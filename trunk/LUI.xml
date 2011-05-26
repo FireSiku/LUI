@@ -1,0 +1,63 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="LUI.lua"/>
+	<Script file="modules\devapi.lua"/>
+	<Script file="modules\themes.lua"/>
+	<Script file="modules\orb.lua"/>
+	<Script file="modules\frames.lua"/>
+	<Script file="modules\panels.lua"/>
+	<Script file="modules\bars.lua"/>
+	
+	<Script file="addons\forte.lua"/>
+	<Script file="addons\pallypower.lua"/>
+	<Script file="addons\bartender.lua"/>
+	<Script file="addons\grid.lua"/>
+	<Script file="addons\omen.lua"/>
+	<Script file="addons\recount.lua"/>
+	
+	<Script file="unitframes\copysettings.lua"/>
+	<Script file="unitframes\general.lua"/>
+	<Script file="unitframes\ouf.lua"/>
+	<Script file="unitframes\colors.lua"/>
+	<Script file="unitframes\player.lua"/>
+	<Script file="unitframes\target.lua"/>
+	<Script file="unitframes\tot.lua"/>
+	<Script file="unitframes\totot.lua"/>
+	<Script file="unitframes\focus.lua"/>
+	<Script file="unitframes\focustarget.lua"/>
+	<Script file="unitframes\pet.lua"/>
+	<Script file="unitframes\pettarget.lua"/>
+	<Script file="unitframes\boss.lua"/>
+	<Script file="unitframes\party.lua"/>
+	<Script file="unitframes\partypet.lua"/>
+	<Script file="unitframes\partytarget.lua"/>
+	<Script file="unitframes\maintank.lua"/>
+	<Script file="unitframes\maintanktarget.lua"/>
+	<Script file="unitframes\maintanktot.lua"/>
+	<Script file="unitframes\arena.lua"/>
+	<Script file="unitframes\arenapet.lua"/>
+	<Script file="unitframes\arenatarget.lua"/>
+	<Script file="unitframes\importexport.lua"/>
+	
+	<Include file="modules\buffs.xml"/>
+	<Script file="modules\buffs.lua"/>
+	<Script file="modules\chat.lua"/>
+	<Script file="modules\minimap.lua"/>
+	<Script file="modules\map.lua"/>
+	<Script file="modules\bags.lua"/>
+	<Script file="modules\nameplates.lua"/>
+	<Script file="modules\cooldown.lua"/>
+	<Script file="modules\tooltip.lua"/>
+	<Script file="modules\datatext.lua"/>
+	<Script file="modules\faq.lua"/>
+	<Script file="modules\micromenu.lua"/>
+	<Include file="modules\raidmenu.xml"/>
+	<Script file="modules\fader.lua"/>
+	
+	<Script file="scripts\error.lua"/>
+	<Script file="scripts\partyfix.lua"/>
+	<Script file="scripts\colourpicker.lua"/>
+	<Script file="scripts\frame.lua"/>
+	<Script file="scripts\invite.lua"/>
+	
+	<Include file="modules\extras.xml"/>
+</Ui>
