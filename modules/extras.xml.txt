@@ -1,0 +1,14 @@
+<!-- Additional Modules
+This file is for adding custom modules to LUI.
+To add a module to this file just include the following line between the <Ui> tags for each extra module:
+
+<Script file="(module.lua)"/>
+
+and replace (module.lua) with the file name
+
+Note: this file must be renamed from extras.xml.txt to extras.xml in order to work.
+	It is a good idea to make a copy of this file and rename it as such as to keep an original version.
+-->
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	
+</Ui>
