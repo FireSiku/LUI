@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: forte.lua
 	Description: FortExorcist Module
-	Version....: 1.0
+	Version....: 1.975
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -11,129 +11,314 @@ local module = LUI:NewModule("Forte", "AceHook-3.0")
 local _, class = UnitClass("player")
 
 local db
+local FW = FW;
+local _G = _G;
+
+LUI_versions.forte = "v1.975";
+
+local defaults = {
+	Forte = {
+		--UseLinks = false,
+
+		IndividualColor = true,
+		Color = {0.24,0.24,0.24},
+		
+		Player = {
+			Enable = true,
+			Lock = true,
+			PaddingX = "0",
+			PaddingY = "0",
+		},
+		Target = {
+			Enable = true,
+			Lock = true,
+			PaddingX = "0",
+			PaddingY = "0",
+		},
+		Focus = {
+			Enable = false,
+			Lock = true,
+			PaddingX = "0",
+			PaddingY = "0",
+		},
+		Compact = {
+			Enable = false,
+			Lock = true,
+			PaddingX = "-4",
+			PaddingY = "-170",
+		},
+		Cooldown = {
+			Enable = true,
+			Lock = true,
+			PaddingX = "0",
+			PaddingY = "120",
+		},
+	},
+}
+
+local global_settings = {
+	GlobalFrameNames = true,
+	ShardEnable = false,
+	SummonEnable = false,
+	SoulstoneEnable = false,
+	HealthstoneEnable = false,
+}
+
+local timer_settings = {
+	lock = true,
+	scale = 1,
+	NormalBgColor = {0.00,0.00,0.00,0.75},
+	StacksFont = {"Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",11,"OUTLINE"},
+	Font = {"Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",11},
+	Height = 18,
+	Texture = "Interface\\AddOns\\LUI\\media\\textures\\statusbars\\Minimalist",
+	LabelFont = {"Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",11},
+}
+
+local cooldown_settings = {
+	lock = true,
+	scale = 1,
+	Loga = 0.255,
+	Tags = 5,
+	CustomTags = {[0]=false,"0 1 10 30 60 120 300 600"},
+	BgColor = {0,0,0,0},
+	Font = {"Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",11},
+	IconFont = {"Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",11,"OUTLINE"},
+	Texture = "Interface\\AddOns\\LUI\\media\\textures\\statusbars\\Minimalist",
+	Width = 384,
+	Height = 28,
+	Hide = true,
+}
+
+local splash_settings = {
+	lock = true,
+	Enable = true,
+	x = 681.2444593840756,
+	y = 156.4444464145517,
+	SecondSplashMax = 3,
+	scale = 2,
+}
+
+local timer_instances = {
+	Player = {
+		anchor = {"oUF_LUI_player"},
+		offset = {
+			DEATHKNIGHT = "Runes",
+			SHAMAN = "Totems",
+			DRUID = "Eclipse",
+			PALADIN = "HolyPower",
+			WARLOCK = "SoulShards",
+		},
+		settings = {
+			Spell = true,
+			Label = false,
+			Target = false,
+			Focus = false,
+			Other = false,
+			NoTarget = true,
+			UnknownTarget = false,
+			You = true,
+			RaidDebuffs = false,
+		}
+	},
+	Target = {
+		anchor = {"oUF_LUI_target","TOPRIGHT"},
+		settings = {
+			Spell = true,
+			Label = false,
+			Target = true,
+			Focus = false,
+			Other = false,
+			NoTarget = false,
+			UnknownTarget = false,
+			You = false,
+			RaidDebuffs = true,
+		}
+	},
+	Focus = {
+		anchor = {"oUF_LUI_focus"},
+		settings = {
+			Spell = true,
+			Label = false,
+			Target = false,
+			Focus = true,
+			Other = false,
+			NoTarget = false,
+			UnknownTarget = false,
+			You = false,
+			RaidDebuffs = false,
+		}
+	},
+	Compact = {
+		settings = {
+			Spell = true,
+			Label = true,
+			RaidTargets = {[0]=true,0.7},
+			CastSpark = {[0]=false,0.3},
+			Spark = {[0]=false,0.7},
+			Name = false,
+			LabelLimit = true,
+			Target = true,
+			Focus = true,
+			Other = true,
+			NoTarget = false,
+			UnknownTarget = false,
+			You = false,
+			RaidDebuffs = false,
+		}
+	},
+}
+
+function module:FXLoaded()
+	return IsAddOnLoaded("Forte_Core") and FW.VERSION >= LUI_versions.forte; -- don't run if FX is too old...
+end
+
+function module:Copy(from,to) -- copies contents from table 'from' to table 'to'
+	for key, val in pairs(from) do
+		if type(val) == "table" then
+			if type(to[key]) ~= "table" then
+				to[key] = {};
+			end
+			self:Copy(val,to[key]);
+		else
+			to[key] = val;
+		end
+	end
+end
+function module:GetTimerIndexByName(name)
+	return FW:InstanceNameToIndex(name,FW.Settings.Timer);
+end
+function module:GetTimerByName(name)
+	return FW.Settings.Timer.Instances[self:GetTimerIndexByName(name)];
+end
+function module:GetCooldown() -- should be replaced by proper function once cooldown cloning is enabled
+	return FW.Settings.Cooldown.Instances[1];
+end
+function module:GetSplash() -- should be replaced by proper function once cooldown cloning is enabled
+	return FW.Settings.Splash.Instances[1];
+end
+
+--[[ this function is needed to allow linking to work in FX (argument order is a bit neater here than in my own func ;) )
+function module:setOption(o,val, root,index,parent_root,parent_index) -- accepts tables or single values
+	if type(val) == "table" then
+		self:Copy(val,root.Instances[index][o]);
+	else
+		root.Instances[index][o] = val;
+	end
+	if db.Forte.UseLinks then
+		FW:SetLinkedOptions(index,o,root,parent_root,parent_index);
+	end
+	-- make sure the proper updates are run after settings options!
+end]]
+
+function module:SetFrameProps(instance,name)
+	local properties = timer_instances[name];
+	local uiScale = UIParent:GetEffectiveScale();
+	local x,y;
+	local width = 50;
+	if properties.anchor then
+		local f = _G[ properties.anchor[1] ];
+		if not f then
+			return; -- don't update anything if anchor frame is missing...
+		end
+		width = tonumber(db.oUF[name] and db.oUF[name].Width) / instance.scale;
+		local s = f:GetEffectiveScale();
+		if properties.anchor[2] == "TOPRIGHT" then -- add target timer to the right of the frame
+			x = f:GetRight() * uiScale + (f:GetWidth() / 2 * s ) + 4;
+		else
+			x = f:GetLeft() * uiScale + (f:GetWidth() / 2 * s );
+		end
+		y = f:GetBottom() * uiScale + (f:GetHeight() * s ) + 9;
+		if properties.offset and properties.offset[class] then
+			local setting = properties.offset[class];
+			if db.oUF[name][setting].Enable and db.oUF[name][setting].Lock then
+				y = y + tonumber(db.oUF[name][setting].Height)*f[setting]:GetEffectiveScale();
+			end
+		end
+	else -- anchor compact frame to right side
+		x = UIParent:GetWidth() * uiScale - ( width / instance.scale ) / 2 * uiScale;
+		y = UIParent:GetHeight() * uiScale / 2;
+	end
+	x = x + tonumber(db.Forte[name].PaddingX);
+	y = y + tonumber(db.Forte[name].PaddingY);
+	
+	instance.Width = width;
+	instance.x = x;
+	instance.y = y;
+end
 
 function module:SetPosForte()
-	if not LUI.isForteTimerLoaded or not db.Forte.Lock or not db.oUF.Settings.Enable then return end
+	if not LUI.isForteTimerLoaded or not db.oUF.Settings.Enable then return end
 
-	local fxwidth = tonumber(db.oUF.Player.Width)
-	local fxscale = tonumber(FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["scale"])
-	fxwidth = fxwidth / fxscale
-	
-	local f = oUF_LUI_player
-	local uiScale = UIParent:GetEffectiveScale()
-	local s = f:GetEffectiveScale()
-	
-	Timer_X = f:GetLeft() * uiScale + (f:GetWidth() / 2 * s )
-	Timer_Y = f:GetBottom() * uiScale + (f:GetHeight() * s ) + 9
-	
-	if class == "DEATHKNIGHT" then
-		if db.oUF.Player.Runes.Enable == true then
-			if db.oUF.Player.Runes.Lock == true then
-				Timer_Y = Timer_Y + (tonumber(db.oUF.Player.Runes.Height)*f.Runes:GetEffectiveScale())
-			end
-		end
-	elseif class == "SHAMAN" then
-		if db.oUF.Player.Totems.Enable == true then
-			if db.oUF.Player.Totems.Lock == true then
-				Timer_Y = Timer_Y + (tonumber(db.oUF.Player.Totems.Height)*f.TotemBar[1]:GetEffectiveScale())
-			end
-		end
-	elseif class == "DRUID" then
-		if db.oUF.Player.Eclipse.Enable == true and oUF_LUI_player.EclipseBar:IsShown() then
-			if db.oUF.Player.Eclipse.Lock == true then
-				Timer_Y = Timer_Y + (tonumber(db.oUF.Player.Eclipse.Height)*f.EclipseBar:GetEffectiveScale())
-			end
-		end
-	elseif class == "PALADIN" then
-		if db.oUF.Player.HolyPower.Enable == true then
-			if db.oUF.Player.HolyPower.Lock == true then
-				Timer_Y = Timer_Y + (tonumber(db.oUF.Player.HolyPower.Height)*f.HolyPower:GetEffectiveScale())
-			end
-		end
-	elseif class == "WARLOCK" then
-		if db.oUF.Player.SoulShards.Enable == true then
-			if db.oUF.Player.SoulShards.Lock == true then
-				Timer_Y = Timer_Y + (tonumber(db.oUF.Player.SoulShards.Height)*f.SoulShards:GetEffectiveScale())
+	for name, data in pairs(timer_instances) do
+		if db.Forte[name].Enable and db.Forte[name].Lock then
+			local instance = self:GetTimerByName(name);
+			if instance then
+				self:SetFrameProps(instance,name);
 			end
 		end
 	end
 	
-	Timer_X = Timer_X + tonumber(db.Forte.Timer_PaddingX)
-	Timer_Y = Timer_Y + tonumber(db.Forte.Timer_PaddingY)
-	
-	FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["Width"] = fxwidth
-	FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["x"] = Timer_X
-	FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["y"] = Timer_Y
-	
-	FW:RefreshFrames()
+	FW:RefreshFrames();
 end
 
 function module:SetPosForteCooldown()
-	if not LUI.isForteCooldownLoaded or not db.Forte.CDLock then return end
+	if not LUI.isForteCooldownLoaded or not db.Forte.Cooldown.Lock then return end
 	
 	local uiScale = UIParent:GetEffectiveScale()
-	local Cooldown_X = (UIParent:GetWidth() * uiScale / 2) + tonumber(db.Forte.Cooldown_PaddingX)
-	local Cooldown_Y = tonumber(db.Forte.Cooldown_PaddingY) * uiScale
+	local x = (UIParent:GetWidth() * uiScale / 2) + tonumber(db.Forte.Cooldown.PaddingX)
+	local y = tonumber(db.Forte.Cooldown.PaddingY) * uiScale
 	
-	FC_Saved.Profiles[FC_Saved.PROFILE]["Cooldown"]["x"] = Cooldown_X
-	FC_Saved.Profiles[FC_Saved.PROFILE]["Cooldown"]["y"] = Cooldown_Y
+	local instance = self:GetCooldown();
+	instance.x = x;
+	instance.y = y;
 
-	FW:RefreshFrames()
+	FW:RefreshFrames();
 end
 
 function module:SetColors()
 	if not LUI.isForteTimerLoaded then return end
 	
-	if db.Forte.IndividualSparkColor == true then
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["SparkColor"] = {unpack(db.Forte.SparkColor)}
-	else
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["SparkColor"] = {unpack(db.Colors.color_top)}
-	end
+	self:Copy(db.Forte.Color,FW.Settings.TimerColorOverride);
+	FW.Settings.TimerColorOverride[0] = db.Forte.IndividualColor;
 	
-	local fxColor = {unpack(db.Forte.Color)}
-	
-	if db.Forte.IndividualColor == true then
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["HighlightColor"] = {unpack(fxColor)}
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["CooldownsColor"] = {unpack(fxColor)}
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["DebuffsColor"] = {unpack(fxColor)}
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["HealColor"] = {unpack(fxColor)}
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["FailColor"] = {unpack(fxColor)}
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["CrowdColor"] = {unpack(fxColor)}
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["BuffColor"] = {unpack(fxColor)}
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["FriendlyBuffColor"] = {unpack(fxColor)}
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["CurseColor"] = {unpack(fxColor)}
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["PetColor"] = {unpack(fxColor)}
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["MagicColor"] = {unpack(fxColor)}
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["DrainColor"] = {unpack(fxColor)}
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["Shared3Color"] = {unpack(fxColor)}
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["Shared2Color"] = {unpack(fxColor)}
-		FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["SelfDebuffColor"] = {unpack(fxColor)}
-	end
-	
-	FW:RefreshFrames()
+	FW:RefreshOptions(); -- at most update FX options frame
 end
 
 function module:SetForte()
-	self:SetColors()
-	self:SetPosForte()
-	self:SetPosForteCooldown()
+	if not FW.Settings then
+		FW:RegisterVariablesEvent(self.SetForte);
+		return;
+	end
+	local created_new = false;
+	if LUI.isForteTimerLoaded then
+		for name, data in pairs(timer_instances) do
+			local instance, enable = self:GetTimerByName(name), db.Forte[name].Enable;
+			if not instance and enable then
+				local index = FW:InstanceCreate(name, FW.Settings.Timer, data.settings);
+				FW.Modules.Timer:NewTimerInstance(index); -- create the new frame and its options
+				instance = FW.Settings.Timer.Instances[index];
+				self:Copy(timer_settings,instance);
+				created_new = true;
+			end
+			if instance then
+				instance.Enable = enable;
+			end
+		end
+		self:SetPosForte();
+	end
+	
+	if LUI.isForteCooldownLoaded then
+		local instance = self:GetCooldown();
+		instance.Enable = db.Forte["Cooldown"].Enable;
+		self:SetPosForteCooldown();
+	end
+	-- live update FX options panel if it's open
+	if created_new then
+		FW:BuildOptions();
+	end
+	self:SetColors(); -- includes a FW:RefreshOptions();
 end
-
-local defaults = {
-	Forte = {
-		Enable = true,
-		CDLock = "true",
-		Lock = "true",
-		IndividualColor = false,
-		IndividualSparkColor = false,
-		Color = {0.24,0.24,0.24},
-		SparkColor = {0.8,0.8,0.8},
-		Timer_PaddingX = "0",
-		Timer_PaddingY = "0",
-		Cooldown_PaddingX = "0",
-		Cooldown_PaddingY = "120",
-	},
-}
 
 function module:LoadOptions()
 	local options = {
@@ -144,197 +329,391 @@ function module:LoadOptions()
 			childGroups = "tab",
 			disabled = function() return not IsAddOnLoaded("Forte_Core") end,
 			args = {
+				--[[UseLinks = {
+					name = "Honor ForteXorcist option linking",
+					desc = "Whether LUI uses the option links that are set in the FX config panel. When enabled, changing a setting through LUI that is linked will automatically be set in all linked profiles / clones.",
+					type = "toggle",
+					width = "full",
+					get = function() return db.Forte.UseLinks end,
+					set = function(self,UseLinks)
+							db.Forte.UseLinks = not db.Forte.UseLinks
+						end,
+					order = 1,
+				},]]
 				Spelltimer = {
-					name = "Spelltimer",
+					name = "Spell Timer",
 					type = "group",
+					childGroups = "tab",
 					disabled = function()
-							if IsAddOnLoaded("Forte_Core") and IsAddOnLoaded("Forte_Timer") then
-								if FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["Enable"] ~= nil then
-									if FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["Enable"] == true then
-										return false
-									else
-										return true
-									end
-								else
-									return true
-								end
-							else
-								return true
-							end
+							return not module:FXLoaded() or not IsAddOnLoaded("Forte_Timer");
 						end,
 					order = 2,
 					args = {
-						Position = {
-							name = "Position",
+						Global = {
+							name = "All frames",
 							type = "group",
 							order = 1,
-							guiInline = true,
+							--guiInline = true,
 							args = {
-								ForteLock = {
-									name = "Lock Spelltimer",
-									desc = "Whether the Spelltimer should stick to your PlayerFrame or not.",
-									type = "toggle",
-									width = "full",
-									get = function() return db.Forte.Lock end,
-									set = function(self,ForteLock)
-											db.Forte.Lock = not db.Forte.Lock
-											if ForteLock == true then
-												module:SetPosForte()
-											end
-										end,
-									order = 1,
-								},
-								PaddingX = {
-									name = "Padding X",
-									desc = "Choose the X Padding for your Forte SpellTimer.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Forte.Timer_PaddingX,
-									type = "input",
-									get = function() return db.Forte.Timer_PaddingX end,
-									set = function(self,PaddingX)
-											if PaddingX == nil or PaddingX == "" then
-												PaddingX = "0"
-											end
-											db.Forte.Timer_PaddingX = PaddingX
-											module:SetPosForte()
-										end,
+								Colors = {
+									name = "Bar Colors",
+									type = "group",
 									order = 2,
-								},
-								PaddingY = {
-									name = "Padding Y",
-									desc = "Choose the Y Padding for your Forte SpellTimer.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Forte.Timer_PaddingY,
-									type = "input",
-									get = function() return db.Forte.Timer_PaddingY end,
-									set = function(self,PaddingY)
-											if PaddingY == nil or PaddingY == "" then
-												PaddingY = "0"
-											end
-											db.Forte.Timer_PaddingY = PaddingY
-											module:SetPosForte()
-										end,
-									order = 3,
+									guiInline = true,
+									args = {
+										--[[header1 = {
+											name = "Bar Color",
+											type = "header",
+											order = 1,
+										},]]
+										IndividualColor = {
+											name = "Global Color",
+											desc = "Whether you want to use a global Color for all your tracked Buffs/Debuffs or not.\n\nNote: If you want different colors for each of your spells please disable this and type /fx to enter ForteXorcist Options and go to Spelltimer -> Coloring/Filtering",
+											type = "toggle",
+											width = "full",
+											get = function() return db.Forte.IndividualColor end,
+											set = function(self,val)
+													db.Forte.IndividualColor = val;
+													module:SetColors();
+												end,
+											order = 2,
+										},
+										Color = {
+											name = "Bar Color",
+											desc = "Choose a global Bar Color.",
+											type = "color",
+											width = "full",
+											disabled = function() return not db.Forte.IndividualColor end,
+											hasAlpha = false,
+											get = function() return unpack(db.Forte.Color) end,
+											set = function(_,r,g,b)
+													db.Forte.Color[1],db.Forte.Color[2],db.Forte.Color[3] = r,g,b;
+													module:SetColors();
+												end,
+											order = 4,
+										},
+									},
 								},
 							},
 						},
-						Colors = {
-							name = "Colors",
+						Player = {
+							name = "Player",
+							desc = "This frame can be attached to the Player frame and show important buffs/debuffs on yourself, spells without a target and some important cooldowns.",
+							type = "group",
+							order = 2,
+							args = {
+								Enable = {
+									name = "Enable",
+									desc = "Enable this buff/debuff frame.",
+									type = "toggle",
+									width = "full",
+									get = function() return db.Forte.Player.Enable end,
+									set = function(self,val)
+											db.Forte.Player.Enable = val
+											module:SetForte()
+										end,
+									order = 1,
+								},
+								Position = {
+									name = "Position",
+									type = "group",
+									order = 2,
+									guiInline = true,
+									args = {
+										ForteLock = {
+											name = "Lock position",
+											desc = "Whether the frame should stick to the location assigned by LUI or not.",
+											type = "toggle",
+											width = "full",
+											get = function() return db.Forte.Player.Lock end,
+											set = function(self,val)
+													db.Forte.Player.Lock = val
+													if val then
+														module:SetPosForte()
+													end
+												end,
+											order = 1,
+										},
+										PaddingX = {
+											name = "Padding X",
+											desc = "Choose the X Padding for this frame.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Forte.Player.PaddingX,
+											type = "input",
+											get = function() return db.Forte.Player.PaddingX end,
+											set = function(self,val)
+													if val == nil or val == "" then
+														val = "0"
+													end
+													db.Forte.Player.PaddingX = val
+													module:SetPosForte()
+												end,
+											order = 2,
+										},
+										PaddingY = {
+											name = "Padding Y",
+											desc = "Choose the Y Padding for this frame.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Forte.Player.PaddingY,
+											type = "input",
+											get = function() return db.Forte.Player.PaddingY end,
+											set = function(self,val)
+													if val == nil or val == "" then
+														val = "0"
+													end
+													db.Forte.Player.PaddingY = val
+													module:SetPosForte()
+												end,
+											order = 3,
+										},
+									},
+								},
+							},
+						},
+						Target = {
+							name = "Target",
+							desc = "This frame can be attached to the target frame and show important buffs/debuffs on your target.",
+							type = "group",
+							order = 3,
+							args = {
+								Enable = {
+									name = "Enable",
+									desc = "Enable this buff/debuff frame.",
+									type = "toggle",
+									width = "full",
+									get = function() return db.Forte.Target.Enable end,
+									set = function(self,val)
+											db.Forte.Target.Enable = val
+											module:SetForte()
+										end,
+									order = 1,
+								},
+								Position = {
+									name = "Position",
+									type = "group",
+									order = 2,
+									guiInline = true,
+									args = {
+										ForteLock = {
+											name = "Lock position",
+											desc = "Whether the frame should stick to the location assigned by LUI or not.",
+											type = "toggle",
+											width = "full",
+											get = function() return db.Forte.Target.Lock end,
+											set = function(self,val)
+													db.Forte.Target.Lock = val
+													if val then
+														module:SetPosForte()
+													end
+												end,
+											order = 1,
+										},
+										PaddingX = {
+											name = "Padding X",
+											desc = "Choose the X Padding for this frame.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Forte.Target.PaddingX,
+											type = "input",
+											get = function() return db.Forte.Target.PaddingX end,
+											set = function(self,val)
+													if val == nil or val == "" then
+														val = "0"
+													end
+													db.Forte.Target.PaddingX = val
+													module:SetPosForte()
+												end,
+											order = 2,
+										},
+										PaddingY = {
+											name = "Padding Y",
+											desc = "Choose the Y Padding for this frame.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Forte.Target.PaddingY,
+											type = "input",
+											get = function() return db.Forte.Target.PaddingY end,
+											set = function(self,val)
+													if val == nil or val == "" then
+														val = "0"
+													end
+													db.Forte.Target.PaddingY = val
+													module:SetPosForte()
+												end,
+											order = 3,
+										},
+									},
+								},
+							},
+						},
+						Focus = {
+							name = "Focus",
+							desc = "This frame can be attached to the focus frame and show important buffs/debuffs on your focus.",
+							type = "group",
+							order = 4,
+							args = {
+								Enable = {
+									name = "Enable",
+									desc = "Enable this buff/debuff frame.",
+									type = "toggle",
+									width = "full",
+									get = function() return db.Forte.Focus.Enable end,
+									set = function(self,val)
+											db.Forte.Focus.Enable = val
+											module:SetForte()
+										end,
+									order = 1,
+								},
+								Position = {
+									name = "Position",
+									type = "group",
+									order = 2,
+									guiInline = true,
+									args = {
+										ForteLock = {
+											name = "Lock position",
+											desc = "Whether the frame should stick to the location assigned by LUI or not.",
+											type = "toggle",
+											width = "full",
+											get = function() return db.Forte.Focus.Lock end,
+											set = function(self,val)
+													db.Forte.Focus.Lock = val
+													if val then
+														module:SetPosForte()
+													end
+												end,
+											order = 1,
+										},
+										PaddingX = {
+											name = "Padding X",
+											desc = "Choose the X Padding for this frame.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Forte.Focus.PaddingX,
+											type = "input",
+											get = function() return db.Forte.Focus.PaddingX end,
+											set = function(self,val)
+													if val == nil or val == "" then
+														val = "0"
+													end
+													db.Forte.Focus.PaddingX = val
+													module:SetPosForte()
+												end,
+											order = 2,
+										},
+										PaddingY = {
+											name = "Padding Y",
+											desc = "Choose the Y Padding for this frame.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Forte.Focus.PaddingY,
+											type = "input",
+											get = function() return db.Forte.Focus.PaddingY end,
+											set = function(self,val)
+													if val == nil or val == "" then
+														val = "0"
+													end
+													db.Forte.Focus.PaddingY = val
+													module:SetPosForte()
+												end,
+											order = 3,
+										},
+									},
+								},
+							},
+						},
+						Compact = {
+							name = "Compact",
+							desc = "Will show a compact timer frame with important spells on multiple units.",
+							type = "group",
+							order = 5,
+							args = {
+								Enable = {
+									name = "Enable",
+									desc = "Enable this buff/debuff frame.",
+									type = "toggle",
+									width = "full",
+									get = function() return db.Forte.Compact.Enable end,
+									set = function(self,val)
+											db.Forte.Compact.Enable = val
+											module:SetForte()
+										end,
+									order = 1,
+								},
+								Position = {
+									name = "Position",
+									type = "group",
+									order = 2,
+									guiInline = true,
+									args = {
+										ForteLock = {
+											name = "Lock position",
+											desc = "Whether the frame should stick to the location assigned by LUI or not.",
+											type = "toggle",
+											width = "full",
+											get = function() return db.Forte.Compact.Lock end,
+											set = function(self,val)
+													db.Forte.Compact.Lock = val
+													if val then
+														module:SetPosForte()
+													end
+												end,
+											order = 1,
+										},
+										PaddingX = {
+											name = "Padding X",
+											desc = "Choose the X Padding for this frame.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Forte.Compact.PaddingX,
+											type = "input",
+											get = function() return db.Forte.Compact.PaddingX end,
+											set = function(self,val)
+													if val == nil or val == "" then
+														val = "0"
+													end
+													db.Forte.Compact.PaddingX = val
+													module:SetPosForte()
+												end,
+											order = 2,
+										},
+										PaddingY = {
+											name = "Padding Y",
+											desc = "Choose the Y Padding for this frame.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Forte.Compact.PaddingY,
+											type = "input",
+											get = function() return db.Forte.Compact.PaddingY end,
+											set = function(self,val)
+													if val == nil or val == "" then
+														val = "0"
+													end
+													db.Forte.Compact.PaddingY = val
+													module:SetPosForte()
+												end,
+											order = 3,
+										},
+									},
+								},
+							},
+						},
+						
+					},
+				},
+				Cooldowntimer = {
+					name = "Cooldown Timer",
+					type = "group",
+					disabled = function()
+						return not module:FXLoaded() or not IsAddOnLoaded("Forte_Cooldown");
+					end,
+					order = 3,
+					args = {
+						Enable = {
+							name = "Enable",
+							desc = "Enable the Cooldown Timer.",
+							type = "toggle",
+							width = "full",
+							get = function() return db.Forte.Cooldown.Enable end,
+							set = function(self,val)
+									db.Forte.Cooldown.Enable = val
+									module:SetForte()
+								end,
+							order = 1,
+						},
+						Position = {
+							name = "Position",
 							type = "group",
 							order = 2,
 							guiInline = true,
 							args = {
-								header1 = {
-									name = "Bar Color",
-									type = "header",
-									order = 1,
-								},
-								IndividualColor = {
-									name = "Individual Color",
-									desc = "Whether you want to use an individual Color for all your tracked Buffs/Debuffs or not.\n\nNote: If you want different colors for each of your spells please disable both options (HealthbarColor/Individual Color) and type /fx to enter FortExorcist Options and go to Spelltimer -> Coloring/Filtering",
-									type = "toggle",
-									width = "full",
-									get = function() return db.Forte.IndividualColor end,
-									set = function(self,IndividualColor)
-											db.Forte.IndividualColor = not db.Forte.IndividualColor
-											if IndividualColor == true then
-												if db.Forte.UseHealthbarColor == true then
-													db.Forte.UseHealthbarColor = false
-												end
-												
-												module:SetColors()
-											end
-										end,
-									order = 2,
-								},
-								Color = {
-									name = "Bar Color",
-									desc = "Choose an individual Bar Color.",
-									type = "color",
-									width = "full",
-									disabled = function() return not db.Forte.IndividualColor end,
-									hasAlpha = false,
-									get = function() return unpack(db.Forte.Color) end,
-									set = function(_,r,g,b)
-											db.Forte.Color = {r,g,b}
-											
-											module:SetColors()
-										end,
-									order = 4,
-								},
-								header2 = {
-									name = "Spark Color",
-									type = "header",
-									order = 5,
-								},
-								IndividualSparkColor = {
-									name = "Individual Spark Color",
-									desc = "Whether you want to use an individual Spark Color for all your tracked Buffs/Debuffs or not.",
-									type = "toggle",
-									width = "full",
-									get = function() return db.Forte.IndividualSparkColor end,
-									set = function(self,IndividualSparkColor)
-											db.Forte.IndividualSparkColor = not db.Forte.IndividualSparkColor
-											if IndividualSparkColor == true then
-												if db.Forte.UseThemeColor == true then
-													db.Forte.UseThemeColor = false
-												end
-												
-												module:SetColors()
-											end
-										end,
-									order = 6,
-								},
-								SparkColor = {
-									name = "Spark Color",
-									desc = "Choose an individual Spark Color.",
-									type = "color",
-									width = "full",
-									disabled = function() return not db.Forte.IndividualSparkColor end,
-									hasAlpha = false,
-									get = function() return unpack(db.Forte.SparkColor) end,
-									set = function(_,r,g,b)
-											db.Forte.SparkColor = {r,g,b}
-											
-											module:SetColors()
-										end,
-									order = 7,
-								},
-							},
-						},
-					},
-				},
-				Cooldowntimer = {
-					name = "Cooldowntimer",
-					type = "group",
-					disabled = function()
-							if IsAddOnLoaded("Forte_Core") and IsAddOnLoaded("Forte_Cooldown") then
-								if FC_Saved.Profiles[FC_Saved.PROFILE]["Cooldown"]["Enable"] ~= nil then
-									if FC_Saved.Profiles[FC_Saved.PROFILE]["Cooldown"]["Enable"] == true then
-										return false
-									else
-										return true
-									end
-								else
-									return true
-								end
-							else
-								return true
-							end
-						end,
-					order = 3,
-					args = {
-						Position = {
-							name = "Position",
-							type = "group",
-							order = 1,
-							guiInline = true,
-							args = {
-								ForteCDLock = {
+								Lock = {
 									name = "Lock Cooldown Timer",
 									desc = "Whether the Cooldown Timer should stick to your Bar or not.",
 									type = "toggle",
 									width = "full",
-									get = function() return db.Forte.CDLock end,
-									set = function(self,ForteCDLock)
-											db.Forte.CDLock = not db.Forte.CDLock
-											if ForteCDLock ~= false then
+									get = function() return db.Forte.Cooldown.Lock end,
+									set = function(self,val)
+											db.Forte.Cooldown.Lock = val
+											if val == true then
 												module:SetPosForteCooldown()
 											end
 										end,
@@ -342,28 +721,28 @@ function module:LoadOptions()
 								},
 								PaddingX = {
 									name = "Padding X",
-									desc = "Choose the X Padding for your Forte Cooldowntimer.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Forte.Cooldown_PaddingX,
+									desc = "Choose the X Padding for your Forte Cooldowntimer.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Forte.Cooldown.PaddingX,
 									type = "input",
-									get = function() return db.Forte.Cooldown_PaddingX end,
-									set = function(self,PaddingX)
-											if PaddingX == nil or PaddingX == "" then
-												PaddingX = "0"
+									get = function() return db.Forte.Cooldown.PaddingX end,
+									set = function(self,val)
+											if val == nil or val == "" then
+												val = "0"
 											end
-											db.Forte.Cooldown_PaddingX = PaddingX
-											module:SetPosForteCooldown()
+											db.Forte.Cooldown.PaddingX = val
+											module:SetPosForteCooldown();
 										end,
 									order = 2,
 								},
 								PaddingY = {
 									name = "Padding Y",
-									desc = "Choose the Y Padding for your Forte Cooldowntimer.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Forte.Cooldown_PaddingY,
+									desc = "Choose the Y Padding for your Forte Cooldowntimer.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Forte.Cooldown.PaddingY,
 									type = "input",
-									get = function() return db.Forte.Cooldown_PaddingY end,
-									set = function(self,PaddingY)
-											if PaddingY == nil or PaddingY == "" then
-												PaddingY = "0"
+									get = function() return db.Forte.Cooldown.PaddingY end,
+									set = function(self,val)
+											if val == nil or val == "" then
+												val = "0"
 											end
-											db.Forte.Cooldown_PaddingY = PaddingY
+											db.Forte.Cooldown.PaddingY = val
 											module:SetPosForteCooldown()
 										end,
 									order = 3,
@@ -379,443 +758,58 @@ function module:LoadOptions()
 end
 
 function LUI:InstallForte()
-	if not IsAddOnLoaded("Forte_Core") then return end
+	if not module:FXLoaded() then return end
 	if LUICONFIG.Versions.forte == LUI_versions.forte and LUICONFIG.IsForteInstalled == true then return end
+	if not FW.Settings then
+		FW:RegisterVariablesEvent(LUI.InstallForte);
+		return;
+	end
+	local LUIprofileOld = UnitName("Player");
+	local LUIprofileNew = "LUI: "..LUIprofileOld;
+	local created_new = false;
 	
-	self.db = LUI.db.profile
-	db = self.db
-
-	local CharName = UnitName("player")
-	local ServerName = GetRealmName()
-	local ProfileName = CharName.." - "..ServerName	
-	local health_r, health_g, health_b = unpack(db.Forte.Color)
-	local ProfileNameForte = CharName.."-"..ServerName
-	local ForteTimerArray = FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["Filter"]
-	local ForteCooldownArray = FC_Saved.Profiles[FC_Saved.PROFILE]["Cooldown"]["Filter"]
-	local ForteProfileFound = false
-	
-	for i, v in ipairs(FC_Saved.ProfileNames) do
-		if v[1] == CharName then
-			ForteProfileFound = true
-			break;
+	local index = FW:InstanceNameToIndex(LUIprofileNew,FW.Saved.Profiles);
+	if not index then
+		index = FW:InstanceNameToIndex(LUIprofileOld,FW.Saved.Profiles);
+		if index then
+			FW:InstanceRename(index,LUIprofileNew,FW.Saved.Profiles);
+		else
+			index = FW:InstanceCreate(LUIprofileNew,FW.Saved.Profiles,global_settings);
+			created_new = true;
 		end
 	end
+	FW:UseProfile( index );
 	
-	if ForteProfileFound == false then
-		tinsert(FC_Saved.ProfileNames,{CharName, CharName})
+	if not created_new then
+		module:Copy(FW.Default,FW.Settings); -- FX
+		module:Copy(global_settings,FW.Settings); -- global
 	end
-		
-	ForteDefaults = {
-		[CharName] = {
-			["RemoveAfterCombat"] = false,
-			["TimerInstantSoundEnable"] = false,
-			["RightClickIconOptions"] = true,
-			["GlobalFrameNames"] = true,
-			["FrameSnap"] = true,
-			["GlobalAlpha"] = 1,
-			["AnimateScroll"] = false,
-			["ShardEnable"] = false,
-			["SoulstoneEnable"] = false,
-			["HealthstoneEnable"] = false,
-			["SummonEnable"] = false,
-			["Timer"] = {
-				["HighlightColor"] = {
-					health_r, -- [1]
-					health_g, -- [2]
-					health_b, -- [3]
-				},
-				["FocusBgColor"] = {
-					1, -- [1]
-					1, -- [2]
-					0.5019607843137255, -- [3]
-					1, -- [4]
-				},
-				["MaxEnable"] = false,
-				["CustomTag"] = false,
-				["Expand"] = true,
-				["SelfDebuffColor"] = {
-					health_r-0.3, -- [1]
-					health_g-0.3, -- [2]
-					health_b-0.3, -- [3]
-				},
-				["HideTime"] = 2,
-				["CurseEnable"] = true,
-				["MagicEnable"] = true,
-				["CustomTagMsg"] = "id target :: spell stacks",
-				["TicksEnable"] = false,
-				["FadeTime"] = 0.5,
-				["PetEnable"] = true,
-				["HealEnable"] = true,
-				["y"] = 261,
-				["BuffEnable"] = true,
-				["ExpiredEnable"] = false,
-				["ExpiredColor"] = {
-					health_r, -- [1]
-					health_g, -- [2]
-					health_b, -- [3]
-					0.1, -- [4]
-				},
-				["Filter"] = {
-				},
-				["DrainColor"] = {
-					health_r, -- [1]
-					health_g, -- [2]
-					health_b, -- [3]
-				},
-				["GroupID"] = false,
-				["scale"] = 1.2,
-				["TargetColor"] = {
-					1, -- [1]
-					1, -- [2]
-					1, -- [3]
-					1, -- [4]
-				},
-				["MagicColor"] = {
-					health_r, -- [1]
-					health_g, -- [2]
-					health_b, -- [3]
-				},
-				["Target"] = true,
-				["IgnoreLong"] = false,
-				["ShowID"] = false,
-				["MaximizeName"] = false,
-				["MaxTimeEnable"] = false,
-				["FocusEnable"] = false,
-				["PetColor"] = {
-					health_r, -- [1]
-					health_g, -- [2]
-					health_b, -- [3]
-				},
-				["Max"] = 10,
-				["Backdrop"] = {
-					"Interface\\AddOns\\Forte_Core\\Textures\\Background", -- [1]
-					"Interface\\AddOns\\LUI\\media\\textures\\statusbars\\glowTex", -- [2]
-					false, -- [3]
-					16, -- [4]
-					6, -- [5]
-					5, -- [6]
-				},
-				["HighlightEnable"] = true,
-				["CooldownsEnable"] = true,
-				["FailEnable"] = true,
-				["Height"] = 17,
-				["CurseColor"] = {
-					health_r, -- [1]
-					health_g, -- [2]
-					health_b, -- [3]
-				},
-				["x"] = 475,
-				["DrainEnable"] = true,
-				["alpha"] = 1,
-				["RaidTargetsAlpha"] = 0.7,
-				["Enable"] = true,
-				["TargetBgColor"] = {
-					0, -- [1]
-					0, -- [2]
-					0, -- [3]
-					1, -- [4]
-				},
-				["SpacingHeight"] = 0,
-				["Fade"] = true,
-				["FocusBgEnable"] = false,
-				["BarBackgroundAlpha"] = 0.5,
-				["Time"] = true,
-				["Focus"] = true,
-				["Blink"] = 3,
-				["TicksNext"] = false,
-				["FailTime"] = 2,
-				["RaidTargets"] = false,
-				["NormalAlpha"] = 0.4,
-				["FadeSpeed"] = 0.3,
-				["MaxTime"] = 30,
-				["CrowdEnable"] = true,
-				["Spell"] = false,
-				["LabelHeight"] = 16,
-				["LabelFont"] = "Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",
-				["Width"] = 210,
-				["BuffColor"] = {
-					health_r, -- [1]
-					health_g, -- [2]
-					health_b, -- [3]
-				},
-				["SparkColor"] = {
-					color_r, -- [1]
-					color_g, -- [2]
-					color_b, -- [3]
-					0.5, -- [4]
-				},
-				["Ticks"] = false,
-				["NormalBgColor"] = {
-					0, -- [1]
-					0, -- [2]
-					0, -- [3]
-					0.7300000190734863, -- [4]
-				},
-				["TimeColor"] = {
-					1, -- [1]
-					1, -- [2]
-					1, -- [3]
-					1, -- [4]
-				},
-				["FriendlyBuffColor"] = {
-					health_r, -- [1]
-					health_g, -- [2]
-					health_b, -- [3]
-				},
-				["FriendlyBuffEnable"] = true,
-				["CrowdColor"] = {
-					health_r, -- [1]
-					health_g, -- [2]
-					health_b, -- [3]
-				},
-				["Other"] = true,
-				["OneMax"] = false,
-				["SparkEnable"] = true,
-				["Flip"] = false,
-				["Texture"] = "Interface\\AddOns\\LUI\\media\\textures\\statusbars\\Minimalist",
-				["HideLongerEnable"] = false,
-				["HideNonStacking"] = false,
-				["HideLonger"] = 30,
-				["FailColor"] = {
-					health_r, -- [1]
-					health_g, -- [2]
-					health_b, -- [3]
-				},
-				["DebuffsEnable"] = true,
-				["TimeSpace"] = 25,
-				["FontSize"] = 10,
-				["Space"] = 1,
-				["Background"] = true,
-				["Outwands"] = true,
-				["BlinkEnable"] = false,
-				["HealColor"] = {
-					health_r, -- [1]
-					health_g, -- [2]
-					health_b, -- [3]
-				},
-				["DebuffsColor"] = {
-					health_r, -- [1]
-					health_g, -- [2]
-					health_b, -- [3]
-				},
-				["TicksColor"] = {
-					1, -- [1]
-					1, -- [2]
-					1, -- [3]
-					1, -- [4]
-				},
-				["TargetEnable"] = false,
-				["HideLongerNoBoss"] = false,
-				["CastSpark"] = false,
-				["TargetBgEnable"] = false,
-				["SelfDebuffEnable"] = true,
-				["NormalColor"] = {
-					1, -- [1]
-					1, -- [2]
-					1, -- [3]
-					1, -- [4]
-				},
-				["CooldownsColor"] = {
-					health_r, -- [1]
-					health_g, -- [2]
-					health_b, -- [3]
-				},
-				["FocusColor"] = {
-					1, -- [1]
-					1, -- [2]
-					0.5, -- [3]
-					1, -- [4]
-				},
-				["lock"] = true,
-				["Test"] = false,
-				["ForceMax"] = false,
-				["LabelFontSize"] = 10,
-				["Font"] = "Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",
-			},
-			["Cooldown"] = {
-				["ResTimerEnable"] = false,
-				["BgColor"] = {
-					0, -- [1]
-					0, -- [2]
-					0, -- [3]
-					0, -- [4]
-				},
-				["SpellEnable"] = true,
-				["AlphaMax"] = 0.6,
-				["Tags"] = 5,
-				["PetEnable"] = true,
-				["y"] = 73,
-				["BuffEnable"] = true,
-				["Filter"] = {
-					["unknown"] = {
-						{
-							-1, -- [1]
-						}, -- [1]
-					},
-					["Blessed Medallion of Karabor"] = {
-						{
-							-1, -- [1]
-						}, -- [1]
-					},
-					["Recently Bandaged"] = {
-						{
-							-2, -- [1]
-							1, -- [2]
-							0.65, -- [3]
-							0, -- [4]
-						}, -- [1]
-					},
-				},
-				["MinRangeEnable"] = false,
-				["IconTextEnable"] = true,
-				["scale"] = 0.7,
-				["PotionColor"] = {
-					0.07450980392156863, -- [1]
-					0.07450980392156863, -- [2]
-					0.07450980392156863, -- [3]
-				},
-				["HealthstoneColor"] = {
-					0.07450980392156863, -- [1]
-					0.07450980392156863, -- [2]
-					0.07450980392156863, -- [3]
-				},
-				["PetColor"] = {
-					0.07450980392156863, -- [1]
-					0.07450980392156863, -- [2]
-					0.07450980392156863, -- [3]
-				},
-				["MaxRangeEnable"] = false,
-				["Max"] = 300,
-				["Backdrop"] = {
-					"Interface\\AddOns\\Forte_Core\\Textures\\Background", -- [1]
-					"Interface\\Addons\\LUI\\media\\textures\\statusbars\\glowTex", -- [2]
-					false, -- [3]
-					16, -- [4]
-					5, -- [5]
-					2, -- [6]
-				},
-				["Font"] = "Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",
-				["DebuffEnable"] = true,
-				["Height"] = 40,
-				["FontSize"] = 15,
-				["MinRange"] = 0,
-				["Enable"] = true,
-				["Loga"] = 0.255,
-				["Vertical"] = false,
-				["MaxRange"] = 3600,
-				["lock"] = true,
-				["PotionEnable"] = true,
-				["CustomTagsMsg"] = "0 1 10 30 60 120 180 240",
-				["SoulstoneEnable"] = false,
-				["Texture"] = "Interface\\AddOns\\LUI\\media\\textures\\statusbars\\Minimalist",
-				["DebuffColor"] = {
-					0.07450980392156863, -- [1]
-					0.07450980392156863, -- [2]
-					0.07450980392156863, -- [3]
-				},
-				["Spark"] = true,
-				["Width"] = 551,
-				["BuffColor"] = {
-					0.01568627450980392, -- [1]
-					0.01568627450980392, -- [2]
-					0.01568627450980392, -- [3]
-				},
-				["TextColor"] = {
-					1, -- [1]
-					1, -- [2]
-					1, -- [3]
-					1, -- [4]
-				},
-				["Swing"] = false,
-				["Flip"] = false,
-				["Detail"] = true,
-				["alpha"] = 1,
-				["IconTextColor"] = {
-					1, -- [1]
-					1, -- [2]
-					1, -- [3]
-					0, -- [4]
-				},
-				["IconFont"] = "Interface\\AddOns\\Forte_Core\\Fonts\\GOTHIC.TTF",
-				["Warn"] = true,
-				["Splash"] = true,
-				["ResTimerColor"] = {
-					0.07450980392156863, -- [1]
-					0.07450980392156863, -- [2]
-					0.07450980392156863, -- [3]
-				},
-				["EnchantColor"] = {
-					0.07450980392156863, -- [1]
-					0.07450980392156863, -- [2]
-					0.07450980392156863, -- [3]
-				},
-				["EnchantEnable"] = true,
-				["PowerupColor"] = {
-					0.01568627450980392, -- [1]
-					0.01568627450980392, -- [2]
-					0.01568627450980392, -- [3]
-				},
-				["SoulstoneColor"] = {
-					0.07450980392156863, -- [1]
-					0.07450980392156863, -- [2]
-					0.07450980392156863, -- [3]
-				},
-				["GroupOverride"] = true,
-				["Alpha"] = 0.1,
-				["ItemEnable"] = true,
-				["CustomTags"] = false,
-				["SpellColor"] = {
-					0.07450980392156863, -- [1]
-					0.07450980392156863, -- [2]
-					0.07450980392156863, -- [3]
-				},
-				["BarColor"] = {
-					0.8627450980392157, -- [1]
-					0.8627450980392157, -- [2]
-					0.8627450980392157, -- [3]
-					0.3500000238418579, -- [4]
-				},
-				["Ignore"] = true,
-				["IconFontSize"] = 11,
-				["HealthstoneEnable"] = false,
-				["ItemColor"] = {
-					0.07450980392156863, -- [1]
-					0.07450980392156863, -- [2]
-					0.07450980392156863, -- [3]
-				},
-				["SplashFactor"] = 6,
-				["Test"] = false,
-				["Hide"] = true,
-				["PowerupEnable"] = true,
-				["x"] = 609,
-			},
-			["Splash"] = {
-				["SplashGlow"] = true,
-				["SecondSplashMax"] = 3,
-				["Enable"] = true,
-				["lock"] = true,
-				["scale"] = 2,
-				["y"] = 384.0000092153639,
-				["alpha"] = 0.7,
-				["x"] = 614.4000447540723,
-			},
-			["RAID"] = false,
-			["PARTY"] = false,
-		}
-	}
-	
-	FC_Saved.Profiles[CharName] = ""
-	FC_Saved.Profiles[CharName] = {}
-
-	for k,v in pairs(ForteDefaults) do
-		FC_Saved.Profiles[k] = v
+				
+	-- disable Spell Timer instances that LUI won't use on install
+	if LUI.isForteTimerLoaded then
+		for index, instance in ipairs(FW.Settings.Timer.Instances) do
+			if not timer_instances[ FW:InstanceIndexToName(index,FW.Settings.Timer) ] then
+				instance.Enable = false;
+			end
+		end
+		 -- restore defaults
+		for name, data in pairs(timer_instances) do
+			local instance = module:GetTimerByName(name);
+			if instance then
+				module:Copy(FW.InstanceDefault.Timer,instance); -- FX
+				module:Copy(timer_settings,instance); -- global
+				module:Copy(data.settings,instance); -- instance
+			end
+		end
+	end
+	-- restore defaults
+	if LUI.isForteCooldownLoaded then
+		module:Copy(FW.InstanceDefault.Cooldown,module:GetCooldown() ); -- FX
+		module:Copy(cooldown_settings,module:GetCooldown() ); -- global
+		module:Copy(FW.InstanceDefault.Splash,module:GetSplash() ); -- FX
+		module:Copy(splash_settings,module:GetSplash() ); -- global
 	end
 	
-	FC_Saved.Profiles[CharName]["Timer"]["Filter"] = ForteTimerArray
-	FC_Saved.Profiles[CharName]["Cooldown"]["Filter"] = ForteCooldownArray
-	
-	FW:UseProfile(CharName)
-		
 	LUICONFIG.Versions.forte = LUI_versions.forte
 	LUICONFIG.IsForteInstalled = true
 end
@@ -825,13 +819,18 @@ local function ConfigureForte()
 	ReloadUI()
 end
 
+local function SetForte()
+	LUICONFIG.Versions.forte = LUI_versions.forte; -- don't ask again
+	module:SetForte();
+end
+
 function module:OnInitialize()
 	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
 	LUI:RefreshDefaults()
 	LUI:Refresh()
 	
 	StaticPopupDialogs["INSTALL_FORTE"] = {
-	  text = "ForteXorcist Addon found!\nDo you want to apply all LUI Styles to ForteXorcist Spelltimer/Cooldowntimer?",
+	  text = "%s",
 	  button1 = YES,
 	  button2 = NO,
 	  OnAccept = ConfigureForte,
@@ -847,36 +846,22 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
-	if IsAddOnLoaded("Forte_Core") then
-		if not FW.Settings then
-			FW:RegisterVariablesEvent(SetForte)
-			return
-		end
-	end
-	
-	if IsAddOnLoaded("Forte_Core") and IsAddOnLoaded("Forte_Timer") then
-		if FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["Enable"] ~= nil then
-			if FC_Saved.Profiles[FC_Saved.PROFILE]["Timer"]["Enable"] == true then
-				LUI.isForteTimerLoaded = true
+	if self:FXLoaded() then
+		LUI.isForteTimerLoaded = IsAddOnLoaded("Forte_Timer") ~= nil;
+		LUI.isForteCooldownLoaded = IsAddOnLoaded("Forte_Cooldown") ~= nil;
+		
+		if LUICONFIG.IsConfigured == true then
+			local extra = "\n\nDo you want to apply all LUI Styles to ForteXorcist Spelltimer/Cooldowntimer?\n\nThis will create a new FX profile for LUI (if it hasn't already) and apply LUI's defaults to it, including new timer frames!\n\nYou can also set the LUI defaults later by going to 'General > Addons > Restore ForteXorcist' in the LUI config.";
+			if LUICONFIG.IsForteInstalled then
+				if LUICONFIG.Versions.forte ~= LUI_versions.forte then
+					StaticPopupDialogs["INSTALL_FORTE"].OnCancel = SetForte; -- run SetForte on cancel to create new instances anyway
+					StaticPopup_Show("INSTALL_FORTE","New major version of ForteXorcist found!"..extra);
+				else
+					self:SetForte();
+				end
+			else
+				StaticPopup_Show("INSTALL_FORTE","ForteXorcist Addon found!"..extra);
 			end
 		end
-	end
-	
-	if IsAddOnLoaded("Forte_Core") and IsAddOnLoaded("Forte_Cooldown") then
-		if FC_Saved.Profiles[FC_Saved.PROFILE]["Cooldown"]["Enable"] ~= nil then
-			if FC_Saved.Profiles[FC_Saved.PROFILE]["Cooldown"]["Enable"] == true then
-				LUI.isForteCooldownLoaded = true
-			end
-		end
-	end
-	
-	if IsAddOnLoaded("Forte_Core") and LUICONFIG.IsConfigured == true then
-		if LUICONFIG.IsForteInstalled == nil or LUICONFIG.IsForteInstalled == false then
-			StaticPopup_Show("INSTALL_FORTE")
-		end
-	end
-	
-	if IsAddOnLoaded("Forte_Core") and LUICONFIG.IsForteInstalled == true then
-		self:SetForte()
 	end
 end
