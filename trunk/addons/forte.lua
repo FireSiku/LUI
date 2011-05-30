@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: forte.lua
 	Description: FortExorcist Module
-	Version....: 1.975-v1.1
+	Version....: 1.975-v1.2
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -103,11 +103,11 @@ local timer_instances = {
 	Player = {
 		anchor = {"oUF_LUI_player"},
 		offset = {
-			DEATHKNIGHT = "Runes",
-			SHAMAN = "Totems",
-			DRUID = "Eclipse",
-			PALADIN = "HolyPower",
-			WARLOCK = "SoulShards",
+			DEATHKNIGHT = {"Runes","Runes"},
+			SHAMAN = {"Totems","TotemBar",1},
+			DRUID = {"Eclipse","EclipseBar"},
+			PALADIN = {"HolyPower","HolyPower"},
+			WARLOCK = {"SoulShards","SoulShards"},
 		},
 		settings = {
 			Spell = true,
@@ -230,9 +230,15 @@ function module:SetFrameProps(instance,name)
 		end
 		y = f:GetBottom() * uiScale + (f:GetHeight() * s ) + 9;
 		if properties.offset and properties.offset[class] then
-			local setting = properties.offset[class];
-			if db.oUF[name][setting].Enable and db.oUF[name][setting].Lock then
-				y = y + tonumber(db.oUF[name][setting].Height)*f[setting]:GetEffectiveScale();
+			local setting,frame,index = unpack(properties.offset[class]);
+			frame = f[frame]; -- frame = index and f[frame][index] or f[frame];
+			if frame and db.oUF[name][setting].Enable and db.oUF[name][setting].Lock then
+				if index then 
+					frame = frame[index];
+				end
+				if frame:IsShown() then
+					y = y + tonumber(db.oUF[name][setting].Height)*frame:GetEffectiveScale();
+				end
 			end
 		end
 	else -- anchor compact frame to right side
