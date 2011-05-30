@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: forte.lua
 	Description: FortExorcist Module
-	Version....: 1.975
+	Version....: 1.975-v1.1
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -186,7 +186,7 @@ function module:Copy(from,to) -- copies contents from table 'from' to table 'to'
 	end
 end
 function module:GetTimerIndexByName(name)
-	return FW:InstanceNameToIndex(name,FW.Settings.Timer);
+	return FW:InstanceNameToIndex(name,FW.Settings.Timer,1);-- set to case sensitive
 end
 function module:GetTimerByName(name)
 	return FW.Settings.Timer.Instances[self:GetTimerIndexByName(name)];
@@ -821,6 +821,9 @@ end
 
 local function SetForte()
 	LUICONFIG.Versions.forte = LUI_versions.forte; -- don't ask again
+	-- disable the new frames that are enabled by default
+	db.Forte.Player.Enable = false;
+	db.Forte.Target.Enable = false;
 	module:SetForte();
 end
 
