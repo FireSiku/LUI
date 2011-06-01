@@ -1,8 +1,8 @@
 --[[
 	Project....: LUI NextGenWoWUserInterface
 	File.......: forte.lua
-	Description: FortExorcist Module
-	Version....: 1.975-v1.2
+	Description: ForteXorcist Module
+	Version....: 1.975-v1.3
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -14,7 +14,9 @@ local db
 local FW = FW;
 local _G = _G;
 
-LUI_versions.forte = "v1.975";
+LUI_versions.forte = "v1.975"; -- major version - DON'T change this for just every FX version, because it will prompt a 'restore'
+
+local locations = {"LEFT","RIGHT"};
 
 local defaults = {
 	Forte = {
@@ -42,9 +44,10 @@ local defaults = {
 			PaddingY = "0",
 		},
 		Compact = {
+			Location = "RIGHT",
 			Enable = false,
 			Lock = true,
-			PaddingX = "-4",
+			PaddingX = "4",
 			PaddingY = "-170",
 		},
 		Cooldown = {
@@ -84,6 +87,7 @@ local cooldown_settings = {
 	BgColor = {0,0,0,0},
 	Font = {"Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",11},
 	IconFont = {"Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",11,"OUTLINE"},
+	IconTime = false,
 	Texture = "Interface\\AddOns\\LUI\\media\\textures\\statusbars\\Minimalist",
 	Width = 384,
 	Height = 28,
@@ -216,19 +220,20 @@ function module:SetFrameProps(instance,name)
 	local uiScale = UIParent:GetEffectiveScale();
 	local x,y;
 	local width = 50;
+	local paddingX,paddingY = tonumber(db.Forte[name].PaddingX),tonumber(db.Forte[name].PaddingY);
 	if properties.anchor then
 		local f = _G[ properties.anchor[1] ];
 		if not f then
 			return; -- don't update anything if anchor frame is missing...
 		end
-		width = tonumber(db.oUF[name] and db.oUF[name].Width) / instance.scale;
-		local s = f:GetEffectiveScale();
+		width = f:GetWidth()*f:GetScale();
 		if properties.anchor[2] == "TOPRIGHT" then -- add target timer to the right of the frame
-			x = f:GetRight() * uiScale + (f:GetWidth() / 2 * s ) + 4;
+			x = f:GetRight() + width/2 + 4;
 		else
-			x = f:GetLeft() * uiScale + (f:GetWidth() / 2 * s );
+			x = f:GetLeft() + width/2;
 		end
-		y = f:GetBottom() * uiScale + (f:GetHeight() * s ) + 9;
+		y = f:GetBottom() + f:GetHeight()*f:GetScale() + instance.Height/2*instance.scale + 4;
+		
 		if properties.offset and properties.offset[class] then
 			local setting,frame,index = unpack(properties.offset[class]);
 			frame = f[frame]; -- frame = index and f[frame][index] or f[frame];
@@ -237,20 +242,25 @@ function module:SetFrameProps(instance,name)
 					frame = frame[index];
 				end
 				if frame:IsShown() then
-					y = y + tonumber(db.oUF[name][setting].Height)*frame:GetEffectiveScale();
+					y = y + frame:GetHeight()*frame:GetScale();
 				end
 			end
 		end
+		
+		x = x + paddingX;
+		y = y + paddingY;
 	else -- anchor compact frame to right side
-		x = UIParent:GetWidth() * uiScale - ( width / instance.scale ) / 2 * uiScale;
-		y = UIParent:GetHeight() * uiScale / 2;
+		paddingX = math.abs(paddingX); -- ignore negative values here
+		if db.Forte.Compact.Location == "RIGHT" then
+			x = UIParent:GetWidth() - width/2 -paddingX;
+		else
+			x = width/2 + paddingX;
+		end
+		y = UIParent:GetHeight()/ 2 + paddingY;
 	end
-	x = x + tonumber(db.Forte[name].PaddingX);
-	y = y + tonumber(db.Forte[name].PaddingY);
-	
-	instance.Width = width;
-	instance.x = x;
-	instance.y = y;
+	instance.Width = width/instance.scale;
+	instance.x = x*uiScale;
+	instance.y = y*uiScale;
 end
 
 function module:SetPosForte()
@@ -258,9 +268,9 @@ function module:SetPosForte()
 
 	for name, data in pairs(timer_instances) do
 		if db.Forte[name].Enable and db.Forte[name].Lock then
-			local instance = self:GetTimerByName(name);
+			local instance = module:GetTimerByName(name);
 			if instance then
-				self:SetFrameProps(instance,name);
+				module:SetFrameProps(instance,name);
 			end
 		end
 	end
@@ -275,7 +285,7 @@ function module:SetPosForteCooldown()
 	local x = (UIParent:GetWidth() * uiScale / 2) + tonumber(db.Forte.Cooldown.PaddingX)
 	local y = tonumber(db.Forte.Cooldown.PaddingY) * uiScale
 	
-	local instance = self:GetCooldown();
+	local instance = module:GetCooldown();
 	instance.x = x;
 	instance.y = y;
 
@@ -285,45 +295,45 @@ end
 function module:SetColors()
 	if not LUI.isForteTimerLoaded then return end
 	
-	self:Copy(db.Forte.Color,FW.Settings.TimerColorOverride);
+	module:Copy(db.Forte.Color,FW.Settings.TimerColorOverride);
 	FW.Settings.TimerColorOverride[0] = db.Forte.IndividualColor;
 	
-	FW:RefreshOptions(); -- at most update FX options frame
+	FW:RefreshOptions(); -- at most update FX options frame, no need to refresh all frames atm
 end
 
 function module:SetForte()
 	if not FW.Settings then
-		FW:RegisterVariablesEvent(self.SetForte);
+		FW:RegisterVariablesEvent(module.SetForte);
 		return;
 	end
 	local created_new = false;
 	if LUI.isForteTimerLoaded then
 		for name, data in pairs(timer_instances) do
-			local instance, enable = self:GetTimerByName(name), db.Forte[name].Enable;
+			local instance, enable = module:GetTimerByName(name), db.Forte[name].Enable;
 			if not instance and enable then
 				local index = FW:InstanceCreate(name, FW.Settings.Timer, data.settings);
 				FW.Modules.Timer:NewTimerInstance(index); -- create the new frame and its options
 				instance = FW.Settings.Timer.Instances[index];
-				self:Copy(timer_settings,instance);
+				module:Copy(timer_settings,instance);
 				created_new = true;
 			end
 			if instance then
 				instance.Enable = enable;
 			end
 		end
-		self:SetPosForte();
+		module:SetPosForte();
 	end
 	
 	if LUI.isForteCooldownLoaded then
-		local instance = self:GetCooldown();
+		local instance = module:GetCooldown();
 		instance.Enable = db.Forte["Cooldown"].Enable;
-		self:SetPosForteCooldown();
+		module:SetPosForteCooldown();
 	end
 	-- live update FX options panel if it's open
 	if created_new then
 		FW:BuildOptions();
 	end
-	self:SetColors(); -- includes a FW:RefreshOptions();
+	module:SetColors(); -- includes a FW:RefreshOptions();
 end
 
 function module:LoadOptions()
@@ -412,7 +422,6 @@ function module:LoadOptions()
 									name = "Enable",
 									desc = "Enable this buff/debuff frame.",
 									type = "toggle",
-									width = "full",
 									get = function() return db.Forte.Player.Enable end,
 									set = function(self,val)
 											db.Forte.Player.Enable = val
@@ -420,10 +429,19 @@ function module:LoadOptions()
 										end,
 									order = 1,
 								},
+								FXOptions = {
+									desc = "Go to all ForteXorcist options for this frame",
+									name = "Toggle FX Options",
+									type = "execute",
+									func = function()
+										FW:ScrollTo(FW.L.SPELL_TIMER,nil,module:GetTimerIndexByName("Player"));
+									end,
+									order = 2,
+								},
 								Position = {
 									name = "Position",
 									type = "group",
-									order = 2,
+									order = 3,
 									guiInline = true,
 									args = {
 										ForteLock = {
@@ -482,7 +500,6 @@ function module:LoadOptions()
 									name = "Enable",
 									desc = "Enable this buff/debuff frame.",
 									type = "toggle",
-									width = "full",
 									get = function() return db.Forte.Target.Enable end,
 									set = function(self,val)
 											db.Forte.Target.Enable = val
@@ -490,10 +507,19 @@ function module:LoadOptions()
 										end,
 									order = 1,
 								},
+								FXOptions = {
+									desc = "Go to all ForteXorcist options for this frame",
+									name = "Toggle FX Options",
+									type = "execute",
+									func = function()
+										FW:ScrollTo(FW.L.SPELL_TIMER,nil,module:GetTimerIndexByName("Target"));
+									end,
+									order = 2,
+								},
 								Position = {
 									name = "Position",
 									type = "group",
-									order = 2,
+									order = 3,
 									guiInline = true,
 									args = {
 										ForteLock = {
@@ -552,7 +578,6 @@ function module:LoadOptions()
 									name = "Enable",
 									desc = "Enable this buff/debuff frame.",
 									type = "toggle",
-									width = "full",
 									get = function() return db.Forte.Focus.Enable end,
 									set = function(self,val)
 											db.Forte.Focus.Enable = val
@@ -560,10 +585,19 @@ function module:LoadOptions()
 										end,
 									order = 1,
 								},
+								FXOptions = {
+									desc = "Go to all ForteXorcist options for this frame",
+									name = "Toggle FX Options",
+									type = "execute",
+									func = function()
+										FW:ScrollTo(FW.L.SPELL_TIMER,nil,module:GetTimerIndexByName("Focus"));
+									end,
+									order = 2,
+								},
 								Position = {
 									name = "Position",
 									type = "group",
-									order = 2,
+									order = 3,
 									guiInline = true,
 									args = {
 										ForteLock = {
@@ -622,7 +656,6 @@ function module:LoadOptions()
 									name = "Enable",
 									desc = "Enable this buff/debuff frame.",
 									type = "toggle",
-									width = "full",
 									get = function() return db.Forte.Compact.Enable end,
 									set = function(self,val)
 											db.Forte.Compact.Enable = val
@@ -630,10 +663,19 @@ function module:LoadOptions()
 										end,
 									order = 1,
 								},
+								FXOptions = {
+									desc = "Go to all ForteXorcist options for this frame",
+									name = "Toggle FX Options",
+									type = "execute",
+									func = function()
+										FW:ScrollTo(FW.L.SPELL_TIMER,nil,module:GetTimerIndexByName("Compact"));
+									end,
+									order = 2,
+								},
 								Position = {
 									name = "Position",
 									type = "group",
-									order = 2,
+									order = 3,
 									guiInline = true,
 									args = {
 										ForteLock = {
@@ -678,6 +720,24 @@ function module:LoadOptions()
 												end,
 											order = 3,
 										},
+										Location = {
+											name = "Anchor Location",
+											desc = "Choose the anchor location for the Compact frame. Should it be on the left or on the right of your screen?",
+											type = "select",
+											values = locations,
+											get = function()
+													for k, v in ipairs(locations) do
+														if db.Forte.Compact.Location == v then
+															return k;
+														end
+													end
+												end,
+											set = function(self, val)
+													db.Forte.Compact.Location = locations[val];
+													module:SetPosForte();
+												end,
+											order = 4,
+										},
 									},
 								},
 							},
@@ -697,7 +757,6 @@ function module:LoadOptions()
 							name = "Enable",
 							desc = "Enable the Cooldown Timer.",
 							type = "toggle",
-							width = "full",
 							get = function() return db.Forte.Cooldown.Enable end,
 							set = function(self,val)
 									db.Forte.Cooldown.Enable = val
@@ -705,10 +764,19 @@ function module:LoadOptions()
 								end,
 							order = 1,
 						},
+						FXOptions = {
+							desc = "Go to all ForteXorcist options for this frame",
+							name = "Toggle FX Options",
+							type = "execute",
+							func = function()
+								FW:ScrollTo(FW.L.COOLDOWN_TIMER);
+							end,
+							order = 2,
+						},
 						Position = {
 							name = "Position",
 							type = "group",
-							order = 2,
+							order = 3,
 							guiInline = true,
 							args = {
 								Lock = {
@@ -825,11 +893,13 @@ local function ConfigureForte()
 	ReloadUI()
 end
 
-local function SetForte()
+local function SetForte() -- only done on new major version
 	LUICONFIG.Versions.forte = LUI_versions.forte; -- don't ask again
 	-- disable the new frames that are enabled by default
-	db.Forte.Player.Enable = false;
-	db.Forte.Target.Enable = false;
+	if LUI_versions.forte == "v1.975" then
+		db.Forte.Player.Enable = false;
+		db.Forte.Target.Enable = false;
+	end
 	module:SetForte();
 end
 
@@ -854,23 +924,101 @@ function module:OnInitialize()
 	LUI:RegisterAddon(self, "Forte_Core")
 end
 
+local function CreateCooldowntimerAnimation()
+	if LUI.isForteCooldownLoaded then
+		if not FW.Settings then
+			FW:RegisterVariablesEvent(CreateCooldowntimerAnimation);
+			return;
+		end
+		-- copy of code that was located in the bars module:
+		local bb_timerout,bb_timerin = 0,0
+		local bb_animation_time = 0.5
+		local bb_at_out = 0.25
+			
+		local bb_SlideIn = CreateFrame("Frame", "bb_SlideIn", UIParent)
+		bb_SlideIn:Hide()
+			
+		bb_SlideIn:SetScript("OnUpdate", function(self,elapsed)
+			bb_timerin = bb_timerin + elapsed
+			local bb_x = tonumber(db.Bars.TopTexture.X)
+			local bb_y = tonumber(db.Bars.TopTexture.Y)
+			local bb_pixelpersecond = tonumber(db.Bars.TopTexture.AnimationHeight) * 2
+			if bb_timerin < bb_animation_time then
+				local y2 = bb_y - bb_timerin * bb_pixelpersecond + bb_pixelpersecond * bb_animation_time
+				BarsBackground:ClearAllPoints()
+				BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, y2)
+			else
+				BarsBackground:ClearAllPoints()
+				BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, bb_y)
+				bb_timerin = 0
+				self:Hide()
+			end
+		end)
+
+		local bb_SlideOut = CreateFrame("Frame", "bb_SlideOut", UIParent)
+		bb_SlideOut:Hide()
+		
+		bb_SlideOut:SetScript("OnUpdate", function(self,elapsed)
+			bb_timerout = bb_timerout + elapsed
+			local bb_x = tonumber(db.Bars.TopTexture.X)
+			local bb_y = tonumber(db.Bars.TopTexture.Y)
+			local bb_ppx_out = tonumber(db.Bars.TopTexture.AnimationHeight) * 3
+			local bb_yout = tonumber(db.Bars.TopTexture.Y) + tonumber(db.Bars.TopTexture.AnimationHeight)
+			if bb_timerout < bb_at_out then
+				local y2 = bb_y + bb_timerout * bb_ppx_out
+				BarsBackground:ClearAllPoints()
+				BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, y2)
+			else
+				BarsBackground:ClearAllPoints()
+				BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, bb_yout)
+				bb_timerout = 0
+				self:Hide()
+			end
+		end)
+		bb_Forte = CreateFrame("Frame", "bb_Forte", UIParent)
+		bb_Forte:Show()
+		
+		local isOut = false
+		bb_Forte:SetScript("OnUpdate", function(self)
+			if db.Forte.Cooldown.Lock then
+				if _G.FX_Cooldown1:IsShown() and not isOut then
+					if db.Bars.TopTexture.Animation then
+						bb_SlideOut:Show()
+						isOut = true
+					end
+				elseif not _G.FX_Cooldown1:IsShown() and isOut then
+					if db.Bars.TopTexture.Animation then
+						bb_SlideIn:Show()
+						isOut = false
+					end
+				end
+			end
+		end)
+	end
+end
+
 function module:OnEnable()
-	if self:FXLoaded() then
+	if module:FXLoaded() then
 		LUI.isForteTimerLoaded = IsAddOnLoaded("Forte_Timer") ~= nil;
 		LUI.isForteCooldownLoaded = IsAddOnLoaded("Forte_Cooldown") ~= nil;
 		
-		if LUICONFIG.IsConfigured == true then
+		if LUICONFIG.IsConfigured then
 			local extra = "\n\nDo you want to apply all LUI Styles to ForteXorcist Spelltimer/Cooldowntimer?\n\nThis will create a new FX profile for LUI (if it hasn't already) and apply LUI's defaults to it, including new timer frames!\n\nYou can also set the LUI defaults later by going to 'General > Addons > Restore ForteXorcist' in the LUI config.";
 			if LUICONFIG.IsForteInstalled then
 				if LUICONFIG.Versions.forte ~= LUI_versions.forte then
 					StaticPopupDialogs["INSTALL_FORTE"].OnCancel = SetForte; -- run SetForte on cancel to create new instances anyway
 					StaticPopup_Show("INSTALL_FORTE","New major version of ForteXorcist found!"..extra);
 				else
-					self:SetForte();
+					module:SetForte();
 				end
+				CreateCooldowntimerAnimation(); -- if forte is installed properly
+				FW:RegisterToEvent("UI_SCALE_CHANGED",module.SetPosForte);
+				FW:RegisterToEvent("UI_SCALE_CHANGED",module.SetPosForteCooldown);
 			else
 				StaticPopup_Show("INSTALL_FORTE","ForteXorcist Addon found!"..extra);
 			end
 		end
 	end
+	
 end
+LUI:GetModule("Bars").CreateCooldowntimerAnimation = function(self) return end --kill the old function in the bars module

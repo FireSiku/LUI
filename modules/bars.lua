@@ -2,8 +2,8 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: bars.lua
 	Description: Bars Module
-	Version....: 2.0
-	Rev Date...: 30/03/11 [dd/mm/yy]
+	Version....: 2.1
+	Rev Date...: 01/06/11 [dd/mm/yy]
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -195,88 +195,6 @@ local function SetRightSidebarAnchor()
 			anchor:SetFrameLevel(2)
 			anchor:ClearAllPoints()
 			anchor:SetPoint("RIGHT",UIParent,"RIGHT",x,y)
-		end
-	end
-end
-
-function module:CreateCooldowntimerAnimation()
-	if IsAddOnLoaded("Forte_Core") and IsAddOnLoaded("Forte_Cooldown") then
-		if FC_Saved.Profiles[FC_Saved.PROFILE]["Cooldown"]["Enable"] ~= nil then
-			if FC_Saved.Profiles[FC_Saved.PROFILE]["Cooldown"]["Enable"] == true then
-				LUI.isForteCooldownLoaded = true
-			end
-		end
-	end
-
-	if not LUI.isForteCooldownLoaded == true then return end
-	
-	local bb_timerout,bb_timerin = 0,0
-	local bb_animation_time = 0.5
-	local bb_at_out = 0.25
-		
-	local bb_SlideIn = CreateFrame("Frame", "bb_SlideIn", UIParent)
-	bb_SlideIn:Hide()
-		
-	bb_SlideIn:SetScript("OnUpdate", function(self,elapsed)
-		bb_timerin = bb_timerin + elapsed
-		local bb_x = tonumber(db.Bars.TopTexture.X)
-		local bb_y = tonumber(db.Bars.TopTexture.Y)
-		local bb_pixelpersecond = tonumber(db.Bars.TopTexture.AnimationHeight) * 2
-		if bb_timerin < bb_animation_time then
-			local y2 = bb_y - bb_timerin * bb_pixelpersecond + bb_pixelpersecond * bb_animation_time
-			BarsBackground:ClearAllPoints()
-			BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, y2)
-		else
-			BarsBackground:ClearAllPoints()
-			BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, bb_y)
-			bb_timerin = 0
-			self:Hide()
-		end
-	end)
-
-	local bb_SlideOut = CreateFrame("Frame", "bb_SlideOut", UIParent)
-	bb_SlideOut:Hide()
-	
-	bb_SlideOut:SetScript("OnUpdate", function(self,elapsed)
-		bb_timerout = bb_timerout + elapsed
-		local bb_x = tonumber(db.Bars.TopTexture.X)
-		local bb_y = tonumber(db.Bars.TopTexture.Y)
-		local bb_ppx_out = tonumber(db.Bars.TopTexture.AnimationHeight) * 3
-		local bb_yout = tonumber(db.Bars.TopTexture.Y) + tonumber(db.Bars.TopTexture.AnimationHeight)
-		if bb_timerout < bb_at_out then
-			local y2 = bb_y + bb_timerout * bb_ppx_out
-			BarsBackground:ClearAllPoints()
-			BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, y2)
-		else
-			BarsBackground:ClearAllPoints()
-			BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, bb_yout)
-			bb_timerout = 0
-			self:Hide()
-		end
-	end)
-	
-	if LUICONFIG.IsConfigured then
-		if IsAddOnLoaded("Forte_Core") and IsAddOnLoaded("Forte_Cooldown") and LUICONFIG.IsForteInstalled == true then
-			bb_Forte = CreateFrame("Frame", "bb_Forte", UIParent)
-			bb_Forte:Show()
-			
-			local isOut = false
-			
-			bb_Forte:SetScript("OnUpdate", function(self)
-				if db.Forte.CDLock ~= false then
-					if FX_Cooldown:IsShown() and isOut == false then
-						if db.Bars.TopTexture.Animation == true then
-							bb_SlideOut:Show()
-							isOut = true
-						end
-					elseif not FX_Cooldown:IsShown() and isOut == true then
-						if db.Bars.TopTexture.Animation == true then
-							bb_SlideIn:Show()
-							isOut = false
-						end
-					end
-				end
-			end)
 		end
 	end
 end
@@ -1715,7 +1633,6 @@ function module:SetBars()
 	end
 	
 	self:CreateBarBackground()
-	self:CreateCooldowntimerAnimation()
 	self:CreateRightSidebar()
 	self:CreateLeftSidebar()
 end
