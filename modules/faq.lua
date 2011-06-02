@@ -50,7 +50,7 @@ function module:LoadOptions()
 					order = 6,
 					width = "full",
 					type = "description",
-					name = "|cff3399ffA:|r This Addon is called FortExorcist. Type /fx to open the OptionPanel.",
+					name = "|cff3399ffA:|r This Addon is called ForteXorcist. Type /fx to open the OptionPanel.",
 				},
 				emptyq2 = {
 					name = "   ",
