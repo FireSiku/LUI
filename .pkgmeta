@@ -18,6 +18,6 @@ externals:
  libs/LibDataBroker-1.1: git://git.wowace.com/wow/libdatabroker-1-1/mainline.git
 
 move-folders:
-    LUI/OUFLUI: oUF_LUI
+    LUI/oUFLUI: oUF_LUI
 
 enable-nolib-creation: no
