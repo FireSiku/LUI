@@ -2093,7 +2093,7 @@ function module:LoadOptions()
 							disabled = function() return not isForteCooldownLoaded end,
 							order = 4,
 							args = {
-								Desc = LUI:NewDesc("This Feature will be only available if you are using FortExorcist CooldownTimer.", 1),
+								Desc = LUI:NewDesc("This Feature will be only available if you are using ForteXorcist CooldownTimer.", 1),
 								empty23223342211 = LUI:NewEmpty(2),
 								Animation = LUI:NewToggle("Enable Bar Texture Animation", "Whether you want to show the Bar Texture Animation or not.", 3, bardb.TopTexture, "Animation", bardefaults.TopTexture, ApplySettings, nil, DisabledTopBarTex),
 								AnimationHeight = LUI:NewHeight("Top Bar Texture Animation", 4, bardb.TopTexture, "AnimationHeight", bardefaults.TopTexture, ApplySettings, nil, DisabledTopBarTex),

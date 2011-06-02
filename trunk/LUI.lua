@@ -843,7 +843,7 @@ local function getOptions()
 								ResetForte = {
 									order = 7,
 									type = "execute",
-									name = "Restore FortExorcist",
+									name = "Restore ForteXorcist",
 									func = function()
 										LUICONFIG.Versions.forte = nil
 										LUI:InstallForte()
