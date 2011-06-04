@@ -1211,6 +1211,7 @@ local toggleFuncs = {
 						end
 					end
 				end)
+				raidAnchor:GetScript("OnEvent")(raidAnchor)
 			end
 		else
 			for i = 1, 5 do
