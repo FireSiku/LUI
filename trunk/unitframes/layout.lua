@@ -786,6 +786,30 @@ local ArenaEnemyUnseen = function(self, event, unit, state)
 	end
 end
 
+local PortraitOverride = function(self, event, unit)
+	if not unit or not UnitIsUnit(self.unit, unit) then return end
+
+	local portrait = self.Portrait
+	
+	if(portrait:IsObjectType'Model') then
+		local guid = UnitGUID(unit)
+		if not UnitExists(unit) or not UnitIsConnected(unit) or not UnitIsVisible(unit) then
+			portrait:SetModelScale(4.25)
+			portrait:SetPosition(0, 0, -1.5)
+			portrait:SetModel("Interface\\Buttons\\talktomequestionmark.mdx")
+		elseif(portrait.guid ~= guid or event == 'UNIT_MODEL_CHANGED') then
+			portrait:SetUnit(unit)
+			portrait:SetCamera(portrait:GetModel() == "character\\worgen\\male\\worgenmale.m2" and 1 or 0)
+			
+			portrait.guid = guid
+		else
+			portrait:SetCamera(portrait:GetModel() == "character\\worgen\\male\\worgenmale.m2" and 1 or 0)
+		end
+	else
+		SetPortraitTexture(portrait, unit)
+	end
+end
+
 do
 	local f = CreateFrame("Frame")
 
@@ -1862,6 +1886,7 @@ oUF_LUI.funcs = {
 		if not self.Portrait then
 			self.Portrait = CreateFrame("PlayerModel", nil, self)
 			self.Portrait:SetFrameLevel(8)
+			self.Portrait.Override = PortraitOverride
 		end
 		
 		self.Portrait:SetHeight(tonumber(oufdb.Portrait.Height))
