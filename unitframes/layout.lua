@@ -5,47 +5,33 @@
 --	DO NOT USE THIS LAYOUT WITHOUT LUI
 ------------------------------------------------------------------------
 
+local _, ns = ...
+local oUF = ns.oUF or oUF
+local oUF_LUI = LUI.oUF
+
 local LSM = LibStub("LibSharedMedia-3.0")
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LUI_Fader = LUI:GetModule("Fader", true)
-local db = LUI.db.profile
+local module = LUI:NewModule("oUF_Layout")
 
-if db == nil then return end
-if db.oUF.Settings.Enable ~= true then return end
-
-local switch = function(n, ...)
-	for k,v in pairs({...}) do
-		if v[1] == n or v[1] == nil then
-			return (type(v[2]) == "function") and v[2]() or v[2]
-		end
-	end
-end
-
-local case = function(n,f)
-	return {n,f}
-end
-
-local default = function(f)
-	return {nil,f}
-end
+local db
 
 ------------------------------------------------------------------------
 --	Textures and Medias
 ------------------------------------------------------------------------
 
-local mediaPath = [=[Interface\Addons\oUF_LUI\media\]=]
+local mediaPath = [=[Interface\Addons\LUI\media\]=]
 
 local floor = math.floor
 local format = string.format
 
-local normTex = mediaPath..[=[textures\normTex]=]
-local glowTex = mediaPath..[=[textures\glowTex]=]
-local bubbleTex = mediaPath..[=[textures\bubbleTex]=]
-local buttonTex = mediaPath..[=[textures\buttonTex]=]
-local highlightTex = mediaPath..[=[textures\highlightTex]=]
-local borderTex = mediaPath..[=[textures\border]=]
-local blankTex = mediaPath..[=[textures\blank]=]
+local normTex = mediaPath..[=[textures\statusbars\normTex]=]
+local glowTex = mediaPath..[=[textures\statusbars\glowTex]=]
+local highlightTex = mediaPath..[=[textures\statusbars\highlightTex]=]
+local blankTex = mediaPath..[=[textures\statusbars\blank]=]
+
 local aggroTex = mediaPath..[=[textures\aggro]=]
+local buttonTex = mediaPath..[=[textures\buttonTex]=]
 
 local backdrop = {
 	bgFile = blankTex,
@@ -59,17 +45,48 @@ local backdrop2 = {
 	insets = {top = -1, left = -1, bottom = -1, right = -1},
 }
 
-local font = [=[Interface\Addons\LUI\media\fonts\vibrocen.ttf]=]
+local font = mediaPath..[=[fonts\vibrocen.ttf]=]
 local fontn = mediaPath..[=[fonts\KhmerUI.ttf]=]
 local font2 = mediaPath..[=[Fonts\ARIALN.ttf]=]
-local font3 = [=[Interface\Addons\LUI\media\fonts\Prototype.ttf]=]
+local font3 = mediaPath..[=[fonts\Prototype.ttf]=]
 
 local _, class = UnitClass("player")
-local standings = {'Hated', 'Hostile', 'Unfriendly', 'Neutral', 'Friendly', 'Honored', 'Revered', 'Exalted'}
+local standings = {"Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted"}
 local highlight = true
 local entering
 
-local colors = oUF_LUI.colors
+local colors
+
+local cornerAuras = {
+	WARRIOR = {
+		TOPLEFT = {"Vigilance", true},
+	},
+	PRIEST = {
+		TOPLEFT = {139, true}, -- Renew
+		TOPRIGHT = {17}, -- Power Word: Shield
+		BOTTOMLEFT = {33076}, -- Prayer of Mending
+		BOTTOMRIGHT = {6788, false, true}, -- Weakened Soul
+	},
+	DRUID = {
+		TOPLEFT = {8936, true}, -- Regrowth
+		TOPRIGHT = {94447}, -- Lifebloom
+		BOTTOMLEFT = {774, true}, -- Rejuvenation
+		BOTTOMRIGHT = {48438, true}, -- Wild Growth
+	},
+	MAGE = {
+		TOPLEFT = {54646}, -- Focus Magic
+	},
+	PALADIN = {
+		TOPLEFT = {25771, false, true}, -- Forbearance
+	},
+	SHAMAN = {
+		TOPLEFT = {61295, true}, -- Riptide
+		TOPRIGHT = {974}, -- Earth Shield
+	},
+	WARLOCK = {
+		TOPLEFT = {80398}, -- Dark Intent
+	},
+}
 
 ------------------------------------------------------------------------
 --	Don't edit this if you don't know what you are doing!
@@ -109,18 +126,43 @@ local ShortValue = function(value)
 	end
 end
 
+local utf8sub = function(string, i, dots)
+	local bytes = string:len()
+	if (bytes <= i) then
+		return string
+	else
+		local len, pos = 0, 1
+		while(pos <= bytes) do
+			len = len + 1
+			local c = string:byte(pos)
+			if (c > 0 and c <= 127) then
+				pos = pos + 1
+			elseif (c >= 192 and c <= 223) then
+				pos = pos + 2
+			elseif (c >= 224 and c <= 239) then
+				pos = pos + 3
+			elseif (c >= 240 and c <= 247) then
+				pos = pos + 4
+			end
+			if (len == i) then break end
+		end
+
+		if (len == i and pos <= bytes) then
+			return string:sub(1, pos - 1)..(dots and "..." or "")
+		else
+			return string
+		end
+	end
+end
+
 local UnitFrame_OnEnter = function(self)
 	UnitFrame_OnEnter(self)
-	if highlight then
-		self.Highlight:Show()	
-	end
+	self.Highlight:Show()
 end
 
 local UnitFrame_OnLeave = function(self)
 	UnitFrame_OnLeave(self)
-	if highlight then
-		self.Highlight:Hide()	
-	end
+	self.Highlight:Hide()
 end
 
 local menu = function(self)
@@ -140,113 +182,83 @@ end
 local PostUpdateHealth = function(health, unit, min, max)
 	if min > max then min = max end
 	
-	local pClass, pToken = UnitClass(unit)
+	local _, pToken = UnitClass(unit)
 	local color = colors.class[pToken] or {0.5, 0.5, 0.5}
-	local r, g, b = oUF.ColorGradient(min/max, unpack(colors.smooth))
 	
 	if unit == "player" and entering == true then
-		health:SetStatusBarColor(unpack(
-			switch(db.oUF.Player.Health.Color,
-				case("By Class", {color[1], color[2], color[3]}),
-				case("Individual", {db.oUF.Player.Health.IndividualColor.r, db.oUF.Player.Health.IndividualColor.g, db.oUF.Player.Health.IndividualColor.b}),
-				case("Gradient", {r, g, b})
-			)
-		))
+		if db.oUF.Player.Health.Color == "By Class" then
+			health:SetStatusBarColor(unpack(color))
+		elseif db.oUF.Player.Health.Color == "Individual" then
+			health:SetStatusBarColor(db.oUF.Player.Health.IndividualColor.r, db.oUF.Player.Health.IndividualColor.g, db.oUF.Player.Health.IndividualColor.b)
+		else
+			health:SetStatusBarColor(oUF.ColorGradient(min/max, unpack(colors.smooth)))
+		end
 	else
-		health:SetStatusBarColor(unpack(
-			switch(health.Color,
-				case("By Class", {color[1], color[2], color[3]}),
-				case("Individual", {health.colorIndividual.r, health.colorIndividual.g, health.colorIndividual.b}),
-				case("Gradient", {r, g, b})
-			)
-		))
+		if health.color == "By Class" then
+			health:SetStatusBarColor(unpack(color))
+		elseif health.color == "Individual" then
+			health:SetStatusBarColor(health.colorIndividual.r, health.colorIndividual.g, health.colorIndividual.b)
+		else
+			health:SetStatusBarColor(oUF.ColorGradient(min/max, unpack(colors.smooth)))
+		end
 	end
 		
 	if health.colorTapping and UnitIsTapped(unit) and not UnitIsTappedByPlayer(unit) then health:SetStatusBarColor(unpack(colors.tapped)) end
+	
 	local r_, g_, b_ = health:GetStatusBarColor()
 	local mu = health.bg.multiplier or 1
 		
 	if health.bg.invert == true then
-		health.bg:SetVertexColor(r_+(1-r_)*mu, g_+(1-g_)*mu, b+(1-b_)*mu)
+		health.bg:SetVertexColor(r_+(1-r_)*mu, g_+(1-g_)*mu, b_+(1-b_)*mu)
 	else
 		health.bg:SetVertexColor(r_*mu, g_*mu, b_*mu)
 	end
 	
 	if not UnitIsConnected(unit) then
 		health:SetValue(0)
+		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Offline>|r" or "")
+		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Offline>|r" or "")
 		health.valueMissing:SetText()
-		
-		if health.value.ShowDead == true then
-			health.value:SetText("|cffD7BEA5<Offline>|r")
-		else
-			health.value:SetText()
-		end
-		
-		if health.valuePercent.ShowDead == true then
-			health.valuePercent:SetText("|cffD7BEA5<Offline>|r")
-		else
-			health.valuePercent:SetText()
-		end
 	elseif UnitIsGhost(unit) then
 		health:SetValue(0)
+		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Ghost>|r" or "")
+		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Ghost>|r" or "")
 		health.valueMissing:SetText()
-		
-		if health.value.ShowDead == true then
-			health.value:SetText("|cffD7BEA5<Ghost>|r")
-		else
-			health.value:SetText()
-		end
-		
-		if health.valuePercent.ShowDead == true then
-			health.valuePercent:SetText("|cffD7BEA5<Ghost>|r")
-		else
-			health.valuePercent:SetText()
-		end
 	elseif UnitIsDead(unit) then
 		health:SetValue(0)
+		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Dead>|r" or "")
+		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Dead>|r" or "")
 		health.valueMissing:SetText()
-		
-		if health.value.ShowDead == true then
-			health.value:SetText("|cffD7BEA5<Dead>|r")
-		else
-			health.value:SetText()
-		end
-		
-		if health.valuePercent.ShowDead == true then
-			health.valuePercent:SetText("|cffD7BEA5<Dead>|r")
-		else
-			health.valuePercent:SetText()
-		end
 	else
-		local healthPercent = 100 * min / max
-		healthPercent = string.format("%.1f", healthPercent)
-		healthPercent = healthPercent.."%"
+		local healthPercent = string.format("%.1f", 100 * min / max).."%"
 		
 		if health.value.Enable == true then
 			if min >= 1 then
 				if health.value.ShowAlways == false and min == max then
 					health.value:SetText()
+				elseif health.value.Format == "Absolut" then
+					health.value:SetFormattedText("%s/%s", min, max)
+				elseif health.value.Format == "Absolut & Percent" then
+					health.value:SetFormattedText("%s/%s | %s", min, max, healthPercent)
+				elseif health.value.Format == "Absolut Short" then
+					health.value:SetFormattedText("%s/%s", ShortValue(min), ShortValue(max))
+				elseif health.value.Format == "Absolut Short & Percent" then
+					health.value:SetFormattedText("%s/%s | %s", ShortValue(min),ShortValue(max), healthPercent)
+				elseif health.value.Format == "Standard" then
+					health.value:SetFormattedText("%s", min)
+				elseif health.value.Format == "Standard Short" then
+					health.value:SetFormattedText("%s", ShortValue(min))
 				else
-					health.value:SetFormattedText(unpack(
-						switch(health.value.Format,
-							case("Absolut", {"%s/%s",min,max}),
-							case("Absolut & Percent", {"%s/%s | %s",min,max,healthPercent}),
-							case("Absolut Short", {"%s/%s",ShortValue(min),ShortValue(max)}),
-							case("Absolut Short & Percent", {"%s/%s | %s",ShortValue(min),ShortValue(max),healthPercent}),
-							case("Standard", {"%s",min}),
-							case("Standard Short", {"%s",ShortValue(min)}),
-							default({"%s",min})
-						)
-					))
+					health.value:SetFormattedText("%s", min)
 				end
 				
-				health.value:SetTextColor(unpack(
-					switch(health.value.color,
-						case("By Class", {color[1], color[2], color[3]}),
-						case("Individual", {health.value.colorIndividual.r, health.value.colorIndividual.g, health.value.colorIndividual.b}),
-						case("Gradient", {r, g, b})
-					)
-				))
+				if health.value.color == "By Class" then
+					health.value:SetTextColor(unpack(color))
+				elseif health.value.color == "Individual" then
+					health.value:SetTextColor(health.value.colorIndividual.r, health.value.colorIndividual.g, health.value.colorIndividual.b)
+				else
+					health.value:SetTextColor(oUF.ColorGradient(min/max, unpack(colors.smooth)))
+				end
 			else
 				health.value:SetText()
 			end
@@ -261,13 +273,13 @@ local PostUpdateHealth = function(health, unit, min, max)
 				health.valuePercent:SetText()
 			end
 			
-			health.valuePercent:SetTextColor(unpack(
-				switch(health.valuePercent.color,
-					case("By Class", {color[1], color[2], color[3]}),
-					case("Individual", {health.valuePercent.colorIndividual.r, health.valuePercent.colorIndividual.g, health.valuePercent.colorIndividual.b}),
-					case("Gradient", {r, g, b})
-				)
-			))
+			if health.valuePercent.color == "By Class" then
+				health.valuePercent:SetTextColor(unpack(color))
+			elseif health.valuePercent.color == "Individual" then
+				health.valuePercent:SetTextColor(health.valuePercent.colorIndividual.r, health.valuePercent.colorIndividual.g, health.valuePercent.colorIndividual.b)
+			else
+				health.valuePercent:SetTextColor(oUF.ColorGradient(min/max, unpack(colors.smooth)))
+			end
 		else
 			health.valuePercent:SetText()
 		end
@@ -285,13 +297,13 @@ local PostUpdateHealth = function(health, unit, min, max)
 				health.valueMissing:SetText()
 			end
 			
-			health.valueMissing:SetTextColor(unpack(
-				switch(health.valueMissing.color,
-					case("By Class", {color[1], color[2], color[3]}),
-					case("Individual", {health.valueMissing.colorIndividual.r, health.valueMissing.colorIndividual.g, health.valueMissing.colorIndividual.b}),
-					case("Gradient", {r, g, b})
-				)
-			))
+			if health.valueMissing.color == "By Class" then
+				health.valueMissing:SetTextColor(unpack(color))
+			elseif health.valueMissing.color == "Individual" then
+				health.valueMissing:SetTextColor(health.valueMissing.colorIndividual.r, health.valueMissing.colorIndividual.g, health.valueMissing.colorIndividual.b)
+			else
+				health.valueMissing:SetTextColor(oUF.ColorGradient(min/max, unpack(colors.smooth)))
+			end
 		else
 			health.valueMissing:SetText()
 		end
@@ -327,30 +339,35 @@ local PostUpdatePower = function(power, unit, min, max)
 	local pClass, pToken = UnitClass(unit)
 	local color = colors.class[pToken] or {0.5, 0.5, 0.5}
 	local color2 = colors.power[pType] or {0.5, 0.5, 0.5}
+	local _, r, g, b = UnitAlternatePowerTextureInfo("player", 2)
 	
 	if unit == "player" and entering == true then
-		power:SetStatusBarColor(unpack(
-			switch(db.oUF.Player.Power.Color,
-				case("By Class", {color[1], color[2], color[3]}),
-				case("Individual", {db.oUF.Player.Power.IndividualColor.r, db.oUF.Player.Power.IndividualColor.g, db.oUF.Player.Power.IndividualColor.b}),
-				case("By Type", {color2[1], color2[2], color2[3]})
-			)
-		))
+		if db.oUF.Player.Power.Color == "By Class" then
+			power:SetStatusBarColor(unpack(color))
+		elseif db.oUF.Player.Power.Color == "Individual" then
+			power:SetStatusBarColor(db.oUF.Player.Power.IndividualColor.r, db.oUF.Player.Power.IndividualColor.g, db.oUF.Player.Power.IndividualColor.b)
+		else
+			power:SetStatusBarColor(unpack(color2))
+		end
 	else
-		power:SetStatusBarColor(unpack(
-			switch(power.color,
-				case("By Class", {color[1], color[2], color[3]}),
-				case("Individual", {power.colorIndividual.r, power.colorIndividual.g, power.colorIndividual.b}),
-				case("By Type", {color2[1], color2[2], color2[3]})
-			)
-		))
+		if power.color == "By Class" then
+			power:SetStatusBarColor(unpack(color))
+		elseif power.color == "Individual" then
+			power:SetStatusBarColor(power.colorIndividual.r, power.colorIndividual.g, power.colorIndividual.b)
+		else
+			if unit == unit:match("boss%d") and select(7, UnitAlternatePowerInfo(unit)) then
+				power:SetStatusBarColor(r, g, b)
+			else
+				power:SetStatusBarColor(unpack(color2))
+			end
+		end
 	end
 	
 	local r_, g_, b_ = power:GetStatusBarColor()
 	local mu = power.bg.multiplier or 1
 	
 	if power.bg.invert == true then
-		power.bg:SetVertexColor(r_+(1-r_)*mu, g_+(1-g_)*mu, b+(1-b_)*mu)
+		power.bg:SetVertexColor(r_+(1-r_)*mu, g_+(1-g_)*mu, b_+(1-b_)*mu)
 	else
 		power.bg:SetVertexColor(r_*mu, g_*mu, b_*mu)
 	end
@@ -371,34 +388,34 @@ local PostUpdatePower = function(power, unit, min, max)
 		power.valuePercent:SetText()
 		power.value:SetText()
 	else
-		local powerPercent = 100 * min / max
-		powerPercent = string.format("%.1f", powerPercent)
-		powerPercent = powerPercent.."%"
+		local powerPercent = string.format("%.1f", 100 * min / max).."%"
 		
 		if power.value.Enable == true then
 			if (power.value.ShowFull == false and min == max) or (power.value.ShowEmpty == false and min == 0) then
 				power.value:SetText()
+			elseif power.value.Format == "Absolut" then
+				power.value:SetFormattedText("%s/%s", min, max)
+			elseif power.value.Format == "Absolut & Percent" then
+				power.value:SetFormattedText("%s/%s | %s", min, max, powerPercent)
+			elseif power.value.Format == "Absolut Short" then
+				power.value:SetFormattedText("%s/%s", ShortValue(min), ShortValue(max))
+			elseif power.value.Format == "Absolut Short & Percent" then
+				power.value:SetFormattedText("%s/%s | %s", ShortValue(min), ShortValue(max), powerPercent)
+			elseif power.value.Format == "Standard" then
+				power.value:SetFormattedText("%s", min)
+			elseif power.value.Format == "Standard Short" then
+				power.value:SetFormattedText("%s", ShortValue(min))
 			else
-				power.value:SetFormattedText(unpack(
-					switch(power.value.Format,
-						case("Absolut", {"%s/%s",min,max}),
-						case("Absolut & Percent", {"%s/%s | %s",min,max,powerPercent}),
-						case("Absolut Short", {"%s/%s",ShortValue(min),ShortValue(max)}),
-						case("Absolut Short & Percent", {"%s/%s | %s",ShortValue(min),ShortValue(max),powerPercent}),
-						case("Standard", {"%s",min}),
-						case("Standard Short", {"%s",ShortValue(min)}),
-						default({"%s",min})
-					)
-				))
+				power.value:SetFormattedText("%s", min)
 			end
 			
-			power.value:SetTextColor(unpack(
-				switch(power.value.color,
-					case("By Class", {color[1], color[2], color[3]}),
-					case("Individual", {power.value.colorIndividual.r, power.value.colorIndividual.g, power.value.colorIndividual.b}),
-					case("By Type", {color2[1], color2[2], color2[3]})
-				)
-			))
+			if power.value.color == "By Class" then
+				power.value:SetTextColor(unpack(color))
+			elseif power.value.color == "Individual" then
+				power.value:SetTextColor(power.value.colorIndividual.r, power.value.colorIndividual.g, power.value.colorIndividual.b)
+			else
+				power.value:SetTextColor(unpack(color2))
+			end
 		else
 			power.value:SetText()
 		end
@@ -410,13 +427,13 @@ local PostUpdatePower = function(power, unit, min, max)
 				power.valuePercent:SetText(powerPercent)
 			end
 			
-			power.valuePercent:SetTextColor(unpack(
-				switch(power.valuePercent.color,
-					case("By Class", {color[1], color[2], color[3]}),
-					case("Individual", {power.valuePercent.colorIndividual.r, power.valuePercent.colorIndividual.g, power.valuePercent.colorIndividual.b}),
-					case("By Type", {color2[1], color2[2], color2[3]})
-				)
-			))
+			if power.valuePercent.color == "By Class" then
+				power.valuePercent:SetTextColor(unpack(color))
+			elseif power.valuePercent.color == "Individual" then
+				power.valuePercent:SetTextColor(power.valuePercent.colorIndividual.r, power.valuePercent.colorIndividual.g, power.valuePercent.colorIndividual.b)
+			else
+				power.valuePercent:SetTextColor(unpack(color2))
+			end
 		else
 			power.valuePercent:SetText()
 		end
@@ -432,13 +449,13 @@ local PostUpdatePower = function(power, unit, min, max)
 				power.valueMissing:SetText("-"..powerMissing)
 			end
 			
-			power.valueMissing:SetTextColor(unpack(
-				switch(power.valueMissing.color,
-					case("By Class", {color[1], color[2], color[3]}),
-					case("Individual", {power.valueMissing.colorIndividual.r, power.valueMissing.colorIndividual.g, power.valueMissing.colorIndividual.b}),
-					case("By Type", {color2[1], color2[2], color2[3]})
-				)
-			))
+			if power.valueMissing.color == "By Class" then
+				power.valueMissing:SetTextColor(unpack(color))
+			elseif power.valueMissing.color == "Individual" then
+				power.valueMissing:SetTextColor(power.valueMissing.colorIndividual.r, power.valueMissing.colorIndividual.g, power.valueMissing.colorIndividual.b)
+			else
+				power.valueMissing:SetTextColor(unpack(color2))
+			end
 		else
 			power.valueMissing:SetText()
 		end
@@ -705,13 +722,13 @@ local PostUpdateAltPower = function(altpowerbar, min, cur, max)
 	
 	if not tex then return end
 	
-	altpowerbar:SetStatusBarColor(unpack(
-		switch(altpowerbar.Color,
-			case("By Class", {color[1], color[2], color[3]}),
-			case("By Type", {r, g, b}),
-			case("Individual", {altpowerbar.colorIndividual.r, altpowerbar.colorIndividual.g, altpowerbar.colorIndividual.b})
-		)
-	))
+	if altpowerbar.color == "By Class" then
+		altpowerbar:SetStatusBarColor(unpack(color))
+	elseif altpowerbar.color == "Individual" then
+		altpowerbar:SetStatusBarColor(altpowerbar.colorIndividual.r, altpowerbar.colorIndividual.g, altpowerbar.colorIndividual.b)
+	else
+		altpowerbar:SetStatusBarColor(r, g, b)
+	end
 	
 	local r_, g_, b_ = altpowerbar:GetStatusBarColor()
 	local mu = altpowerbar.bg.multiplier or 1
@@ -719,14 +736,16 @@ local PostUpdateAltPower = function(altpowerbar, min, cur, max)
 end
 
 local PostUpdateDruidMana = function(druidmana, unit, min, max)
-	druidmana.ManaBar:SetStatusBarColor(unpack(
-		switch(druidmana.Color,
-			case("By Class", oUF_LUI.colors.class["DRUID"]),
-			case("By Type", oUF_LUI.colors.power["MANA"]),
-			case("Gradient", {oUF.ColorGradient(min/max, unpack(colors.smooth))})
-		)
-	))
+	if druidmana.color == "By Class" then
+		druidmana.ManaBar:SetStatusBarColor(unpack(oUF_LUI.colors.class["DRUID"]))
+	elseif druidmana.color == "By Type" then
+		druidmana.ManaBar:SetStatusBarColor(unpack(oUF_LUI.colors.power["MANA"]))
+	else
+		druidmana.ManaBar:SetStatusBarColor(oUF.ColorGradient(min/max, unpack(colors.smooth)))
+	end
+	
 	local bg = druidmana.bg
+	
 	if bg then
 		local mu = bg.multiplier or 1
 		local r, g, b = druidmana.ManaBar:GetStatusBarColor()
@@ -742,31 +761,18 @@ local ArenaEnemyUnseen = function(self, event, unit, state)
 			health:SetValue(0)
 			health:SetStatusBarColor(0.5, 0.5, 0.5, 1)
 			health.bg:SetVertexColor(0.5, 0.5, 0.5, 1)
-			
-			if health.value.ShowDead == true then
-				health.value:SetText("|cffffffff<Unseen>|r")
-			else
-				health.value:SetText()
-			end
-			if health.valuePercent.ShowDead == true then
-				health.valuePercent:SetText("|cffffffff<Unseen>|r")
-			else
-				health.valuePercent:SetText()
-			end
+			health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Unseen>|r" or "")
+			health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Unseen>|r" or "")
 			health.valueMissing:SetText()
 		end
-		
 		self.Power.PostUpdate = function(power)
 			power:SetValue(0)
 			power:SetStatusBarColor(0.5, 0.5, 0.5, 1)
 			power.bg:SetVertexColor(0.5, 0.5, 0.5, 1)
-			
 			power.value:SetText()
 			power.valuePercent:SetText()
 			power.valueMissing:SetText()
 		end
-	
-		self.Info:Hide()
 	
 		self.Hide = self.Show
 		self:UpdateAllElements()
@@ -774,8 +780,6 @@ local ArenaEnemyUnseen = function(self, event, unit, state)
 	else
 		self.Health.PostUpdate = PostUpdateHealth
 		self.Power.PostUpdate = PostUpdatePower
-		
-		if self.Info.Enable then self.Info:Show() end
 		
 		self.Hide = self.Hide_
 		self:UpdateAllElements()
@@ -818,7 +822,7 @@ end
 
 ------------------------------------------------------------------------
 --	Create/Style Funcs
---	They are stored in the global "oUF_LUI" so the LUI options can
+--	They are stored in the LUI.oUF so the LUI options can easily
 --	access them
 ------------------------------------------------------------------------
 
@@ -834,8 +838,8 @@ oUF_LUI.funcs = {
 		self.Health:SetHeight(tonumber(oufdb.Health.Height))
 		self.Health:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Health.Texture))
 		self.Health:ClearAllPoints()
-		self.Health:SetPoint("TOPLEFT", 0, tonumber(oufdb.Health.Padding))
-		self.Health:SetPoint("TOPRIGHT", 0, tonumber(oufdb.Health.Padding))
+		self.Health:SetPoint("TOPLEFT", self, "TOPLEFT", 0, tonumber(oufdb.Health.Padding))
+		self.Health:SetPoint("TOPRIGHT", self, "TOPRIGHT", 0, tonumber(oufdb.Health.Padding))
 
 		self.Health.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Health.TextureBG))
 		self.Health.bg:SetAlpha(oufdb.Health.BGAlpha)
@@ -844,7 +848,7 @@ oUF_LUI.funcs = {
 
 		self.Health.colorTapping = (unit == "target") and oufdb.Health.Tapping or false
 		self.Health.colorDisconnected = false
-		self.Health.Color = oufdb.Health.Color
+		self.Health.color = oufdb.Health.Color
 		self.Health.colorIndividual = oufdb.Health.IndividualColor
 		self.Health.Smooth = oufdb.Health.Smooth
 		self.Health.colorReaction = false
@@ -877,6 +881,7 @@ oUF_LUI.funcs = {
 		self.Power.Smooth = oufdb.Power.Smooth
 		self.Power.colorReaction = false
 		self.Power.frequentUpdates = true
+		self.Power.displayAltPower = unit == unit:match("boss%d")
 		
 		if oufdb.Power.Enable == true then
 			self.Power:Show()
@@ -932,6 +937,7 @@ oUF_LUI.funcs = {
 	Info = function(self, unit, oufdb)
 		if not self.Info then self.Info = SetFontString(self.Health, LSM:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline) end
 		self.Info:SetFont(LSM:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline)
+		self.Info:SetTextColor(oufdb.Texts.Name.IndividualColor.r, oufdb.Texts.Name.IndividualColor.g, oufdb.Texts.Name.IndividualColor.b)
 		self.Info:ClearAllPoints()
 		self.Info:SetPoint(oufdb.Texts.Name.Point, self, oufdb.Texts.Name.RelativePoint, tonumber(oufdb.Texts.Name.X), tonumber(oufdb.Texts.Name.Y))
 		
@@ -946,7 +952,27 @@ oUF_LUI.funcs = {
 		end
 		self:FormatName()
 	end,
-
+	RaidInfo = function(self, unit, oufdb)
+		if not self.Info then
+			self.Info = SetFontString(self.Health, LSM:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline)
+			self.Info:SetPoint("CENTER", self, "CENTER", 0, 0)
+		end
+		self.Info:SetTextColor(oufdb.Texts.Name.IndividualColor.r, oufdb.Texts.Name.IndividualColor.g, oufdb.Texts.Name.IndividualColor.b)
+		self.Info:SetFont(LSM:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline)
+		
+		if oufdb.Texts.Name.Enable == true then
+			self.Info:Show()
+		else
+			self.Info:Hide()
+		end
+		
+		for k, v in pairs(oufdb.Texts.Name) do
+			self.Info[k] = v
+		end
+		
+		self:FormatRaidName()
+	end,
+	
 	HealthValue = function(self, unit, oufdb)
 		if not self.Health.value then self.Health.value = SetFontString(self.Health, LSM:Fetch("font", oufdb.Texts.Health.Font), tonumber(oufdb.Texts.Health.Size), oufdb.Texts.Health.Outline) end
 		self.Health.value:SetFont(LSM:Fetch("font", oufdb.Texts.Health.Font), tonumber(oufdb.Texts.Health.Size), oufdb.Texts.Health.Outline)
@@ -1707,7 +1733,7 @@ oUF_LUI.funcs = {
 			self.DruidMana.value:Hide()
 		end
 		
-		self.DruidMana.Color = oufdb.DruidMana.Color
+		self.DruidMana.color = oufdb.DruidMana.Color
 		
 		self.DruidMana.bg:SetTexture(LSM:Fetch("statusbar", oufdb.DruidMana.TextureBG))
 		self.DruidMana.bg:SetAlpha(oufdb.DruidMana.BGAlpha)
@@ -1780,6 +1806,57 @@ oUF_LUI.funcs = {
 		end
 	end,
 	
+	-- raid specific
+	SingleAuras = function(self, unit, oufdb)
+		if not cornerAuras[class] then return end
+		if not self.SingleAuras then self.SingleAuras = {} end
+		
+		for k, data in pairs(cornerAuras[class]) do
+			local spellId, onlyPlayer, isDebuff = unpack(data)
+			
+			local x = k:gmatch("RIGHT") and -tonumber(oufdb.CornerAura.Inset) or tonumber(oufdb.CornerAura.Inset)
+			local y = k:gmatch("TOP") and -tonumber(oufdb.CornerAura.Inset) or tonumber(oufdb.CornerAura.Inset)
+			
+			if k:gmatch("%d") == 2 then
+				y = key:gmatch("TOP") and y - tonumber(oufdb.CornerAura.Size) or y + tonumber(oufdb.CornerAura.Size)
+			end
+			
+			if not self.SingleAuras[k] then
+				self.SingleAuras[k] = CreateFrame("Frame", nil, self)
+			end
+			
+			self.SingleAuras[k].spellId = tonumber(spellId)
+			self.SingleAuras[k].onlyPlayer = OnlyPlayer
+			self.SingleAuras[k].isDebuff = IsDebuff
+			self.SingleAuras[k]:SetWidth(tonumber(oufdb.CornerAura.Size))
+			self.SingleAuras[k]:SetHeight(tonumber(oufdb.CornerAura.Size))
+			self.SingleAuras[k]:ClearAllPoints()
+			self.SingleAuras[k]:SetPoint(k, self, k, x, y)
+		end
+	end,
+	RaidDebuffs = function(self, unit, oufdb)
+		if not self.RaidDebuffs then
+			self.RaidDebuffs = CreateFrame('Frame', nil, self)
+			self.RaidDebuffs:SetPoint("CENTER", self, "CENTER", 0, 0)
+			self.RaidDebuffs:SetFrameStrata("HIGH")
+				
+			self.RaidDebuffs:SetBackdrop({
+				bgFile = [=[Interface\ChatFrame\ChatFrameBackground]=],
+				insets = {top = -1, left = -1, bottom = -1, right = -1},
+			})
+			
+			self.RaidDebuffs.icon = self.RaidDebuffs:CreateTexture(nil, "OVERLAY")
+			self.RaidDebuffs.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
+			self.RaidDebuffs.icon:SetAllPoints(self.RaidDebuffs)
+			
+			self.RaidDebuffs.cd = CreateFrame("Cooldown", nil, self.RaidDebuffs)
+			self.RaidDebuffs.cd:SetAllPoints(self.RaidDebuffs)
+		end
+		
+		self.RaidDebuffs:SetHeight(tonumber(oufdb.RaidDebuff.Size))
+		self.RaidDebuffs:SetWidth(tonumber(oufdb.RaidDebuff.Size))
+	end,
+	
 	-- others
 	Portrait = function(self, unit, oufdb)
 		if not self.Portrait then
@@ -1789,9 +1866,9 @@ oUF_LUI.funcs = {
 		
 		self.Portrait:SetHeight(tonumber(oufdb.Portrait.Height))
 		self.Portrait:SetWidth(tonumber(oufdb.Portrait.Width))
-		self.Portrait:SetAlpha(1)
+		self.Portrait:SetAlpha(oufdb.Portrait.Alpha)
 		self.Portrait:ClearAllPoints()
-		self.Portrait:SetPoint("TOPLEFT", self.Health, "TOPLEFT", tonumber(oufdb.Portrait.X), tonumber(oufdb.Portrait.Y))
+		self.Portrait:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Portrait.X), tonumber(oufdb.Portrait.Y))
 	end,
 
 	AlternatePower = function(self, unit, oufdb)
@@ -1846,7 +1923,7 @@ oUF_LUI.funcs = {
 		self.AltPowerBar.bg:SetAlpha(db.oUF.Player.AltPower.BGAlpha)
 		self.AltPowerBar.bg.multiplier = db.oUF.Player.AltPower.BGMultiplier
 		
-		self.AltPowerBar.Color = db.oUF.Player.AltPower.Color
+		self.AltPowerBar.color = db.oUF.Player.AltPower.Color
 		self.AltPowerBar.colorIndividual = db.oUF.Player.AltPower.IndividualColor
 		
 		self.AltPowerBar.PostUpdate = PostUpdateAltPower
@@ -2002,7 +2079,7 @@ oUF_LUI.funcs = {
 				self.Castbar.Icon:SetHeight(20)
 				self.Castbar.Icon:SetWidth(20)
 				self.Castbar.Icon:SetTexCoord(0, 1, 0, 1)
-				if unit:find("arena%d") then
+				if unit == unit:match("arena%d") then
 					self.Castbar.Icon:SetPoint("RIGHT", 30, 0)
 				else
 					self.Castbar.Icon:SetPoint("LEFT", -30, 0)
@@ -2039,7 +2116,7 @@ oUF_LUI.funcs = {
 			self.Castbar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(oufdb.Castbar.X), tonumber(oufdb.Castbar.Y))
 		elseif unit == "focus" or unit == "pet" then
 			self.Castbar:SetPoint("TOP", self, "BOTTOM", tonumber(oufdb.Castbar.X), tonumber(oufdb.Castbar.Y))
-		elseif unit:find("arena%d") then
+		elseif unit == unit:match("arena%d") then
 			self.Castbar:SetPoint("RIGHT", self, "LEFT", tonumber(oufdb.Castbar.X), tonumber(oufdb.Castbar.Y))
 		else
 			self.Castbar:SetPoint("LEFT", self, "RIGHT", tonumber(oufdb.Castbar.X), tonumber(oufdb.Castbar.Y))
@@ -2047,7 +2124,7 @@ oUF_LUI.funcs = {
 		
 		self.Castbar.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Castbar.TextureBG))
 		
-		if not unit:find("arena%d") and not unit:find("party") then
+		if unit == "player" or unit == "target" or unit == "focus" or unit == "pet" then
 			if oufdb.Castbar.IndividualColor == true then
 				self.Castbar:SetStatusBarColor(oufdb.Castbar.Colors.Bar.r,oufdb.Castbar.Colors.Bar.g,oufdb.Castbar.Colors.Bar.b,oufdb.Castbar.Colors.Bar.a)
 				self.Castbar.bg:SetVertexColor(oufdb.Castbar.Colors.Background.r,oufdb.Castbar.Colors.Background.g,oufdb.Castbar.Colors.Background.b,oufdb.Castbar.Colors.Background.a)
@@ -2093,6 +2170,7 @@ oUF_LUI.funcs = {
 			}
 			
 			self.Castbar.PostCastStart = PostCastStart
+			self.Castbar.PostChannelStart = PostCastStart
 		end
 		
 		self.Castbar.Time:SetFont(LSM:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
@@ -2205,11 +2283,11 @@ oUF_LUI.funcs = {
 			}
 		end
 		
-		self.HealPrediction.myBar:SetWidth(tonumber(oufdb.Width))
+		self.HealPrediction.myBar:SetWidth((oufdb.Portrait.Dock and oufdb.Portrait.DockHealth) and tonumber(oufdb.Width) - tonumber(oufdb.Portrait.Width) or tonumber(oufdb.Width))
 		self.HealPrediction.myBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.HealPrediction.Texture))
 		self.HealPrediction.myBar:SetStatusBarColor(tonumber(oufdb.HealPrediction.MyColor.r), tonumber(oufdb.HealPrediction.MyColor.g), tonumber(oufdb.HealPrediction.MyColor.b), tonumber(oufdb.HealPrediction.MyColor.a))
 		
-		self.HealPrediction.otherBar:SetWidth(tonumber(oufdb.Width))
+		self.HealPrediction.otherBar:SetWidth((oufdb.Portrait.Dock and oufdb.Portrait.DockHealth) and tonumber(oufdb.Width) - tonumber(oufdb.Portrait.Width) or tonumber(oufdb.Width))
 		self.HealPrediction.otherBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.HealPrediction.Texture))
 		self.HealPrediction.otherBar:SetStatusBarColor(tonumber(oufdb.HealPrediction.OtherColor.r), tonumber(oufdb.HealPrediction.OtherColor.g), tonumber(oufdb.HealPrediction.OtherColor.b), tonumber(oufdb.HealPrediction.OtherColor.a))
 		
@@ -2446,7 +2524,7 @@ oUF_LUI.funcs = {
 			Panel5:Show()
 			
 			self.V2Tex = Panel2
-		elseif unit:find("arena%dtarget") and db.oUF.Settings.show_v2_arena_textures then
+		elseif (unit == unit:match("arena%dtarget") and db.oUF.Settings.show_v2_arena_textures) or (unit == unit:match("boss%dtarget") and db.oUF.Settings.show_v2_boss_textures) then
 			local Panel2 = CreateFrame("Frame", nil, self)
 			Panel2:SetFrameLevel(19)
 			Panel2:SetFrameStrata("BACKGROUND")
@@ -2589,28 +2667,31 @@ local SetStyle = function(self, unit, isSingle)
 		oufdb = db.oUF.MaintankTarget
 	elseif unit == "maintanktargettarget" then
 		oufdb = db.oUF.MaintankToT
-		
-	elseif unit:find("arena%dtarget") then
-		oufdb = db.oUF.ArenaTarget
-	elseif unit:find("arena%dpet") then
-		oufdb = db.oUF.ArenaPet
-	elseif unit:find("arena%d") then
+	
+	elseif unit == unit:match("arena%d") then
 		oufdb = db.oUF.Arena
+	elseif unit == unit:match("arena%dtarget") then
+		oufdb = db.oUF.ArenaTarget
+	elseif unit == unit:match("arena%dpet") then
+		oufdb = db.oUF.ArenaPet
 		
-	elseif unit:find("boss%d") then
+	elseif unit == unit:match("boss%d") then
 		oufdb = db.oUF.Boss
+	elseif unit == unit:match("boss%dtarget") then
+		oufdb = db.oUF.BossTarget
+		
+	elseif unit == "raid" then
+		oufdb = db.oUF.Raid
 	end
 	
-	self.menu = menu
+	self.menu = unit ~= "raid" and menu or nil
 	self.colors = colors
 	self:RegisterForClicks("AnyUp")
 
 	self:SetScript("OnEnter", UnitFrame_OnEnter)
 	self:SetScript("OnLeave", UnitFrame_OnLeave)
 	
-	if (isSingle and (not unit:find("%d"))) or unit == "boss1" or unit == "arena1" or unit == "party" then
-		self.MoveableFrames = true
-	end
+	self.MoveableFrames = ((isSingle and not unit:match("%d")) or unit == "party" or unit == "maintank" or unit == unit:match("%a+1"))
 	
 	self.SpellRange = true
 	self.BarFade = false
@@ -2633,7 +2714,11 @@ local SetStyle = function(self, unit, isSingle)
 	--	Texts
 	------------------------------------------------------------------------
 
-	funcs.Info(self, unit, oufdb)
+	if unit ~= "raid" then
+		funcs.Info(self, unit, oufdb)
+	else
+		funcs.RaidInfo(self, unit, oufdb)
+	end
 	
 	funcs.HealthValue(self, unit, oufdb)
 	funcs.HealthPercent(self, unit, oufdb)
@@ -2776,6 +2861,15 @@ local SetStyle = function(self, unit, isSingle)
 	if unit == "target" and oufdb.ComboPoints.Enable then funcs.CPoints(self, unit, oufdb) end
 	
 	------------------------------------------------------------------------
+	--	Raid Specific Items
+	------------------------------------------------------------------------
+	
+	if unit == "raid" then
+		if oufdb.CornerAura.Enable then funcs.SingleAuras(self, unit, oufdb) end
+		if oufdb.RaidDebuff.Enable then funcs.RaidDebuffs(self, unit, oufdb) end
+	end
+	
+	------------------------------------------------------------------------
 	--	Other
 	------------------------------------------------------------------------
 
@@ -2804,12 +2898,13 @@ local SetStyle = function(self, unit, isSingle)
 	self.Highlight:SetBlendMode("ADD")
 	self.Highlight:Hide()
 
-	--if unit:find("arena") and not (unit:find("target") or unit:find("pet")) then
-		--self.Hide_ = self.Hide
-		--self:RegisterEvent("ARENA_OPPONENT_UPDATE", ArenaEnemyUnseen)
-	--end
+	if unit == unit:match("arena%d") then
+		self.Hide_ = self.Hide
+		self:RegisterEvent("ARENA_OPPONENT_UPDATE", ArenaEnemyUnseen)
+	end
 	
 	self:RegisterEvent("PLAYER_FLAGS_CHANGED", function(self) self.Health:ForceUpdate() end)
+	
 	if unit == "pet" then
 		self.elapsed = 0
 		self:SetScript("OnUpdate", function(self, elapsed)
@@ -2836,182 +2931,339 @@ end
 
 oUF:RegisterStyle("LUI", SetStyle)
 
-oUF:SetActiveStyle("LUI")
-
-oUF:Spawn("player", "oUF_LUI_player"):SetPoint("CENTER", UIParent, "CENTER", tonumber(db.oUF.Player.X), tonumber(db.oUF.Player.Y))
-oUF:Spawn("target", "oUF_LUI_target"):SetPoint("CENTER", UIParent, "CENTER", tonumber(db.oUF.Target.X), tonumber(db.oUF.Target.Y))
-
-if db.oUF.Focus.Enable then oUF:Spawn("focus", "oUF_LUI_focus"):SetPoint("CENTER", UIParent, "CENTER", tonumber(db.oUF.Focus.X), tonumber(db.oUF.Focus.Y)) end
-if db.oUF.FocusTarget.Enable then oUF:Spawn("focustarget", "oUF_LUI_focustarget"):SetPoint("CENTER", UIParent, "CENTER", tonumber(db.oUF.FocusTarget.X), tonumber(db.oUF.FocusTarget.Y)) end
-
-if db.oUF.ToT.Enable then oUF:Spawn("targettarget", "oUF_LUI_targettarget"):SetPoint("CENTER", UIParent, "CENTER", tonumber(db.oUF.ToT.X), tonumber(db.oUF.ToT.Y)) end
-if db.oUF.ToToT.Enable then oUF:Spawn("targettargettarget", "oUF_LUI_targettargettarget"):SetPoint("CENTER", UIParent, "CENTER", tonumber(db.oUF.ToToT.X), tonumber(db.oUF.ToToT.Y)) end
-
-if db.oUF.Pet.Enable then oUF:Spawn("pet", "oUF_LUI_pet"):SetPoint("CENTER", UIParent, "CENTER", tonumber(db.oUF.Pet.X), tonumber(db.oUF.Pet.Y)) end
-if db.oUF.PetTarget.Enable then oUF:Spawn("pettarget", "oUF_LUI_pettarget"):SetPoint("CENTER", UIParent, "CENTER", tonumber(db.oUF.PetTarget.X), tonumber(db.oUF.PetTarget.Y)) end
-
-if db.oUF.Boss.Enable == true then
-	local boss = {}
-
-	for i = 1, MAX_BOSS_FRAMES do
-		boss[i] = oUF:Spawn("boss"..i, "oUF_LUI_boss"..i)
-		if i == 1 then
-			boss[i]:SetPoint("RIGHT", UIParent, "RIGHT", tonumber(db.oUF.Boss.X), tonumber(db.oUF.Boss.Y))
-		else
-			boss[i]:SetPoint('TOP', boss[i-1], 'BOTTOM', 0, -tonumber(db.oUF.Boss.Padding))
-		end
-	end
-elseif db.oUF.Boss.UseBlizzard == false then
-	for i = 1, MAX_BOSS_FRAMES do
-		local boss = _G["Boss"..i.."TargetFrame"]
-		boss.Show = dummy
-		boss:Hide()
-		boss:UnregisterAllEvents()
-	end
-end
-
-if db.oUF.Party.Enable == true then
-	local party = oUF:SpawnHeader("oUF_LUI_party", nil, nil,
-		"showParty", true,
-		"showPlayer", db.oUF.Party.ShowPlayer,
-		"showSolo", false,
-		"template", "oUF_LUI_party",
-		"yOffset", - tonumber(db.oUF.Party.Padding),
-		"oUF-initialConfigFunction", [[
-			local unit = ...
-			if unit == "party" then
-				self:SetHeight(]]..db.oUF.Party.Height..[[)
-				self:SetWidth(]]..db.oUF.Party.Width..[[)
-			elseif unit == "partytarget" then
-				self:SetHeight(]]..db.oUF.PartyTarget.Height..[[)
-				self:SetWidth(]]..db.oUF.PartyTarget.Width..[[)
-				self:SetPoint("]]..db.oUF.PartyTarget.Point..[[", self:GetParent(), "]]..db.oUF.PartyTarget.RelativePoint..[[", ]]..db.oUF.PartyTarget.X..[[, ]]..db.oUF.PartyTarget.Y..[[)
-			elseif unit == "partypet" then
-				self:SetHeight(]]..db.oUF.PartyPet.Height..[[)
-				self:SetWidth(]]..db.oUF.PartyPet.Width..[[)
-				self:SetPoint("]]..db.oUF.PartyPet.Point..[[", self:GetParent(), "]]..db.oUF.PartyPet.RelativePoint..[[", ]]..db.oUF.PartyPet.X..[[, ]]..db.oUF.PartyPet.Y..[[)
+-- the spawn functions are in the module oUF, so we don't need to write all the code twice
+-- "subframes" of groups, like party target are included within the party toggle
+-- has to be OnEnable
+function module:OnEnable()
+	db = LUI.db.profile
+	
+	if db.oUF.Settings.Enable ~= true then return end
+	
+	-- installing color metatables
+	oUF_LUI.colors = setmetatable({
+		power = setmetatable({
+			["POWER_TYPE_STEAM"] = {0.55, 0.57, 0.61},
+			["POWER_TYPE_PYRITE"] = {0.60, 0.09, 0.17},
+		}, {
+			__index = function(t, k)
+				return db.oUF.Colors.Power[k] or oUF.colors.power[k]
 			end
-		]]
-	)
+		}),
+		class = setmetatable({}, {
+			__index = function(t, k)
+				return db.oUF.Colors.Class[k] or oUF.colors.class[k]
+			end
+		}),
+		leveldiff = setmetatable({}, {
+			__index = function(t, k)
+				local diffColor = GetQuestDifficultyColor(UnitLevel("target"))
+				return db.oUF.Colors.LevelDiff[k] or {diffColor.r, diffColor.g, diffColor.b}
+			end
+		}),
+		combattext = setmetatable({}, {
+			__index = function(t, k)
+				return db.oUF.Colors.CombatText[k]
+			end
+		}),
+		combopoints = setmetatable({}, {
+			__index = function(t, k)
+				return db.oUF.Colors.ComboPoints[k] or oUF.colors.combopoints[k]
+			end
+		}),
+		runes = setmetatable({}, {
+			__index = function(t, k)
+				return db.oUF.Colors.Runes[k] or oUF.colors.runes[k]
+			end
+		}),
+		totembar = setmetatable({}, {
+			__index = function(t, k)
+				return db.oUF.Colors.TotemBar[k] or oUF.colors.totembar[k]
+			end
+		}),
+		holypowerbar = setmetatable({}, {
+			__index = function(t, k)
+				return db.oUF.Colors.HolyPowerBar[k] or oUF.colors.holypowerbar[k]
+			end
+		}),
+		soulshardbar = setmetatable({}, {
+			__index = function(t, k)
+				return db.oUF.Colors.SoulShardBar[k] or oUF.colors.soulshardbar[k]
+			end
+		}),
+		eclipsebar = setmetatable({}, {
+			__index = function(t, k)
+				return db.oUF.Colors.EclipseBar[k]
+			end
+		}),
+	}, {
+		__index = function(t, k)
+			return db.oUF.Colors[k and (k:gsub("^%a", strupper)) or k] or oUF.colors[k]
+		end
+	})
+	oUF.colors.smooth = oUF_LUI.colors.smooth or oUF.colors.smooth
+	
+	colors = oUF_LUI.colors
 
-	party:SetPoint("LEFT", UIParent, "LEFT", tonumber(db.oUF.Party.X), tonumber(db.oUF.Party.Y))
+	-- frame for shortening the names for raidframes
+	local testframe = CreateFrame("Frame")
+	local teststring = testframe:CreateFontString(nil, "OVERLAY")
 
-	local partyToggle = CreateFrame("Frame")
-	partyToggle:RegisterEvent("PLAYER_LOGIN")
-	partyToggle:RegisterEvent("RAID_ROSTER_UPDATE")
-	partyToggle:RegisterEvent("PARTY_LEADER_CHANGED")
-	partyToggle:RegisterEvent("PARTY_MEMBERS_CHANGED")
-	partyToggle:SetScript("OnEvent", function(self)
-		if InCombatLockdown() then
-			self:RegisterEvent("PLAYER_REGEN_ENABLED")
-		else
-			self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-			if not db.oUF.Party.ShowInRaid then
-				local numraid = GetNumRaidMembers()
-				if numraid > 0 and (numraid > 5 or numraid ~= GetNumPartyMembers() + 1) then
-					party:Hide()
+	local nameCache = {}
+
+	local function ShortenName(name)
+		nameCache[name] = {name, name} -- temp
+		--[[teststring:SetFont(LSM:Fetch("font", db.oUF.Raid.Texts.Name.Font), db.oUF.Raid.Texts.Name.Size, db.oUF.Raid.Texts.Name.Outline)
+		teststring:SetText(name)
+		
+		if not nameCache[name] then nameCache[name] = {} end
+		
+		local shortname = name
+		local maxwidth = tonumber(db.oUF.Raid.Width) * 0.9
+		
+		teststring:SetText(shortname)
+		while maxwidth < teststring:GetStringWidth() do
+			if shortname:len() == 0 then break end
+			
+			shortname = utf8sub(shortname, shortname:len()-1)
+			teststring:SetText(shortname)
+		end
+		
+		nameCache[name][1] = shortname
+		
+		maxwidth = ((tonumber(db.oUF.Raid.Width) * 5 - tonumber(db.oUF.Raid.GroupPadding) * 3) / 8) * 0.9
+		
+		while maxwidth < teststring:GetStringWidth() do
+			if shortname:len() == 0 then break end
+			
+			shortname = utf8sub(shortname, shortname:len()-1)
+			teststring:SetText(shortname)
+		end
+		
+		nameCache[name][2] = shortname]]
+	end
+
+	-- custom oUF Tags
+	oUF.TagEvents["GetNameColor"] = "UNIT_HAPPINESS"
+	if (not oUF.Tags["GetNameColor"]) then
+		oUF.Tags["GetNameColor"] = function(unit)
+			local reaction = UnitReaction(unit, "player")
+			local pClass, pToken = UnitClass(unit)
+			local pClass2, pToken2 = UnitPowerType(unit)
+			local color = colors.class[pToken]
+			local color2 = colors.power[pToken2]
+			local c = nil
+			
+			if (UnitIsPlayer(unit)) then
+				if color then
+					return string.format("|cff%02x%02x%02x", color[1] * 255, color[2] * 255, color[3] * 255)
 				else
-					party:Show()
+					if color2 then
+						return string.format("|cff%02x%02x%02x", color2[1] * 255, color2[2] * 255, color2[3] * 255)
+					else
+						return string.format("|cff%02x%02x%02x", 0.8 * 255, 0.8 * 255, 0.8 * 255)
+					end
 				end
 			else
-				party:Show()
+				if color2 then
+					return string.format("|cff%02x%02x%02x", color2[1] * 255, color2[2] * 255, color2[3] * 255)
+				else
+					if color then
+						return string.format("|cff%02x%02x%02x", color[1] * 255, color[2] * 255, color[3] * 255)
+					else
+						return string.format("|cff%02x%02x%02x", 0.8 * 255, 0.8 * 255, 0.8 * 255)
+					end
+				end
 			end
 		end
-	end)
-elseif db.oUF.Party.UseBlizzard == false then
-	for i = 1, MAX_PARTY_MEMBERS do
-		local party = _G["PartyMemberFrame"..i]
-		party:Hide()
-		party:UnregisterAllEvents()
-		party.Show = function() end
 	end
-end
 
-if db.oUF.Maintank.Enable == true then
-	local tank = oUF:SpawnHeader("oUF_LUI_maintank", nil, nil,
-		"showRaid", true,
-		"groupFilter", "MAINTANK",
-		"template", "oUF_LUI_maintank",
-		"showPlayer", true,
-		"wrapAfter", 4,
-		"yOffset", - tonumber(db.oUF.Maintank.Padding),
-		"oUF-initialConfigFunction", [[
-			local unit = ...
-			if unit == "raidtargettarget" then
-				self:SetHeight(]]..db.oUF.MaintankToT.Height..[[)
-				self:SetWidth(]]..db.oUF.MaintankToT.Width..[[)
-				self:SetPoint("]]..db.oUF.MaintankToT.Point..[[", self:GetParent(), "]]..db.oUF.MaintankToT.RelativePoint..[[", ]]..db.oUF.MaintankToT.X..[[, ]]..db.oUF.MaintankToT.Y..[[)
-			elseif unit == "raidtarget" then
-				self:SetHeight(]]..db.oUF.MaintankTarget.Height..[[)
-				self:SetWidth(]]..db.oUF.MaintankTarget.Width..[[)
-				self:SetPoint("]]..db.oUF.MaintankTarget.Point..[[", self:GetParent(), "]]..db.oUF.MaintankTarget.RelativePoint..[[", ]]..db.oUF.MaintankTarget.X..[[, ]]..db.oUF.MaintankTarget.Y..[[)
-			elseif unit == "raid" then
-				self:SetHeight(]]..db.oUF.Maintank.Height..[[)
-				self:SetWidth(]]..db.oUF.Maintank.Width..[[)
+	oUF.TagEvents["DiffColor"] = "UNIT_LEVEL"
+	if (not oUF.Tags["DiffColor"]) then
+		oUF.Tags["DiffColor"] = function(unit)
+			local r, g, b
+			local level = UnitLevel(unit)
+			if (level < 1) then
+				r, g, b = unpack(colors.leveldiff[1])
+			else
+				local DiffColor = level - UnitLevel("player")
+				if (DiffColor >= 5) then
+					r, g, b = unpack(colors.leveldiff[1])
+				elseif (DiffColor >= 3) then
+					r, g, b = unpack(colors.leveldiff[2])
+				elseif (DiffColor >= -2) then
+					r, g, b = unpack(colors.leveldiff[3])
+				elseif (-DiffColor <= GetQuestGreenRange()) then
+					r, g, b = unpack(colors.leveldiff[4])
+				else
+					r, g, b = unpack(colors.leveldiff[5])
+				end
 			end
-		]]
-	)
-	tank:SetPoint("TOPRIGHT", UIParent, "RIGHT", tonumber(db.oUF.Maintank.X), tonumber(db.oUF.Maintank.Y))
-	tank:Show()
-end
-
-if db.oUF.Arena.Enable == true then
-	local arenaParent = CreateFrame("Frame", "oUF_LUI_arena", UIParent)
-	arenaParent:SetPoint("RIGHT", UIParent, "RIGHT", tonumber(db.oUF.Arena.X), tonumber(db.oUF.Arena.Y))
-	arenaParent:SetWidth(tonumber(db.oUF.Arena.Width))
-	arenaParent:SetHeight(tonumber(db.oUF.Arena.Height))
-
-	local arena = {}
-
-	for i = 1, 5 do
-		arena[i] = oUF:Spawn("arena"..i, "oUF_LUI_arena"..i)
-		if i == 1 then
-			arena[i]:SetPoint("TOPRIGHT", arenaParent, "TOPRIGHT", 0, 0)
-		else
-			arena[i]:SetPoint("TOP", arena[i-1], "BOTTOM", 0, -tonumber(db.oUF.Arena.Padding))
+			return string.format("|cff%02x%02x%02x", r * 255, g * 255, b * 255)
 		end
 	end
 
-	if db.oUF.ArenaTarget.Enable == true then
-		local arenatarget = {}
-		for i = 1, 5 do
-			arenatarget[i] = oUF:Spawn("arena"..i.."target", "oUF_LUI_arenatarget"..i)
-			arenatarget[i]:SetPoint(db.oUF.ArenaTarget.Point, arena[i], db.oUF.ArenaTarget.RelativePoint, tonumber(db.oUF.ArenaTarget.X), tonumber(db.oUF.ArenaTarget.Y))
+	oUF.TagEvents["level2"] = "UNIT_LEVEL"
+	if (not oUF.Tags["level2"]) then
+		oUF.Tags["level2"] = function(unit)
+			local l = UnitLevel(unit)
+			return (l > 0) and l
 		end
 	end
 
-	if db.oUF.ArenaPet.Enable == true then
-		local arenapet = {}
-		for i = 1, 5 do
-			arenapet[i] = oUF:Spawn("arena"..i.."pet", "oUF_LUI_arenapet"..i)
-			arenapet[i]:SetPoint(db.oUF.ArenaPet.Point, arena[i], db.oUF.ArenaPet.RelativePoint, tonumber(db.oUF.ArenaPet.X), tonumber(db.oUF.ArenaTarget.Y))
+	oUF.TagEvents["NameShort"] = "UNIT_NAME_UPDATE"
+	if (not oUF.Tags["NameShort"]) then
+		oUF.Tags["NameShort"] = function(unit)
+			local name = UnitName(unit)
+			if name then
+				if unit == "pet" and name == "Unknown" then
+					return "Pet"
+				else
+					return utf8sub(name, 9, true)
+				end
+			end
 		end
 	end
 
-	arenaParent:RegisterEvent("PLAYER_LOGIN")
-	arenaParent:RegisterEvent("PLAYER_ENTERING_WORLD")
-	arenaParent:RegisterEvent("ARENA_OPPONENT_UPDATE")
-	arenaParent:SetScript("OnEvent", function(self)
-		if InCombatLockdown() then
-			self:RegisterEvent("PLAYER_REGEN_ENABLED")
-		else
-			self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	oUF.TagEvents["NameMedium"] = "UNIT_NAME_UPDATE"
+	if (not oUF.Tags["NameMedium"]) then
+		oUF.Tags["NameMedium"] = function(unit)
+			local name = UnitName(unit)
+			if name then
+				if unit == "pet" and name == "Unknown" then
+					return "Pet"
+				else
+					return utf8sub(name, 18, true)
+				end
+			end
+		end
+	end
+
+	oUF.TagEvents["NameLong"] = "UNIT_NAME_UPDATE"
+	if (not oUF.Tags["NameLong"]) then
+		oUF.Tags["NameLong"] = function(unit)
+			local name = UnitName(unit)
+			if name then
+				if unit == "pet" and name == "Unknown" then
+					return "Pet"
+				else
+					return utf8sub(name, 36, true)
+				end
+			end
+		end
+	end
+
+	oUF.TagEvents["RaidName25"] = "UNIT_NAME_UPDATE"
+	if (not oUF.Tags["RaidName25"]) then
+		oUF.Tags["RaidName25"] = function(unit, realunit)
+			local name = (unit == "vehicle" and UnitName(realunit or unit)) or UnitName(unit)
+			if not nameCache[name] then ShortenName(name) end
+			return nameCache[name][1]
+		end
+	end
+
+	oUF.TagEvents["RaidName40"] = "UNIT_NAME_UPDATE"
+	if (not oUF.Tags["RaidName40"]) then
+		oUF.Tags["RaidName40"] = function(unit, realunit)
+			local name = (unit == "vehicle" and UnitName(realunit or unit)) or UnitName(unit)
+			if not nameCache[name] then ShortenName(name) end
+			return nameCache[name][2]
+		end
+	end
+
+	oUF.TagEvents["druidmana2"] = "UNIT_POWER UNIT_MAXPOWER"
+	if (not oUF.Tags["druidmana2"]) then
+		oUF.Tags["druidmana2"] = function(unit)
+			if unit ~= "player" then return end
 			
-			local c = 0
-			for i = 1, 5 do
-				if arena[i]:IsShown() then c = i end
+			local min, max = UnitPower("player", SPELL_POWER_MANA), UnitPowerMax("player", SPELL_POWER_MANA)
+			local perc = min/max*100
+			perc = format("%.1f", perc)
+			perc = perc.."%"
+			if db.oUF.Player.Texts.DruidMana.HideIfFullMana and min == max then return "" end
+			
+			local _, pType = UnitPowerType(unit)
+			local pClass, pToken = UnitClass(unit)
+			local color = colors.class[pToken]
+			local color2 = colors.power[pType]
+			
+			local r, g, b, text
+			
+			if db.oUF.Player.Texts.DruidMana.Color == "" then
+				r, g, b = color[1]*255,color[2]*255,color[3]*255
+			elseif db.oUF.Player.Texts.DruidMana.Color == "" then
+				r, g, b = color2[1]*255,color2[2]*255,color2[3]*255
+			else
+				r, g, b = db.oUF.Player.Texts.DruidMana.IndividualColor.r*255,db.oUF.Player.Texts.DruidMana.IndividualColor.g*255,db.oUF.Player.Texts.DruidMana.IndividualColor.b*255
 			end
-
-			if c > 0 then
-				self:SetHeight(tonumber(db.oUF.Arena.Height) * c + tonumber(db.oUF.Arena.Padding) * (c-1))
+			
+			if db.oUF.Player.Texts.DruidMana.Format == "Absolut" then
+				text = format("%s/%s", min, max)
+			elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut & Percent" then
+				text = format("%s/%s | %s", min, max, perc)
+			elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut Short" then
+				text = format("%s/%s", ShortValue(min), ShortValue(max))
+			elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut Short & Percent" then
+				text = format("%s/%s | %s", ShortValue(min), ShortValue(max), perc)
+			elseif db.oUF.Player.Texts.DruidMana.Format == "Standard Short" then
+				text = ShortValue(min)
+			else
+				text = min
 			end
+			
+			return format("|cff%02x%02x%02x%s|r", r, g, b, text)
 		end
-	end)
-	
-	SetCVar("ShowArenaEnemyFrames", 0)
-elseif db.oUF.Arena.UseBlizzard == false then
-	SetCVar("ShowArenaEnemyFrames", 0)
-else
-	SetCVar("showArenaEnemyFrames", 1)
-end
+	end
 
+	-- custom widget API
+	local FormatName = function(self)
+		if not self or not self.Info then return end
+		
+		local info = self.Info
+		
+		local name
+		if info.Length == "Long" then
+			name = "[NameLong]"
+		elseif info.Length == "Short" then
+			name = "[NameShort]"
+		else
+			name = "[NameMedium]"
+		end
+		
+		if info.ColorNameByClass then name = "[GetNameColor]"..name.."|r" end
+		
+		local level = info.ColorLevelByDifficulty and "[DiffColor][level2]|r" or "[level2]"
+		
+		if info.ShowClassification then
+			level = info.ShortClassification and level.."[shortclassification]" or level.."[classification]"
+		end
+		
+		local race = "[race]"
+		
+		local class = info.ColorClassByClass and "[GetNameColor][smartclass]|r" or "[smartclass]"
+		
+		self:Tag(info, info.Format:gsub(" %+ ", " "):gsub("Name", name):gsub("Level", level):gsub("Race", race):gsub("Class", class))
+		self:UpdateAllElements()
+	end
+	oUF:RegisterMetaFunction("FormatName", FormatName)
+
+	local FormatRaidName = function(self)
+		if not self or not self.Info then return end
+		
+		local info = self.Info
+		
+		local index = self:GetParent():GetParent():GetName() == "oUF_LUI_raid_25" and 1 or 2
+		local tag = self:GetParent():GetParent():GetName() == "oUF_LUI_raid_25" and "[RaidName25]" or "[RaidName40]"
+		
+		if info.ColorByClass then tag = "[GetNameColor]"..tag.."|r" end
+		
+		self:Tag(info, tag)
+		self:UpdateAllElements()
+	end
+	oUF:RegisterMetaFunction("FormatRaidName", FormatRaidName)
+
+	-- spawning
+	local spawnList = {"Player", "Target", "Focus", "FocusTarget", "ToT", "ToToT", "Pet", "PetTarget", "Boss", "Party", "Maintank", "Arena", "Raid"}
+	for _, unit in pairs(spawnList) do
+		LUI:GetModule("oUF"):Toggle(unit)
+	end
+end

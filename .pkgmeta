@@ -17,7 +17,4 @@ externals:
  libs/AceGUI-3.0-SharedMediaWidgets: svn://svn.wowace.com/wow/ace-gui-3-0-shared-media-widgets/mainline/trunk
  libs/LibDataBroker-1.1: git://git.wowace.com/wow/libdatabroker-1-1/mainline.git
 
-move-folders:
-    LUI/oUFLUI: oUF_LUI
-
 enable-nolib-creation: no

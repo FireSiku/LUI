@@ -26,6 +26,7 @@ local addonAnchors = {
 		Grid = 'GridLayoutFrame',
 		Healbot = 'HealBot_Action',
 		Vuhdo = 'VdAc1',
+		oUF = 'oUF_LUI_raid',
 	},
 	meter = {
 		Recount = 'Recount_MainWindow',
