@@ -797,6 +797,7 @@ local PortraitOverride = function(self, event, unit)
 			portrait:SetModelScale(4.25)
 			portrait:SetPosition(0, 0, -1.5)
 			portrait:SetModel("Interface\\Buttons\\talktomequestionmark.mdx")
+			portrait.guid = nil
 		elseif(portrait.guid ~= guid or event == 'UNIT_MODEL_CHANGED') then
 			portrait:SetUnit(unit)
 			portrait:SetCamera(portrait:GetModel() == "character\\worgen\\male\\worgenmale.m2" and 1 or 0)
@@ -808,6 +809,10 @@ local PortraitOverride = function(self, event, unit)
 	else
 		SetPortraitTexture(portrait, unit)
 	end
+	
+	local a = portrait:GetAlpha()
+	portrait:SetAlpha(0)
+	portrait:SetAlpha(a)
 end
 
 do
