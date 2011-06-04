@@ -3177,18 +3177,40 @@ function module:OnEnable()
 		end
 	end
 
-	oUF.TagEvents["RaidName25"] = "UNIT_NAME_UPDATE"
+	oUF.TagEvents["RaidName25"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
 	if (not oUF.Tags["RaidName25"]) then
 		oUF.Tags["RaidName25"] = function(unit, realunit)
+			if db.oUF.Raid.Texts.Name.ShowDead then
+				if not UnitIsConnected(unit) then
+					return "|cffD7BEA5<Offline>|r"
+				elseif UnitIsGhost(unit) then
+					return "|cffD7BEA5<Ghost>|r"
+				elseif UnitIsDead(unit) then
+					return "|cffD7BEA5<Dead>|r"
+				elseif UnitIsAFK(unit) then
+					return "|cffD7BEA5<AFK>|r"
+				end
+			end
 			local name = (unit == "vehicle" and UnitName(realunit or unit)) or UnitName(unit)
 			if not nameCache[name] then ShortenName(name) end
 			return nameCache[name][1]
 		end
 	end
 
-	oUF.TagEvents["RaidName40"] = "UNIT_NAME_UPDATE"
+	oUF.TagEvents["RaidName40"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
 	if (not oUF.Tags["RaidName40"]) then
 		oUF.Tags["RaidName40"] = function(unit, realunit)
+			if db.oUF.Raid.Texts.Name.ShowDead then
+				if not UnitIsConnected(unit) then
+					return "|cffD7BEA5<Offline>|r"
+				elseif UnitIsGhost(unit) then
+					return "|cffD7BEA5<Ghost>|r"
+				elseif UnitIsDead(unit) then
+					return "|cffD7BEA5<Dead>|r"
+				elseif UnitIsAFK(unit) then
+					return "|cffD7BEA5<AFK>|r"
+				end
+			end
 			local name = (unit == "vehicle" and UnitName(realunit or unit)) or UnitName(unit)
 			if not nameCache[name] then ShortenName(name) end
 			return nameCache[name][2]

@@ -188,7 +188,7 @@ local defaults = {
 			Name = {
 				Enable = true,
 				Font = "vibroceb",
-				Size = 12,
+				Size = 11,
 				IndividualColor = {
 					r = 1,
 					g = 1,
@@ -198,6 +198,7 @@ local defaults = {
 				Format = "Name",
 				Length = "Medium",
 				ColorByClass = true,
+				ShowDead = true,
 			},
 			Health = {
 				Enable = false,
@@ -399,6 +400,8 @@ function module:LoadOptions()
 										empty2 = LUI:NewEmpty(5),
 										ColorByClass = LUI:NewToggle("Color Name by Class", "Whether you want to color the Raid Name by Class or not.", 6, oufdb.Texts.Name, "ColorByClass", oufdefaults.Texts.Name, ApplyInfoText, "normal"),
 										Color = LUI:NewColorNoAlpha("", "Name Text", 7, oufdb.Texts.Name.IndividualColor, oufdefaults.Texts.Name.IndividualColor, ApplyInfoText),
+										empty3 = LUI:NewEmpty(8),
+										ShowDead = LUI:NewToggle("Show Dead/AFK/Disconnected", "Whether you want to switch the Name to Dead/AFK/Disconnected or not.", 9, oufdb.Texts.Name, "ShowDead", oufdefaults.Texts.Name, ApplyInfoText),
 									},
 								},
 							},
