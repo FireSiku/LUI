@@ -1127,7 +1127,7 @@ local toggleFuncs = {
 				oUF_LUI_raid:RegisterEvent("RAID_ROSTER_UPDATE")
 				oUF_LUI_raid:RegisterEvent("PARTY_LEADER_CHANGED")
 				oUF_LUI_raid:RegisterEvent("PARTY_MEMBERS_CHANGED")
-				oUF_LUI_raid:GetScript("OnEvent")()
+				oUF_LUI_raid:GetScript("OnEvent")(oUF_LUI_raid)
 			else
 				local raidAnchor = CreateFrame("Frame", "oUF_LUI_raid", UIParent)
 				raidAnchor:SetWidth(tonumber(db.oUF.Raid.Width) * 5 + tonumber(db.oUF.Raid.GroupPadding) * 4)
@@ -1228,9 +1228,9 @@ local toggleFuncs = {
 				end
 			end
 			
+			oUF_LUI_raid:UnregisterAllEvents()
 			oUF_LUI_raid_25:Hide()
 			oUF_LUI_raid_40:Hide()
-			oUF_LUI_raid:UnregisterAllEvents()
 		end
 	end,
 }
