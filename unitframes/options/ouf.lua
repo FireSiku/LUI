@@ -1,6 +1,6 @@
 --[[
 	Project....: LUI NextGenWoWUserInterface
-	File.......: _ouf.lua
+	File.......: ouf.lua
 	Description: oUF Module
 	Version....: 1.0
 ]] 
@@ -585,7 +585,13 @@ local toggleFuncs = {
 	
 	Boss = function()
 		if db.oUF.Boss.Enable then
-			if oUF_LUI_boss1 then
+			if oUF_LUI_boss then
+				oUF_LUI_boss:ClearAllPoints()
+				oUF_LUI_boss:SetPoint(db.oUF.Arena.Point, UIParent, db.oUF.Arena.Point, tonumber(db.oUF.Arena.X), tonumber(db.oUF.Arena.Y))
+				oUF_LUI_boss:SetWidth(tonumber(db.oUF.Arena.Width))
+				oUF_LUI_boss:SetHeight(tonumber(db.oUF.Arena.Height))
+				oUF_LUI_boss:Show()
+				
 				for i = 1, MAX_BOSS_FRAMES do
 					_G["oUF_LUI_boss"..i]:Enable()
 					_G["oUF_LUI_boss"..i]:UpdateAllElements()
@@ -596,12 +602,21 @@ local toggleFuncs = {
 						_G["oUF_LUI_boss"..i]:SetPoint('TOP', _G["oUF_LUI_boss"..i-1], 'BOTTOM', 0, -tonumber(db.oUF.Boss.Padding))
 					end
 				end
+				
+				oUF_LUI_boss:RegisterEvent("PLAYER_ENTERING_WORLD")
+				oUF_LUI_boss:RegisterEvent("ARENA_OPPONENT_UPDATE")
+				oUF_LUI_boss:GetScript("OnEvent")(oUF_LUI_boss)
 			else
+				local bossParent = CreateFrame("Frame", "oUF_LUI_boss", UIParent, "SecureHandlerBaseTemplate")
+				bossParent:SetPoint(db.oUF.Arena.Point, UIParent, db.oUF.Arena.Point, tonumber(db.oUF.Arena.X), tonumber(db.oUF.Arena.Y))
+				bossParent:SetWidth(tonumber(db.oUF.Arena.Width))
+				bossParent:SetHeight(tonumber(db.oUF.Arena.Height))
+				
 				local boss = {}
 				for i = 1, MAX_BOSS_FRAMES do
 					boss[i] = oUF:Spawn("boss"..i, "oUF_LUI_boss"..i)
 					if i == 1 then
-						boss[i]:SetPoint("RIGHT", UIParent, "RIGHT", tonumber(db.oUF.Boss.X), tonumber(db.oUF.Boss.Y))
+						boss[i]:SetPoint("TOPRIGHT", bossParent, "TOPRIGHT", 0, 0)
 					else
 						boss[i]:SetPoint("TOP", boss[i-1], "BOTTOM", 0, -tonumber(db.oUF.Boss.Padding))
 					end
@@ -614,12 +629,30 @@ local toggleFuncs = {
 						bosstarget[i]:SetPoint(db.oUF.BossTarget.Point, boss[i], db.oUF.BossTarget.RelativePoint, tonumber(db.oUF.BossTarget.X), tonumber(db.oUF.BossTarget.Y))
 					end
 				end
+				
+				bossParent:RegisterEvent("PLAYER_ENTERING_WORLD")
+				bossParent:RegisterEvent("ARENA_OPPONENT_UPDATE")
+				bossParent:SetScript("OnEvent", function(self)
+					local c = 0
+					for i = 1, MAX_BOSS_FRAMES do
+						if boss[i]:IsShown() then c = i end
+					end
+					
+					if c > 0 then
+						local h = tonumber(db.oUF.Boss.Height) * c + tonumber(db.oUF.Boss.Padding) * (c-1)
+						local snippet = [[self:SetHeight(%d)]]
+						self:Execute(snippet:format(h))
+					end
+				end)
 			end
 		else
 			for i = 1, MAX_BOSS_FRAMES do
 				if _G["oUF_LUI_boss"..i] then _G["oUF_LUI_boss"..i]:Disable() end
 				if _G["oUF_LUI_bosstarget"..i] then _G["oUF_LUI_bosstarget"..i]:Disable() end
 			end
+			
+			oUF_LUI_boss:UnregisterAllEvents()
+			oUF_LUI_boss:Hide()
 		end
 	end,
 	
@@ -816,6 +849,11 @@ local toggleFuncs = {
 			SetCVar("showArenaEnemyFrames", 0)
 			
 			if oUF_LUI_arena then
+				oUF_LUI_arena:ClearAllPoints()
+				oUF_LUI_arena:SetPoint(db.oUF.Arena.Point, UIParent, db.oUF.Arena.Point, tonumber(db.oUF.Arena.X), tonumber(db.oUF.Arena.Y))
+				oUF_LUI_arena:SetWidth(tonumber(db.oUF.Arena.Width))
+				oUF_LUI_arena:SetHeight(tonumber(db.oUF.Arena.Height))
+				
 				for i = 1, 5 do
 					_G["oUF_LUI_arena"..i]:Enable()
 					_G["oUF_LUI_arena"..i]:UpdateAllElements()
@@ -826,10 +864,15 @@ local toggleFuncs = {
 						_G["oUF_LUI_arena"..i]:SetPoint("TOP", _G["oUF_LUI_arena"..i-1], "BOTTOM", 0, -tonumber(db.oUF.Arena.Padding))
 					end
 				end
+				
 				oUF_LUI_arena:Show()
+				oUF_LUI_arena:RegisterEvent("PLAYER_LOGIN")
+				oUF_LUI_arena:RegisterEvent("PLAYER_ENTERING_WORLD")
+				oUF_LUI_arena:RegisterEvent("ARENA_OPPONENT_UPDATE")
+				oUF_LUI_arena:GetScript("OnEvent")(oUF_LUI_arena)
 			else
-				local arenaParent = CreateFrame("Frame", "oUF_LUI_arena", UIParent)
-				arenaParent:SetPoint("RIGHT", UIParent, "RIGHT", tonumber(db.oUF.Arena.X), tonumber(db.oUF.Arena.Y))
+				local arenaParent = CreateFrame("Frame", "oUF_LUI_arena", UIParent, "SecureHandlerBaseTemplate")
+				arenaParent:SetPoint(db.oUF.Arena.Point, UIParent, db.oUF.Arena.Point, tonumber(db.oUF.Arena.X), tonumber(db.oUF.Arena.Y))
 				arenaParent:SetWidth(tonumber(db.oUF.Arena.Width))
 				arenaParent:SetHeight(tonumber(db.oUF.Arena.Height))
 
@@ -864,19 +907,15 @@ local toggleFuncs = {
 				arenaParent:RegisterEvent("PLAYER_ENTERING_WORLD")
 				arenaParent:RegisterEvent("ARENA_OPPONENT_UPDATE")
 				arenaParent:SetScript("OnEvent", function(self)
-					if InCombatLockdown() then
-						self:RegisterEvent("PLAYER_REGEN_ENABLED")
-					else
-						self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-						
-						local c = 0
-						for i = 1, 5 do
-							if arena[i]:IsShown() then c = i end
-						end
-
-						if c > 0 then
-							self:SetHeight(tonumber(db.oUF.Arena.Height) * c + tonumber(db.oUF.Arena.Padding) * (c-1))
-						end
+					local c = 0
+					for i = 1, 5 do
+						if arena[i]:IsShown() then c = i end
+					end
+					
+					if c > 0 then
+						local h = tonumber(db.oUF.Arena.Height) * c + tonumber(db.oUF.Arena.Padding) * (c-1)
+						local snippet = [[self:SetHeight(%d)]]
+						self:Execute(snippet:format(h))
 					end
 				end)
 			end
@@ -890,7 +929,9 @@ local toggleFuncs = {
 			for i = 1, 5 do
 				if _G["oUF_LUI_arena"..i] then _G["oUF_LUI_arena"..i]:Disable() end
 			end
+			
 			oUF_LUI_arena:Hide()
+			oUF_LUI_arena:UnregisterAllEvents()
 		end
 	end,
 	
@@ -936,7 +977,7 @@ local toggleFuncs = {
 		if db.oUF.Maintank.Enable then
 			if oUF_LUI_maintank then
 				oUF_LUI_maintank:ClearAllPoints()
-				oUF_LUI_maintank:SetPoint("TOPRIGHT", UIParent, "RIGHT", tonumber(db.oUF.Maintank.X), tonumber(db.oUF.Maintank.Y))
+				oUF_LUI_maintank:SetPoint(db.oUF.Maintank.Point, UIParent, db.oUF.Maintank.Point, tonumber(db.oUF.Maintank.X), tonumber(db.oUF.Maintank.Y))
 				oUF_LUI_maintank:SetAttribute("yOffset", - tonumber(db.oUF.Maintank.Padding))
 				oUF_LUI_maintank:SetAttribute("oUF-initialConfigFunction", [[
 					local unit = ...
@@ -986,7 +1027,7 @@ local toggleFuncs = {
 					]]
 				)
 				
-				tank:SetPoint("TOPRIGHT", UIParent, "RIGHT", tonumber(db.oUF.Maintank.X), tonumber(db.oUF.Maintank.Y))
+				tank:SetPoint(db.oUF.Maintank.Point, UIParent, db.oUF.Maintank.Point, tonumber(db.oUF.Maintank.X), tonumber(db.oUF.Maintank.Y))
 				tank:Show()
 			end
 		else
@@ -1081,6 +1122,12 @@ local toggleFuncs = {
 						if frame then frame:Enable() end
 					end
 				end
+				
+				oUF_LUI_raid:RegisterEvent("PLAYER_LOGIN")
+				oUF_LUI_raid:RegisterEvent("RAID_ROSTER_UPDATE")
+				oUF_LUI_raid:RegisterEvent("PARTY_LEADER_CHANGED")
+				oUF_LUI_raid:RegisterEvent("PARTY_MEMBERS_CHANGED")
+				oUF_LUI_raid:GetScript("OnEvent")()
 			else
 				local raidAnchor = CreateFrame("Frame", "oUF_LUI_raid", UIParent)
 				raidAnchor:SetWidth(tonumber(db.oUF.Raid.Width) * 5 + tonumber(db.oUF.Raid.GroupPadding) * 4)
@@ -1179,6 +1226,10 @@ local toggleFuncs = {
 					if frame then frame:Disable() end
 				end
 			end
+			
+			oUF_LUI_raid_25:Hide()
+			oUF_LUI_raid_40:Hide()
+			oUF_LUI_raid:UnregisterAllEvents()
 		end
 	end,
 }
