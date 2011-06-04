@@ -6,6 +6,9 @@
 	Notes......: This module contains all of the defaults and options that are contained within all of the UnitFrames.
 ]] 
 
+local _, ns = ...
+local oUF = ns.oUF or oUF
+
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local module = LUI:NewModule("oUF_General")
 local Forte
@@ -14,7 +17,7 @@ local widgetLists = AceGUIWidgetLSMlists
 
 local db
 
-local units = {"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet"}
+local units = {"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "BossTarget", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet", "Raid"}
 
 local ufNamesList = {
 	Player = {"oUF_LUI_player"},
@@ -29,12 +32,14 @@ local ufNamesList = {
 	PartyTarget = {},
 	PartyPet = {},
 	Boss = {},
+	BossTarget ={},
 	Maintank = {},
 	MaintankTarget = {},
 	MaintankToT = {},
 	Arena = {},
 	ArenaTarget = {},
 	ArenaPet = {},
+	Raid = {},
 }
 
 do
@@ -43,6 +48,7 @@ do
 		PartyTarget = "oUF_LUI_partyUnitButton",
 		PartyPet = "oUF_LUI_partyUnitButton",
 		Boss = "oUF_LUI_boss",
+		BossTarget = "oUF_LUI_bosstarget",
 		Maintank = "oUF_LUI_maintankUnitButton",
 		MaintankTarget = "oUF_LUI_maintankUnitButton",
 		MaintankToT = "oUF_LUI_maintankUnitButton",
@@ -61,6 +67,7 @@ do
 		PartyTarget = 5,
 		PartyPet = 5,
 		Boss = 4,
+		BossTarget = 4,
 		Maintank = 3,
 		MaintankTarget = 3,
 		MaintankToT = 3,
@@ -79,6 +86,18 @@ do
 			end
 		end
 	end
+	
+	for i = 1, 5 do
+		for j = 1, 5 do
+			table.insert(ufNamesList.Raid, "oUF_LUI_raid_25_"..i.."UnitButton"..j)
+		end
+	end
+	
+	for i = 1, 8 do
+		for j = 1, 5 do
+			table.insert(ufNamesList.Raid, "oUF_LUI_raid_40_"..i.."UnitButton"..j)
+		end
+	end
 end
 
 -- needed for moving frames and some other things
@@ -95,6 +114,7 @@ local ufMover = {
 	FocusTarget = "oUF_LUI_focustarget",
 	Pet = "oUF_LUI_pet",
 	PetTarget = "oUF_LUI_pettarget",
+	Raid = "oUF_LUI_raid",
 }
 
 local barColors = {
@@ -134,7 +154,7 @@ function module:CreateHealPredictionOptions(unit)
 	local ToggleFunc = function(Enable)
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				if not _G[frame].HealPrediction then oUF_LUI.funcs.HealPrediction(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+				if not _G[frame].HealPrediction then LUI.oUF.funcs.HealPrediction(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 				if Enable then
 					_G[frame]:EnableElement("HealPrediction")
 				else
@@ -148,7 +168,7 @@ function module:CreateHealPredictionOptions(unit)
 	local ApplySettings = function()
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				oUF_LUI.funcs.HealPrediction(_G[frame], _G[frame].__unit, db.oUF[unit])
+				LUI.oUF.funcs.HealPrediction(_G[frame], _G[frame].__unit, db.oUF[unit])
 				_G[frame]:UpdateAllElements()
 			end
 		end
@@ -182,20 +202,10 @@ function module:CreateBarOptions(unit, order, barType)
 	local bardb = db.oUF[unit][barType]
 	local ufNames = ufNamesList[unit]
 	
-	local ToggleFunc = function(Enable)
-		for _, frame in pairs(ufNames) do
-			if Enable then
-				if _G[frame] then _G[frame][barType]:Show() end
-			else
-				if _G[frame] then _G[frame][barType]:Hide() end
-			end
-		end
-	end
-	
 	local ApplySettings = function()
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				oUF_LUI.funcs[barType](_G[frame], _G[frame].__unit, db.oUF[unit])
+				LUI.oUF.funcs[barType](_G[frame], _G[frame].__unit, db.oUF[unit])
 				_G[frame]:UpdateAllElements()
 			end
 		end
@@ -216,7 +226,7 @@ function module:CreateBarOptions(unit, order, barType)
 		type = "group",
 		order = order,
 		args = {
-			Enable = (barType ~= "Health") and LUI:NewToggle("Enable", "Whether you want to show "..barType.."bar or not.", 1, bardb, "Enable", bardefaults, ToggleFunc) or nil,
+			Enable = (barType ~= "Health") and LUI:NewToggle("Enable", "Whether you want to show "..barType.."bar or not.", 1, bardb, "Enable", bardefaults, ApplySettings) or nil,
 			General = {
 				name = "Settings",
 				type = "group",
@@ -281,7 +291,7 @@ function module:CreateTextOptions(unit, order, parentName, textType)
 	local ApplySettings = function()
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				oUF_LUI.funcs[textFunc](_G[frame], _G[frame].__unit, db.oUF[unit])
+				LUI.oUF.funcs[textFunc](_G[frame], _G[frame].__unit, db.oUF[unit])
 				_G[frame]:UpdateAllElements()
 			end
 		end
@@ -356,7 +366,7 @@ function module:CreateIconOptions(unit, order, iconType)
 	local ToggleFunc = function(self, Enable)
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				if not _G[frame][iconNames[1]] then oUF_LUI.funcs[iconNames[1]](_G[frame], _G[frame].__unit, db.oUF[unit]) end
+				if not _G[frame][iconNames[1]] then LUI.oUF.funcs[iconNames[1]](_G[frame], _G[frame].__unit, db.oUF[unit]) end
 				for _, icon in pairs(iconNames) do
 					if Enable then
 						_G[frame]:EnableElement(icon)
@@ -372,7 +382,7 @@ function module:CreateIconOptions(unit, order, iconType)
 	
 	local ApplySettings = function()
 		for _, frame in pairs(ufNames) do
-			if _G[frame] then oUF_LUI.funcs[iconNames[1]](_G[frame], _G[frame].__unit, db.oUF[unit]) end
+			if _G[frame] then LUI.oUF.funcs[iconNames[1]](_G[frame], _G[frame].__unit, db.oUF[unit]) end
 		end
 	end
 	
@@ -415,7 +425,7 @@ function module:CreateAuraOptions(unit, order, isDebuff)
 	local ToggleFunc = function(self, Enable)
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				if not _G[frame][element] then oUF_LUI.funcs[element](_G[frame], _G[frame].__unit, db.oUF[unit]) end
+				if not _G[frame][element] then LUI.oUF.funcs[element](_G[frame], _G[frame].__unit, db.oUF[unit]) end
 				if Enable == true then
 					_G[frame]:EnableElement("Aura")
 					_G[frame][element]:Show()
@@ -432,7 +442,7 @@ function module:CreateAuraOptions(unit, order, isDebuff)
 	
 	local ApplySettings = function()
 		for _, frame in pairs(ufNames) do
-			if _G[frame] then oUF_LUI.funcs[element](_G[frame], _G[frame].__unit, db.oUF[unit]) end
+			if _G[frame] then LUI.oUF.funcs[element](_G[frame], _G[frame].__unit, db.oUF[unit]) end
 		end
 	end
 	
@@ -476,7 +486,7 @@ function module:CreateOptions(index, unit)
 	local oufdb = db.oUF[unit]
 	local ufNames = ufNamesList[unit]
 	
-	local ToggleFunc = function() oUF_LUI.toggle(unit) end
+	local ToggleFunc = function() LUI:GetModule("oUF"):Toggle(unit) end
 	
 	local disabledFunc = function()
 		if not db.oUF.Settings.Enable then return true end
@@ -494,13 +504,17 @@ function module:CreateOptions(index, unit)
 		end
 	end
 	
+	local disabledFunc2 = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end
+	
 	local ToggleBlizz
 	if unit == "Arena" then
 		ToggleBlizz = function(self, Enable)
 			if Enable == true then
 				SetCVar("showArenaEnemyFrames", 1)
+				LUI:GetModule("oUF"):EnableBlizzard("arena")
 			else
 				SetCVar("showArenaEnemyFrames", 0)
+				oUF:DisableBlizzard("party")
 			end
 		end
 	elseif unit == "Boss" then
@@ -531,6 +545,15 @@ function module:CreateOptions(index, unit)
 		ChangePadding = function() oUF_LUI_party:SetAttribute("yOffset", - tonumber(oufdb.Padding)) end
 	elseif unit == "Maintank" then
 		ChangePadding = function() oUF_LUI_maintank:SetAttribute("yOffset", - tonumber(oufdb.Padding)) end
+	elseif unit == "Raid" then
+		ChangePadding = function()
+			for i = 1, 5 do
+				_G["oUF_LUI_raid_25_"..i]:SetAttribute("yOffset", - tonumber(oufdb.Padding))
+			end
+			for i = 1, 8 do
+				_G["oUF_LUI_raid_40_"..i]:SetAttribute("yOffset", - tonumber(oufdb.Padding))
+			end
+		end
 	else
 		ChangePadding = function()
 			local parent = _G[ufNames[1]]
@@ -542,6 +565,7 @@ function module:CreateOptions(index, unit)
 					parent = f
 				end
 			end
+			parent:GetParent():GetScript("OnEvent")(parent:GetParent())
 		end
 	end
 	
@@ -549,9 +573,9 @@ function module:CreateOptions(index, unit)
 	if ufMover[unit] then
 		SetPosition = function()
 			if _G[ufMover[unit]] then
-				local Point, Anchor, RelativePoint = _G[ufMover[unit]]:GetPoint(1)
+				local _, Anchor = _G[ufMover[unit]]:GetPoint(1)
 				_G[ufMover[unit]]:ClearAllPoints()
-				_G[ufMover[unit]]:SetPoint(Point, Anchor, RelativePoint, tonumber(oufdb.X), tonumber(oufdb.Y))
+				_G[ufMover[unit]]:SetPoint(oufdb.Point or "CENTER", Anchor, oufdb.Point or "CENTER", tonumber(oufdb.X), tonumber(oufdb.Y))
 			end
 		end
 	else
@@ -578,7 +602,7 @@ function module:CreateOptions(index, unit)
 			end
 		end
 		if unit == "Player" or unit == "Target" or unit == "Focus" then Forte:SetPosForte() end
-		if strfind(unit, "Party") then
+		if unit == "Party" then
 			oUF_LUI_party:SetAttribute("oUF-initialConfigFunction", [[
 				local unit = ...
 				if unit == "party" then
@@ -594,7 +618,7 @@ function module:CreateOptions(index, unit)
 					self:SetPoint("]]..db.oUF.PartyPet.Point..[[", self:GetParent(), "]]..db.oUF.PartyPet.RelativePoint..[[", ]]..db.oUF.PartyPet.X..[[, ]]..db.oUF.PartyPet.Y..[[)
 				end
 			]])
-		elseif strfind(unit, "Maintank") then
+		elseif unit == "Maintank" then
 			oUF_LUI_maintank:SetAttribute("oUF-initialConfigFunction", [[
 				local unit = ...
 				if unit == "raidtargettarget" then
@@ -610,24 +634,55 @@ function module:CreateOptions(index, unit)
 					self:SetWidth(]]..db.oUF.Maintank.Width..[[)
 				end
 			]])
+		elseif unit == "Arena" then
+			oUF_LUI_arena:GetScript("OnEvent")(oUF_LUI_arena)
+		elseif unit == "Boss" then
+			oUF_LUI_boss.UpdateBossFrame()
+		elseif unit == "Raid" then
+			local width40 = (5 * tonumber(db.oUF.Raid.Height) - 3 * tonumber(db.oUF.Raid.GroupPadding)) / 8
+			
+			for i = 1, 5 do
+				_G["oUF_LUI_raid_25_"..i]:SetAttribute("initialConfigFunction", [[
+					self:SetHeight(]]..db.oUF.Raid.Height..[[)
+					self:SetWidth(]]..db.oUF.Raid.Width..[[)
+				]])
+				for j = 1, 5 do
+					if _G["oUF_LUI_raid_25_"..i.."UnitButton"..j] then
+						_G["oUF_LUI_raid_25_"..i.."UnitButton"..j]:SetHeight(tonumber(db.oUF.Raid.Height))
+						_G["oUF_LUI_raid_25_"..i.."UnitButton"..j]:SetWidth(tonumber(db.oUF.Raid.Width))
+					end
+				end
+			end
+			for i = 1, 8 do
+				_G["oUF_LUI_raid_40_"..i]:SetAttribute("initialConfigFunction", [[
+					self:SetHeight(]]..db.oUF.Raid.Height..[[)
+					self:SetWidth(]]..width40..[[)
+				]])
+				for j = 1, 5 do
+					if _G["oUF_LUI_raid_40_"..i.."UnitButton"..j] then
+						_G["oUF_LUI_raid_40_"..i.."UnitButton"..j]:SetHeight(tonumber(db.oUF.Raid.Height))
+						_G["oUF_LUI_raid_40_"..i.."UnitButton"..j]:SetWidth(width40)
+					end
+				end
+			end
 		end
 	end
 	
 	local ApplySettings = function()
 		for _, frame in pairs(ufNames) do
-			if _G[frame] then oUF_LUI.funcs.FrameBackdrop(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+			if _G[frame] then LUI.oUF.funcs.FrameBackdrop(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 		end
 	end
 	
 	local ApplyInfoText = function()
 		for _, frame in pairs(ufNames) do
-			if _G[frame] then oUF_LUI.funcs.Info(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+			if _G[frame] then LUI.oUF.funcs.Info(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 		end
 	end
 	
 	local ApplyCombatFeedback = function()
 		for _, frame in pairs(ufNames) do
-			if _G[frame] then oUF_LUI.funcs.CombatFeedbackText(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+			if _G[frame] then LUI.oUF.funcs.CombatFeedbackText(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 		end
 	end
 	
@@ -636,7 +691,7 @@ function module:CreateOptions(index, unit)
 	local ToggleCastbar = function(self, Enable)
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				if not _G[frame].Castbar then oUF_LUI.funcs.Castbar(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+				if not _G[frame].Castbar then LUI.oUF.funcs.Castbar(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 				if Enable == true then
 					_G[frame]:EnableElement("Castbar")
 				else
@@ -651,7 +706,7 @@ function module:CreateOptions(index, unit)
 	local ApplyCastbar = function()
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				oUF_LUI.funcs.Castbar(_G[frame], _G[frame].__unit, db.oUF[unit])
+				LUI.oUF.funcs.Castbar(_G[frame], _G[frame].__unit, db.oUF[unit])
 				_G[frame]:UpdateAllElements()
 			end
 		end
@@ -665,6 +720,7 @@ function module:CreateOptions(index, unit)
 					_G[frame].Castbar.duration = 0
 					_G[frame].Castbar.delay = 0
 					_G[frame].Castbar:SetMinMaxValues(0, 60)
+					_G[frame].Castbar.casting = true
 					_G[frame].Castbar.Text:SetText("Dummy Castbar")
 					_G[frame].Castbar:Show()
 				end
@@ -679,7 +735,7 @@ function module:CreateOptions(index, unit)
 	local TogglePortrait = function(self, Enable)
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				if not _G[frame].Portrait then oUF_LUI.funcs.Portrait(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+				if not _G[frame].Portrait then LUI.oUF.funcs.Portrait(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 				if Enable == true then
 					_G[frame]:EnableElement("Portrait")
 					_G[frame].Portrait:Show()
@@ -694,7 +750,7 @@ function module:CreateOptions(index, unit)
 	
 	local ApplyPortrait = function()
 		for _, frame in pairs(ufNames) do
-			if _G[frame] then oUF_LUI.funcs.Portrait(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+			if _G[frame] then LUI.oUF.funcs.Portrait(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 		end
 	end
 	
@@ -719,25 +775,16 @@ function module:CreateOptions(index, unit)
 						args = {
 							Enable = (unit ~= "Player" and unit ~= "Target") and LUI:NewToggle("Enable", "Whether you want to use "..unit.." Frame or not.", 1, oufdb, "Enable", oufdefaults, ToggleFunc) or nil,
 							UseBlizzard = (unit == "Party" or unit == "Boss" or unit == "Arena") and LUI:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, oufdb, "UseBlizzard", oufdefaults, ToggleBlizz, nil, function() return oufdb.Enable end) or nil,
-							Settings = {
-								name = "General Settings",
-								type = "group",
-								guiInline = true,
-								disabled = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end,
-								order = 3,
-								args = {
-									header = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank") and LUI:NewHeader("General", 1) or nil,
-									Padding = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank") and LUI:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.", 2, oufdb, "Padding", oufdefaults, ChangePadding) or nil,
-									header2 = LUI:NewHeader("Frame Position", 3),
-									XValue = LUI:NewPosX(unit.." Frame", 4, oufdb, "", oufdefaults, SetPosition),
-									YValue = LUI:NewPosY(unit.." Frame", 5, oufdb, "", oufdefaults, SetPosition),
-									Point = (not ufMover[unit]) and LUI:NewSelect("Point", "Choose the Point for your "..unit.." Frames.", 7, positions, nil, oufdb, "Point", oufdefaults, SetPosition) or nil,
-									RelativePoint = (not ufMover[unit]) and LUI:NewSelect("Relative Point", "Choose the Relative Point for your "..unit.." Frames.", 8, positions, nil, oufdb, "RelativePoint", oufdefaults, SetPosition) or nil,
-									header3 = LUI:NewHeader("Frame Height/Width", 6),
-									Height = LUI:NewHeight(unit.." Frame", 7, oufdb, nil, oufdefaults, ApplyHeightWidth),
-									Width = LUI:NewWidth(unit.." Frame", 8, oufdb, nil, oufdefaults, ApplyHeightWidth),
-								},
-							},
+							header = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank") and LUI:NewHeader("General", 6) or nil,
+							Padding = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank") and LUI:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.", 7, oufdb, "Padding", oufdefaults, ChangePadding, nil, disabledFunc2) or nil,
+							header2 = LUI:NewHeader("Frame Position", 8),
+							XValue = LUI:NewPosX(unit.." Frame", 9, oufdb, "", oufdefaults, SetPosition, nil, disabledFunc2),
+							YValue = LUI:NewPosY(unit.." Frame", 10, oufdb, "", oufdefaults, SetPosition, nil, disabledFunc2),
+							Point = (not ufMover[unit] or unit == "Boss" or unit == "Party" or unit == "Maintank" or unit == "Arena" or unit == "Raid") and LUI:NewSelect("Point", "Choose the Point for your "..unit.." Frames.", 11, positions, nil, oufdb, "Point", oufdefaults, SetPosition, nil, disabledFunc2) or nil,
+							RelativePoint = (not ufMover[unit]) and LUI:NewSelect("Relative Point", "Choose the Relative Point for your "..unit.." Frames.", 12, positions, nil, oufdb, "RelativePoint", oufdefaults, SetPosition, nil, disabledFunc2) or nil,
+							header3 = LUI:NewHeader("Frame Height/Width", 13),
+							Height = LUI:NewHeight(unit.." Frame", 14, oufdb, nil, oufdefaults, ApplyHeightWidth, nil, disabledFunc2),
+							Width = LUI:NewWidth(unit.." Frame", 15, oufdb, nil, oufdefaults, ApplyHeightWidth, nil, disabledFunc2),
 						},
 					},
 					Appearance = {
@@ -759,7 +806,7 @@ function module:CreateOptions(index, unit)
 										
 										for _, frame in pairs(ufNames) do
 											if _G[frame] then
-												if not _G[frame].Threat then oUF_LUI.funcs.AggroGlow(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+												if not _G[frame].Threat then LUI.oUF.funcs.AggroGlow(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 												if Enable then
 													_G[frame]:EnableElement("Threat")
 												else
@@ -788,7 +835,7 @@ function module:CreateOptions(index, unit)
 							InsetBottom = LUI:NewInputNumber("Bottom", "Value for the bottom Border Inset.", 18, oufdb.Border.Insets, "Bottom", oufdefaults.Border.Insets, ApplySettings, "half"),
 						},
 					},
-					AlphaFader = (ufMover[unit]) and {
+					AlphaFader = oufdb.Fader and {
 						name = "Fader",
 						type = "group",
 						disabled = function()
@@ -808,20 +855,7 @@ function module:CreateOptions(index, unit)
 							},
 						},
 					} or nil,
-					CopySettings = {
-						name = "Copy Settings",
-						type = "group",
-						disabled = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end,
-						order = 9,
-						args = (LUI:GetModule("oUF_CopySettings") and LUI:GetModule("oUF_CopySettings"):CreateCopySettings(unit)) or {
-							empty = {
-								order = 1,
-								width = "full",
-								type = "description",
-								name = "\nCopy Settings Module not found.",
-							},
-						}
-					},
+					CopySettings = LUI:GetModule("oUF_CopySettings") and LUI:GetModule("oUF_CopySettings"):CreateCopySettings(unit, 9) or nil,
 				},
 			},
 			Bars = {
@@ -843,7 +877,7 @@ function module:CreateOptions(index, unit)
 				childGroups = "tab",
 				order = 4,
 				args = {
-					Name = {
+					Name = unit ~= "Raid" and {
 						name = "Name",
 						type = "group",
 						order = 1,
@@ -881,10 +915,12 @@ function module:CreateOptions(index, unit)
 									ColorLevelByDifficulty = LUI:NewToggle("Color Level by Difficulty", "Whether you want to color the Level by Difficulty or not.", 6, oufdb.Texts.Name, "ColorLevelByDifficulty", oufdefaults.Texts.Name, ApplyInfoText, "normal"),
 									ShowClassification = LUI:NewToggle("Show Classifications", "Whether you want to show Classifications like Elite, Boss or not.", 7, oufdb.Texts.Name, "ShowClassification", oufdefaults.Texts.Name, ApplyInfoText, "normal"),
 									ShortClassification = LUI:NewToggle("Short Classifications", "Whether you want to show short Classifications or not.", 8, oufdb.Texts.Name, "ShortClassification", oufdefaults.Texts.Name, ApplyInfoText),
+									empty2 = LUI:NewEmpty(9),
+									Color = LUI:NewColorNoAlpha("", "Name Text", 10, oufdb.Texts.Name.IndividualColor, oufdefaults.Texts.Name.IndividualColor, ApplyInfoText),
 								},
 							},
 						},
-					},
+					} or nil,
 					Health = module:CreateTextOptions(unit, 2, "Health", "Value"),
 					Power = module:CreateTextOptions(unit, 3, "Power", "Value"),
 					HealthPercent = module:CreateTextOptions(unit, 4, "Health", "Percent"),
@@ -918,7 +954,7 @@ function module:CreateOptions(index, unit)
 					} or nil,
 				},
 			},
-			Castbar = (unit == "Arena" or unit == "Party" or unit == "Player" or unit == "Target" or unit == "Focus" or unit == "Pet") and {
+			Castbar = (oufdb.Castbar) and {
 				name = "Castbar",
 				type = "group",
 				disabled = function() return (oufdb.Enable ~= nil and not (oufdb.Enable and db.oUF.Settings.Castbars) or not db.oUF.Settings.Castbars) end,
@@ -1019,7 +1055,7 @@ function module:CreateOptions(index, unit)
 					},
 				},
 			} or nil,
-			Aura = (unit == "Player" or unit == "Target" or unit == "Focus" or unit == "Pet" or unit == "ToT" or unit == "Party" or unit == "PartyPet" or unit == "Arena" or unit == "ArenaPet" or unit == "Maintank") and {
+			Aura = (oufdb.Aura) and {
 				name = "Aura",
 				type = "group",
 				disabled = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end,
@@ -1037,14 +1073,15 @@ function module:CreateOptions(index, unit)
 				disabled = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end,
 				order = 7,
 				args = {
-					EnablePortrait = LUI:NewToggle("Enable", "Whether you want to show the Portrait or not.", 1, oufdb.Portrait, "Enable", oufdefaults.Portrait, TogglePortrait),
-					PortraitWidth = LUI:NewWidth("Portrait", 2, oufdb.Portrait, nil, oufdefaults.Portrait, ApplyPortrait, nil, DisabledPortrait),
-					PortraitHeight = LUI:NewHeight("Portrait", 3, oufdb.Portrait, nil, oufdefaults.Portrait, ApplyPortrait, nil, DisabledPortrait),
-					PortraitX = LUI:NewPosX("Portrait", 4, oufdb.Portrait, "", oufdefaults.Portrait, ApplyPortrait, nil, DisabledPortrait),
-					PortraitY = LUI:NewPosY("Portrait", 5, oufdb.Portrait, "", oufdefaults.Portrait, ApplyPortrait, nil, DisabledPortrait),
+					Enable = LUI:NewToggle("Enable", "Whether you want to show the Portrait or not.", 1, oufdb.Portrait, "Enable", oufdefaults.Portrait, TogglePortrait),
+					Width = LUI:NewWidth("Portrait", 2, oufdb.Portrait, nil, oufdefaults.Portrait, ApplyPortrait, nil, DisabledPortrait),
+					Height = LUI:NewHeight("Portrait", 3, oufdb.Portrait, nil, oufdefaults.Portrait, ApplyPortrait, nil, DisabledPortrait),
+					X = LUI:NewPosX("Portrait", 4, oufdb.Portrait, "", oufdefaults.Portrait, ApplyPortrait, nil, DisabledPortrait),
+					Y = LUI:NewPosY("Portrait", 5, oufdb.Portrait, "", oufdefaults.Portrait, ApplyPortrait, nil, DisabledPortrait),
+					Alpha = LUI:NewSlider("Alpha", "Choose the Alpha for your Portrait.", 6, oufdb.Portrait, "Alpha", oufdefaults.Portrait, 0, 1, 0.05, ApplyPortrait, nil, DisabledPortrait),
 				},
 			},
-			Icons = (unit ~= "Arena" and unit ~= "ArenaTarget" and unit ~= "ArenaPet") and {
+			Icons = (oufdb.Icons) and {
 				name = "Icons",
 				type = "group",
 				disabled = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end,
@@ -1055,7 +1092,7 @@ function module:CreateOptions(index, unit)
 					Leader = (unit ~= "Boss" and unit ~= "PartyPet" and unit ~= "PartyTarget" and unit ~= "MaintankTarget" and unit ~= "MaintankToT") and module:CreateIconOptions(unit, 2, "Leader") or nil,
 					LFDRole = (unit ~= "Boss" and unit ~= "PartyPet" and unit ~= "PartyTarget" and unit ~= "MaintankTarget" and unit ~= "MaintankToT") and module:CreateIconOptions(unit, 3, "Role") or nil,
 					Raid = module:CreateIconOptions(unit, 4, "Raid"),
-					PvP = (unit ~= "Boss" and unit ~= "PartyPet" and unit ~= "PartyTarget" and unit ~= "MaintankTarget" and unit ~= "MaintankToT") and module:CreateIconOptions(unit, 5, "PvP") or nil,
+					PvP = (unit ~= "Boss" and unit ~= "PartyPet" and unit ~= "PartyTarget" and unit ~= "MaintankTarget" and unit ~= "MaintankToT" and unit ~= "Raid") and module:CreateIconOptions(unit, 5, "PvP") or nil,
 				},
 			} or nil,
 		},

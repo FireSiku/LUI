@@ -6,6 +6,9 @@
 	Notes......: This module contains the functions and options for the import/export functions.
 ]]
 
+local _, ns = ...
+local oUF = ns.oUF or oUF
+
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local module = LUI:NewModule("oUF_ImportExport")
 local ACR = LibStub("AceConfigRegistry-3.0")
@@ -16,7 +19,7 @@ local importLayoutName
 
 local _, class = UnitClass("player")
 
-local units = {"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet"}
+local units = {"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "BossTarget", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet", "Raid"}
 
 local ufNamesList = {
 	Player = {"oUF_LUI_player"},
@@ -31,21 +34,24 @@ local ufNamesList = {
 	PartyTarget = {},
 	PartyPet = {},
 	Boss = {},
+	BossTarget ={},
 	Maintank = {},
 	MaintankTarget = {},
 	MaintankToT = {},
 	Arena = {},
 	ArenaTarget = {},
 	ArenaPet = {},
+	Raid = {},
 }
 
 do
 	local ufNamesPrefix = {
 		Party = "oUF_LUI_partyUnitButton",
-		PartyTarget = "oUF_LUI_PartyUnitButton",
-		PartyPet = "oUF_LUI_PartyUnitButton",
+		PartyTarget = "oUF_LUI_partyUnitButton",
+		PartyPet = "oUF_LUI_partyUnitButton",
 		Boss = "oUF_LUI_boss",
-		Maintank = "oUF_LUI_MaintankUnitButton",
+		BossTarget = "oUF_LUI_bosstarget",
+		Maintank = "oUF_LUI_maintankUnitButton",
 		MaintankTarget = "oUF_LUI_maintankUnitButton",
 		MaintankToT = "oUF_LUI_maintankUnitButton",
 		Arena = "oUF_LUI_arena",
@@ -63,6 +69,7 @@ do
 		PartyTarget = 5,
 		PartyPet = 5,
 		Boss = 4,
+		BossTarget = 4,
 		Maintank = 3,
 		MaintankTarget = 3,
 		MaintankToT = 3,
@@ -81,6 +88,18 @@ do
 			end
 		end
 	end
+	
+	for i = 1, 5 do
+		for j = 1, 5 do
+			table.insert(ufNamesList.Raid, "oUF_LUI_raid_25_"..i.."UnitButton"..j)
+		end
+	end
+	
+	for i = 1, 8 do
+		for j = 1, 5 do
+			table.insert(ufNamesList.Raid, "oUF_LUI_raid_40_"..i.."UnitButton"..j)
+		end
+	end
 end
 
 local iconNamesList = {
@@ -93,7 +112,7 @@ local iconNamesList = {
 	Raid = {"RaidIcon"},
 }
 
--- needed for secure copying of data, NO reference!
+-- needed for secure copying of data, NO reference, ALL values!
 local function CopyData(source, destination)
 	for k, v in pairs(source) do
 		if type(v) == "table" then
@@ -132,7 +151,7 @@ end
 local function ApplySettings(unit)
 	local ufNames = ufNamesList[unit]
 	
-	oUF_LUI.toggle(unit)
+	LUI:GetModule("oUF"):Toggle(unit)
 	
 	if db.oUF[unit].Enable == false then return end
 	
@@ -144,28 +163,32 @@ local function ApplySettings(unit)
 			frame:SetHeight(tonumber(db.oUF[unit].Height))
 			
 			-- bars
-			oUF_LUI.funcs.Health(frame, frame.__unit, db.oUF[unit])
-			oUF_LUI.funcs.Power(frame, frame.__unit, db.oUF[unit])
-			oUF_LUI.funcs.Full(frame, frame.__unit, db.oUF[unit])
-			oUF_LUI.funcs.FrameBackdrop(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF.funcs.Health(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF.funcs.Power(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF.funcs.Full(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF.funcs.FrameBackdrop(frame, frame.__unit, db.oUF[unit])
 			
 			-- texts
-			oUF_LUI.funcs.Info(frame, frame.__unit, db.oUF[unit])
+			if unit == "Raid" then
+				LUI.oUF.funcs.RaidInfo(frame, frame.__unit, db.oUF[unit])
+			else
+				LUI.oUF.funcs.Info(frame, frame.__unit, db.oUF[unit])
+			end
 			
-			oUF_LUI.funcs.HealthValue(frame, frame.__unit, db.oUF[unit])
-			oUF_LUI.funcs.HealthPercent(frame, frame.__unit, db.oUF[unit])
-			oUF_LUI.funcs.HealthMissing(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF.funcs.HealthValue(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF.funcs.HealthPercent(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF.funcs.HealthMissing(frame, frame.__unit, db.oUF[unit])
 			
-			oUF_LUI.funcs.PowerValue(frame, frame.__unit, db.oUF[unit])
-			oUF_LUI.funcs.PowerPercent(frame, frame.__unit, db.oUF[unit])
-			oUF_LUI.funcs.PowerMissing(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF.funcs.PowerValue(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF.funcs.PowerPercent(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF.funcs.PowerMissing(frame, frame.__unit, db.oUF[unit])
 			
 			-- icons
 			if db.oUF[unit].Icons then
 				for key, icons in pairs(iconNamesList) do
 					if db.oUF[unit].Icons[key] then
 						if db.oUF[unit].Icons[key].Enable then
-							oUF_LUI.funcs[icons[1]](frame, frame.__unit, db.oUF[unit])
+							LUI.oUF.funcs[icons[1]](frame, frame.__unit, db.oUF[unit])
 							frame:EnableElement(icons[1])
 							if icons[2] then frame:EnableElement(icons[2]) end
 						else
@@ -182,8 +205,8 @@ local function ApplySettings(unit)
 			-- player specific
 			if unit == "Player" then
 				-- exp/rep
-				oUF_LUI.funcs.Experience(frame, frame.__unit, db.oUF.XP_Rep)
-				oUF_LUI.funcs.Reputation(frame, frame.__unit, db.oUF.XP_Rep)
+				LUI.oUF.funcs.Experience(frame, frame.__unit, db.oUF.XP_Rep)
+				LUI.oUF.funcs.Reputation(frame, frame.__unit, db.oUF.XP_Rep)
 				
 				if db.oUF.XP_Rep.Experience.Enable then
 					frame.Experience:Show()
@@ -194,7 +217,7 @@ local function ApplySettings(unit)
 				end
 				
 				-- swing
-				oUF_LUI.funcs.Swing(frame, frame.__unit, db.oUF.Player)
+				LUI.oUF.funcs.Swing(frame, frame.__unit, db.oUF.Player)
 				if db.oUF[unit].Swing.Enable then
 					frame:EnableElement("Swing")
 				else
@@ -204,7 +227,7 @@ local function ApplySettings(unit)
 				
 				-- vengeance
 				if class == "WARRIOR" or class == "PALADIN" or class == "DRUID" or class == "DEATHKNIGHT" or class == "DEATH KNIGHT" then
-					oUF_LUI.funcs.Vengeance(frame, frame.__unit, db.oUF.Player)
+					LUI.oUF.funcs.Vengeance(frame, frame.__unit, db.oUF.Player)
 					if db.oUF[unit].Vengeance.Enable then
 						frame:EnableElement("Vengeance")
 					else
@@ -215,7 +238,7 @@ local function ApplySettings(unit)
 				
 				-- totems
 				if class == "SHAMAN" then
-					oUF_LUI.funcs.TotemBar(frame, frame.__unit, db.oUF.Player)
+					LUI.oUF.funcs.TotemBar(frame, frame.__unit, db.oUF.Player)
 					if db.oUF[unit].Totems.Enable then
 						frame:EnableElement("TotemBar")
 					else
@@ -226,7 +249,7 @@ local function ApplySettings(unit)
 				
 				-- runes
 				if class == "DEATHKNIGHT" or class == "DEATH KNIGHT" then
-					oUF_LUI.funcs.Runes(frame, frame.__unit, db.oUF.Player)
+					LUI.oUF.funcs.Runes(frame, frame.__unit, db.oUF.Player)
 					if db.oUF[unit].Runes.Enable then
 						frame:EnableElement("Runes")
 					else
@@ -237,7 +260,7 @@ local function ApplySettings(unit)
 				
 				-- holy power
 				if class == "PALADIN" then
-					oUF_LUI.funcs.HolyPower(frame, frame.__unit, db.oUF.Player)
+					LUI.oUF.funcs.HolyPower(frame, frame.__unit, db.oUF.Player)
 					if db.oUF[unit].HolyPower.Enable then
 						frame:EnableElement("HolyPower")
 					else
@@ -248,7 +271,7 @@ local function ApplySettings(unit)
 				
 				-- soul shards
 				if class == "WARLOCK" then
-					oUF_LUI.funcs.SoulShards(frame, frame.__unit, db.oUF.Player)
+					LUI.oUF.funcs.SoulShards(frame, frame.__unit, db.oUF.Player)
 					if db.oUF[unit].SoulShards.Enable then
 						frame:EnableElement("SoulShards")
 					else
@@ -259,7 +282,7 @@ local function ApplySettings(unit)
 				
 				-- druid eclipse
 				if class == "DRUID" then
-					oUF_LUI.funcs.EclipseBar(frame, frame.__unit, db.oUF.Player)
+					LUI.oUF.funcs.EclipseBar(frame, frame.__unit, db.oUF.Player)
 					if db.oUF[unit].Eclipse.Enable then
 						frame:EnableElement("EclipseBar")
 					else
@@ -270,7 +293,7 @@ local function ApplySettings(unit)
 				
 				-- druid mana bar
 				if class == "DRUID" then
-					oUF_LUI.funcs.DruidMana(frame, frame.__unit, db.oUF.Player)
+					LUI.oUF.funcs.DruidMana(frame, frame.__unit, db.oUF.Player)
 					if db.oUF[unit].DruidMana.Enable then
 						frame:EnableElement("DruidMana")
 					else
@@ -282,7 +305,7 @@ local function ApplySettings(unit)
 			
 			-- target specific
 			if unit == "Target" then
-				oUF_LUI.funcs.CPoints(frame, frame.__unit, db.oUF.Target)
+				LUI.oUF.funcs.CPoints(frame, frame.__unit, db.oUF.Target)
 				if db.oUF.Target.ComboPoints.Enable then
 					frame:EnableElement("CPoints")
 				else
@@ -293,16 +316,20 @@ local function ApplySettings(unit)
 			
 			-- portrait
 			if db.oUF[unit].Portrait and db.oUF[unit].Portrait.Enable then
-				oUF_LUI.funcs.Portrait(frame, frame.__unit, db.oUF[unit])
+				LUI.oUF.funcs.Portrait(frame, frame.__unit, db.oUF[unit])
 				frame:EnableElement("Portrait")
+				frame.Portrait:Show()
 			else
-				if frame.Portrait then frame:DisableElement("Portrait") end
+				if frame.Portrait then
+					frame:DisableElement("Portrait")
+					frame.Portrait:Hide()
+				end
 			end
 			
 			-- alt power
 			if unit == "Player" or unit == "Pet" then
 				if db.oUF.Player.AltPower.Enable then
-					oUF_LUI.funcs.AlternatePower(frame, frame.__unit, db.oUF[unit])
+					LUI.oUF.funcs.AlternatePower(frame, frame.__unit, db.oUF[unit])
 					frame:EnableElement("AltPowerBar")
 					frame.AltPowerBar.SetPosition()
 				else
@@ -316,13 +343,13 @@ local function ApplySettings(unit)
 			-- auras
 			if db.oUF[unit].Auras then
 				if db.oUF[unit].Auras.buffs_enable then
-					oUF_LUI.funcs.Buffs(frame, frame.__unit, db.oUF[unit])
+					LUI.oUF.funcs.Buffs(frame, frame.__unit, db.oUF[unit])
 				else
 					if frame.Buffs then frame.Buffs:Hide() end
 				end
 				
 				if db.oUF[unit].Auras.debuffs_enable then
-					oUF_LUI.funcs.Debuffs(frame, frame.__unit, db.oUF[unit])
+					LUI.oUF.funcs.Debuffs(frame, frame.__unit, db.oUF[unit])
 				else
 					if frame.Debuffs then Frame.Debuffs:Hide() end
 				end
@@ -335,12 +362,12 @@ local function ApplySettings(unit)
 			end
 			
 			-- combat feedback text
-			if db.oUF[unit].Texts.Combat then oUF_LUI.funcs.CombatFeedbackText(frame, frame.__unit, db.oUF[unit]) end
+			if db.oUF[unit].Texts.Combat then LUI.oUF.funcs.CombatFeedbackText(frame, frame.__unit, db.oUF[unit]) end
 			
 			-- castbar
 			if db.oUF.Settings.Castbars and db.oUF[unit].Castbar then
 				if db.oUF[unit].Castbar.Enable then
-					oUF_LUI.funcs.Castbar(frame, frame.__unit, db.oUF[unit])
+					LUI.oUF.funcs.Castbar(frame, frame.__unit, db.oUF[unit])
 					frame:EnableElement("Castbar")
 				else
 					frame:DisableElement("Castbar")
@@ -349,7 +376,7 @@ local function ApplySettings(unit)
 			
 			-- aggro glow
 			if db.oUF[unit].Border.Aggro then
-				oUF_LUI.funcs.AggroGlow(frame, frame.__unit, db.oUF[unit])
+				LUI.oUF.funcs.AggroGlow(frame, frame.__unit, db.oUF[unit])
 				frame:EnableElement("Threat")
 			else
 				frame:DisableElement("Threat")
@@ -358,20 +385,22 @@ local function ApplySettings(unit)
 			-- heal prediction
 			if db.oUF[unit].HealPrediction then
 				if db.oUF[unit].HealPrediction.Enable then
-					oUF_LUI.funcs.HealPrediction(frame, frame.__unit, db.oUF[unit])
+					LUI.oUF.funcs.HealPrediction(frame, frame.__unit, db.oUF[unit])
 					frame:EnableElement("HealPrediction")
 				else
 					frame:DisableElement("HealPrediction")
 				end
 			end
 			
-			oUF_LUI.funcs.V2Textures(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF.funcs.V2Textures(frame, frame.__unit, db.oUF[unit])
 			if unit == "ToT" or unit == "ToToT" or unit == "FocusTarget" or unit == "Focus" then
 				if db.oUF.Settings.show_v2_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
 			elseif unit == "PartyTarget" then
 				if db.oUF.Settings.show_v2_party_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
 			elseif unit == "ArenaTarget" then
 				if db.oUF.Settings.show_v2_arena_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
+			elseif unit == "BossTarget" then
+				if db.oUF.Settings.show_v2_boss_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
 			end
 			
 			-- fader
@@ -393,7 +422,7 @@ function module:LoadLayout(layout)
 	CopyData(LUI_Layouts[layout], db.oUF)
 	
 	for _, unit in pairs(units) do
-		oUF_LUI.toggle(unit)
+		LUI:GetModule("oUF"):Toggle(unit)
 		ApplySettings(unit)
 	end
 	
@@ -422,6 +451,7 @@ function module:SaveLayout(layout)
 	
 	CopyData(db.oUF, LUI_Layouts[layout])
 	CleanupData(LUI_Layouts[layout], LUI.defaults.profile.oUF)
+	LUI_Layouts[layout].version = version
 	db.oUF.layout = layout
 	ACR:NotifyChange("LUI")
 end
@@ -648,6 +678,8 @@ function module:LoadOptions()
 					type = "group",
 					order = 1,
 					args = {
+						desc = LUI:NewDesc("This is the Layout import/export page. Here you can import and export oUF Layouts as you like.\nAttention! Sometimes importing a layout causes some lag, espacially if the layout differs strongly from the default LUI layout.", 1, "full"),
+						empty = LUI:NewEmpty(2),
 						SetLayout = {
 							name = "Layout",
 							desc = "Choose any Layout you prefer Most.",
@@ -678,16 +710,16 @@ function module:LoadOptions()
 									end
 								end
 							end,
-							order = 1,
+							order = 3,
 						},
-						empty = LUI:NewEmpty(2),
-						SaveLayout = LUI:NewExecute("Save Layout", "Save your current unitframe settings as a new layout.", 3, function() StaticPopup_Show("SAVE_LAYOUT") end),
-						DeleteLayout = LUI:NewExecute("Delete Layout", "Delete the active layout.", 4, function() StaticPopup_Show("DELETE_LAYOUT") end),
-						empty2 = LUI:NewEmpty(5),
-						ImportLayout = LUI:NewExecute("Import Layout", "Import a new layout into LUI", 6, function() StaticPopup_Show("IMPORT_LAYOUT") end),
+						empty = LUI:NewEmpty(4),
+						SaveLayout = LUI:NewExecute("Save Layout", "Save your current unitframe settings as a new layout.", 5, function() StaticPopup_Show("SAVE_LAYOUT") end),
+						DeleteLayout = LUI:NewExecute("Delete Layout", "Delete the active layout.", 6, function() StaticPopup_Show("DELETE_LAYOUT") end),
+						empty2 = LUI:NewEmpty(7),
+						ImportLayout = LUI:NewExecute("Import Layout", "Import a new layout into LUI", 8, function() StaticPopup_Show("IMPORT_LAYOUT") end),
 						ExportLayout = LUI:NewExecute("Export Layout", "Export the current layout so you can share it with others.", 7, function() StaticPopup_Show("EXPORT_LAYOUT") end),
-						empty3 = LUI:NewEmpty(8),
-						ResetLayouts = LUI:NewExecute("Reset Layouts", "Reset all layouts back to defaults", 9, function() StaticPopup_Show("RESET_LAYOUTS") end),
+						empty3 = LUI:NewEmpty(9),
+						ResetLayouts = LUI:NewExecute("Reset Layouts", "Reset all layouts back to defaults", 10, function() StaticPopup_Show("RESET_LAYOUTS") end),
 					},
 				},
 			},
