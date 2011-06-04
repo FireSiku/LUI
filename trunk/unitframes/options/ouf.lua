@@ -1182,10 +1182,14 @@ local toggleFuncs = {
 				end
 			end
 			
-			UnregisterStateDriver(oUF_LUI_raid_25, "visibility")
-			UnregisterStateDriver(oUF_LUI_raid_40, "visibility")
-			oUF_LUI_raid_25:Hide()
-			oUF_LUI_raid_40:Hide()
+			if oUF_LUI_raid_25 then
+				UnregisterStateDriver(oUF_LUI_raid_25, "visibility")
+				oUF_LUI_raid_25:Hide()
+			end
+			if oUF_LUI_raid_40 then
+				UnregisterStateDriver(oUF_LUI_raid_40, "visibility")
+				oUF_LUI_raid_40:Hide()
+			end
 		end
 	end,
 }
