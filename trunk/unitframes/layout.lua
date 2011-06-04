@@ -506,10 +506,10 @@ local PostCreateAura = function(element, button)
 	button.backdrop:SetPoint("TOPLEFT", button, "TOPLEFT", -3.5, 3)
 	button.backdrop:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 4, -3.5)
 	button.backdrop:SetFrameStrata("BACKGROUND")
-	button.backdrop:SetBackdrop {
+	button.backdrop:SetBackdrop({
 		edgeFile = glowTex, edgeSize = 5,
 		insets = {left = 3, right = 3, top = 3, bottom = 3}
-	}
+	})
 	button.backdrop:SetBackdropColor(0, 0, 0, 0)
 	button.backdrop:SetBackdropBorderColor(0, 0, 0)
 	button.count:SetPoint("BOTTOMRIGHT", -1, 2)
@@ -622,7 +622,7 @@ local ThreatOverride = function(self, event, unit)
 	end
 end
 
-local UpdateCPoints = function(self, event, unit)
+local CPointsOverride = function(self, event, unit)
 	if(unit == 'pet') then return end
 
 	local cp
@@ -648,7 +648,7 @@ local UpdateCPoints = function(self, event, unit)
 	end
 end
 
-local UpdateShards = function(self, event, unit, powerType)
+local SoulShardsOverride = function(self, event, unit, powerType)
 	if(self.unit ~= unit or (powerType and powerType ~= 'SOUL_SHARDS')) then return end
 	
 	local num = UnitPower(unit, SPELL_POWER_SOUL_SHARDS)
@@ -661,7 +661,7 @@ local UpdateShards = function(self, event, unit, powerType)
 	end
 end
 
-local UpdateHoly = function(self, event, unit, powerType)
+local HolyPowerOverride = function(self, event, unit, powerType)
 	if(self.unit ~= unit or (powerType and powerType ~= 'HOLY_POWER')) then return end
 	
 	local num = UnitPower(unit, SPELL_POWER_HOLY_POWER)
@@ -964,7 +964,7 @@ oUF_LUI.funcs = {
 
 	--texts
 	Info = function(self, unit, oufdb)
-		if not self.Info then self.Info = SetFontString(self.Health, LSM:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline) end
+		if not self.Info then self.Info = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline) end
 		self.Info:SetFont(LSM:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline)
 		self.Info:SetTextColor(oufdb.Texts.Name.IndividualColor.r, oufdb.Texts.Name.IndividualColor.g, oufdb.Texts.Name.IndividualColor.b)
 		self.Info:ClearAllPoints()
@@ -983,7 +983,7 @@ oUF_LUI.funcs = {
 	end,
 	RaidInfo = function(self, unit, oufdb)
 		if not self.Info then
-			self.Info = SetFontString(self.Health, LSM:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline)
+			self.Info = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline)
 			self.Info:SetPoint("CENTER", self, "CENTER", 0, 0)
 		end
 		self.Info:SetTextColor(oufdb.Texts.Name.IndividualColor.r, oufdb.Texts.Name.IndividualColor.g, oufdb.Texts.Name.IndividualColor.b)
@@ -1003,7 +1003,7 @@ oUF_LUI.funcs = {
 	end,
 	
 	HealthValue = function(self, unit, oufdb)
-		if not self.Health.value then self.Health.value = SetFontString(self.Health, LSM:Fetch("font", oufdb.Texts.Health.Font), tonumber(oufdb.Texts.Health.Size), oufdb.Texts.Health.Outline) end
+		if not self.Health.value then self.Health.value = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.Health.Font), tonumber(oufdb.Texts.Health.Size), oufdb.Texts.Health.Outline) end
 		self.Health.value:SetFont(LSM:Fetch("font", oufdb.Texts.Health.Font), tonumber(oufdb.Texts.Health.Size), oufdb.Texts.Health.Outline)
 		self.Health.value:ClearAllPoints()
 		self.Health.value:SetPoint(oufdb.Texts.Health.Point, self, oufdb.Texts.Health.RelativePoint, tonumber(oufdb.Texts.Health.X), tonumber(oufdb.Texts.Health.Y))
@@ -1022,7 +1022,7 @@ oUF_LUI.funcs = {
 		self.Health.value.colorIndividual = oufdb.Texts.Health.IndividualColor
 	end,
 	HealthPercent = function(self, unit, oufdb)
-		if not self.Health.valuePercent then self.Health.valuePercent = SetFontString(self.Health, LSM:Fetch("font", oufdb.Texts.HealthPercent.Font), tonumber(oufdb.Texts.HealthPercent.Size), oufdb.Texts.HealthPercent.Outline) end
+		if not self.Health.valuePercent then self.Health.valuePercent = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.HealthPercent.Font), tonumber(oufdb.Texts.HealthPercent.Size), oufdb.Texts.HealthPercent.Outline) end
 		self.Health.valuePercent:SetFont(LSM:Fetch("font", oufdb.Texts.HealthPercent.Font), tonumber(oufdb.Texts.HealthPercent.Size), oufdb.Texts.HealthPercent.Outline)
 		self.Health.valuePercent:ClearAllPoints()
 		self.Health.valuePercent:SetPoint(oufdb.Texts.HealthPercent.Point, self, oufdb.Texts.HealthPercent.RelativePoint, tonumber(oufdb.Texts.HealthPercent.X), tonumber(oufdb.Texts.HealthPercent.Y))
@@ -1040,7 +1040,7 @@ oUF_LUI.funcs = {
 		self.Health.valuePercent.colorIndividual = oufdb.Texts.HealthPercent.IndividualColor
 	end,
 	HealthMissing = function(self, unit, oufdb)
-		if not self.Health.valueMissing then self.Health.valueMissing = SetFontString(self.Health, LSM:Fetch("font", oufdb.Texts.HealthMissing.Font), tonumber(oufdb.Texts.HealthMissing.Size), oufdb.Texts.HealthMissing.Outline) end
+		if not self.Health.valueMissing then self.Health.valueMissing = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.HealthMissing.Font), tonumber(oufdb.Texts.HealthMissing.Size), oufdb.Texts.HealthMissing.Outline) end
 		self.Health.valueMissing:SetFont(LSM:Fetch("font", oufdb.Texts.HealthMissing.Font), tonumber(oufdb.Texts.HealthMissing.Size), oufdb.Texts.HealthMissing.Outline)
 		self.Health.valueMissing:ClearAllPoints()
 		self.Health.valueMissing:SetPoint(oufdb.Texts.HealthMissing.Point, self, oufdb.Texts.HealthMissing.RelativePoint, tonumber(oufdb.Texts.HealthMissing.X), tonumber(oufdb.Texts.HealthMissing.Y))
@@ -1059,7 +1059,7 @@ oUF_LUI.funcs = {
 	end,
 
 	PowerValue = function(self, unit, oufdb)
-		if not self.Power.value then self.Power.value = SetFontString(self.Power, LSM:Fetch("font", oufdb.Texts.Power.Font), tonumber(oufdb.Texts.Power.Size), oufdb.Texts.Power.Outline) end
+		if not self.Power.value then self.Power.value = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.Power.Font), tonumber(oufdb.Texts.Power.Size), oufdb.Texts.Power.Outline) end
 		self.Power.value:SetFont(LSM:Fetch("font", oufdb.Texts.Power.Font), tonumber(oufdb.Texts.Power.Size), oufdb.Texts.Power.Outline)
 		self.Power.value:ClearAllPoints()
 		self.Power.value:SetPoint(oufdb.Texts.Power.Point, self, oufdb.Texts.Power.RelativePoint, tonumber(oufdb.Texts.Power.X), tonumber(oufdb.Texts.Power.Y))
@@ -1078,7 +1078,7 @@ oUF_LUI.funcs = {
 		self.Power.value.colorIndividual = oufdb.Texts.Power.IndividualColor
 	end,
 	PowerPercent = function(self, unit, oufdb)
-		if not self.Power.valuePercent then self.Power.valuePercent = SetFontString(self.Power, LSM:Fetch("font", oufdb.Texts.PowerPercent.Font), tonumber(oufdb.Texts.PowerPercent.Size), oufdb.Texts.PowerPercent.Outline) end
+		if not self.Power.valuePercent then self.Power.valuePercent = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.PowerPercent.Font), tonumber(oufdb.Texts.PowerPercent.Size), oufdb.Texts.PowerPercent.Outline) end
 		self.Power.valuePercent:SetFont(LSM:Fetch("font", oufdb.Texts.PowerPercent.Font), tonumber(oufdb.Texts.PowerPercent.Size), oufdb.Texts.PowerPercent.Outline)
 		self.Power.valuePercent:ClearAllPoints()
 		self.Power.valuePercent:SetPoint(oufdb.Texts.PowerPercent.Point, self, oufdb.Texts.PowerPercent.RelativePoint, tonumber(oufdb.Texts.PowerPercent.X), tonumber(oufdb.Texts.PowerPercent.Y))
@@ -1096,7 +1096,7 @@ oUF_LUI.funcs = {
 		self.Power.valuePercent.colorIndividual = oufdb.Texts.PowerPercent.IndividualColor
 	end,
 	PowerMissing = function(self, unit, oufdb)
-		if not self.Power.valueMissing then self.Power.valueMissing = SetFontString(self.Power, LSM:Fetch("font", oufdb.Texts.PowerMissing.Font), tonumber(oufdb.Texts.PowerMissing.Size), oufdb.Texts.PowerMissing.Outline) end
+		if not self.Power.valueMissing then self.Power.valueMissing = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.PowerMissing.Font), tonumber(oufdb.Texts.PowerMissing.Size), oufdb.Texts.PowerMissing.Outline) end
 		self.Power.valueMissing:SetFont(LSM:Fetch("font", oufdb.Texts.PowerMissing.Font), tonumber(oufdb.Texts.PowerMissing.Size), oufdb.Texts.PowerMissing.Outline)
 		self.Power.valueMissing:ClearAllPoints()
 		self.Power.valueMissing:SetPoint(oufdb.Texts.PowerMissing.Point, self, oufdb.Texts.PowerMissing.RelativePoint, tonumber(oufdb.Texts.PowerMissing.X), tonumber(oufdb.Texts.PowerMissing.Y))
@@ -1118,8 +1118,8 @@ oUF_LUI.funcs = {
 	-- icons
 	Leader = function(self, unit, oufdb)
 		if not self.Leader then
-			self.Leader = self.Health:CreateTexture(nil, "OVERLAY")
-			self.Assistant = self.Health:CreateTexture(nil, "OVERLAY")
+			self.Leader = self.Overlay:CreateTexture(nil, "OVERLAY")
+			self.Assistant = self.Overlay:CreateTexture(nil, "OVERLAY")
 		end
 		
 		self.Leader:SetHeight(oufdb.Icons.Leader.Size)
@@ -1133,7 +1133,7 @@ oUF_LUI.funcs = {
 		self.Assistant:SetPoint(oufdb.Icons.Leader.Point, self, oufdb.Icons.Leader.Point, tonumber(oufdb.Icons.Leader.X), tonumber(oufdb.Icons.Leader.Y))
 	end,
 	MasterLooter = function(self, unit, oufdb)
-		if not self.MasterLooter then self.MasterLooter = self.Health:CreateTexture(nil, "OVERLAY") end
+		if not self.MasterLooter then self.MasterLooter = self.Overlay:CreateTexture(nil, "OVERLAY") end
 		
 		self.MasterLooter:SetHeight(oufdb.Icons.Lootmaster.Size)
 		self.MasterLooter:SetWidth(oufdb.Icons.Lootmaster.Size)
@@ -1141,7 +1141,10 @@ oUF_LUI.funcs = {
 		self.MasterLooter:SetPoint(oufdb.Icons.Lootmaster.Point, self, oufdb.Icons.Lootmaster.Point, tonumber(oufdb.Icons.Lootmaster.X), tonumber(oufdb.Icons.Lootmaster.Y))
 	end,
 	RaidIcon = function(self, unit, oufdb)
-		if not self.RaidIcon then self.RaidIcon = self.Health:CreateTexture(nil, "OVERLAY") end
+		if not self.RaidIcon then
+			self.RaidIcon = self.Overlay:CreateTexture(nil, "OVERLAY")
+			self.RaidIcon:SetTexture("Interface\\AddOns\\LUI\\media\\textures\\icons\\raidicons.blp")
+		end
 		
 		self.RaidIcon:SetHeight(oufdb.Icons.Raid.Size)
 		self.RaidIcon:SetWidth(oufdb.Icons.Raid.Size)
@@ -1149,7 +1152,7 @@ oUF_LUI.funcs = {
 		self.RaidIcon:SetPoint(oufdb.Icons.Raid.Point, self, oufdb.Icons.Raid.Point, tonumber(oufdb.Icons.Raid.X), tonumber(oufdb.Icons.Raid.Y))
 	end,
 	LFDRole = function(self, unit, oufdb)
-		if not self.LFDRole then self.LFDRole = self.Health:CreateTexture(nil, "OVERLAY") end
+		if not self.LFDRole then self.LFDRole = self.Overlay:CreateTexture(nil, "OVERLAY") end
 		
 		self.LFDRole:SetHeight(oufdb.Icons.Role.Size)
 		self.LFDRole:SetWidth(oufdb.Icons.Role.Size)
@@ -1158,9 +1161,9 @@ oUF_LUI.funcs = {
 	end,
 	PvP = function(self, unit, oufdb)
 		if not self.PvP then
-			self.PvP = self.Health:CreateTexture(nil, "OVERLAY")
+			self.PvP = self.Overlay:CreateTexture(nil, "OVERLAY")
 			if unit == "player" then
-				self.PvP.Timer = SetFontString(self.Health, LSM:Fetch("font", oufdb.Texts.PvP.Font), oufdb.Texts.PvP.Size, oufdb.Texts.PvP.Outline)
+				self.PvP.Timer = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.PvP.Font), oufdb.Texts.PvP.Size, oufdb.Texts.PvP.Outline)
 				self.Health:HookScript("OnUpdate", function(_, elapsed)
 					if UnitIsPVP(unit) and oufdb.Icons.PvP.Enable and oufdb.Texts.PvP.Enable then
 						if (GetPVPTimer() == 301000 or GetPVPTimer() == -1) then
@@ -1199,7 +1202,7 @@ oUF_LUI.funcs = {
 		end
 	end,
 	Resting = function(self, unit, oufdb)
-		if not self.Resting then self.Resting = self.Health:CreateTexture(nil, "OVERLAY") end
+		if not self.Resting then self.Resting = self.Overlay:CreateTexture(nil, "OVERLAY") end
 		
 		self.Resting:SetHeight(oufdb.Icons.Resting.Size)
 		self.Resting:SetWidth(oufdb.Icons.Resting.Size)
@@ -1465,10 +1468,10 @@ oUF_LUI.funcs = {
 			self.TotemBar.FrameBackdrop:SetPoint("TOPLEFT", self.TotemBar, "TOPLEFT", -3.5, 3)
 			self.TotemBar.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.TotemBar, "BOTTOMRIGHT", 3.5, -3)
 			self.TotemBar.FrameBackdrop:SetFrameStrata("BACKGROUND")
-			self.TotemBar.FrameBackdrop:SetBackdrop {
+			self.TotemBar.FrameBackdrop:SetBackdrop({
 				edgeFile = glowTex, edgeSize = 5,
 				insets = {left = 3, right = 3, top = 3, bottom = 3}
-			}
+			})
 			self.TotemBar.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
 			self.TotemBar.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
 		end
@@ -1510,10 +1513,10 @@ oUF_LUI.funcs = {
 			self.Runes.FrameBackdrop:SetPoint("TOPLEFT", self.Runes, "TOPLEFT", -3.5, 3)
 			self.Runes.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.Runes, "BOTTOMRIGHT", 3.5, -3)
 			self.Runes.FrameBackdrop:SetFrameStrata("BACKGROUND")
-			self.Runes.FrameBackdrop:SetBackdrop {
+			self.Runes.FrameBackdrop:SetBackdrop({
 				edgeFile = glowTex, edgeSize = 5,
 				insets = {left = 3, right = 3, top = 3, bottom = 3}
-			}
+			})
 			self.Runes.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
 			self.Runes.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
 		end
@@ -1557,14 +1560,14 @@ oUF_LUI.funcs = {
 			self.HolyPower.FrameBackdrop:SetPoint("TOPLEFT", self.HolyPower, "TOPLEFT", -3.5, 3)
 			self.HolyPower.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.HolyPower, "BOTTOMRIGHT", 3.5, -3)
 			self.HolyPower.FrameBackdrop:SetFrameStrata("BACKGROUND")
-			self.HolyPower.FrameBackdrop:SetBackdrop {
+			self.HolyPower.FrameBackdrop:SetBackdrop({
 				edgeFile = glowTex, edgeSize = 5,
 				insets = {left = 3, right = 3, top = 3, bottom = 3}
-			}
+			})
 			self.HolyPower.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
 			self.HolyPower.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
 			
-			self.HolyPower.Override = UpdateHoly
+			self.HolyPower.Override = HolyPowerOverride
 		end
 		
 		local x = oufdb.HolyPower.Lock and 0 or oufdb.HolyPower.X
@@ -1604,14 +1607,14 @@ oUF_LUI.funcs = {
 			self.SoulShards.FrameBackdrop:SetPoint("TOPLEFT", self.SoulShards, "TOPLEFT", -3.5, 3)
 			self.SoulShards.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.SoulShards, "BOTTOMRIGHT", 3.5, -3)
 			self.SoulShards.FrameBackdrop:SetFrameStrata("BACKGROUND")
-			self.SoulShards.FrameBackdrop:SetBackdrop {
+			self.SoulShards.FrameBackdrop:SetBackdrop({
 				edgeFile = glowTex, edgeSize = 5,
 				insets = {left = 3, right = 3, top = 3, bottom = 3}
-			}
+			})
 			self.SoulShards.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
 			self.SoulShards.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
 			
-			self.SoulShards.Override = UpdateShards
+			self.SoulShards.Override = SoulShardsOverride
 		end
 	
 		local x = oufdb.SoulShards.Lock and 0 or oufdb.SoulShards.X
@@ -1793,14 +1796,14 @@ oUF_LUI.funcs = {
 			self.CPoints.FrameBackdrop:SetPoint("TOPLEFT", self.CPoints, "TOPLEFT", -3, 3)
 			self.CPoints.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.CPoints, "BOTTOMRIGHT", 3, -3)
 			self.CPoints.FrameBackdrop:SetFrameStrata("BACKGROUND")
-			self.CPoints.FrameBackdrop:SetBackdrop {
+			self.CPoints.FrameBackdrop:SetBackdrop({
 				edgeFile = glowTex, edgeSize = 4,
 				insets = {left = 3, right = 3, top = 3, bottom = 3}
-			}
+			})
 			self.CPoints.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
 			self.CPoints.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
 			
-			self.CPoints.Override = UpdateCPoints
+			self.CPoints.Override = CPointsOverride
 		end
 		
 		self.CPoints:ClearAllPoints()
@@ -3097,7 +3100,12 @@ local SetStyle = function(self, unit, isSingle)
 	------------------------------------------------------------------------
 	--	Texts
 	------------------------------------------------------------------------
-
+	
+	-- creating a frame as anchor for icons, texts etc
+	self.Overlay = CreateFrame("Frame", nil, self)
+	self.Overlay:SetFrameLevel(8)
+	self.Overlay:SetAllPoints(self.Health)
+	
 	if unit ~= "raid" then
 		funcs.Info(self, unit, oufdb)
 	else
