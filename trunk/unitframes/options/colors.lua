@@ -6,6 +6,9 @@
 	Rev Date...: 10/10/2010
 ]] 
 
+local _, ns = ...
+local oUF = ns.oUF or oUF
+
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local module = LUI:NewModule("oUF_Colors")
 
@@ -105,25 +108,25 @@ local defaults = {
 }
 
 function module:UpdateColors()
-	oUF.colors.smooth = oUF_LUI.colors.smooth or oUF.colors.smooth
+	oUF.colors.smooth = LUI.oUF.colors.smooth or oUF.colors.smooth
 	if oUF_LUI_target.CPoints then
 		for i=1, 5 do
-			oUF_LUI_target.CPoints[i]:SetStatusBarColor(unpack(oUF_LUI.colors.combopoints[i]))
+			oUF_LUI_target.CPoints[i]:SetStatusBarColor(unpack(LUI.oUF.colors.combopoints[i]))
 			if db.oUF.Target.ComboPoints.BackgroundColor.Enable == false then
 				local mu = db.oUF.Target.ComboPoints.Multiplier
-				local r, g, b = unpack(oUF_LUI.colors.combopoints[i])
+				local r, g, b = unpack(LUI.oUF.colors.combopoints[i])
 				oUF_LUI_target.CPoints[i].bg:SetVertexColor(r*mu, g*mu, b*mu)
 			end
 		end
 	end
 	if oUF_LUI_player.HolyPower then
 		for i=1, 3 do
-			oUF_LUI_player.HolyPower[i]:SetStatusBarColor(unpack(oUF_LUI.colors.holypowerbar[i]))
+			oUF_LUI_player.HolyPower[i]:SetStatusBarColor(unpack(LUI.oUF.colors.holypowerbar[i]))
 		end
 	end
 	if oUF_LUI_player.SoulShards then
 		for i=1, 3 do
-			oUF_LUI_player.SoulShards[i]:SetStatusBarColor(unpack(oUF_LUI.colors.soulshardbar[i]))
+			oUF_LUI_player.SoulShards[i]:SetStatusBarColor(unpack(LUI.oUF.colors.soulshardbar[i]))
 		end
 	end
 	for k, obj in pairs(oUF.objects) do
