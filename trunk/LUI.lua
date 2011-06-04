@@ -6,12 +6,17 @@
 	Author..: Louí [EU-Das Syndikat] <In Fidem>
 ]] 
 
+local _, ns = ...
+oUF = ns.oUF or oUF
+
 local AceAddon = LibStub("AceAddon-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 LUI = AceAddon:NewAddon("LUI", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceSerializer-3.0")
 local LUIHook = LUI:NewModule("LUIHook", "AceHook-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+
+LUI.oUF = {}
 
 -- Very bad but needed global fileDirectory
 fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
@@ -25,6 +30,7 @@ LSM:Register("font", "Prototype", [[Interface\Addons\LUI\media\fonts\prototype.t
 LSM:Register("font", "neuropol", [[Interface\AddOns\LUI\media\fonts\neuropol.ttf]])
 LSM:Register("font", "AvantGarde_LT_Medium", [[Interface\AddOns\LUI\media\fonts\AvantGarde_LT_Medium.ttf]])
 LSM:Register("font", "Arial Narrow", [[Interface\AddOns\LUI\media\fonts\ARIALN.TTF]])
+LSM:Register("font", "Pepsi", [[Interface\AddOns\LUI\media\fonts\pepsi.ttf]])
 
 -- REGISTER BORDERS
 LSM:Register("border", "glow", [[Interface\Addons\LUI\media\textures\borders\glow.tga]])
@@ -37,6 +43,9 @@ LSM:Register("statusbar", "oUF LUI", [[Interface\AddOns\LUI\media\textures\statu
 LSM:Register("statusbar", "LUI_Gradient", [[Interface\AddOns\LUI\media\textures\statusbars\gradient32x32.tga]])
 LSM:Register("statusbar", "LUI_Minimalist", [[Interface\AddOns\LUI\media\textures\statusbars\Minimalist.tga]])
 LSM:Register("statusbar", "LUI_Ruben", [[Interface\AddOns\LUI\media\textures\statusbars\Ruben.tga]])
+LSM:Register("statusbar", "Smelly", [[Interface\AddOns\LUI\media\textures\statusbars\Smelly.tga]])
+LSM:Register("statusbar", "Neal", [[Interface\AddOns\LUI\media\textures\statusbars\Neal]])
+LSM:Register("statusbar", "RenaitreMinion", [[Interface\AddOns\LUI\media\textures\statusbars\RenaitreMinion.tga]])
 
 LUI_Media = {
 	["blank"] = [[Interface\AddOns\LUI\media\textures\blank]],

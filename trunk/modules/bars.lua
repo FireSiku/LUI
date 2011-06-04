@@ -2,8 +2,8 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: bars.lua
 	Description: Bars Module
-	Version....: 2.1
-	Rev Date...: 01/06/11 [dd/mm/yy]
+	Version....: 2.0
+	Rev Date...: 30/03/11 [dd/mm/yy]
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -1492,6 +1492,7 @@ function module:SetPetBar()
 	for i = 1, NUM_PET_ACTION_SLOTS do
 		button = _G["PetActionButton"..i]
 		button:ClearAllPoints()
+		button:SetParent(bar)
 		
 		if i == 1 then
 			button:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
@@ -1525,6 +1526,7 @@ function module:SetShapeshiftBar()
 		for i = 1, NUM_SHAPESHIFT_SLOTS do
 			button = _G["ShapeshiftButton"..i]
 			button:ClearAllPoints()
+			button:SetParent(bar)
 			
 			if i == 1 then
 				button:SetPoint("BOTTOMLEFT", bar, "BOTTOMLEFT", 0, 0)
@@ -1568,6 +1570,15 @@ function module:HideBlizzard()
 
 	VehicleMenuBar:SetScale(0.00001)
 	VehicleMenuBar:EnableMouse(false)
+	VehicleMenuBar:SetAlpha(0)
+	
+	ShapeshiftBarFrame:SetScale(0.00001)
+	ShapeshiftBarFrame:EnableMouse(false)
+	ShapeshiftBarFrame:SetAlpha(0)
+
+	PetActionBarFrame:SetScale(0.00001)
+	PetActionBarFrame:EnableMouse(false)
+	PetActionBarFrame:SetAlpha(0)
 
 	local FramesToHide = {
 		MainMenuBarArtFrame,
@@ -2093,7 +2104,7 @@ function module:LoadOptions()
 							disabled = function() return not isForteCooldownLoaded end,
 							order = 4,
 							args = {
-								Desc = LUI:NewDesc("This Feature will be only available if you are using ForteXorcist CooldownTimer.", 1),
+								Desc = LUI:NewDesc("This Feature will be only available if you are using FortExorcist CooldownTimer.", 1),
 								empty23223342211 = LUI:NewEmpty(2),
 								Animation = LUI:NewToggle("Enable Bar Texture Animation", "Whether you want to show the Bar Texture Animation or not.", 3, bardb.TopTexture, "Animation", bardefaults.TopTexture, ApplySettings, nil, DisabledTopBarTex),
 								AnimationHeight = LUI:NewHeight("Top Bar Texture Animation", 4, bardb.TopTexture, "AnimationHeight", bardefaults.TopTexture, ApplySettings, nil, DisabledTopBarTex),

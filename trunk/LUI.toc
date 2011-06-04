@@ -1,10 +1,14 @@
-## Interface: 40000
+## Interface: 40100
 ## Version: 3.0
 ## Title: LUI
 ## Author: Louí @EU-Das Syndikat
 ## Notes: User Interface Modification
 ## SavedVariables: LUIDB, LUIGold, LUI_Themes, LUI_Layouts
 ## SavedVariablesPerCharacter: LUICONFIG
+## X-Curse-Packaged-Version: r9
+## X-Curse-Project-Name: LUI Core
+## X-Curse-Project-ID: lui
+## X-Curse-Repository-ID: wow/lui/mainline
 
 #@no-lib-strip@
 libs\LibStub\LibStub.lua
@@ -28,13 +32,6 @@ libs\AceGUI-3.0\AceGUI-3.0.xml
 libs\AceConfig-3.0\AceConfig-3.0.xml
 libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
 libs\AceSerializer-3.0\AceSerializer-3.0.xml
-
-libs\AceOO-2.0\AceOO-2.0.lua
-libs\AceEvent-2.0\AceEvent-2.0.lua
-libs\AceDB-2.0\AceDB-2.0.lua
-libs\AceHook-2.1\AceHook-2.1.lua
-libs\AceAddon-2.0\AceAddon-2.0.lua
-
 libs\AceTimer-3.0\AceTimer-3.0.xml
 #@end-no-lib-strip@
 
