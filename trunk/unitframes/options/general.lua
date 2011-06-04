@@ -103,7 +103,7 @@ end
 -- needed for moving frames and some other things
 local ufMover = {
 	Party = "oUF_LUI_party",
-	Boss = "oUF_LUI_boss1",
+	Boss = "oUF_LUI_boss",
 	Maintank = "oUF_LUI_maintank",
 	Arena = "oUF_LUI_arena",
 	Player = "oUF_LUI_player",
@@ -561,7 +561,7 @@ function module:CreateOptions(index, unit)
 				local f = _G[ufNames[i]]
 				if f and parent then
 					f:ClearAllPoints()
-					f:SetPoint("TOP", parent, "BOTTOM", 0, - tonumber(Padding))
+					f:SetPoint("TOP", parent, "BOTTOM", 0, - tonumber(oufdb.Padding))
 					parent = f
 				end
 			end
@@ -579,6 +579,7 @@ function module:CreateOptions(index, unit)
 			end
 		end
 	else
+		-- "child" frames like arenatargets, partytargets etc
 		SetPosition = function()
 			for _, frame in pairs(ufNames) do
 				if _G[frame] then
@@ -594,7 +595,11 @@ function module:CreateOptions(index, unit)
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
 				_G[frame]:SetHeight(tonumber(oufdb.Height))
-				_G[frame]:SetWidth(tonumber(oufdb.Width))
+				if unit == "Raid" and frame:find("oUF_LUI_raid_40") then
+					_G[frame]:SetWidth((5 * tonumber(db.oUF.Raid.Height) - 3 * tonumber(db.oUF.Raid.GroupPadding)) / 8)
+				else
+					_G[frame]:SetWidth(tonumber(oufdb.Width))
+				end
 				if oufdb.Aura then
 					if oufdb.Aura.buffs_enable then _G[frame].Buffs:SetWidth(tonumber(oufdb.Width)) end
 					if oufdb.Aura.debuffs_enable then _G[frame].Debuffs:SetWidth(tonumber(oufdb.Width)) end
