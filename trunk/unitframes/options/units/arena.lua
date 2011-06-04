@@ -24,7 +24,9 @@ function module:ShowArenaFrames()
 		end
 	end
 	
-	oUF_LUI_arena:SetHeight(tonumber(db.oUF.Arena.Height) * 4 + tonumber(db.oUF.Arena.Padding) * 3)
+	local padding = oUF_LUI_arena:GetAttribute("Padding")
+	local height = oUF_LUI_arena:GetAttribute("Height")
+	oUF_LUI_arena:SetHeight(height * 5 + padding * 4)
 	
 	if not module:IsHooked(eventWatch, "OnEvent") then
 		module:HookScript(eventWatch, "OnEvent", "HideArenaFrames")

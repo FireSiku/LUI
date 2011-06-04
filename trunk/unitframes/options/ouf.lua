@@ -590,6 +590,8 @@ local toggleFuncs = {
 				oUF_LUI_boss:SetPoint(db.oUF.Arena.Point, UIParent, db.oUF.Arena.Point, tonumber(db.oUF.Arena.X), tonumber(db.oUF.Arena.Y))
 				oUF_LUI_boss:SetWidth(tonumber(db.oUF.Arena.Width))
 				oUF_LUI_boss:SetHeight(tonumber(db.oUF.Arena.Height))
+				oUF_LUI_boss:SetAttribute("Height", tonumber(db.oUF.Boss.Height))
+				oUF_LUI_boss:SetAttribute("Padding", tonumber(db.oUF.Boss.Padding))
 				oUF_LUI_boss:Show()
 				
 				for i = 1, MAX_BOSS_FRAMES do
@@ -602,15 +604,27 @@ local toggleFuncs = {
 						_G["oUF_LUI_boss"..i]:SetPoint('TOP', _G["oUF_LUI_boss"..i-1], 'BOTTOM', 0, -tonumber(db.oUF.Boss.Padding))
 					end
 				end
-				
-				oUF_LUI_boss:RegisterEvent("PLAYER_ENTERING_WORLD")
-				oUF_LUI_boss:RegisterEvent("ARENA_OPPONENT_UPDATE")
-				oUF_LUI_boss:GetScript("OnEvent")(oUF_LUI_boss)
 			else
-				local bossParent = CreateFrame("Frame", "oUF_LUI_boss", UIParent, "SecureHandlerBaseTemplate")
-				bossParent:SetPoint(db.oUF.Arena.Point, UIParent, db.oUF.Arena.Point, tonumber(db.oUF.Arena.X), tonumber(db.oUF.Arena.Y))
-				bossParent:SetWidth(tonumber(db.oUF.Arena.Width))
-				bossParent:SetHeight(tonumber(db.oUF.Arena.Height))
+				local bossParent = CreateFrame("Frame", "oUF_LUI_boss", UIParent)
+				bossParent:SetPoint(db.oUF.Boss.Point, UIParent, db.oUF.Boss.Point, tonumber(db.oUF.Boss.X), tonumber(db.oUF.Boss.Y))
+				bossParent:SetWidth(tonumber(db.oUF.Boss.Width))
+				bossParent:SetHeight(tonumber(db.oUF.Boss.Height))
+				bossParent:SetAttribute("Height", tonumber(db.oUF.Boss.Height))
+				bossParent:SetAttribute("Padding", tonumber(db.oUF.Boss.Padding))
+				
+				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
+				handler:SetFrameRef("boss", bossParent)
+				handler:SetAttribute("_onstate-boss", [[
+					if newstate == "0" or newstate == 0 then
+					else
+						local parent = self:GetFrameRef("boss")
+						local padding = parent:GetAttribute("Padding")
+						local height = parent:GetAttribute("Height")
+						parent:SetHeight(newstate * height + (newstate - 1) * padding)
+					end
+				]])
+				RegisterStateDriver(handler, "boss", "[@focus,exists] 4; [@boss4,exists] 4; [@boss3,exists] 3; [@boss2,exists] 2; [@boss1,exists] 1; 0")
+				bossParent.handler = handler
 				
 				local boss = {}
 				for i = 1, MAX_BOSS_FRAMES do
@@ -629,21 +643,6 @@ local toggleFuncs = {
 						bosstarget[i]:SetPoint(db.oUF.BossTarget.Point, boss[i], db.oUF.BossTarget.RelativePoint, tonumber(db.oUF.BossTarget.X), tonumber(db.oUF.BossTarget.Y))
 					end
 				end
-				
-				bossParent:RegisterEvent("PLAYER_ENTERING_WORLD")
-				bossParent:RegisterEvent("ARENA_OPPONENT_UPDATE")
-				bossParent:SetScript("OnEvent", function(self)
-					local c = 0
-					for i = 1, MAX_BOSS_FRAMES do
-						if boss[i]:IsShown() then c = i end
-					end
-					
-					if c > 0 then
-						local h = tonumber(db.oUF.Boss.Height) * c + tonumber(db.oUF.Boss.Padding) * (c-1)
-						local snippet = [[self:SetHeight(%d)]]
-						self:Execute(snippet:format(h))
-					end
-				end)
 			end
 		else
 			for i = 1, MAX_BOSS_FRAMES do
@@ -706,17 +705,11 @@ local toggleFuncs = {
 					end
 				end
 				
-				if not InCombatLockdown() then
-					if not db.oUF.Party.ShowInRaid then
-						local numraid = GetNumRaidMembers()
-						if numraid > 0 and (numraid > 5 or numraid ~= GetNumPartyMembers() + 1) then
-							oUF_LUI_party:Hide()
-						else
-							oUF_LUI_party:Show()
-						end
-					else
-						oUF_LUI_party:Show()
-					end
+				UnregisterStateDriver(party, "visibility")
+				if db.oUF.Party.ShowInRaid then
+					RegisterStateDriver(party, "visibility", "[group:party,group:raid] show; hide")
+				else
+					RegisterStateDriver(party, "visibility", "[group:party,nogroup:raid] show; hide")
 				end
 			else
 				local party = oUF:SpawnHeader("oUF_LUI_party", nil, nil,
@@ -744,29 +737,12 @@ local toggleFuncs = {
 				
 				party:SetPoint("LEFT", UIParent, "LEFT", tonumber(db.oUF.Party.X), tonumber(db.oUF.Party.Y))
 				
-				local partyToggle = CreateFrame("Frame")
-				partyToggle:RegisterEvent("PLAYER_LOGIN")
-				partyToggle:RegisterEvent("RAID_ROSTER_UPDATE")
-				partyToggle:RegisterEvent("PARTY_LEADER_CHANGED")
-				partyToggle:RegisterEvent("PARTY_MEMBERS_CHANGED")
-				partyToggle:SetScript("OnEvent", function(self)
-					if InCombatLockdown() then
-						self:RegisterEvent("PLAYER_REGEN_ENABLED")
-					else
-						self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-
-						if not db.oUF.Party.ShowInRaid then
-							local numraid = GetNumRaidMembers()
-							if numraid > 0 and (numraid > 5 or numraid ~= GetNumPartyMembers() + 1) then
-								party:Hide()
-							else
-								party:Show()
-							end
-						else
-							party:Show()
-						end
-					end
-				end)
+				if db.oUF.Party.ShowInRaid then
+					RegisterStateDriver(party, "visibility", "[group:party,group:raid] show; hide")
+				else
+					RegisterStateDriver(party, "visibility", "[group:party,nogroup:raid] show; hide")
+				end
+				party.StateRegistered = true
 			end
 		else
 			if oUF_LUI_party then
@@ -853,6 +829,9 @@ local toggleFuncs = {
 				oUF_LUI_arena:SetPoint(db.oUF.Arena.Point, UIParent, db.oUF.Arena.Point, tonumber(db.oUF.Arena.X), tonumber(db.oUF.Arena.Y))
 				oUF_LUI_arena:SetWidth(tonumber(db.oUF.Arena.Width))
 				oUF_LUI_arena:SetHeight(tonumber(db.oUF.Arena.Height))
+				oUF_LUI_arena:SetAttribute("Height", tonumber(db.oUF.Arena.Height))
+				oUF_LUI_arena:SetAttribute("Padding", tonumber(db.oUF.Arena.Padding))
+				oUF_LUI_arena:Show()
 				
 				for i = 1, 5 do
 					_G["oUF_LUI_arena"..i]:Enable()
@@ -864,18 +843,31 @@ local toggleFuncs = {
 						_G["oUF_LUI_arena"..i]:SetPoint("TOP", _G["oUF_LUI_arena"..i-1], "BOTTOM", 0, -tonumber(db.oUF.Arena.Padding))
 					end
 				end
-				
-				oUF_LUI_arena:Show()
-				oUF_LUI_arena:RegisterEvent("PLAYER_LOGIN")
-				oUF_LUI_arena:RegisterEvent("PLAYER_ENTERING_WORLD")
-				oUF_LUI_arena:RegisterEvent("ARENA_OPPONENT_UPDATE")
-				oUF_LUI_arena:GetScript("OnEvent")(oUF_LUI_arena)
 			else
+				-- oUF kills it, we save it!
+				Arena_LoadUI_ = ArenaLoadUI
+				
 				local arenaParent = CreateFrame("Frame", "oUF_LUI_arena", UIParent, "SecureHandlerBaseTemplate")
 				arenaParent:SetPoint(db.oUF.Arena.Point, UIParent, db.oUF.Arena.Point, tonumber(db.oUF.Arena.X), tonumber(db.oUF.Arena.Y))
 				arenaParent:SetWidth(tonumber(db.oUF.Arena.Width))
 				arenaParent:SetHeight(tonumber(db.oUF.Arena.Height))
+				arenaParent:SetAttribute("Height", tonumber(db.oUF.Arena.Height))
+				arenaParent:SetAttribute("Padding", tonumber(db.oUF.Arena.Padding))
 
+				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
+				handler:SetFrameRef("arena", arenaParent)
+				handler:SetAttribute("_onstate-arena", [[
+					if newstate == "0" or newstate == 0 then
+					else
+						local parent = self:GetFrameRef("arena")
+						local padding = parent:GetAttribute("Padding")
+						local height = parent:GetAttribute("Height")
+						parent:SetHeight(newstate * height + (newstate - 1) * padding)
+					end
+				]])
+				RegisterStateDriver(handler, "arena", "[@arena5,exists] 5; [@arena4,exists] 4; [@arena3,exists] 3; [@arena2,exists] 2; [@arena1,exists] 1; 0")
+				arenaParent.handler = handler
+				
 				local arena = {}
 
 				for i = 1, 5 do
@@ -902,26 +894,11 @@ local toggleFuncs = {
 						arenapet[i]:SetPoint(db.oUF.ArenaPet.Point, arena[i], db.oUF.ArenaPet.RelativePoint, tonumber(db.oUF.ArenaPet.X), tonumber(db.oUF.ArenaTarget.Y))
 					end
 				end
-
-				arenaParent:RegisterEvent("PLAYER_LOGIN")
-				arenaParent:RegisterEvent("PLAYER_ENTERING_WORLD")
-				arenaParent:RegisterEvent("ARENA_OPPONENT_UPDATE")
-				arenaParent:SetScript("OnEvent", function(self)
-					local c = 0
-					for i = 1, 5 do
-						if arena[i]:IsShown() then c = i end
-					end
-					
-					if c > 0 then
-						local h = tonumber(db.oUF.Arena.Height) * c + tonumber(db.oUF.Arena.Padding) * (c-1)
-						local snippet = [[self:SetHeight(%d)]]
-						self:Execute(snippet:format(h))
-					end
-				end)
 			end
 		else
 			if db.oUF.Arena.UseBlizzard == true then
 				SetCVar("showArenaEnemyFrames", 1)
+				if not ArenaEnemyFrame1 then Arena_LoadUI_() end
 			else
 				SetCVar("showArenaEnemyFrames", 0)
 			end
@@ -1123,18 +1100,15 @@ local toggleFuncs = {
 					end
 				end
 				
-				oUF_LUI_raid:RegisterEvent("PLAYER_LOGIN")
-				oUF_LUI_raid:RegisterEvent("RAID_ROSTER_UPDATE")
-				oUF_LUI_raid:RegisterEvent("PARTY_LEADER_CHANGED")
-				oUF_LUI_raid:RegisterEvent("PARTY_MEMBERS_CHANGED")
-				oUF_LUI_raid:GetScript("OnEvent")(oUF_LUI_raid)
+				RegisterStateDriver(oUF_LUI_raid_25, "visibility", "[@raid26,exists] hide; show")
+				RegisterStateDriver(oUF_LUI_raid_40, "visibility", "[@raid26,exists] show; hide")
 			else
 				local raidAnchor = CreateFrame("Frame", "oUF_LUI_raid", UIParent)
 				raidAnchor:SetWidth(tonumber(db.oUF.Raid.Width) * 5 + tonumber(db.oUF.Raid.GroupPadding) * 4)
 				raidAnchor:SetHeight(tonumber(db.oUF.Raid.Height) * 5 + tonumber(db.oUF.Raid.Padding) * 4)
 				raidAnchor:SetPoint(db.oUF.Raid.Point, UIParent, db.oUF.Raid.Point, tonumber(db.oUF.Raid.X), tonumber(db.oUF.Raid.Y))
 				
-				local raid25 = CreateFrame("Frame", "oUF_LUI_raid_25", raidAnchor)
+				local raid25 = CreateFrame("Frame", "oUF_LUI_raid_25", raidAnchor, "SecureHandlerStateTemplate")
 				raid25:SetWidth(1)
 				raid25:SetHeight(1)
 				raid25:SetPoint("TOPLEFT", raidAnchor, "TOPLEFT", 0, 0)
@@ -1161,7 +1135,7 @@ local toggleFuncs = {
 					end
 				end
 				
-				local raid40 = CreateFrame("Frame", "oUF_LUI_raid_40", raidAnchor)
+				local raid40 = CreateFrame("Frame", "oUF_LUI_raid_40", raidAnchor, "SecureHandlerStateTemplate")
 				raid40:SetWidth(1)
 				raid40:SetHeight(1)
 				raid40:SetPoint("TOPLEFT", raidAnchor, "TOPLEFT", 0, 0)
@@ -1190,28 +1164,8 @@ local toggleFuncs = {
 					end
 				end
 				
-				raidAnchor:RegisterEvent("PLAYER_LOGIN")
-				raidAnchor:RegisterEvent("RAID_ROSTER_UPDATE")
-				raidAnchor:RegisterEvent("PARTY_LEADER_CHANGED")
-				raidAnchor:RegisterEvent("PARTY_MEMBERS_CHANGED")
-				
-				raidAnchor:SetScript("OnEvent", function(self)
-					if InCombatLockdown() then
-						self:RegisterEvent("PLAYER_REGEN_ENABLED")
-					else
-						self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-						
-						local numraid = GetNumRaidMembers()
-						if numraid > 25 then
-							raid25:Hide()
-							raid40:Show()
-						else
-							raid40:Hide()
-							raid25:Show()
-						end
-					end
-				end)
-				raidAnchor:GetScript("OnEvent")(raidAnchor)
+				RegisterStateDriver(raid25, "visibility", "[@raid26,exists] hide; show")
+				RegisterStateDriver(raid40, "visibility", "[@raid26,exists] show; hide")
 			end
 		else
 			for i = 1, 5 do
@@ -1228,7 +1182,8 @@ local toggleFuncs = {
 				end
 			end
 			
-			oUF_LUI_raid:UnregisterAllEvents()
+			UnregisterStateDriver(oUF_LUI_raid_25, "visibility")
+			UnregisterStateDriver(oUF_LUI_raid_40, "visibility")
 			oUF_LUI_raid_25:Hide()
 			oUF_LUI_raid_40:Hide()
 		end
@@ -1521,6 +1476,5 @@ function module:OnInitialize()
 	LUI:RegisterOptions(self)
 end
 
--- the OnEnable function is in the layout.lua file
---function module:OnEnable()
---end
+function module:OnEnable()
+end

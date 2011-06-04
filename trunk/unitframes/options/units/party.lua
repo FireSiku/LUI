@@ -420,17 +420,11 @@ function module:LoadOptions()
 	local TogglePlayer = function() oUF_LUI_party:SetAttribute("showPlayer", db.oUF.Party.ShowPlayer) end
 	
 	local ToggleShowInRaid = function()
-		if InCombatLockdown() then return end
-		
-		if not db.oUF.Party.ShowInRaid then
-			local numraid = GetNumRaidMembers()
-			if numraid > 0 and (numraid > 5 or numraid ~= GetNumPartyMembers() + 1) then
-				oUF_LUI_party:Hide()
-		 	else
-				oUF_LUI_party:Show()
-		 	end
+		UnregisterStateDriver(oUF_LUI_party, "visibility")
+		if db.oUF.Party.ShowInRaid then
+			RegisterStateDriver(oUF_LUI_party, "visibility", "[group:party,group:raid] show; hide")
 		else
-		 	oUF_LUI_party:Show()
+			RegisterStateDriver(oUF_LUI_party, "visibility", "[group:party,nogroup:raid] show; hide")
 		end
 	end
 	

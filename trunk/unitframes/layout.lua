@@ -14,7 +14,9 @@ local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LUI_Fader = LUI:GetModule("Fader", true)
 local module = LUI:NewModule("oUF_Layout")
 
-local db
+local db, colors, funcs
+
+local nameCache = {}
 
 ------------------------------------------------------------------------
 --	Textures and Medias
@@ -54,8 +56,6 @@ local _, class = UnitClass("player")
 local standings = {"Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted"}
 local highlight = true
 local entering
-
-local colors
 
 local cornerAuras = {
 	WARRIOR = {
@@ -2652,7 +2652,361 @@ oUF_LUI.funcs = {
 		end
 	end
 }
-local funcs = oUF_LUI.funcs
+funcs = oUF_LUI.funcs
+
+------------------------------------------------------------------------
+--	Custom Tags
+------------------------------------------------------------------------
+
+oUF_LUI.colors = setmetatable({
+	power = setmetatable({
+		["POWER_TYPE_STEAM"] = {0.55, 0.57, 0.61},
+		["POWER_TYPE_PYRITE"] = {0.60, 0.09, 0.17},
+	}, {
+		__index = function(t, k)
+			return db.oUF.Colors.Power[k] or oUF.colors.power[k]
+		end
+	}),
+	class = setmetatable({}, {
+		__index = function(t, k)
+			return db.oUF.Colors.Class[k] or oUF.colors.class[k]
+		end
+	}),
+	leveldiff = setmetatable({}, {
+		__index = function(t, k)
+			local diffColor = GetQuestDifficultyColor(UnitLevel("target"))
+			return db.oUF.Colors.LevelDiff[k] or {diffColor.r, diffColor.g, diffColor.b}
+		end
+	}),
+	combattext = setmetatable({}, {
+		__index = function(t, k)
+			return db.oUF.Colors.CombatText[k]
+		end
+	}),
+	combopoints = setmetatable({}, {
+		__index = function(t, k)
+			return db.oUF.Colors.ComboPoints[k] or oUF.colors.combopoints[k]
+		end
+	}),
+	runes = setmetatable({}, {
+		__index = function(t, k)
+			return db.oUF.Colors.Runes[k] or oUF.colors.runes[k]
+		end
+	}),
+	totembar = setmetatable({}, {
+		__index = function(t, k)
+			return db.oUF.Colors.TotemBar[k] or oUF.colors.totembar[k]
+		end
+	}),
+	holypowerbar = setmetatable({}, {
+		__index = function(t, k)
+			return db.oUF.Colors.HolyPowerBar[k] or oUF.colors.holypowerbar[k]
+		end
+	}),
+	soulshardbar = setmetatable({}, {
+		__index = function(t, k)
+			return db.oUF.Colors.SoulShardBar[k] or oUF.colors.soulshardbar[k]
+		end
+	}),
+	eclipsebar = setmetatable({}, {
+		__index = function(t, k)
+			return db.oUF.Colors.EclipseBar[k]
+		end
+	}),
+}, {
+	__index = function(t, k)
+		return db.oUF.Colors[k and (k:gsub("^%a", strupper)) or k] or oUF.colors[k]
+	end
+})
+colors = oUF_LUI.colors
+
+------------------------------------------------------------------------
+--	Custom Tags
+------------------------------------------------------------------------
+
+-- frame for shortening the names for raidframes
+local testframe = CreateFrame("Frame")
+local teststring = testframe:CreateFontString(nil, "OVERLAY")
+
+local function ShortenName(name)
+	teststring:SetFont(LSM:Fetch("font", db.oUF.Raid.Texts.Name.Font), db.oUF.Raid.Texts.Name.Size, db.oUF.Raid.Texts.Name.Outline)
+	teststring:SetText(name)
+	
+	if not nameCache[name] then nameCache[name] = {} end
+	
+	local shortname = name
+	local maxwidth = tonumber(db.oUF.Raid.Width) * 0.9
+	
+	local l = name:len()
+	while maxwidth < teststring:GetStringWidth() do
+		shortname = shortname:sub(1, l)
+		teststring:SetText(shortname)
+		l = l - 1
+	end
+	
+	nameCache[name][1] = shortname
+	
+	maxwidth = ((tonumber(db.oUF.Raid.Width) * 5 - tonumber(db.oUF.Raid.GroupPadding) * 3) / 8) * 0.9
+	
+	while maxwidth < teststring:GetStringWidth() do
+		shortname = shortname:sub(1, l)
+		teststring:SetText(shortname)
+		l = l - 1
+	end
+	
+	nameCache[name][2] = shortname
+end
+	
+oUF_LUI.RecreateNameCache = function()
+	for name, shortened in pairs(nameCache) do
+		ShortenName(name)
+	end
+end
+	
+oUF.TagEvents["GetNameColor"] = "UNIT_HAPPINESS"
+if (not oUF.Tags["GetNameColor"]) then
+	oUF.Tags["GetNameColor"] = function(unit)
+		local reaction = UnitReaction(unit, "player")
+		local pClass, pToken = UnitClass(unit)
+		local pClass2, pToken2 = UnitPowerType(unit)
+		local color = colors.class[pToken]
+		local color2 = colors.power[pToken2]
+		local c = nil
+		
+		if (UnitIsPlayer(unit)) then
+			if color then
+				return string.format("|cff%02x%02x%02x", color[1] * 255, color[2] * 255, color[3] * 255)
+			else
+				if color2 then
+					return string.format("|cff%02x%02x%02x", color2[1] * 255, color2[2] * 255, color2[3] * 255)
+				else
+					return string.format("|cff%02x%02x%02x", 0.8 * 255, 0.8 * 255, 0.8 * 255)
+				end
+			end
+		else
+			if color2 then
+				return string.format("|cff%02x%02x%02x", color2[1] * 255, color2[2] * 255, color2[3] * 255)
+			else
+				if color then
+					return string.format("|cff%02x%02x%02x", color[1] * 255, color[2] * 255, color[3] * 255)
+				else
+					return string.format("|cff%02x%02x%02x", 0.8 * 255, 0.8 * 255, 0.8 * 255)
+				end
+			end
+		end
+	end
+end
+
+oUF.TagEvents["DiffColor"] = "UNIT_LEVEL"
+if (not oUF.Tags["DiffColor"]) then
+	oUF.Tags["DiffColor"] = function(unit)
+		local r, g, b
+		local level = UnitLevel(unit)
+		if (level < 1) then
+			r, g, b = unpack(colors.leveldiff[1])
+		else
+			local DiffColor = level - UnitLevel("player")
+			if (DiffColor >= 5) then
+				r, g, b = unpack(colors.leveldiff[1])
+			elseif (DiffColor >= 3) then
+				r, g, b = unpack(colors.leveldiff[2])
+			elseif (DiffColor >= -2) then
+				r, g, b = unpack(colors.leveldiff[3])
+			elseif (-DiffColor <= GetQuestGreenRange()) then
+				r, g, b = unpack(colors.leveldiff[4])
+			else
+				r, g, b = unpack(colors.leveldiff[5])
+			end
+		end
+		return string.format("|cff%02x%02x%02x", r * 255, g * 255, b * 255)
+	end
+end
+
+oUF.TagEvents["level2"] = "UNIT_LEVEL"
+if (not oUF.Tags["level2"]) then
+	oUF.Tags["level2"] = function(unit)
+		local l = UnitLevel(unit)
+		return (l > 0) and l
+	end
+end
+
+oUF.TagEvents["NameShort"] = "UNIT_NAME_UPDATE"
+if (not oUF.Tags["NameShort"]) then
+	oUF.Tags["NameShort"] = function(unit)
+		local name = UnitName(unit)
+		if name then
+			if unit == "pet" and name == "Unknown" then
+				return "Pet"
+			else
+				return utf8sub(name, 9, true)
+			end
+		end
+	end
+end
+
+oUF.TagEvents["NameMedium"] = "UNIT_NAME_UPDATE"
+if (not oUF.Tags["NameMedium"]) then
+	oUF.Tags["NameMedium"] = function(unit)
+		local name = UnitName(unit)
+		if name then
+			if unit == "pet" and name == "Unknown" then
+				return "Pet"
+			else
+				return utf8sub(name, 18, true)
+			end
+		end
+	end
+end
+
+oUF.TagEvents["NameLong"] = "UNIT_NAME_UPDATE"
+if (not oUF.Tags["NameLong"]) then
+	oUF.Tags["NameLong"] = function(unit)
+		local name = UnitName(unit)
+		if name then
+			if unit == "pet" and name == "Unknown" then
+				return "Pet"
+			else
+				return utf8sub(name, 36, true)
+			end
+		end
+	end
+end
+
+oUF.TagEvents["RaidName25"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
+if (not oUF.Tags["RaidName25"]) then
+	oUF.Tags["RaidName25"] = function(unit, realunit)
+		if db and db.oUF.Raid.Texts.Name.ShowDead then
+			if not UnitIsConnected(unit) then
+				return "|cffD7BEA5<Offline>|r"
+			elseif UnitIsGhost(unit) then
+				return "|cffD7BEA5<Ghost>|r"
+			elseif UnitIsDead(unit) then
+				return "|cffD7BEA5<Dead>|r"
+			elseif UnitIsAFK(unit) then
+				return "|cffD7BEA5<AFK>|r"
+			end
+		end
+		local name = (unit == "vehicle" and UnitName(realunit or unit)) or UnitName(unit)
+		if not nameCache[name] then ShortenName(name) end
+		return nameCache[name][1]
+	end
+end
+
+oUF.TagEvents["RaidName40"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
+if (not oUF.Tags["RaidName40"]) then
+	oUF.Tags["RaidName40"] = function(unit, realunit)
+		if db and db.oUF.Raid.Texts.Name.ShowDead then
+			if not UnitIsConnected(unit) then
+				return "|cffD7BEA5<Offline>|r"
+			elseif UnitIsGhost(unit) then
+				return "|cffD7BEA5<Ghost>|r"
+			elseif UnitIsDead(unit) then
+				return "|cffD7BEA5<Dead>|r"
+			elseif UnitIsAFK(unit) then
+				return "|cffD7BEA5<AFK>|r"
+			end
+		end
+		local name = (unit == "vehicle" and UnitName(realunit or unit)) or UnitName(unit)
+		if not nameCache[name] then ShortenName(name) end
+		return nameCache[name][2]
+	end
+end
+
+oUF.TagEvents["druidmana2"] = "UNIT_POWER UNIT_MAXPOWER"
+if (not oUF.Tags["druidmana2"]) then
+	oUF.Tags["druidmana2"] = function(unit)
+		if unit ~= "player" then return end
+		
+		if not db then return "" end
+		
+		local min, max = UnitPower("player", SPELL_POWER_MANA), UnitPowerMax("player", SPELL_POWER_MANA)
+		local perc = min/max*100
+		perc = format("%.1f", perc)
+		perc = perc.."%"
+		if db.oUF.Player.Texts.DruidMana.HideIfFullMana and min == max then return "" end
+		
+		local _, pType = UnitPowerType(unit)
+		local pClass, pToken = UnitClass(unit)
+		local color = colors.class[pToken]
+		local color2 = colors.power[pType]
+		
+		local r, g, b, text
+		
+		if db.oUF.Player.Texts.DruidMana.Color == "" then
+			r, g, b = color[1]*255,color[2]*255,color[3]*255
+		elseif db.oUF.Player.Texts.DruidMana.Color == "" then
+			r, g, b = color2[1]*255,color2[2]*255,color2[3]*255
+		else
+			r, g, b = db.oUF.Player.Texts.DruidMana.IndividualColor.r*255,db.oUF.Player.Texts.DruidMana.IndividualColor.g*255,db.oUF.Player.Texts.DruidMana.IndividualColor.b*255
+		end
+		
+		if db.oUF.Player.Texts.DruidMana.Format == "Absolut" then
+			text = format("%s/%s", min, max)
+		elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut & Percent" then
+			text = format("%s/%s | %s", min, max, perc)
+		elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut Short" then
+			text = format("%s/%s", ShortValue(min), ShortValue(max))
+		elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut Short & Percent" then
+			text = format("%s/%s | %s", ShortValue(min), ShortValue(max), perc)
+		elseif db.oUF.Player.Texts.DruidMana.Format == "Standard Short" then
+			text = ShortValue(min)
+		else
+			text = min
+		end
+		
+		return format("|cff%02x%02x%02x%s|r", r, g, b, text)
+	end
+end
+
+------------------------------------------------------------------------
+--	Custom Widget API
+------------------------------------------------------------------------
+
+local FormatName = function(self)
+	if not self or not self.Info then return end
+	
+	local info = self.Info
+	
+	local name
+	if info.Length == "Long" then
+		name = "[NameLong]"
+	elseif info.Length == "Short" then
+		name = "[NameShort]"
+	else
+		name = "[NameMedium]"
+	end
+	
+	if info.ColorNameByClass then name = "[GetNameColor]"..name.."|r" end
+	
+	local level = info.ColorLevelByDifficulty and "[DiffColor][level2]|r" or "[level2]"
+	
+	if info.ShowClassification then
+		level = info.ShortClassification and level.."[shortclassification]" or level.."[classification]"
+	end
+	
+	local race = "[race]"
+	
+	local class = info.ColorClassByClass and "[GetNameColor][smartclass]|r" or "[smartclass]"
+	
+	self:Tag(info, info.Format:gsub(" %+ ", " "):gsub("Name", name):gsub("Level", level):gsub("Race", race):gsub("Class", class))
+	self:UpdateAllElements()
+end
+oUF:RegisterMetaFunction("FormatName", FormatName)
+
+local FormatRaidName = function(self)
+	if not self or not self.Info then return end
+	
+	local info = self.Info
+	
+	local index = self:GetParent():GetParent():GetName() == "oUF_LUI_raid_25" and 1 or 2
+	local tag = self:GetParent():GetParent():GetName() == "oUF_LUI_raid_25" and "[RaidName25]" or "[RaidName40]"
+	
+	if info.ColorByClass then tag = "[GetNameColor]"..tag.."|r" end
+	
+	self:Tag(info, tag)
+	self:UpdateAllElements()
+end
+oUF:RegisterMetaFunction("FormatRaidName", FormatRaidName)
 
 ------------------------------------------------------------------------
 --	Style Func
@@ -2964,350 +3318,9 @@ function module:OnEnable()
 	
 	if db.oUF.Settings.Enable ~= true then return end
 	
-	-- installing color metatables
-	oUF_LUI.colors = setmetatable({
-		power = setmetatable({
-			["POWER_TYPE_STEAM"] = {0.55, 0.57, 0.61},
-			["POWER_TYPE_PYRITE"] = {0.60, 0.09, 0.17},
-		}, {
-			__index = function(t, k)
-				return db.oUF.Colors.Power[k] or oUF.colors.power[k]
-			end
-		}),
-		class = setmetatable({}, {
-			__index = function(t, k)
-				return db.oUF.Colors.Class[k] or oUF.colors.class[k]
-			end
-		}),
-		leveldiff = setmetatable({}, {
-			__index = function(t, k)
-				local diffColor = GetQuestDifficultyColor(UnitLevel("target"))
-				return db.oUF.Colors.LevelDiff[k] or {diffColor.r, diffColor.g, diffColor.b}
-			end
-		}),
-		combattext = setmetatable({}, {
-			__index = function(t, k)
-				return db.oUF.Colors.CombatText[k]
-			end
-		}),
-		combopoints = setmetatable({}, {
-			__index = function(t, k)
-				return db.oUF.Colors.ComboPoints[k] or oUF.colors.combopoints[k]
-			end
-		}),
-		runes = setmetatable({}, {
-			__index = function(t, k)
-				return db.oUF.Colors.Runes[k] or oUF.colors.runes[k]
-			end
-		}),
-		totembar = setmetatable({}, {
-			__index = function(t, k)
-				return db.oUF.Colors.TotemBar[k] or oUF.colors.totembar[k]
-			end
-		}),
-		holypowerbar = setmetatable({}, {
-			__index = function(t, k)
-				return db.oUF.Colors.HolyPowerBar[k] or oUF.colors.holypowerbar[k]
-			end
-		}),
-		soulshardbar = setmetatable({}, {
-			__index = function(t, k)
-				return db.oUF.Colors.SoulShardBar[k] or oUF.colors.soulshardbar[k]
-			end
-		}),
-		eclipsebar = setmetatable({}, {
-			__index = function(t, k)
-				return db.oUF.Colors.EclipseBar[k]
-			end
-		}),
-	}, {
-		__index = function(t, k)
-			return db.oUF.Colors[k and (k:gsub("^%a", strupper)) or k] or oUF.colors[k]
-		end
-	})
+	-- hmm
 	oUF.colors.smooth = oUF_LUI.colors.smooth or oUF.colors.smooth
 	
-	colors = oUF_LUI.colors
-
-	-- frame for shortening the names for raidframes
-	local testframe = CreateFrame("Frame")
-	local teststring = testframe:CreateFontString(nil, "OVERLAY")
-
-	local nameCache = {}
-
-	local function ShortenName(name)
-		nameCache[name] = {name, name} -- temp
-		--[[teststring:SetFont(LSM:Fetch("font", db.oUF.Raid.Texts.Name.Font), db.oUF.Raid.Texts.Name.Size, db.oUF.Raid.Texts.Name.Outline)
-		teststring:SetText(name)
-		
-		if not nameCache[name] then nameCache[name] = {} end
-		
-		local shortname = name
-		local maxwidth = tonumber(db.oUF.Raid.Width) * 0.9
-		
-		teststring:SetText(shortname)
-		while maxwidth < teststring:GetStringWidth() do
-			if shortname:len() == 0 then break end
-			
-			shortname = utf8sub(shortname, shortname:len()-1)
-			teststring:SetText(shortname)
-		end
-		
-		nameCache[name][1] = shortname
-		
-		maxwidth = ((tonumber(db.oUF.Raid.Width) * 5 - tonumber(db.oUF.Raid.GroupPadding) * 3) / 8) * 0.9
-		
-		while maxwidth < teststring:GetStringWidth() do
-			if shortname:len() == 0 then break end
-			
-			shortname = utf8sub(shortname, shortname:len()-1)
-			teststring:SetText(shortname)
-		end
-		
-		nameCache[name][2] = shortname]]
-	end
-
-	-- custom oUF Tags
-	oUF.TagEvents["GetNameColor"] = "UNIT_HAPPINESS"
-	if (not oUF.Tags["GetNameColor"]) then
-		oUF.Tags["GetNameColor"] = function(unit)
-			local reaction = UnitReaction(unit, "player")
-			local pClass, pToken = UnitClass(unit)
-			local pClass2, pToken2 = UnitPowerType(unit)
-			local color = colors.class[pToken]
-			local color2 = colors.power[pToken2]
-			local c = nil
-			
-			if (UnitIsPlayer(unit)) then
-				if color then
-					return string.format("|cff%02x%02x%02x", color[1] * 255, color[2] * 255, color[3] * 255)
-				else
-					if color2 then
-						return string.format("|cff%02x%02x%02x", color2[1] * 255, color2[2] * 255, color2[3] * 255)
-					else
-						return string.format("|cff%02x%02x%02x", 0.8 * 255, 0.8 * 255, 0.8 * 255)
-					end
-				end
-			else
-				if color2 then
-					return string.format("|cff%02x%02x%02x", color2[1] * 255, color2[2] * 255, color2[3] * 255)
-				else
-					if color then
-						return string.format("|cff%02x%02x%02x", color[1] * 255, color[2] * 255, color[3] * 255)
-					else
-						return string.format("|cff%02x%02x%02x", 0.8 * 255, 0.8 * 255, 0.8 * 255)
-					end
-				end
-			end
-		end
-	end
-
-	oUF.TagEvents["DiffColor"] = "UNIT_LEVEL"
-	if (not oUF.Tags["DiffColor"]) then
-		oUF.Tags["DiffColor"] = function(unit)
-			local r, g, b
-			local level = UnitLevel(unit)
-			if (level < 1) then
-				r, g, b = unpack(colors.leveldiff[1])
-			else
-				local DiffColor = level - UnitLevel("player")
-				if (DiffColor >= 5) then
-					r, g, b = unpack(colors.leveldiff[1])
-				elseif (DiffColor >= 3) then
-					r, g, b = unpack(colors.leveldiff[2])
-				elseif (DiffColor >= -2) then
-					r, g, b = unpack(colors.leveldiff[3])
-				elseif (-DiffColor <= GetQuestGreenRange()) then
-					r, g, b = unpack(colors.leveldiff[4])
-				else
-					r, g, b = unpack(colors.leveldiff[5])
-				end
-			end
-			return string.format("|cff%02x%02x%02x", r * 255, g * 255, b * 255)
-		end
-	end
-
-	oUF.TagEvents["level2"] = "UNIT_LEVEL"
-	if (not oUF.Tags["level2"]) then
-		oUF.Tags["level2"] = function(unit)
-			local l = UnitLevel(unit)
-			return (l > 0) and l
-		end
-	end
-
-	oUF.TagEvents["NameShort"] = "UNIT_NAME_UPDATE"
-	if (not oUF.Tags["NameShort"]) then
-		oUF.Tags["NameShort"] = function(unit)
-			local name = UnitName(unit)
-			if name then
-				if unit == "pet" and name == "Unknown" then
-					return "Pet"
-				else
-					return utf8sub(name, 9, true)
-				end
-			end
-		end
-	end
-
-	oUF.TagEvents["NameMedium"] = "UNIT_NAME_UPDATE"
-	if (not oUF.Tags["NameMedium"]) then
-		oUF.Tags["NameMedium"] = function(unit)
-			local name = UnitName(unit)
-			if name then
-				if unit == "pet" and name == "Unknown" then
-					return "Pet"
-				else
-					return utf8sub(name, 18, true)
-				end
-			end
-		end
-	end
-
-	oUF.TagEvents["NameLong"] = "UNIT_NAME_UPDATE"
-	if (not oUF.Tags["NameLong"]) then
-		oUF.Tags["NameLong"] = function(unit)
-			local name = UnitName(unit)
-			if name then
-				if unit == "pet" and name == "Unknown" then
-					return "Pet"
-				else
-					return utf8sub(name, 36, true)
-				end
-			end
-		end
-	end
-
-	oUF.TagEvents["RaidName25"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
-	if (not oUF.Tags["RaidName25"]) then
-		oUF.Tags["RaidName25"] = function(unit, realunit)
-			if db.oUF.Raid.Texts.Name.ShowDead then
-				if not UnitIsConnected(unit) then
-					return "|cffD7BEA5<Offline>|r"
-				elseif UnitIsGhost(unit) then
-					return "|cffD7BEA5<Ghost>|r"
-				elseif UnitIsDead(unit) then
-					return "|cffD7BEA5<Dead>|r"
-				elseif UnitIsAFK(unit) then
-					return "|cffD7BEA5<AFK>|r"
-				end
-			end
-			local name = (unit == "vehicle" and UnitName(realunit or unit)) or UnitName(unit)
-			if not nameCache[name] then ShortenName(name) end
-			return nameCache[name][1]
-		end
-	end
-
-	oUF.TagEvents["RaidName40"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
-	if (not oUF.Tags["RaidName40"]) then
-		oUF.Tags["RaidName40"] = function(unit, realunit)
-			if db.oUF.Raid.Texts.Name.ShowDead then
-				if not UnitIsConnected(unit) then
-					return "|cffD7BEA5<Offline>|r"
-				elseif UnitIsGhost(unit) then
-					return "|cffD7BEA5<Ghost>|r"
-				elseif UnitIsDead(unit) then
-					return "|cffD7BEA5<Dead>|r"
-				elseif UnitIsAFK(unit) then
-					return "|cffD7BEA5<AFK>|r"
-				end
-			end
-			local name = (unit == "vehicle" and UnitName(realunit or unit)) or UnitName(unit)
-			if not nameCache[name] then ShortenName(name) end
-			return nameCache[name][2]
-		end
-	end
-
-	oUF.TagEvents["druidmana2"] = "UNIT_POWER UNIT_MAXPOWER"
-	if (not oUF.Tags["druidmana2"]) then
-		oUF.Tags["druidmana2"] = function(unit)
-			if unit ~= "player" then return end
-			
-			local min, max = UnitPower("player", SPELL_POWER_MANA), UnitPowerMax("player", SPELL_POWER_MANA)
-			local perc = min/max*100
-			perc = format("%.1f", perc)
-			perc = perc.."%"
-			if db.oUF.Player.Texts.DruidMana.HideIfFullMana and min == max then return "" end
-			
-			local _, pType = UnitPowerType(unit)
-			local pClass, pToken = UnitClass(unit)
-			local color = colors.class[pToken]
-			local color2 = colors.power[pType]
-			
-			local r, g, b, text
-			
-			if db.oUF.Player.Texts.DruidMana.Color == "" then
-				r, g, b = color[1]*255,color[2]*255,color[3]*255
-			elseif db.oUF.Player.Texts.DruidMana.Color == "" then
-				r, g, b = color2[1]*255,color2[2]*255,color2[3]*255
-			else
-				r, g, b = db.oUF.Player.Texts.DruidMana.IndividualColor.r*255,db.oUF.Player.Texts.DruidMana.IndividualColor.g*255,db.oUF.Player.Texts.DruidMana.IndividualColor.b*255
-			end
-			
-			if db.oUF.Player.Texts.DruidMana.Format == "Absolut" then
-				text = format("%s/%s", min, max)
-			elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut & Percent" then
-				text = format("%s/%s | %s", min, max, perc)
-			elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut Short" then
-				text = format("%s/%s", ShortValue(min), ShortValue(max))
-			elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut Short & Percent" then
-				text = format("%s/%s | %s", ShortValue(min), ShortValue(max), perc)
-			elseif db.oUF.Player.Texts.DruidMana.Format == "Standard Short" then
-				text = ShortValue(min)
-			else
-				text = min
-			end
-			
-			return format("|cff%02x%02x%02x%s|r", r, g, b, text)
-		end
-	end
-
-	-- custom widget API
-	local FormatName = function(self)
-		if not self or not self.Info then return end
-		
-		local info = self.Info
-		
-		local name
-		if info.Length == "Long" then
-			name = "[NameLong]"
-		elseif info.Length == "Short" then
-			name = "[NameShort]"
-		else
-			name = "[NameMedium]"
-		end
-		
-		if info.ColorNameByClass then name = "[GetNameColor]"..name.."|r" end
-		
-		local level = info.ColorLevelByDifficulty and "[DiffColor][level2]|r" or "[level2]"
-		
-		if info.ShowClassification then
-			level = info.ShortClassification and level.."[shortclassification]" or level.."[classification]"
-		end
-		
-		local race = "[race]"
-		
-		local class = info.ColorClassByClass and "[GetNameColor][smartclass]|r" or "[smartclass]"
-		
-		self:Tag(info, info.Format:gsub(" %+ ", " "):gsub("Name", name):gsub("Level", level):gsub("Race", race):gsub("Class", class))
-		self:UpdateAllElements()
-	end
-	oUF:RegisterMetaFunction("FormatName", FormatName)
-
-	local FormatRaidName = function(self)
-		if not self or not self.Info then return end
-		
-		local info = self.Info
-		
-		local index = self:GetParent():GetParent():GetName() == "oUF_LUI_raid_25" and 1 or 2
-		local tag = self:GetParent():GetParent():GetName() == "oUF_LUI_raid_25" and "[RaidName25]" or "[RaidName40]"
-		
-		if info.ColorByClass then tag = "[GetNameColor]"..tag.."|r" end
-		
-		self:Tag(info, tag)
-		self:UpdateAllElements()
-	end
-	oUF:RegisterMetaFunction("FormatRaidName", FormatRaidName)
-
 	-- spawning
 	local spawnList = {"Player", "Target", "Focus", "FocusTarget", "ToT", "ToToT", "Pet", "PetTarget", "Boss", "Party", "Maintank", "Arena", "Raid"}
 	for _, unit in pairs(spawnList) do

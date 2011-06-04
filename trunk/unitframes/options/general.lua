@@ -565,7 +565,10 @@ function module:CreateOptions(index, unit)
 					parent = f
 				end
 			end
-			parent:GetParent():GetScript("OnEvent")(parent:GetParent())
+			if unit == "Arena" or unit == "Boss" then
+				local header = _G[ufMover[unit]]
+				header:SetAttribute("Padding", tonumber(oufdb.Padding))
+			end
 		end
 	end
 	
@@ -639,10 +642,8 @@ function module:CreateOptions(index, unit)
 					self:SetWidth(]]..db.oUF.Maintank.Width..[[)
 				end
 			]])
-		elseif unit == "Arena" then
-			oUF_LUI_arena:GetScript("OnEvent")(oUF_LUI_arena)
-		elseif unit == "Boss" then
-			oUF_LUI_boss.UpdateBossFrame()
+		elseif unit == "Arena" or unit == "Boss" then
+			_G[ufMover[unit]]:SetAttribute("Height", tonumber(oufdb.Height))
 		elseif unit == "Raid" then
 			local width40 = (5 * tonumber(db.oUF.Raid.Height) - 3 * tonumber(db.oUF.Raid.GroupPadding)) / 8
 			
@@ -651,23 +652,18 @@ function module:CreateOptions(index, unit)
 					self:SetHeight(]]..db.oUF.Raid.Height..[[)
 					self:SetWidth(]]..db.oUF.Raid.Width..[[)
 				]])
-				for j = 1, 5 do
-					if _G["oUF_LUI_raid_25_"..i.."UnitButton"..j] then
-						_G["oUF_LUI_raid_25_"..i.."UnitButton"..j]:SetHeight(tonumber(db.oUF.Raid.Height))
-						_G["oUF_LUI_raid_25_"..i.."UnitButton"..j]:SetWidth(tonumber(db.oUF.Raid.Width))
-					end
-				end
 			end
 			for i = 1, 8 do
 				_G["oUF_LUI_raid_40_"..i]:SetAttribute("initialConfigFunction", [[
 					self:SetHeight(]]..db.oUF.Raid.Height..[[)
 					self:SetWidth(]]..width40..[[)
 				]])
-				for j = 1, 5 do
-					if _G["oUF_LUI_raid_40_"..i.."UnitButton"..j] then
-						_G["oUF_LUI_raid_40_"..i.."UnitButton"..j]:SetHeight(tonumber(db.oUF.Raid.Height))
-						_G["oUF_LUI_raid_40_"..i.."UnitButton"..j]:SetWidth(width40)
-					end
+			end
+			
+			LUI.oUF.RecreateNameCache()
+			for _, frame in pairs(ufNames) do
+				if _G[frame] then
+					_G[frame]:FormatRaidName()
 				end
 			end
 		end
