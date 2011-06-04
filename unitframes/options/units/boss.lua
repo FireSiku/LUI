@@ -24,7 +24,9 @@ function module:ShowBossFrames()
 		end
 	end
 	
-	oUF_LUI_boss:SetHeight(tonumber(db.oUF.Boss.Height) * 4 + tonumber(db.oUF.Boss.Padding) * 3)
+	local padding = oUF_LUI_boss:GetAttribute("Padding")
+	local height = oUF_LUI_boss:GetAttribute("Height")
+	oUF_LUI_boss:SetHeight(height * 4 + padding * 3)
 	
 	if not module:IsHooked(eventWatch, "OnEvent") then
 		module:HookScript(eventWatch, "OnEvent", "HideBossFrames")
