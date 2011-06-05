@@ -247,38 +247,6 @@ local defaults = {
 				Y = "0",
 			},
 		},
-		Swing = {
-			Enable = true,
-			Width = "384",
-			Height = "4",
-			X = "0",
-			Y = "86.5",
-			Texture = "LUI_Gradient",
-			Color = "By Class",
-			IndividualColor = {
-				r = 1,
-				g = 1,
-				b = 1,
-			},
-			BGTexture = "LUI_Minimalist",
-			BGMultiplier = 0.4,
-		},
-		Vengeance = {
-			Enable = true,
-			Width = "384",
-			Height = "4",
-			X = "0",
-			Y = "12",
-			Texture = "LUI_Gradient",
-			Color = "By Class",
-			IndividualColor = {
-				r = 1,
-				g = 1,
-				b = 1,
-			},
-			BGTexture = "LUI_Minimalist",
-			BGMultiplier = 0.4,
-		},
 		AltPower = {
 			Enable = true,
 			OverPower = false,
@@ -295,6 +263,83 @@ local defaults = {
 			BGAlpha = 1,
 			BGMultiplier = 0.4,
 			Smooth = true,
+			Text = {
+				Enable = false,
+				X = "0",
+				Y = "0",
+				Format = "Standard",
+				Font = "neuropol",
+				Size = 10,
+				Outline = "NONE",
+				Color = "Individual",
+				IndividualColor = {
+					r = 1,
+					g = 1,
+					b = 1,
+				},
+			},
+		},
+		Swing = {
+			Enable = true,
+			Width = "384",
+			Height = "4",
+			X = "0",
+			Y = "86.5",
+			Texture = "LUI_Gradient",
+			Color = "By Class",
+			IndividualColor = {
+				r = 1,
+				g = 1,
+				b = 1,
+			},
+			BGTexture = "LUI_Minimalist",
+			BGMultiplier = 0.4,
+			Text = {
+				Enable = false,
+				X = "0",
+				Y = "0",
+				Format = "Standard",
+				Font = "neuropol",
+				Size = 10,
+				Outline = "NONE",
+				Color = "Individual",
+				IndividualColor = {
+					r = 1,
+					g = 1,
+					b = 1,
+				},
+			},
+		},
+		Vengeance = {
+			Enable = true,
+			Width = "384",
+			Height = "4",
+			X = "0",
+			Y = "12",
+			Texture = "LUI_Gradient",
+			Color = "By Class",
+			IndividualColor = {
+				r = 1,
+				g = 1,
+				b = 1,
+			},
+			BGTexture = "LUI_Minimalist",
+			BGMultiplier = 0.4,
+			Text = {
+				Enable = false,
+				X = "0",
+				Y = "0",
+				Format = "Standard",
+				Font = "neuropol",
+				Size = 10,
+				Outline = "NONE",
+				Color = "Individual",
+				IndividualColor = {
+					r = 1,
+					g = 1,
+					b = 1,
+				},
+			},
 		},
 		Aura = {
 			buffs_colorbytype = false,
@@ -884,23 +929,77 @@ function module:CreateBarOptions(barType, order)
 					BGMultiplier = (not isLockable) and LUI:NewSlider("Background Multiplier", "Choose the Multiplier which will be used to generate the Background Color.", 4, bardb, "BGMultiplier", bardefaults, 0, 1, 0.05, ApplySettings) or nil,
 				},
 			},
-			TextEnable = (barType == "Eclipse") and LUI:NewToggle("Enable Text", "Whether you want to show the Eclipse Bar Text or not.", 5, bardb.Text, "Enable", bardefaults.Text, ApplySettings, nil, function() return not bardb.Enable end) or nil,
-			TextSettings = (barType == "Eclipse") and {
-				name = "Text Settings",
+		}
+	}
+	
+	return options
+end
+
+------------------------------------------------------------------------
+--	Bar Text Options Constructor
+------------------------------------------------------------------------
+
+--barKey: Key in the ouf layout / the creator funcs
+--barName: Shown Name in the options
+--barType: Key in the options/db
+--barType: Vengeance, Swing, Eclipse, AltPower
+function module:CreateBarTextOptions(barType, order)
+	local barName = barNames[barType]
+	local barKey = barKeys[barType]
+	local bardb = db.oUF.Player[barType]
+	local bardefaults = LUI.defaults.profile.oUF.Player[barType]
+	
+	local textformats = barType == "AltPower" and {"Absolut", "Percent", "Standard"} or {"Absolut", "Standard"}
+	
+	local ApplySettings = function()
+		LUI.oUF.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player)
+		oUF_LUI_player:UpdateAllElements()
+	end
+	
+	local options = {
+		name = barName,
+		type = "group",
+		disabled = function() return not bardb.Enable end,
+		order = order,
+		args = {
+			Enable = LUI:NewToggle("Enable Text", "Whether you want to show the "..barType.." Bar Text or not.", 1, bardb.Text, "Enable", bardefaults.Text, ApplySettings, nil, function() return not bardb.Enable end),
+			FontSettings = {
+				name = "Font Settings",
 				type = "group",
-				disabled = function() return not db.oUF.Player.Eclipse.Enable or not db.oUF.Player.Eclipse.Text.Enable end,
+				disabled = function() return not bardb.Text.Enable end,
 				guiInline = true,
-				order = 6,
+				order = 2,
 				args = {
-					FontSize = LUI:NewSlider("Size", "Choose your Eclipse Bar Text Fontsize.", 1, bardb.Text, "Size", bardefaults.Text, 1, 40, 1, ApplySettings),
+					FontSize = LUI:NewSlider("Size", "Choose your "..barType.." Bar Text Fontsize.", 1, bardb.Text, "Size", bardefaults.Text, 1, 40, 1, ApplySettings),
 					empty = LUI:NewEmpty(2),
-					Font = LUI:NewSelect("Font", "Choose your Eclipse Bar Text Font.", 3, widgetLists.font, "LSM30_Font", bardb.Text, "Font", bardefaults.Text, ApplySettings),
-					FontFlag = LUI:NewSelect("Font Flag", "Choose the Font Flag for the Eclipse Bar Text.", 4, fontflags, nil, bardb.Text, "Outline", bardefaults.Text, ApplySettings),
-					XValue = LUI:NewPosX("Eclipse Bar Text", 5, bardb.Text, "", bardefaults.Text, ApplySettings),
-					YValue = LUI:NewPosY("Eclipse Bar Text", 6, bardb.Text, "", bardefaults.Text, ApplySettings),
+					Font = LUI:NewSelect("Font", "Choose your "..barType.." Bar Text Font.", 3, widgetLists.font, "LSM30_Font", bardb.Text, "Font", bardefaults.Text, ApplySettings),
+					FontFlag = LUI:NewSelect("Font Flag", "Choose the Font Flag for the "..barType.." Bar Text.", 4, fontflags, nil, bardb.Text, "Outline", bardefaults.Text, ApplySettings),
+				},
+			},
+			Settings = {
+				name = "Settings",
+				type = "group",
+				disabled = function() return not bardb.Text.Enable end,
+				guiInline = true,
+				order = 3,
+				args = {
+					XValue = LUI:NewPosX(barType.." Bar Text", 1, bardb.Text, "", bardefaults.Text, ApplySettings),
+					YValue = LUI:NewPosY(barType.." Bar Text", 2, bardb.Text, "", bardefaults.Text, ApplySettings),
+					Format = (barType ~= "Eclipse") and LUI:NewSelect("Format", "Choose the Format for the "..barType.." Bar Text.", 3, textformats, nil, bardb.Text, "Format", bardefaults.Text, ApplySettings) or nil,
+				},
+			},
+			Color = (barType ~= "Eclipse") and {
+				name = "Color Settings",
+				type = "group",
+				disabled = function() return not bardb.Text.Enable end,
+				guiInline = true,
+				order = 4,
+				args = {
+					Color = LUI:NewSelect("Color", "Choose the Color Option for the "..barType.." Bar Text.", 1, {"By Class", "Individual"}, nil, bardb.Text, "Color", bardefaults.Text, ApplySettings),
+					IndividualColor = LUI:NewColorNoAlpha("", barType.." Bar Text", 2, bardb.Text.IndividualColor, bardefaults.Text.IndividualColor, ApplySettings),
 				},
 			} or nil,
-		}
+		},
 	}
 	
 	return options
@@ -1073,6 +1172,27 @@ function module:LoadOptions()
 										BGMultiplier = LUI:NewSlider("Background Multiplier", "Choose the Multiplier which will be used to generate the Background Color", 4, db.oUF.Player.AltPower, "BGMultiplier", LUI.defaults.profile.oUF.Player.AltPower, 0, 1, 0.05, ApplySettings),
 									},
 								},
+								--[[TextEnable = LUI:NewToggle("Enable", "Whether you want to show your AltPowerBar Text or not.", 5, db.oUF.Player.AltPower.Text, "Enable", LUI.defaults.profile.oUF.Player.AltPower.Text, StyleAltPower),
+								TextSettings = {
+									name = "Text Settings",
+									type = "group",
+									disabled = function() return not db.oUF.Player.AltPower.Enable or not db.oUF.Player.AltPower.Text.Enable end,
+									guiInline = true,
+									order = 6,
+									args = {
+										FontSize = LUI:NewSlider("Size", "Choose your AltPowerBar Bar Text Fontsize.", 1, db.oUF.Player.AltPower.Text, "Size", LUI.defaults.profile.oUF.Player.AltPower.Text, 1, 40, 1, StyleAltPower),
+										empty = LUI:NewEmpty(2),
+										Font = LUI:NewSelect("Font", "Choose your AltPowerBar Bar Text Font.", 3, widgetLists.font, "LSM30_Font", db.oUF.Player.AltPower.Text, "Font", LUI.defaults.profile.oUF.Player.AltPower.Text, StyleAltPower),
+										FontFlag = LUI:NewSelect("Font Flag", "Choose the Font Flag for the AltPowerBar Bar Text.", 4, fontflags, nil, db.oUF.Player.AltPower.Text, "Outline", LUI.defaults.profile.oUF.Player.AltPower.Text, StyleAltPower),
+										XValue = LUI:NewPosX("AltPowerBar Bar Text", 5, db.oUF.Player.AltPower.Text, "", LUI.defaults.profile.oUF.Player.AltPower.Text, StyleAltPower),
+										YValue = LUI:NewPosY("AltPowerBar Bar Text", 6, db.oUF.Player.AltPower.Text, "", LUI.defaults.profile.oUF.Player.AltPower.Text, StyleAltPower),
+										empty2 = LUI:NewEmpty(7),
+										Format = LUI:NewSelect("Format", "Choose the Format for the AltPowerBar Bar Text.", 8, {"Absolut", "Percent", "Standard"}, nil, db.oUF.Player.AltPower.Text, "Format", LUI.defaults.profile.oUF.Player.AltPower.Text, StyleAltPower),
+										empty3 = LUI:NewEmpty(9),
+										Color = LUI:NewSelect("Color", "Choose the Color Option for the AltPowerBar Bar Text.", 10, {"By Class", "Individual"}, nil, db.oUF.Player.AltPower.Text, "Color", LUI.defaults.profile.oUF.Player.AltPower.Text, StyleAltPower),
+										IndividualColor = LUI:NewColorNoAlpha("", "AltPowerBar Bar Text", 11, db.oUF.Player.AltPower.Text.IndividualColor, LUI.defaults.profile.oUF.Player.AltPower.Text.IndividualColor, StyleAltPower),
+									},
+								},]]
 							},
 						},
 					},
@@ -1151,6 +1271,10 @@ function module:LoadOptions()
 								},
 							},
 						},
+						Vengeance = (class == "DRUID" or class == "WARRIOR" or class == "PALADIN" or class == "DEATHKNIGHT" or class == "DEATH KNIGHT") and module:CreateBarTextOptions("Vengeance", 11) or nil,
+						Swing = module:CreateBarTextOptions("Swing", 12),
+						Eclipse = (class == "DRUID") and module:CreateBarTextOptions("Eclipse", 13) or nil,
+						AltPower = module:CreateBarTextOptions("AltPower", 14),
 					},
 				},
 				Castbar = {

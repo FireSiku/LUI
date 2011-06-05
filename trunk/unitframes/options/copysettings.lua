@@ -281,7 +281,7 @@ local function ApplySettings(unit)
 			-- alt power
 			if unit == "Player" or unit == "Pet" then
 				if db.oUF.Player.AltPower.Enable then
-					LUI.oUF.funcs.AlternatePower(frame, frame.__unit, db.oUF[unit])
+					LUI.oUF.funcs.AltPowerBar(frame, frame.__unit, db.oUF[unit])
 					frame:EnableElement("AltPowerBar")
 					frame.AltPowerBar.SetPosition()
 				else
