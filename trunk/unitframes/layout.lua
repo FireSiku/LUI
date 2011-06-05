@@ -1451,6 +1451,7 @@ oUF_LUI.funcs = {
 	TotemBar = function(self, unit, oufdb)
 		if not self.TotemBar then
 			self.TotemBar = CreateFrame('Frame', nil, self)
+			self.TotemBar:SetFrameLevel(6)
 			self.TotemBar.Destroy = true
 			
 			for i = 1, 4 do
@@ -1502,6 +1503,7 @@ oUF_LUI.funcs = {
 	Runes = function(self, unit, oufdb)
 		if not self.Runes then
 			self.Runes = CreateFrame('Frame', nil, self)
+			self.Runes:SetFrameLevel(6)
 				
 			for i = 1, 6 do
 				self.Runes[i] = CreateFrame('StatusBar', nil, self.Runes)
@@ -1548,6 +1550,7 @@ oUF_LUI.funcs = {
 	HolyPower = function(self, unit, oufdb)
 		if not self.HolyPower then
 			self.HolyPower = CreateFrame('Frame', nil, self)
+			self.HolyPower:SetFrameLevel(6)
 			
 			for i = 1, 3 do
 				self.HolyPower[i] = CreateFrame('StatusBar', nil, self.HolyPower)
@@ -1594,6 +1597,7 @@ oUF_LUI.funcs = {
 	SoulShards = function(self, unit, oufdb)
 		if not self.SoulShards then
 			self.SoulShards = CreateFrame('Frame', nil, self)
+			self.SoulShards:SetFrameLevel(6)
 			
 			for i = 1, 3 do
 				self.SoulShards[i] = CreateFrame('StatusBar', nil, self.SoulShards)
@@ -1641,6 +1645,7 @@ oUF_LUI.funcs = {
 	EclipseBar = function(self, unit, oufdb)
 		if not self.EclipseBar then
 			self.EclipseBar = CreateFrame('Frame', nil, self)
+			self.EclipseBar:SetFrameLevel(6)
 			self.EclipseBar.ShowText = oufdb.Eclipse.Text.Enable
 			self.EclipseBar.PostUnitAura = EclipseBarBuff
 			self.EclipseBar.PostUpdatePower = PostEclipseUpdate
@@ -1893,7 +1898,7 @@ oUF_LUI.funcs = {
 	Portrait = function(self, unit, oufdb)
 		if not self.Portrait then
 			self.Portrait = CreateFrame("PlayerModel", nil, self)
-			self.Portrait:SetFrameLevel(8)
+			self.Portrait:SetFrameLevel(5)
 			self.Portrait.Override = PortraitOverride
 		end
 		
