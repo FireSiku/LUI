@@ -1,7 +1,7 @@
 --[[
 	Project.: oUF_Swing
 	File....: oUF_Swing.lua
-	Version.: 40100.2
+	Version.: 40100.3
 	Rev Date: 23/11/2010
 	Authors.: p3lim, Thalyra
 ]] 
@@ -475,9 +475,18 @@ local Enable = function(self, unit)
 		end
 		bar.Offhand.__owner = bar
 		
-		if bar.Text then bar.Twohand.Text = bar.Text end
-		if bar.TextMH then bar.Mainhand.Text = bar.TextMH end
-		if bar.TextOH then bar.Offhand.Text = bar.TextOH end
+		if bar.Text then
+			bar.Twohand.Text = bar.Text
+			bar.Twohand.Text:SetParent(bar.Twohand)
+		end
+		if bar.TextMH then
+			bar.Mainhand.Text = bar.TextMH
+			bar.Mainhand.Text:SetParent(bar.Mainhand)
+		end
+		if bar.TextOH then
+			bar.Offhand.Text = bar.TextOH
+			bar.Offhand.Text:SetParent(bar.Offhand)
+		end
 		
 		if bar.OverrideText then
 			bar.Twohand.OverrideText = bar.OverrideText

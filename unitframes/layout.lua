@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------
 --	oUF LUI Layout
---	Version 3.0
--- 	Date: 01/12/2010
+--	Version 3.1
+-- 	Date: 06/06/2011
 --	DO NOT USE THIS LAYOUT WITHOUT LUI
 ------------------------------------------------------------------------
 
@@ -733,6 +733,33 @@ local PostUpdateAltPower = function(altpowerbar, min, cur, max)
 	local r_, g_, b_ = altpowerbar:GetStatusBarColor()
 	local mu = altpowerbar.bg.multiplier or 1
 	altpowerbar.bg:SetVertexColor(r_*mu, g_*mu, b_*mu)
+	
+	if altpowerbar.Text then
+		if altpowerbar.Text.Enable then
+			local perc = string.format("%.1f", 100 * cur / max).."%"
+			
+			if altpowerbar.Text.ShowAlways == false and (cur == max or cur == min) then
+				altpowerbar.Text:SetText()
+			elseif altpowerbar.Text.Format == "Absolut" then
+				altpowerbar.Text:SetFormattedText("%s/%s", cur, max)
+			elseif altpowerbar.Text.Format == "Percent" then
+				altpowerbar.Text:SetFormattedText("%s", perc)
+			elseif altpowerbar.Text.Format == "Standard" then
+				altpowerbar.Text:SetFormattedText("%s", cur)
+			end
+				
+			if altpowerbar.Text.color == "By Class" then
+				altpowerbar.Text:SetTextColor(unpack(color))
+			elseif altpowerbar.Text.color == "Individual" then
+				altpowerbar.Text:SetTextColor(altpowerbar.Text.colorIndividual.r, altpowerbar.Text.colorIndividual.g, altpowerbar.Text.colorIndividual.b)
+			else
+				altpowerbar.Text:SetTextColor(r, g, b)
+			end
+			
+		else
+			altpower.Text:SetText("")
+		end
+	end
 end
 
 local PostUpdateDruidMana = function(druidmana, unit, min, max)
@@ -814,6 +841,39 @@ local PortraitOverride = function(self, event, unit)
 	portrait:SetAlpha(0)
 	portrait:SetAlpha(a)
 end
+
+local SwingOverrideText = function(bar, now)
+	local text = bar.Text
+	
+	if not text then return end
+	
+	if text.Enable then
+		local value = string.format("%.1f", bar.max - now)
+		if text.Format == "Absolut" then
+			text:SetFormattedText("%s/%s", string.format("%.1f", bar.max - now), string.format("%.1f", bar.max - bar.min))
+		else
+			text:SetFormattedText("%s", string.format("%.1f", bar.max - now))
+		end
+	else
+		text:SetText("")
+	end
+end						
+
+local VengeanceOverrideText = function(bar, value)
+	local text = bar.Text
+
+	if not text then return end
+	
+	if text.Enable then
+		if text.Format == "Absolut" then
+			bar.Text:SetFormattedText("%s/%s", value, bar.max)
+		else
+			bar.Text:SetFormattedText("%s", value)
+		end
+	else
+		text:SetText("")
+	end
+end						
 
 do
 	local f = CreateFrame("Frame")
@@ -1389,9 +1449,19 @@ oUF_LUI.funcs = {
 			self.Reputation.Value:Hide()
 		end
 	end,
-	
+
 	Swing = function(self, unit, oufdb)
-		if not self.Swing then self.Swing = CreateFrame("Frame", nil, UIParent) end
+		if not self.Swing then
+			self.Swing = CreateFrame("Frame", nil, UIParent)
+			self.Swing.Text = SetFontString(self.Swing, LSM:Fetch("font", oufdb.Swing.Text.Font), oufdb.Swing.Text.Size, oufdb.Swing.Text.Outline)
+			self.Swing.TextMH = SetFontString(self.Swing, LSM:Fetch("font", oufdb.Swing.Text.Font), oufdb.Swing.Text.Size, oufdb.Swing.Text.Outline)
+			self.Swing.TextOH = SetFontString(self.Swing, LSM:Fetch("font", oufdb.Swing.Text.Font), oufdb.Swing.Text.Size, oufdb.Swing.Text.Outline)
+			
+			self.Swing.TextMH:SetPoint("BOTTOM", self.Swing.Text, "CENTER", 0, 1)
+			self.Swing.TextOH:SetPoint("TOP", self.Swing.Text, "CENTER", 0, -1)
+			
+			self.Swing.OverrideText = SwingOverrideText
+		end
 		
 		self.Swing:SetWidth(tonumber(oufdb.Swing.Width))
 		self.Swing:SetHeight(tonumber(oufdb.Swing.Height))
@@ -1404,31 +1474,77 @@ oUF_LUI.funcs = {
 		local mu = oufdb.Swing.BGMultiplier
 		if oufdb.Swing.Color == "By Class" then
 			local color = colors.class[class]
-			self.Swing.color = {color[1], color[2], color[3], 0.8}
+			self.Swing.color = {color[1], color[2], color[3], 1}
 			self.Swing.colorBG = {color[1]*mu, color[2]*mu, color[3]*mu, 1}
 		else
-			self.Swing.color = {oufdb.Swing.IndividualColor.r, oufdb.Swing.IndividualColor.g, oufdb.Swing.IndividualColor.b, 0.8}
-			self.Swing.colorBG = {oufdb.Swing.IndividualColor.r*mu, oufdb.Swing.IndividualColor.g*mu, oufdb.Swing.IndividualColor.b*mu, 0.8}
+			self.Swing.color = {oufdb.Swing.IndividualColor.r, oufdb.Swing.IndividualColor.g, oufdb.Swing.IndividualColor.b, 1}
+			self.Swing.colorBG = {oufdb.Swing.IndividualColor.r*mu, oufdb.Swing.IndividualColor.g*mu, oufdb.Swing.IndividualColor.b*mu, 1}
 		end
 		
 		if self.Swing.Twohand then
+			self.Swing.Twohand:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Swing.Texture))
 			self.Swing.Twohand:SetStatusBarColor(unpack(self.Swing.color))
+			self.Swing.Twohand.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Swing.TextureBG))
 			self.Swing.Twohand.bg:SetVertexColor(unpack(self.Swing.colorBG))
 		end
 		if self.Swing.Mainhand then
+			self.Swing.Mainhand:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Swing.Texture))
 			self.Swing.Mainhand:SetStatusBarColor(unpack(self.Swing.color))
+			self.Swing.Mainhand.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Swing.TextureBG))
 			self.Swing.Mainhand.bg:SetVertexColor(unpack(self.Swing.colorBG))
 		end
 		if self.Swing.Offhand then
+			self.Swing.Offhand:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Swing.Texture))
 			self.Swing.Offhand:SetStatusBarColor(unpack(self.Swing.color))
+			self.Swing.Offhand.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Swing.TextureBG))
 			self.Swing.Offhand.bg:SetVertexColor(unpack(self.Swing.colorBG))
 		end
+		
+		self.Swing.Text:SetFont(LSM:Fetch("font", oufdb.Swing.Text.Font), oufdb.Swing.Text.Size, oufdb.Swing.Text.Outline)
+		self.Swing.TextMH:SetFont(LSM:Fetch("font", oufdb.Swing.Text.Font), oufdb.Swing.Text.Size, oufdb.Swing.Text.Outline)
+		self.Swing.TextOH:SetFont(LSM:Fetch("font", oufdb.Swing.Text.Font), oufdb.Swing.Text.Size, oufdb.Swing.Text.Outline)
+		
+		self.Swing.Text:ClearAllPoints()
+		self.Swing.Text:SetPoint("CENTER", self.Swing, "CENTER", tonumber(oufdb.Swing.Text.X), tonumber(oufdb.Swing.Text.Y))
+		
+		if oufdb.Swing.Text.Color == "By Class" then
+			local color = colors.class[class]
+			self.Swing.Text:SetTextColor(color[1], color[2], color[3])
+			self.Swing.TextMH:SetTextColor(color[1], color[2], color[3])
+			self.Swing.TextOH:SetTextColor(color[1], color[2], color[3])
+		else
+			self.Swing.Text:SetTextColor(oufdb.Swing.Text.IndividualColor.r, oufdb.Swing.Text.IndividualColor.g, oufdb.Swing.Text.IndividualColor.b)
+			self.Swing.TextMH:SetTextColor(oufdb.Swing.Text.IndividualColor.r, oufdb.Swing.Text.IndividualColor.g, oufdb.Swing.Text.IndividualColor.b)
+			self.Swing.TextOH:SetTextColor(oufdb.Swing.Text.IndividualColor.r, oufdb.Swing.Text.IndividualColor.g, oufdb.Swing.Text.IndividualColor.b)
+		end
+		
+		if oufdb.Swing.Text.Enable then
+			self.Swing.Text:Show()
+			self.Swing.TextMH:Show()
+			self.Swing.TextOH:Show()
+		else
+			self.Swing.Text:Hide()
+			self.Swing.TextMH:Hide()
+			self.Swing.TextOH:Hide()
+		end
+		
+		self.Swing.Text.Enable = oufdb.Swing.Text.Enable
+		self.Swing.Text.Format = oufdb.Swing.Text.Format
+		
+		self.Swing.TextMH.Enable = oufdb.Swing.Text.Enable
+		self.Swing.TextMH.Format = oufdb.Swing.Text.Format
+		
+		self.Swing.TextOH.Enable = oufdb.Swing.Text.Enable
+		self.Swing.TextOH.Format = oufdb.Swing.Text.Format
 	end,
 	Vengeance = function(self, unit, oufdb)
 		if not self.Vengeance then
 			self.Vengeance = CreateFrame("StatusBar", nil, UIParent)
 			self.Vengeance.bg = self.Vengeance:CreateTexture(nil, "BORDER")
 			self.Vengeance.bg:SetAllPoints(self.Vengeance)
+			
+			self.Vengeance.Text = SetFontString(self.Vengeance, LSM:Fetch("font", oufdb.Vengeance.Text.Font), oufdb.Vengeance.Text.Size, oufdb.Vengeance.Text.Outline)
+			self.Vengeance.OverrideText = VengeanceOverrideText
 		end
 		
 		self.Vengeance:SetWidth(tonumber(oufdb.Vengeance.Width))
@@ -1446,6 +1562,16 @@ oUF_LUI.funcs = {
 		else
 			self.Vengeance:SetStatusBarColor(oufdb.Vengeance.IndividualColor.r, oufdb.Vengeance.IndividualColor.g, oufdb.Vengeance.IndividualColor.b, 0.8)
 			self.Vengeance.bg:SetVertexColor(oufdb.Vengeance.IndividualColor.r*mu, oufdb.Vengeance.IndividualColor.g*mu, oufdb.Vengeance.IndividualColor.b*mu, 1)
+		end
+		
+		self.Vengeance.Text:SetFont(LSM:Fetch("font", oufdb.Vengeance.Text.Font), oufdb.Vengeance.Text.Size, oufdb.Vengeance.Text.Outline)
+		self.Vengeance.Text:ClearAllPoints()
+		self.Vengeance.Text:SetPoint("CENTER", self.Vengeance, "CENTER", tonumber(oufdb.Vengeance.Text.X), tonumber(oufdb.Vengeance.Text.Y))
+		
+		if oufdb.Vengeance.Text.Enable then
+			self.Vengeance.Text:Show()
+		else
+			self.Vengeance.Text:Hide()
 		end
 	end,
 	TotemBar = function(self, unit, oufdb)
@@ -1909,7 +2035,7 @@ oUF_LUI.funcs = {
 		self.Portrait:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Portrait.X), tonumber(oufdb.Portrait.Y))
 	end,
 
-	AlternatePower = function(self, unit, oufdb)
+	AltPowerBar = function(self, unit, oufdb)
 		if not self.AltPowerBar then
 			self.AltPowerBar = CreateFrame("StatusBar", nil, self)
 			if unit == "pet" then self.AltPowerBar:SetParent(oUF_LUI_player) end
@@ -1943,7 +2069,9 @@ oUF_LUI.funcs = {
 				self.AltPowerBar.SetPosition()
 				self.AltPowerBar:ForceUpdate()
 			end)
-			self.AltPowerBar:SetScript("OnHide", self.AltPowerBar.SetPosition)	
+			self.AltPowerBar:SetScript("OnHide", self.AltPowerBar.SetPosition)
+			
+			self.AltPowerBar.Text = SetFontString(self.AltPowerBar, LSM:Fetch("font", db.oUF.Player.AltPower.Text.Font), db.oUF.Player.AltPower.Text.Size, db.oUF.Player.AltPower.Text.Outline)
 		end
 		
 		self.AltPowerBar:ClearAllPoints()
@@ -1963,6 +2091,21 @@ oUF_LUI.funcs = {
 		
 		self.AltPowerBar.color = db.oUF.Player.AltPower.Color
 		self.AltPowerBar.colorIndividual = db.oUF.Player.AltPower.IndividualColor
+		
+		self.AltPowerBar.Text:SetFont(LSM:Fetch("font", db.oUF.Player.AltPower.Text.Font), db.oUF.Player.AltPower.Text.Size, db.oUF.Player.AltPower.Text.Outline)
+		self.AltPowerBar.Text:ClearAllPoints()
+		self.AltPowerBar.Text:SetPoint("CENTER", self.AltPower, "CENTER", tonumber(db.oUF.Player.AltPower.Text.X), tonumber(db.oUF.Player.AltPower.Text.Y))
+		
+		self.AltPowerBar.Text.Enable = db.oUF.Player.AltPower.Text.Enable
+		self.AltPowerBar.Text.Format = db.oUF.Player.AltPower.Text.Format
+		self.AltPowerBar.Text.color = db.oUF.Player.AltPower.Text.Color
+		self.AltPowerBar.Text.colorIndividual = db.oUF.Player.AltPower.Text.IndividualColor
+		
+		if db.oUF.Player.AltPower.Text.Enable then
+			self.AltPowerBar.Text:Show()
+		else
+			self.AltPowerBar.Text:Hide()
+		end
 		
 		self.AltPowerBar.PostUpdate = PostUpdateAltPower
 	end,
@@ -3273,7 +3416,7 @@ local SetStyle = function(self, unit, isSingle)
 	if oufdb.Portrait.Enable then funcs.Portrait(self, unit, oufdb) end
 	
 	if unit == "player" or unit == "pet" then
-		if db.oUF.Player.AltPower.Enable then funcs.AlternatePower(self, unit, oufdb) end
+		if db.oUF.Player.AltPower.Enable then funcs.AltPowerBar(self, unit, oufdb) end
 	end
 	
 	if oufdb.Aura then
