@@ -12,7 +12,6 @@
 	<Script file="modules\bars.lua"/>
 	
 	<!-- Addon Installation Routines -->
-	<Script file="addons\forte.lua"/>
 	<Script file="addons\pallypower.lua"/>
 	<Script file="addons\bartender.lua"/>
 	<Script file="addons\grid.lua"/>
@@ -89,4 +88,7 @@
 	<Script file="unitframes\plugins\raiddebuffs.lua"/>
 	
 	<Script file="unitframes\layout.lua"/>
+	
+	<!-- Addon Installation Routines -->
+	<Script file="addons\forte.lua"/>
 </Ui>

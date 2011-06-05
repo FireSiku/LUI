@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------
 --	oUF LUI Layout
---	Version 3.1
+--	Version 3.1.1
 -- 	Date: 06/06/2011
 --	DO NOT USE THIS LAYOUT WITHOUT LUI
 ------------------------------------------------------------------------
@@ -1920,8 +1920,8 @@ oUF_LUI.funcs = {
 				self.CPoints[i].bg:SetAllPoints(self.CPoints[i])
 			end
 			
-			self.CPoints[1]:SetScript("OnShow", function() LUI:GetModule("Forte"):SetPosForte() end)
-			self.CPoints[1]:SetScript("OnHide", function() LUI:GetModule("Forte"):SetPosForte() end)
+			--self.CPoints[1]:SetScript("OnShow", function() LUI:GetModule("Forte"):SetPosForte() end)
+			--self.CPoints[1]:SetScript("OnHide", function() LUI:GetModule("Forte"):SetPosForte() end)
 			
 			self.CPoints.FrameBackdrop = CreateFrame("Frame", nil, self.CPoints)
 			self.CPoints.FrameBackdrop:SetPoint("TOPLEFT", self.CPoints, "TOPLEFT", -3, 3)
