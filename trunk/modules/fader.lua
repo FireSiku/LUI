@@ -15,6 +15,8 @@
 -- / Notes / --
 ------------------------------------------------------
 --[[	
+	This file is pretty.
+
 	events:
 		There are a lot of events registered I know. Sadly these are the ones
 		i found most suitable with the least spam (or controllable) with still
