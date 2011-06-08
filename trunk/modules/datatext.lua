@@ -2,8 +2,8 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: datatext.lua
 	Description: Datatext Molule for Durability, Gold, Latency, Fps, MS, Friends, Guild, Clock, Bags...
-	Version....: 1.6b
-	Rev Date...: 28/04/2011 [dd/mm/yyyy]
+	Version....: 1.6c
+	Rev Date...: 08/06/2011 [dd/mm/yyyy]
 	
 	Edits:
 		v1.0: Loui
@@ -20,6 +20,7 @@
 		v1.6: Zista
 		-  a: Hix
 		-  b: Hix
+		-  c: Hix
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -105,7 +106,12 @@ function module:SetFPS()
 			int = 1
 			
 			-- Set text.
-			Text_fps:SetFormattedText("%dfps   %dms", floor(GetFramerate()), select(4, GetNetStats()))
+			if db.Infotext.Fps.MSValue == "BOTH" then
+				local _,_, home, world = GetNetStats()
+				Text_fps:SetFormattedText("%dfps   %dms | %dms", floor(GetFramerate()), home, world)
+			else
+				Text_fps:SetFormattedText("%dfps   %dms", floor(GetFramerate()), select((db.Infotext.Fps.MSValue == "HOME" and 3) or 4, GetNetStats()))
+			end
 			self:SetAllPoints(Text_fps)
 		end		
 	end
@@ -1992,6 +1998,7 @@ local defaults = {
 			Enable = true,
 			X = 260,
 			Y = 0,
+			MSValue = "WORLD",
 			Font = "vibroceb",
 			Size = 12,
 			Outline = "NONE",
@@ -2708,11 +2715,25 @@ function module:LoadOptions()
 									end,
 							order = 4,
 						},
+						MSValue = {
+							name = "MS Value",
+							desc = "Wether you want your MS to show World, Home or both latency values.\n\nDefault: WORLD",
+							type = "input",
+							disabled = function() return not db.Infotext.Fps.Enable end,
+							get = function() return db.Infotext.FPS.MSValue end,
+							set = function(self, value)
+										value = strupper(value)
+										if (value == "HOME") or (value == "WORLD") or (value == "BOTH") then
+											db.Infotext.FPS.MSValue = value
+										end
+									end,
+							order = 5,																				
+						},
 						TextSettings = {
 							name = "Font Settings",
 							type = "group",
 							disabled = function() return not db.Infotext.Fps.Enable end,
-							order = 5,
+							order = 6,
 							guiInline = true,
 							args = {
 								FontSize = {
