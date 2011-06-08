@@ -2,13 +2,14 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: invite.lua
 	Description: Autoinvite Module
-	Version....: 1.2
-	Rev Date...: 02/01/2011 [dd/mm/yyyy]
+	Version....: 1.3
+	Rev Date...: 08/06/2011 [dd/mm/yyyy]
 	
 	Edits:
 		v1.0: Loui
 		v1.1: Hix
 		v1.2: Zista
+		v1.3: Hix
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -18,7 +19,7 @@ local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 ------------------------------------------------------------------------
 
 local function SetAutoAcceptInvite()
-	if LUI.db.profile.General.AutoAcceptInvite ~= true then return end
+	if not LUI.db.profile.General.AutoAcceptInvite then return end
 
 	local tAutoAcceptInvite = CreateFrame("Frame")
 	tAutoAcceptInvite:RegisterEvent("PARTY_INVITE_REQUEST")
@@ -31,7 +32,7 @@ local function SetAutoAcceptInvite()
 		local leader = ...
 		
 		if event == "PARTY_INVITE_REQUEST" then
-			if (GetNumPartyMembers() > 0) or (GetNumRaidMembers() > 0) then return end
+			if (GetNumRealPartyMembers() > 0) or (GetNumRealRaidMembers() > 0) then return end
 						
 			for friendIndex = 1, GetNumFriends() do
 				local friendName = GetFriendInfo(friendIndex)
@@ -58,6 +59,7 @@ local function SetAutoAcceptInvite()
 					break
 				end
 			end
+			StaticPopup_Hide("PARTY_INVITE")
 			hidestatic = false
 		end
 	end)
@@ -68,19 +70,19 @@ end
 ------------------------------------------------------------------------
 
 local function SetAutoInvite()
-	local ainvenabled = LUI.db.profile.General.Autoinvite
-	local ainvkeyword = LUI.db.profile.General.AutoInviteKeyword
+	local enabled = LUI.db.profile.General.Autoinvite
+	local keyword = LUI.db.profile.General.AutoInviteKeyword
 
 	local autoinvite = CreateFrame("frame")
 	autoinvite:RegisterEvent("CHAT_MSG_WHISPER")
-	autoinvite:SetScript("OnEvent", function(self,event,arg1,arg2)
-		if ((not UnitExists("party1") or IsPartyLeader("player")) and arg1:lower():match(ainvkeyword)) and ainvenabled == true then
-			InviteUnit(arg2)
+	autoinvite:SetScript("OnEvent", function(self, event, msg, sender)
+		if enabled and (IsPartyLeader("player") or (GetRealNumPartyMembers() == 0) and msg:lower():match(keyword) then
+			InviteUnit(sender)
 		end
 	end)
 end
 
-local f = CreateFrame("Frame", nil, UIParent)
+local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 f:SetScript("OnEvent", function(self)
