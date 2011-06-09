@@ -121,6 +121,9 @@ end
 local function LUIBank_OnHide()
 	CloseBankFrame()
 end
+local function LUIBank_OnShow()
+	module:PLAYERBANKSLOTS_CHANGED(self, 29)
+end
 
 local function LUIBags_OnHide()  -- Close the Bank if Bags are closed.
 	if LUIBank and LUIBank:IsShown() then
@@ -182,7 +185,7 @@ function module:InitSelect(bag)
 end
 
 function module:SlotUpdate(item)
-	if not LUIBags:IsShown() then return end -- don't do any slot update if bags are not shown
+
 	local texture, count, locked = GetContainerItemInfo(item.bag, item.slot)
 	local clink = GetContainerItemLink(item.bag, item.slot)
 	local color = db.Bags.Colors.Border
@@ -472,6 +475,7 @@ function module:InitBank()
 	end
 
 	LUIBank = self:CreateBagFrame("Bank")
+	LUIBank:SetScript("OnShow", LUIBank_OnShow)
 	LUIBank:SetScript("OnHide", LUIBank_OnHide)
 end
 
@@ -720,11 +724,8 @@ function module:Layout(bagType)
 					if x == GetNumBankSlots() + 1 then
 
 						--Set Things back up to normal after a purchase.
-						local texture = b.frame:GetNormalTexture()
 						b.frame:SetAlpha(1)
-						b.frame:SetPushedTexture("Interface\Buttons\UI-Quickslot-Depress")
-						b.frame:SetNormalTexture("Interface\\Buttons\\UI-Quickslot2")
-						texture:SetSize(50,50)
+						SetItemButtonTexture(b.frame,"Interface\\paperdoll\\UI-PaperDoll-Slot-Bag")
 
 						b.frame:SetScript("OnClick", function(self)
 							if ( IsModifiedClick("PICKUPACTION") ) then
@@ -737,14 +738,8 @@ function module:Layout(bagType)
 					--Bag about to be purcahsed.
 					elseif x == GetNumBankSlots() + 2 then
 
-						local goldTex = "Interface\\Icons\\INV_Misc_Coin_02"
-						--Setting the Texture.
-
-						local texture = b.frame:GetNormalTexture()
-						b.frame:SetAlpha(1)
-						texture:SetTexture(goldTex)
-						texture:SetSize(bagTexSize-1,bagTexSize-1)
-						b.frame:SetPushedTexture(goldTex)
+						b.frame:SetAlpha(1)						
+						SetItemButtonTexture(b.frame,GetCoinIcon(cost))
 
 						-- Add the Click-To-Purchase option.
 						b.frame:SetScript("OnClick", function(self)
@@ -786,7 +781,6 @@ function module:Layout(bagType)
 		end
 
 		frame:SetWidth(LUI:Scale(cols * 31 + (cols - 1) * spacing + padding * 2))
-		--frame:SetHeight(LUI:Scale(rows * 31 + (rows - 1) * spacing + off + padding * 2))
 		frame:SetHeight(LUI:Scale(rows * 31 + (rows - 1) * spacing + off + padding * 2) + frame.sortButton:GetHeight());
 
 	end
@@ -932,10 +926,10 @@ function module:PLAYERBANKSLOTS_CHANGED(self, id)
 	if id > 28 then
 		for _, v in ipairs(BagsSlots) do
 			if v.frame and v.frame.GetInventorySlot then
-
-				BankFrameItemButton_Update(v.frame)
-				BankFrameItemButton_UpdateLocked(v.frame)
-
+				if v.slot < GetNumBankSlots() + 5 then
+					BankFrameItemButton_Update(v.frame)
+					BankFrameItemButton_UpdateLocked(v.frame)
+				end 
 				if not v.frame.tooltipText then
 					v.frame.tooltipText = ""
 				end
