@@ -4,7 +4,7 @@
 	Description: Datatext Molule for Durability, Gold, Latency, Fps, MS, Friends, Guild, Clock, Bags...
 	Version....: 1.6c
 	Rev Date...: 08/06/2011 [dd/mm/yyyy]
-	
+
 	Edits:
 		v1.0: Loui
 		v1.1: Hix
@@ -21,7 +21,7 @@
 		-  a: Hix
 		-  b: Hix
 		-  c: Hix
-]] 
+]]
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LSM = LibStub("LibSharedMedia-3.0")
@@ -74,7 +74,7 @@ function module:SetDataTextFrames()
 	local infos_left = LUI:CreateMeAFrame("FRAME","infos_left",UIParent,100,20,1,"HIGH",0,"TOPLEFT",UIParent,"TOPLEFT",200,3,1)
 	infos_left:SetAlpha(1)
 	infos_left:Show()
-	
+
 	local infos_right = LUI:CreateMeAFrame("FRAME","infos_right",UIParent,100,20,1,"HIGH",0,"TOPRIGHT",UIParent,"TOPRIGHT",0,3,1)
 	infos_right:SetAlpha(1)
 	infos_right:Show()
@@ -86,25 +86,25 @@ end
 
 function module:SetFPS()
 	if db.Infotext.Fps.Enable == false then return end
-	
+
 	local Stat1 = CreateFrame("Frame", "LUI_Info_FPS", infos_left)
 	Stat1:EnableMouse(true)
-	
+
 	Text_fps  = infos_left:CreateFontString(nil, "OVERLAY")
 	Text_fps:SetFont(LSM:Fetch("font", db.Infotext.Fps.Font), db.Infotext.Fps.Size, db.Infotext.Fps.Outline)
 	Text_fps:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Fps.X, db.Infotext.Fps.Y)
 	Text_fps:SetHeight(db.Infotext.Fps.Size)
 	Text_fps:SetTextColor(db.Infotext.Fps.Color.r, db.Infotext.Fps.Color.g, db.Infotext.Fps.Color.b, db.Infotext.Fps.Color.a)
-	
+
 	-- Localise functions.
 	local floor, GetFramerate, select, GetNetStats = floor, GetFramerate, select, GetNetStats
-	
-	local int = 1
-	local function Update(self, t)
-		int = int - t
-		if int < 0 then
-			int = 1
-			
+
+	local inta = 1--
+	local function Update(self, t)--
+		inta = inta - t--
+		if inta < 0 then--
+			inta = 1--
+
 			-- Set text.
 			if db.Infotext.Fps.MSValue == "BOTH" then
 				local _,_, home, world = GetNetStats()
@@ -113,50 +113,50 @@ function module:SetFPS()
 				Text_fps:SetFormattedText("%dfps   %dms", floor(GetFramerate()), select((db.Infotext.Fps.MSValue == "HOME" and 3) or 4, GetNetStats()))
 			end
 			self:SetAllPoints(Text_fps)
-		end		
+		end
 	end
-	
+
 	local function ColourMS(ms)
 		local t = ms / 400
 		local r = t
 		local g = 1 - t
-		
+
 		return r, g, 0
 	end
-	
+
 	local function ColourFPS(fps)
 		local t = fps / 60
 		local r = 1 - t
 		local g = t
-		
+
 		return r, g, 0
 	end
 
-	Stat1:SetScript("OnUpdate", Update) 
+	Stat1:SetScript("OnUpdate", Update)
 	Stat1:SetScript("OnEnter", function(self)
 		if not InCombatLockdown() then
 			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 			GameTooltip:ClearLines()
 			GameTooltip:AddLine("FPS & MS:", 0.4, 0.78, 1)
 			GameTooltip:AddLine(" ")
-			
+
 			-- Fps stats.
 			local fps = floor(GetFramerate())
 			GameTooltip:AddLine("FPS:")
 			GameTooltip:AddDoubleLine("Current:", fps, 1, 1, 1, ColourFPS(fps))
 			GameTooltip:AddLine(" ")
-			
-			
-			local bandIn, bandOut, home, world = GetNetStats()			
+
+
+			local bandIn, bandOut, home, world = GetNetStats()
 			GameTooltip:AddLine("Latency:")
 			GameTooltip:AddDoubleLine("Home:", home, 1, 1, 1, ColourMS(home))
 			GameTooltip:AddDoubleLine("World:", world, 1, 1, 1, ColourMS(world))
 			GameTooltip:AddLine(" ")
-			
+
 			GameTooltip:AddLine("Bandwidth:")
 			GameTooltip:AddDoubleLine("Current Down:", format("%.2f KB/s", bandIn), 1, 1, 1, 1, 1, 1)
 			GameTooltip:AddDoubleLine("Current Up:", format("%.2f KB/s", bandOut), 1, 1, 1, 1, 1, 1)
-			
+
 			GameTooltip:Show()
 		end
 	end)
@@ -170,7 +170,7 @@ end
 
 function module:SetMemoryUsage()
 	if db.Infotext.Memory.Enable == false then return end
-	
+
 	local Stat2 = CreateFrame("Frame", "LUI__Info_Memory", infos_left)
 	Stat2:EnableMouse(true)
 
@@ -198,36 +198,36 @@ function module:SetMemoryUsage()
 		Total = 0
 		for i = 1, GetNumAddOns() do
 			if not Memory[i] then Memory[i] = {} end
-			
+
 			Mem = GetAddOnMemoryUsage(i)
 			Memory[i][1] = select(2, GetAddOnInfo(i))
 			Memory[i][2] = Mem
 			Memory[i][3] = IsAddOnLoaded(i)
 			Total = Total + Mem
 		end
-		
+
 		MEMORY_TEXT = formatMem(Total)
 		sort(Memory, function(a, b)
 			if a and b then
 				return a[2] > b[2]
 			end
 		end)
-		
+
 		Text_mb:SetText(MEMORY_TEXT)
 		self:SetAllPoints(Text_mb)
 	end
-		
-	local int = 10
+
+	local intb = 10
 	local function Update(self, t)
-		int = int - t
-		if int < 0 then
+		intb = intb - t
+		if intb < 0 then
 			RefreshMem(self)
-			int = 10
+			intb = 10
 		end
 	end
-	
+
 	Stat2:SetScript("OnMouseDown", function() collectgarbage("collect") Update(Stat2, 10) end)
-	Stat2:SetScript("OnUpdate", Update) 
+	Stat2:SetScript("OnUpdate", Update)
 	Stat2:SetScript("OnEnter", function(self)
 		if not InCombatLockdown() then
 			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
@@ -235,22 +235,22 @@ function module:SetMemoryUsage()
 			GameTooltip:AddLine("Memory:", 0.4, 0.78, 1)
 			GameTooltip:AddLine(" ")
 			for i = 1, #Memory do
-				if Memory[i][3] then 
+				if Memory[i][3] then
 					local red = Memory[i][2]/Total * 2
 					local green = 1 - red
-					GameTooltip:AddDoubleLine(Memory[i][1], formatMem(Memory[i][2]), 1, 1, 1, red, green+1, 0)						
+					GameTooltip:AddDoubleLine(Memory[i][1], formatMem(Memory[i][2]), 1, 1, 1, red, green+1, 0)
 				end
 			end
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddDoubleLine("Total Memory Usage:",formatMem(Total), 1, 1, 1,0.8, 0.8, 0.8)
-			
+
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine("Hint: Click to Collect Garbage.", 0.0, 1.0, 0.0)
 			GameTooltip:Show()
 		end
 	end)
 	Stat2:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	
+
 	Update(Stat2, 20)
 end
 
@@ -260,7 +260,7 @@ end
 
 function module:SetBags(refresh)
 	if db.Infotext.Bags.Enable == false then return end
-	
+
 	local Stat4 = CreateFrame("Frame", "LUI_Info_Bags", infos_left)
 	Stat4:EnableMouse(true)
 
@@ -269,10 +269,10 @@ function module:SetBags(refresh)
 	Text_bags:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Bags.X, db.Infotext.Bags.Y)
 	Text_bags:SetHeight(db.Infotext.Bags.Size)
 	Text_bags:SetTextColor(db.Infotext.Bags.Color.r, db.Infotext.Bags.Color.g, db.Infotext.Bags.Color.b, db.Infotext.Bags.Color.a)
-	
+
 	-- Localise functions
 	local GetContainerNumFreeSlots, GetContainerNumSlots = GetContainerNumFreeSlots, GetContainerNumSlots
-	
+
 	local function OnEvent(self, event, ...)
 		local free, total, used = 0, 0, 0
 		for i = 0, NUM_BAG_SLOTS do
@@ -282,7 +282,7 @@ function module:SetBags(refresh)
 		Text_bags:SetText("Bags: "..used.."/"..total)
 		self:SetAllPoints(Text_bags)
 	end
-		
+
 	Stat4:RegisterEvent("PLAYER_LOGIN")
 	Stat4:RegisterEvent("BAG_UPDATE")
 	Stat4:SetScript("OnEvent", OnEvent)
@@ -295,7 +295,7 @@ function module:SetBags(refresh)
 
 			GameTooltip:AddLine("Hint: Click to open Bags.", 0.0, 1.0, 0.0)
 			GameTooltip:Show()
-		end		
+		end
 	end)
 	Stat4:SetScript("OnLeave", function() GameTooltip:Hide() end)
 	Stat4:SetScript("OnMouseDown", function() OpenAllBags() end)
@@ -308,7 +308,7 @@ end
 
 function module:SetDurability(refresh)
 	if db.Infotext.Armor.Enable == false then return end
-	
+
 	local Stat6 = CreateFrame("Frame", "LUI_Info_Durability", infos_left)
 	Stat6:EnableMouse(true)
 
@@ -317,7 +317,7 @@ function module:SetDurability(refresh)
 	Text_dura:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Armor.X, db.Infotext.Armor.Y)
 	Text_dura:SetHeight(db.Infotext.Armor.Size)
 	Text_dura:SetTextColor(db.Infotext.Armor.Color.r, db.Infotext.Armor.Color.g, db.Infotext.Armor.Color.b, db.Infotext.Armor.Color.a)
-	
+
 	local Slots = {
 		[1] = {1, "Head", 1000},
 		[2] = {3, "Shoulder", 1000},
@@ -334,27 +334,27 @@ function module:SetDurability(refresh)
 
 	-- Localise functions
 	local sort = table.sort
-	
+
 	local Total = 0
-	local current, max	
+	local current, max
 	local function OnEvent(self, event)
 		for i = 1, 11 do
 			if GetInventoryItemLink("player", Slots[i][1]) ~= nil then
 				current, max = GetInventoryItemDurability(Slots[i][1])
-				if current then 
+				if current then
 					Slots[i][3] = current / max
 					Total = Total + 1
 				end
 			end
 		end
 		sort(Slots, function(a, b) return a[3] < b[3] end)
-		
+
 		if Total > 0 then
 			Text_dura:SetText("Armor: "..floor(Slots[1][3]*100).."%")
 		else
 			Text_dura:SetText("Armor: 100%")
 		end
-		
+
 		-- Setup Durability Tooltip
 		self:SetAllPoints(Text_dura)
 		Total = 0
@@ -377,7 +377,7 @@ function module:SetDurability(refresh)
 					GameTooltip:AddDoubleLine(Slots[i][2], floor(Slots[i][3]*100).."%", 1 ,1 , 1, red + 1, green, 0)
 				end
 			end
-			
+
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine("Hint: Click to open Character Frame.", 0.0, 1.0, 0.0)
 			GameTooltip:Show()
@@ -393,7 +393,7 @@ end
 
 function module:SetGold(refresh)
 	if db.Infotext.Gold.Enable == false then return end
-	
+
 	local Stat7 = CreateFrame("Frame", "LUI_Info_Gold", infos_left)
 	Stat7:EnableMouse(true)
 
@@ -408,8 +408,8 @@ function module:SetGold(refresh)
 	local OldMoney	= 0
 	local colours	= {
 		["Alliance"] = {
-			r = 0, 
-			g = 0.6, 
+			r = 0,
+			g = 0.6,
 			b = 1,
 		},
 		["Horde"] = {
@@ -418,7 +418,7 @@ function module:SetGold(refresh)
 			b = 0,
 		},
 	}
-	
+
 	-- Localised functions
 	local format, floor, abs, mod = format, floor, math.abs, mod
 
@@ -446,20 +446,20 @@ function module:SetGold(refresh)
 			end
 		end
 	end
-	
+
 	local function FormatTooltipMoney(money)
 		local gold, silver, copper = abs(money / 10000), abs(mod(money / 100, 100)), abs(mod(money, 100))
-		local cash = format("%d|cffffd700g|r %d|cffc7c7cfs|r %d|cffeda55fc|r", gold, silver, copper)		
+		local cash = format("%d|cffffd700g|r %d|cffc7c7cfs|r %d|cffeda55fc|r", gold, silver, copper)
 		return cash
-	end	
-	
+	end
+
 	local function ShowGold(self)
 		if not InCombatLockdown() then
 			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 			GameTooltip:ClearLines()
 			GameTooltip:AddLine("Money:", 0.4, 0.78, 1)
 			GameTooltip:AddLine(" ")
-			
+
 			GameTooltip:AddLine("Session:")
 			GameTooltip:AddDoubleLine("Earned:", formatMoney(Profit), 1, 1, 1, 1, 1, 1)
 			GameTooltip:AddDoubleLine("Spent:", formatMoney(Spent), 1, 1, 1, 1, 1, 1)
@@ -467,14 +467,14 @@ function module:SetGold(refresh)
 				GameTooltip:AddDoubleLine("Deficit:", formatMoney(Profit-Spent), 1, 0, 0, 1, 1, 1)
 			elseif (Profit - Spent) > 0 then
 				GameTooltip:AddDoubleLine("Profit:", formatMoney(Profit-Spent), 0, 1, 0, 1, 1, 1)
-			end				
+			end
 			GameTooltip:AddLine(" ")
-		
+
 			local totalGold = 0
 			local totalPlayerFaction = 0
 			local totalOtherFaction = 0
 			local otherFaction = ((myPlayerFaction == "Alliance") and "Horde") or "Alliance"
-			
+
 			GameTooltip:AddLine("Character:")
 			for k, v in pairs(LUIGold.gold[myPlayerRealm][myPlayerFaction]) do
 				GameTooltip:AddDoubleLine(k, FormatTooltipMoney(v), colours[myPlayerFaction].r, colours[myPlayerFaction].g, colours[myPlayerFaction].b, 1, 1, 1)
@@ -485,7 +485,7 @@ function module:SetGold(refresh)
 				GameTooltip:AddDoubleLine(k, FormatTooltipMoney(v), colours[otherFaction].r, colours[otherFaction].g, colours[otherFaction].b, 1, 1, 1)
 				totalGold = totalGold + v
 				totalOtherFaction = totalOtherFaction + v
-			end 
+			end
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine("Server:")
 			if totalOtherFaction > 0 then
@@ -493,7 +493,7 @@ function module:SetGold(refresh)
 				GameTooltip:AddDoubleLine(otherFaction..":", FormatTooltipMoney(totalOtherFaction), colours[otherFaction].r, colours[otherFaction].g, colours[otherFaction].b, 1, 1, 1)
 			end
 			GameTooltip:AddDoubleLine("Total:", FormatTooltipMoney(totalGold), 1, 1, 1, 1, 1, 1)
-			
+
 			for i = 1, MAX_WATCHED_TOKENS do
 				local name, count, extraCurrencyType, icon, itemID = GetBackpackCurrencyInfo(i)
 				if name and i == 1 then
@@ -504,29 +504,29 @@ function module:SetGold(refresh)
 				if itemID then r, g, b = GetItemQualityColor(select(3, GetItemInfo(itemID))) end
 				if name and count then GameTooltip:AddDoubleLine(name, count, r, g, b, 1, 1, 1) end
 			end
-			
+
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine("Hint:\n- Left-Click to open Bags.\n- Right-Click to reset Session.", 0.0, 1.0, 0.0)
 			GameTooltip:Show()
 		end
 	end
-	
+
 	local function OnEvent(self, event)
 		if event == "PLAYER_ENTERING_WORLD" then
 			OldMoney = GetMoney()
-			
-			if (LUIGold == nil) then LUIGold = {} end			
+
+			if (LUIGold == nil) then LUIGold = {} end
 			if (LUIGold.gold == nil) then LUIGold.gold = {} end
 			if (LUIGold.gold[myPlayerRealm] == nil) then LUIGold.gold[myPlayerRealm] = {} end
 			if (LUIGold.gold[myPlayerRealm]["Alliance"] == nil) then LUIGold.gold[myPlayerRealm]["Alliance"] = {} end
 			if (LUIGold.gold[myPlayerRealm]["Horde"] == nil) then LUIGold.gold[myPlayerRealm]["Horde"] = {} end
-			
+
 			Stat7:UnregisterEvent("PLAYER_ENTERING_WORLD")
 		end
-		
+
 		local NewMoney = GetMoney()
 		local Change = NewMoney - OldMoney -- Positive if we gain money
-		
+
 		if OldMoney > NewMoney then		-- Lost Money
 			Spent = Spent - Change
 		else							-- Gained Moeny
@@ -534,19 +534,19 @@ function module:SetGold(refresh)
 		end
 
 		Text_gold:SetText(formatMoney(NewMoney))
-		
+
 		-- Setup Money Tooltip
 		self:SetAllPoints(Text_gold)
-		
+
 		LUIGold.gold[myPlayerRealm][myPlayerFaction][myPlayerName] = GetMoney()
-		
+
 		OldMoney = NewMoney
-		
+
 		if self:IsMouseOver() and GameTooltip:GetOwner() == self then
 			ShowGold(self)
 		end
 	end
-		
+
 	Stat7:RegisterEvent("PLAYER_MONEY")
 	Stat7:RegisterEvent("PLAYER_ENTERING_WORLD")
 	Stat7:SetScript("OnMouseDown", function(self, button)
@@ -556,7 +556,7 @@ function module:SetGold(refresh)
 			OldMoney = GetMoney()
 		else
 			OpenAllBags()
-		end 
+		end
 	end)
 	Stat7:SetScript("OnEvent", OnEvent)
 	Stat7:SetScript("OnEnter", ShowGold)
@@ -566,7 +566,7 @@ end
 
 function module:ResetGold(player,faction)
 	if player == nil then return end
-	
+
 	if player == "ALL" then
 		LUIGold = {}
 	elseif faction ~= nil then
@@ -580,7 +580,7 @@ end
 
 function module:SetClock()
 	if db.Infotext.Clock.Enable == false then return end
-	
+
 	local Stat8 = CreateFrame("Frame", "LUI_Info_Clock", infos_right)
 	Stat8:EnableMouse(true)
 
@@ -589,15 +589,15 @@ function module:SetClock()
 	Text_time:SetPoint("CENTER", infos_right, "CENTER", db.Infotext.Clock.X, db.Infotext.Clock.Y)
 	Text_time:SetHeight(db.Infotext.Clock.Size)
 	Text_time:SetTextColor(db.Infotext.Clock.Color.r, db.Infotext.Clock.Color.g, db.Infotext.Clock.Color.b, db.Infotext.Clock.Color.a)
-	
+
 	-- Localised functions
 	local tonumber, date, GetGameTime, IsInInstance, GetInstanceInfo = tonumber, date, GetGameTime, IsInInstance, GetInstanceInfo
 
-	local int = 1
+	local intc = 1
 	local instanceInfo, guildParty = nil, ""
-	local function Update(self, t)		
-		int = int - t
-		if int < 0 then
+	local function Update(self, t)
+		intc = intc - t
+		if intc < 0 then
 			if ( GameTimeFrame.pendingCalendarInvites > 0 ) then
 				Text_time:SetText("(Inv. pending)")
 				self:SetAllPoints(Text_time)
@@ -606,8 +606,8 @@ function module:SetClock()
 					local Hr24 = tonumber(date("%H"))
 					local Hr = tonumber(date("%I"))
 					local Min = date("%M")
-					
-					if db.Infotext.Clock.Time24 == true then 
+
+					if db.Infotext.Clock.Time24 == true then
 						Text_time:SetText(Hr24..":"..Min)
 					else
 						if Hr24 >= 12 then
@@ -619,7 +619,7 @@ function module:SetClock()
 				else
 					local Hr, Min = GetGameTime()
 					if Min < 10 then Min = "0"..Min end
-					
+
 					if db.Infotext.Clock.Time24 == true then
 						Text_time:SetText(Hr..":"..Min)
 					else
@@ -631,7 +631,7 @@ function module:SetClock()
 						end
 					end
 				end
-				
+
 				-- Instance Info
 				if db.Infotext.Clock.ShowInstanceDifficulty == true then
 					if instanceInfo then Text_time:SetText(Text_time:GetText().." ("..instanceInfo..guildParty.."|r)") end
@@ -640,10 +640,10 @@ function module:SetClock()
 
 			-- Prepare tooltip and reset timer.
 			self:SetAllPoints(Text_time)
-			int = 1
+			intc = 1
 		end
 	end
-	
+
 	-- More Localised funcitons
 	local GetNumWorldPVPAreas, GetWorldPVPAreaInfo, format, floor, GetNumSavedInstances, GetSavedInstanceInfo = GetNumWorldPVPAreas, GetWorldPVPAreaInfo, format, floor, GetNumSavedInstances, GetSavedInstanceInfo
 	local gsub, strtrim, strmatch = gsub, strtrim, strmatch
@@ -655,7 +655,7 @@ function module:SetClock()
 			guildParty = ""
 		end
 	end
-		
+
 	function Stat8:PLAYER_ENTERING_WORLD()
 		local inInstance, instanceType = IsInInstance()
 		if inInstance then
@@ -679,7 +679,7 @@ function module:SetClock()
 			instanceInfo = nil
 		end
 	end
-	
+
 	function module:ClockShowInstanceDifficulty()
 		if db.Infotext.Clock.ShowInstanceDifficulty then
 			Stat8:RegisterEvent("GUILD_PARTY_STATE_UPDATED")
@@ -695,7 +695,7 @@ function module:SetClock()
 			instanceInfo, guildParty = nil, ""
 		end
 	end
-	
+
 	module:ClockShowInstanceDifficulty()
 	Stat8:SetScript("OnEnter", function(self)
 		if not InCombatLockdown() then
@@ -703,7 +703,7 @@ function module:SetClock()
 			GameTooltip:ClearLines()
 			GameTooltip:AddLine("Time:", 0.4, 0.78, 1)
 			GameTooltip:AddLine(" ")
-			
+
 			local pvp = GetNumWorldPVPAreas()
 			for i = 1, pvp do
 				local _, name, inprogress, _, timeleft = GetWorldPVPAreaInfo(i)
@@ -715,22 +715,22 @@ function module:SetClock()
 				else
 					local hour = tonumber(format("%01.f", floor(timeleft / 3600)))
 					local min = format((hour > 0) and "%02.f" or "%01.f", floor(timeleft / 60 - (hour * 60)))
-					local sec = format("%02.f", floor(timeleft - (hour * 3600) - (min * 60))) 
+					local sec = format("%02.f", floor(timeleft - (hour * 3600) - (min * 60)))
 					timeleft = (hour > 0 and hour..":" or "")..min..":"..sec
 				end
-				
+
 				GameTooltip:AddDoubleLine("Time to "..name, timeleft)
 			end
-			
+
 			GameTooltip:AddLine(" ")
-			
+
 			if db.Infotext.Clock.LocalTime == true then
-				local Hr, Min = GetGameTime()			
+				local Hr, Min = GetGameTime()
 				if Min<10 then Min = "0"..Min end
-				
-				if db.Infotext.Clock.Time24 == true then         
+
+				if db.Infotext.Clock.Time24 == true then
 					GameTooltip:AddDoubleLine("Server Time: ", Hr..":"..Min)
-				else             
+				else
 					if Hr >= 12 then
 						GameTooltip:AddDoubleLine("Server Time: ", (Hr - 12)..":"..Min.." PM")
 					else
@@ -751,14 +751,14 @@ function module:SetClock()
 						GameTooltip:AddDoubleLine("Local Time: ", Hr..":"..Min.." AM")
 					end
 				end
-			end  
-			
+			end
+
 			local oneraid
 			for i = 1, GetNumSavedInstances() do
 			local name,_, reset, difficulty, locked, extended,_, isRaid, maxPlayers = GetSavedInstanceInfo(i)
 			if isRaid and (locked or extended) then
 				local tr, tg, tb, diff
-				
+
 				if not oneraid then
 					GameTooltip:AddLine(" ")
 					GameTooltip:AddLine("Saved Raid(s)")
@@ -772,23 +772,23 @@ function module:SetClock()
 					local string = strtrim(gsub(string, "([dhms])", {d = table.days or "d", h = table.hours or "h", m = table.minutes or "m", s = table.seconds or "s"}), " ")
 					return strmatch(string, "^%s*$") and "0"..(table.seconds or L"s") or string
 				end
-				
-				if extended then 
+
+				if extended then
 					tr, tg, tb = 0.3, 1, 0.3
 				else
 					tr, tg, tb = 1, 1, 1
 				end
-				
+
 				if difficulty == 3 or difficulty == 4 then diff = "H" else diff = "N" end
 					GameTooltip:AddDoubleLine(format("%s |cffaaaaaa(%s%s)", name, maxPlayers, diff), fmttime(reset), 1, 1, 1, tr, tg, tb)
 				end
 			end
-			
+
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine("Hint:\n- Left-Click for Calendar Frame.\n- Right-Click for Time Manager Frame.", 0.0, 1.0, 0.0)
 			GameTooltip:Show()
 		end
-	end)	
+	end)
 	Stat8:SetScript("OnLeave", function() GameTooltip:Hide() end)
 	Stat8:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
 	Stat8:SetScript("OnUpdate", Update)
@@ -802,7 +802,7 @@ end
 
 function module:SetGuild_Friends()
 	if db.Infotext.Guild_Friends.Guild.Enable == false and db.Infotext.Guild_Friends.Friends.Enable == false then return end
-	
+
 	local f = CreateFrame("Frame", "LUI_Info_Guild/Friends", infos_right)
 	f:SetScale(fscale)
 	local t = CreateFrame("Frame", "LUI_Info_updater", infos_right)
@@ -810,7 +810,7 @@ function module:SetGuild_Friends()
 	highlight:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
 	highlight:SetBlendMode("ADD")
 	highlight:SetAlpha(0)
-	
+
 	local function ShowHints(btn)
 		if db.Infotext.Guild_Friends.ShowHints and btn and btn.unit then
 			local showBelow = UIParent:GetHeight()/fscale-f:GetTop() < f:GetBottom()
@@ -831,7 +831,7 @@ function module:SetGuild_Friends()
 			if GameTooltip:NumLines() > 1 then GameTooltip:Show() end
 		end
 	end
-	
+
 	local function UpdateBlockHints()
 		if f.onBlock then
 			if db.Infotext.Guild_Friends.ShowHints then
@@ -848,7 +848,7 @@ function module:SetGuild_Friends()
 			end
 		end
 	end
-	
+
 	local function Menu_OnEnter(b)
 		if b and b.index then
 			highlight:SetAllPoints(b)
@@ -858,14 +858,14 @@ function module:SetGuild_Friends()
 			end
 		end
 	end
-	
+
 	local function Menu_OnLeave(b)
 		highlight:ClearAllPoints()
 		GameTooltip:Hide()
 		if b and b.index and b.index > 0 then highlight:SetAlpha(0) end
 		if not f:IsMouseOver() then f:Hide() end
 	end
-	
+
 	local function Block_OnLeave(self)
 		f.onBlock = nil
 		GameTooltip:Hide()
@@ -873,7 +873,7 @@ function module:SetGuild_Friends()
 			f:Hide()
 		end
 	end
-	
+
 	local function UpdateGuildText()
 		if IsInGuild() then
 			f.Guild.text:SetText((db.Infotext.Guild_Friends.ShowTotal and "Guild: %d/%d" or "Guild: %d"):format(#guildEntries, GetNumGuildMembers(true)))
@@ -924,7 +924,7 @@ function module:SetGuild_Friends()
 		if unit and unit ~= "player" then return end
 		if IsInGuild() then GuildRoster() end
 	end
-	
+
 	local function GetZoneColor(zone)
 		return unpack( db.Infotext.Guild_Friends.Color[
 			hordeZones:find(zone..",") and (horde and "FriendlyZone" or "EnemyZone") or
@@ -932,7 +932,7 @@ function module:SetGuild_Friends()
 			"ContestedZone"
 		] )
 	end
-	
+
 	local function MOTD_OnClose(edit)
 		edit:ClearAllPoints()
 		edit:SetParent(edit.prevParent)
@@ -956,7 +956,7 @@ function module:SetGuild_Friends()
 		f:Hide()
 		StaticPopup_Show("SET_BN_BROADCAST")
 	end
-	
+
 	local function OnGuildmateClick( self, button )
 		if not( self and self.unit ) then return end
 		if (isGuild or not self.presenceID) and button == "RightButton" and not IsControlKeyDown() then
@@ -1033,7 +1033,7 @@ function module:SetGuild_Friends()
 
 	local sep2, sep = f:CreateTexture()
 	sep2:SetTexture"Interface\\FriendsFrame\\UI-FriendsFrame-OnlineDivider"
-	
+
 	local broadcasts = setmetatable( {}, { __index = function( table, index )
 		local bc = CreateFrame( "Button", nil, f )
 		table[index] = bc
@@ -1119,7 +1119,7 @@ function module:SetGuild_Friends()
 		end
 		return button
 	end } )
-	
+
 	local function SetClassIcon( tex, class )
 		tex:SetTexture"Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes"
 		local offset, left, right, bottom, top = 0.025, unpack( CLASS_BUTTONS[class] )
@@ -1251,7 +1251,7 @@ function module:SetGuild_Friends()
 			button:Show()
 		end
 	end
-	
+
 	local function SortMates(a,b)
 		local s = sortIndexes[isGuild]
 		local si, lv = s[1], 1
@@ -1267,11 +1267,11 @@ function module:SetGuild_Friends()
 			return a[si] > b[si]
 		end
 	end
-	
+
 	local texOrder1 = f:CreateTexture()
 	texOrder1:SetTexture"Interface\\Buttons\\WHITE8X8"
 	texOrder1:SetBlendMode"ADD"
-	
+
 	UpdateTablet = function()
 		local totalRF, onlineRF, entries = 0, 0
 
@@ -1329,7 +1329,7 @@ function module:SetGuild_Friends()
 			end
 		end
 		if isGuild or #entries==0 then sep2:Hide() end
-		
+
 		sort(entries,SortMates)
 		for i = 1, #entries do
 			button, nameW, levelW, zoneW, notesW, rankW = SetButtonData( i, inGroup )
@@ -1473,7 +1473,7 @@ function module:SetGuild_Friends()
 		f:SetHeight( extraHeight + realFriendsHeight + BUTTON_HEIGHT * nbEntries + GAP*2 )
 		if not (f.onBlock or f:IsMouseOver()) then f:Hide() end
 	end
-	
+
 	local function AnchorTablet(frame)
 		CloseDropDownMenus()
 		f:Show()
@@ -1485,17 +1485,17 @@ function module:SetGuild_Friends()
 		UpdateBlockHints()
 		UpdateTablet()
 	end
-	
-	
+
+
 	--------------------------------------------------------------------
 	-- /GUILD/ --
 	--------------------------------------------------------------------
-	
+
 	if db.Infotext.Guild_Friends.Guild.Enable == true then
-	
+
 		local Stat9 = CreateFrame("Frame", "LUI_Info_Guild", infos_right)
 		Stat9:EnableMouse(true)
-		
+
 		f.Guild = CreateFrame("Frame", "LUI Guild", Stat9)
 
 		f.Guild.text = infos_right:CreateFontString("LUI_Guild", "OVERLAY")
@@ -1504,7 +1504,7 @@ function module:SetGuild_Friends()
 		f.Guild.text:SetHeight(db.Infotext.Guild_Friends.Guild.Size)
 		f.Guild.text:SetTextColor(db.Infotext.Guild_Friends.Guild.Color.r, db.Infotext.Guild_Friends.Guild.Color.g, db.Infotext.Guild_Friends.Guild.Color.b, db.Infotext.Guild_Friends.Guild.Color.a)
 		f.Guild.text:SetText("LUI_Friends")
-		
+
 		f.Guild:SetAllPoints(f.Guild.text)
 		f.Guild:SetScript("OnEnter", function(self)
 			if not InCombatLockdown() then
@@ -1537,31 +1537,31 @@ function module:SetGuild_Friends()
 				UpdateBlockHints()
 			end
 		end)
-		
+
 		f:RegisterEvent("GUILD_ROSTER_UPDATE")
 		f:RegisterEvent("PLAYER_GUILD_UPDATE")
-		
+
 		f:GUILD_ROSTER_UPDATE()
 	end
-	
+
 	--------------------------------------------------------------------
 	-- /FRIENDS/ --
 	--------------------------------------------------------------------
-	
+
 	if db.Infotext.Guild_Friends.Friends.Enable == true then
-		
+
 		local Stat10 = CreateFrame("Frame", "LUI_Info_Friends", infos_right)
 		Stat10:EnableMouse(true)
-		
+
 		f.Friends = CreateFrame("Frame", "LUI Friends", Stat10)
-		
+
 		f.Friends.text = infos_right:CreateFontString("LUI_Friends", "OVERLAY")
 		f.Friends.text:SetPoint("RIGHT", infos_right, "LEFT", db.Infotext.Guild_Friends.Friends.X, db.Infotext.Guild_Friends.Friends.Y)
 		f.Friends.text:SetFont(LSM:Fetch("font", db.Infotext.Guild_Friends.Friends.Font), db.Infotext.Guild_Friends.Friends.Size, db.Infotext.Guild_Friends.Friends.Outline)
 		f.Friends.text:SetHeight(db.Infotext.Guild_Friends.Friends.Size)
 		f.Friends.text:SetTextColor(db.Infotext.Guild_Friends.Friends.Color.r, db.Infotext.Guild_Friends.Friends.Color.g, db.Infotext.Guild_Friends.Friends.Color.b, db.Infotext.Guild_Friends.Friends.Color.a)
 		f.Friends.text:SetText("LUI_Guild")
-		
+
 		f.Friends:SetAllPoints(f.Friends.text)
 		f.Friends:SetScript("OnEnter", function(self)
 			if not InCombatLockdown() then
@@ -1585,7 +1585,7 @@ function module:SetGuild_Friends()
 				UpdateBlockHints()
 			end
 		end)
-		
+
 		StaticPopupDialogs.SET_BN_BROADCAST = {
 			text = BN_BROADCAST_TOOLTIP,
 			button1 = ACCEPT,
@@ -1603,7 +1603,7 @@ function module:SetGuild_Friends()
 			whileDead = 1,
 			hideOnEscape = 1
 		}
-		
+
 		f:RegisterEvent("FRIENDLIST_UPDATE")
 		f:RegisterEvent("CHAT_MSG_SYSTEM")
 		f:RegisterEvent("BN_FRIEND_INFO_CHANGED")
@@ -1612,24 +1612,24 @@ function module:SetGuild_Friends()
 		f:RegisterEvent("BN_CUSTOM_MESSAGE_CHANGED")
 		f:RegisterEvent("BN_CONNECTED")
 		f:RegisterEvent("BN_DISCONNECTED")
-		
+
 		ShowFriends()
 	end
-	
+
 	local guildTimer, friendTimer = 0, 0
-	
+
 	local orgGuildRoster = GuildRoster
 	GuildRoster = function(...)
 		guildTimer = 0
 		return orgGuildRoster(...)
 	end
-	
+
 	local orgShowFriends = ShowFriends
 	ShowFriends = function(...)
 		friendTimer = 0
 		return orgShowFriends(...)
 	end
-	
+
 	local function OnUpdate( self, elapsed )
 		guildTimer, friendTimer = guildTimer + elapsed, friendTimer + elapsed
 		if guildTimer > 15 then
@@ -1637,21 +1637,21 @@ function module:SetGuild_Friends()
 		end
 		if friendTimer > 15 then ShowFriends() end
 	end
-	
+
 	function f:BN_FRIEND_INFO_CHANGED()
 		if f:IsShown() then
 			UpdateTablet()
 		end
 	end
-	
+
 	f.BN_CUSTOM_MESSAGE_CHANGED = f.BN_FRIEND_INFO_CHANGED
 	f.BN_FRIEND_ACCOUNT_ONLINE = UpdateFriendText
 	f.BN_FRIEND_ACCOUNT_OFFLINE = UpdateFriendText
 	f.BN_CONNECTED = UpdateFriendText
 	f.BN_DISCONNECTED = UpdateFriendText
-	
+
 	f:Hide()
-	
+
 	local r,g,b = unpack(db.Infotext.Guild_Friends.Color.Status)
 	preformatedStatusText = db.Infotext.Guild_Friends.ClassColoredStatus and "%s " or ("|cff%.2x%.2x%.2x%%s|r "):format(r*255,g*255,b*255)
 	sortIndexes = {
@@ -1659,17 +1659,17 @@ function module:SetGuild_Friends()
 		[false] ={ colpairs[db.Infotext.Guild_Friends.sortCols[false][1]], colpairs[db.Infotext.Guild_Friends.sortCols[false][2]], colpairs[db.Infotext.Guild_Friends.sortCols[false][3]] },
 	}
 	texOrder1:SetVertexColor(unpack(db.Infotext.Guild_Friends.Color.OrderA))
-	
+
 	horde = UnitFactionGroup("player") == "Horde"
 	f:SetBackdrop({
-		bgFile = LSM:Fetch("background", db.Infotext.Guild_Friends.BGTexture), 
-		edgeFile = LSM:Fetch("border", db.Infotext.Guild_Friends.BorderTexture), 
+		bgFile = LSM:Fetch("background", db.Infotext.Guild_Friends.BGTexture),
+		edgeFile = LSM:Fetch("border", db.Infotext.Guild_Friends.BorderTexture),
 		edgeSize=14, tile = false, tileSize=0,
 		insets = { left=0, right=0, top=0, bottom=0 }})
 	f:SetFrameStrata("TOOLTIP")
 	f:SetClampedToScreen(true)
 	f:EnableMouse(true)
-	
+
 	slider = CreateFrame("Slider", "LUI_Info_G/F_slider", f)
 	slider:SetWidth(16)
 	slider:SetThumbTexture("Interface\\Buttons\\UI-SliderBar-Button-Horizontal")
@@ -1687,14 +1687,14 @@ function module:SetGuild_Friends()
 			if f:IsMouseOver() then UpdateScrollButtons(MAX_ENTRIES) end
 		end
 	end)
-	
+
 	if IsInGuild(buttons[0]) then GuildRoster() else guildTimer = 0 end
-	
+
 	t:SetScript("OnUpdate", OnUpdate)
 	f:SetScript("OnEnter", Menu_OnEnter)
 	f:SetScript("OnLeave", Menu_OnLeave)
 	f:SetScript("OnEvent", function(self, event, ...) return self[event](self, ...) end)
-	
+
 	StaticPopupDialogs.COLORS_RESET = {
 		text = "The Colors have been reset to thier default settings",
 		button1 = "OK",
@@ -1711,26 +1711,26 @@ end
 
 function module:SetDPS(refresh)
 	if db.Infotext.Dps.Enable == false then return end
-	
+
 	local Stat11 = CreateFrame("Frame", "LUI_Info_DPS", infos_right)
 	Stat11:EnableMouse(true)
-	
+
 	local active = db.Infotext.Dps.active
 	if active ~= "dps" and active ~= "hps" and active ~= "dtps" and active ~= "htps" then db.Infotext.Dps.active = "dps" active = "dps" end
-	
+
 	Text_dps = infos_right:CreateFontString(nil, "OVERLAY")
 	Text_dps:SetFont(LSM:Fetch("font", db.Infotext.Dps.Font), db.Infotext.Dps.Size, db.Infotext.Dps.Outline)
 	Text_dps:SetPoint("LEFT", infos_right, "LEFT", db.Infotext.Dps.X,db.Infotext.Dps.Y)
 	Text_dps:SetHeight(db.Infotext.Dps.Size)
 	Text_dps:SetTextColor(db.Infotext.Dps.Color.r, db.Infotext.Dps.Color.g, db.Infotext.Dps.Color.b, db.Infotext.Dps.Color.a)
 	Stat11:SetAllPoints(Text_dps)
-	
+
 	if active == "dps" then Text_dps:SetText("DPS: ")
 	elseif active == "hps" then Text_dps:SetText("HPS: ")
 	elseif active == "dtps" then Text_dps:SetText("DTPS: ")
 	elseif active == "htps" then Text_dps:SetText("HTPS: ") end
-	
-	
+
+
 	-- Localised functions
 	local UnitGUID, GetTime = UnitGUID, GetTime
 
@@ -1738,14 +1738,14 @@ function module:SetDPS(refresh)
 	local playerId, petId, combatStartTime, combatTimeElapsed, elapsedTime
 	local totalDamage, playerDamage, petDamage, totalHealing, effectiveHealing, overHealing, totalDamageTaken, totalHealingTaken, effectiveHealingTaken, overHealingTaken = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 	combatTimeElapsed = combatTimeElapsed or 1
-	
+
 	local textFormat = {
 		dps = "DPS: %.1f",
 		hps = "HPS: %.1f",
 		dtps = "DTPS: %.1f",
 		htps = "HTPS: %.1f",
 	}
-	
+
 	local events = {
 		dps = {
 			SWING_DAMAGE = true,
@@ -1776,7 +1776,7 @@ function module:SetDPS(refresh)
 			SPELL_AURA_REFRESH = true,
 		},
 	}
-	
+
 	local shields = {
 		[select(1, GetSpellInfo(17))] = true, -- Power Word: Shield
 		[select(1, GetSpellInfo(47515))] = true, -- Divine Aegis
@@ -1787,7 +1787,7 @@ function module:SetDPS(refresh)
 		elapsedTime = elapsedTime - t
 		if elapsedTime < 0 then
 			elapsedTime = 0.5
-			
+
 			-- SetText
 			combatTimeElapsed = GetTime() - combatStartTime
 			local total
@@ -1800,12 +1800,12 @@ function module:SetDPS(refresh)
 			elseif active == "htps" then
 				total = totalHealingTaken / combatTimeElapsed
 			end
-				
+
 			Text_dps:SetFormattedText(textFormat[active], total)
 			self:SetAllPoints(Text_dps)
 		end
 	end
-	
+
 	function Stat11:COMBAT_LOG_EVENT_UNFILTERED(_, eventType, _, Id, _, _, TargetId, _, _, spellID, spellName, _, amount, amount2)
 		local record = false
 		for mode in pairs(events) do
@@ -1821,12 +1821,12 @@ function module:SetDPS(refresh)
 				amount = amount2
 			end
 		end
-		
+
 		if Id == playerId or Id == petId then
 			if eventType == "SWING_DAMAGE" then
 				amount = spellID
 			end
-			
+
 			if events["dps"][eventType] then
 				totalDamage = totalDamage + amount
 				if Id == playerId then playerDamage = playerDamage + amount end
@@ -1837,13 +1837,13 @@ function module:SetDPS(refresh)
 				effectiveHealing = effectiveHealing + (amount - amount2)
 				overHealing = overHealing + amount2
 			end
-			
+
 		end
 		if TargetId == playerId then
 			if eventType == "SWING_DAMAGE" then
 				amount = spellID
 			end
-			
+
 			if events["dtps"][eventType] then
 				totalDamageTaken = totalDamageTaken + amount
 			end
@@ -1852,7 +1852,7 @@ function module:SetDPS(refresh)
 				effectiveHealingTaken = effectiveHealingTaken + (amount - amount2)
 				overHealingTaken = overHealingTaken + amount2
 			end
-			
+
 		end
 	end
 
@@ -1860,7 +1860,7 @@ function module:SetDPS(refresh)
 		playerId = UnitGUID("player")
 		petId = UnitGUID("pet")
 	end
-	
+
 	function Stat11:PLAYER_REGEN_DISABLED()
 		combatStartTime = GetTime()
 		combatTimeElapsed = 0
@@ -1869,24 +1869,24 @@ function module:SetDPS(refresh)
 		totalDamageTaken = 0
 		totalHealingTaken, effectiveHealingTaken, overHealingTaken = 0, 0, 0
 		elapsedTime = 0.5
-		
+
 		self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 		self:SetScript("OnUpdate", OnUpdate)
 	end
 
 	function Stat11:PLAYER_REGEN_ENABLED()
 		OnUpdate(self, 10)
-		
+
 		self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 		self:SetScript("OnUpdate", nil)
 	end
-	
+
 	function Stat11:UNIT_PET(unit)
 		if unit == "player" then
 			petId = UnitGUID("pet")
 		end
 	end
-	
+
 	Stat11:RegisterEvent("PLAYER_ENTERING_WORLD")
 	Stat11:RegisterEvent("PLAYER_REGEN_DISABLED")
 	Stat11:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -1907,43 +1907,43 @@ function module:SetDPS(refresh)
 			total = totalDamage / combatTimeElapsed
 		end
 		db.Infotext.Dps.active = active
-		
+
 		Text_dps:SetFormattedText(textFormat[active], total)
 		self:SetAllPoints(Text_dps)
 	end)
 	Stat11:SetScript("OnEnter", function(self)
 		if not InCombatLockdown() then
 			local name = UnitName("player")
-			
+
 			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 			GameTooltip:ClearLines()
 			GameTooltip:AddLine("Combat Info", 1, 1, 1)
-			
+
 			GameTooltip:AddLine("DPS:", 0.4, 0.78, 1)
 			GameTooltip:AddDoubleLine(name..":", format("%.1f", playerDamage / combatTimeElapsed))
 			if petDamage and (petDamage > 0) then
 				GameTooltip:AddDoubleLine("Pet:", format("%.1f", petDamage / combatTimeElapsed))
 			end
-			
+
 			GameTooltip:AddLine("HPS:", 0.4, 0.78, 1)
 			GameTooltip:AddDoubleLine("Effective:", format("%.1f", effectiveHealing / combatTimeElapsed))
 			GameTooltip:AddDoubleLine("Overhealing:", format("%.1f", overHealing / combatTimeElapsed))
-			
+
 			GameTooltip:AddLine("DTPS:", 0.4, 0.78, 1)
 			GameTooltip:AddDoubleLine(name..":", format("%.1f", totalDamageTaken / combatTimeElapsed))
-			
+
 			GameTooltip:AddLine("HTPS:", 0.4, 0.78, 1)
 			GameTooltip:AddDoubleLine("Effective:", format("%.1f", effectiveHealingTaken / combatTimeElapsed))
 			GameTooltip:AddDoubleLine("Overhealing:", format("%.1f", overHealingTaken / combatTimeElapsed))
-			
-			
+
+
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine("Hint: Click to change meter type.", 0.0, 1.0, 0.0)
 
 			GameTooltip:Show()
 		end
 	end)
-	Stat11:SetScript("OnLeave", function() GameTooltip:Hide() end)		
+	Stat11:SetScript("OnLeave", function() GameTooltip:Hide() end)
 	Stat11:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
 	if refresh then Stat11:PLAYER_ENTERING_WORLD() end
 end
@@ -2211,7 +2211,7 @@ function module:LoadOptions()
 											db.Infotext.Bags.Color.g = g
 											db.Infotext.Bags.Color.b = b
 											db.Infotext.Bags.Color.a = a
-											
+
 											Text_bags:SetTextColor(r, g, b, a)
 										end,
 									order = 2,
@@ -2318,7 +2318,7 @@ function module:LoadOptions()
 										if ClockX == nil or ClockX == "" then
 											ClockX = "0"
 										end
-										
+
 										db.Infotext.Clock.X = tonumber(ClockX)
 										Text_time:SetPoint("CENTER", infos_right, "CENTER", db.Infotext.Clock.X, db.Infotext.Clock.Y)
 									end,
@@ -2371,7 +2371,7 @@ function module:LoadOptions()
 											db.Infotext.Clock.Color.g = g
 											db.Infotext.Clock.Color.b = b
 											db.Infotext.Clock.Color.a = a
-											
+
 											Text_time:SetTextColor(r, g, b, a)
 										end,
 									order = 2,
@@ -2495,7 +2495,7 @@ function module:LoadOptions()
 											db.Infotext.Dps.Color.g = g
 											db.Infotext.Dps.Color.b = b
 											db.Infotext.Dps.Color.a = a
-											
+
 											Text_dps:SetTextColor(r, g, b, a)
 										end,
 									order = 2,
@@ -2567,7 +2567,7 @@ function module:LoadOptions()
 										if ArmorX == nil or ArmorX == "" then
 											ArmorX = "0"
 										end
-										
+
 										db.Infotext.Armor.X = tonumber(ArmorX)
 										Text_dura:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Armor.X, db.Infotext.Armor.Y)
 									end,
@@ -2583,7 +2583,7 @@ function module:LoadOptions()
 										if ArmorY == nil or ArmorY == "" then
 											ArmorY = "0"
 										end
-										
+
 										db.Infotext.Armor.Y = tonumber(ArmorY)
 										Text_dura:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Armor.X, db.Infotext.Armor.Y)
 									end,
@@ -2621,7 +2621,7 @@ function module:LoadOptions()
 											db.Infotext.Armor.Color.g = g
 											db.Infotext.Armor.Color.b = b
 											db.Infotext.Armor.Color.a = a
-											
+
 											Text_dura:SetTextColor(r, g, b, a)
 										end,
 									order = 2,
@@ -2693,7 +2693,7 @@ function module:LoadOptions()
 										if FpsX == nil or FpsX == "" then
 											FpsX = "0"
 										end
-										
+
 										db.Infotext.Fps.X = tonumber(FpsX)
 										Text_fps:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Fps.X, db.Infotext.Fps.Y)
 									end,
@@ -2709,7 +2709,7 @@ function module:LoadOptions()
 										if FpsY == nil or FpsY == "" then
 											FpsY = "0"
 										end
-										
+
 										db.Infotext.Fps.Y = tonumber(FpsY)
 										Text_fps:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Fps.X, db.Infotext.Fps.Y)
 									end,
@@ -2727,7 +2727,7 @@ function module:LoadOptions()
 											db.Infotext.FPS.MSValue = value
 										end
 									end,
-							order = 5,																				
+							order = 5,
 						},
 						TextSettings = {
 							name = "Font Settings",
@@ -2761,7 +2761,7 @@ function module:LoadOptions()
 											db.Infotext.Fps.Color.g = g
 											db.Infotext.Fps.Color.b = b
 											db.Infotext.Fps.Color.a = a
-											
+
 											Text_fps:SetTextColor(r, g, b, a)
 										end,
 									order = 2,
@@ -2829,8 +2829,8 @@ function module:LoadOptions()
 							type = "select",
 							values = function()
 								local realmPlayerArray = {"ALL"}
-								
-								if LUIGold.gold ~= nil then 
+
+								if LUIGold.gold ~= nil then
 									if LUIGold.gold[myPlayerRealm] ~= nil then
 										for f in pairs(LUIGold.gold[myPlayerRealm]) do
 											if f == "Horde" or f == "Alliance" then
@@ -2845,8 +2845,8 @@ function module:LoadOptions()
 							end,
 							get = function()
 								local realmPlayerArray = {"ALL"}
-								
-								if LUIGold.gold ~= nil then 
+
+								if LUIGold.gold ~= nil then
 									if LUIGold.gold[myPlayerRealm] ~= nil then
 										for f in pairs(LUIGold.gold[myPlayerRealm]) do
 											if f == "Horde" or f == "Alliance" then
@@ -2867,8 +2867,8 @@ function module:LoadOptions()
 							end,
 							set = function(self, player)
 								local realmPlayerArray = {"ALL"}
-								
-								if LUIGold.gold ~= nil then 
+
+								if LUIGold.gold ~= nil then
 									if LUIGold.gold[myPlayerRealm] ~= nil then
 										for f in pairs(LUIGold.gold[myPlayerRealm]) do
 											if f == "Horde" or f == "Alliance" then
@@ -2879,7 +2879,7 @@ function module:LoadOptions()
 										end
 									end
 								end
-								
+
 								for i = 1, #realmPlayerArray do
 									if i == player and realmPlayerArray[i] ~= "" then
 										playerReset = realmPlayerArray[i]
@@ -2898,7 +2898,7 @@ function module:LoadOptions()
 									module:ResetGold("ALL")
 									return
 								end
-								if LUIGold.gold ~= nil then 
+								if LUIGold.gold ~= nil then
 									if LUIGold.gold[myPlayerRealm] ~= nil then
 										local breakloop = false
 										for f in pairs(LUIGold.gold[myPlayerRealm]) do
@@ -2929,7 +2929,7 @@ function module:LoadOptions()
 										if GoldX == nil or GoldX == "" then
 											GoldX = "0"
 										end
-										
+
 										db.Infotext.Gold.X = tonumber(GoldX)
 										Text_gold:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Gold.X, db.Infotext.Gold.Y)
 									end,
@@ -2982,7 +2982,7 @@ function module:LoadOptions()
 											db.Infotext.Gold.Color.g = g
 											db.Infotext.Gold.Color.b = b
 											db.Infotext.Gold.Color.a = a
-											
+
 											Text_gold:SetTextColor(r, g, b, a)
 										end,
 									order = 2,
@@ -3106,8 +3106,8 @@ function module:LoadOptions()
 											set = function(self, texture)
 													db.Infotext.Guild_Friends.BGTexture = texture
 													_G["LUI Guild/Friends"]:SetBackdrop({
-															bgFile = LSM:Fetch("background", db.Infotext.Guild_Friends.BGTexture), 
-															edgeFile = LSM:Fetch("border", db.Infotext.Guild_Friends.BorderTexture), 
+															bgFile = LSM:Fetch("background", db.Infotext.Guild_Friends.BGTexture),
+															edgeFile = LSM:Fetch("border", db.Infotext.Guild_Friends.BorderTexture),
 															edgeSize=14, tile = false, tileSize=0,
 															insets = { left=0, right=0, top=0, bottom=0 }})
 												end,
@@ -3122,8 +3122,8 @@ function module:LoadOptions()
 											set = function(self, texture)
 													db.Infotext.Guild_Friends.BorderTexture = texture
 													_G["LUI Guild/Friends"]:SetBackdrop({
-															bgFile = LSM:Fetch("background", db.Infotext.Guild_Friends.BGTexture), 
-															edgeFile = LSM:Fetch("border", db.Infotext.Guild_Friends.BorderTexture), 
+															bgFile = LSM:Fetch("background", db.Infotext.Guild_Friends.BGTexture),
+															edgeFile = LSM:Fetch("border", db.Infotext.Guild_Friends.BorderTexture),
 															edgeSize=14, tile = false, tileSize=0,
 															insets = { left=0, right=0, top=0, bottom=0 }})
 												end,
@@ -3164,7 +3164,7 @@ function module:LoadOptions()
 												if GuildX == nil or GuildX == "" then
 													GuildX = "0"
 												end
-												
+
 												db.Infotext.Guild_Friends.Guild.X = tonumber(GuildX)
 												LUI_Guild:SetPoint("RIGHT", infos_right, "LEFT", db.Infotext.Guild_Friends.Guild.X, db.Infotext.Guild_Friends.Guild.Y)
 											end,
@@ -3180,7 +3180,7 @@ function module:LoadOptions()
 												if GuildY == nil or GuildY == "" then
 													GuildY = "0"
 												end
-												
+
 												db.Infotext.Guild_Friends.Guild.Y = tonumber(GuildY)
 												LUI_Guild:SetPoint("RIGHT", infos_right, "LEFT", db.Infotext.Guild_Friends.Guild.X, db.Infotext.Guild_Friends.Guild.Y)
 											end,
@@ -3218,7 +3218,7 @@ function module:LoadOptions()
 													db.Infotext.Guild_Friends.Guild.Color.g = g
 													db.Infotext.Guild_Friends.Guild.Color.b = b
 													db.Infotext.Guild_Friends.Guild.Color.a = a
-													
+
 													LUI_Guild:SetTextColor(r, g, b, a)
 												end,
 											order = 2,
@@ -3290,7 +3290,7 @@ function module:LoadOptions()
 												if FriendsX == nil or FriendsX == "" then
 													FriendsX = "0"
 												end
-												
+
 												db.Infotext.Guild_Friends.Friends.X = tonumber(FriendsX)
 												LUI_Friends:SetPoint("RIGHT", infos_right, "LEFT", db.Infotext.Guild_Friends.Friends.X, db.Infotext.Guild_Friends.Friends.Y)
 											end,
@@ -3306,7 +3306,7 @@ function module:LoadOptions()
 												if FriendsY == nil or FriendsY == "" then
 													FriendsY = "0"
 												end
-												
+
 												db.Infotext.Guild_Friends.Friends.Y = tonumber(FriendsY)
 												LUI_Friends:SetPoint("RIGHT", infos_right, "LEFT", db.Infotext.Guild_Friends.Friends.X, db.Infotext.Guild_Friends.Friends.Y)
 											end,
@@ -3344,7 +3344,7 @@ function module:LoadOptions()
 													db.Infotext.Guild_Friends.Friends.Color.g = g
 													db.Infotext.Guild_Friends.Friends.Color.b = b
 													db.Infotext.Guild_Friends.Friends.Color.a = a
-													
+
 													LUI_Friends:SetTextColor(r, g, b, a)
 												end,
 											order = 2,
@@ -3444,7 +3444,7 @@ function module:LoadOptions()
 										if MemoryX == nil or MemoryX == "" then
 											MemoryX = "0"
 										end
-										
+
 										db.Infotext.Memory.X = tonumber(MemoryX)
 										Text_mb:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Memory.X, db.Infotext.Memory.Y)
 									end,
@@ -3460,7 +3460,7 @@ function module:LoadOptions()
 										if MemoryY == nil or MemoryY == "" then
 											MemoryY = "0"
 										end
-										
+
 										db.Infotext.Memory.Y = tonumber(MemoryY)
 										Text_mb:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Memory.X, db.Infotext.Memory.Y)
 									end,
@@ -3498,7 +3498,7 @@ function module:LoadOptions()
 											db.Infotext.Memory.Color.g = g
 											db.Infotext.Memory.Color.b = b
 											db.Infotext.Memory.Color.a = a
-											
+
 											Text_mb:SetTextColor(r, g, b, a)
 										end,
 									order = 2,
@@ -3541,7 +3541,7 @@ function module:LoadOptions()
 			},
 		},
 	}
-	
+
 	local colorOptions = {"Background", "Border", "Note", "OfficerNote", "MotD", "Broadcast", "Title", "Rank", "Realm", "Status", "OrderA", "ContestedZone", "FriendlyZone", "EnemyZone"}
 	local colorDesc = {
 		Background = "Background Color of the Guild and Friends List frames.\n\nNote: most textures will ignore changing this color.",
@@ -3580,7 +3580,7 @@ function module:LoadOptions()
 						db.Infotext.Guild_Friends.Color[v] = {r, g, b}
 					end
 				end,
-		}			
+		}
 	end
 
 	return options
@@ -3590,15 +3590,15 @@ function module:OnInitialize()
 	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
 	LUI:RefreshDefaults()
 	LUI:Refresh()
-	
+
 	self.db = LUI.db.profile
 	db = self.db
-	
+
 	if LUIGold.version ~= version then
 		module:ResetGold("ALL")
 		LUIGold.version = version
 	end
-	
+
 	LUI:RegisterModule(self)
 end
 
