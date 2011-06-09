@@ -2,20 +2,22 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: bags.lua
 	Description: Bags Module
-	Version....: 1.3
-	Rev Date...: 05/02/11 [dd/mm/yy]
-	
+	Version....: 1.3.2
+	Rev Date...: 27/04/11 [dd/mm/yy]
+
 	Edits:
 		v1.0: Loui
 		-  a: Chaoslux
 		v1.1: Chaoslux
 		v1.2: Chaoslux
 		v1.3: Chaoslux
+		v1.3.1: Xolsom (Stack & Sort Function)
+		v1.3.2: Xolsom (WoW 4.1 Fix)
 
-	A featureless, 'pure' version of Stuffing. 
-	This version should work on absolutely everything, 
+	A featureless, 'pure' version of Stuffing.
+	This version should work on absolutely everything,
 	but I've removed pretty much all of the options.
-]] 
+]]
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LSM = LibStub("LibSharedMedia-3.0")
@@ -65,7 +67,7 @@ local ST_NORMAL = 1	--Flagged for possible deletion
 local ST_SPECIAL = 3	--Flagged for possible deletion
 local bagTexSize = 30
 
---Wonder about new names for those. Or if their purpose is justified. 
+--Wonder about new names for those. Or if their purpose is justified.
 local trashButton = {}
 local trashBag = {}
 
@@ -76,7 +78,7 @@ local BagsInfo = {}		--replace self.bags
 local ItemSlots = {}		--replace self.buttons
 local BagsSlots = {}		--replace self.bagsframe_buttons
 
---Tooltip Frame for to scan item tooltips. 
+--Tooltip Frame for to scan item tooltips.
 --At the moment, not sure if tooltip scanning is required.
 --local LUIBagsTT = nil
 
@@ -98,7 +100,7 @@ StaticPopupDialogs["CONFIRM_BUY_BANK_SLOT"] = {
 	hideOnEscape = 1,
 };
 
---This function returns the correct variable for the bag type. 
+--This function returns the correct variable for the bag type.
 local function LUIBags_Select(bag)
 	if bag == "Bank" and LUIBank then return LUIBank end
 	if bag == "Bags" and LUIBags then return LUIBags end
@@ -118,9 +120,6 @@ end
 
 local function LUIBank_OnHide()
 	CloseBankFrame()
-end
-local function LUIBank_OnShow()
-	module:PLAYERBANKSLOTS_CHANGED(self, 29)
 end
 
 local function LUIBags_OnHide()  -- Close the Bank if Bags are closed.
@@ -172,7 +171,7 @@ local function LUIBags_StopMoving(self)
 	local x, y = self:GetCenter()
 
 	-- Get rid of the "LUI" in the frame name, leaving Bags or Bank
-	local bag = strsub(self:GetName(), 4) 
+	local bag = strsub(self:GetName(), 4)
 	db.Bags[bag].CoordX = x
 	db.Bags[bag].CoordY = y
 end
@@ -183,23 +182,23 @@ function module:InitSelect(bag)
 end
 
 function module:SlotUpdate(item)
-	--if not LUIBags:IsShown() then return end -- don't do any slot update if bags are not shown
+	if not LUIBags:IsShown() then return end -- don't do any slot update if bags are not shown
 	local texture, count, locked = GetContainerItemInfo(item.bag, item.slot)
 	local clink = GetContainerItemLink(item.bag, item.slot)
 	local color = db.Bags.Colors.Border
 
 	if not item.frame.lock then
 		item.frame:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
-		
+
 		--Check for Profession Bag
 		local bagType = module:BagType(item.bag)
-		if (bagType == ST_SPECIAL) then 
+		if (bagType == ST_SPECIAL) then
 			local color = db.Bags.Colors.Professions
 			item.frame:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
 		end
 
 	end
-	
+
 	if item.Cooldown then
 		local cd_start, cd_finish, cd_enable = GetContainerItemCooldown(item.bag, item.slot)
 		CooldownFrame_SetTimer(item.Cooldown, cd_start, cd_finish, cd_enable)
@@ -219,13 +218,13 @@ function module:SlotUpdate(item)
 	else
 		item.name, item.rarity = nil, nil
 	end
-	
+
 	SetItemButtonTexture(item.frame, texture)
 	SetItemButtonCount(item.frame, count)
 	SetItemButtonDesaturated(item.frame, locked, 0.5, 0.5, 0.5)
-		
+
 	item.frame:Show()
-end 
+end
 
 function module:BagSlotUpdate(bag)
 	if not ItemSlots then
@@ -238,8 +237,8 @@ function module:BagSlotUpdate(bag)
 		end
 	end
 	if bag >= 0 and bag <= 4 then
-		if LUIBags and LUIBags:IsShown() then 
-			module:ReloadLayout("Bags") 
+		if LUIBags and LUIBags:IsShown() then
+			module:ReloadLayout("Bags")
 		end
 	end
 end
@@ -253,7 +252,7 @@ function module:BagFrameSlotNew(slot, parent)
 		end
 	end
 
-	--Make a new slot. 
+	--Make a new slot.
 	local ret = {}
 	local template
 
@@ -341,10 +340,10 @@ function module:SlotNew(bag, slot)
 end
 
 function module:BagType(bag)
-	--From OneBag. Still wondering the use of those. 
+	--From OneBag. Still wondering the use of those.
 	local bagProfession = 0x0008 + 0x0010 + 0x0020 + 0x0040 + 0x0080 + 0x0200 + 0x0400
 	local bagType = select(2, GetContainerNumFreeSlots(bag))
-	
+
 	if bit.band(bagType, bagProfession) > 0 then
 		return ST_SPECIAL
 	end
@@ -424,7 +423,7 @@ function module:CreateBagFrame(bagType)
 	frame:SetToplevel(1)
 	frame:SetFrameStrata("HIGH")
 	frame:SetFrameLevel(20)
-	
+
 	if db.Bags[bagType].Locked == 0 then
 		frame:SetScript("OnMouseDown", LUIBags_StartMoving)
 		frame:SetScript("OnMouseUp", LUIBags_StopMoving)
@@ -445,12 +444,24 @@ function module:CreateBagFrame(bagType)
 	closeBtn:RegisterForClicks("AnyUp")
 	closeBtn:GetNormalTexture():SetDesaturated(1)
 	frame.closeButton = closeBtn
-	
+
 	-- Bag Frame
 	local bagsFrame = CreateFrame("Frame", frameName.."_BagsFrame", frame)
 	bagsFrame:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 0, LUI:Scale(2))
 	bagsFrame:SetFrameStrata("HIGH")
 	frame.BagsFrame = bagsFrame
+
+	-- Sort Button
+	local sortBtn = CreateFrame("Button", frameName.."_SortButton", frame, "UIPanelButtonTemplate")
+	sortBtn:SetText("Stack & Sort");
+	sortBtn:SetWidth(LUI:Scale(sortBtn:GetTextWidth()+20))
+	sortBtn:SetHeight(LUI:Scale(sortBtn:GetTextHeight()+10))
+	sortBtn:SetPoint("BOTTOMRIGHT", LUI:Scale(-3), LUI:Scale(3))
+	sortBtn:SetScript("OnClick", function(self, button)
+		module:PrepareSort(self:GetParent());
+	end)
+	sortBtn:RegisterForClicks("AnyUp")
+	frame.sortButton = sortBtn
 
 	return frame
 end
@@ -461,7 +472,6 @@ function module:InitBank()
 	end
 
 	LUIBank = self:CreateBagFrame("Bank")
-	LUIBank:SetScript("OnShow", LUIBank_OnShow)
 	LUIBank:SetScript("OnHide", LUIBank_OnHide)
 end
 
@@ -474,40 +484,21 @@ local GetParent_StopMoving = function(self)
 end
 
 -- Function to return a string containing tracked currencies.
-local function GetCurrency(num)
-	local currencyFormat = "%d\124T%s:0:0:2:0\124t"
-	local name, count, icon = GetBackpackCurrencyInfo(num)
-	if name then 
-		return format(currencyFormat, count, icon) 
+local function GetTrackedCurrency()
+	local currencyFormat = "%d\124T%s:%d:%d:2:0\124t"
+	local currencyString = {}
+	for i = 1, MAX_WATCHED_TOKENS do
+		local name, count, icon = GetBackpackCurrencyInfo(i)
+		if name ~= nil then
+			currencyString[i] = format(currencyFormat,count,icon,0,0)
+		end
 	end
+	local currencyReturn = ""
+	for i = 1, #currencyString do
+		currencyReturn = currencyReturn.."  "..currencyString[i]
+	end
+	return currencyReturn
 end
-
-local testTitleBarDB = {
-	["Gold"] = {
-		order = 1,
-		enabled = true,
-		events = { "PLAYER_MONEY", "PLAYER_TRADE_MONEY", "TRADE_MONEY_CHANGED", },
-		func = function() return GetMoneyString(GetMoney(), 12) end,
-		
-	},
-}
-
-local TitleBarFuncs = {
-	function() return GetMoneyString(GetMoney(), 12) end,
-	function() return GetCurrency(1) end,
-	function() return GetCurrency(2) end,
-	function() return GetCurrency(3) end,
-}
-
-local TitleBarEvents = {
-	"PLAYER_MONEY",
-	"PLAYER_LOGIN",
-	"PLAYER_TRADE_MONEY",
-	"TRADE_MONEY_CHANGED",
-	"CURRENCY_DISPLAY_UPDATE",
-	"PLAYER_TRADE_CURRENCY",
-	"TRADE_CURRENCY_CHANGED",
-}
 
 function module:SetBags()
 	if LUIBags then return end -- Bags are already setup.
@@ -515,25 +506,25 @@ function module:SetBags()
 	LUIBags = module:CreateBagFrame("Bags")
 	LUIBags:SetScript("OnShow", LUIBags_OnShow)
 	LUIBags:SetScript("OnHide", LUIBags_OnHide)
-	
+
 	-- Search Editbox
 	local editbox = CreateFrame("EditBox", nil, LUIBags)
 	editbox:Hide()
 	editbox:SetAutoFocus(true)
 	editbox:SetHeight(LUI:Scale(32))
-	editbox:SetBackdrop( { 
-		bgFile = LUI_Media.blank, 
-		edgeFile = LUI_Media.blank, 
-		tile = false, edgeSize = 0, 
+	editbox:SetBackdrop( {
+		bgFile = LUI_Media.blank,
+		edgeFile = LUI_Media.blank,
+		tile = false, edgeSize = 0,
 		insets = { left = 0, right = 0, top = 0, bottom = 0 }
 	})
 	editbox:SetBackdropColor(0,0,0,0)
 	editbox:SetBackdropBorderColor(0,0,0,0)
-	
-	local resetAndClear = function(self)
+
+	local resetAndClear = function (self)
 		self:GetParent().search:Show()
-		--self:GetParent().gold:Show()
-		--self:GetParent().currency:Show()
+		self:GetParent().gold:Show()
+		self:GetParent().currency:Show()
 		self:ClearFocus()
 		module:SearchReset()
 	end
@@ -558,39 +549,13 @@ function module:SetBags()
 	search:SetJustifyH("LEFT")
 	search:SetText("|cff9999ff" .. "Search")
 	editbox:SetAllPoints(search)
-	
-	--Setting up the TitleBar
-	local TitleBarLastFrame = LUIBags.closeButton
-	for k, v in ipairs(TitleBarEvents) do
-		LUIBags:RegisterEvent(v)  -- Register all required events
-	end
-	for k, v in ipairs(TitleBarFuncs) do -- Create the FontString for each title bar function. 
-		LUIBags["TitleBar"..k] = LUIBags:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge")
-		LUIBags["TitleBar"..k]:SetJustifyH("RIGHT")
-		LUIBags["TitleBar"..k]:SetPoint("RIGHT", TitleBarLastFrame, "LEFT", -5, 0)
-		LUIBags["TitleBar"..k]:SetFont(LSM:Fetch("font", db.Bags.Bags.Font), 12)
-		TitleBarLastFrame = LUIBags["TitleBar"..k]
-	end
 
-	local refreshTitleBar = function(self)
-		for k, v in ipairs(TitleBarFuncs) do
-			self["TitleBar"..k]:SetText( v() ) -- Call the function for each titlebar string.
-		end
-	end
-
-	LUIBags:SetScript("OnEvent", refreshTitleBar)
-	function module:BackpackTokenFrame_Update()
-		refreshTitleBar(LUIBags)
-	end
-	module:Hook("BackpackTokenFrame_Update", true)
-
-	--[[
 	--Gold Display, next to close button
 	local gold = LUIBags:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge")
 	gold:SetJustifyH("RIGHT")
 	gold:SetPoint("RIGHT", LUIBags.closeButton, "LEFT", LUI:Scale(-3), 0)
 
-	--Watched Currency Display, next to gold. 
+	--Watched Currency Display, next to gold.
 	local currency = LUIBags:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge")
 	currency:SetJustifyH("RIGHT")
 	currency:SetPoint("RIGHT", gold, "LEFT", LUI:Scale(-9), 0)
@@ -613,11 +578,11 @@ function module:SetBags()
 	LUIBags:RegisterEvent("CURRENCY_DISPLAY_UPDATE")
 	LUIBags:RegisterEvent("PLAYER_TRADE_CURRENCY")
 	LUIBags:RegisterEvent("TRADE_CURRENCY_CHANGED")
-	--]]
+
 	local OpenEditbox = function(self)
 		self:GetParent().search:Hide()
-		--self:GetParent().gold:Hide()
-		--self:GetParent().currency:Hide()
+		self:GetParent().gold:Hide()
+		self:GetParent().currency:Hide()
 		self:GetParent().editbox:Show()
 		self:GetParent().editbox:HighlightText()
 	end
@@ -634,8 +599,8 @@ function module:SetBags()
 				self:GetParent().editbox:Hide()
 				self:GetParent().editbox:ClearFocus()
 				self:GetParent().detail:Show()
-				--self:GetParent().gold:Show()
-				--self:GetParent().currency:Show()
+				self:GetParent().gold:Show()
+				self:GetParent().currency:Show()
 				module:SearchReset()
 			end
 		end
@@ -656,12 +621,12 @@ function module:SetBags()
 
 	button:SetScript("OnMouseDown", GetParent_StartMoving)
 	button:SetScript("OnMouseUp", GetParent_StopMoving)
-	
+
 	LUIBags.editbox = editbox
 	LUIBags.search = search
 	LUIBags.button = button
-	--LUIBags.gold = gold
-	--LUIBags.currency = currency
+	LUIBags.gold = gold
+	LUIBags.currency = currency
 	LUIBags:Hide()
 end
 
@@ -669,11 +634,11 @@ function module:Layout(bagType)
 	local frame = LUIBags_Select(bagType)
 	local cols = db.Bags[bagType].Cols
 	local bagId = GetBags[bagType]
-	
+
 	local slots = 0
 	local rows = 0
 	local off = 26
-	
+
 	local padding = db.Bags[bagType].Padding
 	local spacing = db.Bags[bagType].Spacing
 	local borderTex = LSM:Fetch("border", db.Bags[bagType].BorderTexture)
@@ -690,27 +655,27 @@ function module:Layout(bagType)
 	end
 
 	local isBank = false
-	if bagType == "Bank" then 
+	if bagType == "Bank" then
 		isBank = true
 	else
-		--frame.gold:SetText(GetMoneyString(GetMoney(), 12))
+		frame.gold:SetText(GetMoneyString(GetMoney(), 12))
 		frame.editbox:SetFont(LSM:Fetch("font", db.Bags.Bags.Font), 12)
 		frame.search:SetFont(LSM:Fetch("font", db.Bags.Bags.Font), 12)
-		--frame.gold:SetFont(LSM:Fetch("font", db.Bags.Bags.Font), 12)
-		--frame.currency:SetFont(LSM:Fetch("font", db.Bags.Bags.Font), 12)
+		frame.gold:SetFont(LSM:Fetch("font", db.Bags.Bags.Font), 12)
+		frame.currency:SetFont(LSM:Fetch("font", db.Bags.Bags.Font), 12)
 
 		frame.search:ClearAllPoints()
 		frame.search:SetPoint("TOPLEFT", frame, LUI:Scale(db.Bags.Bags.Padding), LUI:Scale(-10))
 		frame.search:SetPoint("RIGHT", LUI:Scale(-(16 + 24)), 0)
 	end
-	
+
 	local bagsFrame = frame.BagsFrame
 	if not isCreated[bagType] then
 		frame:SetClampedToScreen(1)
-		frame:SetBackdrop( { 
-			bgFile = "Interface/Tooltips/UI-Tooltip-Background", 
-			edgeFile = borderTex, 
-			tile = false, edgeSize = 5, 
+		frame:SetBackdrop( {
+			bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+			edgeFile = borderTex,
+			tile = false, edgeSize = 5,
 			insets = { left = 3, right = 3, top = 3, bottom = 3 }
 		})
 		local fColor = { color.r *1.5, color.g *1.5, color.b *1.5, color.a}
@@ -725,9 +690,9 @@ function module:Layout(bagType)
 		-- bag frame stuff
 
 		bagsFrame:SetClampedToScreen(1)
-		bagsFrame:SetBackdrop( { 
-			bgFile = "Interface/Tooltips/UI-Tooltip-Background", 
-			edgeFile = borderTex, 
+		bagsFrame:SetBackdrop( {
+			bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+			edgeFile = borderTex,
 			tile = false, edgeSize = 5,
 			insets = { left = 3, right = 3, top = 3, bottom = 3 }
 		})
@@ -738,28 +703,28 @@ function module:Layout(bagType)
 
 		bagsFrame:SetHeight(LUI:Scale(2 * padding + bagTexSize))
 		bagsFrame:SetWidth(LUI:Scale(width))
-	
+
 		local idx = 0
 		for x, id in ipairs(bagId) do
 			if (not isBank and id <= 3 ) or (isBank and id ~= -1) then
 				local b = module:BagFrameSlotNew(id, bagsFrame)
 
-				local Xoffset = padding + idx*bagTexSize + idx*spacing 
+				local Xoffset = padding + idx*bagTexSize + idx*spacing
 
 				local BankSlots, Full = GetNumBankSlots()
 				local cost = GetBankSlotCost(BankSlots);
 
 				if isBank and not Full then
-					
+
 					--Most recently bought bag.
 					if x == GetNumBankSlots() + 1 then
 
 						--Set Things back up to normal after a purchase.
+						local texture = b.frame:GetNormalTexture()
 						b.frame:SetAlpha(1)
-						SetItemButtonTexture(b.frame,"Interface\\paperdoll\\UI-PaperDoll-Slot-Bag")
-						--b.frame:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
-						--b.frame:SetNormalTexture("Interface\\Buttons\\UI-Quickslot2")
-						--texture:SetSize(50,50)
+						b.frame:SetPushedTexture("Interface\Buttons\UI-Quickslot-Depress")
+						b.frame:SetNormalTexture("Interface\\Buttons\\UI-Quickslot2")
+						texture:SetSize(50,50)
 
 						b.frame:SetScript("OnClick", function(self)
 							if ( IsModifiedClick("PICKUPACTION") ) then
@@ -768,26 +733,32 @@ function module:Layout(bagType)
 								BankFrameItemButtonBag_OnClick(self, button);
 							end
 						end)
-					
+
 					--Bag about to be purcahsed.
 					elseif x == GetNumBankSlots() + 2 then
 
-						b.frame:SetAlpha(1)
-						SetItemButtonTexture(b.frame,GetCoinIcon(cost))
+						local goldTex = "Interface\\Icons\\INV_Misc_Coin_02"
+						--Setting the Texture.
 
-						-- Add the Click-To-Purchase option. 
+						local texture = b.frame:GetNormalTexture()
+						b.frame:SetAlpha(1)
+						texture:SetTexture(goldTex)
+						texture:SetSize(bagTexSize-1,bagTexSize-1)
+						b.frame:SetPushedTexture(goldTex)
+
+						-- Add the Click-To-Purchase option.
 						b.frame:SetScript("OnClick", function(self)
 							LUIBank.bankCost = cost
 							StaticPopup_Show("CONFIRM_BUY_BANK_SLOT");
 						end)
-					
+
 					--Unpurchased Bags.
 					elseif x > GetNumBankSlots() + 2 then
 						b.frame:SetAlpha(.2)
 					end
 				end
 				if isBank and Full and LUIBank.bankCost then
-					LUIBank.bankCost = nil 
+					LUIBank.bankCost = nil
 				end
 
 				b.frame:ClearAllPoints()
@@ -797,7 +768,7 @@ function module:Layout(bagType)
 				idx = idx + 1
 			end
 		end
-		
+
 		for _, id in ipairs(bagId) do
 			local bagCount = GetContainerNumSlots(id)
 			if bagCount > 0 then
@@ -813,18 +784,19 @@ function module:Layout(bagType)
 		if (slots % cols) ~= 0 then
 			rows = rows + 1
 		end
-		
+
 		frame:SetWidth(LUI:Scale(cols * 31 + (cols - 1) * spacing + padding * 2))
-		frame:SetHeight(LUI:Scale(rows * 31 + (rows - 1) * spacing + off + padding * 2))
-		
+		--frame:SetHeight(LUI:Scale(rows * 31 + (rows - 1) * spacing + off + padding * 2))
+		frame:SetHeight(LUI:Scale(rows * 31 + (rows - 1) * spacing + off + padding * 2) + frame.sortButton:GetHeight());
+
 	end
-	
+
 	if db.Bags[bagType].BagFrame then
 		bagsFrame:Show()
 	else
 		bagsFrame:Hide()
 	end
-	
+
 	local idx = 0
 	for _, id in ipairs(bagId) do
 		local bagCount = GetContainerNumSlots(id)
@@ -834,14 +806,14 @@ function module:Layout(bagType)
 			local idBagType = BagsInfo[id].bagType
 
 			BagsInfo[id]:Show()
-			
+
 			for i = 1, bagCount do
 				local item, isnew = module:SlotNew(id, i)
-					
+
 				if isnew then
 					tinsert(ItemSlots, idx + 1, item)
 				end
-					
+
 				if not isCreated[bagType] then
 					local xoff
 					local yoff
@@ -851,7 +823,7 @@ function module:Layout(bagType)
 					xoff = padding + (x * 31) + (x * spacing)
 					yoff = off + padding + (y * 31) + ((y - 1) * spacing)
 					yoff = yoff * -1
-					
+
 					item.frame:ClearAllPoints()
 					item.frame:SetPoint("TOPLEFT", frame, "TOPLEFT", LUI:Scale(xoff), LUI:Scale(yoff))
 					item.frame:SetHeight(LUI:Scale(32))
@@ -860,10 +832,10 @@ function module:Layout(bagType)
 					item.frame:SetNormalTexture("")
 					item.frame:Show()
 
-					item.frame:SetBackdrop( { 
+					item.frame:SetBackdrop( {
 						bgFile = "Interface/Tooltips/UI-Tooltip-Background",
-						edgeFile = borderTex, 
-						tile = false, tileSize = 0, edgeSize = 15, 
+						edgeFile = borderTex,
+						tile = false, tileSize = 0, edgeSize = 15,
 						insets = { left = 5, right = 5, top = 5, bottom = 5 }
 					})
 
@@ -871,10 +843,10 @@ function module:Layout(bagType)
 					item.frame:SetBackdropBorderColor(unpack(border_color))
 
 				end
-					
+
 				LUI:StyleButton(item.frame)
 				module:SlotUpdate(item)
-				
+
 				local iconTex = _G[item.frame:GetName() .. "IconTexture"]
 				iconTex:SetTexCoord(.08, .92, .08, .92)
 				iconTex:SetPoint("TOPLEFT", item.frame, LUI:Scale(3), LUI:Scale(-3))
@@ -882,14 +854,14 @@ function module:Layout(bagType)
 
 				iconTex:Show()
 				item.iconTex = iconTex
-				
+
 				idx = idx + 1
 			end
 
 		end
-	
+
 	end
-	
+
 	--adjust the size of the frames now.
 	frame:SetScale(db.Bags[bagType].Scale)
 	bagsFrame:SetScale(db.Bags[bagType].BagScale)
@@ -909,15 +881,15 @@ function module:EnableBags()
 			keybackdrop:SetPoint("TOPLEFT", LUI:Scale(9), LUI:Scale(-40))
 			keybackdrop:SetPoint("BOTTOMLEFT", 0, 0)
 			keybackdrop:SetSize(LUI:Scale(179),LUI:Scale(215))
-			keybackdrop:SetBackdrop( { 
-				bgFile = LSM:Fetch("background", LUI_Media.empty), 
-				edgeFile = LSM:Fetch("border", LUI_Media.empty), 
-				tile = false, edgeSize = 0, 
+			keybackdrop:SetBackdrop( {
+				bgFile = LSM:Fetch("background", LUI_Media.empty),
+				edgeFile = LSM:Fetch("border", LUI_Media.empty),
+				tile = false, edgeSize = 0,
 				insets = { left = 0, right = 0, top = 0, bottom = 0 }
 			})
 			keybackdrop:SetBackdropColor(0,0,0,0)
 			keybackdrop:SetBackdropBorderColor(0,0,0,0)
-			
+
 			ContainerFrame1CloseButton:Hide()
 			ContainerFrame1Portrait:Hide()
 			ContainerFrame1Name:Hide()
@@ -926,7 +898,7 @@ function module:EnableBags()
 			ContainerFrame1BackgroundMiddle2:SetAlpha(0)
 			ContainerFrame1BackgroundBottom:SetAlpha(0)
 
-			local bgColor, color = db.Bags.Colors.Background, db.Bags.Colors.Border -- Shorter vars for colors. 
+			local bgColor, color = db.Bags.Colors.Background, db.Bags.Colors.Border -- Shorter vars for colors.
 			for i=1, GetKeyRingSize() do
 				local slot = _G["ContainerFrame1Item"..i]
 				local t = _G["ContainerFrame1Item"..i.."IconTexture"]
@@ -935,10 +907,10 @@ function module:EnableBags()
 				t:SetTexCoord(.08, .92, .08, .92)
 				t:SetPoint("TOPLEFT", slot, LUI:Scale(2), LUI:Scale(-2))
 				t:SetPoint("BOTTOMRIGHT", slot, LUI:Scale(-2), LUI:Scale(2))
-				slot:SetBackdrop( { 
-					bgFile = LSM:Fetch("background", db.Bags.Bags.BackgroundTexture), 
-					edgeFile = LSM:Fetch("border", db.Bags.Bags.BorderTexture), 
-					tile = false, edgeSize = 20, 
+				slot:SetBackdrop( {
+					bgFile = LSM:Fetch("background", db.Bags.Bags.BackgroundTexture),
+					edgeFile = LSM:Fetch("border", db.Bags.Bags.BorderTexture),
+					tile = false, edgeSize = 20,
 					insets = { left = 5, right = -3, top = -3, bottom = 5 }
 				})
 				slot:SetBackdropColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a)
@@ -960,10 +932,10 @@ function module:PLAYERBANKSLOTS_CHANGED(self, id)
 	if id > 28 then
 		for _, v in ipairs(BagsSlots) do
 			if v.frame and v.frame.GetInventorySlot then
-				if v.slot < GetNumBankSlots() + 5 then 
-					BankFrameItemButton_Update(v.frame)
-					BankFrameItemButton_UpdateLocked(v.frame)
-				end 
+
+				BankFrameItemButton_Update(v.frame)
+				BankFrameItemButton_UpdateLocked(v.frame)
+
 				if not v.frame.tooltipText then
 					v.frame.tooltipText = ""
 				end
@@ -974,14 +946,14 @@ function module:PLAYERBANKSLOTS_CHANGED(self, id)
 	if LUIBank and LUIBank:IsShown() then
 		for _, id in ipairs(GetBags["Bank"]) do
 			module:BagSlotUpdate(id)
-			
+
 		end
 	end
 end
 
 function module:BAG_UPDATE(self,id)
 	module:BagSlotUpdate(id)
-	
+
 end
 
 function module:ITEM_LOCK_CHANGED(self, bag, slot)
@@ -1087,13 +1059,13 @@ end
 function module:ReloadLayout(bag)
 	isCreated[bag] = false
 	local frame = LUIBags_Select(bag)
-	if frame and frame:IsShown() then 
+	if frame and frame:IsShown() then
 		module:Layout(bag)
 	end
 end
 
 -- Note: Do not make new tables inside the Bags and Bank Options.
---       It would break the CopyBags function that dynamically copy things. 
+--       It would break the CopyBags function that dynamically copy things.
 local defaults = {
 	Bags = {
 		Enable = true,
@@ -1106,7 +1078,7 @@ local defaults = {
 			Spacing = 3,
 			Scale = 1,
 			BagScale = 1,
-			BagFrame = true, 
+			BagFrame = true,
 			ItemQuality = false,
 			ShowQuest = true,
 			Locked = 0,
@@ -1178,7 +1150,7 @@ function module:LoadOptions()
 		if db.Bags.CopyBags then module:CopyBags() end
 	end
 	local function BankOpt()
-		module:ReloadLayout("Bank") 
+		module:ReloadLayout("Bank")
 	end
 	local function DisabledCopy()
 		return db.Bags.Bank.CopyBags
@@ -1203,7 +1175,7 @@ function module:LoadOptions()
 					order = 3,
 					args = {
 						Enable = LUI:NewEnable("Bags", 1, db.Bags),
-						Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.", 
+						Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.",
 									2, db.Bags.Bags, "Cols", luidef.Bags, 4, 32, 1, BagOpt),
 						Header = LUI:NewHeader("", 3),
 						Padding = LUI:NewSlider("Bag Padding", "This sets the space between the background border and the adjacent items.",
@@ -1222,15 +1194,15 @@ function module:LoadOptions()
 					type = "group",
 					order = 4,
 					args = {
-						CopyBags = LUI:NewToggle("Copy Bags", "Make the Bank frames copies the bags options.", 1, db.Bags.Bank, "CopyBags", luidef.Bank, 
+						CopyBags = LUI:NewToggle("Copy Bags", "Make the Bank frames copies the bags options.", 1, db.Bags.Bank, "CopyBags", luidef.Bank,
 							function()
 								module:CheckBagsCopy()
 								if db.Bags.Bank.CopyBags then module:CopyBags() end
 							end),
-						Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.", 2, 
+						Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.", 2,
 									db.Bags.Bank, "Cols", luidef.Bank, 4, 32, 1, BankOpt),
 						Header = LUI:NewHeader("", 3),
-						Padding = LUI:NewSlider("Bank Padding", "This sets the space between the background border and the adjacent items.", 4, 
+						Padding = LUI:NewSlider("Bank Padding", "This sets the space between the background border and the adjacent items.", 4,
 									db.Bags.Bank, "Padding", luidef.Bank, 4, 24, 1, BankOpt, nil, DisabledCopy),
 						Spacing = LUI:NewSlider("Bank Spacing", "This sets the distance between items.", 5,
 									db.Bags.Bank, "Spacing", luidef.Bank, 1, 15, 1, BankOpt, nil, DisabledCopy),
@@ -1266,27 +1238,28 @@ function module:OnInitialize()
 	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
 	LUI:RefreshDefaults()
 	LUI:Refresh()
-	
+
 	self.db = LUI.db.profile
 	db = self.db
-	
+
 	LUI:RegisterModule(self)
 end
 
 local OldFuncs = {}
 function module:OnEnable()
-	
+
 	module:RegisterEvent("BANKFRAME_OPENED")
 	module:RegisterEvent("BANKFRAME_CLOSED")
 
 	-- Add LUIBags to the "Can be closed using ESC" table.
 	tinsert(UISpecialFrames,"LUIBags")
-	
+
 	CloseAllBags()
-	
+
 	--Keep the old functions in mind for OnDisable
 	OldFuncs["TogglePack"] = ToggleBackpack
 	OldFuncs["OpenBags"] = OpenAllBags
+	OldFuncs["ToggleBags"] = ToggleAllBags
 	OldFuncs["OpenPack"] = OpenBackpack
 	OldFuncs["ClosePack"] = CloseBackpack
 	OldFuncs["CloseBags"] = CloseAllBags
@@ -1294,6 +1267,7 @@ function module:OnEnable()
 	--Now changes the functions to ours
 	ToggleBackpack = LUIBags_Toggle
 	OpenAllBags = LUIBags_Toggle
+	ToggleAllBags = LUIBags_Toggle
 	OpenBackpack = LUIBags_Open
 	CloseBackpack = LUIBags_Close
 	CloseAllBags = LUIBags_Close
@@ -1302,7 +1276,7 @@ function module:OnEnable()
 
 	module:SetBags()
 	module:EnableBags()
-	
+
 end
 
 function module:OnDisable()
@@ -1317,12 +1291,13 @@ function module:OnDisable()
 	--Makes the UI functions like they were
 	ToggleBackpack = OldFuncs["TogglePack"]
 	OpenAllBags = OldFuncs["OpenBags"]
+	ToggleAllBags = OldFuncs["ToggleBags"]
 	OpenBackpack = OldFuncs["OpenPack"]
 	CloseBackpack = OldFuncs["ClosePack"]
 	CloseAllBags = OldFuncs["CloseBags"]
-	
+
 	module:Unhook(ContainerFrame1, "OnShow")
-	
+
 	ContainerFrame1CloseButton:Show()
 	ContainerFrame1Portrait:Show()
 	ContainerFrame1Name:Show()
@@ -1330,5 +1305,214 @@ function module:OnDisable()
 	ContainerFrame1BackgroundMiddle1:SetAlpha(1)
 	ContainerFrame1BackgroundMiddle2:SetAlpha(1)
 	ContainerFrame1BackgroundBottom:SetAlpha(1)
-	
+
+end
+
+function module:PrepareSort(frame)
+	if frame ~= LUIBags and frame ~= LUIBank then
+		return;
+	end
+
+	if frame:GetScript("OnUpdate") then
+		return;
+	end
+
+	self.sortFrame = frame;
+
+	self.sortBags = {};
+	self.sortItems = {};
+
+	local bagOrder = {}
+	if self.sortFrame == LUIBags then
+		bagOrder = GetBags["Bags"];
+	elseif self.sortFrame == LUIBank then
+		bagOrder = GetBags["Bank"];
+	end
+
+	local specialBags = {};
+
+	for _, v in pairs(bagOrder) do
+		local maxSlots = GetContainerNumSlots(v);
+
+		if maxSlots > 0 then
+			local bagFamily = select(2, GetContainerNumFreeSlots(v));
+
+			if bagFamily > 0 then
+				table.insert(specialBags, {bagId = v, slot = maxSlots, maxSlots = maxSlots, bagFamily = bagFamily});
+			else
+				table.insert(self.sortBags, {bagId = v, slot = maxSlots, maxSlots = maxSlots, bagFamily = bagFamily});
+			end
+		end
+	end
+
+	for _, v in pairs(specialBags) do
+		table.insert(self.sortBags, v);
+	end
+
+	for _, bag in pairs(self.sortBags) do
+		for j = 1, GetContainerNumSlots(bag.bagId) do
+			local itemId = GetContainerItemID(bag.bagId, j);
+
+			if itemId then
+				local _, count, locked = GetContainerItemInfo(bag.bagId, j);
+
+				if locked then
+					return;
+				end
+
+				local name, _, rarity, itemLevel, requiredLevel, itemType, itemSubType, stackCount, equipLocation, _, sellPrice = GetItemInfo(itemId);
+
+				local sortString = rarity .. itemType .. itemSubType .. requiredLevel .. itemLevel .. name .. itemId;
+
+				local itemFamily = GetItemFamily(itemId);
+
+				table.insert(self.sortItems, {
+					sortString = sortString,
+					sBag = bag.bagId,
+					sSlot = j,
+					itemFamily = itemFamily,
+					count = count,
+					stackCount = stackCount
+				});
+			end
+		end
+	end
+
+	table.sort(self.sortItems, function(a, b)
+		if a.sortString == b.sortString then
+			return a.count > b.count;
+		end
+
+		return a.sortString > b.sortString;
+	end);
+
+	-- Set targets
+	for i, v in pairs(self.sortItems) do
+		local bagIndex = #self.sortBags;
+
+		-- Test for special bag
+		local firstNormal = -1;
+		while bit.band(v.itemFamily, self.sortBags[bagIndex].bagFamily) == 0 do
+			if self.sortBags[bagIndex].bagFamily == 0 and firstNormal == -1 then
+				firstNormal = bagIndex;
+			end
+
+			bagIndex = bagIndex - 1;
+
+			if not self.sortBags[bagIndex] then
+				bagIndex = firstNormal;
+
+				break;
+			end
+		end
+
+		local bag = self.sortBags[bagIndex];
+
+		-- Stacking
+		local targetchange = true;
+		if i > 1 and self.sortItems[i - 1].sortString == v.sortString then
+			if self.sortItems[i - 1].count < v.stackCount then
+				local count = self.sortItems[i - 1].count + v.count;
+
+				v.tBag = self.sortItems[i - 1].tBag;
+				v.tSlot = self.sortItems[i - 1].tSlot;
+
+				if count - v.stackCount > 0 then
+					v.count = count - v.stackCount;
+
+					v.tBag2 = bag.bagId;
+					v.tSlot2 = bag.slot;
+				else
+					targetchange = false;
+					v.count = count;
+				end
+			end
+		end
+
+		if not v.tBag then
+			v.tBag = bag.bagId;
+			v.tSlot = bag.slot;
+		end
+
+		if targetchange then
+			bag.slot = bag.slot - 1;
+		end
+
+		if bag.slot < 1 then
+			table.remove(self.sortBags, bagIndex);
+		end
+	end
+
+	self.sortFrame:SetScript("OnUpdate", module.Sort);
+end
+
+function module:Sort(elapsed)
+	if not module.sortTime or module.sortTime > 0.1 then
+		module.sortTime = 0;
+	else
+		module.sortTime = module.sortTime + elapsed;
+		return;
+	end
+
+	if module.sorting then
+		return;
+	end
+
+	module.sorting = true;
+
+	ClearCursor();
+
+	local changes = 1;
+	local key = 1;
+
+	while module.sortItems[key] do
+		local item = module.sortItems[key];
+
+		if not select(3, GetContainerItemInfo(item.sBag, item.sSlot)) and not select(3, GetContainerItemInfo(item.tBag, item.tSlot)) then
+			if item.sBag ~= item.tBag or item.sSlot ~= item.tSlot then
+				PickupContainerItem(item.sBag, item.sSlot);
+				PickupContainerItem(item.tBag, item.tSlot);
+
+				for i = 1, #module.sortItems do
+					if module.sortItems[i].sBag == item.tBag and module.sortItems[i].sSlot == item.tSlot then
+						module.sortItems[i].sBag = item.sBag;
+						module.sortItems[i].sSlot = item.sSlot;
+					end
+				end
+
+				changes = changes + 1;
+			end
+
+			if item.tBag2 then
+				item.tBag = item.tBag2;
+				item.tSlot = item.tSlot2;
+
+				item.tBag2 = nil;
+				item.tSlot2 = nil;
+			else
+				table.remove(module.sortItems, key);
+				key = key - 1;
+
+				if changes > 5 then
+					module.sorting = false;
+
+					return;
+				end
+			end
+		end
+
+
+		key = key + 1;
+	end
+
+	if not module.sortItems[1] then
+		module.sortFrame:SetScript("OnUpdate", nil);
+		module.sortTime = nil;
+		module.sorting = nil;
+		module.sortItems = nil;
+		module.sortBags = nil;
+		module.sortFrame = nil;
+	else
+		module.sorting = false;
+	end
 end
