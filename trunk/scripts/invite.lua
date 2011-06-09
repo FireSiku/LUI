@@ -32,7 +32,7 @@ local function SetAutoAcceptInvite()
 		local leader = ...
 		
 		if event == "PARTY_INVITE_REQUEST" then
-			if (GetNumRealPartyMembers() > 0) or (GetNumRealRaidMembers() > 0) then return end
+			if (GetRealNumPartyMembers() > 0) or (GetRealNumRaidMembers() > 0) then return end
 						
 			for friendIndex = 1, GetNumFriends() do
 				local friendName = GetFriendInfo(friendIndex)
@@ -76,7 +76,7 @@ local function SetAutoInvite()
 	local autoinvite = CreateFrame("frame")
 	autoinvite:RegisterEvent("CHAT_MSG_WHISPER")
 	autoinvite:SetScript("OnEvent", function(self, event, msg, sender)
-		if enabled and (IsPartyLeader("player") or (GetRealNumPartyMembers() == 0) and msg:lower():match(keyword) then
+		if enabled and (IsPartyLeader("player") or (GetRealNumPartyMembers() == 0)) and msg:lower():match(keyword) then
 			InviteUnit(sender)
 		end
 	end)
