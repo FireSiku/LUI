@@ -2,8 +2,8 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: datatext.lua
 	Description: Datatext Molule for Durability, Gold, Latency, Fps, MS, Friends, Guild, Clock, Bags...
-	Version....: 1.6c
-	Rev Date...: 08/06/2011 [dd/mm/yyyy]
+	Version....: 1.7
+	Rev Date...: 10/06/2011 [dd/mm/yyyy]
 
 	Edits:
 		v1.0: Loui
@@ -21,6 +21,7 @@
 		-  a: Hix
 		-  b: Hix
 		-  c: Hix
+		v1.7: Hix
 ]]
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -29,8 +30,14 @@ local widgetLists = AceGUIWidgetLSMlists
 local LUIHook = LUI:GetModule("LUIHook")
 local module = LUI:NewModule("Infotext", "AceHook-3.0")
 local version = 3316
-
 local db
+
+--[[
+	All these variables need to be moved.
+	Need to be placed into their respective stat modules, cause these local (globals) are just messy and will cause problems.
+	In the circumstance that these variables need to be accessable from other location of of the stat (i.e. the options)
+	then they should be given accessors; functions within the stat module to view and change the variable.
+--]]
 local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
 local myPlayerRealm = GetRealmName()
 local myPlayerFaction = UnitFactionGroup("player")
@@ -408,8 +415,9 @@ function module:SetGold(refresh)
 	Text_gold:SetTextColor(db.Infotext.Gold.Color.r, db.Infotext.Gold.Color.g, db.Infotext.Gold.Color.b, db.Infotext.Gold.Color.a)
 
 	local Profit	= 0
-	local Spent		= 0
 	local OldMoney	= 0
+	local ServerGold = 0
+	local Spent		= 0
 	local colours	= {
 		["Alliance"] = {
 			r = 0,
@@ -510,7 +518,7 @@ function module:SetGold(refresh)
 			end
 
 			GameTooltip:AddLine(" ")
-			GameTooltip:AddLine("Hint:\n- Left-Click to open Bags.\n- Right-Click to reset Session.", 0.0, 1.0, 0.0)
+			GameTooltip:AddLine("Hint:\n- Left-Click to toggle server/toon gold.\n- Right-Click to reset Session.", 0.0, 1.0, 0.0)
 			GameTooltip:Show()
 		end
 	end
@@ -525,11 +533,21 @@ function module:SetGold(refresh)
 			if (LUIGold.gold[myPlayerRealm]["Alliance"] == nil) then LUIGold.gold[myPlayerRealm]["Alliance"] = {} end
 			if (LUIGold.gold[myPlayerRealm]["Horde"] == nil) then LUIGold.gold[myPlayerRealm]["Horde"] = {} end
 
+			-- Gather total server gold.
+			ServerGold = 0
+			for k, v in pairs(LUIGold.gold[myPlayerRealm]["Alliance"]) do
+				ServerGold = ServerGold + v
+			end
+			for k, v in pairs(LUIGold.gold[myPlayerRealm]["Horde"]) do
+				ServerGold = ServerGold + v
+			end			
+
 			Stat7:UnregisterEvent("PLAYER_ENTERING_WORLD")
 		end
 
 		local NewMoney = GetMoney()
-		local Change = NewMoney - OldMoney -- Positive if we gain money
+		local Change = NewMoney - OldMoney	-- Positive if we gain money
+		ServerGold = ServerGold + Change	-- Add change to the server total.
 
 		if OldMoney > NewMoney then		-- Lost Money
 			Spent = Spent - Change
@@ -537,7 +555,11 @@ function module:SetGold(refresh)
 			Profit = Profit + Change
 		end
 
-		Text_gold:SetText(formatMoney(NewMoney))
+		if db.Infotext.Gold.ShowToonMoney then
+			Text_gold:SetText(formatMoney(NewMoney))
+		else
+			Text_gold:SetText(formatMoney(ServerGold))
+		end
 
 		-- Setup Money Tooltip
 		self:SetAllPoints(Text_gold)
@@ -559,7 +581,7 @@ function module:SetGold(refresh)
 			Spent = 0
 			OldMoney = GetMoney()
 		else
-			OpenAllBags()
+			db.Infotext.Gold.ShowToonMoney = not db.Infotext.Gold.ShowToonMoney
 		end
 	end)
 	Stat7:SetScript("OnEvent", OnEvent)
@@ -568,7 +590,7 @@ function module:SetGold(refresh)
 	if refresh then OnEvent(Stat7, "PLAYER_ENTERING_WORLD") end
 end
 
-function module:ResetGold(player,faction)
+function module:ResetGold(player, faction)
 	if player == nil then return end
 
 	if player == "ALL" then
@@ -2347,6 +2369,7 @@ local defaults = {
 			Enable = true,
 			X = -200,
 			Y = 0,
+			ShowToonMoney = true,
 			Font = "vibroceb",
 			Size = 12,
 			Outline = "NONE",
@@ -3354,6 +3377,15 @@ function module:LoadOptions()
 								end
 							end,
 						},
+						ToonMoney = {
+							name = "Server Total",
+							desc = "Whether you want your gold display to show your server total gold, or your current toon's gold.\n\nNote: Change will not take effect until a money update occurs.",
+							type = "toggle",
+							width = "full",
+							get = function() return not db.Infotext.Gold.ShowToonMoney end,
+							set = function() db.Infotext.Gold.ShowToonMoney = not db.Infotext.Gold.ShowToonMoney end,
+							order = 5,			
+						},
 						GoldX = {
 							name = "X Value",
 							desc = "X Value for your Gold Amount.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Gold.X,
@@ -3368,7 +3400,7 @@ function module:LoadOptions()
 										db.Infotext.Gold.X = tonumber(GoldX)
 										Text_gold:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Gold.X, db.Infotext.Gold.Y)
 									end,
-							order = 5,
+							order = 6,
 						},
 						GoldY = {
 							name = "Y Value",
@@ -3383,13 +3415,13 @@ function module:LoadOptions()
 										db.Infotext.Gold.Y = tonumber(GoldY)
 										Text_gold:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Gold.X, db.Infotext.Gold.Y)
 									end,
-							order = 6,
+							order = 7,
 						},
 						TextSettings = {
 							name = "Font Settings",
 							type = "group",
 							disabled = function() return not db.Infotext.Gold.Enable end,
-							order = 7,
+							order = 8,
 							guiInline = true,
 							args = {
 								FontSize = {
