@@ -51,6 +51,10 @@ local colpairs = { ["class"] = 1, ["name"] = 2, ["level"] = 3, ["zone"] = 4, ["n
 local hordeZones = "Orgrimmar,Undercity,Thunder Bluff,Silvermoon City,Durotar,Tirisfal Glades,Mulgore,Eversong Woods,Northern Barrens,Silverpine Forest,Ghostlands,Azshara,"
 local allianceZones = "Ironforge,Stormwind City,Darnassus,The Exodar,Azuremyst Isle,Bloodmyst Isle,Darkshore,Deeprun Tram,Dun Morogh,Elwynn Forest,Loch Modan,Teldrassil,Westfall,"
 local new, del
+local specCache = {}
+local iconCache = {}
+local GetNumTalentGroups, GetActiveTalentGroup = GetNumTalentGroups, GetActiveTalentGroup
+
 do
 	local tables = setmetatable( {}, { __mode = "k" } )
 
@@ -1948,6 +1952,394 @@ function module:SetDPS(refresh)
 	if refresh then Stat11:PLAYER_ENTERING_WORLD() end
 end
 
+------------------------------------------------------
+-- / DUALSPEC / --
+------------------------------------------------------
+
+function module:SetDualSpec()
+	if db.Infotext.DualSpec.Enable == false then return end
+	if UnitLevel("player") < 10 then return end
+
+	local Stat12 = CreateFrame("Frame", "LUI_Info_DualSpec", infos_left)
+	Stat12:EnableMouse(true)
+
+	Text_DualSpec  = infos_left:CreateFontString(nil, "OVERLAY")
+	Text_DualSpec:SetFont(LSM:Fetch("font", db.Infotext.DualSpec.Font), db.Infotext.DualSpec.Size, db.Infotext.DualSpec.Outline)
+	Text_DualSpec:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.DualSpec.X, db.Infotext.DualSpec.Y)
+	Text_DualSpec:SetHeight(db.Infotext.DualSpec.Size)
+	Text_DualSpec:SetTextColor(db.Infotext.DualSpec.Color.r, db.Infotext.DualSpec.Color.g, db.Infotext.DualSpec.Color.b, db.Infotext.DualSpec.Color.a)
+
+	local Text_DualSpecIcon = CreateFrame("Button", "Text_DualSpecIcon", infos_left)
+	Text_DualSpecIcon:SetPoint("RIGHT", "LUI_Info_DualSpec", "LEFT", 0, 0)
+	Text_DualSpecIcon:SetWidth(15)
+	Text_DualSpecIcon:SetHeight(15)
+	Text_DualSpecIcon:SetFrameStrata("TOOLTIP")
+	Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }})
+	Text_DualSpecIcon:Show()
+
+	Text_DualSpecIcon:RegisterForClicks("AnyUp")
+	Text_DualSpecIcon:SetScript("OnClick", function(self, button)
+		--if button == "RightButton" then
+			if PlayerTalentFrame:IsVisible() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 3) then
+				PlayerTalentFrame:Hide()
+			else
+				PanelTemplates_SetTab(PlayerTalentFrame, 3)
+				PlayerTalentFrame_Refresh()
+				PlayerTalentFrame:Show()
+			end
+		--end
+	end)
+
+
+	local function ShowSpec(self)
+	if not InCombatLockdown() then
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:ClearLines()
+		GameTooltip:AddLine("Dual Spec:", 0.4, 0.78, 1)
+		GameTooltip:AddLine(" ")
+
+		for i = 1, GetNumTalentGroups() do
+		specCache[i] = specCache[i] or {}
+		local thisCache = specCache[i]
+		TalentFrame_UpdateSpecInfoCache(thisCache, false, false, i)
+		if thisCache.primaryTabIndex and thisCache.primaryTabIndex ~= 0 then
+			thisCache.specName = thisCache[thisCache.primaryTabIndex].name
+			thisCache.mainTabIcon = thisCache[thisCache.primaryTabIndex].icon
+		else
+			thisCache.specName = "|cffff0000Talents undefined!|r"
+			thisCache.mainTabIcon = "Interface\\Icons\\Spell_Nature_MoonKey"
+		end
+
+	end
+
+	local activeGroupNum = GetActiveTalentGroup()
+	local curCache = specCache[activeGroupNum]
+	local a = curCache[1].pointsSpent
+	local b = curCache[2].pointsSpent
+	local c = curCache[3].pointsSpent
+
+	if db.Infotext.DualSpec.ShowSpentPoints then
+		if a <= 0 and b <= 0 and c <= 0 then
+	       	Text_DualSpec:SetText(" |cffff0000Talents undefined!|r")
+			Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+	    else
+		   	Text_DualSpec:SetText(" "..curCache.specName.." ("..a.."/"..b.."/"..c..")")
+			Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+			--DEFAULT_CHAT_FRAME:AddMessage(curCache.mainTabIcon)
+		end
+	else
+		Text_DualSpec:SetText(" "..curCache.specName)
+		Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+	end
+
+	if a <= 0 and b <= 0 and c <= 0 then
+	    GameTooltip:AddLine(" |cffff0000Talents undefined!|r")
+	   	Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+	else
+		if activeGroupNum == 1 then
+			GameTooltip:AddDoubleLine("Primary Spec:", curCache.specName.." ("..a.."/"..b.."/"..c..")", 255, 255, 255, 255, 255, 255)
+		else
+			GameTooltip:AddDoubleLine("Secondary Spec:", curCache.specName.." ("..a.."/"..b.."/"..c..")", 255, 255, 255, 255, 255, 255)
+		end
+		Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+	end
+
+	if GetNumTalentGroups() >= 2 then
+		local nextGroup = -activeGroupNum + 3
+		local nextCache = specCache[nextGroup]
+
+		local a3 = nextCache[1].pointsSpent
+		local b3 = nextCache[2].pointsSpent
+		local c3 = nextCache[3].pointsSpent
+
+		if a3 <= 0 and b3 <= 0 and c3 <= 0 then
+			GameTooltip:AddLine(" |cffff0000Talents undefined!|r")
+			Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+		else
+			if activeGroupNum == 2 then
+				GameTooltip:AddDoubleLine("Primary Spec:", nextCache.specName.." ("..a3.."/"..b3.."/"..c3..")", 255, 255, 255, 255, 255, 255)
+			else
+				GameTooltip:AddDoubleLine("Secondary Spec:", nextCache.specName.." ("..a3.."/"..b3.."/"..c3..")", 255, 255, 255, 255, 255, 255)
+			end
+			Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+		end
+	else
+		GameTooltip:AddLine(" |cffff0000Talents undefined!|r")
+	end
+
+	GameTooltip:AddLine(" ")
+	GameTooltip:AddLine("Hint:\n- Left-Click to switch talent.\n- Right-Click to open Talent Frame.\n- Any Click on the Icon to open Glyph.", 0.0, 1.0, 0.0)
+	GameTooltip:Show()
+	end
+	end
+
+	local function OnEvent(self, event)
+		if UnitLevel("player") < 10 then return end
+
+		for i = 1, GetNumTalentGroups() do
+		specCache[i] = specCache[i] or {}
+		local thisCache = specCache[i]
+		TalentFrame_UpdateSpecInfoCache(thisCache, false, false, i)
+		if thisCache.primaryTabIndex and thisCache.primaryTabIndex ~= 0 then
+			thisCache.specName = thisCache[thisCache.primaryTabIndex].name
+			thisCache.mainTabIcon = thisCache[thisCache.primaryTabIndex].icon
+		else
+			thisCache.specName = "|cffff0000Talents undefined!|r"
+			thisCache.mainTabIcon = "Interface\\Icons\\Spell_Nature_MoonKey"
+		end
+	end
+
+	local activeGroupNum = GetActiveTalentGroup()
+	local curCache = specCache[activeGroupNum]
+	local a = curCache[1].pointsSpent
+	local b = curCache[2].pointsSpent
+	local c = curCache[3].pointsSpent
+
+	if db.Infotext.DualSpec.ShowSpentPoints then
+		if a <= 0 and b <= 0 and c <= 0 or a == nil or b == nil or c == nil then
+	       	Text_DualSpec:SetText(" |cffff0000Talents undefined!|r")
+	       	Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+		else
+		   	Text_DualSpec:SetText(" "..curCache.specName.." ("..a.."/"..b.."/"..c..")")
+			Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+		end
+	else
+		Text_DualSpec:SetText(" "..curCache.specName)
+		Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+	end
+		self:SetAllPoints(Text_DualSpec)
+
+		if self:IsMouseOver() and GameTooltip:GetOwner() == self then
+			ShowSpec(self)
+		end
+	end
+
+	Stat12:RegisterEvent("PLAYER_TALENT_UPDATE")
+	Stat12:SetScript("OnMouseDown", function(self, button)
+		if button == "RightButton" then
+			if PlayerTalentFrame:IsVisible() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 1) then
+				PlayerTalentFrame:Hide();
+			else
+				PanelTemplates_SetTab(PlayerTalentFrame, 1);
+				PlayerTalentFrame_Refresh();
+				PlayerTalentFrame:Show()
+			end
+		else
+			if GetNumTalentGroups() < 2 then return	end
+
+			local curSpec = GetActiveTalentGroup()
+			local newSpec = -curSpec + 3
+
+			SetActiveTalentGroup(newSpec)
+		end
+	end)
+	Stat12:SetScript("OnEvent", OnEvent)
+	Stat12:SetScript("OnEnter", ShowSpec)
+	Stat12:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
+	Text_DualSpecIcon:SetScript("OnEnter", ShowSpec)
+	Text_DualSpecIcon:SetScript("OnLeave", function() GameTooltip:Hide() end)
+end
+
+------------------------------------------------------
+-- / INSTANCE / --
+------------------------------------------------------
+
+function module:SetInstance()
+   if db.Infotext.Instance.Enable == false then return end
+
+   local Stat13 = CreateFrame("Frame", "LUI_Info_Instance", infos_right)
+   Stat13:EnableMouse(true)
+
+   Text_Instance = infos_right:CreateFontString(nil, "OVERLAY")
+   Text_Instance:SetFont(LSM:Fetch("font", db.Infotext.Instance.Font), db.Infotext.Instance.Size, db.Infotext.Instance.Outline)
+   Text_Instance:SetPoint("LEFT", infos_right, "LEFT", db.Infotext.Instance.X,db.Infotext.Instance.Y)
+   Text_Instance:SetHeight(db.Infotext.Instance.Size)
+   Text_Instance:SetTextColor(db.Infotext.Instance.Color.r, db.Infotext.Instance.Color.g, db.Infotext.Instance.Color.b, db.Infotext.Instance.Color.a)
+
+
+   local instances = {}
+
+   local function UpdateInstanceInfo()
+      local numInstances = GetNumSavedInstances()
+      for i = 1, numInstances do
+         local instance = {}
+         local instanceDifficulty
+         instance.name, instance.ID, instance.remaining, _, _, _, _, _, _, instanceDifficulty = GetSavedInstanceInfo(i)
+         instance.name = instance.name .. ' - ' .. instanceDifficulty
+         instance.curtime = time()
+         if (instance.remaining ~= 0) then
+            instances[i] = instance
+         end
+      end
+
+      --LUI:Print{instances}   Chat Lines
+      table.sort(instances, function(a, b) return a.name < b.name end)
+      Text_Instance:SetText("Instance ["..#(instances).."]")
+      --LUI:Print{instances}   Chat Lines
+
+      return true
+   end
+
+   local function ShowInstance(self)
+      local numInstance = #(instances)
+      GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+      GameTooltip:ClearLines()
+      GameTooltip:AddLine("Instance Info:", 0.4, 0.78, 1)
+      GameTooltip:AddLine(" ")
+      if numInstance == 0 then
+         GameTooltip:AddLine("[No saved instance]")
+      else
+         GameTooltip:AddDoubleLine("Instance:", "Time Remaining:")
+         GameTooltip:AddLine(" ")
+      end
+
+      for i = 1, numInstance do
+         local instance = instances[i]
+         if (instance ~= nil) then
+            if (time() <= (instance.curtime + instance.remaining)) then
+               GameTooltip:AddDoubleLine(instance.name.." ("..instance.ID..")", SecondsToTime((instance.curtime + instance.remaining) - time()), 255, 255, 255, 255, 255, 255)
+            else
+               instance = nil
+            end
+         end
+      end
+
+      GameTooltip:AddLine(" ")
+      GameTooltip:AddLine("Hint:\n- Any Click to open Raid Info frame.", 0.0, 1.0, 0.0)
+      GameTooltip:Show()
+      Text_Instance:SetText("Instance ["..numInstance.."]")
+   end
+
+   local function OnEvent(self, event)
+      if event == "PLAYER_ENTERING_WORLD" then
+         RequestRaidInfo()
+
+         Text_Instance:SetText("Instance [0]")
+
+      elseif event == "UPDATE_INSTANCE_INFO" then
+         UpdateInstanceInfo()
+      elseif event == "INSTANCE_BOOT_START" then
+         UpdateInstanceInfo()
+      elseif event == "INSTANCE_BOOT_STOP" then
+         UpdateInstanceInfo()
+      end
+
+      self:SetAllPoints(Text_Instance)
+
+      if self:IsMouseOver() and GameTooltip:GetOwner() == self then
+         ShowInstance(self)
+      end
+   end
+
+   Stat13:RegisterEvent("PLAYER_ENTERING_WORLD");
+   Stat13:RegisterEvent("UPDATE_INSTANCE_INFO");
+   Stat13:RegisterEvent("INSTANCE_BOOT_START");
+   Stat13:RegisterEvent("INSTANCE_BOOT_STOP");
+   Stat13:SetScript("OnEvent", OnEvent)
+   Stat13:SetScript("OnEnter", ShowInstance)
+   Stat13:SetScript("OnLeave", function() GameTooltip:Hide() end)
+   Stat13:SetScript("OnMouseDown", function(self, button)
+      if RaidInfoFrame:IsVisible() then
+         RaidInfoFrame:Hide()
+         if FriendsFrame:IsVisible() then
+            FriendsFrame:Hide()
+         end
+      else
+         ToggleFriendsFrame(4)
+         RaidInfoFrame:Show()
+      end
+   end)
+end
+
+------------------------------------------------------
+-- / CURRENCY / --
+------------------------------------------------------
+
+function module:SetCurrency()
+	if db.Infotext.Currency.Enable == false then return end
+
+	local Stat14 = CreateFrame("Frame", "LUI_Info_Currency", infos_left)
+	Stat14:EnableMouse(true)
+
+	Text_Currency  = infos_left:CreateFontString(nil, "OVERLAY")
+	Text_Currency:SetFont(LSM:Fetch("font", db.Infotext.Currency.Font), db.Infotext.Currency.Size, db.Infotext.Currency.Outline)
+	Text_Currency:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Currency.X, db.Infotext.Currency.Y)
+	Text_Currency:SetHeight(db.Infotext.Currency.Size)
+	Text_Currency:SetTextColor(db.Infotext.Currency.Color.r, db.Infotext.Currency.Color.g, db.Infotext.Currency.Color.b, db.Infotext.Currency.Color.a)
+
+	local Text_CurrencyIcon = CreateFrame("Button", "Text_CurrencyIcon", infos_left)
+	Text_CurrencyIcon:SetPoint("RIGHT", "LUI_Info_Currency", "LEFT", 0, 0)
+	Text_CurrencyIcon:SetWidth(15)
+	Text_CurrencyIcon:SetHeight(15)
+	Text_CurrencyIcon:SetFrameStrata("TOOLTIP")
+	Text_CurrencyIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }})
+	Text_CurrencyIcon:Show()
+
+	Text_CurrencyIcon:RegisterForClicks("AnyUp")
+	Text_CurrencyIcon:SetScript("OnClick", function(self, button)
+	ToggleCharacter("TokenFrame")
+	end)
+
+
+	local function ShowCurrency(self)
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:ClearLines()
+		GameTooltip:AddLine("Currency:", 0.4, 0.78, 1)
+
+		for i = 1, GetCurrencyListSize() do
+			local name, isHeader, _, _, _, count, icon = GetCurrencyListInfo(i)
+			if isHeader ~= true then
+				if name ~= nil then
+					if count ~= 0 and count ~= nil then
+						GameTooltip:AddDoubleLine(name, count, 255, 255, 255, 255, 255, 255)
+					else
+						GameTooltip:AddDoubleLine(name, "--", 255, 255, 255, 255, 255, 255)
+					end
+				end
+			else
+				GameTooltip:AddLine(" ")
+				GameTooltip:AddLine(name)
+			end
+		end
+
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine("Hint:\n- Any Click to open Currency frame.", 0.0, 1.0, 0.0)
+		GameTooltip:Show()
+	end
+
+	local function OnEvent(self, event)
+		if event == "PLAYER_ENTERING_WORLD" then
+			if UnitFactionGroup("player") == "Horde" then
+				Text_CurrencyIcon:SetBackdrop({bgFile = "Interface\\PVPFrame\\PVP-Currency-Horde", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }})
+			else
+				Text_CurrencyIcon:SetBackdrop({bgFile = "Interface\\PVPFrame\\PVP-Currency-Alliance", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }})
+			end
+
+			Text_Currency:SetText("Currency")
+		end
+
+		self:SetAllPoints(Text_Currency)
+
+		if self:IsMouseOver() and GameTooltip:GetOwner() == self then
+			ShowCurrency(self)
+		end
+	end
+
+	Stat14:RegisterEvent("PLAYER_ENTERING_WORLD")
+	Stat14:SetScript("OnEvent", OnEvent)
+	Stat14:SetScript("OnEnter", ShowCurrency)
+	Stat14:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	Stat14:SetScript("OnMouseDown", function(self, button)
+	ToggleCharacter("TokenFrame")
+	end)
+
+	Text_CurrencyIcon:SetScript("OnEnter", ShowCurrency)
+	Text_CurrencyIcon:SetScript("OnLeave", function() GameTooltip:Hide() end)
+end
+
+--  END INFO TEXT --
+
 local defaults = {
 	Infotext = {
 		Enable = true,
@@ -2113,6 +2505,49 @@ local defaults = {
 					b = 1,
 					a = 1,
 				},
+			},
+		},
+		DualSpec = {
+			Enable = true,
+			ShowSpentPoints = true,
+			X = 420,
+			Y = 0,
+			Font = "vibroceb",
+			Size = 12,
+			Outline = "NONE",
+			Color = {
+				r = 1,
+				g = 1,
+				b = 1,
+				a = 1,
+			},
+		},
+		Instance = {
+			Enable = true,
+			X = -660,
+			Y = 0,
+			Font = "vibroceb",
+			Size = 12,
+			Outline = "NONE",
+			Color = {
+				r = 1,
+				g = 1,
+				b = 1,
+				a = 1,
+			},
+		},
+		Currency = {
+			Enable = true,
+			X = 280,
+			Y = 0,
+			Font = "vibroceb",
+			Size = 12,
+			Outline = "NONE",
+			Color = {
+				r = 1,
+				g = 1,
+				b = 1,
+				a = 1,
 			},
 		},
 	},
@@ -3538,6 +3973,393 @@ function module:LoadOptions()
 						},
 					},
 				},
+				DualSpec = {
+					name = "Dual Spec",
+					type = "group",
+					order = 30,
+					args = {
+						header92 = {
+							name = "Dual Spec",
+							type = "header",
+							order = 1,
+						},
+						DualSpecEnable = {
+							name = "Enable",
+							desc = "Whether you want to show your Spec or not. (Only for level 10+)",
+							type = "toggle",
+							width = "full",
+							get = function() return db.Infotext.DualSpec.Enable end,
+							set = function()
+										db.Infotext.DualSpec.Enable = not db.Infotext.DualSpec.Enable
+										StaticPopup_Show("RELOAD_UI")
+									end,
+							order = 2,
+						},
+						DualSpecShowSpentPoints = {
+							name = "Spent points",
+							desc = "Show spent talent points \"(x/x/x)\".",
+							type = "toggle",
+							width = "full",
+							get = function() return db.Infotext.DualSpec.ShowSpentPoints end,
+							set = function()
+										db.Infotext.DualSpec.ShowSpentPoints = not db.Infotext.DualSpec.ShowSpentPoints
+										end,
+							order = 3,
+						},
+						DualSpecX = {
+							name = "X Value",
+							desc = "X Value for your Spec.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.DualSpec.X,
+							type = "input",
+							disabled = function() return not db.Infotext.DualSpec.Enable end,
+							get = function() return tostring(db.Infotext.DualSpec.X) end,
+							set = function(self, DualSpecX)
+										if DualSpecX == nil or DualSpecX == "" then
+											DualSpecX = "0"
+										end
+
+										db.Infotext.DualSpec.X = tonumber(DualSpecX)
+										Text_DualSpec:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.DualSpec.X, db.Infotext.DualSpec.Y)
+									end,
+							order = 5,
+						},
+						DualSpecY = {
+							name = "Y Value",
+							desc = "Y Value for your Spec.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.DualSpec.Y,
+							type = "input",
+							disabled = function() return not db.Infotext.DualSpec.Enable end,
+							get = function() return tostring(db.Infotext.DualSpec.Y) end,
+							set = function(self, DualSpecY)
+										if DualSpecY == nil or DualSpecY == "" then
+											DualSpecY = "0"
+										end
+										db.Infotext.DualSpec.Y = tonumber(DualSpecY)
+										Text_DualSpec:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.DualSpec.X, db.Infotext.DualSpec.Y)
+									end,
+							order = 6,
+						},
+						TextSettings = {
+							name = "Font Settings",
+							type = "group",
+							disabled = function() return not db.Infotext.DualSpec.Enable end,
+							order = 7,
+							guiInline = true,
+							args = {
+								FontSize = {
+									name = "Size",
+									desc = "Choose your Spec Info Text Fontsize!\n\nDefault: "..LUI.defaults.profile.Infotext.DualSpec.Size,
+									type = "range",
+									min = 1,
+									max = 40,
+									step = 1,
+									get = function() return db.Infotext.DualSpec.Size end,
+									set = function(_, FontSize)
+											db.Infotext.DualSpec.Size = FontSize
+											Text_DualSpec:SetFont(LSM:Fetch("font", db.Infotext.DualSpec.Font), FontSize, db.Infotext.DualSpec.Outline)
+										end,
+									order = 1,
+								},
+								Color = {
+									name = "Color",
+									desc = "Choose an individual Spec Info Text Color.\n\nDefaults:\nr = "..LUI.defaults.profile.Infotext.DualSpec.Color.r.."\ng = "..LUI.defaults.profile.Infotext.DualSpec.Color.g.."\nb = "..LUI.defaults.profile.Infotext.DualSpec.Color.b.."\na = "..LUI.defaults.profile.Infotext.DualSpec.Color.a,
+									type = "color",
+									hasAlpha = true,
+									get = function() return db.Infotext.DualSpec.Color.r, db.Infotext.DualSpec.Color.g, db.Infotext.DualSpec.Color.b, db.Infotext.DualSpec.Color.a end,
+									set = function(_, r, g, b, a)
+											db.Infotext.DualSpec.Color.r = r
+											db.Infotext.DualSpec.Color.g = g
+											db.Infotext.DualSpec.Color.b = b
+											db.Infotext.DualSpec.Color.a = a
+
+											Text_DualSpec:SetTextColor(r, g, b, a)
+										end,
+									order = 2,
+								},
+								Font = {
+									name = "Font",
+									desc = "Choose the Font for your Spec Info Text!\n\nDefault: "..LUI.defaults.profile.Infotext.DualSpec.Font,
+									type = "select",
+									dialogControl = "LSM30_Font",
+									values = widgetLists.font,
+									get = function() return db.Infotext.DualSpec.Font end,
+									set = function(self, Font)
+											db.Infotext.DualSpec.Font = Font
+											Text_DualSpec:SetFont(LSM:Fetch("font", Font), db.Infotext.DualSpec.Size, db.Infotext.DualSpec.Outline)
+										end,
+									order = 3,
+								},
+								FontFlag = {
+									name = "Font Flag",
+									desc = "Choose the Font Flag for your Spec Info Text.\n\nDefault: "..LUI.defaults.profile.Infotext.DualSpec.Outline,
+									type = "select",
+									values = fontflags,
+									get = function()
+											for k, v in pairs(fontflags) do
+												if db.Infotext.DualSpec.Outline == v then
+													return k
+												end
+											end
+										end,
+									set = function(self, FontFlag)
+											db.Infotext.DualSpec.Outline = fontflags[FontFlag]
+											Text_DualSpec:SetFont(LSM:Fetch("font", db.Infotext.DualSpec.Font), db.Infotext.DualSpec.Size, db.Infotext.DualSpec.Outline)
+										end,
+									order = 4,
+								},
+							},
+						},
+					},
+				},
+				Instance = {
+					name = "Instance Info",
+					type = "group",
+					order = 35,
+					args = {
+						header92 = {
+							name = "Instance",
+							type = "header",
+							order = 1,
+						},
+						InstanceEnable = {
+							name = "Enable",
+							desc = "Whether you want to show your Instance Info or not.",
+							type = "toggle",
+							width = "full",
+							get = function() return db.Infotext.Instance.Enable end,
+							set = function()
+										db.Infotext.Instance.Enable = not db.Infotext.Instance.Enable
+										StaticPopup_Show("RELOAD_UI")
+									end,
+							order = 2,
+						},
+						InstanceX = {
+							name = "X Value",
+							desc = "X Value for your Instance Info.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Instance.X,
+							type = "input",
+							disabled = function() return not db.Infotext.Instance.Enable end,
+							get = function() return tostring(db.Infotext.Instance.X) end,
+							set = function(self, InstanceX)
+										if InstanceX == nil or InstanceX == "" then
+											InstanceX = "0"
+										end
+
+										db.Infotext.Instance.X = tonumber(InstanceX)
+										Text_Instance:SetPoint("LEFT", infos_right, "LEFT", db.Infotext.Instance.X, db.Infotext.Instance.Y)
+									end,
+							order = 5,
+						},
+						InstanceY = {
+							name = "Y Value",
+							desc = "Y Value for your Instance Info.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Instance.Y,
+							type = "input",
+							disabled = function() return not db.Infotext.Instance.Enable end,
+							get = function() return tostring(db.Infotext.Instance.Y) end,
+							set = function(self, InstanceY)
+										if InstanceY == nil or InstanceY == "" then
+											InstanceY = "0"
+										end
+										db.Infotext.Instance.Y = tonumber(InstanceY)
+										Text_Instance:SetPoint("LEFT", infos_right, "LEFT", db.Infotext.Instance.X, db.Infotext.Instance.Y)
+									end,
+							order = 6,
+						},
+						TextSettings = {
+							name = "Font Settings",
+							type = "group",
+							disabled = function() return not db.Infotext.Instance.Enable end,
+							order = 7,
+							guiInline = true,
+							args = {
+								FontSize = {
+									name = "Size",
+									desc = "Choose your Instance Info Text Fontsize!\n\nDefault: "..LUI.defaults.profile.Infotext.Instance.Size,
+									type = "range",
+									min = 1,
+									max = 40,
+									step = 1,
+									get = function() return db.Infotext.Instance.Size end,
+									set = function(_, FontSize)
+											db.Infotext.Instance.Size = FontSize
+											Text_Instance:SetFont(LSM:Fetch("font", db.Infotext.Instance.Font), FontSize, db.Infotext.Instance.Outline)
+										end,
+									order = 1,
+								},
+								Color = {
+									name = "Color",
+									desc = "Choose an individual Instance Info Text Color.\n\nDefaults:\nr = "..LUI.defaults.profile.Infotext.Instance.Color.r.."\ng = "..LUI.defaults.profile.Infotext.Instance.Color.g.."\nb = "..LUI.defaults.profile.Infotext.Instance.Color.b.."\na = "..LUI.defaults.profile.Infotext.Instance.Color.a,
+									type = "color",
+									hasAlpha = true,
+									get = function() return db.Infotext.Instance.Color.r, db.Infotext.Instance.Color.g, db.Infotext.Instance.Color.b, db.Infotext.Instance.Color.a end,
+									set = function(_, r, g, b, a)
+											db.Infotext.Instance.Color.r = r
+											db.Infotext.Instance.Color.g = g
+											db.Infotext.Instance.Color.b = b
+											db.Infotext.Instance.Color.a = a
+
+											Text_Instance:SetTextColor(r, g, b, a)
+										end,
+									order = 2,
+								},
+								Font = {
+									name = "Font",
+									desc = "Choose the Font for your Instance Info Text!\n\nDefault: "..LUI.defaults.profile.Infotext.Instance.Font,
+									type = "select",
+									dialogControl = "LSM30_Font",
+									values = widgetLists.font,
+									get = function() return db.Infotext.Instance.Font end,
+									set = function(self, Font)
+											db.Infotext.Instance.Font = Font
+											Text_Instance:SetFont(LSM:Fetch("font", Font), db.Infotext.Instance.Size, db.Infotext.Instance.Outline)
+										end,
+									order = 3,
+								},
+								FontFlag = {
+									name = "Font Flag",
+									desc = "Choose the Font Flag for your Instance Info Text.\n\nDefault: "..LUI.defaults.profile.Infotext.Instance.Outline,
+									type = "select",
+									values = fontflags,
+									get = function()
+											for k, v in pairs(fontflags) do
+												if db.Infotext.Instance.Outline == v then
+													return k
+												end
+											end
+										end,
+									set = function(self, FontFlag)
+											db.Infotext.Instance.Outline = fontflags[FontFlag]
+											Text_Instance:SetFont(LSM:Fetch("font", db.Infotext.Instance.Font), db.Infotext.Instance.Size, db.Infotext.Instance.Outline)
+										end,
+									order = 4,
+								},
+							},
+						},
+					},
+				},
+				Currency = {
+					name = "Currency Info",
+					type = "group",
+					order = 25,
+					args = {
+						header92 = {
+							name = "Currency",
+							type = "header",
+							order = 1,
+						},
+						InstanceEnable = {
+							name = "Enable",
+							desc = "Whether you want to show your Currency Info or not.",
+							type = "toggle",
+							width = "full",
+							get = function() return db.Infotext.Currency.Enable end,
+							set = function()
+										db.Infotext.Currency.Enable = not db.Infotext.Currency.Enable
+										StaticPopup_Show("RELOAD_UI")
+									end,
+							order = 2,
+						},
+						CurrencyX = {
+							name = "X Value",
+							desc = "X Value for your Currency Info.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Currency.X,
+							type = "input",
+							disabled = function() return not db.Infotext.Currency.Enable end,
+							get = function() return tostring(db.Infotext.Currency.X) end,
+							set = function(self, CurrencyX)
+										if CurrencyX == nil or CurrencyX == "" then
+											CurrencyX = "0"
+										end
+
+										db.Infotext.Currency.X = tonumber(CurrencyX)
+										Text_Currency:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Currency.X, db.Infotext.Currency.Y)
+									end,
+							order = 5,
+						},
+						CurrencyY = {
+							name = "Y Value",
+							desc = "Y Value for your Currency Info.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Currency.Y,
+							type = "input",
+							disabled = function() return not db.Infotext.Currency.Enable end,
+							get = function() return tostring(db.Infotext.Currency.Y) end,
+							set = function(self, CurrencyY)
+										if CurrencyY == nil or CurrencyY == "" then
+											CurrencyY = "0"
+										end
+										db.Infotext.Currency.Y = tonumber(CurrencyY)
+										Text_Currency:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Currency.X, db.Infotext.Currency.Y)
+									end,
+							order = 6,
+						},
+						TextSettings = {
+							name = "Font Settings",
+							type = "group",
+							disabled = function() return not db.Infotext.Currency.Enable end,
+							order = 7,
+							guiInline = true,
+							args = {
+								FontSize = {
+									name = "Size",
+									desc = "Choose your Currency Info Text Fontsize!\n\nDefault: "..LUI.defaults.profile.Infotext.Currency.Size,
+									type = "range",
+									min = 1,
+									max = 40,
+									step = 1,
+									get = function() return db.Infotext.Currency.Size end,
+									set = function(_, FontSize)
+											db.Infotext.Currency.Size = FontSize
+											Text_Currency:SetFont(LSM:Fetch("font", db.Infotext.Currency.Font), FontSize, db.Infotext.Currency.Outline)
+										end,
+									order = 1,
+								},
+								Color = {
+									name = "Color",
+									desc = "Choose an individual Currency Info Text Color.\n\nDefaults:\nr = "..LUI.defaults.profile.Infotext.Currency.Color.r.."\ng = "..LUI.defaults.profile.Infotext.Currency.Color.g.."\nb = "..LUI.defaults.profile.Infotext.Currency.Color.b.."\na = "..LUI.defaults.profile.Infotext.Currency.Color.a,
+									type = "color",
+									hasAlpha = true,
+									get = function() return db.Infotext.Currency.Color.r, db.Infotext.Currency.Color.g, db.Infotext.Currency.Color.b, db.Infotext.Currency.Color.a end,
+									set = function(_, r, g, b, a)
+											db.Infotext.Currency.Color.r = r
+											db.Infotext.Currency.Color.g = g
+											db.Infotext.Currency.Color.b = b
+											db.Infotext.Currency.Color.a = a
+
+											Text_Currency:SetTextColor(r, g, b, a)
+										end,
+									order = 2,
+								},
+								Font = {
+									name = "Font",
+									desc = "Choose the Font for your Currency Info Text!\n\nDefault: "..LUI.defaults.profile.Infotext.Currency.Font,
+									type = "select",
+									dialogControl = "LSM30_Font",
+									values = widgetLists.font,
+									get = function() return db.Infotext.Currency.Font end,
+									set = function(self, Font)
+											db.Infotext.Currency.Font = Font
+											Text_Currency:SetFont(LSM:Fetch("font", Font), db.Infotext.Currency.Size, db.Infotext.Currency.Outline)
+										end,
+									order = 3,
+								},
+								FontFlag = {
+									name = "Font Flag",
+									desc = "Choose the Font Flag for your Currency Info Text.\n\nDefault: "..LUI.defaults.profile.Infotext.Currency.Outline,
+									type = "select",
+									values = fontflags,
+									get = function()
+											for k, v in pairs(fontflags) do
+												if db.Infotext.Currency.Outline == v then
+													return k
+												end
+											end
+										end,
+									set = function(self, FontFlag)
+											db.Infotext.Currency.Outline = fontflags[FontFlag]
+											Text_Currency:SetFont(LSM:Fetch("font", db.Infotext.Currency.Font), db.Infotext.Currency.Size, db.Infotext.Currency.Outline)
+										end,
+									order = 4,
+								},
+							},
+						},
+					},
+				},
+				--
 			},
 		},
 	}
@@ -3612,6 +4434,9 @@ function module:OnEnable()
 	self:SetGold(true)
 	self:SetClock()
 	self:SetDPS(true)
+	self:SetDualSpec()
+	self:SetInstance()
+	self:SetCurrency()
 end
 
 function module:OnDisable()
