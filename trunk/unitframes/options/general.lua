@@ -454,6 +454,9 @@ function module:CreateAuraOptions(unit, order, isDebuff)
 		name = element,
 		type = "group",
 		order = order,
+		disabled = (unit == "Raid") and function()
+			return IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot")
+		end or nil,
 		args = {
 			Enable = LUI:NewToggle("Enable "..unit.." "..element, "Whether you want to show "..unit.." "..element.." or not.", 1, auradb, prefix.."_enable", auradefaults, ToggleFunc),
 			Auratimer = LUI:NewToggle("Enable Auratimer", "Whether you want to show Auratimers or not.", 2, auradb, prefix.."_auratimer", auradefaults, ApplySettings, nil, AurasDisabled),

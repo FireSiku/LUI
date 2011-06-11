@@ -1085,6 +1085,9 @@ local toggleFuncs = {
 
 	Raid = function()
 		if db.oUF.Raid.Enable then
+			if IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") then
+				return
+			end
 			if oUF_LUI_raid then
 				for i = 1, 5 do
 					for j = 1, 5 do
