@@ -582,6 +582,7 @@ function module:SetGold(refresh)
 			OldMoney = GetMoney()
 		else
 			db.Infotext.Gold.ShowToonMoney = not db.Infotext.Gold.ShowToonMoney
+			OnEvent(self)
 		end
 	end)
 	Stat7:SetScript("OnEvent", OnEvent)
