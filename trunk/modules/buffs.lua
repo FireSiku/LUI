@@ -257,6 +257,22 @@ function module:SetBuffs()
 		end
 	end
 
+	local function AuraButton_UpdateTooltip(button, elapsed)
+		if button.lastUpdate < 1 then
+			button.lastUpdate = button.lastUpdate + elapsed
+			return
+		end
+		
+		button.lastUpdate = 0
+		
+		if GameTooltip:IsOwned(button) then
+			local name = UnitAura("player", button:GetID(), button.filter)
+			if name then
+				GameTooltip:SetUnitAura("player", button:GetID(), button.filter)
+			end
+		end
+	end
+	
 	local function AuraButton_Update(button, filter)
 		if not button.panel then AuraButton_Create(button, filter) end
 		
@@ -280,7 +296,7 @@ function module:SetBuffs()
 				AuraButton_UpdateCooldown(button, 5)
 			else
 				button.duration:SetText("")
-				button:SetScript("OnUpdate", nil)
+				button:SetScript("OnUpdate", AuraButton_UpdateTooltip)
 			end
 			
 			if count and count > 1 then
@@ -355,6 +371,7 @@ function module:SetBuffs()
 	
 	local function SetHeaderAttributes(header, templatename, aurasize, isBuff)
 		local temp = templatename..aurasize
+		
 		header:SetAttribute("unit", "player")
 		header:SetAttribute("filter", isBuff and "HELPFUL" or "HARMFUL")
         header:SetAttribute("template", temp)
