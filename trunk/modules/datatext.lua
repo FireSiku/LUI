@@ -540,7 +540,7 @@ function module:SetGold(refresh)
 			end
 			for k, v in pairs(LUIGold.gold[myPlayerRealm]["Horde"]) do
 				ServerGold = ServerGold + v
-			end			
+			end
 
 			Stat7:UnregisterEvent("PLAYER_ENTERING_WORLD")
 		end
@@ -624,7 +624,7 @@ function module:SetClock()
 	local function Update(self, t)
 		intc = intc - t
 		if intc < 0 then
-			if ( GameTimeFrame.pendingCalendarInvites > 0 ) then
+			if ( GameTimeFrame.pendingCalendarInvites >= 1 ) then --------------
 				Text_time:SetText("(Inv. pending)")
 				self:SetAllPoints(Text_time)
 			else
@@ -3384,7 +3384,7 @@ function module:LoadOptions()
 							width = "full",
 							get = function() return not db.Infotext.Gold.ShowToonMoney end,
 							set = function() db.Infotext.Gold.ShowToonMoney = not db.Infotext.Gold.ShowToonMoney end,
-							order = 5,			
+							order = 5,
 						},
 						GoldX = {
 							name = "X Value",
