@@ -2,7 +2,7 @@
 	Project.: LUI NextGenWoWUserInterface
 	File....: LUI.lua
 	Version.: 3.403
-	Rev Date: 13/02/2011r
+	Rev Date: 13/02/2011
 	Author..: Louí [EU-Das Syndikat] <In Fidem>
 ]] 
 
@@ -12,7 +12,7 @@ oUF = ns.oUF or oUF
 local AceAddon = LibStub("AceAddon-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-LUI = AceAddon:NewAddon("LUI", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceSerializer-3.0")
+LUI = AceAddon:NewAddon("LUI", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceSerializer-3.0") -- localize
 local LUIHook = LUI:NewModule("LUIHook", "AceHook-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
@@ -1074,23 +1074,23 @@ function LUI:OnInitialize()
 	end
 	
 	StaticPopupDialogs["RELOAD_UI"] = {
-	  text = "The UI needs to be reloaded!",
-	  button1 = ACCEPT,
-	  button2 = CANCEL,
-	  OnAccept = ReloadUI,
-	  timeout = 0,
-	  whileDead = 1,
-	  hideOnEscape = 1
+		text = "The UI needs to be reloaded!",
+		button1 = ACCEPT,
+		button2 = CANCEL,
+		OnAccept = ReloadUI,
+		timeout = 0,
+		whileDead = 1,
+		hideOnEscape = 1
 	}
 	
 	StaticPopupDialogs["RESTORE_DETAULTS"] = {
-	  text = "Do you really want to restore all defaults. All your settings will be lost!",
-	  button1 = ACCEPT,
-	  button2 = CANCEL,
-	  OnAccept = Configure,
-	  timeout = 0,
-	  whileDead = 1,
-	  hideOnEscape = 1
+		text = "Do you really want to restore all defaults. All your settings will be lost!",
+		button1 = ACCEPT,
+		button2 = CANCEL,
+		OnAccept = Configure,
+		timeout = 0,
+		whileDead = 1,
+		hideOnEscape = 1
 	}
 	
 	CompactRaidFrameManager:UnregisterAllEvents()

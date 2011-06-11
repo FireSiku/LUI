@@ -474,7 +474,7 @@ function module:SaveTheme(theme)
 		orb_hover = {unpack(db.Colors.orb_hover)},
 	}
 	db.Colors.theme = theme
-	LibStub("AceConfigRegistry-3.0"):NotifyChange("LUI")
+	ACR:NotifyChange("LUI")
 end
 
 function module:DeleteTheme(theme)
@@ -491,7 +491,7 @@ function module:DeleteTheme(theme)
 	db.Colors.theme = ""
 	module:CheckTheme()
 	module:ApplyTheme()
-	LibStub("AceConfigRegistry-3.0"):NotifyChange("LUI")
+	ACR:NotifyChange("LUI")
 end
 
 function module:ImportThemeName(name)
@@ -534,7 +534,7 @@ function module:ExportTheme(theme)
 	if data == nil then return end
 	local breakDown
 	for i = 1, math.ceil(strlen(data)/100) do
-		part = (strsub(data, (((i-1)*100)+1), (i*100))).." "
+		local part = (strsub(data, (((i-1)*100)+1), (i*100))).." "
 		breakDown = (breakDown and breakDown or "")..part
 	end
 	return breakDown
@@ -1159,7 +1159,7 @@ function module:StaticPopups()
 	}
 	
 	StaticPopupDialogs["EXPORT_THEME"] = {
-		text = "Copy the folowing to share it with others:",
+		text = "Copy the following to share it with others:",
 		button1 = "Close",
 		hasEditBox = 1,
 		editBoxWidth = 500,
@@ -1186,7 +1186,7 @@ function module:StaticPopups()
 				if LUI_Themes[db.Colors.theme] == nil then db.Colors.theme = "" end
 				module:CheckTheme()
 				module:ApplyTheme()
-				LibStub("AceConfigRegistry-3.0"):NotifyChange("LUI")
+				ACR:NotifyChange("LUI")
 			end,
 		timeout = 0,
 		whileDead = true,
@@ -1196,7 +1196,7 @@ end
 
 function module:LoadOptions()
 	local options = {
-		Colors = {
+		Layouts = {
 			name = "Colors",
 			type = "group",
 			order = 5,

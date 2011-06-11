@@ -91,20 +91,26 @@ function module:SetMap()
 		WorldMapButton:SetAllPoints(WorldMapDetailFrame)
 		WorldMapFrame:SetFrameStrata("MEDIUM")
 		WorldMapFrame:SetClampedToScreen(true) 
+		
 		WorldMapDetailFrame:SetFrameStrata("MEDIUM")
 		WorldMapTitleButton:Show()	
+		
 		WorldMapFrameMiniBorderLeft:Hide()
 		WorldMapFrameMiniBorderRight:Hide()
+		
 		WorldMapFrameSizeUpButton:Show()
 		WorldMapFrameSizeUpButton:ClearAllPoints()
 		WorldMapFrameSizeUpButton:SetPoint("TOPRIGHT", WorldMapButton, "TOPRIGHT", LUI:Scale(3), LUI:Scale(-18))
 		WorldMapFrameSizeUpButton:SetFrameStrata("HIGH")
 		WorldMapFrameSizeUpButton:SetFrameLevel(18)
+		
 		WorldMapFrameCloseButton:ClearAllPoints()
 		WorldMapFrameCloseButton:SetPoint("TOPRIGHT", WorldMapButton, "TOPRIGHT", LUI:Scale(3), LUI:Scale(3))
 		WorldMapFrameCloseButton:SetFrameStrata("HIGH")
 		WorldMapFrameCloseButton:SetFrameLevel(18)
+		
 		WorldMapFrameSizeDownButton:SetPoint("TOPRIGHT", WorldMapFrameMiniBorderRight, "TOPRIGHT", LUI:Scale(-66), LUI:Scale(5))
+		
 		WorldMapQuestShowObjectives:SetParent(ald)
 		WorldMapQuestShowObjectives:ClearAllPoints()
 		WorldMapQuestShowObjectives:SetPoint("BOTTOMRIGHT", WorldMapButton, "BOTTOMRIGHT", 0, LUI:Scale(-1))
@@ -112,10 +118,22 @@ function module:SetMap()
 		WorldMapQuestShowObjectivesText:SetFont(ft, fontsize, "OUTLINE")
 		WorldMapQuestShowObjectivesText:ClearAllPoints()
 		WorldMapQuestShowObjectivesText:SetPoint("RIGHT", WorldMapQuestShowObjectives, "LEFT", LUI:Scale(-4), LUI:Scale(1))
+		
+		if WorldMapShowDigSites then
+			WorldMapShowDigSites:SetParent(ald)
+			WorldMapShowDigSites:ClearAllPoints()
+			WorldMapShowDigSites:SetPoint("BOTTOMRIGHT", WorldMapButton, "BOTTOMRIGHT", LUI:Scale(-400), LUI:Scale(-1))
+			WorldMapShowDigSites:SetFrameStrata("HIGH")
+			WorldMapShowDigSitesText:SetFont(ft, fontsize, "OUTLINE")
+			WorldMapShowDigSitesText:ClearAllPoints()
+			WorldMapShowDigSitesText:SetPoint("RIGHT", WorldMapShowDigSites, "LEFT", LUI:Scale(-4), LUI:Scale(1))
+		end
+		
 		WorldMapFrameTitle:ClearAllPoints()
 		WorldMapFrameTitle:SetPoint("BOTTOMLEFT", WorldMapDetailFrame, LUI:Scale(9), LUI:Scale(5))
 		WorldMapFrameTitle:SetFont(ft, fontsize, "OUTLINE")
-		WorldMapFrameTitle:SetParent(ald)		
+		WorldMapFrameTitle:SetParent(ald)
+		
 		WorldMapTitleButton:SetFrameStrata("MEDIUM")
 		WorldMapTooltip:SetFrameStrata("TOOLTIP")
 		
@@ -269,6 +287,7 @@ function module:SetMap()
 		end)
 	end)
 	
+	SmallerMapSkin()
 end
 
 local defaults = {
