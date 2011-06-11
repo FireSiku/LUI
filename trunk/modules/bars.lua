@@ -14,6 +14,9 @@ local Panels = LUI:GetModule("Panels")
 local module = LUI:NewModule("Bars", "AceHook-3.0")
 local LibKeyBound = LibStub("LibKeyBound-1.0")
 
+local db
+local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
+
 local _, class = UnitClass("player")
 
 local buttonlist = {}

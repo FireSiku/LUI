@@ -70,7 +70,6 @@ function module:SetNaviAlpha(frame, value)
 end
 
 function module:SetFrames()
-	
 	local Orb = LUI:GetModule("Orb")
 	local Panels = LUI:GetModule("Panels")
 	local navi = {unpack(db.Colors.navi)}
@@ -384,23 +383,19 @@ function module:SetFrames()
 			if LUI_Navi_Button2:GetAlpha() == 0 then
 				OmenButtonAlphaIn:Show()
 				
-				local Tps_Show = loadstring(db.Frames.Tps.Anchor..":Show()")
-				Tps_Show()
+				_G[db.Frames.Tps.Anchor]:Show()
 				
 				for _, frame in pairs(Panels:LoadAdditional(db.Frames.Tps.Additional)) do
-					local Additional_Show = loadstring(frame..":Show()")
-					Additional_Show()
+					_G[frame]:Show()
 				end
 				
 				if db.Frames.Tps.Animation == "AlphaSlide" then
 					OmenAlphaIn:Show()
 				else
-					local Tps_SetAlpha = loadstring(db.Frames.Tps.Anchor..":SetAlpha(1)")
-					Tps_SetAlpha()
+					_G[db.Frames.Tps.Anchor]:SetAlpha(1)
 					
 					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Tps.Additional)) do
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha(1)")
-						Additional_SetAlpha()
+						_G[frame]:SetAlpha(1)
 					end
 				end
 				
@@ -411,18 +406,12 @@ function module:SetFrames()
 				if db.Frames.Tps.Animation == "AlphaSlide" then
 					OmenAlphaOut:Show()
 				else
-					local Tps_SetAlpha = loadstring(db.Frames.Tps.Anchor..":SetAlpha(0)")
-					Tps_SetAlpha()
-					
-					local Tps_Hide = loadstring(db.Frames.Tps.Anchor..":Hide()")
-					Tps_Hide()
+					_G[db.Frames.Tps.Anchor]:SetAlpha(0)
+					_G[db.Frames.Tps.Anchor]:Hide()
 					
 					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Tps.Additional)) do
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha(0)")
-						Additional_SetAlpha()
-						
-						local Additional_Hide = loadstring(frame..":Hide()")
-						Additional_Hide()
+						_G[frame]:SetAlpha(0)
+						_G[frame]:Hide()
 					end
 				end
 				
@@ -445,23 +434,19 @@ function module:SetFrames()
 			if LUI_Navi_Button3:GetAlpha() == 0 then
 				DPSButtonAlphaIn:Show()
 				
-				local Dps_Show = loadstring(db.Frames.Dps.Anchor..":Show()")
-				Dps_Show()
+				_G[db.Frames.Dps.Anchor]:Show()
 				
 				for _, frame in pairs(Panels:LoadAdditional(db.Frames.Dps.Additional)) do
-					local Additional_Show = loadstring(frame..":Show()")
-					Additional_Show()
+					_G[frame]:Show()
 				end
 				
 				if db.Frames.Dps.Animation == "AlphaSlide" then
 					RecountAlphaIn:Show()
 				else
-					local Dps_SetAlpha = loadstring(db.Frames.Dps.Anchor..":SetAlpha(1)")
-					Dps_SetAlpha()
+					_G[db.Frames.Dps.Anchor]:SetAlpha(1)
 					
 					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Dps.Additional)) do
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha(1)")
-						Additional_SetAlpha()
+						_G[frame]:SetAlpha(1)
 					end
 				end
 				
@@ -472,18 +457,12 @@ function module:SetFrames()
 				if db.Frames.Dps.Animation == "AlphaSlide" then
 					RecountAlphaOut:Show()
 				else
-					local Dps_SetAlpha = loadstring(db.Frames.Dps.Anchor..":SetAlpha(0)")
-					Dps_SetAlpha()
-					
-					local Dps_Hide = loadstring(db.Frames.Dps.Anchor..":Hide()")
-					Dps_Hide()
+					_G[db.Frames.Dps.Anchor]:SetAlpha(0)
+					_G[db.Frames.Dps.Anchor]:Hide()
 					
 					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Dps.Additional)) do
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha(0)")
-						Additional_SetAlpha()
-						
-						local Additional_Hide = loadstring(frame..":Hide()")
-						Additional_Hide()
+						_G[frame]:SetAlpha(0)
+						_G[frame]:Hide()
 					end
 				end
 				
@@ -506,23 +485,19 @@ function module:SetFrames()
 			if LUI_Navi_Button4:GetAlpha() == 0 then
 				GridButtonAlphaIn:Show()
 				
-				local Raid_Show = loadstring(db.Frames.Raid.Anchor..":Show()")
-				Raid_Show()
+				_G[db.Frames.Raid.Anchor]:Show()
 				
 				for _, frame in pairs(Panels:LoadAdditional(db.Frames.Raid.Additional)) do
-					local Additional_Show = loadstring(frame..":Show()")
-					Additional_Show()
+					_G[frame]:Show()
 				end
 				
 				if db.Frames.Raid.Animation == "AlphaSlide" then
 					GridAlphaIn:Show()
 				else
-					local Raid_SetAlpha = loadstring(db.Frames.Raid.Anchor..":SetAlpha(1)")
-					Raid_SetAlpha()
+					_G[db.Frames.Raid.Anchor]:SetAlpha(1)
 					
 					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Raid.Additional)) do
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha(1)")
-						Additional_SetAlpha()
+					_G[frame]:SetAlpha(1)
 					end
 				end
 				
@@ -533,18 +508,12 @@ function module:SetFrames()
 				if db.Frames.Raid.Animation == "AlphaSlide" then
 					GridAlphaOut:Show()
 				else
-					local Raid_SetAlpha = loadstring(db.Frames.Raid.Anchor..":SetAlpha(0)")
-					Raid_SetAlpha()
-					
-					local Raid_Hide = loadstring(db.Frames.Raid.Anchor..":Hide()")
-					Raid_Hide()
+					_G[db.Frames.Raid.Anchor]:SetAlpha(0)
+					_G[db.Frames.Raid.Anchor]:Hide()
 					
 					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Raid.Additional)) do
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha(0)")
-						Additional_SetAlpha()
-						
-						local Additional_Hide = loadstring(frame..":Hide()")
-						Additional_Hide()
+						_G[frame]:SetAlpha(0)
+						_G[frame]:Hide()
 					end
 				end
 				
@@ -660,7 +629,7 @@ function module:SetFrames()
 	finfo3:SetBackdropBorderColor(0,0,0,0)
 	finfo3:Hide()
 	
-	local finfo3_back = LUI:CreateMeAFrame("FRAME","finfo3_back",finfo3_anchor,1024,1024,1,"BACKGROUND",0,"TOPRIGHT",finfo3_anchor,"TOPRIGHT",9,11,1)
+	local finfo3_back = LUI:CreateMeAFrame("FRAME","finfo3_back",finfo3_anchor,1012,1024,1,"BACKGROUND",0,"TOPRIGHT",finfo3_anchor,"TOPRIGHT",9,11,1)
 	finfo3_back:SetBackdrop({
 		bgFile=fdir.."info_top_left2", 
 		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
@@ -696,7 +665,7 @@ function module:SetFrames()
 	finfo4:SetBackdropBorderColor(0,0,0,0)
 	finfo4:Hide()
 	
-	local finfo4_back = LUI:CreateMeAFrame("FRAME","finfo4_back",finfo4_anchor,1024,1024,1,"BACKGROUND",0,"TOPLEFT",finfo4_anchor,"TOPLEFT",-9,11,1)
+	local finfo4_back = LUI:CreateMeAFrame("FRAME","finfo4_back",finfo4_anchor,1017,1024,1,"BACKGROUND",0,"TOPLEFT",finfo4_anchor,"TOPLEFT",-9,11,1)
 	finfo4_back:SetBackdrop({
 		bgFile=fdir.."info_top_right2", 
 		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
@@ -863,23 +832,19 @@ function module:SetFrames()
 				if _G[db.Frames.Tps.Anchor] then
 					OmenButtonAlphaIn:Show()
 					
-					local Tps_Show = loadstring(db.Frames.Tps.Anchor..":Show()")
-					Tps_Show()
+					_G[db.Frames.Tps.Anchor]:Show()
 					
 					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Tps.Additional)) do
-						local Additional_Show = loadstring(frame..":Show()")
-						Additional_Show()
+						_G[frame]:Show()
 					end
 				
 					if db.Frames.Tps.Animation == "AlphaSlide" then
 						OmenAlphaIn:Show()
 					else
-						local Tps_SetAlpha = loadstring(db.Frames.Tps.Anchor..":SetAlpha(1)")
-						Tps_SetAlpha()
+						_G[db.Frames.Tps.Anchor]:SetAlpha(1)
 						
 						for _, frame in pairs(Panels:LoadAdditional(db.Frames.Tps.Additional)) do
-							local Additional_SetAlpha = loadstring(frame..":SetAlpha(1)")
-							Additional_SetAlpha()
+							_G[frame]:SetAlpha(1)
 						end
 					end
 				end
@@ -889,24 +854,20 @@ function module:SetFrames()
 			if LUI_Navi_Button3:GetAlpha() == 0 then
 				if _G[db.Frames.Dps.Anchor] then
 					DPSButtonAlphaIn:Show()
-				
-					local Dps_Show = loadstring(db.Frames.Dps.Anchor..":Show()")
-					Dps_Show()
+					
+					_G[db.Frames.Dps.Anchor]:Show()
 					
 					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Dps.Additional)) do
-						local Additional_Show = loadstring(frame..":Show()")
-						Additional_Show()
+						_G[frame]:Show()
 					end
 					
 					if db.Frames.Dps.Animation == "AlphaSlide" then
 						RecountAlphaIn:Show()
 					else
-						local Dps_SetAlpha = loadstring(db.Frames.Dps.Anchor..":SetAlpha(1)")
-						Dps_SetAlpha()
+						_G[db.Frames.Dps.Anchor]:SetAlpha(1)
 						
 						for _, frame in pairs(Panels:LoadAdditional(db.Frames.Dps.Additional)) do
-							local Additional_SetAlpha = loadstring(frame..":SetAlpha(1)")
-							Additional_SetAlpha()
+							_G[frame]:SetAlpha(1)
 						end
 					end
 				end
@@ -917,23 +878,19 @@ function module:SetFrames()
 				if _G[db.Frames.Raid.Anchor] then 
 					GridButtonAlphaIn:Show()
 					
-					local Raid_Show = loadstring(db.Frames.Raid.Anchor..":Show()")
-					Raid_Show()
+					_G[db.Frames.Raid.Anchor]:Show()
 					
 					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Raid.Additional)) do
-						local Additional_Show = loadstring(frame..":Show()")
-						Additional_Show()
+						_G[frame]:Show()
 					end
 					
 					if db.Frames.Raid.Animation == "AlphaSlide" then
 						GridAlphaIn:Show()
 					else
-						local Raid_SetAlpha = loadstring(db.Frames.Raid.Anchor..":SetAlpha(1)")
-						Raid_SetAlpha()
+						_G[db.Frames.Raid.Anchor]:SetAlpha(1)
 						
 						for _, frame in pairs(Panels:LoadAdditional(db.Frames.Raid.Additional)) do
-							local Additional_SetAlpha = loadstring(frame..":SetAlpha(1)")
-							Additional_SetAlpha()
+							_G[frame]:SetAlpha(1)
 						end
 					end
 				end
@@ -966,18 +923,12 @@ function module:SetFrames()
 					if db.Frames.Tps.Animation == "AlphaSlide" then
 						OmenAlphaOut:Show()
 					else
-						local Tps_SetAlpha = loadstring(db.Frames.Tps.Anchor..":SetAlpha(0)")
-						Tps_SetAlpha()
-						
-						local Tps_Hide = loadstring(db.Frames.Tps.Anchor..":Hide()")
-						Tps_Hide()
+						_G[db.Frames.Tps.Anchor]:SetAlpha(0)
+						_G[db.Frames.Tps.Anchor]:Hide()
 						
 						for _, frame in pairs(Panels:LoadAdditional(db.Frames.Tps.Additional)) do
-							local Additional_SetAlpha = loadstring(frame..":SetAlpha(0)")
-							Additional_SetAlpha()
-							
-							local Additional_Hide = loadstring(frame..":Hide()")
-							Additional_Hide()
+							_G[frame]:SetAlpha(0)
+							_G[frame]:Hide()
 						end
 					end
 				end
@@ -991,18 +942,12 @@ function module:SetFrames()
 					if db.Frames.Dps.Animation == "AlphaSlide" then
 						RecountAlphaOut:Show()
 					else
-						local Dps_SetAlpha = loadstring(db.Frames.Dps.Anchor..":SetAlpha(0)")
-						Dps_SetAlpha()
-						
-						local Dps_Hide = loadstring(db.Frames.Dps.Anchor..":Hide()")
-						Dps_Hide()
+						_G[db.Frames.Dps.Anchor]:SetAlpha(0)
+						_G[db.Frames.Dps.Anchor]:Hide()
 						
 						for _, frame in pairs(Panels:LoadAdditional(db.Frames.Dps.Additional)) do
-							local Additional_SetAlpha = loadstring(frame..":SetAlpha(0)")
-							Additional_SetAlpha()
-							
-							local Additional_Hide = loadstring(frame..":Hide()")
-							Additional_Hide()
+							_G[frame]:SetAlpha(0)
+							_G[frame]:Hide()
 						end
 					end
 				end
@@ -1016,18 +961,12 @@ function module:SetFrames()
 					if db.Frames.Raid.Animation == "AlphaSlide" then
 						GridAlphaOut:Show()
 					else
-						local Raid_SetAlpha = loadstring(db.Frames.Raid.Anchor..":SetAlpha(0)")
-						Raid_SetAlpha()
-						
-						local Raid_Hide = loadstring(db.Frames.Raid.Anchor..":Hide()")
-						Raid_Hide()
+						_G[db.Frames.Raid.Anchor]:SetAlpha(0)
+						_G[db.Frames.Raid.Anchor]:Hide()
 						
 						for _, frame in pairs(Panels:LoadAdditional(db.Frames.Raid.Additional)) do
-							local Additional_SetAlpha = loadstring(frame..":SetAlpha(0)")
-							Additional_SetAlpha()
-							
-							local Additional_Hide = loadstring(frame..":Hide()")
-							Additional_Hide()
+							_G[frame]:SetAlpha(0)
+							_G[frame]:Hide()
 						end
 					end
 				end

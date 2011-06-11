@@ -18,9 +18,6 @@ local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
 LUI.oUF = {}
 
--- Very bad but needed global fileDirectory
-fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
-
 LUI.dummy = function() return end
 
 -- REGISTER FONTS

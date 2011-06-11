@@ -20,6 +20,7 @@ local LSM = LibStub("LibSharedMedia-3.0")
 local RaidMenu
 
 local db
+local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
 local _, class = UnitClass("player")
 
