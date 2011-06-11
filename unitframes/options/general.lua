@@ -486,7 +486,15 @@ function module:CreateOptions(index, unit)
 	local oufdb = db.oUF[unit]
 	local ufNames = ufNamesList[unit]
 	
-	local ToggleFunc = function() LUI:GetModule("oUF"):Toggle(unit) end
+	local ToggleFunc = function()
+		LUI:GetModule("oUF"):Toggle(unit)
+		if unit == "Raid" then
+			if oufdb.Enable then
+				db.Frames.Raid.Anchor = "oUF_LUI_raid"
+				StaticPopup_Show("RELOAD_UI") -- to remove!
+			end
+		end
+	end
 	
 	local disabledFunc = function()
 		if not db.oUF.Settings.Enable then return true end

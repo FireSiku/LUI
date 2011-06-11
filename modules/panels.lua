@@ -4,11 +4,11 @@
 	Description: Main Panels Module
 	Version....: 1.1
 	Rev Date...: 16/01/2011 [dd/mm/yyyy]
-
+	
 	Edits:
 		v1.0: Loui
 		v1.1: Zista
-]]
+]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LSM = LibStub("LibSharedMedia-3.0")
@@ -24,8 +24,9 @@ local animations = {'AlphaSlide', 'None'}
 local addonAnchors = {
 	raid = {
 		Grid = 'GridLayoutFrame',
+		Grid2 = 'Grid2LayoutFrame',
 		Healbot = 'HealBot_Action',
-		Vuhdo = 'Vd1', -- Changed anchor
+		Vuhdo = 'Vd1',
 		oUF = 'oUF_LUI_raid',
 	},
 	meter = {
@@ -50,7 +51,7 @@ function module:CheckPanels()
 			--LUI_OrbCycle:SetBackdropColor(0.25,0.25,0.25,0.7)
 		end
 	end
-
+		
 	if db.Frames.AlwaysShowMinimap == true or db.Frames.IsMinimapShown == true then
 		Minimap:SetAlpha(1)
 		Minimap:Show()
@@ -60,10 +61,10 @@ function module:CheckPanels()
 		Minimap:Hide()
 		db.Frames.IsMinimapShown = false
 	end
-
+		
 	if db.Frames.AlwaysShowChat == true or db.Frames.IsChatShown == true then
 		Frames:SetNaviAlpha("chat",1)
-
+		
 		ChatAlphaAnchor:SetAlpha(1)
 		ChatFrame1:SetAlpha(1)
 		ChatFrame2:SetAlpha(1)
@@ -82,86 +83,68 @@ function module:CheckPanels()
 		end
 		db.Frames.IsChatShown = false
 	end
-
+		
 	if db.Frames.AlwaysShowTps == true or db.Frames.IsTpsShown == true then
-		if _G[db.Frames.Tps.Anchor] then
+		if _G[db.Frames.Tps.Anchor] then 
 			Frames:SetNaviAlpha("tps",1)
-
-			local Tps_SetAlpha = loadstring(db.Frames.Tps.Anchor..":SetAlpha(1)")
-			Tps_SetAlpha()
-
-			local Tps_Show = loadstring(db.Frames.Tps.Anchor..":Show()")
-			Tps_Show()
-
+			
+			_G[db.Frames.Tps.Anchor]:SetAlpha(1)
+			_G[db.Frames.Tps.Anchor]:Show()
+			
 			db.Frames.IsTpsShown = true
 		end
 	else
 		Frames:SetNaviAlpha("tps",0)
 
-		if _G[db.Frames.Tps.Anchor] then
-			local Tps_SetAlpha = loadstring(db.Frames.Tps.Anchor..":SetAlpha(0)")
-			Tps_SetAlpha()
-
-			local Tps_Hide = loadstring(db.Frames.Tps.Anchor..":Hide()")
-			Tps_Hide()
+		if _G[db.Frames.Tps.Anchor] then 
+			_G[db.Frames.Tps.Anchor]:SetAlpha(0)
+			_G[db.Frames.Tps.Anchor]:Hide()
 		end
-
+		
 		db.Frames.IsTpsShown = false
 	end
-
+		
 	if db.Frames.AlwaysShowDps == true or db.Frames.IsDpsShown == true then
-		if _G[db.Frames.Dps.Anchor] then
+		if _G[db.Frames.Dps.Anchor] then 
 			Frames:SetNaviAlpha("dps",1)
-
-			local Dps_SetAlpha = loadstring(db.Frames.Dps.Anchor..":SetAlpha(1)")
-			Dps_SetAlpha()
-
-			local Dps_Show = loadstring(db.Frames.Dps.Anchor..":Show()")
-			Dps_Show()
-
+		
+			_G[db.Frames.Dps.Anchor]:SetAlpha(1)
+			_G[db.Frames.Dps.Anchor]:Show()
+			
 			db.Frames.IsDpsShown = true
 		end
 	else
 		Frames:SetNaviAlpha("dps",0)
-
-		if _G[db.Frames.Dps.Anchor] then
-			local Dps_SetAlpha = loadstring(db.Frames.Dps.Anchor..":SetAlpha(0)")
-			Dps_SetAlpha()
-
-			local Dps_Hide = loadstring(db.Frames.Dps.Anchor..":Hide()")
-			Dps_Hide()
+		
+		if _G[db.Frames.Dps.Anchor] then 
+			_G[db.Frames.Dps.Anchor]:SetAlpha(0)
+			_G[db.Frames.Dps.Anchor]:Hide()
 		end
-
+		
 		db.Frames.IsDpsShown = false
 	end
-
+		
 	if db.Frames.AlwaysShowRaid == true or db.Frames.IsRaidShown == true then
-		if _G[db.Frames.Raid.Anchor] then
+		if _G[db.Frames.Raid.Anchor] then 
 			Frames:SetNaviAlpha("raid",1)
-
-			local Grid_SetAlpha = loadstring(db.Frames.Raid.Anchor..":SetAlpha(1)")
-			Grid_SetAlpha()
-
-			local Grid_Show = loadstring(db.Frames.Raid.Anchor..":Show()")
-			Grid_Show()
-
+		
+			_G[db.Frames.Raid.Anchor]:SetAlpha(1)
+			_G[db.Frames.Raid.Anchor]:Show()
+			
 			db.Frames.IsRaidShown = true
 		end
 	else
 		Frames:SetNaviAlpha("raid",0)
-
-		if _G[db.Frames.Raid.Anchor] then
-			local Grid_SetAlpha = loadstring(db.Frames.Raid.Anchor..":SetAlpha(0)")
-			Grid_SetAlpha()
-
-			local Raid_Hide = loadstring(db.Frames.Raid.Anchor..":Hide()")
-			Raid_Hide()
+		
+		if _G[db.Frames.Raid.Anchor] then 
+			_G[db.Frames.Raid.Anchor]:SetAlpha(0)
+			_G[db.Frames.Raid.Anchor]:Hide()
 		end
-
+		
 		db.Frames.IsRaidShown = false
 	end
-
-	if LUI:GetModule("Micromenu", true) then
+	
+	if LUI:GetModule("Micromenu", true) then	
 		if db.Frames.AlwaysShowMicroMenu == true or db.Frames.IsMicroMenuShown == true then
 			MicroMenuButton:SetAlpha(1)
 			MicroMenuButton:Show()
@@ -174,9 +157,9 @@ end
 
 function module:LoadAdditional(str, debug)
 	if str == nil or str == "" then return {} end
-
+	
 	local frames = {}
-
+	
 	if strfind(str, "%s") then
 		local part1, part2
 		while true do
@@ -185,7 +168,7 @@ function module:LoadAdditional(str, debug)
 			str = part1..part2
 		end
 	end
-
+	
 	if strfind(str, ",") then
 		local part1, part2
 		while true do
@@ -206,7 +189,7 @@ function module:LoadAdditional(str, debug)
 			LUI:Print("Could not find frame named "..str)
 		end
 	end
-
+	
 	if debug then return end
 	return frames
 end
@@ -445,6 +428,7 @@ end
 ------------------------------------------------------
 -- / TPS Panel / --
 ------------------------------------------------------
+
 function module:SetOmenAggroBarColor()
 	local r,g,b = unpack(db.Frames.Tps.AggroBarColor)
 	Omen.db.profile.Bar.AggroBarColor.r = r
@@ -466,7 +450,7 @@ function module:SetTpsBackground()
 	TpsFrameBG:SetBackdrop({bgFile=tpsTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
 	TpsFrameBG:SetBackdropColor(unpack(tpsColor))
 	TpsFrameBG:SetBackdropBorderColor(0,0,0,0)
-
+	
 	local Set_TpsFrame = loadstring("TpsFrameBG:SetPoint(\"TOPLEFT\","..db.Frames.Tps.Anchor..",\"TOPLEFT\","..db.Frames.Tps.OffsetX..","..db.Frames.Tps.OffsetY..")")
 	Set_TpsFrame()
 
@@ -611,6 +595,7 @@ end
 ------------------------------------------------------
 -- / DPS Panel / --
 ------------------------------------------------------
+
 function module:SetDpsBackground()
 	local dpsColor = {unpack(db.Colors.dps)}
 	local dpsBorderColor = {unpack(db.Colors.dpsborder)}
@@ -764,6 +749,7 @@ end
 ------------------------------------------------------
 -- / RAID PANEL / --
 ------------------------------------------------------
+
 function module:SetRaidBackground()
 	local raidTex, raidBorderTex
 	local raidColor = {unpack(db.Colors.raid)}
@@ -1078,18 +1064,17 @@ function module:LoadOptions()
 											end
 											return tpsAddons
 										end,
-									width = full,
 									get = function()
 											local tpsAddon = ""
 											local tpsAddons = {}
-
+											
 											for k, v in pairs(addonAnchors.meter) do
 												if db.Frames.Tps.Anchor == v then
 													tpsAddon = tostring(k)
 												end
 												table.insert(tpsAddons, k)
 											end
-
+											
 											for k, v in pairs(tpsAddons) do
 												if tpsAddon == v then
 													return k
@@ -1101,7 +1086,7 @@ function module:LoadOptions()
 											for k, v in pairs(addonAnchors.meter) do
 												if tostring(tpsLoop) == tostring(ChooseAddon) then
 													db.Frames.Tps.Anchor = v
-												end
+												end		
 												tpsLoop = tpsLoop + 1
 											end
 											StaticPopup_Show("RELOAD_UI")
@@ -1175,7 +1160,7 @@ function module:LoadOptions()
 							name = "AggroBar Color",
 							type = "group",
 							order = 4,
-							disabled = function()
+							disabled = function() 
 								if IsAddOnLoaded("Omen") or IsAddOnLoaded("Omen3") then
 									return false
 								else
@@ -1409,18 +1394,17 @@ function module:LoadOptions()
 											end
 											return dpsAddons
 										end,
-									width = full,
 									get = function()
 											local dpsAddon = ""
 											local dpsAddons = {}
-
+											
 											for k, v in pairs(addonAnchors.meter) do
 												if db.Frames.Dps.Anchor == v then
 													dpsAddon = tostring(k)
 												end
 												table.insert(dpsAddons, k)
 											end
-
+											
 											for k, v in pairs(dpsAddons) do
 												if dpsAddon == v then
 													return k
@@ -1432,7 +1416,7 @@ function module:LoadOptions()
 											for k, v in pairs(addonAnchors.meter) do
 												if tostring(dpsLoop) == tostring(ChooseAddon) then
 													db.Frames.Dps.Anchor = v
-												end
+												end		
 												dpsLoop = dpsLoop + 1
 											end
 											StaticPopup_Show("RELOAD_UI")
@@ -1685,18 +1669,17 @@ function module:LoadOptions()
 											end
 											return raidAddons
 										end,
-									width = full,
 									get = function()
 											local raidAddon = ""
 											local raidAddons = {}
-
+											
 											for k, v in pairs(addonAnchors.raid) do
 												if db.Frames.Raid.Anchor == v then
 													raidAddon = tostring(k)
 												end
 												table.insert(raidAddons, k)
 											end
-
+											
 											for k, v in pairs(raidAddons) do
 												if raidAddon == v then
 													return k
@@ -1704,13 +1687,12 @@ function module:LoadOptions()
 											end
 										end,
 									set = function(self, ChooseAddon)
-											local raidLoop = 1
 											for k, v in pairs(addonAnchors.raid) do
 												if tostring(raidLoop) == tostring(ChooseAddon) then
 													db.Frames.Raid.Anchor = v
 												end
-												raidLoop = raidLoop + 1
 											end
+											db.oUF.Raid.Enable = (db.Frames.Raid.Anchor == addonAnchors.raid.oUF)
 											StaticPopup_Show("RELOAD_UI")
 										end,
 									order = 6,
@@ -2145,18 +2127,18 @@ function module:OnInitialize()
 	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
 	LUI:RefreshDefaults()
 	LUI:Refresh()
-
+	
 	self.db = LUI.db.profile
 	db = self.db
-
+	
 	LUI:RegisterOptions(self) -- Change to a for loop with a RegisterFrame call for each frame (make options menu a template for each frame to pull from)
 end
 
 function module:OnEnable()
 	self:SetPanels()
-
+	
 	local LUI_CheckPanels = CreateFrame("Frame", nil, UIParent)
-
+	
 	LUI_CheckPanels:RegisterEvent("PLAYER_ENTERING_WORLD")
 	LUI_CheckPanels:SetScript("OnEvent", function(self, event, addon)
 		module:CheckPanels()
