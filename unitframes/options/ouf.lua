@@ -31,7 +31,8 @@ local ufNames = {
 	Boss = "oUF_LUI_boss",
 	Player_Castbar = "oUF_LUI_player_Castbar",
 	Target_Castbar = "oUF_LUI_target_Castbar",
-	Arena = "oUF_LUI_arena1",
+	Arena = "oUF_LUI_arena",
+	Raid = "oUF_LUI_raid"
 }
 
 local _LOCK
@@ -397,6 +398,9 @@ function module:MoveUnitFrames(override)
 	if InCombatLockdown() and not override then
 		return LUI:Print("UnitFrames cannot be moved while in combat.")
 	end
+	
+	-- sometimes bugs around!
+	oUF_LUI_party:Show()
 	
 	if (not _LOCK) and (not override) then
 		StaticPopup_Show("DRAG_UNITFRAMES")
@@ -1103,8 +1107,14 @@ local toggleFuncs = {
 					end
 				end
 				
+				UnregisterStateDriver(oUF_LUI_raid_25, "visibility")
 				RegisterStateDriver(oUF_LUI_raid_25, "visibility", "[@raid26,exists] hide; show")
+				UnregisterStateDriver(oUF_LUI_raid_40, "visibility")
 				RegisterStateDriver(oUF_LUI_raid_40, "visibility", "[@raid26,exists] show; hide")
+				
+				oUF_LUI_raid:ClearAllPoints()
+				oUF_LUI_raid:SetPoint(db.oUF.Raid.Point, UIParent, db.oUF.Raid.Point, tonumber(db.oUF.Raid.X), tonumber(db.oUF.Raid.Y))
+				oUF_LUI_raid:Show()
 			else
 				local raidAnchor = CreateFrame("Frame", "oUF_LUI_raid", UIParent)
 				raidAnchor:SetWidth(tonumber(db.oUF.Raid.Width) * 5 + tonumber(db.oUF.Raid.GroupPadding) * 4)
@@ -1171,27 +1181,31 @@ local toggleFuncs = {
 				RegisterStateDriver(raid40, "visibility", "[@raid26,exists] show; hide")
 			end
 		else
-			for i = 1, 5 do
-				for j = 1, 5 do
-					local frame = _G["oUF_LUI_raid_25_"..i.."UnitButton"..j]
-					if frame then frame:Disable() end
+			if oUF_LUI_raid then
+				for i = 1, 5 do
+					for j = 1, 5 do
+						local frame = _G["oUF_LUI_raid_25_"..i.."UnitButton"..j]
+						if frame then frame:Disable() end
+					end
 				end
-			end
-			
-			for i = 1, 8 do
-				for j = 1, 5 do
-					local frame = _G["oUF_LUI_raid_40_"..i.."UnitButton"..j]
-					if frame then frame:Disable() end
+				
+				for i = 1, 8 do
+					for j = 1, 5 do
+						local frame = _G["oUF_LUI_raid_40_"..i.."UnitButton"..j]
+						if frame then frame:Disable() end
+					end
 				end
-			end
-			
-			if oUF_LUI_raid_25 then
-				UnregisterStateDriver(oUF_LUI_raid_25, "visibility")
-				oUF_LUI_raid_25:Hide()
-			end
-			if oUF_LUI_raid_40 then
-				UnregisterStateDriver(oUF_LUI_raid_40, "visibility")
-				oUF_LUI_raid_40:Hide()
+				
+				if oUF_LUI_raid_25 then
+					UnregisterStateDriver(oUF_LUI_raid_25, "visibility")
+					oUF_LUI_raid_25:Hide()
+				end
+				if oUF_LUI_raid_40 then
+					UnregisterStateDriver(oUF_LUI_raid_40, "visibility")
+					oUF_LUI_raid_40:Hide()
+				end
+				
+				oUF_LUI_raid:Hide()
 			end
 		end
 	end,

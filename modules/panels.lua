@@ -17,6 +17,8 @@ local LUIHook = LUI:GetModule("LUIHook")
 local module = LUI:NewModule("Panels", "AceHook-3.0")
 
 local db
+local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
+
 local frameBackgrounds = {'LEFT', 'RIGHT', 'NONE'}
 local frameBackgrounds2 = {'LUI v3', 'NONE'}
 local animations = {'AlphaSlide', 'None'}
@@ -200,10 +202,6 @@ end
 
 function module:SetChatBackground()
 	local chatTex, chatBorderTex
-	local chatColor = {unpack(db.Colors.chat)}
-	local chatBorderColor = {unpack(db.Colors.chatborder)}
-	local chat2Color = {unpack(db.Colors.chat2)}
-	local chat2BorderColor = {unpack(db.Colors.chat2border)}
 
 	if db.Frames.Chat.FullTexture == true then
 		if db.Frames.Chat.Background == "LEFT" then
@@ -224,12 +222,12 @@ function module:SetChatBackground()
 	end
 
 	ChatBG:SetBackdrop({bgFile=chatTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	ChatBG:SetBackdropColor(unpack(chatColor))
+	ChatBG:SetBackdropColor(unpack(db.Colors.chat))
 	ChatBG:SetBackdropBorderColor(0,0,0,0)
 	ChatBG:SetPoint("TOPLEFT",ChatAlphaAnchor,"TOPLEFT",db.Frames.Chat.OffsetX,db.Frames.Chat.OffsetY)
 
 	ChatBorder:SetBackdrop({bgFile=chatBorderTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	ChatBorder:SetBackdropColor(unpack(chatBorderColor))
+	ChatBorder:SetBackdropColor(unpack(db.Colors.chatborder))
 	ChatBorder:SetBackdropBorderColor(0,0,0,0)
 	ChatBorder:SetPoint("TOPLEFT", ChatAlphaAnchor, "TOPLEFT", db.Frames.Chat.OffsetX, db.Frames.Chat.OffsetY)
 
@@ -262,12 +260,12 @@ function module:SetChatBackground()
 	end
 
 	Chat2BG:SetBackdrop({bgFile=chatTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	Chat2BG:SetBackdropColor(unpack(chat2Color))
+	Chat2BG:SetBackdropColor(unpack(db.Colors.chat2))
 	Chat2BG:SetBackdropBorderColor(0,0,0,0)
 	Chat2BG:SetPoint("TOPLEFT",ChatAlphaAnchor2,"TOPLEFT",db.Frames.Chat.Chatframe2.OffsetX,db.Frames.Chat.Chatframe2.OffsetY)
 
 	Chat2Border:SetBackdrop({bgFile=chatBorderTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	Chat2Border:SetBackdropColor(unpack(chat2BorderColor))
+	Chat2Border:SetBackdropColor(unpack(db.Colors.chat2border))
 	Chat2Border:SetBackdropBorderColor(0,0,0,0)
 	Chat2Border:SetPoint("TOPLEFT", ChatAlphaAnchor2, "TOPLEFT", db.Frames.Chat.Chatframe2.OffsetX, db.Frames.Chat.Chatframe2.OffsetY)
 
@@ -298,13 +296,11 @@ end
 function module:SetSecondChatAnchor()
 	if LUI:GetModule("Chat", true) then
 		ChatAlphaAnchor2:ClearAllPoints()
-		local SetChatAnchor = loadstring("ChatAlphaAnchor2:SetPoint(\"TOPLEFT\","..db.Chat.SecondChatAnchor..",\"TOPLEFT\",-10,8)")
-		SetChatAnchor()
+		ChatAlphaAnchor2:SetPoint("TOPLEFT", _G[db.Chat.SecondChatAnchor], "TOPLEFT", -10, 8)
 	end
 end
 
 function module:SetChat()
-
 	local ChatAlphaAnchor = CreateFrame("Frame", "ChatAlphaAnchor", UIParent)
 	ChatAlphaAnchor:SetWidth(30)
 	ChatAlphaAnchor:SetHeight(30)
@@ -379,7 +375,7 @@ function module:SetChat()
 	local ChatAlphaOut = CreateFrame("Frame", "ChatAlphaOut", UIParent)
 	ChatAlphaOut:Hide()
 
-	ChatAlphaOut:SetScript("OnUpdate", function(self,elapsed)
+	ChatAlphaOut:SetScript("OnUpdate", function(self, elapsed)
 		chattimerout = chattimerout + elapsed
 		if chattimerout < alpha_timer then
 			local alpha = 1 - chattimerout / alpha_timer
@@ -402,7 +398,7 @@ function module:SetChat()
 	local ChatAlphaIn = CreateFrame("Frame", "ChatAlphaIn", UIParent)
 	ChatAlphaIn:Hide()
 
-	ChatAlphaIn:SetScript("OnUpdate", function(self,elapsed)
+	ChatAlphaIn:SetScript("OnUpdate", function(self, elapsed)
 		chattimerin = chattimerin + elapsed
 		if db.Chat.SecondChatFrame == true then
 			ChatAlphaAnchor2:Show()
@@ -438,9 +434,13 @@ function module:SetOmenAggroBarColor()
 end
 
 function module:SetTpsBackground()
-	local tpsColor = {unpack(db.Colors.tps)}
-	local tpsBorderColor = {unpack(db.Colors.tpsborder)}
-
+	if not _G[db.Frames.Tps.Anchor] then
+		LUI:Print("Could not find frame named "..db.Frames.Tps.Anchor.." (Tps).")
+		return
+	end
+	
+	local tpsTex
+	
 	if db.Frames.Tps.FullTexture == true then
 		tpsTex = fdir.."omen_full"
 	else
@@ -448,18 +448,18 @@ function module:SetTpsBackground()
 	end
 
 	TpsFrameBG:SetBackdrop({bgFile=tpsTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	TpsFrameBG:SetBackdropColor(unpack(tpsColor))
+	TpsFrameBG:SetBackdropColor(unpack(db.Colors.tps))
 	TpsFrameBG:SetBackdropBorderColor(0,0,0,0)
-	
-	local Set_TpsFrame = loadstring("TpsFrameBG:SetPoint(\"TOPLEFT\","..db.Frames.Tps.Anchor..",\"TOPLEFT\","..db.Frames.Tps.OffsetX..","..db.Frames.Tps.OffsetY..")")
-	Set_TpsFrame()
+	TpsFrameBG:ClearAllPoints()
+	TpsFrameBG:SetPoint("TOPLEFT", _G[db.Frames.Tps.Anchor], "TOPLEFT", tonumber(db.Frames.Tps.OffsetX), tonumber(db.Frames.Tps.OffsetY))
+	TpsFrameBG:SetParent(_G[db.Frames.Tps.Anchor])
 
 	TpsFrameBorder:SetBackdrop({bgFile=fdir.."omen", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	TpsFrameBorder:SetBackdropColor(unpack(tpsBorderColor))
+	TpsFrameBorder:SetBackdropColor(unpack(db.Colors.tpsborder))
 	TpsFrameBorder:SetBackdropBorderColor(0,0,0,0)
-
-	local Set_TpsFrameBorder = loadstring("TpsFrameBorder:SetPoint(\"TOPLEFT\","..db.Frames.Tps.Anchor..",\"TOPLEFT\","..db.Frames.Tps.OffsetX..","..db.Frames.Tps.OffsetY..")")
-	Set_TpsFrameBorder()
+	TpsFrameBorder:ClearAllPoints()
+	TpsFrameBorder:SetPoint("TOPLEFT", _G[db.Frames.Tps.Anchor], "TOPLEFT", tonumber(db.Frames.Tps.OffsetX), tonumber(db.Frames.Tps.OffsetY))
+	TpsFrameBorder:SetParent(_G[db.Frames.Tps.Anchor])
 
 	if db.Frames.Tps.Background == "NONE" then
 		TpsFrameBG:Hide()
@@ -471,43 +471,49 @@ function module:SetTpsBackground()
 end
 
 function module:SetTps()
+	local TpsFrameBG = CreateFrame("FRAME", "TpsFrameBG", UIParent)
+	TpsFrameBG:SetWidth(LUI:Scale(237))
+	TpsFrameBG:SetHeight(LUI:Scale(285))
+	TpsFrameBG:SetFrameStrata("BACKGROUND")
+	TpsFrameBG:SetFrameLevel(0)
+	TpsFrameBG:SetAlpha(1)
+	TpsFrameBG:Show()
+
+	local TpsFrameBorder = CreateFrame("FRAME", "TpsFrameBorder", UIParent)
+	TpsFrameBorder:SetWidth(LUI:Scale(237))
+	TpsFrameBorder:SetHeight(LUI:Scale(285))
+	TpsFrameBorder:SetFrameStrata("BACKGROUND")
+	TpsFrameBorder:SetFrameLevel(0)
+	TpsFrameBorder:SetAlpha(1)
+	TpsFrameBorder:Show()
+
 	local omentimerout,omentimerin = 0,0
 	local alpha_timer = 0.5
 
 	local OmenAlphaOut = CreateFrame("Frame", "OmenAlphaOut", UIParent)
 	OmenAlphaOut:Hide()
 
-	OmenAlphaOut:SetScript("OnUpdate", function(self,elapsed)
+	OmenAlphaOut:SetScript("OnUpdate", function(self, elapsed)
 		omentimerout = omentimerout + elapsed
 		if omentimerout < alpha_timer then
 			local alpha = 1 - omentimerout / alpha_timer
 
 			if _G[db.Frames.Tps.Anchor] then
-				local Tps_SetAlpha = loadstring(db.Frames.Tps.Anchor..":SetAlpha("..alpha..")")
-				Tps_SetAlpha()
-
+				_G[db.Frames.Tps.Anchor]:SetAlpha(alpha)
 				for _, frame in pairs(module:LoadAdditional(db.Frames.Tps.Additional)) do
 					if _G[frame] then
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha("..alpha..")")
-						Additional_SetAlpha()
+						_G[frame]:SetAlpha(alpha)
 					end
 				end
 			end
 		else
 			if _G[db.Frames.Tps.Anchor] then
-				local Tps_SetAlpha = loadstring(db.Frames.Tps.Anchor..":SetAlpha(0)")
-				Tps_SetAlpha()
-
-				local Tps_Hide = loadstring(db.Frames.Tps.Anchor..":Hide()")
-				Tps_Hide()
-
+				_G[db.Frames.Tps.Anchor]:SetAlpha(0)
+				_G[db.Frames.Tps.Anchor]:Hide()
 				for _, frame in pairs(module:LoadAdditional(db.Frames.Tps.Additional)) do
 					if _G[frame] then
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha(0)")
-						Additional_SetAlpha()
-
-						local Additional_Hide = loadstring(frame..":Hide()")
-						Additional_Hide()
+						_G[frame]:SetAlpha(0)
+						_G[frame]:Hide()
 					end
 				end
 			end
@@ -520,31 +526,25 @@ function module:SetTps()
 	local OmenAlphaIn = CreateFrame("Frame", "OmenAlphaIn", UIParent)
 	OmenAlphaIn:Hide()
 
-	OmenAlphaIn:SetScript("OnUpdate", function(self,elapsed)
+	OmenAlphaIn:SetScript("OnUpdate", function(self, elapsed)
 		omentimerin = omentimerin + elapsed
 		if omentimerin < alpha_timer then
 			local alpha = omentimerin / alpha_timer
 
 			if _G[db.Frames.Tps.Anchor] then
-				local Tps_SetAlpha = loadstring(db.Frames.Tps.Anchor..":SetAlpha("..alpha..")")
-				Tps_SetAlpha()
-
+				_G[db.Frames.Tps.Anchor]:SetAlpha(alpha)
 				for _, frame in pairs(module:LoadAdditional(db.Frames.Tps.Additional)) do
 					if _G[frame] then
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha("..alpha..")")
-						Additional_SetAlpha()
+						_G[frame]:SetAlpha(alpha)
 					end
 				end
 			end
 		else
 			if _G[db.Frames.Tps.Anchor] then
-				local Tps_SetAlpha = loadstring(db.Frames.Tps.Anchor..":SetAlpha(1)")
-				Tps_SetAlpha()
-
+				_G[db.Frames.Tps.Anchor]:SetAlpha(1)
 				for _, frame in pairs(module:LoadAdditional(db.Frames.Tps.Additional)) do
 					if _G[frame] then
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha(1)")
-						Additional_SetAlpha()
+						_G[frame]:SetAlpha(1)
 					end
 				end
 			end
@@ -555,35 +555,12 @@ function module:SetTps()
 	end)
 
 	local CreateTps = CreateFrame("Frame", nil, UIParent)
-	local isTpsBackgroundCreated = false
 
 	CreateTps:RegisterEvent("PLAYER_ENTERING_WORLD")
 	CreateTps:SetScript("OnEvent", function(self)
 		if _G[db.Frames.Tps.Anchor] then
-			if isTpsBackgroundCreated == false or isTpsBackgroundCreated == nil then
-				isTpsBackgroundCreated = true
-
-				local Create_TpsFrame = loadstring("CreateFrame(\"FRAME\",\"TpsFrameBG\","..db.Frames.Tps.Anchor..")")
-				Create_TpsFrame()
-				TpsFrameBG:SetWidth(LUI:Scale(237))
-				TpsFrameBG:SetHeight(LUI:Scale(285))
-				TpsFrameBG:SetFrameStrata("BACKGROUND")
-				TpsFrameBG:SetFrameLevel(0)
-				TpsFrameBG:SetAlpha(1)
-				TpsFrameBG:Show()
-
-				local Create_TpsFrameBorder = loadstring("CreateFrame(\"FRAME\",\"TpsFrameBorder\","..db.Frames.Tps.Anchor..")")
-				Create_TpsFrameBorder()
-				TpsFrameBorder:SetWidth(LUI:Scale(237))
-				TpsFrameBorder:SetHeight(LUI:Scale(285))
-				TpsFrameBorder:SetFrameStrata("BACKGROUND")
-				TpsFrameBorder:SetFrameLevel(0)
-				TpsFrameBorder:SetAlpha(1)
-				TpsFrameBorder:Show()
-
-				module:SetTpsBackground()
-				CreateTps:UnregisterEvent("PLAYER_ENTERING_WORLD")
-			end
+			module:SetTpsBackground()
+			CreateTps:UnregisterEvent("PLAYER_ENTERING_WORLD")
 		end
 	end)
 
@@ -597,9 +574,13 @@ end
 ------------------------------------------------------
 
 function module:SetDpsBackground()
-	local dpsColor = {unpack(db.Colors.dps)}
-	local dpsBorderColor = {unpack(db.Colors.dpsborder)}
-
+	if not _G[db.Frames.Dps.Anchor] then
+		LUI:Print("Could not find frame named "..db.Frames.Dps.Anchor.." (Dps).")
+		return
+	end
+	
+	local dpsTex
+	
 	if db.Frames.Dps.FullTexture == true then
 		dpsTex = fdir.."omen_full"
 	else
@@ -607,18 +588,18 @@ function module:SetDpsBackground()
 	end
 
 	DpsFrameBG:SetBackdrop({bgFile=dpsTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	DpsFrameBG:SetBackdropColor(unpack(dpsColor))
+	DpsFrameBG:SetBackdropColor(unpack(db.Colors.dps))
 	DpsFrameBG:SetBackdropBorderColor(0,0,0,0)
-
-	local Set_DpsFrame = loadstring("DpsFrameBG:SetPoint(\"TOPLEFT\","..db.Frames.Dps.Anchor..",\"TOPLEFT\","..db.Frames.Dps.OffsetX..","..db.Frames.Dps.OffsetY..")")
-	Set_DpsFrame()
+	DpsFrameBG:ClearAllPoints()
+	DpsFrameBG:SetPoint("TOPLEFT", _G[db.Frames.Dps.Anchor], "TOPLEFT", tonumber(db.Frames.Dps.OffsetX), tonumber(db.Frames.Dps.OffsetY))
+	DpsFrameBG:SetParent(_G[db.Frames.Dps.Anchor])
 
 	DpsFrameBorder:SetBackdrop({bgFile=fdir.."omen", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	DpsFrameBorder:SetBackdropColor(unpack(dpsBorderColor))
+	DpsFrameBorder:SetBackdropColor(unpack(db.Colors.dpsborder))
 	DpsFrameBorder:SetBackdropBorderColor(0,0,0,0)
-
-	local Set_DpsFrameBorder = loadstring("DpsFrameBorder:SetPoint(\"TOPLEFT\","..db.Frames.Dps.Anchor..",\"TOPLEFT\","..db.Frames.Dps.OffsetX..","..db.Frames.Dps.OffsetY..")")
-	Set_DpsFrameBorder()
+	DpsFrameBorder:ClearAllPoints()
+	DpsFrameBorder:SetPoint("TOPLEFT", _G[db.Frames.Dps.Anchor], "TOPLEFT", tonumber(db.Frames.Dps.OffsetX), tonumber(db.Frames.Dps.OffsetY))
+	DpsFrameBorder:SetParent(_G[db.Frames.Dps.Anchor])
 
 	if db.Frames.Dps.Background == "NONE" then
 		DpsFrameBG:Hide()
@@ -630,42 +611,49 @@ function module:SetDpsBackground()
 end
 
 function module:SetDps()
+	local DpsFrameBG = CreateFrame("FRAME", "DpsFrameBG", _G[db.Frames.Dps.Anchor])
+	DpsFrameBG:SetWidth(LUI:Scale(237))
+	DpsFrameBG:SetHeight(LUI:Scale(287))
+	DpsFrameBG:SetFrameStrata("BACKGROUND")
+	DpsFrameBG:SetFrameLevel(0)
+	DpsFrameBG:SetAlpha(1)
+	DpsFrameBG:Show()
+
+	local DpsFrameBorder = CreateFrame("FRAME", "DpsFrameBorder", _G[db.Frames.Dps.Anchor])
+	DpsFrameBorder:SetWidth(LUI:Scale(237))
+	DpsFrameBorder:SetHeight(LUI:Scale(287))
+	DpsFrameBorder:SetFrameStrata("BACKGROUND")
+	DpsFrameBorder:SetFrameLevel(0)
+	DpsFrameBorder:SetAlpha(1)
+	DpsFrameBorder:Show()
+
 	local recounttimerout, recounttimerin = 0,0
 	local alpha_timer = 0.5
 
 	local RecountAlphaOut = CreateFrame("Frame", "RecountAlphaOut", UIParent)
 	RecountAlphaOut:Hide()
 
-	RecountAlphaOut:SetScript("OnUpdate", function(self,elapsed)
+	RecountAlphaOut:SetScript("OnUpdate", function(self, elapsed)
 		recounttimerout = recounttimerout + elapsed
 		if recounttimerout < alpha_timer then
 			local alpha = 1 - recounttimerout / alpha_timer
 
 			if _G[db.Frames.Dps.Anchor] then
-				local Dps_SetAlpha = loadstring(db.Frames.Dps.Anchor..":SetAlpha("..alpha..")")
-				Dps_SetAlpha()
+				 _G[db.Frames.Dps.Anchor]:SetAlpha(alpha)
 				for _, frame in pairs(module:LoadAdditional(db.Frames.Dps.Additional)) do
 					if _G[frame] then
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha("..alpha..")")
-						Additional_SetAlpha()
+						_G[frame]:SetAlpha(alpha)
 					end
 				end
 			end
 		else
 			if _G[db.Frames.Dps.Anchor] then
-				local Dps_SetAlpha = loadstring(db.Frames.Dps.Anchor..":SetAlpha(0)")
-				Dps_SetAlpha()
-
-				local Dps_Hide = loadstring(db.Frames.Dps.Anchor..":Hide()")
-				Dps_Hide()
-
+				 _G[db.Frames.Dps.Anchor]:SetAlpha(0)
+				 _G[db.Frames.Dps.Anchor]:Hide()
 				for _, frame in pairs(module:LoadAdditional(db.Frames.Dps.Additional)) do
 					if _G[frame] then
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha(0)")
-						Additional_SetAlpha()
-
-						local Additional_Hide = loadstring(frame..":Hide()")
-						Additional_Hide()
+						 _G[frame]:SetAlpha(0)
+						 _G[frame]:Hide()
 					end
 				end
 			end
@@ -678,31 +666,25 @@ function module:SetDps()
 	local RecountAlphaIn = CreateFrame("Frame", "RecountAlphaIn", UIParent)
 	RecountAlphaIn:Hide()
 
-	RecountAlphaIn:SetScript("OnUpdate", function(self,elapsed)
+	RecountAlphaIn:SetScript("OnUpdate", function(self, elapsed)
 		recounttimerin = recounttimerin + elapsed
 		if recounttimerin < alpha_timer then
 			local alpha = recounttimerin / alpha_timer
 
 			if _G[db.Frames.Dps.Anchor] then
-				local Dps_SetAlpha = loadstring(db.Frames.Dps.Anchor..":SetAlpha("..alpha..")")
-				Dps_SetAlpha()
-
+				_G[db.Frames.Dps.Anchor]:SetAlpha(alpha)
 				for _, frame in pairs(module:LoadAdditional(db.Frames.Dps.Additional)) do
 					if _G[frame] then
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha("..alpha..")")
-						Additional_SetAlpha()
+						_G[frame]:SetAlpha(alpha)
 					end
 				end
 			end
 		else
 			if _G[db.Frames.Dps.Anchor] then
-				local Dps_SetAlpha = loadstring(db.Frames.Dps.Anchor..":SetAlpha(1)")
-				Dps_SetAlpha()
-
+				_G[db.Frames.Dps.Anchor]:SetAlpha(1)
 				for _, frame in pairs(module:LoadAdditional(db.Frames.Dps.Additional)) do
 					if _G[frame] then
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha(1)")
-						Additional_SetAlpha()
+						_G[frame]:SetAlpha(1)
 					end
 				end
 			end
@@ -713,35 +695,12 @@ function module:SetDps()
 	end)
 
 	local CreateDps = CreateFrame("Frame", nil, UIParent)
-	local isDpsBackgroundCreated = false
 
 	CreateDps:RegisterEvent("PLAYER_ENTERING_WORLD")
 	CreateDps:SetScript("OnEvent", function(self)
 		if _G[db.Frames.Dps.Anchor] then
-			if isDpsBackgroundCreated == false or isDpsBackgroundCreated == nil then
-				isDpsBackgroundCreated = true
-
-				local Create_DpsFrame = loadstring("CreateFrame(\"FRAME\",\"DpsFrameBG\","..db.Frames.Dps.Anchor..")")
-				Create_DpsFrame()
-				DpsFrameBG:SetWidth(LUI:Scale(237))
-				DpsFrameBG:SetHeight(LUI:Scale(287))
-				DpsFrameBG:SetFrameStrata("BACKGROUND")
-				DpsFrameBG:SetFrameLevel(0)
-				DpsFrameBG:SetAlpha(1)
-				DpsFrameBG:Show()
-
-				local Create_DpsFrameBorder = loadstring("CreateFrame(\"FRAME\",\"DpsFrameBorder\","..db.Frames.Dps.Anchor..")")
-				Create_DpsFrameBorder()
-				DpsFrameBorder:SetWidth(LUI:Scale(237))
-				DpsFrameBorder:SetHeight(LUI:Scale(287))
-				DpsFrameBorder:SetFrameStrata("BACKGROUND")
-				DpsFrameBorder:SetFrameLevel(0)
-				DpsFrameBorder:SetAlpha(1)
-				DpsFrameBorder:Show()
-
-				module:SetDpsBackground()
-				CreateDps:UnregisterEvent("PLAYER_ENTERING_WORLD")
-			end
+			module:SetDpsBackground()
+			CreateDps:UnregisterEvent("PLAYER_ENTERING_WORLD")
 		end
 	end)
 end
@@ -751,9 +710,12 @@ end
 ------------------------------------------------------
 
 function module:SetRaidBackground()
+	if not _G[db.Frames.Raid.Anchor] then
+		LUI:Print("Could not find frame named "..db.Frames.Raid.Anchor.." (Raid).")
+		return
+	end
+	
 	local raidTex, raidBorderTex
-	local raidColor = {unpack(db.Colors.raid)}
-	local raidBorderColor = {unpack(db.Colors.raidborder)}
 
 	if db.Frames.Raid.FullTexture == true then
 		if db.Frames.Raid.Background == "LEFT" then
@@ -774,18 +736,18 @@ function module:SetRaidBackground()
 	end
 
 	RaidFrameBG:SetBackdrop({bgFile=raidTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	RaidFrameBG:SetBackdropColor(unpack(raidColor))
+	RaidFrameBG:SetBackdropColor(unpack(db.Colors.raid))
 	RaidFrameBG:SetBackdropBorderColor(0,0,0,0)
-
-	local Set_RaidFrame = loadstring("RaidFrameBG:SetPoint(\"TOPLEFT\","..db.Frames.Raid.Anchor..",\"TOPLEFT\","..db.Frames.Raid.OffsetX..","..db.Frames.Raid.OffsetY..")")
-	Set_RaidFrame()
+	RaidFrameBG:ClearAllPoints()
+	RaidFrameBG:SetPoint("TOPLEFT", _G[db.Frames.Raid.Anchor], "TOPLEFT", tonumber(db.Frames.Raid.OffsetX), tonumber(db.Frames.Raid.OffsetY))
+	RaidFrameBG:SetParent(_G[db.Frames.Raid.Anchor])
 
 	RaidFrameBorder:SetBackdrop({bgFile=raidBorderTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	RaidFrameBorder:SetBackdropColor(unpack(raidBorderColor))
+	RaidFrameBorder:SetBackdropColor(unpack(db.Colors.raidborder))
 	RaidFrameBorder:SetBackdropBorderColor(0,0,0,0)
-
-	local Set_RaidFrameBorder = loadstring("RaidFrameBorder:SetPoint(\"TOPLEFT\","..db.Frames.Raid.Anchor..",\"TOPLEFT\","..db.Frames.Raid.OffsetX..","..db.Frames.Raid.OffsetY..")")
-	Set_RaidFrameBorder()
+	RaidFrameBorder:ClearAllPoints()
+	RaidFrameBorder:SetPoint("TOPLEFT", _G[db.Frames.Raid.Anchor], "TOPLEFT", tonumber(db.Frames.Raid.OffsetX), tonumber(db.Frames.Raid.OffsetY))
+	RaidFrameBorder:SetParent(_G[db.Frames.Raid.Anchor])
 
 	if db.Frames.Raid.Background == "NONE" then
 		RaidFrameBG:Hide()
@@ -797,41 +759,48 @@ function module:SetRaidBackground()
 end
 
 function module:SetRaid()
+	local RaidFrameBG = CreateFrame("FRAME", "RaidFrameBG", _G[db.Frames.Raid.Anchor])
+	RaidFrameBG:SetWidth(LUI:Scale(576))
+	RaidFrameBG:SetHeight(LUI:Scale(576))
+	RaidFrameBG:SetFrameStrata("BACKGROUND")
+	RaidFrameBG:SetFrameLevel(0)
+	RaidFrameBG:SetAlpha(1)
+	RaidFrameBG:Show()
+
+	local RaidFrameBorder = CreateFrame("FRAME", "RaidFrameBorder", _G[db.Frames.Raid.Anchor])
+	RaidFrameBorder:SetWidth(LUI:Scale(576))
+	RaidFrameBorder:SetHeight(LUI:Scale(576))
+	RaidFrameBorder:SetFrameStrata("BACKGROUND")
+	RaidFrameBorder:SetFrameLevel(0)
+	RaidFrameBorder:SetAlpha(1)
+	RaidFrameBorder:Show()
+
 	local gridtimerout, gridtimerin = 0,0
 	local alpha_timer = 0.5
 
 	local GridAlphaOut = CreateFrame("Frame", "GridAlphaOut", UIParent)
 	GridAlphaOut:Hide()
 
-	GridAlphaOut:SetScript("OnUpdate", function(self,elapsed)
+	GridAlphaOut:SetScript("OnUpdate", function(self, elapsed)
 		gridtimerout = gridtimerout + elapsed
 		if gridtimerout < alpha_timer then
 			local alpha = 1 - gridtimerout / alpha_timer
 			if _G[db.Frames.Raid.Anchor] then
-				local Raid_SetAlpha = loadstring(db.Frames.Raid.Anchor..":SetAlpha("..alpha..")")
-				Raid_SetAlpha()
+				_G[db.Frames.Raid.Anchor]:SetAlpha(alpha)
 				for _, frame in pairs(module:LoadAdditional(db.Frames.Raid.Additional)) do
 					if _G[frame] then
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha("..alpha..")")
-						Additional_SetAlpha()
+						_G[frame]:SetAlpha(alpha)
 					end
 				end
 			end
 		else
 			if _G[db.Frames.Raid.Anchor] then
-				local Raid_SetAlpha = loadstring(db.Frames.Raid.Anchor..":SetAlpha(0)")
-				Raid_SetAlpha()
-
-				local Raid_Hide = loadstring(db.Frames.Raid.Anchor..":Hide()")
-				Raid_Hide()
-
+				_G[db.Frames.Raid.Anchor]:SetAlpha(0)
+				_G[db.Frames.Raid.Anchor]:Hide()
 				for _, frame in pairs(module:LoadAdditional(db.Frames.Raid.Additional)) do
 					if _G[frame] then
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha(0)")
-						Additional_SetAlpha()
-
-						local Additional_Hide = loadstring(frame..":Hide()")
-						Additional_Hide()
+						_G[frame]:SetAlpha(0)
+						_G[frame]:Hide()
 					end
 				end
 			end
@@ -843,30 +812,24 @@ function module:SetRaid()
 	local GridAlphaIn = CreateFrame("Frame", "GridAlphaIn", UIParent)
 	GridAlphaIn:Hide()
 
-	GridAlphaIn:SetScript("OnUpdate", function(self,elapsed)
+	GridAlphaIn:SetScript("OnUpdate", function(self, elapsed)
 		gridtimerin = gridtimerin + elapsed
 		if gridtimerin < alpha_timer then
 			local alpha = gridtimerin / alpha_timer
 			if _G[db.Frames.Raid.Anchor] then
-				local Grid_SetAlpha = loadstring(db.Frames.Raid.Anchor..":SetAlpha("..alpha..")")
-				Grid_SetAlpha()
-
+				_G[db.Frames.Raid.Anchor]:SetAlpha(alpha)
 				for _, frame in pairs(module:LoadAdditional(db.Frames.Raid.Additional)) do
 					if _G[frame] then
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha("..alpha..")")
-						Additional_SetAlpha()
+						_G[frame]:SetAlpha(alpha)
 					end
 				end
 			end
 		else
 			if _G[db.Frames.Raid.Anchor] then
-				local Grid_SetAlpha = loadstring(db.Frames.Raid.Anchor..":SetAlpha(1)")
-				Grid_SetAlpha()
-
+				_G[db.Frames.Raid.Anchor]:SetAlpha(1)
 				for _, frame in pairs(module:LoadAdditional(db.Frames.Raid.Additional)) do
 					if _G[frame] then
-						local Additional_SetAlpha = loadstring(frame..":SetAlpha(1)")
-						Additional_SetAlpha()
+						_G[frame]:SetAlpha(1)
 					end
 				end
 			end
@@ -876,36 +839,12 @@ function module:SetRaid()
 	end)
 
 	local CreateGrid = CreateFrame("Frame", nil, UIParent)
-	local isGridBackgroundCreated = false
 
 	CreateGrid:RegisterEvent("PLAYER_ENTERING_WORLD")
 	CreateGrid:SetScript("OnEvent", function(self)
 		if _G[db.Frames.Raid.Anchor] then
-			if isGridBackgroundCreated == false or isGridBackgroundCreated == nil then
-				isGridBackgroundCreated = true
-
-				local Create_RaidFrame = loadstring("CreateFrame(\"FRAME\",\"RaidFrameBG\","..db.Frames.Raid.Anchor..")")
-				Create_RaidFrame()
-				RaidFrameBG:SetWidth(LUI:Scale(576))
-				RaidFrameBG:SetHeight(LUI:Scale(576))
-				RaidFrameBG:SetFrameStrata("BACKGROUND")
-				RaidFrameBG:SetFrameLevel(0)
-				RaidFrameBG:SetAlpha(1)
-				RaidFrameBG:Show()
-
-				local Create_RaidFrameBorder = loadstring("CreateFrame(\"FRAME\",\"RaidFrameBorder\","..db.Frames.Raid.Anchor..")")
-				Create_RaidFrameBorder()
-				RaidFrameBorder:SetWidth(LUI:Scale(576))
-				RaidFrameBorder:SetHeight(LUI:Scale(576))
-				RaidFrameBorder:SetFrameStrata("BACKGROUND")
-				RaidFrameBorder:SetFrameLevel(0)
-				RaidFrameBorder:SetAlpha(1)
-				RaidFrameBorder:Show()
-
-				module:SetRaidBackground()
-
-				CreateGrid:UnregisterEvent("PLAYER_ENTERING_WORLD")
-			end
+			module:SetRaidBackground()
+			CreateGrid:UnregisterEvent("PLAYER_ENTERING_WORLD")
 		end
 	end)
 end
@@ -916,7 +855,7 @@ Blizz_UnitAnchor:SetWidth(200)
 Blizz_UnitAnchor:SetHeight(350)
 
 function LUIHook:OnEnable()
-	for i=1, 4, 1 do
+	for i = 1, MAX_BOSS_FRAMES do
 		_G["Boss"..i.."TargetFrame"]:ClearAllPoints()
 		_G["Boss"..i.."TargetFrame"]:SetParent(Blizz_UnitAnchor)
 		_G["Boss"..i.."TargetFrame"]:SetPoint("TOP", i == 1 and Blizz_UnitAnchor or _G["Boss"..(i-1).."TargetFrame"], i == 1 and "TOP" or "BOTTOM")
@@ -1089,7 +1028,7 @@ function module:LoadOptions()
 												end		
 												tpsLoop = tpsLoop + 1
 											end
-											StaticPopup_Show("RELOAD_UI")
+											module:SetTpsBackground()
 										end,
 									order = 6,
 								},
@@ -1101,9 +1040,9 @@ function module:LoadOptions()
 									set = function(self,AddonAnchor)
 												if AddonAnchor ~= nil and AddonAnchor ~= "" then
 													db.Frames.Tps.Anchor = AddonAnchor
-													StaticPopup_Show("RELOAD_UI")
+													module:SetTpsBackground()
 												else
-													print("You typed in an invalid Value!")
+													LUI:Print("You typed in an invalid Value!")
 												end
 											end,
 									order = 7,
@@ -1419,7 +1358,7 @@ function module:LoadOptions()
 												end		
 												dpsLoop = dpsLoop + 1
 											end
-											StaticPopup_Show("RELOAD_UI")
+											module:SetDpsBackground()
 										end,
 									order = 6,
 								},
@@ -1431,7 +1370,7 @@ function module:LoadOptions()
 									set = function(self,AddonAnchor)
 												if AddonAnchor ~= nil and AddonAnchor ~= "" then
 													db.Frames.Dps.Anchor = AddonAnchor
-													StaticPopup_Show("RELOAD_UI")
+													module:SetDpsBackground()
 												else
 													print("You typed in an invalid Value!")
 												end
@@ -1687,13 +1626,15 @@ function module:LoadOptions()
 											end
 										end,
 									set = function(self, ChooseAddon)
+											local raidLoop = 1
 											for k, v in pairs(addonAnchors.raid) do
 												if tostring(raidLoop) == tostring(ChooseAddon) then
 													db.Frames.Raid.Anchor = v
 												end
+												raidLoop = raidLoop + 1
 											end
 											db.oUF.Raid.Enable = (db.Frames.Raid.Anchor == addonAnchors.raid.oUF)
-											StaticPopup_Show("RELOAD_UI")
+											module:SetRaidBackground()
 										end,
 									order = 6,
 								},
@@ -1705,7 +1646,7 @@ function module:LoadOptions()
 									set = function(self,AddonAnchor)
 											if AddonAnchor ~= nil and AddonAnchor ~= "" then
 												db.Frames.Raid.Anchor = AddonAnchor
-												StaticPopup_Show("RELOAD_UI")
+												module:SetRaidBackground()
 											else
 												print("You typed in an invalid Value!")
 											end

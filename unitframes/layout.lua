@@ -2210,7 +2210,11 @@ oUF_LUI.funcs = {
 
 	Castbar = function(self, unit, oufdb)
 		if not self.Castbar then
-			self.Castbar = CreateFrame("StatusBar", nil, self)
+			if unit == "player" or unit == "target" then
+				self.Castbar = CreateFrame("StatusBar", self:GetName().."_Castbar", self) -- needed for moveable frames
+			else
+				self.Castbar = CreateFrame("StatusBar", nil, self)
+			end
 			self.Castbar:SetFrameLevel(6)
 			if unit == "player" or unit == "target" then self.Castbar:SetParent(UIParent) end
 

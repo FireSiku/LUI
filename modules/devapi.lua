@@ -83,6 +83,7 @@ end
 
 function LUI:NewEnable(name, order, dbt)
 	local t = {}
+
 	t.order = order or 1
 	t.type, t.name = "toggle", "Enable"
 	t.desc = "Enables LUI's "..name.." module."
@@ -96,6 +97,7 @@ end
 ---- Header
 function LUI:NewHeader(name, order, width, disabled, hidden)
 	local t = {}
+
 	t.type ,t.order, t.name = "header", order, name
 
 	SetState(t, width, disabled, hidden)
@@ -202,8 +204,8 @@ function LUI:NewInput(name, desc, order, dbt, option, default, func, width, disa
 end
 
 --Same thing as an input, except it requires a number. 
--- It will always uses the %d format unless specified otherwise. This means that it will not display floating points.
---   This was done because when you use drag commands for example, it gives  you an insane amount of floating points, which are truncated by %d. 
+-- It will always uses the %.1f format unless specified otherwise. This means that it will display only one floating point.
+--   This was done because when you use drag commands for example, it gives  you an insane amount of floating points, which are truncated by %.1f. 
 function LUI:NewInputNumber(name, desc, order, dbt, option, default, func, width, disabled, hidden, iformat)
 	local t = {}
 	
@@ -211,7 +213,7 @@ function LUI:NewInputNumber(name, desc, order, dbt, option, default, func, width
 	t.name, t.desc = name, desc.."\n\nDefault: "..default[option]
 	t.validate = IsNumber
 	t.get = function() 
-		if not iformat then return format("%d",dbt[option])
+		if not iformat then return format("%.1f",dbt[option])
 		else return format(iformat,dbt[option]) end
 	end
 	t.set = function(info, num)
