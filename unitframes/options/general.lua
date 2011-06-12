@@ -577,6 +577,7 @@ function module:CreateOptions(index, unit)
 				end
 			end
 			if unit == "Arena" or unit == "Boss" then
+				-- needed for dynamic resize!
 				local header = _G[ufMover[unit]]
 				header:SetAttribute("Padding", tonumber(oufdb.Padding))
 			end
@@ -640,15 +641,15 @@ function module:CreateOptions(index, unit)
 		elseif unit == "Maintank" then
 			oUF_LUI_maintank:SetAttribute("oUF-initialConfigFunction", [[
 				local unit = ...
-				if unit == "raidtargettarget" then
+				if unit == "maintanktargettarget" then
 					self:SetHeight(]]..db.oUF.MaintankToT.Height..[[)
 					self:SetWidth(]]..db.oUF.MaintankToT.Width..[[)
 					self:SetPoint("]]..db.oUF.MaintankToT.Point..[[", self:GetParent(), "]]..db.oUF.MaintankToT.RelativePoint..[[", ]]..db.oUF.MaintankToT.X..[[, ]]..db.oUF.MaintankToT.Y..[[)
-				elseif unit == "raidtarget" then
+				elseif unit == "maintanktarget" then
 					self:SetHeight(]]..db.oUF.MaintankTarget.Height..[[)
 					self:SetWidth(]]..db.oUF.MaintankTarget.Width..[[)
 					self:SetPoint("]]..db.oUF.MaintankTarget.Point..[[", self:GetParent(), "]]..db.oUF.MaintankTarget.RelativePoint..[[", ]]..db.oUF.MaintankTarget.X..[[, ]]..db.oUF.MaintankTarget.Y..[[)
-				elseif unit == "raid" then
+				elseif unit == "maintank" then
 					self:SetHeight(]]..db.oUF.Maintank.Height..[[)
 					self:SetWidth(]]..db.oUF.Maintank.Width..[[)
 				end
@@ -787,16 +788,16 @@ function module:CreateOptions(index, unit)
 						args = {
 							Enable = (unit ~= "Player" and unit ~= "Target") and LUI:NewToggle("Enable", "Whether you want to use "..unit.." Frame or not.", 1, oufdb, "Enable", oufdefaults, ToggleFunc) or nil,
 							UseBlizzard = (unit == "Party" or unit == "Boss" or unit == "Arena") and LUI:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, oufdb, "UseBlizzard", oufdefaults, ToggleBlizz, nil, function() return oufdb.Enable end) or nil,
-							header = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank") and LUI:NewHeader("General", 6) or nil,
-							Padding = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank") and LUI:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.", 7, oufdb, "Padding", oufdefaults, ChangePadding, nil, disabledFunc2) or nil,
-							header2 = LUI:NewHeader("Frame Position", 8),
-							XValue = LUI:NewPosX(unit.." Frame", 9, oufdb, "", oufdefaults, SetPosition, nil, disabledFunc2),
-							YValue = LUI:NewPosY(unit.." Frame", 10, oufdb, "", oufdefaults, SetPosition, nil, disabledFunc2),
-							Point = (not ufMover[unit] or unit == "Boss" or unit == "Party" or unit == "Maintank" or unit == "Arena" or unit == "Raid") and LUI:NewSelect("Point", "Choose the Point for your "..unit.." Frames.", 11, positions, nil, oufdb, "Point", oufdefaults, SetPosition, nil, disabledFunc2) or nil,
-							RelativePoint = (not ufMover[unit]) and LUI:NewSelect("Relative Point", "Choose the Relative Point for your "..unit.." Frames.", 12, positions, nil, oufdb, "RelativePoint", oufdefaults, SetPosition, nil, disabledFunc2) or nil,
-							header3 = LUI:NewHeader("Frame Height/Width", 13),
-							Height = LUI:NewHeight(unit.." Frame", 14, oufdb, nil, oufdefaults, ApplyHeightWidth, nil, disabledFunc2),
-							Width = LUI:NewWidth(unit.." Frame", 15, oufdb, nil, oufdefaults, ApplyHeightWidth, nil, disabledFunc2),
+							header = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank" or unit == "Raid") and LUI:NewHeader("General", 6) or nil,
+							Padding = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank" or unit == "Raid") and LUI:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.", 7, oufdb, "Padding", oufdefaults, ChangePadding, nil, disabledFunc2) or nil,
+							header2 = LUI:NewHeader("Frame Position", 9),
+							XValue = LUI:NewPosX(unit.." Frame", 10, oufdb, "", oufdefaults, SetPosition, nil, disabledFunc2),
+							YValue = LUI:NewPosY(unit.." Frame", 11, oufdb, "", oufdefaults, SetPosition, nil, disabledFunc2),
+							Point = (not ufMover[unit] or unit == "Boss" or unit == "Party" or unit == "Maintank" or unit == "Arena" or unit == "Raid") and LUI:NewSelect("Point", "Choose the Point for your "..unit.." Frames.", 12, positions, nil, oufdb, "Point", oufdefaults, SetPosition, nil, disabledFunc2) or nil,
+							RelativePoint = (not ufMover[unit]) and LUI:NewSelect("Relative Point", "Choose the Relative Point for your "..unit.." Frames.", 13, positions, nil, oufdb, "RelativePoint", oufdefaults, SetPosition, nil, disabledFunc2) or nil,
+							header3 = LUI:NewHeader("Frame Height/Width", 14),
+							Height = LUI:NewHeight(unit.." Frame", 15, oufdb, nil, oufdefaults, ApplyHeightWidth, nil, disabledFunc2),
+							Width = LUI:NewWidth(unit.." Frame", 16, oufdb, nil, oufdefaults, ApplyHeightWidth, nil, disabledFunc2),
 						},
 					},
 					Appearance = {

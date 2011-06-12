@@ -139,12 +139,12 @@ local defaults = {
 		},
 		CornerAura = {
 			Enable = true,
-			Size = "8",
+			Size = "10",
 			Inset = "1",
 		},
 		RaidDebuff = {
 			Enable = true,
-			Size = "12",
+			Size = "16",
 		},
 		Portrait = {
 			Enable = false,
@@ -375,9 +375,47 @@ function module:LoadOptions()
 		end
 	end
 	
+	local ChangeGroupPadding = function()
+		for i = 2, 5 do
+			_G["oUF_LUI_raid_25_"..i]:ClearAllPoints()
+			_G["oUF_LUI_raid_25_"..i]:SetPoint("TOPLEFT", _G["oUF_LUI_raid_25_"..i-1], "TOPRIGHT", tonumber(db.oUF.Raid.GroupPadding), 0)
+		end
+		
+		for i = 2, 8 do
+			_G["oUF_LUI_raid_40_"..i]:ClearAllPoints()
+			_G["oUF_LUI_raid_40_"..i]:SetPoint("TOPLEFT", _G["oUF_LUI_raid_40_"..i-1], "TOPRIGHT", tonumber(db.oUF.Raid.GroupPadding), 0)
+		end
+		
+		local width40 = (5 * tonumber(db.oUF.Raid.Height) - 3 * tonumber(db.oUF.Raid.GroupPadding)) / 8
+		
+		LUI.oUF.RecreateNameCache()
+		
+		for i = 1, 8 do
+			_G["oUF_LUI_raid_40_"..i]:SetAttribute("initialConfigFunction", [[
+				self:SetHeight(]]..db.oUF.Raid.Height..[[)
+				self:SetWidth(]]..width40..[[)
+			]])
+			for j = 1, 5 do
+				if _G["oUF_LUI_raid_40_"..i.."UnitButton"..j] then
+					_G["oUF_LUI_raid_40_"..i.."UnitButton"..j]:SetWidth(width40)
+					_G["oUF_LUI_raid_40_"..i.."UnitButton"..j]:FormatRaidName()
+				end
+			end
+		end
+	end
+	
 	local options = {
 		Raid = {
 			args = {
+				General = {
+					args = {
+						General = {
+							args = {
+								GroupPadding = LUI:NewInputNumber("Group Padding", "Choose the Padding between your Raidframe Groups", 8, oufdb, "GroupPadding", oufdefaults, ChangeGroupPadding, nil, function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end),
+							},
+						},
+					},
+				},
 				Texts = {
 					args = {
 						Name = {

@@ -571,7 +571,9 @@ local ufUnits = {
 	PetTarget = "pettarget",
 }
 
-local toggleFuncs = {
+-- needed this way because of self calls!
+local toggleFuncs
+toggleFuncs = {
 	Default = function(unit) 
 		if db.oUF[unit].Enable == nil or db.oUF[unit].Enable then -- == nil needed for player/target
 			if _G["oUF_LUI_"..ufUnits[unit]] then
@@ -591,21 +593,21 @@ local toggleFuncs = {
 		if db.oUF.Boss.Enable then
 			if oUF_LUI_boss then
 				oUF_LUI_boss:ClearAllPoints()
-				oUF_LUI_boss:SetPoint(db.oUF.Arena.Point, UIParent, db.oUF.Arena.Point, tonumber(db.oUF.Arena.X), tonumber(db.oUF.Arena.Y))
-				oUF_LUI_boss:SetWidth(tonumber(db.oUF.Arena.Width))
-				oUF_LUI_boss:SetHeight(tonumber(db.oUF.Arena.Height))
+				oUF_LUI_boss:SetPoint(db.oUF.Boss.Point, UIParent, db.oUF.Boss.Point, tonumber(db.oUF.Boss.X), tonumber(db.oUF.Boss.Y))
+				oUF_LUI_boss:SetWidth(tonumber(db.oUF.Boss.Width))
+				oUF_LUI_boss:SetHeight(tonumber(db.oUF.Boss.Height))
 				oUF_LUI_boss:SetAttribute("Height", tonumber(db.oUF.Boss.Height))
 				oUF_LUI_boss:SetAttribute("Padding", tonumber(db.oUF.Boss.Padding))
 				oUF_LUI_boss:Show()
 				
-				for i = 1, MAX_BOSS_FRAMES do
+				for i = 1, 4 do
 					_G["oUF_LUI_boss"..i]:Enable()
 					_G["oUF_LUI_boss"..i]:UpdateAllElements()
 					_G["oUF_LUI_boss"..i]:ClearAllPoints()
 					if i == 1 then
-						_G["oUF_LUI_boss"..i]:SetPoint("RIGHT", UIParent, "RIGHT", tonumber(db.oUF.Boss.X), tonumber(db.oUF.Boss.Y))
+						_G["oUF_LUI_boss"..i]:SetPoint("TOPLEFT", oUF_LUI_boss, "TOPLEFT", 0, 0)
 					else
-						_G["oUF_LUI_boss"..i]:SetPoint('TOP', _G["oUF_LUI_boss"..i-1], 'BOTTOM', 0, -tonumber(db.oUF.Boss.Padding))
+						_G["oUF_LUI_boss"..i]:SetPoint("TOP", _G["oUF_LUI_boss"..i-1], "BOTTOM", 0, -tonumber(db.oUF.Boss.Padding))
 					end
 				end
 			else
@@ -615,64 +617,57 @@ local toggleFuncs = {
 				bossParent:SetHeight(tonumber(db.oUF.Boss.Height))
 				bossParent:SetAttribute("Height", tonumber(db.oUF.Boss.Height))
 				bossParent:SetAttribute("Padding", tonumber(db.oUF.Boss.Padding))
+				bossParent:Show()
 				
 				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
 				handler:SetFrameRef("boss", bossParent)
 				handler:SetAttribute("_onstate-boss", [[
-					if newstate ~= "0" and newstate ~= 0 then
-						local parent = self:GetFrameRef("boss")
-						local padding = parent:GetAttribute("Padding")
-						local height = parent:GetAttribute("Height")
-						parent:SetHeight(newstate * height + (newstate - 1) * padding)
-					end
+					local parent = self:GetFrameRef("boss")
+					local padding = parent:GetAttribute("Padding")
+					local height = parent:GetAttribute("Height")
+					parent:SetHeight(newstate * height + (newstate - 1) * padding)
 				]])
-				RegisterStateDriver(handler, "boss", "[@boss4,exists] 4; [@boss3,exists] 3; [@boss2,exists] 2; [@boss1,exists] 1; 0")
+				RegisterStateDriver(handler, "boss", "[@boss4,exists] 4; [@boss3,exists] 3; [@boss2,exists] 2; 1")
 				bossParent.handler = handler
 				
 				local boss = {}
-				for i = 1, MAX_BOSS_FRAMES do
+				for i = 1, 4 do
 					boss[i] = oUF:Spawn("boss"..i, "oUF_LUI_boss"..i)
 					if i == 1 then
-						boss[i]:SetPoint("TOPRIGHT", bossParent, "TOPRIGHT", 0, 0)
+						boss[i]:SetPoint("TOPLEFT", bossParent, "TOPLEFT", 0, 0)
 					else
 						boss[i]:SetPoint("TOP", boss[i-1], "BOTTOM", 0, -tonumber(db.oUF.Boss.Padding))
 					end
 				end
-				
-				if db.oUF.BossTarget.Enable == true then
-					local bosstarget = {}
-					for i = 1, MAX_BOSS_FRAMES do
-						bosstarget[i] = oUF:Spawn("boss"..i.."target", "oUF_LUI_bosstarget"..i)
-						bosstarget[i]:SetPoint(db.oUF.BossTarget.Point, boss[i], db.oUF.BossTarget.RelativePoint, tonumber(db.oUF.BossTarget.X), tonumber(db.oUF.BossTarget.Y))
-					end
-				end
 			end
 		else
-			for i = 1, MAX_BOSS_FRAMES do
+			for i = 1, 4 do
 				if _G["oUF_LUI_boss"..i] then _G["oUF_LUI_boss"..i]:Disable() end
-				if _G["oUF_LUI_bosstarget"..i] then _G["oUF_LUI_bosstarget"..i]:Disable() end
 			end
 			
-			oUF_LUI_boss:UnregisterAllEvents()
 			oUF_LUI_boss:Hide()
 		end
+		
+		toggleFuncs.BossTarget()
 	end,
 	
 	BossTarget = function()
 		if db.oUF.Boss.Enable and db.oUF.BossTarget.Enable then
-			if not oUF_LUI_bosstarget1 then
-				local bosstarget = {}
-				for i = 1, MAX_BOSS_FRAMES do
-					bosstarget[i] = oUF:Spawn("boss"..i.."target", "oUF_LUI_bosstarget"..i)
-					bosstarget[i]:SetPoint(db.oUF.BossTarget.Point, _G["oUF_LUI_boss"..i], db.oUF.BossTarget.RelativePoint, tonumber(db.oUF.BossTarget.X), tonumber(db.oUF.BossTarget.Y))
+			if oUF_LUI_bosstarget1 then
+				for i = 1, 4 do
+					if _G["oUF_LUI_bosstarget"..i] then
+						_G["oUF_LUI_bosstarget"..i]:Enable()
+						_G["oUF_LUI_bosstarget"..i]:ClearAllPoints()
+						_G["oUF_LUI_bosstarget"..i]:SetPoint(db.oUF.BossTarget.Point, _G["oUF_LUI_boss"..i], db.oUF.BossTarget.RelativePoint, tonumber(db.oUF.BossTarget.X), tonumber(db.oUF.BossTarget.Y))
+					end
 				end
 			else
-				for i = 1, MAX_BOSS_FRAMES do
-					if _G["oUF_LUI_bosstarget"..i] then _G["oUF_LUI_bosstarget"..i]:Enable() end
+				for i = 1, 4 do
+					oUF:Spawn("boss"..i.."target", "oUF_LUI_bosstarget"..i):SetPoint(db.oUF.BossTarget.Point, _G["oUF_LUI_boss"..i], db.oUF.BossTarget.RelativePoint, tonumber(db.oUF.BossTarget.X), tonumber(db.oUF.BossTarget.Y))
 				end
 			end
 		else
-			for i = 1, MAX_BOSS_FRAMES do
+			for i = 1, 4 do
 				if _G["oUF_LUI_bosstarget"..i] then _G["oUF_LUI_bosstarget"..i]:Disable() end
 			end
 		end
@@ -682,7 +677,7 @@ local toggleFuncs = {
 		if db.oUF.Party.Enable then
 			if oUF_LUI_party then
 				oUF_LUI_party:ClearAllPoints()
-				oUF_LUI_party:SetPoint("LEFT", UIParent, "LEFT", tonumber(db.oUF.Party.X), tonumber(db.oUF.Party.Y))
+				oUF_LUI_party:SetPoint(db.oUF.Party.Point, UIParent, db.oUF.Party.Point, tonumber(db.oUF.Party.X), tonumber(db.oUF.Party.Y))
 				oUF_LUI_party:SetAttribute("yOffset", - tonumber(db.oUF.Party.Padding))
 				oUF_LUI_party:SetAttribute("showPlayer", db.oUF.Party.ShowPlayer)
 				oUF_LUI_party:SetAttribute("oUF-initialConfigFunction", [[
@@ -738,7 +733,7 @@ local toggleFuncs = {
 					]]
 				)
 				
-				party:SetPoint("LEFT", UIParent, "LEFT", tonumber(db.oUF.Party.X), tonumber(db.oUF.Party.Y))
+				party:SetPoint(db.oUF.Party.Point, UIParent, db.oUF.Party.Point, tonumber(db.oUF.Party.X), tonumber(db.oUF.Party.Y))
 				
 				if db.oUF.Party.ShowInRaid then
 					RegisterStateDriver(party, "visibility", "[group:party,group:raid] show; hide")
@@ -755,6 +750,9 @@ local toggleFuncs = {
 				oUF_LUI_party:Hide()
 			end
 		end
+		
+		toggleFuncs.PartyTarget()
+		toggleFuncs.PartyPet()
 	end,
 	
 	PartyTarget = function()
@@ -767,22 +765,6 @@ local toggleFuncs = {
 					_G["oUF_LUI_partyUnitButton"..i.."target"]:SetPoint(db.oUF.PartyTarget.Point, _G["oUF_LUI_partyUnitButton"..i], db.oUF.PartyTarget.RelativePoint, tonumber(db.oUF.PartyTarget.X), tonumber(db.oUF.PartyTarget.Y))
 				end
 			end
-			
-			oUF_LUI_party:SetAttribute("oUF-initialConfigFunction", [[
-				local unit = ...
-				if unit == "party" then
-					self:SetHeight(]]..db.oUF.Party.Height..[[)
-					self:SetWidth(]]..db.oUF.Party.Width..[[)
-				elseif unit == "partytarget" then
-					self:SetHeight(]]..db.oUF.PartyTarget.Height..[[)
-					self:SetWidth(]]..db.oUF.PartyTarget.Width..[[)
-					self:SetPoint("]]..db.oUF.PartyTarget.Point..[[", self:GetParent(), "]]..db.oUF.PartyTarget.RelativePoint..[[", ]]..db.oUF.PartyTarget.X..[[, ]]..db.oUF.PartyTarget.Y..[[)
-				elseif unit == "partypet" then
-					self:SetHeight(]]..db.oUF.PartyPet.Height..[[)
-					self:SetWidth(]]..db.oUF.PartyPet.Width..[[)
-					self:SetPoint("]]..db.oUF.PartyPet.Point..[[", self:GetParent(), "]]..db.oUF.PartyPet.RelativePoint..[[", ]]..db.oUF.PartyPet.X..[[, ]]..db.oUF.PartyPet.Y..[[)
-				end
-			]])
 		else
 			for i = 1, 5 do
 				if _G["oUF_LUI_partyUnitButton"..i.."target"] then _G["oUF_LUI_partyUnitButton"..i.."target"]:Disable() end
@@ -800,22 +782,6 @@ local toggleFuncs = {
 					_G["oUF_LUI_partyUnitButton"..i.."target"]:SetPoint(db.oUF.PartyPet.Point, _G["oUF_LUI_partyUnitButton"..i], db.oUF.PartyPet.RelativePoint, tonumber(db.oUF.PartyPet.X), tonumber(db.oUF.PartyPet.Y))
 				end
 			end
-			
-			oUF_LUI_party:SetAttribute("oUF-initialConfigFunction", [[
-				local unit = ...
-				if unit == "party" then
-					self:SetHeight(]]..db.oUF.Party.Height..[[)
-					self:SetWidth(]]..db.oUF.Party.Width..[[)
-				elseif unit == "partytarget" then
-					self:SetHeight(]]..db.oUF.PartyTarget.Height..[[)
-					self:SetWidth(]]..db.oUF.PartyTarget.Width..[[)
-					self:SetPoint("]]..db.oUF.PartyTarget.Point..[[", self:GetParent(), "]]..db.oUF.PartyTarget.RelativePoint..[[", ]]..db.oUF.PartyTarget.X..[[, ]]..db.oUF.PartyTarget.Y..[[)
-				elseif unit == "partypet" then
-					self:SetHeight(]]..db.oUF.PartyPet.Height..[[)
-					self:SetWidth(]]..db.oUF.PartyPet.Width..[[)
-					self:SetPoint("]]..db.oUF.PartyPet.Point..[[", self:GetParent(), "]]..db.oUF.PartyPet.RelativePoint..[[", ]]..db.oUF.PartyPet.X..[[, ]]..db.oUF.PartyPet.Y..[[)
-				end
-			]])
 		else
 			for i = 1, 5 do
 				if _G["oUF_LUI_partyUnitButton"..i.."pet"] then _G["oUF_LUI_partyUnitButton"..i.."pet"]:Disable() end
@@ -841,7 +807,7 @@ local toggleFuncs = {
 					_G["oUF_LUI_arena"..i]:UpdateAllElements()
 					_G["oUF_LUI_arena"..i]:ClearAllPoints()
 					if i == 1 then
-						_G["oUF_LUI_arena"..i]:SetPoint("TOPRIGHT", oUF_LUI_arena, "TOPRIGHT", 0, 0)
+						_G["oUF_LUI_arena"..i]:SetPoint("TOPLEFT", oUF_LUI_arena, "TOPLEFT", 0, 0)
 					else
 						_G["oUF_LUI_arena"..i]:SetPoint("TOP", _G["oUF_LUI_arena"..i-1], "BOTTOM", 0, -tonumber(db.oUF.Arena.Padding))
 					end
@@ -856,19 +822,17 @@ local toggleFuncs = {
 				arenaParent:SetHeight(tonumber(db.oUF.Arena.Height))
 				arenaParent:SetAttribute("Height", tonumber(db.oUF.Arena.Height))
 				arenaParent:SetAttribute("Padding", tonumber(db.oUF.Arena.Padding))
+				arenaParent:Show()
 
 				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
 				handler:SetFrameRef("arena", arenaParent)
 				handler:SetAttribute("_onstate-arena", [[
-					if newstate == "0" or newstate == 0 then
-					else
-						local parent = self:GetFrameRef("arena")
-						local padding = parent:GetAttribute("Padding")
-						local height = parent:GetAttribute("Height")
-						parent:SetHeight(newstate * height + (newstate - 1) * padding)
-					end
+					local parent = self:GetFrameRef("arena")
+					local padding = parent:GetAttribute("Padding")
+					local height = parent:GetAttribute("Height")
+					parent:SetHeight(newstate * height + (newstate - 1) * padding)
 				]])
-				RegisterStateDriver(handler, "arena", "[@arena5,exists] 5; [@arena4,exists] 4; [@arena3,exists] 3; [@arena2,exists] 2; [@arena1,exists] 1; 0")
+				RegisterStateDriver(handler, "arena", "[@arena5,exists] 5; [@arena4,exists] 4; [@arena3,exists] 3; [@arena2,exists] 2; 1")
 				arenaParent.handler = handler
 				
 				local arena = {}
@@ -876,25 +840,9 @@ local toggleFuncs = {
 				for i = 1, 5 do
 					arena[i] = oUF:Spawn("arena"..i, "oUF_LUI_arena"..i)
 					if i == 1 then
-						arena[i]:SetPoint("TOPRIGHT", arenaParent, "TOPRIGHT", 0, 0)
+						arena[i]:SetPoint("TOPLEFT", arenaParent, "TOPLEFT", 0, 0)
 					else
 						arena[i]:SetPoint("TOP", arena[i-1], "BOTTOM", 0, -tonumber(db.oUF.Arena.Padding))
-					end
-				end
-
-				if db.oUF.ArenaTarget.Enable == true then
-					local arenatarget = {}
-					for i = 1, 5 do
-						arenatarget[i] = oUF:Spawn("arena"..i.."target", "oUF_LUI_arenatarget"..i)
-						arenatarget[i]:SetPoint(db.oUF.ArenaTarget.Point, arena[i], db.oUF.ArenaTarget.RelativePoint, tonumber(db.oUF.ArenaTarget.X), tonumber(db.oUF.ArenaTarget.Y))
-					end
-				end
-
-				if db.oUF.ArenaPet.Enable == true then
-					local arenapet = {}
-					for i = 1, 5 do
-						arenapet[i] = oUF:Spawn("arena"..i.."pet", "oUF_LUI_arenapet"..i)
-						arenapet[i]:SetPoint(db.oUF.ArenaPet.Point, arena[i], db.oUF.ArenaPet.RelativePoint, tonumber(db.oUF.ArenaPet.X), tonumber(db.oUF.ArenaTarget.Y))
 					end
 				end
 			end
@@ -911,8 +859,10 @@ local toggleFuncs = {
 			end
 			
 			oUF_LUI_arena:Hide()
-			oUF_LUI_arena:UnregisterAllEvents()
 		end
+		
+		toggleFuncs.ArenaTarget()
+		toggleFuncs.ArenaPet()
 	end,
 	
 	ArenaTarget = function()
@@ -961,15 +911,15 @@ local toggleFuncs = {
 				oUF_LUI_maintank:SetAttribute("yOffset", - tonumber(db.oUF.Maintank.Padding))
 				oUF_LUI_maintank:SetAttribute("oUF-initialConfigFunction", [[
 					local unit = ...
-					if unit == "raidtargettarget" then
+					if unit == "maintanktargettarget" then
 						self:SetHeight(]]..db.oUF.MaintankToT.Height..[[)
 						self:SetWidth(]]..db.oUF.MaintankToT.Width..[[)
 						self:SetPoint("]]..db.oUF.MaintankToT.Point..[[", self:GetParent(), "]]..db.oUF.MaintankToT.RelativePoint..[[", ]]..db.oUF.MaintankToT.X..[[, ]]..db.oUF.MaintankToT.Y..[[)
-					elseif unit == "raidtarget" then
+					elseif unit == "maintanktarget" then
 						self:SetHeight(]]..db.oUF.MaintankTarget.Height..[[)
 						self:SetWidth(]]..db.oUF.MaintankTarget.Width..[[)
 						self:SetPoint("]]..db.oUF.MaintankTarget.Point..[[", self:GetParent(), "]]..db.oUF.MaintankTarget.RelativePoint..[[", ]]..db.oUF.MaintankTarget.X..[[, ]]..db.oUF.MaintankTarget.Y..[[)
-					elseif unit == "raid" then
+					elseif unit == "maintank" then
 						self:SetHeight(]]..db.oUF.Maintank.Height..[[)
 						self:SetWidth(]]..db.oUF.Maintank.Width..[[)
 					end
@@ -988,19 +938,19 @@ local toggleFuncs = {
 					"groupFilter", "MAINTANK",
 					"template", "oUF_LUI_maintank",
 					"showPlayer", true,
-					"wrapAfter", 4,
+					"unitsPerColumn", 4,
 					"yOffset", - tonumber(db.oUF.Maintank.Padding),
 					"oUF-initialConfigFunction", [[
 						local unit = ...
-						if unit == "raidtargettarget" then
+						if unit == "maintanktargettarget" then
 							self:SetHeight(]]..db.oUF.MaintankToT.Height..[[)
 							self:SetWidth(]]..db.oUF.MaintankToT.Width..[[)
 							self:SetPoint("]]..db.oUF.MaintankToT.Point..[[", self:GetParent(), "]]..db.oUF.MaintankToT.RelativePoint..[[", ]]..db.oUF.MaintankToT.X..[[, ]]..db.oUF.MaintankToT.Y..[[)
-						elseif unit == "raidtarget" then
+						elseif unit == "maintanktarget" then
 							self:SetHeight(]]..db.oUF.MaintankTarget.Height..[[)
 							self:SetWidth(]]..db.oUF.MaintankTarget.Width..[[)
 							self:SetPoint("]]..db.oUF.MaintankTarget.Point..[[", self:GetParent(), "]]..db.oUF.MaintankTarget.RelativePoint..[[", ]]..db.oUF.MaintankTarget.X..[[, ]]..db.oUF.MaintankTarget.Y..[[)
-						elseif unit == "raid" then
+						elseif unit == "maintank" then
 							self:SetHeight(]]..db.oUF.Maintank.Height..[[)
 							self:SetWidth(]]..db.oUF.Maintank.Width..[[)
 						end
@@ -1014,71 +964,45 @@ local toggleFuncs = {
 			if oUF_LUI_maintank then
 				for i = 1, 4 do
 					if _G["oUF_LUI_maintankUnitButton"..i] then _G["oUF_LUI_maintankUnitButton"..i]:Disable() end
+					if _G["oUF_LUI_maintankUnitButton"..i.."target"] then _G["oUF_LUI_maintankUnitButton"..i.."target"]:Disable() end
+					if _G["oUF_LUI_maintankUnitButton"..i.."targettarget"] then _G["oUF_LUI_maintankUnitButton"..i.."targettarget"]:Disable() end
 				end
 				oUF_LUI_maintank:Hide()
 			end
 		end
+		
+		toggleFuncs.MaintankTarget()
 	end,
 	
 	MaintankTarget = function()
 		if db.oUF.Maintank.Enable and db.oUF.MaintankTarget.Enable then
 			for i = 1, 4 do
 				if _G["oUF_LUI_maintankUnitButton"..i.."target"] then
-					_G["oUF_LUI_maintankUnitButton"..i.."target"]:Enable()
-					--_G["oUF_LUI_maintankUnitButton"..i.."target"]:UpdateAllElements()
 					_G["oUF_LUI_maintankUnitButton"..i.."target"]:ClearAllPoints()
 					_G["oUF_LUI_maintankUnitButton"..i.."target"]:SetPoint(db.oUF.MaintankTarget.Point, _G["oUF_LUI_maintankUnitButton"..i], db.oUF.MaintankTarget.RelativePoint, tonumber(db.oUF.MaintankTarget.X), tonumber(db.oUF.MaintankTarget.Y))
+					_G["oUF_LUI_maintankUnitButton"..i.."target"]:Enable()
+					_G["oUF_LUI_maintankUnitButton"..i.."target"]:UpdateAllElements()
 				end
 			end
-			
-			oUF_LUI_maintank:SetAttribute("oUF-initialConfigFunction", [[
-				local unit = ...
-				if unit == "raidtargettarget" then
-					self:SetHeight(]]..db.oUF.MaintankToT.Height..[[)
-					self:SetWidth(]]..db.oUF.MaintankToT.Width..[[)
-					self:SetPoint("]]..db.oUF.MaintankToT.Point..[[", self:GetParent(), "]]..db.oUF.MaintankToT.RelativePoint..[[", ]]..db.oUF.MaintankToT.X..[[, ]]..db.oUF.MaintankToT.Y..[[)
-				elseif unit == "raidtarget" then
-					self:SetHeight(]]..db.oUF.MaintankTarget.Height..[[)
-					self:SetWidth(]]..db.oUF.MaintankTarget.Width..[[)
-					self:SetPoint("]]..db.oUF.MaintankTarget.Point..[[", self:GetParent(), "]]..db.oUF.MaintankTarget.RelativePoint..[[", ]]..db.oUF.MaintankTarget.X..[[, ]]..db.oUF.MaintankTarget.Y..[[)
-				elseif unit == "raid" then
-					self:SetHeight(]]..db.oUF.Maintank.Height..[[)
-					self:SetWidth(]]..db.oUF.Maintank.Width..[[)
-				end
-			]])
 		else
 			for i = 1, 4 do
 				if _G["oUF_LUI_maintankUnitButton"..i.."target"] then _G["oUF_LUI_maintankUnitButton"..i.."target"]:Disable() end
 			end
 		end
+		
+		toggleFuncs.MaintankToT()
 	end,
 	
 	MaintankToT = function()
 		if db.oUF.Maintank.Enable and db.oUF.MaintankTarget.Enable and db.oUF.MaintankToT.Enable then
 			for i = 1, 4 do
 				if _G["oUF_LUI_maintankUnitButton"..i.."targettarget"] then
-					_G["oUF_LUI_maintankUnitButton"..i.."targettarget"]:Enable()
-					_G["oUF_LUI_maintankUnitButton"..i.."targettarget"]:UpdateAllElements()
 					_G["oUF_LUI_maintankUnitButton"..i.."targettarget"]:ClearAllPoints()
 					_G["oUF_LUI_maintankUnitButton"..i.."targettarget"]:SetPoint(db.oUF.MaintankToT.Point, _G["oUF_LUI_maintankUnitButton"..i.."target"], db.oUF.MaintankToT.RelativePoint, tonumber(db.oUF.MaintankToT.X), tonumber(db.oUF.MaintankToT.Y))
+					_G["oUF_LUI_maintankUnitButton"..i.."targettarget"]:Enable()
+					_G["oUF_LUI_maintankUnitButton"..i.."targettarget"]:UpdateAllElements()
 				end
 			end
-			
-			oUF_LUI_maintank:SetAttribute("oUF-initialConfigFunction", [[
-				local unit = ...
-				if unit == "raidtargettarget" then
-					self:SetHeight(]]..db.oUF.MaintankToT.Height..[[)
-					self:SetWidth(]]..db.oUF.MaintankToT.Width..[[)
-					self:SetPoint("]]..db.oUF.MaintankToT.Point..[[", self:GetParent(), "]]..db.oUF.MaintankToT.RelativePoint..[[", ]]..db.oUF.MaintankToT.X..[[, ]]..db.oUF.MaintankToT.Y..[[)
-				elseif unit == "raidtarget" then
-					self:SetHeight(]]..db.oUF.MaintankTarget.Height..[[)
-					self:SetWidth(]]..db.oUF.MaintankTarget.Width..[[)
-					self:SetPoint("]]..db.oUF.MaintankTarget.Point..[[", self:GetParent(), "]]..db.oUF.MaintankTarget.RelativePoint..[[", ]]..db.oUF.MaintankTarget.X..[[, ]]..db.oUF.MaintankTarget.Y..[[)
-				elseif unit == "raid" then
-					self:SetHeight(]]..db.oUF.Maintank.Height..[[)
-					self:SetWidth(]]..db.oUF.Maintank.Width..[[)
-				end
-			]])
 		else
 			for i = 1, 4 do
 				if _G["oUF_LUI_maintankUnitButton"..i.."targettarget"] then _G["oUF_LUI_maintankUnitButton"..i.."targettarget"]:Disable() end
@@ -1153,7 +1077,6 @@ local toggleFuncs = {
 				raid40:SetPoint("TOPLEFT", raidAnchor, "TOPLEFT", 0, 0)
 				
 				local width40 = (5 * tonumber(db.oUF.Raid.Width) - 3 * tonumber(db.oUF.Raid.GroupPadding)) / 8
-				print(tonumber(db.oUF.Raid.Width), width40)
 				
 				local raid40table = {}
 				for i = 1, 8 do

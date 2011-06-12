@@ -1980,17 +1980,14 @@ oUF_LUI.funcs = {
 			local x = k:gmatch("RIGHT") and -tonumber(oufdb.CornerAura.Inset) or tonumber(oufdb.CornerAura.Inset)
 			local y = k:gmatch("TOP") and -tonumber(oufdb.CornerAura.Inset) or tonumber(oufdb.CornerAura.Inset)
 
-			if k:gmatch("%d") == 2 then
-				y = key:gmatch("TOP") and y - tonumber(oufdb.CornerAura.Size) or y + tonumber(oufdb.CornerAura.Size)
-			end
-
 			if not self.SingleAuras[k] then
 				self.SingleAuras[k] = CreateFrame("Frame", nil, self)
+				self.SingleAuras[k]:SetFrameLevel(7)
 			end
 
-			self.SingleAuras[k].spellId = tonumber(spellId)
-			self.SingleAuras[k].onlyPlayer = OnlyPlayer
-			self.SingleAuras[k].isDebuff = IsDebuff
+			self.SingleAuras[k].spellName = GetSpellInfo(spellId)
+			self.SingleAuras[k].onlyPlayer = onlyPlayer
+			self.SingleAuras[k].isDebuff = isDebuff
 			self.SingleAuras[k]:SetWidth(tonumber(oufdb.CornerAura.Size))
 			self.SingleAuras[k]:SetHeight(tonumber(oufdb.CornerAura.Size))
 			self.SingleAuras[k]:ClearAllPoints()
@@ -2001,7 +1998,8 @@ oUF_LUI.funcs = {
 		if not self.RaidDebuffs then
 			self.RaidDebuffs = CreateFrame('Frame', nil, self)
 			self.RaidDebuffs:SetPoint("CENTER", self, "CENTER", 0, 0)
-			self.RaidDebuffs:SetFrameStrata("HIGH")
+			--self.RaidDebuffs:SetFrameStrata("HIGH")
+			self.RaidDebuffs:SetFrameLevel(7)
 
 			self.RaidDebuffs:SetBackdrop({
 				bgFile = [=[Interface\ChatFrame\ChatFrameBackground]=],
@@ -3448,6 +3446,7 @@ local SetStyle = function(self, unit, isSingle)
 	end
 
 	self:RegisterEvent("PLAYER_FLAGS_CHANGED", function(self) self.Health:ForceUpdate() end)
+	if unit == "player" then self:RegisterEvent("PLAYER_ENTERING_WORLD", function(self) self.Health:ForceUpdate() end) end
 
 	if unit == "pet" then
 		self.elapsed = 0
