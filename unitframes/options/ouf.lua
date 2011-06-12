@@ -709,11 +709,11 @@ local toggleFuncs = {
 					end
 				end
 				
-				UnregisterStateDriver(party, "visibility")
+				UnregisterStateDriver(oUF_LUI_party, "visibility")
 				if db.oUF.Party.ShowInRaid then
-					RegisterStateDriver(party, "visibility", "[group:party,group:raid] show; hide")
+					RegisterStateDriver(oUF_LUI_party, "visibility", "[group:party,group:raid] show; hide")
 				else
-					RegisterStateDriver(party, "visibility", "[group:party,nogroup:raid] show; hide")
+					RegisterStateDriver(oUF_LUI_party, "visibility", "[group:party,nogroup:raid] show; hide")
 				end
 			else
 				local party = oUF:SpawnHeader("oUF_LUI_party", nil, nil,
