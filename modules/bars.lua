@@ -2100,19 +2100,19 @@ function module:LoadOptions()
 								YOffset = LUI:NewPosY("Top Bar Texture", 4, bardb.TopTexture, "", bardefaults.TopTexture, ApplySettings, nil, DisabledTopBarTex),
 							},
 						},
-						TopBarAnimation = {
+						TopBarAnimation = LUI.isForteCooldownLoaded and {
 							name = "Bar Animation",
 							type = "group",
 							guiInline = true,
-							disabled = function() return not isForteCooldownLoaded end,
+							--disabled = function() return not LUI.isForteCooldownLoaded end,
 							order = 4,
 							args = {
-								Desc = LUI:NewDesc("This Feature will be only available if you are using FortExorcist CooldownTimer.", 1),
+								Desc = LUI:NewDesc("This Feature will be only available if you are using ForteXorcist CooldownTimer.", 1),
 								empty23223342211 = LUI:NewEmpty(2),
 								Animation = LUI:NewToggle("Enable Bar Texture Animation", "Whether you want to show the Bar Texture Animation or not.", 3, bardb.TopTexture, "Animation", bardefaults.TopTexture, ApplySettings, nil, DisabledTopBarTex),
 								AnimationHeight = LUI:NewHeight("Top Bar Texture Animation", 4, bardb.TopTexture, "AnimationHeight", bardefaults.TopTexture, ApplySettings, nil, DisabledTopBarTex),
 							},
-						},
+						} or nil,
 						BottomTextureSettings = {
 							name = "Bars Bottom Texture Settings",
 							type = "group",
@@ -2120,9 +2120,9 @@ function module:LoadOptions()
 							order = 5,
 							args = {
 								Toggle = LUI:NewToggle("Enable", "Whether you want to show the Bottom Bar Texture or not.", 1, bardb.BottomTexture, "Enable", bardefaults.BottomTexture, ApplySettings),
-								Alpha = LUI:NewSlider("Alpha", "Choose your Bar Bottom Texture Alpha Value.", 2, bardb.BottomTexture, "Alpha", bardefaults.BottomTexture, 0, 1, 0.1, ApplySettings, nil, DisabledTopBarTex),
-								XOffset = LUI:NewPosX("Bottom Bar Texture", 3, bardb.BottomTexture, "", bardefaults.BottomTexture, ApplySettings, nil, DisabledTopBarTex),
-								YOffset = LUI:NewPosY("Bottom Bar Texture", 4, bardb.BottomTexture, "", bardefaults.BottomTexture, ApplySettings, nil, DisabledTopBarTex),
+								Alpha = LUI:NewSlider("Alpha", "Choose your Bar Bottom Texture Alpha Value.", 2, bardb.BottomTexture, "Alpha", bardefaults.BottomTexture, 0, 1, 0.1, ApplySettings, nil, DisabledBottomBarTex),
+								XOffset = LUI:NewPosX("Bottom Bar Texture", 3, bardb.BottomTexture, "", bardefaults.BottomTexture, ApplySettings, nil, DisabledBottomBarTex),
+								YOffset = LUI:NewPosY("Bottom Bar Texture", 4, bardb.BottomTexture, "", bardefaults.BottomTexture, ApplySettings, nil, DisabledBottomBarTex),
 							},
 						},
 					},
