@@ -627,7 +627,7 @@ local toggleFuncs = {
 						parent:SetHeight(newstate * height + (newstate - 1) * padding)
 					end
 				]])
-				RegisterStateDriver(handler, "boss", "[@focus,exists] 4; [@boss4,exists] 4; [@boss3,exists] 3; [@boss2,exists] 2; [@boss1,exists] 1; 0")
+				RegisterStateDriver(handler, "boss", "[@boss4,exists] 4; [@boss3,exists] 3; [@boss2,exists] 2; [@boss1,exists] 1; 0")
 				bossParent.handler = handler
 				
 				local boss = {}
