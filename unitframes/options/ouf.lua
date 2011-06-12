@@ -746,7 +746,6 @@ local toggleFuncs = {
 				else
 					RegisterStateDriver(party, "visibility", "[group:party,nogroup:raid] show; hide")
 				end
-				party.StateRegistered = true
 			end
 		else
 			if oUF_LUI_party then
