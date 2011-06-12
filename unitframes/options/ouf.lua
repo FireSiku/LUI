@@ -619,8 +619,7 @@ local toggleFuncs = {
 				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
 				handler:SetFrameRef("boss", bossParent)
 				handler:SetAttribute("_onstate-boss", [[
-					if newstate == "0" or newstate == 0 then
-					else
+					if newstate ~= "0" and newstate ~= 0 then
 						local parent = self:GetFrameRef("boss")
 						local padding = parent:GetAttribute("Padding")
 						local height = parent:GetAttribute("Height")
@@ -1153,7 +1152,8 @@ local toggleFuncs = {
 				raid40:SetHeight(1)
 				raid40:SetPoint("TOPLEFT", raidAnchor, "TOPLEFT", 0, 0)
 				
-				local width40 = (5 * tonumber(db.oUF.Raid.Height) - 3 * tonumber(db.oUF.Raid.GroupPadding)) / 8
+				local width40 = (5 * tonumber(db.oUF.Raid.Width) - 3 * tonumber(db.oUF.Raid.GroupPadding)) / 8
+				print(tonumber(db.oUF.Raid.Width), width40)
 				
 				local raid40table = {}
 				for i = 1, 8 do
