@@ -752,6 +752,7 @@ local toggleFuncs = {
 				for i = 1, 5 do
 					if _G["oUF_LUI_partyUnitButton"..i] then _G["oUF_LUI_partyUnitButton"..i]:Disable() end
 				end
+				UnregisterStateDriver(oUF_LUI_party, "visibility")
 				oUF_LUI_party:Hide()
 			end
 		end
