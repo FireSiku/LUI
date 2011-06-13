@@ -757,7 +757,7 @@ local PostUpdateAltPower = function(altpowerbar, min, cur, max)
 			end
 
 		else
-			altpower.Text:SetText("")
+			altpowerbar.Text:SetText("")
 		end
 	end
 end
