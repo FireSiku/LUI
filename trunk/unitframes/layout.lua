@@ -59,7 +59,7 @@ local entering
 
 local cornerAuras = {
 	WARRIOR = {
-		TOPLEFT = {"Vigilance", true},
+		TOPLEFT = {50720, true},
 	},
 	PRIEST = {
 		TOPLEFT = {139, true}, -- Renew
@@ -128,11 +128,11 @@ end
 
 local utf8sub = function(string, i, dots)
 	local bytes = string:len()
-	if (bytes <= i) then
+	if bytes <= i then
 		return string
 	else
 		local len, pos = 0, 1
-		while(pos <= bytes) do
+		while pos <= bytes do
 			len = len + 1
 			local c = string:byte(pos)
 			if (c > 0 and c <= 127) then
@@ -147,7 +147,7 @@ local utf8sub = function(string, i, dots)
 			if (len == i) then break end
 		end
 
-		if (len == i and pos <= bytes) then
+		if len == i and pos <= bytes then
 			return string:sub(1, pos - 1)..(dots and "..." or "")
 		else
 			return string
@@ -534,7 +534,7 @@ end
 
 local PostUpdateAura = function(icons, unit, icon, index, offset, filter, isDebuff, duration, timeLeft)
 	local _, _, _, _, dtype, duration, expirationTime, unitCaster, _ = UnitAura(unit, index, icon.filter)
-	if not(unitCaster == "player" or unitCaster == "pet" or unitCaster == "vehicle") then
+	if not (unitCaster == "player" or unitCaster == "pet" or unitCaster == "vehicle") then
 		if icon.debuff then
 			icon.icon:SetDesaturated(true)
 		end
@@ -605,7 +605,7 @@ local PostCastStart = function(castbar, unit, name)
 end
 
 local ThreatOverride = function(self, event, unit)
-	if(unit ~= self.unit) then return end
+	if unit ~= self.unit then return end
 	if unit == "vehicle" then unit = "player" end
 
 	unit = unit or self.unit
@@ -623,10 +623,10 @@ local ThreatOverride = function(self, event, unit)
 end
 
 local CPointsOverride = function(self, event, unit)
-	if(unit == 'pet') then return end
+	if unit == 'pet' then return end
 
 	local cp
-	if(UnitExists'vehicle') then
+	if UnitExists'vehicle' then
 		cp = GetComboPoints('vehicle', 'target')
 	else
 		cp = GetComboPoints('player', 'target')
@@ -640,7 +640,7 @@ local CPointsOverride = function(self, event, unit)
 	end
 
 	for i=1, MAX_COMBO_POINTS do
-		if(i <= cp) then
+		if i <= cp then
 			cpoints[i]:SetValue(1)
 		else
 			cpoints[i]:SetValue(0)
@@ -649,11 +649,11 @@ local CPointsOverride = function(self, event, unit)
 end
 
 local SoulShardsOverride = function(self, event, unit, powerType)
-	if(self.unit ~= unit or (powerType and powerType ~= 'SOUL_SHARDS')) then return end
+	if self.unit ~= unit or (powerType and powerType ~= 'SOUL_SHARDS') then return end
 
 	local num = UnitPower(unit, SPELL_POWER_SOUL_SHARDS)
 	for i = 1, SHARD_BAR_NUM_SHARDS do
-		if(i <= num) then
+		if i <= num then
 			self.SoulShards[i]:SetAlpha(1)
 		else
 			self.SoulShards[i]:SetAlpha(.4)
@@ -662,11 +662,11 @@ local SoulShardsOverride = function(self, event, unit, powerType)
 end
 
 local HolyPowerOverride = function(self, event, unit, powerType)
-	if(self.unit ~= unit or (powerType and powerType ~= 'HOLY_POWER')) then return end
+	if self.unit ~= unit or (powerType and powerType ~= 'HOLY_POWER') then return end
 
 	local num = UnitPower(unit, SPELL_POWER_HOLY_POWER)
 	for i = 1, MAX_HOLY_POWER do
-		if(i <= num) then
+		if i <= num then
 			self.HolyPower[i]:SetAlpha(1)
 		else
 			self.HolyPower[i]:SetAlpha(.4)
@@ -676,12 +676,12 @@ end
 
 local PostEclipseUpdate = function(self, unit)
 	if self.ShowText then
-		if ( GetEclipseDirection() == "sun" ) then
+		if GetEclipseDirection() == "sun" then
 			self.LunarText:SetText(50+math.floor((UnitPower('player', SPELL_POWER_ECLIPSE)+1)/2))
 			self.LunarText:SetTextColor(unpack(colors.eclipsebar["LunarBG"]))
 			self.SolarText:SetText("Starfire!")
 			self.SolarText:SetTextColor(unpack(colors.eclipsebar["LunarBG"]))
-		elseif ( GetEclipseDirection() == "moon" ) then
+		elseif GetEclipseDirection() == "moon" then
 			self.LunarText:SetText("Wrath!")
 			self.LunarText:SetTextColor(unpack(colors.eclipsebar["SolarBG"]))
 			self.SolarText:SetText(50-math.floor((UnitPower('player', SPELL_POWER_ECLIPSE)+1)/2))
@@ -696,12 +696,12 @@ local PostEclipseUpdate = function(self, unit)
 end
 
 local EclipseBarBuff = function(self, unit)
-	if ( GetEclipseDirection() == "sun" ) then
+	if GetEclipseDirection() == "sun" then
 		self.LunarBar:SetAlpha(1)
 		self.SolarBar:SetAlpha(0.7)
 		self.LunarBar:SetStatusBarColor(unpack(colors.eclipsebar["Lunar"]))
 		self.SolarBar:SetStatusBarColor(unpack(colors.eclipsebar["SolarBG"]))
-	elseif ( GetEclipseDirection() == "moon" ) then
+	elseif GetEclipseDirection() == "moon" then
 		self.SolarBar:SetAlpha(1)
 		self.LunarBar:SetAlpha(0.7)
 		self.LunarBar:SetStatusBarColor(unpack(colors.eclipsebar["LunarBG"]))
@@ -1976,16 +1976,17 @@ oUF_LUI.funcs = {
 
 		for k, data in pairs(cornerAuras[class]) do
 			local spellId, onlyPlayer, isDebuff = unpack(data)
-
-			local x = k:gmatch("RIGHT") and -tonumber(oufdb.CornerAura.Inset) or tonumber(oufdb.CornerAura.Inset)
-			local y = k:gmatch("TOP") and -tonumber(oufdb.CornerAura.Inset) or tonumber(oufdb.CornerAura.Inset)
+			local spellName = GetSpellInfo(spellId)
+			
+			local x = k:find("RIGHT") and -tonumber(oufdb.CornerAura.Inset) or tonumber(oufdb.CornerAura.Inset)
+			local y = k:find("TOP") and -tonumber(oufdb.CornerAura.Inset) or tonumber(oufdb.CornerAura.Inset)
 
 			if not self.SingleAuras[k] then
 				self.SingleAuras[k] = CreateFrame("Frame", nil, self)
 				self.SingleAuras[k]:SetFrameLevel(7)
 			end
-
-			self.SingleAuras[k].spellName = GetSpellInfo(spellId)
+			
+			self.SingleAuras[k].spellName = spellName
 			self.SingleAuras[k].onlyPlayer = onlyPlayer
 			self.SingleAuras[k].isDebuff = isDebuff
 			self.SingleAuras[k]:SetWidth(tonumber(oufdb.CornerAura.Size))
@@ -1996,9 +1997,8 @@ oUF_LUI.funcs = {
 	end,
 	RaidDebuffs = function(self, unit, oufdb)
 		if not self.RaidDebuffs then
-			self.RaidDebuffs = CreateFrame('Frame', nil, self)
+			self.RaidDebuffs = CreateFrame("Frame", nil, self)
 			self.RaidDebuffs:SetPoint("CENTER", self, "CENTER", 0, 0)
-			--self.RaidDebuffs:SetFrameStrata("HIGH")
 			self.RaidDebuffs:SetFrameLevel(7)
 
 			self.RaidDebuffs:SetBackdrop({
@@ -2813,7 +2813,7 @@ oUF_LUI.funcs = {
 funcs = oUF_LUI.funcs
 
 ------------------------------------------------------------------------
---	Custom Tags
+--	oUF Colors
 ------------------------------------------------------------------------
 
 oUF_LUI.colors = setmetatable({
