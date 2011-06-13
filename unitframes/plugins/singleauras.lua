@@ -39,24 +39,30 @@ local oUF = oUF or ns.oUF
 local UnitAura = UnitAura
 
 local Update = function(self, event, unit)
-	if not unit or unit ~= self.unit then return end
+	if not unit or unit ~= self.__owner.unit then return end
 	if event ~= "UNIT_AURA" then return end
 	
 	local index = 1
+	
 	while true do
 		local name, _, icon, _, debuffType, _, _, unitCaster = UnitAura(unit, index, self.isDebuff and "HARMFUL" or "HELPFUL")
 		
 		if not name then
 			self:Hide()
+			
 			break
 		end
 		
-		if name == self.spellname then
+		if name == self.spellName then
 			if unitCaster == "player" or not self.onlyPlayer then
 				self.tex:SetTexture(icon)
+				self:Show()
+				
 				break
 			end
 		end
+		
+		index = index + 1
 	end
 end
 
@@ -70,8 +76,10 @@ local Enable = function(self, unit)
 			if not frame.tex then
 				frame.tex = frame:CreateTexture(nil, "OVERLAY")
 				frame.tex:SetAllPoints(frame)
+				frame.tex:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 			end
 			
+			frame.__owner = self
 			if type(frame.spellName) == "string" then
 				frame:RegisterEvent("UNIT_AURA")
 				frame:SetScript("OnEvent", Update)

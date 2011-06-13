@@ -139,7 +139,7 @@ local defaults = {
 		},
 		CornerAura = {
 			Enable = true,
-			Size = "10",
+			Size = "8",
 			Inset = "1",
 		},
 		RaidDebuff = {
