@@ -463,13 +463,15 @@ function module:LoadOptions()
 		else
 			oUF_LUI_target:DisableElement("CPoints")
 		end
-		Forte:SetPosForte()
+
+		if Forte then Forte:SetPosForte() end
+
 		oUF_LUI_target:UpdateAllElements()
 	end
 	
 	local ApplyCPoints = function()
 		LUI.oUF.funcs.CPoints(oUF_LUI_target, oUF_LUI_target.__unit, db.oUF.Target)
-		Forte:SetPosForte()
+		if Forte then Forte:SetPosForte() end
 		oUF_LUI_target:UpdateAllElements()
 	end
 	
@@ -535,7 +537,7 @@ function module:OnInitialize()
 	self.db = LUI.db.profile
 	db = self.db
 	
-	Forte = LUI:GetModule("Forte")
+	Forte = LUI:GetModule("Forte", true)
 	
 	LUI:RegisterUnitFrame(self)
 end
