@@ -1,27 +1,12 @@
 --[[
 	Project....: LUI NextGenWoWUserInterface
 	File.......: datatext.lua
-	Description: Datatext Molule for Durability, Gold, Latency, Fps, MS, Friends, Guild, Clock, Bags...
-	Version....: 1.7
+	Description: Provides LUI datatexts which hold relative info.
+	Version....: 1.8
 	Rev Date...: 10/06/2011 [dd/mm/yyyy]
 
 	Edits:
-		v1.0: Loui
-		v1.1: Hix
-		-  a: Hix
-		v1.2: Hix
-		-  a: Hix
-		-  b: Hix
-		v1.3: Hix
-		-  a: Hix
-		-  b: Hix
-		v1.4: Zista
-		v1.5: Zista
-		v1.6: Zista
-		-  a: Hix
-		-  b: Hix
-		-  c: Hix
-		v1.7: Hix
+		v1.8: Hix
 ]]
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -44,7 +29,7 @@ local myPlayerFaction = UnitFactionGroup("player")
 local myPlayerName = UnitName("player")
 local playerReset = ""
 local BUTTON_HEIGHT, ICON_SIZE, GAP, TEXT_OFFSET, MAX_ENTRIES = 15, 13, 10, 5
-local _,L = ...
+local _, L = ...
 local fscale = 1
 local block, horde, isGuild = true
 local guildEntries, friendEntries, motd, slider, nbEntries = {}, {}
@@ -66,616 +51,367 @@ do
 	local tables = setmetatable( {}, { __mode = "k" } )
 
 	new = function(...)
-		local t = next(tables)
-		if t then tables[t] = nil else t = {} end
-		for i=1, select("#",...) do t[i] = select(i,...) end
-		return t
+		local _t = next(tables)
+		if _t then tables[_t] = nil else _t = {} end
+		for i  = 1, select("#", ...) do _t[i] = select(i, ...) end
+		return _t
 	end
 
-	del = function(t)
-		tables[wipe(t)] = true
+	del = function(_t)
+		tables[wipe(_t)] = true
 	end
 
 end
 for eng, loc in next, LOCALIZED_CLASS_NAMES_MALE   do L[loc] = eng end
 for eng, loc in next, LOCALIZED_CLASS_NAMES_FEMALE do L[loc] = eng end
 
+-- Module functions.
+function module:GetInfoPanel(frame)
+	if not frame then return end
+
+	frame:SetParent(_G["LUI_Infos_"..frame.db.InfoPanel.Vertical..frame.db.InfoPanel.Horizontal])
+end
+
+function module:GetInfoPanelPosition(text, database)
+	if (not text) or (not database) then return end
+
+	text:ClearAllPoints()
+	text:SetPoint(database.InfoPanel.Vertical, _G["LUI_Infos_"..database.InfoPanel.Vertical..database.InfoPanel.Horizontal], database.InfoPanel.Vertical, database.X, database.Y)
+end
+
+function module:KillDataText(stat, text, icon)
+	if stat then
+		-- Unregister events.
+		stat:UnregisterAllEvents()
+
+		-- Unregister scripts.
+		stat:SetScript("OnEnter", nil)
+		stat:SetScript("OnEvent", nil)
+		stat:SetScript("OnLeave", nil)
+		stat:SetScript("OnMouseDown", nil)
+		stat:SetScript("OnUpdate", nil)
+
+		-- Kill	
+		stat:Hide()
+	end
+
+	if text then
+		-- Kill
+		text:Hide()
+	end
+
+	if icon then
+		-- Kill
+		icon:Hide()
+	end
+end
 
 function module:SetDataTextFrames()
-	local infos_left = LUI:CreateMeAFrame("FRAME","infos_left",UIParent,100,20,1,"HIGH",0,"TOPLEFT",UIParent,"TOPLEFT",200,3,1)
-	infos_left:SetAlpha(1)
-	infos_left:Show()
+	-- Bottom Left.
+	LUI_Infos_BottomLeft = LUI:CreateMeAFrame("Frame", "LUI_Infos_BottomLeft", UIParent, 1, 1, 1, "HIGH", 0, "BOTTOMLEFT", UIParent, "BOTTOMLEFT", 0, 4, 1)
+	LUI_Infos_BottomLeft:SetAlpha(1)
+	LUI_Infos_BottomLeft:Show()
 
-	local infos_right = LUI:CreateMeAFrame("FRAME","infos_right",UIParent,100,20,1,"HIGH",0,"TOPRIGHT",UIParent,"TOPRIGHT",0,3,1)
-	infos_right:SetAlpha(1)
-	infos_right:Show()
+	-- Bottom Right.
+	LUI_Infos_BottomRight = LUI:CreateMeAFrame("Frame", "LUI_Infos_BottomRight", UIParent, 1, 1, 1, "HIGH", 0, "BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", 0, 4, 1)
+	LUI_Infos_BottomRight:SetAlpha(1)
+	LUI_Infos_BottomRight:Show()
+
+	-- Top Left.
+	LUI_Infos_TopLeft = LUI:CreateMeAFrame("Frame", "LUI_Infos_TopLeft", UIParent, 1, 1, 1, "HIGH", 0, "TOPLEFT", UIParent, "TOPLEFT", 0, -1, 1)
+	LUI_Infos_TopLeft:SetAlpha(1)
+	LUI_Infos_TopLeft:Show()
+
+	-- Top Right.
+	LUI_Infos_TopRight = LUI:CreateMeAFrame("Frame", "LUI_Infos_TopRight", UIParent, 1, 1, 1, "HIGH", 0, "TOPRIGHT", UIParent, "TOPRIGHT", 0, -1, 1)
+	LUI_Infos_TopRight:SetAlpha(1)
+	LUI_Infos_TopRight:Show()
 end
 
-------------------------------------------------------
--- / FPS & MS / --
-------------------------------------------------------
-
-function module:SetFPS()
-	if db.Infotext.Fps.Enable == false then return end
-
-	local Stat1 = CreateFrame("Frame", "LUI_Info_FPS", infos_left)
-	Stat1:EnableMouse(true)
-
-	Text_fps  = infos_left:CreateFontString(nil, "OVERLAY")
-	Text_fps:SetFont(LSM:Fetch("font", db.Infotext.Fps.Font), db.Infotext.Fps.Size, db.Infotext.Fps.Outline)
-	Text_fps:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Fps.X, db.Infotext.Fps.Y)
-	Text_fps:SetHeight(db.Infotext.Fps.Size)
-	Text_fps:SetTextColor(db.Infotext.Fps.Color.r, db.Infotext.Fps.Color.g, db.Infotext.Fps.Color.b, db.Infotext.Fps.Color.a)
-
-	-- Localise functions.
-	local floor, GetFramerate, select, GetNetStats = floor, GetFramerate, select, GetNetStats
-
-	local inta = 1--
-	local function Update(self, t)--
-		inta = inta - t--
-		if inta < 0 then--
-			inta = 1--
-
-			-- Set text.
-			if db.Infotext.Fps.MSValue == "BOTH" then
-				local _,_, home, world = GetNetStats()
-				Text_fps:SetFormattedText("%dfps   %dms | %dms", floor(GetFramerate()), home, world)
-			else
-				Text_fps:SetFormattedText("%dfps   %dms", floor(GetFramerate()), select((db.Infotext.Fps.MSValue == "HOME" and 3) or 4, GetNetStats()))
-			end
-			self:SetAllPoints(Text_fps)
-		end
-	end
-
-	local function ColourMS(ms)
-		local t = ms / 400
-		local r = t
-		local g = 1 - t
-
-		return r, g, 0
-	end
-
-	local function ColourFPS(fps)
-		local t = fps / 60
-		local r = 1 - t
-		local g = t
-
-		return r, g, 0
-	end
-
-	Stat1:SetScript("OnUpdate", Update)
-	Stat1:SetScript("OnEnter", function(self)
-		if not InCombatLockdown() then
-			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-			GameTooltip:ClearLines()
-			GameTooltip:AddLine("FPS & MS:", 0.4, 0.78, 1)
-			GameTooltip:AddLine(" ")
-
-			-- Fps stats.
-			local fps = floor(GetFramerate())
-			GameTooltip:AddLine("FPS:")
-			GameTooltip:AddDoubleLine("Current:", fps, 1, 1, 1, ColourFPS(fps))
-			GameTooltip:AddLine(" ")
-
-
-			local bandIn, bandOut, home, world = GetNetStats()
-			GameTooltip:AddLine("Latency:")
-			GameTooltip:AddDoubleLine("Home:", home, 1, 1, 1, ColourMS(home))
-			GameTooltip:AddDoubleLine("World:", world, 1, 1, 1, ColourMS(world))
-			GameTooltip:AddLine(" ")
-
-			GameTooltip:AddLine("Bandwidth:")
-			GameTooltip:AddDoubleLine("Current Down:", format("%.2f KB/s", bandIn), 1, 1, 1, 1, 1, 1)
-			GameTooltip:AddDoubleLine("Current Up:", format("%.2f KB/s", bandOut), 1, 1, 1, 1, 1, 1)
-
-			GameTooltip:Show()
-		end
-	end)
-	Stat1:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	Update(Stat1, 10)
-end
-
-------------------------------------------------------
--- / MEMORY USAGE / --
-------------------------------------------------------
-
-function module:SetMemoryUsage()
-	if db.Infotext.Memory.Enable == false then return end
-
-	local Stat2 = CreateFrame("Frame", "LUI__Info_Memory", infos_left)
-	Stat2:EnableMouse(true)
-
-	Text_mb  = infos_left:CreateFontString(nil, "OVERLAY")
-	Text_mb:SetFont(LSM:Fetch("font", db.Infotext.Memory.Font), db.Infotext.Memory.Size, db.Infotext.Memory.Outline)
-	Text_mb:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Memory.X, db.Infotext.Memory.Y)
-	Text_mb:SetHeight(db.Infotext.Memory.Size)
-	Text_mb:SetTextColor(db.Infotext.Memory.Color.r, db.Infotext.Memory.Color.g, db.Infotext.Memory.Color.b, db.Infotext.Memory.Color.a)
-
-	-- Localised functions
-	local floor, format, sort = floor, string.format, table.sort
-
-	local function formatMem(memory)
-		if memory > 1024 then
-			return format("%.1fmb", memory / 1024)
-		else
-			return format("%.1fkb", memory)
-		end
-	end
-
-	local Total, Mem, MEMORY_TEXT, LATENCY_TEXT
-	local Memory = {}
-	local function RefreshMem(self)
-		UpdateAddOnMemoryUsage()
-		Total = 0
-		for i = 1, GetNumAddOns() do
-			if not Memory[i] then Memory[i] = {} end
-
-			Mem = GetAddOnMemoryUsage(i)
-			Memory[i][1] = select(2, GetAddOnInfo(i))
-			Memory[i][2] = Mem
-			Memory[i][3] = IsAddOnLoaded(i)
-			Total = Total + Mem
-		end
-
-		MEMORY_TEXT = formatMem(Total)
-		sort(Memory, function(a, b)
-			if a and b then
-				return a[2] > b[2]
-			end
-		end)
-
-		Text_mb:SetText(MEMORY_TEXT)
-		self:SetAllPoints(Text_mb)
-	end
-
-	local intb = 10
-	local function Update(self, t)
-		intb = intb - t
-		if intb < 0 then
-			RefreshMem(self)
-			intb = 10
-		end
-	end
-
-	Stat2:SetScript("OnMouseDown", function() collectgarbage("collect") Update(Stat2, 10) end)
-	Stat2:SetScript("OnUpdate", Update)
-	Stat2:SetScript("OnEnter", function(self)
-		if not InCombatLockdown() then
-			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-			GameTooltip:ClearLines()
-			GameTooltip:AddLine("Memory:", 0.4, 0.78, 1)
-			GameTooltip:AddLine(" ")
-			for i = 1, #Memory do
-				if Memory[i][3] then
-					local red = Memory[i][2]/Total * 2
-					local green = 1 - red
-					GameTooltip:AddDoubleLine(Memory[i][1], formatMem(Memory[i][2]), 1, 1, 1, red, green+1, 0)
-				end
-			end
-			GameTooltip:AddLine(" ")
-			GameTooltip:AddDoubleLine("Total Memory Usage:",formatMem(Total), 1, 1, 1,0.8, 0.8, 0.8)
-
-			GameTooltip:AddLine(" ")
-			GameTooltip:AddLine("Hint: Click to Collect Garbage.", 0.0, 1.0, 0.0)
-			GameTooltip:Show()
-		end
-	end)
-	Stat2:SetScript("OnLeave", function() GameTooltip:Hide() end)
-
-	Update(Stat2, 20)
-end
 
 ------------------------------------------------------
 -- / BAGS / --
 ------------------------------------------------------
 
-function module:SetBags(refresh)
-	if db.Infotext.Bags.Enable == false then return end
+function module:SetBags()
+	if not db.Infotext.Bags.Enable then self:KillDataText(self.Bags, LUI_Text_Bags) return end
 
-	local Stat4 = CreateFrame("Frame", "LUI_Info_Bags", infos_left)
-	Stat4:EnableMouse(true)
+	-- Add stat to modules namespace.
+	self.Bags = CreateFrame("Frame", "LUI_Info_Bags")
 
-	Text_bags  = infos_left:CreateFontString(nil, "OVERLAY")
-	Text_bags:SetFont(LSM:Fetch("font", db.Infotext.Bags.Font), db.Infotext.Bags.Size, db.Infotext.Bags.Outline)
-	Text_bags:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Bags.X, db.Infotext.Bags.Y)
-	Text_bags:SetHeight(db.Infotext.Bags.Size)
-	Text_bags:SetTextColor(db.Infotext.Bags.Color.r, db.Infotext.Bags.Color.g, db.Infotext.Bags.Color.b, db.Infotext.Bags.Color.a)
+	-- Create local shortcuts.
+	local BAGS = self.Bags
+	BAGS.db = db.Infotext.Bags
 
-	-- Localise functions
+	-- Frame settings.
+	BAGS:EnableMouse(true)
+	self:GetInfoPanel(BAGS)
+	BAGS:Show()
+
+	-- Create info text.
+	LUI_Text_Bags = BAGS:CreateFontString(nil, "OVERLAY")
+	self:GetInfoPanelPosition(LUI_Text_Bags, BAGS.db)
+	LUI_Text_Bags:SetFont(LSM:Fetch("font", BAGS.db.Font), BAGS.db.Size, BAGS.db.Outline)
+	LUI_Text_Bags:SetHeight(BAGS.db.Size)
+	LUI_Text_Bags:SetTextColor(BAGS.db.Color.r, BAGS.db.Color.g, BAGS.db.Color.b, BAGS.db.Color.a)
+	LUI_Text_Bags:Show()
+	BAGS:SetAllPoints(BAGS.Text)
+
+	-- Localised functions.
 	local GetContainerNumFreeSlots, GetContainerNumSlots = GetContainerNumFreeSlots, GetContainerNumSlots
 
-	local function OnEvent(self, event, ...)
+	-- Script functions.
+	function BAGS:OnEnter()
+		if db.Infotext.CombatLock then return end
+
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:ClearLines()
+		GameTooltip:AddLine("Bags:", 0.4, 0.78, 1)
+		GameTooltip:AddLine(" ")
+
+		GameTooltip:AddLine("Hint: Click to open Bags.", 0, 1, 0)
+		GameTooltip:Show()
+	end
+
+	function BAGS:OnEvent()
 		local free, total, used = 0, 0, 0
+
 		for i = 0, NUM_BAG_SLOTS do
 			free, total = free + GetContainerNumFreeSlots(i), total + GetContainerNumSlots(i)
 		end
+
 		used = total - free
-		Text_bags:SetText("Bags: "..used.."/"..total)
-		self:SetAllPoints(Text_bags)
-	end
+		LUI_Text_Bags:SetText("Bags: "..used.."/"..total)
 
-	Stat4:RegisterEvent("PLAYER_LOGIN")
-	Stat4:RegisterEvent("BAG_UPDATE")
-	Stat4:SetScript("OnEvent", OnEvent)
-	Stat4:SetScript("OnEnter", function(self)
-		if not InCombatLockdown() then
-			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-			GameTooltip:ClearLines()
-			GameTooltip:AddLine("Bags:", 0.4, 0.78, 1)
-			GameTooltip:AddLine(" ")
+		-- Setup bags tooltip
+		self:SetAllPoints(LUI_Text_Bags)
 
-			GameTooltip:AddLine("Hint: Click to open Bags.", 0.0, 1.0, 0.0)
-			GameTooltip:Show()
-		end
-	end)
-	Stat4:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	Stat4:SetScript("OnMouseDown", function() OpenAllBags() end)
-	if refresh then OnEvent(Stat4, "PLAYER_LOGIN") end
-end
-
-------------------------------------------------------
--- / DURABILITY / --
-------------------------------------------------------
-
-function module:SetDurability(refresh)
-	if db.Infotext.Armor.Enable == false then return end
-
-	local Stat6 = CreateFrame("Frame", "LUI_Info_Durability", infos_left)
-	Stat6:EnableMouse(true)
-
-	Text_dura  = infos_left:CreateFontString(nil, "OVERLAY")
-	Text_dura:SetFont(LSM:Fetch("font", db.Infotext.Armor.Font), db.Infotext.Armor.Size, db.Infotext.Armor.Outline)
-	Text_dura:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Armor.X, db.Infotext.Armor.Y)
-	Text_dura:SetHeight(db.Infotext.Armor.Size)
-	Text_dura:SetTextColor(db.Infotext.Armor.Color.r, db.Infotext.Armor.Color.g, db.Infotext.Armor.Color.b, db.Infotext.Armor.Color.a)
-
-	local Slots = {
-		[1] = {1, "Head", 1000},
-		[2] = {3, "Shoulder", 1000},
-		[3] = {5, "Chest", 1000},
-		[4] = {6, "Waist", 1000},
-		[5] = {9, "Wrist", 1000},
-		[6] = {10, "Hands", 1000},
-		[7] = {7, "Legs", 1000},
-		[8] = {8, "Feet", 1000},
-		[9] = {16, "Main Hand", 1000},
-		[10] = {17, "Off Hand", 1000},
-		[11] = {18, "Ranged", 1000}
-	}
-
-	-- Localise functions
-	local sort = table.sort
-
-	local Total = 0
-	local current, max
-	local function OnEvent(self, event)
-		for i = 1, 11 do
-			if GetInventoryItemLink("player", Slots[i][1]) ~= nil then
-				current, max = GetInventoryItemDurability(Slots[i][1])
-				if current then
-					Slots[i][3] = current / max
-					Total = Total + 1
-				end
-			end
-		end
-		sort(Slots, function(a, b) return a[3] < b[3] end)
-
-		if Total > 0 then
-			Text_dura:SetText("Armor: "..floor(Slots[1][3]*100).."%")
-		else
-			Text_dura:SetText("Armor: 100%")
-		end
-
-		-- Setup Durability Tooltip
-		self:SetAllPoints(Text_dura)
-		Total = 0
-	end
-
-	Stat6:RegisterEvent("UPDATE_INVENTORY_DURABILITY")
-	Stat6:RegisterEvent("PLAYER_ENTERING_WORLD")
-	Stat6:SetScript("OnMouseDown", function() ToggleCharacter("PaperDollFrame") end)
-	Stat6:SetScript("OnEvent", OnEvent)
-	Stat6:SetScript("OnEnter", function(self)
-		if not InCombatLockdown() then
-			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-			GameTooltip:ClearLines()
-			GameTooltip:AddLine("Armor:", 0.4, 0.78, 1)
-			GameTooltip:AddLine(" ")
-			for i = 1, 11 do
-				if Slots[i][3] ~= 1000 then
-					green = Slots[i][3] * 2
-					red = 1 - green
-					GameTooltip:AddDoubleLine(Slots[i][2], floor(Slots[i][3]*100).."%", 1 ,1 , 1, red + 1, green, 0)
-				end
-			end
-
-			GameTooltip:AddLine(" ")
-			GameTooltip:AddLine("Hint: Click to open Character Frame.", 0.0, 1.0, 0.0)
-			GameTooltip:Show()
-		end
-	end)
-	Stat6:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	if refresh then OnEvent(Stat6, "PLAYER_ENTERING_WORLD") end
-end
-
-------------------------------------------------------
--- / GOLD / --
-------------------------------------------------------
-
-function module:SetGold(refresh)
-	if db.Infotext.Gold.Enable == false then return end
-
-	local Stat7 = CreateFrame("Frame", "LUI_Info_Gold", infos_left)
-	Stat7:EnableMouse(true)
-
-	Text_gold  = infos_left:CreateFontString(nil, "OVERLAY")
-	Text_gold:SetFont(LSM:Fetch("font", db.Infotext.Gold.Font), db.Infotext.Gold.Size, db.Infotext.Gold.Outline)
-	Text_gold:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Gold.X, db.Infotext.Gold.Y)
-	Text_gold:SetHeight(db.Infotext.Gold.Size)
-	Text_gold:SetTextColor(db.Infotext.Gold.Color.r, db.Infotext.Gold.Color.g, db.Infotext.Gold.Color.b, db.Infotext.Gold.Color.a)
-
-	local Profit	= 0
-	local OldMoney	= 0
-	local ServerGold = 0
-	local Spent		= 0
-	local colours	= {
-		["Alliance"] = {
-			r = 0,
-			g = 0.6,
-			b = 1,
-		},
-		["Horde"] = {
-			r = 0.8,
-			g = 0,
-			b = 0,
-		},
-	}
-
-	-- Localised functions
-	local format, floor, abs, mod = format, floor, math.abs, mod
-
-	local function formatMoney(money)
-		local gold = floor(abs(money) / 10000)
-		local silver = mod(floor(abs(money) / 100), 100)
-		local copper = mod(floor(abs(money)), 100)
-		if gold ~= 0 then
-			if db.Infotext.Gold.ColorType then
-				return format("%s|cffffd700g|r %s|cffc7c7cfs|r", gold, silver)
-			else
-				return format("%sg %ss", gold, silver)
-			end
-		elseif silver ~= 0 then
-			if db.Infotext.Gold.ColorType then
-				return format("%s|cffc7c7cfs|r %s|cffeda55fc|r", silver, copper)
-			else
-				return format("%ss %sc", silver, copper)
-			end
-		else
-			if db.Infotext.Gold.ColorType then
-				return format("%s|cffeda55f c|r", copper)
-			else
-				return format("%sc", copper)
-			end
-		end
-	end
-
-	local function FormatTooltipMoney(money)
-		local gold, silver, copper = abs(money / 10000), abs(mod(money / 100, 100)), abs(mod(money, 100))
-		local cash = format("%d|cffffd700g|r %d|cffc7c7cfs|r %d|cffeda55fc|r", gold, silver, copper)
-		return cash
-	end
-
-	local function ShowGold(self)
-		if not InCombatLockdown() then
-			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-			GameTooltip:ClearLines()
-			GameTooltip:AddLine("Money:", 0.4, 0.78, 1)
-			GameTooltip:AddLine(" ")
-
-			GameTooltip:AddLine("Session:")
-			GameTooltip:AddDoubleLine("Earned:", formatMoney(Profit), 1, 1, 1, 1, 1, 1)
-			GameTooltip:AddDoubleLine("Spent:", formatMoney(Spent), 1, 1, 1, 1, 1, 1)
-			if Profit < Spent then
-				GameTooltip:AddDoubleLine("Deficit:", formatMoney(Profit-Spent), 1, 0, 0, 1, 1, 1)
-			elseif (Profit - Spent) > 0 then
-				GameTooltip:AddDoubleLine("Profit:", formatMoney(Profit-Spent), 0, 1, 0, 1, 1, 1)
-			end
-			GameTooltip:AddLine(" ")
-
-			local totalGold = 0
-			local totalPlayerFaction = 0
-			local totalOtherFaction = 0
-			local otherFaction = ((myPlayerFaction == "Alliance") and "Horde") or "Alliance"
-
-			GameTooltip:AddLine("Character:")
-			for k, v in pairs(LUIGold.gold[myPlayerRealm][myPlayerFaction]) do
-				GameTooltip:AddDoubleLine(k, FormatTooltipMoney(v), colours[myPlayerFaction].r, colours[myPlayerFaction].g, colours[myPlayerFaction].b, 1, 1, 1)
-				totalGold = totalGold + v
-				totalPlayerFaction = totalPlayerFaction + v
-			end
-			for k, v in pairs(LUIGold.gold[myPlayerRealm][otherFaction]) do
-				GameTooltip:AddDoubleLine(k, FormatTooltipMoney(v), colours[otherFaction].r, colours[otherFaction].g, colours[otherFaction].b, 1, 1, 1)
-				totalGold = totalGold + v
-				totalOtherFaction = totalOtherFaction + v
-			end
-			GameTooltip:AddLine(" ")
-			GameTooltip:AddLine("Server:")
-			if totalOtherFaction > 0 then
-				GameTooltip:AddDoubleLine(myPlayerFaction..":", FormatTooltipMoney(totalPlayerFaction), colours[myPlayerFaction].r, colours[myPlayerFaction].g, colours[myPlayerFaction].b, 1, 1, 1)
-				GameTooltip:AddDoubleLine(otherFaction..":", FormatTooltipMoney(totalOtherFaction), colours[otherFaction].r, colours[otherFaction].g, colours[otherFaction].b, 1, 1, 1)
-			end
-			GameTooltip:AddDoubleLine("Total:", FormatTooltipMoney(totalGold), 1, 1, 1, 1, 1, 1)
-
-			for i = 1, MAX_WATCHED_TOKENS do
-				local name, count, extraCurrencyType, icon, itemID = GetBackpackCurrencyInfo(i)
-				if name and i == 1 then
-					GameTooltip:AddLine(" ")
-					GameTooltip:AddLine(CURRENCY)
-				end
-				local r, g, b = 1,1,1
-				if itemID then r, g, b = GetItemQualityColor(select(3, GetItemInfo(itemID))) end
-				if name and count then GameTooltip:AddDoubleLine(name, count, r, g, b, 1, 1, 1) end
-			end
-
-			GameTooltip:AddLine(" ")
-			GameTooltip:AddLine("Hint:\n- Left-Click to toggle server/toon gold.\n- Right-Click to reset Session.", 0.0, 1.0, 0.0)
-			GameTooltip:Show()
-		end
-	end
-
-	local function OnEvent(self, event)
-		if event == "PLAYER_ENTERING_WORLD" then
-			OldMoney = GetMoney()
-
-			if (LUIGold == nil) then LUIGold = {} end
-			if (LUIGold.gold == nil) then LUIGold.gold = {} end
-			if (LUIGold.gold[myPlayerRealm] == nil) then LUIGold.gold[myPlayerRealm] = {} end
-			if (LUIGold.gold[myPlayerRealm]["Alliance"] == nil) then LUIGold.gold[myPlayerRealm]["Alliance"] = {} end
-			if (LUIGold.gold[myPlayerRealm]["Horde"] == nil) then LUIGold.gold[myPlayerRealm]["Horde"] = {} end
-
-			-- Gather total server gold.
-			ServerGold = 0
-			for k, v in pairs(LUIGold.gold[myPlayerRealm]["Alliance"]) do
-				ServerGold = ServerGold + v
-			end
-			for k, v in pairs(LUIGold.gold[myPlayerRealm]["Horde"]) do
-				ServerGold = ServerGold + v
-			end
-
-			Stat7:UnregisterEvent("PLAYER_ENTERING_WORLD")
-		end
-
-		local NewMoney = GetMoney()
-		local Change = NewMoney - OldMoney	-- Positive if we gain money
-		ServerGold = ServerGold + Change	-- Add change to the server total.
-
-		if OldMoney > NewMoney then		-- Lost Money
-			Spent = Spent - Change
-		else							-- Gained Moeny
-			Profit = Profit + Change
-		end
-
-		if db.Infotext.Gold.ShowToonMoney then
-			Text_gold:SetText(formatMoney(NewMoney))
-		else
-			Text_gold:SetText(formatMoney(ServerGold))
-		end
-
-		-- Setup Money Tooltip
-		self:SetAllPoints(Text_gold)
-
-		LUIGold.gold[myPlayerRealm][myPlayerFaction][myPlayerName] = GetMoney()
-
-		OldMoney = NewMoney
-
+		-- Update tooltip if open.
 		if self:IsMouseOver() and GameTooltip:GetOwner() == self then
-			ShowGold(self)
+			self:OnEnter()
 		end
 	end
 
-	Stat7:RegisterEvent("PLAYER_MONEY")
-	Stat7:RegisterEvent("PLAYER_ENTERING_WORLD")
-	Stat7:SetScript("OnMouseDown", function(self, button)
-		if button == "RightButton" then
-			Profit = 0
-			Spent = 0
-			OldMoney = GetMoney()
-		else
-			db.Infotext.Gold.ShowToonMoney = not db.Infotext.Gold.ShowToonMoney
-			OnEvent(self)
-		end
-	end)
-	Stat7:SetScript("OnEvent", OnEvent)
-	Stat7:SetScript("OnEnter", ShowGold)
-	Stat7:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	if refresh then OnEvent(Stat7, "PLAYER_ENTERING_WORLD") end
-end
-
-function module:ResetGold(player, faction)
-	if player == nil then return end
-
-	if player == "ALL" then
-		LUIGold = {}
-	elseif faction ~= nil then
-		LUIGold.gold[myPlayerRealm][faction][player] = nil
-	end
+	BAGS:RegisterEvent("BAG_UPDATE")
+	BAGS:RegisterEvent("PLAYER_LOGIN")
+	BAGS:SetScript("OnEnter", BAGS.OnEnter)
+	BAGS:SetScript("OnEvent", BAGS.OnEvent)
+	BAGS:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	BAGS:SetScript("OnMouseDown", function() OpenAllBags() end)
+	BAGS:OnEvent()
 end
 
 ------------------------------------------------------
--- / TIME / --
+-- / Clock / --
 ------------------------------------------------------
 
 function module:SetClock()
-	if db.Infotext.Clock.Enable == false then return end
+	if not db.Infotext.Clock.Enable then self:KillDataText(self.Clock, LUI_Text_Clock) return end
 
-	local Stat8 = CreateFrame("Frame", "LUI_Info_Clock", infos_right)
-	Stat8:EnableMouse(true)
+	-- Add stat to the modules namespace.
+	self.Clock = CreateFrame("Frame", "LUI_Info_Clock")
 
-	Text_time  = infos_right:CreateFontString(nil, "OVERLAY")
-	Text_time:SetFont(LSM:Fetch("font", db.Infotext.Clock.Font), db.Infotext.Clock.Size, db.Infotext.Clock.Outline)
-	Text_time:SetPoint("CENTER", infos_right, "CENTER", db.Infotext.Clock.X, db.Infotext.Clock.Y)
-	Text_time:SetHeight(db.Infotext.Clock.Size)
-	Text_time:SetTextColor(db.Infotext.Clock.Color.r, db.Infotext.Clock.Color.g, db.Infotext.Clock.Color.b, db.Infotext.Clock.Color.a)
+	-- Create local shortcuts.
+	local CLOCK = self.Clock
+	CLOCK.db = db.Infotext.Clock
 
-	-- Localised functions
+	-- Frame settings.
+	CLOCK:EnableMouse(true)
+	self:GetInfoPanel(CLOCK)
+	CLOCK:Show()
+
+	-- Create info texts.
+	LUI_Text_Clock = CLOCK:CreateFontString(nil, "OVERLAY")
+	self:GetInfoPanelPosition(LUI_Text_Clock, CLOCK.db)
+	LUI_Text_Clock:SetFont(LSM:Fetch("font", CLOCK.db.Font), CLOCK.db.Size, CLOCK.db.Outline)
+	LUI_Text_Clock:SetHeight(CLOCK.db.Size)
+	LUI_Text_Clock:SetTextColor(CLOCK.db.Color.r, CLOCK.db.Color.g, CLOCK.db.Color.b, CLOCK.db.Color.a)
+	LUI_Text_Clock:Show()
+	CLOCK:SetAllPoints(LUI_Text_Clock)
+
+	-- Localised functions.
 	local tonumber, date, GetGameTime, IsInInstance, GetInstanceInfo = tonumber, date, GetGameTime, IsInInstance, GetInstanceInfo
 
-	local intc = 1
+	-- Variables.
 	local instanceInfo, guildParty = nil, ""
-	local function Update(self, t)
-		intc = intc - t
-		if intc < 0 then
-			if ( GameTimeFrame.pendingCalendarInvites >= 1 ) then --------------
-				Text_time:SetText("(Inv. pending)")
-				self:SetAllPoints(Text_time)
+
+	-- Script functions.
+	function CLOCK:OnEnter()
+		if db.Infotext.CombatLock then return end
+
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:ClearLines()
+		GameTooltip:AddLine("Time:", 0.4, 0.78, 1)
+		GameTooltip:AddLine(" ")
+
+		local pvp = GetNumWorldPVPAreas()
+		for i = 1, pvp do
+			local _, name, inprogress, _, timeleft = GetWorldPVPAreaInfo(i)
+			local inInstance, instanceType = IsInInstance()
+			if not (instanceType == "none") then
+				timeleft = QUEUE_TIME_UNAVAILABLE
+			elseif inprogress then
+				timeleft = WINTERGRASP_IN_PROGRESS
 			else
-				if db.Infotext.Clock.LocalTime == true then
+				local hour = tonumber(format("%01.f", floor(timeleft / 3600)))
+				local min = format((hour > 0) and "%02.f" or "%01.f", floor(timeleft / 60 - (hour * 60)))
+				local sec = format("%02.f", floor(timeleft - (hour * 3600) - (min * 60)))
+				timeleft = (hour > 0 and hour..":" or "")..min..":"..sec
+			end
+
+			GameTooltip:AddDoubleLine("Time to "..name, timeleft)
+		end
+
+		GameTooltip:AddLine(" ")
+		if self.db.LocalTime == true then
+			local Hr, Min = GetGameTime()
+			if Min < 10 then Min = "0"..Min end
+
+			if self.db.Time24 == true then
+				GameTooltip:AddDoubleLine("Server Time: ", Hr..":"..Min)
+			else
+				if Hr >= 12 then
+					GameTooltip:AddDoubleLine("Server Time: ", (Hr - 12)..":"..Min.." PM")
+				else
+					if Hr == 0 then Hr = 12 end
+					GameTooltip:AddDoubleLine("Server Time: ", Hr..":".. Min.." AM")
+				end
+			end
+		else
+			local Hr24 = tonumber(date("%H"))
+			local Hr = tonumber(date("%I"))
+			local Min = date("%M")
+			if self.db.Time24 == true then
+				GameTooltip:AddDoubleLine("Local Time: ", Hr24..":".. Min)
+			else
+				if Hr24 >= 12 then
+					GameTooltip:AddDoubleLine("Local Time: ", Hr..":"..Min.." PM")
+				else
+					GameTooltip:AddDoubleLine("Local Time: ", Hr..":"..Min.." AM")
+				end
+			end
+		end
+
+		local oneraid
+		for i = 1, GetNumSavedInstances() do
+		local name,_, reset, difficulty, locked, extended,_, isRaid, maxPlayers = GetSavedInstanceInfo(i)
+
+		if isRaid and (locked or extended) then
+			local tr, tg, tb, diff
+
+			if not oneraid then
+				GameTooltip:AddLine(" ")
+				GameTooltip:AddLine("Saved Raid(s)")
+				oneraid = true
+			end
+
+			local function fmttime(sec, table)
+				local table = table or {}
+				local d, h, m, s = ChatFrame_TimeBreakDown(floor(sec))
+				local string = gsub(gsub(format(" %dd %dh %dm "..((d==0 and h==0) and "%ds" or ""), d, h, m, s), " 0[dhms]", " "), "%s+", " ")
+				local string = strtrim(gsub(string, "([dhms])", {d = table.days or "d", h = table.hours or "h", m = table.minutes or "m", s = table.seconds or "s"}), " ")
+				return strmatch(string, "^%s*$") and "0"..(table.seconds or L"s") or string
+			end
+
+			if extended then
+				tr, tg, tb = 0.3, 1, 0.3
+			else
+				tr, tg, tb = 1, 1, 1
+			end
+
+			if difficulty == 3 or difficulty == 4 then diff = "H" else diff = "N" end
+				GameTooltip:AddDoubleLine(format("%s |cffaaaaaa(%s%s)", name, maxPlayers, diff), fmttime(reset), 1, 1, 1, tr, tg, tb)
+			end
+		end
+
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine("Hint:\n- Left-Click for Calendar Frame.\n- Right-Click for Time Manager Frame.", 0, 1, 0)
+		GameTooltip:Show()
+	end
+
+	CLOCK.dt = 0
+	function CLOCK:OnUpdate(deltaTime)
+		self.dt = self.dt + deltaTime
+		if self.dt > 1 then
+			self.dt = 0
+
+			if (GameTimeFrame.pendingCalendarInvites > 0) then
+				LUI_Text_Clock:SetText("(Inv. pending)")
+				self:SetAllPoints(LUI_Text_Clock)
+			else
+				if self.db.LocalTime == true then
 					local Hr24 = tonumber(date("%H"))
 					local Hr = tonumber(date("%I"))
 					local Min = date("%M")
 
-					if db.Infotext.Clock.Time24 == true then
-						Text_time:SetText(Hr24..":"..Min)
+					if self.db.Time24 == true then
+						LUI_Text_Clock:SetText(Hr24..":"..Min)
 					else
 						if Hr24 >= 12 then
-							Text_time:SetText(Hr..":"..Min.." pm")
+							LUI_Text_Clock:SetText(Hr..":"..Min.." pm")
 						else
-							Text_time:SetText(Hr..":"..Min.." am")
+							LUI_Text_Clock:SetText(Hr..":"..Min.." am")
 						end
 					end
 				else
 					local Hr, Min = GetGameTime()
 					if Min < 10 then Min = "0"..Min end
 
-					if db.Infotext.Clock.Time24 == true then
-						Text_time:SetText(Hr..":"..Min)
+					if self.db.Time24 == true then
+						LUI_Text_Clock:SetText(Hr..":"..Min)
 					else
 						if Hr >= 12 then
-							Text_time:SetText((Hr - 12)..":"..Min.." pm")
+							LUI_Text_Clock:SetText((Hr - 12)..":"..Min.." pm")
 						else
 							if Hr == 0 then Hr = 12 end
-							Text_time:SetText(Hr..":"..Min.." am")
+							LUI_Text_Clock:SetText(Hr..":"..Min.." am")
 						end
 					end
 				end
 
 				-- Instance Info
-				if db.Infotext.Clock.ShowInstanceDifficulty == true then
-					if instanceInfo then Text_time:SetText(Text_time:GetText().." ("..instanceInfo..guildParty.."|r)") end
+				if self.db.ShowInstanceDifficulty then
+					if instanceInfo then LUI_Text_Clock:SetText(LUI_Text_Clock:GetText().." ("..instanceInfo..guildParty.."|r)") end
 				end
 			end
 
-			-- Prepare tooltip and reset timer.
-			self:SetAllPoints(Text_time)
-			intc = 1
+			-- Setup clock tooltip.
+			self:SetAllPoints(LUI_Text_Clock)
+
+			-- Update tooltip if open.
+			if self:IsMouseOver() and GameTooltip:GetOwner() == self then
+				self:OnEnter()
+			end
+		end
+	end
+
+	-- Accessors.
+	function CLOCK:ShowInstanceDifficulty()
+		if self.db.ShowInstanceDifficulty then
+			self:RegisterEvent("GUILD_PARTY_STATE_UPDATED")
+			self:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
+			self:RegisterEvent("PLAYER_ENTERING_WORLD")
+
+			self:GUILD_PARTY_STATE_UPDATED()
+			self:PLAYER_ENTERING_WORLD()
+
+			self.PLAYER_DIFFICULTY_CHANGED = self.PLAYER_ENTERING_WORLD
+			instanceInfo, guildParty = nil, ""
+		else
+			self:RegisterEvent("PLAYER_ENTERING_WORLD")
+			self:UnregisterEvent("GUILD_PARTY_STATE_UPDATED")
+			self:UnregisterEvent("PLAYER_DIFFICULTY_CHANGED")
+
+			instanceInfo, guildParty = nil, ""
 		end
 	end
 
 	-- More Localised funcitons
-	local GetNumWorldPVPAreas, GetWorldPVPAreaInfo, format, floor, GetNumSavedInstances, GetSavedInstanceInfo = GetNumWorldPVPAreas, GetWorldPVPAreaInfo, format, floor, GetNumSavedInstances, GetSavedInstanceInfo
-	local gsub, strtrim, strmatch = gsub, strtrim, strmatch
+	local GetNumWorldPVPAreas, GetWorldPVPAreaInfo, GetNumSavedInstances, GetSavedInstanceInfo = GetNumWorldPVPAreas, GetWorldPVPAreaInfo, GetNumSavedInstances, GetSavedInstanceInfo
+	local gsub, format, floor, strtrim, strmatch = gsub, format, floor, strtrim, strmatch
 
-	function Stat8:GUILD_PARTY_STATE_UPDATED()
+	-- Event functions
+	function CLOCK:GUILD_PARTY_STATE_UPDATED()
 		if InGuildParty() then
 			guildParty = " |cff66c7ffG"
 		else
@@ -683,7 +419,7 @@ function module:SetClock()
 		end
 	end
 
-	function Stat8:PLAYER_ENTERING_WORLD()
+	function CLOCK:PLAYER_ENTERING_WORLD()
 		local inInstance, instanceType = IsInInstance()
 		if inInstance then
 			local _,_, instanceDifficulty,_, maxPlayers, dynamicMode, isDynamic = GetInstanceInfo()
@@ -707,132 +443,1018 @@ function module:SetClock()
 		end
 	end
 
-	function module:ClockShowInstanceDifficulty()
-		if db.Infotext.Clock.ShowInstanceDifficulty then
-			Stat8:RegisterEvent("GUILD_PARTY_STATE_UPDATED")
-			Stat8:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
-			Stat8:RegisterEvent("PLAYER_ENTERING_WORLD")
-			Stat8:GUILD_PARTY_STATE_UPDATED()
-			Stat8:PLAYER_ENTERING_WORLD()
-			Stat8.PLAYER_DIFFICULTY_CHANGED = Stat8.PLAYER_ENTERING_WORLD
-			instanceInfo, guildParty = nil, ""
-		else
-			Stat8:RegisterEvent("GUILD_PARTY_STATE_UPDATED")
-			Stat8:RegisterEvent("PLAYER_ENTERING_WORLD")
-			instanceInfo, guildParty = nil, ""
-		end
-	end
+	CLOCK:SetScript("OnEnter", CLOCK.OnEnter)
+	CLOCK:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
+	CLOCK:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	CLOCK:SetScript("OnMouseDown", function(self, button) if button == "RightButton" then TimeManager_Toggle() else GameTimeFrame:Click() end end)
+	CLOCK:SetScript("OnUpdate", CLOCK.OnUpdate)
+	CLOCK:ShowInstanceDifficulty()
+	CLOCK:OnUpdate(10)
+end
 
-	module:ClockShowInstanceDifficulty()
-	Stat8:SetScript("OnEnter", function(self)
-		if not InCombatLockdown() then
-			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-			GameTooltip:ClearLines()
-			GameTooltip:AddLine("Time:", 0.4, 0.78, 1)
-			GameTooltip:AddLine(" ")
+------------------------------------------------------
+-- / CURRENCY / --
+------------------------------------------------------
 
-			local pvp = GetNumWorldPVPAreas()
-			for i = 1, pvp do
-				local _, name, inprogress, _, timeleft = GetWorldPVPAreaInfo(i)
-				local inInstance, instanceType = IsInInstance()
-				if not ( instanceType == "none" ) then
-					timeleft = QUEUE_TIME_UNAVAILABLE
-				elseif inprogress then
-					timeleft = WINTERGRASP_IN_PROGRESS
-				else
-					local hour = tonumber(format("%01.f", floor(timeleft / 3600)))
-					local min = format((hour > 0) and "%02.f" or "%01.f", floor(timeleft / 60 - (hour * 60)))
-					local sec = format("%02.f", floor(timeleft - (hour * 3600) - (min * 60)))
-					timeleft = (hour > 0 and hour..":" or "")..min..":"..sec
-				end
+function module:SetCurrency()
+	if not db.Infotext.Currency.Enable then self:KillDataText(self.Currency, LUI_Text_Currency, LUI_Text_CurrencyIcon) return end
 
-				GameTooltip:AddDoubleLine("Time to "..name, timeleft)
-			end
+	-- Add stat to modules namespace.
+	self.Currency = CreateFrame("Frame", "LUI_Info_Currency")
 
-			GameTooltip:AddLine(" ")
+	-- Create local shortcuts.
+	local CUR = self.Currency
+	CUR.db = db.Infotext.Currency
 
-			if db.Infotext.Clock.LocalTime == true then
-				local Hr, Min = GetGameTime()
-				if Min<10 then Min = "0"..Min end
+	-- Frame settings.
+	CUR:EnableMouse(true)
+	self:GetInfoPanel(CUR)
+	CUR:Show()
 
-				if db.Infotext.Clock.Time24 == true then
-					GameTooltip:AddDoubleLine("Server Time: ", Hr..":"..Min)
-				else
-					if Hr >= 12 then
-						GameTooltip:AddDoubleLine("Server Time: ", (Hr - 12)..":"..Min.." PM")
+	-- Create info text.
+	LUI_Text_Currency = CUR:CreateFontString(nil, "OVERLAY")
+	self:GetInfoPanelPosition(LUI_Text_Currency, CUR.db)
+	LUI_Text_Currency:SetFont(LSM:Fetch("font", CUR.db.Font), CUR.db.Size, CUR.db.Outline)
+	LUI_Text_Currency:SetHeight(CUR.db.Size)
+	LUI_Text_Currency:SetTextColor(CUR.db.Color.r, CUR.db.Color.g, CUR.db.Color.b, CUR.db.Color.a)
+	LUI_Text_Currency:Show()
+	CUR:SetAllPoints(LUI_Text_Currency)
+
+	-- Create info text icon.
+	LUI_Text_CurrencyIcon = CreateFrame("Button", "LUI_Text_CurrencyIcon", CUR)
+	LUI_Text_CurrencyIcon:SetPoint("RIGHT", LUI_Text_Currency, "LEFT", -2, 0)
+	LUI_Text_CurrencyIcon:SetWidth(15)
+	LUI_Text_CurrencyIcon:SetHeight(15)
+	LUI_Text_CurrencyIcon:SetFrameStrata("TOOLTIP")
+	LUI_Text_CurrencyIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }})
+	LUI_Text_CurrencyIcon:Show()
+
+	-- Script functions.
+	function CUR:OnEnter()
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:ClearLines()
+		GameTooltip:AddLine("Currency:", 0.4, 0.78, 1)
+
+		for i = 1, GetCurrencyListSize() do
+			local name, isHeader,_,_,_, count, icon = GetCurrencyListInfo(i)
+			if isHeader ~= true then
+				if name ~= nil then
+					if count ~= 0 and count ~= nil then
+						GameTooltip:AddDoubleLine(name, count, 255, 255, 255, 255, 255, 255)
 					else
-						if Hr == 0 then Hr = 12 end
-						GameTooltip:AddDoubleLine("Server Time: ", Hr..":".. Min.." AM")
+						GameTooltip:AddDoubleLine(name, "--", 255, 255, 255, 255, 255, 255)
 					end
 				end
 			else
-				local Hr24 = tonumber(date("%H"))
-				local Hr = tonumber(date("%I"))
-				local Min = date("%M")
-				if db.Infotext.Clock.Time24 == true then
-					GameTooltip:AddDoubleLine("Local Time: ", Hr24..":".. Min)
-				else
-					if Hr24 >= 12 then
-						GameTooltip:AddDoubleLine("Local Time: ", Hr..":"..Min.." PM")
-					else
-						GameTooltip:AddDoubleLine("Local Time: ", Hr..":"..Min.." AM")
-					end
-				end
+				GameTooltip:AddLine(" ")
+				GameTooltip:AddLine(name)
 			end
-
-			local oneraid
-			for i = 1, GetNumSavedInstances() do
-			local name,_, reset, difficulty, locked, extended,_, isRaid, maxPlayers = GetSavedInstanceInfo(i)
-			if isRaid and (locked or extended) then
-				local tr, tg, tb, diff
-
-				if not oneraid then
-					GameTooltip:AddLine(" ")
-					GameTooltip:AddLine("Saved Raid(s)")
-					oneraid = true
-				end
-
-				local function fmttime(sec, table)
-					local table = table or {}
-					local d, h, m, s = ChatFrame_TimeBreakDown(floor(sec))
-					local string = gsub(gsub(format(" %dd %dh %dm "..((d==0 and h==0) and "%ds" or ""), d, h, m, s), " 0[dhms]", " "), "%s+", " ")
-					local string = strtrim(gsub(string, "([dhms])", {d = table.days or "d", h = table.hours or "h", m = table.minutes or "m", s = table.seconds or "s"}), " ")
-					return strmatch(string, "^%s*$") and "0"..(table.seconds or L"s") or string
-				end
-
-				if extended then
-					tr, tg, tb = 0.3, 1, 0.3
-				else
-					tr, tg, tb = 1, 1, 1
-				end
-
-				if difficulty == 3 or difficulty == 4 then diff = "H" else diff = "N" end
-					GameTooltip:AddDoubleLine(format("%s |cffaaaaaa(%s%s)", name, maxPlayers, diff), fmttime(reset), 1, 1, 1, tr, tg, tb)
-				end
-			end
-
-			GameTooltip:AddLine(" ")
-			GameTooltip:AddLine("Hint:\n- Left-Click for Calendar Frame.\n- Right-Click for Time Manager Frame.", 0.0, 1.0, 0.0)
-			GameTooltip:Show()
 		end
+
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine("Hint:\n- Any Click to open Currency frame.", 0, 1, 0)
+		GameTooltip:Show()
+	end
+
+	function CUR:OnEvent(event)
+		if event == "PLAYER_ENTERING_WORLD" then
+			if UnitFactionGroup("player") == "Horde" then
+				LUI_Text_CurrencyIcon:SetBackdrop({bgFile = "Interface\\PVPFrame\\PVP-Currency-Horde", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }})
+			else
+				LUI_Text_CurrencyIcon:SetBackdrop({bgFile = "Interface\\PVPFrame\\PVP-Currency-Alliance", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }})
+			end
+
+			LUI_Text_Currency:SetText("Currency")
+		end
+
+		-- Setup currency tooltip.
+		self:SetAllPoints(LUI_Text_Currency)
+
+		-- Update tooltip if open.
+		if self:IsMouseOver() and GameTooltip:GetOwner() == self then
+			self:OnEnter()
+		end
+	end
+
+	CUR:RegisterEvent("PLAYER_ENTERING_WORLD")
+	CUR:SetScript("OnEnter", CUR.OnEnter)
+	CUR:SetScript("OnEvent", CUR.OnEvent)
+	CUR:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	CUR:SetScript("OnMouseDown", function(self, button)
+		ToggleCharacter("TokenFrame")
 	end)
-	Stat8:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	Stat8:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
-	Stat8:SetScript("OnUpdate", Update)
-	Stat8:SetScript("OnMouseDown", function(self, button) if button == "RightButton" then TimeManager_Toggle() else GameTimeFrame:Click() end end)
-	Update(Stat8, 10)
+	CUR:OnEvent("PLAYER_ENTERING_WORLD")
 end
 
---------------------------------------------------------------------
--- /GUILD and FRIENDS/ --
---------------------------------------------------------------------
+------------------------------------------------------
+-- / DPS / --
+------------------------------------------------------
+
+function module:SetDPS()
+	if not db.Infotext.Dps.Enable then self:KillDataText(self.DPS, LUI_Text_DPS) return end
+
+	-- Add stat to the modules namespace.
+	self.DPS = CreateFrame("Frame", "LUI_Info_DPS")
+
+	-- Create local shortcuts.
+	local DPS = self.DPS
+	DPS.db = db.Infotext.Dps
+
+	-- Frame settings.
+	DPS:EnableMouse(true)
+	self:GetInfoPanel(DPS)
+	DPS:Show()
+
+	local active = DPS.db.Active
+	if active ~= "dps" and active ~= "hps" and active ~= "dtps" and active ~= "htps" then DPS.db.Active = "dps" active = "dps" end
+
+	-- Create info text.
+	LUI_Text_DPS = DPS:CreateFontString(nil, "OVERLAY")
+	self:GetInfoPanelPosition(LUI_Text_DPS, DPS.db)
+	LUI_Text_DPS:SetFont(LSM:Fetch("font", DPS.db.Font), DPS.db.Size, DPS.db.Outline)
+	LUI_Text_DPS:SetHeight(DPS.db.Size)
+	LUI_Text_DPS:SetTextColor(DPS.db.Color.r, DPS.db.Color.g, DPS.db.Color.b, DPS.db.Color.a)
+	LUI_Text_DPS:Show()
+	DPS:SetAllPoints(LUI_Text_DPS)
+
+	if active == "dps" then LUI_Text_DPS:SetText("DPS: ")
+	elseif active == "hps" then LUI_Text_DPS:SetText("HPS: ")
+	elseif active == "dtps" then LUI_Text_DPS:SetText("DTPS: ")
+	elseif active == "htps" then LUI_Text_DPS:SetText("HTPS: ") end
+
+	-- Localised functions.
+	local UnitGUID, GetTime = UnitGUID, GetTime
+
+	-- Variables.
+	local playerId, petId, combatStartTime, combatTimeElapsed = nil, nil, 0, combatTimeElapsed or 1
+	local totalDamage, playerDamage, petDamage, totalHealing, effectiveHealing, overHealing, totalDamageTaken, totalHealingTaken, effectiveHealingTaken, overHealingTaken = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+	local textFormat = {
+		dps = "DPS: %.1f",
+		hps = "HPS: %.1f",
+		dtps = "DTPS: %.1f",
+		htps = "HTPS: %.1f",
+	}
+	local events = {
+		dps = {
+			SWING_DAMAGE = true,
+			RANGE_DAMAGE = true,
+			SPELL_DAMAGE = true,
+			SPELL_PERIODIC_DAMAGE = true,
+			DAMAGE_SHIELD = true,
+			DAMAGE_SPLIT = true,
+		},
+		hps = {
+			SPELL_PERIODIC_HEAL = true,
+			SPELL_HEAL = true,
+			SPELL_AURA_APPLIED = true,
+			SPELL_AURA_REFRESH = true,
+		},
+		dtps = {
+			SWING_DAMAGE = true,
+			RANGE_DAMAGE = true,
+			SPELL_DAMAGE = true,
+			SPELL_PERIODIC_DAMAGE = true,
+			DAMAGE_SHIELD = true,
+			DAMAGE_SPLIT = true,
+		},
+		htps = {
+			SPELL_PERIODIC_HEAL = true,
+			SPELL_HEAL = true,
+			SPELL_AURA_APPLIED = true,
+			SPELL_AURA_REFRESH = true,
+		},
+	}
+	local shields = {
+		[select(1, GetSpellInfo(17))] = true, -- Power Word: Shield
+		[select(1, GetSpellInfo(47515))] = true, -- Divine Aegis
+		[select(1, GetSpellInfo(76669))] = true, -- Illuminated Healing
+	}
+
+	-- Script functions.
+	function DPS:OnEnter()
+		if db.Infotext.CombatLock then return end
+
+		local name = UnitName("player")
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:ClearLines()
+		GameTooltip:AddLine("Combat Info", 1, 1, 1)
+
+		GameTooltip:AddLine("DPS:", 0.4, 0.78, 1)
+		GameTooltip:AddDoubleLine(name..":", format("%.1f", playerDamage / combatTimeElapsed))
+		if petDamage and (petDamage > 0) then
+			GameTooltip:AddDoubleLine("Pet:", format("%.1f", petDamage / combatTimeElapsed))
+		end
+
+		GameTooltip:AddLine("HPS:", 0.4, 0.78, 1)
+		GameTooltip:AddDoubleLine("Effective:", format("%.1f", effectiveHealing / combatTimeElapsed))
+		GameTooltip:AddDoubleLine("Overhealing:", format("%.1f", overHealing / combatTimeElapsed))
+
+		GameTooltip:AddLine("DTPS:", 0.4, 0.78, 1)
+		GameTooltip:AddDoubleLine(name..":", format("%.1f", totalDamageTaken / combatTimeElapsed))
+
+		GameTooltip:AddLine("HTPS:", 0.4, 0.78, 1)
+		GameTooltip:AddDoubleLine("Effective:", format("%.1f", effectiveHealingTaken / combatTimeElapsed))
+		GameTooltip:AddDoubleLine("Overhealing:", format("%.1f", overHealingTaken / combatTimeElapsed))
+		
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine("Hint: Click to change meter type.", 0, 1, 0)
+		GameTooltip:Show()
+	end
+
+	DPS.dt = 0
+	function DPS:OnUpdate(deltaTime)
+		DPS.dt = DPS.dt + deltaTime
+		if DPS.dt > 1 then
+			DPS.dt = 0
+
+			-- SetText
+			combatTimeElapsed = GetTime() - combatStartTime
+			local total = 0
+			if active == "dps" then
+				total = totalDamage / combatTimeElapsed
+			elseif active == "hps" then
+				total = totalHealing / combatTimeElapsed
+			elseif active == "dtps" then
+				total = totalDamageTaken / combatTimeElapsed
+			elseif active == "htps" then
+				total = totalHealingTaken / combatTimeElapsed
+			end
+
+			LUI_Text_DPS:SetFormattedText(textFormat[active], total)
+
+			-- Setup dps tooltip.
+			self:SetAllPoints(LUI_Text_DPS)
+
+			-- Update tooltip if open.
+			if self:IsMouseOver() and GameTooltip:GetOwner() == self then
+				self:OnEnter()
+			end
+		end
+	end
+
+	-- Event fucntions.
+	function DPS:COMBAT_LOG_EVENT_UNFILTERED(_, eventType,_, Id,_,_, TargetId,_,_, spellID, spellName,_, amount, amount2)
+		local record = false
+		for mode in pairs(events) do
+			if events[mode][eventType] then
+				record = true
+			end
+		end
+		if record == false then return end
+		if (eventType == "SPELL_AURA_APPLIED" or eventType == "SPELL_AURA_REFRESH") then
+			if not shields[spellName] then
+				return
+			else
+				amount = amount2
+			end
+		end
+
+		if Id == playerId or Id == petId then
+			if eventType == "SWING_DAMAGE" then
+				amount = spellID
+			end
+
+			if events["dps"][eventType] then
+				totalDamage = totalDamage + amount
+				if Id == playerId then playerDamage = playerDamage + amount end
+				if Id == petId then petDamage = petDamage + amount end
+			end
+
+			if events["hps"][eventType] then
+				totalHealing = totalHealing + amount
+				effectiveHealing = effectiveHealing + (amount - amount2)
+				overHealing = overHealing + amount2
+			end
+
+		end
+		if TargetId == playerId then
+			if eventType == "SWING_DAMAGE" then
+				amount = spellID
+			end
+
+			if events["dtps"][eventType] then
+				totalDamageTaken = totalDamageTaken + amount
+			end
+
+			if events["htps"][eventType] then
+				totalHealingTaken = totalHealingTaken + amount
+				effectiveHealingTaken = effectiveHealingTaken + (amount - amount2)
+				overHealingTaken = overHealingTaken + amount2
+			end
+
+		end
+	end
+
+	function DPS:PLAYER_ENTERING_WORLD()
+		playerId = UnitGUID("player")
+		petId = UnitGUID("pet")
+	end
+
+	function DPS:PLAYER_REGEN_DISABLED()
+		combatStartTime = GetTime()
+		combatTimeElapsed = 0
+		totalDamage, playerDamage, petDamage = 0, 0, 0
+		totalHealing, effectiveHealing, overHealing = 0, 0, 0
+		totalDamageTaken = 0
+		totalHealingTaken, effectiveHealingTaken, overHealingTaken = 0, 0, 0
+		elapsedTime = 0.5
+
+		self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+		self:SetScript("OnUpdate", self.OnUpdate)
+	end
+
+	function DPS:PLAYER_REGEN_ENABLED()
+		self:OnUpdate(10)
+
+		self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+		self:SetScript("OnUpdate", nil)
+	end
+
+	function DPS:UNIT_PET(unit)
+		if unit == "player" then
+			petId = UnitGUID("pet")
+		end
+	end
+
+	DPS:RegisterEvent("PLAYER_ENTERING_WORLD")
+	DPS:RegisterEvent("PLAYER_REGEN_DISABLED")
+	DPS:RegisterEvent("PLAYER_REGEN_ENABLED")
+	DPS:RegisterEvent("UNIT_PET")
+	DPS:SetScript("OnEnter", DPS.OnEnter)
+	DPS:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
+	DPS:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	DPS:SetScript("OnMouseDown", function(self, button)
+		local total = 0
+
+		if active == "dps" then
+			active = "hps"
+			total = totalHealing / combatTimeElapsed
+		elseif active == "hps" then
+			active = "dtps"
+			total = totalDamageTaken / combatTimeElapsed
+		elseif active == "dtps" then
+			active = "htps"
+			total = totalHealingTaken / combatTimeElapsed
+		else
+			active = "dps"
+			total = totalDamage / combatTimeElapsed
+		end
+
+		self.db.Active = active
+
+		LUI_Text_DPS:SetFormattedText(textFormat[active], total)
+		self:SetAllPoints(LUI_Text_DPS)
+	end)
+	DPS:PLAYER_ENTERING_WORLD()
+	DPS:OnUpdate(10)
+end
+
+------------------------------------------------------
+-- / DUALSPEC / --
+------------------------------------------------------
+
+function module:SetDualSpec()
+	if not db.Infotext.DualSpec.Enable then self:KillDataText(self.DualSpec, LUI_Text_DualSpec, LUI_Text_DualSpecIcon) return end
+	if UnitLevel("player") < 10 then return end
+
+	-- Add stat to modules namespace.
+	self.DualSpec = CreateFrame("Frame", "LUI_Info_DualSpec")
+
+	-- Create local shortcuts.
+	local DS = self.DualSpec
+	DS.db = db.Infotext.DualSpec
+
+	-- Frame settings.
+	DS:EnableMouse(true)
+	self:GetInfoPanel(DS)
+	DS:Show()
+
+	-- Create info text.
+	LUI_Text_DualSpec = DS:CreateFontString(nil, "OVERLAY")
+	self:GetInfoPanelPosition(LUI_Text_DualSpec, DS.db)
+	LUI_Text_DualSpec:SetFont(LSM:Fetch("font", DS.db.Font), DS.db.Size, DS.db.Outline)
+	LUI_Text_DualSpec:SetHeight(DS.db.Size)
+	LUI_Text_DualSpec:SetTextColor(DS.db.Color.r, DS.db.Color.g, DS.db.Color.b, DS.db.Color.a)
+	LUI_Text_DualSpec:Show()
+	DS:SetAllPoints(LUI_Text_DualSpec)
+
+	-- Create info text icon.
+	LUI_Text_DualSpecIcon = CreateFrame("Button", "LUI_Text_DualSpecIcon", DS)
+	LUI_Text_DualSpecIcon:SetPoint("RIGHT", LUI_Text_DualSpec, "LEFT", -2, 0)
+	LUI_Text_DualSpecIcon:SetWidth(15)
+	LUI_Text_DualSpecIcon:SetHeight(15)
+	LUI_Text_DualSpecIcon:SetFrameStrata("TOOLTIP")
+	LUI_Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }})
+	LUI_Text_DualSpecIcon:Show()
+	
+	-- Script functions.
+	function DS:OnEnter()
+		if db.Infotext.CombatLock then return end
+
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:ClearLines()
+		GameTooltip:AddLine("Dual Spec:", 0.4, 0.78, 1)
+		GameTooltip:AddLine(" ")
+
+		for i = 1, GetNumTalentGroups() do
+			specCache[i] = specCache[i] or {}
+			local thisCache = specCache[i]
+			TalentFrame_UpdateSpecInfoCache(thisCache, false, false, i)
+
+			if thisCache.primaryTabIndex and thisCache.primaryTabIndex ~= 0 then
+				thisCache.specName = thisCache[thisCache.primaryTabIndex].name
+				thisCache.mainTabIcon = thisCache[thisCache.primaryTabIndex].icon
+			else
+				thisCache.specName = "|cffff0000Talents undefined!|r"
+				thisCache.mainTabIcon = "Interface\\Icons\\Spell_Nature_MoonKey"
+			end
+		end
+
+		local activeGroupNum = GetActiveTalentGroup()
+		local curCache = specCache[activeGroupNum]
+		local a = curCache[1].pointsSpent
+		local b = curCache[2].pointsSpent
+		local c = curCache[3].pointsSpent
+
+		if self.db.ShowSpentPoints then
+			if a <= 0 and b <= 0 and c <= 0 then
+	       		LUI_Text_DualSpec:SetText(" |cffff0000Talents undefined!|r")
+				LUI_Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+			else
+		   		LUI_Text_DualSpec:SetText(" "..curCache.specName.." ("..a.."/"..b.."/"..c..")")
+				LUI_Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+			end
+		else
+			LUI_Text_DualSpec:SetText(" "..curCache.specName)
+			LUI_Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+		end
+
+		if a <= 0 and b <= 0 and c <= 0 then
+			GameTooltip:AddLine(" |cffff0000Talents undefined!|r")
+	   		LUI_Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+		else
+			if activeGroupNum == 1 then
+				GameTooltip:AddDoubleLine("Primary Spec:", curCache.specName.." ("..a.."/"..b.."/"..c..")", 255, 255, 255, 255, 255, 255)
+			else
+				GameTooltip:AddDoubleLine("Secondary Spec:", curCache.specName.." ("..a.."/"..b.."/"..c..")", 255, 255, 255, 255, 255, 255)
+			end
+			LUI_Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+		end
+
+		if GetNumTalentGroups() >= 2 then
+			local nextGroup = -activeGroupNum + 3
+			local nextCache = specCache[nextGroup]
+
+			local a3 = nextCache[1].pointsSpent
+			local b3 = nextCache[2].pointsSpent
+			local c3 = nextCache[3].pointsSpent
+
+			if a3 <= 0 and b3 <= 0 and c3 <= 0 then
+				GameTooltip:AddLine(" |cffff0000Talents undefined!|r")
+				LUI_Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+			else
+				if activeGroupNum == 2 then
+					GameTooltip:AddDoubleLine("Primary Spec:", nextCache.specName.." ("..a3.."/"..b3.."/"..c3..")", 255, 255, 255, 255, 255, 255)
+				else
+					GameTooltip:AddDoubleLine("Secondary Spec:", nextCache.specName.." ("..a3.."/"..b3.."/"..c3..")", 255, 255, 255, 255, 255, 255)
+				end
+				LUI_Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+			end
+		else
+			GameTooltip:AddLine(" |cffff0000Talents undefined!|r")
+		end
+
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine("Hint:\n- Left-Click to switch talent.\n- Right-Click to open Talent Frame.\n- Any Click on the Icon to open Glyph.", 0, 1, 0)
+		GameTooltip:Show()
+	end
+
+	function DS:OnEvent()
+		if UnitLevel("player") < 10 then return end
+
+		for i = 1, GetNumTalentGroups() do
+			specCache[i] = specCache[i] or {}
+			local thisCache = specCache[i]
+			TalentFrame_UpdateSpecInfoCache(thisCache, false, false, i)
+
+			if thisCache.primaryTabIndex and thisCache.primaryTabIndex ~= 0 then
+				thisCache.specName = thisCache[thisCache.primaryTabIndex].name
+				thisCache.mainTabIcon = thisCache[thisCache.primaryTabIndex].icon
+			else
+				thisCache.specName = "|cffff0000Talents undefined!|r"
+				thisCache.mainTabIcon = "Interface\\Icons\\Spell_Nature_MoonKey"
+			end
+		end
+
+		local activeGroupNum = GetActiveTalentGroup()
+		local curCache = specCache[activeGroupNum]
+		local a = curCache[1].pointsSpent
+		local b = curCache[2].pointsSpent
+		local c = curCache[3].pointsSpent
+
+		if self.db.ShowSpentPoints then
+			if a <= 0 and b <= 0 and c <= 0 or a == nil or b == nil or c == nil then
+	       		LUI_Text_DualSpec:SetText(" |cffff0000Talents undefined!|r")
+	       		LUI_Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+			else
+		   		LUI_Text_DualSpec:SetText(" "..curCache.specName.." ("..a.."/"..b.."/"..c..")")
+				LUI_Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+			end
+		else
+			LUI_Text_DualSpec:SetText(" "..curCache.specName)
+			LUI_Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
+		end
+		
+		-- Setup dual spec tooltip.
+		self:SetAllPoints(LUI_Text_DualSpec)
+
+		-- Update tooltip if open.
+		if self:IsMouseOver() and GameTooltip:GetOwner() == self then
+			self:OnEnter()
+		end
+	end
+
+	DS:RegisterEvent("PLAYER_TALENT_UPDATE")
+	DS:SetScript("OnEnter", DS.OnEnter)
+	DS:SetScript("OnEvent", DS.OnEvent)
+	DS:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	DS:SetScript("OnMouseDown", function(self, button)
+		if button == "RightButton" then
+			if PlayerTalentFrame:IsVisible() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 1) then
+				PlayerTalentFrame:Hide();
+			else
+				PanelTemplates_SetTab(PlayerTalentFrame, 1);
+				PlayerTalentFrame_Refresh();
+				PlayerTalentFrame:Show()
+			end
+		else
+			if GetNumTalentGroups() < 2 then return	end
+
+			local curSpec = GetActiveTalentGroup()
+			local newSpec = -curSpec + 3
+
+			SetActiveTalentGroup(newSpec)
+		end
+	end)
+	DS:OnEvent()
+end
+
+------------------------------------------------------
+-- / DURABILITY / --
+------------------------------------------------------
+
+function module:SetDurability()
+	if not db.Infotext.Armor.Enable then self:KillDataText(self.Durability, LUI_Text_Durability) return end
+
+	-- Add stat to modules namespace.
+	self.Durability = CreateFrame("Frame", "LUI_Info_Durability")
+
+	-- Create local shortcuts.
+	local DUR = self.Durability
+	DUR.db = db.Infotext.Armor
+
+	-- Frame settings.
+	DUR:EnableMouse(true)
+	self:GetInfoPanel(DUR)
+	DUR:Show()
+
+	-- Create info text.
+	LUI_Text_Durability = DUR:CreateFontString(nil, "OVERLAY")
+	self:GetInfoPanelPosition(LUI_Text_Durability, DUR.db)
+	LUI_Text_Durability:SetFont(LSM:Fetch("font", DUR.db.Font), DUR.db.Size, DUR.db.Outline)
+	LUI_Text_Durability:SetHeight(DUR.db.Size)
+	LUI_Text_Durability:SetTextColor(DUR.db.Color.r, DUR.db.Color.g, DUR.db.Color.b, DUR.db.Color.a)
+	LUI_Text_Durability:Show()
+	DUR:SetAllPoints(LUI_Text_Durability)
+
+	-- Localised functions.
+	local sort = table.sort
+
+	-- Variables.
+	local Slots = {
+		[1] = {1, "Head", 1000},
+		[2] = {3, "Shoulder", 1000},
+		[3] = {5, "Chest", 1000},
+		[4] = {6, "Waist", 1000},
+		[5] = {9, "Wrist", 1000},
+		[6] = {10, "Hands", 1000},
+		[7] = {7, "Legs", 1000},
+		[8] = {8, "Feet", 1000},
+		[9] = {16, "Main Hand", 1000},
+		[10] = {17, "Off Hand", 1000},
+		[11] = {18, "Ranged", 1000}
+	}
+	local Total, Current, Max = 0, 0, 0
+
+	-- Script functions.
+	function DUR:OnEnter()
+		if db.Infotext.ComabtLock then return end
+
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:ClearLines()
+		GameTooltip:AddLine("Armor:", 0.4, 0.78, 1)
+		GameTooltip:AddLine(" ")
+
+		for i = 1, 11 do
+			if Slots[i][3] ~= 1000 then
+				green = Slots[i][3] * 2
+				red = 1 - green
+				GameTooltip:AddDoubleLine(Slots[i][2], floor(Slots[i][3] * 100).."%", 1, 1, 1, red + 1, green, 0)
+			end
+		end
+
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine("Hint: Click to open Character Frame.", 0, 1, 0)
+		GameTooltip:Show()
+	end
+		
+	function DUR:OnEvent()
+		Total = 0
+
+		for i = 1, 11 do
+			if GetInventoryItemLink("player", Slots[i][1]) ~= nil then
+				Current, Max = GetInventoryItemDurability(Slots[i][1])
+				if Current then
+					Slots[i][3] = Current / Max
+					Total = Total + 1
+				end
+			end
+		end
+
+		sort(Slots, function(a, b) return a[3] < b[3] end)
+
+		if Total > 0 then
+			LUI_Text_Durability:SetText("Armor: "..floor(Slots[1][3] * 100).."%")
+		else
+			LUI_Text_Durability:SetText("Armor: 100%")
+		end
+
+		-- Setup durability tooltip.
+		self:SetAllPoints(LUI_Text_Durability)
+
+		-- Update tooltip if open.
+		if self:IsMouseOver() and GameTooltip:GetOwner() == self then
+			self:OnEnter()
+		end
+	end
+
+	DUR:RegisterEvent("PLAYER_ENTERING_WORLD")
+	DUR:RegisterEvent("UPDATE_INVENTORY_DURABILITY")
+	DUR:SetScript("OnEnter", DUR.OnEnter)
+	DUR:SetScript("OnEvent", DUR.OnEvent)
+	DUR:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	DUR:SetScript("OnMouseDown", function() ToggleCharacter("PaperDollFrame") end)
+	DUR:OnEvent()
+end
+
+------------------------------------------------------
+-- / FPS & MS / --
+------------------------------------------------------
+
+function module:SetFPS()
+	if not db.Infotext.Fps.Enable then self:KillDataText(self.FPS, LUI_Text_FPS) return end
+
+	-- Add new stat to modules namespace.
+	self.FPS = CreateFrame("Frame", "LUI_Info_FPS")
+
+	-- Create local shortcuts.
+	local FPS = self.FPS
+	FPS.db = db.Infotext.Fps
+
+	-- Frame settings.
+	FPS:EnableMouse(true)
+	self:GetInfoPanel(FPS)
+	FPS:Show()
+
+	-- Create info text.
+	LUI_Text_FPS = FPS:CreateFontString(nil, "OVERLAY")
+	self:GetInfoPanelPosition(LUI_Text_FPS, FPS.db)
+	LUI_Text_FPS:SetFont(LSM:Fetch("font", FPS.db.Font), FPS.db.Size, FPS.db.Outline)
+	LUI_Text_FPS:SetHeight(FPS.db.Size)
+	LUI_Text_FPS:SetTextColor(FPS.db.Color.r, FPS.db.Color.g, FPS.db.Color.b, FPS.db.Color.a)
+	LUI_Text_FPS:Show()
+	FPS:SetAllPoints(LUI_Text_FPS)
+
+	-- Localised functions.
+	local floor, GetFramerate, select, GetNetStats = floor, GetFramerate, select, GetNetStats
+
+	-- Stat functions.
+	function FPS.ColourFPS(fps)
+		local t = fps / 60
+		local r = 1 - t
+		local g = t
+
+		return r, g, 0
+	end
+	
+	function FPS.ColourMS(ms)
+		local t = ms / 400
+		local r = t
+		local g = 1 - t
+
+		return r, g, 0
+	end
+
+	-- Script functions.
+	function FPS:OnEnter()
+		if db.Infotext.CombatLock then return end
+
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:ClearLines()
+		GameTooltip:AddLine("FPS & MS:", 0.4, 0.78, 1)
+		GameTooltip:AddLine(" ")
+
+		-- Fps stats.
+		local fps = floor(GetFramerate())
+		GameTooltip:AddLine("FPS:")
+		GameTooltip:AddDoubleLine("Current:", fps, 1, 1, 1, self.ColourFPS(fps))
+		GameTooltip:AddLine(" ")
+
+
+		local bandIn, bandOut, home, world = GetNetStats()
+		GameTooltip:AddLine("Latency:")
+		GameTooltip:AddDoubleLine("Home:", home, 1, 1, 1, self.ColourMS(home))
+		GameTooltip:AddDoubleLine("World:", world, 1, 1, 1, self.ColourMS(world))
+		GameTooltip:AddLine(" ")
+
+		GameTooltip:AddLine("Bandwidth:")
+		GameTooltip:AddDoubleLine("Current Down:", format("%.2f KB/s", bandIn), 1, 1, 1, 1, 1, 1)
+		GameTooltip:AddDoubleLine("Current Up:", format("%.2f KB/s", bandOut), 1, 1, 1, 1, 1, 1)
+
+		GameTooltip:Show()
+	end
+
+	FPS.dt = 0
+	function FPS:OnUpdate(deltaTime)
+		self.dt = self.dt + deltaTime
+		if self.dt > 1 then
+			self.dt = 0
+
+			-- Set text.
+			if self.db.MSValue == "Both" then
+				local _,_, home, world = GetNetStats()
+				LUI_Text_FPS:SetFormattedText("%dfps    %dms | %dms", floor(GetFramerate()), home, world)
+			else
+				LUI_Text_FPS:SetFormattedText("%dfps    %dms", floor(GetFramerate()), select((self.db.MSValue == "Home" and 3) or 4, GetNetStats()))
+			end
+
+			-- Setup fps tooltip.
+			self:SetAllPoints(LUI_Text_FPS)
+
+			-- Update tooltip if open.
+			if self:IsMouseOver() and GameTooltip:GetOwner() == self then
+				self:OnEnter()
+			end
+		end
+	end
+
+	FPS:SetScript("OnEnter", FPS.OnEnter)
+	FPS:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	FPS:SetScript("OnUpdate", FPS.OnUpdate)
+	FPS:OnUpdate(10)
+end
+
+------------------------------------------------------
+-- / GOLD / --
+------------------------------------------------------
+
+function module:SetGold()
+	if not db.Infotext.Gold.Enable then self:KillDataText(self.Gold, LUI_Text_Gold) return end
+
+	-- Add stat to modules namespace.
+	self.Gold = CreateFrame("Frame", "LUI_Info_Gold")
+
+	-- Create local shortcuts.
+	local GOLD = self.Gold
+	GOLD.db = db.Infotext.Gold
+
+	-- Frame settings.
+	GOLD:EnableMouse(true)
+	self:GetInfoPanel(GOLD)
+	GOLD:Show()
+
+	-- Create info text.
+	LUI_Text_Gold = GOLD:CreateFontString(nil, "OVERLAY")
+	self:GetInfoPanelPosition(LUI_Text_Gold, GOLD.db)
+	LUI_Text_Gold:SetFont(LSM:Fetch("font", GOLD.db.Font), GOLD.db.Size, GOLD.db.Outline)
+	LUI_Text_Gold:SetHeight(GOLD.db.Size)
+	LUI_Text_Gold:SetTextColor(GOLD.db.Color.r, GOLD.db.Color.g, GOLD.db.Color.b, GOLD.db.Color.a)
+	LUI_Text_Gold:Show()
+	GOLD:SetAllPoints(LUI_Text_Gold)
+	
+	-- Localised functions
+	local format, floor, abs, mod = format, floor, math.abs, mod
+
+	-- Variables.
+	local Profit, OldMoney, ServerGold, Spent = 0, 0, 0, 0
+	local colours	= {
+		["Alliance"] = {
+			r = 0,
+			g = 0.6,
+			b = 1,
+		},
+		["Horde"] = {
+			r = 0.8,
+			g = 0,
+			b = 0,
+		},
+	}
+
+	-- Stat functions.
+	function GOLD.FormatMoney(money)
+		money = abs(money)
+		local gold, silver, copper = floor(money / 10000), mod(floor(money / 100), 100), mod(floor(money), 100)
+
+		if gold ~= 0 then
+			if GOLD.db.ColorType then
+				return format("%s|cffffd700g|r %s|cffc7c7cfs|r", gold, silver)
+			else
+				return format("%sg %ss", gold, silver)
+			end
+		elseif silver ~= 0 then
+			if GOLD.db.ColorType then
+				return format("%s|cffc7c7cfs|r %s|cffeda55fc|r", silver, copper)
+			else
+				return format("%ss %sc", silver, copper)
+			end
+		else
+			if GOLD.db.ColorType then
+				return format("%s|cffeda55f c|r", copper)
+			else
+				return format("%sc", copper)
+			end
+		end
+	end
+
+	function GOLD.FormatTooltipMoney(money)
+		money = abs(money)
+		local gold, silver, copper = floor(money / 10000), mod(floor(money / 100), 100), mod(floor(money), 100)
+		local cash = format("%d|cffffd700g|r %d|cffc7c7cfs|r %d|cffeda55fc|r", gold, silver, copper)
+		return cash
+	end
+
+	-- Script functions.
+	function GOLD:OnEnter()
+		if db.Infotext.CombatLock then return end
+
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:ClearLines()
+		GameTooltip:AddLine("Money:", 0.4, 0.78, 1)
+		GameTooltip:AddLine(" ")
+
+		GameTooltip:AddLine("Session:")
+		GameTooltip:AddDoubleLine("Earned:", self.FormatMoney(Profit), 1, 1, 1, 1, 1, 1)
+		GameTooltip:AddDoubleLine("Spent:", self.FormatMoney(Spent), 1, 1, 1, 1, 1, 1)
+
+		local dif = Profit - Spent
+		if Profit < Spent then
+			GameTooltip:AddDoubleLine("Deficit:", self.FormatMoney(dif), 1, 0, 0, 1, 1, 1)
+		elseif (dif) > 0 then
+			GameTooltip:AddDoubleLine("Profit:", self.FormatMoney(dif), 0, 1, 0, 1, 1, 1)
+		end
+
+		local totalGold = 0
+		local totalPlayerFaction = 0
+		local totalOtherFaction = 0
+		local otherFaction = ((myPlayerFaction == "Alliance") and "Horde") or "Alliance"
+
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine("Character:")
+		for k, v in pairs(LUIGold.gold[myPlayerRealm][myPlayerFaction]) do
+			GameTooltip:AddDoubleLine(k, self.FormatTooltipMoney(v), colours[myPlayerFaction].r, colours[myPlayerFaction].g, colours[myPlayerFaction].b, 1, 1, 1)
+			totalGold = totalGold + v
+			totalPlayerFaction = totalPlayerFaction + v
+		end
+		for k, v in pairs(LUIGold.gold[myPlayerRealm][otherFaction]) do
+			GameTooltip:AddDoubleLine(k, self.FormatTooltipMoney(v), colours[otherFaction].r, colours[otherFaction].g, colours[otherFaction].b, 1, 1, 1)
+			totalGold = totalGold + v
+			totalOtherFaction = totalOtherFaction + v
+		end
+
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine("Server:")
+		if totalOtherFaction > 0 then
+			GameTooltip:AddDoubleLine(myPlayerFaction..":", self.FormatTooltipMoney(totalPlayerFaction), colours[myPlayerFaction].r, colours[myPlayerFaction].g, colours[myPlayerFaction].b, 1, 1, 1)
+			GameTooltip:AddDoubleLine(otherFaction..":", self.FormatTooltipMoney(totalOtherFaction), colours[otherFaction].r, colours[otherFaction].g, colours[otherFaction].b, 1, 1, 1)
+		end
+
+		GameTooltip:AddDoubleLine("Total:", self.FormatTooltipMoney(totalGold), 1, 1, 1, 1, 1, 1)
+
+		for i = 1, MAX_WATCHED_TOKENS do
+			local name, count, extraCurrencyType, icon, itemID = GetBackpackCurrencyInfo(i)
+			if name and i == 1 then
+				GameTooltip:AddLine(" ")
+				GameTooltip:AddLine("Currency:")
+			end
+			local r, g, b = 1 ,1, 1
+			if itemID then r, g, b = GetItemQualityColor(select(3, GetItemInfo(itemID))) end
+			if name and count then GameTooltip:AddDoubleLine(name, count, r, g, b, 1, 1, 1) end
+		end
+
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine("Hint:\n- Left-Click to toggle server/toon gold.\n- Right-Click to reset Session.", 0, 1, 0)
+		GameTooltip:Show()
+	end
+
+	function GOLD:OnEvent(event)
+		if event == "PLAYER_ENTERING_WORLD" then
+			OldMoney = GetMoney()
+
+			if (LUIGold == nil) then LUIGold = {} end
+			if (LUIGold.gold == nil) then LUIGold.gold = {} end
+			if (LUIGold.gold[myPlayerRealm] == nil) then LUIGold.gold[myPlayerRealm] = {} end
+			if (LUIGold.gold[myPlayerRealm]["Alliance"] == nil) then LUIGold.gold[myPlayerRealm]["Alliance"] = {} end
+			if (LUIGold.gold[myPlayerRealm]["Horde"] == nil) then LUIGold.gold[myPlayerRealm]["Horde"] = {} end
+			LUIGold.gold[myPlayerRealm][myPlayerFaction][myPlayerName] = GetMoney()
+
+			-- Gather total server gold.
+			ServerGold = 0
+			for k, v in pairs(LUIGold.gold[myPlayerRealm]["Alliance"]) do
+				ServerGold = ServerGold + v
+			end
+			for k, v in pairs(LUIGold.gold[myPlayerRealm]["Horde"]) do
+				ServerGold = ServerGold + v
+			end
+
+			self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+		end
+
+		local NewMoney = GetMoney()
+		local Change = NewMoney - OldMoney	-- Positive if we gain money
+		ServerGold = ServerGold + Change	-- Add change to the server total.
+
+		if OldMoney > NewMoney then			-- Lost Money
+			Spent = Spent - Change
+		else								-- Gained Moeny
+			Profit = Profit + Change
+		end
+
+		if self.db.ShowToonMoney then
+			LUI_Text_Gold:SetText(self.FormatMoney(NewMoney))
+		else
+			LUI_Text_Gold:SetText(self.FormatMoney(ServerGold))
+		end
+
+		-- Setup money tooltip.
+		self:SetAllPoints(LUI_Text_Gold)
+
+		-- Update gold database.
+		LUIGold.gold[myPlayerRealm][myPlayerFaction][myPlayerName] = GetMoney()
+
+		-- Update gold count.
+		OldMoney = NewMoney
+
+		-- Update tooltip if open.
+		if self:IsMouseOver() and GameTooltip:GetOwner() == self then
+			self:OnEnter()
+		end
+	end
+
+	-- Accessors
+	function GOLD:ResetGold(player, faction)
+		if not player then return end
+
+		if player == "ALL" then
+			LUIGold = {}
+		elseif faction ~= nil then
+			LUIGold.gold[myPlayerRealm][faction][player] = nil
+		end
+
+		-- Update server total.
+		self.GatherServerTotal()
+
+		-- Update info text display.
+		self:OnEvent()
+	end
+
+	GOLD:RegisterEvent("PLAYER_ENTERING_WORLD")
+	GOLD:RegisterEvent("PLAYER_MONEY")
+	GOLD:SetScript("OnEnter", GOLD.OnEnter)
+	GOLD:SetScript("OnEvent", GOLD.OnEvent)
+	GOLD:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	GOLD:SetScript("OnMouseDown", function(self, button)
+		if button == "RightButton" then
+			Profit = 0
+			Spent = 0
+			OldMoney = GetMoney()
+		else
+			self.db.ShowToonMoney = not self.db.ShowToonMoney
+			self:OnEvent()
+		end
+	end)
+	GOLD:OnEvent("PLAYER_ENTERING_WORLD")
+end
+
+------------------------------------------------------
+-- / GUILD and FRIENDS / --
+------------------------------------------------------
 
 function module:SetGuild_Friends()
 	if db.Infotext.Guild_Friends.Guild.Enable == false and db.Infotext.Guild_Friends.Friends.Enable == false then return end
 
-	local f = CreateFrame("Frame", "LUI_Info_Guild/Friends", infos_right)
+	local f = CreateFrame("Frame", "LUI_Info_Guild/Friends", LUI_Infos_TopRight)
 	f:SetScale(fscale)
-	local t = CreateFrame("Frame", "LUI_Info_updater", infos_right)
+	local t = CreateFrame("Frame", "LUI_Info_updater", LUI_Infos_TopRight)
 	local highlight = f:CreateTexture()
 	highlight:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
 	highlight:SetBlendMode("ADD")
@@ -1520,13 +2142,13 @@ function module:SetGuild_Friends()
 
 	if db.Infotext.Guild_Friends.Guild.Enable == true then
 
-		local Stat9 = CreateFrame("Frame", "LUI_Info_Guild", infos_right)
+		local Stat9 = CreateFrame("Frame", "LUI_Info_Guild", LUI_Infos_TopRight)
 		Stat9:EnableMouse(true)
 
 		f.Guild = CreateFrame("Frame", "LUI Guild", Stat9)
 
-		f.Guild.text = infos_right:CreateFontString("LUI_Guild", "OVERLAY")
-		f.Guild.text:SetPoint("RIGHT", infos_right, "LEFT", db.Infotext.Guild_Friends.Guild.X, db.Infotext.Guild_Friends.Guild.Y)
+		f.Guild.text = LUI_Infos_TopRight:CreateFontString("LUI_Guild", "OVERLAY")
+		f.Guild.text:SetPoint("RIGHT", LUI_Infos_TopRight, "LEFT", db.Infotext.Guild_Friends.Guild.X, db.Infotext.Guild_Friends.Guild.Y)
 		f.Guild.text:SetFont(LSM:Fetch("font", db.Infotext.Guild_Friends.Guild.Font), db.Infotext.Guild_Friends.Guild.Size, db.Infotext.Guild_Friends.Guild.Outline)
 		f.Guild.text:SetHeight(db.Infotext.Guild_Friends.Guild.Size)
 		f.Guild.text:SetTextColor(db.Infotext.Guild_Friends.Guild.Color.r, db.Infotext.Guild_Friends.Guild.Color.g, db.Infotext.Guild_Friends.Guild.Color.b, db.Infotext.Guild_Friends.Guild.Color.a)
@@ -1577,13 +2199,13 @@ function module:SetGuild_Friends()
 
 	if db.Infotext.Guild_Friends.Friends.Enable == true then
 
-		local Stat10 = CreateFrame("Frame", "LUI_Info_Friends", infos_right)
+		local Stat10 = CreateFrame("Frame", "LUI_Info_Friends", LUI_Infos_TopRight)
 		Stat10:EnableMouse(true)
 
 		f.Friends = CreateFrame("Frame", "LUI Friends", Stat10)
 
-		f.Friends.text = infos_right:CreateFontString("LUI_Friends", "OVERLAY")
-		f.Friends.text:SetPoint("RIGHT", infos_right, "LEFT", db.Infotext.Guild_Friends.Friends.X, db.Infotext.Guild_Friends.Friends.Y)
+		f.Friends.text = LUI_Infos_TopRight:CreateFontString("LUI_Friends", "OVERLAY")
+		f.Friends.text:SetPoint("RIGHT", LUI_Infos_TopRight, "LEFT", db.Infotext.Guild_Friends.Friends.X, db.Infotext.Guild_Friends.Friends.Y)
 		f.Friends.text:SetFont(LSM:Fetch("font", db.Infotext.Guild_Friends.Friends.Font), db.Infotext.Guild_Friends.Friends.Size, db.Infotext.Guild_Friends.Friends.Outline)
 		f.Friends.text:SetHeight(db.Infotext.Guild_Friends.Friends.Size)
 		f.Friends.text:SetTextColor(db.Infotext.Guild_Friends.Friends.Color.r, db.Infotext.Guild_Friends.Friends.Color.g, db.Infotext.Guild_Friends.Friends.Color.b, db.Infotext.Guild_Friends.Friends.Color.a)
@@ -1733,632 +2355,239 @@ function module:SetGuild_Friends()
 end
 
 ------------------------------------------------------
--- / DPS / --
-------------------------------------------------------
-
-function module:SetDPS(refresh)
-	if db.Infotext.Dps.Enable == false then return end
-
-	local Stat11 = CreateFrame("Frame", "LUI_Info_DPS", infos_right)
-	Stat11:EnableMouse(true)
-
-	local active = db.Infotext.Dps.active
-	if active ~= "dps" and active ~= "hps" and active ~= "dtps" and active ~= "htps" then db.Infotext.Dps.active = "dps" active = "dps" end
-
-	Text_dps = infos_right:CreateFontString(nil, "OVERLAY")
-	Text_dps:SetFont(LSM:Fetch("font", db.Infotext.Dps.Font), db.Infotext.Dps.Size, db.Infotext.Dps.Outline)
-	Text_dps:SetPoint("LEFT", infos_right, "LEFT", db.Infotext.Dps.X,db.Infotext.Dps.Y)
-	Text_dps:SetHeight(db.Infotext.Dps.Size)
-	Text_dps:SetTextColor(db.Infotext.Dps.Color.r, db.Infotext.Dps.Color.g, db.Infotext.Dps.Color.b, db.Infotext.Dps.Color.a)
-	Stat11:SetAllPoints(Text_dps)
-
-	if active == "dps" then Text_dps:SetText("DPS: ")
-	elseif active == "hps" then Text_dps:SetText("HPS: ")
-	elseif active == "dtps" then Text_dps:SetText("DTPS: ")
-	elseif active == "htps" then Text_dps:SetText("HTPS: ") end
-
-
-	-- Localised functions
-	local UnitGUID, GetTime = UnitGUID, GetTime
-
-	-- Local variables
-	local playerId, petId, combatStartTime, combatTimeElapsed, elapsedTime
-	local totalDamage, playerDamage, petDamage, totalHealing, effectiveHealing, overHealing, totalDamageTaken, totalHealingTaken, effectiveHealingTaken, overHealingTaken = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-	combatTimeElapsed = combatTimeElapsed or 1
-
-	local textFormat = {
-		dps = "DPS: %.1f",
-		hps = "HPS: %.1f",
-		dtps = "DTPS: %.1f",
-		htps = "HTPS: %.1f",
-	}
-
-	local events = {
-		dps = {
-			SWING_DAMAGE = true,
-			RANGE_DAMAGE = true,
-			SPELL_DAMAGE = true,
-			SPELL_PERIODIC_DAMAGE = true,
-			DAMAGE_SHIELD = true,
-			DAMAGE_SPLIT = true,
-		},
-		hps = {
-			SPELL_PERIODIC_HEAL = true,
-			SPELL_HEAL = true,
-			SPELL_AURA_APPLIED = true,
-			SPELL_AURA_REFRESH = true,
-		},
-		dtps = {
-			SWING_DAMAGE = true,
-			RANGE_DAMAGE = true,
-			SPELL_DAMAGE = true,
-			SPELL_PERIODIC_DAMAGE = true,
-			DAMAGE_SHIELD = true,
-			DAMAGE_SPLIT = true,
-		},
-		htps = {
-			SPELL_PERIODIC_HEAL = true,
-			SPELL_HEAL = true,
-			SPELL_AURA_APPLIED = true,
-			SPELL_AURA_REFRESH = true,
-		},
-	}
-
-	local shields = {
-		[select(1, GetSpellInfo(17))] = true, -- Power Word: Shield
-		[select(1, GetSpellInfo(47515))] = true, -- Divine Aegis
-		[select(1, GetSpellInfo(76669))] = true, -- Illuminated Healing
-	}
-
-	local function OnUpdate(self, t)
-		elapsedTime = elapsedTime - t
-		if elapsedTime < 0 then
-			elapsedTime = 0.5
-
-			-- SetText
-			combatTimeElapsed = GetTime() - combatStartTime
-			local total
-			if active == "dps" then
-				total = totalDamage / combatTimeElapsed
-			elseif active == "hps" then
-				total = totalHealing / combatTimeElapsed
-			elseif active == "dtps" then
-				total = totalDamageTaken / combatTimeElapsed
-			elseif active == "htps" then
-				total = totalHealingTaken / combatTimeElapsed
-			end
-
-			Text_dps:SetFormattedText(textFormat[active], total)
-			self:SetAllPoints(Text_dps)
-		end
-	end
-
-	function Stat11:COMBAT_LOG_EVENT_UNFILTERED(_, eventType, _, Id, _, _, TargetId, _, _, spellID, spellName, _, amount, amount2)
-		local record = false
-		for mode in pairs(events) do
-			if events[mode][eventType] then
-				record = true
-			end
-		end
-		if record == false then return end
-		if (eventType == "SPELL_AURA_APPLIED" or eventType == "SPELL_AURA_REFRESH") then
-			if not shields[spellName] then
-				return
-			else
-				amount = amount2
-			end
-		end
-
-		if Id == playerId or Id == petId then
-			if eventType == "SWING_DAMAGE" then
-				amount = spellID
-			end
-
-			if events["dps"][eventType] then
-				totalDamage = totalDamage + amount
-				if Id == playerId then playerDamage = playerDamage + amount end
-				if Id == petId then petDamage = petDamage + amount end
-			end
-			if events["hps"][eventType] then
-				totalHealing = totalHealing + amount
-				effectiveHealing = effectiveHealing + (amount - amount2)
-				overHealing = overHealing + amount2
-			end
-
-		end
-		if TargetId == playerId then
-			if eventType == "SWING_DAMAGE" then
-				amount = spellID
-			end
-
-			if events["dtps"][eventType] then
-				totalDamageTaken = totalDamageTaken + amount
-			end
-			if events["htps"][eventType] then
-				totalHealingTaken = totalHealingTaken + amount
-				effectiveHealingTaken = effectiveHealingTaken + (amount - amount2)
-				overHealingTaken = overHealingTaken + amount2
-			end
-
-		end
-	end
-
-	function Stat11:PLAYER_ENTERING_WORLD()
-		playerId = UnitGUID("player")
-		petId = UnitGUID("pet")
-	end
-
-	function Stat11:PLAYER_REGEN_DISABLED()
-		combatStartTime = GetTime()
-		combatTimeElapsed = 0
-		totalDamage, playerDamage, petDamage = 0, 0, 0
-		totalHealing, effectiveHealing, overHealing = 0, 0, 0
-		totalDamageTaken = 0
-		totalHealingTaken, effectiveHealingTaken, overHealingTaken = 0, 0, 0
-		elapsedTime = 0.5
-
-		self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-		self:SetScript("OnUpdate", OnUpdate)
-	end
-
-	function Stat11:PLAYER_REGEN_ENABLED()
-		OnUpdate(self, 10)
-
-		self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-		self:SetScript("OnUpdate", nil)
-	end
-
-	function Stat11:UNIT_PET(unit)
-		if unit == "player" then
-			petId = UnitGUID("pet")
-		end
-	end
-
-	Stat11:RegisterEvent("PLAYER_ENTERING_WORLD")
-	Stat11:RegisterEvent("PLAYER_REGEN_DISABLED")
-	Stat11:RegisterEvent("PLAYER_REGEN_ENABLED")
-	Stat11:RegisterEvent("UNIT_PET")
-	Stat11:SetScript("OnMouseDown", function(self, button)
-		local total
-		if active == "dps" then
-			active = "hps"
-			total = totalHealing / combatTimeElapsed
-		elseif active == "hps" then
-			active = "dtps"
-			total = totalDamageTaken / combatTimeElapsed
-		elseif active == "dtps" then
-			active = "htps"
-			total = totalHealingTaken / combatTimeElapsed
-		else
-			active = "dps"
-			total = totalDamage / combatTimeElapsed
-		end
-		db.Infotext.Dps.active = active
-
-		Text_dps:SetFormattedText(textFormat[active], total)
-		self:SetAllPoints(Text_dps)
-	end)
-	Stat11:SetScript("OnEnter", function(self)
-		if not InCombatLockdown() then
-			local name = UnitName("player")
-
-			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-			GameTooltip:ClearLines()
-			GameTooltip:AddLine("Combat Info", 1, 1, 1)
-
-			GameTooltip:AddLine("DPS:", 0.4, 0.78, 1)
-			GameTooltip:AddDoubleLine(name..":", format("%.1f", playerDamage / combatTimeElapsed))
-			if petDamage and (petDamage > 0) then
-				GameTooltip:AddDoubleLine("Pet:", format("%.1f", petDamage / combatTimeElapsed))
-			end
-
-			GameTooltip:AddLine("HPS:", 0.4, 0.78, 1)
-			GameTooltip:AddDoubleLine("Effective:", format("%.1f", effectiveHealing / combatTimeElapsed))
-			GameTooltip:AddDoubleLine("Overhealing:", format("%.1f", overHealing / combatTimeElapsed))
-
-			GameTooltip:AddLine("DTPS:", 0.4, 0.78, 1)
-			GameTooltip:AddDoubleLine(name..":", format("%.1f", totalDamageTaken / combatTimeElapsed))
-
-			GameTooltip:AddLine("HTPS:", 0.4, 0.78, 1)
-			GameTooltip:AddDoubleLine("Effective:", format("%.1f", effectiveHealingTaken / combatTimeElapsed))
-			GameTooltip:AddDoubleLine("Overhealing:", format("%.1f", overHealingTaken / combatTimeElapsed))
-
-
-			GameTooltip:AddLine(" ")
-			GameTooltip:AddLine("Hint: Click to change meter type.", 0.0, 1.0, 0.0)
-
-			GameTooltip:Show()
-		end
-	end)
-	Stat11:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	Stat11:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
-	if refresh then Stat11:PLAYER_ENTERING_WORLD() end
-end
-
-------------------------------------------------------
--- / DUALSPEC / --
-------------------------------------------------------
-
-function module:SetDualSpec()
-	if db.Infotext.DualSpec.Enable == false then return end
-	if UnitLevel("player") < 10 then return end
-
-	local Stat12 = CreateFrame("Frame", "LUI_Info_DualSpec", infos_left)
-	Stat12:EnableMouse(true)
-
-	Text_DualSpec  = infos_left:CreateFontString(nil, "OVERLAY")
-	Text_DualSpec:SetFont(LSM:Fetch("font", db.Infotext.DualSpec.Font), db.Infotext.DualSpec.Size, db.Infotext.DualSpec.Outline)
-	Text_DualSpec:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.DualSpec.X, db.Infotext.DualSpec.Y)
-	Text_DualSpec:SetHeight(db.Infotext.DualSpec.Size)
-	Text_DualSpec:SetTextColor(db.Infotext.DualSpec.Color.r, db.Infotext.DualSpec.Color.g, db.Infotext.DualSpec.Color.b, db.Infotext.DualSpec.Color.a)
-
-	local Text_DualSpecIcon = CreateFrame("Button", "Text_DualSpecIcon", infos_left)
-	Text_DualSpecIcon:SetPoint("RIGHT", "LUI_Info_DualSpec", "LEFT", 0, 0)
-	Text_DualSpecIcon:SetWidth(15)
-	Text_DualSpecIcon:SetHeight(15)
-	Text_DualSpecIcon:SetFrameStrata("TOOLTIP")
-	Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }})
-	Text_DualSpecIcon:Show()
-
-	Text_DualSpecIcon:RegisterForClicks("AnyUp")
-	Text_DualSpecIcon:SetScript("OnClick", function(self, button)
-		--if button == "RightButton" then
-			if PlayerTalentFrame:IsVisible() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 3) then
-				PlayerTalentFrame:Hide()
-			else
-				PanelTemplates_SetTab(PlayerTalentFrame, 3)
-				PlayerTalentFrame_Refresh()
-				PlayerTalentFrame:Show()
-			end
-		--end
-	end)
-
-
-	local function ShowSpec(self)
-	if not InCombatLockdown() then
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-		GameTooltip:ClearLines()
-		GameTooltip:AddLine("Dual Spec:", 0.4, 0.78, 1)
-		GameTooltip:AddLine(" ")
-
-		for i = 1, GetNumTalentGroups() do
-		specCache[i] = specCache[i] or {}
-		local thisCache = specCache[i]
-		TalentFrame_UpdateSpecInfoCache(thisCache, false, false, i)
-		if thisCache.primaryTabIndex and thisCache.primaryTabIndex ~= 0 then
-			thisCache.specName = thisCache[thisCache.primaryTabIndex].name
-			thisCache.mainTabIcon = thisCache[thisCache.primaryTabIndex].icon
-		else
-			thisCache.specName = "|cffff0000Talents undefined!|r"
-			thisCache.mainTabIcon = "Interface\\Icons\\Spell_Nature_MoonKey"
-		end
-
-	end
-
-	local activeGroupNum = GetActiveTalentGroup()
-	local curCache = specCache[activeGroupNum]
-	local a = curCache[1].pointsSpent
-	local b = curCache[2].pointsSpent
-	local c = curCache[3].pointsSpent
-
-	if db.Infotext.DualSpec.ShowSpentPoints then
-		if a <= 0 and b <= 0 and c <= 0 then
-	       	Text_DualSpec:SetText(" |cffff0000Talents undefined!|r")
-			Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
-	    else
-		   	Text_DualSpec:SetText(" "..curCache.specName.." ("..a.."/"..b.."/"..c..")")
-			Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
-			--DEFAULT_CHAT_FRAME:AddMessage(curCache.mainTabIcon)
-		end
-	else
-		Text_DualSpec:SetText(" "..curCache.specName)
-		Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
-	end
-
-	if a <= 0 and b <= 0 and c <= 0 then
-	    GameTooltip:AddLine(" |cffff0000Talents undefined!|r")
-	   	Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
-	else
-		if activeGroupNum == 1 then
-			GameTooltip:AddDoubleLine("Primary Spec:", curCache.specName.." ("..a.."/"..b.."/"..c..")", 255, 255, 255, 255, 255, 255)
-		else
-			GameTooltip:AddDoubleLine("Secondary Spec:", curCache.specName.." ("..a.."/"..b.."/"..c..")", 255, 255, 255, 255, 255, 255)
-		end
-		Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
-	end
-
-	if GetNumTalentGroups() >= 2 then
-		local nextGroup = -activeGroupNum + 3
-		local nextCache = specCache[nextGroup]
-
-		local a3 = nextCache[1].pointsSpent
-		local b3 = nextCache[2].pointsSpent
-		local c3 = nextCache[3].pointsSpent
-
-		if a3 <= 0 and b3 <= 0 and c3 <= 0 then
-			GameTooltip:AddLine(" |cffff0000Talents undefined!|r")
-			Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
-		else
-			if activeGroupNum == 2 then
-				GameTooltip:AddDoubleLine("Primary Spec:", nextCache.specName.." ("..a3.."/"..b3.."/"..c3..")", 255, 255, 255, 255, 255, 255)
-			else
-				GameTooltip:AddDoubleLine("Secondary Spec:", nextCache.specName.." ("..a3.."/"..b3.."/"..c3..")", 255, 255, 255, 255, 255, 255)
-			end
-			Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
-		end
-	else
-		GameTooltip:AddLine(" |cffff0000Talents undefined!|r")
-	end
-
-	GameTooltip:AddLine(" ")
-	GameTooltip:AddLine("Hint:\n- Left-Click to switch talent.\n- Right-Click to open Talent Frame.\n- Any Click on the Icon to open Glyph.", 0.0, 1.0, 0.0)
-	GameTooltip:Show()
-	end
-	end
-
-	local function OnEvent(self, event)
-		if UnitLevel("player") < 10 then return end
-
-		for i = 1, GetNumTalentGroups() do
-		specCache[i] = specCache[i] or {}
-		local thisCache = specCache[i]
-		TalentFrame_UpdateSpecInfoCache(thisCache, false, false, i)
-		if thisCache.primaryTabIndex and thisCache.primaryTabIndex ~= 0 then
-			thisCache.specName = thisCache[thisCache.primaryTabIndex].name
-			thisCache.mainTabIcon = thisCache[thisCache.primaryTabIndex].icon
-		else
-			thisCache.specName = "|cffff0000Talents undefined!|r"
-			thisCache.mainTabIcon = "Interface\\Icons\\Spell_Nature_MoonKey"
-		end
-	end
-
-	local activeGroupNum = GetActiveTalentGroup()
-	local curCache = specCache[activeGroupNum]
-	local a = curCache[1].pointsSpent
-	local b = curCache[2].pointsSpent
-	local c = curCache[3].pointsSpent
-
-	if db.Infotext.DualSpec.ShowSpentPoints then
-		if a <= 0 and b <= 0 and c <= 0 or a == nil or b == nil or c == nil then
-	       	Text_DualSpec:SetText(" |cffff0000Talents undefined!|r")
-	       	Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
-		else
-		   	Text_DualSpec:SetText(" "..curCache.specName.." ("..a.."/"..b.."/"..c..")")
-			Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
-		end
-	else
-		Text_DualSpec:SetText(" "..curCache.specName)
-		Text_DualSpecIcon:SetBackdrop({bgFile = tostring(curCache.mainTabIcon), edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
-	end
-		self:SetAllPoints(Text_DualSpec)
-
-		if self:IsMouseOver() and GameTooltip:GetOwner() == self then
-			ShowSpec(self)
-		end
-	end
-
-	Stat12:RegisterEvent("PLAYER_TALENT_UPDATE")
-	Stat12:SetScript("OnMouseDown", function(self, button)
-		if button == "RightButton" then
-			if PlayerTalentFrame:IsVisible() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 1) then
-				PlayerTalentFrame:Hide();
-			else
-				PanelTemplates_SetTab(PlayerTalentFrame, 1);
-				PlayerTalentFrame_Refresh();
-				PlayerTalentFrame:Show()
-			end
-		else
-			if GetNumTalentGroups() < 2 then return	end
-
-			local curSpec = GetActiveTalentGroup()
-			local newSpec = -curSpec + 3
-
-			SetActiveTalentGroup(newSpec)
-		end
-	end)
-	Stat12:SetScript("OnEvent", OnEvent)
-	Stat12:SetScript("OnEnter", ShowSpec)
-	Stat12:SetScript("OnLeave", function() GameTooltip:Hide() end)
-
-	Text_DualSpecIcon:SetScript("OnEnter", ShowSpec)
-	Text_DualSpecIcon:SetScript("OnLeave", function() GameTooltip:Hide() end)
-end
-
-------------------------------------------------------
 -- / INSTANCE / --
 ------------------------------------------------------
 
 function module:SetInstance()
-   if db.Infotext.Instance.Enable == false then return end
+	if not db.Infotext.Instance.Enable then self:KillDataText(self.Instance, LUI_Text_Instance) return end
 
-   local Stat13 = CreateFrame("Frame", "LUI_Info_Instance", infos_right)
-   Stat13:EnableMouse(true)
+	-- Add stat to the modules namespace.
+	self.Instance = CreateFrame("Frame", "LUI_Info_Instance")
 
-   Text_Instance = infos_right:CreateFontString(nil, "OVERLAY")
-   Text_Instance:SetFont(LSM:Fetch("font", db.Infotext.Instance.Font), db.Infotext.Instance.Size, db.Infotext.Instance.Outline)
-   Text_Instance:SetPoint("LEFT", infos_right, "LEFT", db.Infotext.Instance.X,db.Infotext.Instance.Y)
-   Text_Instance:SetHeight(db.Infotext.Instance.Size)
-   Text_Instance:SetTextColor(db.Infotext.Instance.Color.r, db.Infotext.Instance.Color.g, db.Infotext.Instance.Color.b, db.Infotext.Instance.Color.a)
+	-- Create local shortcuts.
+	local INST = self.Instance
+	INST.db = db.Infotext.Instance
 
+	-- Frame settings.
+	INST:EnableMouse(true)
+	self:GetInfoPanel(INST)
+	INST:Show()
 
-   local instances = {}
+	-- Create info text.
+	LUI_Text_Instance = INST:CreateFontString(nil, "OVERLAY")
+	self:GetInfoPanelPosition(LUI_Text_Instance, INST.db)
+	LUI_Text_Instance:SetFont(LSM:Fetch("font", INST.db.Font), INST.db.Size, INST.db.Outline)
+	LUI_Text_Instance:SetHeight(INST.db.Size)
+	LUI_Text_Instance:SetTextColor(INST.db.Color.r, INST.db.Color.g, INST.db.Color.b, INST.db.Color.a)
+	LUI_Text_Instance:Show()
+	INST:SetAllPoints(LUI_Text_Instance)
+   
+	local instances = {}
 
-   local function UpdateInstanceInfo()
-      local numInstances = GetNumSavedInstances()
-      for i = 1, numInstances do
-         local instance = {}
-         local instanceDifficulty
-         instance.name, instance.ID, instance.remaining, _, _, _, _, _, _, instanceDifficulty = GetSavedInstanceInfo(i)
-         instance.name = instance.name .. ' - ' .. instanceDifficulty
-         instance.curtime = time()
-         if (instance.remaining ~= 0) then
-            instances[i] = instance
-         end
-      end
+	-- Stat functions.
+	function INST.UpdateInstanceInfo()
+		local numInstances = GetNumSavedInstances()
 
-      --LUI:Print{instances}   Chat Lines
-      table.sort(instances, function(a, b) return a.name < b.name end)
-      Text_Instance:SetText("Instance ["..#(instances).."]")
-      --LUI:Print{instances}   Chat Lines
+		for i = 1, numInstances do
+			local instance = {}
+			local instanceDifficulty
+			instance.name, instance.ID, instance.remaining, _, _, _, _, _, _, instanceDifficulty = GetSavedInstanceInfo(i)
+			instance.name = instance.name .. ' - ' .. instanceDifficulty
+			instance.curtime = time()
 
-      return true
-   end
+			if (instance.remaining ~= 0) then
+			instances[i] = instance
+			end
+		end
 
-   local function ShowInstance(self)
-      local numInstance = #(instances)
-      GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
-      GameTooltip:ClearLines()
-      GameTooltip:AddLine("Instance Info:", 0.4, 0.78, 1)
-      GameTooltip:AddLine(" ")
-      if numInstance == 0 then
-         GameTooltip:AddLine("[No saved instance]")
-      else
-         GameTooltip:AddDoubleLine("Instance:", "Time Remaining:")
-         GameTooltip:AddLine(" ")
-      end
+		table.sort(instances, function(a, b) return a.name < b.name end)
+		LUI_Text_Instance:SetText("Instance ["..#(instances).."]")
+		return true
+	end
 
-      for i = 1, numInstance do
-         local instance = instances[i]
-         if (instance ~= nil) then
-            if (time() <= (instance.curtime + instance.remaining)) then
-               GameTooltip:AddDoubleLine(instance.name.." ("..instance.ID..")", SecondsToTime((instance.curtime + instance.remaining) - time()), 255, 255, 255, 255, 255, 255)
-            else
-               instance = nil
-            end
-         end
-      end
-
-      GameTooltip:AddLine(" ")
-      GameTooltip:AddLine("Hint:\n- Any Click to open Raid Info frame.", 0.0, 1.0, 0.0)
-      GameTooltip:Show()
-      Text_Instance:SetText("Instance ["..numInstance.."]")
-   end
-
-   local function OnEvent(self, event)
-      if event == "PLAYER_ENTERING_WORLD" then
-         RequestRaidInfo()
-
-         Text_Instance:SetText("Instance [0]")
-
-      elseif event == "UPDATE_INSTANCE_INFO" then
-         UpdateInstanceInfo()
-      elseif event == "INSTANCE_BOOT_START" then
-         UpdateInstanceInfo()
-      elseif event == "INSTANCE_BOOT_STOP" then
-         UpdateInstanceInfo()
-      end
-
-      self:SetAllPoints(Text_Instance)
-
-      if self:IsMouseOver() and GameTooltip:GetOwner() == self then
-         ShowInstance(self)
-      end
-   end
-
-   Stat13:RegisterEvent("PLAYER_ENTERING_WORLD");
-   Stat13:RegisterEvent("UPDATE_INSTANCE_INFO");
-   Stat13:RegisterEvent("INSTANCE_BOOT_START");
-   Stat13:RegisterEvent("INSTANCE_BOOT_STOP");
-   Stat13:SetScript("OnEvent", OnEvent)
-   Stat13:SetScript("OnEnter", ShowInstance)
-   Stat13:SetScript("OnLeave", function() GameTooltip:Hide() end)
-   Stat13:SetScript("OnMouseDown", function(self, button)
-      if RaidInfoFrame:IsVisible() then
-         RaidInfoFrame:Hide()
-         if FriendsFrame:IsVisible() then
-            FriendsFrame:Hide()
-         end
-      else
-         ToggleFriendsFrame(4)
-         RaidInfoFrame:Show()
-      end
-   end)
-end
-
-------------------------------------------------------
--- / CURRENCY / --
-------------------------------------------------------
-
-function module:SetCurrency()
-	if db.Infotext.Currency.Enable == false then return end
-
-	local Stat14 = CreateFrame("Frame", "LUI_Info_Currency", infos_left)
-	Stat14:EnableMouse(true)
-
-	Text_Currency  = infos_left:CreateFontString(nil, "OVERLAY")
-	Text_Currency:SetFont(LSM:Fetch("font", db.Infotext.Currency.Font), db.Infotext.Currency.Size, db.Infotext.Currency.Outline)
-	Text_Currency:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Currency.X, db.Infotext.Currency.Y)
-	Text_Currency:SetHeight(db.Infotext.Currency.Size)
-	Text_Currency:SetTextColor(db.Infotext.Currency.Color.r, db.Infotext.Currency.Color.g, db.Infotext.Currency.Color.b, db.Infotext.Currency.Color.a)
-
-	local Text_CurrencyIcon = CreateFrame("Button", "Text_CurrencyIcon", infos_left)
-	Text_CurrencyIcon:SetPoint("RIGHT", "LUI_Info_Currency", "LEFT", 0, 0)
-	Text_CurrencyIcon:SetWidth(15)
-	Text_CurrencyIcon:SetHeight(15)
-	Text_CurrencyIcon:SetFrameStrata("TOOLTIP")
-	Text_CurrencyIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }})
-	Text_CurrencyIcon:Show()
-
-	Text_CurrencyIcon:RegisterForClicks("AnyUp")
-	Text_CurrencyIcon:SetScript("OnClick", function(self, button)
-	ToggleCharacter("TokenFrame")
-	end)
-
-
-	local function ShowCurrency(self)
+	-- Script functions.
+	function INST:OnEnter()
+		local numInstance = #(instances)
 		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 		GameTooltip:ClearLines()
-		GameTooltip:AddLine("Currency:", 0.4, 0.78, 1)
+		GameTooltip:AddLine("Instance Info:", 0.4, 0.78, 1)
+		GameTooltip:AddLine(" ")
 
-		for i = 1, GetCurrencyListSize() do
-			local name, isHeader, _, _, _, count, icon = GetCurrencyListInfo(i)
-			if isHeader ~= true then
-				if name ~= nil then
-					if count ~= 0 and count ~= nil then
-						GameTooltip:AddDoubleLine(name, count, 255, 255, 255, 255, 255, 255)
-					else
-						GameTooltip:AddDoubleLine(name, "--", 255, 255, 255, 255, 255, 255)
-					end
-				end
+		if numInstance == 0 then
+			GameTooltip:AddLine("[No saved instances]")
+		else
+			GameTooltip:AddDoubleLine("Instance:", "Time Remaining:")
+			GameTooltip:AddLine(" ")
+		end
+
+		for i = 1, numInstance do
+			local instance = instances[i]
+			if (instance ~= nil) then
+			if (time() <= (instance.curtime + instance.remaining)) then
+				GameTooltip:AddDoubleLine(instance.name.." ("..instance.ID..")", SecondsToTime((instance.curtime + instance.remaining) - time()), 255, 255, 255, 255, 255, 255)
 			else
-				GameTooltip:AddLine(" ")
-				GameTooltip:AddLine(name)
+				instance = nil
+			end
 			end
 		end
 
 		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine("Hint:\n- Any Click to open Currency frame.", 0.0, 1.0, 0.0)
+		GameTooltip:AddLine("Hint:\n- Any Click to open Raid Info frame.", 0, 1, 0)
+		GameTooltip:Show()
+		LUI_Text_Instance:SetText("Instance ["..numInstance.."]")
+	end
+
+	function INST:OnEvent(event)
+		if event == "PLAYER_ENTERING_WORLD" then
+			RequestRaidInfo()
+			LUI_Text_Instance:SetText("Instance [0]")
+		else
+			self.UpdateInstanceInfo()
+		end
+
+		-- Setup instance tooltip.
+		self:SetAllPoints(LUI_Text_Instance)
+
+		-- Update tooltip if open.
+		if self:IsMouseOver() and GameTooltip:GetOwner() == self then
+			self:OnEnter()
+		end
+	end
+
+	INST:RegisterEvent("INSTANCE_BOOT_START");
+	INST:RegisterEvent("INSTANCE_BOOT_STOP");
+	INST:RegisterEvent("PLAYER_ENTERING_WORLD");
+	INST:RegisterEvent("UPDATE_INSTANCE_INFO");
+	INST:SetScript("OnEnter", INST.OnEnter)
+	INST:SetScript("OnEvent", INST.OnEvent)
+	INST:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	INST:SetScript("OnMouseDown", function(self, button)
+		if RaidInfoFrame:IsVisible() then
+			RaidInfoFrame:Hide()
+			if FriendsFrame:IsVisible() then
+				FriendsFrame:Hide()
+			end
+		else
+			ToggleFriendsFrame(4)
+			RaidInfoFrame:Show()
+		end
+	end)
+	INST:OnEvent("PLAYER_ENTERING_WORLD")
+end
+
+------------------------------------------------------
+-- / MEMORY USAGE / --
+------------------------------------------------------
+
+function module:SetMemoryUsage()
+	if not db.Infotext.Memory.Enable then self:KillDataText(self.Memory, LUI_Text_Memory) return end
+
+	-- Add stat to modules namespace.
+	self.Memory = CreateFrame("Frame", "LUI_Info_Memory")
+
+	-- Create local shortcuts.
+	local MEM = self.Memory
+	MEM.db = db.Infotext.Memory
+
+	-- Frame settings.
+	MEM:EnableMouse(true)
+	self:GetInfoPanel(MEM)
+	MEM:Show()
+
+	LUI_Text_Memory = MEM:CreateFontString(nil, "OVERLAY")
+	self:GetInfoPanelPosition(LUI_Text_Memory, MEM.db)
+	LUI_Text_Memory:SetFont(LSM:Fetch("font", MEM.db.Font), MEM.db.Size, MEM.db.Outline)
+	LUI_Text_Memory:SetHeight(MEM.db.Size)
+	LUI_Text_Memory:SetTextColor(MEM.db.Color.r, MEM.db.Color.g, MEM.db.Color.b, MEM.db.Color.a)
+	LUI_Text_Memory:Show()
+	MEM:SetAllPoints(LUI_Text_Memory)
+
+	-- Localised functions.
+	local floor, format, sort = floor, string.format, table.sort
+
+	-- Variables.
+	local Total
+	local Memory = {}
+
+	-- Stat functions.
+	function MEM.FormatMemory(kb)
+		if kb > 1024 then
+			return format("%.1fmb", kb / 1024)
+		else
+			return format("%.1fkb", kb)
+		end
+	end
+
+	function MEM:RefreshMemory()
+		UpdateAddOnMemoryUsage()
+
+		Total = 0
+		for i = 1, GetNumAddOns() do
+			if not Memory[i] then Memory[i] = {} end
+
+			Memory[i][1] = select(2, GetAddOnInfo(i))
+			Memory[i][2] = GetAddOnMemoryUsage(i)
+			Memory[i][3] = IsAddOnLoaded(i)
+			Total = Total + Memory[i][2]
+		end
+
+		-- Update info text.		
+		LUI_Text_Memory:SetText(self.FormatMemory(Total))
+
+		-- Setup memory tooltip.
+		self:SetAllPoints(LUI_Text_Memory)
+
+		-- Update tooltip if open.
+		if self:IsMouseOver() and GameTooltip:GetOwner() == self then
+			self:OnEnter()
+		end
+	end
+
+	-- Script functions.
+	function MEM:OnEnter()
+		if db.Infotext.CombatLock then return end
+		
+		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:ClearLines()
+		GameTooltip:AddLine("Memory:", 0.4, 0.78, 1)
+		GameTooltip:AddLine(" ")
+
+		sort(Memory, function(a, b)
+			if a and b then
+				return a[2] > b[2]
+			end
+		end)
+
+		for i = 1, #Memory do
+			if Memory[i][3] then
+				local red = Memory[i][2] / Total * 2
+				local green = 1 - red
+				GameTooltip:AddDoubleLine(Memory[i][1], self.FormatMemory(Memory[i][2]), 1, 1, 1, red, green + 1, 0)
+			end
+		end
+
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddDoubleLine("Total Memory Usage:", self.FormatMemory(Total), 1, 1, 1, 0.8, 0.8, 0.8)
+
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine("Hint: Click to Collect Garbage.", 0, 1, 0)
 		GameTooltip:Show()
 	end
 
-	local function OnEvent(self, event)
-		if event == "PLAYER_ENTERING_WORLD" then
-			if UnitFactionGroup("player") == "Horde" then
-				Text_CurrencyIcon:SetBackdrop({bgFile = "Interface\\PVPFrame\\PVP-Currency-Horde", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }})
-			else
-				Text_CurrencyIcon:SetBackdrop({bgFile = "Interface\\PVPFrame\\PVP-Currency-Alliance", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }})
-			end
-
-			Text_Currency:SetText("Currency")
-		end
-
-		self:SetAllPoints(Text_Currency)
-
-		if self:IsMouseOver() and GameTooltip:GetOwner() == self then
-			ShowCurrency(self)
+	MEM.dt = 0
+	function MEM:OnUpdate(deltaTime)
+		self.dt = self.dt + deltaTime
+		if self.dt > 10 then
+			self.dt = 0
+			self:RefreshMemory()
 		end
 	end
 
-	Stat14:RegisterEvent("PLAYER_ENTERING_WORLD")
-	Stat14:SetScript("OnEvent", OnEvent)
-	Stat14:SetScript("OnEnter", ShowCurrency)
-	Stat14:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	Stat14:SetScript("OnMouseDown", function(self, button)
-	ToggleCharacter("TokenFrame")
-	end)
-
-	Text_CurrencyIcon:SetScript("OnEnter", ShowCurrency)
-	Text_CurrencyIcon:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	MEM:SetScript("OnEnter", MEM.OnEnter)
+	MEM:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	MEM:SetScript("OnMouseDown", function(self) collectgarbage("collect") self:OnUpdate(10) end)
+	MEM:SetScript("OnUpdate", MEM.OnUpdate)
+	MEM:OnUpdate(100)
 end
 
 --  END INFO TEXT --
@@ -2366,15 +2595,18 @@ end
 local defaults = {
 	Infotext = {
 		Enable = true,
-		Gold = {
+		CombatLock = false,
+		Armor = {
 			Enable = true,
-			X = -200,
+			X = 345,
 			Y = 0,
-			ShowToonMoney = true,
+			InfoPanel = {
+				Horizontal = "Left",
+				Vertical = "Top",
+			},
 			Font = "vibroceb",
 			Size = 12,
 			Outline = "NONE",
-			ColorType = false,
 			Color = {
 				r = 1,
 				g = 1,
@@ -2384,66 +2616,12 @@ local defaults = {
 		},
 		Bags = {
 			Enable = true,
-			X = -50,
+			X = 200,
 			Y = 0,
-			Font = "vibroceb",
-			Size = 12,
-			Outline = "NONE",
-			Color = {
-				r = 1,
-				g = 1,
-				b = 1,
-				a = 1,
+			InfoPanel = {
+				Horizontal = "Left",
+				Vertical = "Top",
 			},
-		},
-		Armor = {
-			Enable = true,
-			X = 100,
-			Y = 0,
-			Font = "vibroceb",
-			Size = 12,
-			Outline = "NONE",
-			Color = {
-				r = 1,
-				g = 1,
-				b = 1,
-				a = 1,
-			},
-		},
-		Fps = {
-			Enable = true,
-			X = 260,
-			Y = 0,
-			MSValue = "WORLD",
-			Font = "vibroceb",
-			Size = 12,
-			Outline = "NONE",
-			Color = {
-				r = 1,
-				g = 1,
-				b = 1,
-				a = 1,
-			},
-		},
-		Dps = {
-			Enable = true,
-			X = -535,
-			Y = 0,
-			Font = "vibroceb",
-			Size = 12,
-			Outline = "NONE",
-			Color = {
-				r = 1,
-				g = 1,
-				b = 1,
-				a = 1,
-			},
-			active = "dps",
-		},
-		Memory = {
-			Enable = true,
-			X = 340,
-			Y = 0,
 			Font = "vibroceb",
 			Size = 12,
 			Outline = "NONE",
@@ -2459,11 +2637,110 @@ local defaults = {
 			LocalTime = true,
 			Time24 = true,
 			ShowInstanceDifficulty = true,
-			X = -5,
+			X = -55,
 			Y = 0,
+			InfoPanel = {
+				Horizontal = "Right",
+				Vertical = "Top",
+			},
 			Font = "vibroceb",
 			Size = 12,
 			Outline = "NONE",
+			Color = {
+				r = 1,
+				g = 1,
+				b = 1,
+				a = 1,
+			},
+		},
+		Currency = {
+			Enable = false,
+			X = 280,
+			Y = 0,
+			InfoPanel = {
+				Horizontal = "Left",
+				Vertical = "Top",
+			},
+			Font = "vibroceb",
+			Size = 12,
+			Outline = "NONE",
+			Color = {
+				r = 1,
+				g = 1,
+				b = 1,
+				a = 1,
+			},
+		},
+		Dps = {
+			Enable = true,
+			Active = "dps",
+			X = -610,
+			Y = 0,
+			InfoPanel = {
+				Horizontal = "Right",
+				Vertical = "Top",
+			},
+			Font = "vibroceb",
+			Size = 12,
+			Outline = "NONE",
+			Color = {
+				r = 1,
+				g = 1,
+				b = 1,
+				a = 1,
+			},
+		},
+		DualSpec = {
+			Enable = false,
+			ShowSpentPoints = true,
+			X = 420,
+			Y = 0,
+			InfoPanel = {
+				Horizontal = "Left",
+				Vertical = "Top",
+			},
+			Font = "vibroceb",
+			Size = 12,
+			Outline = "NONE",
+			Color = {
+				r = 1,
+				g = 1,
+				b = 1,
+				a = 1,
+			},
+		},
+		Fps = {
+			Enable = true,
+			MSValue = "Both",
+			X = 500,
+			Y = 0,
+			InfoPanel = {
+				Horizontal = "Left",
+				Vertical = "Top",
+			},
+			Font = "vibroceb",
+			Size = 12,
+			Outline = "NONE",
+			Color = {
+				r = 1,
+				g = 1,
+				b = 1,
+				a = 1,
+			},
+		},
+		Gold = {
+			Enable = true,
+			ShowToonMoney = true,
+			X = 55,
+			Y = 0,
+			InfoPanel = {
+				Horizontal = "Left",
+				Vertical = "Top",
+			},
+			Font = "vibroceb",
+			Size = 12,
+			Outline = "NONE",
+			ColorType = false,
 			Color = {
 				r = 1,
 				g = 1,
@@ -2488,7 +2765,7 @@ local defaults = {
 				FriendlyZone = { 0, 1, 0 },
 				EnemyZone = { 1, 0, 0 },
 			},
-			ShowTotal = true,
+			ShowTotal = false,
 			ShowHints = true,
 			showNotes = true,
 			sortCols = {
@@ -2503,9 +2780,9 @@ local defaults = {
 			BGTexture = "Blizzard Tooltip",
 			BorderTexture = "Stripped_medium",
 			Guild = {
-				Enable = false,
-				X = -380,
-				Y = 0,
+				Enable = true,
+				X = -485,
+				Y = -6,
 				Font = "vibroceb",
 				Size = 12,
 				Outline = "NONE",
@@ -2517,9 +2794,9 @@ local defaults = {
 				},
 			},
 			Friends = {
-				Enable = false,
-				X = -280,
-				Y = 0,
+				Enable = true,
+				X = -375,
+				Y = -6,
 				Font = "vibroceb",
 				Size = 12,
 				Outline = "NONE",
@@ -2531,25 +2808,14 @@ local defaults = {
 				},
 			},
 		},
-		DualSpec = {
-			Enable = true,
-			ShowSpentPoints = true,
-			X = 420,
-			Y = 0,
-			Font = "vibroceb",
-			Size = 12,
-			Outline = "NONE",
-			Color = {
-				r = 1,
-				g = 1,
-				b = 1,
-				a = 1,
-			},
-		},
 		Instance = {
-			Enable = true,
+			Enable = false,
 			X = -660,
 			Y = 0,
+			InfoPanel = {
+				Horizontal = "Right",
+				Vertical = "Top",
+			},
 			Font = "vibroceb",
 			Size = 12,
 			Outline = "NONE",
@@ -2560,10 +2826,14 @@ local defaults = {
 				a = 1,
 			},
 		},
-		Currency = {
+		Memory = {
 			Enable = true,
-			X = 280,
+			X = 610,
 			Y = 0,
+			InfoPanel = {
+				Horizontal = "Left",
+				Vertical = "Top",
+			},
 			Font = "vibroceb",
 			Size = 12,
 			Outline = "NONE",
@@ -2578,6 +2848,163 @@ local defaults = {
 }
 
 function module:LoadOptions()
+	-- Local options creators.
+	local function PostionOptions(statName, infoText, order, statDB, statDefaults)
+		local horizontal = { "Left", "Right", }
+		local vertical = { "Bottom", "Top", }
+		local option = {
+			name = "Info Panel and Position",
+			type = "group",
+			order = order,
+			disabled = function() return not statDB.Enable end,
+			guiInline = true,
+			args = {
+				X = {
+					name = "X Offset",
+					desc = "X offset for the "..statName.." info text.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..statDefaults.X,
+					type = "input",
+					order = 1,
+					disabled = function() return not statDB.Enable end,
+					get = function() return tostring(statDB.X) end,
+					set = function(self, x)
+								if x == nil or x == "" then
+									x = "0"
+								end
+
+								statDB.X = tonumber(x)
+								module:GetInfoPanelPosition(infoText, statDB)
+							end,
+				},
+				Y = {
+					name = "Y Offset",
+					desc = "Y offset for the "..statName.." info text.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..statDefaults.Y,
+					type = "input",
+					order = 2,
+					disabled = function() return not statDB.Enable end,
+					get = function() return tostring(statDB.Y) end,
+					set = function(self, y)
+								if y == nil or y == "" then
+									y = "0"
+								end
+
+								statDB.Y = tonumber(y)
+								module:GetInfoPanelPosition(infoText, statDB)
+							end,
+				},
+				Horizontal = {
+					name = "Horizontal",
+					desc = "Select the horizontal panel that the "..statName.." info text will be anchored to.\n\nDefault: "..statDefaults.InfoPanel.Horizontal,
+					type = "select",
+					order = 3,
+					values = horizontal,
+					get = function()
+							for k, v in pairs(horizontal) do
+								if statDB.InfoPanel.Horizontal == v then return k end
+							end
+						end,
+					set = function(self, value)
+							statDB.InfoPanel.Horizontal = horizontal[value]
+							statDB.X = 0
+							module:GetInfoPanelPosition(infoText, statDB)
+						end,
+				},
+				Vertical = {
+					name = "Vertical",
+					desc = "Select the vertical panel that the "..statName.." info text will be anchored to.\n\nDefault: "..statDefaults.InfoPanel.Vertical,
+					type = "select",
+					order = 4,
+					values = vertical,
+					get = function()
+							for k, v in pairs(vertical) do
+								if statDB.InfoPanel.Vertical == v then return k end
+							end
+						end,
+					set = function(self, value)
+							statDB.InfoPanel.Vertical = vertical[value]
+							statDB.Y = 0
+							module:GetInfoPanelPosition(infoText, statDB)
+						end,
+				},				
+			}
+		}
+
+		return option
+	end
+	local function FontOptions(statName, infoText, order, statDB, statDefaults)
+		local option = {
+			name = "Font Settings",
+			type = "group",
+			disabled = function() return not statDB.Enable end,
+			order = order,
+			guiInline = true,
+			args = {
+				FontSize = {
+					name = "Size",
+					desc = "Choose your "..statName.." info text's fontsize.\n\nDefault: "..statDefaults.Size,
+					type = "range",
+					order = 1,
+					min = 1,
+					max = 40,
+					step = 1,
+					get = function() return statDB.Size end,
+					set = function(_, size)
+							statDB.Size = size
+							infoText:SetFont(LSM:Fetch("font", statDB.Font), statDB.Size, statDB.Outline)
+						end,
+				},
+				Color = {
+					name = "Color",
+					desc = "Choose your "..statName.." info text's colour.\n\nDefaults:\nr = "..statDefaults.Color.r.."\ng = "..statDefaults.Color.b.."\na = "..statDefaults.Color.a,
+					type = "color",
+					hasAlpha = true,
+					get = function() return statDB.Color.r, statDB.Color.g, statDB.Color.b, statDB.Color.a end,
+					set = function(_, r, g, b, a)
+							statDB.Color.r = r
+							statDB.Color.g = g
+							statDB.Color.b = b
+							statDB.Color.a = a
+
+							infoText:SetTextColor(r, g, b, a)
+						end,
+					order = 2,
+				},
+				Font = {
+					name = "Font",
+					desc = "Choose your "..statName.." info text's font.\n\nDefault: "..statDefaults.Font,
+					type = "select",
+					dialogControl = "LSM30_Font",
+					values = widgetLists.font,
+					get = function() return statDB.Font end,
+					set = function(self, font)
+							statDB.Font = font
+							infoText:SetFont(LSM:Fetch("font", statDB.Font), statDB.Size, statDB.Outline)
+						end,
+					order = 3,
+				},
+				FontFlag = {
+					name = "Font Flag",
+					desc = "Choose your "..statName.." info text's font flag.\n\nDefault: "..statDefaults.Outline,
+					type = "select",
+					values = fontflags,
+					get = function()
+							for k, v in pairs(fontflags) do
+								if statDB.Outline == v then
+									return k
+								end
+							end
+						end,
+					set = function(self, flag)
+							statDB.Outline = fontflags[flag]
+							infoText:SetFont(LSM:Fetch("font", statDB.Font), statDB.Size, statDB.Outline)
+						end,
+					order = 4,
+				},
+			},
+		}
+
+		return option
+	end
+
 	local options = {
 		Infotext = {
 			name = "Info Text",
@@ -2586,12 +3013,42 @@ function module:LoadOptions()
 			disabled = function() return not db.Infotext.Enable end,
 			childGroups = "select",
 			args = {
-				Bags = {
-					name = "Bags",
+				General = {
+					name = "General",
 					type = "group",
 					order = 1,
 					args = {
-						header94 = {
+						Header = {
+							name = "General",
+							type = "header",
+							order = 1,
+						},
+						CombatLock = {
+							name = "Combat Lock Down",
+							desc = "Hide tooltip info for datatext stats while in combat.",
+							type = "toggle",
+							width = "full",
+							get = function() return db.Infotext.CombatLock end,
+							set = function() db.Infotext.CombatLock = not db.Infotext.CombatLock end,
+							order = 2,
+						},
+						ResetToDefaults = {
+							name = "Reset To Defaults",
+							type = "execute",
+							func = function()
+									db.Infotext = defaults.Infotext
+									StaticPopup_Show("RELOAD_UI")
+								end,
+							order = 3,
+						},
+					},
+				},
+				Bags = {
+					name = "Bags",
+					type = "group",
+					order = 2,
+					args = {
+						Header = {
 							name = "Bags",
 							type = "header",
 							order = 1,
@@ -2603,122 +3060,24 @@ function module:LoadOptions()
 							width = "full",
 							get = function() return db.Infotext.Bags.Enable end,
 							set = function()
-										db.Infotext.Bags.Enable = not db.Infotext.Bags.Enable
-										StaticPopup_Show("RELOAD_UI")
-									end,
+									db.Infotext.Bags.Enable = not db.Infotext.Bags.Enable
+									module:SetBags()
+								end,
 							order = 2,
 						},
-						BagsX = {
-							name = "X Value",
-							desc = "X Value for your Bags Status.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Bags.X,
-							type = "input",
-							disabled = function() return not db.Infotext.Bags.Enable end,
-							get = function() return tostring(db.Infotext.Bags.X) end,
-							set = function(self, BagsX)
-										if BagsX == nil or BagsX == "" then
-											BagsX = "0"
-										end
-										db.Infotext.Bags.X = tonumber(BagsX)
-										Text_bags:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Bags.X, db.Infotext.Bags.Y)
-									end,
-							order = 3,
-						},
-						BagsY = {
-							name = "Y Value",
-							desc = "Y Value for your Bags Status.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Bags.Y,
-							type = "input",
-							disabled = function() return not db.Infotext.Bags.Enable end,
-							get = function() return tostring(db.Infotext.Bags.Y) end,
-							set = function(self,BagsY)
-										if BagsY == nil or BagsY == "" then
-											BagsY = "0"
-										end
-										db.Infotext.Bags.Y = tonumber(BagsY)
-										Text_bags:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Bags.X, db.Infotext.Bags.Y)
-									end,
-							order = 4,
-						},
-						TextSettings = {
-							name = "Font Settings",
-							type = "group",
-							disabled = function() return not db.Infotext.Bags.Enable end,
-							order = 5,
-							guiInline = true,
-							args = {
-								FontSize = {
-									name = "Size",
-									desc = "Choose your Bag Info Text Fontsize!\n\nDefault: "..LUI.defaults.profile.Infotext.Bags.Size,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									get = function() return db.Infotext.Bags.Size end,
-									set = function(_, FontSize)
-											db.Infotext.Bags.Size = FontSize
-											Text_bags:SetFont(LSM:Fetch("font", db.Infotext.Bags.Font), FontSize, db.Infotext.Bags.Outline)
-										end,
-									order = 1,
-								},
-								Color = {
-									name = "Color",
-									desc = "Choose an individual Bags Info Text Color.\n\nDefaults:\nr = "..LUI.defaults.profile.Infotext.Bags.Color.r.."\ng = "..LUI.defaults.profile.Infotext.Bags.Color.g.."\nb = "..LUI.defaults.profile.Infotext.Bags.Color.b.."\na = "..LUI.defaults.profile.Infotext.Bags.Color.a,
-									type = "color",
-									hasAlpha = true,
-									get = function() return db.Infotext.Bags.Color.r, db.Infotext.Bags.Color.g, db.Infotext.Bags.Color.b, db.Infotext.Bags.Color.a end,
-									set = function(_, r, g, b, a)
-											db.Infotext.Bags.Color.r = r
-											db.Infotext.Bags.Color.g = g
-											db.Infotext.Bags.Color.b = b
-											db.Infotext.Bags.Color.a = a
-
-											Text_bags:SetTextColor(r, g, b, a)
-										end,
-									order = 2,
-								},
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for your Bags Info Text!\n\nDefault: "..LUI.defaults.profile.Infotext.Bags.Font,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Infotext.Bags.Font end,
-									set = function(self, Font)
-											db.Infotext.Bags.Font = Font
-											Text_bags:SetFont(LSM:Fetch("font", Font), db.Infotext.Bags.Size, db.Infotext.Bags.Outline)
-										end,
-									order = 3,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Bags Info Text.\n\nDefault: "..LUI.defaults.profile.Infotext.Bags.Outline,
-									type = "select",
-									values = fontflags,
-									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Infotext.Bags.Outline == v then
-													return k
-												end
-											end
-										end,
-									set = function(self, FontFlag)
-											db.Infotext.Bags.Outline = fontflags[FontFlag]
-											Text_bags:SetFont(LSM:Fetch("font", db.Infotext.Bags.Font), db.Infotext.Bags.Size, db.Infotext.Bags.Outline)
-										end,
-									order = 4,
-								},
-							},
-						},
+						Position = PostionOptions("Bags", LUI_Text_Bags, 3, db.Infotext.Bags, LUI.defaults.profile.Infotext.Bags),
+						Font = FontOptions("Bags",LUI_Text_Bags, 4, db.Infotext.Bags, LUI.defaults.profile.Infotext.Bags),
 					},
 				},
 				Clock = {
 					name = "Clock",
 					type = "group",
-					order = 2,
+					order = 3,
 					args = {
-						header93 = {
+						Header = {
 							name = "Clock",
 							type = "header",
-							order = 13,
+							order = 1,
 						},
 						ClockEnable = {
 							name = "Enable",
@@ -2727,9 +3086,9 @@ function module:LoadOptions()
 							get = function() return db.Infotext.Clock.Enable end,
 							set = function()
 										db.Infotext.Clock.Enable = not db.Infotext.Clock.Enable
-										StaticPopup_Show("RELOAD_UI")
+										module:SetClock()
 									end,
-							order = 14,
+							order = 2,
 						},
 						ShowInstanceDifficulty = {
 							name = "Show Instance Difficulty",
@@ -2739,9 +3098,9 @@ function module:LoadOptions()
 							get = function() return db.Infotext.Clock.ShowInstanceDifficulty end,
 							set = function()
 										db.Infotext.Clock.ShowInstanceDifficulty = not db.Infotext.Clock.ShowInstanceDifficulty
-										module:ClockShowInstanceDifficulty()
+										module.Clock:ShowInstanceDifficulty()
 									end,
-							order = 15,
+							order = 3,
 						},
 						EnableLocalTime = {
 							name = "Local Time",
@@ -2750,10 +3109,8 @@ function module:LoadOptions()
 							width = "50%",
 							disabled = function() return not db.Infotext.Clock.Enable end,
 							get = function() return db.Infotext.Clock.LocalTime end,
-							set = function()
-										db.Infotext.Clock.LocalTime = not db.Infotext.Clock.LocalTime
-									end,
-							order = 16,
+							set = function() db.Infotext.Clock.LocalTime = not db.Infotext.Clock.LocalTime end,
+							order = 4,
 						},
 						EnableTime24 = {
 							name = "24h Clock",
@@ -2762,120 +3119,45 @@ function module:LoadOptions()
 							width = "50%",
 							disabled = function() return not db.Infotext.Clock.Enable end,
 							get = function() return db.Infotext.Clock.Time24 end,
+							set = function() db.Infotext.Clock.Time24 = not db.Infotext.Clock.Time24 end,
+							order = 5,
+						},
+						Position = PostionOptions("Clock", LUI_Text_Clock, 6, db.Infotext.Clock, LUI.defaults.profile.Infotext.Clock),
+						Font = FontOptions("Clock", LUI_Text_Clock, 7, db.Infotext.Clock, LUI.defaults.profile.Infotext.Clock),
+					},
+				},
+				Currency = {
+					name = "Currency Info",
+					type = "group",
+					order = 4,
+					args = {
+						Header = {
+							name = "Currency",
+							type = "header",
+							order = 1,
+						},
+						CurrencyEnable = {
+							name = "Enable",
+							desc = "Whether you want to show your Currency Info or not.",
+							type = "toggle",
+							width = "full",
+							get = function() return db.Infotext.Currency.Enable end,
 							set = function()
-										db.Infotext.Clock.Time24 = not db.Infotext.Clock.Time24
+										db.Infotext.Currency.Enable = not db.Infotext.Currency.Enable
+										module:SetCurrency()
 									end,
-							order = 17,
+							order = 2,
 						},
-						ClockX = {
-							name = "X Value",
-							desc = "X Value for your Clock.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Clock.X,
-							type = "input",
-							disabled = function() return not db.Infotext.Clock.Enable end,
-							get = function() return tostring(db.Infotext.Clock.X) end,
-							set = function(self, ClockX)
-										if ClockX == nil or ClockX == "" then
-											ClockX = "0"
-										end
-
-										db.Infotext.Clock.X = tonumber(ClockX)
-										Text_time:SetPoint("CENTER", infos_right, "CENTER", db.Infotext.Clock.X, db.Infotext.Clock.Y)
-									end,
-							order = 18,
-						},
-						ClockY = {
-							name = "Y Value",
-							disabled = function() return not db.Infotext.Clock.Enable end,
-							desc = "Y Value for your Clock.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Clock.Y,
-							type = "input",
-							get = function() return tostring(db.Infotext.Clock.Y) end,
-							set = function(self,ClockY)
-										if ClockY == nil or ClockY == "" then
-											ClockY = "0"
-										end
-										db.Infotext.Clock.Y = tonumber(ClockY)
-										Text_time:SetPoint("CENTER", infos_right, "CENTER", db.Infotext.Clock.X, db.Infotext.Clock.Y)
-									end,
-							order = 19,
-						},
-						TextSettings = {
-							name = "Font Settings",
-							type = "group",
-							disabled = function() return not db.Infotext.Clock.Enable end,
-							order = 20,
-							guiInline = true,
-							args = {
-								FontSize = {
-									name = "Size",
-									desc = "Choose your Clock Info Text Fontsize!\n\nDefault: "..LUI.defaults.profile.Infotext.Clock.Size,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									get = function() return db.Infotext.Clock.Size end,
-									set = function(_, FontSize)
-											db.Infotext.Clock.Size = FontSize
-											Text_time:SetFont(LSM:Fetch("font", db.Infotext.Clock.Font), FontSize, db.Infotext.Clock.Outline)
-										end,
-									order = 1,
-								},
-								Color = {
-									name = "Color",
-									desc = "Choose an individual Clock Info Text Color.\n\nDefaults:\nr = "..LUI.defaults.profile.Infotext.Clock.Color.r.."\ng = "..LUI.defaults.profile.Infotext.Clock.Color.g.."\nb = "..LUI.defaults.profile.Infotext.Clock.Color.b.."\na = "..LUI.defaults.profile.Infotext.Clock.Color.a,
-									type = "color",
-									hasAlpha = true,
-									get = function() return db.Infotext.Clock.Color.r, db.Infotext.Clock.Color.g, db.Infotext.Clock.Color.b, db.Infotext.Clock.Color.a end,
-									set = function(_, r, g, b, a)
-											db.Infotext.Clock.Color.r = r
-											db.Infotext.Clock.Color.g = g
-											db.Infotext.Clock.Color.b = b
-											db.Infotext.Clock.Color.a = a
-
-											Text_time:SetTextColor(r, g, b, a)
-										end,
-									order = 2,
-								},
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for your Clock Info Text!\n\nDefault: "..LUI.defaults.profile.Infotext.Clock.Font,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Infotext.Clock.Font end,
-									set = function(self, Font)
-											db.Infotext.Clock.Font = Font
-											Text_time:SetFont(LSM:Fetch("font", Font), db.Infotext.Clock.Size, db.Infotext.Clock.Outline)
-										end,
-									order = 3,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Clock Info Text.\n\nDefault: "..LUI.defaults.profile.Infotext.Clock.Outline,
-									type = "select",
-									values = fontflags,
-									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Infotext.Clock.Outline == v then
-													return k
-												end
-											end
-										end,
-									set = function(self, FontFlag)
-											db.Infotext.Clock.Outline = fontflags[FontFlag]
-											Text_time:SetFont(LSM:Fetch("font", db.Infotext.Clock.Font), db.Infotext.Clock.Size, db.Infotext.Clock.Outline)
-										end,
-									order = 4,
-								},
-							},
-						},
+						Position = PostionOptions("Currency", LUI_Text_Currency, 3, db.Infotext.Currency, LUI.defaults.profile.Infotext.Currency),
+						Font = FontOptions("Currency", LUI_Text_Currency, 4, db.Infotext.Currency, LUI.defaults.profile.Infotext.Currency),
 					},
 				},
 				DPS = {
 					name = "DPS",
 					type = "group",
-					order = 3,
+					order = 5,
 					args = {
-						header96 = {
+						Header = {
 							name = "DPS",
 							type = "header",
 							order = 1,
@@ -2888,118 +3170,56 @@ function module:LoadOptions()
 							get = function() return db.Infotext.Dps.Enable end,
 							set = function()
 										db.Infotext.Dps.Enable = not db.Infotext.Dps.Enable
-										StaticPopup_Show("RELOAD_UI")
+										module:SetDPS()
 									end,
 							order = 2,
 						},
-						DpsX = {
-							name = "X Value",
-							desc = "X Value for your DPS Notice.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Dps.X,
-							type = "input",
-							disabled = function() return not db.Infotext.Dps.Enable end,
-							get = function() return tostring(db.Infotext.Dps.X) end,
-							set = function(self, DpsX)
-										if DpsX == nil or DpsX == "" then
-											DpsX = "-535"
-										end
-										db.Infotext.Dps.X = tonumber(DpsX)
-										Text_dps:SetPoint("LEFT", infos_right, "LEFT", db.Infotext.Dps.X, db.Infotext.Dps.Y)
+						Position = PostionOptions("DPS", LUI_Text_DPS, 3, db.Infotext.Dps, LUI.defaults.profile.Infotext.Dps),
+						Font = FontOptions("DPS", LUI_Text_DPS, 4, db.Infotext.Dps, LUI.defaults.profile.Infotext.Dps),
+					},
+				},
+				DualSpec = {
+					name = "Dual Spec",
+					type = "group",
+					order = 6,
+					args = {
+						Header = {
+							name = "Dual Spec",
+							type = "header",
+							order = 1,
+						},
+						DualSpecEnable = {
+							name = "Enable",
+							desc = "Whether you want to show your Spec or not. (Only for level 10+)",
+							type = "toggle",
+							width = "full",
+							get = function() return db.Infotext.DualSpec.Enable end,
+							set = function()
+										db.Infotext.DualSpec.Enable = not db.Infotext.DualSpec.Enable
+										module:SetDualSpec()
 									end,
+							order = 2,
+						},
+						DualSpecShowSpentPoints = {
+							name = "Spent points",
+							desc = "Show spent talent points \"(x/x/x)\".",
+							type = "toggle",
+							width = "full",
+							disabled = function() return not db.Infotext.DualSpec.Enable end,
+							get = function() return db.Infotext.DualSpec.ShowSpentPoints end,
+							set = function() db.Infotext.DualSpec.ShowSpentPoints = not db.Infotext.DualSpec.ShowSpentPoints end,
 							order = 3,
 						},
-						DpsY = {
-							name = "Y Value",
-							desc = "Y Value for your DPS Notice.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Infotext.Dps.Y,
-							type = "input",
-							disabled = function() return not db.Infotext.Dps.Enable end,
-							get = function() return tostring(db.Infotext.Dps.Y) end,
-							set = function(self, DpsY)
-										if DpsY == nil or DpsY == "" then
-											DpsY = "0"
-										end
-										db.Infotext.Dps.Y = tonumber(DpsY)
-										Text_dps:SetPoint("LEFT", infos_right, "LEFT", db.Infotext.Dps.X, db.Infotext.Dps.Y)
-									end,
-							order = 4,
-						},
-						TextSettings = {
-							name = "Font Settings",
-							type = "group",
-							disabled = function() return not db.Infotext.Dps.Enable end,
-							order = 5,
-							guiInline = true,
-							args = {
-								FontSize = {
-									name = "Size",
-									desc = "Choose your Dps Info Text Fontsize!\n\nDefault: "..LUI.defaults.profile.Infotext.Dps.Size,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									get = function() return db.Infotext.Dps.Size end,
-									set = function(_, FontSize)
-											db.Infotext.Dps.Size = FontSize
-											Text_dps:SetFont(LSM:Fetch("font", db.Infotext.Dps.Font), FontSize, db.Infotext.Dps.Outline)
-										end,
-									order = 1,
-								},
-								Color = {
-									name = "Color",
-									desc = "Choose an individual Dps Info Text Color.\n\nDefaults:\nr = "..LUI.defaults.profile.Infotext.Dps.Color.r.."\ng = "..LUI.defaults.profile.Infotext.Dps.Color.g.."\nb = "..LUI.defaults.profile.Infotext.Dps.Color.b.."\na = "..LUI.defaults.profile.Infotext.Dps.Color.a,
-									type = "color",
-									hasAlpha = true,
-									get = function() return db.Infotext.Dps.Color.r, db.Infotext.Dps.Color.g, db.Infotext.Dps.Color.b, db.Infotext.Dps.Color.a end,
-									set = function(_, r, g, b, a)
-											db.Infotext.Dps.Color.r = r
-											db.Infotext.Dps.Color.g = g
-											db.Infotext.Dps.Color.b = b
-											db.Infotext.Dps.Color.a = a
-
-											Text_dps:SetTextColor(r, g, b, a)
-										end,
-									order = 2,
-								},
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for your Dps Info Text!\n\nDefault: "..LUI.defaults.profile.Infotext.Dps.Font,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Infotext.Dps.Font end,
-									set = function(self, Font)
-											db.Infotext.Dps.Font = Font
-											Text_dps:SetFont(LSM:Fetch("font", Font), db.Infotext.Dps.Size, db.Infotext.Dps.Outline)
-										end,
-									order = 3,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Dps Info Text.\n\nDefault: "..LUI.defaults.profile.Infotext.Dps.Outline,
-									type = "select",
-									values = fontflags,
-									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Infotext.Dps.Outline == v then
-													return k
-												end
-											end
-										end,
-									set = function(self, FontFlag)
-											db.Infotext.Dps.Outline = fontflags[FontFlag]
-											Text_dps:SetFont(LSM:Fetch("font", db.Infotext.Dps.Font), db.Infotext.Dps.Size, db.Infotext.Dps.Outline)
-										end,
-									order = 4,
-								},
-							},
-						},
+						Position = PostionOptions("DualSpec", LUI_Text_DualSpec, 4, db.Infotext.DualSpec, LUI.defaults.profile.Infotext.DualSpec),
+						Font = FontOptions("DualSpec", LUI_Text_DualSpec, 5, db.Infotext.DualSpec, LUI.defaults.profile.Infotext.DualSpec),
 					},
 				},
 				Durability = {
 					name = "Durability",
 					type = "group",
-					order = 4,
+					order = 7,
 					args = {
-						header95 = {
+						Header = {
 							name = "Durability",
 							type = "header",
 							order = 1,
@@ -3012,260 +3232,65 @@ function module:LoadOptions()
 							get = function() return db.Infotext.Armor.Enable end,
 							set = function()
 										db.Infotext.Armor.Enable = not db.Infotext.Armor.Enable
-										StaticPopup_Show("RELOAD_UI")
+										module:SetDurability()
 									end,
 							order = 2,
 						},
-						ArmorX = {
-							name = "X Value",
-							desc = "X Value for your Durability.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Armor.X,
-							type = "input",
-							disabled = function() return not db.Infotext.Armor.Enable end,
-							get = function() return tostring(db.Infotext.Armor.X) end,
-							set = function(self,ArmorX)
-										if ArmorX == nil or ArmorX == "" then
-											ArmorX = "0"
-										end
-
-										db.Infotext.Armor.X = tonumber(ArmorX)
-										Text_dura:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Armor.X, db.Infotext.Armor.Y)
-									end,
-							order = 3,
-						},
-						ArmorY = {
-							name = "Y Value",
-							desc = "Y Value for your Durability.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Armor.Y,
-							type = "input",
-							disabled = function() return not db.Infotext.Armor.Enable end,
-							get = function() return tostring(db.Infotext.Armor.Y) end,
-							set = function(self,ArmorY)
-										if ArmorY == nil or ArmorY == "" then
-											ArmorY = "0"
-										end
-
-										db.Infotext.Armor.Y = tonumber(ArmorY)
-										Text_dura:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Armor.X, db.Infotext.Armor.Y)
-									end,
-							order = 4,
-						},
-						TextSettings = {
-							name = "Font Settings",
-							type = "group",
-							disabled = function() return not db.Infotext.Armor.Enable end,
-							order = 5,
-							guiInline = true,
-							args = {
-								FontSize = {
-									name = "Size",
-									desc = "Choose your Armor Info Text Fontsize!\n\nDefault: "..LUI.defaults.profile.Infotext.Armor.Size,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									get = function() return db.Infotext.Armor.Size end,
-									set = function(_, FontSize)
-											db.Infotext.Armor.Size = FontSize
-											Text_dura:SetFont(LSM:Fetch("font", db.Infotext.Armor.Font), FontSize, db.Infotext.Armor.Outline)
-										end,
-									order = 1,
-								},
-								Color = {
-									name = "Color",
-									desc = "Choose an individual Armor Info Text Color.\n\nDefaults:\nr = "..LUI.defaults.profile.Infotext.Armor.Color.r.."\ng = "..LUI.defaults.profile.Infotext.Armor.Color.g.."\nb = "..LUI.defaults.profile.Infotext.Armor.Color.b.."\na = "..LUI.defaults.profile.Infotext.Armor.Color.a,
-									type = "color",
-									hasAlpha = true,
-									get = function() return db.Infotext.Armor.Color.r, db.Infotext.Armor.Color.g, db.Infotext.Armor.Color.b, db.Infotext.Armor.Color.a end,
-									set = function(_, r, g, b, a)
-											db.Infotext.Armor.Color.r = r
-											db.Infotext.Armor.Color.g = g
-											db.Infotext.Armor.Color.b = b
-											db.Infotext.Armor.Color.a = a
-
-											Text_dura:SetTextColor(r, g, b, a)
-										end,
-									order = 2,
-								},
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for your Armor Info Text!\n\nDefault: "..LUI.defaults.profile.Infotext.Armor.Font,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Infotext.Armor.Font end,
-									set = function(self, Font)
-											db.Infotext.Armor.Font = Font
-											Text_dura:SetFont(LSM:Fetch("font", Font), db.Infotext.Armor.Size, db.Infotext.Armor.Outline)
-										end,
-									order = 3,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Armor Info Text.\n\nDefault: "..LUI.defaults.profile.Infotext.Armor.Outline,
-									type = "select",
-									values = fontflags,
-									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Infotext.Armor.Outline == v then
-													return k
-												end
-											end
-										end,
-									set = function(self, FontFlag)
-											db.Infotext.Armor.Outline = fontflags[FontFlag]
-											Text_dura:SetFont(LSM:Fetch("font", db.Infotext.Armor.Font), db.Infotext.Armor.Size, db.Infotext.Armor.Outline)
-										end,
-									order = 4,
-								},
-							},
-						},
+						Position = PostionOptions("Durability", LUI_Text_Durability, 3, db.Infotext.Armor, LUI.defaults.profile.Infotext.Armor),
+						Font = FontOptions("Durability", LUI_Text_Durability, 4, db.Infotext.Armor, LUI.defaults.profile.Infotext.Armor),
 					},
 				},
 				FPS = {
-					name = "FPS/MS",
+					name = "FPS / MS",
 					type = "group",
-					order = 5,
+					order = 8,
 					args = {
-						header96 = {
-							name = "FPS/MS",
+						Header = {
+							name = "FPS / MS",
 							type = "header",
 							order = 1,
 						},
 						FpsEnable = {
 							name = "Enable",
-							desc = "Whether you want to show your Fps/Ms or not.",
+							desc = "Whether you want to show your FPS / MS or not.",
 							type = "toggle",
 							width = "full",
 							get = function() return db.Infotext.Fps.Enable end,
 							set = function()
 										db.Infotext.Fps.Enable = not db.Infotext.Fps.Enable
-										StaticPopup_Show("RELOAD_UI")
+										module:SetFPS()
 									end,
 							order = 2,
 						},
-						FpsX = {
-							name = "X Value",
-							desc = "X Value for your FPS/MS Notice.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Fps.X,
-							type = "input",
-							disabled = function() return not db.Infotext.Fps.Enable end,
-							get = function() return tostring(db.Infotext.Fps.X) end,
-							set = function(self, FpsX)
-										if FpsX == nil or FpsX == "" then
-											FpsX = "0"
-										end
-
-										db.Infotext.Fps.X = tonumber(FpsX)
-										Text_fps:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Fps.X, db.Infotext.Fps.Y)
-									end,
-							order = 3,
-						},
-						FpsY = {
-							name = "Y Value",
-							desc = "Y Value for your FPS/MS Notice.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Fps.Y,
-							type = "input",
-							disabled = function() return not db.Infotext.Fps.Enable end,
-							get = function() return tostring(db.Infotext.Fps.Y) end,
-							set = function(self, FpsY)
-										if FpsY == nil or FpsY == "" then
-											FpsY = "0"
-										end
-
-										db.Infotext.Fps.Y = tonumber(FpsY)
-										Text_fps:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Fps.X, db.Infotext.Fps.Y)
-									end,
-							order = 4,
-						},
 						MSValue = {
 							name = "MS Value",
-							desc = "Wether you want your MS to show World, Home or both latency values.\n\nDefault: WORLD",
-							type = "input",
+							desc = "Wether you want your MS to show World, Home or both latency values.\n\nDefault: World",
+							type = "select",
 							disabled = function() return not db.Infotext.Fps.Enable end,
-							get = function() return db.Infotext.FPS.MSValue end,
-							set = function(self, value)
-										value = strupper(value)
-										if (value == "HOME") or (value == "WORLD") or (value == "BOTH") then
-											db.Infotext.FPS.MSValue = value
-										end
-									end,
-							order = 5,
-						},
-						TextSettings = {
-							name = "Font Settings",
-							type = "group",
-							disabled = function() return not db.Infotext.Fps.Enable end,
-							order = 6,
-							guiInline = true,
-							args = {
-								FontSize = {
-									name = "Size",
-									desc = "Choose your Fps Info Text Fontsize!\n\nDefault: "..LUI.defaults.profile.Infotext.Fps.Size,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									get = function() return db.Infotext.Fps.Size end,
-									set = function(_, FontSize)
-											db.Infotext.Fps.Size = FontSize
-											Text_fps:SetFont(LSM:Fetch("font", db.Infotext.Fps.Font), FontSize, db.Infotext.Fps.Outline)
-										end,
-									order = 1,
-								},
-								Color = {
-									name = "Color",
-									desc = "Choose an individual Fps Info Text Color.\n\nDefaults:\nr = "..LUI.defaults.profile.Infotext.Fps.Color.r.."\ng = "..LUI.defaults.profile.Infotext.Fps.Color.g.."\nb = "..LUI.defaults.profile.Infotext.Fps.Color.b.."\na = "..LUI.defaults.profile.Infotext.Fps.Color.a,
-									type = "color",
-									hasAlpha = true,
-									get = function() return db.Infotext.Fps.Color.r, db.Infotext.Fps.Color.g, db.Infotext.Fps.Color.b, db.Infotext.Fps.Color.a end,
-									set = function(_, r, g, b, a)
-											db.Infotext.Fps.Color.r = r
-											db.Infotext.Fps.Color.g = g
-											db.Infotext.Fps.Color.b = b
-											db.Infotext.Fps.Color.a = a
+							values = { "Both", "Home", "World", },
+							get = function()
+									local t = { "Both", "Home", "World", }
 
-											Text_fps:SetTextColor(r, g, b, a)
-										end,
-									order = 2,
-								},
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for your Fps Info Text!\n\nDefault: "..LUI.defaults.profile.Infotext.Fps.Font,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Infotext.Fps.Font end,
-									set = function(self, Font)
-											db.Infotext.Fps.Font = Font
-											Text_fps:SetFont(LSM:Fetch("font", Font), db.Infotext.Fps.Size, db.Infotext.Fps.Outline)
-										end,
-									order = 3,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Fps Info Text.\n\nDefault: "..LUI.defaults.profile.Infotext.Fps.Outline,
-									type = "select",
-									values = fontflags,
-									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Infotext.Fps.Outline == v then
-													return k
-												end
-											end
-										end,
-									set = function(self, FontFlag)
-											db.Infotext.Fps.Outline = fontflags[FontFlag]
-											Text_fps:SetFont(LSM:Fetch("font", db.Infotext.Fps.Font), db.Infotext.Fps.Size, db.Infotext.Fps.Outline)
-										end,
-									order = 4,
-								},
-							},
+									for k, v in pairs(t) do
+										if db.Infotext.Fps.MSValue == v then return k end
+									end
+								end,
+							set = function(self, value)
+									local t = { "Both", "Home", "World", }
+									db.Infotext.Fps.MSValue = t[value]
+								end,
+							order = 3,
 						},
+						Position = PostionOptions("FPS", LUI_Text_FPS, 4, db.Infotext.Fps, LUI.defaults.profile.Infotext.Fps),
+						Font = FontOptions("FPS", LUI_Text_FPS, 5, db.Infotext.Fps, LUI.defaults.profile.Infotext.Fps),
 					},
 				},
 				Gold = {
 					name = "Gold",
 					type = "group",
-					order = 6,
+					order = 9,
 					args = {
-						header92 = {
+						Header = {
 							name = "Gold",
 							type = "header",
 							order = 1,
@@ -3278,14 +3303,38 @@ function module:LoadOptions()
 							get = function() return db.Infotext.Gold.Enable end,
 							set = function()
 										db.Infotext.Gold.Enable = not db.Infotext.Gold.Enable
-										StaticPopup_Show("RELOAD_UI")
+										module:SetGold()
 									end,
 							order = 2,
+						},
+						ToonMoney = {
+							name = "Server Total",
+							desc = "Whether you want your gold display to show your server total gold, or your current toon's gold.",
+							type = "toggle",
+							disabled = function() return not db.Infotext.Gold.Enable end,
+							get = function() return not db.Infotext.Gold.ShowToonMoney end,
+							set = function()
+									db.Infotext.Gold.ShowToonMoney = not db.Infotext.Gold.ShowToonMoney
+									module.Gold:OnEvent()
+								end,
+							order = 3,
+						},
+						ColorType = {
+							name = "Color By Type",
+							desc = "Weather or not to color the coin letters by the type of coin.",
+							type = "toggle",
+							get = function() return db.Infotext.Gold.ColorType end,
+							set = function(self)
+								db.Infotext.Gold.ColorType = not db.Infotext.Gold.ColorType
+								module.Gold:OnEvent()
+							end,
+							order = 4,
 						},
 						GoldPlayerReset = {
 							name = "Reset Player",
 							desc = "Choose the player you want to clear Gold data for.\n",
 							type = "select",
+							order = 5,
 							values = function()
 								local realmPlayerArray = {"ALL"}
 
@@ -3293,13 +3342,14 @@ function module:LoadOptions()
 									if LUIGold.gold[myPlayerRealm] ~= nil then
 										for f in pairs(LUIGold.gold[myPlayerRealm]) do
 											if f == "Horde" or f == "Alliance" then
-												for p,g in pairs(LUIGold.gold[myPlayerRealm][f]) do
+												for p, g in pairs(LUIGold.gold[myPlayerRealm][f]) do
 													table.insert(realmPlayerArray, p)
 												end
 											end
 										end
 									end
 								end
+
 								return realmPlayerArray
 							end,
 							get = function()
@@ -3309,18 +3359,20 @@ function module:LoadOptions()
 									if LUIGold.gold[myPlayerRealm] ~= nil then
 										for f in pairs(LUIGold.gold[myPlayerRealm]) do
 											if f == "Horde" or f == "Alliance" then
-												for p,g in pairs(LUIGold.gold[myPlayerRealm][f]) do
+												for p, g in pairs(LUIGold.gold[myPlayerRealm][f]) do
 													table.insert(realmPlayerArray, p)
 												end
 											end
 										end
 									end
 								end
-								for k,v in pairs(realmPlayerArray) do
+
+								for k, v in pairs(realmPlayerArray) do
 									if v == playerReset then
 										return k
 									end
 								end
+
 								playerReset = "ALL"
 								return 1
 							end,
@@ -3346,25 +3398,25 @@ function module:LoadOptions()
 									end
 								end
 							end,
-							order = 3,
 						},
 						GoldReset = {
-							order = 4,
-							type = "execute",
 							name = "Reset",
+							type = "execute",
+							order = 6,
 							func = function()
 								if playerReset == "ALL" then
-									module:ResetGold("ALL")
+									module.Gold:ResetGold("ALL")
 									return
 								end
+
 								if LUIGold.gold ~= nil then
 									if LUIGold.gold[myPlayerRealm] ~= nil then
 										local breakloop = false
 										for f in pairs(LUIGold.gold[myPlayerRealm]) do
 											if f == "Horde" or f == "Alliance" then
-												for p,g in pairs(LUIGold.gold[myPlayerRealm][f]) do
+												for p, g in pairs(LUIGold.gold[myPlayerRealm][f]) do
 													if playerReset == p then
-														module:ResetGold(p, f)
+														module.Gold:ResetGold(p, f)
 														breakloop = true
 														break
 													end
@@ -3378,132 +3430,14 @@ function module:LoadOptions()
 								end
 							end,
 						},
-						ToonMoney = {
-							name = "Server Total",
-							desc = "Whether you want your gold display to show your server total gold, or your current toon's gold.\n\nNote: Change will not take effect until a money update occurs.",
-							type = "toggle",
-							width = "full",
-							get = function() return not db.Infotext.Gold.ShowToonMoney end,
-							set = function() db.Infotext.Gold.ShowToonMoney = not db.Infotext.Gold.ShowToonMoney end,
-							order = 5,
-						},
-						GoldX = {
-							name = "X Value",
-							desc = "X Value for your Gold Amount.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Gold.X,
-							type = "input",
-							disabled = function() return not db.Infotext.Gold.Enable end,
-							get = function() return tostring(db.Infotext.Gold.X) end,
-							set = function(self, GoldX)
-										if GoldX == nil or GoldX == "" then
-											GoldX = "0"
-										end
-
-										db.Infotext.Gold.X = tonumber(GoldX)
-										Text_gold:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Gold.X, db.Infotext.Gold.Y)
-									end,
-							order = 6,
-						},
-						GoldY = {
-							name = "Y Value",
-							desc = "Y Value for your Gold Amount.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Gold.Y,
-							type = "input",
-							disabled = function() return not db.Infotext.Gold.Enable end,
-							get = function() return tostring(db.Infotext.Gold.Y) end,
-							set = function(self, GoldY)
-										if GoldY == nil or GoldY == "" then
-											GoldY = "0"
-										end
-										db.Infotext.Gold.Y = tonumber(GoldY)
-										Text_gold:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Gold.X, db.Infotext.Gold.Y)
-									end,
-							order = 7,
-						},
-						TextSettings = {
-							name = "Font Settings",
-							type = "group",
-							disabled = function() return not db.Infotext.Gold.Enable end,
-							order = 8,
-							guiInline = true,
-							args = {
-								FontSize = {
-									name = "Size",
-									desc = "Choose your Gold Info Text Fontsize!\n\nDefault: "..LUI.defaults.profile.Infotext.Gold.Size,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									get = function() return db.Infotext.Gold.Size end,
-									set = function(_, FontSize)
-											db.Infotext.Gold.Size = FontSize
-											Text_gold:SetFont(LSM:Fetch("font", db.Infotext.Gold.Font), FontSize, db.Infotext.Gold.Outline)
-										end,
-									order = 1,
-								},
-								Color = {
-									name = "Color",
-									desc = "Choose an individual Gold Info Text Color.\n\nDefaults:\nr = "..LUI.defaults.profile.Infotext.Gold.Color.r.."\ng = "..LUI.defaults.profile.Infotext.Gold.Color.g.."\nb = "..LUI.defaults.profile.Infotext.Gold.Color.b.."\na = "..LUI.defaults.profile.Infotext.Gold.Color.a,
-									type = "color",
-									hasAlpha = true,
-									get = function() return db.Infotext.Gold.Color.r, db.Infotext.Gold.Color.g, db.Infotext.Gold.Color.b, db.Infotext.Gold.Color.a end,
-									set = function(_, r, g, b, a)
-											db.Infotext.Gold.Color.r = r
-											db.Infotext.Gold.Color.g = g
-											db.Infotext.Gold.Color.b = b
-											db.Infotext.Gold.Color.a = a
-
-											Text_gold:SetTextColor(r, g, b, a)
-										end,
-									order = 2,
-								},
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for your Gold Info Text!\n\nDefault: "..LUI.defaults.profile.Infotext.Gold.Font,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Infotext.Gold.Font end,
-									set = function(self, Font)
-											db.Infotext.Gold.Font = Font
-											Text_gold:SetFont(LSM:Fetch("font", Font), db.Infotext.Gold.Size, db.Infotext.Gold.Outline)
-										end,
-									order = 3,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Gold Info Text.\n\nDefault: "..LUI.defaults.profile.Infotext.Gold.Outline,
-									type = "select",
-									values = fontflags,
-									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Infotext.Gold.Outline == v then
-													return k
-												end
-											end
-										end,
-									set = function(self, FontFlag)
-											db.Infotext.Gold.Outline = fontflags[FontFlag]
-											Text_gold:SetFont(LSM:Fetch("font", db.Infotext.Gold.Font), db.Infotext.Gold.Size, db.Infotext.Gold.Outline)
-										end,
-									order = 4,
-								},
-								ColorType = {
-									name = "Color By Type",
-									desc = "Weather or not to color the coin letters by the type of coin.\n\nNote:\nYou have to reload the UI.\nType /rl",
-									type = "toggle",
-									get = function() return db.Infotext.Gold.ColorType end,
-									set = function(self)
-										db.Infotext.Gold.ColorType = not db.Infotext.Gold.ColorType
-									end,
-									order = 5,
-								},
-							},
-						},
+						Position = PostionOptions("Gold", LUI_Text_Gold, 7, db.Infotext.Gold, LUI.defaults.profile.Infotext.Gold),
+						Font = FontOptions("Gold", LUI_Text_Gold, 8, db.Infotext.Gold, LUI.defaults.profile.Infotext.Gold),
 					},
 				},
 				Guild_Friends = {
 					name = "Guild / Friends",
 					type = "group",
-					order = 7,
+					order = 10,
 					childGroups = "tab",
 					args = {
 						General = {
@@ -3634,7 +3568,7 @@ function module:LoadOptions()
 												end
 
 												db.Infotext.Guild_Friends.Guild.X = tonumber(GuildX)
-												LUI_Guild:SetPoint("RIGHT", infos_right, "LEFT", db.Infotext.Guild_Friends.Guild.X, db.Infotext.Guild_Friends.Guild.Y)
+												LUI_Guild:SetPoint("RIGHT", LUI_Infos_TopRight, "LEFT", db.Infotext.Guild_Friends.Guild.X, db.Infotext.Guild_Friends.Guild.Y)
 											end,
 									order = 3,
 								},
@@ -3650,7 +3584,7 @@ function module:LoadOptions()
 												end
 
 												db.Infotext.Guild_Friends.Guild.Y = tonumber(GuildY)
-												LUI_Guild:SetPoint("RIGHT", infos_right, "LEFT", db.Infotext.Guild_Friends.Guild.X, db.Infotext.Guild_Friends.Guild.Y)
+												LUI_Guild:SetPoint("RIGHT", LUI_Infos_TopRight, "LEFT", db.Infotext.Guild_Friends.Guild.X, db.Infotext.Guild_Friends.Guild.Y)
 											end,
 									order = 4,
 								},
@@ -3760,7 +3694,7 @@ function module:LoadOptions()
 												end
 
 												db.Infotext.Guild_Friends.Friends.X = tonumber(FriendsX)
-												LUI_Friends:SetPoint("RIGHT", infos_right, "LEFT", db.Infotext.Guild_Friends.Friends.X, db.Infotext.Guild_Friends.Friends.Y)
+												LUI_Friends:SetPoint("RIGHT", LUI_Infos_TopRight, "LEFT", db.Infotext.Guild_Friends.Friends.X, db.Infotext.Guild_Friends.Friends.Y)
 											end,
 									order = 3,
 								},
@@ -3776,7 +3710,7 @@ function module:LoadOptions()
 												end
 
 												db.Infotext.Guild_Friends.Friends.Y = tonumber(FriendsY)
-												LUI_Friends:SetPoint("RIGHT", infos_right, "LEFT", db.Infotext.Guild_Friends.Friends.X, db.Infotext.Guild_Friends.Friends.Y)
+												LUI_Friends:SetPoint("RIGHT", LUI_Infos_TopRight, "LEFT", db.Infotext.Guild_Friends.Friends.X, db.Infotext.Guild_Friends.Friends.Y)
 											end,
 									order = 4,
 								},
@@ -3880,274 +3814,12 @@ function module:LoadOptions()
 						},
 					},
 				},
-				MemoryUsage = {
-					name = "Memory Usage",
-					type = "group",
-					order = 8,
-					args = {
-						header97 = {
-							name = "Memory Usage",
-							type = "header",
-							order = 1,
-						},
-						MemoryEnable = {
-							name = "Enable",
-							desc = "Whether you want to show your Memory Usage or not.",
-							type = "toggle",
-							width = "full",
-							get = function() return db.Infotext.Memory.Enable end,
-							set = function()
-										db.Infotext.Memory.Enable = not db.Infotext.Memory.Enable
-										StaticPopup_Show("RELOAD_UI")
-									end,
-							order = 2,
-						},
-						MemoryX = {
-							name = "X Value",
-							desc = "X Value for your Addon Memory Notice.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Memory.X,
-							type = "input",
-							disabled = function() return not db.Infotext.Memory.Enable end,
-							get = function() return tostring(db.Infotext.Memory.X) end,
-							set = function(self,MemoryX)
-										if MemoryX == nil or MemoryX == "" then
-											MemoryX = "0"
-										end
-
-										db.Infotext.Memory.X = tonumber(MemoryX)
-										Text_mb:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Memory.X, db.Infotext.Memory.Y)
-									end,
-							order = 3,
-						},
-						MemoryY = {
-							name = "Y Value",
-							desc = "Y Value for your Addon Memory Notice.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Memory.Y,
-							type = "input",
-							disabled = function() return not db.Infotext.Memory.Enable end,
-							get = function() return tostring(db.Infotext.Memory.Y) end,
-							set = function(self, MemoryY)
-										if MemoryY == nil or MemoryY == "" then
-											MemoryY = "0"
-										end
-
-										db.Infotext.Memory.Y = tonumber(MemoryY)
-										Text_mb:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Memory.X, db.Infotext.Memory.Y)
-									end,
-							order = 4,
-						},
-						TextSettings = {
-							name = "Font Settings",
-							type = "group",
-							disabled = function() return not db.Infotext.Memory.Enable end,
-							order = 5,
-							guiInline = true,
-							args = {
-								FontSize = {
-									name = "Size",
-									desc = "Choose your Memory Info Text Fontsize!\n\nDefault: "..LUI.defaults.profile.Infotext.Memory.Size,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									get = function() return db.Infotext.Memory.Size end,
-									set = function(_, FontSize)
-											db.Infotext.Memory.Size = FontSize
-											Text_mb:SetFont(LSM:Fetch("font", db.Infotext.Memory.Font), FontSize, db.Infotext.Memory.Outline)
-										end,
-									order = 1,
-								},
-								Color = {
-									name = "Color",
-									desc = "Choose an individual Memory Info Text Color.\n\nDefaults:\nr = "..LUI.defaults.profile.Infotext.Memory.Color.r.."\ng = "..LUI.defaults.profile.Infotext.Memory.Color.g.."\nb = "..LUI.defaults.profile.Infotext.Memory.Color.b.."\na = "..LUI.defaults.profile.Infotext.Memory.Color.a,
-									type = "color",
-									hasAlpha = true,
-									get = function() return db.Infotext.Memory.Color.r, db.Infotext.Memory.Color.g, db.Infotext.Memory.Color.b, db.Infotext.Memory.Color.a end,
-									set = function(_, r, g, b, a)
-											db.Infotext.Memory.Color.r = r
-											db.Infotext.Memory.Color.g = g
-											db.Infotext.Memory.Color.b = b
-											db.Infotext.Memory.Color.a = a
-
-											Text_mb:SetTextColor(r, g, b, a)
-										end,
-									order = 2,
-								},
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for your Memory Info Text!\n\nDefault: "..LUI.defaults.profile.Infotext.Memory.Font,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Infotext.Memory.Font end,
-									set = function(self, Font)
-											db.Infotext.Memory.Font = Font
-											Text_mb:SetFont(LSM:Fetch("font", Font), db.Infotext.Memory.Size, db.Infotext.Memory.Outline)
-										end,
-									order = 3,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Memory Info Text.\n\nDefault: "..LUI.defaults.profile.Infotext.Memory.Outline,
-									type = "select",
-									values = fontflags,
-									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Infotext.Memory.Outline == v then
-													return k
-												end
-											end
-										end,
-									set = function(self, FontFlag)
-											db.Infotext.Memory.Outline = fontflags[FontFlag]
-											Text_mb:SetFont(LSM:Fetch("font", db.Infotext.Memory.Font), db.Infotext.Memory.Size, db.Infotext.Memory.Outline)
-										end,
-									order = 4,
-								},
-							},
-						},
-					},
-				},
-				DualSpec = {
-					name = "Dual Spec",
-					type = "group",
-					order = 30,
-					args = {
-						header92 = {
-							name = "Dual Spec",
-							type = "header",
-							order = 1,
-						},
-						DualSpecEnable = {
-							name = "Enable",
-							desc = "Whether you want to show your Spec or not. (Only for level 10+)",
-							type = "toggle",
-							width = "full",
-							get = function() return db.Infotext.DualSpec.Enable end,
-							set = function()
-										db.Infotext.DualSpec.Enable = not db.Infotext.DualSpec.Enable
-										StaticPopup_Show("RELOAD_UI")
-									end,
-							order = 2,
-						},
-						DualSpecShowSpentPoints = {
-							name = "Spent points",
-							desc = "Show spent talent points \"(x/x/x)\".",
-							type = "toggle",
-							width = "full",
-							get = function() return db.Infotext.DualSpec.ShowSpentPoints end,
-							set = function()
-										db.Infotext.DualSpec.ShowSpentPoints = not db.Infotext.DualSpec.ShowSpentPoints
-										end,
-							order = 3,
-						},
-						DualSpecX = {
-							name = "X Value",
-							desc = "X Value for your Spec.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.DualSpec.X,
-							type = "input",
-							disabled = function() return not db.Infotext.DualSpec.Enable end,
-							get = function() return tostring(db.Infotext.DualSpec.X) end,
-							set = function(self, DualSpecX)
-										if DualSpecX == nil or DualSpecX == "" then
-											DualSpecX = "0"
-										end
-
-										db.Infotext.DualSpec.X = tonumber(DualSpecX)
-										Text_DualSpec:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.DualSpec.X, db.Infotext.DualSpec.Y)
-									end,
-							order = 5,
-						},
-						DualSpecY = {
-							name = "Y Value",
-							desc = "Y Value for your Spec.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.DualSpec.Y,
-							type = "input",
-							disabled = function() return not db.Infotext.DualSpec.Enable end,
-							get = function() return tostring(db.Infotext.DualSpec.Y) end,
-							set = function(self, DualSpecY)
-										if DualSpecY == nil or DualSpecY == "" then
-											DualSpecY = "0"
-										end
-										db.Infotext.DualSpec.Y = tonumber(DualSpecY)
-										Text_DualSpec:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.DualSpec.X, db.Infotext.DualSpec.Y)
-									end,
-							order = 6,
-						},
-						TextSettings = {
-							name = "Font Settings",
-							type = "group",
-							disabled = function() return not db.Infotext.DualSpec.Enable end,
-							order = 7,
-							guiInline = true,
-							args = {
-								FontSize = {
-									name = "Size",
-									desc = "Choose your Spec Info Text Fontsize!\n\nDefault: "..LUI.defaults.profile.Infotext.DualSpec.Size,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									get = function() return db.Infotext.DualSpec.Size end,
-									set = function(_, FontSize)
-											db.Infotext.DualSpec.Size = FontSize
-											Text_DualSpec:SetFont(LSM:Fetch("font", db.Infotext.DualSpec.Font), FontSize, db.Infotext.DualSpec.Outline)
-										end,
-									order = 1,
-								},
-								Color = {
-									name = "Color",
-									desc = "Choose an individual Spec Info Text Color.\n\nDefaults:\nr = "..LUI.defaults.profile.Infotext.DualSpec.Color.r.."\ng = "..LUI.defaults.profile.Infotext.DualSpec.Color.g.."\nb = "..LUI.defaults.profile.Infotext.DualSpec.Color.b.."\na = "..LUI.defaults.profile.Infotext.DualSpec.Color.a,
-									type = "color",
-									hasAlpha = true,
-									get = function() return db.Infotext.DualSpec.Color.r, db.Infotext.DualSpec.Color.g, db.Infotext.DualSpec.Color.b, db.Infotext.DualSpec.Color.a end,
-									set = function(_, r, g, b, a)
-											db.Infotext.DualSpec.Color.r = r
-											db.Infotext.DualSpec.Color.g = g
-											db.Infotext.DualSpec.Color.b = b
-											db.Infotext.DualSpec.Color.a = a
-
-											Text_DualSpec:SetTextColor(r, g, b, a)
-										end,
-									order = 2,
-								},
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for your Spec Info Text!\n\nDefault: "..LUI.defaults.profile.Infotext.DualSpec.Font,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Infotext.DualSpec.Font end,
-									set = function(self, Font)
-											db.Infotext.DualSpec.Font = Font
-											Text_DualSpec:SetFont(LSM:Fetch("font", Font), db.Infotext.DualSpec.Size, db.Infotext.DualSpec.Outline)
-										end,
-									order = 3,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Spec Info Text.\n\nDefault: "..LUI.defaults.profile.Infotext.DualSpec.Outline,
-									type = "select",
-									values = fontflags,
-									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Infotext.DualSpec.Outline == v then
-													return k
-												end
-											end
-										end,
-									set = function(self, FontFlag)
-											db.Infotext.DualSpec.Outline = fontflags[FontFlag]
-											Text_DualSpec:SetFont(LSM:Fetch("font", db.Infotext.DualSpec.Font), db.Infotext.DualSpec.Size, db.Infotext.DualSpec.Outline)
-										end,
-									order = 4,
-								},
-							},
-						},
-					},
-				},
 				Instance = {
 					name = "Instance Info",
 					type = "group",
-					order = 35,
+					order = 11,
 					args = {
-						header92 = {
+						Header = {
 							name = "Instance",
 							type = "header",
 							order = 1,
@@ -4160,239 +3832,40 @@ function module:LoadOptions()
 							get = function() return db.Infotext.Instance.Enable end,
 							set = function()
 										db.Infotext.Instance.Enable = not db.Infotext.Instance.Enable
-										StaticPopup_Show("RELOAD_UI")
+										module:SetInstance()
 									end,
 							order = 2,
 						},
-						InstanceX = {
-							name = "X Value",
-							desc = "X Value for your Instance Info.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Instance.X,
-							type = "input",
-							disabled = function() return not db.Infotext.Instance.Enable end,
-							get = function() return tostring(db.Infotext.Instance.X) end,
-							set = function(self, InstanceX)
-										if InstanceX == nil or InstanceX == "" then
-											InstanceX = "0"
-										end
-
-										db.Infotext.Instance.X = tonumber(InstanceX)
-										Text_Instance:SetPoint("LEFT", infos_right, "LEFT", db.Infotext.Instance.X, db.Infotext.Instance.Y)
-									end,
-							order = 5,
-						},
-						InstanceY = {
-							name = "Y Value",
-							desc = "Y Value for your Instance Info.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Instance.Y,
-							type = "input",
-							disabled = function() return not db.Infotext.Instance.Enable end,
-							get = function() return tostring(db.Infotext.Instance.Y) end,
-							set = function(self, InstanceY)
-										if InstanceY == nil or InstanceY == "" then
-											InstanceY = "0"
-										end
-										db.Infotext.Instance.Y = tonumber(InstanceY)
-										Text_Instance:SetPoint("LEFT", infos_right, "LEFT", db.Infotext.Instance.X, db.Infotext.Instance.Y)
-									end,
-							order = 6,
-						},
-						TextSettings = {
-							name = "Font Settings",
-							type = "group",
-							disabled = function() return not db.Infotext.Instance.Enable end,
-							order = 7,
-							guiInline = true,
-							args = {
-								FontSize = {
-									name = "Size",
-									desc = "Choose your Instance Info Text Fontsize!\n\nDefault: "..LUI.defaults.profile.Infotext.Instance.Size,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									get = function() return db.Infotext.Instance.Size end,
-									set = function(_, FontSize)
-											db.Infotext.Instance.Size = FontSize
-											Text_Instance:SetFont(LSM:Fetch("font", db.Infotext.Instance.Font), FontSize, db.Infotext.Instance.Outline)
-										end,
-									order = 1,
-								},
-								Color = {
-									name = "Color",
-									desc = "Choose an individual Instance Info Text Color.\n\nDefaults:\nr = "..LUI.defaults.profile.Infotext.Instance.Color.r.."\ng = "..LUI.defaults.profile.Infotext.Instance.Color.g.."\nb = "..LUI.defaults.profile.Infotext.Instance.Color.b.."\na = "..LUI.defaults.profile.Infotext.Instance.Color.a,
-									type = "color",
-									hasAlpha = true,
-									get = function() return db.Infotext.Instance.Color.r, db.Infotext.Instance.Color.g, db.Infotext.Instance.Color.b, db.Infotext.Instance.Color.a end,
-									set = function(_, r, g, b, a)
-											db.Infotext.Instance.Color.r = r
-											db.Infotext.Instance.Color.g = g
-											db.Infotext.Instance.Color.b = b
-											db.Infotext.Instance.Color.a = a
-
-											Text_Instance:SetTextColor(r, g, b, a)
-										end,
-									order = 2,
-								},
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for your Instance Info Text!\n\nDefault: "..LUI.defaults.profile.Infotext.Instance.Font,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Infotext.Instance.Font end,
-									set = function(self, Font)
-											db.Infotext.Instance.Font = Font
-											Text_Instance:SetFont(LSM:Fetch("font", Font), db.Infotext.Instance.Size, db.Infotext.Instance.Outline)
-										end,
-									order = 3,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Instance Info Text.\n\nDefault: "..LUI.defaults.profile.Infotext.Instance.Outline,
-									type = "select",
-									values = fontflags,
-									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Infotext.Instance.Outline == v then
-													return k
-												end
-											end
-										end,
-									set = function(self, FontFlag)
-											db.Infotext.Instance.Outline = fontflags[FontFlag]
-											Text_Instance:SetFont(LSM:Fetch("font", db.Infotext.Instance.Font), db.Infotext.Instance.Size, db.Infotext.Instance.Outline)
-										end,
-									order = 4,
-								},
-							},
-						},
+						Position = PostionOptions("Instance", LUI_Text_Instance, 3, db.Infotext.Instance, LUI.defaults.profile.Infotext.Instance),
+						Font = FontOptions("Instance", LUI_Text_Instance, 4, db.Infotext.Instance, LUI.defaults.profile.Infotext.Instance),
 					},
 				},
-				Currency = {
-					name = "Currency Info",
+				MemoryUsage = {
+					name = "Memory Usage",
 					type = "group",
-					order = 25,
+					order = 12,
 					args = {
-						header92 = {
-							name = "Currency",
+						Header = {
+							name = "Memory Usage",
 							type = "header",
 							order = 1,
 						},
-						InstanceEnable = {
+						MemoryEnable = {
 							name = "Enable",
-							desc = "Whether you want to show your Currency Info or not.",
+							desc = "Whether you want to show your Memory Usage or not.",
 							type = "toggle",
 							width = "full",
-							get = function() return db.Infotext.Currency.Enable end,
+							get = function() return db.Infotext.Memory.Enable end,
 							set = function()
-										db.Infotext.Currency.Enable = not db.Infotext.Currency.Enable
-										StaticPopup_Show("RELOAD_UI")
+										db.Infotext.Memory.Enable = not db.Infotext.Memory.Enable
+										module:SetMemoryUsage()
 									end,
 							order = 2,
 						},
-						CurrencyX = {
-							name = "X Value",
-							desc = "X Value for your Currency Info.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Currency.X,
-							type = "input",
-							disabled = function() return not db.Infotext.Currency.Enable end,
-							get = function() return tostring(db.Infotext.Currency.X) end,
-							set = function(self, CurrencyX)
-										if CurrencyX == nil or CurrencyX == "" then
-											CurrencyX = "0"
-										end
-
-										db.Infotext.Currency.X = tonumber(CurrencyX)
-										Text_Currency:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Currency.X, db.Infotext.Currency.Y)
-									end,
-							order = 5,
-						},
-						CurrencyY = {
-							name = "Y Value",
-							desc = "Y Value for your Currency Info.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Infotext.Currency.Y,
-							type = "input",
-							disabled = function() return not db.Infotext.Currency.Enable end,
-							get = function() return tostring(db.Infotext.Currency.Y) end,
-							set = function(self, CurrencyY)
-										if CurrencyY == nil or CurrencyY == "" then
-											CurrencyY = "0"
-										end
-										db.Infotext.Currency.Y = tonumber(CurrencyY)
-										Text_Currency:SetPoint("CENTER", infos_left, "CENTER", db.Infotext.Currency.X, db.Infotext.Currency.Y)
-									end,
-							order = 6,
-						},
-						TextSettings = {
-							name = "Font Settings",
-							type = "group",
-							disabled = function() return not db.Infotext.Currency.Enable end,
-							order = 7,
-							guiInline = true,
-							args = {
-								FontSize = {
-									name = "Size",
-									desc = "Choose your Currency Info Text Fontsize!\n\nDefault: "..LUI.defaults.profile.Infotext.Currency.Size,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									get = function() return db.Infotext.Currency.Size end,
-									set = function(_, FontSize)
-											db.Infotext.Currency.Size = FontSize
-											Text_Currency:SetFont(LSM:Fetch("font", db.Infotext.Currency.Font), FontSize, db.Infotext.Currency.Outline)
-										end,
-									order = 1,
-								},
-								Color = {
-									name = "Color",
-									desc = "Choose an individual Currency Info Text Color.\n\nDefaults:\nr = "..LUI.defaults.profile.Infotext.Currency.Color.r.."\ng = "..LUI.defaults.profile.Infotext.Currency.Color.g.."\nb = "..LUI.defaults.profile.Infotext.Currency.Color.b.."\na = "..LUI.defaults.profile.Infotext.Currency.Color.a,
-									type = "color",
-									hasAlpha = true,
-									get = function() return db.Infotext.Currency.Color.r, db.Infotext.Currency.Color.g, db.Infotext.Currency.Color.b, db.Infotext.Currency.Color.a end,
-									set = function(_, r, g, b, a)
-											db.Infotext.Currency.Color.r = r
-											db.Infotext.Currency.Color.g = g
-											db.Infotext.Currency.Color.b = b
-											db.Infotext.Currency.Color.a = a
-
-											Text_Currency:SetTextColor(r, g, b, a)
-										end,
-									order = 2,
-								},
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for your Currency Info Text!\n\nDefault: "..LUI.defaults.profile.Infotext.Currency.Font,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Infotext.Currency.Font end,
-									set = function(self, Font)
-											db.Infotext.Currency.Font = Font
-											Text_Currency:SetFont(LSM:Fetch("font", Font), db.Infotext.Currency.Size, db.Infotext.Currency.Outline)
-										end,
-									order = 3,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Currency Info Text.\n\nDefault: "..LUI.defaults.profile.Infotext.Currency.Outline,
-									type = "select",
-									values = fontflags,
-									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Infotext.Currency.Outline == v then
-													return k
-												end
-											end
-										end,
-									set = function(self, FontFlag)
-											db.Infotext.Currency.Outline = fontflags[FontFlag]
-											Text_Currency:SetFont(LSM:Fetch("font", db.Infotext.Currency.Font), db.Infotext.Currency.Size, db.Infotext.Currency.Outline)
-										end,
-									order = 4,
-								},
-							},
-						},
+						Position = PostionOptions("Memory", LUI_Text_Memory, 3, db.Infotext.Memory, LUI.defaults.profile.Infotext.Memory),
+						Font = FontOptions("Memory", LUI_Text_Memory, 4, db.Infotext.Memory, LUI.defaults.profile.Infotext.Memory),
 					},
 				},
-				--
 			},
 		},
 	}
@@ -4450,7 +3923,7 @@ function module:OnInitialize()
 	db = self.db
 
 	if LUIGold.version ~= version then
-		module:ResetGold("ALL")
+		module.Gold:ResetGold("ALL")
 		LUIGold.version = version
 	end
 
@@ -4459,20 +3932,20 @@ end
 
 function module:OnEnable()
 	self:SetDataTextFrames()
-	self:SetFPS()
-	self:SetMemoryUsage()
-	self:SetBags(true)
-	self:SetDurability(true)
-	self:SetGuild_Friends()
-	self:SetGold(true)
+	self:SetBags()
 	self:SetClock()
-	self:SetDPS(true)
-	self:SetDualSpec()
-	self:SetInstance()
 	self:SetCurrency()
+	self:SetDPS()
+	self:SetDualSpec()
+	self:SetDurability()
+	self:SetFPS()
+	self:SetGold()
+	self:SetGuild_Friends()
+	self:SetInstance()
+	self:SetMemoryUsage()
 end
 
 function module:OnDisable()
-	local frameList = {"infos_left", "infos_right"}
+	local frameList = {"LUI_Infos_TopLeft", "LUI_Infos_TopRight"}
 	LUI:ClearFrames(frameList)
 end
