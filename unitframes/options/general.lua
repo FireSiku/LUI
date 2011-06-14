@@ -621,7 +621,7 @@ function module:CreateOptions(index, unit)
 				end
 			end
 		end
-		if unit == "Player" or unit == "Target" or unit == "Focus" then Forte:SetPosForte() end
+		if Forte and unit == "Player" or unit == "Target" or unit == "Focus" then Forte:SetPosForte() end
 		if unit == "Party" then
 			oUF_LUI_party:SetAttribute("oUF-initialConfigFunction", [[
 				local unit = ...
@@ -1128,7 +1128,7 @@ function module:OnInitialize()
 	self.db = LUI.db.profile
 	db = self.db
 	
-	Forte = LUI:GetModule("Forte")
+	Forte = LUI:GetModule("Forte", true)
 	
 	LUI:RegisterUnitFrame(self)
 end

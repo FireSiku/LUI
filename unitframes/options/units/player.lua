@@ -874,7 +874,9 @@ function module:CreateBarOptions(barType, order)
 		else
 			oUF_LUI_player:DisableElement(barKey)
 		end
-		Forte:SetPosForte()
+
+		if Forte then Forte:SetPosForte() end
+
 		oUF_LUI_player:UpdateAllElements()
 	end
 	
@@ -1290,7 +1292,7 @@ function module:OnInitialize()
 	self.db = LUI.db.profile
 	db = self.db
 	
-	Forte = LUI:GetModule("Forte")
+	Forte = LUI:GetModule("Forte", true)
 	
 	LUI:RegisterUnitFrame(self)
 end
