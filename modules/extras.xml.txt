@@ -10,5 +10,6 @@ Note: this file must be renamed from extras.xml.txt to extras.xml in order to wo
 	It is a good idea to make a copy of this file and rename it as such as to keep an original version.
 -->
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-	
+        <Script file="Hix_InterruptAnnouncer.lua"/>
+        <Script file="merchant.lua"/>		
 </Ui>
