@@ -69,8 +69,8 @@
 	<Script file="scripts\colourpicker.lua"/>
 	<Script file="scripts\frame.lua"/>
 	<Script file="scripts\invite.lua"/>
-	
-	<Include file="modules\extras.xml"/>
+
+        <Include file="modules\extras.xml"/>
 	
 	<!-- oUF Layout -->
 	<Include file="unitframes\templates.xml"/>
@@ -87,10 +87,8 @@
 	<Script file="unitframes\plugins\oUF_RaidDebuffs.lua"/>
 	<Script file="unitframes\plugins\raiddebuffs.lua"/>
 	
-	<Script file="unitframes\layout.lua"/>
+        <Script file="unitframes\layout.lua"/>
 	
 	<!-- Addon Installation Routines -->
 	<Script file="addons\forte.lua"/>
-        <Script file="modules\Hix_InterruptAnnouncer.lua"/>
-        <Script file="modules\merchant.lua"/>	
 </Ui>
