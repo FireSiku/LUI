@@ -14,7 +14,6 @@ local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 local LUIHook = LUI:GetModule("LUIHook")
 local module = LUI:NewModule("Infotext", "AceHook-3.0")
-local version = 3316
 local db
 
 --[[
@@ -79,7 +78,7 @@ function module:GetInfoPanelPosition(text, database)
 	text:SetPoint(database.InfoPanel.Vertical, _G["LUI_Infos_"..database.InfoPanel.Vertical..database.InfoPanel.Horizontal], database.InfoPanel.Vertical, database.X, database.Y)
 end
 
-function module:KillDataText(stat, text, icon)
+function module:HideDataText(stat, text, icon)
 	if stat then
 		-- Unregister events.
 		stat:UnregisterAllEvents()
@@ -91,17 +90,17 @@ function module:KillDataText(stat, text, icon)
 		stat:SetScript("OnMouseDown", nil)
 		stat:SetScript("OnUpdate", nil)
 
-		-- Kill	
+		-- Hide	
 		stat:Hide()
 	end
 
 	if text then
-		-- Kill
+		-- Hide
 		text:Hide()
 	end
 
 	if icon then
-		-- Kill
+		-- Hide
 		icon:Hide()
 	end
 end
@@ -134,7 +133,7 @@ end
 ------------------------------------------------------
 
 function module:SetBags()
-	if not db.Infotext.Bags.Enable then self:KillDataText(self.Bags, LUI_Text_Bags) return end
+	if not db.Infotext.Bags.Enable then self:HideDataText(self.Bags, LUI_Text_Bags) return end
 
 	-- Add stat to modules namespace.
 	self.Bags = CreateFrame("Frame", "LUI_Info_Bags")
@@ -206,7 +205,7 @@ end
 ------------------------------------------------------
 
 function module:SetClock()
-	if not db.Infotext.Clock.Enable then self:KillDataText(self.Clock, LUI_Text_Clock) return end
+	if not db.Infotext.Clock.Enable then self:HideDataText(self.Clock, LUI_Text_Clock) return end
 
 	-- Add stat to the modules namespace.
 	self.Clock = CreateFrame("Frame", "LUI_Info_Clock")
@@ -457,7 +456,7 @@ end
 ------------------------------------------------------
 
 function module:SetCurrency()
-	if not db.Infotext.Currency.Enable then self:KillDataText(self.Currency, LUI_Text_Currency, LUI_Text_CurrencyIcon) return end
+	if not db.Infotext.Currency.Enable then self:HideDataText(self.Currency, LUI_Text_Currency, LUI_Text_CurrencyIcon) return end
 
 	-- Add stat to modules namespace.
 	self.Currency = CreateFrame("Frame", "LUI_Info_Currency")
@@ -551,7 +550,7 @@ end
 ------------------------------------------------------
 
 function module:SetDPS()
-	if not db.Infotext.Dps.Enable then self:KillDataText(self.DPS, LUI_Text_DPS) return end
+	if not db.Infotext.Dps.Enable then self:HideDataText(self.DPS, LUI_Text_DPS) return end
 
 	-- Add stat to the modules namespace.
 	self.DPS = CreateFrame("Frame", "LUI_Info_DPS")
@@ -814,7 +813,7 @@ end
 ------------------------------------------------------
 
 function module:SetDualSpec()
-	if not db.Infotext.DualSpec.Enable then self:KillDataText(self.DualSpec, LUI_Text_DualSpec, LUI_Text_DualSpecIcon) return end
+	if not db.Infotext.DualSpec.Enable then self:HideDataText(self.DualSpec, LUI_Text_DualSpec, LUI_Text_DualSpecIcon) return end
 	if UnitLevel("player") < 10 then return end
 
 	-- Add stat to modules namespace.
@@ -1004,7 +1003,7 @@ end
 ------------------------------------------------------
 
 function module:SetDurability()
-	if not db.Infotext.Armor.Enable then self:KillDataText(self.Durability, LUI_Text_Durability) return end
+	if not db.Infotext.Armor.Enable then self:HideDataText(self.Durability, LUI_Text_Durability) return end
 
 	-- Add stat to modules namespace.
 	self.Durability = CreateFrame("Frame", "LUI_Info_Durability")
@@ -1112,7 +1111,7 @@ end
 ------------------------------------------------------
 
 function module:SetFPS()
-	if not db.Infotext.Fps.Enable then self:KillDataText(self.FPS, LUI_Text_FPS) return end
+	if not db.Infotext.Fps.Enable then self:HideDataText(self.FPS, LUI_Text_FPS) return end
 
 	-- Add new stat to modules namespace.
 	self.FPS = CreateFrame("Frame", "LUI_Info_FPS")
@@ -1219,7 +1218,7 @@ end
 ------------------------------------------------------
 
 function module:SetGold()
-	if not db.Infotext.Gold.Enable then self:KillDataText(self.Gold, LUI_Text_Gold) return end
+	if not db.Infotext.Gold.Enable then self:HideDataText(self.Gold, LUI_Text_Gold) return end
 
 	-- Add stat to modules namespace.
 	self.Gold = CreateFrame("Frame", "LUI_Info_Gold")
@@ -2359,7 +2358,7 @@ end
 ------------------------------------------------------
 
 function module:SetInstance()
-	if not db.Infotext.Instance.Enable then self:KillDataText(self.Instance, LUI_Text_Instance) return end
+	if not db.Infotext.Instance.Enable then self:HideDataText(self.Instance, LUI_Text_Instance) return end
 
 	-- Add stat to the modules namespace.
 	self.Instance = CreateFrame("Frame", "LUI_Info_Instance")
@@ -2480,7 +2479,7 @@ end
 ------------------------------------------------------
 
 function module:SetMemoryUsage()
-	if not db.Infotext.Memory.Enable then self:KillDataText(self.Memory, LUI_Text_Memory) return end
+	if not db.Infotext.Memory.Enable then self:HideDataText(self.Memory, LUI_Text_Memory) return end
 
 	-- Add stat to modules namespace.
 	self.Memory = CreateFrame("Frame", "LUI_Info_Memory")
@@ -2849,7 +2848,7 @@ local defaults = {
 
 function module:LoadOptions()
 	-- Local options creators.
-	local function PostionOptions(statName, infoText, order, statDB, statDefaults)
+	local function PostionOptions(statName, infoTextName, order, statDB, statDefaults)
 		local horizontal = { "Left", "Right", }
 		local vertical = { "Bottom", "Top", }
 		local option = {
@@ -2872,7 +2871,7 @@ function module:LoadOptions()
 								end
 
 								statDB.X = tonumber(x)
-								module:GetInfoPanelPosition(infoText, statDB)
+								module:GetInfoPanelPosition(_G[infoTextName], statDB)
 							end,
 				},
 				Y = {
@@ -2888,7 +2887,7 @@ function module:LoadOptions()
 								end
 
 								statDB.Y = tonumber(y)
-								module:GetInfoPanelPosition(infoText, statDB)
+								module:GetInfoPanelPosition(_G[infoTextName], statDB)
 							end,
 				},
 				Horizontal = {
@@ -2905,7 +2904,7 @@ function module:LoadOptions()
 					set = function(self, value)
 							statDB.InfoPanel.Horizontal = horizontal[value]
 							statDB.X = 0
-							module:GetInfoPanelPosition(infoText, statDB)
+							module:GetInfoPanelPosition(_G[infoTextName], statDB)
 						end,
 				},
 				Vertical = {
@@ -2922,7 +2921,7 @@ function module:LoadOptions()
 					set = function(self, value)
 							statDB.InfoPanel.Vertical = vertical[value]
 							statDB.Y = 0
-							module:GetInfoPanelPosition(infoText, statDB)
+							module:GetInfoPanelPosition(_G[infoTextName], statDB)
 						end,
 				},				
 			}
@@ -2949,7 +2948,7 @@ function module:LoadOptions()
 					get = function() return statDB.Size end,
 					set = function(_, size)
 							statDB.Size = size
-							infoText:SetFont(LSM:Fetch("font", statDB.Font), statDB.Size, statDB.Outline)
+							_G[infoTextName]:SetFont(LSM:Fetch("font", statDB.Font), statDB.Size, statDB.Outline)
 						end,
 				},
 				Color = {
@@ -2964,7 +2963,7 @@ function module:LoadOptions()
 							statDB.Color.b = b
 							statDB.Color.a = a
 
-							infoText:SetTextColor(r, g, b, a)
+							_G[infoTextName]:SetTextColor(r, g, b, a)
 						end,
 					order = 2,
 				},
@@ -2977,7 +2976,7 @@ function module:LoadOptions()
 					get = function() return statDB.Font end,
 					set = function(self, font)
 							statDB.Font = font
-							infoText:SetFont(LSM:Fetch("font", statDB.Font), statDB.Size, statDB.Outline)
+							_G[infoTextName]:SetFont(LSM:Fetch("font", statDB.Font), statDB.Size, statDB.Outline)
 						end,
 					order = 3,
 				},
@@ -2995,7 +2994,7 @@ function module:LoadOptions()
 						end,
 					set = function(self, flag)
 							statDB.Outline = fontflags[flag]
-							infoText:SetFont(LSM:Fetch("font", statDB.Font), statDB.Size, statDB.Outline)
+							_G[infoTextName]:SetFont(LSM:Fetch("font", statDB.Font), statDB.Size, statDB.Outline)
 						end,
 					order = 4,
 				},
@@ -3065,8 +3064,8 @@ function module:LoadOptions()
 								end,
 							order = 2,
 						},
-						Position = PostionOptions("Bags", LUI_Text_Bags, 3, db.Infotext.Bags, LUI.defaults.profile.Infotext.Bags),
-						Font = FontOptions("Bags",LUI_Text_Bags, 4, db.Infotext.Bags, LUI.defaults.profile.Infotext.Bags),
+						Position = PostionOptions("Bags", "LUI_Text_Bags", 3, db.Infotext.Bags, LUI.defaults.profile.Infotext.Bags),
+						Font = FontOptions("Bags", "LUI_Text_Bags", 4, db.Infotext.Bags, LUI.defaults.profile.Infotext.Bags),
 					},
 				},
 				Clock = {
@@ -3122,8 +3121,8 @@ function module:LoadOptions()
 							set = function() db.Infotext.Clock.Time24 = not db.Infotext.Clock.Time24 end,
 							order = 5,
 						},
-						Position = PostionOptions("Clock", LUI_Text_Clock, 6, db.Infotext.Clock, LUI.defaults.profile.Infotext.Clock),
-						Font = FontOptions("Clock", LUI_Text_Clock, 7, db.Infotext.Clock, LUI.defaults.profile.Infotext.Clock),
+						Position = PostionOptions("Clock", "LUI_Text_Clock", 6, db.Infotext.Clock, LUI.defaults.profile.Infotext.Clock),
+						Font = FontOptions("Clock", "LUI_Text_Clock", 7, db.Infotext.Clock, LUI.defaults.profile.Infotext.Clock),
 					},
 				},
 				Currency = {
@@ -3148,8 +3147,8 @@ function module:LoadOptions()
 									end,
 							order = 2,
 						},
-						Position = PostionOptions("Currency", LUI_Text_Currency, 3, db.Infotext.Currency, LUI.defaults.profile.Infotext.Currency),
-						Font = FontOptions("Currency", LUI_Text_Currency, 4, db.Infotext.Currency, LUI.defaults.profile.Infotext.Currency),
+						Position = PostionOptions("Currency", "LUI_Text_Currency", 3, db.Infotext.Currency, LUI.defaults.profile.Infotext.Currency),
+						Font = FontOptions("Currency", "LUI_Text_Currency", 4, db.Infotext.Currency, LUI.defaults.profile.Infotext.Currency),
 					},
 				},
 				DPS = {
@@ -3174,8 +3173,8 @@ function module:LoadOptions()
 									end,
 							order = 2,
 						},
-						Position = PostionOptions("DPS", LUI_Text_DPS, 3, db.Infotext.Dps, LUI.defaults.profile.Infotext.Dps),
-						Font = FontOptions("DPS", LUI_Text_DPS, 4, db.Infotext.Dps, LUI.defaults.profile.Infotext.Dps),
+						Position = PostionOptions("DPS", "LUI_Text_DPS", 3, db.Infotext.Dps, LUI.defaults.profile.Infotext.Dps),
+						Font = FontOptions("DPS", "LUI_Text_DPS", 4, db.Infotext.Dps, LUI.defaults.profile.Infotext.Dps),
 					},
 				},
 				DualSpec = {
@@ -3210,8 +3209,8 @@ function module:LoadOptions()
 							set = function() db.Infotext.DualSpec.ShowSpentPoints = not db.Infotext.DualSpec.ShowSpentPoints end,
 							order = 3,
 						},
-						Position = PostionOptions("DualSpec", LUI_Text_DualSpec, 4, db.Infotext.DualSpec, LUI.defaults.profile.Infotext.DualSpec),
-						Font = FontOptions("DualSpec", LUI_Text_DualSpec, 5, db.Infotext.DualSpec, LUI.defaults.profile.Infotext.DualSpec),
+						Position = PostionOptions("DualSpec", "LUI_Text_DualSpec", 4, db.Infotext.DualSpec, LUI.defaults.profile.Infotext.DualSpec),
+						Font = FontOptions("DualSpec", "LUI_Text_DualSpec", 5, db.Infotext.DualSpec, LUI.defaults.profile.Infotext.DualSpec),
 					},
 				},
 				Durability = {
@@ -3236,8 +3235,8 @@ function module:LoadOptions()
 									end,
 							order = 2,
 						},
-						Position = PostionOptions("Durability", LUI_Text_Durability, 3, db.Infotext.Armor, LUI.defaults.profile.Infotext.Armor),
-						Font = FontOptions("Durability", LUI_Text_Durability, 4, db.Infotext.Armor, LUI.defaults.profile.Infotext.Armor),
+						Position = PostionOptions("Durability", "LUI_Text_Durability", 3, db.Infotext.Armor, LUI.defaults.profile.Infotext.Armor),
+						Font = FontOptions("Durability", "LUI_Text_Durability", 4, db.Infotext.Armor, LUI.defaults.profile.Infotext.Armor),
 					},
 				},
 				FPS = {
@@ -3281,8 +3280,8 @@ function module:LoadOptions()
 								end,
 							order = 3,
 						},
-						Position = PostionOptions("FPS", LUI_Text_FPS, 4, db.Infotext.Fps, LUI.defaults.profile.Infotext.Fps),
-						Font = FontOptions("FPS", LUI_Text_FPS, 5, db.Infotext.Fps, LUI.defaults.profile.Infotext.Fps),
+						Position = PostionOptions("FPS", "LUI_Text_FPS", 4, db.Infotext.Fps, LUI.defaults.profile.Infotext.Fps),
+						Font = FontOptions("FPS", "LUI_Text_FPS", 5, db.Infotext.Fps, LUI.defaults.profile.Infotext.Fps),
 					},
 				},
 				Gold = {
@@ -3430,8 +3429,8 @@ function module:LoadOptions()
 								end
 							end,
 						},
-						Position = PostionOptions("Gold", LUI_Text_Gold, 7, db.Infotext.Gold, LUI.defaults.profile.Infotext.Gold),
-						Font = FontOptions("Gold", LUI_Text_Gold, 8, db.Infotext.Gold, LUI.defaults.profile.Infotext.Gold),
+						Position = PostionOptions("Gold", "LUI_Text_Gold", 7, db.Infotext.Gold, LUI.defaults.profile.Infotext.Gold),
+						Font = FontOptions("Gold", "LUI_Text_Gold", 8, db.Infotext.Gold, LUI.defaults.profile.Infotext.Gold),
 					},
 				},
 				Guild_Friends = {
@@ -3836,8 +3835,8 @@ function module:LoadOptions()
 									end,
 							order = 2,
 						},
-						Position = PostionOptions("Instance", LUI_Text_Instance, 3, db.Infotext.Instance, LUI.defaults.profile.Infotext.Instance),
-						Font = FontOptions("Instance", LUI_Text_Instance, 4, db.Infotext.Instance, LUI.defaults.profile.Infotext.Instance),
+						Position = PostionOptions("Instance", "LUI_Text_Instance", 3, db.Infotext.Instance, LUI.defaults.profile.Infotext.Instance),
+						Font = FontOptions("Instance", "LUI_Text_Instance", 4, db.Infotext.Instance, LUI.defaults.profile.Infotext.Instance),
 					},
 				},
 				MemoryUsage = {
@@ -3862,8 +3861,8 @@ function module:LoadOptions()
 									end,
 							order = 2,
 						},
-						Position = PostionOptions("Memory", LUI_Text_Memory, 3, db.Infotext.Memory, LUI.defaults.profile.Infotext.Memory),
-						Font = FontOptions("Memory", LUI_Text_Memory, 4, db.Infotext.Memory, LUI.defaults.profile.Infotext.Memory),
+						Position = PostionOptions("Memory", "LUI_Text_Memory", 3, db.Infotext.Memory, LUI.defaults.profile.Infotext.Memory),
+						Font = FontOptions("Memory", "LUI_Text_Memory", 4, db.Infotext.Memory, LUI.defaults.profile.Infotext.Memory),
 					},
 				},
 			},
@@ -3921,11 +3920,6 @@ function module:OnInitialize()
 
 	self.db = LUI.db.profile
 	db = self.db
-
-	if LUIGold.version ~= version then
-		module.Gold:ResetGold("ALL")
-		LUIGold.version = version
-	end
 
 	LUI:RegisterModule(self)
 end
