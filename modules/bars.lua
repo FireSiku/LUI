@@ -1853,16 +1853,17 @@ end
 	
 -- side: "Left" or "Right"
 function module:CreateSidebarOptions(side, order)
-	local sbdb = (side == "Right") and db.Bars.SidebarRight or db.Bars.SidebarLeft
-	local sbdefaults = (side == "Right") and LUI.defaults.profile.Bars.SidebarRight or LUI.defaults.profile.Bars.SidebarLeft
-	local sbanchor = (side == "Right") and fsidebar_anchor or fsidebar2_anchor
+	local isRight = side == "Right"
+	local sbdb = isRight and db.Bars.SidebarRight or db.Bars.SidebarLeft
+	local sbdefaults = isRight and LUI.defaults.profile.Bars.SidebarRight or LUI.defaults.profile.Bars.SidebarLeft
+	local sbanchor = isRight and fsidebar_anchor or fsidebar2_anchor
 	
 	local UIRL = function() StaticPopup_Show("RELOAD_UI") end
 	
 	local ApplySettings = function()
 		sbanchor:ClearAllPoints()
-		sbanchor:SetPoint("RIGHT", UIParent, "RIGHT", 11, sbdb.Offset)
-		if side == "Right" then
+		sbanchor:SetPoint(side, UIParent, side, isRight and 11 or -11, sbdb.Offset)
+		if isRight then
 			if sbdb.AutoPosEnable or isBarAddOnLoaded then SetRightSidebarAnchor() end
 		else
 			if sbdb.AutoPosEnable or isBarAddOnLoaded then SetLeftSidebarAnchor() end
