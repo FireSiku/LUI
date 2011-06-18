@@ -849,7 +849,13 @@ toggleFuncs = {
 		else
 			if db.oUF.Arena.UseBlizzard == true then
 				SetCVar("showArenaEnemyFrames", 1)
-				if not ArenaEnemyFrame1 then Arena_LoadUI_() end
+				if not ArenaEnemyFrame1 then
+					if Arena_LoadUI_ then
+						Arena_LoadUI_()
+					else
+						Arena_LoadUI()
+					end
+				end
 			else
 				SetCVar("showArenaEnemyFrames", 0)
 			end
@@ -858,7 +864,7 @@ toggleFuncs = {
 				if _G["oUF_LUI_arena"..i] then _G["oUF_LUI_arena"..i]:Disable() end
 			end
 			
-			oUF_LUI_arena:Hide()
+			if oUF_LUI_arena then oUF_LUI_arena:Hide() end
 		end
 		
 		toggleFuncs.ArenaTarget()

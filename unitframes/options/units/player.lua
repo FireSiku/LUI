@@ -769,7 +769,7 @@ function module:CreateXpRepOptionsPart(barType, order)
 	end
 	
 	local options = {
-		name = "XPBar",
+		name = barType,
 		type = "group",
 		order = 3,
 		args = {
