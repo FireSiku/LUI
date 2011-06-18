@@ -875,9 +875,9 @@ function module:SetDualSpec()
 
 		local activeGroupNum = GetActiveTalentGroup()
 		local curCache = specCache[activeGroupNum]
-		local a = curCache[1].pointsSpent
-		local b = curCache[2].pointsSpent
-		local c = curCache[3].pointsSpent
+		local a = curCache[1].pointsSpent or 0
+		local b = curCache[2].pointsSpent or 0
+		local c = curCache[3].pointsSpent or 0
 
 		if self.db.ShowSpentPoints then
 			if a <= 0 and b <= 0 and c <= 0 then
@@ -908,9 +908,9 @@ function module:SetDualSpec()
 			local nextGroup = -activeGroupNum + 3
 			local nextCache = specCache[nextGroup]
 
-			local a3 = nextCache[1].pointsSpent
-			local b3 = nextCache[2].pointsSpent
-			local c3 = nextCache[3].pointsSpent
+			local a3 = nextCache[1].pointsSpent or 0
+			local b3 = nextCache[2].pointsSpent or 0
+			local c3 = nextCache[3].pointsSpent or 0
 
 			if a3 <= 0 and b3 <= 0 and c3 <= 0 then
 				GameTooltip:AddLine(" |cffff0000Talents undefined!|r")
@@ -951,12 +951,12 @@ function module:SetDualSpec()
 
 		local activeGroupNum = GetActiveTalentGroup()
 		local curCache = specCache[activeGroupNum]
-		local a = curCache[1].pointsSpent
-		local b = curCache[2].pointsSpent
-		local c = curCache[3].pointsSpent
+		local a = curCache[1].pointsSpent or 0
+		local b = curCache[2].pointsSpent or 0
+		local c = curCache[3].pointsSpent or 0
 
 		if self.db.ShowSpentPoints then
-			if a <= 0 and b <= 0 and c <= 0 or a == nil or b == nil or c == nil then
+			if a <= 0 and b <= 0 and c <= 0 then
 	       		LUI_Text_DualSpec:SetText(" |cffff0000Talents undefined!|r")
 	       		LUI_Text_DualSpecIcon:SetBackdrop({bgFile = "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = { top = 0, right = 0, bottom = 0, left = 0 }});
 			else
