@@ -2,13 +2,11 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: fader.lua
 	Description: This module can handle fading of frames registered with it.
-	Version....: 2.0a
-	Rev Date...: 21/02/2010 [dd/mm/yyyy]
+	Version....: 2.0
+	Rev Date...: 17/06/2010 [dd/mm/yyyy]
 
 	Edits:
-		v1.0: Hix
 		v2.0: Hix
-		-  a: Hix
 ]]
 
 ------------------------------------------------------
@@ -17,7 +15,7 @@
 --[[	
 	events:
 		There are a lot of events registered I know. Sadly these are the ones
-		i found most suitable with the least spam (or controllable) with still
+		i found most suitable with the least spam (or controllable) while still
 		capturing all possible triggers and situations where the fader will be
 		needed to operate. If you can find more please post them in the according
 		thread on the forums for this module.
@@ -29,9 +27,9 @@
 			Hover Scripts,
 			
 	settings:
-		settings are now passed into the fader when registering a frame. RegisteredFrames now
+		Settings are now passed into the fader when registering a frame. RegisteredFrames now
 		holds reference tables for the settings of each frame. The intent is that along with a frame
-		db.oUF.<framae>.FaderSettings database would be passed with the frame during registering.
+		db.oUF.<frame>.FaderSettings database would be passed with the frame during registering.
 		
 	more settings:
 		I dunno if i should add more settings. If we wanted we could add tons more
@@ -46,6 +44,7 @@
 --[[
 	2.0:
 		1)	Updated so usable with new framework.
+		2)	No longer hooks OnUpdate scripts. Instead the module has its own frame which runs an OnUpdate script.
 		
 	1.0 (b):
 		1)	Changed the way registered frames are store. Now stored like follows:
@@ -81,6 +80,9 @@ local Fader = LUI:NewModule("Fader", "AceEvent-3.0", "AceHook-3.0")
 -- Fader local variables.
 -- RegisteredFrames[frame] = frameSettings. (e.i. RegisteredFrames = { oUF_LUI_player = db.oUF.Player.Fader, oUF_LUI_target = db.oUF.Target.Fader, etc })
 local db
+Fader.Fading = {}
+Fader.Fader = CreateFrame("frame", "LUI_Fader", UIParent)
+Fader.Fader.Throttle = 0
 Fader.RegisteredFrames = nil
 Fader.RegisteredFrameTotal = 0
 Fader.Status = {
@@ -100,19 +102,20 @@ Fader.Status = {
 	Notes.....: fades the frame when the mouse enters the frame
 ]]
 local Hover_OnEnter = function(self)
-	if self.Fader.fading and self.Fader.fadingIn then return end
-	
-	-- cancel current fade
-	if self.Fader.fading then
-		self.Fader.fading = false
-		Fader:Unhook(self, "OnUpdate")
-	end
-	
-	-- check if fade in is needed
+	-- set mouse hover.
+	self.Fader.mouseHover = true
+
+	-- check if already fading in.
+	if self.Fader.fading and self.Fader.endAlpha > Fader.RegisteredFrames[self].HoverAlpha then return end
+		
+	-- cancel any fading.
+	Fader:StopFading(self)
+
+	-- check if fade is required.
 	if self:GetAlpha() >= Fader.RegisteredFrames[self].HoverAlpha then return end
 
-	-- fade in frame
-	Fader.FadeFrame(self, Fader.RegisteredFrames[self].HoverAlpha)
+	-- fade in frame.
+	Fader:FadeFrame(self, Fader.RegisteredFrames[self].HoverAlpha)
 end
 
 --[[
@@ -120,13 +123,16 @@ end
 	Notes.....: fades out the frame when the mouse leaves the frame
 ]]
 local Hover_OnLeave = function(self)
-	-- cancel current fades
-	if self.Fader.fading and (not self.Fader.fadingIn) then
-		self.Fader.fading = false
-		Fader:Unhook(self, "OnUpdate")
-	end
+	-- set mouse hover.
+	self.Fader.mouseHover = false
+
+	-- check if already fading out.
+	if self.Fader.fading and not self.Fader.fadingIn then return end
 	
-	-- fade out frame
+	-- fade out frame.
+	Fader:FadeFrame(self,	Fader.RegisteredFrames[self].OutAlpha,
+							Fader.RegisteredFrames[self].OutTime,
+							Fader.RegisteredFrames[self].OutDelay)
 	Fader:FadeHandler(self)
 end
 
@@ -147,8 +153,8 @@ function Fader:AttachHoverScript(frame)
 	-- hook scripts.
 	if not self:IsHooked(frame, "OnEnter") then self:SecureHookScript(frame, "OnEnter", Hover_OnEnter) end
 	if not self:IsHooked(frame, "OnLeave") then self:SecureHookScript(frame, "OnLeave", Hover_OnLeave) end
-	
-	-- run scripts.
+
+	-- run leave script.
 	frame:GetScript("OnLeave")(frame)
 end
 
@@ -206,10 +212,8 @@ function Fader:RegisterFrame(frame, settings)
 	end
 	
 	-- create fader table.
-	if not frame.Fader then
-		frame.Fader = {}
-		frame.Fader.PreAlpha = frame:GetAlpha()
-	end
+	frame.Fader = frame.fader or {}
+	frame.Fader.PreAlpha = frame.Fader.PreAlpha or frame:GetAlpha()
 	
 	-- attach mouseover scripts to frame.
 	self:AttachHoverScript(frame)
@@ -229,24 +233,28 @@ function Fader:UnregisterFrame(frame)
 	if not frame then return end
 	
 	-- check if registered frames table exists.
-	if self.RegisteredFrames and self.RegisteredFrames[frame] then
-		-- remove frame.
-		self.RegisteredFrames[frame] = nil
-		self.RegisteredFrameTotal = self.RegisteredFrameTotal - 1
-		-- remove hooks.
-		self:Unhook(frame, "OnEnter")
-		self:Unhook(frame, "OnLeave")				
-		-- reset alpha.
-		frame:SetAlpha((frame.Fader and frame.Fader.PreAlpha) or 1)
-		-- if currently fading, stop fading.
-		if frame.Fader.fading then
-			self:Unhook(frame, "OnUpdate")
-		end
-		-- remove variables.
-		frame.Fader = nil
-	else
-		return
+	if not self.RegisteredFrames then return end
+
+	-- check if frame is registered.
+	if not self.RegisteredFrames[frame] then return end
+
+	-- remove frame.
+	self.RegisteredFrames[frame] = nil
+	self.RegisteredFrameTotal = self.RegisteredFrameTotal - 1
+
+	-- remove hooks.
+	self:RemoveHoverScript(frame)
+				
+	-- reset alpha.
+	frame:SetAlpha((frame.Fader and frame.Fader.PreAlpha) or 1)
+
+	-- if currently fading, stop fading.
+	if frame.Fader.fading then
+		self:StopFading(frame)
 	end
+
+	-- remove variables.
+	frame.Fader = nil
 	
 	-- check if there are any registered frames left.
 	if self.RegisteredFrameTotal == 0 then
@@ -281,7 +289,7 @@ end
 	Notes.....: un-register all the event triggers for the fader
 ]]
 function Fader:EventsUnregister()
-	-- un-register event triggers
+	-- unregister event triggers
 	self:UnregisterEvent("PLAYER_REGEN_DISABLED")
 	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
 	self:UnregisterEvent("PLAYER_TARGET_CHANGED")
@@ -330,7 +338,6 @@ function Fader:UnitEventHandler(event, unit)
 		self.Status.health = (curHealth < maxHeatlh) and (curHealth / maxHeatlh)
 	elseif event == "UNIT_POWER" then
 		local powerType, curPower, maxPower = UnitPowerType("player"), UnitPower("player"), UnitPowerMax("player")
-		self.Status.power = false
 		if (powerType == 0) or (powerType == 3) then
 			self.Status.power = (curPower < maxPower) and (curPower / maxPower)
 		elseif (powerType == 1) or (powerType == 6) then
@@ -352,9 +359,8 @@ end
 	Notes.....: handles fading of a frame using the options of that frame
 ]]
 function Fader:FadeHandler(frame)
-	-- frame checks.
-	if frame.Fader.fading and frame.Fader.fadingIn then return end
-	
+	if frame.Fader.mouseHover then return end
+
 	-- local variables.
 	local fadeIn = false
 	
@@ -386,22 +392,23 @@ end
 ]]
 function Fader:FadeOnEvent(frame, fadeIn)
 	if fadeIn then
-		-- cancel any current fades.
-		if frame.Fader.fading then
-			frame.Fader.fading = false
-			self:Unhook(frame, "OnUpdate")
-		end
-		
+		-- check if already fading in.
+		if frame.Fader.fading and frame.Fader.fadingIn then return end
+
+		-- check if fade is required.
+		if frame:GetAlpha() >= self.RegisteredFrames[frame].InAlpha then self:StopFading(frame) return end
+
 		-- set to fade in.
-		frame.Fader.fadingIn = true
-		self.FadeFrame(frame, self.RegisteredFrames[frame].InAlpha)
+		self:FadeFrame(frame, self.RegisteredFrames[frame].InAlpha)
 	else
-		-- check if already fading out.
-		if frame.Fader.fading then return end
+		-- check if frame is fadingIn or for mouse hover.
+		if frame.Fader.mouseHover or (frame.Fader.fading and not frame.Fader.fadingIn) then return end
+
+		-- check if fade is required.
+		if frame:GetAlpha() <= self.RegisteredFrames[frame].OutAlpha then return end
 		
 		-- set to fade out.
-		frame.Fader.fadingIn = false
-		self.FadeFrame(frame,	self.RegisteredFrames[frame].OutAlpha,
+		self:FadeFrame(frame,	self.RegisteredFrames[frame].OutAlpha,
 								self.RegisteredFrames[frame].OutTime,
 								self.RegisteredFrames[frame].OutDelay)
 	end
@@ -415,24 +422,33 @@ end
 	Function..: Fade_OnUpdate(self, elapsed)
 	Notes.....: fades the frame over time
 ]]
-local Fade_OnUpdate = function(self, elapsed)
-	-- manage delay before fading.
-	if self.Fader.fadeDelay then
-		self.Fader.fadeDelay = self.Fader.fadeDelay - elapsed
-		if not (self.Fader.fadeDelay <= 0) then return end
-	end
+function Fader.Fader_OnUpdate(self, elapsed)
+	-- check fader throttle.
+	self.Throttle = self.Throttle + elapsed
+	if self.Throttle < 0.05 then return end
+	elapsed = self.Throttle
+	self.Throttle = 0
 	
-	-- manage fading.
-	self.Fader.timeElapsed = self.Fader.timeElapsed + elapsed
-	if self.Fader.timeElapsed < self.Fader.fadeTime then
-		local alpha = self.Fader.startAlpha + (self.Fader.deltaAlpha * self.Fader.timeElapsed / self.Fader.fadeTime)
-		self:SetAlpha(alpha)
-	else
-		-- cleanup
-		self:SetAlpha(self.Fader.endAlpha)
-		if self.Fader.endAlpha == 0 then self:Hide() end
-		self.Fader.fading = false
-		Fader:Unhook(self, "OnUpdate")
+	-- check if there are frames to fade.
+	if #Fader.Fading == 0 then self:SetScript("OnUpdate", nil) end
+
+	-- loop through frames and fade.
+	for i, frame in ipairs(Fader.Fading) do
+		-- manage delay before fading.
+		if frame.Fader.fadeDelay > 0 then
+			frame.Fader.fadeDelay = frame.Fader.fadeDelay - elapsed
+		else	
+			-- manage fading.
+			frame.Fader.timeElapsed = frame.Fader.timeElapsed + elapsed
+			if frame.Fader.timeElapsed < frame.Fader.fadeTime then
+				frame:SetAlpha(frame.Fader.startAlpha + (frame.Fader.deltaAlpha * frame.Fader.timeElapsed / frame.Fader.fadeTime))
+			else
+				-- cleanup
+				frame:SetAlpha(frame.Fader.endAlpha)
+				if frame.Fader.endAlpha == 0 then frame:Hide() end
+				Fader:StopFading(frame)
+			end
+		end
 	end
 end
 
@@ -445,12 +461,16 @@ end
 		fadetime: time (seconds) to fade over
 		fadedelay: delay (seconds) before fading
 ]]
-function Fader.FadeFrame(frame, endAlpha, fadeTime, fadeDelay)
+function Fader:FadeFrame(frame, endAlpha, fadeTime, fadeDelay)
 	-- check frame is a usable object.
 	if not frame then return end
 	
 	-- check if fading is needed.
-	if frame:GetAlpha() == (endAlpha or 0) then return end
+	if frame:GetAlpha() == (endAlpha or 0) then
+		-- stop fading.
+		self:StopFading(frame)
+		return
+	end
 	
 	-- check if frame needs to be shown.
 	if not frame:IsVisible() then
@@ -462,16 +482,50 @@ function Fader.FadeFrame(frame, endAlpha, fadeTime, fadeDelay)
 	-- setup fader settings.
 	-- settings equal optional parameters or defaults.
 	frame.Fader = frame.Fader or {}
-	frame.Fader.fading = true
 	frame.Fader.startAlpha = frame:GetAlpha()
-	frame.Fader.endAlpha = endAlpha or 0.0
+	frame.Fader.endAlpha = endAlpha or 0
 	frame.Fader.deltaAlpha = frame.Fader.endAlpha - frame.Fader.startAlpha
+	frame.Fader.fadingIn = frame.Fader.endAlpha > frame.Fader.startAlpha
 	frame.Fader.fadeTime = fadeTime or 0.2
-	frame.Fader.timeElapsed = 0.0
-	frame.Fader.fadeDelay = fadeDelay or nil
-	
-	-- set script with appropriate settings.
-	Fader:SecureHookScript(frame, "OnUpdate", Fade_OnUpdate)
+	frame.Fader.timeElapsed = 0
+	frame.Fader.fadeDelay = fadeDelay or 0
+
+	-- start fading frame.
+	self:StartFading(frame)
+end
+
+--[[
+	Function..: StartFading(frame)
+	Notes.....: adds a frame to the fading table.
+]]
+function Fader:StartFading(frame)
+	-- check frame isn't already fading.
+	if frame.Fader.fading then return end
+
+	-- check if OnUpdate script needs to be applied.
+	if #self.Fading == 0 then
+		self.Fader:SetScript("OnUpdate", self.Fader_OnUpdate)
+		self.Fader.Throttle = 0
+	end
+
+	-- add frame to fading table.
+	frame.Fader.fading = true
+	tinsert(self.Fading, frame)
+end
+
+--[[
+	Function..: StopFading(frame)
+	Notes.....: removes a frame to the fading table.
+]]
+function Fader:StopFading(frame)
+	-- find and remove frame.
+	for i, v in ipairs(self.Fading) do
+		if v == frame then
+			frame.Fader.fading = false
+			tremove(self.Fading, i)
+			break
+		end
+	end
 end
 
 ------------------------------------------------------
