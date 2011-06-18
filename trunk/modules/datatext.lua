@@ -267,6 +267,7 @@ function module:SetClock()
 			if Min < 10 then Min = "0"..Min end
 
 			if self.db.Time24 == true then
+				if Hr < 10 then Hr = "0"..Hr end
 				GameTooltip:AddDoubleLine("Server Time: ", Hr..":"..Min)
 			else
 				if Hr >= 12 then
@@ -281,6 +282,7 @@ function module:SetClock()
 			local Hr = tonumber(date("%I"))
 			local Min = date("%M")
 			if self.db.Time24 == true then
+				if Hr24 < 10 then Hr24 = "0"..Hr24 end
 				GameTooltip:AddDoubleLine("Local Time: ", Hr24..":".. Min)
 			else
 				if Hr24 >= 12 then
@@ -344,6 +346,7 @@ function module:SetClock()
 					local Min = date("%M")
 
 					if self.db.Time24 == true then
+						if Hr24 < 10 then Hr24 = "0"..Hr24 end
 						LUI_Text_Clock:SetText(Hr24..":"..Min)
 					else
 						if Hr24 >= 12 then
@@ -357,6 +360,7 @@ function module:SetClock()
 					if Min < 10 then Min = "0"..Min end
 
 					if self.db.Time24 == true then
+						if Hr < 10 then Hr = "0"..Hr end
 						LUI_Text_Clock:SetText(Hr..":"..Min)
 					else
 						if Hr >= 12 then
