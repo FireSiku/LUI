@@ -163,7 +163,7 @@ function module:SetBags()
 	function BAGS:OnEnter()
 		if db.Infotext.CombatLock then return end
 
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
 		GameTooltip:AddLine("Bags:", 0.4, 0.78, 1)
 		GameTooltip:AddLine(" ")
@@ -238,7 +238,7 @@ function module:SetClock()
 	function CLOCK:OnEnter()
 		if db.Infotext.CombatLock then return end
 
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
 		GameTooltip:AddLine("Time:", 0.4, 0.78, 1)
 		GameTooltip:AddLine(" ")
@@ -494,7 +494,7 @@ function module:SetCurrency()
 
 	-- Script functions.
 	function CUR:OnEnter()
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
 		GameTooltip:AddLine("Currency:", 0.4, 0.78, 1)
 
@@ -638,7 +638,7 @@ function module:SetDPS()
 		if db.Infotext.CombatLock then return end
 
 		local name = UnitName("player")
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
 		GameTooltip:AddLine("Combat Info", 1, 1, 1)
 
@@ -854,7 +854,7 @@ function module:SetDualSpec()
 	function DS:OnEnter()
 		if db.Infotext.CombatLock then return end
 
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
 		GameTooltip:AddLine("Dual Spec:", 0.4, 0.78, 1)
 		GameTooltip:AddLine(" ")
@@ -1053,7 +1053,7 @@ function module:SetDurability()
 	function DUR:OnEnter()
 		if db.Infotext.ComabtLock then return end
 
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
 		GameTooltip:AddLine("Armor:", 0.4, 0.78, 1)
 		GameTooltip:AddLine(" ")
@@ -1162,7 +1162,7 @@ function module:SetFPS()
 	function FPS:OnEnter()
 		if db.Infotext.CombatLock then return end
 
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
 		GameTooltip:AddLine("FPS & MS:", 0.4, 0.78, 1)
 		GameTooltip:AddLine(" ")
@@ -1300,7 +1300,7 @@ function module:SetGold()
 	function GOLD:OnEnter()
 		if db.Infotext.CombatLock then return end
 
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
 		GameTooltip:AddLine("Money:", 0.4, 0.78, 1)
 		GameTooltip:AddLine(" ")
@@ -2411,7 +2411,7 @@ function module:SetInstance()
 	-- Script functions.
 	function INST:OnEnter()
 		local numInstance = #(instances)
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
 		GameTooltip:AddLine("Instance Info:", 0.4, 0.78, 1)
 		GameTooltip:AddLine(" ")
@@ -2550,7 +2550,7 @@ function module:SetMemoryUsage()
 	function MEM:OnEnter()
 		if db.Infotext.CombatLock then return end
 		
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
 		GameTooltip:AddLine("Memory:", 0.4, 0.78, 1)
 		GameTooltip:AddLine(" ")
@@ -2658,11 +2658,11 @@ local defaults = {
 		},
 		Currency = {
 			Enable = false,
-			X = 280,
+			X = 180,
 			Y = 0,
 			InfoPanel = {
 				Horizontal = "Left",
-				Vertical = "Top",
+				Vertical = "Bottom",
 			},
 			Font = "vibroceb",
 			Size = 12,
@@ -2696,11 +2696,11 @@ local defaults = {
 		DualSpec = {
 			Enable = false,
 			ShowSpentPoints = true,
-			X = 420,
+			X = 320,
 			Y = 0,
 			InfoPanel = {
 				Horizontal = "Left",
-				Vertical = "Top",
+				Vertical = "Bottom",
 			},
 			Font = "vibroceb",
 			Size = 12,
@@ -2813,11 +2813,11 @@ local defaults = {
 		},
 		Instance = {
 			Enable = false,
-			X = -660,
+			X = 60,
 			Y = 0,
 			InfoPanel = {
-				Horizontal = "Right",
-				Vertical = "Top",
+				Horizontal = "Left",
+				Vertical = "Bottom",
 			},
 			Font = "vibroceb",
 			Size = 12,
