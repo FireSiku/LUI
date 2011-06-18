@@ -3433,6 +3433,13 @@ local SetStyle = function(self, unit, isSingle)
 
 	funcs.V2Textures(self, unit, oufdb)
 
+	if unit == "raid" then
+		self.Range = {
+			insideAlpha = 1,
+			outsideAlpha = 0.5
+		}
+	end
+	
 	self.Highlight = self.Health:CreateTexture(nil, "OVERLAY")
 	self.Highlight:SetAllPoints(self)
 	self.Highlight:SetTexture(highlightTex)
