@@ -532,71 +532,15 @@ end
 -- / Module Settings / --
 ------------------------------------------------------
 
-function Fader:CreateFaderGroupOptions(objectPrefix, objectSuffix, objectCount, objectDB, objectDBdefaults)
-	local frames = {}
-	
-	for i = 1, objectCount do
-		frames[i] = _G[objectPrefix..i..objectSuffix]
-	end
-	
-	-- Shortcut database values.
-	local odb = objectDB
-	local odbD = objectDBdefaults
-	
-	local ApplySettings = function()
-		if odb.Enable then
-			for k, v in pairs(frames) do Fader:RegisterFrame(v, odb) end
-		else
-			for k, v in pairs(frames) do Fader:UnregisterFrame(v) end
-		end
-	end
-	
-	local FaderOptions = {
-		Enable = LUI:NewToggle("Enable Fader", nil, 1, odb, "Enable", nil, ApplySettings),
-		UseGlobalSettings = LUI:NewToggle("Use Global Settings", nil, 2, odb, "UseGlobalSettings", nil, ApplySettings, nil, function() return (not odb.Enable) end),
-		ForcingGlobal = {
-			order = 3,
-			width = "full",
-			type = "description",
-			name = "|cffff0000Global settings are being forced.|r",
-			hidden = function() return not db.Fader.ForceGlobalSettings end,
-		},
-		Options = {
-			name = "",
-			type = "group",
-			guiInline = true,
-			disabled = function() return (not odb.Enable) or odb.UseGlobalSettings or db.Fader.ForceGlobalSettings end,
-			order = 4,
-			args = {
-				FadeInHeader = LUI:NewHeader("Fade In", 2),
-				Casting = LUI:NewToggle("Casting", nil, 3, odb, "Casting", nil, ApplySettings, "normal"),
-				InCombat = LUI:NewToggle("In Combat", nil, 4, odb, "Combat", nil, ApplySettings, "normal"),
-				Health = LUI:NewToggle("Health Is Low", nil, 5, odb, "Health", nil, ApplySettings, "normal"),
-				Power = LUI:NewToggle("Power Is Low", nil, 6, odb, "Power", nil, ApplySettings, "normal"),
-				Targeting = LUI:NewToggle("Targeting", nil, 7, odb, "Targeting", nil, ApplySettings, "full"),
-				
-				Settings = LUI:NewHeader("Settings", 8),
-				InAlpha = LUI:NewSlider("In Alpha", "Set the alpha of the frame while not faded.", 9, odb, "InAlpha", odbD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
-				OutAlpha = LUI:NewSlider("Out Alpha", "Set the alpha of the frame while faded.", 10, odb, "OutAlpha", odbD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
-				OutTime = LUI:NewSlider("Fade Time", "Set the time it takes to fade out.", 11, odb, "OutTime", odbD, 0, 5, 0.05, ApplySettings, "normal"),
-				OutDelay = LUI:NewSlider("Fade Delay", "Set the delay time before the frame fades out.", 12, odb, "OutDelay", odbD, 0, 5, 0.05, ApplySettings, "normal"),
-				HealthClip = LUI:NewSlider("Health Trigger", "Set the percent at which health is considered low.", 13, odb, "HealthClip", odbD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
-				PowerClip = LUI:NewSlider("Power Trigger", "Set the percent at which power is considered low.", 14, odb, "PowerClip", odbD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
-				
-				Hover = LUI:NewHeader("Mouse Hover", 15),
-				HoverEnable = LUI:NewToggle("Fade On Mouse Hover", nil, 16, odb, "Hover", nil, ApplySettings, "normal"),
-				HoverAlpha = LUI:NewSlider("Hover Alpha", "Set the alpha of the frame while the mouse is hovering over it.", 17, odb, "HoverAlpha", odbD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
-			},
-		},
-	}
-	
-	return FaderOptions
-end
-
 function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 	local frame
 	if type(object) == "string" then
 		frame = _G[object]
+	elseif type(object) == "table" and not object.GetParent then
+		frame = {}
+		for i, v in pairs(object) do
+			frame[i] = type(v) == "string" and _G[v] or v
+		end
 	else
 		frame = object
 	end
@@ -608,11 +552,27 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 	local odb = objectDB
 	local odbD = objectDBdefaults
 		
-	local ApplySettings = function()
-		if odb.Enable then
-			Fader:RegisterFrame(frame, odb)
-		else
-			Fader:UnregisterFrame(frame)
+	-- Create ApplySettings function.
+	local ApplySettings
+	if type(frame) == "table" and not frame.GetParent then
+		ApplySettings = function()
+			if odb.Enable then
+				for _, f in pairs(frame) do
+					Fader:RegisterFrame(f, odb)
+				end
+			else
+				for _, f in pairs(frame) do
+					Fader:UnregisterFrame(f)
+				end
+			end
+		end
+	else
+		ApplySettings = function()
+			if odb.Enable then
+				Fader:RegisterFrame(frame, odb)
+			else
+				Fader:UnregisterFrame(frame)
+			end
 		end
 	end
 	
