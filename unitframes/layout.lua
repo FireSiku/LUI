@@ -11,7 +11,6 @@ local oUF_LUI = LUI.oUF
 
 local LSM = LibStub("LibSharedMedia-3.0")
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local LUI_Fader = LUI:GetModule("Fader", true)
 local module = LUI:NewModule("oUF_Layout")
 
 local db, colors, funcs
@@ -3467,7 +3466,8 @@ local SetStyle = function(self, unit, isSingle)
 		end)
 	end
 
-	if LUI_Fader and oufdb.Fader and oufdb.Fader.Enable then LUI_Fader:RegisterFrame(self, oUF.Fader) end
+	local LUI_Fader = LUI:GetModule("Fader", true)
+	if oufdb.Fader and oufdb.Fader.Enable and LUI_Fader then LUI_Fader:RegisterFrame(self, oUF.Fader) end
 
 	self.Health.PostUpdate = PostUpdateHealth
 	self.Power.PostUpdate = PostUpdatePower

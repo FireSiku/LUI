@@ -1307,7 +1307,8 @@ function module:SetBottomBar1()
 	-- Register bar to fader.
 	--[[
 	if db.Bars.Bottombar1.Fader.Enable and bar.FaderBar then
-		if LUI:GetModule("Fader", true) then LUI:GetModule("Fader", true):RegisterFrame(bar.FaderBar, db.Bars.Bottombar1.Fader) end
+		local LUI_Fader = LUI:GetModule("Fader", true)
+		if LUI_Fader then LUI_Fader:RegisterFrame(bar.FaderBar, db.Bars.Bottombar1.Fader) end
 	end
 	]]
 end
@@ -1362,7 +1363,8 @@ function module:SetBottomBar2()
 	-- Register bar to fader.
 	--[[
 	if db.Bars.Bottombar2.Fader.Enable and bar.FaderBar then
-		if LUI:GetModule("Fader", true) then LUI:GetModule("Fader", true):RegisterFrame(bar.FaderBar, db.Bars.Bottombar2.Fader) end
+		local LUI_Fader = LUI:GetModule("Fader", true)
+		if LUI_Fader then LUI_Fader:RegisterFrame(bar.FaderBar, db.Bars.Bottombar2.Fader) end
 	end
 	]]
 end
@@ -1417,7 +1419,8 @@ function module:SetBottomBar3()
 	-- Register bar to fader.
 	--[[
 	if db.Bars.Bottombar3.Fader.Enable and bar.FaderBar then
-		if LUI:GetModule("Fader", true) then LUI:GetModule("Fader", true):RegisterFrame(bar.FaderBar, db.Bars.Bottombar3.Fader) end
+		local LUI_Fader = LUI:GetModule("Fader", true)
+		if LUI_Fader then LUI_Fader::RegisterFrame(bar.FaderBar, db.Bars.Bottombar3.Fader) end
 	end
 	]]
 end
