@@ -400,7 +400,7 @@ function module:MoveUnitFrames(override)
 	end
 	
 	-- sometimes bugs around!
-	oUF_LUI_party:Show()
+	if oUF_LUI_party then oUF_LUI_party:Show() end
 	
 	if (not _LOCK) and (not override) then
 		StaticPopup_Show("DRAG_UNITFRAMES")
