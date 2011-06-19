@@ -9,21 +9,14 @@
 ## X-Curse-Project-Name: LUI Core
 ## X-Curse-Project-ID: lui
 ## X-Curse-Repository-ID: wow/lui/mainline
-## X-Curse-Packaged-Version: r63
-## X-Curse-Project-Name: LUI Core
-## X-Curse-Project-ID: lui
-## X-Curse-Repository-ID: wow/lui/mainline
 
-#@no-lib-strip@
 libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
 libs\LibSharedMedia-3.0\lib.xml
 libs\LibKeyBound-1.0\lib.xml
-#@end-no-lib-strip@
 
 libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 
-#@no-lib-strip@
 libs\AceAddon-3.0\AceAddon-3.0.xml
 libs\AceDB-3.0\AceDB-3.0.xml
 libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
@@ -36,7 +29,6 @@ libs\AceConfig-3.0\AceConfig-3.0.xml
 libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
 libs\AceSerializer-3.0\AceSerializer-3.0.xml
 libs\AceTimer-3.0\AceTimer-3.0.xml
-#@end-no-lib-strip@
 
 LUI.xml
 
