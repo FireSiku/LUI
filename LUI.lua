@@ -457,7 +457,7 @@ function LUI:Configure()
 
 		SetCVar("buffDurations", 1)
 		SetCVar("consolidateBuffs", 0)
-		SetCVar("scriptErrors", 0)
+		SetCVar("scriptErrors", 1)
 		SetCVar("uiScale", 0.6949)
 		SetCVar("useUiScale", 1)
 		SetCVar("chatMouseScroll", 1)

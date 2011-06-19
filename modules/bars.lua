@@ -1662,15 +1662,15 @@ local defaults = {
 			Enable = true,
 			Alpha = 0.7,
 			X = "-25",
-			Y = "25",
+			Y = "15",
 			Animation = true,
 			AnimationHeight = "35",
 		},
 		BottomTexture = {
 			Enable = true,
 			Alpha = 1,
-			X = "0",
-			Y = "-42",
+			X = "-25",
+			Y = "-45",
 		},
 		SidebarRight = { 
 			Enable = true,
