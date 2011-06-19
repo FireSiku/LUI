@@ -70,7 +70,7 @@ function LUI:NewToggle(name, desc, order, dbt, option, default, func, width, dis
 	local t = {}
 	
 	t.type, t.name, t.order = "toggle", name, order
-	t.desc = desc or "Whether or not to "..name.."."
+	t.desc = desc or "Whether or not to "..name..".\n\nDefault: "..(default[option] and "Enabled" or "Disabled")
 	t.get = function() return dbt[option] end
 	t.set = function(info, toggle) 
 		dbt[option] = not dbt[option]

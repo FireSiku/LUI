@@ -212,7 +212,7 @@ function Fader:RegisterFrame(frame, settings)
 	end
 	
 	-- create fader table.
-	frame.Fader = frame.fader or {}
+	frame.Fader = frame.Fader or {}
 	frame.Fader.PreAlpha = frame.Fader.PreAlpha or frame:GetAlpha()
 	
 	-- attach mouseover scripts to frame.
@@ -577,15 +577,9 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 	end
 	
 	local FaderOptions = {
-		Enable = LUI:NewToggle("Enable Fader", nil, 1, odb, "Enable", nil, ApplySettings),
-		UseGlobalSettings = LUI:NewToggle("Use Global Settings", nil, 2, odb, "UseGlobalSettings", nil, ApplySettings, nil, function() return (not odb.Enable) end),
-		ForcingGlobal = {
-			order = 3,
-			width = "full",
-			type = "description",
-			name = "|cffff0000Global settings are being forced.|r",
-			hidden = function() return not db.Fader.ForceGlobalSettings end,
-		},
+		Enable = LUI:NewToggle("Enable Fader", nil, 1, odb, "Enable", odbD, ApplySettings),
+		UseGlobalSettings = LUI:NewToggle("Use Global Settings", nil, 2, odb, "UseGlobalSettings", odbD, ApplySettings, nil, function() return (not odb.Enable) end),
+		ForcingGlobal = LUI:NewDesc("|cffff0000Global settings are being forced.|r", 3, nil, nil, function() return not db.Fader.ForceGlobalSettings end),
 		Options = {
 			name = "",
 			type = "group",
@@ -594,11 +588,11 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 			order = 4,
 			args = {
 				FadeInHeader = LUI:NewHeader("Fade In", 2),
-				Casting = LUI:NewToggle("Casting", nil, 3, odb, "Casting", nil, ApplySettings, "normal"),
-				InCombat = LUI:NewToggle("In Combat", nil, 4, odb, "Combat", nil, ApplySettings, "normal"),
-				Health = LUI:NewToggle("Health Is Low", nil, 5, odb, "Health", nil, ApplySettings, "normal"),
-				Power = LUI:NewToggle("Power Is Low", nil, 6, odb, "Power", nil, ApplySettings, "normal"),
-				Targeting = LUI:NewToggle("Targeting", nil, 7, odb, "Targeting", nil, ApplySettings, "full"),
+				Casting = LUI:NewToggle("Casting", nil, 3, odb, "Casting", odbD, ApplySettings, "normal"),
+				InCombat = LUI:NewToggle("In Combat", nil, 4, odb, "Combat", odbD, ApplySettings, "normal"),
+				Health = LUI:NewToggle("Health Is Low", nil, 5, odb, "Health", odbD, ApplySettings, "normal"),
+				Power = LUI:NewToggle("Power Is Low", nil, 6, odb, "Power", odbD, ApplySettings, "normal"),
+				Targeting = LUI:NewToggle("Targeting", nil, 7, odb, "Targeting", odbD, ApplySettings, "full"),
 				
 				Settings = LUI:NewHeader("Settings", 8),
 				InAlpha = LUI:NewSlider("In Alpha", "Set the alpha of the frame while not faded.", 9, odb, "InAlpha", odbD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
@@ -609,7 +603,7 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 				PowerClip = LUI:NewSlider("Power Trigger", "Set the percent at which power is considered low.", 14, odb, "PowerClip", odbD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
 				
 				Hover = LUI:NewHeader("Mouse Hover", 15),
-				HoverEnable = LUI:NewToggle("Fade On Mouse Hover", nil, 16, odb, "Hover", nil, ApplySettings, "normal"),
+				HoverEnable = LUI:NewToggle("Fade On Mouse Hover", nil, 16, odb, "Hover", odbD, ApplySettings, "normal"),
 				HoverAlpha = LUI:NewSlider("Hover Alpha", "Set the alpha of the frame while the mouse is hovering over it.", 17, odb, "HoverAlpha", odbD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
 			},
 		},
@@ -678,7 +672,7 @@ function Fader:LoadOptions()
 					order = 2,
 					args = {
 						Enable = LUI:NewEnable("Fader", 1, db.Fader),
-						ForceGlobalSettings = LUI:NewToggle("Force Global Settings", nil, 2, db.Fader, "ForceGlobalSettings", nil,
+						ForceGlobalSettings = LUI:NewToggle("Force Global Settings", nil, 2, db.Fader, "ForceGlobalSettings", LUI.defaults.profile.Fader,
 							function()
 								if not Fader.RegisteredFrames then return end
 								if db.Fader.ForceGlobalSettings then
@@ -700,11 +694,11 @@ function Fader:LoadOptions()
 					order = 3,
 					args = {
 						FadeInHeader = LUI:NewHeader("Fade In", 1),
-						Casting = LUI:NewToggle("While Casting", nil, 2, gs, "Casting", nil, ApplySettings, "normal"),
-						InCombat = LUI:NewToggle("While In Combat", nil, 3, gs, "Combat", nil, ApplySettings, "normal"),
-						Health = LUI:NewToggle("While Health Is Low", nil, 4, gs, "Health", nil, ApplySettings, "normal"),
-						Power = LUI:NewToggle("While Power Is Low", nil, 5, gs, "Power", nil, ApplySettings, "normal"),
-						Targeting = LUI:NewToggle("While Targeting", nil, 6, gs, "Targeting", nil, ApplySettings, "full"),
+						Casting = LUI:NewToggle("While Casting", nil, 2, gs, "Casting", gsD, ApplySettings, "normal"),
+						InCombat = LUI:NewToggle("While In Combat", nil, 3, gs, "Combat", gsD, ApplySettings, "normal"),
+						Health = LUI:NewToggle("While Health Is Low", nil, 4, gs, "Health", gsD, ApplySettings, "normal"),
+						Power = LUI:NewToggle("While Power Is Low", nil, 5, gs, "Power", gsD, ApplySettings, "normal"),
+						Targeting = LUI:NewToggle("While Targeting", nil, 6, gs, "Targeting", gsD, ApplySettings, "full"),
 						
 						Settings = LUI:NewHeader("Settings", 7),
 						InAlpha = LUI:NewSlider("In Alpha", "Set the alpha of the frame while not faded.", 8, gs, "InAlpha", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
@@ -715,7 +709,7 @@ function Fader:LoadOptions()
 						PowerClip = LUI:NewSlider("Power Trigger", "Set the percent at which power is considered low.", 13, gs, "PowerClip", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
 						
 						Hover = LUI:NewHeader("Mouse Hover", 14),
-						HoverEnable = LUI:NewToggle("Fade On Mouse Hover", nil, 15, gs, "Hover", nil, ApplySettings, "normal"),
+						HoverEnable = LUI:NewToggle("Fade On Mouse Hover", nil, 15, gs, "Hover", gsD, ApplySettings, "normal"),
 						HoverAlpha = LUI:NewSlider("Hover Alpha", "Set the alpha of the frame while the mouse is hovering over it.", 16, gs, "HoverAlpha", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),																								
 					},
 				},
