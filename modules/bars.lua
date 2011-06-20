@@ -1719,6 +1719,7 @@ local defaults = {
 			State = "0",
 		},
 		Bottombar1 = {
+			Enable = true,
 			X = "0",
 			Y = "24.5",
 			Scale = 0.85,
@@ -1840,7 +1841,7 @@ function module:CreateBottombarOptions(num, order)
 		end
 	end
 	
-	local DisabledFunc = function() return bardb.Enable == false end
+	local DisabledFunc = function() return not bardb.Enable end
 	
 	local options = {
 		name = barName,

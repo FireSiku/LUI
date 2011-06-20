@@ -161,7 +161,7 @@ function module:SetBags()
 
 	-- Script functions.
 	function BAGS:OnEnter()
-		if db.Infotext.CombatLock then return end
+		if db.Infotext.CombatLock and InCombatLockdown() then return end
 
 		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
@@ -236,7 +236,7 @@ function module:SetClock()
 
 	-- Script functions.
 	function CLOCK:OnEnter()
-		if db.Infotext.CombatLock then return end
+		if db.Infotext.CombatLock and InCombatLockdown() then return end
 
 		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
@@ -635,7 +635,7 @@ function module:SetDPS()
 
 	-- Script functions.
 	function DPS:OnEnter()
-		if db.Infotext.CombatLock then return end
+		if db.Infotext.CombatLock and InCombatLockdown() then return end
 
 		local name = UnitName("player")
 		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
@@ -852,7 +852,7 @@ function module:SetDualSpec()
 	
 	-- Script functions.
 	function DS:OnEnter()
-		if db.Infotext.CombatLock then return end
+		if db.Infotext.CombatLock and InCombatLockdown() then return end
 
 		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
@@ -1160,7 +1160,7 @@ function module:SetFPS()
 
 	-- Script functions.
 	function FPS:OnEnter()
-		if db.Infotext.CombatLock then return end
+		if db.Infotext.CombatLock and InCombatLockdown() then return end
 
 		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
@@ -1298,7 +1298,7 @@ function module:SetGold()
 
 	-- Script functions.
 	function GOLD:OnEnter()
-		if db.Infotext.CombatLock then return end
+		if db.Infotext.CombatLock and InCombatLockdown() then return end
 
 		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
@@ -2159,11 +2159,11 @@ function module:SetGuild_Friends()
 
 		f.Guild:SetAllPoints(f.Guild.text)
 		f.Guild:SetScript("OnEnter", function(self)
-			if not InCombatLockdown() then
-				isGuild = true
-				if IsInGuild() then GuildRoster() end
-				AnchorTablet(self)
-			end
+			if db.Infotext.CombatLock and InCombatLockdown() then return end
+
+			isGuild = true
+			if IsInGuild() then GuildRoster() end
+			AnchorTablet(self)
 		end)
 		f.Guild:SetScript("OnLeave", Block_OnLeave)
 		f.Guild:SetScript("OnMouseUp", function(self, button)
@@ -2216,11 +2216,11 @@ function module:SetGuild_Friends()
 
 		f.Friends:SetAllPoints(f.Friends.text)
 		f.Friends:SetScript("OnEnter", function(self)
-			if not InCombatLockdown() then
-				isGuild = false
-				ShowFriends()
-				AnchorTablet(self)
-			end
+			if db.Infotext.CombatLock and InCombatLockdown() then return end
+
+			isGuild = false
+			ShowFriends()
+			AnchorTablet(self)
 		end)
 		f.Friends:SetScript("OnLeave", Block_OnLeave)
 		f.Friends:SetScript("OnMouseUp", function(self, button)
@@ -2548,7 +2548,7 @@ function module:SetMemoryUsage()
 
 	-- Script functions.
 	function MEM:OnEnter()
-		if db.Infotext.CombatLock then return end
+		if db.Infotext.CombatLock and InCombatLockdown() then return end
 		
 		GameTooltip:SetOwner(self, "ANCHOR_"..(self.db.InfoPanel.Vertical == "Top" and "BOTTOM" or "TOP"))
 		GameTooltip:ClearLines()
@@ -3047,7 +3047,7 @@ function module:LoadOptions()
 					},
 				},
 				Bags = {
-					name = "Bags",
+					name = function() return (db.Infotext.Bags.Enable and "Bags") or "|cff888888Bags|r" end,
 					type = "group",
 					order = 2,
 					args = {
@@ -3073,7 +3073,7 @@ function module:LoadOptions()
 					},
 				},
 				Clock = {
-					name = "Clock",
+					name = function() return (db.Infotext.Clock.Enable and "Clock") or "|cff888888Clock|r" end,
 					type = "group",
 					order = 3,
 					args = {
@@ -3130,7 +3130,7 @@ function module:LoadOptions()
 					},
 				},
 				Currency = {
-					name = "Currency Info",
+					name = function() return (db.Infotext.Currency.Enable and "Currency Info") or "|cff888888Currency Info|r" end,
 					type = "group",
 					order = 4,
 					args = {
@@ -3156,7 +3156,7 @@ function module:LoadOptions()
 					},
 				},
 				DPS = {
-					name = "DPS",
+					name = function() return (db.Infotext.Dps.Enable and "DPS") or "|cff888888DPS|r" end,
 					type = "group",
 					order = 5,
 					args = {
@@ -3182,7 +3182,7 @@ function module:LoadOptions()
 					},
 				},
 				DualSpec = {
-					name = "Dual Spec",
+					name = function() return (db.Infotext.DualSpec.Enable and "Dual Spec") or "|cff888888Dual Spec|r" end,
 					type = "group",
 					order = 6,
 					args = {
@@ -3218,7 +3218,7 @@ function module:LoadOptions()
 					},
 				},
 				Durability = {
-					name = "Durability",
+					name = function() return (db.Infotext.Armor.Enable and "Durability") or "|cff888888Durability|r" end,
 					type = "group",
 					order = 7,
 					args = {
@@ -3244,7 +3244,7 @@ function module:LoadOptions()
 					},
 				},
 				FPS = {
-					name = "FPS / MS",
+					name = function() return (db.Infotext.Fps.Enable and "FPS / MS") or "|cff888888FPS / MS|r" end,
 					type = "group",
 					order = 8,
 					args = {
@@ -3289,7 +3289,7 @@ function module:LoadOptions()
 					},
 				},
 				Gold = {
-					name = "Gold",
+					name = function() return (db.Infotext.Gold.Enable and "Gold") or "|cff888888Gold|r" end,
 					type = "group",
 					order = 9,
 					args = {
@@ -3818,7 +3818,7 @@ function module:LoadOptions()
 					},
 				},
 				Instance = {
-					name = "Instance Info",
+					name = function() return (db.Infotext.Instance.Enable and "Instance Info") or "|cff888888Instance Info|r" end,
 					type = "group",
 					order = 11,
 					args = {
@@ -3844,7 +3844,7 @@ function module:LoadOptions()
 					},
 				},
 				MemoryUsage = {
-					name = "Memory Usage",
+					name = function() return (db.Infotext.Memory.Enable and "Memory Usage") or "|cff888888Memory Usage|r" end,
 					type = "group",
 					order = 12,
 					args = {
