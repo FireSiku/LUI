@@ -183,6 +183,13 @@ local defaults = {
 				Y = "10",
 				Point = "CENTER",
 			},
+			ReadyCheck = {
+				Enable = true,
+				Size = 20,
+				X = "0",
+				Y = "0",
+				Point = "CENTER",
+			},
 		},
 		Texts = {
 			Name = {

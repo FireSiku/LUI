@@ -1276,7 +1276,15 @@ oUF_LUI.funcs = {
 		self.Combat:ClearAllPoints()
 		self.Combat:SetPoint(oufdb.Icons.Combat.Point, self, oufdb.Icons.Combat.Point, tonumber(oufdb.Icons.Combat.X), tonumber(oufdb.Icons.Combat.Y))
 	end,
-
+	ReadyCheck = function(self, unit, oufdb)
+		if not self.ReadyCheck then self.ReadyCheck = self.Overlay:CreateTexture(nil, "OVERLAY") end
+		
+		self.ReadyCheck:SetHeight(oufdb.Icons.ReadyCheck.Size)
+		self.ReadyCheck:SetWidth(oufdb.Icons.ReadyCheck.Size)
+		self.ReadyCheck:ClearAllPoints()
+		self.ReadyCheck:SetPoint(oufdb.Icons.ReadyCheck.Point, self, oufdb.Icons.ReadyCheck.Point, tonumber(oufdb.Icons.ReadyCheck.X), tonumber(oufdb.Icons.ReadyCheck.Y))
+	end,
+	
 	-- player specific
 	Experience = function(self, unit, ouf_xp_rep)
 		if not self.XP then
@@ -3281,6 +3289,7 @@ local SetStyle = function(self, unit, isSingle)
 		if oufdb.Icons.PvP and oufdb.Icons.PvP.Enable then funcs.PvP(self, unit, oufdb) end
 		if oufdb.Icons.Resting and oufdb.Icons.Resting.Enable then funcs.Resting(self, unit, oufdb) end
 		if oufdb.Icons.Combat and oufdb.Icons.Combat.Enable then funcs.Combat(self, unit, oufdb) end
+		if oufdb.Icons.ReadyCheck and oufdb.Icons.ReadyCheck.Enable then funcs.ReadyCheck(self, unit, oufdb) end
 	end
 
 	------------------------------------------------------------------------
