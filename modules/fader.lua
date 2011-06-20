@@ -473,7 +473,7 @@ function Fader:FadeFrame(frame, endAlpha, fadeTime, fadeDelay)
 	end
 	
 	-- check if frame needs to be shown.
-	if not frame:IsVisible() then
+	if not frame:IsShown() then
 		-- set alpha to zero to avoid sudden flash of frame.
 		frame:SetAlpha(0)
 		frame:Show() 
@@ -523,7 +523,8 @@ function Fader:StopFading(frame)
 		if v == frame then
 			frame.Fader.fading = false
 			tremove(self.Fading, i)
-			break
+			if not self.RegisteredFrames[frame] then frame.Fader = nil end
+			return
 		end
 	end
 end
