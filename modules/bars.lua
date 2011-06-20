@@ -202,27 +202,6 @@ local function SetRightSidebarAnchor()
 	end
 end
 
-function module:CreateFaderBar(bar)
-	local fstrata = bar:GetFrameStrata()
-	bar.FaderBar = CreateFrame("Frame", bar:GetName().."_FaderBar", UIParent)
-	bar.FaderBar:ClearAllPoints()
-	bar.FaderBar:SetAllPoints(bar)
-	bar.FaderBar:SetFrameStrata("DIALOG")
-	bar:SetParent(bar.FaderBar)
-	bar:SetFrameStrata(fstrata)
-
-	bar.OldHide = bar.Hide
-	bar.Hide = function(self)
-		bar.FaderBar:Hide()
-		self:OldHide()
-	end
-	bar.OldShow = bar.Show
-	bar.Show = function(self)
-		bar.FaderBar:Show()
-		self:OldShow()
-	end
-end
-
 function module:SetBarColors()
 	BarsBackground:SetBackdropColor(unpack(db.Colors.bar))
 	BarsBackground2:SetBackdropColor(unpack(db.Colors.bar2))
@@ -1226,6 +1205,8 @@ function module:SetButtons()
 end
 
 function module:SetBottomBar1()
+	local LUI_Fader = LUI:GetModule("Fader", true)
+
 	local Page = {
 		["DRUID"] = {
 			"[bonusbar:1,nostealth] %s; ",
@@ -1265,7 +1246,7 @@ function module:SetBottomBar1()
 	bar:SetHeight(36)
 	bar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.Bottombar1.X), tonumber(db.Bars.Bottombar1.Y))
 	bar:SetScale(tonumber(db.Bars.Bottombar1.Scale))
-	--self:CreateFaderBar(bar)
+	if LUI_Fader then LUI_Fader:CreateFaderBar(bar) end
 
 	local button, buttons, previous
 	
@@ -1305,21 +1286,19 @@ function module:SetBottomBar1()
 	end
 
 	-- Register bar to fader.
-	--[[
-	if db.Bars.Bottombar1.Fader.Enable and bar.FaderBar then
-		local LUI_Fader = LUI:GetModule("Fader", true)
+	if db.Bars.Bottombar1.Fader.Enable and bar.FaderBar then		
 		if LUI_Fader then LUI_Fader:RegisterFrame(bar.FaderBar, db.Bars.Bottombar1.Fader) end
 	end
-	]]
 end
 
 function module:SetBottomBar2()
+	local LUI_Fader = LUI:GetModule("Fader", true)
 	local bar = CreateFrame("Frame", "LUIBar2", UIParent, "SecureHandlerStateTemplate")
 	bar:SetWidth(454)
 	bar:SetHeight(36)
 	bar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.Bottombar2.X), tonumber(db.Bars.Bottombar2.Y))
 	bar:SetScale(tonumber(db.Bars.Bottombar2.Scale))
-	--self:CreateFaderBar(bar)
+	if LUI_Fader then LUI_Fader:CreateFaderBar(bar) end
 
 	local button, buttons, previous
 	
@@ -1361,21 +1340,19 @@ function module:SetBottomBar2()
 	end
 
 	-- Register bar to fader.
-	--[[
 	if db.Bars.Bottombar2.Fader.Enable and bar.FaderBar then
-		local LUI_Fader = LUI:GetModule("Fader", true)
 		if LUI_Fader then LUI_Fader:RegisterFrame(bar.FaderBar, db.Bars.Bottombar2.Fader) end
 	end
-	]]
 end
 
 function module:SetBottomBar3()
+	local LUI_Fader = LUI:GetModule("Fader", true)
 	local bar = CreateFrame("Frame", "LUIBar3", UIParent, "SecureHandlerStateTemplate")
 	bar:SetWidth(454)
 	bar:SetHeight(36)
 	bar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.Bottombar3.X), tonumber(db.Bars.Bottombar3.Y))
 	bar:SetScale(tonumber(db.Bars.Bottombar3.Scale))
-	--self:CreateFaderBar(bar)
+	if LUI_Fader then LUI_Fader:CreateFaderBar(bar) end
 
 	local button, buttons, previous
 	
@@ -1417,12 +1394,9 @@ function module:SetBottomBar3()
 	end
 
 	-- Register bar to fader.
-	--[[
 	if db.Bars.Bottombar3.Fader.Enable and bar.FaderBar then
-		local LUI_Fader = LUI:GetModule("Fader", true)
-		if LUI_Fader then LUI_Fader::RegisterFrame(bar.FaderBar, db.Bars.Bottombar3.Fader) end
+		if LUI_Fader then LUI_Fader:RegisterFrame(bar.FaderBar, db.Bars.Bottombar3.Fader) end
 	end
-	]]
 end
 
 function module:SetLeftBar()
@@ -1756,7 +1730,6 @@ local defaults = {
 				[5] = "0",
 				[6] = "0",
 			},
-			--[[
 			Fader = {
 				Casting = true,
 				Combat = true,
@@ -1774,7 +1747,6 @@ local defaults = {
 				Targeting = true,
 				UseGlobalSettings = true,
 			},
-			]]
 		},
 		Bottombar2 = {
 			Enable = true,
@@ -1782,7 +1754,6 @@ local defaults = {
 			Y = "63.5",
 			Scale = 0.85,
 			State = "0",
-			--[[
 			Fader = {
 				Casting = true,
 				Combat = true,
@@ -1800,7 +1771,6 @@ local defaults = {
 				Targeting = true,
 				UseGlobalSettings = true,
 			},
-			]]
 		},
 		Bottombar3 = {
 			Enable = false,
@@ -1808,7 +1778,6 @@ local defaults = {
 			Y = "102.5",
 			Scale = 0.85,
 			State = "0",
-			--[[
 			Fader = {
 				Casting = true,
 				Combat = true,
@@ -1826,7 +1795,6 @@ local defaults = {
 				Targeting = true,
 				UseGlobalSettings = true,
 			},
-			]]
 		},
 		Shapeshiftbar = {
 			X = "50",
@@ -1901,7 +1869,6 @@ function module:CreateBottombarOptions(num, order)
 				order = 3,
 				args = {},
 			},
-			--[[
 			Fader = {
 				name = "Fader",
 				type = "group",
@@ -1912,7 +1879,6 @@ function module:CreateBottombarOptions(num, order)
 					Empty = LUI:NewDesc("|cffff0000Fader not found.|r", 1),
 				},
 			},
-			]]
 		},
 	}
 	
