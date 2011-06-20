@@ -5,10 +5,6 @@
 ## Notes: User Interface Modification
 ## SavedVariables: LUIDB, LUIGold, LUI_Themes, LUI_Layouts
 ## SavedVariablesPerCharacter: LUICONFIG
-## X-Curse-Packaged-Version: r9
-## X-Curse-Project-Name: LUI Core
-## X-Curse-Project-ID: lui
-## X-Curse-Repository-ID: wow/lui/mainline
 
 libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
