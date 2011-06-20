@@ -38,40 +38,6 @@
 		event types.
 ]]
 
-------------------------------------------------------
--- / Changes / --
-------------------------------------------------------
---[[
-	2.0:
-		1)	Updated so usable with new framework.
-		2)	No longer hooks OnUpdate scripts. Instead the module has its own frame which runs an OnUpdate script.
-		
-	1.0 (b):
-		1)	Changed the way registered frames are store. Now stored like follows:
-				frame = framesettings.
-			To keep track of number of frames I added variable Fader.RegisteredFrameTotal 
-		2)	Update all logic and code for above changes (BIG CHANGE)
-		3)	Re-ordered fade logic to try against most likely first:
-				targeting, combat, power, health, casting
-
-	1.0 (a):
-		1)	Added remove hover script method.
-		2)	Added loops to OnEnable/OnDisable to attach/remove hover scripts
-			from registered frames.
-		3)	frame.Fade tables are now created upon register of frames. They are
-			also removed upon unregistered. This removes a step from relevant logic
-			tests by allowing methods to assume the frame will have a table.
-		4)	Added power returns to Collect_States() function.
-		5)	Changed health/power return information to this format:
-				returns false if state is normal (not a trigger)
-				returns the percent of health/power.
-				power is in the format: 1(100%) equals full, 0(0%) equals empty
-		7)	Added second EventHandler function (UnitEventHandler) to specifily
-			handle events that recieve unit parameters. This way to speed up
-			normal events, removing undeed checks.
-		6)	Updated logic for above changes.				
-]]
-
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
@@ -521,17 +487,10 @@ function Fader:FadeFrame(frame, endAlpha, fadeTime, fadeDelay)
 		return
 	end
 	
-	-- Check if frame needs to be shown.
-	if not frame:IsShown() then
-		-- Set alpha to zero to avoid sudden flash of frame.
-		frame:SetAlpha(0)
-		frame:Show() 
-	end
-	
 	-- Setup fader settings.
 	-- Settings equal optional parameters or defaults.
 	frame.Fader = frame.Fader or {}
-	frame.Fader.startAlpha = frame:GetAlpha()
+	frame.Fader.startAlpha = (not frame:IsShown() and 0) or frame:GetAlpha()
 	frame.Fader.endAlpha = endAlpha or 0
 	frame.Fader.deltaAlpha = frame.Fader.endAlpha - frame.Fader.startAlpha
 	frame.Fader.fadingIn = frame.Fader.endAlpha > frame.Fader.startAlpha

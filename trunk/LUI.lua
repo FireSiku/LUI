@@ -89,8 +89,8 @@ LUI.defaults = {
 			BlizzFrameScale = 1,
 			ModuleMessages = true,
 			DamageFont = "neuropol",
-			DamageFontSize = 38,
-			DamageFontSizeCrit = 41,
+			DamageFontSize = 25,
+			DamageFontSizeCrit = 34,
 		},
 	}
 }
