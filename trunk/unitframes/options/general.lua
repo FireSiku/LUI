@@ -130,6 +130,7 @@ local iconNamesList = {
 	Leader = {"Leader", "Assistant"},
 	Role = {"LFDRole"},
 	Raid = {"RaidIcon"},
+	ReadyCheck = {"ReadyCheck"},
 }
 
 local positions = {"TOP", "TOPRIGHT", "TOPLEFT","BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT","RIGHT", "LEFT", "CENTER"}
@@ -356,7 +357,7 @@ end
 --	Icon Option Constructor
 ------------------------------------------------------------------------
 	
--- iconType: "PvP", "Combat", "Resting", "Lootmaster", "Leader", "Role", "Raid"
+-- iconType: "PvP", "Combat", "Resting", "Lootmaster", "Leader", "Role", "Raid", "ReadyCheck"
 function module:CreateIconOptions(unit, order, iconType)
 	local icondefaults = LUI.defaults.profile.oUF[unit]["Icons"][iconType]
 	local icondb = db.oUF[unit]["Icons"][iconType]
@@ -1106,6 +1107,7 @@ function module:CreateOptions(index, unit)
 					LFDRole = (unit ~= "Boss" and unit ~= "PartyPet" and unit ~= "PartyTarget" and unit ~= "MaintankTarget" and unit ~= "MaintankToT") and module:CreateIconOptions(unit, 3, "Role") or nil,
 					Raid = module:CreateIconOptions(unit, 4, "Raid"),
 					PvP = (unit ~= "Boss" and unit ~= "PartyPet" and unit ~= "PartyTarget" and unit ~= "MaintankTarget" and unit ~= "MaintankToT" and unit ~= "Raid") and module:CreateIconOptions(unit, 5, "PvP") or nil,
+					ReadyCheck = (unit == "Raid") and module:CreateIconOptions(unit, 6, "ReadyCheck") or nil,
 				},
 			} or nil,
 		},
