@@ -542,7 +542,24 @@ local function getOptions()
 									order = 3,
 									width = "full",
 									type = "description",
-									name = "Welcome to |c0090ffffLUI v3|r the first and only NextGeneration\nWorld of Warcraft User Interface.\n\nPlease read the FAQ if you have Questions!\nFor more information please visit\n|cff8080ffhttp://www.wow-lui.com|r\n|cff8080ffhttp://wowinterface.com|r\n\nEnjoy!\n\n\nVersion: |c0090ffff"..LUICONFIG.Versions.lui.."|r",
+									name = "Welcome to |c0090ffffLUI v3|r the first and only NextGeneration\nWorld of Warcraft User Interface.\n\nPlease read the FAQ if you have Questions!\nFor more information please visit\n|cff8080ffhttp://www.wow-lui.com|r\n|cff8080ffhttp://wowinterface.com|r\n\nEnjoy!\n\n\n|r",
+								},
+								VerText = {
+									order = 4,
+									width = "full",
+									type = "description",
+									name = "Version: "..GetAddOnMetadata("LUI", "Version"),
+								},
+								RevText = {
+									order = 5,
+									width = "full",
+									type = "description",
+									name = function()
+											if GetAddOnMetadata("LUI", "X-Curse-Packaged-Version") then 
+												return "Revision: "..GetAddOnMetadata("LUI", "X-Curse-Packaged-Version") 
+											else	return "Revision: ???"
+											end
+										end,
 								},
 							},
 						},
