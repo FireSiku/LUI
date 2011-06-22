@@ -91,7 +91,10 @@ LUI.defaults = {
 			DamageFont = "neuropol",
 			DamageFontSize = 25,
 			DamageFontSizeCrit = 34,
-			RecountFontHack = true,
+		},
+		Recount = {
+			FontHack = true,
+			FontSize = 13,
 		},
 	}
 }
@@ -826,30 +829,8 @@ local function getOptions()
 									type = "header",
 									order = 1,
 								},
-								empty1 = {
-									name = "   ",
-									width = "full",
-									type = "description",
-									order = 2,
-								},
-								ResetGrid = {
-									order = 3,
-									type = "execute",
-									name = "Restore Grid",
-									func = function()
-										LUICONFIG.Versions.grid = nil
-										LUI:InstallGrid()
-										StaticPopup_Show("RELOAD_UI")
-									end,
-								},
-								empty2 = {
-									name = "   ",
-									width = "full",
-									type = "description",
-									order = 4,
-								},
 								ResetBartender = {
-									order = 5,
+									order = 2,
 									type = "execute",
 									name = "Restore Bartender",
 									func = function()
@@ -858,14 +839,8 @@ local function getOptions()
 										StaticPopup_Show("RELOAD_UI")
 									end,
 								},
-								empty3 = {
-									name = "   ",
-									width = "full",
-									type = "description",
-									order = 6,
-								},
 								ResetForte = {
-									order = 7,
+									order = 3,
 									type = "execute",
 									name = "Restore ForteXorcist",
 									func = function()
@@ -874,33 +849,18 @@ local function getOptions()
 										StaticPopup_Show("RELOAD_UI")
 									end,
 								},
-								empty4 = {
-									name = "   ",
-									width = "full",
-									type = "description",
-									order = 8,
-								},
-								ResetRecount = {
-									order = 9,
+								ResetGrid = {
+									order = 4,
 									type = "execute",
-									name = "Restore Recount",
+									name = "Restore Grid",
 									func = function()
-										LUICONFIG.Versions.recount = nil
-										LUI:InstallRecount()
+										LUICONFIG.Versions.grid = nil
+										LUI:InstallGrid()
 										StaticPopup_Show("RELOAD_UI")
 									end,
 								},
-								RecountHack = {
-									name = "Recount Fix",
-									desc = "Whether or not to apply the font size fix to Recount.",
-									type = "toggle",
-									order = 10,
-									disabled = function() return not IsAddOnLoaded("Recount") end,
-									get = function() return db.General.RecountFontHack end,
-									set = function() LUI.RecountFontHack:Toggle() end,								
-								},
 								ResetOmen = {
-									order = 11,
+									order = 5,
 									type = "execute",
 									name = "Restore Omen",
 									func = function()
@@ -909,25 +869,61 @@ local function getOptions()
 										StaticPopup_Show("RELOAD_UI")
 									end,
 								},
-								empty6 = {
-									name = "   ",
-									width = "full",
-									type = "description",
-									order = 12,
+								ResetRecount = {
+									order = 6,
+									type = "execute",
+									name = "Restore Recount",
+									func = function()
+										LUICONFIG.Versions.recount = nil
+										LUI:InstallRecount()
+										StaticPopup_Show("RELOAD_UI")
+									end,
 								},
-								header1222 = {
+								header2 = {
+									name = "Recount Settings",
+									type = "header",
+									order = 7,
+									hidden = function() return not IsAddOnLoaded("Recount") end,
+								},
+								RecountHack = {
+									name = "Force Font Size",
+									desc = "Whether or not to apply a font size fix to Recount.",
+									type = "toggle",
+									order = 10,
+									disabled = function() return not IsAddOnLoaded("Recount") end,
+									hidden = function() return not IsAddOnLoaded("Recount") end,
+									get = function() return db.Recount.FontHack end,
+									set = function() LUI.RecountFontHack:Toggle() end,								
+								},
+								RecountFontSize = {
+									name = "Font Size",
+									desc = "Set the font size for Recount's bars.",
+									type = "range",
+									min = 6,
+									max = 32,
+									step = 1,
+									disabled = function() return not IsAddOnLoaded("Recount") or not db.Recount.FontHack end,
+									hidden = function() return not IsAddOnLoaded("Recount") end,
+									get = function() return db.Recount.FontSize end,
+									set = function(self, size)
+											db.Recount.FontSize = size
+											Recount:BarsChanged()
+										end,
+									order = 11,
+								},
+								header3 = {
 									name = "Restore ALL Addon Defaults",
 									type = "header",
-									order = 13,
+									order = 12,
 								},
 								ResetDesc = {
-									order = 14,
+									order = 13,
 									width = "full",
 									type = "description",
 									name = "ATTENTION:\nAll SavedVariables from Grid, Recount, Omen, Bartender and ForteXorcist will be resetted!"
 								},
 								Reset = {
-									order = 15,
+									order = 14,
 									type = "execute",
 									name = "Restore Defaults",
 									func = function()

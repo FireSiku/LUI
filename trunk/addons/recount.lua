@@ -141,12 +141,16 @@ LUI.RecountFontHack = CreateFrame("frame", "RecountFontHack")
 local frame = LUI.RecountFontHack
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 
+function frame:FontSizeFix(string)
+	local Font, Height, Flags = string:GetFont()
+	string:SetFont(Font, LUI.db.profile.Recount.FontSize, Flags)
+end
 function frame:Hack()
 	-- Unregister event.
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 
 	-- Check if hack is enabled.
-	if not LUI.db.profile.General.RecountFontHack then return end
+	if not LUI.db.profile.Recount.FontHack then return end
 
 	-- Check if Recount is installed.
 	if not IsAddOnLoaded("Recount") then return end
@@ -154,19 +158,14 @@ function frame:Hack()
 	-- Check if hack hasn't already been done.
 	if self.Hacked then return end
 
-	local function mod(str)
-		local f, h, fl = str:GetFont()
-		str:SetFont(f, 13, fl)
-	end
-
 	-- Apply hack.
 	self.old = Recount.BarsChanged
 	function Recount:BarsChanged()
 		frame.old(self)
 
 		for k, v in pairs(Recount.MainWindow.Rows) do
-			mod(v.LeftText)
-			mod(v.RightText)
+			frame:FontSizeFix(v.LeftText)
+			frame:FontSizeFix(v.RightText)
 		end
 	end
 	
@@ -191,10 +190,10 @@ end
 
 function frame:Toggle()
 	-- Toggle database setting
-	LUI.db.profile.General.RecountFontHack = not LUI.db.profile.General.RecountFontHack
+	LUI.db.profile.Recount.FontHack = not LUI.db.profile.Recount.FontHack
 
 	-- Hack or UnHack accordingly.
-	if LUI.db.profile.General.RecountFontHack then
+	if LUI.db.profile.Recount.FontHack then
 		self:Hack()
 	else
 		self:UnHack()
