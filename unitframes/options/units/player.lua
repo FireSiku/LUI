@@ -1264,7 +1264,7 @@ function module:LoadOptions()
 							args = {
 								Colors = {
 									args = {
-										CBLatencyColor = LUI:NewColor("Castbar Latency Color", nil, 5, db.oUF.Player.Castbar.Colors.Latency, LUI.defaults.profile.oUF.Player.Castbar.Colors.Latency, oUF_LUI_player.StyleCastbar, nil, function() return not db.oUF.Player.Castbar.IndividualColor end)
+										CBLatencyColor = LUI:NewColor("Castbar Latency Color", nil, 5, db.oUF.Player.Castbar.Colors.Latency, LUI.defaults.profile.oUF.Player.Castbar.Colors.Latency, function() if oUF_LUI_player then LUI.oUF.funcs.Castbar(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player) end end, nil, function() return not db.oUF.Player.Castbar.IndividualColor end)
 									},
 								},
 							},
