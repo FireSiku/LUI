@@ -91,6 +91,7 @@ LUI.defaults = {
 			DamageFont = "neuropol",
 			DamageFontSize = 25,
 			DamageFontSizeCrit = 34,
+			RecountFontHack = true,
 		},
 	}
 }
@@ -889,11 +890,14 @@ local function getOptions()
 										StaticPopup_Show("RELOAD_UI")
 									end,
 								},
-								empty5 = {
-									name = "   ",
-									width = "full",
-									type = "description",
+								RecountHack = {
+									name = "Recount Fix",
+									desc = "Whether or not to apply the font size fix to Recount.",
+									type = "toggle",
 									order = 10,
+									disabled = function() return not IsAddOnLoaded("Recount") end,
+									get = function() return db.General.RecountFontHack end,
+									set = function() LUI.RecountFontHack:Toggle() end,								
 								},
 								ResetOmen = {
 									order = 11,
