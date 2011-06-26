@@ -87,7 +87,7 @@ function LUI:NewToggle(name, desc, order, dbt, option, default, func, width, dis
 	return t
 end
 
-function LUI:NewEnable(name, order, dbt)
+function LUI:NewEnable(name, order, dbt, width, disabled, hidden)
 	local t = {}
 
 	t.order = order or 1
