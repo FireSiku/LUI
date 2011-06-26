@@ -184,7 +184,6 @@ function module:LoadOptions()
 	local options = {
 		Merchant = {
 			type = "group",
-			order = 35,
 			name = "Merchant",
 			disabled = function()
 					return not db.Merchant.Enable

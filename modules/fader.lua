@@ -674,7 +674,6 @@ function Fader:LoadOptions()
 			name = "Fader",
 			type = "group",
 			childGroups = "tab",
-			order = 70,
 			disabled = function() return not db.Fader.Enable end,
 			args = {
 				Header = LUI:NewHeader("Fader", 1),

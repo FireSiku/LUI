@@ -1199,7 +1199,7 @@ function module:LoadOptions()
 		Layouts = {
 			name = "Colors",
 			type = "group",
-			order = 5,
+			order = 2,
 			childGroups = "tab",
 			args = {
 				Theme = {

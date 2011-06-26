@@ -2147,7 +2147,6 @@ function module:LoadOptions()
 		Bars = {
 			name = "Bars",
 			type = "group",
-			order = 15,
 			disabled = function() return InCombatLockdown() end,
 			childGroups = "tab",
 			args = {

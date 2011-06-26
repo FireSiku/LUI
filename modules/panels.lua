@@ -940,7 +940,7 @@ function module:LoadOptions()
 		Frames = {
 			name = "Frames",
 			type = "group",
-			order = 10,
+			order = 3,
 			childGroups = "tab",
 			args = {
 				Tps = {

@@ -945,7 +945,6 @@ function module:LoadOptions()
 		Chat = {
 			name = "Chat",
 			type = "group",
-			order = 30,
 			disabled = function() return not db.Chat.Enable end,
 			childGroups = "tab",
 			args = {

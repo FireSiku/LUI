@@ -152,7 +152,6 @@ function module:LoadOptions()
 		Hix_InterruptAnnouncer = {
 			name = "Interrupt Announcer",
 			type = "group",
-			order = 60,
 			disabled = function() return not db.Hix_InterruptAnnouncer.Enable end,
 			childGroups = "tab",
 			args = {

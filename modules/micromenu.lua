@@ -1123,7 +1123,6 @@ function module:LoadOptions()
 		Micromenu = {
 			name = "MicroMenu",
 			type = "group",
-			order = 9,
 			args = {
 				MicroMenuPosition = {
 					name = "Micro Menu",

@@ -536,7 +536,6 @@ function module:LoadOptions()
 			name = "Auras",
 			type = "group",
 			disabled = function() return not db.Auras.Enable end,
-			order = 25,
 			childGroups = "tab",
 			args = {
 				Settings = {
