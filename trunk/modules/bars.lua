@@ -1116,10 +1116,10 @@ function module:SetButtons()
 			arrowDistance = 2
 		end
 		
-		if self:GetParent():GetParent():GetName() == "SpellBookSpellIconsFrame" then return end
+		if self:GetParent():GetName() == "SpellBookSpellIconsFrame" then return end
 		
 		if self:GetAttribute("flyoutDirection") ~= nil then
-			local point = self:GetParent():GetParent():GetPoint()
+			local point = self:GetParent():GetPoint()
 			
 			if point:find("BOTTOM") then
 				self.FlyoutArrow:ClearAllPoints()
