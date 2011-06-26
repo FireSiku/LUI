@@ -472,11 +472,12 @@ end
 	Notes.....: Takes a frame and fades it with the given parameters.
 	Parameters:
 		frame: Frame to fade.
-		endalpha: Alpha value to fade to.
-		fadetime: Time (seconds) to fade over.
-		fadedelay: Delay (seconds) before fading.
+		endAlpha: Alpha value to fade to.
+		fadeTime: Time (seconds) to fade over.
+		fadeDelay: Delay (seconds) before fading.
+		callBack: Function to call upon finishing the fade.
 ]]
-function Fader:FadeFrame(frame, endAlpha, fadeTime, fadeDelay)
+function Fader:FadeFrame(frame, endAlpha, fadeTime, fadeDelay, callBack)
 	-- Check frame is a usable object.
 	if not frame then return end
 	
@@ -497,6 +498,7 @@ function Fader:FadeFrame(frame, endAlpha, fadeTime, fadeDelay)
 	frame.Fader.fadeTime = fadeTime or 0.2
 	frame.Fader.timeElapsed = 0
 	frame.Fader.fadeDelay = fadeDelay or 0
+	frame.Fader.callBack = (type(callBack) == "function" and callBack) or nil
 
 	-- Start fading frame.
 	self:StartFading(frame)
@@ -531,6 +533,7 @@ function Fader:StopFading(frame)
 		if v == frame then
 			frame.Fader.fading = false
 			tremove(self.Fading, i)
+			if frame.Fader.callBack then frame.Fader.callBack() end
 			if not self.RegisteredFrames[frame] then frame.Fader = nil end
 			return
 		end
