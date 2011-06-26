@@ -1121,6 +1121,7 @@ function module:SetButtons()
 		if self:GetAttribute("flyoutDirection") ~= nil then
 			local point = self:GetParent():GetPoint()
 			
+			if not point then return end
 			if point:find("BOTTOM") then
 				self.FlyoutArrow:ClearAllPoints()
 				self.FlyoutArrow:SetPoint("TOP", self, "TOP", 0, arrowDistance)
