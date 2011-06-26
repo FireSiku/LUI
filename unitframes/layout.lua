@@ -1343,8 +1343,11 @@ oUF_LUI.funcs = {
 			local frameStrata = self.XP:GetFrameStrata()
 			self.XP:SetScript("OnEnter", function()
 				self.XP:SetAlpha(ouf_xp_rep.Experience.Alpha)
+
 				-- Set frame strata to raise frame above health text.
+				frameStrata = self.XP:GetFrameStrata()
 				self.XP:SetFrameStrata("TOOLTIP")
+
 				local level, value, max, rested = UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetXPExhaustion()
 				GameTooltip:SetOwner(self.XP, "ANCHOR_LEFT")
 				GameTooltip:ClearLines()
@@ -1360,6 +1363,7 @@ oUF_LUI.funcs = {
 				if not ouf_xp_rep.Experience.AlwaysShow then
 					self.XP:SetAlpha(0)
 				end
+
 				-- Reset frame strata back to normal level.
 				self.XP:SetFrameStrata(frameStrata)
 				GameTooltip:Hide()
@@ -1419,8 +1423,14 @@ oUF_LUI.funcs = {
 				if event == 'PLAYER_ENTERING_WORLD' then self.Rep:UnregisterEvent('PLAYER_ENTERING_WORLD') end
 			end)
 
+			local frameStrata = self.Rep:GetFrameStrata()
 			self.Rep:SetScript("OnEnter", function()
 				self.Rep:SetAlpha(ouf_xp_rep.Reputation.Alpha)
+
+				-- Set frame strata to raise frame above health text.
+				frameStrata = self.Rep:GetFrameStrata()
+				self.Rep:SetFrameStrata("TOOLTIP")
+
 				GameTooltip:SetOwner(self.Rep, "ANCHOR_LEFT")
 				GameTooltip:ClearLines()
 				if GetWatchedFactionInfo() then
@@ -1437,6 +1447,9 @@ oUF_LUI.funcs = {
 				if ouf_xp_rep.Reputation.AlwaysShow ~= true then
 					self.Rep:SetAlpha(0)
 				end
+
+				-- Reset frame strata back to normal level.
+				self.Rep:SetFrameStrata(frameStrata)
 				GameTooltip:Hide()
 			end)
 		end
