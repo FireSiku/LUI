@@ -15,24 +15,12 @@ function module:LoadOptions()
 		FAQ = {
 			name = "FAQ",
 			type = "group",
-			order = 99,
+			order = 5,
 			args = {
 				header10 = {
 					name = "FAQ",
 					type = "header",
 					order = 1,
-				},
-				question1 = {
-					order = 2,
-					width = "full",
-					type = "description",
-					name = "|cffFF0000Q:|r Can i update all Addons like i always do?",
-				},
-				answer1 = {
-					order = 3,
-					width = "full",
-					type = "description",
-					name = "|cff3399ffA:|r Yes but please DO NOT update Recount.\nFor more information please visit |cff8080ffhttp://www.wow-lui.com|r",
 				},
 				emptyq1 = {
 					name = "   ",

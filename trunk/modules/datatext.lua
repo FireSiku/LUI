@@ -3011,7 +3011,6 @@ function module:LoadOptions()
 		Infotext = {
 			name = "Info Text",
 			type = "group",
-			order = 65,
 			disabled = function() return not db.Infotext.Enable end,
 			childGroups = "select",
 			args = {

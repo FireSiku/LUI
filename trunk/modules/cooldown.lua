@@ -247,7 +247,6 @@ function module:LoadOptions()
 			name = "Cooldown",
 			type = "group",
 			childGroups = "tab",
-			order = 60,
 			disabled = function() return not db.Cooldown.Enable end,
 			args = {
 				Header = {

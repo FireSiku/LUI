@@ -491,7 +491,7 @@ end
 
 local options, moduleList, moduleOptions, frameOptions, unitframeOptions = nil, {}, {}, {}, {}
 
-function LUI:MergeOptions(target, source)
+function LUI:MergeOptions(target, source, sort)
 	if type(target) ~= "table" then target = {} end
 	for k,v in pairs(target) do
 		if k == "type" and v ~= "group" then
@@ -502,6 +502,9 @@ function LUI:MergeOptions(target, source)
 	for k,v in pairs(source) do
 		if type(v) == "table" then
 			target[k] = self:MergeOptions(target[k], v)
+			
+			-- Sort modules by name if they don't have an order.
+			if sort then target[k].order = target[k].order or 10 end
 		else
 			target[k] = v
 		end
@@ -813,18 +816,12 @@ local function getOptions()
 								},
 							},
 						},
-						Modules = {
-							name = "Modules",
-							type = "group",
-							order = 3,
-							args = {},
-						},
 						Addons = {
 							name = "Addons",
 							type = "group",
 							order = 4,
 							args = {
-								header1 = {
+								Header1 = {
 									name = "Restore Addon Defaults",
 									type = "header",
 									order = 1,
@@ -840,7 +837,7 @@ local function getOptions()
 									end,
 								},
 								ResetForte = {
-									order = 3,
+									order = 2,
 									type = "execute",
 									name = "Restore ForteXorcist",
 									func = function()
@@ -850,7 +847,7 @@ local function getOptions()
 									end,
 								},
 								ResetGrid = {
-									order = 4,
+									order = 2,
 									type = "execute",
 									name = "Restore Grid",
 									func = function()
@@ -860,7 +857,7 @@ local function getOptions()
 									end,
 								},
 								ResetOmen = {
-									order = 5,
+									order = 2,
 									type = "execute",
 									name = "Restore Omen",
 									func = function()
@@ -870,7 +867,7 @@ local function getOptions()
 									end,
 								},
 								ResetRecount = {
-									order = 6,
+									order = 2,
 									type = "execute",
 									name = "Restore Recount",
 									func = function()
@@ -879,17 +876,17 @@ local function getOptions()
 										StaticPopup_Show("RELOAD_UI")
 									end,
 								},
-								header2 = {
+								Header2 = {
 									name = "Recount Settings",
 									type = "header",
-									order = 7,
+									order = 3,
 									hidden = function() return not IsAddOnLoaded("Recount") end,
 								},
 								RecountHack = {
 									name = "Force Font Size",
 									desc = "Whether or not to apply a font size fix to Recount.",
 									type = "toggle",
-									order = 10,
+									order = 4,
 									disabled = function() return not IsAddOnLoaded("Recount") end,
 									hidden = function() return not IsAddOnLoaded("Recount") end,
 									get = function() return db.Recount.FontHack end,
@@ -909,21 +906,21 @@ local function getOptions()
 											db.Recount.FontSize = size
 											Recount:BarsChanged()
 										end,
-									order = 11,
+									order = 5,
 								},
-								header3 = {
+								Header3 = {
 									name = "Restore ALL Addon Defaults",
 									type = "header",
-									order = 12,
+									order = 6,
 								},
 								ResetDesc = {
-									order = 13,
+									order = 7,
 									width = "full",
 									type = "description",
 									name = "ATTENTION:\nAll SavedVariables from Grid, Recount, Omen, Bartender and ForteXorcist will be resetted!"
 								},
 								Reset = {
-									order = 14,
+									order = 8,
 									type = "execute",
 									name = "Restore Defaults",
 									func = function()
@@ -934,17 +931,31 @@ local function getOptions()
 						},
 					},
 				},
+				Space = {
+					name = "",
+					order = 8,
+					type = "group",
+					args = {},
+				},
+				Modules = {
+					name = "|cffffffffModules:|r",
+					order = 9,
+					type = "group",
+					args = {
+						Header = LUI:NewHeader("Module List", 1),
+					},
+				},
 			},
 		}
 		LUI.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(LUI.db)
-		LUI.options.args.profiles.order = 100
+		LUI.options.args.profiles.order = 4
 		
 		for k,v in pairs(moduleList) do
-			LUI.options.args.General.args.Modules.args = LUI:MergeOptions(LUI.options.args.General.args.Modules.args, (type(v) == "function") and v() or v)
+			LUI.options.args.Modules.args = LUI:MergeOptions(LUI.options.args.Modules.args, (type(v) == "function") and v() or v)
 		end
 		
 		for k,v in pairs(moduleOptions) do
-			LUI.options.args = LUI:MergeOptions(LUI.options.args, (type(v) == "function") and v() or v)
+			LUI.options.args = LUI:MergeOptions(LUI.options.args, (type(v) == "function") and v() or v, true)
 		end
 		
 		for k,v in pairs(frameOptions) do
@@ -983,7 +994,6 @@ function LUI:RegisterModule(module, moduledb, addFunc)
 	
 	table.insert(moduleList, {
 		[mName] = {
-			order = LUI:GetModuleCount(),
 			type = "execute",
 			name = function()
 				if db[moduledb].Enable then

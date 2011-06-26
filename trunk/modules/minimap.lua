@@ -518,7 +518,6 @@ function module:LoadOptions()
 		Minimap = {
 			name = "Minimap",
 			type = "group",
-			order = 40,
 			disabled = function() return not db.Minimap.Enable end,
 			childGroups = "tab",
 			args = {		

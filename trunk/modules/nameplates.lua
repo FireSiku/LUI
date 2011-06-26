@@ -414,7 +414,6 @@ function module:LoadOptions()
 			name = "Nameplates",
 			type = "group",
 			childGroups = "tab",
-			order = 55,
 			disabled = function() return not db.Nameplates.Enable end,
 			args = {
 				Header = {

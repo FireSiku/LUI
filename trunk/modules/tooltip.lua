@@ -425,7 +425,6 @@ function module:LoadOptions()
 			name = "Tooltip",
 			type = "group",
 			childGroups = "tab",
-			order = 50,
 			disabled = function() return not db.Tooltip.Enable end,
 			args = {
 				Header = {

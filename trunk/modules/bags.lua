@@ -1159,7 +1159,6 @@ function module:LoadOptions()
 			name = "Bags",
 			type = "group",
 			childGroups = "tab",
-			order = 50,
 			disabled = function() return not db.Bags.Enable end,
 			args = {
 				Header = LUI:NewHeader("Bags", 1),

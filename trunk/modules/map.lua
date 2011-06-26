@@ -301,7 +301,6 @@ function module:LoadOptions()
 		Map = {
 			name = "Map",
 			type = "group",
-			order = 45,
 			disabled = function() return not db.Map.Enable end,
 			childGroups = "select",
 			args = {
