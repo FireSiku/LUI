@@ -2932,7 +2932,7 @@ function module:LoadOptions()
 
 		return option
 	end
-	local function FontOptions(statName, infoText, order, statDB, statDefaults)
+	local function FontOptions(statName, infoTextName, order, statDB, statDefaults)
 		local option = {
 			name = "Font Settings",
 			type = "group",
