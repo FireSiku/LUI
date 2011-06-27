@@ -136,7 +136,7 @@ function LUI:NewSlider(name, desc, order, dbt, option, default, smin, smax, step
 	t.get = function() return dbt[option] end
 	t.set = function(info, size)
 		dbt[option] = size
-		func(info, size)
+		if func then func(info, size) end
 	end
 
 	SetState(t, width, disabled, hidden)
@@ -166,7 +166,7 @@ function LUI:NewColor(name, desc, order, dbt, default, func, width, disabled, hi
 
 	t.set = function(info, r, g, b, a)
 		dbt.r, dbt.g, dbt.b, dbt.a = r, g, b, a
-		func(info, r, g, b, a)
+		if func then func(info, r, g, b, a) end
 	end
 
 	SetState(t, width, disabled, hidden)
@@ -186,7 +186,7 @@ function LUI:NewColorNoAlpha(name, desc, order, dbt, default, func, width, disab
 
 	t.set = function(info, r, g, b)
 		dbt.r, dbt.g, dbt.b = r, g, b
-		func(info, r, g, b)
+		if func then func(info, r, g, b) end
 	end
 
 	SetState(t, width, disabled, hidden)
@@ -202,7 +202,7 @@ function LUI:NewInput(name, desc, order, dbt, option, default, func, width, disa
 	t.get = function() return dbt[option] end
 	t.set = function(info, str)
 		dbt[option] = str
-		func(info, str)
+		if func then func(info, str) end
 	end
 
 	SetState(t, width, disabled, hidden)
@@ -224,7 +224,7 @@ function LUI:NewInputNumber(name, desc, order, dbt, option, default, func, width
 	end
 	t.set = function(info, num)
 		dbt[option] = num
-		func(info, num)
+		if func then func(info, num) end
 	end
 	
 	SetState(t, width, disabled, hidden)
@@ -284,7 +284,7 @@ function LUI:NewSelect(name, desc, order, values, dcontrol, dbt, option, default
 		get = function() return dbt[option] end
 		set = function(info, select)
 			dbt[option] = select
-			func(info, select)
+			if func then func(info, select) end
 		end
 	else
 		get = function()
@@ -296,7 +296,7 @@ function LUI:NewSelect(name, desc, order, values, dcontrol, dbt, option, default
 		end
 		set = function(info, select)
 			dbt[option] = values[select]
-			func(info, select)
+			if func then func(info, select) end
 		end
 	end
 	
@@ -318,6 +318,54 @@ function LUI:NewExecute(name, desc, order, func, width, disabled, hidden)
 	t.func = func
 	t.type = "execute"
 	
+	SetState(t, width, disabled, hidden)
+	return t
+end
+
+
+-- SOME FONT BASIC FUNCTIONS AS AN OUTLINE FOR NOW.
+-- These will need to be changed an adopted when we find a style we like and a good way to manage.
+-- Stuff like passing the font object into these functions for dynamic changes would be nice; however with this complexity everything would need to be references rather than valued.
+-- It may be necessary to change database storage of font data so we can reliabiliy reference locations we don't really know exist.
+-- I.e. DataBase.Object.Font.[setting] rather than db.Object.Size, db.Object.Font etc.
+
+-- Creates a font flag selector.
+function LUI:NewFontFlags(name, order, dbt, defaults, func, width, disabled, hidden)
+	local tname = "Font Flag"
+	local desc = "Select the font flag to use with your "..name.."'s font."
+	local values = { "OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE" }
+	return LUI:NewSelect(tname, desc, order, values, nil, dbt, "Outline", defaults, func, width, disabled, hidden)
+end
+
+-- Creates a font selector.
+function LUI:NewFontSelect(name, order, dbt, defaults, func, width, disabled, hidden)
+	local tname = "Font"
+	local desc = "Select the font to use for "..name.."."
+	return LUI:NewSelect(tname, desc, order, widgetLists.font, "LSM30_Font", dbt, "Font", defaults, func, width, disabled, hidden)
+end
+
+-- Creates a font size slider.
+-- name: Name of object that the font size is for.
+function LUI:NewFontSize(name, order, dbt, defaults, func, width, disabled, hidden)
+	local tname = "Font Size"
+	local desc = "Select the font size for "..name.."."
+	return LUI:NewSlider(tname, desc, order, dbt, "Size", defaults, 1, 40, 1, func, width, disabled, hidden, false)
+end
+
+---- Font: Creates combined font options.	-- Currently gone for GUI Inline option style. This ofcourse can be changed as needed. But this is the easiest way without passing and editing options tables directly.
+-- name: Name of object font options are being created for.
+-- order: Order for where the options will appear.
+function LUI:NewFont(name, order, dbt, defaults, func, disabled, hidden, width)
+	local t = {}
+
+	t.name, t.type, t.order, t.guiInline = "Font Settings", "group", order, true
+	t.args = {
+		FontSize = LUI:NewFontSize(name, 1, dbt, defaults),
+		FontColor = LUI:NewColor("Font", name.."'s font.", 2, dbt.Color, defaults.Color),
+		FontSelect = LUI:NewFontSelect(name, 3, dbt, defaults),
+		FontFlags = LUI:NewFontFlags(name, 4, dbt, defaults),
+	}
+
 	SetState(t, width, disabled, hidden)
 	return t
 end
