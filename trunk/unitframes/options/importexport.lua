@@ -737,7 +737,7 @@ function module:OnInitialize()
 	self.db = LUI.db.profile
 	db = self.db
 	
-	if LUICONFIG.Versions.layout ~= version then
+	if LUICONFIG.Versions.layout ~= version or not LUI_Layouts then
 		LUI_Layouts = LUI_Layouts or {}
 		
 		layouts.LUI = {}
