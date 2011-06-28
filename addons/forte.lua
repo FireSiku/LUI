@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: forte.lua
 	Description: ForteXorcist Module
-	Version....: 1.975-v1.4
+	Version....: 1.975-v1.5
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -179,7 +179,7 @@ local timer_instances = {
 }
 
 function module:FXLoaded()
-	return IsAddOnLoaded("Forte_Core") and FW.VERSION >= LUI_versions.forte; -- don't run if FX is too old...
+	return IsAddOnLoaded("Forte_Core") and FW.VERSION and FW.VERSION >= LUI_versions.forte; -- don't run if FX is too old...
 end
 
 function module:Copy(from,to) -- copies contents from table 'from' to table 'to'
