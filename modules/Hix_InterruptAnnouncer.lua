@@ -42,7 +42,7 @@ function module:SetInterruptAnnouncer()
 	IA.petGUID = nil
 	
 	-- Combat log event unfiltered event function
-	function IA:COMBAT_LOG_EVENT_UNFILTERED(timeStamp, event, _, sGUID, _,_,_, dName, _,_, spellName, _, spellID)
+	function IA:COMBAT_LOG_EVENT_UNFILTERED(timeStamp, event, _, sGUID, _,_,_,_, dName, _,_,_, spellName, _, spellID)
 		-- Filter combat events.
 		if (sGUID ~= self.GUID) and (sGUID ~= self.petGUID) then return end
 		if (event ~= "SPELL_INTERRUPT") then return end

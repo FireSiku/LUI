@@ -695,7 +695,7 @@ function module:SetDPS()
 	end
 
 	-- Event fucntions.
-	function DPS:COMBAT_LOG_EVENT_UNFILTERED(_, eventType,_, Id,_,_, TargetId,_,_, spellID, spellName,_, amount, amount2)
+	function DPS:COMBAT_LOG_EVENT_UNFILTERED(_, eventType,_, Id,_,_,_, TargetId,_,_,_, spellID, spellName,_, amount, amount2)
 		local record = false
 		for mode in pairs(events) do
 			if events[mode][eventType] then
