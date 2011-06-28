@@ -139,7 +139,6 @@ end
 -- Recount font fix without having to edit recount files.
 LUI.RecountFontHack = CreateFrame("frame", "RecountFontHack")
 local frame = LUI.RecountFontHack
-local Recount = Recount
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:SetScript("OnEvent", function(self)
 	-- Unregister event/script and clean up.
@@ -167,7 +166,7 @@ frame:SetScript("OnEvent", function(self)
 		function Recount:BarsChanged()
 			frame.old(self)
 
-			for k, v in pairs(Recount.MainWindow.Rows) do
+			for k, v in pairs(self.MainWindow.Rows) do
 				frame:FontSizeFix(v.LeftText)
 				frame:FontSizeFix(v.RightText)
 			end
