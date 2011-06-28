@@ -1,8 +1,8 @@
 --[[
 	Project.: oUF_Vengeance
 	File....: oUF_Vengeance.lua
-	Version.: 40100.2
-	Rev Date: 05/24/2011
+	Version.: 40200.1
+	Rev Date: 06/28/2011
 	Authors.: Shandrela [EU-Baelgun] <Bloodmoon>
 ]]
 
@@ -54,7 +54,7 @@ local function getTooltipText(...)
 end
 
 local function maxChanged(self, event, unit)
-	if not unit == "player" then return end
+	if unit ~= "player" then return end
 	local bar = self.Vengeance
 	
 	local health = UnitHealthMax("player")
@@ -64,15 +64,8 @@ local function maxChanged(self, event, unit)
 	bar:SetMinMaxValues(0, bar.max)
 end
 
-local function getVengeanceIndex()
-	for i = 1, 40 do
-		local name = UnitAura("player", i)
-		if name == vengeance then return i end
-	end
-	return nil
-end
-
-local function valueChanged(self)
+local function valueChanged(self, event, unit)
+	if unit ~= "player" then return end
 	local bar = self.Vengeance
 	
 	if not bar.isTank then
@@ -80,11 +73,11 @@ local function valueChanged(self)
 		return
 	end
 	
-	local index = getVengeanceIndex()
+	local name = UnitAura("player", vengeance)
 	
-	if index then
+	if name then
 		tooltip:ClearLines()
-		tooltip:SetUnitBuff("player", index)
+		tooltip:SetUnitBuff("player", name)
 		local text = getTooltipText(tooltip:GetRegions())
 		local value = tonumber(string.match(text,"%d+")) or 0
 		
@@ -150,10 +143,12 @@ local function Enable(self, unit)
 		
 		self:RegisterEvent("UNIT_MAXHEALTH", maxChanged)
 		self:RegisterEvent("PLAYER_ENTERING_WORLD", maxChanged)
+		self:RegisterEvent("UNIT_LEVEL", maxChanged)
 		
 		self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED", isTank)
 		self:RegisterEvent("PLAYER_TALENT_UPDATE", isTank)
 		self:RegisterEvent("PLAYER_LOGIN", isTank)
+		self:RegisterEvent("PLAYER_ALIVE", isTank)
 		
 		if class == "DRUID" then
 			self:RegisterEvent("UPDATE_SHAPESHIFT_FORM", isTank)
@@ -173,10 +168,12 @@ local function Disable(self)
 		
 		self:UnregisterEvent("UNIT_MAXHEALTH", maxChanged)
 		self:UnregisterEvent("PLAYER_ENTERING_WORLD", maxChanged)
+		self:UnregisterEvent("UNIT_LEVEL", maxChanged)
 		
 		self:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED", isTank)
 		self:UnregisterEvent("PLAYER_TALENT_UPDATE", isTank)
 		self:UnregisterEvent("PLAYER_LOGIN", isTank)
+		self:UnregisterEvent("PLAYER_ALIVE", isTank)
 		
 		if class == "DRUID" then
 			self:UnregisterEvent("UPDATE_SHAPESHIFT_FORM", isTank)
