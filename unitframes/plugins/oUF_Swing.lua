@@ -1,8 +1,8 @@
 --[[
 	Project.: oUF_Swing
 	File....: oUF_Swing.lua
-	Version.: 40100.3
-	Rev Date: 23/11/2010
+	Version.: 40200.1
+	Rev Date: 06/28/2011
 	Authors.: p3lim, Thalyra
 ]] 
 
@@ -47,6 +47,8 @@ local lasthit
 local MainhandID = GetInventoryItemID("player", 16)
 local OffhandID = GetInventoryItemID("player", 17)
 local RangedID = GetInventoryItemID("player", 18)
+
+local toc = select(4, GetBuildInfo())
 
 local SwingStopped = function(element)
 	local bar = element.__owner
@@ -337,7 +339,17 @@ local Melee = function(self, event, _, subevent, _, GUID)
 	lasthit = GetTime()
 end
 
-local ParryHaste = function(self, event, _, subevent, _, _, _, _, _, tarGUID, _, missType)
+local ParryHaste = function(self, event, _, subevent, ...)
+	local tarGUID, missType
+	
+	if toc >= 40200 then
+		tarGUID = select(7, ...)
+		missType = select(9, ...)
+	else
+		tarGUID = select(6, ...)
+		missType = select(8, ...)
+	end
+	
 	if UnitGUID("player") ~= tarGUID then return end
 	if not meleeing then return end
 	if not string.find(subevent, "MISSED") then return end
@@ -352,7 +364,7 @@ local ParryHaste = function(self, event, _, subevent, _, _, _, _, _, tarGUID, _,
 	local _, dualwield = UnitAttackSpeed("player")
 	local now = GetTime()
 	
-	-- needed calculations, so the timer wont jump on parryhaste
+	-- needed calculations, so the timer doesnt jump on parryhaste
 	if dualwield then
 		local percentage = (swingMH.max - now) / swingMH.speed
 		
