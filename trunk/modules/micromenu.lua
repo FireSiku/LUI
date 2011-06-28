@@ -2,15 +2,15 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: micromenu.lua
 	Description: Micromenu Module
-	Version....: 1.3
-	Rev Date...: 17/11/2010
+	Version....: 1.4
+	Rev Date...: 29/06/2011
 	
 	Edits:
 		v1.0: Loui
 		v1.1: Loui/Thaly
 		v1.2: Thaly
 		v1.3: Thaly
-		...b: Thaly
+		v1.4: Xus
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -169,8 +169,14 @@ function module:SetMicroMenu()
 	MicroMenu_ButtonLeft_Clicker:SetBackdropBorderColor(0,0,0,0)
 	MicroMenu_ButtonLeft_Clicker:SetAlpha(1)
 	MicroMenu_ButtonLeft_Clicker:Hide()
+	local s
+	if select(4, GetBuildInfo()) >= 40200 then
+		s = 550
+	else
+		s = 510
+	end
 	
-	local MicroMenuButton = LUI:CreateMeAFrame("FRAME","MicroMenuButton",UIParent,512,512,1,"BACKGROUND",1,"TOPRIGHT",UIParent,"TOPRIGHT",0,-1,1)
+	local MicroMenuButton = LUI:CreateMeAFrame("FRAME","MicroMenuButton",UIParent,s,512,1,"BACKGROUND",1,"TOPRIGHT",UIParent,"TOPRIGHT",0,-1,1)
 	MicroMenuButton:SetBackdrop({bgFile = fdir.."micro_button",
 		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
 		tile = false,
@@ -375,13 +381,7 @@ function module:SetMicroMenu()
 		end
 	end)
 	
-	local s
-	if select(4, GetBuildInfo()) >= 40200 then
-		s = 544
-	else
-		s = 510
-	end
-	
+
 	local MicroMenuButtonBG = LUI:CreateMeAFrame("FRAME","MicroMenuButtonBG",MicroMenuButton,s,512,1,"BACKGROUND",0,"TOPRIGHT",MicroMenuButton,"TOPRIGHT",0,0,1)
 	MicroMenuButtonBG:SetBackdrop({bgFile = fdir.."micro_button_bg",
 		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
@@ -691,7 +691,7 @@ function module:SetMicroMenu()
 	-- patch 4.2 journal button!
 	local nextanchor
 	if select(4, GetBuildInfo()) >= 40200 then
-		local MicroMenuButton_Journal = LUI:CreateMeAFrame("FRAME","MicroMenuButton_Journal",MicroMenuButton_LFG,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_LFG,"LET",-33,0,1)
+		local MicroMenuButton_Journal = LUI:CreateMeAFrame("FRAME","MicroMenuButton_Journal",MicroMenuButton_LFG,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_LFG,"LEFT",-33,0,1)
 		MicroMenuButton_Journal:SetBackdrop({bgFile = fdir.."micro_encounter",
 			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
 			tile = false,
@@ -724,18 +724,18 @@ function module:SetMicroMenu()
 		
 		MicroMenuButton_Journal_Clicker:SetScript("OnEnter", function(self)
 			MicroMenuButton_Journal_Clicker:SetAlpha(1)
-			MicroMenuButton_Journal_Clicker = true
+			MicroMenuButton_Journal_Clicker_State = true
 			GameTooltip:SetOwner(MicroMenuButton_Journal_Clicker, "ANCHOR_NONE ",40,-90)
 			GameTooltip:SetText("Dungeon Journal")
 			GameTooltip:AddLine("Dungeon & Encounter Journal", 1, 1, 1)
 			GameTooltip:Show()
 		end)
-		
+
 		MicroMenuButton_Journal_Clicker:SetScript("OnLeave", function(self)
 			if not EncounterJournal:IsShown() then
 				MicroMenuButton_Journal_Clicker:SetAlpha(0)
 			end
-			MicroMenuButton_Journal_Clicker = false
+			MicroMenuButton_Journal_Clicker_State = false
 			GameTooltip:Hide()
 		end)
 		
@@ -1196,7 +1196,7 @@ function module:SetMicroMenu()
 		end
 	end)
 	
-	local MicroMenuButton_Player = LUI:CreateMeAFrame("FRAME","MicroMenuButton_Player",MicroMenuButton_Spellbook,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_Spellbook,"LEFT",-33,0,1)
+	local MicroMenuButton_Player = LUI:CreateMeAFrame("FRAME","MicroMenuButton_Player",MicroMenuButton_Spellbook,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_Spellbook,"LEFT",-32,0,1)
 	MicroMenuButton_Player:SetBackdrop({bgFile = fdir.."micro_player",
 		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
 		tile = false,
@@ -1311,6 +1311,7 @@ function module:SetMicroMenu()
 	TalentMicroButtonAlertGlowBottom:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-HORIZONTAL2")
 	TalentMicroButtonAlertGlowLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
 	TalentMicroButtonAlertGlowRight:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
+
 end
 
 local defaults = {
