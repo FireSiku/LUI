@@ -1,7 +1,7 @@
 --[[
 	Project.: oUF_Vengeance
 	File....: oUF_Vengeance.lua
-	Version.: 40200.1
+	Version.: 40200.2
 	Rev Date: 06/28/2011
 	Authors.: Shandrela [EU-Baelgun] <Bloodmoon>
 ]]
@@ -139,6 +139,8 @@ local function Enable(self, unit)
 	local bar = self.Vengeance
 	
 	if bar and unit == "player" then
+		bar.max = 0
+		
 		self:RegisterEvent("UNIT_AURA", valueChanged)
 		
 		self:RegisterEvent("UNIT_MAXHEALTH", maxChanged)
