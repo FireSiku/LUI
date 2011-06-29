@@ -10,10 +10,10 @@ SLASH_YAIAPFIX1 = "/yaiap"
 local old = SendAddonMessage
 local function fix(pre, msg, ch, ...)
 	-- Filter messages with oversized parameters.
-	if (#pre > 15) or (#msg > 250) then
+	if (type(pre) == "string" and #pre > 15) or (type(msg) == "string" and #msg > 250) then
 		if DEBUG then
 			-- Print message error info.
-			print("|c00ff0000YAIAP|r: ["..strupper(ch).."] prefix = |c0000ff00"..pre.."|r: debugstack = "..debugstack(3, 4, 0))
+			print("|c00ff0000YAIAP|r: ["..strupper(ch).."] prefix = "..(#pre)..", message = "..(#msg)..": debugstack = "..debugstack(3, 4, 0))
 
 			-- Pipe errored message to SendAddonMessage to create an error for debug.
 			old(pre, msg, ch, ...)
