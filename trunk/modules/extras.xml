@@ -13,5 +13,5 @@ Note: this file must be moved out of the modules folder, and next to lui.lua and
 
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
         	
-        <Script file="merchant.lua"/>		
+	<Script file="modules\merchant.lua"/>
 </Ui>
