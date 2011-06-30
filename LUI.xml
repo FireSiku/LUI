@@ -69,8 +69,6 @@
 	<Script file="scripts\colourpicker.lua"/>
 	<Script file="scripts\frame.lua"/>
 	<Script file="scripts\invite.lua"/>
-
-        <Include file="modules\extras.xml"/>
 	
 	<!-- oUF Layout -->
 	<Include file="unitframes\templates.xml"/>
@@ -91,4 +89,8 @@
 	
 	<!-- Addon Installation Routines -->
 	<Script file="addons\forte.lua"/>
+
+	<!-- Extra Modules -->
+	<Script file="Hix_InterruptAnnouncer.lua"/>
+	<Include file="extras.xml"/>
 </Ui>

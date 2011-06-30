@@ -6,10 +6,12 @@ To add a module to this file just include the following line between the <Ui> ta
 
 and replace (module.lua) with the file name
 
-Note: this file must be renamed from extras.xml.txt to extras.xml in order to work.
+Note: this file must be moved out of the modules folder, and next to lui.lua and lui.xml to work.
 	It is a good idea to make a copy of this file and rename it as such as to keep an original version.
 -->
+
+
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-        <Script file="Hix_InterruptAnnouncer.lua"/>
+        	
         <Script file="merchant.lua"/>		
 </Ui>
