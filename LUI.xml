@@ -91,6 +91,6 @@
 	<Script file="addons\forte.lua"/>
 
 	<!-- Extra Modules -->
-	<Script file="Hix_InterruptAnnouncer.lua"/>
+	<Script file="modules\Hix_InterruptAnnouncer.lua"/>
 	<Include file="extras.xml"/>
 </Ui>
