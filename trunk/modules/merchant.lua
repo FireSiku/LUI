@@ -89,7 +89,7 @@ function Merchant:Create(disable)
 					local _, itemLink, itemQuality, _,_,_,_,_,_,_, itemPrice = GetItemInfo(item);
 
 					if ((db.AutoSell.ItemQualities[itemQuality + 1]) and (not db.AutoSell.Exclusions[item]))
-					or ((not db.AutoSell.ItemQualities[itemQuality + 1]) and (db.AutoSell.Exlusions[item]))
+					or ((not db.AutoSell.ItemQualities[itemQuality + 1]) and (db.AutoSell.Exclusions[item])) then
 						local _, itemCount  = GetContainerItemInfo(bag, slot)
 						totalPrice = totalPrice + (itemCount * itemPrice)
 
