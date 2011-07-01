@@ -91,6 +91,15 @@ local cornerAuras = {
 --	Don't edit this if you don't know what you are doing!
 ------------------------------------------------------------------------
 
+local GetDisplayPower = function(power, unit)
+	local barType = UnitAlternatePowerInfo(unit)
+	if power.displayAltPower and barType then
+		return ALTERNATE_POWER_INDEX
+	else
+		return (UnitPowerType(unit))
+	end
+end
+
 local SetFontString = function(parent, fontName, fontHeight, fontStyle)
 	local fs = parent:CreateFontString(nil, "OVERLAY")
 	fs:SetFont(fontName, fontHeight, fontStyle)
@@ -178,9 +187,21 @@ local menu = function(self)
 	end
 end
 
-local PostUpdateHealth = function(health, unit, min, max)
+local OverrideHealth = function(self, event, unit, powerType)
+	if self.unit ~= unit then return end
+	local health = self.Health
+	
+	local min = UnitHealth(unit)
+	local max = UnitHealthMax(unit)
+	local disconnected = not UnitIsConnected(unit)
 	if min > max then min = max end
-
+	
+	health:SetMinMaxValues(0, max)
+	
+	health:SetValue(disconnected and max or min)
+	
+	health.disconnected = disconnected
+	
 	local _, pToken = UnitClass(unit)
 	local color = colors.class[pToken] or {0.5, 0.5, 0.5}
 
@@ -331,9 +352,22 @@ local PostUpdateHealth = function(health, unit, min, max)
 	end
 end
 
-local PostUpdatePower = function(power, unit, min, max)
+local OverridePower = function(self, event, unit)
+	if self.unit ~= unit then return end
+	local power = self.Power
+	
+	local displayType = GetDisplayPower(power, unit)
+	local min = UnitPower(unit, displayType)
+	local max = UnitPowerMax(unit, displayType)
+	local disconnected = not UnitIsConnected(unit)
 	if min > max then min = max end
+	
+	power:SetMinMaxValues(0, max)
 
+	power:SetValue(disconnected and max or min)
+	
+	power.disconnected = disconnected
+	
 	local _, pType = UnitPowerType(unit)
 	local pClass, pToken = UnitClass(unit)
 	local color = colors.class[pToken] or {0.5, 0.5, 0.5}
@@ -783,7 +817,7 @@ local ArenaEnemyUnseen = function(self, event, unit, state)
 	if unit ~= self.unit then return end
 
 	if state == "unseen" then
-		self.Health.PostUpdate = function(health)
+		self.Health.Override = function(health)
 			health:SetValue(0)
 			health:SetStatusBarColor(0.5, 0.5, 0.5, 1)
 			health.bg:SetVertexColor(0.5, 0.5, 0.5, 1)
@@ -791,7 +825,7 @@ local ArenaEnemyUnseen = function(self, event, unit, state)
 			health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Unseen>|r" or "")
 			health.valueMissing:SetText()
 		end
-		self.Power.PostUpdate = function(power)
+		self.Power.Override = function(power)
 			power:SetValue(0)
 			power:SetStatusBarColor(0.5, 0.5, 0.5, 1)
 			power.bg:SetVertexColor(0.5, 0.5, 0.5, 1)
@@ -804,8 +838,8 @@ local ArenaEnemyUnseen = function(self, event, unit, state)
 		self:UpdateAllElements()
 		self:Show()
 	else
-		self.Health.PostUpdate = PostUpdateHealth
-		self.Power.PostUpdate = PostUpdatePower
+		self.Health.Override = OverrideHealth
+		self.Power.Override = OverridePower
 
 		self.Hide = self.Hide_
 		self:UpdateAllElements()
@@ -3496,8 +3530,8 @@ local SetStyle = function(self, unit, isSingle)
 	local LUI_Fader = LUI:GetModule("Fader", true)
 	if oufdb.Fader and oufdb.Fader.Enable and LUI_Fader then LUI_Fader:RegisterFrame(self, oUF.Fader) end
 
-	self.Health.PostUpdate = PostUpdateHealth
-	self.Power.PostUpdate = PostUpdatePower
+	self.Health.Override = OverrideHealth
+	self.Power.Override = OverridePower
 
 	self.__unit = unit
 
