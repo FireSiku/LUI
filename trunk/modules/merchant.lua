@@ -86,7 +86,7 @@ function Merchant:Create(disable)
 				local item = GetContainerItemID(bag, slot)
 
 				if item then
-					local _, itemLink, itemQuality, _,_,_,_,_,_,_, itemPrice = GetItemInfo(item);
+					local _, itemLink, itemQuality, _,_,_,_,_,_,_, itemPrice = GetItemInfo(item)
 
 					if ((db.AutoSell.ItemQualities[itemQuality + 1]) and (not db.AutoSell.Exclusions[item]))
 					or ((not db.AutoSell.ItemQualities[itemQuality + 1]) and (db.AutoSell.Exclusions[item])) then
@@ -112,7 +112,7 @@ function Merchant:Create(disable)
 end
 
 function Merchant:ItemExclusion(item, remove)
-	local _, itemLink, _,_,_,_,_,_,_,_, itemPrice = GetItemInfo(item);
+	local _, itemLink, _,_,_,_,_,_,_,_, itemPrice = GetItemInfo(item)
 
 	-- Check item.
 	if not itemLink then
@@ -123,7 +123,7 @@ function Merchant:ItemExclusion(item, remove)
 		return
 	end
 
-	local itemID = string.match(itemLink, "item:(%d+)")
+	local itemID = tonumber(string.match(itemLink, "item:(%d+)"))
 
 	if remove then
 		db.AutoSell.Exclusions[itemID] = nil
