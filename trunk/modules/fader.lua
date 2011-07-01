@@ -383,7 +383,7 @@ function Fader:FadeHandler(frame)
 	-- Check states vs. settings.
 	if self.Status.targeting and self.RegisteredFrames[frame].Targeting then
 		fadeIn = true
-	elseif self.Status.inCombat and self.RegisteredFrames[frame].Combat then
+	elseif self.Status.combat and self.RegisteredFrames[frame].Combat then
 		fadeIn = true
 	elseif self.Status.power and self.RegisteredFrames[frame].Power
 		and (self.Status.power < self.RegisteredFrames[frame].PowerClip) then
