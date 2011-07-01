@@ -88,7 +88,8 @@ function Merchant:Create(disable)
 				if item then
 					local _, itemLink, itemQuality, _,_,_,_,_,_,_, itemPrice = GetItemInfo(item);
 
-					if (db.AutoSell.ItemQualitys[itemQuality + 1]) and (not db.AutoSell.Exclusions[item]) then
+					if ((db.AutoSell.ItemQualities[itemQuality + 1]) and (not db.AutoSell.Exclusions[item]))
+					or ((not db.AutoSell.ItemQualities[itemQuality + 1]) and (db.AutoSell.Exlusions[item]))
 						local _, itemCount  = GetContainerItemInfo(bag, slot)
 						totalPrice = totalPrice + (itemCount * itemPrice)
 
@@ -173,7 +174,7 @@ local defaults = {
 		AutoSell = {
 			Enable = false,
 			Exclusions = {},
-			ItemQualitys = {
+			ItemQualities = {
 				true, -- Poor
 				false, -- Common
 				false, -- Uncommon
@@ -275,10 +276,10 @@ function Merchant:LoadOptions()
 							values = qualities(),
 							order = 4,
 							set = function(_, key)
-									db.AutoSell.ItemQualitys[key] = not db.AutoSell.ItemQualitys[key]
+									db.AutoSell.ItemQualities[key] = not db.AutoSell.ItemQualities[key]
 								end,
 							get = function(_, key)
-									return db.AutoSell.ItemQualitys[key]
+									return db.AutoSell.ItemQualities[key]
 								end,
 						},
 						AddExclusion = {
