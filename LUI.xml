@@ -63,6 +63,7 @@
 	<Include file="modules\raidmenu.xml"/>
 	<Script file="modules\fader.lua"/>
   <Script file="modules\Hix_InterruptAnnouncer.lua"/>
+	<Script file="modules\merchant.lua"/>
 
 	<!-- Additional Scripts -->
 	<Script file="scripts\error.lua"/>

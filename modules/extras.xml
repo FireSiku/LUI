@@ -2,7 +2,7 @@
 This file is for adding custom modules to LUI.
 To add a module to this file just include the following line between the <Ui> tags for each extra module:
 
-<Script file="(module.lua)"/>
+<Script file="modules\(module.lua)"/>
 
 and replace (module.lua) with the file name
 
@@ -12,6 +12,7 @@ Note: this file must be moved out of the modules folder, and next to lui.lua and
 
 
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-        	
-	<Script file="modules\merchant.lua"/>
+	<!-- Example:
+	Script file="modules\bars.lua"/>
+	-->
 </Ui>
