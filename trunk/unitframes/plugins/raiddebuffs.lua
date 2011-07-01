@@ -3,6 +3,8 @@ local _, ns = ...
 local oUF = ns.oUF or oUF
 local ORD = ns.oUF_RaidDebuffs or oUF_RaidDebuffs
 
+-- credits to authors of GridStatusRaidDebuff_Cata
+
 if not ORD then return end
 
 ORD.ShowDispelableDebuff = true
@@ -153,6 +155,72 @@ local debuff_data = {
 	[89668] = 6, -- Lightning Rod
 	[87856] = 6, -- Squall Line
 	
+	------------------------------------------------------------------------
+	--	Firelands
+	------------------------------------------------------------------------
+	
+	-- Trash
+	[76622] = 4, -- Sunder Armor
+	[99610] = 5, -- Shockwave
+	[99695] = 4, -- Flaming Spear
+	[99800] = 4, -- Ensnare
+	[99993] = 4, -- Fiery Blood
+	[100767] = 4, -- Melt Armor
+	[99693] = 4, -- Dinner Time
+	[97151] = 4, -- Magma
+	
+	-- Beth'Tilac
+	[99506] = 5, -- The Widow's Kiss
+	[49026] = 6, -- Fixate
+	[97202] = 5, -- Fiery Web Spin
+	[97079] = 4, -- Seeping Venom
+	
+	-- Lord Rhyolith
+	[98492] = 5, -- Eruption
+	
+	-- Alysrazor
+	[101729] = 5, -- Blazing Claw
+	[100094] = 5, -- Fieroblast
+	[99389] = 5, -- Imprinted
+	[99308] = 5, -- Gushing Wound
+	[100640] = 5, -- Harsh Winds
+	[100555] = 5, -- Smouldering Roots
+	[99461] = 4, -- Blazing Power
+
+	-- Shannox
+	[99936] = 4, -- Jagged Tear
+	[99837] = 4, -- Crystal Prison Trap Effect
+	[101208] = 4, -- Immolation Trap
+	[99840] = 4, -- Magma Rupture
+	[99947] = 4, -- Face Rage
+	[100415] = 4, -- Rage
+	
+	-- Baleroc
+	[99252] = 5, -- Blaze of Glory
+	[99256] = 5, -- Torment
+	[99403] = 6, -- Tormented
+	[99262] = 4, -- Vital Spark
+	[99263] = 4, -- Vital Flame
+	[99516] = 7, -- Countdown
+	[99353] = 7, -- Decimating Strike
+	[100908] = 6, -- Fiery Torment
+	
+	-- Majordomo Staghelm
+	[98535] = 5, -- Leaping Flames
+	[98443] = 6, -- Fiery Cyclone
+	[98450] = 5, -- Searing Seeds
+	[100210] = 6, -- Burning Orb
+	[96993] = 5, -- Stay Withdrawn?
+	
+	-- Ragnaros
+	[99399] = 5, -- Burning Wound
+	[100293] = 5, -- Lava Wave
+	[100238] = 4, -- Magma Trap Vulnerability
+	[98313] = 4, -- Magma Blast
+	[100460] = 7, -- Blazing Heat
+	[98981] = 5, -- Lava Bolt
+	[100249] = 5, -- Combustion
+	[99613] = 6, -- Molten Blast
 }
 
 ORD:RegisterDebuffs(debuff_data)
