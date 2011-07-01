@@ -62,7 +62,8 @@
 	<Script file="modules\micromenu.lua"/>
 	<Include file="modules\raidmenu.xml"/>
 	<Script file="modules\fader.lua"/>
-	
+  <Script file="modules\Hix_InterruptAnnouncer.lua"/>
+
 	<!-- Additional Scripts -->
 	<Script file="scripts\error.lua"/>
 	<Script file="scripts\partyfix.lua"/>
@@ -84,13 +85,11 @@
 	<Script file="unitframes\plugins\singleauras.lua"/>
 	<Script file="unitframes\plugins\oUF_RaidDebuffs.lua"/>
 	<Script file="unitframes\plugins\raiddebuffs.lua"/>
-	
-        <Script file="unitframes\layout.lua"/>
+    <Script file="unitframes\layout.lua"/>
 	
 	<!-- Addon Installation Routines -->
 	<Script file="addons\forte.lua"/>
 
 	<!-- Extra Modules -->
-	<Script file="modules\Hix_InterruptAnnouncer.lua"/>
 	<Include file="extras.xml"/>
 </Ui>
