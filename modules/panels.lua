@@ -30,6 +30,7 @@ local addonAnchors = {
 		Healbot = 'HealBot_Action',
 		Vuhdo = 'Vd1',
 		oUF = 'oUF_LUI_raid',
+		Blizzard = 'CompactRaidFrameContainer',
 	},
 	meter = {
 		Recount = 'Recount_MainWindow',
@@ -706,7 +707,7 @@ function module:SetDps()
 end
 
 ------------------------------------------------------
--- / RAID PANEL / --
+-- / Raid Panel / --
 ------------------------------------------------------
 
 function module:SetRaidBackground()
