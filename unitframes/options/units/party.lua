@@ -22,6 +22,7 @@ local defaults = {
 		Padding = "50",
 		ShowPlayer = false,
 		ShowInRaid = false,
+		ShowInRealParty = false,
 		Border = {
 			Aggro = false,
 			EdgeFile = "glow",
@@ -419,14 +420,7 @@ local defaults = {
 function module:LoadOptions()
 	local TogglePlayer = function() oUF_LUI_party:SetAttribute("showPlayer", db.oUF.Party.ShowPlayer) end
 	
-	local ToggleShowInRaid = function()
-		UnregisterStateDriver(oUF_LUI_party, "visibility")
-		if db.oUF.Party.ShowInRaid then
-			RegisterStateDriver(oUF_LUI_party, "visibility", "[group:party,group:raid] show; hide")
-		else
-			RegisterStateDriver(oUF_LUI_party, "visibility", "[group:party,nogroup:raid] show; hide")
-		end
-	end
+	local ToggleVisibility = function() oUF_LUI_party.handler:GetScript("OnEvent")(oUF_LUI_party.handler) end
 	
 	local options = {
 		Party = {
@@ -436,7 +430,8 @@ function module:LoadOptions()
 						General = {
 							args = {
 								ShowPlayer = LUI:NewToggle("Show Player", "Whether you want to show yourself within the Party Frames or not.", 3, db.oUF.Party, "ShowPlayer", LUI.defaults.profile.oUF.Party, TogglePlayer, nil, function() return not db.oUF.Party.Enable end),
-								ShowInRaid = LUI:NewToggle("Show In Raid", "Whether you want to show the Party Frames while in Raids with more than 5 Players or not.", 4, db.oUF.Party, "ShowInRaid", LUI.defaults.profile.oUF.Party, ToggleShowInRaid, nil, function() return not db.oUF.Party.Enable end),
+								ShowInRaid = LUI:NewToggle("Show In Raid", "Whether you want to show the Party Frames while in Raids with more than 5 Players or not.", 4, db.oUF.Party, "ShowInRaid", LUI.defaults.profile.oUF.Party, ToggleVisibility, nil, function() return not db.oUF.Party.Enable end),
+								ShowInRealParty = LUI:NewToggle("Show only in real Partys", "Whether you want to show the Party Frames only in real Partys or in Raids with 5 or less players too", 5, db.oUF.Party, "ShowInRealParty", LUI.defaults.profile.oUF.Party, ToggleVisibility, nil, function() return not db.oUF.Party.Enable or db.oUF.Party.ShowInRaid end),
 							},
 						},
 					},
