@@ -916,15 +916,15 @@ do
 
 	local delay = 0.5
 	local OnUpdate = function(self, elapsed)
+		if not oUF_LUI_pet then return end
 		self.elapsed = (self.elapsed or delay) - elapsed
 		if self.elapsed <= 0 then
-			local petframe = oUF_LUI_pet
-			petframe:PLAYER_ENTERING_WORLD()
+			oUF_LUI_pet:PLAYER_ENTERING_WORLD()
 			self:SetScript("OnUpdate", nil)
-			if entering and petframe.PostEnterVehicle then
-				petframe:PostEnterVehicle("enter")
-			elseif not entering and petframe.PostExitVehicle then
-				petframe:PostExitVehicle("exit")
+			if entering and oUF_LUI_pet.PostEnterVehicle then
+				oUF_LUI_pet:PostEnterVehicle("enter")
+			elseif not entering and oUF_LUI_pet.PostExitVehicle then
+				oUF_LUI_pet:PostExitVehicle("exit")
 			end
 		end
 	end
