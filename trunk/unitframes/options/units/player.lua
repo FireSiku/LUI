@@ -741,31 +741,35 @@ function module:CreateXpRepOptionsPart(barType, order)
 	local Toggle
 	if barType == "XP" then
 		Toggle = function()
-			if not oUF_LUI_player.Experience then LUI.oUF.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, xprepdb) end
+			if not oUF_LUI_player.XP then LUI.oUF.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, xprepdb) end
 			if db.oUF.XP_Rep.Experience.Enable then
-				oUF_LUI_player.Experience:Show()
-				if oUF_LUI_player.Reputation then oUF_LUI_player.Reputation:Hide() end
+				oUF_LUI_player.XP:Show()
+				if oUF_LUI_player.Rep then oUF_LUI_player.Rep:Hide() end
 			else
-				oUF_LUI_player.Experience:Hide()
-				if oUF_LUI_player.Reputation then oUF_LUI_player.Reputation:Show() end
+				oUF_LUI_player.XP:Hide()
+				if oUF_LUI_player.Rep then oUF_LUI_player.Rep:Show() end
 			end
+			oUF_LUI_player.XP.Enable = db.oUF.XP_Rep.Experience.Enable
 		end
 	else
 		Toggle = function()
-			if not oUF_LUI_player.Reputation then LUI.oUF.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, xprepdb) end
+			if not oUF_LUI_player.Rep then LUI.oUF.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, xprepdb) end
 			if db.oUF.XP_Rep.Reputation.Enable then
-				oUF_LUI_player.Reputation:Show()
-				if oUF_LUI_player.Experience then oUF_LUI_player.Experience:Hide() end
+				print("Ena")
+				oUF_LUI_player.Rep:Show()
+				if oUF_LUI_player.XP then oUF_LUI_player.XP:Hide() end
 			else
-				oUF_LUI_player.Reputation:Hide()
-				if oUF_LUI_player.Experience then oUF_LUI_player.Experience:Show() end
+				print("Disa")
+				oUF_LUI_player.Rep:Hide()
+				if oUF_LUI_player.XP then oUF_LUI_player.XP:Show() end
 			end
+			oUF_LUI_player.Rep.Enable = db.oUF.XP_Rep.Reputation.Enable
 		end
 	end
 	
 	local ApplySettings = function()
-		if oUF_LUI_player.Experience then LUI.oUF.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, xprepdb) end
-		if oUF_LUI_player.Reputation then LUI.oUF.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, xprepdb) end
+		if oUF_LUI_player.XP then LUI.oUF.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.XP_Rep) end
+		if oUF_LUI_player.Rep then LUI.oUF.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.XP_Rep) end
 	end
 	
 	local options = {
@@ -773,7 +777,7 @@ function module:CreateXpRepOptionsPart(barType, order)
 		type = "group",
 		order = 3,
 		args = {
-			Enable = LUI:NewToggle("Enable", "Whether you want to show the Experience Bar or not.", 1, db.oUF.XP_Rep.Experience, "Enable", LUI.defaults.profile.oUF.XP_Rep.Experience, Toggle),
+			Enable = LUI:NewToggle("Enable", "Whether you want to show the "..barType.." Bar or not.", 1, xprepdb, "Enable", xprepdefaults, Toggle),
 			Settings = {
 				name = "Settings",
 				type = "group",
@@ -802,6 +806,11 @@ function module:CreateXpRepOptions(order)
 	local ResetXpRep = function()
 		db.oUF.XP_Rep = defaults.XP_Rep
 		StaticPopup_Show("RELOAD_UI")
+	end
+	
+	local ApplySettings = function()
+		if oUF_LUI_player.XP then LUI.oUF.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.XP_Rep) end
+		if oUF_LUI_player.Rep then LUI.oUF.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.XP_Rep) end
 	end
 	
 	local options = {

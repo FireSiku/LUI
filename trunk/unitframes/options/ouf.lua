@@ -541,6 +541,7 @@ function module:EnableBlizzard(unit)
 				)
 			end
 		end
+		ShowPartyFrame()
 	end
 	
 	if(unit:match'(arena)%d?$' == 'arena') then
@@ -621,13 +622,13 @@ toggleFuncs = {
 				
 				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
 				handler:SetFrameRef("boss", bossParent)
-				handler:SetAttribute("_onstate-boss", [[
+				handler:SetAttribute("_onstate-resize", [[
 					local parent = self:GetFrameRef("boss")
 					local padding = parent:GetAttribute("Padding")
 					local height = parent:GetAttribute("Height")
 					parent:SetHeight(newstate * height + (newstate - 1) * padding)
 				]])
-				RegisterStateDriver(handler, "boss", "[@boss4,exists] 4; [@boss3,exists] 3; [@boss2,exists] 2; 1")
+				RegisterStateDriver(handler, "resize", "[@boss4,exists] 4; [@boss3,exists] 3; [@boss2,exists] 2; 1")
 				bossParent.handler = handler
 				
 				local boss = {}
@@ -702,13 +703,6 @@ toggleFuncs = {
 						_G["oUF_LUI_partyUnitButton"..i]:UpdateAllElements()
 					end
 				end
-				
-				UnregisterStateDriver(oUF_LUI_party, "visibility")
-				if db.oUF.Party.ShowInRaid then
-					RegisterStateDriver(oUF_LUI_party, "visibility", "[group:party,group:raid] show; hide")
-				else
-					RegisterStateDriver(oUF_LUI_party, "visibility", "[group:party,nogroup:raid] show; hide")
-				end
 			else
 				local party = oUF:SpawnHeader("oUF_LUI_party", nil, nil,
 					"showParty", true,
@@ -734,12 +728,51 @@ toggleFuncs = {
 				)
 				
 				party:SetPoint(db.oUF.Party.Point, UIParent, db.oUF.Party.Point, tonumber(db.oUF.Party.X), tonumber(db.oUF.Party.Y))
-				
-				if db.oUF.Party.ShowInRaid then
-					RegisterStateDriver(party, "visibility", "[group:party,group:raid] show; hide")
-				else
-					RegisterStateDriver(party, "visibility", "[group:party,nogroup:raid] show; hide")
-				end
+								
+				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerAttributeTemplate")
+				handler:SetAttribute("vis", 1)
+				handler:SetFrameRef("party", party)
+				handler:SetAttribute("_onattributechanged", [[
+					if name == "vis" then
+						if self:GetAttribute("vis") then
+							self:GetFrameRef("party"):Show()
+						else
+							self:GetFrameRef("party"):Hide()
+						end
+					end
+				]])
+
+				handler:RegisterEvent("PLAYER_ENTERING_WORLD")
+				handler:RegisterEvent("PARTY_MEMBERS_CHANGED")
+				handler:RegisterEvent("RAID_ROSTER_UPDATE")
+				handler:SetScript("OnEvent", function(self)
+					if db.oUF.Party.Enable == false then
+						self:SetAttribute("vis", nil)
+						return
+					end
+					
+					if db.oUF.Party.ShowInRaid == true then
+						self:SetAttribute("vis", 1)
+					else
+						local numparty = GetNumPartyMembers()
+						local numraid = GetNumRaidMembers()
+						
+						if db.oUF.Party.ShowInRealParty == true then
+							if numparty and numraid == 0 then
+								self:SetAttribute("vis", 1)
+							else
+								self:SetAttribute("vis", nil)
+							end
+						else
+							if (numraid < 6 and numraid == numparty + 1) or numraid == 0 then
+								self:SetAttribute("vis", 1)
+							else
+								self:SetAttribute("vis", nil)
+							end
+						end
+					end
+				end)
+				party.handler = handler
 			end
 		else
 			if oUF_LUI_party then
@@ -826,13 +859,13 @@ toggleFuncs = {
 
 				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
 				handler:SetFrameRef("arena", arenaParent)
-				handler:SetAttribute("_onstate-arena", [[
+				handler:SetAttribute("_onstate-resize", [[
 					local parent = self:GetFrameRef("arena")
 					local padding = parent:GetAttribute("Padding")
 					local height = parent:GetAttribute("Height")
 					parent:SetHeight(newstate * height + (newstate - 1) * padding)
 				]])
-				RegisterStateDriver(handler, "arena", "[@arena5,exists] 5; [@arena4,exists] 4; [@arena3,exists] 3; [@arena2,exists] 2; 1")
+				RegisterStateDriver(handler, "resize", "[@arena5,exists] 5; [@arena4,exists] 4; [@arena3,exists] 3; [@arena2,exists] 2; 1")
 				arenaParent.handler = handler
 				
 				local arena = {}

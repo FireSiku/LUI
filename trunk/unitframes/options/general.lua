@@ -547,6 +547,7 @@ function module:CreateOptions(index, unit)
 			if Enable == true then
 				LUI:GetModule("oUF"):EnableBlizzard("party")
 			else
+				SetCVar("useCompactPartyFrames", nil)
 				oUF:DisableBlizzard("party")
 			end
 		end

@@ -1402,6 +1402,8 @@ oUF_LUI.funcs = {
 				self.XP:SetFrameStrata(frameStrata)
 				GameTooltip:Hide()
 			end)
+			
+			self.XP.Enable = true
 		end
 
 		self.Experience:SetStatusBarColor(ouf_xp_rep.Experience.FillColor.r, ouf_xp_rep.Experience.FillColor.g, ouf_xp_rep.Experience.FillColor.b, ouf_xp_rep.Experience.FillColor.a)
@@ -1486,6 +1488,8 @@ oUF_LUI.funcs = {
 				self.Rep:SetFrameStrata(frameStrata)
 				GameTooltip:Hide()
 			end)
+			
+			self.Rep.Enable = true
 		end
 
 		self.Reputation:SetStatusBarColor(ouf_xp_rep.Reputation.FillColor.r, ouf_xp_rep.Reputation.FillColor.g, ouf_xp_rep.Reputation.FillColor.b, ouf_xp_rep.Reputation.FillColor.a)
@@ -3405,7 +3409,7 @@ local SetStyle = function(self, unit, isSingle)
 								print("Experience into Level "..level..": "..value.." / "..max.." ("..max - value.." remaining)")
 							end
 						end
-					elseif button == "RightButton" and self.Rep then
+					elseif button == "RightButton" and self.Rep and self.Rep.Enable then
 						self.XP:Hide()
 						self.Rep:Show()
 					end
@@ -3428,7 +3432,7 @@ local SetStyle = function(self, unit, isSingle)
 						if msgSent == false then
 							print("Reputation with "..name..": "..value - min.." / "..max - min.." "..standings[standing].." ("..max - value.." remaining)")
 						end
-					elseif button == "RightButton" and self.XP and UnitLevel("player") ~= MAX_PLAYER_LEVEL then
+					elseif button == "RightButton" and self.XP and self.XP.Enable and UnitLevel("player") ~= MAX_PLAYER_LEVEL then
 						self.Rep:Hide()
 						self.XP:Show()
 					end
