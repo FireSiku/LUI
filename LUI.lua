@@ -1035,7 +1035,7 @@ function LUI:OnEnable()
 	SLASH_RELOADUI1 = "/rl"
 	SlashCmdList.RELOADUI = ReloadUI
 	
-	--fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
+	fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 	
 	if LUICONFIG.IsConfigured == false then
 		self.db:SetProfile(UnitName("player").." - "..GetRealmName())
