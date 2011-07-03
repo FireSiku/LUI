@@ -1,19 +1,19 @@
 -- Create slash command to enable debug mode.
 local DEBUG = false
-SlashCmdList["YAIAPFIX"] = function()
+SlashCmdList["LUIYAIAP"] = function()
 	DEBUG = not DEBUG
-	print("|c00ff0000YAIAP|r: Debug = "..tostring(DEBUG))
+	print("|c0090ffffLUI|r: YAIAP Debug "..(DEBUG and "Enabled" or "Disabled"))
 end
-SLASH_YAIAPFIX1 = "/yaiap"
+SLASH_LUIYAIAP1 = "/yaiap"
 
 -- Hook SendAddonMessage.
 local old = SendAddonMessage
 local function fix(pre, msg, ch, ...)
 	-- Filter messages with oversized parameters.
-	if (type(pre) == "string" and #pre > 15) or (type(msg) == "string" and #msg > 250) then
+	if type(pre) == "string" and #pre > 16 then
 		if DEBUG then
 			-- Print message error info.
-			print("|c00ff0000YAIAP|r: ["..strupper(ch).."] prefix = "..(#pre)..", message = "..(#msg)..": debugstack = "..debugstack(3, 4, 0))
+			print("|c0090ffffLUI|r: YAIAP: ["..strupper(ch).."] prefix is to large ("..#pre.."): debugstack = "..debugstack(3, 4, 0))
 
 			-- Pipe errored message to SendAddonMessage to create an error for debug.
 			old(pre, msg, ch, ...)
@@ -26,7 +26,7 @@ local function fix(pre, msg, ch, ...)
 	if (chl == "raid" and GetRealNumRaidMembers() == 0) or (chl == "party" and GetRealNumPartyMembers() == 0) or (chl == "guild" and not IsInGuild()) then
 		if DEBUG then
 			-- Print message error info.
-			print("|c00ff0000YAIAP|r: ["..strupper(ch).."] prefix = |c0000ff00"..pre.."|r: debugstack = "..debugstack(3, 4, 0))
+			print("|c0090ffffLUI|r: YAIAP: ["..strupper(ch).."] prefix = |c0000ff00"..pre.."|r: debugstack = "..debugstack(3, 4, 0))
 
 			-- Pipe errored message to SendAddonMessage to create an erorr for debug.
 			old(pre, msg, ch, ...)
