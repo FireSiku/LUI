@@ -48,7 +48,7 @@ local function SetTabsAlpha()
             chatTab.mouseOverAlpha = CHAT_FRAME_TAB_SELECTED_MOUSEOVER_ALPHA;            
 	        chatTab.noMouseAlpha = CHAT_FRAME_TAB_SELECTED_NOMOUSE_ALPHA;
             
-            FCF_FadeOutChatFrame(chatframe)
+            FCF_FadeOutChatFrame(chatframe,1)
       	end
     end
 end
