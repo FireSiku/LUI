@@ -589,10 +589,11 @@ function module:CreateOptions(index, unit)
 	local SetPosition
 	if ufMover[unit] then
 		SetPosition = function()
+			local scale = oufdb.Scale or 1
 			if _G[ufMover[unit]] then
 				local _, Anchor = _G[ufMover[unit]]:GetPoint(1)
 				_G[ufMover[unit]]:ClearAllPoints()
-				_G[ufMover[unit]]:SetPoint(oufdb.Point or "CENTER", Anchor, oufdb.Point or "CENTER", tonumber(oufdb.X), tonumber(oufdb.Y))
+				_G[ufMover[unit]]:SetPoint(oufdb.Point or "CENTER", Anchor, oufdb.Point or "CENTER", tonumber(oufdb.X) / scale, tonumber(oufdb.Y) / scale)
 			end
 		end
 	else
@@ -737,6 +738,7 @@ function module:CreateOptions(index, unit)
 					_G[frame].Castbar:SetMinMaxValues(0, 60)
 					_G[frame].Castbar.casting = true
 					_G[frame].Castbar.Text:SetText("Dummy Castbar")
+					_G[frame].Castbar:PostCastStart(_G[frame].__unit, "Dummy Castbar")
 					_G[frame].Castbar:Show()
 				end
 			end
@@ -800,6 +802,7 @@ function module:CreateOptions(index, unit)
 							header3 = LUI:NewHeader("Frame Height/Width", 14),
 							Height = LUI:NewHeight(unit.." Frame", 15, oufdb, nil, oufdefaults, ApplyHeightWidth, nil, disabledFunc2),
 							Width = LUI:NewWidth(unit.." Frame", 16, oufdb, nil, oufdefaults, ApplyHeightWidth, nil, disabledFunc2),
+							Scale = (unit ~= "Raid" and ufMover[unit]) and LUI:NewSlider("Scale", "Choose the Scale for your "..unit.." Unitframes.", 17, oufdb, "Scale", oufdefaults, 0.1, 2, 0.05, ToggleFunc) or nil,
 						},
 					},
 					Appearance = {
@@ -1016,8 +1019,11 @@ function module:CreateOptions(index, unit)
 									CBBGColor = LUI:NewColor("Castbar BG", nil, 3, oufdb.Castbar.Colors.Background, oufdefaults.Castbar.Colors.Background, ApplyCastbar, nil, function() return not oufdb.Castbar.IndividualColor end),
 									CBBorderColor = LUI:NewColor("Castbar Border", nil, 5, oufdb.Castbar.Colors.Border, oufdefaults.Castbar.Colors.Border, ApplyCastbar, nil, function() return not oufdb.Castbar.IndividualColor end),
 									empty = LUI:NewEmpty(6),
-									CBNameColor = LUI:NewColorNoAlpha("Castbar Name Text", nil, 7, oufdb.Castbar.Colors.Name, oufdefaults.Castbar.Colors.Name, ApplyCastbar, nil, function() return not oufdb.Castbar.Text.Name.Enable end),
-									CBTimeColor = LUI:NewColorNoAlpha("Castbar Time Text", nil, 8, oufdb.Castbar.Colors.Time, oufdefaults.Castbar.Colors.Time, ApplyCastbar, nil, function() return not oufdb.Castbar.Text.Time.Enable end),
+									--CBShieldEnable = LUI:NewToggle("Color Shielded", "Whether you want to use an other Color for shielded Casts or not.", 7, oufdb.Castbar.Colors.Shield, "Enable", oufdefaults.Castbar.Colors.Shield, ApplyCastbar),
+									--CBShieldColor = LUI:NewColor("Shield Color", "Choose the Color you want to use for shielded Casts.", 8, oufdb.Castbar.Colors.Shield, oufdefaults.Castbar.Colors.Shield, ApplyCastbar, function() return not oufdb.Castbar.Colors.Shield.Enable end),
+									--empty2 = LUI:NewEmpty(9),
+									CBNameColor = LUI:NewColorNoAlpha("Castbar Name Text", nil, 10, oufdb.Castbar.Colors.Name, oufdefaults.Castbar.Colors.Name, ApplyCastbar, nil, function() return not oufdb.Castbar.Text.Name.Enable end),
+									CBTimeColor = LUI:NewColorNoAlpha("Castbar Time Text", nil, 11, oufdb.Castbar.Colors.Time, oufdefaults.Castbar.Colors.Time, ApplyCastbar, nil, function() return not oufdb.Castbar.Text.Time.Enable end),
 								},
 							},
 							Textures = {

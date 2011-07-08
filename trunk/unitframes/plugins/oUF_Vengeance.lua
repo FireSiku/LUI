@@ -1,7 +1,7 @@
 --[[
 	Project.: oUF_Vengeance
 	File....: oUF_Vengeance.lua
-	Version.: 40200.3
+	Version.: 40200.4
 	Rev Date: 06/28/2011
 	Authors.: Shandrela [EU-Baelgun] <Bloodmoon>
 ]]
@@ -39,19 +39,13 @@ local oUF = oUF or ns.oUF
 local _, class = UnitClass("player")
 local vengeance = GetSpellInfo(93098)
 
-local tooltip = CreateFrame("GameTooltip", "VengeanceTooltip", UIParent, "GameTooltipTemplate")
-tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+local UnitAura = UnitAura
 
-local function getTooltipText(...)
-	local t = ""
-	for i = 1, select("#",...) do
-		local r = select(i,...)
-		if r and r:GetObjectType() == "FontString" then
-			t = t .. (r:GetText() or "")
-		end
-	end
-	return t
-end
+local tooltip = CreateFrame("GameTooltip", "VengeanceTooltip", UIParent, "GameTooltipTemplate")
+local tooltiptext = _G[tooltip:GetName().."TextLeft2"]
+
+tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+tooltiptext:SetText("")
 
 local function valueChanged(self, event, unit)
 	if unit ~= "player" then return end
@@ -62,17 +56,15 @@ local function valueChanged(self, event, unit)
 		return
 	end
 	
-	local name = UnitAura("player", vengeance)
+	local name = UnitAura("player", vengeance, nil, "PLAYER|HELPFUL")
 	
 	if name then
 		tooltip:ClearLines()
 		tooltip:SetUnitBuff("player", name)
-		local text = getTooltipText(tooltip:GetRegions())
-		local value = tonumber(string.match(text,"%d+")) or 0
+		local value = tonumber(string.match(tooltiptext:GetText(), "%d+")) or -1
 		
 		if value > 0 then
 			if value > bar.max then value = bar.max end
-			
 			if value == bar.value then return end
 			
 			bar:SetMinMaxValues(0, bar.max)
@@ -88,7 +80,7 @@ local function valueChanged(self, event, unit)
 				end
 			end
 		else
-			bar:Hide()
+			print(tooltiptext:GetText())
 		end
 	else
 		bar:Hide()
@@ -121,13 +113,7 @@ local function isTank(self, event)
 	
 	if masteryIndex then
 		if class == "DRUID" and masteryIndex == 2 then
-			local form = GetShapeshiftFormID()
-			if form and form == BEAR_FORM then
-				bar.isTank = true
-			else
-				bar.isTank = false
-				bar:Hide()
-			end
+			bar.isTank = true
 		elseif (class == "DEATH KNIGHT" or class == "DEATHKNIGHT") and masteryIndex == 1 then
 			bar.isTank = true
 		elseif class == "PALADIN" and masteryIndex == 2 then
@@ -143,7 +129,7 @@ local function isTank(self, event)
 		bar:Hide()
 	end
 	
-	maxChanged(self, event, unit)
+	maxChanged(self, event, "player")
 end
 
 local function Enable(self, unit)
@@ -159,10 +145,6 @@ local function Enable(self, unit)
 		self:RegisterEvent("UNIT_LEVEL", maxChanged)
 		
 		self:RegisterEvent("PLAYER_REGEN_DISABLED", isTank)
-		
-		if class == "DRUID" then
-			self:RegisterEvent("UPDATE_SHAPESHIFT_FORM", isTank)
-		end
 		
 		bar:Hide()
 		
@@ -180,10 +162,6 @@ local function Disable(self)
 		self:UnregisterEvent("UNIT_LEVEL", maxChanged)
 		
 		self:UnregisterEvent("PLAYER_REGEN_DISABLED", isTank)
-		
-		if class == "DRUID" then
-			self:UnregisterEvent("UPDATE_SHAPESHIFT_FORM", isTank)
-		end
 	end
 end
 

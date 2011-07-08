@@ -18,6 +18,7 @@ local defaults = {
 		Width = "170",
 		X = "150",
 		Y = "100",
+		Scale = 1,
 		Point = "LEFT",
 		Padding = "50",
 		ShowPlayer = false,
@@ -204,6 +205,13 @@ local defaults = {
 					g = 0,
 					b = 0,
 					a = 0.7,
+				},
+				Shield = {
+					Enable = true,
+					r = 0.5,
+					g = 0,
+					b = 0,
+					a = 0.1,
 				},
 				Name = {
 					r = 0.9,

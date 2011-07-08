@@ -49,10 +49,12 @@ local getPoint = function(obj, anchor)
 	if anchor then
 		if (not positions.__INITIAL) or (not positions.__INITIAL[obj]) then return end
 		local UIx, UIy = UIParent:GetCenter()
+		local x, y
 		local Ipoint, Iparent, Irpoint, Ix, Iy = string.split('\031', positions.__INITIAL[obj])
 
-		-- Frame doesn't really have a positon yet.
 		if(not Ix) then return end
+		
+		local IS = anchor:GetScale()
 		
 		local UIx, UIy = UIParent:GetCenter()
 		local UIWidth, UIHeight = UIParent:GetRight(), UIParent:GetTop()
@@ -97,6 +99,9 @@ local getPoint = function(obj, anchor)
 		)
 	else
 		local point, _, rpoint, x, y = obj:GetPoint()
+		local scale = obj:GetScale()
+		x = x * scale
+		y = y * scale
 
 		return string.format(
 			'%s\031%s\031%s\031%d\031%d',
@@ -108,7 +113,6 @@ end
 local getObjectInformation  = function(obj)
 	local identifier = obj:GetName() or obj.unit
 
-	-- Are we dealing with header units?
 	local isHeader
 	local parent = obj:GetParent()
 
@@ -154,18 +158,19 @@ local setAllPositions = function()
 		end
 		if positions[v] and _G[v] and db.oUF[k] then
 			str = getPoint(v, backdropPool[_G[v]])
-			local point, parent, rpoint, x, y = string.split('\031', str)
+			local point, parent, rpoint, x, y = backdropPool[_G[v]]:GetPoint()
 			if k2 then
 				if db.oUF[k][k2] then
 					db.oUF[k].Castbar.X = tostring(x)
 					db.oUF[k].Castbar.Y = tostring(y)
 				end
 			else
-				db.oUF[k].X = tostring(x)
-				db.oUF[k].Y = tostring(y)
+				db.oUF[k].X = tostring(x * (db.oUF[k].Scale or 1))
+				db.oUF[k].Y = tostring(y * (db.oUF[k].Scale or 1))
 			end
+			local scale = db.oUF[k].Scale or 1
 			_G[v]:ClearAllPoints()
-			_G[v]:SetPoint(point, parent, rpoint, x, y)
+			_G[v]:SetPoint(point, UIParent, rpoint, x, y)
 			
 			positions[v] = nil
 			positions.__INITIAL[v] = nil
@@ -326,18 +331,27 @@ do
 	local OnDragStop = function(self)
 		self:StopMovingOrSizing()
 		savePosition(self.obj, self)
+		print(self:GetPoint())
 	end
 
 	getBackdrop = function(obj, isHeader)
 		local target = isHeader or obj
 		if not target and not target:GetCenter() then return end
-		if backdropPool[target] then return backdropPool[target] end
+		if backdropPool[target] then
+			backdropPool[target]:SetScale(target:GetScale())
+			backdropPool[target]:SetAllPoints(target)
+			return backdropPool[target]
+		end
 
 		local backdrop = CreateFrame("Frame")
 		backdrop:SetParent(UIParent)
 		backdrop:Hide()
 
+		backdrop:SetScale(target:GetScale())
 		backdrop:SetBackdrop(_BACKDROP)
+		
+		backdrop:SetBackdropColor(0, .9, 0)
+		backdrop:SetBackdropBorderColor(0, .9, 0)
 		backdrop:SetFrameStrata("TOOLTIP")
 		backdrop:SetAllPoints(target)
 
@@ -357,10 +371,6 @@ do
 		backdrop.obj = obj
 		backdrop.header = isHeader
 
-		backdrop:SetBackdropBorderColor(0, .9, 0)
-		backdrop:SetBackdropColor(0, .9, 0)
-
-		-- Work around the fact that headers with no units displayed are 0 in height.
 		if isHeader and math.floor(isHeader:GetHeight()) == 0 then
 			local height = isHeader:GetChildren():GetHeight()
 			isHeader:SetHeight(height)
@@ -575,15 +585,21 @@ local ufUnits = {
 -- needed this way because of self calls!
 local toggleFuncs
 toggleFuncs = {
-	Default = function(unit) 
+	Default = function(unit)
+		local x = tonumber(db.oUF[unit].X) / (db.oUF[unit].Scale)
+		local y = tonumber(db.oUF[unit].Y) / (db.oUF[unit].Scale)
+		
 		if db.oUF[unit].Enable == nil or db.oUF[unit].Enable then -- == nil needed for player/target
 			if _G["oUF_LUI_"..ufUnits[unit]] then
 				_G["oUF_LUI_"..ufUnits[unit]]:Enable()
 				_G["oUF_LUI_"..ufUnits[unit]]:UpdateAllElements()
 				_G["oUF_LUI_"..ufUnits[unit]]:ClearAllPoints()
-				_G["oUF_LUI_"..ufUnits[unit]]:SetPoint("CENTER", UIParent, "CENTER", tonumber(db.oUF[unit].X), tonumber(db.oUF[unit].Y))
+				_G["oUF_LUI_"..ufUnits[unit]]:SetScale(db.oUF[unit].Scale)
+				_G["oUF_LUI_"..ufUnits[unit]]:SetPoint("CENTER", UIParent, "CENTER", x, y)
 			else
-				oUF:Spawn(ufUnits[unit], "oUF_LUI_"..ufUnits[unit]):SetPoint("CENTER", UIParent, "CENTER", tonumber(db.oUF[unit].X), tonumber(db.oUF[unit].Y))
+				local f = oUF:Spawn(ufUnits[unit], "oUF_LUI_"..ufUnits[unit])
+				f:SetScale(db.oUF[unit].Scale)
+				f:SetPoint("CENTER", UIParent, "CENTER", x, y)
 			end
 		else
 			if _G["oUF_LUI_"..ufUnits[unit]] then _G["oUF_LUI_"..ufUnits[unit]]:Disable() end
@@ -592,9 +608,13 @@ toggleFuncs = {
 	
 	Boss = function()
 		if db.oUF.Boss.Enable then
+			local x = tonumber(db.oUF.Boss.X) / (db.oUF.Boss.Scale)
+			local y = tonumber(db.oUF.Boss.Y) / (db.oUF.Boss.Scale)
+			
 			if oUF_LUI_boss then
+				oUF_LUI_boss:SetScale(db.oUF.Boss.Scale)
 				oUF_LUI_boss:ClearAllPoints()
-				oUF_LUI_boss:SetPoint(db.oUF.Boss.Point, UIParent, db.oUF.Boss.Point, tonumber(db.oUF.Boss.X), tonumber(db.oUF.Boss.Y))
+				oUF_LUI_boss:SetPoint(db.oUF.Boss.Point, UIParent, db.oUF.Boss.Point, x, y)
 				oUF_LUI_boss:SetWidth(tonumber(db.oUF.Boss.Width))
 				oUF_LUI_boss:SetHeight(tonumber(db.oUF.Boss.Height))
 				oUF_LUI_boss:SetAttribute("Height", tonumber(db.oUF.Boss.Height))
@@ -613,7 +633,8 @@ toggleFuncs = {
 				end
 			else
 				local bossParent = CreateFrame("Frame", "oUF_LUI_boss", UIParent)
-				bossParent:SetPoint(db.oUF.Boss.Point, UIParent, db.oUF.Boss.Point, tonumber(db.oUF.Boss.X), tonumber(db.oUF.Boss.Y))
+				bossParent:SetScale(db.oUF.Boss.Scale)
+				bossParent:SetPoint(db.oUF.Boss.Point, UIParent, db.oUF.Boss.Point, x, y)
 				bossParent:SetWidth(tonumber(db.oUF.Boss.Width))
 				bossParent:SetHeight(tonumber(db.oUF.Boss.Height))
 				bossParent:SetAttribute("Height", tonumber(db.oUF.Boss.Height))
@@ -646,7 +667,7 @@ toggleFuncs = {
 				if _G["oUF_LUI_boss"..i] then _G["oUF_LUI_boss"..i]:Disable() end
 			end
 			
-			oUF_LUI_boss:Hide()
+			if oUF_LUI_boss then oUF_LUI_boss:Hide() end
 		end
 		
 		toggleFuncs.BossTarget()
@@ -676,9 +697,13 @@ toggleFuncs = {
 	
 	Party = function()
 		if db.oUF.Party.Enable then
+			local x = tonumber(db.oUF.Party.X) / (db.oUF.Party.Scale)
+			local y = tonumber(db.oUF.Party.Y) / (db.oUF.Party.Scale)
+			
 			if oUF_LUI_party then
+				oUF_LUI_party:SetScale(db.oUF.Party.Scale)
 				oUF_LUI_party:ClearAllPoints()
-				oUF_LUI_party:SetPoint(db.oUF.Party.Point, UIParent, db.oUF.Party.Point, tonumber(db.oUF.Party.X), tonumber(db.oUF.Party.Y))
+				oUF_LUI_party:SetPoint(db.oUF.Party.Point, UIParent, db.oUF.Party.Point, x, y)
 				oUF_LUI_party:SetAttribute("yOffset", - tonumber(db.oUF.Party.Padding))
 				oUF_LUI_party:SetAttribute("showPlayer", db.oUF.Party.ShowPlayer)
 				oUF_LUI_party:SetAttribute("oUF-initialConfigFunction", [[
@@ -727,7 +752,8 @@ toggleFuncs = {
 					]]
 				)
 				
-				party:SetPoint(db.oUF.Party.Point, UIParent, db.oUF.Party.Point, tonumber(db.oUF.Party.X), tonumber(db.oUF.Party.Y))
+				party:SetScale(db.oUF.Party.Scale)
+				party:SetPoint(db.oUF.Party.Point, UIParent, db.oUF.Party.Point, x, y)
 								
 				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerAttributeTemplate")
 				handler:SetAttribute("vis", 1)
@@ -824,11 +850,14 @@ toggleFuncs = {
 	
 	Arena = function()
 		if db.oUF.Arena.Enable then
+			local x = tonumber(db.oUF.Arena.X) / (db.oUF.Arena.Scale)
+			local y = tonumber(db.oUF.Arena.Y) / (db.oUF.Arena.Scale)
 			SetCVar("showArenaEnemyFrames", 0)
 			
 			if oUF_LUI_arena then
+				oUF_LUI_arena:SetScale(db.oUF.Arena.Scale)
 				oUF_LUI_arena:ClearAllPoints()
-				oUF_LUI_arena:SetPoint(db.oUF.Arena.Point, UIParent, db.oUF.Arena.Point, tonumber(db.oUF.Arena.X), tonumber(db.oUF.Arena.Y))
+				oUF_LUI_arena:SetPoint(db.oUF.Arena.Point, UIParent, db.oUF.Arena.Point, x, y)
 				oUF_LUI_arena:SetWidth(tonumber(db.oUF.Arena.Width))
 				oUF_LUI_arena:SetHeight(tonumber(db.oUF.Arena.Height))
 				oUF_LUI_arena:SetAttribute("Height", tonumber(db.oUF.Arena.Height))
@@ -849,8 +878,9 @@ toggleFuncs = {
 				-- oUF kills it, we save it!
 				Arena_LoadUI_ = ArenaLoadUI
 				
-				local arenaParent = CreateFrame("Frame", "oUF_LUI_arena", UIParent, "SecureHandlerBaseTemplate")
-				arenaParent:SetPoint(db.oUF.Arena.Point, UIParent, db.oUF.Arena.Point, tonumber(db.oUF.Arena.X), tonumber(db.oUF.Arena.Y))
+				local arenaParent = CreateFrame("Frame", "oUF_LUI_arena", UIParent)
+				arenaParent:SetScale(db.oUF.Arena.Scale)
+				arenaParent:SetPoint(db.oUF.Arena.Point, UIParent, db.oUF.Arena.Point, x, y)
 				arenaParent:SetWidth(tonumber(db.oUF.Arena.Width))
 				arenaParent:SetHeight(tonumber(db.oUF.Arena.Height))
 				arenaParent:SetAttribute("Height", tonumber(db.oUF.Arena.Height))
@@ -944,9 +974,13 @@ toggleFuncs = {
 	
 	Maintank = function()
 		if db.oUF.Maintank.Enable then
+			local x = tonumber(db.oUF.Arena.X) / (db.oUF.Arena.Scale)
+			local y = tonumber(db.oUF.Arena.Y) / (db.oUF.Arena.Scale)
+			
 			if oUF_LUI_maintank then
+				oUF_LUI_maintank:SetScale(db.oUF.Maintank.Scale)
 				oUF_LUI_maintank:ClearAllPoints()
-				oUF_LUI_maintank:SetPoint(db.oUF.Maintank.Point, UIParent, db.oUF.Maintank.Point, tonumber(db.oUF.Maintank.X), tonumber(db.oUF.Maintank.Y))
+				oUF_LUI_maintank:SetPoint(db.oUF.Maintank.Point, UIParent, db.oUF.Maintank.Point, x, y)
 				oUF_LUI_maintank:SetAttribute("yOffset", - tonumber(db.oUF.Maintank.Padding))
 				oUF_LUI_maintank:SetAttribute("oUF-initialConfigFunction", [[
 					local unit = ...
@@ -996,7 +1030,8 @@ toggleFuncs = {
 					]]
 				)
 				
-				tank:SetPoint(db.oUF.Maintank.Point, UIParent, db.oUF.Maintank.Point, tonumber(db.oUF.Maintank.X), tonumber(db.oUF.Maintank.Y))
+				tank:SetScale(db.oUF.Maintank.Scale)
+				tank:SetPoint(db.oUF.Maintank.Point, UIParent, db.oUF.Maintank.Point, x, y)
 				tank:Show()
 			end
 		else

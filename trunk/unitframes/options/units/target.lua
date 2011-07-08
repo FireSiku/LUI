@@ -22,6 +22,7 @@ local defaults = {
 		Width = "250",
 		X = "200",
 		Y = "-200",
+		Scale = 1,
 		Border = {
 			Aggro = false,
 			EdgeFile = "glow",
@@ -221,6 +222,13 @@ local defaults = {
 					g = 0,
 					b = 0,
 					a = 0.7,
+				},
+				Shield = {
+					Enable = true,
+					r = 0.5,
+					g = 0,
+					b = 0,
+					a = 0.1,
 				},
 				Name = {
 					r = 0.9,

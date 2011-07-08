@@ -342,6 +342,7 @@ function module:LoadOptions()
 		for _, frame in pairs(ufNamesListRaid) do
 			if _G[frame] then LUI.oUF.funcs.RaidInfo(_G[frame], _G[frame].__unit, oufdb) end
 		end
+		LUI.oUF.RecreateNameCache()
 	end
 	
 	local ToggleCornerAura = function(Info, Enable)
