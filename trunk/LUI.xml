@@ -1,4 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<!-- Error frame hook -->
+	<Script file="scripts\errorframe.lua"/>
+	
 	<!-- oUF Core -->
 	<Include file="unitframes\core\ouf.xml"/>
 	
