@@ -2,8 +2,8 @@
        Project....: LUI NextGenWoWUserInterface
        File.......: questwatch.lua
        Description: Makes the Questwatch Frame movable
-       Version....: 1.0
-       Rev Date...: 05/07/2011 [dd/mm/yyyy]
+       Version....: 1.01
+       Rev Date...: 08/07/2011 [dd/mm/yyyy]
        Author.....: Yunai
     ]]
 
@@ -17,13 +17,13 @@
 
     local function QWFM_Tooltip(self)
        GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:AddLine("Touch me to move...", 0, 1, 0.5, 1, 1, 1)
+        GameTooltip:AddLine("Click to move...", 1, 1, 0.5, 1, 1, 1)
         GameTooltip:Show()
     end
      
     local function init()
 
-	if not LUIDB.QuestWatch then LUIDB.QuestWatch = {a1 = "TOPRIGHT", a2 = "TOPRIGHT", af = "UIParent", x = 0, y = 0} end
+ 	if not LUIDB.QuestWatch then LUIDB.QuestWatch = {a1 = "TOPRIGHT", af = "UIParent",a2 = "TOPRIGHT", x = -100, y = -150} end
 	pos = LUIDB.QuestWatch
 	
         local wf = _G['WatchFrame']
