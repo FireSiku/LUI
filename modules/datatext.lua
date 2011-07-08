@@ -335,7 +335,7 @@ function module:SetClock()
 		if self.dt > 1 then
 			self.dt = 0
 
-			if (GameTimeFrame.pendingCalendarInvites > 0) then
+			if (GameTimeFrame.pendingCalendarInvites > 1) then     -- Do NOT change the "1" to "0" > This results in Inv Pending issue !
 				LUI_Text_Clock:SetText("(Inv. pending)")
 				self:SetAllPoints(LUI_Text_Clock)
 			else
