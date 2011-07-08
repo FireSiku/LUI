@@ -87,6 +87,8 @@
 	<Script file="unitframes\plugins\singleauras.lua"/>
 	<Script file="unitframes\plugins\oUF_RaidDebuffs.lua"/>
 	<Script file="unitframes\plugins\raiddebuffs.lua"/>
+	<Script file="unitframes\plugins\threatbar.lua"/>
+	
     <Script file="unitframes\layout.lua"/>
 	
 	<!-- Addon Installation Routines -->

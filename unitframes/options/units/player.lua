@@ -83,6 +83,7 @@ local defaults = {
 		Width = "250",
 		X = "-200",
 		Y = "-200",
+		Scale = 1,
 		Border = {
 			Aggro = false,
 			EdgeFile = "glow",
@@ -341,6 +342,37 @@ local defaults = {
 				},
 			},
 		},
+		ThreatBar = {
+			Enable = true,
+			Width = "384",
+			Height = "4",
+			X = "0",
+			Y = "12",
+			Texture = "LUI_Gradient",
+			Color = "By Class",
+			HideTank = true,
+			IndividualColor = {
+				r = 1,
+				g = 1,
+				b = 1,
+			},
+			BGTexture = "LUI_Minimalist",
+			BGMultiplier = 0.4,
+			Text = {
+				Enable = false,
+				X = "0",
+				Y = "0",
+				Font = "neuropol",
+				Size = 10,
+				Outline = "NONE",
+				Color = "Individual",
+				IndividualColor = {
+					r = 1,
+					g = 1,
+					b = 1,
+				},
+			},
+		},
 		Aura = {
 			buffs_colorbytype = false,
 			buffs_playeronly = false,
@@ -435,6 +467,13 @@ local defaults = {
 					g = 0,
 					b = 0,
 					a = 0.7,
+				},
+				Shield = {
+					Enable = true,
+					r = 0.5,
+					g = 0,
+					b = 0,
+					a = 0.1,
 				},
 				Name = {
 					r = 0.9,
@@ -664,7 +703,7 @@ local defaults = {
 				Font = "vibrocen",
 				Outline = "OUTLINE",
 				Size = 20,
-				Point = "CENTER", ----- here down
+				Point = "CENTER",
 				RelativePoint = "BOTTOM",
 				X = "0",
 				Y = "0",
@@ -673,7 +712,7 @@ local defaults = {
 				ShowImmune = true,
 				ShowEnergize = true,
 				ShowOther = true,
-				MaxAlpha = 0.6, ----- to here
+				MaxAlpha = 0.6,
 			},
 			PvP = {
 				Enable = true,
@@ -718,6 +757,7 @@ local barKeys = {
 	Swing = "Swing",
 	Vengeance = "Vengeance",
 	AltPower = "AltPowerBar",
+	ThreatBar = "ThreatBar",
 }
 local barNames = {
 	Totems = "Totems",
@@ -728,6 +768,7 @@ local barNames = {
 	Swing = "Swingtimer",
 	Vengeance = "Vengeance",
 	AltPower = "Alternate Power",
+	ThreatBar = "Threat",
 }
 
 ------------------------------------------------------------------------
@@ -865,14 +906,14 @@ end
 --barKey: Key in the ouf layout / the creator funcs
 --barName: Shown Name in the options
 --barType: Key in the options/db
---barType: Vengeance, Swing, Totems, Runes, HolyPower, SoulShards, Eclipse
+--barType: Vengeance, Swing, Totems, Runes, HolyPower, SoulShards, Eclipse, ThreatBar
 function module:CreateBarOptions(barType, order)
 	local barName = barNames[barType]
 	local barKey = barKeys[barType]
 	local bardb = db.oUF.Player[barType]
 	local bardefaults = LUI.defaults.profile.oUF.Player[barType]
 	
-	local isLockable = not (barType == "Vengeance" or barType == "Swing")
+	local isLockable = not (barType == "Vengeance" or barType == "Swing" or barType == "ThreatBar")
 	local isLocked
 	if isLockable then isLocked = function() return not bardb.Enable or bardb.Lock end end
 	
@@ -914,6 +955,7 @@ function module:CreateBarOptions(barType, order)
 					Height = LUI:NewHeight(barName, 5, bardb, nil, bardefaults, ApplySettings),
 					empty = LUI:NewEmpty(6),
 					Padding = (barType ~= "Eclipse" and isLockable) and LUI:NewSlider("Padding", "Choose the Padding between your "..barName.." Elements.", 12, bardb, "Padding", bardefaults, 1, 10, 1, ApplySettings) or nil,
+					Tankhide = barType == "ThreatBar" and LUI:NewToggle("Hide if Tanking", "Whether you want to hide your "..barName.." Bar if tanking or not.", 13, bardb, "HideTank", bardefaults, ApplySettings) or nil,
 				},
 			},
 			Colors = (not isLockable) and {
@@ -923,8 +965,8 @@ function module:CreateBarOptions(barType, order)
 				guiInline = true,
 				order = 3,
 				args = {
-					ColorType = LUI:NewSelect("Color", "Choose the Color Option for your "..barName..".", 1, {"By Class", "Individual"}, nil, bardb, "Color", bardefaults, ApplySettings),
-					Color = LUI:NewColorNoAlpha("Individual", barName, 2, bardb.IndividualColor, bardefaults.IndividualColor, ApplySettings, nil, function() return (bardb.Color == "By Class") end),
+					ColorType = LUI:NewSelect("Color", "Choose the Color Option for your "..barName..".", 1, barType == "ThreatBar" and {"By Class", "Individual", "Gradient"} or {"By Class", "Individual"}, nil, bardb, "Color", bardefaults, ApplySettings),
+					Color = LUI:NewColorNoAlpha("Individual", barName, 2, bardb.IndividualColor, bardefaults.IndividualColor, ApplySettings, nil, function() return (bardb.Color ~= "Individual") end),
 				},
 			} or nil,
 			Textures = {
@@ -953,7 +995,7 @@ end
 --barKey: Key in the ouf layout / the creator funcs
 --barName: Shown Name in the options
 --barType: Key in the options/db
---barType: Vengeance, Swing, Eclipse, AltPower
+--barType: Vengeance, Swing, Eclipse, AltPower, ThreatBar
 function module:CreateBarTextOptions(barType, order)
 	local barName = barNames[barType]
 	local barKey = barKeys[barType]
@@ -996,7 +1038,7 @@ function module:CreateBarTextOptions(barType, order)
 				args = {
 					XValue = LUI:NewPosX(barType.." Bar Text", 1, bardb.Text, "", bardefaults.Text, ApplySettings),
 					YValue = LUI:NewPosY(barType.." Bar Text", 2, bardb.Text, "", bardefaults.Text, ApplySettings),
-					Format = (barType ~= "Eclipse") and LUI:NewSelect("Format", "Choose the Format for the "..barType.." Bar Text.", 3, textformats, nil, bardb.Text, "Format", bardefaults.Text, ApplySettings) or nil,
+					Format = (barType ~= "Eclipse" and barType ~= "ThreatBar") and LUI:NewSelect("Format", "Choose the Format for the "..barType.." Bar Text.", 3, textformats, nil, bardb.Text, "Format", bardefaults.Text, ApplySettings) or nil,
 				},
 			},
 			Color = (barType ~= "Eclipse") and {
@@ -1142,10 +1184,11 @@ function module:LoadOptions()
 						Eclipse = (class == "DRUID") and module:CreateBarOptions("Eclipse", 16) or nil,
 						Swing = module:CreateBarOptions("Swing", 17),
 						Vengeance = (class == "DRUID" or class == "WARRIOR" or class == "PALADIN" or class == "DEATHKNIGHT" or class == "DEATH KNIGHT") and module:CreateBarOptions("Vengeance", 18) or nil,
+						ThreatBar = module:CreateBarOptions("ThreatBar", 19),
 						AltPower = {
 							name = "Alternate Power",
 							type = "group",
-							order = 19,
+							order = 20,
 							args = {
 								Enable = LUI:NewToggle("Enable", "Whether you want to show the Alternate Power Bar or not.", 1, db.oUF.Player.AltPower, "Enable", LUI.defaults.profile.oUF.Player.AltPower, ToggleAltPower),
 								General = {
@@ -1265,6 +1308,7 @@ function module:LoadOptions()
 						Swing = module:CreateBarTextOptions("Swing", 12),
 						Eclipse = (class == "DRUID") and module:CreateBarTextOptions("Eclipse", 13) or nil,
 						AltPower = module:CreateBarTextOptions("AltPower", 14),
+						ThreatBar = module:CreateBarTextOptions("ThreatBar", 15),
 					},
 				},
 				Castbar = {

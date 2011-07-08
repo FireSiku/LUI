@@ -372,7 +372,7 @@ local OverridePower = function(self, event, unit)
 	local pClass, pToken = UnitClass(unit)
 	local color = colors.class[pToken] or {0.5, 0.5, 0.5}
 	local color2 = colors.power[pType] or {0.5, 0.5, 0.5}
-	local _, r, g, b = UnitAlternatePowerTextureInfo("player", 2)
+	local _, r, g, b = UnitAlternatePowerTextureInfo(unit, 2)
 
 	if unit == "player" and entering == true then
 		if db.oUF.Player.Power.Color == "By Class" then
@@ -496,17 +496,33 @@ local OverridePower = function(self, event, unit)
 end
 
 local FormatCastbarTime = function(self, duration)
-	if self.channeling then
-		if self.Time.ShowMax == true then
-			self.Time:SetFormattedText("%.1f / %.1f", duration, self.max)
-		else
-			self.Time:SetFormattedText("%.1f", duration)
+	if self.delay ~= 0 then
+		if self.channeling then
+			if self.Time.ShowMax == true then
+				self.Time:SetFormattedText("%.1f / %.1f |cffff0000-%.1f|r", duration, self.max, self.delay)
+			else
+				self.Time:SetFormattedText("%.1f |cffff0000-%.1f|r", duration, self.delay)
+			end
+		elseif self.casting then
+			if self.Time.ShowMax == true then
+				self.Time:SetFormattedText("%.1f / %.1f |cffff0000-%.1f|r", self.max - duration, self.max, self.delay)
+			else
+				self.Time:SetFormattedText("%.1f |cffff0000-%.1f|r", self.max - duration, self.delay)
+			end
 		end
-	elseif self.casting then
-		if self.Time.ShowMax == true then
-			self.Time:SetFormattedText("%.1f / %.1f", self.max - duration, self.max)
-		else
-			self.Time:SetFormattedText("%.1f ", self.max - duration)
+	else
+		if self.channeling then
+			if self.Time.ShowMax == true then
+				self.Time:SetFormattedText("%.1f / %.1f", duration, self.max)
+			else
+				self.Time:SetFormattedText("%.1f", duration)
+			end
+		elseif self.casting then
+			if self.Time.ShowMax == true then
+				self.Time:SetFormattedText("%.1f / %.1f", self.max - duration, self.max)
+			else
+				self.Time:SetFormattedText("%.1f", self.max - duration)
+			end
 		end
 	end
 end
@@ -522,8 +538,7 @@ local CreateAuraTimer = function(self,elapsed)
 				self.first = false
 			end
 			if self.timeLeft > 0 then
-				local time = FormatTime(self.timeLeft)
-				self.remaining:SetText(time)
+				self.remaining:SetText(FormatTime(self.timeLeft))
 				self.remaining:SetTextColor(1, 1, 1)
 			else
 				self.remaining:Hide()
@@ -624,17 +639,22 @@ end
 
 local PostCastStart = function(castbar, unit, name)
 	if castbar.Colors.Individual == true then
-		castbar:SetStatusBarColor(Castbar.Colors.Bar.r, Castbar.Colors.Bar.g, Castbar.Colors.Bar.b, Castbar.Colors.Bar.a)
-		castbar.bg:SetVertexColor(Castbar.Colors.Background.r, Castbar.Colors.Background.g, Castbar.Colors.Background.b, Castbar.Colors.Background.a)
-		castbar.Backdrop:setBackdropBorderColor(Castbar.Colors.Border.r, Castbar.Colors.Border.g, Castbar.Colors.Border.b, Castbar.Colors.Border.a)
+		castbar:SetStatusBarColor(castbar.Colors.Bar.r, castbar.Colors.Bar.g, castbar.Colors.Bar.b, castbar.Colors.Bar.a)
+		castbar.bg:SetVertexColor(castbar.Colors.Background.r, castbar.Colors.Background.g, castbar.Colors.Background.b, castbar.Colors.Background.a)
+		castbar.Backdrop:SetBackdropBorderColor(castbar.Colors.Border.r, castbar.Colors.Border.g, castbar.Colors.Border.b, castbar.Colors.Border.a)
 	else
+		if unit == "target" or unit == "focus" or unit == "pet" then unit = "player" end
 		local pClass, pToken = UnitClass(unit)
 		local color = colors.class[pToken]
-
+		
 		castbar:SetStatusBarColor(color[1], color[2], color[3], 0.68)
 		castbar.bg:SetVertexColor(0.15, 0.15, 0.15, 0.75)
 		castbar.Backdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 	end
+	
+	--if castbar.interrupt and UnitCanAttack("player", unit) and castbar.Colors.Shield.Enable then
+	--	castbar:SetStatusBarColor(castbar.Colors.Shield.r, castbar.Colors.Shield.g, castbar.Colors.Shield.b, castbar.Colors.Shield.a)
+	--end
 end
 
 local ThreatOverride = function(self, event, unit)
@@ -1620,10 +1640,10 @@ oUF_LUI.funcs = {
 		local mu = oufdb.Vengeance.BGMultiplier
 		if oufdb.Vengeance.Color == "By Class" then
 			local color = colors.class[class]
-			self.Vengeance:SetStatusBarColor(color[1], color[2], color[3], 0.8)
+			self.Vengeance:SetStatusBarColor(color[1], color[2], color[3], 1)
 			self.Vengeance.bg:SetVertexColor(color[1]*mu, color[2]*mu, color[3]*mu, 1)
 		else
-			self.Vengeance:SetStatusBarColor(oufdb.Vengeance.IndividualColor.r, oufdb.Vengeance.IndividualColor.g, oufdb.Vengeance.IndividualColor.b, 0.8)
+			self.Vengeance:SetStatusBarColor(oufdb.Vengeance.IndividualColor.r, oufdb.Vengeance.IndividualColor.g, oufdb.Vengeance.IndividualColor.b, 1)
 			self.Vengeance.bg:SetVertexColor(oufdb.Vengeance.IndividualColor.r*mu, oufdb.Vengeance.IndividualColor.g*mu, oufdb.Vengeance.IndividualColor.b*mu, 1)
 		end
 
@@ -1635,6 +1655,46 @@ oUF_LUI.funcs = {
 			self.Vengeance.Text:Show()
 		else
 			self.Vengeance.Text:Hide()
+		end
+	end,
+	ThreatBar = function(self, unit, oufdb)
+		if not self.ThreatBar then
+			self.ThreatBar = CreateFrame("StatusBar", nil, UIParent)
+			self.ThreatBar.bg = self.ThreatBar:CreateTexture(nil, "BORDER")
+			self.ThreatBar.bg:SetAllPoints(self.ThreatBar)
+			
+			self.ThreatBar.Text = SetFontString(self.ThreatBar, LSM:Fetch("font", oufdb.ThreatBar.Text.Font), oufdb.ThreatBar.Text.Size, oufdb.ThreatBar.Text.Outline)
+		end
+		
+		self.ThreatBar:SetWidth(tonumber(oufdb.ThreatBar.Width))
+		self.ThreatBar:SetHeight(tonumber(oufdb.ThreatBar.Height))
+		self.ThreatBar:ClearAllPoints()
+		self.ThreatBar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(oufdb.ThreatBar.X), tonumber(oufdb.ThreatBar.Y))
+		self.ThreatBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.ThreatBar.Texture))
+		self.ThreatBar.bg:SetTexture(LSM:Fetch("statusbar", oufdb.ThreatBar.TextureBG))
+		
+		self.ThreatBar.BGMultiplier = oufdb.ThreatBar.BGMultiplier
+		
+		local mu = self.ThreatBar.BGMultiplier
+		if oufdb.ThreatBar.Color == "By Class" then
+			local color = colors.class[class]
+			self.ThreatBar:SetStatusBarColor(color[1], color[2], color[3], 1)
+			self.ThreatBar.bg:SetVertexColor(color[1]*mu, color[2]*mu, color[3]*mu, 1)
+		elseif oufdb.ThreatBar.Color == "Individual" then
+			self.ThreatBar:SetStatusBarColor(oufdb.ThreatBar.IndividualColor.r, oufdb.ThreatBar.IndividualColor.g, oufdb.ThreatBar.IndividualColor.b, 0.8)
+			self.ThreatBar.bg:SetVertexColor(oufdb.ThreatBar.IndividualColor.r*mu, oufdb.ThreatBar.IndividualColor.g*mu, oufdb.ThreatBar.IndividualColor.b*mu, 1)
+		end
+		self.ThreatBar.colorGradient = (oufdb.ThreatBar.Color == "Gradient")
+		self.ThreatBar.tankHide = oufdb.ThreatBar.TankHide
+		
+		self.ThreatBar.Text:SetFont(LSM:Fetch("font", oufdb.ThreatBar.Text.Font), oufdb.ThreatBar.Text.Size, oufdb.ThreatBar.Text.Outline)
+		self.ThreatBar.Text:ClearAllPoints()
+		self.ThreatBar.Text:SetPoint("CENTER", self.ThreatBar, "CENTER", tonumber(oufdb.ThreatBar.Text.X), tonumber(oufdb.ThreatBar.Text.Y))
+
+		if oufdb.ThreatBar.Text.Enable then
+			self.ThreatBar.Text:Show()
+		else
+			self.ThreatBar.Text:Hide()
 		end
 	end,
 	TotemBar = function(self, unit, oufdb)
@@ -1967,7 +2027,7 @@ oUF_LUI.funcs = {
 
 		if GetShapeshiftFormID() == CAT_FORM or GetShapeshiftFormID() == BEAR_FORM then self.DruidMana.SetPosition() end
 	end,
-
+	
 	-- target specific
 	CPoints = function(self, unit, oufdb)
 		if not self.CPoints then
@@ -2100,10 +2160,10 @@ oUF_LUI.funcs = {
 		if not self.AltPowerBar then
 			self.AltPowerBar = CreateFrame("StatusBar", nil, self)
 			if unit == "pet" then self.AltPowerBar:SetParent(oUF_LUI_player) end
-
+			
 			self.AltPowerBar.bg = self.AltPowerBar:CreateTexture(nil, "BORDER")
 			self.AltPowerBar.bg:SetAllPoints(self.AltPowerBar)
-
+			
 			self.AltPowerBar.SetPosition = function()
 				if (oUF_LUI_player.AltPowerBar:IsShown() or (oUF_LUI_pet and oUF_LUI_pet.AltPowerBar and oUF_LUI_pet.AltPowerBar:IsShown())) and db.oUF.Player.AltPower.OverPower then
 					if oUF_LUI_player.DruidMana then
@@ -2155,7 +2215,7 @@ oUF_LUI.funcs = {
 
 		self.AltPowerBar.Text:SetFont(LSM:Fetch("font", db.oUF.Player.AltPower.Text.Font), db.oUF.Player.AltPower.Text.Size, db.oUF.Player.AltPower.Text.Outline)
 		self.AltPowerBar.Text:ClearAllPoints()
-		self.AltPowerBar.Text:SetPoint("CENTER", self.AltPower, "CENTER", tonumber(db.oUF.Player.AltPower.Text.X), tonumber(db.oUF.Player.AltPower.Text.Y))
+		self.AltPowerBar.Text:SetPoint("CENTER", self.AltPowerBar, "CENTER", tonumber(db.oUF.Player.AltPower.Text.X), tonumber(db.oUF.Player.AltPower.Text.Y))
 
 		self.AltPowerBar.Text.Enable = db.oUF.Player.AltPower.Text.Enable
 		self.AltPowerBar.Text.Format = db.oUF.Player.AltPower.Text.Format
@@ -2290,9 +2350,10 @@ oUF_LUI.funcs = {
 			self.Castbar.Time = SetFontString(self.Castbar, LSM:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
 			self.Castbar.Time:SetJustifyH("RIGHT")
 			self.Castbar.CustomTimeText = FormatCastbarTime
+			self.Castbar.CustomDelayText = FormatCastbarTime
 
 			self.Castbar.Text = SetFontString(self.Castbar, LSM:Fetch("font", oufdb.Castbar.Text.Name.Font), oufdb.Castbar.Text.Name.Size)
-
+			
 			if unit == "player" then
 				self.Castbar.SafeZone = self.Castbar:CreateTexture(nil, "ARTWORK")
 				self.Castbar.SafeZone:SetTexture(normTex)
@@ -2347,16 +2408,12 @@ oUF_LUI.funcs = {
 				self.Castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
 				self.Castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 			end
-
 		end
-
-		local pClass, pToken = UnitClass("player")
-		local color = colors.class[pToken]
-
+		
 		self.Castbar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Castbar.Texture))
 		self.Castbar:SetHeight(tonumber(oufdb.Castbar.Height))
 		self.Castbar:SetWidth(tonumber(oufdb.Castbar.Width))
-
+		
 		self.Castbar:ClearAllPoints()
 		if unit == "player" or unit == "target" then
 			self.Castbar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(oufdb.Castbar.X), tonumber(oufdb.Castbar.Y))
@@ -2367,70 +2424,44 @@ oUF_LUI.funcs = {
 		else
 			self.Castbar:SetPoint("LEFT", self, "RIGHT", tonumber(oufdb.Castbar.X), tonumber(oufdb.Castbar.Y))
 		end
-
+		
 		self.Castbar.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Castbar.TextureBG))
-
-		if unit == "player" or unit == "target" or unit == "focus" or unit == "pet" then
-			if oufdb.Castbar.IndividualColor == true then
-				self.Castbar:SetStatusBarColor(oufdb.Castbar.Colors.Bar.r,oufdb.Castbar.Colors.Bar.g,oufdb.Castbar.Colors.Bar.b,oufdb.Castbar.Colors.Bar.a)
-				self.Castbar.bg:SetVertexColor(oufdb.Castbar.Colors.Background.r,oufdb.Castbar.Colors.Background.g,oufdb.Castbar.Colors.Background.b,oufdb.Castbar.Colors.Background.a)
-
-				self.Castbar.Backdrop:SetBackdrop({
-					edgeFile = LSM:Fetch("border", oufdb.Castbar.Border.Texture), edgeSize = oufdb.Castbar.Border.Thickness,
-					insets = {left = oufdb.Castbar.Border.Inset.left, right = oufdb.Castbar.Border.Inset.right, top = oufdb.Castbar.Border.Inset.top, bottom = oufdb.Castbar.Border.Inset.bottom}
-				})
-				self.Castbar.Backdrop:SetBackdropColor(0, 0, 0, 0)
-				self.Castbar.Backdrop:SetBackdropBorderColor(oufdb.Castbar.Colors.Border.r,oufdb.Castbar.Colors.Border.g,oufdb.Castbar.Colors.Border.b,oufdb.Castbar.Colors.Border.a)
-			else
-				self.Castbar.bg:SetVertexColor(0.15, 0.15, 0.15, 0.75)
-				self.Castbar:SetStatusBarColor(color[1],color[2],color[3],0.68)
-
-				self.Castbar.Backdrop:SetBackdrop({
-					edgeFile = LSM:Fetch("border", oufdb.Castbar.Border.Texture), edgeSize = oufdb.Castbar.Border.Thickness,
-					insets = {left = oufdb.Castbar.Border.Inset.left, right = oufdb.Castbar.Border.Inset.right, top = oufdb.Castbar.Border.Inset.top, bottom = oufdb.Castbar.Border.Inset.bottom}
-				})
-				self.Castbar.Backdrop:SetBackdropColor(0, 0, 0, 0)
-				self.Castbar.Backdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
-			end
-		else
-			self.Castbar.Colors = {
-				Individual = oufdb.Castbar.IndividualColor,
-				Bar = {
-					r = tonumber(oufdb.Castbar.Colors.Bar.r),
-					g = tonumber(oufdb.Castbar.Colors.Bar.g),
-					b = tonumber(oufdb.Castbar.Colors.Bar.b),
-					a = tonumber(oufdb.Castbar.Colors.Bar.a),
-				},
-				Background = {
-					r = tonumber(oufdb.Castbar.Colors.Background.r),
-					g = tonumber(oufdb.Castbar.Colors.Background.g),
-					b = tonumber(oufdb.Castbar.Colors.Background.b),
-					a = tonumber(oufdb.Castbar.Colors.Background.a),
-				},
-				Border = {
-					r = tonumber(oufdb.Castbar.Colors.Border.r),
-					g = tonumber(oufdb.Castbar.Colors.Border.g),
-					b = tonumber(oufdb.Castbar.Colors.Border.b),
-					a = tonumber(oufdb.Castbar.Colors.Border.a),
-				},
+		
+		self.Castbar.Backdrop:SetBackdrop({
+			edgeFile = LSM:Fetch("border", oufdb.Castbar.Border.Texture),
+			edgeSize = tonumber(oufdb.Castbar.Border.Thickness),
+			insets = {
+				left = tonumber(oufdb.Castbar.Border.Inset.left),
+				right = tonumber(oufdb.Castbar.Border.Inset.right),
+				top = tonumber(oufdb.Castbar.Border.Inset.top),
+				bottom = tonumber(oufdb.Castbar.Border.Inset.bottom)
 			}
-
-			self.Castbar.PostCastStart = PostCastStart
-			self.Castbar.PostChannelStart = PostCastStart
-		end
-
+		})
+		self.Castbar.Backdrop:SetBackdropColor(0, 0, 0, 0)
+		
+		self.Castbar.Colors = {
+			Individual = oufdb.Castbar.IndividualColor,
+			Bar = oufdb.Castbar.Colors.Bar,
+			Background = oufdb.Castbar.Colors.Background,
+			Border = oufdb.Castbar.Colors.Border,
+			Shield = oufdb.Castbar.Colors.Shield,
+		}
+		
+		self.Castbar.PostCastStart = PostCastStart
+		self.Castbar.PostChannelStart = PostCastStart
+		
 		self.Castbar.Time:SetFont(LSM:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
 		self.Castbar.Time:ClearAllPoints()
 		self.Castbar.Time:SetPoint("RIGHT", self.Castbar, "RIGHT", oufdb.Castbar.Text.Time.OffsetX, oufdb.Castbar.Text.Time.OffsetY)
 		self.Castbar.Time:SetTextColor(oufdb.Castbar.Colors.Time.r, oufdb.Castbar.Colors.Time.g, oufdb.Castbar.Colors.Time.b)
 		self.Castbar.Time.ShowMax = oufdb.Castbar.Text.Time.ShowMax
-
+		
 		if oufdb.Castbar.Text.Time.Enable == true then
 			self.Castbar.Time:Show()
 		else
 			self.Castbar.Time:Hide()
 		end
-
+		
 		self.Castbar.Text:SetFont(LSM:Fetch("font", oufdb.Castbar.Text.Name.Font), oufdb.Castbar.Text.Name.Size)
 		self.Castbar.Text:ClearAllPoints()
 		self.Castbar.Text:SetPoint("LEFT", self.Castbar, "LEFT", oufdb.Castbar.Text.Name.OffsetX, oufdb.Castbar.Text.Name.OffsetY)
@@ -3318,7 +3349,7 @@ local SetStyle = function(self, unit, isSingle)
 	self.Overlay = CreateFrame("Frame", nil, self)
 	self.Overlay:SetFrameLevel(8)
 	self.Overlay:SetAllPoints(self.Health)
-
+	
 	if unit ~= "raid" then
 		funcs.Info(self, unit, oufdb)
 	else
@@ -3458,6 +3489,7 @@ local SetStyle = function(self, unit, isSingle)
 		elseif class == "WARLOCK" then
 			if oufdb.SoulShards.Enable then funcs.SoulShards(self, unit, oufdb) end
 		end
+		if oufdb.ThreatBar.Enable then funcs.ThreatBar(self, unit, oufdb) end
 	end
 
 	------------------------------------------------------------------------
@@ -3559,7 +3591,5 @@ function module:OnEnable()
 
 	-- spawning
 	local spawnList = {"Player", "Target", "Focus", "FocusTarget", "ToT", "ToToT", "Pet", "PetTarget", "Boss", "Party", "Maintank", "Arena", "Raid"}
-	for _, unit in pairs(spawnList) do
-		LUI:GetModule("oUF"):Toggle(unit)
-	end
+	for _, unit in pairs(spawnList) do LUI:GetModule("oUF"):Toggle(unit) end
 end

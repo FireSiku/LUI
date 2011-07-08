@@ -36,6 +36,7 @@ local defaults = {
 		Width = "130",
 		X = "-10",
 		Y = "350",
+		Scale = 1,
 		Point = "BOTTOMRIGHT",
 		Padding = "6",
 		Border = {

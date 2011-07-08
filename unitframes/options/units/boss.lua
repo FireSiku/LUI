@@ -52,6 +52,7 @@ local defaults = {
 		Width = "130",
 		X = "-25",
 		Y = "-250",
+		Scale = 1,
 		Point = "TOPRIGHT",
 		Padding = "6",
 		Border = {
@@ -218,6 +219,13 @@ local defaults = {
 					g = 0,
 					b = 0,
 					a = 0.7,
+				},
+				Shield = {
+					Enable = true,
+					r = 0.5,
+					g = 0,
+					b = 0,
+					a = 0.1,
 				},
 				Name = {
 					r = 0.9,
