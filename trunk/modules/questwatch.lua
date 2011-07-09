@@ -2,8 +2,8 @@
        Project....: LUI NextGenWoWUserInterface
        File.......: questwatch.lua
        Description: Makes the Questwatch Frame movable
-       Version....: 1.01
-       Rev Date...: 08/07/2011 [dd/mm/yyyy]
+       Version....: 1.02
+       Rev Date...: 09/07/2011 [dd/mm/yyyy]
        Author.....: Yunai
     ]]
 
@@ -56,10 +56,10 @@
         wfh:SetScript("OnLeave", function(s)
           GameTooltip:Hide()
         end)
+		return
     end
 	
-    function module:OnInitialize()
-	init()
+	function module:OnInitialize()
+		init()
 		LUI:RegisterOptions(self)
     end
-
