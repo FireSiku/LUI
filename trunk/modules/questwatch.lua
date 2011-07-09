@@ -63,3 +63,13 @@
 		init()
 		LUI:RegisterOptions(self)
     end
+	
+	  local a = CreateFrame("Frame")
+
+  a:SetScript("OnEvent", function(self, event)
+    if(event=="PLAYER_LOGIN") then
+      init()
+    end
+  end)
+  
+  a:RegisterEvent("PLAYER_LOGIN")
