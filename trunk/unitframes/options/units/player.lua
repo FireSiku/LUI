@@ -23,6 +23,49 @@ local justifications = {'LEFT', 'CENTER', 'RIGHT'}
 local valueFormat = {'Absolut', 'Absolut & Percent', 'Absolut Short', 'Absolut Short & Percent', 'Standard', 'Standard Short'}
 local _, class = UnitClass("player")
 
+local ShowDummyBar = function(bar)
+	bar.IsDummy = true
+	bar.Hide_ = bar.Hide
+	bar.Hide = function() end
+	bar:SetAlpha(1)
+	bar.SetAlpha_ = bar.SetAlpha
+	bar.SetAlpha = function() end
+	bar:Show()
+end
+
+local HideDummyBar = function(bar)
+	bar.IsDummy = nil
+	bar.SetAlpha = bar.SetAlpha_
+	bar.Hide = bar.Hide_
+	bar:Hide()
+end
+
+local ToggleDummyBar = function(bar)
+	if bar.IsDummy then
+		HideDummyBar(bar)
+	else
+		ShowDummyBar(bar)
+	end
+end
+
+local f = CreateFrame("Frame")
+f:RegisterEvent("PLAYER_REGEN_DISABLED")
+f:SetScript("OnEvent", function()
+	if not oUF_LUI_player then return end
+	
+	local msg = false
+	
+	for _, v in pairs({"Vengeance", "ThreatBar"}) do
+		if oUF_LUI_player[v] and oUF_LUI_player[v].IsDummy then
+			HideDummyBar(oUF_LUI_player[v])
+			msg = true
+		end
+	end
+	
+	if msg then LUI:Print("oUF Testbars hidden due to combat.") end
+	oUF_LUI_player:UpdateAllElements()
+end)
+
 local defaults = {
 	XP_Rep = {
 		Font = "vibrocen",
@@ -954,8 +997,11 @@ function module:CreateBarOptions(barType, order)
 					Width = LUI:NewWidth(barName, 4, bardb, nil, bardefaults, ApplySettings),
 					Height = LUI:NewHeight(barName, 5, bardb, nil, bardefaults, ApplySettings),
 					empty = LUI:NewEmpty(6),
-					Padding = (barType ~= "Eclipse" and isLockable) and LUI:NewSlider("Padding", "Choose the Padding between your "..barName.." Elements.", 12, bardb, "Padding", bardefaults, 1, 10, 1, ApplySettings) or nil,
-					Tankhide = barType == "ThreatBar" and LUI:NewToggle("Hide if Tanking", "Whether you want to hide your "..barName.." Bar if tanking or not.", 13, bardb, "HideTank", bardefaults, ApplySettings) or nil,
+					Padding = (barType ~= "Eclipse" and isLockable) and LUI:NewSlider("Padding", "Choose the Padding between your "..barName.." Elements.", 7, bardb, "Padding", bardefaults, 1, 10, 1, ApplySettings) or nil,
+					empty2 = barType == "ThreatBar" and LUI:NewEmpty(8) or nil,
+					Tankhide = barType == "ThreatBar" and LUI:NewToggle("Hide if Tanking", "Whether you want to hide your "..barName.." Bar if tanking or not.", 9, bardb, "HideTank", bardefaults, ApplySettings) or nil,
+					empty3 = (barType == "Vengeance" or barType == "ThreatBar") and LUI:NewEmpty(10) or nil,
+					Test = (barType == "Vengeance" or barType == "ThreatBar") and LUI:NewExecute("Show Dummy Bar", "Click to show a dummy "..barName.." Bar", 11, function() ToggleDummyBar(oUF_LUI_player[barType]) end) or nil,
 				},
 			},
 			Colors = (not isLockable) and {
