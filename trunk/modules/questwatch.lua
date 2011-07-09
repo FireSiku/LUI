@@ -2,7 +2,7 @@
        Project....: LUI NextGenWoWUserInterface
        File.......: questwatch.lua
        Description: Makes the Questwatch Frame movable
-       Version....: 1.02
+       Version....: 1.03
        Rev Date...: 09/07/2011 [dd/mm/yyyy]
        Author.....: Yunai
     ]]
@@ -66,7 +66,7 @@
 	
 	  local a = CreateFrame("Frame")
 
-  a:SetScript("OnEvent", function(self, event)
+  a:SetScript("OnEnter", function(self, event)
     if(event=="PLAYER_LOGIN") then
       init()
     end
