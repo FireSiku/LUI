@@ -22,7 +22,7 @@ local dbd
 ------------------------------------------------------
 
 function Merchant:Create(disable)
-	if (not db.Enable) or disable then
+	if (not db.Merchant.Enable) or disable then
 		if self.Merchant then self.Merchant:UnregisterAllEvents() end
 		return
 	end
@@ -38,7 +38,7 @@ function Merchant:Create(disable)
 	end
 
 	function M:AutoRepair()
-		if not db.AutoRepair.Enable then return end
+		if not db.Merchant.AutoRepair.Enable then return end
 
 		-- Check if merchant can repair.
 		if not CanMerchantRepair() then return end
@@ -49,20 +49,20 @@ function Merchant:Create(disable)
 		if not can then return end
 
 		-- Check cost limit.
-		if (not db.AutoRepair.NoLimit) and (cost > (db.AutoRepair.CostLimit * 1000)) then
-			if db.AutoRepair.ShowError then
+		if (not db.Merchant.AutoRepair.NoLimit) and (cost > (db.Merchant.AutoRepair.CostLimit * 1000)) then
+			if db.Merchant.AutoRepair.ShowError then
 				print("|cffff0000The repair costs of|r " .. GetCoinTextureString(cost) .. " |cffff0000exceed the limit of|r " .. GetCoinTextureString(db.Merchant.AutoRepair.CostLimit))
 			end
 			return
 		end
 
 		-- Try guild repair.
-		if db.AutoRepair.UseGuild then RepairAllItems(1) end
+		if db.Merchant.AutoRepair.UseGuild then RepairAllItems(1) end
 
 		-- Check if guild repair worked.
 		local remaining, needed = GetRepairAllCost()
 
-		if (remaining < cost) and db.AutoRepair.ShowSuccess then
+		if (remaining < cost) and db.Merchant.AutoRepair.ShowSuccess then
 			print("|cff00ff00Successfully guild repaired armor for:|r "..GetCoinTextureString(cost - remaining))
 		end
 
@@ -72,13 +72,13 @@ function Merchant:Create(disable)
 		-- Repair remaining.
 		RepairAllItems()
 
-		if db.AutoRepair.ShowSuccess then
+		if db.Merchant.AutoRepair.ShowSuccess then
 			print("|cff00ff00Successfully repaired armor for:|r "..GetCoinTextureString(remaining))
 		end
 	end
 
 	function M:AutoSell()
-		if not db.AutoSell.Enable then return end
+		if not db.Merchant.AutoSell.Enable then return end
 
 		local totalPrice = 0
 		for bag = 0, NUM_BAG_SLOTS do
@@ -88,8 +88,8 @@ function Merchant:Create(disable)
 				if item then
 					local _, itemLink, itemQuality, _,_,_,_,_,_,_, itemPrice = GetItemInfo(item)
 
-					if ((db.AutoSell.ItemQualities[itemQuality + 1]) and (not db.AutoSell.Exclusions[item]))
-					or ((not db.AutoSell.ItemQualities[itemQuality + 1]) and (db.AutoSell.Exclusions[item])) then
+					if ((db.Merchant.AutoSell.ItemQualities[itemQuality + 1]) and (not db.Merchant.AutoSell.Exclusions[item]))
+					or ((not db.Merchant.AutoSell.ItemQualities[itemQuality + 1]) and (db.Merchant.AutoSell.Exclusions[item])) then
 						local _, itemCount  = GetContainerItemInfo(bag, slot)
 						totalPrice = totalPrice + (itemCount * itemPrice)
 
@@ -101,7 +101,7 @@ function Merchant:Create(disable)
 		end
 
 		-- Print profits.
-		if (totalPrice > 0) and db.AutoSell.ShowSuccess then
+		if (totalPrice > 0) and db.Merchant.AutoSell.ShowSuccess then
 			print("|cff00ff00Successfully sold specified items for:|r "..GetCoinTextureString(totalPrice))
 		end
 	end
@@ -116,7 +116,7 @@ function Merchant:ItemExclusion(item, remove)
 
 	-- Check item.
 	if not itemLink then
-		if db.AutoSell.ShowExclusion then
+		if db.Merchant.AutoSell.ShowExclusion then
 			print(item .. " |cffff0000is not a valid item.")
 		end
 
@@ -126,22 +126,22 @@ function Merchant:ItemExclusion(item, remove)
 	local itemID = tonumber(string.match(itemLink, "item:(%d+)"))
 
 	if remove then
-		db.AutoSell.Exclusions[itemID] = nil
+		db.Merchant.AutoSell.Exclusions[itemID] = nil
 
-		if db.AutoSell.ShowExclusion then
+		if db.Merchant.AutoSell.ShowExclusion then
 			print("|cff00ff00Successfully removed|r "..itemLink.." |cff00ff00from the exclusion list.")
 		end
 	else
-		if db.AutoSell.Exclusions[itemID] then
-			if db.AutoSell.ShowExclusion then
+		if db.Merchant.AutoSell.Exclusions[itemID] then
+			if db.Merchant.AutoSell.ShowExclusion then
 				print(itemLink.." |cffff0000 is already in the exclusion list.")
 			end
 		elseif itemPrice <= 0 then
 			print(itemLink.." |cffff0000 has no sell price and can't be excluded.")
 		else
-			db.AutoSell.Exclusions[itemID] = true
+			db.Merchant.AutoSell.Exclusions[itemID] = true
 
-			if db.AutoSell.ShowExclusion then
+			if db.Merchant.AutoSell.ShowExclusion then
 				print("|cff00ff00Successfully added|r "..itemLink.." |cff00ff00to the exclusion list.")
 			end
 		end
@@ -149,9 +149,9 @@ function Merchant:ItemExclusion(item, remove)
 end
 
 function Merchant:ClearExclusions()
-	db.AutoSell.Exclusions = {}
+	db.Merchant.AutoSell.Exclusions = {}
 
-	if db.AutoSell.ShowExclusion then
+	if db.Merchant.AutoSell.ShowExclusion then
 		print("|cff00ff00Successfully cleared the exclusion list.")
 	end
 end
@@ -205,7 +205,7 @@ function Merchant:LoadOptions()
 		Merchant = {
 			type = "group",
 			name = "Merchant",
-			disabled = function() return not db.Enable end,
+			disabled = function() return not db.Merchant.Enable end,
 			childGroups = "tab",
 			args = {
 				General = {
@@ -221,8 +221,8 @@ function Merchant:LoadOptions()
 							order = 3,
 							guiInline = true,
 							args = {
-								AutoRepair = LUI:NewToggle("Enable Auto Repair", nil, 1, db.AutoRepair, "Enable", dbd.AutoRepair),
-								AutoSell = LUI:NewToggle("Enable Auto Sell", nil, 2, db.AutoSell, "Enable", dbd.AutoSell),
+								AutoRepair = LUI:NewToggle("Enable Auto Repair", nil, 1, db.Merchant.AutoRepair, "Enable", dbd.Merchant.AutoRepair),
+								AutoSell = LUI:NewToggle("Enable Auto Sell", nil, 2, db.Merchant.AutoSell, "Enable", dbd.Merchant.AutoSell),
 							},
 						},
 					},
@@ -231,7 +231,7 @@ function Merchant:LoadOptions()
 					name = "Auto Repair",
 					type = "group",
 					order = 2,
-					disabled = function() return not db.AutoRepair.Enable end,
+					disabled = function() return not db.Merchant.AutoRepair.Enable end,
 					args = {
 						Title = LUI:NewHeader("Auto Repair Settings", 1),
 						Info = LUI:NewDesc("Set your Auto Repair options. If a guild repair fails it will not prevent a normal repair. Additionally you may also set a cost limit.", 2),
@@ -241,11 +241,11 @@ function Merchant:LoadOptions()
 							order = 3,
 							guiInline = true,
 							args = {
-								UseGuild = LUI:NewToggle("Use Guild Repair", nil, 1, db.AutoRepair, "UseGuild", dbd.AutoRepair),
-								NoLimit = LUI:NewToggle("No Cost Limit", nil, 2, db.AutoRepair, "NoLimit", dbd.AutoRepair),
-								CostLimit = LUI:NewSlider("Cost Limit", "The cost limit in gold after which the repair won't happen automatically.", 3, db.AutoRepair, "CostLimit", dbd.AutoRepair, 0, 500, 10, nil, nil, function() return (not db.AutoRepair.Enable) or db.AutoRepair.NoLimit end),
-								ShowError = LUI:NewToggle("Show Limit Error", nil, 4, db.AutoRepair, "ShowError", dbd.AutoRepair),
-								ShowSuccess = LUI:NewToggle("Show Success Messages", nil, 5, db.AutoRepair, "ShowSuccess", dbd.AutoRepair),
+								UseGuild = LUI:NewToggle("Use Guild Repair", nil, 1, db.Merchant.AutoRepair, "UseGuild", dbd.Merchant.AutoRepair),
+								NoLimit = LUI:NewToggle("No Cost Limit", nil, 2, db.Merchant.AutoRepair, "NoLimit", dbd.Merchant.AutoRepair),
+								CostLimit = LUI:NewSlider("Cost Limit", "The cost limit in gold after which the repair won't happen automatically.", 3, db.Merchant.AutoRepair, "CostLimit", dbd.Merchant.AutoRepair, 0, 500, 10, nil, nil, function() return (not db.Merchant.AutoRepair.Enable) or db.Merchant.AutoRepair.NoLimit end),
+								ShowError = LUI:NewToggle("Show Limit Error", nil, 4, db.Merchant.AutoRepair, "ShowError", dbd.Merchant.AutoRepair),
+								ShowSuccess = LUI:NewToggle("Show Success Messages", nil, 5, db.Merchant.AutoRepair, "ShowSuccess", dbd.Merchant.AutoRepair),
 							},
 						},
 					},
@@ -254,7 +254,7 @@ function Merchant:LoadOptions()
 					name = "Auto Sell",
 					type = "group",
 					order = 2,
-					disabled = function() return not db.AutoSell.Enable end,
+					disabled = function() return not db.Merchant.AutoSell.Enable end,
 					args = {
 						Title = LUI:NewHeader("Auto Sell Settings", 1),
 						Info = LUI:NewDesc("Set your Auto Sell options.", 2),
@@ -265,8 +265,8 @@ function Merchant:LoadOptions()
 							order = 3,
 							guiInline = true,
 							args = {
-								ShowSuccess = LUI:NewToggle("Show Success Messages", nil, 1, db.AutoSell, "ShowSuccess", dbd.AutoSell),
-								ShowExclusion = LUI:NewToggle("Show Exclusion Messages", nil, 2, db.AutoSell, "ShowExclusion", dbd.AutoSell),
+								ShowSuccess = LUI:NewToggle("Show Success Messages", nil, 1, db.Merchant.AutoSell, "ShowSuccess", dbd.Merchant.AutoSell),
+								ShowExclusion = LUI:NewToggle("Show Exclusion Messages", nil, 2, db.Merchant.AutoSell, "ShowExclusion", dbd.Merchant.AutoSell),
 							},
 						},
 						ItemQuality = {
@@ -276,10 +276,10 @@ function Merchant:LoadOptions()
 							values = qualities(),
 							order = 4,
 							set = function(_, key)
-									db.AutoSell.ItemQualities[key] = not db.AutoSell.ItemQualities[key]
+									db.Merchant.AutoSell.ItemQualities[key] = not db.Merchant.AutoSell.ItemQualities[key]
 								end,
 							get = function(_, key)
-									return db.AutoSell.ItemQualities[key]
+									return db.Merchant.AutoSell.ItemQualities[key]
 								end,
 						},
 						AddExclusion = {
@@ -333,7 +333,7 @@ function Merchant:LoadOptions()
 									order = 1,
 									values = function()
 											local items = {}
-											table.foreach(db.AutoSell.Exclusions, function(itemID)
+											table.foreach(db.Merchant.AutoSell.Exclusions, function(itemID)
 												local _, itemLink = GetItemInfo(itemID)
 												items[itemID] = itemLink
 											end)
@@ -386,8 +386,8 @@ function Merchant:OnInitialize()
 	LUI:Refresh()
 
 	-- Link database and defaults shortcuts.
-	self.db = LUI.db.profile.Merchant
-	self.dbd = LUI.db.defaults.profile.Merchant
+	self.db = LUI.db.profile
+	self.dbd = LUI.db.defaults.profile
 	db = self.db
 	dbd = self.dbd
 
