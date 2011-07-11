@@ -31,167 +31,57 @@ local ufNames = {
 	Boss = "oUF_LUI_boss",
 	Player_Castbar = "oUF_LUI_player_Castbar",
 	Target_Castbar = "oUF_LUI_target_Castbar",
-	Arena = "oUF_LUI_arena",
-	Raid = "oUF_LUI_raid"
+	Arena = "oUF_LUI_arena"
 }
 
 local _LOCK
 local _BACKDROP = {bgFile = "Interface\\Tooltips\\UI-Tooltip-Background"}
 
-local round = function(n)
-	return math.floor(n + .5)
-end
+local round = function(n) return math.floor(n + .5) end
 
-local positions = {}
 local backdropPool = {}
-
-local getPoint = function(obj, anchor)
-	if anchor then
-		if (not positions.__INITIAL) or (not positions.__INITIAL[obj]) then return end
-		local UIx, UIy = UIParent:GetCenter()
-		local x, y
-		local Ipoint, Iparent, Irpoint, Ix, Iy = string.split('\031', positions.__INITIAL[obj])
-
-		if(not Ix) then return end
-		
-		local IS = anchor:GetScale()
-		
-		local UIx, UIy = UIParent:GetCenter()
-		local UIWidth, UIHeight = UIParent:GetRight(), UIParent:GetTop()
-		local UIS = UIParent:GetEffectiveScale()
-		local S = anchor:GetEffectiveScale()
-		
-		if strfind("LEFT", Ipoint) then 
-			x = anchor:GetLeft()
-		elseif strfind("RIGHT", Ipoint) then
-			x = anchor:GetRight()
-		else
-			x = anchor:GetCenter()
-		end
-		
-		if strfind("LEFT", Irpoint) then 
-			x = x
-		elseif strfind("RIGHT", Irpoint) then
-			x = x - UIWidth
-		else
-			x = x - UIx
-		end
-		
-		if strfind("TOP", Ipoint) then 
-			y = anchor:GetTop()
-		elseif strfind("BOTTOM", Ipoint) then
-			y = anchor:GetBottom()
-		else
-			y = select(2, anchor:GetCenter())
-		end
-		
-		if strfind("TOP", Irpoint) then 
-			y = y - UIHeight
-		elseif strfind("BOTTOM", Irpoint) then
-			y = y
-		else
-			y = y - UIy
-		end
-		
-		return string.format(
-			'%s\031%s\031%s\031%d\031%d',
-			Ipoint, 'UIParent', Irpoint, round(x * UIS / S),  round(y * UIS / S)
-		)
-	else
-		local point, _, rpoint, x, y = obj:GetPoint()
-		local scale = obj:GetScale()
-		x = x * scale
-		y = y * scale
-
-		return string.format(
-			'%s\031%s\031%s\031%d\031%d',
-			point, 'UIParent', rpoint, round(x), round(y)
-		)
-	end
-end
-
-local getObjectInformation  = function(obj)
-	local identifier = obj:GetName() or obj.unit
-
-	local isHeader
-	local parent = obj:GetParent()
-
-	if parent then
-		if parent:GetAttribute('initialConfigFunction') and parent.style then
-			isHeader = parent
-		elseif parent:GetAttribute('oUF-onlyProcessChildren') then
-			isHeader = parent:GetParent()
-		elseif parent:GetParent() and parent:GetParent():GetAttribute('initialConfigFunction') and parent:GetParent().style then
-			isHeader = parent:GetParent()
-		end
-		if isHeader then identifier = isHeader:GetName() end
-		
-	end
-
-	return identifier, isHeader
-end
-
-local saveDefaultPosition = function(obj)
-	local identifier, isHeader = getObjectInformation(obj)
-	if not positions.__INITIAL then
-		positions.__INITIAL = {}
-	end
-
-	if not positions.__INITIAL[identifier] then
-		local point = getPoint(isHeader or obj)
-		
-		positions.__INITIAL[identifier] = point
-	end
-end
-
-local savePosition = function(obj, anchor)
-	local identifier, isHeader = getObjectInformation(obj)
-	
-	positions[identifier] = getPoint(identifier, anchor)
-end
 
 local setAllPositions = function()
 	for k, v in pairs(ufNames) do
 		local k2 = nil
-		if strfind(k, "Castbar") then
-			k, k2 = strsplit("_", k)
-		end
-		if positions[v] and _G[v] and db.oUF[k] then
-			str = getPoint(v, backdropPool[_G[v]])
-			local point, parent, rpoint, x, y = backdropPool[_G[v]]:GetPoint()
+		if strfind(k, "Castbar") then k, k2 = strsplit("_", k) end
+		if _G[v] and db.oUF[k] then
+			local point, _, rpoint, x, y = backdropPool[_G[v]]:GetPoint()
+			
 			if k2 then
 				if db.oUF[k][k2] then
-					db.oUF[k].Castbar.X = tostring(x)
-					db.oUF[k].Castbar.Y = tostring(y)
+					db.oUF[k][k2].X = tostring(x)
+					db.oUF[k][k2].Y = tostring(y)
+					db.oUF[k][k2].Point = point
 				end
 			else
 				db.oUF[k].X = tostring(x * (db.oUF[k].Scale or 1))
 				db.oUF[k].Y = tostring(y * (db.oUF[k].Scale or 1))
+				db.oUF[k].Point = point
 			end
+			
 			local scale = db.oUF[k].Scale or 1
 			_G[v]:ClearAllPoints()
 			_G[v]:SetPoint(point, UIParent, rpoint, x, y)
-			
-			positions[v] = nil
-			positions.__INITIAL[v] = nil
 		end
 	end
 end
 
 local resetAllPositions = function()
-	if not positions.__INITIAL then return end
-	for k, v in pairs(positions.__INITIAL) do
-		if _G[k] then
-			_G[k]:ClearAllPoints()
-			local point, parent, rpoint, x, y = string.split('\031', v)
-			_G[k]:SetPoint(point, parent, rpoint, x, y)
-			positions[k] = nil
-			positions.__INITIAL[k] = nil
+	for k, v in pairs(ufNames) do
+		local k2 = nil
+		if strfind(k, "Castbar") then k, k2 = strsplit("_", k) end
+		if _G[v] and db.oUF[k] then
+			if backdropPool[_G[v]] then backdropPool[_G[v]]:ClearAllPoints() end
 			
-			local backdrop = backdropPool[_G[k]]
-			if backdrop then
-				backdrop:ClearAllPoints()
-				backdrop:SetAllPoints(_G[k])
+			if k2 then
+				if db.oUF[k][k2] then
+					_G[v]:ClearAllPoints()
+					_G[v]:SetPoint(db.oUF[k][k2].Point, UIParent, db.oUF[k][k2].Point, tonumber(db.oUF[k][k2].X), tonumber(db.oUF[k][k2].Y))
+				end
+			else
+				_G[v]:ClearAllPoints()
+				_G[v]:SetPoint(db.oUF[k].Point, UIParent, db.oUF[k].Point, tonumber(db.oUF[k].X) / (db.oUF[k].Scale or 1), tonumber(db.oUF[k].Y) / (db.oUF[k].Scale or 1))
 			end
 		end
 	end
@@ -200,6 +90,7 @@ end
 local smartName
 do
 	local nameCache = {}
+	
 	local validNames = {
 		'player',
 		'target',
@@ -250,11 +141,9 @@ do
 
 		local n = select('#', ...)
 		if n > 1 then
-			for i=2, n do
+			for i = 2, n do
 				local inp = validName(select(i, ...))
-				if inp then
-					name = (name or '') .. inp
-				end
+				if inp then name = (name or '')..inp end
 			end
 		end
 
@@ -276,17 +165,12 @@ do
 		return name
 	end
 
-	smartName = function(obj, header)
+	smartName = function(obj)
 		if type(obj) == 'string' then
 			return smartString(obj)
-		elseif header then
-			return smartString(header:GetName())
 		else
 			local name = obj:GetName()
-			if name then
-				return smartString(name)
-			end
-
+			if name then return smartString(name) end
 			return obj.unit or '<unknown>'
 		end
 	end
@@ -300,14 +184,11 @@ do
 
 	function frame:PLAYER_REGEN_DISABLED()
 		if _LOCK then
-			for k, bdrop in next, backdropPool do
-				print(k, bdrop)
-				bdrop:Hide()
-			end
+			for k, bdrop in next, backdropPool do bdrop:Hide() end
 			_LOCK = nil
 			
 			StaticPopup_Hide("DRAG_UNITFRAMES")
-			LUI:Print("UnitFrame anchors hidden due to combat.")
+			LUI:Print("UnitFrame anchors hidden due to combat. The changed positions are NOT saved!")
 		end
 	end
 	frame:RegisterEvent("PLAYER_REGEN_DISABLED")
@@ -316,44 +197,43 @@ end
 local getBackdrop
 do
 	local OnShow = function(self)
-		return self.name:SetText(smartName(self.obj, self.header))
+		return self.name:SetText(smartName(self.obj))
 	end
 
 	local OnDragStart = function(self)
-		saveDefaultPosition(self.obj)
 		self:StartMoving()
 
-		local frame = self.header or self.obj
-		frame:ClearAllPoints();
-		frame:SetPoint("TOPLEFT", self);
+		local frame = self.obj
+		frame:ClearAllPoints()
+		frame:SetPoint("TOPLEFT", self)
 	end
 
 	local OnDragStop = function(self)
 		self:StopMovingOrSizing()
-		savePosition(self.obj, self)
-		print(self:GetPoint())
 	end
 
-	getBackdrop = function(obj, isHeader)
-		local target = isHeader or obj
-		if not target and not target:GetCenter() then return end
-		if backdropPool[target] then
-			backdropPool[target]:SetScale(target:GetScale())
-			backdropPool[target]:SetAllPoints(target)
-			return backdropPool[target]
+	getBackdrop = function(obj)
+		if not obj and not obj:GetCenter() then return end
+		if backdropPool[obj] then
+			backdropPool[obj]:SetScale(obj:GetScale())
+			backdropPool[obj]:SetPoint(obj:GetPoint())
+			backdropPool[obj]:SetSize(obj:GetSize())
+			return backdropPool[obj]
 		end
 
 		local backdrop = CreateFrame("Frame")
 		backdrop:SetParent(UIParent)
 		backdrop:Hide()
 
-		backdrop:SetScale(target:GetScale())
-		backdrop:SetBackdrop(_BACKDROP)
+		backdrop:SetScale(obj:GetScale())
+		backdrop:SetPoint(obj:GetPoint())
+		backdrop:SetSize(obj:GetSize())
 		
+		backdrop:SetBackdrop(_BACKDROP)
 		backdrop:SetBackdropColor(0, .9, 0)
 		backdrop:SetBackdropBorderColor(0, .9, 0)
+		
 		backdrop:SetFrameStrata("TOOLTIP")
-		backdrop:SetAllPoints(target)
 
 		backdrop:EnableMouse(true)
 		backdrop:SetMovable(true)
@@ -369,17 +249,13 @@ do
 
 		backdrop.name = name
 		backdrop.obj = obj
-		backdrop.header = isHeader
 
-		if isHeader and math.floor(isHeader:GetHeight()) == 0 then
-			local height = isHeader:GetChildren():GetHeight()
-			isHeader:SetHeight(height)
-		end
+		if  math.floor(obj:GetHeight()) == 0 then obj:SetHeight(obj:GetChildren():GetHeight()) end
 
 		backdrop:SetScript("OnDragStart", OnDragStart)
 		backdrop:SetScript("OnDragStop", OnDragStop)
 
-		backdropPool[target] = backdrop
+		backdropPool[obj] = backdrop
 
 		return backdrop
 	end
@@ -399,6 +275,7 @@ StaticPopupDialogs["DRAG_UNITFRAMES"] = {
 	end,
 	OnAccept = setAllPositions,
 	OnAlt = resetAllPositions,
+	OnCancel = resetAllPositions,
 	timeout = 0,
 	whileDead = true,
 	hideOnEscape = true,
@@ -414,14 +291,13 @@ function module:MoveUnitFrames(override)
 	
 	if (not _LOCK) and (not override) then
 		StaticPopup_Show("DRAG_UNITFRAMES")
-		for k, obj in next, oUF.objects do
-			if obj.MoveableFrames then
-				local identifier, isHeader = getObjectInformation(obj)
-				local backdrop = getBackdrop(obj, isHeader)
-				if backdrop then backdrop:Show() end
-				if _G[obj:GetName().."_Castbar"] then
-					local backdrop = getBackdrop(_G[obj:GetName().."_Castbar"])
-					if backdrop then backdrop:Show() end
+		for k, v in pairs(ufNames) do
+			if _G[v] then
+				local bd = getBackdrop(_G[v])
+				if bd then bd:Show() end
+				if _G[v.."Castbar"] then
+					local bd = getBackdrop(_G[v.._"Castbar"])
+					if bd then bd:Show() end
 				end
 			end
 		end
@@ -595,11 +471,11 @@ toggleFuncs = {
 				_G["oUF_LUI_"..ufUnits[unit]]:UpdateAllElements()
 				_G["oUF_LUI_"..ufUnits[unit]]:ClearAllPoints()
 				_G["oUF_LUI_"..ufUnits[unit]]:SetScale(db.oUF[unit].Scale)
-				_G["oUF_LUI_"..ufUnits[unit]]:SetPoint("CENTER", UIParent, "CENTER", x, y)
+				_G["oUF_LUI_"..ufUnits[unit]]:SetPoint(db.oUF[unit].Point, UIParent, db.oUF[unit].Point, x, y)
 			else
 				local f = oUF:Spawn(ufUnits[unit], "oUF_LUI_"..ufUnits[unit])
 				f:SetScale(db.oUF[unit].Scale)
-				f:SetPoint("CENTER", UIParent, "CENTER", x, y)
+				f:SetPoint(db.oUF[unit].Point, UIParent, db.oUF[unit].Point, x, y)
 			end
 		else
 			if _G["oUF_LUI_"..ufUnits[unit]] then _G["oUF_LUI_"..ufUnits[unit]]:Disable() end

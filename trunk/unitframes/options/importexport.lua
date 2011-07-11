@@ -17,6 +17,8 @@ local version = 3043
 local db
 local importLayoutName
 
+local layouts = {}
+
 local _, class = UnitClass("player")
 
 local units = {"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "BossTarget", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet", "Raid"}
@@ -656,8 +658,6 @@ function module:LayoutArray()
 	
 	return LayoutArray
 end
-
-local layouts = {}
 
 local defaults = {
 	oUF = {
