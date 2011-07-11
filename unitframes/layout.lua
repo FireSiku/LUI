@@ -2332,12 +2332,11 @@ oUF_LUI.funcs = {
 	Castbar = function(self, unit, oufdb)
 		if not self.Castbar then
 			if unit == "player" or unit == "target" then
-				self.Castbar = CreateFrame("StatusBar", self:GetName().."_Castbar", self) -- needed for moveable frames
+				self.Castbar = CreateFrame("StatusBar", self:GetName().."_Castbar", UIParent) -- needed for moveable frames
 			else
 				self.Castbar = CreateFrame("StatusBar", nil, self)
 			end
 			self.Castbar:SetFrameLevel(6)
-			if unit == "player" or unit == "target" then self.Castbar:SetParent(UIParent) end
 
 			self.Castbar.bg = self.Castbar:CreateTexture(nil, "BORDER")
 			self.Castbar.bg:SetAllPoints(self.Castbar)
@@ -2416,7 +2415,7 @@ oUF_LUI.funcs = {
 		
 		self.Castbar:ClearAllPoints()
 		if unit == "player" or unit == "target" then
-			self.Castbar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(oufdb.Castbar.X), tonumber(oufdb.Castbar.Y))
+			self.Castbar:SetPoint(oufdb.Castbar.Point, UIParent, oufdb.Castbar.Point, tonumber(oufdb.Castbar.X), tonumber(oufdb.Castbar.Y))
 		elseif unit == "focus" or unit == "pet" then
 			self.Castbar:SetPoint("TOP", self, "BOTTOM", tonumber(oufdb.Castbar.X), tonumber(oufdb.Castbar.Y))
 		elseif unit == unit:match("arena%d") then
@@ -3577,6 +3576,26 @@ local SetStyle = function(self, unit, isSingle)
 end
 
 oUF:RegisterStyle("LUI", SetStyle)
+
+--temp func
+local function KillUnused(data, default)
+	for k, v in pairs(data) do
+		if type(default[k]) == "table" and type(data[k]) == "table" then
+			KillUnused(data[k], default[k])
+			local a = true
+			for k2, v2 in pairs(data[k]) do
+				if data[k][k2] ~= nil then
+					a = false
+				end
+			end
+			if a then data[k] = nil end 
+		end
+		
+		if default[k] == nil then
+			data[k] = nil
+		end
+	end
+end
 
 -- the spawn functions are in the module oUF, so we don't need to write all the code twice
 -- "subframes" of groups, like party target are included within the party toggle

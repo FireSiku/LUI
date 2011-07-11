@@ -20,6 +20,7 @@ local defaults = {
 		Width = "200",
 		X = "465",
 		Y = "-285",
+		Point = "CENTER",
 		Scale = 1,
 		Border = {
 			EdgeFile = "glow",

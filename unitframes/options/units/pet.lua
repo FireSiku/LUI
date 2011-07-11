@@ -17,6 +17,7 @@ local defaults = {
 		Width = "130",
 		X = "0",
 		Y = "-200",
+		Point = "CENTER",
 		Scale = 1,
 		Border = {
 			Aggro = false,
