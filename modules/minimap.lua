@@ -9,6 +9,7 @@
 		v1.0: Loui
 		v1.1: Zista
 		v1.2: Darkruler
+		v1.2b: Thaly
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -198,7 +199,7 @@ end
 
 function module:SetMinimapPosition()
 	Minimap:ClearAllPoints()
-	Minimap:SetPoint("TOPRIGHT", UIParent, db.Minimap.General.Position.RelativePoint, db.Minimap.General.Position.X, db.Minimap.General.Position.Y)
+	Minimap:SetPoint(db.Minimap.General.Position.Point, UIParent, db.Minimap.General.Position.RelativePoint, db.Minimap.General.Position.X, db.Minimap.General.Position.Y)
 end
 
 function module:SetMinimapSize()
@@ -454,10 +455,10 @@ function module:SetMinimap()
 	Minimap:RegisterForDrag('LeftButton')
 	Minimap:SetMovable(true)
 	Minimap:SetScript('OnDragStop', function() if(db.Minimap.General.Position.UnLocked) then 
-				Minimap:StopMovingOrSizing()
-				self:GetMinimapPosition()
-			end 
-		end)
+			Minimap:StopMovingOrSizing()
+			self:GetMinimapPosition()
+		end 
+	end)
 	Minimap:SetScript('OnDragStart', function() if(db.Minimap.General.Position.UnLocked) then Minimap:StartMoving() end end)
 	MinimapCluster:EnableMouse(false)
 	
@@ -467,8 +468,9 @@ function module:GetMinimapPosition()
 
 	local point, relativeTo, relativePoint, xOfs, yOfs = Minimap:GetPoint()
 	db.Minimap.General.Position.RelativePoint = relativePoint
+	db.Minimap.General.Position.Point = point
 	db.Minimap.General.Position.X = xOfs
-	db.Minimap.General.Position.y = yOfs
+	db.Minimap.General.Position.Y = yOfs
 
 end
 local defaults = {
@@ -480,6 +482,7 @@ local defaults = {
 				X = "-24",
 				Y = "-80",
 				RelativePoint = "TOPRIGHT",
+				Point = "TOPRIGHT",
 				UnLocked = true
 			},
 			Size = 1,
@@ -600,12 +603,12 @@ function module:LoadOptions()
 									name = "X Value",
 									desc = "X Value for your Minimap.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Minimap.General.Position.X,
 									type = "input",
-									get = function() return db.Minimap.General.Position.X end,
+									get = function() return tostring(db.Minimap.General.Position.X) end,
 									set = function(self,PosX)
 											if PosX == nil or PosX == "" then
 												PosX = "-24"
 											end
-											db.Minimap.General.Position.X = PosX
+											db.Minimap.General.Position.X = tonumber(PosX)
 											module:SetMinimapPosition()
 										end,
 									order = 4,
@@ -614,16 +617,23 @@ function module:LoadOptions()
 									name = "Y Value",
 									desc = "Y Value for your Minimap.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Minimap.General.Position.Y,
 									type = "input",
-									get = function() return db.Minimap.General.Position.Y end,
+									get = function() return tostring(db.Minimap.General.Position.Y) end,
 									set = function(self,PosY)
 											if PosY == nil or PosY == "" then
 												PosY = "-80"
 											end
-											db.Minimap.General.Position.Y= PosY
+											db.Minimap.General.Position.Y = tonumber(PosY)
 											module:SetMinimapPosition()
 										end,
 									order = 5,
 								},
+								Restore = LUI:NewExecute("Restore Default Position", "Restores Default Minimap Position", 6, function()
+									db.Minimap.General.Position.RelativePoint = LUI.defaults.profile.Minimap.General.Position.RelativePoint
+									db.Minimap.General.Position.Point = LUI.defaults.profile.Minimap.General.Position.Point
+									db.Minimap.General.Position.X = LUI.defaults.profile.Minimap.General.Position.X
+									db.Minimap.General.Position.Y = LUI.defaults.profile.Minimap.General.Position.Y
+									module:SetMinimapPosition()
+								end),
 								Unlocked = {
 									name = "Locked",
 									desc = "Weather or not the Minimap is locked or not.\n",
@@ -634,12 +644,12 @@ function module:LoadOptions()
 									set = function(self)
 										db.Minimap.General.Position.UnLocked = not db.Minimap.General.Position.UnLocked
 									end,
-									order = 6,
+									order = 7,
 								},
 								header2 = {
 									name = "Size",
 									type = "header",
-									order = 7
+									order = 8
 								},	
 								Size = {
 									name = "Size",
@@ -658,7 +668,7 @@ function module:LoadOptions()
 											db.Minimap.General.Size = Size
 											module:SetMinimapSize()
 										end,
-									order = 8,
+									order = 9,
 								},
 							},
 						},
