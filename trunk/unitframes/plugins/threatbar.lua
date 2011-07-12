@@ -13,7 +13,7 @@ local aggrocolors = {
 local Update = function(bar)
 	local self = bar.__owner
 	
-	if bar.tankHide and self.Vengeance and self.Vengeance:IsShown() then
+	if bar.tankHide and self.Vengeance and self.Vengeance.isTank then
 		bar:SetAlpha(0)
 		return
 	end

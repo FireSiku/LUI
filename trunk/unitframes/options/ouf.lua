@@ -15,7 +15,9 @@ local widgetLists = AceGUIWidgetLSMlists
 
 local db
 
-local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
+LUI_versions.ouf = 3403
+
+local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
 
 local ufNames = {
 	Player = "oUF_LUI_player",
@@ -92,15 +94,15 @@ do
 	local nameCache = {}
 	
 	local validNames = {
-		'player',
-		'target',
-		'focus',
-		'raid',
-		'pet',
-		'party',
-		'maintank',
-		'mainassist',
-		'arena',
+		"player",
+		"target",
+		"focus",
+		"raid",
+		"pet",
+		"party",
+		"maintank",
+		"mainassist",
+		"arena",
 	}
 
 	local validName = function(smartName)
@@ -108,12 +110,12 @@ do
 			return smartName
 		end
 
-		if type(smartName) == 'string' then
-			if smartName == 'mt' then
-				return 'maintank'
+		if type(smartName) == "string" then
+			if smartName == "mt" then
+				return "maintank"
 			end
-			if smartName == 'castbar' then
-				return ' castbar'
+			if smartName == "castbar" then
+				return " castbar"
 			end
 
 			for _, v in next, validNames do
@@ -123,13 +125,13 @@ do
 			end
 
 			if (
-				smartName:match'^party%d?$' or
-				smartName:match'^arena%d?$' or
-				smartName:match'^boss%d?$' or
-				smartName:match'^partypet%d?$' or
-				smartName:match'^raid%d?%d?$' or
-				smartName:match'%w+target$' or
-				smartName:match'%w+pet$'
+				smartName:match("^party%d?$") or
+				smartName:match("^arena%d?$") or
+				smartName:match("^boss%d?$") or
+				smartName:match("^partypet%d?$") or
+				smartName:match("^raid%d?%d?$") or
+				smartName:match("%w+target$") or
+				smartName:match("%w+pet$")
 			) then
 				return smartName
 			end
@@ -139,11 +141,11 @@ do
 	local function guessName(...)
 		local name = validName(select(1, ...))
 
-		local n = select('#', ...)
+		local n = select("#", ...)
 		if n > 1 then
 			for i = 2, n do
 				local inp = validName(select(i, ...))
-				if inp then name = (name or '')..inp end
+				if inp then name = (name or "")..inp end
 			end
 		end
 
@@ -155,8 +157,8 @@ do
 			return nameCache[name]
 		end
 
-		local n = name:gsub('(%l)(%u)', '%1_%2'):gsub('([%l%u])(%d)', '%1_%2_'):lower()
-		n = guessName(string.split('_', n))
+		local n = name:gsub("(%l)(%u)", "%1_%2"):gsub("([%l%u])(%d)", "%1_%2_"):lower()
+		n = guessName(string.split("_", n))
 		if n then
 			nameCache[name] = n
 			return n
@@ -166,12 +168,12 @@ do
 	end
 
 	smartName = function(obj)
-		if type(obj) == 'string' then
+		if type(obj) == "string" then
 			return smartString(obj)
 		else
 			local name = obj:GetName()
 			if name then return smartString(name) end
-			return obj.unit or '<unknown>'
+			return obj.unit or "<unknown>"
 		end
 	end
 end
@@ -317,14 +319,15 @@ local frameShow = PlayerFrame.Show
 
 function module:EnableBlizzard(unit)
 	local function RegisterBlizzUnitFrame(frame, ...)
+		if not frame then return end
 		frame.Show = frameShow
 		
-		for i=1, select('#', ...) do
+		for i = 1, select("#", ...) do
 			frame:RegisterEvent(select(i, ...))
 		end
 	end
 	
-	if(unit == 'player') then
+	if unit == "player" then
 		RegisterBlizzUnitFrame(PlayerFrame,
 			"UNIT_LEVEL", "UNIT_COMBAT", "UNIT_FACTION", "UNIT_MAXPOWER", "PLAYER_ENTERING_WORLD", "PLAYER_ENTER_COMBAT",
 			"PLAYER_LEAVE_COMBAT", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED", "PLAYER_UPDATE_RESTING", "PARTY_MEMBERS_CHANGED",
@@ -334,10 +337,10 @@ function module:EnableBlizzard(unit)
 		)
 		PlayerFrame:Show()
 		
-		unit = 'playerCastbar'
+		unit = "playerCastbar"
 	end
 	
-	if(unit == 'playerCastbar') then
+	if unit == "playerCastbar" then
 		RegisterBlizzUnitFrame(CastingBarFrame,
 			"UNIT_SPELLCAST_START", "UNIT_SPELLCAST_STOP", "UNIT_SPELLCAST_FAILED", "UNIT_SPELLCAST_INTERRUPTED",
 			"UNIT_SPELLCAST_DELAYED", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_CHANNEL_UPDATE", "UNIT_SPELLCAST_CHANNEL_STOP",
@@ -345,15 +348,15 @@ function module:EnableBlizzard(unit)
 		)
 	end
 	
-	if(unit == 'pet') then
+	if unit == "pet" then
 		RegisterBlizzUnitFrame(PetFrame,
 			"UNIT_PET", "UNIT_COMBAT", "UNIT_AURA", "PET_ATTACK_START", "PET_ATTACK_STOP", "UNIT_POWER", "PET_UI_UPDATE", "PET_RENAMEABLE"
 		)
 		
-		unit = 'petCastbar'
+		unit = "petCastbar"
 	end
 	
-	if(unit == 'petCastbar') then
+	if unit == "petCastbar" then
 		RegisterBlizzUnitFrame(PetCastingBarFrame,
 			"UNIT_PET", "UNIT_SPELLCAST_START", "UNIT_SPELLCAST_STOP", "UNIT_SPELLCAST_FAILED", "UNIT_SPELLCAST_INTERRUPTED",
 			"UNIT_SPELLCAST_DELAYED", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_CHANNEL_UPDATE", "UNIT_SPELLCAST_CHANNEL_STOP",
@@ -361,7 +364,7 @@ function module:EnableBlizzard(unit)
 		)
 	end
 	
-	if(unit == 'target') then
+	if unit == "target" then
 		RegisterBlizzUnitFrame(TargetFrame,
 			"PLAYER_ENTERING_WORLD", "PLAYER_TARGET_CHANGED", "UNIT_HEALTH", "CVAR_UPDATE", "UNIT_LEVEL", "UNIT_FACTION",
 			"UNIT_CLASSIFICATION_CHANGED", "UNIT_AURA", "PLAYER_FLAGS_CHANGED", "PARTY_MEMBERS_CHANGED", "RAID_TARGET_UPDATE"
@@ -376,7 +379,7 @@ function module:EnableBlizzard(unit)
 		)
 	end
 	
-	if(unit == 'focus') then
+	if unit == "focus" then
 		RegisterBlizzUnitFrame(FocusFrame,
 			"PLAYER_ENTERING_WORLD", "PLAYER_FOCUS_CHANGED", "UNIT_HEALTH", "UNIT_LEVEL", "UNIT_FACTION", "UNIT_CLASSIFICATION_CHANGED",
 			"UNIT_AURA", "PLAYER_FLAGS_CHANGED", "PARTY_MEMBERS_CHANGED", "RAID_TARGET_UPDATE", "VARIABLES_LOADED"
@@ -389,37 +392,49 @@ function module:EnableBlizzard(unit)
 		FocusFrame_SetSmallSize(not GetCVarBool("fullSizeFocusFrame"))
 	end
 	
-	if(unit == 'targettarget') then
+	if unit == "targettarget" then
 		RegisterBlizzUnitFrame(TargetFrameToT, false)
 	end
 	
-	if(unit:match'(boss)%d?$' == 'boss') then
-		local id = unit:match'boss(%d)'
-		if(id) then
-			RegisterBlizzUnitFrame(_G['Boss'..id..'TargetFrame'],
-				"UNIT_TARGETABLE_CHANGED", id == 1 and "INSTANCE_ENCOUNTER_ENGAGE_UNIT" or nil
-			)
-		else
-			for i=1, 4 do
-				RegisterBlizzUnitFrame(_G['Boss'..i..'TargetFrame'],
-					"UNIT_TARGETABLE_CHANGED", i == 1 and "INSTANCE_ENCOUNTER_ENGAGE_UNIT" or nil
+	if unit:match("(boss)%d?$") == "boss" then
+		local id = unit:match("boss(%d)")
+		if id then
+			if id == 1 then
+				RegisterBlizzUnitFrame(_G["Boss"..id.."TargetFrame"],
+					"UNIT_TARGETABLE_CHANGED", "INSTANCE_ENCOUNTER_ENGAGE_UNIT"
 				)
+			else
+				RegisterBlizzUnitFrame(_G["Boss"..id.."TargetFrame"],
+					"UNIT_TARGETABLE_CHANGED"
+				)
+			end
+		else
+			for i = 1, 4 do
+				if i == 1 then
+					RegisterBlizzUnitFrame(_G["Boss"..i.."TargetFrame"],
+						"UNIT_TARGETABLE_CHANGED", "INSTANCE_ENCOUNTER_ENGAGE_UNIT"
+					)
+				else
+					RegisterBlizzUnitFrame(_G["Boss"..i.."TargetFrame"],
+						"UNIT_TARGETABLE_CHANGED"
+					)
+				end
 			end
 		end
 	end
 	
-	if(unit:match'(party)%d?$' == 'party') then
-		local id = unit:match'party(%d)'
-		if(id) then
-			RegisterBlizzUnitFrame(_G['PartyMemberFrame'..id],
+	if unit:match("(party)%d?$") == "party" then
+		local id = unit:match("party(%d)")
+		if id then
+			RegisterBlizzUnitFrame(_G["PartyMemberFrame"..id],
 				"PLAYER_ENTERING_WORLD", "PARTY_MEMBERS_CHANGED", "PARTY_LEADER_CHANGED", "PARTY_LOOT_METHOD_CHANGED", "MUTELIST_UPDATE",
 				"IGNORELIST_UPDATE", "UNIT_FACTION", "UNIT_AURA", "UNIT_PET", "VOICE_START", "VOICE_STOP", "VARIABLES_LOADED",
 				"VOICE_STATUS_UPDATE", "READY_CHECK", "READY_CHECK_CONFIRM", "READY_CHECK_FINISHED", "UNIT_ENTERED_VEHICLE",
 				"UNIT_EXITED_VEHICLE", "UNIT_HEALTH", "UNIT_CONNECTION", "PARTY_MEMBER_ENABLE", "PARTY_MEMBER_DISABLE", "UNIT_PHASE"
 			)
 		else
-			for i=1, 4 do
-				RegisterBlizzUnitFrame(_G['PartyMemberFrame'..i],
+			for i = 1, 4 do
+				RegisterBlizzUnitFrame(_G["PartyMemberFrame"..i],
 					"PLAYER_ENTERING_WORLD", "PARTY_MEMBERS_CHANGED", "PARTY_LEADER_CHANGED", "PARTY_LOOT_METHOD_CHANGED", "MUTELIST_UPDATE",
 					"IGNORELIST_UPDATE", "UNIT_FACTION", "UNIT_AURA", "UNIT_PET", "VOICE_START", "VOICE_STOP", "VARIABLES_LOADED",
 					"VOICE_STATUS_UPDATE", "READY_CHECK", "READY_CHECK_CONFIRM", "READY_CHECK_FINISHED", "UNIT_ENTERED_VEHICLE",
@@ -430,16 +445,16 @@ function module:EnableBlizzard(unit)
 		ShowPartyFrame()
 	end
 	
-	if(unit:match'(arena)%d?$' == 'arena') then
+	if unit:match("(arena)%d?$") == "arena" then
 		if not ArenaEnemyFrame1 then Arena_LoadUI_() end
-		local id = unit:match'arena(%d)'
-		if(id) then
-			RegisterBlizzUnitFrame(_G['ArenaEnemyFrame'..id],
+		local id = unit:match("arena(%d)")
+		if id then
+			RegisterBlizzUnitFrame(_G["ArenaEnemyFrame"..id],
 				"CVAR_UPDATE", "VARIABLES_LOADED", "PLAYER_ENTERING_WORLD"
 			)
 		else
-			for i=1, 5 do
-				RegisterBlizzUnitFrame(_G['ArenaEnemyFrame'..i],
+			for i = 1, 5 do
+				RegisterBlizzUnitFrame(_G["ArenaEnemyFrame"..i],
 					"CVAR_UPDATE", "VARIABLES_LOADED", "PLAYER_ENTERING_WORLD"
 				)
 			end
@@ -538,7 +553,29 @@ toggleFuncs = {
 					end
 				end
 			end
+			
+			for i = 1, MAX_BOSS_FRAMES do
+				local boss = _G["Boss"..i.."TargetFrame"]
+				if boss then
+					boss.Show = function() end
+					boss:Hide()
+					boss:UnregisterAllEvents()
+				end
+			end
 		else
+			if db.oUF.Boss.UseBlizzard then
+				module:EnableBlizzard("boss")
+			else
+				for i = 1, MAX_BOSS_FRAMES do
+					local boss = _G["Boss"..i.."TargetFrame"]
+					if boss then
+						boss.Show = function() end
+						boss:Hide()
+						boss:UnregisterAllEvents()
+					end
+				end
+			end
+			
 			for i = 1, 4 do
 				if _G["oUF_LUI_boss"..i] then _G["oUF_LUI_boss"..i]:Disable() end
 			end
@@ -604,6 +641,10 @@ toggleFuncs = {
 						_G["oUF_LUI_partyUnitButton"..i]:UpdateAllElements()
 					end
 				end
+				
+				oUF_LUI_party.handler:SetAttribute("vis", nil)
+				oUF_LUI_party.handler:SetAttribute("vis", 1)
+				oUF_LUI_party.handler:GetScript("OnEvent")(oUF_LUI_party.handler)
 			else
 				local party = oUF:SpawnHeader("oUF_LUI_party", nil, nil,
 					"showParty", true,
@@ -675,8 +716,22 @@ toggleFuncs = {
 					end
 				end)
 				party.handler = handler
+				
+				handler:SetAttribute("vis", nil)
+				handler:SetAttribute("vis", 1)
+				handler:GetScript("OnEvent")(handler)
 			end
+			
+			SetCVar("useCompactPartyFrames", nil)
+			oUF:DisableBlizzard("party")
 		else
+			if db.oUF.Party.UseBlizzard then
+				module:EnableBlizzard("party")
+			else
+				SetCVar("useCompactPartyFrames", nil)
+				oUF:DisableBlizzard("party")
+			end
+			
 			if oUF_LUI_party then
 				for i = 1, 5 do
 					if _G["oUF_LUI_partyUnitButton"..i] then _G["oUF_LUI_partyUnitButton"..i]:Disable() end
@@ -728,7 +783,6 @@ toggleFuncs = {
 		if db.oUF.Arena.Enable then
 			local x = tonumber(db.oUF.Arena.X) / (db.oUF.Arena.Scale)
 			local y = tonumber(db.oUF.Arena.Y) / (db.oUF.Arena.Scale)
-			SetCVar("showArenaEnemyFrames", 0)
 			
 			if oUF_LUI_arena then
 				oUF_LUI_arena:SetScale(db.oUF.Arena.Scale)
@@ -785,6 +839,9 @@ toggleFuncs = {
 					end
 				end
 			end
+			
+			SetCVar("showArenaEnemyFrames", 0)
+			oUF:DisableBlizzard("arena")
 		else
 			if db.oUF.Arena.UseBlizzard == true then
 				SetCVar("showArenaEnemyFrames", 1)
@@ -797,6 +854,7 @@ toggleFuncs = {
 				end
 			else
 				SetCVar("showArenaEnemyFrames", 0)
+				oUF:DisableBlizzard("arena")
 			end
 			
 			for i = 1, 5 do

@@ -207,6 +207,9 @@ function module:CreateBarOptions(unit, order, barType)
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
 				LUI.oUF.funcs[barType](_G[frame], _G[frame].__unit, db.oUF[unit])
+				if barType == "Health" and _G[frame].HealPrediction then
+					LUI.oUF.funcs["HealPrediction"](_G[frame], _G[frame].__unit, db.oUF[unit])
+				end
 				_G[frame]:UpdateAllElements()
 			end
 		end
@@ -236,10 +239,13 @@ function module:CreateBarOptions(unit, order, barType)
 				order = 2,
 				args = {
 					Height = LUI:NewHeight(unit.." "..barType.."bar", 1, bardb, nil, bardefaults, ApplySettings),
-					Padding = (barType == "Health") and LUI:NewPadding(barType.." bar and the Unitframe", 2, bardb, nil, bardefaults, ApplySettings) or LUI:NewPadding(barType.."bar and Healthbar", 2, bardb, nil, bardefaults, ApplySettings),
-					Smooth = (barType ~= "Full") and LUI:NewToggle("Enable Smooth Bar Animation", "Whether you want to use Smooth Animations or not.", 3, bardb, "Smooth", bardefaults, ToggleSmooth) or nil,
-					Color = (barType == "Full") and LUI:NewColorNoAlpha(barType.."bar ", nil, 4, bardb.Color, bardefaults.Color, ApplySettings) or nil,
-					Texture = (barType == "Full") and LUI:NewSelect("Texture", "Choose the "..barType.."bar Texture.", 5, widgetLists.statusbar, "LSM30_Statusbar", bardb, "Texture", bardefaults, ApplySettings) or nil,
+					Width = LUI:NewWidth(unit.." "..barType.."bar", 2, bardb, nil, bardefaults, ApplySettings),
+					XValue = LUI:NewPosX(unit.." "..barType.."bar", 3, bardb, "", bardefaults, ApplySettings),
+					YValue = LUI:NewPosY(unit.." "..barType.."bar", 4, bardb, "", bardefaults, ApplySettings),
+					empty = (barType ~= "Full") and LUI:NewEmpty(5) or nil,
+					Smooth = (barType ~= "Full") and LUI:NewToggle("Enable Smooth Bar Animation", "Whether you want to use Smooth Animations or not.", 6, bardb, "Smooth", bardefaults, ToggleSmooth) or nil,
+					Color = (barType == "Full") and LUI:NewColorNoAlpha(barType.."bar ", nil, 7, bardb.Color, bardefaults.Color, ApplySettings) or nil,
+					Texture = (barType == "Full") and LUI:NewSelect("Texture", "Choose the "..barType.."bar Texture.", 8, widgetLists.statusbar, "LSM30_Statusbar", bardb, "Texture", bardefaults, ApplySettings) or nil,
 				},
 			},
 			Colors = (barType ~= "Full") and {
@@ -518,41 +524,6 @@ function module:CreateOptions(index, unit)
 	
 	local disabledFunc2 = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end
 	
-	local ToggleBlizz
-	if unit == "Arena" then
-		ToggleBlizz = function(self, Enable)
-			if Enable == true then
-				SetCVar("showArenaEnemyFrames", 1)
-				LUI:GetModule("oUF"):EnableBlizzard("arena")
-			else
-				SetCVar("showArenaEnemyFrames", 0)
-				oUF:DisableBlizzard("party")
-			end
-		end
-	elseif unit == "Boss" then
-		ToggleBlizz = function(self, Enable)
-			if Enable == true then
-				LUI:GetModule("oUF"):EnableBlizzard("boss")
-			else
-				for i = 1, MAX_BOSS_FRAMES do
-					local boss = _G["Boss"..i.."TargetFrame"]
-					boss.Show = function() end
-					boss:Hide()
-					boss:UnregisterAllEvents()
-				end
-			end
-		end
-	elseif unit == "Party" then
-		ToggleBlizz = function(self, Enable)
-			if Enable == true then
-				LUI:GetModule("oUF"):EnableBlizzard("party")
-			else
-				SetCVar("useCompactPartyFrames", nil)
-				oUF:DisableBlizzard("party")
-			end
-		end
-	end
-	
 	local ChangePadding
 	if unit == "Party" then
 		ChangePadding = function() oUF_LUI_party:SetAttribute("yOffset", - tonumber(oufdb.Padding)) end
@@ -791,7 +762,7 @@ function module:CreateOptions(index, unit)
 						order = 1,
 						args = {
 							Enable = (unit ~= "Player" and unit ~= "Target") and LUI:NewToggle("Enable", "Whether you want to use "..unit.." Frame or not.", 1, oufdb, "Enable", oufdefaults, ToggleFunc) or nil,
-							UseBlizzard = (unit == "Party" or unit == "Boss" or unit == "Arena") and LUI:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, oufdb, "UseBlizzard", oufdefaults, ToggleBlizz, nil, function() return oufdb.Enable end) or nil,
+							UseBlizzard = (unit == "Party" or unit == "Boss" or unit == "Arena") and LUI:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, oufdb, "UseBlizzard", oufdefaults, ToggleFunc, nil, function() return oufdb.Enable end) or nil,
 							header = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank" or unit == "Raid") and LUI:NewHeader("General", 6) or nil,
 							Padding = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank" or unit == "Raid") and LUI:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.", 7, oufdb, "Padding", oufdefaults, ChangePadding, nil, disabledFunc2) or nil,
 							header2 = LUI:NewHeader("Frame Position", 9),

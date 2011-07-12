@@ -1,19 +1,20 @@
 ------------------------------------------------------------------------
 --	oUF LUI Layout
---	Version 3.1.1
+--	Version 3.5.2
 -- 	Date: 06/06/2011
 --	DO NOT USE THIS LAYOUT WITHOUT LUI
 ------------------------------------------------------------------------
 
 local _, ns = ...
 local oUF = ns.oUF or oUF
-local oUF_LUI = LUI.oUF
 
 local LSM = LibStub("LibSharedMedia-3.0")
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local module = LUI:NewModule("oUF_Layout")
 
 local db, colors, funcs
+
+LUI_versions.ouf = 3520
 
 local nameCache = {}
 
@@ -88,7 +89,7 @@ local cornerAuras = {
 }
 
 ------------------------------------------------------------------------
---	Don't edit this if you don't know what you are doing!
+--	Dont edit this if you dont know what you are doing!
 ------------------------------------------------------------------------
 
 local GetDisplayPower = function(power, unit)
@@ -117,7 +118,7 @@ local FormatTime = function(s)
 		return format("%dh", floor(s/hour + 1)), s % hour
 	elseif s >= minute then
 		if s <= minute * 1 then
-			return format('%d:%02d', floor(s/60), s % minute), s - floor(s)
+			return format("%d:%02d", floor(s/60), s % minute), s - floor(s)
 		end
 		return format("%dm", floor(s/minute + 1)), s % minute
 	end
@@ -676,13 +677,13 @@ local ThreatOverride = function(self, event, unit)
 end
 
 local CPointsOverride = function(self, event, unit)
-	if unit == 'pet' then return end
+	if unit == "pet" then return end
 
 	local cp
-	if UnitExists'vehicle' then
-		cp = GetComboPoints('vehicle', 'target')
+	if UnitExists("vehicle") then
+		cp = GetComboPoints("vehicle", "target")
 	else
-		cp = GetComboPoints('player', 'target')
+		cp = GetComboPoints("player", "target")
 	end
 
 	local cpoints = self.CPoints
@@ -692,7 +693,7 @@ local CPointsOverride = function(self, event, unit)
 		cpoints:Show()
 	end
 
-	for i=1, MAX_COMBO_POINTS do
+	for i = 1, MAX_COMBO_POINTS do
 		if i <= cp then
 			cpoints[i]:SetValue(1)
 		else
@@ -702,7 +703,7 @@ local CPointsOverride = function(self, event, unit)
 end
 
 local SoulShardsOverride = function(self, event, unit, powerType)
-	if self.unit ~= unit or (powerType and powerType ~= 'SOUL_SHARDS') then return end
+	if self.unit ~= unit or (powerType and powerType ~= "SOUL_SHARDS") then return end
 
 	local num = UnitPower(unit, SPELL_POWER_SOUL_SHARDS)
 	for i = 1, SHARD_BAR_NUM_SHARDS do
@@ -715,7 +716,7 @@ local SoulShardsOverride = function(self, event, unit, powerType)
 end
 
 local HolyPowerOverride = function(self, event, unit, powerType)
-	if self.unit ~= unit or (powerType and powerType ~= 'HOLY_POWER') then return end
+	if self.unit ~= unit or (powerType and powerType ~= "HOLY_POWER") then return end
 
 	local num = UnitPower(unit, SPELL_POWER_HOLY_POWER)
 	for i = 1, MAX_HOLY_POWER do
@@ -730,19 +731,19 @@ end
 local PostEclipseUpdate = function(self, unit)
 	if self.ShowText then
 		if GetEclipseDirection() == "sun" then
-			self.LunarText:SetText(50+math.floor((UnitPower('player', SPELL_POWER_ECLIPSE)+1)/2))
+			self.LunarText:SetText(50+math.floor((UnitPower("player", SPELL_POWER_ECLIPSE)+1)/2))
 			self.LunarText:SetTextColor(unpack(colors.eclipsebar["LunarBG"]))
 			self.SolarText:SetText("Starfire!")
 			self.SolarText:SetTextColor(unpack(colors.eclipsebar["LunarBG"]))
 		elseif GetEclipseDirection() == "moon" then
 			self.LunarText:SetText("Wrath!")
 			self.LunarText:SetTextColor(unpack(colors.eclipsebar["SolarBG"]))
-			self.SolarText:SetText(50-math.floor((UnitPower('player', SPELL_POWER_ECLIPSE)+1)/2))
+			self.SolarText:SetText(50-math.floor((UnitPower("player", SPELL_POWER_ECLIPSE)+1)/2))
 			self.SolarText:SetTextColor(unpack(colors.eclipsebar["SolarBG"]))
 		elseif self:IsShown() then
-			self.LunarText:SetText(50+math.floor((UnitPower('player', SPELL_POWER_ECLIPSE)+1)/2))
+			self.LunarText:SetText(50+math.floor((UnitPower("player", SPELL_POWER_ECLIPSE)+1)/2))
 			self.LunarText:SetTextColor(unpack(colors.eclipsebar["SolarBG"]))
-			self.SolarText:SetText(50-math.floor((UnitPower('player', SPELL_POWER_ECLIPSE)+1)/2))
+			self.SolarText:SetText(50-math.floor((UnitPower("player", SPELL_POWER_ECLIPSE)+1)/2))
 			self.SolarText:SetTextColor(unpack(colors.eclipsebar["LunarBG"]))
 		end
 	end
@@ -817,9 +818,9 @@ end
 
 local PostUpdateDruidMana = function(druidmana, unit, min, max)
 	if druidmana.color == "By Class" then
-		druidmana.ManaBar:SetStatusBarColor(unpack(oUF_LUI.colors.class["DRUID"]))
+		druidmana.ManaBar:SetStatusBarColor(unpack(LUI.oUF.colors.class["DRUID"]))
 	elseif druidmana.color == "By Type" then
-		druidmana.ManaBar:SetStatusBarColor(unpack(oUF_LUI.colors.power["MANA"]))
+		druidmana.ManaBar:SetStatusBarColor(unpack(LUI.oUF.colors.power["MANA"]))
 	else
 		druidmana.ManaBar:SetStatusBarColor(oUF.ColorGradient(min/max, unpack(colors.smooth)))
 	end
@@ -871,14 +872,14 @@ local PortraitOverride = function(self, event, unit)
 
 	local portrait = self.Portrait
 
-	if(portrait:IsObjectType'Model') then
+	if(portrait:IsObjectType"Model") then
 		local guid = UnitGUID(unit)
 		if not UnitExists(unit) or not UnitIsConnected(unit) or not UnitIsVisible(unit) then
 			portrait:SetModelScale(4.25)
 			portrait:SetPosition(0, 0, -1.5)
 			portrait:SetModel("Interface\\Buttons\\talktomequestionmark.mdx")
 			portrait.guid = nil
-		elseif(portrait.guid ~= guid or event == 'UNIT_MODEL_CHANGED') then
+		elseif(portrait.guid ~= guid or event == "UNIT_MODEL_CHANGED") then
 			portrait:SetUnit(unit)
 			portrait:SetCamera(portrait:GetModel() == "character\\worgen\\male\\worgenmale.m2" and 1 or 0)
 
@@ -968,7 +969,7 @@ end
 --	access them
 ------------------------------------------------------------------------
 
-oUF_LUI.funcs = {
+LUI.oUF.funcs = {
 	Health = function(self, unit, oufdb)
 		if not self.Health then
 			self.Health = CreateFrame("StatusBar", nil, self)
@@ -978,10 +979,10 @@ oUF_LUI.funcs = {
 		end
 
 		self.Health:SetHeight(tonumber(oufdb.Health.Height))
+		self.Health:SetWidth(tonumber(oufdb.Health.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid downscaling!
 		self.Health:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Health.Texture))
 		self.Health:ClearAllPoints()
-		self.Health:SetPoint("TOPLEFT", self, "TOPLEFT", 0, tonumber(oufdb.Health.Padding))
-		self.Health:SetPoint("TOPRIGHT", self, "TOPRIGHT", 0, tonumber(oufdb.Health.Padding))
+		self.Health:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Health.X), tonumber(oufdb.Health.Y))
 
 		self.Health.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Health.TextureBG))
 		self.Health.bg:SetAlpha(oufdb.Health.BGAlpha)
@@ -1005,10 +1006,10 @@ oUF_LUI.funcs = {
 		end
 
 		self.Power:SetHeight(tonumber(oufdb.Power.Height))
+		self.Power:SetWidth(tonumber(oufdb.Power.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid downscaling!
 		self.Power:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Power.Texture))
 		self.Power:ClearAllPoints()
-		self.Power:SetPoint("TOPLEFT", self.Health, "BOTTOMLEFT", 0, tonumber(oufdb.Power.Padding))
-		self.Power:SetPoint("TOPRIGHT", self.Health, "BOTTOMRIGHT", 0, tonumber(oufdb.Power.Padding))
+		self.Power:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Power.X), tonumber(oufdb.Power.Y))
 
 		self.Power.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Power.TextureBG))
 		self.Power.bg:SetAlpha(oufdb.Power.BGAlpha)
@@ -1039,11 +1040,11 @@ oUF_LUI.funcs = {
 		end
 
 		self.Full:SetHeight(tonumber(oufdb.Full.Height))
+		self.Full:SetWidth(tonumber(oufdb.Full.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid downscaling!
 		self.Full:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Full.Texture))
 		self.Full:SetStatusBarColor(tonumber(oufdb.Full.Color.r), tonumber(oufdb.Full.Color.g), tonumber(oufdb.Full.Color.b), tonumber(oufdb.Full.Color.a))
 		self.Full:ClearAllPoints()
-		self.Full:SetPoint("TOPLEFT", self.Health, "BOTTOMLEFT", 0, tonumber(oufdb.Full.Padding))
-		self.Full:SetPoint("TOPRIGHT", self.Health, "BOTTOMRIGHT", 0, tonumber(oufdb.Full.Padding))
+		self.Full:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Full.X), tonumber(oufdb.Full.Y))
 		self.Full:SetAlpha(oufdb.Full.Alpha)
 
 		if oufdb.Full.Enable == true then
@@ -1360,7 +1361,7 @@ oUF_LUI.funcs = {
 			self.Experience.Rested:SetAllPoints(self.XP)
 			self.Experience.Rested:SetStatusBarTexture(normTex)
 
-			self.Experience.bg = self.XP:CreateTexture(nil, 'BACKGROUND')
+			self.Experience.bg = self.XP:CreateTexture(nil, "BACKGROUND")
 			self.Experience.bg:SetAllPoints(self.XP)
 			self.Experience.bg:SetTexture(normTex)
 
@@ -1380,18 +1381,18 @@ oUF_LUI.funcs = {
 				self.Experience:SetValue(min)
 
 				if self.Experience.Rested then
-					local exhaustion = unit == 'player' and GetXPExhaustion() or 0
+					local exhaustion = unit == "player" and GetXPExhaustion() or 0
 					self.Experience.Rested:SetMinMaxValues(0, max)
 					self.Experience.Rested:SetValue(math.min(min + exhaustion, max))
 				end
 			end
 
-			local events = {'PLAYER_XP_UPDATE', 'PLAYER_LEVEL_UP', 'UPDATE_EXHAUSTION', 'PLAYER_ENTERING_WORLD'}
+			local events = {"PLAYER_XP_UPDATE", "PLAYER_LEVEL_UP", "UPDATE_EXHAUSTION", "PLAYER_ENTERING_WORLD"}
 			for i=1, #events do self.XP:RegisterEvent(events[i]) end
 			self.XP:SetScript("OnEvent", function(_, event)
 				local value, max = UnitXP("player"), UnitXPMax("player")
 				self.Experience.Value:SetText(value.." / "..max.."  ("..math.floor(value / max * 100 + 0.5).."%)")
-				if event == 'PLAYER_ENTERING_WORLD' then self.XP:UnregisterEvent('PLAYER_ENTERING_WORLD') end
+				if event == "PLAYER_ENTERING_WORLD" then self.XP:UnregisterEvent("PLAYER_ENTERING_WORLD") end
 			end)
 
 			local frameStrata = self.XP:GetFrameStrata()
@@ -1463,11 +1464,11 @@ oUF_LUI.funcs = {
 			self.Reputation.Value:SetAllPoints(self.Rep)
 			self.Reputation.Value:SetFontObject(GameFontHighlight)
 
-			self.Reputation.bg = self.Reputation:CreateTexture(nil, 'BACKGROUND')
+			self.Reputation.bg = self.Reputation:CreateTexture(nil, "BACKGROUND")
 			self.Reputation.bg:SetAllPoints(self.Rep)
 			self.Reputation.bg:SetTexture(normTex)
 
-			local events = {'UPDATE_FACTION', 'PLAYER_ENTERING_WORLD'}
+			local events = {"UPDATE_FACTION", "PLAYER_ENTERING_WORLD"}
 			for i=1, #events do self.Rep:RegisterEvent(events[i]) end
 			self.Rep:SetScript("OnEvent", function(_, event)
 				if GetWatchedFactionInfo() then
@@ -1476,7 +1477,7 @@ oUF_LUI.funcs = {
 				else
 					self.Reputation.Value:SetText("")
 				end
-				if event == 'PLAYER_ENTERING_WORLD' then self.Rep:UnregisterEvent('PLAYER_ENTERING_WORLD') end
+				if event == "PLAYER_ENTERING_WORLD" then self.Rep:UnregisterEvent("PLAYER_ENTERING_WORLD") end
 			end)
 
 			local frameStrata = self.Rep:GetFrameStrata()
@@ -1629,7 +1630,9 @@ oUF_LUI.funcs = {
 			self.Vengeance.Text = SetFontString(self.Vengeance, LSM:Fetch("font", oufdb.Vengeance.Text.Font), oufdb.Vengeance.Text.Size, oufdb.Vengeance.Text.Outline)
 			self.Vengeance.OverrideText = VengeanceOverrideText
 		end
-
+		
+		self.Vengeance.showInfight = true
+		
 		self.Vengeance:SetWidth(tonumber(oufdb.Vengeance.Width))
 		self.Vengeance:SetHeight(tonumber(oufdb.Vengeance.Height))
 		self.Vengeance:ClearAllPoints()
@@ -1699,7 +1702,7 @@ oUF_LUI.funcs = {
 	end,
 	TotemBar = function(self, unit, oufdb)
 		if not self.TotemBar then
-			self.TotemBar = CreateFrame('Frame', nil, self)
+			self.TotemBar = CreateFrame("Frame", nil, self)
 			self.TotemBar:SetFrameLevel(6)
 			self.TotemBar.Destroy = true
 
@@ -1732,7 +1735,7 @@ oUF_LUI.funcs = {
 		self.TotemBar:SetHeight(oufdb.Totems.Height)
 		self.TotemBar:SetWidth(oufdb.Totems.Width)
 		self.TotemBar:ClearAllPoints()
-		self.TotemBar:SetPoint('BOTTOMLEFT', self, 'TOPLEFT', x, y)
+		self.TotemBar:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 		self.TotemBar.colors = colors.totembar
 
 		for i = 1, 4 do
@@ -1751,11 +1754,11 @@ oUF_LUI.funcs = {
 	end,
 	Runes = function(self, unit, oufdb)
 		if not self.Runes then
-			self.Runes = CreateFrame('Frame', nil, self)
+			self.Runes = CreateFrame("Frame", nil, self)
 			self.Runes:SetFrameLevel(6)
 
 			for i = 1, 6 do
-				self.Runes[i] = CreateFrame('StatusBar', nil, self.Runes)
+				self.Runes[i] = CreateFrame("StatusBar", nil, self.Runes)
 				self.Runes[i]:SetBackdrop(backdrop)
 				self.Runes[i]:SetBackdropColor(0.08, 0.08, 0.08)
 			end
@@ -1778,7 +1781,7 @@ oUF_LUI.funcs = {
 		self.Runes:SetHeight(oufdb.Runes.Height)
 		self.Runes:SetWidth(oufdb.Runes.Width)
 		self.Runes:ClearAllPoints()
-		self.Runes:SetPoint('BOTTOMLEFT', self, 'TOPLEFT', x, y)
+		self.Runes:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 
 		for i = 1, 6 do
 			self.Runes[i]:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Runes.Texture))
@@ -1798,11 +1801,11 @@ oUF_LUI.funcs = {
 	end,
 	HolyPower = function(self, unit, oufdb)
 		if not self.HolyPower then
-			self.HolyPower = CreateFrame('Frame', nil, self)
+			self.HolyPower = CreateFrame("Frame", nil, self)
 			self.HolyPower:SetFrameLevel(6)
 
 			for i = 1, 3 do
-				self.HolyPower[i] = CreateFrame('StatusBar', nil, self.HolyPower)
+				self.HolyPower[i] = CreateFrame("StatusBar", nil, self.HolyPower)
 				self.HolyPower[i]:SetBackdrop(backdrop)
 				self.HolyPower[i]:SetBackdropColor(0.08, 0.08, 0.08)
 				self.HolyPower[i]:SetAlpha(.4)
@@ -1828,7 +1831,7 @@ oUF_LUI.funcs = {
 		self.HolyPower:SetHeight(tonumber(oufdb.HolyPower.Height))
 		self.HolyPower:SetWidth(tonumber(oufdb.HolyPower.Width))
 		self.HolyPower:ClearAllPoints()
-		self.HolyPower:SetPoint('BOTTOMLEFT', self, 'TOPLEFT', x, y)
+		self.HolyPower:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 
 		for i = 1, 3 do
 			self.HolyPower[i]:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.HolyPower.Texture))
@@ -1845,11 +1848,11 @@ oUF_LUI.funcs = {
 	end,
 	SoulShards = function(self, unit, oufdb)
 		if not self.SoulShards then
-			self.SoulShards = CreateFrame('Frame', nil, self)
+			self.SoulShards = CreateFrame("Frame", nil, self)
 			self.SoulShards:SetFrameLevel(6)
 
 			for i = 1, 3 do
-				self.SoulShards[i] = CreateFrame('StatusBar', nil, self.SoulShards)
+				self.SoulShards[i] = CreateFrame("StatusBar", nil, self.SoulShards)
 				self.SoulShards[i]:SetBackdrop(backdrop)
 				self.SoulShards[i]:SetBackdropColor(0.08, 0.08, 0.08)
 
@@ -1876,7 +1879,7 @@ oUF_LUI.funcs = {
 		self.SoulShards:SetHeight(tonumber(oufdb.SoulShards.Height))
 		self.SoulShards:SetWidth(tonumber(oufdb.SoulShards.Width))
 		self.SoulShards:ClearAllPoints()
-		self.SoulShards:SetPoint('BOTTOMLEFT', self, 'TOPLEFT', x, y)
+		self.SoulShards:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 
 		for i = 1, 3 do
 			self.SoulShards[i]:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.SoulShards.Texture))
@@ -1893,19 +1896,19 @@ oUF_LUI.funcs = {
 	end,
 	EclipseBar = function(self, unit, oufdb)
 		if not self.EclipseBar then
-			self.EclipseBar = CreateFrame('Frame', nil, self)
+			self.EclipseBar = CreateFrame("Frame", nil, self)
 			self.EclipseBar:SetFrameLevel(6)
 			self.EclipseBar.ShowText = oufdb.Eclipse.Text.Enable
 			self.EclipseBar.PostUnitAura = EclipseBarBuff
 			self.EclipseBar.PostUpdatePower = PostEclipseUpdate
 			self.EclipseBar.PostUpdateVisibility = function() LUI:GetModule("Forte"):SetPosForte() end
 
-			self.EclipseBar.LunarBar = CreateFrame('StatusBar', nil, self.EclipseBar)
+			self.EclipseBar.LunarBar = CreateFrame("StatusBar", nil, self.EclipseBar)
 			self.EclipseBar.LunarBar:SetAllPoints(self.EclipseBar)
 
-			self.EclipseBar.SolarBar = CreateFrame('StatusBar', nil, self.EclipseBar)
-			self.EclipseBar.SolarBar:SetPoint('TOPLEFT', self.EclipseBar.LunarBar:GetStatusBarTexture(), 'TOPRIGHT')
-			self.EclipseBar.SolarBar:SetPoint('BOTTOMLEFT', self.EclipseBar.LunarBar:GetStatusBarTexture(), 'BOTTOMRIGHT')
+			self.EclipseBar.SolarBar = CreateFrame("StatusBar", nil, self.EclipseBar)
+			self.EclipseBar.SolarBar:SetPoint("TOPLEFT", self.EclipseBar.LunarBar:GetStatusBarTexture(), "TOPRIGHT")
+			self.EclipseBar.SolarBar:SetPoint("BOTTOMLEFT", self.EclipseBar.LunarBar:GetStatusBarTexture(), "BOTTOMRIGHT")
 
 			self.EclipseBar.spark = self.EclipseBar:CreateTexture(nil, "OVERLAY")
 			self.EclipseBar.spark:SetPoint("TOP", self.EclipseBar, "TOP")
@@ -1934,7 +1937,7 @@ oUF_LUI.funcs = {
 		self.EclipseBar:SetHeight(oufdb.Eclipse.Height)
 		self.EclipseBar:SetWidth(oufdb.Eclipse.Width)
 		self.EclipseBar:ClearAllPoints()
-		self.EclipseBar:SetPoint('BOTTOMLEFT', self, 'TOPLEFT', x, y)
+		self.EclipseBar:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 
 		self.EclipseBar.LunarBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Eclipse.Texture))
 		self.EclipseBar.LunarBar:SetStatusBarColor(unpack(colors.eclipsebar["Lunar"]))
@@ -1959,6 +1962,80 @@ oUF_LUI.funcs = {
 			self.EclipseBar.SolarText:Hide()
 		end
 	end,
+
+	AltPowerBar = function(self, unit, oufdb)
+		if not self.AltPowerBar then
+			self.AltPowerBar = CreateFrame("StatusBar", nil, self)
+			if unit == "pet" then self.AltPowerBar:SetParent(oUF_LUI_player) end
+			
+			self.AltPowerBar.bg = self.AltPowerBar:CreateTexture(nil, "BORDER")
+			self.AltPowerBar.bg:SetAllPoints(self.AltPowerBar)
+			
+			self.AltPowerBar.SetPosition = function()
+				if not db.oUF.Player.AltPower.OverPower then return end
+				
+				if oUF_LUI_player.AltPowerBar:IsShown() or (oUF_LUI_pet and oUF_LUI_pet.AltPowerBar and oUF_LUI_pet.AltPowerBar:IsShown()) then
+					oUF_LUI_player.Power:SetHeight(tonumber(db.oUF.Player.Power.Height)/2 - 1)
+					oUF_LUI_player.AltPowerBar:SetHeight(tonumber(db.oUF.Player.Power.Height)/2 - 1)
+				else
+					oUF_LUI_player.Power:SetHeight(tonumber(db.oUF.Player.Power.Height))
+					oUF_LUI_player.AltPowerBar:SetHeight(tonumber(db.oUF.Player.AltPower.Height))
+				end
+			end
+
+			self.AltPowerBar:SetScript("OnShow", function()
+				self.AltPowerBar.SetPosition()
+				self.AltPowerBar:ForceUpdate()
+			end)
+			self.AltPowerBar:SetScript("OnHide", self.AltPowerBar.SetPosition)
+
+			self.AltPowerBar.Text = SetFontString(self.AltPowerBar, LSM:Fetch("font", db.oUF.Player.AltPower.Text.Font), db.oUF.Player.AltPower.Text.Size, db.oUF.Player.AltPower.Text.Outline)
+		end
+
+		self.AltPowerBar:ClearAllPoints()
+		if unit == "player" then
+			if db.oUF.Player.AltPower.OverPower then
+				self.AltPowerBar:SetPoint("TOPLEFT", self.Power, "BOTTOMLEFT", 0, -2)
+				self.AltPowerBar:SetPoint("TOPRIGHT", self.Power, "BOTTOMRIGHT", 0, -2)
+			else
+				self.AltPowerBar:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(db.oUF.Player.AltPower.X), tonumber(db.oUF.Player.AltPower.Y))
+			end
+		else
+			self.AltPowerBar:SetPoint("TOPLEFT", oUF_LUI_player.AltPowerBar, "TOPLEFT", 0, 0)
+			self.AltPowerBar:SetPoint("BOTTOMRIGHT", oUF_LUI_player.AltPowerBar, "BOTTOMRIGHT", 0, 0)
+		end
+		
+		self.AltPowerBar:SetHeight(tonumber(db.oUF.Player.AltPower.Height))
+		self.AltPowerBar:SetWidth(tonumber(db.oUF.Player.AltPower.Width))
+		self.AltPowerBar:SetStatusBarTexture(LSM:Fetch("statusbar", db.oUF.Player.AltPower.Texture))
+
+		self.AltPowerBar.bg:SetTexture(LSM:Fetch("statusbar", db.oUF.Player.AltPower.TextureBG))
+		self.AltPowerBar.bg:SetAlpha(db.oUF.Player.AltPower.BGAlpha)
+		self.AltPowerBar.bg.multiplier = db.oUF.Player.AltPower.BGMultiplier
+		
+		self.AltPowerBar.Smooth = db.oUF.Player.AltPower.Smooth
+		self.AltPowerBar.color = db.oUF.Player.AltPower.Color
+		self.AltPowerBar.colorIndividual = db.oUF.Player.AltPower.IndividualColor
+
+		self.AltPowerBar.Text:SetFont(LSM:Fetch("font", db.oUF.Player.AltPower.Text.Font), db.oUF.Player.AltPower.Text.Size, db.oUF.Player.AltPower.Text.Outline)
+		self.AltPowerBar.Text:ClearAllPoints()
+		self.AltPowerBar.Text:SetPoint("CENTER", self.AltPowerBar, "CENTER", tonumber(db.oUF.Player.AltPower.Text.X), tonumber(db.oUF.Player.AltPower.Text.Y))
+
+		self.AltPowerBar.Text.Enable = db.oUF.Player.AltPower.Text.Enable
+		self.AltPowerBar.Text.Format = db.oUF.Player.AltPower.Text.Format
+		self.AltPowerBar.Text.color = db.oUF.Player.AltPower.Text.Color
+		self.AltPowerBar.Text.colorIndividual = db.oUF.Player.AltPower.Text.IndividualColor
+
+		if db.oUF.Player.AltPower.Text.Enable then
+			self.AltPowerBar.Text:Show()
+		else
+			self.AltPowerBar.Text:Hide()
+		end
+
+		self.AltPowerBar.PostUpdate = PostUpdateAltPower
+		
+		self.AltPowerBar.SetPosition()
+	end,
 	DruidMana = function(self, unit, oufdb)
 		if not self.DruidMana then
 			self.DruidMana = CreateFrame("Frame", nil, self)
@@ -1968,7 +2045,7 @@ oUF_LUI.funcs = {
 			self.DruidMana.ManaBar = CreateFrame("StatusBar", nil, self.DruidMana)
 			self.DruidMana.ManaBar:SetAllPoints(self.DruidMana)
 
-			self.DruidMana.bg = self.DruidMana:CreateTexture(nil, 'BORDER')
+			self.DruidMana.bg = self.DruidMana:CreateTexture(nil, "BORDER")
 			self.DruidMana.bg:SetAllPoints(self.DruidMana)
 
 			self.DruidMana.Smooth = oufdb.DruidMana.Smooth
@@ -1977,22 +2054,12 @@ oUF_LUI.funcs = {
 			self:Tag(self.DruidMana.value, "[druidmana2]")
 
 			self.DruidMana.SetPosition = function()
-				if self.DruidMana:IsShown() and oufdb.DruidMana.OverPower then
-					if self.AltPowerBar then
-						self.AltPowerBar:ClearAllPoints()
-						self.AltPowerBar:SetPoint("TOPLEFT", self.DruidMana, "BOTTOMLEFT", 0, tonumber(oufdb.AltPower.Padding))
-						self.AltPowerBar:SetPoint("TOPRIGHT", self.DruidMana, "BOTTOMRIGHT", 0, tonumber(oufdb.AltPower.Padding))
-					end
-
-					self.Power:SetHeight((tonumber(oufdb.Power.Height)+tonumber(oufdb.DruidMana.Padding))/2)
-					self.DruidMana:SetHeight((tonumber(oufdb.Power.Height)+tonumber(oufdb.DruidMana.Padding))/2)
+				if not oufdb.DruidMana.OverPower then return end
+				
+				if self.DruidMana:IsShown() then
+					self.Power:SetHeight(tonumber(oufdb.Power.Height)/2 - 1)
+					self.DruidMana:SetHeight(tonumber(oufdb.Power.Height)/2 - 1)
 				else
-					if self.AltPowerBar then
-						self.AltPowerBar:ClearAllPoints()
-						self.AltPowerBar:SetPoint("TOPLEFT", self.Power, "BOTTOMLEFT", 0, tonumber(oufdb.AltPower.Padding))
-						self.AltPowerBar:SetPoint("TOPRIGHT", self.Power, "BOTTOMRIGHT", 0, tonumber(oufdb.AltPower.Padding))
-					end
-
 					self.Power:SetHeight(tonumber(oufdb.Power.Height))
 					self.DruidMana:SetHeight(tonumber(oufdb.DruidMana.Height))
 				end
@@ -2005,13 +2072,19 @@ oUF_LUI.funcs = {
 		end
 
 		self.DruidMana:ClearAllPoints()
-		self.DruidMana:SetPoint('TOPLEFT', self.Power, 'BOTTOMLEFT', 0, oufdb.DruidMana.Padding)
-		self.DruidMana:SetPoint('TOPRIGHT', self.Power, 'BOTTOMRIGHT', 0, oufdb.DruidMana.Padding)
-
+		if oufdb.DruidMana.OverPower then
+			self.DruidMana:SetPoint("TOPLEFT", self.Power, "BOTTOMLEFT", 0, -2)
+			self.DruidMana:SetPoint("TOPRIGHT", self.Power, "BOTTOMRIGHT", 0, -2)
+		else
+			self.DruidMana:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(db.oUF.Player.DruidMana.X), tonumber(db.oUF.Player.DruidMana.Y))
+		end
+		
+		self.DruidMana:SetHeight(tonumber(oufdb.DruidMana.Height))
+		self.DruidMana:SetWidth(tonumber(oufdb.DruidMana.Width))
 		self.DruidMana.ManaBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.DruidMana.Texture))
 
 		self.DruidMana.value:SetFont(LSM:Fetch("font", oufdb.Texts.DruidMana.Font), oufdb.Texts.DruidMana.Size, oufdb.Texts.DruidMana.Outline)
-		self.DruidMana.value:SetPoint('CENTER', self.DruidMana.ManaBar, 'CENTER')
+		self.DruidMana.value:SetPoint("CENTER", self.DruidMana.ManaBar, "CENTER")
 
 		if db.oUF.Player.Texts.DruidMana.Enable == true then
 			self.DruidMana.value:Show()
@@ -2061,7 +2134,7 @@ oUF_LUI.funcs = {
 		end
 
 		self.CPoints:ClearAllPoints()
-		self.CPoints:SetPoint('BOTTOMLEFT', self, 'TOPLEFT', oufdb.ComboPoints.X, oufdb.ComboPoints.Y)
+		self.CPoints:SetPoint("BOTTOMLEFT", self, "TOPLEFT", oufdb.ComboPoints.X, oufdb.ComboPoints.Y)
 		self.CPoints:SetHeight(oufdb.ComboPoints.Height)
 		self.CPoints:SetWidth(oufdb.ComboPoints.Width)
 		self.CPoints.showAlways = oufdb.ComboPoints.ShowAlways
@@ -2150,85 +2223,10 @@ oUF_LUI.funcs = {
 		end
 
 		self.Portrait:SetHeight(tonumber(oufdb.Portrait.Height))
-		self.Portrait:SetWidth(tonumber(oufdb.Portrait.Width))
+		self.Portrait:SetWidth(tonumber(oufdb.Portrait.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid downscaling!
 		self.Portrait:SetAlpha(oufdb.Portrait.Alpha)
 		self.Portrait:ClearAllPoints()
 		self.Portrait:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Portrait.X), tonumber(oufdb.Portrait.Y))
-	end,
-
-	AltPowerBar = function(self, unit, oufdb)
-		if not self.AltPowerBar then
-			self.AltPowerBar = CreateFrame("StatusBar", nil, self)
-			if unit == "pet" then self.AltPowerBar:SetParent(oUF_LUI_player) end
-			
-			self.AltPowerBar.bg = self.AltPowerBar:CreateTexture(nil, "BORDER")
-			self.AltPowerBar.bg:SetAllPoints(self.AltPowerBar)
-			
-			self.AltPowerBar.SetPosition = function()
-				if (oUF_LUI_player.AltPowerBar:IsShown() or (oUF_LUI_pet and oUF_LUI_pet.AltPowerBar and oUF_LUI_pet.AltPowerBar:IsShown())) and db.oUF.Player.AltPower.OverPower then
-					if oUF_LUI_player.DruidMana then
-						oUF_LUI_player.DruidMana:ClearAllPoints()
-						oUF_LUI_player.DruidMana:SetPoint("TOPLEFT", oUF_LUI_player.AltPowerBar, "BOTTOMLEFT", 0, tonumber(db.oUF.Player.DruidMana.Padding))
-						oUF_LUI_player.DruidMana:SetPoint("TOPRIGHT", oUF_LUI_player.AltPowerBar, "BOTTOMRIGHT", 0, tonumber(db.oUF.Player.DruidMana.Padding))
-					end
-
-					oUF_LUI_player.Power:SetHeight((tonumber(db.oUF.Player.Power.Height)+tonumber(db.oUF.Player.AltPower.Padding))/2)
-					oUF_LUI_player.AltPowerBar:SetHeight((tonumber(db.oUF.Player.Power.Height)+tonumber(db.oUF.Player.AltPower.Padding))/2)
-				else
-					if oUF_LUI_player.DruidMana then
-						oUF_LUI_player.DruidMana:ClearAllPoints()
-						oUF_LUI_player.DruidMana:SetPoint("TOPLEFT", oUF_LUI_player.Power, "BOTTOMLEFT", 0, tonumber(db.oUF.Player.DruidMana.Padding))
-						oUF_LUI_player.DruidMana:SetPoint("TOPRIGHT", oUF_LUI_player.Power, "BOTTOMRIGHT", 0, tonumber(db.oUF.Player.DruidMana.Padding))
-					end
-
-					oUF_LUI_player.Power:SetHeight(tonumber(db.oUF.Player.Power.Height))
-					oUF_LUI_player.AltPowerBar:SetHeight(tonumber(db.oUF.Player.AltPower.Height))
-				end
-			end
-
-			self.AltPowerBar:SetScript("OnShow", function()
-				self.AltPowerBar.SetPosition()
-				self.AltPowerBar:ForceUpdate()
-			end)
-			self.AltPowerBar:SetScript("OnHide", self.AltPowerBar.SetPosition)
-
-			self.AltPowerBar.Text = SetFontString(self.AltPowerBar, LSM:Fetch("font", db.oUF.Player.AltPower.Text.Font), db.oUF.Player.AltPower.Text.Size, db.oUF.Player.AltPower.Text.Outline)
-		end
-
-		self.AltPowerBar:ClearAllPoints()
-		if unit == "player" then
-			self.AltPowerBar:SetPoint("TOPLEFT", self.Power, "BOTTOMLEFT", 0, tonumber(db.oUF.Player.AltPower.Padding))
-			self.AltPowerBar:SetPoint("TOPRIGHT", self.Power, "BOTTOMRIGHT", 0, tonumber(db.oUF.Player.AltPower.Padding))
-		else
-			self.AltPowerBar:SetAllPoints(oUF_LUI_player.AltPowerBar)
-		end
-
-		self.AltPowerBar:SetHeight(tonumber(db.oUF.Player.AltPower.Height))
-		self.AltPowerBar:SetStatusBarTexture(LSM:Fetch("statusbar", db.oUF.Player.AltPower.Texture))
-
-		self.AltPowerBar.bg:SetTexture(LSM:Fetch("statusbar", db.oUF.Player.AltPower.TextureBG))
-		self.AltPowerBar.bg:SetAlpha(db.oUF.Player.AltPower.BGAlpha)
-		self.AltPowerBar.bg.multiplier = db.oUF.Player.AltPower.BGMultiplier
-
-		self.AltPowerBar.color = db.oUF.Player.AltPower.Color
-		self.AltPowerBar.colorIndividual = db.oUF.Player.AltPower.IndividualColor
-
-		self.AltPowerBar.Text:SetFont(LSM:Fetch("font", db.oUF.Player.AltPower.Text.Font), db.oUF.Player.AltPower.Text.Size, db.oUF.Player.AltPower.Text.Outline)
-		self.AltPowerBar.Text:ClearAllPoints()
-		self.AltPowerBar.Text:SetPoint("CENTER", self.AltPowerBar, "CENTER", tonumber(db.oUF.Player.AltPower.Text.X), tonumber(db.oUF.Player.AltPower.Text.Y))
-
-		self.AltPowerBar.Text.Enable = db.oUF.Player.AltPower.Text.Enable
-		self.AltPowerBar.Text.Format = db.oUF.Player.AltPower.Text.Format
-		self.AltPowerBar.Text.color = db.oUF.Player.AltPower.Text.Color
-		self.AltPowerBar.Text.colorIndividual = db.oUF.Player.AltPower.Text.IndividualColor
-
-		if db.oUF.Player.AltPower.Text.Enable then
-			self.AltPowerBar.Text:Show()
-		else
-			self.AltPowerBar.Text:Hide()
-		end
-
-		self.AltPowerBar.PostUpdate = PostUpdateAltPower
 	end,
 
 	Buffs = function(self, unit, oufdb)
@@ -2559,11 +2557,11 @@ oUF_LUI.funcs = {
 			}
 		end
 
-		self.HealPrediction.myBar:SetWidth((oufdb.Portrait.Dock and oufdb.Portrait.DockHealth) and tonumber(oufdb.Width) - tonumber(oufdb.Portrait.Width) or tonumber(oufdb.Width))
+		self.HealPrediction.myBar:SetWidth(tonumber(oufdb.Health.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid downscaling!
 		self.HealPrediction.myBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.HealPrediction.Texture))
 		self.HealPrediction.myBar:SetStatusBarColor(tonumber(oufdb.HealPrediction.MyColor.r), tonumber(oufdb.HealPrediction.MyColor.g), tonumber(oufdb.HealPrediction.MyColor.b), tonumber(oufdb.HealPrediction.MyColor.a))
 
-		self.HealPrediction.otherBar:SetWidth((oufdb.Portrait.Dock and oufdb.Portrait.DockHealth) and tonumber(oufdb.Width) - tonumber(oufdb.Portrait.Width) or tonumber(oufdb.Width))
+		self.HealPrediction.otherBar:SetWidth(tonumber(oufdb.Health.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid downscaling!
 		self.HealPrediction.otherBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.HealPrediction.Texture))
 		self.HealPrediction.otherBar:SetStatusBarColor(tonumber(oufdb.HealPrediction.OtherColor.r), tonumber(oufdb.HealPrediction.OtherColor.g), tonumber(oufdb.HealPrediction.OtherColor.b), tonumber(oufdb.HealPrediction.OtherColor.a))
 
@@ -2903,13 +2901,13 @@ oUF_LUI.funcs = {
 		end
 	end
 }
-funcs = oUF_LUI.funcs
+funcs = LUI.oUF.funcs
 
 ------------------------------------------------------------------------
 --	oUF Colors
 ------------------------------------------------------------------------
 
-oUF_LUI.colors = setmetatable({
+LUI.oUF.colors = setmetatable({
 	power = setmetatable({
 		["POWER_TYPE_STEAM"] = {0.55, 0.57, 0.61},
 		["POWER_TYPE_PYRITE"] = {0.60, 0.09, 0.17},
@@ -2969,7 +2967,7 @@ oUF_LUI.colors = setmetatable({
 		return db.oUF.Colors[k and (k:gsub("^%a", strupper)) or k] or oUF.colors[k]
 	end
 })
-colors = oUF_LUI.colors
+colors = LUI.oUF.colors
 
 ------------------------------------------------------------------------
 --	Custom Tags
@@ -3008,7 +3006,7 @@ local function ShortenName(name)
 	nameCache[name][2] = shortname
 end
 
-oUF_LUI.RecreateNameCache = function()
+LUI.oUF.RecreateNameCache = function()
 	for name, shortened in pairs(nameCache) do
 		ShortenName(name)
 	end
@@ -3577,36 +3575,52 @@ end
 
 oUF:RegisterStyle("LUI", SetStyle)
 
---temp func
-local function KillUnused(data, default)
-	for k, v in pairs(data) do
-		if type(default[k]) == "table" and type(data[k]) == "table" then
-			KillUnused(data[k], default[k])
-			local a = true
-			for k2, v2 in pairs(data[k]) do
-				if data[k][k2] ~= nil then
-					a = false
-				end
-			end
-			if a then data[k] = nil end 
-		end
-		
-		if default[k] == nil then
-			data[k] = nil
-		end
-	end
-end
-
--- the spawn functions are in the module oUF, so we don't need to write all the code twice
+-- the spawn functions are in the module oUF, so we dont need to write all the code twice
 -- "subframes" of groups, like party target are included within the party toggle
 -- has to be OnEnable
 function module:OnEnable()
 	db = LUI.db.profile
 
 	if db.oUF.Settings.Enable ~= true then return end
+	
+	-- remove with LUI v3.6 or something like that!
+	if LUICONFIG.Versions.ouf ~= LUI_versions.ouf then	
+		for _, oufdb in pairs(db.oUF) do
+			if type(oufdb) == "table" and oufdb.Health then
+				oufdb.Health.Y = oufdb.Health.Padding or oufdb.Health.Y
+				oufdb.Health.Width = oufdb.Width
+				
+				oufdb.Power.Y = tostring(oufdb.Health.Y - oufdb.Health.Height + (oufdb.Power.Padding or -2))
+				oufdb.Power.Width = oufdb.Width
+				
+				oufdb.Full.Y = tostring(oufdb.Health.Y - oufdb.Health.Height + (oufdb.Full.Padding or -2))
+				oufdb.Full.Width = oufdb.Width
+				
+				if oufdb.AltPower then
+					oufdb.AltPower.Y = tostring(oufdb.Power.Y - oufdb.Power.Height + (oufdb.AltPower.Padding or -2))
+					oufdb.AltPower.Width = oufdb.Width
+					
+					oufdb.AltPower.Padding = nil
+				end
+				
+				if oufdb.DruidMana then
+					oufdb.DruidMana.Y = tostring(oufdb.Power.Y - oufdb.Power.Height + (oufdb.DruidMana.Padding or -2))
+					oufdb.DruidMana.Width = oufdb.Width
+					
+					oufdb.DruidMana.Padding = nil
+				end
+				
+				oufdb.Health.Padding = nil
+				oufdb.Power.Padding = nil
+				oufdb.Full.Padding = nil
+			end
+		end
 
+		LUICONFIG.Versions.ouf = LUI_versions.ouf
+	end
+	
 	-- hmm
-	oUF.colors.smooth = oUF_LUI.colors.smooth or oUF.colors.smooth
+	oUF.colors.smooth = LUI.oUF.colors.smooth or oUF.colors.smooth
 
 	-- spawning
 	local spawnList = {"Player", "Target", "Focus", "FocusTarget", "ToT", "ToToT", "Pet", "PetTarget", "Boss", "Party", "Maintank", "Arena", "Raid"}

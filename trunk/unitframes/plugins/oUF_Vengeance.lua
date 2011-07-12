@@ -31,6 +31,10 @@
 	end
 	...
 	self.Vengeance.OverrideText = VengOverrideText
+	
+	others:
+	self.Vengeance.showInfight [boolean]
+	if true, the Vengeance bar will be shown infight, even if you haven't got stacks of Vengeance
 --]]
 
 local _, ns = ...
@@ -40,6 +44,7 @@ local _, class = UnitClass("player")
 local vengeance = GetSpellInfo(93098)
 
 local UnitAura = UnitAura
+local InCombatLockdown = InCombatLockdown
 
 local tooltip = CreateFrame("GameTooltip", "VengeanceTooltip", UIParent, "GameTooltipTemplate")
 local tooltiptext = _G[tooltip:GetName().."TextLeft2"]
@@ -79,9 +84,9 @@ local function valueChanged(self, event, unit)
 					bar.Text:SetText(value)
 				end
 			end
-		else
-			print(tooltiptext:GetText())
 		end
+	elseif bar.showInfight and InCombatLockdown() then
+		bar:Show()
 	else
 		bar:Hide()
 	end
