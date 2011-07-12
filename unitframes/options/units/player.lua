@@ -162,7 +162,9 @@ local defaults = {
 		},
 		Health = {
 			Height = "30",
-			Padding = "0",
+			Width = "250",
+			X = "0",
+			Y = "0",
 			Color = "Individual",
 			Texture = "LUI_Gradient",
 			TextureBG = "LUI_Gradient",
@@ -179,7 +181,9 @@ local defaults = {
 		Power = {
 			Enable = true,
 			Height = "10",
-			Padding = "-2",
+			Width = "250",
+			X = "0",
+			Y = "-32",
 			Color = "By Class",
 			Texture = "LUI_Minimalist",
 			TextureBG = "LUI_Minimalist",
@@ -196,8 +200,10 @@ local defaults = {
 		Full = {
 			Enable = false,
 			Height = "17",
+			Width = "250",
+			X = "0",
+			Y = "-42",
 			Texture = "LUI_Minimalist",
-			Padding = "-12",
 			Alpha = 1,
 			Color = {
 				r = 0.11,
@@ -222,11 +228,47 @@ local defaults = {
 				a = 0.25
 			}
 		},
+		AltPower = {
+			Enable = true,
+			OverPower = false,
+			Height = "10",
+			Width = "250",
+			X = "0",
+			Y = "-44",
+			Color = "By Type",
+			IndividualColor = {
+				r = 1,
+				g = 1,
+				b = 1,
+			},
+			Texture = "LUI_Gradient",
+			TextureBG = "LUI_Gradient",
+			BGAlpha = 1,
+			BGMultiplier = 0.4,
+			Smooth = true,
+			Text = {
+				Enable = false,
+				X = "0",
+				Y = "0",
+				Format = "Standard",
+				Font = "neuropol",
+				Size = 10,
+				Outline = "NONE",
+				Color = "Individual",
+				IndividualColor = {
+					r = 1,
+					g = 1,
+					b = 1,
+				},
+			},
+		},
 		DruidMana = {
 			Enable = true,
 			OverPower = true,
 			Height = "10",
-			Padding = "-2",
+			Width = "250",
+			X = "0",
+			Y = "-44",
 			Color = "By Type",
 			Texture = "LUI_Minimalist",
 			TextureBG = "LUI_Minimalist",
@@ -290,38 +332,6 @@ local defaults = {
 				Outline = "NONE",
 				X = "0",
 				Y = "0",
-			},
-		},
-		AltPower = {
-			Enable = true,
-			OverPower = false,
-			Color = "By Type",
-			IndividualColor = {
-				r = 1,
-				g = 1,
-				b = 1,
-			},
-			Height = "10",
-			Padding = "-2",
-			Texture = "LUI_Gradient",
-			TextureBG = "LUI_Gradient",
-			BGAlpha = 1,
-			BGMultiplier = 0.4,
-			Smooth = true,
-			Text = {
-				Enable = false,
-				X = "0",
-				Y = "0",
-				Format = "Standard",
-				Font = "neuropol",
-				Size = 10,
-				Outline = "NONE",
-				Color = "Individual",
-				IndividualColor = {
-					r = 1,
-					g = 1,
-					b = 1,
-				},
 			},
 		},
 		Swing = {
@@ -394,7 +404,7 @@ local defaults = {
 			Y = "12",
 			Texture = "LUI_Gradient",
 			Color = "By Class",
-			HideTank = true,
+			TankHide = true,
 			IndividualColor = {
 				r = 1,
 				g = 1,
@@ -1001,7 +1011,7 @@ function module:CreateBarOptions(barType, order)
 					empty = LUI:NewEmpty(6),
 					Padding = (barType ~= "Eclipse" and isLockable) and LUI:NewSlider("Padding", "Choose the Padding between your "..barName.." Elements.", 7, bardb, "Padding", bardefaults, 1, 10, 1, ApplySettings) or nil,
 					empty2 = barType == "ThreatBar" and LUI:NewEmpty(8) or nil,
-					Tankhide = barType == "ThreatBar" and LUI:NewToggle("Hide if Tanking", "Whether you want to hide your "..barName.." Bar if tanking or not.", 9, bardb, "HideTank", bardefaults, ApplySettings) or nil,
+					Tankhide = barType == "ThreatBar" and LUI:NewToggle("Hide if Tanking", "Whether you want to hide your "..barName.." Bar if tanking or not.", 9, bardb, "TankHide", bardefaults, ApplySettings) or nil,
 					empty3 = (barType == "Vengeance" or barType == "ThreatBar") and LUI:NewEmpty(10) or nil,
 					Test = (barType == "Vengeance" or barType == "ThreatBar") and LUI:NewExecute("Show Dummy Bar", "Click to show a dummy "..barName.." Bar", 11, function() ToggleDummyBar(oUF_LUI_player[barType]) end) or nil,
 				},
@@ -1175,6 +1185,16 @@ function module:LoadOptions()
 		if oUF_LUI_pet then oUF_LUI_pet:UpdateAllElements() end
 	end
 	
+	local SmoothAltPower = function(self, Smooth)
+		if Smooth then
+			oUF_LUI_player:SmoothBar(oUF_LUI_player.AltPowerBar)
+			if oUF_LUI_pet then oUF_LUI_pet:SmoothBar(oUF_LUI_pet.AltPowerBar) end
+		else
+			oUF_LUI_player.AltPowerBar.SetValue = oUF_LUI_player.AltPowerBar.SetValue_
+			if oUF_LUI_pet then oUF_LUI_pet.AltPowerBar.SetValue = oUF_LUI_pet.AltPowerBar.SetValue_ end
+		end
+	end
+	
 	local options = {
 		XP_Rep = module:CreateXpRepOptions(5),
 		Player = {
@@ -1196,8 +1216,10 @@ function module:LoadOptions()
 									args = {
 										OverPower = LUI:NewToggle("Over Power Bar", "Whether you want the Druid Mana Bar to take up halt the Power bar or not.\n\nNote: This option disables the OverPower option of the Alternate Power Bar.", 1, db.oUF.Player.DruidMana, "OverPower", LUI.defaults.profile.oUF.Player.DruidMana, StyleDruidMana),
 										Height = LUI:NewHeight("Druid Mana Bar", 2, db.oUF.Player.DruidMana, nil, LUI.defaults.profile.oUF.Player.DruidMana, StyleDruidMana),
-										Padding = LUI:NewPadding("Power Bar & Druid Mana Bar", 3, db.oUF.Player.DruidMana, nil, LUI.defaults.profile.oUF.Player.DruidMana, StyleDruidMana),
-										Smooth = LUI:NewToggle("Enable Smooth Bar Animation", "Whether you want to use Smooth Animations or not.", 4, db.oUF.Player.DruidMana, "Smooth", LUI.defaults.profile.oUF.Player.DruidMana, SmoothDruidMana),
+										Width = LUI:NewWidth("Druid Mana Bar", 3, db.oUF.Player.DruidMana, nil, LUI.defaults.profile.oUF.Player.DruidMana, StyleDruidMana),
+										XValue = LUI:NewPosX("Druid Mana Bar", 4, db.oUF.Player.DruidMana, "", LUI.defaults.profile.oUF.Player.DruidMana, StyleDruidMana),
+										YValue = LUI:NewPosY("Druid Mana Bar", 5, db.oUF.Player.DruidMana, "", LUI.defaults.profile.oUF.Player.DruidMana, StyleDruidMana),
+										Smooth = LUI:NewToggle("Enable Smooth Bar Animation", "Whether you want to use Smooth Animations or not.", 6, db.oUF.Player.DruidMana, "Smooth", LUI.defaults.profile.oUF.Player.DruidMana, SmoothDruidMana),
 									},
 								},
 								Colors = {
@@ -1247,7 +1269,10 @@ function module:LoadOptions()
 									args = {
 										OverPower = LUI:NewToggle("Over Power Bar", "Whether you want the Alternate Power Bar to take up halt the Power bar or not.\n\nNote: This option disables the OverPower option of the Druid Mana Bar.", 1, db.oUF.Player.AltPower, "OverPower", LUI.defaults.profile.oUF.Player.AltPower, StyleAltPower),
 										Height = LUI:NewHeight("Alternate Power Bar", 2, db.oUF.Player.AltPower, nil, LUI.defaults.profile.oUF.Player.AltPower, StyleAltPower),
-										Padding = LUI:NewPadding("Power & Alternate Power Bar", 3, db.oUF.Player.AltPower, nil, LUI.defaults.profile.oUF.Player.AltPower, StyleAltPower),
+										Width = LUI:NewWidth("Alternate Power Bar", 3, db.oUF.Player.AltPower, nil, LUI.defaults.profile.oUF.Player.AltPower, StyleDruidMana),
+										XValue = LUI:NewPosX("Druid Mana Bar", 4, db.oUF.Player.AltPower, "", LUI.defaults.profile.oUF.Player.AltPower, StyleDruidMana),
+										YValue = LUI:NewPosY("Druid Mana Bar", 5, db.oUF.Player.AltPower, "", LUI.defaults.profile.oUF.Player.AltPower, StyleDruidMana),
+										Smooth = LUI:NewToggle("Enable Smooth Bar Animation", "Whether you want to use Smooth Animations or not.", 6, db.oUF.Player.AltPower, "Smooth", LUI.defaults.profile.oUF.Player.AltPower, SmoothAltPower),
 									},
 								},
 								Colors = {
