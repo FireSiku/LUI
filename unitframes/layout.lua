@@ -979,10 +979,10 @@ LUI.oUF.funcs = {
 		end
 
 		self.Health:SetHeight(tonumber(oufdb.Health.Height))
-		self.Health:SetWidth(tonumber(oufdb.Health.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid downscaling!
+		self.Health:SetWidth(tonumber(oufdb.Health.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid width downscaling!
 		self.Health:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Health.Texture))
 		self.Health:ClearAllPoints()
-		self.Health:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Health.X), tonumber(oufdb.Health.Y))
+		self.Health:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Health.X) * (self:GetWidth()/oufdb.Width), tonumber(oufdb.Health.Y)) -- needed for 25/40 man raid width downscaling!
 
 		self.Health.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Health.TextureBG))
 		self.Health.bg:SetAlpha(oufdb.Health.BGAlpha)
@@ -1006,10 +1006,10 @@ LUI.oUF.funcs = {
 		end
 
 		self.Power:SetHeight(tonumber(oufdb.Power.Height))
-		self.Power:SetWidth(tonumber(oufdb.Power.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid downscaling!
+		self.Power:SetWidth(tonumber(oufdb.Power.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid width downscaling!
 		self.Power:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Power.Texture))
 		self.Power:ClearAllPoints()
-		self.Power:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Power.X), tonumber(oufdb.Power.Y))
+		self.Power:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Power.X) * (self:GetWidth()/oufdb.Width), tonumber(oufdb.Power.Y)) -- needed for 25/40 man raid width downscaling!
 
 		self.Power.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Power.TextureBG))
 		self.Power.bg:SetAlpha(oufdb.Power.BGAlpha)
@@ -1040,11 +1040,11 @@ LUI.oUF.funcs = {
 		end
 
 		self.Full:SetHeight(tonumber(oufdb.Full.Height))
-		self.Full:SetWidth(tonumber(oufdb.Full.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid downscaling!
+		self.Full:SetWidth(tonumber(oufdb.Full.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid width downscaling!
 		self.Full:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Full.Texture))
 		self.Full:SetStatusBarColor(tonumber(oufdb.Full.Color.r), tonumber(oufdb.Full.Color.g), tonumber(oufdb.Full.Color.b), tonumber(oufdb.Full.Color.a))
 		self.Full:ClearAllPoints()
-		self.Full:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Full.X), tonumber(oufdb.Full.Y))
+		self.Full:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Full.X) * (self:GetWidth()/oufdb.Width), tonumber(oufdb.Full.Y)) -- needed for 25/40 man raid width downscaling!
 		self.Full:SetAlpha(oufdb.Full.Alpha)
 
 		if oufdb.Full.Enable == true then
@@ -2223,10 +2223,10 @@ LUI.oUF.funcs = {
 		end
 
 		self.Portrait:SetHeight(tonumber(oufdb.Portrait.Height))
-		self.Portrait:SetWidth(tonumber(oufdb.Portrait.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid downscaling!
+		self.Portrait:SetWidth(tonumber(oufdb.Portrait.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid width downscaling!
 		self.Portrait:SetAlpha(oufdb.Portrait.Alpha)
 		self.Portrait:ClearAllPoints()
-		self.Portrait:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Portrait.X), tonumber(oufdb.Portrait.Y))
+		self.Portrait:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Portrait.X) * (self:GetWidth()/oufdb.Width), tonumber(oufdb.Portrait.Y)) -- needed for 25/40 man raid width downscaling!
 	end,
 
 	Buffs = function(self, unit, oufdb)
@@ -2557,11 +2557,11 @@ LUI.oUF.funcs = {
 			}
 		end
 
-		self.HealPrediction.myBar:SetWidth(tonumber(oufdb.Health.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid downscaling!
+		self.HealPrediction.myBar:SetWidth(tonumber(oufdb.Health.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid width downscaling!
 		self.HealPrediction.myBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.HealPrediction.Texture))
 		self.HealPrediction.myBar:SetStatusBarColor(tonumber(oufdb.HealPrediction.MyColor.r), tonumber(oufdb.HealPrediction.MyColor.g), tonumber(oufdb.HealPrediction.MyColor.b), tonumber(oufdb.HealPrediction.MyColor.a))
 
-		self.HealPrediction.otherBar:SetWidth(tonumber(oufdb.Health.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid downscaling!
+		self.HealPrediction.otherBar:SetWidth(tonumber(oufdb.Health.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid width downscaling!
 		self.HealPrediction.otherBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.HealPrediction.Texture))
 		self.HealPrediction.otherBar:SetStatusBarColor(tonumber(oufdb.HealPrediction.OtherColor.r), tonumber(oufdb.HealPrediction.OtherColor.g), tonumber(oufdb.HealPrediction.OtherColor.b), tonumber(oufdb.HealPrediction.OtherColor.a))
 
