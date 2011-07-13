@@ -66,7 +66,7 @@ local function valueChanged(self, event, unit)
 	if name then
 		tooltip:ClearLines()
 		tooltip:SetUnitBuff("player", name)
-		local value = tonumber(string.match(tooltiptext:GetText(), "%d+")) or -1
+		local value = (tooltiptext:GetText() and tonumber(string.match(tostring(tooltiptext:GetText()), "%d+"))) or -1
 		
 		if value > 0 then
 			if value > bar.max then value = bar.max end
