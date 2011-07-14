@@ -83,6 +83,7 @@ LUI.defaults = {
 		General = {
 			IsConfigured = false,
 			HideErrors = false,
+			HideTalentSpam = false,
 			AutoInvite = false,
 			AutoInviteKeyword = "",
 			AutoAcceptInvite = false,
@@ -298,40 +299,84 @@ end
 -- / SET BLIZZARD FRAME SIZES / --
 ------------------------------------------------------
 
-local function SetBlizzFrameSizes(force)
-	if force then
-		LoadAddOn("Blizzard_MacroUI")
-		ShowUIPanel(MacroFrame)
-		HideUIPanel(MacroFrame)
-	end
-	
-	local blizzAddons = {
-		PlayerTalentFrame = "Blizzard_TalentUI",
-		GuildFrame = "Blizzard_GuildUI",
-		MacroFrame = "Blizzard_MacroUI",
-	}
+local function SetBlizzFrameSizes()
 	local blizzFrames = {
-		CharacterFrame = true,
-		SpellBookFrame = true,
-		PlayerTalentFrame = true,
-		QuestLogFrame = true,
-		GuildFrame = true,
-		FriendsFrame = true,
-		PVPFrame = true,
-		LFDParentFrame = true,
-		HelpFrame = true,
-		MacroFrame = true,
+		CalendarFrame,
+		CharacterFrame,
+		DressUpFrame,
+		ItemSocketingFrame,
+		SpellBookFrame,
+		PlayerTalentFrame,
+		QuestLogFrame,
+		QuestFrame,
+		QuestLogDetailFrame,
+		ArchaeologyFrame,
+		GossipFrame,
+		AchievementFrame,
+		MerchantFrame,
+		TradeFrame,
+		MailFrame,
+		OpenMailFrame,
+		TradeSkillFrame,
+		ClassTrainerFrame,
+		ReforgingFrame,
+		LookingForGuildFrame,
+		GuildFrame,
+		FriendsFrame,
+		PVPFrame,
+		LFDParentFrame,
+		LFRParentFrame,
+		HelpFrame,
+		MacroFrame,
+		GameMenuFrame,
+		VideoOptionsFrame,
+		InterfaceOptionsFrame,
+		KeyBindingFrame,
 	}
 	
-	for frame, addon in pairs(blizzAddons) do
-		if not frame then LoadAddOn(addon) end
+	for _, frame in pairs(blizzFrames) do
+		if frame then frame:SetScale(db.General.BlizzFrameScale) end
 	end
 	
-	-- secured hook
-	-- normal way caused problems
-	hooksecurefunc("ShowUIPanel", function(frame)
-		if blizzFrames[frame:GetName()] then frame:SetScale(db.General.BlizzFrameScale) end
-	end)
+	if AuctionFrame and not IsAddOnLoaded("Auc-Advanced") then
+		AuctionFrame:SetScale(db.General.BlizzFrameScale)
+	end
+end
+
+------------------------------------------------------
+-- / HIDE TALENT CHANGE SPAM / --							this function has been disabled until the next release
+------------------------------------------------------
+-- to enable this function, remove the first line of the function and the hidden line of the option in the general settings section on line 770
+
+local function HideTalentSpam()
+	if true then return end
+	if not LUI:IsHooked("SetActiveTalentGroup") then
+		local spam1 = gsub(ERR_LEARN_ABILITY_S:gsub("%.", "%."), "%%s", "(.*)")
+		local spam2 = gsub(ERR_LEARN_SPELL_S:gsub("%.", "%."), "%%s", "(.*)")
+		local spam3 = gsub(ERR_SPELL_UNLEARNED_S:gsub("%.", "%."), "%%s", "(.*)")
+		
+		local function SpamFilter(self, event, msg)
+			if strfind(msg, spam1) or strfind(msg, spam2) or strfind(msg, spam3) then return true end
+		end
+		
+		local function clearSpam(event, unit)
+			if unit ~= "player" then return end
+			LUI:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+			LUI:UnregisterEvent("UNIT_SPELLCAST_STOP")
+			ChatFrame_RemoveMessageEventFilter("CHAT_MSG_SYSTEM", SpamFilter)
+		end
+		
+		local function SetActiveTalentGroupSpamFree(...)
+			if db.General.HideTalentSpam == true then
+				LUI:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", clearSpam)
+				LUI:RegisterEvent("UNIT_SPELLCAST_STOP", clearSpam)
+				ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", SpamFilter)
+			end
+			return LUI.hooks.SetActiveTalentGroup(...)
+		end
+		
+		LUI:RawHook("SetActiveTalentGroup", SetActiveTalentGroupSpamFree, true)
+	end
 end
 
 ------------------------------------------------------
@@ -712,6 +757,18 @@ local function getOptions()
 										end,
 									order = 34,
 								},
+								HideTalentSpam = {
+									name = "Hide Talent Change Spam",
+									desc = "Filters out the chat window spam that occurs when you switch specs",
+									type = "toggle",
+									width = "full",
+									get = function() return db.General.HideTalentSpam end,
+									set = function(info, value)
+											db.General.HideTalentSpam = value
+									end,
+									order = 35,
+									hidden = true,
+								},
 								ModuleMessages = {
 									name = "Show Module Messages",
 									desc = "Show messages when LUI modules are enabled or disabled",
@@ -719,7 +776,7 @@ local function getOptions()
 									width = "full",
 									get = function() return db.General.ModuleMessages end,
 									set = function() db.General.ModuleMessages = not db.General.ModuleMessages end,
-									order = 35,
+									order = 36,
 								},
 								AutoAcceptInvite = {
 									name = "Enable Auto Accept Invites",
@@ -1057,7 +1114,11 @@ function LUI:OnEnable()
 		end
 	end
 	
-	SetBlizzFrameSizes(true)
+	LUI:RegisterEvent("ADDON_LOADED", function(event, name)
+		if strsub(name, 1, 8) == "Blizzard" then SetBlizzFrameSizes() end
+	end)
+	SetBlizzFrameSizes()
+	HideTalentSpam()
 	CompactRaidFrameManager:UnregisterAllEvents()
 	CompactRaidFrameManager:Hide()
 	CompactRaidFrameContainer:UnregisterEvent("RAID_ROSTER_UPDATE")
