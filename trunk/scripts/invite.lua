@@ -23,35 +23,47 @@ local function SetAutoAcceptInvite()
 
 	local tAutoAcceptInvite = CreateFrame("Frame")
 	tAutoAcceptInvite:RegisterEvent("PARTY_INVITE_REQUEST")
-	tAutoAcceptInvite:RegisterEvent("PARTY_MEMBERS_CHANGED")
 	
-	-- used to hide static popup when auto-accepting
-	local hidestatic
+	local function isFriend(name)
+		for i=1, GetNumFriends() do
+			if strlower(GetFriendInfo(i)) == strlower(name) then
+				return true
+			end
+		end
+	end
 	
-	tAutoAcceptInvite:SetScript("OnEvent", function(self, event, ...)
-		local leader = ...
+	local function isGuildmate(name)
+		if IsInGuild() then
+			for i=1, GetNumGuildMembers() do
+				if strlower(GetGuildRosterInfo(i)) == strlower(name) then
+					return true
+				end
+			end
+		end
+	end
+	
+	local function isBNFriend(name)
+		if BNFeaturesEnabledAndConnected() then
+			local playerRealm = GetRealmName()
+			for i=1, BNGetNumFriends() do
+				pID, _, _, _, _, client, isOnline = BNGetFriendInfo(i)
+				if client == "WoW" and isOnline then
+					_, tName, _, realm = BNGetToonInfo(pID)
+					if realm == playerRealm then
+						if strlower(tName) == strlower(name) then
+							return true
+						end
+					end
+				end
+			end
+		end
+	end
+	
+	tAutoAcceptInvite:SetScript("OnEvent", function(self, event, leader)
+		if leader == nil then return end
 		
-		if event == "PARTY_INVITE_REQUEST" then
-			if (GetRealNumPartyMembers() > 0) or (GetRealNumRaidMembers() > 0) then return end
-						
-			for friendIndex = 1, GetNumFriends() do
-				local friendName = GetFriendInfo(friendIndex)
-				if friendName == leader then
-					AcceptGroup()
-					hidestatic = true
-					return
-				end
-			end
-			
-			for guildIndex = 1, GetNumGuildMembers(true) do
-				local guildMemberName = GetGuildRosterInfo(guildIndex)
-				if guildMemberName == leader then
-					AcceptGroup()
-					hidestatic = true
-					return
-				end
-			end
-		elseif event == "PARTY_MEMBERS_CHANGED" and hidestatic == true then
+		if isFriend(leader) or isGuildmate(leader) or isBNFriend(leader) then
+			AcceptGroup()
 			for i=1, STATICPOPUP_NUMDIALOGS do
 				local dlg = _G["StaticPopup"..i]
 				if dlg.which == "PARTY_INVITE" then
@@ -60,7 +72,6 @@ local function SetAutoAcceptInvite()
 				end
 			end
 			StaticPopup_Hide("PARTY_INVITE")
-			hidestatic = false
 		end
 	end)
 end
@@ -70,13 +81,12 @@ end
 ------------------------------------------------------------------------
 
 local function SetAutoInvite()
-	local enabled = LUI.db.profile.General.Autoinvite
-	local keyword = LUI.db.profile.General.AutoInviteKeyword
+	local general = LUI.db.profile.General
 
 	local autoinvite = CreateFrame("frame")
 	autoinvite:RegisterEvent("CHAT_MSG_WHISPER")
 	autoinvite:SetScript("OnEvent", function(self, event, msg, sender)
-		if enabled and (IsPartyLeader("player") or (GetRealNumPartyMembers() == 0)) and msg:lower():match(keyword) then
+		if general.Autoinvite and (IsPartyLeader("player") or (GetRealNumPartyMembers() == 0)) and msg:lower():match(general.AutoInviteKeyword) then
 			InviteUnit(sender)
 		end
 	end)
