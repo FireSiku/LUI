@@ -292,10 +292,12 @@ function module:SetRaidMenu()
 	RaidMenu_Border:SetAlpha(1)
 	RaidMenu_Border:Show()
 	
+	local font = (db.Infotext and db.Infotext.Clock and db.Infotext.Clock.Font) and db.Infotext.Clock.Font or "vibroceb"
+	local color = (db.Infotext and db.Infotext.Clock and db.Infotext.Clock.Color) and db.Infotext.Clock.Color or {r = 1, g = 1, b = 1, a = 1}
 	local RaidMenu_Header = RaidMenu:CreateFontString("RaidMenu_Header", "OVERLAY")
-	RaidMenu_Header:SetFont(LSM:Fetch("font", db.Infotext.Clock.Font), LUI:Scale(20), "THICKOUTLINE")
+	RaidMenu_Header:SetFont(LSM:Fetch("font", font), LUI:Scale(20), "THICKOUTLINE")
 	RaidMenu_Header:SetPoint("TOP", RaidMenu, "TOP", -5, -25)
-	RaidMenu_Header:SetTextColor(db.Infotext.Clock.Color.r, db.Infotext.Clock.Color.g, db.Infotext.Clock.Color.b, db.Infotext.Clock.Color.a)
+	RaidMenu_Header:SetTextColor(color.r, color.g, color.b, color.a)
 	RaidMenu_Header:SetText("LUI Raid Menu")
 	
 	-- Create frame for dropdown lists to access
