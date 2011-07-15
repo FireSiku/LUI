@@ -42,6 +42,7 @@ local ufNamesList = {
 	Raid = {},
 }
 
+local ufNamesCount
 do
 	local ufNamesPrefix = {
 		Party = "oUF_LUI_partyUnitButton",
@@ -62,7 +63,7 @@ do
 		MaintankTarget = "target",
 		MaintankToT = "targettarget",
 	}
-	local ufNamesCount = {
+	ufNamesCount = {
 		Party = 5,
 		PartyTarget = 5,
 		PartyPet = 5,
