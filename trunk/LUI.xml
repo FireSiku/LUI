@@ -74,6 +74,8 @@
 	<Script file="scripts\colourpicker.lua"/>
 	<Script file="scripts\frame.lua"/>
 	<Script file="scripts\invite.lua"/>
+	<Script file="scripts\blizzscale.lua"/>
+	<Script file="scripts\talentspam.lua"/>
 	
 	<!-- oUF Layout -->
 	<Include file="unitframes\templates.xml"/>

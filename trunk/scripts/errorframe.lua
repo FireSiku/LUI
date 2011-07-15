@@ -1,14 +1,18 @@
--- Hook error frame so that error messages contain LUI version and revision info.
-local frame = CreateFrame("Frame")
-frame:RegisterEvent("ADDON_LOADED")
+local script = {}
+LibStub("AceEvent-3.0"):Embed(script)
+LibStub("AceHook-3.0"):Embed(script)
 
-frame:SetScript("OnEvent", function(self, event, addon)
+-- Hook error frame so that error messages regarding LUI contain LUI version and revision info.
+script:RegisterEvent("ADDON_LOADED", function(event, addon)
 	if not (addon == "Blizzard_DebugTools") then return end
 
 	-- Hook the :SetText function.
-	local old = ScriptErrorsFrameScrollFrameText.SetText
-	ScriptErrorsFrameScrollFrameText.SetText = function (self, text)
-		local new = ("|cffffd200LUI Version:|cffffffff "..GetAddOnMetadata("LUI", "Version").." ("..GetAddOnMetadata("LUI", "X-Curse-Packaged-Version")..")\n")..text
-		old(self, new)
-	end
+	script:RawHook(ScriptErrorsFrameScrollFrameText, "SetText", function(frame, text)
+		if strfind(strsub(text, 1, strfind(text, "\n")), "Interface\\AddOns\\LUI") then
+			text = ("|cffffd200LUI Version:|cffffffff "..GetAddOnMetadata("LUI", "Version").." ("..GetAddOnMetadata("LUI", "X-Curse-Packaged-Version")..")\n")..text
+		end
+		script.hooks[frame].SetText(frame, text)
+	end, true)
+	
+	script:UnregisterEvent("ADDON_LOADED")
 end)
