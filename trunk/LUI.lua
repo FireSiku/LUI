@@ -1123,8 +1123,18 @@ function LUI:OnEnable()
 	CompactRaidFrameContainer:Hide()
 end
 
+function LUI:RunOnce()
+	for i=1, GetNumAddOns() do
+		local name, title, notes, enabled, loadable = GetAddOnInfo(i)
+		if strfind(name, "LUI_") then
+			if enabled and loadable then
+				LoadAddOn(i)
+			end
+		end
+	end
+end
+
 function LUI:OnInitialize()
-	
 	self.db = LibStub("AceDB-3.0"):New("LUIDB", LUI.defaults, true)
 	db_ = self.db.profile
 	LUI_DB = self.db.profile
@@ -1183,6 +1193,11 @@ function LUI:OnInitialize()
 	CompactRaidFrameContainer:UnregisterEvent("RAID_ROSTER_UPDATE")
 	CompactRaidFrameContainer:UnregisterEvent("UNIT_PET")
 	CompactRaidFrameContainer:Hide()
+	
+	self:RegisterEvent("PLAYER_LOGIN", function()
+		self:RunOnce()
+		self:UnregisterEvent("PLAYER_LOGIN")
+	end)
 end
 
 function LUI:MergeDefaults(target, source)

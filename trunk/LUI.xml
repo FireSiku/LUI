@@ -95,7 +95,4 @@
 	
 	<!-- Addon Installation Routines -->
 	<Script file="addons\forte.lua"/>
-
-	<!-- Extra Modules -->
-	<Include file="extras.xml"/>
 </Ui>
