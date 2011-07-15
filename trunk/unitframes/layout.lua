@@ -1737,18 +1737,21 @@ LUI.oUF.funcs = {
 		self.TotemBar:ClearAllPoints()
 		self.TotemBar:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 		self.TotemBar.colors = colors.totembar
-
+		
+		local totemPoints = {2,0,1,3}
+		
 		for i = 1, 4 do
 			self.TotemBar[i]:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Totems.Texture))
 			self.TotemBar[i]:SetHeight(oufdb.Totems.Height)
 			self.TotemBar[i]:SetWidth((tonumber(oufdb.Totems.Width) -3*oufdb.Totems.Padding) / 4)
 
 			self.TotemBar[i]:ClearAllPoints()
-			if i == 1 then
+			if totemPoints[i] == 0 then
 				self.TotemBar[i]:SetPoint("LEFT", self.TotemBar, "LEFT", 0, 0)
 			else
-				self.TotemBar[i]:SetPoint("LEFT", self.TotemBar[i-1], "RIGHT", oufdb.Totems.Padding, 0)
+				self.TotemBar[i]:SetPoint("LEFT", self.TotemBar[totemPoints[i]], "RIGHT", oufdb.Totems.Padding, 0)
 			end
+			
 			self.TotemBar[i].bg.multiplier = tonumber(oufdb.Totems.Multiplier)
 		end
 	end,
@@ -1782,22 +1785,21 @@ LUI.oUF.funcs = {
 		self.Runes:SetWidth(oufdb.Runes.Width)
 		self.Runes:ClearAllPoints()
 		self.Runes:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
-
+		
+		local runePoints = {0,1,6,3,2,5}
+		
 		for i = 1, 6 do
 			self.Runes[i]:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Runes.Texture))
 			self.Runes[i]:SetStatusBarColor(unpack(colors.runes[math.floor((i+1)/2)]))
 			self.Runes[i]:SetSize(((oufdb.Runes.Width - 5*oufdb.Runes.Padding) / 6), oufdb.Runes.Height)
 
 			self.Runes[i]:ClearAllPoints()
-			if i == 1 then
+			if runePoints[i] == 0 then
 				self.Runes[i]:SetPoint("LEFT", self.Runes, "LEFT", 0, 0)
 			else
-				self.Runes[i]:SetPoint("LEFT", self.Runes[i-1], "RIGHT", oufdb.Runes.Padding, 0)
+				self.Runes[i]:SetPoint("LEFT", self.Runes[runePoints[i]], "RIGHT", oufdb.Runes.Padding, 0)
 			end
 		end
-
-		self.Runes[5]:SetPoint("LEFT", self.Runes[2], "RIGHT", oufdb.Runes.Padding, 0)
-		self.Runes[3]:SetPoint("LEFT", self.Runes[6], "RIGHT", oufdb.Runes.Padding, 0)
 	end,
 	HolyPower = function(self, unit, oufdb)
 		if not self.HolyPower then
