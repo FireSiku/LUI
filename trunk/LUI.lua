@@ -344,12 +344,10 @@ local function SetBlizzFrameSizes()
 end
 
 ------------------------------------------------------
--- / HIDE TALENT CHANGE SPAM / --							this function has been disabled until the next release
+-- / HIDE TALENT CHANGE SPAM / --
 ------------------------------------------------------
--- to enable this function, remove the first line of the function and the hidden line of the option in the general settings section on line 770
 
 local function HideTalentSpam()
-	if true then return end
 	if not LUI:IsHooked("SetActiveTalentGroup") then
 		local spam1 = gsub(ERR_LEARN_ABILITY_S:gsub("%.", "%."), "%%s", "(.*)")
 		local spam2 = gsub(ERR_LEARN_SPELL_S:gsub("%.", "%."), "%%s", "(.*)")
@@ -767,7 +765,6 @@ local function getOptions()
 											db.General.HideTalentSpam = value
 									end,
 									order = 35,
-									hidden = true,
 								},
 								ModuleMessages = {
 									name = "Show Module Messages",
