@@ -1219,6 +1219,13 @@ function LUI:Open(force)
 			AceConfigDialog:Close("LUI")
 		else
 			AceConfigDialog:Open("LUI")
+			AceConfigDialog.OpenFrames.LUI.frame:SetScale(db.General.BlizzFrameScale)
+			AceConfigDialog.OpenFrames.LUI:SetCallback("OnClose", function(widget, event)
+				widget.frame:SetScale(1)
+				local appName = widget:GetUserData("appName")
+				AceConfigDialog.OpenFrames[appName] = nil
+				LibStub("AceGUI-3.0"):Release(widget)
+			end)
 		end
 	end
 	
