@@ -296,88 +296,6 @@ function SetDamageFont:ApplyDamageFont()
 end
 
 ------------------------------------------------------
--- / SET BLIZZARD FRAME SIZES / --
-------------------------------------------------------
-
-local function SetBlizzFrameSizes()
-	local blizzFrames = {
-		CalendarFrame,
-		CharacterFrame,
-		DressUpFrame,
-		ItemSocketingFrame,
-		SpellBookFrame,
-		PlayerTalentFrame,
-		QuestLogFrame,
-		QuestFrame,
-		QuestLogDetailFrame,
-		ArchaeologyFrame,
-		GossipFrame,
-		AchievementFrame,
-		MerchantFrame,
-		TradeFrame,
-		MailFrame,
-		OpenMailFrame,
-		TradeSkillFrame,
-		ClassTrainerFrame,
-		ReforgingFrame,
-		LookingForGuildFrame,
-		GuildFrame,
-		FriendsFrame,
-		PVPFrame,
-		LFDParentFrame,
-		LFRParentFrame,
-		HelpFrame,
-		MacroFrame,
-		GameMenuFrame,
-		VideoOptionsFrame,
-		InterfaceOptionsFrame,
-		KeyBindingFrame,
-	}
-	
-	for _, frame in pairs(blizzFrames) do
-		if frame then frame:SetScale(db.General.BlizzFrameScale) end
-	end
-	
-	if AuctionFrame and not IsAddOnLoaded("Auc-Advanced") then
-		AuctionFrame:SetScale(db.General.BlizzFrameScale)
-	end
-end
-
-------------------------------------------------------
--- / HIDE TALENT CHANGE SPAM / --
-------------------------------------------------------
-
-local function HideTalentSpam()
-	if not LUI:IsHooked("SetActiveTalentGroup") then
-		local spam1 = gsub(ERR_LEARN_ABILITY_S:gsub("%.", "%."), "%%s", "(.*)")
-		local spam2 = gsub(ERR_LEARN_SPELL_S:gsub("%.", "%."), "%%s", "(.*)")
-		local spam3 = gsub(ERR_SPELL_UNLEARNED_S:gsub("%.", "%."), "%%s", "(.*)")
-		
-		local function SpamFilter(self, event, msg)
-			if strfind(msg, spam1) or strfind(msg, spam2) or strfind(msg, spam3) then return true end
-		end
-		
-		local function clearSpam(event, unit)
-			if unit ~= "player" then return end
-			LUI:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-			LUI:UnregisterEvent("UNIT_SPELLCAST_STOP")
-			ChatFrame_RemoveMessageEventFilter("CHAT_MSG_SYSTEM", SpamFilter)
-		end
-		
-		local function SetActiveTalentGroupSpamFree(...)
-			if db.General.HideTalentSpam == true then
-				LUI:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", clearSpam)
-				LUI:RegisterEvent("UNIT_SPELLCAST_STOP", clearSpam)
-				ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", SpamFilter)
-			end
-			return LUI.hooks.SetActiveTalentGroup(...)
-		end
-		
-		LUI:RawHook("SetActiveTalentGroup", SetActiveTalentGroupSpamFree, true)
-	end
-end
-
-------------------------------------------------------
 -- / UPDATE / --
 ------------------------------------------------------
 
@@ -526,6 +444,40 @@ function LUI:Configure()
 		LUICONFIG.IsConfigured = true
 		ReloadUI()
 	end)
+end
+
+------------------------------------------------------
+-- / SCRIPTS / --
+------------------------------------------------------
+
+local scripts = {}
+
+function LUI:NewScript(name, ...)
+	local script = {}
+	scripts[name] = script
+
+	local errormsg
+	for i=1, select("#", ...) do
+		local lib = select(i, ...)
+		if type(lib) ~= "string" then
+			errormsg = "Error generating script: "..name.." - library names must be string values!"
+		elseif not LibStub(lib, true) then
+			errormsg = "Error generating script: "..name.." - '"..lib.."' library does not exist!"
+		elseif type(LibStub(lib).Embed) ~= "function" then
+			errormsg = "Error generating script: "..name.." - '"..lib.."' library is not Embedable!"
+		end
+		if errormsg then
+			return self:Print(errormsg)
+		end
+
+		LibStub(lib):Embed(script)
+	end
+
+	return script
+end
+
+function LUI:FetchScript(name)
+	return scripts[name]
 end
 
 ------------------------------------------------------
@@ -728,12 +680,10 @@ local function getOptions()
 									isPercent = true,
 									width = "double",
 									get = function() return db.General.BlizzFrameScale end,
-									set = function(self, scale)
-											if scale == nil or scale == "" then
-												scale = 1
-											end
-											db.General.BlizzFrameScale = scale
-											SetBlizzFrameSizes()
+									set = function(info, value)
+											if scale == nil or scale == "" then scale = 1 end
+											db.General.BlizzFrameScale = value
+											LUI:FetchScript("BlizzScale"):SetBlizzScale()
 										end,
 									order = 32,
 								},
@@ -749,9 +699,9 @@ local function getOptions()
 									type = "toggle",
 									width = "full",
 									get = function() return db.General.HideErrors end,
-									set = function()
-											db.General.HideErrors = not db.General.HideErrors
-											StaticPopup_Show("RELOAD_UI")
+									set = function(info, value)
+											db.General.HideErrors = value
+											LUI:FetchScript("Error"):ErrorMessageHandler()
 										end,
 									order = 34,
 								},
@@ -763,7 +713,8 @@ local function getOptions()
 									get = function() return db.General.HideTalentSpam end,
 									set = function(info, value)
 											db.General.HideTalentSpam = value
-									end,
+											LUI:FetchScript("TalentSpam"):SetTalentSpam()
+										end,
 									order = 35,
 								},
 								ModuleMessages = {
@@ -781,8 +732,9 @@ local function getOptions()
 									type = "toggle",
 									width = "full",
 									get = function() return db.General.AutoAcceptInvite end,
-									set = function()
-											db.General.AutoAcceptInvite = not db.General.AutoAcceptInvite
+									set = function(info, value)
+											db.General.AutoAcceptInvite = value
+											LUI:FetchScript("Invite"):SetAutoAccept()
 										end,
 									order = 37,
 								},
@@ -792,8 +744,9 @@ local function getOptions()
 									type = "toggle",
 									width = "full",
 									get = function() return db.General.Autoinvite end,
-									set = function()
-											db.General.Autoinvite = not db.General.Autoinvite
+									set = function(info, value)
+											db.General.Autoinvite = value
+											LUI:FetchScript("Invite"):SetAutoInvite()
 										end,
 									order = 38,
 								},
@@ -803,12 +756,10 @@ local function getOptions()
 									type = "input",
 									disabled = function() return not db.General.Autoinvite end,
 									get = function() return db.General.AutoInviteKeyword end,
-									set = function(self,AutoInviteKeyword)
-												if AutoInviteKeyword == nil or AutoInviteKeyword == "" then
-													AutoInviteKeyword = ""
-												end
-												db.General.AutoInviteKeyword = AutoInviteKeyword
-											end,
+									set = function(info, value)
+											if value == nil then AutoInviteKeyword = "" end
+											db.General.AutoInviteKeyword = value
+										end,
 									order = 39,
 								},
 								header91 = {
@@ -1111,11 +1062,6 @@ function LUI:OnEnable()
 		end
 	end
 	
-	LUI:RegisterEvent("ADDON_LOADED", function(event, name)
-		if strsub(name, 1, 8) == "Blizzard" then SetBlizzFrameSizes() end
-	end)
-	SetBlizzFrameSizes()
-	HideTalentSpam()
 	CompactRaidFrameManager:UnregisterAllEvents()
 	CompactRaidFrameManager:Hide()
 	CompactRaidFrameContainer:UnregisterEvent("RAID_ROSTER_UPDATE")

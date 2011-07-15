@@ -1,24 +1,37 @@
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local script = LUI:NewScript("Error", "AceEvent-3.0")
 
-local function hideErrors()
-	local event = CreateFrame("Frame")
-	local dummy = function() end
+function script:ErrorMessageHandler()
+	if LUI.db.profile.General.HideErrors then
 
-	UIErrorsFrame:UnregisterEvent("UI_ERROR_MESSAGE")
-	event.UI_ERROR_MESSAGE = function(self, event, error)
-		if(not stuff[error]) then
-			UIErrorsFrame:AddMessage(error, 1, .1, .1)
+		local function isException(message)
+			local ex = LUI.db.profile.General.ErrorExceptions
+			local message = message
+
+			if ex == nil or ex == "" then
+				return false
+			else
+				ex = strlower(ex)
+				message = strlower(message)
+
+				if ex == message or strfind(ex, message..",") or strfind(ex, ","..message) then
+					return true
+				else
+					return false
+				end
+			end
 		end
+
+		UIErrorsFrame:UnregisterEvent("UI_ERROR_MESSAGE")
+		self:RegisterEvent("UI_ERROR_MESSAGE", function(event, message)
+			if isException(message) then
+				UIErrorsFrame:AddMessage(message, 1, .1, .1)
+			end
+		end)
+	else
+		self:UnregisterEvent("UI_ERROR_MESSAGE")
+		UIErrorsFrame:RegisterEvent("UI_ERROR_MESSAGE")
 	end
-		
-	event:RegisterEvent("UI_ERROR_MESSAGE")
 end
 
-local enable = CreateFrame("Frame", nil, UIParent)
-enable:RegisterEvent("PLAYER_ENTERING_WORLD")
-
-enable:SetScript("OnEvent", function(self)
-	if LUI.db.profile.General.HideErrors == true then
-		hideErrors()
-	end
-end)
+script:RegisterEvent("PLAYER_ENTERING_WORLD", "ErrorMessageHandler")
