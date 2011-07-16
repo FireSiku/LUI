@@ -35,7 +35,14 @@ local hooks = { }
 
 local function SetTabsAlpha()
 	CHAT_FRAME_TAB_SELECTED_NOMOUSE_ALPHA = db.Chat.Tabs.ActiveAlpha;
-    CHAT_FRAME_TAB_NORMAL_NOMOUSE_ALPHA = db.Chat.Tabs.NotActiveAlpha; 
+    CHAT_FRAME_TAB_NORMAL_NOMOUSE_ALPHA = db.Chat.Tabs.NotActiveAlpha;
+	
+	for i = 1, NUM_CHAT_WINDOWS do
+		chatframe = _G[("ChatFrame%d"):format(i)]
+		if FCF_IsValidChatFrame(chatframe) and not chatframe.oldAlpha then
+			chatframe.oldAlpha = CHAT_FRAME_TAB_NORMAL_NOMOUSE_ALPHA
+		end
+	end
     
     for i = 1, NUM_CHAT_WINDOWS do
 		chatframe = _G[("ChatFrame%d"):format(i)]
@@ -48,7 +55,7 @@ local function SetTabsAlpha()
             chatTab.mouseOverAlpha = CHAT_FRAME_TAB_SELECTED_MOUSEOVER_ALPHA;            
 	        chatTab.noMouseAlpha = CHAT_FRAME_TAB_SELECTED_NOMOUSE_ALPHA;
             
-            if chatframe:IsShown() then FCF_FadeOutChatFrame(chatframe, 1) end
+            if chatframe:IsShown() then FCF_FadeOutChatFrame(chatframe) end
       	end
     end
 end
