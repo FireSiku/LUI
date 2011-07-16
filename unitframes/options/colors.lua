@@ -107,6 +107,18 @@ local defaults = {
 	},
 }
 
+local function applyDefaults(target, source)
+	if type(target) ~= "table" then target = {} end
+	for k, v in pairs(source) do
+		if type(v) == "table" then
+			target[k] = applyDefaults(target[k], v)
+		else
+			target[k] = v
+		end
+	end
+	return target
+end
+
 function module:UpdateColors()
 	oUF.colors.smooth = LUI.oUF.colors.smooth or oUF.colors.smooth
 	if oUF_LUI_target.CPoints then
@@ -216,7 +228,7 @@ function module:LoadOptions()
 						DeathKnight = module:CreateClassColorOption("DeathKnight", 11),
 						empty = LUI:NewEmpty(12),
 						Reset = LUI:NewExecute("Restore Defaults", nil, 13, function()
-							db.oUF.Colors.Class = LUI.defaults.profile.oUF.Colors.Class
+							db.oUF.Colors.Class = applyDefaults(db.oUF.Colors.Class, LUI.defaults.profile.oUF.Colors.Class)
 							module:UpdateColors()
 						end),
 					},
@@ -237,8 +249,8 @@ function module:LoadOptions()
 						Fuel = module:CreatePowerColorOption("Fuel", 9),
 						empty = LUI:NewEmpty(10),
 						Reset = LUI:NewExecute("Restore Defaults", nil, 11, function()
-							db.oUF.Colors.Power = LUI.defaults.profile.oUF.Colors.Power
-							module:UpdateClassColors()
+							db.oUF.Colors.Power = applyDefaults(db.oUF.Colors.Power, LUI.defaults.profile.oUF.Colors.Power)
+							module:UpdateColors()
 						end),
 					},
 				},
@@ -302,7 +314,7 @@ function module:LoadOptions()
 						},
 						empty = LUI:NewEmpty(5),
 						Reset = LUI:NewExecute("Restore Defaults", nil, 6, function()
-							db.oUF.Colors.Smooth = LUI.defaults.profile.oUF.Colors.Smooth
+							db.oUF.Colors.Smooth = applyDefaults(db.oUF.Colors.Smooth, LUI.defaults.profile.oUF.Colors.Smooth)
 							module:UpdateColors()
 						end),
 					},
@@ -352,7 +364,7 @@ function module:LoadOptions()
 						},
 						empty = LUI:NewEmpty(4),
 						Reset = LUI:NewExecute("Restore Defaults", nil, 5, function()
-							db.oUF.Colors.CombatText = LUI.defaults.profile.oUF.Colors.CombatText
+							db.oUF.Colors.CombatText = applyDefaults(db.oUF.Colors.CombatText, LUI.defaults.profile.oUF.Colors.CombatText)
 							module:UpdateColors()
 						end),
 					},
@@ -819,15 +831,14 @@ function module:LoadOptions()
 							type = "execute",
 							order = 11,
 							func = function()
-								db.oUF.Colors.Happiness = LUI.defaults.profile.oUF.Colors.Happiness
-								db.oUF.Colors.Runes = LUI.defaults.profile.oUF.Colors.Runes
-								db.oUF.Colors.ComboPoints = LUI.defaults.profile.oUF.Colors.ComboPoints
-								db.oUF.Colors.TotemBar = LUI.defaults.profile.oUF.Colors.TotemBar
-								db.oUF.Colors.LevelDiff = LUI.defaults.profile.oUF.Colors.LevelDiff
-								db.oUF.Colors.Tapped = LUI.defaults.profile.oUF.Colors.Tapped
-								db.oUF.Colors.HolyPowerBar = LUI.defaults.profile.oUF.Colors.HolyPowerBar
-								db.oUF.Colors.SoulShardBar = LUI.defaults.profile.oUF.Colors.SoulShardBar
-								db.oUF.Colors.EclipseBar = LUI.defaults.profile.oUF.Colors.EclipseBar
+								db.oUF.Colors.Runes = applyDefaults(db.oUF.Colors.Runes, LUI.defaults.profile.oUF.Colors.Runes)
+								db.oUF.Colors.ComboPoints = applyDefaults(db.oUF.Colors.ComboPoints, LUI.defaults.profile.oUF.Colors.ComboPoints)
+								db.oUF.Colors.TotemBar = applyDefaults(db.oUF.Colors.TotemBar, LUI.defaults.profile.oUF.Colors.TotemBar)
+								db.oUF.Colors.LevelDiff = applyDefaults(db.oUF.Colors.LevelDiff, LUI.defaults.profile.oUF.Colors.LevelDiff)
+								db.oUF.Colors.Tapped = applyDefaults(db.oUF.Colors.Tapped, LUI.defaults.profile.oUF.Colors.Tapped)
+								db.oUF.Colors.HolyPowerBar = applyDefaults(db.oUF.Colors.HolyPowerBar, LUI.defaults.profile.oUF.Colors.HolyPowerBar)
+								db.oUF.Colors.SoulShardBar = applyDefaults(db.oUF.Colors.SoulShardBar, LUI.defaults.profile.oUF.Colors.SoulShardBar)
+								db.oUF.Colors.EclipseBar = applyDefaults(db.oUF.Colors.EclipseBar, LUI.defaults.profile.oUF.Colors.EclipseBar)
 								module:UpdateColors()
 							end,
 						},
