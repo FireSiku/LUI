@@ -49,6 +49,9 @@ function module:SetColors()
 	MicroMenuButton_Settings:SetBackdropColor(r, g, b, 1)
 	MicroMenuButton_GM:SetBackdropColor(r, g, b, 1)
 	MicroMenuButton_LFG:SetBackdropColor(r, g, b, 1)
+	if MicroMenuButton_Journal then
+		MicroMenuButton_Journal:SetBackdropColor(r, g, b, 1)
+	end
 	MicroMenuButton_PVP:SetBackdropColor(r, g, b, 1)
 	MicroMenuButton_Guild:SetBackdropColor(r, g, b, 1)
 	MicroMenuButton_Quests:SetBackdropColor(r, g, b, 1)
