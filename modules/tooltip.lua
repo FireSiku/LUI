@@ -166,7 +166,8 @@ function module:SetTooltip()
 		if not self.text then
 			self.text = self:CreateFontString(nil, "OVERLAY")
 			self.text:SetPoint("CENTER", GameTooltipStatusBar, 0, LUI:Scale(6))
-			self.text:SetFont(LSM:Fetch("font", db.Infotext.Bags.Font), 12, "THINOUTLINE")
+			local Infotext = LUI:GetModule(Infotext, true)
+			self.text:SetFont(LSM:Fetch("font", (Infotext and Infotext.db.profile.Bags.Font or "vibroceb")), 12, "THINOUTLINE")
 			self.text:Show()
 			if unit then
 				min, max = UnitHealth(unit), UnitHealthMax(unit)

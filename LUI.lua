@@ -116,10 +116,13 @@ function CheckResolution()
 	
 	if ScreenWidth == "1280" and ScreenHeight == "1024" then
 		-- Repostion Info Texts
-		LUI.defaults.profile.Infotext.Bags.X = -100
-		LUI.defaults.profile.Infotext.Armor.X = 10
-		LUI.defaults.profile.Infotext.Fps.X = 120
-		LUI.defaults.profile.Infotext.Memory.X = 190
+		local Infotext = LUI:GetModule("Infotext", true)
+		if Infotext and false then -- broken with false until propper positions have been determinied
+			Infotext.db.defaults.profile.Bags.X = -100
+			Infotext.db.defaults.profile.Durability.X = 10
+			Infotext.db.defaults.profile.FPS.X = 120
+			Infotext.db.defaults.profile.Memory.X = 190
+		end
 		
 		LUI.defaults.profile.Frames.Dps.X = -968
 		LUI.defaults.profile.Frames.Dps.Y = 863
@@ -213,7 +216,8 @@ function LUI:StyleButton(b, checked)
 	pushed:SetPoint("BOTTOMRIGHT",button,-2,2)
 	button:SetPushedTexture(pushed)
 	
-	count:SetFont(LSM:Fetch("font", db.Infotext.Fps.Font), db.Infotext.Fps.Size, "OUTLINE")
+	local Infotext = self:GetModule("Infotext", true)
+	count:SetFont(LSM:Fetch("font", (Infotext and Infotext.db.profile.FPS.Font or "vibroceb")), (Infotext and Infotext.db.profile.FPS.FontSize or 12), "OUTLINE")
  
 	if checked then
 		local checked = b:CreateTexture("frame", nil, self) -- checked

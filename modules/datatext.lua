@@ -43,7 +43,9 @@ local function SetInfoPanel(stat)
 	stat.text:ClearAllPoints()
 	stat.text:SetPoint(db.profile[stat.db].InfoPanel.Vertical, parent, db.profile[stat.db].InfoPanel.Vertical, db.profile[stat.db].X, db.profile[stat.db].Y)
 	
-	-- stat:SetParent(parent)
+	stat:SetParent(parent)
+	stat:ClearAllPoints()
+	stat:SetAllPoints(stat.text)
 end
 
 local function NewText(stat)
@@ -58,7 +60,6 @@ local function NewText(stat)
 	stat.text = fs
 	
 	SetInfoPanel(stat)
-	stat:SetAllPoints(fs)
 end
 
 local function SetFontSettings(stat)
@@ -74,7 +75,7 @@ local function NewIcon(stat, tex)
 	if not stat then return end
 	if stat.icon then return stat.icon end
 	
-	local icon = stat:CreateFrame("Button", stat:GetName().."Icon", stat)
+	local icon = CreateFrame("Button", stat:GetName().."Icon", stat)
 	icon:SetPoint("RIGHT", stat.text, "LEFT", -2, 0)
 	icon:SetWidth(15)
 	icon:SetHeight(15)
@@ -152,11 +153,6 @@ local function SetInfoTextFrames()
 end
 
 local function CombatTips()
-	--[[if InCombatLockdown() then
-		return (not db.profile.CombatLock)
-	else
-		return true
-	end]]
 	return ((not InCombatLockdown()) or (not db.profile.CombatLock))
 end
 
@@ -820,6 +816,19 @@ function module:SetDualSpec()
 	
 	if db.profile.DualSpec.Enable and not stat.Created then
 		NewIcon(stat)
+		stat.icon:SetScript("OnMouseDown", function(self, button) -- Toggle GlyphFrame
+			if not PlayerTalentFrame then
+				LoadAddOn("Blizzard_TalentUI")
+			end
+			
+			if PlayerTalentFrame and PlayerTalentFrame:IsShown() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 3) then
+				PlayerTalentFrame:Hide()
+			else
+				PanelTemplates_SetTab(PlayerTalentFrame, 3)
+				PlayerTalentFrame_Refresh()
+				PlayerTalentFrame:Show()
+			end
+		end)
 		
 		-- Localized functions
 		local GetNumTalentGroups, GetActiveTalentGroup = GetNumTalentGroups, GetActiveTalentGroup
@@ -892,15 +901,7 @@ function module:SetDualSpec()
 		end
 		
 		stat.OnClick = function(self, button)
-			if self.icon:IsMouseOver() then -- Toggle GlyphFrame
-				if PlayerTalentFrame:IsVisable() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 3) then
-					PlayerTalentFrame:Hide()
-				else
-					PanelTemplates_SetTab(PlayerTalentFrame, 3)
-					PlayerTalentFrame_Refresh()
-					PlayerTalentFrame:Show()
-				end
-			elseif button == "RightButton" then -- Toggle TalentFrame
+			if button == "RightButton" then -- Toggle TalentFrame
 				if PlayerTalentFrame:IsVisible() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 1) then
 					PlayerTalentFrame:Hide()
 				else
@@ -930,9 +931,9 @@ function module:SetDualSpec()
 					local text2 = thisCache.specName
 					
 					if thisCache.primaryTabIndex and thisCache.primaryTabIndex ~= 0 then
-						local a = thisCache[j].pointsSpent or 0
-						local b = thisCache[j].pointsSpent or 0
-						local c = thisCache[j].pointsSpent or 0
+						local a = thisCache[1].pointsSpent or 0
+						local b = thisCache[2].pointsSpent or 0
+						local c = thisCache[3].pointsSpent or 0
 						text2 = (text2 .. " (" .. a .. "/" .. b .. "/" .. c .. ")")
 					end
 					
@@ -2390,10 +2391,12 @@ function module:SetInstance()
 	
 	if db.profile.Instance.Enable and not stat.Created then
 		-- Localized functions
-		local GetNumSavedInstances, GetSavedInstanceInfo, sort, time = GetNumSavedInstances, GetSavedInstanceInfo, sort, time
+		local GetNumSavedInstances, GetSavedInstanceInfo, SecondsToTime = GetNumSavedInstances, GetSavedInstanceInfo, SecondsToTime
+		local sort, time = sort, time
 		
 		-- Local variables
 		local instances = {}
+		stat.inst = instances
 		
 		-- Event functions
 		stat.Events = {"PLAYER_ENTERING_WORLD", "UPDATE_INSTANCE_INFO", "INSTANCE_BOOT_START", "INSTANCE_BOOT_STOP"}
@@ -2403,16 +2406,23 @@ function module:SetInstance()
 		end
 		
 		stat.UPDATE_INSTANCE_INFO = function(self)
-			for i = i, GetNumSavedInstances do
+			for i = 1, GetNumSavedInstances() do
 				local name, id, reset, _, _, _, _, _, _, difficulty = GetSavedInstanceInfo(i)
 				
-				if reset then
+				if reset and reset > 0 then
 					instances[i] = {
 						name = (name .. " - " .. difficulty),
 						id = id,
 						reset = reset,
 						curTime = time(),
 					}
+				end
+			end
+			
+			for i, v in ipairs(instances) do
+				if time() >= (v.curTime + v.reset) then
+					wipe(instances[i])
+					instances[i] = nil
 				end
 			end
 			
@@ -2467,14 +2477,20 @@ function module:SetInstance()
 				for i = 1, numInstances do
 					local instance = instances[i]
 					if instance and (time() <= (instance.curTime + instance.reset)) then
-						GameTooltip:AddDoubleLine(instance.name .. " (" .. instance.id .. ")", SecondsToTime((instance.curtime + instance.remaining) - time()), 1,1,1, 1,1,1)
+						GameTooltip:AddDoubleLine(instance.name .. " (" .. instance.id .. ")", SecondsToTime((instance.curTime + instance.reset) - time()), 1,1,1, 1,1,1)
 					end
 				end
+				
+				GameTooltip:AddLine(" ")
+				GameTooltip:AddLine("Hint:\n- Any Click to open Raid Info frame.", 0, 1, 0)
+				GameTooltip:Show()
 			end
 		end
 		stat.OnLeave = function()
 			GameTooltip:Hide()
 		end
+		
+		stat.Created = true
 	end
 end
 
@@ -2582,11 +2598,13 @@ end
 
 local function EnableStat(stat)
 	module["Set"..stat]()
-	if InfoStats[stat].Created then
-		if not InfoStats[stat].Hidden then InfoStats[stat]:Show() end
-		InfoStats[stat]:Enable()
-	else
-		InfoStats[stat]:Hide()
+	if InfoStats[stat] then
+		if InfoStats[stat].Created then
+			if not InfoStats[stat].Hidden then InfoStats[stat]:Show() end
+			InfoStats[stat]:Enable()
+		else
+			InfoStats[stat]:Hide()
+		end
 	end
 end
 
@@ -2785,7 +2803,7 @@ module.defaults = {
 		Gold = {
 			Enable = true,
 			ShowToonMoney = true,
-			X = -200,
+			X = 55,
 			Y = 0,
 			InfoPanel = {
 				Horizontal = "Left",
@@ -2946,7 +2964,7 @@ function module:LoadOptions()
 					set = function(info, value)
 						db.profile[statDB].InfoPanel.Vertical = vertical[value]
 						db.profile[statDB].Y = 0
-						SetInfoPanel(statName)
+						SetInfoPanel(statDB)
 					end,
 				},
 			}
@@ -3277,7 +3295,10 @@ function module:LoadOptions()
 					width = "full",
 					disabled = DualSpecDisabled,
 					get = function() return db.profile.DualSpec.ShowSpentPoints end,
-					set = function(info, value) db.profile.DualSpec.ShowSpentPoints = value end,
+					set = function(info, value)
+						db.profile.DualSpec.ShowSpentPoints = value
+						InfoStats.DualSpec:PLAYER_TALENT_UPDATE()
+					end,
 					order = 3,
 				},
 				Position = PositionOptions("DualSpec", 4),
@@ -3381,7 +3402,8 @@ function module:LoadOptions()
 					get = function() return db.profile.Friends.ShowTotal end,
 					set = function(info, value)
 						db.profile.Friends.ShowTotal = value
-						GuildRoster()
+						InfoStats.Friends:UpdateText()
+						ShowFriends()
 					end,
 					order = 3,
 				},
@@ -3436,10 +3458,10 @@ function module:LoadOptions()
 					desc = "Whether you want your gold display to show your server total gold, or your current toon's gold.",
 					type = "toggle",
 					disabled = GoldDisabled,
-					get = function() return not db.profile.Gold.ShowToonMoney end,
+					get = function() return db.profile.Gold.ShowToonMoney end,
 					set = function(info, value)
 						db.profile.Gold.ShowToonMoney = value
-						InfoStats.Gold:OnEvent()
+						InfoStats.Gold:PLAYER_MONEY()
 					end,
 					order = 3,
 				},
@@ -3451,7 +3473,7 @@ function module:LoadOptions()
 					get = function() return db.profile.Gold.ColorType end,
 					set = function(info, value)
 						db.profile.Gold.ColorType = value
-						InfoStats.Gold:OnEvent()
+						InfoStats.Gold:PLAYER_MONEY()
 					end,
 					order = 4,
 				},
@@ -3523,6 +3545,7 @@ function module:LoadOptions()
 					get = function() return db.profile.Guild.ShowTotal end,
 					set = function(info, value)
 						db.profile.Guild.ShowTotal = value
+						InfoStats.Guild:UpdateText()
 						GuildRoster()
 					end,
 					order = 3,
@@ -3595,7 +3618,7 @@ function module:LoadOptions()
 					get = function() return db.profile.Memory.Enable end,
 					set = function(info, value)
 						db.profile.Memory.Enable = value
-						ToggleStat("MemoryUsage")
+						ToggleStat("Memory")
 					end,
 					order = 2,
 				},
@@ -3617,6 +3640,8 @@ end
 function module:OnInitialize()
 	db = LUI:NewNamespace(self)
 	
+	LUIGold = LUIGold or {}
+	LUIGold.version = LUIGold.version or 0
 	if floor(LUIGold.version) ~= floor(version) then
 		self:ResetGold("ALL")
 		LUIGold.version = version
@@ -3627,16 +3652,16 @@ function module:OnEnable()
 	SetInfoTextFrames()
 	EnableStat("Bags")
 	EnableStat("Clock")
-	
+	EnableStat("Currency")
 	EnableStat("DPS")
-	
+	EnableStat("DualSpec")
 	EnableStat("Durability")
 	EnableStat("FPS")
 	EnableStat("Gold")
 	EnableStat("GF")
 	EnableStat("Guild")
 	EnableStat("Friends")
-	
+	EnableStat("Instance")
 	EnableStat("Memory")
 end
 
