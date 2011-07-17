@@ -484,7 +484,7 @@ end
 -- / OPTIONS MENU / --
 ------------------------------------------------------
 
-local options, moduleList, moduleOptions, frameOptions, unitframeOptions = nil, {}, {}, {}, {}
+local options, moduleList, moduleOptions, newModuleOptions, frameOptions, unitframeOptions = nil, {}, {}, {}, {}, {}
 
 function LUI:MergeOptions(target, source, sort)
 	if type(target) ~= "table" then target = {} end
@@ -963,6 +963,19 @@ local function getOptions()
 			LUI.options.args = LUI:MergeOptions(LUI.options.args, (type(v) == "function") and v() or v, true)
 		end
 		
+		
+		for k,v in pairs(newModuleOptions) do -- needs api implementation and all modules need to be converted over to this
+			LUI.options.args[v:GetName()] = {
+				name = v.optionsName or v:GetName(),
+				type = "group",
+				order = v.order or 10,
+				childGroups = v.childGroups or "tab",
+				disabled = function() return not v.db.profile.Enable end,
+				args = type(v.LoadOptions) == "function" and v:LoadOptions() or v.options,
+			}
+		end
+		
+		
 		for k,v in pairs(frameOptions) do
 			LUI.options.args.Frames.args = LUI:MergeOptions(LUI.options.args.Frames.args, (type(v) == "function") and v() or v)
 		end
@@ -1027,6 +1040,19 @@ function LUI:RegisterModule(module, moduledb, addFunc)
 	
 	module:SetEnabledState(db[moduledb].Enable)
 end
+
+
+
+function LUI:NewNamespace(module)
+	table.insert(newModuleOptions, module)
+	
+	module.db = self.db:RegisterNamespace(module:GetName(), type(module.defaults) == "table" and module.defaults or {})
+	module.defaults = nil
+	
+	return module.db
+end
+
+
 
 ------------------------------------------------------
 -- / SETUP LUI / --
