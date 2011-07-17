@@ -768,8 +768,8 @@ toggleFuncs = {
 				if _G["oUF_LUI_partyUnitButton"..i.."pet"] then
 					_G["oUF_LUI_partyUnitButton"..i.."pet"]:Enable()
 					_G["oUF_LUI_partyUnitButton"..i.."pet"]:UpdateAllElements()
-					_G["oUF_LUI_partyUnitButton"..i.."target"]:ClearAllPoints()
-					_G["oUF_LUI_partyUnitButton"..i.."target"]:SetPoint(db.oUF.PartyPet.Point, _G["oUF_LUI_partyUnitButton"..i], db.oUF.PartyPet.RelativePoint, tonumber(db.oUF.PartyPet.X), tonumber(db.oUF.PartyPet.Y))
+					_G["oUF_LUI_partyUnitButton"..i.."pet"]:ClearAllPoints()
+					_G["oUF_LUI_partyUnitButton"..i.."pet"]:SetPoint(db.oUF.PartyPet.Point, _G["oUF_LUI_partyUnitButton"..i], db.oUF.PartyPet.RelativePoint, tonumber(db.oUF.PartyPet.X), tonumber(db.oUF.PartyPet.Y))
 				end
 			end
 		else
