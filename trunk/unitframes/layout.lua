@@ -856,15 +856,16 @@ local ArenaEnemyUnseen = function(self, event, unit, state)
 		end
 
 		self.Hide = self.Show
-		self:UpdateAllElements()
 		self:Show()
 	else
 		self.Health.Override = OverrideHealth
 		self.Power.Override = OverridePower
 
 		self.Hide = self.Hide_
-		self:UpdateAllElements()
 	end
+	
+	self.Health:ForceUpdate()
+	self.Power:ForceUpdate()
 end
 
 local PortraitOverride = function(self, event, unit)
