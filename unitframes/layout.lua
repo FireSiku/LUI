@@ -600,7 +600,7 @@ local PostUpdateAura = function(icons, unit, icon, index, offset, filter, isDebu
 		end
 	end
 
-	if icons.disableCooldown then
+	if icons.disableCooldown or (not duration) or duration <= 0 then
 		icon.cd:Hide()
 	else
 		icon.cd:Show()

@@ -646,7 +646,7 @@ function module:SetDPS()
 		
 		stat.PLAYER_REGEN_DISABLED = function(self) -- Entering combat
 			combatStartTime = GetTime()
-			combatTimeElapsed = 0
+			combatTimeElapsed = 0.01
 			totalDamage, playerDamage, petDamage = 0, 0, 0
 			totalHealing, effectiveHealing, overHealing = 0, 0, 0
 			totalDamageTaken, overKill = 0, 0
@@ -688,15 +688,15 @@ function module:SetDPS()
 			-- Determine event prefix to get arg order of ...
 			local prefix = strsub(event, 1, strfind(event, "_")-1)
 			if prefix == "SPELL" then
-				local str = strsub(event, strlen(prefix)+1, strfind(event, "_")-1)
-				if str == "PERIODIC" then
-					prefix = prefix .. "_" .. str
+				local str = prefix .. "_PERIODIC"
+				if strfind(event, str) then
+					prefix = str
 				end
 			elseif prefix == "DAMAGE" then
 				prefix = "SPELL"
 			end
 			
-			local suffix = strsub(event, strlen(prefix)+1)
+			local suffix = strsub(event, strlen(prefix)+2)
 			
 			local amount, amountOver = 0, 0
 			if prefix == "SWING" then
@@ -706,29 +706,35 @@ function module:SetDPS()
 			end
 			
 			if sourceGUID == playerID or sourceGUID == petID then -- Player/Pet damage and healing done
-				if events[1][eventType] then -- Damage
+				if events[1][event] then -- Damage
 					totalDamage = totalDamage + amount
 					if ID == playerID then playerDamage = playerDamage + amount end
 					if ID == petID then petDamage = petDamage + amount end
 				end
 				
-				if events[2][eventType] then -- Healing
+				if events[2][event] then -- Healing
 					totalHealing = totalHealing + amount
-					effectiveHealing = effectiveHealing + (amount - amountOver)
-					overHealing = overHealing + amountOver
+					if amountOver ~= -1 then
+						effectiveHealing = effectiveHealing + (amount - amountOver)
+						overHealing = overHealing + amountOver
+					end
 				end
 			end
 			
 			if destGUID == playerID then -- Player damage and healing taken
-				if events[3][eventType] then -- Damage Taken
+				if events[3][event] then -- Damage Taken
 					totalDamageTaken = totalDamageTaken + amount
-					overKill = amountOver or overKill -- Last Death only
+					if amountOver ~= -1 then
+						overKill = amountOver or overKill -- Last Death only
+					end
 				end
 				
-				if events[4][eventType] then -- Healing Taken
+				if events[4][event] then -- Healing Taken
 					totalHealingTaken = totalHealingTaken + amount
-					effectiveHealingTaken = effectiveHealingTaken + (amount - amountOver)
-					overHealingTaken = overHealingTaken + amountOver
+					if amountOver ~= -1 then
+						effectiveHealingTaken = effectiveHealingTaken + (amount - amountOver)
+						overHealingTaken = overHealingTaken + amountOver
+					end
 				end
 			end
 		end
