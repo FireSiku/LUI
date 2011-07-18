@@ -13,6 +13,7 @@ local AceAddon = LibStub("AceAddon-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 LUI = AceAddon:NewAddon("LUI", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceSerializer-3.0") -- localize
+local LUI = _G["LUI"] -- this is a temp localization for this file
 local LUIHook = LUI:NewModule("LUIHook", "AceHook-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
@@ -1047,11 +1048,38 @@ end
 
 
 
-function LUI:NewNamespace(module)
+function LUI:NewNamespace(module, enableButton, addFunc)
 	table.insert(newModuleOptions, module)
 	
 	module.db = self.db:RegisterNamespace(module:GetName(), type(module.defaults) == "table" and module.defaults or {})
 	module.defaults = nil
+	
+	if enableButton then
+		local mName = module:GetName()
+		table.insert(moduleList, {
+			[mName] = {
+				type = "execute",
+				name = function()
+					if module.db.profile.Enable then
+						return "|cff00FF00"..mName.." Enabled|r"
+					else
+						return "|cffFF0000"..mName.." Disabled|r"
+					end
+				end,
+				func = function()
+					module.db.profile.Enable = not module.db.profile.Enable
+					if module.db.profile.Enable then
+						module:Enable()
+						if db.General.ModuleMessages then LUI:Print(mName.." Module Enabled") end
+					else
+						module:Disable()
+						if db.General.ModuleMessages then LUI:Print(mName.." Module Disabled") end
+					end
+					if type(addFunc) == "function" then addFunc() end
+				end,
+			},
+		})
+	end
 	
 	return module.db
 end

@@ -1520,7 +1520,7 @@ function module:SetGF()
 		local function SetToastData(index, inGroup)
 			local toast, bc, color = toasts[index]
 			local presenceID, givenName, surname, toonName, toonID, client, isOnline, lastOnline, isAFK, isDND, broadcast, notes = BNGetFriendInfo(index)
-			local _, _, game, realm, faction, race, class, guild, zone, level, gameText = BNGetToonInfo(toonID or 0)
+			local _, _, _, realm, _, faction, race, class, guild, zone, level, gameText = BNGetToonInfo(toonID or 0)
 			local statusText = (isAFK or isDND) and (formatedStatusText()):format(isAFK and CHAT_FLAG_AFK or isDND and CHAT_FLAG_DND) or ""
 			
 			if broadcast and broadcast ~= "" then
@@ -1973,13 +1973,31 @@ function module:SetGF()
 			self:SetPoint(isTop(frame) and "TOP" or "BOTTOM", frame, isTop(frame) and "BOTTOM" or "TOP")
 			
 			local Tooltip = LUI:GetModule("Tooltip", true)
-			local ttEnabled = Tooltip and Tooltip:IsEnabled()
-			local ttdb = ttEnabled and LUI.db.profile.Tooltip
-			local bgColor = ttEnabled and {ttdb.Background.Color.r, ttdb.Background.Color.g, ttdb.Background.Color.b, ttdb.Background.Color.a}
-			local borderColor = ttEnabled and {ttdb.Border.Color.r, ttdb.Border.Color.g, ttdb.Border.Color.b, ttdb.Border.Color.a}
-			self:SetBackdrop(GameTooltip:GetBackdrop())
-			self:SetBackdropColor(bgColor and unpack(bgColor) or GameTooltip:GetBackdropColor())
-			self:SetBackdropBorderColor(borderColor and unpack(borderColor) or GameTooltip:GetBackdropBorderColor())
+			if Tooltip and Tooltip:IsEnabled() then
+				local backdrop = { 
+					bgFile = LSM:Fetch("background", LUI.db.profile.Tooltip.Background.Texture), 
+					edgeFile = LSM:Fetch("border", LUI.db.profile.Tooltip.Border.Texture), 
+					tile = false,
+					edgeSize = LUI.db.profile.Tooltip.Border.Size, 
+					insets = {
+						left = LUI.db.profile.Tooltip.Border.Insets.Left,
+						right = LUI.db.profile.Tooltip.Border.Insets.Right,
+						top = LUI.db.profile.Tooltip.Border.Insets.Top,
+						bottom = LUI.db.profile.Tooltip.Border.Insets.Bottom
+					}
+				}
+				local bgColor = LUI.db.profile.Tooltip.Background.Color
+				local borderColor = LUI.db.profile.Tooltip.Border.Color
+				
+				self:SetBackdrop(backdrop)
+				self:SetBackdropColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a)
+				self:SetBackdropBorderColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a)
+			else
+				self:SetBackdrop(GameTooltip:GetBackdrop())
+				self:SetBackdropColor(GameTooltip:GetBackdropColor())
+				self:SetBackdropBorderColor(GameTooltip:GetBackdropBorderColor())
+			end
+			
 			self:Update()
 		end
 		
@@ -2887,174 +2905,32 @@ module.optionsName = "Info Text"
 module.childGroups = "select"
 
 function module:LoadOptions()
+	-- Local variables
 	local msvalues = {"Both", "Home", "World"}
 	local fontflags = {"NONE", "OUTLINE", "THICKOUTLINE", "MONOCHROME"}
 	
-	-- Local options creators.
-	local function NameLabel(info, name)
-		name = name or info[#info]
-		return (db.profile[info[#info]].Enable and name or ("|cff888888"..name.."|r"))
-	end
-	local function PositionOptions(statName, order, statDB)
-		statDB = statDB or statName
-		
-		local horizontal = {"Left", "Right"}
-		local vertical = {"Top", "Bottom"}
-		local option = {
-			name = "Info Panel and Position",
-			type = "group",
-			order = order,
-			disabled = function() return not db.profile[statDB].Enable end,
-			guiInline = true,
-			args = {
-				X = {
-					name = "X Offset",
-					desc = "X offset for the "..statName.." info text.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..db.defaults.profile[statDB].X,
-					type = "input",
-					order = 1,
-					disabled = function() return not db.profile[statDB].Enable end,
-					get = function() return tostring(db.profile[statDB].X) end,
-					set = function(info, value)
-						if value == nil or value == "" then value = "0" end
-						db.profile[statDB].X = tonumber(value)
-						SetInfoPanel(statName)
-					end,
-				},
-				Y = {
-					name = "Y Offset",
-					desc = "Y offset for the "..statName.." info text.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..db.defaults.profile[statDB].Y,
-					type = "input",
-					order = 2,
-					disabled = function() return not db.profile[statDB].Enable end,
-					get = function() return tostring(db.profile[statDB].Y) end,
-					set = function(info, value)
-						if value == nil or value == "" then value = "0" end
-						db.profile[statDB].Y = tonumber(value)
-						SetInfoPanel(statName)
-					end,
-				},
-				Horizontal = {
-					name = "Horizontal",
-					desc = "Select the horizontal panel that the "..statName.." info text will be anchored to.\n\nDefault: "..db.defaults.profile[statDB].InfoPanel.Horizontal,
-					type = "select",
-					order = 3,
-					values = horizontal,
-					get = function()
-						for k, v in pairs(horizontal) do
-							if db.profile[statDB].InfoPanel.Horizontal == v then return k end
-						end
-					end,
-					set = function(info, value)
-						db.profile[statDB].InfoPanel.Horizontal = horizontal[value]
-						db.profile[statDB].X = 0
-						SetInfoPanel(statName)
-					end,
-				},
-				Vertical = {
-					name = "Vertical",
-					desc = "Select the vertical panel that the "..statName.." info text will be anchored to.\n\nDefault: "..db.defaults.profile[statDB].InfoPanel.Vertical,
-					type = "select",
-					order = 3,
-					values = vertical,
-					get = function()
-						for k, v in pairs(vertical) do
-							if db.profile[statDB].InfoPanel.Vertical == v then return k end
-						end
-					end,
-					set = function(info, value)
-						db.profile[statDB].InfoPanel.Vertical = vertical[value]
-						db.profile[statDB].Y = 0
-						SetInfoPanel(statDB)
-					end,
-				},
-			}
-		}
-		
-		return option
-	end
-	local function FontOptions(statName, order, statDB)
-		statDB = statDB or statName
-		
-		local option = {
-			name = "Font Settings",
-			type = "group",
-			disabled = function() return not db.profile[statDB].Enable end,
-			order = order,
-			guiInline = true,
-			args = {
-				FontSize = {
-					name = "Size",
-					desc = "Choose your "..statName.." info text's fontsize.\n\nDefault: "..db.defaults.profile[statDB].FontSize,
-					type = "range",
-					order = 1,
-					min = 1,
-					max = 40,
-					step = 1,
-					get = function() return db.profile[statDB].FontSize end,
-					set = function(info, value)
-						db.profile[statDB].FontSize = value
-						SetFontSettings(statName)
-					end,
-				},
-				Color = {
-					name = "Color",
-					desc = "Choose your "..statName.." info text's colour.\n\nDefaults:\nr = "..db.defaults.profile[statDB].Color.r.."\ng = "..db.defaults.profile[statDB].Color.b.."\na = "..db.defaults.profile[statDB].Color.a,
-					type = "color",
-					hasAlpha = true,
-					get = function() return db.profile[statDB].Color.r, db.profile[statDB].Color.g, db.profile[statDB].Color.b, db.profile[statDB].Color.a end,
-					set = function(info, r, g, b, a)
-						db.profile[statDB].Color.r = r
-						db.profile[statDB].Color.g = g
-						db.profile[statDB].Color.b = b
-						db.profile[statDB].Color.a = a
-						
-						SetFontSettings(statName)
-					end,
-					order = 2,
-				},
-				Font = {
-					name = "Font",
-					desc = "Choose your "..statName.." info text's font.\n\nDefault: "..db.defaults.profile[statDB].Font,
-					type = "select",
-					dialogControl = "LSM30_Font",
-					values = LSM:HashTable("font"),
-					get = function() return db.profile[statDB].Font end,
-					set = function(info, value)
-						db.profile[statDB].Font = value
-						SetFontSettings(statName)
-					end,
-					order = 3,
-				},
-				Outline = {
-					name = "Font Flag",
-					desc = "Choose your "..statName.." info text's font flag.\n\nDefault: "..db.defaults.profile[statDB].Outline,
-					type = "select",
-					values = fontflags,
-					get = function()
-						for k, v in pairs(fontflags) do
-							if db.profile[statDB].Outline == v then
-								return k
-							end
-						end
-					end,
-					set = function(info, value)
-						db.profile[statDB].Outline = fontflags[value]
-						SetFontSettings(statName)
-					end,
-					order = 4,
-				},
-			},
-		}
-
-		return option
-	end
-	
-	db.profile.Gold.PlayerReset = db.defaults.profile.Gold.PlayerReset
 	local goldPlayerArray = {"ALL"}
+	db.profile.Gold.PlayerReset = db.defaults.profile.Gold.PlayerReset
 	if LUIGold.gold and type(LUIGold.gold[myPlayerRealm]) == "table" then
 		for faction in pairs(LUIGold.gold[myPlayerRealm]) do
 			for player, gold in pairs(LUIGold.gold[myPlayerRealm][faction]) do
 				table.insert(goldPlayerArray, player)
+			end
+		end
+	end
+	
+	-- Local functions
+	local function copyDefaults(dest, src)
+		for k, v in pairs(src) do
+			if type(v) == "table" then
+				if not rawget(dest, k) then rawset(dest, k, {}) end
+				if type(dest[k]) == "table" then
+					copyDefaults(dest[k], v)
+				end
+			else
+				if rawget(dest, k) == nil then
+					rawset(dest, k, v)
+				end
 			end
 		end
 	end
@@ -3079,25 +2955,232 @@ function module:LoadOptions()
 		end
 	end
 	
-	local function ClockDisabled()
-		return not db.profile.Clock.Enable
-	end
-	local function DualSpecDisabled()
-		return not db.profile.DualSpec.Enable
-	end
-	local function FPSDisabled()
-		return not db.profile.FPS.Enable
-	end
-	local function GoldDisabled()
-		return not db.profile.Gold.Enable
-	end
-	local function GuildDisabled()
-		return not db.profile.Guild.Enable
-	end
-	local function FriendsDisabled()
-		return not db.profile.Friends.Enable
+	local function StatDisabled(info)
+		for i, v in ipairs(info) do
+			if v == module:GetName() then
+				return not db.profile[info[i+1]].Enable
+			end
+		end
 	end
 	
+	-- Local options creators.
+	local function NameLabel(info, statName) -- (info [, statName])
+		statName = statName or info[#info]
+		return (db.profile[info[#info]].Enable and statName or ("|cff888888"..statName.."|r"))
+	end
+	local function PositionOptions(order, statName) -- (order [, statName])
+		local horizontal = {"Left", "Right"}
+		local vertical = {"Top", "Bottom"}
+		
+		local option = {
+			name = "Info Panel and Position",
+			type = "group",
+			order = order,
+			disabled = StatDisabled,
+			guiInline = true,
+			args = {
+				X = {
+					name = "X Offset",
+					desc = function(info)
+							return ("X offset for the " .. (statName or info[#info-2]) .. " info text.\n\n" ..
+								"Note:\nPositive values = right\nNegative values = left\n" ..
+								"Default: " .. db.defaults.profile[info[#info-2]].X
+							)
+						end,
+					type = "input",
+					order = 1,
+					get = function(info) return tostring(db.profile[info[#info-2]].X) end,
+					set = function(info, value)
+						if value == nil or value == "" then value = "0" end
+						db.profile[info[#info-2]].X = tonumber(value)
+						SetInfoPanel(info[#info-2])
+					end,
+				},
+				Y = {
+					name = "Y Offset",
+					desc = function(info)
+							return ("Y offset for the " .. (statName or info[#info-2]) .. " info text.\n\n" ..
+								"Note:\nPositive values = up\nNegative values = down\n" ..
+								"Default: " .. db.defaults.profile[info[#info-2]].Y
+							)
+						end,
+					type = "input",
+					order = 2,
+					disabled = function(info) return not db.profile[info[#info-2]].Enable end,
+					get = function(info) return tostring(db.profile[info[#info-2]].Y) end,
+					set = function(info, value)
+						if value == nil or value == "" then value = "0" end
+						db.profile[info[#info-2]].Y = tonumber(value)
+						SetInfoPanel(info[#info-2])
+					end,
+				},
+				Horizontal = {
+					name = "Horizontal",
+					desc = function(info)
+							return ("Select the horizontal panel that the " .. (statName or info[#info-2]) .. " info text will be anchored to.\n\n" ..
+								"Default: " .. db.defaults.profile[info[#info-2]].InfoPanel.Horizontal
+							)
+						end,
+					type = "select",
+					order = 3,
+					values = horizontal,
+					get = function(info)
+						for k, v in pairs(horizontal) do
+							if db.profile[info[#info-2]].InfoPanel.Horizontal == v then return k end
+						end
+					end,
+					set = function(info, value)
+						db.profile[info[#info-2]].InfoPanel.Horizontal = horizontal[value]
+						db.profile[info[#info-2]].X = 0
+						SetInfoPanel(info[#info-2])
+					end,
+				},
+				Vertical = {
+					name = "Vertical",
+					desc = function(info)
+							return ("Select the vertical panel that the " .. (statName or info[#info-2]) .. " info text will be anchored to.\n\n" ..
+								"Default: " .. db.defaults.profile[info[#info-2]].InfoPanel.Vertical
+							)
+						end,
+					type = "select",
+					order = 3,
+					values = vertical,
+					get = function(info)
+						for k, v in pairs(vertical) do
+							if db.profile[info[#info-2]].InfoPanel.Vertical == v then return k end
+						end
+					end,
+					set = function(info, value)
+						db.profile[info[#info-2]].InfoPanel.Vertical = vertical[value]
+						db.profile[info[#info-2]].Y = 0
+						SetInfoPanel(info[#info-2])
+					end,
+				},
+			}
+		}
+		
+		return option
+	end
+	local function FontOptions(order, statName) -- (order [, statName])
+		local option = {
+			name = "Font Settings",
+			type = "group",
+			disabled = StatDisabled,
+			order = order,
+			guiInline = true,
+			args = {
+				FontSize = {
+					name = "Size",
+					desc = function(info)
+							return ("Choose your " .. (statName or info[#info-2]) .. " info text's fontsize.\n\n" ..
+								"Default: " .. db.defaults.profile[info[#info-2]].FontSize
+							)
+						end,
+					type = "range",
+					order = 1,
+					min = 1,
+					max = 40,
+					step = 1,
+					get = function(info) return db.profile[info[#info-2]].FontSize end,
+					set = function(info, value)
+						db.profile[info[#info-2]].FontSize = value
+						SetFontSettings(info[#info-2])
+					end,
+				},
+				Color = {
+					name = "Color",
+					desc = function(info)
+							local defaults = db.defaults.profile[info[#info-2]].Color
+							return ("Choose your " .. (statName or info[#info-2]) .. " info text's colour.\n\n" ..
+								"Defaults:\nr = " .. defaults.r .. "\ng = " .. defaults.g .. "\nb = " .. defaults.b .. "\na = " .. defaults.a
+							)
+						end,
+					type = "color",
+					hasAlpha = true,
+					get = function(info)
+							local color = db.profile[info[#info-2]].Color
+							return color.r, color.g, color.b, color.a
+						end,
+					set = function(info, r, g, b, a)
+						local color = db.profile[info[#info-2]].Color
+						color.r = r
+						color.g = g
+						color.b = b
+						color.a = a
+						
+						SetFontSettings(info[#info-2])
+					end,
+					order = 2,
+				},
+				Font = {
+					name = "Font",
+					desc = function(info)
+							return ("Choose your " .. (statName or info[#info-2]) .. " info text's font.\n\n" ..
+								"Default: " .. db.defaults.profile[info[#info-2]].Font
+							)
+						end,
+					type = "select",
+					dialogControl = "LSM30_Font",
+					values = LSM:HashTable("font"),
+					get = function(info) return db.profile[info[#info-2]].Font end,
+					set = function(info, value)
+						db.profile[info[#info-2]].Font = value
+						SetFontSettings(info[#info-2])
+					end,
+					order = 3,
+				},
+				Outline = {
+					name = "Font Flag",
+					desc = function(info)
+							return ("Choose your " .. (statName or info[#info-2]) .. " info text's font flag.\n\n" ..
+								"Default: " .. db.defaults.profile[info[#info-2]].Outline
+							)
+						end,
+					type = "select",
+					values = fontflags,
+					get = function(info)
+						for k, v in pairs(fontflags) do
+							if db.profile[info[#info-2]].Outline == v then
+								return k
+							end
+						end
+					end,
+					set = function(info, value)
+						db.profile[info[#info-2]].Outline = fontflags[value]
+						SetFontSettings(info[#info-2])
+					end,
+					order = 4,
+				},
+			},
+		}
+
+		return option
+	end
+	local function ResetOption(order)
+		local option = {
+			name = "Reset Settings",
+			type = "execute",
+			disabled = StatDisabled,
+			order = order,
+			func = function(info)
+				local statDB = info[#info-1]
+				
+				for k, v in pairs(db.profile[statDB]) do
+					db.profile[statDB][k] = nil
+				end
+				copyDefaults(db.profile[statDB], db.defaults.profile[statDB])
+				db.profile[statDB].Enable = true
+				
+				ResetStat(statDB)
+				DisableStat(statDB)
+				EnableStat(statDB)
+			end
+		}
+		
+		return option
+	end
+	
+	-- Options table
 	local options = {
 		General = {
 			name = "General",
@@ -3125,6 +3208,8 @@ function module:LoadOptions()
 						db:ResetProfile()
 						for k in pairs(InfoStats) do
 							ResetStat(k)
+							DisableStat(k)
+							EnableStat(k)
 						end
 					end,
 					order = 3,
@@ -3153,8 +3238,9 @@ function module:LoadOptions()
 					end,
 					order = 2,
 				},
-				Position = PositionOptions("Bags", 3),
-				Font = FontOptions("Bags", 4),
+				Position = PositionOptions(3),
+				Font = FontOptions(4),
+				Reset = ResetOption(5),
 			},
 		},
 		Clock = {
@@ -3182,7 +3268,7 @@ function module:LoadOptions()
 					name = "Show Instance Difficulty",
 					desc = "Whether you want to show the Instance Difficulty or not.",
 					type = "toggle",
-					disabled = ClockDisabled,
+					disabled = StatDisabled,
 					get = function() return db.profile.Clock.ShowInstanceDifficulty end,
 					set = function(info, value)
 						db.profile.Clock.ShowInstanceDifficulty = value
@@ -3195,7 +3281,7 @@ function module:LoadOptions()
 					desc = "Whether you want to show your Local Time or Server Time.",
 					type = "toggle",
 					width = "half",
-					disabled = ClockDisabled,
+					disabled = StatDisabled,
 					get = function() return db.profile.Clock.LocalTime end,
 					set = function(info, value) db.profile.Clock.LocalTime = value end,
 					order = 4,
@@ -3205,13 +3291,14 @@ function module:LoadOptions()
 					desc = "Whether you want to show 24 or 12 hour Clock.",
 					type = "toggle",
 					width = "half",
-					disabled = ClockDisabled,
+					disabled = StatDisabled,
 					get = function() return db.profile.Clock.Time24 end,
 					set = function(info, value) db.profile.Clock.Time24 = value end,
 					order = 5,
 				},
-				Position = PositionOptions("Clock", 6),
-				Font = FontOptions("Clock", 7),
+				Position = PositionOptions(6),
+				Font = FontOptions(7),
+				Reset = ResetOption(8),
 			},
 		},
 		Currency = {
@@ -3236,8 +3323,9 @@ function module:LoadOptions()
 					end,
 					order = 2,
 				},
-				Position = PositionOptions("Currency", 3),
-				Font = FontOptions("Currency", 4),
+				Position = PositionOptions(3),
+				Font = FontOptions(4),
+				Reset = ResetOption(5),
 			},
 		},
 		DPS = {
@@ -3262,8 +3350,9 @@ function module:LoadOptions()
 					end,
 					order = 2,
 				},
-				Position = PositionOptions("DPS", 3),
-				Font = FontOptions("DPS", 4),
+				Position = PositionOptions(3),
+				Font = FontOptions(4),
+				Reset = ResetOption(5),
 			},
 		},
 		DualSpec = {
@@ -3293,7 +3382,7 @@ function module:LoadOptions()
 					desc = "Show spent talent points \"(x/x/x)\".",
 					type = "toggle",
 					width = "full",
-					disabled = DualSpecDisabled,
+					disabled = StatDisabled,
 					get = function() return db.profile.DualSpec.ShowSpentPoints end,
 					set = function(info, value)
 						db.profile.DualSpec.ShowSpentPoints = value
@@ -3301,8 +3390,9 @@ function module:LoadOptions()
 					end,
 					order = 3,
 				},
-				Position = PositionOptions("DualSpec", 4),
-				Font = FontOptions("DualSpec", 5),
+				Position = PositionOptions(4, "Dual Spec"),
+				Font = FontOptions(5, "Dual Spec"),
+				Reset = ResetOption(6),
 			},
 		},
 		Durability = {
@@ -3327,8 +3417,9 @@ function module:LoadOptions()
 					end,
 					order = 2,
 				},
-				Position = PositionOptions("Durability", 3),
-				Font = FontOptions("Durability", 4),
+				Position = PositionOptions(3),
+				Font = FontOptions(4),
+				Reset = ResetOption(5),
 			},
 		},
 		FPS = {
@@ -3357,7 +3448,7 @@ function module:LoadOptions()
 					name = "MS Value",
 					desc = "Wether you want your MS to show World, Home or both latency values.\n\nDefault: "..db.defaults.profile.FPS.MSValue,
 					type = "select",
-					disabled = FPSDisabled,
+					disabled = StatDisabled,
 					values = msvalues,
 					get = function()
 						for k, v in pairs(msvalues) do
@@ -3367,8 +3458,9 @@ function module:LoadOptions()
 					set = function(info, value) db.profile.FPS.MSValue = msvalues[value] end,
 					order = 3,
 				},
-				Position = PositionOptions("FPS", 4),
-				Font = FontOptions("FPS", 5),
+				Position = PositionOptions(4, "FPS / MS"),
+				Font = FontOptions(5, "FPS / MS"),
+				Reset = ResetOption(6),
 			},
 		},
 		Friends = {
@@ -3397,7 +3489,7 @@ function module:LoadOptions()
 					name = "Show Total",
 					desc = "Whether you want to show total number of Friends online or not.",
 					type = "toggle",
-					disabled = FriendsDisabled,
+					disabled = StatDisabled,
 					width = "full",
 					get = function() return db.profile.Friends.ShowTotal end,
 					set = function(info, value)
@@ -3411,7 +3503,7 @@ function module:LoadOptions()
 					name = "Show Hints",
 					desc = "Whether you want to show mouseclick hints or not.",
 					type = "toggle",
-					disabled = FriendsDisabled,
+					disabled = StatDisabled,
 					width = "full",
 					get = function() return db.profile.Friends.ShowHints end,
 					set = function(info, value) db.profile.Friends.ShowHints = value end,
@@ -3421,14 +3513,15 @@ function module:LoadOptions()
 					name = "Show Notes",
 					desc = "Whether you want to show friend notes or not.",
 					type = "toggle",
-					disabled = FriendsDisabled,
+					disabled = StatDisabled,
 					width = "full",
 					get = function() return db.profile.Friends.ShowNotes end,
 					set = function(info, value) db.profile.Friends.ShowNotes = value end,
 					order = 5,
 				},
-				Position = PositionOptions("Friends", 6),
-				Font = FontOptions("Friends", 7),
+				Position = PositionOptions(6),
+				Font = FontOptions(7),
+				Reset = ResetOption(8),
 			},
 		},
 		Gold = {
@@ -3457,7 +3550,7 @@ function module:LoadOptions()
 					name = "Server Total",
 					desc = "Whether you want your gold display to show your server total gold, or your current toon's gold.",
 					type = "toggle",
-					disabled = GoldDisabled,
+					disabled = StatDisabled,
 					get = function() return db.profile.Gold.ShowToonMoney end,
 					set = function(info, value)
 						db.profile.Gold.ShowToonMoney = value
@@ -3469,7 +3562,7 @@ function module:LoadOptions()
 					name = "Color By Type",
 					desc = "Weather or not to color the coin letters by the type of coin.",
 					type = "toggle",
-					disabled = GoldDisabled,
+					disabled = StatDisabled,
 					get = function() return db.profile.Gold.ColorType end,
 					set = function(info, value)
 						db.profile.Gold.ColorType = value
@@ -3481,7 +3574,7 @@ function module:LoadOptions()
 					name = "Reset Player",
 					desc = "Choose the player you want to clear Gold data for.\n",
 					type = "select",
-					disabled = GoldDisabled,
+					disabled = StatDisabled,
 					order = 5,
 					values = goldPlayerArray,
 					get = function()
@@ -3506,12 +3599,13 @@ function module:LoadOptions()
 				GoldReset = {
 					name = "Reset",
 					type = "execute",
-					disabled = GoldDisabled,
+					disabled = StatDisabled,
 					order = 6,
 					func = resetGold,
 				},
-				Position = PositionOptions("Gold", 7),
-				Font = FontOptions("Gold", 8),
+				Position = PositionOptions(7),
+				Font = FontOptions(8),
+				Reset = ResetOption(9),
 			},
 		},
 		Guild = {
@@ -3540,7 +3634,7 @@ function module:LoadOptions()
 					name = "Show Total",
 					desc = "Whether you want to show total number of Guildmates online or not.",
 					type = "toggle",
-					disabled = GuildDisabled,
+					disabled = StatDisabled,
 					width = "full",
 					get = function() return db.profile.Guild.ShowTotal end,
 					set = function(info, value)
@@ -3554,7 +3648,7 @@ function module:LoadOptions()
 					name = "Show Hints",
 					desc = "Whether you want to show mouseclick hints or not.",
 					type = "toggle",
-					disabled = GuildDisabled,
+					disabled = StatDisabled,
 					width = "full",
 					get = function() return db.profile.Guild.ShowHints end,
 					set = function(info, value) db.profile.Guild.ShowHints = value end,
@@ -3564,14 +3658,15 @@ function module:LoadOptions()
 					name = "Show Notes",
 					desc = "Whether you want to show guild/officer notes or not.",
 					type = "toggle",
-					disabled = GuildDisabled,
+					disabled = StatDisabled,
 					width = "full",
 					get = function() return db.profile.Guild.ShowNotes end,
 					set = function(info, value) db.profile.Guild.ShowNotes = value end,
 					order = 5,
 				},
-				Position = PositionOptions("Guild", 6),
-				Font = FontOptions("Guild", 7),
+				Position = PositionOptions(6),
+				Font = FontOptions(7),
+				Reset = ResetOption(8),
 			},
 		},
 		Instance = {
@@ -3596,8 +3691,9 @@ function module:LoadOptions()
 					end,
 					order = 2,
 				},
-				Position = PositionOptions("Instance", 3),
-				Font = FontOptions("Instance", 4),
+				Position = PositionOptions(3, "Instance Info"),
+				Font = FontOptions(4, "Instance Info"),
+				Reset = ResetOption(5),
 			},
 		},
 		Memory = {
@@ -3622,8 +3718,9 @@ function module:LoadOptions()
 					end,
 					order = 2,
 				},
-				Position = PositionOptions("Memory", 3),
-				Font = FontOptions("Memory", 4),
+				Position = PositionOptions(3, "Memory Usage"),
+				Font = FontOptions(4, "Memory Usage"),
+				Reset = ResetOption(5),
 			},
 		},
 	}
@@ -3638,7 +3735,7 @@ function module:Refresh()
 end
 
 function module:OnInitialize()
-	db = LUI:NewNamespace(self)
+	db = LUI:NewNamespace(self, true)
 	
 	LUIGold = LUIGold or {}
 	LUIGold.version = LUIGold.version or 0
