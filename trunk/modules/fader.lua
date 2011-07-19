@@ -74,13 +74,11 @@ function Fader:RegisterFrame(frame, settings)
 	-- Check fader is enabled.
 	if not db.Fader.Enable then return end
 	
-<<<<<<< .mine
 	-- Check frame is a usable objects.
 	if type(frame) ~= "table"  then return end
-=======
+
 	-- Check frame is a usable object.
-	if (not frame) or (type(frame) ~= "table") then return end
->>>>>>> .r161
+--	if (not frame) or (type(frame) ~= "table") then return end
 	
 	-- Apply settings
 	if not settings then settings = db.Fader.GlobalSettings end	
@@ -128,11 +126,8 @@ end
 ]]
 function Fader:UnregisterFrame(frame)
 	-- Check frame is a usable object.
-<<<<<<< .mine
 	if type(frame) ~= "table" then return end
-=======
-	if (not frame) or (type(frame) ~= "table") then return end
->>>>>>> .r161
+--	if (not frame) or (type(frame) ~= "table") then return end
 	
 	-- Check if registered frames table exists.
 	if not self.RegisteredFrames then return end
@@ -488,11 +483,8 @@ end
 ]]
 function Fader:FadeFrame(frame, endAlpha, fadeTime, fadeDelay, callBack)
 	-- Check frame is a usable object.
-<<<<<<< .mine
 	if type(frame) ~= "table" then return end
-=======
-	if (not frame) or (type(frame) ~= "table") then return end
->>>>>>> .r161
+--	if (not frame) or (type(frame) ~= "table") then return end
 	
 	-- Check if fading is needed.
 	if frame:GetAlpha() == (endAlpha or 0) then
@@ -563,21 +555,21 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 		frame = _G[object]
 	elseif type(object) == "table" and not object.GetParent then
 		frame = {}
-<<<<<<< .mine
+
 		for i, f in ipairs(object) do
 			if type(f) == "string" then
 				frame[i] = _G[f]
 			else
 				frame[i] = f
 			end
-=======
+--[[
 		for i, f in pairs(object) do
 			if type(f) == "string" then
 				frame[i] = _G[f]
 			else
 				frame[i] = f
 			end
->>>>>>> .r161
+--]]
 		end
 	else
 		frame = object
