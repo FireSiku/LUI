@@ -3529,13 +3529,6 @@ local SetStyle = function(self, unit, isSingle)
 
 	funcs.V2Textures(self, unit, oufdb)
 
-	if unit == "raid" then
-		self.Range = {
-			insideAlpha = 1,
-			outsideAlpha = 0.5
-		}
-	end
-	
 	self.Highlight = self.Health:CreateTexture(nil, "OVERLAY")
 	self.Highlight:SetAllPoints(self)
 	self.Highlight:SetTexture(highlightTex)
@@ -3565,6 +3558,13 @@ local SetStyle = function(self, unit, isSingle)
 
 	local LUI_Fader = LUI:GetModule("Fader", true)
 	if oufdb.Fader and oufdb.Fader.Enable and LUI_Fader then LUI_Fader:RegisterFrame(self, oUF.Fader) end
+	
+	if unit == "raid" or (unit == "party" and oufdb.RangeFade and LUI_Fader and oufdb.Fader and not oufdb.Fader.Enable) then
+		self.Range = {
+			insideAlpha = 1,
+			outsideAlpha = 0.5
+		}
+	end
 
 	self.Health.Override = OverrideHealth
 	self.Power.Override = OverridePower

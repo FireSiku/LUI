@@ -908,8 +908,8 @@ toggleFuncs = {
 	
 	Maintank = function()
 		if db.oUF.Maintank.Enable then
-			local x = tonumber(db.oUF.Arena.X) / (db.oUF.Arena.Scale)
-			local y = tonumber(db.oUF.Arena.Y) / (db.oUF.Arena.Scale)
+			local x = tonumber(db.oUF.Maintank.X) / (db.oUF.Maintank.Scale)
+			local y = tonumber(db.oUF.Maintank.Y) / (db.oUF.Maintank.Scale)
 			
 			if oUF_LUI_maintank then
 				oUF_LUI_maintank:SetScale(db.oUF.Maintank.Scale)

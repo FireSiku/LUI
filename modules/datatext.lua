@@ -3263,6 +3263,7 @@ function module:LoadOptions()
 					name = "Enable",
 					desc = "Whether you want to show your Clock or not.",
 					type = "toggle",
+					width = "full",
 					get = function() return db.profile.Clock.Enable end,
 					set = function(info, value)
 						db.profile.Clock.Enable = value
@@ -3274,6 +3275,7 @@ function module:LoadOptions()
 					name = "Show Instance Difficulty",
 					desc = "Whether you want to show the Instance Difficulty or not.",
 					type = "toggle",
+					width = "full",
 					disabled = StatDisabled,
 					get = function() return db.profile.Clock.ShowInstanceDifficulty end,
 					set = function(info, value)
@@ -3286,7 +3288,6 @@ function module:LoadOptions()
 					name = "Local Time",
 					desc = "Whether you want to show your Local Time or Server Time.",
 					type = "toggle",
-					width = "half",
 					disabled = StatDisabled,
 					get = function() return db.profile.Clock.LocalTime end,
 					set = function(info, value) db.profile.Clock.LocalTime = value end,
@@ -3296,7 +3297,6 @@ function module:LoadOptions()
 					name = "24h Clock",
 					desc = "Whether you want to show 24 or 12 hour Clock.",
 					type = "toggle",
-					width = "half",
 					disabled = StatDisabled,
 					get = function() return db.profile.Clock.Time24 end,
 					set = function(info, value) db.profile.Clock.Time24 = value end,
@@ -3387,7 +3387,6 @@ function module:LoadOptions()
 					name = "Spent points",
 					desc = "Show spent talent points \"(x/x/x)\".",
 					type = "toggle",
-					width = "full",
 					disabled = StatDisabled,
 					get = function() return db.profile.DualSpec.ShowSpentPoints end,
 					set = function(info, value)
@@ -3495,8 +3494,8 @@ function module:LoadOptions()
 					name = "Show Total",
 					desc = "Whether you want to show total number of Friends online or not.",
 					type = "toggle",
-					disabled = StatDisabled,
 					width = "full",
+					disabled = StatDisabled,
 					get = function() return db.profile.Friends.ShowTotal end,
 					set = function(info, value)
 						db.profile.Friends.ShowTotal = value
@@ -3510,7 +3509,6 @@ function module:LoadOptions()
 					desc = "Whether you want to show mouseclick hints or not.",
 					type = "toggle",
 					disabled = StatDisabled,
-					width = "full",
 					get = function() return db.profile.Friends.ShowHints end,
 					set = function(info, value) db.profile.Friends.ShowHints = value end,
 					order = 4,
@@ -3520,7 +3518,6 @@ function module:LoadOptions()
 					desc = "Whether you want to show friend notes or not.",
 					type = "toggle",
 					disabled = StatDisabled,
-					width = "full",
 					get = function() return db.profile.Friends.ShowNotes end,
 					set = function(info, value) db.profile.Friends.ShowNotes = value end,
 					order = 5,
@@ -3640,8 +3637,8 @@ function module:LoadOptions()
 					name = "Show Total",
 					desc = "Whether you want to show total number of Guildmates online or not.",
 					type = "toggle",
-					disabled = StatDisabled,
 					width = "full",
+					disabled = StatDisabled,
 					get = function() return db.profile.Guild.ShowTotal end,
 					set = function(info, value)
 						db.profile.Guild.ShowTotal = value
@@ -3655,7 +3652,6 @@ function module:LoadOptions()
 					desc = "Whether you want to show mouseclick hints or not.",
 					type = "toggle",
 					disabled = StatDisabled,
-					width = "full",
 					get = function() return db.profile.Guild.ShowHints end,
 					set = function(info, value) db.profile.Guild.ShowHints = value end,
 					order = 4,
@@ -3665,7 +3661,6 @@ function module:LoadOptions()
 					desc = "Whether you want to show guild/officer notes or not.",
 					type = "toggle",
 					disabled = StatDisabled,
-					width = "full",
 					get = function() return db.profile.Guild.ShowNotes end,
 					set = function(info, value) db.profile.Guild.ShowNotes = value end,
 					order = 5,

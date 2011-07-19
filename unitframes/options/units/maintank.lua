@@ -6,27 +6,23 @@
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF_Maintank", "AceHook-3.0")
+local module = LUI:NewModule("oUF_Maintank", "AceEvent-3.0")
 
 local db
-
-local eventWatch = CreateFrame("Frame")
-eventWatch:RegisterEvent("PLAYER_REGEN_DISABLED")
 
 function module:ShowMaintankFrames()
 	oUF_LUI_maintank:SetAttribute("groupFilter", nil)
 	oUF_LUI_maintank:SetAttribute("showSolo", 1)
-	if not module:IsHooked(eventWatch, "OnEvent") then
-		module:HookScript(eventWatch, "OnEvent", "HideMaintankFrames")
-	end
+	self:RegisterEvent("PLAYER_REGEN_DISABLED", self.HideMaintankFrames, self)
 end
 
-function module:HideMaintankFrames(self, event)
-	if event and event ~= "PLAYER_REGEN_DISABLED" then return end
+function module:HideMaintankFrames(event)
 	oUF_LUI_maintank:SetAttribute("groupFilter", "MAINTANK")
 	oUF_LUI_maintank:SetAttribute("showSolo", 0)
-	module:Unhook(eventWatch, "OnEvent")
-	if event then LUI:Print("MainTank Frames hidden due to combat") end
+	if event then
+		self:UnregisterEvent(event)
+		LUI:Print("MainTank Frames hidden due to combat")
+	end
 end
 
 local defaults = {
