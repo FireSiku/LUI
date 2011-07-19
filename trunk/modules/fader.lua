@@ -77,9 +77,6 @@ function Fader:RegisterFrame(frame, settings)
 	-- Check frame is a usable objects.
 	if type(frame) ~= "table"  then return end
 
-	-- Check frame is a usable object.
---	if (not frame) or (type(frame) ~= "table") then return end
-	
 	-- Apply settings
 	if not settings then settings = db.Fader.GlobalSettings end	
 	local usedSettings
@@ -127,7 +124,6 @@ end
 function Fader:UnregisterFrame(frame)
 	-- Check frame is a usable object.
 	if type(frame) ~= "table" then return end
---	if (not frame) or (type(frame) ~= "table") then return end
 	
 	-- Check if registered frames table exists.
 	if not self.RegisteredFrames then return end
@@ -484,7 +480,6 @@ end
 function Fader:FadeFrame(frame, endAlpha, fadeTime, fadeDelay, callBack)
 	-- Check frame is a usable object.
 	if type(frame) ~= "table" then return end
---	if (not frame) or (type(frame) ~= "table") then return end
 	
 	-- Check if fading is needed.
 	if frame:GetAlpha() == (endAlpha or 0) then
@@ -555,28 +550,26 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 		frame = _G[object]
 	elseif type(object) == "table" and not object.GetParent then
 		frame = {}
+	
+		local numObjects = 0
+		for k, f in pairs(object) do
+			if type(f) == "string" then
+				frame[k] = _G[f]
+			else
+				frame[k] = f
+			end
 
-		for i, f in ipairs(object) do
-			if type(f) == "string" then
-				frame[i] = _G[f]
-			else
-				frame[i] = f
-			end
---[[
-		for i, f in pairs(object) do
-			if type(f) == "string" then
-				frame[i] = _G[f]
-			else
-				frame[i] = f
-			end
---]]
+			numObjects = numObjects + 1
 		end
+
+		-- Check there are frames to be used.
+		if numObjects == 0 then return end
 	else
 		frame = object
 	end
 	
 	-- Check frame is usable.
-	if not frame then return end
+	if type(frame) ~= "table" then return end
 	
 	-- Shortcut database values.
 	local odb = objectDB
@@ -585,10 +578,14 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 	-- Create ApplySettings function.
 	local ApplySettings
 	if type(frame) == "table" and not frame.GetParent then
+		local oUF_Party = false
+		for _, f in pairs(frame) do if strfind(f:GetName(), "oUF_LUI_party") then oUF_Party = true end end
+
 		ApplySettings = function()
 			if odb.Enable then
-				if strfind(frame[1]:GetName(), "oUF_LUI_party") then
-					LUI:GetModule("oUF_Party"):ToggleRangeFade(false) -- Disable Range Fader for Party
+				if oUF_Party then
+					-- Disable Range Fader for Party
+					LUI:GetModule("oUF_Party"):ToggleRangeFade(false)
 				end
 				
 				for _, f in pairs(frame) do
@@ -599,8 +596,9 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 					Fader:UnregisterFrame(f)
 				end
 				
-				if strfind(frame[1]:GetName(), "oUF_LUI_party") then
-					LUI:GetModule("oUF_Party"):ToggleRangeFade() -- Set Range Fader for Party to correct state
+				if oUF_Party then
+					-- Set Range Fader for Party to correct state
+					LUI:GetModule("oUF_Party"):ToggleRangeFade()
 				end
 			end
 		end
