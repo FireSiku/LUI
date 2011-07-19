@@ -10,6 +10,22 @@ local module = LUI:NewModule("oUF_Party")
 
 local db
 
+function module:ToggleRangeFade(enable) -- when the option calls this func, self will be info arg, so don't use self in here.
+	enable = enable or db.oUF.Party.RangeFade
+	
+	for i, frame in ipairs(oUF_LUI_party) do
+		if enable then
+			frame.Range = frame.Range or {insideAlpha = 1, outsideAlpha = 0.5}
+			frame:EnableElement("Range")
+		else
+			frame:DisableElement("Range")
+			if frame.Range and (frame:GetAlpha() ~= frame.Range.insideAlpha) then
+				frame:SetAlpha(frame.Range.insideAlpha)
+			end
+		end
+	end
+end
+
 local defaults = {
 	Party = {
 		Enable = true,
@@ -24,6 +40,7 @@ local defaults = {
 		ShowPlayer = false,
 		ShowInRaid = false,
 		ShowInRealParty = false,
+		RangeFade = true,
 		Border = {
 			Aggro = false,
 			EdgeFile = "glow",
@@ -448,6 +465,11 @@ function module:LoadOptions()
 								ShowInRealParty = LUI:NewToggle("Show only in real Partys", "Whether you want to show the Party Frames only in real Partys or in Raids with 5 or less players too", 5, db.oUF.Party, "ShowInRealParty", LUI.defaults.profile.oUF.Party, ToggleVisibility, nil, function() return not db.oUF.Party.Enable or db.oUF.Party.ShowInRaid end),
 							},
 						},
+						Appearance = {
+							args = {
+								RangeFade = LUI:NewToggle("Fade Out of Range(40yrds)", "Whether you want Party Frames to fade if that player is more than 40 yards away or not.", 4.5, db.oUF.Party, "RangeFade", LUI.defaults.profile.oUF.Party, module.ToggleRangeFade, "normal", function() return not (db.oUF.Party.Enable and not db.oUF.Party.Fader.Enable) end),
+							},
+						}
 					},
 				},
 			},
