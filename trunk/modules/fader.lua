@@ -550,8 +550,8 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 		frame = _G[object]
 	elseif type(object) == "table" and not object.GetParent then
 		frame = {}
-		for i, v in pairs(object) do
-			frame[i] = type(v) == "string" and _G[v] or v
+		for i, f in pairs(object) do
+			frame[i] = f
 		end
 	else
 		frame = object
@@ -570,11 +570,11 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 		ApplySettings = function()
 			if odb.Enable then
 				for _, f in pairs(frame) do
-					Fader:RegisterFrame(f, odb)
+					Fader:RegisterFrame((type(f) == "string" and _G[f]) or f, odb)
 				end
 			else
 				for _, f in pairs(frame) do
-					Fader:UnregisterFrame(f)
+					Fader:UnregisterFrame((type(f) == "string" and _G[f]) or f)
 				end
 			end
 		end
