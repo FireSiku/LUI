@@ -15,7 +15,6 @@
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local LUIHook = LUI:GetModule("LUIHook")
 local module = LUI:NewModule("Minimap", "AceHook-3.0")
 
 local db
@@ -24,7 +23,7 @@ local shouldntSetPoint = false
 local numHookedCaptureFrames = 0
 local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
 
-function LUIHook:OnEnable()
+function module:SetAdditionalFrames()
 	self:SecureHook(DurabilityFrame, "SetPoint", "DurabilityFrame_SetPoint")
 	self:SecureHook(VehicleSeatIndicator, "SetPoint", "VehicleSeatIndicator_SetPoint")
 	self:SecureHook(WatchFrame, "SetPoint", "WatchFrame_SetPoint")
@@ -56,37 +55,37 @@ function module:SetPosition(frame)
 	shouldntSetPoint = false
 end
 
-function LUIHook:DurabilityFrame_SetPoint()
+function module:DurabilityFrame_SetPoint()
 	if shouldntSetPoint then return end
-	module:SetPosition('durability')
+	self:SetPosition('durability')
 end
 
-function LUIHook:WatchFrame_SetPoint()
+function module:WatchFrame_SetPoint()
 	if shouldntSetPoint then return end
-	module:SetPosition('questWatch')
+	self:SetPosition('questWatch')
 end
 
-function LUIHook:VehicleSeatIndicator_SetPoint()
+function module:VehicleSeatIndicator_SetPoint()
 	if shouldntSetPoint then return end
-	module:SetPosition('vehicleSeats')
+	self:SetPosition('vehicleSeats')
 end
 
-function LUIHook:WorldStateAlwaysUpFrame_SetPoint()
+function module:WorldStateAlwaysUpFrame_SetPoint()
 	if shouldntSetPoint then return end
-	module:SetPosition('worldState')
+	self:SetPosition('worldState')
 end
 
-function LUIHook:WorldStateCaptureBar_SetPoint()
+function module:WorldStateCaptureBar_SetPoint()
 	if shouldntSetPoint then return end
-	module:SetPosition('capture')
+	self:SetPosition('capture')
 end
 
-function LUIHook:TicketStatusFrame_SetPoint()
+function module:TicketStatusFrame_SetPoint()
 	if shouldntSetPoint then return end
-	module:SetPosition('ticketStatus')
+	self:SetPosition('ticketStatus')
 end
 
-function LUIHook:WorldStateAlwaysUpFrame_Update()
+function module:WorldStateAlwaysUpFrame_Update()
 	while numHookedCaptureFrames < NUM_EXTENDED_UI_FRAMES do
 		numHookedCaptureFrames = numHookedCaptureFrames + 1
 
@@ -1128,6 +1127,7 @@ end
 
 function module:OnEnable()
 	self:SetMinimap()
+	self:SetAdditionalFrames()
 end
 
 function module:OnDisable()

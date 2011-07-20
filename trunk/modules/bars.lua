@@ -9,9 +9,8 @@
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local LUIHook = LUI:GetModule("LUIHook")
 local Panels = LUI:GetModule("Panels")
-local module = LUI:NewModule("Bars", "AceHook-3.0")
+local module = LUI:NewModule("Bars")
 local LibKeyBound = LibStub("LibKeyBound-1.0")
 
 local db

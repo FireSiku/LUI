@@ -16,8 +16,7 @@
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local LUIHook = LUI:GetModule("LUIHook")
-local module = LUI:NewModule("Auras", "AceHook-3.0")
+local module = LUI:NewModule("Auras")
 
 local db
 local positions = {"TOPRIGHT", "TOPLEFT", "BOTTOMRIGHT", "BOTTOMLEFT"}
