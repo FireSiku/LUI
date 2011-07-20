@@ -16,8 +16,6 @@ LUI = AceAddon:NewAddon("LUI", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", 
 local LUI = _G["LUI"] -- this is a temp localization for this file
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
-LUI:SetDefaultModuleState(false)
-
 LUI.oUF = {}
 
 LUI.dummy = function() return end
@@ -299,12 +297,19 @@ end
 -- / SET BLIZZ RAID FRAMES / --
 ------------------------------------------------------
 
-function LUI:SetBlizzRaidFrames(enabled)
+function LUI:SetBlizzRaidFrames(enabled) -- true = use blizz frames, false = hide
 	if enabled == nil then
-		enabled = not (IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") or db.oUF.Raid.Enabled)
+		enabled = not (IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") or db.oUF.Raid.Enable)
 	end
 	
 	if enabled then
+		self:Unhook(CompactRaidFrameManager, "Show")
+		self:Unhook(CompactRaidFrameContainer, "Show")
+		if UnitInRaid("player") then
+			CompactRaidFrameManager:Show()
+			CompactRaidFrameContainer:Show()
+		end
+	else
 		if not self:IsHooked(CompactRaidFrameManager, "Show") then
 			self:RawHook(CompactRaidFrameManager, "Show", self.dummy, true)
 		end
@@ -313,13 +318,6 @@ function LUI:SetBlizzRaidFrames(enabled)
 		end
 		CompactRaidFrameManager:Hide()
 		CompactRaidFrameContainer:Hide()
-	else
-		self:Unhook(CompactRaidFrameManager, "Show")
-		self:Unhook(CompactRaidFrameContainer, "Show")
-		if UnitInRaid("player") then
-			CompactRaidFrameManager:Show()
-			CompactRaidFrameContainer:Show()
-		end
 	end
 end
 
@@ -1191,15 +1189,17 @@ function LUI:OnEnable()
 	fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 	
 	if LUICONFIG.IsConfigured == false then
+		for name, module in self:IterateModules() do
+			module:SetEnabledState(false)
+		end
 		self.db:SetProfile(UnitName("player").." - "..GetRealmName())
 		self:Configure()
 	elseif LUICONFIG.Versions.lui ~= LUI_versions.lui then
+		for name, module in self:IterateModules() do
+			module:SetEnabledState(false)
+		end
 		self:Update()
 	else
-		for name, module in self:IterateModules() do
-			module:SetEnabledState(true)
-		end
-		
 		local LoginMsg = false
 		if(LoginMsg==true) then
 			print(" ")

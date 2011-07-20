@@ -500,6 +500,7 @@ function module:CreateOptions(index, unit)
 	local ToggleFunc = function()
 		LUI:GetModule("oUF"):Toggle(unit)
 		if unit == "Raid" then
+			LUI:SetBlizzRaidFrames()
 			if oufdb.Enable and db.Frames.Raid.Anchor ~= "oUF_LUI_raid" then
 				db.Frames.Raid.Anchor = "oUF_LUI_raid"
 				StaticPopup_Show("RELOAD_UI") -- to remove!
