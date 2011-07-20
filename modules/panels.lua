@@ -13,8 +13,7 @@
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local LUIHook = LUI:GetModule("LUIHook")
-local module = LUI:NewModule("Panels", "AceHook-3.0")
+local module = LUI:NewModule("Panels", "AceHook-3.0", "AceEvent-3.0")
 
 local db
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
@@ -855,12 +854,12 @@ local Blizz_UnitAnchor = CreateFrame("Frame")
 Blizz_UnitAnchor:SetWidth(200)
 Blizz_UnitAnchor:SetHeight(350)
 
-function LUIHook:OnEnable()
+function module:SetBlizzBossFrames()
 	for i = 1, MAX_BOSS_FRAMES do
 		_G["Boss"..i.."TargetFrame"]:ClearAllPoints()
 		_G["Boss"..i.."TargetFrame"]:SetParent(Blizz_UnitAnchor)
 		_G["Boss"..i.."TargetFrame"]:SetPoint("TOP", i == 1 and Blizz_UnitAnchor or _G["Boss"..(i-1).."TargetFrame"], i == 1 and "TOP" or "BOTTOM")
-		_G["Boss"..i.."TargetFrame"].SetPoint = function() end
+		self:RawHook(_G["Boss"..i.."TargetFrame"], "SetPoint", LUI.dummy, true)
 	end
 end
 
@@ -2077,14 +2076,12 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	self:SetBlizzBossFrames()
 	self:SetPanels()
 	
-	local LUI_CheckPanels = CreateFrame("Frame", nil, UIParent)
-	
-	LUI_CheckPanels:RegisterEvent("PLAYER_ENTERING_WORLD")
-	LUI_CheckPanels:SetScript("OnEvent", function(self, event, addon)
-		module:CheckPanels()
-		LUI_CheckPanels:UnregisterAllEvents()
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", function()
+		self:CheckPanels()
+		self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	end)
 end
 

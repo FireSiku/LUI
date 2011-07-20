@@ -14,8 +14,9 @@ local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 LUI = AceAddon:NewAddon("LUI", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceSerializer-3.0") -- localize
 local LUI = _G["LUI"] -- this is a temp localization for this file
-local LUIHook = LUI:NewModule("LUIHook", "AceHook-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+
+LUI:SetDefaultModuleState(false)
 
 LUI.oUF = {}
 
@@ -283,13 +284,7 @@ end
 -- / SET DAMAGE FONT / --
 ------------------------------------------------------
 
-SetDamageFont = CreateFrame("Frame", "SetDamageFont");
-SetDamageFont:RegisterEvent("ADDON_LOADED")
-SetDamageFont:SetScript("OnEvent", function(self)
-	SetDamageFont:ApplyDamageFont()
-end)
-
-function SetDamageFont:ApplyDamageFont()
+function LUI:SetDamageFont()
 	local DamageFont = LSM:Fetch("font", db.General.DamageFont)
 
 	COMBAT_TEXT_SCROLLSPEED = 1.9
@@ -298,6 +293,34 @@ function SetDamageFont:ApplyDamageFont()
 	COMBAT_TEXT_HEIGHT = db.General.DamageFontSize
 	COMBAT_TEXT_CRIT_MAXHEIGHT = db.General.DamageFontSizeCrit
 	COMBAT_TEXT_CRIT_MINHEIGHT = db.General.DamageFontSizeCrit - 2
+end
+
+------------------------------------------------------
+-- / SET BLIZZ RAID FRAMES / --
+------------------------------------------------------
+
+function LUI:SetBlizzRaidFrames(enabled)
+	if enabled == nil then
+		enabled = not (IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") or db.oUF.Raid.Enabled)
+	end
+	
+	if enabled then
+		if not self:IsHooked(CompactRaidFrameManager, "Show") then
+			self:RawHook(CompactRaidFrameManager, "Show", self.dummy, true)
+		end
+		if not self:IsHooked(CompactRaidFrameContainer, "Show") then
+			self:RawHook(CompactRaidFrameContainer, "Show", self.dummy, true)
+		end
+		CompactRaidFrameManager:Hide()
+		CompactRaidFrameContainer:Hide()
+	else
+		self:Unhook(CompactRaidFrameManager, "Show")
+		self:Unhook(CompactRaidFrameContainer, "Show")
+		if UnitInRaid("player") then
+			CompactRaidFrameManager:Show()
+			CompactRaidFrameContainer:Show()
+		end
+	end
 end
 
 ------------------------------------------------------
@@ -1090,54 +1113,6 @@ end
 -- / SETUP LUI / --
 ------------------------------------------------------
 
-function LUI:OnEnable()
-	db_ = self.db.profile
-	local isAllShown = false
-	CheckResolution()
-	
-	SLASH_RELOADUI1 = "/rl"
-	SlashCmdList.RELOADUI = ReloadUI
-	
-	fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
-	
-	if LUICONFIG.IsConfigured == false then
-		self.db:SetProfile(UnitName("player").." - "..GetRealmName())
-		self:Configure()
-	else
-		if LUICONFIG.Versions.lui ~= LUI_versions.lui then
-			self:Update()
-		else
-			local CharName = UnitName("player")
-			
-			SetDamageFont:ApplyDamageFont()
-			
-			local LoginMsg = false
-			if(LoginMsg==true) then
-				print(" ")
-				print("Welcome on |c0090ffffLUI v3|r for Patch 3.3.5 !")
-				print("For more Information visit www.wow-lui.com")
-			end
-		end
-	end
-	
-	CompactRaidFrameManager:UnregisterAllEvents()
-	CompactRaidFrameManager:Hide()
-	CompactRaidFrameContainer:UnregisterEvent("RAID_ROSTER_UPDATE")
-	CompactRaidFrameContainer:UnregisterEvent("UNIT_PET")
-	CompactRaidFrameContainer:Hide()
-end
-
-function LUI:RunOnce()
-	for i=1, GetNumAddOns() do
-		local name, title, notes, enabled, loadable = GetAddOnInfo(i)
-		if strfind(name, "LUI_") then
-			if enabled and loadable then
-				LoadAddOn(i)
-			end
-		end
-	end
-end
-
 function LUI:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("LUIDB", LUI.defaults, true)
 	db_ = self.db.profile
@@ -1192,17 +1167,61 @@ function LUI:OnInitialize()
 		hideOnEscape = 1
 	}
 	
-	CompactRaidFrameManager:UnregisterAllEvents()
-	CompactRaidFrameManager:Hide()
-	CompactRaidFrameContainer:UnregisterEvent("RAID_ROSTER_UPDATE")
-	CompactRaidFrameContainer:UnregisterEvent("UNIT_PET")
-	CompactRaidFrameContainer:Hide()
+	-- CompactRaidFrameManager:UnregisterAllEvents()
+	-- CompactRaidFrameManager:Hide()
+	-- CompactRaidFrameContainer:UnregisterEvent("RAID_ROSTER_UPDATE")
+	-- CompactRaidFrameContainer:UnregisterEvent("UNIT_PET")
+	-- CompactRaidFrameContainer:Hide()
 	
-	self:RegisterEvent("PLAYER_LOGIN", function()
-		self:RunOnce()
-		self:UnregisterEvent("PLAYER_LOGIN")
-	end)
+	self:RegisterEvent("PLAYER_LOGIN", "RunOnce", self)
 end
+
+function LUI:OnEnable()
+	db_ = self.db.profile
+	local isAllShown = false
+	CheckResolution()
+	
+	SLASH_RELOADUI1 = "/rl"
+	SlashCmdList.RELOADUI = ReloadUI
+	
+	fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
+	
+	if LUICONFIG.IsConfigured == false then
+		self.db:SetProfile(UnitName("player").." - "..GetRealmName())
+		self:Configure()
+	elseif LUICONFIG.Versions.lui ~= LUI_versions.lui then
+		self:Update()
+	else
+		self:SetDamageFont()
+		for name, module in self:IterateModules() do
+			module:SetEnabledState(true)
+		end
+		
+		local LoginMsg = false
+		if(LoginMsg==true) then
+			print(" ")
+			print("Welcome on |c0090ffffLUI v3|r for Patch 3.3.5 !")
+			print("For more Information visit www.wow-lui.com")
+		end
+	end
+	
+	self:SetBlizzRaidFrames()
+end
+
+function LUI:RunOnce() -- This fires after OnEnable
+	for i=1, GetNumAddOns() do
+		local name, _, _, enabled, loadable = GetAddOnInfo(i)
+		if strfind(name, "LUI_") and enabled and loadable then
+			LoadAddOn(i)
+		end
+	end
+	
+	self:SetDamageFont()
+	
+	self:UnregisterEvent("PLAYER_LOGIN")
+end
+
+
 
 function LUI:MergeDefaults(target, source)
 	if type(target) ~= "table" then target = {} end

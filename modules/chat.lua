@@ -13,7 +13,6 @@
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local LUIHook = LUI:GetModule("LUIHook")
 local module = LUI:NewModule("Chat", "AceHook-3.0")
 
 local db
@@ -287,11 +286,7 @@ local function SetChatJustify()
 	SetChatFloating2()
 end
 
-function module:SetColors()
-	LUIHook:SetEditBoxColor()
-end
-
-function LUIHook:SetEditBoxColor(...)
+function module:SetEditBoxColor()
 	local r = db.Colors.editbox[1] or 0
 	local g = db.Colors.editbox[2] or 0
 	local b = db.Colors.editbox[3] or 0
@@ -327,6 +322,8 @@ function LUIHook:SetEditBoxColor(...)
 		end
 	end
 end
+
+module.SetColors = module.SetEditBoxColor
 
 local function SetChatStyle(frame)
 	local id = frame:GetID()
@@ -406,6 +403,7 @@ function module:SetChat()
 		['Guild'] = '[G]',
 		['Party'] = '[P]',
 		['Party Leader'] = '[PL]',
+		['Dungeon Guide'] = '[DG]',
 		['Raid'] = '[R]',
 		['Raid Leader'] = '[RL]',
 		['Raid Warning'] = '[RW]',
@@ -415,10 +413,8 @@ function module:SetChat()
 		['(%d+)%. .-'] = '[%1]',
 	}
 	
-	-- Hook into the AddMessage function
-	local AddMessageOriginal = ChatFrame1.AddMessage
-	local function AddMessageHook(frame, text, ...)
-		
+	-- Create function to be hooked
+	local function chatFrame_AddMessage(frame, text, ...)
 		if db.Chat.ShortChannelNames == true then
 			for k,v in pairs(replaceschan) do
 				text = text:gsub('|h%['..k..'%]|h', '|h'..v..'|h')
@@ -431,27 +427,16 @@ function module:SetChat()
 		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h says:", "[|Hplayer:%1:%2|h%3|h]:")	
 		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h yells:", "[|Hplayer:%1:%2|h%3|h]:")
 			
-		return AddMessageOriginal(frame, text, ...)
+		return self.hooks[frame].AddMessage(frame, text, ...)
 	end
-	ChatFrame1.AddMessage = AddMessageHook
 	
-	local AddMessageOriginal2 = ChatFrame3.AddMessage
-	local function AddMessageHook2(frame, text, ...)
-		-- chan text smaller or hidden
-		if db.Chat.ShortChannelNames == true then
-			for k,v in pairs(replaceschan) do
-				text = text:gsub('|h%['..k..'%]|h', '|h'..v..'|h')
-			end
+	-- Hook into the AddMessage function
+	for i = 1, NUM_CHAT_WINDOWS do
+		local chatFrame = _G["ChatFrame"..i]
+		if chatFrame and chatFrame.AddMessage then
+			self:RawHook(chatFrame, "AddMessage", chatFrame_AddMessage, true)
 		end
-		text = replace(text, "has come online.", "is now online!")
-		text = replace(text, "|Hplayer:(.+)|h%[(.+)%]|h has earned", "|Hplayer:%1|h%2|h has earned")
-		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h whispers:", "From [|Hplayer:%1:%2|h%3|h]:")
-		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h says:", "[|Hplayer:%1:%2|h%3|h]:")	
-		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h yells:", "[|Hplayer:%1:%2|h%3|h]:")
-			
-		return AddMessageOriginal2(frame, text, ...)
 	end
-	ChatFrame3.AddMessage = AddMessageHook2
 	
 	-- WoW or battle.net player status
 	CHAT_FLAG_AFK = "[AFK] "
@@ -529,9 +514,9 @@ function module:SetChat()
 		
 		--	Color Editbox
 		SetEditBoxBackdrop()
-		LUIHook:Unhook("ChatEdit_UpdateHeader")
-		LUIHook:SecureHook("ChatEdit_UpdateHeader", "SetEditBoxColor", true)
-		LUIHook:SetEditBoxColor()
+		self:Unhook("ChatEdit_UpdateHeader")
+		self:Hook("ChatEdit_UpdateHeader", "SetEditBoxColor", true)
+		self:SetEditBoxColor()
 	end
 	
 	-----------------------------------------------------------------------------
@@ -1341,7 +1326,7 @@ function module:LoadOptions()
 									set = function(_,r,g,b,a)
 											db.Colors.editbox = {r,g,b,a}
 											
-											LUIHook:SetEditBoxColor()
+											self:SetEditBoxColor()
 										end,
 									order = 3,
 								},
@@ -1416,7 +1401,7 @@ function module:LoadOptions()
 									set = function(self, BorderTexture)
 											db.Chat.Editbox.Border.Texture = BorderTexture
 											SetEditBoxBackdrop()
-											LUIHook:SetEditBoxColor()
+											self:SetEditBoxColor()
 										end,
 									order = 1,
 								},
@@ -1432,7 +1417,7 @@ function module:LoadOptions()
 												end
 												db.Chat.Editbox.Border.Thickness = BorderThickness
 												SetEditBoxBackdrop()
-												LUIHook:SetEditBoxColor()
+												self:SetEditBoxColor()
 											end,
 									order = 2,
 								},
@@ -1454,7 +1439,7 @@ function module:LoadOptions()
 											end
 											db.Chat.Editbox.Border.Inset.left = InsetLeft
 											SetEditBoxBackdrop()
-											LUIHook:SetEditBoxColor()
+											self:SetEditBoxColor()
 										end,
 									order = 4,
 								},
@@ -1470,7 +1455,7 @@ function module:LoadOptions()
 											end
 											db.Chat.Editbox.Border.Inset.right = InsetRight
 											SetEditBoxBackdrop()
-											LUIHook:SetEditBoxColor()
+											self:SetEditBoxColor()
 										end,
 									order = 5,
 								},
@@ -1486,7 +1471,7 @@ function module:LoadOptions()
 											end
 											db.Chat.Editbox.Border.Inset.top = InsetTop
 											SetEditBoxBackdrop()
-											LUIHook:SetEditBoxColor()
+											self:SetEditBoxColor()
 										end,
 									order = 6,
 								},
@@ -1502,7 +1487,7 @@ function module:LoadOptions()
 											end
 											db.Chat.Editbox.Border.Inset.bottom = InsetBottom
 											SetEditBoxBackdrop()
-											LUIHook:SetEditBoxColor()
+											self:SetEditBoxColor()
 										end,
 									order = 7,
 								},
