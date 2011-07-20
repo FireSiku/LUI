@@ -324,6 +324,19 @@ function LUI:SetBlizzRaidFrames(enabled)
 end
 
 ------------------------------------------------------
+-- / LOAD EXTRA MODULES / --
+------------------------------------------------------
+
+function LUI:LoadExtraModules()
+	for i=1, GetNumAddOns() do
+		local name, _, _, enabled, loadable = GetAddOnInfo(i)
+		if strfind(name, "LUI_") and enabled and loadable then
+			LoadAddOn(i)
+		end
+	end
+end
+
+------------------------------------------------------
 -- / UPDATE / --
 ------------------------------------------------------
 
@@ -1126,25 +1139,22 @@ function LUI:OnInitialize()
 	
 	self:SetupOptions()
 	
-	LUICONFIG = LUICONFIG or {}
-	if LUICONFIG.IsConfigured == nil then
-		LUICONFIG.IsConfigured = false
-	end
-	
 	LUIGold = LUIGold or {}
 	
-	if LUICONFIG.Versions == nil then
-		versiondefaults = {
-			lui = 0,
-			theme = 0,
-			grid = 0,
-			bartender = 0,
-			omen = 0,
-			recount = 0,
-			forte = 0,
-		}
-
-		LUICONFIG.Versions = versiondefaults
+	LUICONFIG = LUICONFIG or {}
+	LUICONFIG.IsConfigured = LUICONFIG.IsConfigured or false
+	LUICONFIG.Versions = LUICONFIG.Versions or {
+		lui = 0,
+		theme = 0,
+		grid = 0,
+		bartender = 0,
+		omen = 0,
+		recount = 0,
+		forte = 0,
+	}
+	
+	if LUICONFIG.IsConfigured and LUICONFIG.Versions.lui == LUI_versions.lui then
+		self:LoadExtraModules()
 	end
 	
 	StaticPopupDialogs["RELOAD_UI"] = {
@@ -1167,12 +1177,6 @@ function LUI:OnInitialize()
 		hideOnEscape = 1
 	}
 	
-	-- CompactRaidFrameManager:UnregisterAllEvents()
-	-- CompactRaidFrameManager:Hide()
-	-- CompactRaidFrameContainer:UnregisterEvent("RAID_ROSTER_UPDATE")
-	-- CompactRaidFrameContainer:UnregisterEvent("UNIT_PET")
-	-- CompactRaidFrameContainer:Hide()
-	
 	self:RegisterEvent("PLAYER_LOGIN", "RunOnce", self)
 end
 
@@ -1192,7 +1196,6 @@ function LUI:OnEnable()
 	elseif LUICONFIG.Versions.lui ~= LUI_versions.lui then
 		self:Update()
 	else
-		self:SetDamageFont()
 		for name, module in self:IterateModules() do
 			module:SetEnabledState(true)
 		end
@@ -1203,21 +1206,13 @@ function LUI:OnEnable()
 			print("Welcome on |c0090ffffLUI v3|r for Patch 3.3.5 !")
 			print("For more Information visit www.wow-lui.com")
 		end
+		
+		self:SetDamageFont()
+		self:SetBlizzRaidFrames()
 	end
-	
-	self:SetBlizzRaidFrames()
 end
 
 function LUI:RunOnce() -- This fires after OnEnable
-	for i=1, GetNumAddOns() do
-		local name, _, _, enabled, loadable = GetAddOnInfo(i)
-		if strfind(name, "LUI_") and enabled and loadable then
-			LoadAddOn(i)
-		end
-	end
-	
-	self:SetDamageFont()
-	
 	self:UnregisterEvent("PLAYER_LOGIN")
 end
 
