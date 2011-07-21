@@ -1367,6 +1367,7 @@ function module:SetGF()
 	
 	if (db.profile.Guild.Enable or db.profile.Friends.Enable) and not stat.Created then
 		stat:SetFrameStrata("TOOLTIP")
+		stat:SetFrameLevel(1)
 		stat:SetClampedToScreen(true)
 		
 		-- Localized functions
@@ -2102,6 +2103,7 @@ function module:SetGF()
 				if not btn.presenceID then
 					GameTooltip:AddLine("|cffff8020RightClick|r to sort by column.", .2, 1, .2)
 				end
+				GameTooltip:SetFrameLevel(2) -- keep tooltip above friends/guild list
 				GameTooltip:Show()
 			end
 		end
@@ -2117,11 +2119,15 @@ function module:SetGF()
 		
 		-- Hooks
 		module:Hook("GuildRoster", function(...)
-			stat.Guild.dt = 0
+			if type(stat.Guild) == "table" then
+				stat.Guild.dt = 0
+			end
 		end, true)
 		
 		module:Hook("ShowFriends", function(...)
-			stat.Friends.dt = 0
+			if type(stat.Friends) == "table" then
+				stat.Friends.dt = 0
+			end
 		end, true)
 		
 		-- Script functions
@@ -2172,6 +2178,7 @@ function module:SetGuild()
 					GameTooltip:AddLine("|cffff8020RightClick|r to display Guild Information.", 0.2, 1, 0.2)
 					GameTooltip:AddLine("|cffff8020Button4|r to toggle notes.", 0.2, 1, 0.2)
 					GameTooltip:AddLine("|cffff8020Button5|r to toggle hints.", 0.2, 1, 0.2)
+					GameTooltip:SetFrameLevel(2) -- keep tooltip above friends/guild list
 					GameTooltip:Show()
 				else
 					GameTooltip:Hide()
@@ -2296,6 +2303,7 @@ function module:SetFriends()
 					GameTooltip:AddLine("|cffff8020RightClick|r to add a Friend.", 0.2, 1, 0.2)
 					GameTooltip:AddLine("|cffff8020Button4|r to toggle notes.", 0.2, 1, 0.2)
 					GameTooltip:AddLine("|cffff8020Button5|r to toggle hints.", 0.2, 1, 0.2)
+					GameTooltip:SetFrameLevel(2) -- keep tooltip above friends/guild list
 					GameTooltip:Show()
 				else
 					GameTooltip:Hide()
@@ -2665,6 +2673,8 @@ end
 -- / MODULE FUNCTIONS / --
 ------------------------------------------------------
 
+module.optionsName = "Info Text"
+module.childGroups = "select"
 module.defaults = {
 	profile = {
 		Enable = true,
@@ -2907,8 +2917,6 @@ module.defaults = {
 	},
 }
 
-module.optionsName = "Info Text"
-module.childGroups = "select"
 
 function module:LoadOptions()
 	-- Local variables

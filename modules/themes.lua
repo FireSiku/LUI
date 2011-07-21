@@ -45,8 +45,8 @@ end
 
 function module:Refresh_Forte()
 	if LUI:GetModule("Panels", true) then
-		if db.Forte.Enable then
-			local Forte = LUI:GetModule("Forte")
+		local Forte = LUI:GetModule("Forte", true)
+		if Forte and Forte.db.profile.Enable then
 			Forte:SetColors()
 		end
 	end

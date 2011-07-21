@@ -286,12 +286,13 @@ function LUI:SetDamageFont()
 	local DamageFont = LSM:Fetch("font", db.General.DamageFont)
 
 	COMBAT_TEXT_SCROLLSPEED = 1.9
-	COMBAT_TEXT_FADEOUT_TIME = 1.3 
+	COMBAT_TEXT_FADEOUT_TIME = 1.3
 	DAMAGE_TEXT_FONT = DamageFont
 	COMBAT_TEXT_HEIGHT = db.General.DamageFontSize
 	COMBAT_TEXT_CRIT_MAXHEIGHT = db.General.DamageFontSizeCrit
 	COMBAT_TEXT_CRIT_MINHEIGHT = db.General.DamageFontSizeCrit - 2
 end
+LUI:RegisterEvent("ADDON_LOADED", "SetDamageFont", self)
 
 ------------------------------------------------------
 -- / SET BLIZZ RAID FRAMES / --
@@ -1004,13 +1005,14 @@ local function getOptions()
 		
 		
 		for k,v in pairs(newModuleOptions) do -- needs api implementation and all modules need to be converted over to this
-			LUI.options.args[v:GetName()] = {
-				name = v.optionsName or v:GetName(),
+			module = type(v) == "string" and LUI:GetModule(v) or v
+			LUI.options.args[module:GetName()] = {
+				name = module.optionsName or module:GetName(),
 				type = "group",
-				order = v.order or 10,
-				childGroups = v.childGroups or "tab",
-				disabled = function() return not v.db.profile.Enable end,
-				args = type(v.LoadOptions) == "function" and v:LoadOptions() or v.options,
+				order = module.order or 10,
+				childGroups = module.childGroups or "tab",
+				disabled = function() return not module:IsEnabled() end,
+				args = type(module.LoadOptions) == "function" and module:LoadOptions() or module.options,
 			}
 		end
 		
@@ -1082,12 +1084,14 @@ end
 
 
 
-function LUI:NewNamespace(module, enableButton, addFunc)
-	table.insert(newModuleOptions, module)
+function LUI:NewNamespace(module, enableButton)
+	if (not module.addon) or IsAddOnLoaded(module.addon) then
+		table.insert(newModuleOptions, module:GetName())
+	end
 	
 	module.db = self.db:RegisterNamespace(module:GetName(), type(module.defaults) == "table" and module.defaults or {})
 	module.defaults = nil
-	
+		
 	if enableButton then
 		local mName = module:GetName()
 		table.insert(moduleList, {
@@ -1109,7 +1113,6 @@ function LUI:NewNamespace(module, enableButton, addFunc)
 						module:Disable()
 						if db.General.ModuleMessages then LUI:Print(mName.." Module Disabled") end
 					end
-					if type(addFunc) == "function" then addFunc() end
 				end,
 			},
 		})
@@ -1174,8 +1177,6 @@ function LUI:OnInitialize()
 		whileDead = 1,
 		hideOnEscape = 1
 	}
-	
-	self:RegisterEvent("PLAYER_LOGIN", "RunOnce", self)
 end
 
 function LUI:OnEnable()
@@ -1207,13 +1208,8 @@ function LUI:OnEnable()
 			print("For more Information visit www.wow-lui.com")
 		end
 		
-		self:SetDamageFont()
 		self:SetBlizzRaidFrames()
 	end
-end
-
-function LUI:RunOnce() -- This fires after OnEnable
-	self:UnregisterEvent("PLAYER_LOGIN")
 end
 
 
