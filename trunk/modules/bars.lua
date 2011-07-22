@@ -1642,7 +1642,10 @@ end
 
 function module:SetBars()
 	if not (IsAddOnLoaded("Bartender4") or IsAddOnLoaded("Dominos")) then
-		if not db.Bars.StatesLoaded then LoadStates(defaultstate) end
+		if not db.Bars.StatesLoaded then
+			LoadStates(defaultstate)
+			db.Bars.StatesLoaded = true
+		end
 		
 		self:SetLibKeyBound()
 		
