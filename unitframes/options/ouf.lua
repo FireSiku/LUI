@@ -9,7 +9,7 @@ local _, ns = ...
 local oUF = ns.oUF or oUF
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF")
+local module = LUI:NewModule("oUF", "AceHook-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -462,6 +462,30 @@ function module:EnableBlizzard(unit)
 	end
 end
 
+function module:SetBlizzardRaidFrames()
+	local useBlizz = db.oUF.Raid.UseBlizzard
+	if IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") or db.oUF.Raid.Enable then
+		useBlizz = false
+	end
+	if useBlizz then
+		module:Unhook(CompactRaidFrameManager, "Show")
+		module:Unhook(CompactRaidFrameContainer, "Show")
+		-- if UnitInRaid("player") then			-- may add back in
+			CompactRaidFrameManager:Show()
+			CompactRaidFrameContainer:Show()
+		-- end
+	else
+		if not module:IsHooked(CompactRaidFrameManager, "Show") then
+		module:RawHook(CompactRaidFrameManager, "Show", LUI.dummy, true)
+		end
+		if not module:IsHooked(CompactRaidFrameContainer, "Show") then
+			module:RawHook(CompactRaidFrameContainer, "Show", LUI.dummy, true)
+		end
+		CompactRaidFrameManager:Hide()
+		CompactRaidFrameContainer:Hide()
+	end
+end
+
 local ufUnits = {
 	Player = "player",
 	Target = "target",
@@ -689,6 +713,11 @@ toggleFuncs = {
 				handler:RegisterEvent("PARTY_MEMBERS_CHANGED")
 				handler:RegisterEvent("RAID_ROSTER_UPDATE")
 				handler:SetScript("OnEvent", function(self)
+					if InCombatLockdown() then
+						self:RegisterEvent("PLAYER_REGEN_ENABLED") -- prevents updating untill end of combat to stop SetAttribute errors
+						return
+					end
+					
 					if db.oUF.Party.Enable == false then
 						self:SetAttribute("vis", nil)
 						return
@@ -1020,6 +1049,8 @@ toggleFuncs = {
 
 	Raid = function()
 		if db.oUF.Raid.Enable then
+			module:SetBlizzardRaidFrames()
+			
 			if IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") then
 				return
 			end
@@ -1138,6 +1169,8 @@ toggleFuncs = {
 				
 				oUF_LUI_raid:Hide()
 			end
+			
+			module:SetBlizzardRaidFrames()
 		end
 	end,
 }

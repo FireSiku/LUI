@@ -10,7 +10,7 @@ local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 local Panels = LUI:GetModule("Panels")
-local module = LUI:NewModule("Bars")
+local module = LUI:NewModule("Bars", "AceHook-3.0")
 local LibKeyBound = LibStub("LibKeyBound-1.0")
 
 local db
@@ -99,6 +99,8 @@ local function LoadStates(data)
 			db.Bars[k].State = v
 		end
 	end
+	
+	db.Bars.StatesLoaded = true
 end
 
 local function GetAnchorStatus(anchor)
@@ -1073,12 +1075,16 @@ function module:SetButtons()
 		for i = 1, NUM_SHAPESHIFT_SLOTS do
 			StyleButton(_G["ShapeshiftButton"..i])
 		end
+		
+		if LUIShapeshiftBar and LUIShapeshiftBar.MoveShapeshift then
+			LUIShapeshiftBar.MoveShapeshift()
+		end
 	end
 	
-	hooksecurefunc("ActionButton_Update", StyleButton)
-	hooksecurefunc("PetActionBar_Update", StylePetButtons)
-	hooksecurefunc("ShapeshiftBar_Update", StyleShapeshiftButtons)
-	hooksecurefunc("ShapeshiftBar_UpdateState", StyleShapeshiftButtons)
+	module:SecureHook("ActionButton_Update", StyleButton)
+	module:SecureHook("PetActionBar_Update", StylePetButtons)
+	module:SecureHook("ShapeshiftBar_Update", StyleShapeshiftButtons)
+	module:SecureHook("ShapeshiftBar_UpdateState", StyleShapeshiftButtons)
 	
 	-- flyout
 	local buttons = 0
@@ -1144,7 +1150,7 @@ function module:SetButtons()
 			end
 		end
 	end
-	hooksecurefunc("ActionButton_UpdateFlyout", StyleFlyout)
+	module:SecureHook("ActionButton_UpdateFlyout", StyleFlyout)
 	
 	-- hotkey text replace
 	-- only EN client :/
@@ -1174,7 +1180,7 @@ function module:SetButtons()
 			hotkey:SetText(text)
 		end
 	end
-	hooksecurefunc("ActionButton_UpdateHotkeys", UpdateHotkey)
+	module:SecureHook("ActionButton_UpdateHotkeys", UpdateHotkey)
 	
 	-- usable coloring on icon
 	local function Button_OnUpdate(button, elapsed)
@@ -1201,7 +1207,7 @@ function module:SetButtons()
 			button.__elapsed = button.__elapsed + elapsed
 		end
 	end
-	hooksecurefunc("ActionButton_OnUpdate", Button_OnUpdate)
+	module:SecureHook("ActionButton_OnUpdate", Button_OnUpdate)
 end
 
 function module:SetBottomBar1()
@@ -1561,8 +1567,7 @@ function module:SetShapeshiftBar()
 			previous = button
 		end
 	end
-
-	hooksecurefunc("ShapeshiftBar_Update", MoveShapeshift)
+	bar.MoveShapeshift = MoveShapeshift -- for the hook in the SetButtons function to access
 
 	MoveShapeshift()
 end
@@ -1613,21 +1618,24 @@ function module:HideBlizzard()
 	}
 
 	for _, frame in pairs(FramesToHide) do
-		if frame:GetObjectType() == "Frame" then frame:UnregisterAllEvents() end
-		frame:HookScript("OnShow", function(self) self:Hide() end)
+		if not module:IsHooked(frame, "Show") then
+			module:RawHook(frame, "Show", LUI.dummy, true)
+		end
 		frame:Hide()
-		frame:SetAlpha(0)
 	end
 
-	hooksecurefunc("TalentFrame_LoadUI", function() PlayerTalentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED") end)
+	module:SecureHook("TalentFrame_LoadUI", function()
+		PlayerTalentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+	end)
 
 	local totem = _G["MultiCastActionBarFrame"]
 
 	if not totem then return end
 
-	totem:UnregisterAllEvents()
+	if not module:IsHooked(totem, "Show") then
+		module:RawHook(totem, "Show", LUI.dummy, true)
+	end
 	totem:Hide()
-	totem:HookScript("OnShow", function(self) self:Hide() end)
 end
 
 function module:SetLibKeyBound()
@@ -1642,10 +1650,7 @@ end
 
 function module:SetBars()
 	if not (IsAddOnLoaded("Bartender4") or IsAddOnLoaded("Dominos")) then
-		if not db.Bars.StatesLoaded then
-			LoadStates(defaultstate)
-			db.Bars.StatesLoaded = true
-		end
+		if not db.Bars.StatesLoaded then LoadStates(defaultstate) end
 		
 		self:SetLibKeyBound()
 		
@@ -1664,7 +1669,7 @@ function module:SetBars()
 		self:SetButtons()
 		
 		-- because of an ugly bug...
-		hooksecurefunc(CharacterFrame, "Show", function()
+		module:SecureHook(CharacterFrame, "Show", function()
 			TokenFrame_Update()
 		end)
 	else
@@ -2149,7 +2154,6 @@ function module:LoadOptions()
 		Bars = {
 			name = "Bars",
 			type = "group",
-			disabled = function() return InCombatLockdown() end,
 			childGroups = "tab",
 			args = {
 				Settings = {
@@ -2248,6 +2252,12 @@ function module:LoadOptions()
 			},
 		},
 	}
+	
+	for _, v in pairs(options.Bars.args) do
+		if type(v) == "table" then
+			v.disabled = InCombatLockdown
+		end
+	end
 	
 	return options
 end

@@ -13,15 +13,18 @@ local db
 function module:ShowMaintankFrames()
 	oUF_LUI_maintank:SetAttribute("groupFilter", nil)
 	oUF_LUI_maintank:SetAttribute("showSolo", 1)
-	self:RegisterEvent("PLAYER_REGEN_DISABLED", self.HideMaintankFrames, self)
+	
+	self:RegisterEvent("PLAYER_REGEN_DISABLED", "HideMaintankFrames")
 end
 
 function module:HideMaintankFrames(event)
+	self:UnregisterEvent("PLAYER_REGEN_DISABLED")
+	
 	oUF_LUI_maintank:SetAttribute("groupFilter", "MAINTANK")
 	oUF_LUI_maintank:SetAttribute("showSolo", 0)
+	
 	if event then
-		self:UnregisterEvent(event)
-		LUI:Print("MainTank Frames hidden due to combat")
+		LUI:Print("Dummy MainTank Frames hidden due to combat")
 	end
 end
 

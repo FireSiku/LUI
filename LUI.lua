@@ -12,9 +12,10 @@ oUF = ns.oUF or oUF
 local AceAddon = LibStub("AceAddon-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-LUI = AceAddon:NewAddon("LUI", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceSerializer-3.0") -- localize
-local LUI = _G["LUI"] -- this is a temp localization for this file
-local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+LUI = AceAddon:NewAddon("LUI", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceSerializer-3.0", "AceComm-3.0") -- localize
+local LUI = _G.LUI -- this is a temp localization for this file
+local ACD = LibStub("AceConfigDialog-3.0")
+local ACR = LibStub("AceConfigRegistry-3.0")
 
 LUI.oUF = {}
 
@@ -279,6 +280,83 @@ function LUI:ClearFrames(frameList)
 end
 
 ------------------------------------------------------
+-- / SYNC ADDON VERSION / --
+------------------------------------------------------
+
+function LUI:SyncAddonVersion()
+	local luiversion, version, newVersion = GetAddOnMetadata("LUI", "Version"), "", ""
+	local myRealm, myFaction, inGroup = GetRealmName(), (UnitFactionGroup("player") == "Horde" and 0 or 1), false
+	
+	while luiversion ~= nil do
+		local pos = strfind(luiversion, "%.")
+		if pos then
+			version = version .. format("%03d.", strsub(luiversion, 1, pos-1))
+			
+			
+			luiversion = strsub(luiversion, pos+1)
+		else
+			version = version .. format("%03d", luiversion)
+			luiversion = nil
+			newVersion = version
+		end
+	end
+	
+	local function sendVersion(distribution, target) -- (distribution [, target])
+		if distribution == "RAID" then
+			local zoneType = select(2, IsInInstance())
+			if zoneType == "pvp" or zoneType == "arena" then
+				distribution = "BATTLEGROUND"
+			end
+		end
+		
+		LUI:SendCommMessage("LUI_Version", version, distribution, target)
+	end
+	
+	local function checkVersion(prefix, text, distribution, from)
+		if version < text and newVersion < text then -- your version out of date (only print once)
+			newVersion = text
+			LUI:Print("Version " .. gsub(text, "%d+", tonumber) .. " available for download.")
+		elseif version > text and distribution ~= "WHISPER" then -- their version out of date (tell them)
+			sendVersion("WHISPER", from)
+		end
+	end
+	
+	local function groupUpdate(groupType)
+		if not groupType then return end
+		if groupType == "Party" and GetNumRaidMembers() > 0 then return end
+		
+		if (groupType == "Party" and (GetNumPartyMembers() >= 1) or (GetNumRaidMembers() >= 1)) then
+			if inGroup then return end
+			inGroup = true
+			sendVersion("Raid")
+		else
+			inGroup = false
+		end
+	end
+	
+	LUI:RegisterComm("LUI_Version", checkVersion)
+	
+	for i = 1, GetNumFriends() do -- send to friends via whisper on login
+		local name, _, _, _, connected = GetFriendInfo(i)
+		if connected then
+			sendVersion("WHISPER", name)
+		end
+	end
+	for i = 1, BNGetNumFriends() do -- send to BN friends (on your realm) via whisper on login
+		local _, _, _, toonName, toonID, client, isOnline = BNGetFriendInfo(i)
+		if isOnline and client == "WoW" then
+			local _, _, _, realmName, _, faction = BNGetToonInfo(toonID or 0)
+			if realmName == myRealm and faction == myFaction then
+				sendVersion("WHISPER", toonName)
+			end
+		end
+	end
+	sendVersion("GUILD") -- send to guild on login
+	LUI:RegisterEvent("PARTY_MEMBERS_CHANGED", groupUpdate, "Party") -- send to party on join party
+	LUI:RegisterEvent("RAID_ROSTER_UPDATE", groupUpdate, "Raid") -- send to raid on join raid
+end
+
+------------------------------------------------------
 -- / SET DAMAGE FONT / --
 ------------------------------------------------------
 
@@ -293,34 +371,6 @@ function LUI:SetDamageFont()
 	COMBAT_TEXT_CRIT_MINHEIGHT = db.General.DamageFontSizeCrit - 2
 end
 LUI:RegisterEvent("ADDON_LOADED", "SetDamageFont", self)
-
-------------------------------------------------------
--- / SET BLIZZ RAID FRAMES / --
-------------------------------------------------------
-
-function LUI:SetBlizzRaidFrames(enabled) -- true = use blizz frames, false = hide
-	if enabled == nil then
-		enabled = not (IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") or db.oUF.Raid.Enable)
-	end
-	
-	if enabled then
-		self:Unhook(CompactRaidFrameManager, "Show")
-		self:Unhook(CompactRaidFrameContainer, "Show")
-		if UnitInRaid("player") then
-			CompactRaidFrameManager:Show()
-			CompactRaidFrameContainer:Show()
-		end
-	else
-		if not self:IsHooked(CompactRaidFrameManager, "Show") then
-			self:RawHook(CompactRaidFrameManager, "Show", self.dummy, true)
-		end
-		if not self:IsHooked(CompactRaidFrameContainer, "Show") then
-			self:RawHook(CompactRaidFrameContainer, "Show", self.dummy, true)
-		end
-		CompactRaidFrameManager:Hide()
-		CompactRaidFrameContainer:Hide()
-	end
-end
 
 ------------------------------------------------------
 -- / LOAD EXTRA MODULES / --
@@ -1208,7 +1258,7 @@ function LUI:OnEnable()
 			print("For more Information visit www.wow-lui.com")
 		end
 		
-		self:SetBlizzRaidFrames()
+		self:SyncAddonVersion()
 	end
 end
 
@@ -1244,15 +1294,15 @@ end
 
 function LUI:Open(force)
 	function LUI:Open(force)
-		if AceConfigDialog.OpenFrames.LUI and not force then
-			AceConfigDialog:Close("LUI")
+		if ACD.OpenFrames.LUI and not force then
+			ACD:Close("LUI")
 		else
-			AceConfigDialog:Open("LUI")
-			AceConfigDialog.OpenFrames.LUI.frame:SetScale(db.General.BlizzFrameScale)
-			AceConfigDialog.OpenFrames.LUI:SetCallback("OnClose", function(widget, event)
+			ACD:Open("LUI")
+			ACD.OpenFrames.LUI.frame:SetScale(db.General.BlizzFrameScale)
+			ACD.OpenFrames.LUI:SetCallback("OnClose", function(widget, event)
 				widget.frame:SetScale(1)
 				local appName = widget:GetUserData("appName")
-				AceConfigDialog.OpenFrames[appName] = nil
+				ACD.OpenFrames[appName] = nil
 				LibStub("AceGUI-3.0"):Release(widget)
 			end)
 		end
@@ -1260,7 +1310,15 @@ function LUI:Open(force)
 	
 	self.optionsFrames = {}
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("LUI", getOptions)
-	AceConfigDialog:SetDefaultSize("LUI", 720,525)
+	ACD:SetDefaultSize("LUI", 720,525)
+	
+	local function refreshOptions()
+		if ACD.OpenFrames.LUI then
+			ACR:NotifyChange("LUI")
+		end
+	end
+	self:RegisterEvent("PLAYER_REGEN_ENABLED", refreshOptions)
+	self:RegisterEvent("PLAYER_REGEN_DISABLED", refreshOptions)
 	
 	return LUI:Open(force)
 end
@@ -1277,7 +1335,7 @@ function LUI:SetupOptions()
 	--self.optionsFrames = {}
 	--LibStub("AceConfig-3.0"):RegisterOptionsTable("LUI", getOptions)
 	
-	--AceConfigDialog:SetDefaultSize("LUI", 720,525)
+	--ACD:SetDefaultSize("LUI", 720,525)
 	self:RegisterChatCommand( "lui", "ChatCommand")
 	self:RegisterChatCommand( "LUI", "ChatCommand")
 end

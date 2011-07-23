@@ -13,7 +13,7 @@
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local module = LUI:NewModule("Frames", "AceHook-3.0")
+local module = LUI:NewModule("Frames")
 
 local db
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"

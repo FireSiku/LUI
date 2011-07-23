@@ -384,6 +384,60 @@ function module:SetChat()
 	local replace = string.gsub
 	local find = string.find
 	
+	-----------------------------------------------------------------------------
+	-- Copy url
+	-----------------------------------------------------------------------------
+	
+	module:RawHook("SetItemRef", function(link, text, button, chatFrame)
+		if (strsub(link, 1, 3) == "url") then
+			local ChatFrameEditBox = ChatEdit_ChooseBoxForSend()
+			local url = strsub(link, 5);
+			if (not ChatFrameEditBox:IsShown()) then
+				ChatEdit_ActivateChat(ChatFrameEditBox)
+			end
+			ChatFrameEditBox:Insert(url)
+			ChatFrameEditBox:HighlightText()
+
+		else
+			module.hooks.SetItemRef(link, text, button, chatFrame)
+		end
+	end, true)
+	
+	local ReURL_Color = "b4b4b4"
+	local ReURL_Brackets = false
+	local ReURL_CustomColor = true
+	
+	local function ReURL_Link(url)
+		url = "|Hurl:" .. url .. "|h" .. (ReURL_Brackets and "[" or "") .. url .. (ReURL_Brackets and "]" or "") .. "|h"
+		url = (ReURL_CustomColor and " |cff"..ReURL_Color or " ") .. url .. (ReURL_CustomColor and "|r " or " ")
+		
+		return url
+	end
+	
+	local function ReURL_AddLinkSyntax(chatstring)
+		if (type(chatstring) == "string") then
+			local extraspace;
+			if (not strfind(chatstring, "^ ")) then
+				extraspace = true;
+				chatstring = " "..chatstring;
+			end
+			chatstring = gsub (chatstring, " www%.([_A-Za-z0-9-]+)%.(%S+)%s?", ReURL_Link("www.%1.%2"))
+			chatstring = gsub (chatstring, " (%a+)://(%S+)%s?", ReURL_Link("%1://%2"))
+			chatstring = gsub (chatstring, " ([_A-Za-z0-9-%.]+)@([_A-Za-z0-9-]+)(%.+)([_A-Za-z0-9-%.]+)%s?", ReURL_Link("%1@%2%3%4"))
+			chatstring = gsub (chatstring, " (%d%d?%d?)%.(%d%d?%d?)%.(%d%d?%d?)%.(%d%d?%d?):(%d%d?%d?%d?%d?)%s?", ReURL_Link("%1.%2.%3.%4:%5"))
+			chatstring = gsub (chatstring, " (%d%d?%d?)%.(%d%d?%d?)%.(%d%d?%d?)%.(%d%d?%d?)%s?", ReURL_Link("%1.%2.%3.%4"))
+			if (extraspace) then
+				chatstring = strsub(chatstring, 2);
+			end
+		end
+		
+		return chatstring
+	end
+	
+	-----------------------------------------------------------------------------
+	-- Short channel names
+	-----------------------------------------------------------------------------
+	
 	local replaceschan = {
 		['Гильдия'] = '[Г]',
 		['Группа'] = '[Гр]',
@@ -413,8 +467,7 @@ function module:SetChat()
 		['(%d+)%. .-'] = '[%1]',
 	}
 	
-	-- Create function to be hooked
-	local function chatFrame_AddMessage(frame, text, ...)
+	local function shortChannelNames(text)
 		if db.Chat.ShortChannelNames == true then
 			for k,v in pairs(replaceschan) do
 				text = text:gsub('|h%['..k..'%]|h', '|h'..v..'|h')
@@ -426,11 +479,16 @@ function module:SetChat()
 		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h whispers:", "From [|Hplayer:%1:%2|h%3|h]:")
 		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h says:", "[|Hplayer:%1:%2|h%3|h]:")	
 		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h yells:", "[|Hplayer:%1:%2|h%3|h]:")
-			
-		return self.hooks[frame].AddMessage(frame, text, ...)
+		
+		return text
 	end
 	
 	-- Hook into the AddMessage function
+	local function chatFrame_AddMessage(frame, text, ...)
+		text = ReURL_AddLinkSyntax(shortChannelNames(text))
+		
+		return self.hooks[frame].AddMessage(frame, text, ...)
+	end
 	for i = 1, NUM_CHAT_WINDOWS do
 		local chatFrame = _G["ChatFrame"..i]
 		if chatFrame and chatFrame.AddMessage then
@@ -457,7 +515,7 @@ function module:SetChat()
 	CheckChatMenuButton()
 	CheckChatMinimizeButton()
 	
-	GeneralDockManagerOverflowButton:SetScript("OnShow", GeneralDockManagerOverflowButton.Hide)
+	module:RawHook(GeneralDockManagerOverflowButton, "Show", LUI.dummy, true)
 	GeneralDockManagerOverflowButton:Hide()
 	
 	-- hide editbox colored round border
@@ -506,18 +564,17 @@ function module:SetChat()
 		editbox:Hide()
 		editbox:HookScript('OnEnterPressed', function(s) s:Hide() end)
 		
-		-- SetPosition
-		SetEditBoxPosition()
-		
 		-- Disable alt key usage
 		editbox:SetAltArrowKeyMode(false)
-		
-		--	Color Editbox
-		SetEditBoxBackdrop()
-		self:Unhook("ChatEdit_UpdateHeader")
-		self:Hook("ChatEdit_UpdateHeader", "SetEditBoxColor", true)
-		self:SetEditBoxColor()
 	end
+	
+	-- Set Editboxes' Positions
+	SetEditBoxPosition()
+	
+	--	Color Editboxes
+	SetEditBoxBackdrop()
+	self:SecureHook("ChatEdit_UpdateHeader", "SetEditBoxColor")
+	self:SetEditBoxColor()
 	
 	-----------------------------------------------------------------------------
 	--Tab Settings
@@ -571,74 +628,6 @@ function module:SetChat()
 		for k, v in pairs(channels) do
 			ChatTypeInfo[k].sticky = 0
 		end
-	end
-
-	-----------------------------------------------------------------------------
-	-- copy url
-	-----------------------------------------------------------------------------
-	
-	local SetItemRef_orig = SetItemRef
-	function ReURL_SetItemRef(link, text, button, chatFrame)
-		if (strsub(link, 1, 3) == "url") then
-			local ChatFrameEditBox = ChatEdit_ChooseBoxForSend()
-			local url = strsub(link, 5);
-			if (not ChatFrameEditBox:IsShown()) then
-				ChatEdit_ActivateChat(ChatFrameEditBox)
-			end
-			ChatFrameEditBox:Insert(url)
-			ChatFrameEditBox:HighlightText()
-
-		else
-			SetItemRef_orig(link, text, button, chatFrame)
-		end
-	end
-	SetItemRef = ReURL_SetItemRef
-
-	function ReURL_AddLinkSyntax(chatstring)
-		if (type(chatstring) == "string") then
-			local extraspace;
-			if (not strfind(chatstring, "^ ")) then
-				extraspace = true;
-				chatstring = " "..chatstring;
-			end
-			chatstring = gsub (chatstring, " www%.([_A-Za-z0-9-]+)%.(%S+)%s?", ReURL_Link("www.%1.%2"))
-			chatstring = gsub (chatstring, " (%a+)://(%S+)%s?", ReURL_Link("%1://%2"))
-			chatstring = gsub (chatstring, " ([_A-Za-z0-9-%.]+)@([_A-Za-z0-9-]+)(%.+)([_A-Za-z0-9-%.]+)%s?", ReURL_Link("%1@%2%3%4"))
-			chatstring = gsub (chatstring, " (%d%d?%d?)%.(%d%d?%d?)%.(%d%d?%d?)%.(%d%d?%d?):(%d%d?%d?%d?%d?)%s?", ReURL_Link("%1.%2.%3.%4:%5"))
-			chatstring = gsub (chatstring, " (%d%d?%d?)%.(%d%d?%d?)%.(%d%d?%d?)%.(%d%d?%d?)%s?", ReURL_Link("%1.%2.%3.%4"))
-			if (extraspace) then
-				chatstring = strsub(chatstring, 2);
-			end
-		end
-		return chatstring
-	end
-
-	REURL_COLOR = "b4b4b4"
-	ReURL_Brackets = false
-	ReUR_CustomColor = true
-
-	function ReURL_Link(url)
-		if (ReUR_CustomColor) then
-			if (ReURL_Brackets) then
-				url = " |cff"..REURL_COLOR.."|Hurl:"..url.."|h["..url.."]|h|r "
-			else
-				url = " |cff"..REURL_COLOR.."|Hurl:"..url.."|h"..url.."|h|r "
-			end
-		else
-			if (ReURL_Brackets) then
-				url = " |Hurl:"..url.."|h["..url.."]|h "
-			else
-				url = " |Hurl:"..url.."|h"..url.."|h "
-			end
-		end
-		return url
-	end
-
-	--Hook all the AddMessage funcs
-	for i=1, NUM_CHAT_WINDOWS do
-		local frame = getglobal("ChatFrame"..i)
-		local addmessage = frame.AddMessage
-		frame.AddMessage = function(self, text, ...) addmessage(self, ReURL_AddLinkSyntax(text), ...) end
 	end
 	
 	------------------------------------------------------------------------

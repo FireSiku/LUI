@@ -8,6 +8,7 @@ function script:SetBlizzScale()
 		CharacterFrame,
 		DressUpFrame,
 		ItemSocketingFrame,
+		InspectFrame,
 		SpellBookFrame,
 		PlayerTalentFrame,
 		QuestLogFrame,

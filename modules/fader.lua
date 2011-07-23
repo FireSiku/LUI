@@ -170,18 +170,14 @@ function Fader:CreateFaderBar(bar)
 	bar.FaderBar:SetFrameStrata(fstrata)
 	bar:SetParent(bar.FaderBar)
 
-	-- Hook hide and show scripts.
-	bar.OldHide = bar.Hide
-	bar.Hide = function(self)
-		bar.FaderBar:Hide()
-		self:OldHide()
-	end
-	bar.OldShow = bar.Show
-	bar.Show = function(self)
-		bar.FaderBar:Show()
-		self:OldShow()
-	end
-
+	-- Hook show and hide scripts.
+	bar:HookScript("OnShow", function(self)
+		self.FaderBar:Show()
+	end)
+	bar:HookScript("OnHide", function(self)
+		self.FaderBar:Hide()
+	end)
+	
 	-- Create mouse hover updates.
 	bar.FaderBar.Throttle = 0
 	bar.FaderBar:SetScript("OnUpdate", function(self, elapsed)
@@ -579,26 +575,32 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 	local ApplySettings
 	if type(frame) == "table" and not frame.GetParent then
 		local oUF_Party = false
-		for _, f in pairs(frame) do if strfind(f:GetName(), "oUF_LUI_party") then oUF_Party = true end end
+		for _, f in pairs(frame) do if strfind(f:GetName(), "oUF_LUI_party") then oUF_Party = LUI:GetModule("oUF_Party") break end end
 
-		ApplySettings = function()
-			if odb.Enable then
-				if oUF_Party then
-					-- Disable Range Fader for Party
-					LUI:GetModule("oUF_Party"):ToggleRangeFade(false)
+		if oUF_Party then
+			ApplySettings = function()
+				if odb.Enable then
+					oUF_Party:ToggleRangeFade(false) -- Disable Range Fader for Party
+					for _, f in pairs(frame) do
+						Fader:RegisterFrame(f, odb)
+					end
+				else
+					for _, f in pairs(frame) do
+						Fader:UnregisterFrame(f)
+					end
+					oUF_Party:ToggleRangeFade() -- Set Range Fader for Party to correct state
 				end
-				
-				for _, f in pairs(frame) do
-					Fader:RegisterFrame(f, odb)
-				end
-			else
-				for _, f in pairs(frame) do
-					Fader:UnregisterFrame(f)
-				end
-				
-				if oUF_Party then
-					-- Set Range Fader for Party to correct state
-					LUI:GetModule("oUF_Party"):ToggleRangeFade()
+			end
+		else
+			ApplySettings = function()
+				if odb.Enable then
+					for _, f in pairs(frame) do
+						Fader:RegisterFrame(f, odb)
+					end
+				else
+					for _, f in pairs(frame) do
+						Fader:UnregisterFrame(f)
+					end
 				end
 			end
 		end

@@ -7,7 +7,7 @@
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("Orb", "AceHook-3.0")
+local module = LUI:NewModule("Orb")
 
 local db
 

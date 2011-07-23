@@ -11,7 +11,7 @@
 ]]
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local Merchant = LUI:NewModule("Merchant", "AceHook-3.0")
+local Merchant = LUI:NewModule("Merchant")
 
 -- Database and defaults shortcuts.
 local db

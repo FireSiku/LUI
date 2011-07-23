@@ -13,9 +13,6 @@ local module = LUI:NewModule("oUF_Boss", "AceHook-3.0")
 
 local db
 
-local eventWatch = CreateFrame("Frame")
-eventWatch:RegisterEvent("PLAYER_REGEN_DISABLED")
-
 function module:ShowBossFrames()
 	for k, v in next, oUF.objects do
 		if v.unit and v.unit:find("boss") then
@@ -28,20 +25,22 @@ function module:ShowBossFrames()
 	local height = oUF_LUI_boss:GetAttribute("Height")
 	oUF_LUI_boss:SetHeight(height * 4 + padding * 3)
 	
-	if not module:IsHooked(eventWatch, "OnEvent") then
-		module:HookScript(eventWatch, "OnEvent", "HideBossFrames")
-	end
+	self:RegisterEvent("PLAYER_REGEN_DISABLED", "HideBossFrames")
 end
 
-function module:HideBossFrames(self, event)
-	if event and event ~= "PLAYER_REGEN_DISABLED" then return end
+function module:HideBossFrames(event)
+	self:UnregisterEvent("PLAYER_REGEN_DISABLED")
+	
 	for k, v in next, oUF.objects do
 		if v.unit_ and v.unit_:find("boss") then
 			v:SetAttribute("unit", v.unit_)
+			v.unit_ = nil
 		end
 	end
-	module:Unhook(eventWatch, "OnEvent")
-	if event then LUI:Print("Boss Frames resetted due to combat") end
+	
+	if event then
+		LUI:Print("Dummy Boss Frames hidden due to combat")
+	end
 end
 
 local defaults = {

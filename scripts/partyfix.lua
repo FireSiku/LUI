@@ -1,3 +1,5 @@
+local script = LUI:NewScript("YAIAP", "AceHook-3.0")
+
 -- Create slash command to enable debug mode.
 local DEBUG = false
 SlashCmdList["LUIYAIAP"] = function()
@@ -7,35 +9,32 @@ end
 SLASH_LUIYAIAP1 = "/yaiap"
 
 -- Hook SendAddonMessage.
-local old = SendAddonMessage
-local function fix(pre, msg, ch, ...)
+script:RawHook("SendAddonMessage", function(prefix, text, chatType, ...)
 	-- Filter messages with oversized parameters.
-	if type(pre) == "string" and #pre > 16 then
+	if type(prefix) == "string" and #prefix > 16 then
 		if DEBUG then
 			-- Print message error info.
-			print("|c0090ffffLUI|r: YAIAP: ["..strupper(ch).."] prefix is to large ("..#pre.."): debugstack = "..debugstack(3, 4, 0))
+			print("|c0090ffffLUI|r: YAIAP: ["..strupper(chatType).."] prefix is to large ("..#prefix.."): debugstack = "..debugstack(3, 4, 0))
 
 			-- Pipe errored message to SendAddonMessage to create an error for debug.
-			old(pre, msg, ch, ...)
+			script.hooks.SendAddonMessage(prefix, text, chatType, ...)
 		end
 		return
 	end
 
 	-- Filter messages en route to a channel not accessible.
-	local chl = strlower(ch)
+	local chl = strlower(chatType)
 	if (chl == "raid" and GetRealNumRaidMembers() == 0) or (chl == "party" and GetRealNumPartyMembers() == 0) or (chl == "guild" and not IsInGuild()) then
 		if DEBUG then
 			-- Print message error info.
-			print("|c0090ffffLUI|r: YAIAP: ["..strupper(ch).."] prefix = |c0000ff00"..pre.."|r: debugstack = "..debugstack(3, 4, 0))
+			print("|c0090ffffLUI|r: YAIAP: ["..strupper(chatType).."] prefix = |c0000ff00"..prefix.."|r: debugstack = "..debugstack(3, 4, 0))
 
 			-- Pipe errored message to SendAddonMessage to create an erorr for debug.
-			old(pre, msg, ch, ...)
+			script.hooks.SendAddonMessage(prefix, text, chatType, ...)
 		end
 		return
 	end
 
 	-- Pipe accepted message to SendAddonMessage.
-	old(pre, msg, ch, ...)
-end
-
-SendAddonMessage = fix
+	script.hooks.SendAddonMessage(prefix, text, chatType, ...)
+end, true)
