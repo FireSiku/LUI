@@ -1532,8 +1532,8 @@ function module:SetGF()
 		
 		local function SetToastData(index, inGroup)
 			local toast, bc, color = toasts[index]
-			local presenceID, givenName, surname, toonName, _, client, isOnline, _, isAFK, isDND, broadcast, notes = BNGetFriendInfo(index)
-			local _, _, _, realm, _, faction, _, class, _, zone, level, gameText = BNGetToonInfo(toonID or 0)
+			local presenceID, givenName, surname, toonName, toonID, client, isOnline, _, isAFK, isDND, broadcast, notes = BNGetFriendInfo(index)
+			local _, _, _, realm, _, faction, race, class, _, zone, level, gameText = BNGetToonInfo(toonID or 0)
 			local statusText = (isAFK or isDND) and (formatedStatusText()):format(isAFK and CHAT_FLAG_AFK or isDND and CHAT_FLAG_DND) or ""
 			
 			if broadcast and broadcast ~= "" then
@@ -1549,7 +1549,7 @@ function module:SetGF()
 			toast.unit = toonName
 			toast.realID = BATTLENET_NAME_FORMAT:format(givenName, surname)
 			
-			SetStatusLayout(toast.status, toast.name )
+			SetStatusLayout(toast.status, toast.name)
 			
 			client = client == BNET_CLIENT_WOW and WOW or BNET_CLIENT_SC2 and SC2 or 0
 			toast.client = client
@@ -1557,13 +1557,12 @@ function module:SetGF()
 			if client == WOW then
 				toast.faction:SetTexture("Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Factions")
 				toast.faction:SetTexCoord(faction == 1 and 0.03 or 0.53, faction == 1 and 0.47 or 0.97, 0.03, 0.97)
-				zone = (not zone or zone == "") and UNKNOWN or zone
+				zone = (zone == nil or zone == "") and UNKNOWN or zone
 				toast.zone:SetPoint("TOPLEFT", toast.faction, "TOPRIGHT", textOffset, 0)
 				toast.zone:SetTextColor(GetZoneColor(zone))
 				toast.sameRealm = realm == myPlayerRealm
 
 				if not toast.sameRealm then
-					-- hide faction icon and move zone to level
 					local r,g,b = unpack(GF_Colors.Realm)
 					zone = ("%1$s |cff%3$.2x%4$.2x%5$.2x- %2$s"):format(zone, realm, r*255, g*255, b*255)
 				end
