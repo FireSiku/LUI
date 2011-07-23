@@ -3562,7 +3562,7 @@ function module:LoadOptions()
 					desc = "Whether you want your gold display to show your server total gold, or your current toon's gold.",
 					type = "toggle",
 					disabled = StatDisabled,
-					get = function() return db.profile.Gold.ShowToonMoney end,
+					get = function() return not db.profile.Gold.ShowToonMoney end,
 					set = function(info, value)
 						db.profile.Gold.ShowToonMoney = value
 						InfoStats.Gold:PLAYER_MONEY()
