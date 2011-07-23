@@ -157,6 +157,32 @@ function Fader:UnregisterFrame(frame)
 end
 
 --[[
+	Function..: FaderBar_OnUpdate(self, elapsed)
+	Notes.....: Checks if the mouse is hovering over the fader bar, and calls the OnEnter/OnLeave scripts.
+]]
+
+function Fader.FaderBar_OnUpdate(self, elapsed)
+	-- Check frame has mouse hover fading enabled.
+	if not (Fader.RegisteredFrames and Fader.RegisteredFrames[self] and Fader.RegisteredFrames[self].Hover) then return end
+
+	-- Throttle the OnUpdate script.
+	self.Throttle = self.Throttle + elapsed
+	if self.Throttle < 0.1 then return end
+	self.Throttle = 0
+
+	-- Check if mouse is hovering over the fader bar.
+	local hover = MouseIsOver(self)
+	if self.Fader.mouseHover == hover then return end
+
+	-- Call relative scripts if state has changed.
+	if hover then
+		self:GetScript("OnEnter")(self)
+	else
+		self:GetScript("OnLeave")(self)
+	end
+end
+
+--[[
 	Function..: CreateFaderBar(bar)
 	Notes.....: Creates a parent frame for a given bar which has children buttons. Main use is for frames which struggle with mouse hover scripts.
 	Parameters:
@@ -170,32 +196,13 @@ function Fader:CreateFaderBar(bar)
 	bar.FaderBar:SetFrameStrata(fstrata)
 	bar:SetParent(bar.FaderBar)
 
-	-- Hook show and hide scripts.
-	bar:HookScript("OnShow", function(self)
-		self.FaderBar:Show()
-	end)
-	bar:HookScript("OnHide", function(self)
-		self.FaderBar:Hide()
-	end)
+	-- Hook hide and show scripts.
+	self:SecureHookScript(bar, "OnHide", function(self) self.FaderBar:Hide() end)
+	self:SecureHookScript(bar, "OnShow", function(self) self.FaderBar:Show() end)
 	
 	-- Create mouse hover updates.
 	bar.FaderBar.Throttle = 0
-	bar.FaderBar:SetScript("OnUpdate", function(self, elapsed)
-		if not (Fader.RegisteredFrames and Fader.RegisteredFrames[self] and Fader.RegisteredFrames[self].Hover) then return end
-
-		self.Throttle = self.Throttle + elapsed
-		if self.Throttle < 0.1 then return end
-		self.Throttle = 0
-
-		local hover = MouseIsOver(self)
-		if self.Fader.mouseHover == hover then return end
-
-		if hover then
-			self:GetScript("OnEnter")(self)
-		else
-			self:GetScript("OnLeave")(self)
-		end
-	end)
+	bar.FaderBar:SetScript("OnUpdate", Fader.FaderBar_OnUpdate)
 end
 
 ------------------------------------------------------
@@ -542,19 +549,12 @@ end
 
 function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 	local frame
-	if type(object) == "string" then
-		frame = _G[object]
-	elseif type(object) == "table" and not object.GetParent then
+	if type(object) == "table" and not object.GetParent then
 		frame = {}
 	
 		local numObjects = 0
 		for k, f in pairs(object) do
-			if type(f) == "string" then
-				frame[k] = _G[f]
-			else
-				frame[k] = f
-			end
-
+			frame[k] = f
 			numObjects = numObjects + 1
 		end
 
@@ -563,9 +563,9 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 	else
 		frame = object
 	end
-	
-	-- Check frame is usable.
-	if type(frame) ~= "table" then return end
+
+	-- Check frame is an usable object.
+	if (type(frame) ~= "table") and (type(frame) ~= "string") then return end
 	
 	-- Shortcut database values.
 	local odb = objectDB
@@ -574,42 +574,61 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 	-- Create ApplySettings function.
 	local ApplySettings
 	if type(frame) == "table" and not frame.GetParent then
-		local oUF_Party = false
-		for _, f in pairs(frame) do if strfind(f:GetName(), "oUF_LUI_party") then oUF_Party = LUI:GetModule("oUF_Party") break end end
+		-- Check if objects are for oUF_Party.
+		local oUF_Party
+		for _, f in pairs(frame) do
+			if type(f) == "string" then
+				if _G[f] and strfind(_G[f]:GetName(), "oUF_LUI_party") then
+					oUF_Party = LUI:GeModule("oUF_Party")
+					break
+				end
+			else
+				if strfind(f:GetName(), "oUF_LUI_party") then
+					oUF_Party = LUI:GetModule("oUF_Party")
+					break
+				end
+			end			
+		end
 
-		if oUF_Party then
-			ApplySettings = function()
-				if odb.Enable then
-					oUF_Party:ToggleRangeFade(false) -- Disable Range Fader for Party
-					for _, f in pairs(frame) do
+		ApplySettings = function()
+			if odb.Enable then
+				-- Disable Range Fader for Party
+				if oUF_Party then oUF_Party:ToggleRangeFade(false) end
+
+				for _, f in pairs(frame) do
+					if type(f) == "string" then
+						if _G[f] then Fader:RegisterFrame(_G[f], odb) end
+					else
 						Fader:RegisterFrame(f, odb)
 					end
-				else
-					for _, f in pairs(frame) do
-						Fader:UnregisterFrame(f)
-					end
-					oUF_Party:ToggleRangeFade() -- Set Range Fader for Party to correct state
 				end
-			end
-		else
-			ApplySettings = function()
-				if odb.Enable then
-					for _, f in pairs(frame) do
-						Fader:RegisterFrame(f, odb)
-					end
-				else
-					for _, f in pairs(frame) do
+			else
+				for _, f in pairs(frame) do
+					if type(f) == "string" then
+						if _G[f] then Fader:UnregisterFrame(_G[f]) end
+					else
 						Fader:UnregisterFrame(f)
 					end
 				end
+
+				-- Set Range Fader for Party to correct state
+				if oUF_Party then oUF_Party:ToggleRangeFade() end 
 			end
 		end
 	else
 		ApplySettings = function()
 			if odb.Enable then
-				Fader:RegisterFrame(frame, odb)
+				if type(frame) == "string" then
+					if _G[frame] then Fader:RegisterFrame(_G[frame], odb) end
+				else
+					Fader:RegisterFrame(frame, odb)
+				end
 			else
-				Fader:UnregisterFrame(frame)
+				if type(frame) == "string" then
+					if _G[frame] then Fader:UnregisterFrame(_G[frame]) end
+				else
+					Fader:UnregisterFrame(frame)
+				end
 			end
 		end
 	end
