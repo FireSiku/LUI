@@ -13,7 +13,7 @@
 
 -- Local includes/definitions.
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("InterruptAnnouncer", "AceHook-3.0")
+local module = LUI:NewModule("InterruptAnnouncer")
 
 -- Database and defaults shortcuts.
 local db

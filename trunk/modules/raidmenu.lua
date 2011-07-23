@@ -13,7 +13,7 @@
 -- Local includes/definitions
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LSM = LibStub("LibSharedMedia-3.0")
-local module = LUI:NewModule("RaidMenu", "AceHook-3.0")
+local module = LUI:NewModule("RaidMenu")
 local Themes = LUI:GetModule("Themes")
 local Micromenu = LUI:GetModule("Micromenu", true)
 local db

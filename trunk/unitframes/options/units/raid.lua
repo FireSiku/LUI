@@ -35,6 +35,7 @@ end
 local defaults = {
 	Raid = {
 		Enable = true,
+		UseBlizzard = false,
 		Height = "33",
 		Width = "77.5",
 		X = "-28.5",

@@ -500,7 +500,6 @@ function module:CreateOptions(index, unit)
 	local ToggleFunc = function()
 		LUI:GetModule("oUF"):Toggle(unit)
 		if unit == "Raid" then
-			LUI:SetBlizzRaidFrames()
 			if oufdb.Enable and db.Frames.Raid.Anchor ~= "oUF_LUI_raid" then
 				db.Frames.Raid.Anchor = "oUF_LUI_raid"
 				StaticPopup_Show("RELOAD_UI") -- to remove!
@@ -764,7 +763,7 @@ function module:CreateOptions(index, unit)
 						order = 1,
 						args = {
 							Enable = (unit ~= "Player" and unit ~= "Target") and LUI:NewToggle("Enable", "Whether you want to use "..unit.." Frame or not.", 1, oufdb, "Enable", oufdefaults, ToggleFunc) or nil,
-							UseBlizzard = (unit == "Party" or unit == "Boss" or unit == "Arena") and LUI:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, oufdb, "UseBlizzard", oufdefaults, ToggleFunc, nil, function() return oufdb.Enable end) or nil,
+							UseBlizzard = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Raid") and LUI:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, oufdb, "UseBlizzard", oufdefaults, ToggleFunc, nil, function() return oufdb.Enable end) or nil,
 							header = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank" or unit == "Raid") and LUI:NewHeader("General", 6) or nil,
 							Padding = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank" or unit == "Raid") and LUI:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.", 7, oufdb, "Padding", oufdefaults, ChangePadding, nil, disabledFunc2) or nil,
 							header2 = LUI:NewHeader("Frame Position", 9),

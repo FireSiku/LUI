@@ -25,7 +25,7 @@ end
 
 function script:SetTalentSpam()
 	if LUI.db.profile.General.HideTalentSpam then
-		self:Hook("SetActiveTalentGroup", "AddFilter", true)
+		self:SecureHook("SetActiveTalentGroup", "AddFilter")
 	else
 		self:Unhook("SetActiveTalentGroup")
 	end

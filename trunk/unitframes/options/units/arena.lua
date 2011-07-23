@@ -9,12 +9,9 @@ local _, ns = ...
 local oUF = ns.oUF or oUF
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF_Arena", "AceHook-3.0")
+local module = LUI:NewModule("oUF_Arena", "AceEvent-3.0")
 
 local db
-
-local eventWatch = CreateFrame("Frame")
-eventWatch:RegisterEvent("PLAYER_REGEN_DISABLED")
 
 function module:ShowArenaFrames()
 	for k, v in next, oUF.objects do
@@ -28,19 +25,22 @@ function module:ShowArenaFrames()
 	local height = oUF_LUI_arena:GetAttribute("Height")
 	oUF_LUI_arena:SetHeight(height * 5 + padding * 4)
 	
-	if not module:IsHooked(eventWatch, "OnEvent") then
-		module:HookScript(eventWatch, "OnEvent", "HideArenaFrames")
-	end
+	self:RegisterEvent("PLAYER_REGEN_DISABLED", "HideArenaFrames")
 end
 
-function module:HideArenaFrames(self, event)
-	if event and event ~= "PLAYER_REGEN_DISABLED" then return end
+function module:HideArenaFrames(event)
+	self:UnregisterEvent("PLAYER_REGEN_DISABLED")
+	
 	for k, v in next, oUF.objects do
 		if v.unit_ and v.unit_:match'(arena)%d' == 'arena' then
 			v:SetAttribute("unit", v.unit_)
+			v.unit_ = nil
 		end
 	end
-	if event then LUI:Print("Arena Frames resetted due to combat") end
+	
+	if event then
+		LUI:Print("Dummy Arena Frames hidden due to combat")
+	end
 end
 
 local defaults = {

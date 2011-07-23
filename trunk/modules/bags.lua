@@ -573,7 +573,7 @@ function module:SetBags()
 	function module:BackpackTokenFrame_Update()
 		currency:SetText(GetTrackedCurrency())
 	end
-	module:Hook("BackpackTokenFrame_Update", true)
+	module:SecureHook("BackpackTokenFrame_Update")
 
 	LUIBags:RegisterEvent("PLAYER_MONEY")
 	LUIBags:RegisterEvent("PLAYER_LOGIN")
@@ -866,10 +866,12 @@ end
 function module:EnableBags()
 	if db.Bags.Enable ~= true then return end
 
+	-- Commented out because key bag no longer exists
+	
 	-- hooking and setting key ring bag
 	-- this is just a reskin of Blizzard key bag to fit LUI
 	-- hooking OnShow because sometime key max slot changes.
-	if not module:IsHooked(ContainerFrame1, "OnShow") then
+	--[[if not module:IsHooked(ContainerFrame1, "OnShow") then
 		module:HookScript(ContainerFrame1, "OnShow", function(self)
 			local keybackdrop = CreateFrame("Frame", nil, self)
 			keybackdrop:SetPoint("TOPLEFT", LUI:Scale(9), LUI:Scale(-40))
@@ -915,7 +917,7 @@ function module:EnableBags()
 			self:ClearAllPoints()
 			self:SetPoint("CENTER", UIParent, "CENTER", LUI:Scale(4), LUI:Scale(5))
 		end)
-	end
+	end]]
 end
 
 function module:PLAYERBANKBAGSLOTS_CHANGED(self, id)

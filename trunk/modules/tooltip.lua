@@ -18,7 +18,7 @@
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local module = LUI:NewModule("Tooltip")
+local module = LUI:NewModule("Tooltip", "AceHook-3.0", "AceEvent-3.0")
 
 local db
 local hooks = { }
@@ -84,28 +84,28 @@ function module:SetTooltip()
 
 	local NeedBackdropBorderRefresh = false
 
-	hooksecurefunc("GameTooltip_SetDefaultAnchor", function(self, parent)
+	module:SecureHook("GameTooltip_SetDefaultAnchor", function(frame, parent)
 		if db.Tooltip.Cursor == true then
-			self:SetOwner(parent, "ANCHOR_CURSOR")
+			frame:SetOwner(parent, "ANCHOR_CURSOR")
 		else
-			self:SetOwner(parent, "ANCHOR_NONE")
-			self:SetPoint("RIGHT", UIParent, "RIGHT", db.Tooltip.X, db.Tooltip.Y)
+			frame:SetOwner(parent, "ANCHOR_NONE")
+			frame:SetPoint(db.Tooltip.Point, UIParent, db.Tooltip.Point, db.Tooltip.X, db.Tooltip.Y)
 		end
-		self.default = 1
+		frame.default = 1
 	end)
 
-	GameTooltip:HookScript("OnUpdate", function(self, ...)
-		if self:GetAnchorType() == "ANCHOR_CURSOR" and NeedBackdropBorderRefresh == true and db.Tooltip.Cursor ~= true then
+	module:HookScript(GameTooltip, "OnUpdate", function(frame, ...)
+		if frame:GetAnchorType() == "ANCHOR_CURSOR" and NeedBackdropBorderRefresh == true and db.Tooltip.Cursor ~= true then
 			NeedBackdropBorderRefresh = false
-			self:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
-			self:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
-		elseif self:GetAnchorType() == "ANCHOR_NONE" then
+			frame:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
+			frame:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
+		elseif frame:GetAnchorType() == "ANCHOR_NONE" then
 			if InCombatLockdown() and db.Tooltip.Hidecombat == true then
-				self:SetAlpha(0)
+				frame:SetAlpha(0)
 			else
-				self:SetAlpha(1)
-				self:ClearAllPoints()
-				self:SetPoint("RIGHT", UIParent, "RIGHT", db.Tooltip.X, db.Tooltip.Y)
+				frame:SetAlpha(1)
+				frame:ClearAllPoints()
+				frame:SetPoint(db.Tooltip.Point, UIParent, db.Tooltip.Point, db.Tooltip.X, db.Tooltip.Y)
 			end
 		end
 	end)
@@ -217,10 +217,10 @@ function module:SetTooltip()
 	healthBarBG:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
 	healthBarBG:SetBackdropBorderColor(0,0,0,0)
 
-	GameTooltip:HookScript("OnTooltipSetUnit", function(self)
-		local lines = self:NumLines()
+	module:HookScript(GameTooltip, "OnTooltipSetUnit", function(frame)
+		local lines = frame:NumLines()
 		local GMF = GetMouseFocus()
-		local unit = (select(2, self:GetUnit())) or (GMF and GMF:GetAttribute("unit"))
+		local unit = (select(2, frame:GetUnit())) or (GMF and GMF:GetAttribute("unit"))
 		
 		-- A mage's mirror images sometimes doesn't return a unit, this would fix it
 		if (not unit) and (UnitExists("mouseover")) then
@@ -228,10 +228,10 @@ function module:SetTooltip()
 		end
 		
 		-- Sometimes when you move your mouse quicky over units in the worldframe, we can get here without a unit
-		if not unit then self:Hide() return end
+		if not unit then frame:Hide() return end
 		
 		-- for hiding tooltip on unitframes
-		if (self:GetOwner() ~= UIParent and db.Tooltip.Hideuf) then self:Hide() return end
+		if (frame:GetOwner() ~= UIParent and db.Tooltip.Hideuf) then frame:Hide() return end
 		
 		-- A "mouseover" unit is better to have as we can then safely say the tip should no longer show when it becomes invalid.
 		if (UnitIsUnit(unit,"mouseover")) then
@@ -255,9 +255,9 @@ function module:SetTooltip()
 
 		if(UnitIsPlayer(unit)) then
 			if UnitIsAFK(unit) then
-				self:AppendText((" %s"):format(CHAT_FLAG_AFK))
+				frame:AppendText((" %s"):format(CHAT_FLAG_AFK))
 			elseif UnitIsDND(unit) then 
-				self:AppendText((" %s"):format(CHAT_FLAG_DND))
+				frame:AppendText((" %s"):format(CHAT_FLAG_DND))
 			end
 
 			local offset = 2
@@ -302,7 +302,7 @@ function module:SetTooltip()
 		end
 		
 		-- Sometimes this wasn't getting reset, the fact a cleanup isn't performed at this point, now that it was moved to "OnTooltipCleared" is very bad, so this is a fix
-		self.fadeOut = nil
+		frame.fadeOut = nil
 	end)
 
 	local BorderColor = function(self)
@@ -353,14 +353,14 @@ function module:SetTooltip()
 		BorderColor(self)
 	end
 
-	LUITooltip:RegisterEvent("PLAYER_ENTERING_WORLD")
-	LUITooltip:SetScript("OnEvent", function(self)
+	module:RegisterEvent("PLAYER_ENTERING_WORLD", function()
 		for _, tt in pairs(Tooltips) do
-			tt:HookScript("OnShow", SetStyle)
+			if not module:IsHooked(tt, "OnShow") then
+				module:HookScript(tt, "OnShow", SetStyle)
+			end
 		end
 		
-		self:UnregisterEvent("PLAYER_ENTERING_WORLD")
-		self:SetScript("OnEvent", nil)
+		module:UnregisterEvent("PLAYER_ENTERING_WORLD")
 		
 		-- Hide tooltips in combat for actions, pet actions and shapeshift
 		if db.Tooltip.Hidebuttons then
@@ -387,6 +387,7 @@ local defaults = {
 		Cursor = false,
 		X = -150,
 		Y = 0,
+		Point = "RIGHT",
 		Scale = 1,
 		Health = {
 			Texture = "LUI_Minimalist",

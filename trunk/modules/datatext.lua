@@ -280,7 +280,7 @@ function module:SetClock()
 	
 	if db.profile.Clock.Enable and not stat.Created then
 		-- Localized functions
-		local tonumber, date, GetGameTime, IsInInstance, GetInstanceInfo, CalendarGetNumPendingInvites = tonumber, date, GetGameTime, IsInInstance, GetInstanceInfo, CalendarGetNumPendingInvites
+		local tonumber, date, GetGameTime, IsInInstance, GetInstanceInfo = tonumber, date, GetGameTime, IsInInstance, GetInstanceInfo
 		local GetNumWorldPVPAreas, GetWorldPVPAreaInfo, GetNumSavedInstances, GetSavedInstanceInfo = GetNumWorldPVPAreas, GetWorldPVPAreaInfo, GetNumSavedInstances, GetSavedInstanceInfo
 		local gsub, format, floor, strtrim, strmatch = gsub, format, floor, strtrim, strmatch
 		
@@ -290,8 +290,8 @@ function module:SetClock()
 		-- Event functions
 		stat.Events = {"CALENDAR_UPDATE_PENDING_INVITES"}
 		
-		stat.CALENDAR_UPDATE_PENDING_INVITES = function(self) -- Change to number of pending invites for calendar events
-			invitesPending = (CalendarGetNumPendingInvites() > 0)
+		stat.CALENDAR_UPDATE_PENDING_INVITES = function(self) -- A change to number of pending invites for calendar events occurred
+			invitesPending = GameTimeFrame and (GameTimeFrame.pendingCalendarInvites > 0) or false
 		end
 		
 		
@@ -337,7 +337,13 @@ function module:SetClock()
 				self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 				instanceInfo, guildParty = nil, ""
 			end
+			
+			module:SecureHookScript(GameTimeFrame, "OnClick", stat.CALENDAR_UPDATE_PENDING_INVITES) -- hook the OnClick function of the GameTimeFrame to update the pending invites
 			self:CALENDAR_UPDATE_PENDING_INVITES()
+		end
+		
+		stat.OnDisable = function(self)
+			module:Unhook(GameTimeFrame, "OnClick")
 		end
 		
 		stat.OnUpdate = function(self, deltaTime)
@@ -382,7 +388,7 @@ function module:SetClock()
 			if button == "RightButton" then -- Toggle TimeManagerFrame
 				TimeManager_Toggle()
 			else -- Toggle CalendarFrame
-				GameTimeFrame:Click()
+				GameTimeFrame:Click() -- using just :Click() wont fire the hook
 			end
 		end
 		
@@ -433,7 +439,7 @@ function module:SetClock()
 					local text1 = (db.profile.Clock.LocalTime and "Local Time:" or "Server Time:")
 					local text2 = (Hr..":"..Min..(not db.profile.Clock.Time24 and PM or ""))
 					
-					GameTooltip:AddDoubleLine(text, text2)
+					GameTooltip:AddDoubleLine(text1, text2)
 				end
 				
 				-- Show alternate time in tooltip
@@ -456,7 +462,7 @@ function module:SetClock()
 				local text1 = (db.profile.Clock.LocalTime and "Server Time:" or "Local Time:")
 				local text2 = (Hr..":"..Min..(not db.profile.Clock.Time24 and PM or ""))
 				
-				GameTooltip:AddDoubleLine(text, text2)
+				GameTooltip:AddDoubleLine(text1, text2)
 				
 				-- Saved raid info
 				local function formatTime(sec, t)
@@ -1212,7 +1218,7 @@ function module:SetGold()
 			end
 			
 			-- Set value
-			self.text:SetText(formatMoney(db.profile.Gold.ShowToonMoney and newMoney or serverGold))
+			self.text:SetText(formatMoney(db.profile.Gold.ServerTotal and serverGold or newMoney))
 			
 			-- Update gold db
 			LUIGold.gold[myPlayerRealm][myPlayerFaction][myPlayerName] = newMoney
@@ -1249,7 +1255,7 @@ function module:SetGold()
 				oldMoney = GetMoney()
 				UpdateTooltip(self)
 			else -- toggle server/toon gold
-				db.profile.Gold.ShowToonMoney = not db.profile.Gold.ShowToonMoney
+				db.profile.Gold.ServerTotal = not db.profile.Gold.ServerTotal
 				self:PLAYER_MONEY()
 			end 
 		end
@@ -1526,8 +1532,8 @@ function module:SetGF()
 		
 		local function SetToastData(index, inGroup)
 			local toast, bc, color = toasts[index]
-			local presenceID, givenName, surname, toonName, toonID, client, isOnline, lastOnline, isAFK, isDND, broadcast, notes = BNGetFriendInfo(index)
-			local _, _, _, realm, _, faction, race, class, guild, zone, level, gameText = BNGetToonInfo(toonID or 0)
+			local presenceID, givenName, surname, toonName, _, client, isOnline, _, isAFK, isDND, broadcast, notes = BNGetFriendInfo(index)
+			local _, _, _, realm, _, faction, _, class, _, zone, level, gameText = BNGetToonInfo(toonID or 0)
 			local statusText = (isAFK or isDND) and (formatedStatusText()):format(isAFK and CHAT_FLAG_AFK or isDND and CHAT_FLAG_DND) or ""
 			
 			if broadcast and broadcast ~= "" then
@@ -2078,7 +2084,7 @@ function module:SetGF()
 				end
 			else -- leftclick = whisper, shift leftclick = /who
 				local name = b.presenceID and b.realID or b.unit
-				SetItemRef("player:"..name, ("|Hplayer:%1$s|h[%1$s]|h"):format(name), "LeftButton")
+				SetItemRef("player:"..name, ("|Hplayer:%1$s|h[%1$s]|h"):format(name), button)
 			end
 		end
 		
@@ -2118,17 +2124,16 @@ function module:SetGF()
 		end
 		
 		-- Hooks
-		module:Hook("GuildRoster", function(...)
-			if type(stat.Guild) == "table" then
+		local function guildRoster()
+			if stat.Guild then
 				stat.Guild.dt = 0
 			end
-		end, true)
-		
-		module:Hook("ShowFriends", function(...)
-			if type(stat.Friends) == "table" then
+		end
+		local function showFriends()
+			if stat.Friends then
 				stat.Friends.dt = 0
 			end
-		end, true)
+		end
 		
 		-- Script functions
 		stat.OnEnable = function(self)
@@ -2136,6 +2141,14 @@ function module:SetGF()
 			
 			for eng, loc in pairs(LOCALIZED_CLASS_NAMES_MALE)   do L[loc] = eng end
 			for eng, loc in pairs(LOCALIZED_CLASS_NAMES_FEMALE) do L[loc] = eng end
+			
+			module:SecureHook("GuildRoster", guildRoster)
+			module:SecureHook("ShowFriends", showFriends)
+		end
+		
+		stat.OnDisable = function(self)
+			module:Unhook("GuildRoster")
+			module:Unhook("ShowFriends")
 		end
 		
 		stat.OnLeave = function(self)
@@ -2644,6 +2657,7 @@ local function DisableStat(stat)
 	if not InfoStats[stat] or not InfoStats[stat].Created then return end
 	InfoStats[stat]:UnregisterAllEvents()
 	InfoStats[stat]:SetScript("OnUpdate", nil)
+	if InfoStats[stat].OnDisable then InfoStats[stat]:OnDisable() end
 	InfoStats[stat]:Hide()
 end
 
@@ -2836,7 +2850,7 @@ module.defaults = {
 		},
 		Gold = {
 			Enable = true,
-			ShowToonMoney = true,
+			ServerTotal = false,
 			X = 55,
 			Y = 0,
 			InfoPanel = {
@@ -3557,14 +3571,14 @@ function module:LoadOptions()
 					end,
 					order = 2,
 				},
-				ShowToonMoney = {
+				ServerTotal = {
 					name = "Server Total",
 					desc = "Whether you want your gold display to show your server total gold, or your current toon's gold.",
 					type = "toggle",
 					disabled = StatDisabled,
-					get = function() return not db.profile.Gold.ShowToonMoney end,
+					get = function() return db.profile.Gold.ServerTotal end,
 					set = function(info, value)
-						db.profile.Gold.ShowToonMoney = value
+						db.profile.Gold.ServerTotal = value
 						InfoStats.Gold:PLAYER_MONEY()
 					end,
 					order = 3,
