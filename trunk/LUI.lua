@@ -302,7 +302,9 @@ function LUI:SyncAddonVersion()
 	end
 	
 	local function sendVersion(distribution, target) -- (distribution [, target])
-		if distribution == "RAID" then
+		if distribution == "WHISPER" and not target then
+			return
+		elseif distribution == "RAID" then
 			local zoneType = select(2, IsInInstance())
 			if zoneType == "pvp" or zoneType == "arena" then
 				distribution = "BATTLEGROUND"
@@ -338,13 +340,13 @@ function LUI:SyncAddonVersion()
 	
 	for i = 1, GetNumFriends() do -- send to friends via whisper on login
 		local name, _, _, _, connected = GetFriendInfo(i)
-		if connected then
+		if name and connected then
 			sendVersion("WHISPER", name)
 		end
 	end
 	for i = 1, BNGetNumFriends() do -- send to BN friends (on your realm) via whisper on login
 		local _, _, _, toonName, toonID, client, isOnline = BNGetFriendInfo(i)
-		if isOnline and client == "WoW" then
+		if toonName and isOnline and client == "WoW" then
 			local _, _, _, realmName, _, faction = BNGetToonInfo(toonID or 0)
 			if realmName == myRealm and faction == myFaction then
 				sendVersion("WHISPER", toonName)
