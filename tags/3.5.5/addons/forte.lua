@@ -1,0 +1,900 @@
+--[[
+	Project....: LUI NextGenWoWUserInterface
+	File.......: forte.lua
+	Description: ForteXorcist Module
+	Version....: 1.975-v1.5
+]] 
+
+local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local module = LUI:NewModule("Forte", "AceHook-3.0")
+local _, class = UnitClass("player")
+local _G = _G
+
+local db
+local FW = _G.FW
+local UIParent = _G.UIParent
+
+LUI_versions.forte = "v1.975"; -- major version - DON'T change this for just every FX version, because it will prompt a 'restore'
+
+------------------------------------------------------
+-- / LOCAL VARIABLES / --
+------------------------------------------------------
+
+local LR = {"LEFT","RIGHT"};
+local TB = {"TOP","BOTTOM"};
+
+local global_settings = {
+	GlobalFrameNames = true,
+	ShardEnable = false,
+	SummonEnable = false,
+	SoulstoneEnable = false,
+	HealthstoneEnable = false,
+}
+
+local timer_settings = {
+	lock = true,
+	scale = 1,
+	NormalBgColor = {0.00,0.00,0.00,0.75},
+	StacksFont = {"Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",11,"OUTLINE"},
+	Font = {"Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",11},
+	Height = 18,
+	Texture = "Interface\\AddOns\\LUI\\media\\textures\\statusbars\\Minimalist",
+	LabelFont = {"Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",11},
+}
+
+local cooldown_settings = {
+	lock = true,
+	scale = 1,
+	Loga = 0.255,
+	Tags = 5,
+	CustomTags = {[0]=false,"0 1 10 30 60 120 300 600"},
+	BgColor = {0,0,0,0},
+	Font = {"Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",11},
+	IconFont = {"Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",11,"OUTLINE"},
+	IconTime = false,
+	Texture = "Interface\\AddOns\\LUI\\media\\textures\\statusbars\\Minimalist",
+	Width = 384,
+	Height = 28,
+	Hide = true,
+}
+
+local splash_settings = {
+	lock = true,
+	Enable = true,
+	SecondSplashMax = 3,
+	scale = 2,
+}
+
+local timer_instances = {
+	Player = {
+		anchor = {"oUF_LUI_player"},
+		offset = {
+			DEATHKNIGHT = {"Runes","Runes"},
+			SHAMAN = {"Totems","TotemBar",1},
+			DRUID = {"Eclipse","EclipseBar"},
+			PALADIN = {"HolyPower","HolyPower"},
+			WARLOCK = {"SoulShards","SoulShards"},
+		},
+		settings = {
+			Spell = true,
+			Label = false,
+			Target = false,
+			Focus = false,
+			Other = false,
+			NoTarget = true,
+			UnknownTarget = false,
+			You = true,
+			RaidDebuffs = false,
+		}
+	},
+	Target = {
+		anchor = {"oUF_LUI_target","TOPRIGHT"},
+		settings = {
+			Spell = true,
+			Label = false,
+			Target = true,
+			Focus = false,
+			Other = false,
+			NoTarget = false,
+			UnknownTarget = false,
+			You = false,
+			RaidDebuffs = true,
+		}
+	},
+	Focus = {
+		anchor = {"oUF_LUI_focus"},
+		settings = {
+			Spell = true,
+			Label = false,
+			Target = false,
+			Focus = true,
+			Other = false,
+			NoTarget = false,
+			UnknownTarget = false,
+			You = false,
+			RaidDebuffs = false,
+		}
+	},
+	Compact = {
+		settings = {
+			Spell = true,
+			Label = true,
+			RaidTargets = {[0]=true,0.7},
+			CastSpark = {[0]=false,0.3},
+			Spark = {[0]=false,0.7},
+			Name = false,
+			LabelLimit = true,
+			Target = true,
+			Focus = true,
+			Other = true,
+			NoTarget = false,
+			UnknownTarget = false,
+			You = false,
+			RaidDebuffs = false,
+		}
+	},
+}
+
+------------------------------------------------------
+-- / LOCAL FUNCTIONS / --
+------------------------------------------------------
+
+local function CreateCooldowntimerAnimation()
+	if LUI.isForteCooldownLoaded then
+		if not FW.Settings then
+			FW:RegisterVariablesEvent(CreateCooldowntimerAnimation);
+			return;
+		end
+		-- copy of code that was located in the bars module:
+		local bb_timerout,bb_timerin = 0,0
+		local bb_animation_time = 0.5
+		local bb_at_out = 0.25
+			
+		local bb_SlideIn = CreateFrame("Frame", nil, UIParent)
+		bb_SlideIn:Hide()
+			
+		bb_SlideIn:SetScript("OnUpdate", function(self,elapsed)
+			bb_timerin = bb_timerin + elapsed
+			local bb_x = tonumber(LUI.db.profile.Bars.TopTexture.X)
+			local bb_y = tonumber(LUI.db.profile.Bars.TopTexture.Y)
+			local bb_pixelpersecond = tonumber(LUI.db.profile.Bars.TopTexture.AnimationHeight) * 2
+			if bb_timerin < bb_animation_time then
+				local y2 = bb_y - bb_timerin * bb_pixelpersecond + bb_pixelpersecond * bb_animation_time
+				BarsBackground:ClearAllPoints()
+				BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, y2)
+			else
+				BarsBackground:ClearAllPoints()
+				BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, bb_y)
+				bb_timerin = 0
+				self:Hide()
+			end
+		end)
+
+		local bb_SlideOut = CreateFrame("Frame", nil, UIParent)
+		bb_SlideOut:Hide()
+		
+		bb_SlideOut:SetScript("OnUpdate", function(self,elapsed)
+			bb_timerout = bb_timerout + elapsed
+			local bb_x = tonumber(LUI.db.profile.Bars.TopTexture.X)
+			local bb_y = tonumber(LUI.db.profile.Bars.TopTexture.Y)
+			local bb_ppx_out = tonumber(LUI.db.profile.Bars.TopTexture.AnimationHeight) * 3
+			local bb_yout = tonumber(LUI.db.profile.Bars.TopTexture.Y) + tonumber(LUI.db.profile.Bars.TopTexture.AnimationHeight)
+			if bb_timerout < bb_at_out then
+				local y2 = bb_y + bb_timerout * bb_ppx_out
+				BarsBackground:ClearAllPoints()
+				BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, y2)
+			else
+				BarsBackground:ClearAllPoints()
+				BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, bb_yout)
+				bb_timerout = 0
+				self:Hide()
+			end
+		end)
+		local bb_Forte = CreateFrame("Frame", nil, UIParent)
+		bb_Forte:Show()
+		
+		local isOut = false
+		bb_Forte:SetScript("OnUpdate", function(self)
+			if db.profile.Cooldown.Lock and _G.FX_Cooldown1 then
+				if _G.FX_Cooldown1:IsShown() and not isOut then
+					if LUI.db.profile.Bars.TopTexture.Animation then
+						bb_SlideOut:Show()
+						isOut = true
+					end
+				elseif not _G.FX_Cooldown1:IsShown() and isOut then
+					if LUI.db.profile.Bars.TopTexture.Animation then
+						bb_SlideIn:Show()
+						isOut = false
+					end
+				end
+			end
+		end)
+	end
+end
+
+local function ConfigureForte()
+	LUI:InstallForte()
+	ReloadUI()
+end
+
+local function SetupForte() -- only done on new major version
+	LUICONFIG.Versions.forte = LUI_versions.forte; -- don't ask again
+	-- disable the new frames that are enabled by default
+	if LUI_versions.forte == "v1.975" then
+		db.profile.Player.Enable = false;
+		db.profile.Target.Enable = false;
+	end
+	module:SetForte();
+end
+
+------------------------------------------------------
+-- / LUI INSTALL FUNCTION / --
+------------------------------------------------------
+
+function LUI:InstallForte()
+	if not module:FXLoaded() then return end
+	if LUICONFIG.Versions.forte == LUI_versions.forte and LUICONFIG.IsForteInstalled == true then return end
+	if not FW.Settings then
+		FW:RegisterVariablesEvent(LUI.InstallForte);
+		return;
+	end
+	local LUIprofileOld = UnitName("Player");
+	local LUIprofileNew = "LUI: "..LUIprofileOld;
+	local created_new = false;
+	
+	local index = FW:InstanceNameToIndex(LUIprofileNew,FW.Saved.Profiles);
+	if not index then
+		index = FW:InstanceNameToIndex(LUIprofileOld,FW.Saved.Profiles);
+		if index then
+			FW:InstanceRename(index,LUIprofileNew,FW.Saved.Profiles);
+		else
+			index = FW:InstanceCreate(LUIprofileNew,FW.Saved.Profiles,global_settings);
+			created_new = true;
+		end
+	end
+	FW:UseProfile( index );
+	
+	if not created_new then
+		module:Copy(FW.Default,FW.Settings); -- FX
+		module:Copy(global_settings,FW.Settings); -- global
+	end
+				
+	-- disable Spell Timer instances that LUI won't use on install
+	if LUI.isForteTimerLoaded then
+		for index, instance in ipairs(FW.Settings.Timer.Instances) do
+			if not timer_instances[ FW:InstanceIndexToName(index,FW.Settings.Timer) ] then
+				instance.Enable = false;
+			end
+		end
+		 -- restore defaults
+		for name, data in pairs(timer_instances) do
+			local instance = module:GetTimerByName(name);
+			if instance then
+				module:Copy(FW.InstanceDefault.Timer,instance); -- FX
+				module:Copy(timer_settings,instance); -- global
+				module:Copy(data.settings,instance); -- instance
+			end
+		end
+	end
+	-- restore defaults
+	if LUI.isForteCooldownLoaded then
+		module:Copy(FW.InstanceDefault.Cooldown,module:GetCooldown() ); -- FX
+		module:Copy(cooldown_settings,module:GetCooldown() ); -- global
+		module:Copy(FW.InstanceDefault.Splash,module:GetSplash() ); -- FX
+		module:Copy(splash_settings,module:GetSplash() ); -- global
+	end
+	
+	LUICONFIG.Versions.forte = LUI_versions.forte
+	LUICONFIG.IsForteInstalled = true
+end
+
+------------------------------------------------------
+-- / FORTE FUNCTIONS / --
+------------------------------------------------------
+
+function module:Copy(from,to) -- copies contents from table 'from' to table 'to'
+	for key, val in pairs(from) do
+		if type(val) == "table" then
+			if type(to[key]) ~= "table" then
+				to[key] = {};
+			end
+			self:Copy(val,to[key]);
+		else
+			to[key] = val;
+		end
+	end
+end
+function module:GetTimerIndexByName(name)
+	return FW:InstanceNameToIndex(name,FW.Settings.Timer,1);-- set to case sensitive
+end
+function module:GetTimerByName(name)
+	return FW.Settings.Timer.Instances[module:GetTimerIndexByName(name)];
+end
+function module:GetCooldown() -- should be replaced by proper function once cooldown cloning is enabled
+	return FW.Settings.Cooldown.Instances[1];
+end
+function module:GetSplash() -- should be replaced by proper function once cooldown cloning is enabled
+	return FW.Settings.Splash.Instances[1];
+end
+
+------------------------------------------------------
+-- / MODULE FUNCTIONS / --
+------------------------------------------------------
+
+function module:FXLoaded()
+	return IsAddOnLoaded("Forte_Core") and FW.VERSION and FW.VERSION >= LUI_versions.forte; -- don't run if FX is too old...
+end
+
+function module:SetFrameProps(instance,name)
+	local properties = timer_instances[name];
+	local uiScale = UIParent:GetEffectiveScale();
+	local x,y;
+	local width = 50;
+	local paddingX,paddingY = tonumber(db.profile[name].PaddingX),tonumber(db.profile[name].PaddingY);
+	if properties.anchor then
+		local f = _G[ properties.anchor[1] ];
+		if not f then
+			return; -- don't update anything if anchor frame is missing...
+		end
+		width = f:GetWidth()*f:GetScale();
+		if properties.anchor[2] == "TOPRIGHT" then -- add target timer to the right of the frame
+			x = f:GetRight() + width/2 + 4;
+		else
+			x = f:GetLeft() + width/2;
+		end
+		y = f:GetBottom() + f:GetHeight()*f:GetScale() + instance.Height/2*instance.scale + 4;
+		
+		if properties.offset and properties.offset[class] then
+			local setting,frame,index = unpack(properties.offset[class]);
+			frame = f[frame]; -- frame = index and f[frame][index] or f[frame];
+			if frame and LUI.db.profile.oUF[name][setting].Enable and LUI.db.profile.oUF[name][setting].Lock then
+				if index then 
+					frame = frame[index];
+				end
+				if frame:IsShown() then
+					y = y + frame:GetHeight()*frame:GetScale();
+				end
+			end
+		end
+		
+		x = x + paddingX;
+		y = y + paddingY;
+	else -- anchor compact frame to right side
+		paddingX = math.abs(paddingX); -- ignore negative values here
+		if db.profile.Compact.Location == "RIGHT" then
+			x = UIParent:GetWidth() - width/2 -paddingX;
+		else
+			x = width/2 + paddingX;
+		end
+		y = UIParent:GetHeight()/ 2 + paddingY;
+	end
+	instance.Width = width/instance.scale;
+	instance.x = x*uiScale;
+	instance.y = y*uiScale;
+end
+
+function module:SetPosForte()
+	if not LUI.isForteTimerLoaded or not LUI.db.profile.oUF.Settings.Enable then return end
+
+	for name, data in pairs(timer_instances) do
+		if db.profile[name].Enable and db.profile[name].Lock then
+			local instance = module:GetTimerByName(name);
+			if instance then
+				module:SetFrameProps(instance,name);
+			end
+		end
+	end
+	
+	FW:RefreshFrames();
+end
+
+function module:SetPosForteCooldown()
+	if not LUI.isForteCooldownLoaded or not db.profile.Cooldown.Lock then return end
+	
+	local uiScale = UIParent:GetEffectiveScale()
+	local x = (UIParent:GetWidth() * uiScale / 2) + tonumber(db.profile.Cooldown.PaddingX)
+	local y = tonumber(db.profile.Cooldown.PaddingY) * uiScale
+	
+	local instance = module:GetCooldown();
+	instance.x = x;
+	instance.y = y;
+
+	FW:RefreshFrames();
+end
+
+function module:SetPosForteSplash()
+	if not LUI.isForteCooldownLoaded or not db.profile.Splash.Lock then return end
+	local x,y;
+	local uiScale = UIParent:GetEffectiveScale()
+	x = tonumber(db.profile.Splash.PaddingX) + UIParent:GetWidth() / 2;
+	if db.profile.Splash.Location == "TOP" then
+		y = UIParent:GetHeight() - tonumber(db.profile.Splash.PaddingY);
+	else
+		y = tonumber(db.profile.Splash.PaddingY);
+	end
+	local instance = module:GetSplash();
+	instance.x = x * uiScale;
+	instance.y = y * uiScale;
+
+	FW:RefreshFrames();
+end
+
+function module:SetColors()
+	if not LUI.isForteTimerLoaded then return end
+	
+	module:Copy(db.profile.Color,FW.Settings.TimerColorOverride);
+	FW.Settings.TimerColorOverride[0] = db.profile.IndividualColor;
+	
+	FW:RefreshOptions(); -- at most update FX options frame, no need to refresh all frames atm
+end
+
+function module:SetForte()
+	if not FW.Settings then
+		FW:RegisterVariablesEvent(module.SetForte);
+		return;
+	end
+	local created_new = false;
+	if LUI.isForteTimerLoaded then
+		for name, data in pairs(timer_instances) do
+			local instance, enable = module:GetTimerByName(name), db.profile[name].Enable;
+			if not instance and enable then
+				local index = FW:InstanceCreate(name, FW.Settings.Timer, data.settings);
+				FW.Modules.Timer:NewTimerInstance(index); -- create the new frame and its options
+				instance = FW.Settings.Timer.Instances[index];
+				module:Copy(timer_settings,instance);
+				created_new = true;
+			end
+			if instance then
+				instance.Enable = enable;
+			end
+		end
+		module:SetPosForte();
+	end
+	
+	if LUI.isForteCooldownLoaded then
+		local instance = module:GetCooldown();
+		instance.Enable = db.profile["Cooldown"].Enable;
+		module:SetPosForteCooldown();
+
+		instance = module:GetSplash();
+		instance.Enable = db.profile["Splash"].Enable;
+		module:SetPosForteSplash();
+	end
+	-- live update FX options panel if it's open
+	if created_new then
+		FW:BuildOptions();
+	end
+	module:SetColors(); -- includes a FW:RefreshOptions();
+	
+	-- hook into the FX options panel to disable positioning
+	if not module:IsHooked(FW, "BuildOptions") then
+		local function printNotification(frame, ...)
+			local parent = frame.parent.parent
+			local instance = parent.instance
+			if instance then
+				local dbcheck = instance.instanceof
+				if dbcheck == "Timer" then
+					dbcheck = FW:InstanceIndexToName(instance.index, FW.Settings.Timer)
+				end
+				
+				if type(db.profile[dbcheck]) == "table" and db.profile[dbcheck].Lock then
+					LUI:Print("Use the options in LUI to move the ForteXorcist " .. (instance.instanceof == "Timer" and dbcheck.." " or "") .. FW.Options[parent.index][1])
+					if frame == frame.parent.coordinates then
+						frame:ClearFocus()
+					end
+					return
+				end
+			end
+			
+			if frame == frame.parent.coordinates then
+				return module.hooks[frame].OnEnterPressed(frame, ...)
+			else
+				return module.hooks[frame].OnClick(frame, ...)
+			end
+		end
+		
+		module:RawHook(FW, "BuildOptions", function()
+			module.hooks[FW]:BuildOptions() -- Post Hook
+			
+			for i = 1, #FW.Options do
+				if FW.Options[i][6] == "Timer" or db.profile[FW.Options[i][6]] then
+					if FW.Options[i].option and FW.Options[i].option.frameheader then
+						local lockOption = FW.Options[i].option.frameheader.lock
+						if lockOption and not module:IsHooked(lockOption, "OnClick") then
+							module:RawHookScript(lockOption, "OnClick", printNotification)
+						end
+						
+						local coordOption = FW.Options[i].option.frameheader.coordinates
+						if coordOption and not module:IsHooked(coordOption, "OnEnterPressed") then
+							module:RawHookScript(coordOption, "OnEnterPressed", printNotification)
+						end
+						
+						local posOption = FW.Options[i].option.frameheader.position
+						if posOption and not module:IsHooked(posOption, "OnClick") then
+							module:RawHookScript(posOption, "OnClick", printNotification)
+						end
+					end
+				end
+			end
+		end)
+	end
+end
+
+------------------------------------------------------
+-- / MODULE FUNCTIONS / --
+------------------------------------------------------
+
+module.optionsName = "ForteXorcist"
+module.order = 70
+module.addon = "Forte_Core"
+module.defaults = {
+	profile = {
+		IndividualColor = true,
+		Color = {0.24,0.24,0.24},
+		
+		Player = {
+			Enable = true,
+			Lock = true,
+			PaddingX = 0,
+			PaddingY = 0,
+		},
+		Target = {
+			Enable = true,
+			Lock = true,
+			PaddingX = 0,
+			PaddingY = 0,
+		},
+		Focus = {
+			Enable = false,
+			Lock = true,
+			PaddingX = 0,
+			PaddingY = 0,
+		},
+		Compact = {
+			Location = "LEFT",
+			Enable = false,
+			Lock = true,
+			PaddingX = 4,
+			PaddingY = -170,
+		},
+		Cooldown = {
+			Enable = true,
+			Lock = true,
+			PaddingX = 0,
+			PaddingY = 120,
+		},
+		Splash = {
+			Location = "BOTTOM",
+			Enable = true,
+			Lock = true,
+			PaddingX = 0,
+			PaddingY = 250,
+		},
+	},
+}
+
+
+function module:LoadOptions()
+	local moduleName = module:GetName()
+	
+	local function fxModuleDisabled(info)
+		for i, v in ipairs(info) do
+			if v == moduleName then
+				local isSpellTimer = info[i+1] == "SpellTimer"
+				return not db.profile[info[i+(isSpellTimer and 2 or 1)]].Enable
+			end
+		end
+	end
+	local function lockDisabled(info)
+		return not db.profile[info[#info-2]].Lock
+	end
+	local function forteTimerDisabled()
+		return not LUI.isForteTimerLoaded
+	end
+	local function forteCooldownDisabled()
+		return not LUI.isForteCooldownLoaded
+	end
+	
+	local function isNumber(info, value)
+		if value == nil or value:trim() == "" or not tonumber(value) then
+			return "Please input a number."
+		end
+		return true
+	end
+	
+	local function getName(info)
+		return info[#info]
+	end
+	local function getDefault(info)
+		for i, v in ipairs(info) do
+			if v == moduleName then
+				local isSpellTimer = info[i+1] == "SpellTimer"
+				return db.defaults.profile[info[i+(isSpellTimer and 2 or 1)]][info[#info]]
+			end
+		end
+	end
+	local function getValue(info)
+		for i, v in ipairs(info) do
+			if v == moduleName then
+				local isSpellTimer = info[i+1] == "SpellTimer"
+				return db.profile[info[i+(isSpellTimer and 2 or 1)]][info[#info]]
+			end
+		end
+	end
+	local function getNumValue(info)
+		return tostring(getValue(info))
+	end
+	local function setValue(info, value)
+		for i, v in ipairs(info) do
+			if v == moduleName then
+				local isSpellTimer = info[i+1] == "SpellTimer"
+				db.profile[info[i+(isSpellTimer and 2 or 1)]][info[#info]] = value
+				break
+			end
+		end
+	end
+	local function setForte(info, value)
+		setValue(info, value)
+		module:SetForte()
+	end
+	local function setPosForte(info, value)
+		value = tonumber(value) or value
+		setValue(info, value)
+		if value then
+			for i, v in ipairs(info) do
+				if v == moduleName then
+					if info[i+1] == "SpellTimer" then
+						module:SetPosForte()
+					else
+						module["SetPosForte"..info[i+1]]()
+					end
+					break
+				end
+			end
+		end
+	end
+	
+	local scrollTable = {
+		SpellTimer = "SPELL_TIMER",
+		Cooldown = "COOLDOWN_TIMER",
+		Splash = "SECONDARY_SPLASH",
+	}
+	local function fxOptionsFunc(info)
+		local goto, unit = info[#info-1]
+		if info[#info-2] == "SpellTimer" then
+			unit = module:GetTimerIndexByName(goto)
+			goto = info[#info-2]
+		end
+		FW:ScrollTo(FW.L[scrollTable[goto]], nil, unit)
+	end
+	local function newFXOptionsButton(order)
+		order = order or 2
+			
+		local option = {
+			name = "Toggle FX Options",
+			desc = "Open ForteXorcist options for this frame",
+			type = "execute",
+			disabled = fxModuleDisabled,
+			func = fxOptionsFunc,
+			order = order,
+		}
+		
+		return option
+	end
+	
+	local function newPosOptions(order)
+		order = order or 3
+		
+		local option = {
+			name = "Position",
+			type = "group",
+			order = order,
+			guiInline = true,
+			disabled = fxModuleDisabled,
+			args = {
+				Lock = {
+					name = "Use LUI position",
+					desc = "Whether the frame should stick to the location assigned by LUI or not.",
+					type = "toggle",
+					width = "full",
+					get = getValue,
+					set = setPosForte,
+					order = 1,
+				},
+				PaddingX = {
+					name = "Padding X",
+					desc = function(info) return "Choose the X Padding for this frame.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: " .. getDefault(info) end,
+					type = "input",
+					disabled = lockDisabled,
+					validate = isNumber,
+					get = getNumValue,
+					set = setPosForte,
+					order = 2,
+				},
+				PaddingY = {
+					name = "Padding Y",
+					desc = function(info) return "Choose the Y Padding for this frame.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: " .. getDefault(info) end,
+					type = "input",
+					disabled = lockDisabled,
+					validate = isNumber,
+					get = getNumValue,
+					set = setPosForte,
+					order = 3,
+				},
+			},
+		}
+		
+		return option
+	end
+	
+	local function newSpellTimerOption(order, desc)
+		local option = {
+			name = getName,
+			desc = desc,
+			type = "group",
+			order = order,
+			args = {
+				Enable = {
+					name = "Enable",
+					desc = "Enable this buff/debuff frame.",
+					type = "toggle",
+					get = getValue,
+					set = setForte,
+					order = 1,
+				},
+				FXOptions = newFXOptionsButton(),
+				Position = newPosOptions(),
+			},
+		}
+		
+		return option
+	end
+	
+	local options = {
+		SpellTimer = {
+			name = "Spell Timer",
+			type = "group",
+			childGroups = "tab",
+			disabled = forteTimerDisabled,
+			order = 1,
+			args = {
+				Global = {
+					name = "All frames",
+					type = "group",
+					order = 1,
+					--guiInline = true,
+					args = {
+						Colors = {
+							name = "Bar Colors",
+							type = "group",
+							order = 2,
+							guiInline = true,
+							args = {
+								--[[header1 = {
+									name = "Bar Color",
+									type = "header",
+									order = 1,
+								},]]
+								IndividualColor = {
+									name = "Global Color",
+									desc = "Whether you want to use a global Color for all your tracked Buffs/Debuffs or not.\n\nNote: If you want different colors for each of your spells please disable this and type /fx to enter ForteXorcist Options and go to Spelltimer -> Coloring/Filtering",
+									type = "toggle",
+									width = "full",
+									get = function() return db.profile.IndividualColor end,
+									set = function(info, value)
+											db.profile.IndividualColor = value
+											module:SetColors()
+										end,
+									order = 2,
+								},
+								Color = {
+									name = "Bar Color",
+									desc = function(info)
+											local color = db.defaults.profile.Color
+											return "Choose a global Bar Color.\n\nDefault:\nr = " .. color[1] .. "\ng = " .. color[2] .. "\nb = " .. color[3]
+										end,
+									type = "color",
+									width = "full",
+									disabled = function() return not db.profile.IndividualColor end,
+									hasAlpha = false,
+									get = function() return unpack(db.profile.Color) end,
+									set = function(info, r, g, b)
+											db.profile.Color[1],db.profile.Color[2],db.profile.Color[3] = r,g,b
+											module:SetColors()
+										end,
+									order = 4,
+								},
+							},
+						},
+					},
+				},
+				Player = newSpellTimerOption(2, "This frame can be attached to the Player frame and show important buffs/debuffs on yourself, spells without a target and some important cooldowns."),
+				Target = newSpellTimerOption(3, "This frame can be attached to the target frame and show important buffs/debuffs on your target."),
+				Focus = newSpellTimerOption(4, "This frame can be attached to the focus frame and show important buffs/debuffs on your focus."),
+				Compact = newSpellTimerOption(5, "Will show a compact timer frame with important spells on multiple units."),
+			},
+		},
+		Cooldown = {
+			name = "Cooldown Timer",
+			type = "group",
+			disabled = forteCooldownDisabled,
+			order = 2,
+			args = {
+				Enable = {
+					name = "Enable",
+					desc = "Enable the Cooldown Timer.",
+					type = "toggle",
+					get = getValue,
+					set = setForte,
+					order = 1,
+				},
+				FXOptions = newFXOptionsButton(),
+				Position = newPosOptions(),
+			},
+		},
+		Splash = {
+			name = "Cooldown Splash",
+			type = "group",
+			disabled = forteCooldownDisabled,
+			order = 3,
+			args = {
+				Enable = {
+					name = "Enable",
+					desc = "Enable the Cooldown Splash.",
+					type = "toggle",
+					get = getValue,
+					set = setForte,
+					order = 1,
+				},
+				FXOptions = newFXOptionsButton(),
+				Position = newPosOptions(),
+			},
+		},
+	}
+	
+	return options;
+end
+
+function module:OnInitialize()
+	db = LUI:NewNamespace(self)
+	
+	StaticPopupDialogs["INSTALL_FORTE"] = {
+		text = "%s",
+		button1 = YES,
+		button2 = NO,
+		OnAccept = ConfigureForte,
+		timeout = 0,
+		whileDead = 1,
+		hideOnEscape = 1
+	}
+	
+	module:SetEnabledState(module:FXLoaded())
+end
+
+function module:OnEnable()
+	if module:FXLoaded() then
+		LUI.isForteTimerLoaded = IsAddOnLoaded("Forte_Timer") ~= nil;
+		LUI.isForteCooldownLoaded = IsAddOnLoaded("Forte_Cooldown") ~= nil;
+		
+		if LUICONFIG.IsConfigured then
+			local extra = "\n\nDo you want to apply all LUI Styles to ForteXorcist Spelltimer/Cooldowntimer?\n\nThis will create a new FX profile for LUI (if it hasn't already) and apply LUI's defaults to it, including new timer frames!\n\nYou can also set the LUI defaults later by going to 'General > Addons > Restore ForteXorcist' in the LUI config.";
+			if LUICONFIG.IsForteInstalled then
+				if LUICONFIG.Versions.forte ~= LUI_versions.forte then
+					StaticPopupDialogs["INSTALL_FORTE"].OnCancel = SetupForte; -- run SetForte on cancel to create new instances anyway
+					StaticPopup_Show("INSTALL_FORTE","New major version of ForteXorcist found!"..extra);
+				else
+					module:SetForte();
+				end
+				CreateCooldowntimerAnimation(); -- if forte is installed properly
+				FW:RegisterToEvent("UI_SCALE_CHANGED",module.SetPosForte);
+				FW:RegisterToEvent("UI_SCALE_CHANGED",module.SetPosForteCooldown);
+				FW:RegisterToEvent("UI_SCALE_CHANGED",module.SetPosForteSplash);
+			else
+				StaticPopup_Show("INSTALL_FORTE","ForteXorcist Addon found!"..extra);
+			end
+		end
+	end
+end
+
+function module:OnDisable()
+end
