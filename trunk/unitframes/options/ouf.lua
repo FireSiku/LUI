@@ -463,7 +463,7 @@ function module:EnableBlizzard(unit)
 end
 
 function module:SetBlizzardRaidFrames()
-	local useBlizz = db.oUF.Settings.Enable and db.oUF.Raid.UseBlizzard or true
+	local useBlizz = (db.oUF.Settings.Enable == false) or db.oUF.Raid.UseBlizzard
 	if IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") or (db.oUF.Settings.Enable and db.oUF.Raid.Enable) then
 		useBlizz = false
 	end
