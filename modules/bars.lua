@@ -1159,6 +1159,10 @@ function module:SetButtons()
 		local hotkey = _G[self:GetName().."HotKey"]
 		local text = hotkey:GetText()
 		
+		if text == nil then
+			text = ""
+		end
+		
 		text = gsub(text, "(s%-)", "S")
 		text = gsub(text, "(a%-)", "A")
 		text = gsub(text, "(c%-)", "C")
