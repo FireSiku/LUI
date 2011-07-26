@@ -197,8 +197,8 @@ function Fader:CreateFaderBar(bar)
 	bar:SetParent(bar.FaderBar)
 
 	-- Hook hide and show scripts.
-	self:SecureHook(bar, "Hide", self.FaderBar.Hide)
-	self:SecureHook(bar, "Show", self.FaderBar.Show)
+	self:SecureHook(bar, "Hide", bar.FaderBar.Hide)
+	self:SecureHook(bar, "Show", bar.FaderBar.Show)
 	
 	-- Create mouse hover updates.
 	bar.FaderBar.Throttle = 0
