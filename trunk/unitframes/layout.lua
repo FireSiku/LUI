@@ -3584,7 +3584,10 @@ oUF:RegisterStyle("LUI", SetStyle)
 function module:OnEnable()
 	db = LUI.db.profile
 
-	if db.oUF.Settings.Enable ~= true then return end
+	if db.oUF.Settings.Enable ~= true then
+		LUI:GetModule("oUF"):SetBlizzardRaidFrames()
+		return
+	end
 	
 	-- remove with LUI v3.6 or something like that!
 	if LUICONFIG.Versions.ouf ~= LUI_versions.ouf then	
