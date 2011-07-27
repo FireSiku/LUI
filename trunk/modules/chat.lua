@@ -11,9 +11,11 @@
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local module = LUI:NewModule("Chat", "AceHook-3.0")
+local Themes = LUI:GetModule("Themes")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local module = LUI:NewModule("Chat", "AceHook-3.0")
+
 
 local db
 local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
@@ -287,10 +289,7 @@ local function SetChatJustify()
 end
 
 function module:SetEditBoxColor()
-	local r = db.Colors.editbox[1] or 0
-	local g = db.Colors.editbox[2] or 0
-	local b = db.Colors.editbox[3] or 0
-	local a = db.Colors.editbox[4] or 0
+	local r, g, b, a = unpack(Themes.db.profile.editbox)
 
 	if db.Chat.Editbox.ColorByChannel == true then
 		for i = 1, NUM_CHAT_WINDOWS do
@@ -1311,9 +1310,9 @@ function module:LoadOptions()
 									type = "color",
 									width = "full",
 									hasAlpha = true,
-									get = function() return unpack(db.Colors.editbox) end,
+									get = function() return unpack(Themes.db.profile.editbox) end,
 									set = function(_,r,g,b,a)
-											db.Colors.editbox = {r,g,b,a}
+											Themes.db.profile.editbox = {r,g,b,a}
 											
 											self:SetEditBoxColor()
 										end,

@@ -8,12 +8,13 @@
 	Edits:
 		v1.0: Loui
 		v1.1: Zista
-]] 
+]]
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local module = LUI:NewModule("Panels", "AceHook-3.0", "AceEvent-3.0")
+local Themes = LUI:GetModule("Themes")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local module = LUI:NewModule("Panels", "AceHook-3.0", "AceEvent-3.0")
 
 local db
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
@@ -222,12 +223,12 @@ function module:SetChatBackground()
 	end
 
 	ChatBG:SetBackdrop({bgFile=chatTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	ChatBG:SetBackdropColor(unpack(db.Colors.chat))
+	ChatBG:SetBackdropColor(unpack(Themes.db.profile.chat))
 	ChatBG:SetBackdropBorderColor(0,0,0,0)
 	ChatBG:SetPoint("TOPLEFT",ChatAlphaAnchor,"TOPLEFT",db.Frames.Chat.OffsetX,db.Frames.Chat.OffsetY)
 
 	ChatBorder:SetBackdrop({bgFile=chatBorderTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	ChatBorder:SetBackdropColor(unpack(db.Colors.chatborder))
+	ChatBorder:SetBackdropColor(unpack(Themes.db.profile.chatborder))
 	ChatBorder:SetBackdropBorderColor(0,0,0,0)
 	ChatBorder:SetPoint("TOPLEFT", ChatAlphaAnchor, "TOPLEFT", db.Frames.Chat.OffsetX, db.Frames.Chat.OffsetY)
 
@@ -260,12 +261,12 @@ function module:SetChatBackground()
 	end
 
 	Chat2BG:SetBackdrop({bgFile=chatTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	Chat2BG:SetBackdropColor(unpack(db.Colors.chat2))
+	Chat2BG:SetBackdropColor(unpack(Themes.db.profile.chat2))
 	Chat2BG:SetBackdropBorderColor(0,0,0,0)
 	Chat2BG:SetPoint("TOPLEFT",ChatAlphaAnchor2,"TOPLEFT",db.Frames.Chat.Chatframe2.OffsetX,db.Frames.Chat.Chatframe2.OffsetY)
 
 	Chat2Border:SetBackdrop({bgFile=chatBorderTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	Chat2Border:SetBackdropColor(unpack(db.Colors.chat2border))
+	Chat2Border:SetBackdropColor(unpack(Themes.db.profile.chat2border))
 	Chat2Border:SetBackdropBorderColor(0,0,0,0)
 	Chat2Border:SetPoint("TOPLEFT", ChatAlphaAnchor2, "TOPLEFT", db.Frames.Chat.Chatframe2.OffsetX, db.Frames.Chat.Chatframe2.OffsetY)
 
@@ -448,14 +449,14 @@ function module:SetTpsBackground()
 	end
 
 	TpsFrameBG:SetBackdrop({bgFile=tpsTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	TpsFrameBG:SetBackdropColor(unpack(db.Colors.tps))
+	TpsFrameBG:SetBackdropColor(unpack(Themes.db.profile.tps))
 	TpsFrameBG:SetBackdropBorderColor(0,0,0,0)
 	TpsFrameBG:ClearAllPoints()
 	TpsFrameBG:SetPoint("TOPLEFT", _G[db.Frames.Tps.Anchor], "TOPLEFT", tonumber(db.Frames.Tps.OffsetX), tonumber(db.Frames.Tps.OffsetY))
 	TpsFrameBG:SetParent(_G[db.Frames.Tps.Anchor])
 
 	TpsFrameBorder:SetBackdrop({bgFile=fdir.."omen", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	TpsFrameBorder:SetBackdropColor(unpack(db.Colors.tpsborder))
+	TpsFrameBorder:SetBackdropColor(unpack(Themes.db.profile.tpsborder))
 	TpsFrameBorder:SetBackdropBorderColor(0,0,0,0)
 	TpsFrameBorder:ClearAllPoints()
 	TpsFrameBorder:SetPoint("TOPLEFT", _G[db.Frames.Tps.Anchor], "TOPLEFT", tonumber(db.Frames.Tps.OffsetX), tonumber(db.Frames.Tps.OffsetY))
@@ -588,14 +589,14 @@ function module:SetDpsBackground()
 	end
 
 	DpsFrameBG:SetBackdrop({bgFile=dpsTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	DpsFrameBG:SetBackdropColor(unpack(db.Colors.dps))
+	DpsFrameBG:SetBackdropColor(unpack(Themes.db.profile.dps))
 	DpsFrameBG:SetBackdropBorderColor(0,0,0,0)
 	DpsFrameBG:ClearAllPoints()
 	DpsFrameBG:SetPoint("TOPLEFT", _G[db.Frames.Dps.Anchor], "TOPLEFT", tonumber(db.Frames.Dps.OffsetX), tonumber(db.Frames.Dps.OffsetY))
 	DpsFrameBG:SetParent(_G[db.Frames.Dps.Anchor])
 
 	DpsFrameBorder:SetBackdrop({bgFile=fdir.."omen", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	DpsFrameBorder:SetBackdropColor(unpack(db.Colors.dpsborder))
+	DpsFrameBorder:SetBackdropColor(unpack(Themes.db.profile.dpsborder))
 	DpsFrameBorder:SetBackdropBorderColor(0,0,0,0)
 	DpsFrameBorder:ClearAllPoints()
 	DpsFrameBorder:SetPoint("TOPLEFT", _G[db.Frames.Dps.Anchor], "TOPLEFT", tonumber(db.Frames.Dps.OffsetX), tonumber(db.Frames.Dps.OffsetY))
@@ -736,14 +737,14 @@ function module:SetRaidBackground()
 	end
 
 	RaidFrameBG:SetBackdrop({bgFile=raidTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	RaidFrameBG:SetBackdropColor(unpack(db.Colors.raid))
+	RaidFrameBG:SetBackdropColor(unpack(Themes.db.profile.raid))
 	RaidFrameBG:SetBackdropBorderColor(0,0,0,0)
 	RaidFrameBG:ClearAllPoints()
 	RaidFrameBG:SetPoint("TOPLEFT", _G[db.Frames.Raid.Anchor], "TOPLEFT", tonumber(db.Frames.Raid.OffsetX), tonumber(db.Frames.Raid.OffsetY))
 	RaidFrameBG:SetParent(_G[db.Frames.Raid.Anchor])
 
 	RaidFrameBorder:SetBackdrop({bgFile=raidBorderTex, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-	RaidFrameBorder:SetBackdropColor(unpack(db.Colors.raidborder))
+	RaidFrameBorder:SetBackdropColor(unpack(Themes.db.profile.raidborder))
 	RaidFrameBorder:SetBackdropBorderColor(0,0,0,0)
 	RaidFrameBorder:ClearAllPoints()
 	RaidFrameBorder:SetPoint("TOPLEFT", _G[db.Frames.Raid.Anchor], "TOPLEFT", tonumber(db.Frames.Raid.OffsetX), tonumber(db.Frames.Raid.OffsetY))
@@ -1224,9 +1225,9 @@ function module:LoadOptions()
 									desc = "Choose any Color for your Tps Panel",
 									type = "color",
 									hasAlpha = true,
-									get = function() return unpack(db.Colors.tps) end,
+									get = function() return unpack(Themes.db.profile.tps) end,
 									set = function(_,r,g,b,a)
-											db.Colors.tps = {r,g,b,a}
+											Themes.db.profile.tps = {r,g,b,a}
 											local Panels = LUI:GetModule("Panels")
 											Panels:SetTpsBackground()
 										end,
@@ -1237,9 +1238,9 @@ function module:LoadOptions()
 									desc = "Choose any Bordercolor for your Tps Panel",
 									type = "color",
 									hasAlpha = true,
-									get = function() return unpack(db.Colors.tpsborder) end,
+									get = function() return unpack(Themes.db.profile.tpsborder) end,
 									set = function(_,r,g,b,a)
-											db.Colors.tpsborder = {r,g,b,a}
+											Themes.db.profile.tpsborder = {r,g,b,a}
 											local Panels = LUI:GetModule("Panels")
 											Panels:SetTpsBackground()
 										end,
@@ -1499,9 +1500,9 @@ function module:LoadOptions()
 									desc = "Choose any Color for your Dps Panel",
 									type = "color",
 									hasAlpha = true,
-									get = function() return unpack(db.Colors.dps) end,
+									get = function() return unpack(Themes.db.profile.dps) end,
 									set = function(_,r,g,b,a)
-											db.Colors.dps = {r,g,b,a}
+											Themes.db.profile.dps = {r,g,b,a}
 											local Panels = LUI:GetModule("Panels")
 											Panels:SetDpsBackground()
 										end,
@@ -1512,9 +1513,9 @@ function module:LoadOptions()
 									desc = "Choose any Bordercolor for your Dps Panel",
 									type = "color",
 									hasAlpha = true,
-									get = function() return unpack(db.Colors.dpsborder) end,
+									get = function() return unpack(Themes.db.profile.dpsborder) end,
 									set = function(_,r,g,b,a)
-											db.Colors.dpsborder = {r,g,b,a}
+											Themes.db.profile.dpsborder = {r,g,b,a}
 											local Panels = LUI:GetModule("Panels")
 											Panels:SetDpsBackground()
 										end,
@@ -1775,9 +1776,9 @@ function module:LoadOptions()
 									desc = "Choose any Color for your Raid Panel",
 									type = "color",
 									hasAlpha = true,
-									get = function() return unpack(db.Colors.raid) end,
+									get = function() return unpack(Themes.db.profile.raid) end,
 									set = function(_,r,g,b,a)
-											db.Colors.raid = {r,g,b,a}
+											Themes.db.profile.raid = {r,g,b,a}
 											local Panels = LUI:GetModule("Panels")
 											Panels:SetRaidBackground()
 										end,
@@ -1788,9 +1789,9 @@ function module:LoadOptions()
 									desc = "Choose any Bordercolor for your Raid Panel",
 									type = "color",
 									hasAlpha = true,
-									get = function() return unpack(db.Colors.raidborder) end,
+									get = function() return unpack(Themes.db.profile.raidborder) end,
 									set = function(_,r,g,b,a)
-											db.Colors.raidborder = {r,g,b,a}
+											Themes.db.profile.raidborder = {r,g,b,a}
 											local Panels = LUI:GetModule("Panels")
 											Panels:SetRaidBackground()
 										end,
@@ -1909,9 +1910,9 @@ function module:LoadOptions()
 									desc = "Choose any Color for your Chat Panel",
 									type = "color",
 									hasAlpha = true,
-									get = function() return unpack(db.Colors.chat) end,
+									get = function() return unpack(Themes.db.profile.chat) end,
 									set = function(_,r,g,b,a)
-											db.Colors.chat = {r,g,b,a}
+											Themes.db.profile.chat = {r,g,b,a}
 											local Panels = LUI:GetModule("Panels")
 											Panels:SetChatBackground()
 										end,
@@ -1922,9 +1923,9 @@ function module:LoadOptions()
 									desc = "Choose any Bordercolor for your Chat Panel",
 									type = "color",
 									hasAlpha = true,
-									get = function() return unpack(db.Colors.chatborder) end,
+									get = function() return unpack(Themes.db.profile.chatborder) end,
 									set = function(_,r,g,b,a)
-											db.Colors.chatborder = {r,g,b,a}
+											Themes.db.profile.chatborder = {r,g,b,a}
 											local Panels = LUI:GetModule("Panels")
 											Panels:SetChatBackground()
 										end,
@@ -2032,9 +2033,9 @@ function module:LoadOptions()
 									desc = "Choose any Color for your 2nd Chat Panel",
 									type = "color",
 									hasAlpha = true,
-									get = function() return unpack(db.Colors.chat2) end,
+									get = function() return unpack(Themes.db.profile.chat2) end,
 									set = function(_,r,g,b,a)
-											db.Colors.chat2 = {r,g,b,a}
+											Themes.db.profile.chat2 = {r,g,b,a}
 											local Panels = LUI:GetModule("Panels")
 											Panels:SetChatBackground()
 										end,
@@ -2045,9 +2046,9 @@ function module:LoadOptions()
 									desc = "Choose any Bordercolor for your 2nd Chat Panel",
 									type = "color",
 									hasAlpha = true,
-									get = function() return unpack(db.Colors.chat2border) end,
+									get = function() return unpack(Themes.db.profile.chat2border) end,
 									set = function(_,r,g,b,a)
-											db.Colors.chat2border = {r,g,b,a}
+											Themes.db.profile.chat2border = {r,g,b,a}
 											local Panels = LUI:GetModule("Panels")
 											Panels:SetChatBackground()
 										end,

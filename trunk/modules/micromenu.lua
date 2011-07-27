@@ -15,6 +15,7 @@
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local module = LUI:NewModule("Micromenu")
+local Themes = LUI:GetModule("Themes")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")
 local RaidMenu
@@ -33,10 +34,10 @@ function module:SetMicroMenuPosition()
 end
 
 function module:SetColors()
-	local r, g, b = unpack(db.Colors.micromenu)
-	local rc, gc, bc, ac = unpack(db.Colors.micromenu_bg)
-	local rd, gd, bd, ad = unpack(db.Colors.micromenu_bg2)
-	local rb, gb, bb, ab = unpack(db.Colors.micromenu_btn)
+	local r, g, b = unpack(Themes.db.profile.micromenu)
+	local rc, gc, bc, ac = unpack(Themes.db.profile.micromenu_bg)
+	local rd, gd, bd, ad = unpack(Themes.db.profile.micromenu_bg2)
+	local rb, gb, bb, ab = unpack(Themes.db.profile.micromenu_btn)
 	
 	MicroMenuAnchor:SetBackdropColor(rb, gb, bb, ab)
 	MicroMenu_ButtonRight:SetBackdropColor(rb, gb, bb, ab)
@@ -80,7 +81,7 @@ function module:SetColors()
 end
 
 function module:SetMicroMenu()
-	local micro_r, micro_g, micro_b = unpack(db.Colors.micromenu)
+	local micro_r, micro_g, micro_b = unpack(Themes.db.profile.micromenu)
 	
 	local MicroMenuAnchor = LUI:CreateMeAFrame("FRAME","MicroMenuAnchor",UIParent,128,128,1,"HIGH",2,"TOPRIGHT",UIParent,"TOPRIGHT",-150,6,1)
 	MicroMenuAnchor:SetBackdrop({
@@ -91,7 +92,7 @@ function module:SetMicroMenu()
 		edgeSize = 1,
 		insets = { left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuAnchor:SetBackdropColor(unpack(db.Colors.micromenu_btn))
+	MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
 	MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)
 	MicroMenuAnchor:SetAlpha(1)
 	MicroMenuAnchor:Show()
@@ -104,7 +105,7 @@ function module:SetMicroMenu()
 			edgeSize = 1,
 			insets = { left = 0, right = 0, top = 0, bottom = 0}
 		})
-		MicroMenuAnchor:SetBackdropColor(unpack(db.Colors.micromenu_btn))
+		MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
 		MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
 	end
 	
@@ -116,7 +117,7 @@ function module:SetMicroMenu()
 		edgeSize = 1,
 		insets = { left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenu_ButtonRight:SetBackdropColor(unpack(db.Colors.micromenu_btn))
+	MicroMenu_ButtonRight:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
 	MicroMenu_ButtonRight:SetBackdropBorderColor(0,0,0,0)
 	MicroMenu_ButtonRight:SetAlpha(1)
 	MicroMenu_ButtonRight:Show()
@@ -129,7 +130,7 @@ function module:SetMicroMenu()
 		edgeSize = 1,
 		insets = { left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenu_ButtonLeft:SetBackdropColor(unpack(db.Colors.micromenu_btn))
+	MicroMenu_ButtonLeft:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
 	MicroMenu_ButtonLeft:SetBackdropBorderColor(0,0,0,0)
 	MicroMenu_ButtonLeft:SetAlpha(1)
 	MicroMenu_ButtonLeft:Show()
@@ -187,7 +188,7 @@ function module:SetMicroMenu()
 		edgeSize = 1,
 		insets = { left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuButton:SetBackdropColor(db.Colors.micromenu_bg[1], db.Colors.micromenu_bg[2], db.Colors.micromenu_bg[3],db.Colors.micromenu_bg[4])
+	MicroMenuButton:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg))
 	MicroMenuButton:SetBackdropBorderColor(0,0,0,0)
 	MicroMenuButton:SetAlpha(1)
 	MicroMenuButton:Show()
@@ -211,7 +212,7 @@ function module:SetMicroMenu()
 			edgeSize = 1,
 			insets = { left = 0, right = 0, top = 0, bottom = 0}
 		})
-		MicroMenu_ButtonRight:SetBackdropColor(unpack(db.Colors.micromenu_btn_hover))
+		MicroMenu_ButtonRight:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
 		MicroMenu_ButtonRight:SetBackdropBorderColor(0,0,0,0)
 	end)
 	
@@ -223,7 +224,7 @@ function module:SetMicroMenu()
 			edgeSize = 1,
 			insets = { left = 0, right = 0, top = 0, bottom = 0}
 		})
-		MicroMenu_ButtonRight:SetBackdropColor(unpack(db.Colors.micromenu_btn))
+		MicroMenu_ButtonRight:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
 		MicroMenu_ButtonRight:SetBackdropBorderColor(0,0,0,0)
 	end)
 	
@@ -252,7 +253,7 @@ function module:SetMicroMenu()
 			edgeSize = 1,
 			insets = { left = 0, right = 0, top = 0, bottom = 0}
 		})
-		MicroMenu_ButtonLeft:SetBackdropColor(unpack(db.Colors.micromenu_btn_hover))
+		MicroMenu_ButtonLeft:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
 		MicroMenu_ButtonLeft:SetBackdropBorderColor(0,0,0,0)
 	end)
 	
@@ -264,7 +265,7 @@ function module:SetMicroMenu()
 			edgeSize = 1,
 			insets = { left = 0, right = 0, top = 0, bottom = 0}
 		})
-		MicroMenu_ButtonLeft:SetBackdropColor(unpack(db.Colors.micromenu_btn))
+		MicroMenu_ButtonLeft:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
 		MicroMenu_ButtonLeft:SetBackdropBorderColor(0,0,0,0)
 	end)
 
@@ -318,7 +319,7 @@ function module:SetMicroMenu()
 				edgeSize = 1,
 				insets = { left = 0, right = 0, top = 0, bottom = 0}
 			})
-			MicroMenuAnchor:SetBackdropColor(unpack(db.Colors.micromenu_btn_hover))
+			MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
 			MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
 		else
 			MMAlphaIn:Show()
@@ -331,7 +332,7 @@ function module:SetMicroMenu()
 				edgeSize = 1,
 				insets = { left = 0, right = 0, top = 0, bottom = 0}
 			})
-			MicroMenuAnchor:SetBackdropColor(unpack(db.Colors.micromenu_btn_hover))
+			MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
 			MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
 		end
 	end)
@@ -345,7 +346,7 @@ function module:SetMicroMenu()
 				edgeSize = 1,
 				insets = { left = 0, right = 0, top = 0, bottom = 0}
 			})
-			MicroMenuAnchor:SetBackdropColor(unpack(db.Colors.micromenu_btn_hover))
+			MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
 			MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
 		else
 			MicroMenuAnchor:SetBackdrop({bgFile = fdir.."micro_anchor2",
@@ -355,7 +356,7 @@ function module:SetMicroMenu()
 				edgeSize = 1,
 				insets = { left = 0, right = 0, top = 0, bottom = 0}
 			})
-			MicroMenuAnchor:SetBackdropColor(unpack(db.Colors.micromenu_btn_hover))
+			MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
 			MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
 		end
 	end)
@@ -369,7 +370,7 @@ function module:SetMicroMenu()
 				edgeSize = 1,
 				insets = { left = 0, right = 0, top = 0, bottom = 0}
 			})
-			MicroMenuAnchor:SetBackdropColor(unpack(db.Colors.micromenu_btn))
+			MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
 			MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
 		else
 			MicroMenuAnchor:SetBackdrop({bgFile = fdir.."micro_anchor",
@@ -379,7 +380,7 @@ function module:SetMicroMenu()
 				edgeSize = 1,
 				insets = { left = 0, right = 0, top = 0, bottom = 0}
 			})
-			MicroMenuAnchor:SetBackdropColor(unpack(db.Colors.micromenu_btn))
+			MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
 			MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
 		end
 	end)
@@ -391,7 +392,7 @@ function module:SetMicroMenu()
 		tile = false, tileSize = 0, edgeSize = 1,
 		insets = { left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuButtonBG:SetBackdropColor(unpack(db.Colors.micromenu_bg2))
+	MicroMenuButtonBG:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg2))
 	MicroMenuButtonBG:SetBackdropBorderColor(0,0,0,0)
 	MicroMenuButtonBG:SetFrameStrata("BACKGROUND")
 	MicroMenuButtonBG:Show()

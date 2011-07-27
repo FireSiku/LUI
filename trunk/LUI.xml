@@ -10,8 +10,8 @@
 	<Script file="modules\devapi.lua"/>
 	<Script file="modules\themes.lua"/>
 	<Script file="modules\orb.lua"/>
-	<Script file="modules\frames.lua"/>
 	<Script file="modules\panels.lua"/>
+	<Script file="modules\frames.lua"/>
 	<Script file="modules\bars.lua"/>
 	
 	<!-- Addon Installation Routines -->

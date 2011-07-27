@@ -13,8 +13,9 @@
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local module = LUI:NewModule("Infotext", "AceHook-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")
-local version = 1.9
+local widgetLists = AceGUIWidgetLSMlists
 
+local version = 1.9
 local db
 
 ------------------------------------------------------
@@ -714,8 +715,8 @@ function module:SetDPS()
 			if sourceGUID == playerID or sourceGUID == petID then -- Player/Pet damage and healing done
 				if events[1][event] then -- Damage
 					totalDamage = totalDamage + amount
-					if ID == playerID then playerDamage = playerDamage + amount end
-					if ID == petID then petDamage = petDamage + amount end
+					if sourceGUID == playerID then playerDamage = playerDamage + amount end
+					if sourceGUID == petID then petDamage = petDamage + amount end
 				end
 				
 				if events[2][event] then -- Healing
@@ -3148,7 +3149,7 @@ function module:LoadOptions()
 						end,
 					type = "select",
 					dialogControl = "LSM30_Font",
-					values = LSM:HashTable("font"),
+					values = widgetLists.font,
 					get = function(info) return db.profile[info[#info-2]].Font end,
 					set = function(info, value)
 						db.profile[info[#info-2]].Font = value
