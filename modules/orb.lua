@@ -8,6 +8,7 @@
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local module = LUI:NewModule("Orb")
+local Themes = LUI:GetModule("Themes")
 
 local db
 
@@ -85,9 +86,7 @@ function module:CreateMeAnOrb(orbname,orbsize,orbanchorframe,orbpoint,orbposx,or
 	local hgal1,hgal2,hgal3,mgal1,mgal2,mgal3
 	local fog_smoother = 1.3
 	
-	local orb_r = db.Colors.orb[1]
-	local orb_g = db.Colors.orb[2]
-	local orb_b = db.Colors.orb[3]
+	local orb_r, orb_g, orb_b = unpack(Themes.db.profile.orb)
 
 	orbtab = {
 		[0] = {r = orb_r, g = orb_g, b = orb_b, scale = 0.9, z = -12, x = -0.5, y = -0.8, anim = "SPELLS\WhiteRadiationFog.m2"},
@@ -126,11 +125,11 @@ function module:CreateMeAnOrb(orbname,orbsize,orbanchorframe,orbpoint,orbposx,or
 end
 
 function module:SetOrbColor()
-	local orb = {unpack(db.Colors.orb)}
-	LUI_OrbFill:SetVertexColor(unpack(db.Colors.orb))
-	LUI_OrbGalaxy1.t:SetVertexColor(unpack(db.Colors.orb))
-	LUI_OrbGalaxy2.t:SetVertexColor(unpack(db.Colors.orb))
-	LUI_OrbGalaxy3.t:SetVertexColor(unpack(db.Colors.orb))
+	local orb = Themes.db.profile.orb
+	LUI_OrbFill:SetVertexColor(unpack(orb))
+	LUI_OrbGalaxy1.t:SetVertexColor(unpack(orb))
+	LUI_OrbGalaxy2.t:SetVertexColor(unpack(orb))
+	LUI_OrbGalaxy3.t:SetVertexColor(unpack(orb))
 end
 
 function module:OnInitialize()

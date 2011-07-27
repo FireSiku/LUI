@@ -7,11 +7,12 @@
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local LSM = LibStub("LibSharedMedia-3.0")
-local widgetLists = AceGUIWidgetLSMlists
-local Panels = LUI:GetModule("Panels")
 local module = LUI:NewModule("Bars", "AceHook-3.0")
+local Panels = LUI:GetModule("Panels")
+local Themes = LUI:GetModule("Themes")
+local LSM = LibStub("LibSharedMedia-3.0")
 local LibKeyBound = LibStub("LibKeyBound-1.0")
+local widgetLists = AceGUIWidgetLSMlists
 
 local db
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
@@ -204,8 +205,8 @@ local function SetRightSidebarAnchor()
 end
 
 function module:SetBarColors()
-	BarsBackground:SetBackdropColor(unpack(db.Colors.bar))
-	BarsBackground2:SetBackdropColor(unpack(db.Colors.bar2))
+	BarsBackground:SetBackdropColor(unpack(Themes.db.profile.bar))
+	BarsBackground2:SetBackdropColor(unpack(Themes.db.profile.bar2))
 end
 
 function module:CreateBarBackground()
@@ -217,7 +218,7 @@ function module:CreateBarBackground()
 		tile=false, edgeSize=1, 
 		insets={left=0, right=0, top=0, bottom=0}
 	})
-	BarsBackground:SetBackdropColor(unpack(db.Colors.bar))
+	BarsBackground:SetBackdropColor(unpack(Themes.db.profile.bar))
 	BarsBackground:SetBackdropBorderColor(0,0,0,0)
 	BarsBackground:ClearAllPoints()
 	BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.TopTexture.X), tonumber(db.Bars.TopTexture.Y))
@@ -237,7 +238,7 @@ function module:CreateBarBackground()
 		tile=false, edgeSize=1,
 		insets={left=0, right=0, top=0, bottom=0}
 	})
-	BarsBackground2:SetBackdropColor(unpack(db.Colors.bar2))
+	BarsBackground2:SetBackdropColor(unpack(Themes.db.profile.bar2))
 	BarsBackground2:SetBackdropBorderColor(0,0,0,0)	
 	BarsBackground2:ClearAllPoints()
 	BarsBackground2:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.BottomTexture.X), tonumber(db.Bars.BottomTexture.Y))
@@ -251,7 +252,7 @@ function module:CreateBarBackground()
 end
 
 function module:SetSidebarColors()
-	local sidebar_r, sidebar_g, sidebar_b, sidebar_a = unpack(db.Colors.sidebar)
+	local sidebar_r, sidebar_g, sidebar_b, sidebar_a = unpack(Themes.db.profile.sidebar)
 	
 	fsidebar_back:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,sidebar_a)
 	fsidebar_back2:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,sidebar_a)
@@ -269,7 +270,7 @@ end
 function module:CreateRightSidebar()
 	local RightAnchor = isBarAddOnLoaded and db.Bars.SidebarRight.Anchor or "LUIBarRight"
 	local isRightSidebarCreated = false
-	local sidebar_r, sidebar_g, sidebar_b, sidebar_a = unpack(db.Colors.sidebar)
+	local sidebar_r, sidebar_g, sidebar_b, sidebar_a = unpack(Themes.db.profile.sidebar)
 	
 	if isRightSidebarCreated == false or isRightSidebarCreated == nil then
 		local isRightSidebarCreated = true
@@ -573,7 +574,7 @@ end
 function module:CreateLeftSidebar()
 	local LeftAnchor = isBarAddOnLoaded and db.Bars.SidebarLeft.Anchor or "LUIBarLeft"
 	local isLeftSidebarCreated = false
-	local sidebar_r, sidebar_g, sidebar_b, sidebar_a = unpack(db.Colors.sidebar)
+	local sidebar_r, sidebar_g, sidebar_b, sidebar_a = unpack(Themes.db.profile.sidebar)
 	
 	if isLeftSidebarCreated == false or isLeftSidebarCreated == nil then
 		local isLeftSidebarCreated = true

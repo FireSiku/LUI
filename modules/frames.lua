@@ -11,38 +11,40 @@
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local module = LUI:NewModule("Frames")
+local Panels = LUI:GetModule("Panels")
+local Themes = LUI:GetModule("Themes")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local module = LUI:NewModule("Frames")
 
 local db
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
 function module:SetOrbCycleColor()
-	local orb_cycle = {unpack(db.Colors.orb_cycle)}
+	local orb_cycle = Themes.db.profile.orb_cycle
 	LUI_OrbCycle:SetBackdropColor(unpack(orb_cycle))
 end
 
 function module:SetOrbHoverColor()
-	local orb_hover = {unpack(db.Colors.orb_hover)}
+	local orb_hover = Themes.db.profile.orb_hover
 	LUI_OrbHover:SetBackdropColor(unpack(orb_hover))
 end
 
 function module:SetBottomInfoColors()
-	local color_bottom = {unpack(db.Colors.color_bottom)}
+	local color_bottom = Themes.db.profile.color_bottom
 	finfo_back:SetBackdropColor(unpack(color_bottom))
 	finfo2_back:SetBackdropColor(unpack(color_bottom))
 end
 
 function module:SetTopInfoColors()
-	local color_top = {unpack(db.Colors.color_top)}
+	local color_top = Themes.db.profile.color_top
 	finfo3_back:SetBackdropColor(unpack(color_top))
 	finfo4_back:SetBackdropColor(unpack(color_top))
 	top_frame2:SetBackdropColor(unpack(color_top))
 end
 
 function module:SetNavigationColors()
-	local navi = {unpack(db.Colors.navi)}
+	local navi = Themes.db.profile.navi
 	LUI_Navi_Button1:SetBackdropColor(unpack(navi))
 	LUI_Navi_Button2:SetBackdropColor(unpack(navi))
 	LUI_Navi_Button3:SetBackdropColor(unpack(navi))
@@ -50,7 +52,7 @@ function module:SetNavigationColors()
 end
 
 function module:SetNavigationHoverColors()
-	local navi_hover = {unpack(db.Colors.navi_hover)}
+	local navi_hover = Themes.db.profile.navi_hover
 	LUI_Navi_Button1_hover:SetBackdropColor(unpack(navi_hover))
 	LUI_Navi_Button2_hover:SetBackdropColor(unpack(navi_hover))
 	LUI_Navi_Button3_hover:SetBackdropColor(unpack(navi_hover))
@@ -58,29 +60,29 @@ function module:SetNavigationHoverColors()
 end
 
 function module:SetNaviAlpha(frame, value)
+	value = tonumber(value)
+	
 	if frame == "chat" then
-		LUI_Navi_Button1:SetAlpha(tonumber(value))
+		LUI_Navi_Button1:SetAlpha(value)
 	elseif frame == "tps" then
-		LUI_Navi_Button2:SetAlpha(tonumber(value))
+		LUI_Navi_Button2:SetAlpha(value)
 	elseif frame == "dps" then
-		LUI_Navi_Button3:SetAlpha(tonumber(value))
+		LUI_Navi_Button3:SetAlpha(value)
 	elseif frame == "raid" then
-		LUI_Navi_Button4:SetAlpha(tonumber(value))
+		LUI_Navi_Button4:SetAlpha(value)
 	end
 end
 
 function module:SetFrames()
-	local Orb = LUI:GetModule("Orb")
-	local Panels = LUI:GetModule("Panels")
-	local navi = {unpack(db.Colors.navi)}
-	local navi_hover = {unpack(db.Colors.navi_hover)}
-	local orb_hover = {unpack(db.Colors.orb_hover)}
-	local color_bottom = {unpack(db.Colors.color_bottom)}
-	local color_top = {unpack(db.Colors.color_top)}
-	local orb_cycle = {unpack(db.Colors.orb_cycle)}
+	local navi = Themes.db.profile.navi
+	local navi_hover = Themes.db.profile.navi_hover
+	local orb_hover = Themes.db.profile.orb_hover
+	local color_bottom = Themes.db.profile.color_bottom
+	local color_top = Themes.db.profile.color_top
+	local orb_cycle = Themes.db.profile.orb_cycle
 	
 	local navi_anchor = LUI:CreateMeAFrame("FRAME","navi_anchor",UIParent,100,100,1,"BACKGROUND",1,"TOP",UIParent,"TOP",17,15,1)
-	Orb:CreateMeAnOrb("LUI_Orb",55,navi_anchor,"CENTER",-17,0,1,"orb_filling8",0)
+	LUI:GetModule("Orb"):CreateMeAnOrb("LUI_Orb",55,navi_anchor,"CENTER",-17,0,1,"orb_filling8",0)
 
 	local top_frame = LUI:CreateMeAFrame("FRAME","top_frame",UIParent,1024,1024,1,"BACKGROUND",1,"TOP",UIParent,"TOP",17,8,1)
 	top_frame:SetBackdrop({
@@ -805,7 +807,7 @@ function module:SetFrames()
 		if not isAllShown then
 			isAllShown = true
 			
-			LUI_OrbCycle:SetBackdropColor(unpack(db.Colors.orb_cycle))
+			LUI_OrbCycle:SetBackdropColor(unpack(orb_cycle))
 			
 			if LUI_Navi_Button1:GetAlpha() == 0 then
 				ChatButtonAlphaIn:Show()

@@ -12,12 +12,13 @@
 
 -- Local includes/definitions
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local LSM = LibStub("LibSharedMedia-3.0")
 local module = LUI:NewModule("RaidMenu")
 local Themes = LUI:GetModule("Themes")
 local Micromenu = LUI:GetModule("Micromenu", true)
+local LSM = LibStub("LibSharedMedia-3.0")
+
+local version = 2.3
 local db
-local version = "2.3"
 
 local normtex = 'Interface\\AddOns\\LUI\\media\\templates\\v3\\raidmenu'
 local bgtex = 'Interface\\AddOns\\LUI\\media\\templates\\v3\\raidmenu_bg'
@@ -247,6 +248,14 @@ local SizeRaidMenu = function(compact)
 	end
 end
 
+-- SetColors function
+function module:SetColors()
+	RaidMenu_Parent:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg2))
+	RaidMenu:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg))
+	local r, g, b = unpack(Themes.db.profile.micromenu)
+	RaidMenu_Border:SetBackdropColor(r, g, b, 1)
+end
+
 -- Create module function
 function module:SetRaidMenu()
 	if (db.RaidMenu.Enable ~= true) or not(Micromenu) then return end
@@ -267,7 +276,7 @@ function module:SetRaidMenu()
 				  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
 				  tile=false, tileSize = 0, edgeSize = 1,
 				  insets = { left = 0, right = 0, top = 0, bottom = 0}})
-	RaidMenu_BG:SetBackdropColor(unpack(db.Colors.micromenu_bg2))
+	RaidMenu_BG:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg2))
 	RaidMenu_BG:SetBackdropBorderColor(0,0,0,0)
 	RaidMenu_BG:SetAlpha(1)
 	RaidMenu_BG:Show()
@@ -277,23 +286,25 @@ function module:SetRaidMenu()
 				  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
 				  tile=false, tileSize = 0, edgeSize = 1,
 				  insets = { left = 0, right = 0, top = 0, bottom = 0}})
-	RaidMenu:SetBackdropColor(unpack(db.Colors.micromenu_bg))
+	RaidMenu:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg))
 	RaidMenu:SetBackdropBorderColor(0,0,0,0)
 	RaidMenu:SetAlpha(1)
 	RaidMenu:Show()
 	
+	local micro_r, micro_g, micro_b = unpack(Themes.db.profile.micromenu)
 	local RaidMenu_Border = LUI:CreateMeAFrame("FRAME","RaidMenu_Border",RaidMenu_Parent,256,256,1,"HIGH",3,"TOPRIGHT",RaidMenu_Parent,"TOPRIGHT",2,1,1)
 	RaidMenu_Border:SetBackdrop({bgFile = bordertex,
 				  edgeFile='Interface\\Tooltips\\UI-Tooltip-Border',
 				  tile=false, tileSize = 0, edgeSize = 1,
 				  insets = { left = 0, right = 0, top = 0, bottom = 0}})
-	RaidMenu_Border:SetBackdropColor(db.Colors.micromenu[1], db.Colors.micromenu[2], db.Colors.micromenu[3], 1)
+	RaidMenu_Border:SetBackdropColor(micro_r, micro_g, micro_b, 1)
 	RaidMenu_Border:SetBackdropBorderColor(0,0,0,0)
 	RaidMenu_Border:SetAlpha(1)
 	RaidMenu_Border:Show()
 	
-	local font = (db.Infotext and db.Infotext.Clock and db.Infotext.Clock.Font) and db.Infotext.Clock.Font or "vibroceb"
-	local color = (db.Infotext and db.Infotext.Clock and db.Infotext.Clock.Color) and db.Infotext.Clock.Color or {r = 1, g = 1, b = 1, a = 1}
+	local Infotext = LUI:GetModule("Infotext", true)
+	local font = Infotext and Infotext.db.profile.Clock.Font or "vibroceb"
+	local color = Infotext and Infotext.db.profile.Clock.Color or {r = 1, g = 1, b = 1, a = 1}
 	local RaidMenu_Header = RaidMenu:CreateFontString("RaidMenu_Header", "OVERLAY")
 	RaidMenu_Header:SetFont(LSM:Fetch("font", font), LUI:Scale(20), "THICKOUTLINE")
 	RaidMenu_Header:SetPoint("TOP", RaidMenu, "TOP", -5, -25)

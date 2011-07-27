@@ -13,9 +13,10 @@
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local module = LUI:NewModule("Minimap", "AceHook-3.0")
+local Themes = LUI:GetModule("Themes")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local module = LUI:NewModule("Minimap", "AceHook-3.0")
 
 local db
 local hooks = { }
@@ -95,7 +96,7 @@ function module:WorldStateAlwaysUpFrame_Update()
 end
 
 function module:SetColors()
-	local minimap_r, minimap_g, minimap_b, minimap_a = unpack(db.Colors.minimap)
+	local minimap_r, minimap_g, minimap_b, minimap_a = unpack(Themes.db.profile.minimap)
 	
 	fminimap_texture1:SetBackdropBorderColor(minimap_r,minimap_g,minimap_b,minimap_a)
 	fminimap_texture3:SetBackdropBorderColor(minimap_r,minimap_g,minimap_b,minimap_a)
@@ -105,7 +106,7 @@ end
 
 function module:SetMinimapFrames()
 	local glowTex = LUI_Media.glowTex
-	local minimap_r, minimap_g, minimap_b, minimap_a = unpack(db.Colors.minimap)
+	local minimap_r, minimap_g, minimap_b, minimap_a = unpack(Themes.db.profile.minimap)
 	
 	local fminimap_border = LUI:CreateMeAFrame("FRAME","fminimap_border",Minimap,143,143,1,"BACKGROUND",2,"CENTER",Minimap,"CENTER",0,0,1)
 	fminimap_border:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background", edgeFile=glowTex, tile=0, tileSize=0, edgeSize=7, insets={left=0, right=0, top=0, bottom=0}})
