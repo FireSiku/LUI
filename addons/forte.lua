@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: forte.lua
 	Description: ForteXorcist Module
-	Version....: 1.975-v1.5
+	Version....: 1.975-v1.6
 ]] 
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -633,6 +633,7 @@ function module:LoadOptions()
 			end
 		end
 	end
+	
 	local function setForte(info, value)
 		setValue(info, value)
 		module:SetForte()
@@ -682,7 +683,7 @@ function module:LoadOptions()
 		return option
 	end
 	
-	local function newPosOptions(order)
+	local function newPosOptions(order,location)
 		order = order or 3
 		
 		local option = {
@@ -721,13 +722,32 @@ function module:LoadOptions()
 					set = setPosForte,
 					order = 3,
 				},
+				Location = location and {
+					name = "Anchor Location",
+					desc = "Choose the anchor location for this frame.",
+					type = "select",
+					disabled = lockDisabled,
+					values = location,
+					get = function(self)
+						local val = getValue(self);
+						for k, v in ipairs(location) do
+							if val == v then
+								return k;
+							end
+						end
+					end,
+					set = function(self, val)
+						setPosForte(self, location[val] );
+					end,
+					order = 4,
+				},
 			},
 		}
 		
 		return option
 	end
 	
-	local function newSpellTimerOption(order, desc)
+	local function newSpellTimerOption(order, desc, location)
 		local option = {
 			name = getName,
 			desc = desc,
@@ -743,7 +763,7 @@ function module:LoadOptions()
 					order = 1,
 				},
 				FXOptions = newFXOptionsButton(),
-				Position = newPosOptions(),
+				Position = newPosOptions(nil,location),
 			},
 		}
 		
@@ -811,7 +831,7 @@ function module:LoadOptions()
 				Player = newSpellTimerOption(2, "This frame can be attached to the Player frame and show important buffs/debuffs on yourself, spells without a target and some important cooldowns."),
 				Target = newSpellTimerOption(3, "This frame can be attached to the target frame and show important buffs/debuffs on your target."),
 				Focus = newSpellTimerOption(4, "This frame can be attached to the focus frame and show important buffs/debuffs on your focus."),
-				Compact = newSpellTimerOption(5, "Will show a compact timer frame with important spells on multiple units."),
+				Compact = newSpellTimerOption(5, "Will show a compact timer frame with important spells on multiple units.",LR),
 			},
 		},
 		Cooldown = {
@@ -847,7 +867,7 @@ function module:LoadOptions()
 					order = 1,
 				},
 				FXOptions = newFXOptionsButton(),
-				Position = newPosOptions(),
+				Position = newPosOptions(nil,TB),
 			},
 		},
 	}
