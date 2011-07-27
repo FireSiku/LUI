@@ -470,16 +470,20 @@ function module:SetBlizzardRaidFrames()
 	if useBlizz then
 		module:Unhook(CompactRaidFrameManager, "Show")
 		module:Unhook(CompactRaidFrameContainer, "Show")
-		-- if UnitInRaid("player") then			-- may add back in
+		-- if UnitInRaid("player") then			-- may add back in at some point
 			CompactRaidFrameManager:Show()
 			CompactRaidFrameContainer:Show()
 		-- end
 	else
+		local function hideCompactFrame(frame)
+			frame:Hide()
+		end
+		-- RawHooking a blank function causes action blocked errors
 		if not module:IsHooked(CompactRaidFrameManager, "Show") then
-		module:RawHook(CompactRaidFrameManager, "Show", LUI.dummy, true)
+			module:SecureHook(CompactRaidFrameManager, "Show", hideCompactFrame)
 		end
 		if not module:IsHooked(CompactRaidFrameContainer, "Show") then
-			module:RawHook(CompactRaidFrameContainer, "Show", LUI.dummy, true)
+			module:SecureHook(CompactRaidFrameContainer, "Show", hideCompactFrame)
 		end
 		CompactRaidFrameManager:Hide()
 		CompactRaidFrameContainer:Hide()
