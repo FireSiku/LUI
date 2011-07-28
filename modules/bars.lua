@@ -1654,7 +1654,7 @@ function module:SetLibKeyBound()
 end
 
 function module:SetBars()
-	if not (IsAddOnLoaded("Bartender4") or IsAddOnLoaded("Dominos")) then
+	if not (IsAddOnLoaded("Bartender4") or IsAddOnLoaded("Dominos") or IsAddOnLoaded("Macaroon")) and db.Bars.Enable then
 		if not db.Bars.StatesLoaded then LoadStates(defaultstate) end
 		
 		self:SetLibKeyBound()
@@ -1674,9 +1674,7 @@ function module:SetBars()
 		self:SetButtons()
 		
 		-- because of an ugly bug...
-		module:SecureHook(CharacterFrame, "Show", function()
-			TokenFrame_Update()
-		end)
+		module:SecureHook(CharacterFrame, "Show", function() TokenFrame_Update() end)
 	else
 		isBarAddOnLoaded = true
 	end
@@ -1688,6 +1686,7 @@ end
 
 local defaults = {
 	Bars = {
+		Enable = true,
 		StatesLoaded = false,
 		ShowHotkey = false,
 		ShowMacro = false,
@@ -2166,10 +2165,11 @@ function module:LoadOptions()
 					type = "group",
 					order = 2,
 					args = {
+						Enable = LUI:NewToggle("Enable", "Whether you want to use LUI Bars or not.", 1, bardb, "Enable", bardefaults, function() StaticPopup_Show("RELOAD_UI") end),
 						GeneralSettings = not isBarAddOnLoaded and {
 							name = "General",
 							type = "group",
-							order = 1,
+							order = 2,
 							guiInline = true,
 							args = {
 								ShowHotkey = LUI:NewToggle("Show Hotkey Text", "Whether you want to show hotkey text or not.", 1, bardb, "ShowHotkey", bardefaults, ToggleTexts),
