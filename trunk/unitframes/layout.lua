@@ -3536,10 +3536,10 @@ local SetStyle = function(self, unit, isSingle)
 	self.Highlight:SetBlendMode("ADD")
 	self.Highlight:Hide()
 
-	if unit == unit:match("arena%d") then
-		self.Hide_ = self.Hide
-		self:RegisterEvent("ARENA_OPPONENT_UPDATE", ArenaEnemyUnseen)
-	end
+	--if unit == unit:match("arena%d") then
+		--self.Hide_ = self.Hide
+		--self:RegisterEvent("ARENA_OPPONENT_UPDATE", ArenaEnemyUnseen)
+	--end
 
 	self:RegisterEvent("PLAYER_FLAGS_CHANGED", function(self) self.Health:ForceUpdate() end)
 	if unit == "player" then self:RegisterEvent("PLAYER_ENTERING_WORLD", function(self) self.Health:ForceUpdate() end) end
