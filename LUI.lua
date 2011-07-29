@@ -1141,17 +1141,29 @@ end
 
 
 function LUI:NewNamespace(module, enableButton)
+	-- Add options loader function to list
 	if (not module.addon) or IsAddOnLoaded(module.addon) then
 		table.insert(newModuleOptions, module:GetName())
 	end
 	
+	-- Register namespace
 	module.db = self.db:RegisterNamespace(module:GetName(), type(module.defaults) == "table" and module.defaults or {})
 	module.defaults = nil
 	
+	-- Look for outdated db vars and transfer them over
+	if LUI.db.profile[module:GetName()] then
+		for k, v in pairs(LUI.db.profile[module:GetName()]) do
+			module.db.profile[k] = v
+		end
+		LUI.db.profile[module:GetName()] = nil
+	end
+	
+	-- Set module enabled state
 	if module.db.profile.Enable ~= nil then
 		module:SetEnabledState(module.db.profile.Enable)
 	end
 	
+	-- Create Enable button for module if applicable
 	if enableButton then
 		local mName = module:GetName()
 		table.insert(moduleList, {
