@@ -2332,11 +2332,7 @@ LUI.oUF.funcs = {
 
 	Castbar = function(self, unit, oufdb)
 		if not self.Castbar then
-			if unit == "player" or unit == "target" then
-				self.Castbar = CreateFrame("StatusBar", self:GetName().."_Castbar", UIParent) -- needed for moveable frames
-			else
-				self.Castbar = CreateFrame("StatusBar", nil, self)
-			end
+			self.Castbar = CreateFrame("StatusBar", self:GetName().."_Castbar", self)
 			self.Castbar:SetFrameLevel(6)
 
 			self.Castbar.bg = self.Castbar:CreateTexture(nil, "BORDER")

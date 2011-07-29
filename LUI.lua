@@ -1055,7 +1055,11 @@ local function getOptions()
 			LUI.options.args = LUI:MergeOptions(LUI.options.args, (type(v) == "function") and v() or v, true)
 		end
 		
-		
+		local function createDisabled(module)
+			local disabled = function() return not module:IsEnabled() end
+			
+			return disabled
+		end
 		for k,v in pairs(newModuleOptions) do -- needs api implementation and all modules need to be converted over to this
 			module = type(v) == "string" and LUI:GetModule(v) or v
 			LUI.options.args[module:GetName()] = {
@@ -1063,7 +1067,7 @@ local function getOptions()
 				type = "group",
 				order = module.order or 10,
 				childGroups = module.childGroups or "tab",
-				disabled = function() return not module:IsEnabled() end,
+				disabled = createDisabled(module),
 				args = type(module.LoadOptions) == "function" and module:LoadOptions() or module.options,
 			}
 		end
@@ -1143,7 +1147,11 @@ function LUI:NewNamespace(module, enableButton)
 	
 	module.db = self.db:RegisterNamespace(module:GetName(), type(module.defaults) == "table" and module.defaults or {})
 	module.defaults = nil
-		
+	
+	if module.db.profile.Enable ~= nil then
+		module:SetEnabledState(module.db.profile.Enable)
+	end
+	
 	if enableButton then
 		local mName = module:GetName()
 		table.insert(moduleList, {

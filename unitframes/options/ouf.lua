@@ -297,10 +297,6 @@ function module:MoveUnitFrames(override)
 			if _G[v] then
 				local bd = getBackdrop(_G[v])
 				if bd then bd:Show() end
-				if _G[v.."Castbar"] then
-					local bd = getBackdrop(_G[v.._"Castbar"])
-					if bd then bd:Show() end
-				end
 			end
 		end
 
