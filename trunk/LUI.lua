@@ -1148,7 +1148,7 @@ function LUI:NewNamespace(module, enableButton)
 	
 	-- Register namespace
 	module.db = self.db:RegisterNamespace(module:GetName(), type(module.defaults) == "table" and module.defaults or {})
-	module.defaults = nil
+	--module.defaults = nil
 	
 	-- Look for outdated db vars and transfer them over
 	if LUI.db.profile[module:GetName()] then
