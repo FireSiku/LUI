@@ -197,8 +197,18 @@ function Fader:CreateFaderBar(bar)
 	bar:SetParent(bar.FaderBar)
 
 	-- Hook hide and show scripts.
-	self:SecureHook(bar, "Hide", function(frame) frame.FaderBar:Hide() end)
-	self:SecureHook(bar, "Show", function(frame) frame.FaderBar:Show() end)
+	self:RawHook(bar, "Hide", function(self)
+		Fader.hooks[self]["Hide"](self)
+		self.FaderBar:Hide()
+	end, true)
+	self:RawHook(bar, "Show", function(self)
+		self.FaderBar:Show()
+		Fader.hooks[self]["Show"](self)
+	end, true)
+
+	-- These cause Bars enable toggle button not to work properly because there seems to be a check within the method :Show() where it first checks the parent (the faderbar) and cancels the function when the parent is hidden.
+	--self:SecureHookScript(bar, "OnHide", function(self) self.FaderBar:Hide() end)
+	--self:SecureHookScript(bar, "OnShow", function(self) self.FaderBar:Show() end)
 	
 	-- Create mouse hover updates.
 	bar.FaderBar.Throttle = 0
