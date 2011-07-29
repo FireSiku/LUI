@@ -94,16 +94,9 @@ local function LoadStates(data)
 		if type(v) == "table" then
 			for k2, v2 in pairs(v) do
 				db.Bars[k].State[k2] = v2
-
-				if k2 == 1 then
-					db.Bars[k].AltState = v2
-					db.Bars[k].CtrlState = v2
-				end
 			end
 		else
 			db.Bars[k].State = v
-			db.Bars[k].AltState = v
-			db.Bars[k].CtrlState = v
 		end
 	end
 	
@@ -1166,6 +1159,10 @@ function module:SetButtons()
 		local hotkey = _G[self:GetName().."HotKey"]
 		local text = hotkey:GetText()
 		
+		if text == nil then
+			text = ""
+		end
+		
 		text = gsub(text, "(s%-)", "S")
 		text = gsub(text, "(a%-)", "A")
 		text = gsub(text, "(c%-)", "C")
@@ -1245,17 +1242,6 @@ function module:SetBottomBar1()
 
 	local function GetBar()
 		local condition = "[bonusbar:5] 11; "
-		
-		-- Add alt key state.
-		if db.Bars.Bottombar1.AltState ~= db.Bars.Bottombar1.State[1] then
-			condition = condition.."[mod:alt] "..db.Bars.Bottombar1.AltState.."; "
-		end
-
-		-- Add ctrl key state.
-		if db.Bars.Bottombar1.CtrlState ~= db.Bars.Bottombar1.State[1] then
-			condition = condition.."[mod:ctrl] "..db.Bars.Bottombar1.CtrlState.."; "
-		end
-
 		if Page[class] then
 			for num, word in pairs(Page[class]) do
 				condition = condition..word:format(db.Bars.Bottombar1.State[num+1])
@@ -1316,23 +1302,6 @@ function module:SetBottomBar1()
 end
 
 function module:SetBottomBar2()
-	local function GetBar()
-		local condition = ""
-
-		-- Add alt key state.
-		if db.Bars.Bottombar2.AltState ~= db.Bars.Bottombar2.State then
-			condition = condition.."[mod:alt] "..db.Bars.Bottombar2.AltState.."; "
-		end
-
-		-- Add ctrl key state.
-		if db.Bars.Bottombar2.CtrlState ~= db.Bars.Bottombar2.State then
-			condition = condition.."[mod:ctrl] "..db.Bars.Bottombar2.CtrlState.."; "
-		end
-
-		condition = condition..db.Bars.Bottombar2.State
-		return condition
-	end
-
 	local LUI_Fader = LUI:GetModule("Fader", true)
 	local bar = CreateFrame("Frame", "LUIBar2", UIParent, "SecureHandlerStateTemplate")
 	bar:SetWidth(454)
@@ -1371,13 +1340,13 @@ function module:SetBottomBar2()
 		end
 	]])
 			
-	RegisterStateDriver(bar, "page", GetBar())
+	RegisterStateDriver(bar, "page", db.Bars.Bottombar2.State)
 	
 	if not db.Bars.Bottombar2.Enable then bar:Hide() end
 	
 	bar.UpdateState = function()
 		UnregisterStateDriver(bar, "page")
-		RegisterStateDriver(bar, "page", GetBar())
+		RegisterStateDriver(bar, "page", db.Bars.Bottombar2.State)
 	end
 
 	-- Register bar to fader.
@@ -1387,23 +1356,6 @@ function module:SetBottomBar2()
 end
 
 function module:SetBottomBar3()
-	local function GetBar()
-		local condition = ""
-
-		-- Add alt key state.
-		if db.Bars.Bottombar3.AltState ~= db.Bars.Bottombar3.State then
-			condition = condition.."[mod:alt] "..db.Bars.Bottombar3.AltState.."; "
-		end
-
-		-- Add ctrl key state.
-		if db.Bars.Bottombar3.CtrlState ~= db.Bars.Bottombar3.State then
-			condition = condition.."[mod:ctrl] "..db.Bars.Bottombar3.CtrlState.."; "
-		end
-
-		condition = condition..db.Bars.Bottombar3.State
-		return condition
-	end
-
 	local LUI_Fader = LUI:GetModule("Fader", true)
 	local bar = CreateFrame("Frame", "LUIBar3", UIParent, "SecureHandlerStateTemplate")
 	bar:SetWidth(454)
@@ -1442,13 +1394,13 @@ function module:SetBottomBar3()
 		end
 	]])
 			
-	RegisterStateDriver(bar, "page", GetBar())
+	RegisterStateDriver(bar, "page", db.Bars.Bottombar3.State)
 	
 	if not db.Bars.Bottombar3.Enable then bar:Hide() end
 	
 	bar.UpdateState = function()
 		UnregisterStateDriver(bar, "page")
-		RegisterStateDriver(bar, "page", GetBar())
+		RegisterStateDriver(bar, "page", db.Bars.Bottombar3.State)
 	end
 
 	-- Register bar to fader.
@@ -1783,8 +1735,6 @@ local defaults = {
 			X = "0",
 			Y = "24.5",
 			Scale = 0.85,
-			AltState = "0",
-			CtrlState = "0",
 			State = {
 				[1] = "0",
 				[2] = "0",
@@ -1816,8 +1766,6 @@ local defaults = {
 			X = "0",
 			Y = "63.5",
 			Scale = 0.85,
-			AltState = "0",
-			CtrlState = "0",
 			State = "0",
 			Fader = {
 				Casting = true,
@@ -1842,8 +1790,6 @@ local defaults = {
 			X = "0",
 			Y = "102.5",
 			Scale = 0.85,
-			AltState = "0",
-			CtrlState = "0",
 			State = "0",
 			Fader = {
 				Casting = true,
@@ -1948,46 +1894,6 @@ function module:CreateBottombarOptions(num, order)
 			},
 		},
 	}
-
-	local ModStates = function(name, order, default, bdefault)
-		local alt = {
-			name = "Alt",
-			desc = "Choose the Alt key state for your "..name..".\nLUI Default: "..default.."\nBlizzard Default: "..bdefault,
-			type = "select",
-			values = statelist,
-			get = function()
-					for k, v in pairs(statelist) do
-						if bardb.AltState == v then
-							return k
-						end
-					end
-				end,
-			set = function(_, select)
-					bardb.AltState = statelist[select]
-					bar.UpdateState()
-				end,
-			order = order,
-		}
-		local ctrl = {
-			name = "Ctrl",
-			desc = "Choose the Ctrl key state for your "..name..".\nLUI Default: "..default.."\nBlizzard Default: "..bdefault,
-			type = "select",
-			values = statelist,
-			get = function()
-					for k, v in pairs(statelist) do
-						if bardb.CtrlState == v then
-							return k
-						end
-					end
-				end,
-			set = function(_, select)
-					bardb.CtrlState = statelist[select]
-					bar.UpdateState()
-				end,
-			order = order + 1,
-		}
-		return alt, ctrl
-	end
 	
 	if num == 1 then
 		local i = 1
@@ -2013,10 +1919,9 @@ function module:CreateBottombarOptions(num, order)
 			}
 			i = i + 1
 		end
-		options.args.State.args["AltState"], options.args.State.args["CtrlState"] = ModStates(barName, i, defaultstate[barKey][1], blizzstate[barKey][1])
 	else
-		options.args.State.args["Default"] = {
-			name = "Default",
+		options.args.State.args.State = {
+			name = "State",
 			desc = "Choose the State for your "..barName..".\nLUI Default: "..defaultstate[barKey].."\nBlizzard Default: "..blizzstate[barKey],
 			type = "select",
 			values = statelist,
@@ -2033,7 +1938,6 @@ function module:CreateBottombarOptions(num, order)
 				end,
 			order = 1,
 		}
-		options.args.State.args["AltState"], options.args.State.args["CtrlState"] = ModStates(barName, 2, defaultstate[barKey], blizzstate[barKey])
 	end
 	
 	return options
