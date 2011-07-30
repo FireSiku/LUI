@@ -1138,7 +1138,19 @@ function LUI:RegisterModule(module, moduledb, addFunc)
 	module:SetEnabledState(db[moduledb].Enable)
 end
 
-
+local function mergeOldDB(dest, src)
+	if type(dest) ~= "table" then dest = {} end
+	for k,v in pairs(src) do
+		if type(v) == type(dest[k]) then
+			if type(v) == "table" then
+				dest[k] = mergeOldDB(dest[k], v)
+			else
+				dest[k] = v
+			end
+		end
+	end
+	return dest
+end
 
 function LUI:NewNamespace(module, enableButton)
 	-- Add options loader function to list
@@ -1147,14 +1159,12 @@ function LUI:NewNamespace(module, enableButton)
 	end
 	
 	-- Register namespace
-	module.db = self.db:RegisterNamespace(module:GetName(), type(module.defaults) == "table" and module.defaults or {})
+	module.db = self.db:RegisterNamespace(module:GetName(), type(module.defaults) == "table" and module.defaults or nil)
 	--module.defaults = nil
 	
 	-- Look for outdated db vars and transfer them over
 	if LUI.db.profile[module:GetName()] then
-		for k, v in pairs(LUI.db.profile[module:GetName()]) do
-			module.db.profile[k] = v
-		end
+		mergeOldDB(module.db.profile, LUI.db.profile[module:GetName()])
 		LUI.db.profile[module:GetName()] = nil
 	end
 	
