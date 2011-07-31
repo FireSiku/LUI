@@ -546,7 +546,12 @@ function Fader:StopFading(frame)
 		if v == frame then
 			frame.Fader.fading = false
 			tremove(self.Fading, i)
-			if frame.Fader.callBack then frame.Fader.callBack() end
+
+			if frame.Fader.callBack then
+				frame.Fader.callBack()
+				frame.Fader.callBack = nil			
+			end
+
 			if not self.RegisteredFrames[frame] then frame.Fader = nil end
 			return
 		end
