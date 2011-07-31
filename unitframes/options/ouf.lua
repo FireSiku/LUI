@@ -327,13 +327,6 @@ do
 	local blizzFrameEvents = {}
 
 	local function UnitFrame_OnEvent(frame, event, ...)
-		if not blizzFrameEvents[frame] then blizzFrameEvents[frame] = {} end
-		if frame == PlayerFrame then
-			if event == "UNIT_ENTERING_VEHICLE" or event == "UNIT_ENTERED_VEHICLE" or event == "UNIT_EXITING_VEHICLE" or event == "UNIT_EXITED_VEHICLE" then
-				return module.hooks[frame].OnEvent(frame, event, ...)
-			end
-		end
-		
 		tinsert(blizzFrameEvents[frame], event)
 		frame:UnregisterEvent(event)
 	end
@@ -345,12 +338,29 @@ do
 		module:Unhook(frame, "Show")
 		module:Unhook(frame, "OnEvent")
 		if blizzFrameEvents[frame] then
-			for _, event in pairs(blizzFrameEvents[frame]) do
+			for key, event in pairs(blizzFrameEvents[frame]) do
 				frame:RegisterEvent(event)
+				blizzFrameEvents[key] = nil
 			end
 		end
-		if frame.unit and UnitExists(frame.unit) then
-			frame:Show()
+		if frame.unit then
+			if UnitExists(frame.unit) then
+				frame:Show()
+			end
+			
+			if _G[frame:GetName().."_Update"] then
+				_G[frame:GetName().."_Update"](frame)
+			else
+				UnitFrame_Update(frame)
+			end
+			
+			if frame == PlayerFrame then
+				if frame.unit == "player" and UnitInVehicle("player") then
+					PlayerFrame_ToVehicleArt(frame, UnitVehicleSkin("player"))
+				elseif(frame.unit == "vehicle" and not UnitInVehicle("player")) then
+					PlayerFrame_ToPlayerArt(frame)
+				end
+			end
 		end
 	end
 	local function DisableUnitFrame(frame)
@@ -361,6 +371,7 @@ do
 			module:SecureHook(frame, "Show", frame.Hide)
 			module:RawHookScript(frame, "OnEvent", UnitFrame_OnEvent, true)
 		end
+		blizzFrameEvents[frame] = blizzFrameEvents[frame] or {}
 		frame:Hide()
 	end
 
@@ -407,6 +418,10 @@ do
 			if db.oUF.Arena.UseBlizzard then
 				SetCVar("showArenaEnemyFrames", "1")
 			end
+		end
+		
+		if unit == "raid" then
+			CompactRaidFrameManager:Show()
 		end
 	end
 
@@ -463,12 +478,8 @@ do
 		if IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") or (db.oUF.Settings.Enable and db.oUF.Raid.Enable) then
 			useBlizz = false
 		end
-		if useBlizz then
-			module:EnableBlizzard("raid")
-			CompactRaidFrameManager:Show()
-		else
-			module:DisableBlizzard("raid")
-		end
+		
+		module[(useBlizz and "Enable" or "Disable") .. "Blizzard"](module, "raid")
 	end
 
 end
