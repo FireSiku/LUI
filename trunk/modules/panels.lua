@@ -851,7 +851,7 @@ function module:SetRaid()
 end
 
 -- special hack for boss/arena unitframes
-local Blizz_UnitAnchor = CreateFrame("Frame")
+--[[local Blizz_UnitAnchor = CreateFrame("Frame")
 Blizz_UnitAnchor:SetWidth(200)
 Blizz_UnitAnchor:SetHeight(350)
 
@@ -862,7 +862,7 @@ function module:SetBlizzBossFrames()
 		_G["Boss"..i.."TargetFrame"]:SetPoint("TOP", i == 1 and Blizz_UnitAnchor or _G["Boss"..(i-1).."TargetFrame"], i == 1 and "TOP" or "BOTTOM")
 		self:RawHook(_G["Boss"..i.."TargetFrame"], "SetPoint", LUI.dummy, true)
 	end
-end
+end]]
 
 function module:SetPanels()
 	self:SetChat()
@@ -2077,7 +2077,7 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
-	self:SetBlizzBossFrames()
+	-- self:SetBlizzBossFrames() -- not sure what this is for
 	self:SetPanels()
 	
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", function()
