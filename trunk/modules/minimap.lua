@@ -203,11 +203,9 @@ function module:SetMinimapPosition()
 end
 
 function module:SetMinimapSize()
-
-	local size = 135*db.Minimap.General.Size
+	local size = db.Minimap.General.Size * 135
 	Minimap:SetSize(LUI:Scale(size), LUI:Scale(size))
 	fminimap_border:SetSize(LUI:Scale(size+8), LUI:Scale(size+8))
-
 end
 
 function module:SetMinimap()
@@ -266,7 +264,7 @@ function module:SetMinimap()
 	-- Hide Calendar Button
 	GameTimeFrame:Hide()
 
-	-- Hide Mail Button
+	-- Move Mail icon
 	MiniMapMailFrame:ClearAllPoints()
 	MiniMapMailFrame:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(4))
 	MiniMapMailBorder:Hide()
@@ -276,6 +274,54 @@ function module:SetMinimap()
 	MiniMapBattlefieldFrame:ClearAllPoints()
 	MiniMapBattlefieldFrame:SetPoint(db.Minimap.Icon.BG, Minimap, LUI:Scale(3), 0)
 	MiniMapBattlefieldBorder:Hide()
+	
+	-- Move GM Ticket Status icon
+	HelpOpenTicketButton:SetParent(Minimap)
+	HelpOpenTicketButton:ClearAllPoints()
+	HelpOpenTicketButton:SetPoint(db.Minimap.Icon.GMTicket, Minimap, LUI:Scale(3), LUI:Scale(3))
+	
+	local micro_r, micro_g, micro_b = unpack(Themes.db.profile.micromenu)
+	HelpOpenTicketButtonTutorial:ClearAllPoints()
+	HelpOpenTicketButtonTutorial:SetPoint("TOP", HelpOpenTicketButton, "BOTTOM", 0, -PlayerTalentFrameLearnButtonTutorialArrow:GetHeight())
+	
+	HelpOpenTicketButtonTutorialBg:SetGradientAlpha("VERTICAL", micro_r/4, micro_g/4, micro_b/4, 1, 0, 0, 0, 1)
+	
+	HelpOpenTicketButtonTutorialText:SetFont(LSM:Fetch("font", "vibrocen"), 14, "NONE")
+	
+	PlayerTalentFrameLearnButtonTutorialArrow:ClearAllPoints()
+	PlayerTalentFrameLearnButtonTutorialArrow:SetPoint("BOTTOM", HelpOpenTicketButtonTutorial, "TOP", 0, -6)
+	
+	PlayerTalentFrameLearnButtonTutorialArrowGlow:SetTexCoord(0.40625000, 0.66015625, 0.82812500, 0.77343750)
+	PlayerTalentFrameLearnButtonTutorialArrowGlow:SetVertexColor(r, g, b, 0.5)
+	PlayerTalentFrameLearnButtonTutorialArrowGlow:ClearAllPoints()
+	PlayerTalentFrameLearnButtonTutorialArrowGlow:SetPoint("BOTTOM", PlayerTalentFrameLearnButtonTutorialArrow, "BOTTOM", 0, 0)
+	
+	PlayerTalentFrameLearnButtonTutorialArrowArrow:SetTexCoord(0.78515625, 0.99218750, 0.58789063, 0.54687500)
+	PlayerTalentFrameLearnButtonTutorialArrowArrow:SetVertexColor(micro_r, micro_g, micro_b)
+	
+	HelpOpenTicketButtonTutorialGlowTopLeft:SetVertexColor(micro_r, micro_g, micro_b)
+	HelpOpenTicketButtonTutorialGlowTopRight:SetVertexColor(micro_r, micro_g, micro_b)
+	HelpOpenTicketButtonTutorialGlowBottomLeft:SetVertexColor(micro_r, micro_g, micro_b)
+	HelpOpenTicketButtonTutorialGlowBottomRight:SetVertexColor(micro_r, micro_g, micro_b)
+	
+	HelpOpenTicketButtonTutorialGlowTop:SetVertexColor(micro_r, micro_g, micro_b)
+	HelpOpenTicketButtonTutorialGlowBottom:SetVertexColor(micro_r, micro_g, micro_b)
+	HelpOpenTicketButtonTutorialGlowLeft:SetVertexColor(micro_r, micro_g, micro_b)
+	HelpOpenTicketButtonTutorialGlowRight:SetVertexColor(micro_r, micro_g, micro_b)
+	
+	-- greyscaled textures
+	PlayerTalentFrameLearnButtonTutorialArrowGlow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+	PlayerTalentFrameLearnButtonTutorialArrowArrow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+	
+	HelpOpenTicketButtonTutorialGlowTopLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+	HelpOpenTicketButtonTutorialGlowTopRight:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+	HelpOpenTicketButtonTutorialGlowBottomLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+	HelpOpenTicketButtonTutorialGlowBottomRight:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+	
+	HelpOpenTicketButtonTutorialGlowTop:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-HORIZONTAL2")
+	HelpOpenTicketButtonTutorialGlowBottom:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-HORIZONTAL2")
+	HelpOpenTicketButtonTutorialGlowLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
+	HelpOpenTicketButtonTutorialGlowRight:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
 
 	-- Hide world map button
 	MiniMapWorldMapButton:Hide()
@@ -295,10 +341,21 @@ function module:SetMinimap()
 	-- Enable mouse scrolling
 	Minimap:EnableMouseWheel(true)
 	Minimap:SetScript("OnMouseWheel", function(self, d)
-		if d > 0 then
-			_G.MinimapZoomIn:Click()
-		elseif d < 0 then
-			_G.MinimapZoomOut:Click()
+		if IsShiftKeyDown() then
+			db.Minimap.General.Size = db.Minimap.General.Size + ((d > 0 and 0.25) or (d < 0 and -0.25) or 0)
+			if db.Minimap.General.Size > 2.5 then
+				db.Minimap.General.Size = 2.5
+			elseif db.Minimap.General.Size < 0.5 then
+				db.Minimap.General.Size = 0.5
+			end
+			
+			module:SetMinimapSize()
+		else
+			if d > 0 then
+				_G.MinimapZoomIn:Click()
+			elseif d < 0 then
+				_G.MinimapZoomOut:Click()
+			end
 		end
 	end)
 
@@ -352,7 +409,7 @@ function module:SetMinimap()
 	Minimap:SetMaskTexture('Interface\\ChatFrame\\ChatFrameBackground')
 
 	-- For others mods with a minimap button, set minimap buttons position in square mode.
-	function GetMinimapShape() return 'SQUARE' end
+	function GetMinimapShape() return "SQUARE" end
 
 	-- reskin LFG dropdown
 	--[[LFDSearchStatus:SetBackdrop({
@@ -498,6 +555,7 @@ local defaults = {
 			Mail = "TOPRIGHT",
 			BG = "BOTTOMRIGHT",
 			LFG = "BOTTOMRIGHT",
+			GMTicket = "TOPLEFT",
 		},
 		Frames = {
 			AlwaysUpFrameX = "300",
