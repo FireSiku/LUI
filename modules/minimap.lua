@@ -25,6 +25,7 @@ local numHookedCaptureFrames = 0
 local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
 
 function module:SetAdditionalFrames()
+	if db.Minimap.Enable ~= true then return end
 	self:SecureHook(DurabilityFrame, "SetPoint", "DurabilityFrame_SetPoint")
 	self:SecureHook(VehicleSeatIndicator, "SetPoint", "VehicleSeatIndicator_SetPoint")
 	self:SecureHook(WatchFrame, "SetPoint", "WatchFrame_SetPoint")
