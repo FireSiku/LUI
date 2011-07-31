@@ -9,7 +9,7 @@ local _, ns = ...
 local oUF = ns.oUF or oUF
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF", "AceHook-3.0")
+local module = LUI:NewModule("oUF", "AceHook-3.0", "AceEvent-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -19,172 +19,169 @@ LUI_versions.ouf = 3403
 
 local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
 
-local ufNames = {
-	Player = "oUF_LUI_player",
-	Target = "oUF_LUI_target",
-	ToT = "oUF_LUI_targettarget",
-	ToToT = "oUF_LUI_targettargettarget",
-	Focus = "oUF_LUI_focus",
-	FocusTarget = "oUF_LUI_focustarget",
-	Pet = "oUF_LUI_pet",
-	PetTarget = "oUF_LUI_pettarget",
-	Party = "oUF_LUI_party",
-	Maintank = "oUF_LUI_maintank",
-	Boss = "oUF_LUI_boss",
-	Player_Castbar = "oUF_LUI_player_Castbar",
-	Target_Castbar = "oUF_LUI_target_Castbar",
-	Arena = "oUF_LUI_arena"
-}
-
-local _LOCK
-local _BACKDROP = {bgFile = "Interface\\Tooltips\\UI-Tooltip-Background"}
-
-local round = function(n) return math.floor(n + .5) end
-
-local backdropPool = {}
-
-local setAllPositions = function()
-	for k, v in pairs(ufNames) do
-		local k2 = nil
-		if strfind(k, "Castbar") then k, k2 = strsplit("_", k) end
-		if _G[v] and db.oUF[k] then
-			local point, _, rpoint, x, y = backdropPool[_G[v]]:GetPoint()
-			
-			if k2 then
-				if db.oUF[k][k2] then
-					db.oUF[k][k2].X = tostring(x)
-					db.oUF[k][k2].Y = tostring(y)
-					db.oUF[k][k2].Point = point
-				end
-			else
-				db.oUF[k].X = tostring(x * (db.oUF[k].Scale or 1))
-				db.oUF[k].Y = tostring(y * (db.oUF[k].Scale or 1))
-				db.oUF[k].Point = point
-			end
-			
-			local scale = db.oUF[k].Scale or 1
-			_G[v]:ClearAllPoints()
-			_G[v]:SetPoint(point, UIParent, rpoint, x, y)
-		end
-	end
-end
-
-local resetAllPositions = function()
-	for k, v in pairs(ufNames) do
-		local k2 = nil
-		if strfind(k, "Castbar") then k, k2 = strsplit("_", k) end
-		if _G[v] and db.oUF[k] then
-			if backdropPool[_G[v]] then backdropPool[_G[v]]:ClearAllPoints() end
-			
-			if k2 then
-				if db.oUF[k][k2] then
-					_G[v]:ClearAllPoints()
-					_G[v]:SetPoint(db.oUF[k][k2].Point, UIParent, db.oUF[k][k2].Point, tonumber(db.oUF[k][k2].X), tonumber(db.oUF[k][k2].Y))
-				end
-			else
-				_G[v]:ClearAllPoints()
-				_G[v]:SetPoint(db.oUF[k].Point, UIParent, db.oUF[k].Point, tonumber(db.oUF[k].X) / (db.oUF[k].Scale or 1), tonumber(db.oUF[k].Y) / (db.oUF[k].Scale or 1))
-			end
-		end
-	end
-end
-
-local smartName
+-- Movable UnitFrames --
 do
-	local nameCache = {}
 	
-	local validNames = {
-		"player",
-		"target",
-		"focus",
-		"raid",
-		"pet",
-		"party",
-		"maintank",
-		"mainassist",
-		"arena",
+	local ufNames = {
+		Player = "oUF_LUI_player",
+		Target = "oUF_LUI_target",
+		ToT = "oUF_LUI_targettarget",
+		ToToT = "oUF_LUI_targettargettarget",
+		Focus = "oUF_LUI_focus",
+		FocusTarget = "oUF_LUI_focustarget",
+		Pet = "oUF_LUI_pet",
+		PetTarget = "oUF_LUI_pettarget",
+		Party = "oUF_LUI_party",
+		Maintank = "oUF_LUI_maintank",
+		Boss = "oUF_LUI_boss",
+		Player_Castbar = "oUF_LUI_player_Castbar",
+		Target_Castbar = "oUF_LUI_target_Castbar",
+		Arena = "oUF_LUI_arena"
 	}
 
-	local validName = function(smartName)
-		if tonumber(smartName) then
-			return smartName
+	local _LOCK
+	local _BACKDROP = {bgFile = "Interface\\Tooltips\\UI-Tooltip-Background"}
+
+	local backdropPool = {}
+
+	local setAllPositions = function()
+		for k, v in pairs(ufNames) do
+			local k2 = nil
+			if strfind(k, "Castbar") then k, k2 = strsplit("_", k) end
+			if _G[v] and db.oUF[k] then
+				local point, _, rpoint, x, y = backdropPool[_G[v]]:GetPoint()
+				
+				if k2 then
+					if db.oUF[k][k2] then
+						db.oUF[k][k2].X = tostring(x)
+						db.oUF[k][k2].Y = tostring(y)
+						db.oUF[k][k2].Point = point
+					end
+				else
+					db.oUF[k].X = tostring(x * (db.oUF[k].Scale or 1))
+					db.oUF[k].Y = tostring(y * (db.oUF[k].Scale or 1))
+					db.oUF[k].Point = point
+				end
+				
+				local scale = db.oUF[k].Scale or 1
+				_G[v]:ClearAllPoints()
+				_G[v]:SetPoint(point, UIParent, rpoint, x, y)
+			end
 		end
+	end
 
-		if type(smartName) == "string" then
-			if smartName == "mt" then
-				return "maintank"
+	local resetAllPositions = function()
+		for k, v in pairs(ufNames) do
+			local k2 = nil
+			if strfind(k, "Castbar") then k, k2 = strsplit("_", k) end
+			if _G[v] and db.oUF[k] then
+				if backdropPool[_G[v]] then backdropPool[_G[v]]:ClearAllPoints() end
+				
+				if k2 then
+					if db.oUF[k][k2] then
+						_G[v]:ClearAllPoints()
+						_G[v]:SetPoint(db.oUF[k][k2].Point, UIParent, db.oUF[k][k2].Point, tonumber(db.oUF[k][k2].X), tonumber(db.oUF[k][k2].Y))
+					end
+				else
+					_G[v]:ClearAllPoints()
+					_G[v]:SetPoint(db.oUF[k].Point, UIParent, db.oUF[k].Point, tonumber(db.oUF[k].X) / (db.oUF[k].Scale or 1), tonumber(db.oUF[k].Y) / (db.oUF[k].Scale or 1))
+				end
 			end
-			if smartName == "castbar" then
-				return " castbar"
+		end
+	end
+
+	-- Get UnitFrame Names --
+	local smartName
+	do
+		local nameCache = {}
+		
+		local validNames = {
+			"player",
+			"target",
+			"focus",
+			"raid",
+			"pet",
+			"party",
+			"maintank",
+			"mainassist",
+			"arena",
+		}
+
+		local validName = function(smartName)
+			if tonumber(smartName) then
+				return smartName
 			end
 
-			for _, v in next, validNames do
-				if v == smartName then
+			if type(smartName) == "string" then
+				if smartName == "mt" then
+					return "maintank"
+				end
+				if smartName == "castbar" then
+					return " castbar"
+				end
+
+				for _, v in next, validNames do
+					if v == smartName then
+						return smartName
+					end
+				end
+
+				if (
+					smartName:match("^party%d?$") or
+					smartName:match("^arena%d?$") or
+					smartName:match("^boss%d?$") or
+					smartName:match("^partypet%d?$") or
+					smartName:match("^raid%d?%d?$") or
+					smartName:match("%w+target$") or
+					smartName:match("%w+pet$")
+				) then
 					return smartName
 				end
 			end
+		end
 
-			if (
-				smartName:match("^party%d?$") or
-				smartName:match("^arena%d?$") or
-				smartName:match("^boss%d?$") or
-				smartName:match("^partypet%d?$") or
-				smartName:match("^raid%d?%d?$") or
-				smartName:match("%w+target$") or
-				smartName:match("%w+pet$")
-			) then
-				return smartName
+		local function guessName(...)
+			local name = validName(select(1, ...))
+
+			local n = select("#", ...)
+			if n > 1 then
+				for i = 2, n do
+					local inp = validName(select(i, ...))
+					if inp then name = (name or "")..inp end
+				end
+			end
+
+			return name
+		end
+
+		local smartString = function(name)
+			if nameCache[name] then
+				return nameCache[name]
+			end
+
+			local n = name:gsub("(%l)(%u)", "%1_%2"):gsub("([%l%u])(%d)", "%1_%2_"):lower()
+			n = guessName(string.split("_", n))
+			if n then
+				nameCache[name] = n
+				return n
+			end
+
+			return name
+		end
+
+		smartName = function(obj)
+			if type(obj) == "string" then
+				return smartString(obj)
+			else
+				local name = obj:GetName()
+				if name then return smartString(name) end
+				return obj.unit or "<unknown>"
 			end
 		end
 	end
 
-	local function guessName(...)
-		local name = validName(select(1, ...))
-
-		local n = select("#", ...)
-		if n > 1 then
-			for i = 2, n do
-				local inp = validName(select(i, ...))
-				if inp then name = (name or "")..inp end
-			end
-		end
-
-		return name
-	end
-
-	local smartString = function(name)
-		if nameCache[name] then
-			return nameCache[name]
-		end
-
-		local n = name:gsub("(%l)(%u)", "%1_%2"):gsub("([%l%u])(%d)", "%1_%2_"):lower()
-		n = guessName(string.split("_", n))
-		if n then
-			nameCache[name] = n
-			return n
-		end
-
-		return name
-	end
-
-	smartName = function(obj)
-		if type(obj) == "string" then
-			return smartString(obj)
-		else
-			local name = obj:GetName()
-			if name then return smartString(name) end
-			return obj.unit or "<unknown>"
-		end
-	end
-end
-
-do
-	local frame = CreateFrame("Frame")
-	frame:SetScript("OnEvent", function(self, event)
-		return self[event](self)
-	end)
-
-	function frame:PLAYER_REGEN_DISABLED()
+	-- Hide UnitFrame Anchors When Entering Combat --
+	function module:PLAYER_REGEN_DISABLED()
 		if _LOCK then
 			for k, bdrop in next, backdropPool do bdrop:Hide() end
 			_LOCK = nil
@@ -193,298 +190,289 @@ do
 			LUI:Print("UnitFrame anchors hidden due to combat. The changed positions are NOT saved!")
 		end
 	end
-	frame:RegisterEvent("PLAYER_REGEN_DISABLED")
-end
 
-local getBackdrop
-do
-	local OnShow = function(self)
-		return self.name:SetText(smartName(self.obj))
-	end
-
-	local OnDragStart = function(self)
-		self:StartMoving()
-
-		local frame = self.obj
-		frame:ClearAllPoints()
-		frame:SetPoint("TOPLEFT", self)
-	end
-
-	local OnDragStop = function(self)
-		self:StopMovingOrSizing()
-	end
-
-	getBackdrop = function(obj)
-		if not obj and not obj:GetCenter() then return end
-		if backdropPool[obj] then
-			backdropPool[obj]:SetScale(obj:GetScale())
-			backdropPool[obj]:SetPoint(obj:GetPoint())
-			backdropPool[obj]:SetSize(obj:GetSize())
-			return backdropPool[obj]
+	-- UnitFrame Anchor Scripts --
+	local getBackdrop
+	do
+		local OnShow = function(self)
+			return self.name:SetText(smartName(self.obj))
 		end
 
-		local backdrop = CreateFrame("Frame")
-		backdrop:SetParent(UIParent)
-		backdrop:Hide()
+		local OnDragStart = function(self)
+			self:StartMoving()
 
-		backdrop:SetScale(obj:GetScale())
-		backdrop:SetPoint(obj:GetPoint())
-		backdrop:SetSize(obj:GetSize())
-		
-		backdrop:SetBackdrop(_BACKDROP)
-		backdrop:SetBackdropColor(0, .9, 0)
-		backdrop:SetBackdropBorderColor(0, .9, 0)
-		
-		backdrop:SetFrameStrata("TOOLTIP")
+			local frame = self.obj
+			frame:ClearAllPoints()
+			frame:SetPoint("TOPLEFT", self)
+		end
 
-		backdrop:EnableMouse(true)
-		backdrop:SetMovable(true)
-		backdrop:RegisterForDrag("LeftButton")
+		local OnDragStop = function(self)
+			self:StopMovingOrSizing()
+		end
 
-		backdrop:SetScript("OnShow", OnShow)
-
-		local name = backdrop:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-		name:SetPoint("CENTER")
-		name:SetJustifyH("CENTER")
-		name:SetFont(GameFontNormal:GetFont(), 12)
-		name:SetTextColor(1, 1, 1)
-
-		backdrop.name = name
-		backdrop.obj = obj
-
-		if  math.floor(obj:GetHeight()) == 0 then obj:SetHeight(obj:GetChildren():GetHeight()) end
-
-		backdrop:SetScript("OnDragStart", OnDragStart)
-		backdrop:SetScript("OnDragStop", OnDragStop)
-
-		backdropPool[obj] = backdrop
-
-		return backdrop
-	end
-end
-
-StaticPopupDialogs["DRAG_UNITFRAMES"] = {
-	text = "oUF_LUI UnitFrames are dragable.",
-	button1 = "Save",
-	button3 = "Reset",
-	button2 = "Cancel",
-	OnShow = function()
-		LibStub("AceConfigDialog-3.0"):Close("LUI")
-		GameTooltip:Hide()
-	end,
-	OnHide = function()
-		module:MoveUnitFrames(true)
-	end,
-	OnAccept = setAllPositions,
-	OnAlt = resetAllPositions,
-	OnCancel = resetAllPositions,
-	timeout = 0,
-	whileDead = true,
-	hideOnEscape = true,
-}
-
-function module:MoveUnitFrames(override)
-	if InCombatLockdown() and not override then
-		return LUI:Print("UnitFrames cannot be moved while in combat.")
-	end
-	
-	-- sometimes bugs around!
-	if oUF_LUI_party then oUF_LUI_party:Show() end
-	
-	if (not _LOCK) and (not override) then
-		StaticPopup_Show("DRAG_UNITFRAMES")
-		for k, v in pairs(ufNames) do
-			if _G[v] then
-				local bd = getBackdrop(_G[v])
-				if bd then bd:Show() end
+		getBackdrop = function(obj)
+			if not obj and not obj:GetCenter() then return end
+			if backdropPool[obj] then
+				backdropPool[obj]:SetScale(obj:GetScale())
+				backdropPool[obj]:SetPoint(obj:GetPoint())
+				backdropPool[obj]:SetSize(obj:GetSize())
+				return backdropPool[obj]
 			end
-		end
 
-		_LOCK = true
-	else
-		for k, bdrop in next, backdropPool do
-			bdrop:Hide()
+			local backdrop = CreateFrame("Frame")
+			backdrop:SetParent(UIParent)
+			backdrop:Hide()
+
+			backdrop:SetScale(obj:GetScale())
+			backdrop:SetPoint(obj:GetPoint())
+			backdrop:SetSize(obj:GetSize())
+			
+			backdrop:SetBackdrop(_BACKDROP)
+			backdrop:SetBackdropColor(0, .9, 0)
+			backdrop:SetBackdropBorderColor(0, .9, 0)
+			
+			backdrop:SetFrameStrata("TOOLTIP")
+
+			backdrop:EnableMouse(true)
+			backdrop:SetMovable(true)
+			backdrop:RegisterForDrag("LeftButton")
+
+			backdrop:SetScript("OnShow", OnShow)
+
+			local name = backdrop:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+			name:SetPoint("CENTER")
+			name:SetJustifyH("CENTER")
+			name:SetFont(GameFontNormal:GetFont(), 12)
+			name:SetTextColor(1, 1, 1)
+
+			backdrop.name = name
+			backdrop.obj = obj
+
+			if  math.floor(obj:GetHeight()) == 0 then obj:SetHeight(obj:GetChildren():GetHeight()) end
+
+			backdrop:SetScript("OnDragStart", OnDragStart)
+			backdrop:SetScript("OnDragStop", OnDragStop)
+
+			backdropPool[obj] = backdrop
+
+			return backdrop
+		end
+	end
+
+	StaticPopupDialogs["DRAG_UNITFRAMES"] = {
+		text = "oUF_LUI UnitFrames are dragable.",
+		button1 = "Save",
+		button3 = "Reset",
+		button2 = "Cancel",
+		OnShow = function()
+			LibStub("AceConfigDialog-3.0"):Close("LUI")
+			GameTooltip:Hide()
+		end,
+		OnHide = function()
+			module:MoveUnitFrames(true)
+		end,
+		OnAccept = setAllPositions,
+		OnAlt = resetAllPositions,
+		OnCancel = resetAllPositions,
+		timeout = 0,
+		whileDead = true,
+		hideOnEscape = true,
+	}
+
+	function module:MoveUnitFrames(override)
+		if InCombatLockdown() and not override then
+			return LUI:Print("UnitFrames cannot be moved while in combat.")
 		end
 		
-		StaticPopup_Hide("DRAG_UNITFRAMES")
-		_LOCK = nil
-	end
-end
-
-local frameShow = PlayerFrame.Show
-
-function module:EnableBlizzard(unit)
-	local function RegisterBlizzUnitFrame(frame, ...)
-		if not frame then return end
-		frame.Show = frameShow
+		-- sometimes bugs around!
+		if oUF_LUI_party then oUF_LUI_party:Show() end
 		
-		for i = 1, select("#", ...) do
-			frame:RegisterEvent(select(i, ...))
-		end
-	end
-	
-	if unit == "player" then
-		RegisterBlizzUnitFrame(PlayerFrame,
-			"UNIT_LEVEL", "UNIT_COMBAT", "UNIT_FACTION", "UNIT_MAXPOWER", "PLAYER_ENTERING_WORLD", "PLAYER_ENTER_COMBAT",
-			"PLAYER_LEAVE_COMBAT", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED", "PLAYER_UPDATE_RESTING", "PARTY_MEMBERS_CHANGED",
-			"PARTY_LEADER_CHANGED", "PARTY_LOOT_METHOD_CHANGED", "VOICE_START", "VOICE_STOP", "RAID_ROSTER_UPDATE", "READY_CHECK",
-			"READY_CHECK_CONFIRM", "READY_CHECK_FINISHED", "UNIT_ENTERED_VEHICLE", "UNIT_ENTERING_VEHICLE", "UNIT_EXITING_VEHICLE",
-			"UNIT_EXITED_VEHICLE", "PLAYER_FLAGS_CHANGED", "PLAYER_ROLES_ASSIGNED", "PLAYTIME_CHANGED"
-		)
-		PlayerFrame:Show()
-		
-		unit = "playerCastbar"
-	end
-	
-	if unit == "playerCastbar" then
-		RegisterBlizzUnitFrame(CastingBarFrame,
-			"UNIT_SPELLCAST_START", "UNIT_SPELLCAST_STOP", "UNIT_SPELLCAST_FAILED", "UNIT_SPELLCAST_INTERRUPTED",
-			"UNIT_SPELLCAST_DELAYED", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_CHANNEL_UPDATE", "UNIT_SPELLCAST_CHANNEL_STOP",
-			"UNIT_SPELLCAST_INTERRUPTIBLE", "UNIT_SPELLCAST_NOT_INTERRUPTIBLE", "PLAYER_ENTERING_WORLD"
-		)
-	end
-	
-	if unit == "pet" then
-		RegisterBlizzUnitFrame(PetFrame,
-			"UNIT_PET", "UNIT_COMBAT", "UNIT_AURA", "PET_ATTACK_START", "PET_ATTACK_STOP", "UNIT_POWER", "PET_UI_UPDATE", "PET_RENAMEABLE"
-		)
-		
-		unit = "petCastbar"
-	end
-	
-	if unit == "petCastbar" then
-		RegisterBlizzUnitFrame(PetCastingBarFrame,
-			"UNIT_PET", "UNIT_SPELLCAST_START", "UNIT_SPELLCAST_STOP", "UNIT_SPELLCAST_FAILED", "UNIT_SPELLCAST_INTERRUPTED",
-			"UNIT_SPELLCAST_DELAYED", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_CHANNEL_UPDATE", "UNIT_SPELLCAST_CHANNEL_STOP",
-			"UNIT_SPELLCAST_INTERRUPTIBLE", "UNIT_SPELLCAST_NOT_INTERRUPTIBLE", "PLAYER_ENTERING_WORLD"
-		)
-	end
-	
-	if unit == "target" then
-		RegisterBlizzUnitFrame(TargetFrame,
-			"PLAYER_ENTERING_WORLD", "PLAYER_TARGET_CHANGED", "UNIT_HEALTH", "CVAR_UPDATE", "UNIT_LEVEL", "UNIT_FACTION",
-			"UNIT_CLASSIFICATION_CHANGED", "UNIT_AURA", "PLAYER_FLAGS_CHANGED", "PARTY_MEMBERS_CHANGED", "RAID_TARGET_UPDATE"
-		)
-		
-		RegisterBlizzUnitFrame(TargetFrame.spellbar,
-			"CVAR_UPDATE", "VARIABLES_LOADED", "PLAYER_TARGET_CHANGED"
-		)
-		
-		RegisterBlizzUnitFrame(ComboFrame,
-			"PLAYER_TARGET_CHANGED", "UNIT_COMBO_POINTS"
-		)
-	end
-	
-	if unit == "focus" then
-		RegisterBlizzUnitFrame(FocusFrame,
-			"PLAYER_ENTERING_WORLD", "PLAYER_FOCUS_CHANGED", "UNIT_HEALTH", "UNIT_LEVEL", "UNIT_FACTION", "UNIT_CLASSIFICATION_CHANGED",
-			"UNIT_AURA", "PLAYER_FLAGS_CHANGED", "PARTY_MEMBERS_CHANGED", "RAID_TARGET_UPDATE", "VARIABLES_LOADED"
-		)
-		
-		RegisterBlizzUnitFrame(FocusFrame.spellbar,
-			"CVAR_UPDATE", "VARIABLES_LOADED", "PLAYER_FOCUS_CHANGED"
-		)
-		
-		FocusFrame_SetSmallSize(not GetCVarBool("fullSizeFocusFrame"))
-	end
-	
-	if unit == "targettarget" then
-		RegisterBlizzUnitFrame(TargetFrameToT, false)
-	end
-	
-	if unit:match("(boss)%d?$") == "boss" then
-		local id = unit:match("boss(%d)")
-		if id then
-			if id == 1 then
-				RegisterBlizzUnitFrame(_G["Boss"..id.."TargetFrame"],
-					"UNIT_TARGETABLE_CHANGED", "INSTANCE_ENCOUNTER_ENGAGE_UNIT"
-				)
-			else
-				RegisterBlizzUnitFrame(_G["Boss"..id.."TargetFrame"],
-					"UNIT_TARGETABLE_CHANGED"
-				)
-			end
-		else
-			for i = 1, 4 do
-				if i == 1 then
-					RegisterBlizzUnitFrame(_G["Boss"..i.."TargetFrame"],
-						"UNIT_TARGETABLE_CHANGED", "INSTANCE_ENCOUNTER_ENGAGE_UNIT"
-					)
-				else
-					RegisterBlizzUnitFrame(_G["Boss"..i.."TargetFrame"],
-						"UNIT_TARGETABLE_CHANGED"
-					)
+		if (not _LOCK) and (not override) then
+			module:RegisterEvent("PLAYER_REGEN_DISABLED")
+			StaticPopup_Show("DRAG_UNITFRAMES")
+			
+			for k, v in pairs(ufNames) do
+				if _G[v] then
+					local bd = getBackdrop(_G[v])
+					if bd then bd:Show() end
 				end
 			end
+
+			_LOCK = true
+		else
+			for k, bdrop in next, backdropPool do
+				bdrop:Hide()
+			end
+			
+			StaticPopup_Hide("DRAG_UNITFRAMES")
+			_LOCK = nil
+			
+			module:UnregisterEvent("PLAYER_REGEN_DISABLED")
 		end
 	end
 	
-	if unit:match("(party)%d?$") == "party" then
-		local id = unit:match("party(%d)")
-		if id then
-			RegisterBlizzUnitFrame(_G["PartyMemberFrame"..id],
-				"PLAYER_ENTERING_WORLD", "PARTY_MEMBERS_CHANGED", "PARTY_LEADER_CHANGED", "PARTY_LOOT_METHOD_CHANGED", "MUTELIST_UPDATE",
-				"IGNORELIST_UPDATE", "UNIT_FACTION", "UNIT_AURA", "UNIT_PET", "VOICE_START", "VOICE_STOP", "VARIABLES_LOADED",
-				"VOICE_STATUS_UPDATE", "READY_CHECK", "READY_CHECK_CONFIRM", "READY_CHECK_FINISHED", "UNIT_ENTERED_VEHICLE",
-				"UNIT_EXITED_VEHICLE", "UNIT_HEALTH", "UNIT_CONNECTION", "PARTY_MEMBER_ENABLE", "PARTY_MEMBER_DISABLE", "UNIT_PHASE"
-			)
-		else
-			for i = 1, 4 do
-				RegisterBlizzUnitFrame(_G["PartyMemberFrame"..i],
-					"PLAYER_ENTERING_WORLD", "PARTY_MEMBERS_CHANGED", "PARTY_LEADER_CHANGED", "PARTY_LOOT_METHOD_CHANGED", "MUTELIST_UPDATE",
-					"IGNORELIST_UPDATE", "UNIT_FACTION", "UNIT_AURA", "UNIT_PET", "VOICE_START", "VOICE_STOP", "VARIABLES_LOADED",
-					"VOICE_STATUS_UPDATE", "READY_CHECK", "READY_CHECK_CONFIRM", "READY_CHECK_FINISHED", "UNIT_ENTERED_VEHICLE",
-					"UNIT_EXITED_VEHICLE", "UNIT_HEALTH", "UNIT_CONNECTION", "PARTY_MEMBER_ENABLE", "PARTY_MEMBER_DISABLE", "UNIT_PHASE"
-				)
-			end
-		end
-		ShowPartyFrame()
-	end
-	
-	if unit:match("(arena)%d?$") == "arena" then
-		if not ArenaEnemyFrame1 then Arena_LoadUI_() end
-		local id = unit:match("arena(%d)")
-		if id then
-			RegisterBlizzUnitFrame(_G["ArenaEnemyFrame"..id],
-				"CVAR_UPDATE", "VARIABLES_LOADED", "PLAYER_ENTERING_WORLD"
-			)
-		else
-			for i = 1, 5 do
-				RegisterBlizzUnitFrame(_G["ArenaEnemyFrame"..i],
-					"CVAR_UPDATE", "VARIABLES_LOADED", "PLAYER_ENTERING_WORLD"
-				)
-			end
-		end
-	end
 end
 
-function module:SetBlizzardRaidFrames()
-	local useBlizz = (db.oUF.Settings.Enable == false) or db.oUF.Raid.UseBlizzard
-	if IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") or (db.oUF.Settings.Enable and db.oUF.Raid.Enable) then
-		useBlizz = false
+-- Blizzard Frame Handling --
+do
+
+	local blizzUnitFrames = {
+		player = "PlayerFrame",
+		pet = "PetFrame",
+		target = {"TargetFrame", "ComboFrame"},
+		focus = {"FocusFrame", "TargetofFocusFrame"},
+		targettarget = "TargetFrameToT",
+		raid = "CompactRaidFrameManager",
+	}
+	local blizzFrameEvents = {}
+
+	local function UnitFrame_OnEvent(frame, event, ...)
+		if not blizzFrameEvents[frame] then blizzFrameEvents[frame] = {} end
+		if frame == PlayerFrame then
+			if event == "UNIT_ENTERING_VEHICLE" or event == "UNIT_ENTERED_VEHICLE" or event == "UNIT_EXITING_VEHICLE" or event == "UNIT_EXITED_VEHICLE" then
+				return module.hooks[frame].OnEvent(frame, event, ...)
+			end
+		end
+		
+		tinsert(blizzFrameEvents[frame], event)
+		frame:UnregisterEvent(event)
 	end
-	if useBlizz then
-		module:Unhook(CompactRaidFrameManager, "Show")
-		module:Unhook(CompactRaidFrameContainer, "Show")
-		-- if UnitInRaid("player") then			-- may add back in at some point
+
+	local function EnableUnitFrame(frame)
+		if type(frame) == "string" then frame = _G[frame] end
+		if not frame then return end
+		
+		module:Unhook(frame, "Show")
+		module:Unhook(frame, "OnEvent")
+		if blizzFrameEvents[frame] then
+			for _, event in pairs(blizzFrameEvents[frame]) do
+				frame:RegisterEvent(event)
+			end
+		end
+		if frame.unit and UnitExists(frame.unit) then
+			frame:Show()
+		end
+	end
+	local function DisableUnitFrame(frame)
+		if type(frame) == "string" then frame = _G[frame] end
+		if not frame then return end
+		
+		if not module:IsHooked(frame, "Show") then
+			module:SecureHook(frame, "Show", frame.Hide)
+			module:RawHookScript(frame, "OnEvent", UnitFrame_OnEvent, true)
+		end
+		frame:Hide()
+	end
+
+	function module:EnableBlizzard(unit)
+		if not unit then return end
+		
+		if blizzUnitFrames[unit] then
+			if type(blizzUnitFrames[unit]) == "table" then
+				for k, v in pairs(blizzUnitFrames[unit]) do
+					EnableUnitFrame(v)
+				end
+			else
+				EnableUnitFrame(blizzUnitFrames[unit])
+			end
+		elseif unit:match("(party)%d?$") == "party" then
+			local id = unit:match("party(%d)")
+			if id then
+				EnableUnitFrame("PartyMemberFrame" .. id)
+			else
+				for i=1, MAX_PARTY_MEMBERS do
+					EnableUnitFrame("PartyMemberFrame" .. i)
+				end
+			end
+		elseif unit:match("(boss)%d?$") == "boss" then
+			local id = unit:match("boss(%d)")
+			if id then
+				EnableUnitFrame("Boss" .. id .. "TargetFrame")
+			else
+				for i=1, MAX_BOSS_FRAMES do
+					EnableUnitFrame("Boss" .. i .. "TargetFrame")
+				end
+			end
+		elseif unit:match("(arena)%d?$") == "arena" then
+			local id = unit:match("arena(%d)")
+			if id then
+				EnableUnitFrame("ArenaEnemyFrame" .. id)
+			else
+				for i=1, MAX_ARENA_ENEMIES do
+					EnableUnitFrame("ArenaEnemyFrame" .. i)
+				end
+			end
+			
+			module:Unhook("Arena_LoadUI")
+			if db.oUF.Arena.UseBlizzard then
+				SetCVar("showArenaEnemyFrames", "1")
+			end
+		end
+	end
+
+	function module:DisableBlizzard(unit) -- do not use self in this function
+		if not unit then return end
+		
+		if blizzUnitFrames[unit] then
+			if type(blizzUnitFrames[unit]) == "table" then
+				for k, v in pairs(blizzUnitFrames[unit]) do
+					DisableUnitFrame(v)
+				end
+			else
+				DisableUnitFrame(blizzUnitFrames[unit])
+			end
+		elseif unit:match("(party)%d?$") == "party" then
+			local id = unit:match("party(%d)")
+			if id then
+				DisableUnitFrame("PartyMemberFrame" .. id)
+			else
+				for i=1, MAX_PARTY_MEMBERS do
+					DisableUnitFrame("PartyMemberFrame" .. i)
+				end
+			end
+		elseif unit:match("(boss)%d?$") == "boss" then
+			local id = unit:match("boss(%d)")
+			if id then
+				DisableUnitFrame("Boss" .. id .. "TargetFrame")
+			else
+				for i=1, MAX_BOSS_FRAMES do
+					DisableUnitFrame("Boss" .. i .. "TargetFrame")
+				end
+			end
+		elseif unit:match("(arena)%d?$") == "arena" then
+			local id = unit:match("arena(%d)")
+			if id then
+				DisableUnitFrame("ArenaEnemyFrame" .. id)
+			else
+				for i=1, (MAX_ARENA_ENEMIES or 5) do
+					DisableUnitFrame("ArenaEnemyFrame" .. i)
+				end
+			end
+			
+			-- Blizzard_ArenaUI should not be loaded
+			if not module:IsHooked("Arena_LoadUI") then
+				module:RawHook("Arena_LoadUI", function() end, true)
+			end
+			SetCVar("showArenaEnemyFrames", "0")
+		end
+	end
+	oUF.DisableBlizzard = module.DisableBlizzard -- overwrite oUF's DisableBlizzard function
+
+	function module:SetBlizzardRaidFrames()
+		local useBlizz = (db.oUF.Settings.Enable == false) or db.oUF.Raid.UseBlizzard
+		if IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") or (db.oUF.Settings.Enable and db.oUF.Raid.Enable) then
+			useBlizz = false
+		end
+		if useBlizz then
+			module:EnableBlizzard("raid")
 			CompactRaidFrameManager:Show()
-			CompactRaidFrameContainer:Show()
-		-- end
-	else
-		local function hideCompactFrame(frame)
-			frame:Hide()
+		else
+			module:DisableBlizzard("raid")
 		end
-		-- RawHooking a blank function causes action blocked errors
-		if not module:IsHooked(CompactRaidFrameManager, "Show") then
-			module:SecureHook(CompactRaidFrameManager, "Show", hideCompactFrame)
-		end
-		if not module:IsHooked(CompactRaidFrameContainer, "Show") then
-			module:SecureHook(CompactRaidFrameContainer, "Show", hideCompactFrame)
-		end
-		CompactRaidFrameManager:Hide()
-		CompactRaidFrameContainer:Hide()
 	end
+
 end
+
 
 local ufUnits = {
 	Player = "player",
@@ -752,13 +740,13 @@ toggleFuncs = {
 			end
 			
 			SetCVar("useCompactPartyFrames", nil)
-			oUF:DisableBlizzard("party")
+			module:DisableBlizzard("party")
 		else
 			if db.oUF.Party.UseBlizzard then
 				module:EnableBlizzard("party")
 			else
 				SetCVar("useCompactPartyFrames", nil)
-				oUF:DisableBlizzard("party")
+				module:DisableBlizzard("party")
 			end
 			
 			if oUF_LUI_party then
@@ -870,7 +858,7 @@ toggleFuncs = {
 			end
 			
 			SetCVar("showArenaEnemyFrames", 0)
-			oUF:DisableBlizzard("arena")
+			module:DisableBlizzard("arena")
 		else
 			if db.oUF.Arena.UseBlizzard == true then
 				SetCVar("showArenaEnemyFrames", 1)
@@ -883,7 +871,7 @@ toggleFuncs = {
 				end
 			else
 				SetCVar("showArenaEnemyFrames", 0)
-				oUF:DisableBlizzard("arena")
+				module:DisableBlizzard("arena")
 			end
 			
 			for i = 1, 5 do

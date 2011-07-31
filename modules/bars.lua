@@ -1275,7 +1275,6 @@ function module:SetBottomBar1()
 	bar:SetHeight(36)
 	bar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.Bottombar1.X), tonumber(db.Bars.Bottombar1.Y))
 	bar:SetScale(tonumber(db.Bars.Bottombar1.Scale))
-	if LUI_Fader then LUI_Fader:CreateFaderBar(bar) end
 
 	local button, buttons, previous
 	
@@ -1315,8 +1314,8 @@ function module:SetBottomBar1()
 	end
 
 	-- Register bar to fader.
-	if db.Bars.Bottombar1.Fader.Enable and bar.FaderBar then		
-		if LUI_Fader then LUI_Fader:RegisterFrame(bar.FaderBar, db.Bars.Bottombar1.Fader) end
+	if db.Bars.Bottombar1.Fader.Enable and LUI_Fader then
+		LUI_Fader:RegisterFrame(bar, db.Bars.Bottombar1.Fader, true)
 	end
 end
 
@@ -1344,7 +1343,6 @@ function module:SetBottomBar2()
 	bar:SetHeight(36)
 	bar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.Bottombar2.X), tonumber(db.Bars.Bottombar2.Y))
 	bar:SetScale(tonumber(db.Bars.Bottombar2.Scale))
-	if LUI_Fader then LUI_Fader:CreateFaderBar(bar) end
 
 	local button, buttons, previous
 	
@@ -1386,8 +1384,8 @@ function module:SetBottomBar2()
 	end
 
 	-- Register bar to fader.
-	if db.Bars.Bottombar2.Fader.Enable and bar.FaderBar then
-		if LUI_Fader then LUI_Fader:RegisterFrame(bar.FaderBar, db.Bars.Bottombar2.Fader) end
+	if db.Bars.Bottombar2.Fader.Enable and LUI_Fader then
+		LUI_Fader:RegisterFrame(bar, db.Bars.Bottombar2.Fader, true)
 	end
 end
 
@@ -1415,7 +1413,6 @@ function module:SetBottomBar3()
 	bar:SetHeight(36)
 	bar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.Bottombar3.X), tonumber(db.Bars.Bottombar3.Y))
 	bar:SetScale(tonumber(db.Bars.Bottombar3.Scale))
-	if LUI_Fader then LUI_Fader:CreateFaderBar(bar) end
 
 	local button, buttons, previous
 	
@@ -1457,8 +1454,8 @@ function module:SetBottomBar3()
 	end
 
 	-- Register bar to fader.
-	if db.Bars.Bottombar3.Fader.Enable and bar.FaderBar then
-		if LUI_Fader then LUI_Fader:RegisterFrame(bar.FaderBar, db.Bars.Bottombar3.Fader) end
+	if db.Bars.Bottombar3.Fader.Enable and LUI_Fader then
+		LUI_Fader:RegisterFrame(bar, db.Bars.Bottombar3.Fader, true)
 	end
 end
 
@@ -1946,7 +1943,7 @@ function module:CreateBottombarOptions(num, order)
 				guiInline = true,
 				disabled = DisabledFunc,
 				order = 4,
-				args = (bar.FaderBar and LUI:GetModule("Fader", true) and LUI:GetModule("Fader", true):CreateFaderOptions(bar.FaderBar, bardb.Fader, bardefaults.Fader)) or {
+				args = (LUI:GetModule("Fader", true) and LUI:GetModule("Fader"):CreateFaderOptions(bar, bardb.Fader, bardefaults.Fader, true)) or {
 					Empty = LUI:NewDesc("|cffff0000Fader not found.|r", 1),
 				},
 			},

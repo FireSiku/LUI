@@ -70,7 +70,7 @@ Fader.Status = {
 		frame: Frame to be registered to the fader.
 		settings: Settings for the frame.
 ]]
-function Fader:RegisterFrame(frame, settings)
+function Fader:RegisterFrame(frame, settings, specialHover)
 	-- Check fader is enabled.
 	if not db.Fader.Enable then return end
 	
@@ -107,6 +107,9 @@ function Fader:RegisterFrame(frame, settings)
 	-- Create fader table.
 	frame.Fader = frame.Fader or {}
 	frame.Fader.PreAlpha = frame.Fader.PreAlpha or frame:GetAlpha()
+	
+	-- Create indexer for special frames.
+	self.RegisteredFrames[frame].SpecialHover = specialHover
 	
 	-- Attach mouseover scripts to frame.
 	self:AttachHoverScript(frame)
@@ -156,65 +159,6 @@ function Fader:UnregisterFrame(frame)
 	end
 end
 
---[[
-	Function..: FaderBar_OnUpdate(self, elapsed)
-	Notes.....: Checks if the mouse is hovering over the fader bar, and calls the OnEnter/OnLeave scripts.
-]]
-
-function Fader.FaderBar_OnUpdate(self, elapsed)
-	-- Check frame has mouse hover fading enabled.
-	if not (Fader.RegisteredFrames and Fader.RegisteredFrames[self] and Fader.RegisteredFrames[self].Hover) then return end
-
-	-- Throttle the OnUpdate script.
-	self.Throttle = self.Throttle + elapsed
-	if self.Throttle < 0.1 then return end
-	self.Throttle = 0
-
-	-- Check if mouse is hovering over the fader bar.
-	local hover = MouseIsOver(self)
-	if self.Fader.mouseHover == hover then return end
-
-	-- Call relative scripts if state has changed.
-	if hover then
-		self:GetScript("OnEnter")(self)
-	else
-		self:GetScript("OnLeave")(self)
-	end
-end
-
---[[
-	Function..: CreateFaderBar(bar)
-	Notes.....: Creates a parent frame for a given bar which has children buttons. Main use is for frames which struggle with mouse hover scripts.
-	Parameters:
-		bar: The bar that fader bar is created for.
-]]
-function Fader:CreateFaderBar(bar)
-	local fstrata = bar:GetFrameStrata()
-	bar.FaderBar = CreateFrame("Frame", bar:GetName().."_FaderBar", UIParent)
-	bar.FaderBar:ClearAllPoints()
-	bar.FaderBar:SetAllPoints(bar)
-	bar.FaderBar:SetFrameStrata(fstrata)
-	bar:SetParent(bar.FaderBar)
-
-	-- Hook hide and show scripts.
-	self:RawHook(bar, "Hide", function(self)
-		Fader.hooks[self]["Hide"](self)
-		self.FaderBar:Hide()
-	end, true)
-	self:RawHook(bar, "Show", function(self)
-		self.FaderBar:Show()
-		Fader.hooks[self]["Show"](self)
-	end, true)
-
-	-- These cause Bars enable toggle button not to work properly because there seems to be a check within the method :Show() where it first checks the parent (the faderbar) and cancels the function when the parent is hidden.
-	--self:SecureHookScript(bar, "OnHide", function(self) self.FaderBar:Hide() end)
-	--self:SecureHookScript(bar, "OnShow", function(self) self.FaderBar:Show() end)
-	
-	-- Create mouse hover updates.
-	bar.FaderBar.Throttle = 0
-	bar.FaderBar:SetScript("OnUpdate", Fader.FaderBar_OnUpdate)
-end
-
 ------------------------------------------------------
 -- / Fader Mouse Hover Scripts / --
 ------------------------------------------------------
@@ -259,6 +203,30 @@ function Fader.Hover_OnLeave(self)
 end
 
 --[[
+	Function..: SpecialHover_OnEnter(self)
+	Notes.....: Fades the frame when the mouse enters the frame or any child of the frame.
+]]
+function Fader.SpecialHover_OnEnter(self)
+	self = self.Fader and self or self:GetParent()
+	
+	if not self.Fader.mouseHover then
+		Fader.Hover_OnEnter(self)
+	end
+end
+
+--[[
+	Function..: SpecialHover_OnLeave(self)
+	Notes.....: Fades out the frame when the mouse leaves the frame or any child of the frame.
+]]
+function Fader.SpecialHover_OnLeave(self)
+	self = self.Fader and self or self:GetParent()
+	
+	if not self:IsMouseOver() then
+		Fader.Hover_OnLeave(self)
+	end
+end
+
+--[[
 	Function..: AttachHoverScript(frame)
 	Notes.....: Registers a mouseover script to a given frame if needed.
 	Parameters:
@@ -272,10 +240,36 @@ function Fader:AttachHoverScript(frame)
 		return
 	end
 	
+	-- Check is special scripts are needed.
+	if self.RegisteredFrames[frame].SpecialHover then
+		return self:AttachSpecialHoverScript(frame)
+	end
+	
 	-- Hook scripts.
 	if not self:IsHooked(frame, "OnEnter") then self:SecureHookScript(frame, "OnEnter", Fader.Hover_OnEnter) end
 	if not self:IsHooked(frame, "OnLeave") then self:SecureHookScript(frame, "OnLeave", Fader.Hover_OnLeave) end
 
+	-- Run leave script.
+	frame:GetScript("OnLeave")(frame)
+end
+
+--[[
+	Function..: AttachSpecialHoverScript(frame)
+	Notes.....: Registers a mouseover script to a given frame that has children if needed.
+	Parameters:
+		frame: Frame to be given hover scripts.
+]]
+function Fader:AttachSpecialHoverScript(frame)
+	-- Hook scripts.
+	if not self:IsHooked(frame, "OnEnter") then self:SecureHookScript(frame, "OnEnter", Fader.SpecialHover_OnEnter) end
+	if not self:IsHooked(frame, "OnLeave") then self:SecureHookScript(frame, "OnLeave", Fader.SpecialHover_OnLeave) end
+	
+	-- Hook scripts to children.
+	for index, child in pairs({frame:GetChildren()}) do
+		if not self:IsHooked(child, "OnEnter") then self:SecureHookScript(child, "OnEnter", Fader.SpecialHover_OnEnter) end
+		if not self:IsHooked(child, "OnLeave") then self:SecureHookScript(child, "OnLeave", Fader.SpecialHover_OnLeave) end
+	end
+	
 	-- Run leave script.
 	frame:GetScript("OnLeave")(frame)
 end
@@ -288,8 +282,15 @@ end
 ]]
 function Fader:RemoveHoverScript(frame)
 	-- Unhook scripts
-	self:Unhook(frame, "OnEnter")		
-	self:Unhook(frame, "OnLeave")	
+	self:Unhook(frame, "OnEnter")
+	self:Unhook(frame, "OnLeave")
+	
+	if self.RegisteredFrames[frame].SpecialHover then
+		for index, child in pairs({frame:GetChildren()}) do
+			self:Unhook(child, "OnEnter")
+			self:Unhook(child, "OnLeave")
+		end
+	end
 end
 
 ------------------------------------------------------
@@ -546,12 +547,12 @@ function Fader:StopFading(frame)
 		if v == frame then
 			frame.Fader.fading = false
 			tremove(self.Fading, i)
-
+			
 			if frame.Fader.callBack then
 				frame.Fader.callBack()
-				frame.Fader.callBack = nil			
+				frame.Fader.callBack = nil
 			end
-
+			
 			if not self.RegisteredFrames[frame] then frame.Fader = nil end
 			return
 		end
@@ -562,7 +563,7 @@ end
 -- / Module Settings / --
 ------------------------------------------------------
 
-function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
+function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults, specialHover)
 	local frame
 	if type(object) == "table" and not object.GetParent then
 		frame = {}
@@ -612,9 +613,9 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 
 				for _, f in pairs(frame) do
 					if type(f) == "string" then
-						if _G[f] then Fader:RegisterFrame(_G[f], odb) end
+						if _G[f] then Fader:RegisterFrame(_G[f], odb, specialHover) end
 					else
-						Fader:RegisterFrame(f, odb)
+						Fader:RegisterFrame(f, odb, specialHover)
 					end
 				end
 			else
@@ -634,9 +635,9 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults)
 		ApplySettings = function()
 			if odb.Enable then
 				if type(frame) == "string" then
-					if _G[frame] then Fader:RegisterFrame(_G[frame], odb) end
+					if _G[frame] then Fader:RegisterFrame(_G[frame], odb, specialHover) end
 				else
-					Fader:RegisterFrame(frame, odb)
+					Fader:RegisterFrame(frame, odb, specialHover)
 				end
 			else
 				if type(frame) == "string" then

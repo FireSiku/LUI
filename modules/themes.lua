@@ -24,39 +24,7 @@ local db
 -- / Local Variables / --
 --------------------------------------------------
 
-local importThemeName
-
 local ClassArray = {"Death Knight", "Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior"}
-
-local colorSets = {
-	"color_top",
-	"color_bottom",
-	"chat",
-	"chatborder",
-	"chat2",
-	"chat2border",
-	"editbox",
-	"tps",
-	"tpsborder",
-	"dps",
-	"dpsborder",
-	"raid",
-	"raidborder",
-	"bar",
-	"bar2",
-	"sidebar",
-	"minimap",
-	"micromenu",
-	"micromenu_bg",
-	"micromenu_bg2",
-	"micromenu_btn",
-	"micromenu_btn_hover",
-	"navi",
-	"navi_hover",
-	"orb",
-	"orb_cycle",
-	"orb_hover",
-}
 
 local themes = {
 	-- Class Themes
@@ -591,7 +559,7 @@ end
 --------------------------------------------------
 
 function module:CheckTheme()
-	local theme = LUI_Themes[db.profile.theme] and db.profile.theme
+	local theme = db.profile.theme and LUI_Themes[db.profile.theme]
 	
 	if not theme then
 		local _, class = UnitClass("player")
@@ -607,223 +575,123 @@ function module:CheckTheme()
 		
 		module:LoadTheme()
 	else
-		for _, v in pairs(colorSets) do
-			if not db.profile[v] then
-				db.profile[v] = LUI_Themes[db.profile.theme][v]
+		for k, v in pairs(theme) do
+			if not db.profile[k] then
+				db.profile[k] = v
 			end
 		end
 	end
 end
 
-function module:LoadTheme(theme) --
+function module:LoadTheme(theme)
 	theme = theme or db.profile.theme
-
-	if LUI_Themes[theme].color_top then
-		db.profile.color_top = {unpack(LUI_Themes[theme].color_top)}
-	end
 	
-	if LUI_Themes[theme].color_bottom then
-		db.profile.color_bottom = {unpack(LUI_Themes[theme].color_bottom)}
-	end
-	
-	if LUI_Themes[theme].chat then
-		db.profile.chat = {unpack(LUI_Themes[theme].chat)}
-	end
-	
-	if LUI_Themes[theme].chatborder then
-		db.profile.chatborder = {unpack(LUI_Themes[theme].chatborder)}
-	end
-	
-	if LUI_Themes[theme].chat2 then
-		db.profile.chat2 = {unpack(LUI_Themes[theme].chat2)}
-	end
-	
-	if LUI_Themes[theme].chat2border then
-		db.profile.chat2border = {unpack(LUI_Themes[theme].chat2border)}
-	end
-	
-	if LUI_Themes[theme].editbox then
-		db.profile.editbox = {unpack(LUI_Themes[theme].editbox)}
-	end
-	
-	if LUI_Themes[theme].tps then
-		db.profile.tps = {unpack(LUI_Themes[theme].tps)}
-	end
-	
-	if LUI_Themes[theme].tpsborder then
-		db.profile.tpsborder = {unpack(LUI_Themes[theme].tpsborder)}
-	end
-	
-	if LUI_Themes[theme].dps then
-		db.profile.dps = {unpack(LUI_Themes[theme].dps)}
-	end
-	
-	if LUI_Themes[theme].dpsborder then
-		db.profile.dpsborder = {unpack(LUI_Themes[theme].dpsborder)}
-	end
-	
-	if LUI_Themes[theme].raid then
-		db.profile.raid = {unpack(LUI_Themes[theme].raid)}
-	end
-	
-	if LUI_Themes[theme].raidborder then
-		db.profile.raidborder = {unpack(LUI_Themes[theme].raidborder)}
-	end
-	
-	if LUI_Themes[theme].bar then
-		db.profile.bar = {unpack(LUI_Themes[theme].bar)}
-	end
-	
-	if LUI_Themes[theme].bar2 then
-		db.profile.bar2 = {unpack(LUI_Themes[theme].bar2)}
-	end
-	
-	if LUI_Themes[theme].sidebar then
-		db.profile.sidebar = {unpack(LUI_Themes[theme].sidebar)}
-	end
-	
-	if LUI_Themes[theme].minimap then
-		db.profile.minimap = {unpack(LUI_Themes[theme].minimap)}
-	end
-	
-	if LUI_Themes[theme].micromenu then
-		db.profile.micromenu = {unpack(LUI_Themes[theme].micromenu)}
-	end
-	
-	if LUI_Themes[theme].micromenu_bg then
-		db.profile.micromenu_bg = {unpack(LUI_Themes[theme].micromenu_bg)}
-	end
-	
-	if LUI_Themes[theme].micromenu_bg2 then
-		db.profile.micromenu_bg2 = {unpack(LUI_Themes[theme].micromenu_bg2)}
-	end
-	
-	if LUI_Themes[theme].micromenu_btn then
-		db.profile.micromenu_btn = {unpack(LUI_Themes[theme].micromenu_btn)}
-	end
-
-	if LUI_Themes[theme].micromenu_btn_hover then
-		db.profile.micromenu_btn_hover = {unpack(LUI_Themes[theme].micromenu_btn_hover)}
-	end
-	
-	if LUI_Themes[theme].navi then
-		db.profile.navi = {unpack(LUI_Themes[theme].navi)}
-	end
-	
-	if LUI_Themes[theme].navi_hover then
-		db.profile.navi_hover = {unpack(LUI_Themes[theme].navi_hover)}
-	end
-	
-	if LUI_Themes[theme].orb then
-		db.profile.orb = {unpack(LUI_Themes[theme].orb)}
-	end
-	
-	if LUI_Themes[theme].orb_cycle then
-		db.profile.orb_cycle = {unpack(LUI_Themes[theme].orb_cycle)}
-	end
-	
-	if LUI_Themes[theme].orb_hover then	
-		db.profile.orb_hover = {unpack(LUI_Themes[theme].orb_hover)}
+	for k, v in pairs(LUI_Themes[theme]) do
+		db.profile[k] = v
 	end
 end
 
-function module:SaveTheme(theme) --
-	if theme == "" or theme == nil then return end
-	if LUI_Themes[theme] ~= nil then StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS") return end
+function module:SaveTheme(theme)
+	-- check if the theme name is valid
+	if type(theme) ~= "string" or theme == "" then return end
+	-- check if theme name already exists
+	if LUI_Themes[theme] then
+		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
+	end
 	
-	LUI_Themes[theme] = {
-		color_top = {unpack(db.profile.color_top)},
-		color_bottom = {unpack(db.profile.color_bottom)},
-		chat = {unpack(db.profile.chat)},
-		chatborder = {unpack(db.profile.chatborder)},
-		chat2 = {unpack(db.profile.chat2)},
-		chat2border = {unpack(db.profile.chat2border)},
-		editbox = {unpack(db.profile.editbox)},
-		tps = {unpack(db.profile.tps)},
-		tpsborder = {unpack(db.profile.tpsborder)},
-		dps = {unpack(db.profile.dps)},
-		dpsborder = {unpack(db.profile.dpsborder)},
-		raid = {unpack(db.profile.raid)},
-		raidborder = {unpack(db.profile.raidborder)},
-		bar = {unpack(db.profile.bar)},
-		bar2 = {unpack(db.profile.bar2)},
-		sidebar = {unpack(db.profile.sidebar)},
-		minimap = {unpack(db.profile.minimap)},
-		micromenu = {unpack(db.profile.micromenu)},
-		micromenu_bg = {unpack(db.profile.micromenu_bg)},
-		micromenu_bg2 = {unpack(db.profile.micromenu_bg2)},
-		micromenu_btn = {unpack(db.profile.micromenu_btn)},
-		micromenu_btn_hover = {unpack(db.profile.micromenu_btn_hover)},
-		navi = {unpack(db.profile.navi)},
-		navi_hover = {unpack(db.profile.navi_hover)},
-		orb = {unpack(db.profile.orb)},
-		orb_cycle = {unpack(db.profile.orb_cycle)},
-		orb_hover = {unpack(db.profile.orb_hover)},
-	}
+	-- create the new theme
+	LUI_Themes[theme] = {}
+	for k, v in pairs(db.profile) do
+		LUI_Themes[theme][k] = v
+	end
+	-- clear the theme value (its in the db but shouldn't be in the theme's table)
+	LUI_Themes[theme].theme = nil
+	
+	-- set the new theme to be the active one
 	db.profile.theme = theme
+	-- update the options menu
 	ACR:NotifyChange("LUI")
 end
 
-function module:DeleteTheme(theme) --
-	if theme == "" or theme == nil then theme = db.profile.theme end
+function module:DeleteTheme(theme)
+	-- check if the theme name is valid (esle use current theme)
+	if theme == nil or theme == "" then theme = db.profile.theme end
 	
-	for k, v in pairs(ClassArray) do
-		if theme == v then
-			LUI:Print("CLASS THEMES CAN NOT BE DELETED!!!")
-			return
-		end
+	-- check if theme is a class theme (can't be deleted)
+	if tContains(ClassArray, theme) then
+		return LUI:Print("CLASS THEMES CAN NOT BE DELETED!!!")
 	end
 	
+	-- remove theme from table
 	LUI_Themes[theme] = nil
+	-- set theme to default
 	db.profile.theme = ""
 	module:CheckTheme()
 	module:ApplyTheme()
+	-- update the options menu
 	ACR:NotifyChange("LUI")
 end
 
-function module:ImportThemeName(name) --
-	if name == nil or name == "" then return end
-	if LUI_Themes[name] ~= nil then StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS") return end
-	importThemeName = name
-	StaticPopup_Show("LUI_THEMES_IMPORT_DATA")
+function module:ImportThemeName(name)
+	-- check if the theme name is valid
+	if type(name) ~= "string" or name == "" then return end
+	-- check if theme name already exists
+	if LUI_Themes[name] then
+		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
+	end
+	
+	-- show import data popup
+	local dialog = StaticPopup_Show("LUI_THEMES_IMPORT_DATA")
+	-- hand off theme name
+	dialog.data = name
 end
 
-function module:ImportThemeData(str, name) --
-	if str == nil or str == "" then return end
-	if name == nil or name == "" then
-		if importThemeName ~= nil then
-			name = importThemeName
-		else
-			LUI:Print("Invalid Theme Name")
-		end
+function module:ImportThemeData(str, name)
+	-- check if str has valid data
+	if type(str) ~= "string" or str == "" then return end
+	-- check if the theme name is valid
+	if type(name) ~= "string" or name == "" then
+		return LUI:Print("Invalid Theme Name")
 	end
-	importThemeName = nil
-	if LUI_Themes[name] ~= nil then StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS") return end
+	-- check if theme name already exists
+	if LUI_Themes[name] then
+		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
+	end
 	
+	-- decrypt import data
 	local valid, data = LUI:Deserialize(str)
+	-- check if import data was valid
 	if not valid then
-		LUI:Print("Error importing theme!")
-		return
+		return LUI:Print("Error importing theme!")
 	end
+	
+	-- import data into themes table
 	LUI_Themes[name] = data
+	-- set new theme as the active one
 	db.profile.theme = name
 	module:LoadTheme(name)
 	module:ApplyTheme()
 	LUI:Print("Successfully imported "..name.." theme!")
+	-- update the options menu
 	ACR:NotifyChange("LUI")
 end
 
-function module:ExportTheme(theme) --
-	if theme == "" or theme == nil then theme = db.profile.theme end
-	if LUI_Themes[theme] == nil then return end
+function module:ExportTheme(theme)
+	-- check if the theme name is valid (esle use current theme)
+	if theme == nil or theme == "" then theme = db.profile.theme end
+	-- check if theme exists
+	if not LUI_Themes[theme] then return StaticPopup_Hide("LUI_THEMES_EXPORT") end
 	
+	-- encrypt data for export
 	local data = LUI:Serialize(LUI_Themes[theme])
-	if data == nil then return end
+	if not data then return end
+	-- breakdown the data into multiple lines (100 chars length each, add a space) for easier posting
 	local breakDown
 	for i = 1, math.ceil(strlen(data)/100) do
 		local part = (strsub(data, (((i-1)*100)+1), (i*100))).." "
 		breakDown = (breakDown and breakDown or "")..part
 	end
+	-- hand the data over to the static popup
 	return breakDown
 end
 
@@ -924,12 +792,12 @@ local function setStaticPopups()
 		hasEditBox = 1,
 		editBoxWidth = 500,
 		maxLetters = 2000,
-		OnAccept = function(self)
-				module:ImportThemeData(self.editBox:GetText())
+		OnAccept = function(self, data)
+				module:ImportThemeData(self.editBox:GetText(), data)
 			end,
-		EditBoxOnEnterPressed = function(self)
+		EditBoxOnEnterPressed = function(self, data)
 				self:GetParent():Hide()
-				module:ImportThemeData(self:GetText())
+				module:ImportThemeData(self:GetText(), data)
 			end,
 		EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
 		timeout = 0,

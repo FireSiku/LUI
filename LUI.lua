@@ -1159,8 +1159,7 @@ function LUI:NewNamespace(module, enableButton)
 	end
 	
 	-- Register namespace
-	module.db = self.db:RegisterNamespace(module:GetName(), type(module.defaults) == "table" and module.defaults or nil)
-	--module.defaults = nil
+	module.db = self.db:RegisterNamespace(module:GetName(), module.defaults)
 	
 	-- Look for outdated db vars and transfer them over
 	if LUI.db.profile[module:GetName()] then
@@ -1180,20 +1179,15 @@ function LUI:NewNamespace(module, enableButton)
 			[mName] = {
 				type = "execute",
 				name = function()
-					if module.db.profile.Enable then
-						return "|cff00FF00"..mName.." Enabled|r"
-					else
-						return "|cffFF0000"..mName.." Disabled|r"
-					end
+					local color = module.db.profile.Enable and "00FF00" or "FF0000"
+					local status = module.db.profile.Enable and "Enabled" or "Disabled"
+					return format("|cff%s%s %s|r", color, mName, status)
 				end,
 				func = function()
 					module.db.profile.Enable = not module.db.profile.Enable
-					if module.db.profile.Enable then
-						module:Enable()
-						if db.General.ModuleMessages then LUI:Print(mName.." Module Enabled") end
-					else
-						module:Disable()
-						if db.General.ModuleMessages then LUI:Print(mName.." Module Disabled") end
+					module[module.db.profile.Enable and "Enable" or "Disable"](module)
+					if db.General.ModuleMessages then
+						LUI:Print(mName.." Module " .. (module.db.profile.Enable and "Enabled" or "Disabled"))
 					end
 				end,
 			},
