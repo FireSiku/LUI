@@ -409,7 +409,7 @@ do
 			if id then
 				EnableUnitFrame("ArenaEnemyFrame" .. id)
 			else
-				for i=1, MAX_ARENA_ENEMIES do
+				for i=1, (MAX_ARENA_ENEMIES or 5) do
 					EnableUnitFrame("ArenaEnemyFrame" .. i)
 				end
 			end
@@ -421,6 +421,12 @@ do
 		end
 		
 		if unit == "raid" then
+			module:Unhook("CompactUnitFrame_UpateVisible")
+			for _, frame in pairs(CompactRaidFrameContainer.flowFrames) do
+				if type(v) == "table" then
+					CompactUnitFrame_UpdateVisible(frame)
+				end
+			end
 			CompactRaidFrameManager:Show()
 		end
 	end
@@ -469,6 +475,12 @@ do
 				module:RawHook("Arena_LoadUI", function() end, true)
 			end
 			SetCVar("showArenaEnemyFrames", "0")
+		end
+		
+		if unit == "raid" then
+			if not module:IsHooked("CompactUnitFrame_UpateVisible") then
+				module:RawHook("CompactUnitFrame_UpateVisible", LUI.dummy, true)
+			end
 		end
 	end
 	oUF.DisableBlizzard = module.DisableBlizzard -- overwrite oUF's DisableBlizzard function
@@ -524,6 +536,8 @@ toggleFuncs = {
 		if db.oUF.Boss.Enable then
 			local x = tonumber(db.oUF.Boss.X) / (db.oUF.Boss.Scale)
 			local y = tonumber(db.oUF.Boss.Y) / (db.oUF.Boss.Scale)
+			
+			module:DisableBlizzard("boss")
 			
 			if oUF_LUI_boss then
 				oUF_LUI_boss:SetScale(db.oUF.Boss.Scale)
@@ -589,14 +603,7 @@ toggleFuncs = {
 			if db.oUF.Boss.UseBlizzard then
 				module:EnableBlizzard("boss")
 			else
-				for i = 1, MAX_BOSS_FRAMES do
-					local boss = _G["Boss"..i.."TargetFrame"]
-					if boss then
-						boss.Show = function() end
-						boss:Hide()
-						boss:UnregisterAllEvents()
-					end
-				end
+				module:DisableBlizzard("boss")
 			end
 			
 			for i = 1, 4 do
@@ -868,18 +875,11 @@ toggleFuncs = {
 				end
 			end
 			
-			SetCVar("showArenaEnemyFrames", 0)
 			module:DisableBlizzard("arena")
 		else
 			if db.oUF.Arena.UseBlizzard == true then
 				SetCVar("showArenaEnemyFrames", 1)
-				if not ArenaEnemyFrame1 then
-					if Arena_LoadUI_ then
-						Arena_LoadUI_()
-					else
-						Arena_LoadUI()
-					end
-				end
+				module:EnableBlizzard("arena")
 			else
 				SetCVar("showArenaEnemyFrames", 0)
 				module:DisableBlizzard("arena")
