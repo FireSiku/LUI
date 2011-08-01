@@ -1,7 +1,7 @@
 --[[
 	Project.: oUF_Vengeance
 	File....: oUF_Vengeance.lua
-	Version.: 40200.4
+	Version.: 40200.5
 	Rev Date: 06/28/2011
 	Authors.: Shandrela [EU-Baelgun] <Bloodmoon>
 ]]
@@ -87,8 +87,12 @@ local function valueChanged(self, event, unit)
 		end
 	elseif bar.showInfight and InCombatLockdown() then
 		bar:Show()
+		bar:SetMinMaxValues(0, 1)
+		bar:SetValue(0)
+		bar.value = 0
 	else
 		bar:Hide()
+		bar.value = 0
 	end
 end
 
