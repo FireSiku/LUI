@@ -3537,8 +3537,8 @@ local SetStyle = function(self, unit, isSingle)
 		--self:RegisterEvent("ARENA_OPPONENT_UPDATE", ArenaEnemyUnseen)
 	--end
 
-	self:RegisterEvent("PLAYER_FLAGS_CHANGED", function(self) self.Health:ForceUpdate() end)
-	if unit == "player" then self:RegisterEvent("PLAYER_ENTERING_WORLD", function(self) self.Health:ForceUpdate() end) end
+	--self:RegisterEvent("PLAYER_FLAGS_CHANGED", function(self) self.Health:ForceUpdate() end)
+	--if unit == "player" then self:RegisterEvent("PLAYER_ENTERING_WORLD", function(self) self.Health:ForceUpdate() end) end
 
 	if unit == "pet" then
 		self.elapsed = 0
