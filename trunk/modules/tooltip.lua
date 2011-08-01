@@ -122,7 +122,7 @@ function module:SetTooltip()
 			local r,g,b = color.r, color.g, color.b
 			return Hex(color), r, g, b	
 		else
-			local color = FACTION_BAR_COLORS[UnitReaction("player", unit)]
+			local color = FACTION_BAR_COLORS[UnitReaction(unit, "player")]
 			if not color then return end -- sometime unit too far away return nil for color :(
 			local r,g,b = color.r, color.g, color.b		
 			return Hex(color), r, g, b		
@@ -309,7 +309,7 @@ function module:SetTooltip()
 		local GMF = GetMouseFocus()
 		local unit = (select(2, self:GetUnit())) or (GMF and GMF:GetAttribute("unit"))
 			
-		local reaction = unit and UnitReaction("player", unit)
+		local reaction = unit and UnitReaction(unit, "player")
 		local player = unit and UnitIsPlayer(unit)
 		local tapped = unit and UnitIsTapped(unit)
 		local tappedbyme = unit and UnitIsTappedByPlayer(unit)
