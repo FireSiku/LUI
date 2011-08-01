@@ -2077,6 +2077,7 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	if db.Frames.AlwaysShowMicroMenu then db.Frames.IsMicroMenuShown = true end
 	-- self:SetBlizzBossFrames() -- not sure what this is for
 	self:SetPanels()
 	
