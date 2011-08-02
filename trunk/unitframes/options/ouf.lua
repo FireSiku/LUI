@@ -713,11 +713,11 @@ toggleFuncs = {
 				party:SetPoint(db.oUF.Party.Point, UIParent, db.oUF.Party.Point, x, y)
 								
 				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerAttributeTemplate")
-				handler:SetAttribute("vis", 1)
 				handler:SetFrameRef("party", party)
 				handler:SetAttribute("_onattributechanged", [[
+					print(self:GetFrameRef("party"):IsProtected())
 					if name == "vis" then
-						if self:GetAttribute("vis") then
+						if value then
 							self:GetFrameRef("party"):Show()
 						else
 							self:GetFrameRef("party"):Hide()
@@ -729,6 +729,12 @@ toggleFuncs = {
 				handler:RegisterEvent("PARTY_MEMBERS_CHANGED")
 				handler:RegisterEvent("RAID_ROSTER_UPDATE")
 				handler:SetScript("OnEvent", function(self)
+					if InCombatLockdown() then
+						self:RegisterEvent("PLAYER_REGEN_ENABLED")
+						return
+					end
+					self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+					
 					if db.oUF.Party.Enable == false then
 						self:SetAttribute("vis", nil)
 						return
@@ -776,7 +782,6 @@ toggleFuncs = {
 				for i = 1, 5 do
 					if _G["oUF_LUI_partyUnitButton"..i] then _G["oUF_LUI_partyUnitButton"..i]:Disable() end
 				end
-				UnregisterStateDriver(oUF_LUI_party, "visibility")
 				oUF_LUI_party:Hide()
 			end
 		end
