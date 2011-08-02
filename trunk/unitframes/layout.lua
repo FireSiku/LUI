@@ -897,39 +897,6 @@ local PortraitOverride = function(self, event, unit)
 	portrait:SetAlpha(a)
 end
 
-local SwingOverrideText = function(bar, now)
-	local text = bar.Text
-
-	if not text then return end
-
-	if text.Enable then
-		local value = string.format("%.1f", bar.max - now)
-		if text.Format == "Absolut" then
-			text:SetFormattedText("%s/%s", string.format("%.1f", bar.max - now), string.format("%.1f", bar.max - bar.min))
-		else
-			text:SetFormattedText("%s", string.format("%.1f", bar.max - now))
-		end
-	else
-		text:SetText("")
-	end
-end
-
-local VengeanceOverrideText = function(bar, value)
-	local text = bar.Text
-
-	if not text then return end
-
-	if text.Enable then
-		if text.Format == "Absolut" then
-			bar.Text:SetFormattedText("%s/%s", value, bar.max)
-		else
-			bar.Text:SetFormattedText("%s", value)
-		end
-	else
-		text:SetText("")
-	end
-end
-
 local Reposition = function(V2Tex)
 	local to = V2Tex.to
 	local from = V2Tex.from
@@ -1685,172 +1652,6 @@ LUI.oUF.funcs = {
 		end
 	end,
 
-	Swing = function(self, unit, oufdb)
-		if not self.Swing then
-			self.Swing = CreateFrame("Frame", nil, UIParent)
-			self.Swing.Text = SetFontString(self.Swing, LSM:Fetch("font", oufdb.Swing.Text.Font), oufdb.Swing.Text.Size, oufdb.Swing.Text.Outline)
-			self.Swing.TextMH = SetFontString(self.Swing, LSM:Fetch("font", oufdb.Swing.Text.Font), oufdb.Swing.Text.Size, oufdb.Swing.Text.Outline)
-			self.Swing.TextOH = SetFontString(self.Swing, LSM:Fetch("font", oufdb.Swing.Text.Font), oufdb.Swing.Text.Size, oufdb.Swing.Text.Outline)
-
-			self.Swing.TextMH:SetPoint("BOTTOM", self.Swing.Text, "CENTER", 0, 1)
-			self.Swing.TextOH:SetPoint("TOP", self.Swing.Text, "CENTER", 0, -1)
-
-			self.Swing.OverrideText = SwingOverrideText
-		end
-
-		self.Swing:SetWidth(tonumber(oufdb.Swing.Width))
-		self.Swing:SetHeight(tonumber(oufdb.Swing.Height))
-		self.Swing:ClearAllPoints()
-		self.Swing:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(oufdb.Swing.X), tonumber(oufdb.Swing.Y))
-
-		self.Swing.texture = LSM:Fetch("statusbar", oufdb.Swing.Texture)
-		self.Swing.textureBG = LSM:Fetch("statusbar", oufdb.Swing.TextureBG)
-
-		local mu = oufdb.Swing.BGMultiplier
-		if oufdb.Swing.Color == "By Class" then
-			local color = colors.class[class]
-			self.Swing.color = {color[1], color[2], color[3], 1}
-			self.Swing.colorBG = {color[1]*mu, color[2]*mu, color[3]*mu, 1}
-		else
-			self.Swing.color = {oufdb.Swing.IndividualColor.r, oufdb.Swing.IndividualColor.g, oufdb.Swing.IndividualColor.b, 1}
-			self.Swing.colorBG = {oufdb.Swing.IndividualColor.r*mu, oufdb.Swing.IndividualColor.g*mu, oufdb.Swing.IndividualColor.b*mu, 1}
-		end
-
-		if self.Swing.Twohand then
-			self.Swing.Twohand:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Swing.Texture))
-			self.Swing.Twohand:SetStatusBarColor(unpack(self.Swing.color))
-			self.Swing.Twohand.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Swing.TextureBG))
-			self.Swing.Twohand.bg:SetVertexColor(unpack(self.Swing.colorBG))
-		end
-		if self.Swing.Mainhand then
-			self.Swing.Mainhand:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Swing.Texture))
-			self.Swing.Mainhand:SetStatusBarColor(unpack(self.Swing.color))
-			self.Swing.Mainhand.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Swing.TextureBG))
-			self.Swing.Mainhand.bg:SetVertexColor(unpack(self.Swing.colorBG))
-		end
-		if self.Swing.Offhand then
-			self.Swing.Offhand:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Swing.Texture))
-			self.Swing.Offhand:SetStatusBarColor(unpack(self.Swing.color))
-			self.Swing.Offhand.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Swing.TextureBG))
-			self.Swing.Offhand.bg:SetVertexColor(unpack(self.Swing.colorBG))
-		end
-
-		self.Swing.Text:SetFont(LSM:Fetch("font", oufdb.Swing.Text.Font), oufdb.Swing.Text.Size, oufdb.Swing.Text.Outline)
-		self.Swing.TextMH:SetFont(LSM:Fetch("font", oufdb.Swing.Text.Font), oufdb.Swing.Text.Size, oufdb.Swing.Text.Outline)
-		self.Swing.TextOH:SetFont(LSM:Fetch("font", oufdb.Swing.Text.Font), oufdb.Swing.Text.Size, oufdb.Swing.Text.Outline)
-
-		self.Swing.Text:ClearAllPoints()
-		self.Swing.Text:SetPoint("CENTER", self.Swing, "CENTER", tonumber(oufdb.Swing.Text.X), tonumber(oufdb.Swing.Text.Y))
-
-		if oufdb.Swing.Text.Color == "By Class" then
-			local color = colors.class[class]
-			self.Swing.Text:SetTextColor(color[1], color[2], color[3])
-			self.Swing.TextMH:SetTextColor(color[1], color[2], color[3])
-			self.Swing.TextOH:SetTextColor(color[1], color[2], color[3])
-		else
-			self.Swing.Text:SetTextColor(oufdb.Swing.Text.IndividualColor.r, oufdb.Swing.Text.IndividualColor.g, oufdb.Swing.Text.IndividualColor.b)
-			self.Swing.TextMH:SetTextColor(oufdb.Swing.Text.IndividualColor.r, oufdb.Swing.Text.IndividualColor.g, oufdb.Swing.Text.IndividualColor.b)
-			self.Swing.TextOH:SetTextColor(oufdb.Swing.Text.IndividualColor.r, oufdb.Swing.Text.IndividualColor.g, oufdb.Swing.Text.IndividualColor.b)
-		end
-
-		if oufdb.Swing.Text.Enable then
-			self.Swing.Text:Show()
-			self.Swing.TextMH:Show()
-			self.Swing.TextOH:Show()
-		else
-			self.Swing.Text:Hide()
-			self.Swing.TextMH:Hide()
-			self.Swing.TextOH:Hide()
-		end
-
-		self.Swing.Text.Enable = oufdb.Swing.Text.Enable
-		self.Swing.Text.Format = oufdb.Swing.Text.Format
-
-		self.Swing.TextMH.Enable = oufdb.Swing.Text.Enable
-		self.Swing.TextMH.Format = oufdb.Swing.Text.Format
-
-		self.Swing.TextOH.Enable = oufdb.Swing.Text.Enable
-		self.Swing.TextOH.Format = oufdb.Swing.Text.Format
-	end,
-	Vengeance = function(self, unit, oufdb)
-		if not self.Vengeance then
-			self.Vengeance = CreateFrame("StatusBar", nil, UIParent)
-			self.Vengeance.bg = self.Vengeance:CreateTexture(nil, "BORDER")
-			self.Vengeance.bg:SetAllPoints(self.Vengeance)
-
-			self.Vengeance.Text = SetFontString(self.Vengeance, LSM:Fetch("font", oufdb.Vengeance.Text.Font), oufdb.Vengeance.Text.Size, oufdb.Vengeance.Text.Outline)
-			self.Vengeance.OverrideText = VengeanceOverrideText
-		end
-		
-		self.Vengeance.showInfight = true
-		
-		self.Vengeance:SetWidth(tonumber(oufdb.Vengeance.Width))
-		self.Vengeance:SetHeight(tonumber(oufdb.Vengeance.Height))
-		self.Vengeance:ClearAllPoints()
-		self.Vengeance:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(oufdb.Vengeance.X), tonumber(oufdb.Vengeance.Y))
-		self.Vengeance:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Vengeance.Texture))
-		self.Vengeance.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Vengeance.TextureBG))
-
-		local mu = oufdb.Vengeance.BGMultiplier
-		if oufdb.Vengeance.Color == "By Class" then
-			local color = colors.class[class]
-			self.Vengeance:SetStatusBarColor(color[1], color[2], color[3], 1)
-			self.Vengeance.bg:SetVertexColor(color[1]*mu, color[2]*mu, color[3]*mu, 1)
-		else
-			self.Vengeance:SetStatusBarColor(oufdb.Vengeance.IndividualColor.r, oufdb.Vengeance.IndividualColor.g, oufdb.Vengeance.IndividualColor.b, 1)
-			self.Vengeance.bg:SetVertexColor(oufdb.Vengeance.IndividualColor.r*mu, oufdb.Vengeance.IndividualColor.g*mu, oufdb.Vengeance.IndividualColor.b*mu, 1)
-		end
-
-		self.Vengeance.Text:SetFont(LSM:Fetch("font", oufdb.Vengeance.Text.Font), oufdb.Vengeance.Text.Size, oufdb.Vengeance.Text.Outline)
-		self.Vengeance.Text:ClearAllPoints()
-		self.Vengeance.Text:SetPoint("CENTER", self.Vengeance, "CENTER", tonumber(oufdb.Vengeance.Text.X), tonumber(oufdb.Vengeance.Text.Y))
-
-		if oufdb.Vengeance.Text.Enable then
-			self.Vengeance.Text:Show()
-		else
-			self.Vengeance.Text:Hide()
-		end
-	end,
-	ThreatBar = function(self, unit, oufdb)
-		if not self.ThreatBar then
-			self.ThreatBar = CreateFrame("StatusBar", nil, UIParent)
-			self.ThreatBar.bg = self.ThreatBar:CreateTexture(nil, "BORDER")
-			self.ThreatBar.bg:SetAllPoints(self.ThreatBar)
-			
-			self.ThreatBar.Text = SetFontString(self.ThreatBar, LSM:Fetch("font", oufdb.ThreatBar.Text.Font), oufdb.ThreatBar.Text.Size, oufdb.ThreatBar.Text.Outline)
-		end
-		
-		self.ThreatBar:SetWidth(tonumber(oufdb.ThreatBar.Width))
-		self.ThreatBar:SetHeight(tonumber(oufdb.ThreatBar.Height))
-		self.ThreatBar:ClearAllPoints()
-		self.ThreatBar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(oufdb.ThreatBar.X), tonumber(oufdb.ThreatBar.Y))
-		self.ThreatBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.ThreatBar.Texture))
-		self.ThreatBar.bg:SetTexture(LSM:Fetch("statusbar", oufdb.ThreatBar.TextureBG))
-		
-		self.ThreatBar.BGMultiplier = oufdb.ThreatBar.BGMultiplier
-		
-		local mu = self.ThreatBar.BGMultiplier
-		if oufdb.ThreatBar.Color == "By Class" then
-			local color = colors.class[class]
-			self.ThreatBar:SetStatusBarColor(color[1], color[2], color[3], 1)
-			self.ThreatBar.bg:SetVertexColor(color[1]*mu, color[2]*mu, color[3]*mu, 1)
-		elseif oufdb.ThreatBar.Color == "Individual" then
-			self.ThreatBar:SetStatusBarColor(oufdb.ThreatBar.IndividualColor.r, oufdb.ThreatBar.IndividualColor.g, oufdb.ThreatBar.IndividualColor.b, 0.8)
-			self.ThreatBar.bg:SetVertexColor(oufdb.ThreatBar.IndividualColor.r*mu, oufdb.ThreatBar.IndividualColor.g*mu, oufdb.ThreatBar.IndividualColor.b*mu, 1)
-		end
-		self.ThreatBar.colorGradient = (oufdb.ThreatBar.Color == "Gradient")
-		self.ThreatBar.tankHide = oufdb.ThreatBar.TankHide
-		
-		self.ThreatBar.Text:SetFont(LSM:Fetch("font", oufdb.ThreatBar.Text.Font), oufdb.ThreatBar.Text.Size, oufdb.ThreatBar.Text.Outline)
-		self.ThreatBar.Text:ClearAllPoints()
-		self.ThreatBar.Text:SetPoint("CENTER", self.ThreatBar, "CENTER", tonumber(oufdb.ThreatBar.Text.X), tonumber(oufdb.ThreatBar.Text.Y))
-
-		if oufdb.ThreatBar.Text.Enable then
-			self.ThreatBar.Text:Show()
-		else
-			self.ThreatBar.Text:Hide()
-		end
-	end,
 	TotemBar = function(self, unit, oufdb)
 		if not self.TotemBar then
 			self.TotemBar = CreateFrame("Frame", nil, self)
@@ -3345,25 +3146,18 @@ local SetStyle = function(self, unit, isSingle)
 			end
 		end
 
-		if oufdb.Swing.Enable then funcs.Swing(self, unit, oufdb) end
-		if class == "WARRIOR" then
-			if oufdb.Vengeance.Enable then funcs.Vengeance(self, unit, oufdb) end
-		elseif class == "DEATH KNIGHT" or class == "DEATHKNIGHT" then
-			if oufdb.Vengeance.Enable then funcs.Vengeance(self, unit, oufdb) end
+		if class == "DEATH KNIGHT" or class == "DEATHKNIGHT" then
 			if oufdb.Runes.Enable then funcs.Runes(self, unit, oufdb) end
 		elseif class == "DRUID" then
-			if oufdb.Vengeance.Enable then funcs.Vengeance(self, unit, oufdb) end
 			if oufdb.Eclipse.Enable then funcs.EclipseBar(self, unit, oufdb) end
 			if oufdb.DruidMana.Enable then funcs.DruidMana(self, unit, oufdb) end
 		elseif class == "PALADIN" then
-			if oufdb.Vengeance.Enable then funcs.Vengeance(self, unit, oufdb) end
 			if oufdb.HolyPower.Enable then funcs.HolyPower(self, unit, oufdb) end
 		elseif class == "SHAMAN" then
 			if oufdb.Totems.Enable then funcs.TotemBar(self, unit, oufdb) end
 		elseif class == "WARLOCK" then
 			if oufdb.SoulShards.Enable then funcs.SoulShards(self, unit, oufdb) end
 		end
-		if oufdb.ThreatBar.Enable then funcs.ThreatBar(self, unit, oufdb) end
 	end
 
 	------------------------------------------------------------------------
