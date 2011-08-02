@@ -4,9 +4,6 @@
 	Description: This module can handle fading of frames registered with it.
 	Version....: 2.0
 	Rev Date...: 17/06/2010 [dd/mm/yyyy]
-
-	Edits:
-		v2.0: Hix
 ]]
 
 ------------------------------------------------------
@@ -38,14 +35,18 @@
 		event types.
 ]]
 
+-- External references.
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 local Fader = LUI:NewModule("Fader", "AceEvent-3.0", "AceHook-3.0")
 
+-- Database and defaults shortcuts.
+local db
+local dbd
+
 -- Fader local variables.
 -- RegisteredFrames[frame] = frameSettings. (e.i. RegisteredFrames = { oUF_LUI_player = db.oUF.Player.Fader, oUF_LUI_target = db.oUF.Target.Fader, etc })
-local db
 Fader.Fading = {}
 Fader.Fader = CreateFrame("frame", "LUI_Fader", UIParent)
 Fader.Fader.Throttle = 0
@@ -71,19 +72,16 @@ Fader.Status = {
 		settings: Settings for the frame.
 ]]
 function Fader:RegisterFrame(frame, settings, specialHover)
-	-- Check fader is enabled.
-	if not db.Fader.Enable then return end
-	
 	-- Check frame is a usable objects.
 	if type(frame) ~= "table"  then return end
 
 	-- Apply settings
-	if not settings then settings = db.Fader.GlobalSettings end	
+	if not settings then settings = db.GlobalSettings end	
 	local usedSettings
-	if db.Fader.ForceGlobalSettings then
-		usedSettings = db.Fader.GlobalSettings
+	if db.ForceGlobalSettings then
+		usedSettings = db.GlobalSettings
 	else
-		usedSettings = (settings.UseGlobalSettings and db.Fader.GlobalSettings) or settings
+		usedSettings = (settings.UseGlobalSettings and db.GlobalSettings) or settings
 	end
 	
 	-- Check if registered frames table exists.
@@ -91,7 +89,7 @@ function Fader:RegisterFrame(frame, settings, specialHover)
 		self.RegisteredFrames = {}
 		self.RegisteredFrames[frame] = usedSettings
 		self.RegisteredFrameTotal = 1
-		self:EventsRegister()
+		if db.Enable then self:EventsRegister() end
 	else
 		-- Check if frame is already registered.
 		if self.RegisteredFrames[frame] then 
@@ -103,6 +101,9 @@ function Fader:RegisterFrame(frame, settings, specialHover)
 			self.RegisteredFrameTotal = self.RegisteredFrameTotal + 1
 		end
 	end
+
+	-- Check fader is enabled.
+	if not db.Enable then return end
 	
 	-- Create fader table.
 	frame.Fader = frame.Fader or {}
@@ -652,12 +653,12 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults, specialHov
 	local FaderOptions = {
 		Enable = LUI:NewToggle("Enable Fader", nil, 1, odb, "Enable", odbD, ApplySettings),
 		UseGlobalSettings = LUI:NewToggle("Use Global Settings", nil, 2, odb, "UseGlobalSettings", odbD, ApplySettings, nil, function() return (not odb.Enable) end),
-		ForcingGlobal = LUI:NewDesc("|cffff0000Global settings are being forced.|r", 3, nil, nil, function() return not db.Fader.ForceGlobalSettings end),
+		ForcingGlobal = LUI:NewDesc("|cffff0000Global settings are being forced.|r", 3, nil, nil, function() return not db.ForceGlobalSettings end),
 		Options = {
 			name = "",
 			type = "group",
 			guiInline = true,
-			disabled = function() return (not odb.Enable) or odb.UseGlobalSettings or db.Fader.ForceGlobalSettings end,
+			disabled = function() return (not odb.Enable) or odb.UseGlobalSettings or db.ForceGlobalSettings end,
 			order = 4,
 			args = {
 				FadeInHeader = LUI:NewHeader("Fade In", 2),
@@ -686,8 +687,8 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults, specialHov
 end
 
 -- Default variables
-local defaults = {
-	Fader = {
+Fader.defaults = {
+	profile = {
 		Enable = true,
 		ForceGlobalSettings = true,
 		GlobalSettings = {
@@ -713,7 +714,7 @@ local defaults = {
 function Fader:LoadOptions()
 	local ApplySettings = function()
 		if not Fader.RegisteredFrames then return end
-		if db.Fader.ForceGlobalSettings then
+		if db.ForceGlobalSettings then
 			-- Re-apply settings to frames.
 			for frame in pairs(Fader.RegisteredFrames) do
 				Fader:RegisterFrame(frame)
@@ -727,15 +728,15 @@ function Fader:LoadOptions()
 	end
 	
 	-- db quick locals
-	local gs = db.Fader.GlobalSettings
-	local gsD = LUI.defaults.profile.Fader.GlobalSettings
+	local gs = db.GlobalSettings
+	local gsD = dbd.GlobalSettings
 	
 	local options = {
 		Fader = {
 			name = "Fader",
 			type = "group",
 			childGroups = "tab",
-			disabled = function() return not db.Fader.Enable end,
+			disabled = function() return not db.Enable end,
 			args = {
 				Header = LUI:NewHeader("Fader", 1),
 				Settings = {
@@ -743,11 +744,10 @@ function Fader:LoadOptions()
 					type = "group",
 					order = 2,
 					args = {
-						Enable = LUI:NewEnable("Fader", 1, db.Fader),
-						ForceGlobalSettings = LUI:NewToggle("Force Global Settings", nil, 2, db.Fader, "ForceGlobalSettings", LUI.defaults.profile.Fader,
+						ForceGlobalSettings = LUI:NewToggle("Force Global Settings", nil, 1, db, "ForceGlobalSettings", dbd,
 							function()
 								if not Fader.RegisteredFrames then return end
-								if db.Fader.ForceGlobalSettings then
+								if db.ForceGlobalSettings then
 									-- Re-apply settings to frames.
 									for frame in pairs(Fader.RegisteredFrames) do
 										Fader:RegisterFrame(frame)
@@ -757,7 +757,7 @@ function Fader:LoadOptions()
 									StaticPopup_Show("RELOAD_UI")																		
 								end
 							end),
-						Line = LUI:NewHeader("", 3),
+						Line = LUI:NewHeader("", 2),
 					},					
 				},
 				GlobalSettings = {
@@ -792,27 +792,30 @@ function Fader:LoadOptions()
 end
 
 function Fader:OnInitialize()
-	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
-	LUI:RefreshDefaults()
-	LUI:Refresh()
-	
-	self.db = LUI.db.profile
-	db = self.db
-	
-	LUI:RegisterModule(self)
+	LUI:NewNamespace(self, true)
+	db = self.db.profile
+	dbd = self.defaults.profile
 end
 
 function Fader:OnEnable()
 	-- Check if enabled.
-	if not db.Fader.Enable then return end
+	if not db.Enable then return end
 	
 	-- Check if events need to be registered
 	if self.RegisteredFrames then
 		self:EventsRegister()
 		
-		-- Apply hover scripts
+		-- Enable fader on registered frames.
 		for frame in pairs(self.RegisteredFrames) do
+			-- Create fader table.
+			frame.Fader = frame.Fader or {}
+			frame.Fader.PreAlpha = frame.Fader.PreAlpha or frame:GetAlpha()
+	
+			-- Attach mouseover scripts to frame.
 			self:AttachHoverScript(frame)
+	
+			-- Run fader
+			self:FadeHandler(frame)
 		end
 	end
 end
@@ -821,9 +824,21 @@ function Fader:OnDisable()
 	-- Check if events need to be un-registered
 	if self.RegisteredFrames then
 		self:EventsUnregister()
-		
-		-- Remove hover scripts
+
+		-- Disable fader on registered frames.
 		for frame in pairs(self.RegisteredFrames) do
+			-- Reset alpha.
+			frame:SetAlpha((frame.Fader and frame.Fader.PreAlpha) or 1)
+
+			-- If currently fading, stop fading.
+			if frame.Fader.fading then
+				self:StopFading(frame)
+			end
+
+			-- Remove variables.
+			frame.Fader = nil
+		
+			-- Remove hover scripts
 			self:RemoveHoverScript(frame)
 		end
 	end

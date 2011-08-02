@@ -1178,16 +1178,24 @@ function LUI:NewNamespace(module, enableButton)
 		table.insert(moduleList, {
 			[mName] = {
 				type = "execute",
+				desc = "Left Click: Enable/Disable this module.\nShift Click: Reset modules settings.",
 				name = function()
 					local color = module.db.profile.Enable and "00FF00" or "FF0000"
 					local status = module.db.profile.Enable and "Enabled" or "Disabled"
 					return format("|cff%s%s %s|r", color, mName, status)
 				end,
-				func = function()
-					module.db.profile.Enable = not module.db.profile.Enable
-					module[module.db.profile.Enable and "Enable" or "Disable"](module)
-					if db.General.ModuleMessages then
-						LUI:Print(mName.." Module " .. (module.db.profile.Enable and "Enabled" or "Disabled"))
+				func = function(self, button)
+					if IsShiftKeyDown() then
+						module.db:ResetProfile()
+						if db.General.ModuleMessages then
+							LUI:Print(mName.." module settings reset.")
+						end
+					else
+						module.db.profile.Enable = not module.db.profile.Enable
+						module[module.db.profile.Enable and "Enable" or "Disable"](module)
+						if db.General.ModuleMessages then
+							LUI:Print(mName.." module " .. (module.db.profile.Enable and "enabled." or "disabled."))
+						end
 					end
 				end,
 			},

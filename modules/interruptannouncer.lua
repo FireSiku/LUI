@@ -11,9 +11,9 @@
 		This is an evolved version of the Hix: Interrupt Announcer addOn, providing LUI incorporation and additional options.
 ]]
 
--- Local includes/definitions.
+-- External references.
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("InterruptAnnouncer")
+local InterruptAnnouncer = LUI:NewModule("InterruptAnnouncer")
 
 -- Database and defaults shortcuts.
 local db
@@ -23,8 +23,8 @@ local partyChatChannels = {"SAY", "YELL", "PARTY"}
 local raidChatChannels = {"SAY", "YELL", "PARTY", "RAID", "RAID_WARNING"}
 
 -- Create module function.
-function module:Create()
-	if not db.InterruptAnnouncer.Enable then return end
+function InterruptAnnouncer:Create()
+	if not db.Enable then return end
 	
 	-- Create a frame to work with.
 	local IA = CreateFrame("frame")
@@ -54,9 +54,9 @@ function module:Create()
 		self.lastTime, self.lastInterrupt = timeStamp, spellID
 
 		-- Send chat message.
-		if db.InterruptAnnouncer.EnableFormat then
+		if db.EnableFormat then
 			-- Create msg from custom format and keywords.
-			local msg = db.InterruptAnnouncer.Format
+			local msg = db.Format
 			msg = msg:gsub("!player", sName)
 			msg = msg:gsub("!target", dName)
 			msg = msg:gsub("!interruptSpell", interruptName)
@@ -90,11 +90,11 @@ function module:Create()
 
 		-- Set channel for output.
 		if (GetRealNumRaidMembers() > 0) then
-			if db.InterruptAnnouncer.EnableRaid then
-				if (db.InterruptAnnouncer.AnnounceRaid == "RAID_WARNING") and (not(IsRaidLeader())) and (not(IsRaidOfficer())) then
+			if db.EnableRaid then
+				if (db.AnnounceRaid == "RAID_WARNING") and (not(IsRaidLeader())) and (not(IsRaidOfficer())) then
 					self.channel = "RAID"
 				else
-					self.channel = db.InterruptAnnouncer.AnnounceRaid
+					self.channel = db.AnnounceRaid
 				end
 			else
 				-- Unregister combat events.
@@ -110,8 +110,8 @@ function module:Create()
 				return
 			end
 		else
-			if db.InterruptAnnouncer.EnableParty then
-				self.channel = db.InterruptAnnouncer.AnnounceParty
+			if db.EnableParty then
+				self.channel = db.AnnounceParty
 			else
 				-- Unregister combat events.
 				self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -131,7 +131,7 @@ function module:Create()
 
 		-- Collect GUIDs.
 		self.GUID = UnitGUID("player")
-		if db.InterruptAnnouncer.EnablePet then self.petGUID = UnitGUID("pet") end
+		if db.EnablePet then self.petGUID = UnitGUID("pet") end
 		
 		-- Register combat events.
 		self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -142,7 +142,7 @@ function module:Create()
 	function IA:UNIT_PET(unit)
 		if unit ~= "player" then return end
 		if not self.GUID then return end
-		if not db.InterruptAnnouncer.EnablePet then return end
+		if not db.EnablePet then return end
 	
 		-- Update pet GUID.
 		self.petGUID = UnitGUID("pet")
@@ -150,8 +150,8 @@ function module:Create()
 end
 
 -- Defaults for the module.
-local defaults = {
-	InterruptAnnouncer = {
+InterruptAnnouncer.defaults = {
+	profile = {
 		Enable = true,
 		AnnounceParty = "PARTY",
 		AnnounceRaid = "RAID",
@@ -164,13 +164,13 @@ local defaults = {
 }
 
 -- Load options: Creates the options menu for LUI.
-function module:LoadOptions()
+function InterruptAnnouncer:LoadOptions()
 	local options = {
 		InterruptAnnouncer = {
 			name = "Interrupt Announcer",
 			type = "group",
-			disabled = function() return not db.InterruptAnnouncer.Enable end,
 			childGroups = "tab",
+			disabled = function() return not db.Enable end,
 			args = {
 				Title = LUI:NewHeader("Interrupt Announcer", 1),
 				General = {
@@ -195,12 +195,12 @@ function module:LoadOptions()
 							order = 2,
 							guiInline = true,
 							args = {
-								EnableParty = LUI:NewToggle("Enable In Party", nil, 1, db.InterruptAnnouncer, "EnableParty", dbd.InterruptAnnouncer),
-								EnableRaid = LUI:NewToggle("Enable In Raid", nil, 2, db.InterruptAnnouncer, "EnableRaid", dbd.InterruptAnnouncer),
-								EnablePet = LUI:NewToggle("Announce Pet Interrupts", nil, 3, db.InterruptAnnouncer, "EnablePet", dbd.InterruptAnnouncer),
-								EnableFormat = LUI:NewToggle("Enable Custom Format", nil, 4, db.InterruptAnnouncer, "EnableFormat", dbd.InterruptAnnouncer),
-								AnnouceParty = LUI:NewSelect("Announce Channel For Party", "Which channel to announce interrupts to while in a party", 5, partyChatChannels, nil, db.InterruptAnnouncer, "AnnounceParty", dbd.InterruptAnnouncer),
-								AnnouceRaid = LUI:NewSelect("Announce Channel For Raid", "Which channel to announce interrupts to while in a raid", 6, raidChatChannels, nil, db.InterruptAnnouncer, "AnnounceRaid", dbd.InterruptAnnouncer),
+								EnableParty = LUI:NewToggle("Enable In Party", nil, 1, db, "EnableParty", dbd),
+								EnableRaid = LUI:NewToggle("Enable In Raid", nil, 2, db, "EnableRaid", dbd),
+								EnablePet = LUI:NewToggle("Announce Pet Interrupts", nil, 3, db, "EnablePet", dbd),
+								EnableFormat = LUI:NewToggle("Enable Custom Format", nil, 4, db, "EnableFormat", dbd),
+								AnnouceParty = LUI:NewSelect("Announce Channel For Party", "Which channel to announce interrupts to while in a party", 5, partyChatChannels, nil, db, "AnnounceParty", dbd),
+								AnnouceRaid = LUI:NewSelect("Announce Channel For Raid", "Which channel to announce interrupts to while in a raid", 6, raidChatChannels, nil, db, "AnnounceRaid", dbd),
 							},
 						},
 					},
@@ -209,7 +209,7 @@ function module:LoadOptions()
 					name = "Announce Format",
 					type = "group",
 					order = 3,
-					disabled = function() return (not db.InterruptAnnouncer.Enable) or (not db.InterruptAnnouncer.EnableFormat) end,
+					disabled = function() return (not db.Enable) or (not db.EnableFormat) end,
 					args = {
 						Info = {
 							name = "Info",
@@ -222,7 +222,7 @@ function module:LoadOptions()
 								C = LUI:NewDesc("!player = interruptors name\n!target = targets name\n!interruptSpell = the interrupts spell name\n!interruptLink = the interrupts spell link\n!spellName = the spell name interrupted\n!spellLink = the spell link of the spell interrupted.", 3),
 							},
 						},
-						Format = LUI:NewInput("Announce Format", "Create a string that becomes the interrupt announcers output format. Use keywords to be replaced by realtime data.", 2, db.InterruptAnnouncer, "Format", dbd.InterruptAnnouncer, nil, "double"),
+						Format = LUI:NewInput("Announce Format", "Create a string that becomes the interrupt announcers output format. Use keywords to be replaced by realtime data.", 2, db, "Format", dbd, nil, "double"),
 					},
 				},
 			},
@@ -233,20 +233,13 @@ function module:LoadOptions()
 end
 
 -- Initialize module: Called when the addon should intialize its self; this is where we load in database values.
-function module:OnInitialize()
-	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
-	LUI:RefreshDefaults()
-	LUI:Refresh()
-	
-	self.db = LUI.db.profile
-	self.dbd = LUI.db.defaults.profile
-	db = self.db
-	dbd = self.dbd
-
-	LUI:RegisterModule(self)
+function InterruptAnnouncer:OnInitialize()
+	LUI:NewNamespace(self, true)
+	db = self.db.profile
+	dbd = self.defaults.profile
 end
 
 -- Enable module: Called when addon is enabled.
-function module:OnEnable()
+function InterruptAnnouncer:OnEnable()
 	self:Create()
 end
