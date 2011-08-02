@@ -68,6 +68,11 @@ do
 				_G[v]:SetPoint(point, UIParent, rpoint, x, y)
 			end
 		end
+		
+		-- has to be done AFTER saving the changes
+		for k, v in pairs(ufNames) do
+			if _G[v] and _G[v].V2Tex then _G[v].V2Tex:Reposition() end
+		end
 	end
 
 	local resetAllPositions = function()
@@ -87,6 +92,11 @@ do
 					_G[v]:SetPoint(db.oUF[k].Point, UIParent, db.oUF[k].Point, tonumber(db.oUF[k].X) / (db.oUF[k].Scale or 1), tonumber(db.oUF[k].Y) / (db.oUF[k].Scale or 1))
 				end
 			end
+		end
+		
+		-- has to be done AFTER saving the changes
+		for k, v in pairs(ufNames) do
+			if _G[v] and _G[v].V2Tex then _G[v].V2Tex:Reposition() end
 		end
 	end
 
@@ -719,11 +729,6 @@ toggleFuncs = {
 				handler:RegisterEvent("PARTY_MEMBERS_CHANGED")
 				handler:RegisterEvent("RAID_ROSTER_UPDATE")
 				handler:SetScript("OnEvent", function(self)
-					if InCombatLockdown() then
-						self:RegisterEvent("PLAYER_REGEN_ENABLED") -- prevents updating untill end of combat to stop SetAttribute errors
-						return
-					end
-					
 					if db.oUF.Party.Enable == false then
 						self:SetAttribute("vis", nil)
 						return
@@ -1205,6 +1210,17 @@ function module:LoadOptions()
 	local ToggleV2 = function(self, Enable)
 		for _, f in pairs({"oUF_LUI_targettarget", "oUF_LUI_targettargettarget", "oUF_LUI_focustarget", "oUF_LUI_focus"}) do
 			if _G[f] then
+				if not _G[f].V2Tex then
+					if f == "oUF_LUI_targettarget" then
+						funcs.V2Textures(oUF_LUI_targettarget, oUF_LUI_target)
+					elseif f == "oUF_LUI_targettargettarget" then
+						funcs.V2Textures(oUF_LUI_targettargettarget, oUF_LUI_targettarget)
+					elseif f == "oUF_LUI_focustarget" then
+						funcs.V2Textures(oUF_LUI_focustarget, oUF_LUI_focus)
+					elseif f == "oUF_LUI_focus" then
+						funcs.V2Textures(oUF_LUI_focus, oUF_LUI_player)
+					end
+				end
 				if not _G[f].V2Tex then LUI.oUF.funcs.V2Textures(_G[f], _G[f].__unit) end
 				if Enable then
 					_G[f].V2Tex:Show()
@@ -1219,7 +1235,7 @@ function module:LoadOptions()
 		for i = 1, 5 do
 			local f = _G["oUF_LUI_partyUnitButton"..i.."target"]
 			if f then
-				if not f.V2Tex then LUI.oUF.funcs.V2Textures(f, f.__unit) end
+				if not f.V2Tex then LUI.oUF.funcs.V2Textures(f, _G["oUF_LUI_partyUnitButton"..i]) end
 				if Enable then
 					f.V2Tex:Show()
 				else
@@ -1233,7 +1249,7 @@ function module:LoadOptions()
 		for i = 1, 5 do
 			local f = _G["oUF_LUI_arenatarget"..i]
 			if f then
-				if not f.V2Tex then LUI.oUF.funcs.V2Textures(f, f.__unit) end
+				if not f.V2Tex then LUI.oUF.funcs.V2Textures(f, _G["oUF_LUI_arena"..i]) end
 				if Enable then
 					f.V2Tex:Show()
 				else
@@ -1247,7 +1263,7 @@ function module:LoadOptions()
 		for i = 1, MAX_BOSS_FRAMES do
 			local f = _G["oUF_LUI_bosstarget"..i]
 			if f then
-				if not f.V2Tex then LUI.oUF.funcs.V2Textures(f, f.__unit) end
+				if not f.V2Tex then LUI.oUF.funcs.V2Textures(f, _G["oUF_LUI_boss"..i]) end
 				if Enable then
 					f.V2Tex:Show()
 				else
@@ -1458,7 +1474,4 @@ function module:OnInitialize()
 	db = self.db
 	
 	LUI:RegisterOptions(self)
-end
-
-function module:OnEnable()
 end

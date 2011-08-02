@@ -10,7 +10,7 @@ local oUF = ns.oUF or oUF
 
 local LSM = LibStub("LibSharedMedia-3.0")
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF_Layout")
+local module = LUI:GetModule("oUF", true)
 
 local db, colors, funcs
 
@@ -928,6 +928,156 @@ local VengeanceOverrideText = function(bar, value)
 	else
 		text:SetText("")
 	end
+end
+
+local Reposition = function(V2Tex)
+	local to = V2Tex.to
+	local from = V2Tex.from
+	
+	local toL, toR = to:GetLeft(), to:GetRight()
+	local toT, toB = to:GetTop(), to:GetBottom()
+	local toCX, toCY = to:GetCenter()
+	local toS = to:GetEffectiveScale()
+	
+	local fromL, fromR = from:GetLeft(), from:GetRight()
+	local fromT, fromB = from:GetTop(), from:GetBottom()
+	local fromCX, fromCY = from:GetCenter()
+	local fromS = from:GetEffectiveScale()
+	
+	if not (toL and toR and toT and toB and toCX and toCY and toS and fromL and fromR and fromT and fromB and fromCX and fromCY and fromS) then return end
+	
+	toL, toR = toL * toS, toR * toS
+	toT, toB = toT * toS, toB * toS
+	toCX, toCY = toCX * toS, toCY * toS
+	
+	fromL, fromR = fromL * fromS, fromR * fromS
+	fromT, fromB = fromT * fromS, fromB * fromS
+	fromCX, fromCY = fromCX * fromS, fromCY * fromS
+	
+	local magicValue = to:GetWidth() / 6
+	
+	V2Tex:ClearAllPoints()
+	V2Tex.Vertical:ClearAllPoints()
+	V2Tex.Horizontal:ClearAllPoints()
+	V2Tex.Horizontal2:ClearAllPoints()
+	V2Tex.Dot:ClearAllPoints()
+	
+	V2Tex:Show()
+	V2Tex.Vertical:Show()
+	V2Tex.Horizontal:Show()
+	V2Tex.Horizontal2:Show()
+	V2Tex.Dot:Show()
+	
+	if fromL > toR - magicValue then
+		V2Tex.Dot:SetPoint("CENTER", V2Tex.Horizontal2, "RIGHT")
+		
+		V2Tex.Horizontal2:SetPoint("LEFT", from, "RIGHT")
+		V2Tex.Horizontal2:SetWidth(fromL - toR + magicValue)
+		
+		if fromCY < toB then
+			V2Tex.Vertical:SetPoint("TOPLEFT", V2Tex, "TOPLEFT")
+			V2Tex.Vertical:SetPoint("BOTTOMLEFT", V2Tex, "BOTTOMLEFT")
+			
+			V2Tex.Horizontal:SetPoint("BOTTOMLEFT", V2Tex, "BOTTOMLEFT")
+			V2Tex.Horizontal:SetPoint("BOTTOMRIGHT", V2Tex, "BOTTOMRIGHT")
+			
+			V2Tex:SetPoint("TOPLEFT", to, "BOTTOMRIGHT", -magicValue, 0)
+			V2Tex:SetPoint("BOTTOMRIGHT", from, "LEFT", 0, -1)
+		elseif fromCY > toT then
+			V2Tex.Vertical:SetPoint("TOPLEFT", V2Tex, "TOPLEFT")
+			V2Tex.Vertical:SetPoint("BOTTOMLEFT", V2Tex, "BOTTOMLEFT")
+			
+			V2Tex.Horizontal:SetPoint("TOPLEFT", V2Tex, "TOPLEFT")
+			V2Tex.Horizontal:SetPoint("TOPRIGHT", V2Tex, "TOPRIGHT")
+			
+			V2Tex:SetPoint("BOTTOMLEFT", to, "TOPRIGHT", -magicValue, 0)
+			V2Tex:SetPoint("TOPRIGHT", from, "LEFT", 0, 1)
+		elseif fromCY > toCY then
+			V2Tex.Vertical:Hide()
+			
+			V2Tex.Horizontal:SetPoint("TOPLEFT", V2Tex, "TOPLEFT")
+			V2Tex.Horizontal:SetPoint("TOPRIGHT", V2Tex, "TOPRIGHT")
+			
+			V2Tex:SetPoint("TOPLEFT", to, "RIGHT", 0, 1)
+			V2Tex:SetPoint("BOTTOMRIGHT", from, "LEFT", 0, -1)
+		else
+			V2Tex.Vertical:Hide()
+			
+			V2Tex.Horizontal:SetPoint("BOTTOMLEFT", V2Tex, "BOTTOMLEFT")
+			V2Tex.Horizontal:SetPoint("BOTTOMRIGHT", V2Tex, "BOTTOMRIGHT")
+			
+			V2Tex:SetPoint("BOTTOMLEFT", to, "RIGHT", 0, -1)
+			V2Tex:SetPoint("TOPRIGHT", from, "LEFT", 0, 1)
+		end
+	elseif toL > fromR - magicValue then
+		V2Tex.Dot:SetPoint("CENTER", V2Tex.Horizontal2, "LEFT")
+		
+		V2Tex.Horizontal2:SetPoint("RIGHT", from, "LEFT")
+		V2Tex.Horizontal2:SetWidth(toL - fromR + magicValue)
+		
+		if fromCY < toB then
+			V2Tex.Vertical:SetPoint("TOPRIGHT", V2Tex, "TOPRIGHT")
+			V2Tex.Vertical:SetPoint("BOTTOMRIGHT", V2Tex, "BOTTOMRIGHT")
+			
+			V2Tex.Horizontal:SetPoint("BOTTOMLEFT", V2Tex, "BOTTOMLEFT")
+			V2Tex.Horizontal:SetPoint("BOTTOMRIGHT", V2Tex, "BOTTOMRIGHT")
+			
+			V2Tex:SetPoint("TOPRIGHT", to, "BOTTOMLEFT", magicValue, 0)
+			V2Tex:SetPoint("BOTTOMLEFT", from, "RIGHT", 0, -1)
+		elseif fromCY > toT then
+			V2Tex.Vertical:SetPoint("TOPRIGHT", V2Tex, "TOPRIGHT")
+			V2Tex.Vertical:SetPoint("BOTTOMRIGHT", V2Tex, "BOTTOMRIGHT")
+			
+			V2Tex.Horizontal:SetPoint("TOPLEFT", V2Tex, "TOPLEFT")
+			V2Tex.Horizontal:SetPoint("TOPRIGHT", V2Tex, "TOPRIGHT")
+			
+			V2Tex:SetPoint("BOTTOMRIGHT", to, "TOPLEFT", magicValue, 0)
+			V2Tex:SetPoint("TOPLEFT", from, "RIGHT", 0, 1)
+		elseif fromCY > toCY then
+			V2Tex.Vertical:Hide()
+			
+			V2Tex.Horizontal:SetPoint("TOPLEFT", V2Tex, "TOPLEFT")
+			V2Tex.Horizontal:SetPoint("TOPRIGHT", V2Tex, "TOPRIGHT")
+			
+			V2Tex:SetPoint("TOPRIGHT", to, "LEFT", 0, 1)
+			V2Tex:SetPoint("BOTTOMLEFT", from, "RIGHT", 0, -1)
+		else
+			V2Tex.Vertical:Hide()
+			
+			V2Tex.Horizontal:SetPoint("BOTTOMLEFT", V2Tex, "BOTTOMLEFT")
+			V2Tex.Horizontal:SetPoint("BOTTOMRIGHT", V2Tex, "BOTTOMRIGHT")
+			
+			V2Tex:SetPoint("BOTTOMRIGHT", to, "LEFT", 0, -1)
+			V2Tex:SetPoint("TOPLEFT", from, "RIGHT", 0, 1)
+		end
+	else
+		V2Tex.Vertical:SetPoint("TOP", V2Tex, "TOP")
+		V2Tex.Vertical:SetPoint("BOTTOM", V2Tex, "BOTTOM")
+		
+		V2Tex.Horizontal:Hide()
+		V2Tex.Horizontal2:Hide()
+		V2Tex.Dot:Hide()
+		
+		if toCX > fromCX then
+			if toCY > fromCY then
+				V2Tex:SetPoint("TOPRIGHT", to, "BOTTOM")
+				V2Tex:SetPoint("BOTTOMLEFT", from, "TOP")
+			else
+				V2Tex:SetPoint("BOTTOMRIGHT", to, "TOP")
+				V2Tex:SetPoint("TOPLEFT", from, "BOTTOM")
+			end
+		else
+			if toCY > fromCY then
+				V2Tex:SetPoint("TOPLEFT", to, "BOTTOM")
+				V2Tex:SetPoint("BOTTOMRIGHT", from, "TOP")
+			else
+				V2Tex:SetPoint("BOTTOMLEFT", to, "TOP")
+				V2Tex:SetPoint("TOPRIGHT", from, "BOTTOM")
+			end
+		end
+	end
+	
+	if module:IsHooked(from, "Show") then module:Unhook(from, "Show") end
 end
 
 do
@@ -2572,333 +2722,61 @@ LUI.oUF.funcs = {
 		self.HealPrediction.otherBar:SetPoint("BOTTOMLEFT", self.HealPrediction.myBar:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
 	end,
 
-	V2Textures = function(self, unit, oufdb)
-		if unit == "targettarget" and db.oUF.Settings.show_v2_textures then
-			local Panel2 = CreateFrame("Frame", nil, self)
-			Panel2:SetFrameLevel(19)
-			Panel2:SetFrameStrata("BACKGROUND")
-			Panel2:SetHeight(2)
-			Panel2:SetWidth(60)
-			Panel2:SetPoint("LEFT", self.Health, "LEFT", -50, -1)
-			Panel2:SetScale(1)
-			Panel2:SetBackdrop(backdrop2)
-			Panel2:SetBackdropColor(0,0,0,1)
-			Panel2:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel2:Show()
+	V2Textures = function(from, to)
+		if not from.V2Tex then		
+			local V2Tex = CreateFrame("Frame", nil, from)
 
-			local Panel3 = CreateFrame("Frame", nil, Panel2)
-			Panel3:SetFrameLevel(19)
-			Panel3:SetFrameStrata("BACKGROUND")
-			Panel3:SetHeight(50)
-			Panel3:SetWidth(2)
-			Panel3:SetPoint("LEFT", self.Health, "LEFT", -50, 23)
-			Panel3:SetScale(1)
-			Panel3:SetBackdrop(backdrop2)
-			Panel3:SetBackdropColor(0,0,0,1)
-			Panel3:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel3:Show()
+			V2Tex.Horizontal = CreateFrame("Frame", nil, V2Tex)
+			V2Tex.Horizontal:SetFrameLevel(19)
+			V2Tex.Horizontal:SetFrameStrata("BACKGROUND")
+			V2Tex.Horizontal:SetHeight(2)
+			V2Tex.Horizontal:SetBackdrop(backdrop2)
+			V2Tex.Horizontal:SetBackdropColor(0, 0, 0, 1)
+			V2Tex.Horizontal:SetBackdropBorderColor(0.1, 0.1, 0.1, 1)
+			V2Tex.Horizontal:Show()
 
-			local Panel4 = CreateFrame("Frame", nil, Panel2)
-			Panel4:SetFrameLevel(19)
-			Panel4:SetFrameStrata("BACKGROUND")
-			Panel4:SetHeight(2)
-			Panel4:SetWidth(60)
-			Panel4:SetPoint("RIGHT", self.Health, "RIGHT", 50, -1)
-			Panel4:SetScale(1)
-			Panel4:SetBackdrop(backdrop2)
-			Panel4:SetBackdropColor(0,0,0,1)
-			Panel4:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel4:Show()
+			V2Tex.Vertical = CreateFrame("Frame", nil, V2Tex)
+			V2Tex.Vertical:SetFrameLevel(19)
+			V2Tex.Vertical:SetFrameStrata("BACKGROUND")
+			V2Tex.Vertical:SetWidth(2)
+			V2Tex.Vertical:SetBackdrop(backdrop2)
+			V2Tex.Vertical:SetBackdropColor(0, 0, 0, 1)
+			V2Tex.Vertical:SetBackdropBorderColor(0.1, 0.1, 0.1, 1)
+			V2Tex.Vertical:Show()
 
-			local Panel5 = CreateFrame("Frame", nil, Panel2)
-			Panel5:SetFrameLevel(19)
-			Panel5:SetFrameStrata("BACKGROUND")
-			Panel5:SetHeight(6)
-			Panel5:SetWidth(6)
-			Panel5:SetPoint("RIGHT", self.Health, "RIGHT", 52, -1)
-			Panel5:SetScale(1)
-			Panel5:SetBackdrop(backdrop2)
-			Panel5:SetBackdropColor(0,0,0,1)
-			Panel5:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel5:Show()
+			V2Tex.Horizontal2 = CreateFrame("Frame", nil, V2Tex)
+			V2Tex.Horizontal2:SetFrameLevel(19)
+			V2Tex.Horizontal2:SetFrameStrata("BACKGROUND")
+			V2Tex.Horizontal2:SetHeight(2)
+			V2Tex.Horizontal2:SetBackdrop(backdrop2)
+			V2Tex.Horizontal2:SetBackdropColor(0, 0, 0, 1)
+			V2Tex.Horizontal2:SetBackdropBorderColor(0.1, 0.1, 0.1, 1)
+			V2Tex.Horizontal2:Show()
 
-			self.V2Tex = Panel2
-		elseif unit == "targettargettarget" and db.oUF.Settings.show_v2_textures then
-			local Panel2 = CreateFrame("Frame", nil, self)
-			Panel2:SetFrameLevel(19)
-			Panel2:SetFrameStrata("BACKGROUND")
-			Panel2:SetHeight(2)
-			Panel2:SetWidth(60)
-			Panel2:SetPoint("LEFT", self.Health, "LEFT", -50, -1)
-			Panel2:SetScale(1)
-			Panel2:SetBackdrop(backdrop2)
-			Panel2:SetBackdropColor(0,0,0,1)
-			Panel2:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel2:Show()
+			V2Tex.Dot = CreateFrame("Frame", nil, V2Tex)
+			V2Tex.Dot:SetFrameLevel(19)
+			V2Tex.Dot:SetFrameStrata("BACKGROUND")
+			V2Tex.Dot:SetHeight(6)
+			V2Tex.Dot:SetWidth(6)
+			V2Tex.Dot:SetBackdrop(backdrop2)
+			V2Tex.Dot:SetBackdropColor(0, 0, 0, 1)
+			V2Tex.Dot:SetBackdropBorderColor(0.1, 0.1, 0.1, 1)
+			V2Tex.Dot:Show()
+			
+			-- needed for the options
+			from.V2Tex = V2Tex
+			to._V2Tex = V2Tex
 
-			local Panel3 = CreateFrame("Frame", nil, Panel2)
-			Panel3:SetFrameLevel(19)
-			Panel3:SetFrameStrata("BACKGROUND")
-			Panel3:SetHeight(35)
-			Panel3:SetWidth(2)
-			Panel3:SetPoint("LEFT", self.Health, "LEFT", -50, 16)
-			Panel3:SetScale(1)
-			Panel3:SetBackdrop(backdrop2)
-			Panel3:SetBackdropColor(0,0,0,1)
-			Panel3:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel3:Show()
-
-			local Panel4 = CreateFrame("Frame", nil, Panel2)
-			Panel4:SetFrameLevel(19)
-			Panel4:SetFrameStrata("BACKGROUND")
-			Panel4:SetHeight(2)
-			Panel4:SetWidth(60)
-			Panel4:SetPoint("RIGHT", self.Health, "RIGHT", 50, -1)
-			Panel4:SetScale(1)
-			Panel4:SetBackdrop(backdrop2)
-			Panel4:SetBackdropColor(0,0,0,1)
-			Panel4:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel4:Show()
-
-			local Panel5 = CreateFrame("Frame", nil, Panel2)
-			Panel5:SetFrameLevel(19)
-			Panel5:SetFrameStrata("BACKGROUND")
-			Panel5:SetHeight(6)
-			Panel5:SetWidth(6)
-			Panel5:SetPoint("RIGHT", self.Health, "RIGHT", 52, -1)
-			Panel5:SetScale(1)
-			Panel5:SetBackdrop(backdrop2)
-			Panel5:SetBackdropColor(0,0,0,1)
-			Panel5:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel5:Show()
-
-			local Panel6 = CreateFrame("Frame", nil, Panel2)
-			Panel6:SetFrameLevel(19)
-			Panel6:SetFrameStrata("BACKGROUND")
-			Panel6:SetHeight(6)
-			Panel6:SetWidth(6)
-			Panel6:SetPoint("LEFT", self.Health, "LEFT", -52, 34)
-			Panel6:SetScale(1)
-			Panel6:SetBackdrop(backdrop2)
-			Panel6:SetBackdropColor(0,0,0,1)
-			Panel6:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel6:Show()
-
-			self.V2Tex = Panel2
-		elseif unit == "focustarget" and db.oUF.Settings.show_v2_textures then
-			local Panel2 = CreateFrame("Frame", nil, self)
-			Panel2:SetFrameLevel(19)
-			Panel2:SetFrameStrata("BACKGROUND")
-			Panel2:SetHeight(2)
-			Panel2:SetWidth(60)
-			Panel2:SetPoint("LEFT", self.Health, "LEFT", -50, -1)
-			Panel2:SetScale(1)
-			Panel2:SetBackdrop(backdrop2)
-			Panel2:SetBackdropColor(0,0,0,1)
-			Panel2:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel2:Show()
-
-			local Panel3 = CreateFrame("Frame", nil, Panel2)
-			Panel3:SetFrameLevel(19)
-			Panel3:SetFrameStrata("BACKGROUND")
-			Panel3:SetHeight(35)
-			Panel3:SetWidth(2)
-			Panel3:SetPoint("RIGHT", self.Health, "RIGHT", 50, 16)
-			Panel3:SetScale(1)
-			Panel3:SetBackdrop(backdrop2)
-			Panel3:SetBackdropColor(0,0,0,1)
-			Panel3:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel3:Show()
-
-			local Panel4 = CreateFrame("Frame", nil, Panel2)
-			Panel4:SetFrameLevel(19)
-			Panel4:SetFrameStrata("BACKGROUND")
-			Panel4:SetHeight(2)
-			Panel4:SetWidth(60)
-			Panel4:SetPoint("RIGHT", self.Health, "RIGHT", 50, -1)
-			Panel4:SetScale(1)
-			Panel4:SetBackdrop(backdrop2)
-			Panel4:SetBackdropColor(0,0,0,1)
-			Panel4:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel4:Show()
-
-			local Panel5 = CreateFrame("Frame", nil, Panel2)
-			Panel5:SetFrameLevel(19)
-			Panel5:SetFrameStrata("BACKGROUND")
-			Panel5:SetHeight(6)
-			Panel5:SetWidth(6)
-			Panel5:SetPoint("LEFT", self.Health, "LEFT", -52, -1)
-			Panel5:SetScale(1)
-			Panel5:SetBackdrop(backdrop2)
-			Panel5:SetBackdropColor(0,0,0,1)
-			Panel5:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel5:Show()
-
-			local Panel6 = CreateFrame("Frame", nil, Panel2)
-			Panel6:SetFrameLevel(19)
-			Panel6:SetFrameStrata("BACKGROUND")
-			Panel6:SetHeight(6)
-			Panel6:SetWidth(6)
-			Panel6:SetPoint("RIGHT", self.Health, "RIGHT", 52, 34)
-			Panel6:SetScale(1)
-			Panel6:SetBackdrop(backdrop2)
-			Panel6:SetBackdropColor(0,0,0,1)
-			Panel6:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel6:Show()
-
-			self.V2Tex = Panel2
-		elseif unit == "focus" and db.oUF.Settings.show_v2_textures then
-			local Panel2 = CreateFrame("Frame", nil, self)
-			Panel2:SetFrameLevel(19)
-			Panel2:SetFrameStrata("BACKGROUND")
-			Panel2:SetHeight(2)
-			Panel2:SetWidth(60)
-			Panel2:SetPoint("RIGHT", self.Health, "RIGHT", 50, -1)
-			Panel2:SetScale(1)
-			Panel2:SetBackdrop(backdrop2)
-			Panel2:SetBackdropColor(0,0,0,1)
-			Panel2:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel2:Show()
-
-			local Panel3 = CreateFrame("Frame", nil, Panel2)
-			Panel3:SetFrameLevel(19)
-			Panel3:SetFrameStrata("BACKGROUND")
-			Panel3:SetHeight(50)
-			Panel3:SetWidth(2)
-			Panel3:SetPoint("RIGHT", self.Health, "RIGHT", 50, 23)
-			Panel3:SetScale(1)
-			Panel3:SetBackdrop(backdrop2)
-			Panel3:SetBackdropColor(0,0,0,1)
-			Panel3:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel3:Show()
-
-			local Panel4 = CreateFrame("Frame", nil, Panel2)
-			Panel4:SetFrameLevel(19)
-			Panel4:SetFrameStrata("BACKGROUND")
-			Panel4:SetHeight(2)
-			Panel4:SetWidth(50)
-			Panel4:SetPoint("LEFT", self.Health, "LEFT", -50, -1)
-			Panel4:SetScale(1)
-			Panel4:SetBackdrop(backdrop2)
-			Panel4:SetBackdropColor(0,0,0,1)
-			Panel4:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel4:Show()
-
-			local Panel5 = CreateFrame("Frame", nil, Panel2)
-			Panel5:SetFrameLevel(19)
-			Panel5:SetFrameStrata("BACKGROUND")
-			Panel5:SetHeight(6)
-			Panel5:SetWidth(6)
-			Panel5:SetPoint("LEFT", self.Health, "LEFT", -52, -1)
-			Panel5:SetScale(1)
-			Panel5:SetBackdrop(backdrop2)
-			Panel5:SetBackdropColor(0,0,0,1)
-			Panel5:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel5:Show()
-
-			self.V2Tex = Panel2
-		elseif (unit == unit:match("arena%dtarget") and db.oUF.Settings.show_v2_arena_textures) or (unit == unit:match("boss%dtarget") and db.oUF.Settings.show_v2_boss_textures) then
-			local Panel2 = CreateFrame("Frame", nil, self)
-			Panel2:SetFrameLevel(19)
-			Panel2:SetFrameStrata("BACKGROUND")
-			Panel2:SetHeight(2)
-			Panel2:SetWidth(60)
-			Panel2:SetPoint("RIGHT", self.Health, "RIGHT", 40, -1)
-			Panel2:SetScale(1)
-			Panel2:SetBackdrop(backdrop2)
-			Panel2:SetBackdropColor(0,0,0,1)
-			Panel2:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel2:Show()
-
-			local Panel3 = CreateFrame("Frame", nil, Panel2)
-			Panel3:SetFrameLevel(19)
-			Panel3:SetFrameStrata("BACKGROUND")
-			Panel3:SetHeight(50)
-			Panel3:SetWidth(2)
-			Panel3:SetPoint("RIGHT", self.Health, "RIGHT", 40, 23)
-			Panel3:SetScale(1)
-			Panel3:SetBackdrop(backdrop2)
-			Panel3:SetBackdropColor(0,0,0,1)
-			Panel3:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel3:Show()
-
-			local Panel4 = CreateFrame("Frame", nil, Panel2)
-			Panel4:SetFrameLevel(19)
-			Panel4:SetFrameStrata("BACKGROUND")
-			Panel4:SetHeight(2)
-			Panel4:SetWidth(60)
-			Panel4:SetPoint("LEFT", self.Health, "LEFT", -40, -1)
-			Panel4:SetScale(1)
-			Panel4:SetBackdrop(backdrop2)
-			Panel4:SetBackdropColor(0,0,0,1)
-			Panel4:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel4:Show()
-
-			local Panel5 = CreateFrame("Frame", nil, Panel2)
-			Panel5:SetFrameLevel(19)
-			Panel5:SetFrameStrata("BACKGROUND")
-			Panel5:SetHeight(6)
-			Panel5:SetWidth(6)
-			Panel5:SetPoint("LEFT", self.Health, "LEFT", -42, -1)
-			Panel5:SetScale(1)
-			Panel5:SetBackdrop(backdrop2)
-			Panel5:SetBackdropColor(0,0,0,1)
-			Panel5:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel5:Show()
-
-			self.V2Tex = Panel2
-		elseif unit == "partytarget" and db.oUF.Settings.show_v2_party_textures then
-			local Panel2 = CreateFrame("Frame", nil, self)
-			Panel2:SetFrameLevel(19)
-			Panel2:SetFrameStrata("BACKGROUND")
-			Panel2:SetHeight(2)
-			Panel2:SetWidth(60)
-			Panel2:SetPoint("LEFT", self.Health, "LEFT", -40, -1)
-			Panel2:SetScale(1)
-			Panel2:SetBackdrop(backdrop2)
-			Panel2:SetBackdropColor(0,0,0,1)
-			Panel2:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel2:Show()
-
-			local Panel3 = CreateFrame("Frame", nil, Panel2)
-			Panel3:SetFrameLevel(19)
-			Panel3:SetFrameStrata("BACKGROUND")
-			Panel3:SetHeight(50)
-			Panel3:SetWidth(2)
-			Panel3:SetPoint("LEFT", self.Health, "LEFT", -40, 23)
-			Panel3:SetScale(1)
-			Panel3:SetBackdrop(backdrop2)
-			Panel3:SetBackdropColor(0,0,0,1)
-			Panel3:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel3:Show()
-
-			local Panel4 = CreateFrame("Frame", nil, Panel2)
-			Panel4:SetFrameLevel(19)
-			Panel4:SetFrameStrata("BACKGROUND")
-			Panel4:SetHeight(2)
-			Panel4:SetWidth(60)
-			Panel4:SetPoint("RIGHT", self.Health, "RIGHT", 40, -1)
-			Panel4:SetScale(1)
-			Panel4:SetBackdrop(backdrop2)
-			Panel4:SetBackdropColor(0,0,0,1)
-			Panel4:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel4:Show()
-
-			local Panel5 = CreateFrame("Frame", nil, Panel2)
-			Panel5:SetFrameLevel(19)
-			Panel5:SetFrameStrata("BACKGROUND")
-			Panel5:SetHeight(6)
-			Panel5:SetWidth(6)
-			Panel5:SetPoint("RIGHT", self.Health, "RIGHT", 42, -1)
-			Panel5:SetScale(1)
-			Panel5:SetBackdrop(backdrop2)
-			Panel5:SetBackdropColor(0,0,0,1)
-			Panel5:SetBackdropBorderColor(0.1,0.1,0.1,1)
-			Panel5:Show()
-
-			self.V2Tex = Panel2
+			V2Tex.from = from
+			V2Tex.to = to
+			
+			V2Tex.Reposition = Reposition
+			
+			module:SecureHook(from, "Show", function() V2Tex:Reposition() end)
 		end
-	end
+		
+		from.V2Tex:Reposition()
+	end,
 }
 funcs = LUI.oUF.funcs
 
@@ -3523,8 +3401,20 @@ local SetStyle = function(self, unit, isSingle)
 	if oufdb.Border.Aggro then funcs.AggroGlow(self, unit, oufdb) end
 	if oufdb.HealPrediction and oufdb.HealPrediction.Enable then funcs.HealPrediction(self, unit, oufdb) end
 
-	funcs.V2Textures(self, unit, oufdb)
-
+	if unit == "targettarget" and db.oUF.Settings.show_v2_textures then
+		funcs.V2Textures(self, oUF_LUI_target)
+	elseif unit == "targettargettarget" and db.oUF.Settings.show_v2_textures then
+		funcs.V2Textures(self, oUF_LUI_targettarget)
+	elseif unit == "focustarget" and db.oUF.Settings.show_v2_textures then
+		funcs.V2Textures(self, oUF_LUI_focus)
+	elseif unit == "focus" and db.oUF.Settings.show_v2_textures then
+		funcs.V2Textures(self, oUF_LUI_player)
+	elseif (unit == unit:match("arena%dtarget") and db.oUF.Settings.show_v2_arena_textures) or (unit == unit:match("boss%dtarget") and db.oUF.Settings.show_v2_boss_textures) then
+		funcs.V2Textures(self, _G["oUF_LUI_"..unit:match("%a+%d")])
+	elseif unit == "partytarget" and db.oUF.Settings.show_v2_party_textures then
+		funcs.V2Textures(self, self:GetParent())
+	end
+	
 	self.Highlight = self.Health:CreateTexture(nil, "OVERLAY")
 	self.Highlight:SetAllPoints(self)
 	self.Highlight:SetTexture(highlightTex)
@@ -3537,8 +3427,8 @@ local SetStyle = function(self, unit, isSingle)
 		--self:RegisterEvent("ARENA_OPPONENT_UPDATE", ArenaEnemyUnseen)
 	--end
 
-	--self:RegisterEvent("PLAYER_FLAGS_CHANGED", function(self) self.Health:ForceUpdate() end)
-	--if unit == "player" then self:RegisterEvent("PLAYER_ENTERING_WORLD", function(self) self.Health:ForceUpdate() end) end
+	self:RegisterEvent("PLAYER_FLAGS_CHANGED", function(self) self.Health:ForceUpdate() end)
+	if unit == "player" then self:RegisterEvent("PLAYER_ENTERING_WORLD", function(self) self.Health:ForceUpdate() end) end
 
 	if unit == "pet" then
 		self.elapsed = 0
