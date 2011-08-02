@@ -715,7 +715,6 @@ toggleFuncs = {
 				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerAttributeTemplate")
 				handler:SetFrameRef("party", party)
 				handler:SetAttribute("_onattributechanged", [[
-					print(self:GetFrameRef("party"):IsProtected())
 					if name == "vis" then
 						if value then
 							self:GetFrameRef("party"):Show()
