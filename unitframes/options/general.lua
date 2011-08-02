@@ -566,6 +566,8 @@ function module:CreateOptions(index, unit)
 				local _, Anchor = _G[ufMover[unit]]:GetPoint(1)
 				_G[ufMover[unit]]:ClearAllPoints()
 				_G[ufMover[unit]]:SetPoint(oufdb.Point or "CENTER", Anchor, oufdb.Point or "CENTER", tonumber(oufdb.X) / scale, tonumber(oufdb.Y) / scale)
+				if _G[ufMover[unit]].V2Tex then _G[ufMover[unit]].V2Tex:Reposition() end
+				if _G[ufMover[unit]]._V2Tex then _G[ufMover[unit]]._V2Tex:Reposition() end
 			end
 		end
 	else
@@ -576,6 +578,8 @@ function module:CreateOptions(index, unit)
 					local _, Anchor = _G[frame]:GetPoint(1)
 					_G[frame]:ClearAllPoints()
 					_G[frame]:SetPoint(oufdb.Point, Anchor, oufdb.RelativePoint, tonumber(oufdb.X), tonumber(oufdb.Y))
+					if _G[frame].V2Tex then _G[frame].V2Tex:Reposition() end
+					if _G[frame]._V2Tex then _G[frame]._V2Tex:Reposition() end
 				end
 			end
 		end
@@ -594,9 +598,13 @@ function module:CreateOptions(index, unit)
 					if oufdb.Aura.buffs_enable then _G[frame].Buffs:SetWidth(tonumber(oufdb.Width)) end
 					if oufdb.Aura.debuffs_enable then _G[frame].Debuffs:SetWidth(tonumber(oufdb.Width)) end
 				end
+				if _G[frame].V2Tex then _G[frame].V2Tex:Reposition() end
+				if _G[frame]._V2Tex then _G[frame]._V2Tex:Reposition() end
 			end
 		end
+		
 		if Forte and unit == "Player" or unit == "Target" or unit == "Focus" then Forte:SetPosForte() end
+		
 		if unit == "Party" then
 			oUF_LUI_party:SetAttribute("oUF-initialConfigFunction", [[
 				local unit = ...

@@ -9,7 +9,7 @@ local _, ns = ...
 local oUF = ns.oUF or oUF
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF_Boss", "AceHook-3.0")
+local module = LUI:NewModule("oUF_Boss", "AceEvent-3.0")
 
 local db
 
