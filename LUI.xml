@@ -65,6 +65,9 @@
 	<Script file="modules\micromenu.lua"/>
 	<Include file="modules\raidmenu.xml"/>
 	<Script file="modules\fader.lua"/>
+	<Script file="modules\vengeance.lua"/>
+	<Script file="modules\swing.lua"/>
+	<Script file="modules\threatbar.lua"/>
  	<Script file="modules\interruptannouncer.lua"/>
 	<Script file="modules\merchant.lua"/>
 
@@ -85,13 +88,10 @@
 	<Script file="unitframes\plugins\oUF_Experience.lua"/>
 	<Script file="unitframes\plugins\oUF_Reputation.lua"/>
 	<Script file="unitframes\plugins\oUF_Smooth.lua"/>
-	<Script file="unitframes\plugins\oUF_Swing.lua"/>
-	<Script file="unitframes\plugins\oUF_Vengeance.lua"/>
 	<Script file="unitframes\plugins\totem.lua"/>
 	<Script file="unitframes\plugins\singleauras.lua"/>
 	<Script file="unitframes\plugins\oUF_RaidDebuffs.lua"/>
 	<Script file="unitframes\plugins\raiddebuffs.lua"/>
-	<Script file="unitframes\plugins\threatbar.lua"/>
 	
     <Script file="unitframes\layout.lua"/>
 	
