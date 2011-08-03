@@ -285,7 +285,7 @@ function Fader:RemoveHoverScript(frame)
 	-- Unhook scripts
 	self:Unhook(frame, "OnEnter")
 	self:Unhook(frame, "OnLeave")
-	
+
 	if self.RegisteredFrames[frame].SpecialHover then
 		for index, child in pairs({frame:GetChildren()}) do
 			self:Unhook(child, "OnEnter")
@@ -732,59 +732,51 @@ function Fader:LoadOptions()
 	local gsD = dbd.GlobalSettings
 	
 	local options = {
-		Fader = {
-			name = "Fader",
+		Header = LUI:NewHeader("Fader", 1),
+		Settings = {
+			name = "Settings",
 			type = "group",
-			childGroups = "tab",
-			disabled = function() return not db.Enable end,
+			order = 2,
 			args = {
-				Header = LUI:NewHeader("Fader", 1),
-				Settings = {
-					name = "Settings",
-					type = "group",
-					order = 2,
-					args = {
-						ForceGlobalSettings = LUI:NewToggle("Force Global Settings", nil, 1, db, "ForceGlobalSettings", dbd,
-							function()
-								if not Fader.RegisteredFrames then return end
-								if db.ForceGlobalSettings then
-									-- Re-apply settings to frames.
-									for frame in pairs(Fader.RegisteredFrames) do
-										Fader:RegisterFrame(frame)
-									end
-								else
-									-- Need to reload to gather frames personal settings.
-									StaticPopup_Show("RELOAD_UI")																		
-								end
-							end),
-						Line = LUI:NewHeader("", 2),
-					},					
-				},
-				GlobalSettings = {
-					name = "Global Settings",
-					type = "group",
-					order = 3,
-					args = {
-						FadeInHeader = LUI:NewHeader("Fade In", 1),
-						Casting = LUI:NewToggle("While Casting", nil, 2, gs, "Casting", gsD, ApplySettings, "normal"),
-						InCombat = LUI:NewToggle("While In Combat", nil, 3, gs, "Combat", gsD, ApplySettings, "normal"),
-						Health = LUI:NewToggle("While Health Is Low", nil, 4, gs, "Health", gsD, ApplySettings, "normal"),
-						Power = LUI:NewToggle("While Power Is Low", nil, 5, gs, "Power", gsD, ApplySettings, "normal"),
-						Targeting = LUI:NewToggle("While Targeting", nil, 6, gs, "Targeting", gsD, ApplySettings, "full"),
+				ForceGlobalSettings = LUI:NewToggle("Force Global Settings", nil, 1, db, "ForceGlobalSettings", dbd,
+					function()
+						if not Fader.RegisteredFrames then return end
+						if db.ForceGlobalSettings then
+							-- Re-apply settings to frames.
+							for frame in pairs(Fader.RegisteredFrames) do
+								Fader:RegisterFrame(frame)
+							end
+						else
+							-- Need to reload to gather frames personal settings.
+							StaticPopup_Show("RELOAD_UI")																		
+						end
+					end),
+				Line = LUI:NewHeader("", 2),
+			},					
+		},
+		GlobalSettings = {
+			name = "Global Settings",
+			type = "group",
+			order = 3,
+			args = {
+				FadeInHeader = LUI:NewHeader("Fade In", 1),
+				Casting = LUI:NewToggle("While Casting", nil, 2, gs, "Casting", gsD, ApplySettings, "normal"),
+				InCombat = LUI:NewToggle("While In Combat", nil, 3, gs, "Combat", gsD, ApplySettings, "normal"),
+				Health = LUI:NewToggle("While Health Is Low", nil, 4, gs, "Health", gsD, ApplySettings, "normal"),
+				Power = LUI:NewToggle("While Power Is Low", nil, 5, gs, "Power", gsD, ApplySettings, "normal"),
+				Targeting = LUI:NewToggle("While Targeting", nil, 6, gs, "Targeting", gsD, ApplySettings, "full"),
 						
-						Settings = LUI:NewHeader("Settings", 7),
-						InAlpha = LUI:NewSlider("In Alpha", "Set the alpha of the frame while not faded.", 8, gs, "InAlpha", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
-						OutAlpha = LUI:NewSlider("Out Alpha", "Set the alpha of the frame while faded.", 9, gs, "OutAlpha", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
-						OutTime = LUI:NewSlider("Fade Time", "Set the time it takes to fade out.", 10, gs, "OutTime", gsD, 0, 5, 0.05, ApplySettings, "normal"),
-						OutDelay = LUI:NewSlider("Fade Delay", "Set the delay time before the frame fades out.", 11, gs, "OutDelay", gsD, 0, 5, 0.05, ApplySettings, "normal"),
-						HealthClip = LUI:NewSlider("Health Trigger", "Set the percent at which health is considered low.", 12, gs, "HealthClip", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
-						PowerClip = LUI:NewSlider("Power Trigger", "Set the percent at which power is considered low.", 13, gs, "PowerClip", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
+				Settings = LUI:NewHeader("Settings", 7),
+				InAlpha = LUI:NewSlider("In Alpha", "Set the alpha of the frame while not faded.", 8, gs, "InAlpha", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
+				OutAlpha = LUI:NewSlider("Out Alpha", "Set the alpha of the frame while faded.", 9, gs, "OutAlpha", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
+				OutTime = LUI:NewSlider("Fade Time", "Set the time it takes to fade out.", 10, gs, "OutTime", gsD, 0, 5, 0.05, ApplySettings, "normal"),
+				OutDelay = LUI:NewSlider("Fade Delay", "Set the delay time before the frame fades out.", 11, gs, "OutDelay", gsD, 0, 5, 0.05, ApplySettings, "normal"),
+				HealthClip = LUI:NewSlider("Health Trigger", "Set the percent at which health is considered low.", 12, gs, "HealthClip", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
+				PowerClip = LUI:NewSlider("Power Trigger", "Set the percent at which power is considered low.", 13, gs, "PowerClip", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
 						
-						Hover = LUI:NewHeader("Mouse Hover", 14),
-						HoverEnable = LUI:NewToggle("Fade On Mouse Hover", nil, 15, gs, "Hover", gsD, ApplySettings, "normal"),
-						HoverAlpha = LUI:NewSlider("Hover Alpha", "Set the alpha of the frame while the mouse is hovering over it.", 16, gs, "HoverAlpha", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),																								
-					},
-				},
+				Hover = LUI:NewHeader("Mouse Hover", 14),
+				HoverEnable = LUI:NewToggle("Fade On Mouse Hover", nil, 15, gs, "Hover", gsD, ApplySettings, "normal"),
+				HoverAlpha = LUI:NewSlider("Hover Alpha", "Set the alpha of the frame while the mouse is hovering over it.", 16, gs, "HoverAlpha", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),																								
 			},
 		},
 	}
