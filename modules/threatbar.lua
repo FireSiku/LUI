@@ -62,7 +62,7 @@ local Update = function(bar)
 	end
 				
 	if db.profile.Text.Enable then
-		bar.Text:SetFormattedText("%s%%", rawthreat)
+		bar.Text:SetFormattedText("%d%%", rawthreat)
 	else
 		bar.Text:SetText("")
 	end
