@@ -166,65 +166,57 @@ InterruptAnnouncer.defaults = {
 -- Load options: Creates the options menu for LUI.
 function InterruptAnnouncer:LoadOptions()
 	local options = {
-		InterruptAnnouncer = {
-			name = "Interrupt Announcer",
+		Title = LUI:NewHeader("Interrupt Announcer", 1),
+		General = {
+			name = "General",
 			type = "group",
-			childGroups = "tab",
-			disabled = function() return not db.Enable end,
+			order = 2,
 			args = {
-				Title = LUI:NewHeader("Interrupt Announcer", 1),
-				General = {
-					name = "General",
+				Info = {
+					name = "Info",
+					type = "group",
+					order = 1,
+					guiInline = true,
+					args = {
+						A = LUI:NewDesc("This module will announce to your group when you interrupt a spell while in a party or raid.", 1),
+						B = LUI:NewDesc("The interrupt announcer is disabled while in battlegrounds and WorldPVP (while in battle).", 2),
+						C = LUI:NewDesc("A standalone version of this addon is available on curse if prefered:\nhttp://wow.curse.com/downloads/wow-addons/details/hix_interruptannouncer.aspx", 3),
+					},
+				},
+				Settings = {
+					name = "Settings",
 					type = "group",
 					order = 2,
+					guiInline = true,
 					args = {
-						Info = {
-							name = "Info",
-							type = "group",
-							order = 1,
-							guiInline = true,
-							args = {
-								A = LUI:NewDesc("This module will announce to your group when you interrupt a spell while in a party or raid.", 1),
-								B = LUI:NewDesc("The interrupt announcer is disabled while in battlegrounds and WorldPVP (while in battle).", 2),
-								C = LUI:NewDesc("A standalone version of this addon is available on curse if prefered:\nhttp://wow.curse.com/downloads/wow-addons/details/hix_interruptannouncer.aspx", 3),
-							},
-						},
-						Settings = {
-							name = "Settings",
-							type = "group",
-							order = 2,
-							guiInline = true,
-							args = {
-								EnableParty = LUI:NewToggle("Enable In Party", nil, 1, db, "EnableParty", dbd),
-								EnableRaid = LUI:NewToggle("Enable In Raid", nil, 2, db, "EnableRaid", dbd),
-								EnablePet = LUI:NewToggle("Announce Pet Interrupts", nil, 3, db, "EnablePet", dbd),
-								EnableFormat = LUI:NewToggle("Enable Custom Format", nil, 4, db, "EnableFormat", dbd),
-								AnnouceParty = LUI:NewSelect("Announce Channel For Party", "Which channel to announce interrupts to while in a party", 5, partyChatChannels, nil, db, "AnnounceParty", dbd),
-								AnnouceRaid = LUI:NewSelect("Announce Channel For Raid", "Which channel to announce interrupts to while in a raid", 6, raidChatChannels, nil, db, "AnnounceRaid", dbd),
-							},
-						},
+						EnableParty = LUI:NewToggle("Enable In Party", nil, 1, db, "EnableParty", dbd),
+						EnableRaid = LUI:NewToggle("Enable In Raid", nil, 2, db, "EnableRaid", dbd),
+						EnablePet = LUI:NewToggle("Announce Pet Interrupts", nil, 3, db, "EnablePet", dbd),
+						EnableFormat = LUI:NewToggle("Enable Custom Format", nil, 4, db, "EnableFormat", dbd),
+						AnnouceParty = LUI:NewSelect("Announce Channel For Party", "Which channel to announce interrupts to while in a party", 5, partyChatChannels, nil, db, "AnnounceParty", dbd),
+						AnnouceRaid = LUI:NewSelect("Announce Channel For Raid", "Which channel to announce interrupts to while in a raid", 6, raidChatChannels, nil, db, "AnnounceRaid", dbd),
 					},
 				},
-				Format = {
-					name = "Announce Format",
+			},
+		},
+		Format = {
+			name = "Announce Format",
+			type = "group",
+			order = 3,
+			disabled = function() return (not db.Enable) or (not db.EnableFormat) end,
+			args = {
+				Info = {
+					name = "Info",
 					type = "group",
-					order = 3,
-					disabled = function() return (not db.Enable) or (not db.EnableFormat) end,
+					order = 1,
+					guiInline = true,
 					args = {
-						Info = {
-							name = "Info",
-							type = "group",
-							order = 1,
-							guiInline = true,
-							args = {
-								A = LUI:NewDesc("You can customise the interrupt announcers output format.", 1),
-								B = LUI:NewDesc("Enter into the box below the format you wish to use. There are select keywords that will be replaced by realtime data before outputing:", 2),
-								C = LUI:NewDesc("!player = interruptors name\n!target = targets name\n!interruptSpell = the interrupts spell name\n!interruptLink = the interrupts spell link\n!spellName = the spell name interrupted\n!spellLink = the spell link of the spell interrupted.", 3),
-							},
-						},
-						Format = LUI:NewInput("Announce Format", "Create a string that becomes the interrupt announcers output format. Use keywords to be replaced by realtime data.", 2, db, "Format", dbd, nil, "double"),
+						A = LUI:NewDesc("You can customise the interrupt announcers output format.", 1),
+						B = LUI:NewDesc("Enter into the box below the format you wish to use. There are select keywords that will be replaced by realtime data before outputing:", 2),
+						C = LUI:NewDesc("!player = interruptors name\n!target = targets name\n!interruptSpell = the interrupts spell name\n!interruptLink = the interrupts spell link\n!spellName = the spell name interrupted\n!spellLink = the spell link of the spell interrupted.", 3),
 					},
 				},
+				Format = LUI:NewInput("Announce Format", "Create a string that becomes the interrupt announcers output format. Use keywords to be replaced by realtime data.", 2, db, "Format", dbd, nil, "double"),
 			},
 		},
 	}
@@ -234,6 +226,8 @@ end
 
 -- Initialize module: Called when the addon should intialize its self; this is where we load in database values.
 function InterruptAnnouncer:OnInitialize()
+	-- Prep for upcoming update.
+	-- db, dbd = LUI:NewNamespace(self, true)
 	LUI:NewNamespace(self, true)
 	db = self.db.profile
 	dbd = self.defaults.profile
