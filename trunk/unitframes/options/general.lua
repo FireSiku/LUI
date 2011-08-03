@@ -838,9 +838,9 @@ function module:CreateOptions(index, unit)
 						type = "group",
 						disabled = function()
 								if unit == "Player" or unit == "Target" then
-									return not db.Fader.Enable
+									return not (LUI:GetModule("Fader", true) and LUI:GetModule("Fader", true).db.profile.Enable)
 								else
-									return not oufdb.Enable or not db.Fader.Enable
+									return not oufdb.Enable or not (LUI:GetModule("Fader", true) and LUI:GetModule("Fader", true).db.profile.Enable)
 								end
 							end,
 						order = 8,
