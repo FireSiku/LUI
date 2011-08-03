@@ -104,9 +104,9 @@ do
 				self:SetValue(now)
 				if db.profile.Text.Enable then
 					if db.profile.Text.Format == "Absolut" then
-						self.Text:SetFormattedText("%s/%s", string.format("%.1f", self.max - now), string.format("%.1f", self.max - self.min))
+						self.Text:SetFormattedText("%.1f/%.1f", self.max - now, self.max - self.min)
 					else
-						self.Text:SetFormattedText("%s", string.format("%.1f", self.max - now))
+						self.Text:SetFormattedText("%.1f", self.max - now)
 					end
 				else
 					self.Text:SetText("")

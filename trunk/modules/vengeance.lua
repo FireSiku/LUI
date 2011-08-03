@@ -64,9 +64,9 @@ local ValueChanged = function(bar, event, unit)
 			
 	if db.profile.Text.Enable then
 		if db.profile.Text.Format == "Absolut" then
-			bar.Text:SetFormattedText("%s/%s", bar.value, bar.max)
+			bar.Text:SetFormattedText("%d/%d", bar.value, mbar.max)
 		else
-			bar.Text:SetFormattedText("%s", bar.value)
+			bar.Text:SetFormattedText("%d", bar.value)
 		end
 	else
 		bar.Text:SetText("")
@@ -86,7 +86,7 @@ local MaxChanged = function(bar, event, unit)
 	
 	if not health or not stamina then return end
 	
-	bar.max = 0.1 * (health - 15 * stamina) + stamina
+	bar.max = math.floor(0.1 * (health - 15 * stamina) + stamina)
 	bar:SetMinMaxValues(0, bar.max)
 	
 	ValueChanged(bar, event, unit)
