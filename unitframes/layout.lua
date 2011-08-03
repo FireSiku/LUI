@@ -234,7 +234,7 @@ local OverrideHealth = function(self, event, unit, powerType)
 	else
 		health.bg:SetVertexColor(r_*mu, g_*mu, b_*mu)
 	end
-
+	
 	if not UnitIsConnected(unit) then
 		health:SetValue(0)
 		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Offline>|r" or "")
@@ -251,26 +251,26 @@ local OverrideHealth = function(self, event, unit, powerType)
 		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Dead>|r" or "")
 		health.valueMissing:SetText()
 	else
-		local healthPercent = string.format("%.1f", 100 * min / max).."%"
+		local healthPercent = 100 * (min / max)
 
 		if health.value.Enable == true then
 			if min >= 1 then
 				if health.value.ShowAlways == false and min == max then
 					health.value:SetText()
 				elseif health.value.Format == "Absolut" then
-					health.value:SetFormattedText("%s/%s", min, max)
+					health.value:SetFormattedText("%d/%d", min, max)
 				elseif health.value.Format == "Absolut & Percent" then
-					health.value:SetFormattedText("%s/%s | %s", min, max, healthPercent)
+					health.value:SetFormattedText("%d/%d | %.1f%%", min, max, healthPercent)
 				elseif health.value.Format == "Absolut Short" then
-					health.value:SetFormattedText("%s/%s", ShortValue(min), ShortValue(max))
+					health.value:SetFormattedText("%d/%d", ShortValue(min), ShortValue(max))
 				elseif health.value.Format == "Absolut Short & Percent" then
-					health.value:SetFormattedText("%s/%s | %s", ShortValue(min),ShortValue(max), healthPercent)
+					health.value:SetFormattedText("%d/%d | %.1f%%", ShortValue(min),ShortValue(max), healthPercent)
 				elseif health.value.Format == "Standard" then
-					health.value:SetFormattedText("%s", min)
+					health.value:SetText(min)
 				elseif health.value.Format == "Standard Short" then
-					health.value:SetFormattedText("%s", ShortValue(min))
+					health.value:SetText(ShortValue(min))
 				else
-					health.value:SetFormattedText("%s", min)
+					health.value:SetText(min)
 				end
 
 				if health.value.color == "By Class" then
@@ -289,7 +289,7 @@ local OverrideHealth = function(self, event, unit, powerType)
 
 		if health.valuePercent.Enable == true then
 			if min ~= max or health.valuePercent.ShowAlways == true then
-				health.valuePercent:SetText(healthPercent)
+				health.valuePercent:SetFormattedText("%.1f%%", healthPercent)
 			else
 				health.valuePercent:SetText()
 			end
@@ -310,9 +310,9 @@ local OverrideHealth = function(self, event, unit, powerType)
 
 			if healthMissing > 0 or health.valueMissing.ShowAlways == true then
 				if health.valueMissing.ShortValue == true then
-					health.valueMissing:SetText("-"..ShortValue(healthMissing))
+					health.valueMissing:SetFormattedText("-%d", ShortValue(healthMissing))
 				else
-					health.valueMissing:SetText("-"..healthMissing)
+					health.valueMissing:SetFormattedText("-%d", healthMissing)
 				end
 			else
 				health.valueMissing:SetText()
@@ -334,7 +334,7 @@ local OverrideHealth = function(self, event, unit, powerType)
 		if health.value.ShowDead == true then
 			if health.value:GetText() then
 				if not strfind(health.value:GetText(), "AFK") then
-					health.value:SetText("|cffffffff<AFK>|r "..health.value:GetText())
+					health.value:SetFormattedText("|cffffffff<AFK>|r %s", health.value:GetText())
 				end
 			else
 				health.value:SetText("|cffffffff<AFK>|r")
@@ -344,10 +344,10 @@ local OverrideHealth = function(self, event, unit, powerType)
 		if health.valuePercent.ShowDead == true then
 			if health.valuePercent:GetText() then
 				if not strfind(health.valuePercent:GetText(), "AFK") then
-					health.valuePercent:SetText("|cffffffff<AFK>|r "..health.valuePercent:GetText())
+					health.valuePercent:SetText("|cffffffff<AFK>|r %s", health.valuePercent:GetText())
 				end
 			else
-				health.valuePercent:SetText("|cffffffff<AFK>|r")
+				health.valuePercent:SetText()
 			end
 		end
 	end
@@ -422,25 +422,25 @@ local OverridePower = function(self, event, unit)
 		power.valuePercent:SetText()
 		power.value:SetText()
 	else
-		local powerPercent = string.format("%.1f", 100 * min / max).."%"
+		local powerPercent = 100 * (min / max)
 
 		if power.value.Enable == true then
 			if (power.value.ShowFull == false and min == max) or (power.value.ShowEmpty == false and min == 0) then
 				power.value:SetText()
 			elseif power.value.Format == "Absolut" then
-				power.value:SetFormattedText("%s/%s", min, max)
+				power.value:SetFormattedText("%d/%d", min, max)
 			elseif power.value.Format == "Absolut & Percent" then
-				power.value:SetFormattedText("%s/%s | %s", min, max, powerPercent)
+				power.value:SetFormattedText("%d/%d | %.1f%%", min, max, powerPercent)
 			elseif power.value.Format == "Absolut Short" then
-				power.value:SetFormattedText("%s/%s", ShortValue(min), ShortValue(max))
+				power.value:SetFormattedText("%d/%d", ShortValue(min), ShortValue(max))
 			elseif power.value.Format == "Absolut Short & Percent" then
-				power.value:SetFormattedText("%s/%s | %s", ShortValue(min), ShortValue(max), powerPercent)
+				power.value:SetFormattedText("%d/%d | %.1f%%", ShortValue(min), ShortValue(max), powerPercent)
 			elseif power.value.Format == "Standard" then
-				power.value:SetFormattedText("%s", min)
+				power.value:SetText(min)
 			elseif power.value.Format == "Standard Short" then
-				power.value:SetFormattedText("%s", ShortValue(min))
+				power.value:SetText(ShortValue(min))
 			else
-				power.value:SetFormattedText("%s", min)
+				power.value:SetText(min)
 			end
 
 			if power.value.color == "By Class" then
@@ -458,7 +458,7 @@ local OverridePower = function(self, event, unit)
 			if (power.valuePercent.ShowFull == false and min == max) or (power.valuePercent.ShowEmpty == false and min == 0) then
 				power.valuePercent:SetText()
 			else
-				power.valuePercent:SetText(powerPercent)
+				power.valuePercent:SetFormattedText("%.1f%%", powerPercent)
 			end
 
 			if power.valuePercent.color == "By Class" then
@@ -478,9 +478,9 @@ local OverridePower = function(self, event, unit)
 			if (power.valueMissing.ShowFull == false and min == max) or (power.valueMissing.ShowEmpty == false and min == 0) then
 				power.valueMissing:SetText()
 			elseif power.valueMissing.ShortValue == true then
-				power.valueMissing:SetText("-"..ShortValue(powerMissing))
+				power.valueMissing:SetText(-ShortValue(powerMissing))
 			else
-				power.valueMissing:SetText("-"..powerMissing)
+				power.valueMissing:SetText(-powerMissing)
 			end
 
 			if power.valueMissing.color == "By Class" then
@@ -790,16 +790,14 @@ local PostUpdateAltPower = function(altpowerbar, min, cur, max)
 
 	if altpowerbar.Text then
 		if altpowerbar.Text.Enable then
-			local perc = string.format("%.1f", 100 * cur / max).."%"
-
 			if altpowerbar.Text.ShowAlways == false and (cur == max or cur == min) then
 				altpowerbar.Text:SetText()
 			elseif altpowerbar.Text.Format == "Absolut" then
-				altpowerbar.Text:SetFormattedText("%s/%s", cur, max)
+				altpowerbar.Text:SetFormattedText("%d/%d", cur, max)
 			elseif altpowerbar.Text.Format == "Percent" then
-				altpowerbar.Text:SetFormattedText("%s", perc)
+				altpowerbar.Text:SetFormattedText("%.1f%%", 100 * (cur / max))
 			elseif altpowerbar.Text.Format == "Standard" then
-				altpowerbar.Text:SetFormattedText("%s", cur)
+				altpowerbar.Text:SetText(cur)
 			end
 
 			if altpowerbar.Text.color == "By Class" then
@@ -1406,8 +1404,7 @@ LUI.oUF.funcs = {
 							self.PvP.Timer:Show()
 							local min = math.floor(GetPVPTimer()/1000/60)
 							local sec = (math.floor(GetPVPTimer()/1000))-(min*60)
-							if sec < 10 then sec = "0"..sec end
-							self.PvP.Timer:SetText(min..":"..sec)
+							self.PvP.Timer:SetFormmatedText("%d:%.2d", min, sec)
 						end
 					elseif self.PvP.Timer:IsShown() then
 						self.PvP.Timer:Hide()
@@ -1509,7 +1506,7 @@ LUI.oUF.funcs = {
 			for i=1, #events do self.XP:RegisterEvent(events[i]) end
 			self.XP:SetScript("OnEvent", function(_, event)
 				local value, max = UnitXP("player"), UnitXPMax("player")
-				self.Experience.Value:SetText(value.." / "..max.."  ("..math.floor(value / max * 100 + 0.5).."%)")
+				self.Experience.Value:SetFormattedText("%d / %d (%d%%)", value, max, math.floor((value / max) * 100 + 0.5))
 				if event == "PLAYER_ENTERING_WORLD" then self.XP:UnregisterEvent("PLAYER_ENTERING_WORLD") end
 			end)
 
@@ -1591,7 +1588,7 @@ LUI.oUF.funcs = {
 			self.Rep:SetScript("OnEvent", function(_, event)
 				if GetWatchedFactionInfo() then
 					local _, _, min, max, value = GetWatchedFactionInfo()
-					self.Reputation.Value:SetText(value - min.." / "..max - min.."  ("..math.floor(((value - min) / (max - min)) * 100 + 0.5).."%)")
+					self.Reputation.Value:SetFormattedText("%d / %d (%d%%)", value - min, max - min, math.floor(((value - min) / (max - min)) * 100 + 0.5))
 				else
 					self.Reputation.Value:SetText("")
 				end
@@ -2847,9 +2844,7 @@ if (not oUF.Tags["druidmana2"]) then
 		if not db then return "" end
 
 		local min, max = UnitPower("player", SPELL_POWER_MANA), UnitPowerMax("player", SPELL_POWER_MANA)
-		local perc = min/max*100
-		perc = format("%.1f", perc)
-		perc = perc.."%"
+		local perc = (min / max) * 100
 		if db.oUF.Player.Texts.DruidMana.HideIfFullMana and min == max then return "" end
 
 		local _, pType = UnitPowerType(unit)
@@ -2868,13 +2863,13 @@ if (not oUF.Tags["druidmana2"]) then
 		end
 
 		if db.oUF.Player.Texts.DruidMana.Format == "Absolut" then
-			text = format("%s/%s", min, max)
+			text = format("%d/%d", min, max)
 		elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut & Percent" then
-			text = format("%s/%s | %s", min, max, perc)
+			text = format("%d/%d | %.1f", min, max, perc)
 		elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut Short" then
-			text = format("%s/%s", ShortValue(min), ShortValue(max))
+			text = format("%d/%d", ShortValue(min), ShortValue(max))
 		elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut Short & Percent" then
-			text = format("%s/%s | %s", ShortValue(min), ShortValue(max), perc)
+			text = format("%d/%d | %.1f", ShortValue(min), ShortValue(max), perc)
 		elseif db.oUF.Player.Texts.DruidMana.Format == "Standard Short" then
 			text = ShortValue(min)
 		else
