@@ -61,12 +61,12 @@ local ValueChanged = function(bar, event, unit)
 		bar:Hide()
 		bar.value = 0
 	end
-				
+			
 	if db.profile.Text.Enable then
 		if db.profile.Text.Format == "Absolut" then
-			bar.Text:SetFormattedText("%s/%s", value, bar.max)
+			bar.Text:SetFormattedText("%s/%s", bar.value, bar.max)
 		else
-			bar.Text:SetFormattedText("%s", value)
+			bar.Text:SetFormattedText("%s", bar.value)
 		end
 	else
 		bar.Text:SetText("")
