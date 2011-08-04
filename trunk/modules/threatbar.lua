@@ -64,7 +64,7 @@ local Update = function(bar)
 	if db.profile.Text.Enable then
 		bar.Text:SetFormattedText("%d%%", rawthreat)
 	else
-		bar.Text:SetText("")
+		bar.Text:SetText()
 	end
 	
 	if db.profile.Text.Color == "Gradient" then

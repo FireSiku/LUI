@@ -227,7 +227,7 @@ function module:SetBags()
 			end
 			
 			used = total - free
-			self.text:SetText("Bags: "..used.."/"..total)
+			self.text:SetFormattedText("Bags: %d/%d", used, total)
 			
 			-- Update tooltip if open.
 			UpdateTooltip(self)
@@ -360,7 +360,6 @@ function module:SetClock()
 						Hr, Min = tonumber(date("%H")), date("%M")
 					else
 						Hr, Min = GetGameTime()
-						Min = Min < 10 and "0"..Min or Min
 					end
 					PM = ((Hr >= 12) and " pm" or " am")
 					
@@ -373,7 +372,7 @@ function module:SetClock()
 					end
 					
 					-- time
-					local text = (Hr..":"..Min..(db.profile.Clock.Time24 and "" or PM))
+					local text = format("%d:%.2d%s", Hr, Min, (db.profile.Clock.Time24 and "" or PM))
 					-- instance info
 					local text2 = ((db.profile.Clock.ShowInstanceDifficulty and instanceInfo) and (" ("..instanceInfo..guildParty.."|r)") or "")
 					
@@ -1011,7 +1010,7 @@ function module:SetDurability()
 			sort(slots, function(a, b) return a[3] < b[3] end)
 			
 			if total > 0 then
-				self.text:SetText("Armor: "..floor(slots[1][3] * 100) .. "%")
+				self.text:SetFormattedText("Armor: %d%%", slots[1][3] * 100)
 			else
 				self.text:SetText("Armor: 100%")
 			end
@@ -1518,10 +1517,10 @@ function module:SetGF()
 				button.zone:SetTextColor(GetZoneColor(zone))
 			end
 			
-			button.level:SetText(level or "")
-			button.zone:SetText(zone or "")
-			button.note:SetText(notes or "")
-			button.rank:SetText(rank or "")
+			button.level:SetText(level)
+			button.zone:SetText(zone)
+			button.note:SetText(notes)
+			button.rank:SetText(rank)
 
 			return button,
 				button.name:GetStringWidth(),
@@ -1593,11 +1592,11 @@ function module:SetGF()
 				color = GetQuestDifficultyColor(tonumber(level))
 				toast.level:SetTextColor(color.r, color.g, color.b)
 			else
-				toast.level:SetText("")
+				toast.level:SetText()
 			end
 			
-			toast.zone:SetText(zone or "")
-			toast.note:SetText(notes or "")
+			toast.zone:SetText(zone)
+			toast.note:SetText(notes)
 
 			return toast, client,
 				toast.name:GetStringWidth(),
@@ -1881,7 +1880,7 @@ function module:SetGF()
 				buttons[1]:SetPoint("TOPLEFT", motd, "BOTTOMLEFT", 0, -realFriendsHeight)
 			else
 				extraHeight = 0
-				motd.name:SetText("")
+				motd.name:SetText()
 				motd:SetHeight(1)
 				motd:SetWidth(maxWidth)
 				buttons[1]:SetPoint("TOPLEFT", self, "TOPLEFT", gap, -gap)
@@ -2476,7 +2475,7 @@ function module:SetInstance()
 			end)
 			
 			-- Set value
-			self.text:SetText("Instance [" .. #instances .. "]")
+			self.text:SetFormattedText("Instance [%d]", #instances)
 			
 			-- Update tooltip if open
 			UpdateTooltip(self)

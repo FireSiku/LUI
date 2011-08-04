@@ -170,26 +170,24 @@ function module:SetTooltip()
 			self.text:Show()
 			if unit then
 				min, max = UnitHealth(unit), UnitHealthMax(unit)
-				local hp = ShortValue(min).." / "..ShortValue(max)
 				if UnitIsGhost(unit) then
 					self.text:SetText("Ghost")
 				elseif min == 0 or UnitIsDead(unit) or UnitIsGhost(unit) then
 					self.text:SetText("Dead")
 				else
-					self.text:SetText(hp)
+					self.text:SetFormattedText("%d / %d", ShortValue(min), ShortValue(max))
 				end
 			end
 		else
 			if unit then
 				min, max = UnitHealth(unit), UnitHealthMax(unit)
 				self.text:Show()
-				local hp = ShortValue(min).." / "..ShortValue(max)
 				if UnitIsGhost(unit) then
 					self.text:SetText("Ghost")
 				elseif min == 0 or UnitIsDead(unit) or UnitIsGhost(unit) then
 					self.text:SetText("Dead")
 				else
-					self.text:SetText(hp)
+					self.text:SetFormattedText("%d / %d", ShortValue(min), ShortValue(max))
 				end
 			else
 				self.text:Hide()

@@ -467,17 +467,7 @@ function module:SetMinimap()
 		if x == 0 and y == 0 then
 			m_coord_text:SetText("X _ X")
 		else
-			if x < 10 then
-				xt = "0"..x
-			else
-				xt = x
-			end
-			if y < 10 then
-				yt = "0"..y
-			else
-				yt = y
-			end
-			m_coord_text:SetText(xt..","..yt)
+			m_coord_text:SetFormattedText("%.2d, %.2d", xt, yt)
 		end
 	end)
 	
