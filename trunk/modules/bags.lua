@@ -175,8 +175,8 @@ local function LUIBags_StopMoving(self)
 
 	-- Get rid of the "LUI" in the frame name, leaving Bags or Bank
 	local bag = strsub(self:GetName(), 4)
-	db.Bags[bag].CoordX = x
-	db.Bags[bag].CoordY = y
+	db[bag].CoordX = x
+	db[bag].CoordY = y
 end
 
 function module:InitSelect(bag)
@@ -188,7 +188,7 @@ function module:SlotUpdate(item)
 
 	local texture, count, locked = GetContainerItemInfo(item.bag, item.slot)
 	local clink = GetContainerItemLink(item.bag, item.slot)
-	local color = db.Bags.Colors.Border
+	local color = db.Colors.Border
 
 	if not item.frame.lock then
 		item.frame:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
@@ -196,7 +196,7 @@ function module:SlotUpdate(item)
 		--Check for Profession Bag
 		local bagType = module:BagType(item.bag)
 		if (bagType == ST_SPECIAL) then
-			local color = db.Bags.Colors.Professions
+			local color = db.Colors.Professions
 			item.frame:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
 		end
 
@@ -211,11 +211,11 @@ function module:SlotUpdate(item)
 		local iType
 		item.name, _, item.rarity, _, _, iType = GetItemInfo(clink)
 		-- color slot according to item quality
-		if db.Bags.Bags.ItemQuality and not item.frame.lock and item.rarity and item.rarity > 1 then
+		if db.Bags.ItemQuality and not item.frame.lock and item.rarity and item.rarity > 1 then
 			item.frame:SetBackdropBorderColor(GetItemQualityColor(item.rarity))
 		end
-		if db.Bags.Bags.ShowQuest and not item.frame.lock and iType == "Quest" then
-			local color = db.Bags.Colors.Quest
+		if db.Bags.ShowQuest and not item.frame.lock and iType == "Quest" then
+			local color = db.Colors.Quest
 			item.frame:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
 		end
 	else
@@ -427,13 +427,13 @@ function module:CreateBagFrame(bagType)
 	frame:SetFrameStrata("HIGH")
 	frame:SetFrameLevel(20)
 
-	if db.Bags[bagType].Locked == 0 then
+	if db[bagType].Locked == 0 then
 		frame:SetScript("OnMouseDown", LUIBags_StartMoving)
 		frame:SetScript("OnMouseUp", LUIBags_StopMoving)
 	end
 
-	local x = db.Bags[bagType].CoordX or 0
-	local y = db.Bags[bagType].CoordY or 0
+	local x = db[bagType].CoordX or 0
+	local y = db[bagType].CoordY or 0
 	frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x, y)
 
 	--Close Button, no embed options anymore.
@@ -548,7 +548,7 @@ function module:SetBags()
 
 	--Search text
 	local search = LUIBags:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge")
-	search:SetPoint("TOPLEFT", LUIBags, LUI:Scale(db.Bags.Bags.Padding), LUI:Scale(-10))
+	search:SetPoint("TOPLEFT", LUIBags, LUI:Scale(db.Bags.Padding), LUI:Scale(-10))
 	search:SetPoint("RIGHT", LUI:Scale(-(16 + 24)), 0)
 	search:SetJustifyH("LEFT")
 	search:SetText("|cff9999ff" .. "Search")
@@ -636,20 +636,20 @@ end
 
 function module:Layout(bagType)
 	local frame = LUIBags_Select(bagType)
-	local cols = db.Bags[bagType].Cols
+	local cols = db[bagType].Cols
 	local bagId = GetBags[bagType]
 
 	local slots = 0
 	local rows = 0
 	local off = 26
 
-	local padding = db.Bags[bagType].Padding
-	local spacing = db.Bags[bagType].Spacing
-	local borderTex = LSM:Fetch("border", db.Bags[bagType].BorderTexture)
-	local border_size = db.Bags[bagType].BorderSize
-	local border_inset = db.Bags[bagType].BorderInset
+	local padding = db[bagType].Padding
+	local spacing = db[bagType].Spacing
+	local borderTex = LSM:Fetch("border", db[bagType].BorderTexture)
+	local border_size = db[bagType].BorderSize
+	local border_inset = db[bagType].BorderInset
 
-	local color, bgcolor = db.Bags.Colors.Border, db.Bags.Colors.Background
+	local color, bgcolor = db.Colors.Border, db.Colors.Background
 	local border_color = { color.r, color.g, color.b, color.a }
 	local background_color = { bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a }
 
@@ -663,13 +663,13 @@ function module:Layout(bagType)
 		isBank = true
 	else
 		frame.gold:SetText(GetMoneyString(GetMoney(), 12))
-		frame.editbox:SetFont(LSM:Fetch("font", db.Bags.Bags.Font), 12)
-		frame.search:SetFont(LSM:Fetch("font", db.Bags.Bags.Font), 12)
-		frame.gold:SetFont(LSM:Fetch("font", db.Bags.Bags.Font), 12)
-		frame.currency:SetFont(LSM:Fetch("font", db.Bags.Bags.Font), 12)
+		frame.editbox:SetFont(LSM:Fetch("font", db.Bags.Font), 12)
+		frame.search:SetFont(LSM:Fetch("font", db.Bags.Font), 12)
+		frame.gold:SetFont(LSM:Fetch("font", db.Bags.Font), 12)
+		frame.currency:SetFont(LSM:Fetch("font", db.Bags.Font), 12)
 
 		frame.search:ClearAllPoints()
-		frame.search:SetPoint("TOPLEFT", frame, LUI:Scale(db.Bags.Bags.Padding), LUI:Scale(-10))
+		frame.search:SetPoint("TOPLEFT", frame, LUI:Scale(db.Bags.Padding), LUI:Scale(-10))
 		frame.search:SetPoint("RIGHT", LUI:Scale(-(16 + 24)), 0)
 	end
 
@@ -684,7 +684,7 @@ function module:Layout(bagType)
 		})
 		local fColor = { color.r *1.5, color.g *1.5, color.b *1.5, color.a}
 		local fbgColor = { bgcolor.r /2, bgcolor.g /2, bgcolor.b /2, bgcolor.a}
-		if db.Bags.Colors.BlackFrameBG then
+		if db.Colors.BlackFrameBG then
 			frame:SetBackdropColor(0.1, 0.1, 0.1, 1)
 			frame:SetBackdropBorderColor(0.3, 0.3 ,0.3 ,1)
 		else
@@ -785,7 +785,7 @@ function module:Layout(bagType)
 
 	end
 
-	if db.Bags[bagType].BagFrame then
+	if db[bagType].BagFrame then
 		bagsFrame:Show()
 	else
 		bagsFrame:Hide()
@@ -857,14 +857,14 @@ function module:Layout(bagType)
 	end
 
 	--adjust the size of the frames now.
-	frame:SetScale(db.Bags[bagType].Scale)
-	bagsFrame:SetScale(db.Bags[bagType].BagScale)
+	frame:SetScale(db[bagType].Scale)
+	bagsFrame:SetScale(db[bagType].BagScale)
 
 	isCreated[bagType] = true
 end
 
 function module:EnableBags()
-	if db.Bags.Enable ~= true then return end
+	if db.Enable ~= true then return end
 
 	-- Commented out because key bag no longer exists
 	
@@ -894,7 +894,7 @@ function module:EnableBags()
 			ContainerFrame1BackgroundMiddle2:SetAlpha(0)
 			ContainerFrame1BackgroundBottom:SetAlpha(0)
 
-			local bgColor, color = db.Bags.Colors.Background, db.Bags.Colors.Border -- Shorter vars for colors.
+			local bgColor, color = db.Colors.Background, db.Colors.Border -- Shorter vars for colors.
 			for i=1, GetKeyRingSize() do
 				local slot = _G["ContainerFrame1Item"..i]
 				local t = _G["ContainerFrame1Item"..i.."IconTexture"]
@@ -904,8 +904,8 @@ function module:EnableBags()
 				t:SetPoint("TOPLEFT", slot, LUI:Scale(2), LUI:Scale(-2))
 				t:SetPoint("BOTTOMRIGHT", slot, LUI:Scale(-2), LUI:Scale(2))
 				slot:SetBackdrop( {
-					bgFile = LSM:Fetch("background", db.Bags.Bags.BackgroundTexture),
-					edgeFile = LSM:Fetch("border", db.Bags.Bags.BorderTexture),
+					bgFile = LSM:Fetch("background", db.Bags.BackgroundTexture),
+					edgeFile = LSM:Fetch("border", db.Bags.BorderTexture),
 					tile = false, edgeSize = 20,
 					insets = { left = 5, right = -3, top = -3, bottom = 5 }
 				})
@@ -1025,11 +1025,11 @@ function module:CopyBags()
 	for bag, _ in pairs(GetBags) do
 
 		--Check for bag types that needs to be copied.
-		if bag ~= "Bags" and db.Bags[bag].CopyBags then
+		if bag ~= "Bags" and db[bag].CopyBags then
 
-			for option, value in pairs(db.Bags.Bags) do
-				if db.Bags[bag][option] ~= value and option ~= "Cols" then
-					db.Bags[bag][option] = value
+			for option, value in pairs(db.Bags) do
+				if db[bag][option] ~= value and option ~= "Cols" then
+					db[bag][option] = value
 				end
 			end
 
@@ -1043,13 +1043,13 @@ end
 function module:CheckBagsCopy()
 	for bag, _ in pairs(GetBags) do
 		if bag ~= "Bags" then
-			if db.Bags[bag].CopyBags then
-				db.Bags.CopyBags = true
+			if db[bag].CopyBags then
+				db.CopyBags = true
 				return
 			end
 		end
 	end
-	db.Bags.CopyBags = false
+	db.CopyBags = false
 end
 
 function module:ReloadLayout(bag)
@@ -1062,13 +1062,14 @@ end
 
 -- Note: Do not make new tables inside the Bags and Bank Options.
 --       It would break the CopyBags function that dynamically copy things.
-local defaults = {
-	Bags = {
+module.defaults = {
+	profile = { 
 		Enable = true,
 		CopyBags = true,
 		--Start of Bags Options
 		Bags = {
 			Font = "AvantGarde_LT_Medium",
+			FontSize = 12,
 			Cols = 12,
 			Padding = 8,
 			Spacing = 3,
@@ -1089,7 +1090,6 @@ local defaults = {
 		--Start of Bank Options
 		Bank = {
 			CopyBags = true,
-			Font = "AvantGarde_LT_Medium",
 			Cols = 14,
 			Padding = 8,
 			Spacing = 3,
@@ -1135,21 +1135,35 @@ local defaults = {
 			},
 		},
 		--End of Colors Options
+		Fonts = {
+			General = {
+				Font = "AvantGarde_LT_Medium",
+				FontSize = 12,
+				FontFlag = "OUTLINE",
+				FontColor = {
+					r = 1,
+					g = 1,
+					b = 1,
+					a = 1,
+				},
+			},
+		},
 	},
 }
 
 function module:LoadOptions()
-	local luidef = LUI.defaults.profile.Bags
+	--local luidef = LUI.defaults.profile.Bags
+	local luidef = module.db.defaults.profile
 
 	local function BagOpt()
 		module:ReloadLayout("Bags")
-		if db.Bags.CopyBags then module:CopyBags() end
+		if db.CopyBags then module:CopyBags() end
 	end
 	local function BankOpt()
 		module:ReloadLayout("Bank")
 	end
 	local function DisabledCopy()
-		return db.Bags.Bank.CopyBags
+		return db.Bank.CopyBags
 	end
 	local function ReloadBoth()
 		module:ReloadLayout("Bags")
@@ -1157,87 +1171,73 @@ function module:LoadOptions()
 	end
 
 	local options = {
-		LUIBags = {
+		Bags = {
 			name = "Bags",
 			type = "group",
-			childGroups = "tab",
-			disabled = function() return not db.Bags.Enable end,
+			order = 3,
 			args = {
-				Header = LUI:NewHeader("Bags", 1),
-				Bags = {
-					name = "Bags",
-					type = "group",
-					order = 3,
-					args = {
-						Enable = LUI:NewEnable("Bags", 1, db.Bags),
-						Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.",
-									2, db.Bags.Bags, "Cols", luidef.Bags, 4, 32, 1, BagOpt),
-						Header = LUI:NewHeader("", 3),
-						Padding = LUI:NewSlider("Bag Padding", "This sets the space between the background border and the adjacent items.",
-									4, db.Bags.Bags, "Padding", luidef.Bags, 4, 24, 1, BagOpt),
-						Spacing = LUI:NewSlider("Bag Spacing", "This sets the distance between items.",
-									5, db.Bags.Bags, "Spacing", luidef.Bags, 1, 15, 1, BagOpt),
-						Scale = LUI:NewScale("Bags Frame",6, db.Bags.Bags, "Scale", luidef.Bags, BagOpt),
-						BagScale = LUI:NewScale("Bags BagBar",7, db.Bags.Bags, "BagScale", luidef.Bags, BagOpt),
-						BagFrame = LUI:NewToggle("Show Bag Bar", nil, 8, db.Bags.Bags, "BagFrame", luidef.Bags, BagOpt),
-						ItemQuality = LUI:NewToggle("Show Item Quality", nil, 9, db.Bags.Bags, "ItemQuality", luidef.Bags, BagOpt),
-						ShowQuest = LUI:NewToggle("Highlight Quest Items", nil, 10, db.Bags.Bags, "ShowQuest", luidef.Bags, BagOpt),
-					},
-				},
-				Bank = {
-					name = "Bank",
-					type = "group",
-					order = 4,
-					args = {
-						CopyBags = LUI:NewToggle("Copy Bags", "Make the Bank frames copies the bags options.", 1, db.Bags.Bank, "CopyBags", luidef.Bank,
-							function()
-								module:CheckBagsCopy()
-								if db.Bags.Bank.CopyBags then module:CopyBags() end
-							end),
-						Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.", 2,
-									db.Bags.Bank, "Cols", luidef.Bank, 4, 32, 1, BankOpt),
-						Header = LUI:NewHeader("", 3),
-						Padding = LUI:NewSlider("Bank Padding", "This sets the space between the background border and the adjacent items.", 4,
-									db.Bags.Bank, "Padding", luidef.Bank, 4, 24, 1, BankOpt, nil, DisabledCopy),
-						Spacing = LUI:NewSlider("Bank Spacing", "This sets the distance between items.", 5,
-									db.Bags.Bank, "Spacing", luidef.Bank, 1, 15, 1, BankOpt, nil, DisabledCopy),
-						Scale = LUI:NewScale("Bank Frame",6, db.Bags.Bank, "Scale", luidef.Bank, BankOpt, nil, DisabledCopy),
-						BagScale = LUI:NewScale("Bank BagBar",7, db.Bags.Bank, "BagScale", luidef.Bank, BankOpt, nil, DisabledCopy),
-						BagFrame = LUI:NewToggle("Show Bag Bar", nil, 8, db.Bags.Bank, "BagFrame", luidef.Bank, BankOpt, nil, DisabledCopy),
-						ItemQuality = LUI:NewToggle("Show Item Quality", nil, 9, db.Bags.Bank, "ItemQuality", luidef.Bank, BankOpt, nil, DisabledCopy),
-						ShowQuest = LUI:NewToggle("Highlight Quest Items", nil, 10, db.Bags.Bank, "ShowQuest", luidef.Bank, BankOpt, nil, DisabledCopy),
-					},
-				},
-				Colors = {
-					name = "Colors",
-					type = "group",
-					order = 5,
-					args = {
-						BackgroundColor = LUI:NewColor("Background", "Bags Background", 1, db.Bags.Colors.Background, luidef.Colors.Background, ReloadBoth),
-						BorderColor = LUI:NewColor("Border", "Bags Borders", 2, db.Bags.Colors.Border, luidef.Colors.Border, ReloadBoth),
-						ProfessionColor = LUI:NewColor("Profession", "Profession Bags Borders", 3, db.Bags.Colors.Professions, luidef.Colors.Professions, ReloadBoth),
-						QuestColor = LUI:NewColor("Quest", "Quest Items Borders", 4, db.Bags.Colors.Quest, luidef.Colors.Quest, ReloadBoth),
-						FrameBG = LUI:NewToggle("Black Frame Background", "This will force the Bags' Frame Background to always be black.", 5,
-									db.Bags.Colors, "BlackFrameBG", luidef.Colors, ReloadBoth)
-					},
-				},
-				--Reminder for where to had new categories
+				Enable = LUI:NewEnable("Bags", 1, db),
+				Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.",
+							2, db.Bags, "Cols", luidef.Bags, 4, 32, 1, BagOpt),
+				Header = LUI:NewHeader("", 3),
+				Padding = LUI:NewSlider("Bag Padding", "This sets the space between the background border and the adjacent items.",
+							4, db.Bags, "Padding", luidef.Bags, 4, 24, 1, BagOpt),
+				Spacing = LUI:NewSlider("Bag Spacing", "This sets the distance between items.",
+							5, db.Bags, "Spacing", luidef.Bags, 1, 15, 1, BagOpt),
+				Scale = LUI:NewScale("Bags Frame",6, db.Bags, "Scale", luidef.Bags, BagOpt),
+				BagScale = LUI:NewScale("Bags BagBar",7, db.Bags, "BagScale", luidef.Bags, BagOpt),
+				BagFrame = LUI:NewToggle("Show Bag Bar", nil, 8, db.Bags, "BagFrame", luidef.Bags, BagOpt),
+				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 9, db.Bags, "ItemQuality", luidef.Bags, BagOpt),
+				--ShowQuest = LUI:NewToggle("Highlight Quest Items", nil, 10, db.Bags, "ShowQuest", luidef.Bags, BagOpt),
+				ShowQuest = module:NewToggle("Highlight Quest Items", nil, 10, BagOpt),
 			},
 		},
+		Bank = {
+			name = "Bank",
+			type = "group",
+			order = 4,
+			args = {
+				CopyBags = LUI:NewToggle("Copy Bags", "Make the Bank frames copies the bags options.", 1, db.Bank, "CopyBags", luidef.Bank,
+					function()
+						module:CheckBagsCopy()
+						if db.Bank.CopyBags then module:CopyBags() end
+					end, "double"),
+				Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.", 2,
+							db.Bank, "Cols", luidef.Bank, 4, 32, 1, BankOpt),
+				Header = LUI:NewHeader("", 3),
+				Padding = LUI:NewSlider("Bank Padding", "This sets the space between the background border and the adjacent items.", 4,
+							db.Bank, "Padding", luidef.Bank, 4, 24, 1, BankOpt, nil, DisabledCopy),
+				Spacing = LUI:NewSlider("Bank Spacing", "This sets the distance between items.", 5,
+							db.Bank, "Spacing", luidef.Bank, 1, 15, 1, BankOpt, nil, DisabledCopy),
+				Scale = LUI:NewScale("Bank Frame",6, db.Bank, "Scale", luidef.Bank, BankOpt, nil, DisabledCopy),
+				BagScale = LUI:NewScale("Bank BagBar",7, db.Bank, "BagScale", luidef.Bank, BankOpt, nil, DisabledCopy),
+				BagFrame = LUI:NewToggle("Show Bag Bar", nil, 8, db.Bank, "BagFrame", luidef.Bank, BankOpt, nil, DisabledCopy),
+				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 9, db.Bank, "ItemQuality", luidef.Bank, BankOpt, nil, DisabledCopy),
+				ShowQuest = LUI:NewToggle("Highlight Quest Items", nil, 10, db.Bank, "ShowQuest", luidef.Bank, BankOpt, nil, DisabledCopy),
+			},
+		},
+		Colors = {
+			name = "Colors",
+			type = "group",
+			order = 5,
+			args = {
+				Background = module:NewColor("Background", "Bags Background", 1, ReloadBoth),
+				Border = module:NewColor("Border", "Bags Border", 2, ReloadBoth),
+				Professions = module:NewColor("Profession", "Profession Bags Borders", 3, ReloadBoth),
+				Quest = module:NewColor("Quest", "Quest Item Borders", 4, ReloadBoth),
+				BlackFrameBG = module:NewToggle("Black Frame Background", "This will force the Bags' Frame background to always be black.", 5, ReloadBoth),
+			},
+		},
+		--Reminder for where to had new categories
 	}
 
 	return options
 end
 
 function module:OnInitialize()
-	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
-	LUI:RefreshDefaults()
-	LUI:Refresh()
-
-	self.db = LUI.db.profile
-	db = self.db
-
-	LUI:RegisterModule(self)
+	db = LUI:NewNamespace(self, true)
+	db = db.profile
+	LUI:EmbedAPI(module)
 end
 
 local OldFuncs = {}
