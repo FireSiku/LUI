@@ -1404,7 +1404,7 @@ LUI.oUF.funcs = {
 							self.PvP.Timer:Show()
 							local min = math.floor(GetPVPTimer()/1000/60)
 							local sec = (math.floor(GetPVPTimer()/1000))-(min*60)
-							self.PvP.Timer:SetFormmatedText("%d:%.2d", min, sec)
+							self.PvP.Timer:SetFormattedText("%d:%.2d", min, sec)
 						end
 					elseif self.PvP.Timer:IsShown() then
 						self.PvP.Timer:Hide()
