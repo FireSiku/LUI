@@ -271,6 +271,9 @@ function Fader:AttachSpecialHoverScript(frame)
 		if not self:IsHooked(child, "OnLeave") then self:SecureHookScript(child, "OnLeave", Fader.SpecialHover_OnLeave) end
 	end
 	
+	-- Mark frame as having a special hover script
+	frame.SpecialFaderHover = true
+	
 	-- Run leave script.
 	frame:GetScript("OnLeave")(frame)
 end
@@ -286,7 +289,7 @@ function Fader:RemoveHoverScript(frame)
 	self:Unhook(frame, "OnEnter")
 	self:Unhook(frame, "OnLeave")
 
-	if self.RegisteredFrames[frame].SpecialHover then
+	if frame.SpecialFaderHover then
 		for index, child in pairs({frame:GetChildren()}) do
 			self:Unhook(child, "OnEnter")
 			self:Unhook(child, "OnLeave")

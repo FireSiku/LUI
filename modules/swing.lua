@@ -499,7 +499,6 @@ local ApplySettings = function()
 end
 
 module.optionsName = "Swing Timer"
-module.childGroups = "tab"
 module.defaults = {
 	profile = {
 		Enable = true,

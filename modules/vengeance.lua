@@ -178,7 +178,6 @@ local ApplySettings = function()
 end
 
 module.optionsName = "Vengeance Bar"
-module.childGroups = "tab"
 module.defaults = {
 	profile = {
 		Enable = true,

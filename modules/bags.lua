@@ -344,6 +344,7 @@ end
 
 function module:BagType(bag)
 	--From OneBag. Still wondering the use of those.
+	--[[
 	local bagProfession = 0x0008 + 0x0010 + 0x0020 + 0x0040 + 0x0080 + 0x0200 + 0x0400
 	local bagType = select(2, GetContainerNumFreeSlots(bag))
 
@@ -351,6 +352,14 @@ function module:BagType(bag)
 		return ST_SPECIAL
 	end
 
+	return ST_NORMAL
+	]]
+	
+	local bagType = select(2, GetContainerNumFreeSlots(bag))
+	if bagType and bagType > 0 then
+		return ST_SPECIAL
+	end
+	
 	return ST_NORMAL
 end
 

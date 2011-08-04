@@ -344,10 +344,10 @@ local OverrideHealth = function(self, event, unit, powerType)
 		if health.valuePercent.ShowDead == true then
 			if health.valuePercent:GetText() then
 				if not strfind(health.valuePercent:GetText(), "AFK") then
-					health.valuePercent:SetText("|cffffffff<AFK>|r %s", health.valuePercent:GetText())
+					health.valuePercent:SetFormattedText("|cffffffff<AFK>|r %s", health.valuePercent:GetText())
 				end
 			else
-				health.valuePercent:SetText()
+				health.valuePercent:SetText("|cffffffff<AFK>|r")
 			end
 		end
 	end
@@ -3253,12 +3253,15 @@ end
 
 oUF:RegisterStyle("LUI", SetStyle)
 
+local origInit = module.OnInitialize
+function module:OnInitialize()
+	origInit(self)
+	db = self.db
+end
 -- the spawn functions are in the module oUF, so we dont need to write all the code twice
 -- "subframes" of groups, like party target are included within the party toggle
 -- has to be OnEnable
 function module:OnEnable()
-	db = LUI.db.profile
-
 	if db.oUF.Settings.Enable ~= true then
 		LUI:GetModule("oUF"):SetBlizzardRaidFrames()
 		return

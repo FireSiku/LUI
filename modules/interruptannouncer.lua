@@ -13,17 +13,16 @@
 
 -- External references.
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local InterruptAnnouncer = LUI:NewModule("InterruptAnnouncer")
+local module = LUI:NewModule("InterruptAnnouncer")
 
 -- Database and defaults shortcuts.
-local db
-local dbd
+local db, dbd
 
 local partyChatChannels = {"SAY", "YELL", "PARTY"}
 local raidChatChannels = {"SAY", "YELL", "PARTY", "RAID", "RAID_WARNING"}
 
 -- Create module function.
-function InterruptAnnouncer:Create()
+function module:Create()
 	if not db.Enable then return end
 	
 	-- Create a frame to work with.
@@ -150,7 +149,7 @@ function InterruptAnnouncer:Create()
 end
 
 -- Defaults for the module.
-InterruptAnnouncer.defaults = {
+module.defaults = {
 	profile = {
 		Enable = true,
 		AnnounceParty = "PARTY",
@@ -162,9 +161,10 @@ InterruptAnnouncer.defaults = {
 		Format = "!interruptName - !spellLink (!target)",
 	},
 }
+module.optionsName = "Interrupt Announcer"
 
 -- Load options: Creates the options menu for LUI.
-function InterruptAnnouncer:LoadOptions()
+function module:LoadOptions()
 	local options = {
 		Title = LUI:NewHeader("Interrupt Announcer", 1),
 		General = {
@@ -203,7 +203,7 @@ function InterruptAnnouncer:LoadOptions()
 			name = "Announce Format",
 			type = "group",
 			order = 3,
-			disabled = function() return (not db.Enable) or (not db.EnableFormat) end,
+			disabled = function() return not db.EnableFormat end,
 			args = {
 				Info = {
 					name = "Info",
@@ -225,7 +225,7 @@ function InterruptAnnouncer:LoadOptions()
 end
 
 -- Initialize module: Called when the addon should intialize its self; this is where we load in database values.
-function InterruptAnnouncer:OnInitialize()
+function module:OnInitialize()
 	-- Prep for upcoming update.
 	-- db, dbd = LUI:NewNamespace(self, true)
 	LUI:NewNamespace(self, true)
@@ -234,6 +234,6 @@ function InterruptAnnouncer:OnInitialize()
 end
 
 -- Enable module: Called when addon is enabled.
-function InterruptAnnouncer:OnEnable()
+function module:OnEnable()
 	self:Create()
 end

@@ -3209,39 +3209,13 @@ function module:LoadOptions()
 	
 	-- Options table
 	local options = {
-		General = {
-			name = "General",
-			type = "group",
+		CombatLock = {
+			name = "Combat Lock Down",
+			desc = "Hide tooltip info for datatext stats while in combat.",
+			type = "toggle",
+			get = function() return db.profile.CombatLock end,
+			set = function(info, value) db.profile.CombatLock = value end,
 			order = 1,
-			args = {
-				Header = {
-					name = "General",
-					type = "header",
-					order = 1,
-				},
-				CombatLock = {
-					name = "Combat Lock Down",
-					desc = "Hide tooltip info for datatext stats while in combat.",
-					type = "toggle",
-					width = "full",
-					get = function() return db.profile.CombatLock end,
-					set = function(info, value) db.profile.CombatLock = value end,
-					order = 2,
-				},
-				ResetToDefaults = {
-					name = "Reset To Defaults",
-					type = "execute",
-					func = function()
-						db:ResetProfile()
-						for k in pairs(InfoStats) do
-							ResetStat(k)
-							DisableStat(k)
-							EnableStat(k)
-						end
-					end,
-					order = 3,
-				},
-			},
 		},
 		Bags = {
 			name = NameLabel,
@@ -3751,8 +3725,10 @@ function module:LoadOptions()
 end
 
 function module:Refresh()
-	for k, v in pairs(InfoStats) do
-		ResetStat(k)
+	for stat in pairs(InfoStats) do
+		ResetStat(stat)
+		DisableStat(stat)
+		EnableStat(stat)
 	end
 end
 

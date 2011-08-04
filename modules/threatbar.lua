@@ -150,7 +150,6 @@ local ApplySettings = function()
 end
 
 module.optionsName = "Threat Bar"
-module.childGroups = "tab"
 module.defaults = {
 	profile = {
 		Enable = true,
