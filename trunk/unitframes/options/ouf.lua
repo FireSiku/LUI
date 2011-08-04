@@ -496,6 +496,13 @@ do
 	oUF.DisableBlizzard = module.DisableBlizzard -- overwrite oUF's DisableBlizzard function
 
 	function module:SetBlizzardRaidFrames()
+		-- look for other styles of oUF (if one is found then let it disable the blizz raid frames)
+		if not db.oUF.Settings.Enable then
+			for style in oUF.IterateStyles() do
+				if style ~= "LUI" then return end
+			end
+		end
+		
 		local useBlizz = (db.oUF.Settings.Enable == false) or db.oUF.Raid.UseBlizzard
 		if IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") or (db.oUF.Settings.Enable and db.oUF.Raid.Enable) then
 			useBlizz = false

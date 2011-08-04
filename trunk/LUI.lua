@@ -1040,6 +1040,7 @@ local function getOptions()
 					type = "group",
 					args = {
 						Header = LUI:NewHeader("Module List", 1),
+						UpdatedModules = LUI:NewHeader("New Style Modules", 75),
 					},
 				},
 			},
@@ -1110,13 +1111,8 @@ function LUI:RegisterModule(module, moduledb, addFunc)
 	table.insert(moduleList, {
 		[mName] = {
 			type = "execute",
-			name = function()
-				if db[moduledb].Enable then
-					return "|cff00FF00"..mName.." Enabled|r"
-				else
-					return "|cffFF0000"..mName.." Disabled|r"
-				end
-			end,
+			name = function() return (mName .. ": |cff" .. (db[moduledb].Enable and "00FF00Enabled" or "FF0000Disabled") .. "|r") end,
+			order = 50,
 			func = function()
 				db[moduledb].Enable = not db[moduledb].Enable
 				if db[moduledb].Enable then
@@ -1153,18 +1149,20 @@ local function mergeOldDB(dest, src)
 end
 
 function LUI:NewNamespace(module, enableButton)
+	local mName = module:GetName()
+	
 	-- Add options loader function to list
 	if (not module.addon) or IsAddOnLoaded(module.addon) then
-		table.insert(newModuleOptions, module:GetName())
+		table.insert(newModuleOptions, mName)
 	end
 	
 	-- Register namespace
-	module.db = self.db:RegisterNamespace(module:GetName(), module.defaults)
+	module.db = self.db:RegisterNamespace(mName, module.defaults)
 	
 	-- Look for outdated db vars and transfer them over
-	if LUI.db.profile[module:GetName()] then
-		mergeOldDB(module.db.profile, LUI.db.profile[module:GetName()])
-		LUI.db.profile[module:GetName()] = nil
+	if LUI.db.profile[mName] then
+		mergeOldDB(module.db.profile, LUI.db.profile[mName])
+		LUI.db.profile[mName] = nil
 	end
 	
 	-- Set module enabled state
@@ -1172,29 +1170,31 @@ function LUI:NewNamespace(module, enableButton)
 		module:SetEnabledState(module.db.profile.Enable)
 	end
 	
+	-- Register Callbacks
+	if type(module.Refresh) == "function" then
+		module.db.RegisterCallback(module, "OnProfileChanged", "Refresh")
+		module.db.RegisterCallback(module, "OnProfileCopied", "Refresh")
+		module.db.RegisterCallback(module, "OnProfileReset", "Refresh")
+	end
+	
 	-- Create Enable button for module if applicable
 	if enableButton then
-		local mName = module:GetName()
 		table.insert(moduleList, {
 			[mName] = {
 				type = "execute",
-				desc = "Left Click: Enable/Disable this module.\nShift Click: Reset modules settings.",
-				name = function()
-					local color = module.db.profile.Enable and "00FF00" or "FF0000"
-					local status = module.db.profile.Enable and "Enabled" or "Disabled"
-					return format("|cff%s%s %s|r", color, mName, status)
-				end,
-				func = function(self, button)
+				name = function() return (mName .. ": |cff" .. (module:IsEnabled() and "00FF00Enabled" or "FF0000Disabled") .. "|r") end,
+				desc = function() return ("Left Click: " .. (module:IsEnabled() and "Enable" or "Disable") .. " this module.\nShift Click: Reset modules settings.") end,
+				func = function()
 					if IsShiftKeyDown() then
 						module.db:ResetProfile()
 						if db.General.ModuleMessages then
-							LUI:Print(mName.." module settings reset.")
+							LUI:Print(mName .. " module settings reset.")
 						end
 					else
 						module.db.profile.Enable = not module.db.profile.Enable
 						module[module.db.profile.Enable and "Enable" or "Disable"](module)
 						if db.General.ModuleMessages then
-							LUI:Print(mName.." module " .. (module.db.profile.Enable and "enabled." or "disabled."))
+							LUI:Print(mName .. " module |cff" .. (module.db.profile.Enable and "00FF00enabled" or "FF0000disabled") .. "|r.")
 						end
 					end
 				end,
@@ -1202,7 +1202,7 @@ function LUI:NewNamespace(module, enableButton)
 		})
 	end
 	
-	return module.db
+	return module.db, module.defaults
 end
 
 
@@ -1316,12 +1316,9 @@ end
 
 function LUI:Refresh()
 	db_ = self.db.profile
-
-	for k,v in self:IterateModules() do
-		if k ~= "Position" then
-			if type(v.Refresh) == "function" then
-				v:Refresh()
-			end
+	for name, module in self:IterateModules() do
+		if module.db and module.db.profile and module.db.profile.Enable ~= nil then
+			module[module.db.profile.Enable and "Enable" or "Disable"](module)
 		end
 	end
 end
