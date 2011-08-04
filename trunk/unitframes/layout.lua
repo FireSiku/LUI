@@ -262,13 +262,13 @@ local OverrideHealth = function(self, event, unit, powerType)
 				elseif health.value.Format == "Absolut & Percent" then
 					health.value:SetFormattedText("%d/%d | %.1f%%", min, max, healthPercent)
 				elseif health.value.Format == "Absolut Short" then
-					health.value:SetFormattedText("%d/%d", ShortValue(min), ShortValue(max))
+					health.value:SetFormattedText("%s/%s", ShortValue(min), ShortValue(max))
 				elseif health.value.Format == "Absolut Short & Percent" then
-					health.value:SetFormattedText("%d/%d | %.1f%%", ShortValue(min),ShortValue(max), healthPercent)
+					health.value:SetFormattedText("%s/%s | %.1f%%", ShortValue(min),ShortValue(max), healthPercent)
 				elseif health.value.Format == "Standard" then
 					health.value:SetFormattedText("%d", min)
 				elseif health.value.Format == "Standard Short" then
-					health.value:SetFormattedText("%d", ShortValue(min))
+					health.value:SetFormattedText("%s", ShortValue(min))
 				else
 					health.value:SetFormattedText("%d", min)
 				end
@@ -310,7 +310,7 @@ local OverrideHealth = function(self, event, unit, powerType)
 
 			if healthMissing > 0 or health.valueMissing.ShowAlways == true then
 				if health.valueMissing.ShortValue == true then
-					health.valueMissing:SetFormattedText("-%d", ShortValue(healthMissing))
+					health.valueMissing:SetFormattedText("-%s", ShortValue(healthMissing))
 				else
 					health.valueMissing:SetFormattedText("-%d", healthMissing)
 				end
@@ -432,13 +432,13 @@ local OverridePower = function(self, event, unit)
 			elseif power.value.Format == "Absolut & Percent" then
 				power.value:SetFormattedText("%d/%d | %.1f%%", min, max, powerPercent)
 			elseif power.value.Format == "Absolut Short" then
-				power.value:SetFormattedText("%d/%d", ShortValue(min), ShortValue(max))
+				power.value:SetFormattedText("%s/%s", ShortValue(min), ShortValue(max))
 			elseif power.value.Format == "Absolut Short & Percent" then
-				power.value:SetFormattedText("%d/%d | %.1f%%", ShortValue(min), ShortValue(max), powerPercent)
+				power.value:SetFormattedText("%s/%s | %.1f%%", ShortValue(min), ShortValue(max), powerPercent)
 			elseif power.value.Format == "Standard" then
 				power.value:SetFormattedText("%d", min)
 			elseif power.value.Format == "Standard Short" then
-				power.value:SetFormattedText("%d", ShortValue(min))
+				power.value:SetFormattedText("%s", ShortValue(min))
 			else
 				power.value:SetFormattedText("%d", min)
 			end
@@ -478,7 +478,7 @@ local OverridePower = function(self, event, unit)
 			if (power.valueMissing.ShowFull == false and min == max) or (power.valueMissing.ShowEmpty == false and min == 0) then
 				power.valueMissing:SetText()
 			elseif power.valueMissing.ShortValue == true then
-				power.valueMissing:SetFormattedText("-%d", ShortValue(powerMissing))
+				power.valueMissing:SetFormattedText("-%s", ShortValue(powerMissing))
 			else
 				power.valueMissing:SetFormattedText("-%d", powerMissing)
 			end
@@ -2867,9 +2867,9 @@ if (not oUF.Tags["druidmana2"]) then
 		elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut & Percent" then
 			text = format("%d/%d | %.1f", min, max, perc)
 		elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut Short" then
-			text = format("%d/%d", ShortValue(min), ShortValue(max))
+			text = format("%s/%s", ShortValue(min), ShortValue(max))
 		elseif db.oUF.Player.Texts.DruidMana.Format == "Absolut Short & Percent" then
-			text = format("%d/%d | %.1f", ShortValue(min), ShortValue(max), perc)
+			text = format("%s/%s | %.1f", ShortValue(min), ShortValue(max), perc)
 		elseif db.oUF.Player.Texts.DruidMana.Format == "Standard Short" then
 			text = ShortValue(min)
 		else
