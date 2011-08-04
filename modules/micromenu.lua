@@ -404,7 +404,9 @@ function module:SetMicroMenu()
 	local bagsFrame
 	
 	local function getBagsFrame()
-		if db.Bags.Enable == true then
+		local Bags = LUI:GetModule("Bags")
+		
+		if Bags.db.profile.Enable == true then
 			bagsFrame = _G["LUIBags"]
 		else
 			if IsAddOnLoaded("Stuffing") then
