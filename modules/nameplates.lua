@@ -128,7 +128,7 @@ function module:SetNameplates()
 		elseif not elite and level == mylevel then
 			self.level:Hide()
 		else
-			self.level:SetText(level..(elite and "+" or ""))
+			self.level:SetFormattedText("%d%s", level, (elite and "+"))
 		end
 	end
 

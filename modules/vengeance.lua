@@ -26,7 +26,7 @@ local tooltip = CreateFrame("GameTooltip", "LUIVengeanceTooltip", UIParent, "Gam
 local tooltiptext = _G[tooltip:GetName().."TextLeft2"]
 
 tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-tooltiptext:SetText("")
+tooltiptext:SetText()
 
 local ValueChanged = function(bar, event, unit)
 	if unit ~= "player" then return end
@@ -69,7 +69,7 @@ local ValueChanged = function(bar, event, unit)
 			bar.Text:SetFormattedText("%d", bar.value)
 		end
 	else
-		bar.Text:SetText("")
+		bar.Text:SetText()
 	end
 end
 

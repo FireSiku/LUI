@@ -237,18 +237,18 @@ local OverrideHealth = function(self, event, unit, powerType)
 	
 	if not UnitIsConnected(unit) then
 		health:SetValue(0)
-		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Offline>|r" or "")
-		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Offline>|r" or "")
+		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Offline>|r")
+		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Offline>|r")
 		health.valueMissing:SetText()
 	elseif UnitIsGhost(unit) then
 		health:SetValue(0)
-		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Ghost>|r" or "")
-		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Ghost>|r" or "")
+		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Ghost>|r")
+		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Ghost>|r")
 		health.valueMissing:SetText()
 	elseif UnitIsDead(unit) then
 		health:SetValue(0)
-		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Dead>|r" or "")
-		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Dead>|r" or "")
+		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Dead>|r")
+		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Dead>|r")
 		health.valueMissing:SetText()
 	else
 		local healthPercent = 100 * (min / max)
@@ -266,11 +266,11 @@ local OverrideHealth = function(self, event, unit, powerType)
 				elseif health.value.Format == "Absolut Short & Percent" then
 					health.value:SetFormattedText("%d/%d | %.1f%%", ShortValue(min),ShortValue(max), healthPercent)
 				elseif health.value.Format == "Standard" then
-					health.value:SetText(min)
+					health.value:SetFormattedText("%d", min)
 				elseif health.value.Format == "Standard Short" then
-					health.value:SetText(ShortValue(min))
+					health.value:SetFormattedText("%d", ShortValue(min))
 				else
-					health.value:SetText(min)
+					health.value:SetFormattedText("%d", min)
 				end
 
 				if health.value.color == "By Class" then
@@ -436,11 +436,11 @@ local OverridePower = function(self, event, unit)
 			elseif power.value.Format == "Absolut Short & Percent" then
 				power.value:SetFormattedText("%d/%d | %.1f%%", ShortValue(min), ShortValue(max), powerPercent)
 			elseif power.value.Format == "Standard" then
-				power.value:SetText(min)
+				power.value:SetFormattedText("%d", min)
 			elseif power.value.Format == "Standard Short" then
-				power.value:SetText(ShortValue(min))
+				power.value:SetFormattedText("%d", ShortValue(min))
 			else
-				power.value:SetText(min)
+				power.value:SetFormattedText("%d", min)
 			end
 
 			if power.value.color == "By Class" then
@@ -478,9 +478,9 @@ local OverridePower = function(self, event, unit)
 			if (power.valueMissing.ShowFull == false and min == max) or (power.valueMissing.ShowEmpty == false and min == 0) then
 				power.valueMissing:SetText()
 			elseif power.valueMissing.ShortValue == true then
-				power.valueMissing:SetText(-ShortValue(powerMissing))
+				power.valueMissing:SetFormattedText("-%d", ShortValue(powerMissing))
 			else
-				power.valueMissing:SetText(-powerMissing)
+				power.valueMissing:SetFormattedText("-%d", powerMissing)
 			end
 
 			if power.valueMissing.color == "By Class" then
@@ -797,7 +797,7 @@ local PostUpdateAltPower = function(altpowerbar, min, cur, max)
 			elseif altpowerbar.Text.Format == "Percent" then
 				altpowerbar.Text:SetFormattedText("%.1f%%", 100 * (cur / max))
 			elseif altpowerbar.Text.Format == "Standard" then
-				altpowerbar.Text:SetText(cur)
+				altpowerbar.Text:SetFormattedText("%d", cur)
 			end
 
 			if altpowerbar.Text.color == "By Class" then
@@ -809,7 +809,7 @@ local PostUpdateAltPower = function(altpowerbar, min, cur, max)
 			end
 
 		else
-			altpowerbar.Text:SetText("")
+			altpowerbar.Text:SetText()
 		end
 	end
 end
@@ -840,8 +840,8 @@ local ArenaEnemyUnseen = function(self, event, unit, state)
 			health:SetValue(0)
 			health:SetStatusBarColor(0.5, 0.5, 0.5, 1)
 			health.bg:SetVertexColor(0.5, 0.5, 0.5, 1)
-			health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Unseen>|r" or "")
-			health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Unseen>|r" or "")
+			health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Unseen>|r")
+			health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Unseen>|r")
 			health.valueMissing:SetText()
 		end
 		self.Power.Override = function(power)
@@ -1590,7 +1590,7 @@ LUI.oUF.funcs = {
 					local _, _, min, max, value = GetWatchedFactionInfo()
 					self.Reputation.Value:SetFormattedText("%d / %d (%d%%)", value - min, max - min, math.floor(((value - min) / (max - min)) * 100 + 0.5))
 				else
-					self.Reputation.Value:SetText("")
+					self.Reputation.Value:SetText()
 				end
 				if event == "PLAYER_ENTERING_WORLD" then self.Rep:UnregisterEvent("PLAYER_ENTERING_WORLD") end
 			end)

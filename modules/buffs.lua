@@ -294,18 +294,18 @@ function module:SetBuffs()
 				button:SetScript("OnUpdate", AuraButton_UpdateCooldown)
 				AuraButton_UpdateCooldown(button, 5)
 			else
-				button.duration:SetText("")
+				button.duration:SetText()
 				button:SetScript("OnUpdate", AuraButton_UpdateTooltip)
 			end
 			
 			if count and count > 1 then
-				button.count:SetText(count)
+				button.count:SetFormattedText("%d", count)
 			else
-				button.count:SetText("")
+				button.count:SetText()
 			end
 		else
-			button.duration:SetText("")
-			button.count:SetText("")
+			button.duration:SetText()
+			button.count:SetText()
 			button:SetScript("OnUpdate", nil)
 		end
 	end
@@ -347,7 +347,7 @@ function module:SetBuffs()
 			button:SetScript("OnUpdate", TempEnchantButton_UpdateCooldown)
 			TempEnchantButton_UpdateCooldown(button, 5)
 		else
-			button.duration:SetText("")
+			button.duration:SetText()
 			button:SetScript("OnUpdate", nil)
 		end
 	end
