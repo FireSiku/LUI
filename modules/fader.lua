@@ -101,16 +101,16 @@ function Fader:RegisterFrame(frame, settings, specialHover)
 		end
 	end
 
+	-- Create indexer for special frames.
+	frame.FaderSpecialHover = specialHover
+
 	-- Check fader is enabled.
 	if not db.Enable then return end
 	
 	-- Create fader table.
 	frame.Fader = frame.Fader or {}
 	frame.Fader.PreAlpha = frame.Fader.PreAlpha or frame:GetAlpha()
-	
-	-- Create indexer for special frames.
-	self.RegisteredFrames[frame].SpecialHover = specialHover
-	
+		
 	-- Attach mouseover scripts to frame.
 	self:AttachHoverScript(frame)
 	
@@ -137,6 +137,9 @@ function Fader:UnregisterFrame(frame)
 	-- Remove frame.
 	self.RegisteredFrames[frame] = nil
 	self.RegisteredFrameTotal = self.RegisteredFrameTotal - 1
+
+	-- Remove indexer for special frames.
+	frame.FaderSpecialHover = nil
 
 	-- Remove hooks.
 	self:RemoveHoverScript(frame)
@@ -241,7 +244,7 @@ function Fader:AttachHoverScript(frame)
 	end
 	
 	-- Check is special scripts are needed.
-	if self.RegisteredFrames[frame].SpecialHover then
+	if frame.FaderSpecialHover then
 		return self:AttachSpecialHoverScript(frame)
 	end
 	
@@ -270,8 +273,8 @@ function Fader:AttachSpecialHoverScript(frame)
 		if not self:IsHooked(child, "OnLeave") then self:SecureHookScript(child, "OnLeave", Fader.SpecialHover_OnLeave) end
 	end
 	
-	-- Mark frame as having a special hover script
-	frame.SpecialFaderHover = true
+	-- Mark frame as having a special hover script.
+	frame.Fader.SpecialMouseHover = true
 	
 	-- Run leave script.
 	frame:GetScript("OnLeave")(frame)
@@ -288,7 +291,7 @@ function Fader:RemoveHoverScript(frame)
 	self:Unhook(frame, "OnEnter")
 	self:Unhook(frame, "OnLeave")
 
-	if frame.SpecialFaderHover then
+	if frame.Fader.SpecialMouseHover then
 		for index, child in pairs({frame:GetChildren()}) do
 			self:Unhook(child, "OnEnter")
 			self:Unhook(child, "OnLeave")
@@ -719,12 +722,12 @@ function Fader:LoadOptions()
 		if db.ForceGlobalSettings then
 			-- Re-apply settings to frames.
 			for frame in pairs(Fader.RegisteredFrames) do
-				Fader:RegisterFrame(frame)
+				Fader:RegisterFrame(frame, nil, frame.FaderSpecialHover)
 			end
 		else
 			-- Re-apply settings to frames.
 			for frame, settings in pairs(Fader.RegisteredFrames) do
-				Fader:RegisterFrame(frame, settings)
+				Fader:RegisterFrame(frame, settings, frame.FaderSpecialHover)
 			end																		
 		end
 	end
@@ -746,7 +749,7 @@ function Fader:LoadOptions()
 						if db.ForceGlobalSettings then
 							-- Re-apply settings to frames.
 							for frame in pairs(Fader.RegisteredFrames) do
-								Fader:RegisterFrame(frame)
+								Fader:RegisterFrame(frame, nil, frame.FaderSpecialHover)
 							end
 						else
 							-- Need to reload to gather frames personal settings.
@@ -790,9 +793,6 @@ function Fader:OnInitialize()
 end
 
 function Fader:OnEnable()
-	-- Check if enabled.
-	if not db.Enable then return end
-	
 	-- Check if events need to be registered
 	if self.RegisteredFrames then
 		self:EventsRegister()
@@ -819,19 +819,19 @@ function Fader:OnDisable()
 
 		-- Disable fader on registered frames.
 		for frame in pairs(self.RegisteredFrames) do
-			-- Reset alpha.
-			frame:SetAlpha((frame.Fader and frame.Fader.PreAlpha) or 1)
-
 			-- If currently fading, stop fading.
 			if frame.Fader.fading then
 				self:StopFading(frame)
 			end
 
-			-- Remove variables.
-			frame.Fader = nil
-		
 			-- Remove hover scripts
 			self:RemoveHoverScript(frame)
+
+			-- Reset alpha.
+			frame:SetAlpha((frame.Fader and frame.Fader.PreAlpha) or 1)
+
+			-- Remove variables.
+			frame.Fader = nil
 		end
 	end
 end
