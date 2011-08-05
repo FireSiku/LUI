@@ -42,8 +42,7 @@ local widgetLists = AceGUIWidgetLSMlists
 local Fader = LUI:NewModule("Fader", "AceEvent-3.0", "AceHook-3.0")
 
 -- Database and defaults shortcuts.
-local db
-local dbd
+local db, dbd
 
 -- Fader local variables.
 -- RegisteredFrames[frame] = frameSettings. (e.i. RegisteredFrames = { oUF_LUI_player = db.oUF.Player.Fader, oUF_LUI_target = db.oUF.Target.Fader, etc })
@@ -787,9 +786,7 @@ function Fader:LoadOptions()
 end
 
 function Fader:OnInitialize()
-	LUI:NewNamespace(self, true)
-	db = self.db.profile
-	dbd = self.defaults.profile
+	db, dbd = LUI:NewNamespace(self, true)
 end
 
 function Fader:OnEnable()

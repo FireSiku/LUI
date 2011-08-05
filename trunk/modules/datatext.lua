@@ -15,8 +15,7 @@ local module = LUI:NewModule("Infotext", "AceHook-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
-local version = 1.9
-local db
+local db, dbd
 
 ------------------------------------------------------
 -- / LOCAL VARIABLES / --
@@ -25,10 +24,12 @@ local db
 local _,L = ...
 local myPlayerName = UnitName("player")
 local myPlayerFaction = UnitFactionGroup("player")
+local otherFaction = myPlayerFaction == "Horde" and "Alliance" or "Horde"
 local myPlayerRealm = GetRealmName()
 
 local InfoStats = {}
 
+local goldPlayerArray = {"ALL"}
 local guildEntries, friendEntries, totalFriends, onlineFriends = {}, {}, 0, 0
 
 ------------------------------------------------------
@@ -39,10 +40,10 @@ local function SetInfoPanel(stat)
 	if type(stat) == "string" then stat = InfoStats[stat] end
 	if not stat then return end
 	
-	local parent = _G["LUI_Infos_" .. db.profile[stat.db].InfoPanel.Vertical .. db.profile[stat.db].InfoPanel.Horizontal]
+	local parent = _G["LUI_Infos_" .. db[stat.db].InfoPanel.Vertical .. db[stat.db].InfoPanel.Horizontal]
 	
 	stat.text:ClearAllPoints()
-	stat.text:SetPoint(db.profile[stat.db].InfoPanel.Vertical, parent, db.profile[stat.db].InfoPanel.Vertical, db.profile[stat.db].X, db.profile[stat.db].Y)
+	stat.text:SetPoint(db[stat.db].InfoPanel.Vertical, parent, db[stat.db].InfoPanel.Vertical, db[stat.db].X, db[stat.db].Y)
 	
 	stat:SetParent(parent)
 	stat:ClearAllPoints()
@@ -67,8 +68,8 @@ local function SetFontSettings(stat)
 	if type(stat) == "string" then stat = InfoStats[stat] end
 	if not stat then return end
 	
-	stat.text:SetFont(LSM:Fetch("font", db.profile[stat.db].Font), db.profile[stat.db].FontSize, db.profile[stat.db].Outline)
-	local color = db.profile[stat.db].Color
+	stat.text:SetFont(LSM:Fetch("font", db[stat.db].Font), db[stat.db].FontSize, db[stat.db].Outline)
+	local color = db[stat.db].Color
 	stat.text:SetTextColor(color.r, color.g, color.b, color.a)
 end
 
@@ -89,7 +90,7 @@ end
 
 local function NewStat(statDB)
 	if InfoStats[statDB] then return InfoStats[statDB] end
-	if db.profile[statDB] and not db.profile[statDB].Enable then return {Created = false} end
+	if db[statDB] and not db[statDB].Enable then return {Created = false} end
 	
 	local stat = CreateFrame("Frame", "LUI_Info_" .. statDB, LUI_Infos_TopRight)
 	stat.db = statDB
@@ -118,7 +119,7 @@ local function NewStat(statDB)
 		end
 		if stat.OnEnable then stat:OnEnable() end
 	end
-	if db.profile[statDB] then
+	if db[statDB] then
 		NewText(stat)
 		SetFontSettings(stat)
 	end
@@ -154,7 +155,7 @@ local function SetInfoTextFrames()
 end
 
 local function CombatTips()
-	return ((not InCombatLockdown()) or (not db.profile.CombatLock))
+	return ((not InCombatLockdown()) or (not db.CombatLock))
 end
 
 local function UpdateTooltip(frame, func, ...)
@@ -173,8 +174,8 @@ local function UpdateTooltip(frame, func, ...)
 end
 
 local function isTop(frame)
-	if frame.db and db.profile[frame.db] then
-		return (db.profile[frame.db].InfoPanel.Vertical == "Top")
+	if frame.db and db[frame.db] then
+		return (db[frame.db].InfoPanel.Vertical == "Top")
 	else
 		return (select(2, frame:GetCenter()) > UIParent:GetHeight() / 2)
 	end
@@ -195,7 +196,7 @@ end
 function module:SetBags()
 	local stat = NewStat("Bags")
 	
-	if db.profile.Bags.Enable and not stat.Created then
+	if db.Bags.Enable and not stat.Created then
 		-- Localized functions
 		local GetContainerNumFreeSlots, GetContainerNumSlots = GetContainerNumFreeSlots, GetContainerNumSlots
 		
@@ -279,7 +280,7 @@ end
 function module:SetClock()
 	local stat = NewStat("Clock")
 	
-	if db.profile.Clock.Enable and not stat.Created then
+	if db.Clock.Enable and not stat.Created then
 		-- Localized functions
 		local tonumber, date, GetGameTime, IsInInstance, GetInstanceInfo = tonumber, date, GetGameTime, IsInInstance, GetInstanceInfo
 		local GetNumWorldPVPAreas, GetWorldPVPAreaInfo, GetNumSavedInstances, GetSavedInstanceInfo = GetNumWorldPVPAreas, GetWorldPVPAreaInfo, GetNumSavedInstances, GetSavedInstanceInfo
@@ -326,7 +327,7 @@ function module:SetClock()
 		
 		-- Script functions
 		stat.OnEnable = function(self)
-			if db.profile.Clock.ShowInstanceDifficulty then
+			if db.Clock.ShowInstanceDifficulty then
 				self:RegisterEvent("GUILD_PARTY_STATE_UPDATED")
 				self:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
 				self:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -356,14 +357,14 @@ function module:SetClock()
 					self.text:SetText("(Inv. pending)")
 				else
 					local Hr, Min, PM
-					if db.profile.Clock.LocalTime == true then
+					if db.Clock.LocalTime == true then
 						Hr, Min = tonumber(date("%H")), date("%M")
 					else
 						Hr, Min = GetGameTime()
 					end
 					PM = ((Hr >= 12) and " pm" or " am")
 					
-					if not db.profile.Clock.Time24 then
+					if not db.Clock.Time24 then
 						if Hr > 12 then
 							Hr = Hr - 12
 						elseif Hr == 0 then
@@ -372,9 +373,9 @@ function module:SetClock()
 					end
 					
 					-- time
-					local text = format("%d:%.2d%s", Hr, Min, (db.profile.Clock.Time24 and "" or PM))
+					local text = format("%d:%.2d%s", Hr, Min, (db.Clock.Time24 and "" or PM))
 					-- instance info
-					local text2 = ((db.profile.Clock.ShowInstanceDifficulty and instanceInfo) and (" ("..instanceInfo..guildParty.."|r)") or "")
+					local text2 = ((db.Clock.ShowInstanceDifficulty and instanceInfo) and (" ("..instanceInfo..guildParty.."|r)") or "")
 					
 					self.text:SetText(text..text2)
 				end
@@ -420,7 +421,7 @@ function module:SetClock()
 				
 				local Hr, Min, PM
 				if (invitesPending) then -- Show main time in tooltip if invites are pending
-					if db.profile.Clock.LocalTime == true then
+					if db.Clock.LocalTime == true then
 						Hr, Min = tonumber(date("%H")), date("%M")
 					else
 						Hr, Min = GetGameTime()
@@ -428,7 +429,7 @@ function module:SetClock()
 					end
 					PM = ((Hr >= 12) and " pm" or " am")
 					
-					if not db.profile.Clock.Time24 then
+					if not db.Clock.Time24 then
 						if Hr > 12 then
 							Hr = Hr - 12
 						elseif Hr == 0 then
@@ -436,14 +437,14 @@ function module:SetClock()
 						end
 					end
 					
-					local text1 = (db.profile.Clock.LocalTime and "Local Time:" or "Server Time:")
-					local text2 = (Hr..":"..Min..(not db.profile.Clock.Time24 and PM or ""))
+					local text1 = (db.Clock.LocalTime and "Local Time:" or "Server Time:")
+					local text2 = (Hr..":"..Min..(not db.Clock.Time24 and PM or ""))
 					
 					GameTooltip:AddDoubleLine(text1, text2)
 				end
 				
 				-- Show alternate time in tooltip
-				if db.profile.Clock.LocalTime == true then
+				if db.Clock.LocalTime == true then
 					Hr, Min = GetGameTime()
 					Min = Min < 10 and "0"..Min or Min
 				else
@@ -451,7 +452,7 @@ function module:SetClock()
 				end
 				PM = ((Hr >= 12) and " pm" or " am")
 				
-				if not db.profile.Clock.Time24 then
+				if not db.Clock.Time24 then
 					if Hr > 12 then
 						Hr = Hr - 12
 					elseif Hr == 0 then
@@ -459,8 +460,8 @@ function module:SetClock()
 					end
 				end
 				
-				local text1 = (db.profile.Clock.LocalTime and "Server Time:" or "Local Time:")
-				local text2 = (Hr..":"..Min..(not db.profile.Clock.Time24 and PM or ""))
+				local text1 = (db.Clock.LocalTime and "Server Time:" or "Local Time:")
+				local text2 = (Hr..":"..Min..(not db.Clock.Time24 and PM or ""))
 				
 				GameTooltip:AddDoubleLine(text1, text2)
 				
@@ -520,7 +521,7 @@ end
 function module:SetCurrency()
 	local stat = NewStat("Currency")
 	
-	if db.profile.Currency.Enable and not stat.Created then
+	if db.Currency.Enable and not stat.Created then
 		NewIcon(stat)
 		
 		-- Script functions
@@ -574,8 +575,8 @@ end
 function module:SetDPS()
 	local stat = NewStat("DPS")
 	
-	if db.profile.DPS.Enable and not stat.Created then
-		if (type(db.profile.DPS.active) ~= "number" or db.profile.DPS.active > 4) then db.profile.DPS.active = 1 end
+	if db.DPS.Enable and not stat.Created then
+		if (type(db.DPS.active) ~= "number" or db.DPS.active > 4) then db.DPS.active = 1 end
 		
 		-- Localized functions
 		local UnitGUID, GetTime = UnitGUID, GetTime
@@ -590,7 +591,7 @@ function module:SetDPS()
 		local totalHealingTaken, effectiveHealingTaken, overHealingTaken = 0, 0, 0
 		
 		local function active()
-			return db.profile.DPS.active
+			return db.DPS.active
 		end
 		
 		local textFormat = {
@@ -768,7 +769,7 @@ function module:SetDPS()
 		end
 		
 		stat.OnClick = function(self, button) -- Alternate through modes
-			db.profile.DPS.active = active() < 4 and active() + 1 or 1
+			db.DPS.active = active() < 4 and active() + 1 or 1
 			self.text:SetFormattedText(textFormat[active()], formulas[active()]())
 		end
 		
@@ -826,7 +827,7 @@ end
 function module:SetDualSpec()
 	local stat = NewStat("DualSpec")
 	
-	if db.profile.DualSpec.Enable and not stat.Created then
+	if db.DualSpec.Enable and not stat.Created then
 		NewIcon(stat)
 		stat.icon:SetScript("OnMouseDown", function(self, button) -- Toggle GlyphFrame
 			if not PlayerTalentFrame then
@@ -883,10 +884,13 @@ function module:SetDualSpec()
 			
 			local activeTalentGroup = GetActiveTalentGroup()
 			local curCache = specCache[activeTalentGroup]
-			if not curCache then return end
-
+			if not curCache then
+				self.text:SetText("|cffff0000Talents unavailable!|r")
+				return
+			end
+			
 			local text = " "..curCache.specName
-			if db.profile.DualSpec.ShowSpentPoints then
+			if db.DualSpec.ShowSpentPoints then
 				if curCache.defined then
 					local a = curCache[1].pointsSpent or 0
 					local b = curCache[2].pointsSpent or 0
@@ -973,7 +977,7 @@ end
 function module:SetDurability()
 	local stat = NewStat("Durability")
 	
-	if db.profile.Durability.Enable and not stat.Created then
+	if db.Durability.Enable and not stat.Created then
 		-- Localized functions
 		local GetInventoryItemLink, GetInventoryItemDurability = GetInventoryItemLink, GetInventoryItemDurability
 		local sort, floor = sort, floor
@@ -1062,7 +1066,7 @@ end
 function module:SetFPS()
 	local stat = NewStat("FPS")
 	
-	if db.profile.FPS.Enable and not stat.Created then
+	if db.FPS.Enable and not stat.Created then
 		-- Localized functions
 		local GetFramerate, GetNetStats = GetFramerate, GetNetStats
 		local floor = floor
@@ -1098,10 +1102,10 @@ function module:SetFPS()
 				
 				-- Set value
 				local _, _, lagHome, lagWorld = GetNetStats()
-				if db.profile.FPS.MSValue == "Both" then
+				if db.FPS.MSValue == "Both" then
 					self.text:SetFormattedText("%dfps    %dms | %dms", floor(GetFramerate()), lagHome, lagWorld)
 				else
-					self.text:SetFormattedText("%dfps    %dms", floor(GetFramerate()), (db.profile.FPS.MSValue == "Home") and lagHome or lagWorld)
+					self.text:SetFormattedText("%dfps    %dms", floor(GetFramerate()), (db.FPS.MSValue == "Home") and lagHome or lagWorld)
 				end
 				
 				-- Update tooltip if open
@@ -1150,7 +1154,7 @@ end
 function module:SetGold()
 	local stat = NewStat("Gold")
 	
-	if db.profile.Gold.Enable and not stat.Created then
+	if db.Gold.Enable and not stat.Created then
 		-- Localized functions
 		local GetMoney, GetBackpackCurrencyInfo, GetItemQualityColor, GetItemInfo = GetMoney, GetBackpackCurrencyInfo, GetItemQualityColor, GetItemInfo
 		local format, floor, abs, mod, select = format, floor, abs, mod, select
@@ -1176,11 +1180,11 @@ function module:SetGold()
 			local gold, silver, copper = floor(money / 10000), mod(floor(money / 100), 100), mod(floor(money), 100)
 			
 			if gold ~= 0 then
-				return format(db.profile.Gold.ColorType and "%s|cffffd700g|r %s|cffc7c7cfs|r" or "%sg %ss", gold, silver)
+				return format(db.Gold.ColorType and "%s|cffffd700g|r %s|cffc7c7cfs|r" or "%sg %ss", gold, silver)
 			elseif silver ~= 0 then
-				return format(db.profile.Gold.ColorType and "%s|cffc7c7cfs|r %s|cffeda55fc|r" or "%ss %sc", silver, copper)
+				return format(db.Gold.ColorType and "%s|cffc7c7cfs|r %s|cffeda55fc|r" or "%ss %sc", silver, copper)
 			else
-				return format(db.profile.Gold.ColorType and "%s|cffeda55fc|r" or "%sc", copper)
+				return format(db.Gold.ColorType and "%s|cffeda55fc|r" or "%sc", copper)
 			end
 		end
 		
@@ -1196,11 +1200,10 @@ function module:SetGold()
 		stat.RefreshServerTotal = function(self)
 			serverGold = 0
 			
-			for player, gold in pairs(LUIGold.gold[myPlayerRealm]["Alliance"]) do
-				serverGold = serverGold + gold
-			end
-			for player, gold in pairs(LUIGold.gold[myPlayerRealm]["Horde"]) do
-				serverGold = serverGold + gold
+			for _, data in pairs(db.realm) do
+				for player, gold in pairs(data) do
+					serverGold = serverGold + gold
+				end
 			end
 		end
 			
@@ -1219,10 +1222,10 @@ function module:SetGold()
 			end
 			
 			-- Set value
-			self.text:SetText(formatMoney(db.profile.Gold.ServerTotal and serverGold or newMoney))
+			self.text:SetText(formatMoney(db.Gold.ServerTotal and serverGold or newMoney))
 			
 			-- Update gold db
-			LUIGold.gold[myPlayerRealm][myPlayerFaction][myPlayerName] = newMoney
+			db.realm[myPlayerFaction][myPlayerName] = newMoney
 			
 			-- Update gold count
 			oldMoney = newMoney
@@ -1235,19 +1238,11 @@ function module:SetGold()
 		stat.OnEnable = function(self)
 			oldMoney = GetMoney()
 			
-			LUIGold = LUIGold or {}
-			LUIGold.gold = LUIGold.gold or {}
-			LUIGold.gold[myPlayerRealm] = LUIGold.gold[myPlayerRealm] or {}
-			LUIGold.gold[myPlayerRealm].Alliance = LUIGold.gold[myPlayerRealm].Alliance or {}
-			LUIGold.gold[myPlayerRealm].Horde = LUIGold.gold[myPlayerRealm].Horde or {}
-			
 			self:RefreshServerTotal()
 			self:PLAYER_MONEY()
 		end
 		
-		stat.OnReset = function(self)
-			self:PLAYER_MONEY()
-		end
+		stat.OnReset = stat.PLAYER_MONEY
 		
 		stat.OnClick = function(self, button)
 			if button == "RightButton" then -- reset session
@@ -1256,7 +1251,7 @@ function module:SetGold()
 				oldMoney = GetMoney()
 				UpdateTooltip(self)
 			else -- toggle server/toon gold
-				db.profile.Gold.ServerTotal = not db.profile.Gold.ServerTotal
+				db.Gold.ServerTotal = not db.Gold.ServerTotal
 				self:PLAYER_MONEY()
 			end 
 		end
@@ -1278,29 +1273,29 @@ function module:SetGold()
 					GameTooltip:AddDoubleLine("Profit:", formatMoney(profit-spent), 0,1,0, 1,1,1)
 				end
 			
-				local totalGold, totalPlayerFaction, totalOtherFaction = 0, 0, 0
-				local otherFaction = ((myPlayerFaction == "Alliance") and "Horde" or "Alliance")
+				local factionGold = {
+					Horde = 0,
+					Alliance = 0,
+				}
 				
 				GameTooltip:AddLine(" ")
 				GameTooltip:AddLine("Character:")
-				for k, v in pairs(LUIGold.gold[myPlayerRealm][myPlayerFaction]) do
-					GameTooltip:AddDoubleLine(k, formatTooltipMoney(v), colors[myPlayerFaction].r, colors[myPlayerFaction].g, colors[myPlayerFaction].b, 1,1,1)
-					totalGold = totalGold + v
-					totalPlayerFaction = totalPlayerFaction + v
+				for player, gold in pairs(db.realm[myPlayerFaction]) do
+					GameTooltip:AddDoubleLine(player, formatTooltipMoney(gold), colors[myPlayerFaction].r, colors[myPlayerFaction].g, colors[myPlayerFaction].b, 1,1,1)
+					factionGold[myPlayerFaction] = factionGold[myPlayerFaction] + gold
 				end
-				for k, v in pairs(LUIGold.gold[myPlayerRealm][otherFaction]) do
-					GameTooltip:AddDoubleLine(k, formatTooltipMoney(v), colors[otherFaction].r, colors[otherFaction].g, colors[otherFaction].b, 1,1,1)
-					totalGold = totalGold + v
-					totalOtherFaction = totalOtherFaction + v
+				for player, gold in pairs(db.realm[otherFaction]) do
+					GameTooltip:AddDoubleLine(player, formatTooltipMoney(gold), colors[otherFaction].r, colors[otherFaction].g, colors[otherFaction].b, 1,1,1)
+					factionGold[otherFaction] = factionGold[otherFaction] + gold
 				end
 				
 				GameTooltip:AddLine(" ")
 				GameTooltip:AddLine("Server:")
-				if totalOtherFaction > 0 then
-					GameTooltip:AddDoubleLine(myPlayerFaction..":", formatTooltipMoney(totalPlayerFaction), colors[myPlayerFaction].r, colors[myPlayerFaction].g, colors[myPlayerFaction].b, 1,1,1)
-					GameTooltip:AddDoubleLine(otherFaction..":", formatTooltipMoney(totalOtherFaction), colors[otherFaction].r, colors[otherFaction].g, colors[otherFaction].b, 1,1,1)
+				if factionGold[otherFaction] > 0 then
+					GameTooltip:AddDoubleLine(myPlayerFaction..":", formatTooltipMoney(factionGold[myPlayerFaction]), colors[myPlayerFaction].r, colors[myPlayerFaction].g, colors[myPlayerFaction].b, 1,1,1)
+					GameTooltip:AddDoubleLine(otherFaction..":", formatTooltipMoney(factionGold[otherFaction]), colors[otherFaction].r, colors[otherFaction].g, colors[otherFaction].b, 1,1,1)
 				end
-				GameTooltip:AddDoubleLine("Total:", formatTooltipMoney(totalGold), 1,1,1, 1,1,1)
+				GameTooltip:AddDoubleLine("Total:", formatTooltipMoney(serverGold), 1,1,1, 1,1,1)
 				
 				for i = 1, MAX_WATCHED_TOKENS do
 					local name, count, extraCurrencyType, icon, itemID = GetBackpackCurrencyInfo(i)
@@ -1336,13 +1331,42 @@ function module:ResetGold(player, faction)
 	if not player then return end
 	
 	if player == "ALL" then
-		LUIGold = {}
-		return
+		local function copyDefaults(tar, src)
+			if type(tar) ~= "table" then tar = {} end
+			
+			for k, v in pairs(src) do
+				if type(v) == "table" then
+					tar[k] = copyDefaults(tar[k], v)
+				else
+					tar[k] = v
+				end
+			end
+			
+			return tar
+		end
+		
+		wipe(db.realm)
+		copyDefaults(db.realm, dbd.realm)
+		
+		while #goldPlayerArray > 0 do
+			tremove(goldPlayerArray)
+		end
+		tinsert(goldPlayerArray, "ALL")
+		tinsert(goldPlayerArray, myPlayerName)
 	elseif faction then
-		LUIGold.gold[myPlayerRealm][faction][player] = nil
+		db.realm[faction][player] = nil
+		if player == myPlayerName then -- can't have the same name on both factions of a realm so faction check isn't needed
+			db.realm[faction][player] = 0
+		else
+			for i, v in ipairs(goldPlayerArray) do
+				if v == player then
+					tremove(goldPlayerArray, i)
+				end
+			end
+		end
 	end
 	
-	if db.profile.Gold.Enable and InfoStats.Gold and InfoStats.Gold.Created then
+	if db.Gold.Enable and InfoStats.Gold and InfoStats.Gold.Created then
 		InfoStats.Gold:RefreshServerTotal()
 		InfoStats.Gold:PLAYER_MONEY()
 	end
@@ -1372,7 +1396,7 @@ function module:SetGF()
 	local stat = NewStat("GF")
 	stat.Hidden = true
 	
-	if (db.profile.Guild.Enable or db.profile.Friends.Enable) and not stat.Created then
+	if (db.Guild.Enable or db.Friends.Enable) and not stat.Created then
 		stat:SetFrameStrata("TOOLTIP")
 		stat:SetFrameLevel(1)
 		stat:SetClampedToScreen(true)
@@ -1413,14 +1437,14 @@ function module:SetGF()
 		}
 		local sortIndexes = {
 			[true] = {	-- Guild
-				colpairs[db.profile.Guild.sortCols[1]],
-				colpairs[db.profile.Guild.sortCols[2]],
-				colpairs[db.profile.Guild.sortCols[3]]
+				colpairs[db.Guild.sortCols[1]],
+				colpairs[db.Guild.sortCols[2]],
+				colpairs[db.Guild.sortCols[3]]
 			},
 			[false] ={	-- Friends
-				colpairs[db.profile.Friends.sortCols[1]],
-				colpairs[db.profile.Friends.sortCols[2]],
-				colpairs[db.profile.Friends.sortCols[3]]
+				colpairs[db.Friends.sortCols[1]],
+				colpairs[db.Friends.sortCols[2]],
+				colpairs[db.Friends.sortCols[3]]
 			},
 		}
 		
@@ -1626,7 +1650,7 @@ function module:SetGF()
 					si, lv = s[3], 3
 				end
 			end
-			if db.profile[GorF()].sortASC[lv] then
+			if db[GorF()].sortASC[lv] then
 				return a[si] < b[si]
 			else
 				return a[si] > b[si]
@@ -1784,7 +1808,7 @@ function module:SetGF()
 
 			local nameC, levelC, zoneC, notesC, rankC = 0, 0, 0, 0, -gap
 			local nameW, levelW, zoneW, notesW, rankW
-			local hideNotes = not db.profile[GorF()].ShowNotes
+			local hideNotes = not db[GorF()].ShowNotes
 
 			local inGroup = GetNumRaidMembers() > 0 and UnitInRaid("player") or GetNumPartyMembers() > 0 and UnitInParty("player") or nil
 			local tnC, lC, zC, nC = 0, -gap, -gap, 0
@@ -1945,13 +1969,13 @@ function module:SetGF()
 			end
 
 			if nbEntries>0 then
-				local col = db.profile[GorF()].sortCols[1]
+				local col = db[GorF()].sortCols[1]
 				local obj = buttons[1][col]
 				if obj:IsShown() then
 					texOrder1:SetPoint("TOPLEFT", obj, "TOPLEFT", -.25*gap, 2 )
 					texOrder1:SetWidth(obj:GetWidth() + gap*.5)
 					texOrder1:SetHeight(nbEntries * btnHeight + 1)
-					local asc = db.profile[GorF()].sortASC[1]
+					local asc = db[GorF()].sortASC[1]
 					if col == "level" then asc = not asc end
 					local a1, r1, g1, b1 = GF_Colors.OrderA[4], unpack(GF_Colors.OrderA)
 					local a2, r2, g2, b2 = 0, GameTooltip:GetBackdropColor()
@@ -2044,7 +2068,7 @@ function module:SetGF()
 				for v, i in pairs(colpairs) do
 					local btnv = btn[v]
 					if btnv:IsShown() and pos >= btnv:GetLeft() - ofx and pos <= btnv:GetRight() + ofx then
-						local sortCols, sortASC = db.profile[GorF()].sortCols, db.profile[GorF()].sortASC
+						local sortCols, sortASC = db[GorF()].sortCols, db[GorF()].sortASC
 						if sortCols[1] == v then
 							sortASC[1] = not sortASC[1]
 						else
@@ -2089,7 +2113,7 @@ function module:SetGF()
 		end
 		
 		stat.ShowHints = function(self, btn)
-			if db.profile[GorF()].ShowHints and btn and btn.unit then
+			if db[GorF()].ShowHints and btn and btn.unit then
 				local point = self.IsGuild and self.Guild or self.Friends
 				if (select(1, self:GetCenter()) > UIParent:GetWidth()/2) then
 					GameTooltip:SetOwner(point, isTop(self) and "ANCHOR_BOTTOMLEFT" or "ANCHOR_LEFT", -(self:GetWidth()-point:GetWidth())/2, 0)
@@ -2163,7 +2187,7 @@ end
 function module:SetGuild()
 	local stat = NewStat("Guild")
 	
-	if db.profile.Guild.Enable and not stat.Created then
+	if db.Guild.Enable and not stat.Created then
 		if not InfoStats.GF or not InfoStats.GF.Created then module:SetGF() end
 		local tooltip = InfoStats.GF
 		
@@ -2175,12 +2199,12 @@ function module:SetGuild()
 		
 		-- Stat functions
 		stat.UpdateText = function(self)
-			self.text:SetText(IsInGuild() and (db.profile.Guild.ShowTotal and "Guild: %d/%d" or "Guild: %d"):format(#guildEntries, GetNumGuildMembers(true)) or "No Guild")
+			self.text:SetText(IsInGuild() and (db.Guild.ShowTotal and "Guild: %d/%d" or "Guild: %d"):format(#guildEntries, GetNumGuildMembers(true)) or "No Guild")
 		end
 		
 		stat.UpdateHints = function(self)
 			if tooltip.onBlock then
-				if db.profile.Guild.ShowHints and IsInGuild() then
+				if db.Guild.ShowHints and IsInGuild() then
 					if (select(1, self:GetCenter()) > UIParent:GetWidth()/2) then
 						GameTooltip:SetOwner(self, isTop(self) and "ANCHOR_BOTTOMLEFT" or "ANCHOR_LEFT", -(tooltip:GetWidth()-self:GetWidth())/2, 0)
 					else
@@ -2258,10 +2282,10 @@ function module:SetGuild()
 					GuildFrameTab1:Click()
 				end
 			elseif button == "Button4" then -- toggle guild and officer notes
-				db.profile.Guild.ShowNotes = not db.profile.Guild.ShowNotes
+				db.Guild.ShowNotes = not db.Guild.ShowNotes
 				tooltip:Update()
 			elseif button == "Button5" then -- toggle mouseclick hints
-				db.profile.Guild.ShowHints = not db.profile.Guild.ShowHints
+				db.Guild.ShowHints = not db.Guild.ShowHints
 				self:UpdateHints()
 			end
 		end
@@ -2283,7 +2307,7 @@ end
 function module:SetFriends()
 	local stat = NewStat("Friends")
 	
-	if db.profile.Friends.Enable and not stat.Created then
+	if db.Friends.Enable and not stat.Created then
 		if not InfoStats.GF or not InfoStats.GF.Created then module:SetGF() end
 		local tooltip = InfoStats.GF
 		
@@ -2299,13 +2323,13 @@ function module:SetFriends()
 		-- Stat functions
 		stat.UpdateText = function(self, updatePanel)
 			local totalRF, onlineRF = BNGetNumFriends()
-			self.text:SetText((db.profile.Friends.ShowTotal and "Friends: %d/%d" or "Friends: %d"):format(onlineFriends + onlineRF, totalFriends + totalRF))
+			self.text:SetText((db.Friends.ShowTotal and "Friends: %d/%d" or "Friends: %d"):format(onlineFriends + onlineRF, totalFriends + totalRF))
 			if updatePanel then self:BN_FRIEND_INFO_CHANGED() end
 		end
 		
 		stat.UpdateHints = function(self)
 			if tooltip.onBlock then
-				if db.profile.Friends.ShowHints then
+				if db.Friends.ShowHints then
 					if (select(1, self:GetCenter()) > UIParent:GetWidth()/2) then
 						GameTooltip:SetOwner(self, isTop(self) and "ANCHOR_BOTTOMLEFT" or "ANCHOR_LEFT", -(tooltip:GetWidth()-self:GetWidth())/2, 0)
 					else
@@ -2405,10 +2429,10 @@ function module:SetFriends()
 			elseif button == "LeftButton" then -- toggle friends list
 				ToggleFriendsFrame(1)
 			elseif button == "Button4" then -- toggle player notes
-				db.profile.Friends.ShowNotes = not db.profile.Friends.ShowNotes
+				db.Friends.ShowNotes = not db.Friends.ShowNotes
 				tooltip:Update()
 			elseif button == "Button5" then -- toggle mouseclick hints
-				db.profile.Friends.ShowHints = not db.profile.Friends.ShowHints
+				db.Friends.ShowHints = not db.Friends.ShowHints
 				self:UpdateHints()
 			end
 		end
@@ -2434,7 +2458,7 @@ end
 function module:SetInstance()
 	local stat = NewStat("Instance")
 	
-	if db.profile.Instance.Enable and not stat.Created then
+	if db.Instance.Enable and not stat.Created then
 		-- Localized functions
 		local GetNumSavedInstances, GetSavedInstanceInfo, SecondsToTime = GetNumSavedInstances, GetSavedInstanceInfo, SecondsToTime
 		local sort, time = sort, time
@@ -2546,7 +2570,7 @@ end
 function module:SetMemory()
 	local stat = NewStat("Memory")
 	
-	if db.profile.Memory.Enable and not stat.Created then
+	if db.Memory.Enable and not stat.Created then
 		-- Localized functions
 		local UpdateAddOnMemoryUsage, IsAddOnLoaded = UpdateAddOnMemoryUsage, IsAddOnLoaded
 		local GetNumAddOns, GetAddOnInfo, GetAddOnMemoryUsage = GetNumAddOns, GetAddOnInfo, GetAddOnMemoryUsage
@@ -2662,7 +2686,7 @@ local function DisableStat(stat)
 end
 
 local function ToggleStat(stat)
-	if db.profile[stat] and not db.profile[stat].Enable then
+	if db[stat] and not db[stat].Enable then
 		DisableStat(stat)
 	else
 		EnableStat(stat)
@@ -2929,6 +2953,12 @@ module.defaults = {
 			},
 		},
 	},
+	realm = {
+		[myPlayerFaction] = {
+			[myPlayerName] = 0,
+		},
+		[otherFaction] = {},
+	}
 }
 
 
@@ -2937,13 +2967,10 @@ function module:LoadOptions()
 	local msvalues = {"Both", "Home", "World"}
 	local fontflags = {"NONE", "OUTLINE", "THICKOUTLINE", "MONOCHROME"}
 	
-	local goldPlayerArray = {"ALL"}
-	db.profile.Gold.PlayerReset = db.defaults.profile.Gold.PlayerReset
-	if LUIGold.gold and type(LUIGold.gold[myPlayerRealm]) == "table" then
-		for faction in pairs(LUIGold.gold[myPlayerRealm]) do
-			for player, gold in pairs(LUIGold.gold[myPlayerRealm][faction]) do
-				table.insert(goldPlayerArray, player)
-			end
+	db.Gold.PlayerReset = dbd.Gold.PlayerReset
+	for faction, data in pairs(db.realm) do
+		for player, gold in pairs(data) do
+			table.insert(goldPlayerArray, player)
 		end
 	end
 	
@@ -2963,22 +2990,18 @@ function module:LoadOptions()
 		end
 	end
 	local function resetGold()
-		if db.profile.Gold.PlayerReset == "ALL" then
+		if db.Gold.PlayerReset == "ALL" then
 			module:ResetGold("ALL")
 			InfoStats.Gold:OnEnable()
-			db.profile.Gold.PlayerReset = db.defaults.profile.Gold.PlayerReset
+			db.Gold.PlayerReset = dbd.Gold.PlayerReset
 			return
 		end
 		
-		if LUIGold.gold and type(LUIGold.gold[myPlayerRealm]) == "table" then
-			for faction in pairs(LUIGold.gold[myPlayerRealm]) do
-				for player, gold in pairs(LUIGold.gold[myPlayerRealm][faction]) do
-					if db.profile.Gold.PlayerReset == player then
-						module:ResetGold(player, faction)
-						db.profile.Gold.PlayerReset = db.defaults.profile.Gold.PlayerReset
-						return
-					end
-				end
+		for faction, data in pairs(db.realm) do
+			if data[db.Gold.PlayerReset] then
+				module:ResetGold(db.Gold.PlayerReset, faction)
+				db.Gold.PlayerReset = dbd.Gold.PlayerReset
+				return
 			end
 		end
 	end
@@ -2986,7 +3009,7 @@ function module:LoadOptions()
 	local function StatDisabled(info)
 		for i, v in ipairs(info) do
 			if v == module:GetName() then
-				return not db.profile[info[i+1]].Enable
+				return not db[info[i+1]].Enable
 			end
 		end
 	end
@@ -2994,7 +3017,7 @@ function module:LoadOptions()
 	-- Local options creators.
 	local function NameLabel(info, statName) -- (info [, statName])
 		statName = statName or info[#info]
-		return (db.profile[info[#info]].Enable and statName or ("|cff888888"..statName.."|r"))
+		return (db[info[#info]].Enable and statName or ("|cff888888"..statName.."|r"))
 	end
 	local function PositionOptions(order, statName) -- (order [, statName])
 		local horizontal = {"Left", "Right"}
@@ -3012,15 +3035,15 @@ function module:LoadOptions()
 					desc = function(info)
 							return ("X offset for the " .. (statName or info[#info-2]) .. " info text.\n\n" ..
 								"Note:\nPositive values = right\nNegative values = left\n" ..
-								"Default: " .. db.defaults.profile[info[#info-2]].X
+								"Default: " .. dbd[info[#info-2]].X
 							)
 						end,
 					type = "input",
 					order = 1,
-					get = function(info) return tostring(db.profile[info[#info-2]].X) end,
+					get = function(info) return tostring(db[info[#info-2]].X) end,
 					set = function(info, value)
 						if value == nil or value == "" then value = "0" end
-						db.profile[info[#info-2]].X = tonumber(value)
+						db[info[#info-2]].X = tonumber(value)
 						SetInfoPanel(info[#info-2])
 					end,
 				},
@@ -3029,16 +3052,16 @@ function module:LoadOptions()
 					desc = function(info)
 							return ("Y offset for the " .. (statName or info[#info-2]) .. " info text.\n\n" ..
 								"Note:\nPositive values = up\nNegative values = down\n" ..
-								"Default: " .. db.defaults.profile[info[#info-2]].Y
+								"Default: " .. dbd[info[#info-2]].Y
 							)
 						end,
 					type = "input",
 					order = 2,
-					disabled = function(info) return not db.profile[info[#info-2]].Enable end,
-					get = function(info) return tostring(db.profile[info[#info-2]].Y) end,
+					disabled = function(info) return not db[info[#info-2]].Enable end,
+					get = function(info) return tostring(db[info[#info-2]].Y) end,
 					set = function(info, value)
 						if value == nil or value == "" then value = "0" end
-						db.profile[info[#info-2]].Y = tonumber(value)
+						db[info[#info-2]].Y = tonumber(value)
 						SetInfoPanel(info[#info-2])
 					end,
 				},
@@ -3046,7 +3069,7 @@ function module:LoadOptions()
 					name = "Horizontal",
 					desc = function(info)
 							return ("Select the horizontal panel that the " .. (statName or info[#info-2]) .. " info text will be anchored to.\n\n" ..
-								"Default: " .. db.defaults.profile[info[#info-2]].InfoPanel.Horizontal
+								"Default: " .. dbd[info[#info-2]].InfoPanel.Horizontal
 							)
 						end,
 					type = "select",
@@ -3054,12 +3077,12 @@ function module:LoadOptions()
 					values = horizontal,
 					get = function(info)
 						for k, v in pairs(horizontal) do
-							if db.profile[info[#info-2]].InfoPanel.Horizontal == v then return k end
+							if db[info[#info-2]].InfoPanel.Horizontal == v then return k end
 						end
 					end,
 					set = function(info, value)
-						db.profile[info[#info-2]].InfoPanel.Horizontal = horizontal[value]
-						db.profile[info[#info-2]].X = 0
+						db[info[#info-2]].InfoPanel.Horizontal = horizontal[value]
+						db[info[#info-2]].X = 0
 						SetInfoPanel(info[#info-2])
 					end,
 				},
@@ -3067,7 +3090,7 @@ function module:LoadOptions()
 					name = "Vertical",
 					desc = function(info)
 							return ("Select the vertical panel that the " .. (statName or info[#info-2]) .. " info text will be anchored to.\n\n" ..
-								"Default: " .. db.defaults.profile[info[#info-2]].InfoPanel.Vertical
+								"Default: " .. dbd[info[#info-2]].InfoPanel.Vertical
 							)
 						end,
 					type = "select",
@@ -3075,12 +3098,12 @@ function module:LoadOptions()
 					values = vertical,
 					get = function(info)
 						for k, v in pairs(vertical) do
-							if db.profile[info[#info-2]].InfoPanel.Vertical == v then return k end
+							if db[info[#info-2]].InfoPanel.Vertical == v then return k end
 						end
 					end,
 					set = function(info, value)
-						db.profile[info[#info-2]].InfoPanel.Vertical = vertical[value]
-						db.profile[info[#info-2]].Y = 0
+						db[info[#info-2]].InfoPanel.Vertical = vertical[value]
+						db[info[#info-2]].Y = 0
 						SetInfoPanel(info[#info-2])
 					end,
 				},
@@ -3101,7 +3124,7 @@ function module:LoadOptions()
 					name = "Size",
 					desc = function(info)
 							return ("Choose your " .. (statName or info[#info-2]) .. " info text's fontsize.\n\n" ..
-								"Default: " .. db.defaults.profile[info[#info-2]].FontSize
+								"Default: " .. dbd[info[#info-2]].FontSize
 							)
 						end,
 					type = "range",
@@ -3109,16 +3132,16 @@ function module:LoadOptions()
 					min = 1,
 					max = 40,
 					step = 1,
-					get = function(info) return db.profile[info[#info-2]].FontSize end,
+					get = function(info) return db[info[#info-2]].FontSize end,
 					set = function(info, value)
-						db.profile[info[#info-2]].FontSize = value
+						db[info[#info-2]].FontSize = value
 						SetFontSettings(info[#info-2])
 					end,
 				},
 				Color = {
 					name = "Color",
 					desc = function(info)
-							local defaults = db.defaults.profile[info[#info-2]].Color
+							local defaults = dbd[info[#info-2]].Color
 							return ("Choose your " .. (statName or info[#info-2]) .. " info text's colour.\n\n" ..
 								"Defaults:\nr = " .. defaults.r .. "\ng = " .. defaults.g .. "\nb = " .. defaults.b .. "\na = " .. defaults.a
 							)
@@ -3126,11 +3149,11 @@ function module:LoadOptions()
 					type = "color",
 					hasAlpha = true,
 					get = function(info)
-							local color = db.profile[info[#info-2]].Color
+							local color = db[info[#info-2]].Color
 							return color.r, color.g, color.b, color.a
 						end,
 					set = function(info, r, g, b, a)
-						local color = db.profile[info[#info-2]].Color
+						local color = db[info[#info-2]].Color
 						color.r = r
 						color.g = g
 						color.b = b
@@ -3144,15 +3167,15 @@ function module:LoadOptions()
 					name = "Font",
 					desc = function(info)
 							return ("Choose your " .. (statName or info[#info-2]) .. " info text's font.\n\n" ..
-								"Default: " .. db.defaults.profile[info[#info-2]].Font
+								"Default: " .. dbd[info[#info-2]].Font
 							)
 						end,
 					type = "select",
 					dialogControl = "LSM30_Font",
 					values = widgetLists.font,
-					get = function(info) return db.profile[info[#info-2]].Font end,
+					get = function(info) return db[info[#info-2]].Font end,
 					set = function(info, value)
-						db.profile[info[#info-2]].Font = value
+						db[info[#info-2]].Font = value
 						SetFontSettings(info[#info-2])
 					end,
 					order = 3,
@@ -3161,20 +3184,20 @@ function module:LoadOptions()
 					name = "Font Flag",
 					desc = function(info)
 							return ("Choose your " .. (statName or info[#info-2]) .. " info text's font flag.\n\n" ..
-								"Default: " .. db.defaults.profile[info[#info-2]].Outline
+								"Default: " .. dbd[info[#info-2]].Outline
 							)
 						end,
 					type = "select",
 					values = fontflags,
 					get = function(info)
 						for k, v in pairs(fontflags) do
-							if db.profile[info[#info-2]].Outline == v then
+							if db[info[#info-2]].Outline == v then
 								return k
 							end
 						end
 					end,
 					set = function(info, value)
-						db.profile[info[#info-2]].Outline = fontflags[value]
+						db[info[#info-2]].Outline = fontflags[value]
 						SetFontSettings(info[#info-2])
 					end,
 					order = 4,
@@ -3193,11 +3216,11 @@ function module:LoadOptions()
 			func = function(info)
 				local statDB = info[#info-1]
 				
-				for k, v in pairs(db.profile[statDB]) do
-					db.profile[statDB][k] = nil
+				for k, v in pairs(db[statDB]) do
+					db[statDB][k] = nil
 				end
-				copyDefaults(db.profile[statDB], db.defaults.profile[statDB])
-				db.profile[statDB].Enable = true
+				copyDefaults(db[statDB], dbd[statDB])
+				db[statDB].Enable = true
 				
 				ResetStat(statDB)
 				DisableStat(statDB)
@@ -3214,8 +3237,8 @@ function module:LoadOptions()
 			name = "Combat Lock Down",
 			desc = "Hide tooltip info for datatext stats while in combat.",
 			type = "toggle",
-			get = function() return db.profile.CombatLock end,
-			set = function(info, value) db.profile.CombatLock = value end,
+			get = function() return db.CombatLock end,
+			set = function(info, value) db.CombatLock = value end,
 			order = 1,
 		},
 		Bags = {
@@ -3233,9 +3256,9 @@ function module:LoadOptions()
 					desc = "Whether you want to show your Bag Status or not.",
 					type = "toggle",
 					width = "full",
-					get = function() return db.profile.Bags.Enable end,
+					get = function() return db.Bags.Enable end,
 					set = function(info, value)
-						db.profile.Bags.Enable = value
+						db.Bags.Enable = value
 						ToggleStat("Bags")
 					end,
 					order = 2,
@@ -3260,9 +3283,9 @@ function module:LoadOptions()
 					desc = "Whether you want to show your Clock or not.",
 					type = "toggle",
 					width = "full",
-					get = function() return db.profile.Clock.Enable end,
+					get = function() return db.Clock.Enable end,
 					set = function(info, value)
-						db.profile.Clock.Enable = value
+						db.Clock.Enable = value
 						ToggleStat("Clock")
 					end,
 					order = 2,
@@ -3273,9 +3296,9 @@ function module:LoadOptions()
 					type = "toggle",
 					width = "full",
 					disabled = StatDisabled,
-					get = function() return db.profile.Clock.ShowInstanceDifficulty end,
+					get = function() return db.Clock.ShowInstanceDifficulty end,
 					set = function(info, value)
-						db.profile.Clock.ShowInstanceDifficulty = value
+						db.Clock.ShowInstanceDifficulty = value
 						InfoStats.Clock:OnEnable()
 					end,
 					order = 3,
@@ -3285,8 +3308,8 @@ function module:LoadOptions()
 					desc = "Whether you want to show your Local Time or Server Time.",
 					type = "toggle",
 					disabled = StatDisabled,
-					get = function() return db.profile.Clock.LocalTime end,
-					set = function(info, value) db.profile.Clock.LocalTime = value end,
+					get = function() return db.Clock.LocalTime end,
+					set = function(info, value) db.Clock.LocalTime = value end,
 					order = 4,
 				},
 				EnableTime24 = {
@@ -3294,8 +3317,8 @@ function module:LoadOptions()
 					desc = "Whether you want to show 24 or 12 hour Clock.",
 					type = "toggle",
 					disabled = StatDisabled,
-					get = function() return db.profile.Clock.Time24 end,
-					set = function(info, value) db.profile.Clock.Time24 = value end,
+					get = function() return db.Clock.Time24 end,
+					set = function(info, value) db.Clock.Time24 = value end,
 					order = 5,
 				},
 				Position = PositionOptions(6),
@@ -3318,9 +3341,9 @@ function module:LoadOptions()
 					desc = "Whether you want to show your Currency Info or not.",
 					type = "toggle",
 					width = "full",
-					get = function() return db.profile.Currency.Enable end,
+					get = function() return db.Currency.Enable end,
 					set = function(info, value)
-						db.profile.Currency.Enable = value
+						db.Currency.Enable = value
 						ToggleStat("Currency")
 					end,
 					order = 2,
@@ -3345,9 +3368,9 @@ function module:LoadOptions()
 					desc = "Whether you want to show your DPS or not.",
 					type = "toggle",
 					width = "full",
-					get = function() return db.profile.DPS.Enable end,
+					get = function() return db.DPS.Enable end,
 					set = function(info, value)
-						db.profile.DPS.Enable = value
+						db.DPS.Enable = value
 						ToggleStat("DPS")
 					end,
 					order = 2,
@@ -3372,9 +3395,9 @@ function module:LoadOptions()
 					desc = "Whether you want to show your Spec or not. (Only for level 10+)",
 					type = "toggle",
 					width = "full",
-					get = function() return db.profile.DualSpec.Enable end,
+					get = function() return db.DualSpec.Enable end,
 					set = function(info, value)
-						db.profile.DualSpec.Enable = value
+						db.DualSpec.Enable = value
 						ToggleStat("DualSpec")
 					end,
 					order = 2,
@@ -3384,9 +3407,9 @@ function module:LoadOptions()
 					desc = "Show spent talent points \"(x/x/x)\".",
 					type = "toggle",
 					disabled = StatDisabled,
-					get = function() return db.profile.DualSpec.ShowSpentPoints end,
+					get = function() return db.DualSpec.ShowSpentPoints end,
 					set = function(info, value)
-						db.profile.DualSpec.ShowSpentPoints = value
+						db.DualSpec.ShowSpentPoints = value
 						InfoStats.DualSpec:PLAYER_TALENT_UPDATE()
 					end,
 					order = 3,
@@ -3411,9 +3434,9 @@ function module:LoadOptions()
 					desc = "Whether you want to show your Durability or not.",
 					type = "toggle",
 					width = "full",
-					get = function() return db.profile.Durability.Enable end,
+					get = function() return db.Durability.Enable end,
 					set = function(info, value)
-						db.profile.Durability.Enable = value
+						db.Durability.Enable = value
 						ToggleStat("Durability")
 					end,
 					order = 2,
@@ -3438,25 +3461,25 @@ function module:LoadOptions()
 					desc = "Whether you want to show your FPS / MS or not.",
 					type = "toggle",
 					width = "full",
-					get = function() return db.profile.FPS.Enable end,
+					get = function() return db.FPS.Enable end,
 					set = function(info, value)
-						db.profile.FPS.Enable = value
+						db.FPS.Enable = value
 						ToggleStat("FPS")
 					end,
 					order = 2,
 				},
 				MSValue = {
 					name = "MS Value",
-					desc = "Wether you want your MS to show World, Home or both latency values.\n\nDefault: "..db.defaults.profile.FPS.MSValue,
+					desc = "Wether you want your MS to show World, Home or both latency values.\n\nDefault: "..dbd.FPS.MSValue,
 					type = "select",
 					disabled = StatDisabled,
 					values = msvalues,
 					get = function()
 						for k, v in pairs(msvalues) do
-							if db.profile.FPS.MSValue == v then return k end
+							if db.FPS.MSValue == v then return k end
 						end
 					end,
-					set = function(info, value) db.profile.FPS.MSValue = msvalues[value] end,
+					set = function(info, value) db.FPS.MSValue = msvalues[value] end,
 					order = 3,
 				},
 				Position = PositionOptions(4, "FPS / MS"),
@@ -3479,9 +3502,9 @@ function module:LoadOptions()
 					desc = "Whether you want to show your Friends Status or not.",
 					type = "toggle",
 					width = "full",
-					get = function() return db.profile.Friends.Enable end,
+					get = function() return db.Friends.Enable end,
 					set = function(info, value)
-						db.profile.Friends.Enable = value
+						db.Friends.Enable = value
 						ToggleStat("Friends")
 					end,
 					order = 2,
@@ -3492,9 +3515,9 @@ function module:LoadOptions()
 					type = "toggle",
 					width = "full",
 					disabled = StatDisabled,
-					get = function() return db.profile.Friends.ShowTotal end,
+					get = function() return db.Friends.ShowTotal end,
 					set = function(info, value)
-						db.profile.Friends.ShowTotal = value
+						db.Friends.ShowTotal = value
 						InfoStats.Friends:UpdateText()
 						ShowFriends()
 					end,
@@ -3505,8 +3528,8 @@ function module:LoadOptions()
 					desc = "Whether you want to show mouseclick hints or not.",
 					type = "toggle",
 					disabled = StatDisabled,
-					get = function() return db.profile.Friends.ShowHints end,
-					set = function(info, value) db.profile.Friends.ShowHints = value end,
+					get = function() return db.Friends.ShowHints end,
+					set = function(info, value) db.Friends.ShowHints = value end,
 					order = 4,
 				},
 				ShowNotes = {
@@ -3514,8 +3537,8 @@ function module:LoadOptions()
 					desc = "Whether you want to show friend notes or not.",
 					type = "toggle",
 					disabled = StatDisabled,
-					get = function() return db.profile.Friends.ShowNotes end,
-					set = function(info, value) db.profile.Friends.ShowNotes = value end,
+					get = function() return db.Friends.ShowNotes end,
+					set = function(info, value) db.Friends.ShowNotes = value end,
 					order = 5,
 				},
 				Position = PositionOptions(6),
@@ -3538,9 +3561,9 @@ function module:LoadOptions()
 					desc = "Whether you want to show your Gold Amount or not.",
 					type = "toggle",
 					width = "full",
-					get = function() return db.profile.Gold.Enable end,
+					get = function() return db.Gold.Enable end,
 					set = function(info, value)
-						db.profile.Gold.Enable = value
+						db.Gold.Enable = value
 						ToggleStat("Gold")
 					end,
 					order = 2,
@@ -3550,9 +3573,9 @@ function module:LoadOptions()
 					desc = "Whether you want your gold display to show your server total gold, or your current toon's gold.",
 					type = "toggle",
 					disabled = StatDisabled,
-					get = function() return db.profile.Gold.ServerTotal end,
+					get = function() return db.Gold.ServerTotal end,
 					set = function(info, value)
-						db.profile.Gold.ServerTotal = value
+						db.Gold.ServerTotal = value
 						InfoStats.Gold:PLAYER_MONEY()
 					end,
 					order = 3,
@@ -3562,9 +3585,9 @@ function module:LoadOptions()
 					desc = "Weather or not to color the coin letters by the type of coin.",
 					type = "toggle",
 					disabled = StatDisabled,
-					get = function() return db.profile.Gold.ColorType end,
+					get = function() return db.Gold.ColorType end,
 					set = function(info, value)
-						db.profile.Gold.ColorType = value
+						db.Gold.ColorType = value
 						InfoStats.Gold:PLAYER_MONEY()
 					end,
 					order = 4,
@@ -3578,18 +3601,18 @@ function module:LoadOptions()
 					values = goldPlayerArray,
 					get = function()
 						for k, v in pairs(goldPlayerArray) do
-							if v == db.profile.Gold.PlayerReset then
+							if v == db.Gold.PlayerReset then
 								return k
 							end
 						end
 
-						db.profile.Gold.PlayerReset = "ALL"
+						db.Gold.PlayerReset = "ALL"
 						return 1
 					end,
 					set = function(info, value)
 						for i = 1, #goldPlayerArray do
 							if i == value and goldPlayerArray[i] ~= "" then
-								db.profile.Gold.PlayerReset = goldPlayerArray[i]
+								db.Gold.PlayerReset = goldPlayerArray[i]
 								return
 							end
 						end
@@ -3622,9 +3645,9 @@ function module:LoadOptions()
 					desc = "Whether you want to show your Guild Status or not.",
 					type = "toggle",
 					width = "full",
-					get = function() return db.profile.Guild.Enable end,
+					get = function() return db.Guild.Enable end,
 					set = function(info, value)
-						db.profile.Guild.Enable = value
+						db.Guild.Enable = value
 						ToggleStat("Guild")
 					end,
 					order = 2,
@@ -3635,9 +3658,9 @@ function module:LoadOptions()
 					type = "toggle",
 					width = "full",
 					disabled = StatDisabled,
-					get = function() return db.profile.Guild.ShowTotal end,
+					get = function() return db.Guild.ShowTotal end,
 					set = function(info, value)
-						db.profile.Guild.ShowTotal = value
+						db.Guild.ShowTotal = value
 						InfoStats.Guild:UpdateText()
 						GuildRoster()
 					end,
@@ -3648,8 +3671,8 @@ function module:LoadOptions()
 					desc = "Whether you want to show mouseclick hints or not.",
 					type = "toggle",
 					disabled = StatDisabled,
-					get = function() return db.profile.Guild.ShowHints end,
-					set = function(info, value) db.profile.Guild.ShowHints = value end,
+					get = function() return db.Guild.ShowHints end,
+					set = function(info, value) db.Guild.ShowHints = value end,
 					order = 4,
 				},
 				ShowNotes = {
@@ -3657,8 +3680,8 @@ function module:LoadOptions()
 					desc = "Whether you want to show guild/officer notes or not.",
 					type = "toggle",
 					disabled = StatDisabled,
-					get = function() return db.profile.Guild.ShowNotes end,
-					set = function(info, value) db.profile.Guild.ShowNotes = value end,
+					get = function() return db.Guild.ShowNotes end,
+					set = function(info, value) db.Guild.ShowNotes = value end,
 					order = 5,
 				},
 				Position = PositionOptions(6),
@@ -3681,9 +3704,9 @@ function module:LoadOptions()
 					desc = "Whether you want to show your Instance Info or not.",
 					type = "toggle",
 					width = "full",
-					get = function() return db.profile.Instance.Enable end,
+					get = function() return db.Instance.Enable end,
 					set = function(info, value)
-						db.profile.Instance.Enable = value
+						db.Instance.Enable = value
 						ToggleStat("Instance")
 					end,
 					order = 2,
@@ -3708,9 +3731,9 @@ function module:LoadOptions()
 					desc = "Whether you want to show your Memory Usage or not.",
 					type = "toggle",
 					width = "full",
-					get = function() return db.profile.Memory.Enable end,
+					get = function() return db.Memory.Enable end,
 					set = function(info, value)
-						db.profile.Memory.Enable = value
+						db.Memory.Enable = value
 						ToggleStat("Memory")
 					end,
 					order = 2,
@@ -3734,13 +3757,29 @@ function module:Refresh()
 end
 
 function module:OnInitialize()
-	db = LUI:NewNamespace(self, true)
+	db, dbd = LUI:NewNamespace(self, true)
 	
-	LUIGold = LUIGold or {}
-	LUIGold.version = LUIGold.version or 0
-	if floor(LUIGold.version) ~= floor(version) then
-		self:ResetGold("ALL")
-		LUIGold.version = version
+	if type(LUIGold) == "table" and LUIGold.gold then
+		if not db.sv.realm then
+			db.sv.realm = {}
+		end
+		
+		for realm, realmData in pairs(LUIGold.gold) do
+			if not db.sv.realm[realm] then
+				db.sv.realm[realm] = {}
+			end
+			
+			for faction, factionData in pairs(realmData) do
+				if not db.sv.realm[realm][faction] then
+					db.sv.realm[realm][faction] = {}
+				end
+				
+				for player, gold in pairs(factionData) do
+					db.sv.realm[realm][faction][player] = gold
+				end
+			end
+		end
+		LUIGold = nil
 	end
 end
 

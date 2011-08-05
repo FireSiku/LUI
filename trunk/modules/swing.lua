@@ -17,7 +17,7 @@ local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
 
 local _, class = UnitClass("player")
 
-local db
+local db, dbd
 local LUISwing
 
 local meleeing
@@ -102,8 +102,8 @@ do
 				end
 			else
 				self:SetValue(now)
-				if db.profile.Text.Enable then
-					if db.profile.Text.Format == "Absolut" then
+				if db.Text.Enable then
+					if db.Text.Format == "Absolut" then
 						self.Text:SetFormattedText("%.1f/%.1f", self.max - now, self.max - self.min)
 					else
 						self.Text:SetFormattedText("%.1f", self.max - now)
@@ -441,53 +441,53 @@ local SetSwing = function()
 end
 
 local ApplySettings = function()
-	LUISwing:SetWidth(LUI:Scale(db.profile.Width))
-	LUISwing:SetHeight(LUI:Scale(db.profile.Height))
+	LUISwing:SetWidth(LUI:Scale(db.Width))
+	LUISwing:SetHeight(LUI:Scale(db.Height))
 	LUISwing:ClearAllPoints()
-	LUISwing:SetPoint("BOTTOM", UIParent, "BOTTOM", LUI:Scale(db.profile.X), LUI:Scale(db.profile.Y))
+	LUISwing:SetPoint("BOTTOM", UIParent, "BOTTOM", LUI:Scale(db.X), LUI:Scale(db.Y))
 
 	local r, g, b
-	local mu = db.profile.BGMultiplier
-	if db.profile.Color == "By Class" then
+	local mu = db.BGMultiplier
+	if db.Color == "By Class" then
 		r, g, b = unpack(LUI.oUF.colors.class[class])
 	else
-		r, g, b = db.profile.IndividualColor.r, db.profile.IndividualColor.g, db.profile.IndividualColor.b
+		r, g, b = db.IndividualColor.r, db.IndividualColor.g, db.IndividualColor.b
 	end
 	
-	LUISwing.Twohand:SetStatusBarTexture(LSM:Fetch("statusbar", db.profile.Texture))
+	LUISwing.Twohand:SetStatusBarTexture(LSM:Fetch("statusbar", db.Texture))
 	LUISwing.Twohand:SetStatusBarColor(r, g, b)
-	LUISwing.Twohand.bg:SetTexture(LSM:Fetch("statusbar", db.profile.TextureBG))
+	LUISwing.Twohand.bg:SetTexture(LSM:Fetch("statusbar", db.TextureBG))
 	LUISwing.Twohand.bg:SetVertexColor(r*mu, g*mu, b*mu)
 	
-	LUISwing.Mainhand:SetStatusBarTexture(LSM:Fetch("statusbar", db.profile.Texture))
+	LUISwing.Mainhand:SetStatusBarTexture(LSM:Fetch("statusbar", db.Texture))
 	LUISwing.Mainhand:SetStatusBarColor(r, g, b)
-	LUISwing.Offhand:SetStatusBarTexture(LSM:Fetch("statusbar", db.profile.Texture))
+	LUISwing.Offhand:SetStatusBarTexture(LSM:Fetch("statusbar", db.Texture))
 	LUISwing.Offhand:SetStatusBarColor(r, g, b)
 	
-	LUISwing.Mainhand.bg:SetTexture(LSM:Fetch("statusbar", db.profile.TextureBG))
+	LUISwing.Mainhand.bg:SetTexture(LSM:Fetch("statusbar", db.TextureBG))
 	LUISwing.Mainhand.bg:SetVertexColor(r*mu, g*mu, b*mu)
-	LUISwing.Offhand.bg:SetTexture(LSM:Fetch("statusbar", db.profile.TextureBG))
+	LUISwing.Offhand.bg:SetTexture(LSM:Fetch("statusbar", db.TextureBG))
 	LUISwing.Offhand.bg:SetVertexColor(r*mu, g*mu, b*mu)
 	
 	-- texts
-	if db.profile.Text.Color == "By Class" then
+	if db.Text.Color == "By Class" then
 		r, g, b = unpack(colors.class[class])
 	else
-		r, g, b = db.profile.Text.IndividualColor.r, db.profile.Text.IndividualColor.g, db.profile.Text.IndividualColor.b
+		r, g, b = db.Text.IndividualColor.r, db.Text.IndividualColor.g, db.Text.IndividualColor.b
 	end
 	
-	LUISwing.Mainhand.Text:SetFont(LSM:Fetch("font", db.profile.Text.Font), db.profile.Text.Size, db.profile.Text.Outline)
+	LUISwing.Mainhand.Text:SetFont(LSM:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
 	LUISwing.Mainhand.Text:SetTextColor(r, g, b)
 	
-	LUISwing.Offhand.Text:SetFont(LSM:Fetch("font", db.profile.Text.Font), db.profile.Text.Size, db.profile.Text.Outline)
+	LUISwing.Offhand.Text:SetFont(LSM:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
 	LUISwing.Offhand.Text:SetTextColor(r, g, b)
 	
-	LUISwing.Twohand.Text:SetFont(LSM:Fetch("font", db.profile.Text.Font), db.profile.Text.Size, db.profile.Text.Outline)
+	LUISwing.Twohand.Text:SetFont(LSM:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
 	LUISwing.Twohand.Text:SetTextColor(r, g, b)
 	LUISwing.Twohand.Text:ClearAllPoints()
-	LUISwing.Twohand.Text:SetPoint("CENTER", LUISwing.Twohand, "CENTER", LUI:Scale(db.profile.Text.X), LUI:Scale(db.profile.Text.Y))
+	LUISwing.Twohand.Text:SetPoint("CENTER", LUISwing.Twohand, "CENTER", LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
 	
-	if db.profile.Text.Enable then
+	if db.Text.Enable then
 		LUISwing.Twohand.Text:Show()
 		LUISwing.Mainhand.Text:Show()
 		LUISwing.Offhand.Text:Show()
@@ -546,10 +546,10 @@ function module:LoadOptions()
 					guiInline = true,
 					order = 1,
 					args = {
-						XValue = LUI:NewPosX("Swing Timer", 1, db.profile, "", module.defaults.profile, ApplySettings),
-						YValue = LUI:NewPosY("Swing Timer", 2, db.profile, "", module.defaults.profile, ApplySettings),
-						Width = LUI:NewWidth("Swing Timer", 3, db.profile, nil, module.defaults.profile, ApplySettings),
-						Height = LUI:NewHeight("Swing Timer", 4, db.profile, nil, module.defaults.profile, ApplySettings)
+						XValue = LUI:NewPosX("Swing Timer", 1, db, "", dbd, ApplySettings),
+						YValue = LUI:NewPosY("Swing Timer", 2, db, "", dbd, ApplySettings),
+						Width = LUI:NewWidth("Swing Timer", 3, db, nil, dbd, ApplySettings),
+						Height = LUI:NewHeight("Swing Timer", 4, db, nil, dbd, ApplySettings)
 					}
 				},
 				Colors = {
@@ -558,8 +558,8 @@ function module:LoadOptions()
 					guiInline = true,
 					order = 2,
 					args = {
-						ColorType = LUI:NewSelect("Color", "Choose the Color Option for your Swing Timer.", 1, {"By Class", "Individual"}, nil, db.profile, "Color", module.defaults.profile, ApplySettings),
-						Color = LUI:NewColorNoAlpha("Individual", barName, 2, db.profile.IndividualColor, module.defaults.profile.IndividualColor, ApplySettings, nil, function() return (db.Color ~= "Individual") end),
+						ColorType = LUI:NewSelect("Color", "Choose the Color Option for your Swing Timer.", 1, {"By Class", "Individual"}, nil, db, "Color", dbd, ApplySettings),
+						Color = LUI:NewColorNoAlpha("Individual", barName, 2, db.IndividualColor, dbd.IndividualColor, ApplySettings, nil, function() return (db.Color ~= "Individual") end),
 					}
 					
 				},
@@ -569,9 +569,9 @@ function module:LoadOptions()
 					guiInline = true,
 					order = 3,
 					args = {
-						Texture = LUI:NewSelect("Texture", "Choose the Swing Timer Texture.", 1, widgetLists.statusbar, "LSM30_Statusbar", db.profile, "Texture", module.defaults.profile, ApplySettings),
-						BGTexture = LUI:NewSelect("Background Texture", "Choose the Swing Timer Background Texture.", 2, widgetLists.statusbar, "LSM30_Statusbar", db.profile, "BGTexture", module.defaults.profile, ApplySettings),
-						BGMultiplier = LUI:NewSlider("Background Multiplier", "Choose the Multiplier which will be used to generate the Background Color", 3, db.profile, "BGMultiplier", module.defaults.profile, 0, 1, 0.05, ApplySettings),
+						Texture = LUI:NewSelect("Texture", "Choose the Swing Timer Texture.", 1, widgetLists.statusbar, "LSM30_Statusbar", db, "Texture", dbd, ApplySettings),
+						BGTexture = LUI:NewSelect("Background Texture", "Choose the Swing Timer Background Texture.", 2, widgetLists.statusbar, "LSM30_Statusbar", db, "BGTexture", dbd, ApplySettings),
+						BGMultiplier = LUI:NewSlider("Background Multiplier", "Choose the Multiplier which will be used to generate the Background Color", 3, db, "BGMultiplier", dbd, 0, 1, 0.05, ApplySettings),
 					}
 				}
 			}
@@ -581,18 +581,18 @@ function module:LoadOptions()
 			type = "group",
 			order = 3,
 			args = {
-				Enable = LUI:NewToggle("Enable Text", "Whether you want to show the Swing Timer Text or not.", 1, db.profile.Text, "Enable", module.defaults.profile.Text, ApplySettings),
+				Enable = LUI:NewToggle("Enable Text", "Whether you want to show the Swing Timer Text or not.", 1, db.Text, "Enable", dbd.Text, ApplySettings),
 				FontSettings = {
 					name = "Font Settings",
 					type = "group",
 					guiInline = true,
 					order = 2,
-					disabled = function() return not db.profile.Text.Enable end,
+					disabled = function() return not db.Text.Enable end,
 					args = {
-						FontSize = LUI:NewSlider("Size", "Choose your Swing Timer Text Fontsize.", 1, db.profile.Text, "Size", module.defaults.profile.Text, 1, 40, 1, ApplySettings),
+						FontSize = LUI:NewSlider("Size", "Choose your Swing Timer Text Fontsize.", 1, db.Text, "Size", dbd.Text, 1, 40, 1, ApplySettings),
 						empty = LUI:NewEmpty(2),
-						Font = LUI:NewSelect("Font", "Choose your Swing Timer Text Font.", 3, widgetLists.font, "LSM30_Font", db.profile.Text, "Font", module.defaults.profile.Text, ApplySettings),
-						FontFlag = LUI:NewSelect("Font Flag", "Choose the Font Flag for the Swing Timer Text Font.", 4, fontflags, nil, db.profile.Text, "Outline", module.defaults.profile.Text, ApplySettings),
+						Font = LUI:NewSelect("Font", "Choose your Swing Timer Text Font.", 3, widgetLists.font, "LSM30_Font", db.Text, "Font", dbd.Text, ApplySettings),
+						FontFlag = LUI:NewSelect("Font Flag", "Choose the Font Flag for the Swing Timer Text Font.", 4, fontflags, nil, db.Text, "Outline", dbd.Text, ApplySettings),
 					},
 				},
 				Settings = {
@@ -600,11 +600,11 @@ function module:LoadOptions()
 					type = "group",
 					guiInline = true,
 					order = 3,
-					disabled = function() return not db.profile.Text.Enable end,
+					disabled = function() return not db.Text.Enable end,
 					args = {
-						XValue = LUI:NewPosX("Swing Timer Text", 1, db.profile.Text, "", module.defaults.profile.Text, ApplySettings),
-						YValue = LUI:NewPosY("Swing Timer Text", 2, db.profile.Text, "", module.defaults.profile.Text, ApplySettings),
-						Format = LUI:NewSelect("Format", "Choose the Format for the Swing Timer Text.", 3, {"Absolut", "Standard"}, nil, db.profile.Text, "Format", module.defaults.profile.Text, ApplySettings),
+						XValue = LUI:NewPosX("Swing Timer Text", 1, db.Text, "", dbd.Text, ApplySettings),
+						YValue = LUI:NewPosY("Swing Timer Text", 2, db.Text, "", dbd.Text, ApplySettings),
+						Format = LUI:NewSelect("Format", "Choose the Format for the Swing Timer Text.", 3, {"Absolut", "Standard"}, nil, db.Text, "Format", dbd.Text, ApplySettings),
 					}
 				},
 				Color = {
@@ -612,10 +612,10 @@ function module:LoadOptions()
 					type = "group",
 					guiInline = true,
 					order = 4,
-					disabled = function() return not db.profile.Text.Enable end,
+					disabled = function() return not db.Text.Enable end,
 					args = {
-						Color = LUI:NewSelect("Color", "Choose the Color Option for the Swing Timer Text.", 1, {"By Class", "Individual"}, nil, db.profile.Text, "Color", module.defaults.profile.Text, ApplySettings),
-						IndividualColor = LUI:NewColorNoAlpha("", "Swing Timer Text", 2, db.profile.Text.IndividualColor, module.defaults.profile.Text.IndividualColor, ApplySettings),
+						Color = LUI:NewSelect("Color", "Choose the Color Option for the Swing Timer Text.", 1, {"By Class", "Individual"}, nil, db.Text, "Color", dbd.Text, ApplySettings),
+						IndividualColor = LUI:NewColorNoAlpha("", "Swing Timer Text", 2, db.Text.IndividualColor, dbd.Text.IndividualColor, ApplySettings),
 					}
 				}
 			}
@@ -626,12 +626,12 @@ function module:LoadOptions()
 end
 
 function module:OnInitialize()
-	db = LUI:NewNamespace(self, true)
+	db, dbd = LUI:NewNamespace(self, true)
 	
 	-- Look for outdated db vars and transfer them over
 	if LUI.db.profile.oUF.Player.Swing then
 		for k, v in pairs(LUI.db.profile.oUF.Player.Swing) do
-			db.profile[k] = v
+			db[k] = v
 		end
 		LUI.db.profile.oUF.Player.Swing = nil
 	end

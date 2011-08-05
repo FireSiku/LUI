@@ -1157,7 +1157,43 @@ function LUI:NewNamespace(module, enableButton)
 	end
 	
 	-- Register namespace
-	module.db = self.db:RegisterNamespace(mName, module.defaults)
+	local mdb = self.db:RegisterNamespace(mName, module.defaults)
+	
+	-- Create db metatable
+	module.db = setmetatable({}, {
+		__index = function(t, k)
+			if mdb[k] then
+				return mdb[k]
+			else
+				return mdb.profile[k]
+			end
+		end,
+		__newindex = function(t, k, v)
+			if mdb[k] then
+				mdb[k] = v
+			else
+				mdb.profile[k] = v
+			end
+		end,
+	})
+	
+	-- Create defaults metatable (the module.defaults table was handed off to AceDB and now exists as module.db.defaults)
+	module.defaults = setmetatable({}, {
+		__index = function(t, k)
+			if mdb.defaults[k] then
+				return mdb.defaults[k]
+			else
+				return mdb.defaults.profile[k]
+			end
+		end,
+		__newindex = function(t, k, v)
+			if mdb[k] then
+				mdb.defaults[k] = v
+			else
+				mdb.defaults.profile[k] = v
+			end
+		end,
+	})
 	
 	-- Look for outdated db vars and transfer them over
 	if LUI.db.profile[mName] then
@@ -1214,17 +1250,10 @@ end
 function LUI:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("LUIDB", LUI.defaults, true)
 	db_ = self.db.profile
-	LUI_DB = self.db.profile
-	
-	self.db.RegisterCallback(self, "OnProfileChanged", "Refresh")
-	self.db.RegisterCallback(self, "OnProfileCopied", "Refresh")
-	self.db.RegisterCallback(self, "OnProfileReset", "Refresh")
 	
 	self.elementsToHide = {}
 	
 	self:SetupOptions()
-	
-	LUIGold = LUIGold or {}
 	
 	LUICONFIG = LUICONFIG or {}
 	LUICONFIG.IsConfigured = LUICONFIG.IsConfigured or false
@@ -1291,6 +1320,10 @@ function LUI:OnEnable()
 			print("Welcome on |c0090ffffLUI v3|r for Patch 3.3.5 !")
 			print("For more Information visit www.wow-lui.com")
 		end
+		
+		self.db.RegisterCallback(self, "OnProfileChanged", "Refresh")
+		self.db.RegisterCallback(self, "OnProfileCopied", "Refresh")
+		self.db.RegisterCallback(self, "OnProfileReset", "Refresh")
 		
 		self:SyncAddonVersion()
 	end
