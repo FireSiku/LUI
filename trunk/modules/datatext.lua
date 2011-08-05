@@ -883,7 +883,8 @@ function module:SetDualSpec()
 			
 			local activeTalentGroup = GetActiveTalentGroup()
 			local curCache = specCache[activeTalentGroup]
-			
+			if not curCache then return end
+
 			local text = " "..curCache.specName
 			if db.profile.DualSpec.ShowSpentPoints then
 				if curCache.defined then
