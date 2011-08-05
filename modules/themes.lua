@@ -17,483 +17,13 @@ local module = LUI:NewModule("Themes")
 local LSM = LibStub("LibSharedMedia-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
-local version = 1.4
-local db
+local db, dbd
 
 --------------------------------------------------
 -- / Local Variables / --
 --------------------------------------------------
 
 local ClassArray = {"Death Knight", "Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior"}
-
-local themes = {
-	-- Class Themes
-	["Death Knight"] = {
-		color_top = {0.80, 0.1, 0.1, 0.5},
-		color_bottom = {0.80, 0.1, 0.1, 0.5},
-		chat = {0.80, 0.1, 0.1, 0.4},
-		chatborder = {0.80, 0.1, 0.1, 0.4},
-		chat2 = {0.80, 0.1, 0.1, 0.4},
-		chat2border = {0.80, 0.1, 0.1, 0.4},
-		editbox = {0.80, 0.1, 0.1, 0.4},
-		tps = {0.80, 0.1, 0.1, 0.4},
-		tpsborder = {0.80, 0.1, 0.1, 0.4},
-		dps = {0.80, 0.1, 0.1, 0.4},
-		dpsborder = {0.80, 0.1, 0.1, 0.4},
-		raid = {0.80, 0.1, 0.1, 0.4},
-		raidborder = {0.80, 0.1, 0.1, 0.4},
-		bar = {0.80, 0.1, 0.1, 0.8},
-		bar2 = {0.80, 0.1, 0.1, 0.6},
-		sidebar = {0.80, 0.1, 0.1, 0.4},
-		minimap = {0.80, 0.1, 0.1, 1},
-		micromenu = {0.80, 0.1, 0.1},
-		micromenu_bg = {0.7, 0, 0, 0.8},
-		micromenu_bg2 = {0.1, 0.1, 0.1, 0.8},
-		micromenu_btn = {0.80, 0.1, 0.1, 0.8},
-		micromenu_btn_hover = {0.80, 0.1, 0.1, 0.8},
-		navi = {0.80, 0.1, 0.1, 0.6},
-		navi_hover = {0.80, 0.1, 0.1, 0.4},
-		orb = {0.80, 0.1, 0.1},
-		orb_cycle = {0.80, 0.1, 0.1, 0.4},
-		orb_hover = {0.80, 0.1, 0.1, 0.4},
-	},
-	["Druid"] = {
-		color_top = {1, 0.44, 0.15, 0.5},
-		color_bottom = {1, 0.44, 0.15, 0.5},
-		chat = {1, 0.44, 0.15, 0.4},
-		chatborder = {1, 0.44, 0.15, 0.4},
-		chat2 = {1, 0.44, 0.15, 0.4},
-		chat2border = {1, 0.44, 0.15, 0.4},
-		editbox = {1, 0.44, 0.15, 0.4},
-		tps = {1, 0.44, 0.15, 0.4},
-		tpsborder = {1, 0.44, 0.15, 0.4},
-		dps = {1, 0.44, 0.15, 0.4},
-		dpsborder = {1, 0.44, 0.15, 0.4},
-		raid = {1, 0.44, 0.15, 0.4},
-		raidborder = {1, 0.44, 0.15, 0.4},
-		bar = {1, 0.44, 0.15, 0.7},
-		bar2 = {1, 0.44, 0.15, 0.6},
-		sidebar = {1, 0.44, 0.15, 0.5},
-		minimap = {1, 0.44, 0.15, 1},
-		micromenu = {1, 0.44, 0.15},
-		micromenu_bg = {1, 0.44, 0.15, 0.8},
-		micromenu_bg2 = {0, 0, 0, 0.7},
-		micromenu_btn = {1, 0.44, 0.15, 0.8},
-		micromenu_btn_hover = {1, 0.44, 0.15, 0.8},
-		navi = {1, 0.44, 0.15, 0.6},
-		navi_hover = {1, 0.44, 0.15, 0.4},
-		orb = {1, 0.44, 0.15},
-		orb_cycle = {1, 0.44, 0.15, 0.4},
-		orb_hover = {1, 0.44, 0.15, 0.4},
-	},
-	["Hunter"] = {
-		color_top = {0.22, 0.91, 0.18, 0.5},
-		color_bottom = {0.22, 0.91, 0.18, 0.5},
-		chat = {0.22, 0.91, 0.18, 0.4},
-		chatborder = {0.22, 0.91, 0.18, 0.4},
-		chat2 = {0.22, 0.91, 0.18, 0.4},
-		chat2border = {0.22, 0.91, 0.18, 0.4},
-		editbox = {0.22, 0.91, 0.18, 0.4},
-		tps = {0.22, 0.91, 0.18, 0.4},
-		tpsborder = {0.22, 0.91, 0.18, 0.4},
-		dps = {0.22, 0.91, 0.18, 0.4},
-		dpsborder = {0.22, 0.91, 0.18, 0.4},
-		raid = {0.22, 0.91, 0.18, 0.4},
-		raidborder = {0.22, 0.91, 0.18, 0.4},
-		bar = {0.22, 0.91, 0.18, 0.7},
-		bar2 = {0.22, 0.91, 0.18, 0.6},
-		sidebar = {0.22, 0.91, 0.18, 0.4},
-		minimap = {0.22, 0.91, 0.18, 1},
-		micromenu = {0.22, 0.91, 0.18},
-		micromenu_bg = {0, 0.61, 0, 0.8},
-		micromenu_bg2 = {0, 0, 0, 0.7},
-		micromenu_btn = {0.22, 0.91, 0.18, 0.8},
-		micromenu_btn_hover = {0.22, 0.91, 0.18, 0.8},
-		navi = {0.22, 0.91, 0.18, 0.6},
-		navi_hover = {0.22, 0.91, 0.18, 0.4},
-		orb = {0.22, 0.91, 0.18},
-		orb_cycle = {0.22, 0.91, 0.18, 0.4},
-		orb_hover = {0.22, 0.91, 0.18, 0.4},
-	},
-	["Mage"] = {
-		color_top = {0.12, 0.58, 0.89, 0.5},
-		color_bottom = {0.12, 0.58, 0.89, 0.5},
-		chat = {0.12, 0.58, 0.89, 0.4},
-		chatborder = {0.12, 0.58, 0.89, 0.4},
-		chat2 = {0.12, 0.58, 0.89, 0.4},
-		chat2border = {0.12, 0.58, 0.89, 0.4},
-		editbox = {0.12, 0.58, 0.89, 0.4},
-		tps = {0.12, 0.58, 0.89, 0.4},
-		tpsborder = {0.12, 0.58, 0.89, 0.4},
-		dps = {0.12, 0.58, 0.89, 0.4},
-		dpsborder = {0.12, 0.58, 0.89, 0.4},
-		raid = {0.12, 0.58, 0.89, 0.4},
-		raidborder = {0.12, 0.58, 0.89, 0.4},
-		bar = {0.12, 0.58, 0.89, 0.8},
-		bar2 = {0.12, 0.58, 0.89, 0.6},
-		sidebar = {0.12, 0.58, 0.89, 0.4},
-		minimap = {0.12, 0.58, 0.89, 1},
-		micromenu = {0.12, 0.58, 0.89},
-		micromenu_bg = {0, 0.22, 0.47, 1},
-		micromenu_bg2 = {0.12, 0.12, 0.12, 0.6},
-		micromenu_btn = {0.12, 0.58, 0.89, 0.8},
-		micromenu_btn_hover = {0.12, 0.58, 0.89, 0.8},
-		navi = {0.12, 0.58, 0.89, 0.6},
-		navi_hover = {0.12, 0.58, 0.89, 0.4},
-		orb = {0.12, 0.58, 0.89},
-		orb_cycle = {0.12, 0.58, 0.89, 0.4},
-		orb_hover = {0.12, 0.58, 0.89, 0.4},
-	},
-	["Paladin"] = {
-		color_top = {0.96, 0.21, 0.73, 0.5},
-		color_bottom = {0.96, 0.21, 0.73, 0.5},
-		chat = {0.96, 0.21, 0.73, 0.4},
-		chatborder = {0.96, 0.21, 0.73, 0.4},
-		chat2 = {0.96, 0.21, 0.73, 0.4},
-		chat2border = {0.96, 0.21, 0.73, 0.4},
-		editbox = {0.96, 0.21, 0.73, 0.4},
-		tps = {0.96, 0.21, 0.73, 0.4},
-		tpsborder = {0.96, 0.21, 0.73, 0.4},
-		dps = {0.96, 0.21, 0.73, 0.4},
-		dpsborder = {0.96, 0.21, 0.73, 0.4},
-		raid = {0.96, 0.21, 0.73, 0.4},
-		raidborder = {0.96, 0.21, 0.73, 0.4},
-		bar = {0.96, 0.21, 0.73, 0.7},
-		bar2 = {0.96, 0.21, 0.73, 0.6},
-		sidebar = {0.96, 0.21, 0.73, 0.4},
-		minimap = {0.96, 0.21, 0.73, 1},
-		micromenu = {0.96, 0.21, 0.73},
-		micromenu_bg = {0.66, 0, 0.43, 0.8},
-		micromenu_bg2 = {0, 0, 0, 0.7},
-		micromenu_btn = {0.96, 0.21, 0.73, 0.8},
-		micromenu_btn_hover = {0.96, 0.21, 0.73, 0.8},
-		navi = {0.96, 0.21, 0.73, 0.6},
-		navi_hover = {0.96, 0.21, 0.73, 0.4},
-		orb = {0.96, 0.21, 0.73},
-		orb_cycle = {0.96, 0.21, 0.73, 0.4},
-		orb_hover = {0.96, 0.21, 0.73, 0.4},
-	},
-	["Priest"] = {
-		color_top = {0.9, 0.9, 0.9, 0.5},
-		color_bottom = {0.9, 0.9, 0.9, 0.5},
-		chat = {0.9, 0.9, 0.9, 0.4},
-		chatborder = {0.9, 0.9, 0.9, 0.4},
-		chat2 = {0.9, 0.9, 0.9, 0.4},
-		chat2border = {0.9, 0.9, 0.9, 0.4},
-		editbox = {0.9, 0.9, 0.9, 0.4},
-		tps = {0.9, 0.9, 0.9, 0.4},
-		tpsborder = {0.9, 0.9, 0.9, 0.4},
-		dps = {0.9, 0.9, 0.9, 0.4},
-		dpsborder = {0.9, 0.9, 0.9, 0.4},
-		raid = {0.9, 0.9, 0.9, 0.4},
-		raidborder = {0.9, 0.9, 0.9, 0.4},
-		bar = {0.9, 0.9, 0.9, 0.7},
-		bar2 = {0.9, 0.9, 0.9, 0.6},
-		sidebar = {0.9, 0.9, 0.9, 0.4},
-		minimap = {0.9, 0.9, 0.9, 1},
-		micromenu = {0.9, 0.9, 0.9},
-		micromenu_bg = {0.6, 0.6, 0.6, 0.8},
-		micromenu_bg2 = {0, 0, 0, 0.7},
-		micromenu_btn = {0.9, 0.9, 0.9, 0.8},
-		micromenu_btn_hover = {0.9, 0.9, 0.9, 0.8},
-		navi = {0.9, 0.9, 0.9, 0.6},
-		navi_hover = {0.9, 0.9, 0.9, 0.4},
-		orb = {0.9, 0.9, 0.9},
-		orb_cycle = {0.9, 0.9, 0.9, 0.4},
-		orb_hover = {0.9, 0.9, 0.9, 0.4},
-	},
-	["Rogue"] = {
-		color_top = {0.95, 0.86, 0.16, 0.5},
-		color_bottom = {0.95, 0.86, 0.16, 0.5},
-		chat = {0.95, 0.86, 0.16, 0.4},
-		chatborder = {0.95, 0.86, 0.16, 0.4},
-		chat2 = {0.95, 0.86, 0.16, 0.4},
-		chat2border = {0.95, 0.86, 0.16, 0.4},
-		editbox = {0.95, 0.86, 0.16, 0.4},
-		tps = {0.95, 0.86, 0.16, 0.4},
-		tpsborder = {0.95, 0.86, 0.16, 0.4},
-		dps = {0.95, 0.86, 0.16, 0.4},
-		dpsborder = {0.95, 0.86, 0.16, 0.4},
-		raid = {0.95, 0.86, 0.16, 0.4},
-		raidborder = {0.95, 0.86, 0.16, 0.4},
-		bar = {0.95, 0.86, 0.16, 0.7},
-		bar2 = {0.95, 0.86, 0.16, 0.5},
-		sidebar = {0.95, 0.86, 0.16, 0.4},
-		minimap = {0.95, 0.86, 0.16, 1},
-		micromenu = {0.95, 0.86, 0.16},
-		micromenu_bg = {0.65, 0.56, 0, 0.8},
-		micromenu_bg2 = {0, 0, 0, 1},
-		micromenu_btn = {0.95, 0.86, 0.16, 0.8},
-		micromenu_btn_hover = {0.95, 0.86, 0.16, 0.8},
-		navi = {0.95, 0.86, 0.16, 0.6},
-		navi_hover = {0.95, 0.86, 0.16, 0.4},
-		orb = {0.95, 0.86, 0.16},
-		orb_cycle = {0.95, 0.86, 0.16, 0.4},
-		orb_hover = {0.95, 0.86, 0.16, 0.4},
-	},
-	["Shaman"] = {
-		color_top = {0.04, 0.39, 0.98, 0.5},
-		color_bottom = {0.04, 0.39, 0.98, 0.5},
-		chat = {0.04, 0.39, 0.98, 0.4},
-		chatborder = {0.04, 0.39, 0.98, 0.4},
-		chat2 = {0.04, 0.39, 0.98, 0.4},
-		chat2border = {0.04, 0.39, 0.98, 0.4},
-		editbox = {0.04, 0.39, 0.98, 0.4},
-		tps = {0.04, 0.39, 0.98, 0.4},
-		tpsborder = {0.04, 0.39, 0.98, 0.4},
-		dps = {0.04, 0.39, 0.98, 0.4},
-		dpsborder = {0.04, 0.39, 0.98, 0.4},
-		raid = {0.04, 0.39, 0.98, 0.4},
-		raidborder = {0.04, 0.39, 0.98, 0.4},
-		bar = {0.04, 0.39, 0.98, 0.7},
-		bar2 = {0.04, 0.39, 0.98, 0.6},
-		sidebar = {0.04, 0.39, 0.98, 0.4},
-		minimap = {0.04, 0.39, 0.98, 1},
-		micromenu = {0.04, 0.39, 0.98},
-		micromenu_bg = {0, 0.09, 0.68, 0.8},
-		micromenu_bg2 = {0, 0, 0, 0.8},
-		micromenu_btn = {0.04, 0.39, 0.98, 0.8},
-		micromenu_btn_hover = {0.04, 0.39, 0.98, 0.8},
-		navi = {0.04, 0.39, 0.98, 0.6},
-		navi_hover = {0.04, 0.39, 0.98, 0.4},
-		orb = {0.04, 0.39, 0.98},
-		orb_cycle = {0.04, 0.39, 0.98, 0.4},
-		orb_hover = {0.04, 0.39, 0.98, 0.4},
-	},
-	["Warlock"] = {
-		color_top = {0.57, 0.22, 1, 0.5},
-		color_bottom = {0.57, 0.22, 1, 0.5},
-		chat = {0.57, 0.22, 1, 0.4},
-		chatborder = {0.57, 0.22, 1, 0.4},
-		chat2 = {0.57, 0.22, 1, 0.4},
-		chat2border = {0.57, 0.22, 1, 0.4},
-		editbox = {0.57, 0.22, 1, 0.4},
-		tps = {0.57, 0.22, 1, 0.4},
-		tpsborder = {0.57, 0.22, 1, 0.4},
-		dps = {0.57, 0.22, 1, 0.4},
-		dpsborder = {0.57, 0.22, 1, 0.4},
-		raid = {0.57, 0.22, 1, 0.4},
-		raidborder = {0.57, 0.22, 1, 0.4},
-		bar = {0.57, 0.22, 1, 0.7},
-		bar2 = {0.57, 0.22, 1, 0.5},
-		sidebar = {0.57, 0.22, 1, 0.4},
-		minimap = {0.57, 0.22, 1, 1},
-		micromenu = {0.57, 0.22, 1},
-		micromenu_bg = {0.27, 0, 0.7, 0.8},
-		micromenu_bg2 = {0, 0, 0, 0.7},
-		micromenu_btn = {0.57, 0.22, 1, 0.8},
-		micromenu_btn_hover = {0.57, 0.22, 1, 0.8},
-		navi = {0.57, 0.22, 1, 0.6},
-		navi_hover = {0.57, 0.22, 1, 0.4},
-		orb = {0.57, 0.22, 1},
-		orb_cycle = {0.57, 0.22, 1, 0.4},
-		orb_hover = {0.57, 0.22, 1, 0.4},
-	},
-	["Warrior"] = {
-		color_top = {1, 0.78, 0.55, 0.55},
-		color_bottom = {1, 0.78, 0.55, 0.55},
-		chat = {1, 0.78, 0.55, 0.4},
-		chatborder = {1, 0.78, 0.55, 0.4},
-		chat2 = {1, 0.78, 0.55, 0.4},
-		chat2border = {1, 0.78, 0.55, 0.4},
-		editbox = {1, 0.78, 0.55, 0.4},
-		tps = {1, 0.78, 0.55, 0.4},
-		tpsborder = {1, 0.78, 0.55, 0.4},
-		dps = {1, 0.78, 0.55, 0.4},
-		dpsborder = {1, 0.78, 0.55, 0.4},
-		raid = {1, 0.78, 0.55, 0.4},
-		raidborder = {1, 0.78, 0.55, 0.4},
-		bar = {1, 0.78, 0.55, 0.7},
-		bar2 = {1, 0.78, 0.55, 0.6},
-		sidebar = {1, 0.78, 0.55, 0.5},
-		minimap = {1, 0.78, 0.55, 1},
-		micromenu = {1, 0.78, 0.55},
-		micromenu_bg = {0.7, 0.48, 0.25, 0.8},
-		micromenu_bg2 = {0, 0, 0, 0.7},
-		micromenu_btn = {1, 0.78, 0.55, 0.8},
-		micromenu_btn_hover = {1, 0.78, 0.55, 0.8},
-		navi = {1, 0.78, 0.55, 0.6},
-		navi_hover = {1, 0.78, 0.55, 0.4},
-		orb = {1, 0.78, 0.55},
-		orb_cycle = {1, 0.78, 0.55, 0.4},
-		orb_hover = {1, 0.78, 0.55, 0.4},
-	},
-	-- Additional Themes
-	["Absinth"] = {
-		color_top = {0.63, 0.6, 0.62, 0.65},
-		color_bottom = {0.63, 0.6, 0.62, 0.65},
-		chat = {0.11, 0.67, 0.13, 0.4},
-		chatborder = {0.11, 0.67, 0.13, 0.4},
-		chat2 = {0.11, 0.67, 0.13, 0.4},
-		chat2border = {0.11, 0.67, 0.13, 0.4},
-		editbox = {0.11, 0.67, 0.13, 0.4},
-		tps = {0.11, 0.67, 0.13, 0.4},
-		tpsborder = {0.11, 0.67, 0.13, 0.4},
-		dps = {0.11, 0.67, 0.13, 0.4},
-		dpsborder = {0.11, 0.67, 0.13, 0.4},
-		raid = {0.11, 0.67, 0.13, 0.4},
-		raidborder = {0.11, 0.67, 0.13, 0.4},
-		bar = {0, 0, 0, 0.7},
-		bar2 = {0, 0, 0, 0.6},
-		sidebar = {0.6, 0.6, 0.6, 0.5},
-		minimap = {0.43, 1, 0.43, 1},
-		micromenu = {0.9, 0.9, 0.9},
-		micromenu_bg = {0.6, 0.6, 0.6, 0.8},
-		micromenu_bg2 = {0, 0, 0, 0.7},
-		micromenu_btn = {0.63, 0.6, 0.62, 0.8},
-		micromenu_btn_hover = {0.63, 0.6, 0.62, 0.8},
-		navi = {0.38, 0.85, 0, 0.26},
-		navi_hover = {0.63, 0.6, 0.62, 0.65},
-		orb = {0.28, 0.8, 0.36},
-		orb_cycle = {0.63, 0.6, 0.62, 0.65},
-		orb_hover = {0.63, 0.6, 0.62, 0.65},
-	},
-	["Bloodprince"] = {
-		color_top = {0.75, 0.25, 0.20, 0.6},
-		color_bottom = {0.75, 0.25, 0.20, 0.6},
-		chat = {0, 0, 0, 0.45},
-		chatborder = {0, 0, 0, 0.45},
-		chat2 = {0, 0, 0, 0.45},
-		chat2border = {0, 0, 0, 0.45},
-		editbox = {0, 0, 0, 0.45},
-		tps = {0, 0, 0, 0.45},
-		tpsborder = {0, 0, 0, 0.45},
-		dps = {0, 0, 0, 0.45},
-		dpsborder = {0, 0, 0, 0.45},
-		raid = {0, 0, 0, 0.45},
-		raidborder = {0, 0, 0, 0.45},
-		bar = {0, 0, 0, 0.7},
-		bar2 = {0, 0, 0, 0.6},
-		sidebar = {0.75, 0.25, 0.20, 0.5},
-		minimap = {0.4, 0, 0, 0.7},
-		micromenu = {0.7, 0.16, 0.12},
-		micromenu_bg = {0.4, 0, 0, 0.8},
-		micromenu_bg2 = {0, 0, 0, 0.7},
-		micromenu_btn = {0.75, 0.25, 0.20, 0.8},
-		micromenu_btn_hover = {0.75, 0.25, 0.20, 0.8},
-		navi = {0.3, 0.05, 0.02, 1},
-		navi_hover = {0.75, 0.25, 0.20, 0.6},
-		orb = {0.71, 0.33, 0.27},
-		orb_cycle = {0.75, 0.25, 0.20, 0.6},
-		orb_hover = {0.75, 0.25, 0.20, 0.6},
-	},
-	["Deep Freeze"] = {
-		color_top = {0.28, 0.52, 0.85, 0.65},
-		color_bottom = {0.28, 0.52, 0.85, 0.65},
-		chat = {0.28, 0.52, 0.85, 0.46},
-		chatborder = {0.28, 0.52, 0.85, 0.46},
-		chat2 = {0.28, 0.52, 0.85, 0.46},
-		chat2border = {0.28, 0.52, 0.85, 0.46},
-		editbox = {0.28, 0.52, 0.85, 0.46},
-		tps = {0.28, 0.52, 0.85, 0.46},
-		tpsborder = {0.28, 0.52, 0.85, 0.46},
-		dps = {0.28, 0.52, 0.85, 0.46},
-		dpsborder = {0.28, 0.52, 0.85, 0.46},
-		raid = {0.28, 0.52, 0.85, 0.46},
-		raidborder = {0.28, 0.52, 0.85, 0.46},
-		bar = {0.33, 0.61, 1, 0.7},
-		bar2 = {0.33, 0.61, 1, 0.5},
-		sidebar = {0.28, 0.52, 0.85, 0.55},
-		minimap = {0.33, 0.61, 1, 1},
-		micromenu = {0.45, 0.71, 0.98},
-		micromenu_bg = {0.15, 0.41, 0.68, 0.8},
-		micromenu_bg2 = {0, 0, 0, 0.7},
-		micromenu_btn = {0.28, 0.52, 0.85, 0.8},
-		micromenu_btn_hover = {0.28, 0.52, 0.85, 0.8},
-		navi = {0.28, 0.52, 0.85, 0.63},
-		navi_hover = {0.28, 0.52, 0.85, 0.65},
-		orb = {0.44, 0.60, 0.80},
-		orb_cycle = {0.28, 0.52, 0.85, 0.65},
-		orb_hover = {0.28, 0.52, 0.85, 0.65},
-	},
-	["Demonic Pact"] = {
-		color_top = {0.55, 0.38, 0.85, 0.55},
-		color_bottom = {0.55, 0.38, 0.85, 0.55},
-		chat = {1, 1, 1, 0.27},
-		chatborder = {1, 1, 1, 0.27},
-		chat2 = {1, 1, 1, 0.27},
-		chat2border = {1, 1, 1, 0.27},
-		editbox = {1, 1, 1, 0.27},
-		tps = {1, 1, 1, 0.27},
-		tpsborder = {1, 1, 1, 0.27},
-		dps = {1, 1, 1, 0.27},
-		dpsborder = {1, 1, 1, 0.27},
-		raid = {1, 1, 1, 0.27},
-		raidborder = {1, 1, 1, 0.27},
-		bar = {0.53, 0.48, 0.9, 0.8},
-		bar2 = {0.53, 0.48, 0.9, 0.7},
-		sidebar = {0.53, 0.48, 0.9, 0.5},
-		minimap = {0.71, 0.66, 0.85, 1},
-		micromenu = {0.76, 0.72, 1},
-		micromenu_bg = {0.46, 0.42, 0.7, 0.8},
-		micromenu_bg2 = {0, 0, 0, 0.7},
-		micromenu_btn = {0.55, 0.38, 0.85, 0.8},
-		micromenu_btn_hover = {0.55, 0.38, 0.85, 0.8},
-		navi = {0.45, 0.32, 0.83, 0.26},
-		navi_hover = {0.55, 0.38, 0.85, 0.45},
-		orb = {0.29, 0.25, 0.31},
-		orb_cycle = {0.55, 0.38, 0.85, 0.45},
-		orb_hover = {0.55, 0.38, 0.85, 0.45},
-	},
-	["Goldenboy"] = {
-		color_top = {0.85, 0.58, 0.33, 0.73},
-		color_bottom = {0.85, 0.58, 0.33, 0.73},
-		chat = {0, 0, 0, 0.45},
-		chatborder = {0, 0, 0, 0.45},
-		chat2 = {0, 0, 0, 0.45},
-		chat2border = {0, 0, 0, 0.45},
-		editbox = {0, 0, 0, 0.45},
-		tps = {0, 0, 0, 0.45},
-		tpsborder = {0, 0, 0, 0.45},
-		dps = {0, 0, 0, 0.45},
-		dpsborder = {0, 0, 0, 0.45},
-		raid = {0, 0, 0, 0.45},
-		raidborder = {0, 0, 0, 0.45},
-		bar = {0.85, 0.58, 0.33, 0.75},
-		bar2 = {0.85, 0.58, 0.33, 0.65},
-		sidebar = {0.85, 0.58, 0.33, 0.5},
-		minimap = {0.85, 0.58, 0.33, 0.2},
-		micromenu = {0.85, 0.58, 0.33},
-		micromenu_bg = {0.85, 0.58, 0.33, 0.8},
-		micromenu_bg2 = {0, 0, 0, 0.7},
-		micromenu_btn = {0.85, 0.58, 0.33, 0.8},
-		micromenu_btn_hover = {0.85, 0.58, 0.33, 0.8},
-		navi = {0.02, 0.02, 0.02, 1},
-		navi_hover = {0.85, 0.58, 0.33, 0.73},
-		orb = {0.85, 0.58, 0.33},
-		orb_cycle = {0.85, 0.58, 0.33, 0.73},
-		orb_hover = {0.85, 0.58, 0.33, 0.73},
-	},
-	["Orangemarmalade"] = {
-		color_top = {1, 0.43, 0, 0.55},
-		color_bottom = {1, 0.43, 0, 0.55},
-		chat = {0, 0, 0, 0.83},
-		chatborder = {0, 0, 0, 0.86},
-		chat2 = {0, 0, 0, 0.83},
-		chat2border = {0, 0, 0, 0.86},
-		editbox = {0, 0, 0, 0.5},
-		tps = {0, 0, 0, 0.83},
-		tpsborder = {0, 0, 0, 0.86},
-		dps = {0, 0, 0, 0.83},
-		dpsborder = {0, 0, 0, 0.86},
-		raid = {0, 0, 0, 0.83},
-		raidborder = {0, 0, 0, 0.86},
-		bar = {1, 0.48, 0, 0.81},
-		bar2 = {1, 0.48, 0, 0.81},
-		sidebar = {1, 0.48, 0, 0.5},
-		minimap = {0.85, 0.35, 0, 0.58},
-		micromenu = {1, 0.54, 0.32},
-		micromenu_bg = {0.7, 0.24, 0.02, 0.8},
-		micromenu_bg2 = {0, 0, 0, 0.7},
-		micromenu_btn = {1, 0.43, 0, 0.8},
-		micromenu_btn_hover = {1, 0.43, 0, 0.8},
-		navi = {0.72, 0.75, 0.72, 0.38},
-		navi_hover = {1, 0.43, 0, 0.4},
-		orb = {0.8, 0.38, 0.05},
-		orb_cycle = {1, 0.43, 0, 0.4},
-		orb_hover = {1, 0.43, 0, 0.4},
-	},
-}
 
 --------------------------------------------------
 -- / Color Functions / --
@@ -520,7 +50,7 @@ end
 function module:Refresh_Forte() -- disabled for now (forces lui color even if disabled)
 	-- if LUI:GetModule("Panels", true) then
 		-- local Forte = LUI:GetModule("Forte", true)
-		-- if Forte and Forte.db.profile.Enable then
+		-- if Forte and Forte.db.Enable then
 			-- Forte:SetColors()
 		-- end
 	-- end
@@ -559,7 +89,7 @@ end
 --------------------------------------------------
 
 function module:CheckTheme()
-	local theme = db.profile.theme and LUI_Themes[db.profile.theme]
+	local theme = db.global[db.theme] and db.theme
 	
 	if not theme then
 		local _, class = UnitClass("player")
@@ -568,26 +98,23 @@ function module:CheckTheme()
 		end
 		
 		-- get class theme name
-		local function classTheme(first, rest)
-			return strupper(first)..strlower(rest)
-		end
-		db.profile.theme = gsub(class, "(%a)([%w_']*)", classTheme)
+		db.theme = gsub(class, "(%a)([%w_']*)", function(first, rest) return strupper(first)..strlower(rest) end)
 		
 		module:LoadTheme()
 	else
-		for k, v in pairs(theme) do
-			if not db.profile[k] then
-				db.profile[k] = v
+		for k, v in pairs(db.global[theme]) do
+			if not db[k] then
+				db[k] = {unpack(v)}
 			end
 		end
 	end
 end
 
 function module:LoadTheme(theme)
-	theme = theme or db.profile.theme
+	theme = theme or db.theme
 	
-	for k, v in pairs(LUI_Themes[theme]) do
-		db.profile[k] = v
+	for k, v in pairs(db.global[theme]) do
+		db[k] = {unpack(v)}
 	end
 end
 
@@ -595,37 +122,41 @@ function module:SaveTheme(theme)
 	-- check if the theme name is valid
 	if type(theme) ~= "string" or theme == "" then return end
 	-- check if theme name already exists
-	if LUI_Themes[theme] then
+	if db.global[theme] and not db.global[theme].deleted then
 		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
 	end
 	
 	-- create the new theme
-	LUI_Themes[theme] = {}
+	db.global[theme] = {}
 	for k, v in pairs(db.profile) do
-		LUI_Themes[theme][k] = v
+		db.global[theme][k] = v
 	end
 	-- clear the theme value (its in the db but shouldn't be in the theme's table)
-	LUI_Themes[theme].theme = nil
+	db.global[theme].theme = nil
 	
 	-- set the new theme to be the active one
-	db.profile.theme = theme
+	db.theme = theme
 	-- update the options menu
 	ACR:NotifyChange("LUI")
 end
 
 function module:DeleteTheme(theme)
 	-- check if the theme name is valid (esle use current theme)
-	if theme == nil or theme == "" then theme = db.profile.theme end
+	if theme == nil or theme == "" then theme = db.theme end
 	
 	-- check if theme is a class theme (can't be deleted)
 	if tContains(ClassArray, theme) then
 		return LUI:Print("CLASS THEMES CAN NOT BE DELETED!!!")
 	end
 	
-	-- remove theme from table
-	LUI_Themes[theme] = nil
+	-- remove theme from table (and stop defaults from repopulating)
+	if dbd.global[theme] then
+		db.global[theme].deleted = true
+	else
+		db.global[theme] = nil
+	end
 	-- set theme to default
-	db.profile.theme = ""
+	db.theme = ""
 	module:CheckTheme()
 	module:ApplyTheme()
 	-- update the options menu
@@ -636,7 +167,7 @@ function module:ImportThemeName(name)
 	-- check if the theme name is valid
 	if type(name) ~= "string" or name == "" then return end
 	-- check if theme name already exists
-	if LUI_Themes[name] then
+	if db.global[name] and not db.global[name].deleted then
 		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
 	end
 	
@@ -654,7 +185,7 @@ function module:ImportThemeData(str, name)
 		return LUI:Print("Invalid Theme Name")
 	end
 	-- check if theme name already exists
-	if LUI_Themes[name] then
+	if db.global[name] and not db.global[name].deleted then
 		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
 	end
 	
@@ -666,9 +197,9 @@ function module:ImportThemeData(str, name)
 	end
 	
 	-- import data into themes table
-	LUI_Themes[name] = data
+	db.global[name] = data
 	-- set new theme as the active one
-	db.profile.theme = name
+	db.theme = name
 	module:LoadTheme(name)
 	module:ApplyTheme()
 	LUI:Print("Successfully imported "..name.." theme!")
@@ -678,12 +209,12 @@ end
 
 function module:ExportTheme(theme)
 	-- check if the theme name is valid (esle use current theme)
-	if theme == nil or theme == "" then theme = db.profile.theme end
+	if theme == nil or theme == "" then theme = db.theme end
 	-- check if theme exists
-	if not LUI_Themes[theme] then return StaticPopup_Hide("LUI_THEMES_EXPORT") end
+	if not db.global[theme] then return StaticPopup_Hide("LUI_THEMES_EXPORT") end
 	
 	-- encrypt data for export
-	local data = LUI:Serialize(LUI_Themes[theme])
+	local data = LUI:Serialize(db.global[theme])
 	if not data then return end
 	-- breakdown the data into multiple lines (100 chars length each, add a space) for easier posting
 	local breakDown
@@ -703,8 +234,10 @@ function module.ThemeArray() -- no self in this function
 	local LUIThemeArray = {}
 	local TempThemeArray = {}
 	
-	for themeName in pairs(LUI_Themes) do
-		table.insert((tContains(ClassArray, themeName) and LUIThemeArray or TempThemeArray), themeName)
+	for themeName, theme in pairs(db.global) do
+		if theme and not theme.deleted then -- check for false
+			table.insert((tContains(ClassArray, themeName) and LUIThemeArray or TempThemeArray), themeName)
+		end
 	end
 	table.sort(LUIThemeArray)
 	table.sort(TempThemeArray)
@@ -828,9 +361,23 @@ local function setStaticPopups()
 		button1 = "Yes",
 		button2 = "No",
 		OnAccept = function(self)
-				wipe(LUI_Themes)
-				LUI_Themes = themes
-				if LUI_Themes[db.profile.theme] == nil then db.profile.theme = "" end
+				local function copyDefaults(tar, src)
+					if type(tar) ~= "table" then tar = {} end
+					
+					for k, v in pairs(src) do
+						if type(v) == "table" then
+							tar[k] = copyDefaults(tar[k], v)
+						else
+							tar[k] = v
+						end
+					end
+					
+					return tar
+				end
+				
+				wipe(db.global)
+				db.global = copyDefaults(db.global, dbd.global)
+				db.theme = ""
 				module:CheckTheme()
 				module:ApplyTheme()
 				ACR:NotifyChange("LUI")
@@ -850,6 +397,474 @@ module.order = 2
 module.defaults = {
 	profile = {
 		theme = "",
+	},
+	global = {
+		-- Class Themes
+		["Death Knight"] = {
+			color_top = {0.80, 0.1, 0.1, 0.5},
+			color_bottom = {0.80, 0.1, 0.1, 0.5},
+			chat = {0.80, 0.1, 0.1, 0.4},
+			chatborder = {0.80, 0.1, 0.1, 0.4},
+			chat2 = {0.80, 0.1, 0.1, 0.4},
+			chat2border = {0.80, 0.1, 0.1, 0.4},
+			editbox = {0.80, 0.1, 0.1, 0.4},
+			tps = {0.80, 0.1, 0.1, 0.4},
+			tpsborder = {0.80, 0.1, 0.1, 0.4},
+			dps = {0.80, 0.1, 0.1, 0.4},
+			dpsborder = {0.80, 0.1, 0.1, 0.4},
+			raid = {0.80, 0.1, 0.1, 0.4},
+			raidborder = {0.80, 0.1, 0.1, 0.4},
+			bar = {0.80, 0.1, 0.1, 0.8},
+			bar2 = {0.80, 0.1, 0.1, 0.6},
+			sidebar = {0.80, 0.1, 0.1, 0.4},
+			minimap = {0.80, 0.1, 0.1, 1},
+			micromenu = {0.80, 0.1, 0.1},
+			micromenu_bg = {0.7, 0, 0, 0.8},
+			micromenu_bg2 = {0.1, 0.1, 0.1, 0.8},
+			micromenu_btn = {0.80, 0.1, 0.1, 0.8},
+			micromenu_btn_hover = {0.80, 0.1, 0.1, 0.8},
+			navi = {0.80, 0.1, 0.1, 0.6},
+			navi_hover = {0.80, 0.1, 0.1, 0.4},
+			orb = {0.80, 0.1, 0.1},
+			orb_cycle = {0.80, 0.1, 0.1, 0.4},
+			orb_hover = {0.80, 0.1, 0.1, 0.4},
+		},
+		["Druid"] = {
+			color_top = {1, 0.44, 0.15, 0.5},
+			color_bottom = {1, 0.44, 0.15, 0.5},
+			chat = {1, 0.44, 0.15, 0.4},
+			chatborder = {1, 0.44, 0.15, 0.4},
+			chat2 = {1, 0.44, 0.15, 0.4},
+			chat2border = {1, 0.44, 0.15, 0.4},
+			editbox = {1, 0.44, 0.15, 0.4},
+			tps = {1, 0.44, 0.15, 0.4},
+			tpsborder = {1, 0.44, 0.15, 0.4},
+			dps = {1, 0.44, 0.15, 0.4},
+			dpsborder = {1, 0.44, 0.15, 0.4},
+			raid = {1, 0.44, 0.15, 0.4},
+			raidborder = {1, 0.44, 0.15, 0.4},
+			bar = {1, 0.44, 0.15, 0.7},
+			bar2 = {1, 0.44, 0.15, 0.6},
+			sidebar = {1, 0.44, 0.15, 0.5},
+			minimap = {1, 0.44, 0.15, 1},
+			micromenu = {1, 0.44, 0.15},
+			micromenu_bg = {1, 0.44, 0.15, 0.8},
+			micromenu_bg2 = {0, 0, 0, 0.7},
+			micromenu_btn = {1, 0.44, 0.15, 0.8},
+			micromenu_btn_hover = {1, 0.44, 0.15, 0.8},
+			navi = {1, 0.44, 0.15, 0.6},
+			navi_hover = {1, 0.44, 0.15, 0.4},
+			orb = {1, 0.44, 0.15},
+			orb_cycle = {1, 0.44, 0.15, 0.4},
+			orb_hover = {1, 0.44, 0.15, 0.4},
+		},
+		["Hunter"] = {
+			color_top = {0.22, 0.91, 0.18, 0.5},
+			color_bottom = {0.22, 0.91, 0.18, 0.5},
+			chat = {0.22, 0.91, 0.18, 0.4},
+			chatborder = {0.22, 0.91, 0.18, 0.4},
+			chat2 = {0.22, 0.91, 0.18, 0.4},
+			chat2border = {0.22, 0.91, 0.18, 0.4},
+			editbox = {0.22, 0.91, 0.18, 0.4},
+			tps = {0.22, 0.91, 0.18, 0.4},
+			tpsborder = {0.22, 0.91, 0.18, 0.4},
+			dps = {0.22, 0.91, 0.18, 0.4},
+			dpsborder = {0.22, 0.91, 0.18, 0.4},
+			raid = {0.22, 0.91, 0.18, 0.4},
+			raidborder = {0.22, 0.91, 0.18, 0.4},
+			bar = {0.22, 0.91, 0.18, 0.7},
+			bar2 = {0.22, 0.91, 0.18, 0.6},
+			sidebar = {0.22, 0.91, 0.18, 0.4},
+			minimap = {0.22, 0.91, 0.18, 1},
+			micromenu = {0.22, 0.91, 0.18},
+			micromenu_bg = {0, 0.61, 0, 0.8},
+			micromenu_bg2 = {0, 0, 0, 0.7},
+			micromenu_btn = {0.22, 0.91, 0.18, 0.8},
+			micromenu_btn_hover = {0.22, 0.91, 0.18, 0.8},
+			navi = {0.22, 0.91, 0.18, 0.6},
+			navi_hover = {0.22, 0.91, 0.18, 0.4},
+			orb = {0.22, 0.91, 0.18},
+			orb_cycle = {0.22, 0.91, 0.18, 0.4},
+			orb_hover = {0.22, 0.91, 0.18, 0.4},
+		},
+		["Mage"] = {
+			color_top = {0.12, 0.58, 0.89, 0.5},
+			color_bottom = {0.12, 0.58, 0.89, 0.5},
+			chat = {0.12, 0.58, 0.89, 0.4},
+			chatborder = {0.12, 0.58, 0.89, 0.4},
+			chat2 = {0.12, 0.58, 0.89, 0.4},
+			chat2border = {0.12, 0.58, 0.89, 0.4},
+			editbox = {0.12, 0.58, 0.89, 0.4},
+			tps = {0.12, 0.58, 0.89, 0.4},
+			tpsborder = {0.12, 0.58, 0.89, 0.4},
+			dps = {0.12, 0.58, 0.89, 0.4},
+			dpsborder = {0.12, 0.58, 0.89, 0.4},
+			raid = {0.12, 0.58, 0.89, 0.4},
+			raidborder = {0.12, 0.58, 0.89, 0.4},
+			bar = {0.12, 0.58, 0.89, 0.8},
+			bar2 = {0.12, 0.58, 0.89, 0.6},
+			sidebar = {0.12, 0.58, 0.89, 0.4},
+			minimap = {0.12, 0.58, 0.89, 1},
+			micromenu = {0.12, 0.58, 0.89},
+			micromenu_bg = {0, 0.22, 0.47, 1},
+			micromenu_bg2 = {0.12, 0.12, 0.12, 0.6},
+			micromenu_btn = {0.12, 0.58, 0.89, 0.8},
+			micromenu_btn_hover = {0.12, 0.58, 0.89, 0.8},
+			navi = {0.12, 0.58, 0.89, 0.6},
+			navi_hover = {0.12, 0.58, 0.89, 0.4},
+			orb = {0.12, 0.58, 0.89},
+			orb_cycle = {0.12, 0.58, 0.89, 0.4},
+			orb_hover = {0.12, 0.58, 0.89, 0.4},
+		},
+		["Paladin"] = {
+			color_top = {0.96, 0.21, 0.73, 0.5},
+			color_bottom = {0.96, 0.21, 0.73, 0.5},
+			chat = {0.96, 0.21, 0.73, 0.4},
+			chatborder = {0.96, 0.21, 0.73, 0.4},
+			chat2 = {0.96, 0.21, 0.73, 0.4},
+			chat2border = {0.96, 0.21, 0.73, 0.4},
+			editbox = {0.96, 0.21, 0.73, 0.4},
+			tps = {0.96, 0.21, 0.73, 0.4},
+			tpsborder = {0.96, 0.21, 0.73, 0.4},
+			dps = {0.96, 0.21, 0.73, 0.4},
+			dpsborder = {0.96, 0.21, 0.73, 0.4},
+			raid = {0.96, 0.21, 0.73, 0.4},
+			raidborder = {0.96, 0.21, 0.73, 0.4},
+			bar = {0.96, 0.21, 0.73, 0.7},
+			bar2 = {0.96, 0.21, 0.73, 0.6},
+			sidebar = {0.96, 0.21, 0.73, 0.4},
+			minimap = {0.96, 0.21, 0.73, 1},
+			micromenu = {0.96, 0.21, 0.73},
+			micromenu_bg = {0.66, 0, 0.43, 0.8},
+			micromenu_bg2 = {0, 0, 0, 0.7},
+			micromenu_btn = {0.96, 0.21, 0.73, 0.8},
+			micromenu_btn_hover = {0.96, 0.21, 0.73, 0.8},
+			navi = {0.96, 0.21, 0.73, 0.6},
+			navi_hover = {0.96, 0.21, 0.73, 0.4},
+			orb = {0.96, 0.21, 0.73},
+			orb_cycle = {0.96, 0.21, 0.73, 0.4},
+			orb_hover = {0.96, 0.21, 0.73, 0.4},
+		},
+		["Priest"] = {
+			color_top = {0.9, 0.9, 0.9, 0.5},
+			color_bottom = {0.9, 0.9, 0.9, 0.5},
+			chat = {0.9, 0.9, 0.9, 0.4},
+			chatborder = {0.9, 0.9, 0.9, 0.4},
+			chat2 = {0.9, 0.9, 0.9, 0.4},
+			chat2border = {0.9, 0.9, 0.9, 0.4},
+			editbox = {0.9, 0.9, 0.9, 0.4},
+			tps = {0.9, 0.9, 0.9, 0.4},
+			tpsborder = {0.9, 0.9, 0.9, 0.4},
+			dps = {0.9, 0.9, 0.9, 0.4},
+			dpsborder = {0.9, 0.9, 0.9, 0.4},
+			raid = {0.9, 0.9, 0.9, 0.4},
+			raidborder = {0.9, 0.9, 0.9, 0.4},
+			bar = {0.9, 0.9, 0.9, 0.7},
+			bar2 = {0.9, 0.9, 0.9, 0.6},
+			sidebar = {0.9, 0.9, 0.9, 0.4},
+			minimap = {0.9, 0.9, 0.9, 1},
+			micromenu = {0.9, 0.9, 0.9},
+			micromenu_bg = {0.6, 0.6, 0.6, 0.8},
+			micromenu_bg2 = {0, 0, 0, 0.7},
+			micromenu_btn = {0.9, 0.9, 0.9, 0.8},
+			micromenu_btn_hover = {0.9, 0.9, 0.9, 0.8},
+			navi = {0.9, 0.9, 0.9, 0.6},
+			navi_hover = {0.9, 0.9, 0.9, 0.4},
+			orb = {0.9, 0.9, 0.9},
+			orb_cycle = {0.9, 0.9, 0.9, 0.4},
+			orb_hover = {0.9, 0.9, 0.9, 0.4},
+		},
+		["Rogue"] = {
+			color_top = {0.95, 0.86, 0.16, 0.5},
+			color_bottom = {0.95, 0.86, 0.16, 0.5},
+			chat = {0.95, 0.86, 0.16, 0.4},
+			chatborder = {0.95, 0.86, 0.16, 0.4},
+			chat2 = {0.95, 0.86, 0.16, 0.4},
+			chat2border = {0.95, 0.86, 0.16, 0.4},
+			editbox = {0.95, 0.86, 0.16, 0.4},
+			tps = {0.95, 0.86, 0.16, 0.4},
+			tpsborder = {0.95, 0.86, 0.16, 0.4},
+			dps = {0.95, 0.86, 0.16, 0.4},
+			dpsborder = {0.95, 0.86, 0.16, 0.4},
+			raid = {0.95, 0.86, 0.16, 0.4},
+			raidborder = {0.95, 0.86, 0.16, 0.4},
+			bar = {0.95, 0.86, 0.16, 0.7},
+			bar2 = {0.95, 0.86, 0.16, 0.5},
+			sidebar = {0.95, 0.86, 0.16, 0.4},
+			minimap = {0.95, 0.86, 0.16, 1},
+			micromenu = {0.95, 0.86, 0.16},
+			micromenu_bg = {0.65, 0.56, 0, 0.8},
+			micromenu_bg2 = {0, 0, 0, 1},
+			micromenu_btn = {0.95, 0.86, 0.16, 0.8},
+			micromenu_btn_hover = {0.95, 0.86, 0.16, 0.8},
+			navi = {0.95, 0.86, 0.16, 0.6},
+			navi_hover = {0.95, 0.86, 0.16, 0.4},
+			orb = {0.95, 0.86, 0.16},
+			orb_cycle = {0.95, 0.86, 0.16, 0.4},
+			orb_hover = {0.95, 0.86, 0.16, 0.4},
+		},
+		["Shaman"] = {
+			color_top = {0.04, 0.39, 0.98, 0.5},
+			color_bottom = {0.04, 0.39, 0.98, 0.5},
+			chat = {0.04, 0.39, 0.98, 0.4},
+			chatborder = {0.04, 0.39, 0.98, 0.4},
+			chat2 = {0.04, 0.39, 0.98, 0.4},
+			chat2border = {0.04, 0.39, 0.98, 0.4},
+			editbox = {0.04, 0.39, 0.98, 0.4},
+			tps = {0.04, 0.39, 0.98, 0.4},
+			tpsborder = {0.04, 0.39, 0.98, 0.4},
+			dps = {0.04, 0.39, 0.98, 0.4},
+			dpsborder = {0.04, 0.39, 0.98, 0.4},
+			raid = {0.04, 0.39, 0.98, 0.4},
+			raidborder = {0.04, 0.39, 0.98, 0.4},
+			bar = {0.04, 0.39, 0.98, 0.7},
+			bar2 = {0.04, 0.39, 0.98, 0.6},
+			sidebar = {0.04, 0.39, 0.98, 0.4},
+			minimap = {0.04, 0.39, 0.98, 1},
+			micromenu = {0.04, 0.39, 0.98},
+			micromenu_bg = {0, 0.09, 0.68, 0.8},
+			micromenu_bg2 = {0, 0, 0, 0.8},
+			micromenu_btn = {0.04, 0.39, 0.98, 0.8},
+			micromenu_btn_hover = {0.04, 0.39, 0.98, 0.8},
+			navi = {0.04, 0.39, 0.98, 0.6},
+			navi_hover = {0.04, 0.39, 0.98, 0.4},
+			orb = {0.04, 0.39, 0.98},
+			orb_cycle = {0.04, 0.39, 0.98, 0.4},
+			orb_hover = {0.04, 0.39, 0.98, 0.4},
+		},
+		["Warlock"] = {
+			color_top = {0.57, 0.22, 1, 0.5},
+			color_bottom = {0.57, 0.22, 1, 0.5},
+			chat = {0.57, 0.22, 1, 0.4},
+			chatborder = {0.57, 0.22, 1, 0.4},
+			chat2 = {0.57, 0.22, 1, 0.4},
+			chat2border = {0.57, 0.22, 1, 0.4},
+			editbox = {0.57, 0.22, 1, 0.4},
+			tps = {0.57, 0.22, 1, 0.4},
+			tpsborder = {0.57, 0.22, 1, 0.4},
+			dps = {0.57, 0.22, 1, 0.4},
+			dpsborder = {0.57, 0.22, 1, 0.4},
+			raid = {0.57, 0.22, 1, 0.4},
+			raidborder = {0.57, 0.22, 1, 0.4},
+			bar = {0.57, 0.22, 1, 0.7},
+			bar2 = {0.57, 0.22, 1, 0.5},
+			sidebar = {0.57, 0.22, 1, 0.4},
+			minimap = {0.57, 0.22, 1, 1},
+			micromenu = {0.57, 0.22, 1},
+			micromenu_bg = {0.27, 0, 0.7, 0.8},
+			micromenu_bg2 = {0, 0, 0, 0.7},
+			micromenu_btn = {0.57, 0.22, 1, 0.8},
+			micromenu_btn_hover = {0.57, 0.22, 1, 0.8},
+			navi = {0.57, 0.22, 1, 0.6},
+			navi_hover = {0.57, 0.22, 1, 0.4},
+			orb = {0.57, 0.22, 1},
+			orb_cycle = {0.57, 0.22, 1, 0.4},
+			orb_hover = {0.57, 0.22, 1, 0.4},
+		},
+		["Warrior"] = {
+			color_top = {1, 0.78, 0.55, 0.55},
+			color_bottom = {1, 0.78, 0.55, 0.55},
+			chat = {1, 0.78, 0.55, 0.4},
+			chatborder = {1, 0.78, 0.55, 0.4},
+			chat2 = {1, 0.78, 0.55, 0.4},
+			chat2border = {1, 0.78, 0.55, 0.4},
+			editbox = {1, 0.78, 0.55, 0.4},
+			tps = {1, 0.78, 0.55, 0.4},
+			tpsborder = {1, 0.78, 0.55, 0.4},
+			dps = {1, 0.78, 0.55, 0.4},
+			dpsborder = {1, 0.78, 0.55, 0.4},
+			raid = {1, 0.78, 0.55, 0.4},
+			raidborder = {1, 0.78, 0.55, 0.4},
+			bar = {1, 0.78, 0.55, 0.7},
+			bar2 = {1, 0.78, 0.55, 0.6},
+			sidebar = {1, 0.78, 0.55, 0.5},
+			minimap = {1, 0.78, 0.55, 1},
+			micromenu = {1, 0.78, 0.55},
+			micromenu_bg = {0.7, 0.48, 0.25, 0.8},
+			micromenu_bg2 = {0, 0, 0, 0.7},
+			micromenu_btn = {1, 0.78, 0.55, 0.8},
+			micromenu_btn_hover = {1, 0.78, 0.55, 0.8},
+			navi = {1, 0.78, 0.55, 0.6},
+			navi_hover = {1, 0.78, 0.55, 0.4},
+			orb = {1, 0.78, 0.55},
+			orb_cycle = {1, 0.78, 0.55, 0.4},
+			orb_hover = {1, 0.78, 0.55, 0.4},
+		},
+		-- Additional Themes
+		["Absinth"] = {
+			color_top = {0.63, 0.6, 0.62, 0.65},
+			color_bottom = {0.63, 0.6, 0.62, 0.65},
+			chat = {0.11, 0.67, 0.13, 0.4},
+			chatborder = {0.11, 0.67, 0.13, 0.4},
+			chat2 = {0.11, 0.67, 0.13, 0.4},
+			chat2border = {0.11, 0.67, 0.13, 0.4},
+			editbox = {0.11, 0.67, 0.13, 0.4},
+			tps = {0.11, 0.67, 0.13, 0.4},
+			tpsborder = {0.11, 0.67, 0.13, 0.4},
+			dps = {0.11, 0.67, 0.13, 0.4},
+			dpsborder = {0.11, 0.67, 0.13, 0.4},
+			raid = {0.11, 0.67, 0.13, 0.4},
+			raidborder = {0.11, 0.67, 0.13, 0.4},
+			bar = {0, 0, 0, 0.7},
+			bar2 = {0, 0, 0, 0.6},
+			sidebar = {0.6, 0.6, 0.6, 0.5},
+			minimap = {0.43, 1, 0.43, 1},
+			micromenu = {0.9, 0.9, 0.9},
+			micromenu_bg = {0.6, 0.6, 0.6, 0.8},
+			micromenu_bg2 = {0, 0, 0, 0.7},
+			micromenu_btn = {0.63, 0.6, 0.62, 0.8},
+			micromenu_btn_hover = {0.63, 0.6, 0.62, 0.8},
+			navi = {0.38, 0.85, 0, 0.26},
+			navi_hover = {0.63, 0.6, 0.62, 0.65},
+			orb = {0.28, 0.8, 0.36},
+			orb_cycle = {0.63, 0.6, 0.62, 0.65},
+			orb_hover = {0.63, 0.6, 0.62, 0.65},
+		},
+		["Bloodprince"] = {
+			color_top = {0.75, 0.25, 0.20, 0.6},
+			color_bottom = {0.75, 0.25, 0.20, 0.6},
+			chat = {0, 0, 0, 0.45},
+			chatborder = {0, 0, 0, 0.45},
+			chat2 = {0, 0, 0, 0.45},
+			chat2border = {0, 0, 0, 0.45},
+			editbox = {0, 0, 0, 0.45},
+			tps = {0, 0, 0, 0.45},
+			tpsborder = {0, 0, 0, 0.45},
+			dps = {0, 0, 0, 0.45},
+			dpsborder = {0, 0, 0, 0.45},
+			raid = {0, 0, 0, 0.45},
+			raidborder = {0, 0, 0, 0.45},
+			bar = {0, 0, 0, 0.7},
+			bar2 = {0, 0, 0, 0.6},
+			sidebar = {0.75, 0.25, 0.20, 0.5},
+			minimap = {0.4, 0, 0, 0.7},
+			micromenu = {0.7, 0.16, 0.12},
+			micromenu_bg = {0.4, 0, 0, 0.8},
+			micromenu_bg2 = {0, 0, 0, 0.7},
+			micromenu_btn = {0.75, 0.25, 0.20, 0.8},
+			micromenu_btn_hover = {0.75, 0.25, 0.20, 0.8},
+			navi = {0.3, 0.05, 0.02, 1},
+			navi_hover = {0.75, 0.25, 0.20, 0.6},
+			orb = {0.71, 0.33, 0.27},
+			orb_cycle = {0.75, 0.25, 0.20, 0.6},
+			orb_hover = {0.75, 0.25, 0.20, 0.6},
+		},
+		["Deep Freeze"] = {
+			color_top = {0.28, 0.52, 0.85, 0.65},
+			color_bottom = {0.28, 0.52, 0.85, 0.65},
+			chat = {0.28, 0.52, 0.85, 0.46},
+			chatborder = {0.28, 0.52, 0.85, 0.46},
+			chat2 = {0.28, 0.52, 0.85, 0.46},
+			chat2border = {0.28, 0.52, 0.85, 0.46},
+			editbox = {0.28, 0.52, 0.85, 0.46},
+			tps = {0.28, 0.52, 0.85, 0.46},
+			tpsborder = {0.28, 0.52, 0.85, 0.46},
+			dps = {0.28, 0.52, 0.85, 0.46},
+			dpsborder = {0.28, 0.52, 0.85, 0.46},
+			raid = {0.28, 0.52, 0.85, 0.46},
+			raidborder = {0.28, 0.52, 0.85, 0.46},
+			bar = {0.33, 0.61, 1, 0.7},
+			bar2 = {0.33, 0.61, 1, 0.5},
+			sidebar = {0.28, 0.52, 0.85, 0.55},
+			minimap = {0.33, 0.61, 1, 1},
+			micromenu = {0.45, 0.71, 0.98},
+			micromenu_bg = {0.15, 0.41, 0.68, 0.8},
+			micromenu_bg2 = {0, 0, 0, 0.7},
+			micromenu_btn = {0.28, 0.52, 0.85, 0.8},
+			micromenu_btn_hover = {0.28, 0.52, 0.85, 0.8},
+			navi = {0.28, 0.52, 0.85, 0.63},
+			navi_hover = {0.28, 0.52, 0.85, 0.65},
+			orb = {0.44, 0.60, 0.80},
+			orb_cycle = {0.28, 0.52, 0.85, 0.65},
+			orb_hover = {0.28, 0.52, 0.85, 0.65},
+		},
+		["Demonic Pact"] = {
+			color_top = {0.55, 0.38, 0.85, 0.55},
+			color_bottom = {0.55, 0.38, 0.85, 0.55},
+			chat = {1, 1, 1, 0.27},
+			chatborder = {1, 1, 1, 0.27},
+			chat2 = {1, 1, 1, 0.27},
+			chat2border = {1, 1, 1, 0.27},
+			editbox = {1, 1, 1, 0.27},
+			tps = {1, 1, 1, 0.27},
+			tpsborder = {1, 1, 1, 0.27},
+			dps = {1, 1, 1, 0.27},
+			dpsborder = {1, 1, 1, 0.27},
+			raid = {1, 1, 1, 0.27},
+			raidborder = {1, 1, 1, 0.27},
+			bar = {0.53, 0.48, 0.9, 0.8},
+			bar2 = {0.53, 0.48, 0.9, 0.7},
+			sidebar = {0.53, 0.48, 0.9, 0.5},
+			minimap = {0.71, 0.66, 0.85, 1},
+			micromenu = {0.76, 0.72, 1},
+			micromenu_bg = {0.46, 0.42, 0.7, 0.8},
+			micromenu_bg2 = {0, 0, 0, 0.7},
+			micromenu_btn = {0.55, 0.38, 0.85, 0.8},
+			micromenu_btn_hover = {0.55, 0.38, 0.85, 0.8},
+			navi = {0.45, 0.32, 0.83, 0.26},
+			navi_hover = {0.55, 0.38, 0.85, 0.45},
+			orb = {0.29, 0.25, 0.31},
+			orb_cycle = {0.55, 0.38, 0.85, 0.45},
+			orb_hover = {0.55, 0.38, 0.85, 0.45},
+		},
+		["Goldenboy"] = {
+			color_top = {0.85, 0.58, 0.33, 0.73},
+			color_bottom = {0.85, 0.58, 0.33, 0.73},
+			chat = {0, 0, 0, 0.45},
+			chatborder = {0, 0, 0, 0.45},
+			chat2 = {0, 0, 0, 0.45},
+			chat2border = {0, 0, 0, 0.45},
+			editbox = {0, 0, 0, 0.45},
+			tps = {0, 0, 0, 0.45},
+			tpsborder = {0, 0, 0, 0.45},
+			dps = {0, 0, 0, 0.45},
+			dpsborder = {0, 0, 0, 0.45},
+			raid = {0, 0, 0, 0.45},
+			raidborder = {0, 0, 0, 0.45},
+			bar = {0.85, 0.58, 0.33, 0.75},
+			bar2 = {0.85, 0.58, 0.33, 0.65},
+			sidebar = {0.85, 0.58, 0.33, 0.5},
+			minimap = {0.85, 0.58, 0.33, 0.2},
+			micromenu = {0.85, 0.58, 0.33},
+			micromenu_bg = {0.85, 0.58, 0.33, 0.8},
+			micromenu_bg2 = {0, 0, 0, 0.7},
+			micromenu_btn = {0.85, 0.58, 0.33, 0.8},
+			micromenu_btn_hover = {0.85, 0.58, 0.33, 0.8},
+			navi = {0.02, 0.02, 0.02, 1},
+			navi_hover = {0.85, 0.58, 0.33, 0.73},
+			orb = {0.85, 0.58, 0.33},
+			orb_cycle = {0.85, 0.58, 0.33, 0.73},
+			orb_hover = {0.85, 0.58, 0.33, 0.73},
+		},
+		["Orangemarmalade"] = {
+			color_top = {1, 0.43, 0, 0.55},
+			color_bottom = {1, 0.43, 0, 0.55},
+			chat = {0, 0, 0, 0.83},
+			chatborder = {0, 0, 0, 0.86},
+			chat2 = {0, 0, 0, 0.83},
+			chat2border = {0, 0, 0, 0.86},
+			editbox = {0, 0, 0, 0.5},
+			tps = {0, 0, 0, 0.83},
+			tpsborder = {0, 0, 0, 0.86},
+			dps = {0, 0, 0, 0.83},
+			dpsborder = {0, 0, 0, 0.86},
+			raid = {0, 0, 0, 0.83},
+			raidborder = {0, 0, 0, 0.86},
+			bar = {1, 0.48, 0, 0.81},
+			bar2 = {1, 0.48, 0, 0.81},
+			sidebar = {1, 0.48, 0, 0.5},
+			minimap = {0.85, 0.35, 0, 0.58},
+			micromenu = {1, 0.54, 0.32},
+			micromenu_bg = {0.7, 0.24, 0.02, 0.8},
+			micromenu_bg2 = {0, 0, 0, 0.7},
+			micromenu_btn = {1, 0.43, 0, 0.8},
+			micromenu_btn_hover = {1, 0.43, 0, 0.8},
+			navi = {0.72, 0.75, 0.72, 0.38},
+			navi_hover = {1, 0.43, 0, 0.4},
+			orb = {0.8, 0.38, 0.05},
+			orb_cycle = {1, 0.43, 0, 0.4},
+			orb_hover = {1, 0.43, 0, 0.4},
+		},
 	},
 }
 
@@ -879,17 +894,17 @@ function module:LoadOptions()
 	
 	-- get/set functions
 	local function getValue(info)
-		return db.profile[info[#info]]
+		return db[info[#info]]
 	end
 	local function setValue(info, val)
-		db.profile[info[#info]] = val
+		db[info[#info]] = val
 	end
 	
 	local function getColor(info)
-		return unpack(db.profile[info[#info]])
+		return unpack(db[info[#info]])
 	end
 	local function setColor(info, r, g, b, a)
-		db.profile[info[#info]] = {r, g, b, a}
+		db[info[#info]] = {r, g, b, a}
 	end
 	
 	local function setColorMicromenu(...)
@@ -923,7 +938,7 @@ function module:LoadOptions()
 					values = self.ThemeArray,
 					get = function()
 						for k, v in pairs(self.ThemeArray()) do
-							if v == db.profile.theme then
+							if v == db.theme then
 								return k
 							end
 						end
@@ -931,7 +946,7 @@ function module:LoadOptions()
 					set = function(info, val)
 						local themeArray = self.ThemeArray()
 						if themeArray[val] ~= "" then
-							db.profile.theme = themeArray[val]
+							db.theme = themeArray[val]
 						end
 						
 						self:LoadTheme()
@@ -1320,23 +1335,23 @@ function module:LoadOptions()
 end
 
 function module:OnInitialize()
-	db = LUI:NewNamespace(self)
+	db, dbd = LUI:NewNamespace(self)
 	
 	-- for transition to namespace
 	if LUI.db.profile.Colors then
 		for k, v in pairs(LUI.db.profile.Colors) do
-			db.profile[k] = v
+			db[k] = v
 		end
 		LUI.db.profile.Colors = nil
 	end
 	
-	LUI_Themes = LUI_Themes or {}
-	if LUICONFIG.Versions.theme ~= version then -- rewrite the predefined themes saved in LUI_Themes
-		for k, v in pairs(themes) do
-			LUI_Themes[k] = v
+	if type(LUI_Themes) == "table" then
+		for k, v in pairs(LUI_Themes) do
+			if not db.global[k] then
+				db.global[k] = v
+			end
 		end
-
-		LUICONFIG.Versions.theme = version
+		LUI_Themes = nil
 	end
 	
 	self:CheckTheme()

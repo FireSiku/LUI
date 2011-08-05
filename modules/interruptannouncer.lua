@@ -226,11 +226,7 @@ end
 
 -- Initialize module: Called when the addon should intialize its self; this is where we load in database values.
 function module:OnInitialize()
-	-- Prep for upcoming update.
-	-- db, dbd = LUI:NewNamespace(self, true)
-	LUI:NewNamespace(self, true)
-	db = self.db.profile
-	dbd = self.defaults.profile
+	db, dbd = LUI:NewNamespace(self, true)	
 end
 
 -- Enable module: Called when addon is enabled.

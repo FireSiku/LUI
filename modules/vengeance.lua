@@ -17,7 +17,7 @@ local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
 
 local _, class = UnitClass("player")
 
-local db
+local db, dbd
 local LUIVengeance
 
 local vengeance = GetSpellInfo(93098)
@@ -62,8 +62,8 @@ local ValueChanged = function(bar, event, unit)
 		bar.value = 0
 	end
 			
-	if db.profile.Text.Enable then
-		if db.profile.Text.Format == "Absolut" then
+	if db.Text.Enable then
+		if db.Text.Format == "Absolut" then
 			bar.Text:SetFormattedText("%d/%d", bar.value, mbar.max)
 		else
 			bar.Text:SetFormattedText("%d", bar.value)
@@ -142,35 +142,35 @@ end
 
 local ApplySettings = function()
 	local r, g, b
-	local mu = db.profile.BGMultiplier
-	if db.profile.Color == "By Class" then
+	local mu = db.BGMultiplier
+	if db.Color == "By Class" then
 		r, g, b = unpack(LUI.oUF.colors.class[class])
 	else
-		r, g, b = db.profile.IndividualColor.r, db.profile.IndividualColor.g, db.profile.IndividualColor.b
+		r, g, b = db.IndividualColor.r, db.IndividualColor.g, db.IndividualColor.b
 	end
 	
-	LUIVengeance:SetWidth(LUI:Scale(db.profile.Width))
-	LUIVengeance:SetHeight(LUI:Scale(db.profile.Height))
+	LUIVengeance:SetWidth(LUI:Scale(db.Width))
+	LUIVengeance:SetHeight(LUI:Scale(db.Height))
 	LUIVengeance:ClearAllPoints()
-	LUIVengeance:SetPoint("BOTTOM", UIParent, "BOTTOM", LUI:Scale(db.profile.X), LUI:Scale(db.profile.Y))
-	LUIVengeance:SetStatusBarTexture(LSM:Fetch("statusbar", db.profile.Texture))
+	LUIVengeance:SetPoint("BOTTOM", UIParent, "BOTTOM", LUI:Scale(db.X), LUI:Scale(db.Y))
+	LUIVengeance:SetStatusBarTexture(LSM:Fetch("statusbar", db.Texture))
 	LUIVengeance:SetStatusBarColor(r, g, b)
 	
-	LUIVengeance.bg:SetTexture(LSM:Fetch("statusbar", db.profile.TextureBG))
+	LUIVengeance.bg:SetTexture(LSM:Fetch("statusbar", db.TextureBG))
 	LUIVengeance.bg:SetVertexColor(r * mu, g * mu, b * mu)
 	
-	if db.profile.Text.Color == "By Class" then
+	if db.Text.Color == "By Class" then
 		r, g, b = unpack(LUI.oUF.colors.class[class])
 	else
-		r, g, b = db.profile.Text.IndividualColor.r, db.profile.Text.IndividualColor.g, db.profile.Text.IndividualColor.b
+		r, g, b = db.Text.IndividualColor.r, db.Text.IndividualColor.g, db.Text.IndividualColor.b
 	end
 	
-	LUIVengeance.Text:SetFont(LSM:Fetch("font", db.profile.Text.Font), db.profile.Text.Size, db.profile.Text.Outline)
+	LUIVengeance.Text:SetFont(LSM:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
 	LUIVengeance.Text:ClearAllPoints()
-	LUIVengeance.Text:SetPoint("CENTER", LUIVengeance, "CENTER", LUI:Scale(db.profile.Text.X), LUI:Scale(db.profile.Text.Y))
+	LUIVengeance.Text:SetPoint("CENTER", LUIVengeance, "CENTER", LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
 	LUIVengeance.Text:SetTextColor(r, g, b)
 	
-	if db.profile.Text.Enable then
+	if db.Text.Enable then
 		LUIVengeance.Text:Show()
 	else
 		LUIVengeance.Text:Hide()
@@ -225,10 +225,10 @@ function module:LoadOptions()
 					guiInline = true,
 					order = 1,
 					args = {
-						XValue = LUI:NewPosX("Vengeance Bar", 1, db.profile, "", module.defaults.profile, ApplySettings),
-						YValue = LUI:NewPosY("Vengeance Bar", 2, db.profile, "", module.defaults.profile, ApplySettings),
-						Width = LUI:NewWidth("Vengeance Bar", 3, db.profile, nil, module.defaults.profile, ApplySettings),
-						Height = LUI:NewHeight("Vengeance Bar", 4, db.profile, nil, module.defaults.profile, ApplySettings)
+						XValue = LUI:NewPosX("Vengeance Bar", 1, db, "", dbd, ApplySettings),
+						YValue = LUI:NewPosY("Vengeance Bar", 2, db, "", dbd, ApplySettings),
+						Width = LUI:NewWidth("Vengeance Bar", 3, db, nil, dbd, ApplySettings),
+						Height = LUI:NewHeight("Vengeance Bar", 4, db, nil, dbd, ApplySettings)
 					}
 				},
 				Colors = {
@@ -237,8 +237,8 @@ function module:LoadOptions()
 					guiInline = true,
 					order = 2,
 					args = {
-						ColorType = LUI:NewSelect("Color", "Choose the Color Option for your Vengeance Bar.", 1, {"By Class", "Individual"}, nil, db.profile, "Color", module.defaults.profile, ApplySettings),
-						Color = LUI:NewColorNoAlpha("Individual", barName, 2, db.profile.IndividualColor, module.defaults.profile.IndividualColor, ApplySettings, nil, function() return (db.Color ~= "Individual") end),
+						ColorType = LUI:NewSelect("Color", "Choose the Color Option for your Vengeance Bar.", 1, {"By Class", "Individual"}, nil, db, "Color", dbd, ApplySettings),
+						Color = LUI:NewColorNoAlpha("Individual", barName, 2, db.IndividualColor, dbd.IndividualColor, ApplySettings, nil, function() return (db.Color ~= "Individual") end),
 					}
 					
 				},
@@ -248,9 +248,9 @@ function module:LoadOptions()
 					guiInline = true,
 					order = 3,
 					args = {
-						Texture = LUI:NewSelect("Texture", "Choose the Vengeance Bar Texture.", 1, widgetLists.statusbar, "LSM30_Statusbar", db.profile, "Texture", module.defaults.profile, ApplySettings),
-						BGTexture = LUI:NewSelect("Background Texture", "Choose the Vengeance Bar Background Texture.", 2, widgetLists.statusbar, "LSM30_Statusbar", db.profile, "BGTexture", module.defaults.profile, ApplySettings),
-						BGMultiplier = LUI:NewSlider("Background Multiplier", "Choose the Multiplier which will be used to generate the Background Color", 3, db.profile, "BGMultiplier", module.defaults.profile, 0, 1, 0.05, ApplySettings),
+						Texture = LUI:NewSelect("Texture", "Choose the Vengeance Bar Texture.", 1, widgetLists.statusbar, "LSM30_Statusbar", db, "Texture", dbd, ApplySettings),
+						BGTexture = LUI:NewSelect("Background Texture", "Choose the Vengeance Bar Background Texture.", 2, widgetLists.statusbar, "LSM30_Statusbar", db, "BGTexture", dbd, ApplySettings),
+						BGMultiplier = LUI:NewSlider("Background Multiplier", "Choose the Multiplier which will be used to generate the Background Color", 3, db, "BGMultiplier", dbd, 0, 1, 0.05, ApplySettings),
 					}
 				}
 			}
@@ -260,18 +260,18 @@ function module:LoadOptions()
 			type = "group",
 			order = 3,
 			args = {
-				Enable = LUI:NewToggle("Enable Text", "Whether you want to show the Vengeance Bar Text or not.", 1, db.profile.Text, "Enable", module.defaults.profile.Text, ApplySettings),
+				Enable = LUI:NewToggle("Enable Text", "Whether you want to show the Vengeance Bar Text or not.", 1, db.Text, "Enable", dbd.Text, ApplySettings),
 				FontSettings = {
 					name = "Font Settings",
 					type = "group",
 					guiInline = true,
 					order = 2,
-					disabled = function() return not db.profile.Text.Enable end,
+					disabled = function() return not db.Text.Enable end,
 					args = {
-						FontSize = LUI:NewSlider("Size", "Choose your Vengeance Bar Text Fontsize.", 1, db.profile.Text, "Size", module.defaults.profile.Text, 1, 40, 1, ApplySettings),
+						FontSize = LUI:NewSlider("Size", "Choose your Vengeance Bar Text Fontsize.", 1, db.Text, "Size", dbd.Text, 1, 40, 1, ApplySettings),
 						empty = LUI:NewEmpty(2),
-						Font = LUI:NewSelect("Font", "Choose your Vengeance Bar Text Font.", 3, widgetLists.font, "LSM30_Font", db.profile.Text, "Font", module.defaults.profile.Text, ApplySettings),
-						FontFlag = LUI:NewSelect("Font Flag", "Choose the Font Flag for the Vengeance Bar Text Font.", 4, fontflags, nil, db.profile.Text, "Outline", module.defaults.profile.Text, ApplySettings),
+						Font = LUI:NewSelect("Font", "Choose your Vengeance Bar Text Font.", 3, widgetLists.font, "LSM30_Font", db.Text, "Font", dbd.Text, ApplySettings),
+						FontFlag = LUI:NewSelect("Font Flag", "Choose the Font Flag for the Vengeance Bar Text Font.", 4, fontflags, nil, db.Text, "Outline", dbd.Text, ApplySettings),
 					},
 				},
 				Settings = {
@@ -279,11 +279,11 @@ function module:LoadOptions()
 					type = "group",
 					guiInline = true,
 					order = 3,
-					disabled = function() return not db.profile.Text.Enable end,
+					disabled = function() return not db.Text.Enable end,
 					args = {
-						XValue = LUI:NewPosX("Vengeance Bar Text", 1, db.profile.Text, "", module.defaults.profile.Text, ApplySettings),
-						YValue = LUI:NewPosY("Vengeance Bar Text", 2, db.profile.Text, "", module.defaults.profile.Text, ApplySettings),
-						Format = LUI:NewSelect("Format", "Choose the Format for the Vengeance Bar Text.", 3, {"Absolut", "Standard"}, nil, db.profile.Text, "Format", module.defaults.profile.Text, ApplySettings),
+						XValue = LUI:NewPosX("Vengeance Bar Text", 1, db.Text, "", dbd.Text, ApplySettings),
+						YValue = LUI:NewPosY("Vengeance Bar Text", 2, db.Text, "", dbd.Text, ApplySettings),
+						Format = LUI:NewSelect("Format", "Choose the Format for the Vengeance Bar Text.", 3, {"Absolut", "Standard"}, nil, db.Text, "Format", dbd.Text, ApplySettings),
 					}
 				},
 				Color = {
@@ -291,10 +291,10 @@ function module:LoadOptions()
 					type = "group",
 					guiInline = true,
 					order = 4,
-					disabled = function() return not db.profile.Text.Enable end,
+					disabled = function() return not db.Text.Enable end,
 					args = {
-						Color = LUI:NewSelect("Color", "Choose the Color Option for the Vengeance Bar Text.", 1, {"By Class", "Individual"}, nil, db.profile.Text, "Color", module.defaults.profile.Text, ApplySettings),
-						IndividualColor = LUI:NewColorNoAlpha("", "Vengeance Bar Text", 2, db.profile.Text.IndividualColor, module.defaults.profile.Text.IndividualColor, ApplySettings),
+						Color = LUI:NewSelect("Color", "Choose the Color Option for the Vengeance Bar Text.", 1, {"By Class", "Individual"}, nil, db.Text, "Color", dbd.Text, ApplySettings),
+						IndividualColor = LUI:NewColorNoAlpha("", "Vengeance Bar Text", 2, db.Text.IndividualColor, dbd.Text.IndividualColor, ApplySettings),
 					}
 				}
 			}
@@ -305,12 +305,12 @@ function module:LoadOptions()
 end
 
 function module:OnInitialize()
-	db = LUI:NewNamespace(self, true)
+	db, dbd = LUI:NewNamespace(self, true)
 	
 	-- Look for outdated db vars and transfer them over
 	if LUI.db.profile.oUF.Player.Vengeance then
 		for k, v in pairs(LUI.db.profile.oUF.Player.Vengeance) do
-			db.profile[k] = v
+			db[k] = v
 		end
 		LUI.db.profile.oUF.Player.Vengeance = nil
 	end

@@ -10,7 +10,7 @@ local module = LUI:NewModule("Forte", "AceHook-3.0")
 local _, class = UnitClass("player")
 local _G = _G
 
-local db
+local db, dbd
 local FW = _G.FW
 local UIParent = _G.UIParent
 
@@ -195,7 +195,7 @@ local function CreateCooldowntimerAnimation()
 		
 		local isOut = false
 		bb_Forte:SetScript("OnUpdate", function(self)
-			if db.profile.Cooldown.Lock and _G.FX_Cooldown1 then
+			if db.Cooldown.Lock and _G.FX_Cooldown1 then
 				if _G.FX_Cooldown1:IsShown() and not isOut then
 					if LUI.db.profile.Bars.TopTexture.Animation then
 						bb_SlideOut:Show()
@@ -221,8 +221,8 @@ local function SetupForte() -- only done on new major version
 	LUICONFIG.Versions.forte = LUI_versions.forte; -- don't ask again
 	-- disable the new frames that are enabled by default
 	if LUI_versions.forte == "v1.975" then
-		db.profile.Player.Enable = false;
-		db.profile.Target.Enable = false;
+		db.Player.Enable = false;
+		db.Target.Enable = false;
 	end
 	module:SetForte();
 end
@@ -330,7 +330,7 @@ function module:SetFrameProps(instance,name)
 	local uiScale = UIParent:GetEffectiveScale();
 	local x,y;
 	local width = 50;
-	local paddingX,paddingY = tonumber(db.profile[name].PaddingX),tonumber(db.profile[name].PaddingY);
+	local paddingX,paddingY = tonumber(db[name].PaddingX),tonumber(db[name].PaddingY);
 	if properties.anchor then
 		local f = _G[ properties.anchor[1] ];
 		if not f then
@@ -361,7 +361,7 @@ function module:SetFrameProps(instance,name)
 		y = y + paddingY;
 	else -- anchor compact frame to right side
 		paddingX = math.abs(paddingX); -- ignore negative values here
-		if db.profile.Compact.Location == "RIGHT" then
+		if db.Compact.Location == "RIGHT" then
 			x = UIParent:GetWidth() - width/2 -paddingX;
 		else
 			x = width/2 + paddingX;
@@ -377,7 +377,7 @@ function module:SetPosForte()
 	if not LUI.isForteTimerLoaded or not LUI.db.profile.oUF.Settings.Enable then return end
 
 	for name, data in pairs(timer_instances) do
-		if db.profile[name].Enable and db.profile[name].Lock then
+		if db[name].Enable and db[name].Lock then
 			local instance = module:GetTimerByName(name);
 			if instance then
 				module:SetFrameProps(instance,name);
@@ -389,11 +389,11 @@ function module:SetPosForte()
 end
 
 function module:SetPosForteCooldown()
-	if not LUI.isForteCooldownLoaded or not db.profile.Cooldown.Lock then return end
+	if not LUI.isForteCooldownLoaded or not db.Cooldown.Lock then return end
 	
 	local uiScale = UIParent:GetEffectiveScale()
-	local x = (UIParent:GetWidth() * uiScale / 2) + tonumber(db.profile.Cooldown.PaddingX)
-	local y = tonumber(db.profile.Cooldown.PaddingY) * uiScale
+	local x = (UIParent:GetWidth() * uiScale / 2) + tonumber(db.Cooldown.PaddingX)
+	local y = tonumber(db.Cooldown.PaddingY) * uiScale
 	
 	local instance = module:GetCooldown();
 	instance.x = x;
@@ -403,14 +403,14 @@ function module:SetPosForteCooldown()
 end
 
 function module:SetPosForteSplash()
-	if not LUI.isForteCooldownLoaded or not db.profile.Splash.Lock then return end
+	if not LUI.isForteCooldownLoaded or not db.Splash.Lock then return end
 	local x,y;
 	local uiScale = UIParent:GetEffectiveScale()
-	x = tonumber(db.profile.Splash.PaddingX) + UIParent:GetWidth() / 2;
-	if db.profile.Splash.Location == "TOP" then
-		y = UIParent:GetHeight() - tonumber(db.profile.Splash.PaddingY);
+	x = tonumber(db.Splash.PaddingX) + UIParent:GetWidth() / 2;
+	if db.Splash.Location == "TOP" then
+		y = UIParent:GetHeight() - tonumber(db.Splash.PaddingY);
 	else
-		y = tonumber(db.profile.Splash.PaddingY);
+		y = tonumber(db.Splash.PaddingY);
 	end
 	local instance = module:GetSplash();
 	instance.x = x * uiScale;
@@ -422,8 +422,8 @@ end
 function module:SetColors()
 	if not LUI.isForteTimerLoaded then return end
 	
-	module:Copy(db.profile.Color,FW.Settings.TimerColorOverride);
-	FW.Settings.TimerColorOverride[0] = db.profile.IndividualColor;
+	module:Copy(db.Color,FW.Settings.TimerColorOverride);
+	FW.Settings.TimerColorOverride[0] = db.IndividualColor;
 	
 	FW:RefreshOptions(); -- at most update FX options frame, no need to refresh all frames atm
 end
@@ -436,7 +436,7 @@ function module:SetForte()
 	local created_new = false;
 	if LUI.isForteTimerLoaded then
 		for name, data in pairs(timer_instances) do
-			local instance, enable = module:GetTimerByName(name), db.profile[name].Enable;
+			local instance, enable = module:GetTimerByName(name), db[name].Enable;
 			if not instance and enable then
 				local index = FW:InstanceCreate(name, FW.Settings.Timer, data.settings);
 				FW.Modules.Timer:NewTimerInstance(index); -- create the new frame and its options
@@ -453,11 +453,11 @@ function module:SetForte()
 	
 	if LUI.isForteCooldownLoaded then
 		local instance = module:GetCooldown();
-		instance.Enable = db.profile["Cooldown"].Enable;
+		instance.Enable = db["Cooldown"].Enable;
 		module:SetPosForteCooldown();
 
 		instance = module:GetSplash();
-		instance.Enable = db.profile["Splash"].Enable;
+		instance.Enable = db["Splash"].Enable;
 		module:SetPosForteSplash();
 	end
 	-- live update FX options panel if it's open
@@ -477,7 +477,7 @@ function module:SetForte()
 					dbcheck = FW:InstanceIndexToName(instance.index, FW.Settings.Timer)
 				end
 				
-				if type(db.profile[dbcheck]) == "table" and db.profile[dbcheck].Lock then
+				if type(db[dbcheck]) == "table" and db[dbcheck].Lock then
 					LUI:Print("Use the options in LUI to move the ForteXorcist " .. (instance.instanceof == "Timer" and dbcheck.." " or "") .. FW.Options[parent.index][1])
 					if frame == frame.parent.coordinates then
 						frame:ClearFocus()
@@ -497,7 +497,7 @@ function module:SetForte()
 			module.hooks[FW]:BuildOptions() -- Post Hook
 			
 			for i = 1, #FW.Options do
-				if FW.Options[i][6] == "Timer" or db.profile[FW.Options[i][6]] then
+				if FW.Options[i][6] == "Timer" or db[FW.Options[i][6]] then
 					if FW.Options[i].option and FW.Options[i].option.frameheader then
 						local lockOption = FW.Options[i].option.frameheader.lock
 						if lockOption and not module:IsHooked(lockOption, "OnClick") then
@@ -581,12 +581,12 @@ function module:LoadOptions()
 		for i, v in ipairs(info) do
 			if v == moduleName then
 				local isSpellTimer = info[i+1] == "SpellTimer"
-				return not db.profile[info[i+(isSpellTimer and 2 or 1)]].Enable
+				return not db[info[i+(isSpellTimer and 2 or 1)]].Enable
 			end
 		end
 	end
 	local function lockDisabled(info)
-		return not db.profile[info[#info-2]].Lock
+		return not db[info[#info-2]].Lock
 	end
 	local function forteTimerDisabled()
 		return not LUI.isForteTimerLoaded
@@ -609,7 +609,7 @@ function module:LoadOptions()
 		for i, v in ipairs(info) do
 			if v == moduleName then
 				local isSpellTimer = info[i+1] == "SpellTimer"
-				return db.defaults.profile[info[i+(isSpellTimer and 2 or 1)]][info[#info]]
+				return dbd[info[i+(isSpellTimer and 2 or 1)]][info[#info]]
 			end
 		end
 	end
@@ -617,7 +617,7 @@ function module:LoadOptions()
 		for i, v in ipairs(info) do
 			if v == moduleName then
 				local isSpellTimer = info[i+1] == "SpellTimer"
-				return db.profile[info[i+(isSpellTimer and 2 or 1)]][info[#info]]
+				return db[info[i+(isSpellTimer and 2 or 1)]][info[#info]]
 			end
 		end
 	end
@@ -628,7 +628,7 @@ function module:LoadOptions()
 		for i, v in ipairs(info) do
 			if v == moduleName then
 				local isSpellTimer = info[i+1] == "SpellTimer"
-				db.profile[info[i+(isSpellTimer and 2 or 1)]][info[#info]] = value
+				db[info[i+(isSpellTimer and 2 or 1)]][info[#info]] = value
 				break
 			end
 		end
@@ -800,9 +800,9 @@ function module:LoadOptions()
 									desc = "Whether you want to use a global Color for all your tracked Buffs/Debuffs or not.\n\nNote: If you want different colors for each of your spells please disable this and type /fx to enter ForteXorcist Options and go to Spelltimer -> Coloring/Filtering",
 									type = "toggle",
 									width = "full",
-									get = function() return db.profile.IndividualColor end,
+									get = function() return db.IndividualColor end,
 									set = function(info, value)
-											db.profile.IndividualColor = value
+											db.IndividualColor = value
 											module:SetColors()
 										end,
 									order = 2,
@@ -810,16 +810,16 @@ function module:LoadOptions()
 								Color = {
 									name = "Bar Color",
 									desc = function(info)
-											local color = db.defaults.profile.Color
+											local color = dbd.Color
 											return "Choose a global Bar Color.\n\nDefault:\nr = " .. color[1] .. "\ng = " .. color[2] .. "\nb = " .. color[3]
 										end,
 									type = "color",
 									width = "full",
-									disabled = function() return not db.profile.IndividualColor end,
+									disabled = function() return not db.IndividualColor end,
 									hasAlpha = false,
-									get = function() return unpack(db.profile.Color) end,
+									get = function() return unpack(db.Color) end,
 									set = function(info, r, g, b)
-											db.profile.Color[1],db.profile.Color[2],db.profile.Color[3] = r,g,b
+											db.Color = {r, g, b}
 											module:SetColors()
 										end,
 									order = 4,
@@ -876,7 +876,7 @@ function module:LoadOptions()
 end
 
 function module:OnInitialize()
-	db = LUI:NewNamespace(self)
+	db, dbd = LUI:NewNamespace(self)
 	
 	StaticPopupDialogs["INSTALL_FORTE"] = {
 		text = "%s",

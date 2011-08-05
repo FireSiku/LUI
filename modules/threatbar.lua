@@ -17,13 +17,13 @@ local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
 
 local _, class = UnitClass("player")
 
-local db
+local db, dbd
 local LUIThreat
 
 local aggrocolors = {0, 1, 0, 1, 1, 0, 1, 0, 0}
 
 local Update = function(bar)
-	if db.profile.TankHide and LUIVengeance and LUIVengeance:IsShown() then
+	if db.TankHide and LUIVengeance and LUIVengeance:IsShown() then
 		bar:SetAlpha(0)
 		return
 	end
@@ -54,20 +54,20 @@ local Update = function(bar)
 		bar:SetValue(rawthreat)
 	end
 	
-	if db.profile.Color == "Gradient" then
+	if db.Color == "Gradient" then
 		local r, g, b = oUF.ColorGradient(threat/100, 0, 1, 0, 1, 1, 0, 1, 0, 0)
-		local mu = db.profile.BGMultiplier or 0
+		local mu = db.BGMultiplier or 0
 		bar:SetStatusBarColor(r, g, b)
 		if bar.bg then bar.bg:SetVertexColor(r * mu, g * mu, b * mu) end
 	end
 				
-	if db.profile.Text.Enable then
+	if db.Text.Enable then
 		bar.Text:SetFormattedText("%d%%", rawthreat)
 	else
 		bar.Text:SetText()
 	end
 	
-	if db.profile.Text.Color == "Gradient" then
+	if db.Text.Color == "Gradient" then
 		bar.Text:SetTextColor(oUF.ColorGradient(threat/100, 0, 1, 0, 1, 1, 0, 1, 0, 0))
 	end
 end
@@ -112,37 +112,37 @@ end
 
 local ApplySettings = function()
 	local r, g, b
-	local mu = db.profile.BGMultiplier
-	if db.profile.Color == "By Class" then
+	local mu = db.BGMultiplier
+	if db.Color == "By Class" then
 		r, g, b = unpack(LUI.oUF.colors.class[class])
-	elseif db.profile.Color == "Individual" then
-		r, g, b = db.profile.IndividualColor.r, db.profile.IndividualColor.g, db.profile.IndividualColor.b
+	elseif db.Color == "Individual" then
+		r, g, b = db.IndividualColor.r, db.IndividualColor.g, db.IndividualColor.b
 	end
 	
-	LUIThreat:SetWidth(LUI:Scale(db.profile.Width))
-	LUIThreat:SetHeight(LUI:Scale(db.profile.Height))
+	LUIThreat:SetWidth(LUI:Scale(db.Width))
+	LUIThreat:SetHeight(LUI:Scale(db.Height))
 	LUIThreat:ClearAllPoints()
-	LUIThreat:SetPoint("BOTTOM", UIParent, "BOTTOM", LUI:Scale(db.profile.X), LUI:Scale(db.profile.Y))
-	LUIThreat:SetStatusBarTexture(LSM:Fetch("statusbar", db.profile.Texture))
+	LUIThreat:SetPoint("BOTTOM", UIParent, "BOTTOM", LUI:Scale(db.X), LUI:Scale(db.Y))
+	LUIThreat:SetStatusBarTexture(LSM:Fetch("statusbar", db.Texture))
 	if r then LUIThreat:SetStatusBarColor(r, g, b) end
 	
-	LUIThreat.bg:SetTexture(LSM:Fetch("statusbar", db.profile.TextureBG))
+	LUIThreat.bg:SetTexture(LSM:Fetch("statusbar", db.TextureBG))
 	if r then LUIThreat.bg:SetVertexColor(r * mu, g * mu, b * mu) end
 	
-	if db.profile.Text.Color == "By Class" then
+	if db.Text.Color == "By Class" then
 		r, g, b = unpack(colors.class[class])
-	elseif db.profile.Text.Color == "Individual" then
-		r, g, b = db.profile.Text.IndividualColor.r, db.profile.Text.IndividualColor.g, db.profile.Text.IndividualColor.b
+	elseif db.Text.Color == "Individual" then
+		r, g, b = db.Text.IndividualColor.r, db.Text.IndividualColor.g, db.Text.IndividualColor.b
 	else
 		r, g, b = nil, nil, nil
 	end
 	
-	LUIThreat.Text:SetFont(LSM:Fetch("font", db.profile.Text.Font), db.profile.Text.Size, db.profile.Text.Outline)
+	LUIThreat.Text:SetFont(LSM:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
 	LUIThreat.Text:ClearAllPoints()
-	LUIThreat.Text:SetPoint("CENTER", LUIThreat, "CENTER", LUI:Scale(db.profile.Text.X), LUI:Scale(db.profile.Text.Y))
+	LUIThreat.Text:SetPoint("CENTER", LUIThreat, "CENTER", LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
 	if r then LUIThreat.Text:SetTextColor(r, g, b) end
 	
-	if db.profile.Text.Enable then
+	if db.Text.Enable then
 		LUIThreat.Text:Show()
 	else
 		LUIThreat.Text:Hide()
@@ -197,11 +197,11 @@ function module:LoadOptions()
 					guiInline = true,
 					order = 1,
 					args = {
-						XValue = LUI:NewPosX("Threat Bar", 1, db.profile, "", module.defaults.profile, ApplySettings),
-						YValue = LUI:NewPosY("Threat Bar", 2, db.profile, "", module.defaults.profile, ApplySettings),
-						Width = LUI:NewWidth("Threat Bar", 3, db.profile, nil, module.defaults.profile, ApplySettings),
-						Height = LUI:NewHeight("Threat Bar", 4, db.profile, nil, module.defaults.profile, ApplySettings),
-						TankHide = LUI:NewToggle("Hide if Tanking", "Whether you want to hide the Threat Bar if you are tank specced or not.", 5, db.profile, "TankHide", module.defaults.profile, ApplySettings),
+						XValue = LUI:NewPosX("Threat Bar", 1, db, "", dbd, ApplySettings),
+						YValue = LUI:NewPosY("Threat Bar", 2, db, "", dbd, ApplySettings),
+						Width = LUI:NewWidth("Threat Bar", 3, db, nil, dbd, ApplySettings),
+						Height = LUI:NewHeight("Threat Bar", 4, db, nil, dbd, ApplySettings),
+						TankHide = LUI:NewToggle("Hide if Tanking", "Whether you want to hide the Threat Bar if you are tank specced or not.", 5, db, "TankHide", dbd, ApplySettings),
 					}
 				},
 				Colors = {
@@ -210,8 +210,8 @@ function module:LoadOptions()
 					guiInline = true,
 					order = 2,
 					args = {
-						ColorType = LUI:NewSelect("Color", "Choose the Color Option for your Threat Bar.", 1, {"By Class", "Individual", "Gradient"}, nil, db.profile, "Color", module.defaults.profile, ApplySettings),
-						Color = LUI:NewColorNoAlpha("Individual", barName, 2, db.profile.IndividualColor, module.defaults.profile.IndividualColor, ApplySettings, nil, function() return (db.Color ~= "Individual") end),
+						ColorType = LUI:NewSelect("Color", "Choose the Color Option for your Threat Bar.", 1, {"By Class", "Individual", "Gradient"}, nil, db, "Color", dbd, ApplySettings),
+						Color = LUI:NewColorNoAlpha("Individual", barName, 2, db.IndividualColor, dbd.IndividualColor, ApplySettings, nil, function() return (db.Color ~= "Individual") end),
 					}
 					
 				},
@@ -221,9 +221,9 @@ function module:LoadOptions()
 					guiInline = true,
 					order = 3,
 					args = {
-						Texture = LUI:NewSelect("Texture", "Choose the Threat Bar Texture.", 1, widgetLists.statusbar, "LSM30_Statusbar", db.profile, "Texture", module.defaults.profile, ApplySettings),
-						BGTexture = LUI:NewSelect("Background Texture", "Choose the Threat Bar Background Texture.", 2, widgetLists.statusbar, "LSM30_Statusbar", db.profile, "BGTexture", module.defaults.profile, ApplySettings),
-						BGMultiplier = LUI:NewSlider("Background Multiplier", "Choose the Multiplier which will be used to generate the Background Color", 3, db.profile, "BGMultiplier", module.defaults.profile, 0, 1, 0.05, ApplySettings),
+						Texture = LUI:NewSelect("Texture", "Choose the Threat Bar Texture.", 1, widgetLists.statusbar, "LSM30_Statusbar", db, "Texture", dbd, ApplySettings),
+						BGTexture = LUI:NewSelect("Background Texture", "Choose the Threat Bar Background Texture.", 2, widgetLists.statusbar, "LSM30_Statusbar", db, "BGTexture", dbd, ApplySettings),
+						BGMultiplier = LUI:NewSlider("Background Multiplier", "Choose the Multiplier which will be used to generate the Background Color", 3, db, "BGMultiplier", dbd, 0, 1, 0.05, ApplySettings),
 					}
 				}
 			}
@@ -233,18 +233,18 @@ function module:LoadOptions()
 			type = "group",
 			order = 3,
 			args = {
-				Enable = LUI:NewToggle("Enable Text", "Whether you want to show the Threat Bar Text or not.", 1, db.profile.Text, "Enable", module.defaults.profile.Text, ApplySettings),
+				Enable = LUI:NewToggle("Enable Text", "Whether you want to show the Threat Bar Text or not.", 1, db.Text, "Enable", dbd.Text, ApplySettings),
 				FontSettings = {
 					name = "Font Settings",
 					type = "group",
 					guiInline = true,
 					order = 2,
-					disabled = function() return not db.profile.Text.Enable end,
+					disabled = function() return not db.Text.Enable end,
 					args = {
-						FontSize = LUI:NewSlider("Size", "Choose your Threat Bar Text Fontsize.", 1, db.profile.Text, "Size", module.defaults.profile.Text, 1, 40, 1, ApplySettings),
+						FontSize = LUI:NewSlider("Size", "Choose your Threat Bar Text Fontsize.", 1, db.Text, "Size", dbd.Text, 1, 40, 1, ApplySettings),
 						empty = LUI:NewEmpty(2),
-						Font = LUI:NewSelect("Font", "Choose your Threat Bar Text Font.", 3, widgetLists.font, "LSM30_Font", db.profile.Text, "Font", module.defaults.profile.Text, ApplySettings),
-						FontFlag = LUI:NewSelect("Font Flag", "Choose the Font Flag for the Threat Bar Text Font.", 4, fontflags, nil, db.profile.Text, "Outline", module.defaults.profile.Text, ApplySettings),
+						Font = LUI:NewSelect("Font", "Choose your Threat Bar Text Font.", 3, widgetLists.font, "LSM30_Font", db.Text, "Font", dbd.Text, ApplySettings),
+						FontFlag = LUI:NewSelect("Font Flag", "Choose the Font Flag for the Threat Bar Text Font.", 4, fontflags, nil, db.Text, "Outline", dbd.Text, ApplySettings),
 					},
 				},
 				Settings = {
@@ -252,10 +252,10 @@ function module:LoadOptions()
 					type = "group",
 					guiInline = true,
 					order = 3,
-					disabled = function() return not db.profile.Text.Enable end,
+					disabled = function() return not db.Text.Enable end,
 					args = {
-						XValue = LUI:NewPosX("Threat Bar Text", 1, db.profile.Text, "", module.defaults.profile.Text, ApplySettings),
-						YValue = LUI:NewPosY("Threat Bar Text", 2, db.profile.Text, "", module.defaults.profile.Text, ApplySettings),
+						XValue = LUI:NewPosX("Threat Bar Text", 1, db.Text, "", dbd.Text, ApplySettings),
+						YValue = LUI:NewPosY("Threat Bar Text", 2, db.Text, "", dbd.Text, ApplySettings),
 					}
 				},
 				Color = {
@@ -263,10 +263,10 @@ function module:LoadOptions()
 					type = "group",
 					guiInline = true,
 					order = 4,
-					disabled = function() return not db.profile.Text.Enable end,
+					disabled = function() return not db.Text.Enable end,
 					args = {
-						Color = LUI:NewSelect("Color", "Choose the Color Option for the Threat Bar Text.", 1, {"By Class", "Individual", "Gradient"}, nil, db.profile.Text, "Color", module.defaults.profile.Text, ApplySettings),
-						IndividualColor = LUI:NewColorNoAlpha("", "Threat Bar Text", 2, db.profile.Text.IndividualColor, module.defaults.profile.Text.IndividualColor, ApplySettings),
+						Color = LUI:NewSelect("Color", "Choose the Color Option for the Threat Bar Text.", 1, {"By Class", "Individual", "Gradient"}, nil, db.Text, "Color", dbd.Text, ApplySettings),
+						IndividualColor = LUI:NewColorNoAlpha("", "Threat Bar Text", 2, db.Text.IndividualColor, dbd.Text.IndividualColor, ApplySettings),
 					}
 				}
 			}
@@ -277,12 +277,12 @@ function module:LoadOptions()
 end
 
 function module:OnInitialize()
-	db = LUI:NewNamespace(self, true)
+	db, dbd = LUI:NewNamespace(self, true)
 	
 	-- Look for outdated db vars and transfer them over
 	if LUI.db.profile.oUF.Player.ThreatBar then
 		for k, v in pairs(LUI.db.profile.oUF.Player.ThreatBar) do
-			db.profile[k] = v
+			db[k] = v
 		end
 		LUI.db.profile.oUF.Player.ThreatBar = nil
 	end

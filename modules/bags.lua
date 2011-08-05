@@ -24,7 +24,7 @@ local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 local module = LUI:NewModule("Bags", "AceHook-3.0", "AceEvent-3.0")
 
-local db
+local db, dbd
 local GetBags = {
 	["Bags"] = {0, 1, 2, 3, 4},
 	["Bank"] = {-1, 5, 6, 7, 8, 9, 10, 11},
@@ -1161,9 +1161,6 @@ module.defaults = {
 }
 
 function module:LoadOptions()
-	--local luidef = LUI.defaults.profile.Bags
-	local luidef = module.db.defaults.profile
-
 	local function BagOpt()
 		module:ReloadLayout("Bags")
 		if db.CopyBags then module:CopyBags() end
@@ -1187,17 +1184,17 @@ function module:LoadOptions()
 			args = {
 				Enable = LUI:NewEnable("Bags", 1, db),
 				Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.",
-							2, db.Bags, "Cols", luidef.Bags, 4, 32, 1, BagOpt),
+							2, db.Bags, "Cols", dbd.Bags, 4, 32, 1, BagOpt),
 				Header = LUI:NewHeader("", 3),
 				Padding = LUI:NewSlider("Bag Padding", "This sets the space between the background border and the adjacent items.",
-							4, db.Bags, "Padding", luidef.Bags, 4, 24, 1, BagOpt),
+							4, db.Bags, "Padding", dbd.Bags, 4, 24, 1, BagOpt),
 				Spacing = LUI:NewSlider("Bag Spacing", "This sets the distance between items.",
-							5, db.Bags, "Spacing", luidef.Bags, 1, 15, 1, BagOpt),
-				Scale = LUI:NewScale("Bags Frame",6, db.Bags, "Scale", luidef.Bags, BagOpt),
-				BagScale = LUI:NewScale("Bags BagBar",7, db.Bags, "BagScale", luidef.Bags, BagOpt),
-				BagFrame = LUI:NewToggle("Show Bag Bar", nil, 8, db.Bags, "BagFrame", luidef.Bags, BagOpt),
-				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 9, db.Bags, "ItemQuality", luidef.Bags, BagOpt),
-				--ShowQuest = LUI:NewToggle("Highlight Quest Items", nil, 10, db.Bags, "ShowQuest", luidef.Bags, BagOpt),
+							5, db.Bags, "Spacing", dbd.Bags, 1, 15, 1, BagOpt),
+				Scale = LUI:NewScale("Bags Frame",6, db.Bags, "Scale", dbd.Bags, BagOpt),
+				BagScale = LUI:NewScale("Bags BagBar",7, db.Bags, "BagScale", dbd.Bags, BagOpt),
+				BagFrame = LUI:NewToggle("Show Bag Bar", nil, 8, db.Bags, "BagFrame", dbd.Bags, BagOpt),
+				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 9, db.Bags, "ItemQuality", dbd.Bags, BagOpt),
+				--ShowQuest = LUI:NewToggle("Highlight Quest Items", nil, 10, db.Bags, "ShowQuest", dbd.Bags, BagOpt),
 				ShowQuest = module:NewToggle("Highlight Quest Items", nil, 10, BagOpt),
 			},
 		},
@@ -1206,23 +1203,23 @@ function module:LoadOptions()
 			type = "group",
 			order = 4,
 			args = {
-				CopyBags = LUI:NewToggle("Copy Bags", "Make the Bank frames copies the bags options.", 1, db.Bank, "CopyBags", luidef.Bank,
+				CopyBags = LUI:NewToggle("Copy Bags", "Make the Bank frames copies the bags options.", 1, db.Bank, "CopyBags", dbd.Bank,
 					function()
 						module:CheckBagsCopy()
 						if db.Bank.CopyBags then module:CopyBags() end
 					end, "double"),
 				Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.", 2,
-							db.Bank, "Cols", luidef.Bank, 4, 32, 1, BankOpt),
+							db.Bank, "Cols", dbd.Bank, 4, 32, 1, BankOpt),
 				Header = LUI:NewHeader("", 3),
 				Padding = LUI:NewSlider("Bank Padding", "This sets the space between the background border and the adjacent items.", 4,
-							db.Bank, "Padding", luidef.Bank, 4, 24, 1, BankOpt, nil, DisabledCopy),
+							db.Bank, "Padding", dbd.Bank, 4, 24, 1, BankOpt, nil, DisabledCopy),
 				Spacing = LUI:NewSlider("Bank Spacing", "This sets the distance between items.", 5,
-							db.Bank, "Spacing", luidef.Bank, 1, 15, 1, BankOpt, nil, DisabledCopy),
-				Scale = LUI:NewScale("Bank Frame",6, db.Bank, "Scale", luidef.Bank, BankOpt, nil, DisabledCopy),
-				BagScale = LUI:NewScale("Bank BagBar",7, db.Bank, "BagScale", luidef.Bank, BankOpt, nil, DisabledCopy),
-				BagFrame = LUI:NewToggle("Show Bag Bar", nil, 8, db.Bank, "BagFrame", luidef.Bank, BankOpt, nil, DisabledCopy),
-				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 9, db.Bank, "ItemQuality", luidef.Bank, BankOpt, nil, DisabledCopy),
-				ShowQuest = LUI:NewToggle("Highlight Quest Items", nil, 10, db.Bank, "ShowQuest", luidef.Bank, BankOpt, nil, DisabledCopy),
+							db.Bank, "Spacing", dbd.Bank, 1, 15, 1, BankOpt, nil, DisabledCopy),
+				Scale = LUI:NewScale("Bank Frame",6, db.Bank, "Scale", dbd.Bank, BankOpt, nil, DisabledCopy),
+				BagScale = LUI:NewScale("Bank BagBar",7, db.Bank, "BagScale", dbd.Bank, BankOpt, nil, DisabledCopy),
+				BagFrame = LUI:NewToggle("Show Bag Bar", nil, 8, db.Bank, "BagFrame", dbd.Bank, BankOpt, nil, DisabledCopy),
+				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 9, db.Bank, "ItemQuality", dbd.Bank, BankOpt, nil, DisabledCopy),
+				ShowQuest = LUI:NewToggle("Highlight Quest Items", nil, 10, db.Bank, "ShowQuest", dbd.Bank, BankOpt, nil, DisabledCopy),
 			},
 		},
 		Colors = {
@@ -1244,8 +1241,7 @@ function module:LoadOptions()
 end
 
 function module:OnInitialize()
-	db = LUI:NewNamespace(self, true)
-	db = db.profile
+	db, dbd = LUI:NewNamespace(self, true)
 	LUI:EmbedAPI(module)
 end
 
