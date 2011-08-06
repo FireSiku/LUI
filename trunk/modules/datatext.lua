@@ -523,6 +523,9 @@ function module:SetCurrency()
 	
 	if db.Currency.Enable and not stat.Created then
 		NewIcon(stat)
+
+		-- Events
+		stat.Events = { "CURRENCY_DISPLAY_UPDATE" }
 		
 		-- Script functions
 		stat.OnEnable = function(self)
@@ -533,6 +536,20 @@ function module:SetCurrency()
 		
 		stat.OnClick = function(self, button) -- Toggle CurrencyFrame
 			ToggleCharacter("TokenFrame")
+		end
+
+		stat.CURRENCY_DISPLAY_UPDATE = function (self)
+			if db.Currency.Display == 0 then
+				self.text:SetText("Currency")
+				return
+			end
+
+			local name, count = GetCurrencyInfo(db.Currency.Display)
+			self.text:SetFormattedText("%s: %d", name, count)
+		end
+
+		function module:UpdateCurrency()
+			stat:CURRENCY_DISPLAY_UPDATE()
 		end
 		
 		stat.OnEnter = function(self)
@@ -2760,6 +2777,7 @@ module.defaults = {
 			Enable = false,
 			X = 180,
 			Y = 0,
+			Display = 0,
 			InfoPanel = {
 				Horizontal = "Left",
 				Vertical = "Bottom",
@@ -2966,6 +2984,13 @@ function module:LoadOptions()
 	-- Local variables
 	local msvalues = {"Both", "Home", "World"}
 	local fontflags = {"NONE", "OUTLINE", "THICKOUTLINE", "MONOCHROME"}
+	local CurrencyList = {[0] = "None",}
+	for i=32, 512 do
+		local n, _,_,_,_,_,d = GetCurrencyInfo(i)
+		if n ~= "" and d then
+			CurrencyList[i] = n
+		end
+	end
 	
 	db.Gold.PlayerReset = dbd.Gold.PlayerReset
 	for faction, data in pairs(db.realm) do
@@ -3348,9 +3373,23 @@ function module:LoadOptions()
 					end,
 					order = 2,
 				},
-				Position = PositionOptions(3),
-				Font = FontOptions(4),
-				Reset = ResetOption(5),
+				Display = {
+					name = "Currency On Display",
+					desc = "Select the currency to display",
+					type = "select",
+					order = 3,
+					values = CurrencyList,
+					get = function(info)
+						return db.Currency.Display
+					end,
+					set = function(info, value)
+						db.Currency.Display = value
+						if module.UpdateCurrency then module:UpdateCurrency() end
+					end,
+				},
+				Position = PositionOptions(4),
+				Font = FontOptions(5),
+				Reset = ResetOption(6),
 			},
 		},
 		DPS = {
