@@ -530,7 +530,7 @@ local defaults = {
 				Y = "-80",
 				RelativePoint = "TOPRIGHT",
 				Point = "TOPRIGHT",
-				UnLocked = true
+				UnLocked = false,
 			},
 			Size = 1,
 			ShowTextures = true,
