@@ -535,7 +535,6 @@ function module:SetCurrency()
 					CurrencyList[i] = n
 				end
 			end
-
 			return CurrencyList
 		end
 
@@ -561,7 +560,9 @@ function module:SetCurrency()
 			end
 
 			local name, count = GetCurrencyInfo(db.Currency.Display)
-			self.text:SetFormattedText("%s: %d", name, count)
+			name = name:sub(1, db.Currency.DisplayLimit)
+			name = (#name > 0 and name..":") or name
+			self.text:SetFormattedText("%s %d", name, count)
 		end
 
 		stat.OnEnter = function(self)
@@ -1242,14 +1243,14 @@ function module:SetGold()
 			if player == "ALL" then
 				db.realm.Gold = {
 					[myPlayerFaction] = {
-						[myPlayerName] = 0,
+						[myPlayerName] = GetMoney(),
 					},
 					[otherFaction] = {},
 				}
-				goldPlayerArray = {["ALL"] = "ALL"}
+				goldPlayerArray = {["ALL"] = "ALL", [myPlayerName] = myPlayerName,}
 			elseif faction then
 				if player == myPlayerName then
-					db.realm.Gold[faction][player] = 0
+					db.realm.Gold[faction][player] = GetMoney()
 				else
 					db.realm.Gold[faction][player] = nil
 					goldPlayerArray[player] = nil
@@ -1262,7 +1263,7 @@ function module:SetGold()
 		end
 		
 		-- Event functions
-		stat.Events = {"PLAYER_MONEY"}
+		stat.Events = {"PLAYER_MONEY", "PLAYER_ENTERING_WORLD"}
 		stat.PLAYER_MONEY = function(self)
 			local newMoney = GetMoney()
 
@@ -1289,9 +1290,10 @@ function module:SetGold()
 		end
 		
 		-- Script functions
-		stat.OnEnable = function(self)
-			oldMoney = GetMoney()
-			
+		stat.PLAYER_ENTERING_WORLD = function(self)
+			self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+
+			oldMoney = GetMoney()			
 			self:RefreshServerTotal()
 			self:PLAYER_MONEY()
 		end
@@ -2770,6 +2772,7 @@ module.defaults = {
 			X = 180,
 			Y = 0,
 			Display = 0,
+			DisplayLimit = 40,
 			InfoPanel = {
 				Horizontal = "Left",
 				Vertical = "Bottom",
@@ -3375,9 +3378,13 @@ function module:LoadOptions()
 						if InfoStats.Currency and InfoStats.Currency.Created then InfoStats.Currency:CURRENCY_DISPLAY_UPDATE() end
 					end,
 				},
-				Position = PositionOptions(4),
-				Font = FontOptions(5),
-				Reset = ResetOption(6),
+				DisplayLimit = LUI:NewSlider("Length Limit", "Set the length limit of the currency's text display.", 4, db.Currency, "DisplayLimit", dbd.Currency, 0, 40, 1,
+					function()
+						if InfoStats.Currency and InfoStats.Currency.Created then InfoStats.Currency:CURRENCY_DISPLAY_UPDATE() end
+					end),			
+				Position = PositionOptions(5),
+				Font = FontOptions(6),
+				Reset = ResetOption(7),
 			},
 		},
 		DPS = {
