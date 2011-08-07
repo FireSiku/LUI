@@ -29,7 +29,7 @@ local myPlayerRealm = GetRealmName()
 
 local InfoStats = {}
 
-local goldPlayerArray = {"ALL"}
+local goldPlayerArray = {["ALL"] = "ALL"}
 local guildEntries, friendEntries, totalFriends, onlineFriends = {}, {}, 0, 0
 
 ------------------------------------------------------
@@ -524,6 +524,21 @@ function module:SetCurrency()
 	if db.Currency.Enable and not stat.Created then
 		NewIcon(stat)
 
+		local CurrencyList
+		stat.Currencies = function(self)
+			if CurrencyList then return CurrencyList end
+
+			local CurrencyList = {[0] = "None",}
+			for i=1, 512 do
+				local n, _,_,_,_,_,d = GetCurrencyInfo(i)
+				if n ~= "" and d then
+					CurrencyList[i] = n
+				end
+			end
+
+			return CurrencyList
+		end
+
 		-- Events
 		stat.Events = { "CURRENCY_DISPLAY_UPDATE" }
 		
@@ -532,6 +547,7 @@ function module:SetCurrency()
 			local tex = "Interface\\PVPFrame\\PVP-Currency-" .. UnitFactionGroup("player")
 			self.icon:SetBackdrop({bgFile = tex, edgeFile = nil, tile = false, edgeSize = 0, insets = {top = 0, right = 0, bottom = 0, left = 0}})
 			self.text:SetText("Currency")
+			self:CURRENCY_DISPLAY_UPDATE()
 		end
 		
 		stat.OnClick = function(self, button) -- Toggle CurrencyFrame
@@ -548,10 +564,6 @@ function module:SetCurrency()
 			self.text:SetFormattedText("%s: %d", name, count)
 		end
 
-		function module:UpdateCurrency()
-			stat:CURRENCY_DISPLAY_UPDATE()
-		end
-		
 		stat.OnEnter = function(self)
 			if CombatTips() then
 				GameTooltip:SetOwner(self, getOwnerAnchor(self))
@@ -1197,11 +1209,11 @@ function module:SetGold()
 			local gold, silver, copper = floor(money / 10000), mod(floor(money / 100), 100), mod(floor(money), 100)
 			
 			if gold ~= 0 then
-				return format(db.Gold.ColorType and "%s|cffffd700g|r %s|cffc7c7cfs|r" or "%sg %ss", gold, silver)
+				return format(db.Gold.ColorType and "%d|cffffd700g|r %d|cffc7c7cfs|r" or "%dg %ds", gold, silver)
 			elseif silver ~= 0 then
-				return format(db.Gold.ColorType and "%s|cffc7c7cfs|r %s|cffeda55fc|r" or "%ss %sc", silver, copper)
+				return format(db.Gold.ColorType and "%d|cffc7c7cfs|r %d|cffeda55fc|r" or "%ds %dc", silver, copper)
 			else
-				return format(db.Gold.ColorType and "%s|cffeda55fc|r" or "%sc", copper)
+				return format(db.Gold.ColorType and "%d|cffeda55fc|r" or "%dc", copper)
 			end
 		end
 		
@@ -1217,18 +1229,43 @@ function module:SetGold()
 		stat.RefreshServerTotal = function(self)
 			serverGold = 0
 			
-			for _, data in pairs(db.realm) do
-				for player, gold in pairs(data) do
+			for _, faction in pairs(db.realm.Gold) do
+				for player, gold in pairs(faction) do
 					serverGold = serverGold + gold
 				end
 			end
 		end
-			
+
+		stat.ResetGold = function(self, player, faction)
+			if not player then return end
+
+			if player == "ALL" then
+				db.realm.Gold = {
+					[myPlayerFaction] = {
+						[myPlayerName] = 0,
+					},
+					[otherFaction] = {},
+				}
+				goldPlayerArray = {["ALL"] = "ALL"}
+			elseif faction then
+				if player == myPlayerName then
+					db.realm.Gold[faction][player] = 0
+				else
+					db.realm.Gold[faction][player] = nil
+					goldPlayerArray[player] = nil
+				end
+			end
+
+			oldMoney = GetMoney()
+			self:RefreshServerTotal()
+			self:PLAYER_MONEY()
+		end
 		
 		-- Event functions
 		stat.Events = {"PLAYER_MONEY"}
 		stat.PLAYER_MONEY = function(self)
 			local newMoney = GetMoney()
+
 			local change = newMoney - oldMoney	-- Positive if we gain money
 			serverGold = serverGold + change	-- Add change to server total
 			
@@ -1242,7 +1279,7 @@ function module:SetGold()
 			self.text:SetText(formatMoney(db.Gold.ServerTotal and serverGold or newMoney))
 			
 			-- Update gold db
-			db.realm[myPlayerFaction][myPlayerName] = newMoney
+			db.realm.Gold[myPlayerFaction][myPlayerName] = newMoney
 			
 			-- Update gold count
 			oldMoney = newMoney
@@ -1297,11 +1334,11 @@ function module:SetGold()
 				
 				GameTooltip:AddLine(" ")
 				GameTooltip:AddLine("Character:")
-				for player, gold in pairs(db.realm[myPlayerFaction]) do
+				for player, gold in pairs(db.realm.Gold[myPlayerFaction]) do
 					GameTooltip:AddDoubleLine(player, formatTooltipMoney(gold), colors[myPlayerFaction].r, colors[myPlayerFaction].g, colors[myPlayerFaction].b, 1,1,1)
 					factionGold[myPlayerFaction] = factionGold[myPlayerFaction] + gold
 				end
-				for player, gold in pairs(db.realm[otherFaction]) do
+				for player, gold in pairs(db.realm.Gold[otherFaction]) do
 					GameTooltip:AddDoubleLine(player, formatTooltipMoney(gold), colors[otherFaction].r, colors[otherFaction].g, colors[otherFaction].b, 1,1,1)
 					factionGold[otherFaction] = factionGold[otherFaction] + gold
 				end
@@ -1341,51 +1378,6 @@ function module:SetGold()
 		end
 		
 		stat.Created = true
-	end
-end
-
-function module:ResetGold(player, faction)
-	if not player then return end
-	
-	if player == "ALL" then
-		local function copyDefaults(tar, src)
-			if type(tar) ~= "table" then tar = {} end
-			
-			for k, v in pairs(src) do
-				if type(v) == "table" then
-					tar[k] = copyDefaults(tar[k], v)
-				else
-					tar[k] = v
-				end
-			end
-			
-			return tar
-		end
-		
-		wipe(db.realm)
-		copyDefaults(db.realm, dbd.realm)
-		
-		while #goldPlayerArray > 0 do
-			tremove(goldPlayerArray)
-		end
-		tinsert(goldPlayerArray, "ALL")
-		tinsert(goldPlayerArray, myPlayerName)
-	elseif faction then
-		db.realm[faction][player] = nil
-		if player == myPlayerName then -- can't have the same name on both factions of a realm so faction check isn't needed
-			db.realm[faction][player] = 0
-		else
-			for i, v in ipairs(goldPlayerArray) do
-				if v == player then
-					tremove(goldPlayerArray, i)
-				end
-			end
-		end
-	end
-	
-	if db.Gold.Enable and InfoStats.Gold and InfoStats.Gold.Created then
-		InfoStats.Gold:RefreshServerTotal()
-		InfoStats.Gold:PLAYER_MONEY()
 	end
 end
 
@@ -2972,10 +2964,12 @@ module.defaults = {
 		},
 	},
 	realm = {
-		[myPlayerFaction] = {
-			[myPlayerName] = 0,
+		Gold = {
+			[myPlayerFaction] = {
+				[myPlayerName] = 0,
+			},
+			[otherFaction] = {},
 		},
-		[otherFaction] = {},
 	}
 }
 
@@ -2984,18 +2978,11 @@ function module:LoadOptions()
 	-- Local variables
 	local msvalues = {"Both", "Home", "World"}
 	local fontflags = {"NONE", "OUTLINE", "THICKOUTLINE", "MONOCHROME"}
-	local CurrencyList = {[0] = "None",}
-	for i=32, 512 do
-		local n, _,_,_,_,_,d = GetCurrencyInfo(i)
-		if n ~= "" and d then
-			CurrencyList[i] = n
-		end
-	end
-	
+		
 	db.Gold.PlayerReset = dbd.Gold.PlayerReset
-	for faction, data in pairs(db.realm) do
-		for player, gold in pairs(data) do
-			table.insert(goldPlayerArray, player)
+	for _, faction in pairs(db.realm.Gold) do
+		for player, gold in pairs(faction) do
+			goldPlayerArray[player] = player
 		end
 	end
 	
@@ -3015,20 +3002,21 @@ function module:LoadOptions()
 		end
 	end
 	local function resetGold()
+		local stat = InfoStats.Gold
+		if not stat then return end
+
 		if db.Gold.PlayerReset == "ALL" then
-			module:ResetGold("ALL")
-			InfoStats.Gold:OnEnable()
-			db.Gold.PlayerReset = dbd.Gold.PlayerReset
-			return
-		end
-		
-		for faction, data in pairs(db.realm) do
-			if data[db.Gold.PlayerReset] then
-				module:ResetGold(db.Gold.PlayerReset, faction)
-				db.Gold.PlayerReset = dbd.Gold.PlayerReset
-				return
+			stat:ResetGold(db.Gold.PlayerReset)
+		else		
+			for faction, data in pairs(db.realm.Gold) do
+				if data[db.Gold.PlayerReset] then
+					stat:ResetGold(db.Gold.PlayerReset, faction)
+					break
+				end
 			end
 		end
+
+		db.Gold.PlayerReset = dbd.Gold.PlayerReset
 	end
 	
 	local function StatDisabled(info)
@@ -3378,13 +3366,13 @@ function module:LoadOptions()
 					desc = "Select the currency to display",
 					type = "select",
 					order = 3,
-					values = CurrencyList,
+					values = function() return (InfoStats.Currency and InfoStats.Currency.Created and InfoStats.Currency:Currencies()) or {"None"} end,
 					get = function(info)
 						return db.Currency.Display
 					end,
 					set = function(info, value)
 						db.Currency.Display = value
-						if module.UpdateCurrency then module:UpdateCurrency() end
+						if InfoStats.Currency and InfoStats.Currency.Created then InfoStats.Currency:CURRENCY_DISPLAY_UPDATE() end
 					end,
 				},
 				Position = PositionOptions(4),
@@ -3639,22 +3627,10 @@ function module:LoadOptions()
 					order = 5,
 					values = goldPlayerArray,
 					get = function()
-						for k, v in pairs(goldPlayerArray) do
-							if v == db.Gold.PlayerReset then
-								return k
-							end
-						end
-
-						db.Gold.PlayerReset = "ALL"
-						return 1
+						return goldPlayerArray[db.Gold.PlayerReset] or "ALL"
 					end,
 					set = function(info, value)
-						for i = 1, #goldPlayerArray do
-							if i == value and goldPlayerArray[i] ~= "" then
-								db.Gold.PlayerReset = goldPlayerArray[i]
-								return
-							end
-						end
+						db.Gold.PlayerReset = value
 					end,
 				},
 				GoldReset = {
@@ -3797,29 +3773,6 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
-	
-	if type(LUIGold) == "table" and LUIGold.gold then
-		if not db.sv.realm then
-			db.sv.realm = {}
-		end
-		
-		for realm, realmData in pairs(LUIGold.gold) do
-			if not db.sv.realm[realm] then
-				db.sv.realm[realm] = {}
-			end
-			
-			for faction, factionData in pairs(realmData) do
-				if not db.sv.realm[realm][faction] then
-					db.sv.realm[realm][faction] = {}
-				end
-				
-				for player, gold in pairs(factionData) do
-					db.sv.realm[realm][faction][player] = gold
-				end
-			end
-		end
-		LUIGold = nil
-	end
 end
 
 function module:OnEnable()

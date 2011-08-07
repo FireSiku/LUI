@@ -110,39 +110,7 @@ function InfoText:CreateStat(statTable)
 	stat:EnableMouse(true)
 
 	-- Create stat's Enable function.
-	function stat:Enable()
-		-- Register assigned events and handlers.
-		if self.Events then
-			for i = 1, #self.Events do
-				self:RegisterEvent(self.Events[i])
-			end
-			self:SetScript("OnEvent", self.OnEvent or function(self, event, ...) self[event](self, ...) end)
-		end
-
-		-- Register OnClick script. (Debate: OnMouseDown vs. OnMouseUp)
-		if self.OnClick then
-			self:SetScript("OnMouseDown", self.OnClick)
-		end
-
-		-- Register OnEnter/OnLeave scripts.
-		if self.OnEnter then
-			-- Create embeded tooltip functions.
-			self.Enter = InfoText.CreateTooltip
-			self.Leave = InfoText.LeaveTooltip
-			self.UpdateTooltip = InfoText.UpdateTooltip
-			self:SetScript("OnEnter", self.Enter)
-			self:SetScript("OnLeave", self.Leave)
-		end
-
-		-- Register OnUpdate script. (Debate: I'm not force running the OnUpdate script; stats should be in an initial state where they can wait until the first update interval. Be it just setting an initial text state [which is done my default].)
-		if self.OnUpdate then
-			self.dt = 0
-			self:SetScript("OnUpdate", self.OnUpdate)
-		end
-
-		-- Call stat's OnEnable function.
-		if self.OnEnable then self.OnEnable() end
-	end
+	stat.Enable = self.StatOnEnable
 
 	-- Create stat's text.
 	self:CreateText(statTable)
@@ -183,6 +151,44 @@ function InfoText:NewStat(name)
 	}
 
 	return self.Stats[name]	
+end
+
+function InfoText:StatOnEnable()
+	-- Embeded functionality.
+	-- Usage of this function makes self the object calling the function.
+	-- In this case: self == statTable.stat.
+
+	-- Register assigned events and handlers.
+	if self.Events then
+		for i = 1, #self.Events do
+			self:RegisterEvent(self.Events[i])
+		end
+		self:SetScript("OnEvent", self.OnEvent or function(self, event, ...) self[event](self, ...) end)
+	end
+
+	-- Register OnClick script. (Debate: OnMouseDown vs. OnMouseUp)
+	if self.OnClick then
+		self:SetScript("OnMouseDown", self.OnClick)
+	end
+
+	-- Register OnEnter/OnLeave scripts.
+	if self.OnEnter then
+		-- Create embeded tooltip functions.
+		self.Enter = InfoText.CreateTooltip
+		self.Leave = InfoText.LeaveTooltip
+		self.UpdateTooltip = InfoText.UpdateTooltip
+		self:SetScript("OnEnter", self.Enter)
+		self:SetScript("OnLeave", self.Leave)
+	end
+
+	-- Register OnUpdate script. (Debate: I'm not force running the OnUpdate script; stats should be in an initial state where they can wait until the first update interval. Be it just setting an initial text state [which is done my default].)
+	if self.OnUpdate then
+		self.dt = 0
+		self:SetScript("OnUpdate", self.OnUpdate)
+	end
+
+	-- Call stat's OnEnable function.
+	if self.OnEnable then self.OnEnable() end
 end
 
 -- Accessor functions.
