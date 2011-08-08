@@ -10,6 +10,7 @@ SLASH_LUIYAIAP1 = "/yaiap"
 
 -- Hook SendAddonMessage.
 script:RawHook("SendAddonMessage", function(prefix, text, chatType, ...)
+	--[[ Removed since causing more issues than solved. I may be a better fix to shorten prefix to 16 characters rather than cause error.
 	-- Filter messages with oversized parameters.
 	if type(prefix) == "string" and #prefix > 16 then
 		if DEBUG then
@@ -21,6 +22,7 @@ script:RawHook("SendAddonMessage", function(prefix, text, chatType, ...)
 		end
 		return
 	end
+	]]
 
 	-- Filter messages en route to a channel not accessible.
 	local chl = strlower(chatType)
