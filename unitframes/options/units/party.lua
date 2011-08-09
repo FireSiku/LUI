@@ -36,6 +36,7 @@ local defaults = {
 		Y = "100",
 		Scale = 1,
 		Point = "LEFT",
+		GrowDirection = "BOTTOM",
 		Padding = "50",
 		ShowPlayer = false,
 		ShowInRaid = false,

@@ -15,7 +15,7 @@ local db
 
 function module:ShowArenaFrames()
 	for k, v in next, oUF.objects do
-		if v.unit and v.unit:match'(arena)%d' == 'arena' then
+		if v.unit and v.unit:match"(arena)%d" == "arena" then
 			v.unit_ = v.unit
 			v:SetAttribute("unit", "player")
 		end
@@ -32,7 +32,7 @@ function module:HideArenaFrames(event)
 	self:UnregisterEvent("PLAYER_REGEN_DISABLED")
 	
 	for k, v in next, oUF.objects do
-		if v.unit_ and v.unit_:match'(arena)%d' == 'arena' then
+		if v.unit_ and v.unit_:match"(arena)%d" == "arena" then
 			v:SetAttribute("unit", v.unit_)
 			v.unit_ = nil
 		end
@@ -53,6 +53,7 @@ local defaults = {
 		Y = "100",
 		Scale = 1,
 		Point = "RIGHT",
+		GrowDirection = "BOTTOM",
 		Padding = "50",
 		Border = {
 			EdgeFile = "glow",

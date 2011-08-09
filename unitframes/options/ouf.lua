@@ -15,13 +15,10 @@ local widgetLists = AceGUIWidgetLSMlists
 
 local db
 
-LUI_versions.ouf = 3403
-
 local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
 
 -- Movable UnitFrames --
 do
-	
 	local ufNames = {
 		Player = "oUF_LUI_player",
 		Target = "oUF_LUI_target",
@@ -320,12 +317,10 @@ do
 			module:UnregisterEvent("PLAYER_REGEN_DISABLED")
 		end
 	end
-	
 end
 
 -- Blizzard Frame Handling --
 do
-
 	local blizzUnitFrames = {
 		player = "PlayerFrame",
 		pet = "PetFrame",
@@ -510,9 +505,7 @@ do
 		
 		module[(useBlizz and "Enable" or "Disable") .. "Blizzard"](module, "raid")
 	end
-
 end
-
 
 local ufUnits = {
 	Player = "player",
@@ -524,6 +517,18 @@ local ufUnits = {
 	Pet = "pet",
 	PetTarget = "pettarget",
 }
+
+local function GetOpposite(dir)
+	if dir == "RIGHT" then
+		return "LEFT"
+	elseif dir == "LEFT" then
+		return "RIGHT"
+	elseif dir == "BOTTOM" then
+		return "TOP"
+	elseif dir == "TOP" then
+		return "BOTTOM"
+	end
+end
 
 -- needed this way because of self calls!
 local toggleFuncs
@@ -554,6 +559,9 @@ toggleFuncs = {
 			local x = tonumber(db.oUF.Boss.X) / (db.oUF.Boss.Scale)
 			local y = tonumber(db.oUF.Boss.Y) / (db.oUF.Boss.Scale)
 			
+			local growdir = db.oUF.Party.GrowDirection
+			local opposite = GetOpposite(growdir)
+			
 			module:DisableBlizzard("boss")
 			
 			if oUF_LUI_boss then
@@ -571,9 +579,18 @@ toggleFuncs = {
 					_G["oUF_LUI_boss"..i]:UpdateAllElements()
 					_G["oUF_LUI_boss"..i]:ClearAllPoints()
 					if i == 1 then
-						_G["oUF_LUI_boss"..i]:SetPoint("TOPLEFT", oUF_LUI_boss, "TOPLEFT", 0, 0)
+						local point = (growdir == "LEFT" or growdir == "TOP") and "BOTTOMRIGHT" or "TOPLEFT"
+						_G["oUF_LUI_boss"..i]:SetPoint(point, oUF_LUI_boss, point, 0, 0)
 					else
-						_G["oUF_LUI_boss"..i]:SetPoint("TOP", _G["oUF_LUI_boss"..i-1], "BOTTOM", 0, -tonumber(db.oUF.Boss.Padding))
+						if growdir == "LEFT" then
+							_G["oUF_LUI_boss"..i]:SetPoint(opposite, _G["oUF_LUI_boss"..i-1], growdir, - tonumber(db.oUF.Boss.Padding), 0)
+						elseif growdir == "RIGHT" then
+							_G["oUF_LUI_boss"..i]:SetPoint(opposite, _G["oUF_LUI_boss"..i-1], growdir, tonumber(db.oUF.Boss.Padding), 0)
+						elseif growdir == "TOP" then
+							_G["oUF_LUI_boss"..i]:SetPoint(opposite, _G["oUF_LUI_boss"..i-1], growdir, 0, tonumber(db.oUF.Boss.Padding))
+						else
+							_G["oUF_LUI_boss"..i]:SetPoint(opposite, _G["oUF_LUI_boss"..i-1], growdir, 0, - tonumber(db.oUF.Boss.Padding))
+						end
 					end
 				end
 			else
@@ -601,9 +618,18 @@ toggleFuncs = {
 				for i = 1, 4 do
 					boss[i] = oUF:Spawn("boss"..i, "oUF_LUI_boss"..i)
 					if i == 1 then
-						boss[i]:SetPoint("TOPLEFT", bossParent, "TOPLEFT", 0, 0)
+						local point = (growdir == "LEFT" or growdir == "TOP") and "BOTTOMRIGHT" or "TOPLEFT"
+						boss[i]:SetPoint(point, bossParent, point, 0, 0)
 					else
-						boss[i]:SetPoint("TOP", boss[i-1], "BOTTOM", 0, -tonumber(db.oUF.Boss.Padding))
+						if growdir == "LEFT" then
+							boss[i]:SetPoint(opposite, boss[i-1], growdir, - tonumber(db.oUF.Boss.Padding), 0)
+						elseif growdir == "RIGHT" then
+							boss[i]:SetPoint(opposite, boss[i-1], growdir, tonumber(db.oUF.Boss.Padding), 0)
+						elseif growdir == "TOP" then
+							boss[i]:SetPoint(opposite, boss[i-1], growdir, 0, tonumber(db.oUF.Boss.Padding))
+						else
+							boss[i]:SetPoint(opposite, boss[i-1], growdir, 0, - tonumber(db.oUF.Boss.Padding))
+						end
 					end
 				end
 			end
@@ -660,11 +686,16 @@ toggleFuncs = {
 			local x = tonumber(db.oUF.Party.X) / (db.oUF.Party.Scale)
 			local y = tonumber(db.oUF.Party.Y) / (db.oUF.Party.Scale)
 			
+			local growdir = db.oUF.Party.GrowDirection
+			local opposite = GetOpposite(growdir)
+			
 			if oUF_LUI_party then
 				oUF_LUI_party:SetScale(db.oUF.Party.Scale)
 				oUF_LUI_party:ClearAllPoints()
 				oUF_LUI_party:SetPoint(db.oUF.Party.Point, UIParent, db.oUF.Party.Point, x, y)
-				oUF_LUI_party:SetAttribute("yOffset", - tonumber(db.oUF.Party.Padding))
+				oUF_LUI_party:SetAttribute("point", opposite)
+				oUF_LUI_party:SetAttribute("xOffset", growdir == "LEFT" and - tonumber(db.oUF.Party.Padding) or tonumber(db.oUF.Party.Padding))
+				oUF_LUI_party:SetAttribute("yOffset", growdir == "BOTTOM" and - tonumber(db.oUF.Party.Padding) or tonumber(db.oUF.Party.Padding))
 				oUF_LUI_party:SetAttribute("showPlayer", db.oUF.Party.ShowPlayer)
 				oUF_LUI_party:SetAttribute("oUF-initialConfigFunction", [[
 					local unit = ...
@@ -685,6 +716,7 @@ toggleFuncs = {
 				for i = 1, 5 do
 					if _G["oUF_LUI_partyUnitButton"..i] then
 						_G["oUF_LUI_partyUnitButton"..i]:Enable()
+						_G["oUF_LUI_partyUnitButton"..i]:ClearAllPoints()
 						_G["oUF_LUI_partyUnitButton"..i]:UpdateAllElements()
 					end
 				end
@@ -698,7 +730,9 @@ toggleFuncs = {
 					"showPlayer", db.oUF.Party.ShowPlayer,
 					"showSolo", false,
 					"template", "oUF_LUI_party",
-					"yOffset", - tonumber(db.oUF.Party.Padding),
+					"point", opposite,
+					"xOffset", growdir == "LEFT" and - tonumber(db.oUF.Party.Padding) or tonumber(db.oUF.Party.Padding),
+					"yOffset", growdir == "BOTTOM" and - tonumber(db.oUF.Party.Padding) or tonumber(db.oUF.Party.Padding),
 					"oUF-initialConfigFunction", [[
 						local unit = ...
 						if unit == "party" then
@@ -835,6 +869,9 @@ toggleFuncs = {
 			local x = tonumber(db.oUF.Arena.X) / (db.oUF.Arena.Scale)
 			local y = tonumber(db.oUF.Arena.Y) / (db.oUF.Arena.Scale)
 			
+			local growdir = db.oUF.Arena.GrowDirection
+			local opposite = GetOpposite(growdir)
+			
 			if oUF_LUI_arena then
 				oUF_LUI_arena:SetScale(db.oUF.Arena.Scale)
 				oUF_LUI_arena:ClearAllPoints()
@@ -847,12 +884,21 @@ toggleFuncs = {
 				
 				for i = 1, 5 do
 					_G["oUF_LUI_arena"..i]:Enable()
-					_G["oUF_LUI_arena"..i]:UpdateAllElements()
 					_G["oUF_LUI_arena"..i]:ClearAllPoints()
+					_G["oUF_LUI_arena"..i]:UpdateAllElements()
 					if i == 1 then
-						_G["oUF_LUI_arena"..i]:SetPoint("TOPLEFT", oUF_LUI_arena, "TOPLEFT", 0, 0)
+						local point = (growdir == "LEFT" or growdir == "TOP") and "BOTTOMRIGHT" or "TOPLEFT"
+						_G["oUF_LUI_arena"..i]:SetPoint(point, arenaParent, point, 0, 0)
 					else
-						_G["oUF_LUI_arena"..i]:SetPoint("TOP", _G["oUF_LUI_arena"..i-1], "BOTTOM", 0, -tonumber(db.oUF.Arena.Padding))
+						if growdir == "LEFT" then
+							_G["oUF_LUI_arena"..i]:SetPoint(opposite, _G["oUF_LUI_arena"..i-1], growdir, - tonumber(db.oUF.Arena.Padding), 0)
+						elseif growdir == "RIGHT" then
+							_G["oUF_LUI_arena"..i]:SetPoint(opposite, _G["oUF_LUI_arena"..i-1], growdir, tonumber(db.oUF.Arena.Padding), 0)
+						elseif growdir == "TOP" then
+							_G["oUF_LUI_arena"..i]:SetPoint(opposite, _G["oUF_LUI_arena"..i-1], growdir, 0, tonumber(db.oUF.Arena.Padding))
+						else
+							_G["oUF_LUI_arena"..i]:SetPoint(opposite, _G["oUF_LUI_arena"..i-1], growdir, 0, - tonumber(db.oUF.Arena.Padding))
+						end
 					end
 				end
 			else
@@ -880,13 +926,21 @@ toggleFuncs = {
 				arenaParent.handler = handler
 				
 				local arena = {}
-
 				for i = 1, 5 do
 					arena[i] = oUF:Spawn("arena"..i, "oUF_LUI_arena"..i)
 					if i == 1 then
-						arena[i]:SetPoint("TOPLEFT", arenaParent, "TOPLEFT", 0, 0)
+						local point = (growdir == "LEFT" or growdir == "TOP") and "BOTTOMRIGHT" or "TOPLEFT"
+						arena[i]:SetPoint(point, arenaParent, point, 0, 0)
 					else
-						arena[i]:SetPoint("TOP", arena[i-1], "BOTTOM", 0, -tonumber(db.oUF.Arena.Padding))
+						if growdir == "LEFT" then
+							arena[i]:SetPoint(opposite, arena[i-1], growdir, - tonumber(db.oUF.Arena.Padding), 0)
+						elseif growdir == "RIGHT" then
+							arena[i]:SetPoint(opposite, arena[i-1], growdir, tonumber(db.oUF.Arena.Padding), 0)
+						elseif growdir == "TOP" then
+							arena[i]:SetPoint(opposite, arena[i-1], growdir, 0, tonumber(db.oUF.Arena.Padding))
+						else
+							arena[i]:SetPoint(opposite, arena[i-1], growdir, 0, - tonumber(db.oUF.Arena.Padding))
+						end
 					end
 				end
 			end
@@ -955,11 +1009,16 @@ toggleFuncs = {
 			local x = tonumber(db.oUF.Maintank.X) / (db.oUF.Maintank.Scale)
 			local y = tonumber(db.oUF.Maintank.Y) / (db.oUF.Maintank.Scale)
 			
+			local growdir = db.oUF.Maintank.GrowDirection
+			local opposite = GetOpposite(growdir)
+			
 			if oUF_LUI_maintank then
 				oUF_LUI_maintank:SetScale(db.oUF.Maintank.Scale)
 				oUF_LUI_maintank:ClearAllPoints()
 				oUF_LUI_maintank:SetPoint(db.oUF.Maintank.Point, UIParent, db.oUF.Maintank.Point, x, y)
-				oUF_LUI_maintank:SetAttribute("yOffset", - tonumber(db.oUF.Maintank.Padding))
+				oUF_LUI_maintank:SetAttribute("point", opposite)
+				oUF_LUI_maintank:SetAttribute("xOffset", growdir == "LEFT" and - tonumber(db.oUF.Maintank.Padding) or tonumber(db.oUF.Maintank.Padding))
+				oUF_LUI_maintank:SetAttribute("yOffset", growdir == "BOTTOM" and - tonumber(db.oUF.Maintank.Padding) or tonumber(db.oUF.Maintank.Padding))
 				oUF_LUI_maintank:SetAttribute("oUF-initialConfigFunction", [[
 					local unit = ...
 					if unit == "maintanktargettarget" then
@@ -980,6 +1039,7 @@ toggleFuncs = {
 				for i = 1, 4 do
 					if _G["oUF_LUI_maintankUnitButton"..i] then
 						_G["oUF_LUI_maintankUnitButton"..i]:Enable()
+						_G["oUF_LUI_maintankUnitButton"..i]:ClearAllPoints()
 						_G["oUF_LUI_maintankUnitButton"..i]:UpdateAllElements()
 					end
 				end
@@ -990,7 +1050,9 @@ toggleFuncs = {
 					"template", "oUF_LUI_maintank",
 					"showPlayer", true,
 					"unitsPerColumn", 4,
-					"yOffset", - tonumber(db.oUF.Maintank.Padding),
+					"point", opposite,
+					"xOffset", growdir == "LEFT" and - tonumber(db.oUF.Maintank.Padding) or tonumber(db.oUF.Maintank.Padding),
+					"yOffset", growdir == "BOTTOM" and - tonumber(db.oUF.Maintank.Padding) or tonumber(db.oUF.Maintank.Padding),
 					"oUF-initialConfigFunction", [[
 						local unit = ...
 						if unit == "maintanktargettarget" then

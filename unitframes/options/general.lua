@@ -134,12 +134,13 @@ local iconNamesList = {
 	ReadyCheck = {"ReadyCheck"},
 }
 
-local positions = {"TOP", "TOPRIGHT", "TOPLEFT","BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT","RIGHT", "LEFT", "CENTER"}
-local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
-local justifications = {'LEFT', 'CENTER', 'RIGHT'}
-local valueFormat = {'Absolut', 'Absolut & Percent', 'Absolut Short', 'Absolut Short & Percent', 'Standard', 'Standard Short'}
-local nameFormat = {'Name', 'Name + Level', 'Name + Level + Class', 'Name + Level + Race + Class', 'Level + Name', 'Level + Name + Class', 'Level + Class + Name', 'Level + Name + Race + Class', 'Level + Race + Class + Name'}
-local nameLenghts = {'Short', 'Medium', 'Long'}
+local positions = {"TOP", "TOPRIGHT", "TOPLEFT","BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT", "RIGHT", "LEFT", "CENTER"}
+local directions = {"RIGHT", "TOP", "LEFT", "BOTTOM"}
+local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
+local justifications = {"LEFT", "CENTER", "RIGHT"}
+local valueFormat = {"Absolut", "Absolut & Percent", "Absolut Short", "Absolut Short & Percent", "Standard", "Standard Short"}
+local nameFormat = {"Name", "Name + Level", "Name + Level + Class", "Name + Level + Race + Class", "Level + Name", "Level + Name + Class", "Level + Class + Name", "Level + Name + Race + Class", "Level + Race + Class + Name"}
+local nameLenghts = {"Short", "Medium", "Long"}
 local growthY = {"UP", "DOWN"}
 local growthX = {"LEFT", "RIGHT"}
 local _, class = UnitClass("player")
@@ -525,38 +526,7 @@ function module:CreateOptions(index, unit)
 	
 	local disabledFunc2 = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end
 	
-	local ChangePadding
-	if unit == "Party" then
-		ChangePadding = function() oUF_LUI_party:SetAttribute("yOffset", - tonumber(oufdb.Padding)) end
-	elseif unit == "Maintank" then
-		ChangePadding = function() oUF_LUI_maintank:SetAttribute("yOffset", - tonumber(oufdb.Padding)) end
-	elseif unit == "Raid" then
-		ChangePadding = function()
-			for i = 1, 5 do
-				_G["oUF_LUI_raid_25_"..i]:SetAttribute("yOffset", - tonumber(oufdb.Padding))
-			end
-			for i = 1, 8 do
-				_G["oUF_LUI_raid_40_"..i]:SetAttribute("yOffset", - tonumber(oufdb.Padding))
-			end
-		end
-	else
-		ChangePadding = function()
-			local parent = _G[ufNames[1]]
-			for i = 2, ufNamesCount[unit] do
-				local f = _G[ufNames[i]]
-				if f and parent then
-					f:ClearAllPoints()
-					f:SetPoint("TOP", parent, "BOTTOM", 0, - tonumber(oufdb.Padding))
-					parent = f
-				end
-			end
-			if unit == "Arena" or unit == "Boss" then
-				-- needed for dynamic resize!
-				local header = _G[ufMover[unit]]
-				header:SetAttribute("Padding", tonumber(oufdb.Padding))
-			end
-		end
-	end
+	local ChangePadding = function() LUI:GetModule("oUF"):Toggle(unit) end
 	
 	local SetPosition
 	if ufMover[unit] then
@@ -774,15 +744,16 @@ function module:CreateOptions(index, unit)
 							UseBlizzard = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Raid") and LUI:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, oufdb, "UseBlizzard", oufdefaults, ToggleFunc, nil, function() return oufdb.Enable end) or nil,
 							header = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank" or unit == "Raid") and LUI:NewHeader("General", 6) or nil,
 							Padding = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank" or unit == "Raid") and LUI:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.", 7, oufdb, "Padding", oufdefaults, ChangePadding, nil, disabledFunc2) or nil,
-							header2 = LUI:NewHeader("Frame Position", 9),
-							XValue = LUI:NewPosX(unit.." Frame", 10, oufdb, "", oufdefaults, SetPosition, nil, disabledFunc2),
-							YValue = LUI:NewPosY(unit.." Frame", 11, oufdb, "", oufdefaults, SetPosition, nil, disabledFunc2),
-							Point = LUI:NewSelect("Point", "Choose the Point for your "..unit.." Frame(s).", 12, positions, nil, oufdb, "Point", oufdefaults, SetPosition, nil, disabledFunc2),
-							RelativePoint = (not ufMover[unit]) and LUI:NewSelect("Relative Point", "Choose the Relative Point for your "..unit.." Frames.", 13, positions, nil, oufdb, "RelativePoint", oufdefaults, SetPosition, nil, disabledFunc2) or nil,
-							header3 = LUI:NewHeader("Frame Height/Width", 14),
-							Height = LUI:NewHeight(unit.." Frame", 15, oufdb, nil, oufdefaults, ApplyHeightWidth, nil, disabledFunc2),
-							Width = LUI:NewWidth(unit.." Frame", 16, oufdb, nil, oufdefaults, ApplyHeightWidth, nil, disabledFunc2),
-							Scale = (unit ~= "Raid" and ufMover[unit]) and LUI:NewSlider("Scale", "Choose the Scale for your "..unit.." Unitframes.", 17, oufdb, "Scale", oufdefaults, 0.1, 2, 0.05, ToggleFunc) or nil,
+							GrowDirection = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank") and LUI:NewSelect("Grow Direction", "Choose the Grow Direction for your "..unit.." Frames.", 8, directions, nil, oufdb, "GrowDirection", oufdefaults, ChangePadding, nil, disabledFunc2) or nil,
+							header2 = LUI:NewHeader("Frame Position", 10),
+							XValue = LUI:NewPosX(unit.." Frame", 11, oufdb, "", oufdefaults, SetPosition, nil, disabledFunc2),
+							YValue = LUI:NewPosY(unit.." Frame", 12, oufdb, "", oufdefaults, SetPosition, nil, disabledFunc2),
+							Point = LUI:NewSelect("Point", "Choose the Point for your "..unit.." Frame(s).", 13, positions, nil, oufdb, "Point", oufdefaults, SetPosition, nil, disabledFunc2),
+							RelativePoint = (not ufMover[unit]) and LUI:NewSelect("Relative Point", "Choose the Relative Point for your "..unit.." Frames.", 14, positions, nil, oufdb, "RelativePoint", oufdefaults, SetPosition, nil, disabledFunc2) or nil,
+							header3 = LUI:NewHeader("Frame Height/Width", 15),
+							Height = LUI:NewHeight(unit.." Frame", 16, oufdb, nil, oufdefaults, ApplyHeightWidth, nil, disabledFunc2),
+							Width = LUI:NewWidth(unit.." Frame", 17, oufdb, nil, oufdefaults, ApplyHeightWidth, nil, disabledFunc2),
+							Scale = (unit ~= "Raid" and ufMover[unit]) and LUI:NewSlider("Scale", "Choose the Scale for your "..unit.." Unitframes.", 18, oufdb, "Scale", oufdefaults, 0.1, 2, 0.05, ToggleFunc) or nil,
 						},
 					},
 					Appearance = {

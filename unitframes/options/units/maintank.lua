@@ -37,6 +37,7 @@ local defaults = {
 		Y = "350",
 		Scale = 1,
 		Point = "BOTTOMRIGHT",
+		GrowDirection = "BOTTOM",
 		Padding = "6",
 		Border = {
 			Aggro = false,
