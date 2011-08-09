@@ -53,6 +53,7 @@ local defaults = {
 		Y = "-250",
 		Scale = 1,
 		Point = "TOPRIGHT",
+		GrowDirection = "BOTTOM",
 		Padding = "6",
 		Border = {
 			EdgeFile = "glow",
