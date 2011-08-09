@@ -247,8 +247,10 @@ function module:SetBags()
 				for i=0, NUM_BAG_SLOTS do
 					local free, bagType = GetContainerNumFreeSlots(i)
 					local total = GetContainerNumSlots(i)
-					freeslots[bagType] = (freeslots[bagType] ~= nil and freeslots[bagType] + free or free)
-					totalslots[bagType] = (totalslots[bagType] ~= nil and totalslots[bagType] + total or total)
+					if bagType then
+						freeslots[bagType] = (freeslots[bagType] and freeslots[bagType] + free) or free
+						totalslots[bagType] = (totalslots[bagType] and totalslots[bagType] + total) or total
+					end
 				end
 				
 				GameTooltip:SetOwner(self, getOwnerAnchor(self))
