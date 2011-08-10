@@ -344,16 +344,8 @@ local function ApplySettings(unit)
 				end
 			end
 			
-			LUI.oUF.funcs.V2Textures(frame, frame.__unit, db.oUF[unit])
-			if unit == "ToT" or unit == "ToToT" or unit == "FocusTarget" or unit == "Focus" then
-				if db.oUF.Settings.show_v2_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
-			elseif unit == "PartyTarget" then
-				if db.oUF.Settings.show_v2_party_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
-			elseif unit == "ArenaTarget" then
-				if db.oUF.Settings.show_v2_arena_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
-			elseif unit == "BossTarget" then
-				if db.oUF.Settings.show_v2_boss_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
-			end
+			if frame.V2Tex then frame.V2Tex:Reposition() end
+			if frame._V2Tex then frame._V2Tex:Reposition() end
 			
 			-- fader
 			if db.oUF[unit].Fader then

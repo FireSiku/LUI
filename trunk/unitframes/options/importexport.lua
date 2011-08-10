@@ -394,14 +394,31 @@ local function ApplySettings(unit)
 				end
 			end
 			
-			LUI.oUF.funcs.V2Textures(frame, frame.__unit, db.oUF[unit])
 			if unit == "ToT" or unit == "ToToT" or unit == "FocusTarget" or unit == "Focus" then
+				if not frame.V2Tex then
+					if unit == "ToT" then
+						LUI.oUF.funcs.V2Textures(frame, oUF_LUI_target)
+					elseif unit == "ToToT" then
+						LUI.oUF.funcs.V2Textures(frame, oUF_LUI_targettarget)
+					elseif unit == "FocusTarget" then
+						LUI.oUF.funcs.V2Textures(frame, oUF_LUI_focus)
+					elseif unit == "Focus" then
+						LUI.oUF.funcs.V2Textures(frame, oUF_LUI_player)
+					end
+				end
+				frame.V2Tex:Reposition()
 				if db.oUF.Settings.show_v2_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
 			elseif unit == "PartyTarget" then
+				if not frame.V2Tex then LUI.oUF.funcs.V2Textures(frame, _G["oUF_LUI_partyUnitButton"..frame:GetName():match("%d")]) end
+				frame.V2Tex:Reposition()
 				if db.oUF.Settings.show_v2_party_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
 			elseif unit == "ArenaTarget" then
+				if not frame.V2Tex then LUI.oUF.funcs.V2Textures(frame, _G["oUF_LUI_arena"..frame:GetName():match("%d")]) end
+				frame.V2Tex:Reposition()
 				if db.oUF.Settings.show_v2_arena_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
 			elseif unit == "BossTarget" then
+				if not frame.V2Tex then LUI.oUF.funcs.V2Textures(frame, _G["oUF_LUI_boss"..frame:GetName():match("%d")]) end
+				frame.V2Tex:Reposition()
 				if db.oUF.Settings.show_v2_boss_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
 			end
 			

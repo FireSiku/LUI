@@ -7,6 +7,7 @@
 
 	Edits:
 		v1.0: Thaly
+		v1.1: Thaly
 ]]
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
@@ -29,7 +30,7 @@ tooltip:SetOwner(UIParent, "ANCHOR_NONE")
 tooltiptext:SetText()
 
 local ValueChanged = function(bar, event, unit)
-	if unit ~= "player" then return end
+	if unit and unit ~= "player" then return end
 	
 	if not bar.isTank then
 		bar:Hide()
@@ -73,8 +74,26 @@ local ValueChanged = function(bar, event, unit)
 	end
 end
 
-local MaxChanged = function(bar, event, unit)
-	if unit ~= "player" then return end
+local BaseChanged = function(bar, event, unit)
+	if unit and unit ~= "player" then return end
+	
+	if not bar.isTank then
+		bar:Hide()
+		return
+	end
+	
+	local health = UnitHealthMax("player")
+	local _, stamina = UnitStat("player", 3)
+	
+	bar.base = (health - 15 * stamina) * .1
+	bar.max = bar.base + bar.stam
+	bar:SetMinMaxValues(0, bar.max)
+	
+	ValueChanged(bar, event, unit)
+end
+
+local StamChanged = function(bar, event, unit)
+	if unit and unit ~= "player" then return end
 	
 	if not bar.isTank then
 		bar:Hide()
@@ -86,7 +105,8 @@ local MaxChanged = function(bar, event, unit)
 	
 	if not health or not stamina then return end
 	
-	bar.max = math.floor(0.1 * (health - 15 * stamina) + stamina)
+	bar.stam = stamina
+	bar.max = bar.base + bar.stam
 	bar:SetMinMaxValues(0, bar.max)
 	
 	ValueChanged(bar, event, unit)
@@ -113,7 +133,8 @@ local IsTank = function(bar, event)
 		bar:Hide()
 	end
 	
-	MaxChanged(bar, event, "player")
+	StamChanged(bar, event, "player")
+	BaseChanged(bar, event, "player")
 end
 
 local SetVengeance = function()
@@ -133,7 +154,9 @@ local SetVengeance = function()
 		if event == "UNIT_AURA" then
 			ValueChanged(self, event, ...)
 		elseif event == "UNIT_MAXHEALTH" or event == "UNIT_LEVEL" then
-			MaxChanged(self, event, ...)
+			StamChanged(self, event, ...)
+		elseif event == "UNIT_LEVEL" or event == "ACTIVE_TALENT_GROUP_CHANGED" then
+			BaseChanged(self, event, ...)
 		elseif event == "PLAYER_REGEN_DISABLED" then
 			IsTank(self, event, ...)
 		end
@@ -322,6 +345,8 @@ function module:OnEnable()
 	
 	LUIVengeance.max = 0
 	LUIVengeance.value = 0
+	LUIVengeance.stam = 0
+	LUIVengeance.base = 0
 	
 	LUIVengeance:RegisterEvent("UNIT_AURA")
 	LUIVengeance:RegisterEvent("UNIT_MAXHEALTH")
