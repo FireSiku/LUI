@@ -1294,7 +1294,6 @@ function module:LoadOptions()
 						funcs.V2Textures(oUF_LUI_focus, oUF_LUI_player)
 					end
 				end
-				if not _G[f].V2Tex then LUI.oUF.funcs.V2Textures(_G[f], _G[f].__unit) end
 				if Enable then
 					_G[f].V2Tex:Show()
 				else
