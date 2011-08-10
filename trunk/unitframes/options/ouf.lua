@@ -327,7 +327,7 @@ do
 		target = {"TargetFrame", "ComboFrame"},
 		focus = {"FocusFrame", "TargetofFocusFrame"},
 		targettarget = "TargetFrameToT",
-		raid = "CompactRaidFrameManager",
+		raid = {"CompactRaidFrameManager", "CompactRaidFrameContainer"},
 	}
 	local blizzFrameEvents = {}
 
