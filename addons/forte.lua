@@ -472,6 +472,8 @@ function module:SetForte()
 			local parent = frame.parent.parent
 			local instance = parent.instance
 			if instance then
+				if instance.s.lock == false then return module.hooks[frame].OnClick(frame) end -- lock it
+				
 				local dbcheck = instance.instanceof
 				if dbcheck == "Timer" then
 					dbcheck = FW:InstanceIndexToName(instance.index, FW.Settings.Timer)

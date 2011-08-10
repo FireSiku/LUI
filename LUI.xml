@@ -79,6 +79,7 @@
 	<Script file="scripts\invite.lua"/>
 	<Script file="scripts\blizzscale.lua"/>
 	<Script file="scripts\talentspam.lua"/>
+	<Script file="scripts\blizzoptions.lua"/>
 	
 	<!-- oUF Layout -->
 	<Include file="unitframes\templates.xml"/>

@@ -1351,7 +1351,7 @@ function module:SetGold()
 					GameTooltip:AddDoubleLine(myPlayerFaction..":", formatTooltipMoney(factionGold[myPlayerFaction]), colors[myPlayerFaction].r, colors[myPlayerFaction].g, colors[myPlayerFaction].b, 1,1,1)
 					GameTooltip:AddDoubleLine(otherFaction..":", formatTooltipMoney(factionGold[otherFaction]), colors[otherFaction].r, colors[otherFaction].g, colors[otherFaction].b, 1,1,1)
 				end
-				GameTooltip:AddDoubleLine("Total:", formatTooltipMoney(serverGold), 1,1,1, 1,1,1)
+				GameTooltip:AddDoubleLine("Total:", formatTooltipMoney(factionGold[myPlayerFaction] + factionGold[otherFaction]), 1,1,1, 1,1,1)
 				
 				for i = 1, MAX_WATCHED_TOKENS do
 					local name, count, extraCurrencyType, icon, itemID = GetBackpackCurrencyInfo(i)
