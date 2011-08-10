@@ -1251,6 +1251,10 @@ function LUI:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("LUIDB", LUI.defaults, true)
 	db_ = self.db.profile
 	
+	self.db.RegisterCallback(self, "OnProfileChanged", "Refresh")
+	self.db.RegisterCallback(self, "OnProfileCopied", "Refresh")
+	self.db.RegisterCallback(self, "OnProfileReset", "Refresh")
+	
 	self.elementsToHide = {}
 	
 	self:SetupOptions()
@@ -1306,6 +1310,7 @@ function LUI:OnEnable()
 		for name, module in self:IterateModules() do
 			module:SetEnabledState(false)
 		end
+		self.db.UnregisterAllCallbacks(self)
 		self.db:SetProfile(UnitName("player").." - "..GetRealmName())
 		self:Configure()
 	elseif LUICONFIG.Versions.lui ~= LUI_versions.lui then
@@ -1320,10 +1325,6 @@ function LUI:OnEnable()
 			print("Welcome on |c0090ffffLUI v3|r for Patch 3.3.5 !")
 			print("For more Information visit www.wow-lui.com")
 		end
-		
-		self.db.RegisterCallback(self, "OnProfileChanged", "Refresh")
-		self.db.RegisterCallback(self, "OnProfileCopied", "Refresh")
-		self.db.RegisterCallback(self, "OnProfileReset", "Refresh")
 		
 		self:SyncAddonVersion()
 	end
@@ -1349,6 +1350,9 @@ end
 
 function LUI:Refresh()
 	db_ = self.db.profile
+	
+	if not IsLoggedIn() then return end -- in case db callbacks fire before the OnEnable function
+	
 	for name, module in self:IterateModules() do
 		if module.db and module.db.profile and module.db.profile.Enable ~= nil then
 			module[module.db.profile.Enable and "Enable" or "Disable"](module)
