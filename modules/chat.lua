@@ -1002,7 +1002,7 @@ function module:LoadOptions()
 											disabled = function() return not db.Chat.Enable end,
 											width = "full",
 											get = function() return db.Chat.SecondChatFrame end,
-											set = function(self, SecondChatFrame)
+											set = function(info, SecondChatFrame)
 													db.Chat.SecondChatFrame = not db.Chat.SecondChatFrame
 													local Panels = LUI:GetModule("Panels")
 													Panels:CheckSecondChatFrame()
@@ -1021,7 +1021,7 @@ function module:LoadOptions()
 														end
 													end
 												end,
-											set = function(self, TextureAnchor)
+											set = function(info, TextureAnchor)
 													db.Chat.SecondChatAnchor = chatTextureAnchors[TextureAnchor]
 													local Panels = LUI:GetModule("Panels")
 													Panels:SetSecondChatAnchor()
@@ -1040,7 +1040,7 @@ function module:LoadOptions()
 														end
 													end
 												end,
-											set = function(self, ChatJustify)
+											set = function(info, ChatJustify)
 													db.Chat.Justify2 = chatAlignments[ChatJustify]
 													SetChatJustify()
 												end,
@@ -1065,7 +1065,7 @@ function module:LoadOptions()
 									get = function()
 											return db.Chat.Font
 										end,
-									set = function(self, font)
+									set = function(info, font)
 											db.Chat.Font = font
 											SetChatFont()
 										end,
@@ -1097,7 +1097,7 @@ function module:LoadOptions()
 												end
 											end
 										end,
-									set = function(self, FontFlag)
+									set = function(info, FontFlag)
 											db.Chat.Flag = fontflags[FontFlag]
 											SetChatFont()
 										end,
@@ -1115,7 +1115,7 @@ function module:LoadOptions()
 												end
 											end
 										end,
-									set = function(self, ChatJustify)
+									set = function(info, ChatJustify)
 											db.Chat.Justify = chatAlignments[ChatJustify]
 											SetChatJustify()
 										end,
@@ -1140,7 +1140,7 @@ function module:LoadOptions()
 									desc = "Value for the normal Scroll Speed\nDefault: "..LUI.defaults.profile.Chat.MouseWheel.NormalSpeed,
 									type = "input",
 									get = function() return db.Chat.MouseWheel.NormalSpeed end,
-									set = function(self,NormalScroll)
+									set = function(info,NormalScroll)
 											if NormalScroll == nil or NormalScroll == "" then
 												NormalScroll = "0"
 											end
@@ -1159,7 +1159,7 @@ function module:LoadOptions()
 									desc = "Value for the CTRL Scroll Speed\nDefault: "..LUI.defaults.profile.Chat.MouseWheel.CTRLSpeed,
 									type = "input",
 									get = function() return db.Chat.MouseWheel.CTRLSpeed end,
-									set = function(self,CTRLScroll)
+									set = function(info,CTRLScroll)
 											if CTRLScroll == nil or CTRLScroll == "" then
 												CTRLScroll = "0"
 											end
@@ -1186,7 +1186,7 @@ function module:LoadOptions()
 									desc = "Choose the Width of your ChatFrame1.\nDefault: "..LUI.defaults.profile.Chat.Width,
 									type = "input",
 									get = function() return db.Chat.Width end,
-									set = function(self,Width)
+									set = function(info,Width)
 											if Width == nil or Width == "" then
 												Width = "0"
 											end
@@ -1200,7 +1200,7 @@ function module:LoadOptions()
 									desc = "Choose the Height of your ChatFrame1.\nDefault: "..LUI.defaults.profile.Chat.Height,
 									type = "input",
 									get = function() return db.Chat.Height end,
-									set = function(self,Height)
+									set = function(info,Height)
 											if Height == nil or Height == "" then
 												Height = "0"
 											end
@@ -1220,7 +1220,7 @@ function module:LoadOptions()
 									desc = "X Value for your ChatFrame1.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Chat.X,
 									type = "input",
 									get = function() return db.Chat.X end,
-									set = function(self,PosX)
+									set = function(info,PosX)
 											if PosX == nil or PosX == "" then
 												PosX = "0"
 											end
@@ -1234,7 +1234,7 @@ function module:LoadOptions()
 									desc = "Y Value for your ChatFrame1.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Chat.Y,
 									type = "input",
 									get = function() return db.Chat.Y end,
-									set = function(self,PosY)
+									set = function(info,PosY)
 											if PosY == nil or PosY == "" then
 												PosY = "0"
 											end
@@ -1263,7 +1263,7 @@ function module:LoadOptions()
 									type = "toggle",
 									width = "full",
 									get = function() return db.Chat.Sticky.Enable end,
-									set = function(self, Enabled)
+									set = function(info, Enabled)
 											db.Chat.Sticky.Enable = not db.Chat.Sticky.Enable
 											for k, v in pairs(channels) do
 												ChatTypeInfo[k].sticky = 0
@@ -1314,7 +1314,7 @@ function module:LoadOptions()
 									set = function(_,r,g,b,a)
 											Themes.db.profile.editbox = {r,g,b,a}
 											
-											self:SetEditBoxColor()
+											module:SetEditBoxColor()
 										end,
 									order = 3,
 								},
@@ -1334,7 +1334,7 @@ function module:LoadOptions()
 									get = function()
 											return db.Chat.Editbox.Font
 										end,
-									set = function(self, font)
+									set = function(info, font)
 											db.Chat.Editbox.Font = font
 											SetChatFont()
 										end,
@@ -1366,7 +1366,7 @@ function module:LoadOptions()
 												end
 											end
 										end,
-									set = function(self, FontFlag)
+									set = function(info, FontFlag)
 											db.Chat.Editbox.Flag = fontflags[FontFlag]
 											SetChatFont()
 										end,
@@ -1386,10 +1386,10 @@ function module:LoadOptions()
 									dialogControl = "LSM30_Border",
 									values = widgetLists.border,
 									get = function() return db.Chat.Editbox.Border.Texture end,
-									set = function(self, BorderTexture)
+									set = function(info, BorderTexture)
 											db.Chat.Editbox.Border.Texture = BorderTexture
 											SetEditBoxBackdrop()
-											self:SetEditBoxColor()
+											module:SetEditBoxColor()
 										end,
 									order = 1,
 								},
@@ -1399,13 +1399,13 @@ function module:LoadOptions()
 									type = "input",
 									width = "half",
 									get = function() return db.Chat.Editbox.Border.Thickness end,
-									set = function(self,BorderThickness)
+									set = function(info,BorderThickness)
 												if BorderThickness == nil or BorderThickness == "" then
 													BorderThickness = "0"
 												end
 												db.Chat.Editbox.Border.Thickness = BorderThickness
 												SetEditBoxBackdrop()
-												self:SetEditBoxColor()
+												module:SetEditBoxColor()
 											end,
 									order = 2,
 								},
@@ -1421,13 +1421,13 @@ function module:LoadOptions()
 									type = "input",
 									width = "half",
 									get = function() return db.Chat.Editbox.Border.Inset.left end,
-									set = function(self,InsetLeft)
+									set = function(info,InsetLeft)
 											if InsetLeft == nil or InsetLeft == "" then
 												InsetLeft = "0"
 											end
 											db.Chat.Editbox.Border.Inset.left = InsetLeft
 											SetEditBoxBackdrop()
-											self:SetEditBoxColor()
+											module:SetEditBoxColor()
 										end,
 									order = 4,
 								},
@@ -1437,13 +1437,13 @@ function module:LoadOptions()
 									type = "input",
 									width = "half",
 									get = function() return db.Chat.Editbox.Border.Inset.right end,
-									set = function(self,InsetRight)
+									set = function(info,InsetRight)
 											if InsetRight == nil or InsetRight == "" then
 												InsetRight = "0"
 											end
 											db.Chat.Editbox.Border.Inset.right = InsetRight
 											SetEditBoxBackdrop()
-											self:SetEditBoxColor()
+											module:SetEditBoxColor()
 										end,
 									order = 5,
 								},
@@ -1453,13 +1453,13 @@ function module:LoadOptions()
 									type = "input",
 									width = "half",
 									get = function() return db.Chat.Editbox.Border.Inset.top end,
-									set = function(self,InsetTop)
+									set = function(info,InsetTop)
 											if InsetTop == nil or InsetTop == "" then
 												InsetTop = "0"
 											end
 											db.Chat.Editbox.Border.Inset.top = InsetTop
 											SetEditBoxBackdrop()
-											self:SetEditBoxColor()
+											module:SetEditBoxColor()
 										end,
 									order = 6,
 								},
@@ -1469,13 +1469,13 @@ function module:LoadOptions()
 									type = "input",
 									width = "half",
 									get = function() return db.Chat.Editbox.Border.Inset.bottom end,
-									set = function(self,InsetBottom)
+									set = function(info,InsetBottom)
 											if InsetBottom == nil or InsetBottom == "" then
 												InsetBottom = "0"
 											end
 											db.Chat.Editbox.Border.Inset.bottom = InsetBottom
 											SetEditBoxBackdrop()
-											self:SetEditBoxColor()
+											module:SetEditBoxColor()
 										end,
 									order = 7,
 								},
@@ -1498,7 +1498,7 @@ function module:LoadOptions()
 												end
 											end
 										end,
-									set = function(self, Anchor)
+									set = function(info, Anchor)
 											db.Chat.Editbox.Position.Anchor = editboxanchors[Anchor]
 											SetEditBoxPosition()
 										end,
@@ -1523,7 +1523,7 @@ function module:LoadOptions()
 									end,
 									width = "half",
 									get = function() return db.Chat.Editbox.Position.X end,
-									set = function(self,PosX)
+									set = function(info,PosX)
 											if PosX == nil or PosX == "" then
 												PosX = "0"
 											end
@@ -1545,7 +1545,7 @@ function module:LoadOptions()
 									end,
 									width = "half",
 									get = function() return db.Chat.Editbox.Position.Y end,
-									set = function(self,PosY)
+									set = function(info,PosY)
 											if PosY == nil or PosY == "" then
 												PosY = "0"
 											end
@@ -1570,7 +1570,7 @@ function module:LoadOptions()
 							type = "toggle",
 							width = "full",
 							get = function() return db.Chat.Buttons.Enable end,
-							set = function(self, Enable)
+							set = function(info, Enable)
 										db.Chat.Buttons.Enable = not db.Chat.Buttons.Enable
 										CheckChatButtons()
 										
@@ -1643,7 +1643,7 @@ function module:LoadOptions()
 									disabled = function() return not db.Chat.Buttons.Arrows.Enable end,
 									width = "half",
 									get = function() return db.Chat.Buttons.Arrows.X end,
-									set = function(self,PosX)
+									set = function(info,PosX)
 											if PosX == nil or PosX == "" then
 												PosX = "0"
 											end
@@ -1659,7 +1659,7 @@ function module:LoadOptions()
 									disabled = function() return not db.Chat.Buttons.Arrows.Enable end,
 									width = "half",
 									get = function() return db.Chat.Buttons.Arrows.Y end,
-									set = function(self,PosY)
+									set = function(info,PosY)
 											if PosY == nil or PosY == "" then
 												PosY = "0"
 											end
@@ -1725,7 +1725,7 @@ function module:LoadOptions()
 									disabled = function() return not db.Chat.Buttons.BottomButton.Enable end,
 									width = "half",
 									get = function() return db.Chat.Buttons.BottomButton.X end,
-									set = function(self,PosX)
+									set = function(info,PosX)
 											if PosX == nil or PosX == "" then
 												PosX = "0"
 											end
@@ -1741,7 +1741,7 @@ function module:LoadOptions()
 									disabled = function() return not db.Chat.Buttons.BottomButton.Enable end,
 									width = "half",
 									get = function() return db.Chat.Buttons.BottomButton.Y end,
-									set = function(self,PosY)
+									set = function(info,PosY)
 											if PosY == nil or PosY == "" then
 												PosY = "0"
 											end
@@ -1807,7 +1807,7 @@ function module:LoadOptions()
 									disabled = function() return not db.Chat.Buttons.MenuButton.Enable end,
 									width = "half",
 									get = function() return db.Chat.Buttons.MenuButton.X end,
-									set = function(self,PosX)
+									set = function(info,PosX)
 											if PosX == nil or PosX == "" then
 												PosX = "0"
 											end
@@ -1823,7 +1823,7 @@ function module:LoadOptions()
 									disabled = function() return not db.Chat.Buttons.MenuButton.Enable end,
 									width = "half",
 									get = function() return db.Chat.Buttons.MenuButton.Y end,
-									set = function(self,PosY)
+									set = function(info,PosY)
 											if PosY == nil or PosY == "" then
 												PosY = "0"
 											end
@@ -1889,7 +1889,7 @@ function module:LoadOptions()
 									disabled = function() return not db.Chat.Buttons.MinimizeButton.Enable end,
 									width = "half",
 									get = function() return db.Chat.Buttons.MinimizeButton.X end,
-									set = function(self,PosX)
+									set = function(info,PosX)
 											if PosX == nil or PosX == "" then
 												PosX = "0"
 											end
@@ -1905,7 +1905,7 @@ function module:LoadOptions()
 									disabled = function() return not db.Chat.Buttons.MinimizeButton.Enable end,
 									width = "half",
 									get = function() return db.Chat.Buttons.MinimizeButton.Y end,
-									set = function(self,PosY)
+									set = function(info,PosY)
 											if PosY == nil or PosY == "" then
 												PosY = "0"
 											end
@@ -1971,7 +1971,7 @@ function module:LoadOptions()
 									disabled = function() return not db.Chat.Buttons.SocialButton.Enable end,
 									width = "half",
 									get = function() return db.Chat.Buttons.SocialButton.X end,
-									set = function(self,PosX)
+									set = function(info,PosX)
 											if PosX == nil or PosX == "" then
 												PosX = "0"
 											end
@@ -1987,7 +1987,7 @@ function module:LoadOptions()
 									disabled = function() return not db.Chat.Buttons.SocialButton.Enable end,
 									width = "half",
 									get = function() return db.Chat.Buttons.SocialButton.Y end,
-									set = function(self,PosY)
+									set = function(info,PosY)
 											if PosY == nil or PosY == "" then
 												PosY = "0"
 											end
@@ -2050,7 +2050,7 @@ function module:LoadOptions()
 									disabled = function() return not db.Chat.Buttons.Copy.Enable end,
 									width = "half",
 									get = function() return db.Chat.Buttons.Copy.X end,
-									set = function(self,PosX)
+									set = function(info,PosX)
 											if PosX == nil or PosX == "" then
 												PosX = "0"
 											end
@@ -2065,7 +2065,7 @@ function module:LoadOptions()
 									disabled = function() return not db.Chat.Buttons.Copy.Enable end,
 									width = "half",
 									get = function() return db.Chat.Buttons.Copy.Y end,
-									set = function(self,PosY)
+									set = function(info,PosY)
 											if PosY == nil or PosY == "" then
 												PosY = "0"
 											end
@@ -2140,7 +2140,7 @@ function module:LoadOptions()
 			desc = ("Make %s sticky"):format(v),
 			type = "toggle",
 			get = function() return db.Chat.Sticky[k] end,
-			set = function(self, Enabled)
+			set = function(info, Enabled)
 					db.Chat.Sticky[k] = Enabled
 					ChatTypeInfo[k].sticky = Enabled and 1 or 0
 				end,

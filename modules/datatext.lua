@@ -1265,7 +1265,7 @@ function module:SetGold()
 		end
 		
 		-- Event functions
-		stat.Events = {"PLAYER_MONEY", "PLAYER_ENTERING_WORLD"}
+		stat.Events = {"PLAYER_MONEY"}
 		stat.PLAYER_MONEY = function(self)
 			local newMoney = GetMoney()
 
@@ -1292,10 +1292,8 @@ function module:SetGold()
 		end
 		
 		-- Script functions
-		stat.PLAYER_ENTERING_WORLD = function(self)
-			self:UnregisterEvent("PLAYER_ENTERING_WORLD")
-
-			oldMoney = GetMoney()			
+		stat.OnEnable = function(self)
+			oldMoney = GetMoney()
 			self:RefreshServerTotal()
 			self:PLAYER_MONEY()
 		end
