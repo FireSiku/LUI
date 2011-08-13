@@ -1,6 +1,6 @@
 --[[
 	Project....: LUI NextGenWoWUserInterface
-	File.......: map.lua
+	File.......: worldmap.lua
 	Description: Worldmap Module
 	Version....: 1.5
 	Rev Date...: 08/12/2011
@@ -10,7 +10,7 @@
 
 -- External references.
 local parent, LUI = ...
-local module = LUI:NewModule("Map", "AceHook-3.0", "AceEvent-3.0")
+local module = LUI:NewModule("WorldMap", "AceHook-3.0", "AceEvent-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")
 local LibWindow = LibStub("LibWindow-1.1")
 local widgetLists = AceGUIWidgetLSMlists
@@ -258,20 +258,20 @@ function module:HideBlobs()
 end
 
 --------------------------------------------------
--- Map Functions
+-- World Map Functions
 --------------------------------------------------
 
 function module:SetStrata()
 	WorldMapFrame:SetFrameStrata(db.General.Strata)
 end
 
-function module:SetAlpha()
-	WorldMapFrame:SetAlpha(db[mapSize()].Alpha)
+function module:SetAlpha(alpha)
+	WorldMapFrame:SetAlpha(alpha or db[mapSize()].Alpha)
 end
 
-function module:SetArrow()
-	PlayerArrowFrame:SetModelScale(db.General.ArrowScale)
-	PlayerArrowEffectFrame:SetModelScale(db.General.ArrowScale)
+function module:SetArrow(scale)
+	PlayerArrowFrame:SetModelScale(scale or db.General.ArrowScale)
+	PlayerArrowEffectFrame:SetModelScale(scale or db.General.ArrowScale)
 end
 
 function module:SetScale(scale)
@@ -457,6 +457,9 @@ function module:SetMap()
 	
 	SetUIPanelAttribute(WorldMapFrame, "area", nil)
 	SetUIPanelAttribute(WorldMapFrame, "allowOtherPanels", true)
+	
+	WorldMapFrame:EnableMouse(true)
+	WorldMapFrame:EnableKeyboard(false)
 	
 	self:SecureHookScript(WorldMapFrame, "OnShow", wmfOnShow)
 	self:SecureHookScript(WorldMapFrame, "OnHide", wmfOnHide)
@@ -662,6 +665,7 @@ module.defaults = {
 -- Module Functions
 --------------------------------------------------
 
+module.optionsName = "World Map"
 module.getter = "generic"
 module.setter = "Refresh"
 
@@ -740,13 +744,23 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
-	HideUIPanel(WorldMapFrame)
+	local vis = WorldMapFrame:IsVisible()
+	if vis then
+		HideUIPanel(WorldMapFrame)
+	end
 	
 	self:UnregisterAllEvents()
 	self:UnhookAll()
 	
+	self:SecureHook("WorldMapFrame_DisplayQuestPOI", function(questFrame) questFrame.poiIcon:SetScale(1) end)
+	WorldMapFrame_DisplayQuests()
+	self:Unhook("WorldMapFrame_DisplayQuestPOI")
+	
 	self:UpdateMapElements()
 	self:WORLD_MAP_UPDATE()
+	self:SetArrow(1)
+	self:SetScale(1)
+	self:SetAlpha(1)
 	
 	if InCombatLockdown() then
 		self:PLAYER_REGEN_ENABLED()
@@ -760,8 +774,6 @@ function module:OnDisable()
 	WorldMapFrame:RegisterForDrag(nil)
 	WorldMapFrame:SetClampedToScreen(true)
 	WorldMapFrame:SetClampRectInsets(0, 0, 0, -60)
-	WorldMapFrame:SetScale(1)
-	WorldMapFrame:SetAlpha(1)
 	WorldMapFrame:SetScript("OnKeyDown", WorldMapFrame_OnKeyDown)
 	
 	WorldMapQuestShowObjectives:Show()
@@ -776,5 +788,8 @@ function module:OnDisable()
 	
 	if self.miniMap then
 		WorldMap_ToggleSizeDown()
+		if vis then
+			ShowUIPanel(WorldMapFrame)
+		end
 	end
 end

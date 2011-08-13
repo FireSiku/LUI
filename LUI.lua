@@ -786,7 +786,7 @@ local function getOptions()
 									get = function() return db.General.HideErrors end,
 									set = function(info, value)
 											db.General.HideErrors = value
-											LUI:FetchScript("Error"):ErrorMessageHandler()
+											LUI:FetchScript("ErrorHider"):ErrorMessageHandler()
 										end,
 									order = 34,
 								},
@@ -819,7 +819,7 @@ local function getOptions()
 									get = function() return db.General.AutoAcceptInvite end,
 									set = function(info, value)
 											db.General.AutoAcceptInvite = value
-											LUI:FetchScript("Invite"):SetAutoAccept()
+											LUI:FetchScript("AutoInvite"):SetAutoAccept()
 										end,
 									order = 37,
 								},
@@ -831,7 +831,7 @@ local function getOptions()
 									get = function() return db.General.Autoinvite end,
 									set = function(info, value)
 											db.General.Autoinvite = value
-											LUI:FetchScript("Invite"):SetAutoInvite()
+											LUI:FetchScript("AutoInvite"):SetAutoInvite()
 										end,
 									order = 38,
 								},

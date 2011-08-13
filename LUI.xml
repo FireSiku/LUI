@@ -1,6 +1,6 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 	<!-- Error frame hook -->
-	<Script file="scripts\errorframe.lua"/>
+	<Script file="scripts\bugcatcher.lua"/>
 	
 	<!-- Initialize LUI -->
 	<Include file="locale\locale.xml"/>
@@ -59,7 +59,7 @@
 	<Script file="modules\buffs.lua"/>
 	<Script file="modules\chat.lua"/>
 	<Script file="modules\minimap.lua"/>
-	<Script file="modules\map.lua"/>
+	<Script file="modules\worldmap.lua"/>
 	<Script file="modules\bags.lua"/>
 	<Script file="modules\nameplates.lua"/>
 	<Script file="modules\cooldown.lua"/>
@@ -76,14 +76,14 @@
 	<Script file="modules\merchant.lua"/>
 
 	<!-- Additional Scripts -->
-	<Script file="scripts\error.lua"/>
+	<Script file="scripts\errorhider.lua"/>
 	<Script file="scripts\partyfix.lua"/>
 	<Script file="scripts\colourpicker.lua"/>
-	<Script file="scripts\frame.lua"/>
-	<Script file="scripts\invite.lua"/>
+	<Script file="scripts\frameidentifier.lua"/>
+	<Script file="scripts\autoinvite.lua"/>
 	<Script file="scripts\blizzscale.lua"/>
 	<Script file="scripts\talentspam.lua"/>
-	<Script file="scripts\blizzoptions.lua"/>
+	<Script file="scripts\blizzoptionsmover.lua"/>
 	
 	<!-- oUF Layout -->
 	<Include file="unitframes\templates.xml"/>

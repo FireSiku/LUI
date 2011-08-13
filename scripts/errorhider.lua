@@ -1,5 +1,5 @@
 local _, LUI = ...
-local script = LUI:NewScript("Error", "AceEvent-3.0")
+local script = LUI:NewScript("ErrorHider", "AceEvent-3.0")
 
 function script:ErrorMessageHandler()
 	if LUI.db.profile.General.HideErrors then
