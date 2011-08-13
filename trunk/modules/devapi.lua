@@ -72,7 +72,19 @@ local function GetParentInfo(info)
 	return parentinfo
 end
 
--- api:NewGroup(name, order [, childGroups] [, guiInline [, disabled [, hidden]]], args)
+-- api:NewGroup(name, order [, childGroups] [, get [, set]] [, guiInline [, disabled [, hidden]]], args)
+--[[
+	childGroups (string) - layout for groups inside this group (optional)
+	get (function, methodname, string) - get function for all options in this group that don't have thier own get function (optional)
+		- "skip" or "nil" (string) can be used to set get function to nil for the group
+		- "generic" (string) can be used for a general get function that will traverse the db via the info table
+	set (function, methodname, string) - set function for all options in this group that don't have thier own set function (optional, get required)
+		- "skip" or "nil" (string) can be used to set set function as nil for the group
+		- "generic" (string) can be used for a general set function that will traverse the db via the info table
+	guiInline (boolean) - if group should show inline with the other options or be a new tab, section, etc. (optional)
+	disabled (boolean, function, methodname) - disabled function (optional, guiInline required)
+	hidden (boolean, function, methodname) - hidden function (optional, disabled required)
+]]
 function api:NewGroup(name, order, ...)	
 	local t = {}
 	t.type, t.name, t.order = "group", name, order
@@ -81,13 +93,56 @@ function api:NewGroup(name, order, ...)
 	
 	local args, i = {...}, 1
 	while i <= #args do
-		if type(args[i]) == "table" then
+		if type(args[i]) == "table" then -- args
 			t.args = args[i]
 			break
-		elseif i == 1 and type(args[i]) == "string" then
+		elseif i == 1 and type(args[i]) == "string" then -- childGroups
 			t.childGroups = args[i]
 			i = i + 1
-		else
+		elseif i < 3 and (type(args[i]) == "function" or type(args[i]) == "string") then -- get/set
+			-- get
+			if type(args[i]) == "function" then
+				t.get = args[i]
+			elseif self[args[i]] then -- methodname
+				t.get = args[i]
+			elseif args[i] ~= "skip" and args[i] ~= "nil" then -- generic
+				t.get = function(info)
+					local value = self.db.profile
+					for i, v in ipairs(info) do
+						if v == self:GetName() then
+							for j=i+1, #info do
+								value = value[info[j]]
+							end
+							return value
+						end
+					end
+				end
+			end
+			i = i + 1
+			
+			-- set
+			if type(args[i]) == "function" or type(args[i]) == "string" then
+				if type(args[i]) == "function" then
+					t.set = args[i]
+				elseif self[args[i]] then -- methodname
+					t.set = args[i]
+				elseif args[i] ~= "skip" and args[i] ~= "nil" then -- generic
+					t.set = function(info, value)
+						local dbloc = module.db.profile
+						for i, v in ipairs(info) do
+							if v == module:GetName() then
+								for j=i+1, #info-1 do
+									dbloc = dbloc[info[j]]
+								end
+								dbloc[info[#info]] = value
+								break
+							end
+						end
+					end
+				end
+				i = i + 1
+			end
+		else -- guiInline, disabled, hidden
 			t.guiInline = args[i]
 			i = i + 1
 			if type(args[i]) ~= "table" then
