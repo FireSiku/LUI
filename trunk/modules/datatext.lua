@@ -2201,6 +2201,7 @@ function module:SetGuild()
 	if db.Guild.Enable and not stat.Created then
 		if not InfoStats.GF or not InfoStats.GF.Created then module:SetGF() end
 		local tooltip = InfoStats.GF
+		local locClassNames = tooltip.LocClassNames
 		
 		tooltip.Guild = stat
 		
@@ -2248,7 +2249,7 @@ function module:SetGuild()
 				local name, rank, rankIndex, level, class, zone, note, offnote, connected, status = GetGuildRosterInfo(i)
 				if connected then
 					local notes = note ~= "" and (offnote == "" and note or ("%s |cffffcc00-|r %s%s"):format(note, offcolor, offnote)) or offnote == "" and "|cffffcc00-" or offcolor..offnote
-					guildEntries[#guildEntries+1] = tooltip:new(stat.LocClassNames[class] or "", name or "", level or 0, zone or UNKNOWN, notes, status or "", rankIndex or 0, rank or 0, i)
+					guildEntries[#guildEntries+1] = tooltip:new(locClassNames[class] or "", name or "", level or 0, zone or UNKNOWN, notes, status or "", rankIndex or 0, rank or 0, i)
 				end
 			end
 			self:UpdateText()
@@ -2321,6 +2322,7 @@ function module:SetFriends()
 	if db.Friends.Enable and not stat.Created then
 		if not InfoStats.GF or not InfoStats.GF.Created then module:SetGF() end
 		local tooltip = InfoStats.GF
+		local locClassNames = tooltip.LocClassNames
 		
 		tooltip.Friends = stat
 		
@@ -2371,7 +2373,7 @@ function module:SetFriends()
 			totalFriends, onlineFriends = GetNumFriends()
 			for i = 1, onlineFriends do
 				local name, level, class, zone, connected, status, note = GetFriendInfo(i)
-				friendEntries[i] = tooltip:new(stat.LocClassNames[class] or "", name or "", level or 0, zone or UNKNOWN, note or "|cffffcc00-", status or "", "", "", i)
+				friendEntries[i] = tooltip:new(locClassNames[class] or "", name or "", level or 0, zone or UNKNOWN, note or "|cffffcc00-", status or "", "", "", i)
 			end
 			self:UpdateText()
 			if not tooltip.IsGuild and tooltip:IsShown() then tooltip:Update() end
