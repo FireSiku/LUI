@@ -28,6 +28,8 @@ local questObjTexts = {
 	[2] = L["Show Markers & Panels"],
 }
 
+local WorldMapFrame = WorldMapFrame
+
 local realZone
 
 local WORLDMAP_POI_MIN_X = 12
@@ -93,6 +95,12 @@ end
 --------------------------------------------------
 -- Hook Functions
 --------------------------------------------------
+
+local function questObjButtonOnClick(button)
+	module.hooks[button].OnClick(button)
+	db.QuestObjectives = button:GetChecked() and 2 or 0
+	questObjDropDownUpdate()
+end
 
 function module:WorldMapFrame_DisplayQuestPOI(questFrame, isComplete)
 	-- Recalculate Position to adjust for Scale
@@ -162,7 +170,7 @@ end
 	
 function module:UpdateMapElements()
 	local mouseOver = WorldMapFrame:IsMouseOver()
-	if self.elementsHidden and (mouseOver or not db[mapSize()].HideBorder) then
+	if self.elementsHidden and (mouseOver or not db.Enable or not db[mapSize()].HideBorder) then
 		self.elementsHidden = nil
 		(self.miniMap and WorldMapFrameSizeUpButton or WorldMapFrameSizeDownButton):Show()
 		WorldMapFrameCloseButton:Show()
@@ -170,7 +178,7 @@ function module:UpdateMapElements()
 		for _, frame in pairs(self.elementsToHide) do
 			frame:Show()
 		end
-	elseif not self.elementsHidden and not mouseOver and db[mapSize()].HideBorder then
+	elseif not self.elementsHidden and not mouseOver and db.Enable and db[mapSize()].HideBorder then
 		self.elementsHidden = true
 		WorldMapFrameSizeUpButton:Hide()
 		WorldMapFrameSizeDownButton:Hide()
@@ -216,11 +224,7 @@ local function wmfOnHide(frame)
 end
 
 local function wmsdsOnShow(frame)
-	if module.miniMap then
-		frame:Hide()
-	elseif select(3, GetProfessions()) then
-		frame:Show()
-	else
+	if db[mapSize()].HideBorder or not select(3, GetProfessions()) then 
 		frame:Hide()
 	end
 end
@@ -314,18 +318,10 @@ function module:SizeUp()
 	-- tiny adjustments
 	WorldMapFrameCloseButton:SetPoint("TOPRIGHT", WorldMapPositioningGuide, 4, 4)
 	WorldMapFrameSizeDownButton:SetPoint("TOPRIGHT", WorldMapPositioningGuide, -16, 4)
-	WorldMapTrackQuest:SetParent(WorldMapFrame)
-	WorldMapTrackQuest:ClearAllPoints()
-	WorldMapTrackQuest:SetPoint("BOTTOMLEFT", WorldMapPositioningGuide, "BOTTOMLEFT", 16, 4)
-	WorldMapTrackQuest:Show()
 	WorldMapFrameTitle:ClearAllPoints()
 	WorldMapFrameTitle:SetPoint("CENTER", 0, 372)
 
-	LUIMapQuestObjectivesDropDown:Show()
-	WorldMapShowDigSites:Show()
-
 	WorldMapFrame_SetPOIMaxBounds()
-	--WorldMapQuestShowObjectives_AdjustPosition()
 	self:WorldMapFrame_DisplayQuests()
 end
 
@@ -370,15 +366,10 @@ function module:SizeDown()
 	-- tiny adjustments
 	WorldMapFrameCloseButton:SetPoint("TOPRIGHT", WorldMapFrameMiniBorderRight, "TOPRIGHT", -44, 5)
 	WorldMapFrameSizeDownButton:SetPoint("TOPRIGHT", WorldMapFrameMiniBorderRight, "TOPRIGHT", -66, 5)
-	WorldMapTrackQuest:SetParent(self.UIHider)
 	WorldMapFrameTitle:ClearAllPoints()
 	WorldMapFrameTitle:SetPoint("TOP", WorldMapDetailFrame, 0, 20)
 
-	LUIMapQuestObjectivesDropDown:Hide()
-	WorldMapShowDigSites:Hide()
-
 	WorldMapFrame_SetPOIMaxBounds()
-	--WorldMapQuestShowObjectives_AdjustPosition()
 end
 
 function module:ToggleMapSize()
@@ -401,10 +392,11 @@ function module:UpdateBorderVisibility()
 		if self.miniMap then
 			WorldMapFrameMiniBorderLeft:Hide()
 			WorldMapFrameMiniBorderRight:Hide()
-			--WorldMapQuestShowObjectives:SetPoint("BOTTOMRIGHT", WorldMapDetailFrame, "TOPRIGHT", -50 - WorldMapQuestShowObjectivesText:GetWidth(), 2);
+			WorldMapQuestShowObjectives:Hide()
 		else
 			-- TODO
 		end
+		WorldMapTrackQuest:SetParent(self.UIHider)
 		WorldMapFrameTitle:Hide()
 		self:RegisterEvent("WORLD_MAP_UPDATE")
 		self:WORLD_MAP_UPDATE()
@@ -417,10 +409,17 @@ function module:UpdateBorderVisibility()
 		if self.miniMap then
 			WorldMapFrameMiniBorderLeft:Show()
 			WorldMapFrameMiniBorderRight:Show()
+			WorldMapQuestShowObjectives:Show()
+			WorldMapQuestShowObjectives_AdjustPosition()
+			WorldMapTrackQuest:SetParent(WorldMapFrame)
+			WorldMapTrackQuest:SetPoint("BOTTOMLEFT", WorldMapDetailFrame, "BOTTOMLEFT", 2, -26)
+			LUIMapQuestObjectivesDropDown:Hide()
 		else
-			-- TODO
+			WorldMapQuestShowObjectives:Hide()
+			WorldMapTrackQuest:SetPoint("BOTTOMLEFT", WorldMapPositioningGuide, "BOTTOMLEFT", 16, 4)
+			LUIMapQuestObjectivesDropDown:Show()
 		end
-		--WorldMapQuestShowObjectives_AdjustPosition()
+		WorldMapShowDigSites:Show()
 		WorldMapFrameTitle:Show()
 		self:UnregisterEvent("WORLD_MAP_UPDATE")
 		self:WORLD_MAP_UPDATE()
@@ -431,7 +430,7 @@ end
 
 function module:RefreshQuestObjectivesDisplay()
 	WorldMapQuestShowObjectives:SetChecked(db.QuestObjectives ~= 0)
-	WorldMapQuestShowObjectives:GetScript("OnClick")(WorldMapQuestShowObjectives)
+	self.hooks[WorldMapQuestShowObjectives].OnClick(WorldMapQuestShowObjectives)
 end
 
 function module:SetMap()
@@ -456,6 +455,9 @@ function module:SetMap()
 		HideUIPanel(WorldMapFrame)
 	end
 	
+	SetUIPanelAttribute(WorldMapFrame, "area", nil)
+	SetUIPanelAttribute(WorldMapFrame, "allowOtherPanels", true)
+	
 	self:SecureHookScript(WorldMapFrame, "OnShow", wmfOnShow)
 	self:SecureHookScript(WorldMapFrame, "OnHide", wmfOnHide)
 	BlackoutWorld:Hide()
@@ -468,7 +470,7 @@ function module:SetMap()
 	self:SecureHookScript(WorldMapFrame, "OnDragStop", "ShowBlobs")
 
 	WorldMapFrame:SetParent(UIParent)
-	WorldMapFrame:SetToplevel(true)
+	--WorldMapFrame:SetToplevel(true)
 	WorldMapFrame:SetWidth(1024)
 	WorldMapFrame:SetHeight(768)
 	WorldMapFrame:SetClampedToScreen(false)
@@ -482,19 +484,20 @@ function module:SetMap()
 	self:RawHook("WorldMapFrame_ToggleWindowSize", "ToggleMapSize", true)
 
 	-- Hide Quest Objectives CheckBox and replace it with a DropDown
-	WorldMapQuestShowObjectives:Hide()
+	self:RawHookScript(WorldMapQuestShowObjectives, "OnClick", questObjButtonOnClick, true)
 	WorldMapQuestShowObjectives:SetChecked(db.QuestObjectives ~= 0)
 	WorldMapQuestShowObjectives_Toggle()
+	WorldMapQuestShowObjectives:Hide()
 	local questObj = LUIMapQuestObjectivesDropDown
 	if not questObj then
 		questObj = CreateFrame("Frame", "LUIMapQuestObjectivesDropDown", WorldMapFrame, "UIDropDownMenuTemplate")
 		questObj:SetPoint("BOTTOMRIGHT", "WorldMapPositioningGuide", "BOTTOMRIGHT", -5, -2)
 	end
+	questObj:Show()
 	
 	WorldMapShowDigSites:ClearAllPoints()
 	WorldMapShowDigSites:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 25, 0)
 	self:SecureHookScript(WorldMapShowDigSites, "OnShow", wmsdsOnShow)
-	WorldMapShowDigSites:Show()
 
 	local text = LUIMapQuestObjectivesDropDownLabel
 	if not text then
@@ -536,7 +539,7 @@ end
 --------------------------------------------------
 
 function module:WORLD_MAP_UPDATE() -- updates detail tiles
-	if db[mapSize()].HideBorder and GetCurrentMapZone() > 0 and hasOverlays() then
+	if db.Enable and db[mapSize()].HideBorder and GetCurrentMapZone() > 0 and hasOverlays() then
 		for i=1, GetNumberOfDetailTiles() do
 			_G["WorldMapDetailTile"..i]:Hide()
 		end
@@ -708,7 +711,7 @@ function module:Refresh(...)
 	self:SetPosition()
 	
 	self:UpdateBorderVisibility()
-	WorldMapFrame_UpdateQuests()
+	WorldMapFrame_DisplayQuests()
 end
 
 function module:OnInitialize()
@@ -729,9 +732,6 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
-	SetUIPanelAttribute(WorldMapFrame, "area", "center")
-	SetUIPanelAttribute(WorldMapFrame, "allowOtherPanels", true)
-	
 	self:SetMap()
 	
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
@@ -744,6 +744,9 @@ function module:OnDisable()
 	
 	self:UnregisterAllEvents()
 	self:UnhookAll()
+	
+	self:UpdateMapElements()
+	self:WORLD_MAP_UPDATE()
 	
 	if InCombatLockdown() then
 		self:PLAYER_REGEN_ENABLED()
@@ -758,6 +761,7 @@ function module:OnDisable()
 	WorldMapFrame:SetClampedToScreen(true)
 	WorldMapFrame:SetClampRectInsets(0, 0, 0, -60)
 	WorldMapFrame:SetScale(1)
+	WorldMapFrame:SetAlpha(1)
 	WorldMapFrame:SetScript("OnKeyDown", WorldMapFrame_OnKeyDown)
 	
 	WorldMapQuestShowObjectives:Show()
@@ -765,6 +769,8 @@ function module:OnDisable()
 	
 	WorldMapShowDigSites:ClearAllPoints()
 	WorldMapShowDigSites:GetScript("OnLoad")(WorldMapShowDigSites)
+	
+	InterfaceOptionsObjectivesPanelAdvancedWorldMap:Enable()
 	
 	WorldMap_ToggleSizeUp()
 	
