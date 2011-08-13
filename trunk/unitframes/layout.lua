@@ -88,6 +88,53 @@ local cornerAuras = {
 	},
 }
 
+local barticks = setmetatable({}, {
+	__call = function(t, castbar, i)
+		local spark = t[i]
+		if not spark then
+			spark = castbar:CreateTexture(nil, "OVERLAY")
+			t[i] = spark
+			spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
+			spark:SetVertexColor(1, 1, 1, 0.8)
+			spark:SetBlendMode("ADD")
+			spark:SetWidth(15)
+		end
+		spark:SetHeight(castbar:GetHeight() * 1.8)
+		return spark
+	end,
+})
+	
+local channelingTicks = (( -- base time between ticks
+	class == "DRUID" and {
+		[GetSpellInfo(740)] = 2, -- Tranquility
+		[GetSpellInfo(16914)] = 1, -- Hurricane
+	}) or (class == "MAGE" and setmetatable({
+		[GetSpellInfo(10)] = 1, -- Blizzard
+		[GetSpellInfo(12051)] = 2, -- Evocation
+	}, {
+		__index = function(t, k)
+			if k == GetSpellInfo(5143) then -- Arcane Missiles
+				local mb = select(5, GetTalentInfo(1, 10))
+				return (mb == 0 and 0.75 or (0.7 - (mb/10)))
+			end
+		end,
+	})) or (class == "PRIEST" and {
+		[GetSpellInfo(15407)] = 1, -- Mind Flay
+		[GetSpellInfo(48045)] = 1, -- Mind Sear
+		[GetSpellInfo(64843)] = 2, -- Divine Hymn
+		[GetSpellInfo(64901)] = 2, -- Hymn of Hope
+		[GetSpellInfo(47540)] = 1, -- Penance
+	}) or (class == "SHAMAN" and {
+		[GetSpellInfo(61882)] = 1, -- Earthquake
+	}) or (class == "WARLOCK" and {
+		[GetSpellInfo(1120)] = 3, -- Drain Soul
+		[GetSpellInfo(689)] = 1, -- Drain Life
+		[GetSpellInfo(79268)] = 3, -- Soul Harvest
+		[GetSpellInfo(5740)] = 2, -- Rain of Fire
+		[GetSpellInfo(1949)] = 1, -- Hellfire
+	})
+)
+
 ------------------------------------------------------------------------
 --	Dont edit this if you dont know what you are doing!
 ------------------------------------------------------------------------
@@ -638,6 +685,23 @@ local CustomFilter = function(icons, unit, icon, name, rank, texture, count, dty
 	end
 end
 
+local SetTicks = function(castbar, unit, tickspeed)
+	if tickspeed and tickspeed > 0 then
+		local numticks = floor((castbar.max/(tickspeed/(1+(UnitSpellHaste(unit or "player")/100))))+0.5)
+		local delta = castbar:GetWidth() / numticks
+		for i = 1, numticks - 1 do
+			local tick = barticks(castbar, i)
+			tick:ClearAllPoints()
+			tick:SetPoint("CENTER", castbar, "LEFT", delta * i, 0)
+			tick:Show()
+		end
+	else
+		for i = 1, #barticks do
+			barticks[i]:Hide()
+		end
+	end
+end
+
 local PostCastStart = function(castbar, unit, name)
 	if castbar.Colors.Individual == true then
 		castbar:SetStatusBarColor(castbar.Colors.Bar.r, castbar.Colors.Bar.g, castbar.Colors.Bar.b, castbar.Colors.Bar.a)
@@ -656,6 +720,18 @@ local PostCastStart = function(castbar, unit, name)
 	--if castbar.interrupt and UnitCanAttack("player", unit) and castbar.Colors.Shield.Enable then
 	--	castbar:SetStatusBarColor(castbar.Colors.Shield.r, castbar.Colors.Shield.g, castbar.Colors.Shield.b, castbar.Colors.Shield.a)
 	--end
+end
+
+local PostChannelStart = function(castbar, unit, name)
+	if castbar.channeling then
+		SetTicks(castbar, unit, channelingTicks[name])
+	end
+	
+	PostCastStart(castbar, unit, name)
+end
+
+local PostChannelStop = function(castbar, unit, name)
+	SetTicks()
 end
 
 local ThreatOverride = function(self, event, unit)
@@ -2392,7 +2468,10 @@ LUI.oUF_LUI.funcs = {
 		}
 		
 		self.Castbar.PostCastStart = PostCastStart
-		self.Castbar.PostChannelStart = PostCastStart
+		self.Castbar.PostChannelStart = ((unit == "player" and channelingTicks) and PostChannelStart) or PostCastStart
+		if unit == "player" and channelingTicks then
+			self.Castbar.PostChannelStop = PostChannelStop
+		end
 		
 		self.Castbar.Time:SetFont(LSM:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
 		self.Castbar.Time:ClearAllPoints()
