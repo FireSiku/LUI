@@ -8,6 +8,7 @@
 	Edits: 1.5 - Zista
 ]] 
 
+-- External references.
 local parent, LUI = ...
 local module = LUI:NewModule("Map", "AceHook-3.0", "AceEvent-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")

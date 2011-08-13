@@ -10,7 +10,8 @@
 		v1.1: Zista
 ]] 
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+-- External references.
+local _, LUI = ...
 local module = LUI:NewModule("Frames")
 local Panels = LUI:GetModule("Panels")
 local Themes = LUI:GetModule("Themes")

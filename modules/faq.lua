@@ -7,7 +7,8 @@
 	Author.....: Louí [EU - Das Syndikat] <In Fidem>
 ]] 
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+-- External references.
+local _, LUI = ...
 local module = LUI:NewModule("FAQ")
 
 function module:LoadOptions()

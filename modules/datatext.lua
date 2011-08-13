@@ -10,6 +10,7 @@
 		v1.9: Zista
 ]]
 
+-- External references.
 local _, LUI = ...
 local module = LUI:NewModule("Infotext", "AceHook-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")

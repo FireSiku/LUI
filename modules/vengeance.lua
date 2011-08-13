@@ -10,6 +10,7 @@
 		v1.1: Thaly
 ]]
 
+-- External references.
 local _, LUI = ...
 local module = LUI:NewModule("Vengeance")
 local LSM = LibStub("LibSharedMedia-3.0")

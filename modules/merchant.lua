@@ -10,7 +10,8 @@
 		v1.3: Hix
 ]]
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+-- External references.
+local _, LUI = ...
 local Merchant = LUI:NewModule("Merchant")
 
 -- Database and defaults shortcuts.

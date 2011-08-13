@@ -9,6 +9,7 @@
 		v1.0: Thaly
 ]]
 
+-- External references.
 local _, LUI = ...
 local module = LUI:NewModule("Threat")
 local LSM = LibStub("LibSharedMedia-3.0")

@@ -6,7 +6,8 @@
 	Rev Date...: 30/03/11 [dd/mm/yy]
 ]] 
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+-- External references.
+local _, LUI = ...
 local module = LUI:NewModule("Bars", "AceHook-3.0")
 local Panels = LUI:GetModule("Panels")
 local Themes = LUI:GetModule("Themes")
