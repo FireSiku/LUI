@@ -595,6 +595,7 @@ end
 
 local function getOptions()
 	if not LUI.options then
+		local api = LUI:GetModule("DevAPI")
 		LUI.options = {
 			name = "LUI",
 			type = "group",
@@ -1048,84 +1049,11 @@ local function getOptions()
 			LUI.options.args = LUI:MergeOptions(LUI.options.args, (type(v) == "function") and v() or v, true)
 		end
 		
-		local function createDisabled(module)
-			local disabled = function() return not module:IsEnabled() end
-			
-			return disabled
+		for k,v in pairs(newModuleOptions) do -- all modules need to be converted over to this
+			local module = type(v) == "string" and LUI:GetModule(v) or v
+			LUI.options.args[module:GetName()] = api.NewGroup(module, module.optionsName or module:GetName(), module.order or 10, module.childGroups or "tab", module.getter or "skip", module.setter or "skip", 
+				false, function() return not module:IsEnabled() end, type(module.LoadOptions) == "function" and module:LoadOptions() or module.options)
 		end
-		local function createGet(module)
-			if not module.getter then return end
-			
-			local func
-			if type(module.getter) == "function" then
-				func = module.getter
-			elseif module.getter == true then
-				func = function(info)
-					local value = module.db.profile
-					for i, v in ipairs(info) do
-						if v == module:GetName() then
-							for j=i+1, #info do
-								value = value[info[j]]
-							end
-							return value
-						end
-					end
-				end
-			end
-			
-			return func
-		end
-		local function createSet(module)
-			if not module.setter then return end
-			
-			local func
-			if type(module.setter) == "function" then
-				func = module.setter
-			elseif module.setter == true then
-				func = function(info, value)
-					local dbloc = module.db.profile
-					for i, v in ipairs(info) do
-						if v == module:GetName() then
-							for j=i+1, #info-1 do
-								dbloc = dbloc[info[j]]
-							end
-							dbloc[info[#info]] = value
-							break
-						end
-					end
-				end
-			elseif type(module.setter) == "string" and module[module.setter] then
-				func = function(info, value)
-					local dbloc = module.db.profile
-					for i, v in ipairs(info) do
-						if v == module:GetName() then
-							for j=i+1, #info-1 do
-								dbloc = dbloc[info[j]]
-							end
-							dbloc[info[#info]] = value
-							break
-						end
-					end
-					module[module.setter](module, info, value)
-				end
-			end
-			
-			return func
-		end
-		for k,v in pairs(newModuleOptions) do -- needs api implementation and all modules need to be converted over to this
-			module = type(v) == "string" and LUI:GetModule(v) or v
-			LUI.options.args[module:GetName()] = {
-				name = module.optionsName or module:GetName(),
-				type = "group",
-				order = module.order or 10,
-				childGroups = module.childGroups or "tab",
-				disabled = createDisabled(module),
-				get = createGet(module),
-				set = createSet(module),
-				args = type(module.LoadOptions) == "function" and module:LoadOptions() or module.options,
-			}
-		end
-		
 		
 		for k,v in pairs(frameOptions) do
 			LUI.options.args.Frames.args = LUI:MergeOptions(LUI.options.args.Frames.args, (type(v) == "function") and v() or v)

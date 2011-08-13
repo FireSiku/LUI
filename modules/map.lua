@@ -658,7 +658,7 @@ module.defaults = {
 -- Module Functions
 --------------------------------------------------
 
-module.getter = true
+module.getter = "generic"
 module.setter = "Refresh"
 
 function module:LoadOptions()
@@ -691,10 +691,14 @@ function module:LoadOptions()
 	return options
 end
 
-function module:Refresh()
+function module:Refresh(...)
+	local info, value = ...
+	if type(info) == "table" then -- set option function
+		db[info[#info-1]][info[#info]] = value
+	end
+	
 	if db.miniMap ~= self.miniMap then
-		self.miniMap = db.miniMap
-		self[self.miniMap and "SizeDown" or "SizeUp"](self)
+		self:ToggleMapSize()
 	end
 	
 	self:SetStrata()
