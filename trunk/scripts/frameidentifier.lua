@@ -1,5 +1,5 @@
 local _, LUI = ...
-local script = LUI:NewScript("Frame_Identifier")
+local script = LUI:NewScript("FrameIdentifier")
 
 local f = CreateFrame("Frame", "LUI_Frame_Identifier", UIParent)
 f:SetWidth(320)

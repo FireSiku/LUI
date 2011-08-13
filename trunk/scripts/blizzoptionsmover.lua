@@ -1,5 +1,5 @@
 local _, LUI = ...
-local script = LUI:NewScript("BlizzOptions", "AceEvent-3.0")
+local script = LUI:NewScript("BlizzOptionsMover", "AceEvent-3.0")
 
 function script:MakeMovable(frame)
 	local mover = CreateFrame("Frame", frame:GetName() .. "Mover", frame)

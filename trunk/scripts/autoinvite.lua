@@ -1,5 +1,5 @@
 local _, LUI = ...
-local script = LUI:NewScript("Invite", "AceEvent-3.0")
+local script = LUI:NewScript("AutoInvite", "AceEvent-3.0")
 
 function script:SetAutoAccept()
 	if LUI.db.profile.General.AutoAcceptInvite then
