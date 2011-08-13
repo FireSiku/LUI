@@ -366,7 +366,6 @@ function LUI:SetDamageFont()
 	COMBAT_TEXT_CRIT_MAXHEIGHT = db.General.DamageFontSizeCrit
 	COMBAT_TEXT_CRIT_MINHEIGHT = db.General.DamageFontSizeCrit - 2
 end
-LUI:RegisterEvent("ADDON_LOADED", "SetDamageFont", self)
 
 ------------------------------------------------------
 -- / LOAD EXTRA MODULES / --
@@ -1253,6 +1252,7 @@ function LUI:OnInitialize()
 	}
 	
 	if LUICONFIG.IsConfigured and LUICONFIG.Versions.lui == LUI_versions.lui then
+		self:RegisterEvent("ADDON_LOADED", "SetDamageFont", self)
 		self:LoadExtraModules()
 	end
 	
