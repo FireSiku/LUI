@@ -12,6 +12,7 @@
 		v1.4: Zista
 ]] 
 
+-- External references.
 local _, LUI = ...
 local module = LUI:NewModule("Themes")
 local LSM = LibStub("LibSharedMedia-3.0")

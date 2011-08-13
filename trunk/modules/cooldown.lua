@@ -15,7 +15,8 @@
     This version should work on absolutely everything, but I've removed pretty much all of the options
 ]] 
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+-- External references.
+local _, LUI = ...
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 local module = LUI:NewModule("Cooldown")

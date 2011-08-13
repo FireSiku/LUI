@@ -10,8 +10,8 @@
 		Replaces PallyPower button with a Raid Menu.  Paladins will be able to show/hide PallyPower by right clicking the button.
 ]]
 
--- Local includes/definitions
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+-- External references.
+local _, LUI = ...
 local module = LUI:NewModule("RaidMenu")
 local Themes = LUI:GetModule("Themes")
 local Micromenu = LUI:GetModule("Micromenu", true)

@@ -6,7 +6,8 @@
 	Rev Date...: 10/10/2010
 ]] 
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+-- External references.
+local _, LUI = ...
 local module = LUI:NewModule("Orb")
 local Themes = LUI:GetModule("Themes")
 

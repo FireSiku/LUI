@@ -13,7 +13,8 @@
 		v1.4: Xus
 ]] 
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+-- External references.
+local _, LUI = ...
 local module = LUI:NewModule("Micromenu")
 local Themes = LUI:GetModule("Themes")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")

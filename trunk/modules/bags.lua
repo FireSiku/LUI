@@ -19,6 +19,7 @@
 	but I've removed pretty much all of the options.
 ]]
 
+-- External references.
 local _, LUI = ...
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
