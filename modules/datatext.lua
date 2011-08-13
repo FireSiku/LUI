@@ -10,7 +10,7 @@
 		v1.9: Zista
 ]]
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local _, LUI = ...
 local module = LUI:NewModule("Infotext", "AceHook-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
@@ -21,7 +21,6 @@ local db, dbd
 -- / LOCAL VARIABLES / --
 ------------------------------------------------------
 
-local _,L = ...
 local myPlayerName = UnitName("player")
 local myPlayerFaction = UnitFactionGroup("player")
 local otherFaction = myPlayerFaction == "Horde" and "Alliance" or "Horde"
@@ -81,7 +80,7 @@ local function NewIcon(stat, tex)
 	icon:SetPoint("RIGHT", stat.text, "LEFT", -2, 0)
 	icon:SetWidth(15)
 	icon:SetHeight(15)
-	icon:SetFrameStrata("TOOLTIP")
+	icon:SetFrameStrata("HIGH")
 	icon:SetBackdrop({bgFile = tex or "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = {top = 0, bottom, 0, left = 0, right = 0}})
 	icon:Show()
 	
@@ -468,12 +467,11 @@ function module:SetClock()
 				GameTooltip:AddDoubleLine(text1, text2)
 				
 				-- Saved raid info
-				local function formatTime(sec, t)
-					t = t or {}
+				local function formatTime(sec)
 					local d, h, m, s = ChatFrame_TimeBreakDown(floor(sec))
 					local str = gsub(gsub(format(" %dd %dh %dm "..((d==0 and h==0) and "%ds" or ""), d, h, m, s), " 0[dhms]", " "), "%s+", " ")
-					local str = strtrim(gsub(str, "([dhms])", {d = t.days or "d", h = t.hours or "h", m = t.minutes or "m", s = t.seconds or "s"}), " ")
-					return strmatch(str, "^%s*$") and "0"..(t.seconds or L"s") or str
+					local str = strtrim(gsub(str, "([dhms])", {d = "d", h = "h", m = "m", s = "s"}), " ")
+					return strmatch(str, "^%s*$") and "0"..("s") or str
 				end
 				
 				local oneraid
@@ -1412,6 +1410,8 @@ function module:SetGF()
 		stat:SetFrameLevel(1)
 		stat:SetClampedToScreen(true)
 		
+		stat.LocClassNames = {}
+		
 		-- Localized functions
 		local RAID_CLASS_COLORS = CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS
 		
@@ -1602,7 +1602,7 @@ function module:SetGF()
 					local r,g,b = unpack(GF_Colors.Realm)
 					zone = ("%1$s |cff%3$.2x%4$.2x%5$.2x- %2$s"):format(zone, realm, r*255, g*255, b*255)
 				end
-				class = L[class]
+				class = stat.LocClassNames[class]
 				if class then
 					SetClassIcon(toast.class, class)
 					color = RAID_CLASS_COLORS[class]
@@ -2174,8 +2174,8 @@ function module:SetGF()
 		stat.OnEnable = function(self)
 			self:Hide()
 			
-			for eng, loc in pairs(LOCALIZED_CLASS_NAMES_MALE)   do L[loc] = eng end
-			for eng, loc in pairs(LOCALIZED_CLASS_NAMES_FEMALE) do L[loc] = eng end
+			for eng, loc in pairs(LOCALIZED_CLASS_NAMES_MALE)   do stat.LocClassNames[loc] = eng end
+			for eng, loc in pairs(LOCALIZED_CLASS_NAMES_FEMALE) do stat.LocClassNames[loc] = eng end
 			
 			module:SecureHook("GuildRoster", guildRoster)
 			module:SecureHook("ShowFriends", showFriends)
@@ -2248,7 +2248,7 @@ function module:SetGuild()
 				local name, rank, rankIndex, level, class, zone, note, offnote, connected, status = GetGuildRosterInfo(i)
 				if connected then
 					local notes = note ~= "" and (offnote == "" and note or ("%s |cffffcc00-|r %s%s"):format(note, offcolor, offnote)) or offnote == "" and "|cffffcc00-" or offcolor..offnote
-					guildEntries[#guildEntries+1] = tooltip:new(L[class] or "", name or "", level or 0, zone or UNKNOWN, notes, status or "", rankIndex or 0, rank or 0, i)
+					guildEntries[#guildEntries+1] = tooltip:new(stat.LocClassNames[class] or "", name or "", level or 0, zone or UNKNOWN, notes, status or "", rankIndex or 0, rank or 0, i)
 				end
 			end
 			self:UpdateText()
@@ -2371,7 +2371,7 @@ function module:SetFriends()
 			totalFriends, onlineFriends = GetNumFriends()
 			for i = 1, onlineFriends do
 				local name, level, class, zone, connected, status, note = GetFriendInfo(i)
-				friendEntries[i] = tooltip:new(L[class] or "", name or "", level or 0, zone or UNKNOWN, note or "|cffffcc00-", status or "", "", "", i)
+				friendEntries[i] = tooltip:new(stat.LocClassNames[class] or "", name or "", level or 0, zone or UNKNOWN, note or "|cffffcc00-", status or "", "", "", i)
 			end
 			self:UpdateText()
 			if not tooltip.IsGuild and tooltip:IsShown() then tooltip:Update() end

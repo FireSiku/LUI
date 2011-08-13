@@ -2,6 +2,10 @@
 	<!-- Error frame hook -->
 	<Script file="scripts\errorframe.lua"/>
 	
+	<!-- Initialize LUI -->
+	<Include file="locale\locale.xml"/>
+	<Script file="init.lua"/>
+	
 	<!-- oUF Core -->
 	<Include file="unitframes\core\ouf.xml"/>
 	

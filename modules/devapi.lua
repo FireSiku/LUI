@@ -22,8 +22,8 @@ local tonumber = tonumber
 
 
 local mixins = {
-	"NewToggle", "NewHeader", "NewDesc", 
-	"NewSlider", "NewSelect",
+	"NewGroup", "NewHeader", "NewDesc", 
+	"NewToggle", "NewSlider", "NewSelect",
 	"NewColor", "NewColorNoAlpha", 
 	"NewInput", "NewInputNumber",
 	"NewPosition", "NewFontOptions",
@@ -70,6 +70,40 @@ local function GetParentInfo(info)
 		parentinfo = parentinfo[info[i]].args
 	end
 	return parentinfo
+end
+
+-- api:NewGroup(name, order [, childGroups] [, guiInline [, disabled [, hidden]]], args)
+function api:NewGroup(name, order, ...)	
+	local t = {}
+	t.type, t.name, t.order = "group", name, order
+	
+	local hidden, disabled
+	
+	local args, i = {...}, 1
+	while i <= #args do
+		if type(args[i]) == "table" then
+			t.args = args[i]
+			break
+		elseif i == 1 and type(args[i]) == "string" then
+			t.childGroups = args[i]
+			i = i + 1
+		else
+			t.guiInline = args[i]
+			i = i + 1
+			if type(args[i]) ~= "table" then
+				disabled = args[i]
+				i = i + 1
+				if type(args[i]) ~= "table" then
+					hidden = args[i]
+					i = i + 1
+				end
+			end
+		end
+	end
+	
+	t.handler = self
+	SetState(t, nil, disabled, hidden)
+	return t
 end
 
 function api:NewToggle(name, desc, order, func, width, disabled, hidden)
@@ -135,22 +169,20 @@ function api:NewInputNumber(name, desc, order, func, width, disabled, hidden, if
 	return t
 end
 
-function api:NewSlider(name, desc, order, smin, smax, step, func, width, disabled, hidden, isPercent)
+function api:NewSlider(name, desc, order, smin, smax, step, func, isPercent, width, disabled, hidden)
 	local t = {}
 	t.type, t.order, t.name = "range", order, name
 	t.desc = function(info) 
-		return desc.."\n\nDefault: "..self.db.defaults.profile[info[#info-1]][info[#info]]
+		local default = self.db.defaults.profile[info[#info-1]][info[#info]]
+		default = isPercent and default*100 or default
+		return desc.."\n\nDefault: "..format(isPercent and "%d%%" or "%d", default)
 	end
 	t.min, t.max, t.step = smin or 1, smax or 100, step or 1
 	if isPercent then t.isPercent = true end
 	if not func or type(func) == "function" then
 		t.get = function(info) return self.db.profile[info[#info-1]][info[#info]] end
 		t.set = function(info, value)
-			local opt = self.db.profile[info[#info-1]]
-			if (value == nil) or (value:trim() == "") then
-				value = 0
-			end
-			opt[info[#info]] = tonumber(value)
+			self.db.profile[info[#info-1]][info[#info]] = value
 			if func and type(func) == "function" then func(info, value) end
 		end
 	end

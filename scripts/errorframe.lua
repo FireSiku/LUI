@@ -1,9 +1,11 @@
+local parent, ns = ...
+
 local script = {}
-LibStub("AceEvent-3.0"):Embed(script)
-LibStub("AceHook-3.0"):Embed(script)
+LibStub("AceAddon-3.0"):EmbedLibraries(script, "AceEvent-3.0")
 
 -- Set text to insert.
-script.text = ("\nLUI Version: %s (%s)"):format(GetAddOnMetadata("LUI", "Version"), GetAddOnMetadata("LUI", "X-Curse-Packaged-Version"))
+local version, revision = GetAddOnMetadata(parent, "Version"), GetAddOnMetadata(parent, "X-Curse-Packaged-Version")
+script.text = format("\nLUI Version: %s", version) .. (version ~= revision and format(" (%s)", revision) or "")
 
 -- Hook error handler so that error messages regarding LUI contain LUI version and revision info.
 function script:ApplyHook()
@@ -38,7 +40,7 @@ end
 script:ApplyHook()
 
 -- Check hook upon entering world; check if another error mod has attempted to hook the error handler, in which case the hook will be updated and applied again.
-script:RegisterEvent("PLAYER_ENTERING_WORLD", script.ApplyHook)
+script:RegisterEvent("PLAYER_ENTERING_WORLD", "ApplyHook")
 
 --[[
 SlashCmdList["LUIERRORTEST"] = function()

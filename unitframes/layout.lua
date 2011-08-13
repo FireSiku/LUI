@@ -5,12 +5,12 @@
 --	DO NOT USE THIS LAYOUT WITHOUT LUI
 ------------------------------------------------------------------------
 
-local _, ns = ...
-local oUF = ns.oUF or oUF
+local _, LUI = ...
+local module = LUI:GetModule("oUF", true)
+
+local oUF = LUI.oUF
 
 local LSM = LibStub("LibSharedMedia-3.0")
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:GetModule("oUF", true)
 
 local db, colors, funcs
 
@@ -816,9 +816,9 @@ end
 
 local PostUpdateDruidMana = function(druidmana, unit, min, max)
 	if druidmana.color == "By Class" then
-		druidmana.ManaBar:SetStatusBarColor(unpack(LUI.oUF.colors.class["DRUID"]))
+		druidmana.ManaBar:SetStatusBarColor(unpack(LUI.oUF_LUI.colors.class["DRUID"]))
 	elseif druidmana.color == "By Type" then
-		druidmana.ManaBar:SetStatusBarColor(unpack(LUI.oUF.colors.power["MANA"]))
+		druidmana.ManaBar:SetStatusBarColor(unpack(LUI.oUF_LUI.colors.power["MANA"]))
 	else
 		druidmana.ManaBar:SetStatusBarColor(oUF.ColorGradient(min/max, unpack(colors.smooth)))
 	end
@@ -1081,11 +1081,11 @@ end
 
 ------------------------------------------------------------------------
 --	Create/Style Funcs
---	They are stored in the LUI.oUF so the LUI options can easily
+--	They are stored in the LUI.oUF_LUI so the LUI options can easily
 --	access them
 ------------------------------------------------------------------------
 
-LUI.oUF.funcs = {
+LUI.oUF_LUI.funcs = {
 	Health = function(self, unit, oufdb)
 		if not self.Health then
 			self.Health = CreateFrame("StatusBar", nil, self)
@@ -2576,13 +2576,13 @@ LUI.oUF.funcs = {
 		from.V2Tex:Reposition()
 	end,
 }
-funcs = LUI.oUF.funcs
+funcs = LUI.oUF_LUI.funcs
 
 ------------------------------------------------------------------------
 --	oUF Colors
 ------------------------------------------------------------------------
 
-LUI.oUF.colors = setmetatable({
+LUI.oUF_LUI.colors = setmetatable({
 	power = setmetatable({
 		["POWER_TYPE_STEAM"] = {0.55, 0.57, 0.61},
 		["POWER_TYPE_PYRITE"] = {0.60, 0.09, 0.17},
@@ -2642,7 +2642,7 @@ LUI.oUF.colors = setmetatable({
 		return db.oUF.Colors[k and (k:gsub("^%a", strupper)) or k] or oUF.colors[k]
 	end
 })
-colors = LUI.oUF.colors
+colors = LUI.oUF_LUI.colors
 
 ------------------------------------------------------------------------
 --	Custom Tags
@@ -2681,7 +2681,7 @@ local function ShortenName(name)
 	nameCache[name][2] = shortname
 end
 
-LUI.oUF.RecreateNameCache = function()
+LUI.oUF_LUI.RecreateNameCache = function()
 	for name, shortened in pairs(nameCache) do
 		ShortenName(name)
 	end
@@ -3304,7 +3304,7 @@ function module:OnEnable()
 	end
 	
 	-- hmm
-	oUF.colors.smooth = LUI.oUF.colors.smooth or oUF.colors.smooth
+	oUF.colors.smooth = LUI.oUF_LUI.colors.smooth or oUF.colors.smooth
 
 	-- spawning
 	local spawnList = {"Player", "Target", "Focus", "FocusTarget", "ToT", "ToToT", "Pet", "PetTarget", "Boss", "Party", "Maintank", "Arena", "Raid"}

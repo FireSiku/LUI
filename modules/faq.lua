@@ -22,6 +22,18 @@ function module:LoadOptions()
 					type = "header",
 					order = 1,
 				},
+				question1 = {
+					order = 2,
+					width = "full",
+					type = "description",
+					name = "|cffFF0000Q:|r How do I disable modules?",
+				},
+				answer1 = {
+					order = 3,
+					width = "full",
+					type = "description",
+					name = "|cff3399ffA:|r Click the \"Modules:\" section on the left to find an enable/disable button for each module.",
+				},
 				emptyq1 = {
 					name = "   ",
 					width = "full",

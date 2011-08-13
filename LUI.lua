@@ -6,18 +6,21 @@
 	Author..: Louí [EU-Das Syndikat] <In Fidem>
 ]] 
 
-local _, ns = ...
-oUF = ns.oUF or oUF
+local parent, LUI = ...
+local L = LUI.L
 
-local AceAddon = LibStub("AceAddon-3.0")
+LibStub("AceAddon-3.0"):EmbedLibraries(LUI, "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceSerializer-3.0", "AceComm-3.0")
+
+-- this is a temp globalization (should make it check for alpha verion to globalize or not once all other files dont need global)
+_G.LUI = LUI
+_G.oUF = LUI.oUF
+
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-LUI = AceAddon:NewAddon("LUI", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceSerializer-3.0", "AceComm-3.0") -- localize
-local LUI = _G.LUI -- this is a temp localization for this file
 local ACD = LibStub("AceConfigDialog-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
-LUI.oUF = {}
+LUI.oUF_LUI = {}
 
 LUI.dummy = function() return end
 
@@ -59,12 +62,9 @@ LUI_Media = {
 	["btn_gloss"] = [[Interface\AddOns\LUI\media\textures\buttons\Gloss]], -- Button Overlay
 }
 
-LUI_ModuleCount = 0
-
 local screen_height = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "%d+x(%d+)")
 local screen_width = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "(%d+)x%d+")
 local _, class = UnitClass("player")
-local hooks = { }
 
 LUI_versions = {
 	lui = 3403,
@@ -147,12 +147,6 @@ local function RGBToHex(r, g, b)
 	g = g <= 255 and g >= 0 and g or 0
 	b = b <= 255 and b >= 0 and b or 0
 	return string.format("%02x%02x%02x", r, g, b)
-end
-
-local moduleCount = 0
-function LUI:GetModuleCount()
-	moduleCount = moduleCount + 2
-	return moduleCount
 end
 
 function LUI:Kill(object)
@@ -284,7 +278,7 @@ end
 ------------------------------------------------------
 
 function LUI:SyncAddonVersion()
-	local luiversion, version, newVersion = GetAddOnMetadata("LUI", "Version"), "", ""
+	local luiversion, version, newVersion = GetAddOnMetadata(parent, "Version"), "", ""
 	local myRealm, myFaction, inGroup = GetRealmName(), (UnitFactionGroup("player") == "Horde" and 0 or 1), false
 	
 	while luiversion ~= nil do
@@ -317,7 +311,7 @@ function LUI:SyncAddonVersion()
 	local function checkVersion(prefix, text, distribution, from)
 		if version < text and newVersion < text then -- your version out of date (only print once)
 			newVersion = text
-			LUI:Print("Version " .. gsub(text, "%d+", tonumber) .. " available for download.")
+			LUI:Print(format(L["Version %s available for download."], gsub(text, "%d+", tonumber)))
 		elseif version > text and distribution ~= "WHISPER" then -- their version out of date (tell them)
 			sendVersion("WHISPER", from)
 		end
@@ -636,23 +630,21 @@ local function getOptions()
 									order = 3,
 									width = "full",
 									type = "description",
-									name = "Welcome to |c0090ffffLUI v3|r the first and only NextGeneration\nWorld of Warcraft User Interface.\n\nPlease read the FAQ if you have Questions!\nFor more information please visit\n|cff8080ffhttp://www.wow-lui.com|r\n|cff8080ffhttp://wowinterface.com|r\n\nEnjoy!\n\n\n|r",
+									name = L["Welcome to LUI v3"].."\n\n"..L["Please read the FAQ"].."\n\n\n",
 								},
 								VerText = {
 									order = 4,
 									width = "full",
 									type = "description",
-									name = "Version: "..GetAddOnMetadata("LUI", "Version"),
+									name = L["Version: "]..GetAddOnMetadata(parent, "Version"),
 								},
 								RevText = {
 									order = 5,
 									width = "full",
 									type = "description",
 									name = function()
-											if GetAddOnMetadata("LUI", "X-Curse-Packaged-Version") then 
-												return "Revision: "..GetAddOnMetadata("LUI", "X-Curse-Packaged-Version") 
-											else	return "Revision: ???"
-											end
+											local revision = GetAddOnMetadata(parent, "X-Curse-Packaged-Version")
+											return L["Revision: "]..(revision or "???")
 										end,
 								},
 							},
@@ -1061,6 +1053,65 @@ local function getOptions()
 			
 			return disabled
 		end
+		local function createGet(module)
+			if not module.getter then return end
+			
+			local func
+			if type(module.getter) == "function" then
+				func = module.getter
+			elseif module.getter == true then
+				func = function(info)
+					local value = module.db.profile
+					for i, v in ipairs(info) do
+						if v == module:GetName() then
+							for j=i+1, #info do
+								value = value[info[j]]
+							end
+							return value
+						end
+					end
+				end
+			end
+			
+			return func
+		end
+		local function createSet(module)
+			if not module.setter then return end
+			
+			local func
+			if type(module.setter) == "function" then
+				func = module.setter
+			elseif module.setter == true then
+				func = function(info, value)
+					local dbloc = module.db.profile
+					for i, v in ipairs(info) do
+						if v == module:GetName() then
+							for j=i+1, #info-1 do
+								dbloc = dbloc[info[j]]
+							end
+							dbloc[info[#info]] = value
+							break
+						end
+					end
+				end
+			elseif type(module.setter) == "string" and module[module.setter] then
+				func = function(info, value)
+					local dbloc = module.db.profile
+					for i, v in ipairs(info) do
+						if v == module:GetName() then
+							for j=i+1, #info-1 do
+								dbloc = dbloc[info[j]]
+							end
+							dbloc[info[#info]] = value
+							break
+						end
+					end
+					module[module.setter](module, info, value)
+				end
+			end
+			
+			return func
+		end
 		for k,v in pairs(newModuleOptions) do -- needs api implementation and all modules need to be converted over to this
 			module = type(v) == "string" and LUI:GetModule(v) or v
 			LUI.options.args[module:GetName()] = {
@@ -1069,6 +1120,8 @@ local function getOptions()
 				order = module.order or 10,
 				childGroups = module.childGroups or "tab",
 				disabled = createDisabled(module),
+				get = createGet(module),
+				set = createSet(module),
 				args = type(module.LoadOptions) == "function" and module:LoadOptions() or module.options,
 			}
 		end
@@ -1208,9 +1261,9 @@ function LUI:NewNamespace(module, enableButton)
 	
 	-- Register Callbacks
 	if type(module.Refresh) == "function" then
-		module.db.RegisterCallback(module, "OnProfileChanged", "Refresh")
-		module.db.RegisterCallback(module, "OnProfileCopied", "Refresh")
-		module.db.RegisterCallback(module, "OnProfileReset", "Refresh")
+		module.db.RegisterCallback(module, "OnProfileChanged", LUI.RefreshModule, module)
+		module.db.RegisterCallback(module, "OnProfileCopied", LUI.RefreshModule, module)
+		module.db.RegisterCallback(module, "OnProfileReset", LUI.RefreshModule, module)
 	end
 	
 	-- Create Enable button for module if applicable
@@ -1276,7 +1329,7 @@ function LUI:OnInitialize()
 	end
 	
 	StaticPopupDialogs["RELOAD_UI"] = {
-		text = "The UI needs to be reloaded!",
+		text = L["The UI needs to be reloaded!"],
 		button1 = ACCEPT,
 		button2 = CANCEL,
 		OnAccept = ReloadUI,
@@ -1357,6 +1410,12 @@ function LUI:Refresh()
 		if module.db and module.db.profile and module.db.profile.Enable ~= nil then
 			module[module.db.profile.Enable and "Enable" or "Disable"](module)
 		end
+	end
+end
+
+function LUI:RefreshModule(...) -- LUI.RefreshModule(module, callback_event, db, ...)
+	if self:IsEnabled() then
+		self:Refresh(...)
 	end
 end
 

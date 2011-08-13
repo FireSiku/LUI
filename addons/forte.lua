@@ -5,8 +5,9 @@
 	Version....: 1.975-v1.6
 ]] 
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local _, LUI = ...
 local module = LUI:NewModule("Forte", "AceHook-3.0")
+
 local _, class = UnitClass("player")
 local _G = _G
 

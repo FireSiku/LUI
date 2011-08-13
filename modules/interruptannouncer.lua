@@ -12,7 +12,7 @@
 ]]
 
 -- External references.
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local _, LUI = ...
 local module = LUI:NewModule("InterruptAnnouncer")
 
 -- Database and defaults shortcuts.

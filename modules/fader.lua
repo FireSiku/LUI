@@ -36,7 +36,7 @@
 ]]
 
 -- External references.
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local _, LUI = ...
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 local Fader = LUI:NewModule("Fader", "AceEvent-3.0", "AceHook-3.0")

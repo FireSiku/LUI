@@ -157,7 +157,7 @@ function module:CreateHealPredictionOptions(unit)
 	local ToggleFunc = function(Enable)
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				if not _G[frame].HealPrediction then LUI.oUF.funcs.HealPrediction(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+				if not _G[frame].HealPrediction then LUI.oUF_LUI.funcs.HealPrediction(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 				if Enable then
 					_G[frame]:EnableElement("HealPrediction")
 				else
@@ -171,7 +171,7 @@ function module:CreateHealPredictionOptions(unit)
 	local ApplySettings = function()
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				LUI.oUF.funcs.HealPrediction(_G[frame], _G[frame].__unit, db.oUF[unit])
+				LUI.oUF_LUI.funcs.HealPrediction(_G[frame], _G[frame].__unit, db.oUF[unit])
 				_G[frame]:UpdateAllElements()
 			end
 		end
@@ -208,9 +208,9 @@ function module:CreateBarOptions(unit, order, barType)
 	local ApplySettings = function()
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				LUI.oUF.funcs[barType](_G[frame], _G[frame].__unit, db.oUF[unit])
+				LUI.oUF_LUI.funcs[barType](_G[frame], _G[frame].__unit, db.oUF[unit])
 				if barType == "Health" and _G[frame].HealPrediction then
-					LUI.oUF.funcs["HealPrediction"](_G[frame], _G[frame].__unit, db.oUF[unit])
+					LUI.oUF_LUI.funcs["HealPrediction"](_G[frame], _G[frame].__unit, db.oUF[unit])
 				end
 				_G[frame]:UpdateAllElements()
 			end
@@ -300,7 +300,7 @@ function module:CreateTextOptions(unit, order, parentName, textType)
 	local ApplySettings = function()
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				LUI.oUF.funcs[textFunc](_G[frame], _G[frame].__unit, db.oUF[unit])
+				LUI.oUF_LUI.funcs[textFunc](_G[frame], _G[frame].__unit, db.oUF[unit])
 				_G[frame]:UpdateAllElements()
 			end
 		end
@@ -375,7 +375,7 @@ function module:CreateIconOptions(unit, order, iconType)
 	local ToggleFunc = function(self, Enable)
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				if not _G[frame][iconNames[1]] then LUI.oUF.funcs[iconNames[1]](_G[frame], _G[frame].__unit, db.oUF[unit]) end
+				if not _G[frame][iconNames[1]] then LUI.oUF_LUI.funcs[iconNames[1]](_G[frame], _G[frame].__unit, db.oUF[unit]) end
 				for _, icon in pairs(iconNames) do
 					if Enable then
 						_G[frame]:EnableElement(icon)
@@ -391,7 +391,7 @@ function module:CreateIconOptions(unit, order, iconType)
 	
 	local ApplySettings = function()
 		for _, frame in pairs(ufNames) do
-			if _G[frame] then LUI.oUF.funcs[iconNames[1]](_G[frame], _G[frame].__unit, db.oUF[unit]) end
+			if _G[frame] then LUI.oUF_LUI.funcs[iconNames[1]](_G[frame], _G[frame].__unit, db.oUF[unit]) end
 		end
 	end
 	
@@ -434,7 +434,7 @@ function module:CreateAuraOptions(unit, order, isDebuff)
 	local ToggleFunc = function(self, Enable)
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				if not _G[frame][element] then LUI.oUF.funcs[element](_G[frame], _G[frame].__unit, db.oUF[unit]) end
+				if not _G[frame][element] then LUI.oUF_LUI.funcs[element](_G[frame], _G[frame].__unit, db.oUF[unit]) end
 				if Enable == true then
 					_G[frame]:EnableElement("Aura")
 					_G[frame][element]:Show()
@@ -451,7 +451,7 @@ function module:CreateAuraOptions(unit, order, isDebuff)
 	
 	local ApplySettings = function()
 		for _, frame in pairs(ufNames) do
-			if _G[frame] then LUI.oUF.funcs[element](_G[frame], _G[frame].__unit, db.oUF[unit]) end
+			if _G[frame] then LUI.oUF_LUI.funcs[element](_G[frame], _G[frame].__unit, db.oUF[unit]) end
 		end
 	end
 	
@@ -625,7 +625,7 @@ function module:CreateOptions(index, unit)
 				]])
 			end
 			
-			LUI.oUF.RecreateNameCache()
+			LUI.oUF_LUI.RecreateNameCache()
 			for _, frame in pairs(ufNames) do
 				if _G[frame] then
 					_G[frame]:FormatRaidName()
@@ -636,19 +636,19 @@ function module:CreateOptions(index, unit)
 	
 	local ApplySettings = function()
 		for _, frame in pairs(ufNames) do
-			if _G[frame] then LUI.oUF.funcs.FrameBackdrop(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+			if _G[frame] then LUI.oUF_LUI.funcs.FrameBackdrop(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 		end
 	end
 	
 	local ApplyInfoText = function()
 		for _, frame in pairs(ufNames) do
-			if _G[frame] then LUI.oUF.funcs.Info(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+			if _G[frame] then LUI.oUF_LUI.funcs.Info(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 		end
 	end
 	
 	local ApplyCombatFeedback = function()
 		for _, frame in pairs(ufNames) do
-			if _G[frame] then LUI.oUF.funcs.CombatFeedbackText(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+			if _G[frame] then LUI.oUF_LUI.funcs.CombatFeedbackText(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 		end
 	end
 	
@@ -657,7 +657,7 @@ function module:CreateOptions(index, unit)
 	local ToggleCastbar = function(self, Enable)
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				if not _G[frame].Castbar then LUI.oUF.funcs.Castbar(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+				if not _G[frame].Castbar then LUI.oUF_LUI.funcs.Castbar(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 				if Enable == true then
 					_G[frame]:EnableElement("Castbar")
 				else
@@ -672,7 +672,7 @@ function module:CreateOptions(index, unit)
 	local ApplyCastbar = function()
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				LUI.oUF.funcs.Castbar(_G[frame], _G[frame].__unit, db.oUF[unit])
+				LUI.oUF_LUI.funcs.Castbar(_G[frame], _G[frame].__unit, db.oUF[unit])
 				_G[frame]:UpdateAllElements()
 			end
 		end
@@ -702,7 +702,7 @@ function module:CreateOptions(index, unit)
 	local TogglePortrait = function(self, Enable)
 		for _, frame in pairs(ufNames) do
 			if _G[frame] then
-				if not _G[frame].Portrait then LUI.oUF.funcs.Portrait(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+				if not _G[frame].Portrait then LUI.oUF_LUI.funcs.Portrait(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 				if Enable == true then
 					_G[frame]:EnableElement("Portrait")
 					_G[frame].Portrait:Show()
@@ -717,7 +717,7 @@ function module:CreateOptions(index, unit)
 	
 	local ApplyPortrait = function()
 		for _, frame in pairs(ufNames) do
-			if _G[frame] then LUI.oUF.funcs.Portrait(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+			if _G[frame] then LUI.oUF_LUI.funcs.Portrait(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 		end
 	end
 	
@@ -775,7 +775,7 @@ function module:CreateOptions(index, unit)
 										
 										for _, frame in pairs(ufNames) do
 											if _G[frame] then
-												if not _G[frame].Threat then LUI.oUF.funcs.AggroGlow(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+												if not _G[frame].Threat then LUI.oUF_LUI.funcs.AggroGlow(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 												if Enable then
 													_G[frame]:EnableElement("Threat")
 												else
