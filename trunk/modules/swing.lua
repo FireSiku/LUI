@@ -9,7 +9,7 @@
 		v1.0: Thaly
 ]]
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local _, LUI = ...
 local module = LUI:NewModule("Swing")
 local LSM = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
@@ -449,7 +449,7 @@ local ApplySettings = function()
 	local r, g, b
 	local mu = db.BGMultiplier
 	if db.Color == "By Class" then
-		r, g, b = unpack(LUI.oUF.colors.class[class])
+		r, g, b = unpack(LUI.oUF_LUI.colors.class[class])
 	else
 		r, g, b = db.IndividualColor.r, db.IndividualColor.g, db.IndividualColor.b
 	end

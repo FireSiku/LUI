@@ -1,4 +1,4 @@
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local _, LUI = ...
 local script = LUI:NewScript("TalentSpam", "AceEvent-3.0", "AceHook-3.0")
 
 local spam1 = gsub(ERR_LEARN_ABILITY_S:gsub("%.", "%."), "%%s", "(.*)")

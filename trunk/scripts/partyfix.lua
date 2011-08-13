@@ -1,3 +1,4 @@
+local _, LUI = ...
 local script = LUI:NewScript("YAIAP", "AceHook-3.0")
 
 -- Create slash command to enable debug mode.

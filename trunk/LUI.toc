@@ -5,6 +5,7 @@
 ## Notes: User Interface Modification
 ## SavedVariables: LUIDB, LUIGold, LUI_Themes, LUI_Layouts
 ## SavedVariablesPerCharacter: LUICONFIG
+## X-oUF: oUF_LUI
 
 libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
@@ -12,6 +13,7 @@ libs\LibSharedMedia-3.0\lib.xml
 libs\LibKeyBound-1.0\lib.xml
 
 libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+libs\LibWindow-1.1\LibWindow-1.1.lua
 
 libs\AceAddon-3.0\AceAddon-3.0.xml
 libs\AceDB-3.0\AceDB-3.0.xml

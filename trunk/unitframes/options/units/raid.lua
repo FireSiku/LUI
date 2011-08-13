@@ -347,15 +347,15 @@ function module:LoadOptions()
 	
 	local ApplyInfoText = function()
 		for _, frame in pairs(ufNamesListRaid) do
-			if _G[frame] then LUI.oUF.funcs.RaidInfo(_G[frame], _G[frame].__unit, oufdb) end
+			if _G[frame] then LUI.oUF_LUI.funcs.RaidInfo(_G[frame], _G[frame].__unit, oufdb) end
 		end
-		LUI.oUF.RecreateNameCache()
+		LUI.oUF_LUI.RecreateNameCache()
 	end
 	
 	local ToggleCornerAura = function(Info, Enable)
 		for _, frame in pairs(ufNamesListRaid) do
 			if _G[frame] then
-				if not _G[frame].SingleAuras then LUI.oUF.funcs.SingleAuras(_G[frame], _G[frame].__unit, oufdb) end
+				if not _G[frame].SingleAuras then LUI.oUF_LUI.funcs.SingleAuras(_G[frame], _G[frame].__unit, oufdb) end
 				if Enable then
 					_G[frame]:EnableElement("SingleAuras")
 				else
@@ -367,14 +367,14 @@ function module:LoadOptions()
 	
 	local ApplyCornerAura = function()
 		for _, frame in pairs(ufNamesListRaid) do
-			if _G[frame] then LUI.oUF.funcs.CornerAura(_G[frame], _G[frame].__unit, oufdb) end
+			if _G[frame] then LUI.oUF_LUI.funcs.CornerAura(_G[frame], _G[frame].__unit, oufdb) end
 		end
 	end
 	
 	local ToggleRaidDebuff = function(Info, Enable)
 		for _, frame in pairs(ufNamesListRaid) do
 			if _G[frame] then
-				if not _G[frame].RaidDebuffs then LUI.oUF.funcs.RaidDebuffs(_G[frame], _G[frame].__unit, oufdb) end
+				if not _G[frame].RaidDebuffs then LUI.oUF_LUI.funcs.RaidDebuffs(_G[frame], _G[frame].__unit, oufdb) end
 				if Enable then
 					_G[frame]:EnableElement("RaidDebuffs")
 				else
@@ -386,7 +386,7 @@ function module:LoadOptions()
 	
 	local ApplyRaidDebuff = function()
 		for _, frame in pairs(ufNamesListRaid) do
-			if _G[frame] then LUI.oUF.funcs.RaidDebuffs(_G[frame], _G[frame].__unit, oufdb) end
+			if _G[frame] then LUI.oUF_LUI.funcs.RaidDebuffs(_G[frame], _G[frame].__unit, oufdb) end
 		end
 	end
 	
@@ -403,7 +403,7 @@ function module:LoadOptions()
 		
 		local width40 = (5 * tonumber(db.oUF.Raid.Height) - 3 * tonumber(db.oUF.Raid.GroupPadding)) / 8
 		
-		LUI.oUF.RecreateNameCache()
+		LUI.oUF_LUI.RecreateNameCache()
 		
 		for i = 1, 8 do
 			_G["oUF_LUI_raid_40_"..i]:SetAttribute("initialConfigFunction", [[

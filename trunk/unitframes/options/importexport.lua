@@ -165,32 +165,32 @@ local function ApplySettings(unit)
 			frame:SetHeight(tonumber(db.oUF[unit].Height))
 			
 			-- bars
-			LUI.oUF.funcs.Health(frame, frame.__unit, db.oUF[unit])
-			LUI.oUF.funcs.Power(frame, frame.__unit, db.oUF[unit])
-			LUI.oUF.funcs.Full(frame, frame.__unit, db.oUF[unit])
-			LUI.oUF.funcs.FrameBackdrop(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF_LUI.funcs.Health(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF_LUI.funcs.Power(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF_LUI.funcs.Full(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF_LUI.funcs.FrameBackdrop(frame, frame.__unit, db.oUF[unit])
 			
 			-- texts
 			if unit == "Raid" then
-				LUI.oUF.funcs.RaidInfo(frame, frame.__unit, db.oUF[unit])
+				LUI.oUF_LUI.funcs.RaidInfo(frame, frame.__unit, db.oUF[unit])
 			else
-				LUI.oUF.funcs.Info(frame, frame.__unit, db.oUF[unit])
+				LUI.oUF_LUI.funcs.Info(frame, frame.__unit, db.oUF[unit])
 			end
 			
-			LUI.oUF.funcs.HealthValue(frame, frame.__unit, db.oUF[unit])
-			LUI.oUF.funcs.HealthPercent(frame, frame.__unit, db.oUF[unit])
-			LUI.oUF.funcs.HealthMissing(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF_LUI.funcs.HealthValue(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF_LUI.funcs.HealthPercent(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF_LUI.funcs.HealthMissing(frame, frame.__unit, db.oUF[unit])
 			
-			LUI.oUF.funcs.PowerValue(frame, frame.__unit, db.oUF[unit])
-			LUI.oUF.funcs.PowerPercent(frame, frame.__unit, db.oUF[unit])
-			LUI.oUF.funcs.PowerMissing(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF_LUI.funcs.PowerValue(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF_LUI.funcs.PowerPercent(frame, frame.__unit, db.oUF[unit])
+			LUI.oUF_LUI.funcs.PowerMissing(frame, frame.__unit, db.oUF[unit])
 			
 			-- icons
 			if db.oUF[unit].Icons then
 				for key, icons in pairs(iconNamesList) do
 					if db.oUF[unit].Icons[key] then
 						if db.oUF[unit].Icons[key].Enable then
-							LUI.oUF.funcs[icons[1]](frame, frame.__unit, db.oUF[unit])
+							LUI.oUF_LUI.funcs[icons[1]](frame, frame.__unit, db.oUF[unit])
 							frame:EnableElement(icons[1])
 							if icons[2] then frame:EnableElement(icons[2]) end
 						else
@@ -207,8 +207,8 @@ local function ApplySettings(unit)
 			-- player specific
 			if unit == "Player" then
 				-- exp/rep
-				LUI.oUF.funcs.Experience(frame, frame.__unit, db.oUF.XP_Rep)
-				LUI.oUF.funcs.Reputation(frame, frame.__unit, db.oUF.XP_Rep)
+				LUI.oUF_LUI.funcs.Experience(frame, frame.__unit, db.oUF.XP_Rep)
+				LUI.oUF_LUI.funcs.Reputation(frame, frame.__unit, db.oUF.XP_Rep)
 				
 				if db.oUF.XP_Rep.Experience.Enable then
 					frame.Experience:Show()
@@ -219,7 +219,7 @@ local function ApplySettings(unit)
 				end
 				
 				-- swing
-				LUI.oUF.funcs.Swing(frame, frame.__unit, db.oUF.Player)
+				LUI.oUF_LUI.funcs.Swing(frame, frame.__unit, db.oUF.Player)
 				if db.oUF[unit].Swing.Enable then
 					frame:EnableElement("Swing")
 				else
@@ -229,7 +229,7 @@ local function ApplySettings(unit)
 				
 				-- vengeance
 				if class == "WARRIOR" or class == "PALADIN" or class == "DRUID" or class == "DEATHKNIGHT" or class == "DEATH KNIGHT" then
-					LUI.oUF.funcs.Vengeance(frame, frame.__unit, db.oUF.Player)
+					LUI.oUF_LUI.funcs.Vengeance(frame, frame.__unit, db.oUF.Player)
 					if db.oUF[unit].Vengeance.Enable then
 						frame:EnableElement("Vengeance")
 					else
@@ -240,7 +240,7 @@ local function ApplySettings(unit)
 				
 				-- totems
 				if class == "SHAMAN" then
-					LUI.oUF.funcs.TotemBar(frame, frame.__unit, db.oUF.Player)
+					LUI.oUF_LUI.funcs.TotemBar(frame, frame.__unit, db.oUF.Player)
 					if db.oUF[unit].Totems.Enable then
 						frame:EnableElement("TotemBar")
 					else
@@ -251,7 +251,7 @@ local function ApplySettings(unit)
 				
 				-- runes
 				if class == "DEATHKNIGHT" or class == "DEATH KNIGHT" then
-					LUI.oUF.funcs.Runes(frame, frame.__unit, db.oUF.Player)
+					LUI.oUF_LUI.funcs.Runes(frame, frame.__unit, db.oUF.Player)
 					if db.oUF[unit].Runes.Enable then
 						frame:EnableElement("Runes")
 					else
@@ -262,7 +262,7 @@ local function ApplySettings(unit)
 				
 				-- holy power
 				if class == "PALADIN" then
-					LUI.oUF.funcs.HolyPower(frame, frame.__unit, db.oUF.Player)
+					LUI.oUF_LUI.funcs.HolyPower(frame, frame.__unit, db.oUF.Player)
 					if db.oUF[unit].HolyPower.Enable then
 						frame:EnableElement("HolyPower")
 					else
@@ -273,7 +273,7 @@ local function ApplySettings(unit)
 				
 				-- soul shards
 				if class == "WARLOCK" then
-					LUI.oUF.funcs.SoulShards(frame, frame.__unit, db.oUF.Player)
+					LUI.oUF_LUI.funcs.SoulShards(frame, frame.__unit, db.oUF.Player)
 					if db.oUF[unit].SoulShards.Enable then
 						frame:EnableElement("SoulShards")
 					else
@@ -284,7 +284,7 @@ local function ApplySettings(unit)
 				
 				-- druid eclipse
 				if class == "DRUID" then
-					LUI.oUF.funcs.EclipseBar(frame, frame.__unit, db.oUF.Player)
+					LUI.oUF_LUI.funcs.EclipseBar(frame, frame.__unit, db.oUF.Player)
 					if db.oUF[unit].Eclipse.Enable then
 						frame:EnableElement("EclipseBar")
 					else
@@ -295,7 +295,7 @@ local function ApplySettings(unit)
 				
 				-- druid mana bar
 				if class == "DRUID" then
-					LUI.oUF.funcs.DruidMana(frame, frame.__unit, db.oUF.Player)
+					LUI.oUF_LUI.funcs.DruidMana(frame, frame.__unit, db.oUF.Player)
 					if db.oUF[unit].DruidMana.Enable then
 						frame:EnableElement("DruidMana")
 					else
@@ -307,7 +307,7 @@ local function ApplySettings(unit)
 			
 			-- target specific
 			if unit == "Target" then
-				LUI.oUF.funcs.CPoints(frame, frame.__unit, db.oUF.Target)
+				LUI.oUF_LUI.funcs.CPoints(frame, frame.__unit, db.oUF.Target)
 				if db.oUF.Target.ComboPoints.Enable then
 					frame:EnableElement("CPoints")
 				else
@@ -318,7 +318,7 @@ local function ApplySettings(unit)
 			
 			-- portrait
 			if db.oUF[unit].Portrait and db.oUF[unit].Portrait.Enable then
-				LUI.oUF.funcs.Portrait(frame, frame.__unit, db.oUF[unit])
+				LUI.oUF_LUI.funcs.Portrait(frame, frame.__unit, db.oUF[unit])
 				frame:EnableElement("Portrait")
 				frame.Portrait:Show()
 			else
@@ -331,7 +331,7 @@ local function ApplySettings(unit)
 			-- alt power
 			if unit == "Player" or unit == "Pet" then
 				if db.oUF.Player.AltPower.Enable then
-					LUI.oUF.funcs.AltPowerBar(frame, frame.__unit, db.oUF[unit])
+					LUI.oUF_LUI.funcs.AltPowerBar(frame, frame.__unit, db.oUF[unit])
 					frame:EnableElement("AltPowerBar")
 					frame.AltPowerBar.SetPosition()
 				else
@@ -345,13 +345,13 @@ local function ApplySettings(unit)
 			-- auras
 			if db.oUF[unit].Auras then
 				if db.oUF[unit].Auras.buffs_enable then
-					LUI.oUF.funcs.Buffs(frame, frame.__unit, db.oUF[unit])
+					LUI.oUF_LUI.funcs.Buffs(frame, frame.__unit, db.oUF[unit])
 				else
 					if frame.Buffs then frame.Buffs:Hide() end
 				end
 				
 				if db.oUF[unit].Auras.debuffs_enable then
-					LUI.oUF.funcs.Debuffs(frame, frame.__unit, db.oUF[unit])
+					LUI.oUF_LUI.funcs.Debuffs(frame, frame.__unit, db.oUF[unit])
 				else
 					if frame.Debuffs then Frame.Debuffs:Hide() end
 				end
@@ -364,12 +364,12 @@ local function ApplySettings(unit)
 			end
 			
 			-- combat feedback text
-			if db.oUF[unit].Texts.Combat then LUI.oUF.funcs.CombatFeedbackText(frame, frame.__unit, db.oUF[unit]) end
+			if db.oUF[unit].Texts.Combat then LUI.oUF_LUI.funcs.CombatFeedbackText(frame, frame.__unit, db.oUF[unit]) end
 			
 			-- castbar
 			if db.oUF.Settings.Castbars and db.oUF[unit].Castbar then
 				if db.oUF[unit].Castbar.Enable then
-					LUI.oUF.funcs.Castbar(frame, frame.__unit, db.oUF[unit])
+					LUI.oUF_LUI.funcs.Castbar(frame, frame.__unit, db.oUF[unit])
 					frame:EnableElement("Castbar")
 				else
 					frame:DisableElement("Castbar")
@@ -378,7 +378,7 @@ local function ApplySettings(unit)
 			
 			-- aggro glow
 			if db.oUF[unit].Border.Aggro then
-				LUI.oUF.funcs.AggroGlow(frame, frame.__unit, db.oUF[unit])
+				LUI.oUF_LUI.funcs.AggroGlow(frame, frame.__unit, db.oUF[unit])
 				frame:EnableElement("Threat")
 			else
 				frame:DisableElement("Threat")
@@ -387,7 +387,7 @@ local function ApplySettings(unit)
 			-- heal prediction
 			if db.oUF[unit].HealPrediction then
 				if db.oUF[unit].HealPrediction.Enable then
-					LUI.oUF.funcs.HealPrediction(frame, frame.__unit, db.oUF[unit])
+					LUI.oUF_LUI.funcs.HealPrediction(frame, frame.__unit, db.oUF[unit])
 					frame:EnableElement("HealPrediction")
 				else
 					frame:DisableElement("HealPrediction")
@@ -397,27 +397,27 @@ local function ApplySettings(unit)
 			if unit == "ToT" or unit == "ToToT" or unit == "FocusTarget" or unit == "Focus" then
 				if not frame.V2Tex then
 					if unit == "ToT" then
-						LUI.oUF.funcs.V2Textures(frame, oUF_LUI_target)
+						LUI.oUF_LUI.funcs.V2Textures(frame, oUF_LUI_target)
 					elseif unit == "ToToT" then
-						LUI.oUF.funcs.V2Textures(frame, oUF_LUI_targettarget)
+						LUI.oUF_LUI.funcs.V2Textures(frame, oUF_LUI_targettarget)
 					elseif unit == "FocusTarget" then
-						LUI.oUF.funcs.V2Textures(frame, oUF_LUI_focus)
+						LUI.oUF_LUI.funcs.V2Textures(frame, oUF_LUI_focus)
 					elseif unit == "Focus" then
-						LUI.oUF.funcs.V2Textures(frame, oUF_LUI_player)
+						LUI.oUF_LUI.funcs.V2Textures(frame, oUF_LUI_player)
 					end
 				end
 				frame.V2Tex:Reposition()
 				if db.oUF.Settings.show_v2_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
 			elseif unit == "PartyTarget" then
-				if not frame.V2Tex then LUI.oUF.funcs.V2Textures(frame, _G["oUF_LUI_partyUnitButton"..frame:GetName():match("%d")]) end
+				if not frame.V2Tex then LUI.oUF_LUI.funcs.V2Textures(frame, _G["oUF_LUI_partyUnitButton"..frame:GetName():match("%d")]) end
 				frame.V2Tex:Reposition()
 				if db.oUF.Settings.show_v2_party_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
 			elseif unit == "ArenaTarget" then
-				if not frame.V2Tex then LUI.oUF.funcs.V2Textures(frame, _G["oUF_LUI_arena"..frame:GetName():match("%d")]) end
+				if not frame.V2Tex then LUI.oUF_LUI.funcs.V2Textures(frame, _G["oUF_LUI_arena"..frame:GetName():match("%d")]) end
 				frame.V2Tex:Reposition()
 				if db.oUF.Settings.show_v2_arena_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
 			elseif unit == "BossTarget" then
-				if not frame.V2Tex then LUI.oUF.funcs.V2Textures(frame, _G["oUF_LUI_boss"..frame:GetName():match("%d")]) end
+				if not frame.V2Tex then LUI.oUF_LUI.funcs.V2Textures(frame, _G["oUF_LUI_boss"..frame:GetName():match("%d")]) end
 				frame.V2Tex:Reposition()
 				if db.oUF.Settings.show_v2_boss_textures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
 			end

@@ -1307,7 +1307,7 @@ function module:LoadOptions()
 		for i = 1, 5 do
 			local f = _G["oUF_LUI_partyUnitButton"..i.."target"]
 			if f then
-				if not f.V2Tex then LUI.oUF.funcs.V2Textures(f, _G["oUF_LUI_partyUnitButton"..i]) end
+				if not f.V2Tex then LUI.oUF_LUI.funcs.V2Textures(f, _G["oUF_LUI_partyUnitButton"..i]) end
 				if Enable then
 					f.V2Tex:Show()
 				else
@@ -1321,7 +1321,7 @@ function module:LoadOptions()
 		for i = 1, 5 do
 			local f = _G["oUF_LUI_arenatarget"..i]
 			if f then
-				if not f.V2Tex then LUI.oUF.funcs.V2Textures(f, _G["oUF_LUI_arena"..i]) end
+				if not f.V2Tex then LUI.oUF_LUI.funcs.V2Textures(f, _G["oUF_LUI_arena"..i]) end
 				if Enable then
 					f.V2Tex:Show()
 				else
@@ -1335,7 +1335,7 @@ function module:LoadOptions()
 		for i = 1, MAX_BOSS_FRAMES do
 			local f = _G["oUF_LUI_bosstarget"..i]
 			if f then
-				if not f.V2Tex then LUI.oUF.funcs.V2Textures(f, _G["oUF_LUI_boss"..i]) end
+				if not f.V2Tex then LUI.oUF_LUI.funcs.V2Textures(f, _G["oUF_LUI_boss"..i]) end
 				if Enable then
 					f.V2Tex:Show()
 				else
@@ -1349,7 +1349,7 @@ function module:LoadOptions()
 		for unit, frame in pairs({Player = "oUF_LUI_player", Target = "oUF_LUI_target", Focus = "oUF_LUI_focus", Pet = "oUF_LUI_pet"}) do
 			if Enable then
 				if _G[frame] and db.oUF[unit].Castbar.Enable then
-					if not _G[frame].Castbar then LUI.oUF.funcs.Castbar(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+					if not _G[frame].Castbar then LUI.oUF_LUI.funcs.Castbar(_G[frame], _G[frame].__unit, db.oUF[unit]) end
 					_G[frame]:EnableElement("Castbar")
 				end
 			else
@@ -1368,12 +1368,12 @@ function module:LoadOptions()
 			
 			if Enable then
 				if p and db.oUF.Party.Castbar.Enable then
-					if not p.Castbar then LUI.oUF.funcs.Castbar(p, p.__unit, db.oUF.Party) end
+					if not p.Castbar then LUI.oUF_LUI.funcs.Castbar(p, p.__unit, db.oUF.Party) end
 					p:EnableElement("Castbar")
 				end
 				
 				if a and db.oUF.Arena.Castbar.Enable then
-					if not a.Castbar then LUI.oUF.funcs.Castbar(a, a.__unit, db.oUF.Arena) end
+					if not a.Castbar then LUI.oUF_LUI.funcs.Castbar(a, a.__unit, db.oUF.Arena) end
 					a:EnableElement("Castbar")
 				end
 			else

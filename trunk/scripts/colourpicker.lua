@@ -1,12 +1,9 @@
-
 -- LUI Color Picker based on ColorPickerPlus
+local _, LUI = ...
+local script = LUI:NewScript("ColorPicker", "AceEvent-3.0")
 
-local initialized = nil
 local colorBuffer = {}
 local editingText = nil
-
-local ColorPicker = CreateFrame("Frame")
-ColorPicker:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 local function UpdateColor(tbox)
 	local r, g, b = ColorPickerFrame:GetColorRGB()
@@ -46,11 +43,10 @@ local function UpdateAlphaText()
 	ColorPickerBoxA:SetText(string.format("%.2f", a))
 end
 
-ColorPicker:SetScript("OnEvent", function()
-	if initialized then return end
-	initialized = true
+function script:PLAYER_ENTERING_WORLD(event)
+	self:UnregisterEvent(event)
 	
-	ColorPickerFrame:HookScript("OnShow", function()
+	ColorPickerFrame:HookScript("OnShow", function(self)
 		ColorPickerOldColorSwatch:SetTexture(ColorPickerFrame:GetColorRGB())
 		
 		if ColorPickerFrame.hasOpacity then
@@ -183,4 +179,6 @@ ColorPicker:SetScript("OnEvent", function()
 	mover:SetScript("OnMouseUp", function() ColorPickerFrame:StopMovingOrSizing() end)
 	ColorPickerFrame:SetUserPlaced(true)
 	ColorPickerFrame:EnableKeyboard(false)
-end)
+end
+
+script:RegisterEvent("PLAYER_ENTERING_WORLD")

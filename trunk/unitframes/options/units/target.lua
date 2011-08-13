@@ -473,7 +473,7 @@ function module:LoadOptions()
 	end
 	
 	local ToggleCPoints = function(self, Enable)
-		if not oUF_LUI_target.CPoints then LUI.oUF.funcs.CPoints(oUF_LUI_target, oUF_LUI_target.__unit, db.oUF.Target) end
+		if not oUF_LUI_target.CPoints then LUI.oUF_LUI.funcs.CPoints(oUF_LUI_target, oUF_LUI_target.__unit, db.oUF.Target) end
 		if Enable then
 			oUF_LUI_target:EnableElement("CPoints")
 		else
@@ -486,7 +486,7 @@ function module:LoadOptions()
 	end
 	
 	local ApplyCPoints = function()
-		LUI.oUF.funcs.CPoints(oUF_LUI_target, oUF_LUI_target.__unit, db.oUF.Target)
+		LUI.oUF_LUI.funcs.CPoints(oUF_LUI_target, oUF_LUI_target.__unit, db.oUF.Target)
 		if Forte then Forte:SetPosForte() end
 		oUF_LUI_target:UpdateAllElements()
 	end

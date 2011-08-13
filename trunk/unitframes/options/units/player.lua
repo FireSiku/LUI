@@ -695,7 +695,7 @@ function module:CreateXpRepOptionsPart(barType, order)
 	local Toggle
 	if barType == "XP" then
 		Toggle = function()
-			if not oUF_LUI_player.XP then LUI.oUF.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, xprepdb) end
+			if not oUF_LUI_player.XP then LUI.oUF_LUI.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, xprepdb) end
 			if db.oUF.XP_Rep.Experience.Enable then
 				oUF_LUI_player.XP:Show()
 				if oUF_LUI_player.Rep then oUF_LUI_player.Rep:Hide() end
@@ -707,7 +707,7 @@ function module:CreateXpRepOptionsPart(barType, order)
 		end
 	else
 		Toggle = function()
-			if not oUF_LUI_player.Rep then LUI.oUF.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, xprepdb) end
+			if not oUF_LUI_player.Rep then LUI.oUF_LUI.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, xprepdb) end
 			if db.oUF.XP_Rep.Reputation.Enable then
 				print("Ena")
 				oUF_LUI_player.Rep:Show()
@@ -722,8 +722,8 @@ function module:CreateXpRepOptionsPart(barType, order)
 	end
 	
 	local ApplySettings = function()
-		if oUF_LUI_player.XP then LUI.oUF.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.XP_Rep) end
-		if oUF_LUI_player.Rep then LUI.oUF.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.XP_Rep) end
+		if oUF_LUI_player.XP then LUI.oUF_LUI.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.XP_Rep) end
+		if oUF_LUI_player.Rep then LUI.oUF_LUI.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.XP_Rep) end
 	end
 	
 	local options = {
@@ -763,8 +763,8 @@ function module:CreateXpRepOptions(order)
 	end
 	
 	local ApplySettings = function()
-		if oUF_LUI_player.XP then LUI.oUF.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.XP_Rep) end
-		if oUF_LUI_player.Rep then LUI.oUF.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.XP_Rep) end
+		if oUF_LUI_player.XP then LUI.oUF_LUI.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.XP_Rep) end
+		if oUF_LUI_player.Rep then LUI.oUF_LUI.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.XP_Rep) end
 	end
 	
 	local options = {
@@ -829,7 +829,7 @@ function module:CreateBarOptions(barType, order)
 	local isLocked = function() return not bardb.Enable or bardb.Lock end
 	
 	local ToggleFunc = function(self, Enable)
-		if not oUF_LUI_player[barKey] then LUI.oUF.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player) end
+		if not oUF_LUI_player[barKey] then LUI.oUF_LUI.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player) end
 		if Enable then
 			oUF_LUI_player:EnableElement(barKey)
 		else
@@ -842,7 +842,7 @@ function module:CreateBarOptions(barType, order)
 	end
 	
 	local ApplySettings = function()
-		LUI.oUF.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player)
+		LUI.oUF_LUI.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player)
 		oUF_LUI_player:UpdateAllElements()
 	end
 	
@@ -902,7 +902,7 @@ function module:CreateBarTextOptions(barType, order)
 	local textformats = barType == "AltPower" and {"Absolut", "Percent", "Standard"} or {"Absolut", "Standard"}
 	
 	local ApplySettings = function()
-		LUI.oUF.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player)
+		LUI.oUF_LUI.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player)
 		oUF_LUI_player:UpdateAllElements()
 	end
 	
@@ -961,7 +961,7 @@ end
 	
 function module:LoadOptions()
 	local ToggleDruidManaBar = function(self, Enable)
-		if not oUF_LUI_player.DruidMana then LUI.oUF.funcs.DruidMana(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player) end
+		if not oUF_LUI_player.DruidMana then LUI.oUF_LUI.funcs.DruidMana(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player) end
 		if Enable then
 			oUF_LUI_player:EnableElement("DruidMana")
 		else
@@ -980,7 +980,7 @@ function module:LoadOptions()
 	
 	local StyleDruidMana = function()
 		db.oUF.Player.AltPower.OverPower = not db.oUF.Player.DruidMana.OverPower
-		LUI.oUF.funcs.DruidMana(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player)
+		LUI.oUF_LUI.funcs.DruidMana(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player)
 		if oUF_LUI_player.AltPowerBar then oUF_LUI_player.AltPowerBar.SetPosition() end
 		oUF_LUI_player.DruidMana.SetPosition()
 		oUF_LUI_player:UpdateAllElements()
@@ -995,14 +995,14 @@ function module:LoadOptions()
 	end
 	
 	local StylePvP = function()
-		LUI.oUF.funcs.PvP(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player)
+		LUI.oUF_LUI.funcs.PvP(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player)
 		oUF_LUI_player:UpdateAllElements()
 	end
 	
 	local ToggleAltPower = function(self, Enable)
 		if not oUF_LUI_player.AltPowerBar then
-			LUI.oUF.funcs.AltPowerBar(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player)
-			if oUF_LUI_pet then LUI.oUF.funcs.AltPowerBar(oUF_LUI_pet, oUF_LUI_pet.__unit, db.oUF.Pet) end
+			LUI.oUF_LUI.funcs.AltPowerBar(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player)
+			if oUF_LUI_pet then LUI.oUF_LUI.funcs.AltPowerBar(oUF_LUI_pet, oUF_LUI_pet.__unit, db.oUF.Pet) end
 		end
 		if oUF_LUI_pet and not oUF_LUI_pet.AltPowerBar then oUF_LUI_pet.CreateAltPowerBar() end
 		if Enable then
@@ -1017,8 +1017,8 @@ function module:LoadOptions()
 	
 	local StyleAltPower = function()
 		db.oUF.Player.DruidMana.OverPower = not db.oUF.Player.AltPower.OverPower
-		LUI.oUF.funcs.AltPowerBar(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player)
-		if oUF_LUI_pet then LUI.oUF.funcs.AltPowerBar(oUF_LUI_pet, oUF_LUI_pet.__unit, db.oUF.Pet) end
+		LUI.oUF_LUI.funcs.AltPowerBar(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player)
+		if oUF_LUI_pet then LUI.oUF_LUI.funcs.AltPowerBar(oUF_LUI_pet, oUF_LUI_pet.__unit, db.oUF.Pet) end
 		if oUF_LUI_player.DruidMana then oUF_LUI_player.DruidMana.SetPosition() end
 		oUF_LUI_player:UpdateAllElements()
 		if oUF_LUI_pet then oUF_LUI_pet:UpdateAllElements() end
@@ -1223,7 +1223,7 @@ function module:LoadOptions()
 							args = {
 								Colors = {
 									args = {
-										CBLatencyColor = LUI:NewColor("Castbar Latency Color", nil, 5, db.oUF.Player.Castbar.Colors.Latency, LUI.defaults.profile.oUF.Player.Castbar.Colors.Latency, function() if oUF_LUI_player then LUI.oUF.funcs.Castbar(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player) end end, nil, function() return not db.oUF.Player.Castbar.IndividualColor end)
+										CBLatencyColor = LUI:NewColor("Castbar Latency Color", nil, 5, db.oUF.Player.Castbar.Colors.Latency, LUI.defaults.profile.oUF.Player.Castbar.Colors.Latency, function() if oUF_LUI_player then LUI.oUF_LUI.funcs.Castbar(oUF_LUI_player, oUF_LUI_player.__unit, db.oUF.Player) end end, nil, function() return not db.oUF.Player.Castbar.IndividualColor end)
 									},
 								},
 							},

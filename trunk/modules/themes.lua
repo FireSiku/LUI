@@ -12,7 +12,7 @@
 		v1.4: Zista
 ]] 
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local _, LUI = ...
 local module = LUI:NewModule("Themes")
 local LSM = LibStub("LibSharedMedia-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")

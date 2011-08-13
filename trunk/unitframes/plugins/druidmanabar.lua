@@ -35,11 +35,11 @@ local UNIT_POWER = function(self, event, unit, powerType)
 
 	local r, g, b
 	if(druidmana.colorClass and UnitIsPlayer(unit)) then
-		r, g, b = unpack(LUI.oUF.colors.class['DRUID'])
+		r, g, b = unpack(LUI.oUF_LUI.colors.class['DRUID'])
 	elseif(druidmana.colorSmooth) then
 		r, g, b = self.ColorGradient(min / max, unpack(oUF.smoothGradient or oUF.colors.smooth))
 	else
-		r, g, b = unpack(LUI.oUF.colors.power['MANA'])
+		r, g, b = unpack(LUI.oUF_LUI.colors.power['MANA'])
 	end
 	if(b) then
 		druidmana.ManaBar:SetStatusBarColor(r, g, b)

@@ -1275,7 +1275,7 @@ function module:SetBottomBar1()
 	bar:SetHeight(36)
 	bar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.Bottombar1.X), tonumber(db.Bars.Bottombar1.Y))
 	bar:SetScale(tonumber(db.Bars.Bottombar1.Scale))
-
+	
 	local button, buttons, previous
 	
 	for i = 1, NUM_ACTIONBAR_BUTTONS do
