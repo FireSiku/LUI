@@ -1,0 +1,3 @@
+local parent, ns = ...
+LibStub("AceAddon-3.0"):NewAddon(ns, parent)
+ns.L = LibStub("AceLocale-3.0"):GetLocale(parent)
