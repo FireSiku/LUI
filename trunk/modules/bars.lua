@@ -1808,7 +1808,7 @@ function module:LoadOptions()
 					end,
 				set = function(info, select)
 						db["Sidebar"..side..num].Anchor = barAnchors[select]
-						UIRL()
+						SidebarSetAnchor(side, num)
 					end,
 				order = 4,
 			},
