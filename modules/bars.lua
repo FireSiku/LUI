@@ -195,7 +195,7 @@ local SidebarSetAnchor = function(side, id)
 	local scaleUI = UIParent:GetEffectiveScale()
 	
 	local x = tonumber(xOffset) + ( scaleUI * math.floor( (side == "Right" and -90 or 20) / scale ) / 0.85 * sbdb.Scale)
-	local y = tonumber(yOffset) + ( scaleUI * math.floor( 157 + tonumber(sbOffset) / scale ) )
+	local y = tonumber(yOffset) + ( scaleUI * math.floor( 157 + tonumber(sbOffset) / scale / 0.85 * sbdb.Scale ) )
 	
 	anchor:SetFrameStrata("BACKGROUND")
 	anchor:SetFrameLevel(2)
@@ -1027,8 +1027,8 @@ function module:SetBottomBar(id)
 		
 		RegisterStateDriver(bar, "page", GetBarState(id))
 		
-		if bardb.Fader.Enable and LUI_Fader then
-			LUI_Fader:RegisterFrame(bar, bardb.Fader, true)
+		if bardb.Fader.Enable and LUI:GetModule("Fader", true) then
+			LUI:GetModule("Fader"):RegisterFrame(bar, bardb.Fader, true)
 		end
 		
 		if LibMasque then
