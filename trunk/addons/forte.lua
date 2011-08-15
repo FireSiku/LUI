@@ -7,6 +7,7 @@
 
 local _, LUI = ...
 local module = LUI:NewModule("Forte", "AceHook-3.0")
+local Bars = LUI:GetModule("Bars", true)
 
 local _, class = UnitClass("player")
 local _G = _G
@@ -89,7 +90,7 @@ local timer_instances = {
 		}
 	},
 	Target = {
-		anchor = {"oUF_LUI_target","TOPRIGHT"},
+		anchor = {"oUF_LUI_target"},
 		settings = {
 			Spell = true,
 			Label = false,
@@ -156,9 +157,9 @@ local function CreateCooldowntimerAnimation()
 			
 		bb_SlideIn:SetScript("OnUpdate", function(self,elapsed)
 			bb_timerin = bb_timerin + elapsed
-			local bb_x = tonumber(LUI.db.profile.Bars.TopTexture.X)
-			local bb_y = tonumber(LUI.db.profile.Bars.TopTexture.Y)
-			local bb_pixelpersecond = tonumber(LUI.db.profile.Bars.TopTexture.AnimationHeight) * 2
+			local bb_x = tonumber(Bars.db.profile.TopTexture.X)
+			local bb_y = tonumber(Bars.db.profile.TopTexture.Y)
+			local bb_pixelpersecond = tonumber(Bars.db.profile.TopTexture.AnimationHeight) * 2
 			if bb_timerin < bb_animation_time then
 				local y2 = bb_y - bb_timerin * bb_pixelpersecond + bb_pixelpersecond * bb_animation_time
 				BarsBackground:ClearAllPoints()
@@ -176,10 +177,10 @@ local function CreateCooldowntimerAnimation()
 		
 		bb_SlideOut:SetScript("OnUpdate", function(self,elapsed)
 			bb_timerout = bb_timerout + elapsed
-			local bb_x = tonumber(LUI.db.profile.Bars.TopTexture.X)
-			local bb_y = tonumber(LUI.db.profile.Bars.TopTexture.Y)
-			local bb_ppx_out = tonumber(LUI.db.profile.Bars.TopTexture.AnimationHeight) * 3
-			local bb_yout = tonumber(LUI.db.profile.Bars.TopTexture.Y) + tonumber(LUI.db.profile.Bars.TopTexture.AnimationHeight)
+			local bb_x = tonumber(Bars.db.profile.TopTexture.X)
+			local bb_y = tonumber(Bars.db.profile.TopTexture.Y)
+			local bb_ppx_out = tonumber(Bars.db.profile.TopTexture.AnimationHeight) * 3
+			local bb_yout = tonumber(Bars.db.profile.TopTexture.Y) + tonumber(Bars.db.profile.TopTexture.AnimationHeight)
 			if bb_timerout < bb_at_out then
 				local y2 = bb_y + bb_timerout * bb_ppx_out
 				BarsBackground:ClearAllPoints()
@@ -198,12 +199,12 @@ local function CreateCooldowntimerAnimation()
 		bb_Forte:SetScript("OnUpdate", function(self)
 			if db.Cooldown.Lock and _G.FX_Cooldown1 then
 				if _G.FX_Cooldown1:IsShown() and not isOut then
-					if LUI.db.profile.Bars.TopTexture.Animation then
+					if Bars.db.profile.TopTexture.Animation then
 						bb_SlideOut:Show()
 						isOut = true
 					end
 				elseif not _G.FX_Cooldown1:IsShown() and isOut then
-					if LUI.db.profile.Bars.TopTexture.Animation then
+					if Bars.db.profile.TopTexture.Animation then
 						bb_SlideIn:Show()
 						isOut = false
 					end
