@@ -471,7 +471,7 @@ function module:CreateSidebarSlider(side, id)
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	sb.SidebarBack2:SetBackdropColor(r, g, b, 1)
+	sb.SidebarBack2:SetBackdropColor(r, g, b, a)
 	sb.SidebarBack2:SetBackdropBorderColor(0, 0, 0, 0)
 	sb.SidebarBack2:Show()
 	
