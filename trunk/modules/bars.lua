@@ -78,8 +78,8 @@ local defaultstate = {
 	Bottombar5 = "5",
 	Bottombar6 = "6",
 	SidebarLeft1 = "9",
-	SidebarLeft2 = "9",
-	SidebarRight1 = "10",
+	SidebarLeft2 = "7",
+	SidebarRight1 = "9",
 	SidebarRight2 = "10",
 }
 
@@ -95,13 +95,13 @@ local blizzstate = {
 	Bottombar1 = blizzstates[class] or blizzstates["DEFAULT"],
 	Bottombar2 = "6",
 	Bottombar3 = "5",
-	Bottombar4 = "4",
-	Bottombar5 = "3",
-	Bottombar6 = "2",
+	Bottombar4 = "7",
+	Bottombar5 = "8",
+	Bottombar6 = "9",
 	SidebarLeft1 = "3",
-	SidebarLeft2 = "3",
+	SidebarLeft2 = "1",
 	SidebarRight1 = "4",
-	SidebarRight2 = "4"
+	SidebarRight2 = "2"
 }
 
 local Page = {
@@ -1724,7 +1724,7 @@ function module:LoadOptions()
 						end
 					end,
 				set = function(info, select)
-						db["Bottombar"..i].State = statelist[select]
+						db["Bottombar"..num].State = statelist[select]
 						UnregisterStateDriver(_G["LUIBar"..num], "page")
 						RegisterStateDriver(_G["LUIBar"..num], "page", GetBarState(num))
 					end,
