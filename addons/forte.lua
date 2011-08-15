@@ -90,7 +90,7 @@ local timer_instances = {
 		}
 	},
 	Target = {
-		anchor = {"oUF_LUI_target"},
+		anchor = {"oUF_LUI_target", "TOPRIGHT"},
 		settings = {
 			Spell = true,
 			Label = false,
