@@ -6,7 +6,6 @@
 	Rev Date...: 30/03/11 [dd/mm/yy]
 ]] 
 
--- External references.
 local _, LUI = ...
 local module = LUI:NewModule("Bars", "AceHook-3.0")
 local Panels = LUI:GetModule("Panels")
@@ -15,12 +14,17 @@ local LSM = LibStub("LibSharedMedia-3.0")
 local LibKeyBound = LibStub("LibKeyBound-1.0")
 local widgetLists = AceGUIWidgetLSMlists
 
-local db
+local L = LUI.L
+local db, dbd
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
 local _, class = UnitClass("player")
 
 local buttonlist = {}
+local bars = {}
+local rightsidebars = {}
+local leftsidebars = {}
+local sidebars = {}
 
 local barAnchors = {
 	"BT4Bar1",
@@ -46,7 +50,7 @@ local barAnchors = {
 }
 local statelist = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
 
-local isBarAddOnLoaded
+local isBarAddOnLoaded, isLibMasqueLoaded
 
 local statetexts = {
 	["DRUID"] = {"Default", "Bear Form", "Cat Form", "Cat Form (Prowl)", "Moonkin Form", "Tree of Life Form"},
@@ -70,8 +74,13 @@ local defaultstate = {
 	Bottombar1 = defaultstates[class] or defaultstates["DEFAULT"],
 	Bottombar2 = "2",
 	Bottombar3 = "3",
-	SidebarLeft = "9",
-	SidebarRight = "10",
+	Bottombar4 = "4",
+	Bottombar5 = "5",
+	Bottombar6 = "6",
+	SidebarLeft1 = "9",
+	SidebarLeft2 = "9",
+	SidebarRight1 = "10",
+	SidebarRight2 = "10",
 }
 
 local blizzstates = {
@@ -86,129 +95,190 @@ local blizzstate = {
 	Bottombar1 = blizzstates[class] or blizzstates["DEFAULT"],
 	Bottombar2 = "6",
 	Bottombar3 = "5",
-	SidebarLeft = "3",
-	SidebarRight = "4"
+	Bottombar4 = "4",
+	Bottombar5 = "3",
+	Bottombar6 = "2",
+	SidebarLeft1 = "3",
+	SidebarLeft2 = "3",
+	SidebarRight1 = "4",
+	SidebarRight2 = "4"
 }
 
-local function LoadStates(data)
+local Page = {
+	["DRUID"] = {
+		"[bonusbar:1,nostealth] %s; ",
+		"[bonusbar:1,stealth] %s; ",
+		"[bonusbar:2] %s; ",
+		"[bonusbar:3] %s; ",
+		"[bonusbar:4] %s; "
+	},
+	["WARRIOR"] = {
+		"[bonusbar:1] %s; ",
+		"[bonusbar:2] %s; ",
+		"[bonusbar:3] %s; "
+	},
+	["PRIEST"] = {
+		"[bonusbar:1] %s; "
+	},
+	["ROGUE"] = {
+		"[bonusbar:1] %s; ",
+		"[form:3] %s; "
+	},
+	["WARLOCK"] = {
+		"[form:2] %s; "
+	},
+}
+
+local LoadStates = function(data)
 	if type(data) ~= "table" then return end
 	for k, v in pairs(data) do
 		if type(v) == "table" then
 			for k2, v2 in pairs(v) do
-				db.Bars[k].State[k2] = v2
+				db[k].State[k2] = v2
 
 				if k2 == 1 then
-					db.Bars[k].AltState = v2
-					db.Bars[k].CtrlState = v2
+					db[k].AltState = v2
+					db[k].CtrlState = v2
 				end
 			end
 		else
-			db.Bars[k].State = v
-			db.Bars[k].AltState = v
-			db.Bars[k].CtrlState = v
+			db[k].State = v
+			db[k].AltState = v
+			db[k].CtrlState = v
 		end
 	end
 	
-	db.Bars.StatesLoaded = true
+	db.StatesLoaded = true
 end
 
-local function GetAnchorStatus(anchor)
-	if strmatch(anchor, "Dominos") then
+local GetAnchor = function(anchor)
+	if string.match(anchor, "Dominos") then
 		if IsAddOnLoaded("Dominos") then
-			anchor = Dominos.ActionBar:Get(string.match(anchor, "%d+"))
-			return anchor:IsShown()
+			return Dominos.ActionBar:Get(string.match(anchor, "%d+"))
 		end
 	else
-		if _G[anchor] then return _G[anchor]:IsShown() end
+		return _G[anchor]
 	end
 end
 
-local function SidebarSetAlpha(anchor,alpha)
-	if strmatch(anchor, "Dominos") then
-		if IsAddOnLoaded("Dominos") then
-			anchor = Dominos.ActionBar:Get(string.match(anchor, "%d+"))
-			anchor:SetAlpha(alpha)
+local SidebarSetAlpha = function(anchor, alpha)
+	anchor = GetAnchor(anchor)
+	if anchor then anchor:SetAlpha(alpha) end
+end
+
+local SidebarSetAnchor = function(side, id)
+	local sbdb = db["Sidebar"..side..id]
+	--local sb = side == "Right" and rightsidebars[id].Anchor or leftsidebars[id].Anchor
+	local sb = sidebars[side..id].Anchor
+	
+	sb:ClearAllPoints()
+	sb:SetPoint(side, UIParent, side, side == "Right" and 11 or -11, sbdb.Offset)
+	sb:SetScale(1 / 0.85 * sbdb.Scale)
+	
+	sb[sbdb.Enable and "Show" or "Hide"](sb)
+	
+	if sbdb.AutoPosEnable ~= true and isBarAddOnLoaded == true then return end
+	
+	local anchor = isBarAddOnLoaded and sbdb.Anchor or "LUIBar"..side..id
+	local xOffset = tonumber(sbdb.X)
+	local yOffset = tonumber(sbdb.Y)
+	local sbOffset = tonumber(sbdb.Offset)
+	
+	anchor = GetAnchor(anchor)
+	
+	if not anchor then return end
+	if not anchor:IsShown() then return end
+	
+	if not isBarAddOnLoaded then anchor:SetScale(sbdb.Scale) end
+	
+	local scale = anchor:GetEffectiveScale()
+	local scaleUI = UIParent:GetEffectiveScale()
+	
+	local x = tonumber(xOffset) + ( scaleUI * math.floor( (side == "Right" and -90 or 20) / scale ) / 0.85 * sbdb.Scale)
+	local y = tonumber(yOffset) + ( scaleUI * math.floor( 157 + tonumber(sbOffset) / scale ) )
+	
+	anchor:SetFrameStrata("BACKGROUND")
+	anchor:SetFrameLevel(2)
+	anchor:ClearAllPoints()
+	anchor:SetPoint(side, UIParent, side, x, y)
+end
+
+local Configure = function(bar, n, x)
+	local buttons = bar.buttons
+	for i = 2, 12 do
+		buttons[i]:ClearAllPoints()
+		if (i - 1) % x == 0 then
+			buttons[i]:SetPoint("TOP", buttons[i-x], "BOTTOM", 0, -2)
+		else
+			buttons[i]:SetPoint("LEFT", buttons[i-1], "RIGHT", 2, 0)
+		end
+		if i > n then
+			buttons[i]:SetAttribute("statehidden", 1)
+			buttons[i]:Hide()
+		else
+			buttons[i]:SetAttribute("statehidden", nil)
+			ActionButton_Update(buttons[i])
+		end
+	end
+end
+
+local GetBarState = function(id)
+	local bardb = db["Bottombar"..id]
+	local condition = "[bonusbar:5] 11; "
+	
+	if id == 1 then
+		if bardb.AltState ~= bardb.State[1] then
+			condition = condition.."[mod:alt] "..bardb.AltState.."; "
+		end
+		
+		if bardb.CtrlState ~= bardb.State[1] then
+			condition = condition.."[mod:ctrl] "..bardb.CtrlState.."; "
+		end
+		
+		if Page[class] then
+			for num, word in pairs(Page[class]) do
+				condition = condition..word:format(bardb.State[num+1])
+			end
+		end
+		condition = condition..bardb.State[1]
+	else
+		if bardb.AltState ~= bardb.State then
+			condition = condition.."[mod:alt] "..bardb.AltState.."; "
+		end
+		
+		if bardb.CtrlState ~= bardb.State then
+			condition = condition.."[mod:ctrl] "..bardb.CtrlState.."; "
+		end
+		
+		condition = condition..bardb.State
+	end
+	
+	return condition
+end
+
+local GetButton = function(barid, barpos, buttonid)
+	if barpos == "Bottom" then
+		if barid == 1 then
+			return _G["ActionButton"..buttonid]
+		elseif barid == 2 then
+			return _G["MultiBarBottomLeftButton"..buttonid]
+		elseif barid == 3 then
+			return _G["MultiBarBottomRightButton"..buttonid]
+		else
+			local button = CreateFrame("CheckButton", "LUIBar"..barid.."Button"..buttonid, UIParent, "ActionBarButtonTemplate")
+			button:SetID(buttonid)
+			return button
+		end
+	elseif barid == 1 then
+		if barpos == "Left" then
+			return _G["MultiBarLeftButton"..buttonid]
+		else
+			return _G["MultiBarRightButton"..buttonid]
 		end
 	else
-		if GetAnchorStatus(anchor) then _G[anchor]:SetAlpha(alpha) end
-	end
-end
-
-local function SetLeftSidebarAnchor()
-	if db.Bars.SidebarLeft.AutoPosEnable ~= true and isBarAddOnLoaded == true then return end
-	
-	local anchor = isBarAddOnLoaded and db.Bars.SidebarLeft.Anchor or "LUIBarLeft"
-	local xOffset = db.Bars.SidebarLeft.X
-	local yOffset = db.Bars.SidebarLeft.Y
-	local sbOffset = db.Bars.SidebarLeft.Offset
-	
-	if GetAnchorStatus(anchor) then
-		if strmatch(anchor, "Dominos") then
-			if IsAddOnLoaded("Dominos") then
-				anchor = Dominos.ActionBar:Get(string.match(anchor, "%d+"))
-				local scale = anchor:GetEffectiveScale()
-				local scaleUI = UIParent:GetEffectiveScale()
-
-				local x = tonumber(xOffset) + ( scaleUI * math.floor( 20 / scale ) )
-				local y = tonumber(yOffset) + ( scaleUI * math.floor( 157 + tonumber(sbOffset) / scale ) )
-				
-				anchor:SetFrameStrata("BACKGROUND")
-				anchor:SetFrameLevel(2)
-				anchor:ClearAllPoints()
-				anchor:SetPoint("LEFT", UIParent, "LEFT", x, y)
-			end
-		else
-			anchor = _G[anchor]
-			local scale = anchor:GetEffectiveScale()
-			local scaleUI = UIParent:GetEffectiveScale()
-
-			local x = tonumber(xOffset) + ( scaleUI * math.floor( 20 / scale ) )
-			local y = tonumber(yOffset) + ( scaleUI * math.floor( 157 + tonumber(sbOffset) / scale ) )
-			
-			anchor:SetFrameStrata("BACKGROUND")
-			anchor:SetFrameLevel(2)
-			anchor:ClearAllPoints()
-			anchor:SetPoint("LEFT", UIParent, "LEFT", x, y)
-		end
-	end
-end
-
-local function SetRightSidebarAnchor()
-	if db.Bars.SidebarRight.AutoPosEnable ~= true and isBarAddOnLoaded == true then return end
-
-	local anchor = isBarAddOnLoaded and db.Bars.SidebarRight.Anchor or "LUIBarRight"
-	local xOffset = db.Bars.SidebarRight.X
-	local yOffset = db.Bars.SidebarRight.Y
-	local sbOffset = db.Bars.SidebarRight.Offset
-
-	if GetAnchorStatus(anchor) then
-		if strmatch(anchor, "Dominos") then
-			if IsAddOnLoaded("Dominos") then
-				anchor = Dominos.ActionBar:Get(string.match(anchor, "%d+"))
-				local scale = anchor:GetEffectiveScale()
-				local scaleUI = UIParent:GetEffectiveScale()
-
-				local x = tonumber(xOffset) + ( scaleUI * math.floor( -90 / scale ) )
-				local y = tonumber(yOffset) + ( scaleUI * math.floor( 157 + tonumber(sbOffset) / scale ) )
-				
-				anchor:SetFrameStrata("BACKGROUND")
-				anchor:SetFrameLevel(2)
-				anchor:ClearAllPoints()
-				anchor:SetPoint("RIGHT",UIParent,"RIGHT",x,y)
-			end
-		else
-			anchor = _G[anchor]
-			local scale = anchor:GetEffectiveScale()
-			local scaleUI = UIParent:GetEffectiveScale()
-
-			local x = tonumber(xOffset) + ( scaleUI * math.floor( -90 / scale ) )
-			local y = tonumber(yOffset) + ( scaleUI * math.floor( 157 + tonumber(sbOffset) / scale ) )
-			
-			anchor:SetFrameStrata("BACKGROUND")
-			anchor:SetFrameLevel(2)
-			anchor:ClearAllPoints()
-			anchor:SetPoint("RIGHT",UIParent,"RIGHT",x,y)
-		end
+		local button = CreateFrame("CheckButton", "LUIBar"..barpos..barid.."Button"..buttonid, UIParent, "ActionBarButtonTemplate")
+		button:SetID(buttonid)
+		return button
 	end
 end
 
@@ -217,623 +287,324 @@ function module:SetBarColors()
 	BarsBackground2:SetBackdropColor(unpack(Themes.db.profile.bar2))
 end
 
-function module:CreateBarBackground()
-	-- SET BARS TOP TEXTURE
-	local BarsBackground = LUI:CreateMeAFrame("FRAME","BarsBackground",UIParent,1024,1024,1,"BACKGROUND",2,"BOTTOM",UIParent,"BOTTOM",200,-70,1)
-	BarsBackground:SetBackdrop({
-		bgFile=fdir.."bars_top",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile=false, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	BarsBackground:SetBackdropColor(unpack(Themes.db.profile.bar))
-	BarsBackground:SetBackdropBorderColor(0,0,0,0)
-	BarsBackground:ClearAllPoints()
-	BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.TopTexture.X), tonumber(db.Bars.TopTexture.Y))
-	BarsBackground:SetAlpha(db.Bars.TopTexture.Alpha)
-	
-	if db.Bars.TopTexture.Enable == true then
-		BarsBackground:Show()
-	else
-		BarsBackground:Hide()
-	end
-	
-	-- SET BARS BOTTOM TEXTURE
-	local BarsBackground2 = LUI:CreateMeAFrame("FRAME","BarsBackground2",UIParent,1024,1024,1,"BACKGROUND",0,"BOTTOM",UIParent,"BOTTOM",210,-145,1)
-	BarsBackground2:SetBackdrop({
-		bgFile=fdir.."bars_bottom", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=false, edgeSize=1,
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	BarsBackground2:SetBackdropColor(unpack(Themes.db.profile.bar2))
-	BarsBackground2:SetBackdropBorderColor(0,0,0,0)	
-	BarsBackground2:ClearAllPoints()
-	BarsBackground2:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.BottomTexture.X), tonumber(db.Bars.BottomTexture.Y))
-	BarsBackground2:SetAlpha(db.Bars.BottomTexture.Alpha)
-	
-	if db.Bars.BottomTexture.Enable == true then
-		BarsBackground2:Show()
-	else
-		BarsBackground2:Hide()
-	end
-end
-
 function module:SetSidebarColors()
-	local sidebar_r, sidebar_g, sidebar_b, sidebar_a = unpack(Themes.db.profile.sidebar)
+	local r, g, b, a = unpack(Themes.db.profile.sidebar)
 	
-	fsidebar_back:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,sidebar_a)
-	fsidebar_back2:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,sidebar_a)
-	fsidebar_bt_back:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,1)
-	fsidebar_button:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,1)
-	fsidebar_button_hover:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,1)
-	
-	fsidebar2_back:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,sidebar_a)
-	fsidebar2_back2:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,sidebar_a)
-	fsidebar2_bt_back:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,1)
-	fsidebar2_button:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,1)
-	fsidebar2_button_hover:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,1)
-end
-
-function module:CreateRightSidebar()
-	local RightAnchor = isBarAddOnLoaded and db.Bars.SidebarRight.Anchor or "LUIBarRight"
-	local isRightSidebarCreated = false
-	local sidebar_r, sidebar_g, sidebar_b, sidebar_a = unpack(Themes.db.profile.sidebar)
-	
-	if isRightSidebarCreated == false or isRightSidebarCreated == nil then
-		local isRightSidebarCreated = true
-		------------------------------------------------------
-		-- / OPEN / CLOSE RIGHT SIDEBAR / --
-		------------------------------------------------------
-		local fsidebar_timerout,fsidebar_timerin = 0,0
-		local fsidebar_y = 0
-		local fsidebar_x = -30
-		local fsidebar_xout = -118 
-		local fsidebar_pixelpersecond = -176
-		local fsidebar_animation_time = 0.5
-		
-		local fsidebar_SlideOut = CreateFrame("Frame", "fsidebar_SlideOut", UIParent)
-		fsidebar_SlideOut:Hide()
-		
-		fsidebar_SlideOut:SetScript("OnUpdate", function(self,elapsed)
-			fsidebar_timerout = fsidebar_timerout + elapsed
-			if fsidebar_timerout < fsidebar_animation_time then
-				local x2 = fsidebar_x + fsidebar_timerout * fsidebar_pixelpersecond
-				fsidebar_button_anchor:ClearAllPoints()
-				fsidebar_button_anchor:SetPoint("LEFT", fsidebar_anchor, "LEFT", x2, fsidebar_y)
-			else
-				fsidebar_button_anchor:ClearAllPoints()
-				fsidebar_button_anchor:SetPoint("LEFT", fsidebar_anchor, "LEFT", fsidebar_xout, fsidebar_y)
-				fsidebar_timerout = 0
-				fsidebar_bt_AlphaIn:Show()
-				self:Hide()
-			end
-		end)
-		
-		local fsidebar_SlideIn = CreateFrame("Frame", "fsidebar_SlideIn", UIParent)
-		fsidebar_SlideIn:Hide()
-		
-		fsidebar_SlideIn:SetScript("OnUpdate", function(self,elapsed)
-			fsidebar_timerin = fsidebar_timerin + elapsed
-			if fsidebar_timerin < fsidebar_animation_time then
-				local x2 = fsidebar_x - fsidebar_timerin * fsidebar_pixelpersecond + fsidebar_pixelpersecond * fsidebar_animation_time
-				fsidebar_button_anchor:ClearAllPoints()
-				fsidebar_button_anchor:SetPoint("LEFT", fsidebar_anchor, "LEFT", x2, fsidebar_y)
-			else
-				fsidebar_button_anchor:ClearAllPoints()
-				fsidebar_button_anchor:SetPoint("LEFT", fsidebar_anchor, "LEFT", fsidebar_x, fsidebar_y)
-				fsidebar_timerin = 0
-				self:Hide()
-			end
-		end)
-		
-		local fsidebar_alpha_timerout, fsidebar_alpha_timerin = 0,0
-		local fsidebar_speedin = 0.9
-		local fsidebar_speedout = 0.3
-		
-		local fsidebar_AlphaIn = CreateFrame("Frame", "fsidebar_AlphaIn", UIParent)
-		fsidebar_AlphaIn:Hide()
-		
-		fsidebar_AlphaIn:SetScript("OnUpdate", function(self,elapsed)
-			fsidebar_alpha_timerin = fsidebar_alpha_timerin + elapsed
-			if fsidebar_alpha_timerin < fsidebar_speedin then
-				local alpha = fsidebar_alpha_timerin / fsidebar_speedin 
-				fsidebar_bt_back:SetAlpha(alpha)
-			else
-				fsidebar_bt_back:SetAlpha(1)
-				fsidebar_alpha_timerin = 0
-				self:Hide()
-			end
-		end)
-		
-		local fsidebar_AlphaOut = CreateFrame("Frame", "fsidebar_AlphaOut", UIParent)
-		fsidebar_AlphaOut:Hide()
-		
-		fsidebar_AlphaOut:SetScript("OnUpdate", function(self,elapsed)
-			fsidebar_alpha_timerout = fsidebar_alpha_timerout + elapsed
-			if fsidebar_alpha_timerout < fsidebar_speedout then
-				local alpha = 1 - fsidebar_alpha_timerout / fsidebar_speedout
-				fsidebar_bt_back:SetAlpha(alpha)
-			else
-				fsidebar_bt_back:SetAlpha(0)
-				fsidebar_alpha_timerout = 0
-				self:Hide()
-			end
-		end)
-		
-		local fsidebar_bt_timerin = 0
-		local fsidebar_bt_speedin = 0.3
-		
-		local fsidebar_bt_AlphaIn = CreateFrame("Frame", "fsidebar_bt_AlphaIn", UIParent)
-		fsidebar_bt_AlphaIn:Hide()
-		
-		fsidebar_bt_AlphaIn:SetScript("OnUpdate", function(self,elapsed)
-			fsidebar_bt_timerin = fsidebar_bt_timerin + elapsed
-			if fsidebar_bt_timerin < fsidebar_bt_speedin then
-				local alpha = fsidebar_bt_timerin / fsidebar_bt_speedin
-				SidebarSetAlpha(RightAnchor,alpha)
-				
-				for _, frame in pairs(Panels:LoadAdditional(db.Bars.SidebarRight.Additional)) do
-					SidebarSetAlpha(frame, alpha)
-				end
-			else
-				SidebarSetAlpha(RightAnchor,1)
-				for _, frame in pairs(Panels:LoadAdditional(db.Bars.SidebarRight.Additional)) do
-					SidebarSetAlpha(frame, 1)
-				end
-				fsidebar_bt_timerin = 0
-				self:Hide()
-			end
-		end)
-		
-		------------------------------------------------------
-		-- / RIGHT SIDEBAR FRAMES / --
-		------------------------------------------------------
-		
-		fsidebar_anchor = LUI:CreateMeAFrame("FRAME","fsidebar_anchor",UIParent,25,25,1,"BACKGROUND",0,"RIGHT",UIParent,"RIGHT",11,db.Bars.SidebarRight.Offset,1)
-		fsidebar_anchor:SetBackdrop({
-			bgFile="Interface\\Tooltips\\UI-Tooltip-Background", 
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-			tile=false, edgeSize=1, 
-			insets={left=0, right=0, top=0, bottom=0}
-		})
-		fsidebar_anchor:SetBackdropColor(0,0,0,0)
-		fsidebar_anchor:SetBackdropBorderColor(0,0,0,0)
-		fsidebar_anchor:Show() 
-		
-		local fsidebar = LUI:CreateMeAFrame("FRAME","fsidebar",fsidebar_anchor,512,512,1,"BACKGROUND",2,"LEFT",fsidebar_anchor,"LEFT",-17,0,1)
-		fsidebar:SetBackdrop({
-			bgFile=fdir.."sidebar", 
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-			tile=false, edgeSize=1, 
-			insets={left=0, right=0, top=0, bottom=0}
-		})
-		fsidebar:SetBackdropBorderColor(0,0,0,0)
-		fsidebar:Show()
-		
-		local fsidebar_back = LUI:CreateMeAFrame("FRAME","fsidebar_back",fsidebar_anchor,512,512,1,"BACKGROUND",1,"LEFT",fsidebar_anchor,"LEFT",-25,0,1)
-		fsidebar_back:SetBackdrop({
-			bgFile=fdir.."sidebar_back", 
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-			tile=false, edgeSize=1, 
-			insets={left=0, right=0, top=0, bottom=0}
-		})
-		fsidebar_back:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,sidebar_a)
-		fsidebar_back:SetBackdropBorderColor(0,0,0,0)
-		fsidebar_back:Show()
-		
-		local fsidebar_back2 = LUI:CreateMeAFrame("FRAME","fsidebar_back2",fsidebar_anchor,512,512,1,"BACKGROUND",1,"LEFT",fsidebar_anchor,"LEFT",-25,0,1)
-		fsidebar_back2:SetBackdrop({
-			bgFile=fdir.."sidebar_back2", 
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-			tile=false, edgeSize=1,
-			insets={left=0, right=0, top=0, bottom=0}
-		})
-		fsidebar_back2:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,sidebar_a)
-		fsidebar_back2:SetBackdropBorderColor(0,0,0,0)
-		fsidebar_back2:Show()
-		
-		local fsidebar_button_anchor=LUI:CreateMeAFrame("FRAME","fsidebar_button_anchor",fsidebar_anchor,10,10,1,"BACKGROUND",0,"LEFT",fsidebar_anchor,"LEFT",-30,0,1)
-		fsidebar_button_anchor:SetBackdrop({
-			bgFile="Interface\\Tooltips\\UI-Tooltip-Background", 
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-			tile=false, edgeSize=1, 
-			insets={left=0, right=0, top=0, bottom=0}
-		})
-		fsidebar_button_anchor:SetBackdropColor(0,0,0,0)
-		fsidebar_button_anchor:SetBackdropBorderColor(0,0,0,0)
-		fsidebar_button_anchor:Show()
-		
-		local fsidebar_bt_back = LUI:CreateMeAFrame("FRAME","fsidebar_bt_back",fsidebar_button_anchor,273,267,1,"BACKGROUND",0,"LEFT",fsidebar_button_anchor,"LEFT",3,-2,1)
-		fsidebar_bt_back:SetBackdrop({
-			bgFile=fdir.."sidebar_bt_back", 
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-			tile=false, edgeSize=1, 
-			insets={left=0, right=0, top=0, bottom=0}
-		})
-		fsidebar_bt_back:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,1)
-		fsidebar_bt_back:SetBackdropBorderColor(0,0,0,0)
-		fsidebar_bt_back:SetAlpha(0)
-		fsidebar_bt_back:Show()
-		
-		local fsidebar_bt_block= LUI:CreateMeAFrame("FRAME","fsidebar_bt_block",fsidebar_anchor,80,225,1,"MEDIUM",4,"LEFT",fsidebar_anchor,"LEFT",-82,-5,1)
-		fsidebar_bt_block:SetBackdrop({
-			bgFile="Interface\\Tooltips\\UI-Tooltip-Background", 
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-			tile=false, edgeSize=1, 
-			insets={left=0, right=0, top=0, bottom=0}
-		})
-		fsidebar_bt_block:SetBackdropColor(0,0,0,0)
-		fsidebar_bt_block:SetBackdropBorderColor(0,0,0,0)
-		fsidebar_bt_block:EnableMouse(true)
-		fsidebar_bt_block:Show()
-		
-		local fsidebar_button_clicker= LUI:CreateMeAFrame("BUTTON","fsidebar_button_clicker",fsidebar_button_anchor,30,215,1,"MEDIUM",5,"LEFT",fsidebar_button_anchor,"LEFT",6,-5,1)
-		fsidebar_button_clicker:SetBackdrop({
-			bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-			tile=false, edgeSize=1, 
-			insets={left=0, right=0, top=0, bottom=0}
-		})
-		fsidebar_button_clicker:SetBackdropColor(0,0,0,0)
-		fsidebar_button_clicker:SetBackdropBorderColor(0,0,0,0)
-		fsidebar_button_clicker:Show()
-	
-		local fsidebar_button = LUI:CreateMeAFrame("FRAME","fsidebar_button",fsidebar_button_anchor,266,251,1,"BACKGROUND",0,"LEFT",fsidebar_button_anchor,"LEFT",0,-2,1)
-		fsidebar_button:SetBackdrop({
-			bgFile=fdir.."sidebar_button", 
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-			tile=false, edgeSize=1, 
-			insets={left=0, right=0, top=0, bottom=0}
-		})
-		fsidebar_button:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,1)
-		fsidebar_button:SetBackdropBorderColor(0,0,0,0)
-		fsidebar_button:Show()
-		
-		local fsidebar_button_hover = LUI:CreateMeAFrame("FRAME","fsidebar_button_hover",fsidebar_button_anchor,266,251,1,"BACKGROUND",0,"LEFT",fsidebar_button_anchor,"LEFT",0,-2,1)
-		fsidebar_button_hover:SetBackdrop({
-			bgFile=fdir.."sidebar_button_hover",
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-			tile=false, edgeSize=1,
-			insets={left=0, right=0, top=0, bottom=0}
-		})
-		fsidebar_button_hover:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,1)
-		fsidebar_button_hover:SetBackdropBorderColor(0,0,0,0)
-		fsidebar_button_hover:Hide()
-		
-		rightSidebarOpen = 0
-		
-		fsidebar_button_clicker:RegisterForClicks("AnyUp")
-		fsidebar_button_clicker:SetScript("OnClick", function(self)
-			if rightSidebarOpen == 0 then
-				rightSidebarOpen = 1
-				db.Bars.SidebarRight.IsOpen = true
-				if db.Bars.SidebarRight.OpenInstant then
-					fsidebar_button_anchor:ClearAllPoints()
-					fsidebar_button_anchor:SetPoint("LEFT",fsidebar_anchor,"LEFT",-120,0)
-					fsidebar_bt_back:SetAlpha(1)
-					SidebarSetAlpha(RightAnchor,1)
-					for _, frame in pairs(Panels:LoadAdditional(db.Bars.SidebarRight.Additional)) do
-						SidebarSetAlpha(frame, 1)
-					end
-					fsidebar_bt_block:Hide()
-				else
-					fsidebar_SlideOut:Show()
-					fsidebar_AlphaIn:Show()
-					fsidebar_bt_block:Hide()
-				end
-			else
-				rightSidebarOpen = 0
-				db.Bars.SidebarRight.IsOpen = false
-				if db.Bars.SidebarRight.OpenInstant then
-					fsidebar_button_anchor:ClearAllPoints()
-					fsidebar_button_anchor:SetPoint("LEFT",fsidebar_anchor,"LEFT",-32,0)
-					fsidebar_bt_back:SetAlpha(0)
-					SidebarSetAlpha(RightAnchor,0)
-					for _, frame in pairs(Panels:LoadAdditional(db.Bars.SidebarRight.Additional)) do
-						SidebarSetAlpha(frame, 0)
-					end
-					fsidebar_bt_block:Show()
-				else
-					fsidebar_SlideIn:Show()
-					fsidebar_AlphaOut:Show()
-					SidebarSetAlpha(RightAnchor,0)
-					for _, frame in pairs(Panels:LoadAdditional(db.Bars.SidebarRight.Additional)) do
-						SidebarSetAlpha(frame, 0)
-					end
-					fsidebar_bt_block:Show()
-				end
-			end
-		end)
-	
-		fsidebar_button_clicker:SetScript("OnEnter", function(self)
-			fsidebar_button:Hide()
-			fsidebar_button_hover:Show()
-		end)
-	
-		fsidebar_button_clicker:SetScript("OnLeave", function(self)
-			fsidebar_button:Show()
-			fsidebar_button_hover:Hide()
-		end)
-	end
-	
-	if db.Bars.SidebarRight.Enable then	
-		fsidebar_anchor:Show()
-	else
-		fsidebar_anchor:Hide()
-	end
-	
-	SetRightSidebarAnchor()
-	SidebarSetAlpha(RightAnchor,0)
-	for _, frame in pairs(Panels:LoadAdditional(db.Bars.SidebarRight.Additional)) do
-		SidebarSetAlpha(frame, 0)
-	end
-	
-	if db.Bars.SidebarRight.Enable == true then
-		if db.Bars.SidebarRight.IsOpen == true then
-			rightSidebarOpen = 1
-			fsidebar_SlideOut:Show()
-			fsidebar_AlphaIn:Show()
-			fsidebar_bt_block:Hide()
-		end
+	for _, sb in pairs(sidebars) do
+		sb.SidebarBack:SetBackdropColor(r, g, b, a)
+		sb.SidebarBack2:SetBackdropColor(r, g, b, a)
+		sb.ButtonBack:SetBackdropColor(r, g, b, 1)
+		sb.Button:SetBackdropColor(r, g, b, 1)
+		sb.ButtonHover:SetBackdropColor(r, g, b, 1)
 	end
 end
 
-function module:CreateLeftSidebar()
-	local LeftAnchor = isBarAddOnLoaded and db.Bars.SidebarLeft.Anchor or "LUIBarLeft"
-	local isLeftSidebarCreated = false
-	local sidebar_r, sidebar_g, sidebar_b, sidebar_a = unpack(Themes.db.profile.sidebar)
+function module:CreateBarBackground()
+	local top = LUI:CreateMeAFrame("FRAME", "BarsBackground", UIParent, 1024, 1024, 1, "BACKGROUND", 2, "BOTTOM", UIParent, "BOTTOM", 200, -70, 1)
+	top:SetBackdrop({
+		bgFile = fdir.."bars_top",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false,
+		edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	top:SetBackdropColor(unpack(Themes.db.profile.bar))
+	top:SetBackdropBorderColor(0, 0, 0, 0)
+	top:ClearAllPoints()
+	top:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.TopTexture.X), tonumber(db.TopTexture.Y))
+	top:SetAlpha(db.TopTexture.Alpha)
+	top[db.TopTexture.Enable and "Show" or "Hide"](top)
 	
-	if isLeftSidebarCreated == false or isLeftSidebarCreated == nil then
-		local isLeftSidebarCreated = true
-		------------------------------------------------------
-		-- / SLIDE LEFT SIDEBAR / --
-		------------------------------------------------------
-		local fsidebar2_timerout,fsidebar2_timerin = 0,0
-		local fsidebar2_y = 0
-		local fsidebar2_x = 30
-		local fsidebar2_xout = 118
-		local fsidebar2_pixelpersecond = 176
-		local fsidebar2_animation_time = 0.5
-		
-		local fsidebar2_SlideOut = CreateFrame("Frame", "fsidebar2_SlideOut", UIParent)
-		fsidebar2_SlideOut:Hide()
-		
-		fsidebar2_SlideOut:SetScript("OnUpdate", function(self,elapsed)
-			fsidebar2_timerout = fsidebar2_timerout + elapsed
-			if fsidebar2_timerout < fsidebar2_animation_time then
-				local x2 = fsidebar2_x + fsidebar2_timerout * fsidebar2_pixelpersecond
-				fsidebar2_button_anchor:ClearAllPoints()
-				fsidebar2_button_anchor:SetPoint("RIGHT", fsidebar2_anchor, "RIGHT", x2, fsidebar2_y)
-			else
-				fsidebar2_button_anchor:ClearAllPoints()
-				fsidebar2_button_anchor:SetPoint("RIGHT", fsidebar2_anchor, "RIGHT", fsidebar2_xout, fsidebar2_y)
-				fsidebar2_timerout = 0
-				fsidebar2_bt_AlphaIn:Show()
-				self:Hide()
-			end
-		end)
-		
-		local fsidebar2_SlideIn = CreateFrame("Frame", "fsidebar2_SlideIn", UIParent)
-		fsidebar2_SlideIn:Hide()
-		
-		fsidebar2_SlideIn:SetScript("OnUpdate", function(self,elapsed)
-			fsidebar2_timerin = fsidebar2_timerin + elapsed
-			if fsidebar2_timerin < fsidebar2_animation_time then
-				local x2 = fsidebar2_x - fsidebar2_timerin * fsidebar2_pixelpersecond + fsidebar2_pixelpersecond * fsidebar2_animation_time
-				fsidebar2_button_anchor:ClearAllPoints()
-				fsidebar2_button_anchor:SetPoint("RIGHT", fsidebar2_anchor, "RIGHT", x2, fsidebar2_y)
-			else
-				fsidebar2_button_anchor:ClearAllPoints()
-				fsidebar2_button_anchor:SetPoint("RIGHT", fsidebar2_anchor, "RIGHT", fsidebar2_x, fsidebar2_y)
-				fsidebar2_timerin = 0
-				self:Hide()
-			end
-		end)
-		
-		local fsidebar2_alpha_timerout, fsidebar2_alpha_timerin = 0,0
-		local fsidebar2_speedin = 0.9
-		local fsidebar2_speedout = 0.3
-		
-		local fsidebar2_AlphaIn = CreateFrame("Frame", "fsidebar2_AlphaIn", UIParent)
-		fsidebar2_AlphaIn:Hide()
-		
-		fsidebar2_AlphaIn:SetScript("OnUpdate", function(self,elapsed)
-			fsidebar2_alpha_timerin = fsidebar2_alpha_timerin + elapsed
-			if fsidebar2_alpha_timerin < fsidebar2_speedin then
-				local alpha = fsidebar2_alpha_timerin / fsidebar2_speedin 
-				fsidebar2_bt_back:SetAlpha(alpha)
-			else
-				fsidebar2_bt_back:SetAlpha(1)
-				fsidebar2_alpha_timerin = 0
-				self:Hide()
-			end
+	local bottom = LUI:CreateMeAFrame("FRAME", "BarsBackground2", UIParent, 1024, 1024, 1, "BACKGROUND", 0, "BOTTOM", UIParent, "BOTTOM", 210, -145, 1)
+	bottom:SetBackdrop({
+		bgFile = fdir.."bars_bottom", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = false,
+		edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	bottom:SetBackdropColor(unpack(Themes.db.profile.bar2))
+	bottom:SetBackdropBorderColor(0, 0, 0, 0)	
+	bottom:ClearAllPoints()
+	bottom:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.BottomTexture.X), tonumber(db.BottomTexture.Y))
+	bottom:SetAlpha(db.BottomTexture.Alpha)
+	bottom[db.BottomTexture.Enable and "Show" or "Hide"](bottom)
+end
 
-		end)
-		
-		local fsidebar2_AlphaOut = CreateFrame("Frame", "fsidebar2_AlphaOut", UIParent)
-		fsidebar2_AlphaOut:Hide()
-		
-		fsidebar2_AlphaOut:SetScript("OnUpdate", function(self,elapsed)
-			fsidebar2_alpha_timerout = fsidebar2_alpha_timerout + elapsed
-			if fsidebar2_alpha_timerout < fsidebar2_speedout then
-				local alpha = 1 - fsidebar2_alpha_timerout / fsidebar2_speedout
-				fsidebar2_bt_back:SetAlpha(alpha)
-			else
-				fsidebar2_bt_back:SetAlpha(0)
-				fsidebar2_alpha_timerout = 0
-				self:Hide()
+function module:CreateSidebarSlider(side, id)
+	if sidebars[side..id] then return end
+	
+	local bardb = db["Sidebar"..side..id]
+	local other = side == "Right" and "Left" or "Right"
+	local fname = side == "Right" and "sidebar" or "sidebar2"
+	local isRight = side == "Right"
+	
+	local Anchor = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..side..id
+	local r, g, b, a = unpack(Themes.db.profile.sidebar)
+	
+	local sb = {}
+	
+	sidebars[side..id] = sb
+	
+	sb.timerout, sb.timerin = 0, 0
+	sb.x, sb.y, sb.xout = isRight and -30 or 30, 0, isRight and -118 or 118
+	sb.pixelpersecond = isRight and -176 or 176
+	sb.animationtime = 0.5
+	
+	sb.SlideOut = CreateFrame("Frame", nil, UIParent)
+	sb.SlideOut:Hide()
+	sb.SlideOut:SetScript("OnUpdate", function(self, elapsed)
+		sb.timerout = sb.timerout + elapsed
+		if sb.timerout < sb.animationtime then
+			sb.ButtonAnchor:ClearAllPoints()
+			sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, sb.x + sb.timerout * sb.pixelpersecond, sb.y)
+		else
+			sb.ButtonAnchor:ClearAllPoints()
+			sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, sb.xout, sb.y)
+			sb.timerout = 0
+			sb.ButtonAlphaIn:Show()
+			self:Hide()
+		end
+	end)
+	
+	sb.SlideIn = CreateFrame("Frame", nil, UIParent)
+	sb.SlideIn:Hide()
+	sb.SlideIn:SetScript("OnUpdate", function(self, elapsed)
+		sb.timerin = sb.timerin + elapsed
+		if sb.timerin < sb.animationtime then
+			sb.ButtonAnchor:ClearAllPoints()
+			sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, sb.x - sb.timerin * sb.pixelpersecond + sb.pixelpersecond * sb.animationtime, sb.y)
+		else
+			sb.ButtonAnchor:ClearAllPoints()
+			sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, sb.x, sb.y)
+			sb.timerin = 0
+			self:Hide()
+		end
+	end)
+	
+	sb.alphatimerout, sb.alphatimerin = 0, 0
+	sb.speedin, sb.speedout = 0.9, 0.3
+	
+	sb.AlphaIn = CreateFrame("Frame", nil, UIParent)
+	sb.AlphaIn:Hide()
+	sb.AlphaIn:SetScript("OnUpdate", function(self, elapsed)
+		sb.alphatimerin = sb.alphatimerin + elapsed
+		if sb.alphatimerin < sb.speedin then
+			sb.ButtonBack:SetAlpha(sb.alphatimerin / sb.speedin)
+		else
+			sb.ButtonBack:SetAlpha(1)
+			sb.alphatimerin = 0
+			self:Hide()
+		end
+	end)
+	
+	sb.AlphaOut = CreateFrame("Frame", nil, UIParent)
+	sb.AlphaOut:Hide()
+	sb.AlphaOut:SetScript("OnUpdate", function(self, elapsed)
+		sb.alphatimerout = sb.alphatimerout + elapsed
+		if sb.alphatimerout < sb.speedout then
+			sb.ButtonBack:SetAlpha(1 - sb.alphatimerout / sb.speedout)
+		else
+			sb.ButtonBack:SetAlpha(0)
+			sb.alphatimerout = 0
+			self:Hide()
+		end
+	end)
+	
+	sb.bttimerin = 0
+	sb.btspeedin = 0.3
+	
+	sb.ButtonAlphaIn = CreateFrame("Frame", nil, UIParent)
+	sb.ButtonAlphaIn:Hide()
+	sb.ButtonAlphaIn:SetScript("OnUpdate", function(self,elapsed)
+		sb.bttimerin = sb.bttimerin + elapsed
+		if sb.bttimerin < sb.btspeedin then
+			local alpha = sb.bttimerin / sb.btspeedin
+			SidebarSetAlpha(Anchor, alpha)
+			for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
+				SidebarSetAlpha(frame, alpha)
 			end
-		end)
-		
-		local fsidebar2_bt_timerin = 0,0
-		local fsidebar2_bt_speedin = 0.3
-		
-		local fsidebar2_bt_AlphaIn = CreateFrame("Frame", "fsidebar2_bt_AlphaIn", UIParent)
-		fsidebar2_bt_AlphaIn:Hide()
-		
-		fsidebar2_bt_AlphaIn:SetScript("OnUpdate", function(self,elapsed)
-			fsidebar2_bt_timerin = fsidebar2_bt_timerin + elapsed
-			if fsidebar2_bt_timerin < fsidebar2_bt_speedin then
-				local alpha = fsidebar2_bt_timerin / fsidebar2_bt_speedin
-				SidebarSetAlpha(LeftAnchor,alpha)
-				for _, frame in pairs(Panels:LoadAdditional(db.Bars.SidebarLeft.Additional)) do
-					SidebarSetAlpha(frame, alpha)
-				end
-			else
-				SidebarSetAlpha(LeftAnchor,1)
-				for _, frame in pairs(Panels:LoadAdditional(db.Bars.SidebarLeft.Additional)) do
+		else
+			SidebarSetAlpha(Anchor, 1)
+			for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
+				SidebarSetAlpha(frame, 1)
+			end
+			sb.bttimerin = 0
+			self:Hide()
+		end
+	end)
+	
+	sb.Anchor = LUI:CreateMeAFrame("FRAME", nil, UIParent, 25, 25, 1 / 0.85 * bardb.Scale, "BACKGROUND", 0, side, UIParent, side, isRight and 11 or -11, bardb.Offset, 1)
+	sb.Anchor:Show()
+	
+	sb.Sidebar = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 512, 512, 1, "BACKGROUND", 2, other, sb.Anchor, other, isRight and -17 or 17, 0, 1)
+	sb.Sidebar:SetBackdrop({
+		bgFile = fdir..fname,
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false,
+		tileSize = 0,
+		edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	sb.Sidebar:SetBackdropBorderColor(0, 0, 0, 0)
+	sb.Sidebar:Show()
+	
+	sb.SidebarBack = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 512, 512, 1, "BACKGROUND", 1, other, sb.Anchor, other, isRight and -25 or 25, 0, 1)
+	sb.SidebarBack:SetBackdrop({
+		bgFile = fdir..fname.."_back",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false,
+		tileSize = 0,
+		edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	sb.SidebarBack:SetBackdropColor(r, g, b, a)
+	sb.SidebarBack:SetBackdropBorderColor(0, 0, 0, 0)
+	sb.SidebarBack:Show()
+	
+	sb.SidebarBack2 = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 512, 512, 1, "BACKGROUND", 3, other, sb.Anchor, other, isRight and -25 or 25, 0, 1)
+	sb.SidebarBack2:SetBackdrop({
+		bgFile = fdir..fname.."_back2",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false,
+		tileSize = 0,
+		edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	sb.SidebarBack2:SetBackdropColor(r, g, b, 1)
+	sb.SidebarBack2:SetBackdropBorderColor(0, 0, 0, 0)
+	sb.SidebarBack2:Show()
+	
+	sb.ButtonAnchor = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 10, 10, 1, "BACKGROUND", 0, other, sb.Anchor, other, isRight and -30 or 30, 0, 1)
+	sb.ButtonAnchor:Show()
+	
+	sb.ButtonBack = LUI:CreateMeAFrame("FRAME", nil, sb.ButtonAnchor, 273, 267, 1, "BACKGROUND", 0, other, sb.ButtonAnchor, other, isRight and 3 or -3, -2, 1)
+	sb.ButtonBack:SetBackdrop({
+		bgFile = fdir..fname.."_bt_back",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false,
+		tileSize = 0,
+		edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	sb.ButtonBack:SetBackdropColor(r, g, b, 1)
+	sb.ButtonBack:SetBackdropBorderColor(0, 0, 0, 0)
+	sb.ButtonBack:SetAlpha(0)
+	sb.ButtonBack:Show()
+	
+	sb.ButtonBlock = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 80, 225, 1, "MEDIUM", 4, other, sb.Anchor, other, 82, isRight and 5 or -5, 1)
+	sb.ButtonBlock:EnableMouse(true)
+	sb.ButtonBlock:Show()
+	
+	sb.ButtonClicker = LUI:CreateMeAFrame("BUTTON", nil, sb.ButtonAnchor, 30, 215, 1, "MEDIUM", 5, other, sb.ButtonAnchor, other, isRight and 6 or -6, -5, 1)
+	sb.ButtonClicker:Show()
+
+	sb.Button = LUI:CreateMeAFrame("FRAME", nil, sb.ButtonAnchor, 266, 251, 1, "BACKGROUND", 0, other, sb.ButtonAnchor, other, 0, -2, 1)
+	sb.Button:SetBackdrop({
+		bgFile = fdir..fname.."_button",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false,
+		tileSize = 0,
+		edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	sb.Button:SetBackdropColor(r, g, b, 1)
+	sb.Button:SetBackdropBorderColor(0, 0, 0, 0)
+	sb.Button:Show()
+	
+	sb.ButtonHover = LUI:CreateMeAFrame("FRAME", nil, sb.ButtonAnchor, 266, 251, 1, "BACKGROUND", 0, other, sb.ButtonAnchor, other, 0, -2, 1)
+	sb.ButtonHover:SetBackdrop({
+		bgFile = fdir..fname.."_button_hover",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false,
+		tileSize = 0,
+		edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	sb.ButtonHover:SetBackdropColor(r, g, b, 1)
+	sb.ButtonHover:SetBackdropBorderColor(0, 0, 0, 0)
+	sb.ButtonHover:Hide()
+	
+	sb.sidebaropen = 0
+	
+	sb.ButtonClicker:RegisterForClicks("AnyUp")
+	sb.ButtonClicker:SetScript("OnClick", function(self)
+		if sb.sidebaropen == 0 then
+			sb.sidebaropen = 1
+			bardb.IsOpen = true
+			if bardb.OpenInstant then
+				sb.ButtonAnchor:ClearAllPoints()
+				sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, isRight and -120 or 120, 0)
+				sb.ButtonBack:SetAlpha(1)
+				SidebarSetAlpha(Anchor, 1)
+				for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
 					SidebarSetAlpha(frame, 1)
 				end
-				fsidebar2_bt_timerin = 0
-				self:Hide()
-			end
-		end)
-		
-		------------------------------------------------------
-		-- / LEFT SIDEBAR FRAMES / --
-		------------------------------------------------------
-	
-		fsidebar2_anchor = LUI:CreateMeAFrame("FRAME","fsidebar2_anchor",UIParent,25,25,1,"BACKGROUND",0,"LEFT",UIParent,"LEFT",-11,db.Bars.SidebarLeft.Offset,1)
-		fsidebar2_anchor:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-		fsidebar2_anchor:SetBackdropColor(0,0,0,0)
-		fsidebar2_anchor:SetBackdropBorderColor(0,0,0,0)
-		fsidebar2_anchor:Show()
-		
-		local fsidebar2 = LUI:CreateMeAFrame("FRAME","fsidebar2",fsidebar2_anchor,512,512,1,"BACKGROUND",2,"RIGHT",fsidebar2_anchor,"RIGHT",17,0,1)
-		fsidebar2:SetBackdrop({bgFile=fdir.."sidebar2", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-		fsidebar2:SetBackdropBorderColor(0,0,0,0)
-		fsidebar2:Show()
-		
-		local fsidebar2_back = LUI:CreateMeAFrame("FRAME","fsidebar2_back",fsidebar2_anchor,512,512,1,"BACKGROUND",1,"RIGHT",fsidebar2_anchor,"RIGHT",25,0,1)
-		fsidebar2_back:SetBackdrop({bgFile=fdir.."sidebar2_back", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-		fsidebar2_back:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,sidebar_a)
-		fsidebar2_back:SetBackdropBorderColor(0,0,0,0)
-		fsidebar2_back:Show()
-		
-		local fsidebar2_back2 = LUI:CreateMeAFrame("FRAME","fsidebar2_back2",fsidebar2_anchor,512,512,1,"BACKGROUND",3,"RIGHT",fsidebar2_anchor,"RIGHT",25,0,1)
-		fsidebar2_back2:SetBackdrop({bgFile=fdir.."sidebar2_back2", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-		fsidebar2_back2:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,1)
-		fsidebar2_back2:SetBackdropBorderColor(0,0,0,0)
-		fsidebar2_back2:Show()
-		
-		local fsidebar2_button_anchor= LUI:CreateMeAFrame("FRAME","fsidebar2_button_anchor",fsidebar2_anchor,10,10,1,"BACKGROUND",0,"RIGHT",fsidebar2_anchor,"RIGHT",30,0,1)
-		fsidebar2_button_anchor:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-		fsidebar2_button_anchor:SetBackdropColor(0,0,0,0)
-		fsidebar2_button_anchor:SetBackdropBorderColor(0,0,0,0)
-		fsidebar2_button_anchor:Show()
-		
-		local fsidebar2_bt_back = LUI:CreateMeAFrame("FRAME","fsidebar2_bt_back",fsidebar2_button_anchor,273,267,1,"BACKGROUND",0,"RIGHT",fsidebar2_button_anchor,"RIGHT",-3,-2,1)
-		fsidebar2_bt_back:SetBackdrop({bgFile=fdir.."sidebar2_bt_back", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-		fsidebar2_bt_back:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,1)
-		fsidebar2_bt_back:SetBackdropBorderColor(0,0,0,0)
-		fsidebar2_bt_back:SetAlpha(0)
-		fsidebar2_bt_back:Show()
-		
-		local fsidebar2_bt_block= LUI:CreateMeAFrame("FRAME","fsidebar2_bt_block",fsidebar2_anchor,80,225,1,"MEDIUM",4,"RIGHT",fsidebar2_anchor,"RIGHT",82,-5,1)
-		fsidebar2_bt_block:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-		fsidebar2_bt_block:SetBackdropColor(0,0,0,0)
-		fsidebar2_bt_block:SetBackdropBorderColor(0,0,0,0)
-		fsidebar2_bt_block:EnableMouse(true)
-		fsidebar2_bt_block:Show()
-		
-		local fsidebar2_button_clicker= LUI:CreateMeAFrame("BUTTON","fsidebar2_button_clicker",fsidebar2_button_anchor,30,215,1,"MEDIUM",5,"RIGHT",fsidebar2_button_anchor,"RIGHT",-6,-5,1)
-		fsidebar2_button_clicker:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-		fsidebar2_button_clicker:SetBackdropColor(0,0,0,0)
-		fsidebar2_button_clicker:SetBackdropBorderColor(0,0,0,0)
-		fsidebar2_button_clicker:Show()
-
-		local fsidebar2_button = LUI:CreateMeAFrame("FRAME","fsidebar2_button",fsidebar2_button_anchor,266,251,1,"BACKGROUND",0,"RIGHT",fsidebar2_button_anchor,"RIGHT",0,-2,1)
-		fsidebar2_button:SetBackdrop({bgFile=fdir.."sidebar2_button", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-		fsidebar2_button:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,1)
-		fsidebar2_button:SetBackdropBorderColor(0,0,0,0)
-		fsidebar2_button:Show()
-		
-		local fsidebar2_button_hover = LUI:CreateMeAFrame("FRAME","fsidebar2_button_hover",fsidebar2_button_anchor,266,251,1,"BACKGROUND",0,"RIGHT",fsidebar2_button_anchor,"RIGHT",0,-2,1)
-		fsidebar2_button_hover:SetBackdrop({bgFile=fdir.."sidebar2_button_hover", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
-		fsidebar2_button_hover:SetBackdropColor(sidebar_r,sidebar_g,sidebar_b,1)
-		fsidebar2_button_hover:SetBackdropBorderColor(0,0,0,0)
-		fsidebar2_button_hover:Hide()
-	
-		leftSidebarOpen = 0
-		
-		fsidebar2_button_clicker:RegisterForClicks("AnyUp")
-		fsidebar2_button_clicker:SetScript("OnClick", function(self)
-			if leftSidebarOpen == 0 then
-				leftSidebarOpen = 1
-				db.Bars.SidebarLeft.IsOpen = true
-				if db.Bars.SidebarLeft.OpenInstant then
-					fsidebar2_button_anchor:ClearAllPoints()
-					fsidebar2_button_anchor:SetPoint("RIGHT",fsidebar2_anchor,"RIGHT",120,0)
-					fsidebar2_bt_back:SetAlpha(1)
-					SidebarSetAlpha(LeftAnchor,1)
-					for _, frame in pairs(Panels:LoadAdditional(db.Bars.SidebarLeft.Additional)) do
-						SidebarSetAlpha(frame, 1)
-					end
-					fsidebar2_bt_block:Hide()
-				else
-					fsidebar2_SlideOut:Show()
-					fsidebar2_AlphaIn:Show()
-					fsidebar2_bt_block:Hide()
-				end
+				sb.ButtonBlock:Hide()
 			else
-				leftSidebarOpen = 0
-				db.Bars.SidebarLeft.IsOpen = false
-				if db.Bars.SidebarLeft.OpenInstant then
-					fsidebar2_button_anchor:ClearAllPoints()
-					fsidebar2_button_anchor:SetPoint("RIGHT",fsidebar2_anchor,"RIGHT",32,0)
-					fsidebar2_bt_back:SetAlpha(0)
-					SidebarSetAlpha(LeftAnchor,0)
-					for _, frame in pairs(Panels:LoadAdditional(db.Bars.SidebarLeft.Additional)) do
-						SidebarSetAlpha(frame, 0)
-					end
-					fsidebar2_bt_block:Show()
-				else
-					fsidebar2_SlideIn:Show()
-					fsidebar2_AlphaOut:Show()
-					SidebarSetAlpha(LeftAnchor,0)
-					for _, frame in pairs(Panels:LoadAdditional(db.Bars.SidebarLeft.Additional)) do
-						SidebarSetAlpha(frame, 0)
-					end
-					fsidebar2_bt_block:Show()
-				end
+				sb.SlideOut:Show()
+				sb.AlphaIn:Show()
+				sb.ButtonBlock:Hide()
 			end
-		end)
+		else
+			sb.sidebaropen = 0
+			bardb.IsOpen = false
+			if bardb.OpenInstant then
+				sb.ButtonAnchor:ClearAllPoints()
+				sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, isRight and -32 or 32, 0)
+				sb.ButtonBack:SetAlpha(0)
+				SidebarSetAlpha(Anchor, 0)
+				for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
+					SidebarSetAlpha(frame, 0)
+				end
+				sb.ButtonBlock:Show()
+			else
+				sb.SlideIn:Show()
+				sb.AlphaOut:Show()
+				SidebarSetAlpha(Anchor, 0)
+				for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
+					SidebarSetAlpha(frame, 0)
+				end
+				sb.ButtonBlock:Show()
+			end
+		end
+	end)
+
+	sb.ButtonClicker:SetScript("OnEnter", function(self)
+		sb.Button:Hide()
+		sb.ButtonHover:Show()
+	end)
+
+	sb.ButtonClicker:SetScript("OnLeave", function(self)
+		sb.Button:Show()
+		sb.ButtonHover:Hide()
+	end)
 	
-		fsidebar2_button_clicker:SetScript("OnEnter", function(self)
-			fsidebar2_button:Hide()
-			fsidebar2_button_hover:Show()
-		end)
-	
-		fsidebar2_button_clicker:SetScript("OnLeave", function(self)
-			fsidebar2_button:Show()
-			fsidebar2_button_hover:Hide()
-		end)
-	end
-	
-	if db.Bars.SidebarLeft.Enable then	
-		fsidebar2_anchor:Show()
-	else
-		fsidebar2_anchor:Hide()
-	end
-	
-	SetLeftSidebarAnchor()
-	SidebarSetAlpha(LeftAnchor,0)
-	for _, frame in pairs(Panels:LoadAdditional(db.Bars.SidebarLeft.Additional)) do
+	SidebarSetAnchor(side, id)
+	SidebarSetAlpha(Anchor, 0)
+	for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
 		SidebarSetAlpha(frame, 0)
 	end
 	
-	if db.Bars.SidebarLeft.Enable == true then
-		if db.Bars.SidebarLeft.IsOpen == true then
-			leftSidebarOpen = 1
-			fsidebar2_SlideOut:Show()
-			fsidebar2_AlphaIn:Show()
-			fsidebar2_bt_block:Hide()
+	if bardb.Enable then	
+		sb.Anchor:Show()
+		if bardb.IsOpen == true then
+			sb.sidebaropen = 1
+			sb.SlideOut:Show()
+			sb.AlphaIn:Show()
+			sb.ButtonBlock:Hide()
 		end
+	else
+		sb.Anchor:Hide()
 	end
 end
 
 function module:SetButtons()
+	if LibMasque then
+		isLibMasqueLoaded = true
+		return
+	end
+	
 	local mediaPath = [[Interface\AddOns\LUI\media\textures\buttons2\]]
 
 	local normTex = mediaPath..[[Normal.tga]]
@@ -921,7 +692,7 @@ function module:SetButtons()
 		gloss:SetTexture(glossTex)
 		gloss:SetBlendMode("BLEND")
 		gloss:SetVertexColor(1, 1, 1, 1)
-		gloss:SetAlpha(0.3)
+		gloss:SetAlpha(0.5)
 		gloss:SetWidth(40 * scale)
 		gloss:SetHeight(40 * scale)
 		gloss:ClearAllPoints()
@@ -1006,7 +777,7 @@ function module:SetButtons()
 		border.Show_ = border.Show
 		border.Show = function()
 			button.__equipped = true
-			if db.Bars.ShowEquipped then border:Show_() end
+			if db.General.ShowEquipped then border:Show_() end
 		end
 		border.Hide_ = border.Hide
 		border.Hide = function()
@@ -1015,7 +786,7 @@ function module:SetButtons()
 		end
 		
 		if border:IsShown() then button.__equipped = true end
-		if not db.Bars.ShowEquipped then border:Hide_() end
+		if not db.General.ShowEquipped then border:Hide_() end
 		
 		-- autocast
 		local autocast = _G[name.."Shine"]
@@ -1038,12 +809,12 @@ function module:SetButtons()
 		
 		hotkey.Show_ = hotkey.Show
 		hotkey.Show = function()
-			if db.Bars.ShowHotkey and hotkey:GetText() ~= RANGE_INDICATOR then
+			if db.General.ShowHotkey and hotkey:GetText() ~= RANGE_INDICATOR then
 				hotkey:Show_()
 			end
 		end
 		
-		if not db.Bars.ShowHotkey then hotkey:Hide() end
+		if not db.General.ShowHotkey then hotkey:Hide() end
 		
 		-- macro
 		local macro = _G[name.."Name"]
@@ -1054,7 +825,7 @@ function module:SetButtons()
 		macro:SetPoint("BOTTOMLEFT", button, "BOTTOMLEFT", 0, 6)
 		macro:SetHeight(10)
 		
-		if not db.Bars.ShowMacro then macro:Hide() end
+		if not db.General.ShowMacro then macro:Hide() end
 		
 		-- count
 		local count = _G[name.."Count"]
@@ -1065,7 +836,7 @@ function module:SetButtons()
 		count:SetWidth(40)
 		count:SetHeight(10)
 		
-		if not db.Bars.ShowCount then count:Hide() end
+		if not db.General.ShowCount then count:Hide() end
 	
 		button.SetFrameLevel = dummy
 		
@@ -1168,9 +939,7 @@ function module:SetButtons()
 		local hotkey = _G[self:GetName().."HotKey"]
 		local text = hotkey:GetText()
 		
-		if text == nil then
-			text = ""
-		end
+		if text == nil then text = "" end
 		
 		text = gsub(text, "(s%-)", "S")
 		text = gsub(text, "(a%-)", "A")
@@ -1197,7 +966,7 @@ function module:SetButtons()
 	
 	-- usable coloring on icon
 	local function Button_OnUpdate(button, elapsed)
-		if button.__elapsed > 0.25 then
+		if button.__elapsed > 0.2 then
 			local icon = _G[button:GetName().."Icon"]
 			local hotkey = _G[button:GetName().."HotKey"]
 			
@@ -1223,428 +992,238 @@ function module:SetButtons()
 	module:SecureHook("ActionButton_OnUpdate", Button_OnUpdate)
 end
 
-function module:SetBottomBar1()
-	local LUI_Fader = LUI:GetModule("Fader", true)
-
-	local Page = {
-		["DRUID"] = {
-			"[bonusbar:1,nostealth] %s; ",
-			"[bonusbar:1,stealth] %s; ",
-			"[bonusbar:2] %s; ",
-			"[bonusbar:3] %s; ",
-			"[bonusbar:4] %s; "
-		},
-		["WARRIOR"] = {
-			"[bonusbar:1] %s; ", "[bonusbar:2] %s; ", "[bonusbar:3] %s; "
-		},
-		["PRIEST"] = {
-			"[bonusbar:1] %s; "
-		},
-		["ROGUE"] = {
-			"[bonusbar:1] %s; ",
-			"[form:3] %s; "
-		},
-		["WARLOCK"] = {
-			"[form:2] %s; "
-		},
-	}
-
-	local function GetBar()
-		local condition = "[bonusbar:5] 11; "
+function module:SetBottomBar(id)
+	local bardb = db["Bottombar"..id]
+	
+	if not bars[id] then
+		local bar = CreateFrame("Frame", "LUIBar"..id, UIParent, "SecureHandlerStateTemplate")
+		bar.id = id
+		bar.buttons = {}
 		
-		-- Add alt key state.
-		if db.Bars.Bottombar1.AltState ~= db.Bars.Bottombar1.State[1] then
-			condition = condition.."[mod:alt] "..db.Bars.Bottombar1.AltState.."; "
+		for i = 1, 12 do
+			local button = GetButton(id, "Bottom", i)
+			button:ClearAllPoints()
+			button:SetParent(bar)
+			if i == 1 then button:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0) end
+			bar:SetFrameRef("Button"..i, button)
+			bar.buttons[i] = button
+			if button:GetName():find("LUI") then button.buttonType = "LUIBar"..id.."Button" end
 		end
-
-		-- Add ctrl key state.
-		if db.Bars.Bottombar1.CtrlState ~= db.Bars.Bottombar1.State[1] then
-			condition = condition.."[mod:ctrl] "..db.Bars.Bottombar1.CtrlState.."; "
+		
+		local buttons
+		
+		bar:Execute([[
+			buttons = table.new()
+			for i = 1, 12 do
+				table.insert(buttons, self:GetFrameRef("Button"..i))
+			end
+		]])
+		
+		bar:SetAttribute("_onstate-page", [[
+			for i, button in ipairs(buttons) do
+				button:SetAttribute("actionpage", tonumber(newstate))
+			end
+		]])
+		
+		RegisterStateDriver(bar, "page", GetBarState(id))
+		
+		if bardb.Fader.Enable and LUI_Fader then
+			LUI_Fader:RegisterFrame(bar, bardb.Fader, true)
 		end
-
-		if Page[class] then
-			for num, word in pairs(Page[class]) do
-				condition = condition..word:format(db.Bars.Bottombar1.State[num+1])
+		
+		if LibMasque then
+			local group = LibMasque("Button"):Group("LUI", "Bottombar "..id)
+			for _, button in pairs(bar.buttons) do
+				group:AddButton(button)
 			end
 		end
-		condition = condition..db.Bars.Bottombar1.State[1]
-		return condition
-	end
-
-	local bar = CreateFrame("Frame", "LUIBar1", UIParent, "SecureHandlerStateTemplate")
-	bar:SetWidth(454)
-	bar:SetHeight(36)
-	bar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.Bottombar1.X), tonumber(db.Bars.Bottombar1.Y))
-	bar:SetScale(tonumber(db.Bars.Bottombar1.Scale))
-	
-	local button, buttons, previous
-	
-	for i = 1, NUM_ACTIONBAR_BUTTONS do
-		button = _G["ActionButton"..i]
-		button:ClearAllPoints()
-		button:SetParent(bar)
 		
-		if i == 1 then
-			button:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
-		else
-			button:SetPoint("LEFT", previous, "RIGHT", 2, 0)
-		end
-		previous = button
-		
-		bar:SetFrameRef("ActionButton"..i, button)
+		bars[id] = bar
 	end
 	
-	bar:Execute([[
-		buttons = table.new()
-		for i = 1, 12 do
-			table.insert(buttons, self:GetFrameRef("ActionButton"..i))
-		end
-	]])
+	local bar = bars[id]
 	
-	bar:SetAttribute("_onstate-page", [[
-		for i, button in ipairs(buttons) do
-			button:SetAttribute("actionpage", tonumber(newstate))
-		end
-	]])
+	bar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(bardb.X), tonumber(bardb.Y))
+	bar:SetScale(tonumber(bardb.Scale))
 	
-	RegisterStateDriver(bar, "page", GetBar())
+	local numrows = math.ceil(bardb.NumButtons / bardb.NumPerRow)
+	bar:SetWidth(bardb.NumPerRow * 36 + (bardb.NumPerRow - 1) * 2)
+	bar:SetHeight(numrows * 36 + (numrows - 1) * 2)
 	
-	bar.UpdateState = function()
-		UnregisterStateDriver(bar, "page")
-		RegisterStateDriver(bar, "page", GetBar())
-	end
-
-	-- Register bar to fader.
-	if db.Bars.Bottombar1.Fader.Enable and LUI_Fader then
-		LUI_Fader:RegisterFrame(bar, db.Bars.Bottombar1.Fader, true)
-	end
+	Configure(bar, bardb.NumButtons, bardb.NumPerRow)
+	
+	bar[bardb.Enable and "Show" or "Hide"](bar)
 end
 
-function module:SetBottomBar2()
-	local function GetBar()
-		local condition = ""
-
-		-- Add alt key state.
-		if db.Bars.Bottombar2.AltState ~= db.Bars.Bottombar2.State then
-			condition = condition.."[mod:alt] "..db.Bars.Bottombar2.AltState.."; "
-		end
-
-		-- Add ctrl key state.
-		if db.Bars.Bottombar2.CtrlState ~= db.Bars.Bottombar2.State then
-			condition = condition.."[mod:ctrl] "..db.Bars.Bottombar2.CtrlState.."; "
-		end
-
-		condition = condition..db.Bars.Bottombar2.State
-		return condition
-	end
-
-	local LUI_Fader = LUI:GetModule("Fader", true)
-	local bar = CreateFrame("Frame", "LUIBar2", UIParent, "SecureHandlerStateTemplate")
-	bar:SetWidth(454)
-	bar:SetHeight(36)
-	bar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.Bottombar2.X), tonumber(db.Bars.Bottombar2.Y))
-	bar:SetScale(tonumber(db.Bars.Bottombar2.Scale))
-
-	local button, buttons, previous
+function module:SetSideBar(side, id)
+	local bardb = db["Sidebar"..side..id]
 	
-	for i = 1, NUM_ACTIONBAR_BUTTONS do
-		button = _G["MultiBarBottomLeftButton"..i]
-		button:ClearAllPoints()
-		button:SetParent(bar)
+	if not bars[side..id] then
+		local bar = CreateFrame("Frame", "LUIBar"..side..id, UIParent, "SecureHandlerStateTemplate")
+		bar:SetWidth(1) -- because of way LUI handles
+		bar:SetHeight(1) -- sidebar position calculation
+		bar.side = side
+		bar.id = id
+		bar.buttons = {}
 		
-		if i == 1 then
-			button:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
-		else
-			button:SetPoint("LEFT", previous, "RIGHT", 2, 0)
-		end
-		previous = button
-		
-		bar:SetFrameRef("MultiBarBottomLeftButton"..i, button)
-	end
-	
-	bar:Execute([[
-		buttons = table.new()
 		for i = 1, 12 do
-			table.insert(buttons, self:GetFrameRef("MultiBarBottomLeftButton"..i))
+			local button = GetButton(id, side, i)
+			button:ClearAllPoints()
+			button:SetParent(bar)
+			if i == 1 then button:SetPoint("TOPLEFT", bar, "TOPLEFT", 5, -3) end
+			bar:SetFrameRef("Button"..i, button)
+			bar.buttons[i] = button
+			if button:GetName():find("LUI") then button.buttonType = "LUIBar"..side..id.."Button" end
 		end
-	]])
-	
-	bar:SetAttribute("_onstate-page", [[
-		for i, button in ipairs(buttons) do
-			button:SetAttribute("actionpage", tonumber(newstate))
-		end
-	]])
-			
-	RegisterStateDriver(bar, "page", GetBar())
-	
-	if not db.Bars.Bottombar2.Enable then bar:Hide() end
-	
-	bar.UpdateState = function()
-		UnregisterStateDriver(bar, "page")
-		RegisterStateDriver(bar, "page", GetBar())
-	end
-
-	-- Register bar to fader.
-	if db.Bars.Bottombar2.Fader.Enable and LUI_Fader then
-		LUI_Fader:RegisterFrame(bar, db.Bars.Bottombar2.Fader, true)
-	end
-end
-
-function module:SetBottomBar3()
-	local function GetBar()
-		local condition = ""
-
-		-- Add alt key state.
-		if db.Bars.Bottombar3.AltState ~= db.Bars.Bottombar3.State then
-			condition = condition.."[mod:alt] "..db.Bars.Bottombar3.AltState.."; "
-		end
-
-		-- Add ctrl key state.
-		if db.Bars.Bottombar3.CtrlState ~= db.Bars.Bottombar3.State then
-			condition = condition.."[mod:ctrl] "..db.Bars.Bottombar3.CtrlState.."; "
-		end
-
-		condition = condition..db.Bars.Bottombar3.State
-		return condition
-	end
-
-	local LUI_Fader = LUI:GetModule("Fader", true)
-	local bar = CreateFrame("Frame", "LUIBar3", UIParent, "SecureHandlerStateTemplate")
-	bar:SetWidth(454)
-	bar:SetHeight(36)
-	bar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.Bottombar3.X), tonumber(db.Bars.Bottombar3.Y))
-	bar:SetScale(tonumber(db.Bars.Bottombar3.Scale))
-
-	local button, buttons, previous
-	
-	for i = 1, NUM_ACTIONBAR_BUTTONS do
-		button = _G["MultiBarBottomRightButton"..i]
-		button:ClearAllPoints()
-		button:SetParent(bar)
 		
-		if i == 1 then
-			button:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
-		else
-			button:SetPoint("LEFT", previous, "RIGHT", 2, 0)
-		end
-		previous = button
+		local buttons
 		
-		bar:SetFrameRef("MultiBarBottomRightButton"..i, button)
-	end
-	
-	bar:Execute([[
-		buttons = table.new()
-		for i = 1, 12 do
-			table.insert(buttons, self:GetFrameRef("MultiBarBottomRightButton"..i))
-		end
-	]])
-	
-	bar:SetAttribute("_onstate-page", [[
-		for i, button in ipairs(buttons) do
-			button:SetAttribute("actionpage", tonumber(newstate))
-		end
-	]])
-			
-	RegisterStateDriver(bar, "page", GetBar())
-	
-	if not db.Bars.Bottombar3.Enable then bar:Hide() end
-	
-	bar.UpdateState = function()
-		UnregisterStateDriver(bar, "page")
-		RegisterStateDriver(bar, "page", GetBar())
-	end
-
-	-- Register bar to fader.
-	if db.Bars.Bottombar3.Fader.Enable and LUI_Fader then
-		LUI_Fader:RegisterFrame(bar, db.Bars.Bottombar3.Fader, true)
-	end
-end
-
-function module:SetLeftBar()
-	local bar = CreateFrame("Frame", "LUIBarLeft", UIParent, "SecureHandlerStateTemplate")
-	bar:SetWidth(1) -- because of way LUI handles
-	bar:SetHeight(1) -- sidebar position calculation
-	bar:SetScale(0.85)
-
-	local button, buttons, previous, previous2
-	
-	for i = 1, NUM_ACTIONBAR_BUTTONS do
-		button = _G["MultiBarLeftButton"..i]
-		button:ClearAllPoints()
-		button:SetParent(bar)
+		bar:Execute([[
+			buttons = table.new()
+			for i = 1, 12 do
+				table.insert(buttons, self:GetFrameRef("Button"..i))
+			end
+		]])
 		
-		if i == 1 then
-			button:SetPoint("TOPLEFT", bar, "TOPLEFT", 5, -3) -- like BT
-			previous2 = button
-		elseif i % 2 == 1 then
-			button:SetPoint("TOP", previous2, "BOTTOM", 0, -2)
-			previous2 = button
-		else
-			button:SetPoint("LEFT", previous, "RIGHT", 2, 0)
-		end
-		previous = button
+		bar:SetAttribute("_onstate-page", [[
+			for i, button in ipairs(buttons) do
+				button:SetAttribute("actionpage", tonumber(newstate))
+			end
+		]])
 		
-		bar:SetFrameRef("MultiBarLeftButton"..i, button)
-	end
-	
-	bar:Execute([[
-		buttons = table.new()
-		for i = 1, 12 do
-			table.insert(buttons, self:GetFrameRef("MultiBarLeftButton"..i))
-		end
-	]])
-	
-	bar:SetAttribute("_onstate-page", [[
-		for i, button in ipairs(buttons) do
-			button:SetAttribute("actionpage", tonumber(newstate))
-		end
-	]])
-	
-	RegisterStateDriver(bar, "page", db.Bars.SidebarLeft.State)
-
-	if not db.Bars.SidebarLeft.Enable then bar:Hide() end
-	
-	bar.UpdateState = function()
-		UnregisterStateDriver(bar, "page")
-		RegisterStateDriver(bar, "page", db.Bars.SidebarLeft.State)
-	end
-end
-
-function module:SetRightBar()
-	local bar = CreateFrame("Frame", "LUIBarRight", UIParent, "SecureHandlerStateTemplate")
-	bar:SetWidth(1) -- because of way LUI handles
-	bar:SetHeight(1) -- sidebar position calculation
-	bar:SetScale(0.85)
-
-	local button, buttons, previous, previous2
-	
-	for i = 1, NUM_ACTIONBAR_BUTTONS do
-		button = _G["MultiBarRightButton"..i]
-		button:ClearAllPoints()
-		button:SetParent(bar)
+		RegisterStateDriver(bar, "page", bardb.State)
 		
-		if i == 1 then
-			button:SetPoint("TOPLEFT", bar, "TOPLEFT", 5, -3) -- like BT
-			previous2 = button
-		elseif i % 2 == 1 then
-			button:SetPoint("TOP", previous2, "BOTTOM", 0, -2)
-			previous2 = button
-		else
-			button:SetPoint("LEFT", previous, "RIGHT", 2, 0)
+		if LibMasque then
+			local group = LibMasque("Button"):Group("LUI", side.." Sidebar "..id)
+			for _, button in pairs(bar.buttons) do
+				group:AddButton(button)
+			end
 		end
-		previous = button
 		
-		bar:SetFrameRef("MultiBarRightButton"..i, button)
+		bars[side..id] = bar
 	end
 	
-	bar:Execute([[
-		buttons = table.new()
-		for i = 1, 12 do
-			table.insert(buttons, self:GetFrameRef("MultiBarRightButton"..i))
-		end
-	]])
+	local bar = bars[side..id]
 	
-	bar:SetAttribute("_onstate-page", [[
-		for i, button in ipairs(buttons) do
-			button:SetAttribute("actionpage", tonumber(newstate))
-		end
-	]])
+	bar:SetScale(bardb.Scale)
+	Configure(bar, 12, 2)
 	
-	RegisterStateDriver(bar, "page", db.Bars.SidebarRight.State)
-
-	if not db.Bars.SidebarRight.Enable then bar:Hide() end
-	
-	bar.UpdateState = function()
-		UnregisterStateDriver(bar, "page")
-		RegisterStateDriver(bar, "page", db.Bars.SidebarRight.State)
-	end
+	bar[bardb.Enable and "Show" or "Hide"](bar)
 end
 
 function module:SetPetBar()
-	local bar = CreateFrame("Frame", "LUIPetBar", UIParent, "SecureHandlerStateTemplate")
-	bar:SetWidth(30 * math.ceil(NUM_PET_ACTION_SLOTS / 2) + 2 * (math.ceil(NUM_PET_ACTION_SLOTS / 2) - 1))
-	bar:SetHeight(62)
-	bar:SetPoint("RIGHT", UIParent, "RIGHT", tonumber(db.Bars.Petbar.X), tonumber(db.Bars.Petbar.Y))
-	bar:SetScale(tonumber(db.Bars.Petbar.Scale))
-
-	RegisterStateDriver(bar, "visibility", "[pet,novehicleui,nobonusbar:5] show; hide")
-
-	PetActionBarFrame:SetParent(bar)
-	PetActionBarFrame:EnableMouse(false)
-	PetActionBarFrame.showgrid = 1
-	PetActionBar_ShowGrid()
-
-	local button, previous, previous2
-	for i = 1, NUM_PET_ACTION_SLOTS do
-		button = _G["PetActionButton"..i]
-		button:ClearAllPoints()
-		button:SetParent(bar)
+	if not LUIPetBar then
+		local bar = CreateFrame("Frame", "LUIPetBar", UIParent, "SecureHandlerStateTemplate")
+		bar:SetWidth(30 * math.ceil(NUM_PET_ACTION_SLOTS / 2) + 2 * (math.ceil(NUM_PET_ACTION_SLOTS / 2) - 1))
+		bar:SetHeight(62)
 		
-		if i == 1 then
-			button:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
-			previous2 = button
-		elseif i % (NUM_PET_ACTION_SLOTS / 2) == 1 then
-			button:SetPoint("TOP", previous2, "BOTTOM", 0, -2)
-			previous2 = button
-		else
-			button:SetPoint("LEFT", previous, "RIGHT", 2, 0)
-		end
-		previous = button
-	end
-end
+		RegisterStateDriver(bar, "visibility", "[pet,novehicleui,nobonusbar:5] show; hide")
 
-function module:SetShapeshiftBar()
-	local bar = CreateFrame("Frame", "LUIShapeshiftBar", UIParent, "SecureHandlerStateTemplate")
-	bar:SetWidth(30 * NUM_SHAPESHIFT_SLOTS + 2 * (NUM_SHAPESHIFT_SLOTS - 1))
-	bar:SetHeight(30)
-	bar:SetPoint("LEFT", UIParent, "LEFT", tonumber(db.Bars.Shapeshiftbar.X), tonumber(db.Bars.Shapeshiftbar.Y))
-	bar:SetScale(tonumber(db.Bars.Shapeshiftbar.Scale))
+		PetActionBarFrame:SetParent(bar)
+		PetActionBarFrame:EnableMouse(false)
+		PetActionBarFrame.showgrid = 1
+		PetActionBar_ShowGrid()
 
-	ShapeshiftBarFrame:SetParent(bar)
-	ShapeshiftBarFrame:EnableMouse(false)
-
-	local function MoveShapeshift()
-		if InCombatLockdown() then return end
-		
-		bar:SetWidth(30 * NUM_SHAPESHIFT_SLOTS + 2 * (NUM_SHAPESHIFT_SLOTS - 1))
-		
-		local button, previous
-		for i = 1, NUM_SHAPESHIFT_SLOTS do
-			button = _G["ShapeshiftButton"..i]
+		local button, previous, previous2
+		for i = 1, NUM_PET_ACTION_SLOTS do
+			button = _G["PetActionButton"..i]
 			button:ClearAllPoints()
 			button:SetParent(bar)
 			
 			if i == 1 then
-				button:SetPoint("BOTTOMLEFT", bar, "BOTTOMLEFT", 0, 0)
+				button:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
+				previous2 = button
+			elseif i % (NUM_PET_ACTION_SLOTS / 2) == 1 then
+				button:SetPoint("TOP", previous2, "BOTTOM", 0, -2)
+				previous2 = button
 			else
 				button:SetPoint("LEFT", previous, "RIGHT", 2, 0)
 			end
 			previous = button
 		end
+		
+		if LibMasque then
+			local group = LibMasque("Button"):Group("LUI", side.." Sidebar "..id)
+			for i = 1, NUM_PET_ACTION_SLOTS do
+				group:AddButton(_G["PetActionButton"..i])
+			end
+		end
 	end
-	bar.MoveShapeshift = MoveShapeshift -- for the hook in the SetButtons function to access
+	
+	LUIPetBar:SetPoint("RIGHT", UIParent, "RIGHT", tonumber(db.Petbar.X), tonumber(db.Petbar.Y))
+	LUIPetBar:SetScale(tonumber(db.Petbar.Scale))
+end
 
-	MoveShapeshift()
+function module:SetShapeshiftBar()
+	if not LUIShapeshiftBar then
+		local bar = CreateFrame("Frame", "LUIShapeshiftBar", UIParent, "SecureHandlerStateTemplate")
+		bar:SetWidth(30 * NUM_SHAPESHIFT_SLOTS + 2 * (NUM_SHAPESHIFT_SLOTS - 1))
+		bar:SetHeight(30)
+
+		ShapeshiftBarFrame:SetParent(bar)
+		ShapeshiftBarFrame:EnableMouse(false)
+
+		local function MoveShapeshift()
+			if InCombatLockdown() then return end
+			
+			bar:SetWidth(30 * NUM_SHAPESHIFT_SLOTS + 2 * (NUM_SHAPESHIFT_SLOTS - 1))
+			
+			local button, previous
+			for i = 1, NUM_SHAPESHIFT_SLOTS do
+				button = _G["ShapeshiftButton"..i]
+				button:ClearAllPoints()
+				button:SetParent(bar)
+				
+				if i == 1 then
+					button:SetPoint("BOTTOMLEFT", bar, "BOTTOMLEFT", 0, 0)
+				else
+					button:SetPoint("LEFT", previous, "RIGHT", 2, 0)
+				end
+				previous = button
+				
+				if LibMasque and not _G["ShapeshiftButton"..i].added then
+					LibMasque("Button"):Group("LUI", side.." Sidebar "..id):AddButton(button)
+				end
+			end
+		end
+		bar.MoveShapeshift = MoveShapeshift -- for the hook in the SetButtons function to access
+
+		MoveShapeshift()
+		
+		if LibMasque then
+			local group = LibMasque("Button"):Group("LUI", side.." Sidebar "..id)
+			for i = 1, NUM_SHAPESHIFT_SLOTS do
+				group:AddButton(_G["ShapeshiftButton"..i])
+				_G["ShapeshiftButton"..i].added = true
+			end
+		end
+	end
+	
+	LUIShapeshiftBar:SetPoint("LEFT", UIParent, "LEFT", tonumber(db.Shapeshiftbar.X), tonumber(db.Shapeshiftbar.Y))
+	LUIShapeshiftBar:SetScale(tonumber(db.Shapeshiftbar.Scale))
 end
 
 function module:SetVehicleExit()
-	local bar = CreateFrame("Frame", "LUIVehicleExit", UIParent, "SecureHandlerStateTemplate")
-	bar:SetHeight(60)
-	bar:SetWidth(60)
-	bar:SetPoint("CENTER", UIParent, "CENTER", tonumber(db.Bars.VehicleExit.X), tonumber(db.Bars.VehicleExit.Y))
-	bar:SetScale(tonumber(db.Bars.VehicleExit.Scale))
-
-	RegisterStateDriver(bar, "visibility", "[vehicleui] show; hide")
+	if not LUIVehicleExit then
+		local bar = CreateFrame("Frame", "LUIVehicleExit", UIParent, "SecureHandlerStateTemplate")
+		bar:SetHeight(60)
+		bar:SetWidth(60)
+		
+		RegisterStateDriver(bar, "visibility", "[vehicleui] show; hide")
+		
+		local veb = CreateFrame("Button", nil, bar, "SecureActionButtonTemplate")
+		veb:SetAllPoints(bar)
+		veb:RegisterForClicks("AnyUp")
+		veb:SetNormalTexture("Interface\\Vehicles\\UI-Vehicles-Button-Exit-Up")
+		veb:SetPushedTexture("Interface\\Vehicles\\UI-Vehicles-Button-Exit-Down")
+		veb:SetHighlightTexture("Interface\\Vehicles\\UI-Vehicles-Button-Exit-Down")
+		veb:SetScript("OnClick", function(self) VehicleExit() end)
+		
+		if not UnitInVehicle("player") then bar:Hide() end
+	end
 	
-	local veb = CreateFrame("Button", nil, bar, "SecureActionButtonTemplate")
-	veb:SetAllPoints(bar)
-	veb:RegisterForClicks("AnyUp")
-	veb:SetNormalTexture("Interface\\Vehicles\\UI-Vehicles-Button-Exit-Up")
-	veb:SetPushedTexture("Interface\\Vehicles\\UI-Vehicles-Button-Exit-Down")
-	veb:SetHighlightTexture("Interface\\Vehicles\\UI-Vehicles-Button-Exit-Down")
-	veb:SetScript("OnClick", function(self) VehicleExit() end)
-
-	if not UnitInVehicle("player") then bar:Hide() end
+	LUIVehicleExit:SetPoint("CENTER", UIParent, "CENTER", tonumber(db.VehicleExit.X), tonumber(db.VehicleExit.Y))
+	LUIVehicleExit:SetScale(tonumber(db.VehicleExit.Scale))
 end
 
 function module:HideBlizzard()
@@ -1704,17 +1283,20 @@ function module:SetLibKeyBound()
 end
 
 function module:SetBars()
-	if not (IsAddOnLoaded("Bartender4") or IsAddOnLoaded("Dominos") or IsAddOnLoaded("Macaroon")) and db.Bars.Enable then
-		if not db.Bars.StatesLoaded then LoadStates(defaultstate) end
+	if not (IsAddOnLoaded("Bartender4") or IsAddOnLoaded("Dominos") or IsAddOnLoaded("Macaroon")) and db.General.Enable then
+		if not db.StatesLoaded then LoadStates(defaultstate) end
 		
 		self:SetLibKeyBound()
 		
-		self:SetBottomBar1()
-		self:SetBottomBar2()
-		self:SetBottomBar3()
+		for i = 1, 6 do
+			self:SetBottomBar(i)
+		end
 		
-		self:SetLeftBar()
-		self:SetRightBar()
+		for i = 1, 2 do
+			self:SetSideBar("Left", i)
+			self:SetSideBar("Right", i)
+		end
+		
 		self:SetPetBar()
 		self:SetShapeshiftBar()
 		
@@ -1730,18 +1312,26 @@ function module:SetBars()
 	end
 	
 	self:CreateBarBackground()
-	self:CreateRightSidebar()
-	self:CreateLeftSidebar()
+	self:CreateSidebarSlider("Right", 1)
+	self:CreateSidebarSlider("Right", 2)
+	self:CreateSidebarSlider("Left", 1)
+	self:CreateSidebarSlider("Left", 2)
 end
 
-local defaults = {
-	Bars = {
-		Enable = true,
+module.optionsName = "Bars"
+module.getter = "generic"
+module.setter = "Refresh"
+module.childGroups = "select"
+module.defaults = {
+	profile = {
 		StatesLoaded = false,
-		ShowHotkey = false,
-		ShowMacro = false,
-		ShowCount = true,
-		ShowEquipped = false,
+		General = {
+			Enable = true,
+			ShowHotkey = false,
+			ShowMacro = false,
+			ShowCount = true,
+			ShowEquipped = false
+		},
 		TopTexture = {
 			Enable = true,
 			Alpha = 0.7,
@@ -1754,9 +1344,9 @@ local defaults = {
 			Enable = true,
 			Alpha = 1,
 			X = "-25",
-			Y = "-45",
+			Y = "-42",
 		},
-		SidebarRight = { 
+		SidebarRight1 = { 
 			Enable = true,
 			OpenInstant = false,
 			Offset = "0",
@@ -1766,9 +1356,23 @@ local defaults = {
 			AutoPosEnable = true,
 			X = "0",
 			Y = "0",
+			Scale = 0.85,
 			State = "0",
 		},
-		SidebarLeft = {
+		SidebarRight2 = { 
+			Enable = false,
+			OpenInstant = false,
+			Offset = "250",
+			IsOpen = false,
+			Anchor = "BT4Bar8",
+			Additional = "",
+			AutoPosEnable = true,
+			X = "0",
+			Y = "0",
+			Scale = 0.85,
+			State = "0",
+		},
+		SidebarLeft1 = {
 			Enable = false,
 			OpenInstant = false,
 			Offset = "0",
@@ -1778,6 +1382,20 @@ local defaults = {
 			AutoPosEnable = true,
 			X = "0",
 			Y = "0",
+			Scale = 0.85,
+			State = "0",
+		},
+		SidebarLeft2 = {
+			Enable = false,
+			OpenInstant = false,
+			Offset = "250",
+			IsOpen = false,
+			Anchor = "BT4Bar7",
+			Additional = "",
+			AutoPosEnable = true,
+			X = "0",
+			Y = "0",
+			Scale = 0.85,
 			State = "0",
 		},
 		Bottombar1 = {
@@ -1787,6 +1405,8 @@ local defaults = {
 			Scale = 0.85,
 			AltState = "0",
 			CtrlState = "0",
+			NumPerRow = 12,
+			NumButtons = 12,
 			State = {
 				[1] = "0",
 				[2] = "0",
@@ -1821,6 +1441,8 @@ local defaults = {
 			AltState = "0",
 			CtrlState = "0",
 			State = "0",
+			NumPerRow = 12,
+			NumButtons = 12,
 			Fader = {
 				Casting = true,
 				Combat = true,
@@ -1847,6 +1469,92 @@ local defaults = {
 			AltState = "0",
 			CtrlState = "0",
 			State = "0",
+			NumPerRow = 12,
+			NumButtons = 12,
+			Fader = {
+				Casting = true,
+				Combat = true,
+				Enable = false,
+				Health = true,
+				HealthClip = 1.0,
+				Hover = true,
+				HoverAlpha = 0.75,
+				InAlpha = 1.0,
+				OutAlpha = 0.1,
+				OutDelay = 0.0,
+				OutTime = 1.5,
+				Power = true,
+				PowerClip = 0.9,
+				Targeting = true,
+				UseGlobalSettings = true,
+			},
+		},
+		Bottombar4 = {
+			Enable = false,
+			X = "0",
+			Y = "141.5",
+			Scale = 0.85,
+			AltState = "0",
+			CtrlState = "0",
+			State = "0",
+			NumPerRow = 12,
+			NumButtons = 12,
+			Fader = {
+				Casting = true,
+				Combat = true,
+				Enable = false,
+				Health = true,
+				HealthClip = 1.0,
+				Hover = true,
+				HoverAlpha = 0.75,
+				InAlpha = 1.0,
+				OutAlpha = 0.1,
+				OutDelay = 0.0,
+				OutTime = 1.5,
+				Power = true,
+				PowerClip = 0.9,
+				Targeting = true,
+				UseGlobalSettings = true,
+			},
+		},
+		Bottombar5 = {
+			Enable = false,
+			X = "0",
+			Y = "180.5",
+			Scale = 0.85,
+			AltState = "0",
+			CtrlState = "0",
+			State = "0",
+			NumPerRow = 12,
+			NumButtons = 12,
+			Fader = {
+				Casting = true,
+				Combat = true,
+				Enable = false,
+				Health = true,
+				HealthClip = 1.0,
+				Hover = true,
+				HoverAlpha = 0.75,
+				InAlpha = 1.0,
+				OutAlpha = 0.1,
+				OutDelay = 0.0,
+				OutTime = 1.5,
+				Power = true,
+				PowerClip = 0.9,
+				Targeting = true,
+				UseGlobalSettings = true,
+			},
+		},
+		Bottombar6 = {
+			Enable = false,
+			X = "0",
+			Y = "221.5",
+			Scale = 0.85,
+			AltState = "0",
+			CtrlState = "0",
+			State = "0",
+			NumPerRow = 12,
+			NumButtons = 12,
 			Fader = {
 				Casting = true,
 				Combat = true,
@@ -1877,486 +1585,347 @@ local defaults = {
 		},
 		VehicleExit = {
 			X = "-350",
-			Y = "-200",
+			Y = "-220",
 			Scale = 1,
 		},
 	},
 }
 
-------------------------------------------------------------------------
---	Bottom Bar Option Constructor
-------------------------------------------------------------------------
-
--- num: 1, 2 or 3
-function module:CreateBottombarOptions(num, order)
-	local barName = "Bar "..num
-	local barKey = "Bottombar"..num
-	local bardb = db.Bars[barKey]
-	local bardefaults = LUI.defaults.profile.Bars[barKey]
+function module:Refresh(...)
+	local info, value = ...
+	if type(info) == "table" and type(value) ~= "table" then
+		db[info[#info-1]][info[#info]] = value
+	end
 	
-	local bar = _G["LUIBar"..num]
-	
-	local ApplySettings = function()
-		bar:ClearAllPoints()
-		bar:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(bardb.X), tonumber(bardb.Y))
-		bar:SetScale(tonumber(bardb.Scale))
-		bar.UpdateState()
+	if not isBarAddOnLoaded then
+		for i = 1, 6 do
+			self:SetBottomBar(i)
+		end
 		
-		if bardb.Enable == false then
-			bar:Hide()
+		for i = 1, 2 do
+			self:SetSideBar("Left", i)
+			self:SetSideBar("Right", i)
+		end
+		
+		self:SetPetBar()
+		self:SetShapeshiftBar()
+		self:SetVehicleExit()
+	end
+	
+	BarsBackground:SetAlpha(db.TopTexture.Alpha)
+	BarsBackground:ClearAllPoints()
+	BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.TopTexture.X), tonumber(db.TopTexture.Y))
+	BarsBackground[db.TopTexture.Enable and "Show" or "Hide"](BarsBackground)
+	
+	BarsBackground2:SetAlpha(db.BottomTexture.Alpha)
+	BarsBackground2:ClearAllPoints()
+	BarsBackground2:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.BottomTexture.X), tonumber(db.BottomTexture.Y))
+	BarsBackground2[db.BottomTexture.Enable and "Show" or "Hide"](BarsBackground2)
+	
+	for _, button in pairs(buttonlist) do
+		local name = button:GetName()
+		
+		local count = _G[name.."Count"]
+		if db.General.ShowCount then
+			if count then count:Show() end
 		else
-			bar:Show()
+			if count then count:Hide() end
+		end
+		
+		local hotkey = _G[name.."HotKey"]
+		if db.General.ShowHotkey then
+			if hotkey then hotkey:Show() end
+		else
+			if hotkey then hotkey:Hide() end
+		end
+		
+		local macro = _G[name.."Name"]
+		if db.General.ShowMacro then
+			if macro then macro:Show() end
+		else
+			if macro then macro:Hide() end
+		end
+		
+		local border = _G[name.."Border"]
+		if db.General.ShowEquipped and button.action and IsEquippedAction(button.action) then
+			border:Show()
+		else
+			border:Hide()
 		end
 	end
 	
-	local DisabledFunc = function() return not bardb.Enable end
+	SidebarSetAnchor("Left", 1)
+	SidebarSetAnchor("Left", 2)
+	SidebarSetAnchor("Right", 1)
+	SidebarSetAnchor("Right", 2)
+end
+
+function module:LoadOptions()
+	LUI:EmbedAPI(self)
 	
-	local options = {
-		name = barName,
-		type = "group",
-		order = order,
-		args = {
-			Enable = (num ~= 1) and LUI:NewToggle("Enable", "Whether you want to use Bottom Bar "..num.." or not.", 1, bardb, "Enable", bardefaults, ApplySettings) or nil,
-			General = {
-				name = "General Settings",
-				type = "group",
-				guiInline = true,
-				disabled = DisabledFunc,
-				order = 2,
-				args = {
-					XValue = LUI:NewPosX(barName, 1, bardb, "", bardefaults, ApplySettings),
-					YValue = LUI:NewPosY(barName, 2, bardb, "", bardefaults, ApplySettings),
-					empty = LUI:NewEmpty(3),
-					Scale = LUI:NewSlider("Scale", "Choose the Scale of your "..barName..".", 4, bardb, "Scale", bardefaults, 0.1, 1.5, 0.05, ApplySettings),
-				},
-			},
-			State = {
-				name = "State Configuration",
-				type = "group",
-				guiInline = true,
-				disabled = DisabledFunc,
-				order = 3,
-				args = {},
-			},
-			Fader = {
-				name = "Fader",
-				type = "group",
-				guiInline = true,
-				disabled = DisabledFunc,
-				order = 4,
-				args = (LUI:GetModule("Fader", true) and LUI:GetModule("Fader"):CreateFaderOptions(bar, bardb.Fader, bardefaults.Fader, true)) or {
-					Empty = LUI:NewDesc("|cffff0000Fader not found.|r", 1),
-				},
-			},
-		},
-	}
+	local UIRL = function() StaticPopup_Show("RELOAD_UI") end
+	local disabledFunc = function() return not db.General.Enable end
+	local disabledTopTex = function() return not db.TopTexture.Enable end
+	local disabledtopTexAnim = function() return not db.TopTexture.Enable or not db.TopTexture.Animation end
+	local disabledBottomTex = function() return not db.BottomTexture.Enable end
 	
-	local ModStates = function(name, order, default, bdefault)
-		local alt = {
-			name = "Alt",
-			desc = "Choose the Alt key state for your "..name..".\nLUI Default: "..default.."\nBlizzard Default: "..bdefault,
-			type = "select",
-			values = statelist,
-			get = function()
-					for k, v in pairs(statelist) do
-						if bardb.AltState == v then
-							return k
-						end
-					end
-				end,
-			set = function(_, select)
-					bardb.AltState = statelist[select]
-					bar.UpdateState()
-				end,
-			order = order,
-		}
-		local ctrl = {
-			name = "Ctrl",
-			desc = "Choose the Ctrl key state for your "..name..".\nLUI Default: "..default.."\nBlizzard Default: "..bdefault,
-			type = "select",
-			values = statelist,
-			get = function()
-					for k, v in pairs(statelist) do
-						if bardb.CtrlState == v then
-							return k
-						end
-					end
-				end,
-			set = function(_, select)
-					bardb.CtrlState = statelist[select]
-					bar.UpdateState()
-				end,
-			order = order + 1,
-		}
-		return alt, ctrl
-	end
-	
-	if num == 1 then
-		local i = 1
-		for k, v in pairs(statetext) do
-			local c = i
-			options.args.State.args["State"..c] = {
-				name = v,
-				desc = "Choose the State for "..v..".\nLUI Default: "..defaultstate[barKey][c].."\nBlizzard Default: "..blizzstate[barKey][c],
+	local function createBottomBarOptions(num, order)
+		local disabledFunc = function() return not db["Bottombar"..num].Enable end
+		
+		local option = self:NewGroup("Bottom Bar "..num, order, {
+			Enable = (num ~= 1) and self:NewToggle("Show Bottom Bar "..num, nil, 1, true, "full") or nil,
+			header1 = self:NewHeader("General Settings", 2),
+			[""] = self:NewPosition("", "Bottom Bar "..num, 3, nil, true, nil, disabledFunc),
+			empty1 = self:NewDesc(" ", 5, "full"),
+			Scale = self:NewSlider("Scale", "Scale of the Bottom Bar "..num..".", 6, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
+			empty2 = self:NewDesc(" ", 7, "full"),
+			NumPerRow = self:NewSlider("Buttons Per Row", "Choose the Number of Buttons per row for your Bottom Bar "..num..".", 8, 1, 12, 1, true, nil, nil, disabledFunc),
+			NumButtons = self:NewSlider("Number of Buttons", "Choose the Number of Buttons for your Bottom Bar "..num..".", 9, 1, 12, 1, true, nil, nil, disabledFunc),
+			header2 = self:NewHeader("State Settings", 10),
+		})
+		
+		if num == 1 then
+			for i, name in pairs(statetext) do
+				local c = i
+				option.args["State"..c] = {
+					name = name,
+					desc = "Choose the State for "..name..".\nLUI Default: "..defaultstate.Bottombar1[c].."\nBlizzard Default: "..blizzstate.Bottombar1[c],
+					type = "select",
+					values = statelist,
+					disabled = disabledFunc,
+					get = function()
+							for k, v in pairs(statelist) do
+								if db.Bottombar1.State[c] == v then
+									return k
+								end
+							end
+						end,
+					set = function(info, select)
+							db.Bottombar1.State[c] = statelist[select]
+							UnregisterStateDriver(LUIBar1, "page")
+							RegisterStateDriver(LUIBar1, "page", GetBarState(num))
+						end,
+					order = c + 10,
+				}
+				i = i + 1
+			end
+		else
+			option.args.StateDefault = {
+				name = "Default",
+				desc = "Choose the State for your Bottom Bar "..num..".\nLUI Default: "..defaultstate["Bottombar"..num].."\nBlizzard Default: "..blizzstate["Bottombar"..num],
 				type = "select",
 				values = statelist,
+				disabled = disabledFunc,
 				get = function()
 						for k, v in pairs(statelist) do
-							if bardb.State[c] == v then
+							if db["Bottombar"..num].State == v then
+								return k
+							end
+						end
+					end,
+				set = function(info, select)
+						db["Bottombar"..i].State = statelist[select]
+						UnregisterStateDriver(_G["LUIBar"..num], "page")
+						RegisterStateDriver(_G["LUIBar"..num], "page", GetBarState(num))
+					end,
+				order = 11,
+			}
+		end
+		
+		option.args.StateAlt = {
+			name = "Alt",
+			desc = "Choose the Alt State for your Bottom Bar "..num..".",
+			type = "select",
+			values = statelist,
+			disabled = disabledFunc,
+			get = function()
+					for k, v in pairs(statelist) do
+						if db["Bottombar"..num].AltState == v then
+							return k
+						end
+					end
+				end,
+			set = function(info, select)
+					db["Bottombar"..num].AltState = statelist[select]
+					UnregisterStateDriver(_G["LUIBar"..num], "page")
+					RegisterStateDriver(_G["LUIBar"..num], "page", GetBarState(num))
+				end,
+			order = 25,
+		}
+		option.args.StateCtrl = {
+			name = "Ctrl",
+			desc = "Choose the Ctrl State for your Bottom Bar "..num..".",
+			type = "select",
+			values = statelist,
+			disabled = disabledFunc,
+			get = function()
+					for k, v in pairs(statelist) do
+						if db["Bottombar"..num].CtrlState == v then
+							return k
+						end
+					end
+				end,
+			set = function(info, select)
+					db["Bottombar"..num].CtrlState = statelist[select]
+					UnregisterStateDriver(_G["LUIBar"..num], "page")
+					RegisterStateDriver(_G["LUIBar"..num], "page", GetBarState(num))
+				end,
+			order = 26,
+		}
+		option.args.Fader = {
+			name = "Fader",
+			type = "group",
+			guiInline = true,
+			disabled = disabledFunc,
+			order = 27,
+			args = LUI:GetModule("Fader", true) and LUI:GetModule("Fader"):CreateFaderOptions(_G["LUIBar"..num], db["Bottombar"..num].Fader, dbd["Bottombar"..num].Fader) or {
+				Empty = self:NewDesc("|cffff0000Fader not found.|r", 1)
+			}
+		}
+		
+		return option
+	end
+	
+	local function createSideBarOptions(side, num, order)
+		local disabledFunc = function() return not db["Sidebar"..side..num].Enable end
+		local disabledPosFunc = function() return not db["Sidebar"..side..num].Enable or (isBarAddOnLoaded and not db["Sidebar"..side..num].AutoPosEnable) end
+		
+		local option = self:NewGroup(side.." Bar "..num, order, {
+			Enable = self:NewToggle("Show "..side.." Bar "..num, nil, 1, true, "full") or nil,
+			header1 = self:NewHeader("Anchor Settings", 2, nil, nil),
+			Intro = self:NewDesc("Which Bar do you want to use for this Sidebar?\nChoose one or type in the MainAnchor manually.\n\nMake sure your Bar is set to 6 buttons/2 columns and isn't used for another Sidebar.\nLUI will position your Bar automatically.", 3, nil, nil, not isBarAddOnLoaded),
+			AnchorDropdown = {
+				name = "Anchor",
+				type = "select",
+				values = barAnchors,
+				hidden = not isBarAddOnLoaded,
+				get = function()
+						for k, v in pairs(barAnchors) do
+							if db["Sidebar"..side..num].Anchor == v then
+								return k
+							end
+						end
+					end,
+				set = function(info, select)
+						db["Sidebar"..side..num].Anchor = barAnchors[select]
+						UIRL()
+					end,
+				order = 4,
+			},
+			Anchor = self:NewInput("Anchor", "Choose the Bar for this Sidebar.", 5, true, nil, disabledFunc, not isBarAddOnLoaded),
+			Additional = self:NewInput("Additional Frames", "Type in any additional frame names (seperated by commas), that you would like to show/hide with the Sidebar.", 6, true, nil, disabledFunc),
+			header2 = self:NewHeader("General Settings", 7),
+			[""] = self:NewPosition("", side.." Bar "..num, 8, nil, true, nil, disabledPosFunc),
+			Scale = self:NewSlider("Scale", "Choose the Scale for this Sidebar.", 10, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
+			AutoPosEnable = self:NewToggle("Stop touching me!", "Whether you want that LUI handles your Bar Positioning or not.", 11, true, nil, disabledFunc, not isBarAddOnLoaded),
+			header3 = self:NewHeader("Additional Settings", 12),
+			Offset = self:NewInputNumber("Y Offset", "Y Offset for your Sidebar", 13, true, nil, disabledFunc),
+			OpenInstant = self:NewToggle("Open Instant", "Whether you want to show an open/close animation or not.", 14, true, nil, disabledFunc),
+			State = {
+				name = "State",
+				desc = "Choose the State for this Sidebar.\nLUI Default: "..defaultstate["Sidebar"..side..num].."\nBlizzard Default: "..blizzstate["Sidebar"..side..num],
+				type = "select",
+				values = statelist,
+				hidden = isBarAddOnLoaded,
+				get = function()
+						for k, v in pairs(statelist) do
+							if db["Sidebar"..side..num].State == v then
 								return k
 							end
 						end
 					end,
 				set = function(_, select)
-						bardb.State[c] = statelist[select]
-						bar.UpdateState()
+						db["Sidebar"..side..num].State = statelist[select]
+						UnregisterStateDriver(_G["LUIBar"..side..num], "page")
+						RegisterStateDriver(_G["LUIBar"..side..num], "page", db["Sidebar"..side..num].State)
 					end,
-				order = c,
-			}
-			i = i + 1
-		end
-		options.args.State.args["AltState"], options.args.State.args["CtrlState"] = ModStates(barName, i, defaultstate[barKey][1], blizzstate[barKey][1])
-	else
-		options.args.State.args["Default"] = {
-			name = "Default",
-			desc = "Choose the State for your "..barName..".\nLUI Default: "..defaultstate[barKey].."\nBlizzard Default: "..blizzstate[barKey],
-			type = "select",
-			values = statelist,
-			get = function()
-					for k, v in pairs(statelist) do
-						if bardb.State == v then
-							return k
-						end
-					end
-				end,
-			set = function(_, select)
-					bardb.State = statelist[select]
-					bar.UpdateState()
-				end,
-			order = 1,
-		}
-		options.args.State.args["AltState"], options.args.State.args["CtrlState"] = ModStates(barName, 2, defaultstate[barKey], blizzstate[barKey])
+				order = 15,
+			},
+		})
+		
+		return option
 	end
 	
-	return options
-end
-
-------------------------------------------------------------------------
---	Sidebar Option Constructor
-------------------------------------------------------------------------
-	
--- side: "Left" or "Right"
-function module:CreateSidebarOptions(side, order)
-	local isRight = side == "Right"
-	local sbdb = isRight and db.Bars.SidebarRight or db.Bars.SidebarLeft
-	local sbdefaults = isRight and LUI.defaults.profile.Bars.SidebarRight or LUI.defaults.profile.Bars.SidebarLeft
-	local sbanchor = isRight and fsidebar_anchor or fsidebar2_anchor
-	
-	local UIRL = function() StaticPopup_Show("RELOAD_UI") end
-	
-	local ApplySettings = function()
-		sbanchor:ClearAllPoints()
-		sbanchor:SetPoint(side, UIParent, side, isRight and 11 or -11, sbdb.Offset)
-		if isRight then
-			if sbdb.AutoPosEnable or isBarAddOnLoaded then SetRightSidebarAnchor() end
-		else
-			if sbdb.AutoPosEnable or isBarAddOnLoaded then SetLeftSidebarAnchor() end
-		end
+	local function createOtherBarOptions(name, order)
+		local option = self:NewGroup(name, order, {
+			[""] = self:NewPosition("", name, 1, nil, true),
+			Scale = self:NewSlider("Scale", "Choose the Scale for the "..name..".", 3, 0.1, 1.5, 0.05, true, true),
+		})
+		
+		return option
 	end
-	
-	local ApplyAdditionalFrames = function() Panels:LoadAdditional(sbdb.Additional, true) end
-	
-	local DisabledFunc = function() return not sbdb.Enable end
-	
-	local DisabledPosFunc = function() return isBarAddOnLoaded and not sbdb.AutoPosEnable end
-	
-	local ShowFrameIdentifier = function() LUI_Frame_Identifier:Show() end
 	
 	local options = {
-		name = side.." Sidebar",
-		type = "group",
-		order = order,
-		args = {
-			Enable = LUI:NewToggle("Enable", "Whether you want to show the "..side.." Sidebar or not.", 1, sbdb, "Enable", sbdefaults, UIRL),
-			Settings = {
-				name = "Anchor",
-				type = "group",
-				order = 2,
-				disabled = DisabledFunc,
-				guiInline = true,
-				args = {
-					Intro = LUI:NewDesc("Which Bar should be your right Sidebar?\nChoose one or type in the MainAnchor manually.\n\nMake sure your Bar is set to 6 buttons/2 columns.\nLUI will position your Bar automatically.", 1, "full"),
-					empty = LUI:NewEmpty(2),
-					FrameModifierDesc = LUI:NewDesc("Use the LUI Frame Identifier to search for the Parent Frame of your Bar.\n\nOr use the Blizzard Debug Tool: Type /framestack", 3, "full"),
-					FrameIdentifier = LUI:NewExecute("LUI Frame Identifier", nil, 4, ShowFrameIdentifier),
-					empty2 = LUI:NewEmpty(4),
-					SidebarAnchorDropDown = LUI:NewSelect("Bar", "Choose the Bar for your Right Sidebar.", 5, barAnchors, nil, sbdb, "Anchor", sbdefaults, UIRL),
-					SidebarAnchor = LUI:NewInput("Individual Bar", "Choose the Bar for your Right Sidebar.", 6, sbdb, "Anchor", sbdefaults, UIRL),
-					AdditionalFrames = LUI:NewInput("Additional Frames", "Type in any additional frame names (separated by commas)\nthat you would like to show/hide with the "..side.." Sidebar.", 7, sbdb, "Additional", sbdefaults, ApplyAdditionalFrames),
-					XOffset = LUI:NewPosX("Bar Anchor", 8, sbdb, "", sbdefaults, ApplySettings, nil, DisabledPosFunc),
-					YOffset = LUI:NewPosY("Bar Anchor", 9, sbdb, "", sbdefaults, ApplySettings, nil, DisabledPosFunc),
-					AutoPos = isBarAddOnLoaded and LUI:NewToggle("Stop touching me!", "Whether you want that LUI handles your Bar Positioning or not.", 10, sbdb, "AutoPosEnable", sbdefaults, ApplySettings) or nil,
-				},
+		General = self:NewGroup("General", 1, {
+			Enable = self:NewToggle("Enable", "Whether you want to use LUI Bars or not.", 1, UIRL, "full"),
+			empty1 = self:NewDesc(" ", 2, "full"),
+			ShowHotkey = self:NewToggle("Show Hotkey Text", "Whether you want to show hotkey text or not.", 3, true, "full", nil, isLibMasqueLoaded or isBarAddOnLoaded),
+			ShowMacro = self:NewToggle("Show Macro Text", "Whether you want to show macro text or not.", 4, true, "full", nil, isLibMasqueLoaded or isBarAddOnLoaded),
+			ShowCount = self:NewToggle("Show Count Text", "Whether you want to show count text or not.", 5, true, "full", nil, isLibMasqueLoaded or isBarAddOnLoaded),
+			empty2 = self:NewDesc(" ", 6, "full", nil, isLibMasqueLoaded or isBarAddOnLoaded),
+			ShowEquipped = self:NewToggle("Show Equipped Border", "Whether you want to show equipped borders or not.", 7, true, "full", nil, isLibMasqueLoaded or isBarAddOnLoaded),
+			empty3 = self:NewDesc(" ", 8, "full"),
+			LoadBlizz = {
+				name = "Load Blizzard States",
+				desc = "Load the Blizzard Default Bar States.",
+				type = "execute",
+				hidden = isBarAddOnLoaded,
+				func = function()
+						LoadStates(blizzstate)
+						module:Refresh()
+					end,
+				order = 9,
 			},
-			AddOptions = {
-				name = "Additional Options",
-				type = "group",
-				order = 3,
-				disabled = DisabledFunc,
-				guiInline = true,
-				args = {
-					Offset = LUI:NewInputNumber("Sidebar Y Offset", "Y Offset from the middle-right position.", 1, sbdb, "Offset", sbdefaults, ApplySettings),
-					OpenAnim = LUI:NewToggle("Open Instant", "Whether you want to show an open/close animation or not.", 2, sbdb, "OpenInstant", sbdefaults, function() end),
-				},
+			LoadLUI = {
+				name = "Load LUI States",
+				desc = "Load the LUI Default Bar States.",
+				type = "execute",
+				hidden = isBarAddOnLoaded,
+				func = function()
+						LoadStates(defaultstate)
+						module:Refresh()
+					end,
+				order = 10,
 			},
-			BarOptions = not isBarAddOnLoaded and {
-				name = "Bar Options",
-				type = "group",
-				order = 4,
-				disabled = DisabledFunc,
-				guiInline = true,
-				args = {
-					State = {
-						name = "State",
-						desc = "Choose the State for your "..side.." Bar.\nLUI Default: "..defaultstate["Sidebar"..side].."\nBlizzard Default: "..blizzstate["Sidebar"..side],
-						type = "select",
-						values = statelist,
-						get = function()
-								for k, v in pairs(statelist) do
-									if sbdb.State == v then
-										return k
-									end
-								end
-							end,
-						set = function(_, select)
-								sbdb.State = statelist[select]
-								if side == "Right" then LUIBarRight.UpdateState() end
-								if side == "Left" then LUIBarLeft.UpdateState() end
-							end,
-						order = 1,
-					},
-				},
-			} or nil,
-		},
+			empty3 = self:NewDesc(" ", 11, "full", nil, isBarAddOnLoaded),
+			ToggleKB = {
+				name = "Keybinds",
+				desc = "Toggles Keybinding mode.",
+				type = "execute",
+				hidden = isBarAddOnLoaded,
+				func = function() LibKeyBound:Toggle() end,
+				order = 12,
+			},
+			
+		}),
+		TopTexture = self:NewGroup("Top Texture", 2, {
+			Enable = self:NewToggle("Enable", "Whether you want to show the Top Bar Texture or not.", 1, true, "full"),
+			Alpha = self:NewSlider("Alpha", "Choose your Top Bar Texture Alpha.", 2, 0, 1, 0.1, true, true, nil, disabledTopTex),
+			[""] = self:NewPosition("", "Top Bar Texture", 3, nil, true, nil, disabledTopTex),
+			Animation = self:NewToggle("Enable Texture Animation", "Whether you want to show the Texture Animation or not.", 5, function() end, nil, disabledTopTex, not LUI.isForteCooldownLoaded),
+			AnimationHeight = self:NewInputNumber("Animation Height", "Choose the Top Bar Texture Animation Height.", 6, function() end, nil, disabledtopTexAnim, not LUI.isForteCooldownLoaded),
+		}),
+		BottomTexture = self:NewGroup("Bottom Texture", 3, {
+			Enable = self:NewToggle("Enable", "Whether you want to show the Bottom Bar Texture or not.", 1, true, "full"),
+			Alpha = self:NewSlider("Alpha", "Choose your Bottom Bar Texture Alpha.", 2, 0, 1, 0.1, true, true, nil, disabledBottomTex),
+			[""] = self:NewPosition("", "Bottom Bar Texture", 3, nil, true, nil, disabledBottomTex),
+		}),
+		Bottombar1 = not isBarAddOnLoaded and createBottomBarOptions(1, 4) or nil,
+		Bottombar2 = not isBarAddOnLoaded and createBottomBarOptions(2, 5) or nil,
+		Bottombar3 = not isBarAddOnLoaded and createBottomBarOptions(3, 6) or nil,
+		Bottombar4 = not isBarAddOnLoaded and createBottomBarOptions(4, 7) or nil,
+		Bottombar5 = not isBarAddOnLoaded and createBottomBarOptions(5, 8) or nil,
+		Bottombar6 = not isBarAddOnLoaded and createBottomBarOptions(6, 9) or nil,
+		SidebarRight1 = createSideBarOptions("Right", 1, 10),
+		SidebarRight2 = createSideBarOptions("Right", 2, 11),
+		SidebarLeft1 = createSideBarOptions("Left", 1, 12),
+		SidebarLeft2 = createSideBarOptions("Left", 2, 13),
+		Shapeshiftbar = not isBarAddOnLoaded and createOtherBarOptions("Shapeshift Bar", 14) or nil,
+		Petbar = not isBarAddOnLoaded and createOtherBarOptions("Pet Bar", 15) or nil,
+		VehicleExit = not isBarAddOnLoaded and createOtherBarOptions("Vehicle Exit Button", 16) or nil,
 	}
 	
-	return options
-end
-
-function module:LoadOptions()
-	local bardb = db.Bars
-	local bardefaults = LUI.defaults.profile.Bars
-	
-	local ApplySettings = function()
-		BarsBackground:SetAlpha(db.Bars.TopTexture.Alpha)
-		BarsBackground:ClearAllPoints()
-		BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.TopTexture.X), tonumber(db.Bars.TopTexture.Y))
-		
-		if db.Bars.TopTexture.Enable == true then
-			BarsBackground:Show()
-		else
-			BarsBackground:Hide()
-		end
-		
-		BarsBackground2:SetAlpha(db.Bars.BottomTexture.Alpha)
-		BarsBackground2:ClearAllPoints()
-		BarsBackground2:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.Bars.BottomTexture.X), tonumber(db.Bars.BottomTexture.Y))
-		
-		if db.Bars.BottomTexture.Enable == true then
-			BarsBackground2:Show()
-		else
-			BarsBackground2:Hide()
-		end
-	end
-	
-	local ToggleTexts = function()
-		for _, button in pairs(buttonlist) do
-			local name = button:GetName()
-			
-			local count = _G[name.."Count"]
-			if db.Bars.ShowCount then
-				if count then count:Show() end
-			else
-				if count then count:Hide() end
-			end
-			
-			local hotkey = _G[name.."HotKey"]
-			if db.Bars.ShowHotkey then
-				if hotkey then hotkey:Show() end
-			else
-				if hotkey then hotkey:Hide() end
-			end
-			
-			local name = _G[name.."Name"]
-			if db.Bars.ShowMacro then
-				if name then name:Show() end
-			else
-				if name then name:Hide() end
-			end
-		end
-	end
-	
-	local ToggleEquipped = function()
-		for _, button in pairs(buttonlist) do
-			local name = button:GetName()
-			if _G[name] then
-				local border = _G[name.."Border"]
-				if db.Bars.ShowEquipped and button.action and IsEquippedAction(button.action) then
-					border:Show()
-				else
-					border:Hide()
-				end
-			end
-		end
-	end
-	
-	local DisabledTopBarTex = function() return not db.Bars.TopTexture.Enable end
-	
-	local DisabledBottomBarTex = function() return not db.Bars.BottomTexture.Enable end
-	
-	local ApplySettingsPet = function()
-		LUIPetBar:ClearAllPoints()
-		LUIPetBar:SetPoint("RIGHT", UIParent, "RIGHT", tonumber(bardb.Petbar.X), tonumber(bardb.Petbar.Y))
-		LUIPetBar:SetScale(tonumber(bardb.Petbar.Scale))
-	end
-	
-	local ApplySettingsShapeshift = function()
-		LUIShapeshiftBar:ClearAllPoints()
-		LUIShapeshiftBar:SetPoint("LEFT", UIParent, "LEFT", tonumber(bardb.Shapeshiftbar.X), tonumber(bardb.Shapeshiftbar.Y))
-		LUIShapeshiftBar:SetScale(tonumber(bardb.Shapeshiftbar.Scale))
-	end
-	
-	local ApplySettingsVehicleExit = function()
-		LUIVehicleExit:ClearAllPoints()
-		LUIVehicleExit:SetPoint("CENTER", UIParent, "CENTER", tonumber(bardb.VehicleExit.X), tonumber(bardb.VehicleExit.Y))
-		LUIVehicleExit:SetScale(tonumber(bardb.VehicleExit.Scale))
-	end
-	
-	local LoadStatesBlizzard = function()
-		LoadStates(blizzstate)
-		LUIBar1.UpdateState()
-		LUIBar2.UpdateState()
-		LUIBar3.UpdateState()
-		LUIBarLeft.UpdateState()
-		LUIBarRight.UpdateState()
-	end
-	
-	local LoadStatesLUI = function()
-		LoadStates(defaultstate)
-		LUIBar1.UpdateState()
-		LUIBar2.UpdateState()
-		LUIBar3.UpdateState()
-		LUIBarLeft.UpdateState()
-		LUIBarRight.UpdateState()
-	end
-	
-	local ToggleKeybind = function() LibKeyBound:Toggle() end
-	
-	local options = {
-		Bars = {
-			name = "Bars",
-			type = "group",
-			childGroups = "tab",
-			args = {
-				Settings = {
-					name = "General",
-					type = "group",
-					order = 2,
-					args = {
-						Enable = LUI:NewToggle("Enable", "Whether you want to use LUI Bars or not.", 1, bardb, "Enable", bardefaults, function() StaticPopup_Show("RELOAD_UI") end),
-						GeneralSettings = not isBarAddOnLoaded and {
-							name = "General",
-							type = "group",
-							order = 2,
-							guiInline = true,
-							args = {
-								ShowHotkey = LUI:NewToggle("Show Hotkey Text", "Whether you want to show hotkey text or not.", 1, bardb, "ShowHotkey", bardefaults, ToggleTexts),
-								ShowMacro = LUI:NewToggle("Show Macro Text", "Whether you want to show macro text or not.", 2, bardb, "ShowMacro", bardefaults, ToggleTexts),
-								ShowCount = LUI:NewToggle("Show Count Text", "Whether you want to show count text or not.", 3, bardb, "ShowCount", bardefaults, ToggleTexts),
-								empty = LUI:NewEmpty(4),
-								ShowEquipped = LUI:NewToggle("Show Equipped Borders", "Whether you want to show the green equipped borders or not.", 5, bardb, "ShowEquipped", bardefaults, ToggleEquipped),
-								empty2 = LUI:NewEmpty(6),
-								LoadBlizz = LUI:NewExecute("Load Blizzard States", "Load the Blizzard Default Bar States.", 7, LoadStatesBlizzard),
-								LoadLUI = LUI:NewExecute("Load LUI States", "Load the LUI Default Bar States.", 8, LoadStatesLUI),
-								empty3 = LUI:NewEmpty(9),
-								ToggleKeybind = LUI:NewExecute("Keybinds", "Toggles Keybinding Mode", 10, ToggleKeybind),
-							},
-						} or nil,
-						TopTextureSettings = {
-							name = "Bars Top Texture Settings",
-							type = "group",
-							order = 3,
-							guiInline = true,
-							args = {
-								Toggle = LUI:NewToggle("Enable", "Whether you want to show the Top Bar Texture or not.", 1, bardb.TopTexture, "Enable", bardefaults.TopTexture, ApplySettings),
-								Alpha = LUI:NewSlider("Alpha", "Choose your Bar Top Texture Alpha Value.", 2, bardb.TopTexture, "Alpha", bardefaults.TopTexture, 0, 1, 0.1, ApplySettings, nil, DisabledTopBarTex),
-								XOffset = LUI:NewPosX("Top Bar Texture", 3, bardb.TopTexture, "", bardefaults.TopTexture, ApplySettings, nil, DisabledTopBarTex),
-								YOffset = LUI:NewPosY("Top Bar Texture", 4, bardb.TopTexture, "", bardefaults.TopTexture, ApplySettings, nil, DisabledTopBarTex),
-							},
-						},
-						TopBarAnimation = LUI.isForteCooldownLoaded and {
-							name = "Bar Animation",
-							type = "group",
-							guiInline = true,
-							--disabled = function() return not LUI.isForteCooldownLoaded end,
-							order = 4,
-							args = {
-								Desc = LUI:NewDesc("This Feature will be only available if you are using ForteXorcist CooldownTimer.", 1),
-								empty23223342211 = LUI:NewEmpty(2),
-								Animation = LUI:NewToggle("Enable Bar Texture Animation", "Whether you want to show the Bar Texture Animation or not.", 3, bardb.TopTexture, "Animation", bardefaults.TopTexture, ApplySettings, nil, DisabledTopBarTex),
-								AnimationHeight = LUI:NewHeight("Top Bar Texture Animation", 4, bardb.TopTexture, "AnimationHeight", bardefaults.TopTexture, ApplySettings, nil, DisabledTopBarTex),
-							},
-						} or nil,
-						BottomTextureSettings = {
-							name = "Bars Bottom Texture Settings",
-							type = "group",
-							guiInline = true,
-							order = 5,
-							args = {
-								Toggle = LUI:NewToggle("Enable", "Whether you want to show the Bottom Bar Texture or not.", 1, bardb.BottomTexture, "Enable", bardefaults.BottomTexture, ApplySettings),
-								Alpha = LUI:NewSlider("Alpha", "Choose your Bar Bottom Texture Alpha Value.", 2, bardb.BottomTexture, "Alpha", bardefaults.BottomTexture, 0, 1, 0.1, ApplySettings, nil, DisabledBottomBarTex),
-								XOffset = LUI:NewPosX("Bottom Bar Texture", 3, bardb.BottomTexture, "", bardefaults.BottomTexture, ApplySettings, nil, DisabledBottomBarTex),
-								YOffset = LUI:NewPosY("Bottom Bar Texture", 4, bardb.BottomTexture, "", bardefaults.BottomTexture, ApplySettings, nil, DisabledBottomBarTex),
-							},
-						},
-					},
-				},
-				Bottombar1 = not isBarAddOnLoaded and module:CreateBottombarOptions(1, 3) or nil,
-				Bottombar2 = not isBarAddOnLoaded and module:CreateBottombarOptions(2, 4) or nil,
-				Bottombar3 = not isBarAddOnLoaded and module:CreateBottombarOptions(3, 5) or nil,
-				SidebarRight = module:CreateSidebarOptions("Right", 6),
-				SidebarLeft = module:CreateSidebarOptions("Left", 7),
-				Otherbars = not isBarAddOnLoaded and {
-					name = "Other Bars",
-					type = "group",
-					order = 8,
-					args = {
-						PetHeader = LUI:NewHeader("Pet Bar", 1, "full"),
-						PetXValue = LUI:NewPosX("Pet Bar", 2, bardb.Petbar, "", bardefaults.Petbar, ApplySettingsPet),
-						PetYValue = LUI:NewPosY("Pet Bar", 3, bardb.Petbar, "", bardefaults.Petbar, ApplySettingsPet),
-						empty1 = LUI:NewEmpty(4),
-						PetScale = LUI:NewSlider("Scale", "Choose the Scale of your Pet Bar.", 5, bardb.Petbar, "Scale", bardefaults.Petbar, 0.1, 1.5, 0.05, ApplySettingsPet),
-						empty2 = LUI:NewEmpty(6),
-						
-						ShapeshiftHeader = LUI:NewHeader("Shapeshift Bar", 7, "full"),
-						ShapeshiftXValue = LUI:NewPosX("Shapeshift Bar", 8, bardb.Shapeshiftbar, "", bardefaults.Shapeshiftbar, ApplySettingsShapeshift),
-						ShapeshiftYValue = LUI:NewPosY("Shapeshift Bar", 9, bardb.Shapeshiftbar, "", bardefaults.Shapeshiftbar, ApplySettingsShapeshift),
-						empty3 = LUI:NewEmpty(10),
-						ShapeshiftScale = LUI:NewSlider("Scale", "Choose the Scale of your Shapeshift Bar.", 11, bardb.Shapeshiftbar, "Scale", bardefaults.Shapeshiftbar, 0.1, 1.5, 0.05, ApplySettingsShapeshift),
-						empty4 = LUI:NewEmpty(12),
-						
-						VehicleHeader = LUI:NewHeader("Vehicle Exit Button", 13, "full"),
-						VehicleXValue = LUI:NewPosX("Vehicle Exit Button", 14, bardb.VehicleExit, "", bardefaults.VehicleExit, ApplySettingsVehicleExit),
-						VehicleYValue = LUI:NewPosY("Vehicle Exit Button", 15, bardb.VehicleExit, "", bardefaults.VehicleExit, ApplySettingsVehicleExit),
-						empty5 = LUI:NewEmpty(16),
-						VehicleScale = LUI:NewSlider("Scale", "Choose the Scale of your Vehicle Exit Button.", 17, bardb.VehicleExit, "Scale", bardefaults.VehicleExit, 0.1, 1.5, 0.05, ApplySettingsVehicleExit),
-					},
-				} or nil,
-			},
-		},
-	}
-	
-	for _, v in pairs(options.Bars.args) do
+	for _, v in pairs(options) do
 		if type(v) == "table" then
 			v.disabled = InCombatLockdown
 		end
@@ -2366,14 +1935,7 @@ function module:LoadOptions()
 end
 
 function module:OnInitialize()
-	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
-	LUI:RefreshDefaults()
-	LUI:Refresh()
-	
-	self.db = LUI.db.profile
-	db = self.db
-	
-	LUI:RegisterOptions(self)
+	db, dbd = LUI:NewNamespace(self)
 end
 
 function module:OnEnable()
