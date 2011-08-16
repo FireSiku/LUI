@@ -460,6 +460,9 @@ function module:SetMap()
 	
 	WorldMapFrame:EnableMouse(true)
 	WorldMapFrame:EnableKeyboard(false)
+
+	-- Make closable by Esc, and play sound.
+	tinsert(UISpecialFrames, "WorldMapFrame")
 	
 	self:SecureHookScript(WorldMapFrame, "OnShow", wmfOnShow)
 	self:SecureHookScript(WorldMapFrame, "OnHide", wmfOnHide)
