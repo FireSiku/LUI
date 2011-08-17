@@ -492,7 +492,7 @@ function module:CreateSidebarSlider(side, id)
 	sb.ButtonBack:SetAlpha(0)
 	sb.ButtonBack:Show()
 	
-	sb.ButtonBlock = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 80, 225, 1, "MEDIUM", 4, other, sb.Anchor, other, 82, isRight and 5 or -5, 1)
+	sb.ButtonBlock = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 80, 225, 1, "MEDIUM", 4, other, sb.Anchor, other, isRight and -82 or 82, -5, 1)
 	sb.ButtonBlock:EnableMouse(true)
 	sb.ButtonBlock:Show()
 	
