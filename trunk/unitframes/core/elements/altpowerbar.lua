@@ -1,6 +1,8 @@
 local parent, ns = ...
 local oUF = ns.oUF
 
+-- local ALTERNATE_POWER_INDEX = ALTERNATE_POWER_INDEX
+
 local UpdatePower = function(self, event, unit, powerType)
 	if(self.unit ~= unit or powerType ~= 'ALTERNATE') then return end
 
@@ -10,7 +12,6 @@ local UpdatePower = function(self, event, unit, powerType)
 		altpowerbar:PreUpdate()
 	end
 
-	local ALTERNATE_POWER_INDEX = ALTERNATE_POWER_INDEX
 	local barType, min = UnitAlternatePowerInfo(unit)
 	local cur = UnitPower(unit, ALTERNATE_POWER_INDEX)
 	local max = UnitPowerMax(unit, ALTERNATE_POWER_INDEX)
@@ -53,11 +54,13 @@ local Enable = function(self, unit)
 		altpowerbar.__owner = self
 		altpowerbar.ForceUpdate = ForceUpdate
 
-		self:RegisterEvent('UNIT_DISPLAYPOWER', Toggler)
+		self:RegisterEvent('UNIT_POWER_BAR_SHOW', Toggler)
+		self:RegisterEvent('UNIT_POWER_BAR_HIDE', Toggler)
 
 		altpowerbar:Hide()
 
-		PlayerPowerBarAlt:UnregisterEvent'UNIT_DISPLAYPOWER'
+		PlayerPowerBarAlt:UnregisterEvent'UNIT_POWER_BAR_SHOW'
+		PlayerPowerBarAlt:UnregisterEvent'UNIT_POWER_BAR_HIDE'
 		PlayerPowerBarAlt:UnregisterEvent'PLAYER_ENTERING_WORLD'
 
 		return true
@@ -67,9 +70,11 @@ end
 local Disable = function(self, unit)
 	local altpowerbar = self.AltPowerBar
 	if(altpowerbar) then
-		self:UnregisterEvent('UNIT_DISPLAYPOWER', Toggler)
+		self:UnregisterEvent('UNIT_POWER_BAR_SHOW', Toggler)
+		self:UnregisterEvent('UNIT_POWER_BAR_HIDE', Toggler)
 
-		PlayerPowerBarAlt:RegisterEvent'UNIT_DISPLAYPOWER'
+		PlayerPowerBarAlt:RegisterEvent'UNIT_POWER_BAR_SHOW'
+		PlayerPowerBarAlt:RegisterEvent'UNIT_POWER_BAR_HIDE'
 		PlayerPowerBarAlt:RegisterEvent'PLAYER_ENTERING_WORLD'
 	end
 end
