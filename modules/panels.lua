@@ -11,10 +11,11 @@
 ]]
 
 -- External references.
-local _, LUI = ...
-local module = LUI:NewModule("Panels", "AceHook-3.0", "AceEvent-3.0")
-local Themes = LUI:GetModule("Themes")
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("Panels", "AceHook-3.0", "AceEvent-3.0")
+local Frames = LUI:Module("Frames")
+local Themes = LUI:Module("Themes")
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
 local db
@@ -41,8 +42,6 @@ local addonAnchors = {
 }
 
 function module:CheckPanels()
-	local Frames = LUI:GetModule("Frames")
-
 	if db.Frames.AlwaysShowChat == true and db.Frames.AlwaysShowTps == true and db.Frames.AlwaysShowDps == true and db.Frames.AlwaysShowRaid == true then
 		isAllShown = true
 		Frames:SetOrbCycleColor()
@@ -148,7 +147,7 @@ function module:CheckPanels()
 		db.Frames.IsRaidShown = false
 	end
 	
-	if LUI:GetModule("Micromenu", true) then	
+	if LUI:Module("Micromenu", true) then	
 		if db.Frames.AlwaysShowMicroMenu == true or db.Frames.IsMicroMenuShown == true then
 			MicroMenuButton:SetAlpha(1)
 			MicroMenuButton:Show()
@@ -296,7 +295,7 @@ function module:CheckSecondChatFrame()
 end
 
 function module:SetSecondChatAnchor()
-	if LUI:GetModule("Chat", true) then
+	if LUI:Module("Chat", true) then
 		ChatAlphaAnchor2:ClearAllPoints()
 		ChatAlphaAnchor2:SetPoint("TOPLEFT", _G[db.Chat.SecondChatAnchor], "TOPLEFT", -10, 8)
 	end
@@ -865,6 +864,13 @@ function module:SetBlizzBossFrames()
 	end
 end]]
 
+function module:SetColors()
+	self:SetChatBackground()
+	self:SetTpsBackground()
+	self:SetDpsBackground()
+	self:SetRaidBackground()
+end
+
 function module:SetPanels()
 	self:SetChat()
 	self:SetTps()
@@ -1172,8 +1178,7 @@ function module:LoadOptions()
 										end,
 									set = function(self, TpsTexture)
 											db.Frames.Tps.Background = frameBackgrounds2[TpsTexture]
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetTpsBackground()
+											module:SetTpsBackground()
 										end,
 									order = 1,
 								},
@@ -1184,8 +1189,7 @@ function module:LoadOptions()
 									get = function() return db.Frames.Tps.FullTexture end,
 									set = function(self, UseFullTexture)
 											db.Frames.Tps.FullTexture = not db.Frames.Tps.FullTexture
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetTpsBackground()
+											module:SetTpsBackground()
 										end,
 									order = 2,
 								},
@@ -1200,8 +1204,7 @@ function module:LoadOptions()
 												print("Please try again...")
 											end
 											db.Frames.Tps.OffsetX = TpsBGOffsetX
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetTpsBackground()
+											module:SetTpsBackground()
 										end,
 									order = 3,
 								},
@@ -1216,8 +1219,7 @@ function module:LoadOptions()
 												print("Please try again...")
 											end
 											db.Frames.Tps.OffsetY = TpsBGOffsetY
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetTpsBackground()
+											module:SetTpsBackground()
 										end,
 									order = 4,
 								},
@@ -1229,8 +1231,7 @@ function module:LoadOptions()
 									get = function() return unpack(Themes.db.profile.tps) end,
 									set = function(_,r,g,b,a)
 											Themes.db.profile.tps = {r,g,b,a}
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetTpsBackground()
+											module:SetTpsBackground()
 										end,
 									order = 5,
 								},
@@ -1242,8 +1243,7 @@ function module:LoadOptions()
 									get = function() return unpack(Themes.db.profile.tpsborder) end,
 									set = function(_,r,g,b,a)
 											Themes.db.profile.tpsborder = {r,g,b,a}
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetTpsBackground()
+											module:SetTpsBackground()
 										end,
 									order = 6,
 								},
@@ -1447,8 +1447,7 @@ function module:LoadOptions()
 										end,
 									set = function(self, DpsTexture)
 											db.Frames.Dps.Background = frameBackgrounds2[DpsTexture]
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetDpsBackground()
+											module:SetDpsBackground()
 										end,
 									order = 1,
 								},
@@ -1459,8 +1458,7 @@ function module:LoadOptions()
 									get = function() return db.Frames.Dps.FullTexture end,
 									set = function(self, UseFullTexture)
 											db.Frames.Dps.FullTexture = not db.Frames.Dps.FullTexture
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetDpsBackground()
+											module:SetDpsBackground()
 										end,
 									order = 2,
 								},
@@ -1475,8 +1473,7 @@ function module:LoadOptions()
 												print("Please try again...")
 											end
 											db.Frames.Dps.OffsetX = DpsBGOffsetX
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetDpsBackground()
+											module:SetDpsBackground()
 										end,
 									order = 3,
 								},
@@ -1491,8 +1488,7 @@ function module:LoadOptions()
 												print("Please try again...")
 											end
 											db.Frames.Dps.OffsetY = DpsBGOffsetY
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetDpsBackground()
+											module:SetDpsBackground()
 										end,
 									order = 4,
 								},
@@ -1504,8 +1500,7 @@ function module:LoadOptions()
 									get = function() return unpack(Themes.db.profile.dps) end,
 									set = function(_,r,g,b,a)
 											Themes.db.profile.dps = {r,g,b,a}
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetDpsBackground()
+											module:SetDpsBackground()
 										end,
 									order = 5,
 								},
@@ -1517,8 +1512,7 @@ function module:LoadOptions()
 									get = function() return unpack(Themes.db.profile.dpsborder) end,
 									set = function(_,r,g,b,a)
 											Themes.db.profile.dpsborder = {r,g,b,a}
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetDpsBackground()
+											module:SetDpsBackground()
 										end,
 									order = 6,
 								},
@@ -1723,8 +1717,7 @@ function module:LoadOptions()
 										end,
 									set = function(self, RaidTexture)
 											db.Frames.Raid.Background = frameBackgrounds[RaidTexture]
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetRaidBackground()
+											module:SetRaidBackground()
 										end,
 									order = 1,
 								},
@@ -1735,8 +1728,7 @@ function module:LoadOptions()
 									get = function() return db.Frames.Raid.FullTexture end,
 									set = function(self, UseFullTexture)
 											db.Frames.Raid.FullTexture = not db.Frames.Raid.FullTexture
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetRaidBackground()
+											module:SetRaidBackground()
 										end,
 									order = 2,
 								},
@@ -1751,8 +1743,7 @@ function module:LoadOptions()
 												print("Please try again...")
 											end
 											db.Frames.Raid.OffsetX = RaidBGOffsetX
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetRaidBackground()
+											module:SetRaidBackground()
 										end,
 									order = 3,
 								},
@@ -1767,8 +1758,7 @@ function module:LoadOptions()
 												print("Please try again...")
 											end
 											db.Frames.Raid.OffsetY = RaidBGOffsetY
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetRaidBackground()
+											module:SetRaidBackground()
 										end,
 									order = 4,
 								},
@@ -1780,8 +1770,7 @@ function module:LoadOptions()
 									get = function() return unpack(Themes.db.profile.raid) end,
 									set = function(_,r,g,b,a)
 											Themes.db.profile.raid = {r,g,b,a}
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetRaidBackground()
+											module:SetRaidBackground()
 										end,
 									order = 5,
 								},
@@ -1793,8 +1782,7 @@ function module:LoadOptions()
 									get = function() return unpack(Themes.db.profile.raidborder) end,
 									set = function(_,r,g,b,a)
 											Themes.db.profile.raidborder = {r,g,b,a}
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetRaidBackground()
+											module:SetRaidBackground()
 										end,
 									order = 6,
 								},
@@ -1857,8 +1845,7 @@ function module:LoadOptions()
 										end,
 									set = function(self, ChatTexture)
 											db.Frames.Chat.Background = frameBackgrounds[ChatTexture]
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetChatBackground()
+											module:SetChatBackground()
 										end,
 									order = 1,
 								},
@@ -1869,8 +1856,7 @@ function module:LoadOptions()
 									get = function() return db.Frames.Chat.FullTexture end,
 									set = function(self, UseFullTexture)
 											db.Frames.Chat.FullTexture = not db.Frames.Chat.FullTexture
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetChatBackground()
+											module:SetChatBackground()
 										end,
 									order = 2,
 								},
@@ -1885,8 +1871,7 @@ function module:LoadOptions()
 												print("Please try again...")
 											end
 											db.Frames.Chat.OffsetX = ChatBGOffsetX
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetChatBackground()
+											module:SetChatBackground()
 										end,
 									order = 3,
 								},
@@ -1901,8 +1886,7 @@ function module:LoadOptions()
 												print("Please try again...")
 											end
 											db.Frames.Chat.OffsetY = ChatBGOffsetY
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetChatBackground()
+											module:SetChatBackground()
 										end,
 									order = 4,
 								},
@@ -1914,8 +1898,7 @@ function module:LoadOptions()
 									get = function() return unpack(Themes.db.profile.chat) end,
 									set = function(_,r,g,b,a)
 											Themes.db.profile.chat = {r,g,b,a}
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetChatBackground()
+											module:SetChatBackground()
 										end,
 									order = 5,
 								},
@@ -1927,8 +1910,7 @@ function module:LoadOptions()
 									get = function() return unpack(Themes.db.profile.chatborder) end,
 									set = function(_,r,g,b,a)
 											Themes.db.profile.chatborder = {r,g,b,a}
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetChatBackground()
+											module:SetChatBackground()
 										end,
 									order = 6,
 								},
@@ -1980,8 +1962,7 @@ function module:LoadOptions()
 										end,
 									set = function(self, ChatTexture)
 											db.Frames.Chat.Chatframe2.Background = frameBackgrounds[ChatTexture]
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetChatBackground()
+											module:SetChatBackground()
 										end,
 									order = 1,
 								},
@@ -1992,8 +1973,7 @@ function module:LoadOptions()
 									get = function() return db.Frames.Chat.Chatframe2.FullTexture end,
 									set = function(self, UseFullTexture)
 											db.Frames.Chat.Chatframe2.FullTexture = not db.Frames.Chat.Chatframe2.FullTexture
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetChatBackground()
+											module:SetChatBackground()
 										end,
 									order = 2,
 								},
@@ -2008,8 +1988,7 @@ function module:LoadOptions()
 												print("Please try again...")
 											end
 											db.Frames.Chat.Chatframe2.OffsetX = ChatBGOffsetX
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetChatBackground()
+											module:SetChatBackground()
 										end,
 									order = 3,
 								},
@@ -2024,8 +2003,7 @@ function module:LoadOptions()
 												print("Please try again...")
 											end
 											db.Frames.Chat.Chatframe2.OffsetY = ChatBGOffsetY
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetChatBackground()
+											module:SetChatBackground()
 										end,
 									order = 4,
 								},
@@ -2037,8 +2015,7 @@ function module:LoadOptions()
 									get = function() return unpack(Themes.db.profile.chat2) end,
 									set = function(_,r,g,b,a)
 											Themes.db.profile.chat2 = {r,g,b,a}
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetChatBackground()
+											module:SetChatBackground()
 										end,
 									order = 5,
 								},
@@ -2050,8 +2027,7 @@ function module:LoadOptions()
 									get = function() return unpack(Themes.db.profile.chat2border) end,
 									set = function(_,r,g,b,a)
 											Themes.db.profile.chat2border = {r,g,b,a}
-											local Panels = LUI:GetModule("Panels")
-											Panels:SetChatBackground()
+											module:SetChatBackground()
 										end,
 									order = 6,
 								},

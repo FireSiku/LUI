@@ -5,13 +5,9 @@
 	Version....: 1.0
 ]] 
 
-local _, ns = ...
-local oUF = ns.oUF or oUF
-
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF_Target")
-local Forte
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("oUF_Target")
+local Forte = LUI:Module("Forte")
 local widgetLists = AceGUIWidgetLSMlists
 
 local db
@@ -480,14 +476,14 @@ function module:LoadOptions()
 			oUF_LUI_target:DisableElement("CPoints")
 		end
 
-		if Forte then Forte:SetPosForte() end
+		Forte:SetPosForte()
 
 		oUF_LUI_target:UpdateAllElements()
 	end
 	
 	local ApplyCPoints = function()
 		LUI.oUF_LUI.funcs.CPoints(oUF_LUI_target, oUF_LUI_target.__unit, db.oUF.Target)
-		if Forte then Forte:SetPosForte() end
+		Forte:SetPosForte()
 		oUF_LUI_target:UpdateAllElements()
 	end
 	
@@ -552,8 +548,6 @@ function module:OnInitialize()
 	
 	self.db = LUI.db.profile
 	db = self.db
-	
-	Forte = LUI:GetModule("Forte", true)
 	
 	LUI:RegisterUnitFrame(self)
 end

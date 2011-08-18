@@ -11,9 +11,9 @@
 ]]
 
 -- External references.
-local _, LUI = ...
-local module = LUI:NewModule("Infotext", "AceHook-3.0")
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("Infotext", "AceHook-3.0")
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
 local db, dbd
@@ -54,7 +54,7 @@ local function NewText(stat)
 	if not stat then return end
 	if stat.text then return stat.text end
 	
-	local fs = stat:CreateFontString(nil, "OVERLAY")
+	local fs = stat:CreateFontString(stat:GetName().."_Text", "OVERLAY")
 	fs:SetJustifyH("LEFT")
 	fs:SetShadowColor(0, 0, 0)
 	fs:SetShadowOffset(1.25, -1.25)
@@ -68,7 +68,7 @@ local function SetFontSettings(stat)
 	if type(stat) == "string" then stat = InfoStats[stat] end
 	if not stat then return end
 	
-	stat.text:SetFont(LSM:Fetch("font", db[stat.db].Font), db[stat.db].FontSize, db[stat.db].Outline)
+	stat.text:SetFont(Media:Fetch("font", db[stat.db].Font), db[stat.db].FontSize, db[stat.db].Outline)
 	local color = db[stat.db].Color
 	stat.text:SetTextColor(color.r, color.g, color.b, color.a)
 end
@@ -2021,11 +2021,11 @@ function module:SetGF()
 			self:ClearAllPoints()
 			self:SetPoint(isTop(frame) and "TOP" or "BOTTOM", frame, isTop(frame) and "BOTTOM" or "TOP")
 			
-			local Tooltip = LUI:GetModule("Tooltip", true)
+			local Tooltip = LUI:Module("Tooltip", true)
 			if Tooltip and Tooltip:IsEnabled() then
 				local backdrop = { 
-					bgFile = LSM:Fetch("background", LUI.db.profile.Tooltip.Background.Texture), 
-					edgeFile = LSM:Fetch("border", LUI.db.profile.Tooltip.Border.Texture), 
+					bgFile = Media:Fetch("background", LUI.db.profile.Tooltip.Background.Texture), 
+					edgeFile = Media:Fetch("border", LUI.db.profile.Tooltip.Border.Texture), 
 					tile = false,
 					edgeSize = LUI.db.profile.Tooltip.Border.Size, 
 					insets = {

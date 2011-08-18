@@ -8,8 +8,8 @@
 
 
 -- External references.
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local InfoText = LUI:GetModule("InfoText", true)
+local addonname, LUI = ...
+local InfoText = LUI:Module("InfoText", true)
 if not InfoText then return end
 
 -- Register stat.

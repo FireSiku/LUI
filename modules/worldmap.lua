@@ -9,11 +9,14 @@
 ]] 
 
 -- External references.
-local parent, LUI = ...
-local module = LUI:NewModule("WorldMap", "AceHook-3.0", "AceEvent-3.0")
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("WorldMap", "AceHook-3.0", "AceEvent-3.0")
+local Media = LibStub("LibSharedMedia-3.0")
 local LibWindow = LibStub("LibWindow-1.1")
 local widgetLists = AceGUIWidgetLSMlists
+
+local LBZ = LibStub("LibBabble-Zone-3.0"):GetLookupTable()
+local ZoneLoc = {names = {}, data = {}}
 
 local L = LUI.L
 local db, dbd
@@ -28,9 +31,189 @@ local questObjTexts = {
 	[2] = L["Show Markers & Panels"],
 }
 
+-- http://www.wowwiki.com/API_SetMapByID and GetMapNameByID(id)
+local instanceMaps = {
+	cities = {
+		all = {
+			-- Alliance
+			["Stormwind City"] = 301,
+			["Ironforge"] = 341,
+			["Darnassus"] = 381,
+			["The Exodar"] = 471,
+			-- Horde
+			["Orgrimmar"] = 321,
+			["Thunder Bluff"] = 362,
+			["Undercity"] = 382,
+			["Silvermoon City"] = 480,
+			-- Sanctuaries
+			["Shattrath City"] = 481,
+			["Dalaran"] = 504,
+		},
+	},
+	instances = {
+		classic = {
+			-- 1.1.0
+			["Ragefire Chasm"] = 680,
+			["Zul'Farrak"] = 686,
+			["The Temple of Atal'Hakkar"] = 687,
+			["Blackfathom Deeps"] = 688,
+			["The Stockade"] = 690,
+			["Gnomeregan"] = 691,
+			["Uldaman"] = 692,
+			["Blackrock Depths"] = 704,
+			["Blackrock Spire"] = 721,
+			["Wailing Caverns"] = 749,
+			["The Deadmines"] = 756,
+			["Razorfen Downs"] = 760,
+			["Razorfen Kraul"] = 761,
+			["Scarlet Monastery"] = 762,
+			["Scholomance"] = 763,
+			["Shadowfang Keep"] = 764,
+			["Stratholme"] = 765,
+			-- 1.2.0
+			["Maraudon"] = 750,
+			-- 1.3.0
+			["Dire Maul"] = 699,
+		},
+		bc = {
+			-- 2.0.1
+			["The Shattered Halls"] = 710,
+			["Auchenai Crypts"] = 722,
+			["Sethekk Halls"] = 723,
+			["Shadow Labyrinth"] = 724,
+			["The Blood Furnace"] = 725,
+			["The Underbog"] = 726,
+			["The Steamvault"] = 727,
+			["The Slave Pens"] = 728,
+			["The Botanica"] = 729,
+			["The Mechanar"] = 730,
+			["The Arcatraz"] = 731,
+			["Mana-Tombs"] = 732,
+			["The Black Morass"] = 733,
+			["Old Hillsbrad Foothills"] = 734,
+			["Hellfire Ramparts"] = 797,
+			-- 2.4.0
+			["Magisters' Terrace"] = 798,
+		},
+		wrath = {
+			-- 3.0.2
+			["The Nexus"] = 520,
+			["The Culling of Stratholme"] = 521,
+			["Ahn'kahet: The Old Kingdom"] = 522,
+			["Utgarde Keep"] = 523,
+			["Utgarde Pinnacle"] = 524,
+			["Halls of Lightning"] = 525,
+			["Halls of Stone"] = 526,
+			["The Oculus"] = 528,
+			["Gundrak"] = 530,
+			["Azjol-Nerub"] = 533,
+			["Drak'Tharon Keep"] = 534,
+			["The Violet Hold"] = 536,
+			-- 3.2.0
+			["Trial of the Champion"] = 542,
+			-- 3.3.0
+			["The Forge of Souls"] = 601,
+			["Pit of Saron"] = 602,
+			["Halls of Reflection"] = 603,
+		},
+		cataclysm = {
+			-- 4.0.3
+			["Lost City of the Tol'vir"] = 747,
+			["Blackrock Caverns"] = 753,
+			["The Deadmines"] = 756,
+			["Grim Batol"] = 757,
+			["Halls of Origination"] = 759,
+			["Shadowfang Keep"] = 764,
+			["Throne of the Tides"] = 767,
+			["The Stonecore"] = 768,
+			["The Vortex Pinnacle"] = 769,
+			-- 4.1.0
+			["Zul'Aman"] = 781,
+			["Zul'Gurub"] = 793,
+		},
+	},
+	raids = {
+		classic = {
+			-- 1.1.0
+			["Molten Core"] = 696,
+			-- 1.6.0
+			["Blackwing Lair"] = 755,
+			-- 1.9.0
+			["Ruins of Ahn'Qiraj"] = 717,
+			["Ahn'Qiraj"] = 766,
+		},
+		bc = {
+			-- 2.0.3
+			["Hyjal Summit"] = 775,
+			["Gruul's Lair"] = 776,
+			["Magtheridon's Lair"] = 779,
+			["Serpentshrine Cavern"] = 780,
+			["Tempest Keep"] = 782,
+			["Karazhan"] = 799,
+			-- 2.1
+			["Black Temple"] = 796,
+			-- 2.4
+			["Sunwell Plateau"] = 789,
+		},
+		wrath = {
+			-- 3.0.2
+			["The Eye of Eternity"] = 527,
+			["The Obsidian Sanctum"] = 531,
+			["Vault of Archavon"] = 532,
+			["Naxxramas"] = 535,
+			-- 3.1.0
+			["Ulduar"] = 529,
+			-- 3.2.0
+			["Trial of the Crusader"] = 543,
+			-- 3.2.2
+			["Onyxia's Lair"] = 718,
+			-- 3.3.0
+			["Icecrown Citadel"] = 604,
+			-- 3.3.5
+			["The Ruby Sanctum"] = 609,
+		},
+		cataclysm = {
+			-- 4.0.3
+			["Baradin Hold"] = 752,
+			["Blackwing Descent"] = 754,
+			["The Bastion of Twilight"] = 758,
+			["Throne of the Four Winds"] = 773,
+			-- 4.2
+			["Firelands"] = 800,
+		},
+	},
+	bgs = {
+		all = {
+			-- 1.5.0
+			["Alterac Valley"] = 401,
+			["Warsong Gulch"] = 443,
+			-- 1.7.0
+			["Arathi Basin"] = 461,
+			-- 2.0.1
+			["Eye of the Storm"] = 482,
+			-- 3.0.2
+			["Strand of the Ancients"] = 512,
+			-- 3.2.0
+			["Isle of Conquest"] = 540,
+			-- 4.0.3
+			["Twin Peaks"] = 626,
+			["The Battle for Gilneas"] = 736,
+		},
+	},
+}
+
+local defaultZoneCache = setmetatable({}, {__index = function(t, k)
+	rawset(t, k, {GetMapZones(k)})
+	return t[k]
+end})
+
 local WorldMapFrame = WorldMapFrame
 
 local realZone
+local zoomOverride
+
+local coordstemplate = "%%s: %%.%df, %%.%df"
+local coordsformat
 
 local WORLDMAP_POI_MIN_X = 12
 local WORLDMAP_POI_MIN_Y = -12
@@ -63,6 +246,22 @@ local function getZoneId()
 	return (GetCurrentMapZone() + GetCurrentMapContinent() * 100)
 end
 
+local function getMouse()
+	local left, top = WorldMapDetailFrame:GetLeft(), WorldMapDetailFrame:GetTop()
+	local width, height = WorldMapDetailFrame:GetWidth(), WorldMapDetailFrame:GetHeight()
+	local scale = WorldMapDetailFrame:GetEffectiveScale()
+
+	local x, y = GetCursorPosition()
+	local cx = (x/scale - left) / width
+	local cy = (top - y/scale) / height
+
+	if cx < 0 or cx > 1 or cy < 0 or cy > 1 then
+		return
+	end
+
+	return cx, cy
+end
+
 local function questObjDropDownUpdate()
 	UIDropDownMenu_SetSelectedValue(LUIMapQuestObjectivesDropDown, db.QuestObjectives)
 	UIDropDownMenu_SetText(LUIMapQuestObjectivesDropDown,questObjTexts[db.QuestObjectives])
@@ -90,6 +289,45 @@ local function questObjDropDownInit()
 		end
 		UIDropDownMenu_AddButton(info)
 	end
+end
+
+local function getZoneData()
+	return ZoneLoc.data[module.mapCont][module.mapZone]
+end
+
+local function continentButton_OnClick(frame)
+	UIDropDownMenu_SetSelectedID(WorldMapContinentDropDown, frame:GetID())
+	module.mapCont = frame.arg1
+	module.mapContId = frame:GetID()
+	zoomOverride = true
+	SetMapZoom(-1)
+	zoomOverride = nil
+end
+
+local function zoneButton_OnClick(frame)
+	UIDropDownMenu_SetSelectedID(WorldMapZoneDropDown, frame:GetID())
+	module.mapZone = frame:GetID()
+	SetMapByID(getZoneData())
+end
+
+local function loadCustomZones(data)
+	local info = UIDropDownMenu_CreateInfo()
+	for i=1, #data do
+		info.text = data[i]
+		info.func = zoneButton_OnClick
+		info.checked = nil
+		UIDropDownMenu_AddButton(info)
+	end
+end
+
+local function loadDefaultZones(data)
+	local info = UIDropDownMenu_CreateInfo()
+		for i=1, #data do
+			info.text = data[i]
+			info.func = WorldMapZoneButton_OnClick
+			info.checked = nil
+			UIDropDownMenu_AddButton(info)
+		end
 end
 
 --------------------------------------------------
@@ -199,6 +437,95 @@ function module:UpdateMapElements()
 	end
 end
 
+function module:WorldMapContinentsDropDown_Update()
+	if self.mapCont then
+		UIDropDownMenu_SetSelectedID(WorldMapContinentDropDown, self.mapContId)
+	end
+end
+
+function module:WorldMapFrame_LoadContinents()
+	local info = UIDropDownMenu_CreateInfo()
+	info.text =  L["Major Cities"]
+	info.func = continentButton_OnClick
+	info.checked = nil
+	info.arg1 = "cities-all"
+	UIDropDownMenu_AddButton(info)
+	
+	info.text =  L["Classic Instances"]
+	info.func = continentButton_OnClick
+	info.checked = nil
+	info.arg1 = "instances-classic"
+	UIDropDownMenu_AddButton(info)
+
+	info.text =  L["Classic Raids"]
+	info.func = continentButton_OnClick
+	info.checked = nil
+	info.arg1 = "raids-classic"
+	UIDropDownMenu_AddButton(info)
+	
+	info.text =  L["BC Instances"]
+	info.func = continentButton_OnClick
+	info.checked = nil
+	info.arg1 = "instances-bc"
+	UIDropDownMenu_AddButton(info)
+
+	info.text =  L["BC Raids"]
+	info.func = continentButton_OnClick
+	info.checked = nil
+	info.arg1 = "raids-bc"
+	UIDropDownMenu_AddButton(info)
+
+	info.text =  L["Wrath Instances"]
+	info.func = continentButton_OnClick
+	info.checked = nil
+	info.arg1 = "instances-wrath"
+	UIDropDownMenu_AddButton(info)
+
+	info.text =  L["Wrath Raids"]
+	info.func = continentButton_OnClick
+	info.checked = nil
+	info.arg1 = "raids-wrath"
+	UIDropDownMenu_AddButton(info)
+
+	info.text =  L["Cataclysm Instances"]
+	info.func = continentButton_OnClick
+	info.checked = nil
+	info.arg1 = "instances-cataclysm"
+	UIDropDownMenu_AddButton(info)
+
+	info.text =  L["Cataclysm Raids"]
+	info.func = continentButton_OnClick
+	info.checked = nil
+	info.arg1 = "raids-cataclysm"
+	UIDropDownMenu_AddButton(info)
+
+	info.text =  L["Battlegrounds"]
+	info.func = continentButton_OnClick
+	info.checked = nil
+	info.arg1 = "bgs-all"
+	UIDropDownMenu_AddButton(info)
+end
+
+function module:WorldMapZoneDropDown_Update()
+	if self.mapZone then
+		UIDropDownMenu_SetSelectedID(WorldMapZoneDropDown, self.mapZone)
+	end
+end
+
+function module:WorldMapZoneDropDown_Initialize()
+	if self.mapCont then
+		loadCustomZones(ZoneLoc.names[self.mapCont])
+	else
+		loadDefaultZones(defaultZoneCache[GetCurrentMapContinent()])
+	end
+end
+
+function module:SetMapZoom()
+	if not zoomOverride then
+		self.mapCont, self.mapContId, self.mapZone = nil, nil, nil
+	end
+end
+
 --------------------------------------------------
 -- Script Functions
 --------------------------------------------------
@@ -226,6 +553,23 @@ end
 local function wmsdsOnShow(frame)
 	if db[mapSize()].HideBorder or not select(3, GetProfessions()) then 
 		frame:Hide()
+	end
+end
+
+local function coordsOnUpdate()
+	local cx, cy = getMouse()
+	local px, py = GetPlayerMapPosition("player")
+
+	if cx then
+		WorldMapFrame.coords.cursor:SetFormattedText(coordsformat, L["Cursor"], 100 * cx, 100 * cy)
+	else
+		WorldMapFrame.coords.cursor:SetText("")
+	end
+
+	if px == 0 then
+		WorldMapFrame.coords.player:SetText("")
+	else
+		WorldMapFrame.coords.player:SetFormattedText(coordsformat, L["Player"], 100 * px, 100 * py)
 	end
 end
 
@@ -298,6 +642,7 @@ function module:SizeUp()
 	WorldMapBlobFrame.xRatio = nil		-- force hit recalculations
 	WorldMapArchaeologyDigSites:SetScale(WORLDMAP_FULLMAP_SIZE)
 	WorldMapArchaeologyDigSites.xRatio = nil		-- force hit recalculations
+	WorldMapShowDigSites:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 25, 0)
 	-- show big window elements
 	WorldMapZoneMinimapDropDown:Show()
 	WorldMapZoomOutButton:Show()
@@ -342,6 +687,7 @@ function module:SizeDown()
 	WorldMapArchaeologyDigSites.xRatio = nil		-- force hit recalculations
 	WorldMapFrameMiniBorderLeft:SetPoint("TOPLEFT", 10, -14)
 	WorldMapDetailFrame:SetPoint("TOPLEFT", 37, -66)
+	WorldMapShowDigSites:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 10, 0)
 	-- hide big window elements
 	WorldMapZoneMinimapDropDown:Hide()
 	WorldMapZoomOutButton:Hide()
@@ -381,6 +727,8 @@ function module:ToggleMapSize()
 	self:SetPosition()
 
 	self:UpdateBorderVisibility()
+	
+	self:SetCoords()
 
 	ToggleFrame(WorldMapFrame)
 	WorldMapFrame_UpdateQuests()
@@ -433,6 +781,35 @@ function module:RefreshQuestObjectivesDisplay()
 	self.hooks[WorldMapQuestShowObjectives].OnClick(WorldMapQuestShowObjectives)
 end
 
+function module:SetCoords()
+	local coords = WorldMapFrame.coords
+	if not coords then
+		coords = CreateFrame("Frame", "LUIMapCoordsrame", WorldMapFrame)
+		
+		coords.cursor = coords:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+		coords.player = coords:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+		
+		coords:SetScript("OnUpdate", coordsOnUpdate)
+		
+		WorldMapFrame.coords = coords
+	end
+	
+	if self.miniMap then
+		coords.cursor:SetPoint("BOTTOMLEFT", WorldMapPositioningGuide, "BOTTOM", 25, -2)
+		coords.player:SetPoint("BOTTOMRIGHT", WorldMapPositioningGuide, "BOTTOM", 10, -2)
+	else
+		coords.cursor:SetPoint("BOTTOMLEFT", WorldMapPositioningGuide, "BOTTOM", 50, 10)
+		coords.player:SetPoint("BOTTOMRIGHT", WorldMapPositioningGuide, "BOTTOM", -50, 10)
+	end
+	
+	
+	if db.General.CoordEnable and self.bordersVisible ~= false then
+		coords:Show()
+	else
+		coords:Hide()
+	end
+end
+
 function module:SetMap()
 	local advanced, mini = GetCVarBool("advancedWorldMap"), GetCVarBool("miniWorldMap")
 	SetCVar("miniWorldMap", nil)
@@ -455,21 +832,16 @@ function module:SetMap()
 		HideUIPanel(WorldMapFrame)
 	end
 	
-	SetUIPanelAttribute(WorldMapFrame, "area", nil)
+	SetUIPanelAttribute(WorldMapFrame, "area", "center")
 	SetUIPanelAttribute(WorldMapFrame, "allowOtherPanels", true)
 	
 	WorldMapFrame:EnableMouse(true)
 	WorldMapFrame:EnableKeyboard(false)
-
-	-- Make closable by Esc, and play sound.
-	tinsert(UISpecialFrames, "WorldMapFrame")
 	
 	self:SecureHookScript(WorldMapFrame, "OnShow", wmfOnShow)
 	self:SecureHookScript(WorldMapFrame, "OnHide", wmfOnHide)
 	BlackoutWorld:Hide()
 	WorldMapTitleButton:Hide()
-	
-	WorldMapFrame:SetScript("OnKeyDown", nil)
 
 	WorldMapFrame:MakeDraggable() -- LibWindow
 	self:SecureHookScript(WorldMapFrame, "OnDragStart", "HideBlobs")
@@ -534,6 +906,14 @@ function module:SetMap()
 	self:SecureHook("WorldMapFrame_SetPOIMaxBounds")
 	self:SecureHook("WorldMapLevelDropDown_Update", "UpdateMapElements")
 	WorldMapFrame_SetPOIMaxBounds()
+	
+	-- instance zones
+	self:SecureHook("WorldMapContinentsDropDown_Update")
+	self:SecureHook("WorldMapFrame_LoadContinents")
+	self:SecureHook("WorldMapZoneDropDown_Update")
+	self:RawHook("WorldMapZoneDropDown_Initialize", true)
+	self:SecureHook("SetMapZoom")
+	self:SecureHook("SetMapToCurrentZone", "SetMapZoom")
 
 	if vis then
 		ShowUIPanel(WorldMapFrame)
@@ -572,9 +952,9 @@ function module:PLAYER_REGEN_DISABLED()
 	-- dummy position, off screen, so calculations don't go boom
 	WorldMapBlobFrame:SetPoint("TOP", UIParent, "BOTTOM")
 	WorldMapBlobFrame:Hide()
-	WorldMapBlobFrame.Hide = blobHideFunc
-	WorldMapBlobFrame.Show = blobShowFunc
-	WorldMapBlobFrame.SetScale = blobScaleFunc
+	self:RawHook(WorldMapBlobFrame, "Hide", blobHideFunc, true)
+	self:RawHook(WorldMapBlobFrame, "Show", blobShowFunc, true)
+	self:RawHook(WorldMapBlobFrame, "SetScale", blobScaleFunc, true)
 
 	archBlobWasVisible = WorldMapArchaeologyDigSites:IsShown()
 	archBlobNewScale = nil
@@ -583,18 +963,18 @@ function module:PLAYER_REGEN_DISABLED()
 	-- dummy position, off screen, so calculations don't go boom
 	WorldMapArchaeologyDigSites:SetPoint("TOP", UIParent, "BOTTOM")
 	WorldMapArchaeologyDigSites:Hide()
-	WorldMapArchaeologyDigSites.Hide = archBlobHideFunc
-	WorldMapArchaeologyDigSites.Show = archBlobShowFunc
-	WorldMapArchaeologyDigSites.SetScale = archBlobScaleFunc
+	self:RawHook(WorldMapArchaeologyDigSites, "Hide", archBlobHideFunc, true)
+	self:RawHook(WorldMapArchaeologyDigSites, "Show", archBlobShowFunc, true)
+	self:RawHook(WorldMapArchaeologyDigSites, "SetScale", archBlobScaleFunc, true)
 end
 
 function module:PLAYER_REGEN_ENABLED()
 	WorldMapBlobFrame:SetParent(WorldMapFrame)
 	WorldMapBlobFrame:ClearAllPoints()
 	WorldMapBlobFrame:SetPoint("TOPLEFT", WorldMapDetailFrame)
-	WorldMapBlobFrame.Hide = nil
-	WorldMapBlobFrame.Show = nil
-	WorldMapBlobFrame.SetScale = nil
+	self:Unhook(WorldMapBlobFrame, "Hide")
+	self:Unhook(WorldMapBlobFrame, "Show")
+	self:Unhook(WorldMapBlobFrame, "SetScale")
 	if blobWasVisible then
 		WorldMapBlobFrame:Show()
 		WorldMapBlobFrame_CalculateHitTranslations()
@@ -611,9 +991,9 @@ function module:PLAYER_REGEN_ENABLED()
 	WorldMapArchaeologyDigSites:SetParent(WorldMapFrame)
 	WorldMapArchaeologyDigSites:ClearAllPoints()
 	WorldMapArchaeologyDigSites:SetPoint("TOPLEFT", WorldMapDetailFrame)
-	WorldMapArchaeologyDigSites.Hide = nil
-	WorldMapArchaeologyDigSites.Show = nil
-	WorldMapArchaeologyDigSites.SetScale = nil
+	self:Unhook(WorldMapArchaeologyDigSites, "Hide")
+	self:Unhook(WorldMapArchaeologyDigSites, "Show")
+	self:Unhook(WorldMapArchaeologyDigSites, "SetScale")
 	if archBlobWasVisible then
 		WorldMapArchaeologyDigSites:Show()
 	end
@@ -644,6 +1024,8 @@ module.defaults = {
 			Strata = "HIGH",
 			ArrowScale = 0.88,
 			POIScale = 0.8,
+			CoordEnable = true,
+			CoordAccuracy = 1,
 		},
 		Big = {
 			x = 0,
@@ -668,12 +1050,16 @@ module.defaults = {
 -- Module Functions
 --------------------------------------------------
 
+module.conflicts = "Mapster"
+
 module.optionsName = "World Map"
 module.getter = "generic"
 module.setter = "Refresh"
 
 function module:LoadOptions()
-	LUI:EmbedAPI(self)
+	local function coordsDisabled()
+		return not db.General.CoordEnable
+	end
 	
 	local function createMapOptions(size, order)
 		local mini = size == "Mini"
@@ -692,6 +1078,8 @@ function module:LoadOptions()
 		General = self:NewGroup("General Settings", 1, {
 			ArrowScale = self:NewSlider("PlayerArrow Scale", "Adjust the size of the Player Arrow on the Map for better visibility.", 1, 0.5, 2, 0.01, true, true),
 			POIScale = self:NewSlider("POI Scale", "Scale of the POI Icons on the Map.", 2, 0.1, 2, 0.01, true, true),
+			CoordEnable = self:NewToggle("Enable Coordinates", nil, 3, true, "normal"),
+			CoordAccuracy = self:NewSlider("Coordinate Accuracy", "Adjust the number of decimal places the coordinates are accurate to.", 4, 0, 2, 1, true, false, nil, coordDisabled),
 		}),
 		Big = createMapOptions("Fullsize", 2),
 		Mini = createMapOptions("Mini", 3),
@@ -712,6 +1100,10 @@ function module:Refresh(...)
 		self:ToggleMapSize()
 	end
 	
+	coordsformat = coordstemplate:format(db.General.CoordAccuracy, db.General.CoordAccuracy)
+	
+	self:SetCoords()
+	
 	self:SetStrata()
 	self:SetAlpha()
 	self:SetArrow()
@@ -723,22 +1115,43 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
-	local db_ = setmetatable({}, {
-		__index = function(t, k)
-			return db[mapSize()][k]
-		end,
-		__newindex = function(t, k, v)
-			if not db.Enable then return end
-			db[mapSize()][k] = v
-		end,
-	})
 	
-	LibWindow:Embed(WorldMapFrame):RegisterConfig(db_) -- LibWindow
+	for zonetype, v in pairs(instanceMaps) do
+		for expansion, v2 in pairs(v) do
+			local data = {}
+			local key = ("%s-%s"):format(zonetype, expansion)
+			
+			ZoneLoc.names[key], ZoneLoc.data[key] = {}, {}
+			for name, id in pairs(v2) do
+				tinsert(ZoneLoc.names[key], LBZ[name])
+				data[LBZ[name]] = id
+			end
+			table.sort(ZoneLoc.names[key])
+			for i, name in ipairs(ZoneLoc.names[key]) do
+				ZoneLoc.data[key][i] = data[name]
+			end
+		end
+	end
 	
 	self.elementsToHide = {}
 end
 
 function module:OnEnable()
+	if not self.LibWindow then
+		local db_ = setmetatable({}, {
+			__index = function(t, k)
+				return db[mapSize()][k]
+			end,
+			__newindex = function(t, k, v)
+				if not db.Enable then return end
+				db[mapSize()][k] = v
+			end,
+		})
+		
+		LibWindow:Embed(WorldMapFrame):RegisterConfig(db_) -- LibWindow
+		self.LibWindow = true
+	end
+	
 	self:SetMap()
 	
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
@@ -754,6 +1167,10 @@ function module:OnDisable()
 	
 	self:UnregisterAllEvents()
 	self:UnhookAll()
+	
+	self:SetMapZoom()
+	WorldMapContinentsDropDown_Update()
+	WorldMapZoneDropDown_Update()
 	
 	self:SecureHook("WorldMapFrame_DisplayQuestPOI", function(questFrame) questFrame.poiIcon:SetScale(1) end)
 	WorldMapFrame_DisplayQuests()
@@ -777,7 +1194,6 @@ function module:OnDisable()
 	WorldMapFrame:RegisterForDrag(nil)
 	WorldMapFrame:SetClampedToScreen(true)
 	WorldMapFrame:SetClampRectInsets(0, 0, 0, -60)
-	WorldMapFrame:SetScript("OnKeyDown", WorldMapFrame_OnKeyDown)
 	
 	WorldMapQuestShowObjectives:Show()
 	LUIMapQuestObjectivesDropDown:Hide()

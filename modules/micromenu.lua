@@ -14,11 +14,12 @@
 ]] 
 
 -- External references.
-local _, LUI = ...
-local module = LUI:NewModule("Micromenu")
-local Themes = LUI:GetModule("Themes")
+local addonname, LUI = ...
+local module = LUI:Module("Micromenu")
+local Themes = LUI:Module("Themes")
+local RaidMenu = LUI:Module("RaidMenu")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-local LSM = LibStub("LibSharedMedia-3.0")
+local Media = LibStub("LibSharedMedia-3.0")
 local RaidMenu
 
 local db
@@ -232,8 +233,8 @@ function module:SetMicroMenu()
 	MicroMenu_ButtonLeft_Clicker:Show()
 	
 	MicroMenu_ButtonLeft_Clicker:RegisterForClicks("AnyUp")
-	MicroMenu_ButtonLeft_Clicker:SetScript("OnClick", function(self,button)
-		if (class == "PALADIN") and (IsAddOnLoaded("PallyPower")) and ((button == "RightButton") or (not LUI:GetModule("RaidMenu", true) or not db.RaidMenu.Enable)) then
+	MicroMenu_ButtonLeft_Clicker:SetScript("OnClick", function(self, button)
+		if (class == "PALADIN") and (IsAddOnLoaded("PallyPower")) and ((button == "RightButton") or (not db.RaidMenu.Enable)) then
 			if PallyPowerFrame:IsShown() then
 				PallyPowerFrame:Hide()
 				PallyPowerFrame:SetAlpha(0)
@@ -306,7 +307,7 @@ function module:SetMicroMenu()
 	end)
 	
 	MicroMenu_Clicker:SetScript("OnClick", function(self)
-		if LUI:GetModule("RaidMenu", true) and db.RaidMenu.Enable then
+		if db.RaidMenu.Enable then
 			RaidMenu:OverlapPrevention("MM")
 		end
 		if db.Frames.IsMicroMenuShown == true then
@@ -405,8 +406,7 @@ function module:SetMicroMenu()
 	local bagsFrame
 	
 	local function getBagsFrame()
-		local Bags = LUI:GetModule("Bags")
-		
+		local Bags = LUI:Module("Bags")
 		if Bags.db.profile.Enable == true then
 			bagsFrame = _G["LUIBags"]
 		else
@@ -1282,7 +1282,7 @@ function module:SetMicroMenu()
 	
 	TalentMicroButtonAlertBg:SetGradientAlpha("VERTICAL", micro_r/4, micro_g/4, micro_b/4, 1, 0, 0, 0, 1)
 	
-	TalentMicroButtonAlertText:SetFont(LSM:Fetch("font", "vibrocen"), 14, "NONE")
+	TalentMicroButtonAlertText:SetFont(Media:Fetch("font", "vibrocen"), 14, "NONE")
 	
 	TalentMicroButtonAlertArrow:ClearAllPoints()
 	TalentMicroButtonAlertArrow:SetPoint("BOTTOM", TalentMicroButtonAlert, "TOP", 0, -6)
@@ -1353,8 +1353,7 @@ function module:LoadOptions()
 									end
 									db.Frames.Micromenu.X = MMX
 									
-									local Micromenu = LUI:GetModule("Micromenu")
-									Micromenu:SetMicroMenuPosition()
+									module:SetMicroMenuPosition()
 								end,
 							order = 1,
 						},
@@ -1369,8 +1368,7 @@ function module:LoadOptions()
 									end
 									db.Frames.Micromenu.Y = MMY
 									
-									local Micromenu = LUI:GetModule("Micromenu")
-									Micromenu:SetMicroMenuPosition()
+									module:SetMicroMenuPosition()
 								end,
 							order = 2,
 						},
@@ -1393,8 +1391,7 @@ function module:LoadOptions()
 									end
 									db.Frames.Micromenu.NaviX = MMNaviX
 									
-									local Micromenu = LUI:GetModule("Micromenu")
-									Micromenu:SetMicroMenuPosition()
+									module:SetMicroMenuPosition()
 								end,
 							order = 1,
 						},
@@ -1409,8 +1406,7 @@ function module:LoadOptions()
 									end
 									db.Frames.Micromenu.NaviY = MMNaviY
 									
-									local Micromenu = LUI:GetModule("Micromenu")
-									Micromenu:SetMicroMenuPosition()
+									module:SetMicroMenuPosition()
 								end,
 							order = 2,
 						},
@@ -1434,8 +1430,7 @@ function module:OnInitialize()
 	LUI:RegisterFrame(self) -- Look into how to code after changing frame and panels
 end
 
-function module:OnEnable()	
-	RaidMenu = LUI:GetModule("RaidMenu", true)
+function module:OnEnable()
 	self:SetMicroMenu()
 end
 

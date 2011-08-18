@@ -12,8 +12,8 @@
 ]]
 
 -- External references.
-local _, LUI = ...
-local module = LUI:NewModule("InterruptAnnouncer")
+local addonname, LUI = ...
+local module = LUI:Module("InterruptAnnouncer")
 
 -- Database and defaults shortcuts.
 local db, dbd

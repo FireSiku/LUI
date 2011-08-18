@@ -5,11 +5,13 @@
 	Version....: 1.0
 ]] 
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-		
+local addonname, LUI = ...
+
+LUI.Versions.bartender = 3300
+
 function LUI:InstallBartender()
 	if not IsAddOnLoaded("Bartender4") then return end
-	if LUICONFIG.Versions.bartender == LUI_versions.bartender then return end
+	if LUICONFIG.Versions.bartender == LUI.Versions.bartender then return end
 	
 	local CharName = UnitName("player")
 	local ServerName = GetRealmName()
@@ -1169,5 +1171,5 @@ function LUI:InstallBartender()
 		Bartender4DB.profileKeys[ProfileName] = CharName
 	end
 	
-	LUICONFIG.Versions.bartender = LUI_versions.bartender
+	LUICONFIG.Versions.bartender = LUI.Versions.bartender
 end

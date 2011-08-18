@@ -42,7 +42,7 @@ NOTES:
 
 -- External references.
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local InfoText = LUI:NewModule("InfoText", "AceHook-3.0")
+local InfoText = LUI:Module("InfoText", "AceHook-3.0")
 
 -- Database and defaults shortcuts.
 local db, dbd

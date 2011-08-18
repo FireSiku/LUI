@@ -1,10 +1,10 @@
-local parent, ns = ...
+local addonname, addon = ...
 
 local script = {}
 LibStub("AceAddon-3.0"):EmbedLibraries(script, "AceEvent-3.0")
 
 -- Set text to insert.
-local version, revision = GetAddOnMetadata(parent, "Version"), GetAddOnMetadata(parent, "X-Curse-Packaged-Version")
+local version, revision = GetAddOnMetadata(addonname, "Version"), GetAddOnMetadata(addonname, "X-Curse-Packaged-Version")
 script.text = format("\nLUI Version: %s", version) .. (version ~= revision and format(" (%s)", revision) or "")
 
 -- Hook error handler so that error messages regarding LUI contain LUI version and revision info.

@@ -11,11 +11,11 @@
 ]]
 
 -- External references.
-local _, LUI = ...
-local module = LUI:NewModule("RaidMenu")
-local Themes = LUI:GetModule("Themes")
-local Micromenu = LUI:GetModule("Micromenu", true)
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("RaidMenu")
+local Themes = LUI:Module("Themes")
+local Micromenu = LUI:Module("Micromenu")
+local Media = LibStub("LibSharedMedia-3.0")
 
 local version = 2.3
 local db
@@ -302,11 +302,11 @@ function module:SetRaidMenu()
 	RaidMenu_Border:SetAlpha(1)
 	RaidMenu_Border:Show()
 	
-	local Infotext = LUI:GetModule("Infotext", true)
+	local Infotext = LUI:Module("Infotext", true)
 	local font = Infotext and Infotext.db.profile.Clock.Font or "vibroceb"
 	local color = Infotext and Infotext.db.profile.Clock.Color or {r = 1, g = 1, b = 1, a = 1}
 	local RaidMenu_Header = RaidMenu:CreateFontString("RaidMenu_Header", "OVERLAY")
-	RaidMenu_Header:SetFont(LSM:Fetch("font", font), LUI:Scale(20), "THICKOUTLINE")
+	RaidMenu_Header:SetFont(Media:Fetch("font", font), LUI:Scale(20), "THICKOUTLINE")
 	RaidMenu_Header:SetPoint("TOP", RaidMenu, "TOP", -5, -25)
 	RaidMenu_Header:SetTextColor(color.r, color.g, color.b, color.a)
 	RaidMenu_Header:SetText("LUI Raid Menu")

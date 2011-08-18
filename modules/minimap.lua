@@ -13,10 +13,10 @@
 ]] 
 
 -- External references.
-local _, LUI = ...
-local module = LUI:NewModule("Minimap", "AceHook-3.0")
-local Themes = LUI:GetModule("Themes")
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("Minimap", "AceHook-3.0")
+local Themes = LUI:Module("Themes")
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
 local db
@@ -107,7 +107,7 @@ function module:SetColors()
 end
 
 function module:SetMinimapFrames()
-	local glowTex = LUI_Media.glowTex
+	local glowTex = LUI.Media.glowTex
 	local minimap_r, minimap_g, minimap_b, minimap_a = unpack(Themes.db.profile.minimap)
 	
 	local fminimap_border = LUI:CreateMeAFrame("FRAME","fminimap_border",Minimap,143,143,1,"BACKGROUND",2,"CENTER",Minimap,"CENTER",0,0,1)
@@ -223,7 +223,7 @@ function module:SetMinimap()
 	self:SetPosition('capture')
 	self:SetPosition('ticketStatus')
 	
-	local FONT = LSM:Fetch("font", db.Minimap.Font.Font)
+	local FONT = Media:Fetch("font", db.Minimap.Font.Font)
 
 	--------------------------------------------------------------------
 	-- MINIMAP SETTINGS
@@ -270,7 +270,7 @@ function module:SetMinimap()
 	MiniMapMailFrame:ClearAllPoints()
 	MiniMapMailFrame:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(4))
 	MiniMapMailBorder:Hide()
-	MiniMapMailIcon:SetTexture(LUI_Media.mail)
+	MiniMapMailIcon:SetTexture(LUI.Media.mail)
 
 	-- Move battleground icon
 	MiniMapBattlefieldFrame:ClearAllPoints()
@@ -288,7 +288,7 @@ function module:SetMinimap()
 	
 	HelpOpenTicketButtonTutorialBg:SetGradientAlpha("VERTICAL", micro_r/4, micro_g/4, micro_b/4, 1, 0, 0, 0, 1)
 	
-	HelpOpenTicketButtonTutorialText:SetFont(LSM:Fetch("font", "vibrocen"), 14, "NONE")
+	HelpOpenTicketButtonTutorialText:SetFont(Media:Fetch("font", "vibrocen"), 14, "NONE")
 	
 	PlayerTalentFrameLearnButtonTutorialArrow:ClearAllPoints()
 	PlayerTalentFrameLearnButtonTutorialArrow:SetPoint("BOTTOM", HelpOpenTicketButtonTutorial, "TOP", 0, -6)
@@ -415,8 +415,8 @@ function module:SetMinimap()
 
 	-- reskin LFG dropdown
 	--[[LFDSearchStatus:SetBackdrop({
-	  bgFile = LUI_Media.blank, 
-	  edgeFile = LUI_Media.blank, 
+	  bgFile = LUI.Media.blank, 
+	  edgeFile = LUI.Media.blank, 
 	  tile = false, tileSize = 0, edgeSize = mult, 
 	  insets = { left = 0, right = 0, top = 0, bottom = 0}
 	})]]
@@ -736,8 +736,8 @@ function module:LoadOptions()
 									get = function() return db.Minimap.Font.Font end,
 									set = function(self, Font)
 										db.Minimap.Font.Font = Font
-										m_zone_text:SetFont(LSM:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
-										m_coord_text:SetFont(LSM:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
+										m_zone_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
+										m_coord_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
 									end,
 									order = 1,
 								},
@@ -756,8 +756,8 @@ function module:LoadOptions()
 									end,
 									set = function(self, FontFlag)
 										db.Minimap.Font.FontFlag = fontflags[FontFlag]
-										m_zone_text:SetFont(LSM:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
-										m_coord_text:SetFont(LSM:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
+										m_zone_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
+										m_coord_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
 									end,
 									order = 2,
 								},
@@ -773,8 +773,8 @@ function module:LoadOptions()
 									get = function() return db.Minimap.Font.FontSize end,
 									set = function(_, FontSize)
 										db.Minimap.Font.FontSize = FontSize
-										m_zone_text:SetFont(LSM:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
-										m_coord_text:SetFont(LSM:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
+										m_zone_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
+										m_coord_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
 									end,
 									order = 3,
 								},							
@@ -1181,5 +1181,4 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
-	LUI:ClearFrames()
 end

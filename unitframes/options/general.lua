@@ -6,14 +6,15 @@
 	Notes......: This module contains all of the defaults and options that are contained within all of the UnitFrames.
 ]] 
 
-local _, ns = ...
-local oUF = ns.oUF or oUF
-
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF_General")
-local Forte
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("oUF_General")
+local oUFmodule = LUI:Module("oUF")
+local oUF_CopySettings = LUI:Module("oUF_CopySettings")
+local Fader = LUI:Module("Fader")
+local Forte = LUI:Module("Forte")
 local widgetLists = AceGUIWidgetLSMlists
+
+local oUF = LUI.oUF
 
 local db
 
@@ -499,7 +500,7 @@ function module:CreateOptions(index, unit)
 	local ufNames = ufNamesList[unit]
 	
 	local ToggleFunc = function()
-		LUI:GetModule("oUF"):Toggle(unit)
+		oUFmodule:Toggle(unit)
 		if unit == "Raid" then
 			if oufdb.Enable and db.Frames.Raid.Anchor ~= "oUF_LUI_raid" then
 				db.Frames.Raid.Anchor = "oUF_LUI_raid"
@@ -526,7 +527,7 @@ function module:CreateOptions(index, unit)
 	
 	local disabledFunc2 = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end
 	
-	local ChangePadding = function() LUI:GetModule("oUF"):Toggle(unit) end
+	local ChangePadding = function() oUFmodule:Toggle(unit) end
 	
 	local SetPosition
 	if ufMover[unit] then
@@ -809,22 +810,15 @@ function module:CreateOptions(index, unit)
 						type = "group",
 						disabled = function()
 								if unit == "Player" or unit == "Target" then
-									return not (LUI:GetModule("Fader", true) and LUI:GetModule("Fader", true).db.profile.Enable)
+									return not (Fader.db.profile.Enable)
 								else
-									return not oufdb.Enable or not (LUI:GetModule("Fader", true) and LUI:GetModule("Fader", true).db.profile.Enable)
+									return not oufdb.Enable or not (Fader.db.profile.Enable)
 								end
 							end,
 						order = 8,
-						args = (LUI:GetModule("Fader", true) and LUI:GetModule("Fader", true):CreateFaderOptions(ufNames, oufdb.Fader, oufdefaults.Fader)) or {
-							empty = {
-								order = 1,
-								width = "full",
-								type = "description",
-								name = "\nFader not found.",
-							},
-						},
+						args = Fader:CreateFaderOptions(ufNames, oufdb.Fader, oufdefaults.Fader),
 					} or nil,
-					CopySettings = LUI:GetModule("oUF_CopySettings") and LUI:GetModule("oUF_CopySettings"):CreateCopySettings(unit, 9) or nil,
+					CopySettings = oUF_CopySettings:CreateCopySettings(unit, 9),
 				},
 			},
 			Bars = {
@@ -1089,8 +1083,6 @@ end
 function module:OnInitialize()	
 	self.db = LUI.db.profile
 	db = self.db
-	
-	Forte = LUI:GetModule("Forte", true)
 	
 	LUI:RegisterUnitFrame(self)
 end

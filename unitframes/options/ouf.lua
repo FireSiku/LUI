@@ -5,13 +5,12 @@
 	Version....: 1.0
 ]] 
 
-local _, ns = ...
-local oUF = ns.oUF or oUF
-
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF", "AceHook-3.0", "AceEvent-3.0")
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("oUF", "AceHook-3.0", "AceEvent-3.0")
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
+
+local oUF = LUI.oUF
 
 local db
 
@@ -1466,7 +1465,7 @@ function module:LoadOptions()
 			if v.Buffs then
 				for i = 1, 50 do
 					if v.Buffs[i] then
-						v.Buffs[i].remaining:SetFont(LSM:Fetch("font",  db.oUF.Settings.Auras.auratimer_font), db.oUF.Settings.Auras.auratimer_size, db.oUF.Settings.Auras.auratimer_flag)
+						v.Buffs[i].remaining:SetFont(Media:Fetch("font",  db.oUF.Settings.Auras.auratimer_font), db.oUF.Settings.Auras.auratimer_size, db.oUF.Settings.Auras.auratimer_flag)
 					else
 						break
 					end
@@ -1475,7 +1474,7 @@ function module:LoadOptions()
 			if v.Debuffs then
 				for i = 1, 50 do
 					if v.Debuffs[i] then
-						v.Debuffs[i].remaining:SetFont(LSM:Fetch("font",  db.oUF.Settings.Auras.auratimer_font), db.oUF.Settings.Auras.auratimer_size, db.oUF.Settings.Auras.auratimer_flag)
+						v.Debuffs[i].remaining:SetFont(Media:Fetch("font",  db.oUF.Settings.Auras.auratimer_font), db.oUF.Settings.Auras.auratimer_size, db.oUF.Settings.Auras.auratimer_flag)
 					else
 						break
 					end

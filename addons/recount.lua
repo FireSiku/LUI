@@ -5,12 +5,15 @@
 	Version....: 1.0
 ]] 
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local addonname, LUI = ...
+
+LUI.Versions.recount = 3300
+
 local _, class = UnitClass("player")
 
 function LUI:InstallRecount()
 	if not IsAddOnLoaded("Recount") then return end
-	if LUICONFIG.Versions.recount == LUI_versions.recount then return end
+	if LUICONFIG.Versions.recount == LUI.Versions.recount then return end
 	
 	Recount.db.profile.GraphWindowY = 0
 	Recount.db.profile.MainWindow.Buttons.CloseButton = false
@@ -133,7 +136,7 @@ function LUI:InstallRecount()
 	Recount.db.profile.Locked = true
 	Recount:LockWindows(true)
 	
-	LUICONFIG.Versions.recount = LUI_versions.recount
+	LUICONFIG.Versions.recount = LUI.Versions.recount
 end
 
 -- Recount font fix without having to edit recount files.

@@ -2,21 +2,25 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: bars.lua
 	Description: Bars Module
-	Version....: 2.0
-	Rev Date...: 30/03/11 [dd/mm/yy]
+	Version....: 2.1
+	Rev Date...: 16/08/11 [dd/mm/yy]
 ]] 
 
-local _, LUI = ...
-local module = LUI:NewModule("Bars", "AceHook-3.0")
-local Panels = LUI:GetModule("Panels")
-local Themes = LUI:GetModule("Themes")
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("Bars", "AceHook-3.0", "AceEvent-3.0")
+local Panels = LUI:Module("Panels")
+local Themes = LUI:Module("Themes")
+local Forte = LUI:Module("Forte")
+local Fader = LUI:Module("Fader")
+local Masque = LibStub("Masque", true)
 local LibKeyBound = LibStub("LibKeyBound-1.0")
 local widgetLists = AceGUIWidgetLSMlists
 
 local L = LUI.L
 local db, dbd
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
+
+LUI.Versions.bars = 2.1
 
 local _, class = UnitClass("player")
 
@@ -52,56 +56,74 @@ local statelist = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
 
 local isBarAddOnLoaded, isLibMasqueLoaded
 
-local statetexts = {
+local statetexts = setmetatable({
 	["DRUID"] = {"Default", "Bear Form", "Cat Form", "Cat Form (Prowl)", "Moonkin Form", "Tree of Life Form"},
 	["WARRIOR"] = {"Default", "Battle Stance", "Defensive Stance", "Berserker Stance"},
 	["PRIEST"] = {"Default", "Shadow Form"},
 	["ROGUE"] = {"Default", "Stealth", "Shadowdance"},
 	["WARLOCK"] = {"Default", "Metamorphosis"},
 	["DEFAULT"] = {"Default"},
-}
-local statetext = statetexts[class] or statetexts["DEFAULT"]
+}, {
+	__index = function(t, k)
+		return t["DEFAULT"]
+	end,
+})
+local statetext = statetexts[class]
 
-local defaultstates = {
+local defaultstates = setmetatable({
 	["DRUID"] = {"1", "3", "5", "5", "4", "6"},
 	["WARRIOR"] = {"1", "3", "5", "4"},
 	["PRIEST"] = {"1", "3"},
 	["ROGUE"] = {"1", "3", "5"},
 	["WARLOCK"] = {"1", "3"},
 	["DEFAULT"] = {"1"}
-}
+}, {
+	__index = function(t, k)
+		if type(k) == "number" then
+			return {tostring(k)}
+		end
+		return t["DEFAULT"]
+	end,
+})
 local defaultstate = {
-	Bottombar1 = defaultstates[class] or defaultstates["DEFAULT"],
-	Bottombar2 = "2",
-	Bottombar3 = "3",
-	Bottombar4 = "4",
-	Bottombar5 = "5",
-	Bottombar6 = "6",
-	SidebarLeft1 = "9",
-	SidebarLeft2 = "7",
-	SidebarRight1 = "9",
-	SidebarRight2 = "10",
+	Bottombar1 = defaultstates[class],
+	Bottombar2 = defaultstates[2],
+	Bottombar3 = defaultstates[3],
+	Bottombar4 = defaultstates[4],
+	Bottombar5 = defaultstates[5],
+	Bottombar6 = defaultstates[6],
+	SidebarLeft1 = defaultstates[7],
+	SidebarLeft2 = defaultstates[8],
+	SidebarRight1 = defaultstates[9],
+	SidebarRight2 = defaultstates[10],
 }
 
-local blizzstates = {
+local blizzstates = setmetatable({
 	["DRUID"] = {"1", "7", "8", "8", "9", "10"},
 	["WARRIOR"] = {"1", "7", "8", "9"},
 	["PRIEST"] = {"1", "7"},
 	["ROGUE"] = {"1", "7", "8"},
 	["WARLOCK"] = {"1", "7"},
 	["DEFAULT"] = {"1"}
-}
+}, {
+	__index = function(t, k)
+		if type(k) == "number" then
+			return {tostring(k)}
+		end
+		return t["DEFAULT"]
+	end,
+})
 local blizzstate = {
-	Bottombar1 = blizzstates[class] or blizzstates["DEFAULT"],
-	Bottombar2 = "6",
-	Bottombar3 = "5",
-	Bottombar4 = "7",
-	Bottombar5 = "8",
-	Bottombar6 = "9",
-	SidebarLeft1 = "3",
-	SidebarLeft2 = "1",
-	SidebarRight1 = "4",
-	SidebarRight2 = "2"
+	Bottombar1 = blizzstates[class],
+	Bottombar2 = blizzstates[6],
+	Bottombar3 = blizzstates[5],
+	Bottombar4 = blizzstates[7],
+	Bottombar5 = blizzstates[8],
+	Bottombar6 = blizzstates[9],
+	SidebarLeft1 = blizzstates[3],
+	SidebarLeft2 = blizzstates[1],
+	SidebarRight1 = blizzstates[4],
+	SidebarRight2 = blizzstates[2],
 }
 
 local Page = {
@@ -132,19 +154,10 @@ local Page = {
 local LoadStates = function(data)
 	if type(data) ~= "table" then return end
 	for k, v in pairs(data) do
-		if type(v) == "table" then
-			for k2, v2 in pairs(v) do
-				db[k].State[k2] = v2
-
-				if k2 == 1 then
-					db[k].AltState = v2
-					db[k].CtrlState = v2
-				end
-			end
-		else
-			db[k].State = v
-			db[k].AltState = v
-			db[k].CtrlState = v
+		db[k].State = {unpack(v)}
+		if k:find("Bottombar") then
+			db[k].State.Alt = v[1]
+			db[k].State.Ctrl = v[1]
 		end
 	end
 	
@@ -226,32 +239,20 @@ local GetBarState = function(id)
 	local bardb = db["Bottombar"..id]
 	local condition = "[bonusbar:5] 11; "
 	
-	if id == 1 then
-		if bardb.AltState ~= bardb.State[1] then
-			condition = condition.."[mod:alt] "..bardb.AltState.."; "
-		end
-		
-		if bardb.CtrlState ~= bardb.State[1] then
-			condition = condition.."[mod:ctrl] "..bardb.CtrlState.."; "
-		end
-		
-		if Page[class] then
-			for num, word in pairs(Page[class]) do
-				condition = condition..word:format(bardb.State[num+1])
-			end
-		end
-		condition = condition..bardb.State[1]
-	else
-		if bardb.AltState ~= bardb.State then
-			condition = condition.."[mod:alt] "..bardb.AltState.."; "
-		end
-		
-		if bardb.CtrlState ~= bardb.State then
-			condition = condition.."[mod:ctrl] "..bardb.CtrlState.."; "
-		end
-		
-		condition = condition..bardb.State
+	if bardb.State.Alt ~= bardb.State[1] then
+		condition = condition.."[mod:alt] "..bardb.State.Alt.."; "
 	end
+	
+	if bardb.State.Ctrl ~= bardb.State[1] then
+		condition = condition.."[mod:ctrl] "..bardb.State.Ctrl.."; "
+	end
+	
+	if id == 1 and Page[class] then
+		for num, word in pairs(Page[class]) do
+			condition = condition..word:format(bardb.State[num+1])
+		end
+	end
+	condition = condition..bardb.State[1]
 	
 	return condition
 end
@@ -283,8 +284,8 @@ local GetButton = function(barid, barpos, buttonid)
 end
 
 function module:SetBarColors()
-	BarsBackground:SetBackdropColor(unpack(Themes.db.profile.bar))
-	BarsBackground2:SetBackdropColor(unpack(Themes.db.profile.bar2))
+	LUIBarsTopBG:SetBackdropColor(unpack(Themes.db.profile.bar))
+	LUIBarsBottomBG:SetBackdropColor(unpack(Themes.db.profile.bar2))
 end
 
 function module:SetSidebarColors()
@@ -300,9 +301,9 @@ function module:SetSidebarColors()
 end
 
 function module:CreateBarBackground()
-	local top = LUI:CreateMeAFrame("FRAME", "BarsBackground", UIParent, 1024, 1024, 1, "BACKGROUND", 2, "BOTTOM", UIParent, "BOTTOM", 200, -70, 1)
+	local top = LUI:CreateMeAFrame("FRAME", "LUIBarsTopBG", UIParent, 1024, 64, 1, "BACKGROUND", 2, "BOTTOM", UIParent, "BOTTOM", tonumber(db.TopTexture.X), tonumber(db.TopTexture.Y), db.TopTexture.Alpha)
 	top:SetBackdrop({
-		bgFile = fdir.."bars_top",
+		bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v4\\bars_top",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		tile = false,
 		edgeSize = 1, 
@@ -310,29 +311,23 @@ function module:CreateBarBackground()
 	})
 	top:SetBackdropColor(unpack(Themes.db.profile.bar))
 	top:SetBackdropBorderColor(0, 0, 0, 0)
-	top:ClearAllPoints()
-	top:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.TopTexture.X), tonumber(db.TopTexture.Y))
-	top:SetAlpha(db.TopTexture.Alpha)
 	top[db.TopTexture.Enable and "Show" or "Hide"](top)
 	
-	local bottom = LUI:CreateMeAFrame("FRAME", "BarsBackground2", UIParent, 1024, 1024, 1, "BACKGROUND", 0, "BOTTOM", UIParent, "BOTTOM", 210, -145, 1)
+	local bottom = LUI:CreateMeAFrame("FRAME", "LUIBarsBottomBG", UIParent, 512, 64, 1, "BACKGROUND", 0, "BOTTOM", UIParent, "BOTTOM", tonumber(db.BottomTexture.X), tonumber(db.BottomTexture.Y), db.BottomTexture.Alpha)
 	bottom:SetBackdrop({
-		bgFile = fdir.."bars_bottom", 
+		bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v4\\bars_bottom", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
 		tile = false,
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	bottom:SetBackdropColor(unpack(Themes.db.profile.bar2))
-	bottom:SetBackdropBorderColor(0, 0, 0, 0)	
-	bottom:ClearAllPoints()
-	bottom:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.BottomTexture.X), tonumber(db.BottomTexture.Y))
-	bottom:SetAlpha(db.BottomTexture.Alpha)
+	bottom:SetBackdropBorderColor(0, 0, 0, 0)
 	bottom[db.BottomTexture.Enable and "Show" or "Hide"](bottom)
 end
 
 function module:CreateSidebarSlider(side, id)
-	if sidebars[side..id] then return end
+	if sidebars[side..id] then return sidebars[side..id] end
 	
 	local bardb = db["Sidebar"..side..id]
 	local other = side == "Right" and "Left" or "Right"
@@ -586,7 +581,7 @@ function module:CreateSidebarSlider(side, id)
 		SidebarSetAlpha(frame, 0)
 	end
 	
-	if bardb.Enable then	
+	if bardb.Enable then
 		sb.Anchor:Show()
 		if bardb.IsOpen == true then
 			sb.sidebaropen = 1
@@ -600,7 +595,7 @@ function module:CreateSidebarSlider(side, id)
 end
 
 function module:SetButtons()
-	if LibMasque then
+	if Masque then
 		isLibMasqueLoaded = true
 		return
 	end
@@ -1027,12 +1022,12 @@ function module:SetBottomBar(id)
 		
 		RegisterStateDriver(bar, "page", GetBarState(id))
 		
-		if bardb.Fader.Enable and LUI:GetModule("Fader", true) then
-			LUI:GetModule("Fader"):RegisterFrame(bar, bardb.Fader, true)
+		if bardb.Fader.Enable then
+			Fader:RegisterFrame(bar, bardb.Fader, true)
 		end
 		
-		if LibMasque then
-			local group = LibMasque("Button"):Group("LUI", "Bottombar "..id)
+		if Masque then
+			local group = Masque:Group("LUI", "Bottom Bar "..id)
 			for _, button in pairs(bar.buttons) do
 				group:AddButton(button)
 			end
@@ -1091,10 +1086,10 @@ function module:SetSideBar(side, id)
 			end
 		]])
 		
-		RegisterStateDriver(bar, "page", bardb.State)
+		RegisterStateDriver(bar, "page", bardb.State[1])
 		
-		if LibMasque then
-			local group = LibMasque("Button"):Group("LUI", side.." Sidebar "..id)
+		if Masque then
+			local group = Masque:Group("LUI", side.." Sidebar "..id)
 			for _, button in pairs(bar.buttons) do
 				group:AddButton(button)
 			end
@@ -1142,8 +1137,8 @@ function module:SetPetBar()
 			previous = button
 		end
 		
-		if LibMasque then
-			local group = LibMasque("Button"):Group("LUI", side.." Sidebar "..id)
+		if Masque then
+			local group = Masque:Group("LUI", "Pet Bar")
 			for i = 1, NUM_PET_ACTION_SLOTS do
 				group:AddButton(_G["PetActionButton"..i])
 			end
@@ -1162,6 +1157,8 @@ function module:SetShapeshiftBar()
 
 		ShapeshiftBarFrame:SetParent(bar)
 		ShapeshiftBarFrame:EnableMouse(false)
+		
+		local group = Masque and Masque:Group("LUI", "Shapeshift Bar") or nil
 
 		local function MoveShapeshift()
 			if InCombatLockdown() then return end
@@ -1181,21 +1178,17 @@ function module:SetShapeshiftBar()
 				end
 				previous = button
 				
-				if LibMasque and not _G["ShapeshiftButton"..i].added then
-					LibMasque("Button"):Group("LUI", side.." Sidebar "..id):AddButton(button)
+				if group then
+					group:AddButton(button) -- will return if button is already added
 				end
 			end
 		end
 		bar.MoveShapeshift = MoveShapeshift -- for the hook in the SetButtons function to access
 
-		MoveShapeshift()
-		
-		if LibMasque then
-			local group = LibMasque("Button"):Group("LUI", side.." Sidebar "..id)
-			for i = 1, NUM_SHAPESHIFT_SLOTS do
-				group:AddButton(_G["ShapeshiftButton"..i])
-				_G["ShapeshiftButton"..i].added = true
-			end
+		if InCombatLockdown() then
+			self:RegisterEvent("PLAYER_REGEN_ENABLED", function(event) self:UnregisterEvent(event); MoveShapeshift() end)
+		else
+			MoveShapeshift()
 		end
 	end
 	
@@ -1282,6 +1275,11 @@ function module:SetLibKeyBound()
 	--LibKeyBound.RegisterCallback(self, "LIBKEYBOUND_MODE_COLOR_CHANGED")
 end
 
+function module:SetColors()
+	self:SetSidebarColors()
+	self:SetBarColors()
+end
+
 function module:SetBars()
 	if not (IsAddOnLoaded("Bartender4") or IsAddOnLoaded("Dominos") or IsAddOnLoaded("Macaroon")) and db.General.Enable then
 		if not db.StatesLoaded then LoadStates(defaultstate) end
@@ -1318,10 +1316,6 @@ function module:SetBars()
 	self:CreateSidebarSlider("Left", 2)
 end
 
-module.optionsName = "Bars"
-module.getter = "generic"
-module.setter = "Refresh"
-module.childGroups = "select"
 module.defaults = {
 	profile = {
 		StatesLoaded = false,
@@ -1335,76 +1329,74 @@ module.defaults = {
 		TopTexture = {
 			Enable = true,
 			Alpha = 0.7,
-			X = "-25",
-			Y = "15",
+			X = 0,
+			Y = 60,
 			Animation = true,
-			AnimationHeight = "35",
+			AnimationHeight = 35,
 		},
 		BottomTexture = {
 			Enable = true,
 			Alpha = 1,
-			X = "-25",
-			Y = "-42",
+			X = 0,
+			Y = -25,
 		},
 		SidebarRight1 = { 
 			Enable = true,
 			OpenInstant = false,
-			Offset = "0",
+			Offset = 0,
 			IsOpen = false,
 			Anchor = "BT4Bar10",
 			Additional = "",
 			AutoPosEnable = true,
-			X = "0",
-			Y = "0",
+			X = 0,
+			Y = 0,
 			Scale = 0.85,
-			State = "0",
+			State = {"0"},
 		},
 		SidebarRight2 = { 
 			Enable = false,
 			OpenInstant = false,
-			Offset = "250",
+			Offset = 250,
 			IsOpen = false,
 			Anchor = "BT4Bar8",
 			Additional = "",
 			AutoPosEnable = true,
-			X = "0",
-			Y = "0",
+			X = 0,
+			Y = 0,
 			Scale = 0.85,
-			State = "0",
+			State = {"0"},
 		},
 		SidebarLeft1 = {
 			Enable = false,
 			OpenInstant = false,
-			Offset = "0",
+			Offset = 0,
 			IsOpen = false,
 			Anchor = "BT4Bar9",
 			Additional = "",
 			AutoPosEnable = true,
-			X = "0",
-			Y = "0",
+			X = 0,
+			Y = 0,
 			Scale = 0.85,
-			State = "0",
+			State = {"0"},
 		},
 		SidebarLeft2 = {
 			Enable = false,
 			OpenInstant = false,
-			Offset = "250",
+			Offset = 250,
 			IsOpen = false,
 			Anchor = "BT4Bar7",
 			Additional = "",
 			AutoPosEnable = true,
-			X = "0",
-			Y = "0",
+			X = 0,
+			Y = 0,
 			Scale = 0.85,
-			State = "0",
+			State = {"0"},
 		},
 		Bottombar1 = {
 			Enable = true,
-			X = "0",
-			Y = "24.5",
+			X = 0,
+			Y = 24.5,
 			Scale = 0.85,
-			AltState = "0",
-			CtrlState = "0",
 			NumPerRow = 12,
 			NumButtons = 12,
 			State = {
@@ -1414,6 +1406,8 @@ module.defaults = {
 				[4] = "0",
 				[5] = "0",
 				[6] = "0",
+				Alt = "0",
+				Ctrl = "0",
 			},
 			Fader = {
 				Casting = true,
@@ -1435,14 +1429,16 @@ module.defaults = {
 		},
 		Bottombar2 = {
 			Enable = true,
-			X = "0",
-			Y = "63.5",
+			X = 0,
+			Y = 63.5,
 			Scale = 0.85,
-			AltState = "0",
-			CtrlState = "0",
-			State = "0",
 			NumPerRow = 12,
 			NumButtons = 12,
+			State = {
+				[1] = "0",
+				Alt = "0",
+				Ctrl = "0",
+			},
 			Fader = {
 				Casting = true,
 				Combat = true,
@@ -1463,14 +1459,16 @@ module.defaults = {
 		},
 		Bottombar3 = {
 			Enable = false,
-			X = "0",
-			Y = "102.5",
+			X = 0,
+			Y = 102.5,
 			Scale = 0.85,
-			AltState = "0",
-			CtrlState = "0",
-			State = "0",
 			NumPerRow = 12,
 			NumButtons = 12,
+			State = {
+				[1] = "0",
+				Alt = "0",
+				Ctrl = "0",
+			},
 			Fader = {
 				Casting = true,
 				Combat = true,
@@ -1491,14 +1489,16 @@ module.defaults = {
 		},
 		Bottombar4 = {
 			Enable = false,
-			X = "0",
-			Y = "141.5",
+			X = 0,
+			Y = 141.5,
 			Scale = 0.85,
-			AltState = "0",
-			CtrlState = "0",
-			State = "0",
 			NumPerRow = 12,
 			NumButtons = 12,
+			State = {
+				[1] = "0",
+				Alt = "0",
+				Ctrl = "0",
+			},
 			Fader = {
 				Casting = true,
 				Combat = true,
@@ -1519,14 +1519,16 @@ module.defaults = {
 		},
 		Bottombar5 = {
 			Enable = false,
-			X = "0",
-			Y = "180.5",
+			X = 0,
+			Y = 180.5,
 			Scale = 0.85,
-			AltState = "0",
-			CtrlState = "0",
-			State = "0",
 			NumPerRow = 12,
 			NumButtons = 12,
+			State = {
+				[1] = "0",
+				Alt = "0",
+				Ctrl = "0",
+			},
 			Fader = {
 				Casting = true,
 				Combat = true,
@@ -1547,14 +1549,16 @@ module.defaults = {
 		},
 		Bottombar6 = {
 			Enable = false,
-			X = "0",
-			Y = "221.5",
+			X = 0,
+			Y = 221.5,
 			Scale = 0.85,
-			AltState = "0",
-			CtrlState = "0",
-			State = "0",
 			NumPerRow = 12,
 			NumButtons = 12,
+			State = {
+				[1] = "0",
+				Alt = "0",
+				Ctrl = "0",
+			},
 			Fader = {
 				Casting = true,
 				Combat = true,
@@ -1574,27 +1578,207 @@ module.defaults = {
 			},
 		},
 		Shapeshiftbar = {
-			X = "50",
-			Y = "-315",
+			X = 50,
+			Y = -315,
 			Scale = 0.85,
 		},
 		Petbar = {
-			X = "-50",
-			Y = "-330",
+			X = -50,
+			Y = -330,
 			Scale = 0.85,
 		},
 		VehicleExit = {
-			X = "-350",
-			Y = "-220",
+			X = -350,
+			Y = -220,
 			Scale = 1,
 		},
 	},
 }
 
+module.childGroups = "select"
+module.getter = "generic"
+module.setter = "Refresh"
+
+function module:LoadOptions()
+	local UIRL = function() StaticPopup_Show("RELOAD_UI") end
+	
+	local disabled = {
+		TopTex = function() return not db.TopTexture.Enable end,
+		TopTexAnim = function() return not db.TopTexture.Enable or not db.TopTexture.Animation end,
+		BottomTex = function() return not db.BottomTexture.Enable end
+	}
+	
+	local function enableBar(info, value)
+		self:Refresh(info, value)
+		self:UpdatePositionOptions()
+	end
+	
+	local function setSidebarPos(info, value)
+		SidebarSetAnchor(info[#info-1]:match("Sidebar(%a+)(%d+)"))
+	end
+	
+	local function getState(info)
+		info[#info] = tonumber(info[#info]) or info[#info]
+		local val = self.db(info)
+		for k, v in pairs(info.option.values()) do
+			if v == val then
+				return k
+			end
+		end
+	end
+	local function setBottombarState(info, value)
+		info[#info] = tonumber(info[#info]) or info[#info]
+		self.db(info, info.option.values()[value])
+		
+		local id = tonumber(info[#info-2]:match("%d+"))
+		UnregisterStateDriver(bars[id], "page")
+		RegisterStateDriver(bars[id], "page", GetBarState(id))
+	end
+	local function setSidebarState(info, value)
+		info[#info] = tonumber(info[#info]) or info[#info]
+		local val = info.option.values()[value]
+		self.db(info, val)
+		
+		local barname = gsub(info[#info-2], "Sidebar", "LUIBar")
+		UnregisterStateDriver(_G[barname], "page")
+		RegisterStateDriver(_G[barname], "page", val)
+	end
+	
+	local function createBottomBarOptions(num, order)
+		local disabledFunc = function() return not db["Bottombar"..num].Enable end
+		
+		local option = self:NewGroup("Bottom Bar "..num, order, false, InCombatLockdown, {
+			Enable = (num ~= 1) and self:NewToggle("Show Bottom Bar "..num, nil, 1, true) or nil,
+			header1 = self:NewHeader("General Settings", 2),
+			[""] = self:NewPosSliders("Bottom Bar "..num, 3, false, "LUIBar"..num, nil, nil, disabledFunc),
+			empty1 = self:NewDesc(" ", 4),
+			Scale = self:NewSlider("Scale", "Scale of Bottom Bar "..num..".", 5, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
+			empty2 = self:NewDesc(" ", 6),
+			NumPerRow = self:NewSlider("Buttons Per Row", "Choose the Number of Buttons per row for your Bottom Bar "..num..".", 7, 1, 12, 1, true, nil, nil, disabledFunc),
+			NumButtons = self:NewSlider("Number of Buttons", "Choose the Number of Buttons for your Bottom Bar "..num..".", 8, 1, 12, 1, true, nil, nil, disabledFunc),
+			State = self:NewGroup("State Settings", 9, getState, setBottombarState, true, {
+				Alt = self:NewSelect("Alt", "Choose the Alt State for Bottom Bar "..num..".\n\nDefault: "..defaultstate["Bottombar"..num][1], 25, statelist, nil, false, nil, disabledFunc),
+				Ctrl = self:NewSelect("Ctrl", "Choose the Ctrl State for Bottom Bar "..num..".\n\nDefault: "..defaultstate["Bottombar"..num][1], 26, statelist, nil, false, nil, disabledFunc),
+			}),
+			Fader = self:NewGroup("Fader", 10, true, disabledFunc, Fader:CreateFaderOptions(_G["LUIBar"..num], db["Bottombar"..num].Fader, dbd["Bottombar"..num].Fader)),
+		})
+		
+		if num == 1 then
+			for i, name in ipairs(statetext) do
+				option.args.State.args[tostring(i)] = self:NewSelect(name, "Choose the State for "..name..".\n\nDefaults:\nLUI: "..defaultstate.Bottombar1[i].."\nBlizzard: "..blizzstate.Bottombar1[i],
+					i, statelist, nil, false, nil, disabledFunc)
+			end
+		else
+			option.args.State.args["1"] = self:NewSelect("Default", "Choose the State for Bottom Bar "..num..".\n\nDefaults:\nLUI: "..defaultstate["Bottombar"..num][1].."\nBlizzard: "..blizzstate["Bottombar"..num][1],
+				1, statelist, nil, false, nil, disabledFunc)
+		end
+		
+		return option
+	end
+	
+	local function createSideBarOptions(side, num, order)
+		local disabledFunc = function() return not db["Sidebar"..side..num].Enable end
+		local disabledPosFunc = function() return not db["Sidebar"..side..num].Enable or (isBarAddOnLoaded and not db["Sidebar"..side..num].AutoPosEnable) end
+		
+		local option = self:NewGroup(side.." Bar "..num, order, false, InCombatLockdown, {
+			Enable = self:NewToggle("Show "..side.." Bar "..num, nil, 1, enableBar),
+			header1 = self:NewHeader("Anchor Settings", 2),
+			Intro = isBarAddOnLoaded and self:NewDesc("Which Bar do you want to use for this Sidebar?\nChoose one or type in the MainAnchor manually.\n\nMake sure your Bar is set to 6 buttons/2 columns and isn't used for another Sidebar.\nLUI will position your Bar automatically.", 3) or nil,
+			Anchor = isBarAddOnLoaded and self:NewSelect("Anchor", nil, 4, barAnchors, nil, "Refresh") or nil,
+			AnchorInput = isBarAddOnLoaded and self:NewInput("Anchor", nil, 5, false, nil, disabledFunc) or nil,
+			Additional = self:NewInput("Additional Frames", "Type in any additional frame names (seperated by commas), that you would like to show/hide with the Sidebar.", 6, true, nil, disabledFunc),
+			header2 = self:NewHeader("General Settings", 7),
+			[""] = self:NewPosSliders(side.." Bar "..num, 8, false, function() return sidebars[side..num].Anchor end, true, nil, disabledPosFunc),
+			Scale = self:NewSlider("Scale", "Choose the Scale for this Sidebar.", 9, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
+			AutoPosEnable = isBarAddOnLoaded and self:NewToggle("Stop touching me!", "Whether or not to have LUI handle your Bar Positioning.", 10, true, nil, disabledFunc) or nil,
+			header3 = self:NewHeader("Additional Settings", 11),
+			Offset = self:NewInputNumber("Y Offset", "Y Offset for your Sidebar", 12, "Refresh", nil, disabledFunc),
+			OpenInstant = self:NewToggle("Open Instant", "Whether or not to show an open/close animation.", 13, true, nil, disabledFunc),
+			State = not isBarAddOnLoaded and self:NewGroup("State Settings", 14, getState, setSidebarState, true, {
+				["1"] = self:NewSelect("Default", "Choose the State for "..side.." Bar "..num..".\n\nDefaults:\nLUI: "..defaultstate["Sidebar"..side..num][1].."\nBlizzard: "..blizzstate["Sidebar"..side..num][1],
+					1, statelist, nil, false, nil, disabledFunc),
+			}) or nil,
+		})
+		
+		if option.args.AnchorInput then
+			option.args.AnchorInput.desc = function(info)
+				info[#info] = "Anchor"
+				return "Choose the Bar for this Sidebar.\n\nDefault: "..dbd(info)
+			end
+			option.args.AnchorInput.get = function(info)
+				info[#info] = "Anchor"
+				return tostring(db(info))
+			end
+			option.args.AnchorInput.set = function(info, value)
+				info[#info] = "Anchor"
+				db(info, value)
+				SidebarSetAnchor(side, num)
+			end
+		end
+		
+		return option
+	end
+	
+	local function createOtherBarOptions(name, order, frame)
+		local option = self:NewGroup(name, order, false, InCombatLockdown, {
+			[""] = self:NewPosSliders(name, 1, false, frame),
+			Scale = self:NewSlider("Scale", "Choose the Scale for the "..name..".", 2, 0.1, 1.5, 0.05, true, true),
+		})
+		
+		return nil
+	end
+	
+	local options = {
+		General = self:NewGroup("General", 1, false, InCombatLockdown, {
+			Enable = self:NewToggle("Enable", "Whether or not to use LUI's Action Bars.", 1, UIRL), -- not sure how the api will take this
+			empty1 = self:NewDesc(" ", 2),
+			ShowHotkey = self:NewToggle("Show Hotkey Text", nil, 3, true, nil, nil, isLibMasqueLoaded or isBarAddOnLoaded),
+			ShowMacro = self:NewToggle("Show Macro Text", nil, 4, true, nil, nil, isLibMasqueLoaded or isBarAddOnLoaded),
+			ShowCount = self:NewToggle("Show Count Text", nil, 5, true, nil, nil, isLibMasqueLoaded or isBarAddOnLoaded),
+			empty2 = self:NewDesc(" ", 6, nil, nil, isLibMasqueLoaded or isBarAddOnLoaded),
+			ShowEquipped = self:NewToggle("Show Equipped Border", nil, 7, true, nil, nil, isLibMasqueLoaded or isBarAddOnLoaded),
+			empty3 = self:NewDesc(" ", 8, nil, nil, isLibMasqueLoaded or isBarAddOnLoaded),
+			LoadBlizz = self:NewExecute("Load Blizzard States", "Load the Blizzard Default Bar States.", 9, function() LoadStates(blizzstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
+			LoadLUI = self:NewExecute("Load LUI States", "Load the LUI Default Bar States.", 10, function() LoadStates(defaultstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
+			empty3 = self:NewDesc(" ", 11, nil, nil, isBarAddOnLoaded),
+			ToggleKB = self:NewExecute("Keybinds", "Toggles Keybinding mode.", 12, function() LibKeyBound:Toggle() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
+		}),
+		TopTexture = self:NewGroup("Top Texture", 2, false, InCombatLockdown, {
+			Enable = self:NewToggle("Enable", "Whether or not to show the Top Bar Texture.", 1, true),
+			Alpha = self:NewSlider("Alpha", "Choose your Top Bar Texture Alpha.", 2, nil, nil, nil, true, true, nil, disabled.TopTex),
+			empty1 = self:NewDesc(" ", 3),
+			[""] = self:NewPosSliders("Top Bar Texture", 4, false, "LUIBarsTopBG", nil, nil, disabled.TopTex),
+			Animation = self:NewToggle("Enable Texture Animation", "Whether or not to show the Texture Animation.", 5, true, nil, disabled.TopTex, not LUI.isForteCooldownLoaded),
+			AnimationHeight = self:NewInputNumber("Animation Height", "Choose the Top Bar Texture Animation Height.", 6, nil, nil, disabled.TopTexAnim, not LUI.isForteCooldownLoaded),
+		}),
+		BottomTexture = self:NewGroup("Bottom Texture", 3, false, InCombatLockdown, {
+			Enable = self:NewToggle("Enable", "Whether or not to show the Bottom Bar Texture.", 1, true),
+			Alpha = self:NewSlider("Alpha", "Choose your Bottom Bar Texture Alpha.", 2, nil, nil, nil, true, true, nil, disabled.BottomTex),
+			empty1 = self:NewDesc(" ", 3),
+			[""] = self:NewPosSliders("Bottom Bar Texture", 4, false, "LUIBarsBottomBG", nil, nil, disabled.BottomTex),
+		}),
+		Bottombar1 = not isBarAddOnLoaded and createBottomBarOptions(1, 4) or nil,
+		Bottombar2 = not isBarAddOnLoaded and createBottomBarOptions(2, 5) or nil,
+		Bottombar3 = not isBarAddOnLoaded and createBottomBarOptions(3, 6) or nil,
+		Bottombar4 = not isBarAddOnLoaded and createBottomBarOptions(4, 7) or nil,
+		Bottombar5 = not isBarAddOnLoaded and createBottomBarOptions(5, 8) or nil,
+		Bottombar6 = not isBarAddOnLoaded and createBottomBarOptions(6, 9) or nil,
+		SidebarRight1 = createSideBarOptions("Right", 1, 10),
+		SidebarRight2 = createSideBarOptions("Right", 2, 11),
+		SidebarLeft1 = createSideBarOptions("Left", 1, 12),
+		SidebarLeft2 = createSideBarOptions("Left", 2, 13),
+		Shapeshiftbar = not isBarAddOnLoaded and createOtherBarOptions("Shapeshift Bar", 14, "LUIShapeshiftBar") or nil,
+		Petbar = not isBarAddOnLoaded and createOtherBarOptions("Pet Bar", 15, "LUIPetBar") or nil,
+		VehicleExit = not isBarAddOnLoaded and createOtherBarOptions("Vehicle Exit Button", 16, "LUIVehicleExit") or nil,
+	}
+	
+	return options
+end
+
 function module:Refresh(...)
 	local info, value = ...
 	if type(info) == "table" and type(value) ~= "table" then
-		db[info[#info-1]][info[#info]] = value
+		db(info, value)
 	end
 	
 	if not isBarAddOnLoaded then
@@ -1612,15 +1796,22 @@ function module:Refresh(...)
 		self:SetVehicleExit()
 	end
 	
-	BarsBackground:SetAlpha(db.TopTexture.Alpha)
-	BarsBackground:ClearAllPoints()
-	BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.TopTexture.X), tonumber(db.TopTexture.Y))
-	BarsBackground[db.TopTexture.Enable and "Show" or "Hide"](BarsBackground)
+	LUIBarsTopBG:SetAlpha(db.TopTexture.Alpha)
+	LUIBarsTopBG:ClearAllPoints()
+	LUIBarsTopBG:SetPoint("BOTTOM", UIParent, "BOTTOM", db.TopTexture.X, db.TopTexture.Y)
+	LUIBarsTopBG[db.TopTexture.Enable and "Show" or "Hide"](LUIBarsTopBG)
 	
-	BarsBackground2:SetAlpha(db.BottomTexture.Alpha)
-	BarsBackground2:ClearAllPoints()
-	BarsBackground2:SetPoint("BOTTOM", UIParent, "BOTTOM", tonumber(db.BottomTexture.X), tonumber(db.BottomTexture.Y))
-	BarsBackground2[db.BottomTexture.Enable and "Show" or "Hide"](BarsBackground2)
+	if Forte:IsEnabled() and Forte.db.Cooldown.Lock then
+		local FXCD = FX_Cooldown1
+		if FXCD and FXCD:IsShown() then
+			LUIBarsTopBG:SetPoint("BOTTOM", UIParent, "BOTTOM", db.TopTexture.X, db.TopTexture.Y + db.TopTexture.AnimationHeight)
+		end
+	end
+	
+	LUIBarsBottomBG:SetAlpha(db.BottomTexture.Alpha)
+	LUIBarsBottomBG:ClearAllPoints()
+	LUIBarsBottomBG:SetPoint("BOTTOM", UIParent, "BOTTOM", db.BottomTexture.X, db.BottomTexture.Y)
+	LUIBarsBottomBG[db.BottomTexture.Enable and "Show" or "Hide"](LUIBarsBottomBG)
 	
 	for _, button in pairs(buttonlist) do
 		local name = button:GetName()
@@ -1660,282 +1851,13 @@ function module:Refresh(...)
 	SidebarSetAnchor("Right", 2)
 end
 
-function module:LoadOptions()
-	LUI:EmbedAPI(self)
-	
-	local UIRL = function() StaticPopup_Show("RELOAD_UI") end
-	local disabledFunc = function() return not db.General.Enable end
-	local disabledTopTex = function() return not db.TopTexture.Enable end
-	local disabledtopTexAnim = function() return not db.TopTexture.Enable or not db.TopTexture.Animation end
-	local disabledBottomTex = function() return not db.BottomTexture.Enable end
-	
-	local function createBottomBarOptions(num, order)
-		local disabledFunc = function() return not db["Bottombar"..num].Enable end
-		
-		local option = self:NewGroup("Bottom Bar "..num, order, {
-			Enable = (num ~= 1) and self:NewToggle("Show Bottom Bar "..num, nil, 1, true, "full") or nil,
-			header1 = self:NewHeader("General Settings", 2),
-			[""] = self:NewPosition("", "Bottom Bar "..num, 3, nil, true, nil, disabledFunc),
-			empty1 = self:NewDesc(" ", 5, "full"),
-			Scale = self:NewSlider("Scale", "Scale of the Bottom Bar "..num..".", 6, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
-			empty2 = self:NewDesc(" ", 7, "full"),
-			NumPerRow = self:NewSlider("Buttons Per Row", "Choose the Number of Buttons per row for your Bottom Bar "..num..".", 8, 1, 12, 1, true, nil, nil, disabledFunc),
-			NumButtons = self:NewSlider("Number of Buttons", "Choose the Number of Buttons for your Bottom Bar "..num..".", 9, 1, 12, 1, true, nil, nil, disabledFunc),
-			header2 = self:NewHeader("State Settings", 10),
-		})
-		
-		if num == 1 then
-			for i, name in pairs(statetext) do
-				local c = i
-				option.args["State"..c] = {
-					name = name,
-					desc = "Choose the State for "..name..".\nLUI Default: "..defaultstate.Bottombar1[c].."\nBlizzard Default: "..blizzstate.Bottombar1[c],
-					type = "select",
-					values = statelist,
-					disabled = disabledFunc,
-					get = function()
-							for k, v in pairs(statelist) do
-								if db.Bottombar1.State[c] == v then
-									return k
-								end
-							end
-						end,
-					set = function(info, select)
-							db.Bottombar1.State[c] = statelist[select]
-							UnregisterStateDriver(LUIBar1, "page")
-							RegisterStateDriver(LUIBar1, "page", GetBarState(num))
-						end,
-					order = c + 10,
-				}
-				i = i + 1
-			end
-		else
-			option.args.StateDefault = {
-				name = "Default",
-				desc = "Choose the State for your Bottom Bar "..num..".\nLUI Default: "..defaultstate["Bottombar"..num].."\nBlizzard Default: "..blizzstate["Bottombar"..num],
-				type = "select",
-				values = statelist,
-				disabled = disabledFunc,
-				get = function()
-						for k, v in pairs(statelist) do
-							if db["Bottombar"..num].State == v then
-								return k
-							end
-						end
-					end,
-				set = function(info, select)
-						db["Bottombar"..num].State = statelist[select]
-						UnregisterStateDriver(_G["LUIBar"..num], "page")
-						RegisterStateDriver(_G["LUIBar"..num], "page", GetBarState(num))
-					end,
-				order = 11,
-			}
-		end
-		
-		option.args.StateAlt = {
-			name = "Alt",
-			desc = "Choose the Alt State for your Bottom Bar "..num..".",
-			type = "select",
-			values = statelist,
-			disabled = disabledFunc,
-			get = function()
-					for k, v in pairs(statelist) do
-						if db["Bottombar"..num].AltState == v then
-							return k
-						end
-					end
-				end,
-			set = function(info, select)
-					db["Bottombar"..num].AltState = statelist[select]
-					UnregisterStateDriver(_G["LUIBar"..num], "page")
-					RegisterStateDriver(_G["LUIBar"..num], "page", GetBarState(num))
-				end,
-			order = 25,
-		}
-		option.args.StateCtrl = {
-			name = "Ctrl",
-			desc = "Choose the Ctrl State for your Bottom Bar "..num..".",
-			type = "select",
-			values = statelist,
-			disabled = disabledFunc,
-			get = function()
-					for k, v in pairs(statelist) do
-						if db["Bottombar"..num].CtrlState == v then
-							return k
-						end
-					end
-				end,
-			set = function(info, select)
-					db["Bottombar"..num].CtrlState = statelist[select]
-					UnregisterStateDriver(_G["LUIBar"..num], "page")
-					RegisterStateDriver(_G["LUIBar"..num], "page", GetBarState(num))
-				end,
-			order = 26,
-		}
-		option.args.Fader = {
-			name = "Fader",
-			type = "group",
-			guiInline = true,
-			disabled = disabledFunc,
-			order = 27,
-			args = LUI:GetModule("Fader", true) and LUI:GetModule("Fader"):CreateFaderOptions(_G["LUIBar"..num], db["Bottombar"..num].Fader, dbd["Bottombar"..num].Fader) or {
-				Empty = self:NewDesc("|cffff0000Fader not found.|r", 1)
-			}
-		}
-		
-		return option
-	end
-	
-	local function createSideBarOptions(side, num, order)
-		local disabledFunc = function() return not db["Sidebar"..side..num].Enable end
-		local disabledPosFunc = function() return not db["Sidebar"..side..num].Enable or (isBarAddOnLoaded and not db["Sidebar"..side..num].AutoPosEnable) end
-		
-		local option = self:NewGroup(side.." Bar "..num, order, {
-			Enable = self:NewToggle("Show "..side.." Bar "..num, nil, 1, true, "full") or nil,
-			header1 = self:NewHeader("Anchor Settings", 2, nil, nil),
-			Intro = self:NewDesc("Which Bar do you want to use for this Sidebar?\nChoose one or type in the MainAnchor manually.\n\nMake sure your Bar is set to 6 buttons/2 columns and isn't used for another Sidebar.\nLUI will position your Bar automatically.", 3, nil, nil, not isBarAddOnLoaded),
-			AnchorDropdown = {
-				name = "Anchor",
-				type = "select",
-				values = barAnchors,
-				hidden = not isBarAddOnLoaded,
-				get = function()
-						for k, v in pairs(barAnchors) do
-							if db["Sidebar"..side..num].Anchor == v then
-								return k
-							end
-						end
-					end,
-				set = function(info, select)
-						db["Sidebar"..side..num].Anchor = barAnchors[select]
-						SidebarSetAnchor(side, num)
-					end,
-				order = 4,
-			},
-			Anchor = self:NewInput("Anchor", "Choose the Bar for this Sidebar.", 5, true, nil, disabledFunc, not isBarAddOnLoaded),
-			Additional = self:NewInput("Additional Frames", "Type in any additional frame names (seperated by commas), that you would like to show/hide with the Sidebar.", 6, true, nil, disabledFunc),
-			header2 = self:NewHeader("General Settings", 7),
-			[""] = self:NewPosition("", side.." Bar "..num, 8, nil, true, nil, disabledPosFunc),
-			Scale = self:NewSlider("Scale", "Choose the Scale for this Sidebar.", 10, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
-			AutoPosEnable = self:NewToggle("Stop touching me!", "Whether you want that LUI handles your Bar Positioning or not.", 11, true, nil, disabledFunc, not isBarAddOnLoaded),
-			header3 = self:NewHeader("Additional Settings", 12),
-			Offset = self:NewInputNumber("Y Offset", "Y Offset for your Sidebar", 13, true, nil, disabledFunc),
-			OpenInstant = self:NewToggle("Open Instant", "Whether you want to show an open/close animation or not.", 14, true, nil, disabledFunc),
-			State = {
-				name = "State",
-				desc = "Choose the State for this Sidebar.\nLUI Default: "..defaultstate["Sidebar"..side..num].."\nBlizzard Default: "..blizzstate["Sidebar"..side..num],
-				type = "select",
-				values = statelist,
-				hidden = isBarAddOnLoaded,
-				get = function()
-						for k, v in pairs(statelist) do
-							if db["Sidebar"..side..num].State == v then
-								return k
-							end
-						end
-					end,
-				set = function(_, select)
-						db["Sidebar"..side..num].State = statelist[select]
-						UnregisterStateDriver(_G["LUIBar"..side..num], "page")
-						RegisterStateDriver(_G["LUIBar"..side..num], "page", db["Sidebar"..side..num].State)
-					end,
-				order = 15,
-			},
-		})
-		
-		return option
-	end
-	
-	local function createOtherBarOptions(name, order)
-		local option = self:NewGroup(name, order, {
-			[""] = self:NewPosition("", name, 1, nil, true),
-			Scale = self:NewSlider("Scale", "Choose the Scale for the "..name..".", 3, 0.1, 1.5, 0.05, true, true),
-		})
-		
-		return option
-	end
-	
-	local options = {
-		General = self:NewGroup("General", 1, {
-			Enable = self:NewToggle("Enable", "Whether you want to use LUI Bars or not.", 1, UIRL, "full"),
-			empty1 = self:NewDesc(" ", 2, "full"),
-			ShowHotkey = self:NewToggle("Show Hotkey Text", "Whether you want to show hotkey text or not.", 3, true, "full", nil, isLibMasqueLoaded or isBarAddOnLoaded),
-			ShowMacro = self:NewToggle("Show Macro Text", "Whether you want to show macro text or not.", 4, true, "full", nil, isLibMasqueLoaded or isBarAddOnLoaded),
-			ShowCount = self:NewToggle("Show Count Text", "Whether you want to show count text or not.", 5, true, "full", nil, isLibMasqueLoaded or isBarAddOnLoaded),
-			empty2 = self:NewDesc(" ", 6, "full", nil, isLibMasqueLoaded or isBarAddOnLoaded),
-			ShowEquipped = self:NewToggle("Show Equipped Border", "Whether you want to show equipped borders or not.", 7, true, "full", nil, isLibMasqueLoaded or isBarAddOnLoaded),
-			empty3 = self:NewDesc(" ", 8, "full"),
-			LoadBlizz = {
-				name = "Load Blizzard States",
-				desc = "Load the Blizzard Default Bar States.",
-				type = "execute",
-				hidden = isBarAddOnLoaded,
-				func = function()
-						LoadStates(blizzstate)
-						module:Refresh()
-					end,
-				order = 9,
-			},
-			LoadLUI = {
-				name = "Load LUI States",
-				desc = "Load the LUI Default Bar States.",
-				type = "execute",
-				hidden = isBarAddOnLoaded,
-				func = function()
-						LoadStates(defaultstate)
-						module:Refresh()
-					end,
-				order = 10,
-			},
-			empty3 = self:NewDesc(" ", 11, "full", nil, isBarAddOnLoaded),
-			ToggleKB = {
-				name = "Keybinds",
-				desc = "Toggles Keybinding mode.",
-				type = "execute",
-				hidden = isBarAddOnLoaded,
-				func = function() LibKeyBound:Toggle() end,
-				order = 12,
-			},
-			
-		}),
-		TopTexture = self:NewGroup("Top Texture", 2, {
-			Enable = self:NewToggle("Enable", "Whether you want to show the Top Bar Texture or not.", 1, true, "full"),
-			Alpha = self:NewSlider("Alpha", "Choose your Top Bar Texture Alpha.", 2, 0, 1, 0.1, true, true, nil, disabledTopTex),
-			[""] = self:NewPosition("", "Top Bar Texture", 3, nil, true, nil, disabledTopTex),
-			Animation = self:NewToggle("Enable Texture Animation", "Whether you want to show the Texture Animation or not.", 5, function() end, nil, disabledTopTex, not LUI.isForteCooldownLoaded),
-			AnimationHeight = self:NewInputNumber("Animation Height", "Choose the Top Bar Texture Animation Height.", 6, function() end, nil, disabledtopTexAnim, not LUI.isForteCooldownLoaded),
-		}),
-		BottomTexture = self:NewGroup("Bottom Texture", 3, {
-			Enable = self:NewToggle("Enable", "Whether you want to show the Bottom Bar Texture or not.", 1, true, "full"),
-			Alpha = self:NewSlider("Alpha", "Choose your Bottom Bar Texture Alpha.", 2, 0, 1, 0.1, true, true, nil, disabledBottomTex),
-			[""] = self:NewPosition("", "Bottom Bar Texture", 3, nil, true, nil, disabledBottomTex),
-		}),
-		Bottombar1 = not isBarAddOnLoaded and createBottomBarOptions(1, 4) or nil,
-		Bottombar2 = not isBarAddOnLoaded and createBottomBarOptions(2, 5) or nil,
-		Bottombar3 = not isBarAddOnLoaded and createBottomBarOptions(3, 6) or nil,
-		Bottombar4 = not isBarAddOnLoaded and createBottomBarOptions(4, 7) or nil,
-		Bottombar5 = not isBarAddOnLoaded and createBottomBarOptions(5, 8) or nil,
-		Bottombar6 = not isBarAddOnLoaded and createBottomBarOptions(6, 9) or nil,
-		SidebarRight1 = createSideBarOptions("Right", 1, 10),
-		SidebarRight2 = createSideBarOptions("Right", 2, 11),
-		SidebarLeft1 = createSideBarOptions("Left", 1, 12),
-		SidebarLeft2 = createSideBarOptions("Left", 2, 13),
-		Shapeshiftbar = not isBarAddOnLoaded and createOtherBarOptions("Shapeshift Bar", 14) or nil,
-		Petbar = not isBarAddOnLoaded and createOtherBarOptions("Pet Bar", 15) or nil,
-		VehicleExit = not isBarAddOnLoaded and createOtherBarOptions("Vehicle Exit Button", 16) or nil,
-	}
-	
-	for _, v in pairs(options) do
-		if type(v) == "table" then
-			v.disabled = InCombatLockdown
-		end
-	end
-	
-	return options
-end
-
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self)
+	
+	if LUICONFIG.Versions.bars ~= LUI.Versions.bars then
+		db:ResetProfile()
+		LUICONFIG.Versions.bars = LUI.Versions.bars
+	end
 end
 
 function module:OnEnable()

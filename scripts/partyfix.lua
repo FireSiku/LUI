@@ -1,4 +1,4 @@
-local _, LUI = ...
+local addonname, LUI = ...
 local script = LUI:NewScript("YAIAP", "AceHook-3.0")
 
 -- Create slash command to enable debug mode.
@@ -13,7 +13,7 @@ SLASH_LUIYAIAP1 = "/yaiap"
 script:RawHook("SendAddonMessage", function(prefix, text, chatType, ...)
 	---[[	Removed since causing more issues than solved. I may be a better fix to shorten prefix to 16 characters rather than cause error.
 	--		Re-Added with prefix substring fix.
-
+	
 	-- Filter messages with oversized parameters.
 	if type(prefix) == "string" and #prefix > 16 then
 		if DEBUG then
@@ -23,8 +23,8 @@ script:RawHook("SendAddonMessage", function(prefix, text, chatType, ...)
 			-- Pipe errored message to SendAddonMessage to create an error for debug.
 			script.hooks.SendAddonMessage(prefix, text, chatType, ...)
 		end
-
-		-- Shirnk prefix to 16 characters rather than skipping send.
+		
+		-- Srink prefix to 16 characters rather than skipping send.
 		--return
 		prefix = prefix:sub(1, 16)
 	end

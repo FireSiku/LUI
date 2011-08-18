@@ -22,7 +22,19 @@ L["The UI needs to be reloaded!"] = "Die UI neu geladen werden muss!"
 --------------------------------------------------
 
 -- Map.lua
--- L["Hide Completely"] = 
--- L["Only Show Markers"] = 
+L["Hide Completely"] = "Vollständig verstecken"
+L["Only Show Markers"] = "Nur WorldMap Markers"
 L["Quest Objectives"] = "Questziele"
--- L["Show Markers & Panels"] = 
+L["Show Markers & Panels"] = "Markers & Panels"
+L["Player"] = "Spieler"
+L["Cursor"] = "Cursor"
+L["Major Cities"] = "Major zitiert"
+L["Classic Instances"] = "Classic Instanzen"
+L["Classic Raids"] = "Classic Raids"
+L["BC Instances"] = "BC Instanzen"
+L["BC Raids"] = "BC Raids"
+L["Wrath Instances"] = "Wrath Instanzen"
+L["Wrath Raids"] = "Wrath Raids"
+L["Cataclysm Instances"] = "Cataclysm Instanzen"
+L["Cataclysm Raids"] = "Cataclysm Raids"
+L["Battlegrounds"] = "Schlachtfelder"

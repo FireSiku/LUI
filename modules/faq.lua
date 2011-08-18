@@ -8,8 +8,8 @@
 ]] 
 
 -- External references.
-local _, LUI = ...
-local module = LUI:NewModule("FAQ")
+local addonname, LUI = ...
+local module = LUI:Module("FAQ")
 
 function module:LoadOptions()
 	local options = {

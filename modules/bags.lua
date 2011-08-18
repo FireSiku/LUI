@@ -20,10 +20,10 @@
 ]]
 
 -- External references.
-local _, LUI = ...
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("Bags", "AceHook-3.0", "AceEvent-3.0")
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local module = LUI:NewModule("Bags", "AceHook-3.0", "AceEvent-3.0")
 
 local db, dbd
 local GetBags = {
@@ -527,8 +527,8 @@ function module:SetBags()
 	editbox:SetAutoFocus(true)
 	editbox:SetHeight(LUI:Scale(32))
 	editbox:SetBackdrop( {
-		bgFile = LUI_Media.blank,
-		edgeFile = LUI_Media.blank,
+		bgFile = LUI.Media.blank,
+		edgeFile = LUI.Media.blank,
 		tile = false, edgeSize = 0,
 		insets = { left = 0, right = 0, top = 0, bottom = 0 }
 	})
@@ -655,7 +655,7 @@ function module:Layout(bagType)
 
 	local padding = db[bagType].Padding
 	local spacing = db[bagType].Spacing
-	local borderTex = LSM:Fetch("border", db[bagType].BorderTexture)
+	local borderTex = Media:Fetch("border", db[bagType].BorderTexture)
 	local border_size = db[bagType].BorderSize
 	local border_inset = db[bagType].BorderInset
 
@@ -673,10 +673,10 @@ function module:Layout(bagType)
 		isBank = true
 	else
 		frame.gold:SetText(GetMoneyString(GetMoney(), 12))
-		frame.editbox:SetFont(LSM:Fetch("font", db.Bags.Font), 12)
-		frame.search:SetFont(LSM:Fetch("font", db.Bags.Font), 12)
-		frame.gold:SetFont(LSM:Fetch("font", db.Bags.Font), 12)
-		frame.currency:SetFont(LSM:Fetch("font", db.Bags.Font), 12)
+		frame.editbox:SetFont(Media:Fetch("font", db.Bags.Font), 12)
+		frame.search:SetFont(Media:Fetch("font", db.Bags.Font), 12)
+		frame.gold:SetFont(Media:Fetch("font", db.Bags.Font), 12)
+		frame.currency:SetFont(Media:Fetch("font", db.Bags.Font), 12)
 
 		frame.search:ClearAllPoints()
 		frame.search:SetPoint("TOPLEFT", frame, LUI:Scale(db.Bags.Padding), LUI:Scale(-10))
@@ -888,8 +888,8 @@ function module:EnableBags()
 			keybackdrop:SetPoint("BOTTOMLEFT", 0, 0)
 			keybackdrop:SetSize(LUI:Scale(179),LUI:Scale(215))
 			keybackdrop:SetBackdrop( {
-				bgFile = LSM:Fetch("background", LUI_Media.empty),
-				edgeFile = LSM:Fetch("border", LUI_Media.empty),
+				bgFile = Media:Fetch("background", LUI.Media.empty),
+				edgeFile = Media:Fetch("border", LUI.Media.empty),
 				tile = false, edgeSize = 0,
 				insets = { left = 0, right = 0, top = 0, bottom = 0 }
 			})
@@ -914,8 +914,8 @@ function module:EnableBags()
 				t:SetPoint("TOPLEFT", slot, LUI:Scale(2), LUI:Scale(-2))
 				t:SetPoint("BOTTOMRIGHT", slot, LUI:Scale(-2), LUI:Scale(2))
 				slot:SetBackdrop( {
-					bgFile = LSM:Fetch("background", db.Bags.BackgroundTexture),
-					edgeFile = LSM:Fetch("border", db.Bags.BorderTexture),
+					bgFile = Media:Fetch("background", db.Bags.BackgroundTexture),
+					edgeFile = Media:Fetch("border", db.Bags.BorderTexture),
 					tile = false, edgeSize = 20,
 					insets = { left = 5, right = -3, top = -3, bottom = 5 }
 				})
@@ -1243,7 +1243,6 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
-	LUI:EmbedAPI(module)
 end
 
 local OldFuncs = {}

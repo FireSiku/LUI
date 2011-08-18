@@ -11,11 +11,12 @@
 ]] 
 
 -- External references.
-local _, LUI = ...
-local module = LUI:NewModule("Frames")
-local Panels = LUI:GetModule("Panels")
-local Themes = LUI:GetModule("Themes")
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("Frames")
+local Panels = LUI:Module("Panels")
+local Themes = LUI:Module("Themes")
+local Orb = LUI:Module("Orb")
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
 local db
@@ -74,6 +75,15 @@ function module:SetNaviAlpha(frame, value)
 	end
 end
 
+function module:SetColors()
+	self:SetNavigationHoverColors()
+	self:SetNavigationColors()
+	self:SetTopInfoColors()
+	self:SetBottomInfoColors()
+	self:SetOrbCycleColor()
+	self:SetOrbHoverColor()
+end
+
 function module:SetFrames()
 	local navi = Themes.db.profile.navi
 	local navi_hover = Themes.db.profile.navi_hover
@@ -83,7 +93,7 @@ function module:SetFrames()
 	local orb_cycle = Themes.db.profile.orb_cycle
 	
 	local navi_anchor = LUI:CreateMeAFrame("FRAME","navi_anchor",UIParent,100,100,1,"BACKGROUND",1,"TOP",UIParent,"TOP",17,15,1)
-	LUI:GetModule("Orb"):CreateMeAnOrb("LUI_Orb",55,navi_anchor,"CENTER",-17,0,1,"orb_filling8",0)
+	Orb:CreateMeAnOrb("LUI_Orb",55,navi_anchor,"CENTER",-17,0,1,"orb_filling8",0)
 
 	local top_frame = LUI:CreateMeAFrame("FRAME","top_frame",UIParent,1024,1024,1,"BACKGROUND",1,"TOP",UIParent,"TOP",17,8,1)
 	top_frame:SetBackdrop({

@@ -5,14 +5,10 @@
 	Version....: 1.0
 ]] 
 
-local _, ns = ...
-local oUF = ns.oUF or oUF
-
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF_Player")
-local general = LUI:GetModule("oUF_General")
-local Forte
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("oUF_Player")
+local general = LUI:Module("oUF_General")
+local Forte = LUI:Module("Forte")
 local widgetLists = AceGUIWidgetLSMlists
 
 local db
@@ -836,7 +832,7 @@ function module:CreateBarOptions(barType, order)
 			oUF_LUI_player:DisableElement(barKey)
 		end
 
-		if Forte then Forte:SetPosForte() end
+		Forte:SetPosForte()
 
 		oUF_LUI_player:UpdateAllElements()
 	end
@@ -1250,8 +1246,6 @@ function module:OnInitialize()
 	
 	self.db = LUI.db.profile
 	db = self.db
-	
-	Forte = LUI:GetModule("Forte", true)
 	
 	LUI:RegisterUnitFrame(self)
 end

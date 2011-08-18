@@ -5,8 +5,8 @@
 	Version....: 1.0
 ]] 
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("PallyPower")
+local addonname, LUI = ...
+local module = LUI:Module("PallyPower")
 
 function module:SetPallyPower()
 	if IsAddOnLoaded("PallyPower") ~= true then return end

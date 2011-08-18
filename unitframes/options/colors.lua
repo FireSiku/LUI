@@ -6,11 +6,10 @@
 	Rev Date...: 10/10/2010
 ]] 
 
-local _, ns = ...
-local oUF = ns.oUF or oUF
+local addonname, LUI = ...
+local module = LUI:Module("oUF_Colors")
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF_Colors")
+local oUF = LUI.oUF
 
 local db
 

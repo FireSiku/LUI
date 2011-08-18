@@ -14,10 +14,10 @@
 ]] 
 
 -- External references.
-local _, LUI = ...
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("Auras")
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local module = LUI:NewModule("Auras")
 
 local db
 local positions = {"TOPRIGHT", "TOPLEFT", "BOTTOMRIGHT", "BOTTOMLEFT"}
@@ -213,10 +213,10 @@ function module:SetBuffs()
 		-- duration text
 		button.duration = button.vframe:CreateFontString(nil, "OVERLAY")
 		if filter == "HELPFUL" then
-			button.duration:SetFont(LSM:Fetch("font", db.Auras.Buffs.Duration.Font), tonumber(db.Auras.Buffs.Duration.Size), db.Auras.Buffs.Duration.Outline)
+			button.duration:SetFont(Media:Fetch("font", db.Auras.Buffs.Duration.Font), tonumber(db.Auras.Buffs.Duration.Size), db.Auras.Buffs.Duration.Outline)
 			button.duration:SetTextColor(db.Auras.Buffs.Duration.Color.r, db.Auras.Buffs.Duration.Color.g, db.Auras.Buffs.Duration.Color.b ,1)
 		else
-			button.duration:SetFont(LSM:Fetch("font", db.Auras.Debuffs.Duration.Font), tonumber(db.Auras.Debuffs.Duration.Size), db.Auras.Debuffs.Duration.Outline)
+			button.duration:SetFont(Media:Fetch("font", db.Auras.Debuffs.Duration.Font), tonumber(db.Auras.Debuffs.Duration.Size), db.Auras.Debuffs.Duration.Outline)
 			button.duration:SetTextColor(db.Auras.Debuffs.Duration.Color.r, db.Auras.Debuffs.Duration.Color.g, db.Auras.Debuffs.Duration.Color.b ,1)
 		end
 		button.duration:SetDrawLayer("OVERLAY")
@@ -225,10 +225,10 @@ function module:SetBuffs()
 		-- stack count
 		button.count = button.vframe:CreateFontString(nil, "OVERLAY")
 		if filter == "HELPFUL" then
-			button.count:SetFont(LSM:Fetch("font", db.Auras.Buffs.Count.Font), tonumber(db.Auras.Buffs.Count.Size), db.Auras.Buffs.Count.Outline)
+			button.count:SetFont(Media:Fetch("font", db.Auras.Buffs.Count.Font), tonumber(db.Auras.Buffs.Count.Size), db.Auras.Buffs.Count.Outline)
 			button.count:SetTextColor(db.Auras.Buffs.Count.Color.r, db.Auras.Buffs.Count.Color.g, db.Auras.Buffs.Count.Color.b ,1)
 		else
-			button.count:SetFont(LSM:Fetch("font", db.Auras.Debuffs.Count.Font), tonumber(db.Auras.Debuffs.Count.Size), db.Auras.Debuffs.Count.Outline)
+			button.count:SetFont(Media:Fetch("font", db.Auras.Debuffs.Count.Font), tonumber(db.Auras.Debuffs.Count.Size), db.Auras.Debuffs.Count.Outline)
 			button.count:SetTextColor(db.Auras.Debuffs.Count.Color.r, db.Auras.Debuffs.Count.Color.g, db.Auras.Debuffs.Count.Color.b ,1)
 		end
 		button.count:SetDrawLayer("OVERLAY")
@@ -508,10 +508,10 @@ local function ReapplyBuffStyle()
 	for i = 1, num do
 		local button = _G["LUIBuffsAuraButton"..i]
 		if button then
-			button.duration:SetFont(LSM:Fetch("font", db.Auras.Buffs.Duration.Font), tonumber(db.Auras.Buffs.Duration.Size), db.Auras.Buffs.Duration.Outline)
+			button.duration:SetFont(Media:Fetch("font", db.Auras.Buffs.Duration.Font), tonumber(db.Auras.Buffs.Duration.Size), db.Auras.Buffs.Duration.Outline)
 			button.duration:SetTextColor(db.Auras.Buffs.Duration.Color.r, db.Auras.Buffs.Duration.Color.g, db.Auras.Buffs.Duration.Color.b ,1)
 			
-			button.count:SetFont(LSM:Fetch("font", db.Auras.Buffs.Count.Font), tonumber(db.Auras.Buffs.Count.Size), db.Auras.Buffs.Count.Outline)
+			button.count:SetFont(Media:Fetch("font", db.Auras.Buffs.Count.Font), tonumber(db.Auras.Buffs.Count.Size), db.Auras.Buffs.Count.Outline)
 			button.count:SetTextColor(db.Auras.Buffs.Count.Color.r, db.Auras.Buffs.Count.Color.g, db.Auras.Buffs.Count.Color.b ,1)
 		end
 	end
@@ -521,10 +521,10 @@ local function ReapplyDebuffStyle()
 	for i = 1, 16 do
 		local button = _G["LUIDebuffsAuraButton"..i]
 		if button then
-			button.duration:SetFont(LSM:Fetch("font", db.Auras.Debuffs.Duration.Font), tonumber(db.Auras.Debuffs.Duration.Size), db.Auras.Debuffs.Duration.Outline)
+			button.duration:SetFont(Media:Fetch("font", db.Auras.Debuffs.Duration.Font), tonumber(db.Auras.Debuffs.Duration.Size), db.Auras.Debuffs.Duration.Outline)
 			button.duration:SetTextColor(db.Auras.Debuffs.Duration.Color.r, db.Auras.Debuffs.Duration.Color.g, db.Auras.Debuffs.Duration.Color.b ,1)
 			
-			button.count:SetFont(LSM:Fetch("font", db.Auras.Debuffs.Count.Font), tonumber(db.Auras.Debuffs.Count.Size), db.Auras.Debuffs.Count.Outline)
+			button.count:SetFont(Media:Fetch("font", db.Auras.Debuffs.Count.Font), tonumber(db.Auras.Debuffs.Count.Size), db.Auras.Debuffs.Count.Outline)
 			button.count:SetTextColor(db.Auras.Debuffs.Count.Color.r, db.Auras.Debuffs.Count.Color.g, db.Auras.Debuffs.Count.Color.b ,1)
 		end
 	end
@@ -1150,6 +1150,5 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
-	LUI:ClearFrames()
 	self:EnableBlizzardBuffs()
 end

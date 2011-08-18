@@ -5,9 +5,9 @@
 	Version....: 1.975-v1.6
 ]] 
 
-local _, LUI = ...
-local module = LUI:NewModule("Forte", "AceHook-3.0")
-local Bars = LUI:GetModule("Bars", true)
+local addonname, LUI = ...
+local module = LUI:Module("Forte", "AceHook-3.0")
+local Bars = LUI:Module("Bars")
 
 local _, class = UnitClass("player")
 local _G = _G
@@ -16,7 +16,7 @@ local db, dbd
 local FW = _G.FW
 local UIParent = _G.UIParent
 
-LUI_versions.forte = "v1.975"; -- major version - DON'T change this for just every FX version, because it will prompt a 'restore'
+LUI.Versions.forte = "v1.975"; -- major version - DON'T change this for just every FX version, because it will prompt a 'restore'
 
 ------------------------------------------------------
 -- / LOCAL VARIABLES / --
@@ -141,33 +141,76 @@ local timer_instances = {
 -- / LOCAL FUNCTIONS / --
 ------------------------------------------------------
 
+local function AnimateTopBGBar(frame, elapsed)
+	frame.dt = frame.dt + elapsed
+	
+	local point, parent, rpoint = frame:GetPoint()
+	local x, y = Bars.db.TopTexture.X, Bars.db.TopTexture.Y
+	local animheight = Bars.db.TopTexture.AnimationHeight
+	local y2
+	
+	if frame.dt < frame.end_anim then
+		y2 = animheight * (frame.dt / frame.end_anim)
+		if not frame.moveout then
+			y2 = animheight - y2
+		end
+	else
+		frame:SetScript("OnUpdate", nil)
+		y2 = frame.moveout and animheight or 0
+	end
+	
+	frame:SetPoint(point, parent, rpoint, x, y + y2)
+end
+
 local function CreateCooldowntimerAnimation()
 	if LUI.isForteCooldownLoaded then
 		if not FW.Settings then
 			FW:RegisterVariablesEvent(CreateCooldowntimerAnimation);
 			return;
 		end
+		
+		local topbar = LUIBarsTopBG
+		local FXCD = _G.FX_Cooldown1
+		
+		if FXCD and not module:IsHooked(FXCD, "OnShow") then
+			module:HookScript(FXCD, "OnShow", function()
+				if db.Cooldown.Lock and Bars.db.TopTexture.Animation then
+					topbar.dt = 0
+					topbar.end_anim = 0.25
+					topbar.moveout = true
+					topbar:SetScript("OnUpdate", AnimateTopBGBar)
+				end
+			end)
+			module:HookScript(FXCD, "OnHide", function()
+				if db.Cooldown.Lock and Bars.db.TopTexture.Animation then
+					topbar.dt = 0
+					topbar.end_anim = 0.5
+					topbar.moveout = false
+					topbar:SetScript("OnUpdate", AnimateTopBGBar)
+				end
+			end)
+		end
+		--[[
+		
 		-- copy of code that was located in the bars module:
-		local bb_timerout,bb_timerin = 0,0
-		local bb_animation_time = 0.5
-		local bb_at_out = 0.25
+		local timerout,timerin = 0,0
+		local anim_time_out, anim_time_in = 0.25, 0.5
 			
 		local bb_SlideIn = CreateFrame("Frame", nil, UIParent)
 		bb_SlideIn:Hide()
 			
 		bb_SlideIn:SetScript("OnUpdate", function(self,elapsed)
-			bb_timerin = bb_timerin + elapsed
-			local bb_x = tonumber(Bars.db.profile.TopTexture.X)
-			local bb_y = tonumber(Bars.db.profile.TopTexture.Y)
-			local bb_pixelpersecond = tonumber(Bars.db.profile.TopTexture.AnimationHeight) * 2
-			if bb_timerin < bb_animation_time then
-				local y2 = bb_y - bb_timerin * bb_pixelpersecond + bb_pixelpersecond * bb_animation_time
-				BarsBackground:ClearAllPoints()
-				BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, y2)
+			timerin = timerin + elapsed
+			local point, parent, rpoint = BarsBackground:GetPoint()
+			local x = tonumber(Bars.db.TopTexture.X)
+			local y = tonumber(Bars.db.TopTexture.Y)
+			local pixelpersec = tonumber(Bars.db.TopTexture.AnimationHeight) * 2
+			if timerin < anim_time_in then
+				local y2 = y - timerin * pixelpersec + pixelpersec * anim_time_in
+				BarsBackground:SetPoint(point, parent, rpoint, x, y2)
 			else
-				BarsBackground:ClearAllPoints()
-				BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, bb_y)
-				bb_timerin = 0
+				BarsBackground:SetPoint(point, parent, rpoint, x, bb_y)
+				timerin = 0
 				self:Hide()
 			end
 		end)
@@ -176,19 +219,19 @@ local function CreateCooldowntimerAnimation()
 		bb_SlideOut:Hide()
 		
 		bb_SlideOut:SetScript("OnUpdate", function(self,elapsed)
-			bb_timerout = bb_timerout + elapsed
-			local bb_x = tonumber(Bars.db.profile.TopTexture.X)
-			local bb_y = tonumber(Bars.db.profile.TopTexture.Y)
-			local bb_ppx_out = tonumber(Bars.db.profile.TopTexture.AnimationHeight) * 3
-			local bb_yout = tonumber(Bars.db.profile.TopTexture.Y) + tonumber(Bars.db.profile.TopTexture.AnimationHeight)
-			if bb_timerout < bb_at_out then
-				local y2 = bb_y + bb_timerout * bb_ppx_out
+			timerout = timerout + elapsed
+			local bb_x = tonumber(Bars.db.TopTexture.X)
+			local bb_y = tonumber(Bars.db.TopTexture.Y)
+			local bb_ppx_out = tonumber(Bars.db.TopTexture.AnimationHeight) * 3
+			local bb_yout = tonumber(Bars.db.TopTexture.Y) + tonumber(Bars.db.TopTexture.AnimationHeight)
+			if timerout < anim_time_out then
+				local y2 = bb_y + timerout * bb_ppx_out
 				BarsBackground:ClearAllPoints()
 				BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, y2)
 			else
 				BarsBackground:ClearAllPoints()
 				BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, bb_yout)
-				bb_timerout = 0
+				timerout = 0
 				self:Hide()
 			end
 		end)
@@ -199,18 +242,18 @@ local function CreateCooldowntimerAnimation()
 		bb_Forte:SetScript("OnUpdate", function(self)
 			if db.Cooldown.Lock and _G.FX_Cooldown1 then
 				if _G.FX_Cooldown1:IsShown() and not isOut then
-					if Bars.db.profile.TopTexture.Animation then
+					if Bars.db.TopTexture.Animation then
 						bb_SlideOut:Show()
 						isOut = true
 					end
 				elseif not _G.FX_Cooldown1:IsShown() and isOut then
-					if Bars.db.profile.TopTexture.Animation then
+					if Bars.db.TopTexture.Animation then
 						bb_SlideIn:Show()
 						isOut = false
 					end
 				end
 			end
-		end)
+		end)]]
 	end
 end
 
@@ -220,9 +263,9 @@ local function ConfigureForte()
 end
 
 local function SetupForte() -- only done on new major version
-	LUICONFIG.Versions.forte = LUI_versions.forte; -- don't ask again
+	LUICONFIG.Versions.forte = LUI.Versions.forte; -- don't ask again
 	-- disable the new frames that are enabled by default
-	if LUI_versions.forte == "v1.975" then
+	if LUI.Versions.forte == "v1.975" then
 		db.Player.Enable = false;
 		db.Target.Enable = false;
 	end
@@ -235,7 +278,7 @@ end
 
 function LUI:InstallForte()
 	if not module:FXLoaded() then return end
-	if LUICONFIG.Versions.forte == LUI_versions.forte and LUICONFIG.IsForteInstalled == true then return end
+	if LUICONFIG.Versions.forte == LUI.Versions.forte and LUICONFIG.IsForteInstalled == true then return end
 	if not FW.Settings then
 		FW:RegisterVariablesEvent(LUI.InstallForte);
 		return;
@@ -286,7 +329,7 @@ function LUI:InstallForte()
 		module:Copy(splash_settings,module:GetSplash() ); -- global
 	end
 	
-	LUICONFIG.Versions.forte = LUI_versions.forte
+	LUICONFIG.Versions.forte = LUI.Versions.forte
 	LUICONFIG.IsForteInstalled = true
 end
 
@@ -324,7 +367,17 @@ end
 ------------------------------------------------------
 
 function module:FXLoaded()
-	return IsAddOnLoaded("Forte_Core") and FW.VERSION and FW.VERSION >= LUI_versions.forte; -- don't run if FX is too old...
+	return IsAddOnLoaded("Forte_Core") and FW.VERSION and FW.VERSION >= LUI.Versions.forte; -- don't run if FX is too old...
+end
+
+function module:RegisterForteEvents() -- no self in this func (Forte_Core OnEvent callbacks)
+	if not FW.Settings then
+		FW:RegisterVariablesEvent(module.RegisterForteCallbacks);
+		return;
+	end
+	FW:RegisterToEvent("UI_SCALE_CHANGED",module.SetPosForte);
+	FW:RegisterToEvent("UI_SCALE_CHANGED",module.SetPosForteCooldown);
+	FW:RegisterToEvent("UI_SCALE_CHANGED",module.SetPosForteSplash);
 end
 
 function module:SetFrameProps(instance,name)
@@ -375,7 +428,7 @@ function module:SetFrameProps(instance,name)
 	instance.y = y*uiScale;
 end
 
-function module:SetPosForte()
+function module:SetPosForte() -- no self in this func (Forte_Core OnEvent callbacks)
 	if not LUI.isForteTimerLoaded or not LUI.db.profile.oUF.Settings.Enable then return end
 
 	for name, data in pairs(timer_instances) do
@@ -390,7 +443,7 @@ function module:SetPosForte()
 	FW:RefreshFrames();
 end
 
-function module:SetPosForteCooldown()
+function module:SetPosForteCooldown() -- no self in this func (Forte_Core OnEvent callbacks)
 	if not LUI.isForteCooldownLoaded or not db.Cooldown.Lock then return end
 	
 	local uiScale = UIParent:GetEffectiveScale()
@@ -404,7 +457,7 @@ function module:SetPosForteCooldown()
 	FW:RefreshFrames();
 end
 
-function module:SetPosForteSplash()
+function module:SetPosForteSplash() -- no self in this func (Forte_Core OnEvent callbacks)
 	if not LUI.isForteCooldownLoaded or not db.Splash.Lock then return end
 	local x,y;
 	local uiScale = UIParent:GetEffectiveScale()
@@ -430,7 +483,7 @@ function module:SetColors()
 	FW:RefreshOptions(); -- at most update FX options frame, no need to refresh all frames atm
 end
 
-function module:SetForte()
+function module:SetForte() -- no self in this func (Forte_Core OnEvent callbacks)
 	if not FW.Settings then
 		FW:RegisterVariablesEvent(module.SetForte);
 		return;
@@ -533,6 +586,7 @@ module.order = 70
 module.addon = "Forte_Core"
 module.defaults = {
 	profile = {
+		Enable = module:FXLoaded(),
 		IndividualColor = true,
 		Color = {0.24,0.24,0.24},
 		
@@ -891,32 +945,24 @@ function module:OnInitialize()
 		whileDead = 1,
 		hideOnEscape = 1
 	}
-	
-	module:SetEnabledState(module:FXLoaded())
 end
 
 function module:OnEnable()
-	if module:FXLoaded() then
-		LUI.isForteTimerLoaded = IsAddOnLoaded("Forte_Timer") ~= nil;
-		LUI.isForteCooldownLoaded = IsAddOnLoaded("Forte_Cooldown") ~= nil;
-		
-		if LUICONFIG.IsConfigured then
-			local extra = "\n\nDo you want to apply all LUI Styles to ForteXorcist Spelltimer/Cooldowntimer?\n\nThis will create a new FX profile for LUI (if it hasn't already) and apply LUI's defaults to it, including new timer frames!\n\nYou can also set the LUI defaults later by going to 'General > Addons > Restore ForteXorcist' in the LUI config.";
-			if LUICONFIG.IsForteInstalled then
-				if LUICONFIG.Versions.forte ~= LUI_versions.forte then
-					StaticPopupDialogs["INSTALL_FORTE"].OnCancel = SetupForte; -- run SetForte on cancel to create new instances anyway
-					StaticPopup_Show("INSTALL_FORTE","New major version of ForteXorcist found!"..extra);
-				else
-					module:SetForte();
-				end
-				CreateCooldowntimerAnimation(); -- if forte is installed properly
-				FW:RegisterToEvent("UI_SCALE_CHANGED",module.SetPosForte);
-				FW:RegisterToEvent("UI_SCALE_CHANGED",module.SetPosForteCooldown);
-				FW:RegisterToEvent("UI_SCALE_CHANGED",module.SetPosForteSplash);
-			else
-				StaticPopup_Show("INSTALL_FORTE","ForteXorcist Addon found!"..extra);
-			end
+	LUI.isForteTimerLoaded = IsAddOnLoaded("Forte_Timer") ~= nil;
+	LUI.isForteCooldownLoaded = IsAddOnLoaded("Forte_Cooldown") ~= nil;
+	
+	local extra = "\n\nDo you want to apply all LUI Styles to ForteXorcist Spelltimer/Cooldowntimer?\n\nThis will create a new FX profile for LUI (if it hasn't already) and apply LUI's defaults to it, including new timer frames!\n\nYou can also set the LUI defaults later by going to 'General > Addons > Restore ForteXorcist' in the LUI config.";
+	if LUICONFIG.IsForteInstalled then
+		if LUICONFIG.Versions.forte ~= LUI.Versions.forte then
+			StaticPopupDialogs["INSTALL_FORTE"].OnCancel = SetupForte; -- run SetForte on cancel to create new instances anyway
+			StaticPopup_Show("INSTALL_FORTE","New major version of ForteXorcist found!"..extra);
+		else
+			module:SetForte();
 		end
+		CreateCooldowntimerAnimation(); -- if forte is installed properly
+		module:RegisterForteEvents();
+	else
+		StaticPopup_Show("INSTALL_FORTE","ForteXorcist Addon found!"..extra);
 	end
 end
 
