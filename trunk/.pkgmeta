@@ -44,10 +44,7 @@ externals:
 
 enable-nolib-creation: no
 
-license-output: Docs/License.txt
-manual-changelog:
-  filename: Docs/History.txt
-  markup-type: bbcode
+license-output: docs/License.txt
 
 ignore:
   - Docs/ToDo.txt
