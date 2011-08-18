@@ -1400,12 +1400,12 @@ function LUI:RefreshModule(...) -- LUI.RefreshModule(module, callback_event, db,
 	end
 end
 
-function LUI:Open(force)
-	function LUI:Open(force)
+function LUI:Open(force, ...)
+	function LUI:Open(force, ...)
 		if ACD.OpenFrames.LUI and not force then
-			ACD:Close("LUI")
+			ACD:Close(addonname)
 		else
-			ACD:Open("LUI")
+			ACD:Open(addonname, nil, ...)
 			ACD.OpenFrames.LUI.frame:SetScale(db.General.BlizzFrameScale)
 			ACD.OpenFrames.LUI:SetCallback("OnClose", function(widget, event)
 				widget.frame:SetScale(1)
@@ -1416,30 +1416,42 @@ function LUI:Open(force)
 		end
 	end
 	
-	self.optionsFrames = {}
 	LibStub("AceConfig-3.0"):RegisterOptionsTable(addonname, getOptions)
-	ACD:SetDefaultSize("LUI", 720,525)
+	ACD:SetDefaultSize(addonname, 720,525)
 	
 	local function refreshOptions()
 		if ACD.OpenFrames.LUI then
-			ACR:NotifyChange("LUI")
+			ACR:NotifyChange(addonname)
 		end
 	end
 	self:RegisterEvent("PLAYER_REGEN_ENABLED", refreshOptions)
 	self:RegisterEvent("PLAYER_REGEN_DISABLED", refreshOptions)
 	
-	return LUI:Open(force)
+	return LUI:Open(force, ...)
 end
+
+LUI.chatcommands = {
+	["debug"] = "Debug",
+	["install"] = "Configure",
+}
 
 function LUI:ChatCommand(input)
 	if not input or input:trim() == "" then
-		LUI:Open()
+		self:Open()
 	else
 		local arg = self:GetArgs(input)
-		if arg:lower() == "debug" then
-			self:Debug()
+		local cmd = arg and LUI.chatcommands[arg:lower()] or nil
+		if cmd then
+			if type(cmd) == "function" then
+				cmd()
+			else
+				self[cmd](self)
+			end
 		else
-			LibStub("AceConfigCmd-3.0").HandleCommand(LUI, "lui", "LUI", input)
+			if arg then
+				self:Print("Unknown command: "..arg)
+			end
+			self:Open()
 		end
 	end
 end
