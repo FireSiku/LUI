@@ -20,7 +20,7 @@ local L = LUI.L
 local db, dbd
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
-LUI.Versions.bars = 2.1
+LUI.Versions.bars = 2.2
 
 local _, class = UnitClass("player")
 
@@ -193,6 +193,8 @@ local SidebarSetAnchor = function(side, id)
 	if sbdb.AutoPosEnable ~= true and isBarAddOnLoaded == true then return end
 	
 	local anchor = isBarAddOnLoaded and sbdb.Anchor or "LUIBar"..side..id
+	sidebars[side..id].anchor = anchor
+	
 	local xOffset = tonumber(sbdb.X)
 	local yOffset = tonumber(sbdb.Y)
 	local sbOffset = tonumber(sbdb.Offset)
@@ -334,12 +336,13 @@ function module:CreateSidebarSlider(side, id)
 	local fname = side == "Right" and "sidebar" or "sidebar2"
 	local isRight = side == "Right"
 	
-	local Anchor = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..side..id
 	local r, g, b, a = unpack(Themes.db.profile.sidebar)
 	
 	local sb = {}
 	
 	sidebars[side..id] = sb
+	
+	sb.anchor = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..side..id
 	
 	sb.timerout, sb.timerin = 0, 0
 	sb.x, sb.y, sb.xout = isRight and -30 or 30, 0, isRight and -118 or 118
@@ -415,12 +418,12 @@ function module:CreateSidebarSlider(side, id)
 		sb.bttimerin = sb.bttimerin + elapsed
 		if sb.bttimerin < sb.btspeedin then
 			local alpha = sb.bttimerin / sb.btspeedin
-			SidebarSetAlpha(Anchor, alpha)
+			SidebarSetAlpha(sb.anchor, alpha)
 			for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
 				SidebarSetAlpha(frame, alpha)
 			end
 		else
-			SidebarSetAlpha(Anchor, 1)
+			SidebarSetAlpha(sb.anchor, 1)
 			for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
 				SidebarSetAlpha(frame, 1)
 			end
@@ -531,7 +534,7 @@ function module:CreateSidebarSlider(side, id)
 				sb.ButtonAnchor:ClearAllPoints()
 				sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, isRight and -120 or 120, 0)
 				sb.ButtonBack:SetAlpha(1)
-				SidebarSetAlpha(Anchor, 1)
+				SidebarSetAlpha(sb.anchor, 1)
 				for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
 					SidebarSetAlpha(frame, 1)
 				end
@@ -548,7 +551,7 @@ function module:CreateSidebarSlider(side, id)
 				sb.ButtonAnchor:ClearAllPoints()
 				sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, isRight and -32 or 32, 0)
 				sb.ButtonBack:SetAlpha(0)
-				SidebarSetAlpha(Anchor, 0)
+				SidebarSetAlpha(sb.anchor, 0)
 				for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
 					SidebarSetAlpha(frame, 0)
 				end
@@ -556,7 +559,7 @@ function module:CreateSidebarSlider(side, id)
 			else
 				sb.SlideIn:Show()
 				sb.AlphaOut:Show()
-				SidebarSetAlpha(Anchor, 0)
+				SidebarSetAlpha(sb.anchor, 0)
 				for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
 					SidebarSetAlpha(frame, 0)
 				end
@@ -576,7 +579,7 @@ function module:CreateSidebarSlider(side, id)
 	end)
 	
 	SidebarSetAnchor(side, id)
-	SidebarSetAlpha(Anchor, 0)
+	SidebarSetAlpha(sb.anchor, 0)
 	for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
 		SidebarSetAlpha(frame, 0)
 	end
@@ -1684,8 +1687,8 @@ function module:LoadOptions()
 			Enable = self:NewToggle("Show "..side.." Bar "..num, nil, 1, enableBar),
 			header1 = self:NewHeader("Anchor Settings", 2),
 			Intro = isBarAddOnLoaded and self:NewDesc("Which Bar do you want to use for this Sidebar?\nChoose one or type in the MainAnchor manually.\n\nMake sure your Bar is set to 6 buttons/2 columns and isn't used for another Sidebar.\nLUI will position your Bar automatically.", 3) or nil,
-			Anchor = isBarAddOnLoaded and self:NewSelect("Anchor", nil, 4, barAnchors, nil, "Refresh") or nil,
-			AnchorInput = isBarAddOnLoaded and self:NewInput("Anchor", nil, 5, false, nil, disabledFunc) or nil,
+			AnchorDropDown = isBarAddOnLoaded and self:NewSelect("Anchor", nil, 4, barAnchors) or nil,
+			Anchor = isBarAddOnLoaded and self:NewInput("Anchor", "Choose the Bar for this Sidebar.", 5, nil, nil, disabledFunc) or nil,
 			Additional = self:NewInput("Additional Frames", "Type in any additional frame names (seperated by commas), that you would like to show/hide with the Sidebar.", 6, true, nil, disabledFunc),
 			header2 = self:NewHeader("General Settings", 7),
 			[""] = self:NewPosSliders(side.." Bar "..num, 8, false, function() return sidebars[side..num].Anchor end, true, nil, disabledPosFunc),
@@ -1700,18 +1703,23 @@ function module:LoadOptions()
 			}) or nil,
 		})
 		
-		if option.args.AnchorInput then
-			option.args.AnchorInput.desc = function(info)
+		if option.args.AnchorDropDown then
+			option.args.AnchorDropDown.desc = function(info)
 				info[#info] = "Anchor"
 				return "Choose the Bar for this Sidebar.\n\nDefault: "..dbd(info)
 			end
-			option.args.AnchorInput.get = function(info)
+			option.args.AnchorDropDown.get = function(info)
 				info[#info] = "Anchor"
-				return tostring(db(info))
+				local val = db(info)
+				for k, v in pairs(info.option.values()) do
+					if v == val then
+						return k
+					end
+				end
 			end
-			option.args.AnchorInput.set = function(info, value)
+			option.args.AnchorDropDown.set = function(info, value)
 				info[#info] = "Anchor"
-				db(info, value)
+				db(info, info.option.values()[value])
 				SidebarSetAnchor(side, num)
 			end
 		end

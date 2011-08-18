@@ -948,6 +948,11 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	if not self:FXLoaded() then
+		self:Disable()
+		return
+	end
+	
 	LUI.isForteTimerLoaded = IsAddOnLoaded("Forte_Timer") ~= nil;
 	LUI.isForteCooldownLoaded = IsAddOnLoaded("Forte_Cooldown") ~= nil;
 	
