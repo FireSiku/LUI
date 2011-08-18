@@ -10,9 +10,9 @@
 ]]
 
 -- External references.
-local _, LUI = ...
-local module = LUI:NewModule("Threat")
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("Threat")
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
 
@@ -124,10 +124,10 @@ local ApplySettings = function()
 	LUIThreat:SetHeight(LUI:Scale(db.Height))
 	LUIThreat:ClearAllPoints()
 	LUIThreat:SetPoint("BOTTOM", UIParent, "BOTTOM", LUI:Scale(db.X), LUI:Scale(db.Y))
-	LUIThreat:SetStatusBarTexture(LSM:Fetch("statusbar", db.Texture))
+	LUIThreat:SetStatusBarTexture(Media:Fetch("statusbar", db.Texture))
 	if r then LUIThreat:SetStatusBarColor(r, g, b) end
 	
-	LUIThreat.bg:SetTexture(LSM:Fetch("statusbar", db.TextureBG))
+	LUIThreat.bg:SetTexture(Media:Fetch("statusbar", db.TextureBG))
 	if r then LUIThreat.bg:SetVertexColor(r * mu, g * mu, b * mu) end
 	
 	if db.Text.Color == "By Class" then
@@ -138,7 +138,7 @@ local ApplySettings = function()
 		r, g, b = nil, nil, nil
 	end
 	
-	LUIThreat.Text:SetFont(LSM:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
+	LUIThreat.Text:SetFont(Media:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
 	LUIThreat.Text:ClearAllPoints()
 	LUIThreat.Text:SetPoint("CENTER", LUIThreat, "CENTER", LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
 	if r then LUIThreat.Text:SetTextColor(r, g, b) end

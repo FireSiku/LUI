@@ -11,9 +11,9 @@
 ]]
 
 -- External references.
-local _, LUI = ...
-local module = LUI:NewModule("Vengeance")
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("Vengeance")
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
 
@@ -177,10 +177,10 @@ local ApplySettings = function()
 	LUIVengeance:SetHeight(LUI:Scale(db.Height))
 	LUIVengeance:ClearAllPoints()
 	LUIVengeance:SetPoint("BOTTOM", UIParent, "BOTTOM", LUI:Scale(db.X), LUI:Scale(db.Y))
-	LUIVengeance:SetStatusBarTexture(LSM:Fetch("statusbar", db.Texture))
+	LUIVengeance:SetStatusBarTexture(Media:Fetch("statusbar", db.Texture))
 	LUIVengeance:SetStatusBarColor(r, g, b)
 	
-	LUIVengeance.bg:SetTexture(LSM:Fetch("statusbar", db.TextureBG))
+	LUIVengeance.bg:SetTexture(Media:Fetch("statusbar", db.TextureBG))
 	LUIVengeance.bg:SetVertexColor(r * mu, g * mu, b * mu)
 	
 	if db.Text.Color == "By Class" then
@@ -189,7 +189,7 @@ local ApplySettings = function()
 		r, g, b = db.Text.IndividualColor.r, db.Text.IndividualColor.g, db.Text.IndividualColor.b
 	end
 	
-	LUIVengeance.Text:SetFont(LSM:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
+	LUIVengeance.Text:SetFont(Media:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
 	LUIVengeance.Text:ClearAllPoints()
 	LUIVengeance.Text:SetPoint("CENTER", LUIVengeance, "CENTER", LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
 	LUIVengeance.Text:SetTextColor(r, g, b)

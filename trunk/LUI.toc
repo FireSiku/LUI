@@ -1,5 +1,5 @@
 ## Interface: 40200
-## Version: 3.6.0
+## Version: 3.6.1
 ## Title: LUI
 ## Author: Louí @EU-Das Syndikat
 ## Notes: User Interface Modification
@@ -7,26 +7,5 @@
 ## SavedVariablesPerCharacter: LUICONFIG
 ## X-oUF: oUF_LUI
 
-libs\LibStub\LibStub.lua
-libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
-libs\LibSharedMedia-3.0\lib.xml
-libs\LibKeyBound-1.0\lib.xml
-
-libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
-libs\LibWindow-1.1\LibWindow-1.1.lua
-
-libs\AceAddon-3.0\AceAddon-3.0.xml
-libs\AceDB-3.0\AceDB-3.0.xml
-libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
-libs\AceEvent-3.0\AceEvent-3.0.xml
-libs\AceConsole-3.0\AceConsole-3.0.xml
-libs\AceHook-3.0\AceHook-3.0.xml
-libs\AceLocale-3.0\AceLocale-3.0.xml
-libs\AceGUI-3.0\AceGUI-3.0.xml
-libs\AceConfig-3.0\AceConfig-3.0.xml
-libs\AceComm-3.0\AceComm-3.0.xml
-libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
-libs\AceSerializer-3.0\AceSerializer-3.0.xml
-libs\AceTimer-3.0\AceTimer-3.0.xml
-
+libs\libs.xml
 LUI.xml

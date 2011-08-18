@@ -11,10 +11,11 @@
 ]] 
 
 -- External references.
-local _, LUI = ...
-local module = LUI:NewModule("Chat", "AceHook-3.0")
-local Themes = LUI:GetModule("Themes")
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("Chat", "AceHook-3.0")
+local Themes = LUI:Module("Themes")
+local Panels = LUI:Module("Panels")
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
 
@@ -234,9 +235,9 @@ end
 
 local function SetChatFont()
 	for i = 1, NUM_CHAT_WINDOWS do
-		_G["ChatFrame"..i]:SetFont(LSM:Fetch("font", db.Chat.Font), db.Chat.Size, db.Chat.Flag)
-		_G["ChatFrame"..i.."EditBox"]:SetFont(LSM:Fetch("font", db.Chat.Editbox.Font), db.Chat.Editbox.Size, db.Chat.Editbox.Flag)
-		_G["ChatFrame"..i.."EditBox"].header:SetFont(LSM:Fetch("font", db.Chat.Editbox.Font), db.Chat.Editbox.Size, db.Chat.Editbox.Flag)
+		_G["ChatFrame"..i]:SetFont(Media:Fetch("font", db.Chat.Font), db.Chat.Size, db.Chat.Flag)
+		_G["ChatFrame"..i.."EditBox"]:SetFont(Media:Fetch("font", db.Chat.Editbox.Font), db.Chat.Editbox.Size, db.Chat.Editbox.Flag)
+		_G["ChatFrame"..i.."EditBox"].header:SetFont(Media:Fetch("font", db.Chat.Editbox.Font), db.Chat.Editbox.Size, db.Chat.Editbox.Flag)
 	end
 end
 
@@ -263,7 +264,7 @@ local function SetEditBoxBackdrop()
 		
 		editbox:SetBackdrop({
 			bgFile = "Interface/Tooltips/UI-Tooltip-Background",
-			edgeFile = LSM:Fetch("border", db.Chat.Editbox.Border.Texture),
+			edgeFile = Media:Fetch("border", db.Chat.Editbox.Border.Texture),
 			tile = 0, tileSize = 0, edgeSize = tonumber(db.Chat.Editbox.Border.Thickness),
 			insets = { left = tonumber(db.Chat.Editbox.Border.Inset.left), right = tonumber(db.Chat.Editbox.Border.Inset.right), top = tonumber(db.Chat.Editbox.Border.Inset.top), bottom = tonumber(db.Chat.Editbox.Border.Inset.bottom) }
 		})
@@ -367,13 +368,13 @@ function module:SetChat()
 	if db.Chat.Font == nil or db.Chat.Font == "" then
 		chat_font = "Fonts\ARIALN.TTF"
 	else
-		chat_font = LSM:Fetch("font", db.Chat.Font)
+		chat_font = Media:Fetch("font", db.Chat.Font)
 	end
 	
 	if db.Chat.Editbox.Font == nil or db.Chat.Editbox.Font == "" then
 		editbox_font = "Fonts\ARIALN.TTF"
 	else
-		editbox_font = LSM:Fetch("font", db.Chat.Editbox.Font)
+		editbox_font = Media:Fetch("font", db.Chat.Editbox.Font)
 	end
 		
 	chat_fontsize = tonumber(db.Chat.Size)
@@ -681,7 +682,7 @@ function module:SetChat()
 		frame = CreateFrame( "Frame", "CopyFrame", UIParent)
 		frame:SetBackdrop({
 				bgFile = "Interface/Tooltips/UI-Tooltip-Background", 
-				edgeFile = LUI_Media.glowTex, 
+				edgeFile = LUI.Media.glowTex, 
 				tile = 0, tileSize = 0, edgeSize = 3, 
 				insets = { left = 2, right = 2, top = 2, bottom = 2 }
 		})
@@ -748,7 +749,7 @@ function module:SetChat()
 			button:SetHeight(22)
 			button:SetWidth(22)
 			button:SetAlpha(db.Chat.Buttons.Copy.AlphaOut)
-			button:SetNormalTexture(LUI_Media.chatcopy)
+			button:SetNormalTexture(LUI.Media.chatcopy)
 			
 			button:SetScript("OnClick", function() 
 				Copy(cf) 
@@ -1005,7 +1006,6 @@ function module:LoadOptions()
 											get = function() return db.Chat.SecondChatFrame end,
 											set = function(info, SecondChatFrame)
 													db.Chat.SecondChatFrame = not db.Chat.SecondChatFrame
-													local Panels = LUI:GetModule("Panels")
 													Panels:CheckSecondChatFrame()
 												end,
 											order = 1,
@@ -1024,7 +1024,6 @@ function module:LoadOptions()
 												end,
 											set = function(info, TextureAnchor)
 													db.Chat.SecondChatAnchor = chatTextureAnchors[TextureAnchor]
-													local Panels = LUI:GetModule("Panels")
 													Panels:SetSecondChatAnchor()
 												end,
 											order = 2,
@@ -2169,5 +2168,4 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
-	LUI:ClearFrames()
 end

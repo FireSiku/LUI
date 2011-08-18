@@ -7,9 +7,9 @@
 ]] 
 
 -- External references.
-local _, LUI = ...
-local module = LUI:NewModule("Orb")
-local Themes = LUI:GetModule("Themes")
+local addonname, LUI = ...
+local module = LUI:Module("Orb")
+local Themes = LUI:Module("Themes")
 
 local db
 
@@ -125,7 +125,7 @@ function module:CreateMeAnOrb(orbname,orbsize,orbanchorframe,orbpoint,orbposx,or
 	LUI_OrbGalaxy3 = self:CreateMeAGalaxy(orb1,-5,10,53,0.9,18,"galaxy3",useorb)
 end
 
-function module:SetOrbColor()
+function module:SetColors()
 	local orb = Themes.db.profile.orb
 	LUI_OrbFill:SetVertexColor(unpack(orb))
 	LUI_OrbGalaxy1.t:SetVertexColor(unpack(orb))

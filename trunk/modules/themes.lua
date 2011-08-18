@@ -13,9 +13,9 @@
 ]] 
 
 -- External references.
-local _, LUI = ...
-local module = LUI:NewModule("Themes")
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("Themes", "AceSerializer-3.0")
+local Media = LibStub("LibSharedMedia-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
 local db, dbd
@@ -37,52 +37,11 @@ function module:ApplyTheme()
 end
 
 function module:Refresh_Colors(name, targetModule) -- (name [, targetModule])
-	targetModule = targetModule or LUI:GetModule(name, true)
+	targetModule = targetModule or LUI:Module(name, true)
 	
-	if targetModule and targetModule:IsEnabled() then
-		if self["Refresh_"..name] then
-			self["Refresh_"..name](self)
-		elseif targetModule.SetColors then
-			targetModule:SetColors()
-		end
+	if targetModule and targetModule:IsEnabled() and targetModule.SetColors then
+		targetModule:SetColors()
 	end
-end
-
-function module:Refresh_Forte() -- disabled for now (forces lui color even if disabled)
-	-- if LUI:GetModule("Panels", true) then
-		-- local Forte = LUI:GetModule("Forte", true)
-		-- if Forte and Forte.db.Enable then
-			-- Forte:SetColors()
-		-- end
-	-- end
-end
-
-function module:Refresh_Panels()
-	local Panels = LUI:GetModule("Panels")
-	Panels:SetChatBackground()
-	Panels:SetTpsBackground()
-	Panels:SetDpsBackground()
-	Panels:SetRaidBackground()
-end
-
-function module:Refresh_Frames()
-	local Frames = LUI:GetModule("Frames")
-	Frames:SetNavigationHoverColors()
-	Frames:SetNavigationColors()
-	Frames:SetTopInfoColors()
-	Frames:SetBottomInfoColors()
-	Frames:SetOrbCycleColor()
-	Frames:SetOrbHoverColor()
-end
-
-function module:Refresh_Orb()
-	LUI:GetModule("Orb"):SetOrbColor()
-end
-
-function module:Refresh_Bars()
-	local Bars = LUI:GetModule("Bars")
-	Bars:SetSidebarColors()
-	Bars:SetBarColors()
 end
 
 --------------------------------------------------
@@ -191,7 +150,7 @@ function module:ImportThemeData(str, name)
 	end
 	
 	-- decrypt import data
-	local valid, data = LUI:Deserialize(str)
+	local valid, data = self:Deserialize(str)
 	-- check if import data was valid
 	if not valid then
 		return LUI:Print("Error importing theme!")
@@ -215,7 +174,7 @@ function module:ExportTheme(theme)
 	if not db.global[theme] then return StaticPopup_Hide("LUI_THEMES_EXPORT") end
 	
 	-- encrypt data for export
-	local data = LUI:Serialize(db.global[theme])
+	local data = self:Serialize(db.global[theme])
 	if not data then return end
 	-- breakdown the data into multiple lines (100 chars length each, add a space) for easier posting
 	local breakDown
@@ -874,11 +833,11 @@ function module:LoadOptions()
 	
 	-- disabled functions
 	local function minimapDisabled()
-		local Minimap = LUI:GetModule("Minimap", true)
+		local Minimap = LUI:Module("Minimap", true)
 		return not (Minimap and Minimap:IsEnabled())
 	end
 	local function chatDisabled()
-		local Chat = LUI:GetModule("Chat", true)
+		local Chat = LUI:Module("Chat", true)
 		return not (Chat and Chat:IsEnabled())
 	end
 	
@@ -886,7 +845,7 @@ function module:LoadOptions()
 	local function createDisabled(toCheck)
 		if not disabledFuncs[toCheck] then
 			disabledFuncs[toCheck] = function()
-				return not LUI:GetModule(toCheck, true)
+				return not LUI:Module(toCheck, true)
 			end
 		end
 		

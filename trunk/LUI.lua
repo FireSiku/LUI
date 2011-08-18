@@ -6,49 +6,54 @@
 	Author..: Louí [EU-Das Syndikat] <In Fidem>
 ]] 
 
-local parent, LUI = ...
+local addonname, LUI = ...
 local L = LUI.L
 
-LibStub("AceAddon-3.0"):EmbedLibraries(LUI, "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceSerializer-3.0", "AceComm-3.0")
+local AceAddon = LibStub("AceAddon-3.0")
+AceAddon:EmbedLibraries(LUI, "AceComm-3.0", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0")
 
 -- this is a temp globalization (should make it check for alpha verion to globalize or not once all other files dont need global)
 _G.LUI = LUI
 _G.oUF = LUI.oUF
 
-local LSM = LibStub("LibSharedMedia-3.0")
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 local ACD = LibStub("AceConfigDialog-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
+
+LUI.Versions = {lui = 3403}
 
 LUI.oUF_LUI = {}
 
 LUI.dummy = function() return end
 
 -- REGISTER FONTS
-LSM:Register("font", "vibrocen", [[Interface\Addons\LUI\media\fonts\vibrocen.ttf]])
-LSM:Register("font", "vibroceb", [[Interface\Addons\LUI\media\fonts\vibroceb.ttf]])
-LSM:Register("font", "Prototype", [[Interface\Addons\LUI\media\fonts\prototype.ttf]])
-LSM:Register("font", "neuropol", [[Interface\AddOns\LUI\media\fonts\neuropol.ttf]])
-LSM:Register("font", "AvantGarde_LT_Medium", [[Interface\AddOns\LUI\media\fonts\AvantGarde_LT_Medium.ttf]])
-LSM:Register("font", "Arial Narrow", [[Interface\AddOns\LUI\media\fonts\ARIALN.TTF]])
-LSM:Register("font", "Pepsi", [[Interface\AddOns\LUI\media\fonts\pepsi.ttf]])
+Media:Register("font", "vibrocen", [[Interface\Addons\LUI\media\fonts\vibrocen.ttf]])
+Media:Register("font", "vibroceb", [[Interface\Addons\LUI\media\fonts\vibroceb.ttf]])
+Media:Register("font", "Prototype", [[Interface\Addons\LUI\media\fonts\prototype.ttf]])
+Media:Register("font", "neuropol", [[Interface\AddOns\LUI\media\fonts\neuropol.ttf]])
+Media:Register("font", "AvantGarde_LT_Medium", [[Interface\AddOns\LUI\media\fonts\AvantGarde_LT_Medium.ttf]])
+Media:Register("font", "Arial Narrow", [[Interface\AddOns\LUI\media\fonts\ARIALN.TTF]])
+Media:Register("font", "Pepsi", [[Interface\AddOns\LUI\media\fonts\pepsi.ttf]])
 
 -- REGISTER BORDERS
-LSM:Register("border", "glow", [[Interface\Addons\LUI\media\textures\borders\glow.tga]])
-LSM:Register("border", "Stripped", [[Interface\Addons\LUI\media\textures\borders\Stripped.tga]])
-LSM:Register("border", "Stripped_hard", [[Interface\Addons\LUI\media\textures\borders\Stripped_hard.tga]])
-LSM:Register("border", "Stripped_medium", [[Interface\Addons\LUI\media\textures\borders\Stripped_medium.tga]])
+Media:Register("border", "glow", [[Interface\Addons\LUI\media\textures\borders\glow.tga]])
+Media:Register("border", "Stripped", [[Interface\Addons\LUI\media\textures\borders\Stripped.tga]])
+Media:Register("border", "Stripped_hard", [[Interface\Addons\LUI\media\textures\borders\Stripped_hard.tga]])
+Media:Register("border", "Stripped_medium", [[Interface\Addons\LUI\media\textures\borders\Stripped_medium.tga]])
 
 -- REGISTER STATUSBARS
-LSM:Register("statusbar", "oUF LUI", [[Interface\AddOns\LUI\media\textures\statusbars\oUF_LUI.tga]])
-LSM:Register("statusbar", "LUI_Gradient", [[Interface\AddOns\LUI\media\textures\statusbars\gradient32x32.tga]])
-LSM:Register("statusbar", "LUI_Minimalist", [[Interface\AddOns\LUI\media\textures\statusbars\Minimalist.tga]])
-LSM:Register("statusbar", "LUI_Ruben", [[Interface\AddOns\LUI\media\textures\statusbars\Ruben.tga]])
-LSM:Register("statusbar", "Smelly", [[Interface\AddOns\LUI\media\textures\statusbars\Smelly.tga]])
-LSM:Register("statusbar", "Neal", [[Interface\AddOns\LUI\media\textures\statusbars\Neal]])
-LSM:Register("statusbar", "RenaitreMinion", [[Interface\AddOns\LUI\media\textures\statusbars\RenaitreMinion.tga]])
+Media:Register("statusbar", "oUF LUI", [[Interface\AddOns\LUI\media\textures\statusbars\oUF_LUI.tga]])
+Media:Register("statusbar", "LUI_Gradient", [[Interface\AddOns\LUI\media\textures\statusbars\gradient32x32.tga]])
+Media:Register("statusbar", "LUI_Minimalist", [[Interface\AddOns\LUI\media\textures\statusbars\Minimalist.tga]])
+Media:Register("statusbar", "LUI_Ruben", [[Interface\AddOns\LUI\media\textures\statusbars\Ruben.tga]])
+Media:Register("statusbar", "Smelly", [[Interface\AddOns\LUI\media\textures\statusbars\Smelly.tga]])
+Media:Register("statusbar", "Neal", [[Interface\AddOns\LUI\media\textures\statusbars\Neal]])
+Media:Register("statusbar", "RenaitreMinion", [[Interface\AddOns\LUI\media\textures\statusbars\RenaitreMinion.tga]])
 
-LUI_Media = {
+local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
+
+LUI.Media = {
 	["blank"] = [[Interface\AddOns\LUI\media\textures\blank]],
 	["normTex"] = [[Interface\AddOns\LUI\media\textures\statusbars\normTex]], -- texture used for nameplates healthbar
 	["glowTex"] = [[Interface\AddOns\LUI\media\textures\statusbars\glowTex]], -- the glow texture around some frame.
@@ -65,15 +70,6 @@ LUI_Media = {
 local screen_height = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "%d+x(%d+)")
 local screen_width = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "(%d+)x%d+")
 local _, class = UnitClass("player")
-
-LUI_versions = {
-	lui = 3403,
-	grid = 3300,
-	bartender = 3300,
-	omen = 3300,
-	recount = 3300,
-	forte = 3300,
-}
 
 ------------------------------------------------------
 -- / CREATING DEFAULTS / --
@@ -117,7 +113,7 @@ function CheckResolution()
 	
 	if ScreenWidth == "1280" and ScreenHeight == "1024" then
 		-- Repostion Info Texts
-		local Infotext = LUI:GetModule("Infotext", true)
+		local Infotext = LUI:Module("Infotext", true)
 		if Infotext and false then -- broken with false until propper positions have been determinied
 			Infotext.db.defaults.profile.Bags.X = -100
 			Infotext.db.defaults.profile.Durability.X = 10
@@ -172,10 +168,10 @@ function LUI:CreatePanel(f, w, h, a1, p, a2, x, y)
 	f:SetFrameStrata("BACKGROUND")
 	f:SetPoint(a1, p, a2, x, y)
 	f:SetBackdrop({
-	  bgFile = LUI_Media.blank, 
-	  edgeFile = LUI_Media.blank, 
-	  tile = false, tileSize = 0, edgeSize = LUI.mult, 
-	  insets = { left = -LUI.mult, right = -LUI.mult, top = -LUI.mult, bottom = -LUI.mult}
+		bgFile = LUI.Media.blank, 
+		edgeFile = LUI.Media.blank, 
+		tile = false, tileSize = 0, edgeSize = LUI.mult, 
+		insets = { left = -LUI.mult, right = -LUI.mult, top = -LUI.mult, bottom = -LUI.mult}
 	})
 	f:SetBackdropColor(.1,.1,.1,1)
 	f:SetBackdropBorderColor(.6,.6,.6,1)
@@ -211,8 +207,8 @@ function LUI:StyleButton(b, checked)
 	pushed:SetPoint("BOTTOMRIGHT",button,-2,2)
 	button:SetPushedTexture(pushed)
 	
-	local Infotext = self:GetModule("Infotext", true)
-	count:SetFont(LSM:Fetch("font", (Infotext and Infotext.db.profile.FPS.Font or "vibroceb")), (Infotext and Infotext.db.profile.FPS.FontSize or 12), "OUTLINE")
+	local Infotext = self:Module("Infotext", true)
+	count:SetFont(Media:Fetch("font", (Infotext and Infotext.db.profile.FPS.Font or "vibroceb")), (Infotext and Infotext.db.profile.FPS.FontSize or 12), "OUTLINE")
  
 	if checked then
 		local checked = b:CreateTexture("frame", nil, self) -- checked
@@ -245,40 +241,12 @@ function LUI:CreateMeAFrame(fart,fname,fparent,fwidth,fheight,fscale,fstrata,fle
 	return f  
 end
 
-function LUI:ClearFrames(frameList)
-	--[[if not frameList then return end
-	
-	for _, frame in pairs(frameList) do
-		if _G[frame] then
-			for i=1, _G[frame]:GetNumRegions() do
-				local region = select(i, _G[frame]:GetRegions()):GetName()
-				if region then
-					_G[region]:Hide()
-					_G[region] = nil
-				end
-			end
-			for i=1, _G[frame]:GetNumChildren() do
-				local child = select(i, _G[frame]:GetChildren())
-				if child then
-					LUI:ClearFrames({child:GetName()})
-				end
-			end
-			_G[frame]:UnregisterAllEvents()
-			_G[frame]:SetScript("OnUpdate", nil)
-			_G[frame]:Hide()
-			_G[frame]:SetParent(nil)
-			_G[frame] = nil
-		end
-	end
-	collectgarbage()]]
-end
-
 ------------------------------------------------------
 -- / SYNC ADDON VERSION / --
 ------------------------------------------------------
 
 function LUI:SyncAddonVersion()
-	local luiversion, version, newVersion = GetAddOnMetadata(parent, "Version"), "", ""
+	local luiversion, version, newVersion = GetAddOnMetadata(addonname, "Version"), "", ""
 	local myRealm, myFaction, inGroup = GetRealmName(), (UnitFactionGroup("player") == "Horde" and 0 or 1), false
 	
 	while luiversion ~= nil do
@@ -357,7 +325,7 @@ end
 ------------------------------------------------------
 
 function LUI:SetDamageFont()
-	local DamageFont = LSM:Fetch("font", db.General.DamageFont)
+	local DamageFont = Media:Fetch("font", db.General.DamageFont)
 
 	COMBAT_TEXT_SCROLLSPEED = 1.9
 	COMBAT_TEXT_FADEOUT_TIME = 1.3
@@ -448,7 +416,7 @@ function LUI:Update()
 			LUI:InstallForte()
 		end
 	
-		LUICONFIG.Versions.lui = LUI_versions.lui
+		LUICONFIG.Versions.lui = LUI.Versions.lui
 		ReloadUI()
 	end)
 end
@@ -513,10 +481,8 @@ function LUI:Configure()
 		SetCVar("chatMouseScroll", 1)
 		SetCVar("chatStyle", "classic")
 		
-		if LUICONFIG.Versions ~= nil then
-			for k,v in pairs(LUICONFIG.Versions) do
-				LUICONFIG.Versions[k] = nil
-			end
+		if LUICONFIG.Versions then
+			wipe(LUICONFIG.Versions)
 		end
 		
 		LUI:InstallGrid()
@@ -525,11 +491,77 @@ function LUI:Configure()
 		LUI:InstallBartender()
 		LUI:InstallForte()
 
-		LUICONFIG.Versions.lui = LUI_versions.lui
+		LUICONFIG.Versions.lui = LUI.Versions.lui
 		LUICONFIG.IsConfigured = true
 		ReloadUI()
 	end)
 end
+
+------------------------------------------------------
+-- / MODULES / --
+------------------------------------------------------
+
+-- LUI:Module(name [, silent]) to get module
+-- LUI:Module(name [, prototype] [, libs...]) -- to create module or add to module
+function LUI:Module(name, prototype, ...)
+	local i = 1
+	local module = self:GetModule(name, true)
+	if module then
+		if type(prototype) == "string" then
+			AceAddon:EmbedLibraries(module, prototype, ...)
+		elseif type(prototype) == "table" then
+			AceAddon:EmbedLibraries(module, ...)
+			
+			-- set prototype
+			local mt = getmetatable(module)
+			mt.__index = prototype
+			setmetatable(module, mt)
+		end
+	elseif prototype ~= true then
+		module = self:NewModule(name, prototype, ...)
+	end
+	
+	return module
+end
+
+function LUI:Toggle()
+	local success = self[self:IsEnabled() and "Disable" or "Enable"](self)
+	if self.db and self.db.profile and self.db.profile.Enable ~= nil then
+		self.db.profile.Enable = self:IsEnabled()
+	end
+	return success
+end
+
+local function conflictChecker(...)
+	for i=1, select("#", ...) do
+		if IsAddOnLoaded(select(i, ...)) then
+			return select(i, ...)
+		end
+	end
+end
+function LUI:CheckConflict(...) -- self is module
+	local conflict = false
+	if type(self.conflicts) == "table" then
+		conflict = conflictChecker(unpack(self.conflicts))
+	else
+		conflict = conflictChecker((";"):split(self.conflicts))
+	end
+	
+	if conflict then
+		-- disable without calling OnDisable function
+		LibStub("AceAddon-3.0").statuses[self.name] = false
+		self:SetEnabledState(false)
+		if db.General.ModuleMessages then
+			LUI:Print("|cffFF0000" .. self:GetName() .. " could not be enabled because of a conflicting addon: "..conflict..".")
+		end
+		return
+	else
+		return LUI.hooks[self].OnEnable(self, ...)
+	end
+end
+
+LUI:SetDefaultModuleLibraries("LUIDevAPI")
+LUI:SetDefaultModulePrototype({Toggle = LUI.Toggle})
 
 ------------------------------------------------------
 -- / SCRIPTS / --
@@ -594,7 +626,6 @@ end
 
 local function getOptions()
 	if not LUI.options then
-		local api = LUI:GetModule("DevAPI")
 		LUI.options = {
 			name = "LUI",
 			type = "group",
@@ -636,14 +667,14 @@ local function getOptions()
 									order = 4,
 									width = "full",
 									type = "description",
-									name = L["Version: "]..GetAddOnMetadata(parent, "Version"),
+									name = L["Version: "]..GetAddOnMetadata(addonname, "Version"),
 								},
 								RevText = {
 									order = 5,
 									width = "full",
 									type = "description",
 									name = function()
-											local revision = GetAddOnMetadata(parent, "X-Curse-Packaged-Version")
+											local revision = GetAddOnMetadata(addonname, "X-Curse-Packaged-Version")
 											return L["Revision: "]..(revision or "???")
 										end,
 								},
@@ -1040,6 +1071,9 @@ local function getOptions()
 		LUI.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(LUI.db)
 		LUI.options.args.profiles.order = 4
 		
+		LUI.options.args.profiles.args.new.disabled = true -- remove once all modules are using namespaces
+		LUI.options.args.profiles.args.choose.disabled = true -- remove once all modules are using namespaces
+		
 		for k,v in pairs(moduleList) do
 			LUI.options.args.Modules.args = LUI:MergeOptions(LUI.options.args.Modules.args, (type(v) == "function") and v() or v)
 		end
@@ -1049,8 +1083,8 @@ local function getOptions()
 		end
 		
 		for k,v in pairs(newModuleOptions) do -- all modules need to be converted over to this
-			local module = type(v) == "string" and LUI:GetModule(v) or v
-			LUI.options.args[module:GetName()] = api.NewGroup(module, module.optionsName or module:GetName(), module.order or 10, module.childGroups or "tab", module.getter or "skip", module.setter or "skip", 
+			local module = type(v) == "string" and LUI:Module(v) or v
+			LUI.options.args[module:GetName()] = module:NewGroup(module.optionsName or module:GetName(), module.order or 10, module.childGroups or "tab", module.getter or "skip", module.setter or "skip", 
 				false, function() return not module:IsEnabled() end, type(module.LoadOptions) == "function" and module:LoadOptions() or module.options)
 		end
 		
@@ -1155,6 +1189,20 @@ function LUI:NewNamespace(module, enableButton)
 				mdb.profile[k] = v
 			end
 		end,
+		__call = function(t, info, value)
+			local dbloc = mdb.profile
+			for i=2, #info-1 do
+				dbloc = dbloc[info[i]]
+				if type(dbloc) ~= "table" then
+					error("Error accessing db:\nCould not access "..strjoin(".", info[1], "db.profile", unpack(info, 2, dbloc == nil and i or i+1)).."\ndb layout must be the same as info", 2)
+				end
+			end
+			if value ~= nil then
+				dbloc[info[#info]] = value
+			else
+				return dbloc[info[#info]]
+			end
+		end,
 	})
 	
 	-- Create defaults metatable (the module.defaults table was handed off to AceDB and now exists as module.db.defaults)
@@ -1167,10 +1215,24 @@ function LUI:NewNamespace(module, enableButton)
 			end
 		end,
 		__newindex = function(t, k, v)
-			if mdb[k] then
+			if mdb.defaults[k] then
 				mdb.defaults[k] = v
 			else
 				mdb.defaults.profile[k] = v
+			end
+		end,
+		__call = function(t, info, value)
+			local dbloc = mdb.defaults.profile
+			for i=2, #info-1 do
+				dbloc = dbloc[info[i]]
+				if type(dbloc) ~= "table" then
+					error("Error accessing db:\nCould not access "..strjoin(".", info[1], "db.defaults.profile", unpack(info, 2, dbloc == nil and i or i+1)).."\ndb layout must be the same as info", 2)
+				end
+			end
+			if value ~= nil then
+				dbloc[info[#info]] = value
+			else
+				return dbloc[info[#info]]
 			end
 		end,
 	})
@@ -1182,8 +1244,13 @@ function LUI:NewNamespace(module, enableButton)
 	end
 	
 	-- Set module enabled state
-	if module.db.profile.Enable ~= nil then
+	if LUI.defaultModuleState ~= false and module.db.profile.Enable ~= nil then
 		module:SetEnabledState(module.db.profile.Enable)
+	end
+	
+	-- Hook conflicting addon checker
+	if module.conflicts then
+		LUI:RawHook(module, "OnEnable", LUI.CheckConflict)
 	end
 	
 	-- Register Callbacks
@@ -1202,14 +1269,15 @@ function LUI:NewNamespace(module, enableButton)
 				desc = function() return ("Left Click: " .. (module:IsEnabled() and "Enable" or "Disable") .. " this module.\nShift Click: Reset modules settings.") end,
 				func = function()
 					if IsShiftKeyDown() then
+						local enabled = module.db.profile.Enable
 						module.db:ResetProfile()
+						module.db.profile.Enable = enabled -- keep enabled/disabled state (callback from ResetProfile is based on modules enabled state, not the db var)
+						
 						if db.General.ModuleMessages then
 							LUI:Print(mName .. " module settings reset.")
 						end
 					else
-						module.db.profile.Enable = not module.db.profile.Enable
-						module[module.db.profile.Enable and "Enable" or "Disable"](module)
-						if db.General.ModuleMessages then
+						if module:Toggle() and db.General.ModuleMessages then
 							LUI:Print(mName .. " module |cff" .. (module.db.profile.Enable and "00FF00enabled" or "FF0000disabled") .. "|r.")
 						end
 					end
@@ -1235,25 +1303,19 @@ function LUI:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileCopied", "Refresh")
 	self.db.RegisterCallback(self, "OnProfileReset", "Refresh")
 	
-	self.elementsToHide = {}
-	
-	self:SetupOptions()
+	self:RegisterChatCommand(addonname, "ChatCommand")
 	
 	LUICONFIG = LUICONFIG or {}
-	LUICONFIG.IsConfigured = LUICONFIG.IsConfigured or false
-	LUICONFIG.Versions = LUICONFIG.Versions or {
-		lui = 0,
-		theme = 0,
-		grid = 0,
-		bartender = 0,
-		omen = 0,
-		recount = 0,
-		forte = 0,
-	}
+	LUICONFIG.Versions = LUICONFIG.Versions or {}
 	
-	if LUICONFIG.IsConfigured and LUICONFIG.Versions.lui == LUI_versions.lui then
+	if LUICONFIG.IsConfigured and LUICONFIG.Versions.lui == LUI.Versions.lui then
 		self:RegisterEvent("ADDON_LOADED", "SetDamageFont", self)
 		self:LoadExtraModules()
+	else
+		self.defaultModuleState = false
+		for name, module in self:IterateModules() do
+			module:SetEnabledState(false)
+		end
 	end
 	
 	StaticPopupDialogs["RELOAD_UI"] = {
@@ -1279,25 +1341,13 @@ end
 
 function LUI:OnEnable()
 	db_ = self.db.profile
-	local isAllShown = false
 	CheckResolution()
 	
-	SLASH_RELOADUI1 = "/rl"
-	SlashCmdList.RELOADUI = ReloadUI
-	
-	fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
-	
-	if LUICONFIG.IsConfigured == false then
-		for name, module in self:IterateModules() do
-			module:SetEnabledState(false)
-		end
+	if not LUICONFIG.IsConfigured then
 		self.db.UnregisterAllCallbacks(self)
 		self.db:SetProfile(UnitName("player").." - "..GetRealmName())
 		self:Configure()
-	elseif LUICONFIG.Versions.lui ~= LUI_versions.lui then
-		for name, module in self:IterateModules() do
-			module:SetEnabledState(false)
-		end
+	elseif LUICONFIG.Versions.lui ~= LUI.Versions.lui then
 		self:Update()
 	else
 		local LoginMsg = false
@@ -1310,8 +1360,6 @@ function LUI:OnEnable()
 		self:SyncAddonVersion()
 	end
 end
-
-
 
 function LUI:MergeDefaults(target, source)
 	if type(target) ~= "table" then target = {} end
@@ -1329,10 +1377,14 @@ function LUI:RefreshDefaults()
 	self.db:RegisterDefaults(LUI.defaults)
 end
 
-function LUI:Refresh()
+function LUI:Refresh(dbEvent)
 	db_ = self.db.profile
 	
 	if not IsLoggedIn() then return end -- in case db callbacks fire before the OnEnable function
+	
+	if dbEvent then -- remove once all modules are using namespaces
+		return ReloadUI()
+	end
 	
 	for name, module in self:IterateModules() do
 		if module.db and module.db.profile and module.db.profile.Enable ~= nil then
@@ -1342,7 +1394,7 @@ function LUI:Refresh()
 end
 
 function LUI:RefreshModule(...) -- LUI.RefreshModule(module, callback_event, db, ...)
-	if self:IsEnabled() then
+	if AceAddon.statuses[self.name] then -- check if self is enabled and if OnEnable script has ran
 		self:Refresh(...)
 	end
 end
@@ -1364,7 +1416,7 @@ function LUI:Open(force)
 	end
 	
 	self.optionsFrames = {}
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("LUI", getOptions)
+	LibStub("AceConfig-3.0"):RegisterOptionsTable(addonname, getOptions)
 	ACD:SetDefaultSize("LUI", 720,525)
 	
 	local function refreshOptions()
@@ -1382,15 +1434,11 @@ function LUI:ChatCommand(input)
 	if not input or input:trim() == "" then
 		LUI:Open()
 	else
-		LibStub("AceConfigCmd-3.0").HandleCommand(LUI, "lui", "LUI", input)
+		local arg = self:GetArgs(input)
+		if arg:lower() == "debug" then
+			self:Debug()
+		else
+			LibStub("AceConfigCmd-3.0").HandleCommand(LUI, "lui", "LUI", input)
+		end
 	end
-end
-
-function LUI:SetupOptions()
-	--self.optionsFrames = {}
-	--LibStub("AceConfig-3.0"):RegisterOptionsTable("LUI", getOptions)
-	
-	--ACD:SetDefaultSize("LUI", 720,525)
-	self:RegisterChatCommand( "lui", "ChatCommand")
-	self:RegisterChatCommand( "LUI", "ChatCommand")
 end

@@ -5,8 +5,8 @@
 	Version....: 1.0
 ]] 
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF_ArenaTarget")
+local addonname, LUI = ...
+local module = LUI:Module("oUF_ArenaTarget")
 
 local db
 

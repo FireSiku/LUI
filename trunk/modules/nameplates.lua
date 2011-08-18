@@ -14,10 +14,10 @@
 ]]
 
 -- External references.
-local _, LUI = ...
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local module = LUI:NewModule("Nameplates")
+local module = LUI:Module("Nameplates")
 
 local db
 local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
@@ -194,10 +194,10 @@ function module:SetNameplates()
 		--local glowRegion, overlayRegion, castbarOverlay, shieldedRegion, spellIconRegion, highlightRegion, nameTextRegion, levelTextRegion, bossIconRegion, raidIconRegion, stateIconRegion = frame:GetRegions()
 		local glowRegion, overlayRegion, highlightRegion, nameTextRegion, levelTextRegion, bossIconRegion, raidIconRegion, stateIconRegion = frame:GetRegions()
 		local _, castbarOverlay, shieldedRegion, spellIconRegion = frame.castBar:GetRegions();
-		local font, fontSize, fontFlag, fontColor = LSM:Fetch("font", db.Nameplates.FontSettings.Font), db.Nameplates.FontSettings.Size, db.Nameplates.FontSettings.Flag, db.Nameplates.FontSettings.Color
+		local font, fontSize, fontFlag, fontColor = Media:Fetch("font", db.Nameplates.FontSettings.Font), db.Nameplates.FontSettings.Size, db.Nameplates.FontSettings.Flag, db.Nameplates.FontSettings.Color
 
-		local barTexture = LUI_Media.normTex
-		local glowTexture = LUI_Media.glowTex
+		local barTexture = LUI.Media.normTex
+		local glowTexture = LUI.Media.glowTex
 		local backdrop = {
 			edgeFile = glowTexture, edgeSize = LUI:Scale(3),
 			insets = {left = LUI:Scale(3), right = LUI:Scale(3), top = LUI:Scale(3), bottom = LUI:Scale(3)}
@@ -222,7 +222,7 @@ function module:SetNameplates()
 
 		healthBar.hpBackground = healthBar:CreateTexture(nil, "BORDER")
 		healthBar.hpBackground:SetAllPoints(healthBar)
-		healthBar.hpBackground:SetTexture(LUI_Media.blank)
+		healthBar.hpBackground:SetTexture(LUI.Media.blank)
 		healthBar.hpBackground:SetVertexColor(0.15, 0.15, 0.15)
 
 		healthBar.hpGlow = CreateFrame( "Frame", nil, healthBar)
@@ -253,7 +253,7 @@ function module:SetNameplates()
 
 		castBar.cbBackground = castBar:CreateTexture(nil, "BACKGROUND")
 		castBar.cbBackground:SetAllPoints(castBar)
-		castBar.cbBackground:SetTexture(LUI_Media.blank)
+		castBar.cbBackground:SetTexture(LUI.Media.blank)
 		castBar.cbBackground:SetVertexColor(0.15, 0.15, 0.15)
 
 		castBar.cbGlow = CreateFrame( "Frame", nil, castBar)
@@ -787,5 +787,4 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
-	LUI:ClearFrames()
 end

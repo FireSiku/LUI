@@ -5,16 +5,18 @@
 --	DO NOT USE THIS LAYOUT WITHOUT LUI
 ------------------------------------------------------------------------
 
-local _, LUI = ...
-local module = LUI:GetModule("oUF", true)
+local addonname, LUI = ...
+local module = LUI:Module("oUF")
+local Forte = LUI:Module("Forte")
+local Fader = LUI:Module("Fader")
 
 local oUF = LUI.oUF
 
-local LSM = LibStub("LibSharedMedia-3.0")
+LUI.Versions.ouf = 3520
+
+local Media = LibStub("LibSharedMedia-3.0")
 
 local db, colors, funcs
-
-LUI_versions.ouf = 3520
 
 local nameCache = {}
 
@@ -613,7 +615,7 @@ local PostCreateAura = function(element, button)
 	button.count:SetFont(font3, 16, "OUTLINE")
 	button.count:SetTextColor(0.84, 0.75, 0.65)
 
-	button.remaining = SetFontString(button, LSM:Fetch("font", db.oUF.Settings.Auras.auratimer_font), db.oUF.Settings.Auras.auratimer_size, db.oUF.Settings.Auras.auratimer_flag)
+	button.remaining = SetFontString(button, Media:Fetch("font", db.oUF.Settings.Auras.auratimer_font), db.oUF.Settings.Auras.auratimer_size, db.oUF.Settings.Auras.auratimer_flag)
 	button.remaining:SetPoint("TOPLEFT", 1, -1)
 
 	button.cd.noOCC = true
@@ -1172,11 +1174,11 @@ LUI.oUF_LUI.funcs = {
 
 		self.Health:SetHeight(tonumber(oufdb.Health.Height))
 		self.Health:SetWidth(tonumber(oufdb.Health.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid width downscaling!
-		self.Health:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Health.Texture))
+		self.Health:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Health.Texture))
 		self.Health:ClearAllPoints()
 		self.Health:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Health.X) * (self:GetWidth()/oufdb.Width), tonumber(oufdb.Health.Y)) -- needed for 25/40 man raid width downscaling!
 
-		self.Health.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Health.TextureBG))
+		self.Health.bg:SetTexture(Media:Fetch("statusbar", oufdb.Health.TextureBG))
 		self.Health.bg:SetAlpha(oufdb.Health.BGAlpha)
 		self.Health.bg.multiplier = oufdb.Health.BGMultiplier
 		self.Health.bg.invert = oufdb.Health.BGInvert
@@ -1199,11 +1201,11 @@ LUI.oUF_LUI.funcs = {
 
 		self.Power:SetHeight(tonumber(oufdb.Power.Height))
 		self.Power:SetWidth(tonumber(oufdb.Power.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid width downscaling!
-		self.Power:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Power.Texture))
+		self.Power:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Power.Texture))
 		self.Power:ClearAllPoints()
 		self.Power:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Power.X) * (self:GetWidth()/oufdb.Width), tonumber(oufdb.Power.Y)) -- needed for 25/40 man raid width downscaling!
 
-		self.Power.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Power.TextureBG))
+		self.Power.bg:SetTexture(Media:Fetch("statusbar", oufdb.Power.TextureBG))
 		self.Power.bg:SetAlpha(oufdb.Power.BGAlpha)
 		self.Power.bg.multiplier = oufdb.Power.BGMultiplier
 		self.Power.bg.invert = oufdb.Power.BGInvert
@@ -1233,7 +1235,7 @@ LUI.oUF_LUI.funcs = {
 
 		self.Full:SetHeight(tonumber(oufdb.Full.Height))
 		self.Full:SetWidth(tonumber(oufdb.Full.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid width downscaling!
-		self.Full:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Full.Texture))
+		self.Full:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Full.Texture))
 		self.Full:SetStatusBarColor(tonumber(oufdb.Full.Color.r), tonumber(oufdb.Full.Color.g), tonumber(oufdb.Full.Color.b), tonumber(oufdb.Full.Color.a))
 		self.Full:ClearAllPoints()
 		self.Full:SetPoint("TOPLEFT", self, "TOPLEFT", tonumber(oufdb.Full.X) * (self:GetWidth()/oufdb.Width), tonumber(oufdb.Full.Y)) -- needed for 25/40 man raid width downscaling!
@@ -1254,8 +1256,8 @@ LUI.oUF_LUI.funcs = {
 		self.FrameBackdrop:SetFrameStrata("BACKGROUND")
 		self.FrameBackdrop:SetFrameLevel(20)
 		self.FrameBackdrop:SetBackdrop({
-			bgFile = LSM:Fetch("background", oufdb.Backdrop.Texture),
-			edgeFile = LSM:Fetch("border", oufdb.Border.EdgeFile),
+			bgFile = Media:Fetch("background", oufdb.Backdrop.Texture),
+			edgeFile = Media:Fetch("border", oufdb.Border.EdgeFile),
 			edgeSize = tonumber(oufdb.Border.EdgeSize),
 			insets = {
 				left = tonumber(oufdb.Border.Insets.Left),
@@ -1270,8 +1272,8 @@ LUI.oUF_LUI.funcs = {
 
 	--texts
 	Info = function(self, unit, oufdb)
-		if not self.Info then self.Info = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline) end
-		self.Info:SetFont(LSM:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline)
+		if not self.Info then self.Info = SetFontString(self.Overlay, Media:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline) end
+		self.Info:SetFont(Media:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline)
 		self.Info:SetTextColor(oufdb.Texts.Name.IndividualColor.r, oufdb.Texts.Name.IndividualColor.g, oufdb.Texts.Name.IndividualColor.b)
 		self.Info:ClearAllPoints()
 		self.Info:SetPoint(oufdb.Texts.Name.Point, self, oufdb.Texts.Name.RelativePoint, tonumber(oufdb.Texts.Name.X), tonumber(oufdb.Texts.Name.Y))
@@ -1289,11 +1291,11 @@ LUI.oUF_LUI.funcs = {
 	end,
 	RaidInfo = function(self, unit, oufdb)
 		if not self.Info then
-			self.Info = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline)
+			self.Info = SetFontString(self.Overlay, Media:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline)
 			self.Info:SetPoint("CENTER", self, "CENTER", 0, 0)
 		end
 		self.Info:SetTextColor(oufdb.Texts.Name.IndividualColor.r, oufdb.Texts.Name.IndividualColor.g, oufdb.Texts.Name.IndividualColor.b)
-		self.Info:SetFont(LSM:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline)
+		self.Info:SetFont(Media:Fetch("font", oufdb.Texts.Name.Font), tonumber(oufdb.Texts.Name.Size), oufdb.Texts.Name.Outline)
 
 		if oufdb.Texts.Name.Enable == true then
 			self.Info:Show()
@@ -1309,8 +1311,8 @@ LUI.oUF_LUI.funcs = {
 	end,
 
 	HealthValue = function(self, unit, oufdb)
-		if not self.Health.value then self.Health.value = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.Health.Font), tonumber(oufdb.Texts.Health.Size), oufdb.Texts.Health.Outline) end
-		self.Health.value:SetFont(LSM:Fetch("font", oufdb.Texts.Health.Font), tonumber(oufdb.Texts.Health.Size), oufdb.Texts.Health.Outline)
+		if not self.Health.value then self.Health.value = SetFontString(self.Overlay, Media:Fetch("font", oufdb.Texts.Health.Font), tonumber(oufdb.Texts.Health.Size), oufdb.Texts.Health.Outline) end
+		self.Health.value:SetFont(Media:Fetch("font", oufdb.Texts.Health.Font), tonumber(oufdb.Texts.Health.Size), oufdb.Texts.Health.Outline)
 		self.Health.value:ClearAllPoints()
 		self.Health.value:SetPoint(oufdb.Texts.Health.Point, self, oufdb.Texts.Health.RelativePoint, tonumber(oufdb.Texts.Health.X), tonumber(oufdb.Texts.Health.Y))
 
@@ -1328,8 +1330,8 @@ LUI.oUF_LUI.funcs = {
 		self.Health.value.colorIndividual = oufdb.Texts.Health.IndividualColor
 	end,
 	HealthPercent = function(self, unit, oufdb)
-		if not self.Health.valuePercent then self.Health.valuePercent = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.HealthPercent.Font), tonumber(oufdb.Texts.HealthPercent.Size), oufdb.Texts.HealthPercent.Outline) end
-		self.Health.valuePercent:SetFont(LSM:Fetch("font", oufdb.Texts.HealthPercent.Font), tonumber(oufdb.Texts.HealthPercent.Size), oufdb.Texts.HealthPercent.Outline)
+		if not self.Health.valuePercent then self.Health.valuePercent = SetFontString(self.Overlay, Media:Fetch("font", oufdb.Texts.HealthPercent.Font), tonumber(oufdb.Texts.HealthPercent.Size), oufdb.Texts.HealthPercent.Outline) end
+		self.Health.valuePercent:SetFont(Media:Fetch("font", oufdb.Texts.HealthPercent.Font), tonumber(oufdb.Texts.HealthPercent.Size), oufdb.Texts.HealthPercent.Outline)
 		self.Health.valuePercent:ClearAllPoints()
 		self.Health.valuePercent:SetPoint(oufdb.Texts.HealthPercent.Point, self, oufdb.Texts.HealthPercent.RelativePoint, tonumber(oufdb.Texts.HealthPercent.X), tonumber(oufdb.Texts.HealthPercent.Y))
 
@@ -1346,8 +1348,8 @@ LUI.oUF_LUI.funcs = {
 		self.Health.valuePercent.colorIndividual = oufdb.Texts.HealthPercent.IndividualColor
 	end,
 	HealthMissing = function(self, unit, oufdb)
-		if not self.Health.valueMissing then self.Health.valueMissing = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.HealthMissing.Font), tonumber(oufdb.Texts.HealthMissing.Size), oufdb.Texts.HealthMissing.Outline) end
-		self.Health.valueMissing:SetFont(LSM:Fetch("font", oufdb.Texts.HealthMissing.Font), tonumber(oufdb.Texts.HealthMissing.Size), oufdb.Texts.HealthMissing.Outline)
+		if not self.Health.valueMissing then self.Health.valueMissing = SetFontString(self.Overlay, Media:Fetch("font", oufdb.Texts.HealthMissing.Font), tonumber(oufdb.Texts.HealthMissing.Size), oufdb.Texts.HealthMissing.Outline) end
+		self.Health.valueMissing:SetFont(Media:Fetch("font", oufdb.Texts.HealthMissing.Font), tonumber(oufdb.Texts.HealthMissing.Size), oufdb.Texts.HealthMissing.Outline)
 		self.Health.valueMissing:ClearAllPoints()
 		self.Health.valueMissing:SetPoint(oufdb.Texts.HealthMissing.Point, self, oufdb.Texts.HealthMissing.RelativePoint, tonumber(oufdb.Texts.HealthMissing.X), tonumber(oufdb.Texts.HealthMissing.Y))
 
@@ -1365,8 +1367,8 @@ LUI.oUF_LUI.funcs = {
 	end,
 
 	PowerValue = function(self, unit, oufdb)
-		if not self.Power.value then self.Power.value = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.Power.Font), tonumber(oufdb.Texts.Power.Size), oufdb.Texts.Power.Outline) end
-		self.Power.value:SetFont(LSM:Fetch("font", oufdb.Texts.Power.Font), tonumber(oufdb.Texts.Power.Size), oufdb.Texts.Power.Outline)
+		if not self.Power.value then self.Power.value = SetFontString(self.Overlay, Media:Fetch("font", oufdb.Texts.Power.Font), tonumber(oufdb.Texts.Power.Size), oufdb.Texts.Power.Outline) end
+		self.Power.value:SetFont(Media:Fetch("font", oufdb.Texts.Power.Font), tonumber(oufdb.Texts.Power.Size), oufdb.Texts.Power.Outline)
 		self.Power.value:ClearAllPoints()
 		self.Power.value:SetPoint(oufdb.Texts.Power.Point, self, oufdb.Texts.Power.RelativePoint, tonumber(oufdb.Texts.Power.X), tonumber(oufdb.Texts.Power.Y))
 
@@ -1384,8 +1386,8 @@ LUI.oUF_LUI.funcs = {
 		self.Power.value.colorIndividual = oufdb.Texts.Power.IndividualColor
 	end,
 	PowerPercent = function(self, unit, oufdb)
-		if not self.Power.valuePercent then self.Power.valuePercent = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.PowerPercent.Font), tonumber(oufdb.Texts.PowerPercent.Size), oufdb.Texts.PowerPercent.Outline) end
-		self.Power.valuePercent:SetFont(LSM:Fetch("font", oufdb.Texts.PowerPercent.Font), tonumber(oufdb.Texts.PowerPercent.Size), oufdb.Texts.PowerPercent.Outline)
+		if not self.Power.valuePercent then self.Power.valuePercent = SetFontString(self.Overlay, Media:Fetch("font", oufdb.Texts.PowerPercent.Font), tonumber(oufdb.Texts.PowerPercent.Size), oufdb.Texts.PowerPercent.Outline) end
+		self.Power.valuePercent:SetFont(Media:Fetch("font", oufdb.Texts.PowerPercent.Font), tonumber(oufdb.Texts.PowerPercent.Size), oufdb.Texts.PowerPercent.Outline)
 		self.Power.valuePercent:ClearAllPoints()
 		self.Power.valuePercent:SetPoint(oufdb.Texts.PowerPercent.Point, self, oufdb.Texts.PowerPercent.RelativePoint, tonumber(oufdb.Texts.PowerPercent.X), tonumber(oufdb.Texts.PowerPercent.Y))
 
@@ -1402,8 +1404,8 @@ LUI.oUF_LUI.funcs = {
 		self.Power.valuePercent.colorIndividual = oufdb.Texts.PowerPercent.IndividualColor
 	end,
 	PowerMissing = function(self, unit, oufdb)
-		if not self.Power.valueMissing then self.Power.valueMissing = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.PowerMissing.Font), tonumber(oufdb.Texts.PowerMissing.Size), oufdb.Texts.PowerMissing.Outline) end
-		self.Power.valueMissing:SetFont(LSM:Fetch("font", oufdb.Texts.PowerMissing.Font), tonumber(oufdb.Texts.PowerMissing.Size), oufdb.Texts.PowerMissing.Outline)
+		if not self.Power.valueMissing then self.Power.valueMissing = SetFontString(self.Overlay, Media:Fetch("font", oufdb.Texts.PowerMissing.Font), tonumber(oufdb.Texts.PowerMissing.Size), oufdb.Texts.PowerMissing.Outline) end
+		self.Power.valueMissing:SetFont(Media:Fetch("font", oufdb.Texts.PowerMissing.Font), tonumber(oufdb.Texts.PowerMissing.Size), oufdb.Texts.PowerMissing.Outline)
 		self.Power.valueMissing:ClearAllPoints()
 		self.Power.valueMissing:SetPoint(oufdb.Texts.PowerMissing.Point, self, oufdb.Texts.PowerMissing.RelativePoint, tonumber(oufdb.Texts.PowerMissing.X), tonumber(oufdb.Texts.PowerMissing.Y))
 
@@ -1469,7 +1471,7 @@ LUI.oUF_LUI.funcs = {
 		if not self.PvP then
 			self.PvP = self.Overlay:CreateTexture(nil, "OVERLAY")
 			if unit == "player" then
-				self.PvP.Timer = SetFontString(self.Overlay, LSM:Fetch("font", oufdb.Texts.PvP.Font), oufdb.Texts.PvP.Size, oufdb.Texts.PvP.Outline)
+				self.PvP.Timer = SetFontString(self.Overlay, Media:Fetch("font", oufdb.Texts.PvP.Font), oufdb.Texts.PvP.Size, oufdb.Texts.PvP.Outline)
 				self.Health:HookScript("OnUpdate", function(_, elapsed)
 					if UnitIsPVP(unit) and oufdb.Icons.PvP.Enable and oufdb.Texts.PvP.Enable then
 						if (GetPVPTimer() == 301000 or GetPVPTimer() == -1) then
@@ -1495,7 +1497,7 @@ LUI.oUF_LUI.funcs = {
 		self.PvP:SetPoint(oufdb.Icons.PvP.Point, self, oufdb.Icons.PvP.Point, tonumber(oufdb.Icons.PvP.X), tonumber(oufdb.Icons.PvP.Y))
 
 		if self.PvP.Timer then
-			self.PvP.Timer:SetFont(LSM:Fetch("font", oufdb.Texts.PvP.Font), oufdb.Texts.PvP.Size, oufdb.Texts.PvP.Outline)
+			self.PvP.Timer:SetFont(Media:Fetch("font", oufdb.Texts.PvP.Font), oufdb.Texts.PvP.Size, oufdb.Texts.PvP.Outline)
 			self.PvP.Timer:SetPoint("CENTER", self.PvP, "CENTER", tonumber(oufdb.Texts.PvP.X), tonumber(oufdb.Texts.PvP.Y))
 			self.PvP.Timer:SetTextColor(oufdb.Texts.PvP.Color.r, oufdb.Texts.PvP.Color.g, oufdb.Texts.PvP.Color.b)
 
@@ -1544,7 +1546,7 @@ LUI.oUF_LUI.funcs = {
 			self.Experience:SetStatusBarTexture(normTex)
 			self.Experience:SetAllPoints(self.XP)
 
-			self.Experience.Value = SetFontString(self.Experience, LSM:Fetch("font", ouf_xp_rep.Font), tonumber(ouf_xp_rep.FontSize), ouf_xp_rep.FontFlag)
+			self.Experience.Value = SetFontString(self.Experience, Media:Fetch("font", ouf_xp_rep.Font), tonumber(ouf_xp_rep.FontSize), ouf_xp_rep.FontFlag)
 			self.Experience.Value:SetAllPoints(self.XP)
 			self.Experience.Value:SetFontObject(GameFontHighlight)
 
@@ -1620,7 +1622,7 @@ LUI.oUF_LUI.funcs = {
 
 		self.Experience:SetStatusBarColor(ouf_xp_rep.Experience.FillColor.r, ouf_xp_rep.Experience.FillColor.g, ouf_xp_rep.Experience.FillColor.b, ouf_xp_rep.Experience.FillColor.a)
 
-		self.Experience.Value:SetFont(LSM:Fetch("font", ouf_xp_rep.Font), tonumber(ouf_xp_rep.FontSize), ouf_xp_rep.FontFlag)
+		self.Experience.Value:SetFont(Media:Fetch("font", ouf_xp_rep.Font), tonumber(ouf_xp_rep.FontSize), ouf_xp_rep.FontFlag)
 		self.Experience.Value:SetJustifyH(ouf_xp_rep.FontJustify)
 		self.Experience.Value:SetTextColor(ouf_xp_rep.FontColor.r, ouf_xp_rep.FontColor.g, ouf_xp_rep.FontColor.b, ouf_xp_rep.FontColor.a)
 
@@ -1651,7 +1653,7 @@ LUI.oUF_LUI.funcs = {
 			self.Reputation:SetStatusBarTexture(normTex)
 			self.Reputation:SetAllPoints(self.Rep)
 
-			self.Reputation.Value = SetFontString(self.Reputation, LSM:Fetch("font", ouf_xp_rep.Font), tonumber(ouf_xp_rep.FontSize), ouf_xp_rep.FontFlag)
+			self.Reputation.Value = SetFontString(self.Reputation, Media:Fetch("font", ouf_xp_rep.Font), tonumber(ouf_xp_rep.FontSize), ouf_xp_rep.FontFlag)
 			self.Reputation.Value:SetAllPoints(self.Rep)
 			self.Reputation.Value:SetFontObject(GameFontHighlight)
 
@@ -1706,7 +1708,7 @@ LUI.oUF_LUI.funcs = {
 
 		self.Reputation:SetStatusBarColor(ouf_xp_rep.Reputation.FillColor.r, ouf_xp_rep.Reputation.FillColor.g, ouf_xp_rep.Reputation.FillColor.b, ouf_xp_rep.Reputation.FillColor.a)
 
-		self.Reputation.Value:SetFont(LSM:Fetch("font", ouf_xp_rep.Font), tonumber(ouf_xp_rep.FontSize), ouf_xp_rep.FontFlag)
+		self.Reputation.Value:SetFont(Media:Fetch("font", ouf_xp_rep.Font), tonumber(ouf_xp_rep.FontSize), ouf_xp_rep.FontFlag)
 		self.Reputation.Value:SetJustifyH(ouf_xp_rep.FontJustify)
 		self.Reputation.Value:SetTextColor(ouf_xp_rep.FontColor.r, ouf_xp_rep.FontColor.g, ouf_xp_rep.FontColor.b, ouf_xp_rep.FontColor.a)
 
@@ -1766,7 +1768,7 @@ LUI.oUF_LUI.funcs = {
 		local totemPoints = {2,0,1,3}
 		
 		for i = 1, 4 do
-			self.TotemBar[i]:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Totems.Texture))
+			self.TotemBar[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Totems.Texture))
 			self.TotemBar[i]:SetHeight(oufdb.Totems.Height)
 			self.TotemBar[i]:SetWidth((tonumber(oufdb.Totems.Width) -3*oufdb.Totems.Padding) / 4)
 
@@ -1814,7 +1816,7 @@ LUI.oUF_LUI.funcs = {
 		local runePoints = {0,1,6,3,2,5}
 		
 		for i = 1, 6 do
-			self.Runes[i]:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Runes.Texture))
+			self.Runes[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Runes.Texture))
 			self.Runes[i]:SetStatusBarColor(unpack(colors.runes[math.floor((i+1)/2)]))
 			self.Runes[i]:SetSize(((oufdb.Runes.Width - 5*oufdb.Runes.Padding) / 6), oufdb.Runes.Height)
 
@@ -1861,7 +1863,7 @@ LUI.oUF_LUI.funcs = {
 		self.HolyPower:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 
 		for i = 1, 3 do
-			self.HolyPower[i]:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.HolyPower.Texture))
+			self.HolyPower[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.HolyPower.Texture))
 			self.HolyPower[i]:SetStatusBarColor(unpack(colors.holypowerbar[i]))
 			self.HolyPower[i]:SetSize(((oufdb.HolyPower.Width - 2*oufdb.HolyPower.Padding) / 3), oufdb.HolyPower.Height)
 
@@ -1909,7 +1911,7 @@ LUI.oUF_LUI.funcs = {
 		self.SoulShards:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 
 		for i = 1, 3 do
-			self.SoulShards[i]:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.SoulShards.Texture))
+			self.SoulShards[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.SoulShards.Texture))
 			self.SoulShards[i]:SetStatusBarColor(unpack(colors.soulshardbar[i]))
 			self.SoulShards[i]:SetSize(((oufdb.SoulShards.Width - 2*oufdb.SoulShards.Padding) / 3), oufdb.SoulShards.Height)
 
@@ -1928,7 +1930,9 @@ LUI.oUF_LUI.funcs = {
 			self.EclipseBar.ShowText = oufdb.Eclipse.Text.Enable
 			self.EclipseBar.PostUnitAura = EclipseBarBuff
 			self.EclipseBar.PostUpdatePower = PostEclipseUpdate
-			self.EclipseBar.PostUpdateVisibility = function() LUI:GetModule("Forte"):SetPosForte() end
+			if Forte then 
+				self.EclipseBar.PostUpdateVisibility = function() Forte:SetPosForte() end
+			end
 
 			self.EclipseBar.LunarBar = CreateFrame("StatusBar", nil, self.EclipseBar)
 			self.EclipseBar.LunarBar:SetAllPoints(self.EclipseBar)
@@ -1954,8 +1958,8 @@ LUI.oUF_LUI.funcs = {
 			self.EclipseBar.FrameBackdrop:SetBackdropColor(0, 0, 0, 1)
 			self.EclipseBar.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
 
-			self.EclipseBar.LunarText = SetFontString(self.EclipseBar.LunarBar, LSM:Fetch("font", oufdb.Eclipse.Text.Font), tonumber(oufdb.Eclipse.Text.Size), oufdb.Eclipse.Text.Outline)
-			self.EclipseBar.SolarText = SetFontString(self.EclipseBar.SolarBar, LSM:Fetch("font", oufdb.Eclipse.Text.Font), tonumber(oufdb.Eclipse.Text.Size), oufdb.Eclipse.Text.Outline)
+			self.EclipseBar.LunarText = SetFontString(self.EclipseBar.LunarBar, Media:Fetch("font", oufdb.Eclipse.Text.Font), tonumber(oufdb.Eclipse.Text.Size), oufdb.Eclipse.Text.Outline)
+			self.EclipseBar.SolarText = SetFontString(self.EclipseBar.SolarBar, Media:Fetch("font", oufdb.Eclipse.Text.Font), tonumber(oufdb.Eclipse.Text.Size), oufdb.Eclipse.Text.Outline)
 		end
 
 		local x = oufdb.Eclipse.Lock and 0 or oufdb.Eclipse.X
@@ -1966,18 +1970,18 @@ LUI.oUF_LUI.funcs = {
 		self.EclipseBar:ClearAllPoints()
 		self.EclipseBar:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 
-		self.EclipseBar.LunarBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Eclipse.Texture))
+		self.EclipseBar.LunarBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Eclipse.Texture))
 		self.EclipseBar.LunarBar:SetStatusBarColor(unpack(colors.eclipsebar["Lunar"]))
 
 		self.EclipseBar.SolarBar:SetWidth(oufdb.Eclipse.Width)
-		self.EclipseBar.SolarBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Eclipse.Texture))
+		self.EclipseBar.SolarBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Eclipse.Texture))
 		self.EclipseBar.SolarBar:SetStatusBarColor(unpack(colors.eclipsebar["Solar"]))
 
-		self.EclipseBar.LunarText:SetFont( LSM:Fetch("font", oufdb.Eclipse.Text.Font), tonumber(oufdb.Eclipse.Text.Size), oufdb.Eclipse.Text.Outline)
+		self.EclipseBar.LunarText:SetFont( Media:Fetch("font", oufdb.Eclipse.Text.Font), tonumber(oufdb.Eclipse.Text.Size), oufdb.Eclipse.Text.Outline)
 		self.EclipseBar.LunarText:ClearAllPoints()
 		self.EclipseBar.LunarText:SetPoint("LEFT", self.EclipseBar, "LEFT", tonumber(oufdb.Eclipse.Text.X), tonumber(oufdb.Eclipse.Text.Y))
 
-		self.EclipseBar.SolarText:SetFont(LSM:Fetch("font", oufdb.Eclipse.Text.Font), tonumber(oufdb.Eclipse.Text.Size), oufdb.Eclipse.Text.Outline)
+		self.EclipseBar.SolarText:SetFont(Media:Fetch("font", oufdb.Eclipse.Text.Font), tonumber(oufdb.Eclipse.Text.Size), oufdb.Eclipse.Text.Outline)
 		self.EclipseBar.SolarText:ClearAllPoints()
 		self.EclipseBar.SolarText:SetPoint("RIGHT", self.EclipseBar, "RIGHT", -tonumber(oufdb.Eclipse.Text.X), tonumber(oufdb.Eclipse.Text.Y))
 
@@ -2016,7 +2020,7 @@ LUI.oUF_LUI.funcs = {
 			end)
 			self.AltPowerBar:SetScript("OnHide", self.AltPowerBar.SetPosition)
 
-			self.AltPowerBar.Text = SetFontString(self.AltPowerBar, LSM:Fetch("font", db.oUF.Player.AltPower.Text.Font), db.oUF.Player.AltPower.Text.Size, db.oUF.Player.AltPower.Text.Outline)
+			self.AltPowerBar.Text = SetFontString(self.AltPowerBar, Media:Fetch("font", db.oUF.Player.AltPower.Text.Font), db.oUF.Player.AltPower.Text.Size, db.oUF.Player.AltPower.Text.Outline)
 		end
 
 		self.AltPowerBar:ClearAllPoints()
@@ -2034,9 +2038,9 @@ LUI.oUF_LUI.funcs = {
 		
 		self.AltPowerBar:SetHeight(tonumber(db.oUF.Player.AltPower.Height))
 		self.AltPowerBar:SetWidth(tonumber(db.oUF.Player.AltPower.Width))
-		self.AltPowerBar:SetStatusBarTexture(LSM:Fetch("statusbar", db.oUF.Player.AltPower.Texture))
+		self.AltPowerBar:SetStatusBarTexture(Media:Fetch("statusbar", db.oUF.Player.AltPower.Texture))
 
-		self.AltPowerBar.bg:SetTexture(LSM:Fetch("statusbar", db.oUF.Player.AltPower.TextureBG))
+		self.AltPowerBar.bg:SetTexture(Media:Fetch("statusbar", db.oUF.Player.AltPower.TextureBG))
 		self.AltPowerBar.bg:SetAlpha(db.oUF.Player.AltPower.BGAlpha)
 		self.AltPowerBar.bg.multiplier = db.oUF.Player.AltPower.BGMultiplier
 		
@@ -2044,7 +2048,7 @@ LUI.oUF_LUI.funcs = {
 		self.AltPowerBar.color = db.oUF.Player.AltPower.Color
 		self.AltPowerBar.colorIndividual = db.oUF.Player.AltPower.IndividualColor
 
-		self.AltPowerBar.Text:SetFont(LSM:Fetch("font", db.oUF.Player.AltPower.Text.Font), db.oUF.Player.AltPower.Text.Size, db.oUF.Player.AltPower.Text.Outline)
+		self.AltPowerBar.Text:SetFont(Media:Fetch("font", db.oUF.Player.AltPower.Text.Font), db.oUF.Player.AltPower.Text.Size, db.oUF.Player.AltPower.Text.Outline)
 		self.AltPowerBar.Text:ClearAllPoints()
 		self.AltPowerBar.Text:SetPoint("CENTER", self.AltPowerBar, "CENTER", tonumber(db.oUF.Player.AltPower.Text.X), tonumber(db.oUF.Player.AltPower.Text.Y))
 
@@ -2077,7 +2081,7 @@ LUI.oUF_LUI.funcs = {
 
 			self.DruidMana.Smooth = oufdb.DruidMana.Smooth
 
-			self.DruidMana.value = SetFontString(self.DruidMana.ManaBar, LSM:Fetch("font", oufdb.Texts.DruidMana.Font), oufdb.Texts.DruidMana.Size, oufdb.Texts.DruidMana.Outline)
+			self.DruidMana.value = SetFontString(self.DruidMana.ManaBar, Media:Fetch("font", oufdb.Texts.DruidMana.Font), oufdb.Texts.DruidMana.Size, oufdb.Texts.DruidMana.Outline)
 			self:Tag(self.DruidMana.value, "[druidmana2]")
 
 			self.DruidMana.SetPosition = function()
@@ -2108,9 +2112,9 @@ LUI.oUF_LUI.funcs = {
 		
 		self.DruidMana:SetHeight(tonumber(oufdb.DruidMana.Height))
 		self.DruidMana:SetWidth(tonumber(oufdb.DruidMana.Width))
-		self.DruidMana.ManaBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.DruidMana.Texture))
+		self.DruidMana.ManaBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.DruidMana.Texture))
 
-		self.DruidMana.value:SetFont(LSM:Fetch("font", oufdb.Texts.DruidMana.Font), oufdb.Texts.DruidMana.Size, oufdb.Texts.DruidMana.Outline)
+		self.DruidMana.value:SetFont(Media:Fetch("font", oufdb.Texts.DruidMana.Font), oufdb.Texts.DruidMana.Size, oufdb.Texts.DruidMana.Outline)
 		self.DruidMana.value:SetPoint("CENTER", self.DruidMana.ManaBar, "CENTER")
 
 		if db.oUF.Player.Texts.DruidMana.Enable == true then
@@ -2121,7 +2125,7 @@ LUI.oUF_LUI.funcs = {
 
 		self.DruidMana.color = oufdb.DruidMana.Color
 
-		self.DruidMana.bg:SetTexture(LSM:Fetch("statusbar", oufdb.DruidMana.TextureBG))
+		self.DruidMana.bg:SetTexture(Media:Fetch("statusbar", oufdb.DruidMana.TextureBG))
 		self.DruidMana.bg:SetAlpha(oufdb.DruidMana.BGAlpha)
 		self.DruidMana.bg.multiplier = oufdb.DruidMana.BGMultiplier
 
@@ -2143,8 +2147,10 @@ LUI.oUF_LUI.funcs = {
 				self.CPoints[i].bg:SetAllPoints(self.CPoints[i])
 			end
 
-			--self.CPoints[1]:SetScript("OnShow", function() LUI:GetModule("Forte"):SetPosForte() end)
-			--self.CPoints[1]:SetScript("OnHide", function() LUI:GetModule("Forte"):SetPosForte() end)
+			-- if Forte then
+				-- self.CPoints[1]:SetScript("OnShow", function() Forte:SetPosForte() end)
+				-- self.CPoints[1]:SetScript("OnHide", function() Forte:SetPosForte() end)
+			-- end
 
 			self.CPoints.FrameBackdrop = CreateFrame("Frame", nil, self.CPoints)
 			self.CPoints.FrameBackdrop:SetPoint("TOPLEFT", self.CPoints, "TOPLEFT", -3, 3)
@@ -2174,12 +2180,12 @@ LUI.oUF_LUI.funcs = {
 				self.CPoints[i]:SetPoint("LEFT", self.CPoints[i-1], "RIGHT", 1, 0)
 			end
 
-			self.CPoints[i]:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.ComboPoints.Texture))
+			self.CPoints[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.ComboPoints.Texture))
 			self.CPoints[i]:SetStatusBarColor(unpack(colors.combopoints[i]))
 			self.CPoints[i]:SetHeight(oufdb.ComboPoints.Height)
 			self.CPoints[i]:SetWidth((tonumber(oufdb.ComboPoints.Width) -4*oufdb.ComboPoints.Padding) / 5)
 
-			self.CPoints[i].bg:SetTexture(LSM:Fetch("statusbar", oufdb.ComboPoints.Texture))
+			self.CPoints[i].bg:SetTexture(Media:Fetch("statusbar", oufdb.ComboPoints.Texture))
 			self.CPoints[i].bg.multiplier = tonumber(oufdb.ComboPoints.Multiplier)
 
 			if oufdb.ComboPoints.BackgroundColor.Enable == true then
@@ -2330,9 +2336,9 @@ LUI.oUF_LUI.funcs = {
 
 	CombatFeedbackText = function(self, unit, oufdb)
 		if not self.CombatFeedbackText then
-			self.CombatFeedbackText = SetFontString(self.Health, LSM:Fetch("font", oufdb.Texts.Combat.Font), tonumber(oufdb.Texts.Combat.Size), oufdb.Texts.Combat.Outline)
+			self.CombatFeedbackText = SetFontString(self.Health, Media:Fetch("font", oufdb.Texts.Combat.Font), tonumber(oufdb.Texts.Combat.Size), oufdb.Texts.Combat.Outline)
 		else
-			self.CombatFeedbackText:SetFont(LSM:Fetch("font", oufdb.Texts.Combat.Font), tonumber(oufdb.Texts.Combat.Size), oufdb.Texts.Combat.Outline)
+			self.CombatFeedbackText:SetFont(Media:Fetch("font", oufdb.Texts.Combat.Font), tonumber(oufdb.Texts.Combat.Size), oufdb.Texts.Combat.Outline)
 		end
 		self.CombatFeedbackText:ClearAllPoints()
 		self.CombatFeedbackText:SetPoint(oufdb.Texts.Combat.Point, self, oufdb.Texts.Combat.RelativePoint, tonumber(oufdb.Texts.Combat.X), tonumber(oufdb.Texts.Combat.Y))
@@ -2367,12 +2373,12 @@ LUI.oUF_LUI.funcs = {
 			self.Castbar.Backdrop:SetPoint("BOTTOMRIGHT", self.Castbar, "BOTTOMRIGHT", 3, -3.5)
 			self.Castbar.Backdrop:SetParent(self.Castbar)
 
-			self.Castbar.Time = SetFontString(self.Castbar, LSM:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
+			self.Castbar.Time = SetFontString(self.Castbar, Media:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
 			self.Castbar.Time:SetJustifyH("RIGHT")
 			self.Castbar.CustomTimeText = FormatCastbarTime
 			self.Castbar.CustomDelayText = FormatCastbarTime
 
-			self.Castbar.Text = SetFontString(self.Castbar, LSM:Fetch("font", oufdb.Castbar.Text.Name.Font), oufdb.Castbar.Text.Name.Size)
+			self.Castbar.Text = SetFontString(self.Castbar, Media:Fetch("font", oufdb.Castbar.Text.Name.Font), oufdb.Castbar.Text.Name.Size)
 			
 			if unit == "player" then
 				self.Castbar.SafeZone = self.Castbar:CreateTexture(nil, "ARTWORK")
@@ -2430,7 +2436,7 @@ LUI.oUF_LUI.funcs = {
 			end
 		end
 		
-		self.Castbar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.Castbar.Texture))
+		self.Castbar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Castbar.Texture))
 		self.Castbar:SetHeight(tonumber(oufdb.Castbar.Height))
 		self.Castbar:SetWidth(tonumber(oufdb.Castbar.Width))
 		
@@ -2445,10 +2451,10 @@ LUI.oUF_LUI.funcs = {
 			self.Castbar:SetPoint("LEFT", self, "RIGHT", tonumber(oufdb.Castbar.X), tonumber(oufdb.Castbar.Y))
 		end
 		
-		self.Castbar.bg:SetTexture(LSM:Fetch("statusbar", oufdb.Castbar.TextureBG))
+		self.Castbar.bg:SetTexture(Media:Fetch("statusbar", oufdb.Castbar.TextureBG))
 		
 		self.Castbar.Backdrop:SetBackdrop({
-			edgeFile = LSM:Fetch("border", oufdb.Castbar.Border.Texture),
+			edgeFile = Media:Fetch("border", oufdb.Castbar.Border.Texture),
 			edgeSize = tonumber(oufdb.Castbar.Border.Thickness),
 			insets = {
 				left = tonumber(oufdb.Castbar.Border.Inset.left),
@@ -2473,7 +2479,7 @@ LUI.oUF_LUI.funcs = {
 			self.Castbar.PostChannelStop = PostChannelStop
 		end
 		
-		self.Castbar.Time:SetFont(LSM:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
+		self.Castbar.Time:SetFont(Media:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
 		self.Castbar.Time:ClearAllPoints()
 		self.Castbar.Time:SetPoint("RIGHT", self.Castbar, "RIGHT", oufdb.Castbar.Text.Time.OffsetX, oufdb.Castbar.Text.Time.OffsetY)
 		self.Castbar.Time:SetTextColor(oufdb.Castbar.Colors.Time.r, oufdb.Castbar.Colors.Time.g, oufdb.Castbar.Colors.Time.b)
@@ -2485,7 +2491,7 @@ LUI.oUF_LUI.funcs = {
 			self.Castbar.Time:Hide()
 		end
 		
-		self.Castbar.Text:SetFont(LSM:Fetch("font", oufdb.Castbar.Text.Name.Font), oufdb.Castbar.Text.Name.Size)
+		self.Castbar.Text:SetFont(Media:Fetch("font", oufdb.Castbar.Text.Name.Font), oufdb.Castbar.Text.Name.Size)
 		self.Castbar.Text:ClearAllPoints()
 		self.Castbar.Text:SetPoint("LEFT", self.Castbar, "LEFT", oufdb.Castbar.Text.Name.OffsetX, oufdb.Castbar.Text.Name.OffsetY)
 		self.Castbar.Text:SetTextColor(oufdb.Castbar.Colors.Name.r, oufdb.Castbar.Colors.Name.r, oufdb.Castbar.Colors.Name.r)
@@ -2584,11 +2590,11 @@ LUI.oUF_LUI.funcs = {
 		end
 
 		self.HealPrediction.myBar:SetWidth(tonumber(oufdb.Health.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid width downscaling!
-		self.HealPrediction.myBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.HealPrediction.Texture))
+		self.HealPrediction.myBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.HealPrediction.Texture))
 		self.HealPrediction.myBar:SetStatusBarColor(tonumber(oufdb.HealPrediction.MyColor.r), tonumber(oufdb.HealPrediction.MyColor.g), tonumber(oufdb.HealPrediction.MyColor.b), tonumber(oufdb.HealPrediction.MyColor.a))
 
 		self.HealPrediction.otherBar:SetWidth(tonumber(oufdb.Health.Width) * (self:GetWidth()/oufdb.Width)) -- needed for 25/40 man raid width downscaling!
-		self.HealPrediction.otherBar:SetStatusBarTexture(LSM:Fetch("statusbar", oufdb.HealPrediction.Texture))
+		self.HealPrediction.otherBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.HealPrediction.Texture))
 		self.HealPrediction.otherBar:SetStatusBarColor(tonumber(oufdb.HealPrediction.OtherColor.r), tonumber(oufdb.HealPrediction.OtherColor.g), tonumber(oufdb.HealPrediction.OtherColor.b), tonumber(oufdb.HealPrediction.OtherColor.a))
 
 		self.HealPrediction.myBar:ClearAllPoints()
@@ -2732,7 +2738,7 @@ local testframe = CreateFrame("Frame")
 local teststring = testframe:CreateFontString(nil, "OVERLAY")
 
 local function ShortenName(name)
-	teststring:SetFont(LSM:Fetch("font", db.oUF.Raid.Texts.Name.Font), db.oUF.Raid.Texts.Name.Size, db.oUF.Raid.Texts.Name.Outline)
+	teststring:SetFont(Media:Fetch("font", db.oUF.Raid.Texts.Name.Font), db.oUF.Raid.Texts.Name.Size, db.oUF.Raid.Texts.Name.Outline)
 	teststring:SetText(name)
 
 	if not nameCache[name] then nameCache[name] = {} end
@@ -3310,10 +3316,9 @@ local SetStyle = function(self, unit, isSingle)
 		end)
 	end
 
-	local LUI_Fader = LUI:GetModule("Fader", true)
-	if oufdb.Fader and oufdb.Fader.Enable and LUI_Fader then LUI_Fader:RegisterFrame(self, oUF.Fader) end
+	if oufdb.Fader and oufdb.Fader.Enable then Fader:RegisterFrame(self, oUF.Fader) end
 	
-	if unit == "raid" or (unit == "party" and oufdb.RangeFade and LUI_Fader and oufdb.Fader and not oufdb.Fader.Enable) then
+	if unit == "raid" or (unit == "party" and oufdb.RangeFade and oufdb.Fader and not oufdb.Fader.Enable) then
 		self.Range = {
 			insideAlpha = 1,
 			outsideAlpha = 0.5
@@ -3342,12 +3347,12 @@ end
 -- has to be OnEnable
 function module:OnEnable()
 	if db.oUF.Settings.Enable ~= true then
-		LUI:GetModule("oUF"):SetBlizzardRaidFrames()
+		self:SetBlizzardRaidFrames()
 		return
 	end
 	
 	-- remove with LUI v3.6 or something like that!
-	if LUICONFIG.Versions.ouf ~= LUI_versions.ouf then	
+	if LUICONFIG.Versions.ouf ~= LUI.Versions.ouf then	
 		for _, oufdb in pairs(db.oUF) do
 			if type(oufdb) == "table" and oufdb.Health then
 				oufdb.Health.Y = oufdb.Health.Padding or oufdb.Health.Y
@@ -3379,7 +3384,7 @@ function module:OnEnable()
 			end
 		end
 
-		LUICONFIG.Versions.ouf = LUI_versions.ouf
+		LUICONFIG.Versions.ouf = LUI.Versions.ouf
 	end
 	
 	-- hmm
@@ -3387,5 +3392,5 @@ function module:OnEnable()
 
 	-- spawning
 	local spawnList = {"Player", "Target", "Focus", "FocusTarget", "ToT", "ToToT", "Pet", "PetTarget", "Boss", "Party", "Maintank", "Arena", "Raid"}
-	for _, unit in pairs(spawnList) do LUI:GetModule("oUF"):Toggle(unit) end
+	for _, unit in pairs(spawnList) do self:Toggle(unit) end
 end

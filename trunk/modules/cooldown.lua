@@ -16,10 +16,10 @@
 ]] 
 
 -- External references.
-local _, LUI = ...
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("Cooldown")
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local module = LUI:NewModule("Cooldown")
 
 local db
 local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
@@ -113,7 +113,7 @@ function module:SetCooldowns()
 		if fontScale < db.Cooldown.MinScale then
 			self:Hide()
 		else
-			self.text:SetFont(LSM:Fetch("font", db.Cooldown.Text.Font), self.fontScale * db.Cooldown.Text.Size, db.Cooldown.Text.Flag)
+			self.text:SetFont(Media:Fetch("font", db.Cooldown.Text.Font), self.fontScale * db.Cooldown.Text.Size, db.Cooldown.Text.Flag)
 			self.text:SetShadowColor(0, 0, 0, 0.5)
 			self.text:SetShadowOffset(2, -2)
 			if self.enabled then
@@ -140,7 +140,7 @@ function module:SetCooldowns()
 	end
 
 	--returns a new timer object
-	local function Timer_Create(self)
+	local function Timer_Create(self) -- change this to use AceTimer
 		if not self.timer then
 			--a frame to watch for OnSizeChanged events
 			--needed since OnSizeChanged has funny triggering if the frame with the handler is not shown
@@ -521,5 +521,4 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
-	LUI:ClearFrames()
 end

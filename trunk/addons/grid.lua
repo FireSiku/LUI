@@ -5,11 +5,13 @@
 	Version....: 1.0
 ]] 
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-		
+local addonname, LUI = ...
+
+LUI.Versions.grid = 3300
+
 function LUI:InstallGrid()
 	if not IsAddOnLoaded("Grid") then return end
-	if LUICONFIG.Versions.grid == LUI_versions.grid then return end
+	if LUICONFIG.Versions.grid == LUI.Versions.grid then return end
 
 	local Grid = LibStub("AceAddon-3.0"):GetAddon("Grid")
 	local GridStatus = Grid:GetModule("GridStatus")
@@ -376,5 +378,5 @@ function LUI:InstallGrid()
 	GridFrame.db.profile.showTooltip = true
 	GridStatusHealth.db.profile.unit_health.useClassColors = false
 
-	LUICONFIG.Versions.grid = LUI_versions.grid
+	LUICONFIG.Versions.grid = LUI.Versions.grid
 end

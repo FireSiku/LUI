@@ -6,15 +6,15 @@
 	Notes......: This module contains the functions and options for the import/export functions.
 ]]
 
-local _, ns = ...
-local oUF = ns.oUF or oUF
-
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF_ImportExport")
+local addonname, LUI = ...
+local module = LUI:Module("oUF_ImportExport", "AceSerializer-3.0")
+local oUFmodule = LUI:Module("oUF")
+local Fader = LUI:Module("Fader")
+local Forte = LUI:Module("Forte")
 local ACR = LibStub("AceConfigRegistry-3.0")
-local version = 3043
 
 local db
+
 local importLayoutName
 
 local layouts = {}
@@ -153,7 +153,7 @@ end
 local function ApplySettings(unit)
 	local ufNames = ufNamesList[unit]
 	
-	LUI:GetModule("oUF"):Toggle(unit)
+	oUFmodule:Toggle(unit)
 	
 	if db.oUF[unit].Enable == false then return end
 	
@@ -425,9 +425,9 @@ local function ApplySettings(unit)
 			-- fader
 			if db.oUF[unit].Fader then
 				if db.oUF[unit].Fader.Enable then
-					LUI:GetModule("Fader", true):RegisterFrame(frame, db.oUF[unit].Fader)
+					Fader:RegisterFrame(frame, db.oUF[unit].Fader)
 				else
-					LUI:GetModule("Fader", true):UnregisterFrame(frame)
+					Fader:UnregisterFrame(frame)
 				end
 			end
 			
@@ -441,11 +441,11 @@ function module:LoadLayout(layout)
 	CopyData(LUI_Layouts[layout], db.oUF)
 	
 	for _, unit in pairs(units) do
-		LUI:GetModule("oUF"):Toggle(unit)
+		oUFmodule:Toggle(unit)
 		ApplySettings(unit)
 	end
 	
-	LUI:GetModule("Forte"):SetPosForte()
+	Forte:SetPosForte()
 end
 
 function module:CheckLayout()
@@ -470,7 +470,7 @@ function module:SaveLayout(layout)
 	
 	CopyData(db.oUF, LUI_Layouts[layout])
 	CleanupData(LUI_Layouts[layout], LUI.defaults.profile.oUF)
-	LUI_Layouts[layout].version = version
+	LUI_Layouts[layout].version = LUI.Versions.lui
 	db.oUF.layout = layout
 	ACR:NotifyChange("LUI")
 end
@@ -509,7 +509,7 @@ function module:ImportLayoutData(str, name)
 	importLayoutName = nil
 	if LUI_Layouts[name] ~= nil then StaticPopup_Show("ALREADY_A_LAYOUT") return end
 	
-	local valid, data = LUI:Deserialize(str)
+	local valid, data = self:Deserialize(str)
 	if not valid then
 		LUI:Print("Error importing layout!")
 		return
@@ -518,8 +518,8 @@ function module:ImportLayoutData(str, name)
 	LUI_Layouts[name] = data
 	CleanupData(LUI_Layouts[name], LUI.defaults.profile.oUF)
 	
-	if LUI_Layouts[name].version ~= LUI_versions.lui then
-		LUI:Print("This Layout was exported with an other version of LUI!")
+	if LUI_Layouts[name].version ~= LUI.Versions.lui then
+		LUI:Print("This Layout was exported with a different version of LUI!")
 	end
 	
 	db.oUF.layout = name
@@ -532,7 +532,7 @@ function module:ExportLayout(layout)
 	if layout == "" or layout == nil then layout = db.oUF.layout end
 	if LUI_Layouts[layout] == nil then return end
 	
-	local data = LUI:Serialize(LUI_Layouts[layout])
+	local data = self:Serialize(LUI_Layouts[layout])
 	if data == nil then return end
 	local breakDown
 	for i = 1, math.ceil(strlen(data)/100) do
@@ -754,7 +754,7 @@ function module:OnInitialize()
 	self.db = LUI.db.profile
 	db = self.db
 	
-	if LUICONFIG.Versions.layout ~= version or not LUI_Layouts then
+	if LUICONFIG.Versions.layout ~= LUI.Versions.lui or not LUI_Layouts then
 		LUI_Layouts = LUI_Layouts or {}
 		
 		layouts.LUI = {}
@@ -764,10 +764,10 @@ function module:OnInitialize()
 			LUI_Layouts[k] = v
 			CleanupData(LUI_Layouts[k], LUI.defaults.profile.oUF)
 			
-			LUI_Layouts[k].version = LUI_versions.lui
+			LUI_Layouts[k].version = LUI.Versions.lui
 		end
 		
-		LUICONFIG.Versions.layout = version
+		LUICONFIG.Versions.layout = LUI.Versions.lui
 	end
 	
 	self:CheckLayout()

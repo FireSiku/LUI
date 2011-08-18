@@ -16,10 +16,10 @@
 ]] 
 
 -- External references.
-local _, LUI = ...
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("Tooltip", "AceHook-3.0", "AceEvent-3.0")
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local module = LUI:NewModule("Tooltip", "AceHook-3.0", "AceEvent-3.0")
 
 local db
 local hooks = { }
@@ -29,8 +29,8 @@ local Tooltips = {GameTooltip,ItemRefTooltip,ShoppingTooltip1,ShoppingTooltip2,S
 function module:UpdateTooltip()
 	for _, tt in pairs(Tooltips) do
 		tt:SetBackdrop( { 
-			bgFile = LSM:Fetch("background", db.Tooltip.Background.Texture), 
-			edgeFile = LSM:Fetch("border", db.Tooltip.Border.Texture), 
+			bgFile = Media:Fetch("background", db.Tooltip.Background.Texture), 
+			edgeFile = Media:Fetch("border", db.Tooltip.Border.Texture), 
 			tile = false, edgeSize = db.Tooltip.Border.Size, 
 			insets = { left = db.Tooltip.Border.Insets.Left, right = db.Tooltip.Border.Insets.Right, top = db.Tooltip.Border.Insets.Top, bottom = db.Tooltip.Border.Insets.Bottom }
 		})
@@ -166,8 +166,8 @@ function module:SetTooltip()
 		if not self.text then
 			self.text = self:CreateFontString(nil, "OVERLAY")
 			self.text:SetPoint("CENTER", GameTooltipStatusBar, 0, LUI:Scale(6))
-			local Infotext = LUI:GetModule(Infotext, true)
-			self.text:SetFont(LSM:Fetch("font", (Infotext and Infotext.db.profile.Bags.Font or "vibroceb")), 12, "THINOUTLINE")
+			local Infotext = LUI:Module(Infotext, true)
+			self.text:SetFont(Media:Fetch("font", (Infotext and Infotext.db.profile.Bags.Font or "vibroceb")), 12, "THINOUTLINE")
 			self.text:Show()
 			if unit then
 				min, max = UnitHealth(unit), UnitHealthMax(unit)
@@ -203,15 +203,15 @@ function module:SetTooltip()
 	healthBar:SetHeight(LUI:Scale(6))
 	healthBar:SetPoint("BOTTOMLEFT", healthBar:GetParent(), "TOPLEFT", LUI:Scale(2), LUI:Scale(5))
 	healthBar:SetPoint("BOTTOMRIGHT", healthBar:GetParent(), "TOPRIGHT", -LUI:Scale(2), LUI:Scale(5))
-	healthBar:SetStatusBarTexture(LSM:Fetch("statusbar", db.Tooltip.Health.Texture))
+	healthBar:SetStatusBarTexture(Media:Fetch("statusbar", db.Tooltip.Health.Texture))
 
 	local healthBarBG = CreateFrame( "Frame", "StatusBarBG", healthBar)
 	healthBarBG:SetFrameLevel(healthBar:GetFrameLevel() - 1)
 	healthBarBG:SetPoint("TOPLEFT", -LUI:Scale(2), LUI:Scale(2))
 	healthBarBG:SetPoint("BOTTOMRIGHT", LUI:Scale(2), -LUI:Scale(2))
 	healthBarBG:SetBackdrop( { 
-		bgFile = LUI_Media.blank, 
-		edgeFile = LUI_Media.blank, 
+		bgFile = LUI.Media.blank, 
+		edgeFile = LUI.Media.blank, 
 		tile = false, edgeSize = 0, 
 		insets = { left = 0, right = 0, top = 0, bottom = 0 }
 	})
@@ -571,7 +571,7 @@ function module:LoadOptions()
 							get = function() return db.Tooltip.Health.Texture end,
 							set = function(self, texture)
 									db.Tooltip.Health.Texture = texture
-									GameTooltipStatusBar:SetStatusBarTexture(LSM:Fetch("statusbar", db.Tooltip.Health.Texture))
+									GameTooltipStatusBar:SetStatusBarTexture(Media:Fetch("statusbar", db.Tooltip.Health.Texture))
 								end,						
 						},
 					},
@@ -756,5 +756,4 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
-	LUI:ClearFrames()
 end

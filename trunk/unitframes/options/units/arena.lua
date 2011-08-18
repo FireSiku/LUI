@@ -5,11 +5,10 @@
 	Version....: 1.0
 ]] 
 
-local _, ns = ...
-local oUF = ns.oUF or oUF
+local addonname, LUI = ...
+local module = LUI:Module("oUF_Arena", "AceEvent-3.0")
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF_Arena", "AceEvent-3.0")
+local oUF = LUI.oUF
 
 local db
 

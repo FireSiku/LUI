@@ -5,20 +5,23 @@
 	<!-- Initialize LUI -->
 	<Include file="locale\locale.xml"/>
 	<Script file="init.lua"/>
+	<Script file="DEBUG.lua"/>
+	<Script file="DevAPI.lua"/>
 	
 	<!-- oUF Core -->
 	<Include file="unitframes\core\ouf.xml"/>
 	
 	<!-- Core + Basic Modules -->
 	<Script file="LUI.lua"/>
-	<Script file="modules\devapi.lua"/>
 	<Script file="modules\themes.lua"/>
 	<Script file="modules\orb.lua"/>
 	<Script file="modules\panels.lua"/>
 	<Script file="modules\frames.lua"/>
+	<Script file="modules\fader.lua"/>
 	<Script file="modules\bars.lua"/>
 	
 	<!-- Addon Installation Routines -->
+	<Script file="addons\forte.lua"/>
 	<Script file="addons\pallypower.lua"/>
 	<Script file="addons\bartender.lua"/>
 	<Script file="addons\grid.lua"/>
@@ -68,7 +71,6 @@
 	<Script file="modules\faq.lua"/>
 	<Script file="modules\micromenu.lua"/>
 	<Include file="modules\raidmenu.xml"/>
-	<Script file="modules\fader.lua"/>
 	<Script file="modules\vengeance.lua"/>
 	<Script file="modules\swing.lua"/>
 	<Script file="modules\threatbar.lua"/>
@@ -99,7 +101,4 @@
 	<Script file="unitframes\plugins\raiddebuffs.lua"/>
 	
     <Script file="unitframes\layout.lua"/>
-	
-	<!-- Addon Installation Routines -->
-	<Script file="addons\forte.lua"/>
 </Ui>

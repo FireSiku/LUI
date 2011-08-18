@@ -6,12 +6,13 @@
 	Notes......: This module contains the functions and options for the settings copy functions.
 ]]
 
-local _, ns = ...
-local oUF = ns.oUF or oUF
+local addonname, LUI = ...
+local module = LUI:Module("oUF_CopySettings")
+local oUFmodule = LUI:Module("oUF")
+local Fader = LUI:Module("Fader")
+local Forte = LUI:Module("Forte")
 
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
-local module = LUI:NewModule("oUF_CopySettings")
-local Fader = LUI:GetModule("Fader", true)
+local oUF = LUI.oUF
 
 local db
 
@@ -111,7 +112,7 @@ local iconNamesList = {
 local function ApplySettings(unit)
 	local ufNames = ufNamesList[unit]
 	
-	LUI:GetModule("oUF"):Toggle(unit)
+	oUFmodule:Toggle(unit)
 	
 	if db.oUF[unit].Enable == false then return end
 	
@@ -350,9 +351,9 @@ local function ApplySettings(unit)
 			-- fader
 			if db.oUF[unit].Fader then
 				if db.oUF[unit].Fader.Enable then
-					LUI:GetModule("Fader", true):RegisterFrame(frame, db.oUF[unit].Fader)
+					Fader:RegisterFrame(frame, db.oUF[unit].Fader)
 				else
-					LUI:GetModule("Fader", true):UnregisterFrame(frame)
+					Fader:UnregisterFrame(frame)
 				end
 			end
 			
@@ -360,7 +361,7 @@ local function ApplySettings(unit)
 		end
 	end
 	
-	if unit == "Player" or unit == "Target" then LUI:GetModule("Forte"):SetPosForte() end
+	if Forte and unit == "Player" or unit == "Target" then Forte:SetPosForte() end
 end
 
 local function CopySettings(srcTable, dstTable, withSizes, withPosition)

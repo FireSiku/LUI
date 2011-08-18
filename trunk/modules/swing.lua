@@ -10,9 +10,9 @@
 ]]
 
 -- External references.
-local _, LUI = ...
-local module = LUI:NewModule("Swing")
-local LSM = LibStub("LibSharedMedia-3.0")
+local addonname, LUI = ...
+local module = LUI:Module("Swing")
+local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
 
@@ -455,19 +455,19 @@ local ApplySettings = function()
 		r, g, b = db.IndividualColor.r, db.IndividualColor.g, db.IndividualColor.b
 	end
 	
-	LUISwing.Twohand:SetStatusBarTexture(LSM:Fetch("statusbar", db.Texture))
+	LUISwing.Twohand:SetStatusBarTexture(Media:Fetch("statusbar", db.Texture))
 	LUISwing.Twohand:SetStatusBarColor(r, g, b)
-	LUISwing.Twohand.bg:SetTexture(LSM:Fetch("statusbar", db.TextureBG))
+	LUISwing.Twohand.bg:SetTexture(Media:Fetch("statusbar", db.TextureBG))
 	LUISwing.Twohand.bg:SetVertexColor(r*mu, g*mu, b*mu)
 	
-	LUISwing.Mainhand:SetStatusBarTexture(LSM:Fetch("statusbar", db.Texture))
+	LUISwing.Mainhand:SetStatusBarTexture(Media:Fetch("statusbar", db.Texture))
 	LUISwing.Mainhand:SetStatusBarColor(r, g, b)
-	LUISwing.Offhand:SetStatusBarTexture(LSM:Fetch("statusbar", db.Texture))
+	LUISwing.Offhand:SetStatusBarTexture(Media:Fetch("statusbar", db.Texture))
 	LUISwing.Offhand:SetStatusBarColor(r, g, b)
 	
-	LUISwing.Mainhand.bg:SetTexture(LSM:Fetch("statusbar", db.TextureBG))
+	LUISwing.Mainhand.bg:SetTexture(Media:Fetch("statusbar", db.TextureBG))
 	LUISwing.Mainhand.bg:SetVertexColor(r*mu, g*mu, b*mu)
-	LUISwing.Offhand.bg:SetTexture(LSM:Fetch("statusbar", db.TextureBG))
+	LUISwing.Offhand.bg:SetTexture(Media:Fetch("statusbar", db.TextureBG))
 	LUISwing.Offhand.bg:SetVertexColor(r*mu, g*mu, b*mu)
 	
 	-- texts
@@ -477,13 +477,13 @@ local ApplySettings = function()
 		r, g, b = db.Text.IndividualColor.r, db.Text.IndividualColor.g, db.Text.IndividualColor.b
 	end
 	
-	LUISwing.Mainhand.Text:SetFont(LSM:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
+	LUISwing.Mainhand.Text:SetFont(Media:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
 	LUISwing.Mainhand.Text:SetTextColor(r, g, b)
 	
-	LUISwing.Offhand.Text:SetFont(LSM:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
+	LUISwing.Offhand.Text:SetFont(Media:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
 	LUISwing.Offhand.Text:SetTextColor(r, g, b)
 	
-	LUISwing.Twohand.Text:SetFont(LSM:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
+	LUISwing.Twohand.Text:SetFont(Media:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
 	LUISwing.Twohand.Text:SetTextColor(r, g, b)
 	LUISwing.Twohand.Text:ClearAllPoints()
 	LUISwing.Twohand.Text:SetPoint("CENTER", LUISwing.Twohand, "CENTER", LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
