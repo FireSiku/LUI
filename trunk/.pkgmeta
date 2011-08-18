@@ -1,6 +1,6 @@
 license-output: docs/LICENSE.txt
 
-manual-changelog: dogs/Changelog.txt
+manual-changelog: docs/Changelog.txt
 
 ignore:
  - media/templates/v3_backup
