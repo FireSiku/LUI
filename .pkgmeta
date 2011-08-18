@@ -47,6 +47,6 @@ enable-nolib-creation: no
 license-output: docs/License.txt
 
 ignore:
-  - Docs/ToDo.txt
+  - docs/ToDo.txt
   - media/templates/v3_backup
   - media/templates/v4_originals
