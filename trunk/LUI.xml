@@ -5,8 +5,8 @@
 	<!-- Initialize LUI -->
 	<Include file="locale\locale.xml"/>
 	<Script file="init.lua"/>
-	<Script file="DEBUG.lua"/>
-	<Script file="DevAPI.lua"/>
+	<Script file="debug.lua"/>
+	<Script file="devapi.lua"/>
 	
 	<!-- oUF Core -->
 	<Include file="unitframes\core\ouf.xml"/>

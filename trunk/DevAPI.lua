@@ -5,15 +5,15 @@
 ]]
 
 local MAJOR, MINOR = "LUIDevAPI", 2 -- increase manually when changes are made
-local DevAPI = LibStub:NewLibrary(MAJOR, MINOR)
+local devapi = LibStub:NewLibrary(MAJOR, MINOR)
 
-if not DevAPI then return end
+if not devapi then return end
 
 local ACR = LibStub("AceConfigRegistry-3.0")
 local AceEvent = LibStub("AceEvent-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 
-DevAPI.embeds = DevAPI.embeds or {}
+devapi.embeds = devapi.embeds or {}
 
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local addonname = LUI:GetName()
@@ -225,15 +225,12 @@ end
 
 --Local command to handle the type/name/order states of all option wrappers.
 
-local function SetVals(stype, name, order)
+local function SetVals(stype, sname, sorder)
 	argcheck(stype, "typeof", "string")
-	argcheck(name, "typeof", "string;function;nil")
-	argcheck(order, "typeof", "number;string;function;nil")
+	argcheck(sname, "typeof", "string;function;nil")
+	argcheck(sorder, "typeof", "number;string;function;nil")
 	
-	local t = {}
-	t.type = stype
-	t.order = order
-	t.name = name
+	local t = {type = stype, order = sorder, name = sname}
 	return t
 end
 
@@ -270,8 +267,7 @@ end
 
 --Dummy option, used to create more.
 local function ShadowOption()
-	local t = {}
-	t.type, t.order = "description", 500
+	local t = {type = "description", order = 500}
 	SetState(t, nil, true, true)
 	return t
 end
@@ -301,7 +297,7 @@ end
 
 
 
--- DevAPI:NewGroup(name, order [, childGroups] [, get [, set]] [, guiInline [, disabled [, hidden]]], args)
+-- devapi:NewGroup(name, order [, childGroups] [, get [, set]] [, guiInline [, disabled [, hidden]]], args)
 --[[
 	childGroups (string) - layout for groups inside this group (optional)
 	get (methodname|function|string) - get function for all options in this group that don't have thier own get function (optional)
@@ -315,7 +311,7 @@ end
 	hidden (methodname|function|boolean) - hidden function (optional, disabled required)
 	args (table) - subtable with more items/groups in it
 --]]
-function DevAPI:NewGroup(name, order, ...)
+function devapi:NewGroup(name, order, ...)
 	local t = SetVals("group", name, order)
 	
 	local hidden, disabled
@@ -372,7 +368,7 @@ end
 
 --[[
 --]]
-function DevAPI:NewHeader(name, order, width, disabled, hidden)
+function devapi:NewHeader(name, order, width, disabled, hidden)
 	local t = SetVals("header", name, order)
 	SetState(t, width, disabled, hidden)
 	return t
@@ -380,7 +376,7 @@ end
 
 --[[
 --]]
-function DevAPI:NewDesc(name, order, width, disabled, hidden)
+function devapi:NewDesc(name, order, width, disabled, hidden)
 	local t = SetVals("description", name, order)
 	SetState(t, width or "full", disabled, hidden)
 	return t
@@ -388,7 +384,7 @@ end
 
 --[[
 --]]
-function DevAPI:NewToggle(name, desc, order, func, width, disabled, hidden)
+function devapi:NewToggle(name, desc, order, func, width, disabled, hidden)
 	local t = SetVals("toggle", name, order)
 	t.desc = descfuncs(self, func, desc or "Whether or not to "..name..".", function(info) return self.defaults(info) and "Enabled" or "Disabled" end)
 	t.get = getfuncs(self, func)
@@ -406,7 +402,7 @@ end
 		- false (boolean) - no dialog control; use normal style functions instead of values[value] style functions
 		- (nil) - no dialog control; values[value] style functions
 --]]
-function DevAPI:NewSelect(name, desc, order, values, dcontrol, func, width, disabled, hidden)
+function devapi:NewSelect(name, desc, order, values, dcontrol, func, width, disabled, hidden)
 	argcheck(values, "typeof", "table;function")
 	
 	if type(values) == "table" then setmetatable(values, {__call = function(t) return t end}) end
@@ -435,7 +431,7 @@ end
 		- key is the value passed to "set"
 		- value is the string displayed
 --]]
-function DevAPI:NewMultiSelect(name, desc, order, values, func, width, disabled, hidden)
+function devapi:NewMultiSelect(name, desc, order, values, func, width, disabled, hidden)
 	argcheck(values, "typeof", "table;function")
 	
 	if type(values) == "table" then setmetatable(values, {__call = function(t) return t end}) end
@@ -463,7 +459,7 @@ end
 		- (boolean) if true: prompt message = "name - desc"; if false: skip prompt
 		- (string) prompt message
 --]]
-function DevAPI:NewExecute(name, desc, order, func, confirm, width, disabled, hidden)
+function devapi:NewExecute(name, desc, order, func, confirm, width, disabled, hidden)
 	argcheck(func, "typeof", "string;function;nil")
 	argcheck(confirm, "typeof", "string;function;boolean;nil")
 	
@@ -483,7 +479,7 @@ end
 
 --[[
 --]]
-function DevAPI:NewInput(name, desc, order, func, width, disabled, hidden)
+function devapi:NewInput(name, desc, order, func, width, disabled, hidden)
 	local t = SetVals("input", name, order)
 	t.desc = descfuncs(self, func, desc)
 	t.get = getfuncs(self, func, function(info) return tostring(self.db(info)) end)
@@ -497,7 +493,7 @@ end
 	iformat (string) - formatstring to pass to format function
 		- (nil) defaults to "%.1f" (number truncated to tenth of a diget)
 --]]
-function DevAPI:NewInputNumber(name, desc, order, func, width, disabled, hidden, iformat)
+function devapi:NewInputNumber(name, desc, order, func, width, disabled, hidden, iformat)
 	argcheck(iformat, "typeof", "string;nil")
 	
 	iformat = iformat or "%.1f"
@@ -518,7 +514,7 @@ end
 	step (number) - step value: "smaller than this will break the code" (defaults to 1)
 	isPercent (boolean) - represent e.g. 1.0 as 100%, etc.
 --]]
-function DevAPI:NewSlider(name, desc, order, smin, smax, step, func, isPercent, width, disabled, hidden)
+function devapi:NewSlider(name, desc, order, smin, smax, step, func, isPercent, width, disabled, hidden)
 	argcheck(smin, "typeof", "number;nil")
 	argcheck(smax, "typeof", "number;nil")
 	argcheck(step, "typeof", "number;nil")
@@ -546,7 +542,7 @@ end
 		- true (boolean) - name will be used for header text
 		- false (boolean) - no header
 --]]
-function DevAPI:NewPosition(name, order, header, func, width, disabled, hidden)
+function devapi:NewPosition(name, order, header, func, width, disabled, hidden)
 	argcheck(header, "typeof", "string;boolean;nil")
 	
 	if header == true then header = name end
@@ -565,7 +561,7 @@ function DevAPI:NewPosition(name, order, header, func, width, disabled, hidden)
 end
 
 --[[
-	DevAPI:NewPosSliders(...) - create sliders for a frame's position that will update if the frame's anchor or the UI Scale changes
+	devapi:NewPosSliders(...) - create sliders for a frame's position that will update if the frame's anchor or the UI Scale changes
 	
 	header (string|boolean) - create header for position options
 		- (string) - text displayed in the header
@@ -576,12 +572,12 @@ end
 		- (object) - frame itself (only use if frame will always exist)
 		- (function) - a function that returns a frame reference or frame name
 --]]
-function DevAPI:NewPosSliders(name, order, header, frame, func, width, disabled, hidden)
+function devapi:NewPosSliders(name, order, header, frame, func, width, disabled, hidden)
 	argcheck(header, "typeof", "string;boolean;nil")
 	argcheck(frame, "typeof", "string;frame;function")
 	
-	AceEvent.RegisterEvent(DevAPI, "UI_SCALE_CHANGED", "UpdatePositionOptions", false)
-	self.UpdatePositionOptions = DevAPI.UpdatePositionOptions
+	AceEvent.RegisterEvent(devapi, "UI_SCALE_CHANGED", "UpdatePositionOptions", false)
+	self.UpdatePositionOptions = devapi.UpdatePositionOptions
 	
 	if header == true then header = name end
 	
@@ -634,7 +630,7 @@ end
 
 --[[
 --]]
-function DevAPI:NewColor(name, desc, order, func, width, disabled, hidden)
+function devapi:NewColor(name, desc, order, func, width, disabled, hidden)
 	local t = SetVals("color", name.." Color", order)
 	t.desc = descfuncs(self, func, "Choose a color for the "..(desc or name)..".", function(info)
 		local r, g, b, a = getColor(self.defaults(info))
@@ -651,7 +647,7 @@ end
 
 --[[
 --]]
-function DevAPI:NewColorNoAlpha(name, desc, order, func, width, disabled, hidden)
+function devapi:NewColorNoAlpha(name, desc, order, func, width, disabled, hidden)
 	local t = SetVals("color", name.." Color", order)
 	t.desc = descfuncs(self, func, "Choose a color for the "..(desc or name)..".", function(info)
 		local r, g, b = getColor(self.defaults(info))
@@ -667,7 +663,7 @@ function DevAPI:NewColorNoAlpha(name, desc, order, func, width, disabled, hidden
 end
 
 --STILL EXPERIMENTAL
---function DevAPI:NewFontOptions(name, desc, order, func, width, disabled, hidden)
+--function devapi:NewFontOptions(name, desc, order, func, width, disabled, hidden)
 --	local t = {}
 --	t.type, t.order, t.name = "group", order, name
 --	t.args = {}
@@ -744,7 +740,7 @@ end
 	
 	You can call it no args to update all position options or with the same object you handed to ..:NewPosSliders() to update that set of position options
 ]]
-function DevAPI:UpdatePositionOptions(specific) -- specific - update specific options
+function devapi:UpdatePositionOptions(specific) -- specific - update specific options
 	argcheck(specific, "typeof", "boolean;string;frame;function;nil")
 	
 	local t = specific and UI_Scale_Update[specific] and {[specific] = true} or UI_Scale_Update
@@ -778,9 +774,9 @@ local mixins = {
 	
 }
 
--- Embeds DevAPI into the target object making the functions from the mixins list available on target:..
---     target - target object to embed DevAPI in
-function DevAPI:Embed(target)
+-- Embeds devapi into the target object making the functions from the mixins list available on target:..
+--     target - target object to embed devapi in
+function devapi:Embed(target)
 	for k, v in pairs(mixins) do
 		target[v] = self[v]
 	end
@@ -789,8 +785,8 @@ function DevAPI:Embed(target)
 end
 
 -- upgrade old embeds
-for target in pairs(DevAPI.embeds) do
-	DevAPI:Embed(target)
+for target in pairs(devapi.embeds) do
+	devapi:Embed(target)
 end
 
 
