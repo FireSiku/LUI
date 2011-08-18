@@ -1071,8 +1071,9 @@ local function getOptions()
 		LUI.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(LUI.db)
 		LUI.options.args.profiles.order = 4
 		
-		LUI.options.args.profiles.args.new.disabled = true -- remove once all modules are using namespaces
-		LUI.options.args.profiles.args.choose.disabled = true -- remove once all modules are using namespaces
+		local disabled = function(info) return info.options.name == addonname end -- all acedb addons use the same table
+		LUI.options.args.profiles.args.new.disabled = disabled -- remove once all modules are using namespaces
+		LUI.options.args.profiles.args.choose.disabled = disabled -- remove once all modules are using namespaces
 		
 		for k,v in pairs(moduleList) do
 			LUI.options.args.Modules.args = LUI:MergeOptions(LUI.options.args.Modules.args, (type(v) == "function") and v() or v)
