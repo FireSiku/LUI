@@ -20,7 +20,6 @@ local Themes = LUI:Module("Themes")
 local RaidMenu = LUI:Module("RaidMenu")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
-local RaidMenu
 
 local db
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
