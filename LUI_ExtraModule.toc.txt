@@ -1,8 +1,0 @@
-## Interface: 40200
-## Title: LUI_Example
-## Author: YourName
-## Version: version#
-## Dependencies: LUI
-## LoadOnDemand: 1
-
-youraddonfile.lua
