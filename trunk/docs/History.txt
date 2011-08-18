@@ -1,0 +1,38 @@
+[size=20]Version 3.6.1[/size]
+
+[b]Addon Support:[/b]
+*Fixed a bug in the Forte support that wouldn't allow you to lock any of the unlocked Forte modules if you were using LUI to position it.
+
+[b]Unitframes:[/b]
+*Added options for Growth Direction of Arena, Boss, MainTank and Party Frames (Both Horizontal and Vertical growths supported)
+*Added a few fixes for some "Action Blocked" issues.
+*Added channeling ticks to cast bars.
+
+[b]Infotext:[/b]
+*Fixed issues with localized class names in the guild and friends tootlips.
+*The infotexts strata has been updated so it doesnt go above the world map.
+*Issues with gold resetting to 0c until you click on it have been fixed.
+*Improved Currency display a bit.
+
+[b]MicroMenu:[/b]
+*Added Icon for GM Ticket Status, because Blizzard changed that with Patch 4.2.
+*Fixed a bug with the MicroMenu that was causing users to click on the show/hide button twice the first time if you had it set it to always show. (Yeah, this one is a long time coming, but i bet nobody noticed. Right?)
+
+[b]Minimap:[/b]
+*The Minimap is now locked by default.
+
+[b]World Map:[/b]
+*Oh my god, we actually have a World Map module now. It has been fully rewritten, for the first time since... 3.0?
+*It now features a few basic options too.
+
+[b]Chat:[/b]
+*Fixed a memory leak when changing the editbox color that caused insane lag and memory usage
+
+[b]Vengeance Bar:[/b]
+*Fixed an issue where the vengeance bar would have wrong values under the effect of Health Buffs such as Rallying Cry.
+*Few other minor improvements and bugfixes. 
+
+[b]Techinical Information:[/b]
+*LUI Database callbacks will not enable or disable modules unless the PLAYER_LOGIN event has fired.
+*The :Refresh() function of a module should only be called if the module is enabled.
+*Modules can now declare module.setter and module.getter functions for the option panels. 
