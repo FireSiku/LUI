@@ -14,26 +14,9 @@ NOTES:
 	or forward them on the dev forums.
 
 	-- Tasks
-	Last: Creating LDB display support foundations.
-	Next: Updating stats and stat api for LDB use.
-
-	--
-	Debate: I think the table.Created vairable should be ditched. There shouldn't
-	be an occourance where the stat should have its :OnCreate method called more
-	than once. To apply updates, stats should enforce/create an OnRefresh function
-	which will handle the individual requirements possible upon a option change.
-
-	Argument: Upon Enable/Disable of module or stat, we will need to know if we
-	have to create each stat (cause they may have previously have been disabled
-	and therefore not already created).
-	Counter: statTable.stat should be enough veryify a created stat (see CreateStat
-	function).
-
-	--
-	Test: Test weither or not :Hide() a frame also disables OnEvent/script functions
-	similarly to how OnUpdate srcipts are halted.
-
-	Result: OnEvent still works., various On<Script> functions may persist.
+	Last: Updating stat api for LDB use.
+	Next: Create options and option wrappers for stats.
+	Future: Upgrading stats for new infotext.
 ]]
 
 -- External references.
@@ -59,57 +42,92 @@ local CreateFrame, InCombatLockdown, strfind, strupper = CreateFrame, InCombatLo
 -- / STAT API / --
 ------------------------------------------------------
 
--- Creation functions.
-function InfoText:CreateStat(statTable)
-	-- Check stat table exists.
-	if not statTable then return end
+-- Metatables.
+InfoText.StatMetatable = {
+	__index = function(self, k)
+		return self.__LDB[k]
+	end,
+	__newindex = function(self, k, v)
+		if self.__LDB[k] ~= nil then
+			self.__LDB[k] = v
+		end
+	end,
+}
 
-	-- Check if statTable's stat has already been created.
-	if statTable.stat then return end
+-- Creation functions.
+function InfoText:CreateStat(stat)
+	-- Check stat exists.
+	if not stat then return end
+
+	-- Check if stat has already been created.
+	if stat.__LDB then return end
 
 	-- Check if stat is enabled.
-	if not statTable.db[statTable.name].Enabled then end
+	if not stat.db[stat.name].Enabled then end
 
-	-- Create stat.
-	statTable.stat = CreateFrame("Frame", "LUI_Stat_"..statTable.name, self:GetInfoPanel(statTable))
-	local stat = statTable.stat
+	-- Create LDB object.
+	stat.__LDB = LDB:NewDataObject("LUI_Stat_"..stat.name, {type = "data source", text = stat.name, icon = false})
 
-	-- Create db and name references.
-	stat.db = statTable.db
-	stat.name = statTable.name
+	-- Create usable frame.
+	stat.stat = CreateFrame("Frame", "LUI_Stat_"..stat.name)
+	
+	-- Setup metatable links.
+	stat = setmetatable(stat, InfoText.StatMetatable)
 
-	-- Enable mouse actions.
-	stat:EnableMouse(true)
+	local mt = getmetatable(stat.stat)
+	stat.stat = setmetatable(stat.stat, {
+		__index = function(self, k)
+			if stat[k] then
+				return stat[k]
+			else
+				return mt[k]
+			end
+		end,
+		__newindex = function(self, k, v)
+			if stat[k] ~= nil then
+				stat[k] = v
+			end
+		end,
+	}
 
-	-- Create stat's Enable function.
-	stat.Enable = self.StatOnEnable
+	-- Call stat's OnCreate function.
+	stat:OnCreate()
 
-	-- Create stat's text.
-	self:CreateText(statTable)
-
-	-- Call stat table's OnCreate function.
-	statTable:OnCreate()
+	-- Set stat's Enable function.
+	stat.Enable = InfoText.StatOnEnable
 end
 
-function InfoText:CreateText(statTable)
-	-- Check stat table exists.
-	if not statTable then return end
+function InfoText:EnableStat(stat)
+	-- Check stat has been created.
+	self:CreateStat(stat)
 
-	-- Check if stat table already has a text.
-	if statTable.text then return statTable.text end
+	-- Enable stat.
+	stat:Enable()
 
-	-- Create stat's text.
-	statTable.text = statTable.stat:CreateFontString(statTable.stat:GetName()..": Text", "OVERLAY")
-	statTable.text:SetJustifyH("LEFT")
-	statTable.text:SetShadowColor(0, 0, 0)
-	statTable.text:SetShadowOffset(1.24, -1.24)
-	statTable.text:SetText(statTable.name)
+	-- Check if stat is being displayed by panels.
+	if db.UseDisplay and self.LDB[stat.name] then
+		self.LDB[stat.name]:Show()
+	end
+end
+	
+function InfoText:DisableStat(stat)
+	-- Check stat has been created.
+	if not stat or not stat.stat then return end
 
-	-- Create stat.text shortcut.
-	statTable.stat.text = statTable.text
+	-- Hide stat to disable scripts.
+	stat.stat:Hide()
 
-	-- Set text's info panel.
-	self:SetInfoPanel(statTable)
+	-- Stop event handler.
+	stat.stat:SetScript("OnEvent", nil)
+
+	-- Set LDB info.
+	stat.__LDB.icon = false
+	stat.__LDB.text = ""
+
+	-- Check if stat is being displayed by panels.
+	if self.LDB[stat.name] then
+		self.LDB[stat.name]:Hide()
+	end
 end
 
 function InfoText:NewStat(name)
@@ -118,7 +136,6 @@ function InfoText:NewStat(name)
 
 	-- Create new stat table.
 	self.Stats[name] = {
-		Created = false,
 		name = name,
 	}
 
@@ -126,136 +143,53 @@ function InfoText:NewStat(name)
 end
 
 function InfoText:StatOnEnable()
-	-- Embeded functionality.
-	-- Usage of this function makes self the object calling the function.
-	-- In this case: self == statTable.stat.
+	-- Shortcuts.
+	local f = self.stat
+	local ldb = self.__LDB
+
+	-- Update LDB fields.
+	InfoText:UpdateLDBFields(stat)
 
 	-- Register assigned events and handlers.
-	if self.Events then
-		for i = 1, #self.Events do
-			self:RegisterEvent(self.Events[i])
+	if f.Events then
+		for i = 1, #f.Events do
+			f:RegisterEvent(f.Events[i])
 		end
-		self:SetScript("OnEvent", self.OnEvent or function(self, event, ...) self[event](self, ...) end)
+		f:SetScript("OnEvent", f.OnEvent or function(self, event, ...) self[event](self, ...) end)
 	end
 
-	-- Register OnClick script. (Debate: OnMouseDown vs. OnMouseUp)
-	if self.OnClick then
-		self:SetScript("OnMouseUp", self.OnClick)
+	-- Register LDB OnClick script.
+	if f.OnClick then
+		ldb.OnClick = function(self, button)
+			f:OnClick(button)
+		end
 	end
 
-	-- Register OnEnter/OnLeave scripts.
-	if self.OnEnter then
-		-- Create embeded tooltip functions.
-		self.Enter = InfoText.EnterTooltip
-		self.Leave = InfoText.LeaveTooltip
-		self.UpdateTooltip = InfoText.UpdateTooltip
-		self:SetScript("OnEnter", self.Enter)
-		self:SetScript("OnLeave", self.Leave)
-	end
+	-- Register LDB tooltip scripts.
+	ldb.OnEnter = f.OnEnter
+	ldb.OnLeave = f.OnLeave
+	ldb.OnTooltipShow = f.OnTooltipShow
+	ldb.tooltip = f.tooltip
 
 	-- Register OnUpdate script. (Debate: I'm not force running the OnUpdate script; stats should be in an initial state where they can wait until the first update interval. Be it just setting an initial text state [which is done my default].)
-	if self.OnUpdate then
-		self.dt = 0
-		self:SetScript("OnUpdate", self.OnUpdate)
+	if f.OnUpdate then
+		f.dt = 0
+		f:SetScript("OnUpdate", f.OnUpdate)
 	end
 
 	-- Call stat's OnEnable function.
-	if self.OnEnable then self.OnEnable() end
+	if f.OnEnable then f.OnEnable() end
+
+	-- Show stat.
+	f:Show()
 end
 
 -- Accessor functions.
-function InfoText:GetInfoPanel(statTable)
-	-- Check statTable exists.
-	if not statTable then return end
-
-	-- Return panel to anchor stat to.
-	local panel = statTable.db[statTable.name].InfoPanel
-	if self.Panels[panel] then
-		return self.Panels[panel]
-	end
-end
-
-function InfoText:SetInfoPanel(statTable)
-	-- Check statTable exists.
-	if not statTable then return end
-	
-	-- Check statTable's text exists.
-	if not statTable.text then return end
-
-	-- Stat table database shortcut.
-	local db = statTable.db[statTable.name]
-
-	-- Get panel.
-	local panel = self.Panels[db.InfoPanel]
-
-	-- Check panel exists.
-	if not panel then return end
-
-	-- Get anchor.
-	local anchor = strupper(db.InfoPanel)
-
-	-- Set text position.
-	statTable.text:ClearAllPoints()
-	statTable.text:SetPoint(anchor, panel, anchor, db.X, db.Y)
-
-	-- Set stat's parent and position.
-	statTable.stat:SetParent(panel)
-	statTable.stat:ClearAllPoints()
-	statTable.stat:SetAllPoints(statTable.text)
-end
-
--- Tooltip functions.
-function InfoText:EnterTooltip()
-	-- Embeded functionality.
-	-- Usage of this function makes self the object calling the function.
-	-- In this case: self == statTable.stat.
-
-	-- Check if tooltip is usable.
-	if not InfoText:IsTooltipAvailable() then return end
-
-	-- Clear current tooltip.
-	GameTooltip:ClearLines()
-
-	-- Set tooltips owner to the stat.
-	local anchor = (strfind(self.db[self.name].InfoPanel, "Top") and "ANCHOR_BOTTOM") or "ANCHOR_TOP"
-	GameTooltip:SetOwner(self, anchor)
-
-	-- Add tooltip header.
-	GameTooltip:AddLine(self.name, 0.4, 0.78, 1)
-	GameTooltip:AddLine(" ")
-
-	-- Call the custom :OnEnter.
-	self:OnEnter()
-
-	-- Show the tooltip.
-	GameTooltip:Show()
-end
-
-function InfoText:LeaveTooltip()
-	-- Embeded functionality.
-	-- Usage of this function makes self the object calling the function.
-	-- In this case: self == statTable.stat.
-
-	-- Call the custom :OnLeave.
-	if self.OnLeave then self:OnLeave() end
-
-	-- Hide tooltip.
-	GameTooltip:Hide()
-end
-
-function InfoText:IsTooltipAvailable()
-	return not (InCombatLockdown() and db.CombatLock)
-end
-
-function InfoText:UpdateTooltip()
-	-- Embeded functionality.
-	-- Usage of this function makes self the object calling the function.
-	-- In this case: self == statTable.stat.
-
-	if self:IsMouseOver() and GametTooltip:GetOwner() == self then
-		-- Debate: If stat.OnEnter doesn't exist, don't call UpdateTooltip()... lol.
-		self:Enter()
-	end
+function InfoText:UpdateLDBFields(stat)
+	local ldb = stat.__LDB
+	ldb.infoPanel = stat.db[stat.name].InfoPanel.Panel
+	ldb.infoPanelX = stat.db[stat.name].InfoPanel.X
+	ldb.infoPanelY = stat.db[stat.name].InfoPanel.Y
 end
 
 
@@ -302,6 +236,11 @@ function InfoText:HideInfoPanels()
 		panel:Hide()
 	end
 
+	-- Hide LDB frames to stop scripts.
+	for n, ldb in paris(self.LDB) do
+		ldb:Hide()
+	end
+
 	-- Unregister LDB support.
 	LDB.UnregisterCallback(self, "LibDataBroker_DataObjectCreated")
 	LDB.UnregisterCallback(self, "LibDataBroker_AttributeChanged__icon")
@@ -312,7 +251,7 @@ function InfoText:HideInfoPanels()
 end
 
 -- Accessor functions.
-function InfoText:SetLDBInfoPanel(name, panel, x, y)
+function InfoText:LDBSetInfoPanel(name, panel, x, y)
 	-- Check for dataobject.
 	local object = self.LDB[name]
 	if not object then return end
@@ -324,8 +263,16 @@ function InfoText:SetLDBInfoPanel(name, panel, x, y)
 end
 
 -- Tooltip functions.
+function InfoText:IsTooltipLocked()
+	return InCombatLockdown() and db.CombatLock
+end
+
 function InfoText:LDBEnterTooltip()
 	-- Embeded functionality.
+
+	-- Check if tooltip is available.
+	if InfoText:IsTooltipLocked() then return end
+
 	if self.dataobject.tooltip then
 		local f = self.dataobject.tooltip
 
@@ -344,6 +291,9 @@ function InfoText:LDBEnterTooltip()
 		local anchor =  (strfind(self.dataobject.infoPanel, "Top") and "ANCHOR_BOTTOM") or "ANCHOR_TOP"
 		GameTooltip:SetOwner(self, anchor)
 		GameTooltip:ClearLines()
+
+		-- Populate tooltip.
+		InfoText:TooltipHeader(self.dataobject.label or self.name)
 		self.dataobject.OnTooltipShow(GameToolTip)
 
 		-- Show game tooltip.
@@ -365,10 +315,21 @@ function InfoText:LDBLeaveTooltip()
 	end
 end
 
--- LDB functions.
+function InfoText:TooltipHeader(name)
+	-- Add tooltip header.
+	GameTooltip:AddLine(name, 0.4, 0.78, 1)
+	GameTooltip:AddLine(" ")
+end
+
+-- LDB callback functions.
+--[[
+	TODO:
+		- On dataobject creation, imbeded panel position options into the infotext options.
+		- Make stats moveable around panels via dragging; maybe ctrl+left mouse drag.
+]]
 local lastX = -15
 function InfoText:LibDataBroker_DataObjectCreated(_, name, dataobject)
-	-- Check dataobject is already registered.
+	-- Check if dataobject is already registered.
 	if self.LDB[name] then
 		-- Update dataobject reference.
 		self.LDB[name].dataobject = dataobject
@@ -397,29 +358,15 @@ function InfoText:LibDataBroker_DataObjectCreated(_, name, dataobject)
 	object.text:SetJustifyH("LEFT")
 	object.text:SetShadowColor(0, 0, 0)
 	object.text:SetShadowOffset(1.24, -1.24)
+	object.text:Show()
 
 	-- Create object's icon.
 	if dataobject.icon then
-		object.icon = CreateFrame("Button", object:GetName()..": Icon", object)
-		object.icon:SetPoint("RIGHT", object.text, "LEFT", -2, 0)
-		object.icon:SetWidth(15)
-		object.icon:SetHeight(15)
-		object.icon:SetBackdrop({
-			bgFile = dataobject.icon,
-			edgeFile = nil,
-			title = false,
-			edgeSize = 0,
-			insets = {
-				top = 0,
-				bottom = 0,
-				left = 0,
-				right = 0,
-			},
-		})
+		self:LibDataBroker_AttributeChanged__icon(_, name)
 	end
 
 	-- Set LDB panel position.
-	self:SetLDBInfoPanel(name)
+	self:LDBSetInfoPanel(name)
 	if dataobject.infoPanelX == lastX then
 		lastX = object.text:GetLeft() - 90
 	end
@@ -440,6 +387,24 @@ function InfoText:LibDataBroker_AttributeChanged__icon(_, name)
 	local object = self.LDB[name]
 	if not object then return end
 
+	-- Check dataobjects icon has been created.
+	if not object.icon then
+		-- Check new icon is needed.
+		if not object.dataobject.icon then return end
+
+		-- Create icon.
+		object.icon = CreateFrame("Button", object:GetName()..": Icon", object)
+		object.icon:SetPoint("RIGHT", object.text, "LEFT", -2, 0)
+		object.icon:SetWidth(15)
+		object.icon:SetHeight(15)
+	end
+
+	-- Check if icon has been removed.
+	if not object.dataobject.icon then
+		object.icon:Hide()
+		return
+	end
+
 	-- Update dataobjects icon.
 	object.icon:SetBackdrop({
 			bgFile = object.dataobject.icon,
@@ -453,6 +418,7 @@ function InfoText:LibDataBroker_AttributeChanged__icon(_, name)
 				right = 0,
 			},
 		})
+	object.icon:Show()
 end
 
 function InfoText:LibDataBroker_AttributeChanged__infoPanel(_, name)
@@ -498,6 +464,34 @@ InfoText.defaults = {
 	},
 }
 
+function InfoText:OnEnable()
+	if db.UseDisplay then
+		-- Create info panels.
+		self:CreateInfoPanels()
+	else
+		-- Hide info panels.
+		self:HideInfoPanels()
+	end
+
+	-- Create stats.
+	for name, stat in pairs(self.Stats) do
+		self:CreateStat(stat)
+
+		-- Enable stat.
+		stat:Enable()
+	end
+end
+
+function InfoText:OnDisable()
+	-- Hide info panels.
+	self:HideInfoPanels()
+
+	-- Disable all stats.
+	for name, stat in pairs(self.Stats) do
+		self:DisableStat(stat)
+	end
+end
+
 function InfoText:OnInitialize()
 	--[[
 	-- Run through registered stats and merge defaults database into self.defaults
@@ -520,29 +514,4 @@ function InfoText:OnInitialize()
 		if statTable.OnInitialize then statTable:OnInitialize() end
 	end
 	]]
-end
-
-function InfoText:OnEnable()
-	if db.UseDisplay then
-		-- Create info panels.
-		self:CreateInfoPanels()
-	else
-		-- Hide info panels.
-		self:HideInfoPanels()
-	end
-
-	--[[
-		-- Call CreateStat for each registered stat.
-		-- Then call Enable.
-	]]
-
-	for name, statTable in pairs(self.Stats) do
-		-- Create stat.
-		self:CreateStat(statTable)
-
-		-- Enable stat.
-		-- This should probably be a call to an EnableStat(statTable) function like we have in datatext.lua. That way we can enable/disable 
-		-- individual stats properly from options.
-		if stat.Enable then stat:Enable() end
-	end
 end
