@@ -2,8 +2,6 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: infotexts\bags.lua
 	Description: Creates the bag infotext stat.
-	Version....: 1.0
-	Rev Date...: 05/08/2011 [dd/mm/yyyy]
 ]]
 
 
@@ -58,7 +56,7 @@ function Bags:OnCreate()
 		end
 
 		used = total - free
-		self.text:SetText("Bags:"..used.."/"..total)
+		self.text:SetFormattedText("Bags: %d/%d", used, total)
 
 		-- Update tooltip if open.
 		self:UpdateTooltip()
@@ -118,8 +116,7 @@ Bags.defaults = {
 	},
 }
 
-function Bags:OnInitialise(_db, _dbd)
+function Bags:OnInitialise()
 	-- Create database references.
-	self.db, self.defaults = _db, _dbd
-	db, dbd = _db, _dbd
+	db, dbd = self.db, self.defaults
 end

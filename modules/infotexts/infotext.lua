@@ -2,8 +2,6 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: infotext.lua
 	Description: Provides LUI infotext panels and stat building api.
-	Version....: 2.0
-	Rev Date...: 05/08/2011 [dd/mm/yyyy]
 ]]
 
 
@@ -16,10 +14,8 @@ NOTES:
 	or forward them on the dev forums.
 
 	-- Tasks
-	Last: Creating default merge and :Create/:Enable/:Intitialise calls. [Create shells].
-	Next: Creating options, option merging and option wrappers.
-	Future: Embeding LDB support into panels.
-	Debate: Making each stat created via the stat api a LDB, or keeping our stats for our own.
+	Last: Creating LDB display support foundations.
+	Next: Updating stats and stat api for LDB use.
 
 	--
 	Debate: I think the table.Created vairable should be ditched. There shouldn't
@@ -41,8 +37,9 @@ NOTES:
 ]]
 
 -- External references.
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local addonname, LUI = ...
 local InfoText = LUI:Module("InfoText", "AceHook-3.0")
+local LDB = LibStub:GetLibrary("LibDataBroker-1.1")
 
 -- Database and defaults shortcuts.
 local db, dbd
@@ -50,44 +47,19 @@ local db, dbd
 -- Local variables.
 InfoText.Panels = {}
 InfoText.Stats = {}
+InfoText.LDB = {}
 
 ------------------------------------------------------
 -- / LOCALISED FUNCTIONS / --
 ------------------------------------------------------
 
-local CreateFrame, strfind, InCombatLockdown = CreateFrame, strfind, InCombatLockdown
+local CreateFrame, InCombatLockdown, strfind, strupper = CreateFrame, InCombatLockdown, strfind, strupper
 
 ------------------------------------------------------
 -- / STAT API / --
 ------------------------------------------------------
 
 -- Creation functions.
-function InfoText:CreateInfoPanels()
-	local function CreatePanel(name, x, y)
-		--[[
-			This is where LDB support should be imbeded into each panel.
-		]]
-		local uname = strupper(name)
-		return LUI:CreateMeAFrame("Frame", "LUI_InfoPanel_"..name, UIParent, 1, 1, 1, "HIGH", 0, uname, UIParent, uname, x, y, 1)
-	end
-
-	local panel = "BottomLeft"
-	InfoText.Panels[panel] = InfoText.Panels[panel] or CreatePanel(panel, 0, 4)
-	InfoText.Panels[panel]:Show()
-
-	panel = "BottomRight"
-	InfoText.Panels[panel] = InfoText.Panels[panel] or CreatePanel(panel, 0, 4)
-	InfoText.Panels[panel]:Show()
-
-	panel = "TopLeft"
-	InfoText.Panels[panel] = InfoText.Panels[panel] or CreatePanel(panel, 0, -1)
-	InfoText.Panels[panel]:Show()
-
-	panel = "TopRight"
-	InfoText.Panels[panel] = InfoText.Panels[panel] or CreatePanel(panel, 0, -1)
-	InfoText.Panels[panel]:Show()
-end
-
 function InfoText:CreateStat(statTable)
 	-- Check stat table exists.
 	if not statTable then return end
@@ -99,7 +71,7 @@ function InfoText:CreateStat(statTable)
 	if not statTable.db[statTable.name].Enabled then end
 
 	-- Create stat.
-	statTable.stat = CreateFrame("Frame", "LUI_Info_"..statTable.name, self:GetInfoPanel(statTable))
+	statTable.stat = CreateFrame("Frame", "LUI_Stat_"..statTable.name, self:GetInfoPanel(statTable))
 	local stat = statTable.stat
 
 	-- Create db and name references.
@@ -168,13 +140,13 @@ function InfoText:StatOnEnable()
 
 	-- Register OnClick script. (Debate: OnMouseDown vs. OnMouseUp)
 	if self.OnClick then
-		self:SetScript("OnMouseDown", self.OnClick)
+		self:SetScript("OnMouseUp", self.OnClick)
 	end
 
 	-- Register OnEnter/OnLeave scripts.
 	if self.OnEnter then
 		-- Create embeded tooltip functions.
-		self.Enter = InfoText.CreateTooltip
+		self.Enter = InfoText.EnterTooltip
 		self.Leave = InfoText.LeaveTooltip
 		self.UpdateTooltip = InfoText.UpdateTooltip
 		self:SetScript("OnEnter", self.Enter)
@@ -233,7 +205,7 @@ function InfoText:SetInfoPanel(statTable)
 end
 
 -- Tooltip functions.
-function InfoText:CreateTooltip()
+function InfoText:EnterTooltip()
 	-- Embeded functionality.
 	-- Usage of this function makes self the object calling the function.
 	-- In this case: self == statTable.stat.
@@ -288,6 +260,233 @@ end
 
 
 ------------------------------------------------------
+-- / PANEL & LDB FUNCTIONS / --
+------------------------------------------------------
+
+-- Panel functions.
+function InfoText:CreateInfoPanels()
+	local function CreatePanel(name, x, y)
+		local uname = strupper(name)
+		return LUI:CreateMeAFrame("Frame", "LUI_InfoPanel_"..name, UIParent, 1, 1, 1, "HIGH", 0, uname, UIParent, uname, x, y, 1)
+	end
+
+	-- Create the info panels.
+	local panel = "BottomLeft"
+	InfoText.Panels[panel] = InfoText.Panels[panel] or CreatePanel(panel, 0, 4)
+	InfoText.Panels[panel]:Show()
+
+	panel = "BottomRight"
+	InfoText.Panels[panel] = InfoText.Panels[panel] or CreatePanel(panel, 0, 4)
+	InfoText.Panels[panel]:Show()
+
+	panel = "TopLeft"
+	InfoText.Panels[panel] = InfoText.Panels[panel] or CreatePanel(panel, 0, -1)
+	InfoText.Panels[panel]:Show()
+
+	panel = "TopRight"
+	InfoText.Panels[panel] = InfoText.Panels[panel] or CreatePanel(panel, 0, -1)
+	InfoText.Panels[panel]:Show()
+
+	-- Register LDB support.
+	LDB.RegisterCallback(self, "LibDataBroker_DataObjectCreated", nil, self)
+	LDB.RegisterCallback(self, "LibDataBroker_AttributeChanged__icon", nil, self)
+	LDB.RegisterCallback(self, "LibDataBroker_AttributeChanged__infoPanel", nil, self)
+	LDB.RegisterCallback(self, "LibDataBroker_AttributeChanged__infoPanelX", nil, self)
+	LDB.RegisterCallback(self, "LibDataBroker_AttributeChanged__infoPanelY", nil, self)
+	LDB.RegisterCallback(self, "LibDataBroker_AttributeChanged__text", nil, self)
+end
+
+function InfoText:HideInfoPanels()
+	-- Hide infopanels.
+	for n, panel in pairs(self.Panels) do
+		panel:Hide()
+	end
+
+	-- Unregister LDB support.
+	LDB.UnregisterCallback(self, "LibDataBroker_DataObjectCreated")
+	LDB.UnregisterCallback(self, "LibDataBroker_AttributeChanged__icon")
+	LDB.UnregisterCallback(self, "LibDataBroker_AttributeChanged__infoPanel")
+	LDB.UnregisterCallback(self, "LibDataBroker_AttributeChanged__infoPanelX")
+	LDB.UnregisterCallback(self, "LibDataBroker_AttributeChanged__infoPanelY")
+	LDB.UnregisterCallback(self, "LibDataBroker_AttributeChanged__text")
+end
+
+-- Accessor functions.
+function InfoText:SetLDBInfoPanel(name, panel, x, y)
+	-- Check for dataobject.
+	local object = self.LDB[name]
+	if not object then return end
+
+	-- Set object fields.
+	object.dataobject.infoPanel = panel or object.dataobject.infoPanel
+	object.dataobject.infoPanelX = x or object.dataobject.infoPanelX
+	object.dataobject.infoPanelY = y or object.dataobject.infoPanelY
+end
+
+-- Tooltip functions.
+function InfoText:LDBEnterTooltip()
+	-- Embeded functionality.
+	if self.dataobject.tooltip then
+		local f = self.dataobject.tooltip
+
+		-- Position custom tooltip.
+		local anchor = (strfind(self.dataobject.infoPanel, "Top") and "BOTTOM") or "TOP"
+		f:ClearAllPoints()
+		f:SetPoint((anchor == "TOP" and "BOTTOM") or "TOP", self, anchor)
+
+		-- Show custom tooltip.
+		f:Show()
+	elseif self.dataobject.OnEnter then
+		-- Call dataobject's OnEnter.
+		self.dataobject.OnEnter(self)
+	elseif self.dataobject.OnTooltipShow then
+		-- Position game tooltip.
+		local anchor =  (strfind(self.dataobject.infoPanel, "Top") and "ANCHOR_BOTTOM") or "ANCHOR_TOP"
+		GameTooltip:SetOwner(self, anchor)
+		GameTooltip:ClearLines()
+		self.dataobject.OnTooltipShow(GameToolTip)
+
+		-- Show game tooltip.
+		GameTooltip:Show()
+	end
+end
+
+function InfoText:LDBLeaveTooltip()
+	-- Embeded functionality.
+	if self.dataobject.tooltip then
+		-- Hide custom tooltip.
+		self.dataobject.tooltip:Hide()
+	elseif self.dataobject.OnLeave then
+		-- Call dataobject's OnLeave.
+		self.dataobject:OnLeave()
+	elseif self.dataobject.OnTooltipShow then
+		-- Hide game tooltip.
+		GameTooltip:Hide()
+	end
+end
+
+-- LDB functions.
+local lastX = -15
+function InfoText:LibDataBroker_DataObjectCreated(_, name, dataobject)
+	-- Check dataobject is already registered.
+	if self.LDB[name] then
+		-- Update dataobject reference.
+		self.LDB[name].dataobject = dataobject
+		self.LDB[name].text:SetText(dataobject.text)
+		return
+	end
+
+	-- Create dataobject LUI fields.
+	dataobject.infoPanel = dataobject.infoPanel or "BottomRight"
+	dataobject.infoPanelX = dataobject.infoPanelX or lastX
+	dataobject.infoPanelY = dataobject infoPanelY or 0
+	dataobject.text = (dataobject.text ~= "" and dataobject.text) or dataobject.label or name
+	
+	local panel, anchor = self.Panels[dataobject.infoPanel], strupper(dataobject.infoPanel)
+
+	-- Create frame for new dataobject.
+	self.LDB[name] = CreateFrame("Frame", "LUI_LDB_"..name,  panel)
+
+	-- Create reference for frame to dataobject.
+	self.LDB[name].dataobject = dataobject
+	self.LDB[name].name = name
+
+	-- Create object's text.
+	local object = self.LDB[name]
+	object.text = object:CreateFontString(object:GetName()..": Text", "OVERLAY")
+	object.text:SetJustifyH("LEFT")
+	object.text:SetShadowColor(0, 0, 0)
+	object.text:SetShadowOffset(1.24, -1.24)
+
+	-- Create object's icon.
+	if dataobject.icon then
+		object.icon = CreateFrame("Button", object:GetName()..": Icon", object)
+		object.icon:SetPoint("RIGHT", object.text, "LEFT", -2, 0)
+		object.icon:SetWidth(15)
+		object.icon:SetHeight(15)
+		object.icon:SetBackdrop({
+			bgFile = dataobject.icon,
+			edgeFile = nil,
+			title = false,
+			edgeSize = 0,
+			insets = {
+				top = 0,
+				bottom = 0,
+				left = 0,
+				right = 0,
+			},
+		})
+	end
+
+	-- Set LDB panel position.
+	self:SetLDBInfoPanel(name)
+	if dataobject.infoPanelX == lastX then
+		lastX = object.text:GetLeft() - 90
+	end
+
+	-- Set LDB scripts.
+	object:EnableMouse(true)
+	object:SetScript("OnEnter", InfoText.LDBEnterTooltip)
+	object:SetScript("OnLeave", InfoText.LDBLeaveTooltip)
+	object:SetScript("OnMouseUp", dataobject.OnClick or nil)
+
+	-- Force a text and panel position update.
+	self:LibDataBroker_AttributeChanged__infoPanel(_, name)
+	self:LibDataBroker_AttributeChanged__text(_, name)
+end
+
+function InfoText:LibDataBroker_AttributeChanged__icon(_, name)
+	-- Check dataobject exists.
+	local object = self.LDB[name]
+	if not object then return end
+
+	-- Update dataobjects icon.
+	object.icon:SetBackdrop({
+			bgFile = object.dataobject.icon,
+			edgeFile = nil,
+			title = false,
+			edgeSize = 0,
+			insets = {
+				top = 0,
+				bottom = 0,
+				left = 0,
+				right = 0,
+			},
+		})
+end
+
+function InfoText:LibDataBroker_AttributeChanged__infoPanel(_, name)
+	-- Check dataobject exists.
+	local object = self.LDB[name]
+	if not object then return end
+
+	-- Update dataobjects panel position.
+	local anchor, panel = strupper(object.dataobject.infoPanel), self.Panels[object.dataobject.infoPanel]
+
+	-- Set text position.
+	object.text:ClearAllPoints()
+	object.text:SetPoint(anchor, panel, anchor, object.dataobject.infoPanelX, object.dataobject.infoPanelY)
+
+	-- Set LDB's parent and position.
+	object:SetParent(object.dataobject.infoPanel)
+	object:ClearAllPoints()
+	object:SetAllPoints(object.text)	
+end
+
+InfoText.LibDataBroker_AttributeChanged__infoPanelX = InfoText.LibDataBroker_AttributeChanged__infoPanel
+InfoText.LibDataBroker_AttributeChanged__infoPanelY = InfoText.LibDataBroker_AttributeChanged__infoPanel
+
+function InfoText:LibDataBroker_AttributeChanged__text(_, name)
+	-- Check dataobject exists.
+	local object = self.LDB[name]
+	if not object then return end
+
+	-- Update dataobjects text.
+	object.text:SetText(object.dataobject.text)
+end
+
+
+------------------------------------------------------
 -- / MODULE FUNCTIONS / --
 ------------------------------------------------------
 
@@ -295,34 +494,46 @@ InfoText.defaults = {
 	profile = {
 		Enable = true,
 		CombatLock = false,
+		UseDisplay = true,
 	},
 }
 
 function InfoText:OnInitialize()
 	--[[
-		Run through registered stats and merge defaults database into self.defaults
+	-- Run through registered stats and merge defaults database into self.defaults
 
-		for name, statTable in pairs(self.Stats) do
+	for name, statTable in pairs(self.Stats) do
+		if statTable.defaults then
 			self.defaults = MergeDefaults(self.defaults, { profile = { [name] = statTable.defaults, }, })
 		end
+	end
 	]]
 
 	-- Create database namespace.
 	db, dbd = LUI:NewNamespace(self, true)
 
 	--[[
-		Run through resgistered stats and call OnInitialize().
+	-- Run through resgistered stats linking database references and calling OnInitialize().
 
-		for name, statTable in pairs(self.Stats) do
-			statTable:OnInitialize(db, dbd)
-		end
+	for name, statTable in pairs(self.Stats) do
+		statTable.db, statTable.defaults = db, dbd
+		if statTable.OnInitialize then statTable:OnInitialize() end
+	end
 	]]
 end
 
 function InfoText:OnEnable()
+	if db.UseDisplay then
+		-- Create info panels.
+		self:CreateInfoPanels()
+	else
+		-- Hide info panels.
+		self:HideInfoPanels()
+	end
+
 	--[[
-		- Call CreateStat for each registered stat.
-		- Then call Enable.
+		-- Call CreateStat for each registered stat.
+		-- Then call Enable.
 	]]
 
 	for name, statTable in pairs(self.Stats) do
