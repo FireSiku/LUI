@@ -8,7 +8,6 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Bars", "AceHook-3.0", "AceEvent-3.0")
-local Panels = LUI:Module("Panels")
 local Themes = LUI:Module("Themes")
 local Forte = LUI:Module("Forte")
 local Fader = LUI:Module("Fader")
@@ -174,43 +173,56 @@ local GetAnchor = function(anchor)
 	end
 end
 
+local GetAdditionalAnchors = function(str)
+	str = string.gsub(str, " ", "")
+	local t = {}
+	local fname
+	while true do
+		if not string.find(str, ",") then break end
+		fname, str = strsplit(",", str, 2)
+		table.insert(t, fname)
+	end
+	return t
+end
+
 local SidebarSetAlpha = function(anchor, alpha)
 	anchor = GetAnchor(anchor)
 	if anchor then anchor:SetAlpha(alpha) end
 end
 
 local SidebarSetAnchor = function(side, id)
-	local sbdb = db["Sidebar"..side..id]
+	local bardb = db["Sidebar"..side..id]
 	local sb = sidebars[side..id].Anchor
 	
 	sb:ClearAllPoints()
-	sb:SetPoint(side, UIParent, side, side == "Right" and 11 or -11, sbdb.Offset)
-	sb:SetScale(1 / 0.85 * sbdb.Scale)
+	sb:SetPoint(side, UIParent, side, side == "Right" and 11 or -11, bardb.Offset)
+	sb:SetScale(1 / 0.85 * bardb.Scale)
 	
-	sb[sbdb.Enable and "Show" or "Hide"](sb)
+	sb[bardb.Enable and "Show" or "Hide"](sb)
 	
-	if not sbdb.Enable then return end
-	if sbdb.AutoPosEnable ~= true and isBarAddOnLoaded == true then return end
+	if not bardb.Enable then return end
+	if bardb.AutoPosEnable ~= true and isBarAddOnLoaded == true then return end
 	
-	local anchor = isBarAddOnLoaded and sbdb.Anchor or "LUIBar"..side..id
-	sidebars[side..id].anchor = anchor
+	local anchor = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..side..id
+	sidebars[side..id].Main = anchor
+	sidebars[side..id].Additional = GetAdditionalAnchors(bardb.Additional)
 	
-	local xOffset = tonumber(sbdb.X)
-	local yOffset = tonumber(sbdb.Y)
-	local sbOffset = tonumber(sbdb.Offset)
+	local xOffset = tonumber(bardb.X)
+	local yOffset = tonumber(bardb.Y)
+	local sbOffset = tonumber(bardb.Offset)
 	
 	anchor = GetAnchor(anchor)
 	
 	if not anchor then return end
 	if not anchor:IsShown() then return end
 	
-	if not isBarAddOnLoaded then anchor:SetScale(sbdb.Scale) end
+	if not isBarAddOnLoaded then anchor:SetScale(bardb.Scale) end
 	
 	local scale = anchor:GetEffectiveScale()
 	local scaleUI = UIParent:GetEffectiveScale()
 	
-	local x = tonumber(xOffset) + ( scaleUI * math.floor( (side == "Right" and -90 or 20) / scale ) / 0.85 * sbdb.Scale)
-	local y = tonumber(yOffset) + ( scaleUI * math.floor( 157 + tonumber(sbOffset) / scale / 0.85 * sbdb.Scale ) )
+	local x = tonumber(xOffset) + ( scaleUI * math.floor( (side == "Right" and -90 or 20) / scale ) / 0.85 * bardb.Scale)
+	local y = tonumber(yOffset) + ( scaleUI * math.floor( 157 + tonumber(sbOffset) / scale / 0.85 * bardb.Scale ) )
 	
 	anchor:SetFrameStrata("BACKGROUND")
 	anchor:SetFrameLevel(2)
@@ -292,12 +304,12 @@ local GetButton = function(bar, barid, barpos, buttonid)
 end
 
 function module:SetBarColors()
-	LUIBarsTopBG:SetBackdropColor(unpack(Themes.db.profile.bar))
-	LUIBarsBottomBG:SetBackdropColor(unpack(Themes.db.profile.bar2))
+	LUIBarsTopBG:SetBackdropColor(unpack(Themes.db.bar))
+	LUIBarsBottomBG:SetBackdropColor(unpack(Themes.db.bar2))
 end
 
 function module:SetSidebarColors()
-	local r, g, b, a = unpack(Themes.db.profile.sidebar)
+	local r, g, b, a = unpack(Themes.db.sidebar)
 	
 	for _, sb in pairs(sidebars) do
 		sb.SidebarBack:SetBackdropColor(r, g, b, a)
@@ -322,7 +334,7 @@ function module:CreateBarBackground()
 		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	top:SetBackdropColor(unpack(Themes.db.profile.bar))
+	top:SetBackdropColor(unpack(Themes.db.bar))
 	top:SetBackdropBorderColor(0, 0, 0, 0)
 	top[db.TopTexture.Enable and "Show" or "Hide"](top)
 	
@@ -334,7 +346,7 @@ function module:CreateBarBackground()
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	bottom:SetBackdropColor(unpack(Themes.db.profile.bar2))
+	bottom:SetBackdropColor(unpack(Themes.db.bar2))
 	bottom:SetBackdropBorderColor(0, 0, 0, 0)
 	bottom[db.BottomTexture.Enable and "Show" or "Hide"](bottom)
 end
@@ -347,13 +359,14 @@ function module:CreateSidebarSlider(side, id)
 	local fname = side == "Right" and "sidebar" or "sidebar2"
 	local isRight = side == "Right"
 	
-	local r, g, b, a = unpack(Themes.db.profile.sidebar)
+	local r, g, b, a = unpack(Themes.db.sidebar)
 	
 	local sb = {}
 	
 	sidebars[side..id] = sb
 	
-	sb.anchor = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..side..id
+	sb.Main = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..side..id
+	sb.Additional = GetAdditionalAnchors(bardb.Additional)
 	
 	sb.timerout, sb.timerin = 0, 0
 	sb.x, sb.y, sb.xout = isRight and -30 or 30, 0, isRight and -118 or 118
@@ -429,13 +442,13 @@ function module:CreateSidebarSlider(side, id)
 		sb.bttimerin = sb.bttimerin + elapsed
 		if sb.bttimerin < sb.btspeedin then
 			local alpha = sb.bttimerin / sb.btspeedin
-			SidebarSetAlpha(sb.anchor, alpha)
-			for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
+			SidebarSetAlpha(sb.Main, alpha)
+			for _, frame in pairs(sb.Additional) do
 				SidebarSetAlpha(frame, alpha)
 			end
 		else
-			SidebarSetAlpha(sb.anchor, 1)
-			for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
+			SidebarSetAlpha(sb.Main, 1)
+			for _, frame in pairs(sb.Additional) do
 				SidebarSetAlpha(frame, 1)
 			end
 			sb.bttimerin = 0
@@ -501,9 +514,9 @@ function module:CreateSidebarSlider(side, id)
 	sb.ButtonBack:SetAlpha(0)
 	sb.ButtonBack:Show()
 	
-	sb.ButtonBlock = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 80, 225, 1, "MEDIUM", 4, other, sb.Anchor, other, isRight and -82 or 82, -5, 1)
-	sb.ButtonBlock:EnableMouse(true)
-	sb.ButtonBlock:Show()
+	sb.SidebarBlock = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 80, 225, 1, "MEDIUM", 4, other, sb.Anchor, other, isRight and -82 or 82, -5, 1)
+	sb.SidebarBlock:EnableMouse(true)
+	sb.SidebarBlock:Show()
 	
 	sb.ButtonClicker = LUI:CreateMeAFrame("BUTTON", nil, sb.ButtonAnchor, 30, 215, 1, "MEDIUM", 5, other, sb.ButtonAnchor, other, isRight and 6 or -6, -5, 1)
 	sb.ButtonClicker:Show()
@@ -545,15 +558,15 @@ function module:CreateSidebarSlider(side, id)
 				sb.ButtonAnchor:ClearAllPoints()
 				sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, isRight and -120 or 120, 0)
 				sb.ButtonBack:SetAlpha(1)
-				SidebarSetAlpha(sb.anchor, 1)
-				for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
+				SidebarSetAlpha(sb.Main, 1)
+				for _, frame in pairs(sb.Additional) do
 					SidebarSetAlpha(frame, 1)
 				end
-				sb.ButtonBlock:Hide()
+				sb.SidebarBlock:Hide()
 			else
 				sb.SlideOut:Show()
 				sb.AlphaIn:Show()
-				sb.ButtonBlock:Hide()
+				sb.SidebarBlock:Hide()
 			end
 		else
 			sb.sidebaropen = 0
@@ -562,19 +575,19 @@ function module:CreateSidebarSlider(side, id)
 				sb.ButtonAnchor:ClearAllPoints()
 				sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, isRight and -32 or 32, 0)
 				sb.ButtonBack:SetAlpha(0)
-				SidebarSetAlpha(sb.anchor, 0)
-				for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
+				SidebarSetAlpha(sb.Main, 0)
+				for _, frame in pairs(sb.Additional) do
 					SidebarSetAlpha(frame, 0)
 				end
-				sb.ButtonBlock:Show()
+				sb.SidebarBlock:Show()
 			else
 				sb.SlideIn:Show()
 				sb.AlphaOut:Show()
-				SidebarSetAlpha(sb.anchor, 0)
-				for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
+				SidebarSetAlpha(sb.Main, 0)
+				for _, frame in pairs(sb.Additional) do
 					SidebarSetAlpha(frame, 0)
 				end
-				sb.ButtonBlock:Show()
+				sb.SidebarBlock:Show()
 			end
 		end
 	end)
@@ -590,8 +603,8 @@ function module:CreateSidebarSlider(side, id)
 	end)
 	
 	SidebarSetAnchor(side, id)
-	SidebarSetAlpha(sb.anchor, 0)
-	for _, frame in pairs(Panels:LoadAdditional(bardb.Additional)) do
+	SidebarSetAlpha(sb.Main, 0)
+	for _, frame in pairs(sb.Additional) do
 		SidebarSetAlpha(frame, 0)
 	end
 	
@@ -601,7 +614,7 @@ function module:CreateSidebarSlider(side, id)
 			sb.sidebaropen = 1
 			sb.SlideOut:Show()
 			sb.AlphaIn:Show()
-			sb.ButtonBlock:Hide()
+			sb.SidebarBlock:Hide()
 		end
 	else
 		sb.Anchor:Hide()
@@ -658,6 +671,7 @@ function module:SetBottomBar(id)
 	
 	local bar = bars[id]
 	
+	bar:ClearAllPoints()
 	bar:SetPoint(bardb.Point, UIParent, bardb.Point, bardb.X * bardb.Scale, bardb.Y * bardb.Scale)
 	bar:SetScale(bardb.Scale)
 	
@@ -735,12 +749,10 @@ function module:SetPetBar()
 		PetActionBarFrame:EnableMouse(false)
 		PetActionBarFrame.showgrid = 1
 		PetActionBar_ShowGrid()
-
-		local button
-		for i = 1, NUM_PET_ACTION_SLOTS do
+		
+		for i = 1, 10 do
 			local button = _G["PetActionButton"..i]
 			button:SetParent(bar)
-			
 			if i == 1 then
 				button:ClearAllPoints()
 				button:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
@@ -750,13 +762,14 @@ function module:SetPetBar()
 		
 		if Masque then
 			local group = Masque:Group("LUI", "Pet Bar")
-			for i = 1, NUM_PET_ACTION_SLOTS do
+			for i = 1, 10 do
 				group:AddButton(_G["PetActionButton"..i])
 			end
 		end
 	end
 	
 	local s = db.PetBar.Scale
+	LUIPetBar:ClearAllPoints()
 	LUIPetBar:SetPoint(db.PetBar.Point, UIParent, db.PetBar.Point, db.PetBar.X * s, db.PetBar.Y * s)
 	LUIPetBar:SetScale(s)
 	
@@ -773,7 +786,17 @@ function module:SetShapeshiftBar()
 	if not LUIShapeshiftBar then
 		local bar = CreateFrame("Frame", "LUIShapeshiftBar", UIParent, "SecureHandlerStateTemplate")
 		bar.buttons = {}
-
+		
+		for i = 1, 10 do
+			local button = _G["ShapeshiftButton"..i]
+			button:SetParent(bar)
+			if i == 1 then
+				button:ClearAllPoints()
+				button:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
+			end
+			bar.buttons[i] = button
+		end
+		
 		ShapeshiftBarFrame:SetParent(bar)
 		ShapeshiftBarFrame:EnableMouse(false)
 		
@@ -782,42 +805,20 @@ function module:SetShapeshiftBar()
 		local function MoveShapeshift()
 			if InCombatLockdown() then return end
 			
-			bar:SetWidth(30 * NUM_SHAPESHIFT_SLOTS + 2 * (NUM_SHAPESHIFT_SLOTS - 1))
+			local numrows = math.ceil(10 / db.ShapeshiftBar.NumPerRow)
+			bar:SetWidth(db.ShapeshiftBar.NumPerRow * 30 + (db.ShapeshiftBar.NumPerRow - 1) * 2)
+			bar:SetHeight(numrows * 30 + (numrows - 1) * 2)
 			
-			local button, previous
-			for i = 1, NUM_SHAPESHIFT_SLOTS do
-				button = _G["ShapeshiftButton"..i]
-				button:ClearAllPoints()
-				button:SetParent(bar)
-				
-				if i == 1 then
-					button:SetPoint("BOTTOMLEFT", bar, "BOTTOMLEFT", 0, 0)
-				else
-					button:SetPoint("LEFT", previous, "RIGHT", 2, 0)
-				end
-				previous = button
-				
-				if group then
-					group:AddButton(button) -- will return if button is already added
-				end
-			end
+			Configure(LUIShapeshiftBar, 10, db.ShapeshiftBar.NumPerRow)
 		end
 		
 		-- DO NOT CHANGE
 		hooksecurefunc("ShapeshiftBar_Update", MoveShapeshift)
 		hooksecurefunc("ShapeshiftBar_UpdateState", MoveShapeshift)
-		
-		if InCombatLockdown() then
-			self:RegisterEvent("PLAYER_REGEN_ENABLED", function(event)
-				self:UnregisterEvent(event)
-				MoveShapeshift()
-			end)
-		else
-			MoveShapeshift()
-		end
 	end
 	
 	local s = db.ShapeshiftBar.Scale
+	LUIShapeshiftBar:ClearAllPoints()
 	LUIShapeshiftBar:SetPoint(db.ShapeshiftBar.Point, UIParent, db.ShapeshiftBar.Point, db.ShapeshiftBar.X * s, db.ShapeshiftBar.Y * s)
 	LUIShapeshiftBar:SetScale(s)
 	
@@ -828,6 +829,55 @@ function module:SetShapeshiftBar()
 	Configure(LUIShapeshiftBar, 10, db.ShapeshiftBar.NumPerRow)
 	
 	LUIShapeshiftBar[db.ShapeshiftBar.Enable and "Show" or "Hide"](LUIShapeshiftBar)
+end
+
+function module:SetTotemBar()
+	if not LUITotemBar then
+		local bar = CreateFrame("Frame", "LUITotemBar", UIParent, "SecureHandlerStateTemplate")
+		bar.buttons = {}
+		
+		MultiCastActionBarFrame:SetParent(bar)
+		
+		MultiCastSummonSpellButton:SetParent(bar)
+		MultiCastSummonSpellButton:ClearAllPoints()
+		MultiCastSummonSpellButton:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
+		bar.buttons[1] = MultiCastSummonSpellButton
+		
+		for i = 1, 4 do
+			local button = _G["MultiCastSlotButton"..i]
+			button:SetParent(bar)
+			bar.buttons[i+1] = button
+		end
+
+		bar.buttons[6] = MultiCastRecallSpellButton
+		
+		local lookup = {2, 1, 3, [0] = 4}
+		
+		local function TotemDestroy(self, button)
+			if button ~= "RightButton" then return end
+			DestroyTotem(lookup[self:GetName():match("MultiCastActionButton(%d)") % 4])
+		end
+		
+		for i = 1, 12 do
+			local button = _G["MultiCastActionButton"..i]
+			local anchor = _G["MultiCastSlotButton"..(i % 4 == 0 and 4 or i % 4)]
+			button:ClearAllPoints()
+			button:SetPoint("CENTER", anchor, "CENTER", 0, 0)
+			button:HookScript("OnClick", TotemDestroy)
+		end
+	end
+	
+	local s = db.TotemBar.Scale
+	LUITotemBar:ClearAllPoints()
+	LUITotemBar:SetPoint(db.TotemBar.Point, UIParent, db.TotemBar.Point, db.TotemBar.X * s, db.TotemBar.Y * s)
+	LUITotemBar:SetScale(s)
+	
+	LUITotemBar:SetWidth(190)
+	LUITotemBar:SetHeight(30)
+	
+	Configure(LUITotemBar, 6, 6)
+	
+	LUITotemBar[(db.TotemBar.Enable and class == "SHAMAN") and "Show" or "Hide"](LUITotemBar)
 end
 
 function module:SetVehicleExit()
@@ -850,6 +900,7 @@ function module:SetVehicleExit()
 	end
 	
 	local s = db.VehicleExit.Scale
+	LUIVehicleExit:ClearAllPoints()
 	LUIVehicleExit:SetPoint(db.VehicleExit.Point, UIParent, db.VehicleExit.Point, db.VehicleExit.X * s, db.VehicleExit.Y * s)
 	LUIVehicleExit:SetScale(s)
 	
@@ -891,15 +942,6 @@ function module:HideBlizzard()
 	module:SecureHook("TalentFrame_LoadUI", function()
 		PlayerTalentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 	end)
-
-	local totem = _G["MultiCastActionBarFrame"]
-
-	if not totem then return end
-
-	if not module:IsHooked(totem, "Show") then
-		module:RawHook(totem, "Show", LUI.dummy, true)
-	end
-	totem:Hide()
 end
 
 function module:SetButtons()
@@ -932,18 +974,17 @@ function module:SetButtons()
 		end
 	end
 	
-	-- buttons
 	local function StyleButton(button)
 		if not button then return end
 		if button.__Styled == true then return end
 				
-		if button:GetParent() then
-			local parent = button:GetParent():GetName()
-			if parent == "MultiCastActionBarFrame" then return end
-			if parent == "MultiCastActionPage1" then return end
-			if parent == "MultiCastActionPage2" then return end
-			if parent == "MultiCastActionPage3" then return end
-		end
+		--if button:GetParent() then
+			--local parent = button:GetParent():GetName()
+			--if parent == "MultiCastActionBarFrame" then return end
+			--if parent == "MultiCastActionPage1" then return end
+			--if parent == "MultiCastActionPage2" then return end
+			--if parent == "MultiCastActionPage3" then return end
+		--end
 		
 		local name = button:GetName()
 		local size = button:GetWidth()
@@ -1147,25 +1188,23 @@ function module:SetButtons()
 		button.__elapsed = 0
 		button.__Styled = true
 	end
+	module:SecureHook("ActionButton_Update", StyleButton)
 	
 	local function StylePetButtons()
-		for i = 1, NUM_PET_ACTION_SLOTS do
+		for i = 1, 10 do
 			StyleButton(_G["PetActionButton"..i])
 		end
 	end
+	module:SecureHook("PetActionBar_Update", StylePetButtons)
 	
 	local function StyleShapeshiftButtons()
-		for i = 1, NUM_SHAPESHIFT_SLOTS do
+		for i = 1, 10 do
 			StyleButton(_G["ShapeshiftButton"..i])
 		end
 	end
-	
-	module:SecureHook("ActionButton_Update", StyleButton)
-	module:SecureHook("PetActionBar_Update", StylePetButtons)
 	module:SecureHook("ShapeshiftBar_Update", StyleShapeshiftButtons)
 	module:SecureHook("ShapeshiftBar_UpdateState", StyleShapeshiftButtons)
 	
-	-- flyout
 	local buttons = 0
 	local function SetupFlyoutButton()
 		for i = 1, buttons do
@@ -1231,8 +1270,6 @@ function module:SetButtons()
 	end
 	module:SecureHook("ActionButton_UpdateFlyout", StyleFlyout)
 	
-	-- hotkey text replace
-	-- only EN client :/
 	local function UpdateHotkey(self, abt)
 		local gsub = string.gsub
 		local hotkey = _G[self:GetName().."HotKey"]
@@ -1263,9 +1300,8 @@ function module:SetButtons()
 	end
 	module:SecureHook("ActionButton_UpdateHotkeys", UpdateHotkey)
 	
-	-- usable coloring on icon
 	local function Button_OnUpdate(button, elapsed)
-		if button.__elapsed > 0.2 then
+		if button.__elapsed > 0.1 then
 			local icon = _G[button:GetName().."Icon"]
 			local hotkey = _G[button:GetName().."HotKey"]
 			
@@ -1318,8 +1354,9 @@ function module:SetBars()
 		
 		self:SetPetBar()
 		self:SetShapeshiftBar()
-		
+		self:SetTotemBar()
 		self:SetVehicleExit()
+		
 		self:HideBlizzard()
 		
 		self:SetButtons()
@@ -1331,6 +1368,14 @@ function module:SetBars()
 	end
 	
 	self:CreateBarBackground()
+	
+	if Forte:IsEnabled() and Forte.db.Cooldown.Lock then
+		local FXCD = FX_Cooldown1
+		if FXCD and FXCD:IsShown() then
+			LUIBarsTopBG:SetPoint("BOTTOM", UIParent, "BOTTOM", db.TopTexture.X, db.TopTexture.Y + db.TopTexture.AnimationHeight)
+		end
+	end
+	
 	self:CreateSidebarSlider("Right", 1)
 	self:CreateSidebarSlider("Right", 2)
 	self:CreateSidebarSlider("Left", 1)
@@ -1620,6 +1665,13 @@ module.defaults = {
 			Scale = 0.85,
 			NumPerRow = 10,
 		},
+		TotemBar = {
+			Enable = true,
+			X = 58.8,
+			Y = -370.6,
+			Point = "LEFT",
+			Scale = 0.85,
+		},
 		VehicleExit = {
 			Enable = true,
 			X = -350,
@@ -1641,6 +1693,7 @@ function module:LoadOptions()
 		BottomTex = function() return not db.BottomTexture.Enable end,
 		["Shapeshift Bar"] = function() return not db.ShapeshiftBar.Enable end,
 		["Pet Bar"] = function() return not db.PetBar.Enable end,
+		["Totem Bar"] = function() return not db.TotemBar.Enable end,
 		["Vehicle Exit"] = function() return not db.VehicleExit.Enable end
 	}
 	
@@ -1758,7 +1811,7 @@ function module:LoadOptions()
 			[""] = self:NewPosSliders(name, 2, false, frame, true, nil, disabled[name]),
 			Point = self:NewSelect("Point", "Choose the Point for the "..name..".", 3, positions, nil, nil, nil, disabled[name]),
 			Scale = self:NewSlider("Scale", "Choose the Scale for the "..name..".", 4, 0.1, 1.5, 0.05, true, true, nil, nil, disabled[name]),
-			NumPerRow = (name ~= "Vehicle Exit Button") and self:NewSlider("Buttons per Row", "Choose the Number of Buttons per Row.", 5, 1, 10, 1, true, nil, nil, nil, disabled[name]) or nil,
+			NumPerRow = (name ~= "Vehicle Exit Button" and name ~= "Totem Bar") and self:NewSlider("Buttons per Row", "Choose the Number of Buttons per Row.", 5, 1, 10, 1, true, nil, nil, nil, disabled[name]) or nil,
 		})
 		
 		return option
@@ -1805,7 +1858,8 @@ function module:LoadOptions()
 		SidebarLeft2 = createSideBarOptions("Left", 2, 13),
 		ShapeshiftBar = not isBarAddOnLoaded and createOtherBarOptions("Shapeshift Bar", 14, "LUIShapeshiftBar") or nil,
 		PetBar = not isBarAddOnLoaded and createOtherBarOptions("Pet Bar", 15, "LUIPetBar") or nil,
-		VehicleExit = not isBarAddOnLoaded and createOtherBarOptions("Vehicle Exit Button", 16, "LUIVehicleExit") or nil,
+		TotemBar = not isBarAddOnLoaded and createOtherBarOptions("Totem Bar", 16, "LUITotemBar") or nil,
+		VehicleExit = not isBarAddOnLoaded and createOtherBarOptions("Vehicle Exit Button", 17, "LUIVehicleExit") or nil,
 	}
 	
 	return options
@@ -1829,6 +1883,7 @@ function module:Refresh(...)
 		
 		self:SetPetBar()
 		self:SetShapeshiftBar()
+		self:SetTotemBar()
 		self:SetVehicleExit()
 	end
 	
