@@ -838,14 +838,12 @@ function module:SetTotemBar()
 		
 		MultiCastActionBarFrame:SetParent(bar)
 		
-		MultiCastSummonSpellButton:SetParent(bar)
 		MultiCastSummonSpellButton:ClearAllPoints()
 		MultiCastSummonSpellButton:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
 		bar.buttons[1] = MultiCastSummonSpellButton
 		
 		for i = 1, 4 do
 			local button = _G["MultiCastSlotButton"..i]
-			button:SetParent(bar)
 			bar.buttons[i+1] = button
 		end
 
@@ -877,7 +875,7 @@ function module:SetTotemBar()
 	
 	Configure(LUITotemBar, 6, 6)
 	
-	LUITotemBar[(db.TotemBar.Enable and class == "SHAMAN") and "Show" or "Hide"](LUITotemBar)
+	LUITotemBar[db.TotemBar.Enable and "Show" or "Hide"](LUITotemBar)
 end
 
 function module:SetVehicleExit()
@@ -1354,7 +1352,7 @@ function module:SetBars()
 		
 		self:SetPetBar()
 		self:SetShapeshiftBar()
-		self:SetTotemBar()
+		--self:SetTotemBar()
 		self:SetVehicleExit()
 		
 		self:HideBlizzard()
@@ -1858,7 +1856,7 @@ function module:LoadOptions()
 		SidebarLeft2 = createSideBarOptions("Left", 2, 13),
 		ShapeshiftBar = not isBarAddOnLoaded and createOtherBarOptions("Shapeshift Bar", 14, "LUIShapeshiftBar") or nil,
 		PetBar = not isBarAddOnLoaded and createOtherBarOptions("Pet Bar", 15, "LUIPetBar") or nil,
-		TotemBar = not isBarAddOnLoaded and createOtherBarOptions("Totem Bar", 16, "LUITotemBar") or nil,
+		--TotemBar = not isBarAddOnLoaded and createOtherBarOptions("Totem Bar", 16, "LUITotemBar") or nil,
 		VehicleExit = not isBarAddOnLoaded and createOtherBarOptions("Vehicle Exit Button", 17, "LUIVehicleExit") or nil,
 	}
 	
@@ -1883,7 +1881,7 @@ function module:Refresh(...)
 		
 		self:SetPetBar()
 		self:SetShapeshiftBar()
-		self:SetTotemBar()
+		--self:SetTotemBar()
 		self:SetVehicleExit()
 	end
 	
