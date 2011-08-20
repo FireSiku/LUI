@@ -7,8 +7,7 @@
 
 -- External references.
 local addonname, LUI = ...
-local InfoText = LUI:Module("InfoText", true)
-if not InfoText then return end
+local InfoText = LUI:Module("InfoText")
 
 -- Register stat.
 local Bags = InfoText:NewStat("Bags")

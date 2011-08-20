@@ -2,8 +2,6 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: fader.lua
 	Description: This module can handle fading of frames registered with it.
-	Version....: 2.0
-	Rev Date...: 17/06/2010 [dd/mm/yyyy]
 ]]
 
 ------------------------------------------------------
@@ -64,11 +62,12 @@ Fader.Status = {
 ------------------------------------------------------
 
 --[[
-	Function..: RegisterFrame(frame, settings)
+	Function..: RegisterFrame(frame, settings[, specialHover])
 	Notes.....: registers a given frame to the fader logic.
 	Parameters:
 		frame: Frame to be registered to the fader.
 		settings: Settings for the frame.
+		specialHover: Adds special mouse hover script setups for frames with children.
 ]]
 function Fader:RegisterFrame(frame, settings, specialHover)
 	-- Check frame is a usable objects.
@@ -175,7 +174,7 @@ function Fader.Hover_OnEnter(self)
 	self.Fader.mouseHover = true
 
 	-- Check if already fading in.
-	if self.Fader.fading and self.Fader.endAlpha > Fader.RegisteredFrames[self].HoverAlpha then return end
+	if self.Fader.fading and self.Fader.endAlpha >= Fader.RegisteredFrames[self].HoverAlpha then return end
 		
 	-- Cancel any fading.
 	Fader:StopFading(self)
@@ -292,6 +291,135 @@ function Fader:RemoveHoverScript(frame)
 	self:Unhook(frame, "OnLeave")
 
 	if frame.Fader.SpecialMouseHover then
+		for index, child in pairs({frame:GetChildren()}) do
+			self:Unhook(child, "OnEnter")
+			self:Unhook(child, "OnLeave")
+		end
+	end
+end
+
+--[[
+	Function..: CreateHoverScripts(frame[, inAlpha[, outAlpha[, fadeTime[, fadeDelay[, children[, recursive])
+	Notes.....: Creates mousehover scripts for a frame that does not need other fader features.
+				This function can be used with Fader'.'CreateHoverScript(self, ...) notation allowing another
+				module with AceHook functionallity to create hooks local to that module.
+	Parameters:
+		frame: The frame to create hover scripts for.
+		inAlpha: The alpha to be set when the frame is being hovered over.
+		outAlpha: The alpha to be set when the frame is not being hovered over.
+		fadeTime: The time period to fade out over.
+		fadeDelay: The time period before fading out.
+		children: To attach scripts to child frames; much like SpecialHoverScripts.
+		recursive: To attack scripts to children of children, etc.
+]]
+function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, children, recursive)
+	-- Check frame is a usable objects.
+	if type(frame) ~= "table"  then return end
+
+	-- Set defaults.
+	inAlpha = inAlpha or 1
+
+	-- Create upvalues.
+	local mouseHover = false
+	
+	-- Create OnEnter/OnLeave functions.
+	local function OnEnter()
+		-- Check if mouseHover is already detected.
+		if mouseHover then return end
+
+		-- Set mouse hover.
+		mouseHover = true
+
+		-- Check if already fading in.
+		if frame.Fader and frame.Fader.fading and frame.Fader.endAlpha >= inAlpha then return end
+		
+		-- Cancel any fading.
+		Fader:StopFading(frame)
+
+		-- Check if fade is required.
+		if frame:GetAlpha() >= inAlpha then return end
+
+		-- Fade in frame.
+		Fader:FadeFrame(frame, inAlpha)
+	end
+
+	local function OnLeave()
+		-- Check if mouse is over.
+		if frame:IsMouseOver() then return end
+
+		-- Set mouse hover.
+		mouseHover = false
+
+		-- Check if already fading out.
+		if frame.Fader and frame.Fader.fading and not frame.Fader.fadingIn then return end
+	
+		-- Fade out frame.
+		Fader:FadeFrame(frame, outAlpha, fadeTime, fadeDelay)
+	end
+
+	-- Hook scripts.
+	if not self:IsHooked(frame, "OnEnter") then self:SecureHookScript(frame, "OnEnter", OnEnter) end
+	if not self:IsHooked(frame, "OnLeave") then self:SecureHookScript(frame, "OnLeave", OnLeave) end
+
+	if not children then return end
+
+	-- Hook scripts to children.
+	if recursive then
+		local function hookChildren(frame)
+			for index, child in pairs({frame:GetChildren()}) do
+				if not self:IsHooked(child, "OnEnter") then self:SecureHookScript(child, "OnEnter", OnEnter) end
+				if not self:IsHooked(child, "OnLeave") then self:SecureHookScript(child, "OnLeave", OnLeave) end
+				
+				-- Recurse.
+				hookChildren(child)
+			end
+		end
+		
+		-- Hook all children recursively.
+		hookChildren(frame)
+	else
+		for index, child in pairs({frame:GetChildren()}) do
+			if not self:IsHooked(child, "OnEnter") then self:SecureHookScript(child, "OnEnter", OnEnter) end
+			if not self:IsHooked(child, "OnLeave") then self:SecureHookScript(child, "OnLeave", OnLeave) end
+		end
+	end
+end
+
+--[[
+	Function..: DeleteHoverScript(frame[, children[, recursive])
+	Notes.....: Deletes mousehover scripts for a frame that has had hover scripts created for it.
+				This function can be used with Fader'.'CreateHoverScript(self, ...) notation allowing another
+				module with AceHook functionallity to delete hooks that were made by that module.
+	Parameters:
+		frame: The frame to delete hover scripts from.
+		children: To delete scripts from child frames; much like SpecialHoverScripts.
+		recursive: To delete scripts from children of children, etc.
+]]
+function Fader:DeleteHoverScript(frame, children, recursive)
+	-- Check frame is a usable objects.
+	if type(frame) ~= "table"  then return end
+
+	-- Unhook scripts
+	self:Unhook(frame, "OnEnter")
+	self:Unhook(frame, "OnLeave")
+
+	if not children then return end
+
+	-- Unhook children scripts.
+	if recursive then
+		local function UnhookChildren(frame)
+			for index, child in pairs({frame:GetChildren()}) do
+				self:Unhook(child, "OnEnter")
+				self:Unhook(child, "OnLeave")
+				
+				-- Recurse.
+				UnhookChildren(child)
+			end
+		end
+		
+		-- Unhook all children recursively.
+		UnhookChildren(frame)
+	else
 		for index, child in pairs({frame:GetChildren()}) do
 			self:Unhook(child, "OnEnter")
 			self:Unhook(child, "OnLeave")
@@ -456,7 +584,7 @@ end
 
 --[[
 	Function..: Fade_OnUpdate(self, elapsed)
-	Notes.....: Fades the frame over time.
+	Notes.....: Fades running frames over time.
 ]]
 function Fader.Fader_OnUpdate(self, elapsed)
 	-- Check fader throttle.
@@ -488,7 +616,7 @@ function Fader.Fader_OnUpdate(self, elapsed)
 end
 
 --[[
-	Function..: FadeFrame(frame, endalpha, fadetime, fadedelay)
+	Function..: FadeFrame(frame[, endalpha[, fadetime[, fadedelay])
 	Notes.....: Takes a frame and fades it with the given parameters.
 	Parameters:
 		frame: Frame to fade.
