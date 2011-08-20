@@ -21,7 +21,17 @@ local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
 LUI.Versions.bars = 2.3
 
-local positions = {"TOP", "TOPRIGHT", "TOPLEFT","BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT","RIGHT", "LEFT", "CENTER"}
+local positions = {
+	TOP = "TOP",
+	TOPRIGHT = "TOPRIGHT",
+	TOPLEFT = "TOPLEFT",
+	BOTTOM = "BOTTOM",
+	BOTTOMRIGHT = "BOTTOMRIGHT",
+	BOTTOMLEFT = "BOTTOMLEFT",
+	RIGHT = "RIGHT",
+	LEFT = "LEFT",
+	CENTER = "CENTER"
+}
 
 local _, class = UnitClass("player")
 
@@ -226,7 +236,7 @@ local SidebarSetAnchor = function(side, id)
 	if bardb.AutoPosEnable ~= true and isBarAddOnLoaded == true then return end
 	
 	local anchor = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..side..id
-	sidebars[side..id].anchor = anchor
+	sidebars[side..id].Main = anchor
 	
 	local xOffset = tonumber(bardb.X)
 	local yOffset = tonumber(bardb.Y)
