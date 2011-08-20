@@ -2,10 +2,6 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: worldmap.lua
 	Description: Worldmap Module
-	Version....: 1.5
-	Rev Date...: 08/12/2011
-	
-	Edits: 1.5 - Zista
 ]] 
 
 -- External references.
@@ -14,6 +10,7 @@ local module = LUI:Module("WorldMap", "AceHook-3.0", "AceEvent-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 local LibWindow = LibStub("LibWindow-1.1")
 local widgetLists = AceGUIWidgetLSMlists
+local Fader = LUI:Module("Fader")
 
 local LBZ = LibStub("LibBabble-Zone-3.0"):GetLookupTable()
 local ZoneLoc = {names = {}, data = {}}
@@ -618,6 +615,16 @@ function module:SetArrow(scale)
 	PlayerArrowEffectFrame:SetModelScale(scale or db.General.ArrowScale)
 end
 
+function module:SetHoverScripts()
+	if db.General.MouseHover then
+		-- Create mouse hover scripts, include children recursively.
+		Fader.CreateHoverScript(self, WorldMapFrame, db[mapSize()].Alpha, db[mapSize()].Alpha * 0.1, 0.5, nil, true, true)
+	else
+		-- Delete mouse hover scripts.
+		Fader.DeleteHoverScript(self, WorldMapFrame, true, true)	
+	end
+end
+
 function module:SetScale(scale)
 	WorldMapFrame:SetFrameScale(scale or db[mapSize()].scale) -- LibWindow
 end
@@ -843,6 +850,9 @@ function module:SetMap()
 	BlackoutWorld:Hide()
 	WorldMapTitleButton:Hide()
 
+	-- Set mouse hover scripts.
+	self:SetHoverScripts()
+
 	WorldMapFrame:MakeDraggable() -- LibWindow
 	self:SecureHookScript(WorldMapFrame, "OnDragStart", "HideBlobs")
 	self:SecureHookScript(WorldMapFrame, "OnDragStop", "ShowBlobs")
@@ -1026,6 +1036,7 @@ module.defaults = {
 			POIScale = 0.8,
 			CoordEnable = true,
 			CoordAccuracy = 1,
+			MouseHover = false,
 		},
 		Big = {
 			x = 0,
@@ -1080,6 +1091,7 @@ function module:LoadOptions()
 			POIScale = self:NewSlider("POI Scale", "Scale of the POI Icons on the Map.", 2, 0.1, 2, 0.01, true, true),
 			CoordEnable = self:NewToggle("Enable Coordinates", nil, 3, true, "normal"),
 			CoordAccuracy = self:NewSlider("Coordinate Accuracy", "Adjust the number of decimal places the coordinates are accurate to.", 4, 0, 2, 1, true, false, nil, coordDisabled),
+			MouseHover = self:NewToggle("Enable Fading (BUGGY)", "Fade out the map when you move the mouse out of its frame.", 5, true, "normal"),
 		}),
 		Big = createMapOptions("Fullsize", 2),
 		Mini = createMapOptions("Mini", 3),
@@ -1108,6 +1120,7 @@ function module:Refresh(...)
 	self:SetAlpha()
 	self:SetArrow()
 	self:SetPosition()
+	self:SetHoverScripts()
 	
 	self:UpdateBorderVisibility()
 	WorldMapFrame_DisplayQuests()
