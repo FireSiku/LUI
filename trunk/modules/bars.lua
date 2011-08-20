@@ -6,10 +6,6 @@
 	Rev Date...: 16/08/11 [dd/mm/yy]
 ]] 
 
-local f = CreateFrame("Frame")
-f:RegisterEvent("ADDON_ACTION_BLOCKED")
-f:SetScript("OnEvent", print)
-
 local addonname, LUI = ...
 local module = LUI:Module("Bars", "AceHook-3.0", "AceEvent-3.0")
 local Themes = LUI:Module("Themes")
@@ -676,6 +672,7 @@ function module:SetBottomBar(id)
 		bar:RegisterEvent("ACTIONBAR_SHOWGRID")
 		bar:RegisterEvent("ACTIONBAR_HIDEGRID")
 		bar:RegisterEvent("PLAYER_ENTERING_WORLD")
+		bar:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 		bar:SetScript("OnEvent", HookGrid)
 		
 		local buttons
@@ -752,6 +749,7 @@ function module:SetSideBar(side, id)
 		bar:RegisterEvent("ACTIONBAR_SHOWGRID")
 		bar:RegisterEvent("ACTIONBAR_HIDEGRID")
 		bar:RegisterEvent("PLAYER_ENTERING_WORLD")
+		bar:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
 		bar:SetScript("OnEvent", HookGrid)
 		
 		local buttons
@@ -806,10 +804,10 @@ function module:SetPetBar()
 		
 		for i = 1, 10 do
 			local button = _G["PetActionButton"..i]
+			button:SetParent(bar)
 			button:Show()
 			button.Show = function() end
 			button.Hide = function() end
-			button:SetParent(bar)
 			if i == 1 then
 				button:ClearAllPoints()
 				button:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
@@ -849,6 +847,7 @@ function module:SetShapeshiftBar()
 		
 		for i = 1, 10 do
 			local button = _G["ShapeshiftButton"..i]
+			button:SetParent(bar)
 			if i == 1 then
 				button:ClearAllPoints()
 				button:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
@@ -1043,7 +1042,8 @@ function module:SetButtons()
 		-- normal
 		local normal = button:GetNormalTexture()
 		normal:SetTexture("")
-		normal:SetAlpha(0)
+		normal:Hide()
+		normal.Show = normal.Hide
 		
 		local newnormal = button:CreateTexture(name.."Normal", "BACKGROUND", 0)
 		newnormal:SetTexture(normTex)
