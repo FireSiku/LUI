@@ -86,6 +86,8 @@ local getfuncs = setmetatable({
 		argcheck(func, "typeof", "string;function;boolean;nil")
 		argcheck(specialget, "typeof", "function;nil")
 		
+		if func == nil and self.getter then func = true end
+		
 		return t[type(func)](self, func, specialget)
 	end
 })
@@ -135,9 +137,25 @@ local setfuncs = setmetatable({
 		argcheck(func, "typeof", "string;function;boolean;nil")
 		argcheck(specialset, "typeof", "function;nil")
 		
+		if func == nil and self.setter then func = true end
+		
 		return t[type(func)](self, func, specialset)
 	end
 })
+
+local valuesMT = {
+	__call = function(t, get)
+		if get ~= nil then
+			for k, v in pairs(t) do
+				if v == get then
+					return k
+				end
+			end
+		end
+		
+		return t
+	end
+}
 
 --local functions
 local function getColor(t)
@@ -268,6 +286,7 @@ end
 --Dummy option, used to create more.
 local function ShadowOption()
 	local t = {type = "description", order = 500}
+	
 	SetState(t, nil, true, true)
 	return t
 end
@@ -326,23 +345,19 @@ function devapi:NewGroup(name, order, ...)
 			i = i + 1
 		elseif i < 3 and (type(args[i]) == "function" or type(args[i]) == "string") then -- get/set
 			-- get
-			if type(args[i]) == "function" then
-				t.get = args[i]
-			elseif self[args[i]] then -- methodname
+			if type(args[i]) == "function" or self[args[i]] then -- function/methodname
 				t.get = args[i]
 			elseif args[i] ~= "skip" and args[i] ~= "nil" then -- generic
-				t.get = getfuncs(self)
+				t.get = getfuncs["nil"](self)
 			end
 			i = i + 1
 			
 			-- set
 			if type(args[i]) == "function" or type(args[i]) == "string" then
-				if type(args[i]) == "function" then
-					t.set = args[i]
-				elseif self[args[i]] then -- methodname
+				if type(args[i]) == "function" or self[args[i]] then -- function/methodname
 					t.set = args[i]
 				elseif args[i] ~= "skip" and args[i] ~= "nil" then -- generic
-					t.set = setfuncs(self)
+					t.set = setfuncs["nil"](self)
 				end
 				i = i + 1
 			end
@@ -405,7 +420,7 @@ end
 function devapi:NewSelect(name, desc, order, values, dcontrol, func, width, disabled, hidden)
 	argcheck(values, "typeof", "table;function")
 	
-	if type(values) == "table" then setmetatable(values, {__call = function(t) return t end}) end
+	if type(values) == "table" then setmetatable(values, valuesMT) end
 	
 	local t = SetVals("select", name, order)
 	t.values = values
@@ -434,7 +449,7 @@ end
 function devapi:NewMultiSelect(name, desc, order, values, func, width, disabled, hidden)
 	argcheck(values, "typeof", "table;function")
 	
-	if type(values) == "table" then setmetatable(values, {__call = function(t) return t end}) end
+	if type(values) == "table" then setmetatable(values, valuesMT) end
 	
 	local t = SetVals("multiselect", name, order)
 	t.values = values

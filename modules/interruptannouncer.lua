@@ -13,7 +13,9 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("InterruptAnnouncer")
+local module = LUI:Module("InterruptAnnouncer", "AceEvent-3.0")
+
+LUI.Versions.interrupt = 2
 
 -- Database and defaults shortcuts.
 local db, dbd
@@ -21,215 +23,171 @@ local db, dbd
 local partyChatChannels = {"SAY", "YELL", "PARTY"}
 local raidChatChannels = {"SAY", "YELL", "PARTY", "RAID", "RAID_WARNING"}
 
--- Create module function.
-function module:Create()
-	if not db.Enable then return end
+ -- spellID/spellName is the spell used to interrupt; interruptedSpellID/interruptedSpellName is the spell that was interruped
+function module:COMBAT_LOG_EVENT_UNFILTERED(_, timestamp, event, _, sourceGUID, sourceName, _, _, _, destName, _, _, spellID, spellName, _, interruptedSpellID, interruptedSpellName)
+	-- Filter combat events.
+	if event ~= "SPELL_INTERRUPT" then return end
+	if sourceGUID ~= self.GUID and souceGUID ~= self.petGUID then return end
+	if timestamp == self.lastTime and interruptedSpellID == self.lastInterrupt then return end
 	
-	-- Create a frame to work with.
-	local IA = CreateFrame("frame")
+	-- Update variables.
+	self.lastTime, self.lastInterrupt = timestamp, interruptedSpellID
 
-	-- Set event script.
-	IA:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
+	-- Send chat message.
+	if db.General.EnableFormat then
+		-- Create msg from custom format and keywords.
+		local msg = db.Format.Format
+		msg = msg:gsub("!player", sourceName)
+		msg = msg:gsub("!target", destName)
+		msg = msg:gsub("!interruptSpell", spellName)
+		msg = msg:gsub("!interruptLink", GetSpellLink(spellID))
+		msg = msg:gsub("!spellName", interruptedSpellName)
+		msg = msg:gsub("!spellLink", GetSpellLink(interruptedSpellID))
 
-	-- Register events.
-	IA:RegisterEvent("PARTY_MEMBERS_CHANGED")
-	IA:RegisterEvent("UNIT_PET")
-	
-	-- Locale variables for module.
-	IA.channel = nil
-	IA.GUID = nil
-	IA.lastTime = nil
-	IA.lastInterrupt = nil
-	IA.petGUID = nil
-	
-	-- Combat log event unfiltered event function.
-	function IA:COMBAT_LOG_EVENT_UNFILTERED(timeStamp, event, _, sGUID, sName,_,_,_, dName, _,_, interruptID, interruptName, _, spellID, spellName)
-		-- Filter combat events.
-		if (sGUID ~= self.GUID) and (sGUID ~= self.petGUID) then return end
-		if (event ~= "SPELL_INTERRUPT") then return end
-		if (timeStamp == self.lastTime) and (spellID == self.lastInterrupt) then return end
-		
-		-- Update variables.
-		self.lastTime, self.lastInterrupt = timeStamp, spellID
-
-		-- Send chat message.
-		if db.EnableFormat then
-			-- Create msg from custom format and keywords.
-			local msg = db.Format
-			msg = msg:gsub("!player", sName)
-			msg = msg:gsub("!target", dName)
-			msg = msg:gsub("!interruptSpell", interruptName)
-			msg = msg:gsub("!interruptLink", GetSpellLink(interruptID))
-			msg = msg:gsub("!spellName", spellName)
-			msg = msg:gsub("!spellLink", GetSpellLink(spellID))
-
-			SendChatMessage(msg, self.channel)
-		else
-			SendChatMessage(format("%s - %s (%s)", interruptName, GetSpellLink(spellID), dName), self.channel)
-		end
+		SendChatMessage(msg, self.channel)
+	else
+		SendChatMessage(format("%s - %s (%s)", spellName, GetSpellLink(interruptedSpellID), destName), self.channel)
 	end
+end
 
-	-- Party members changed event function.
-	function IA:PARTY_MEMBERS_CHANGED()
-		-- Check if announcer should be enabled/disabled.
-		local _, instanceType = IsInInstance()
-		if (instanceType == "pvp") or IsInActiveWorldPVP() or ((GetRealNumRaidMembers() == 0) and (GetRealNumPartyMembers() == 0)) then
-			-- Unregister combat events.
-			self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-			self:UnregisterEvent("UNIT_PET")
-		
-			-- Reset variables.
-			self.channel = nil
-			self.GUID = nil
-			self.lastTime = nil
-			self.lastInterrupt = nil
-			self.petGUID = nil
-			return
-		end
-
-		-- Set channel for output.
-		if (GetRealNumRaidMembers() > 0) then
-			if db.EnableRaid then
-				if (db.AnnounceRaid == "RAID_WARNING") and (not(IsRaidLeader())) and (not(IsRaidOfficer())) then
-					self.channel = "RAID"
-				else
-					self.channel = db.AnnounceRaid
-				end
-			else
-				-- Unregister combat events.
-				self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-				self:UnregisterEvent("UNIT_PET")
-		
-				-- Reset variables.
-				self.channel = nil
-				self.GUID = nil
-				self.lastTime = nil
-				self.lastInterrupt = nil
-				self.petGUID = nil
-				return
-			end
-		else
-			if db.EnableParty then
-				self.channel = db.AnnounceParty
-			else
-				-- Unregister combat events.
-				self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-				self:UnregisterEvent("UNIT_PET")
-		
-				-- Reset variables.
-				self.channel = nil
-				self.GUID = nil
-				self.lastTime = nil
-				self.lastInterrupt = nil
-				self.petGUID = nil
-				return
-			end
-		end
-		
-		if self.GUID then return end
-
-		-- Collect GUIDs.
-		self.GUID = UnitGUID("player")
-		if db.EnablePet then self.petGUID = UnitGUID("pet") end
-		
-		-- Register combat events.
-		self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-		self:RegisterEvent("UNIT_PET")
+function module:PARTY_MEMBERS_CHANGED()
+	-- Check if announcer should be enabled/disabled.
+	local _, instanceType = IsInInstance()
+	if (instanceType == "pvp") or IsInActiveWorldPVP() or ((GetRealNumRaidMembers() == 0) and (GetRealNumPartyMembers() == 0)) then
+		return module:Deactivate()
 	end
-
-	-- Pet changed event function.
-	function IA:UNIT_PET(unit)
-		if unit ~= "player" then return end
-		if not self.GUID then return end
-		if not db.EnablePet then return end
 	
-		-- Update pet GUID.
-		self.petGUID = UnitGUID("pet")
-	end	
+	-- Set channel for output.
+	if (GetRealNumRaidMembers() > 0) then
+		if not db.General.EnableRaid then
+			return module:Deactivate()
+		end
+		
+		if db.General.AnnounceRaid == "RAID_WARNING" and not IsRaidLeader() and not IsRaidOfficer() then
+			self.channel = "RAID"
+		else
+			self.channel = db.General.AnnounceRaid
+		end
+	else
+		if not db.General.EnableParty then
+			module:Deactivate()
+		end
+		
+		self.channel = db.General.AnnounceParty
+	end
+	
+	if self.GUID then return end
+
+	-- Collect GUIDs.
+	self.GUID = UnitGUID("player")
+	self:UNIT_PET(_, "player")
+	
+	-- Register combat events.
+	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+end
+
+function module:UNIT_PET(_, unit)
+	if not (db.General.EnablePet and unit == "player" and self.GUID) then return end
+	
+	-- Update pet GUID.
+	self.petGUID = UnitGUID("pet")
+end
+
+function module:Deactivate()
+	self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	
+	-- Reset variables.
+	self.channel = nil
+	self.GUID = nil
+	self.lastTime = nil
+	self.lastInterrupt = nil
+	self.petGUID = nil
 end
 
 -- Defaults for the module.
 module.defaults = {
 	profile = {
 		Enable = true,
-		AnnounceParty = "PARTY",
-		AnnounceRaid = "RAID",
-		EnableFormat = false,
-		EnableParty = true,
-		EnablePet = true,
-		EnableRaid = true,
-		Format = "!interruptName - !spellLink (!target)",
+		General = {
+			EnableParty = true,
+			EnableRaid = true,
+			AnnounceParty = "PARTY",
+			AnnounceRaid = "RAID",
+			EnablePet = true,
+			EnableFormat = false,
+		},
+		Format = {
+			Format = "!interruptSpell - !spellLink (!target)",
+		},
 	},
 }
+
 module.optionsName = "Interrupt Announcer"
+module.getter = function(info) return (info.option.type == "select" and info.option.values(db(info)) or db(info)) end
+module.setter = function(info, value) db(info, info.option.type == "select" and info.option.values()[value] or value); module:Refresh() end
 
 -- Load options: Creates the options menu for LUI.
 function module:LoadOptions()
+	local partyDisabled = function()
+		return not db.General.EnableParty
+	end
+	local raidDisabled = function()
+		return not db.General.EnableRaid
+	end
+	local customDisabled = function()
+		return not db.General.EnableFormat
+	end
+	
 	local options = {
-		Title = LUI:NewHeader("Interrupt Announcer", 1),
-		General = {
-			name = "General",
-			type = "group",
-			order = 2,
-			args = {
-				Info = {
-					name = "Info",
-					type = "group",
-					order = 1,
-					guiInline = true,
-					args = {
-						A = LUI:NewDesc("This module will announce to your group when you interrupt a spell while in a party or raid.", 1),
-						B = LUI:NewDesc("The interrupt announcer is disabled while in battlegrounds and WorldPVP (while in battle).", 2),
-						C = LUI:NewDesc("A standalone version of this addon is available on curse if prefered:\nhttp://wow.curse.com/downloads/wow-addons/details/hix_interruptannouncer.aspx", 3),
-					},
-				},
-				Settings = {
-					name = "Settings",
-					type = "group",
-					order = 2,
-					guiInline = true,
-					args = {
-						EnableParty = LUI:NewToggle("Enable In Party", nil, 1, db, "EnableParty", dbd),
-						EnableRaid = LUI:NewToggle("Enable In Raid", nil, 2, db, "EnableRaid", dbd),
-						EnablePet = LUI:NewToggle("Announce Pet Interrupts", nil, 3, db, "EnablePet", dbd),
-						EnableFormat = LUI:NewToggle("Enable Custom Format", nil, 4, db, "EnableFormat", dbd),
-						AnnouceParty = LUI:NewSelect("Announce Channel For Party", "Which channel to announce interrupts to while in a party", 5, partyChatChannels, nil, db, "AnnounceParty", dbd),
-						AnnouceRaid = LUI:NewSelect("Announce Channel For Raid", "Which channel to announce interrupts to while in a raid", 6, raidChatChannels, nil, db, "AnnounceRaid", dbd),
-					},
-				},
-			},
-		},
-		Format = {
-			name = "Announce Format",
-			type = "group",
-			order = 3,
-			disabled = function() return not db.EnableFormat end,
-			args = {
-				Info = {
-					name = "Info",
-					type = "group",
-					order = 1,
-					guiInline = true,
-					args = {
-						A = LUI:NewDesc("You can customise the interrupt announcers output format.", 1),
-						B = LUI:NewDesc("Enter into the box below the format you wish to use. There are select keywords that will be replaced by realtime data before outputing:", 2),
-						C = LUI:NewDesc("!player = interruptors name\n!target = targets name\n!interruptSpell = the interrupts spell name\n!interruptLink = the interrupts spell link\n!spellName = the spell name interrupted\n!spellLink = the spell link of the spell interrupted.", 3),
-					},
-				},
-				Format = LUI:NewInput("Announce Format", "Create a string that becomes the interrupt announcers output format. Use keywords to be replaced by realtime data.", 2, db, "Format", dbd, nil, "double"),
-			},
-		},
+		General = self:NewGroup("General", 1, {
+			Title = self:NewHeader("Interrupt Announcer", 1),
+			Info = self:NewGroup("Info", 2, true, {
+				A = self:NewDesc("This module will announce to your group when you interrupt a spell while in a party or raid.", 1),
+				B = self:NewDesc("The interrupt announcer is disabled while in battlegrounds and WorldPVP (while in battle).", 2),
+				C = self:NewDesc("A standalone version of this addon is available on curse if prefered:\nhttp://wow.curse.com/downloads/wow-addons/details/hix_interruptannouncer.aspx", 3),
+			}),
+			Settings = self:NewHeader("Settings", 3),
+			EnableParty = self:NewToggle("Enable In Party", nil, 4, nil, "normal"),
+			AnnounceParty = self:NewSelect("Announce Channel For Party", "Which channel to announce interrupts to while in a party", 5, partyChatChannels, nil, nil, nil, partyDisabled),
+			EnableRaid = self:NewToggle("Enable In Raid", nil, 6, nil, "normal"),
+			AnnounceRaid = self:NewSelect("Announce Channel For Raid", "Which channel to announce interrupts to while in a raid", 7, raidChatChannels, nil, nil, nil, raidDisabled),
+			EnablePet = self:NewToggle("Announce Pet Interrupts", nil, 8),
+			EnableFormat = self:NewToggle("Enable Custom Format", nil, 9),
+		}),
+		Format = self:NewGroup("Announce Format", 2, false, customDisabled, {
+			Info = self:NewGroup("Info", 1, true, {
+				A = self:NewDesc("You can customise the interrupt announcers output format.", 1),
+				B = self:NewDesc("Enter into the box below the format you wish to use. There are select keywords that will be replaced by realtime data before outputing:", 2),
+				C = self:NewDesc("!player = interruptors name\n!target = targets name\n!interruptSpell = the name of the spell used to interrupt\n!interruptLink = the spell link of the spell used to interrupt", 3),
+				D = self:NewDesc("!spellName = the name of the spell that was interrupted\n!spellLink = the spell link of the spell that was interrupted.", 4),
+			}),
+			Format = self:NewInput("Announce Format", "Create a string that becomes the interrupt announcers output format. Use keywords to be replaced by realtime data.", 2, nil, "double"),
+		}),
 	}
-
+	
 	return options
 end
 
+module.Refresh = module.PARTY_MEMBERS_CHANGED
+
 -- Initialize module: Called when the addon should intialize its self; this is where we load in database values.
 function module:OnInitialize()
-	db, dbd = LUI:NewNamespace(self, true)	
+	db, dbd = LUI:NewNamespace(self, true)
+	
+	if LUICONFIG.Versions.interrupt ~= LUI.Versions.interrupt then
+		db:ResetProfile()
+	end
 end
 
 -- Enable module: Called when addon is enabled.
 function module:OnEnable()
-	self:Create()
+	self:RegisterEvent("UNIT_PET")
+	self:RegisterEvent("PARTY_MEMBERS_CHANGED")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "PARTY_MEMBERS_CHANGED")
+	self:PARTY_MEMBERS_CHANGED()
+end
+
+function module:OnDisable()
+	self:UnregisterAllEvents()
+	self:Deactivate()
 end
