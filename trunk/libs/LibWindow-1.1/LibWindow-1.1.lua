@@ -203,13 +203,15 @@ function lib.RestorePosition(frame)
 end
 
 
-mixins["SetFrameScale"]=true
-function lib.SetFrameScale(frame, scale)
+--mixins["SetScale"]=true -- causes enless loop when embedded (use SetFrameScale)
+function lib.SetScale(frame, scale)
 	setStorage(frame, "scale", scale)
 	frame:SetScale(scale)
 	lib.RestorePosition(frame)
 end
 
+mixins["SetFrameScale"]=true
+lib.SetFrameScale = lib.SetScale
 
 
 ---------------------------------------------------------
