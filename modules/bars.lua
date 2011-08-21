@@ -2,8 +2,6 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: bars.lua
 	Description: Bars Module
-	Version....: 2.3
-	Rev Date...: 16/08/11 [dd/mm/yy]
 ]] 
 
 local addonname, LUI = ...
@@ -1064,6 +1062,7 @@ function module:SetButtons()
 		-- normal
 		local normal = button:GetNormalTexture()
 		normal:SetTexture("")
+		normal.SetTexture = function() end
 		normal:Hide()
 		normal.Show = normal.Hide
 		
