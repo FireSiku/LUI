@@ -35,7 +35,7 @@
 
 -- External references.
 local addonname, LUI = ...
-local Fader = LUI:Module("Fader", "AceEvent-3.0", "AceHook-3.0")
+local Fader = LUI:Module("Fader", "AceEvent-3.0", "AceHook-3.0", "AceTimer-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -61,8 +61,8 @@ Fader.Status = {
 -- / Fader Utilities / --
 ------------------------------------------------------
 
+-- Fader:RegisterFrame(frame, settings[, specialHover])
 --[[
-	Function..: RegisterFrame(frame, settings[, specialHover])
 	Notes.....: registers a given frame to the fader logic.
 	Parameters:
 		frame: Frame to be registered to the fader.
@@ -117,8 +117,8 @@ function Fader:RegisterFrame(frame, settings, specialHover)
 	self:FadeHandler(frame)
 end
 
+-- Fader:UnregisterFrame(frame)
 --[[
-	Function..: UnregisterFrame(frame)
 	Notes.....: Unregisters a given frame from the fader logic.
 	Parameters:
 		frame: Frame to be unregistered from the fader.
@@ -165,71 +165,89 @@ end
 -- / Fader Mouse Hover Scripts / --
 ------------------------------------------------------
 
+-- Fader.Hover_OnEnter(frame)
 --[[
-	Function..: Hover_OnEnter(self)
 	Notes.....: Fades the frame when the mouse enters the frame.
 ]]
-function Fader.Hover_OnEnter(self)
+function Fader.Hover_OnEnter(frame)
 	-- Set mouse hover.
-	self.Fader.mouseHover = true
+	frame.Fader.mouseHover = true
 
 	-- Check if already fading in.
-	if self.Fader.fading and self.Fader.endAlpha >= Fader.RegisteredFrames[self].HoverAlpha then return end
+	if frame.Fader.fading and frame.Fader.endAlpha >= Fader.RegisteredFrames[frame].HoverAlpha then return end
 		
 	-- Cancel any fading.
-	Fader:StopFading(self)
+	Fader:StopFading(frame)
 
 	-- Check if fade is required.
-	if self:GetAlpha() >= Fader.RegisteredFrames[self].HoverAlpha then return end
+	if frame:GetAlpha() >= Fader.RegisteredFrames[frame].HoverAlpha then return end
 
 	-- Fade in frame.
-	Fader:FadeFrame(self, Fader.RegisteredFrames[self].HoverAlpha)
+	Fader:FadeFrame(frame, Fader.RegisteredFrames[frame].HoverAlpha)
 end
 
+-- Fader.Hover_OnLeave(frame)
 --[[
-	Function..: Hover_OnLeave(self)
 	Notes.....: Fades out the frame when the mouse leaves the frame.
 ]]
-function Fader.Hover_OnLeave(self)
+function Fader.Hover_OnLeave(frame)
 	-- Set mouse hover.
-	self.Fader.mouseHover = false
+	frame.Fader.mouseHover = false
 
 	-- Check if already fading out.
-	if self.Fader.fading and not self.Fader.fadingIn then return end
+	if frame.Fader.fading and not frame.Fader.fadingIn then return end
 	
 	-- Fade out frame.
-	Fader:FadeFrame(self,	Fader.RegisteredFrames[self].OutAlpha,
-							Fader.RegisteredFrames[self].OutTime,
-							Fader.RegisteredFrames[self].OutDelay)
-	Fader:FadeHandler(self)
+	Fader:FadeFrame(frame,	Fader.RegisteredFrames[frame].OutAlpha,
+							Fader.RegisteredFrames[frame].OutTime,
+							Fader.RegisteredFrames[frame].OutDelay)
+	Fader:FadeHandler(frame)
 end
 
+-- Fader.SpecialHover_OnEnter(frame) -- not being used
 --[[
-	Function..: SpecialHover_OnEnter(self)
 	Notes.....: Fades the frame when the mouse enters the frame or any child of the frame.
 ]]
-function Fader.SpecialHover_OnEnter(self)
-	self = self.Fader and self or self:GetParent()
+function Fader.SpecialHover_OnEnter(frame)
+	frame = frame.Fader and frame or frame:GetParent()
 	
-	if not self.Fader.mouseHover then
-		Fader.Hover_OnEnter(self)
+	if not frame.Fader.mouseHover then
+		Fader.Hover_OnEnter(frame)
 	end
 end
 
+-- Fader.SpecialHover_OnLeave(frame) -- not being used
 --[[
-	Function..: SpecialHover_OnLeave(self)
 	Notes.....: Fades out the frame when the mouse leaves the frame or any child of the frame.
 ]]
-function Fader.SpecialHover_OnLeave(self)
-	self = self.Fader and self or self:GetParent()
+function Fader.SpecialHover_OnLeave(frame)
+	frame = frame.Fader and frame or frame:GetParent()
 	
-	if not self:IsMouseOver() then
-		Fader.Hover_OnLeave(self)
+	if not frame:IsMouseOver() then
+		Fader.Hover_OnLeave(frame)
 	end
 end
 
+-- Fader:CheckMouseHover()
 --[[
-	Function..: AttachHoverScript(frame)
+	Notes.....: Checks special frames to see if the mouseover of that frame has changed
+]]
+function Fader:CheckMouseHover()
+	for frame, mouseHover in pairs(self.specialHoverFrames) do
+		local isMouseOver = frame:IsMouseOver()
+		if isMouseOver ~= mouseHover then
+			self.specialHoverFrames[frame] = isMouseOver
+			if isMouseOver then
+				self.Hover_OnEnter(frame)
+			else
+				self.Hover_OnLeave(frame)
+			end
+		end
+	end
+end
+
+-- Fader:AttachHoverScript(frame)
+--[[
 	Notes.....: Registers a mouseover script to a given frame if needed.
 	Parameters:
 		frame: Frame to be given hover scripts.
@@ -255,51 +273,46 @@ function Fader:AttachHoverScript(frame)
 	frame:GetScript("OnLeave")(frame)
 end
 
+-- Fader:AttachSpecialHoverScript(frame)
 --[[
-	Function..: AttachSpecialHoverScript(frame)
 	Notes.....: Registers a mouseover script to a given frame that has children if needed.
 	Parameters:
 		frame: Frame to be given hover scripts.
 ]]
 function Fader:AttachSpecialHoverScript(frame)
-	-- Hook scripts.
-	if not self:IsHooked(frame, "OnEnter") then self:SecureHookScript(frame, "OnEnter", Fader.SpecialHover_OnEnter) end
-	if not self:IsHooked(frame, "OnLeave") then self:SecureHookScript(frame, "OnLeave", Fader.SpecialHover_OnLeave) end
-	
-	-- Hook scripts to children.
-	for index, child in pairs({frame:GetChildren()}) do
-		if not self:IsHooked(child, "OnEnter") then self:SecureHookScript(child, "OnEnter", Fader.SpecialHover_OnEnter) end
-		if not self:IsHooked(child, "OnLeave") then self:SecureHookScript(child, "OnLeave", Fader.SpecialHover_OnLeave) end
+	-- Create timer and specialHoverFrames table if they doesn't exist
+	if not self.timerHandle then
+		self.specialHoverFrames = {}
+		self.timerHandle = self:ScheduleRepeatingTimer("CheckMouseHover", 0.1)
 	end
 	
-	-- Mark frame as having a special hover script.
-	frame.Fader.SpecialMouseHover = true
-	
-	-- Run leave script.
-	frame:GetScript("OnLeave")(frame)
+	if not self.specialHoverFrames[frame] then
+		self.specialHoverFrames[frame] = false
+	end
 end
 
+-- Fader:RemoveHoverScript(frame)
 --[[
-	Function..: RemoveHoverScript(frame)
 	Notes.....: Unregisters the mouseover script from the given frame.
 	Parameters:
 		frame: Frame to remove hover scripts from.
 ]]
 function Fader:RemoveHoverScript(frame)
-	-- Unhook scripts
-	self:Unhook(frame, "OnEnter")
-	self:Unhook(frame, "OnLeave")
-
-	if frame.Fader.SpecialMouseHover then
-		for index, child in pairs({frame:GetChildren()}) do
-			self:Unhook(child, "OnEnter")
-			self:Unhook(child, "OnLeave")
+	if self.specialHoverFrames and self.specialHoverFrames[frame] then
+		self.specialHoverFrames[frame] = nil
+		if not next(self.specialHoverFrames) then
+			self:CancelTimer(self.timerHandle)
+			self.timerHandle = nil
 		end
+	else
+		-- Unhook scripts
+		self:Unhook(frame, "OnEnter")
+		self:Unhook(frame, "OnLeave")
 	end
 end
 
+--	Fader:CreateHoverScripts(frame[, inAlpha[, outAlpha[, fadeTime[, fadeDelay[, children[, recursive]]]]]])
 --[[
-	Function..: CreateHoverScripts(frame[, inAlpha[, outAlpha[, fadeTime[, fadeDelay[, children[, recursive])
 	Notes.....: Creates mousehover scripts for a frame that does not need other fader features.
 				This function can be used with Fader'.'CreateHoverScript(self, ...) notation allowing another
 				module with AceHook functionallity to create hooks local to that module.
@@ -312,15 +325,19 @@ end
 		children: To attach scripts to child frames; much like SpecialHoverScripts.
 		recursive: To attack scripts to children of children, etc.
 ]]
-function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, children, recursive)
+function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, children--[[, recursive]])
 	-- Check frame is a usable objects.
 	if type(frame) ~= "table"  then return end
-
+	
 	-- Set defaults.
 	inAlpha = inAlpha or 1
-
+	
 	-- Create upvalues.
 	local mouseHover = false
+	
+	-- Create Fader table for frame if it doesn't exist
+	frame.Fader = frame.Fader or {}
+	frame.FaderHoverScript = true
 	
 	-- Create OnEnter/OnLeave functions.
 	local function OnEnter()
@@ -334,15 +351,15 @@ function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, 
 		if frame.Fader and frame.Fader.fading and frame.Fader.endAlpha >= inAlpha then return end
 		
 		-- Cancel any fading.
-		Fader:StopFading(frame)
+		self:StopFading(frame)
 
 		-- Check if fade is required.
 		if frame:GetAlpha() >= inAlpha then return end
 
 		-- Fade in frame.
-		Fader:FadeFrame(frame, inAlpha)
+		self:FadeFrame(frame, inAlpha)
 	end
-
+	
 	local function OnLeave()
 		-- Check if mouse is over.
 		if frame:IsMouseOver() then return end
@@ -354,39 +371,32 @@ function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, 
 		if frame.Fader and frame.Fader.fading and not frame.Fader.fadingIn then return end
 	
 		-- Fade out frame.
-		Fader:FadeFrame(frame, outAlpha, fadeTime, fadeDelay)
+		self:FadeFrame(frame, outAlpha, fadeTime, fadeDelay)
 	end
-
-	-- Hook scripts.
-	if not self:IsHooked(frame, "OnEnter") then self:SecureHookScript(frame, "OnEnter", OnEnter) end
-	if not self:IsHooked(frame, "OnLeave") then self:SecureHookScript(frame, "OnLeave", OnLeave) end
-
-	if not children then return end
-
-	-- Hook scripts to children.
-	if recursive then
-		local function hookChildren(frame)
-			for index, child in pairs({frame:GetChildren()}) do
-				if not self:IsHooked(child, "OnEnter") then self:SecureHookScript(child, "OnEnter", OnEnter) end
-				if not self:IsHooked(child, "OnLeave") then self:SecureHookScript(child, "OnLeave", OnLeave) end
-				
-				-- Recurse.
-				hookChildren(child)
+	
+	if not children then
+		-- Hook scripts.
+		if not self:IsHooked(frame, "OnEnter") then self:SecureHookScript(frame, "OnEnter", OnEnter) end
+		if not self:IsHooked(frame, "OnLeave") then self:SecureHookScript(frame, "OnLeave", OnLeave) end
+	else
+		local function CheckMouseHover()
+			local isMouseOver = frame:IsMouseOver()
+			if isMouseOver ~= mouseHover then
+				if isMouseOver then
+					OnEnter()
+				else
+					OnLeave()
+				end
 			end
 		end
 		
-		-- Hook all children recursively.
-		hookChildren(frame)
-	else
-		for index, child in pairs({frame:GetChildren()}) do
-			if not self:IsHooked(child, "OnEnter") then self:SecureHookScript(child, "OnEnter", OnEnter) end
-			if not self:IsHooked(child, "OnLeave") then self:SecureHookScript(child, "OnLeave", OnLeave) end
-		end
+		-- Create AceTimer
+		frame.Fader.timerHandle = self:ScheduleRepeatingTimer(CheckMouseHover, 0.1)
 	end
 end
 
+--	Fader:DeleteHoverScript(frame[, children[, recursive]])
 --[[
-	Function..: DeleteHoverScript(frame[, children[, recursive])
 	Notes.....: Deletes mousehover scripts for a frame that has had hover scripts created for it.
 				This function can be used with Fader'.'CreateHoverScript(self, ...) notation allowing another
 				module with AceHook functionallity to delete hooks that were made by that module.
@@ -395,44 +405,51 @@ end
 		children: To delete scripts from child frames; much like SpecialHoverScripts.
 		recursive: To delete scripts from children of children, etc.
 ]]
-function Fader:DeleteHoverScript(frame, children, recursive)
+function Fader:DeleteHoverScript(frame, children--[[, recursive]])
 	-- Check frame is a usable objects.
 	if type(frame) ~= "table"  then return end
-
-	-- Unhook scripts
-	self:Unhook(frame, "OnEnter")
-	self:Unhook(frame, "OnLeave")
-
-	if not children then return end
-
-	-- Unhook children scripts.
-	if recursive then
-		local function UnhookChildren(frame)
+	
+	if not children then
+		-- Unhook scripts
+		self:Unhook(frame, "OnEnter")
+		self:Unhook(frame, "OnLeave")
+	else
+		--[[
+		-- Unhook children scripts.
+		if recursive then
+			local function UnhookChildren(frame)
+				for index, child in pairs({frame:GetChildren()}) do
+					self:Unhook(child, "OnEnter")
+					self:Unhook(child, "OnLeave")
+					
+					-- Recurse.
+					UnhookChildren(child)
+				end
+			end
+			
+			-- Unhook all children recursively.
+			UnhookChildren(frame)
+		else
 			for index, child in pairs({frame:GetChildren()}) do
 				self:Unhook(child, "OnEnter")
 				self:Unhook(child, "OnLeave")
-				
-				-- Recurse.
-				UnhookChildren(child)
 			end
 		end
-		
-		-- Unhook all children recursively.
-		UnhookChildren(frame)
-	else
-		for index, child in pairs({frame:GetChildren()}) do
-			self:Unhook(child, "OnEnter")
-			self:Unhook(child, "OnLeave")
+		]]
+		if frame.Fader then
+			self:CancelTimer(frame.Fader.timerHandle, true)
+			frame.Fader.timerHandle = nil
 		end
 	end
+	frame.FaderHoverScript = nil
 end
 
 ------------------------------------------------------
 -- / Fade / Event Handlers / --
 ------------------------------------------------------
 
+-- Fader:EventsRegister()
 --[[
-	Function..: EventsRegister()
 	Notes.....: Register all the event triggers for the fader.
 ]]
 function Fader:EventsRegister()
@@ -448,8 +465,8 @@ function Fader:EventsRegister()
 	self:RegisterEvent("UNIT_SPELLCAST_STOP", "UnitEventHandler")
 end
 
+-- Fader:EventsUnregister()
 --[[
-	Function..: EventsUnregister()
 	Notes.....: Unregister all the event triggers for the fader.
 ]]
 function Fader:EventsUnregister()
@@ -465,8 +482,8 @@ function Fader:EventsUnregister()
 	self:UnregisterEvent("UNIT_SPELLCAST_STOP")
 end
 
+-- Fader:EventHandler()
 --[[
-	Function..: EventHandler()
 	Notes.....: Handles a passed event, checks frame fade triggers.
 ]]
 function Fader:EventHandler(event)
@@ -485,8 +502,8 @@ function Fader:EventHandler(event)
 	end
 end
 
+-- Fader:UnitEventHandler(eventname, unit)
 --[[
-	Function..: UnitEventHandler(eventname, unit)
 	Notes.....: Handles a passed event that recieves a unit parameter and checks if it is the player unit.
 	Parameters:
 		eventname: Name of the event passed.
@@ -518,8 +535,8 @@ function Fader:UnitEventHandler(event, unit)
 	end
 end
 
+-- Fader:FadeHandler(frame)
 --[[
-	Function..: FadeHandler(frame)
 	Notes.....: Handles fading of a frame using the options of that frame.
 ]]
 function Fader:FadeHandler(frame)
@@ -547,8 +564,8 @@ function Fader:FadeHandler(frame)
 	self:FadeOnEvent(frame, fadeIn)
 end
 
+-- Fader:FadeOnEvent(frame[, fadeIn])
 --[[
-	Function..: FadeOnEvent(frame[, fadeIn])
 	Notes.....: Fades a frame dependant on events.
 	Parameters:
 		frame: The frame to fade.
@@ -582,8 +599,8 @@ end
 -- / Frame Fader / --
 ------------------------------------------------------
 
+-- Fader.Fade_OnUpdate(self, elapsed)
 --[[
-	Function..: Fade_OnUpdate(self, elapsed)
 	Notes.....: Fades running frames over time.
 ]]
 function Fader.Fader_OnUpdate(self, elapsed)
@@ -615,8 +632,8 @@ function Fader.Fader_OnUpdate(self, elapsed)
 	end
 end
 
+-- Fader:FadeFrame(frame[, endalpha[, fadetime[, fadedelay])
 --[[
-	Function..: FadeFrame(frame[, endalpha[, fadetime[, fadedelay])
 	Notes.....: Takes a frame and fades it with the given parameters.
 	Parameters:
 		frame: Frame to fade.
@@ -652,8 +669,8 @@ function Fader:FadeFrame(frame, endAlpha, fadeTime, fadeDelay, callBack)
 	self:StartFading(frame)
 end
 
+-- Fader:StartFading(frame)
 --[[
-	Function..: StartFading(frame)
 	Notes.....: Adds a frame to the fading table.
 ]]
 function Fader:StartFading(frame)
@@ -671,8 +688,8 @@ function Fader:StartFading(frame)
 	tinsert(self.Fading, frame)
 end
 
+-- Fader:StopFading(frame)
 --[[
-	Function..: StopFading(frame)
 	Notes.....: Removes a frame to the fading table.
 ]]
 function Fader:StopFading(frame)
@@ -687,7 +704,7 @@ function Fader:StopFading(frame)
 				frame.Fader.callBack = nil
 			end
 			
-			if not self.RegisteredFrames[frame] then frame.Fader = nil end
+			if not frame.FaderHoverScript and not self.RegisteredFrames[frame] then frame.Fader = nil end
 			return
 		end
 	end

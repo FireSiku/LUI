@@ -196,7 +196,7 @@ local LoadStates = function(data)
 end
 
 local GetAnchor = function(anchor)
-	if string.match(anchor, "Dominos") then
+	if string.find(anchor, "Dominos") then
 		if IsAddOnLoaded("Dominos") then
 			return Dominos.ActionBar:Get(string.match(anchor, "%d+"))
 		end
@@ -252,8 +252,8 @@ local SidebarSetAnchor = function(side, id)
 	local scale = anchor:GetEffectiveScale()
 	local scaleUI = UIParent:GetEffectiveScale()
 	
-	local x = tonumber(xOffset) + ( scaleUI * math.floor( (side == "Right" and -90 or 20) / scale ) / 0.85 * bardb.Scale)
-	local y = tonumber(yOffset) + ( scaleUI * math.floor( 157 + tonumber(sbOffset) / scale / 0.85 * bardb.Scale ) )
+	local x = xOffset + ( scaleUI * math.floor( (side == "Right" and -90 or 20) / scale ) / 0.85 * bardb.Scale)
+	local y = yOffset + ( scaleUI * math.floor( 157 + sbOffset / scale / 0.85 * bardb.Scale ) )
 	
 	anchor:SetFrameStrata("BACKGROUND")
 	anchor:SetFrameLevel(2)
@@ -665,7 +665,7 @@ function module:SetBottomBar(id)
 		bar.buttons = {}
 		
 		for i = 1, 12 do
-			local button = GetButton(bar, id, "Bottom", i)	
+			local button = GetButton(bar, id, "Bottom", i)
 			button:UnregisterEvent("ACTIONBAR_SHOWGRID")
 			button:UnregisterEvent("ACTIONBAR_HIDEGRID")
 			button:SetAttribute("showgrid", 100)
@@ -744,6 +744,7 @@ function module:SetSideBar(side, id)
 		
 		for i = 1, 12 do
 			local button = GetButton(bar, id, side, i)
+			
 			button:UnregisterEvent("ACTIONBAR_SHOWGRID")
 			button:UnregisterEvent("ACTIONBAR_HIDEGRID")
 			button:SetAttribute("showgrid", 100)
@@ -873,6 +874,9 @@ function module:SetShapeshiftBar()
 			local numrows = math.ceil(10 / db.ShapeshiftBar.NumPerRow)
 			bar:SetWidth(db.ShapeshiftBar.NumPerRow * 30 + (db.ShapeshiftBar.NumPerRow - 1) * 2)
 			bar:SetHeight(numrows * 30 + (numrows - 1) * 2)
+			
+			ShapeshiftButton1:ClearAllPoints()
+			ShapeshiftButton1:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
 			
 			Configure(LUIShapeshiftBar, 10, db.ShapeshiftBar.NumPerRow)
 		end
@@ -1798,7 +1802,7 @@ function module:LoadOptions()
 			Anchor = isBarAddOnLoaded and self:NewInput("Anchor", "Choose the Bar for this Sidebar.", 5, nil, nil, disabledFunc) or nil,
 			Additional = self:NewInput("Additional Frames", "Type in any additional frame names (seperated by commas), that you would like to show/hide with the Sidebar.", 6, true, nil, disabledFunc),
 			header2 = self:NewHeader("General Settings", 7),
-			[""] = self:NewPosSliders(side.." Bar "..num, 8, false, function() return sidebars[side..num].Anchor end, true, nil, disabledPosFunc),
+			[""] = self:NewPosSliders(side.." Bar "..num, 8, false, function() return sidebars[side..num].Main end, true, nil, disabledPosFunc),
 			Scale = self:NewSlider("Scale", "Choose the Scale for this Sidebar.", 9, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
 			AutoPosEnable = isBarAddOnLoaded and self:NewToggle("Stop touching me!", "Whether or not to have LUI handle your Bar Positioning.", 10, true, nil, disabledFunc) or nil,
 			HideEmpty = not isBarAddOnLoaded and self:NewToggle("Hide Empty Buttons", nil, 11, true, nil, disabledFunc) or nil,

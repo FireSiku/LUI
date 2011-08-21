@@ -72,21 +72,20 @@ local getfuncs = setmetatable({
 	["boolean"] = function(self, func, specialget)
 		return nil
 	end,
+	["nil"] = function(self, func, specialget)
+		return specialget or function(info)
+			return self.db(info)
+		end
+	end,
 }, {
 	__index = function(t, k) -- standard (nil)
-		return function(self, func, specialget)
-			return specialget or function(info)
-				return self.db(info)
-			end
-		end
+		return t["nil"]
 	end,
 	__call = function(t, self, func, specialget)
 		argcheck(t, "typeof", "table")
 		argcheck(self, "typeof", "table")
 		argcheck(func, "typeof", "string;function;boolean;nil")
 		argcheck(specialget, "typeof", "function;nil")
-		
-		if func == nil and self.getter then func = true end
 		
 		return t[type(func)](self, func, specialget)
 	end
@@ -120,24 +119,23 @@ local setfuncs = setmetatable({
 			end
 		end
 	end,
-	["boolean"] = function(self, func, specialget)
+	["boolean"] = function(self, func, specialset)
 		return nil
+	end,
+	["nil"] = function(self, func, specialset)
+		return specialset or function(info, value)
+			self.db(info, value)
+		end
 	end,
 }, {
 	__index = function(t, k) -- standard (nil)
-		return function(self, func, specialset)
-			return specialset or function(info, value)
-				self.db(info, value)
-			end
-		end
+		return t["nil"]
 	end,
 	__call = function(t, self, func, specialset)
 		argcheck(t, "typeof", "table")
 		argcheck(self, "typeof", "table")
 		argcheck(func, "typeof", "string;function;boolean;nil")
 		argcheck(specialset, "typeof", "function;nil")
-		
-		if func == nil and self.setter then func = true end
 		
 		return t[type(func)](self, func, specialset)
 	end
@@ -181,7 +179,7 @@ end
 local getWidthValues, getHeightValues
 do
 	local function round(number) -- round to nearest 10s
-		return floor(number/10 + 0.5) * 10
+		return (number > 0 and ceil or floor)(number/10) * 10
 	end
 	
 	local regexp = "(%a)([%w_']*)" -- (first letter of each word)(rest of each word)
@@ -193,15 +191,18 @@ do
 	getWidthValues = function(frame)
 		argcheck(frame, "typeof", "frame")
 		
-		local width = frame:GetWidth()
 		local point, parent, rpoint = frame:GetPoint()
 		if not (point and parent and rpoint) then return 0, 0 end
+		
+		local width = frame:GetWidth()
+		local scale = 1 -- frame:GetEffectiveScale()/UIParent:GetEffectiveScale()
+		
 		point, rpoint = point:upper(), rpoint:upper()
 		
-		local pPoint = (rpoint:match("LEFT") or rpoint:match("RIGHT") or "CENTER"):gsub(regexp, titleCase)
+		local base = parent["Get"..(rpoint:match("LEFT") or rpoint:match("RIGHT") or "CENTER"):gsub(regexp, titleCase)](parent)
 		
-		local smin = -parent["Get"..pPoint](parent)
-		local smax = UIParent:GetWidth() + smin -- smin is negative so +
+		local smin = -base/scale
+		local smax = (UIParent:GetWidth() - base)/scale
 		
 		if point:find("LEFT") then
 			smin = smin - width
@@ -218,15 +219,18 @@ do
 	getHeightValues = function(frame)
 		argcheck(frame, "typeof", "frame")
 		
-		local height = frame:GetHeight()
 		local point, parent, rpoint = frame:GetPoint()
 		if not (point and parent and rpoint) then return 0, 0 end
+		
+		local height = frame:GetHeight()
+		local scale = 1 -- frame:GetEffectiveScale()/UIParent:GetEffectiveScale()
+		
 		point, rpoint = point:upper(), rpoint:upper()
 		
-		local pPoint = (rpoint:match("TOP") or rpoint:match("BOTTOM") or "CENTER"):gsub(regexp, titleCase)
+		local base = select(-1, parent["Get"..(rpoint:match("TOP") or rpoint:match("BOTTOM") or "CENTER"):gsub(regexp, titleCase)](parent)) -- GetCenter returns x, y
 		
-		local smin = -select(-1, parent["Get"..pPoint](parent)) -- GetCenter returns x, y
-		local smax = UIParent:GetHeight() + smin -- smin is negative so +
+		local smin = -base/scale
+		local smax = (UIParent:GetHeight() - base)/scale
 		
 		if point:find("BOTTOM") then
 			smin = smin - height
@@ -768,8 +772,11 @@ function devapi:UpdatePositionOptions(specific) -- specific - update specific op
 		if f then
 			local x, y = unpack(UI_Scale_Update[frame])
 			
-			x.min, x.max = getWidthValues(f)
-			y.min, y.max = getHeightValues(f)
+			x.softMin, x.softMax = getWidthValues(f)
+			y.softMin, y.softMax = getHeightValues(f)
+			
+			x.min, x.max = -10000, 10000
+			y.min, y.max = -10000, 10000
 		end
 	end
 	

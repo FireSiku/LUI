@@ -618,10 +618,10 @@ end
 function module:SetHoverScripts()
 	if db.General.MouseHover then
 		-- Create mouse hover scripts, include children recursively.
-		Fader.CreateHoverScript(self, WorldMapFrame, db[mapSize()].Alpha, db[mapSize()].Alpha * 0.1, 0.5, nil, true, true)
+		Fader:CreateHoverScript(WorldMapFrame, db[mapSize()].Alpha, db[mapSize()].Alpha * 0.1, 0.5, nil, true)
 	else
 		-- Delete mouse hover scripts.
-		Fader.DeleteHoverScript(self, WorldMapFrame, true, true)	
+		Fader:DeleteHoverScript(WorldMapFrame, true)	
 	end
 end
 
@@ -1091,7 +1091,7 @@ function module:LoadOptions()
 			POIScale = self:NewSlider("POI Scale", "Scale of the POI Icons on the Map.", 2, 0.1, 2, 0.01, true, true),
 			CoordEnable = self:NewToggle("Enable Coordinates", nil, 3, true, "normal"),
 			CoordAccuracy = self:NewSlider("Coordinate Accuracy", "Adjust the number of decimal places the coordinates are accurate to.", 4, 0, 2, 1, true, false, nil, coordDisabled),
-			MouseHover = self:NewToggle("Enable Fading (BUGGY)", "Fade out the map when you move the mouse out of its frame.", 5, true, "normal"),
+			MouseHover = self:NewToggle("Enable Fading", "Fade out the map when you move the mouse out of its frame.", 5, true, "normal"),
 		}),
 		Big = createMapOptions("Fullsize", 2),
 		Mini = createMapOptions("Mini", 3),

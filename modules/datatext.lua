@@ -10,6 +10,8 @@
 		v1.9: Zista
 ]]
 
+if false then return end -- change false to true if working with new infotext module
+
 -- External references.
 local addonname, LUI = ...
 local module = LUI:Module("Infotext", "AceHook-3.0")
@@ -550,8 +552,13 @@ function module:SetCurrency()
 			self:CURRENCY_DISPLAY_UPDATE()
 		end
 		
-		stat.OnClick = function(self, button) -- Toggle CurrencyFrame
-			ToggleCharacter("TokenFrame")
+		stat.OnClick = function(self, button)
+			if button == "RightButton" then
+				LUI:Open()
+				LibStub("AceConfigDialog-3.0"):SelectGroup(addonname, module:GetName(), "Currency")
+			else -- Toggle CurrencyFrame
+				ToggleCharacter("TokenFrame")
+			end
 		end
 
 		stat.CURRENCY_DISPLAY_UPDATE = function (self)
@@ -587,7 +594,9 @@ function module:SetCurrency()
 				end
 				
 				GameTooltip:AddLine(" ")
-				GameTooltip:AddLine("Hint:\n- Any Click to open Currency frame.", 0, 1, 0)
+				GameTooltip:AddLine("Hint:", 0, 1, 0)
+				GameTooltip:AddLine("- Left Click to open Currency frame.", 0, 1, 0)
+				GameTooltip:AddLine("- Right Click to open LUI Currency Options.", 0, 1, 0)
 				GameTooltip:Show()
 			end
 		end
