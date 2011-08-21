@@ -27,7 +27,7 @@ local raidChatChannels = {"SAY", "YELL", "PARTY", "RAID", "RAID_WARNING"}
 function module:COMBAT_LOG_EVENT_UNFILTERED(_, timestamp, event, _, sourceGUID, sourceName, _, _, _, destName, _, _, spellID, spellName, _, interruptedSpellID, interruptedSpellName)
 	-- Filter combat events.
 	if event ~= "SPELL_INTERRUPT" then return end
-	if sourceGUID ~= self.GUID and souceGUID ~= self.petGUID then return end
+	if sourceGUID ~= self.GUID and sourceGUID ~= self.petGUID then return end
 	if timestamp == self.lastTime and interruptedSpellID == self.lastInterrupt then return end
 	
 	-- Update variables.
@@ -147,12 +147,12 @@ function module:LoadOptions()
 				C = self:NewDesc("A standalone version of this addon is available on curse if prefered:\nhttp://wow.curse.com/downloads/wow-addons/details/hix_interruptannouncer.aspx", 3),
 			}),
 			Settings = self:NewHeader("Settings", 3),
-			EnableParty = self:NewToggle("Enable In Party", nil, 4, nil, "normal"),
-			AnnounceParty = self:NewSelect("Announce Channel For Party", "Which channel to announce interrupts to while in a party", 5, partyChatChannels, nil, nil, nil, partyDisabled),
-			EnableRaid = self:NewToggle("Enable In Raid", nil, 6, nil, "normal"),
-			AnnounceRaid = self:NewSelect("Announce Channel For Raid", "Which channel to announce interrupts to while in a raid", 7, raidChatChannels, nil, nil, nil, raidDisabled),
-			EnablePet = self:NewToggle("Announce Pet Interrupts", nil, 8),
-			EnableFormat = self:NewToggle("Enable Custom Format", nil, 9),
+			EnableParty = self:NewToggle("Enable In Party", nil, 4, true, "normal"),
+			AnnounceParty = self:NewSelect("Announce Channel For Party", "Which channel to announce interrupts to while in a party", 5, partyChatChannels, nil, true, nil, partyDisabled),
+			EnableRaid = self:NewToggle("Enable In Raid", nil, 6, true, "normal"),
+			AnnounceRaid = self:NewSelect("Announce Channel For Raid", "Which channel to announce interrupts to while in a raid", 7, raidChatChannels, nil, true, nil, raidDisabled),
+			EnablePet = self:NewToggle("Announce Pet Interrupts", nil, 8, true),
+			EnableFormat = self:NewToggle("Enable Custom Format", nil, 9, true),
 		}),
 		Format = self:NewGroup("Announce Format", 2, false, customDisabled, {
 			Info = self:NewGroup("Info", 1, true, {
@@ -161,7 +161,7 @@ function module:LoadOptions()
 				C = self:NewDesc("!player = interruptors name\n!target = targets name\n!interruptSpell = the name of the spell used to interrupt\n!interruptLink = the spell link of the spell used to interrupt", 3),
 				D = self:NewDesc("!spellName = the name of the spell that was interrupted\n!spellLink = the spell link of the spell that was interrupted.", 4),
 			}),
-			Format = self:NewInput("Announce Format", "Create a string that becomes the interrupt announcers output format. Use keywords to be replaced by realtime data.", 2, nil, "double"),
+			Format = self:NewInput("Announce Format", "Create a string that becomes the interrupt announcers output format. Use keywords to be replaced by realtime data.", 2, true, "double"),
 		}),
 	}
 	
@@ -176,6 +176,7 @@ function module:OnInitialize()
 	
 	if LUICONFIG.Versions.interrupt ~= LUI.Versions.interrupt then
 		db:ResetProfile()
+		LUICONFIG.Versions.interrupt = LUI.Versions.interrupt
 	end
 end
 
