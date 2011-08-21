@@ -19,6 +19,8 @@ NOTES:
 	Future: Upgrading stats for new infotext.
 ]]
 
+if true then return end -- change true to false if working with new infotext module
+
 -- External references.
 local addonname, LUI = ...
 local InfoText = LUI:Module("InfoText", "AceHook-3.0")

@@ -4,6 +4,7 @@
 	Description: Creates the bag infotext stat.
 ]]
 
+if true then return end -- change true to false if working with new infotext module
 
 -- External references.
 local addonname, LUI = ...
