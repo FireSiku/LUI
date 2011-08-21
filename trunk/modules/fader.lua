@@ -311,11 +311,9 @@ function Fader:RemoveHoverScript(frame)
 	end
 end
 
---	Fader:CreateHoverScripts(frame[, inAlpha[, outAlpha[, fadeTime[, fadeDelay[, children[, recursive]]]]]])
+--	Fader:CreateHoverScripts(frame[, inAlpha[, outAlpha[, fadeTime[, fadeDelay[, children]]]]])
 --[[
 	Notes.....: Creates mousehover scripts for a frame that does not need other fader features.
-				This function can be used with Fader'.'CreateHoverScript(self, ...) notation allowing another
-				module with AceHook functionallity to create hooks local to that module.
 	Parameters:
 		frame: The frame to create hover scripts for.
 		inAlpha: The alpha to be set when the frame is being hovered over.
@@ -323,9 +321,8 @@ end
 		fadeTime: The time period to fade out over.
 		fadeDelay: The time period before fading out.
 		children: To attach scripts to child frames; much like SpecialHoverScripts.
-		recursive: To attack scripts to children of children, etc.
 ]]
-function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, children--[[, recursive]])
+function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, children)
 	-- Check frame is a usable objects.
 	if type(frame) ~= "table"  then return end
 	
@@ -348,7 +345,7 @@ function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, 
 		mouseHover = true
 
 		-- Check if already fading in.
-		if frame.Fader and frame.Fader.fading and frame.Fader.endAlpha >= inAlpha then return end
+		if frame.Fader.fading and frame.Fader.endAlpha >= inAlpha then return end
 		
 		-- Cancel any fading.
 		self:StopFading(frame)
@@ -368,7 +365,7 @@ function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, 
 		mouseHover = false
 
 		-- Check if already fading out.
-		if frame.Fader and frame.Fader.fading and not frame.Fader.fadingIn then return end
+		if frame.Fader.fading and not frame.Fader.fadingIn then return end
 	
 		-- Fade out frame.
 		self:FadeFrame(frame, outAlpha, fadeTime, fadeDelay)
@@ -395,17 +392,14 @@ function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, 
 	end
 end
 
---	Fader:DeleteHoverScript(frame[, children[, recursive]])
+--	Fader:DeleteHoverScript(frame[, children])
 --[[
 	Notes.....: Deletes mousehover scripts for a frame that has had hover scripts created for it.
-				This function can be used with Fader'.'CreateHoverScript(self, ...) notation allowing another
-				module with AceHook functionallity to delete hooks that were made by that module.
 	Parameters:
 		frame: The frame to delete hover scripts from.
 		children: To delete scripts from child frames; much like SpecialHoverScripts.
-		recursive: To delete scripts from children of children, etc.
 ]]
-function Fader:DeleteHoverScript(frame, children--[[, recursive]])
+function Fader:DeleteHoverScript(frame, children)
 	-- Check frame is a usable objects.
 	if type(frame) ~= "table"  then return end
 	
@@ -414,33 +408,14 @@ function Fader:DeleteHoverScript(frame, children--[[, recursive]])
 		self:Unhook(frame, "OnEnter")
 		self:Unhook(frame, "OnLeave")
 	else
-		--[[
-		-- Unhook children scripts.
-		if recursive then
-			local function UnhookChildren(frame)
-				for index, child in pairs({frame:GetChildren()}) do
-					self:Unhook(child, "OnEnter")
-					self:Unhook(child, "OnLeave")
-					
-					-- Recurse.
-					UnhookChildren(child)
-				end
-			end
-			
-			-- Unhook all children recursively.
-			UnhookChildren(frame)
-		else
-			for index, child in pairs({frame:GetChildren()}) do
-				self:Unhook(child, "OnEnter")
-				self:Unhook(child, "OnLeave")
-			end
-		end
-		]]
 		if frame.Fader then
 			self:CancelTimer(frame.Fader.timerHandle, true)
 			frame.Fader.timerHandle = nil
 		end
 	end
+
+	-- Clean up variables.
+	frame.Fader = nil
 	frame.FaderHoverScript = nil
 end
 
