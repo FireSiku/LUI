@@ -1046,6 +1046,14 @@ function module:SetButtons()
 		button:GetNormalTexture():SetAlpha(0)
 		if button.__Styled == true then return end
 		
+		if button:GetParent() then
+			local parent = button:GetParent():GetName()
+			if parent == "MultiCastActionBarFrame" then return end
+			if parent == "MultiCastActionPage1" then return end
+			if parent == "MultiCastActionPage2" then return end
+			if parent == "MultiCastActionPage3" then return end
+		end
+		
 		local name = button:GetName()
 		local size = button:GetWidth()
 		local scale = size / 36
