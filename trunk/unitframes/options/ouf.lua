@@ -7,6 +7,7 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("oUF", "AceHook-3.0", "AceEvent-3.0")
+local Blizzard = LUI.Module(module, "HideBlizzard") -- this can be embedded via prototype once we have more modules of modules
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -320,6 +321,7 @@ end
 
 -- Blizzard Frame Handling --
 do
+	--[[
 	local blizzUnitFrames = {
 		player = "PlayerFrame",
 		pet = "PetFrame",
@@ -504,6 +506,13 @@ do
 		
 		module[(useBlizz and "Enable" or "Disable") .. "Blizzard"](module, "raid")
 	end
+	--]]
+	local orig_DisableBlizz = oUF.DisableBlizzard
+	oUF.DisableBlizzard = function(self, unit)
+		if not db.oUF.Settings.Enable then
+			return orig_DisableBlizz(self, unit)
+		end
+	end
 end
 
 local ufUnits = {
@@ -551,6 +560,14 @@ toggleFuncs = {
 		else
 			if _G["oUF_LUI_"..ufUnits[unit]] then _G["oUF_LUI_"..ufUnits[unit]]:Disable() end
 		end
+		
+		if Blizzard:IsUnitHideable(unit) then
+			Blizzard:Hide(unit)
+			if unit == "Player" then
+				Blizzard:Hide("castbar")
+				Blizzard:Hide("runebar")
+			end
+		end
 	end,
 	
 	Boss = function()
@@ -561,7 +578,7 @@ toggleFuncs = {
 			local growdir = db.oUF.Party.GrowDirection
 			local opposite = GetOpposite(growdir)
 			
-			module:DisableBlizzard("boss")
+			Blizzard:Hide("boss")
 			
 			if oUF_LUI_boss then
 				oUF_LUI_boss:SetScale(db.oUF.Boss.Scale)
@@ -643,9 +660,9 @@ toggleFuncs = {
 			end
 		else
 			if db.oUF.Boss.UseBlizzard then
-				module:EnableBlizzard("boss")
+				Blizzard:Show("boss")
 			else
-				module:DisableBlizzard("boss")
+				Blizzard:Hide("boss")
 			end
 			
 			for i = 1, 4 do
@@ -808,13 +825,13 @@ toggleFuncs = {
 			end
 			
 			SetCVar("useCompactPartyFrames", nil)
-			module:DisableBlizzard("party")
+			Blizzard:Hide("party")
 		else
 			if db.oUF.Party.UseBlizzard then
-				module:EnableBlizzard("party")
+				Blizzard:Show("party")
 			else
 				SetCVar("useCompactPartyFrames", nil)
-				module:DisableBlizzard("party")
+				Blizzard:Hide("party")
 			end
 			
 			if oUF_LUI_party then
@@ -944,14 +961,15 @@ toggleFuncs = {
 				end
 			end
 			
-			module:DisableBlizzard("arena")
+			Blizzard:Hide("arena")
 		else
 			if db.oUF.Arena.UseBlizzard == true then
-				SetCVar("showArenaEnemyFrames", 1)
-				module:EnableBlizzard("arena")
+				Blizzard:Show("arena")
+				if not GetCVarBool("showArenaEnemyFrames") then
+					print("Notice: Blizzard's Arena frames are disabled under the Unit Frames section of your Interface options")
+				end
 			else
-				SetCVar("showArenaEnemyFrames", 0)
-				module:DisableBlizzard("arena")
+				Blizzard:Hide("arena")
 			end
 			
 			for i = 1, 5 do
@@ -1125,8 +1143,6 @@ toggleFuncs = {
 
 	Raid = function()
 		if db.oUF.Raid.Enable then
-			module:SetBlizzardRaidFrames()
-			
 			if IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") then
 				return
 			end
@@ -1218,7 +1234,15 @@ toggleFuncs = {
 				RegisterStateDriver(raid25, "visibility", "[@raid26,exists] hide; show")
 				RegisterStateDriver(raid40, "visibility", "[@raid26,exists] show; hide")
 			end
+			
+			Blizzard:Hide("raid")
 		else
+			if db.oUF.Raid.UseBlizzard == true then
+				Blizzard:Show("raid")
+			else
+				Blizzard:Hide("raid")
+			end
+			
 			if oUF_LUI_raid then
 				for i = 1, 5 do
 					for j = 1, 5 do
@@ -1245,8 +1269,6 @@ toggleFuncs = {
 				
 				oUF_LUI_raid:Hide()
 			end
-			
-			module:SetBlizzardRaidFrames()
 		end
 	end,
 }
@@ -1355,7 +1377,7 @@ function module:LoadOptions()
 				if _G[frame] and _G[frame].Castbar then
 					_G[frame].Castbar:Hide()
 					_G[frame]:DisableElement("Castbar")
-					module:EnableBlizzard(strlower(unit).."Castbar")
+					Blizzard:Show(strlower(unit).."Castbar")
 				end
 			end
 			_G[frame]:UpdateAllElements()

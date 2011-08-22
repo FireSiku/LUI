@@ -501,7 +501,7 @@ end
 -- / MODULES / --
 ------------------------------------------------------
 
--- LUI:Module(name [, silent]) to get module
+-- LUI:Module(name [, silent]) to get module (if silent is true and the module does not exist, it will not be created)
 -- LUI:Module(name [, prototype] [, libs...]) -- to create module or add to module
 function LUI:Module(name, prototype, ...)
 	local i = 1
@@ -517,7 +517,7 @@ function LUI:Module(name, prototype, ...)
 			mt.__index = prototype
 			setmetatable(module, mt)
 		end
-	elseif prototype ~= true then
+	elseif prototype ~= true then -- check silent
 		module = self:NewModule(name, prototype, ...)
 	end
 	

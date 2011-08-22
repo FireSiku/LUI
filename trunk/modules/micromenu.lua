@@ -195,13 +195,17 @@ function module:SetMicroMenu()
 	MicroMenuButton:Show()
 	
 	MicroMenu_ButtonRight_Clicker:RegisterForClicks("AnyUp")
-	MicroMenu_ButtonRight_Clicker:SetScript("OnClick", function(self)
-		if Minimap:GetAlpha() == 0 then
-			MinimapAlphaIn:Show()
-			db.Frames.IsMinimapShown = true
+	MicroMenu_ButtonRight_Clicker:SetScript("OnClick", function(self, button)
+		if button == "RightButton" then
+			ToggleFrame(WorldMapFrame)
 		else
-			MinimapAlphaOut:Show()
-			db.Frames.IsMinimapShown = false
+			if Minimap:GetAlpha() == 0 then
+				MinimapAlphaIn:Show()
+				db.Frames.IsMinimapShown = true
+			else
+				MinimapAlphaOut:Show()
+				db.Frames.IsMinimapShown = false
+			end
 		end
 	end)
 	
