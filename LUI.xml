@@ -31,6 +31,7 @@
 	<!-- oUF Options -->
 	<Script file="unitframes\options\copysettings.lua"/>
 	<Script file="unitframes\options\ouf.lua"/>
+	<Script file="unitframes\options\hideblizzard.lua"/>
 	<Script file="unitframes\options\importexport.lua"/>
 	<Script file="unitframes\options\general.lua"/>
 	<Script file="unitframes\options\colors.lua"/>
