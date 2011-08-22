@@ -2,12 +2,6 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: merchant.lua
 	Description: Merchant Module
-	Version....: 1.3
-	Rev Date...: 01/07/2011 [dd/mm/yyyy]
-	Author...: Xolsom
-
-	Edits:
-		v1.3: Hix
 ]]
 
 -- External references.
@@ -20,6 +14,12 @@ local db, dbd
 ------------------------------------------------------
 -- / Create Module / --
 ------------------------------------------------------
+
+-- Localised functions.
+local select, strfind, strmatch, tonumber, type = select, strfind, strmatch, tonumber, type
+local GetItemCount, GetItemInfo, GetMerchantItemInfo, GetMerchantNumItems = GetItemCount, GetItemInfo, GetMerchantItemInfo, GetMerchantNumItems
+local CanMerchantRepair, GetCoinTextureString, GetRepairAllCost, RepairAllItems = CanMerchantRepair, GetCoinTextureString, GetRepairAllCost, RepairAllItems
+local GetContainerItemID, GetContainerItemInfo, GetContainerNumSlots, UseContainerItem =  GetContainerItemID, GetContainerItemInfo, GetContainerNumSlots, UseContainerItem
 
 function module:ItemExclusion(info, item) -- info = true: remove item from list
 	if type(info) == "table" and not GetItemInfo(item) then
@@ -70,6 +70,17 @@ function module:ClearExclusions()
 	if db.AutoSell.Settings.ShowExclusion then
 		print("|cff00ff00Successfully cleared the exclusion list.")
 	end
+end
+
+function module:GetItemID(item)
+	if not item then return end
+
+	-- Get itemLink.
+	local _, itemLink = GetItemInfo(item)
+	if not itemLink then return end
+	
+	-- Extract id from itemLink.
+	return tonumber(strmatch(itemLink, "|Hitem:(%d+):"))
 end
 
 function module:AutoRepair()
@@ -146,6 +157,47 @@ function module:AutoSell()
 	end
 end
 
+function module:AutoStock()
+	if not db.AutoStock.Enable or db.AutoStock.List.Count <= 0 then return end
+
+	-- Scan through merchants items.
+	local cost, cart = 0, {}
+	local n, _, price, id
+	for i = 0, GetMerchantNumItems() do
+		-- Get item info.
+		n, _, price = GetMerchantItemInfo(i)
+		id = self:GetItemID(n)
+
+		-- Check item is in list.
+		if id and db.AutoStock.List[id] then
+			-- Add to shopping cart.
+			cart[i] = db.AutoStock.List[id] - GetItemCount(id)
+			cost = cost + (price * cart[i])
+		end
+	end
+	
+	-- Check if shopping cart is empty.
+	if cost <= 0 then return end
+
+	-- Check if shopping cart is affordable.
+	if (not db.AutoStock.Settings.NoLimit) and (cost > db.AutoStock.Settings.CostLimit * 1000) then
+		if db.AutoStock.Settings.ShowError then
+			print("|cffff0000The shopping cart costs of|r " .. GetCoinTextureString(cost) .. " |cffff0000exceed the limit of|r " .. GetCoinTextureString(db.AutoStock.Settings.CostLimit * 1000))
+		end
+		return
+	end
+
+	-- Buy shopping cart.
+	for item, qty in pairs(cart) do
+		-- But item.
+		BuyMerchantItem(item, qty)		
+	end
+
+	if db.AutoStock.Settings.ShowSuccess then
+		print("|cff00ff00Successfully bought shopping cart for:|r "..GetCoinTextureString(cost))
+	end
+end
+
 ------------------------------------------------------
 -- / Event Functions / --
 ------------------------------------------------------
@@ -153,6 +205,7 @@ end
 function module:MERCHANT_SHOW()
 	self:AutoSell()
 	self:AutoRepair()
+	self:AutoStock()
 end
 
 ------------------------------------------------------
@@ -187,6 +240,18 @@ module.defaults = {
 				false, -- Epic
 			},
 		},
+		AutoStock = {
+			Enable = false,
+			List = {
+				Count = 0,
+			},
+			Settings = {
+				NoLimit = true,
+				CostLimit = 250,
+				ShowError = true,
+				ShowSuccess = true,
+			},
+		},
 	},
 }
 
@@ -196,8 +261,10 @@ module.setter = "generic"
 function module:LoadOptions()
 	-- disabled funcs
 	local disabled = {
+		AutoStock = function() return not db.AutoStock.Enable end,
 		AutoRepair = function() return not db.AutoRepair.Enable end,
 		AutoSell = function() return not db.AutoSell.Enable end,
+		BuyLimit = function() return ((not db.AutoStock.Enable) or db.AutoStock.Settings.NoLimit) end,
 		CostLimit = function() return ((not db.AutoRepair.Enable) or db.AutoRepair.Settings.NoLimit) end,
 	}
 	
@@ -230,7 +297,7 @@ function module:LoadOptions()
 	
 	local options = {
 		Title = self:NewHeader("Merchant", 1),
-		Info = self:NewDesc("This Merchant allows you to automatically sell items and/or repair your armor when you open a merchant frame.", 2),
+		Info = self:NewDesc("This Merchant allows you to automatically sell/buy items and/or repair your armor when you open a merchant frame.", 2),
 		AutoRepair = self:NewGroup("Auto Repair", 3, {
 			Title = self:NewHeader("Auto Repair Settings", 1),
 			Info = self:NewDesc("Set your Auto Repair options. If a guild repair fails it will not prevent a normal repair. Additionally you may also set a cost limit.", 2),
@@ -243,7 +310,7 @@ function module:LoadOptions()
 				ShowSuccess = self:NewToggle("Show Success Messages", nil, 5, true),
 			}),
 		}),
-		AutoSell = self:NewGroup("Auto Sell", 2, {
+		AutoSell = self:NewGroup("Auto Sell", 3, {
 			Title = self:NewHeader("Auto Sell Settings", 1),
 			Info = self:NewDesc("Set your Auto Sell options.", 2),
 			Enable = self:NewToggle("Enable Auto Sell", nil, 3, true),
@@ -264,6 +331,19 @@ function module:LoadOptions()
 				Select = self:NewSelect("Select Item", "Select the item which you want to remove from the exclusion list.", 1, exclusions, nil, false, "double"),
 				Remove = self:NewExecute("Remove selected item", "Removes the selected item from the exclusion list.", 2, removeExclusion),
 				Clear = self:NewExecute("Clear excluded items", "Removes the selected item from the exclusion list.", 3, "ClearExclusions", "Do you really want to clear all excluded items?"),
+			}),
+		}),
+		AutoStock = self:NewGroup("Auto Stock", 4, {
+			Title = self:NewHeader("Auto Stock Settings", 1),
+			Info = self:NewDesc("Set your Auto Stock options. Additionally you may also set a cost limit.", 2),
+			Enable = self:NewToggle("Enable Auto Stock", nil, 3, true),
+			Lol1 = self:NewDesc("/run local l = LUI.db:GetNamespace(\"Merchant\").profile.AutoStock.List; l[<itemid>] = <stock>; l.Count = l.Count + 1;", 4),
+			Lol2 = self:NewDesc("Because I'm lazy! (TEMP)", 5),
+			Settings = self:NewGroup("Settings", 5, true, disabled.AutoStock, {
+				NoLimit = self:NewToggle("No Cost Limit", nil, 1, true),
+				CostLimit = self:NewSlider("Cost Limit", "The cost limit in gold after which buying items won't happen automatically.", 2, 0, 500, 10, true, false, nil, disabled.BuyLimit),
+				ShowError = self:NewToggle("Show Limit Error", nil, 3, true),
+				ShowSuccess = self:NewToggle("Show Success Messages", nil, 4, true),
 			}),
 		}),
 	}
