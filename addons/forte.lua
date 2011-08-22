@@ -474,8 +474,12 @@ function module:SetPosForteSplash() -- no self in this func (Forte_Core OnEvent 
 	FW:RefreshFrames();
 end
 
-function module:SetColors()
+function module:SetColors() -- no self in this func (Forte_Core OnEvent callbacks)
 	if not LUI.isForteTimerLoaded then return end
+	if not FW.Settings then
+		FW:RegisterVariablesEvent(module.SetColors);
+		return;
+	end
 	
 	module:Copy(db.Color,FW.Settings.TimerColorOverride);
 	FW.Settings.TimerColorOverride[0] = db.IndividualColor;
