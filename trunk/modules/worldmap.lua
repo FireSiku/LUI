@@ -331,6 +331,15 @@ end
 -- Hook Functions
 --------------------------------------------------
 
+local function showUIPanel(frame)
+	if frame == WorldMapFrame then
+		local ACD = LibStub("AceConfigDialog-3.0")
+		if ACD.OpenFrames[addonname] then
+			ACD.frame.closeAllOverride[addonname] = true
+		end
+	end
+end
+
 local function questObjButtonOnClick(button)
 	module.hooks[button].OnClick(button)
 	db.QuestObjectives = button:GetChecked() and 2 or 0
@@ -845,6 +854,7 @@ function module:SetMap()
 	WorldMapFrame:EnableMouse(true)
 	WorldMapFrame:EnableKeyboard(false)
 	
+	self:Hook("ShowUIPanel", showUIPanel, true)
 	self:SecureHookScript(WorldMapFrame, "OnShow", wmfOnShow)
 	self:SecureHookScript(WorldMapFrame, "OnHide", wmfOnHide)
 	BlackoutWorld:Hide()
