@@ -2,518 +2,360 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: cooldown.lua
 	Description: Actionbar Cooldown Module
-	Version....: 1.2
-	Rev Date...: 06/11/2010 [dd/mm/yyyy]
-	
-	Edits:
-		v1.0: Loui
-		v1.1: Hix
-		v1.2: Hix
-	
-	An edited lightweight OmniCC for LUI
-    A featureless, 'pure' version of OmniCC.
-    This version should work on absolutely everything, but I've removed pretty much all of the options
 ]] 
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("Cooldown")
+local module = LUI:Module("Cooldown", "AceHook-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
-local widgetLists = AceGUIWidgetLSMlists
 
-local db
-local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
-local hooks = { }
+-- Database and defaults shortcuts.
+local db, dbd
+
+-- Local variables.
+local Timer
 
 function module:SetCooldowns()
-	if db.Cooldown.Enable ~= true then return end
-	
-	-- Is this omniCC variable needed?
-	OmniCC = true --hack to work around detection from other addons for OmniCC
-	local COLORS = {
-		DAY = "",
-		HOUR = "",
-		MIN = "",
-		SEC = "",
-		THRESHOLD = "",
+	-- Localized functions.
+	local floor, format, GetTime, insert, min, wipe = math.floor, string.format, GetTime, table.insert, math.min, wipe
+	local function round(x) return floor(x + 0.5) end
+
+	-- Local variables.
+	local DAY, HOUR, MINUTE = 86400, 3600, 60
+	local ICON_SIZE = 36
+
+	-- Create a timer object.
+	Timer = {}
+	Timer.__mt = {
+		__index = function(self, k)
+			if Timer[k] then
+				return Timer[k]
+			elseif self.__old then
+				return self.__old.__index[k]
+			end
+		end,
 	}
-	local UPDATE = nil	--used to provide a way to update created timers.
-	local DAY, HOUR, MINUTE = 86400, 3600, 60 --used for formatting text
-	local DAYISH, HOURISH, MINUTEISH = 3600 * 23.5, 60 * 59.5, 59.5 --used for formatting text at transition points
-	local HALFDAYISH, HALFHOURISH, HALFMINUTEISH = DAY/2 + 0.5, HOUR/2 + 0.5, MINUTE/2 + 0.5 --used for calculating next update times
 
-	--local bindings!
-	local format = string.format
-	local floor = math.floor
-	local min = math.min
-	local round = function(x) return floor(x + 0.5) end
-	local GetTime = GetTime
+	-- Timer variables.
+	Timer.FontScale = {}	-- For memoizing.
+	Timer.Stack = {}
+	Timer.Timers = {}
+
+	-- Timer formats.
+	Timer.TimeFormat = {
+		Days = {format = "%dd", color = db.Colors.Day, division = DAY, update = false},
+		Hours = {format = "%dh", color = db.Colors.Hour, division = HOUR, update = false},
+		Minutes = {format = "%dm", color = db.Colors.Min, division = MINUTE, update = false},
+		Seconds = {format = "%d", color = db.Colors.Sec, division = 1, update = 1},
+		Threshold = {format = false, color = db.Colors.Threshold, division = 1, update = false},
+		Update = function(x, v) x = x - v return x > 0 and x or 1 end,
+	}
+	Timer.TimeFormat = setmetatable(Timer.TimeFormat, {
+		__call = function(self, seconds)
+			if seconds < db.General.Threshold + 0.5 then
+				self.Threshold.format = "%."..db.General.Precision.."f"
+				self.Threshold.update = db.General.Precision * 0.05
+				return self.Threshold
+			elseif seconds > DAY then
+				self.Days.update = self.Update(seconds, DAY)
+				return self.Days
+			elseif seconds > HOUR then
+				self.Hours.update = self.Update(seconds, HOUR)
+				return self.Hours
+			elseif seconds > MINUTE then
+				self.Minutes.update = self.Update(seconds, MINUTE)
+				return self.Minutes
+			else
+				return self.Seconds
+			end
+		end,
+	})
+
+	-- Timer methods.
+	function Timer:Assign(frame, start, duration)
+		-- Check if enabled.
+		if not db.Enable then return end
+		
+		-- Check duration.
+		if duration < db.General.MinDuration then return end
+
+		-- Check if frame already has a timer.
+		if frame.Timer then return end
+
+		-- Check if frame is visible.
+		if not frame:IsVisible() then return end
+
+		-- Get font scale.
+		local width = round(frame:GetWidth())
+		if not self.FontScale[width] then
+			local scale = width / ICON_SIZE
+			self.FontScale[width] = scale > db.General.MinScale and scale * db.Text.Size
+		end
+
+		-- Don't assign timers to frames that are too small.
+		if not self.FontScale[width] then return end
+
+		-- Get a timer.
+		local timer = self:Collect()
+
+		-- Assign timer to frame.
+		frame.Timer = timer
+		timer.Frame = frame
+
+		-- Set all points.
+		timer:SetAllPoints(frame)
+
+		-- Set parent to frame.
+		timer:SetParent(frame)
+
+		-- Start timer.
+		timer:Start(start, duration)
+	end
 	
-	--updates created timers
-	function module:UpdateCooldowns()
-		UPDATE = GetTime()
-	end
-	--updates colours
-	function module:UpdateColors()
-		COLORS.DAY = format("|cff%02x%02x%02x", db.Cooldown.Text.Colors.Day.r * 255, db.Cooldown.Text.Colors.Day.g * 255, db.Cooldown.Text.Colors.Day.b * 255)
-		COLORS.HOUR = format("|cff%02x%02x%02x", db.Cooldown.Text.Colors.Hour.r * 255, db.Cooldown.Text.Colors.Hour.g * 255, db.Cooldown.Text.Colors.Hour.b * 255)
-		COLORS.MIN = format("|cff%02x%02x%02x", db.Cooldown.Text.Colors.Min.r * 255, db.Cooldown.Text.Colors.Min.g * 255, db.Cooldown.Text.Colors.Min.b * 255)
-		COLORS.SEC = format("|cff%02x%02x%02x", db.Cooldown.Text.Colors.Sec.r * 255, db.Cooldown.Text.Colors.Sec.g * 255, db.Cooldown.Text.Colors.Sec.b * 255)
-		COLORS.THRESHOLD = format("|cff%02x%02x%02x", db.Cooldown.Text.Colors.Threshold.r * 255, db.Cooldown.Text.Colors.Threshold.g * 255, db.Cooldown.Text.Colors.Threshold.b * 255)
-		module:UpdateCooldowns()
-	end
-	--run function
-	module:UpdateColors()
-
-	--returns both what text to display, and how long until the next update
-	local function getTimeText(s)
-		-- format text as seconds with decimal at threshold or below
-		if s < db.Cooldown.Threshold + 0.5 then
-			return format("%s%.1f|r", COLORS.THRESHOLD, s), s - format("%.1f", s)
-		--format text as seconds when at 90 seconds or below
-		elseif s < MINUTEISH then
-			local seconds = round(s)
-			return format('%s%d|r', COLORS.SEC, seconds), s - (seconds - 0.51)
-		--format text as minutes when below an hour
-		elseif s < HOURISH then
-			local minutes = round(s/MINUTE)
-			return format('%s%dm|r', COLORS.MIN, minutes), minutes > 1 and (s - (minutes*MINUTE - HALFMINUTEISH)) or (s - MINUTEISH)
-		--format text as hours when below a day
-		elseif s < DAYISH then
-			local hours = round(s/HOUR)
-			return format('%s%dh|r', COLORS.HOUR, hours), hours > 1 and (s - (hours*HOUR - HALFHOURISH)) or (s - HOURISH)
-		--format text as days
+	function Timer:Collect()
+		-- Collect an inactive timer or create a new one.
+		if #self.Stack > 0 then
+			-- Pop a timer from the stack.
+			local timer; timer, self.Stack[#self.Stack] = self.Stack[#self.Stack], nil
+			return timer
 		else
-			local days = round(s/DAY)
-			return format('%s%dd|r', COLORS.DAY, days), days > 1 and (s - (days*DAY - HALFDAYISH)) or (s - DAYISH)
+			-- Create a new timer.
+			return self:New()
 		end
 	end
 
-	--stops the timer
-	local function Timer_Stop(self)
-		self.enabled = nil
-		self:Hide()
+	function Timer:Disable()
+		-- Stop all timers.
+		for index, timer in pairs(self.Timers) do
+			timer:Hide()
+		end
 	end
 
-	--forces the given timer to update on the next frame
-	local function Timer_ForceUpdate(self)
+	function Timer:New()		
+		-- Create a timer inheriting the Timer object.
+		local timer = CreateFrame("Frame", "LUI_Cooldown_Timer"..(#self.Timers + 1))
+		timer.__old = getmetatable(timer)
+		timer = setmetatable(timer, self.__mt)
+		timer:Hide()
+
+		-- Create font string.
+		timer.text = timer:CreateFontString(nil, "OVERLAY")
+		timer.text:SetJustifyH("CENTER")
+		timer.text:SetShadowColor(0, 0, 0, 0.5)
+		timer.text:SetShadowOffset(2, -2)
+		timer.text:SetPoint("CENTER", db.Text.XOffset, db.Text.YOffset)
+
+		-- Set timer settings.
+		timer.duration = 0
+		timer.fontScale = 0
+		timer.nextUpdate = 0
+		timer.start = 0
+	
+		-- Set scripts.
+		timer:SetScript("OnSizeChanged", timer.OnSizeChanged)
+		timer:SetScript("OnHide", timer.Stop)
+
+		-- Add timer to timer list.
+		self.Timers[#self.Timers + 1] = timer
+
+		-- Return timer.
+		return timer
+	end
+
+	function Timer:OnSizeChanged(width, height)
+		if not self.Frame then return end
+
+		-- Get font scale.
+		width = round(width)
+		if not self.FontScale[width] then
+			local scale = width / ICON_SIZE
+			self.FontScale[width] = scale > db.General.MinScale and scale * db.Text.Size
+		end
+
+		-- Check font scale.
+		if self.fontScale == self.FontScale[width] then return end
+		
+		-- Set new font scale.
+		self.fontScale = self.FontScale[width]
+
+		-- Check if new scale is big enough.
+		if self.fontScale then
+			-- Set new font scale.
+			self.text:SetFont(Media:Fetch("font", db.Text.Font), self.fontScale, db.Text.Flag)
+		else
+			-- Stop timer.
+			self:Hide()
+		end
+	end
+
+	function Timer:OnUpdate(elapsed)
+		self.nextUpdate = self.nextUpdate - elapsed
+		
+		-- Throttle update.
+		if self.nextUpdate > 0 then return end
+
+		-- Update timer
+		local timeLeft = self.duration - (GetTime() - self.start)
+		if timeLeft > 0 then
+			-- Update text.
+			self:Update(timeLeft)
+		else
+			-- Stop timer if finished.
+			self:Hide()
+		end
+	end
+
+	function Timer:Refresh()
+		-- Reset font scale memoizing results.
+		wipe(self.FontScale)
+
+		-- Update timer's font settings.
+		for index, timer in pairs(self.Timers) do
+			-- Reset font scale.
+			timer.fontScale = 0
+
+			-- Get font scale.
+			if timer.Frame then
+				timer:OnSizeChanged(timer.Frame:GetSize())
+			end
+
+			-- Set new offsets.
+			timer.text:SetPoint("CENTER", db.Text.XOffset, db.Text.YOffset)
+
+			-- Set next update.
+			timer.nextUpdate = 0
+		end
+	end
+
+	function Timer:Start(start, duration)
+		-- Set timer variables.
+		self.start = start
+		self.duration = duration
 		self.nextUpdate = 0
+
+		-- Start timer.
+		self:SetScript("OnUpdate", self.OnUpdate)
 		self:Show()
 	end
 
-	--adjust font size whenever the timer's parent size changes
-	--hide if it gets too tiny
-	local function Timer_OnSizeChanged(self, width, height)
-		local fontScale = round(width) / db.Cooldown.IconSize
-		if fontScale == self.fontScale then
-			return
+	function Timer:Stop()
+		-- Stop timer.
+		self:SetScript("OnUpdate", nil)
+		self:Hide()
+
+		-- Unassign from frame.
+		self:SetParent(nil)
+		if self.Frame then
+			self.Frame.Timer = nil
+			self.Frame = nil
 		end
 
-		self.fontScale = fontScale
-		if fontScale < db.Cooldown.MinScale then
-			self:Hide()
-		else
-			self.text:SetFont(Media:Fetch("font", db.Cooldown.Text.Font), self.fontScale * db.Cooldown.Text.Size, db.Cooldown.Text.Flag)
-			self.text:SetShadowColor(0, 0, 0, 0.5)
-			self.text:SetShadowOffset(2, -2)
-			if self.enabled then
-				Timer_ForceUpdate(self)
-			end
-		end
+		-- Push timer on to the stack.
+		self.Stack[#self.Stack + 1] = self
 	end
 
-	--update timer text, if it needs to be
-	--hide the timer if done
-	local function Timer_OnUpdate(self, elapsed)
-		if self.nextUpdate > 0 then
-			self.nextUpdate = self.nextUpdate - elapsed
-		else
-			local remain = self.duration - (GetTime() - self.start)
-			if round(remain) > 0 then
-				local time, nextUpdate = getTimeText(remain)
-				self.text:SetText(time)
-				self.nextUpdate = nextUpdate
-			else
-				Timer_Stop(self)
-			end
-		end
-	end
-
-	--returns a new timer object
-	local function Timer_Create(self) -- change this to use AceTimer
-		if not self.timer then
-			--a frame to watch for OnSizeChanged events
-			--needed since OnSizeChanged has funny triggering if the frame with the handler is not shown
-			local scaler = CreateFrame("Frame", nil, self)
-			scaler:SetAllPoints(self)
-
-			local timer = CreateFrame("Frame", nil, scaler)
-			timer:Hide()
-			timer:SetAllPoints(scaler)
-
-			local text = timer:CreateFontString(nil, "OVERLAY")
-			text:SetJustifyH("CENTER")
-			
-			-- link children
-			self.timer = timer
-			self.timer.scaler = scaler
-			self.timer.text = text
-			-- set scripts
-			self.timer:SetScript("OnUpdate", Timer_OnUpdate)
-			self.timer.scaler:SetScript('OnSizeChanged', function(s, ...) Timer_OnSizeChanged(self.timer, ...) end)
-		end
-
-		-- set font settings
-		self.timer.text:SetPoint("CENTER", LUI:Scale(db.Cooldown.Text.XOffset), LUI:Scale(db.Cooldown.Text.YOffset))
+	function Timer:Update(timeLeft)
+		-- Get format info.
+		local info = self.TimeFormat(timeLeft)
 		
-		-- run SizeChange
-		self.timer.fontScale = 0
-		Timer_OnSizeChanged(self.timer, self.timer.scaler:GetSize())
+		-- Set text.
+		self.text:SetFormattedText(info.format, timeLeft / info.division)
+		
+		-- Set text colour.
+		self.text:SetTextColor(info.color.r, info.color.g, info.color.b)
 
-		self.timer.update = UPDATE
-		return self.timer
+		-- Set next update interval.
+		self.nextUpdate = info.update
 	end
-
-	--hook the SetCooldown method of all cooldown frames
-	--ActionButton1Cooldown is used here since its likely to always exist 
-	--and I'd rather not create my own cooldown frame to preserve a tiny bit of memory
-	hooksecurefunc(getmetatable(ActionButton1Cooldown).__index, 'SetCooldown', function(self, start, duration)
+	
+	-- Hook the SetCooldown metamethod of all cooldown frames.
+	-- ActionButton1Cooldown is used here since its likely to always exist.
+	-- And I'd rather not create my own cooldown frame to preserve a tiny bit of memory.
+	self:SecureHook(getmetatable(ActionButton1Cooldown).__index, "SetCooldown", function(self, start, duration)
+		-- Skip frames that don't want a timer.
 		if self.noOCC then return end
-		--start timer
-		if start > 0 and duration > db.Cooldown.MinDuration then
-			local timer = ((self.timer and self.timer.update == UPDATE) and self.timer) or Timer_Create(self)
-			timer.start = start
-			timer.duration = duration
-			timer.enabled = true
-			timer.nextUpdate = 0
-			if timer.fontScale >= db.Cooldown.MinScale then timer:Show() end
-		--stop timer
-		else
-			local timer = self.timer
-			if timer then
-				Timer_Stop(timer)
-			end
-		end
+
+		-- Assign a timer.
+		Timer:Assign(self, start, duration)
 	end)
 end
 
-local defaults = {
-	Cooldown = {
+-- Default variables.
+module.defaults = {
+	profile = {
 		Enable = true,
-		Threshold = 8,
+		General = {					
+			MinDuration = 3,
+			MinScale = 0.5,
+			Precision = 1,
+			Threshold = 8,
+		},
 		Text = {
 			Font = "vibroceb",
 			Size = 20,
-			Flag = "OUTLINE",
-			Colors = {
-				Day = {
-					r = 0.8,
-					g = 0.8,
-					b = 0.8,
-				},
-				Hour = {
-					r = 0.8,
-					g = 0.8,
-					b = 1.0,
-				},
-				Min = {
-					r = 1.0,
-					g = 1.0,
-					b = 1.0,
-				},
-				Sec = {
-					r = 1.0,
-					g = 1.0,
-					b = 0.0,
-				},
-				Threshold = {
-					r = 1.0,
-					g = 0.0,
-					b = 0.0,				
-				},
-			},
-			XOffset = 2,
+			Flag = "OUTLINE",			
+			XOffset = 0,
 			YOffset = 0,
 		},
-		MinScale = 0.5,
-		MinDuration = 3,
-		IconSize = 36,
+		Colors = {
+			Day = {
+				r = 0.8,
+				g = 0.8,
+				b = 0.8,
+			},
+			Hour = {
+				r = 0.8,
+				g = 0.8,
+				b = 1.0,
+			},
+			Min = {
+				r = 1.0,
+				g = 1.0,
+				b = 1.0,
+			},
+			Sec = {
+				r = 1.0,
+				g = 1.0,
+				b = 0.0,
+			},
+			Threshold = {
+				r = 1.0,
+				g = 0.0,
+				b = 0.0,				
+			},
+		},
 	},
 }
 
 function module:LoadOptions()
+	local widgetLists = AceGUIWidgetLSMlists
+	local fontflags = {}
+	for k, v in pairs({"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}) do
+		fontflags[v] = v
+	end
+
 	local options = {
-		Cooldown = {
-			name = "Cooldown",
-			type = "group",
-			childGroups = "tab",
-			disabled = function() return not db.Cooldown.Enable end,
-			args = {
-				Header = {
-					name = "Cooldown",
-					type = "header",
-					order = 1,
-				},
-				Description = {
-					name = "|cff3399ffNotice:|r\n- Some changes will not take effect until your next cooldown is activated.",
-					type = "description",
-					width = "full",
-					order = 2,
-				},
-				Settings = {
-					name = "Settings",
-					type = "group",
-					order = 3,
-					args = {
-						Enable = {
-							name = "Enable",
-							desc = "Enable LUI Cooldowns.\n",
-							type = "toggle",
-							width = "full",
-							order = 1,
-							get = function() return db.Cooldown.Enable end,
-							set = function()
-									db.Cooldown.Enable = not db.Cooldown.Enable
-									StaticPopup_Show("RELOAD_UI")
-								end,
-						},
-						Threshold = {
-							name = "Cooldown Threshold",
-							desc = "The time at which your Cooldown's text is coloured differently.\n\nDefault: "..LUI.defaults.profile.Cooldown.Threshold,
-							type = "input",
-							order = 2,
-							get = function() return tostring(db.Cooldown.Threshold) end,
-							set = function(self, threshold)
-									if (threshold == nil) or (threshold == "") then
-										threshold = "0"
-									end
-									
-									db.Cooldown.Threshold = tonumber(threshold)
-									module:UpdateCooldowns()
-								end,
-						},
-						MinDuration = {
-							name = "Minimum Duration\n",
-							desc = "The smallest duration of Cooldown to be watched.\n\nDefault: "..LUI.defaults.profile.Cooldown.MinDuration,
-							type = "input",
-							order = 3,
-							get = function() return tostring(db.Cooldown.MinDuration) end,
-							set = function(self, duration)
-									if (duration == nil) or (duration == "") then
-										duration = "0"
-									end
-									
-									db.Cooldown.MinDuration = tonumber(duration)
-									module:UpdateCooldowns()
-								end,
-						},
-						MinScale = {
-							name = "Minimum Scale",
-							desc = "The smallest size of icons for Cooldowns to effect.\n\nDefault: "..LUI.defaults.profile.Cooldown.MinScale,
-							type = "input",
-							order = 4,
-							get = function() return tostring(db.Cooldown.MinScale) end,
-							set = function(self, scale)
-									if (scale == nil) or (scale == "") then
-										scale = "0"
-									end
-									
-									db.Cooldown.MinScale = tonumber(scale)
-									module:UpdateCooldowns()
-								end,
-						},
-					},					
-				},
-				TextSettings = {
-					name = "Text",
-					type = "group",
-					order = 4,
-					args = {
-						Font = {
-							name = "Font",
-							desc = "Choose a Font to be used by Cooldowns.\n\nDefault: "..LUI.defaults.profile.Cooldown.Text.Font,
-							type = "select",
-							dialogControl = "LSM30_Font",
-							values = widgetLists.font,
-							order = 1,
-							get = function() return db.Cooldown.Text.Font end,
-							set = function(self, font)
-									db.Cooldown.Text.Font = font
-									module:UpdateCooldowns()
-								end,
-						},
-						Size = {
-							name = "Size",
-							desc = "Choose a Font Size to be used by Cooldowns.\n\nDefault: "..LUI.defaults.profile.Cooldown.Text.Size,
-							type = "range",
-							order = 2,
-							min = 6,
-							max = 50,
-							step = 1,
-							get = function() return db.Cooldown.Text.Size end,
-							set = function(self, size)
-									db.Cooldown.Text.Size = size
-									module:UpdateCooldowns()
-								end,
-						},
-						Flag = {
-							name = "Outline",
-							desc = "Choose a Font Flag to be used by Cooldowns.\n\nDefault: "..LUI.defaults.profile.Cooldown.Text.Flag,
-							type = "select",
-							values = fontflags,
-							order = 3,
-							get = function()
-									for k, v in pairs(fontflags) do
-										if db.Cooldown.Text.Flag == v then
-											return k
-										end
-									end
-								end,
-							set = function(self, flag)
-									db.Cooldown.Text.Flag = fontflags[flag]
-									module:UpdateCooldowns()
-								end,
-						},
-						Colors = {
-							name = "Colors",
-							type = "group",
-							guiInline = true,
-							order = 4,
-							args = {
-								Threshold = {
-									name = "Threshold",
-									desc = "Choose an individual color for the Threshold.\n\nDefaults:\nr = "..LUI.defaults.profile.Cooldown.Text.Colors.Threshold.r.."\ng = "..LUI.defaults.profile.Cooldown.Text.Colors.Threshold.g.."\nb = "..LUI.defaults.profile.Cooldown.Text.Colors.Threshold.b,
-									type = "color",
-									order = 1,
-									hasAlpha = false,
-									get = function() return db.Cooldown.Text.Colors.Threshold.r, db.Cooldown.Text.Colors.Threshold.g, db.Cooldown.Text.Colors.Threshold.b end,
-									set = function(self, r, g, b)
-											db.Cooldown.Text.Colors.Threshold.r = r
-											db.Cooldown.Text.Colors.Threshold.g = g
-											db.Cooldown.Text.Colors.Threshold.b = b
-											
-											module:UpdateColors()
-										end,									
-								},
-								Seconds = {
-									name = "Seconds",
-									desc = "Choose an individual color for Seconds.\n\nDefaults:\nr = "..LUI.defaults.profile.Cooldown.Text.Colors.Sec.r.."\ng = "..LUI.defaults.profile.Cooldown.Text.Colors.Sec.g.."\nb = "..LUI.defaults.profile.Cooldown.Text.Colors.Sec.b,
-									type = "color",
-									order = 2,
-									hasAlpha = false,
-									get = function() return db.Cooldown.Text.Colors.Sec.r, db.Cooldown.Text.Colors.Sec.g, db.Cooldown.Text.Colors.Sec.b end,
-									set = function(self, r, g, b)
-											db.Cooldown.Text.Colors.Sec.r = r
-											db.Cooldown.Text.Colors.Sec.g = g
-											db.Cooldown.Text.Colors.Sec.b = b
-											
-											module:UpdateColors()
-										end,									
-								},
-								Minutes = {
-									name = "Minutes",
-									desc = "Choose an individual color for Minutes.\n\nDefaults:\nr = "..LUI.defaults.profile.Cooldown.Text.Colors.Min.r.."\ng = "..LUI.defaults.profile.Cooldown.Text.Colors.Min.g.."\nb = "..LUI.defaults.profile.Cooldown.Text.Colors.Min.b,
-									type = "color",
-									order = 3,
-									hasAlpha = false,
-									get = function() return db.Cooldown.Text.Colors.Min.r, db.Cooldown.Text.Colors.Min.g, db.Cooldown.Text.Colors.Min.b end,
-									set = function(self, r, g, b)
-											db.Cooldown.Text.Colors.Min.r = r
-											db.Cooldown.Text.Colors.Min.g = g
-											db.Cooldown.Text.Colors.Min.b = b
-											
-											module:UpdateColors()
-										end,									
-								},
-								Hours = {
-									name = "Hours",
-									desc = "Choose an individual color for Hours.\n\nDefaults:\nr = "..LUI.defaults.profile.Cooldown.Text.Colors.Hour.r.."\ng = "..LUI.defaults.profile.Cooldown.Text.Colors.Hour.g.."\nb = "..LUI.defaults.profile.Cooldown.Text.Colors.Hour.b,
-									type = "color",
-									order = 4,
-									hasAlpha = false,
-									get = function() return db.Cooldown.Text.Colors.Hour.r, db.Cooldown.Text.Colors.Hour.g, db.Cooldown.Text.Colors.Hour.b end,
-									set = function(self, r, g, b)
-											db.Cooldown.Text.Colors.Hour.r = r
-											db.Cooldown.Text.Colors.Hour.g = g
-											db.Cooldown.Text.Colors.Hour.b = b
-											
-											module:UpdateColors()
-										end,									
-								},
-								Days = {
-									name = "Days",
-									desc = "Choose an individual color for Days.\n\nDefaults:\nr = "..LUI.defaults.profile.Cooldown.Text.Colors.Day.r.."\ng = "..LUI.defaults.profile.Cooldown.Text.Colors.Day.g.."\nb = "..LUI.defaults.profile.Cooldown.Text.Colors.Day.b,
-									type = "color",
-									order = 5,
-									hasAlpha = false,
-									get = function() return db.Cooldown.Text.Colors.Day.r, db.Cooldown.Text.Colors.Day.g, db.Cooldown.Text.Colors.Day.b end,
-									set = function(self, r, g, b)
-											db.Cooldown.Text.Colors.Day.r = r
-											db.Cooldown.Text.Colors.Day.g = g
-											db.Cooldown.Text.Colors.Day.b = b
-											
-											module:UpdateColors()
-										end,									
-								},					
-							},
-						},
-						Offset = {
-							name = "Offset",
-							type = "group",
-							guiInline = true,
-							order = 5,
-							args = {
-								XOffset = {
-									name = "X Offset",
-									desc = "Set the X Offset of your Cooldowns' Text.\n\nNotes:\nPositive values = right\nNegitive values = left\nDefault: "..LUI.defaults.profile.Cooldown.Text.XOffset,
-									type = "input",
-									width = "half",
-									order = 1,
-									get = function() return tostring(db.Cooldown.Text.XOffset) end,
-									set = function(self, x)
-											if (x == nil) or (x == "") then
-												x = "0"
-											end
-											
-											db.Cooldown.Text.XOffset = tonumber(x)
-											module:UpdateCooldowns()
-										end,
-								},
-								YOffset = {
-									name = "Y Offset",
-									desc = "Set the Y Offset of your Cooldowns' Text.\n\nNotes:\nPositive values = up\nNegitive values = down\nDefault: "..LUI.defaults.profile.Cooldown.Text.YOffset,
-									type = "input",
-									width = "half",
-									order = 2,
-									get = function() return tostring(db.Cooldown.Text.YOffset) end,
-									set = function(self, y)
-											if (y == nil) or (y == "") then
-												y = "0"
-											end
-											
-											db.Cooldown.Text.YOffset = tonumber(y)
-											module:UpdateCooldowns()
-										end,
-								},
-							},						
-						},
-					},					
-				},
-			},
-		},
+		General = self:NewGroup("General Settings", 1, {
+			Threshold = self:NewSlider("Cooldown Threshold", "The time at which your cooldown text is colored differently and begins using specified precision.", 1, 0, 30, 1, self.Refresh),
+			Precision = self:NewSlider("Cooldown Precision", "How many decimal places will be shown once time is within the cooldown threshold.", 2, 0, 3, 1, self.Refresh),
+			MinDuration = self:NewSlider("Minimum Duration", "The lowest cooldown duration that timers will be shown for.", 3, 0, 60, 0.5),
+			MinScale = self:NewSlider("Minimum Scale", "The smallest size of icons that timers will be shown for.", 4, 0, 2, 0.1, self.Refresh),
+		}),
+		Text = self:NewGroup("Text Settings", 2, {
+			Font = self:NewSelect("Font", "Select the font to be used by cooldown's texts.", 1, widgetLists.font, "LSM30_Font", self.Refresh),
+			Size = self:NewSlider("Font Size", "Select the font size to be used by cooldown's texts.", 2, 6, 32, 1, self.Refresh),
+			Flag = self:NewSelect("Font Outline", "Select the font outline to be used by cooldown's texts.", 3, fontflags, false, self.Refresh),
+			--Offsets
+		}),
+		Colors = self:NewGroup("Colors", 3, {
+			Threshold = self:NewColorNoAlpha("Threshold", "The color of cooldown's text under the threshold.", 1, self.Refresh),
+			Sec = self:NewColorNoAlpha("Seconds", "The color of cooldown's text when representing seconds.", 2, self.Refresh),
+			Min = self:NewColorNoAlpha("Minutes", "The color of cooldown's text when representing minutes.", 3, self.Refresh),
+			Hour = self:NewColorNoAlpha("Hours", "The color of cooldown's text when representing hours.", 4, self.Refresh),
+			Day = self:NewColorNoAlpha("Days", "The color of cooldown's text when representing days.", 5, self.Refresh),
+		}),
 	}
 	return options
-end
-
-function module:OnInitialize()
-	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
-	LUI:RefreshDefaults()
-	LUI:Refresh()
-	
-	self.db = LUI.db.profile
-	db = self.db
-	
-	LUI:RegisterModule(self)
 end
 
 function module:OnEnable()
@@ -521,4 +363,19 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
+	if not Timer then return end
+
+	-- Stop timers.
+	Timer:Disable()
+end
+
+function module:OnInitialize()
+	db, dbd = LUI:NewNamespace(self, true)
+end
+
+function module:Refresh()
+	if not Timer then return end
+
+	-- Refresh Timers.
+	Timer:Refresh()
 end
