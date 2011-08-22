@@ -82,6 +82,7 @@ LUI.defaults = {
 			HideErrors = false,
 			HideTalentSpam = false,
 			AutoInvite = false,
+			AutoInviteOnlyFriend = true,
 			AutoInviteKeyword = "",
 			AutoAcceptInvite = false,
 			BlizzFrameScale = 1,
@@ -854,28 +855,40 @@ local function getOptions()
 									order = 37,
 								},
 								AutoInvite = {
-									name = "Enable Autoinvite",
-									desc = "Choose if you want to Enable Autoinvite or not.",
+									name = "Enable AutoInvite",
+									desc = "Choose if you want to Enable AutoInvite or not.\n\nYou can type '/lui invite' to enable/disable this option.",
 									type = "toggle",
 									width = "full",
-									get = function() return db.General.Autoinvite end,
+									get = function() return db.General.AutoInvite end,
 									set = function(info, value)
-											db.General.Autoinvite = value
+											db.General.AutoInvite = value
 											LUI:FetchScript("AutoInvite"):SetAutoInvite()
 										end,
 									order = 38,
+								},
+								AutoInviteOnlyFriend = {
+									name = "Only Friends/Guildmates",
+									desc = "If AutoInvite should invite only your friends/guildmates or anyone.",
+									type = "toggle",
+									width = "full",
+									disabled = function() return not db.General.AutoInvite end,
+									get = function() return db.General.AutoInviteOnlyFriend end,
+									set = function(info, value)
+											db.General.AutoInviteOnlyFriend = value
+										end,
+									order = 39,
 								},
 								AutoInviteKeyword = {
 									name = "Auto Invite Keyword",
 									desc = "Choose any Keyword for Auto Invite",
 									type = "input",
-									disabled = function() return not db.General.Autoinvite end,
+									disabled = function() return not db.General.AutoInvite end,
 									get = function() return db.General.AutoInviteKeyword end,
 									set = function(info, value)
 											if value == nil then AutoInviteKeyword = "" end
 											db.General.AutoInviteKeyword = value
 										end,
-									order = 39,
+									order = 40,
 								},
 								header91 = {
 									name = "Damage Font/Size",
@@ -1432,6 +1445,7 @@ end
 
 LUI.chatcommands = {
 	["debug"] = "Debug",
+	["config"] = "Open",
 	["install"] = "Configure",
 }
 
@@ -1447,11 +1461,8 @@ function LUI:ChatCommand(input)
 			else
 				self[cmd](self)
 			end
-		else
-			if arg then
-				self:Print("Unknown command: "..arg)
-			end
-			self:Open()
+		elseif arg then
+			self:Print("Unknown command: "..arg)
 		end
 	end
 end

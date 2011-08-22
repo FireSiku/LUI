@@ -972,9 +972,9 @@ function module:PLAYER_REGEN_DISABLED()
 	-- dummy position, off screen, so calculations don't go boom
 	WorldMapBlobFrame:SetPoint("TOP", UIParent, "BOTTOM")
 	WorldMapBlobFrame:Hide()
-	self:RawHook(WorldMapBlobFrame, "Hide", blobHideFunc, true)
-	self:RawHook(WorldMapBlobFrame, "Show", blobShowFunc, true)
-	self:RawHook(WorldMapBlobFrame, "SetScale", blobScaleFunc, true)
+	WorldMapBlobFrame.Hide = blobHideFunc
+	WorldMapBlobFrame.Show = blobShowFunc
+	WorldMapBlobFrame.SetScale = blobScaleFunc
 
 	archBlobWasVisible = WorldMapArchaeologyDigSites:IsShown()
 	archBlobNewScale = nil
@@ -983,18 +983,18 @@ function module:PLAYER_REGEN_DISABLED()
 	-- dummy position, off screen, so calculations don't go boom
 	WorldMapArchaeologyDigSites:SetPoint("TOP", UIParent, "BOTTOM")
 	WorldMapArchaeologyDigSites:Hide()
-	self:RawHook(WorldMapArchaeologyDigSites, "Hide", archBlobHideFunc, true)
-	self:RawHook(WorldMapArchaeologyDigSites, "Show", archBlobShowFunc, true)
-	self:RawHook(WorldMapArchaeologyDigSites, "SetScale", archBlobScaleFunc, true)
+	WorldMapArchaeologyDigSites.Hide = archBlobHideFunc
+	WorldMapArchaeologyDigSites.Show = archBlobShowFunc
+	WorldMapArchaeologyDigSites.SetScale = archBlobScaleFunc
 end
 
 function module:PLAYER_REGEN_ENABLED()
 	WorldMapBlobFrame:SetParent(WorldMapFrame)
 	WorldMapBlobFrame:ClearAllPoints()
 	WorldMapBlobFrame:SetPoint("TOPLEFT", WorldMapDetailFrame)
-	self:Unhook(WorldMapBlobFrame, "Hide")
-	self:Unhook(WorldMapBlobFrame, "Show")
-	self:Unhook(WorldMapBlobFrame, "SetScale")
+	WorldMapBlobFrame.Hide = nil
+	WorldMapBlobFrame.Show = nil
+	WorldMapBlobFrame.SetScale = nil
 	if blobWasVisible then
 		WorldMapBlobFrame:Show()
 		WorldMapBlobFrame_CalculateHitTranslations()
@@ -1011,9 +1011,9 @@ function module:PLAYER_REGEN_ENABLED()
 	WorldMapArchaeologyDigSites:SetParent(WorldMapFrame)
 	WorldMapArchaeologyDigSites:ClearAllPoints()
 	WorldMapArchaeologyDigSites:SetPoint("TOPLEFT", WorldMapDetailFrame)
-	self:Unhook(WorldMapArchaeologyDigSites, "Hide")
-	self:Unhook(WorldMapArchaeologyDigSites, "Show")
-	self:Unhook(WorldMapArchaeologyDigSites, "SetScale")
+	WorldMapArchaeologyDigSites.Hide = nil
+	WorldMapArchaeologyDigSites.Show = nil
+	WorldMapArchaeologyDigSites.SetScale = nil
 	if archBlobWasVisible then
 		WorldMapArchaeologyDigSites:Show()
 	end
@@ -1225,6 +1225,10 @@ function module:OnDisable()
 	WorldMapShowDigSites:GetScript("OnLoad")(WorldMapShowDigSites)
 	
 	InterfaceOptionsObjectivesPanelAdvancedWorldMap:Enable()
+	
+	if InCombatLockdown() then
+		self:PLAYER_REGEN_ENABLED()
+	end
 	
 	WorldMap_ToggleSizeUp()
 	
