@@ -298,6 +298,7 @@ function module:Hide(unit)
 	
 	hidden[unit] = true
 	hide[unit]()
+	return true -- inform that unitframe was hidden
 end
 
 function module:Show(unit)
@@ -309,6 +310,7 @@ function module:Show(unit)
 	
 	hidden[unit] = nil
 	show[unit]()
+	return true -- inform that unitframe was shown
 end
 
 function module:IsUnitHideable(unit)

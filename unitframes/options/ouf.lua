@@ -964,8 +964,7 @@ toggleFuncs = {
 			Blizzard:Hide("arena")
 		else
 			if db.oUF.Arena.UseBlizzard == true then
-				Blizzard:Show("arena")
-				if not GetCVarBool("showArenaEnemyFrames") then
+				if Blizzard:Show("arena") and not GetCVarBool("showArenaEnemyFrames") then
 					print("Notice: Blizzard's Arena frames are disabled under the Unit Frames section of your Interface options")
 				end
 			else
