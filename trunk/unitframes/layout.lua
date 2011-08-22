@@ -3346,6 +3346,8 @@ end
 -- "subframes" of groups, like party target are included within the party toggle
 -- has to be OnEnable
 function module:OnEnable()
+	if db.oUF.Settings.Enable ~= true then return end
+	
 	-- remove with LUI v3.6 or something like that!
 	if LUICONFIG.Versions.ouf ~= LUI.Versions.ouf then	
 		for _, oufdb in pairs(db.oUF) do
