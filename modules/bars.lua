@@ -680,7 +680,7 @@ function module:SetBottomBar(id)
 		bar:RegisterEvent("ACTIONBAR_SHOWGRID")
 		bar:RegisterEvent("ACTIONBAR_HIDEGRID")
 		bar:RegisterEvent("PLAYER_ENTERING_WORLD")
-		bar:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+		--bar:RegisterEvent("SPELL_UPDATE_USABLE")
 		bar:SetScript("OnEvent", HookGrid)
 		
 		local buttons
@@ -758,7 +758,7 @@ function module:SetSideBar(side, id)
 		bar:RegisterEvent("ACTIONBAR_SHOWGRID")
 		bar:RegisterEvent("ACTIONBAR_HIDEGRID")
 		bar:RegisterEvent("PLAYER_ENTERING_WORLD")
-		bar:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+		--bar:RegisterEvent("SPELL_UPDATE_USABLE") -- better event?
 		bar:SetScript("OnEvent", HookGrid)
 		
 		local buttons
@@ -1042,6 +1042,15 @@ function module:SetButtons()
 	local function StyleButton(button)
 		if not button then return end
 		button:GetNormalTexture():SetAlpha(0)
+		
+		if button:GetParent() then
+			if button:GetParent().HideEmpty and not HasAction(button.action) then
+				button:SetAlpha(0)
+			else
+				button:SetAlpha(1)
+			end
+		end
+			
 		if button.__Styled == true then return end
 		
 		if button:GetParent() then
@@ -1354,6 +1363,34 @@ function module:SetButtons()
 		end
 	end
 	module:SecureHook("ActionButton_UpdateHotkeys", UpdateHotkey)
+	
+	local function Button_UpdateUsable(button)
+		local icon = _G[button:GetName().."Icon"]
+		local isUsable, notEnoughMana = IsUsableAction(button.action)
+		
+		if IsActionInRange(button.action) ~= 0 then
+			if isUsable then
+				icon:SetVertexColor(1.0, 1.0, 1.0)
+			elseif notEnoughMana then
+				icon:SetVertexColor(0.5, 0.5, 1.0)
+			else
+				icon:SetVertexColor(0.4, 0.4, 0.4)
+			end
+		else
+			icon:SetVertexColor(0.8, 0.1, 0.1)
+		end
+	end
+	module:SecureHook("ActionButton_UpdateUsable", Button_UpdateUsable)
+	
+	local function Button_OnUpdate(button, elapsed)
+		button.__elapsed = (button.__elapsed or 0) + elapsed
+		
+		if button.__elapsed > 0.2 then
+			button.__elapsed = nil
+			Button_UpdateUsable(button)
+		end
+	end
+	module:SecureHook("ActionButton_OnUpdate", Button_OnUpdate)
 end
 
 function module:SetLibKeyBound()
@@ -1766,20 +1803,21 @@ function module:LoadOptions()
 	local function createBottomBarOptions(num, order)
 		local disabledFunc = function() return not db["Bottombar"..num].Enable end
 		
-		local option = self:NewGroup("Bottom Bar "..num, order, false, InCombatLockdown, {
-			Enable = (num ~= 1) and self:NewToggle("Show Bottom Bar "..num, nil, 1, true) or nil,
-			header1 = self:NewHeader("General Settings", 2),
+		local option = self:NewGroup("Action Bar "..num, order, false, InCombatLockdown, {
+			header0 = self:NewHeader("Action Bar "..num.." Settings", 0),
+			Enable = (num ~= 1) and self:NewToggle("Show Action Bar "..num, nil, 1, true) or nil,
+			empty1 = self:NewDesc(" ", 2),
 			HideEmpty = self:NewToggle("Hide Empty Buttons", nil, 3, true, nil, disabledFunc),
-			[""] = self:NewPosSliders("Bottom Bar "..num, 4, false, "LUIBar"..num, true, nil, disabledFunc),
-			Point = self:NewSelect("Point", "Choose the Point for your Bottom Bar "..num, 5, positions, nil, nil, nil, disabledFunc),
-			empty1 = self:NewDesc(" ", 6),
-			Scale = self:NewSlider("Scale", "Scale of Bottom Bar "..num..".", 7, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
-			empty2 = self:NewDesc(" ", 8),
-			NumPerRow = self:NewSlider("Buttons Per Row", "Choose the Number of Buttons per row for your Bottom Bar "..num..".", 9, 1, 12, 1, true, nil, nil, disabledFunc),
-			NumButtons = self:NewSlider("Number of Buttons", "Choose the Number of Buttons for your Bottom Bar "..num..".", 10, 1, 12, 1, true, nil, nil, disabledFunc),
+			[""] = self:NewPosSliders("Action Bar "..num, 4, false, "LUIBar"..num, true, nil, disabledFunc),
+			Point = self:NewSelect("Point", "Choose the Point for your Action Bar "..num, 5, positions, nil, nil, nil, disabledFunc),
+			empty2 = self:NewDesc(" ", 6),
+			Scale = self:NewSlider("Scale", "Scale of Action Bar "..num..".", 7, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
+			empty3 = self:NewDesc(" ", 8),
+			NumPerRow = self:NewSlider("Buttons Per Row", "Choose the Number of Buttons per row for your Action Bar "..num..".", 9, 1, 12, 1, true, nil, nil, disabledFunc),
+			NumButtons = self:NewSlider("Number of Buttons", "Choose the Number of Buttons for your Action Bar "..num..".", 10, 1, 12, 1, true, nil, nil, disabledFunc),
 			State = self:NewGroup("State Settings", 11, getState, setBottombarState, true, {
-				Alt = self:NewSelect("Alt", "Choose the Alt State for Bottom Bar "..num..".\n\nDefault: "..defaultstate["Bottombar"..num][1], 25, statelist, nil, false, nil, disabledFunc),
-				Ctrl = self:NewSelect("Ctrl", "Choose the Ctrl State for Bottom Bar "..num..".\n\nDefault: "..defaultstate["Bottombar"..num][1], 26, statelist, nil, false, nil, disabledFunc),
+				Alt = self:NewSelect("Alt", "Choose the Alt State for Action Bar "..num..".\n\nDefault: "..defaultstate["Bottombar"..num][1], 25, statelist, nil, false, nil, disabledFunc),
+				Ctrl = self:NewSelect("Ctrl", "Choose the Ctrl State for Action Bar "..num..".\n\nDefault: "..defaultstate["Bottombar"..num][1], 26, statelist, nil, false, nil, disabledFunc),
 			}),
 			Fader = self:NewGroup("Fader", 12, true, disabledFunc, Fader:CreateFaderOptions(_G["LUIBar"..num], db["Bottombar"..num].Fader, dbd["Bottombar"..num].Fader, true)),
 		})
@@ -1790,7 +1828,7 @@ function module:LoadOptions()
 					i, statelist, nil, false, nil, disabledFunc)
 			end
 		else
-			option.args.State.args["1"] = self:NewSelect("Default", "Choose the State for Bottom Bar "..num..".\n\nDefaults:\nLUI: "..defaultstate["Bottombar"..num][1].."\nBlizzard: "..blizzstate["Bottombar"..num][1],
+			option.args.State.args["1"] = self:NewSelect("Default", "Choose the State for Action Bar "..num..".\n\nDefaults:\nLUI: "..defaultstate["Bottombar"..num][1].."\nBlizzard: "..blizzstate["Bottombar"..num][1],
 				1, statelist, nil, false, nil, disabledFunc)
 		end
 		
@@ -1802,18 +1840,19 @@ function module:LoadOptions()
 		local disabledPosFunc = function() return not db["Sidebar"..side..num].Enable or (isBarAddOnLoaded and not db["Sidebar"..side..num].AutoPosEnable) end
 		
 		local option = self:NewGroup(side.." Bar "..num, order, false, InCombatLockdown, {
+			header1 = self:NewHeader(side.." Bar "..num.." Settings", 0),
 			Enable = self:NewToggle("Show "..side.." Bar "..num, nil, 1, true),
-			header1 = self:NewHeader("Anchor Settings", 2),
+			empty1 = self:NewDesc(" ", 2),
 			Intro = isBarAddOnLoaded and self:NewDesc("Which Bar do you want to use for this Sidebar?\nChoose one or type in the MainAnchor manually.\n\nMake sure your Bar is set to 6 buttons/2 columns and isn't used for another Sidebar.\nLUI will position your Bar automatically.", 3) or nil,
 			AnchorDropDown = isBarAddOnLoaded and self:NewSelect("Anchor", nil, 4, barAnchors) or nil,
 			Anchor = isBarAddOnLoaded and self:NewInput("Anchor", "Choose the Bar for this Sidebar.", 5, nil, nil, disabledFunc) or nil,
 			Additional = self:NewInput("Additional Frames", "Type in any additional frame names (seperated by commas), that you would like to show/hide with the Sidebar.", 6, true, nil, disabledFunc),
-			header2 = self:NewHeader("General Settings", 7),
+			empty2 = self:NewDesc(" ", 7),
 			[""] = self:NewPosSliders(side.." Bar "..num, 8, false, function() return GetAnchor(sidebars[side..num].Main) end, true, nil, disabledPosFunc),
 			Scale = self:NewSlider("Scale", "Choose the Scale for this Sidebar.", 9, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
 			AutoPosEnable = isBarAddOnLoaded and self:NewToggle("Stop touching me!", "Whether or not to have LUI handle your Bar Positioning.", 10, true, nil, disabledFunc) or nil,
 			HideEmpty = not isBarAddOnLoaded and self:NewToggle("Hide Empty Buttons", nil, 11, true, nil, disabledFunc) or nil,
-			header3 = self:NewHeader("Additional Settings", 12),
+			empty3 = self:NewDesc(" ", 12),
 			Offset = self:NewInputNumber("Y Offset", "Y Offset for your Sidebar", 13, true, nil, disabledFunc),
 			OpenInstant = self:NewToggle("Open Instant", "Whether or not to show an open/close animation.", 14, true, nil, disabledFunc),
 			State = not isBarAddOnLoaded and self:NewGroup("State Settings", 15, getState, setSidebarState, true, {
@@ -1848,6 +1887,7 @@ function module:LoadOptions()
 	
 	local function createOtherBarOptions(name, order, frame)
 		local option = self:NewGroup(name, order, false, InCombatLockdown, {
+			header0 = self:NewHeader(name.." Settings", 0),
 			Enable = self:NewToggle("Show "..name, nil, 1, true),
 			[""] = self:NewPosSliders(name, 2, false, frame, true, nil, disabled[name]),
 			Point = self:NewSelect("Point", "Choose the Point for the "..name..".", 3, positions, nil, nil, nil, disabled[name]),
@@ -1860,6 +1900,7 @@ function module:LoadOptions()
 	
 	local options = {
 		General = self:NewGroup("General", 1, false, InCombatLockdown, {
+			header1 = self:NewHeader("General Settings", 0),
 			Enable = self:NewToggle("Enable", "Whether or not to use LUI's Action Bars.", 1, function() StaticPopup_Show("RELOAD_UI") end),
 			empty1 = self:NewDesc(" ", 2),
 			ShowHotkey = self:NewToggle("Show Hotkey Text", nil, 3, true, nil, nil, isLibMasqueLoaded or isBarAddOnLoaded),
@@ -1874,6 +1915,7 @@ function module:LoadOptions()
 			ToggleKB = self:NewExecute("Keybinds", "Toggles Keybinding mode.", 12, function() LibKeyBound:Toggle() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
 		}),
 		TopTexture = self:NewGroup("Top Texture", 2, false, InCombatLockdown, {
+			header1 = self:NewHeader("Top Texture Settings", 0),
 			Enable = self:NewToggle("Enable", "Whether or not to show the Top Bar Texture.", 1, true),
 			Alpha = self:NewSlider("Alpha", "Choose your Top Bar Texture Alpha.", 2, nil, nil, nil, true, true, nil, disabled.TopTex),
 			empty1 = self:NewDesc(" ", 3),
@@ -1882,6 +1924,7 @@ function module:LoadOptions()
 			AnimationHeight = self:NewInputNumber("Animation Height", "Choose the Top Bar Texture Animation Height.", 6, nil, nil, disabled.TopTexAnim, not LUI.isForteCooldownLoaded),
 		}),
 		BottomTexture = self:NewGroup("Bottom Texture", 3, false, InCombatLockdown, {
+			header1 = self:NewHeader("Bottom Texture Settings", 0),
 			Enable = self:NewToggle("Enable", "Whether or not to show the Bottom Bar Texture.", 1, true),
 			Alpha = self:NewSlider("Alpha", "Choose your Bottom Bar Texture Alpha.", 2, nil, nil, nil, true, true, nil, disabled.BottomTex),
 			empty1 = self:NewDesc(" ", 3),
