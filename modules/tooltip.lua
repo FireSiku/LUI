@@ -25,6 +25,7 @@ local db
 local hooks = { }
 local GameTooltip, GameTooltipStatusBar = _G["GameTooltip"], _G["GameTooltipStatusBar"]
 local Tooltips = {GameTooltip,ItemRefTooltip,ShoppingTooltip1,ShoppingTooltip2,ShoppingTooltip3,WorldMapTooltip}
+local LUITooltipColors
 
 function module:UpdateTooltip()
 	for _, tt in pairs(Tooltips) do

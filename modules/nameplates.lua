@@ -207,7 +207,6 @@ function module:SetNameplates()
 		nameTextRegion:Hide()
 
 		local newNameRegion = frame:CreateFontString()
-		DTEST3 = newNameRegion
 		newNameRegion:SetPoint("BOTTOM", healthBar, "TOP", LUI:Scale(db.Nameplates.Name.XOffset), LUI:Scale(db.Nameplates.Name.YOffset))
 		newNameRegion:SetFont(font, fontSize, fontFlag)
 		newNameRegion:SetTextColor(fontColor.r, fontColor.g, fontColor.b)
@@ -314,8 +313,6 @@ function module:SetNameplates()
 
 	local numKids = 0
 	local lastUpdate = 0
-	DTEST = createPlate;
-	DTEST2 = isValidFrame;
 
 	tNamePlates:SetScript("OnUpdate", function(self, elapsed)
 		lastUpdate = lastUpdate + elapsed

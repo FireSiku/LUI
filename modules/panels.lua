@@ -43,14 +43,14 @@ local addonAnchors = {
 
 function module:CheckPanels()
 	if db.Frames.AlwaysShowChat == true and db.Frames.AlwaysShowTps == true and db.Frames.AlwaysShowDps == true and db.Frames.AlwaysShowRaid == true then
-		isAllShown = true
+		Frames:IsAllShown(true)
 		Frames:SetOrbCycleColor()
 	else
 		if db.Frames.IsChatShown == true and db.Frames.IsTpsShown == true and db.Frames.IsDpsShown == true and db.Frames.IsRaidShown == true then
-			isAllShown = true
+			Frames:IsAllShown(true)
 			Frames:SetOrbCycleColor()
 		else
-			isAllShown = false
+			Frames:IsAllShown(false)
 			--LUI_OrbCycle:SetBackdropColor(0.25,0.25,0.25,0.7)
 		end
 	end
