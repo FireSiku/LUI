@@ -16,7 +16,7 @@ local db, dbd
 ------------------------------------------------------
 
 -- Localised functions.
-local select, strfind, strmatch, tonumber, type = select, strfind, strmatch, tonumber, type
+local select, strfind, strmatch, tonumber, tostring, type = select, strfind, strmatch, tonumber, tostring, type
 local GetItemCount, GetItemInfo, GetMerchantItemInfo, GetMerchantNumItems = GetItemCount, GetItemInfo, GetMerchantItemInfo, GetMerchantNumItems
 local CanMerchantRepair, GetCoinTextureString, GetRepairAllCost, RepairAllItems = CanMerchantRepair, GetCoinTextureString, GetRepairAllCost, RepairAllItems
 local GetContainerItemID, GetContainerItemInfo, GetContainerNumSlots, UseContainerItem =  GetContainerItemID, GetContainerItemInfo, GetContainerNumSlots, UseContainerItem
@@ -74,6 +74,10 @@ end
 
 function module:GetItemID(item)
 	if not item then return end
+	local nItem = tonumber(item)
+	if nItem and GetItemInfo(nItem) then
+		return nItem
+	end
 
 	-- Get itemLink.
 	local _, itemLink = GetItemInfo(item)
@@ -158,7 +162,7 @@ function module:AutoSell()
 end
 
 function module:AutoStock()
-	if not db.AutoStock.Enable or db.AutoStock.List.Count <= 0 then return end
+	if not db.AutoStock.Enable or db.AutoStock.Count <= 0 then return end
 
 	-- Scan through merchants items.
 	local cost, cart = 0, {}
@@ -182,7 +186,7 @@ function module:AutoStock()
 	-- Check if shopping cart is affordable.
 	if (not db.AutoStock.Settings.NoLimit) and (cost > db.AutoStock.Settings.CostLimit * 1000) then
 		if db.AutoStock.Settings.ShowError then
-			print("|cffff0000The shopping cart costs of|r " .. GetCoinTextureString(cost) .. " |cffff0000exceed the limit of|r " .. GetCoinTextureString(db.AutoStock.Settings.CostLimit * 1000))
+			print("|cffff0000Stocking items would cost|r " .. GetCoinTextureString(cost) .. " |cffff0000and exceed the limit of|r " .. GetCoinTextureString(db.AutoStock.Settings.CostLimit * 1000))
 		end
 		return
 	end
@@ -194,7 +198,7 @@ function module:AutoStock()
 	end
 
 	if db.AutoStock.Settings.ShowSuccess then
-		print("|cff00ff00Successfully bought shopping cart for:|r "..GetCoinTextureString(cost))
+		print("|cff00ff00Successfully stocked items for:|r "..GetCoinTextureString(cost))
 	end
 end
 
@@ -242,8 +246,8 @@ module.defaults = {
 		},
 		AutoStock = {
 			Enable = false,
+			Count = 0,
 			List = {
-				Count = 0,
 			},
 			Settings = {
 				NoLimit = true,
@@ -283,6 +287,65 @@ function module:LoadOptions()
 			items[itemID] = itemLink
 		end
 		return items
+	end
+
+	-- Auto Stock functions.
+	stockCurrent, stockList = nil, {}
+	local function stockValues()
+		wipe(stockList)
+		stockList[0] = "None"
+		for id, count in pairs(db.AutoStock.List) do
+			stockList[id] = GetItemInfo(id)
+		end
+
+		return stockList
+	end
+	local function stockGet()
+		stockCurrent = (stockCurrent ~= 0 and stockCurrent) or nil
+		return stockCurrent and stockList[stockCurrent] and stockCurrent or 0
+	end
+	local function stockSet(self, id)
+		stockCurrent = (id ~= 0 and id) or nil
+	end
+	local function stockUpdateGet()
+		return (stockCurrent and tostring(db.AutoStock.List[stockCurrent])) or "Enter a new item name, link or id (\"id:1234\")."
+	end
+	local function stockUpdateSet(self, v)
+		if not v or v == "" then return end
+
+		local count = tonumber(v)
+		if count then
+			-- Update an item in list.
+			if stockCurrent and db.Autostock.List[stockCurrent] then
+				if count == 0 then
+					-- Remove item id from list.
+					db.AutoStock.List[stockCurrent] = nil
+					db.AutoStock.Count = db.AutoStock.Count - 1
+					db.AutoStock.Count = db.AutoStock.Count >= 0 and db.AutoStock.Count or 0
+					stockCurrent = nil
+				else
+					-- Update stock count.
+					db.AutoStock.List[stockCurrent] = count
+				end
+			end
+		else
+			-- Add new item.
+			local id = module:GetItemID(v)
+			if not id then
+				id = module:GetItemID(v:match("id:(%d+)"))
+				if not id then
+					stockCurrent = nil
+					return
+				end
+			end
+
+			-- Add item id to list.
+			if not db.AutoStock.List[id] then
+				db.AutoStock.List[id] = 1
+				db.AutoStock.Count = db.AutoStock.Count + 1
+			end
+			stockCurrent = id
+		end			
 	end
 	
 	-- get/set functions
@@ -337,8 +400,21 @@ function module:LoadOptions()
 			Title = self:NewHeader("Auto Stock Settings", 1),
 			Info = self:NewDesc("Set your Auto Stock options. Additionally you may also set a cost limit.", 2),
 			Enable = self:NewToggle("Enable Auto Stock", nil, 3, true),
-			Lol1 = self:NewDesc("/run local l = LUI.db:GetNamespace(\"Merchant\").profile.AutoStock.List; l[<itemid>] = <stock>; l.Count = l.Count + 1;", 4),
-			Lol2 = self:NewDesc("Because I'm lazy! (TEMP)", 5),
+			Items = {
+				type = "select", name = "Stock List", order = 4,
+				desc = "List of all items that will automatically be restocked.",
+				values = stockValues,
+				get = stockGet,
+				set = stockSet,
+				disabled = disabled.AutoStock,
+			},
+			Update = {
+				type = "input", name = "Count & New Item", order = 5,
+				desc = "Type in the amount to buy of the selected item, or type in a new item name, link or id to add a new item to the list. If entering an item id please enter like so: \"id:1234\".",
+				get = stockUpdateGet,
+				set = stockUpdateSet,
+				disabled = disabled.AutoStock,
+			},
 			Settings = self:NewGroup("Settings", 5, true, disabled.AutoStock, {
 				NoLimit = self:NewToggle("No Cost Limit", nil, 1, true),
 				CostLimit = self:NewSlider("Cost Limit", "The cost limit in gold after which buying items won't happen automatically.", 2, 0, 500, 10, true, false, nil, disabled.BuyLimit),

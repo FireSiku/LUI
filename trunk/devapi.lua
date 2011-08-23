@@ -521,7 +521,7 @@ function devapi:NewInputNumber(name, desc, order, func, width, disabled, hidden,
 	t.desc = descfuncs(self, func, desc, function(info) return iformat:format(self.defaults(info)) end)
 	t.validate = IsNumber
 	t.get = getfuncs(self, func, function(info) return iformat:format(self.db(info)) end)
-	t.set = setfuncs(self, func, function(info, value) self.db(info, tonumber(iformat:format(value):match("%d+[%.%d]]*"))) end) -- strip number from formatted string
+	t.set = setfuncs(self, func, function(info, value) self.db(info, tonumber(iformat:format(value):match("[-]?%d+[%.%d]]*"))) end) -- strip number from formatted string
 
 	SetState(t, width, disabled, hidden)
 	return t

@@ -296,7 +296,7 @@ module.defaults = {
 			Font = "vibroceb",
 			Size = 20,
 			Flag = "OUTLINE",			
-			XOffset = 0,
+			XOffset = 2,
 			YOffset = 0,
 		},
 		Colors = {
@@ -338,16 +338,20 @@ function module:LoadOptions()
 
 	local options = {
 		General = self:NewGroup("General Settings", 1, {
-			Threshold = self:NewSlider("Cooldown Threshold", "The time at which your cooldown text is colored differently and begins using specified precision.", 1, 0, 30, 1, self.Refresh),
-			Precision = self:NewSlider("Cooldown Precision", "How many decimal places will be shown once time is within the cooldown threshold.", 2, 0, 3, 1, self.Refresh),
-			MinDuration = self:NewSlider("Minimum Duration", "The lowest cooldown duration that timers will be shown for.", 3, 0, 60, 0.5),
+			--Threshold = self:NewSlider("Cooldown Threshold", "The time at which your cooldown text is colored differently and begins using specified precision.", 1, 0, 30, 1, self.Refresh),
+			Threshold = self:NewInputNumber("Cooldown Threshold", "The time at which your coodown text is colored differnetly and begins using specified precision.", 1, self.Refresh),
+			--MinDuration = self:NewSlider("Minimum Duration", "The lowest cooldown duration that timers will be shown for.", 2, 0, 60, 0.5),
+			MinDuration = self:NewInputNumber("Minimum Duration", "The lowest cooldown duration that timers will be shown for.", 2),
+			Precision = self:NewSlider("Cooldown Precision", "How many decimal places will be shown once time is within the cooldown threshold.", 3, 0, 3, 1, self.Refresh),
 			MinScale = self:NewSlider("Minimum Scale", "The smallest size of icons that timers will be shown for.", 4, 0, 2, 0.1, self.Refresh),
 		}),
 		Text = self:NewGroup("Text Settings", 2, {
 			Font = self:NewSelect("Font", "Select the font to be used by cooldown's texts.", 1, widgetLists.font, "LSM30_Font", self.Refresh),
 			Size = self:NewSlider("Font Size", "Select the font size to be used by cooldown's texts.", 2, 6, 32, 1, self.Refresh),
 			Flag = self:NewSelect("Font Outline", "Select the font outline to be used by cooldown's texts.", 3, fontflags, false, self.Refresh),
-			--Offsets
+			Offsets = self:NewHeader("Text Position Offsets", 4),
+			XOffset = self:NewInputNumber("X Offset", "Horizontal offset to be applied to the cooldown's texts.", 5, self.Refresh),
+			YOffset = self:NewInputNumber("Y Offset", "Vertical offset to be applied to the cooldown's texts.", 6, self.Refresh),
 		}),
 		Colors = self:NewGroup("Colors", 3, {
 			Threshold = self:NewColorNoAlpha("Threshold", "The color of cooldown's text under the threshold.", 1, self.Refresh),
