@@ -286,7 +286,7 @@ end
 
 local GetBarState = function(id)
 	local bardb = db["Bottombar"..id]
-	local condition = "[bonusbar:5] 11; "
+	local condition = id == 1 and "[bonusbar:5] 11; " or ""
 	
 	if bardb.State.Alt ~= bardb.State[1] then
 		condition = condition.."[mod:alt] "..bardb.State.Alt.."; "
@@ -728,6 +728,15 @@ function module:SetBottomBar(id)
 	
 	Configure(bar, bardb.NumButtons, bardb.NumPerRow)
 	
+	if id == 1 then
+		bar:Show()
+	elseif bardb.Enable then
+		UnregisterStateDriver(bar, "visibility")
+		RegisterStateDriver(bar, "visibility", "[bonusbar:5] hide; show")
+	else
+		UnregisterStateDriver(bar, "visibility")
+		bar:Hide()
+	end
 	bar[bardb.Enable and "Show" or "Hide"](bar)
 end
 
@@ -1806,7 +1815,7 @@ function module:LoadOptions()
 		local option = self:NewGroup("Action Bar "..num, order, false, InCombatLockdown, {
 			header0 = self:NewHeader("Action Bar "..num.." Settings", 0),
 			Enable = (num ~= 1) and self:NewToggle("Show Action Bar "..num, nil, 1, true) or nil,
-			empty1 = self:NewDesc(" ", 2),
+			empty1 = (num ~= 1) and  self:NewDesc(" ", 2) or nil,
 			HideEmpty = self:NewToggle("Hide Empty Buttons", nil, 3, true, nil, disabledFunc),
 			[""] = self:NewPosSliders("Action Bar "..num, 4, false, "LUIBar"..num, true, nil, disabledFunc),
 			Point = self:NewSelect("Point", "Choose the Point for your Action Bar "..num, 5, positions, nil, nil, nil, disabledFunc),
