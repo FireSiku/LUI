@@ -320,13 +320,13 @@ function module:SetTooltip()
 		if player then
 			local class = select(2, UnitClass(unit))
 			local c = LUITooltipColors.class[class] or {1, 1, 1}
-			r, g, b = c[1], c[2], c[3]
+			local r, g, b = c[1], c[2], c[3]
 			self:SetBackdropBorderColor(r, g, b)
 			healthBarBG:SetBackdropBorderColor(r, g, b)
 			healthBar:SetStatusBarColor(r, g, b)
 		elseif reaction then
 			local c = LUITooltipColors.reaction[reaction]
-			r, g, b = c[1], c[2], c[3]
+			local r, g, b = c[1], c[2], c[3]
 			self:SetBackdropBorderColor(r, g, b)
 			healthBarBG:SetBackdropBorderColor(r, g, b)
 			healthBar:SetStatusBarColor(r, g, b)
