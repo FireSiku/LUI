@@ -52,6 +52,8 @@ InfoText.StatMetatable = {
 	__newindex = function(self, k, v)
 		if self.__LDB[k] ~= nil then
 			self.__LDB[k] = v
+		else
+			rawset(self, k, v)
 		end
 	end,
 }
@@ -82,12 +84,14 @@ function InfoText:CreateStat(stat)
 			if stat[k] then
 				return stat[k]
 			else
-				return mt[k]
+				return mt.__index[k]
 			end
 		end,
 		__newindex = function(self, k, v)
 			if stat[k] ~= nil then
 				stat[k] = v
+			else
+				rawset(self, k, v)
 			end
 		end,
 	}
@@ -188,10 +192,10 @@ end
 
 -- Accessor functions.
 function InfoText:UpdateLDBFields(stat)
-	local ldb = stat.__LDB
-	ldb.infoPanel = stat.db[stat.name].InfoPanel.Panel
-	ldb.infoPanelX = stat.db[stat.name].InfoPanel.X
-	ldb.infoPanelY = stat.db[stat.name].InfoPanel.Y
+	local ldb, db = stat.__LDB, stat.db[stat.name].InfoPanel
+	ldb.infoPanel = db.Panel
+	ldb.infoPanelX = db.X
+	ldb.infoPanelY = db.Y
 end
 
 
@@ -328,6 +332,7 @@ end
 	TODO:
 		- On dataobject creation, imbeded panel position options into the infotext options.
 		- Make stats moveable around panels via dragging; maybe ctrl+left mouse drag.
+		- Position memory for frames that don't provide a panel position.
 ]]
 local lastX = -15
 function InfoText:LibDataBroker_DataObjectCreated(_, name, dataobject)
