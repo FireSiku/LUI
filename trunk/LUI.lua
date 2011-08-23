@@ -152,8 +152,8 @@ function LUI:Kill(object)
 end
 
 local function scale(x)
-	scaleUI = UIParent:GetEffectiveScale()
-	mult = 768/screen_height/scaleUI
+	local scaleUI = UIParent:GetEffectiveScale()
+	local mult = 768/screen_height/scaleUI
 	LUI.mult = mult
 	return mult*math.floor(x/mult+.5)
 end
@@ -161,8 +161,8 @@ end
 function LUI:Scale(x) return scale(x) end
 
 function LUI:CreatePanel(f, w, h, a1, p, a2, x, y)
-	sh = scale(h)
-	sw = scale(w)
+	local sh = scale(h)
+	local sw = scale(w)
 	f:SetFrameLevel(1)
 	f:SetHeight(sh)
 	f:SetWidth(sw)

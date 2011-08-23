@@ -84,6 +84,14 @@ function module:SetColors()
 	self:SetOrbHoverColor()
 end
 
+local isAllShown = false
+function module:IsAllShown(bool)
+	if bool ~= nil then
+		isAllShown = bool
+	end
+	return isAllShown
+end
+
 function module:SetFrames()
 	local navi = Themes.db.profile.navi
 	local navi_hover = Themes.db.profile.navi_hover

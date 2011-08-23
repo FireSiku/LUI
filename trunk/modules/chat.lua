@@ -66,13 +66,13 @@ end
 local function SetChatFading()
 	if db.Chat.Fading == true then
 		for i = 1, NUM_CHAT_WINDOWS do
-			chatframe = _G[("ChatFrame%d"):format(i)]
+			local chatframe = _G[("ChatFrame%d"):format(i)]
 			chatframe:SetFading(1)
 			chatframe:SetTimeVisible(180)
 		end
 	else
 		for i = 1, NUM_CHAT_WINDOWS do
-			chatframe = _G[("ChatFrame%d"):format(i)]
+			local chatframe = _G[("ChatFrame%d"):format(i)]
 			chatframe:SetFading(0)
 		end
 	end
@@ -363,6 +363,7 @@ function module:SetChat()
 	self:SetChatPosition()
 	SetChatJustify()
 
+	--[[
 	local chat_font, editbox_font
 	
 	if db.Chat.Font == nil or db.Chat.Font == "" then
@@ -377,9 +378,9 @@ function module:SetChat()
 		editbox_font = Media:Fetch("font", db.Chat.Editbox.Font)
 	end
 		
-	chat_fontsize = tonumber(db.Chat.Size)
-	editbox_fontsize = tonumber(db.Chat.Editbox.Size)
-	
+	local chat_fontsize = tonumber(db.Chat.Size)
+	local editbox_fontsize = tonumber(db.Chat.Editbox.Size)
+	--]]
 	local player = UnitName("player")
 	local ChatFrame1 = ChatFrame1
 	local replace = string.gsub
@@ -586,13 +587,13 @@ function module:SetChat()
 	--	Lock docked tabs
 	------------------------------------------------------------------------
 	
-	function ChatTab_OnDragStart(self)
+	local function ChatTab_OnDragStart(self)
 		if IsAltKeyDown() or not _G[self:GetName():sub(1, -4)].isDocked then
 			hooks[self].OnDragStart(self)
 		end
 	end
 	
-	function SetLockDockedTabs()
+	local function SetLockDockedTabs()
 		if db.Chat.Tabs.LockDockedTabs == true then
 			for i = 2, NUM_CHAT_WINDOWS do
 				local tab = _G[("ChatFrame%dTab"):format(i)]
