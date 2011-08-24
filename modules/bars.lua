@@ -61,7 +61,7 @@ local barAnchors = {
 }
 local statelist = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
 
-local isBarAddOnLoaded, isLibMasqueLoaded
+local isBarAddOnLoaded
 
 local statetexts = setmetatable({
 	["DRUID"] = {"Default", "Bear Form", "Cat Form", "Cat Form (Prowl)", "Moonkin Form", "Tree of Life Form"},
@@ -873,8 +873,6 @@ function module:SetShapeshiftBar()
 			bar.buttons[i] = button
 		end
 		
-		local group = Masque and Masque:Group("LUI", "Shapeshift Bar") or nil
-
 		local function MoveShapeshift()
 			if InCombatLockdown() then return end
 			
@@ -891,6 +889,13 @@ function module:SetShapeshiftBar()
 		-- DO NOT CHANGE
 		hooksecurefunc("ShapeshiftBar_Update", MoveShapeshift)
 		hooksecurefunc("ShapeshiftBar_UpdateState", MoveShapeshift)
+		
+		if Masque then
+			local group = Masque:Group("LUI", "Stance Bar")
+			for i = 1, 10 do
+				group:AddButton(_G["ShapeshiftButton"..i])
+			end
+		end
 	end
 	
 	local s = db.ShapeshiftBar.Scale
@@ -1019,11 +1024,6 @@ function module:HideBlizzard()
 end
 
 function module:SetButtons()
-	if Masque then
-		isLibMasqueLoaded = true
-		return
-	end
-	
 	local mediaPath = [[Interface\AddOns\LUI\media\textures\buttons2\]]
 
 	local normTex = mediaPath..[[Normal.tga]]
@@ -1062,6 +1062,9 @@ function module:SetButtons()
 			
 		if button.__Styled == true then return end
 		
+		table.insert(buttonlist, button)
+		button.__Styled = true
+		
 		if button:GetParent() then
 			local parent = button:GetParent():GetName()
 			if parent == "MultiCastActionBarFrame" then return end
@@ -1074,13 +1077,66 @@ function module:SetButtons()
 		local size = button:GetWidth()
 		local scale = size / 36
 		
+		-- first style texts / equipped border, then check for BF/Masque, if not loaded, proceed!
+		-- hotkey
+		local hotkey = _G[name.."HotKey"]
+		
+		hotkey:SetFont(font, 12, "OUTLINE")
+		hotkey:SetDrawLayer("OVERLAY")
+		hotkey:ClearAllPoints()
+		hotkey:SetPoint("TOPRIGHT", button, "TOPRIGHT", -1, -4)
+		hotkey:SetWidth(40)
+		hotkey:SetHeight(10)
+		
+		hotkey.Show_ = hotkey.Show
+		hotkey.Show = function()
+			if db.General.ShowHotkey and hotkey:GetText() ~= RANGE_INDICATOR then
+				hotkey:Show_()
+			end
+		end
+		
+		if not db.General.ShowHotkey then hotkey:Hide() end
+		
+		-- macro
+		local macro = _G[name.."Name"]
+		macro:SetFont(font, 12, "OUTLINE")
+		macro:SetDrawLayer("OVERLAY")
+		macro:ClearAllPoints()
+		macro:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 6)
+		macro:SetPoint("BOTTOMLEFT", button, "BOTTOMLEFT", 0, 6)
+		macro:SetHeight(10)
+		
+		if not db.General.ShowMacro then macro:Hide() end
+		
+		-- count
+		local count = _G[name.."Count"]
+		count:SetFont(font, 14, "OUTLINE")
+		count:SetDrawLayer("OVERLAY")
+		count:ClearAllPoints()
+		count:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -2, 6)
+		count:SetWidth(40)
+		count:SetHeight(10)
+		
+		if not db.General.ShowCount then count:Hide() end
+		
+		-- border (show/hide functionality)
+		local border = _G[name.."Border"]
+		
+		border.Show_ = border.Show
+		border.Show = function() if db.General.ShowEquipped then border:Show_() end end
+		
+		if not db.General.ShowEquipped then border:Hide() end
+		
+		if Masque then return end
+		
 		button.GetHotkey = GetHotkey
 		button:HookScript("OnEnter", Button_OnEnter)
 		
 		-- normal
 		local normal = button:GetNormalTexture()
 		normal:SetTexture("")
-		normal.SetTexture = function() end
+		normal.SetTexture_ = normal.SetTexture
+		normal.SetTexture = function(self) self:SetTexture_("") end
 		normal:Hide()
 		normal.Show = normal.Hide
 		
@@ -1180,9 +1236,8 @@ function module:SetButtons()
 		flash:ClearAllPoints()
 		flash:SetPoint("CENTER", button, "CENTER", 0, 0)
 		flash.SetTexture = dummy
-	
-		-- border
-		local border = _G[name.."Border"]
+		
+		-- border (styling)
 		border:SetTexture(borderTex)
 		border.SetTexture = dummy
 		border:SetDrawLayer("ARTWORK", 0)
@@ -1191,20 +1246,6 @@ function module:SetButtons()
 		border:SetHeight(40 * scale)
 		border:ClearAllPoints()
 		border:SetPoint("CENTER", button, "CENTER", 0, 0)
-		
-		border.Show_ = border.Show
-		border.Show = function()
-			button.__equipped = true
-			if db.General.ShowEquipped then border:Show_() end
-		end
-		border.Hide_ = border.Hide
-		border.Hide = function()
-			button.__equipped = false
-			border:Hide_()
-		end
-		
-		if border:IsShown() then button.__equipped = true end
-		if not db.General.ShowEquipped then border:Hide_() end
 		
 		-- autocast
 		local autocast = _G[name.."Shine"]
@@ -1215,51 +1256,7 @@ function module:SetButtons()
 			autocast:SetPoint("CENTER", button, "CENTER", 0, 0)
 		end
 		
-		-- hotkey
-		local hotkey = _G[name.."HotKey"]
-		
-		hotkey:SetFont(font, 12, "OUTLINE")
-		hotkey:SetDrawLayer("OVERLAY")
-		hotkey:ClearAllPoints()
-		hotkey:SetPoint("TOPRIGHT", button, "TOPRIGHT", -1, -4)
-		hotkey:SetWidth(40)
-		hotkey:SetHeight(10)
-		
-		hotkey.Show_ = hotkey.Show
-		hotkey.Show = function()
-			if db.General.ShowHotkey and hotkey:GetText() ~= RANGE_INDICATOR then
-				hotkey:Show_()
-			end
-		end
-		
-		if not db.General.ShowHotkey then hotkey:Hide() end
-		
-		-- macro
-		local macro = _G[name.."Name"]
-		macro:SetFont(font, 12, "OUTLINE")
-		macro:SetDrawLayer("OVERLAY")
-		macro:ClearAllPoints()
-		macro:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 6)
-		macro:SetPoint("BOTTOMLEFT", button, "BOTTOMLEFT", 0, 6)
-		macro:SetHeight(10)
-		
-		if not db.General.ShowMacro then macro:Hide() end
-		
-		-- count
-		local count = _G[name.."Count"]
-		count:SetFont(font, 14, "OUTLINE")
-		count:SetDrawLayer("OVERLAY")
-		count:ClearAllPoints()
-		count:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -2, 6)
-		count:SetWidth(40)
-		count:SetHeight(10)
-		
-		if not db.General.ShowCount then count:Hide() end
-	
 		button.SetFrameLevel = dummy
-		
-		table.insert(buttonlist, button)
-		button.__Styled = true
 	end
 	module:SecureHook("ActionButton_Update", StyleButton)
 	
@@ -1912,15 +1909,15 @@ function module:LoadOptions()
 			header1 = self:NewHeader("General Settings", 0),
 			Enable = self:NewToggle("Enable", "Whether or not to use LUI's Action Bars.", 1, function() StaticPopup_Show("RELOAD_UI") end),
 			empty1 = self:NewDesc(" ", 2),
-			ShowHotkey = self:NewToggle("Show Hotkey Text", nil, 3, true, nil, nil, isLibMasqueLoaded or isBarAddOnLoaded),
-			ShowMacro = self:NewToggle("Show Macro Text", nil, 4, true, nil, nil, isLibMasqueLoaded or isBarAddOnLoaded),
-			ShowCount = self:NewToggle("Show Count Text", nil, 5, true, nil, nil, isLibMasqueLoaded or isBarAddOnLoaded),
-			empty2 = self:NewDesc(" ", 6, nil, nil, isLibMasqueLoaded or isBarAddOnLoaded),
-			ShowEquipped = self:NewToggle("Show Equipped Border", nil, 7, true, nil, nil, isLibMasqueLoaded or isBarAddOnLoaded),
-			empty3 = self:NewDesc(" ", 8, nil, nil, isLibMasqueLoaded or isBarAddOnLoaded),
+			ShowHotkey = self:NewToggle("Show Hotkey Text", nil, 3, true, nil, nil, isBarAddOnLoaded),
+			ShowMacro = self:NewToggle("Show Macro Text", nil, 4, true, nil, nil, isBarAddOnLoaded),
+			ShowCount = self:NewToggle("Show Count Text", nil, 5, true, nil, nil, isBarAddOnLoaded),
+			empty2 = self:NewDesc(" ", 6, nil, nil, isBarAddOnLoaded),
+			ShowEquipped = self:NewToggle("Show Equipped Border", nil, 7, true, nil, nil, isBarAddOnLoaded),
+			empty3 = self:NewDesc(" ", 8, nil, nil, isBarAddOnLoaded),
 			LoadBlizz = self:NewExecute("Load Blizzard States", "Load the Blizzard Default Bar States.", 9, function() LoadStates(blizzstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
 			LoadLUI = self:NewExecute("Load LUI States", "Load the LUI Default Bar States.", 10, function() LoadStates(defaultstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
-			empty3 = self:NewDesc(" ", 11, nil, nil, isBarAddOnLoaded),
+			empty4 = self:NewDesc(" ", 11, nil, nil, isBarAddOnLoaded),
 			ToggleKB = self:NewExecute("Keybinds", "Toggles Keybinding mode.", 12, function() LibKeyBound:Toggle() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
 		}),
 		TopTexture = self:NewGroup("Top Texture", 2, false, InCombatLockdown, {
