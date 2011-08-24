@@ -109,6 +109,12 @@ function module:SetCooldowns()
 			-- Set parent to frame.
 			timer:SetParent(frame)
 
+			-- Force font update.
+			if timer.text:GetFont() ~= Media:Fetch("font", db.Text.Font) then
+				timer.fontScale = 0
+				timer:OnSizeChanged(frame:GetWidth())
+			end
+
 			-- Start timer.
 			timer:Start(start, duration)
 		end
@@ -163,7 +169,7 @@ function module:SetCooldowns()
 			return timer
 		end
 
-		function Timer:OnSizeChanged(width, height)
+		function Timer:OnSizeChanged(width)
 			if not self.Frame then return end
 
 			-- Get font scale.
