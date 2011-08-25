@@ -136,12 +136,12 @@ function Fader:UnregisterFrame(frame)
 	-- Remove frame.
 	self.RegisteredFrames[frame] = nil
 	self.RegisteredFrameTotal = self.RegisteredFrameTotal - 1
+	
+	-- Remove hooks.
+	self:RemoveHoverScript(frame)
 
 	-- Remove indexer for special frames.
 	frame.FaderSpecialHover = nil
-
-	-- Remove hooks.
-	self:RemoveHoverScript(frame)
 				
 	-- Reset alpha.
 	frame:SetAlpha((frame.Fader and frame.Fader.PreAlpha) or 1)
@@ -204,6 +204,7 @@ function Fader.Hover_OnLeave(frame)
 	Fader:FadeHandler(frame)
 end
 
+--[=[
 -- Fader.SpecialHover_OnEnter(frame) -- not being used
 --[[
 	Notes.....: Fades the frame when the mouse enters the frame or any child of the frame.
@@ -227,10 +228,11 @@ function Fader.SpecialHover_OnLeave(frame)
 		Fader.Hover_OnLeave(frame)
 	end
 end
+--]=]
 
 -- Fader:CheckMouseHover()
 --[[
-	Notes.....: Checks special frames to see if the mouseover of that frame has changed
+	Notes.....: Checks special frames to see if the mouseover of that frame has changed.
 ]]
 function Fader:CheckMouseHover()
 	for frame, mouseHover in pairs(self.specialHoverFrames) do
@@ -280,7 +282,7 @@ end
 		frame: Frame to be given hover scripts.
 ]]
 function Fader:AttachSpecialHoverScript(frame)
-	-- Create timer and specialHoverFrames table if they doesn't exist
+	-- Create timer and specialHoverFrames table if they doesn't exist.
 	if not self.timerHandle then
 		self.specialHoverFrames = {}
 		self.timerHandle = self:ScheduleRepeatingTimer("CheckMouseHover", 0.1)
@@ -298,7 +300,7 @@ end
 		frame: Frame to remove hover scripts from.
 ]]
 function Fader:RemoveHoverScript(frame)
-	if self.specialHoverFrames and self.specialHoverFrames[frame] then
+	if self.specialHoverFrames and (self.specialHoverFrames[frame] ~= nil) then
 		self.specialHoverFrames[frame] = nil
 		if not next(self.specialHoverFrames) then
 			self:CancelTimer(self.timerHandle)
@@ -332,7 +334,7 @@ function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, 
 	-- Create upvalues.
 	local mouseHover = false
 	
-	-- Create Fader table for frame if it doesn't exist
+	-- Create Fader table for frame if it doesn't exist.
 	frame.Fader = frame.Fader or {}
 	frame.FaderHoverScript = true
 	
@@ -387,7 +389,7 @@ function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, 
 			end
 		end
 		
-		-- Create AceTimer
+		-- Create AceTimer.
 		frame.Fader.timerHandle = self:ScheduleRepeatingTimer(CheckMouseHover, 0.1)
 	end
 end
@@ -404,7 +406,7 @@ function Fader:DeleteHoverScript(frame, children)
 	if type(frame) ~= "table"  then return end
 	
 	if not children then
-		-- Unhook scripts
+		-- Unhook scripts.
 		self:Unhook(frame, "OnEnter")
 		self:Unhook(frame, "OnLeave")
 	else
