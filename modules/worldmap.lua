@@ -571,20 +571,7 @@ local function coordsOnUpdate()
 end
 
 local function dropdownScaleFix(self)
-	local point, parent, rpoint, x, y = DropDownList1:GetPoint()
-	local uiScale = 1
-	local uiParentScale = UIParent:GetScale()
-	if GetCVar("useUIScale") == "1" then
-		uiScale = tonumber(GetCVar("uiScale"))
-		if uiParentScale < uiScale then
-			uiScale = uiParentScale
-		end
-	else
-		uiScale = uiParentScale
-	end
-	local scale = uiScale * db[mapSize()].scale
-	DropDownList1:SetScale(scale)
-	DropDownList1:SetPoint(point, parent, rpoint, x/scale, y/scale)
+	DropDownList1:SetScale(self:GetEffectiveScale())
 end
 
 function module:ShowBlobs()
@@ -868,6 +855,7 @@ function module:SetMap()
 	self:SecureHookScript(WorldMapContinentDropDownButton, "OnClick", dropdownScaleFix)
 	self:SecureHookScript(WorldMapZoneDropDownButton, "OnClick", dropdownScaleFix)
 	self:SecureHookScript(WorldMapZoneMinimapDropDownButton, "OnClick", dropdownScaleFix)
+	self:SecureHookScript(WorldMapLevelDropDownButton, "OnClick", dropdownScaleFix)
 
 	self:RawHookScript(WorldMapFrameSizeDownButton, "OnClick", "ToggleMapSize", true)
 	self:RawHookScript(WorldMapFrameSizeUpButton, "OnClick", "ToggleMapSize", true)
@@ -882,13 +870,10 @@ function module:SetMap()
 	if not questObj then
 		questObj = CreateFrame("Frame", "LUIMapQuestObjectivesDropDown", WorldMapFrame, "UIDropDownMenuTemplate")
 		questObj:SetPoint("BOTTOMRIGHT", "WorldMapPositioningGuide", "BOTTOMRIGHT", -5, -2)
+		LUIMapQuestObjectivesDropDownButton:HookScript("OnClick", dropdownScaleFix)
 	end
 	questObj:Show()
 	
-	WorldMapShowDigSites:ClearAllPoints()
-	WorldMapShowDigSites:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 25, 0)
-	self:SecureHookScript(WorldMapShowDigSites, "OnShow", wmsdsOnShow)
-
 	local text = LUIMapQuestObjectivesDropDownLabel
 	if not text then
 		text = questObj:CreateFontString(questObj:GetName().."Label", "OVERLAY", "GameFontNormalSmall")
@@ -899,7 +884,11 @@ function module:SetMap()
 		UIDropDownMenu_SetWidth(questObj, 150)
 	end
 	questObjDropDownUpdate()
-
+	
+	WorldMapShowDigSites:ClearAllPoints()
+	WorldMapShowDigSites:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 25, 0)
+	self:SecureHookScript(WorldMapShowDigSites, "OnShow", wmsdsOnShow)
+	
 	realZone = getZoneId()
 	self:SecureHook(WorldMapTooltip, "Show", function(self)
 		self:SetFrameStrata("TOOLTIP")
