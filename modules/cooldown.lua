@@ -38,7 +38,13 @@ function module:SetCooldowns()
 		}
 		
 		-- Timer variables.
-		Timer.FontScale = {}	-- For memoizing.
+		Timer.FontScale = setmetatable({}, {
+			__index = function(self, width)
+				local scale = width / ICON_SIZE
+				self[width] = scale > db.General.MinScale and scale * db.Text.Size
+				return self[width]
+			end
+		})
 		Timer.Stack = {}
 		Timer.Timers = {}
 		
@@ -76,25 +82,18 @@ function module:SetCooldowns()
 		function Timer:Assign(frame, start, duration)
 			-- Check if enabled.
 			if not db.Enable then return end -- shouldn't be needed since we unhooked the SetCooldown functions in OnDisable
-			
-			-- Check duration.
-			if duration < db.General.MinDuration then return end
 
 			-- Check if frame already has a timer.
 			if frame.Timer then return end
 
 			-- Check if frame is visible.
 			if not frame:IsVisible() then return end
-
-			-- Get font scale.
-			local width = round(frame:GetWidth())
-			if not self.FontScale[width] then
-				local scale = width / ICON_SIZE
-				self.FontScale[width] = scale > db.General.MinScale and scale * db.Text.Size
-			end
-
+			
+			-- Check duration.
+			if duration < db.General.MinDuration then return end
+			
 			-- Don't assign timers to frames that are too small.
-			if not self.FontScale[width] then return end
+			if not self.FontScale[round(frame:GetWidth())] then return end
 
 			-- Get a timer.
 			local timer = self:Collect()
@@ -103,17 +102,14 @@ function module:SetCooldowns()
 			frame.Timer = timer
 			timer.Frame = frame
 
-			-- Set all points.
-			timer:SetAllPoints(frame)
-
 			-- Set parent to frame.
 			timer:SetParent(frame)
 
-			-- Force font update.
-			if timer.text:GetFont() ~= Media:Fetch("font", db.Text.Font) then
-				timer.fontScale = 0
-				timer:OnSizeChanged(frame:GetWidth())
-			end
+			-- Set all points.
+			timer:SetAllPoints(frame)
+
+			-- Check font scale.
+			timer:OnSizeChanged(frame:GetSize())
 
 			-- Start timer.
 			timer:Start(start, duration)
@@ -159,7 +155,7 @@ function module:SetCooldowns()
 			timer.start = 0
 		
 			-- Set scripts.
-			timer:SetScript("OnSizeChanged", timer.OnSizeChanged)
+			--timer:SetScript("OnSizeChanged", timer.OnSizeChanged)
 			timer:SetScript("OnHide", timer.Stop)
 
 			-- Add timer to timer list.
@@ -169,21 +165,17 @@ function module:SetCooldowns()
 			return timer
 		end
 
-		function Timer:OnSizeChanged(width)
+		function Timer:OnSizeChanged(width, height)
 			if not self.Frame then return end
 
 			-- Get font scale.
-			width = round(width)
-			if not self.FontScale[width] then
-				local scale = width / ICON_SIZE
-				self.FontScale[width] = scale > db.General.MinScale and scale * db.Text.Size
-			end
+			local scale = self.FontScale[round(width)]
 
 			-- Check font scale.
-			if self.fontScale == self.FontScale[width] then return end
+			if self.fontScale == scale then return end
 			
 			-- Set new font scale.
-			self.fontScale = self.FontScale[width]
+			self.fontScale = scale
 
 			-- Check if new scale is big enough.
 			if self.fontScale then
