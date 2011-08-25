@@ -851,6 +851,10 @@ function module:SetPetBar()
 	LUIPetBar:SetHeight(numrows * 30 + (numrows - 1) * 2)
 	
 	Configure(LUIPetBar, 10, db.PetBar.NumPerRow)
+
+	if db.PetBar.Fader.Enable then
+		Fader:RegisterFrame(LUIPetBar, db.PetBar.Fader, true)
+	end
 	
 	LUIPetBar[db.PetBar.Enable and "Show" or "Hide"](LUIPetBar)
 end
@@ -908,6 +912,10 @@ function module:SetShapeshiftBar()
 	LUIShapeshiftBar:SetHeight(numrows * 30 + (numrows - 1) * 2)
 	
 	Configure(LUIShapeshiftBar, 10, db.ShapeshiftBar.NumPerRow)
+
+	if db.ShapeshiftBar.Fader.Enable then
+		Fader:RegisterFrame(LUIShapeshiftBar, db.ShapeshiftBar.Fader, true)
+	end
 	
 	LUIShapeshiftBar[db.ShapeshiftBar.Enable and "Show" or "Hide"](LUIShapeshiftBar)
 end
@@ -955,6 +963,10 @@ function module:SetTotemBar()
 	LUITotemBar:SetHeight(30)
 	
 	Configure(LUITotemBar, 6, 6)
+
+	if db.TotemBar.Fader.Enable then
+		Fader:RegisterFrame(LUITotemBar, db.TotemBar.Fader, true)
+	end
 	
 	LUITotemBar[db.TotemBar.Enable and "Show" or "Hide"](LUITotemBar)
 end
@@ -1738,6 +1750,23 @@ module.defaults = {
 			Point = "LEFT",
 			Scale = 0.85,
 			NumPerRow = 10,
+			Fader = {
+				Casting = true,
+				Combat = true,
+				Enable = false,
+				Health = true,
+				HealthClip = 1.0,
+				Hover = true,
+				HoverAlpha = 0.75,
+				InAlpha = 1.0,
+				OutAlpha = 0.1,
+				OutDelay = 0.0,
+				OutTime = 1.5,
+				Power = true,
+				PowerClip = 0.9,
+				Targeting = true,
+				UseGlobalSettings = true,
+			},
 		},
 		PetBar = {
 			Enable = true,
@@ -1746,6 +1775,23 @@ module.defaults = {
 			Point = "RIGHT",
 			Scale = 0.85,
 			NumPerRow = 10,
+			Fader = {
+				Casting = true,
+				Combat = true,
+				Enable = false,
+				Health = true,
+				HealthClip = 1.0,
+				Hover = true,
+				HoverAlpha = 0.75,
+				InAlpha = 1.0,
+				OutAlpha = 0.1,
+				OutDelay = 0.0,
+				OutTime = 1.5,
+				Power = true,
+				PowerClip = 0.9,
+				Targeting = true,
+				UseGlobalSettings = true,
+			},
 		},
 		TotemBar = {
 			Enable = true,
@@ -1753,6 +1799,23 @@ module.defaults = {
 			Y = -370.6,
 			Point = "LEFT",
 			Scale = 0.85,
+			Fader = {
+				Casting = true,
+				Combat = true,
+				Enable = false,
+				Health = true,
+				HealthClip = 1.0,
+				Hover = true,
+				HoverAlpha = 0.75,
+				InAlpha = 1.0,
+				OutAlpha = 0.1,
+				OutDelay = 0.0,
+				OutTime = 1.5,
+				Power = true,
+				PowerClip = 0.9,
+				Targeting = true,
+				UseGlobalSettings = true,
+			},
 		},
 		VehicleExit = {
 			Enable = true,
@@ -1891,7 +1954,7 @@ function module:LoadOptions()
 		return option
 	end
 	
-	local function createOtherBarOptions(name, order, frame)
+	local function createOtherBarOptions(name, order, frame, dbName)
 		local option = self:NewGroup(name, order, false, InCombatLockdown, {
 			header0 = self:NewHeader(name.." Settings", 0),
 			Enable = self:NewToggle("Show "..name, nil, 1, true),
@@ -1899,6 +1962,7 @@ function module:LoadOptions()
 			Point = self:NewSelect("Point", "Choose the Point for the "..name..".", 3, positions, nil, nil, nil, disabled[name]),
 			Scale = self:NewSlider("Scale", "Choose the Scale for the "..name..".", 4, 0.1, 1.5, 0.05, true, true, nil, nil, disabled[name]),
 			NumPerRow = (name ~= "Vehicle Exit Button" and name ~= "Totem Bar") and self:NewSlider("Buttons per Row", "Choose the Number of Buttons per Row.", 5, 1, 10, 1, true, nil, nil, nil, disabled[name]) or nil,
+			Fader = (dbName and self:NewGroup("Fader", 6, true, disabledFunc, Fader:CreateFaderOptions(_G[frame], db[dbName].Fader, dbd[dbName].Fader, true))) or nil,
 		})
 		
 		return option
@@ -1946,9 +2010,9 @@ function module:LoadOptions()
 		SidebarRight2 = createSideBarOptions("Right", 2, 11),
 		SidebarLeft1 = createSideBarOptions("Left", 1, 12),
 		SidebarLeft2 = createSideBarOptions("Left", 2, 13),
-		ShapeshiftBar = not isBarAddOnLoaded and createOtherBarOptions("Shapeshift Bar", 14, "LUIShapeshiftBar") or nil,
-		PetBar = not isBarAddOnLoaded and createOtherBarOptions("Pet Bar", 15, "LUIPetBar") or nil,
-		--TotemBar = not isBarAddOnLoaded and createOtherBarOptions("Totem Bar", 16, "LUITotemBar") or nil,
+		ShapeshiftBar = not isBarAddOnLoaded and createOtherBarOptions("Shapeshift Bar", 14, "LUIShapeshiftBar", "ShapeshiftBar") or nil,
+		PetBar = not isBarAddOnLoaded and createOtherBarOptions("Pet Bar", 15, "LUIPetBar", "PetBar") or nil,
+		--TotemBar = not isBarAddOnLoaded and createOtherBarOptions("Totem Bar", 16, "LUITotemBar", "TotemBar") or nil,
 		VehicleExit = not isBarAddOnLoaded and createOtherBarOptions("Vehicle Exit Button", 17, "LUIVehicleExit") or nil,
 	}
 	
