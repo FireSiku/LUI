@@ -1245,7 +1245,6 @@ function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
 end
 
-local OldFuncs = {}
 function module:OnEnable()
 
 	module:RegisterEvent("BANKFRAME_OPENED")
@@ -1256,21 +1255,13 @@ function module:OnEnable()
 
 	CloseAllBags()
 
-	--Keep the old functions in mind for OnDisable
-	OldFuncs["TogglePack"] = ToggleBackpack
-	OldFuncs["OpenBags"] = OpenAllBags
-	OldFuncs["ToggleBags"] = ToggleAllBags
-	OldFuncs["OpenPack"] = OpenBackpack
-	OldFuncs["ClosePack"] = CloseBackpack
-	OldFuncs["CloseBags"] = CloseAllBags
-
 	--Now changes the functions to ours
-	ToggleBackpack = LUIBags_Toggle
-	OpenAllBags = LUIBags_Toggle
-	ToggleAllBags = LUIBags_Toggle
-	OpenBackpack = LUIBags_Open
-	CloseBackpack = LUIBags_Close
-	CloseAllBags = LUIBags_Close
+	self:RawHook("ToggleBackpack", LUIBags_Toggle, true)
+	self:RawHook("OpenAllBags", LUIBags_Toggle, true)
+	self:RawHook("ToggleAllBags", LUIBags_Toggle, true)
+	self:RawHook("OpenBackpack", LUIBags_Open, true)
+	self:RawHook("CloseBackpack", LUIBags_Close, true)
+	self:RawHook("CloseAllBags", LUIBags_Close, true)
 
 	BankFrame:UnregisterAllEvents()
 
@@ -1289,12 +1280,12 @@ function module:OnDisable()
 	CloseAllBags()
 
 	--Makes the UI functions like they were
-	ToggleBackpack = OldFuncs["TogglePack"]
-	OpenAllBags = OldFuncs["OpenBags"]
-	ToggleAllBags = OldFuncs["ToggleBags"]
-	OpenBackpack = OldFuncs["OpenPack"]
-	CloseBackpack = OldFuncs["ClosePack"]
-	CloseAllBags = OldFuncs["CloseBags"]
+	self:Unhook("ToggleBackpack")
+	self:Unhook("OpenAllBags")
+	self:Unhook("ToggleAllBags")
+	self:Unhook("OpenBackpack")
+	self:Unhook("CloseBackpack")
+	self:Unhook("CloseAllBags")
 
 	module:Unhook(ContainerFrame1, "OnShow")
 

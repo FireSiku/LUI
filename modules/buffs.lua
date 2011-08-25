@@ -109,27 +109,13 @@ local function CreateBarPanel(height, width, x, y, anchorPoint, anchorPointRel, 
 end
 
 function module:EnableBlizzardBuffs()	
-	BuffFrame:RegisterEvent("UNIT_AURA")
-	BuffFrame:Show()
-	TemporaryEnchantFrame:Show()
-	ConsolidatedBuffs:Show()
-	ConsolidatedBuffsContainer:Show()
-	CONSOLIDATE_BUFFS = 1
-	ConsolidatedBuffs.Show = ConsolidatedBuffs.OrigShow
-	ConsolidatedBuffs:Show()
+	LUI:Module("oUF"):Module("HideBlizzard"):Show("aura")
 end
 
 function module:DisableBlizzardBuffs()
 	if db.Auras.DisableBlizzard ~= true then return end
 	
-	BuffFrame:UnregisterAllEvents()
-	BuffFrame:Hide()
-	TemporaryEnchantFrame:Hide()
-	ConsolidatedBuffs:Hide()
-	ConsolidatedBuffsContainer:Hide()
-	CONSOLIDATE_BUFFS = 0
-	ConsolidatedBuffs.OrigShow = ConsolidatedBuffs.Show
-	ConsolidatedBuffs.Show = ConsolidatedBuffs.Hide
+	LUI:Module("oUF"):Module("HideBlizzard"):Hide("aura")
 end
 
 function module:SetBuffs()
@@ -172,6 +158,24 @@ function module:SetBuffs()
 	local buffHeader = CreateFrame("Frame", "LUIBuffs", UIParent, "SecureAuraHeaderTemplate")
 	local debuffHeader = CreateFrame("Frame", "LUIDebuffs", UIParent, "SecureAuraHeaderTemplate")
 
+	local SecondsToTimeAbbrev = function(time)
+		local hr, m, s, text
+		if time <= 0 then text = ""
+		elseif(time < 3600 and time > 60) then
+			hr = floor(time / 3600)
+			m = floor(mod(time, 3600) / 60 + 1)
+			text = format("%dm", m)
+		elseif time < 60 then
+			m = floor(time / 60)
+			s = mod(time, 60)
+			text = (m == 0 and format("%d", s))
+		else
+			hr = floor(time / 3600 + 1)
+			text = format("%dh", hr)
+		end
+		return text
+	end
+	
 	local function AuraButton_Create(button, filter)
 		local size
 		if filter == "HELPFUL" then size = tonumber(db.Auras.Buffs.Size) else size = tonumber(db.Auras.Debuffs.Size) end
@@ -419,24 +423,6 @@ function module:SetBuffs()
 	
 	buffHeader:Show()
 	debuffHeader:Show()
-	
-	SecondsToTimeAbbrev = function(time)
-		local hr, m, s, text
-		if time <= 0 then text = ""
-		elseif(time < 3600 and time > 60) then
-			hr = floor(time / 3600)
-			m = floor(mod(time, 3600) / 60 + 1)
-			text = format("%dm", m)
-		elseif time < 60 then
-			m = floor(time / 60)
-			s = mod(time, 60)
-			text = (m == 0 and format("%d", s))
-		else
-			hr = floor(time / 3600 + 1)
-			text = format("%dh", hr)
-		end
-		return text
-	end
 end
 
 local defaults = {

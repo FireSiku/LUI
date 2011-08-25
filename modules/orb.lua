@@ -13,6 +13,15 @@ local Themes = LUI:Module("Themes")
 
 local db
 
+local galaxytab = {
+	[0] = {r = nil, g = nil, b = nil},
+	[1] = {r = 0.90, g = 0.1, b = 0.1}, -- red
+	[2] = {r = 0.25, g = 0.9, b = 0.25}, -- green
+	[3] = {r = 0, g = 0.35,   b = 0.9}, -- blue
+	[4] = {r = 0.9, g = 0.8, b = 0.35}, -- yellow
+	[5] = {r = 0.35, g = 0.9,   b = 0.9}, -- runic
+}
+
 function module:CreateMeAnOrbFrame(fart,fname,fparent,fstrata,flevel,fwidth,fheight,fanchor,fxpos,fypos,fscale,fdrag,finherit)
 	local f = CreateFrame(fart,fname,fparent,finherit)
 	f:SetFrameStrata(fstrata)
@@ -88,8 +97,10 @@ function module:CreateMeAnOrb(orbname,orbsize,orbanchorframe,orbpoint,orbposx,or
 	local fog_smoother = 1.3
 	
 	local orb_r, orb_g, orb_b = unpack(Themes.db.profile.orb)
-
-	orbtab = {
+	
+	galaxytab[0] = {r = orb_r, g = orb_g, b = orb_b}
+	
+	local orbtab = {
 		[0] = {r = orb_r, g = orb_g, b = orb_b, scale = 0.9, z = -12, x = -0.5, y = -0.8, anim = "SPELLS\WhiteRadiationFog.m2"},
 		[1] = {r = 0.8, g = 0, b = 0, scale = 0.8, z = -12, x = 0.8, y = -1.7, anim = "SPELLS\\RedRadiationFog.m2"}, -- red
 		[2] = {r = 0.2, g = 0.8, b = 0, scale = 0.75, z = -12, x = 0, y = -1.1, anim = "SPELLS\\GreenRadiationFog.m2"}, -- green
@@ -98,15 +109,6 @@ function module:CreateMeAnOrb(orbname,orbsize,orbanchorframe,orbpoint,orbposx,or
 		[5] = {r = 0.1, g = 0.8,   b = 0.7, scale = 0.9, z = -12, x = -0.5, y = -0.8, anim = "SPELLS\\WhiteRadiationFog.m2"}, -- runic
 	}
 	
-	galaxytab = {
-		[0] = {r = orb_r, g = orb_g, b = orb_b, },
-		[1] = {r = 0.90, g = 0.1, b = 0.1, }, -- red
-		[2] = {r = 0.25, g = 0.9, b = 0.25, }, -- green
-		[3] = {r = 0, g = 0.35,   b = 0.9, }, -- blue
-		[4] = {r = 0.9, g = 0.8, b = 0.35, }, -- yellow
-		[5] = {r = 0.35, g = 0.9,   b = 0.9, }, -- runic
-	}
-
 	local orb1 = self:CreateMeAnOrbFrame("Button",orbname,orbanchorframe,"BACKGROUND",4,orbsize,orbsize,orbpoint,orbposx,orbposy,orbscale,nil)
 
 	orb1:SetScript("OnEnter", function(self)

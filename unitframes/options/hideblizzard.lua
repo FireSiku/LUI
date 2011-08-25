@@ -6,7 +6,7 @@
 
 local addonname, LUI = ...
 local oUF = LUI:Module("oUF")
-local module = LUI.Module(oUF, "HideBlizzard", "AceEvent-3.0", "AceHook-3.0") -- this can be embedded via prototype once we have more modules of modules
+local module = oUF:Module("HideBlizzard", "AceEvent-3.0", "AceHook-3.0")
 
 local argcheck = LUI.argcheck
 
