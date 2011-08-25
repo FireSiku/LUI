@@ -331,15 +331,6 @@ end
 -- Hook Functions
 --------------------------------------------------
 
-local function showUIPanel(frame)
-	if frame == WorldMapFrame then
-		local ACD = LibStub("AceConfigDialog-3.0")
-		if ACD.OpenFrames[addonname] then
-			ACD.frame.closeAllOverride[addonname] = true
-		end
-	end
-end
-
 local function questObjButtonOnClick(button)
 	module.hooks[button].OnClick(button)
 	db.QuestObjectives = button:GetChecked() and 2 or 0
@@ -580,18 +571,20 @@ local function coordsOnUpdate()
 end
 
 local function dropdownScaleFix(self)
-	ToggleDropDownMenu(nil, nil, self:GetParent())
+	local point, parent, rpoint, x, y = DropDownList1:GetPoint()
 	local uiScale = 1
 	local uiParentScale = UIParent:GetScale()
 	if GetCVar("useUIScale") == "1" then
-		uiScale = tonumber(GetCVar("uiscale"))
+		uiScale = tonumber(GetCVar("uiScale"))
 		if uiParentScale < uiScale then
 			uiScale = uiParentScale
 		end
 	else
 		uiScale = uiParentScale
 	end
-	DropDownList1:SetScale(uiScale * db[mapSize()].scale)
+	local scale = uiScale * db[mapSize()].scale
+	DropDownList1:SetScale(scale)
+	DropDownList1:SetPoint(point, parent, rpoint, x/scale, y/scale)
 end
 
 function module:ShowBlobs()
@@ -854,7 +847,6 @@ function module:SetMap()
 	WorldMapFrame:EnableMouse(true)
 	WorldMapFrame:EnableKeyboard(false)
 	
-	self:Hook("ShowUIPanel", showUIPanel, true)
 	self:SecureHookScript(WorldMapFrame, "OnShow", wmfOnShow)
 	self:SecureHookScript(WorldMapFrame, "OnHide", wmfOnHide)
 	BlackoutWorld:Hide()
@@ -873,9 +865,9 @@ function module:SetMap()
 	WorldMapFrame:SetHeight(768)
 	WorldMapFrame:SetClampedToScreen(false)
 
-	self:RawHookScript(WorldMapContinentDropDownButton, "OnClick", dropdownScaleFix, true)
-	self:RawHookScript(WorldMapZoneDropDownButton, "OnClick", dropdownScaleFix, true)
-	self:RawHookScript(WorldMapZoneMinimapDropDownButton, "OnClick", dropdownScaleFix, true)
+	self:SecureHookScript(WorldMapContinentDropDownButton, "OnClick", dropdownScaleFix)
+	self:SecureHookScript(WorldMapZoneDropDownButton, "OnClick", dropdownScaleFix)
+	self:SecureHookScript(WorldMapZoneMinimapDropDownButton, "OnClick", dropdownScaleFix)
 
 	self:RawHookScript(WorldMapFrameSizeDownButton, "OnClick", "ToggleMapSize", true)
 	self:RawHookScript(WorldMapFrameSizeUpButton, "OnClick", "ToggleMapSize", true)
@@ -1198,6 +1190,8 @@ function module:OnDisable()
 	self:SecureHook("WorldMapFrame_DisplayQuestPOI", function(questFrame) questFrame.poiIcon:SetScale(1) end)
 	WorldMapFrame_DisplayQuests()
 	self:Unhook("WorldMapFrame_DisplayQuestPOI")
+	
+	WorldMapFrame.coords:Hide()
 	
 	self:UpdateMapElements()
 	self:WORLD_MAP_UPDATE()

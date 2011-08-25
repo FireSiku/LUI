@@ -108,7 +108,7 @@ local db = setmetatable({}, {
 	end
 })
 
-function CheckResolution()
+local function CheckResolution()
 	local ScreenWidth = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "(%d+)x%d+")
 	local ScreenHeight = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "%d+x(%d+)")
 	
@@ -562,7 +562,10 @@ function LUI:CheckConflict(...) -- self is module
 end
 
 LUI:SetDefaultModuleLibraries("LUIDevAPI")
-LUI:SetDefaultModulePrototype({Toggle = LUI.Toggle})
+LUI:SetDefaultModulePrototype({
+	Toggle = LUI.Toggle,
+	Module = LUI.Module,
+})
 
 ------------------------------------------------------
 -- / SCRIPTS / --
