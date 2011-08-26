@@ -13,16 +13,20 @@
 -- External references.
 local addonname, LUI = ...
 
+-- Create restorer namespace.
+LUI.Restore = LUI.Restore or {}
+local module = LUI.Restore
+
+-- Localized functions.
+local tconcat, pairs, print, tonumber, tostring, type = table.concat, pairs, print, tonumber, tostring, type
+
 -- Local variables.
 local db
 local backup
 local stack
 local mismatches
 
--- Localized functions.
-local tconcat, pairs, print, type = table.concat, pairs, print, type
-
-local function Apply(dest, source)
+function module.Apply(dest, source)
 	local dt, st
 	for k, v in pairs(dest) do
 		if source[k] ~= nil then
@@ -31,6 +35,32 @@ local function Apply(dest, source)
 
 			-- Check value types are the same.
 			dt, st = type(v), type(source[k])
+
+			-- Try to convert.
+			if dt == "number" and st == "string" then
+				local num = tonumber(source[k])
+				if num then
+					-- Print mismatch convertion with db stack. (i.e. db.children.Cooldown.profile.Enable).
+					mismatches = mismatches + 1
+					print("|c0090ffffLUI: |cffffff00Restore:|r Value converted because of type mismatch: [", dt, "] ~= [", st, "]; Stack =", tconcat(stack, "."))
+
+					-- Convert.
+					st = dt
+					source[k] = num
+				end
+			elseif dt == "string" and st == "number" then
+				local str = tostring(source[k])
+				if str and str ~= "" and tonumber(str) == source[k] then
+					-- Print mismatch convertion with db stack. (i.e. db.children.Cooldown.profile.Enable).
+					mismatches = mismatches + 1
+					print("|c0090ffffLUI: |cffffff00Restore:|r Value converted because of type mismatch: [", dt, "] ~= [", st, "]; Stack =", tconcat(stack, "."))
+
+					-- Convert.
+					st = dt
+					source[k] = str
+				end
+			end
+
 			if dt ~= st then
 				-- Print mismatch error with db stack. (i.e. db.children.Cooldown.profile.Enable).
 				mismatches = mismatches + 1
@@ -38,7 +68,7 @@ local function Apply(dest, source)
 			else
 				-- Apply backup values.
 				if dt == "table" then
-					Apply(dest[k], source[k])
+					module.Apply(dest[k], source[k])
 				else
 					dest[k] = source[k]
 				end
@@ -50,19 +80,19 @@ local function Apply(dest, source)
 	end
 end
 
-local function Get(source, dest)
+function module.Get(source, dest)
 	for k, v in pairs(source) do
 		-- Get values.
 		if type(v) == "table" then
 			dest[k] = {}
-			Get(v, dest[k])
+			module.Get(v, dest[k])
 		else
 			dest[k] = v
 		end
 	end
 end
 
-local function Set(dest, source)
+function module.Set(dest, source)
 	for k, v in pairs(dest) do
 		if source[k] ~= nil then
 			-- Force apply backup values.
@@ -70,7 +100,7 @@ local function Set(dest, source)
 				if not type(v) == "table" then
 					dest[k] = source[k]
 				else
-					Set(dest[k], source[k])
+					module.Set(dest[k], source[k])
 				end
 			else
 				dest[k] = source[k]
@@ -79,7 +109,7 @@ local function Set(dest, source)
 	end
 end
 
-local function Backup()
+function module.Backup()
 	-- Get current db.
 	db = LUI.db
 
@@ -91,7 +121,7 @@ local function Backup()
 	-- Backup old profiles.
 	for k, v in pairs(db.profile) do
 		backup[k] = {}
-		Get(v, backup[k])
+		module.Get(v, backup[k])
 	end
 
 	-- Backup children.
@@ -100,23 +130,24 @@ local function Backup()
 	for k, v in pairs(db.children) do
 		-- Get child profile and realm setting.
 		child[k] = {profile = {}}
-		Get(v.profile, child[k].profile)
+		module.Get(v.profile, child[k].profile)
 
 		if v.realm then
 			child[k].realm = {}
-			Get(v.realm, child[k].realm)
+			module.Get(v.realm, child[k].realm)
 		end
 	end
 
 	print("|c0090ffffLUI:|r Backup of current profile complete.")
 end
 
-local function Reload()
-	print("|cffffff00Please reload your interface with the pop up provided to avoid errors.")
+function module.Reload()
+	-- Promote a reloadui.
+	print("|c0090ffffLUI: |cffffff00Please reload your interface with the pop up provided to avoid errors.")
 	StaticPopup_Show("RELOAD_UI")
 end
 
-local function Restore()
+function module.Restore()
 	-- Get latest backup.
 	backup = LUICONFIG.BACKUP
 	if not backup then
@@ -135,17 +166,17 @@ local function Restore()
 	-- Begin restore process.
 	-- Restore from old profiles.
 	stack = {"db", "profile"}
-	Apply(db.profile, backup)
+	module.Apply(db.profile, backup)
 
 	-- Restore children.
 	stack = {"db", "children"}
-	Apply(db.children, backup.children)
+	module.Apply(db.children, backup.children)
 
-	print("|c0090ffffLUI:|r Restore of database has completed.", "Encountered", mismatches, " mismatches which have now been corrected.")
-	Reload()
+	print("|c0090ffffLUI:|r Restore of database has completed.", mismatches > 0 and "Encountered", mismatches, "mismatches which have now been corrected." or "")
+	module.Reload()
 end
 
-local function Revert()
+function module.Revert()
 	-- Get latest backup.
 	backup = LUICONFIG.BACKUP
 	if not backup then
@@ -160,10 +191,10 @@ local function Revert()
 
 	-- Begin revert process.
 	-- Revert from old profiles.
-	Set(db.profile, backup)
+	module.Set(db.profile, backup)
 
 	-- Restore children.
-	Set(db.children, backup.children)
+	module.Set(db.children, backup.children)
 
 	print("|c0090ffffLUI:|r Revert of database has completed.")
 	StaticPopup_Show("RELOAD_UI")
@@ -171,10 +202,10 @@ end
 
 
 SLASH_LUIBACKUP1 = "/luibackup"
-SlashCmdList.LUIBACKUP = Backup
+SlashCmdList.LUIBACKUP = module.Backup
 
 SLASH_LUIRESTORE1 = "/luirestore"
-SlashCmdList.LUIRESTORE = Restore
+SlashCmdList.LUIRESTORE = module.Restore
 
 SLASH_LUIREVERT1 = "/luirevert"
-SlashCmdList.LUIREVERT = Revert
+SlashCmdList.LUIREVERT = module.Revert
