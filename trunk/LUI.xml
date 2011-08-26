@@ -7,6 +7,7 @@
 	<Script file="init.lua"/>
 	<Script file="debug.lua"/>
 	<Script file="devapi.lua"/>
+	<Script file="restore.lua"/>
 	
 	<!-- oUF Core -->
 	<Include file="unitframes\core\ouf.xml"/>
