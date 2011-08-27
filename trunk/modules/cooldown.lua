@@ -88,7 +88,12 @@ function module:SetCooldowns()
 		-- Timer methods.
 		function Timer:Assign(frame, start, duration)
 			-- Check if frame already has a timer.
-			if frame.Timer then return end
+			if frame.Timer then
+				if duration < db.General.MinDuration or not frame:IsVisible() then
+					frame.Timer:Stop()
+				end
+				return
+			end
 
 			-- Check if frame is visible.
 			if not frame:IsVisible() then return end
