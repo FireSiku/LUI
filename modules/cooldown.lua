@@ -17,7 +17,7 @@ local Timer
 
 function module:SetCooldowns()
 	-- Localized functions.
-	local floor, format, GetTime, insert, min, wipe = math.floor, string.format, GetTime, table.insert, math.min, wipe
+	local floor, format, GetTime, insert, min, type, wipe = math.floor, string.format, GetTime, table.insert, math.min, type, wipe
 	local function round(x) return floor(x + 0.5) end
 
 	-- Local variables.
@@ -32,7 +32,12 @@ function module:SetCooldowns()
 				if Timer[k] then
 					return Timer[k]
 				elseif self.__old then
-					return self.__old.__index[k]
+					local __type = type(self.__old.__index)
+					if __type == "function" then
+						return self.__oldP.__index(self, k)
+					elseif __type == "table" then
+						return self.__oldP.__index[k]
+					end
 				end
 			end,
 		}
