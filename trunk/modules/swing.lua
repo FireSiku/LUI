@@ -512,8 +512,8 @@ function module:LoadOptions()
 			[""] = self:NewPosSliders("Swing Timer", 1, nil, "LUIThreat", true),
 			Point = self:NewSelect("Point", "Choose the Point for your Swing Timer.", 2, positions, nil, dryCall),
 			empty1 = self:NewDesc(" ", 3),
-			Width = self:NewInputNumber("Width", "Choose the Width for your Swing Timer.", 4),
-			Height = self:NewInputNumber("Height", "Choose the Height for your Swing Timer.", 5),
+			Width = self:NewInputNumber("Width", "Choose the Width for your Swing Timer.", 4, dryCall),
+			Height = self:NewInputNumber("Height", "Choose the Height for your Swing Timer.", 5, dryCall),
 			empty2 = self:NewDesc(" ", 6),
 			Testmode = self:NewExecute("Testmode", "Enable/Disable Swing Timer Testmode", 7, ToggleTestMode),
 		}),
@@ -532,7 +532,7 @@ function module:LoadOptions()
 			empty1 = self:NewDesc(" ", 2),
 			[""] = self:NewPosSliders("Swing Timer Text", 3, nil, "LUIThreatText", true, nil, disabledTextFunc),
 			Font = self:NewSelect("Font", "Choose the Font for your Swing Timer Text.", 4, widgetLists.font, "LSM30_Font", true, nil, disabledTextFunc),
-			Size = self:NewInputNumber("Fontsize", "Choose the Fontsize for your Swing Timer Text.", 5, nil, nil, disabledTextFunc),
+			Size = self:NewInputNumber("Fontsize", "Choose the Fontsize for your Swing Timer Text.", 5, dryCall, nil, disabledTextFunc),
 			Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Swing Timer Text Font.", 6, fontflags, nil, dryCall, nil, disabledTextFunc),
 			empty2 = self:NewDesc(" ", 7),
 			Color = self:NewSelect("Color", "Choose the Color option for your Swing Timer Text.", 8, colorOptions, nil, dryCall, nil, disabledTextFunc),
@@ -545,7 +545,7 @@ end
 
 function module:Refresh(...)
 	local info, value = ...
-	if type(info) == "table" and type(value) ~= "table" then
+	if type(info) == "table" then
 		db(info, value)
 	end
 	
