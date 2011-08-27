@@ -129,7 +129,7 @@ function module:SetCooldowns()
 		function Timer:Disable()
 			-- Stop all timers.
 			for index, timer in pairs(self.Timers) do
-				timer:Hide()
+				timer:Stop()
 			end
 		end
 
@@ -148,6 +148,7 @@ function module:SetCooldowns()
 			timer.text:SetPoint("CENTER", db.Text.XOffset, db.Text.YOffset)
 
 			-- Set timer settings.
+			timer.enabled = false
 			timer.duration = 0
 			timer.fontScale = 0
 			timer.nextUpdate = 0
@@ -184,7 +185,7 @@ function module:SetCooldowns()
 				self.text:SetFont(Media:Fetch("font", db.Text.Font), self.fontScale, db.Text.Flag)
 			else
 				-- Stop timer.
-				self:Hide()
+				self:Stop()
 			end
 		end
 
@@ -201,7 +202,7 @@ function module:SetCooldowns()
 				self:Update(timeLeft)
 			else
 				-- Stop timer if finished.
-				self:Hide()
+				self:Stop()
 			end
 		end
 
@@ -229,9 +230,10 @@ function module:SetCooldowns()
 
 		function Timer:Start(start, duration)
 			-- Set timer variables.
-			self.start = start
+			self.enabled = true
 			self.duration = duration
 			self.nextUpdate = 0
+			self.start = start
 
 			-- Start timer.
 			self:SetScript("OnUpdate", self.OnUpdate)
@@ -239,6 +241,11 @@ function module:SetCooldowns()
 		end
 
 		function Timer:Stop()
+			if not self.enabled then return end
+
+			-- Disable timer.
+			self.enabled = false
+
 			-- Stop timer.
 			self:SetScript("OnUpdate", nil)
 			self:Hide()
