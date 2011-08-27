@@ -70,7 +70,7 @@
 	<Script file="modules\cooldown.lua"/>
 	<Script file="modules\tooltip.lua"/>
 	<Script file="modules\datatext.lua"/>
-	<Include file="modules\infotext\infotext.xml"/>
+	<!-- <Include file="modules\infotext\infotext.xml"/> -->
 	<Script file="modules\faq.lua"/>
 	<Script file="modules\micromenu.lua"/>
 	<Include file="modules\raidmenu.xml"/>
