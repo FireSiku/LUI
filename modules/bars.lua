@@ -20,16 +20,6 @@ local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 LUI.Versions.bars = 2.3
 
 local positions = { "TOP", "TOPRIGHT", "TOPLEFT", "BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT", "RIGHT", "LEFT", "CENTER"}
-	--[[TOP = "TOP",
-	TOPRIGHT = "TOPRIGHT",
-	TOPLEFT = "TOPLEFT",
-	BOTTOM = "BOTTOM",
-	BOTTOMRIGHT = "BOTTOMRIGHT",
-	BOTTOMLEFT = "BOTTOMLEFT",
-	RIGHT = "RIGHT",
-	LEFT = "LEFT",
-	CENTER = "CENTER"
-}]]
 
 local _, class = UnitClass("player")
 
@@ -926,6 +916,10 @@ function module:SetTotemBar()
 		bar.buttons = {}
 		
 		MultiCastActionBarFrame:SetParent(bar)
+		MultiCastActionBarFrame:SetAllPoints(bar)
+		MultiCastActionBarFrame.ClearAllPoints = function() end
+		MultiCastActionBarFrame.SetPoint = function() end
+		MultiCastActionBarFrame.SetAllPoints = function() end
 		
 		MultiCastSummonSpellButton:ClearAllPoints()
 		MultiCastSummonSpellButton:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
@@ -1870,7 +1864,6 @@ function module:LoadOptions()
 		RegisterStateDriver(_G[barname], "page", val)
 	end
 	local function setPoint(info, value)
-		db[info[#info-1]].Point = positions[value]
 		self:Refresh()
 	end
 	
@@ -2015,7 +2008,7 @@ function module:LoadOptions()
 		SidebarRight2 = createSideBarOptions("Right", 2, 11),
 		SidebarLeft1 = createSideBarOptions("Left", 1, 12),
 		SidebarLeft2 = createSideBarOptions("Left", 2, 13),
-		ShapeshiftBar = not isBarAddOnLoaded and createOtherBarOptions("Shapeshift Bar", 14, "LUIShapeshiftBar", "ShapeshiftBar") or nil,
+		ShapeshiftBar = not isBarAddOnLoaded and createOtherBarOptions("Shapeshift/Stance Bar", 14, "LUIShapeshiftBar", "ShapeshiftBar") or nil,
 		PetBar = not isBarAddOnLoaded and createOtherBarOptions("Pet Bar", 15, "LUIPetBar", "PetBar") or nil,
 		--TotemBar = not isBarAddOnLoaded and createOtherBarOptions("Totem Bar", 16, "LUITotemBar", "TotemBar") or nil,
 		VehicleExit = not isBarAddOnLoaded and createOtherBarOptions("Vehicle Exit Button", 17, "LUIVehicleExit") or nil,
@@ -2027,9 +2020,6 @@ end
 function module:Refresh(...)
 	local info, value = ...
 	if type(info) == "table" and type(value) ~= "table" then
-		if info[#info] == "Point" then
-			value = positions[value]
-		end
 		db(info, value)
 	end
 	

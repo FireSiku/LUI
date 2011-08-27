@@ -2,24 +2,22 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: swing.lua
 	Description: LUI Swing Timer
-	Version....: 1.0
-	Rev Date...: 29/07/2011 [dd/mm/yyyy]
-
-	Edits:
-		v1.0: Thaly
 ]]
 
--- External references.
 local addonname, LUI = ...
 local module = LUI:Module("Swing")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
-local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
+
+local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
+local positions = { "TOP", "TOPRIGHT", "TOPLEFT", "BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT", "RIGHT", "LEFT", "CENTER"}
 
 local _, class = UnitClass("player")
 
 local db, dbd
 local LUISwing
+
+LUI.Versions.swing = 2.0
 
 local meleeing
 local rangeing
@@ -28,6 +26,21 @@ local lasthit
 local MainhandID = GetInventoryItemID("player", 16)
 local OffhandID = GetInventoryItemID("player", 17)
 local RangedID = GetInventoryItemID("player", 18)
+
+local ToggleTestMode = function()
+	if LUISwing.Testmode then
+		LUISwing.Testmode = nil
+		LUISwing:Hide()
+	else
+		LUISwing.Testmode = true
+		LUISwing:Show()
+		LUISwing.Twohand:Show()
+		LUISwing.Twohand:SetMinMaxValues(0, 2)
+		LUISwing.Twohand:SetValue(1)
+		LUISwing.Mainhand:Hide()
+		LUISwing.Offhand:Hide()
+	end
+end
 
 local SwingStopped = function(element)
 	local bar = element.__owner
@@ -426,7 +439,12 @@ local SetSwing = function()
 	LUISwing.Offhand.Text:SetPoint("TOP", LUISwing.Twohand.Text, "CENTER", 0, -1)
 	
 	LUISwing:SetScript("OnEvent", function(self, event, ...)
-		if event == "UNIT_SPELLCAST_SUCCEEDED" then
+		if event == "PLAYER_REGEN_DISABLED" then
+			if self.Testmode then
+				self.Testmode = nil
+				self:Hide()
+			end
+		elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
 			Ranged(self, event, ...)
 		elseif event == "UNIT_RANGEDDAMAGE" then
 			RangedChange(self, event, ...)
@@ -441,36 +459,124 @@ local SetSwing = function()
 	end)
 end
 
-local ApplySettings = function()
-	LUISwing:SetWidth(LUI:Scale(db.Width))
-	LUISwing:SetHeight(LUI:Scale(db.Height))
-	LUISwing:ClearAllPoints()
-	LUISwing:SetPoint("BOTTOM", UIParent, "BOTTOM", LUI:Scale(db.X), LUI:Scale(db.Y))
+module.defaults = {
+	profile = {
+		Enable = true,
+		General = {
+			Width = 384,
+			Height = 4,
+			X = 0,
+			Y = 86.5,
+			Point = "BOTTOM",
+		},
+		Appearance = {
+			Texture = "LUI_Gradient",
+			BGTexture = "LUI_Minimalist",
+			BGMultiplier = 0.4,
+			Color = "By Class",
+			IndividualColor = {
+				r = 1,
+				g = 1,
+				b = 1,
+			},
+		},
+		Text = {
+			Enable = false,
+			X = 0,
+			Y = 0,
+			Font = "neuropol",
+			Size = 10,
+			Outline = "NONE",
+			Color = "Individual",
+			IndividualColor = {
+				r = 1,
+				g = 1,
+				b = 1,
+			},
+		},
+	}
+}
 
-	local r, g, b
-	local mu = db.BGMultiplier
-	if db.Color == "By Class" then
-		r, g, b = unpack(LUI.oUF_LUI.colors.class[class])
-	else
-		r, g, b = db.IndividualColor.r, db.IndividualColor.g, db.IndividualColor.b
+module.optionsName = "Swing Timer"
+module.getter = "generic"
+module.setter = "Refresh"
+
+function module:LoadOptions()
+	local disabledTextFunc = function() return not db.Text.Enable end
+	local colorOptions = {"By Class", "Individual", "Gradient"}
+	local dryCall = function() self:Refresh() end
+	
+	local options = {
+		General = self:NewGroup("General", 1, {
+			header = self:NewHeader("General Options", 0),
+			[""] = self:NewPosSliders("Swing Timer", 1, nil, "LUIThreat", true),
+			Point = self:NewSelect("Point", "Choose the Point for your Swing Timer.", 2, positions, nil, dryCall),
+			empty1 = self:NewDesc(" ", 3),
+			Width = self:NewInputNumber("Width", "Choose the Width for your Swing Timer.", 4),
+			Height = self:NewInputNumber("Height", "Choose the Height for your Swing Timer.", 5),
+			empty2 = self:NewDesc(" ", 6),
+			Testmode = self:NewExecute("Testmode", "Enable/Disable Swing Timer Testmode", 7, ToggleTestMode),
+		}),
+		Appearance = self:NewGroup("Appearance", 2, {
+			header = self:NewHeader("Appearance Options", 0),
+			Texture = self:NewSelect("Texture", "Choose the Texture for your Swing Timer.", 1, widgetLists.statusbar, "LSM30_Statusbar", true),
+			BGTexture = self:NewSelect("Background Texture", "Choose the Background Texture for your Swing Timer.", 2, widgetLists.statusbar, "LSM30_Statusbar", true),
+			BGMultiplier = self:NewSlider("Background Multiplier", "Choose the Multiplier for your Background Color.", 3, 0, 1, 0.01, true, true),
+			empty1 = self:NewDesc(" ", 4),
+			Color = self:NewSelect("Color", "Choose the Color Option for your Swing Timer.", 5, colorOptions, nil, dryCall),
+			IndividualColor = self:NewColorNoAlpha("Individual", "Swing Timer", 6, dryCall, nil, function() return db.Appearance.Color ~= "Individual" end),
+		}),
+		Text = self:NewGroup("Text", 3, {
+			header = self:NewHeader("Text Options", 0),
+			Enable = self:NewToggle("Enable Text", "Whether you want to show a Text on your Swing Timer or not.", 1, true),
+			empty1 = self:NewDesc(" ", 2),
+			[""] = self:NewPosSliders("Swing Timer Text", 3, nil, "LUIThreatText", true, nil, disabledTextFunc),
+			Font = self:NewSelect("Font", "Choose the Font for your Swing Timer Text.", 4, widgetLists.font, "LSM30_Font", true, nil, disabledTextFunc),
+			Size = self:NewInputNumber("Fontsize", "Choose the Fontsize for your Swing Timer Text.", 5, nil, nil, disabledTextFunc),
+			Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Swing Timer Text Font.", 6, fontflags, nil, dryCall, nil, disabledTextFunc),
+			empty2 = self:NewDesc(" ", 7),
+			Color = self:NewSelect("Color", "Choose the Color option for your Swing Timer Text.", 8, colorOptions, nil, dryCall, nil, disabledTextFunc),
+			IndividualColor = self:NewColorNoAlpha("Individual", "Swing Timer Text", 9, dryCall, nil, function() return not db.Text.Enable or db.Text.Color ~= "Individual" end),
+		}),
+	}
+	
+	return options
+end
+
+function module:Refresh(...)
+	local info, value = ...
+	if type(info) == "table" and type(value) ~= "table" then
+		db(info, value)
 	end
 	
-	LUISwing.Twohand:SetStatusBarTexture(Media:Fetch("statusbar", db.Texture))
+	local r, g, b
+	local mu = db.Appearance.BGMultiplier
+	if db.Appearance.Color == "By Class" then
+		r, g, b = unpack(LUI.oUF_LUI.colors.class[class])
+	else
+		r, g, b = db.Appearance.IndividualColor.r, db.Appearance.IndividualColor.g, db.Appearance.IndividualColor.b
+	end
+	
+	LUISwing:SetWidth(LUI:Scale(db.General.Width))
+	LUISwing:SetHeight(LUI:Scale(db.General.Height))
+	LUISwing:ClearAllPoints()
+	LUISwing:SetPoint(db.General.Point, UIParent, db.General.Point, LUI:Scale(db.General.X), LUI:Scale(db.General.Y))
+
+	LUISwing.Twohand:SetStatusBarTexture(Media:Fetch("statusbar", db.Appearance.Texture))
 	LUISwing.Twohand:SetStatusBarColor(r, g, b)
-	LUISwing.Twohand.bg:SetTexture(Media:Fetch("statusbar", db.TextureBG))
+	LUISwing.Twohand.bg:SetTexture(Media:Fetch("statusbar", db.Appearance.TextureBG))
 	LUISwing.Twohand.bg:SetVertexColor(r*mu, g*mu, b*mu)
 	
-	LUISwing.Mainhand:SetStatusBarTexture(Media:Fetch("statusbar", db.Texture))
+	LUISwing.Mainhand:SetStatusBarTexture(Media:Fetch("statusbar", db.Appearance.Texture))
 	LUISwing.Mainhand:SetStatusBarColor(r, g, b)
-	LUISwing.Offhand:SetStatusBarTexture(Media:Fetch("statusbar", db.Texture))
+	LUISwing.Offhand:SetStatusBarTexture(Media:Fetch("statusbar", db.Appearance.TextureBG))
 	LUISwing.Offhand:SetStatusBarColor(r, g, b)
 	
-	LUISwing.Mainhand.bg:SetTexture(Media:Fetch("statusbar", db.TextureBG))
+	LUISwing.Mainhand.bg:SetTexture(Media:Fetch("statusbar", db.Appearance.Texture))
 	LUISwing.Mainhand.bg:SetVertexColor(r*mu, g*mu, b*mu)
-	LUISwing.Offhand.bg:SetTexture(Media:Fetch("statusbar", db.TextureBG))
+	LUISwing.Offhand.bg:SetTexture(Media:Fetch("statusbar", db.Appearance.TextureBG))
 	LUISwing.Offhand.bg:SetVertexColor(r*mu, g*mu, b*mu)
 	
-	-- texts
 	if db.Text.Color == "By Class" then
 		r, g, b = unpack(colors.class[class])
 	else
@@ -499,148 +605,23 @@ local ApplySettings = function()
 	end
 end
 
-module.optionsName = "Swing Timer"
-module.defaults = {
-	profile = {
-		Enable = true,
-		Width = "384",
-		Height = "4",
-		X = "0",
-		Y = "86.5",
-		Texture = "LUI_Gradient",
-		Color = "By Class",
-		IndividualColor = {
-			r = 1,
-			g = 1,
-			b = 1
-		},
-		BGTexture = "LUI_Minimalist",
-		BGMultiplier = 0.4,
-		Text = {
-			Enable = false,
-			X = "0",
-			Y = "0",
-			Format = "Standard",
-			Font = "neuropol",
-			Size = 10,
-			Outline = "NONE",
-			Color = "Individual",
-			IndividualColor = {
-				r = 1,
-				g = 1,
-				b = 1
-			}
-		}
-	}
-}
-
-function module:LoadOptions()
-	local options = {
-		Bar = {
-			name = "Bar",
-			type = "group",
-			order = 2,
-			args = {
-				General = {
-					name = "General",
-					type = "group",
-					guiInline = true,
-					order = 1,
-					args = {
-						XValue = LUI:NewPosX("Swing Timer", 1, db, "", dbd, ApplySettings),
-						YValue = LUI:NewPosY("Swing Timer", 2, db, "", dbd, ApplySettings),
-						Width = LUI:NewWidth("Swing Timer", 3, db, nil, dbd, ApplySettings),
-						Height = LUI:NewHeight("Swing Timer", 4, db, nil, dbd, ApplySettings)
-					}
-				},
-				Colors = {
-					name = "Color",
-					type = "group",
-					guiInline = true,
-					order = 2,
-					args = {
-						ColorType = LUI:NewSelect("Color", "Choose the Color Option for your Swing Timer.", 1, {"By Class", "Individual"}, nil, db, "Color", dbd, ApplySettings),
-						Color = LUI:NewColorNoAlpha("Individual", barName, 2, db.IndividualColor, dbd.IndividualColor, ApplySettings, nil, function() return (db.Color ~= "Individual") end),
-					}
-					
-				},
-				Textures = {
-					name = "Texture",
-					type = "group",
-					guiInline = true,
-					order = 3,
-					args = {
-						Texture = LUI:NewSelect("Texture", "Choose the Swing Timer Texture.", 1, widgetLists.statusbar, "LSM30_Statusbar", db, "Texture", dbd, ApplySettings),
-						BGTexture = LUI:NewSelect("Background Texture", "Choose the Swing Timer Background Texture.", 2, widgetLists.statusbar, "LSM30_Statusbar", db, "BGTexture", dbd, ApplySettings),
-						BGMultiplier = LUI:NewSlider("Background Multiplier", "Choose the Multiplier which will be used to generate the Background Color", 3, db, "BGMultiplier", dbd, 0, 1, 0.05, ApplySettings),
-					}
-				}
-			}
-		},
-		Text = {
-			name = "Text",
-			type = "group",
-			order = 3,
-			args = {
-				Enable = LUI:NewToggle("Enable Text", "Whether you want to show the Swing Timer Text or not.", 1, db.Text, "Enable", dbd.Text, ApplySettings),
-				FontSettings = {
-					name = "Font Settings",
-					type = "group",
-					guiInline = true,
-					order = 2,
-					disabled = function() return not db.Text.Enable end,
-					args = {
-						FontSize = LUI:NewSlider("Size", "Choose your Swing Timer Text Fontsize.", 1, db.Text, "Size", dbd.Text, 1, 40, 1, ApplySettings),
-						empty = LUI:NewEmpty(2),
-						Font = LUI:NewSelect("Font", "Choose your Swing Timer Text Font.", 3, widgetLists.font, "LSM30_Font", db.Text, "Font", dbd.Text, ApplySettings),
-						FontFlag = LUI:NewSelect("Font Flag", "Choose the Font Flag for the Swing Timer Text Font.", 4, fontflags, nil, db.Text, "Outline", dbd.Text, ApplySettings),
-					},
-				},
-				Settings = {
-					name = "Settings",
-					type = "group",
-					guiInline = true,
-					order = 3,
-					disabled = function() return not db.Text.Enable end,
-					args = {
-						XValue = LUI:NewPosX("Swing Timer Text", 1, db.Text, "", dbd.Text, ApplySettings),
-						YValue = LUI:NewPosY("Swing Timer Text", 2, db.Text, "", dbd.Text, ApplySettings),
-						Format = LUI:NewSelect("Format", "Choose the Format for the Swing Timer Text.", 3, {"Absolut", "Standard"}, nil, db.Text, "Format", dbd.Text, ApplySettings),
-					}
-				},
-				Color = {
-					name = "Color Settings",
-					type = "group",
-					guiInline = true,
-					order = 4,
-					disabled = function() return not db.Text.Enable end,
-					args = {
-						Color = LUI:NewSelect("Color", "Choose the Color Option for the Swing Timer Text.", 1, {"By Class", "Individual"}, nil, db.Text, "Color", dbd.Text, ApplySettings),
-						IndividualColor = LUI:NewColorNoAlpha("", "Swing Timer Text", 2, db.Text.IndividualColor, dbd.Text.IndividualColor, ApplySettings),
-					}
-				}
-			}
-		}
-	}
-
-	return options
-end
-
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
 	
-	-- Look for outdated db vars and transfer them over
+	-- Look for outdated db vars
 	if LUI.db.profile.oUF.Player.Swing then
-		for k, v in pairs(LUI.db.profile.oUF.Player.Swing) do
-			db[k] = v
-		end
 		LUI.db.profile.oUF.Player.Swing = nil
+	end
+	
+	if LUICONFIG.Versions.swing ~= LUI.Versions.swing then
+		db:ResetProfile()
+		LUICONFIG.Versions.swing = LUI.Versions.swing
 	end
 end
 
 function module:OnEnable()
 	SetSwing()
-	ApplySettings()
+	self:Refresh()
 	
 	LUISwing:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED") -- Ranged
 	LUISwing:RegisterEvent("UNIT_RANGEDDAMAGE") -- RangedChange
