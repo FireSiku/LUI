@@ -22,7 +22,7 @@ function module:SetCooldowns()
 
 	-- Local variables.
 	local DAY, HOUR, MINUTE = 86400, 3600, 60
-	local ICON_SIZE = 36
+	local ICON_SIZE = 1 / 36
 
 	-- Create a timer object.
 	if not Timer then
@@ -40,7 +40,7 @@ function module:SetCooldowns()
 		-- Timer variables.
 		Timer.FontScale = setmetatable({}, {
 			__index = function(self, width)
-				local scale = width / ICON_SIZE
+				local scale = width * ICON_SIZE
 				self[width] = scale > db.General.MinScale and scale * db.Text.Size
 				return self[width]
 			end
@@ -50,39 +50,38 @@ function module:SetCooldowns()
 		
 		-- Timer formats.
 		Timer.TimeFormat = {
-			Days = {format = "%dd", color = db.Colors.Day, division = DAY, update = false},
-			Hours = {format = "%dh", color = db.Colors.Hour, division = HOUR, update = false},
-			Minutes = {format = "%dm", color = db.Colors.Min, division = MINUTE, update = false},
-			Seconds = {format = "%d", color = db.Colors.Sec, division = 1, update = 1},
-			Threshold = {format = false, color = db.Colors.Threshold, division = 1, update = false},
-			Update = function(x, v) x = x - v return x > 0 and x or 1 end,
+			-- Using factors (1 / Division) because multiplication is faster than division.
+			Days = {format = "%dd", color = db.Colors.Day, factor = 1 / DAY},
+			Hours = {format = "%dh", color = db.Colors.Hour, factor = 1 / HOUR},
+			Minutes = {format = "%dm", color = db.Colors.Min, factor = 1 / MINUTE},
+			Seconds = {format = "%d", color = db.Colors.Sec, factor = 1},
+			Threshold = {format = false, color = db.Colors.Threshold, factor = 1},
+			Precision = {
+				[0] = {format = "%d", precision = 1},
+				[1] = {format = "%.1f", precision = 0.1},
+				[2] = {format = "%.2f", precision = 0.01},
+			},
 		}
 		Timer.TimeFormat = setmetatable(Timer.TimeFormat, {
 			__call = function(self, seconds)
-				if seconds < db.General.Threshold + 0.5 then
-					self.Threshold.format = "%."..db.General.Precision.."f"
-					self.Threshold.update = db.General.Precision * 0.05
-					return self.Threshold
+				if seconds < db.General.Threshold then
+					local precision = self.Precision[db.General.Precision]
+					self.Threshold.format = precision.format
+					return self.Threshold, seconds % precision.precision
 				elseif seconds > DAY then
-					self.Days.update = self.Update(seconds, DAY)
-					return self.Days
+					return self.Days, seconds % DAY
 				elseif seconds > HOUR then
-					self.Hours.update = self.Update(seconds, HOUR)
-					return self.Hours
+					return self.Hours, seconds % HOUR
 				elseif seconds > MINUTE then
-					self.Minutes.update = self.Update(seconds, MINUTE)
-					return self.Minutes
+					return self.Minutes, seconds % MINUTE
 				else
-					return self.Seconds
+					return self.Seconds, seconds % 1
 				end
 			end,
 		})
 		
 		-- Timer methods.
 		function Timer:Assign(frame, start, duration)
-			-- Check if enabled.
-			if not db.Enable then return end -- shouldn't be needed since we unhooked the SetCooldown functions in OnDisable
-
 			-- Check if frame already has a timer.
 			if frame.Timer then return end
 
@@ -153,9 +152,11 @@ function module:SetCooldowns()
 			timer.fontScale = 0
 			timer.nextUpdate = 0
 			timer.start = 0
+			timer.text.r = 1
+			timer.text.g = 1
+			timer.text.b = 1
 		
 			-- Set scripts.
-			--timer:SetScript("OnSizeChanged", timer.OnSizeChanged)
 			timer:SetScript("OnHide", timer.Stop)
 
 			-- Add timer to timer list.
@@ -254,17 +255,17 @@ function module:SetCooldowns()
 		end
 
 		function Timer:Update(timeLeft)
-			-- Get format info.
-			local info = self.TimeFormat(timeLeft)
+			-- Get format info and next update interval.
+			local info; info, self.nextUpdate = self.TimeFormat(timeLeft)
 			
 			-- Set text.
-			self.text:SetFormattedText(info.format, timeLeft / info.division)
+			self.text:SetFormattedText(info.format, timeLeft * info.factor)
 			
 			-- Set text colour.
-			self.text:SetTextColor(info.color.r, info.color.g, info.color.b)
-
-			-- Set next update interval.
-			self.nextUpdate = info.update
+			if info.color.r ~= self.text.r or info.color.g ~= self.text.g or info.color.b ~= self.text.b then
+				self.text.r, self.text.g, self.text.b = info.color.r, info.color.g, info.color.b
+				self.text:SetTextColor(info.color.r, info.color.g, info.color.b)
+			end
 		end
 	end
 
@@ -273,7 +274,7 @@ function module:SetCooldowns()
 	-- And I'd rather not create my own cooldown frame to preserve a tiny bit of memory.
 	self:SecureHook(getmetatable(ActionButton1Cooldown).__index, "SetCooldown", function(self, start, duration)
 		-- Skip frames that don't want a timer.
-		if self.noOCC then return end
+		if self.noOCC then return end	-- Need to change from noOCC to noLCD; "no Omni CC", "no LUI cooldown"
 
 		-- Assign a timer.
 		Timer:Assign(self, start, duration)
@@ -336,11 +337,9 @@ function module:LoadOptions()
 
 	local options = {
 		General = self:NewGroup("General Settings", 1, {
-			--Threshold = self:NewSlider("Cooldown Threshold", "The time at which your cooldown text is colored differently and begins using specified precision.", 1, 0, 30, 1, self.Refresh),
 			Threshold = self:NewInputNumber("Cooldown Threshold", "The time at which your coodown text is colored differnetly and begins using specified precision.", 1, self.Refresh),
-			--MinDuration = self:NewSlider("Minimum Duration", "The lowest cooldown duration that timers will be shown for.", 2, 0, 60, 0.5),
 			MinDuration = self:NewInputNumber("Minimum Duration", "The lowest cooldown duration that timers will be shown for.", 2),
-			Precision = self:NewSlider("Cooldown Precision", "How many decimal places will be shown once time is within the cooldown threshold.", 3, 0, 3, 1, self.Refresh),
+			Precision = self:NewSlider("Cooldown Precision", "How many decimal places will be shown once time is within the cooldown threshold.", 3, 0, 2, 1, self.Refresh),
 			MinScale = self:NewSlider("Minimum Scale", "The smallest size of icons that timers will be shown for.", 4, 0, 2, 0.1, self.Refresh),
 		}),
 		Text = self:NewGroup("Text Settings", 2, {
