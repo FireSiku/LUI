@@ -543,9 +543,9 @@ local defaults = {
 			FontFlag = "NONE",
 		},
 		Icon = {
-			Mail = "TOPRIGHT",
+			Mail = "BOTTOMRIGHT", -- LFG and MAIL icon positions changed for better visibilty of the Tooltip
 			BG = "BOTTOMRIGHT",
-			LFG = "BOTTOMRIGHT",
+			LFG = "TOPRIGHT", -- LFG and MAIL icon positions changed for better visibilty of the Tooltip
 			GMTicket = "TOPLEFT",
 		},
 		Frames = {
