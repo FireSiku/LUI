@@ -34,9 +34,9 @@ function module:SetCooldowns()
 				elseif self.__old then
 					local __type = type(self.__old.__index)
 					if __type == "function" then
-						return self.__oldP.__index(self, k)
+						return self.__old.__index(self, k)
 					elseif __type == "table" then
-						return self.__oldP.__index[k]
+						return self.__old.__index[k]
 					end
 				end
 			end,
