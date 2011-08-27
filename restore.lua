@@ -142,7 +142,7 @@ function module.Backup()
 end
 
 function module.Reload()
-	-- Promote a reloadui.
+	-- Prompt a reloadui.
 	print("|c0090ffffLUI: |cffffff00Please reload your interface with the pop up provided to avoid errors.")
 	StaticPopup_Show("RELOAD_UI")
 end
