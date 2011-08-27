@@ -19,8 +19,8 @@ local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
 LUI.Versions.bars = 2.3
 
-local positions = {
-	TOP = "TOP",
+local positions = { "TOP", "TOPRIGHT", "TOPLEFT", "BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT", "RIGHT", "LEFT", "CENTER"}
+	--[[TOP = "TOP",
 	TOPRIGHT = "TOPRIGHT",
 	TOPLEFT = "TOPLEFT",
 	BOTTOM = "BOTTOM",
@@ -29,7 +29,7 @@ local positions = {
 	RIGHT = "RIGHT",
 	LEFT = "LEFT",
 	CENTER = "CENTER"
-}
+}]]
 
 local _, class = UnitClass("player")
 
@@ -265,9 +265,9 @@ local Configure = function(bar, n, x)
 		if i ~= 1 then
 			buttons[i]:ClearAllPoints()
 			if (i - 1) % x == 0 then
-				buttons[i]:SetPoint("TOP", buttons[i-x], "BOTTOM", 0, -2)
+				buttons[i]:SetPoint("TOPLEFT", buttons[i-x], "BOTTOMLEFT", 0, -2)
 			else
-				buttons[i]:SetPoint("LEFT", buttons[i-1], "RIGHT", 2, 0)
+				buttons[i]:SetPoint("TOPLEFT", buttons[i-1], "TOPRIGHT", 2, 0)
 			end
 		end
 		
@@ -1151,6 +1151,7 @@ function module:SetButtons()
 		normal.SetTexture = function(self) self:SetTexture_("") end
 		normal:Hide()
 		normal.Show = normal.Hide
+		button.SetNormalTexture = dummy
 		
 		local newnormal = button:CreateTexture(name.."Normal", "BACKGROUND", 0)
 		newnormal:SetTexture(normTex)
@@ -1868,6 +1869,10 @@ function module:LoadOptions()
 		UnregisterStateDriver(_G[barname], "page")
 		RegisterStateDriver(_G[barname], "page", val)
 	end
+	local function setPoint(info, value)
+		db[info[#info-1]].Point = positions[value]
+		self:Refresh()
+	end
 	
 	local function createBottomBarOptions(num, order)
 		local disabledFunc = function() return not db["Bottombar"..num].Enable end
@@ -1878,7 +1883,7 @@ function module:LoadOptions()
 			empty1 = (num ~= 1) and  self:NewDesc(" ", 2) or nil,
 			HideEmpty = self:NewToggle("Hide Empty Buttons", nil, 3, true, nil, disabledFunc),
 			[""] = self:NewPosSliders("Action Bar "..num, 4, false, "LUIBar"..num, true, nil, disabledFunc),
-			Point = self:NewSelect("Point", "Choose the Point for your Action Bar "..num, 5, positions, nil, nil, nil, disabledFunc),
+			Point = self:NewSelect("Point", "Choose the Point for your Action Bar "..num, 5, positions, nil, setPoint, nil, disabledFunc),
 			empty2 = self:NewDesc(" ", 6),
 			Scale = self:NewSlider("Scale", "Scale of Action Bar "..num..".", 7, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
 			empty3 = self:NewDesc(" ", 8),
@@ -1959,10 +1964,10 @@ function module:LoadOptions()
 			header0 = self:NewHeader(name.." Settings", 0),
 			Enable = self:NewToggle("Show "..name, nil, 1, true),
 			[""] = self:NewPosSliders(name, 2, false, frame, true, nil, disabled[name]),
-			Point = self:NewSelect("Point", "Choose the Point for the "..name..".", 3, positions, nil, nil, nil, disabled[name]),
+			Point = self:NewSelect("Point", "Choose the Point for the "..name..".", 3, positions, nil, setPoint, nil, disabled[name]),
 			Scale = self:NewSlider("Scale", "Choose the Scale for the "..name..".", 4, 0.1, 1.5, 0.05, true, true, nil, nil, disabled[name]),
 			NumPerRow = (name ~= "Vehicle Exit Button" and name ~= "Totem Bar") and self:NewSlider("Buttons per Row", "Choose the Number of Buttons per Row.", 5, 1, 10, 1, true, nil, nil, nil, disabled[name]) or nil,
-			Fader = (dbName and self:NewGroup("Fader", 6, true, disabledFunc, Fader:CreateFaderOptions(_G[frame], db[dbName].Fader, dbd[dbName].Fader, true))) or nil,
+			Fader = (dbName and self:NewGroup("Fader", 6, true, disabled[name], Fader:CreateFaderOptions(_G[frame], db[dbName].Fader, dbd[dbName].Fader, true))) or nil,
 		})
 		
 		return option
@@ -2022,6 +2027,9 @@ end
 function module:Refresh(...)
 	local info, value = ...
 	if type(info) == "table" and type(value) ~= "table" then
+		if info[#info] == "Point" then
+			value = positions[value]
+		end
 		db(info, value)
 	end
 	
