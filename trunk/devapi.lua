@@ -159,17 +159,16 @@ local valuesMT = {
 local function getColor(t)
 	argcheck(t, "typeof", "table")
 	
-	local r, g, b, a = unpack(t)
-	if not (r and g and b) then
-		r, g, b, a = t.r, t.g, t.b, t.a
+	if t.r then
+		return t.r, t.g, t.b, t.a
+	else
+		return unpack(t)
 	end
-	return r, g, b, a
 end
 local function setColor(t, ...)
 	argcheck(t, "typeof", "table")
 	
-	local r, g, b, a = unpack(t)
-	if r and g and b then
+	if t.r then
 		t.r, t.g, t.b, t.a = ...
 	else
 		t[1], t[2], t[3], t[4] = ...
