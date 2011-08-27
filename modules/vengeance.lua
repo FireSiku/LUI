@@ -236,8 +236,8 @@ function module:LoadOptions()
 			[""] = self:NewPosSliders("Vengeance Bar", 1, nil, "LUIThreat", true),
 			Point = self:NewSelect("Point", "Choose the Point for your Vengeance Bar.", 2, positions, nil, dryCall),
 			empty1 = self:NewDesc(" ", 3),
-			Width = self:NewInputNumber("Width", "Choose the Width for your Vengeance Bar.", 3),
-			Height = self:NewInputNumber("Height", "Choose the Height for your Vengeance Bar.", 4),
+			Width = self:NewInputNumber("Width", "Choose the Width for your Vengeance Bar.", 3, dryCall),
+			Height = self:NewInputNumber("Height", "Choose the Height for your Vengeance Bar.", 4, dryCall),
 			empty2 = self:NewDesc(" ", 5),
 			Testmode = self:NewExecute("Testmode", "Enable/Disable Vengeance Bar Testmode", 6, ToggleTestMode),
 		}),
@@ -256,7 +256,7 @@ function module:LoadOptions()
 			empty1 = self:NewDesc(" ", 4),
 			[""] = self:NewPosSliders("Vengeance Bar Text", 2, nil, "LUIThreatText", true, nil, disabledTextFunc),
 			Font = self:NewSelect("Font", "Choose the Font for your Vengeance Bar Text.", 3, widgetLists.font, "LSM30_Font", true, nil, disabledTextFunc),
-			Size = self:NewInputNumber("Fontsize", "Choose the Fontsize for your Vengeance Bar Text.", 4, nil, nil, disabledTextFunc),
+			Size = self:NewInputNumber("Fontsize", "Choose the Fontsize for your Vengeance Bar Text.", 4, dryCall, nil, disabledTextFunc),
 			Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Vengeance Bar Text Font.", 5, fontflags, nil, dryCall, nil, disabledTextFunc),
 			empty2 = self:NewDesc(" ", 6),
 			Color = self:NewSelect("Color", "Choose the Color option for your Vengeance Bar Text.", 6, colorOptions, nil, dryCall, nil, disabledTextFunc),
@@ -269,7 +269,7 @@ end
 
 function module:Refresh(...)
 	local info, value = ...
-	if type(info) == "table" and type(value) ~= "table" then
+	if type(info) == "table" then
 		db(info, value)
 	end
 	

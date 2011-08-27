@@ -1920,7 +1920,7 @@ function module:LoadOptions()
 			AutoPosEnable = isBarAddOnLoaded and self:NewToggle("Stop touching me!", "Whether or not to have LUI handle your Bar Positioning.", 10, true, nil, disabledFunc) or nil,
 			HideEmpty = not isBarAddOnLoaded and self:NewToggle("Hide Empty Buttons", nil, 11, true, nil, disabledFunc) or nil,
 			empty3 = self:NewDesc(" ", 12),
-			Offset = self:NewInputNumber("Y Offset", "Y Offset for your Sidebar", 13, true, nil, disabledFunc),
+			Offset = self:NewInputNumber("Y Offset", "Y Offset for your Sidebar", 13, nil, nil, disabledFunc),
 			OpenInstant = self:NewToggle("Open Instant", "Whether or not to show an open/close animation.", 14, true, nil, disabledFunc),
 			State = not isBarAddOnLoaded and self:NewGroup("State Settings", 15, getState, setSidebarState, true, {
 				["1"] = self:NewSelect("Default", "Choose the State for "..side.." Bar "..num..".\n\nDefaults:\nLUI: "..defaultstate["Sidebar"..side..num][1].."\nBlizzard: "..blizzstate["Sidebar"..side..num][1],
@@ -2019,7 +2019,7 @@ end
 
 function module:Refresh(...)
 	local info, value = ...
-	if type(info) == "table" and type(value) ~= "table" then
+	if type(info) == "table" then
 		db(info, value)
 	end
 	
