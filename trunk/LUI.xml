@@ -1,6 +1,9 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 	<!-- Error frame hook -->
 	<Script file="scripts\bugcatcher.lua"/>
+
+	<!-- Profiler -->
+	<Script file="profiler.lua"/>
 	
 	<!-- Initialize LUI -->
 	<Include file="locale\locale.xml"/>
