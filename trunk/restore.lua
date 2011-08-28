@@ -33,12 +33,15 @@ function module.Apply(dest, source)
 			-- Push stack.
 			stack[#stack + 1] = k
 
+			-- Create a local temp of source[k] so that converts don't effect our backup.
+			local sv = source[k]
+
 			-- Check value types are the same.
-			dt, st = type(v), type(source[k])
+			dt, st = type(v), type(sv)			
 
 			-- Try to convert.
 			if dt == "number" and st == "string" then
-				local num = tonumber(source[k])
+				local num = tonumber(sv)
 				if num then
 					-- Print mismatch convertion with db stack. (i.e. db.children.Cooldown.profile.Enable).
 					mismatches = mismatches + 1
@@ -46,18 +49,18 @@ function module.Apply(dest, source)
 
 					-- Convert.
 					st = dt
-					source[k] = num
+					sv = num
 				end
 			elseif dt == "string" and st == "number" then
-				local str = tostring(source[k])
-				if str and str ~= "" and tonumber(str) == source[k] then
+				local str = tostring(sv)
+				if str and str ~= "" and tonumber(str) == sv then
 					-- Print mismatch convertion with db stack. (i.e. db.children.Cooldown.profile.Enable).
 					mismatches = mismatches + 1
 					print("|c0090ffffLUI: |cffffff00Restore:|r Value converted because of type mismatch: [", dt, "] ~= [", st, "]; Stack =", tconcat(stack, "."))
 
 					-- Convert.
 					st = dt
-					source[k] = str
+					sv = str
 				end
 			end
 
@@ -68,9 +71,9 @@ function module.Apply(dest, source)
 			else
 				-- Apply backup values.
 				if dt == "table" then
-					module.Apply(dest[k], source[k])
+					module.Apply(dest[k], sv)
 				else
-					dest[k] = source[k]
+					dest[k] = sv
 				end
 			end
 
@@ -151,7 +154,7 @@ function module.Restore()
 	-- Get latest backup.
 	backup = LUICONFIG.BACKUP
 	if not backup then
-		return print("|c0090ffffLUI: Restore failed because there was not an available backup. Create backup with '/luibackup'")
+		return print("|c0090ffffLUI:|r Restore failed because there was not an available backup. Create backup with '/luibackup'")
 	end
 
 	-- Get current db.
@@ -180,7 +183,7 @@ function module.Revert()
 	-- Get latest backup.
 	backup = LUICONFIG.BACKUP
 	if not backup then
-		return print("|c0090ffffLUI: Revert failed because there was not an available backup. Create backup with '/luibackup'")
+		return print("|c0090ffffLUI:|r Revert failed because there was not an available backup. Create backup with '/luibackup'")
 	end
 	
 	-- Get current db.
