@@ -14,14 +14,77 @@ local module = LUI.Profiler
 
 -- Localize functions.
 local collectgarbage, error, GetTime, print, type = collectgarbage, error, GetTime, print, type
+local geterrorhandler, seterrorhandler = geterrorhandler, seterrorhandler
 
 -- Local variables.
-local KILLTIME = 2
+local KILLTIME = 0.03
 local traces = {}
 local excludes = {}
+local metatable
+local dummy = function() error("This function has been removed by LUI's profiler.", 3) end
+
+-- For debug purposes.
+function module.GetInfo()
+	return traces, excludes, KILLTIME
+end
+
+function module.Print()
+	for f, t in pairs(traces) do
+		print(t.name, ":", t.count, "calls,", t.total, "seconds,", t.memT, "kb.")
+	end
+end
+
+function module.ApplyMetatable(table, name)
+	-- Check excludes.
+	if excludes[table] then return end
+
+	-- Add table to excludes.
+	excludes[table] = true
+
+	-- Set metatable variables.
+	rawset(table, "__nameP", name)
+	rawset(table, "__oldP", getmetatable(table) or false)
+
+	-- Add old metatable to excludes.
+	if table.__oldP then
+		excludes[table.__oldP] = true
+	end
+		
+	-- Set metatable.
+	print("Setting metatable for", name)
+	table = setmetatable(table, metatable)
+
+	-- Check metatable was set.
+	if type(table) ~= "table" then return error("Metatable failed") end
+
+	-- Scan for previously written functions and tables.
+	local vType
+	for k, v in pairs(table) do
+		vType = type(v)
+		if vType == "function" then
+			-- Trace function.
+			local newFunc = module.Trace(v, k, name)
+			print("Tracing function:", name.."."..k)
+
+			-- Pass new function to old metatable, or rawset.
+			if table.__oldP and table.__oldP.__newindex then
+				table.__oldP.__newindex(table, k, newFunc)
+			else
+				rawset(table, k, newFunc)
+			end
+
+			if table[k] ~= newFunc then
+				print("Failed to set new function.")
+			end
+		elseif vType == "table" then
+			-- Apply metatable to child table.
+			module.ApplyMetatable(v, name.."."..k)
+		end
+	end
+end
 
 function module.Trace(func, name, scope)
-	-- This should never happen, but just in case.
+	-- Skip already traced functions or excluded ones.
 	if traces[func] then
 		return traces[func].newFunc
 	elseif excludes[func] then
@@ -39,8 +102,16 @@ function module.Trace(func, name, scope)
 			if traces[func].recurse > 0 then
 				-- Check this recursion loop hasn't been running excesively (n seconds).
 				if GetTime() - traces[func].start > KILLTIME then
+					-- Remove function.
+					traces[func].removed = true
+					traces[func].oldFunc = dummy
+				
 					-- Create an error to break recursion.
-					error("|c0090ffffLUI:|r Profiler: Stopping recursive loop of "..traces[func].name.." after "..traces[func].recurse.." calls.")
+					print("|c0090ffffLUI:|r Profiler: |cffff0000Stopping recursive loop of "..traces[func].name.." after "..traces[func].recurse.." calls.")
+
+					-- Stop recurse
+					traces[func].recurse = 0
+					return
 				end
 
 				-- Get time.
@@ -49,23 +120,27 @@ function module.Trace(func, name, scope)
 				-- Get time and log for recursion.
 				time  = GetTime()
 				traces[func].start = time
+				traces[func].recurse = 0
 			end
 
 			-- Increase recurse counter.
 			traces[func].recurse = traces[func].recurse + 1
             
 			-- Run and collect results.
-			local r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15 = func(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, 15)
+			local r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15 = traces[func].oldFunc(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, 15)
 
 			-- Collect time and memory results.
 			time = GetTime() - time
 			mem = collectgarbage("count") - mem
 
 			-- Check time to make sure function isn't a problem.
-			if time > KILLTIME then
+			if time > KILLTIME  and not traces[func].removed then
+				-- Remove function.
+				traces[func].removed = true
+				traces[func].oldFunc = dummy
+
 				-- Print error.
-				traces[func].newFunc = function() error("|c0090ffffLUI:|r Profiler: This function has been disabled.", 2) end
-				error("|c0090ffffLUI:|r Profiler: Stopping function call of "..traces[func].name.." after "..time.." seconds execution.")
+				print("|c0090ffffLUI:|r Profiler: |cffff0000Stopping function calls of "..traces[func].name.." after a "..time.." second execution.")
 			end
 
 			-- Decrease recurse counter.
@@ -83,6 +158,7 @@ function module.Trace(func, name, scope)
 
 		start = 0,
 		recurse = 0,
+		removed = false,
 		count = 0,
 		total = 0,
 		last = 0,
@@ -98,59 +174,8 @@ function module.Trace(func, name, scope)
 	return traces[func].newFunc
 end
 
--- For debug purposes.
-function module.Print()
-	print("Num traces:", #traces)
-	for f, t in pairs(traces) do
-		print(t.name, ":", count, ",", total, "s,", memT, "kb.")
-	end
-end
-
--- Prototype meta metatable.
-local meta
-function module.ApplyMetatable(table, name)
-	-- Check excludes.
-	if excludes[table] then return end
-
-	-- Set metatable variables.
-	rawset(table, "__nameP", name)
-	rawset(table, "__oldP", getmetatable(table))
-
-	-- Add old metatable to excludes.
-	if table.__oldP then
-		excludes[table.__oldP] = true
-	end
-		
-	-- Set metatable.
-	print("Settings metatable for", name)
-	table = setmetatable(table, meta)
-
-	-- Check metatable was set.
-	if type(table) ~= "table" then return error("Metatable failed") end
-
-	-- Scan for previously written functions and tables.
-	local vType
-	for k, v in pairs(table) do
-		vType = type(v)
-		if vType == "function" then
-			-- Trace function.
-			local newFunc = module.Trace(v, k, name)
-
-			-- Pass new function to old metatable, or rawset.
-			if table.__oldP and table.__oldP.__newindex then
-				table.__oldP.__newindex(table, k, newFunc)
-			else
-				rawset(table, k, newFunc)
-			end
-		elseif vType == "table" then
-			-- Apply metatable to child table.
-			--module.ApplyMetatable(v, table.__nameP.."."..k)
-		end
-	end
-end
-
 -- Create metatable.
-meta = {
+metatable = {
 	__index = function(self, k)
 		-- Look up old metatbale if it exists.
 		if self.__oldP then
@@ -164,7 +189,6 @@ meta = {
 	end,
 	__newindex = function(self, k, v)
 		local __type = type(v)
-		-- Check if value is a function.
 		if __type == "function" then
 			-- Trace function.
 			local newFunc = module.Trace(v, k, self.__nameP)
@@ -190,26 +214,15 @@ meta = {
 	end,
 }
 
-function module.Slash(msg)
-	local number = tonumber(msg)
-	if not number then return end
-
-	KILLTIME = tonumber(msg)
-	print("|c0090ffffLUI:|r Profiler: Kill time set to", msg, "second/s.")
-end
-
-SLASH_LUIPROFILER1 = "/luiprofiler"
-SlashCmdList.LUIPROFILER = module.Slash
-
 -- Set up exludes.
 -- - Add profiler functions.
-excludes[module.Trace] = true
-excludes[module.Print] = true
 excludes[module.ApplyMetatable] = true
-excludes[module.Slash] = true
+excludes[module.GetInfo] = true
+excludes[module.Print] = true
+excludes[module.Trace] = true
  
 -- - Add profiler tables.
-excludes[meta] = true
+excludes[metatable] = true
 excludes[module] = true
 
 -- - Add global.
