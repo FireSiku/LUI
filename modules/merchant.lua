@@ -316,7 +316,7 @@ function module:LoadOptions()
 		local count = tonumber(v)
 		if count then
 			-- Update an item in list.
-			if stockCurrent and db.Autostock.List[stockCurrent] then
+			if stockCurrent and db.AutoStock.List[stockCurrent] then
 				if count == 0 then
 					-- Remove item id from list.
 					db.AutoStock.List[stockCurrent] = nil
