@@ -21,8 +21,6 @@ local module = LUI.Restore
 local tconcat, pairs, print, tonumber, tostring, type = table.concat, pairs, print, tonumber, tostring, type
 
 -- Local variables.
-local db
-local backup
 local stack
 local mismatches
 
@@ -112,22 +110,55 @@ function module.Set(dest, source)
 	end
 end
 
+local function IsEmptyTable(data)
+	if type(data) ~= "table" then return end
+	for k, v in pairs(data) do
+		return false
+	end
+	return true
+end
+
+local function RemoveDefaults(data, default)
+	if type(data) ~= "table" then return end
+	for k, v in pairs(data) do
+		if type(v) == "table" then
+			if default[k] then
+				RemoveDefaults(data[k], default[k])
+				if IsEmptyTable(data[k]) then data[k] = nil end
+			else
+				data[k] = nil
+			end
+		else
+			if default[k] == data[k] or default[k] == nil then data[k] = nil end
+		end
+	end
+
+	-- Check if data is now empty.
+	if IsEmptyTable(data) then data = nil end
+
+	-- Return processed data.
+	return data
+end
+
 function module.Backup()
 	-- Get current db.
-	db = LUI.db
+	local db = LUI.db
 
-	-- Get backups location.
-	backup = {}
+	-- Get backup location.
+	local backup = {}
 	LUICONFIG = LUICONFIG or {}
 	LUICONFIG.BACKUP = backup
 
-	-- Backup old profiles.
+	-- Collect old profiles.
 	for k, v in pairs(db.profile) do
 		backup[k] = {}
 		module.Get(v, backup[k])
+
+		-- Remove default values.
+		backup[k] = RemoveDefaults(backup[k], db.defaults.profile[k])
 	end
 
-	-- Backup children.
+	-- Collect children.
 	backup.children = {}
 	local child = backup.children
 	for k, v in pairs(db.children) do
@@ -135,9 +166,15 @@ function module.Backup()
 		child[k] = {profile = {}}
 		module.Get(v.profile, child[k].profile)
 
+		-- Remove default values.
+		child[k].profile = RemoveDefaults(child[k].profile, v.defaults.profile)
+
 		if v.realm then
 			child[k].realm = {}
 			module.Get(v.realm, child[k].realm)
+
+			-- Remove default values.
+			child[k].realm = RemoveDefaults(child[k].realm, v.defaults.realm)
 		end
 	end
 
@@ -152,13 +189,13 @@ end
 
 function module.Restore()
 	-- Get latest backup.
-	backup = LUICONFIG.BACKUP
+	local backup = LUICONFIG.BACKUP
 	if not backup then
 		return print("|c0090ffffLUI:|r Restore failed because there was not an available backup. Create backup with '/luibackup'")
 	end
 
 	-- Get current db.
-	db = LUI.db
+	local db = LUI.db
 
 	-- Reset database to defaults.
 	db:ResetProfile(nil, true)
@@ -181,13 +218,13 @@ end
 
 function module.Revert()
 	-- Get latest backup.
-	backup = LUICONFIG.BACKUP
+	local backup = LUICONFIG.BACKUP
 	if not backup then
 		return print("|c0090ffffLUI:|r Revert failed because there was not an available backup. Create backup with '/luibackup'")
 	end
 	
 	-- Get current db.
-	db = LUI.db
+	local db = LUI.db
 
 	-- Reset database to defaults.
 	db:ResetProfile(nil, true)
