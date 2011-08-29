@@ -71,7 +71,7 @@ function module.Apply(dest, source)
 			else
 				-- Apply backup values.
 				if dt == "table" then
-					module.Apply(dest[k], sv)
+					module.Apply(v, sv)
 				else
 					dest[k] = sv
 				end
