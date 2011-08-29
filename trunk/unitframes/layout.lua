@@ -713,6 +713,7 @@ local PostCastStart = function(castbar, unit, name)
 		if unit == "target" or unit == "focus" or unit == "pet" then unit = "player" end
 		local pClass, pToken = UnitClass(unit)
 		local color = colors.class[pToken]
+		if not color then return end
 		
 		castbar:SetStatusBarColor(color[1], color[2], color[3], 0.68)
 		castbar.bg:SetVertexColor(0.15, 0.15, 0.15, 0.75)
