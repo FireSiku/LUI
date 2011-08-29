@@ -173,10 +173,14 @@ function module:AutoStock()
 		id = self:GetItemID(n)
 
 		-- Check item is in list.
+		local count = 0
 		if id and db.AutoStock.List[id] then
 			-- Add to shopping cart.
-			cart[i] = db.AutoStock.List[id] - GetItemCount(id)
-			cost = cost + (price * cart[i])
+			count = db.AutoStock.List[id] - GetItemCount(id)
+			if count > 0 then
+				cart[i] = count
+				cost = cost + (price * cart[i])
+			end
 		end
 	end
 	
