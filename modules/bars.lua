@@ -1433,7 +1433,7 @@ function module:SetBars()
 		
 		self:SetPetBar()
 		self:SetShapeshiftBar()
-		--self:SetTotemBar()
+		self:SetTotemBar()
 		self:SetVehicleExit()
 		
 		self:HideBlizzard()
@@ -2010,7 +2010,7 @@ function module:LoadOptions()
 		SidebarLeft2 = createSideBarOptions("Left", 2, 13),
 		ShapeshiftBar = not isBarAddOnLoaded and createOtherBarOptions("Shapeshift/Stance Bar", 14, "LUIShapeshiftBar", "ShapeshiftBar") or nil,
 		PetBar = not isBarAddOnLoaded and createOtherBarOptions("Pet Bar", 15, "LUIPetBar", "PetBar") or nil,
-		--TotemBar = not isBarAddOnLoaded and createOtherBarOptions("Totem Bar", 16, "LUITotemBar", "TotemBar") or nil,
+		TotemBar = not isBarAddOnLoaded and createOtherBarOptions("Totem Bar", 16, "LUITotemBar", "TotemBar") or nil,
 		VehicleExit = not isBarAddOnLoaded and createOtherBarOptions("Vehicle Exit Button", 17, "LUIVehicleExit") or nil,
 	}
 	
@@ -2039,7 +2039,7 @@ function module:Refresh(...)
 		
 		self:SetPetBar()
 		self:SetShapeshiftBar()
-		--self:SetTotemBar()
+		self:SetTotemBar()
 		self:SetVehicleExit()
 	end
 	
