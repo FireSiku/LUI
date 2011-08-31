@@ -2,12 +2,10 @@
 	<!-- Error frame hook -->
 	<Script file="scripts\bugcatcher.lua"/>
 
-	<!-- Profiler -->
-	<Script file="profiler.lua"/>
-	
 	<!-- Initialize LUI -->
 	<Include file="locale\locale.xml"/>
 	<Script file="init.lua"/>
+	<Script file="profiler.lua"/>
 	<Script file="debug.lua"/>
 	<Script file="devapi.lua"/>
 	<Script file="restore.lua"/>
