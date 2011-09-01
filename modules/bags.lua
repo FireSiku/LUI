@@ -612,7 +612,7 @@ function module:SetBags()
 			if self:GetParent().editbox:IsShown() then
 				self:GetParent().editbox:Hide()
 				self:GetParent().editbox:ClearFocus()
-				self:GetParent().detail:Show()
+				--self:GetParent().detail:Show()
 				self:GetParent().gold:Show()
 				self:GetParent().currency:Show()
 				module:SearchReset()
