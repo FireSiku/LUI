@@ -35,7 +35,7 @@ local excludes = setmetatable({}, weakTable)
 	(string) reason: The reason why the profiler has disabled the function.	
 ]]
 function module.CreateError(name, reason)
-	return "Function ["..name.."] has been removed by LUI's profiler.\nReason = "..reason
+	return "Function ["..name.."] has been removed by LUI's profiler.\nReason: "..reason
 end
 
 -- Profiler.Exclude(func)
