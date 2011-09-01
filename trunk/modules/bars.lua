@@ -148,20 +148,23 @@ local Page = {
 	},
 }
 
+local last = "HIDEGRID"
 local HookGrid = function(self, event)
 	if event == "ACTIONBAR_SHOWGRID" then
 		for i, button in pairs(self.buttons) do
 			button:SetAlpha(1)
 		end
+		last = "SHOWGRID"
 	elseif event == "ACTIONBAR_HIDEGRID" then
 		for i, button in pairs(self.buttons) do
 			if self.HideEmpty and not HasAction(button.action) then
 				button:SetAlpha(0)
 			end
 		end
+		last = "HIDEGRID"
 	else
 		for i, button in pairs(self.buttons) do
-			if self.HideEmpty and not HasAction(button.action) then
+			if self.HideEmpty and not HasAction(button.action) and last == "HIDEGRID" then
 				button:SetAlpha(0)
 			else
 				button:SetAlpha(1)
@@ -669,8 +672,9 @@ function module:SetBottomBar(id)
 		
 		bar:RegisterEvent("ACTIONBAR_SHOWGRID")
 		bar:RegisterEvent("ACTIONBAR_HIDEGRID")
+		bar:RegisterEvent("ACTIONBAR_PAGE_CHANGED")
+		bar:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
 		bar:RegisterEvent("PLAYER_ENTERING_WORLD")
-		--bar:RegisterEvent("SPELL_UPDATE_USABLE")
 		bar:SetScript("OnEvent", HookGrid)
 		
 		local buttons
@@ -756,8 +760,9 @@ function module:SetSideBar(side, id)
 		
 		bar:RegisterEvent("ACTIONBAR_SHOWGRID")
 		bar:RegisterEvent("ACTIONBAR_HIDEGRID")
+		bar:RegisterEvent("ACTIONBAR_PAGE_CHANGED")
+		bar:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
 		bar:RegisterEvent("PLAYER_ENTERING_WORLD")
-		--bar:RegisterEvent("SPELL_UPDATE_USABLE") -- better event?
 		bar:SetScript("OnEvent", HookGrid)
 		
 		local buttons
