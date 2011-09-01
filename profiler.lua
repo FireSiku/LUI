@@ -349,6 +349,9 @@ gui.NewField = function(self, field, width)
 			gui.Active = self.Field
 			self.Name:SetTextColor(0.4, 0.78, 1)
 		end
+
+		-- Update.
+		gui:OnUpdate(1)
 	end)
 	f:SetScript("OnDragStart", function(self)
 		self:StartSizing("RIGHT")
@@ -428,14 +431,14 @@ gui:SetWidth(600)
 -- - Session.
 gui.Session:SetPoint("TOPLEFT", gui, "TOPLEFT", 5, -5)
 gui.Session:SetFontObject(GameFontNormalSmall)
-gui.Session:SetFormattedText("Session Length: %d", GetTime() - gui.StartTime)
-gui.Session:SetTextColor(0.4, 0.78, 1)
+gui.Session:SetFormattedText("|cffffff00Session Length:|r %d", GetTime() - gui.StartTime)
+gui.Session:SetTextColor(1, 1, 1)
 -- - Slider
 gui.Slider:Enable()
 gui.Slider:SetMinMaxValues(0, 15)
 gui.Slider:SetOrientation("VERTICAL")
-gui.Slider:SetPoint("TOPLEFT", gui, "TOPRIGHT", 5, -20)
-gui.Slider:SetPoint("BOTTOMLEFT", gui, "BOTTOMRIGHT", 5, 20)
+gui.Slider:SetPoint("TOPRIGHT", gui, "TOPRIGHT", -5, -20)
+gui.Slider:SetPoint("BOTTOMRIGHT", gui, "BOTTOMRIGHT", -5, 20)
 gui.Slider:SetValueStep(1)
 -- - Title.
 gui.Title:SetPoint("TOP", gui, "TOP", 0, -5)
@@ -445,8 +448,8 @@ gui.Title:SetTextColor(0.4, 0.78, 1)
 -- - Totals.
 gui.Totals:SetPoint("TOPLEFT", gui.Session, "BOTTOMLEFT", 0, -5)
 gui.Totals:SetFontObject(GameFontNormalSmall)
-gui.Totals:SetFormattedText("Totals: Calls =  %d, Time = %d ms, Memory = %d kb.", 0, 0, 0)
-gui.Totals:SetTextColor(0.4, 0.78, 1)
+gui.Totals:SetFormattedText("|cffffff00Totals:|r Calls =  %d, Time = %d ms, Memory = %d kb.", 0, 0, 0)
+gui.Totals:SetTextColor(1, 1, 1)
 
 -- Interaction.
 -- - Frame.
@@ -488,7 +491,7 @@ gui.OnUpdate = function(self, elapsed)
 	self.dt = 0
 
 	-- Set session time.
-	self.Session:SetFormattedText("Session Length: %d", GetTime() - self.StartTime)
+	self.Session:SetFormattedText("|cffffff00Session Length:|r %d", GetTime() - self.StartTime)
 
 	-- Gather totals.
 	local tCalls, tMem, tTime = 0, 0, 0
@@ -497,10 +500,10 @@ gui.OnUpdate = function(self, elapsed)
 		tMem = tMem + traces[func].memT
 		tTime = tTime + traces[func].total
 	end
-	gui.Totals:SetFormattedText("Totals: Functions = %d, Calls =  %d, Time = %d ms, Memory = %d kb.", #self.Sorted, tCalls, tTime * 1000, tMem)
+	gui.Totals:SetFormattedText("|cffffff00Totals:|r Functions = %d, Calls =  %d, Time = %d ms, Memory = %d kb.", #self.Sorted, tCalls, tTime * 1000, tMem)
 
 	-- Sort traces.
-	--tsort(self.Sorted, self.Sort) -- Buggy.
+	tsort(self.Sorted, self.Sort)
 
 	-- Update displays.
 	local t, s = #self.Traces, #self.Sorted

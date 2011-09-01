@@ -37,6 +37,7 @@
 local addonname, LUI = ...
 local Fader = LUI:Module("Fader", "AceEvent-3.0", "AceHook-3.0", "AceTimer-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
+local Profiler = LUI.Profiler
 local widgetLists = AceGUIWidgetLSMlists
 
 -- Database and defaults shortcuts.
@@ -686,6 +687,13 @@ function Fader:StopFading(frame)
 		end
 	end
 end
+
+
+---[[	PROFILER
+-- Add Fader functions to the profiler.
+Profiler.TraceScope(Fader, "Fader", "LUI")
+--]]
+
 
 ------------------------------------------------------
 -- / Module Settings / --
