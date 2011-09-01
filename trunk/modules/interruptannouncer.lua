@@ -14,6 +14,7 @@
 -- External references.
 local addonname, LUI = ...
 local module = LUI:Module("InterruptAnnouncer", "AceEvent-3.0")
+local Profiler = LUI.Profiler
 
 LUI.Versions.interrupt = 2
 
@@ -103,6 +104,13 @@ function module:Deactivate()
 	self.lastInterrupt = nil
 	self.petGUID = nil
 end
+
+
+---[[	PROFILER
+-- Add InterruptAnnouncer functions to the profiler.
+Profiler.TraceScope(module, "InterruptAnnouncer", "LUI")
+--]]
+
 
 -- Defaults for the module.
 module.defaults = {

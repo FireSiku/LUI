@@ -17,6 +17,7 @@ _G.LUI = LUI
 _G.oUF = LUI.oUF
 
 local Media = LibStub("LibSharedMedia-3.0")
+local Profiler = LUI.Profiler
 local widgetLists = AceGUIWidgetLSMlists
 local ACD = LibStub("AceConfigDialog-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
@@ -1253,6 +1254,12 @@ function LUI:NewNamespace(module, enableButton)
 			end
 		end,
 	})
+
+	---[[	PROFILER
+	-- Add module database metatable functions to profiler.
+	Profiler.TraceScope(getmetatable(module.db), "db", "LUI."..mName)
+	Profiler.TraceScope(getmetatable(module.defaults), "dbd", "LUI."..mName)
+	--]]
 	
 	-- Look for outdated db vars and transfer them over
 	if LUI.db.profile[mName] then

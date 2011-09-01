@@ -11,6 +11,7 @@ local Media = LibStub("LibSharedMedia-3.0")
 local LibWindow = LibStub("LibWindow-1.1")
 local widgetLists = AceGUIWidgetLSMlists
 local Fader = LUI:Module("Fader")
+local Profiler = LUI.Profiler
 
 local LBZ = LibStub("LibBabble-Zone-3.0"):GetLookupTable()
 local ZoneLoc = {names = {}, data = {}}
@@ -1008,6 +1009,13 @@ function module:PLAYER_REGEN_ENABLED()
 		WorldMapBlobFrame:DrawBlob(WorldMapQuestScrollChildFrame.selected.questId, false)
 	end
 end
+
+
+---[[	PROFILER
+-- Add WorldMap functions to the profiler.
+Profiler.TraceScope(module, "WorldMap", "LUI")
+--]]
+
 
 --------------------------------------------------
 -- Defaults
