@@ -17,8 +17,8 @@ local module = LUI.Profiler
 
 
 -- Localize functions.
-local collectgarbage, error, format, getmetatable, GetTime = collectgarbage, error, format, getmetatable, GetTime
-local print, setmetatable, tostring, type = print, setmetatable, tostring, type
+local abs, collectgarbage, error, format, getmetatable, GetTime = math.abs, collectgarbage, error, format, getmetatable, GetTime
+local print, setmetatable, tsort, tostring, type, wipe = print, setmetatable, table.sort, tostring, type, wipe
 
 -- Local variables.
 local defaultKillTime = 0.5
@@ -283,23 +283,27 @@ excludes[module.TraceScope] = true
 
 -- Create Profilers GUI.
 if not Enabled then return end
-if true then return end -- Still working on GUI.
 
-module.Frame = CreateFrame("Frame", "LUI: Profiler")
-local f = module.Frame
+module.GUI = CreateFrame("Frame", "LUI: Profiler")
+local gui = module.GUI
 
 -- Apply frame settings.
 -- Variables.
-f.Active = 1
-f.Fields = {}
-f.Traces = {}
+gui.dt = 0
+gui.Active = 3
+gui.Fields = {}
+gui.StartTime = GetTime()
+gui.Traces = {}
+gui.Sorted = {}
 
 -- Create Children.
-f.Title = f:CreateFontString()
+gui.Session = gui:CreateFontString()
+gui.Slider = CreateFrame("Slider", "LUI: Profiler: Slider", gui, "UIPanelScrollBarTemplate")
+gui.Title = gui:CreateFontString()
 
 -- Creators.
-local fields = {"Name", "Calls", "Time (ms)", "Memory (bytes)", "Kill Time"}
-f.NewField = function(self, field, width)
+local fields = {"Name", "Calls", "Time (ms)", "Memory (bytes)", "Kill Time (ms)"}
+gui.NewField = function(self, field, width)
 	local f = CreateFrame("Frame", self:GetName()..": Field <"..field..">", self)
 	local last = self.Fields[#self.Fields]
 	self.Fields[#self.Fields + 1] = f
@@ -314,11 +318,11 @@ f.NewField = function(self, field, width)
 	if not last then
 		f:SetPoint("TOPLEFT", self, "TOPLEFT", 5, -30)
 	else
-		f:SetPoint("LEFT", last, "LEFT", 5)
+		f:SetPoint("TOPLEFT", last, "TOPRIGHT", 5)
 	end
 	f:SetWidth(width)
 	-- Name.
-	f.Name = CreateFontString()
+	f.Name = f:CreateFontString()
 	f.Name:SetPoint("CENTER", f)
 	f.Name:SetFontObject(GameFontNormalSmall)
 	f.Name:SetJustifyH("CENTER")
@@ -327,71 +331,224 @@ f.NewField = function(self, field, width)
 
 	f:EnableMouse(true)
 	f:RegisterForDrag("LeftButton")
-	f:SetMinResize(20, 20)
+	f:SetMinResize(50, 20)
 	f:SetResizable(true)
-	f:SetScript("OnMouseUp", function(f)
-		if math.abs(self.Active) == f.Field then
-			self.Active = -self.Active
+	f:SetScript("OnMouseUp", function(self)
+		local absf = abs(gui.Active)
+		if absf == self.Field then
+			gui.Active = -gui.Active
+
+			if gui.Active > 0 then
+				self.Name:SetTextColor(0.4, 0.78, 1)
+			else
+				self.Name:SetTextColor(1, 0, 1)
+			end
 		else
-			self.Active = f.Field
+			gui.Fields[absf].Name:SetTextColor(0, 1, 0)
+			gui.Active = self.Field
+			self.Name:SetTextColor(0.4, 0.78, 1)
 		end
 	end)
 	f:SetScript("OnDragStart", function(self)
 		self:StartSizing("RIGHT")
 	end)
-	f:SetScript("OnDragStop", f.StopMovingOrSizing)
+	f:SetScript("OnDragStop", function(self)
+		self:StopMovingOrSizing()
+		if self.Field > 1 then
+			self:SetPoint("TOPLEFT", gui.Fields[self.Field - 1], "TOPRIGHT", 5)
+		else
+			self:SetPoint("TOPLEFT", gui, "TOPLEFT", 5, -30)
+		end
+	end)
 end
-f.NewTrace = function(self)
+gui.OnTraceUpdate = function(self, func)
+	self:Show()
+	if self.Func ~= func then
+		self.Func = func
+		self.Fields[1]:SetText(traces[func].name)
+		self.Fields[5]:SetFormattedText("%d", traces[func].killTime * 1000)						
+	end
+	self.Fields[2]:SetFormattedText("%d", traces[func].count)
+	self.Fields[3]:SetFormattedText("%d", traces[func].total * 1000)
+	self.Fields[4]:SetFormattedText("%d", traces[func].memT * 1024)
+end
+gui.NewTrace = function(self)
 	local f = CreateFrame("Frame", nil, self)
-	local last = self.Traces[#self.Traces] or self
+	local last = self.Traces[#self.Traces]
 	self.Traces[#self.Traces + 1] = f
 
-	f:Show()
+	f:Hide()
+	f.Func = nil
 	f:SetHeight(20)
 	f:SetWidth(1)
+
+	-- Create fields.
+	last = last and last.Fields or self.Fields
+	f.Fields = {}
+
+	for i=1, #fields do
+		local field = f:CreateFontString()
+		field:SetPoint("TOPLEFT", last[i], "BOTTOMLEFT", 0, -5)
+		field:SetPoint("TOPRIGHT", last[i], "BOTTOMRIGHT", 0, -5)
+		field:SetFontObject(GameFontNormalSmall)
+		field:SetJustifyH(i == 1 and "LEFT" or "CENTER")
+		field:SetTextColor(1, 1, 1)
+		f.Fields[i] = field
+	end
+
+	f.Update = self.OnTraceUpdate
 end
+
+-- Create fields.
+gui:NewField(fields[1], 200)
+for i = 2, #fields do
+	gui:NewField(fields[i], 80)
+end
+gui.Fields[3].Name:SetTextColor(0.4, 0.78, 1)
 
 -- Layout and look.
 -- - Frame.
-f:SetBackdrop({bgFile = "Interface/Tooltips/UI-Tooltip-Background", edgeFile = "Interface/Tooltips/UI-Tooltip-Border", tile = true, tileSize = 16, edgeSize = 8})
-f:SetBackdropBorderColor(0, 0, 0, 0.2)
-f:SetBackdropColor(0, 0, 0, 0.5)
-f:SetHeight(300)
-f:SetPoint("CENTER", UIParent)
-f:SetWidth(550)
+gui:SetBackdrop({bgFile = "Interface/Tooltips/UI-Tooltip-Background", edgeFile = "Interface/Tooltips/UI-Tooltip-Border", tile = true, tileSize = 16, edgeSize = 8})
+gui:SetBackdropBorderColor(0, 0, 0, 0.2)
+gui:SetBackdropColor(0, 0, 0, 0.5)
+gui:SetHeight(300)
+gui:SetPoint("CENTER", UIParent)
+gui:SetWidth(600)
+-- - Session.
+gui.Session:SetPoint("TOPLEFT", gui, "TOPLEFT", 5, -5)
+gui.Session:SetFontObject(GameFontNormalSmall)
+gui.Session:SetFormattedText("Session Length: %d", GetTime() - gui.StartTime)
+gui.Session:SetTextColor(0.4, 0.78, 1)
+-- - Slider
+gui.Slider:Enable()
+gui.Slider:SetMinMaxValues(1, 10)
+gui.Slider:SetOrientation("VERTICAL")
+gui.Slider:SetPoint("TOPLEFT", gui, "TOPRIGHT", 5, -20)
+gui.Slider:SetPoint("BOTTOMLEFT", gui, "BOTTOMRIGHT", 5, 20)
+gui.Slider:SetValueStep(1)
 -- - Title.
-f.Title:SetPoint("TOP", f, "TOP", 0, -5)
-f.Title:SetFontObject(GameFontNormalSmall)
-f.Title:SetText(f:GetName())
-f.Title:SetTextColor(0.4, 0.78, 1)
+gui.Title:SetPoint("TOP", gui, "TOP", 0, -5)
+gui.Title:SetFontObject(GameFontNormalSmall)
+gui.Title:SetText(gui:GetName())
+gui.Title:SetTextColor(0.4, 0.78, 1)
 
 -- Interaction.
 -- - Frame.
-f:EnableMouse(true)
-f:RegisterForDrag("LeftButton", "RightButton")
-f:SetMinResize(200, 100)
-f:SetMovable(true)
-f:SetResizable(true)
+gui:EnableMouse(true)
+gui:RegisterForDrag("LeftButton", "RightButton")
+gui:SetMinResize(600, 300)
+gui:SetMovable(true)
+gui:SetResizable(true)
+gui.Sort = function(a, b)
+	-- Sort traces by active field.
+	if true then
+		return traces[a].name > traces[b].name	-- Time -
+	end
+
+	-- Buggy.
+	local active = gui.Active
+	if active == 1 then
+		return traces[a].name < traces[b].name	-- Name +
+	elseif active == -1 then
+		return traces[a].name > traces[b].name	-- Name - 
+	elseif active == 2 then
+		return traces[a].count > traces[b].count	-- Calls -
+	elseif active == -2 then
+		return traces[a].count < traces[b].count	-- Calls +
+	elseif active == 3 then
+		return traces[a].total > traces[b].total	-- Time -
+	elseif active == -3 then
+		return traces[a].total < traces[b].total	-- Time +
+	elseif active == 4 then
+		return traces[a].memT > traces[b].memT	-- Memory -
+	elseif active == -4 then
+		return traces[a].memT < traces[b].memT	-- Memory +
+	elseif active == 5 then
+		return traces[a].killTime < traces[b].killTime	-- Kill time +
+	elseif active == -5 then
+		return traces[a].killTime > traces[b].killTime	-- Kill time -
+	else
+		return false
+	end
+end
+gui.OnUpdate = function(self, elapsed)
+	self.dt = self.dt + elapsed
+	if self.dt < 1 then return end
+	self.dt = 0
+
+	-- Set session time.
+	self.Session:SetFormattedText("Session Length: %d", GetTime() - self.StartTime)
+
+	-- Sort traces.
+	--tsort(self.Sorted, self.Sort)
+
+	-- Update displays.
+	local t, s = #self.Traces, #self.Sorted
+	local slider = self.Slider:GetValue()
+	local total = t > s and t or s
+	for i = 1, total do
+		if self.Sorted[i + slider] then
+			-- Create new trace line.
+			if not self.Traces[i] then
+				self:NewTrace()
+			end
+
+			-- Update trace line.
+			self.Traces[i]:Update(self.Sorted[i + slider])
+		else
+			if self.Traces[i] then
+				-- Hide trace line.
+				self.Traces[i]:Hide()
+			end
+		end
+	end
+end
 
 -- Scripts.
 -- - Frame.
-f:SetScript("OnDragStart", function(self, button)
+gui:SetScript("OnDragStart", function(self, button)
 	if button == "LeftButton" then
 		-- Left mouse drag = move frame.
 		self:StartMoving()
 	else
 		-- Right mouse drag = resize frame.
-		self:StartSizing("TOPRIGHT")
+		--self:StartSizing("BOTTOMRIGHT")
 	end
 end)
-f:SetScript("OnDragStop", f.StopMovingOrSizing)
+gui:SetScript("OnDragStop", gui.StopMovingOrSizing)
+gui:SetScript("OnUpdate", gui.OnUpdate)
+-- - Slider.
+gui.Slider:SetScript("OnValueChanged", function(self)
+	gui:OnUpdate(1)
+end)
+
+-- Add profiler GUI functions to profiler as examples.
+module.TraceScope(gui, "GUI", "LUI.Profiler", nil, 2)
 
 -- Add pad to special frames, for "Esc" closure.
-tinsert(UISpecialFrames, f:GetName())
+tinsert(UISpecialFrames, gui:GetName())
 
 -- Create slash command to open Profiler GUI.
 SLASH_LUIPROFILER1 = "/luiprofiler"
-SlashCmdList.LUIPROFILER = function() module.Frame:Show() end
+SlashCmdList.LUIPROFILER = function()
+	-- Collect traces.
+	wipe(gui.Sorted)	
+	for func in pairs(traces) do
+		gui.Sorted[#gui.Sorted + 1] = func
+	end
+
+	if #gui.Sorted > 1 then
+		gui.Slider:SetMinMaxValues(1, #gui.Sorted - 1)
+		gui.Slider:SetValue(1)
+		gui.Slider:Enable()
+	else
+		gui.Slider:Disable()
+	end
+
+	-- Show frame.
+	gui.dt = 1
+	gui:Show()
+end
 
 
 
