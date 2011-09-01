@@ -35,7 +35,7 @@ local excludes = setmetatable({}, weakTable)
 	(string) reason: The reason why the profiler has disabled the function.	
 ]]
 function module.CreateError(name, reason)
-	return "Function ["..name.."] has been removed by LUI's profiler.\nReason: "..reason
+	return "Function ["..name.."] has been removed by LUI's profiler.\nReason = "..reason
 end
 
 -- Profiler.Exclude(func)
@@ -376,8 +376,8 @@ gui.OnTraceUpdate = function(self, func)
 	self.Fields[3]:SetFormattedText("%d", traces[func].total * 1000)
 	self.Fields[4]:SetFormattedText("%d", traces[func].memT * 1024)
 
-	if not self.Removed and traces[func].removed then
-		self.Removed = not self.Removed
+	if self.Removed ~= traces[func].removed then
+		self.Removed = traces[func].removed
 		if self.Removed then
 			self.Fields[1]:SetTextColor(1, 0, 0)
 		else
