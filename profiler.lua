@@ -123,6 +123,12 @@ function module.Trace(func, name, scope, killTime)
 	traces[func] = {
 		oldFunc = func,
 		newFunc = function(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15)
+			-- Check if removed.
+			if traces[func].removed then
+				-- Error out with removal reason.
+				return error(traces[func].removed, 2)
+			end
+
 			local time
 			local mem = collectgarbage("count")
 			
@@ -155,14 +161,8 @@ function module.Trace(func, name, scope, killTime)
 			-- Increase recurse counter.
 			traces[func].recurse = traces[func].recurse + 1
             
-			-- Run and collect results.
-			if traces[func].removed then
-				-- Error out with removal reason.
-				return error(traces[func].removed, 2)
-			else
-				-- Run original function.
-				local r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15 = traces[func].oldFunc(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, 15)
-			end
+			-- Run original function.
+			local r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15 = traces[func].oldFunc(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, 15)
 			
 			-- Collect time and memory results.
 			time = GetTime() - time
@@ -300,6 +300,7 @@ gui.Sorted = {}
 gui.Session = gui:CreateFontString()
 gui.Slider = CreateFrame("Slider", "LUI: Profiler: Slider", gui, "UIPanelScrollBarTemplate")
 gui.Title = gui:CreateFontString()
+gui.Totals = gui:CreateFontString()
 
 -- Creators.
 local fields = {"Name", "Calls", "Time (ms)", "Memory (bytes)", "Kill Time (ms)"}
@@ -316,7 +317,7 @@ gui.NewField = function(self, field, width)
 	f:SetBackdropColor(0, 0, 0, 0)
 	f:SetHeight(20)
 	if not last then
-		f:SetPoint("TOPLEFT", self, "TOPLEFT", 5, -30)
+		f:SetPoint("TOPLEFT", self, "TOPLEFT", 5, -35)
 	else
 		f:SetPoint("TOPLEFT", last, "TOPRIGHT", 5)
 	end
@@ -431,6 +432,11 @@ gui.Title:SetPoint("TOP", gui, "TOP", 0, -5)
 gui.Title:SetFontObject(GameFontNormalSmall)
 gui.Title:SetText(gui:GetName())
 gui.Title:SetTextColor(0.4, 0.78, 1)
+-- - Totals.
+gui.Totals:SetPoint("TOPLEFT", gui.Session, "BOTTOMLEFT", 0, -5)
+gui.Totals:SetFontObject(GameFontNormalSmall)
+gui.Totals:SetFormattedText("Totals: Calls =  %d, Time = %d ms, Memory = %d kb.", 0, 0, 0)
+gui.Totals:SetTextColor(0.4, 0.78, 1)
 
 -- Interaction.
 -- - Frame.
@@ -441,11 +447,6 @@ gui:SetMovable(true)
 gui:SetResizable(true)
 gui.Sort = function(a, b)
 	-- Sort traces by active field.
-	if true then
-		return traces[a].name > traces[b].name	-- Time -
-	end
-
-	-- Buggy.
 	local active = gui.Active
 	if active == 1 then
 		return traces[a].name < traces[b].name	-- Name +
@@ -479,8 +480,17 @@ gui.OnUpdate = function(self, elapsed)
 	-- Set session time.
 	self.Session:SetFormattedText("Session Length: %d", GetTime() - self.StartTime)
 
+	-- Gather totals.
+	local tCalls, tMem, tTime = 0, 0, 0
+	for i, func in ipairs(self.Sorted) do
+		tCalls = tCalls + traces[func].count
+		tMem = tMem + traces[func].memT
+		tTime = tTime + traces[func].total
+	end
+	gui.Totals:SetFormattedText("Totals: Functions = %d, Calls =  %d, Time = %d ms, Memory = %d kb.", #self.Sorted, tCalls, tTime * 1000, tMem)
+
 	-- Sort traces.
-	--tsort(self.Sorted, self.Sort)
+	--tsort(self.Sorted, self.Sort) -- Buggy.
 
 	-- Update displays.
 	local t, s = #self.Traces, #self.Sorted
@@ -523,7 +533,7 @@ gui.Slider:SetScript("OnValueChanged", function(self)
 end)
 
 -- Add profiler GUI functions to profiler as examples.
-module.TraceScope(gui, "GUI", "LUI.Profiler", nil, 2)
+--module.TraceScope(gui, "GUI", "LUI.Profiler", nil, 2)
 
 -- Add pad to special frames, for "Esc" closure.
 tinsert(UISpecialFrames, gui:GetName())

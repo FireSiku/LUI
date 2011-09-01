@@ -618,7 +618,7 @@ local PostCreateAura = function(element, button)
 	button.remaining = SetFontString(button, Media:Fetch("font", db.oUF.Settings.Auras.auratimer_font), db.oUF.Settings.Auras.auratimer_size, db.oUF.Settings.Auras.auratimer_flag)
 	button.remaining:SetPoint("TOPLEFT", 1, -1)
 
-	button.cd.noOCC = true
+	button.cd.noLUITimer = true
 	button.cd.noCooldownCount = true
 
 	button.overlay:Hide()
