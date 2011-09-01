@@ -8,6 +8,7 @@
 local addonname, LUI = ...
 local module = LUI:Module("Cooldown", "AceHook-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
+local Profiler = LUI.Profiler
 
 -- Database and defaults shortcuts.
 local db, dbd
@@ -17,7 +18,7 @@ local Timer
 
 function module:SetCooldowns()
 	-- Localized functions.
-	local floor, format, GetTime, insert, min, type, wipe = math.floor, string.format, GetTime, table.insert, math.min, type, wipe
+	local ceil, floor, format, GetTime, insert, min, type, wipe = math.ceil, math.floor, string.format, GetTime, table.insert, math.min, type, wipe
 	local function round(x) return floor(x + 0.5) end
 
 	-- Local variables.
@@ -143,7 +144,7 @@ function module:SetCooldowns()
 			end
 		end
 
-		function Timer:New()		
+		function Timer:New()
 			-- Create a timer inheriting the Timer object.
 			local timer = CreateFrame("Frame", "LUI_Cooldown_Timer"..(#self.Timers + 1))
 			timer.__old = getmetatable(timer)
@@ -168,7 +169,7 @@ function module:SetCooldowns()
 			timer.text.b = 1
 		
 			-- Set scripts.
-			timer:SetScript("OnHide", timer.Stop)
+			timer:SetScript("OnHide", self.Stop)
 
 			-- Add timer to timer list.
 			self.Timers[#self.Timers + 1] = timer
@@ -276,7 +277,8 @@ function module:SetCooldowns()
 			local info; info, self.nextUpdate = self.TimeFormat(timeLeft)
 			
 			-- Set text.
-			self.text:SetFormattedText(info.format, timeLeft * info.factor)
+			timeLeft = info.factor == 1 and timeLeft or ceil(timeLeft * info.factor)
+			self.text:SetFormattedText(info.format, timeLeft)
 			
 			-- Set text colour.
 			if info.color.r ~= self.text.r or info.color.g ~= self.text.g or info.color.b ~= self.text.b then
@@ -284,6 +286,12 @@ function module:SetCooldowns()
 				self.text:SetTextColor(info.color.r, info.color.g, info.color.b)
 			end
 		end
+
+		---[[	PROFILER
+		-- Add timer functions to profiler.
+		Profiler.TraceScope(Timer, "Timer", "LUI.Cooldown", nil, 1)
+		Profiler.TraceScope(getmetatable(Timer.TimeFormat), "TimeFormat", "LUI.Cooldown.Timer")
+		--]]
 	end
 
 	-- Hook the SetCooldown metamethod of all cooldown frames.
@@ -291,7 +299,7 @@ function module:SetCooldowns()
 	-- And I'd rather not create my own cooldown frame to preserve a tiny bit of memory.
 	self:SecureHook(getmetatable(ActionButton1Cooldown).__index, "SetCooldown", function(self, start, duration)
 		-- Skip frames that don't want a timer.
-		if self.noOCC then return end	-- Need to change from noOCC to noLCD; "no Omni CC", "no LUI cooldown"
+		if self.noLUITimer then return end
 
 		-- Assign a timer.
 		Timer:Assign(self, start, duration)
