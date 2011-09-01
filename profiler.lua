@@ -15,7 +15,6 @@ local Enabled = false
 LUI.Profiler = {}
 local module = LUI.Profiler
 
-
 -- Localize functions.
 local abs, collectgarbage, error, format, getmetatable, GetTime = math.abs, collectgarbage, error, format, getmetatable, GetTime
 local print, setmetatable, tsort, tostring, type, wipe = print, setmetatable, table.sort, tostring, type, wipe
@@ -102,7 +101,7 @@ function module.Trace(func, name, scope, killTime)
 		if type(func) == "table" then
 			module.TraceScope(func, name, scope, killTime)
 		else
-			return
+			return func
 		end
 	end
 
@@ -294,7 +293,7 @@ gui.Active = 3
 gui.Fields = {}
 gui.StartTime = GetTime()
 gui.Traces = {}
-gui.Sorted = {}
+gui.Sorted = setmetatable({}, weakTable)
 
 -- Create Children.
 gui.Session = gui:CreateFontString()
@@ -324,7 +323,7 @@ gui.NewField = function(self, field, width)
 	f:SetWidth(width)
 	-- Name.
 	f.Name = f:CreateFontString()
-	f.Name:SetPoint("CENTER", f)
+	f.Name:SetAllPoints(f)
 	f.Name:SetFontObject(GameFontNormalSmall)
 	f.Name:SetJustifyH("CENTER")
 	f.Name:SetText(field)
@@ -332,7 +331,7 @@ gui.NewField = function(self, field, width)
 
 	f:EnableMouse(true)
 	f:RegisterForDrag("LeftButton")
-	f:SetMinResize(50, 20)
+	f:SetMinResize(10, 20)
 	f:SetResizable(true)
 	f:SetScript("OnMouseUp", function(self)
 		local absf = abs(gui.Active)
@@ -546,9 +545,6 @@ gui.Slider:SetScript("OnValueChanged", function(self)
 	gui:OnUpdate(1)
 end)
 
--- Add profiler GUI functions to profiler as examples.
---module.TraceScope(gui, "GUI", "LUI.Profiler", nil, 2)
-
 -- Add pad to special frames, for "Esc" closure.
 tinsert(UISpecialFrames, gui:GetName())
 
@@ -561,6 +557,7 @@ SlashCmdList.LUIPROFILER = function()
 		gui.Sorted[#gui.Sorted + 1] = func
 	end
 
+	-- Sort slider.
 	if #gui.Sorted > 15 then
 		gui.Slider:SetMinMaxValues(0, #gui.Sorted - 15)
 		gui.Slider:SetValue(0)
@@ -574,7 +571,6 @@ SlashCmdList.LUIPROFILER = function()
 	gui.dt = 1
 	gui:Show()
 end
-
 
 
 

@@ -380,6 +380,8 @@ function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, 
 		if not self:IsHooked(frame, "OnLeave") then self:SecureHookScript(frame, "OnLeave", OnLeave) end
 	else
 		local function CheckMouseHover()
+			if not frame:IsVisible() then return end
+
 			local isMouseOver = frame:IsMouseOver()
 			if isMouseOver ~= mouseHover then
 				if isMouseOver then
