@@ -55,8 +55,9 @@ local hidden, hide, show = {}
 do
 	local hook = setmetatable({}, {
 		__call = function(t, unit, hookto)
-			if t[unit] then return end
-			t[unit] = hookto
+			if t[unit] and t[unit][hookto] then return end
+			t[unit] = t[unit] or {}
+			t[unit][hookto] = true
 			
 			hooksecurefunc(hookto, function()
 				if hidden[unit] then
@@ -102,6 +103,7 @@ do
 				CompactRaidFrameManager_SetSetting("IsShown", "0")
 			end
 			hook("raid", "CompactRaidFrameManager_UpdateShown")
+			hook("raid", "CompactUnitFrame_UpateVisible")
 		end,
 		boss = function()
 			for i = 1, MAX_BOSS_FRAMES do
