@@ -358,7 +358,7 @@ gui.NewField = function(self, field, width)
 		if self.Field > 1 then
 			self:SetPoint("TOPLEFT", gui.Fields[self.Field - 1], "TOPRIGHT", 5)
 		else
-			self:SetPoint("TOPLEFT", gui, "TOPLEFT", 5, -30)
+			self:SetPoint("TOPLEFT", gui, "TOPLEFT", 5, -35)
 		end
 	end)
 end
@@ -372,6 +372,15 @@ gui.OnTraceUpdate = function(self, func)
 	self.Fields[2]:SetFormattedText("%d", traces[func].count)
 	self.Fields[3]:SetFormattedText("%d", traces[func].total * 1000)
 	self.Fields[4]:SetFormattedText("%d", traces[func].memT * 1024)
+
+	if not self.Removed and traces[func].removed then
+		self.Removed = not self.Removed
+		if self.Removed then
+			self.Fields[1]:SetTextColor(1, 0, 0)
+		else
+			self.Fields[1]:SetTextColor(1, 1, 1)
+		end
+	end
 end
 gui.NewTrace = function(self)
 	local f = CreateFrame("Frame", nil, self)
@@ -380,6 +389,7 @@ gui.NewTrace = function(self)
 
 	f:Hide()
 	f.Func = nil
+	f.Removed = false
 	f:SetHeight(20)
 	f:SetWidth(1)
 
@@ -422,7 +432,7 @@ gui.Session:SetFormattedText("Session Length: %d", GetTime() - gui.StartTime)
 gui.Session:SetTextColor(0.4, 0.78, 1)
 -- - Slider
 gui.Slider:Enable()
-gui.Slider:SetMinMaxValues(1, 10)
+gui.Slider:SetMinMaxValues(0, 15)
 gui.Slider:SetOrientation("VERTICAL")
 gui.Slider:SetPoint("TOPLEFT", gui, "TOPRIGHT", 5, -20)
 gui.Slider:SetPoint("BOTTOMLEFT", gui, "BOTTOMRIGHT", 5, 20)
@@ -496,6 +506,7 @@ gui.OnUpdate = function(self, elapsed)
 	local t, s = #self.Traces, #self.Sorted
 	local slider = self.Slider:GetValue()
 	local total = t > s and t or s
+	total = total > 15 and 15 or total
 	for i = 1, total do
 		if self.Sorted[i + slider] then
 			-- Create new trace line.
@@ -547,12 +558,13 @@ SlashCmdList.LUIPROFILER = function()
 		gui.Sorted[#gui.Sorted + 1] = func
 	end
 
-	if #gui.Sorted > 1 then
-		gui.Slider:SetMinMaxValues(1, #gui.Sorted - 1)
-		gui.Slider:SetValue(1)
-		gui.Slider:Enable()
+	if #gui.Sorted > 15 then
+		gui.Slider:SetMinMaxValues(0, #gui.Sorted - 15)
+		gui.Slider:SetValue(0)
+		gui.Slider:Show()
 	else
-		gui.Slider:Disable()
+		gui.Slider:SetValue(0)
+		gui.Slider:Hide()
 	end
 
 	-- Show frame.
