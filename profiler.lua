@@ -121,7 +121,7 @@ function module.Trace(func, name, scope, killTime)
 	-- Create trace.
 	traces[func] = {
 		oldFunc = func,
-		newFunc = function(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15)
+		newFunc = function(...)--a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15)
 			-- Check if removed.
 			if traces[func].removed then
 				-- Error out with removal reason.
@@ -161,7 +161,7 @@ function module.Trace(func, name, scope, killTime)
 			traces[func].recurse = traces[func].recurse + 1
             
 			-- Run original function.
-			local r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15 = traces[func].oldFunc(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, 15)
+			local r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15 = traces[func].oldFunc(...)--a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, 15)
 			
 			-- Collect time and memory results.
 			time = GetTime() - time
