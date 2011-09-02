@@ -18,13 +18,14 @@ local module = LUI.Profiler
 -- Localize functions.
 local abs, collectgarbage, error, format, getmetatable, GetTime = math.abs, collectgarbage, error, format, getmetatable, GetTime
 local print, setmetatable, strfind, strlower, tsort, tostring, type, wipe = print, setmetatable, string.find, string.lower, table.sort, tostring, type, wipe
+local debugprofilestart, debugprofilestop = debugprofilestart, debugprofilestop
 
 -- Local variables.
 local defaultKillTime = 0.5
 local weakTable = {__mode = "k"}
 local traces = setmetatable({}, weakTable)
 local excludes = setmetatable({}, weakTable)
-
+local timeStack = {}
 
 -- Profiler.CreateError(name, reason)
 --[[
@@ -83,6 +84,40 @@ function module.RemoveTrace(func)
 	end
 end
 
+-- timerStart()
+--[[
+	Notes.....: This is a wrapper for debugprofilestart and debugprofilestop. It takes their functionality and makes them work similarly to GetTime().
+				Because the timer start can be affected by other code, we track them in a stack to check against GetTime() later.
+]]
+local function timerStart()
+	if #timeStack == 0 then
+		-- Start debug timer. We track a stack to freshen the debug profiler timer's start time.
+		debugprofilestart()
+	end
+
+	-- Increase stack and return new start time.
+	timeStack[#timeStack + 1] = GetTime()
+	return debugprofilestop()
+end
+
+-- timerStop()
+--[[
+	Notes.....: This is a wrapper for debugprofilestart and debugprofilestop. It takes their functionality and makes them work similarly to GetTime().
+				We check the debug timer and compare it to GetTime(), if GetTime is larger then debugprofilestart has been called from another source.
+				In this case we return GetTime() instead of the debug timer.
+]]
+local function timerStop()
+	-- Get times.
+	local ms = debugprofilestop()
+	local s; s, timeStack[#timeStack] = GetTime() - timeStack[#timeStack], nil
+	
+	-- Convert GetTime to milliseconds.
+	s = s * 1000
+	
+	-- Return largest.	
+	return s > ms and s or ms
+end
+
 -- Profiler.Trace(func, name[, scope[, killTime]])
 --[[
 	Notes.....: Adds a function for profiling. If a table is passed, it will be sent to Profiler.TraceScope.
@@ -121,15 +156,12 @@ function module.Trace(func, name, scope, killTime)
 	-- Create trace.
 	traces[func] = {
 		oldFunc = func,
-		newFunc = function(...)--a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15)
+		newFunc = function(...) --a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15)
 			-- Check if removed.
 			if traces[func].removed then
 				-- Error out with removal reason.
 				return error(traces[func].removed, 2)
 			end
-
-			local time
-			local mem = collectgarbage("count")
 			
 			-- Check for recursion.
 			if traces[func].recurse > 0 then
@@ -147,33 +179,33 @@ function module.Trace(func, name, scope, killTime)
 					-- Return to break recursion.
 					return
 				end
-
-				-- Get time.
-				time = GetTime()
 			else
-				-- Get time and log for recursion.
-				time = GetTime()
-				traces[func].start = time
+				-- Log recursion.
+				traces[func].start = GetTime()
 				traces[func].recurse = 0
 			end
 
 			-- Increase recurse counter.
 			traces[func].recurse = traces[func].recurse + 1
+
+			-- Get start time and memory.
+			local mem = collectgarbage("count")
+			local time = timerStart()
             
 			-- Run original function.
-			local r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15 = traces[func].oldFunc(...)--a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, 15)
+			local r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15 = traces[func].oldFunc(...) --a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, 15)
 			
 			-- Collect time and memory results.
-			time = GetTime() - time
+			time = timerStop() - time
 			mem = collectgarbage("count") - mem
 
 			-- Check time to make sure function isn't a problem.
-			if time >= traces[func].killTime  and not traces[func].removed then
+			if time >= traces[func].killTimeMS  and not traces[func].removed then
 				-- Remove function.
-				traces[func].removed = module.CreateError(traces[func].name, format("Took to long: %.4f seconds.", time))
+				traces[func].removed = module.CreateError(traces[func].name, format("Took to long: %.4f milliseconds.", time))
 
 				-- Print out an error.
-				print("|c0090ffffLUI:|r Profiler: |cffff0000Stopping function calls of", traces[func].name, "after a", time, "second execution.")
+				print("|c0090ffffLUI:|r Profiler: |cffff0000Stopping function calls of", traces[func].name, "after a", time, "millisecond execution.")
 			end
 
 			-- Decrease recurse counter.
@@ -194,6 +226,7 @@ function module.Trace(func, name, scope, killTime)
 
 		count = 0,
 		killTime = killTime,
+		killTimeMS = killTime * 1000,
 		last = 0,
 		max = nil,
 		memL = 0,
@@ -307,7 +340,7 @@ gui.Title = gui:CreateFontString()
 gui.Totals = gui:CreateFontString()
 
 -- Creators.
-local fields = {"Name", "Calls", "Time (ms)", "Avg. Time (ms)", "Min (ms)", "Max (ms)", "Memory (bytes)"}
+local fields = {"Name", "Calls", "Time (us)", "Avg. Time (us)", "Min (us)", "Max (us)", "Memory (bytes)"}
 gui.NewField = function(self, field, width)
 	local f = CreateFrame("Frame", self:GetName()..": Field <"..field..">", self)
 	local last = self.Fields[#self.Fields]
@@ -394,14 +427,14 @@ gui.OnTraceUpdate = function(self, func)
 		self.Fields[1]:SetText(traces[func].name)
 	end
 
-	local totalms = traces[func].total * 1000
-	local avgms = totalms / traces[func].count
-	avgms = avgms > 0 and avgms or 0
+	local total = traces[func].total * 1000
+	local avg =  total / traces[func].count
+	avg = avg > 0 and avg or 0
 	self.Fields[2]:SetFormattedText("%d", traces[func].count)
-	self.Fields[3]:SetFormattedText("%d", totalms)
-	self.Fields[4]:SetFormattedText("%d", avgms)
-	self.Fields[5]:SetFormattedText("%d", traces[func].min and traces[func].min * 1000 or 0)
-	self.Fields[6]:SetFormattedText("%d", traces[func].max and traces[func].max * 1000 or 0)
+	self.Fields[3]:SetFormattedText("%d",  total)
+	self.Fields[4]:SetFormattedText("%.2f", avg)
+	self.Fields[5]:SetFormattedText("%.2f", traces[func].min and traces[func].min * 1000 or 0)
+	self.Fields[6]:SetFormattedText("%.2f", traces[func].max and traces[func].max * 1000 or 0)
 	self.Fields[7]:SetFormattedText("%d", traces[func].memT * 1024)
 
 	if self.Removed ~= traces[func].removed then
@@ -501,9 +534,15 @@ gui.Sort = function(a, b)
 	elseif active == -3 then
 		return traces[a].total < traces[b].total	-- Time +
 	elseif active == 4 then
-		return traces[a].total / traces[a].count > traces[b].total / traces[b].count	-- Avg.Time -
+		local aAvg, bAvg = traces[a].total / traces[a].count, traces[b].total / traces[b].count	-- Avg.Time -
+		aAvg = aAvg > 0 and aAvg or 0
+		bAvg = bAvg > 0 and bAvg or 0
+		return aAvg > bAvg
 	elseif active == -4 then
-		return traces[a].total / traces[a].count < traces[b].total / traces[b].count	-- Avg.Time +
+		local aAvg, bAvg = traces[a].total / traces[a].count, traces[b].total / traces[b].count	-- Avg.Time +
+		aAvg = aAvg > 0 and aAvg or 0
+		bAvg = bAvg > 0 and bAvg or 0
+		return aAvg < bAvg
 	elseif active == 5 then
 		local amin, bmin = traces[a].min, traces[b].min		-- Min Time -
 		if amin and bmin then
@@ -555,7 +594,7 @@ gui.OnUpdate = function(self, elapsed)
 		tMem = tMem + traces[func].memT
 		tTime = tTime + traces[func].total
 	end
-	gui.Totals:SetFormattedText("|cffffff00Totals:|r Functions = %d, Calls =  %d, Time = %d ms, Memory = %d kb.", #self.Sorted, tCalls, tTime * 1000, tMem)
+	gui.Totals:SetFormattedText("|cffffff00Totals:|r Functions = %d, Calls =  %d, Time = %d ms, Memory = %d kb.", #self.Sorted, tCalls, tTime, tMem)
 
 	-- Sort traces.
 	tsort(self.Sorted, self.Sort)
