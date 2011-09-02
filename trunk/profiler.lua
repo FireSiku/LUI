@@ -25,7 +25,7 @@ local defaultKillTime = 0.5
 local weakTable = {__mode = "k"}
 local traces = setmetatable({}, weakTable)
 local excludes = setmetatable({}, weakTable)
-local timeStack = {}
+local timeStack = 0
 
 -- Profiler.CreateError(name, reason)
 --[[
@@ -87,35 +87,34 @@ end
 -- timerStart()
 --[[
 	Notes.....: This is a wrapper for debugprofilestart and debugprofilestop. It takes their functionality and makes them work similarly to GetTime().
-				Because the timer start can be affected by other code, we track them in a stack to check against GetTime() later.
+				We count a time stack so we know when we can refresh the debug timer. Because debugprofilerstart can be called elsewhere; this might not
+				always return the correct time. But a small time error here or there doesn't outwheigh the precision gained.
 ]]
 local function timerStart()
-	if #timeStack == 0 then
+	if timeStack == 0 then
 		-- Start debug timer. We track a stack to freshen the debug profiler timer's start time.
 		debugprofilestart()
 	end
 
 	-- Increase stack and return new start time.
-	timeStack[#timeStack + 1] = GetTime()
+	timeStack = timeStack + 1
 	return debugprofilestop()
 end
 
 -- timerStop()
 --[[
 	Notes.....: This is a wrapper for debugprofilestart and debugprofilestop. It takes their functionality and makes them work similarly to GetTime().
-				We check the debug timer and compare it to GetTime(), if GetTime is larger then debugprofilestart has been called from another source.
-				In this case we return GetTime() instead of the debug timer.
+				Collects the precision timer and reduces the time stack.
 ]]
 local function timerStop()
 	-- Get times.
-	local ms = debugprofilestop()
-	local s; s, timeStack[#timeStack] = GetTime() - timeStack[#timeStack], nil
+	local time = debugprofilestop()
+		
+	-- Reduce time stack.
+	timeStack = timeStack - 1
 	
-	-- Convert GetTime to milliseconds.
-	s = s * 1000
-	
-	-- Return largest.	
-	return s > ms and s or ms
+	-- Return time.
+	return time
 end
 
 -- Profiler.Trace(func, name[, scope[, killTime]])
