@@ -17,7 +17,7 @@ local module = LUI.Profiler
 
 -- Localize functions.
 local abs, collectgarbage, error, format, getmetatable, GetTime = math.abs, collectgarbage, error, format, getmetatable, GetTime
-local print, setmetatable, tsort, tostring, type, wipe = print, setmetatable, table.sort, tostring, type, wipe
+local print, setmetatable, strfind, strlower, tsort, tostring, type, wipe = print, setmetatable, string.find, string.lower, table.sort, tostring, type, wipe
 
 -- Local variables.
 local defaultKillTime = 0.5
@@ -180,11 +180,14 @@ function module.Trace(func, name, scope, killTime)
 			traces[func].recurse = traces[func].recurse - 1
             
 			-- Update stats.
-			traces[func].total = traces[func].total + time
-			traces[func].last = time
-			traces[func].memT = traces[func].memT + mem
-			traces[func].memL = mem
 			traces[func].count = traces[func].count + 1
+			traces[func].last = time
+			traces[func].memL = mem
+			traces[func].memT = traces[func].memT + mem
+			traces[func].total = traces[func].total + time
+			-- - Max/Min
+			if not traces[func].max or time > traces[func].max then traces[func].max = time end
+			if not traces[func].min or time < traces[func].min then traces[func].min = time end
             
 			return r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15
 		end,
@@ -192,8 +195,10 @@ function module.Trace(func, name, scope, killTime)
 		count = 0,
 		killTime = killTime,
 		last = 0,
+		max = nil,
 		memL = 0,
 		memT = 0,
+		min = nil,
 		name = scope and scope.."."..name or name,
 		recurse = 0,
 		removed = false,
@@ -302,7 +307,7 @@ gui.Title = gui:CreateFontString()
 gui.Totals = gui:CreateFontString()
 
 -- Creators.
-local fields = {"Name", "Calls", "Time (ms)", "Memory (bytes)", "Kill Time (ms)"}
+local fields = {"Name", "Calls", "Time (ms)", "Avg. Time (ms)", "Min (ms)", "Max (ms)", "Memory (bytes)"}
 gui.NewField = function(self, field, width)
 	local f = CreateFrame("Frame", self:GetName()..": Field <"..field..">", self)
 	local last = self.Fields[#self.Fields]
@@ -315,8 +320,9 @@ gui.NewField = function(self, field, width)
 	f:SetBackdropBorderColor(0, 1, 0, 1)
 	f:SetBackdropColor(0, 0, 0, 0)
 	f:SetHeight(20)
+	f:ClearAllPoints()
 	if not last then
-		f:SetPoint("TOPLEFT", self, "TOPLEFT", 5, -35)
+		f:SetPoint("TOPLEFT", self.Totals, "BOTTOMLEFT", 0, -5)
 	else
 		f:SetPoint("TOPLEFT", last, "TOPRIGHT", 5)
 	end
@@ -333,34 +339,51 @@ gui.NewField = function(self, field, width)
 	f:RegisterForDrag("LeftButton")
 	f:SetMinResize(10, 20)
 	f:SetResizable(true)
-	f:SetScript("OnMouseUp", function(self)
-		local absf = abs(gui.Active)
-		if absf == self.Field then
-			gui.Active = -gui.Active
+	f:SetScript("OnMouseUp", function(self, button)
+		if button == "LeftButton" then
+			local absf = abs(gui.Active)
+			if absf == self.Field then
+				gui.Active = -gui.Active
 
-			if gui.Active > 0 then
-				self.Name:SetTextColor(0.4, 0.78, 1)
+				if gui.Active > 0 then
+					self.Name:SetTextColor(0.4, 0.78, 1)
+				else
+					self.Name:SetTextColor(1, 0, 1)
+				end
 			else
-				self.Name:SetTextColor(1, 0, 1)
+				gui.Fields[absf].Name:SetTextColor(0, 1, 0)
+				gui.Active = self.Field
+				self.Name:SetTextColor(0.4, 0.78, 1)
 			end
-		else
-			gui.Fields[absf].Name:SetTextColor(0, 1, 0)
-			gui.Active = self.Field
-			self.Name:SetTextColor(0.4, 0.78, 1)
-		end
 
-		-- Update.
-		gui:OnUpdate(1)
+			-- Update.
+			gui:OnUpdate(1)
+		else
+			if self:GetWidth() <= 11 then
+				self:SetWidth(self.lastWidth or 80)
+			else
+				self.lastWidth = self:GetWidth()
+				self:SetWidth(10)
+			end
+
+			self:ClearAllPoints()
+			if self.Field > 1 then
+				self:SetPoint("TOPLEFT", gui.Fields[self.Field - 1], "TOPRIGHT", 5)
+			else
+				self:SetPoint("TOPLEFT", gui.Totals, "BOTTOMLEFT", 0, -5)
+			end
+		end
 	end)
 	f:SetScript("OnDragStart", function(self)
 		self:StartSizing("RIGHT")
 	end)
 	f:SetScript("OnDragStop", function(self)
 		self:StopMovingOrSizing()
+		self:ClearAllPoints()
 		if self.Field > 1 then
 			self:SetPoint("TOPLEFT", gui.Fields[self.Field - 1], "TOPRIGHT", 5)
 		else
-			self:SetPoint("TOPLEFT", gui, "TOPLEFT", 5, -35)
+			self:SetPoint("TOPLEFT", gui.Totals, "BOTTOMLEFT", 0, -5)
 		end
 	end)
 end
@@ -369,11 +392,17 @@ gui.OnTraceUpdate = function(self, func)
 	if self.Func ~= func then
 		self.Func = func
 		self.Fields[1]:SetText(traces[func].name)
-		self.Fields[5]:SetFormattedText("%d", traces[func].killTime * 1000)						
 	end
+
+	local totalms = traces[func].total * 1000
+	local avgms = totalms / traces[func].count
+	avgms = avgms > 0 and avgms or 0
 	self.Fields[2]:SetFormattedText("%d", traces[func].count)
-	self.Fields[3]:SetFormattedText("%d", traces[func].total * 1000)
-	self.Fields[4]:SetFormattedText("%d", traces[func].memT * 1024)
+	self.Fields[3]:SetFormattedText("%d", totalms)
+	self.Fields[4]:SetFormattedText("%d", avgms)
+	self.Fields[5]:SetFormattedText("%d", traces[func].min and traces[func].min * 1000 or 0)
+	self.Fields[6]:SetFormattedText("%d", traces[func].max and traces[func].max * 1000 or 0)
+	self.Fields[7]:SetFormattedText("%d", traces[func].memT * 1024)
 
 	if self.Removed ~= traces[func].removed then
 		self.Removed = traces[func].removed
@@ -424,11 +453,16 @@ gui.Fields[3].Name:SetTextColor(0.4, 0.78, 1)
 gui:SetBackdrop({bgFile = "Interface/Tooltips/UI-Tooltip-Background", edgeFile = "Interface/Tooltips/UI-Tooltip-Border", tile = true, tileSize = 16, edgeSize = 8})
 gui:SetBackdropBorderColor(0, 0, 0, 0.2)
 gui:SetBackdropColor(0, 0, 0, 0.5)
-gui:SetHeight(300)
+gui:SetHeight(400)
 gui:SetPoint("CENTER", UIParent)
-gui:SetWidth(600)
+gui:SetWidth(725)
+-- - Title.
+gui.Title:SetPoint("TOP", gui, "TOP", 0, -5)
+gui.Title:SetFontObject(GameFontNormalSmall)
+gui.Title:SetText(gui:GetName())
+gui.Title:SetTextColor(0.4, 0.78, 1)
 -- - Session.
-gui.Session:SetPoint("TOPLEFT", gui, "TOPLEFT", 5, -5)
+gui.Session:SetPoint("TOPLEFT", gui, "TOPLEFT", 5, -20)
 gui.Session:SetFontObject(GameFontNormalSmall)
 gui.Session:SetFormattedText("|cffffff00Session Length:|r %d", GetTime() - gui.StartTime)
 gui.Session:SetTextColor(1, 1, 1)
@@ -439,11 +473,6 @@ gui.Slider:SetOrientation("VERTICAL")
 gui.Slider:SetPoint("TOPRIGHT", gui, "TOPRIGHT", -5, -20)
 gui.Slider:SetPoint("BOTTOMRIGHT", gui, "BOTTOMRIGHT", -5, 20)
 gui.Slider:SetValueStep(1)
--- - Title.
-gui.Title:SetPoint("TOP", gui, "TOP", 0, -5)
-gui.Title:SetFontObject(GameFontNormalSmall)
-gui.Title:SetText(gui:GetName())
-gui.Title:SetTextColor(0.4, 0.78, 1)
 -- - Totals.
 gui.Totals:SetPoint("TOPLEFT", gui.Session, "BOTTOMLEFT", 0, -5)
 gui.Totals:SetFontObject(GameFontNormalSmall)
@@ -454,9 +483,8 @@ gui.Totals:SetTextColor(1, 1, 1)
 -- - Frame.
 gui:EnableMouse(true)
 gui:RegisterForDrag("LeftButton", "RightButton")
-gui:SetMinResize(600, 300)
+--gui:SetMinResize(725, 400)
 gui:SetMovable(true)
-gui:SetResizable(true)
 gui.Sort = function(a, b)
 	-- Sort traces by active field.
 	local active = gui.Active
@@ -473,13 +501,41 @@ gui.Sort = function(a, b)
 	elseif active == -3 then
 		return traces[a].total < traces[b].total	-- Time +
 	elseif active == 4 then
-		return traces[a].memT > traces[b].memT	-- Memory -
+		return traces[a].total / traces[a].count > traces[b].total / traces[b].count	-- Avg.Time -
 	elseif active == -4 then
-		return traces[a].memT < traces[b].memT	-- Memory +
+		return traces[a].total / traces[a].count < traces[b].total / traces[b].count	-- Avg.Time +
 	elseif active == 5 then
-		return traces[a].killTime < traces[b].killTime	-- Kill time +
+		local amin, bmin = traces[a].min, traces[b].min		-- Min Time -
+		if amin and bmin then
+			return amin > bmin
+		else
+			return amin
+		end
 	elseif active == -5 then
-		return traces[a].killTime > traces[b].killTime	-- Kill time -
+		local amin, bmin = traces[a].min, traces[b].min		-- Min Time +
+		if amin and bmin then
+			return amin < bmin
+		else
+			return amin
+		end
+	elseif active == 6 then
+		local amax, bmax = traces[a].max, traces[b].max		-- Max Time -
+		if amax and bmax then
+			return amax > bmax
+		else
+			return amax
+		end
+	elseif active == -6 then
+		local amax, bmax = traces[a].max, traces[b].max		-- Max Time +
+		if amax and bmax then
+			return amax < bmax
+		else
+			return amax
+		end
+	elseif active == 7 then
+		return traces[a].memT > traces[b].memT	-- Memory -
+	elseif active == -7 then
+		return traces[a].memT < traces[b].memT	-- Memory +
 	else
 		return false
 	end
@@ -508,7 +564,7 @@ gui.OnUpdate = function(self, elapsed)
 	local t, s = #self.Traces, #self.Sorted
 	local slider = self.Slider:GetValue()
 	local total = t > s and t or s
-	total = total > 15 and 15 or total
+	total = total > 20 and 20 or total
 	for i = 1, total do
 		if self.Sorted[i + slider] then
 			-- Create new trace line.
@@ -548,18 +604,30 @@ end)
 -- Add pad to special frames, for "Esc" closure.
 tinsert(UISpecialFrames, gui:GetName())
 
--- Create slash command to open Profiler GUI.
-SLASH_LUIPROFILER1 = "/luiprofiler"
-SlashCmdList.LUIPROFILER = function()
+-- Profiler.Watch(filter)
+--[[
+	Notes.....: Loads GUI to watch all traced functions, or functions with filer in their name.
+]]
+function module.Watch(filter)
+	-- Clear watched traces.
+	wipe(gui.Sorted)
+
+	-- Check filter.
+	if filter and filter == "" then
+		filter = nil
+	end
+		
 	-- Collect traces.
-	wipe(gui.Sorted)	
-	for func in pairs(traces) do
-		gui.Sorted[#gui.Sorted + 1] = func
+	for func, info in pairs(traces) do
+		-- Check against filter.
+		if not filter or strfind(strlower(info.name), strlower(filter)) then
+			gui.Sorted[#gui.Sorted + 1] = func
+		end
 	end
 
 	-- Sort slider.
-	if #gui.Sorted > 15 then
-		gui.Slider:SetMinMaxValues(0, #gui.Sorted - 15)
+	if #gui.Sorted > 20 then
+		gui.Slider:SetMinMaxValues(0, #gui.Sorted - 20)
 		gui.Slider:SetValue(0)
 		gui.Slider:Show()
 	else
@@ -569,8 +637,12 @@ SlashCmdList.LUIPROFILER = function()
 
 	-- Show frame.
 	gui.dt = 1
-	gui:Show()
+	gui:Show()	
 end
+
+-- Create slash command to open Profiler GUI.
+SLASH_LUIPROFILER1 = "/luiprofiler"
+SlashCmdList.LUIPROFILER = module.Watch
 
 
 
