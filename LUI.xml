@@ -1,14 +1,14 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 	<!-- Error frame hook -->
-	<Script file="scripts\bugcatcher.lua"/>
+	<Script file="bugcatcher.lua"/>
 
 	<!-- Initialize LUI -->
 	<Include file="locale\locale.xml"/>
 	<Script file="init.lua"/>
-	<Script file="profiler.lua"/>
+	<Script file="tools\profiler.lua"/>
 	<Script file="debug.lua"/>
 	<Script file="devapi.lua"/>
-	<Script file="restore.lua"/>
+	<Script file="tools\restore.lua"/>
 	
 	<!-- oUF Core -->
 	<Include file="unitframes\core\ouf.xml"/>
