@@ -320,7 +320,7 @@ excludes[module.TraceScope] = true
 -- Create Profilers GUI.
 if not Enabled then return end
 
-module.GUI = CreateFrame("Frame", "LUI: Profiler")
+module.GUI = CreateFrame("Frame", format("LUI: Profiler (%s)", GetAddOnMetadata(addonname, "X-Curse-Packaged-Version")))
 local gui = module.GUI
 
 -- Apply frame settings.
@@ -496,7 +496,7 @@ gui.Title:SetTextColor(0.4, 0.78, 1)
 -- - Session.
 gui.Session:SetPoint("TOPLEFT", gui, "TOPLEFT", 5, -20)
 gui.Session:SetFontObject(GameFontNormalSmall)
-gui.Session:SetFormattedText("|cffffff00Session Length:|r %d", GetTime() - gui.StartTime)
+gui.Session:SetFormattedText("|cffffff00Session:|r %d seconds.", GetTime() - gui.StartTime)
 gui.Session:SetTextColor(1, 1, 1)
 -- - Slider
 gui.Slider:Enable()
@@ -584,7 +584,7 @@ gui.OnUpdate = function(self, elapsed)
 	self.dt = 0
 
 	-- Set session time.
-	self.Session:SetFormattedText("|cffffff00Session Length:|r %d", GetTime() - self.StartTime)
+	self.Session:SetFormattedText("|cffffff00Session:|r %d seconds.", GetTime() - self.StartTime)
 
 	-- Gather totals.
 	local tCalls, tMem, tTime = 0, 0, 0
