@@ -24,30 +24,22 @@ function module:SetCooldowns()
 	-- Local variables.
 	local DAY, HOUR, MINUTE = 86400, 3600, 60
 	local ICON_SIZE = 1 / 36
+	local Cooldown = CreateFrame("Cooldown", "LUI_Cooldown")
+	local metatable = getmetatable(Cooldown)
+	local precision = nil
+	local xOffset, yOffset = db.Text.XOffset, db.Text.YOffset
+	local minDuration, minScale = db.General.MinDuration, db.General.MinScale
+	local textSize = db.Text.Size
 
 	-- Create a timer object.
 	if not Timer then
 		Timer = {}
-		Timer.__mt = {
-			__index = function(self, k)
-				if Timer[k] then
-					return Timer[k]
-				elseif self.__old then
-					local __type = type(self.__old.__index)
-					if __type == "function" then
-						return self.__old.__index(self, k)
-					elseif __type == "table" then
-						return self.__old.__index[k]
-					end
-				end
-			end,
-		}
 		
 		-- Timer variables.
 		Timer.FontScale = setmetatable({}, {
 			__index = function(self, width)
 				local scale = width * ICON_SIZE
-				self[width] = scale > db.General.MinScale and scale * db.Text.Size
+				self[width] = scale > minScale and scale * textSize
 				return self[width]
 			end
 		})
@@ -67,13 +59,9 @@ function module:SetCooldowns()
 				[1] = {format = "%.1f", precision = 0.1},
 				[2] = {format = "%.2f", precision = 0.01},
 			},
-		}
-		Timer.TimeFormat = setmetatable(Timer.TimeFormat, {
-			__call = function(self, seconds)
+			Get = function(self, seconds)
 				if seconds < db.General.Threshold then
-					local precision = self.Precision[db.General.Precision]
-					self.Threshold.format = precision.format
-					return self.Threshold, seconds % precision.precision
+					return self.Threshold, seconds % precision
 				elseif seconds > DAY then
 					return self.Days, seconds % DAY
 				elseif seconds > HOUR then
@@ -84,79 +72,80 @@ function module:SetCooldowns()
 					return self.Seconds, seconds % 1
 				end
 			end,
-		})
+		}
+
+		-- Set initial threshold and precison values.
+		precision = Timer.TimeFormat.Precision[db.General.Precision]
+		Timer.TimeFormat.Threshold.format, precision = precision.format, precision.precision
 		
 		-- Timer methods.
-		function Timer:Assign(frame, start, duration)
+		function Timer:Assign(start, duration)
 			-- Check if frame already has a timer.
-			if frame.Timer then
-				if duration < db.General.MinDuration or not frame:IsVisible() then
-					frame.Timer:Stop()
+			if self.Timer then
+				if duration < minDuration or not self:IsVisible() then
+					self:Stop()
 				end
 				return
 			end
 
 			-- Check if frame is visible.
-			if not frame:IsVisible() then return end
+			if not self:IsVisible() then return end
 			
 			-- Check duration.
-			if duration < db.General.MinDuration then return end
+			if duration < minDuration or start <= 0 then return end
 			
 			-- Don't assign timers to frames that are too small.
-			if not self.FontScale[round(frame:GetWidth())] then return end
+			if not self.FontScale[round(self:GetWidth())] then return end
 
-			-- Get a timer.
-			local timer = self:Collect()
+			-- Don't assign timers to frames with OnHide or OnUpdate scripts.
+			if self:GetScript("OnHide") or self:GetScript("OnUpdate") then return end
 
 			-- Assign timer to frame.
-			frame.Timer = timer
-			timer.Frame = frame
+			self:Collect()
 
 			-- Set parent to frame.
-			timer:SetParent(frame)
+			self.Timer:SetParent(self)
 
 			-- Set all points.
-			timer:SetAllPoints(frame)
+			self.Timer:SetPoint("CENTER", self, "CENTER", xOffset, yOffset)
 
 			-- Check font scale.
-			timer:OnSizeChanged(frame:GetSize())
+			self:OnSizeChanged()
 
 			-- Start timer.
-			timer:Start(start, duration)
+			self:Start(start, duration)
 		end
 		
 		function Timer:Collect()
 			-- Collect an inactive timer or create a new one.
 			if #self.Stack > 0 then
 				-- Pop a timer from the stack.
-				local timer; timer, self.Stack[#self.Stack] = self.Stack[#self.Stack], nil
-				return timer
+				self.Timer, self.Stack[#self.Stack] = self.Stack[#self.Stack], nil
+				self.Timer.Frame = self
 			else
 				-- Create a new timer.
-				return self:New()
+				self:New()
 			end
 		end
 
 		function Timer:Disable()
 			-- Stop all timers.
 			for index, timer in pairs(self.Timers) do
-				timer:Stop()
+				if timer.Frame then
+					timer.Frame:Stop()
+				end
 			end
 		end
 
 		function Timer:New()
 			-- Create a timer inheriting the Timer object.
-			local timer = CreateFrame("Frame", "LUI_Cooldown_Timer"..(#self.Timers + 1))
-			timer.__old = getmetatable(timer)
-			timer = setmetatable(timer, self.__mt)
+			local timer = Cooldown:CreateFontString("LUI_Cooldown_Timer"..(#self.Timers + 1), "OVERLAY")
 			timer:Hide()
 
-			-- Create font string.
-			timer.text = timer:CreateFontString(nil, "OVERLAY")
-			timer.text:SetJustifyH("CENTER")
-			timer.text:SetShadowColor(0, 0, 0, 0.5)
-			timer.text:SetShadowOffset(2, -2)
-			timer.text:SetPoint("CENTER", db.Text.XOffset, db.Text.YOffset)
+			-- Setup font string.
+			timer:SetJustifyH("CENTER")
+			timer:SetShadowColor(0, 0, 0, 0.5)
+			timer:SetShadowOffset(2, -2)
 
 			-- Set timer settings.
 			timer.enabled = false
@@ -164,36 +153,32 @@ function module:SetCooldowns()
 			timer.fontScale = 0
 			timer.nextUpdate = 0
 			timer.start = 0
-			timer.text.r = 1
-			timer.text.g = 1
-			timer.text.b = 1
+			timer.r = 1
+			timer.g = 1
+			timer.b = 1
 		
-			-- Set scripts.
-			timer:SetScript("OnHide", self.Stop)
-
 			-- Add timer to timer list.
 			self.Timers[#self.Timers + 1] = timer
 
-			-- Return timer.
-			return timer
+			-- Assign timer.
+			self.Timer = timer
+			timer.Frame = self
 		end
 
-		function Timer:OnSizeChanged(width, height)
-			if not self.Frame then return end
-
+		function Timer:OnSizeChanged()
 			-- Get font scale.
-			local scale = self.FontScale[round(width)]
+			local scale = self.FontScale[round(self:GetWidth())]
 
 			-- Check font scale.
-			if self.fontScale == scale then return end
+			if self.Timer.fontScale == scale then return end
 			
 			-- Set new font scale.
-			self.fontScale = scale
+			self.Timer.fontScale = scale
 
 			-- Check if new scale is big enough.
-			if self.fontScale then
+			if self.Timer.fontScale then
 				-- Set new font scale.
-				self.text:SetFont(Media:Fetch("font", db.Text.Font), self.fontScale, db.Text.Flag)
+				self.Timer:SetFont(Media:Fetch("font", db.Text.Font), self.Timer.fontScale, db.Text.Flag)
 			else
 				-- Stop timer.
 				self:Stop()
@@ -201,13 +186,13 @@ function module:SetCooldowns()
 		end
 
 		function Timer:OnUpdate(elapsed)
-			self.nextUpdate = self.nextUpdate - elapsed
+			self.Timer.nextUpdate = self.Timer.nextUpdate - elapsed
 			
 			-- Throttle update.
-			if self.nextUpdate > 0 then return end
+			if self.Timer.nextUpdate > 0 then return end
 
 			-- Update timer
-			local timeLeft = self.duration - (GetTime() - self.start)
+			local timeLeft = self.Timer.duration - (GetTime() - self.Timer.start)
 			if timeLeft > 0 then
 				-- Update text.
 				self:Update(timeLeft)
@@ -218,6 +203,13 @@ function module:SetCooldowns()
 		end
 
 		function Timer:Refresh()
+			-- Update local settings.
+			precision = Timer.TimeFormat.Precision[db.General.Precision]
+			Timer.TimeFormat.Threshold.format, precision = precision.format, precision.precision
+			xOffset, yOffset = db.Text.XOffset, db.Text.YOffset
+			minDuration, minScale = db.General.MinDuration, db.General.MinScale
+			textSize = db.Text.Size
+
 			-- Reset font scale memoizing results.
 			wipe(self.FontScale)
 
@@ -228,11 +220,11 @@ function module:SetCooldowns()
 
 				-- Get font scale.
 				if timer.Frame then
-					timer:OnSizeChanged(timer.Frame:GetSize())
-				end
+					timer.Frame:OnSizeChanged()
 
-				-- Set new offsets.
-				timer.text:SetPoint("CENTER", db.Text.XOffset, db.Text.YOffset)
+					-- Set new offsets.
+					timer:SetPoint("CENTER", timer.Frame, "CENTER", xOffset, yOffset)
+				end
 
 				-- Set next update.
 				timer.nextUpdate = 0
@@ -241,68 +233,67 @@ function module:SetCooldowns()
 
 		function Timer:Start(start, duration)
 			-- Set timer variables.
-			self.enabled = true
-			self.duration = duration
-			self.nextUpdate = 0
-			self.start = start
+			self.Timer.enabled = true
+			self.Timer.duration = duration
+			self.Timer.nextUpdate = 0
+			self.Timer.start = start
 
 			-- Start timer.
+			self:SetScript("OnHide", self.Stop)
 			self:SetScript("OnUpdate", self.OnUpdate)
-			self:Show()
+			self.Timer:Show()
 		end
 
 		function Timer:Stop()
-			if not self.enabled then return end
+			if not self.Timer.enabled then return end
 
 			-- Disable timer.
-			self.enabled = false
+			self.Timer.enabled = false
 
 			-- Stop timer.
 			self:SetScript("OnUpdate", nil)
-			self:Hide()
+			self:SetScript("OnHide", nil)
+			self.Timer:Hide()
 
 			-- Unassign from frame.
-			self:SetParent(nil)
-			if self.Frame then
-				self.Frame.Timer = nil
-				self.Frame = nil
-			end
+			self.Timer:SetParent(Cooldown)			
+			self.Timer.Frame = nil
 
 			-- Push timer on to the stack.
-			self.Stack[#self.Stack + 1] = self
+			self.Timer, self.Stack[#self.Stack + 1] = nil, self.Timer
 		end
 
 		function Timer:Update(timeLeft)
 			-- Get format info and next update interval.
-			local info; info, self.nextUpdate = self.TimeFormat(timeLeft)
+			local info; info, self.Timer.nextUpdate = self.TimeFormat:Get(timeLeft)
 			
 			-- Set text.
 			timeLeft = info.factor == 1 and timeLeft or ceil(timeLeft * info.factor)
-			self.text:SetFormattedText(info.format, timeLeft)
+			self.Timer:SetFormattedText(info.format, timeLeft)
 			
 			-- Set text colour.
-			if info.color.r ~= self.text.r or info.color.g ~= self.text.g or info.color.b ~= self.text.b then
-				self.text.r, self.text.g, self.text.b = info.color.r, info.color.g, info.color.b
-				self.text:SetTextColor(info.color.r, info.color.g, info.color.b)
+			if info.color.r ~= self.Timer.r or info.color.g ~= self.Timer.g or info.color.b ~= self.Timer.b then
+				self.Timer.r, self.Timer.g, self.Timer.b = info.color.r, info.color.g, info.color.b
+				self.Timer:SetTextColor(info.color.r, info.color.g, info.color.b)
 			end
 		end
 
 		---[[	PROFILER
 		-- Add timer functions to profiler.
-		Profiler.TraceScope(Timer, "Timer", "LUI.Cooldown", nil, 1)
-		Profiler.TraceScope(getmetatable(Timer.TimeFormat), "TimeFormat", "LUI.Cooldown.Timer")
+		Profiler.TraceScope(Timer, "Timer", "LUI.Cooldown", nil, 2)
 		--]]
-	end
 
-	-- Hook the SetCooldown metamethod of all cooldown frames.
-	-- ActionButton1Cooldown is used here since its likely to always exist.
-	-- And I'd rather not create my own cooldown frame to preserve a tiny bit of memory.
-	self:SecureHook(getmetatable(ActionButton1Cooldown).__index, "SetCooldown", function(self, start, duration)
+		-- Copy Timer methods into the Cooldown metatable.
+		for k, v in pairs(Timer) do metatable.__index[k] = v end
+	end
+	
+	-- Hook the SetCooldown metamethod of all Cooldown frames.
+	self:SecureHook(metatable.__index, "SetCooldown", function(self, start, duration)
 		-- Skip frames that don't want a timer.
 		if self.noLUITimer then return end
 
 		-- Assign a timer.
-		Timer:Assign(self, start, duration)
+		self:Assign(start, duration)
 	end)
 end
 
@@ -363,7 +354,7 @@ function module:LoadOptions()
 	local options = {
 		General = self:NewGroup("General Settings", 1, {
 			Threshold = self:NewInputNumber("Cooldown Threshold", "The time at which your coodown text is colored differnetly and begins using specified precision.", 1, self.Refresh),
-			MinDuration = self:NewInputNumber("Minimum Duration", "The lowest cooldown duration that timers will be shown for.", 2),
+			MinDuration = self:NewInputNumber("Minimum Duration", "The lowest cooldown duration that timers will be shown for.", 2, self.Refresh),
 			Precision = self:NewSlider("Cooldown Precision", "How many decimal places will be shown once time is within the cooldown threshold.", 3, 0, 2, 1, self.Refresh),
 			MinScale = self:NewSlider("Minimum Scale", "The smallest size of icons that timers will be shown for.", 4, 0, 2, 0.1, self.Refresh),
 		}),
