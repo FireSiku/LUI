@@ -373,23 +373,7 @@ gui.NewField = function(self, field, width)
 	f:SetResizable(true)
 	f:SetScript("OnMouseUp", function(self, button)
 		if button == "LeftButton" then
-			local absf = abs(gui.Active)
-			if absf == self.Field then
-				gui.Active = -gui.Active
-
-				if gui.Active > 0 then
-					self.Name:SetTextColor(0.4, 0.78, 1)
-				else
-					self.Name:SetTextColor(1, 0, 1)
-				end
-			else
-				gui.Fields[absf].Name:SetTextColor(0, 1, 0)
-				gui.Active = self.Field
-				self.Name:SetTextColor(0.4, 0.78, 1)
-			end
-
-			-- Update.
-			gui:OnUpdate(1)
+			gui.SetActiveField(gui.Active == self.Field and -self.Field or self.Field)
 		else
 			if self:GetWidth() <= 11 then
 				self:SetWidth(self.lastWidth or 80)
@@ -419,32 +403,6 @@ gui.NewField = function(self, field, width)
 		end
 	end)
 end
-gui.OnTraceUpdate = function(self, func)
-	self:Show()
-	if self.Func ~= func then
-		self.Func = func
-		self.Fields[1]:SetText(traces[func].name)
-	end
-
-	local total = traces[func].total * 1000
-	local avg =  total / traces[func].count
-	avg = avg > 0 and avg or 0
-	self.Fields[2]:SetFormattedText("%d", traces[func].count)
-	self.Fields[3]:SetFormattedText("%d",  total)
-	self.Fields[4]:SetFormattedText("%.2f", avg)
-	self.Fields[5]:SetFormattedText("%.2f", traces[func].min and traces[func].min * 1000 or 0)
-	self.Fields[6]:SetFormattedText("%.2f", traces[func].max and traces[func].max * 1000 or 0)
-	self.Fields[7]:SetFormattedText("%d", traces[func].memT * 1024)
-
-	if self.Removed ~= traces[func].removed then
-		self.Removed = traces[func].removed
-		if self.Removed then
-			self.Fields[1]:SetTextColor(1, 0, 0)
-		else
-			self.Fields[1]:SetTextColor(1, 1, 1)
-		end
-	end
-end
 gui.NewTrace = function(self)
 	local f = CreateFrame("Frame", nil, self)
 	local last = self.Traces[#self.Traces]
@@ -471,6 +429,50 @@ gui.NewTrace = function(self)
 	end
 
 	f.Update = self.OnTraceUpdate
+end
+gui.OnTraceUpdate = function(self, func)
+	self:Show()
+	if self.Func ~= func then
+		self.Func = func
+		self.Fields[1]:SetText(traces[func].name)
+	end
+
+	local total = traces[func].total * 1000
+	local avg =  total / traces[func].count
+	avg = avg > 0 and avg or 0
+	self.Fields[2]:SetFormattedText("%d", traces[func].count)
+	self.Fields[3]:SetFormattedText("%d",  total)
+	self.Fields[4]:SetFormattedText("%.2f", avg)
+	self.Fields[5]:SetFormattedText("%.2f", traces[func].min and traces[func].min * 1000 or 0)
+	self.Fields[6]:SetFormattedText("%.2f", traces[func].max and traces[func].max * 1000 or 0)
+	self.Fields[7]:SetFormattedText("%d", traces[func].memT * 1024)
+
+	if self.Removed ~= traces[func].removed then
+		self.Removed = traces[func].removed
+		if self.Removed then
+			self.Fields[1]:SetTextColor(1, 0, 0)
+		else
+			self.Fields[1]:SetTextColor(1, 1, 1)
+		end
+	end
+end
+gui.SetActiveField = function(field)
+	local active = abs(gui.Active)
+	local absField = abs(field)
+	if active ~= absField then
+		-- Reset previous field.
+		gui.Fields[active].Name:SetTextColor(0, 1, 0)
+	end
+
+	gui.Active = field
+	if gui.Active > 0 then
+		gui.Fields[absField].Name:SetTextColor(0.4, 0.78, 1)
+	else
+		gui.Fields[absField].Name:SetTextColor(1, 0, 1)
+	end
+
+	-- Update.
+	gui:OnUpdate(1)	
 end
 
 -- Create fields.
@@ -642,11 +644,11 @@ end)
 -- Add pad to special frames, for "Esc" closure.
 tinsert(UISpecialFrames, gui:GetName())
 
--- Profiler.Watch(filter)
+-- Profiler.GUI.Watch(filter)
 --[[
 	Notes.....: Loads GUI to watch all traced functions, or functions with filer in their name.
 ]]
-function module.Watch(filter)
+gui.Watch = function(filter)
 	-- Clear watched traces.
 	wipe(gui.Sorted)
 
@@ -680,7 +682,7 @@ end
 
 -- Create slash command to open Profiler GUI.
 SLASH_LUIPROFILER1 = "/luiprofiler"
-SlashCmdList.LUIPROFILER = module.Watch
+SlashCmdList.LUIPROFILER = gui.Watch
 
 
 
