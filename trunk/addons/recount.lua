@@ -10,6 +10,7 @@ local addonname, LUI = ...
 LUI.Versions.recount = 3300
 
 local _, class = UnitClass("player")
+local Media = LibStub("LibSharedMedia-3.0")
 
 function LUI:InstallRecount()
 	if not IsAddOnLoaded("Recount") then return end
@@ -98,12 +99,12 @@ function LUI:InstallRecount()
 	elseif class== "DEATHKNIGHT" then
 		RecountSetClassColor("DEATHKNIGHT",1)
 	end
-	
+
 	Recount.db.profile.DetailWindowY = 143.0000041470295
 	Recount.db.profile.ConfirmDeleteGroup = false
 	Recount.db.profile.DetailWindowX = 281.0000099106976
 	Recount.db.profile.GraphWindowX = 0
-	
+
 	Recount.db.profile.Filters.Show.Pet = true
 	Recount.db.profile.Filters.Show.Ungrouped = false
 	Recount.db.profile.Filters.Data.Boss = false
@@ -112,11 +113,11 @@ function LUI:InstallRecount()
 	Recount.db.profile.Filters.TrackDeaths.Pet = false
 	Recount.db.profile.Filters.TrackDeaths.Boss = false
 	Recount.db.profile.Filters.TrackDeaths.Grouped = false
-	
+
 	Recount.db.profile.BarTexture = "Minimalist"
 	Recount.db.profile.CurDataSet = "CurrentFightData"
+	Recount.db.profile.Font = "Arial Narrow"
 	Recount.db.profile.BarTextColorSwap = false
-	Recount.db.profile.Font = "vibrocen"
 	Recount.db.profile.ConfirmDeleteRaid = false
 	
 	Recount:LockWindows(false)
@@ -154,7 +155,7 @@ frame:SetScript("OnEvent", function(self)
 	-- Create Recount font hack functions.
 	function self:FontSizeFix(string)
 		local Font, Height, Flags = string:GetFont()
-		string:SetFont(Font, LUI.db.profile.Recount.FontSize, Flags)
+		string:SetFont(Media:Fetch("font",  LUI.db.profile.Recount.Font), LUI.db.profile.Recount.FontSize, Flags)
 	end
 
 	function self:Hack()
@@ -173,6 +174,8 @@ frame:SetScript("OnEvent", function(self)
 				frame:FontSizeFix(v.LeftText)
 				frame:FontSizeFix(v.RightText)
 			end
+
+			self:ResizeMainWindow()
 		end
 	
 		-- Finished hack.
