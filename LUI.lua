@@ -93,6 +93,7 @@ LUI.defaults = {
 			DamageFontSizeCrit = 34,
 		},
 		Recount = {
+			Font = "vibrocen",
 			FontHack = true,
 			FontSize = 13,
 		},
@@ -1033,8 +1034,8 @@ local function getOptions()
 									name = "Font Size",
 									desc = "Set the font size for Recount's bars.",
 									type = "range",
-									min = 6,
-									max = 32,
+									min = 0,
+									max = 100,
 									step = 1,
 									disabled = function() return not IsAddOnLoaded("Recount") or not db.Recount.FontHack end,
 									hidden = function() return not IsAddOnLoaded("Recount") end,
@@ -1045,19 +1046,36 @@ local function getOptions()
 										end,
 									order = 5,
 								},
+								RecountFont = {
+									name = "Font",
+									desc = "Choose the font that Recount will use. This is to overcome issues with Recount loading before LUI.",
+									type = "select",
+									disabled = function() return not IsAddOnLoaded("Recount") end,
+									hidden = function() return not IsAddOnLoaded("Recount") end,
+									dialogControl = "LSM30_Font",
+									values = widgetLists.font,
+									get = function()
+											return db.Recount.Font
+										end,
+									set = function(self, font)
+											db.Recount.Font = font
+											Recount:BarsChanged()
+										end,
+									order = 6,
+								},
 								Header3 = {
 									name = "Restore ALL Addon Defaults",
 									type = "header",
-									order = 6,
+									order = 7,
 								},
 								ResetDesc = {
-									order = 7,
+									order = 8,
 									width = "full",
 									type = "description",
 									name = "ATTENTION:\nAll SavedVariables from Grid, Recount, Omen, Bartender and ForteXorcist will be resetted!"
 								},
 								Reset = {
-									order = 8,
+									order = 9,
 									type = "execute",
 									name = "Restore Defaults",
 									func = function()
