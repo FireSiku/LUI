@@ -21,12 +21,6 @@ local vengeance = GetSpellInfo(93098)
 
 LUI.Versions.vengeance = 2.0
 
-local tooltip = CreateFrame("GameTooltip", "LUIVengeanceTooltip", UIParent, "GameTooltipTemplate")
-local tooltiptext = _G[tooltip:GetName().."TextLeft2"]
-
-tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-tooltiptext:SetText("")
-
 local ToggleTestMode = function()
 	if LUIVengeance.Testmode then
 		LUIVengeance.Testmode = nil
@@ -47,22 +41,16 @@ local ValueChanged = function(bar, event, unit)
 		return
 	end
 	
-	local name = UnitAura("player", vengeance, nil, "PLAYER|HELPFUL")
-	
-	if name then
-		tooltip:ClearLines()
-		tooltip:SetUnitBuff("player", name)
-		local value = tonumber(string.match(tooltiptext:GetText(), "%d+")) or -1
-		
-		if value > 0 then
-			if value > bar.max then value = bar.max end
-			if value == bar.value then return end
+	local name,_,_,_,_,_,_,_,_,_,_,_,_, value = UnitAura("player", vengeance, nil, "PLAYER|HELPFUL")
+
+	if value and value > 0 then
+		if value > bar.max then value = bar.max end
+		if value == bar.value then return end
 			
-			bar:SetMinMaxValues(0, bar.max)
-			bar:SetValue(value)
-			bar.value = value
-			bar:Show()
-		end
+		bar:SetMinMaxValues(0, bar.max)
+		bar:SetValue(value)
+		bar.value = value
+		bar:Show()
 	elseif InCombatLockdown() then
 		bar:Show()
 		bar:SetMinMaxValues(0, 1)
