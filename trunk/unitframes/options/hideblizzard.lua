@@ -55,9 +55,8 @@ local hidden, hide, show = {}
 do
 	local hook = setmetatable({}, {
 		__call = function(t, unit, hookto)
-			if t[unit] and t[unit][hookto] then return end
-			t[unit] = t[unit] or {}
-			t[unit][hookto] = true
+			if t[unit] then return end
+			t[unit] = true
 			
 			hooksecurefunc(hookto, function()
 				if hidden[unit] then
@@ -95,6 +94,7 @@ do
 			UIParent:UnregisterEvent("RAID_ROSTER_UPDATE")
 		end,
 		raid = function()
+			CompactRaidFrameManager:UnregisterEvent("PARTY_MEMBERS_CHANGED")
 			CompactRaidFrameManager:UnregisterEvent("RAID_ROSTER_UPDATE")
 			CompactRaidFrameManager:UnregisterEvent("PLAYER_ENTERING_WORLD")
 			CompactRaidFrameManager:Hide()
@@ -103,7 +103,6 @@ do
 				CompactRaidFrameManager_SetSetting("IsShown", "0")
 			end
 			hook("raid", "CompactRaidFrameManager_UpdateShown")
-			hook("raid", "CompactUnitFrame_UpateVisible")
 		end,
 		boss = function()
 			for i = 1, MAX_BOSS_FRAMES do
@@ -228,7 +227,7 @@ do
 	end
 end
 
-function module:Hide(unit)
+function module:Hide(unit, override)
 	argcheck(unit, "typeof", "string")
 	unit = unit:lower()
 	argcheck(unit, "isin", hide)
@@ -236,7 +235,7 @@ function module:Hide(unit)
 	if hidden[unit] then return end
 	
 	hidden[unit] = true
-	if self:IsEnabled() then
+	if self:IsEnabled() or override then
 		hide[unit]()
 	end
 	return true -- inform that unitframe was hidden

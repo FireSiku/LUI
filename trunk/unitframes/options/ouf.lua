@@ -1111,6 +1111,16 @@ local defaults = {
 }
 
 function module:LoadOptions()
+	local ToggleBlizzRaid = function(self, Enable)
+		if Enable then
+			Blizzard:Hide("raid", true)
+		else
+			Blizzard:Show("raid")
+		end
+	end
+	
+	local ufEnabled = function() return db.oUF.Settings.Enable end
+	
 	local ToggleV2 = function(self, Enable)
 		for _, f in pairs({"oUF_LUI_targettarget", "oUF_LUI_targettargettarget", "oUF_LUI_focustarget", "oUF_LUI_focus"}) do
 			if _G[f] then
@@ -1329,6 +1339,7 @@ function module:LoadOptions()
 					order = 2,
 					args = {
 						Enable = LUI:NewToggle("Enable oUF LUI", "Whether you want to use LUI UnitFrames or not", 1, db.oUF.Settings, "Enable", nil, function() StaticPopup_Show("RELOAD_UI") end),
+						HideBlizzardRaid = LUI:NewToggle("Disable Blizzard's Raid Frames", "Whether you want to disable Blizzard's Compact Raid Frames or not", 1.5, db.oUF.Settings, "HideBlizzRaid", nil, ToggleBlizzRaid, nil, ufEnabled, ufEnabled),
 						ShowV2Tex = LUI:NewToggle("Show LUI v2 Connector Frames", "Whether you want to show LUI v2 Frame Connectors or not.", 2, db.oUF.Settings, "show_v2_textures", LUI.defaults.profile.oUF.Settings, ToggleV2, nil, function() return not db.oUF.Settings.Enable end),
 						ShowV2Party = LUI:NewToggle("Show LUI v2 Connector Frames for Party Frames", "Whether you want to show LUI v2 Frame Connectors on the Party Frames or not.", 3, db.oUF.Settings, "show_v2_party_textures", LUI.defaults.profile.oUF.Settings, ToggleV2Party, nil, function() return not db.oUF.Settings.Enable end),
 						ShowV2Arena = LUI:NewToggle("Show LUI v2 Connector Frames for Arena Frames", "Whether you want to show LUI v2 Frame Connectors on the Arena Frames or not.", 4, db.oUF.Settings, "show_v2_arena_textures", LUI.defaults.profile.oUF.Settings, ToggleV2Arena, nil, function() return not db.oUF.Settings.Enable end),
