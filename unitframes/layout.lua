@@ -3347,7 +3347,12 @@ end
 -- "subframes" of groups, like party target are included within the party toggle
 -- has to be OnEnable
 function module:OnEnable()
-	if db.oUF.Settings.Enable ~= true then return end
+	if db.oUF.Settings.Enable ~= true then
+		if db.oUF.Settings.HideBlizzRaid then
+			self:Module("Blizzard"):Hide("raid", true)
+		end
+		return
+	end
 	
 	-- remove with LUI v3.6 or something like that!
 	if LUICONFIG.Versions.ouf ~= LUI.Versions.ouf then	
