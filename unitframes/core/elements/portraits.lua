@@ -24,7 +24,7 @@ local Update = function(self, event, unit)
 	else
 		SetPortraitTexture(portrait, unit)
 	end
-	
+
 	if(portrait.PostUpdate) then
 		return portrait:PostUpdate(unit)
 	end

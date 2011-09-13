@@ -6,6 +6,7 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Vengeance")
+local oUFmodule = LUI:Module("Unitframes")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -41,7 +42,7 @@ local ValueChanged = function(bar, event, unit)
 		return
 	end
 	
-	local name,_,_,_,_,_,_,_,_,_,_,_,_, value = UnitAura("player", vengeance, nil, "PLAYER|HELPFUL")
+	local value = select(14, UnitAura("player", vengeance, nil, "PLAYER|HELPFUL"))
 
 	if value and value > 0 then
 		if value > bar.max then value = bar.max end
@@ -264,7 +265,7 @@ function module:Refresh(...)
 	local r, g, b
 	local mu = db.Appearance.BGMultiplier
 	if db.Appearance.Color == "By Class" then
-		r, g, b = unpack(LUI.oUF_LUI.colors.class[class])
+		r, g, b = unpack(oUFmodule.colors.class[class])
 	else
 		r, g, b = db.Appearance.IndividualColor.r, db.Appearance.IndividualColor.g, db.Appearance.IndividualColor.b
 	end
@@ -280,7 +281,7 @@ function module:Refresh(...)
 	LUIVengeance.bg:SetVertexColor(r * mu, g * mu, b * mu)
 	
 	if db.Text.Color == "By Class" then
-		r, g, b = unpack(LUI.oUF_LUI.colors.class[class])
+		r, g, b = unpack(oUFmodule.colors.class[class])
 	else
 		r, g, b = db.Text.IndividualColor.r, db.Text.IndividualColor.g, db.Text.IndividualColor.b
 	end
@@ -299,11 +300,6 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
-	
-	-- Look for outdated db vars
-	if LUI.db.profile.oUF.Player.Vengeance then
-		LUI.db.profile.oUF.Player.Vengeance = nil
-	end
 	
 	if LUICONFIG.Versions.vengeance ~= LUI.Versions.vengeance then
 		db:ResetProfile()

@@ -24,8 +24,6 @@ local ACR = LibStub("AceConfigRegistry-3.0")
 
 LUI.Versions = {lui = 3403}
 
-LUI.oUF_LUI = {}
-
 LUI.dummy = function() return end
 
 -- REGISTER FONTS
@@ -951,6 +949,29 @@ local function getOptions()
 												db.General.DamageFontSizeCrit = DamageFontSizeCrit
 											end,
 									order = 50,
+								},
+								empty34457 = {
+									name = "   ",
+									width = "full",
+									type = "description",
+									order = 51,
+								},
+								HideBlizzardRaid = {
+									name = "Hide Blizzard Raid Frames",
+									desc = "Hide Blizzard Raid Frames (only available when LUI Unitframes are disabled)",
+									type = "toggle",
+									width = "full",
+									disabled = function() return LUI:Module("Unitframes").db.Enable end,
+									get = function() return LUI:Module("Unitframes").db.General.HideBlizzRaid end,
+									set = function(info, value)
+											LUI:Module("Unitframes").db.General.HideBlizzRaid = value
+											if value then
+												LUI.Module(LUI:Module("Unitframes"), "HideBlizzard"):Hide("raid")
+											else
+												LUI.Module(LUI:Module("Unitframes"), "HideBlizzard"):Show("raid")
+											end
+										end,
+									order = 52,
 								},
 							},
 						},

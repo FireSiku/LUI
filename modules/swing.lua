@@ -6,6 +6,7 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Swing")
+local oUFmodule = LUI:Module("Unitframes")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -552,7 +553,7 @@ function module:Refresh(...)
 	local r, g, b
 	local mu = db.Appearance.BGMultiplier
 	if db.Appearance.Color == "By Class" then
-		r, g, b = unpack(LUI.oUF_LUI.colors.class[class])
+		r, g, b = unpack(oUFmodule.colors.class[class])
 	else
 		r, g, b = db.Appearance.IndividualColor.r, db.Appearance.IndividualColor.g, db.Appearance.IndividualColor.b
 	end
@@ -607,11 +608,6 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
-	
-	-- Look for outdated db vars
-	if LUI.db.profile.oUF.Player.Swing then
-		LUI.db.profile.oUF.Player.Swing = nil
-	end
 	
 	if LUICONFIG.Versions.swing ~= LUI.Versions.swing then
 		db:ResetProfile()

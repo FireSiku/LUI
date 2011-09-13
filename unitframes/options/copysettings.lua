@@ -1,368 +1,17 @@
 --[[
 	Project....: LUI NextGenWoWUserInterface
 	File.......: copysettings.lua
-	Description: oUF CopySettings Module
-	Version....: 1.0
-	Notes......: This module contains the functions and options for the settings copy functions.
+	Description: oUF Copy Settings
 ]]
 
 local addonname, LUI = ...
-local module = LUI:Module("oUF_CopySettings")
-local oUFmodule = LUI:Module("oUF")
+local module = LUI:Module("Unitframes")
 local Fader = LUI:Module("Fader")
 local Forte = LUI:Module("Forte")
 
 local oUF = LUI.oUF
 
-local db
-
 local units = {"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "BossTarget", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet", "Raid"}
-
-local ufNamesList = {
-	Player = {"oUF_LUI_player"},
-	Target = {"oUF_LUI_target"},
-	ToT = {"oUF_LUI_targettarget"},
-	ToToT = {"oUF_LUI_targettargettarget"},
-	Focus = {"oUF_LUI_focus"},
-	FocusTarget = {"oUF_LUI_focustarget"},
-	Pet = {"oUF_LUI_pet"},
-	PetTarget = {"oUF_LUI_pettarget"},
-	Party = {},
-	PartyTarget = {},
-	PartyPet = {},
-	Boss = {},
-	BossTarget ={},
-	Maintank = {},
-	MaintankTarget = {},
-	MaintankToT = {},
-	Arena = {},
-	ArenaTarget = {},
-	ArenaPet = {},
-	Raid = {},
-}
-
-do
-	local ufNamesPrefix = {
-		Party = "oUF_LUI_partyUnitButton",
-		PartyTarget = "oUF_LUI_partyUnitButton",
-		PartyPet = "oUF_LUI_partyUnitButton",
-		Boss = "oUF_LUI_boss",
-		BossTarget = "oUF_LUI_bosstarget",
-		Maintank = "oUF_LUI_maintankUnitButton",
-		MaintankTarget = "oUF_LUI_maintankUnitButton",
-		MaintankToT = "oUF_LUI_maintankUnitButton",
-		Arena = "oUF_LUI_arena",
-		ArenaTarget = "oUF_LUI_arenatarget",
-		ArenaPet = "oUF_LUI_arenapet",
-	}
-	local ufNamesSuffix = {
-		PartyTarget = "target",
-		PartyPet = "pet",
-		MaintankTarget = "target",
-		MaintankToT = "targettarget",
-	}
-	local ufNamesCount = {
-		Party = 5,
-		PartyTarget = 5,
-		PartyPet = 5,
-		Boss = 4,
-		BossTarget = 4,
-		Maintank = 3,
-		MaintankTarget = 3,
-		MaintankToT = 3,
-		Arena = 5,
-		ArenaTarget = 5,
-		ArenaPet = 5,
-	}
-
-	-- adding group frames
-	for k, v in pairs(ufNamesList) do
-		if ufNamesCount[k] then
-			local prefix = ufNamesPrefix[k]
-			local suffix = ufNamesSuffix[k] or ""
-			for i = 1, ufNamesCount[k] do
-				ufNamesList[k][i] = prefix..i..suffix
-			end
-		end
-	end
-	
-	for i = 1, 5 do
-		for j = 1, 5 do
-			table.insert(ufNamesList.Raid, "oUF_LUI_raid_25_"..i.."UnitButton"..j)
-		end
-	end
-	
-	for i = 1, 8 do
-		for j = 1, 5 do
-			table.insert(ufNamesList.Raid, "oUF_LUI_raid_40_"..i.."UnitButton"..j)
-		end
-	end
-end
-
-local iconNamesList = {
-	PvP = {"PvP"},
-	Combat = {"Combat"},
-	Resting = {"Resting"},
-	Lootmaster = {"MasterLooter"},
-	Leader = {"Leader", "Assistant"},
-	Role = {"LFDRole"},
-	Raid = {"RaidIcon"},
-}
-
-local function ApplySettings(unit)
-	local ufNames = ufNamesList[unit]
-	
-	oUFmodule:Toggle(unit)
-	
-	if db.oUF[unit].Enable == false then return end
-	
-	for _, framename in pairs(ufNames) do
-		local frame = _G[framename]
-		
-		if frame then
-			frame:SetWidth(tonumber(db.oUF[unit].Width))
-			frame:SetHeight(tonumber(db.oUF[unit].Height))
-			
-			-- bars
-			LUI.oUF_LUI.funcs.Health(frame, frame.__unit, db.oUF[unit])
-			LUI.oUF_LUI.funcs.Power(frame, frame.__unit, db.oUF[unit])
-			LUI.oUF_LUI.funcs.Full(frame, frame.__unit, db.oUF[unit])
-			LUI.oUF_LUI.funcs.FrameBackdrop(frame, frame.__unit, db.oUF[unit])
-			
-			-- texts
-			LUI.oUF_LUI.funcs.Info(frame, frame.__unit, db.oUF[unit])
-			
-			LUI.oUF_LUI.funcs.HealthValue(frame, frame.__unit, db.oUF[unit])
-			LUI.oUF_LUI.funcs.HealthPercent(frame, frame.__unit, db.oUF[unit])
-			LUI.oUF_LUI.funcs.HealthMissing(frame, frame.__unit, db.oUF[unit])
-			
-			LUI.oUF_LUI.funcs.PowerValue(frame, frame.__unit, db.oUF[unit])
-			LUI.oUF_LUI.funcs.PowerPercent(frame, frame.__unit, db.oUF[unit])
-			LUI.oUF_LUI.funcs.PowerMissing(frame, frame.__unit, db.oUF[unit])
-			
-			-- icons
-			if db.oUF[unit].Icons then
-				for key, icons in pairs(iconNamesList) do
-					if db.oUF[unit].Icons[key] then
-						if db.oUF[unit].Icons[key].Enable then
-							LUI.oUF_LUI.funcs[icons[1]](frame, frame.__unit, db.oUF[unit])
-							frame:EnableElement(icons[1])
-							if icons[2] then frame:EnableElement(icons[2]) end
-						else
-							if frame[icons[1]] then
-								for _, icon in pairs(icons) do
-									frame:DisableElement(icon)
-								end
-							end
-						end
-					end
-				end
-			end
-			
-			-- player specific
-			if unit == "Player" then
-				-- exp/rep
-				LUI.oUF_LUI.funcs.Experience(frame, frame.__unit, db.oUF.XP_Rep)
-				LUI.oUF_LUI.funcs.Reputation(frame, frame.__unit, db.oUF.XP_Rep)
-				
-				if db.oUF.XP_Rep.Experience.Enable then
-					frame.Experience:Show()
-					if frame.Reputation then frame.Reputation:Hide() end
-				else
-					frame.Experience:Hide()
-					if frame.Reputation then frame.Reputation:Show() end
-				end
-				
-				-- swing
-				LUI.oUF_LUI.funcs.Swing(frame, frame.__unit, db.oUF.Player)
-				if db.oUF[unit].Swing.Enable then
-					frame:EnableElement("Swing")
-				else
-					frame:DisableElement("Swing")
-					frame.Swing:Hide()
-				end
-				
-				-- vengeance
-				if class == "WARRIOR" or class == "PALADIN" or class == "DRUID" or class == "DEATHKNIGHT" or class == "DEATH KNIGHT" then
-					LUI.oUF_LUI.funcs.Vengeance(frame, frame.__unit, db.oUF.Player)
-					if db.oUF[unit].Vengeance.Enable then
-						frame:EnableElement("Vengeance")
-					else
-						frame:DisableElement("Vengeance")
-						frame.Vengeance:Hide()
-					end
-				end
-				
-				-- totems
-				if class == "SHAMAN" then
-					LUI.oUF_LUI.funcs.TotemBar(frame, frame.__unit, db.oUF.Player)
-					if db.oUF[unit].Totems.Enable then
-						frame:EnableElement("TotemBar")
-					else
-						frame:DisableElement("TotemBar")
-						frame.TotemBar:Hide()
-					end
-				end
-				
-				-- runes
-				if class == "DEATHKNIGHT" or class == "DEATH KNIGHT" then
-					LUI.oUF_LUI.funcs.Runes(frame, frame.__unit, db.oUF.Player)
-					if db.oUF[unit].Runes.Enable then
-						frame:EnableElement("Runes")
-					else
-						frame:DisableElement("Runes")
-						frame.Runes:Hide()
-					end
-				end
-				
-				-- holy power
-				if class == "PALADIN" then
-					LUI.oUF_LUI.funcs.HolyPower(frame, frame.__unit, db.oUF.Player)
-					if db.oUF[unit].HolyPower.Enable then
-						frame:EnableElement("HolyPower")
-					else
-						frame:DisableElement("HolyPower")
-						frame.HolyPower:Hide()
-					end
-				end
-				
-				-- soul shards
-				if class == "WARLOCK" then
-					LUI.oUF_LUI.funcs.SoulShards(frame, frame.__unit, db.oUF.Player)
-					if db.oUF[unit].SoulShards.Enable then
-						frame:EnableElement("SoulShards")
-					else
-						frame:DisableElement("SoulShards")
-						frame.SoulShards:Hide()
-					end
-				end
-				
-				-- druid eclipse
-				if class == "DRUID" then
-					LUI.oUF_LUI.funcs.EclipseBar(frame, frame.__unit, db.oUF.Player)
-					if db.oUF[unit].Eclipse.Enable then
-						frame:EnableElement("EclipseBar")
-					else
-						frame:DisableElement("EclipseBar")
-						frame.EclipseBar:Hide()
-					end
-				end
-				
-				-- druid mana bar
-				if class == "DRUID" then
-					LUI.oUF_LUI.funcs.DruidMana(frame, frame.__unit, db.oUF.Player)
-					if db.oUF[unit].DruidMana.Enable then
-						frame:EnableElement("DruidMana")
-					else
-						frame:DisableElement("DruidMana")
-						frame.DruidMana.SetPosition()
-					end
-				end
-			end
-			
-			-- target specific
-			if unit == "Target" then
-				LUI.oUF_LUI.funcs.CPoints(frame, frame.__unit, db.oUF.Target)
-				if db.oUF.Target.ComboPoints.Enable then
-					frame:EnableElement("CPoints")
-				else
-					frame:DisableElement("CPoints")
-					frame.CPoints:Hide()
-				end
-			end
-			
-			-- portrait
-			if db.oUF[unit].Portrait and db.oUF[unit].Portrait.Enable then
-				LUI.oUF_LUI.funcs.Portrait(frame, frame.__unit, db.oUF[unit])
-				frame:EnableElement("Portrait")
-			else
-				if frame.Portrait then frame:DisableElement("Portrait") end
-			end
-			
-			-- alt power
-			if unit == "Player" or unit == "Pet" then
-				if db.oUF.Player.AltPower.Enable then
-					LUI.oUF_LUI.funcs.AltPowerBar(frame, frame.__unit, db.oUF[unit])
-					frame:EnableElement("AltPowerBar")
-					frame.AltPowerBar.SetPosition()
-				else
-					if frame.AltPowerBar then
-						frame:DisableElement("AltPowerBar")
-						frame.AltPowerBar.SetPosition()
-					end
-				end
-			end
-			
-			-- auras
-			if db.oUF[unit].Auras then
-				if db.oUF[unit].Auras.buffs_enable then
-					LUI.oUF_LUI.funcs.Buffs(frame, frame.__unit, db.oUF[unit])
-				else
-					if frame.Buffs then frame.Buffs:Hide() end
-				end
-				
-				if db.oUF[unit].Auras.debuffs_enable then
-					LUI.oUF_LUI.funcs.Debuffs(frame, frame.__unit, db.oUF[unit])
-				else
-					if frame.Debuffs then Frame.Debuffs:Hide() end
-				end
-				
-				if db.oUF[unit].Auras.buffs_enable or db.oUF[unit].Auras.debuffs_enable then
-					frame:EnableElement("Auras")
-				else
-					frame:DisableElement("Auras")
-				end
-			end
-			
-			-- combat feedback text
-			if db.oUF[unit].Texts.Combat then LUI.oUF_LUI.funcs.CombatFeedbackText(frame, frame.__unit, db.oUF[unit]) end
-			
-			-- castbar
-			if db.oUF.Settings.Castbars and db.oUF[unit].Castbar then
-				if db.oUF[unit].Castbar.Enable then
-					LUI.oUF_LUI.funcs.Castbar(frame, frame.__unit, db.oUF[unit])
-					frame:EnableElement("Castbar")
-				else
-					frame:DisableElement("Castbar")
-				end
-			end
-			
-			-- aggro glow
-			if db.oUF[unit].Border.Aggro then
-				LUI.oUF_LUI.funcs.AggroGlow(frame, frame.__unit, db.oUF[unit])
-				frame:EnableElement("Threat")
-			else
-				frame:DisableElement("Threat")
-			end
-			
-			-- heal prediction
-			if db.oUF[unit].HealPrediction then
-				if db.oUF[unit].HealPrediction.Enable then
-					LUI.oUF_LUI.funcs.HealPrediction(frame, frame.__unit, db.oUF[unit])
-					frame:EnableElement("HealPrediction")
-				else
-					frame:DisableElement("HealPrediction")
-				end
-			end
-			
-			if frame.V2Tex then frame.V2Tex:Reposition() end
-			if frame._V2Tex then frame._V2Tex:Reposition() end
-			
-			-- fader
-			if db.oUF[unit].Fader then
-				if db.oUF[unit].Fader.Enable then
-					Fader:RegisterFrame(frame, db.oUF[unit].Fader)
-				else
-					Fader:UnregisterFrame(frame)
-				end
-			end
-			
-			frame:UpdateAllElements()
-		end
-	end
-	
-	if Forte and unit == "Player" or unit == "Target" then Forte:SetPosForte() end
-end
 
 local function CopySettings(srcTable, dstTable, withSizes, withPosition)
 	if type(srcTable) ~= "table" then return end
@@ -387,43 +36,43 @@ end
 
 local CopyFuncs = {
 	Castbar = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(db.oUF[srcUnit].Aura, db.oUF[dstUnit].Aura, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].Castbar, module.db[dstUnit].Castbar, withSizes, withPosition)
 	end,
 	
-	Aura = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(db.oUF[srcUnit].Castbar, db.oUF[dstUnit].Castbar, withSizes, withPosition)
+	Auras = function(srcUnit, dstUnit, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].Aura, module.db[dstUnit].Aura, withSizes, withPosition)
 	end,
 	
 	Bars = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(db.oUF[srcUnit].Health, db.oUF[dstUnit].Health, withSizes, withPosition)
-		CopySettings(db.oUF[srcUnit].Power, db.oUF[dstUnit].Power, withSizes, withPosition)
-		CopySettings(db.oUF[srcUnit].Full, db.oUF[dstUnit].Full, withSizes, withPosition)
-		CopySettings(db.oUF[srcUnit].HealPrediction, db.oUF[dstUnit].HealPrediction, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].Health, module.db[dstUnit].Health, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].Power, module.db[dstUnit].Power, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].Full, module.db[dstUnit].Full, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].HealPrediction, module.db[dstUnit].HealPrediction, withSizes, withPosition)
 	end,
 	
 	Icons = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(db.oUF[srcUnit].Icons, db.oUF[dstUnit].Icons, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].Icons, module.db[dstUnit].Icons, withSizes, withPosition)
 	end,
 	
 	Background = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(db.oUF[srcUnit].Backdrop, db.oUF[dstUnit].Backdrop, withSizes, withPosition)
-		CopySettings(db.oUF[srcUnit].Border, db.oUF[dstUnit].Border, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].Backdrop, module.db[dstUnit].Backdrop, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].Border, module.db[dstUnit].Border, withSizes, withPosition)
 	end,
 	
 	Texts = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(db.oUF[srcUnit].Texts, db.oUF[dstUnit].Texts, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].Texts, module.db[dstUnit].Texts, withSizes, withPosition)
 	end,
 	
 	Portrait = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(db.oUF[srcUnit].Portrait, db.oUF[dstUnit].Portrait, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].Portrait, module.db[dstUnit].Portrait, withSizes, withPosition)
 	end,
 	
 	Fader = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(db.oUF[srcUnit].Fader, db.oUF[dstUnit].Fader, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].Fader, module.db[dstUnit].Fader, withSizes, withPosition)
 	end,
 	
 	All = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(db.oUF[srcUnit], db.oUF[dstUnit], withSizes, withPosition)
+		CopySettings(module.db[srcUnit], module.db[dstUnit], withSizes, withPosition)
 	end
 }
 
@@ -441,48 +90,71 @@ StaticPopupDialogs["COPY_SETTINGS"] = {
 	button2 = "No",
 	OnAccept = function(self)
 			CopyFuncs[settings.toCopy](settings.srcUnit, settings.dstUnit, settings.withSizes, settings.withPosition)
-			ApplySettings(settings.dstUnit)
+			module.ApplySettings(settings.dstUnit)
 		end,
 	timeout = 0,
 	whileDead = true,
 	hideOnEscape = true,
 }
+
+local Current = function()
+	local s = "Currently copying "..settings.toCopy.." from "..settings.srcUnit
+	if settings.withSizes and settings.withPosition then
+		s = s..", including Sizes and Positions"
+	elseif settings.withSizes then
+		s = s..", including Sizes"
+	elseif settings.withPosition then
+		s = s..", including Positions"
+	end
+	s = s.."."
+	return s
+end
+
+function module:CreateCopyOptions(unit, order)
+	local disabledFunc = function()
+		if settings.toCopy == "All" or settings.toCopy == "Background" then return false end
+		if module.db[unit][settings.toCopy] then return false end
+		return true
+	end
 	
-function module:CreateCopySettings(unit, order)
-	if unit == "Raid" then return nil end
-	
-	local oufdb = db.oUF[unit]
-	local ufNames = ufNamesList[unit]
-	
+	-- partwise old way
 	local options = {
 		name = "Copy Settings",
 		type = "group",
-		disabled = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end,
 		order = order,
+		disabled = function() return not self.db.Enable end,
 		args = {
-			desc = LUI:NewDesc("This is the Unitframe copysettings page. Here you can choose which settings you want to copy from this or to this unitframe.", 1, "full"),
-			empty = LUI:NewEmpty(2),
-			Paste = LUI:NewExecute("Paste Settings", "Paste the chosen Settings.", 3, function() settings.dstUnit = unit; StaticPopup_Show("COPY_SETTINGS") end, nil, function() return (settings.toCopy == nil) end),
-			empty = LUI:NewEmpty(4),
-			Sizes = LUI:NewToggle("Include Sizes", "Whether you want to include Sizes in the Copy/Paste or not. This option is global for all frames.", 5, settings, "withSizes", nil, function() return end),
-			Position = LUI:NewToggle("Include Positions", "Whether you want to include Positions in the Copy/Paste or not. This option is global for all frames.", 6, settings, "withPosition", nil, function() return end),
-			empty = LUI:NewEmpty(7),
-			Castbar = oufdb.Castbar and LUI:NewExecute("Copy Castbar", "Move the Castbar Settings of this Unitframe into the temporary storage.", 8, function() settings.toCopy = "Castbar"; settings.srcUnit = unit end) or nil,
-			Aura = oufdb.Aura and LUI:NewExecute("Copy Aura", "Move the Aura Settings of this Unitframe into the temporary storage.", 9, function() settings.toCopy = "Aura"; settings.srcUnit = unit end) or nil,
-			Bars = LUI:NewExecute("Copy Bars", "Move the Bar Settings of this Unitframe into the temporary storage.", 10, function() settings.toCopy = "Bars"; settings.srcUnit = unit end),
-			Icons = oufdb.Icons and LUI:NewExecute("Copy Icons", "Move the Icon Settings of this Unitframe into the temporary storage.", 11, function() settings.toCopy = "Icons"; settings.srcUnit = unit end) or nil,
-			Background = LUI:NewExecute("Copy Background", "Move the Background Settings of this Unitframe into the temporary storage.", 12, function() settings.toCopy = "Background"; settings.srcUnit = unit end),
-			Texts = oufdb.Texts and LUI:NewExecute("Copy Texts", "Move the Text Settings of this Unitframe into the temporary storage.", 13, function() settings.toCopy = "Texts"; settings.srcUnit = unit end) or nil,
-			Portrait = LUI:NewExecute("Copy Portrait", "Move the Portrait Settings of this Unitframe into the temporary storage.", 14, function() settings.toCopy = "Portrait"; settings.srcUnit = unit end),
-			Fader = oufdb.Fader and LUI:NewExecute("Copy Fader", "Move the Fader Settings of this Unitframe into the temporary storage.", 15, function() settings.toCopy = "Fader"; settings.srcUnit = unit end) or nil,
-			All = LUI:NewExecute("Copy All", "Move all Settings of this Unitframe into the temporary storage.", 16, function() settings.toCopy = "All"; settings.srcUnit = unit end),
-		},
+			desc = self:NewDesc("This is the Unitframe CopySettings page. Here you can choose which settings you want to copy from this or to this Unitframes.", 1),
+			empty1 = self:NewDesc(" ", 2),
+			currently = self:NewDesc(Current, 3),
+			Paste = self:NewExecute("Paste Settings", "Paste the chosen Settings.", 4, function() settings.dstUnit = unit; StaticPopup_Show("COPY_SETTINGS") end, nil, nil, disabledFunc),
+			empty2 = self:NewDesc(" ", 5),
+			Sizes = {
+				name = "Include Sizes",
+				type = "toggle",
+				order = 6,
+				get = function() return settings.withSizes end,
+				set = function() settings.withSizes = not settings.withSizes end
+			},
+			Positions = {
+				name = "Include Positions",
+				type = "toggle",
+				order = 7,
+				get = function() return settings.withPosition end,
+				set = function() settings.withSizes = not settings.withPosition end
+			},
+			empty3 = self:NewDesc(" ", 8),
+			Castbar = self.db[unit].Castbar and self:NewExecute("Copy Castbar", "Move the Castbar Settings of this Unitframe into the temporary storage.", 8, function() settings.toCopy = "Castbar"; settings.srcUnit = unit end) or nil,
+			Aura = self.db[unit].Aura and self:NewExecute("Copy Aura", "Move the Aura Settings of this Unitframe into the temporary storage.", 9, function() settings.toCopy = "Auras"; settings.srcUnit = unit end) or nil,
+			Bars = self:NewExecute("Copy Bars", "Move the Bar Settings of this Unitframe into the temporary storage.", 10, function() settings.toCopy = "Bars"; settings.srcUnit = unit end),
+			Icons = self.db[unit].Icons and self:NewExecute("Copy Icons", "Move the Icon Settings of this Unitframe into the temporary storage.", 11, function() settings.toCopy = "Icons"; settings.srcUnit = unit end) or nil,
+			Background = self:NewExecute("Copy Background", "Move the Background Settings of this Unitframe into the temporary storage.", 12, function() settings.toCopy = "Background"; settings.srcUnit = unit end),
+			Texts = self:NewExecute("Copy Texts", "Move the Text Settings of this Unitframe into the temporary storage.", 13, function() settings.toCopy = "Texts"; settings.srcUnit = unit end),
+			Portrait = self:NewExecute("Copy Portrait", "Move the Portrait Settings of this Unitframe into the temporary storage.", 14, function() settings.toCopy = "Portrait"; settings.srcUnit = unit end),
+			Fader = self.db[unit].Fader and self:NewExecute("Copy Fader", "Move the Fader Settings of this Unitframe into the temporary storage.", 15, function() settings.toCopy = "Fader"; settings.srcUnit = unit end) or nil,
+			All = self:NewExecute("Copy All", "Move all Settings of this Unitframe into the temporary storage.", 16, function() settings.toCopy = "All"; settings.srcUnit = unit end),
+		}
 	}
 	
 	return options
-end
-
-function module:OnInitialize()	
-	self.db = LUI.db.profile
-	db = self.db
 end

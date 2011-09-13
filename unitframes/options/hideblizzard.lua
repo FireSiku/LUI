@@ -5,8 +5,8 @@
 ]]
 
 local addonname, LUI = ...
-local oUF = LUI:Module("oUF")
-local module = oUF:Module("HideBlizzard", "AceEvent-3.0", "AceHook-3.0")
+local oUF = LUI:Module("Unitframes")
+local module = LUI.Module(oUF, "HideBlizzard", "AceEvent-3.0", "AceHook-3.0") -- this can be embedded via prototype once we have more modules of modules
 
 local argcheck = LUI.argcheck
 
@@ -50,9 +50,48 @@ do
 	end
 end
 
-local partyShowHooked = false
 local hidden, hide, show = {}
 do
+	--[[
+	local hooks = setmetatable({
+		player_frame = function() -- for runebar
+			hooksecurefunc("PlayerFrame_HideVehicleTexture", function()
+				if hidden["runebar"] then
+					hide["runebar"]()
+				end
+			end)
+		end,
+		compact_party = function()
+			hooksecurefunc("CompactPartyFrame_UpdateShown", function()
+				if hidden["party"] then
+					hide["party"]()
+				end
+			end)
+		end,
+		raid_manager = function()
+			hooksecurefunc("CompactRaidFrameManager_UpdateShown", function()
+				if hidden["raid"] then
+					hide["raid"]()
+				end
+			end)
+		end,
+		arena_ui = function()
+			hooksecurefunc("Arena_LoadUI", function()
+				if hidden["arena"] then
+					hide["arena"]()
+				end
+			end)
+		end,
+	}, {
+		__call = function(t, k)
+			local func = t[k]
+			if func then
+				t[k] = nil
+				func()
+			end
+		end
+	})
+	--]]
 	local hook = setmetatable({}, {
 		__call = function(t, unit, hookto)
 			if t[unit] then return end
@@ -92,6 +131,18 @@ do
 			end
 			
 			UIParent:UnregisterEvent("RAID_ROSTER_UPDATE")
+			
+			if CompactPartyFrame then
+				CompactPartyFrame:UnregisterEvent("RAID_ROSTER_UPDATE")
+				CompactPartyFrame:Hide()
+				
+				if hook.party == "CompactPartyFrame_Generate" then
+					hook.party = nil
+				end
+				hook("party", "CompactPartyFrame_UpdateShown")
+			else
+				hook("party", "CompactPartyFrame_Generate")
+			end
 		end,
 		raid = function()
 			CompactRaidFrameManager:UnregisterEvent("PARTY_MEMBERS_CHANGED")
@@ -160,6 +211,18 @@ do
 			end
 
 			UIParent:RegisterEvent("RAID_ROSTER_UPDATE")
+			
+			if CompactPartyFrame then
+				CompactPartyFrame:RegisterEvent("PARTY_MEMBERS_CHANGED")
+				CompactPartyFrame:RegisterEvent("RAID_ROSTER_UPDATE")
+				if GetDisplayedAllyFrames then
+					if GetDisplayedAllyFrames() == "compact-party" then
+						CompactPartyFrame:Show()
+					end
+				elseif GetCVarBool("useCompactPartyFrames") and GetNumPartyMembers() > 0 and GetNumRaidMembers() == 0 then
+					CompactPartyFrame:Show()
+				end
+			end
 		end,
 		raid = function()
 			CompactRaidFrameManager:RegisterEvent("RAID_ROSTER_UPDATE")	
@@ -250,29 +313,12 @@ function module:Show(unit)
 	
 	hidden[unit] = nil
 	show[unit]()
-	return true -- inform that unitframe was shown
 end
 
 function module:IsUnitHideable(unit)
 	argcheck(unit, "typeof", "string")
 	
 	return hide[unit:lower()] ~= nil
-end
-
-function module:Update()
-	for unit in pairs(hide) do
-		if hidden[unit] then
-			hide[unit]()
-		else
-			show[unit]()
-		end
-	end
-end
-
-function module:OnEnable()
-	for unit in pairs(hidden) do
-		hide[unit]()
-	end
 end
 
 function module:OnDisable()

@@ -6,6 +6,7 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Threat")
+local oUFmodule = LUI:Module("Unitframes")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -222,7 +223,7 @@ function module:Refresh(...)
 	local r, g, b
 	local mu = db.Appearance.BGMultiplier
 	if db.Appearance.Color == "By Class" then
-		r, g, b = unpack(LUI.oUF_LUI.colors.class[class])
+		r, g, b = unpack(oUFmodule.colors.class[class])
 	elseif db.Appearance.Color == "Individual" then
 		r, g, b = db.Appearance.IndividualColor.r, db.Appearance.IndividualColor.g, db.Appearance.IndividualColor.b
 	end
@@ -238,7 +239,7 @@ function module:Refresh(...)
 	if r then LUIThreat.bg:SetVertexColor(r * mu, g * mu, b * mu) end
 	
 	if db.Text.Color == "By Class" then
-		r, g, b = unpack(LUI.oUF_LUI.colors.class[class])
+		r, g, b = unpack(oUFmodule.colors.class[class])
 	elseif db.Text.Color == "Individual" then
 		r, g, b = db.Text.IndividualColor.r, db.Text.IndividualColor.g, db.Text.IndividualColor.b
 	else
@@ -259,11 +260,6 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
-	
-	-- Look for outdated db vars
-	if LUI.db.profile.oUF.Player.ThreatBar then
-		LUI.db.profile.oUF.Player.ThreatBar = nil
-	end
 	
 	if LUICONFIG.Versions.threatbar ~= LUI.Versions.threatbar then
 		db:ResetProfile()
