@@ -1765,14 +1765,14 @@ module.funcs = {
 		
 		for i = 1, 4 do
 			self.TotemBar[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Totems.Texture))
-			self.TotemBar[i]:SetHeight(oufdb.Totems.Height)
+			self.TotemBar[i]:SetHeight(oufdb.Bars.Totems.Height)
 			self.TotemBar[i]:SetWidth((oufdb.Bars.Totems.Width - 3 * oufdb.Bars.Totems.Padding) / 4)
 
 			self.TotemBar[i]:ClearAllPoints()
 			if totemPoints[i] == 0 then
 				self.TotemBar[i]:SetPoint("LEFT", self.TotemBar, "LEFT", 0, 0)
 			else
-				self.TotemBar[i]:SetPoint("LEFT", self.TotemBar[totemPoints[i]], "RIGHT", oufdb.Totems.Padding, 0)
+				self.TotemBar[i]:SetPoint("LEFT", self.TotemBar[totemPoints[i]], "RIGHT", oufdb.Bars.Totems.Padding, 0)
 			end
 			
 			self.TotemBar[i].bg.multiplier = oufdb.Bars.Totems.Multiplier
