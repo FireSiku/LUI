@@ -1923,7 +1923,7 @@ module.funcs = {
 		if not self.EclipseBar then
 			self.EclipseBar = CreateFrame("Frame", nil, self)
 			self.EclipseBar:SetFrameLevel(6)
-			self.EclipseBar.ShowText = oufdb.Eclipse.Text.Enable
+			self.EclipseBar.ShowText = oufdb.Texts.Eclipse.Enable
 			self.EclipseBar.PostUnitAura = EclipseBarBuff
 			self.EclipseBar.PostUpdatePower = PostEclipseUpdate
 			if Forte then 
