@@ -49,6 +49,7 @@ Media:Register("statusbar", "LUI_Ruben", [[Interface\AddOns\LUI\media\textures\s
 Media:Register("statusbar", "Smelly", [[Interface\AddOns\LUI\media\textures\statusbars\Smelly.tga]])
 Media:Register("statusbar", "Neal", [[Interface\AddOns\LUI\media\textures\statusbars\Neal]])
 Media:Register("statusbar", "RenaitreMinion", [[Interface\AddOns\LUI\media\textures\statusbars\RenaitreMinion.tga]])
+Media:Register("statusbar", "Otravi", [[Interface\AddOns\LUI\media\textures\statusbars\Otravi.tga]])
 
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
