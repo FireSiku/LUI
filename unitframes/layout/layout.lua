@@ -102,8 +102,8 @@ local barticks = setmetatable({}, {
 	end,
 })
 	
-local channelingTicks = (( -- base time between ticks
-	class == "DRUID" and {
+local channelingTicks = ( -- base time between ticks
+	(class == "DRUID" and {
 		[GetSpellInfo(740)] = 2, -- Tranquility
 		[GetSpellInfo(16914)] = 1, -- Hurricane
 	}) or (class == "MAGE" and setmetatable({
@@ -1923,7 +1923,6 @@ module.funcs = {
 		if not self.EclipseBar then
 			self.EclipseBar = CreateFrame("Frame", nil, self)
 			self.EclipseBar:SetFrameLevel(6)
-			self.EclipseBar.ShowText = oufdb.Texts.Eclipse.Enable
 			self.EclipseBar.PostUnitAura = EclipseBarBuff
 			self.EclipseBar.PostUpdatePower = PostEclipseUpdate
 			if Forte then 
@@ -1954,12 +1953,12 @@ module.funcs = {
 			self.EclipseBar.FrameBackdrop:SetBackdropColor(0, 0, 0, 1)
 			self.EclipseBar.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
 
-			self.EclipseBar.LunarText = SetFontString(self.EclipseBar.LunarBar, Media:Fetch("font", oufdb.Eclipse.Text.Font), oufdb.Eclipse.Text.Size, oufdb.Eclipse.Text.Outline)
-			self.EclipseBar.SolarText = SetFontString(self.EclipseBar.SolarBar, Media:Fetch("font", oufdb.Eclipse.Text.Font), oufdb.Eclipse.Text.Size, oufdb.Eclipse.Text.Outline)
+			self.EclipseBar.LunarText = SetFontString(self.EclipseBar.LunarBar, Media:Fetch("font", oufdb.Texts.Eclipse.Font), oufdb.Texts.Eclipse.Size, oufdb.Texts.Eclipse.Outline)
+			self.EclipseBar.SolarText = SetFontString(self.EclipseBar.SolarBar, Media:Fetch("font", oufdb.Texts.Eclipse.Font), oufdb.Texts.Eclipse.Size, oufdb.Texts.Eclipse.Outline)
 		end
 
-		local x = oufdb.Eclipse.Lock and 0 or oufdb.Eclipse.X
-		local y = oufdb.Eclipse.Lock and 0.5 or oufdb.Eclipse.Y
+		local x = oufdb.Bars.Eclipse.Lock and 0 or oufdb.Bars.Eclipse.X
+		local y = oufdb.Bars.Eclipse.Lock and 0.5 or oufdb.Bars.Eclipse.Y
 
 		self.EclipseBar:SetHeight(oufdb.Bars.Eclipse.Height)
 		self.EclipseBar:SetWidth(oufdb.Bars.Eclipse.Width)
@@ -1973,7 +1972,7 @@ module.funcs = {
 		self.EclipseBar.SolarBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Eclipse.Texture))
 		self.EclipseBar.SolarBar:SetStatusBarColor(unpack(module.colors.eclipsebar.Solar))
 
-		self.EclipseBar.LunarText:SetFont( Media:Fetch("font", oufdb.Texts.Eclipse.Font), oufdb.Texts.Eclipse.Size, oufdb.Texts.Eclipse.Outline)
+		self.EclipseBar.LunarText:SetFont(Media:Fetch("font", oufdb.Texts.Eclipse.Font), oufdb.Texts.Eclipse.Size, oufdb.Texts.Eclipse.Outline)
 		self.EclipseBar.LunarText:ClearAllPoints()
 		self.EclipseBar.LunarText:SetPoint("LEFT", self.EclipseBar, "LEFT", oufdb.Texts.Eclipse.X, oufdb.Texts.Eclipse.Y)
 
@@ -1981,6 +1980,7 @@ module.funcs = {
 		self.EclipseBar.SolarText:ClearAllPoints()
 		self.EclipseBar.SolarText:SetPoint("RIGHT", self.EclipseBar, "RIGHT", - oufdb.Texts.Eclipse.X, oufdb.Texts.Eclipse.Y)
 
+		self.EclipseBar.ShowText = oufdb.Texts.Eclipse.Enable
 		if oufdb.Texts.Eclipse.Enable == true then
 			self.EclipseBar.LunarText:Show()
 			self.EclipseBar.SolarText:Show()
