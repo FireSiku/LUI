@@ -236,14 +236,12 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
-	print("ena")
 	for _, unit in pairs(unitsSpawn) do module.ToggleUnit(unit) end
 	
 	Forte:SetPosForte()
 end
 
 function module:OnDisable()
-	print("disa")
 	for _, unit in pairs(unitsSpawn) do module.ToggleUnit(unit, false) end
 	
 	if module.db.Settings.HideBlizzRaid then
