@@ -56,8 +56,9 @@ local ToggleMT = {
 	end,
 }
 
-module.Toggle = setmetatable({
+module.ToggleUnit = setmetatable({
 	Default = function(override, unit)
+		print(unit)
 		local x = module.db[unit].X / module.db[unit].Scale
 		local y = module.db[unit].Y / module.db[unit].Scale
 		
@@ -173,7 +174,7 @@ module.Toggle = setmetatable({
 				end
 			end
 			
-			module.Toggle("BossTarget")
+			module.ToggleUnit("BossTarget")
 		else
 			if module.db.Boss.UseBlizzard then
 				Blizzard:Show("boss")
@@ -188,7 +189,7 @@ module.Toggle = setmetatable({
 				end
 			end
 			
-			module.Toggle("BossTarget", false)
+			module.ToggleUnit("BossTarget", false)
 		end
 	end,
 	
@@ -331,8 +332,8 @@ module.Toggle = setmetatable({
 			SetCVar("useCompactPartyFrames", nil)
 			Blizzard:Hide("party")
 			
-			module.Toggle("PartyTarget")
-			module.Toggle("PartyPet")
+			module.ToggleUnit("PartyTarget")
+			module.ToggleUnit("PartyPet")
 		else
 			if module.db.Party.UseBlizzard then
 				Blizzard:Show("party")
@@ -351,8 +352,8 @@ module.Toggle = setmetatable({
 				oUF_LUI_party:Hide()
 			end
 			
-			module.Toggle("PartyTarget", false)
-			module.Toggle("PartyPet", false)
+			module.ToggleUnit("PartyTarget", false)
+			module.ToggleUnit("PartyPet", false)
 		end
 	end,
 	
@@ -480,8 +481,8 @@ module.Toggle = setmetatable({
 			
 			Blizzard:Hide("arena")
 			
-			module.Toggle("ArenaTarget")
-			module.Toggle("ArenaPet")
+			module.ToggleUnit("ArenaTarget")
+			module.ToggleUnit("ArenaPet")
 		else
 			if module.db.Arena.UseBlizzard == true then
 				Blizzard:Show("arena")
@@ -499,8 +500,8 @@ module.Toggle = setmetatable({
 				end
 			end
 			
-			module.Toggle("ArenaTarget", false)
-			module.Toggle("ArenaPet", false)
+			module.ToggleUnit("ArenaTarget", false)
+			module.ToggleUnit("ArenaPet", false)
 		end
 	end,
 	
@@ -621,7 +622,7 @@ module.Toggle = setmetatable({
 				tank:Show()
 			end
 			
-			module.Toggle("MaintankTarget")
+			module.ToggleUnit("MaintankTarget")
 		else
 			if oUF_LUI_maintank then
 				oUF_LUI_maintank:Hide()
@@ -632,7 +633,7 @@ module.Toggle = setmetatable({
 				end
 			end
 			
-			module.Toggle("MaintankTarget", false)
+			module.ToggleUnit("MaintankTarget", false)
 		end
 	end,
 	
@@ -649,13 +650,13 @@ module.Toggle = setmetatable({
 				end
 			end
 			
-			module.Toggle("MaintankToT")
+			module.ToggleUnit("MaintankToT")
 		else
 			for i = 1, 4 do
 				if _G["oUF_LUI_maintankUnitButton"..i.."target"] then _G["oUF_LUI_maintankUnitButton"..i.."target"]:Disable() end
 			end
 			
-			module.Toggle("MaintankToT", false)
+			module.ToggleUnit("MaintankToT", false)
 		end
 	end,
 	

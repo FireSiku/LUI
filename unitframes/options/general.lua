@@ -983,7 +983,7 @@ function module:CreateUnitOptions(unit, order)
 			t[info[#info]] = val
 		end
 		
-		module.Toggle(unit)
+		module.ToggleUnit(unit)
 		module.ApplySettings(unit)
 	end
 	
