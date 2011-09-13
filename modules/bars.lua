@@ -217,13 +217,16 @@ local SidebarSetAnchor = function(side, id)
 	local bardb = db["Sidebar"..side..id]
 	local sb = sidebars[side..id].Anchor
 	
+	if not bardb.Enable then
+		sb:Hide()
+		return
+	end
+	
 	sb:ClearAllPoints()
 	sb:SetPoint(side, UIParent, side, side == "Right" and 11 or -11, bardb.Offset)
 	sb:SetScale(1 / 0.85 * bardb.Scale)
+	sb:Show()
 	
-	sb[bardb.Enable and "Show" or "Hide"](sb)
-	
-	if not bardb.Enable then return end
 	if bardb.AutoPosEnable ~= true and isBarAddOnLoaded == true then return end
 	
 	local anchor = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..side..id
