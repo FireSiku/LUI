@@ -58,7 +58,6 @@ local ToggleMT = {
 
 module.ToggleUnit = setmetatable({
 	Default = function(override, unit)
-		print(unit)
 		local x = module.db[unit].X / module.db[unit].Scale
 		local y = module.db[unit].Y / module.db[unit].Scale
 		
