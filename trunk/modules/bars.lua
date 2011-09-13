@@ -1986,6 +1986,8 @@ function module:LoadOptions()
 			LoadLUI = self:NewExecute("Load LUI States", "Load the LUI Default Bar States.", 10, function() LoadStates(defaultstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
 			empty4 = self:NewDesc(" ", 11, nil, nil, isBarAddOnLoaded),
 			ToggleKB = self:NewExecute("Keybinds", "Toggles Keybinding mode.", 12, function() LibKeyBound:Toggle() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
+			empty5 = self:NewDesc(" ", 12),
+			Reset = self:NewExecute("Restore Defaults", "Restores Bar Default Settings. (Does NOT affect Bartender etc! For this go to General->AddOns)", 13, function() module.db:ResetProfile(); self:Refresh() end),
 		}),
 		TopTexture = self:NewGroup("Top Texture", 2, false, InCombatLockdown, {
 			header1 = self:NewHeader("Top Texture Settings", 0),
