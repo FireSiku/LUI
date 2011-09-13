@@ -2075,20 +2075,20 @@ module.funcs = {
 			self.DruidMana.bg = self.DruidMana:CreateTexture(nil, "BORDER")
 			self.DruidMana.bg:SetAllPoints(self.DruidMana)
 
-			self.DruidMana.Smooth = oufdb.DruidMana.Smooth
+			self.DruidMana.Smooth = oufdb.Bars.DruidMana.Smooth
 
 			self.DruidMana.value = SetFontString(self.DruidMana.ManaBar, Media:Fetch("font", oufdb.Texts.DruidMana.Font), oufdb.Texts.DruidMana.Size, oufdb.Texts.DruidMana.Outline)
 			self:Tag(self.DruidMana.value, "[druidmana2]")
 
 			self.DruidMana.SetPosition = function()
-				if not oufdb.DruidMana.OverPower then return end
+				if not oufdb.Bars.DruidMana.OverPower then return end
 				
 				if self.DruidMana:IsShown() then
 					self.Power:SetHeight(oufdb.Bars.Power.Height/2 - 1)
 					self.DruidMana:SetHeight(oufdb.Bars.Power.Height/2 - 1)
 				else
 					self.Power:SetHeight(oufdb.Bars.Power.Height)
-					self.DruidMana:SetHeight(oufdb.DruidMana.Height)
+					self.DruidMana:SetHeight(oufdb.Bars.DruidMana.Height)
 				end
 			end
 
