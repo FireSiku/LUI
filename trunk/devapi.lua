@@ -169,9 +169,11 @@ local function setColor(t, ...)
 	argcheck(t, "typeof", "table")
 	
 	if t.r then
-		t.r, t.g, t.b, t.a = ...
+		t.r, t.g, t.b = ...
+		if t.a then t.a = select(4, ...) end
 	else
-		t[1], t[2], t[3], t[4] = ...
+		t[1], t[2], t[3] = ...
+		if t[4] then t[4] = select(4, ...) end
 	end
 end
 

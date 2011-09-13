@@ -148,7 +148,7 @@ function Fader:UnregisterFrame(frame)
 	frame:SetAlpha((frame.Fader and frame.Fader.PreAlpha) or 1)
 
 	-- If currently fading, stop fading.
-	if frame.Fader.fading then
+	if frame.Fader and frame.Fader.fading then
 		self:StopFading(frame)
 	end
 

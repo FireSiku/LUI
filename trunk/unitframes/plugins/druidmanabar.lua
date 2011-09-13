@@ -1,10 +1,10 @@
 -- Druid Mana Bar for Cat and Bear forms
 -- Authors: Califpornia aka Ennie // some code taken from oUF`s EclipseBar element
+-- customized for LUI
 
-local _, ns = ...
-local oUF = ns.oUF or oUF
-
-local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
+local addonname, LUI = ...
+local oUF = LUI.oUF or oUF
+local module = LUI:Module("Unitframes")
 
 if not oUF then print"oUF_DruidMana: error: oUF not found" return end
 if(select(2, UnitClass('player')) ~= 'DRUID') then return end
@@ -35,11 +35,11 @@ local UNIT_POWER = function(self, event, unit, powerType)
 
 	local r, g, b
 	if(druidmana.colorClass and UnitIsPlayer(unit)) then
-		r, g, b = unpack(LUI.oUF_LUI.colors.class['DRUID'])
+		r, g, b = unpack(module.colors.class['DRUID'])
 	elseif(druidmana.colorSmooth) then
 		r, g, b = self.ColorGradient(min / max, unpack(oUF.smoothGradient or oUF.colors.smooth))
 	else
-		r, g, b = unpack(LUI.oUF_LUI.colors.power['MANA'])
+		r, g, b = unpack(module.colors.power['MANA'])
 	end
 	if(b) then
 		druidmana.ManaBar:SetStatusBarColor(r, g, b)

@@ -7,6 +7,7 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Forte", "AceHook-3.0")
+local oUFmodule = LUI:Module("Unitframes")
 local Bars = LUI:Module("Bars")
 
 local _, class = UnitClass("player")
@@ -353,7 +354,7 @@ function module:GetTimerIndexByName(name)
 	return FW:InstanceNameToIndex(name,FW.Settings.Timer,1);-- set to case sensitive
 end
 function module:GetTimerByName(name)
-	return FW.Settings.Timer.Instances[module:GetTimerIndexByName(name)];
+	return FW.Settings and FW.Settings.Timer.Instances[module:GetTimerIndexByName(name)] or nil;
 end
 function module:GetCooldown() -- should be replaced by proper function once cooldown cloning is enabled
 	return FW.Settings.Cooldown.Instances[1];
@@ -402,7 +403,7 @@ function module:SetFrameProps(instance,name)
 		if properties.offset and properties.offset[class] then
 			local setting,frame,index = unpack(properties.offset[class]);
 			frame = f[frame]; -- frame = index and f[frame][index] or f[frame];
-			if frame and LUI.db.profile.oUF[name][setting].Enable and LUI.db.profile.oUF[name][setting].Lock then
+			if frame and oUFmodule.db.profile[name].Bars[setting].Enable and oUFmodule.db.profile[name].Bars[setting].Lock then
 				if index then 
 					frame = frame[index];
 				end
@@ -429,7 +430,7 @@ function module:SetFrameProps(instance,name)
 end
 
 function module:SetPosForte() -- no self in this func (Forte_Core OnEvent callbacks)
-	if not LUI.isForteTimerLoaded or not LUI.db.profile.oUF.Settings.Enable then return end
+	if not LUI.isForteTimerLoaded or not oUFmodule.db.profile.Enable then return end
 
 	for name, data in pairs(timer_instances) do
 		if db[name].Enable and db[name].Lock then

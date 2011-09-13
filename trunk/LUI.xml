@@ -10,7 +10,7 @@
 	<Script file="devapi.lua"/>
 	<Script file="tools\restore.lua"/>
 	
-	<!-- oUF Core -->
+	<!-- Initialize oUF -->
 	<Include file="unitframes\core\ouf.xml"/>
 	
 	<!-- Core + Basic Modules -->
@@ -29,36 +29,6 @@
 	<Script file="addons\grid.lua"/>
 	<Script file="addons\omen.lua"/>
 	<Script file="addons\recount.lua"/>
-	
-	<!-- oUF Options -->
-	<Script file="unitframes\options\copysettings.lua"/>
-	<Script file="unitframes\options\ouf.lua"/>
-	<Script file="unitframes\options\hideblizzard.lua"/>
-	<Script file="unitframes\options\importexport.lua"/>
-	<Script file="unitframes\options\general.lua"/>
-	<Script file="unitframes\options\colors.lua"/>
-	
-	<!-- Unit Specific oUF Options -->
-	<Script file="unitframes\options\units\player.lua"/>
-	<Script file="unitframes\options\units\target.lua"/>
-	<Script file="unitframes\options\units\tot.lua"/>
-	<Script file="unitframes\options\units\totot.lua"/>
-	<Script file="unitframes\options\units\focus.lua"/>
-	<Script file="unitframes\options\units\focustarget.lua"/>
-	<Script file="unitframes\options\units\pet.lua"/>
-	<Script file="unitframes\options\units\pettarget.lua"/>
-	<Script file="unitframes\options\units\boss.lua"/>
-	<Script file="unitframes\options\units\bosstarget.lua"/>
-	<Script file="unitframes\options\units\party.lua"/>
-	<Script file="unitframes\options\units\partypet.lua"/>
-	<Script file="unitframes\options\units\partytarget.lua"/>
-	<Script file="unitframes\options\units\maintank.lua"/>
-	<Script file="unitframes\options\units\maintanktarget.lua"/>
-	<Script file="unitframes\options\units\maintanktot.lua"/>
-	<Script file="unitframes\options\units\arena.lua"/>
-	<Script file="unitframes\options\units\arenapet.lua"/>
-	<Script file="unitframes\options\units\arenatarget.lua"/>
-	<Script file="unitframes\options\units\raid.lua"/>
 	
 	<!-- Extended Modules -->
 	<Include file="modules\buffs.xml"/>
@@ -91,8 +61,42 @@
 	<Script file="scripts\talentspam.lua"/>
 	<Script file="scripts\blizzoptionsmover.lua"/>
 	
-	<!-- oUF Layout -->
+	<!-- Initialize Unitframes -->
 	<Include file="unitframes\templates.xml"/>
+	<Script file="unitframes\init.lua"/>
+	
+	<!-- Unitframe Default Values -->
+	<Script file="unitframes\defaults\player.lua"/>
+	<Script file="unitframes\defaults\target.lua"/>
+	<Script file="unitframes\defaults\tot.lua"/>
+	<Script file="unitframes\defaults\totot.lua"/>
+	<Script file="unitframes\defaults\focus.lua"/>
+	<Script file="unitframes\defaults\focustarget.lua"/>
+	<Script file="unitframes\defaults\pet.lua"/>
+	<Script file="unitframes\defaults\pettarget.lua"/>
+	<Script file="unitframes\defaults\boss.lua"/>
+	<Script file="unitframes\defaults\bosstarget.lua"/>
+	<Script file="unitframes\defaults\party.lua"/>
+	<Script file="unitframes\defaults\partypet.lua"/>
+	<Script file="unitframes\defaults\partytarget.lua"/>
+	<Script file="unitframes\defaults\maintank.lua"/>
+	<Script file="unitframes\defaults\maintanktarget.lua"/>
+	<Script file="unitframes\defaults\maintanktot.lua"/>
+	<Script file="unitframes\defaults\arena.lua"/>
+	<Script file="unitframes\defaults\arenapet.lua"/>
+	<Script file="unitframes\defaults\arenatarget.lua"/>
+	<Script file="unitframes\defaults\raid.lua"/>
+	
+	<!-- Unitframe Options -->
+	<Script file="unitframes\options\colors.lua"/>
+	<Script file="unitframes\options\copysettings.lua"/>
+	<Script file="unitframes\options\general.lua"/>
+	<Script file="unitframes\options\hideblizzard.lua"/>
+	<Script file="unitframes\options\importexport.lua"/>
+	<Script file="unitframes\options\movable.lua"/>
+	<Script file="unitframes\options\ouf.lua"/>
+	<Script file="unitframes\options\showhide.lua"/>
+	<Script file="unitframes\options\toggle.lua"/>
 	
 	<Script file="unitframes\plugins\druidmanabar.lua"/>
 	<Script file="unitframes\plugins\oUF_CombatFeedback.lua"/>
@@ -104,5 +108,8 @@
 	<Script file="unitframes\plugins\oUF_RaidDebuffs.lua"/>
 	<Script file="unitframes\plugins\raiddebuffs.lua"/>
 	
-    <Script file="unitframes\layout.lua"/>
+	<!-- Unitframe Layout -->
+	<Script file="unitframes\layout\tags.lua"/>
+	<Script file="unitframes\layout\meta.lua"/>
+	<Script file="unitframes\layout\layout.lua"/>
 </Ui>

@@ -1,106 +1,31 @@
 --[[
 	Project....: LUI NextGenWoWUserInterface
 	File.......: general.lua
-	Description: oUF General Module
-	Version....: 1.0
-	Notes......: This module contains all of the defaults and options that are contained within all of the UnitFrames.
-]] 
+	Description: oUF General Options
+]]
 
 local addonname, LUI = ...
-local module = LUI:Module("oUF_General")
-local oUFmodule = LUI:Module("oUF")
-local oUF_CopySettings = LUI:Module("oUF_CopySettings")
+local module = LUI:Module("Unitframes")
 local Fader = LUI:Module("Fader")
 local Forte = LUI:Module("Forte")
-local widgetLists = AceGUIWidgetLSMlists
-
 local oUF = LUI.oUF
 
-local db
+local _, class = UnitClass("player")
+
+local widgetLists = AceGUIWidgetLSMlists
 
 local units = {"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "BossTarget", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet", "Raid"}
 
-local ufNamesList = {
-	Player = {"oUF_LUI_player"},
-	Target = {"oUF_LUI_target"},
-	ToT = {"oUF_LUI_targettarget"},
-	ToToT = {"oUF_LUI_targettargettarget"},
-	Focus = {"oUF_LUI_focus"},
-	FocusTarget = {"oUF_LUI_focustarget"},
-	Pet = {"oUF_LUI_pet"},
-	PetTarget = {"oUF_LUI_pettarget"},
-	Party = {},
-	PartyTarget = {},
-	PartyPet = {},
-	Boss = {},
-	BossTarget ={},
-	Maintank = {},
-	MaintankTarget = {},
-	MaintankToT = {},
-	Arena = {},
-	ArenaTarget = {},
-	ArenaPet = {},
-	Raid = {},
+local iconlist = {
+	PvP = {"PvP"},
+	Combat = {"Combat"},
+	Resting = {"Resting"},
+	Lootmaster = {"MasterLooter"},
+	Leader = {"Leader", "Assistant"},
+	Role = {"LFDRole"},
+	Raid = {"RaidIcon"},
+	ReadyCheck = {"ReadyCheck"},
 }
-
-local ufNamesCount
-do
-	local ufNamesPrefix = {
-		Party = "oUF_LUI_partyUnitButton",
-		PartyTarget = "oUF_LUI_partyUnitButton",
-		PartyPet = "oUF_LUI_partyUnitButton",
-		Boss = "oUF_LUI_boss",
-		BossTarget = "oUF_LUI_bosstarget",
-		Maintank = "oUF_LUI_maintankUnitButton",
-		MaintankTarget = "oUF_LUI_maintankUnitButton",
-		MaintankToT = "oUF_LUI_maintankUnitButton",
-		Arena = "oUF_LUI_arena",
-		ArenaTarget = "oUF_LUI_arenatarget",
-		ArenaPet = "oUF_LUI_arenapet",
-	}
-	local ufNamesSuffix = {
-		PartyTarget = "target",
-		PartyPet = "pet",
-		MaintankTarget = "target",
-		MaintankToT = "targettarget",
-	}
-	ufNamesCount = {
-		Party = 5,
-		PartyTarget = 5,
-		PartyPet = 5,
-		Boss = 4,
-		BossTarget = 4,
-		Maintank = 3,
-		MaintankTarget = 3,
-		MaintankToT = 3,
-		Arena = 5,
-		ArenaTarget = 5,
-		ArenaPet = 5,
-	}
-
-	-- adding group frames
-	for k, v in pairs(ufNamesList) do
-		if ufNamesCount[k] then
-			local prefix = ufNamesPrefix[k]
-			local suffix = ufNamesSuffix[k] or ""
-			for i = 1, ufNamesCount[k] do
-				ufNamesList[k][i] = prefix..i..suffix
-			end
-		end
-	end
-	
-	for i = 1, 5 do
-		for j = 1, 5 do
-			table.insert(ufNamesList.Raid, "oUF_LUI_raid_25_"..i.."UnitButton"..j)
-		end
-	end
-	
-	for i = 1, 8 do
-		for j = 1, 5 do
-			table.insert(ufNamesList.Raid, "oUF_LUI_raid_40_"..i.."UnitButton"..j)
-		end
-	end
-end
 
 -- needed for moving frames and some other things
 local ufMover = {
@@ -124,42 +49,145 @@ local barColors = {
 	Power = {"By Class", "By Type", "Individual"}
 }
 
-local iconNamesList = {
-	PvP = {"PvP"},
-	Combat = {"Combat"},
-	Resting = {"Resting"},
-	Lootmaster = {"MasterLooter"},
-	Leader = {"Leader", "Assistant"},
-	Role = {"LFDRole"},
-	Raid = {"RaidIcon"},
-	ReadyCheck = {"ReadyCheck"},
+local barKeys = {
+	Totems = "TotemBar",
+	Runes = "Runes",
+	HolyPower = "HolyPower",
+	SoulShards = "SoulShards",
+	Eclipse = "EclipseBar",
+	AltPower = "AltPowerBar",
+}
+local barNames = {
+	Totems = "Totems",
+	Runes = "Runes",
+	HolyPower = "Holy Power",
+	SoulShards = "Soulshards",
+	Eclipse = "Eclipse",
+	AltPower = "Alternate Power",
 }
 
-local positions = {"TOP", "TOPRIGHT", "TOPLEFT","BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT", "RIGHT", "LEFT", "CENTER"}
-local directions = {"RIGHT", "TOP", "LEFT", "BOTTOM"}
 local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
-local justifications = {"LEFT", "CENTER", "RIGHT"}
+local directions = {"TOP", "BOTTOM", "RIGHT", "LEFT"}
+local positions = {"TOP", "TOPRIGHT", "TOPLEFT", "BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT", "RIGHT", "LEFT", "CENTER"}
+local justifications = {"RIGHT", "LEFT", "CENTER"}
 local valueFormat = {"Absolut", "Absolut & Percent", "Absolut Short", "Absolut Short & Percent", "Standard", "Standard Short"}
 local nameFormat = {"Name", "Name + Level", "Name + Level + Class", "Name + Level + Race + Class", "Level + Name", "Level + Name + Class", "Level + Class + Name", "Level + Name + Race + Class", "Level + Race + Class + Name"}
 local nameLenghts = {"Short", "Medium", "Long"}
 local growthY = {"UP", "DOWN"}
 local growthX = {"LEFT", "RIGHT"}
-local _, class = UnitClass("player")
 
-------------------------------------------------------------------------
---	Heal Prediction Option Constructor
-------------------------------------------------------------------------
-
-function module:CreateHealPredictionOptions(unit)
-	local hpdefaults = LUI.defaults.profile.oUF[unit].HealPrediction
-	local hpdb = db.oUF[unit].HealPrediction
-	local ufNames = ufNamesList[unit]
+function module.ToggleRangeFadeParty(enable) -- when the option calls this func, self will be info arg, so don't use self in here.
+	enable = enable or module.db.Party.RangeFade
 	
-	local ToggleFunc = function(Enable)
-		for _, frame in pairs(ufNames) do
+	for i, frame in ipairs(oUF_LUI_party) do
+		if enable then
+			frame.Range = frame.Range or {insideAlpha = 1, outsideAlpha = 0.5}
+			frame:EnableElement("Range")
+		else
+			frame:DisableElement("Range")
+			if frame.Range and (frame:GetAlpha() ~= frame.Range.insideAlpha) then
+				frame:SetAlpha(frame.Range.insideAlpha)
+			end
+		end
+	end
+end
+
+--------------------------------------------------------------------------
+--  Bar Option Constructors
+--------------------------------------------------------------------------
+
+-- barType: "XP", "Rep"
+function module:CreateXpRepOptionsPart(barType, order)
+	local barKey = (barType == "XP") and "Experience" or "Reputation"
+	
+	local disabledFunc = function() return not self.db.XP_Rep[barKey].Enable end
+	
+	local toggleFunc
+	if barType == "XP" then
+		toggleFunc = function()
+			if not oUF_LUI_player.XP then module.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, xprepdb) end
+			if self.db.XP_Rep.Experience.Enable then
+				oUF_LUI_player.XP:Show()
+				if oUF_LUI_player.Rep then oUF_LUI_player.Rep:Hide() end
+			else
+				oUF_LUI_player.XP:Hide()
+				if oUF_LUI_player.Rep then oUF_LUI_player.Rep:Show() end
+			end
+			oUF_LUI_player.XP.Enable = self.db.XP_Rep.Experience.Enable
+		end
+	else
+		toggleFunc = function()
+			if not oUF_LUI_player.Rep then module.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, xprepdb) end
+			if self.db.XP_Rep.Reputation.Enable then
+				print("Ena")
+				oUF_LUI_player.Rep:Show()
+				if oUF_LUI_player.XP then oUF_LUI_player.XP:Hide() end
+			else
+				print("Disa")
+				oUF_LUI_player.Rep:Hide()
+				if oUF_LUI_player.XP then oUF_LUI_player.XP:Show() end
+			end
+			oUF_LUI_player.Rep.Enable = self.db.XP_Rep.Reputation.Enable
+		end
+	end
+	
+	local applySettings = function()
+		if oUF_LUI_player.XP then module.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, self.db.XP_Rep) end
+		if oUF_LUI_player.Rep then module.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, self.db.XP_Rep) end
+	end
+	
+	local options = self:NewGroup(barType, order, {
+		Enable = self:NewToggle("Enable", "Whether you want to show the "..barType.." Bar or not.", 1, toggleFunc, "full"),
+		empty1 = self:NewDesc(" ", 2),
+		ShowValue = self:NewToggle("Show Value", "Whether you want to show how much "..barType.." you have in the "..barType.." bar or not.", 3, applySettings, nil, disabledFunc),
+		AlwaysShow = self:NewToggle("Always Show", "Whether you want the "..barType.." bar to show always or not.", 4, applySettings, nil, disabledFunc),
+		BGColor = self:NewColor("Background", barType.."bar Background", 5, applySettings, nil, disabledFunc),
+		FillColor = self:NewColor("Fill", barType.."bar Fill", 6, applySettings, nil, disabledFunc),
+		RestedColor = (barType == "XP") and self:NewColor("Rested", barType.."bar Rested.", 7, applySettings, "full", disabledFunc) or nil,
+		Alpha = self:NewSlider("Alpha", "Select the alpha of the "..barType.." bar when shown.", 8, 0, 1, 0.01, applySettings, true, nil, disabledFunc),
+	})
+	
+	return options
+end
+
+function module:CreateXpRepOptions(order)
+	local resetFunc = function()
+		self.db.profile.XP_Rep = self.defaults.profile.XP_Rep
+		StaticPopup_Show("RELOAD_UI")
+	end
+	
+	local applySettings = function()
+		if oUF_LUI_player.XP then module.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, self.db.XP_Rep) end
+		if oUF_LUI_player.Rep then module.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, self.db.XP_Rep) end
+	end
+	
+	local options = self:NewGroup("XP / Rep", order, "tab", {
+		Info = self:NewGroup("Info", 1, {
+			About = self:NewDesc("The XP and Rep bars are located below the Player UnitFrame and will show on mouseover.\nThe Experience Bar will only be shown if you are not yet Level "..MAX_PLAYER_LEVEL..".\n\nIf you are not yet Level "..MAX_PLAYER_LEVEL.." you can right click on either bar to switch to the other.\nWhen you left click on one of the bars, information about that bar will be paste into your Chat EditBox if it is open and added to the Chat Window if not.\n\n\n", 1),
+			Reset = self:NewExecute("Reset", nil, 2, resetFunc),
+		}),
+		Experience = self:CreateXpRepOptionsPart("XP", 2),
+		Reputation = self:CreateXpRepOptionsPart("Rep", 3),
+		General = self:NewGroup("Font", 4, {
+			Font = self:NewSelect("Font", "Choose the Font for the XP/Rep text.", 1, widgetLists.font, "LSM30_Font", applySettings),
+			FontSize = self:NewSlider("Font Size", "Choose the Font Size for the XP/Rep text.", 2, 6, 20, 1, applySettings),
+			FontFlag = self:NewSelect("Font Flag", "Choose the Font Flag for the XP/Rep text.", 3, fontflags, nil, applySettings),
+			FontJustify = self:NewSelect("Font Justify", "Choose the Font Justification for the XP/Rep text.", 4, justifications, nil, applySettings),
+			FontColor = self:NewColor("Font", "XP/Rep text", 5, applySettings),
+		}),
+	})
+	
+	return options
+end
+
+function module:CreateHealPredictionOptions(unit, order)
+	local disabledFunc = function() return not self.db[unit].Bars.HealPrediction.Enable end
+	
+	local applySettings = function()
+		for _, frame in pairs(self.framelist[unit]) do
 			if _G[frame] then
-				if not _G[frame].HealPrediction then LUI.oUF_LUI.funcs.HealPrediction(_G[frame], _G[frame].__unit, db.oUF[unit]) end
-				if Enable then
+				module.funcs.HealPrediction(_G[frame], _G[frame].__unit, self.db[unit])
+				if self.db[unit].Bars.HealPrediction.Enable then
 					_G[frame]:EnableElement("HealPrediction")
 				else
 					_G[frame]:DisableElement("HealPrediction")
@@ -169,57 +197,36 @@ function module:CreateHealPredictionOptions(unit)
 		end
 	end
 	
-	local ApplySettings = function()
-		for _, frame in pairs(ufNames) do
-			if _G[frame] then
-				LUI.oUF_LUI.funcs.HealPrediction(_G[frame], _G[frame].__unit, db.oUF[unit])
-				_G[frame]:UpdateAllElements()
-			end
-		end
-	end
-	
-	local options = {
-		name = "Heal Prediction",
-		type = "group",
-		guiInline = true,
-		order = 5,
-		args = {
-			Enable = LUI:NewToggle("Enable", "Whether you want to show predicted Heals on "..unit.." or not.", 1, hpdb, "Enable", hpdefaults, ToggleFunc),
-			empty = LUI:NewEmpty(2),
-			MyColor = LUI:NewColor("My", "Heal Prediction Bar", 3, hpdb.MyColor, hpdefaults.MyColor, ApplySettings, "normal", function() return not hpdb.Enable end),
-			OtherColor = LUI:NewColor("Other", "Heal Prediction Bar", 4, hpdb.OtherColor, hpdefaults.OtherColor, ApplySettings, "normal", function() return not hpdb.Enable end),
-			empty2 = LUI:NewEmpty(5),
-			Texture = LUI:NewSelect("Texture", "Choose your Heal Prediction Texture.", 6, widgetLists.statusbar, "LSM30_Statusbar", hpdb, "Texture", hpdefaults, ApplySettings, "normal", function() return not hpdb.Enable end),
-		},
-	}
+	local options = self:NewGroup("Heal Prediction", order, {
+		Enable = self:NewToggle("Enable", "Whether you want to show predicted Heals on "..unit.." or not.", 1, applySettings, "full"),
+		MyColor = self:NewColor("My", "Heal Prediction Bar", 2, applySettings, nil, disabledFunc),
+		OtherColor = self:NewColor("Other", "Heal Prediction Bar", 3, applySettings, nil, disabledFunc),
+		empty1 = self:NewDesc(" ", 4),
+		Texture = self:NewSelect("Texture", "Choose your Heal Prediction Texture.", 5, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc),
+	})
 	
 	return options
 end
 
-------------------------------------------------------------------------
---	Bar Option Constructor
-------------------------------------------------------------------------
-
 -- barType: "Health", "Power", "Full"
 function module:CreateBarOptions(unit, order, barType)
-	local bardefaults = LUI.defaults.profile.oUF[unit][barType]
-	local bardb = db.oUF[unit][barType]
-	local ufNames = ufNamesList[unit]
+	local disabledFunc = (barType ~= "Health") and function() return not self.db[unit].Bars[barType].Enable end or nil
+	local disabledColorFunc = (barType ~= "Full") and function() return not (self.db[unit].Bars[barType].Enable ~= false and self.db[unit].Bars[barType].Color == "Individual") end or nil
 	
-	local ApplySettings = function()
-		for _, frame in pairs(ufNames) do
+	local applySettings = function()
+		for _, frame in pairs(self.framelist[unit]) do
 			if _G[frame] then
-				LUI.oUF_LUI.funcs[barType](_G[frame], _G[frame].__unit, db.oUF[unit])
+				module.funcs[barType](_G[frame], _G[frame].__unit, self.db[unit])
 				if barType == "Health" and _G[frame].HealPrediction then
-					LUI.oUF_LUI.funcs["HealPrediction"](_G[frame], _G[frame].__unit, db.oUF[unit])
+					module.funcs.HealPrediction(_G[frame], _G[frame].__unit, self.db[unit])
 				end
 				_G[frame]:UpdateAllElements()
 			end
 		end
 	end
 	
-	local ToggleSmooth = function(Smooth)
-		for _, frame in pairs(ufNames) do
+	local toggleSmooth = function(info, Smooth)
+		for _, frame in pairs(self.framelist[unit]) do
 			if Smooth then
 				if _G[frame] then _G[frame]:SmoothBar(_G[frame][barType]) end
 			else
@@ -228,438 +235,448 @@ function module:CreateBarOptions(unit, order, barType)
 		end
 	end
 	
-	local options = {
-		name = barType,
-		type = "group",
-		order = order,
-		args = {
-			Enable = (barType ~= "Health") and LUI:NewToggle("Enable", "Whether you want to show "..barType.."bar or not.", 1, bardb, "Enable", bardefaults, ApplySettings) or nil,
-			General = {
-				name = "Settings",
-				type = "group",
-				disabled = function() return (bardb.Enable ~= nil and not bardb.Enable or false) end,
-				guiInline = true,
-				order = 2,
-				args = {
-					Height = LUI:NewHeight(unit.." "..barType.."bar", 1, bardb, nil, bardefaults, ApplySettings),
-					Width = LUI:NewWidth(unit.." "..barType.."bar", 2, bardb, nil, bardefaults, ApplySettings),
-					XValue = LUI:NewPosX(unit.." "..barType.."bar", 3, bardb, "", bardefaults, ApplySettings),
-					YValue = LUI:NewPosY(unit.." "..barType.."bar", 4, bardb, "", bardefaults, ApplySettings),
-					empty = (barType ~= "Full") and LUI:NewEmpty(5) or nil,
-					Smooth = (barType ~= "Full") and LUI:NewToggle("Enable Smooth Bar Animation", "Whether you want to use Smooth Animations or not.", 6, bardb, "Smooth", bardefaults, ToggleSmooth) or nil,
-					Color = (barType == "Full") and LUI:NewColorNoAlpha(barType.."bar ", nil, 7, bardb.Color, bardefaults.Color, ApplySettings) or nil,
-					Texture = (barType == "Full") and LUI:NewSelect("Texture", "Choose the "..barType.."bar Texture.", 8, widgetLists.statusbar, "LSM30_Statusbar", bardb, "Texture", bardefaults, ApplySettings) or nil,
-				},
-			},
-			Colors = (barType ~= "Full") and {
-				name = "Colors",
-				type = "group",
-				disabled = function() return (bardb.Enable ~= nil and not bardb.Enable or false) end,
-				guiInline = true,
-				order = 3,
-				args = {
-					ColorType = LUI:NewSelect("Color", "Choose the Color Option for the "..barType.."bar", 1, barColors[barType], nil, bardb, "Color", bardefaults, ApplySettings),
-					empty = LUI:NewEmpty(2),
-					IndividualColor = LUI:NewColorNoAlpha(barType.."bar", unit.." "..barType.."bar", 3, bardb.IndividualColor, bardefaults.IndividualColor, ApplySettings, "full", function() return (bardb.Color ~= "Individual") end),
-				},
-			} or nil,
-			Textures = (barType ~= "Full") and {
-				name = "Texture Settings",
-				type = "group",
-				disabled = function() return (bardb.Enable ~= nil and not bardb.Enable or false) end,
-				guiInline = true,
-				order = 4,
-				args = {
-					Texture = LUI:NewSelect("Texture", "Choose the "..barType.." Texture.", 1, widgetLists.statusbar, "LSM30_Statusbar", bardb, "Texture", bardefaults, ApplySettings),
-					TextureBG = LUI:NewSelect("Background Texture", "Choose the "..barType.." Background Texture.", 2, widgetLists.statusbar, "LSM30_Statusbar", bardb, "TextureBG", bardefaults, ApplySettings),
-					BGAlpha = LUI:NewSlider("Background Alpha", "Choose the Alpha Value for the "..barType.." Background.", 3, bardb, "BGAlpha", bardefaults, 0, 1, 0.05, ApplySettings, "normal"),
-					BGMultiplier = LUI:NewSlider("Background Multiplier", "Choose the Multiplier which will be used to generate the Background Color.", 4, bardb, "BGMultiplier", bardefaults, 0, 1, 0.05, ApplySettings),
-					BGInvert = LUI:NewToggle("Invert BG Color", "Whether you want to invert the Background Color or not.", 5, bardb, "BGInvert", bardefaults, ApplySettings),
-				},
-			} or nil,
-			HealPrediction = (barType == "Health" and db.oUF[unit].HealPrediction) and module:CreateHealPredictionOptions(unit) or nil,
-		},
+	local options = self:NewGroup(barType, order, {
+		Enable = (barType ~= "Health") and self:NewToggle("Enable", "Whether you want to show "..barType.."bar or not.", 1, applySettings, "full") or nil,
+		empty1 = (barType ~= "Health") and self:NewDesc(" ", 2) or nil,
+		Height = self:NewInputNumber("Height", "Choose the Height for your "..barType.."bar.", 3, applySettings, nil, disabledFunc),
+		Width = self:NewInputNumber("Width", "Choose the Width for your "..barType.."bar.", 4, applySettings, nil, disabledFunc),
+		X = self:NewInputNumber("X Value", "Choose the X Value for your "..barType.."bar.", 5, applySettings, nil, disabledFunc),
+		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..barType.."bar.", 6, applySettings, nil, disabledFunc),
+		empty2 = self:NewDesc(" ", 7),
+		Smooth = (barType ~= "Full") and self:NewToggle("Enable Smooth Bar Animation", "Whether you want to use Smooth Animations or not.", 8, toggleSmooth, nil, disabledFunc) or nil,
+		IndividualColor = self:NewColorNoAlpha(barType.."bar", barType.."bar", 9, applySettings, nil, disabledColorFunc),
+		Color = (barType ~= "Full") and self:NewSelect("Color", "Choose the Color Option for the "..barType.."bar.", 10, barColors[barType], nil, applySettings, nil, disabledFunc) or nil,
+		Tapping = (unit == "Target" and barType == "Health") and self:NewToggle("Enable Taping", "Whether you want to show tapped Healthbars or not.", 11, applySettings, nil, disabledFunc) or nil,
+		empty3 = self:NewDesc(" ", 12),
+		Texture = self:NewSelect("Texture", "Choose the "..barType.."bar Texture.", 13, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc),
+		TextureBG = (barType ~= "Full") and self:NewSelect("Background Texture", "Choose the "..barType.."bar Background Texture.", 14, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc) or nil,
+		BGAlpha = (barType ~= "Full") and self:NewSlider("Background Alpha", "Choose the Alpha for the "..barType.."bar Background.", 15, 0, 1, 0.01, applySettings, true, nil, disabledFunc) or nil,
+		BGMultiplier = (barType ~= "Full") and self:NewSlider("Background Multiplier", "Choose the BG Multiplier used for calculation of the Background Color", 16, 0, 1, 0.01, applySettings, true, nil, disabledFunc) or nil,
+		BGInvert = (barType ~= "Full") and self:NewToggle("Enable", "Whether you want to invert the Background Color or not. Suggested for dark Bar Colors!", 17, applySettings, nil, disabledFunc) or nil,
+	})
+	
+	return options
+end
+
+--barKey: Key in the ouf layout / the creator funcs
+--barName: Shown Name in the options
+--barType: Key in the options/db
+
+--barType: Totems, Runes, HolyPower, SoulShards, Eclipse
+function module:CreatePlayerBarOptions(barType, order)
+	local barName = barNames[barType]
+	local barKey = barKeys[barType]
+	
+	local isLocked = function() return not self.db.Player.Bars[barType].Enable or self.db.Player.Bars[barType].Lock end
+	
+	local disabledFunc = function() return not self.db.Player.Bars[barType].Enable end
+	
+	local applySettings = function(self, Enable)
+		module.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, self.db.Player)
+		if Enable then
+			oUF_LUI_player:EnableElement(barKey)
+		else
+			oUF_LUI_player:DisableElement(barKey)
+		end
+		
+		Forte:SetPosForte()
+		
+		oUF_LUI_player:UpdateAllElements()
+	end
+	
+	local options = self:NewGroup(barName, order, {
+		Enable = self:NewToggle("Enable", "Whether you want to show the "..barName.." or not", 1, applySettings, "full"),
+		empty1 = self:NewDesc(" ", 2),
+		Lock = self:NewToggle("Lock", "Whether you want to lock the "..barName.." to your PlayerFrame or not.\nIf locked, Forte Spelltimer will adjust automaticly", 3, applySettings, "full", disabledFunc),
+		X = self:NewInputNumber("X Value", "Choose the X Value for your "..barName..".", 4, applySettings, nil, isLocked),
+		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..barName..".", 5, applySettings, nil, isLocked),
+		Width = self:NewInputNumber("Width", "Choose the Width for your "..barName..".", 6, applySettings, nil, disabledFunc),
+		Height = self:NewInputNumber("Height", "Choose the Height for your "..barName..".", 7, applySettings, nil, disabledFunc),
+		empty2 = self:NewDesc(" ", 8),
+		Padding = (barType ~= "Eclipse") and self:NewSlider("Padding", "Choose the Padding between your "..barName.." Elements.", 9, 1, 10, 1, applySettings, nil, nil, disabledFunc) or nil,
+		Texture = self:NewSelect("Texture", "Choose the "..barName.." Texture.", 10, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc),
+		Multiplier = (barType == "TotemBar") and self:NewSlider("Multiplier", "Choose the "..barName.." Background Multiplier.", 11, 0, 1, 0.01, applySettings, nil, nil, disabledFunc) or nil,
+	})
+	
+	return options
+end
+
+-- barType: "DruidMana", "AltPower"
+function module:CreatePlayerBarOverlappingOptions(barType, order)
+	local barName = barNames[barType]
+	local barKey = barKeys[barType]
+	
+	local disabledFunc = function() return not module.db.Player.Bars[barType].Enable end
+	local disabledFunc2 = function() return not (module.db.Player.Bars[barType].Enable or not module.db.Player.Bars[barType].OverPower) end
+	
+	local values = (barType == "DruidMana") and {
+		["By Class"] = "By Class",
+		["By Type"] = "By Type",
+		["Gradient"] = "Gradient"
+	} or {
+		["By Class"] = "By Class",
+		["By Type"] = "By Type",
+		["Individual"] = "Individual"
 	}
+	
+	local applySettings = function()
+		module.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, self.db.Player)
+		if oUF_LUI_pet and barType == "AltPower" then module.funcs[barKey](oUF_LUI_pet, oUF_LUI_pet.__unit, self.db.Player) end
+		if self.db.Player.Bars[barType].Enable then
+			oUF_LUI_player:EnableElement(barKey)
+			if oUF_LUI_pet and barType == "AltPower" then oUF_LUI_pet:EnableElement(barKey) end
+		else
+			oUF_LUI_player:DisableElement(barKey)
+			if oUF_LUI_pet and barType == "AltPower" then oUF_LUI_pet:DisableElement(barKey) end
+		end
+	end
+	
+	local smoothBar = function(self, Smooth)
+		if barType == "DruidMana" then
+			if Smooth then
+				oUF_LUI_player:SmoothBar(oUF_LUI_player.DruidMana.ManaBar)
+			else
+				oUF_LUI_player.DruidMana.ManaBar.SetValue = oUF_LUI_player.DruidMana.ManaBar.SetValue_
+			end
+		else
+			if Smooth then
+				oUF_LUI_player:SmoothBar(oUF_LUI_player.AltPowerBar)
+				if oUF_LUI_pet then oUF_LUI_pet:SmoothBar(oUF_LUI_pet.AltPowerBar) end
+			else
+				oUF_LUI_player.AltPowerBar.SetValue = oUF_LUI_player.AltPowerBar.SetValue_
+				if oUF_LUI_pet then oUF_LUI_pet.AltPowerBar.SetValue = oUF_LUI_pet.AltPowerBar.SetValue_ end
+			end
+		end
+	end
+	
+	local options = self:NewGroup(barName, order, {
+		Enable = self:NewToggle("Enable", "Whether you want to show the "..barName.." Bar or not.", 1, applySettings, "full"),
+		empty1 = self:NewDesc(" ", 2),
+		OverPower = self:NewToggle("Over Power Bar", "Whether you want the "..barName.." Bar to take up half the Power bar or not.\n\nNote: This option disables other OverPower options!", 3, applySettings, nil, disabledFunc),
+		X = self:NewInputNumber("X Value", "Choose the X Value for your "..barName.." Bar.", 4, applySettings, nil, disabledFunc),
+		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..barName.." Bar.", 5, applySettings, nil, disabledFunc),
+		Width = self:NewInputNumber("Width", "Choose the Width for your "..barName.." Bar.", 6, applySettings, nil, disabledFunc),
+		Height = self:NewInputNumber("Height", "Choose the Height for your "..barName.." Bar.", 7, applySettings, nil, disabledFunc),
+		Smooth = self:NewToggle("Enable Smooth Bar Animation", "Whether you want to use Smooth Animations or not.", 8, smoothBar, nil, disabledFunc),
+		Color = self:NewSelect("Color", "Choose the Color Option for the "..barName.." Bar.", 9, values, nil, applySettings, nil, disabledFunc),
+		empty3 = self:NewDesc(" ", 10),
+		Texture = self:NewSelect("Texture", "Choose the Texture for the "..barName.." Bar.", 11, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc),
+		TextureBG = self:NewSelect("Background Texture", "Choose the Background Texture for the "..barName.." Bar.", 12, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc),
+		BGAlpha = self:NewSlider("Background Alpha", "Choose the Alpha Value for the "..barName.." Bar Background.", 13, 0, 1, 0.01, applySettings, true, nil, disabledFunc),
+		BGMultiplier = self:NewSlider("Background Multiplier", "Choose the Multiplier for the "..barName.." Bar Background.", 14, 0, 1, 0.01, applySettings, true, nil, disabledFunc),
+	})
+	
+	return options
+end
+
+function module:CreateComboPointsOptions(order)
+	local disabledFunc = function() return not self.db.Target.ComboPoints.Enable end
+	
+	local isLocked = function() return not self.db.Target.Bars.ComboPoints.Enable or self.db.Target.Bars.ComboPoints.Lock end
+	
+	local applySettings = function()
+		module.funcs.CPoints(oUF_LUI_target, oUF_LUI_target.__unit, self.db.Target)
+		if self.db.Target.ComboPoints then
+			oUF_LUI_target:EnableElement("CPoints")
+		else
+			oUF_LUI_target:DisableElement("CPoints")
+		end
+		Forte:SetPosForte()
+		oUF_LUI_target:UpdateAllElements()
+	end
+	
+	local options = self:NewGroup("Combo Points", order, {
+		Enable = self:NewToggle("Enable", "Whether you want to show your Combo Points or not.", 1, applySettings, "full"),
+		empty1 = self:NewDesc(" ", 2),
+		ShowAlways = self:NewToggle("Show Always", "Whether you want to always show your Combo Points or not.", 3, applySettings, nil, disabledFunc),
+		Lock = self:NewToggle("Lock", "Whether you want to lock the Combo Points to your TargetFrame or not.\nIf locked, Forte Spelltimer will adjust automaticly", 4, applySettings, "full", disabledFunc),
+		empty2 = self:NewDesc(" ", 5),
+		X = self:NewInputNumber("X Value", "Choose the X Value for your Combo Points.", 6, applySettings, nil, isLocked),
+		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your Combo Points.", 7, applySettings, nil, isLocked),
+		Width = self:NewInputNumber("Width", "Choose the Width for your Combo Points.", 8, applySettings, nil, disabledFunc),
+		Height = self:NewInputNumber("Height", "Choose the Height for your Combo Points.", 9, applySettings, nil, disabledFunc),
+		Padding = self:NewInputNumber("Padding", "Choose the Padding between your Combo Point Segments.", 10, applySettings, nil, disabledFunc),
+		empty3 = self:NewDesc(" ", 11),
+		Texture = self:NewSelect("Texture", "Choose your Combo Points Texture.", 12, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc),
+		Multiplier = self:NewSlider("Multiplier", "Choose your Combo Points Background Multiplier", 13, 0, 1, 0.01, applySettings, true, nil, disabledFunc),
+		IndividualColor = self:NewToggle("Individual Background Color", "Whether you want to use an individual Background Color or not.", 14, applySettings, nil, disabledFunc),
+		Color = self:NewColorNoAlpha("Combo Points Background", nil, 15, applySettings, nil, function() return not (self.db.Target.Bars.ComboPoints.Enable or self.db.Target.Bars.ComboPoints.IndividualColor) end),
+	})
 	
 	return options
 end
 
 ------------------------------------------------------------------------
---	Text Option Constructor
+--	Text Options Constructors
 ------------------------------------------------------------------------
+
+function module:CreateNameTextOptions(unit, order)
+	local disabledNameFunc = function() return not self.db[unit].Texts.Name.Enable end
 	
+	local applyInfoText = function()
+		for _, frame in pairs(self.framelist[unit]) do
+			if _G[frame] then
+				module.funcs.Info(_G[frame], _G[frame].__unit, self.db[unit])
+				if self.db[unit].Name.Enable then
+					_G[frame].Info:Show()
+				else
+					_G[frame].Info:Hide()
+				end
+			end
+		end
+	end
+
+	local options = self:NewGroup("Name", 1, {
+		Enable = self:NewToggle("Enable", "Whether you want to show the "..unit.." Name or not.", 1, applyInfoText, "full"),
+		empty1 = self:NewDesc(" ", 2),
+		Font = self:NewSelect("Font", "Choose the Font for "..unit.." Name.", 3, widgetLists.font, "LSM30_Font", applyInfoText, nil, disabledTextFunc),
+		Size = self:NewSlider("Size", "Choose the "..unit.." Name Fontsize.", 4, 1, 40, 1, applyInfoText, nil, nil, disabledTextFunc),
+		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for "..unit.." Name.", 5, fontflags, nil, applyInfoText, nil, disabledTextFunc),
+		empty2 = self:NewDesc(" ", 6),
+		X = self:NewInputNumber("X Value", "Choose the X Value for your "..unit.." Name.", 7, applyInfoText, nil, disabledTextFunc),
+		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..unit.." Name.", 8, applyInfoText, nil, disabledTextFunc),
+		Point = self:NewSelect("Point", "Choose the Point for your "..unit.." Name.", 9, positions, nil, applyInfoText, nil, disabledTextFunc),
+		RelativePoint = self:NewSelect("Relative Point", "Choose the Relative Point for your "..unit.." Name.", 10, positions, nil, applyInfoText, nil, disabledTextFunc),
+		empty3 = self:NewDesc(" ", 11),
+		Format = self:NewSelect("Format", "Choose the Format for your "..unit.." Name.", 12, nameFormat, nil, applyInfoText, nil, disabledTextFunc),
+		Length = self:NewSelect("Length", "Choose the Length for your "..unit.." Name.", 13, nameLenghts, nil, applyInfoText, nil, disabledTextFunc),
+		empty4 = self:NewDesc(" ", 14),
+		ColorNameByClass = self:NewToggle("Color Name by Class", "Whether you want to color the "..unit.." Name by Class or not.", 15, applyInfoText, nil, disabledTextFunc),
+		ColorClassByClass = self:NewToggle("Color Class by Class", "Whether you want to color the "..unit.." Class by Class or not.", 16, applyInfoText, nil, disabledTextFunc),
+		ColorLevelByDifficulty = self:NewToggle("Color Level by Difficulty", "Whether you want to color the Level by Difficulty or not.", 17, applyInfoText, nil, disabledTextFunc),
+		ShowClassification = self:NewToggle("Show Classifications", "Whether you want to show Classifications like Elite, Boss or not.", 18, applyInfoText, nil, disabledTextFunc),
+		ShortClassification = self:NewToggle("Short Classifications", "Whether you want to show short Classifications or not.", 19, applyInfoText, nil, disabledTextFunc),
+		empty5 = self:NewDesc(" ", 20),
+		IndividualColor = self:NewColorNoAlpha("Name", "Name Text", 21, applyInfoText, nil, disabledTextFunc),
+	})
+	
+	return options
+end
+
+function module:CreateRaidNameTextOptions(order)
+	local disabledFunc = function() return not module.db.Raid.Texts.Name.Enable end
+	
+	local disabledColorFunc = function() return not (self.db.Raid.Texts.Name.Enable and self.db.Raid.Texts.Name.ColorByClass) end
+	
+	local applySettings = function()
+		for _, frame in pairs(self.framelist.Raid) do
+			if _G[frame] then
+				module.funcs.RaidInfo(_G[frame], _G[frame].__unit, self.db.Raid)
+				if self.db.Raid.Texts.Name.Enable then
+					_G[frame].Info:Show()
+				else
+					_G[frame].Info:Hide()
+				end
+			end
+		end
+	end
+	
+	local options = self:NewGroup("Name", order, {
+		Enable = self:NewToggle("Enable", "Whether you want to show the Raid Name or not.", 1, applySettings, "full"),
+		empty1 = self:NewDesc(" ", 2),
+		Font = self:NewSelect("Font", "Choose the Font for the Raid Name.", 3, widgetLists.font, "LSM30_Font", applySettings, nil, disabledFunc),
+		Size = self:NewSlider("Size", "Choose the Raid Name Fontsize.", 4, 1, 40, 1, applySettings, nil, nil, disabledFunc),
+		Outline = self:NewSelect("Font Flag", "Choose the Raid Name Fontflag.", 5, fontflags, nil, applySettings, nil, disabledFunc),
+		empty2 = self:NewDesc(" ", 6),
+		ColorByClass = self:NewToggle("Color Name by Class", "Whether you want to color the Raid Name by Class or not.", 7, applySettings, nil, disabledFunc),
+		Color = self:NewColorNoAlpha("", "Name Text", 8, applySettings, nil, disabledColorFunc),
+		empty3 = self:NewDesc(" ", 9),
+		ShowDead = self:NewToggle("Show Dead/AFK/Disconnected", "Whether you want to switch the Name to Dead/AFK/Disconnected or not.", 10, applySettings, nil, disabledFunc),
+	})
+	
+	return options
+end
+
 -- parentName: "Health", "Power"
 -- textType: "Value", "Percent", "Missing"
 function module:CreateTextOptions(unit, order, parentName, textType)
 	local textFunc = parentName..textType
+	local textName = parentName.." "..textType
 	if textType == "Value" then textType = "" end
-	local textdefaults = LUI.defaults.profile.oUF[unit]["Texts"][parentName..textType]
-	local textdb = db.oUF[unit]["Texts"][parentName..textType]
-	local ufNames = ufNamesList[unit]
-	local textName = parentName..textType
+	local textKey = parentName..textType
 	
-	local ApplySettings = function()
-		for _, frame in pairs(ufNames) do
+	local applySettings = function()
+		for _, frame in pairs(self.framelist[unit]) do
 			if _G[frame] then
-				LUI.oUF_LUI.funcs[textFunc](_G[frame], _G[frame].__unit, db.oUF[unit])
+				module.funcs[textFunc](_G[frame], _G[frame].__unit, self.db[unit])
 				_G[frame]:UpdateAllElements()
 			end
 		end
 	end
 	
-	local options = {
-		name = textName,
-		type = "group",
-		order = order,
-		args = {
-			Enable = LUI:NewToggle("Enable", "Whether you want to show "..textName.." Value or not.", 1, textdb, "Enable", textdefaults, ApplySettings),
-			FontSettings = {
-				name = "Font Settings",
-				type = "group",
-				disabled = function() return not textdb.Enable end,
-				guiInline = true,
-				order = 2,
-				args = {
-					FontSize = LUI:NewSlider("Size", "Choose the "..unit.." "..textName.." Fontsize.", 1, textdb, "Size", textdefaults, 1, 40, 1, ApplySettings),
-					empty = LUI:NewEmpty(2),
-					Font = LUI:NewSelect("Font", "Choose the Font for "..unit.." "..textName, 3, widgetLists.font, "LSM30_Font", textdb, "Font", textdefaults, ApplySettings),
-					FontFlag = LUI:NewSelect("Font Flag", "Choose the Font Flag for "..unit.." "..textName, 4, fontflags, nil, textdb, "Outline", textdefaults, ApplySettings),
-					XValue = LUI:NewPosX(unit.." "..textName, 5, textdb, "", textdefaults, ApplySettings),
-					YValue = LUI:NewPosY(unit.." "..textName, 6, textdb, "", textdefaults, ApplySettings),
-					Point = LUI:NewSelect("Point", "Choose the Point for your "..unit.." "..textName, 7, positions, nil, textdb, "Point", textdefaults, ApplySettings),
-					RelativePoint = LUI:NewSelect("Relative Point", "Choose the Relative Point for your "..unit.." "..textName, 8, positions, nil, textdb, "RelativePoint", textdefaults, ApplySettings),
-				},
-			},
-			Settings = {
-				name = "Settings",
-				type = "group",
-				disabled = function() return not textdb.Enable end,
-				guiInline = true,
-				order = 3,
-				args = {
-					Format = (textType == "") and LUI:NewSelect("Format", "Choose the Format for the "..unit.." "..textName, 1, valueFormat, nil, textdb, "Format", textdefaults, ApplySettings) or nil,
-					empty = (textType == "") and LUI:NewEmpty(2) or nil,
-					ShowAlways = (parentName == "Health") and LUI:NewToggle("Show Always", "Always show "..unit.." "..textName.." or just if the Unit has no MaxHP", 3, textdb, "ShowAlways", textdefaults, ApplySettings, "normal") or nil,
-					ShowFull = (parentName == "Power") and LUI:NewToggle("Show Full", "Whether show "..unit.." "..textName.." when full or not.", 4, textdb, "ShowFull", textdefaults, ApplySettings, "normal") or nil,
-					ShowEmpty = (parentName == "Power") and LUI:NewToggle("Show Empty", "Whether show "..unit.." "..textName.." when empty or not.", 5, textdb, "ShowEmpty", textdefaults, ApplySettings, "normal") or nil,
-					ShowDead = (parentName == "Health" and textType ~= "Missing") and LUI:NewToggle("Show Dead/AFK/Disconnected", "Whether you want to switch the "..textName.." Value to Dead/AFK/Disconnected or not.", 6, textdb, "ShowDead", textdefaults, ApplySettings, "full") or nil,
-				},
-			},
-			Colors = {
-				name = "Color Settings",
-				type = "group",
-				disabled = function() return not textdb.Enable end,
-				guiInline = true,
-				order = 4,
-				args = {
-					ColorType = LUI:NewSelect("Color", "Choose the Color Option for the "..textType.." Value", 1, barColors[parentName], nil, textdb, "Color", textdefaults, ApplySettings),
-					IndividualColor = LUI:NewColorNoAlpha(textType, textType.." Value", 2, textdb.IndividualColor, textdefaults.IndividualColor, ApplySettings, "full", function() return (textdb.Color ~= "Individual") end),
-				},
-			},
-		},
-	}
+	local disabledFunc = function() return not self.db[unit].Texts[textKey].Enable end
+	local disabledColorFunc = function() return not self.db[unit].Texts[textKey].Enable or self.db[unit].Texts[textKey].Color ~= "Individual" end
+	
+	local options = self:NewGroup(textName, order, {
+		Enable = self:NewToggle("Enable", "Whether you want to show "..textName.." Value or not.", 1, applySettings, "full"),
+		empty1 = self:NewDesc(" ", 2),
+		Font = self:NewSelect("Font", "Choose the "..unit.." "..textName.." Font.", 3, widgetLists.font, "LSM30_Font", applySettings, nil, disabledFunc),
+		Size = self:NewSlider("Font Size", "Choose the "..unit.." "..textName.." Fontsize.", 4, 1, 40, 1, applySettings, nil, nil, disabledFunc),
+		Outline = self:NewSelect("Font Flag", "Choose the "..unit.." "..textName.." Fontflag.", 5, fontflags, nil, applySettings, nil, disabledFunc),
+		empty2 = self:NewDesc(" ", 6),
+		X = self:NewInputNumber("X Value", "Choose the X Value for your "..textName..".", 7, applySettings, nil, disabledFunc),
+		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..textName..".", 8, applySettings, nil, disabledFunc),
+		Point = self:NewSelect("Point", "Choose the Point for your "..unit.." "..textName..".", 9, positions, nil, applySettings, nil, disabledFunc),
+		RelativePoint = self:NewSelect("Relative Point", "Choose the Relative Point for your "..unit.." "..textName..".", 10, positions, nil, applySettings, nil, disabledFunc),
+		empty3 = self:NewDesc(" ", 11),
+		Format = (textType == "") and self:NewSelect("Format", "Choose the Format for the "..unit.." "..textName, 12, valueFormat, nil, applySettings, nil, disabledFunc) or nil,
+		ShowAlways = (parentName == "Health") and self:NewToggle("Show Always", "Always show "..unit.." "..textName.." or just if the Unit has no MaxHP", 13, applySettings, nil, disabledFunc) or nil,
+		ShowFull = (parentName == "Power") and self:NewToggle("Show Full", "Whether show "..unit.." "..textName.." when full or not.", 14, applySettings, nil, disabledFunc) or nil,
+		ShowEmpty = (parentName == "Power") and self:NewToggle("Show Empty", "Whether show "..unit.." "..textName.." when empty or not.", 15, applySettings, nil, disabledFunc) or nil,
+		ShowDead = (parentName == "Health" and textType ~= "Missing") and self:NewToggle("Show Dead/AFK/Disconnected", "Whether you want to switch the "..textName.." Value to Dead/AFK Disconnected or not.", 16, applySettings, nil, disabledFunc) or nil,
+		empty4 = self:NewDesc(" ", 17),
+		Color = self:NewSelect("Color", "Choose the Color Option for the "..textType.." Value.", 18, barColors[parentName], nil, applySettings, nil, disabledFunc),
+		IndividualColor = self:NewColorNoAlpha("Individual", textType.." Value", 19, applySettings, nil, disabledColorFunc),
+	})
 	
 	return options
 end
 
-------------------------------------------------------------------------
---	Icon Option Constructor
-------------------------------------------------------------------------
-	
--- iconType: "PvP", "Combat", "Resting", "Lootmaster", "Leader", "Role", "Raid", "ReadyCheck"
-function module:CreateIconOptions(unit, order, iconType)
-	local icondefaults = LUI.defaults.profile.oUF[unit]["Icons"][iconType]
-	local icondb = db.oUF[unit]["Icons"][iconType]
-	local ufNames = ufNamesList[unit]
-	local iconNames = iconNamesList[iconType]
-	
-	local ToggleFunc = function(self, Enable)
-		for _, frame in pairs(ufNames) do
-			if _G[frame] then
-				if not _G[frame][iconNames[1]] then LUI.oUF_LUI.funcs[iconNames[1]](_G[frame], _G[frame].__unit, db.oUF[unit]) end
-				for _, icon in pairs(iconNames) do
-					if Enable then
-						_G[frame]:EnableElement(icon)
-						_G[frame]:UpdateAllElements()
-					else
-						_G[frame]:DisableElement(icon)
-						_G[frame][icon]:Hide()
-					end
-				end
-			end
+function module:CreateCombatTextOptions(unit, order)
+	local disabledFunc = function() return self.db[unit].Enable == false end
+	local disabledCombatFunc = function() return not self.db[unit].Texts.Combat.Enable end
+
+	local applyCombatFeedback = function()
+		for _, frame in pairs(self.framelist[unit]) do
+			if _G[frame] then module.funcs.CombatFeedbackText(_G[frame], _G[frame].__unit, self.db[unit]) end
 		end
 	end
 	
-	local ApplySettings = function()
-		for _, frame in pairs(ufNames) do
-			if _G[frame] then LUI.oUF_LUI.funcs[iconNames[1]](_G[frame], _G[frame].__unit, db.oUF[unit]) end
-		end
-	end
-	
-	local ShowHideFunc = function()
-		for _, frame in pairs(ufNames) do
-			if _G[frame] and _G[frame][iconNames[1]] then
-				if _G[frame][iconNames[1]]:IsShown() then _G[frame][iconNames[1]]:Hide() else _G[frame][iconNames[1]]:Show() end
-			end
-		end
-	end
-	
-	local options = {
-		name = iconType,
-		type = "group",
-		order = order,
-		args = {
-			Enable = LUI:NewToggle("Enable", "Whether you want to show the "..iconType.." Icon or not.", 1, icondb, "Enable", icondefaults, ToggleFunc),
-			XValue = LUI:NewOffsetX(iconType.." Icon", 2, icondb, "", icondefaults, ApplySettings, nil, function() return not icondb.Enable end),
-			YValue = LUI:NewOffsetY(iconType.." Icon", 3, icondb, "", icondefaults, ApplySettings, nil, function() return not icondb.Enable end),
-			Point = LUI:NewSelect("Position", "Choose the Position for your "..iconType.." Icon.", 4, positions, nil, icondb, "Point", icondefaults, ApplySettings, nil, function() return not icondb.Enable end),
-			Size = LUI:NewSlider("Size", "Choose the Size for your "..iconType.." Icon.", 5, icondb, "Size", icondefaults, 5, 60, 1, ApplySettings, nil, function() return not icondb.Enable end),
-			Toggle = LUI:NewExecute("Show/Hide", "Toggles the "..iconType.." Icon.", 6, ShowHideFunc, nil, function() return not icondb.Enable end),
-		},
-	}
+	local options = self:NewGroup("Combat", order, {
+		Enable = self:NewToggle("Enable", "Whether you want to show Combat Text on the "..unit.." Frame or not.", 1, applyCombatFeedback, "full"),
+		empty1 = self:NewDesc(" ", 2),
+		Size = self:NewSlider("Size", "Choose the "..unit.." Combat Text Fontsize.", 3, 1, 40, 1, applyCombatFeedback, nil, nil, disabledCombatFunc),
+		Font = self:NewSelect("Font", "Choose the Font for "..unit.." Combat Text.", 4, widgetLists.font, "LSM30_Font", applyCombatFeedback, nil, disabledCombatFunc),
+		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for "..unit.." Combat Text.", 5, fontflags, nil, applyCombatFeedback, nil, disabledCombatFunc),
+		empty2 = self:NewDesc(" ", 6),
+		X = self:NewInputNumber("X Value", "Choose the X Value for your "..unit.." Combat Text.", 7, applyCombatFeedback, nil, disabledCombatFunc),
+		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..unit.." Combat Text.", 8, applyCombatFeedback, nil, disabledCombatFunc),
+		Point = self:NewSelect("Point", "Choose the Point for your "..unit.." Combat Text.", 9, positions, nil, applyCombatFeedback, nil, disabledCombatFunc),
+		RelativePoint = self:NewSelect("Relative Point", "Choose the Relative Point for your "..unit.." Combat Text.", 10, positions, nil, applyCombatFeedback, nil, disabledCombatFunc),
+	})
 	
 	return options
 end
 
-------------------------------------------------------------------------
---	Aura Option Constructor
-------------------------------------------------------------------------
+--barKey: Key in the ouf layout / the creator funcs
+--barName: Shown Name in the options
+--barType: Key in the options/db
+--barType: Eclipse, AltPower, PvP, DruidMana?
+
+function module:CreatePlayerBarTextOptions(barType, order)
+	local barName = barNames[barType]
+	local barKey = barKeys[barType]
 	
-function module:CreateAuraOptions(unit, order, isDebuff)
-	local auradb = db.oUF[unit].Aura
-	local auradefaults = LUI.defaults.profile.oUF[unit].Aura
-	local ufNames = ufNamesList[unit]
-	local prefix = isDebuff and "debuffs" or "buffs"
-	local element = isDebuff and "Debuffs" or "Buffs"
-	
-	local ToggleFunc = function(self, Enable)
-		for _, frame in pairs(ufNames) do
-			if _G[frame] then
-				if not _G[frame][element] then LUI.oUF_LUI.funcs[element](_G[frame], _G[frame].__unit, db.oUF[unit]) end
-				if Enable == true then
-					_G[frame]:EnableElement("Aura")
-					_G[frame][element]:Show()
-				else
-					if auradb.debuffs_enable == false and auradb.buffs_enable == false then
-						_G[frame]:DisableElement("Aura")
-					end
-					_G[frame][element]:Hide()
-				end
-				_G[frame]:UpdateAllElements()
-			end
-		end
-	end
-	
-	local ApplySettings = function()
-		for _, frame in pairs(ufNames) do
-			if _G[frame] then LUI.oUF_LUI.funcs[element](_G[frame], _G[frame].__unit, db.oUF[unit]) end
-		end
-	end
-	
-	local AurasDisabled = function() return not auradb[prefix.."_enable"] end
-	local PetIncludeDisabled = function() return not (auradb[prefix.."_enable"] and auradb[prefix.."_playeronly"]) end
-	local CooldownDisabled = function() return not auradb[prefix.."_enable"] or auradb[prefix.."_disableCooldown"] end 
-	
-	local options = {
-		name = element,
-		type = "group",
-		order = order,
-		disabled = (unit == "Raid") and function()
-			return IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot")
-		end or nil,
-		args = {
-			Enable = LUI:NewToggle("Enable "..unit.." "..element, "Whether you want to show "..unit.." "..element.." or not.", 1, auradb, prefix.."_enable", auradefaults, ToggleFunc),
-			Auratimer = LUI:NewToggle("Enable Auratimer", "Whether you want to show Auratimers or not.", 2, auradb, prefix.."_auratimer", auradefaults, ApplySettings, nil, AurasDisabled),
-			PlayerOnly = LUI:NewToggle("Player "..element.." Only", "Whether you want to show only the "..element.." on "..unit.." or not.", 3, auradb, prefix.."_playeronly", auradefaults, ApplySettings, "normal", AurasDisabled),
-			IncludePet = LUI:NewToggle("Include Pet "..element, "Whether you want to include Pet "..element.." or not.", 4, auradb, prefix.."_includepet", auradefaults, ApplySettings, "normal", PetIncludeDisabled),
-			ColorByType = LUI:NewToggle("Color by Type", "Whether you want to color "..unit.." "..element.." by Type or not.", 5, auradb, prefix.."_colorbytype", auradefaults, ApplySettings, nil, AurasDisabled),
-			Cooldown = LUI:NewToggle("Hide Cooldown Spiral", "Whether wou want to disable the cooldown spiral effect or not.", 6, auradb, prefix.."_disableCooldown", auradefaults, ApplySettings, "normal", AurasDisabled),
-			CooldownReverse = LUI:NewToggle("Reverse Cooldown Effect", "Whether you want to reverse the cooldown spiral effect or not.", 7, auradb, prefix.."_cooldownReverse", auradefaults, ApplySettings, "normal", CooldownDisabled),
-			Num = LUI:NewInputNumber("Amount", "Amount of the "..unit.." "..element, 8, auradb, prefix.."_num", auradefaults, ApplySettings, nil, AurasDisabled),
-			empty = LUI:NewEmpty(9),
-			Size = LUI:NewInputNumber("Size", "Size of the "..unit.." "..element, 10, auradb, prefix.."_size", auradefaults, ApplySettings, nil, AurasDisabled),
-			Spacing = LUI:NewInputNumber("Spacing", "Spacing between the "..unit.." "..element, 11, auradb, prefix.."_spacing", auradefaults, ApplySettings, nil, AurasDisabled),
-			X = LUI:NewPosX(unit.." "..element, 12, auradb, prefix, auradefaults, ApplySettings, nil, AurasDisabled),
-			Y = LUI:NewPosY(unit.." "..element, 13, auradb, prefix, auradefaults, ApplySettings, nil, AurasDisabled),
-			GrowthX = LUI:NewSelect("Growth X", "Choose the Growth X direction for the "..unit.." "..element, 14, growthX, nil, auradb, prefix.."_growthX", auradefaults, ApplySettings, nil, AurasDisabled),
-			GrowthY = LUI:NewSelect("Growth Y", "Choose the Growth Y direction for the "..unit.." "..element, 15, growthY, nil, auradb, prefix.."_growthY", auradefaults, ApplySettings, nil, AurasDisabled),
-			Anchor = LUI:NewSelect("Initial Anchor", "Choose the initial Anchor for the "..unit.." "..element, 16, positions, nil, auradb, prefix.."_initialAnchor", auradefaults, ApplySettings, nil, AurasDisabled),
-		},
+	local textformats = barType == "AltPower" and {
+		Absolut = "Absolut",
+		Percent = "Percent",
+		Standard = "Standard"
+	} or {
+		Absolut = "Absolut",
+		Standard = "Standard"
 	}
 	
-	return options
-end
-
-------------------------------------------------------------------------
---	General Options
-------------------------------------------------------------------------
+	local disabledFunc = function() return not self.db.Player.Texts[barType].Enable end
 	
-function module:CreateOptions(index, unit)
-	local oufdefaults = LUI.defaults.profile.oUF[unit]
-	local oufdb = db.oUF[unit]
-	local ufNames = ufNamesList[unit]
-	
-	local ToggleFunc = function()
-		oUFmodule:Toggle(unit)
-		if unit == "Raid" then
-			if oufdb.Enable and db.Frames.Raid.Anchor ~= "oUF_LUI_raid" then
-				db.Frames.Raid.Anchor = "oUF_LUI_raid"
-				StaticPopup_Show("RELOAD_UI") -- to remove!
-			end
-		end
-	end
-	
-	local disabledFunc = function()
-		if not db.oUF.Settings.Enable then return true end
-		
-		if unit == "MaintankToT" then
-			return not (db.oUF.MaintankTarget.Enable and db.oUF.Maintank.Enable)
-		elseif unit == "MaintankTarget" then
-			return not db.oUF.Maintank.Enable
-		elseif unit == "PartyTarget" or unit == "PartyPet" then
-			return not db.oUF.Party.Enable
-		elseif unit == "ArenaTarget" or unit == "ArenaPet" then
-			return not db.oUF.Arena.Enable
+	local applySettings = function()
+		module.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, self.db.Player)
+		if self.db.Player[barType].Enable then
+			oUF_LUI_player:EnableElement(barKey)
 		else
-			return false
+			oUF_LUI_player:DisableElement(barKey)
 		end
+		Forte:SetPosForte()
+		oUF_LUI_player:UpdateAllElements()
 	end
 	
-	local disabledFunc2 = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end
+	local options = self:NewGroup(barName, order, nil, function() return not self.db.Player.Bars[barType].Enable end, {
+		Enable = self:NewToggle("Enable", "Whether you want to show the "..barType.." Bar Text or not.", 1, applySettings, "full"),
+		empty1 = self:NewDesc(" ", 2),
+		Font = self:NewSelect("Font", "Choose your "..barType.." Bar Text Font.", 3, widgetLists.font, "LSM30_Font", applySettings, nil, disabledFunc),
+		Size = self:NewSlider("Size", "Choose your "..barType.." Bar Text Fontsize.", 4, 1, 40, 1, applySettings, nil, nil, disabledFunc),
+		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the "..barType.." Bar Text.", 5, fontflags, nil, applySettings, nil, disabledFunc),
+		empty2 = self:NewDesc(" ", 6),
+		X = self:NewInputNumber("X Value", "Choose the X Value for your "..barName.." Bar Text.", 7, applySettings, nil, disabledFunc),
+		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..barName.." Bar Text.", 8, applySettings, nil, disabledFunc),
+		empty3 = self:NewDesc(" ", 9),
+		Format = (barType == "AltPower") and self:NewSelect("Format", "Choose the Format for the "..barType.." Bar Text.", 10, textformats, nil, applySettings, nil, disabledFunc) or nil,
+		Color = (barType == "AltPower") and self:NewSelect("Color", "Choose the Color Option for the "..barType.." Bar Text.", 11, {["By Class"] = "By Class", ["Individual"] = "Individual"}, nil, applySettings, nil, disabledFunc) or nil,
+		IndividualColor = (barType == "AltPower") and self:NewColorNoAlpha("", barType.." Bar Text", 12, applySettings, nil, disabledFunc) or nil,
+	})
 	
-	local ChangePadding = function() oUFmodule:Toggle(unit) end
+	return options
+end
+
+function module:CreatePvpTimerOptions(order)
+	local disabledFunc = function() return not self.db.Player.Texts.PvP.Enable end
 	
-	local SetPosition
-	if ufMover[unit] then
-		SetPosition = function()
-			local scale = oufdb.Scale or 1
-			if _G[ufMover[unit]] then
-				local _, Anchor = _G[ufMover[unit]]:GetPoint(1)
-				_G[ufMover[unit]]:ClearAllPoints()
-				_G[ufMover[unit]]:SetPoint(oufdb.Point or "CENTER", Anchor, oufdb.Point or "CENTER", tonumber(oufdb.X) / scale, tonumber(oufdb.Y) / scale)
-				if _G[ufMover[unit]].V2Tex then _G[ufMover[unit]].V2Tex:Reposition() end
-				if _G[ufMover[unit]]._V2Tex then _G[ufMover[unit]]._V2Tex:Reposition() end
-			end
-		end
-	else
-		-- "child" frames like arenatargets, partytargets etc
-		SetPosition = function()
-			for _, frame in pairs(ufNames) do
-				if _G[frame] then
-					local _, Anchor = _G[frame]:GetPoint(1)
-					_G[frame]:ClearAllPoints()
-					_G[frame]:SetPoint(oufdb.Point, Anchor, oufdb.RelativePoint, tonumber(oufdb.X), tonumber(oufdb.Y))
-					if _G[frame].V2Tex then _G[frame].V2Tex:Reposition() end
-					if _G[frame]._V2Tex then _G[frame]._V2Tex:Reposition() end
-				end
-			end
-		end
+	local applySettings = function()
+		module.funcs.PvP(oUF_LUI_player, oUF_LUI_player.__unit, self.db.Player)
+		oUF_LUI_player:UpdateAllElements()
 	end
 	
-	local ApplyHeightWidth = function()
-		for _, frame in pairs(ufNames) do
+	local options = self:NewGroup("PvP", order, nil, function() return not self.db.Player.Icons.PvP.Enable end, {
+		Enable = self:NewToggle("Enable", "Whether you want to show a timer next to your PvP Icon when you're pvp flagged or not.", 1, applySettings, "full"),
+		empty1 = self:NewDesc(" ", 2),
+		Font = self:NewSelect("Font", "Choose your PvP Timer Text Font.", 3, widgetLists.font, "LSM30_Font", applySettings, nil, disabledFunc),
+		Size = self:NewSlider("Size", "Choose your PvP Timer Text Fontsize.", 4, 1, 40, 1, applySettings, nil, nil, disabledFunc),
+		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the PvP Timer Text.", 5, fontflags, nil, applySettings, nil, disabledFunc),
+		empty3 = self:NewDesc(" ", 6),
+		Color = self:NewColorNoAlpha("", "PvP Timer Text", 7, applySettings, nil, disabledFunc),
+	})
+	
+	return options
+end
+
+function module:CreateDruidManaTimerOptions(order)
+	local disabledFunc = function() return not self.db.Player.Texts.DruidMana.Enable end
+	local disabledColorFunc = function() return not self.db.Player.Texts.DruidMana.Enable and self.db.Player.Texts.DruidMana.Color ~= "Individual" end
+	
+	local applySettings = function()
+		module.funcs.DruidMana(oUF_LUI_player, oUF_LUI_player.__unit, self.db.Player)
+		if oUF_LUI_player.AltPowerBar then oUF_LUI_player.AltPowerBar.SetPosition() end
+		oUF_LUI_player.DruidMana.SetPosition()
+		oUF_LUI_player:UpdateAllElements()
+	end
+	
+	local options = self:NewGroup("Druid Mana", order, nil, function() return not self.db.Player.Bars.DruidMana.Enable end, {
+		Enable = self:NewToggle("Enable", "Whether you want to show your Druid Mana Value while in Cat/Bear or not.", 2, applySettings),
+		empty1 = self:NewDesc(" ", 2),
+		Font = self:NewSelect("Font", "Choose your Druid Mana Bar Text Font.", 3, widgetLists.font, "LSM30_Font", applySettings, nil, disabledFunc),
+		Size = self:NewSlider("Size", "Choose your Druid Mana Bar Text Fontsize.", 4, 1, 40, 1, applySettings, nil, nil, disabledFunc),
+		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Druid Mana Bar Text.", 5, fontflags, nil, applySettings, nil, disabledFunc),
+		empty2 = self:NewDesc(" ", 6),
+		X = self:NewInputNumber("X Value", "Choose the X Value for your Druid Mana Bar Text.", 7, applySettings, nil, disabledFunc),
+		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your Druid Mana Bar Text.", 8, applySettings, nil, disabledFunc),
+		Point = self:NewSelect("Point", "Choose the Point for your Druid Mana Bar Text.", 9, positions, nil, applySettings, nil, disabledFunc),
+		RelativePoint = self:NewSelect("Relative Point", "Choose the relative Point for your Druid Mana Bar Text.", 10, positions, nil, applySettings, nil, disabledFunc),
+		empty3 = self:NewDesc(" ", 11),
+		Format = self:NewSelect("Format", "Choose the Format for the Druid Mana Text.", 12, valueFormat, nil, applySettings, nil, disabledFunc),
+		HideIfFullMana = self:NewToggle("Hide if Full Mana", "Whether you want to hide the Druid Mana Text when you have full Mana or not.", 13, applySettings, nil, disabledFunc),
+		Color = self:NewSelect("Color", "Choose the Color Option for the Druid Mana Text", 14, barColors.Power, nil, applySettings, nil, disabledFunc),
+		IndividualColor = self:NewColorNoAlpha("", "Druid Mana Text", 15, applySettings, nil, disabledColorFunc),
+	})
+	
+	return options
+end
+
+------------------------------------------------------------------------
+--	Other Options Constructors
+------------------------------------------------------------------------
+
+function module:CreateCastbarOptions(unit, order)
+	local disabledFunc = function() return self.db[unit].Enable == false end
+	local disabledCastbarFunc = function() return not self.db[unit].Castbar.General.Enable end
+	local disabledCastbarLatencyFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.Latency) end
+	local disabledCastbarShieldFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.Shield) end
+	local disabledCastbarNameFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.Text.Name.Enable) end
+	local disabledCastbarTimeFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.Text.Time.Enable) end
+	
+	local applyCastbar = function()
+		for _, frame in pairs(self.framelist[unit]) do
 			if _G[frame] then
-				_G[frame]:SetHeight(tonumber(oufdb.Height))
-				if unit == "Raid" and frame:find("oUF_LUI_raid_40") then
-					_G[frame]:SetWidth((5 * tonumber(db.oUF.Raid.Height) - 3 * tonumber(db.oUF.Raid.GroupPadding)) / 8)
-				else
-					_G[frame]:SetWidth(tonumber(oufdb.Width))
-				end
-				if oufdb.Aura then
-					if oufdb.Aura.buffs_enable then _G[frame].Buffs:SetWidth(tonumber(oufdb.Width)) end
-					if oufdb.Aura.debuffs_enable then _G[frame].Debuffs:SetWidth(tonumber(oufdb.Width)) end
-				end
-				if _G[frame].V2Tex then _G[frame].V2Tex:Reposition() end
-				if _G[frame]._V2Tex then _G[frame]._V2Tex:Reposition() end
-			end
-		end
-		
-		if Forte and unit == "Player" or unit == "Target" or unit == "Focus" then Forte:SetPosForte() end
-		
-		if unit == "Party" then
-			oUF_LUI_party:SetAttribute("oUF-initialConfigFunction", [[
-				local unit = ...
-				if unit == "party" then
-					self:SetHeight(]]..db.oUF.Party.Height..[[)
-					self:SetWidth(]]..db.oUF.Party.Width..[[)
-				elseif unit == "partytarget" then
-					self:SetHeight(]]..db.oUF.PartyTarget.Height..[[)
-					self:SetWidth(]]..db.oUF.PartyTarget.Width..[[)
-					self:SetPoint("]]..db.oUF.PartyTarget.Point..[[", self:GetParent(), "]]..db.oUF.PartyTarget.RelativePoint..[[", ]]..db.oUF.PartyTarget.X..[[, ]]..db.oUF.PartyTarget.Y..[[)
-				elseif unit == "partypet" then
-					self:SetHeight(]]..db.oUF.PartyPet.Height..[[)
-					self:SetWidth(]]..db.oUF.PartyPet.Width..[[)
-					self:SetPoint("]]..db.oUF.PartyPet.Point..[[", self:GetParent(), "]]..db.oUF.PartyPet.RelativePoint..[[", ]]..db.oUF.PartyPet.X..[[, ]]..db.oUF.PartyPet.Y..[[)
-				end
-			]])
-		elseif unit == "Maintank" then
-			oUF_LUI_maintank:SetAttribute("oUF-initialConfigFunction", [[
-				local unit = ...
-				if unit == "maintanktargettarget" then
-					self:SetHeight(]]..db.oUF.MaintankToT.Height..[[)
-					self:SetWidth(]]..db.oUF.MaintankToT.Width..[[)
-					self:SetPoint("]]..db.oUF.MaintankToT.Point..[[", self:GetParent(), "]]..db.oUF.MaintankToT.RelativePoint..[[", ]]..db.oUF.MaintankToT.X..[[, ]]..db.oUF.MaintankToT.Y..[[)
-				elseif unit == "maintanktarget" then
-					self:SetHeight(]]..db.oUF.MaintankTarget.Height..[[)
-					self:SetWidth(]]..db.oUF.MaintankTarget.Width..[[)
-					self:SetPoint("]]..db.oUF.MaintankTarget.Point..[[", self:GetParent(), "]]..db.oUF.MaintankTarget.RelativePoint..[[", ]]..db.oUF.MaintankTarget.X..[[, ]]..db.oUF.MaintankTarget.Y..[[)
-				elseif unit == "maintank" then
-					self:SetHeight(]]..db.oUF.Maintank.Height..[[)
-					self:SetWidth(]]..db.oUF.Maintank.Width..[[)
-				end
-			]])
-		elseif unit == "Arena" or unit == "Boss" then
-			_G[ufMover[unit]]:SetAttribute("Height", tonumber(oufdb.Height))
-		elseif unit == "Raid" then
-			local width40 = (5 * tonumber(db.oUF.Raid.Height) - 3 * tonumber(db.oUF.Raid.GroupPadding)) / 8
-			
-			for i = 1, 5 do
-				_G["oUF_LUI_raid_25_"..i]:SetAttribute("initialConfigFunction", [[
-					self:SetHeight(]]..db.oUF.Raid.Height..[[)
-					self:SetWidth(]]..db.oUF.Raid.Width..[[)
-				]])
-			end
-			for i = 1, 8 do
-				_G["oUF_LUI_raid_40_"..i]:SetAttribute("initialConfigFunction", [[
-					self:SetHeight(]]..db.oUF.Raid.Height..[[)
-					self:SetWidth(]]..width40..[[)
-				]])
-			end
-			
-			LUI.oUF_LUI.RecreateNameCache()
-			for _, frame in pairs(ufNames) do
-				if _G[frame] then
-					_G[frame]:FormatRaidName()
-				end
-			end
-		end
-	end
-	
-	local ApplySettings = function()
-		for _, frame in pairs(ufNames) do
-			if _G[frame] then LUI.oUF_LUI.funcs.FrameBackdrop(_G[frame], _G[frame].__unit, db.oUF[unit]) end
-		end
-	end
-	
-	local ApplyInfoText = function()
-		for _, frame in pairs(ufNames) do
-			if _G[frame] then LUI.oUF_LUI.funcs.Info(_G[frame], _G[frame].__unit, db.oUF[unit]) end
-		end
-	end
-	
-	local ApplyCombatFeedback = function()
-		for _, frame in pairs(ufNames) do
-			if _G[frame] then LUI.oUF_LUI.funcs.CombatFeedbackText(_G[frame], _G[frame].__unit, db.oUF[unit]) end
-		end
-	end
-	
-	local DisabledCBText = function(text) return not oufdb.Castbar.Text[text].Enable end
-	
-	local ToggleCastbar = function(self, Enable)
-		for _, frame in pairs(ufNames) do
-			if _G[frame] then
-				if not _G[frame].Castbar then LUI.oUF_LUI.funcs.Castbar(_G[frame], _G[frame].__unit, db.oUF[unit]) end
-				if Enable == true then
+				module.funcs.Castbar(_G[frame], _G[frame].__unit, self.db[unit])
+				if self.db[unit].Castbar.General.Enable then
 					_G[frame]:EnableElement("Castbar")
 				else
 					_G[frame]:DisableElement("Castbar")
@@ -669,19 +686,10 @@ function module:CreateOptions(index, unit)
 			end
 		end
 	end
-	
-	local ApplyCastbar = function()
-		for _, frame in pairs(ufNames) do
-			if _G[frame] then
-				LUI.oUF_LUI.funcs.Castbar(_G[frame], _G[frame].__unit, db.oUF[unit])
-				_G[frame]:UpdateAllElements()
-			end
-		end
-	end
-	
-	local TestCastbar = function()
-		if _G[ufNames[1]]:IsShown() then
-			for _, frame in pairs(ufNames) do
+
+	local testCastbar = function()
+		if _G[self.framelist[unit][1]]:IsShown() then
+			for _, frame in pairs(self.framelist[unit]) do
 				if _G[frame] and _G[frame].Castbar then
 					_G[frame].Castbar.max = 60
 					_G[frame].Castbar.duration = 0
@@ -694,395 +702,388 @@ function module:CreateOptions(index, unit)
 				end
 			end
 		else
-			LUI:Print("The "..unit.." Frame must be shown for the dummy castbar to work.")
+			LUI:Print("The "..unit.." Frame(s) must be shown for the dummy castbar to work.")
 		end
 	end
 	
-	local DisabledPortrait = function() return not oufdb.Portrait.Enable end
+	local options = self:NewGroup("Castbar", order, "tab", disabledFunc, {
+		General = self:NewGroup("General", 1, {
+			Enable = self:NewToggle("Enable", "Whether you want to show your "..unit.." Castbar or not.", 1, applyCastbar, "full"),
+			empty1 = self:NewDesc(" ", 2),
+			Width = self:NewInputNumber("Width", "Choose the Width for the Castbar.", 3, applyCastbar, nil, disabledCastbarFunc),
+			Height = self:NewInputNumber("Height", "Choose the Height for the Castbar.", 4, applyCastbar, nil, disabledCastbarFunc),
+			Point = (unit == "Player" or unit == "Target") and self:NewSelect("Point", "Choose the Point for your Castbar.", 5, positions, nil, applyCastbar, nil, disabledCastbarFunc) or nil,
+			X = self:NewInputNumber("X Value", "Choose the X Value for the Castbar.", 6, applyCastbar, nil, disabledCastbarFunc),
+			Y = self:NewInputNumber("Y Value", "Choose the Y Value for the Castbar.", 7, applyCastbar, nil, disabledCastbarFunc),
+			Latency = (unit == "player") and self:NewToggle("Latency", "Whether you want to show the Latency or not.", 8, applyCastbar, nil, disabledCastbarFunc) or nil,
+			Shield = self:NewToggle("Shield", "Whether you want to show the Castbar Shield or not.", 9, applyCastbar, nil, disabledCastbarFunc),
+			empty2 = self:NewDesc(" ", 10),
+			IndividualColor = self:NewToggle("Individual Color", "Whether you want to use an individual Color or not.", 11, applyCastbar, nil, disabledCastbarFunc),
+			empty3 = self:NewDesc(" ", 12),
+			Icon = self:NewToggle("Show Icon", "Whether you want to show the Castbar Icon or not.", 13, applyCastbar, nil, disabledCastbarFunc),
+			empty4 = self:NewDesc(" ", 14),
+			Test = self:NewExecute("Test Castbar", "Test the Castbar.", 15, testCastbar, nil, nil, disabledCastbarFunc),
+		}),
+		Colors = self:NewGroup("Colors", 2, nil, function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.IndividualColor) end, {
+			Bar = self:NewColor("Bar", "Castbar", 1, applyCastbar),
+			Background = self:NewColor("Background", "Castbar Background", 2, applyCastbar),
+			Border = self:NewColor("Border", "Castbar Border", 3, applyCastbar),
+			Latency = (unit == "player") and self:NewColor("Latency", "Casting Delay", 4, applyCastbar, nil, disabledCastbarLatencyFunc) or nil,
+			Shield = self:NewColor("Shield", "noninterruptable Casts", 5, applyCastbar, nil, disabledCastbarShieldFunc),
+			empty1 = self:NewDesc(" ", 6),
+			Name = self:NewColorNoAlpha("Name", "Spell Name", 7, applyCastbar, nil, disabledCastbarNameFunc),
+			Time = self:NewColorNoAlpha("Time", "Cast Time", 8, applyCastbar, nil, disabledCastbarTimeFunc),
+		}),
+		Text = self:NewGroup("Texts", 3, nil, disabledCastbarFunc, {
+			Name = self:NewGroup("Name", 1, true, {
+				Enable = self:NewToggle("Enable", "Whether you want to show the Cast Name Text or not.", 1, applyCastbar, "full"),
+				Font = self:NewSelect("Font", "Choose the Font for the Cast Name Text.", 2, widgetLists.font, "LSM30_Font", applyCastbar, nil, disabledCastbarNameFunc),
+				Size = self:NewSlider("Size", "Choose the Font Size for the Cast Name Text.", 3, 1, 40, 1, applyCastbar, nil, nil, disabledCastbarNameFunc),
+				OffsetX = self:NewInputNumber("X Value", "Choose the X Value for the Cast Name Text.", 4, applyCastbar, nil, disabledCastbarNameFunc),
+				OffsetY = self:NewInputNumber("Y Value", "Choose the Y Value for the Cast Name Text.", 5, applyCastbar, nil, disabledCastbarNameFunc),
+			}),
+			Time = self:NewGroup("Time", 2, true, {
+				Enable = self:NewToggle("Enable", "Whether you want to show the Cast Time Text or not.", 1, applyCastbar, "full"),
+				Font = self:NewSelect("Font", "Choose the Font for the Cast Time Text.", 2, widgetLists.font, "LSM30_Font", applyCastbar, nil, disabledCastbarTimeFunc),
+				Size = self:NewSlider("Size", "Choose the Font Size for the Cast Time Text.", 3, 1, 40, 1, applyCastbar, nil, nil, disabledCastbarTimeFunc),
+				OffsetX = self:NewInputNumber("X Value", "Choose the X Value for the Cast Time Text.", 4, applyCastbar, nil, disabledCastbarTimeFunc),
+				OffsetY = self:NewInputNumber("Y Value", "Choose the Y Value for the Cast Time Text.", 5, applyCastbar, nil, disabledCastbarTimeFunc),
+				ShowMax = self:NewToggle("Show Max", "Whether you want to show the max Time or not.", 6, applyCastbar, "full", disabledCastbarTimeFunc),
+			}),
+		}),
+		Border = self:NewGroup("Border", 4, nil, disabledCastbarFunc, {
+			Texture = self:NewSelect("Border Texture", "Choose the Border Texture.", 1, widgetLists.border, "LSM30_Border", applyCastbar),
+			Thickness = self:NewInputNumber("Border Thickness", "Value for your Castbar Border Thickness.", 2, applyCastbar),
+			Inset = self:NewGroup("Insets", 3, true, {
+				left = self:NewInputNumber("Left", "Value for the left Border Inset.", 1, applyCastbar, "half"),
+				right = self:NewInputNumber("Right", "Value for the right Border Inset.", 2, applyCastbar, "half"),
+				top = self:NewInputNumber("Top", "Value for the top Border Inset.", 3, applyCastbar, "half"),
+				bottom = self:NewInputNumber("Bottom", "Value for the bottom Border Inset.", 4, applyCastbar, "half"),
+			}),
+		}),
+	})
 	
-	local TogglePortrait = function(self, Enable)
-		for _, frame in pairs(ufNames) do
+	return options
+end
+
+-- type: "Buffs", "Debuffs"
+function module:CreateAuraOptions(unit, order, type)
+	local disabledFunc = function() return not self.db[unit].Aura[type].Enable end
+	local disabledPetFunc = function() return not self.db[unit].Aura[type].Enable and self.db[unit].Aura[type].PlayerOnly end
+	local disabledCDFunc = function() return not self.db[unit].Aura[type].Enable and self.db[unit].Aura[type].DisableCooldown end
+	
+	local applySettings = function()
+		for _, frame in pairs(self.framelist[unit]) do
 			if _G[frame] then
-				if not _G[frame].Portrait then LUI.oUF_LUI.funcs.Portrait(_G[frame], _G[frame].__unit, db.oUF[unit]) end
-				if Enable == true then
-					_G[frame]:EnableElement("Portrait")
-					_G[frame].Portrait:Show()
+				module.funcs[type](_G[frame], _G[frame].__unit, self.db[unit])
+				if self.db[unit].Aura[type].Enable then
+					_G[frame]:EnableElement("Aura")
+					_G[frame][type]:Show()
 				else
-					_G[frame].Portrait:Hide()
-					_G[frame]:DisableElement("Portrait")
+					if self.db[unit].Aura.Buffs.Enable == false and self.db[unit].Aura.Debuffs.Enable == false then
+						_G[frame]:DisableElement("Aura")
+					end
+					_G[frame][type]:Hide()
 				end
 				_G[frame]:UpdateAllElements()
 			end
 		end
 	end
 	
-	local ApplyPortrait = function()
-		for _, frame in pairs(ufNames) do
-			if _G[frame] then LUI.oUF_LUI.funcs.Portrait(_G[frame], _G[frame].__unit, db.oUF[unit]) end
+	local options = self:NewGroup(type, order, {
+		Enable = self:NewToggle("Enable", "Whether you want to show "..unit.." "..type.." or not.", 1, applySettings, "full"),
+		empty1 = self:NewDesc(" ", 2),
+		X = self:NewInputNumber("X Value", "Choose the X Value for your "..unit.." "..type..".", 3, applySettings, nil, disabledFunc),
+		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..unit.." "..type..".", 4, applySettings, nil, disabledFunc),
+		InitialAnchor = self:NewSelect("Initial Anchor", "Choose the initial Anchor for the "..unit.." "..type..".", 5, positions, nil, applySettings, nil, disabledFunc),
+		GrowthX = self:NewSelect("Growth X", "Choose the Growth X direction for the "..unit.." "..type..".", 6, growthX, nil, applySettings, nil, disabledFunc),
+		GrowthY = self:NewSelect("Growth Y", "Choose the Growth Y direction for the "..unit.." "..type..".", 7, growthY, nil, applySettings, nil, disabledFunc),
+		empty2 = self:NewDesc(" ", 8),
+		Size = self:NewInputNumber("Size", "Choose the Size for the "..unit.." "..type..".", 9, applySettings, nil, disabledFunc),
+		Spacing = self:NewInputNumber("Spacing", "Choose the Spacing between your "..unit.." "..type..".", 10, applySettings, nil, disabledFunc),
+		Num = self:NewInputNumber("Amount", "Choose the Amount of "..unit.." "..type.." you want to show.", 11, applySettings, nil, disabledFunc),
+		empty3 = self:NewDesc(" ", 12),
+		AuraTimer = self:NewToggle("Enable Auratimer", "Whether you want to show Auratimers or not.", 14, applySettings, "full", disabledFunc),
+		PlayerOnly = self:NewToggle("Player "..type.." Only", "Whether you want to show only the "..type.." or not.", 15, applySettings, nil, disabledFunc),
+		IncludePet = self:NewToggle("Include Pet "..type, "Whether you want to include Pet "..type.." or not.", 16, applySettings, nil, disabledPetFunc),
+		ColorByType = self:NewToggle("Color by Type", "Whether you want to color "..type.." by Type or not.", 17, applySettings, "full", disabledFunc),
+		DisableCooldown = self:NewToggle("Hide Cooldown Spiral", "Whether you want to disable the cooldown spiral effect or not.", 18, applySettings, nil, disabledFunc),
+		CooldownReverse = self:NewToggle("Reverse Cooldown Spiral", "Whether you want to reverse the cooldown spiral effect or not.", 19, applySettings, nil, disabledCDFunc),
+	})
+	
+	return options
+end
+
+function module:CreatePortraitOptions(unit, order)
+	local disabledFunc = function() return not self.db[unit].Enable end
+	local disabledPortraitFunc = function() return not self.db[unit].Portrait.Enable end
+	
+	local applyPortrait = function()
+		for _, frame in pairs(self.framelist[unit]) do
+			if _G[frame] then
+				module.funcs.Portrait(_G[frame], _G[frame].__unit, self.db[unit])
+				if self.db[unit].Portrait.Enable == true then
+					_G[frame]:EnableElement("Portrait")
+					_G[frame].Portrait:Show()
+				else
+					_G[frame]:DisableElement("Portrait")
+					_G[frame].Portrait:Hide()
+				end
+				_G[frame]:UpdateAllElements()
+			end
 		end
 	end
 	
-	local options = {
-		name = unit,
-		type = "group",
-		order = index*2+10,
-		disabled = disabledFunc,
-		childGroups = "tab",
-		args = {
-			header = LUI:NewHeader(unit, 1),
-			General = {
-				name = "General",
-				type = "group",
-				order = 2,
-				childGroups = "tab",
-				args = {
-					General = {
-						name = "General",
-						type = "group",
-						order = 1,
-						args = {
-							Enable = (unit ~= "Player" and unit ~= "Target") and LUI:NewToggle("Enable", "Whether you want to use "..unit.." Frame or not.", 1, oufdb, "Enable", oufdefaults, ToggleFunc) or nil,
-							UseBlizzard = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Raid") and LUI:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, oufdb, "UseBlizzard", oufdefaults, ToggleFunc, nil, function() return oufdb.Enable end) or nil,
-							header = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank" or unit == "Raid") and LUI:NewHeader("General", 6) or nil,
-							Padding = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank" or unit == "Raid") and LUI:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.", 7, oufdb, "Padding", oufdefaults, ChangePadding, nil, disabledFunc2) or nil,
-							GrowDirection = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank") and LUI:NewSelect("Grow Direction", "Choose the Grow Direction for your "..unit.." Frames.", 8, directions, nil, oufdb, "GrowDirection", oufdefaults, ChangePadding, nil, disabledFunc2) or nil,
-							header2 = LUI:NewHeader("Frame Position", 10),
-							XValue = LUI:NewPosX(unit.." Frame", 11, oufdb, "", oufdefaults, SetPosition, nil, disabledFunc2),
-							YValue = LUI:NewPosY(unit.." Frame", 12, oufdb, "", oufdefaults, SetPosition, nil, disabledFunc2),
-							Point = LUI:NewSelect("Point", "Choose the Point for your "..unit.." Frame(s).", 13, positions, nil, oufdb, "Point", oufdefaults, SetPosition, nil, disabledFunc2),
-							RelativePoint = (not ufMover[unit]) and LUI:NewSelect("Relative Point", "Choose the Relative Point for your "..unit.." Frames.", 14, positions, nil, oufdb, "RelativePoint", oufdefaults, SetPosition, nil, disabledFunc2) or nil,
-							header3 = LUI:NewHeader("Frame Height/Width", 15),
-							Height = LUI:NewHeight(unit.." Frame", 16, oufdb, nil, oufdefaults, ApplyHeightWidth, nil, disabledFunc2),
-							Width = LUI:NewWidth(unit.." Frame", 17, oufdb, nil, oufdefaults, ApplyHeightWidth, nil, disabledFunc2),
-							Scale = (unit ~= "Raid" and ufMover[unit]) and LUI:NewSlider("Scale", "Choose the Scale for your "..unit.." Unitframes.", 18, oufdb, "Scale", oufdefaults, 0.1, 2, 0.05, ToggleFunc) or nil,
-						},
-					},
-					Appearance = {
-						name = "Appearance",
-						type = "group",
-						disabled = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end,
-						order = 2,
-						args = {
-							header = LUI:NewHeader("Backdrop Colors", 1),
-							BackdropColor = LUI:NewColor("Backdrop", nil, 2, oufdb.Backdrop.Color, oufdefaults.Backdrop.Color, ApplySettings),
-							BackdropBorderColor = LUI:NewColor("Border", nil, 3, oufdb.Border.Color, oufdefaults.Border.Color, ApplySettings),
-							AggroGlow = (unit == "Player" or unit == "Target" or unit == "Focus" or unit == "Pet" or unit == "Maintank" or unit == "Party" or unit == "PartyPet" or unit == "Raid") and {
-								name = "Aggro Glow",
-								desc = "Whether you want the border color to change if the unit has aggro or not.",
-								type = "toggle",
-								get = function() return oufdb.Border.Aggro end,
-								set = function(_, Enable)
-										oufdb.Border.Aggro = Enable
-										
-										for _, frame in pairs(ufNames) do
-											if _G[frame] then
-												if not _G[frame].Threat then LUI.oUF_LUI.funcs.AggroGlow(_G[frame], _G[frame].__unit, db.oUF[unit]) end
-												if Enable then
-													_G[frame]:EnableElement("Threat")
-												else
-													_G[frame]:DisableElement("Threat")
-													_G[frame].Threat:Hide()
-												end
-												_G[frame]:UpdateAllElements()
-											end
-										end
-									end,
-								order = 4,
-							} or nil,
-							header2 = LUI:NewHeader("Backdrop Settings", 5),
-							BackdropTexture = LUI:NewSelect("Backdrop Texture", "Choose the Backdrop Texture.", 6, widgetLists.background, "LSM30_Background", oufdb.Backdrop, "Texture", oufdefaults.Backdrop, ApplySettings),
-							BorderTexture = LUI:NewSelect("Border Texture", "Choose the Border Texture.", 7, widgetLists.border, "LSM30_Border", oufdb.Border, "EdgeFile", oufdefaults.Border, ApplySettings),
-							BorderSize = LUI:NewSlider("Edge Size", "Choose the Edge Size for the Frame Border.", 8, oufdb.Border, "EdgeSize", oufdefaults.Border, 1, 50, 1, ApplySettings),
-							header3 = LUI:NewHeader("Backdrop Padding", 9),
-							PaddingLeft = LUI:NewInputNumber("Left", "Value for the left Backdrop Padding.", 10, oufdb.Backdrop.Padding, "Left", oufdefaults.Backdrop.Padding, ApplySettings, "half"),
-							PaddingRight = LUI:NewInputNumber("Right", "Value for the right Backdrop Padding.", 11, oufdb.Backdrop.Padding, "Right", oufdefaults.Backdrop.Padding, ApplySettings, "half"),
-							PaddingTop = LUI:NewInputNumber("Top", "Value for the top Backdrop Padding.", 12, oufdb.Backdrop.Padding, "Top", oufdefaults.Backdrop.Padding, ApplySettings, "half"),
-							PaddingBottom = LUI:NewInputNumber("Bottom", "Value for the bottom Backdrop Padding.", 13, oufdb.Backdrop.Padding, "Bottom", oufdefaults.Backdrop.Padding, ApplySettings, "half"),
-							header3 = LUI:NewHeader("Border Insets", 14),
-							InsetLeft = LUI:NewInputNumber("Left", "Value for the left Border Inset.", 15, oufdb.Border.Insets, "Left", oufdefaults.Border.Insets, ApplySettings, "half"),
-							InsetRight = LUI:NewInputNumber("Right", "Value for the right Border Inset.", 16, oufdb.Border.Insets, "Right", oufdefaults.Border.Insets, ApplySettings, "half"),
-							InsetTop = LUI:NewInputNumber("Top", "Value for the Top Border Inset.", 17, oufdb.Border.Insets, "Top", oufdefaults.Border.Insets, ApplySettings, "half"),
-							InsetBottom = LUI:NewInputNumber("Bottom", "Value for the bottom Border Inset.", 18, oufdb.Border.Insets, "Bottom", oufdefaults.Border.Insets, ApplySettings, "half"),
-						},
-					},
-					AlphaFader = oufdb.Fader and {
-						name = "Fader",
-						type = "group",
-						disabled = function()
-								if unit == "Player" or unit == "Target" then
-									return not (Fader.db.profile.Enable)
-								else
-									return not oufdb.Enable or not (Fader.db.profile.Enable)
-								end
-							end,
-						order = 8,
-						args = Fader:CreateFaderOptions(ufNames, oufdb.Fader, oufdefaults.Fader),
-					} or nil,
-					CopySettings = oUF_CopySettings:CreateCopySettings(unit, 9),
-				},
-			},
-			Bars = {
-				name = "Bars",
-				type = "group",
-				childGroups = "tab",
-				disabled = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end,
-				order = 3,
-				args = {
-					Health = module:CreateBarOptions(unit, 1, "Health"),
-					Power = module:CreateBarOptions(unit, 2, "Power"),
-					Full = module:CreateBarOptions(unit, 3, "Full"),
-				},
-			},
-			Texts = {
-				name = "Texts",
-				type = "group",
-				disabled = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end,
-				childGroups = "tab",
-				order = 4,
-				args = {
-					Name = unit ~= "Raid" and {
-						name = "Name",
-						type = "group",
-						order = 1,
-						args = {
-							Enable = LUI:NewToggle("Enable", "Whether you want to show the "..unit.." Name or not.", 1, oufdb.Texts.Name, "Enable", oufdefaults.Texts.Name, ApplyInfoText),
-							FontSettings = {
-								name = "Font Settings",
-								type = "group",
-								disabled = function() return not oufdb.Texts.Name.Enable end,
-								guiInline = true,
-								order = 2,
-								args = {
-									FontSize = LUI:NewSlider("Size", "Choose the "..unit.." Name Fontsize.", 1, oufdb.Texts.Name, "Size", oufdefaults.Texts.Name, 1, 40, 1, ApplyInfoText),
-									empty = LUI:NewEmpty(2),
-									Font = LUI:NewSelect("Font", "Choose the Font for "..unit.." Name.", 3, widgetLists.font, "LSM30_Font", oufdb.Texts.Name, "Font", oufdefaults.Texts.Name, ApplyInfoText),
-									FontFlag = LUI:NewSelect("Font Flag", "Choose the Font Flag for "..unit.." Name.", 4, fontflags, nil, oufdb.Texts.Name, "Outline", oufdefaults.Texts.Name, ApplyInfoText),
-									NameX = LUI:NewPosX(unit.." Name", 5, oufdb.Texts.Name, "", oufdefaults.Texts.Name, ApplyInfoText),
-									NameY = LUI:NewPosY(unit.." Name", 6, oufdb.Texts.Name, "", oufdefaults.Texts.Name, ApplyInfoText),
-									Point = LUI:NewSelect("Point", "Choose the Point for the "..unit.." Name.", 7, positions, nil, oufdb.Texts.Name, "Point", oufdefaults.Texts.Name, ApplyInfoText),
-									RelativePoint = LUI:NewSelect("Relative Point", "Choose the Relative Point for the "..unit.." Name.", 8, positions, nil, oufdb.Texts.Name, "RelativePoint", oufdefaults.Texts.Name, ApplyInfoText),
-								},
-							},
-							Settings = {
-								name = "Settings",
-								type = "group",
-								disabled = function() return not oufdb.Texts.Name.Enable end,
-								guiInline = true,
-								order = 3,
-								args = {
-									Format = LUI:NewSelect("Format", "Choose the Format for your "..unit.." Name.", 1, nameFormat, nil, oufdb.Texts.Name, "Format", oufdefaults.Texts.Name, ApplyInfoText),
-									Length = LUI:NewSelect("Length", "Choose the Length of your "..unit.." Name.", 2, nameLenghts, nil, oufdb.Texts.Name, "Length", oufdefaults.Texts.Name, ApplyInfoText),
-									empty = LUI:NewEmpty(3),
-									ColorNameByClass = LUI:NewToggle("Color Name by Class", "Whether you want to color the "..unit.." Name by Class or not.", 4, oufdb.Texts.Name, "ColorNameByClass", oufdefaults.Texts.Name, ApplyInfoText, "normal"),
-									ColorClassByClass = LUI:NewToggle("Color Class by Class", "Whether you want to color the "..unit.." Class by Class or not.", 5, oufdb.Texts.Name, "ColorClassByClass", oufdefaults.Texts.Name, ApplyInfoText, "normal"),
-									ColorLevelByDifficulty = LUI:NewToggle("Color Level by Difficulty", "Whether you want to color the Level by Difficulty or not.", 6, oufdb.Texts.Name, "ColorLevelByDifficulty", oufdefaults.Texts.Name, ApplyInfoText, "normal"),
-									ShowClassification = LUI:NewToggle("Show Classifications", "Whether you want to show Classifications like Elite, Boss or not.", 7, oufdb.Texts.Name, "ShowClassification", oufdefaults.Texts.Name, ApplyInfoText, "normal"),
-									ShortClassification = LUI:NewToggle("Short Classifications", "Whether you want to show short Classifications or not.", 8, oufdb.Texts.Name, "ShortClassification", oufdefaults.Texts.Name, ApplyInfoText),
-									empty2 = LUI:NewEmpty(9),
-									Color = LUI:NewColorNoAlpha("", "Name Text", 10, oufdb.Texts.Name.IndividualColor, oufdefaults.Texts.Name.IndividualColor, ApplyInfoText),
-								},
-							},
-						},
-					} or nil,
-					Health = module:CreateTextOptions(unit, 2, "Health", "Value"),
-					Power = module:CreateTextOptions(unit, 3, "Power", "Value"),
-					HealthPercent = module:CreateTextOptions(unit, 4, "Health", "Percent"),
-					PowerPercent = module:CreateTextOptions(unit, 5, "Power", "Percent"),
-					HealthMissing = module:CreateTextOptions(unit, 6, "Health", "Missing"),
-					PowerMissing = module:CreateTextOptions(unit, 7, "Power", "Missing"),
-					CombatText = (unit == "Player" or unit == "Target" or unit == "Focus" or unit == "Pet" or unit == "ToT") and {
-						name = "Combat",
-						type = "group",
-						order = 8,
-						args = {
-							Enable = LUI:NewToggle("Enable", "Whether you want to show Combat Text on the "..unit.." Frame or not.", 1, oufdb.Texts.Combat, "Enable", oufdefaults.Texts.Combat, ApplyCombatFeedback),
-							FontSettings = {
-								name = "Font Settings",
-								type = "group",
-								disabled = function() return not oufdb.Texts.Combat.Enable end,
-								guiInline = true,
-								order = 2,
-								args = {
-									FontSize = LUI:NewSlider("Size", "Choose the Combat Text Fontsize.", 1, oufdb.Texts.Combat, "Size", oufdefaults.Texts.Combat, 1, 40, 1, ApplyComatFeedback),
-									empty = LUI:NewEmpty(2),
-									Font = LUI:NewSelect("Font", "Choose the Combat Text Font.", 3, widgetLists.font, "LSM30_Font", oufdb.Texts.Combat, "Font", oufdefaults.Texts.Combat, ApplyCombatFeedback),
-									FontFlag = LUI:NewSelect("Font Flag", "Choose the Combat Text Font Flag.", 4, fontflags, nil, oufdb.Texts.Combat, "Outline", oufdefaults.Texts.Combat, ApplyCombatFeedback),
-									XValue = LUI:NewPosX("Combat Text", 5, oufdb.Texts.Combat, "", oufdefaults.Texts.Combat, ApplyCombatFeedback),
-									YValue = LUI:NewPosY("Combat Text", 6, oufdb.Texts.Combat, "", oufdefaults.Texts.Combat, ApplyCombatFeedback),
-									Point = LUI:NewSelect("Point", "Choose the Point for your "..unit.." Combat Text.", 7, positions, nil, oufdb.Texts.Combat, "Point", oufdefaults.Texts.Combat, ApplyCombatFeedback),
-									RelativePoint = LUI:NewSelect("RelativePoint", "Choose the Relative Point for your "..unit.." Combat Text", 8, positions, nil, oufdb.Texts.Combat, "RelativePoint", oufdefaults.Texts.Combat, ApplyCombatFeedback),
-								},
-							},
-						},
-					} or nil,
-				},
-			},
-			Castbar = (oufdb.Castbar) and {
-				name = "Castbar",
-				type = "group",
-				disabled = function() return (oufdb.Enable ~= nil and not (oufdb.Enable and db.oUF.Settings.Castbars) or not db.oUF.Settings.Castbars) end,
-				order = 4,
-				childGroups = "tab",
-				args = {
-					header = LUI:NewHeader(unit.." Castbar", 1),
-					General = {
-						name = "General",
-						type = "group",
-						order = 2,
-						args = {
-							CastbarEnable = LUI:NewToggle("Enable", "Whether you want to show your "..unit.." Castbar or not.", 1, oufdb.Castbar, "Enable", oufdefaults.Castbar, ToggleCastbar),
-							CastbarSize = {
-								name = "Size/Position",
-								type = "group",
-								guiInline = true,
-								disabled = function() return not oufdb.Castbar.Enable end,
-								order = 2,
-								args = {
-									CastbarHeight = LUI:NewHeight("Castbar", 1, oufdb.Castbar, nil, oufdefaults.Castbar, ApplyCastbar),
-									CastbarWidth = LUI:NewWidth("Castbar", 2, oufdb.Castbar, nil, oufdefaults.Castbar, ApplyCastbar),
-									CastbarPoint = (unit == "Player" or unit == "Target") and LUI:NewSelect("Point", "Choose the Point for your Castbar.", 3, positions, nil, oufdb.Castbar, "Point", oufdefaults.Castbar, ApplyCastbar) or nil,
-									empty = (unit == "Player" or unit == "Target") and LUI:NewEmpty(4) or nil,
-									CastbarX = LUI:NewPosX("Castbar", 5, oufdb.Castbar, "", oufdefaults.Castbar, ApplyCastbar),
-									CastbarY = LUI:NewPosY("Castbar", 6, oufdb.Castbar, "", oufdefaults.Castbar, ApplyCastbar),
-								},
-							},
-							CastbarToggle = LUI:NewExecute("Show Dummy Castbar", "Show a Dummy Castbar for testing and positioning", 3, TestCastbar),
-						},
-					},
-					CastbarColors = {
-						name = "Colors",
-						type = "group",
-						disabled = function() return not oufdb.Castbar.Enable end,
-						order = 3,
-						args = {
-							Colors = {
-								name = "Castbar Colors",
-								type = "group",
-								guiInline = true,
-								order = 1,
-								args = {
-									CBColorEnable = LUI:NewToggle("Individual Castbar Color", "Whether you want an individual Castbar Color or not.", 1, oufdb.Castbar, "IndividualColor", oufdefaults.Castbar, ApplyCastbar),
-									CBColor = LUI:NewColor("Castbar", nil, 2, oufdb.Castbar.Colors.Bar, oufdefaults.Castbar.Colors.Bar, ApplyCastbar, nil, function() return not oufdb.Castbar.IndividualColor end),
-									CBBGColor = LUI:NewColor("Castbar BG", nil, 3, oufdb.Castbar.Colors.Background, oufdefaults.Castbar.Colors.Background, ApplyCastbar, nil, function() return not oufdb.Castbar.IndividualColor end),
-									CBBorderColor = LUI:NewColor("Castbar Border", nil, 5, oufdb.Castbar.Colors.Border, oufdefaults.Castbar.Colors.Border, ApplyCastbar, nil, function() return not oufdb.Castbar.IndividualColor end),
-									empty = LUI:NewEmpty(6),
-									--CBShieldEnable = LUI:NewToggle("Color Shielded", "Whether you want to use an other Color for shielded Casts or not.", 7, oufdb.Castbar.Colors.Shield, "Enable", oufdefaults.Castbar.Colors.Shield, ApplyCastbar),
-									--CBShieldColor = LUI:NewColor("Shield Color", "Choose the Color you want to use for shielded Casts.", 8, oufdb.Castbar.Colors.Shield, oufdefaults.Castbar.Colors.Shield, ApplyCastbar, function() return not oufdb.Castbar.Colors.Shield.Enable end),
-									--empty2 = LUI:NewEmpty(9),
-									CBNameColor = LUI:NewColorNoAlpha("Castbar Name Text", nil, 10, oufdb.Castbar.Colors.Name, oufdefaults.Castbar.Colors.Name, ApplyCastbar, nil, function() return not oufdb.Castbar.Text.Name.Enable end),
-									CBTimeColor = LUI:NewColorNoAlpha("Castbar Time Text", nil, 11, oufdb.Castbar.Colors.Time, oufdefaults.Castbar.Colors.Time, ApplyCastbar, nil, function() return not oufdb.Castbar.Text.Time.Enable end),
-								},
-							},
-							Textures = {
-								name = "Castbar Textures",
-								type = "group",
-								guiInline = true,
-								order = 2,
-								args = {
-									CBTexture = LUI:NewSelect("Bar Texture", "Choose the Castbar Texture.", 1, widgetLists.statusbar, "LSM30_Statusbar", oufdb.Castbar, "Texture", oufdefaults.Castbar, ApplyCastbar),
-									CBTextureBG = LUI:NewSelect("Background Texture", "Choose the Castbar Background Texture.", 2, widgetLists.statusbar, "LSM30_Statusbar", oufdb.Castbar, "TextureBG", oufdefaults.Castbar, ApplyCastbar),
-								},
-							},
-						},
-					},
-					CastbarTexts = {
-						name = "Texts",
-						type = "group",
-						disabled = function() return not oufdb.Castbar.Enable end,
-						order = 4,
-						args = {
-							header1 = LUI:NewHeader("Name Text", 1, "full"),
-							CastbarName = LUI:NewToggle("Show Name Text", "Whether you want to show the Castbar Name Text or not.", 2, oufdb.Castbar.Text.Name, "Enable", oufdefaults.Castbar.Text.Name, ApplyCastbar),
-							CastbarNameFont = LUI:NewSelect("Name Font", "Choose the Font for the Castbar Name Text.", 3, widgetLists.font, "LSM30_Font", oufdb.Castbar.Text.Name, "Font", oufdefaults.Castbar.Text.Name, ApplyCastbar, nil, DisabledCBText("Name")),
-							CastbarNameFontsize = LUI:NewSlider("Size", "Choose the Castbar Name Text Fontsize.", 4, oufdb.Castbar.Text.Name, "Size", oufdefaults.Castbar.Text.Name, 10, 40, 1, ApplyCastbar, nil, DisabledCBText("Name")),
-							CastbarNameOffsetX = LUI:NewOffsetX("Castbar Name Text", 5, oufdb.Castbar.Text.Name, "Offset", oufdefaults.Castbar.Text.Name, ApplyCastbar, nil, DisabledCBText("Name")),
-							CastbarNameOffsetY = LUI:NewOffsetY("Castbar Name Text", 6, oufdb.Castbar.Text.Name, "Offset", oufdefaults.Castbar.Text.Name, ApplyCastbar, nil, DisabledCBText("Name")),
-							header2 = LUI:NewHeader("Time Text", 7, "full"),
-							CastbarTime = LUI:NewToggle("Show Time Text", "Whether you want to show the Castbar Time Text or not.", 8, oufdb.Castbar.Text.Time, "Enable", oufdefaults.Castbar.Text.Time, ApplyCastbar),
-							CastbarTimeMax = LUI:NewToggle("Show Cast Time", "Whether you want to show the Castbar Cast Time or not.", 9, oufdb.Castbar.Text.Time, "ShowMax", oufdefaults.Castbar.Text.Time, ApplyCastbar, nil, DisabledCBText("Time")),
-							CastbarTimeFont = LUI:NewSelect("Time Font", "Choose the Font for the Castbar Time Text.", 10, widgetLists.font, "LSM30_Font", oufdb.Castbar.Text.Time, "Font", oufdefaults.Castbar.Text.Name, ApplyCastbar, nil, function() return not oufdb.Castbar.Text.Time.Enable end),
-							CastbarTimeFontsize = LUI:NewSlider("Size", "Choose the Castbar Time Text Fontsize.", 11, oufdb.Castbar.Text.Time, "Size", oufdefaults.Castbar.Text.Time, 10, 40, 1, ApplyCastbar, nil, DisabledCBText("Time")),
-							CastbarTimeOffsetX = LUI:NewOffsetX("Castbar Time Text", 12, oufdb.Castbar.Text.Time, "Offset", oufdefaults.Castbar.Text.Time, ApplyCastbar, nil, DisabledCBText("Time")),
-							CastbarTimeOffsetY = LUI:NewOffsetY("Castbar Time Text", 12, oufdb.Castbar.Text.Time, "Offset", oufdefaults.Castbar.Text.Time, ApplyCastbar, nil, DisabledCBText("Time")),
-						},
-					},
-					CastbarBorder = {
-						name = "Castbar Border",
-						type = "group",
-						disabled = function() return not oufdb.Castbar.Enable end,
-						order = 5,
-						args = {
-							CBBorder = LUI:NewSelect("Border Texture", "Choose the Border Texture.", 1, widgetLists.border, "LSM30_Border", oufdb.Castbar.Border, "Texture", oufdefaults.Castbar.Border, ApplyCastbar),
-							CBBorderThickness = LUI:NewInputNumber("Edge Size", "Value for your Castbar Border Edge Size", 2, oufdb.Castbar.Border, "Thickness", oufdefaults.Castbar.Border, ApplyCastbar, "half"),
-							empty = LUI:NewEmpty(3),
-							CBBorderInsetLeft = LUI:NewInputNumber("Left", "Value for the left Border Inset.", 4, oufdb.Castbar.Border.Inset, "left", oufdefaults.Castbar.Border.Inset, ApplyCastbar, "half"),
-							CBBorderInsetRight = LUI:NewInputNumber("Right", "Value for the right Border Inset.", 5, oufdb.Castbar.Border.Inset, "right", oufdefaults.Castbar.Border.Inset, ApplyCastbar, "half"),
-							CBBorderInsetTop = LUI:NewInputNumber("Top", "Value for the top Border Inset.", 6, oufdb.Castbar.Border.Inset, "top", oufdefaults.Castbar.Border.Inset, ApplyCastbar, "half"),
-							CBBorderInsetBottom = LUI:NewInputNumber("Bottom", "Value for the bottom Border Inset.", 7, oufdb.Castbar.Border.Inset, "bottom", oufdefaults.Castbar.Border.Inset, ApplyCastbar, "half"),
-						},
-					},
-				},
-			} or nil,
-			Aura = (oufdb.Aura) and {
-				name = "Aura",
-				type = "group",
-				disabled = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end,
-				childGroups = "tab",
-				order = 6,
-				args = {
-					header = LUI:NewHeader(unit.." Auras", 1),
-					Buffs = module:CreateAuraOptions(unit, 2, false),
-					Debuffs = module:CreateAuraOptions(unit, 3, true),
-				},
-			} or nil,
-			Portrait = {
-				name = "Portrait",
-				type = "group",
-				disabled = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end,
-				order = 7,
-				args = {
-					Enable = LUI:NewToggle("Enable", "Whether you want to show the Portrait or not.", 1, oufdb.Portrait, "Enable", oufdefaults.Portrait, TogglePortrait),
-					Width = LUI:NewWidth("Portrait", 2, oufdb.Portrait, nil, oufdefaults.Portrait, ApplyPortrait, nil, DisabledPortrait),
-					Height = LUI:NewHeight("Portrait", 3, oufdb.Portrait, nil, oufdefaults.Portrait, ApplyPortrait, nil, DisabledPortrait),
-					X = LUI:NewPosX("Portrait", 4, oufdb.Portrait, "", oufdefaults.Portrait, ApplyPortrait, nil, DisabledPortrait),
-					Y = LUI:NewPosY("Portrait", 5, oufdb.Portrait, "", oufdefaults.Portrait, ApplyPortrait, nil, DisabledPortrait),
-					Alpha = LUI:NewSlider("Alpha", "Choose the Alpha for your Portrait.", 6, oufdb.Portrait, "Alpha", oufdefaults.Portrait, 0, 1, 0.05, ApplyPortrait, nil, DisabledPortrait),
-				},
-			},
-			Icons = (oufdb.Icons) and {
-				name = "Icons",
-				type = "group",
-				disabled = function() return (oufdb.Enable ~= nil and not oufdb.Enable or false) end,
-				order = 8,
-				childGroups = "tab",
-				args = {
-					Lootmaster = (unit ~= "Boss" and unit ~= "PartyPet" and unit ~= "PartyTarget" and unit ~= "MaintankTarget" and unit ~= "MaintankToT") and module:CreateIconOptions(unit, 1, "Lootmaster") or nil,
-					Leader = (unit ~= "Boss" and unit ~= "PartyPet" and unit ~= "PartyTarget" and unit ~= "MaintankTarget" and unit ~= "MaintankToT") and module:CreateIconOptions(unit, 2, "Leader") or nil,
-					LFDRole = (unit ~= "Boss" and unit ~= "PartyPet" and unit ~= "PartyTarget" and unit ~= "MaintankTarget" and unit ~= "MaintankToT") and module:CreateIconOptions(unit, 3, "Role") or nil,
-					Raid = module:CreateIconOptions(unit, 4, "Raid"),
-					PvP = (unit ~= "Boss" and unit ~= "PartyPet" and unit ~= "PartyTarget" and unit ~= "MaintankTarget" and unit ~= "MaintankToT" and unit ~= "Raid") and module:CreateIconOptions(unit, 5, "PvP") or nil,
-					ReadyCheck = (unit == "Raid") and module:CreateIconOptions(unit, 6, "ReadyCheck") or nil,
-				},
-			} or nil,
-		},
-	}
+	local options = self:NewGroup("Portrait", order, "tab", nil, disabledFunc, {
+		Enable = self:NewToggle("Enable", "Whether you want to show the Portrait or not.", 1, applyPortrait, "full"),
+		empty1 = self:NewDesc(" ", 2),
+		Width = self:NewInputNumber("Width", "Choose the Width for the Portrait.", 3, applyPortrait, nil, disabledPortraitFunc),
+		Height = self:NewInputNumber("Height", "Choose the Height for the Portrait.", 4, applyPortrait, nil, disabledPortraitFunc),
+		X = self:NewInputNumber("X Value", "Choose the X Value for the Portrait.", 5, applyPortrait, nil, disabledPortraitFunc),
+		Y = self:NewInputNumber("Y Value", "Choose the Y Value for the Portrait.", 6, applyPortrait, nil, disabledPortraitFunc),
+		Alpha = self:NewSlider("Alpha", "Choose the Alpha for the Portrait.", 7, 0, 1, 0.01, applyPortrait, true, nil, disabledPortraitFunc),
+	})
 	
 	return options
 end
 
-function module:LoadOptions()
-	local options = {}
+-- iconType: "PvP", "Combat", "Resting", "Lootmaster", "Leader", "Role", "Raid", "ReadyCheck"
+function module:CreateIconOptions(unit, order, iconType)
+	local disabledFunc = function() return not self.db[unit].Icons[iconType].Enable end
 	
-	for index, unit in pairs(units) do
-		options[unit] = module:CreateOptions(index, unit)
+	local applySettings = function()
+		for _, frame in pairs(self.framelist[unit]) do
+			if _G[frame] then
+				module.funcs[iconlist[iconType][1]](_G[frame], _G[frame].__unit, self.db[unit])
+				for _, icon in pairs(iconlist[iconType]) do
+					if self.db[unit].Icons[iconType].Enable then
+						_G[frame]:EnableElement(icon)
+						_G[frame]:UpdateAllElements()
+					else
+						_G[frame]:DisableElement(icon)
+						_G[frame][icon]:Hide()
+					end
+				end
+			end
+		end
 	end
 	
+	local showHideFunc = function()
+		for _, frame in pairs(self.framelist[unit]) do
+			if _G[frame] and _G[frame][iconlist[iconType][1]] then
+				if _G[frame][iconlist[iconType][1]]:IsShown() then _G[frame][iconlist[iconType][1]]:Hide() else _G[frame][iconlist[iconType][1]]:Show() end
+			end
+		end
+	end
+	
+	local options = self:NewGroup(iconType, order, {
+		Enable = self:NewToggle("Enable", "Whether you want to show the "..iconType.." Icon or not.", 1, applySettings, "full"),
+		empty1 = self:NewDesc(" ", 2),
+		X = self:NewInputNumber("X Value", "Choose the X Value for your "..iconType.." Icon.", 3, applySettings, nil, disabledFunc),
+		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..iconType.." Icon.", 4, applySettings, nil, disabledFunc),
+		Point = self:NewSelect("Point", "Choose the Point for your "..iconType.." Icon.", 5, positions, nil, applySettings, nil, disabledFunc),
+		Size = self:NewSlider("Size", "Choose the Size for your "..iconType.." Icon.", 6, 5, 60, 1, applySettings, nil, nil, disabledFunc),
+		empty2 = self:NewDesc(" ", 7),
+		Toggle = self:NewExecute("Show/Hide", "Toggles the "..iconType.." Icon.", 8, showHideFunc, nil, nil, disabledFunc),
+	})
+	
 	return options
 end
 
-function module:OnInitialize()	
-	self.db = LUI.db.profile
-	db = self.db
+function module:CreateUnitOptions(unit, order)
+	local disabledFunc = function() return not self.db[unit].Enable end
 	
-	LUI:RegisterUnitFrame(self)
+	local disabledUnitFunc = function()
+		if not self.db.Enable then return true end
+		
+		if unit == "MaintankToT" then
+			return not (self.db.MaintankTarget.Enable and self.db.Maintank.Enable)
+		elseif unit == "MaintankTarget" then
+			return not self.db.Maintank.Enable
+		elseif unit == "PartyTarget" or unit == "PartyPet" then
+			return not self.db.Party.Enable
+		elseif unit == "ArenaTarget" or unit == "ArenaPet" then
+			return not self.db.Arena.Enable
+		else
+			return false
+		end
+	end
+	
+	local testFunc = function()
+		if _G[self.framelist[unit][1]] and _G[self.framelist[unit][1]]:IsShown() then
+			self["Hide"..unit.."Frames"](self)
+		else
+			self["Show"..unit.."Frames"](self)
+		end
+	end
+	
+	local generalGet = function(info)
+		local x
+		for i = 1, #info do
+			x = i
+			if info[i] == unit then break end
+		end
+		local t = module.db[unit]
+		for i = x+1, #info do
+			if info[i] ~= "General" then
+				t = t[info[i]]
+			end
+		end
+		if type(t) == "table" then
+			if t.r then
+				return t.r, t.g, t.b, t.a
+			else
+				return unpack(t)
+			end
+		elseif info[#info] == "GroupPadding" or info[#info] == "Padding" or info[#info] == "X" or info[#info] == "Y" or info[#info] == "Width" or info[#info] == "Height" or info[#info] == "Left" or info[#info] == "Top" or info[#info] == "Right" or info[#info] == "Left" then
+			return tostring(tonumber(string.format("%.1f", t)))
+		elseif info[#info] == "Point" or info[#info] == "RelativePoint" then
+			for k, v in pairs(positions) do
+				if v == t then return k end
+			end
+		elseif info[#info] == "GrowDirection" then
+			for k, v in pairs(directions) do
+				if v == t then return k end
+			end
+		else
+			return t
+		end
+	end
+	
+	local generalSet = function(info, ...)
+		local x
+		for i = 1, #info do
+			x = i
+			if info[i] == unit then break end
+		end
+		local t = module.db[unit]
+		for i = x+1, #info-1 do
+			if info[i] ~= "General" then
+				t = t[info[i]]
+			end
+		end
+		if type(t[info[#info]]) == "table" then
+			t = t[info[#info]]
+			if t.r then
+				t.r, t.g, t.b, t.a = ...
+			else
+				t[1], t[2], t[3], t[4] = ...
+			end
+		elseif info[#info] == "GroupPadding" or info[#info] == "Padding" or info[#info] == "X" or info[#info] == "Y" or info[#info] == "Width" or info[#info] == "Height" or info[#info] == "Left" or info[#info] == "Top" or info[#info] == "Right" or info[#info] == "Left" then
+			local val = ...
+			t[info[#info]] = tonumber(val)
+		elseif info[#info] == "Point" or info[#info] == "RelativePoint" then
+			local val = ...
+			t[info[#info]] = positions[val]
+		elseif info[#info] == "GrowDirection" then
+			local val = ...
+			t[info[#info]] = directions[val]
+		else
+			local val = ...
+			t[info[#info]] = val
+		end
+		
+		module.Toggle(unit)
+		module.ApplySettings(unit)
+	end
+	
+	-- because of special way of get/set funcs, i add the default values manually here
+	local options = self:NewGroup(unit, order * 2 + 10, "tab", nil, disabledUnitFunc, {
+		header1 = self:NewHeader(unit, 1),
+		General = self:NewGroup("General", 2, "tab", generalGet, generalSet, {
+			General = self:NewGroup("General", 1, {
+				Enable = (unit ~= "Player" and unit ~= "Target") and self:NewToggle("Enable", "Whether you want to show "..unit.." Frame(s) or not.\n\nDefault: "..(self.defaults[unit].Enable and "Enabled" or "Disabled"), 1, false, "full") or nil,
+				UseBlizzard = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Raid") and self:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, false, "full", function() return self.db[unit].Enable end) or nil,
+				ShowPlayer = (unit == "Party") and self:NewToggle("Show Player", "Whether you want to show yourself within the Party Frames or not.", 3, false, nil, disabledFunc) or nil,
+				ShowInRaid = (unit == "Party") and self:NewToggle("Show in Raid", "Whether you want to show the Party Frames in Raid or not.", 4, false, nil, disabledFunc) or nil,
+				ShowInRealPartys = (unit == "Party") and self:NewToggle("Show only in real Partys", "Whether you want to show the Party Frames only in real Partys or in Raids with 5 or less players too.", 5, false, nil, function() return not module.db.Party.Enable or module.db.Party.ShowInRaid end) or nil,
+				empty1 = (unit ~= "Player" and unit ~= "Target") and self:NewDesc(" ", 6) or nil,
+				Padding = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank" or unit == "Raid") and self:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.\n\nDefault: "..self.defaults[unit].Padding, 7, false, nil, disabledFunc) or nil,
+				GroupPadding = (unit == "Raid") and self:NewInputNumber("Group Padding", "Choose the Padding between your "..unit.." Groups.\n\nDefault: "..self.defaults[unit].GroupPadding, 8, false, nil, disabledFunc) or nil,
+				GrowDirection = (unit == "Party" or unit == "Boss"or unit == "Arena" or unit == "Maintank") and self:NewSelect("Grow Direction", "Choose the Grow Direction for your "..unit.." Frames.\n\nDefault: "..self.defaults[unit].GrowDirection, 9, directions, nil, false, nil, disabledFunc) or nil,
+				empty2 = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank" or unit == "Raid") and self:NewDesc(" ", 10) or nil,
+				X = self:NewInputNumber("X Value", "Choose the X Value for your "..unit.." Frame(s).\n\nDefault: "..self.defaults[unit].X, 11, false, nil, disabledFunc),
+				Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..unit.." Frame(s).\n\nDefault: "..self.defaults[unit].Y, 12, false, nil, disabledFunc),
+				Point = self:NewSelect("Point", "Choose the Point for your "..unit.." Frame(s).\n\nDefault: "..self.defaults[unit].Point, 13, positions, nil, false, nil, disabledFunc),
+				RelativePoint = (not ufMover[unit]) and self:NewSelect("Relative Point", "Choose the relative Point for your "..unit.." Frame(s).\n\nDefault: "..self.defaults[unit].RelativePoint, 14, positions, nil, false, nil, disabledFunc) or nil,
+				empty3 = self:NewDesc(" ", 15),
+				Height = self:NewInputNumber("Height", "Choose the Height for your "..unit.." Frame(s).\n\nDefault: "..self.defaults[unit].Height, 16, false, nil, disabledFunc),
+				Width = self:NewInputNumber("Width", "Choose the Width for your "..unit.." Frame(s).\n\nDefault: "..self.defaults[unit].Width, 17, false, nil, disabledFunc),
+				Scale = (unit ~= "Raid" and ufMover[unit]) and self:NewSlider("Scale", "Choose the Scale for your "..unit.." Frame(s).\n\nDefault: 100%", 18, 0.1, 2, 0.01, false, nil, nil, disabledFunc) or nil,
+				empty4 = (unit == "Arena" or unit == "Boss" or unit == "Maintank" or unit == "Party") and self:NewDesc(" ", 19) or nil,
+				Toggle = (unit == "Arena" or unit == "Boss" or unit == "Maintank") and self:NewExecute("Show/Hide", "Toggles the "..unit.." Frames", 20, testFunc, nil, nil, disabledFunc) or nil,
+				RangeFade = (unit == "Party") and self:NewToggle("Fade Out of Range", "Whether you want Party Frames to fade if that player is more than 40 yards away or not.", 21, false, nil, function() return not (self.db.Party.Enable and not self.db.Party.Fader.Enable) end) or nil,
+			}),
+			Backdrop = self:NewGroup("Background", 2, nil, disabledFunc, {
+				Color = self:NewColor("Background", nil, 1, false),
+				Texture = self:NewSelect("Backdrop Texture", "Choose the Backdrop Texture.", 2, widgetLists.background, "LSM30_Background", false),
+				Padding = self:NewGroup("Padding", 3, true, {
+					Left = self:NewInputNumber("Left", "Value for the left Backdrop Padding.", 1, false, "half"),
+					Right = self:NewInputNumber("Right", "Value for the right Backdrop Padding.", 2, false, "half"),
+					Top = self:NewInputNumber("Top", "Value for the top Backdrop Padding.", 3, false, "half"),
+					Bottom = self:NewInputNumber("Bottom", "Value for the bottom Backdrop Padding.", 4, false, "half"),
+				}),
+			}),
+			Border = self:NewGroup("Border", 3, nil, disabledFunc, {
+				Color = self:NewColor("Border", nil, 1, false),
+				EdgeFile = self:NewSelect("Border Texture", "Choose the Border Texture.", 2, widgetLists.border, "LSM30_Border", false),
+				EdgeSize = self:NewSlider("Edge Size", "Choose the Edge Size for the Frame Border.", 3, 1, 50, 1, false),
+				AggroGlow = (unit == "Player" or unit == "Target" or unit == "Focus" or unit == "Pet" or unit == "Maintank" or unit == "Party" or unit == "PartyPet" or unit == "Raid") and self:NewToggle("Aggro Glow", "Whether you want the border color to change if the unit has aggro or not.", 4, false) or nil,
+				Insets = self:NewGroup("Insets", 5, true, {
+					Left = self:NewInputNumber("Left", "Value for the left Border Inset.", 1, false, "half"),
+					Right = self:NewInputNumber("Right", "Value for the right Border Inset.", 2, false, "half"),
+					Top = self:NewInputNumber("Top", "Value for the top Border Inset.", 3, false, "half"),
+					Bottom = self:NewInputNumber("Bottom", "Value for the bottom Border Inset.", 4, false, "half"),
+				}),
+			}),
+			--platz!
+			AlphaFader = self.db[unit].Fader and self:NewGroup("Fader", 8, Fader:CreateFaderOptions(self.framelist[unit], self.db[unit].Fader, self.defaults[unit].Fader)) or nil,
+			CopySettings = self:CreateCopyOptions(unit, 9),
+		}),
+		Bars = self:NewGroup("Bars", 3, "tab", nil, disabledFunc, {
+			Health = self:CreateBarOptions(unit, 1, "Health"),
+			Power = self:CreateBarOptions(unit, 2, "Power"),
+			Full = self:CreateBarOptions(unit, 3, "Full"),
+			DruidMana = (class == "DRUID" and unit == "Player") and self:CreatePlayerBarOverlappingOptions("DruidMana", 11) or nil,
+			AltPower = (unit == "Player") and self:CreatePlayerBarOverlappingOptions("AltPower", 12) or nil,
+			TotemBar = (class == "SHAMAN" and unit == "Player") and self:CreatePlayerBarOptions("Totems", 13) or nil,
+			RuneBar = ((class == "DEATHKNIGHT" or class == "DEATH KNIGHT") and unit == "Player") and self:CreatePlayerBarOptions("Runes", 14) or nil,
+			HolyPower = (class == "PALADIN" and unit == "Player") and self:CreatePlayerBarOptions("HolyPower", 15) or nil,
+			SoulShards = (class == "WARLOCK" and unit == "Player") and self:CreatePlayerBarOptions("SoulShards", 16) or nil,
+			Eclipse = (class == "DRUID" and unit == "Player") and self:CreatePlayerBarOptions("Eclipse", 17) or nil,
+			ComboPoints = (unit == "Target") and self:CreateComboPointsOptions(18) or nil,
+		}),
+		Texts = self:NewGroup("Texts", 4, "tab", nil, disabledFunc, {
+			Name = (unit ~= "Raid") and self:CreateNameTextOptions(unit, 1) or self:CreateRaidNameTextOptions(1),
+			Health = self:CreateTextOptions(unit, 2, "Health", "Value"),
+			Power = self:CreateTextOptions(unit, 3, "Power", "Value"),
+			HealthPercent = self:CreateTextOptions(unit, 4, "Health", "Percent"),
+			PowerPercent = self:CreateTextOptions(unit, 5, "Power", "Percent"),
+			HealthMissing = self:CreateTextOptions(unit, 6, "Health", "Missing"),
+			PowerMissing = self:CreateTextOptions(unit, 7, "Power", "Missing"),
+			Combat = (unit == "Player" or unit == "Target" or unit == "Focus" or unit == "Pet" or unit == "ToT") and self:CreateCombatTextOptions(unit, 8) or nil,
+			DruidMana = (unit == "Player" and class == "DRUID") and self:CreateDruidManaTimerOptions(9) or nil,
+			PvPTimer = (unit == "Player") and self:CreatePvpTimerOptions(10) or nil,
+			Eclipse = (unit == "Player" and class == "DRUID") and self:CreatePlayerBarTextOptions("Eclipse", 11) or nil,
+			AltPower = (unit == "Player") and self:CreatePlayerBarTextOptions("AltPower", 12) or nil,
+		}),
+		Castbar = (self.db[unit].Castbar) and self:CreateCastbarOptions(unit, 5) or nil,
+		Aura = (self.db[unit].Aura) and self:NewGroup("Auras", 6, "tab", disabledFunc, {
+			Buffs = self:CreateAuraOptions(unit, 1, "Buffs"),
+			Debuffs = self:CreateAuraOptions(unit, 2, "Debuffs"),
+		}) or nil,
+		Portrait = self:CreatePortraitOptions(unit, 7),
+		Icons = self.db[unit].Icons and self:NewGroup("Icons", 8, "tab", nil, disabledFunc, {
+			PvP = self.db[unit].Icons.PvP and self:CreateIconOptions(unit, 1, "PvP") or nil,
+			Combat = self.db[unit].Icons.Combat and self:CreateIconOptions(unit, 2, "Combat") or nil,
+			Resting = self.db[unit].Icons.Resting and self:CreateIconOptions(unit, 3, "Resting") or nil,
+			Lootmaster = self.db[unit].Icons.Lootmaster and self:CreateIconOptions(unit, 4, "Lootmaster") or nil,
+			Leader = self.db[unit].Icons.Leader and self:CreateIconOptions(unit, 5, "Leader") or nil,
+			Role = self.db[unit].Icons.Role and self:CreateIconOptions(unit, 6, "Role") or nil,
+			Raid = self.db[unit].Icons.Raid and self:CreateIconOptions(unit, 7, "Raid") or nil,
+			ReadyCheck = self.db[unit].Icons.ReadyCheck and self:CreateIconOptions(unit, 8, "ReadyCheck") or nil,
+		}) or nil,
+	})
+
+	return options
 end

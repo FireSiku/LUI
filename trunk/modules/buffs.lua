@@ -109,13 +109,13 @@ local function CreateBarPanel(height, width, x, y, anchorPoint, anchorPointRel, 
 end
 
 function module:EnableBlizzardBuffs()	
-	LUI:Module("oUF"):Module("HideBlizzard"):Show("aura")
+	LUI:Module("Unitframes"):Module("HideBlizzard"):Show("aura")
 end
 
 function module:DisableBlizzardBuffs()
 	if db.Auras.DisableBlizzard ~= true then return end
 	
-	LUI:Module("oUF"):Module("HideBlizzard"):Hide("aura")
+	LUI:Module("Unitframes"):Module("HideBlizzard"):Hide("aura")
 end
 
 function module:SetBuffs()

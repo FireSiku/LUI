@@ -9,10 +9,6 @@ local frame_metatable = Private.frame_metatable
 -- Events
 Private.OnEvent = function(self, event, ...)
 	if(not self:IsShown()) then return end
-	if not self[event] then
-		--error("Please report this error to the LUI forums under this topic: http://web3.india025.server4you.de/board/viewtopic.php?p=30613#p30613 \nError Info: "..self:GetName().."; "..event)
-		return
-	end
 	return self[event](self, event, ...)
 end
 
