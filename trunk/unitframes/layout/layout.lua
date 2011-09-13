@@ -1939,6 +1939,10 @@ module.funcs = {
 			self.EclipseBar.spark:SetWidth(2)
 			self.EclipseBar.spark:SetTexture(1,1,1,1)
 
+			if Forte then
+				self.EclipseBar.PostUpdateVisibility = function() if self:GetLeft() then Forte:SetPosForte() end end
+			end
+			
 			self.EclipseBar.FrameBackdrop = CreateFrame("Frame", nil, self.EclipseBar)
 			self.EclipseBar.FrameBackdrop:SetPoint("TOPLEFT", self.EclipseBar, "TOPLEFT", -3.5, 3)
 			self.EclipseBar.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.EclipseBar, "BOTTOMRIGHT", 3.5, -3)
@@ -1962,10 +1966,6 @@ module.funcs = {
 		self.EclipseBar:ClearAllPoints()
 		self.EclipseBar:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 
-		if Forte and not self.EclipseBar.PostUpdateVisibility then
-			self.EclipseBar.PostUpdateVisibility = function() Forte:SetPosForte() end
-		end
-		
 		self.EclipseBar.LunarBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Eclipse.Texture))
 		self.EclipseBar.LunarBar:SetStatusBarColor(unpack(module.colors.eclipsebar.Lunar))
 

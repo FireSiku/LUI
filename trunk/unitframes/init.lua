@@ -9,7 +9,7 @@ local module = LUI:Module("Unitframes", "AceHook-3.0", "AceEvent-3.0")
 local Blizzard = LUI.Module(module, "HideBlizzard")
 local Forte = LUI:Module("Forte")
 
-local spawnList = {"Player", "Target", "Focus", "FocusTarget", "ToT", "ToToT", "Pet", "PetTarget", "Boss", "Party", "Maintank", "Arena", "Raid"}
+local unitsSpawn = {"Player", "Target", "Focus", "FocusTarget", "ToT", "ToToT", "Pet", "PetTarget", "Boss", "Party", "Maintank", "Arena", "Raid"}
 
 local units = {"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "BossTarget", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet", "Raid"}
 
@@ -118,8 +118,8 @@ function module:LoadOptions()
 end
 
 function module:Refresh()
-	for _, unit in pairs(spawnList) do
-		self.Toggle(unit)
+	for _, unit in pairs(unitsSpawn) do
+		self.ToggleUnit(unit)
 		self.ApplySettings(unit)
 	end
 	
@@ -236,15 +236,17 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
-	for _, unit in pairs(spawnList) do self.Toggle(unit) end
+	print("ena")
+	for _, unit in pairs(unitsSpawn) do module.ToggleUnit(unit) end
 	
 	Forte:SetPosForte()
 end
 
 function module:OnDisable()
-	for _, unit in pairs(spawnList) do self.Toggle(unit, false) end
+	print("disa")
+	for _, unit in pairs(unitsSpawn) do module.ToggleUnit(unit, false) end
 	
-	if self.db.General.HideBlizzRaid then
+	if module.db.Settings.HideBlizzRaid then
 		Blizzard:Hide("raid")
 	end
 end
