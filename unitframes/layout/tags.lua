@@ -125,7 +125,7 @@ oUF.Tags["DiffColor"] = function(unit)
 	local r, g, b
 	local level = UnitLevel(unit)
 	if level < 1 then
-		r, g, b = unpack(colors.leveldiff[1])
+		r, g, b = unpack(module.colors.leveldiff[1])
 	else
 		local difference = level - UnitLevel("player")
 		if difference >= 5 then

@@ -295,6 +295,7 @@ function module:Hide(unit, override)
 	unit = unit:lower()
 	argcheck(unit, "isin", hide)
 	
+	if not oUF:IsEnabled() then return end
 	if hidden[unit] then return end
 	
 	hidden[unit] = true
@@ -309,6 +310,7 @@ function module:Show(unit)
 	unit = unit:lower()
 	argcheck(unit, "isin", show)
 	
+	if not oUF:IsEnabled() then return end
 	if not hidden[unit] then return end
 	
 	hidden[unit] = nil
