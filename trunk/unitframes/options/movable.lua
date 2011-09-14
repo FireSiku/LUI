@@ -40,13 +40,13 @@ local setAllPositions = function()
 			
 			if k2 then
 				if module.db[k][k2] then
-					module.db[k][k2].X = tostring(x)
-					module.db[k][k2].Y = tostring(y)
+					module.db[k][k2].X = x
+					module.db[k][k2].Y = y
 					module.db[k][k2].Point = point
 				end
 			else
-				module.db[k].X = tostring(x * (module.db[k].Scale or 1))
-				module.db[k].Y = tostring(y * (module.db[k].Scale or 1))
+				module.db[k].X = x * (module.db[k].Scale or 1)
+				module.db[k].Y = y * (module.db[k].Scale or 1)
 				module.db[k].Point = point
 			end
 			

@@ -138,6 +138,8 @@ function module:OnInitialize()
 	if LUI.db.profile.oUF then
 		local MoveOver
 		function MoveOver(data, prior, stackstring)
+			if type(data) ~= "table" then return end
+			if type(prior) ~= "table" then return end
 			for k, v in pairs(prior) do
 				if type(prior[k]) == "table" and type(data[k]) == "table" then
 					MoveOver(data[k], prior[k], stackstring.."."..k)
