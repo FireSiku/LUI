@@ -890,9 +890,9 @@ end
 
 local PostUpdateDruidMana = function(druidmana, unit, min, max)
 	if druidmana.color == "By Class" then
-		druidmana.ManaBar:SetStatusBarColor(unpack(module.colors.class.Druid))
+		druidmana.ManaBar:SetStatusBarColor(unpack(module.colors.class.DRUID))
 	elseif druidmana.color == "By Type" then
-		druidmana.ManaBar:SetStatusBarColor(unpack(module.colors.power.Mana))
+		druidmana.ManaBar:SetStatusBarColor(unpack(module.colors.power.MANA))
 	else
 		druidmana.ManaBar:SetStatusBarColor(oUF.ColorGradient(min/max, module.colors.smooth()))
 	end
