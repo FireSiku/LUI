@@ -91,7 +91,7 @@ local timer_instances = {
 		}
 	},
 	Target = {
-		anchor = {"oUF_LUI_target", "TOPRIGHT"},
+		anchor = {"oUF_LUI_target"},
 		settings = {
 			Spell = true,
 			Label = false,
@@ -430,7 +430,7 @@ function module:SetFrameProps(instance,name)
 end
 
 function module:SetPosForte() -- no self in this func (Forte_Core OnEvent callbacks)
-	if not LUI.isForteTimerLoaded or not oUFmodule.db.profile.Enable then return end
+	if not LUI.isForteTimerLoaded or not oUFmodule.db or not oUFmodule.db.profile.Enable then return end
 
 	for name, data in pairs(timer_instances) do
 		if db[name].Enable and db[name].Lock then
