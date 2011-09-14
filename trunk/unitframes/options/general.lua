@@ -56,6 +56,7 @@ local barKeys = {
 	SoulShards = "SoulShards",
 	Eclipse = "EclipseBar",
 	AltPower = "AltPowerBar",
+	DruidMana = "DruidMana",
 }
 local barNames = {
 	Totems = "Totems",
@@ -64,6 +65,7 @@ local barNames = {
 	SoulShards = "Soulshards",
 	Eclipse = "Eclipse",
 	AltPower = "Alternate Power",
+	DruidMana = "Druid Mana",
 }
 
 local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
