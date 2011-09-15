@@ -1,4 +1,4 @@
-## Interface: 40202
+## Interface: 40200
 ## Version: 3.6.4
 ## Title: LUI
 ## Author: Louí @EU-Das Syndikat
