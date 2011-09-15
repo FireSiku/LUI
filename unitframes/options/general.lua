@@ -254,7 +254,7 @@ function module:CreateBarOptions(unit, order, barType)
 		TextureBG = (barType ~= "Full") and self:NewSelect("Background Texture", "Choose the "..barType.."bar Background Texture.", 14, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc) or nil,
 		BGAlpha = (barType ~= "Full") and self:NewSlider("Background Alpha", "Choose the Alpha for the "..barType.."bar Background.", 15, 0, 1, 0.01, applySettings, true, nil, disabledFunc) or nil,
 		BGMultiplier = (barType ~= "Full") and self:NewSlider("Background Multiplier", "Choose the BG Multiplier used for calculation of the Background Color", 16, 0, 1, 0.01, applySettings, true, nil, disabledFunc) or nil,
-		BGInvert = (barType ~= "Full") and self:NewToggle("Enable", "Whether you want to invert the Background Color or not. Suggested for dark Bar Colors!", 17, applySettings, nil, disabledFunc) or nil,
+		BGInvert = (barType ~= "Full") and self:NewToggle("Invert Colors", "Whether you want to invert the Background Color or not. Suggested for dark Bar Colors!", 17, applySettings, nil, disabledFunc) or nil,
 	})
 	
 	return options
@@ -273,8 +273,8 @@ function module:CreatePlayerBarOptions(barType, order)
 	
 	local disabledFunc = function() return not self.db.Player.Bars[barType].Enable end
 	
-	local applySettings = function(self, Enable)
-		module.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, self.db.Player)
+	local applySettings = function(info, Enable)
+		self.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, self.db.Player)
 		if Enable then
 			oUF_LUI_player:EnableElement(barKey)
 		else
@@ -372,7 +372,7 @@ function module:CreatePlayerBarOverlappingOptions(barType, order)
 end
 
 function module:CreateComboPointsOptions(order)
-	local disabledFunc = function() return not self.db.Target.ComboPoints.Enable end
+	local disabledFunc = function() return not self.db.Target.Bars.ComboPoints.Enable end
 	
 	local isLocked = function() return not self.db.Target.Bars.ComboPoints.Enable or self.db.Target.Bars.ComboPoints.Lock end
 	
@@ -401,8 +401,8 @@ function module:CreateComboPointsOptions(order)
 		empty3 = self:NewDesc(" ", 11),
 		Texture = self:NewSelect("Texture", "Choose your Combo Points Texture.", 12, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc),
 		Multiplier = self:NewSlider("Multiplier", "Choose your Combo Points Background Multiplier", 13, 0, 1, 0.01, applySettings, true, nil, disabledFunc),
-		IndividualColor = self:NewToggle("Individual Background Color", "Whether you want to use an individual Background Color or not.", 14, applySettings, nil, disabledFunc),
-		Color = self:NewColorNoAlpha("Combo Points Background", nil, 15, applySettings, nil, function() return not (self.db.Target.Bars.ComboPoints.Enable or self.db.Target.Bars.ComboPoints.IndividualColor) end),
+		IndividualBGColor = self:NewToggle("Individual Background Color", "Whether you want to use an individual Background Color or not.", 14, applySettings, nil, disabledFunc),
+		BackgroundColor = self:NewColorNoAlpha("Combo Points Background", nil, 15, applySettings, nil, function() return not (self.db.Target.Bars.ComboPoints.Enable or self.db.Target.Bars.ComboPoints.IndividualColor) end),
 	})
 	
 	return options
@@ -419,7 +419,7 @@ function module:CreateNameTextOptions(unit, order)
 		for _, frame in pairs(self.framelist[unit]) do
 			if _G[frame] then
 				module.funcs.Info(_G[frame], _G[frame].__unit, self.db[unit])
-				if self.db[unit].Name.Enable then
+				if self.db[unit].Texts.Name.Enable then
 					_G[frame].Info:Show()
 				else
 					_G[frame].Info:Hide()
@@ -481,7 +481,7 @@ function module:CreateRaidNameTextOptions(order)
 		Outline = self:NewSelect("Font Flag", "Choose the Raid Name Fontflag.", 5, fontflags, nil, applySettings, nil, disabledFunc),
 		empty2 = self:NewDesc(" ", 6),
 		ColorByClass = self:NewToggle("Color Name by Class", "Whether you want to color the Raid Name by Class or not.", 7, applySettings, nil, disabledFunc),
-		Color = self:NewColorNoAlpha("", "Name Text", 8, applySettings, nil, disabledColorFunc),
+		IndividualColor = self:NewColorNoAlpha("", "Name Text", 8, applySettings, nil, disabledColorFunc),
 		empty3 = self:NewDesc(" ", 9),
 		ShowDead = self:NewToggle("Show Dead/AFK/Disconnected", "Whether you want to switch the Name to Dead/AFK/Disconnected or not.", 10, applySettings, nil, disabledFunc),
 	})
@@ -582,7 +582,7 @@ function module:CreatePlayerBarTextOptions(barType, order)
 	
 	local applySettings = function()
 		module.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, self.db.Player)
-		if self.db.Player[barType].Enable then
+		if self.db.Player.Bars[barType].Enable then
 			oUF_LUI_player:EnableElement(barKey)
 		else
 			oUF_LUI_player:DisableElement(barKey)
@@ -709,7 +709,8 @@ function module:CreateCastbarOptions(unit, order)
 	end
 	
 	local options = self:NewGroup("Castbar", order, "tab", disabledFunc, {
-		General = self:NewGroup("General", 1, {
+		Test = self:NewExecute("Test Castbar", "Test the Castbar.", 1, testCastbar, nil, nil, disabledCastbarFunc),
+		General = self:NewGroup("General", 2, {
 			Enable = self:NewToggle("Enable", "Whether you want to show your "..unit.." Castbar or not.", 1, applyCastbar, "full"),
 			empty1 = self:NewDesc(" ", 2),
 			Width = self:NewInputNumber("Width", "Choose the Width for the Castbar.", 3, applyCastbar, nil, disabledCastbarFunc),
@@ -723,10 +724,8 @@ function module:CreateCastbarOptions(unit, order)
 			IndividualColor = self:NewToggle("Individual Color", "Whether you want to use an individual Color or not.", 11, applyCastbar, nil, disabledCastbarFunc),
 			empty3 = self:NewDesc(" ", 12),
 			Icon = self:NewToggle("Show Icon", "Whether you want to show the Castbar Icon or not.", 13, applyCastbar, nil, disabledCastbarFunc),
-			empty4 = self:NewDesc(" ", 14),
-			Test = self:NewExecute("Test Castbar", "Test the Castbar.", 15, testCastbar, nil, nil, disabledCastbarFunc),
 		}),
-		Colors = self:NewGroup("Colors", 2, nil, function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.IndividualColor) end, {
+		Colors = self:NewGroup("Colors", 3, nil, function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.IndividualColor) end, {
 			Bar = self:NewColor("Bar", "Castbar", 1, applyCastbar),
 			Background = self:NewColor("Background", "Castbar Background", 2, applyCastbar),
 			Border = self:NewColor("Border", "Castbar Border", 3, applyCastbar),
@@ -736,7 +735,7 @@ function module:CreateCastbarOptions(unit, order)
 			Name = self:NewColorNoAlpha("Name", "Spell Name", 7, applyCastbar, nil, disabledCastbarNameFunc),
 			Time = self:NewColorNoAlpha("Time", "Cast Time", 8, applyCastbar, nil, disabledCastbarTimeFunc),
 		}),
-		Text = self:NewGroup("Texts", 3, nil, disabledCastbarFunc, {
+		Text = self:NewGroup("Texts", 4, nil, disabledCastbarFunc, {
 			Name = self:NewGroup("Name", 1, true, {
 				Enable = self:NewToggle("Enable", "Whether you want to show the Cast Name Text or not.", 1, applyCastbar, "full"),
 				Font = self:NewSelect("Font", "Choose the Font for the Cast Name Text.", 2, widgetLists.font, "LSM30_Font", applyCastbar, nil, disabledCastbarNameFunc),
@@ -753,7 +752,7 @@ function module:CreateCastbarOptions(unit, order)
 				ShowMax = self:NewToggle("Show Max", "Whether you want to show the max Time or not.", 6, applyCastbar, "full", disabledCastbarTimeFunc),
 			}),
 		}),
-		Border = self:NewGroup("Border", 4, nil, disabledCastbarFunc, {
+		Border = self:NewGroup("Border", 5, nil, disabledCastbarFunc, {
 			Texture = self:NewSelect("Border Texture", "Choose the Border Texture.", 1, widgetLists.border, "LSM30_Border", applyCastbar),
 			Thickness = self:NewInputNumber("Border Thickness", "Value for your Castbar Border Thickness.", 2, applyCastbar),
 			Inset = self:NewGroup("Insets", 3, true, {
@@ -1065,7 +1064,7 @@ function module:CreateUnitOptions(unit, order)
 			PowerMissing = self:CreateTextOptions(unit, 7, "Power", "Missing"),
 			Combat = (unit == "Player" or unit == "Target" or unit == "Focus" or unit == "Pet" or unit == "ToT") and self:CreateCombatTextOptions(unit, 8) or nil,
 			DruidMana = (unit == "Player" and class == "DRUID") and self:CreateDruidManaTimerOptions(9) or nil,
-			PvPTimer = (unit == "Player") and self:CreatePvpTimerOptions(10) or nil,
+			PvP = (unit == "Player") and self:CreatePvpTimerOptions(10) or nil,
 			Eclipse = (unit == "Player" and class == "DRUID") and self:CreatePlayerBarTextOptions("Eclipse", 11) or nil,
 			AltPower = (unit == "Player") and self:CreatePlayerBarTextOptions("AltPower", 12) or nil,
 		}),

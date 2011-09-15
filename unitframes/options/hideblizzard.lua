@@ -5,8 +5,8 @@
 ]]
 
 local addonname, LUI = ...
-local oUF = LUI:Module("Unitframes")
-local module = oUF:Module("HideBlizzard", "AceEvent-3.0", "AceHook-3.0")
+local UF = LUI:Module("Unitframes")
+local module = UF:Module("HideBlizzard", "AceEvent-3.0", "AceHook-3.0")
 
 local argcheck = LUI.argcheck
 
@@ -296,11 +296,10 @@ function module:Hide(unit, override)
 	unit = unit:lower()
 	argcheck(unit, "isin", hide)
 	
-	if not oUF:IsEnabled() then return end
 	if hidden[unit] then return end
 	
 	hidden[unit] = true
-	if self:IsEnabled() or override then
+	if (UF:IsEnabled() and self:IsEnabled()) or override then
 		hide[unit]()
 	end
 	return true -- inform that unitframe was hidden
@@ -311,11 +310,13 @@ function module:Show(unit)
 	unit = unit:lower()
 	argcheck(unit, "isin", show)
 	
-	if not oUF:IsEnabled() then return end
 	if not hidden[unit] then return end
 	
 	hidden[unit] = nil
-	show[unit]()
+	if UF:IsEnabled() and self:IsEnabled() then
+		show[unit]()
+	end
+	return true -- inform that unitframe was shown
 end
 
 function module:IsUnitHideable(unit)

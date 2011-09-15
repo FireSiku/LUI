@@ -115,7 +115,7 @@ end
 function module:DisableBlizzardBuffs()
 	if db.Auras.DisableBlizzard ~= true then return end
 	
-	LUI:Module("Unitframes"):Module("HideBlizzard"):Hide("aura")
+	LUI:Module("Unitframes"):Module("HideBlizzard"):Hide("aura", true)
 end
 
 function module:SetBuffs()

@@ -429,7 +429,7 @@ function devapi:NewSelect(name, desc, order, values, dcontrol, func, width, disa
 	
 	local t = SetVals("select", name, order)
 	t.values = values
-	t.desc = descfuncs(self, func, desc, dcontrol and function(info) return values()[self.defaults(info)] end or nil)
+	t.desc = descfuncs(self, func, desc, dcontrol and function(info) return self.defaults(info) end or nil)
 	t.get = getfuncs(self, func, dcontrol == nil and function(info)
 		local val = self.db(info)
 		for k, v in pairs(values()) do
@@ -522,7 +522,7 @@ function devapi:NewInputNumber(name, desc, order, func, width, disabled, hidden,
 	t.desc = descfuncs(self, func, desc, function(info) return iformat:format(self.defaults(info)) end)
 	t.validate = IsNumber
 	t.get = getfuncs(self, func, function(info) return iformat:format(self.db(info)) end)
-	t.set = setfuncs(self, func, function(info, value) self.db(info, tonumber(iformat:format(value):match("[-]?%d+[%.%d]]*"))) end) -- strip number from formatted string
+	t.set = setfuncs(self, func, function(info, value) self.db(info, tonumber(iformat:format(value):match("[-]?%d+[%.[%d]*]?"))) end) -- strip number from formatted string
 
 	SetState(t, width, disabled, hidden)
 	return t

@@ -1581,7 +1581,7 @@ module.funcs = {
 			self.XP:SetScript("OnEvent", function(_, event)
 				local value, max = UnitXP("player"), UnitXPMax("player")
 				self.Experience.Value:SetFormattedText("%d / %d (%d%%)", value, max, math.floor((value / max) * 100 + 0.5))
-				if event == "PLAYER_ENTERING_WORLD" then self.XP:UnregisterEvent("PLAYER_ENTERING_WORLD") end
+				if event == "PLAYER_ENTERING_WORLD" then self.XP:UnregisterEvent(event) end
 			end)
 
 			local frameStrata = self.XP:GetFrameStrata()
@@ -1666,7 +1666,7 @@ module.funcs = {
 				else
 					self.Reputation.Value:SetText()
 				end
-				if event == "PLAYER_ENTERING_WORLD" then self.Rep:UnregisterEvent("PLAYER_ENTERING_WORLD") end
+				if event == "PLAYER_ENTERING_WORLD" then self.Rep:UnregisterEvent(event) end
 			end)
 
 			local frameStrata = self.Rep:GetFrameStrata()
@@ -2186,7 +2186,7 @@ module.funcs = {
 			self.CPoints[i].bg:SetTexture(Media:Fetch("statusbar", oufdb.Bars.ComboPoints.Texture))
 			self.CPoints[i].bg.multiplier = oufdb.Bars.ComboPoints.Multiplier
 
-			if oufdb.Bars.ComboPoints.BackgroundColor.Enable == true then
+			if oufdb.Bars.ComboPoints.IndividualBGColor == true then
 				self.CPoints[i].bg:SetVertexColor(oufdb.Bars.ComboPoints.BackgroundColor.r, oufdb.Bars.ComboPoints.BackgroundColor.g, oufdb.Bars.ComboPoints.BackgroundColor.b)
 			else
 				local mu = oufdb.Bars.ComboPoints.Multiplier
