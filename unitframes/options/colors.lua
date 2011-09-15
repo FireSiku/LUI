@@ -174,7 +174,7 @@ local function UpdateColors()
 		for i = 1, 5 do
 			oUF_LUI_target.CPoints[i]:SetStatusBarColor(unpack(module.colors.combopoints[i]))
 			if module.db.Target.Bars.ComboPoints.BackgroundColor.Enable == false then
-				local mu = module.db.Target.ComboPoints.Multiplier
+				local mu = module.db.Target.Bars.ComboPoints.Multiplier
 				local r, g, b = unpack(module.colors.combopoints[i])
 				oUF_LUI_target.CPoints[i].bg:SetVertexColor(r*mu, g*mu, b*mu)
 			end
