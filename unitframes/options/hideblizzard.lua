@@ -6,7 +6,7 @@
 
 local addonname, LUI = ...
 local oUF = LUI:Module("Unitframes")
-local module = LUI.Module(oUF, "HideBlizzard", "AceEvent-3.0", "AceHook-3.0") -- this can be embedded via prototype once we have more modules of modules
+local module = oUF:Module("HideBlizzard", "AceEvent-3.0", "AceHook-3.0")
 
 local argcheck = LUI.argcheck
 
@@ -225,6 +225,7 @@ do
 			end
 		end,
 		raid = function()
+			CompactRaidFrameManager:RegisterEvent("PARTY_MEMBERS_CHANGED")
 			CompactRaidFrameManager:RegisterEvent("RAID_ROSTER_UPDATE")	
 			CompactRaidFrameManager:RegisterEvent("PLAYER_ENTERING_WORLD")
 			if GetDisplayedAllyFrames then
@@ -321,6 +322,12 @@ function module:IsUnitHideable(unit)
 	argcheck(unit, "typeof", "string")
 	
 	return hide[unit:lower()] ~= nil
+end
+
+function module:OnEnable()
+	for unit in pairs(hidden) do
+		hide[unit]()
+	end
 end
 
 function module:OnDisable()

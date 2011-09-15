@@ -40,9 +40,9 @@ local setAllPositions = function()
 			
 			if k2 then
 				if module.db[k][k2] then
-					module.db[k][k2].X = x
-					module.db[k][k2].Y = y
-					module.db[k][k2].Point = point
+					module.db[k][k2].General.X = x
+					module.db[k][k2].General.Y = y
+					module.db[k][k2].General.Point = point
 				end
 			else
 				module.db[k].X = x * (module.db[k].Scale or 1)
