@@ -24,7 +24,7 @@ function module:SetCooldowns()
 	-- Local variables.
 	local DAY, HOUR, MINUTE = 86400, 3600, 60
 	local ICON_SIZE = 1 / 36
-	local Cooldown = CreateFrame("Cooldown", "LUI_Cooldown")
+	local Cooldown = LUI_Cooldown or CreateFrame("Cooldown", "LUI_Cooldown")
 	local metatable = getmetatable(Cooldown)
 	local precision = nil
 	local xOffset, yOffset = db.Text.XOffset, db.Text.YOffset
@@ -84,6 +84,9 @@ function module:SetCooldowns()
 			if self.Timer then
 				if duration < minDuration or not self:IsVisible() then
 					self:Stop()
+				elseif self.Timer.start ~= start then -- Update timers that have durations that can be shortened by special events.
+					self.Timer.start = start
+					self:Update(self.Timer.duration - (GetTime() - start))
 				end
 				return
 			end
