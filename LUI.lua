@@ -963,13 +963,13 @@ local function getOptions()
 									type = "toggle",
 									width = "full",
 									disabled = function() return LUI:Module("Unitframes").db.Enable end,
-									get = function() return LUI:Module("Unitframes").db.General.HideBlizzRaid end,
+									get = function() return LUI:Module("Unitframes").db.Settings.HideBlizzRaid end,
 									set = function(info, value)
-											LUI:Module("Unitframes").db.General.HideBlizzRaid = value
+											LUI:Module("Unitframes").db.Settings.HideBlizzRaid = value
 											if value then
-												LUI.Module(LUI:Module("Unitframes"), "HideBlizzard"):Hide("raid")
+												LUI:Module("Unitframes"):Module("HideBlizzard"):Hide("raid", true)
 											else
-												LUI.Module(LUI:Module("Unitframes"), "HideBlizzard"):Show("raid")
+												LUI:Module("Unitframes"):Module("HideBlizzard"):Show("raid")
 											end
 										end,
 									order = 52,

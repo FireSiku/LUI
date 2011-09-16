@@ -727,6 +727,9 @@ module.ToggleUnit = setmetatable({
 				oUF_LUI_raid:ClearAllPoints()
 				oUF_LUI_raid:SetPoint(module.db.Raid.Point, UIParent, module.db.Raid.Point, module.db.Raid.X, module.db.Raid.Y)
 				oUF_LUI_raid:Show()
+				
+				RegisterStateDriver(oUF_LUI_raid_25, "visibility", "[@raid26,exists] hide; show")
+				RegisterStateDriver(oUF_LUI_raid_40, "visibility", "[@raid26,exists] show; hide")
 			else
 				local raidAnchor = CreateFrame("Frame", "oUF_LUI_raid", UIParent)
 				raidAnchor:SetWidth(module.db.Raid.Width * 5 + module.db.Raid.GroupPadding * 4)

@@ -6,7 +6,7 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes", "AceHook-3.0", "AceEvent-3.0")
-local Blizzard = LUI.Module(module, "HideBlizzard")
+local Blizzard = module:Module("HideBlizzard")
 local Forte = LUI:Module("Forte")
 
 local unitsSpawn = {"Player", "Target", "Focus", "FocusTarget", "ToT", "ToToT", "Pet", "PetTarget", "Boss", "Party", "Maintank", "Arena", "Raid"}
@@ -247,7 +247,7 @@ function module:OnDisable()
 	for _, unit in pairs(unitsSpawn) do module.ToggleUnit(unit, false) end
 	
 	if module.db.Settings.HideBlizzRaid then
-		Blizzard:Hide("raid")
+		Blizzard:Hide("raid", true)
 	end
 end
 
