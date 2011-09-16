@@ -84,9 +84,10 @@ function module:SetCooldowns()
 			if self.Timer then
 				if duration < minDuration or not self:IsVisible() then
 					self:Stop()
-				elseif self.Timer.start ~= start then -- Update timers that have durations that can be shortened by special events.
+				elseif self.Timer.start ~= start or self.Timer.duration ~= duration then -- Update timers that have durations that can be shortened by special events.
 					self.Timer.start = start
-					self:Update(self.Timer.duration - (GetTime() - start))
+					self.Timer.duration = duration
+					self:Update(duration - (GetTime() - start))
 				end
 				return
 			end
