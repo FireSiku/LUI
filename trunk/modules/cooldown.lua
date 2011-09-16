@@ -14,6 +14,7 @@ local Profiler = LUI.Profiler
 local db, dbd
 
 -- Local variables.
+local Cooldown
 local Timer
 
 function module:SetCooldowns()
@@ -21,10 +22,12 @@ function module:SetCooldowns()
 	local ceil, floor, format, GetTime, insert, min, type, wipe = math.ceil, math.floor, string.format, GetTime, table.insert, math.min, type, wipe
 	local function round(x) return floor(x + 0.5) end
 
+	-- Create a cooldown frame.
+	Cooldown = Cooldown or CreateFrame("Cooldown", "LUI_Cooldown")
+
 	-- Local variables.
 	local DAY, HOUR, MINUTE = 86400, 3600, 60
 	local ICON_SIZE = 1 / 36
-	local Cooldown = LUI_Cooldown or CreateFrame("Cooldown", "LUI_Cooldown")
 	local metatable = getmetatable(Cooldown)
 	local precision = nil
 	local xOffset, yOffset = db.Text.XOffset, db.Text.YOffset
@@ -82,12 +85,15 @@ function module:SetCooldowns()
 		function Timer:Assign(start, duration)
 			-- Check if frame already has a timer.
 			if self.Timer then
-				if duration < minDuration or not self:IsVisible() then
-					self:Stop()
-				elseif self.Timer.start ~= start or self.Timer.duration ~= duration then -- Update timers that have durations that can be shortened by special events.
-					self.Timer.start = start
-					self.Timer.duration = duration
-					self:Update(duration - (GetTime() - start))
+				-- Update timers in the case of durations be ing shortened by speical events.
+				if duration ~= self.Timer.duration or start ~= self.Timer.start then
+					if duration < minDuration or not self:IsVisible() then
+						self:Stop()
+					else
+						self.Timer.start = start
+						self.Timer.duration = duration
+						self.Timer.nextUpdate = 0
+					end					
 				end
 				return
 			end
@@ -96,7 +102,7 @@ function module:SetCooldowns()
 			if not self:IsVisible() then return end
 			
 			-- Check duration.
-			if duration < minDuration or start <= 0 then return end
+			if duration < minDuration then return end
 			
 			-- Don't assign timers to frames that are too small.
 			if not self.FontScale[round(self:GetWidth())] then return end
