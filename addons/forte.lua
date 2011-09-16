@@ -7,7 +7,7 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Forte", "AceHook-3.0")
-local oUFmodule = LUI:Module("Unitframes")
+local UF = LUI:Module("Unitframes")
 local Bars = LUI:Module("Bars")
 
 local _, class = UnitClass("player")
@@ -403,7 +403,7 @@ function module:SetFrameProps(instance,name)
 		if properties.offset and properties.offset[class] then
 			local setting,frame,index = unpack(properties.offset[class]);
 			frame = f[frame]; -- frame = index and f[frame][index] or f[frame];
-			if frame and oUFmodule.db.profile[name].Bars[setting].Enable and oUFmodule.db.profile[name].Bars[setting].Lock then
+			if frame and UF.db.profile[name].Bars[setting].Enable and UF.db.profile[name].Bars[setting].Lock then
 				if index then 
 					frame = frame[index];
 				end
@@ -430,7 +430,11 @@ function module:SetFrameProps(instance,name)
 end
 
 function module:SetPosForte() -- no self in this func (Forte_Core OnEvent callbacks)
-	if not LUI.isForteTimerLoaded or not oUFmodule.db or not oUFmodule.db.profile.Enable then return end
+	if not LUI.isForteTimerLoaded or not UF.db or not UF.db.profile.Enable then return end
+	if not FW.Settings then
+		FW:RegisterVariablesEvent(module.SetPosForte);
+		return;
+	end
 
 	for name, data in pairs(timer_instances) do
 		if db[name].Enable and db[name].Lock then

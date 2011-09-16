@@ -353,6 +353,7 @@ module.defaults = {
 		},
 	},
 }
+module.conflicts = "OmniCC"
 
 function module:LoadOptions()
 	local widgetLists = AceGUIWidgetLSMlists
