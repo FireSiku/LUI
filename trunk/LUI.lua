@@ -711,7 +711,7 @@ local function getOptions()
 									order = 4,
 									width = "full",
 									type = "description",
-									name = "LUI will show automaticly all Frames which were shown after logging out.\n\nYou can set some Rules here that LUI should always show some Frames regardless of how you are logging off."
+									name = "LUI will show automatically all Frames which were shown after logging out.\n\nYou can set some Rules here that LUI should always show some Frames regardless of how you are logging off."
 								},
 								empty6 = {
 									name = "   ",
@@ -1094,7 +1094,7 @@ local function getOptions()
 									order = 8,
 									width = "full",
 									type = "description",
-									name = "ATTENTION:\nAll SavedVariables from Grid, Recount, Omen, Bartender and ForteXorcist will be resetted!"
+									name = "ATTENTION:\nAll SavedVariables from Grid, Recount, Omen, Bartender and ForteXorcist will be reset!"
 								},
 								Reset = {
 									order = 9,

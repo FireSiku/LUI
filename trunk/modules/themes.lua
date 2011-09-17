@@ -976,8 +976,8 @@ function module:LoadOptions()
 			order = 2,
 			args = {
 				color_top = {
-					name = "Top Textur Color",
-					desc = "Choose any Color for your Top Textur",
+					name = "Top Texture Color",
+					desc = "Choose any Color for your Top Texture",
 					type = "color",
 					width = "full",
 					hasAlpha = true,
@@ -986,8 +986,8 @@ function module:LoadOptions()
 					order = 1,
 				},
 				color_bottom = {
-					name = "Bottom Textur Color",
-					desc = "Choose any Color for your Bottom Textur",
+					name = "Bottom Texture Color",
+					desc = "Choose any Color for your Bottom Texture",
 					type = "color",
 					width = "full",
 					hasAlpha = true,
@@ -1193,7 +1193,7 @@ function module:LoadOptions()
 				},
 				orb_cycle = {
 					name = "Orb Background Color",
-					desc = "Choose any Color for your Orb Background Textur",
+					desc = "Choose any Color for your Orb Background Texture",
 					type = "color",
 					width = "full",
 					hasAlpha = true,
