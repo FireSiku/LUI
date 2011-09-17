@@ -765,7 +765,12 @@ function devapi:UpdatePositionOptions(specific) -- specific - update specific op
 	
 	local t = specific and UI_Scale_Update[specific] and {[specific] = true} or UI_Scale_Update
 	for frame in pairs(t) do
-		local f = type(frame) == "function" and frame() or frame
+		local f
+		if type(frame) == "function" then
+			f = frame()
+		else
+			f = frame
+		end
 		if type(f) == "string" then
 			f = _G[f]
 		end
