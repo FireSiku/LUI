@@ -385,11 +385,11 @@ function module:LoadOptions()
 				ShowSuccess = self:NewToggle("Show Success Messages", nil, 1, true),
 				ShowExclusion = self:NewToggle("Show Exclusion Messages", nil, 2, true),
 			}),
-			Warning = self:NewDesc("|cffff9933Warning:|r You really shouldn't enable other item qualities unless you are very sure that you won't sell anything of worth.", 5),
+			Warning = self:NewDesc("|cffff9933Warning:|r You really shouldn't enable other item qualities unless you are very sure that you won't sell anything of value.", 5),
 			ItemQualities = self:NewMultiSelect("Item Qualities", "Changes the item quality from which everything automatically will be sold when opening a merchant frame.",
 				6, qualities, nil, nil, disabled.AutoSell),
 			AddExclusion = self:NewGroup("Add Item Exclusion", 7, LUI.dummy, "ItemExclusion", true, disabled.AutoSell, {
-				Description = self:NewDesc("Items in this list will behave oposite of the settings.\nTo add an item to the Exclusion list do one of the following:\n" ..
+				Description = self:NewDesc("Items in this list will behave opposite of the settings.\nTo add an item to the Exclusion list do one of the following:\n" ..
 					"Drag and drop (leftclick) an item into the box.\nEnter an item id, name or link in the input box.\n\t	You can provide a link by Shift + Leftclicking on an item or link.", 1),
 				DropItem = self:NewExecute("Drop an item here!", "Select an item and drop it on this slot. (Leftclick)", 2, "ItemExclusion"),
 				InputItem = self:NewInput("Or enter an id, name or link", "Enter an item id, name or link (Shift + Leftclick an item)", 3, false)
