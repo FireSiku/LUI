@@ -390,6 +390,7 @@ local SetSwing = function()
 	if LUISwing then return end
 	
 	LUISwing = CreateFrame("Frame", "LUISwing", UIParent)
+	LUISwing:SetFrameStrata("HIGH")
 	
 	LUISwing.Twohand = CreateFrame("StatusBar", nil, LUISwing)
 	LUISwing.Twohand:SetPoint("TOPLEFT", LUISwing, "TOPLEFT", 0, 0)
@@ -510,7 +511,7 @@ function module:LoadOptions()
 	local options = {
 		General = self:NewGroup("General", 1, {
 			header = self:NewHeader("General Options", 0),
-			[""] = self:NewPosSliders("Swing Timer", 1, nil, "LUIThreat", true),
+			[""] = self:NewPosSliders("Swing Timer", 1, nil, "LUISwing", true),
 			Point = self:NewSelect("Point", "Choose the Point for your Swing Timer.", 2, positions, nil, dryCall),
 			empty1 = self:NewDesc(" ", 3),
 			Width = self:NewInputNumber("Width", "Choose the Width for your Swing Timer.", 4, dryCall),
@@ -531,7 +532,7 @@ function module:LoadOptions()
 			header = self:NewHeader("Text Options", 0),
 			Enable = self:NewToggle("Enable Text", "Whether you want to show a Text on your Swing Timer or not.", 1, true),
 			empty1 = self:NewDesc(" ", 2),
-			[""] = self:NewPosSliders("Swing Timer Text", 3, nil, "LUIThreatText", true, nil, disabledTextFunc),
+			[""] = self:NewPosSliders("Swing Timer Text", 3, nil, "LUISwingText", true, nil, disabledTextFunc),
 			Font = self:NewSelect("Font", "Choose the Font for your Swing Timer Text.", 4, widgetLists.font, "LSM30_Font", true, nil, disabledTextFunc),
 			Size = self:NewInputNumber("Fontsize", "Choose the Fontsize for your Swing Timer Text.", 5, dryCall, nil, disabledTextFunc),
 			Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Swing Timer Text Font.", 6, fontflags, nil, dryCall, nil, disabledTextFunc),

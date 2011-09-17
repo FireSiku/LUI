@@ -89,6 +89,7 @@ local SetThreat = function()
 	if LUIThreat then return end
 	
 	LUIThreat = CreateFrame("StatusBar", "LUIThreat", UIParent)
+	LUIThreat:SetFrameStrata("HIGH")
 	
 	LUIThreat.bg = LUIThreat:CreateTexture(nil, "BORDER")
 	LUIThreat.bg:SetAllPoints(LUIThreat)

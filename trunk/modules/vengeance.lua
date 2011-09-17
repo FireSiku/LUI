@@ -29,8 +29,8 @@ local ToggleTestMode = function()
 	else
 		LUIVengeance.Testmode = true
 		LUIVengeance:Show()
-		LUIThreat:SetMinMaxValues(0, 100)
-		LUIThreat:SetValue(50)
+		LUIVengeance:SetMinMaxValues(0, 100)
+		LUIVengeance:SetValue(50)
 	end
 end
 
@@ -140,6 +140,7 @@ local SetVengeance = function()
 	if LUIVengeance then return end
 	
 	LUIVengeance = CreateFrame("StatusBar", "LUIVengeance", UIParent)
+	LUIVengeance:SetFrameStrata("HIGH")
 	
 	LUIVengeance.bg = LUIVengeance:CreateTexture(nil, "BORDER")
 	LUIVengeance.bg:SetAllPoints(LUIVengeance)
@@ -222,7 +223,7 @@ function module:LoadOptions()
 	local options = {
 		General = self:NewGroup("General", 1, {
 			header = self:NewHeader("General Options", 0),
-			[""] = self:NewPosSliders("Vengeance Bar", 1, nil, "LUIThreat", true),
+			[""] = self:NewPosSliders("Vengeance Bar", 1, nil, "LUIVengeance", true),
 			Point = self:NewSelect("Point", "Choose the Point for your Vengeance Bar.", 2, positions, nil, dryCall),
 			empty1 = self:NewDesc(" ", 3),
 			Width = self:NewInputNumber("Width", "Choose the Width for your Vengeance Bar.", 3, dryCall),
@@ -243,7 +244,7 @@ function module:LoadOptions()
 			header = self:NewHeader("Text Options", 0),
 			Enable = self:NewToggle("Enable Text", "Whether you want to show a Text on your Vengeance Bar or not.", 1, true),
 			empty1 = self:NewDesc(" ", 4),
-			[""] = self:NewPosSliders("Vengeance Bar Text", 2, nil, "LUIThreatText", true, nil, disabledTextFunc),
+			[""] = self:NewPosSliders("Vengeance Bar Text", 2, nil, "LUIVengeanceText", true, nil, disabledTextFunc),
 			Font = self:NewSelect("Font", "Choose the Font for your Vengeance Bar Text.", 3, widgetLists.font, "LSM30_Font", true, nil, disabledTextFunc),
 			Size = self:NewInputNumber("Fontsize", "Choose the Fontsize for your Vengeance Bar Text.", 4, dryCall, nil, disabledTextFunc),
 			Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Vengeance Bar Text Font.", 5, fontflags, nil, dryCall, nil, disabledTextFunc),
