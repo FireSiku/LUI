@@ -71,7 +71,7 @@ local resetAllPositions = function()
 			if k2 then
 				if module.db[k][k2] then
 					_G[v]:ClearAllPoints()
-					_G[v]:SetPoint(module.db[k][k2].Point, UIParent, module.db[k][k2].Point, module.db[k][k2].X, module.db[k][k2].Y)
+					_G[v]:SetPoint(module.db[k][k2].General.Point, UIParent, module.db[k][k2].General.Point, module.db[k][k2].General.X, module.db[k][k2].General.Y)
 				end
 			else
 				_G[v]:ClearAllPoints()
