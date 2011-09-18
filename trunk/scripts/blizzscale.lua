@@ -1,7 +1,15 @@
 local addonname, LUI = ...
 local script = LUI:NewScript("BlizzScale", "AceEvent-3.0")
 
-function script:SetBlizzScale()
+function script:ADDON_LOADED(event, name)
+	if event == "ADDON_LOADED" and (name == nil or select(7, GetAddOnInfo(name)) ~= "SECURE") then return end
+	if InCombatLockdown() then
+		self:RegisterEvent("PLAYER_REGEN_ENABLED", "ADDON_LOADED")
+		return
+	elseif event == "PLAYER_REGEN_ENABLED" then
+		self:UnregisterEvent(event)
+	end
+	
 	local scale = LUI.db.profile.General.BlizzFrameScale
 	local blizzFrames = {
 		CalendarFrame,
@@ -50,9 +58,6 @@ end
 script:RegisterEvent("PLAYER_LOGIN", function(event)
 	script:UnregisterEvent(event)
 
-	script:RegisterEvent("ADDON_LOADED", function(event, name)
-		if name == nil then return end
-		if select(7, GetAddOnInfo(name)) == "SECURE" then script:SetBlizzScale() end
-	end)
-	script:SetBlizzScale()
+	script:RegisterEvent("ADDON_LOADED")
+	script:ADDON_LOADED()
 end)
