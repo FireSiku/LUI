@@ -305,7 +305,7 @@ function module:Hide(unit, override)
 	return true -- inform that unitframe was hidden
 end
 
-function module:Show(unit)
+function module:Show(unit, override)
 	argcheck(unit, "typeof", "string")
 	unit = unit:lower()
 	argcheck(unit, "isin", show)
@@ -313,7 +313,7 @@ function module:Show(unit)
 	if not hidden[unit] then return end
 	
 	hidden[unit] = nil
-	if UF:IsEnabled() and self:IsEnabled() then
+	if (UF:IsEnabled() and self:IsEnabled()) or override then
 		show[unit]()
 	end
 	return true -- inform that unitframe was shown

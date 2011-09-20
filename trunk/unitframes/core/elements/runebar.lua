@@ -91,8 +91,8 @@ local Enable = function(self, unit)
 		-- buffs and such are correctly updated when entering/exiting vehicles.
 		--
 		-- This however makes the code also show/hide the RuneFrame.
-		RuneFrame.Show = RuneFrame.Hide
-		RuneFrame:Hide()
+		--[[RuneFrame.Show = RuneFrame.Hide
+		RuneFrame:Hide()]]
 
 		return true
 	end

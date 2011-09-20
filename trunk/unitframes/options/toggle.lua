@@ -75,16 +75,16 @@ module.ToggleUnit = setmetatable({
 				f:SetScale(module.db[unit].Scale)
 				f:SetPoint(module.db[unit].Point, UIParent, module.db[unit].Point, x, y)
 			end
-		else
-			if _G["oUF_LUI_"..ufUnits[unit]] then _G["oUF_LUI_"..ufUnits[unit]]:Disable() end
-		end
-		
-		if Blizzard:IsUnitHideable(unit) then
-			Blizzard:Hide(unit)
-			if unit == "Player" then
-				Blizzard:Hide("castbar")
-				Blizzard:Hide("runebar")
+			
+			if Blizzard:IsUnitHideable(unit) then
+				Blizzard:Hide(unit)
 			end
+		else
+			if Blizzard:IsUnitHideable(unit) then
+				Blizzard:Show(unit)
+			end
+			
+			if _G["oUF_LUI_"..ufUnits[unit]] then _G["oUF_LUI_"..ufUnits[unit]]:Disable() end
 		end
 		
 		module.ApplySettings(unit)
