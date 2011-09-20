@@ -6,6 +6,7 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
+local Blizzard = module:Module("HideBlizzard")
 local Fader = LUI:Module("Fader")
 local Forte = LUI:Module("Forte")
 local oUF = LUI.oUF
@@ -277,8 +278,14 @@ function module:CreatePlayerBarOptions(barType, order)
 		self.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, self.db.Player)
 		if Enable then
 			oUF_LUI_player:EnableElement(barKey)
+			if barType == "Runes" then
+				Blizzard:Hide("runebar")
+			end
 		else
 			oUF_LUI_player:DisableElement(barKey)
+			if barType == "Runes" then
+				Blizzard:Show("runebar")
+			end
 		end
 		
 		Forte:SetPosForte()
@@ -680,9 +687,15 @@ function module:CreateCastbarOptions(unit, order)
 				module.funcs.Castbar(_G[frame], _G[frame].__unit, self.db[unit])
 				if self.db[unit].Castbar.General.Enable then
 					_G[frame]:EnableElement("Castbar")
+					if unit == "Player" then
+						Blizzard:Hide("castbar")
+					end
 				else
 					_G[frame]:DisableElement("Castbar")
 					_G[frame].Castbar:Hide()
+					if unit == "Player" then
+						Blizzard:Show("castbar")
+					end
 				end
 				_G[frame]:UpdateAllElements()
 			end
@@ -715,21 +728,22 @@ function module:CreateCastbarOptions(unit, order)
 			empty1 = self:NewDesc(" ", 2),
 			Width = self:NewInputNumber("Width", "Choose the Width for the Castbar.", 3, applyCastbar, nil, disabledCastbarFunc),
 			Height = self:NewInputNumber("Height", "Choose the Height for the Castbar.", 4, applyCastbar, nil, disabledCastbarFunc),
-			Point = (unit == "Player" or unit == "Target") and self:NewSelect("Point", "Choose the Point for your Castbar.", 5, positions, nil, applyCastbar, nil, disabledCastbarFunc) or nil,
-			X = self:NewInputNumber("X Value", "Choose the X Value for the Castbar.", 6, applyCastbar, nil, disabledCastbarFunc),
-			Y = self:NewInputNumber("Y Value", "Choose the Y Value for the Castbar.", 7, applyCastbar, nil, disabledCastbarFunc),
-			Latency = (unit == "player") and self:NewToggle("Latency", "Whether you want to show the Latency or not.", 8, applyCastbar, nil, disabledCastbarFunc) or nil,
-			Shield = self:NewToggle("Shield", "Whether you want to show the Castbar Shield or not.", 9, applyCastbar, nil, disabledCastbarFunc),
-			empty2 = self:NewDesc(" ", 10),
-			IndividualColor = self:NewToggle("Individual Color", "Whether you want to use an individual Color or not.", 11, applyCastbar, nil, disabledCastbarFunc),
-			empty3 = self:NewDesc(" ", 12),
-			Icon = self:NewToggle("Show Icon", "Whether you want to show the Castbar Icon or not.", 13, applyCastbar, nil, disabledCastbarFunc),
+			X = self:NewInputNumber("X Value", "Choose the X Value for the Castbar.", 5, applyCastbar, nil, disabledCastbarFunc),
+			Y = self:NewInputNumber("Y Value", "Choose the Y Value for the Castbar.", 6, applyCastbar, nil, disabledCastbarFunc),
+			Point = (unit == "Player" or unit == "Target") and self:NewSelect("Point", "Choose the Point for your Castbar.", 7, positions, nil, applyCastbar, nil, disabledCastbarFunc) or nil,
+			empty2 = self:NewDesc(" ", 8),
+			Texture = self:NewSelect("Texture", "Choose the Castbar Texture.", 9, widgetLists.statusbar, "LSM30_Statusbar", applyCastbar, nil, disabledCastbarFunc),
+			TextureBG = self:NewSelect("Background Texture", "Choose the Castbar Background Texture.", 10, widgetLists.statusbar, "LSM30_Statusbar", applyCastbar, nil, disabledCastbarFunc),
+			Latency = (unit == "Player") and self:NewToggle("Latency", "Whether you want to show the Latency or not.", 11, applyCastbar, nil, disabledCastbarFunc) or nil,
+			Shield = self:NewToggle("Shield", "Whether you want to show the Castbar Shield or not.", 12, applyCastbar, nil, disabledCastbarFunc),
+			IndividualColor = self:NewToggle("Individual Color", "Whether you want to use an individual Color or not.", 13, applyCastbar, nil, disabledCastbarFunc),
+			Icon = self:NewToggle("Show Icon", "Whether you want to show the Castbar Icon or not.", 14, applyCastbar, nil, disabledCastbarFunc),
 		}),
 		Colors = self:NewGroup("Colors", 3, nil, function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.IndividualColor) end, {
 			Bar = self:NewColor("Bar", "Castbar", 1, applyCastbar),
 			Background = self:NewColor("Background", "Castbar Background", 2, applyCastbar),
 			Border = self:NewColor("Border", "Castbar Border", 3, applyCastbar),
-			Latency = (unit == "player") and self:NewColor("Latency", "Casting Delay", 4, applyCastbar, nil, disabledCastbarLatencyFunc) or nil,
+			Latency = (unit == "Player") and self:NewColor("Latency", "Casting Delay", 4, applyCastbar, nil, disabledCastbarLatencyFunc) or nil,
 			Shield = self:NewColor("Shield", "noninterruptable Casts", 5, applyCastbar, nil, disabledCastbarShieldFunc),
 			empty1 = self:NewDesc(" ", 6),
 			Name = self:NewColorNoAlpha("Name", "Spell Name", 7, applyCastbar, nil, disabledCastbarNameFunc),

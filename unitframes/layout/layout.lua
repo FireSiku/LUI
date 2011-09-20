@@ -2501,7 +2501,7 @@ module.funcs = {
 		end
 
 		if unit == "player" then
-			if oufdb.Castbar.Latency == true then
+			if oufdb.Castbar.General.Latency == true then
 				self.Castbar.SafeZone:Show()
 				if oufdb.Castbar.General.IndividualColor == true then
 					self.Castbar.SafeZone:SetVertexColor(oufdb.Castbar.Colors.Latency.r,oufdb.Castbar.Colors.Latency.g,oufdb.Castbar.Colors.Latency.b,oufdb.Castbar.Colors.Latency.a)
@@ -2834,7 +2834,10 @@ local SetStyle = function(self, unit, isSingle)
 		end
 
 		if class == "DEATH KNIGHT" or class == "DEATHKNIGHT" then
-			if oufdb.Bars.Runes.Enable then module.funcs.Runes(self, unit, oufdb) end
+			if oufdb.Bars.Runes.Enable then
+				module.funcs.Runes(self, unit, oufdb)
+				module:Module("HideBlizzard"):Hide("runebar")
+			end
 		elseif class == "DRUID" then
 			if oufdb.Bars.Eclipse.Enable then module.funcs.EclipseBar(self, unit, oufdb) end
 			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
