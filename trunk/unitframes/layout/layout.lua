@@ -2878,7 +2878,12 @@ local SetStyle = function(self, unit, isSingle)
 	end
 
 	if oufdb.Texts.Combat then module.funcs.CombatFeedbackText(self, unit, oufdb) end
-	if module.db.Settings.Castbars and oufdb.Castbar and oufdb.Castbar.General.Enable then module.funcs.Castbar(self, unit, oufdb) end
+	if module.db.Settings.Castbars and oufdb.Castbar and oufdb.Castbar.General.Enable then
+		module.funcs.Castbar(self, unit, oufdb)
+		if unit == "player" then
+			module:Module("HideBlizzard"):Hide("castbar")
+		end
+	end
 	if oufdb.Border.Aggro then module.funcs.AggroGlow(self, unit, oufdb) end
 	
 	if unit == "targettarget" and module.db.Settings.ShowV2Textures then

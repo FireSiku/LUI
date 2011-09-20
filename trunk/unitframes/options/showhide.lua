@@ -10,7 +10,7 @@ local oUF = LUI.oUF
 
 local orig_DisableBlizz = oUF.DisableBlizzard
 oUF.DisableBlizzard = function(self, unit)
-	if not module.db.Enable then return orig_DisableBlizz(self, unit) end
+	if not module:IsEnabled() then return orig_DisableBlizz(self, unit) end
 end
 
 local togglers = {

@@ -99,12 +99,17 @@ function module:CreateSettings(order)
 				if _G[frame] and module.db[unit].Castbar.Enable then
 					if not _G[frame].Castbar then module.funcs.Castbar(_G[frame], _G[frame].__unit, module.db[unit]) end
 					_G[frame]:EnableElement("Castbar")
+					if unit == "Player" then
+						Blizzard:Hide("castbar")
+					end
 				end
 			else
 				if _G[frame] and _G[frame].Castbar then
 					_G[frame].Castbar:Hide()
 					_G[frame]:DisableElement("Castbar")
-					Blizzard:Show(strlower(unit).."Castbar")
+					if unit == "Player" then
+						Blizzard:Show("castbar")
+					end
 				end
 			end
 			_G[frame]:UpdateAllElements()
