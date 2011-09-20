@@ -601,7 +601,7 @@ function devapi:NewPosSliders(name, order, header, frame, func, width, disabled,
 	
 	if header == true then header = name end
 	
-	local x = self:NewSlider("Horizonal Position", "Horizontal position for the "..name, order+0.1, nil, nil, 0.1, func, false, width, disabled, hidden)
+	local x = self:NewSlider("Horizontal Position", "Horizontal position for the "..name, order+0.1, nil, nil, 0.1, func, false, width, disabled, hidden)
 	local y = self:NewSlider("Vertical Position", "Vertical position for the "..name, order+0.2, nil, nil, 0.1, func, false, width, disabled, hidden)
 	x.bigStep = 10
 	y.bigStep = 10
