@@ -25,7 +25,7 @@ local db, dbd
 ------------------------------------------------------
 
 local myPlayerName = UnitName("player")
-local myPlayerFaction = UnitFactionGroup("player")
+local myPlayerFaction, localeFaction = UnitFactionGroup("player")
 local otherFaction = myPlayerFaction == "Horde" and "Alliance" or "Horde"
 local myPlayerRealm = GetRealmName()
 
@@ -292,15 +292,47 @@ function module:SetClock()
 		
 		local instanceInfo, guildParty = nil, ""
 		local invitesPending = false
+		local pvpControl = {}
+		local pvpColor = setmetatable({
+			default = {1, 1, 1},
+			Horde = {0.8, 0, 0},
+			Alliance = {0, 0.6, 1},
+		}, {
+			__index = function(t, k)
+				return t.default
+			end
+		})
+		
+		-- Local functions
+		local function UpdateWGControl()
+			if GetCurrentMapContinent() == 4 then
+				pvpControl["Wintergrasp"] = UnitBuff("player", GetSpellInfo(57940)) and myPlayerFaction or otherFaction
+				return
+			end
+			pvpControl["Wintergrasp"] = nil
+		end
+		
+		local function UpdateTBControl()
+			local continent = GetCurrentMapContinent() 
+			if continent == 1 or continent == 2 then
+				SetMapByID(708)
+				local name, description = GetMapLandmarkInfo(1)
+				if description then
+					pvpControl["Tol Barad"] = description:find(localeFaction) and myPlayerFaction or otherFaction
+					return
+				end
+			end
+			pvpControl["Tol Barad"] = nil
+		end
 		
 		-- Event functions
-		stat.Events = {"CALENDAR_UPDATE_PENDING_INVITES"}
+		stat.Events = {"CALENDAR_UPDATE_PENDING_INVITES", "CHAT_MSG_CHANNEL_NOTICE", "PLAYER_ENTERING_WORLD"}
 		
 		stat.CALENDAR_UPDATE_PENDING_INVITES = function(self) -- A change to number of pending invites for calendar events occurred
 			invitesPending = GameTimeFrame and (GameTimeFrame.pendingCalendarInvites > 0) or false
 		end
 		
-		
+				
 		stat.GUILD_PARTY_STATE_UPDATED = function(self) -- Number of guildmates in group changed
 			if InGuildParty() then
 				guildParty = " |cff66c7ffG"
@@ -325,8 +357,21 @@ function module:SetClock()
 			end
 		end
 		
+		stat.CHAT_MSG_CHANNEL_NOTICE = function(self)
+			local mapZone = GetCurrentMapAreaID()
+			SetMapToCurrentZone()
+			UpdateWGControl()
+			UpdateTBControl()
+			if WorldMapFrame:IsShown() then
+				SetMapByID(mapZone)
+			end
+		end
+		
 		stat.PLAYER_ENTERING_WORLD = function(self) -- Zoning in/out or logging in
-			self:PLAYER_DIFFICULTY_CHANGED()
+			if db.Clock.ShowInstanceDifficulty then
+				self:PLAYER_DIFFICULTY_CHANGED()
+			end
+			self:CHAT_MSG_CHANNEL_NOTICE()
 		end
 		
 		-- Script functions
@@ -334,18 +379,17 @@ function module:SetClock()
 			if db.Clock.ShowInstanceDifficulty then
 				self:RegisterEvent("GUILD_PARTY_STATE_UPDATED")
 				self:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
-				self:RegisterEvent("PLAYER_ENTERING_WORLD")
 				self:GUILD_PARTY_STATE_UPDATED()
-				self:PLAYER_DIFFICULTY_CHANGED()
 			else
 				self:UnregisterEvent("GUILD_PARTY_STATE_UPDATED")
 				self:UnregisterEvent("PLAYER_DIFFICULTY_CHANGED")
-				self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 				instanceInfo, guildParty = nil, ""
 			end
 			
 			module:SecureHookScript(GameTimeFrame, "OnClick", stat.CALENDAR_UPDATE_PENDING_INVITES) -- hook the OnClick function of the GameTimeFrame to update the pending invites
 			self:CALENDAR_UPDATE_PENDING_INVITES()
+			
+			self:PLAYER_ENTERING_WORLD()
 		end
 		
 		stat.OnDisable = function(self)
@@ -407,6 +451,7 @@ function module:SetClock()
 				for i = 1, GetNumWorldPVPAreas() do
 					local _, name, inprogress, _, timeleft = GetWorldPVPAreaInfo(i)
 					local inInstance, instanceType = IsInInstance()
+					local color = pvpColor.default
 					if not (instanceType == "none") then
 						timeleft = QUEUE_TIME_UNAVAILABLE
 					elseif inprogress then
@@ -416,9 +461,10 @@ function module:SetClock()
 						local min = format((hour > 0) and "%02.f" or "%01.f", floor(timeleft / 60 - (hour * 60)))
 						local sec = format("%02.f", floor(timeleft - (hour * 3600) - (min * 60))) 
 						timeleft = (hour > 0 and hour..":" or "")..min..":"..sec
+						color = pvpColor[pvpControl[name]]
 					end
 					
-					GameTooltip:AddDoubleLine("Time to "..name..":", timeleft)
+					GameTooltip:AddDoubleLine("Time to "..name..":", timeleft, unpack(color))
 				end
 				
 				GameTooltip:AddLine(" ")
