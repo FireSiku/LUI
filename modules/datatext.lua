@@ -326,7 +326,7 @@ function module:SetClock()
 		end
 		
 		-- Event functions
-		stat.Events = {"CALENDAR_UPDATE_PENDING_INVITES", "CHAT_MSG_CHANNEL_NOTICE", "PLAYER_ENTERING_WORLD"}
+		stat.Events = {"CALENDAR_UPDATE_PENDING_INVITES", "ZONE_CHANGED", "CHAT_MSG_CHANNEL_NOTICE", "PLAYER_ENTERING_WORLD"}
 		
 		stat.CALENDAR_UPDATE_PENDING_INVITES = function(self) -- A change to number of pending invites for calendar events occurred
 			invitesPending = GameTimeFrame and (GameTimeFrame.pendingCalendarInvites > 0) or false
@@ -357,7 +357,7 @@ function module:SetClock()
 			end
 		end
 		
-		stat.CHAT_MSG_CHANNEL_NOTICE = function(self)
+		stat.ZONE_CHANGED = function(self)
 			local mapZone = GetCurrentMapAreaID()
 			SetMapToCurrentZone()
 			UpdateWGControl()
@@ -367,11 +367,13 @@ function module:SetClock()
 			end
 		end
 		
+		stat.CHAT_MSG_CHANNEL_NOTICE = stat.ZONE_CHANGED
+		
 		stat.PLAYER_ENTERING_WORLD = function(self) -- Zoning in/out or logging in
 			if db.Clock.ShowInstanceDifficulty then
 				self:PLAYER_DIFFICULTY_CHANGED()
 			end
-			self:CHAT_MSG_CHANNEL_NOTICE()
+			self:ZONE_CHANGED()
 		end
 		
 		-- Script functions
