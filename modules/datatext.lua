@@ -362,9 +362,7 @@ function module:SetClock()
 			SetMapToCurrentZone()
 			UpdateWGControl()
 			UpdateTBControl()
-			if WorldMapFrame:IsShown() then
-				SetMapByID(mapZone)
-			end
+			SetMapByID(mapZone)
 		end
 		
 		stat.CHAT_MSG_CHANNEL_NOTICE = stat.ZONE_CHANGED
