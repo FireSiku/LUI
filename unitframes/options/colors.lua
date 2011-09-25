@@ -111,7 +111,7 @@ module.colors = setmetatable({
 	}),
 	class = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.Class[k] or oUF.colors.class[k]
+			return module.db.Colors.Class[k] or oUF.colors.class[k] or {0.5, 0.5, 0.5, 1}
 		end
 	}),
 	leveldiff = setmetatable({}, {

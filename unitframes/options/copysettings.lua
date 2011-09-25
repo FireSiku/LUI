@@ -141,7 +141,7 @@ function module:CreateCopyOptions(unit, order)
 				type = "toggle",
 				order = 7,
 				get = function() return settings.withPosition end,
-				set = function() settings.withSizes = not settings.withPosition end
+				set = function() settings.withPosition = not settings.withPosition end
 			},
 			empty3 = self:NewDesc(" ", 8),
 			Castbar = self.db[unit].Castbar and self:NewExecute("Copy Castbar", "Move the Castbar Settings of this Unitframe into the temporary storage.", 8, function() settings.toCopy = "Castbar"; settings.srcUnit = unit end) or nil,

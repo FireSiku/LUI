@@ -467,7 +467,7 @@ local OverridePower = function(self, event, unit)
 		power.valuePercent:SetText()
 		power.value:SetText()
 	else
-		local powerPercent = 100 * (min / max)
+		local powerPercent = max == 0 and 0 or 100 * (min / max)
 
 		if power.value.Enable == true then
 			if (power.value.ShowFull == false and min == max) or (power.value.ShowEmpty == false and min == 0) then
