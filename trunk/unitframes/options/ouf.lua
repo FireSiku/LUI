@@ -94,50 +94,30 @@ function module:CreateSettings(order)
 	end
 	
 	local toggleCB = function(info, Enable)
-		for unit, frame in pairs({Player = "oUF_LUI_player", Target = "oUF_LUI_target", Focus = "oUF_LUI_focus", Pet = "oUF_LUI_pet"}) do
-			if Enable then
-				if _G[frame] and module.db[unit].Castbar.Enable then
-					if not _G[frame].Castbar then module.funcs.Castbar(_G[frame], _G[frame].__unit, module.db[unit]) end
-					_G[frame]:EnableElement("Castbar")
-					if unit == "Player" then
-						Blizzard:Hide("castbar")
+		for unit, frames in pairs(self.framelist) do
+			if self.defaults[unit].Castbar then
+				for _, frame in pairs(frames) do
+					if _G[frame] then
+						frame = _G[frame]
+						if Enable then
+							if module.db[unit].Castbar.Enable ~= false then
+								if not frame.Castbar then module.funcs.Castbar(frame, frame.__unit, module.db[unit]) end
+								frame:EnableElement("Castbar")
+								if unit == "Player" then
+									Blizzard:Hide("castbar")
+								end
+							end
+						else
+							if frame.Castbar then
+								frame:DisableElement("Castbar")
+								frame.Castbar:Hide()
+								if unit == "Player" then
+									Blizzard:Show("castbar")
+								end
+							end
+						end
+						frame:UpdateAllElements()
 					end
-				end
-			else
-				if _G[frame] and _G[frame].Castbar then
-					_G[frame].Castbar:Hide()
-					_G[frame]:DisableElement("Castbar")
-					if unit == "Player" then
-						Blizzard:Show("castbar")
-					end
-				end
-			end
-			_G[frame]:UpdateAllElements()
-		end
-		
-		for i = 1, 5 do
-			local p = _G["oUF_LUI_partyUnitButton"..i]
-			local a = _G["oUF_LUI_arena"..i]
-			
-			if Enable then
-				if p and module.db.Party.Castbar.Enable then
-					if not p.Castbar then module.funcs.Castbar(p, p.__unit, module.db.Party) end
-					p:EnableElement("Castbar")
-				end
-				
-				if a and module.db.Arena.Castbar.Enable then
-					if not a.Castbar then module.funcs.Castbar(a, a.__unit, module.db.Arena) end
-					a:EnableElement("Castbar")
-				end
-			else
-				if p and p.Castbar then
-					p.Castbar:Hide()
-					p:DisableElement("Castbar")
-				end
-				
-				if a and a.Castbar then
-					a.Castbar:Hide()
-					a:DisableElement("Castbar")
 				end
 			end
 		end
@@ -167,16 +147,16 @@ function module:CreateSettings(order)
 	end
 	
 	local options = self:NewGroup("Settings", order, true, {
-		ShowV2Textures = self:NewToggle("Show LUI v2 Connector Frames", "Whether you want to show LUI v2 Frame Connectors or not.", 1, toggleV2, nil, disabledFunc),
-		ShowV2PartyTextures = self:NewToggle("Show LUI v2 Connector Frames for Party Frames", "Whether you want to show LUI v2 Frame Connectors on Party Frames or not.", 2, toggleV2Party, nil, disabledFunc),
-		ShowV2ArenaTextures = self:NewToggle("Show LUI v2 Connector Frames for Arena Frames", "Whether you want to show LUI v2 Frame Connectors on Arena Frames or not.", 3, toggleV2Arena, nil, disabledFunc),
-		ShowV2BossTextures = self:NewToggle("Show LUI v2 Connector Frames for Boss Frames", "Whether you want to show LUI v2 Frame Connectors on Boss Frames or not.", 4, toggleV2Boss, nil, disabledFunc),
+		ShowV2Textures = self:NewToggle("Show LUI v2 Connector Frames", "Whether you want to show LUI v2 Frame Connectors or not.", 1, toggleV2),
+		ShowV2PartyTextures = self:NewToggle("Show LUI v2 Connector Frames for Party Frames", "Whether you want to show LUI v2 Frame Connectors on Party Frames or not.", 2, toggleV2Party),
+		ShowV2ArenaTextures = self:NewToggle("Show LUI v2 Connector Frames for Arena Frames", "Whether you want to show LUI v2 Frame Connectors on Arena Frames or not.", 3, toggleV2Arena),
+		ShowV2BossTextures = self:NewToggle("Show LUI v2 Connector Frames for Boss Frames", "Whether you want to show LUI v2 Frame Connectors on Boss Frames or not.", 4, toggleV2Boss),
 		empty1 = self:NewDesc(" ", 5),
-		Castbars = self:NewToggle("Enable Castbars", "Whether you want to use oUF Castbars or not.", 6, toggleCB, nil, disabledFunc),
+		Castbars = self:NewToggle("Enable Castbars", "Whether you want to use oUF Castbars or not.", 6, toggleCB),
 		empty2 = self:NewDesc(" ", 7),
-		AuratimerFont = self:NewSelect("Auratimer Font", "Choose the Font for Auratimers.", 8, widgetLists.font, "LSM30_Font", updateAuraTimer, nil, disabledFunc),
-		AuratimerSize = self:NewSlider("Size", "Choose the Auratimers Fontsize.", 9, 5, 20, 1, updateAuraTimer, nil, disabledFunc),
-		AuratimerFlag = self:NewSelect("Font Flag", "Choose the Font Flag for the Auratimers.", 10, fontflags, nil, updateAuraTimer, nil, disabledFunc),
+		AuratimerFont = self:NewSelect("Auratimer Font", "Choose the Font for Auratimers.", 8, widgetLists.font, "LSM30_Font", updateAuraTimer),
+		AuratimerSize = self:NewSlider("Size", "Choose the Auratimers Fontsize.", 9, 5, 20, 1, updateAuraTimer),
+		AuratimerFlag = self:NewSelect("Font Flag", "Choose the Font Flag for the Auratimers.", 10, fontflags, nil, updateAuraTimer),
 		empty3 = self:NewDesc(" ", 11),
 		Move = self:NewExecute("Move Unitframes", nil, 12, function() module:MoveUnitFrames() end),
 	})
