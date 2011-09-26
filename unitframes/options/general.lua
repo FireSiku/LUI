@@ -674,7 +674,7 @@ end
 ------------------------------------------------------------------------
 
 function module:CreateCastbarOptions(unit, order)
-	local disabledFunc = function() return self.db[unit].Enable == false end
+	local disabledFunc = function() return self.db.Settings.Castbars == false or self.db[unit].Enable == false end
 	local disabledCastbarFunc = function() return not self.db[unit].Castbar.General.Enable end
 	local disabledCastbarLatencyFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.Latency) end
 	local disabledCastbarShieldFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.Shield) end
@@ -721,7 +721,7 @@ function module:CreateCastbarOptions(unit, order)
 		end
 	end
 	
-	local options = self:NewGroup("Castbar", order, "tab", disabledFunc, {
+	local options = self:NewGroup("Castbar", order, "tab", nil, disabledFunc, {
 		Test = self:NewExecute("Test Castbar", "Test the Castbar.", 1, testCastbar, nil, nil, disabledCastbarFunc),
 		General = self:NewGroup("General", 2, {
 			Enable = self:NewToggle("Enable", "Whether you want to show your "..unit.." Castbar or not.", 1, applyCastbar, "full"),
@@ -1082,13 +1082,13 @@ function module:CreateUnitOptions(unit, order)
 			Eclipse = (unit == "Player" and class == "DRUID") and self:CreatePlayerBarTextOptions("Eclipse", 11) or nil,
 			AltPower = (unit == "Player") and self:CreatePlayerBarTextOptions("AltPower", 12) or nil,
 		}),
-		Castbar = (self.db[unit].Castbar) and self:CreateCastbarOptions(unit, 5) or nil,
-		Aura = (self.db[unit].Aura) and self:NewGroup("Auras", 6, "tab", disabledFunc, {
+		Castbar = (self.defaults[unit].Castbar) and self:CreateCastbarOptions(unit, 5) or nil,
+		Aura = (self.defaults[unit].Aura) and self:NewGroup("Auras", 6, "tab", nil, disabledFunc, {
 			Buffs = self:CreateAuraOptions(unit, 1, "Buffs"),
 			Debuffs = self:CreateAuraOptions(unit, 2, "Debuffs"),
 		}) or nil,
 		Portrait = self:CreatePortraitOptions(unit, 7),
-		Icons = self.db[unit].Icons and self:NewGroup("Icons", 8, "tab", nil, disabledFunc, {
+		Icons = self.defaults[unit].Icons and self:NewGroup("Icons", 8, "tab", nil, disabledFunc, {
 			PvP = self.db[unit].Icons.PvP and self:CreateIconOptions(unit, 1, "PvP") or nil,
 			Combat = self.db[unit].Icons.Combat and self:CreateIconOptions(unit, 2, "Combat") or nil,
 			Resting = self.db[unit].Icons.Resting and self:CreateIconOptions(unit, 3, "Resting") or nil,
