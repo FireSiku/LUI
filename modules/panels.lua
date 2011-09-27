@@ -1629,7 +1629,7 @@ function module:LoadOptions()
 												end
 												raidLoop = raidLoop + 1
 											end
-											db.oUF.Raid.Enable = (db.Frames.Raid.Anchor == addonAnchors.raid.oUF)
+											LUI:Module("Unitframes").db.Raid.Enable = (db.Frames.Raid.Anchor == addonAnchors.raid.oUF)
 											module:SetRaidBackground()
 										end,
 									order = 6,
