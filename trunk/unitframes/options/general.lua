@@ -109,12 +109,19 @@ function module:CreateXpRepOptionsPart(barType, order)
 	if barType == "XP" then
 		toggleFunc = function()
 			if not oUF_LUI_player.XP then module.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, xprepdb) end
-			if self.db.XP_Rep.Experience.Enable then
+			if self.db.XP_Rep.Experience.Enable and UnitLevel("player") ~= MAX_PLAYER_LEVEL then
+				oUF_LUI_player.Experience:ForceUpdate()
 				oUF_LUI_player.XP:Show()
 				if oUF_LUI_player.Rep then oUF_LUI_player.Rep:Hide() end
 			else
 				oUF_LUI_player.XP:Hide()
-				if oUF_LUI_player.Rep then oUF_LUI_player.Rep:Show() end
+				if oUF_LUI_player.Rep then
+					if self.db.XP_Rep.Reputation.Enable then
+						oUF_LUI_player.Rep:Show()
+					else
+						oUF_LUI_player.Rep:Hide()
+					end
+				end
 			end
 			oUF_LUI_player.XP.Enable = self.db.XP_Rep.Experience.Enable
 		end
@@ -122,13 +129,18 @@ function module:CreateXpRepOptionsPart(barType, order)
 		toggleFunc = function()
 			if not oUF_LUI_player.Rep then module.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, xprepdb) end
 			if self.db.XP_Rep.Reputation.Enable then
-				print("Ena")
+				oUF_LUI_player.Reputation:ForceUpdate()
 				oUF_LUI_player.Rep:Show()
 				if oUF_LUI_player.XP then oUF_LUI_player.XP:Hide() end
 			else
-				print("Disa")
 				oUF_LUI_player.Rep:Hide()
-				if oUF_LUI_player.XP then oUF_LUI_player.XP:Show() end
+				if oUF_LUI_player.XP then
+					if self.db.XP_Rep.Experience.Enable and UnitLevel("player") ~= MAX_PLAYER_LEVEL then
+						oUF_LUI_player.XP:Show()
+					else
+						oUF_LUI_player.XP:Hide()
+					end
+				end
 			end
 			oUF_LUI_player.Rep.Enable = self.db.XP_Rep.Reputation.Enable
 		end
@@ -166,7 +178,7 @@ function module:CreateXpRepOptions(order)
 	
 	local options = self:NewGroup("XP / Rep", order, "tab", {
 		Info = self:NewGroup("Info", 1, {
-			About = self:NewDesc("The XP and Rep bars are located below the Player UnitFrame and will show on mouseover.\nThe Experience Bar will only be shown if you are not yet Level "..MAX_PLAYER_LEVEL..".\n\nIf you are not yet Level "..MAX_PLAYER_LEVEL.." you can right click on either bar to switch to the other.\nWhen you left click on one of the bars, information about that bar will be paste into your Chat EditBox if it is open and added to the Chat Window if not.\n\n\n", 1),
+			About = self:NewDesc("The XP and Rep bars are located below the Player UnitFrame and will show on mouseover.\nThe Experience Bar will only be shown if you are not yet Level "..MAX_PLAYER_LEVEL..".\n\nIf you are not yet Level "..MAX_PLAYER_LEVEL.." you can right click on either bar to switch to the other.\nWhen you left click on one of the bars, information about that bar will be copied into your Chat EditBox if it is open and added to the Chat Window if not.\n\n\n", 1),
 			Reset = self:NewExecute("Reset", nil, 2, resetFunc),
 		}),
 		Experience = self:CreateXpRepOptionsPart("XP", 2),
@@ -630,8 +642,11 @@ function module:CreatePvpTimerOptions(order)
 		Font = self:NewSelect("Font", "Choose your PvP Timer Text Font.", 3, widgetLists.font, "LSM30_Font", applySettings, nil, disabledFunc),
 		Size = self:NewSlider("Size", "Choose your PvP Timer Text Fontsize.", 4, 1, 40, 1, applySettings, nil, nil, disabledFunc),
 		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the PvP Timer Text.", 5, fontflags, nil, applySettings, nil, disabledFunc),
-		empty3 = self:NewDesc(" ", 6),
-		Color = self:NewColorNoAlpha("", "PvP Timer Text", 7, applySettings, nil, disabledFunc),
+		empty2 = self:NewDesc(" ", 6),
+		X = self:NewInputNumber("X Value", "Choose the X Value for your PvP Timer Text.", 7, applySettings, nil, disabledFunc),
+		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your PvP Timer Text.", 8, applySettings, nil, disabledFunc),
+		empty3 = self:NewDesc(" ", 9),
+		Color = self:NewColorNoAlpha("", "PvP Timer Text", 10, applySettings, nil, disabledFunc),
 	})
 	
 	return options
@@ -1011,7 +1026,7 @@ function module:CreateUnitOptions(unit, order)
 				UseBlizzard = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Raid") and self:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, false, "full", function() return self.db[unit].Enable end) or nil,
 				ShowPlayer = (unit == "Party") and self:NewToggle("Show Player", "Whether you want to show yourself within the Party Frames or not.", 3, false, nil, disabledFunc) or nil,
 				ShowInRaid = (unit == "Party") and self:NewToggle("Show in Raid", "Whether you want to show the Party Frames in Raid or not.", 4, false, nil, disabledFunc) or nil,
-				ShowInRealPartys = (unit == "Party") and self:NewToggle("Show only in real Partys", "Whether you want to show the Party Frames only in real Partys or in Raids with 5 or less players too.", 5, false, nil, function() return not module.db.Party.Enable or module.db.Party.ShowInRaid end) or nil,
+				ShowInRealPartys = (unit == "Party") and self:NewToggle("Show only in real Parties", "Whether you want to show the Party Frames only in real Parties or in Raids with 5 or less players too.", 5, false, nil, function() return not module.db.Party.Enable or module.db.Party.ShowInRaid end) or nil,
 				empty1 = (unit ~= "Player" and unit ~= "Target") and self:NewDesc(" ", 6) or nil,
 				Padding = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank" or unit == "Raid") and self:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.\n\nDefault: "..self.defaults[unit].Padding, 7, false, nil, disabledFunc) or nil,
 				GroupPadding = (unit == "Raid") and self:NewInputNumber("Group Padding", "Choose the Padding between your "..unit.." Groups.\n\nDefault: "..self.defaults[unit].GroupPadding, 8, false, nil, disabledFunc) or nil,

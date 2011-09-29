@@ -124,7 +124,7 @@ function module:CreateCopyOptions(unit, order)
 		order = order,
 		disabled = function() return not self.db.Enable end,
 		args = {
-			desc = self:NewDesc("This is the Unitframe CopySettings page. Here you can choose which settings you want to copy from this or to this Unitframes.", 1),
+			desc = self:NewDesc("This is the Unitframe CopySettings page. Here you can choose which settings you want to copy from or to this/these Unitframe(s).", 1),
 			empty1 = self:NewDesc(" ", 2),
 			currently = self:NewDesc(Current, 3),
 			Paste = self:NewExecute("Paste Settings", "Paste the chosen Settings.", 4, function() settings.dstUnit = unit; StaticPopup_Show("COPY_SETTINGS") end, nil, nil, disabledFunc),

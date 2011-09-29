@@ -892,12 +892,18 @@ module.ApplySettings = function(unit)
 				module.funcs.Experience(frame, frame.__unit, module.db.XP_Rep)
 				module.funcs.Reputation(frame, frame.__unit, module.db.XP_Rep)
 				
-				if module.db.XP_Rep.Experience.Enable then
-					frame.Experience:Show()
-					if frame.Reputation then frame.Reputation:Hide() end
+				if module.db.XP_Rep.Experience.Enable and UnitLevel("player") ~= MAX_PLAYER_LEVEL then
+					frame.Experience:ForceUpdate()
+					frame.XP:Show()
+					frame.Rep:Hide()
 				else
-					frame.Experience:Hide()
-					if frame.Reputation then frame.Reputation:Show() end
+					frame.XP:Hide()
+					if module.db.XP_Rep.Reputation.Enable then
+						frame.Reputation:ForceUpdate()
+						frame.Rep:Show()
+					else
+						frame.Rep:Hide()
+					end
 				end
 				
 				-- totems

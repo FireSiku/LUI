@@ -1554,35 +1554,35 @@ module.funcs = {
 			self.Experience.bg:SetAllPoints(self.XP)
 			self.Experience.bg:SetTexture(normTex)
 
-			self.Experience.Override = function(self, event, unit)
+			self.Experience.Override = function(_, event, unit)
 				if(self.unit ~= unit) then return end
 				if unit == "vehicle" then unit = "player" end
 
-				if UnitLevel(unit) == MAX_PLAYER_LEVEL then
-					return self.Experience:Hide()
-				else
-					self.Experience:Show()
-				end
-
-				local min, max = UnitXP(unit), UnitXPMax(unit)
+				local value, max = UnitXP(unit), UnitXPMax(unit)
 
 				self.Experience:SetMinMaxValues(0, max)
-				self.Experience:SetValue(min)
+				self.Experience:SetValue(value)
 
-				if self.Experience.Rested then
-					local exhaustion = unit == "player" and GetXPExhaustion() or 0
-					self.Experience.Rested:SetMinMaxValues(0, max)
-					self.Experience.Rested:SetValue(math.min(min + exhaustion, max))
-				end
+				local exhaustion = unit == "player" and GetXPExhaustion() or 0
+				self.Experience.Rested:SetMinMaxValues(0, max)
+				self.Experience.Rested:SetValue(math.min(value + exhaustion, max))
+				
+				self.Experience.Value:SetFormattedText("%d / %d (%d%%)", value, max, math.floor((value / max) * 100 + 0.5))
 			end
 
-			local events = {"PLAYER_XP_UPDATE", "PLAYER_LEVEL_UP", "UPDATE_EXHAUSTION", "PLAYER_ENTERING_WORLD"}
-			for i=1, #events do self.XP:RegisterEvent(events[i]) end
-			self.XP:SetScript("OnEvent", function(_, event)
-				local value, max = UnitXP("player"), UnitXPMax("player")
-				self.Experience.Value:SetFormattedText("%d / %d (%d%%)", value, max, math.floor((value / max) * 100 + 0.5))
-				if event == "PLAYER_ENTERING_WORLD" then self.XP:UnregisterEvent(event) end
-			end)
+			if UnitLevel("player") == MAX_PLAYER_LEVEL then
+				self.XP:Hide()
+			else
+				self.XP:RegisterEvent("PLAYER_LEVEL_UP")
+				self.XP:SetScript("OnEvent", function(_, event, level)
+					if level == MAX_PLAYER_LEVEL then
+						self.XP:Hide()
+						if self.Rep and ouf_xp_rep.Reputation.Enable then
+							self.Rep:Show()
+						end
+					end
+				end)
+			end
 
 			local frameStrata = self.XP:GetFrameStrata()
 			self.XP:SetScript("OnEnter", function()
@@ -1611,6 +1611,24 @@ module.funcs = {
 				-- Reset frame strata back to normal level.
 				self.XP:SetFrameStrata(frameStrata)
 				GameTooltip:Hide()
+			end)
+			
+			self.XP:SetScript("OnMouseUp", function(_, button)
+				if button == "LeftButton" then
+					local level, value, max, rested = UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetXPExhaustion()
+					local msg = "Experience into Level "..level..": "..value.." / "..max.." ("..max - value.." remaining)"..((rested and rested > 0) and (", "..rested.." rested XP") or "")
+					for i=1, NUM_CHAT_WINDOWS do
+						local editbox = _G["ChatFrame"..i.."EditBox"] 
+						if editbox and editbox:IsShown() then
+							editbox:Insert(msg)
+							return
+						end
+					end
+					print(msg)
+				elseif button == "RightButton" and self.Rep and self.Rep.Enable then
+					self.XP:Hide()
+					self.Rep:Show()
+				end
 			end)
 			
 			self.XP.Enable = true
@@ -1656,18 +1674,24 @@ module.funcs = {
 			self.Reputation.bg = self.Reputation:CreateTexture(nil, "BACKGROUND")
 			self.Reputation.bg:SetAllPoints(self.Rep)
 			self.Reputation.bg:SetTexture(normTex)
-
-			local events = {"UPDATE_FACTION", "PLAYER_ENTERING_WORLD"}
-			for i=1, #events do self.Rep:RegisterEvent(events[i]) end
-			self.Rep:SetScript("OnEvent", function(_, event)
-				if GetWatchedFactionInfo() then
-					local _, _, min, max, value = GetWatchedFactionInfo()
+			
+			self.Reputation.Override = function(_, event, unit)
+				if(self.unit ~= unit) then return end
+				if unit == "vehicle" then unit = "player" end
+				
+				local name, standing, min, max, value = GetWatchedFactionInfo()
+				if name then
+					self.Reputation:SetMinMaxValues(min, max)
+					self.Reputation:SetValue(value)
+					
 					self.Reputation.Value:SetFormattedText("%d / %d (%d%%)", value - min, max - min, math.floor(((value - min) / (max - min)) * 100 + 0.5))
 				else
+					self.Reputation:SetMinMaxValues(0, 100)
+					self.Reputation:SetValue(0)
+					
 					self.Reputation.Value:SetText()
 				end
-				if event == "PLAYER_ENTERING_WORLD" then self.Rep:UnregisterEvent(event) end
-			end)
+			end
 
 			local frameStrata = self.Rep:GetFrameStrata()
 			self.Rep:SetScript("OnEnter", function()
@@ -1697,6 +1721,26 @@ module.funcs = {
 				-- Reset frame strata back to normal level.
 				self.Rep:SetFrameStrata(frameStrata)
 				GameTooltip:Hide()
+			end)
+			
+			self.Rep:SetScript("OnMouseUp", function(_, button)
+				if button == "LeftButton" then
+					local name, standing, min, max, value = GetWatchedFactionInfo()
+					if not name then return end
+					
+					local msg = "Reputation with "..name..": "..value - min.." / "..max - min.." "..standings[standing].." ("..max - value.." remaining)"
+					for i=1, NUM_CHAT_WINDOWS do
+						local editbox = _G["ChatFrame"..i.."EditBox"] 
+						if editbox and editbox:IsShown() then
+							editbox:Insert(msg)
+							return
+						end
+					end
+					print(msg)
+				elseif button == "RightButton" and self.XP and self.XP.Enable and UnitLevel("player") ~= MAX_PLAYER_LEVEL then
+					self.Rep:Hide()
+					self.XP:Show()
+				end
 			end)
 			
 			self.Rep.Enable = true
@@ -2788,50 +2832,6 @@ local SetStyle = function(self, unit, isSingle)
 	if unit == "player" then
 		if ouf_xp_rep.Experience.Enable then module.funcs.Experience(self, unit, ouf_xp_rep) end
 		if ouf_xp_rep.Reputation.Enable then module.funcs.Reputation(self, unit, ouf_xp_rep) end
-
-		if UnitLevel("player") == MAX_PLAYER_LEVEL then
-			if self.XP then
-				self.XP:Hide()
-			end
-			if self.Rep then
-				self.Rep:SetScript("OnMouseUp", function(_, button)
-					if button == "LeftButton" and GetWatchedFactionInfo() then
-						local name, standing, min, max, value = GetWatchedFactionInfo()
-						print("Reputation with "..name..": "..value - min.." / "..max - min.." "..standings[standing].." ("..max - value.." remaining)")
-					end
-				end)
-			end
-		else
-			if self.XP and self.Rep then
-				self.Rep:Hide()
-			end
-			if self.XP then
-				self.XP:SetScript("OnMouseUp", function(_, button)
-					if button == "LeftButton" then
-						local level, value, max, rested = UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetXPExhaustion()
-						if (rested and rested > 0) then
-							print("Experience into Level "..level..": "..value.." / "..max.." ("..max - value.." remaining), "..rested.." rested XP")
-						else
-							print("Experience into Level "..level..": "..value.." / "..max.." ("..max - value.." remaining)")
-						end
-					elseif button == "RightButton" and self.Rep and self.Rep.Enable then
-						self.XP:Hide()
-						self.Rep:Show()
-					end
-				end)
-			end
-			if self.Rep then
-				self.Rep:SetScript("OnMouseUp", function(_, button)
-					if button == "LeftButton" and GetWatchedFactionInfo() then
-						local name, standing, min, max, value = GetWatchedFactionInfo()
-						print("Reputation with "..name..": "..value - min.." / "..max - min.." "..standings[standing].." ("..max - value.." remaining)")
-					elseif button == "RightButton" and self.XP and self.XP.Enable and UnitLevel("player") ~= MAX_PLAYER_LEVEL then
-						self.Rep:Hide()
-						self.XP:Show()
-					end
-				end)
-			end
-		end
 
 		if class == "DEATH KNIGHT" or class == "DEATHKNIGHT" then
 			if oufdb.Bars.Runes.Enable then
