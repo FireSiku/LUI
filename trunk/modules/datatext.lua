@@ -202,21 +202,24 @@ function module:SetBags()
 		-- Localized functions
 		local GetContainerNumFreeSlots, GetContainerNumSlots = GetContainerNumFreeSlots, GetContainerNumSlots
 		
-		local BagTypes = {
-				[0] = "Normal",
-				[1] = "Quiver",
-				[2] = "Ammo Pouch",
-				[4] = "Soul Bag",
-				[8] = "Leatherworking Bag",
-				[16] = "Inscription Bag",
-				[32] = "Herb Bag",
-				[64] = "Enchanting Bag",
-				[128] = "Engineering Bag",
-				[256] = "Keyring",
-				[512] = "Gem Bag",
-				[1024] = "Mining Bag",
-				[2048] = "Unknown",
-				[4096] = "Vanity Pets",
+		local bagTypes = {
+			[0x0000] = "Normal", -- 0
+			[0x0001] = "Quiver", -- 1
+			[0x0002] = "Ammo Pouch", -- 2
+			[0x0004] = "Soul Bag", -- 4
+			[0x0008] = "Leatherworking Bag", -- 8
+			[0x0010] = "Inscription Bag", -- 16
+			[0x0020] = "Herb Bag", -- 32
+			[0x0040] = "Enchanting Bag", -- 64
+			[0x0080] = "Engineering Bag", -- 128
+			[0x0100] = "Keyring", -- 256
+			[0x0200] = "Gem Bag", -- 512
+			[0x0400] = "Mining Bag", -- 1024
+			-- [0x0800] = "", -- 2048
+			[0x1000] = "Vanity Pets", -- 4096
+			-- [0x2000] = "", -- 8192
+			-- [0x4000] = "", -- 16384
+			[0x8000] = "Tackle Box", -- 32768
 		}
 		
 		-- Event functions
@@ -261,7 +264,7 @@ function module:SetBags()
 				GameTooltip:AddLine(" ")
 				
 				for k, v in pairs(freeslots) do
-					GameTooltip:AddDoubleLine(BagTypes[k]..":", totalslots[k]-v.."/"..totalslots[k], 1, 1, 1, 1, 1, 1)
+					GameTooltip:AddDoubleLine((bagTypes[k] or "Unknown")..":", totalslots[k]-v.."/"..totalslots[k], 1, 1, 1, 1, 1, 1)
 				end
 				GameTooltip:AddLine(" ")
 				
