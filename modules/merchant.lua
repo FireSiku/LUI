@@ -166,20 +166,25 @@ function module:AutoStock()
 
 	-- Scan through merchants items.
 	local cost, cart = 0, {}
-	local n, _, price, id
-	for i = 0, GetMerchantNumItems() do
+	for i = 1, GetMerchantNumItems() do
 		-- Get item info.
-		n, _, price = GetMerchantItemInfo(i)
-		id = self:GetItemID(n)
+		local name, _, price, quantity, numAvailable = GetMerchantItemInfo(i)
+		local id = self:GetItemID(GetMerchantItemLink(i))
 
 		-- Check item is in list.
 		local count = 0
 		if id and db.AutoStock.List[id] then
 			-- Add to shopping cart.
 			count = db.AutoStock.List[id] - GetItemCount(id)
+			if numAvailable ~= -1 and numAvailable < count then
+				if db.AutoStock.Settings.ShowError then
+					print("|cffff0000Only " .. numAvailable .. " " .. name .. (numAvailable == 1 and " was" or "s were") .. " available for purchase.|r")
+				end
+				count = numAvailable
+			end
 			if count > 0 then
 				cart[i] = count
-				cost = cost + (price * cart[i])
+				cost = cost + (price / quantity * count)
 			end
 		end
 	end
