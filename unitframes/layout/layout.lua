@@ -1675,10 +1675,7 @@ module.funcs = {
 			self.Reputation.bg:SetAllPoints(self.Rep)
 			self.Reputation.bg:SetTexture(normTex)
 			
-			self.Reputation.Override = function(_, event, unit)
-				if(self.unit ~= unit) then return end
-				if unit == "vehicle" then unit = "player" end
-				
+			self.Reputation.Override = function()
 				local name, standing, min, max, value = GetWatchedFactionInfo()
 				if name then
 					self.Reputation:SetMinMaxValues(min, max)
