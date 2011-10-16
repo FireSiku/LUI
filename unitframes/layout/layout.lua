@@ -127,6 +127,7 @@ local channelingTicks = ( -- base time between ticks
 	}) or (class == "WARLOCK" and {
 		[GetSpellInfo(1120)] = 3, -- Drain Soul
 		[GetSpellInfo(689)] = 1, -- Drain Life
+		[GetSpellInfo(755)] = 1, -- Health Funnel
 		[GetSpellInfo(79268)] = 3, -- Soul Harvest
 		[GetSpellInfo(5740)] = 2, -- Rain of Fire
 		[GetSpellInfo(1949)] = 1, -- Hellfire
@@ -683,17 +684,20 @@ local CustomFilter = function(icons, unit, icon, name, rank, texture, count, dty
 	end
 end
 
-local SetTicks = function(castbar, unit, tickspeed)
-	if tickspeed and tickspeed > 0 then
-		local numticks = floor((castbar.max/(tickspeed/(1+(UnitSpellHaste(unit or "player")/100))))+0.5)
-		local delta = castbar:GetWidth() / numticks
-		for i = 1, numticks - 1 do
+local SetTicks = function(castbar, unit, name)
+	if name and channelingTicks[name] then
+		castbar.tickspeed = channelingTicks[name] / (1 + (UnitSpellHaste(unit) / 100))
+		castbar.numticks = floor((castbar.max / castbar.tickspeed) + 0.5)
+		local spacing = castbar:GetWidth() / castbar.numticks
+		for i = 1, castbar.numticks - 1 do
 			local tick = barticks(castbar, i)
 			tick:ClearAllPoints()
-			tick:SetPoint("CENTER", castbar, "LEFT", delta * i, 0)
+			tick:SetPoint("CENTER", castbar, "RIGHT", -spacing * i, 0)
 			tick:Show()
 		end
 	else
+		castbar.numticks = 0
+		castbar.tickspeed = nil
 		for i = 1, #barticks do
 			barticks[i]:Hide()
 		end
@@ -722,14 +726,36 @@ end
 
 local PostChannelStart = function(castbar, unit, name)
 	if castbar.channeling then
-		SetTicks(castbar, unit, channelingTicks[name])
+		SetTicks(castbar, unit, name)
 	end
 	
 	PostCastStart(castbar, unit, name)
 end
 
+local PostChannelUpdate = function(castbar, unit, name)
+	if not channelingTicks[name] then return end
+	
+	local cbWidth = castbar:GetWidth()
+	local nexttick = floor((castbar.max - (castbar.duration + castbar.delay)) / castbar.tickspeed) + 1
+	local spacing = cbWidth / castbar.numticks
+	local deltaX = (cbWidth / castbar.max) * castbar.delay
+	
+	for i = nexttick, castbar.numticks - 1 do
+		local newX = (spacing * i) + deltaX
+		if newX > cbWidth then
+			castbar.numticks = i - 1
+			for j = i, #barticks do
+				barticks[i]:Hide()
+			end
+			break
+		else
+			barticks[i]:SetPoint("CENTER", castbar, "RIGHT", -newX, 0)
+		end
+	end
+end
+
 local PostChannelStop = function(castbar, unit, name)
-	SetTicks()
+	SetTicks(castbar, unit)
 end
 
 local ThreatOverride = function(self, event, unit)
@@ -2516,7 +2542,11 @@ module.funcs = {
 		
 		self.Castbar.PostCastStart = PostCastStart
 		self.Castbar.PostChannelStart = ((unit == "player" and channelingTicks) and PostChannelStart) or PostCastStart
-		if unit == "player" and channelingTicks then self.Castbar.PostChannelStop = PostChannelStop end
+		if unit == "player" and channelingTicks then
+			self.Castbar.numticks = self.Castbar.numticks or 0
+			self.Castbar.PostChannelStop = PostChannelStop
+			self.Castbar.PostChannelUpdate = PostChannelUpdate
+		end
 		
 		self.Castbar.Time:SetFont(Media:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
 		self.Castbar.Time:ClearAllPoints()
