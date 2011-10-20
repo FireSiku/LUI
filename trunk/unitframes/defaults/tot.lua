@@ -139,6 +139,7 @@ module.defaults.profile.ToT = {
 			ColorByType = false,
 			PlayerOnly = false,
 			IncludePet = false,
+			FadeOthers = false,
 			AuraTimer = false,
 			DisableCooldown = false,
 			CooldownReverse = true,

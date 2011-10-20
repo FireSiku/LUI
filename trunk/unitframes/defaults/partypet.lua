@@ -140,6 +140,7 @@ module.defaults.profile.PartyPet = {
 			ColorByType = false,
 			PlayerOnly = false,
 			IncludePet = false,
+			FadeOthers = false,
 			AuraTimer = false,
 			DisableCooldown = false,
 			CooldownReverse = true,

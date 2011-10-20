@@ -123,6 +123,7 @@ module.defaults.profile.ArenaPet = {
 			ColorByType = true,
 			PlayerOnly = true,
 			IncludePet = true,
+			FadeOthers = true,
 			AuraTimer = false,
 			DisableCooldown = false,
 			CooldownReverse = true,
