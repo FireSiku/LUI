@@ -217,6 +217,7 @@ module.defaults.profile.Focus = {
 			ColorByType = false,
 			PlayerOnly = false,
 			IncludePet = false,
+			FadeOthers = true,
 			AuraTimer = false,
 			DisableCooldown = false,
 			CooldownReverse = true,

@@ -554,7 +554,6 @@ function module:CreateTextOptions(unit, order, parentName, textType)
 end
 
 function module:CreateCombatTextOptions(unit, order)
-	local disabledFunc = function() return self.db[unit].Enable == false end
 	local disabledCombatFunc = function() return not self.db[unit].Texts.Combat.Enable end
 
 	local applyCombatFeedback = function()
@@ -654,7 +653,7 @@ end
 
 function module:CreateDruidManaTimerOptions(order)
 	local disabledFunc = function() return not self.db.Player.Texts.DruidMana.Enable end
-	local disabledColorFunc = function() return not self.db.Player.Texts.DruidMana.Enable and self.db.Player.Texts.DruidMana.Color ~= "Individual" end
+	local disabledColorFunc = function() return not self.db.Player.Texts.DruidMana.Enable or self.db.Player.Texts.DruidMana.Color ~= "Individual" end
 	
 	local applySettings = function()
 		module.funcs.DruidMana(oUF_LUI_player, oUF_LUI_player.__unit, self.db.Player)
@@ -799,8 +798,9 @@ end
 -- type: "Buffs", "Debuffs"
 function module:CreateAuraOptions(unit, order, type)
 	local disabledFunc = function() return not self.db[unit].Aura[type].Enable end
-	local disabledPetFunc = function() return not self.db[unit].Aura[type].Enable and self.db[unit].Aura[type].PlayerOnly end
-	local disabledCDFunc = function() return not self.db[unit].Aura[type].Enable and self.db[unit].Aura[type].DisableCooldown end
+	local disabledPetFunc = function() return not self.db[unit].Aura[type].Enable or not self.db[unit].Aura[type].PlayerOnly end
+	local disabledOthersFunc = function() return not self.db[unit].Aura[type].Enable or self.db[unit].Aura[type].PlayerOnly end
+	local disabledCDFunc = function() return not self.db[unit].Aura[type].Enable or self.db[unit].Aura[type].DisableCooldown end
 	
 	local applySettings = function()
 		for _, frame in pairs(self.framelist[unit]) do
@@ -836,9 +836,10 @@ function module:CreateAuraOptions(unit, order, type)
 		AuraTimer = self:NewToggle("Enable Auratimer", "Whether you want to show Auratimers or not.", 14, applySettings, "full", disabledFunc),
 		PlayerOnly = self:NewToggle("Player "..type.." Only", "Whether you want to show only the "..type.." or not.", 15, applySettings, nil, disabledFunc),
 		IncludePet = self:NewToggle("Include Pet "..type, "Whether you want to include Pet "..type.." or not.", 16, applySettings, nil, disabledPetFunc),
-		ColorByType = self:NewToggle("Color by Type", "Whether you want to color "..type.." by Type or not.", 17, applySettings, "full", disabledFunc),
-		DisableCooldown = self:NewToggle("Hide Cooldown Spiral", "Whether you want to disable the cooldown spiral effect or not.", 18, applySettings, nil, disabledFunc),
-		CooldownReverse = self:NewToggle("Reverse Cooldown Spiral", "Whether you want to reverse the cooldown spiral effect or not.", 19, applySettings, nil, disabledCDFunc),
+		FadeOthers = type == "Debuffs" and self:NewToggle("Fade Other's "..type, "Whether you want "..type.." cast by others be grayed out or not", 17, applySettings, nil, disabledOthersFunc) or nil,
+		ColorByType = self:NewToggle("Color by Type", "Whether you want to color "..type.." by Type or not.", 18, applySettings, "full", disabledFunc),
+		DisableCooldown = self:NewToggle("Hide Cooldown Spiral", "Whether you want to disable the cooldown spiral effect or not.", 19, applySettings, nil, disabledFunc),
+		CooldownReverse = self:NewToggle("Reverse Cooldown Spiral", "Whether you want to reverse the cooldown spiral effect or not.", 20, applySettings, nil, disabledCDFunc),
 	})
 	
 	return options

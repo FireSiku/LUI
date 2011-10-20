@@ -126,6 +126,7 @@ module.defaults.profile.Boss = {
 			ColorByType = true,
 			PlayerOnly = true,
 			IncludePet = false,
+			FadeOthers = true,
 			AuraTimer = false,
 			DisableCooldown = false,
 			CooldownReverse = true,

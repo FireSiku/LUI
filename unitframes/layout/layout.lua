@@ -86,22 +86,6 @@ local cornerAuras = {
 	},
 }
 
-local barticks = setmetatable({}, {
-	__call = function(t, castbar, i)
-		local spark = t[i]
-		if not spark then
-			spark = castbar:CreateTexture(nil, "OVERLAY")
-			t[i] = spark
-			spark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
-			spark:SetVertexColor(1, 1, 1, 0.8)
-			spark:SetBlendMode("ADD")
-			spark:SetWidth(15)
-		end
-		spark:SetHeight(castbar:GetHeight() * 1.8)
-		return spark
-	end,
-})
-	
 local channelingTicks = ( -- base time between ticks
 	(class == "DRUID" and {
 		[GetSpellInfo(740)] = 2, -- Tranquility
@@ -546,15 +530,15 @@ local FormatCastbarTime = function(self, duration)
 	if self.delay ~= 0 then
 		if self.channeling then
 			if self.Time.ShowMax == true then
-				self.Time:SetFormattedText("%.1f / %.1f |cffff0000-%.1f|r", duration, self.max, self.delay)
+				self.Time:SetFormattedText("%.1f / %.1f |cffff0000%.1f|r", duration, self.max, -self.delay)
 			else
-				self.Time:SetFormattedText("%.1f |cffff0000-%.1f|r", duration, self.delay)
+				self.Time:SetFormattedText("%.1f |cffff0000%.1f|r", duration, -self.delay)
 			end
 		elseif self.casting then
 			if self.Time.ShowMax == true then
-				self.Time:SetFormattedText("%.1f / %.1f |cffff0000-%.1f|r", self.max - duration, self.max, self.delay)
+				self.Time:SetFormattedText("%.1f / %.1f |cffff0000%.1f|r", self.max - duration, self.max, -self.delay)
 			else
-				self.Time:SetFormattedText("%.1f |cffff0000-%.1f|r", self.max - duration, self.delay)
+				self.Time:SetFormattedText("%.1f |cffff0000%.1f|r", self.max - duration, -self.delay)
 			end
 		end
 	else
@@ -631,7 +615,7 @@ local PostUpdateAura = function(icons, unit, icon, index, offset, filter, isDebu
 	local _, _, _, _, dtype, duration, expirationTime, unitCaster, _ = UnitAura(unit, index, icon.filter)
 	if not (unitCaster == "player" or unitCaster == "pet" or unitCaster == "vehicle") then
 		if icon.debuff then
-			icon.icon:SetDesaturated(true)
+			icon.icon:SetDesaturated(icons.fadeOthers)
 		end
 	end
 
@@ -684,26 +668,6 @@ local CustomFilter = function(icons, unit, icon, name, rank, texture, count, dty
 	end
 end
 
-local SetTicks = function(castbar, unit, name)
-	if name and channelingTicks[name] then
-		castbar.tickspeed = channelingTicks[name] / (1 + (UnitSpellHaste(unit) / 100))
-		castbar.numticks = floor((castbar.max / castbar.tickspeed) + 0.5)
-		local spacing = castbar:GetWidth() / castbar.numticks
-		for i = 1, castbar.numticks - 1 do
-			local tick = barticks(castbar, i)
-			tick:ClearAllPoints()
-			tick:SetPoint("CENTER", castbar, "RIGHT", -spacing * i, 0)
-			tick:Show()
-		end
-	else
-		castbar.numticks = 0
-		castbar.tickspeed = nil
-		for i = 1, #barticks do
-			barticks[i]:Hide()
-		end
-	end
-end
-
 local PostCastStart = function(castbar, unit, name)
 	if castbar.Colors.Individual == true then
 		castbar:SetStatusBarColor(castbar.Colors.Bar.r, castbar.Colors.Bar.g, castbar.Colors.Bar.b, castbar.Colors.Bar.a)
@@ -725,37 +689,54 @@ local PostCastStart = function(castbar, unit, name)
 end
 
 local PostChannelStart = function(castbar, unit, name)
+	local _, _, _, _, startTime, endTime = UnitChannelInfo(unit)
 	if castbar.channeling then
-		SetTicks(castbar, unit, name)
+		if channelingTicks[name] then
+			local tickspeed = channelingTicks[name] / (1 + (UnitSpellHaste(unit) / 100))
+			local numticks = floor((castbar.max / tickspeed) + 0.5) - 1
+			for i = 1, numticks do
+				local tick = castbar:GetTick(i)
+				tick.ticktime = tickspeed * i
+				tick.delay = 0
+				tick:Update()
+			end
+			castbar.tickspeed = tickspeed
+			castbar.numticks = numticks
+		else
+			castbar:HideTicks()
+		end
 	end
 	
 	PostCastStart(castbar, unit, name)
 end
 
 local PostChannelUpdate = function(castbar, unit, name)
-	if not channelingTicks[name] then return end
+	local _, _, _, _, startTime, endTime = UnitChannelInfo(unit)
 	
-	local cbWidth = castbar:GetWidth()
-	local nexttick = floor((castbar.max - (castbar.duration + castbar.delay)) / castbar.tickspeed) + 1
-	local spacing = cbWidth / castbar.numticks
-	local deltaX = (cbWidth / castbar.max) * castbar.delay
+	if castbar.delay < 0 then
+		castbar.numticks = castbar.numticks + 1
+		
+		for i = 1, castbar.numticks do
+			local tick = castbar:GetTick(i)
+			tick.ticktime = castbar.tickspeed * i
+			tick.delay = 0
+			tick:Update()
+		end
+		
+		castbar.delay = 0
+		return
+	end
 	
-	for i = nexttick, castbar.numticks - 1 do
-		local newX = (spacing * i) + deltaX
-		if newX > cbWidth then
-			castbar.numticks = i - 1
-			for j = i, #barticks do
-				barticks[i]:Hide()
-			end
-			break
+	local _duration = castbar.duration + castbar.delay
+	for i = 1, castbar.numticks do
+		local tick = castbar:GetTick(i)
+		if tick.ticktime < _duration then
+			tick.delay = castbar.delay
+			tick:Update()
 		else
-			barticks[i]:SetPoint("CENTER", castbar, "RIGHT", -newX, 0)
+			break
 		end
 	end
-end
-
-local PostChannelStop = function(castbar, unit, name)
-	SetTicks(castbar, unit)
 end
 
 local ThreatOverride = function(self, event, unit)
@@ -2389,6 +2370,7 @@ module.funcs = {
 		self.Debuffs["growth-x"] = oufdb.Aura.Debuffs.GrowthX
 		self.Debuffs.onlyShowPlayer = oufdb.Aura.Debuffs.PlayerOnly
 		self.Debuffs.includePet = oufdb.Aura.Debuffs.IncludePet
+		self.Debuffs.fadeOthers = oufdb.Aura.Debuffs.FadeOthers
 		self.Debuffs.showStealableBuffs = (unit ~= "player" and (class == "MAGE" or class == "SHAMAN"))
 		self.Debuffs.showAuraType = oufdb.Aura.Debuffs.ColorByType
 		self.Debuffs.showAuratimer = oufdb.Aura.Debuffs.AuraTimer
@@ -2427,99 +2409,143 @@ module.funcs = {
 	end,
 
 	Castbar = function(self, unit, oufdb)
-		if not self.Castbar then
+		local castbar = self.Castbar
+		if not castbar then
 			self.Castbar = CreateFrame("StatusBar", self:GetName().."_Castbar", self)
-			self.Castbar:SetFrameLevel(6)
+			castbar = self.Castbar
+			castbar:SetFrameLevel(6)
 
-			self.Castbar.bg = self.Castbar:CreateTexture(nil, "BORDER")
-			self.Castbar.bg:SetAllPoints(self.Castbar)
+			castbar.bg = castbar:CreateTexture(nil, "BORDER")
+			castbar.bg:SetAllPoints(castbar)
 
-			self.Castbar.Backdrop = CreateFrame("Frame", nil, self)
-			self.Castbar.Backdrop:SetPoint("TOPLEFT", self.Castbar, "TOPLEFT", -4, 3)
-			self.Castbar.Backdrop:SetPoint("BOTTOMRIGHT", self.Castbar, "BOTTOMRIGHT", 3, -3.5)
-			self.Castbar.Backdrop:SetParent(self.Castbar)
+			castbar.Backdrop = CreateFrame("Frame", nil, self)
+			castbar.Backdrop:SetPoint("TOPLEFT", castbar, "TOPLEFT", -4, 3)
+			castbar.Backdrop:SetPoint("BOTTOMRIGHT", castbar, "BOTTOMRIGHT", 3, -3.5)
+			castbar.Backdrop:SetParent(castbar)
 
-			self.Castbar.Time = SetFontString(self.Castbar, Media:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
-			self.Castbar.Time:SetJustifyH("RIGHT")
-			self.Castbar.CustomTimeText = FormatCastbarTime
-			self.Castbar.CustomDelayText = FormatCastbarTime
+			castbar.Time = SetFontString(castbar, Media:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
+			castbar.Time:SetJustifyH("RIGHT")
+			castbar.CustomTimeText = FormatCastbarTime
+			castbar.CustomDelayText = FormatCastbarTime
 
-			self.Castbar.Text = SetFontString(self.Castbar, Media:Fetch("font", oufdb.Castbar.Text.Name.Font), oufdb.Castbar.Text.Name.Size)
+			castbar.Text = SetFontString(castbar, Media:Fetch("font", oufdb.Castbar.Text.Name.Font), oufdb.Castbar.Text.Name.Size)
+			
+			castbar.PostCastStart = PostCastStart
+			castbar.PostChannelStart = PostCastStart
 			
 			if unit == "player" then
-				self.Castbar.SafeZone = self.Castbar:CreateTexture(nil, "ARTWORK")
-				self.Castbar.SafeZone:SetTexture(normTex)
+				castbar.SafeZone = castbar:CreateTexture(nil, "ARTWORK")
+				castbar.SafeZone:SetTexture(normTex)
+				
+				local ticks = {}
+				local function updateTick(self)
+					local ticktime = self.ticktime - self.delay
+					if ticktime > 0 and ticktime < castbar.max then
+						self:SetPoint("CENTER", castbar, "LEFT", ticktime / castbar.max * castbar:GetWidth(), 0)
+						self:Show()
+					else
+						self:Hide()
+						self.ticktime = 0
+						self.delay = 0
+					end
+				end
+				
+				castbar.GetTick = function(self, i)
+					local tick = ticks[i]
+					if not tick then
+						tick = self:CreateTexture(nil, "OVERLAY")
+						ticks[i] = tick
+						tick:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
+						tick:SetVertexColor(1, 1, 1, 0.8)
+						tick:SetBlendMode("ADD")
+						tick:SetWidth(15)
+						tick.Update = updateTick
+					end
+					tick:SetHeight(self:GetHeight() * 1.8)
+					return tick
+				end
+				castbar.HideTicks = function(self)
+					for i, tick in ipairs(ticks) do
+						tick:Hide()
+						tick.ticktime = 0
+						tick.delay = 0
+					end
+				end
+				
+				castbar.PostChannelStart = PostChannelStart
+				castbar.PostChannelUpdate = PostChannelUpdate
+				castbar.PostChannelStop = castbar.HideTicks
 			end
 
 			if unit == "player" or unit == "target" or unit == "focus" or unit == "pet" then
-				self.Castbar.Icon = self.Castbar:CreateTexture(nil, "ARTWORK")
-				self.Castbar.Icon:SetHeight(28.5)
-				self.Castbar.Icon:SetWidth(28.5)
-				self.Castbar.Icon:SetTexCoord(0, 1, 0, 1)
-				self.Castbar.Icon:SetPoint("LEFT", -41.5, 0)
+				castbar.Icon = castbar:CreateTexture(nil, "ARTWORK")
+				castbar.Icon:SetHeight(28.5)
+				castbar.Icon:SetWidth(28.5)
+				castbar.Icon:SetTexCoord(0, 1, 0, 1)
+				castbar.Icon:SetPoint("LEFT", -41.5, 0)
 
-				self.Castbar.IconOverlay = self.Castbar:CreateTexture(nil, "OVERLAY")
-				self.Castbar.IconOverlay:SetPoint("TOPLEFT", self.Castbar.Icon, "TOPLEFT", -1.5, 1)
-				self.Castbar.IconOverlay:SetPoint("BOTTOMRIGHT", self.Castbar.Icon, "BOTTOMRIGHT", 1, -1)
-				self.Castbar.IconOverlay:SetTexture(buttonTex)
-				self.Castbar.IconOverlay:SetVertexColor(1, 1, 1)
+				castbar.IconOverlay = castbar:CreateTexture(nil, "OVERLAY")
+				castbar.IconOverlay:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -1.5, 1)
+				castbar.IconOverlay:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 1, -1)
+				castbar.IconOverlay:SetTexture(buttonTex)
+				castbar.IconOverlay:SetVertexColor(1, 1, 1)
 
-				self.Castbar.IconBackdrop = CreateFrame("Frame", nil, self.Castbar)
-				self.Castbar.IconBackdrop:SetPoint("TOPLEFT", self.Castbar.Icon, "TOPLEFT", -4, 3)
-				self.Castbar.IconBackdrop:SetPoint("BOTTOMRIGHT", self.Castbar.Icon, "BOTTOMRIGHT", 3, -3.5)
-				self.Castbar.IconBackdrop:SetBackdrop({
+				castbar.IconBackdrop = CreateFrame("Frame", nil, castbar)
+				castbar.IconBackdrop:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -4, 3)
+				castbar.IconBackdrop:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 3, -3.5)
+				castbar.IconBackdrop:SetBackdrop({
 					edgeFile = glowTex, edgeSize = 4,
 					insets = {left = 3, right = 3, top = 3, bottom = 3}
 				})
-				self.Castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
-				self.Castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
+				castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
+				castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 			else
-				self.Castbar.Icon = self.Castbar:CreateTexture(nil, "ARTWORK")
-				self.Castbar.Icon:SetHeight(20)
-				self.Castbar.Icon:SetWidth(20)
-				self.Castbar.Icon:SetTexCoord(0, 1, 0, 1)
+				castbar.Icon = castbar:CreateTexture(nil, "ARTWORK")
+				castbar.Icon:SetHeight(20)
+				castbar.Icon:SetWidth(20)
+				castbar.Icon:SetTexCoord(0, 1, 0, 1)
 				if unit == unit:match("arena%d") then
-					self.Castbar.Icon:SetPoint("RIGHT", 30, 0)
+					castbar.Icon:SetPoint("RIGHT", 30, 0)
 				else
-					self.Castbar.Icon:SetPoint("LEFT", -30, 0)
+					castbar.Icon:SetPoint("LEFT", -30, 0)
 				end
 
-				self.Castbar.IconOverlay = self.Castbar:CreateTexture(nil, "OVERLAY")
-				self.Castbar.IconOverlay:SetPoint("TOPLEFT", self.Castbar.Icon, "TOPLEFT", -1.5, 1)
-				self.Castbar.IconOverlay:SetPoint("BOTTOMRIGHT", self.Castbar.Icon, "BOTTOMRIGHT", 1, -1)
-				self.Castbar.IconOverlay:SetTexture(buttonTex)
-				self.Castbar.IconOverlay:SetVertexColor(1, 1, 1)
+				castbar.IconOverlay = castbar:CreateTexture(nil, "OVERLAY")
+				castbar.IconOverlay:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -1.5, 1)
+				castbar.IconOverlay:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 1, -1)
+				castbar.IconOverlay:SetTexture(buttonTex)
+				castbar.IconOverlay:SetVertexColor(1, 1, 1)
 
-				self.Castbar.IconBackdrop = CreateFrame("Frame", nil, self.Castbar)
-				self.Castbar.IconBackdrop:SetPoint("TOPLEFT", self.Castbar.Icon, "TOPLEFT", -4, 3)
-				self.Castbar.IconBackdrop:SetPoint("BOTTOMRIGHT", self.Castbar.Icon, "BOTTOMRIGHT", 3, -3.5)
-				self.Castbar.IconBackdrop:SetBackdrop({
+				castbar.IconBackdrop = CreateFrame("Frame", nil, castbar)
+				castbar.IconBackdrop:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -4, 3)
+				castbar.IconBackdrop:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 3, -3.5)
+				castbar.IconBackdrop:SetBackdrop({
 					edgeFile = glowTex, edgeSize = 4,
 					insets = {left = 3, right = 3, top = 3, bottom = 3}
 				})
-				self.Castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
-				self.Castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
+				castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
+				castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 			end
 		end
 		
-		self.Castbar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Castbar.General.Texture))
-		self.Castbar:SetHeight(oufdb.Castbar.General.Height)
-		self.Castbar:SetWidth(oufdb.Castbar.General.Width)
+		castbar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Castbar.General.Texture))
+		castbar:SetHeight(oufdb.Castbar.General.Height)
+		castbar:SetWidth(oufdb.Castbar.General.Width)
 		
-		self.Castbar:ClearAllPoints()
+		castbar:ClearAllPoints()
 		if unit == "player" or unit == "target" then
-			self.Castbar:SetPoint(oufdb.Castbar.General.Point, UIParent, oufdb.Castbar.General.Point, oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
+			castbar:SetPoint(oufdb.Castbar.General.Point, UIParent, oufdb.Castbar.General.Point, oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
 		elseif unit == "focus" or unit == "pet" then
-			self.Castbar:SetPoint("TOP", self, "BOTTOM", oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
+			castbar:SetPoint("TOP", self, "BOTTOM", oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
 		elseif unit == unit:match("arena%d") then
-			self.Castbar:SetPoint("RIGHT", self, "LEFT", oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
+			castbar:SetPoint("RIGHT", self, "LEFT", oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
 		else
-			self.Castbar:SetPoint("LEFT", self, "RIGHT", oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
+			castbar:SetPoint("LEFT", self, "RIGHT", oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
 		end
 		
-		self.Castbar.bg:SetTexture(Media:Fetch("statusbar", oufdb.Castbar.General.TextureBG))
+		castbar.bg:SetTexture(Media:Fetch("statusbar", oufdb.Castbar.General.TextureBG))
 		
-		self.Castbar.Backdrop:SetBackdrop({
+		castbar.Backdrop:SetBackdrop({
 			edgeFile = Media:Fetch("border", oufdb.Castbar.Border.Texture),
 			edgeSize = oufdb.Castbar.Border.Thickness,
 			insets = {
@@ -2529,9 +2555,9 @@ module.funcs = {
 				bottom = oufdb.Castbar.Border.Inset.bottom
 			}
 		})
-		self.Castbar.Backdrop:SetBackdropColor(0, 0, 0, 0)
+		castbar.Backdrop:SetBackdropColor(0, 0, 0, 0)
 		
-		self.Castbar.Colors = {
+		castbar.Colors = {
 			Individual = oufdb.Castbar.General.IndividualColor,
 			ShieldEnable = oufdb.Castbar.General.Shield,
 			Bar = oufdb.Castbar.Colors.Bar,
@@ -2540,58 +2566,50 @@ module.funcs = {
 			Shield = oufdb.Castbar.Colors.Shield,
 		}
 		
-		self.Castbar.PostCastStart = PostCastStart
-		self.Castbar.PostChannelStart = ((unit == "player" and channelingTicks) and PostChannelStart) or PostCastStart
-		if unit == "player" and channelingTicks then
-			self.Castbar.numticks = self.Castbar.numticks or 0
-			self.Castbar.PostChannelStop = PostChannelStop
-			self.Castbar.PostChannelUpdate = PostChannelUpdate
-		end
-		
-		self.Castbar.Time:SetFont(Media:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
-		self.Castbar.Time:ClearAllPoints()
-		self.Castbar.Time:SetPoint("RIGHT", self.Castbar, "RIGHT", oufdb.Castbar.Text.Time.OffsetX, oufdb.Castbar.Text.Time.OffsetY)
-		self.Castbar.Time:SetTextColor(oufdb.Castbar.Colors.Time.r, oufdb.Castbar.Colors.Time.g, oufdb.Castbar.Colors.Time.b)
-		self.Castbar.Time.ShowMax = oufdb.Castbar.Text.Time.ShowMax
+		castbar.Time:SetFont(Media:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
+		castbar.Time:ClearAllPoints()
+		castbar.Time:SetPoint("RIGHT", castbar, "RIGHT", oufdb.Castbar.Text.Time.OffsetX, oufdb.Castbar.Text.Time.OffsetY)
+		castbar.Time:SetTextColor(oufdb.Castbar.Colors.Time.r, oufdb.Castbar.Colors.Time.g, oufdb.Castbar.Colors.Time.b)
+		castbar.Time.ShowMax = oufdb.Castbar.Text.Time.ShowMax
 		
 		if oufdb.Castbar.Text.Time.Enable == true then
-			self.Castbar.Time:Show()
+			castbar.Time:Show()
 		else
-			self.Castbar.Time:Hide()
+			castbar.Time:Hide()
 		end
 		
-		self.Castbar.Text:SetFont(Media:Fetch("font", oufdb.Castbar.Text.Name.Font), oufdb.Castbar.Text.Name.Size)
-		self.Castbar.Text:ClearAllPoints()
-		self.Castbar.Text:SetPoint("LEFT", self.Castbar, "LEFT", oufdb.Castbar.Text.Name.OffsetX, oufdb.Castbar.Text.Name.OffsetY)
-		self.Castbar.Text:SetTextColor(oufdb.Castbar.Colors.Name.r, oufdb.Castbar.Colors.Name.r, oufdb.Castbar.Colors.Name.r)
+		castbar.Text:SetFont(Media:Fetch("font", oufdb.Castbar.Text.Name.Font), oufdb.Castbar.Text.Name.Size)
+		castbar.Text:ClearAllPoints()
+		castbar.Text:SetPoint("LEFT", castbar, "LEFT", oufdb.Castbar.Text.Name.OffsetX, oufdb.Castbar.Text.Name.OffsetY)
+		castbar.Text:SetTextColor(oufdb.Castbar.Colors.Name.r, oufdb.Castbar.Colors.Name.r, oufdb.Castbar.Colors.Name.r)
 
 		if oufdb.Castbar.Text.Name.Enable == true then
-			self.Castbar.Text:Show()
+			castbar.Text:Show()
 		else
-			self.Castbar.Text:Hide()
+			castbar.Text:Hide()
 		end
 
 		if unit == "player" then
 			if oufdb.Castbar.General.Latency == true then
-				self.Castbar.SafeZone:Show()
+				castbar.SafeZone:Show()
 				if oufdb.Castbar.General.IndividualColor == true then
-					self.Castbar.SafeZone:SetVertexColor(oufdb.Castbar.Colors.Latency.r,oufdb.Castbar.Colors.Latency.g,oufdb.Castbar.Colors.Latency.b,oufdb.Castbar.Colors.Latency.a)
+					castbar.SafeZone:SetVertexColor(oufdb.Castbar.Colors.Latency.r,oufdb.Castbar.Colors.Latency.g,oufdb.Castbar.Colors.Latency.b,oufdb.Castbar.Colors.Latency.a)
 				else
-					self.Castbar.SafeZone:SetVertexColor(0.11,0.11,0.11,0.6)
+					castbar.SafeZone:SetVertexColor(0.11,0.11,0.11,0.6)
 				end
 			else
-				self.Castbar.SafeZone:Hide()
+				castbar.SafeZone:Hide()
 			end
 		end
 
 		if oufdb.Castbar.General.Icon then
-			self.Castbar.Icon:Show()
-			self.Castbar.IconOverlay:Show()
-			self.Castbar.IconBackdrop:Show()
+			castbar.Icon:Show()
+			castbar.IconOverlay:Show()
+			castbar.IconBackdrop:Show()
 		else
-			self.Castbar.Icon:Hide()
-			self.Castbar.IconOverlay:Hide()
-			self.Castbar.IconBackdrop:Hide()
+			castbar.Icon:Hide()
+			castbar.IconOverlay:Hide()
+			castbar.IconBackdrop:Hide()
 		end
 	end,
 
