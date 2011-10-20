@@ -125,26 +125,26 @@ local blizzstate = {
 
 local Page = {
 	["DRUID"] = {
-		"[bonusbar:1,nostealth] %s; ",
-		"[bonusbar:1,stealth] %s; ",
-		"[bonusbar:2] %s; ",
-		"[bonusbar:3] %s; ",
-		"[bonusbar:4] %s; "
+		"[bonusbar:3] %s; ", -- Bear Form
+		"[bonusbar:1,nostealth] %s; ", -- Cat Form
+		"[bonusbar:1,stealth] %s; ", -- Cat Form (prowling)
+		"[bonusbar:4] %s; ", -- Moonkin Form
+		"[bonusbar:2] %s; ", -- Tree of Life Form
 	},
 	["WARRIOR"] = {
-		"[bonusbar:1] %s; ",
-		"[bonusbar:2] %s; ",
-		"[bonusbar:3] %s; "
+		"[bonusbar:1] %s; ", -- Battle Stance
+		"[bonusbar:2] %s; ", -- Berserker Stance
+		"[bonusbar:3] %s; ", -- Defensive Stance
 	},
 	["PRIEST"] = {
-		"[bonusbar:1] %s; "
+		"[bonusbar:1] %s; " -- Shadow Form
 	},
 	["ROGUE"] = {
-		"[bonusbar:1] %s; ",
-		"[form:3] %s; "
+		"[bonusbar:1] %s; ", -- Stealth
+		"[form:3] %s; " -- Shadowdance
 	},
 	["WARLOCK"] = {
-		"[form:2] %s; "
+		"[form:2] %s; " -- Metamorphosis
 	},
 }
 
@@ -1901,6 +1901,9 @@ function module:LoadOptions()
 			for i, name in ipairs(statetext) do
 				option.args.State.args[tostring(i)] = self:NewSelect(name, "Choose the State for "..name..".\n\nDefaults:\nLUI: "..defaultstate.Bottombar1[i].."\nBlizzard: "..blizzstate.Bottombar1[i],
 					i, statelist, nil, false, nil, disabledFunc)
+			end
+			if class == "DRUID" then
+				option.args.State.args[tostring(#statetext)].disabled = true -- disable tree of life
 			end
 		else
 			option.args.State.args["1"] = self:NewSelect("Default", "Choose the State for Action Bar "..num..".\n\nDefaults:\nLUI: "..defaultstate["Bottombar"..num][1].."\nBlizzard: "..blizzstate["Bottombar"..num][1],
