@@ -116,7 +116,7 @@ local channelingTicks = ( -- base time between ticks
 		[GetSpellInfo(5740)] = 2, -- Rain of Fire
 		[GetSpellInfo(1949)] = 1, -- Hellfire
 	})
-)
+) or {}
 
 ------------------------------------------------------------------------
 --	Dont edit this if you dont know what you are doing!
