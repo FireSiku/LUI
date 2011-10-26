@@ -38,3 +38,13 @@ L["Wrath Raids"] = true
 L["Cataclysm Instances"] = true
 L["Cataclysm Raids"] = true
 L["Battlegrounds"] = true
+
+--------------------------------------------------
+-- Unitframes
+--------------------------------------------------
+
+L["Blizzard currently does not provide a proper way to right-click focus with custom unit frames."] = true
+L["Initiate a ready check, asking your group members if they are ready to continue."] = true
+L["Initiate a role check, asking your group members to specify their roles."] = true
+L["Type %s to Clear Focus"] = true
+L["Type %s to Set Focus"] = true
