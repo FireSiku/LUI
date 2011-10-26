@@ -23,12 +23,12 @@ L["The UI needs to be reloaded!"] = "Die UI neu geladen werden muss!"
 
 -- Map.lua
 L["Hide Completely"] = "Vollständig verstecken"
-L["Only Show Markers"] = "Nur WorldMap Markers"
+L["Only Show Markers"] = "Nur Weltkartenmarkierungen"
 L["Quest Objectives"] = "Questziele"
-L["Show Markers & Panels"] = "Markers & Panels"
+L["Show Markers & Panels"] = "Markierungen & Panels"
 L["Player"] = "Spieler"
-L["Cursor"] = "Cursor"
-L["Major Cities"] = "Major zitiert"
+L["Cursor"] = "Mauszeiger"
+L["Major Cities"] = "Hauptstädte"
 L["Classic Instances"] = "Classic Instanzen"
 L["Classic Raids"] = "Classic Raids"
 L["BC Instances"] = "BC Instanzen"
@@ -43,8 +43,8 @@ L["Battlegrounds"] = "Schlachtfelder"
 -- Unitframes
 --------------------------------------------------
 
-L["Blizzard currently does not provide a proper way to right-click focus with custom unit frames."] = "Blizzard bietet derzeit keinen geeigneten Weg an, um mittels Rechtsklick auf benutzerdefinierte Einheiten-Rahmen zu fokussieren."
+L["Blizzard currently does not provide a proper way to right-click focus with custom unit frames."] = "Blizzard bietet derzeit keinen geeigneten Weg an, um mittels Rechtsklick auf benutzerdefinierte Einheiten-Rahmen ein Fokusziel zu setzen."
 L["Initiate a ready check, asking your group members if they are ready to continue."] = "Bereitschaftsabfrage einleiten, um festzustellen, ob deine Gruppenmitglieder bereit sind, fortzusetzen."
 L["Initiate a role check, asking your group members to specify their roles."] = "Rollenabfrage einleiten, um deine Gruppenmitglieder zu bitten, ihre Rollen zu bestimmen."
-L["Type %s to Clear Focus"] = "Gib %s ein, um den Fokus zu entfernen"
-L["Type %s to Set Focus"] = "Gib %s ein, um den Fokus zu setzen"
+L["Type %s to Clear Focus"] = "Gib %s ein, um den Fokus zu entfernen."
+L["Type %s to Set Focus"] = "Gib %s ein, um den Fokus zu setzen."
