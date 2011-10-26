@@ -38,3 +38,13 @@ L["Wrath Raids"] = "Wrath Raids"
 L["Cataclysm Instances"] = "Cataclysm Instanzen"
 L["Cataclysm Raids"] = "Cataclysm Raids"
 L["Battlegrounds"] = "Schlachtfelder"
+
+--------------------------------------------------
+-- Unitframes
+--------------------------------------------------
+
+L["Blizzard currently does not provide a proper way to right-click focus with custom unit frames."] = "Blizzard bietet derzeit keinen geeigneten Weg an, um mittels Rechtsklick auf benutzerdefinierte Einheiten-Rahmen zu fokussieren."
+L["Initiate a ready check, asking your group members if they are ready to continue."] = "Bereitschaftsabfrage einleiten, um festzustellen, ob deine Gruppenmitglieder bereit sind, fortzusetzen."
+L["Initiate a role check, asking your group members to specify their roles."] = "Rollenabfrage einleiten, um deine Gruppenmitglieder zu bitten, ihre Rollen zu bestimmen."
+L["Type %s to Clear Focus"] = "Gib %s ein, um den Fokus zu entfernen"
+L["Type %s to Set Focus"] = "Gib %s ein, um den Fokus zu setzen"

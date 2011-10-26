@@ -10,6 +10,8 @@ local module = LUI:Module("Unitframes")
 local Forte = LUI:Module("Forte")
 local Fader = LUI:Module("Fader")
 
+local L = LUI.L
+
 local oUF = LUI.oUF
 
 local Media = LibStub("LibSharedMedia-3.0")
@@ -86,37 +88,205 @@ local cornerAuras = {
 	},
 }
 
-local channelingTicks = ( -- base time between ticks
-	(class == "DRUID" and {
-		[GetSpellInfo(740)] = 2, -- Tranquility
-		[GetSpellInfo(16914)] = 1, -- Hurricane
-	}) or (class == "MAGE" and setmetatable({
-		[GetSpellInfo(10)] = 1, -- Blizzard
-		[GetSpellInfo(12051)] = 2, -- Evocation
-	}, {
-		__index = function(t, k)
-			if k == GetSpellInfo(5143) then -- Arcane Missiles
-				local mb = select(5, GetTalentInfo(1, 10))
-				return (mb == 0 and 0.75 or (0.7 - (mb/10)))
+local channelingTicks -- base time between ticks
+do
+	if class == "DRUID" then
+		channelingTicks = {
+			[GetSpellInfo(740)] = 2, -- Tranquility
+			[GetSpellInfo(16914)] = 1, -- Hurricane
+		}
+	elseif class == "MAGE" then
+		channelingTicks = setmetatable({
+			[GetSpellInfo(10)] = 1, -- Blizzard
+			[GetSpellInfo(12051)] = 2, -- Evocation
+		}, {
+			__index = function(t, k)
+				if k == GetSpellInfo(5143) then -- Arcane Missiles
+					local mb = select(5, GetTalentInfo(1, 10))
+					return (mb == 0 and 0.75 or (0.7 - (mb/10)))
+				end
+			end,
+		})
+	elseif class == "PRIEST" then
+		channelingTicks = {
+			[GetSpellInfo(15407)] = 1, -- Mind Flay
+			[GetSpellInfo(48045)] = 1, -- Mind Sear
+			[GetSpellInfo(64843)] = 2, -- Divine Hymn
+			[GetSpellInfo(64901)] = 2, -- Hymn of Hope
+			[GetSpellInfo(47540)] = 1, -- Penance
+		}
+	elseif class == "SHAMAN" then
+		channelingTicks = {
+			[GetSpellInfo(61882)] = 1, -- Earthquake
+		}
+	elseif class == "WARLOCK" then
+		channelingTicks = {
+			[GetSpellInfo(1120)] = 3, -- Drain Soul
+			[GetSpellInfo(689)] = 1, -- Drain Life
+			[GetSpellInfo(755)] = 1, -- Health Funnel
+			[GetSpellInfo(79268)] = 3, -- Soul Harvest
+			[GetSpellInfo(5740)] = 2, -- Rain of Fire
+			[GetSpellInfo(1949)] = 1, -- Hellfire
+		}
+	end
+end
+
+local menu
+do
+	local removeMenuOptions = {
+		SET_FOCUS = "LUI_SET_FOCUS",
+		CLEAR_FOCUS = "LUI_CLEAR_FOCUS",
+		LOCK_FOCUS_FRAME = true,
+		UNLOCK_FOCUS_FRAME = true,
+	}
+	
+	local insertMenuOptions = {
+		SELF = {
+			"LUI_ROLE_CHECK",
+			"LUI_READY_CHECK",
+		},
+	}
+	
+	UnitPopupButtons["LUI_SET_FOCUS"] = {
+		text = L["Type %s to Set Focus"]:format(SLASH_FOCUS1),
+		tooltipText = L["Blizzard currently does not provide a proper way to right-click focus with custom unit frames."],
+		dist = 0,
+	}
+	UnitPopupButtons["LUI_CLEAR_FOCUS"] = {
+		text = L["Type %s to Clear Focus"]:format(SLASH_CLEARFOCUS1),
+		tooltipText = L["Blizzard currently does not provide a proper way to right-click focus with custom unit frames."],
+		dist = 0,
+	}
+	UnitPopupButtons["LUI_ROLE_CHECK"] = {
+		text = ROLE_POLL, 
+		tooltipText = L["Initiate a role check, asking your group members to specify their roles."],
+		dist = 0,
+	}
+	UnitPopupButtons["LUI_READY_CHECK"] = {
+		text = READY_CHECK,
+		tooltipText = L["Initiate a ready check, asking your group members if they are ready to continue."],
+		dist = 0,
+	}
+	
+	hooksecurefunc("UnitPopup_OnClick", function(self)
+		local button = self.value
+		if button == "LUI_ROLE_CHECK" then
+			InitiateRolePoll()
+		elseif button == "LUI_READY_CHECK" then
+			DoReadyCheck()
+		end
+	end)
+	
+	hooksecurefunc("UnitPopup_HideButtons", function()
+		local dropdownMenu = UIDROPDOWNMENU_INIT_MENU
+		local inParty, inRaid, inBG, isLeader, isAssist = GetNumPartyMembers() > 0, GetNumRaidMembers() > 0, UnitInBattleground("player"), IsPartyLeader(), IsRaidOfficer()
+		if inRaid then
+			inParty = true
+		end
+		
+		for i, v in ipairs(UnitPopupMenus[UIDROPDOWNMENU_MENU_VALUE] or UnitPopupMenus[dropdownMenu.which]) do
+			if v == "LUI_ROLE_CHECK" or v == "LUI_READY_CHECK" then
+				if (not isLeader and not isAssist) or inBG or (not inParty and not inRaid) then
+					UnitPopupShown[UIDROPDOWNMENU_MENU_LEVEL][i] = 0
+				end
 			end
-		end,
-	})) or (class == "PRIEST" and {
-		[GetSpellInfo(15407)] = 1, -- Mind Flay
-		[GetSpellInfo(48045)] = 1, -- Mind Sear
-		[GetSpellInfo(64843)] = 2, -- Divine Hymn
-		[GetSpellInfo(64901)] = 2, -- Hymn of Hope
-		[GetSpellInfo(47540)] = 1, -- Penance
-	}) or (class == "SHAMAN" and {
-		[GetSpellInfo(61882)] = 1, -- Earthquake
-	}) or (class == "WARLOCK" and {
-		[GetSpellInfo(1120)] = 3, -- Drain Soul
-		[GetSpellInfo(689)] = 1, -- Drain Life
-		[GetSpellInfo(755)] = 1, -- Health Funnel
-		[GetSpellInfo(79268)] = 3, -- Soul Harvest
-		[GetSpellInfo(5740)] = 2, -- Rain of Fire
-		[GetSpellInfo(1949)] = 1, -- Hellfire
-	})
-) or {}
+		end
+	end)
+	
+	local dropdown = CreateFrame("Frame", "LUI_UnitFrame_DropDown", UIParent, "UIDropDownMenuTemplate")
+	UnitPopupFrames[#UnitPopupFrames+1] = "LUI_UnitFrame_DropDown"
+	
+	local function getMenuUnit(unit)
+		if unit == "focus" then return "FOCUS" end
+		
+		if UnitIsUnit(unit, "player") then return "SELF" end
+		
+		if UnitIsUnit(unit, "vehicle") then return "VEHICLE" end
+		
+		if UnitIsUnit(unit, "pet") then return "PET" end
+		
+		if not UnitIsPlayer(unit) then return "TARGET" end
+		
+		local id = UnitInRaid(unit)
+		if id then
+			return "RAID_PLAYER", id
+		end
+		
+		if UnitInParty(unit) then
+			return "PARTY"
+		end
+		
+		return "PLAYER"
+	end
+	
+	local unitDropDownMenus = {}
+	local function getUnitDropDownMenu(unit)
+		local menu = unitDropDownMenus[unit]
+		if menu then return menu end
+		
+		if not UnitPopupMenus then
+			unitDropDownMenus[unit] = unit
+			return unit
+		end
+		
+		local data = UnitPopupMenus[unit]
+		if not data then
+			unitDropDownMenus[unit] = unit
+			return unit
+		end
+		
+		local found = false
+		for _, v in pairs(data) do
+			if removeMenuOptions[v] then
+				found = true
+				break
+			end
+		end
+		
+		local insert = insertMenuOptions[unit]
+		
+		if not found and not insert then -- nothing to add or remove
+			unitDropDownMenus[unit] = unit
+			return unit
+		end
+		
+		local newData = {}
+		for _, v in ipairs(data) do
+			local blacklisted = removeMenuOptions[v]
+			if not blacklisted then
+				if insert and v == "CANCEL" then
+					for _, extra in ipairs(insert) do
+						tinsert(newData, extra)
+					end
+				end
+				tinsert(newData, v)
+			elseif blacklisted ~= true then
+				tinsert(newData, blacklisted)
+			end
+		end
+		
+		local newMenuName = "LUI_" .. unit
+		UnitPopupMenus[newMenuName] = newData
+		unitDropDownMenus[unit] = newMenuName
+		return newMenuName
+	end
+	
+	local dropdown_unit
+	UIDropDownMenu_Initialize(LUI_UnitFrame_DropDown, function()
+		if not dropdown_unit then return end
+		
+		local unit, id = getMenuUnit(dropdown_unit)
+		if unit then
+			local menu = getUnitDropDownMenu(unit)
+			UnitPopup_ShowMenu(LUI_UnitFrame_DropDown, menu, dropdown_unit, nil, id)
+		end
+	end, "MENU", nil)
+	
+	menu = function(self, unit)
+		dropdown_unit = unit
+		ToggleDropDownMenu(1, nil, LUI_UnitFrame_DropDown, "cursor")
+	end
+end
 
 ------------------------------------------------------------------------
 --	Dont edit this if you dont know what you are doing!
@@ -203,7 +373,7 @@ local UnitFrame_OnLeave = function(self)
 	UnitFrame_OnLeave(self)
 	self.Highlight:Hide()
 end
-
+--[[
 local menu = function(self)
 	local unit = self.unit:gsub("(.)", string.upper, 1)
 	if _G[unit.."FrameDropDown"] then
@@ -217,7 +387,7 @@ local menu = function(self)
 		ToggleDropDownMenu(1, nil, FriendsDropDown, "cursor")
 	end
 end
-
+]]
 local OverrideHealth = function(self, event, unit, powerType)
 	if self.unit ~= unit then return end
 	local health = self.Health
@@ -2437,44 +2607,46 @@ module.funcs = {
 				castbar.SafeZone = castbar:CreateTexture(nil, "ARTWORK")
 				castbar.SafeZone:SetTexture(normTex)
 				
-				local ticks = {}
-				local function updateTick(self)
-					local ticktime = self.ticktime - self.delay
-					if ticktime > 0 and ticktime < castbar.max then
-						self:SetPoint("CENTER", castbar, "LEFT", ticktime / castbar.max * castbar:GetWidth(), 0)
-						self:Show()
-					else
-						self:Hide()
-						self.ticktime = 0
-						self.delay = 0
+				if channelingTicks then -- make sure player is a class that has a channeled spell
+					local ticks = {}
+					local function updateTick(self)
+						local ticktime = self.ticktime - self.delay
+						if ticktime > 0 and ticktime < castbar.max then
+							self:SetPoint("CENTER", castbar, "LEFT", ticktime / castbar.max * castbar:GetWidth(), 0)
+							self:Show()
+						else
+							self:Hide()
+							self.ticktime = 0
+							self.delay = 0
+						end
 					end
-				end
-				
-				castbar.GetTick = function(self, i)
-					local tick = ticks[i]
-					if not tick then
-						tick = self:CreateTexture(nil, "OVERLAY")
-						ticks[i] = tick
-						tick:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
-						tick:SetVertexColor(1, 1, 1, 0.8)
-						tick:SetBlendMode("ADD")
-						tick:SetWidth(15)
-						tick.Update = updateTick
+					
+					castbar.GetTick = function(self, i)
+						local tick = ticks[i]
+						if not tick then
+							tick = self:CreateTexture(nil, "OVERLAY")
+							ticks[i] = tick
+							tick:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
+							tick:SetVertexColor(1, 1, 1, 0.8)
+							tick:SetBlendMode("ADD")
+							tick:SetWidth(15)
+							tick.Update = updateTick
+						end
+						tick:SetHeight(self:GetHeight() * 1.8)
+						return tick
 					end
-					tick:SetHeight(self:GetHeight() * 1.8)
-					return tick
-				end
-				castbar.HideTicks = function(self)
-					for i, tick in ipairs(ticks) do
-						tick:Hide()
-						tick.ticktime = 0
-						tick.delay = 0
+					castbar.HideTicks = function(self)
+						for i, tick in ipairs(ticks) do
+							tick:Hide()
+							tick.ticktime = 0
+							tick.delay = 0
+						end
 					end
+					
+					castbar.PostChannelStart = PostChannelStart
+					castbar.PostChannelUpdate = PostChannelUpdate
+					castbar.PostChannelStop = castbar.HideTicks
 				end
-				
-				castbar.PostChannelStart = PostChannelStart
-				castbar.PostChannelUpdate = PostChannelUpdate
-				castbar.PostChannelStop = castbar.HideTicks
 			end
 
 			if unit == "player" or unit == "target" or unit == "focus" or unit == "pet" then
