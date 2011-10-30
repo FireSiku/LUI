@@ -881,6 +881,8 @@ local PostChannelStart = function(castbar, unit, name)
 end
 
 local PostChannelUpdate = function(castbar, unit, name)
+	if not castbar.numticks then return end
+	
 	local _, _, _, _, startTime, endTime = UnitChannelInfo(unit)
 	
 	if castbar.delay < 0 then
@@ -2641,6 +2643,7 @@ module.funcs = {
 							tick.ticktime = 0
 							tick.delay = 0
 						end
+						self.numticks = nil
 					end
 					
 					castbar.PostChannelStart = PostChannelStart
