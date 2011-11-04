@@ -1132,6 +1132,99 @@ local function getOptions()
 		LUI.options.args.profiles.args.new.disabled = disabled -- remove once all modules are using namespaces
 		LUI.options.args.profiles.args.choose.disabled = disabled -- remove once all modules are using namespaces
 		
+		local copyProfile, selectModules = {}
+		do
+			selectModules = function(...)
+				local name = addonname.."_ProfileCopier"
+				
+				local options = {
+					name = "Select Modules",
+					type = "group",
+					args = {
+						title = {
+							order = 1,
+							type = "description",
+							name = function() return "Copying profile: "..copyProfile.name.."\nWhich modules should be copied?" end,
+						},
+						copy = {
+							order = -1,
+							type = "execute",
+							name = "Copy Selected Modules",
+							func = function()
+								for k, v in pairs(copyProfile) do
+									if k ~= "name" and v == true then
+										local module = LUI:Module(k, true)
+										if module then
+											LUI.db.CopyProfile(module.db, copyProfile.name)
+										end
+									end
+								end
+								ACD:Close(name)
+							end,
+						},
+					},
+				}
+				local moduleChkbox = {
+					type = "toggle",
+					name = function(info) return info[#info] end,
+					get = function(info) return copyProfile[info[#info]] end,
+					set = function(info, value) copyProfile[info[#info]] = value end,
+					disabled = function(info)
+						local module = LUI:Module(info[#info], true)
+						if module then
+							return (not(module.db and module.db.profiles and module.db.profiles[copyProfile.name]) and true or false)
+						end
+					end,
+				}
+				for i, v in ipairs(newModuleOptions) do
+					if type(v) == "string" then
+						options.args[v] = moduleChkbox
+					end
+				end
+				LibStub("AceConfig-3.0"):RegisterOptionsTable(name, options)
+				
+				selectModules = function(info, value)
+					copyProfile.name = value
+					local parent = ACD.OpenFrames.LUI
+					ACD:SetDefaultSize(name, 300, parent.status.height)
+					ACD:Open(name)
+					local f = ACD.OpenFrames[name]
+					f.frame:SetScale(db.General.BlizzFrameScale)
+					f:SetCallback("OnClose", function(widget, event)
+						wipe(copyProfile)
+						widget.frame:SetScale(1)
+						local appName = widget:GetUserData("appName")
+						ACD.OpenFrames[appName] = nil
+						LibStub("AceGUI-3.0"):Release(widget)
+					end)
+					f:SetPoint("TOPLEFT", parent.frame, "TOPRIGHT")
+					f.status.top = f.frame:GetTop()
+					f.status.left = f.frame:GetLeft()
+				end
+				selectModules(...)
+			end
+		end
+		LUI.options.args.profiles.plugins = {
+			LUI = {
+				copyDesc = {
+					order = 45,
+					type = "description",
+					name = "\nCopy the settings from the profile of only select modules into the currently active profile.",
+				},
+				copySettings = {
+					order = 46,
+					type = "select",
+					name = "Copy From Select Modules",
+					desc = "Copy the settings from the profile of only select modules into the currently active profile.",
+					get = false,
+					set = selectModules,
+					values = "ListProfiles",
+					disabled = "HasNoProfiles",
+					arg = "nocurrent",
+				},
+			},
+		}
+		
 		for k,v in pairs(moduleList) do
 			LUI.options.args.Modules.args = LUI:MergeOptions(LUI.options.args.Modules.args, (type(v) == "function") and v() or v)
 		end
