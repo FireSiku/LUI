@@ -90,45 +90,51 @@ local cornerAuras = {
 
 local channelingTicks -- base time between ticks
 do
-	if class == "DRUID" then
-		channelingTicks = {
+	local classChannels = {
+		DRUID = {
 			[GetSpellInfo(740)] = 2, -- Tranquility
 			[GetSpellInfo(16914)] = 1, -- Hurricane
-		}
-	elseif class == "MAGE" then
-		channelingTicks = setmetatable({
+		},
+		MAGE = setmetatable({
 			[GetSpellInfo(10)] = 1, -- Blizzard
 			[GetSpellInfo(12051)] = 2, -- Evocation
 		}, {
 			__index = function(t, k)
 				if k == GetSpellInfo(5143) then -- Arcane Missiles
-					local mb = select(5, GetTalentInfo(1, 10))
-					return (mb == 0 and 0.75 or (0.7 - (mb/10)))
+					local rank = select(5, GetTalentInfo(1, 10)) -- Missle Barrage talent
+					return (rank == 0 and 0.75 or (0.7 - (rank/10)))
 				end
 			end,
-		})
-	elseif class == "PRIEST" then
-		channelingTicks = {
+		}),
+		PRIEST = {
 			[GetSpellInfo(15407)] = 1, -- Mind Flay
 			[GetSpellInfo(48045)] = 1, -- Mind Sear
 			[GetSpellInfo(64843)] = 2, -- Divine Hymn
 			[GetSpellInfo(64901)] = 2, -- Hymn of Hope
 			[GetSpellInfo(47540)] = 1, -- Penance
-		}
-	elseif class == "SHAMAN" then
-		channelingTicks = {
+		},
+		SHAMAN = {
 			[GetSpellInfo(61882)] = 1, -- Earthquake
-		}
-	elseif class == "WARLOCK" then
-		channelingTicks = {
+		},
+		WARLOCK = {
 			[GetSpellInfo(1120)] = 3, -- Drain Soul
 			[GetSpellInfo(689)] = 1, -- Drain Life
 			[GetSpellInfo(755)] = 1, -- Health Funnel
 			[GetSpellInfo(79268)] = 3, -- Soul Harvest
 			[GetSpellInfo(5740)] = 2, -- Rain of Fire
 			[GetSpellInfo(1949)] = 1, -- Hellfire
-		}
+		},
+	}
+	
+	channelingTicks = {
+		["First Aid"] = 1 -- Bandages
+	}
+	if classChannels[class] then
+		for k, v in pairs(classChannels[class]) do
+			channelingTicks[k] = v
+		end
 	end
+	wipe(classChannels)
 end
 
 local menu
