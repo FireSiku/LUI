@@ -503,6 +503,22 @@ end
 -- / MODULES / --
 ------------------------------------------------------
 
+local function getModulePrototype(parent)
+	local prototype = {
+		Toggle = parent.Toggle,
+		GetDBVar = parent.GetDBVar,
+		SetDBVar = parent.SetDBVar,
+		GetDefaultVal = parent.GetDefaultVal,
+	}
+	
+	if parent == LUI then
+		prototype.Module = parent.Module
+		prototype.Namespace = parent.Namespace
+	end
+	
+	return prototype
+end
+
 -- LUI:Module(name [, silent]) to get module (if silent is true and the module does not exist, it will not be created)
 -- LUI:Module(name [, prototype] [, libs...]) -- to create module or add to module
 function LUI:Module(name, prototype, ...)
@@ -520,7 +536,16 @@ function LUI:Module(name, prototype, ...)
 			setmetatable(module, mt)
 		end
 	elseif prototype ~= true then -- check silent
+		if not next(self.modules) then -- set defaultModulePrototype and defaultModuleLibraries for the parent module
+			self:SetDefaultModulePrototype(getModulePrototype(self))
+			self:SetDefaultModuleLibraries("LUIDevAPI")
+		end
+		
 		module = self:NewModule(name, prototype, ...)
+		
+		if self ~= LUI then
+			module.isNestedModule = true
+		end
 	end
 	
 	return module
@@ -532,6 +557,45 @@ function LUI:Toggle()
 		self.db.profile.Enable = self:IsEnabled()
 	end
 	return success
+end
+
+function LUI:GetDBVar(info)
+	local value = self.db.profile
+	
+	local start = self.isNestedModule and 3 or 2
+	for i=start, #info-1 do
+		value = value[info[i]]
+		if type(value) ~= "table" then
+			error("Error accessing db\nCould not access "..strjoin(".", info[start-1], "db.profile", unpack(info, start, value == nil and i or i+1)).."\ndb layout must be the same as info", 2)
+		end
+	end
+	return value[info[#info]]
+end
+
+function LUI:SetDBVar(info, value)
+	local dbloc = self.db.profile
+	
+	local start = self.isNestedModule and 3 or 2
+	for i=start, #info-1 do
+		dbloc = dbloc[info[i]]
+		if type(dbloc) ~= "table" then
+			error("Error accessing db\nCould not access "..strjoin(".", info[start-1], "db.profile", unpack(info, start, dbloc == nil and i or i+1)).."\ndb layout must be the same as info", 2)
+		end
+	end
+	dbloc[info[#info]] = value
+end
+
+function LUI:GetDefaultVal(info)
+	local dbloc = self.db.defaults.profile
+	
+	local start = self.isNestedModule and 3 or 2
+	for i=start, #info-1 do
+		dbloc = dbloc[info[i]]
+		if type(dbloc) ~= "table" then
+			error("Error accessing defaults\nCould not access "..strjoin(".", info[start-1], "db.defaults.profile", unpack(info, start, dbloc == nil and i or i+1)).."\nddfaults layout must be the same as info", 2)
+		end
+	end
+	return dbloc[info[#info]]
 end
 
 local function conflictChecker(...)
@@ -561,12 +625,6 @@ function LUI:CheckConflict(...) -- self is module
 		return LUI.hooks[self].OnEnable(self, ...)
 	end
 end
-
-LUI:SetDefaultModuleLibraries("LUIDevAPI")
-LUI:SetDefaultModulePrototype({
-	Toggle = LUI.Toggle,
-	Module = LUI.Module,
-})
 
 ------------------------------------------------------
 -- / SCRIPTS / --
@@ -1446,6 +1504,76 @@ function LUI:NewNamespace(module, enableButton)
 	return module.db, module.defaults
 end
 
+function LUI:Namespace(module, toggleButton) -- no metatables (note: do not use defaults.Enable for the enabled state, it is handled by the parent module)
+	local mName = module:GetName()
+	if self.db.children and self.db.children[mName] then return module.db.profile, module.db.defaults.profile end
+	
+	-- Add options loader function to list
+	if self == LUI and (not module.addon or IsAddOnLoaded(module.addon)) then
+		table.insert(newModuleOptions, mName)
+	end
+	
+	-- Register namespace
+	module.db = LUI.db.RegisterNamespace(self.db, mName, module.defaults)
+	
+	-- Look for outdated db vars and transfer them over
+	if self.db.profile[mName] then
+		mergeOldDB(module.db.profile, self.db.profile[mName])
+		self.db.profile[mName] = nil
+	end
+	
+	-- Hook conflicting addon checker
+	if module.conflicts then
+		LUI:RawHook(module, "OnEnable", LUI.CheckConflict)
+	end
+	
+	-- Register Callbacks
+	if type(module.DBCallback) == "function" then
+		module.db.RegisterCallback(module, "OnProfileChanged", "DBCallback")
+		module.db.RegisterCallback(module, "OnProfileCopied", "DBCallback")
+		module.db.RegisterCallback(module, "OnProfileReset", "DBCallback")
+	end
+	
+	-- Create toggle button and set module enabled state
+	if toggleButton then
+		self.db.profile.modules = self.db.profile.modules or {}
+		if self.db.profile.modules[mName] == nil then
+			self.db.profile.modules[mName] = module.defaultState == nil and true or module.defaultState
+		end
+		if rawget(module.db.profile, "Enable") ~= nil then
+			self.db.profile.modules[mName] = module.db.profile.Enable
+			module.db.profile.Enable = nil
+		end
+		if LUI.defaultModuleState ~= false and self.db.profile.modules[mName] ~= nil then
+			module:SetEnabledState(self.db.profile.modules[mName])
+		end
+		
+		table.insert(moduleList, {
+			[mName] = {
+				type = "execute",
+				name = function() return format("%s: |cff%s|r", mName, module:IsEnabled() and "00FF00Enabled" or "FF0000Disabled") end,
+				desc = "Left Click: Toggle between Enabled and Disabled.\nShift Click: Reset module's settings.",
+				func = function()
+					if IsShiftKeyDown() then
+						module.db:ResetProfile()
+						
+						if db.General.ModuleMessages then
+							LUI:Printf("%s module settings reset.", mName)
+						end
+					elseif module:Toggle() then
+						self.db.profile.modules[mName] = module:IsEnabled()
+						
+						if db.General.ModuleMessages then
+							LUI:Printf("%s module |cff%s|r", mName, module:IsEnabled() and "00FF00enabled" or "FF0000disabled")
+						end
+					end
+				end,
+			},
+		})
+	end
+	
+	return module.db.profile, module.db.defaults.profile
+end
 
 
 ------------------------------------------------------

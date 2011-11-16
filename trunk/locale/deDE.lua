@@ -18,17 +18,15 @@ L["Version %s available for download."] = "Version 3.5 steht zum Download bereit
 L["The UI needs to be reloaded!"] = "Die UI neu geladen werden muss!"
 
 --------------------------------------------------
--- Modules
+-- World Map
 --------------------------------------------------
 
--- Map.lua
 L["Hide Completely"] = "Vollständig verstecken"
 L["Only Show Markers"] = "Nur Weltkartenmarkierungen"
 L["Quest Objectives"] = "Questziele"
 L["Show Markers & Panels"] = "Markierungen & Panels"
 L["Player"] = "Spieler"
 L["Cursor"] = "Mauszeiger"
-L["Major Cities"] = "Hauptstädte"
 L["Classic Instances"] = "Classic Instanzen"
 L["Classic Raids"] = "Classic Raids"
 L["BC Instances"] = "BC Instanzen"
@@ -38,6 +36,7 @@ L["Wrath Raids"] = "Wrath Raids"
 L["Cataclysm Instances"] = "Cataclysm Instanzen"
 L["Cataclysm Raids"] = "Cataclysm Raids"
 L["Battlegrounds"] = "Schlachtfelder"
+L["Handled by LUI"] = " (gehandhabt von LUI)"
 
 --------------------------------------------------
 -- Unitframes

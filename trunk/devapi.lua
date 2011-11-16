@@ -39,7 +39,7 @@ local descfuncs = setmetatable({
 			end
 		else
 			return function(info)
-				return desc(info).."\n\nDefault: "..self.defaults(info)
+				return desc(info).."\n\nDefault: "..self:GetDefaultVal(info)
 			end
 		end
 	end,
@@ -50,7 +50,7 @@ local descfuncs = setmetatable({
 			end
 		else
 			return function(info)
-				return desc.."\n\nDefault: "..self.defaults(info)
+				return desc.."\n\nDefault: "..self:GetDefaultVal(info)
 			end
 		end
 	end,
@@ -74,7 +74,7 @@ local getfuncs = setmetatable({
 	end,
 	["nil"] = function(self, func, specialget)
 		return specialget or function(info)
-			return self.db(info)
+			return self:GetDBVar(info)
 		end
 	end,
 }, {
@@ -101,7 +101,7 @@ local setfuncs = setmetatable({
 			end
 		else
 			return function(info, value)
-				self.db(info, value)
+				self:SetDBVar(info, value)
 				self[func](self, info, value)
 			end
 		end
@@ -114,7 +114,7 @@ local setfuncs = setmetatable({
 			end
 		else
 			return function(info, value)
-				self.db(info, value)
+				self:SetDBVar(info, value)
 				func(info, value)
 			end
 		end
@@ -124,7 +124,7 @@ local setfuncs = setmetatable({
 	end,
 	["nil"] = function(self, func, specialset)
 		return specialset or function(info, value)
-			self.db(info, value)
+			self:SetDBVar(info, value)
 		end
 	end,
 }, {
@@ -345,7 +345,7 @@ function devapi:NewGroup(name, order, ...)
 		if type(args[i]) == "table" then -- args
 			t.args = args[i]
 			break
-		elseif i == 1 and type(args[i]) == "string" then -- childGroups
+		elseif i == 1 and type(args[i]) == "string" and (args[i] == "tree" or args[i] == "tab" or args[i] == "select")  then -- childGroups
 			t.childGroups = args[i]
 			i = i + 1
 		elseif i < 3 and (type(args[i]) == "function" or type(args[i]) == "string") then -- get/set
@@ -406,7 +406,7 @@ end
 --]]
 function devapi:NewToggle(name, desc, order, func, width, disabled, hidden)
 	local t = SetVals("toggle", name, order)
-	t.desc = descfuncs(self, func, desc or "Whether or not to "..name..".", function(info) return self.defaults(info) and "Enabled" or "Disabled" end)
+	t.desc = descfuncs(self, func, desc or "Whether or not to "..name..".", function(info) return self:GetDefaultVal(info) and "Enabled" or "Disabled" end)
 	t.get = getfuncs(self, func)
 	t.set = setfuncs(self, func)
 	
@@ -429,16 +429,16 @@ function devapi:NewSelect(name, desc, order, values, dcontrol, func, width, disa
 	
 	local t = SetVals("select", name, order)
 	t.values = values
-	t.desc = descfuncs(self, func, desc, dcontrol and function(info) return self.defaults(info) end or nil)
+	t.desc = descfuncs(self, func, desc, dcontrol and function(info) return self:GetDefaultVal(info) end or nil)
 	t.get = getfuncs(self, func, dcontrol == nil and function(info)
-		local val = self.db(info)
+		local val = self:GetDBVar(info)
 		for k, v in pairs(values()) do
 			if v == val then
 				return k
 			end
 		end
 	end or nil)
-	t.set = setfuncs(self, func, dcontrol == nil and function(info, value) self.db(info, values()[value]) end or nil)
+	t.set = setfuncs(self, func, dcontrol == nil and function(info, value) self:SetDBVar(info, values()[value]) end or nil)
 	
 	if dcontrol then t.dialogControl = dcontrol end
 	
@@ -459,14 +459,14 @@ function devapi:NewMultiSelect(name, desc, order, values, func, width, disabled,
 	local t = SetVals("multiselect", name, order)
 	t.values = values
 	t.desc = descfuncs(self, func, desc, function(info, key)
-		local default, defaults = "", self.defaults(info)
+		local default, defaults = "", self:GetDefaultVal(info)
 		for k, v in pairs(defaults) do
 			default = default.."\n"..values()[k]..": "..(v and "Enabled" or "Disabled")
 		end
 		return default
 	end)
-	t.get = getfuncs(self, func, function(info, key) tinsert(info, key); return self.db(info) end)
-	t.set = setfuncs(self, func, function(info, key, value) tinsert(info, key); self.db(info, value) end)
+	t.get = getfuncs(self, func, function(info, key) tinsert(info, key); return self:GetDBVar(info) end)
+	t.set = setfuncs(self, func, function(info, key, value) tinsert(info, key); self:SetDBVar(info, value) end)
 	
 	SetState(t, width, disabled, hidden)
 	return t
@@ -502,7 +502,7 @@ end
 function devapi:NewInput(name, desc, order, func, width, disabled, hidden)
 	local t = SetVals("input", name, order)
 	t.desc = descfuncs(self, func, desc)
-	t.get = getfuncs(self, func, function(info) return tostring(self.db(info)) end)
+	t.get = getfuncs(self, func, function(info) return tostring(self:GetDBVar(info)) end)
 	t.set = setfuncs(self, func)
 
 	SetState(t, width, disabled, hidden)
@@ -519,10 +519,10 @@ function devapi:NewInputNumber(name, desc, order, func, width, disabled, hidden,
 	iformat = iformat or "%.1f"
 	
 	local t = SetVals("input", name, order)
-	t.desc = descfuncs(self, func, desc, function(info) return iformat:format(self.defaults(info)) end)
+	t.desc = descfuncs(self, func, desc, function(info) return iformat:format(self:GetDefaultVal(info)) end)
 	t.validate = IsNumber
-	t.get = getfuncs(self, func, function(info) return iformat:format(self.db(info)) end)
-	t.set = setfuncs(self, func, function(info, value) self.db(info, tonumber(iformat:format(value):match("[-]?%d+[%.[%d]*]?"))) end) -- strip number from formatted string
+	t.get = getfuncs(self, func, function(info) return iformat:format(self:GetDBVar(info)) end)
+	t.set = setfuncs(self, func, function(info, value) self:SetDBVar(info, tonumber(iformat:format(value):match("[-]?%d+[%.[%d]*]?"))) end) -- strip number from formatted string
 
 	SetState(t, width, disabled, hidden)
 	return t
@@ -541,7 +541,7 @@ function devapi:NewSlider(name, desc, order, smin, smax, step, func, isPercent, 
 	argcheck(isPercent, "typeof", "boolean;nil")
 	
 	local t = SetVals("range", name, order)
-	t.desc = descfuncs(self, func, desc, isPercent and function(info) return (self.defaults(info)*100).."%" end or nil)
+	t.desc = descfuncs(self, func, desc, isPercent and function(info) return (format("%d%%", self:GetDefaultVal(info)*100)) end or nil)
 	if isPercent then
 		t.min, t.max, t.step = smin or 0, smax or 1, step or 0.01
 		t.bigStep = step or 0.05
@@ -606,7 +606,7 @@ function devapi:NewPosSliders(name, order, header, frame, func, width, disabled,
 	x.bigStep = 10
 	y.bigStep = 10
 	x.set = setfuncs(self, func, function(info, value)
-		self.db(info, value)
+		self:SetDBVar(info, value)
 		if func then return end
 		
 		local f = type(frame) == "function" and frame() or frame
@@ -619,7 +619,7 @@ function devapi:NewPosSliders(name, order, header, frame, func, width, disabled,
 		f:SetPoint(point, parent, rpoint, value, y)
 	end)
 	y.set = setfuncs(self, func, function(info, value)
-		self.db(info, value)
+		self:SetDBVar(info, value)
 		if func then return end
 		
 		local f = type(frame) == "function" and frame() or frame
@@ -653,11 +653,11 @@ end
 function devapi:NewColor(name, desc, order, func, width, disabled, hidden)
 	local t = SetVals("color", name.." Color", order)
 	t.desc = descfuncs(self, func, "Choose a color for the "..(desc or name)..".", function(info)
-		local r, g, b, a = getColor(self.defaults(info))
+		local r, g, b, a = getColor(self:GetDefaultVal(info))
 		return "\nR: "..r.."\nG: "..g.."\nB: "..b.."\nA: "..a
 	end)
-	t.get = getfuncs(self, func, function(info) return getColor(self.db(info))  end)
-	t.set = setfuncs(self, func, function(info, ...) setColor(self.db(info), ...) end)
+	t.get = getfuncs(self, func, function(info) return getColor(self:GetDBVar(info))  end)
+	t.set = setfuncs(self, func, function(info, ...) setColor(self:GetDBVar(info), ...) end)
 	
 	t.hasAlpha = true
 	
@@ -670,11 +670,11 @@ end
 function devapi:NewColorNoAlpha(name, desc, order, func, width, disabled, hidden)
 	local t = SetVals("color", name.." Color", order)
 	t.desc = descfuncs(self, func, "Choose a color for the "..(desc or name)..".", function(info)
-		local r, g, b = getColor(self.defaults(info))
+		local r, g, b = getColor(self:GetDefaultVal(info))
 		return "\nR: "..r.."\nG: "..g.."\nB: "..b
 	end)
-	t.get = getfuncs(self, func, function(info) local r, g, b = getColor(self.db(info)); return r, g, b end)
-	t.set = setfuncs(self, func, function(info, r, g, b) setColor(self.db(info), r, g, b) end)
+	t.get = getfuncs(self, func, function(info) local r, g, b = getColor(self:GetDBVar(info)); return r, g, b end)
+	t.set = setfuncs(self, func, function(info, r, g, b) setColor(self:GetDBVar(info), r, g, b) end)
 	
 	t.hasAlpha = false
 	
