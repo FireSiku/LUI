@@ -250,6 +250,8 @@ end
 
 -- SetColors function
 function module:SetColors()
+	if not db.RaidMenu.Enable or not Micromenu then return end
+	
 	RaidMenu_Parent:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg2))
 	RaidMenu:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg))
 	local r, g, b = unpack(Themes.db.profile.micromenu)

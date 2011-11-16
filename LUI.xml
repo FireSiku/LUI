@@ -35,7 +35,7 @@
 	<Script file="modules\buffs.lua"/>
 	<Script file="modules\chat.lua"/>
 	<Script file="modules\minimap.lua"/>
-	<Script file="modules\worldmap.lua"/>
+	<Include file="modules\worldmap\worldmap.xml"/>
 	<Script file="modules\bags.lua"/>
 	<Script file="modules\nameplates.lua"/>
 	<Script file="modules\cooldown.lua"/>

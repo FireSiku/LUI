@@ -18,17 +18,15 @@ L["Version %s available for download."] = true
 L["The UI needs to be reloaded!"] = true
 
 --------------------------------------------------
--- Modules
+-- World Map
 --------------------------------------------------
 
--- Map.lua
 L["Hide Completely"] = true
 L["Only Show Markers"] = true
 L["Quest Objectives"] = true
 L["Show Markers & Panels"] = true
 L["Player"] = true
 L["Cursor"] = true
-L["Major Cities"] = true
 L["Classic Instances"] = true
 L["Classic Raids"] = true
 L["BC Instances"] = true
@@ -38,6 +36,7 @@ L["Wrath Raids"] = true
 L["Cataclysm Instances"] = true
 L["Cataclysm Raids"] = true
 L["Battlegrounds"] = true
+L["Handled by LUI"] = " (handled by LUI)"
 
 --------------------------------------------------
 -- Unitframes
