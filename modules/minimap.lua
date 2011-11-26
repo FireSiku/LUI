@@ -205,9 +205,13 @@ function module:SetMinimapPosition()
 end
 
 function module:SetMinimapSize()
+	local zoom = Minimap:GetZoom()
 	local size = db.Minimap.General.Size * 135
 	Minimap:SetSize(LUI:Scale(size), LUI:Scale(size))
 	fminimap_border:SetSize(LUI:Scale(size+8), LUI:Scale(size+8))
+	-- change then reset zoom to make the minimap fill the display area
+	Minimap:SetZoom(zoom == 0 and 1 or zoom-1)
+	Minimap:SetZoom(zoom)
 end
 
 function module:SetMinimap()
@@ -411,6 +415,7 @@ function module:SetMinimap()
 	Minimap:SetMaskTexture('Interface\\ChatFrame\\ChatFrameBackground')
 
 	-- For others mods with a minimap button, set minimap buttons position in square mode.
+	--noinspection GlobalCreationOutsideO
 	function GetMinimapShape() return "SQUARE" end
 
 	-- reskin LFG dropdown
