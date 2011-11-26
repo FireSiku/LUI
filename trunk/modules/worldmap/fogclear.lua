@@ -1434,9 +1434,14 @@ function module:Refresh(info, value)
 		
 		self:SetDBVar(info, value)
 	end
-	
-	self:WorldMapFrame_Update()
-	self:BattlefieldMinimap_Update()
+
+	-- check to make sure hooks are in place before calling update functions
+	if self:IsHooked("WorldMapFrame_Update") then
+		self:WorldMapFrame_Update()
+	end
+	if self:IsHooked("BattlefieldMinimap_Update") then
+		self:BattlefieldMinimap_Update()
+	end
 end
 
 function module:OnInitialize()

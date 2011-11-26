@@ -1133,8 +1133,8 @@ function module:SetDurability()
 				
 				for i = 1, #slots do
 					if slots[i][3] ~= 1000 then
-						green = slots[i][3] * 2
-						red = 2 - green
+						local green = slots[i][3] * 2
+						local red = 2 - green
 						GameTooltip:AddDoubleLine(slots[i][2], floor(slots[i][3] * 100) .. "%", 1,1,1, red,green,0)
 					end
 				end
@@ -1487,9 +1487,9 @@ function module:SetGF()
 		
 		-- Local variables
 		local motd, slider, nbEntries
-		local nbRealFriends, realFriendsHeight, nbBroadcast = 0
-		local btnHeight, iconSize, gap, textOffset, maxEntries = 15, 13, 10, 5
-		local sliderValue, hasSlider, extraHeight = 0
+		local nbRealFriends, realFriendsHeight, nbBroadcast = 0, nil, nil
+		local btnHeight, iconSize, gap, textOffset, maxEntries = 15, 13, 10, 5, nil
+		local sliderValue, hasSlider, extraHeight = 0, nil, nil
 		local tables, broadcasts, toasts, buttons
 		local slider, highlight, texOrder1, sep, sep2
 		
@@ -1630,7 +1630,7 @@ function module:SetGF()
 		end
 		
 		local function SetToastData(index, inGroup)
-			local toast, bc, color = toasts[index]
+			local toast, bc, color = toasts[index], nil, nil
 			local presenceID, givenName, surname, toonName, toonID, client, isOnline, _, isAFK, isDND, broadcast, notes = BNGetFriendInfo(index)
 			local _, _, _, realm, _, faction, race, class, _, zone, level, gameText = BNGetToonInfo(toonID or 0)
 			local statusText = (isAFK or isDND) and (formatedStatusText()):format(isAFK and CHAT_FLAG_AFK or isDND and CHAT_FLAG_DND) or ""
@@ -1864,7 +1864,7 @@ function module:SetGF()
 		end
 		
 		stat.Update = function(self)
-			local totalRF, onlineRF, entries = 0, 0
+			local totalRF, onlineRF, entries = 0, 0, nil
 
 			if self.IsGuild then
 				entries = guildEntries
@@ -1876,7 +1876,7 @@ function module:SetGF()
 			end
 
 			local nbTotalEntries = #entries + nbRealFriends
-			local rid_width, button = 0
+			local rid_width, button = 0, nil
 
 			realFriendsHeight = 0
 
@@ -1940,6 +1940,7 @@ function module:SetGF()
 			local maxWidth = max( rid_width, iconSize + textOffset + nameC + levelC + zoneC + notesC + rankC + gap * 4 )
 
 			-- motd / broadcast
+			--noinspection ArrayElementZero
 			motd = buttons[0] -- fix for errors caused by motd being nil
 			motd:SetScript("OnClick",nil)
 			local guildMOTD = self.IsGuild and GetGuildRosterMOTD()
@@ -1952,11 +1953,11 @@ function module:SetGF()
 					SetButtonData(0, nbTotalEntries>0 and motdText:format("MOTD", guildMOTD) or "     |cffff2020"..ERR_GUILD_PLAYER_NOT_IN_GUILD)
 					if nbTotalEntries>0 and CanEditMOTD() then motd:SetScript("OnClick", EditMOTD) end
 				else
-					if nbTotalEntries == 0 then
-						SetButtonData(0, "     |cffff2020".."No friends online.")
-					elseif not BNConnected() then
+					if not BNConnected() then
 						motd.name:SetJustifyH("CENTER")
 						SetButtonData(0, "|cffff2020"..BATTLENET_UNAVAILABLE)
+					elseif nbTotalEntries == 0 then
+						SetButtonData(0, "     |cffff2020".."No friends online.")
 					else
 						SetButtonData(0, motdText:format("Broadcast", select(3, BNGetInfo()) or ""))
 						motd:SetScript("OnClick", EditBroadcast)
