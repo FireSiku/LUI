@@ -119,7 +119,8 @@ local function IsEmptyTable(data)
 end
 
 local function RemoveDefaults(data, default)
-	if type(data) ~= "table" then return end
+	if type(data) ~= "table" or type(default) ~= "table" then return end
+	
 	for k, v in pairs(data) do
 		if type(v) == "table" then
 			if default[k] then
@@ -146,6 +147,7 @@ function module.Backup()
 
 	-- Get backup location.
 	local backup = {}
+	--noinspection GlobalCreationOutsideO
 	LUICONFIG = LUICONFIG or {}
 	LUICONFIG.BACKUP = backup
 
