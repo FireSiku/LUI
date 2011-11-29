@@ -15,7 +15,7 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("Micromenu")
+local module = LUI:Module("Micromenu", "AceEvent-3.0")
 local Themes = LUI:Module("Themes")
 local RaidMenu = LUI:Module("RaidMenu")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
@@ -667,23 +667,25 @@ function module:SetMicroMenu()
 		if UnitLevel("player") < 15 then
 			GameTooltip:AddLine("Available with Level 15", 1, 0, 0)
 		end
+		GameTooltip:AddLine("Left-Click: Toggle Dungeon Finder")
+		GameTooltip:AddLine("Right-click: Toggle Raid Finder")
 		GameTooltip:Show()
 	end)
 		
 	MicroMenuButton_LFG_Clicker:SetScript("OnLeave", function(self)
-		if not LFDParentFrame:IsShown() then
+		if not LFDParentFrame:IsShown() and not RaidParentFrame:IsShown() then
 			MicroMenuButton_LFG_Clicker:SetAlpha(0)
 		end
 		MicroMenuButton_LFG_Clicker_State = false
 		GameTooltip:Hide()
 	end)
 	
-	MicroMenuButton_LFG_Clicker:SetScript("OnClick", function(self)
+	MicroMenuButton_LFG_Clicker:SetScript("OnClick", function(self, button)
 		if UnitLevel("player") >= 15 then
-			if LFDParentFrame:IsShown() then
-				HideUIPanel(LFDParentFrame)
+			if button == "RightButton" then
+				ToggleFrame(RaidParentFrame)
 			else
-				ShowUIPanel(LFDParentFrame)
+				ToggleFrame(LFDParentFrame)
 			end
 		end
 	end)
@@ -756,17 +758,23 @@ function module:SetMicroMenu()
 				ShowUIPanel(EncounterJournal)
 			end
 		end)
-		
-		EncounterJournal:HookScript("OnShow", function(self)
-			MicroMenuButton_Journal_Clicker:SetAlpha(1)
-		end)
-		
-		EncounterJournal:HookScript("OnHide", function(self)
-			if MicroMenuButton_Journal_Clicker_State == false then
-				MicroMenuButton_Journal_Clicker:SetAlpha(0)
-			end
-		end)
-		
+
+		local function hookEJ(event)
+			if not IsAddOnLoaded("Blizzard_EncounterJournal") then return end
+			self:UnregisterEvent(event)
+
+			EncounterJournal:HookScript("OnShow", function(self)
+				MicroMenuButton_Journal_Clicker:SetAlpha(1)
+			end)
+
+			EncounterJournal:HookScript("OnHide", function(self)
+				if MicroMenuButton_Journal_Clicker_State == false then
+					MicroMenuButton_Journal_Clicker:SetAlpha(0)
+				end
+			end)
+		end
+
+		self:RegisterEvent("ADDON_LOADED", hookEJ)
 		
 		nextanchor = MicroMenuButton_Journal
 	else

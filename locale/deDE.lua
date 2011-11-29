@@ -21,7 +21,7 @@ L["The UI needs to be reloaded!"] = "Die UI neu geladen werden muss!"
 -- World Map
 --------------------------------------------------
 
-L["Hide Completely"] = "Vollständig verstecken"
+L["Hide Completely"] = "Vollstï¿½ndig verstecken"
 L["Only Show Markers"] = "Nur Weltkartenmarkierungen"
 L["Quest Objectives"] = "Questziele"
 L["Show Markers & Panels"] = "Markierungen & Panels"
@@ -36,7 +36,6 @@ L["Wrath Raids"] = "Wrath Raids"
 L["Cataclysm Instances"] = "Cataclysm Instanzen"
 L["Cataclysm Raids"] = "Cataclysm Raids"
 L["Battlegrounds"] = "Schlachtfelder"
-L["Handled by LUI"] = " (gehandhabt von LUI)"
 
 --------------------------------------------------
 -- Unitframes

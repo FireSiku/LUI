@@ -1075,6 +1075,7 @@ function module:CreateUnitOptions(unit, order)
 			Health = self:CreateBarOptions(unit, 1, "Health"),
 			Power = self:CreateBarOptions(unit, 2, "Power"),
 			Full = self:CreateBarOptions(unit, 3, "Full"),
+			HealPrediction = self.db[unit].Bars.HealPrediction and self:CreateHealPredictionOptions(unit, 4) or nil,
 			DruidMana = (class == "DRUID" and unit == "Player") and self:CreatePlayerBarOverlappingOptions("DruidMana", 11) or nil,
 			AltPower = (unit == "Player") and self:CreatePlayerBarOverlappingOptions("AltPower", 12) or nil,
 			Totems = (class == "SHAMAN" and unit == "Player") and self:CreatePlayerBarOptions("Totems", 13) or nil,

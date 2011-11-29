@@ -319,23 +319,8 @@ do
 end
 
 function module:SetMap()
-	InterfaceOptionsObjectivesPanelAdvancedWorldMap:Disable()
-	if InterfaceOptionsObjectivesPanelAdvancedWorldMapText:GetText() then
-		InterfaceOptionsObjectivesPanelAdvancedWorldMapText:SetText(InterfaceOptionsObjectivesPanelAdvancedWorldMapText:GetText()..L["Handled by LUI"])
-	else
-		self:SecureHook(InterfaceOptionsObjectivesPanelAdvancedWorldMapText, "SetText", function(frame)
-			self:Unhook(frame, "SetText")
-			frame:SetText(frame:GetText()..L["Handled by LUI"])
-		end)
-	end
-	InterfaceOptionsObjectivesPanelAdvancedWorldMapText:SetTextColor(0.5, 0.5, 0.5)
-	
 	WorldMap_ToggleSizeUp()
-	if GetCVarBool("advancedWorldMap") then
-		SetCVar("advancedWorldMap", nil)
-		WorldMapFrame_ToggleAdvanced()
-	end
-	
+
 	local visible = WorldMapFrame:IsVisible()
 	if visible then
 		HideUIPanel(WorldMapFrame)
@@ -591,7 +576,4 @@ function module:OnDisable()
 			ShowUIPanel(WorldMapFrame)
 		end
 	end
-	
-	InterfaceOptionsObjectivesPanelAdvancedWorldMap:Enable()
-	InterfaceOptionsObjectivesPanelAdvancedWorldMapText:SetText(_G[InterfaceOptionsObjectivesPanel.options.advancedWorldMap.text])
 end

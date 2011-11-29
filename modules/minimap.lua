@@ -342,7 +342,7 @@ function module:SetMinimap()
 		MiniMapLFGFrame:SetPoint(db.Minimap.Icon.LFG, Minimap, db.Minimap.Icon.LFG, LUI:Scale(2), LUI:Scale(1))
 		MiniMapLFGFrameBorder:Hide()
 	end
-	hooksecurefunc("MiniMapLFG_UpdateIsShown", UpdateLFG)
+	hooksecurefunc("MiniMapLFG_Update", UpdateLFG)
 
 	-- Enable mouse scrolling
 	Minimap:EnableMouseWheel(true)
@@ -425,8 +425,8 @@ function module:SetMinimap()
 	  tile = false, tileSize = 0, edgeSize = mult, 
 	  insets = { left = 0, right = 0, top = 0, bottom = 0}
 	})]]
-	LFDSearchStatus:SetBackdropColor(.1,.1,.1,1)
-	LFDSearchStatus:SetBackdropBorderColor(.6,.6,.6,1)
+	LFGSearchStatus:SetBackdropColor(.1,.1,.1,1)
+	LFGSearchStatus:SetBackdropBorderColor(.6,.6,.6,1)
 
 	----------------------------------------------------------------------------------------
 	-- Animation Coords and Current Zone. Awesome feature by AlleyKat.
