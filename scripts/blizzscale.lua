@@ -37,7 +37,7 @@ function script:ADDON_LOADED(event, name)
 		FriendsFrame,
 		PVPFrame,
 		LFDParentFrame,
-		LFRParentFrame,
+		RaidParentFrame,
 		HelpFrame,
 		MacroFrame,
 		GameMenuFrame,
