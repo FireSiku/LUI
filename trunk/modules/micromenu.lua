@@ -657,18 +657,20 @@ function module:SetMicroMenu()
 	MicroMenuButton_LFG_Clicker:Show()
 	
 	local MicroMenuButton_LFG_Clicker_State = false
+
+	MircoMenuButton_LFG_Clicker:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	
 	MicroMenuButton_LFG_Clicker:SetScript("OnEnter", function(self)
 		MicroMenuButton_LFG_Clicker:SetAlpha(1)
 		MicroMenuButton_LFG_Clicker_State = true
 		GameTooltip:SetOwner(MicroMenuButton_LFG_Clicker, "ANCHOR_NONE ",40,-90)
-		GameTooltip:SetText("Dungeon Finder")
-		GameTooltip:AddLine("Dungeons/Instances...", 1, 1, 1)
+		GameTooltip:SetText("Dungeon/Raid Finder")
 		if UnitLevel("player") < 15 then
 			GameTooltip:AddLine("Available with Level 15", 1, 0, 0)
+		else
+			GameTooltip:AddLine("Left-Click: Toggle Dungeon Finder", 1, 1, 1)
+			GameTooltip:AddLine("Right-click: Toggle Raid Finder", 1, 1, 1)
 		end
-		GameTooltip:AddLine("Left-Click: Toggle Dungeon Finder")
-		GameTooltip:AddLine("Right-click: Toggle Raid Finder")
 		GameTooltip:Show()
 	end)
 		
@@ -744,7 +746,7 @@ function module:SetMicroMenu()
 		end)
 
 		MicroMenuButton_Journal_Clicker:SetScript("OnLeave", function(self)
-			if not EncounterJournal:IsShown() then
+			if not EncounterJournal or not EncounterJournal:IsShown() then
 				MicroMenuButton_Journal_Clicker:SetAlpha(0)
 			end
 			MicroMenuButton_Journal_Clicker_State = false
@@ -752,6 +754,8 @@ function module:SetMicroMenu()
 		end)
 		
 		MicroMenuButton_Journal_Clicker:SetScript("OnClick", function(self)
+			if not EncounterJournal then LoadAddOn("Blizzard_EncounterJournal") end
+			
 			if EncounterJournal:IsShown() then
 				HideUIPanel(EncounterJournal)
 			else
