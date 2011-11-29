@@ -1305,6 +1305,8 @@ function module:SetButtons()
 	SpellFlyout:HookScript("OnShow", SetupFlyoutButton)
 
 	local function StyleFlyout(self)
+		if not self.FlyoutArrow then return end
+		
 		self.FlyoutBorder:SetAlpha(0)
 		self.FlyoutBorderShadow:SetAlpha(0)
 		
