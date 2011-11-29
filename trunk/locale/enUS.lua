@@ -36,7 +36,6 @@ L["Wrath Raids"] = true
 L["Cataclysm Instances"] = true
 L["Cataclysm Raids"] = true
 L["Battlegrounds"] = true
-L["Handled by LUI"] = " (handled by LUI)"
 
 --------------------------------------------------
 -- Unitframes

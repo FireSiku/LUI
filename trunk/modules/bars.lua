@@ -1064,7 +1064,9 @@ function module:SetButtons()
 	
 	local function StyleButton(button)
 		if not button then return end
-		button:GetNormalTexture():SetAlpha(0)
+		if button:GetNormalTexture() then
+			button:GetNormalTexture():SetAlpha(0)
+		end
 		
 		if button:GetParent() then
 			if button:GetParent().HideEmpty and not HasAction(button.action) then
@@ -1085,6 +1087,7 @@ function module:SetButtons()
 			if parent == "MultiCastActionPage1" then return end
 			if parent == "MultiCastActionPage2" then return end
 			if parent == "MultiCastActionPage3" then return end
+			if parent == "ExtraActionBarFrame" then return end
 		end
 		
 		local name = button:GetName()

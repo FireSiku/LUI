@@ -1,7 +1,7 @@
-## Interface: 40200
-## Version: 3.6.4
+## Interface: 40300
+## Version: 3.6.5
 ## Title: LUI
-## Author: Louí @EU-Das Syndikat
+## Author: Louï¿½ @EU-Das Syndikat
 ## Notes: User Interface Modification
 ## SavedVariables: LUIDB, LUIGold, LUI_Themes, LUI_Layouts
 ## SavedVariablesPerCharacter: LUICONFIG
