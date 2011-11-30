@@ -658,7 +658,7 @@ function module:SetMicroMenu()
 	
 	local MicroMenuButton_LFG_Clicker_State = false
 
-	MircoMenuButton_LFG_Clicker:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	MicroMenuButton_LFG_Clicker:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	
 	MicroMenuButton_LFG_Clicker:SetScript("OnEnter", function(self)
 		MicroMenuButton_LFG_Clicker:SetAlpha(1)
