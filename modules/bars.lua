@@ -303,34 +303,9 @@ local GetBarState = function(id)
 end
 
 local GetButton = function(bar, barid, barpos, buttonid)
-	if barpos == "Bottom" then
-		if barid == 1 then
-			_G["ActionButton"..buttonid]:SetParent(bar)
-			return _G["ActionButton"..buttonid]
-		elseif barid == 2 then
-			_G["MultiBarBottomLeftButton"..buttonid]:SetParent(bar)
-			return _G["MultiBarBottomLeftButton"..buttonid]
-		elseif barid == 3 then
-			_G["MultiBarBottomRightButton"..buttonid]:SetParent(bar)
-			return _G["MultiBarBottomRightButton"..buttonid]
-		else
-			local button = CreateFrame("CheckButton", "LUIBar"..barid.."Button"..buttonid, bar, "ActionBarButtonTemplate")
-			button:SetID(buttonid)
-			return button
-		end
-	elseif barid == 1 then
-		if barpos == "Left" then
-			_G["MultiBarLeftButton"..buttonid]:SetParent(bar)
-			return _G["MultiBarLeftButton"..buttonid]
-		else
-			_G["MultiBarRightButton"..buttonid]:SetParent(bar)
-			return _G["MultiBarRightButton"..buttonid]
-		end
-	else
-		local button = CreateFrame("CheckButton", "LUIBar"..barpos..barid.."Button"..buttonid, bar, "ActionBarButtonTemplate")
-		button:SetID(buttonid)
-		return button
-	end
+	local button = CreateFrame("CheckButton", "LUIBar"..barpos..barid.."Button"..buttonid, bar, "ActionBarButtonTemplate")
+	button:SetID(buttonid)
+	return button
 end
 
 function module:SetBarColors()
@@ -1000,12 +975,39 @@ function module:SetVehicleExit()
 	LUIVehicleExit[db.VehicleExit.Enable and "Show" or "Hide"](LUIVehicleExit)
 end
 
+function module:SetExtraButton()
+	if not LUIExtraButton then
+		local bar = CreateFrame("Frame", "LUIExtraButton", UIParent, "SecureHandlerStateTemplate")
+		bar:SetHeight(52)
+		bar:SetWidth(52)
+		bar:Show()
+		
+		ExtraActionBarFrame:ClearAllPoints()
+		ExtraActionBarFrame.ClearAllPoints = function() end
+		ExtraActionBarFrame:SetPoint("CENTER", bar, "CENTER", 0, 0)
+		ExtraActionBarFrame.SetPoint = function() end
+		ExtraActionBarFrame.SetAllPoints = function() end
+	end
+	
+	local s = db.ExtraButton.Scale
+	LUIExtraButton:ClearAllPoints()
+	LUIExtraButton:SetPoint(db.ExtraButton.Point, UIParent, db.ExtraButton.Point, db.ExtraButton.X * s, db.ExtraButton.Y * s)
+	LUIExtraButton:SetScale(s)
+	
+	LUIExtraButton[db.ExtraButton.Enable and "Show" or "Hide"](LUIExtraButton)
+end
+
 function module:HideBlizzard()
 	MainMenuBar:SetScale(0.00001)
 	MainMenuBar:EnableMouse(false)
 	MainMenuBar:SetAlpha(0)
 	MainMenuBar:UnregisterAllEvents()
 
+	SHOW_MULTI_ACTIONBAR_1 = nil
+	SHOW_MULTI_ACTIONBAR_2 = nil
+	SHOW_MULTI_ACTIONBAR_3 = nil
+	SHOW_MULTI_ACTIONBAR_4 = nil
+	
 	VehicleMenuBar:SetScale(0.00001)
 	VehicleMenuBar:EnableMouse(false)
 	VehicleMenuBar:SetAlpha(0)
@@ -1063,7 +1065,9 @@ function module:SetButtons()
 	end
 	
 	local function StyleButton(button)
+		if InCombatLockdown() then return end
 		if not button then return end
+		
 		if button:GetNormalTexture() then
 			button:GetNormalTexture():SetAlpha(0)
 		end
@@ -1448,6 +1452,7 @@ function module:SetBars()
 		self:SetShapeshiftBar()
 		self:SetTotemBar()
 		self:SetVehicleExit()
+		self:SetExtraButton()
 		
 		self:HideBlizzard()
 		
@@ -1832,6 +1837,13 @@ module.defaults = {
 			Point = "CENTER",
 			Scale = 1,
 		},
+		ExtraButton = {
+			Enable = true,
+			X = 0, -- -314,
+			Y = 350, -- 41,
+			Point = "BOTTOM",
+			Scale = 0.85,
+		},
 	},
 }
 
@@ -1975,7 +1987,7 @@ function module:LoadOptions()
 			[""] = self:NewPosSliders(name, 2, false, frame, true, nil, disabled[name]),
 			Point = self:NewSelect("Point", "Choose the Point for the "..name..".", 3, positions, nil, setPoint, nil, disabled[name]),
 			Scale = self:NewSlider("Scale", "Choose the Scale for the "..name..".", 4, 0.1, 1.5, 0.05, true, true, nil, nil, disabled[name]),
-			NumPerRow = (name ~= "Vehicle Exit Button" and name ~= "Totem Bar") and self:NewSlider("Buttons per Row", "Choose the Number of Buttons per Row.", 5, 1, 10, 1, true, nil, nil, nil, disabled[name]) or nil,
+			NumPerRow = (name ~= "Vehicle Exit Button" and name ~= "Totem Bar" and name ~= "Extra Button") and self:NewSlider("Buttons per Row", "Choose the Number of Buttons per Row.", 5, 1, 10, 1, true, nil, nil, nil, disabled[name]) or nil,
 			Fader = (dbName and self:NewGroup("Fader", 6, true, disabled[name], Fader:CreateFaderOptions(_G[frame], db[dbName].Fader, dbd[dbName].Fader, true))) or nil,
 		})
 		
@@ -2030,6 +2042,7 @@ function module:LoadOptions()
 		PetBar = not isBarAddOnLoaded and createOtherBarOptions("Pet Bar", 15, "LUIPetBar", "PetBar") or nil,
 		TotemBar = not isBarAddOnLoaded and createOtherBarOptions("Totem Bar", 16, "LUITotemBar", "TotemBar") or nil,
 		VehicleExit = not isBarAddOnLoaded and createOtherBarOptions("Vehicle Exit Button", 17, "LUIVehicleExit") or nil,
+		ExtraButton = not isBarAddOnLoaded and createOtherBarOptions("Extra Button", 18, "LUIExtraButton") or nil,
 	}
 	
 	return options
@@ -2104,9 +2117,9 @@ function module:Refresh(...)
 		
 		local border = _G[name.."Border"]
 		if db.General.ShowEquipped and button.action and IsEquippedAction(button.action) then
-			border:Show()
+			if border then border:Show() end
 		else
-			border:Hide()
+			if border then border:Hide() end
 		end
 	end
 	
