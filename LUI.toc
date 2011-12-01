@@ -1,5 +1,5 @@
 ## Interface: 40300
-## Version: 3.6.6
+## Version: 3.6.5
 ## Title: LUI
 ## Author: Lou� @EU-Das Syndikat
 ## Notes: User Interface Modification
