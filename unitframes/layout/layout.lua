@@ -95,17 +95,11 @@ do
 			[GetSpellInfo(740)] = 2, -- Tranquility
 			[GetSpellInfo(16914)] = 1, -- Hurricane
 		},
-		MAGE = setmetatable({
+		MAGE = {
 			[GetSpellInfo(10)] = 1, -- Blizzard
 			[GetSpellInfo(12051)] = 2, -- Evocation
-		}, {
-			__index = function(t, k)
-				if k == GetSpellInfo(5143) then -- Arcane Missiles
-					local rank = select(5, GetTalentInfo(1, 10)) -- Missle Barrage talent
-					return (rank == 0 and 0.75 or (0.7 - (rank/10)))
-				end
-			end,
-		}),
+			-- [GetSpellInfo(5143)] = 0.75, -- Arcane Missiles			located below do to talents affecting time between ticks
+		},
 		PRIEST = {
 			[GetSpellInfo(15407)] = 1, -- Mind Flay
 			[GetSpellInfo(48045)] = 1, -- Mind Sear
@@ -120,7 +114,7 @@ do
 			[GetSpellInfo(1120)] = 3, -- Drain Soul
 			[GetSpellInfo(689)] = 1, -- Drain Life
 			[GetSpellInfo(755)] = 1, -- Health Funnel
-			[GetSpellInfo(79268)] = 3, -- Soul Harvest
+			[GetSpellInfo(79268)] = 1, -- Soul Harvest
 			[GetSpellInfo(5740)] = 2, -- Rain of Fire
 			[GetSpellInfo(1949)] = 1, -- Hellfire
 		},
@@ -135,6 +129,18 @@ do
 		end
 	end
 	wipe(classChannels)
+	
+	if class == "MAGE" then
+		local arcaneMissiles = GetSpellInfo(5143)
+		
+		local function talentUpdate()
+			local rank = select(5, GetTalentInfo(1, 10)) -- Missile Barrage talent
+			channelingTicks[arcaneMissiles] = rank == 0 and 0.75 or (0.7 - (rank / 10))
+		end
+		
+		module:RegisterEvent("PLAYER_TALENT_UPDATE", talentUpdate)
+		talentUpdate()
+	end
 end
 
 local menu
@@ -278,19 +284,19 @@ do
 	end
 	
 	local dropdown_unit
-	UIDropDownMenu_Initialize(LUI_UnitFrame_DropDown, function()
+	UIDropDownMenu_Initialize(dropdown, function(frame)
 		if not dropdown_unit then return end
 		
 		local unit, id = getMenuUnit(dropdown_unit)
 		if unit then
 			local menu = getUnitDropDownMenu(unit)
-			UnitPopup_ShowMenu(LUI_UnitFrame_DropDown, menu, dropdown_unit, nil, id)
+			UnitPopup_ShowMenu(frame, menu, dropdown_unit, nil, id)
 		end
-	end, "MENU", nil)
+	end, "MENU")
 	
 	menu = function(self, unit)
 		dropdown_unit = unit
-		ToggleDropDownMenu(1, nil, LUI_UnitFrame_DropDown, "cursor")
+		ToggleDropDownMenu(1, nil, dropdown, "cursor")
 	end
 end
 
