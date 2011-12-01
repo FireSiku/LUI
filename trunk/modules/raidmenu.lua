@@ -117,11 +117,14 @@ local FormatMarker = function(frame,x,y,r,g,b,id,t1,t2,t3,t4)
 	frame:RegisterForClicks("AnyUp")
 	
 	if string.find(frame:GetName(), "WorldMarker") ~= nil then
-		frame:SetAttribute("type", "macro")
-		frame:SetAttribute("macrotext", [[/click CompactRaidFrameManagerDisplayFrameLeaderOptionsRaidWorldMarkerButton
-/click DropDownList1Button]]..tostring(id)..[[
-
-/run if LUI.db.profile.RaidMenu.AutoHide then MicroMenu_ButtonLeft_Clicker:Click() end]])
+		frame:SetAttribute("type", "worldmarker")
+		frame:SetAttribute("marker", id)
+		if id == 6 then
+			frame:SetAttribute("action", "clear")
+		else
+			frame:SetAttribute("action1", "set")
+			frame:SetAttribute("action2", "clear")
+		end
 		
 		local texture = _G[frame:GetName().."MarkerTex"]
 		if texture == nil then
@@ -172,7 +175,7 @@ local FormatMarker = function(frame,x,y,r,g,b,id,t1,t2,t3,t4)
 		if db.RaidMenu.Compact then
 			width = 100+(db.RaidMenu.Spacing*3)
 		else
-			width = 120, 20
+			width = 120
 		end
 		frame:SetWidth(width)
 		frame:SetHeight(LUI:Scale(20))
@@ -259,6 +262,7 @@ function module:SetColors()
 end
 
 -- Create module function
+--noinspection LuaOverlyLongMethod
 function module:SetRaidMenu()
 	if (db.RaidMenu.Enable ~= true) or not(Micromenu) then return end
 	

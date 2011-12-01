@@ -50,48 +50,8 @@ do
 	end
 end
 
-local hidden, hide, show = {}
+local hidden, hide, show = {}, nil, nil
 do
-	--[[
-	local hooks = setmetatable({
-		player_frame = function() -- for runebar
-			hooksecurefunc("PlayerFrame_HideVehicleTexture", function()
-				if hidden["runebar"] then
-					hide["runebar"]()
-				end
-			end)
-		end,
-		compact_party = function()
-			hooksecurefunc("CompactPartyFrame_UpdateShown", function()
-				if hidden["party"] then
-					hide["party"]()
-				end
-			end)
-		end,
-		raid_manager = function()
-			hooksecurefunc("CompactRaidFrameManager_UpdateShown", function()
-				if hidden["raid"] then
-					hide["raid"]()
-				end
-			end)
-		end,
-		arena_ui = function()
-			hooksecurefunc("Arena_LoadUI", function()
-				if hidden["arena"] then
-					hide["arena"]()
-				end
-			end)
-		end,
-	}, {
-		__call = function(t, k)
-			local func = t[k]
-			if func then
-				t[k] = nil
-				func()
-			end
-		end
-	})
-	--]]
 	local hook = setmetatable({}, {
 		__call = function(t, unit, hookto)
 			if t[unit] then return end
@@ -139,7 +99,9 @@ do
 				if hook.party == "CompactPartyFrame_Generate" then
 					hook.party = nil
 				end
-				hook("party", "CompactPartyFrame_UpdateShown")
+				if CompactPartyFrame_UpdateShown then
+					hook("party", "CompactPartyFrame_UpdateShown")
+				end
 			else
 				hook("party", "CompactPartyFrame_Generate")
 			end
