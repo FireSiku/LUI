@@ -1,7 +1,0 @@
-<Ui xmlns="http://www.blizzard.com/wow/ui/">
-	<Script file="worldmap.lua"/>
-	<Script file="coords.lua"/>
-	<Script file="questpoi.lua"/>
-	<Script file="fogclear.lua"/>
-	<Script file="instancemaps.lua"/>
-</Ui>
