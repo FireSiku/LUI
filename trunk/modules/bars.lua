@@ -734,6 +734,7 @@ function module:SetSideBar(side, id)
 			bar:SetFrameRef("Button"..i, button)
 			bar.buttons[i] = button
 			if button:GetName():find("LUI") then button.buttonType = "LUIBar"..side..id.."Button" end
+			button:SetAttribute("flyoutDirection", side == "Left" and "RIGHT" or "LEFT")
 		end
 		
 		bar:RegisterEvent("ACTIONBAR_SHOWGRID")
@@ -982,11 +983,9 @@ function module:SetExtraButton()
 		bar:SetWidth(52)
 		bar:Show()
 		
+		ExtraActionBarFrame:SetParent(bar)
 		ExtraActionBarFrame:ClearAllPoints()
-		ExtraActionBarFrame.ClearAllPoints = function() end
 		ExtraActionBarFrame:SetPoint("CENTER", bar, "CENTER", 0, 0)
-		ExtraActionBarFrame.SetPoint = function() end
-		ExtraActionBarFrame.SetAllPoints = function() end
 	end
 	
 	local s = db.ExtraButton.Scale
@@ -1084,6 +1083,8 @@ function module:SetButtons()
 		
 		table.insert(buttonlist, button)
 		button.__Styled = true
+		
+		local name = button:GetName()
 		
 		if button:GetParent() then
 			local parent = button:GetParent():GetName()
@@ -1331,35 +1332,6 @@ function module:SetButtons()
 			arrowDistance = 5
 		else
 			arrowDistance = 2
-		end
-		
-		if self:GetParent():GetName() == "SpellBookSpellIconsFrame" then return end
-		
-		if self:GetAttribute("flyoutDirection") ~= nil then
-			local point = self:GetParent():GetPoint()
-			
-			if not point then return end
-			if point:find("BOTTOM") then
-				self.FlyoutArrow:ClearAllPoints()
-				self.FlyoutArrow:SetPoint("TOP", self, "TOP", 0, arrowDistance)
-				SetClampedTextureRotation(self.FlyoutArrow, 0)
-				if not InCombatLockdown() then self:SetAttribute("flyoutDirection", "UP") end
-			elseif point:find("RIGHT") then
-				self.FlyoutArrow:ClearAllPoints()
-				self.FlyoutArrow:SetPoint("LEFT", self, "LEFT", -arrowDistance, 0)
-				SetClampedTextureRotation(self.FlyoutArrow, 270)
-				if not InCombatLockdown() then self:SetAttribute("flyoutDirection", "LEFT") end
-			elseif point:find("LEFT") then
-				self.FlyoutArrow:ClearAllPoints()
-				self.FlyoutArrow:SetPoint("RIGHT", self, "RIGHT", arrowDistance, 0)
-				SetClampedTextureRotation(self.FlyoutArrow, 90)
-				if not InCombatLockdown() then self:SetAttribute("flyoutDirection", "RIGHT") end
-			else
-				self.FlyoutArrow:ClearAllPoints()
-				self.FlyoutArrow:SetPoint("BOTTOM", self, "BOTTOM", 0, -arrowDistance)
-				SetClampedTextureRotation(self.FlyoutArrow, 180)
-				if not InCombatLockdown() then self:SetAttribute("flyoutDirection", "BOTTOM") end
-			end
 		end
 	end
 	module:SecureHook("ActionButton_UpdateFlyout", StyleFlyout)

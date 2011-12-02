@@ -194,7 +194,7 @@ function module:SetBuffs()
 		button.overlay2:SetAlpha(0.4)
 		button.overlay2:SetBlendMode("ADD")
 		button.overlay2:SetTexCoord(.1, .9, .1, .9)
-				
+		
 		button.panel = CreatePanel(size+15, size+15, 0, 0, "CENTER", "CENTER", button, 3, button, "BACKGROUND")
 		if filter == "HELPFUL" then
 			button.gloss = CreateGlossPanel(size+2, size+2, 0, 0, "CENTER", "CENTER", button, 3, button, "BACKGROUND")
@@ -283,16 +283,7 @@ function module:SetBuffs()
 		local name, _, icon, count, debuffType, duration, expirationTime = UnitAura("player", button:GetID(), filter)
 		if name then
 			button.texture:SetTexture(icon)
-			
-			if filter == "HARMFUL" then
-				local color
-				if (debuffType ~= nil) then
-					color = DebuffTypeColor[debuffType]
-				else
-					color = DebuffTypeColor["none"]
-				end
-				button.gloss.overlay:SetVertexColor(unpack(color))
-			end
+			if filter == "HARMFUL" then button.gloss.overlay:SetVertexColor(DebuffTypeColor[debuffType or "none"]) end
 			
 			if duration > 0 then
 				button.remaining = expirationTime - GetTime()
@@ -323,11 +314,13 @@ function module:SetBuffs()
 		
 		button.lastUpdate = 0
 		
-		local _, MHtime, _, _, OHtime = GetWeaponEnchantInfo()
+		local _, MHtime, _, _, OHtime, _, _, RAtime = GetWeaponEnchantInfo()
 		if button.slotID == 16 then
 			button.remaining = MHtime/1000
-		else
+		elseif button.slotID == 17 then
 			button.remaining = OHtime/1000
+		else
+			button.remaining = RAtime/1000
 		end
 		
 		button.duration:SetText(SecondsToTimeAbbrev(button.remaining))
@@ -363,12 +356,14 @@ function module:SetBuffs()
 		for _, button in header:ActiveButtons() do AuraButton_Update(button, header.filter) end
 		
 		if header.filter == "HELPFUL" then
-			local MHenchant, MHtime, _, OHenchant, OHtime = GetWeaponEnchantInfo()
-			local Enchant1 = buffHeader:GetAttribute("tempEnchant1")
-			local Enchant2 = buffHeader:GetAttribute("tempEnchant2")
+			local MHenchant, MHtime, _, OHenchant, OHtime, _, RAenchant, RAtime = GetWeaponEnchantInfo()
+			local Enchant1 = header:GetAttribute("tempEnchant1")
+			local Enchant2 = header:GetAttribute("tempEnchant2")
+			local Enchant3 = header:GetAttribute("tempEnchant3")
 			
 			if Enchant1 then TempEnchantButton_Update(Enchant1, "MainHandSlot", MHenchant, MHtime) end
 			if Enchant2 then TempEnchantButton_Update(Enchant2, "SecondaryHandSlot", OHenchant, OHtime) end
+			if Enchant3 then TempEnchantButton_Update(Enchant3, "RangedSlot", RAenchant, RAtime) end
 		end
 	end
 	AuraAnchorsOnEnable = UpdateAuraAnchors
@@ -397,8 +392,9 @@ function module:SetBuffs()
 		header.filter = isBuff and "HELPFUL" or "HARMFUL"
 		
 		if isBuff then
-			header:SetAttribute("includeWeapons", 1)
+			--header:SetAttribute("includeWeapons", 1)
             header:SetAttribute("weaponTemplate", temp)
+			
 			header:RegisterEvent("UNIT_INVENTORY_CHANGED")
 			header:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 		end
