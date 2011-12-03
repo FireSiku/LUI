@@ -14,16 +14,15 @@ local Profiler = LUI.Profiler
 local db, dbd
 
 -- Localized API
-local ceil, floor, min, format = math.ceil, math.floor, math.min, string.format
-local pairs, ipairs, tinsert, tremove, next, wipe = pairs, ipairs, table.insert, table.remove, next, wipe
-local GetTime = GetTime
+local floor, format, tinsert, tremove = math.floor, string.format, table.insert, table.remove
+local pairs, ipairs, next, wipe, GetTime = pairs, ipairs, next, wipe, GetTime
 
 --------------------------------------------------
 -- Local Variables
 --------------------------------------------------
 
 local day, hour, minute = 86400, 3600, 60
-local iconSize = 1 / 36
+local iconSize = 36
 local precision, threshold, minDuration
 
 local timers, cache = {}, {}
@@ -31,7 +30,7 @@ local activeUICooldowns = {}
 
 local fontScale = setmetatable({}, {
 	__index = function(t, width)
-		local scale = width * iconSize
+		local scale = width / iconSize
 		t[width] = scale > db.General.MinScale and scale * db.Text.Size
 
 		return t[width]
@@ -46,48 +45,9 @@ local function round(num)
 	return floor(num + 0.5)
 end
 
-local formatTime, setPrecision
-do
-	local timeFormats = {
-		Day = "%.0fd",
-		Hour = "%.0fh",
-		Min = "%.0fm",
-		Sec = "%.0f",
-	}
-
-	local precisions = {
-		[0] = 1,
-		[1] = 0.1,
-		[2] = 0.01,
-	}
-
-	setPrecision = function()
-		timeFormats.Threshold = format("%%.%df", db.General.Precision)
-		precision = precisions[db.General.Precision]
-		threshold = db.General.Threshold
-		minDuration = db.General.MinDuration
-	end
-
-	formatTime = function(seconds)
-		if seconds < threshold then
-			return timeFormats.Threshold, seconds, precision, db.Colors.Threshold
-		elseif seconds > day then
-			return timeFormats.Day, seconds / day, seconds % day, db.Colors.Day
-		elseif seconds > hour then
-			return timeFormats.Hour, seconds / hour, seconds % hour, db.Colors.Hour
-		elseif seconds > minute then
-			return timeFormats.Min, seconds / minute, seconds % minute, db.Colors.Min
-		else
-			return timeFormats.Sec, seconds, seconds % 1, db.Colors.Sec
-		end
-	end
-end
-
 local getTimer
 do
-	local function updater_OnFinished(self)
-		module.UpdateTimer(self.timer)
-	end
+	local timerEmbeds = { "Start", "Stop", "Update", "OnUpdate", "ShouldUpdate", "FormatTime", "Scale", "Position" }
 
 	getTimer = function(cd)
 		local timer = tremove(cache)
@@ -96,15 +56,11 @@ do
 			timer = CreateFrame("Frame")
 			timer:Hide()
 
-			local updater = timer:CreateAnimationGroup()
-			updater.timer = timer
-			updater:SetLooping("NONE")
-			updater:SetScript("OnFinished", updater_OnFinished)
+			for _, func in pairs(timerEmbeds) do
+				timer[func] = module[func]
+			end
 
-			local animation = updater:CreateAnimation("Animation")
-			animation:SetOrder(1)
-
-			timer.updater = updater
+			timer:SetScript("OnUpdate", timer.OnUpdate)
 
 			local text = timer:CreateFontString(nil, "OVERLAY")
 
@@ -123,7 +79,7 @@ do
 		timer:SetFrameStrata(cd:GetFrameStrata())
 		timer:SetFrameLevel(cd:GetFrameLevel() + 10)
 
-		module.PositionTimer(timer)
+		timer:Position()
 
 		cd.timer = timer
 		return timer
@@ -146,38 +102,94 @@ end
 -- Cooldown Functions
 --------------------------------------------------
 
-function module.SetNextUpdate(self, nextUpdate)
-	self.updater:GetAnimations():SetDuration(nextUpdate)
-	if self.updater:IsPlaying() then
-		self.updater:Stop()
+local updateVars
+do
+	local colors = {}
+
+	local timeFormats = {
+		[day] = "%.0fd",
+		[hour] = "%.0fh",
+		[minute] = "%.0fm",
+		[1] = "%.0f",
+	}
+
+	updateVars = function()
+		precision = 1 / 10^(db.General.Precision)
+		threshold = db.General.Threshold
+		minDuration = db.General.MinDuration
+
+		wipe(fontScale)
+
+		timeFormats[true] = format("%%.%df", db.General.Precision) -- threshold
+
+		colors[day] = db.Colors.Day
+		colors[hour] = db.Colors.Hour
+		colors[minute] = db.Colors.Min
+		colors[1] = db.Colors.Sec
+		colors[true] = db.Colors.Threshold
 	end
-	self.updater:Play()
-end
 
-function module.UpdateTimer(self)
-	local remaining = self.duration - (GetTime() - self.start)
-	
-	if remaining > 0 then
-		local formatStr, time, nextUpdate, color = formatTime(remaining)
-		self.text:SetFormattedText(formatStr, time)
-		module.SetNextUpdate(self, nextUpdate)
+	function module:FormatTime(seconds)
+		local factor
+		if seconds < threshold then
+			factor = true
 
-		if self.r ~= color.r or self.g ~= color.g or self.b ~= color.b then
-			self.r, self.g, self.b = color.r, color.g, color.b
-			self.text:SetTextColor(color.r, color.g, color.b)
+			self.nextUpdate = precision
+			self.text:SetFormattedText(timeFormats[factor], seconds)
+		else
+			factor = seconds < minute and 1 or seconds < hour and minute or seconds < day and hour or day
+
+			self.nextUpdate = seconds % factor
+			self.text:SetFormattedText(timeFormats[factor], seconds / factor)
 		end
-	else
-		module.StopTimer(self)
+
+		if self.color ~= colors[factor] then
+			self.color = colors[factor]
+			self.text:SetTextColor(unpack(self.color))
+		end
 	end
 end
 
-function module.RefreshTimer(self)
+function module:ShouldUpdate(start, duration)
+	if start ~= self.start or duration ~= self.duration then
+		if duration < minDuration or not self:IsVisible() then
+			self:Stop()
+			return
+		end
+	end
+
+	return true
+end
+
+function module:OnUpdate(elapsed)
+	self.nextUpdate = self.nextUpdate - elapsed
+
+	if self.nextUpdate > 0 then return end
+
+	self:Update()
+end
+
+function module:Update()
+	local remaining = self.duration - (GetTime() - self.start)
+
+	if remaining > 0 then
+		self:FormatTime(remaining)
+		return true
+	end
+
+	self:Stop()
+end
+
+function module:Scale()
 	local scale = fontScale[round(self.cd:GetWidth())]
 
 	if self.fontScale ~= scale then
 		self.fontScale = scale
 
-		if not scale then return end
+		if not scale then
+			self:Stop()
+			return
+		end
 		
 		self.text:SetFont(Media:Fetch("font", db.Text.Font), self.fontScale, db.Text.Flag)
 	end
@@ -185,32 +197,27 @@ function module.RefreshTimer(self)
 	return true
 end
 
-function module.PositionTimer(self)
+function module:Position()
 	self:SetAllPoints()
 	self.text:SetPoint("CENTER", db.Text.XOffset, db.Text.YOffset)
 end
 
-function module.StartTimer(self, start, duration)
+function module:Start(start, duration)
 	self.start = start
 	self.duration = duration
 	self.enabled = true
 
-	if module.RefreshTimer(self) then
-		module.UpdateTimer(self)
-		self:Show()
-	else
-		module.StopTimer(self)
-	end
+	if not self:Scale() or not self:Update() then return end
+
+	self:Show()
 end
 
-function module.StopTimer(self)
-	self.enabled = nil
-	if self.updater:IsPlaying() then
-		self.updater:Stop()
-	end
+function module:Stop()
 	self:Hide()
 
+	self.enabled = nil
 	self.cd.timer = nil
+	self.fontScale = nil -- force update on next use
 
 	tinsert(cache, self)
 end
@@ -218,9 +225,13 @@ end
 function module:AssignTimer(cd, start, duration)
 	if cd.noCooldownCount then return end
 
-	if not cd.timer and (duration < minDuration or not cd:IsVisible() or not fontScale[round(cd:GetWidth())]) then return end
-
-	module.StartTimer(cd.timer or getTimer(cd), start, duration)
+	if cd.timer then
+		if cd.timer:ShouldUpdate(start, duration) then
+			cd.timer:Start(start, duration)
+		end
+	elseif duration >= minDuration and cd:IsVisible() and fontScale[round(cd:GetWidth())] then
+		getTimer(cd):Start(start, duration)
+	end
 end
 
 function module:RegisterActionUIButton(frame)
@@ -237,11 +248,7 @@ end
 
 function module:ACTIONBAR_UPDATE_COOLDOWN()
 	for cd, button in pairs(activeUICooldowns) do
-		local start, duration = GetActionCooldown(button.action)
-
-		if not cd.timer or cd.timer.start ~= start or cd.timer.duration ~= duration then
-			module:AssignTimer(cd, start, duration)
-		end
+		module:AssignTimer(cd, GetActionCooldown(button.action))
 	end
 end
 
@@ -266,89 +273,71 @@ module.defaults = {
 			YOffset = 0,
 		},
 		Colors = {
-			Day = {
-				r = 0.8,
-				g = 0.8,
-				b = 0.8,
-			},
-			Hour = {
-				r = 0.8,
-				g = 0.8,
-				b = 1.0,
-			},
-			Min = {
-				r = 1.0,
-				g = 1.0,
-				b = 1.0,
-			},
-			Sec = {
-				r = 1.0,
-				g = 1.0,
-				b = 0.0,
-			},
-			Threshold = {
-				r = 1.0,
-				g = 0.0,
-				b = 0.0,				
-			},
+			Day = {0.8, 0.8, 0.8},
+			Hour = {0.8, 0.8, 1.0},
+			Min = {1.0, 1.0, 1.0},
+			Sec = {1.0, 1.0, 0.0},
+			Threshold = {1.0, 0.0, 0.0},
 		},
 	},
 }
 
 module.conflicts = "OmniCC;tullaCooldownCount"
-module.getter = "generic"
-module.setter = "Refresh"
 
 function module:LoadOptions()
+	local func = "Refresh"
+
 	local options = {
 		General = self:NewGroup("General Settings", 1, {
-			Threshold = self:NewInputNumber("Cooldown Threshold", "The time at which your coodown text is colored differnetly and begins using specified precision.", 1),
-			MinDuration = self:NewInputNumber("Minimum Duration", "The lowest cooldown duration that timers will be shown for.", 2),
-			Precision = self:NewSlider("Cooldown Precision", "How many decimal places will be shown once time is within the cooldown threshold.", 3, 0, 2, 1),
-			MinScale = self:NewSlider("Minimum Scale", "The smallest size of icons that timers will be shown for.", 4, 0, 2, 0.1),
+			Threshold = self:NewInputNumber("Cooldown Threshold", "The time at which your coodown text is colored differnetly and begins using specified precision.", 1, func),
+			MinDuration = self:NewInputNumber("Minimum Duration", "The lowest cooldown duration that timers will be shown for.", 2, func),
+			Precision = self:NewSlider("Cooldown Precision", "How many decimal places will be shown once time is within the cooldown threshold.", 3, 0, 2, 1, func),
+			MinScale = self:NewSlider("Minimum Scale", "The smallest size of icons that timers will be shown for.", 4, 0, 2, 0.1, func),
 		}),
 		Text = self:NewGroup("Text Settings", 2, {
-			Font = self:NewSelect("Font", "Select the font to be used by cooldown's texts.", 1, AceGUIWidgetLSMlists.font, "LSM30_Font"),
-			Size = self:NewSlider("Font Size", "Select the font size to be used by cooldown's texts.", 2, 6, 32, 1),
-			Flag = self:NewSelect("Font Outline", "Select the font outline to be used by cooldown's texts.", 3, LUI.FontFlags),
+			Font = self:NewSelect("Font", "Select the font to be used by cooldown's texts.", 1, AceGUIWidgetLSMlists.font, "LSM30_Font", func),
+			Size = self:NewSlider("Font Size", "Select the font size to be used by cooldown's texts.", 2, 6, 32, 1, func),
+			Flag = self:NewSelect("Font Outline", "Select the font outline to be used by cooldown's texts.", 3, LUI.FontFlags, nil, func),
 			Offsets = self:NewHeader("Text Position Offsets", 4),
-			XOffset = self:NewInputNumber("X Offset", "Horizontal offset to be applied to the cooldown's texts.", 5),
-			YOffset = self:NewInputNumber("Y Offset", "Vertical offset to be applied to the cooldown's texts.", 6),
+			XOffset = self:NewInputNumber("X Offset", "Horizontal offset to be applied to the cooldown's texts.", 5, func),
+			YOffset = self:NewInputNumber("Y Offset", "Vertical offset to be applied to the cooldown's texts.", 6, func),
 		}),
 		Colors = self:NewGroup("Colors", 3, {
-			Threshold = self:NewColorNoAlpha("Threshold", "The color of cooldown's text under the threshold.", 1),
-			Sec = self:NewColorNoAlpha("Seconds", "The color of cooldown's text when representing seconds.", 2),
-			Min = self:NewColorNoAlpha("Minutes", "The color of cooldown's text when representing minutes.", 3),
-			Hour = self:NewColorNoAlpha("Hours", "The color of cooldown's text when representing hours.", 4),
-			Day = self:NewColorNoAlpha("Days", "The color of cooldown's text when representing days.", 5),
+			Threshold = self:NewColorNoAlpha("Threshold", "The color of cooldown's text under the threshold.", 1, func),
+			Sec = self:NewColorNoAlpha("Seconds", "The color of cooldown's text when representing seconds.", 2, func),
+			Min = self:NewColorNoAlpha("Minutes", "The color of cooldown's text when representing minutes.", 3, func),
+			Hour = self:NewColorNoAlpha("Hours", "The color of cooldown's text when representing hours.", 4, func),
+			Day = self:NewColorNoAlpha("Days", "The color of cooldown's text when representing days.", 5, func),
 		}),
 	}
 	return options
 end
 
-function module:Refresh(info, value)
-	if type(info) == "table" then
-		module:SetDBVar(info, value)
-	end
-
-	setPrecision()
+function module:Refresh()
+	updateVars()
 
 	for i, timer in ipairs(timers) do
 		if timer.enabled then
-			module.RefreshTimer(timer)
-			module.PositionTimer(timer)
+			timer.fontScale = nil -- force update
+			if timer:Scale() then
+				timer:Position()
+			end
 		end
 	end
+end
+
+function module:DBCallback(event, dbobj, profile)
+	module:OnInitialize()
+
+	module:Refresh()
 end
 
 function module:OnInitialize()
 	db, dbd = LUI:Namespace(self, true)
 end
 
-module.DBCallback = module.OnInitialize
-
 function module:OnEnable()
-	setPrecision()
+	updateVars()
 
 	-- Hook the SetCooldown metamethod of all Cooldown frames.
 	module:SecureHook(getmetatable(ActionButton1Cooldown).__index, "SetCooldown", "AssignTimer")
@@ -369,7 +358,7 @@ function module:OnDisable()
 
 	for i, timer in ipairs(timers) do
 		if timer.enabled then
-			module.StopTimer(timer)
+			timer:Stop()
 		end
 	end
 end
