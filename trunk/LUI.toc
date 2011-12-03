@@ -1,7 +1,8 @@
 ## Interface: 40300
 ## Version: 3.6.6
 ## Title: LUI
-## Author: Lou� @EU-Das Syndikat
+## Author: Chaoslux, Hix, Thaly, Yunai, Zista
+## FormerAuthor: Louí @EU-Das Syndikat
 ## Notes: User Interface Modification
 ## SavedVariables: LUIDB, LUIGold, LUI_Themes, LUI_Layouts
 ## SavedVariablesPerCharacter: LUICONFIG
