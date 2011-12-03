@@ -67,6 +67,13 @@ LUI.Media = {
 	["btn_gloss"] = [[Interface\AddOns\LUI\media\textures\buttons\Gloss]], -- Button Overlay
 }
 
+LUI.FontFlags = {
+	"NONE",
+	"OUTLINE",
+	"THICKOUTLINE",
+	"MONOCHROME",
+}
+
 local screen_height = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "%d+x(%d+)")
 local screen_width = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "(%d+)x%d+")
 local _, class = UnitClass("player")

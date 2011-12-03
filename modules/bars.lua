@@ -148,6 +148,38 @@ local Page = {
 	},
 }
 
+local toggleDummyBar
+do
+	local function playerRegenDisabled(bar, event)
+		module:UnregisterEvent(event)
+		
+		toggleDummyBar(bar, false)
+		LUI:Print("Dummy "..bar:GetName().." hidden due to combat.")
+	end
+
+	toggleDummyBar = function(bar, show)
+		if show == nil then
+			show = not bar:IsShown()
+		end
+
+		local parent = bar:GetParent()
+
+		if show then
+			parent:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background"})
+			bar.button:Show()
+			bar:Show()
+			bar.outro:Stop()
+			bar.intro:Play()
+
+			module:RegisterEvent("PLAYER_REGEN_DISABLED", playerRegenDisabled, bar)
+		else
+			parent:SetBackdrop({})
+			bar.intro:Stop()
+			bar:Hide()
+		end
+	end
+end
+
 local last = "HIDEGRID"
 local HookGrid = function(self, event)
 	if event == "ACTIONBAR_SHOWGRID" then
@@ -976,24 +1008,29 @@ function module:SetVehicleExit()
 	LUIVehicleExit[db.VehicleExit.Enable and "Show" or "Hide"](LUIVehicleExit)
 end
 
-function module:SetExtraButton()
-	if not LUIExtraButton then
-		local bar = CreateFrame("Frame", "LUIExtraButton", UIParent, "SecureHandlerStateTemplate")
+function module:SetExtraActionBar()
+	local bar = LUIExtraActionBar
+	if not LUIExtraActionBar then
+		bar = CreateFrame("Frame", "LUIExtraActionBar", UIParent, "SecureHandlerStateTemplate")
 		bar:SetHeight(52)
 		bar:SetWidth(52)
-		bar:Show()
-		
-		ExtraActionBarFrame:SetParent(bar)
-		ExtraActionBarFrame:ClearAllPoints()
-		ExtraActionBarFrame:SetPoint("CENTER", bar, "CENTER", 0, 0)
+		bar.content = ExtraActionBarFrame
+
+		bar.content.ignoreFramePositionManager = true
+
+		bar.content:SetParent(bar)
+		bar.content:ClearAllPoints()
+		bar.content:SetPoint("CENTER", bar, "CENTER", 0, 0)
 	end
+
+	local s = db.ExtraActionBar.Scale
+	bar:ClearAllPoints()
+	bar:SetPoint(db.ExtraActionBar.Point, UIParent, db.ExtraActionBar.Point, db.ExtraActionBar.X / s, db.ExtraActionBar.Y / s)
+	bar:SetScale(s)
+
+	bar.content.button.style[db.ExtraActionBar.HideTextures and "Hide" or "Show"](bar.content.button.style)
 	
-	local s = db.ExtraButton.Scale
-	LUIExtraButton:ClearAllPoints()
-	LUIExtraButton:SetPoint(db.ExtraButton.Point, UIParent, db.ExtraButton.Point, db.ExtraButton.X * s, db.ExtraButton.Y * s)
-	LUIExtraButton:SetScale(s)
-	
-	LUIExtraButton[db.ExtraButton.Enable and "Show" or "Hide"](LUIExtraButton)
+	bar[db.ExtraActionBar.Enable and "Show" or "Hide"](bar)
 end
 
 function module:HideBlizzard()
@@ -1002,10 +1039,15 @@ function module:HideBlizzard()
 	MainMenuBar:SetAlpha(0)
 	MainMenuBar:UnregisterAllEvents()
 
-	SHOW_MULTI_ACTIONBAR_1 = nil
-	SHOW_MULTI_ACTIONBAR_2 = nil
-	SHOW_MULTI_ACTIONBAR_3 = nil
-	SHOW_MULTI_ACTIONBAR_4 = nil
+	self:SecureHookScript(InterfaceOptionsActionBarsPanel, "OnEvent", function(frame, event)
+		if event == "PLAYER_ENTERING_WORLD" then
+			SHOW_MULTI_ACTIONBAR_1 = nil
+			SHOW_MULTI_ACTIONBAR_2 = nil
+			SHOW_MULTI_ACTIONBAR_3 = nil
+			SHOW_MULTI_ACTIONBAR_4 = nil
+			InterfaceOptions_UpdateMultiActionBars()
+		end
+	end)
 	
 	VehicleMenuBar:SetScale(0.00001)
 	VehicleMenuBar:EnableMouse(false)
@@ -1083,11 +1125,11 @@ function module:SetButtons()
 		
 		table.insert(buttonlist, button)
 		button.__Styled = true
-		
-		local name = button:GetName()
-		
-		if button:GetParent() then
-			local parent = button:GetParent():GetName()
+
+		local parent = button:GetParent()
+		if parent then
+			parent = parent:GetName()
+
 			if parent == "MultiCastActionBarFrame" then return end
 			if parent == "MultiCastActionPage1" then return end
 			if parent == "MultiCastActionPage2" then return end
@@ -1424,7 +1466,7 @@ function module:SetBars()
 		self:SetShapeshiftBar()
 		self:SetTotemBar()
 		self:SetVehicleExit()
-		self:SetExtraButton()
+		self:SetExtraActionBar()
 		
 		self:HideBlizzard()
 		
@@ -1809,12 +1851,13 @@ module.defaults = {
 			Point = "CENTER",
 			Scale = 1,
 		},
-		ExtraButton = {
+		ExtraActionBar = {
 			Enable = true,
 			X = 0, -- -314,
-			Y = 350, -- 41,
+			Y = 280, -- 41,
 			Point = "BOTTOM",
 			Scale = 0.85,
+			HideTextures = false,
 		},
 	},
 }
@@ -1862,8 +1905,15 @@ function module:LoadOptions()
 	end
 	local function setPoint(info, value)
 		self:Refresh()
+
+		self:UpdatePositionOptions()
 	end
-	
+	local function setDummyBar()
+		if InCombatLockdown() then return end
+
+		toggleDummyBar(ExtraActionBarFrame)
+	end
+
 	local function createBottomBarOptions(num, order)
 		local disabledFunc = function() return not db["Bottombar"..num].Enable end
 		
@@ -1952,14 +2002,20 @@ function module:LoadOptions()
 		return option
 	end
 	
-	local function createOtherBarOptions(name, order, frame, dbName)
+	local function createOtherBarOptions(name, order, frame, dbName, multiRow)
+		local specialBar = name == "Extra Action Bar"
+
 		local option = self:NewGroup(name, order, false, InCombatLockdown, {
 			header0 = self:NewHeader(name.." Settings", 0),
 			Enable = self:NewToggle("Show "..name, nil, 1, true),
 			[""] = self:NewPosSliders(name, 2, false, frame, true, nil, disabled[name]),
 			Point = self:NewSelect("Point", "Choose the Point for the "..name..".", 3, positions, nil, setPoint, nil, disabled[name]),
 			Scale = self:NewSlider("Scale", "Choose the Scale for the "..name..".", 4, 0.1, 1.5, 0.05, true, true, nil, nil, disabled[name]),
-			NumPerRow = (name ~= "Vehicle Exit Button" and name ~= "Totem Bar" and name ~= "Extra Button") and self:NewSlider("Buttons per Row", "Choose the Number of Buttons per Row.", 5, 1, 10, 1, true, nil, nil, nil, disabled[name]) or nil,
+
+			HideTextures = specialBar and self:NewToggle("Hide Textures", "Whether or not to hide "..name.." textures.", 5, true) or nil,
+			DummyBar = specialBar and self:NewExecute("Show Dummy "..name, "Click to show/hide a dummy "..name..".", 6, setDummyBar, nil, disabled[name]) or nil,
+
+			NumPerRow = multiRow and self:NewSlider("Buttons per Row", "Choose the Number of Buttons per Row.", 5, 1, 10, 1, true, nil, nil, nil, disabled[name]) or nil,
 			Fader = (dbName and self:NewGroup("Fader", 6, true, disabled[name], Fader:CreateFaderOptions(_G[frame], db[dbName].Fader, dbd[dbName].Fader, true))) or nil,
 		})
 		
@@ -2010,11 +2066,11 @@ function module:LoadOptions()
 		SidebarRight2 = createSideBarOptions("Right", 2, 11),
 		SidebarLeft1 = createSideBarOptions("Left", 1, 12),
 		SidebarLeft2 = createSideBarOptions("Left", 2, 13),
-		ShapeshiftBar = not isBarAddOnLoaded and createOtherBarOptions("Shapeshift/Stance Bar", 14, "LUIShapeshiftBar", "ShapeshiftBar") or nil,
-		PetBar = not isBarAddOnLoaded and createOtherBarOptions("Pet Bar", 15, "LUIPetBar", "PetBar") or nil,
+		ShapeshiftBar = not isBarAddOnLoaded and createOtherBarOptions("Shapeshift/Stance Bar", 14, "LUIShapeshiftBar", "ShapeshiftBar", true) or nil,
+		PetBar = not isBarAddOnLoaded and createOtherBarOptions("Pet Bar", 15, "LUIPetBar", "PetBar", true) or nil,
 		TotemBar = not isBarAddOnLoaded and createOtherBarOptions("Totem Bar", 16, "LUITotemBar", "TotemBar") or nil,
 		VehicleExit = not isBarAddOnLoaded and createOtherBarOptions("Vehicle Exit Button", 17, "LUIVehicleExit") or nil,
-		ExtraButton = not isBarAddOnLoaded and createOtherBarOptions("Extra Button", 18, "LUIExtraButton") or nil,
+		ExtraActionBar = not isBarAddOnLoaded and createOtherBarOptions("Extra Action Bar", 18, "LUIExtraActionBar") or nil,
 	}
 	
 	return options
@@ -2044,6 +2100,7 @@ function module:Refresh(...)
 		self:SetShapeshiftBar()
 		self:SetTotemBar()
 		self:SetVehicleExit()
+		self:SetExtraActionBar()
 	end
 	
 	LUIBarsTopBG:SetAlpha(db.TopTexture.Alpha)

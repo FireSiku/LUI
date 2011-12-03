@@ -127,9 +127,13 @@ do
 				["Throne of the Tides"] = 767,
 				["The Stonecore"] = 768,
 				["The Vortex Pinnacle"] = 769,
-				-- 4.1.0
+				-- 4.1
 				["Zul'Aman"] = 781,
 				["Zul'Gurub"] = 793,
+				-- 4.3
+				["Well of Eternity"] = 813,
+				["Hour of Twilight"] = 819,
+				["End Time"] = 820,
 			},
 		},
 		raids = {
@@ -180,6 +184,8 @@ do
 				["Throne of the Four Winds"] = 773,
 				-- 4.2
 				["Firelands"] = 800,
+				-- 4.3
+				["Dragon Soul"] = 824,
 			},
 		},
 		bgs = {

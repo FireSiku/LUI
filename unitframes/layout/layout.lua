@@ -781,7 +781,6 @@ local PostCreateAura = function(element, button)
 	button.remaining = SetFontString(button, Media:Fetch("font", module.db.Settings.AuratimerFont), module.db.Settings.AuratimerSize, module.db.Settings.AuratimerFlag)
 	button.remaining:SetPoint("TOPLEFT", 1, -1)
 
-	button.cd.noLUITimer = true
 	button.cd.noCooldownCount = true
 
 	button.overlay:Hide()
