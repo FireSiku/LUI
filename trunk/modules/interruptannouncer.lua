@@ -71,7 +71,7 @@ function module:PARTY_MEMBERS_CHANGED()
 		end
 	else
 		if not db.General.EnableParty then
-			module:Deactivate()
+			return module:Deactivate()
 		end
 		
 		self.channel = db.General.AnnounceParty
