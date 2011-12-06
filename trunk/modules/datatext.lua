@@ -1478,7 +1478,7 @@ function module:SetGF()
 		-- Localized functions
 		local RAID_CLASS_COLORS = CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS
 		
-		local BNGetFriendInfo, BNGetToonInfo, BNGetNumFriends, BNFeaturesEnabled = BNGetFriendInfo, BNGetToonInfo, BNGetNumFriends, BNFeaturesEnabled
+		local BNGetFriendInfo, BNGetToonInfo, BNGetNumFriends, BNFeaturesEnabled, BNConnected = BNGetFriendInfo, BNGetToonInfo, BNGetNumFriends, BNFeaturesEnabled, BNConnected
 		local GetNumRaidMembers, GetNumPartyMembers, UnitInRaid, UnitInParty, InviteUnit = GetNumRaidMembers, GetNumPartyMembers, UnitInRaid, UnitInParty, InviteUnit
 		local CanEditMOTD, GetGuildRosterMOTD, CanEditPublicNote, CanEditOfficerNote = CanEditMOTD, GetGuildRosterMOTD, CanEditPublicNote, CanEditOfficerNote
 		local GetQuestDifficultyColor, RemoveFriend, SetGuildRosterSelection, SetItemRef = GetQuestDifficultyColor, RemoveFriend, SetGuildRosterSelection, SetItemRef
@@ -1944,7 +1944,7 @@ function module:SetGF()
 			motd = buttons[0] -- fix for errors caused by motd being nil
 			motd:SetScript("OnClick",nil)
 			local guildMOTD = self.IsGuild and GetGuildRosterMOTD()
-			if self.IsGuild and (nbTotalEntries>0 and guildMOTD or nbTotalEntries==0) or not self.IsGuild and (BNFeaturesEnabled() and totalRF>0 or nbTotalEntries==0) then
+			if self.IsGuild and (nbTotalEntries>0 and guildMOTD or nbTotalEntries==0) or not self.IsGuild and (BNFeaturesEnabled() and totalRF>0 or nbTotalEntries==0 or not BNConnected()) then -- TODO look for better way to phrase this
 				motd.name:SetJustifyH("LEFT")
 				motd.name:SetTextColor(unpack(GF_Colors.Title))
 				local r, g, b = unpack(GF_Colors.MotD)
