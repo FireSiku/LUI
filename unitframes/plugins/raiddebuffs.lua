@@ -221,6 +221,60 @@ local debuff_data = {
 	[98981] = 5, -- Lava Bolt
 	[100249] = 5, -- Combustion
 	[99613] = 6, -- Molten Blast
+
+--en_zone, debuffID, order, icon_priority, color_priority, timer, stackable, color, default_disable, noicon
+
+--Trash
+
+--Morchok
+	[103687] = 4, --Crush Armor
+	[103821] = 3, --Earthen Vortex
+	[103785] = 6, --Black Blood of the Earth
+	[103534] = 5, --Danger (Red)
+	[103536] = 5, --Warning (Yellow)
+	[103541] = 5, --Safe (Blue)
+
+--Warlord Zon'ozz
+	[104378] = 3, --Black Blood of Go'rath
+	[103434] = 5, --Disrupting Shadows (dispellable)
+
+--Yor'sahj the Unsleeping
+	[104849] = 5, --Void Bolt
+	[105171] = 4, --Deep Corruption
+
+--Hagara the Stormbinder
+	[105316] = 4, --Ice Lance
+	[105465] = 6, --Lightning Storm
+	[105369] = 5, --Lightning Conduit
+	[105289] = 3, --Shattered Ice (dispellable)
+	[105285] = 6, --Target (next Ice Lance)
+	[104451] = 5, --Ice Tomb
+	[110317] = 6, --Watery Entrenchment
+
+--Ultraxion
+	[105925] = 6, --Fading Light
+	[106108] = 5, --Heroic Will
+	[105984] = 3, --Timeloop
+	[105927] = 4, --Faded Into Twilight
+
+--Warmaster Blackhorn
+	[108043] = 4, --Sunder Armor
+	[107558] = 3, --Degeneration
+	[107567] = 3, --Brutal Strike
+	[108046] = 5, --Shockwave
+
+--Spine of Deathwing
+	[105563] = 3, --Grasping Tendrils
+	[105479] = 6, --Searing Plasma
+	[105490] = 5, --Fiery Grip
+
+--Madness of Deathwing
+	[105445] = 3, --Blistering Heat
+	[105841] = 4, --Degenerative Bite
+	[106385] = 5, --Crush
+	[106730] = 5, --Tetanus
+	[106444] = 5, --Impale
+	[106794] = 6, --Shrapnel (target)
 }
 
 ORD:RegisterDebuffs(debuff_data)
