@@ -915,7 +915,7 @@ function module:SetMicroMenu()
 				ShowUIPanel(FriendsFrame)
 			end
 		else
-			if GuildFrame:IsShown() then
+			if GuildFrame:IsShown() or LookingForGuildFrame:IsShown() then
 				if IsInGuild() then HideUIPanel(GuildFrame) else HideUIPanel(LookingForGuildFrame) end
 			else
 				if IsInGuild() then ShowUIPanel(GuildFrame) else ShowUIPanel(LookingForGuildFrame) end
