@@ -934,6 +934,7 @@ function module:SetMicroMenu()
 	end)
 	
 	if not GuildFrame then LoadAddOn("Blizzard_GuildUI") end
+	if not LookingForGuildFrame then LoadAddOn("Blizzard_LookingForGuildUI") end
 	
 	GuildFrame:HookScript("OnShow", function(self)
 		MicroMenuButton_Guild_Clicker:SetAlpha(1)
