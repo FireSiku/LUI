@@ -2654,7 +2654,6 @@ module.funcs = {
 							tick.ticktime = 0
 							tick.delay = 0
 						end
-						self.numticks = nil
 					end
 					
 					castbar.PostChannelStart = PostChannelStart
