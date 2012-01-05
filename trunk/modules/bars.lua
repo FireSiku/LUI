@@ -987,7 +987,7 @@ function module:SetVehicleExit()
 		bar:SetHeight(60)
 		bar:SetWidth(60)
 		
-		RegisterStateDriver(bar, "visibility", "[vehicleui] show; hide")
+		RegisterStateDriver(bar, "visibility", "[vehicleui] [bonusbar:5] [target=vehicle, exists] show; hide")
 		
 		local veb = CreateFrame("Button", nil, bar, "SecureActionButtonTemplate")
 		veb:SetAllPoints(bar)
