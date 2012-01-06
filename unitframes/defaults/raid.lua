@@ -155,8 +155,8 @@ module.defaults.profile.Raid = {
 		Role = {
 			Enable = false,
 			Size = 14,
-			X = 4,
-			Y = 4,
+			X = 2,
+			Y = 2,
 			Point = "TOPRIGHT",
 		},
 		Raid = {
