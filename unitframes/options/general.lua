@@ -503,6 +503,7 @@ function module:CreateRaidNameTextOptions(order)
 		IndividualColor = self:NewColorNoAlpha("", "Name Text", 8, applySettings, nil, disabledColorFunc),
 		empty3 = self:NewDesc(" ", 9),
 		ShowDead = self:NewToggle("Show Dead/AFK/Disconnected", "Whether you want to switch the Name to Dead/AFK/Disconnected or not.", 10, applySettings, nil, disabledFunc),
+		OnlyWhenFull = self:NewToggle("Only When Full", "This will only show the name text when the unit's health is at full.", 11, applySettings, nil, disabledFunc),
 	})
 	
 	return options
@@ -1044,6 +1045,8 @@ function module:CreateUnitOptions(unit, order)
 				empty4 = (unit == "Arena" or unit == "Boss" or unit == "Maintank" or unit == "Party") and self:NewDesc(" ", 19) or nil,
 				Toggle = (unit == "Arena" or unit == "Boss" or unit == "Maintank") and self:NewExecute("Show/Hide", "Toggles the "..unit.." Frames", 20, testFunc, nil, nil, disabledFunc) or nil,
 				RangeFade = (unit == "Party") and self:NewToggle("Fade Out of Range", "Whether you want Party Frames to fade if that player is more than 40 yards away or not.", 21, false, nil, function() return not (self.db.Party.Enable and not self.db.Party.Fader.Enable) end) or nil,
+				empty5 = self:NewHeader("Reset to Defaults", 22),
+				ResetToDefaults = self:NewExecute("Reset to Defaults", "Reset this unitframe's settings to the defaults.\n\nRequires a UI reload.", 23, function() self.db[unit] = {} ReloadUI() end, true),
 			}),
 			Backdrop = self:NewGroup("Background", 2, nil, disabledFunc, {
 				Color = self:NewColor("Background", nil, 1, false),

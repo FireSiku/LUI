@@ -465,6 +465,12 @@ local OverrideHealth = function(self, event, unit, powerType)
 	else
 		local healthPercent = 100 * (min / max)
 
+		-- Check if name should only be displayed when health is full.
+		if self.Info.OnlyWhenFull and min ~= max then
+			-- Just set to nil, as name tags are updated when ever anything happens? Inefficient but works for us here.
+			self.Info:SetText()
+		end
+
 		if health.value.Enable == true then
 			if min >= 1 then
 				if health.value.ShowAlways == false and min == max then
