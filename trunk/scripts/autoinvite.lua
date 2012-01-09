@@ -23,9 +23,9 @@ local function isBNFriend(name)
 	if not BNFeaturesEnabledAndConnected() then return end
 
 	for i = 1, BNGetNumFriends() do
-		local pID, _, _, _, _, client, isOnline = BNGetFriendInfo(i)
+		local pID, _,_,_,_, client, isOnline = BNGetFriendInfo(i)
 		if isOnline and client == "WoW" then
-			local _, tName, = BNGetToonInfo(pID)
+			local _, tName = BNGetToonInfo(pID)
 			if tName == name then return true end
 		end
 	end
