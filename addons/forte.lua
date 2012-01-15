@@ -25,6 +25,7 @@ LUI.Versions.forte = "v1.975"; -- major version - DON'T change this for just eve
 
 local LR = {"LEFT","RIGHT"};
 local TB = {"TOP","BOTTOM"};
+local TTR = {"TOP","TOPRIGHT"};
 
 local global_settings = {
 	GlobalFrameNames = true,
@@ -191,70 +192,6 @@ local function CreateCooldowntimerAnimation()
 				end
 			end)
 		end
-		--[[
-		
-		-- copy of code that was located in the bars module:
-		local timerout,timerin = 0,0
-		local anim_time_out, anim_time_in = 0.25, 0.5
-			
-		local bb_SlideIn = CreateFrame("Frame", nil, UIParent)
-		bb_SlideIn:Hide()
-			
-		bb_SlideIn:SetScript("OnUpdate", function(self,elapsed)
-			timerin = timerin + elapsed
-			local point, parent, rpoint = BarsBackground:GetPoint()
-			local x = tonumber(Bars.db.TopTexture.X)
-			local y = tonumber(Bars.db.TopTexture.Y)
-			local pixelpersec = tonumber(Bars.db.TopTexture.AnimationHeight) * 2
-			if timerin < anim_time_in then
-				local y2 = y - timerin * pixelpersec + pixelpersec * anim_time_in
-				BarsBackground:SetPoint(point, parent, rpoint, x, y2)
-			else
-				BarsBackground:SetPoint(point, parent, rpoint, x, bb_y)
-				timerin = 0
-				self:Hide()
-			end
-		end)
-
-		local bb_SlideOut = CreateFrame("Frame", nil, UIParent)
-		bb_SlideOut:Hide()
-		
-		bb_SlideOut:SetScript("OnUpdate", function(self,elapsed)
-			timerout = timerout + elapsed
-			local bb_x = tonumber(Bars.db.TopTexture.X)
-			local bb_y = tonumber(Bars.db.TopTexture.Y)
-			local bb_ppx_out = tonumber(Bars.db.TopTexture.AnimationHeight) * 3
-			local bb_yout = tonumber(Bars.db.TopTexture.Y) + tonumber(Bars.db.TopTexture.AnimationHeight)
-			if timerout < anim_time_out then
-				local y2 = bb_y + timerout * bb_ppx_out
-				BarsBackground:ClearAllPoints()
-				BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, y2)
-			else
-				BarsBackground:ClearAllPoints()
-				BarsBackground:SetPoint("BOTTOM", UIParent, "BOTTOM", bb_x, bb_yout)
-				timerout = 0
-				self:Hide()
-			end
-		end)
-		local bb_Forte = CreateFrame("Frame", nil, UIParent)
-		bb_Forte:Show()
-		
-		local isOut = false
-		bb_Forte:SetScript("OnUpdate", function(self)
-			if db.Cooldown.Lock and _G.FX_Cooldown1 then
-				if _G.FX_Cooldown1:IsShown() and not isOut then
-					if Bars.db.TopTexture.Animation then
-						bb_SlideOut:Show()
-						isOut = true
-					end
-				elseif not _G.FX_Cooldown1:IsShown() and isOut then
-					if Bars.db.TopTexture.Animation then
-						bb_SlideIn:Show()
-						isOut = false
-					end
-				end
-			end
-		end)]]
 	end
 end
 
@@ -393,7 +330,9 @@ function module:SetFrameProps(instance,name)
 			return; -- don't update anything if anchor frame is missing...
 		end
 		width = f:GetWidth()*f:GetScale();
-		if properties.anchor[2] == "TOPRIGHT" then -- add target timer to the right of the frame
+		
+		--if properties.anchor[2] == "TOPRIGHT" then -- OLD but may be useful - add target timer to the right of the frame
+		if db[name].Location == "TOPRIGHT" then -- add target timer to the right of the frame
 			x = f:GetRight() + width/2 + 4;
 		else
 			x = f:GetLeft() + width/2;
@@ -606,6 +545,7 @@ module.defaults = {
 			PaddingY = 0,
 		},
 		Target = {
+			Location = "TOPRIGHT",
 			Enable = true,
 			Lock = true,
 			PaddingX = 0,
@@ -896,7 +836,7 @@ function module:LoadOptions()
 					},
 				},
 				Player = newSpellTimerOption(2, "This frame can be attached to the Player frame and show important buffs/debuffs on yourself, spells without a target and some important cooldowns."),
-				Target = newSpellTimerOption(3, "This frame can be attached to the target frame and show important buffs/debuffs on your target."),
+				Target = newSpellTimerOption(3, "This frame can be attached to the target frame and show important buffs/debuffs on your target.",TTR),
 				Focus = newSpellTimerOption(4, "This frame can be attached to the focus frame and show important buffs/debuffs on your focus."),
 				Compact = newSpellTimerOption(5, "Will show a compact timer frame with important spells on multiple units.",LR),
 			},
