@@ -133,9 +133,9 @@ module.defaults = {
 		Enable = true,
 		General = {
 			Width = 384,
-			Height = 4,
+			Height = 6,
 			X = 0,
-			Y = 12,
+			Y = 8,
 			Point = "BOTTOM",
 			TankHide = true,
 		},
@@ -151,11 +151,11 @@ module.defaults = {
 			},
 		},
 		Text = {
-			Enable = false,
-			X = 0,
+			Enable = true,
+			X = 170,
 			Y = 0,
-			Font = "neuropol",
-			Size = 10,
+			Font = "Prototype",
+			Size = 14,
 			Outline = "NONE",
 			Color = "Individual",
 			IndividualColor = {
