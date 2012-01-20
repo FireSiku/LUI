@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: forte.lua
 	Description: ForteXorcist Module
-	Version....: 1.975-v1.6
+	Version....: 1.975-v1.7
 ]] 
 
 local addonname, LUI = ...
@@ -243,7 +243,7 @@ function LUI:InstallForte()
 	end
 				
 	-- disable Spell Timer instances that LUI won't use on install
-	if LUI.isForteTimerLoaded then
+	if IsAddOnLoaded("Forte_Timer") then
 		for index, instance in ipairs(FW.Settings.Timer.Instances) do
 			if not timer_instances[ FW:InstanceIndexToName(index,FW.Settings.Timer) ] then
 				instance.Enable = false;
@@ -260,7 +260,7 @@ function LUI:InstallForte()
 		end
 	end
 	-- restore defaults
-	if LUI.isForteCooldownLoaded then
+	if IsAddOnLoaded("Forte_Cooldown") then
 		module:Copy(FW.InstanceDefault.Cooldown,module:GetCooldown() ); -- FX
 		module:Copy(cooldown_settings,module:GetCooldown() ); -- global
 		module:Copy(FW.InstanceDefault.Splash,module:GetSplash() ); -- FX
