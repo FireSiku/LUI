@@ -180,6 +180,8 @@ function module:SetBuffs()
 		local size
 		if filter == "HELPFUL" then size = tonumber(db.Auras.Buffs.Size) else size = tonumber(db.Auras.Debuffs.Size) end
 		
+		button.header = button:GetParent()
+		
 		-- texture
 		button.texture = button:CreateTexture(nil, "OVERLAY")
 		button.texture:SetPoint("TOPLEFT")
@@ -250,13 +252,13 @@ function module:SetBuffs()
 		
 		button.lastUpdate = 0
 		
-		local name, _, _, _, _, duration, expirationTime = UnitAura("player", button:GetID(), button.filter)
+		local name, _, _, _, _, duration, expirationTime = UnitAura(button.header:GetAttribute("unit"), button:GetID(), button.filter)
 		if name and duration > 0 then
 			button.remaining = expirationTime - GetTime()
 			button.duration:SetText(SecondsToTimeAbbrev(button.remaining))
 			
 			if GameTooltip:IsOwned(button) then
-				GameTooltip:SetUnitAura("player", button:GetID(), button.filter)
+				GameTooltip:SetUnitAura(button.header:GetAttribute("unit"), button:GetID(), button.filter)
 			end
 		end
 	end
@@ -270,9 +272,9 @@ function module:SetBuffs()
 		button.lastUpdate = 0
 		
 		if GameTooltip:IsOwned(button) then
-			local name = UnitAura("player", button:GetID(), button.filter)
+			local name = UnitAura(button.header:GetAttribute("unit"), button:GetID(), button.filter)
 			if name then
-				GameTooltip:SetUnitAura("player", button:GetID(), button.filter)
+				GameTooltip:SetUnitAura(button.header:GetAttribute("unit"), button:GetID(), button.filter)
 			end
 		end
 	end
@@ -280,7 +282,7 @@ function module:SetBuffs()
 	local function AuraButton_Update(button, filter)
 		if not button.panel then AuraButton_Create(button, filter) end
 		
-		local name, _, icon, count, debuffType, duration, expirationTime = UnitAura("player", button:GetID(), filter)
+		local name, _, icon, count, debuffType, duration, expirationTime = UnitAura(button.header:GetAttribute("unit"), button:GetID(), filter)
 		if name then
 			button.texture:SetTexture(icon)
 			if filter == "HARMFUL" then button.gloss.overlay:SetVertexColor(DebuffTypeColor[debuffType or "none"]) end
@@ -312,6 +314,11 @@ function module:SetBuffs()
 			return
 		end
 		
+		if not button.texture:GetTexture() then
+			local icon = GetInventoryItemTexture(button.header:GetAttribute("unit"), button.slotID)
+			button.texture:SetTexture(icon)
+		end
+		
 		button.lastUpdate = 0
 		
 		local _, MHtime, _, _, OHtime, _, _, RAtime = GetWeaponEnchantInfo()
@@ -326,7 +333,7 @@ function module:SetBuffs()
 		button.duration:SetText(SecondsToTimeAbbrev(button.remaining))
 		
 		if GameTooltip:IsOwned(button) then
-			GameTooltip:SetInventoryItem("player", button.slotID)
+			GameTooltip:SetInventoryItem(button.header:GetAttribute("unit"), button.slotID)
 		end
 	end
 
@@ -335,10 +342,10 @@ function module:SetBuffs()
 		
 		if hasEnchant then
 			button.slotID = GetInventorySlotInfo(slot)
-			local icon = GetInventoryItemTexture("player", button.slotID)
+			local icon = GetInventoryItemTexture(button.header:GetAttribute("unit"), button.slotID)
 			button.texture:SetTexture(icon)
 			
-			local quality = GetInventoryItemQuality("player", button.slotID)
+			local quality = GetInventoryItemQuality(button.header:GetAttribute("unit"), button.slotID)
 			local r, g, b = GetItemQualityColor(quality or 1)
 			button.gloss.overlay:SetVertexColor(r,g,b)
 			
@@ -351,7 +358,7 @@ function module:SetBuffs()
 	end
 
 	local function UpdateAuraAnchors(header, event, unit)
-		if unit ~= "player" and event ~= "PLAYER_ENTERING_WORLD" then return end
+		if unit ~= "player" and unit ~= "vehicle" and event ~= "PLAYER_ENTERING_WORLD" then return end
 		
 		for _, button in header:ActiveButtons() do AuraButton_Update(button, header.filter) end
 		
@@ -401,6 +408,8 @@ function module:SetBuffs()
 		
 		header:RegisterEvent("PLAYER_ENTERING_WORLD")
 		header:HookScript("OnEvent", UpdateAuraAnchors)
+		
+		RegisterAttributeDriver(header, "unit", "[vehicleui] vehicle; player")
 	end
 
 	local function btn_iterator(self, i)
