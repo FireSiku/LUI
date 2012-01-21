@@ -17,7 +17,7 @@ local L = LUI.L
 local db, dbd
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
-LUI.Versions.bars = 2.3
+LUI.Versions.bars = 2.4
 
 local positions = { "TOP", "TOPRIGHT", "TOPLEFT", "BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT", "RIGHT", "LEFT", "CENTER"}
 
@@ -723,7 +723,7 @@ function module:SetBottomBar(id)
 	bar.HideEmpty = bardb.HideEmpty
 	
 	bar:ClearAllPoints()
-	bar:SetPoint(bardb.Point, UIParent, bardb.Point, bardb.X * bardb.Scale, bardb.Y * bardb.Scale)
+	bar:SetPoint(bardb.Point, UIParent, bardb.Point, bardb.X / bardb.Scale, bardb.Y / bardb.Scale)
 	bar:SetScale(bardb.Scale)
 	
 	local numrows = math.ceil(bardb.NumButtons / bardb.NumPerRow)
@@ -849,7 +849,7 @@ function module:SetPetBar()
 	
 	local s = db.PetBar.Scale
 	LUIPetBar:ClearAllPoints()
-	LUIPetBar:SetPoint(db.PetBar.Point, UIParent, db.PetBar.Point, db.PetBar.X * s, db.PetBar.Y * s)
+	LUIPetBar:SetPoint(db.PetBar.Point, UIParent, db.PetBar.Point, db.PetBar.X / s, db.PetBar.Y / s)
 	LUIPetBar:SetScale(s)
 	
 	local numrows = math.ceil(10 / db.PetBar.NumPerRow)
@@ -910,7 +910,7 @@ function module:SetShapeshiftBar()
 	
 	local s = db.ShapeshiftBar.Scale
 	LUIShapeshiftBar:ClearAllPoints()
-	LUIShapeshiftBar:SetPoint(db.ShapeshiftBar.Point, UIParent, db.ShapeshiftBar.Point, db.ShapeshiftBar.X * s, db.ShapeshiftBar.Y * s)
+	LUIShapeshiftBar:SetPoint(db.ShapeshiftBar.Point, UIParent, db.ShapeshiftBar.Point, db.ShapeshiftBar.X / s, db.ShapeshiftBar.Y / s)
 	LUIShapeshiftBar:SetScale(s)
 	
 	local numrows = math.ceil(10 / db.ShapeshiftBar.NumPerRow)
@@ -966,7 +966,7 @@ function module:SetTotemBar()
 	
 	local s = db.TotemBar.Scale
 	LUITotemBar:ClearAllPoints()
-	LUITotemBar:SetPoint(db.TotemBar.Point, UIParent, db.TotemBar.Point, db.TotemBar.X * s, db.TotemBar.Y * s)
+	LUITotemBar:SetPoint(db.TotemBar.Point, UIParent, db.TotemBar.Point, db.TotemBar.X / s, db.TotemBar.Y / s)
 	LUITotemBar:SetScale(s)
 	
 	LUITotemBar:SetWidth(190)
@@ -1002,7 +1002,7 @@ function module:SetVehicleExit()
 	
 	local s = db.VehicleExit.Scale
 	LUIVehicleExit:ClearAllPoints()
-	LUIVehicleExit:SetPoint(db.VehicleExit.Point, UIParent, db.VehicleExit.Point, db.VehicleExit.X * s, db.VehicleExit.Y * s)
+	LUIVehicleExit:SetPoint(db.VehicleExit.Point, UIParent, db.VehicleExit.Point, db.VehicleExit.X / s, db.VehicleExit.Y / s)
 	LUIVehicleExit:SetScale(s)
 	
 	LUIVehicleExit[db.VehicleExit.Enable and "Show" or "Hide"](LUIVehicleExit)
@@ -1576,7 +1576,7 @@ module.defaults = {
 		Bottombar1 = {
 			Enable = true,
 			X = 0,
-			Y = 28.8,
+			Y = 20.8,
 			Point = "BOTTOM",
 			Scale = 0.85,
 			NumPerRow = 12,
@@ -1613,7 +1613,7 @@ module.defaults = {
 		Bottombar2 = {
 			Enable = true,
 			X = 0,
-			Y = 74.7,
+			Y = 54,
 			Point = "BOTTOM",
 			Scale = 0.85,
 			NumPerRow = 12,
@@ -1645,7 +1645,7 @@ module.defaults = {
 		Bottombar3 = {
 			Enable = false,
 			X = 0,
-			Y = 120.6,
+			Y = 87.2,
 			Point = "BOTTOM",
 			Scale = 0.85,
 			NumPerRow = 12,
@@ -1677,7 +1677,7 @@ module.defaults = {
 		Bottombar4 = {
 			Enable = false,
 			X = 0,
-			Y = 166.5,
+			Y = 120.4,
 			Point = "BOTTOM",
 			Scale = 0.85,
 			NumPerRow = 12,
@@ -1709,7 +1709,7 @@ module.defaults = {
 		Bottombar5 = {
 			Enable = false,
 			X = 0,
-			Y = 212.4,
+			Y = 153.6,
 			Point = "BOTTOM",
 			Scale = 0.85,
 			NumPerRow = 12,
@@ -1741,7 +1741,7 @@ module.defaults = {
 		Bottombar6 = {
 			Enable = false,
 			X = 0,
-			Y = 258.3,
+			Y = 186.8,
 			Point = "BOTTOM",
 			Scale = 0.85,
 			NumPerRow = 12,
@@ -1772,8 +1772,8 @@ module.defaults = {
 		},
 		ShapeshiftBar = {
 			Enable = true,
-			X = 58.8,
-			Y = -370.6,
+			X = 42.5,
+			Y = -267.8,
 			Point = "LEFT",
 			Scale = 0.85,
 			NumPerRow = 10,
@@ -1797,8 +1797,8 @@ module.defaults = {
 		},
 		PetBar = {
 			Enable = true,
-			X = -58.8,
-			Y = -370.6,
+			X = -42.5,
+			Y = -267.8,
 			Point = "RIGHT",
 			Scale = 0.85,
 			NumPerRow = 10,
@@ -1822,8 +1822,8 @@ module.defaults = {
 		},
 		TotemBar = {
 			Enable = true,
-			X = 58.8,
-			Y = -370.6,
+			X = 42.5,
+			Y = -267.8,
 			Point = "LEFT",
 			Scale = 0.85,
 			Fader = {
@@ -1846,15 +1846,15 @@ module.defaults = {
 		},
 		VehicleExit = {
 			Enable = true,
-			X = -350,
-			Y = -220,
+			X = -253,
+			Y = -159,
 			Point = "CENTER",
 			Scale = 1,
 		},
 		ExtraActionBar = {
 			Enable = true,
 			X = 0, -- -314,
-			Y = 280, -- 41,
+			Y = 245, -- 41,
 			Point = "BOTTOM",
 			Scale = 0.85,
 			HideTextures = false,
@@ -2162,7 +2162,29 @@ function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self)
 	
 	if LUICONFIG.Versions.bars ~= LUI.Versions.bars then
-		db:ResetProfile()
+		
+		-- recalc X/Y values for fixed scale options
+		if LUI.Versions.bars < 2.4 then
+			for k, v in pairs(module.db.profile) do
+				if type(v) == "table" then
+					if v.Scale then
+						if v.X ~= module.defaults.profile[k].X then
+							v.X = v.X * v.Scale * v.Scale
+						end
+						
+						if v.Y ~= module.defaults.profile[k].Y then
+							v.Y = v.Y * v.Scale * v.Scale
+						end
+					end
+				end
+			end
+			value = value * scale * scale
+		end
+		
+		-- exclude this time!
+		if not (LUI.Versions.bars == 2.4 and LUICONFIG.Versions.bars == 2.3) then
+			db:ResetProfile()
+		end
 		LUICONFIG.Versions.bars = LUI.Versions.bars
 	end
 end
