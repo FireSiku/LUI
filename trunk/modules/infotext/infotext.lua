@@ -137,7 +137,15 @@ function module:StatOnEnable()
 	ldb.OnClick = stat.OnClick
 	ldb.OnEnter = stat.OnEnter
 	ldb.OnLeave = stat.OnLeave
-	ldb.OnTooltipShow = stat.OnTooltipShow
+	ldb.OnTooltipShow = function(tooltip, LUI)
+		if not LUI then
+			-- Add stat header when using third-party LDB display.
+			tooltip:AddLine(ldb.label, 0.4, 0.78, 1)
+			tooltip:AddLine(" ")
+		end
+
+		stat.OnTooltipShow(tooltip)
+	end
 	ldb.tooltip = stat.tooltip
 
 	-- Register OnUpdate script. (Debate: I'm not force running the OnUpdate script; stats should be in an initial state where they can wait until the first update interval. Be it just setting an initial text state [which is done my default].)
@@ -278,7 +286,7 @@ function module:LDBEnterTooltip()
 
 		-- Populate tooltip.
 		module:TooltipHeader(self.dataobject.label or self.name)
-		self.dataobject.OnTooltipShow(GameTooltip)
+		self.dataobject.OnTooltipShow(GameTooltip, true)
 
 		-- Show game tooltip.
 		GameTooltip:Show()
@@ -338,7 +346,7 @@ function module:LibDataBroker_DataObjectCreated(_,_, name, dataobject)
 				Enable = true,
 				InfoPanel = {
 					InfoPanel = "BottomRight",
-					X = #db.LDB * -90,
+					X = -90,
 					Y = 0,
 				},
 			}
