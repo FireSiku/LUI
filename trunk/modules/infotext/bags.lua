@@ -4,7 +4,6 @@
 	Description: Creates the bag infotext stat.
 ]]
 
-if true then return end -- change true to false if working with new infotext module
 
 -- External references.
 local addonname, LUI = ...
@@ -13,18 +12,15 @@ local InfoText = LUI:Module("InfoText")
 -- Register stat.
 local Bags = InfoText:NewStat("Bags")
 
--- Database and defaults shortcuts.
-local db, dbd
-
 function Bags:OnCreate()
 	-- Check if stat is not enabled or is already created.
-	if (not self.db[self.name].Enable) or self.Created then return end
+	if not self.db.profile.Enable then return end
 
 	-- Local shortcuts.
 	local stat = self.stat
 
 	-- Localized functions.
-	local GetContainerNumFreeSlots, GetContainerNumSlots = GetContainerNumFreeSlots, GetContainerNumSlots
+	local format, GetContainerNumFreeSlots, GetContainerNumSlots = string.format, GetContainerNumFreeSlots, GetContainerNumSlots
 	
 	-- Variables.
 	local BagTypes = {
@@ -56,10 +52,7 @@ function Bags:OnCreate()
 		end
 
 		used = total - free
-		self.text:SetFormattedText("Bags: %d/%d", used, total)
-
-		-- Update tooltip if open.
-		self:UpdateTooltip()
+		self:Text(format("Bags: %d/%d", used, total))
 	end
 
 	-- Script functions.
@@ -70,9 +63,8 @@ function Bags:OnCreate()
 
 	stat.OnEnable = stat.BAG_UPDATE
 
-	function stat:OnEnter()
-		-- Check tooltip creation is allowed.
-		if not InfoText:TooltipAvailable() then return end
+	function stat:OnTooltipShow()
+		-- Embeded functionality: self = GameToolTip
 
 		local freeslots, totalslots = {}, {}
 		for i=0, NUM_BAG_SLOTS do
@@ -82,41 +74,24 @@ function Bags:OnCreate()
 			totalslots[bagType] = (totalslots[bagType] ~= nil and totalslots[bagType] + total or total)
 		end
 				
-		GameTooltip:SetOwner(self, getOwnerAnchor(self))
-		GameTooltip:ClearLines()
-		GameTooltip:AddLine("Bags:", 0.4, 0.78, 1)
-		GameTooltip:AddLine(" ")
-				
 		for k, v in pairs(freeslots) do
-			GameTooltip:AddDoubleLine(BagTypes[k]..":", totalslots[k]-v.."/"..totalslots[k], 1, 1, 1, 1, 1, 1)
+			self:AddDoubleLine(BagTypes[k]..":", totalslots[k]-v.."/"..totalslots[k], 1, 1, 1, 1, 1, 1)
 		end
-		GameTooltip:AddLine(" ")
+		self:AddLine(" ")
 				
-		GameTooltip:AddLine("Hint: Click to open Bags.", 0.0, 1.0, 0.0)
-		GameTooltip:Show()
+		self:AddLine("Hint: Click to open Bags.", 0.0, 1.0, 0.0)
+		self:Show()
 	end
-
-	self.Created = true
 end
 
 -- Create defaults.
 Bags.defaults = {
-	Enable = true,
-	X = 200,
-	Y = 0,
-	InfoPanel = "TopLeft",
-	Font = "vibroceb",
-	FontSize = 12,
-	Outline = "NONE",
-	Color = {
-		r = 1,
-		g = 1,
-		b = 1,
-		a = 1,
-	},
+	profile = {
+		Enable = true,
+		InfoPanel = {
+			InfoPanel = "TopLeft",
+			X = 200,
+			Y = 0,
+		},
+	}
 }
-
-function Bags:OnInitialise()
-	-- Create database references.
-	db, dbd = self.db, self.defaults
-end
