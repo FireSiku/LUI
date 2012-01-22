@@ -1846,8 +1846,8 @@ module.defaults = {
 		},
 		VehicleExit = {
 			Enable = true,
-			X = -253,
-			Y = -159,
+			X = -350,
+			Y = -220,
 			Point = "CENTER",
 			Scale = 1,
 		},
@@ -2165,6 +2165,7 @@ function module:OnInitialize()
 		
 		-- recalc X/Y values for fixed scale options
 		if LUI.Versions.bars < 2.4 then
+			print("bla")
 			for k, v in pairs(module.db.profile) do
 				if type(v) == "table" then
 					if v.Scale then
