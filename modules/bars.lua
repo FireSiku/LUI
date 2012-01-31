@@ -1481,7 +1481,7 @@ function module:SetBars()
 	self:CreateBarBackground()
 	
 	if Forte:IsEnabled() and Forte.db.Cooldown.Lock then
-		local FXCD = FX_Cooldown1
+		local FXCD = FW.Frames.FX_Cooldown1
 		if FXCD and FXCD:IsShown() then
 			LUIBarsTopBG:SetPoint("BOTTOM", UIParent, "BOTTOM", db.TopTexture.X, db.TopTexture.Y + db.TopTexture.AnimationHeight)
 		end
@@ -2109,7 +2109,7 @@ function module:Refresh(...)
 	LUIBarsTopBG[db.TopTexture.Enable and "Show" or "Hide"](LUIBarsTopBG)
 	
 	if Forte:IsEnabled() and Forte.db.Cooldown.Lock then
-		local FXCD = FX_Cooldown1
+		local FXCD = FW.Frames.FX_Cooldown1
 		if FXCD and FXCD:IsShown() then
 			LUIBarsTopBG:SetPoint("BOTTOM", UIParent, "BOTTOM", db.TopTexture.X, db.TopTexture.Y + db.TopTexture.AnimationHeight)
 		end
