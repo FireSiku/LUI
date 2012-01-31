@@ -1004,6 +1004,7 @@ function module:CreateUnitOptions(unit, order)
 		elseif info[#info] == "GroupPadding" or info[#info] == "Padding" or info[#info] == "X" or info[#info] == "Y" or info[#info] == "Width" or info[#info] == "Height" or info[#info] == "Left" or info[#info] == "Top" or info[#info] == "Right" or info[#info] == "Left" then
 			local val = ...
 			t[info[#info]] = tonumber(val)
+
 		elseif info[#info] == "Point" or info[#info] == "RelativePoint" then
 			local val = ...
 			t[info[#info]] = positions[val]
@@ -1014,9 +1015,12 @@ function module:CreateUnitOptions(unit, order)
 			local val = ...
 			t[info[#info]] = val
 		end
-		
 		module.ToggleUnit(unit)
 		module.ApplySettings(unit)
+		
+		if unit == "Player" or unit == "Target" or unit == "Focus" then
+			Forte:SetPosForte();
+		end
 	end
 	
 	-- because of special way of get/set funcs, i add the default values manually here
