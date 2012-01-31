@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: forte.lua
 	Description: ForteXorcist Module
-	Version....: 1.975-v1.7
+	Version....: 1.975-v1.8
 ]] 
 
 local addonname, LUI = ...
@@ -28,7 +28,6 @@ local TB = {"TOP","BOTTOM"};
 local TTR = {"TOP","TOPRIGHT"};
 
 local global_settings = {
-	GlobalFrameNames = true,
 	ShardEnable = false,
 	SummonEnable = false,
 	SoulstoneEnable = false,
@@ -172,7 +171,7 @@ local function CreateCooldowntimerAnimation()
 		end
 		
 		local topbar = LUIBarsTopBG
-		local FXCD = _G.FX_Cooldown1
+		local FXCD = FW.Frames.FX_Cooldown1
 		
 		if FXCD and not module:IsHooked(FXCD, "OnShow") then
 			module:HookScript(FXCD, "OnShow", function()
@@ -308,37 +307,45 @@ function module:FXLoaded()
 	return IsAddOnLoaded("Forte_Core") and FW.VERSION and FW.VERSION >= LUI.Versions.forte; -- don't run if FX is too old...
 end
 
+local function SetPosForteAll()
+	module:SetPosForte();
+	module:SetPosForteCooldown();
+	module:SetPosForteSplash();
+end
+
 function module:RegisterForteEvents() -- no self in this func (Forte_Core OnEvent callbacks)
 	if not FW.Settings then
 		FW:RegisterVariablesEvent(module.RegisterForteCallbacks);
 		return;
 	end
-	FW:RegisterToEvent("UI_SCALE_CHANGED",module.SetPosForte);
-	FW:RegisterToEvent("UI_SCALE_CHANGED",module.SetPosForteCooldown);
-	FW:RegisterToEvent("UI_SCALE_CHANGED",module.SetPosForteSplash);
+	FW:RegisterToEvent("UI_SCALE_CHANGED",SetPosForteAll);
+	--[[hooksecurefunc(UF,"CreateUnitOptions.",
+	function(info)
+		
+	end]]
 end
 
 function module:SetFrameProps(instance,name)
 	local properties = timer_instances[name];
 	local uiScale = UIParent:GetEffectiveScale();
 	local x,y;
-	local width = 50;
+	local width;
 	local paddingX,paddingY = tonumber(db[name].PaddingX),tonumber(db[name].PaddingY);
 	if properties.anchor then
 		local f = _G[ properties.anchor[1] ];
 		if not f then
 			return; -- don't update anything if anchor frame is missing...
 		end
-		width = f:GetWidth()*f:GetScale();
+		local scale = f:GetScale();
+		width = f:GetWidth()*scale;
 		
 		--if properties.anchor[2] == "TOPRIGHT" then -- OLD but may be useful - add target timer to the right of the frame
 		if db[name].Location == "TOPRIGHT" then -- add target timer to the right of the frame
-			x = f:GetRight() + width/2 + 4;
+			x = f:GetRight() + f:GetWidth()/2 + 4;
 		else
-			x = f:GetLeft() + width/2;
+			x = f:GetLeft() + f:GetWidth()/2;
 		end
-		y = f:GetBottom() + f:GetHeight()*f:GetScale() + instance.Height/2*instance.scale + 4;
-		
+		y = f:GetTop();
 		if properties.offset and properties.offset[class] then
 			local setting,frame,index = unpack(properties.offset[class]);
 			frame = f[frame]; -- frame = index and f[frame][index] or f[frame];
@@ -351,13 +358,16 @@ function module:SetFrameProps(instance,name)
 				end
 			end
 		end
+		x,y = x*scale,y*scale;
 		
 		x = x + paddingX;
-		y = y + paddingY;
+		y = y + paddingY + instance.Height/2*instance.scale + 4;
 	else -- anchor compact frame to right side
+		width = 50;
+		
 		paddingX = math.abs(paddingX); -- ignore negative values here
 		if db.Compact.Location == "RIGHT" then
-			x = UIParent:GetWidth() - width/2 -paddingX;
+			x = UIParent:GetWidth() - 50/2 -paddingX;
 		else
 			x = width/2 + paddingX;
 		end
