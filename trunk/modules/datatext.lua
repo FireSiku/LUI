@@ -2312,7 +2312,7 @@ function module:SetGuild()
 				local name, rank, rankIndex, level, class, zone, note, offnote, connected, status = GetGuildRosterInfo(i)
 				if connected then
 					local notes = note ~= "" and (offnote == "" and note or ("%s |cffffcc00-|r %s%s"):format(note, offcolor, offnote)) or offnote == "" and "|cffffcc00-" or offcolor..offnote
-					guildEntries[#guildEntries+1] = tooltip:new(tooltip.LocClassNames[class] or "", name or "", level or 0, zone or UNKNOWN, notes, status or "", rankIndex or 0, rank or 0, i)
+					guildEntries[#guildEntries+1] = tooltip:new(tooltip.LocClassNames[class] or "", name or "", level or 0, zone or UNKNOWN, notes, status == 1 and "[AFK]" or "", rankIndex or 0, rank or 0, i)
 				end
 			end
 			self:UpdateText()
