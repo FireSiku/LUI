@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: forte.lua
 	Description: ForteXorcist Module
-	Version....: 1.975-v1.8
+	Version....: 1.975-v1.81
 ]] 
 
 local addonname, LUI = ...
@@ -35,7 +35,6 @@ local global_settings = {
 }
 
 local timer_settings = {
-	lock = true,
 	scale = 1,
 	NormalBgColor = {0.00,0.00,0.00,0.75},
 	StacksFont = {"Interface\\AddOns\\LUI\\media\\fonts\\vibrocen.ttf",11,"OUTLINE"},
@@ -46,7 +45,6 @@ local timer_settings = {
 }
 
 local cooldown_settings = {
-	lock = true,
 	scale = 1,
 	Loga = 0.255,
 	Tags = 5,
@@ -62,8 +60,6 @@ local cooldown_settings = {
 }
 
 local splash_settings = {
-	lock = true,
-	Enable = true,
 	SecondSplashMax = 3,
 	scale = 2,
 }
@@ -209,6 +205,12 @@ local function SetupForte() -- only done on new major version
 	module:SetForte();
 end
 
+local function SetPosForteAll()
+	module:SetPosForte();
+	module:SetPosForteCooldown();
+	module:SetPosForteSplash();
+end
+
 ------------------------------------------------------
 -- / LUI INSTALL FUNCTION / --
 ------------------------------------------------------
@@ -220,13 +222,14 @@ function LUI:InstallForte()
 		FW:RegisterVariablesEvent(LUI.InstallForte);
 		return;
 	end
-	local LUIprofileOld = UnitName("Player");
-	local LUIprofileNew = "LUI: "..LUIprofileOld;
+	local LUIprofileOldest = UnitName("Player");
+	local LUIprofileOld = "LUI: "..LUIprofileOldest;
+	local LUIprofileNew = LUIprofileOld.." - "..GetRealmName();
 	local created_new = false;
 	
 	local index = FW:InstanceNameToIndex(LUIprofileNew,FW.Saved.Profiles);
 	if not index then
-		index = FW:InstanceNameToIndex(LUIprofileOld,FW.Saved.Profiles);
+		index = FW:InstanceNameToIndex(LUIprofileOld,FW.Saved.Profiles) or FW:InstanceNameToIndex(LUIprofileOldest,FW.Saved.Profiles);
 		if index then
 			FW:InstanceRename(index,LUIprofileNew,FW.Saved.Profiles);
 		else
@@ -307,22 +310,12 @@ function module:FXLoaded()
 	return IsAddOnLoaded("Forte_Core") and FW.VERSION and FW.VERSION >= LUI.Versions.forte; -- don't run if FX is too old...
 end
 
-local function SetPosForteAll()
-	module:SetPosForte();
-	module:SetPosForteCooldown();
-	module:SetPosForteSplash();
-end
-
 function module:RegisterForteEvents() -- no self in this func (Forte_Core OnEvent callbacks)
 	if not FW.Settings then
 		FW:RegisterVariablesEvent(module.RegisterForteCallbacks);
 		return;
 	end
 	FW:RegisterToEvent("UI_SCALE_CHANGED",SetPosForteAll);
-	--[[hooksecurefunc(UF,"CreateUnitOptions.",
-	function(info)
-		
-	end]]
 end
 
 function module:SetFrameProps(instance,name)
@@ -376,6 +369,12 @@ function module:SetFrameProps(instance,name)
 	instance.Width = width/instance.scale;
 	instance.x = x*uiScale;
 	instance.y = y*uiScale;
+	if not instance.lock then
+		instance.lock = true;
+		FW:RegisterThrottle(FW.RefreshOptionsNoStyle);
+	end
+	local i = module:GetTimerIndexByName(name);
+	FW.Frames["FX_Timer"..i]:Update();
 end
 
 function module:SetPosForte() -- no self in this func (Forte_Core OnEvent callbacks)
@@ -393,22 +392,23 @@ function module:SetPosForte() -- no self in this func (Forte_Core OnEvent callba
 			end
 		end
 	end
-	
-	FW:RefreshFrames();
 end
 
 function module:SetPosForteCooldown() -- no self in this func (Forte_Core OnEvent callbacks)
 	if not LUI.isForteCooldownLoaded or not db.Cooldown.Lock then return end
 	
-	local uiScale = UIParent:GetEffectiveScale()
-	local x = (UIParent:GetWidth() * uiScale / 2) + tonumber(db.Cooldown.PaddingX)
-	local y = tonumber(db.Cooldown.PaddingY) * uiScale
+	local uiScale = UIParent:GetEffectiveScale();
+	local x = UIParent:GetWidth() / 2 + tonumber(db.Cooldown.PaddingX);
+	local y = tonumber(db.Cooldown.PaddingY);
 	
 	local instance = module:GetCooldown();
-	instance.x = x;
-	instance.y = y;
-
-	FW:RefreshFrames();
+	instance.x = x * uiScale;
+	instance.y = y * uiScale;
+	if not instance.lock then
+		instance.lock = true;
+		FW:RegisterThrottle(FW.RefreshOptionsNoStyle);
+	end
+	FW.Frames["FX_Cooldown1"]:Update();
 end
 
 function module:SetPosForteSplash() -- no self in this func (Forte_Core OnEvent callbacks)
@@ -424,8 +424,11 @@ function module:SetPosForteSplash() -- no self in this func (Forte_Core OnEvent 
 	local instance = module:GetSplash();
 	instance.x = x * uiScale;
 	instance.y = y * uiScale;
-
-	FW:RefreshFrames();
+	if not instance.lock then
+		instance.lock = true;
+		FW:RegisterThrottle(FW.RefreshOptionsNoStyle);
+	end
+	FW.Frames["FX_Splash1"]:Update();
 end
 
 function module:SetColors() -- no self in this func (Forte_Core OnEvent callbacks)
@@ -485,7 +488,7 @@ function module:SetForte() -- no self in this func (Forte_Core OnEvent callbacks
 			local parent = frame.parent.parent
 			local instance = parent.instance
 			if instance then
-				if instance.s.lock == false then return module.hooks[frame].OnClick(frame) end -- lock it
+				--if instance.s.lock == false then return module.hooks[frame].OnClick(frame) end -- lock it
 				
 				local dbcheck = instance.instanceof
 				if dbcheck == "Timer" then
@@ -593,14 +596,22 @@ module.defaults = {
 
 function module:LoadOptions()
 	local moduleName = module:GetName()
-	
-	local function fxModuleDisabled(info)
+	local function getName(info)
+		return info[#info]
+	end
+	local function getIndex(info)
 		for i, v in ipairs(info) do
 			if v == moduleName then
-				local isSpellTimer = info[i+1] == "SpellTimer"
-				return not db[info[i+(isSpellTimer and 2 or 1)]].Enable
+				return i;
 			end
 		end
+	end
+	local function getParentName(info)
+		local i = getIndex(info);
+		return info[i+(info[i+1] == "SpellTimer" and 2 or 1)]
+	end	
+	local function fxModuleDisabled(info)
+		return not db[getParentName(info)].Enable
 	end
 	local function lockDisabled(info)
 		return not db[info[#info-2]].Lock
@@ -618,37 +629,18 @@ function module:LoadOptions()
 		end
 		return true
 	end
-	
-	local function getName(info)
-		return info[#info]
-	end
+
 	local function getDefault(info)
-		for i, v in ipairs(info) do
-			if v == moduleName then
-				local isSpellTimer = info[i+1] == "SpellTimer"
-				return dbd[info[i+(isSpellTimer and 2 or 1)]][info[#info]]
-			end
-		end
+		return dbd[getParentName(info)][getName(info)]
 	end
 	local function getValue(info)
-		for i, v in ipairs(info) do
-			if v == moduleName then
-				local isSpellTimer = info[i+1] == "SpellTimer"
-				return db[info[i+(isSpellTimer and 2 or 1)]][info[#info]]
-			end
-		end
+		return db[getParentName(info)][getName(info)]
 	end
 	local function getNumValue(info)
 		return tostring(getValue(info))
 	end
 	local function setValue(info, value)
-		for i, v in ipairs(info) do
-			if v == moduleName then
-				local isSpellTimer = info[i+1] == "SpellTimer"
-				db[info[i+(isSpellTimer and 2 or 1)]][info[#info]] = value
-				break
-			end
-		end
+		db[getParentName(info)][getName(info)] = value
 	end
 	
 	local function setForte(info, value)
@@ -659,16 +651,8 @@ function module:LoadOptions()
 		value = tonumber(value) or value
 		setValue(info, value)
 		if value then
-			for i, v in ipairs(info) do
-				if v == moduleName then
-					if info[i+1] == "SpellTimer" then
-						module:SetPosForte()
-					else
-						module["SetPosForte"..info[i+1]]()
-					end
-					break
-				end
-			end
+			local t = info[getIndex(info)+1];
+			module["SetPosForte"..(t=="SpellTimer" and "" or t)]()
 		end
 	end
 	
@@ -678,12 +662,12 @@ function module:LoadOptions()
 		Splash = "SECONDARY_SPLASH",
 	}
 	local function fxOptionsFunc(info)
-		local goto, unit = info[#info-1]
+		local goto, index = info[#info-1]
 		if info[#info-2] == "SpellTimer" then
-			unit = module:GetTimerIndexByName(goto)
+			index = module:GetTimerIndexByName(goto)
 			goto = info[#info-2]
 		end
-		FW:ScrollTo(FW.L[scrollTable[goto]], nil, unit)
+		FW:ScrollTo(FW.L[scrollTable[goto]], nil, index)
 	end
 	local function newFXOptionsButton(order)
 		order = order or 2
@@ -799,7 +783,6 @@ function module:LoadOptions()
 					name = "All frames",
 					type = "group",
 					order = 1,
-					--guiInline = true,
 					args = {
 						Colors = {
 							name = "Bar Colors",
@@ -807,11 +790,6 @@ function module:LoadOptions()
 							order = 2,
 							guiInline = true,
 							args = {
-								--[[header1 = {
-									name = "Bar Color",
-									type = "header",
-									order = 1,
-								},]]
 								IndividualColor = {
 									name = "Global Color",
 									desc = "Whether you want to use a global Color for all your tracked Buffs/Debuffs or not.\n\nNote: If you want different colors for each of your spells please disable this and type /fx to enter ForteXorcist Options and go to Spelltimer -> Coloring/Filtering",
