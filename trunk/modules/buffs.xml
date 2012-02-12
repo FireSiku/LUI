@@ -62,6 +62,7 @@
 	<Button name='LUIAuraButtonTemplate35' inherits='LUIAuraButtonTemplate' virtual='true'>
 		<Size x='35' y='35'/>
 	</Button>
+	
 	<Button name='LUIAuraButtonTemplate' inherits='SecureActionButtonTemplate' virtual='true'>
 		<Attributes>
 			<Attribute name='type' value='cancelaura'/>
@@ -80,5 +81,69 @@
 			</OnEnter>
 			<OnLeave function='GameTooltip_Hide'/>
 		</Scripts>
+	</Button>
+	
+	<Button name='LUIAuraProxyTemplate15' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='15' y='15'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate16' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='16' y='16'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate17' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='17' y='17'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate18' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='18' y='18'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate19' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='19' y='19'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate20' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='20' y='20'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate21' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='21' y='21'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate22' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='22' y='22'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate23' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='23' y='23'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate24' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='24' y='24'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate25' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='25' y='25'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate26' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='26' y='26'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate27' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='27' y='27'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate28' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='28' y='28'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate29' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='29' y='29'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate30' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='30' y='30'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate31' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='31' y='31'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate32' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='32' y='32'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate33' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='33' y='33'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate34' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='34' y='34'/>
+	</Button>
+	<Button name='LUIAuraProxyTemplate35' inherits='SecureUnitButtonTemplate, SecureHandlerEnterLeaveTemplate' virtual='true'>
+		<Size x='35' y='35'/>
 	</Button>
 </Ui>
