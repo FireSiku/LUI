@@ -2,8 +2,8 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: buffs.lua
 	Description: Buffs Module
-	Version....: 1.3
-	Rev Date...: 10/11/2010
+	Version....: 1.4
+	Rev Date...: 11/02/2012
 	
 	Edits:
 		v1.0: Loui
@@ -11,19 +11,23 @@
 		v1.2: Thaly
 		-  b: Thaly
 		v1.3: Thaly
-]] 
+		v1.4: Thaly
+]]
 
--- External references.
 local addonname, LUI = ...
 local module = LUI:Module("Auras")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
-local db
+local db, dbd
 local positions = {"TOPRIGHT", "TOPLEFT", "BOTTOMRIGHT", "BOTTOMLEFT"}
 local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
 local sortorders = {"NAME", "INDEX", "TIME"}
 local AuraAnchorsOnEnable
+
+local UnitAura = UnitAura
+
+LUI.Versions.auras = 1.4
 
 local function CreatePanel(height, width, x, y, anchorPoint, anchorPointRel, anchor, level, parent, strata)
 	local Panel = CreateFrame("Frame", nil, parent)
@@ -36,11 +40,10 @@ local function CreatePanel(height, width, x, y, anchorPoint, anchorPointRel, anc
 	  bgFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Normal", 
 	  edgeFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Border", 
 	  tile = false, tileSize = 0, edgeSize = 3, 
-	  insets = { left = 2, right = 2, top = 2, bottom = 2 }
+	  insets = {left = 2, right = 2, top = 2, bottom = 2}
 	})
-	--Panel:SetBackdropColor(0.3,0.3,0.3,1)
-	Panel:SetBackdropColor(1,0,0,1)
-	Panel:SetBackdropBorderColor(0,0,0,0)
+	Panel:SetBackdropColor(1, 0, 0, 1)
+	Panel:SetBackdropBorderColor(0, 0, 0, 0)
 	
 	return Panel
 end
@@ -56,26 +59,24 @@ local function CreateGlossPanel(height, width, x, y, anchorPoint, anchorPointRel
 	  bgFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Normal", 
 	  edgeFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Border", 
 	  tile = false, tileSize = 0, edgeSize = 3, 
-	  insets = { left = 2, right = 2, top = 2, bottom = 2 }
+	  insets = {left = 2, right = 2, top = 2, bottom = 2}
 	})
-	Panel:SetBackdropColor(0.3,0.3,0.3,0)
-	Panel:SetBackdropBorderColor(0,0,0,0)
+	Panel:SetBackdropColor(0.3, 0.3, 0.3, 0)
+	Panel:SetBackdropBorderColor(0, 0, 0, 0)
 	
 	if type == "debuff" then
 		local overlay = Panel:CreateTexture(nil, "OVERLAY")
 		overlay:SetTexture("Interface\\AddOns\\LUI\\media\\textures\\buttons\\Border")
 		overlay:SetAllPoints(Panel)
 		overlay:SetAlpha(1)
-		--overlay:SetVertexColor(1,0,0,0.6)
 		overlay:SetVertexColor(debuffcolor.r, debuffcolor.g, debuffcolor.b)
-		--overlay:SetTexCoord(0.1,0.9,0.1,0.9)
 		Panel.overlay = overlay
 	else
 		local overlay = Panel:CreateTexture(nil, "OVERLAY")
 		overlay:SetTexture("Interface\\AddOns\\LUI\\media\\textures\\buttons\\Gloss")
 		overlay:SetAllPoints(Panel)
 		overlay:SetAlpha(1)
-		overlay:SetTexCoord(0.1,0.9,0.1,0.9)
+		overlay:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 		Panel.overlay = overlay
 	end
 
@@ -93,16 +94,16 @@ local function CreateBarPanel(height, width, x, y, anchorPoint, anchorPointRel, 
 	  bgFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Normal", 
 	  edgeFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Border", 
 	  tile = false, tileSize = 0, edgeSize = 3, 
-	  insets = { left = -3, right = -3, top = -3, bottom = -3 }
+	  insets = {left = -3, right = -3, top = -3, bottom = -3}
 	})
-	Panel:SetBackdropColor(0.2,0.2,0.2,0.9)
-	Panel:SetBackdropBorderColor(0.2,0.2,0.2,0.9)
+	Panel:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
+	Panel:SetBackdropBorderColor(0.2, 0.2, 0.2, 0.9)
 
 	local overlay = Panel:CreateTexture(nil, "OVERLAY")
 	overlay:SetTexture("Interface\\AddOns\\LUI\\media\\textures\\buttons\\Gloss")
 	overlay:SetAllPoints(Panel)
 	overlay:SetAlpha(0.7)
-	overlay:SetTexCoord(0.1,0.9,0.1,0.9)
+	overlay:SetTexCoord(0.1, 0.9, 0.1, 0.9)
 	Panel.overlay = overlay
 
 	return Panel
@@ -113,36 +114,55 @@ function module:EnableBlizzardBuffs()
 end
 
 function module:DisableBlizzardBuffs()
-	if db.Auras.DisableBlizzard ~= true then return end
+	if db.General.DisableBlizzard ~= true then return end
 	
 	LUI:Module("Unitframes"):Module("HideBlizzard"):Hide("aura", true)
 end
 
 function module:SetBuffs()
-	if db.Auras.Enable ~= true then return end
+	if db.Enable ~= true then return end
 	
-	local buff_spacing, debuff_spacing, aura_spacing_row
+	if LUIBuffs then
+		LUIBuffs:Show()
+		LUIDebuffs:Show()
+		self:Refresh()
+		return
+	end
 	
-	if db.Auras.Anchor == "TOPLEFT" then
-		buff_spacing = tonumber(db.Auras.Spacing) + tonumber(db.Auras.Buffs.Size)
-		debuff_spacing = tonumber(db.Auras.Spacing) + tonumber(db.Auras.Debuffs.Size)
+	local buff_spacing, debuff_spacing, aura_spacing_row, opposite, consolx, consoly
+	
+	if db.General.Anchor == "TOPLEFT" then
+		buff_spacing = db.General.Spacing + db.Buffs.Size
+		debuff_spacing = db.General.Spacing + db.Debuffs.Size
 		
-		aura_spacing_row = - ( tonumber(db.Auras.Spacing_row) )
-	elseif db.Auras.Anchor == "TOPRIGHT" then
-		buff_spacing = -(  tonumber(db.Auras.Spacing) + tonumber(db.Auras.Buffs.Size) )
-		debuff_spacing = - ( tonumber(db.Auras.Spacing) + tonumber(db.Auras.Debuffs.Size) )
+		aura_spacing_row = - db.General.Spacing_row
+		opposite = "BOTTOMRIGHT"
+		consolx = 6
+		consoly = -6
+	elseif db.General.Anchor == "TOPRIGHT" then
+		buff_spacing = - (db.General.Spacing + db.Buffs.Size)
+		debuff_spacing = - (db.General.Spacing + db.Debuffs.Size)
 		
-		aura_spacing_row = - ( tonumber(db.Auras.Spacing_row) )
-	elseif db.Auras.Anchor == "BOTTOMLEFT" then
-		buff_spacing = tonumber(db.Auras.Spacing) + tonumber(db.Auras.Buffs.Size)
-		debuff_spacing = tonumber(db.Auras.Spacing) + tonumber(db.Auras.Debuffs.Size)
+		aura_spacing_row = - db.General.Spacing_row
+		opposite = "BOTTOMLEFT"
+		consolx = -6
+		consoly = -6
+	elseif db.General.Anchor == "BOTTOMLEFT" then
+		buff_spacing = db.General.Spacing + db.Buffs.Size
+		debuff_spacing = db.General.Spacing + db.Debuffs.Size
 		
-		aura_spacing_row = tonumber(db.Auras.Spacing_row)
+		aura_spacing_row = db.General.Spacing_row
+		opposite = "TOPRIGHT"
+		consolx = 6
+		consoly = 6
 	else
-		buff_spacing = - ( tonumber(db.Auras.Spacing) + tonumber(db.Auras.Buffs.Size) )
-		debuff_spacing = - ( tonumber(db.Auras.Spacing) + tonumber(db.Auras.Debuffs.Size) )
+		buff_spacing = - (db.General.Spacing + db.Buffs.Size)
+		debuff_spacing = - (db.General.Spacing + db.Debuffs.Size)
 		
-		aura_spacing_row = tonumber(db.Auras.Spacing_row)
+		aura_spacing_row = db.General.Spacing_row
+		opposite = "TOPLEFT"
+		consolx = -6
+		consoly = 6
 	end
 	
 	local dummy = function() return end
@@ -154,10 +174,13 @@ function module:SetBuffs()
 	DebuffTypeColor["Disease"]	= { r = 0.60, g = 0.40, b = 0 }
 	DebuffTypeColor["Poison"]	= { r = 0.00, g = 0.60, b = 0 }
 	DebuffTypeColor[""]	= DebuffTypeColor["none"]
-
+	
 	local buffHeader = CreateFrame("Frame", "LUIBuffs", UIParent, "SecureAuraHeaderTemplate")
 	local debuffHeader = CreateFrame("Frame", "LUIDebuffs", UIParent, "SecureAuraHeaderTemplate")
-
+	local consolidateHeader = CreateFrame("Frame", "LUIConsolidate", UIParent, "SecureFrameTemplate")
+	consolidateHeader:SetFrameStrata("DIALOG")
+	local proxy = CreateFrame("Frame", buffHeader:GetName() .. "ProxyButton", buffHeader, "LUIAuraProxyTemplate"..db.Buffs.Size)
+	
 	local SecondsToTimeAbbrev = function(time)
 		local hr, m, s, text
 		if time <= 0 then text = ""
@@ -178,9 +201,12 @@ function module:SetBuffs()
 	
 	local function AuraButton_Create(button, filter)
 		local size
-		if filter == "HELPFUL" then size = tonumber(db.Auras.Buffs.Size) else size = tonumber(db.Auras.Debuffs.Size) end
+		if filter == "HELPFUL" then size = db.Buffs.Size else size = db.Debuffs.Size end
 		
 		button.header = button:GetParent()
+		if button.header == consolidateHeader then
+			button:SetFrameStrata("DIALOG")
+		end
 		
 		-- texture
 		button.texture = button:CreateTexture(nil, "OVERLAY")
@@ -197,9 +223,15 @@ function module:SetBuffs()
 		button.overlay2:SetBlendMode("ADD")
 		button.overlay2:SetTexCoord(.1, .9, .1, .9)
 		
-		button.panel = CreatePanel(size+15, size+15, 0, 0, "CENTER", "CENTER", button, 3, button, "BACKGROUND")
+		-- blocker frame
+		button.block = CreateFrame("Frame", nil, button)
+		button.block:SetAllPoints(button)
+		button.block:EnableMouse(true)
+		button.block:Hide()
+		
+		button.panel = CreatePanel(size + 15, size + 15, 0, 0, "CENTER", "CENTER", button, 3, button, button.header == consolidateHeader and "MEDIUM" or "BACKGROUND")
 		if filter == "HELPFUL" then
-			button.gloss = CreateGlossPanel(size+2, size+2, 0, 0, "CENTER", "CENTER", button, 3, button, "BACKGROUND")
+			button.gloss = CreateGlossPanel(size + 2, size + 2, 0, 0, "CENTER", "CENTER", button, 3, button, button.header == consolidateHeader and "MEDIUM" or "BACKGROUND")
 		else
 			local debuffType = select(5, UnitAura("player", button:GetID(), filter))
 			local color
@@ -208,7 +240,7 @@ function module:SetBuffs()
 			else
 				color = DebuffTypeColor["none"]
 			end
-			button.gloss = CreateGlossPanel(size+2, size+2, 0, 0, "CENTER", "CENTER", button, 3, button, "BACKGROUND", "debuff", color)
+			button.gloss = CreateGlossPanel(size + 2, size + 2, 0, 0, "CENTER", "CENTER", button, 3, button, button.header == consolidateHeader and "MEDIUM" or "BACKGROUND", "debuff", color)
 		end
 		
 		-- subframe for texts
@@ -219,11 +251,11 @@ function module:SetBuffs()
 		-- duration text
 		button.duration = button.vframe:CreateFontString(nil, "OVERLAY")
 		if filter == "HELPFUL" then
-			button.duration:SetFont(Media:Fetch("font", db.Auras.Buffs.Duration.Font), tonumber(db.Auras.Buffs.Duration.Size), db.Auras.Buffs.Duration.Outline)
-			button.duration:SetTextColor(db.Auras.Buffs.Duration.Color.r, db.Auras.Buffs.Duration.Color.g, db.Auras.Buffs.Duration.Color.b ,1)
+			button.duration:SetFont(Media:Fetch("font", db.Buffs.Duration.Font), db.Buffs.Duration.Size, db.Buffs.Duration.Outline)
+			button.duration:SetTextColor(db.Buffs.Duration.Color.r, db.Buffs.Duration.Color.g, db.Buffs.Duration.Color.b ,1)
 		else
-			button.duration:SetFont(Media:Fetch("font", db.Auras.Debuffs.Duration.Font), tonumber(db.Auras.Debuffs.Duration.Size), db.Auras.Debuffs.Duration.Outline)
-			button.duration:SetTextColor(db.Auras.Debuffs.Duration.Color.r, db.Auras.Debuffs.Duration.Color.g, db.Auras.Debuffs.Duration.Color.b ,1)
+			button.duration:SetFont(Media:Fetch("font", db.Debuffs.Duration.Font), db.Debuffs.Duration.Size, db.Debuffs.Duration.Outline)
+			button.duration:SetTextColor(db.Debuffs.Duration.Color.r, db.Debuffs.Duration.Color.g, db.Debuffs.Duration.Color.b ,1)
 		end
 		button.duration:SetDrawLayer("OVERLAY")
 		button.duration:SetPoint("BOTTOM", .5, -16)
@@ -231,11 +263,11 @@ function module:SetBuffs()
 		-- stack count
 		button.count = button.vframe:CreateFontString(nil, "OVERLAY")
 		if filter == "HELPFUL" then
-			button.count:SetFont(Media:Fetch("font", db.Auras.Buffs.Count.Font), tonumber(db.Auras.Buffs.Count.Size), db.Auras.Buffs.Count.Outline)
-			button.count:SetTextColor(db.Auras.Buffs.Count.Color.r, db.Auras.Buffs.Count.Color.g, db.Auras.Buffs.Count.Color.b ,1)
+			button.count:SetFont(Media:Fetch("font", db.Buffs.Count.Font), db.Buffs.Count.Size, db.Buffs.Count.Outline)
+			button.count:SetTextColor(db.Buffs.Count.Color.r, db.Buffs.Count.Color.g, db.Buffs.Count.Color.b ,1)
 		else
-			button.count:SetFont(Media:Fetch("font", db.Auras.Debuffs.Count.Font), tonumber(db.Auras.Debuffs.Count.Size), db.Auras.Debuffs.Count.Outline)
-			button.count:SetTextColor(db.Auras.Debuffs.Count.Color.r, db.Auras.Debuffs.Count.Color.g, db.Auras.Debuffs.Count.Color.b ,1)
+			button.count:SetFont(Media:Fetch("font", db.Debuffs.Count.Font), db.Debuffs.Count.Size, db.Debuffs.Count.Outline)
+			button.count:SetTextColor(db.Debuffs.Count.Color.r, db.Debuffs.Count.Color.g, db.Debuffs.Count.Color.b ,1)
 		end
 		button.count:SetDrawLayer("OVERLAY")
 		button.count:SetPoint("TOPLEFT", -1, -1)
@@ -258,7 +290,11 @@ function module:SetBuffs()
 			button.duration:SetText(SecondsToTimeAbbrev(button.remaining))
 			
 			if GameTooltip:IsOwned(button) then
-				GameTooltip:SetUnitAura(button.header:GetAttribute("unit"), button:GetID(), button.filter)
+				if button:GetAlpha() == 1 then
+					GameTooltip:SetUnitAura(button.header:GetAttribute("unit"), button:GetID(), button.filter)
+				else
+					GameTooltip:Hide()
+				end
 			end
 		end
 	end
@@ -274,7 +310,11 @@ function module:SetBuffs()
 		if GameTooltip:IsOwned(button) then
 			local name = UnitAura(button.header:GetAttribute("unit"), button:GetID(), button.filter)
 			if name then
-				GameTooltip:SetUnitAura(button.header:GetAttribute("unit"), button:GetID(), button.filter)
+				if button:GetAlpha() == 1 then
+					GameTooltip:SetUnitAura(button.header:GetAttribute("unit"), button:GetID(), button.filter)
+				else
+					GameTooltip:Hide()
+				end
 			end
 		end
 	end
@@ -360,9 +400,36 @@ function module:SetBuffs()
 	local function UpdateAuraAnchors(header, event, unit)
 		if unit ~= "player" and unit ~= "vehicle" and event ~= "PLAYER_ENTERING_WORLD" then return end
 		
-		for _, button in header:ActiveButtons() do AuraButton_Update(button, header.filter) end
+		for _, button in header:ActiveButtons() do
+			AuraButton_Update(button, header.filter)
+		end
 		
-		if header.filter == "HELPFUL" then
+		local num, i, count = 0, 0, 0
+		if header == buffHeader then
+			while true do
+				local name, _, _, _, _, _, _, _, _, consolidate = UnitAura("player", i + 1)
+				if not name then break end
+				if not consolidate or not db.General.Consolidate then
+					num = num + 1
+				else
+					count = count + 1
+				end
+				i = i + 1
+			end
+			
+			for i, button in header:ActiveButtons() do
+				button:SetAlpha(i > num and 0 or 1)
+				if button.block then
+				button.block[i > num and "Show" or "Hide"](button.block)
+				else
+					print(button:GetName())
+				end
+			end
+			
+			proxy.count:SetText(count > 1 and count or "")
+		end
+		
+		if header == buffHeader then
 			local MHenchant, MHtime, _, OHenchant, OHtime, _, RAenchant, RAtime = GetWeaponEnchantInfo()
 			local Enchant1 = header:GetAttribute("tempEnchant1")
 			local Enchant2 = header:GetAttribute("tempEnchant2")
@@ -371,12 +438,16 @@ function module:SetBuffs()
 			if Enchant1 then TempEnchantButton_Update(Enchant1, "MainHandSlot", MHenchant, MHtime) end
 			if Enchant2 then TempEnchantButton_Update(Enchant2, "SecondaryHandSlot", OHenchant, OHtime) end
 			if Enchant3 then TempEnchantButton_Update(Enchant3, "RangedSlot", RAenchant, RAtime) end
+			
+			UpdateAuraAnchors(consolidateHeader, event, unit)
 		end
 	end
 	AuraAnchorsOnEnable = UpdateAuraAnchors
 	
-	local function SetHeaderAttributes(header, templatename, aurasize, isBuff)
+	local function SetHeaderAttributes(header, templatename, aurasize, isBuff, isConsolidate)
 		local temp = templatename..aurasize
+		
+		header:SetClampedToScreen(true)
 		
 		header:SetAttribute("unit", "player")
 		header:SetAttribute("filter", isBuff and "HELPFUL" or "HARMFUL")
@@ -385,29 +456,38 @@ function module:SetBuffs()
 		header:SetAttribute("minWidth", aurasize)
 		header:SetAttribute("minHeight", aurasize)
 		
-		header:SetAttribute("point", db.Auras.Anchor)
+		header:SetAttribute("point", db.General.Anchor)
 		header:SetAttribute("xOffset", isBuff and buff_spacing or debuff_spacing)
 		header:SetAttribute("yOffset", 0)
-		header:SetAttribute("wrapAfter", isBuff and tonumber(db.Auras.Num_row) or 16)
+		header:SetAttribute("wrapAfter", isConsolidate and 8 or db.General.Num_row)
 		header:SetAttribute("wrapXOffset", 0)
 		header:SetAttribute("wrapYOffset", aura_spacing_row)
-		header:SetAttribute("maxWraps", isBuff and tonumber(db.Auras.Row_max) or 1)
+		header:SetAttribute("maxWraps", isConsolidate and 3 or isBuff and db.General.Row_max or 1)
 		
-		header:SetAttribute("sortMethod", db.Auras.Sort)
-		header:SetAttribute("sortDirection", db.Auras.SortReverse and "-" or "+")
+		header:SetAttribute("sortMethod", db.General.Sort)
+		header:SetAttribute("sortDirection", db.General.SortReverse and "-" or "+")
 		
 		header.filter = isBuff and "HELPFUL" or "HARMFUL"
 		
 		if isBuff then
-			--header:SetAttribute("includeWeapons", 1)
+			header:SetAttribute("consolidateTo", db.General.Consolidate and 1 or 0)
+			header:SetAttribute("consolidateDuration", -1)
+			header:SetAttribute("consolidateThreshold", -1)
+			header:SetAttribute("consolidateFraction", -1)
+			
+			header:SetAttribute("includeWeapons", 1)
             header:SetAttribute("weaponTemplate", temp)
 			
 			header:RegisterEvent("UNIT_INVENTORY_CHANGED")
 			header:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 		end
 		
-		header:RegisterEvent("PLAYER_ENTERING_WORLD")
-		header:HookScript("OnEvent", UpdateAuraAnchors)
+		if isConsolidate then
+			SecureHandlerSetFrameRef(proxy, "header", consolidateHeader)
+		else
+			header:RegisterEvent("PLAYER_ENTERING_WORLD")
+			header:HookScript("OnEvent", UpdateAuraAnchors)
+		end
 		
 		RegisterAttributeDriver(header, "unit", "[vehicleui] vehicle; player")
 	end
@@ -417,33 +497,107 @@ function module:SetBuffs()
 		local child = self:GetAttribute("child" .. i)
 		if child and child:IsShown() then return i, child, child:GetAttribute("index") end
 	end
+	
 	function buffHeader:ActiveButtons() return btn_iterator, self, 0 end
 	function debuffHeader:ActiveButtons() return btn_iterator, self, 0 end
-
-	SetHeaderAttributes(buffHeader, "LUIAuraButtonTemplate", tonumber(db.Auras.Buffs.Size), true)
-	SetHeaderAttributes(debuffHeader, "LUIAuraButtonTemplate", tonumber(db.Auras.Debuffs.Size), false)
-
-	buffHeader:SetPoint(db.Auras.Anchor, UIParent, db.Auras.Anchor, tonumber(db.Auras.Buffs.X), tonumber(db.Auras.Buffs.Y))
-	debuffHeader:SetPoint(db.Auras.Anchor, UIParent, db.Auras.Anchor, tonumber(db.Auras.Debuffs.X), tonumber(db.Auras.Debuffs.Y))
+	function consolidateHeader:ActiveButtons() return btn_iterator, self, 0 end
+	
+	proxy.header = proxy:GetParent()
+	
+	proxy.texture = proxy:CreateTexture(nil, "OVERLAY")
+	proxy.texture:SetPoint("TOPLEFT")
+	proxy.texture:SetPoint("BOTTOMRIGHT")
+	proxy.texture:SetDrawLayer("OVERLAY")
+	proxy.texture:SetTexture("Interface\\Buttons\\BuffConsolidation")
+	proxy.texture:SetTexCoord(19/128, 45/128, 19/64, 45/64)
+	--proxy.texture:SetTexture("Interface\\Icons\\Pvpcurrency-honor-"..(UnitFactionGroup("player") == "Horde" and [[horde]] or [[alliance]]))
+	--proxy.texture:SetTexCoord(.05, .95, .05, .95)
+	
+	proxy.overlay2 = proxy:CreateTexture(nil, "OVERLAY")
+	proxy.overlay2:SetTexture("Interface\\AddOns\\LUI\\media\\textures\\buttons\\Gloss")
+	proxy.overlay2:SetAllPoints(proxy)
+	proxy.overlay2:SetAlpha(0.4)
+	proxy.overlay2:SetBlendMode("ADD")
+	proxy.overlay2:SetTexCoord(.1, .9, .1, .9)
+	
+	proxy.panel = CreatePanel(db.Buffs.Size + 15, db.Buffs.Size + 15, 0, 0, "CENTER", "CENTER", proxy, 3, proxy, "BACKGROUND")
+	proxy.gloss = CreateGlossPanel(db.Buffs.Size + 2, db.Buffs.Size + 2, 0, 0, "CENTER", "CENTER", proxy, 3, proxy, "BACKGROUND")
+	
+	-- subframe for texts
+	proxy.vframe = CreateFrame("Frame", nil, proxy)
+	proxy.vframe:SetAllPoints(proxy)
+	proxy.vframe:SetFrameLevel(3)
+	
+	-- count
+	proxy.count = proxy.vframe:CreateFontString(nil, "OVERLAY")
+	proxy.count:SetFont(Media:Fetch("font", db.Buffs.Count.Font), db.Buffs.Count.Size, db.Buffs.Count.Outline)
+	proxy.count:SetTextColor(db.Buffs.Count.Color.r, db.Buffs.Count.Color.g, db.Buffs.Count.Color.b ,1)
+	proxy.count:SetDrawLayer("OVERLAY")
+	proxy.count:SetPoint("TOPLEFT", -1, -1)
+	
+	SetHeaderAttributes(buffHeader, "LUIAuraButtonTemplate", db.Buffs.Size, true)
+	SetHeaderAttributes(debuffHeader, "LUIAuraButtonTemplate", db.Debuffs.Size)
+	SetHeaderAttributes(consolidateHeader, "LUIAuraButtonTemplate", db.Buffs.Size, true, true)
+	
+	buffHeader:SetAttribute("consolidateProxy", proxy)
+	buffHeader:SetAttribute("consolidateHeader", consolidateHeader)
+	
+	buffHeader:SetPoint(db.General.Anchor, UIParent, db.General.Anchor, db.Buffs.X, db.Buffs.Y)
+	debuffHeader:SetPoint(db.General.Anchor, UIParent, db.General.Anchor, db.Debuffs.X, db.Debuffs.Y)
+	
+	consolidateHeader:SetParent(proxy)
+	consolidateHeader:ClearAllPoints()
+	consolidateHeader:SetPoint(db.General.Anchor, proxy, opposite, consolx, consoly)
 	
 	buffHeader:Show()
 	debuffHeader:Show()
+	consolidateHeader:Hide()
+	
+	local BG = CreateFrame("Frame", nil, consolidateHeader)
+	BG:SetPoint("TOPLEFT", consolidateHeader, "TOPLEFT", -10, 10)
+	BG:SetPoint("BOTTOMRIGHT", consolidateHeader, "BOTTOMRIGHT", 10, -25)
+	BG:SetFrameStrata("HIGH")
+	BG:SetFrameLevel(BG:GetFrameLevel() - 2)
+	BG:SetBackdrop({ 
+		bgFile = Media:Fetch("background", "Blizzard Tooltip"), 
+		edgeFile = Media:Fetch("border", "Stripped_medium"), 
+		tile = false, edgeSize = 14, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	BG:SetBackdropColor(0.18, 0.18, 0.18, 1)
+	BG:SetBackdropBorderColor(0.3, 0.3, 0.3, 1)
+	
+	local dropdown = CreateFrame("Button", "LUIBuffsProxyOpenButton", proxy, "SecureHandlerClickTemplate")
+	dropdown:SetAllPoints()
+	dropdown:RegisterForClicks("AnyUp")
+	dropdown:SetAttribute("_onclick", [[
+		local header = self:GetParent():GetFrameRef("header")
+		
+		if header:IsShown() then
+			header:Hide()
+		else
+			header:Show()
+		end
+	]])
 end
 
-local defaults = {
-	Auras = {
+module.defaults = {
+	profile = {
 		Enable = true,
-		DisableBlizzard = true,
-		Num_row = "16",
-		Row_max = "2",
-		Spacing_row = "52",
-		Spacing = "12",
-		Anchor = "TOPLEFT",
-		Sort = "TIME",
-		SortReverse = false,
+		General = {
+			Consolidate = true,
+			DisableBlizzard = true,
+			Num_row = 16,
+			Row_max = 2,
+			Spacing_row = 52,
+			Spacing = 12,
+			Anchor = "TOPLEFT",
+			Sort = "TIME",
+			SortReverse = false,
+		},
 		Buffs = {
-			X = "30",
-			Y = "-35",
+			X = 30,
+			Y = -35,
 			Size = 29,
 			Duration = {
 				Font = "vibrocen",
@@ -467,8 +621,8 @@ local defaults = {
 			},
 		},
 		Debuffs = {
-			X = "30",
-			Y = "-160",
+			X = 30,
+			Y = -160,
 			Size = 29,
 			Duration = {
 				Font = "vibrocen",
@@ -491,648 +645,163 @@ local defaults = {
 				},
 			},
 		},
-	},
+	}
 }
 
-local function ReapplyBuffStyle()
-	local num = tonumber(db.Auras.Num_row) * tonumber(db.Auras.Row_max)
+module.optionsName = "Auras"
+module.getter = "generic"
+module.setter = "Refresh"
+
+function module:Refresh(...)
+	local info, value = ...
+	if type(info) == "table" then
+		db(info, value)
+	end
+	
+	if not db.Enable then return end
+	
+	local buff_spacing, debuff_spacing, aura_spacing_row, opposite, consolx, consoly
+	
+	if db.General.Anchor == "TOPLEFT" then
+		buff_spacing = db.General.Spacing + db.Buffs.Size
+		debuff_spacing = db.General.Spacing + db.Debuffs.Size
+		
+		aura_spacing_row = - db.General.Spacing_row
+		opposite = "BOTTOMRIGHT"
+		consolx = 6
+		consoly = -6
+	elseif db.General.Anchor == "TOPRIGHT" then
+		buff_spacing = - (db.General.Spacing + db.Buffs.Size)
+		debuff_spacing = - (db.General.Spacing + db.Debuffs.Size)
+		
+		aura_spacing_row = - db.General.Spacing_row
+		opposite = "BOTTOMLEFT"
+		consolx = -6
+		consoly = -6
+	elseif db.General.Anchor == "BOTTOMLEFT" then
+		buff_spacing = db.General.Spacing + db.Buffs.Size
+		debuff_spacing = db.General.Spacing + db.Debuffs.Size
+		
+		aura_spacing_row = db.General.Spacing_row
+		opposite = "TOPRIGHT"
+		consolx = 6
+		consoly = 6
+	else
+		buff_spacing = - (db.General.Spacing + db.Buffs.Size)
+		debuff_spacing = - (db.General.Spacing + db.Debuffs.Size)
+		
+		aura_spacing_row = db.General.Spacing_row
+		opposite = "TOPLEFT"
+		consolx = -6
+		consoly = 6
+	end
+	
+	LUIBuffs:ClearAllPoints()
+	LUIBuffs:SetPoint(db.General.Anchor, UIParent, db.General.Anchor, db.Buffs.X, db.Buffs.Y)
+	LUIBuffs:SetAttribute("point", db.General.Anchor)
+	LUIBuffs:SetAttribute("xOffset", buff_spacing)
+	LUIBuffs:SetAttribute("wrapYOffset", aura_spacing_row)
+	LUIBuffs:SetAttribute("maxWraps", db.General.Row_max)
+	LUIBuffs:SetAttribute("wrapAfter", db.General.Num_row)
+	LUIBuffs:SetAttribute("sortMethod", db.General.Sort)
+	LUIBuffs:SetAttribute("sortDirection", db.General.SortReverse and "-" or "+")
+	LUIBuffs:SetAttribute("consolidateTo", db.General.Consolidate and 1 or 0)
+	
+	LUIDebuffs:ClearAllPoints()
+	LUIDebuffs:SetPoint(db.General.Anchor, UIParent, db.General.Anchor, db.Debuffs.X, db.Debuffs.Y)
+	LUIDebuffs:SetAttribute("point", db.General.Anchor)
+	LUIDebuffs:SetAttribute("xOffset", debuff_spacing)
+	LUIDebuffs:SetAttribute("wrapYOffset", aura_spacing_row)
+	LUIDebuffs:SetAttribute("wrapAfter", db.General.Num_row)
+	LUIDebuffs:SetAttribute("sortMethod", db.General.Sort)
+	LUIDebuffs:SetAttribute("sortDirection", db.General.SortReverse and "-" or "+")
+	
+	LUIBuffsProxyButton.count:SetFont(Media:Fetch("font", db.Buffs.Count.Font), db.Buffs.Count.Size, db.Buffs.Count.Outline)
+	LUIBuffsProxyButton.count:SetTextColor(db.Buffs.Count.Color.r, db.Buffs.Count.Color.g, db.Buffs.Count.Color.b ,1)
+	
+	local num = db.General.Num_row * db.General.Row_max
 	for i = 1, num do
 		local button = _G["LUIBuffsAuraButton"..i]
-		if button then
-			button.duration:SetFont(Media:Fetch("font", db.Auras.Buffs.Duration.Font), tonumber(db.Auras.Buffs.Duration.Size), db.Auras.Buffs.Duration.Outline)
-			button.duration:SetTextColor(db.Auras.Buffs.Duration.Color.r, db.Auras.Buffs.Duration.Color.g, db.Auras.Buffs.Duration.Color.b ,1)
+		if button and button.duration and button.count then
+			button.duration:SetFont(Media:Fetch("font", db.Buffs.Duration.Font), db.Buffs.Duration.Size, db.Buffs.Duration.Outline)
+			button.duration:SetTextColor(db.Buffs.Duration.Color.r, db.Buffs.Duration.Color.g, db.Buffs.Duration.Color.b ,1)
 			
-			button.count:SetFont(Media:Fetch("font", db.Auras.Buffs.Count.Font), tonumber(db.Auras.Buffs.Count.Size), db.Auras.Buffs.Count.Outline)
-			button.count:SetTextColor(db.Auras.Buffs.Count.Color.r, db.Auras.Buffs.Count.Color.g, db.Auras.Buffs.Count.Color.b ,1)
+			button.count:SetFont(Media:Fetch("font", db.Buffs.Count.Font), db.Buffs.Count.Size, db.Buffs.Count.Outline)
+			button.count:SetTextColor(db.Buffs.Count.Color.r, db.Buffs.Count.Color.g, db.Buffs.Count.Color.b ,1)
 		end
 	end
-end
-
-local function ReapplyDebuffStyle()
-	for i = 1, 16 do
+	
+	for i = 1, db.General.Num_row do
 		local button = _G["LUIDebuffsAuraButton"..i]
-		if button then
-			button.duration:SetFont(Media:Fetch("font", db.Auras.Debuffs.Duration.Font), tonumber(db.Auras.Debuffs.Duration.Size), db.Auras.Debuffs.Duration.Outline)
-			button.duration:SetTextColor(db.Auras.Debuffs.Duration.Color.r, db.Auras.Debuffs.Duration.Color.g, db.Auras.Debuffs.Duration.Color.b ,1)
+		if button and button.duration and button.count then
+			button.duration:SetFont(Media:Fetch("font", db.Debuffs.Duration.Font), db.Debuffs.Duration.Size, db.Debuffs.Duration.Outline)
+			button.duration:SetTextColor(db.Debuffs.Duration.Color.r, db.Debuffs.Duration.Color.g, db.Debuffs.Duration.Color.b ,1)
 			
-			button.count:SetFont(Media:Fetch("font", db.Auras.Debuffs.Count.Font), tonumber(db.Auras.Debuffs.Count.Size), db.Auras.Debuffs.Count.Outline)
-			button.count:SetTextColor(db.Auras.Debuffs.Count.Color.r, db.Auras.Debuffs.Count.Color.g, db.Auras.Debuffs.Count.Color.b ,1)
+			button.count:SetFont(Media:Fetch("font", db.Debuffs.Count.Font), db.Debuffs.Count.Size, db.Debuffs.Count.Outline)
+			button.count:SetTextColor(db.Debuffs.Count.Color.r, db.Debuffs.Count.Color.g, db.Debuffs.Count.Color.b ,1)
 		end
 	end
+	
+	LUIBuffs:Hide()
+	LUIBuffs:Show()
+	AuraAnchorsOnEnable(LUIBuffs)
+	LUIDebuffs:Hide()
+	LUIDebuffs:Show()
+	AuraAnchorsOnEnable(LUIDebuffs)
 end
 
 function module:LoadOptions()
+	local dryCall = function() self:Refresh() end
+	local UIRL = function() StaticPopup_Show("RELOAD_UI") end
+	
+	local function CreateTextOptions(tag, kind, order)
+		local options = self:NewGroup(kind, order, true, {
+			Size = self:NewSlider("Size", "Choose your "..tag.." "..kind.." Fontsize.", 1, 1, 40, 1, true),
+			Font = self:NewSelect("Font", "Choose your "..tag.." "..kind.." Font.", 2, widgetLists.font, "LSM30_Font", true),
+			Outline = self:NewSelect("Font Flag", "Choose your "..tag.." "..kind.." Font Flag.", 3, fontflags, nil, dryCall),
+		})
+		
+		return options
+	end
+	
+	local function CreateSpecificOptions(tag, order)
+		local options = self:NewGroup(tag, order, {
+			header = self:NewHeader(tag.." Options", 1),
+			Size = self:NewSlider("Size", "Choose the Size for your "..tag..".", 2, 15, 35, 1, UIRL),
+			[""] = self:NewPosition(tag, 3, nil, dryCall),
+			Duration = CreateTextOptions(tag, "Duration", 5),
+			Count = CreateTextOptions(tag, "Count", 6),
+		})
+		
+		return options
+	end
+	
 	local options = {
-		Auras = {
-			name = "Auras",
-			type = "group",
-			disabled = function() return not db.Auras.Enable end,
-			childGroups = "tab",
-			args = {
-				Settings = {
-					name = "Settings",
-					type = "group",
-					order = 3,
-					args = {
-						PlayerBuffsEnable = {
-							name = "Enable Player Auras",
-							desc = "Wether you want to show your Buffs/Debuffs or not.",
-							type = "toggle",
-							width = "full",
-							get = function() return db.Auras.Enable end,
-							set = function(self,PlayerBuffsEnable)
-									db.Auras.Enable = not db.Auras.Enable
-									if db.Auras.Enable == true then
-										db.Auras.DisableBlizzard = true
-									end
-									StaticPopup_Show("RELOAD_UI")
-								end,
-							order = 1,
-						},
-						DisableBlizzardBuffs = {
-							name = "Disable Default Auras",
-							desc = "Wether you want to disable the Default Blizzard Buffs or not.\n\nNote: If LUI Buffs is enabled, this option is automatically activated.",
-							type = "toggle",
-							width = "full",
-							disabled = function() return db.Auras.Enable end,
-							get = function() return db.Auras.DisableBlizzard end,
-							set = function()
-									db.Auras.DisableBlizzard = not db.Auras.DisableBlizzard
-									StaticPopup_Show("RELOAD_UI")
-								end,
-							order = 2,
-						},
-						RowMax = {
-							name = "Max Rows",
-							desc = "Maximal Amount of Rows for Buffs.\nDefault: "..LUI.defaults.profile.Auras.Row_max,
-							type = "input",
-							disabled = function() return not db.Auras.Enable end,
-							get = function() return db.Auras.Row_max end,
-							set = function(self,RowMax)
-									if RowMax == nil or RowMax == "" then
-										RowMax = "0"
-									end
-									db.Auras.Row_max = RowMax
-									LUIBuffs:SetAttribute("maxWraps", tonumber(RowMax))
-								end,
-							order = 3,
-						},
-						NumRow = {
-							name = "Amount per Row",
-							desc = "Choose an Amount of Buffs/Debuffs per Row.\nDefault: "..LUI.defaults.profile.Auras.Num_row,
-							type = "input",
-							disabled = function() return not db.Auras.Enable end,
-							get = function() return db.Auras.Num_row end,
-							set = function(self,NumRow)
-									if NumRow == nil or NumRow == "" then
-										NumRow = "0"
-									end
-									db.Auras.Num_row = NumRow
-									LUIBuffs:SetAttribute("wrapAfter", tonumber(NumRow))
-								end,
-							order = 4,
-						},
-						Spacing = {
-							name = "Spacing",
-							desc = "Spacing between your Buffs/Debuffs.\nDefault: "..LUI.defaults.profile.Auras.Spacing,
-							type = "input",
-							disabled = function() return not db.Auras.Enable end,
-							get = function() return db.Auras.Spacing end,
-							set = function(self,Spacing)
-									if Spacing == nil or Spacing == "" then
-										Spacing = "0"
-									end
-									db.Auras.Spacing = Spacing
-									
-									local mult
-									if LUIBuffs:GetAttribute("xOffset") < 0 then
-										mult = -1
-									else
-										mult = 1
-									end
-									LUIBuffs:SetAttribute("xOffset", mult * (tonumber(Spacing) + tonumber(db.Auras.Buffs.Size)))
-									LUIDebuffs:SetAttribute("xOffset", mult * (tonumber(Spacing) + tonumber(db.Auras.Debuffs.Size)))
-								end,
-							order = 5,
-						},
-						SpacingRow = {
-							name = "Spacing between Rows",
-							desc = "Spacing between your Buff Rows.\nDefault: "..LUI.defaults.profile.Auras.Spacing_row,
-							type = "input",
-							disabled = function() return not db.Auras.Enable end,
-							get = function() return db.Auras.Spacing_row end,
-							set = function(self,SpacingRow)
-									if SpacingRow == nil or SpacingRow == "" then
-										SpacingRow = "0"
-									end
-									db.Auras.Spacing_row = SpacingRow
-									
-									local mult
-									if LUIBuffs:GetAttribute("wrapYOffset") < 0 then
-										mult = -1
-									else
-										mult = 1
-									end
-									LUIBuffs:SetAttribute("wrapYOffset", tonumber(SpacingRow))
-								end,
-							order = 6,
-						},
-						Anchor = {
-							name = "Initial Anchor",
-							desc = "Choose the initinal Anchor for your Auras.\nDefault: "..LUI.defaults.profile.Auras.Anchor,
-							type = "select",
-							disabled = function() return not db.Auras.Enable end,
-							values = positions,
-							get = function()
-									for k, v in pairs(positions) do
-										if db.Auras.Anchor == v then
-											return k
-										end
-									end
-								end,
-							set = function(self, Anchor)
-									db.Auras.Anchor = positions[Anchor]
-									
-									local buff_spacing, debuff_spacing, aura_spacing_row
-									
-									if db.Auras.Anchor == "TOPLEFT" then
-										buff_spacing = tonumber(db.Auras.Spacing) + tonumber(db.Auras.Buffs.Size)
-										debuff_spacing = tonumber(db.Auras.Spacing) + tonumber(db.Auras.Debuffs.Size)
-										
-										aura_spacing_row = - ( tonumber(db.Auras.Spacing_row) )
-									elseif db.Auras.Anchor == "TOPRIGHT" then
-										buff_spacing = -(  tonumber(db.Auras.Spacing) + tonumber(db.Auras.Buffs.Size) )
-										debuff_spacing = - ( tonumber(db.Auras.Spacing) + tonumber(db.Auras.Debuffs.Size) )
-										
-										aura_spacing_row = - ( tonumber(db.Auras.Spacing_row) )
-									elseif db.Auras.Anchor == "BOTTOMLEFT" then
-										buff_spacing = tonumber(db.Auras.Spacing) + tonumber(db.Auras.Buffs.Size)
-										debuff_spacing = tonumber(db.Auras.Spacing) + tonumber(db.Auras.Debuffs.Size)
-										
-										aura_spacing_row = tonumber(db.Auras.Spacing_row)
-									else
-										buff_spacing = - ( tonumber(db.Auras.Spacing) + tonumber(db.Auras.Buffs.Size) )
-										debuff_spacing = - ( tonumber(db.Auras.Spacing) + tonumber(db.Auras.Debuffs.Size) )
-										
-										aura_spacing_row = tonumber(db.Auras.Spacing_row)
-									end
-									
-									LUIBuffs:ClearAllPoints()
-									LUIBuffs:SetPoint(db.Auras.Anchor, UIParent, db.Auras.Anchor, tonumber(db.Auras.Buffs.X), tonumber(db.Auras.Buffs.Y))
-									LUIBuffs:SetAttribute("point", db.Auras.Anchor)
-									LUIBuffs:SetAttribute("xOffset", buff_spacing)
-									LUIBuffs:SetAttribute("wrapYOffset", aura_spacing_row)
-									
-									LUIDebuffs:ClearAllPoints()
-									LUIDebuffs:SetPoint(db.Auras.Anchor, UIParent, db.Auras.Anchor, tonumber(db.Auras.Debuffs.X), tonumber(db.Auras.Debuffs.Y))
-									LUIDebuffs:SetAttribute("point", db.Auras.Anchor)
-									LUIDebuffs:SetAttribute("xOffset", debuff_spacing)
-									LUIDebuffs:SetAttribute("wrapYOffset", aura_spacing_row)
-								end,
-							order = 7,
-						},
-						SortOrder = {
-							name = "Sorting Order",
-							desc = "Choose the Sorting order for your Buffs/Debuffs.",
-							type = "select",
-							disabled = function() return not db.Auras.Enable end,
-							values = sortorders,
-							get = function()
-									for k, v in pairs(sortorders) do
-										if db.Auras.Sort == v then
-											return k
-										end
-									end
-								end,
-							set = function(_, SortOrder)
-									db.Auras.Sort = sortorders[SortOrder]
-									LUIBuffs:SetAttribute("sortMethod", db.Auras.Sort)
-									LUIDebuffs:SetAttribute("sortMethod", db.Auras.Sort)
-								end,
-							order = 8,
-						},
-						SortReverse = {
-							name = "Reverse Sorting",
-							desc = "Choose wether you want to reverse the Sorting or not.",
-							type = "toggle",
-							disabled = function() return not db.Auras.Enable end,
-							get = function() return db.Auras.SortReverse end,
-							set = function()
-									db.Auras.SortReverse = not db.Auras.SortReverse
-									LUIBuffs:SetAttribute("sortDirection", db.Auras.SortReverse and "-" or "+")
-									LUIDebuffs:SetAttribute("sortDirection", db.Auras.SortReverse and "-" or "+")
-								end,
-							order = 9,
-						},
-					},
-				},
-				Buffs = {
-					name = "Buffs",
-					type = "group",
-					disabled = function() return not db.Auras.Enable end,
-					order = 4,
-					args = {
-						Size = {
-							name = "Size",
-							desc = "Choose a Size for your Buffs\nDefault: "..LUI.defaults.profile.Auras.Buffs.Size,
-							type = "range",
-							min = 15,
-							max = 35,
-							step = 1,
-							get = function() return db.Auras.Buffs.Size end,
-							set = function(self,Size)
-									db.Auras.Buffs.Size = Size
-									StaticPopup_Show("RELOAD_UI")
-								end,
-							order = 1,
-						},
-						emptyapb = {
-							order = 3,
-							width = "full",
-							type = "description",
-							name = " ",
-						},
-						BuffsX = {
-							name = "X Value",
-							desc = "X Value for your Player Buffs.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Auras.Buffs.X,
-							type = "input",
-							get = function() return db.Auras.Buffs.X end,
-							set = function(self,BuffsX)
-									if BuffsX == nil or BuffsX == "" then
-										BuffsX = "0"
-									end
-									db.Auras.Buffs.X = BuffsX
-									LUIBuffs:ClearAllPoints()
-									LUIBuffs:SetPoint(db.Auras.Anchor, UIParent, db.Auras.Anchor, tonumber(db.Auras.Buffs.X), tonumber(db.Auras.Buffs.Y))
-								end,
-							order = 4,
-						},
-						BuffsY = {
-							name = "Y Value",
-							desc = "Y Value for your Player Buffs.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Auras.Buffs.Y,
-							type = "input",
-							get = function() return db.Auras.Buffs.Y end,
-							set = function(self,BuffsY)
-									if BuffsY == nil or BuffsY == "" then
-										BuffsY = "0"
-									end
-									db.Auras.Buffs.Y = BuffsY
-									LUIBuffs:ClearAllPoints()
-									LUIBuffs:SetPoint(db.Auras.Anchor, UIParent, db.Auras.Anchor, tonumber(db.Auras.Buffs.X), tonumber(db.Auras.Buffs.Y))
-								end,
-							order = 5,
-						},
-						Duration = {
-							name = "Duration",
-							type = "group",
-							guiInline = true,
-							order = 6,
-							args = {
-								FontSize = {
-									name = "Size",
-									desc = "Choose your Auras Duration Fontsize!\n Default: "..LUI.defaults.profile.Auras.Buffs.Duration.Size,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									get = function() return db.Auras.Buffs.Duration.Size end,
-									set = function(_, FontSize)
-											db.Auras.Buffs.Duration.Size = FontSize
-											ReapplyBuffStyle()
-										end,
-									order = 1,
-								},
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for Auras Duration!\n\nDefault: "..LUI.defaults.profile.Auras.Buffs.Duration.Font,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Auras.Buffs.Duration.Font end,
-									set = function(self, Font)
-											db.Auras.Buffs.Duration.Font = Font
-											ReapplyBuffStyle()
-										end,
-									order = 2,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Auras Duration.\nDefault: "..LUI.defaults.profile.Auras.Buffs.Duration.Outline,
-									type = "select",
-									values = fontflags,
-									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Auras.Buffs.Duration.Outline == v then
-													return k
-												end
-											end
-										end,
-									set = function(self, FontFlag)
-											db.Auras.Buffs.Duration.Outline = fontflags[FontFlag]
-											ReapplyBuffStyle()
-										end,
-									order = 3,
-								},
-								Color = {
-									name = "Color",
-									desc = "Choose the Color for your Aura Duration.",
-									type = "color",
-									hasAlpha = false,
-									get = function() return db.Auras.Buffs.Duration.Color.r, db.Auras.Buffs.Duration.Color.g, db.Auras.Buffs.Duration.Color.b end,
-									set = function(_,r,g,b)
-											db.Auras.Buffs.Duration.Color.r = r
-											db.Auras.Buffs.Duration.Color.g = g
-											db.Auras.Buffs.Duration.Color.b = b
-											ReapplyBuffStyle()
-										end,
-									order = 4,
-								},
-							},
-						},
-						Count = {
-							name = "Count",
-							type = "group",
-							guiInline = true,
-							order = 7,
-							args = {
-								FontSize = {
-									name = "Size",
-									desc = "Choose your Auras Count Fontsize!\n Default: "..LUI.defaults.profile.Auras.Buffs.Count.Size,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									get = function() return db.Auras.Buffs.Count.Size end,
-									set = function(_, FontSize)
-											db.Auras.Buffs.Count.Size = FontSize
-											ReapplyBuffStyle()
-										end,
-									order = 1,
-								},
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for your Auras Count!\n\nDefault: "..LUI.defaults.profile.Auras.Buffs.Count.Font,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Auras.Buffs.Count.Font end,
-									set = function(self, Font)
-											db.Auras.Buffs.Count.Font = Font
-											ReapplyBuffStyle()
-										end,
-									order = 2,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Auras Count.\nDefault: "..LUI.defaults.profile.Auras.Buffs.Count.Outline,
-									type = "select",
-									values = fontflags,
-									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Auras.Buffs.Count.Outline == v then
-													return k
-												end
-											end
-										end,
-									set = function(self, FontFlag)
-											db.Auras.Buffs.Count.Outline = fontflags[FontFlag]
-											ReapplyBuffStyle()
-										end,
-									order = 3,
-								},
-								Color = {
-									name = "Color",
-									desc = "Choose the Color for your Aura Count.",
-									type = "color",
-									hasAlpha = false,
-									get = function() return db.Auras.Buffs.Count.Color.r, db.Auras.Buffs.Count.Color.g, db.Auras.Buffs.Count.Color.b end,
-									set = function(_,r,g,b)
-											db.Auras.Buffs.Count.Color.r = r
-											db.Auras.Buffs.Count.Color.g = g
-											db.Auras.Buffs.Count.Color.b = b
-											ReapplyBuffStyle()
-										end,
-									order = 4,
-								},
-							},
-						},
-					},
-				},
-				Debuffs = {
-					name = "Debuffs",
-					type = "group",
-					disabled = function() return not db.Auras.Enable end,
-					order = 5,
-					args = {
-						Size = {
-							name = "Size",
-							desc = "Choose a Size for your Debuffs\nDefault: "..LUI.defaults.profile.Auras.Debuffs.Size,
-							type = "range",
-							min = 15,
-							max = 35,
-							step = 1,
-							get = function() return db.Auras.Debuffs.Size end,
-							set = function(self,Size)
-									db.Auras.Debuffs.Size = Size
-									StaticPopup_Show("RELOAD_UI")
-								end,
-							order = 1,
-						},
-						emptyapb = {
-							order = 3,
-							width = "full",
-							type = "description",
-							name = " ",
-						},
-						DebuffsX = {
-							name = "Debuffs X Value",
-							desc = "X Value for your Player Debuffs.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Auras.Debuffs.X,
-							type = "input",
-							get = function() return db.Auras.Debuffs.X end,
-							set = function(self,DebuffsX)
-									if DebuffsX == nil or DebuffsX == "" then
-										DebuffsX = "0"
-									end
-									db.Auras.Debuffs.X = DebuffsX
-									LUIDebuffs:ClearAllPoints()
-									LUIDebuffs:SetPoint(db.Auras.Anchor, UIParent, db.Auras.Anchor, tonumber(db.Auras.Debuffs.X), tonumber(db.Auras.Debuffs.Y))
-								end,
-							order = 4,
-						},
-						DebuffsY = {
-							name = "Debuffs Y Value",
-							desc = "Y Value for your Player Debuffs.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Auras.Debuffs.Y,
-							type = "input",
-							get = function() return db.Auras.Debuffs.Y end,
-							set = function(self,DebuffsY)
-									if DebuffsY == nil or DebuffsY == "" then
-										DebuffsY = "0"
-									end
-									db.Auras.Debuffs.Y = DebuffsY
-									LUIDebuffs:ClearAllPoints()
-									LUIDebuffs:SetPoint(db.Auras.Anchor, UIParent, db.Auras.Anchor, tonumber(db.Auras.Debuffs.X), tonumber(db.Auras.Debuffs.Y))
-								end,
-							order = 5,
-						},
-						Duration = {
-							name = "Duration",
-							type = "group",
-							guiInline = true,
-							order = 6,
-							args = {
-								FontSize = {
-									name = "Size",
-									desc = "Choose your Auras Duration Fontsize!\n Default: "..LUI.defaults.profile.Auras.Debuffs.Duration.Size,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									get = function() return db.Auras.Debuffs.Duration.Size end,
-									set = function(_, FontSize)
-											db.Auras.Debuffs.Duration.Size = FontSize
-											ReapplyDebuffStyle()
-										end,
-									order = 1,
-								},
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for Auras Duration!\n\nDefault: "..LUI.defaults.profile.Auras.Debuffs.Duration.Font,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Auras.Debuffs.Duration.Font end,
-									set = function(self, Font)
-											db.Auras.Debuffs.Duration.Font = Font
-											ReapplyDebuffStyle()
-										end,
-									order = 2,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Auras Duration.\nDefault: "..LUI.defaults.profile.Auras.Debuffs.Duration.Outline,
-									type = "select",
-									values = fontflags,
-									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Auras.Debuffs.Duration.Outline == v then
-													return k
-												end
-											end
-										end,
-									set = function(self, FontFlag)
-											db.Auras.Debuffs.Duration.Outline = fontflags[FontFlag]
-											ReapplyDebuffStyle()
-										end,
-									order = 3,
-								},
-								Color = {
-									name = "Color",
-									desc = "Choose the Color for your Aura Duration.",
-									type = "color",
-									hasAlpha = false,
-									get = function() return db.Auras.Debuffs.Duration.Color.r, db.Auras.Debuffs.Duration.Color.g, db.Auras.Debuffs.Duration.Color.b end,
-									set = function(_,r,g,b)
-											db.Auras.Debuffs.Duration.Color.r = r
-											db.Auras.Debuffs.Duration.Color.g = g
-											db.Auras.Debuffs.Duration.Color.b = b
-											ReapplyDebuffStyle()
-										end,
-									order = 4,
-								},
-							},
-						},
-						Count = {
-							name = "Count",
-							type = "group",
-							guiInline = true,
-							order = 7,
-							args = {
-								FontSize = {
-									name = "Size",
-									desc = "Choose your Auras Count Fontsize!\n Default: "..LUI.defaults.profile.Auras.Debuffs.Count.Size,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									get = function() return db.Auras.Debuffs.Count.Size end,
-									set = function(_, FontSize)
-											db.Auras.Debuffs.Count.Size = FontSize
-											ReapplyDebuffStyle()
-										end,
-									order = 1,
-								},
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for your Auras Count!\n\nDefault: "..LUI.defaults.profile.Auras.Buffs.Count.Font,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Auras.Debuffs.Count.Font end,
-									set = function(self, Font)
-											db.Auras.Debuffs.Count.Font = Font
-											ReapplyDebuffStyle()
-										end,
-									order = 2,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Auras Count.\nDefault: "..LUI.defaults.profile.Auras.Debuffs.Count.Outline,
-									type = "select",
-									values = fontflags,
-									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Auras.Debuffs.Count.Outline == v then
-													return k
-												end
-											end
-										end,
-									set = function(self, FontFlag)
-											db.Auras.Debuffs.Count.Outline = fontflags[FontFlag]
-											ReapplyDebuffStyle()
-										end,
-									order = 3,
-								},
-								Color = {
-									name = "Color",
-									desc = "Choose the Color for your Aura Count.",
-									type = "color",
-									hasAlpha = false,
-									get = function() return db.Auras.Debuffs.Count.Color.r, db.Auras.Debuffs.Count.Color.g, db.Auras.Debuffs.Count.Color.b end,
-									set = function(_,r,g,b)
-											db.Auras.Debuffs.Count.Color.r = r
-											db.Auras.Debuffs.Count.Color.g = g
-											db.Auras.Debuffs.Count.Color.b = b
-											ReapplyDebuffStyle()
-										end,
-									order = 4,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
+		General = self:NewGroup("General", 1, {
+			header = self:NewHeader("General Options", 1),
+			Row_max = self:NewInputNumber("Max Rows", "Maximal Amount of Rows for Buffs.", 2, dryCall, nil, nil, nil, "%.0f"),
+			Num_row = self:NewInputNumber("Amount per Row", "Choose an Amount of Buffs/Debuffs per Row.", 3, dryCall, nil, nil, nil, "%.0f"),
+			Spacing = self:NewInputNumber("Spacing", "Spacing between your Buffs/Debuffs.", 4, dryCall),
+			Spacing_row = self:NewInputNumber("Spacing between Rows", "Spacing between your Buff Rows.", 5, dryCall),
+			Anchor = self:NewSelect("Initial Anchor", "Choose the initial Anchor for your Auras.", 6, positions, nil, dryCall),
+			Sort = self:NewSelect("Sorting Order", "Choose the Sorting order for your Buffs/Debuffs.", 7, sortorders, nil, dryCall),
+			SortReverse = self:NewToggle("Reverse Sorting", "Choose whether you want to reverse the Sorting or not.", 8, true),
+			Consolidate = self:NewToggle("Consolidate Buffs", "Choose whether you want to consolidate your Buffs or not.", 9, true),
+		}),
+		Buffs = CreateSpecificOptions("Buffs", 2),
+		Debuffs = CreateSpecificOptions("Debuffs", 3),
 	}
-
+	
 	return options
 end
 
 function module:OnInitialize()
-	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
-	LUI:RefreshDefaults()
-	LUI:Refresh()
+	db, dbd = LUI:NewNamespace(self, true)
 	
-	self.db = LUI.db.profile
-	db = self.db
-	
-	local SetAuraAnchors = function()
-		if db.Auras.Enable then
-			AuraAnchorsOnEnable(LUIBuffs, "PLAYER_ENTERING_WORLD")
-			AuraAnchorsOnEnable(LUIDebuffs, "PLAYER_ENTERING_WORLD")
-		end
+	if LUICONFIG.Versions.auras ~= LUI.Versions.auras then
+		db:ResetProfile()
+		LUICONFIG.Versions.auras = LUI.Versions.auras
 	end
-	
-	LUI:RegisterModule(self, nil, SetAuraAnchors)
 end
 
 function module:OnEnable()
@@ -1141,5 +810,7 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
+	if LUIBuffs then LUIBuffs:Hide() end
+	if LUIDebuffs then LUIDebuffs:Hide() end
 	self:EnableBlizzardBuffs()
 end

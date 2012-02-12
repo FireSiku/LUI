@@ -137,13 +137,13 @@ local function CheckResolution()
 		LUI.defaults.profile.Frames.Tps.Y = 882
 		
 		-- Repositon Auras
-		LUI.defaults.profile.Auras.Spacing = "-12"
-		LUI.defaults.profile.Auras.Anchor = "TOPRIGHT"
-		LUI.defaults.profile.Auras.Growth = "LEFT"
-		LUI.defaults.profile.Auras.Buffs.X = "-170"
-		LUI.defaults.profile.Auras.Buffs.Y = "-75"
-		LUI.defaults.profile.Auras.Debuffs.X = "-170"
-		LUI.defaults.profile.Auras.Debuffs.Y = "-185"
+		local auras = LUI:Module("Auras")
+		auras.db.General.Spacing = -12
+		auras.db.General.Anchor = "TOPRIGHT"
+		auras.db.Buffs.X = -170
+		auras.db.Buffs.Y = -75
+		auras.db.Debuffs.X = -170
+		auras.db.Debuffs.Y = -185
 	end
 end
 
