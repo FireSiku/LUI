@@ -204,7 +204,7 @@ function module:SetBuffs()
 		if filter == "HELPFUL" then size = db.Buffs.Size else size = db.Debuffs.Size end
 		
 		button.header = button:GetParent()
-		if button.header == consolidateHeader then
+		if string.find(button:GetName(), "Consolidate") then
 			button:SetFrameStrata("DIALOG")
 		end
 		
