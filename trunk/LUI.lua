@@ -138,7 +138,6 @@ local function CheckResolution()
 		
 		-- Repositon Auras
 		local auras = LUI:Module("Auras")
-		auras.db.General.Spacing = -12
 		auras.db.General.Anchor = "TOPRIGHT"
 		auras.db.Buffs.X = -170
 		auras.db.Buffs.Y = -75
@@ -502,6 +501,7 @@ function LUI:Configure()
 
 		LUICONFIG.Versions.lui = LUI.Versions.lui
 		LUICONFIG.IsConfigured = true
+		CheckResolution()
 		ReloadUI()
 	end)
 end
@@ -1633,7 +1633,7 @@ end
 
 function LUI:OnEnable()
 	db_ = self.db.profile
-	CheckResolution()
+	--CheckResolution()
 	
 	if not LUICONFIG.IsConfigured then
 		self.db.UnregisterAllCallbacks(self)
