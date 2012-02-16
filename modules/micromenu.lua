@@ -51,9 +51,7 @@ function module:SetColors()
 	MicroMenuButton_Settings:SetBackdropColor(r, g, b, 1)
 	MicroMenuButton_GM:SetBackdropColor(r, g, b, 1)
 	MicroMenuButton_LFG:SetBackdropColor(r, g, b, 1)
-	if MicroMenuButton_Journal then
-		MicroMenuButton_Journal:SetBackdropColor(r, g, b, 1)
-	end
+	MicroMenuButton_Journal:SetBackdropColor(r, g, b, 1)
 	MicroMenuButton_PVP:SetBackdropColor(r, g, b, 1)
 	MicroMenuButton_Guild:SetBackdropColor(r, g, b, 1)
 	MicroMenuButton_Quests:SetBackdropColor(r, g, b, 1)
@@ -174,14 +172,8 @@ function module:SetMicroMenu()
 	MicroMenu_ButtonLeft_Clicker:SetBackdropBorderColor(0,0,0,0)
 	MicroMenu_ButtonLeft_Clicker:SetAlpha(1)
 	MicroMenu_ButtonLeft_Clicker:Hide()
-	local s
-	if select(4, GetBuildInfo()) >= 40200 then
-		s = 550
-	else
-		s = 510
-	end
 	
-	local MicroMenuButton = LUI:CreateMeAFrame("FRAME","MicroMenuButton",UIParent,s,512,1,"BACKGROUND",1,"TOPRIGHT",UIParent,"TOPRIGHT",0,-1,1)
+	local MicroMenuButton = LUI:CreateMeAFrame("FRAME","MicroMenuButton",UIParent,550,512,1,"BACKGROUND",1,"TOPRIGHT",UIParent,"TOPRIGHT",0,-1,1)
 	MicroMenuButton:SetBackdrop({bgFile = fdir.."micro_button",
 		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
 		tile = false,
@@ -391,7 +383,7 @@ function module:SetMicroMenu()
 	end)
 	
 
-	local MicroMenuButtonBG = LUI:CreateMeAFrame("FRAME","MicroMenuButtonBG",MicroMenuButton,s,512,1,"BACKGROUND",0,"TOPRIGHT",MicroMenuButton,"TOPRIGHT",0,0,1)
+	local MicroMenuButtonBG = LUI:CreateMeAFrame("FRAME","MicroMenuButtonBG",MicroMenuButton,550,512,1,"BACKGROUND",0,"TOPRIGHT",MicroMenuButton,"TOPRIGHT",0,0,1)
 	MicroMenuButtonBG:SetBackdrop({bgFile = fdir.."micro_button_bg",
 		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
 		tile = false, tileSize = 0, edgeSize = 1,
@@ -665,11 +657,10 @@ function module:SetMicroMenu()
 		MicroMenuButton_LFG_Clicker_State = true
 		GameTooltip:SetOwner(MicroMenuButton_LFG_Clicker, "ANCHOR_NONE ",40,-90)
 		GameTooltip:SetText("Dungeon/Raid Finder")
+		GameTooltip:AddLine("Left-Click: Dungeons/Instances...", 1, 1, 1)
+		GameTooltip:AddLine("Right-Click: Raids...", 1, 1, 1)
 		if UnitLevel("player") < 15 then
 			GameTooltip:AddLine("Available with Level 15", 1, 0, 0)
-		else
-			GameTooltip:AddLine("Left-Click: Toggle Dungeon Finder", 1, 1, 1)
-			GameTooltip:AddLine("Right-click: Toggle Raid Finder", 1, 1, 1)
 		end
 		GameTooltip:Show()
 	end)
@@ -697,95 +688,110 @@ function module:SetMicroMenu()
 	end)
 	
 	LFDParentFrame:HookScript("OnHide", function(self)
-		if MicroMenuButton_LFG_Clicker_State == false then
+		if MicroMenuButton_LFG_Clicker_State == false and not RaidParentFrame:IsShown() then
 			MicroMenuButton_LFG_Clicker:SetAlpha(0)
 		end
 	end)
 	
-	-- patch 4.2 journal button!
-	local nextanchor
-	if select(4, GetBuildInfo()) >= 40200 then
-		local MicroMenuButton_Journal = LUI:CreateMeAFrame("FRAME","MicroMenuButton_Journal",MicroMenuButton_LFG,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_LFG,"LEFT",-33,0,1)
-		MicroMenuButton_Journal:SetBackdrop({bgFile = fdir.."micro_encounter",
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-			tile = false,
-			tileSize = 0,
-			edgeSize = 1,
-			insets = {left = 0, right = 0, top = 0, bottom = 0}
-		})
-		--MicroMenuButton_Journal:SetBackdropColor(0.6,0.9,1,1)
-		MicroMenuButton_Journal:SetBackdropColor(micro_r, micro_g, micro_b,1)
-		MicroMenuButton_Journal:SetBackdropBorderColor(0,0,0,0)
-		MicroMenuButton_Journal:SetAlpha(1)
-		MicroMenuButton_Journal:Show()
-		
-		local MicroMenuButton_Journal_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenuButton_Journal_Clicker",MicroMenuButton_Journal,30,25,1,"BACKGROUND",2,"CENTER",MicroMenuButton_Journal,"CENTER",-2,0,1)
-		MicroMenuButton_Journal_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-			tile = false,
-			tileSize = 0,
-			edgeSize = 1,
-			insets = { left = 0, right = 0, top = 0, bottom = 0}
-		})
-		MicroMenuButton_Journal_Clicker:SetBackdropColor(0,0,0,1)
-		MicroMenuButton_Journal_Clicker:SetBackdropBorderColor(0,0,0,0)
-		MicroMenuButton_Journal_Clicker:SetFrameStrata("BACKGROUND")
-		MicroMenuButton_Journal_Clicker:SetFrameLevel(2)
-		MicroMenuButton_Journal_Clicker:SetAlpha(0)
-		MicroMenuButton_Journal_Clicker:Show()	
-		
-		local MicroMenuButton_Journal_Clicker_State = false
-		
-		MicroMenuButton_Journal_Clicker:SetScript("OnEnter", function(self)
-			MicroMenuButton_Journal_Clicker:SetAlpha(1)
-			MicroMenuButton_Journal_Clicker_State = true
-			GameTooltip:SetOwner(MicroMenuButton_Journal_Clicker, "ANCHOR_NONE ",40,-90)
-			GameTooltip:SetText("Dungeon Journal")
-			GameTooltip:AddLine("Dungeon & Encounter Journal", 1, 1, 1)
-			GameTooltip:Show()
-		end)
+	RaidParentFrame:HookScript("OnShow", function(self)
+		MicroMenuButton_LFG_Clicker:SetAlpha(1)
+	end)
+	
+	RaidParentFrame:HookScript("OnHide", function(self)
+		if MicroMenuButton_LFG_Clicker_State == false and not LFDParentFrame:IsShown() then
+			MicroMenuButton_LFG_Clicker:SetAlpha(0)
+		end
+	end)
+	
+	local MicroMenuButton_Journal = LUI:CreateMeAFrame("FRAME","MicroMenuButton_Journal",MicroMenuButton_LFG,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_LFG,"LEFT",-33,0,1)
+	MicroMenuButton_Journal:SetBackdrop({bgFile = fdir.."micro_encounter",
+		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false,
+		tileSize = 0,
+		edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	--MicroMenuButton_Journal:SetBackdropColor(0.6,0.9,1,1)
+	MicroMenuButton_Journal:SetBackdropColor(micro_r, micro_g, micro_b,1)
+	MicroMenuButton_Journal:SetBackdropBorderColor(0,0,0,0)
+	MicroMenuButton_Journal:SetAlpha(1)
+	MicroMenuButton_Journal:Show()
+	
+	local MicroMenuButton_Journal_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenuButton_Journal_Clicker",MicroMenuButton_Journal,30,25,1,"BACKGROUND",2,"CENTER",MicroMenuButton_Journal,"CENTER",-2,0,1)
+	MicroMenuButton_Journal_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false,
+		tileSize = 0,
+		edgeSize = 1,
+		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	})
+	MicroMenuButton_Journal_Clicker:SetBackdropColor(0,0,0,1)
+	MicroMenuButton_Journal_Clicker:SetBackdropBorderColor(0,0,0,0)
+	MicroMenuButton_Journal_Clicker:SetFrameStrata("BACKGROUND")
+	MicroMenuButton_Journal_Clicker:SetFrameLevel(2)
+	MicroMenuButton_Journal_Clicker:SetAlpha(0)
+	MicroMenuButton_Journal_Clicker:Show()	
+	
+	local MicroMenuButton_Journal_Clicker_State = false
+	
+	MicroMenuButton_Journal_Clicker:SetScript("OnEnter", function(self)
+		MicroMenuButton_Journal_Clicker:SetAlpha(1)
+		MicroMenuButton_Journal_Clicker_State = true
+		GameTooltip:SetOwner(MicroMenuButton_Journal_Clicker, "ANCHOR_NONE ",40,-90)
+		GameTooltip:SetText("Dungeon Journal")
+		GameTooltip:AddLine("Dungeon & Encounter Journal", 1, 1, 1)
+		GameTooltip:Show()
+	end)
 
-		MicroMenuButton_Journal_Clicker:SetScript("OnLeave", function(self)
-			if not EncounterJournal or not EncounterJournal:IsShown() then
-				MicroMenuButton_Journal_Clicker:SetAlpha(0)
-			end
-			MicroMenuButton_Journal_Clicker_State = false
-			GameTooltip:Hide()
-		end)
+	MicroMenuButton_Journal_Clicker:SetScript("OnLeave", function(self)
+		if not EncounterJournal or not EncounterJournal:IsShown() then
+			MicroMenuButton_Journal_Clicker:SetAlpha(0)
+		end
+		MicroMenuButton_Journal_Clicker_State = false
+		GameTooltip:Hide()
+	end)
 		
-		MicroMenuButton_Journal_Clicker:SetScript("OnClick", function(self)
-			if not EncounterJournal then LoadAddOn("Blizzard_EncounterJournal") end
-			
+	MicroMenuButton_Journal_Clicker:SetScript("OnClick", function(self)
+		if EncounterJournal then
 			if EncounterJournal:IsShown() then
 				HideUIPanel(EncounterJournal)
 			else
 				ShowUIPanel(EncounterJournal)
 			end
-		end)
-
-		local function hookEJ(event)
-			if not IsAddOnLoaded("Blizzard_EncounterJournal") then return end
-			self:UnregisterEvent(event)
-
+		else
+			LoadAddOn("Blizzard_EncounterJournal")
+			
 			EncounterJournal:HookScript("OnShow", function(self)
 				MicroMenuButton_Journal_Clicker:SetAlpha(1)
 			end)
-
+				
 			EncounterJournal:HookScript("OnHide", function(self)
 				if MicroMenuButton_Journal_Clicker_State == false then
 					MicroMenuButton_Journal_Clicker:SetAlpha(0)
 				end
 			end)
+			
+			ShowUIPanel(EncounterJournal)
 		end
-
-		self:RegisterEvent("ADDON_LOADED", hookEJ)
+	end)
+	
+	local function hookEJ(event)
+		if event and not IsAddOnLoaded("Blizzard_EncounterJournal") then return end
+		if event then self:UnregisterEvent(event) end
 		
-		nextanchor = MicroMenuButton_Journal
-	else
-		nextanchor = MicroMenuButton_LFG
+		EncounterJournal:HookScript("OnShow", function(self)
+			MicroMenuButton_Journal_Clicker:SetAlpha(1)
+		end)
+		EncounterJournal:HookScript("OnHide", function(self)
+			if MicroMenuButton_Journal_Clicker_State == false then
+				MicroMenuButton_Journal_Clicker:SetAlpha(0)
+			end
+		end)
 	end
 	
-	local MicroMenuButton_PVP = LUI:CreateMeAFrame("FRAME","MicroMenuButton_PVP",nextanchor,64,64,1,"BACKGROUND",3,"LEFT",nextanchor,"LEFT",-33,0,1)
+	self:RegisterEvent("ADDON_LOADED", hookEJ)
+		
+	local MicroMenuButton_PVP = LUI:CreateMeAFrame("FRAME","MicroMenuButton_PVP",MicroMenuButton_Journal,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_Journal,"LEFT",-33,0,1)
 	MicroMenuButton_PVP:SetBackdrop({bgFile = fdir.."micro_pvp",
 		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
 		tile = false,
@@ -915,7 +921,7 @@ function module:SetMicroMenu()
 				ShowUIPanel(FriendsFrame)
 			end
 		else
-			if GuildFrame:IsShown() or LookingForGuildFrame:IsShown() then
+			if GuildFrame:IsShown() or (LookingForGuildFrame and LookingForGuildFrame:IsShown()) then
 				if IsInGuild() then HideUIPanel(GuildFrame) else HideUIPanel(LookingForGuildFrame) end
 			else
 				if IsInGuild() then ShowUIPanel(GuildFrame) else ShowUIPanel(LookingForGuildFrame) end
