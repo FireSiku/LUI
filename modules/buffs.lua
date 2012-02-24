@@ -36,11 +36,11 @@ local function CreatePanel(height, width, x, y, anchorPoint, anchorPointRel, anc
 	Panel:SetHeight(height)
 	Panel:SetWidth(width)
 	Panel:SetPoint(anchorPoint, anchor, anchorPointRel, x, y)
-	Panel:SetBackdrop( { 
-	  bgFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Normal", 
-	  edgeFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Border", 
-	  tile = false, tileSize = 0, edgeSize = 3, 
-	  insets = {left = 2, right = 2, top = 2, bottom = 2}
+	Panel:SetBackdrop({ 
+		bgFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Normal", 
+		edgeFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Border", 
+		tile = false, tileSize = 0, edgeSize = 3, 
+		insets = {left = 2, right = 2, top = 2, bottom = 2}
 	})
 	Panel:SetBackdropColor(1, 0, 0, 1)
 	Panel:SetBackdropBorderColor(0, 0, 0, 0)
@@ -48,28 +48,28 @@ local function CreatePanel(height, width, x, y, anchorPoint, anchorPointRel, anc
 	return Panel
 end
 
-local function CreateGlossPanel(height, width, x, y, anchorPoint, anchorPointRel, anchor, level, parent, strata, type, debuffcolor)
+local function CreateGlossPanel(height, width, x, y, anchorPoint, anchorPointRel, anchor, level, parent, strata, isDebuff, color)
 	local Panel = CreateFrame("Frame", nil, parent)
 	Panel:SetFrameLevel(level)
 	Panel:SetFrameStrata(strata)
 	Panel:SetHeight(height)
 	Panel:SetWidth(width)
 	Panel:SetPoint(anchorPoint, anchor, anchorPointRel, x, y)
-	Panel:SetBackdrop( { 
-	  bgFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Normal", 
-	  edgeFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Border", 
-	  tile = false, tileSize = 0, edgeSize = 3, 
-	  insets = {left = 2, right = 2, top = 2, bottom = 2}
+	Panel:SetBackdrop({ 
+		bgFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Normal", 
+		edgeFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Border", 
+		tile = false, tileSize = 0, edgeSize = 3, 
+		insets = {left = 2, right = 2, top = 2, bottom = 2}
 	})
 	Panel:SetBackdropColor(0.3, 0.3, 0.3, 0)
 	Panel:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	if type == "debuff" then
+	if isDebuff then
 		local overlay = Panel:CreateTexture(nil, "OVERLAY")
 		overlay:SetTexture("Interface\\AddOns\\LUI\\media\\textures\\buttons\\Border")
 		overlay:SetAllPoints(Panel)
 		overlay:SetAlpha(1)
-		overlay:SetVertexColor(debuffcolor.r, debuffcolor.g, debuffcolor.b)
+		overlay:SetVertexColor(color.r, color.g, color.b)
 		Panel.overlay = overlay
 	else
 		local overlay = Panel:CreateTexture(nil, "OVERLAY")
@@ -82,32 +82,6 @@ local function CreateGlossPanel(height, width, x, y, anchorPoint, anchorPointRel
 
 	return Panel
 end 
-
-local function CreateBarPanel(height, width, x, y, anchorPoint, anchorPointRel, anchor, level, parent, strata)
-	local Panel = CreateFrame("Frame", nil, parent)
-	Panel:SetFrameLevel(level)
-	Panel:SetFrameStrata(strata)
-	Panel:SetHeight(height)
-	Panel:SetWidth(width)
-	Panel:SetPoint(anchorPoint, anchor, anchorPointRel, x, y)
-	Panel:SetBackdrop( { 
-	  bgFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Normal", 
-	  edgeFile = "Interface\\AddOns\\LUI\\media\\textures\\buttons\\Border", 
-	  tile = false, tileSize = 0, edgeSize = 3, 
-	  insets = {left = -3, right = -3, top = -3, bottom = -3}
-	})
-	Panel:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
-	Panel:SetBackdropBorderColor(0.2, 0.2, 0.2, 0.9)
-
-	local overlay = Panel:CreateTexture(nil, "OVERLAY")
-	overlay:SetTexture("Interface\\AddOns\\LUI\\media\\textures\\buttons\\Gloss")
-	overlay:SetAllPoints(Panel)
-	overlay:SetAlpha(0.7)
-	overlay:SetTexCoord(0.1, 0.9, 0.1, 0.9)
-	Panel.overlay = overlay
-
-	return Panel
-end
 
 function module:EnableBlizzardBuffs()	
 	LUI:Module("Unitframes"):Module("HideBlizzard"):Show("aura", true)
@@ -166,14 +140,15 @@ function module:SetBuffs()
 	end
 	
 	local dummy = function() return end
-
-	local DebuffTypeColor = { }
-	DebuffTypeColor["none"]	= { r = 0.80, g = 0, b = 0 }
-	DebuffTypeColor["Magic"]	= { r = 0.20, g = 0.60, b = 1.00 }
-	DebuffTypeColor["Curse"]	= { r = 0.60, g = 0.00, b = 1.00 }
-	DebuffTypeColor["Disease"]	= { r = 0.60, g = 0.40, b = 0 }
-	DebuffTypeColor["Poison"]	= { r = 0.00, g = 0.60, b = 0 }
-	DebuffTypeColor[""]	= DebuffTypeColor["none"]
+	
+	local DebuffTypeColor = {
+		none = {r = .8, g = 0, b = 0},
+		Magic = {r = 0.2, g = 0.6, b = 1},
+		Curse = {r = 0.6, g = 0, b = 1},
+		Disease = {r = 0.6, g = 0.4, b = 0},
+		Poison = {r = 0, g = 0.6, b = 0},
+		[""] = {r = .8, g = 0, b = 0}
+	}
 	
 	local buffHeader = CreateFrame("Frame", "LUIBuffs", UIParent, "SecureAuraHeaderTemplate")
 	local debuffHeader = CreateFrame("Frame", "LUIDebuffs", UIParent, "SecureAuraHeaderTemplate")
@@ -181,38 +156,31 @@ function module:SetBuffs()
 	consolidateHeader:SetFrameStrata("DIALOG")
 	local proxy = CreateFrame("Frame", buffHeader:GetName() .. "ProxyButton", buffHeader, "LUIAuraProxyTemplate"..db.Buffs.Size)
 	
-	local SecondsToTimeAbbrev = function(time)
-		local hr, m, s, text
-		if time <= 0 then text = ""
-		elseif(time < 3600 and time > 60) then
-			hr = floor(time / 3600)
-			m = floor(mod(time, 3600) / 60 + 1)
-			text = format("%dm", m)
-		elseif time < 60 then
-			m = floor(time / 60)
-			s = mod(time, 60)
-			text = (m == 0 and format("%d", s))
+	local SecondsToTimeAbbrev = function(t)
+		if t <= 0 then
+			return ""
+		elseif t < 60 then
+			local s = mod(t, 60)
+			return format("%d", s)
+		elseif t < 3600 then
+			local m = floor(mod(t, 3600) / 60 + 1)
+			return format("%dm", m)
 		else
-			hr = floor(time / 3600 + 1)
-			text = format("%dh", hr)
+			local hr = floor(t / 3600 + 1)
+			return format("%dh", hr)
 		end
-		return text
 	end
 	
 	local function AuraButton_Create(button, filter)
-		local size
-		if filter == "HELPFUL" then size = db.Buffs.Size else size = db.Debuffs.Size end
+		local size = filter == "HELPFUL" and db.Buffs.Size or db.Debuffs.Size
 		
 		button.header = button:GetParent()
-		if string.find(button:GetName(), "Consolidate") then
-			button:SetFrameStrata("DIALOG")
-		end
+		if string.find(button:GetName(), "Consolidate") then button:SetFrameStrata("DIALOG") end
 		
 		-- texture
 		button.texture = button:CreateTexture(nil, "OVERLAY")
 		button.texture:SetPoint("TOPLEFT")
 		button.texture:SetPoint("BOTTOMRIGHT")
-		button.texture:SetDrawLayer("OVERLAY")
 		button.texture:SetTexCoord(.1, .9, .1, .9)
 		
 		-- panel/gloss
@@ -231,16 +199,10 @@ function module:SetBuffs()
 		
 		button.panel = CreatePanel(size + 15, size + 15, 0, 0, "CENTER", "CENTER", button, 3, button, button.header == consolidateHeader and "MEDIUM" or "BACKGROUND")
 		if filter == "HELPFUL" then
-			button.gloss = CreateGlossPanel(size + 2, size + 2, 0, 0, "CENTER", "CENTER", button, 3, button, button.header == consolidateHeader and "MEDIUM" or "BACKGROUND")
+			button.gloss = CreateGlossPanel(size + 2, size + 2, 0, 0, "CENTER", "CENTER", button, 7, button, button.header == consolidateHeader and "MEDIUM" or "BACKGROUND")
 		else
 			local debuffType = select(5, UnitAura("player", button:GetID(), filter))
-			local color
-			if (debuffType ~= nil) then
-				color = DebuffTypeColor[debuffType]
-			else
-				color = DebuffTypeColor["none"]
-			end
-			button.gloss = CreateGlossPanel(size + 2, size + 2, 0, 0, "CENTER", "CENTER", button, 3, button, button.header == consolidateHeader and "MEDIUM" or "BACKGROUND", "debuff", color)
+			button.gloss = CreateGlossPanel(size + 2, size + 2, 0, 0, "CENTER", "CENTER", button, 3, button, "BACKGROUND", true, DebuffTypeColor[debuffType or "none"])
 		end
 		
 		-- subframe for texts
@@ -325,13 +287,17 @@ function module:SetBuffs()
 		local name, _, icon, count, debuffType, duration, expirationTime = UnitAura(button.header:GetAttribute("unit"), button:GetID(), filter)
 		if name then
 			button.texture:SetTexture(icon)
-			if filter == "HARMFUL" then button.gloss.overlay:SetVertexColor(DebuffTypeColor[debuffType or "none"]) end
+			if filter == "HARMFUL" then
+				local c = DebuffTypeColor[debuffType or "none"]
+				button.gloss.overlay:SetVertexColor(c.r, c.g, c.b)
+			end
 			
 			if duration > 0 then
 				button.remaining = expirationTime - GetTime()
 				button:SetScript("OnUpdate", AuraButton_UpdateCooldown)
 				AuraButton_UpdateCooldown(button, 5)
 			else
+				button.remaining = nil
 				button.duration:SetText()
 				button:SetScript("OnUpdate", AuraButton_UpdateTooltip)
 			end
