@@ -10,6 +10,7 @@ local Themes = LUI:Module("Themes")
 local Forte = LUI:Module("Forte")
 local Fader = LUI:Module("Fader")
 local Masque = LibStub("Masque", true)
+local Media = LibStub("LibSharedMedia-3.0")
 local LibKeyBound = LibStub("LibKeyBound-1.0")
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -336,6 +337,7 @@ end
 
 local GetButton = function(bar, barid, barpos, buttonid)
 	local button = CreateFrame("CheckButton", "LUIBar"..barpos..barid.."Button"..buttonid, bar, "ActionBarButtonTemplate")
+	--button:RegisterForClicks("AnyDown")
 	button:SetID(buttonid)
 	return button
 end
@@ -1144,8 +1146,7 @@ function module:SetButtons()
 		-- first style texts / equipped border, then check for BF/Masque, if not loaded, proceed!
 		-- hotkey
 		local hotkey = _G[name.."HotKey"]
-		
-		hotkey:SetFont(font, 12, "OUTLINE")
+		hotkey:SetFont(Media:Fetch("font", db.General.HotkeyFont), db.General.HotkeySize, db.General.HotkeyOutline)
 		hotkey:SetDrawLayer("OVERLAY")
 		hotkey:ClearAllPoints()
 		hotkey:SetPoint("TOPRIGHT", button, "TOPRIGHT", -1, -4)
@@ -1163,21 +1164,21 @@ function module:SetButtons()
 		
 		-- macro
 		local macro = _G[name.."Name"]
-		macro:SetFont(font, 12, "OUTLINE")
+		macro:SetFont(Media:Fetch("font", db.General.MacroFont), db.General.MacroSize, db.General.MacroOutline)
 		macro:SetDrawLayer("OVERLAY")
 		macro:ClearAllPoints()
-		macro:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 6)
-		macro:SetPoint("BOTTOMLEFT", button, "BOTTOMLEFT", 0, 6)
+		macro:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 4)
+		macro:SetPoint("BOTTOMLEFT", button, "BOTTOMLEFT", 0, 4)
 		macro:SetHeight(10)
 		
 		if not db.General.ShowMacro then macro:Hide() end
 		
 		-- count
 		local count = _G[name.."Count"]
-		count:SetFont(font, 14, "OUTLINE")
+		count:SetFont(Media:Fetch("font", db.General.CountFont), db.General.CountSize, db.General.CountOutline)
 		count:SetDrawLayer("OVERLAY")
 		count:ClearAllPoints()
-		count:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -2, 6)
+		count:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 6)
 		count:SetWidth(40)
 		count:SetHeight(10)
 		
@@ -1499,8 +1500,17 @@ module.defaults = {
 		General = {
 			Enable = true,
 			ShowHotkey = false,
+			HotkeyFont = "vibrocen",
+			HotkeySize = 12,
+			HotkeyOutline = "OUTLINE",
 			ShowMacro = false,
+			MacroFont = "vibrocen",
+			MacroSize = 12,
+			MacroOutline = "OUTLINE",
 			ShowCount = true,
+			CountFont = "vibrocen",
+			CountSize = 14,
+			CountOutline = "OUTLINE",
 			ShowEquipped = false
 		},
 		TopTexture = {
@@ -1874,8 +1884,12 @@ function module:LoadOptions()
 		["Shapeshift Bar"] = function() return not db.ShapeshiftBar.Enable end,
 		["Pet Bar"] = function() return not db.PetBar.Enable end,
 		["Totem Bar"] = function() return not db.TotemBar.Enable end,
-		["Vehicle Exit"] = function() return not db.VehicleExit.Enable end
+		["Vehicle Exit"] = function() return not db.VehicleExit.Enable end,
+		Hotkey = function() return not db.General.ShowHotkey end,
+		Count = function() return not db.General.ShowCount end,
+		Macro = function() return not db.General.ShowMacro end,
 	}
+	local dryCall = function() module:Refresh() end
 	
 	local function getState(info)
 		info[#info] = tonumber(info[#info]) or info[#info]
@@ -2028,17 +2042,28 @@ function module:LoadOptions()
 			Enable = self:NewToggle("Enable", "Whether or not to use LUI's Action Bars.", 1, function() StaticPopup_Show("RELOAD_UI") end),
 			empty1 = self:NewDesc(" ", 2),
 			ShowHotkey = self:NewToggle("Show Hotkey Text", nil, 3, true, nil, nil, isBarAddOnLoaded),
-			ShowMacro = self:NewToggle("Show Macro Text", nil, 4, true, nil, nil, isBarAddOnLoaded),
-			ShowCount = self:NewToggle("Show Count Text", nil, 5, true, nil, nil, isBarAddOnLoaded),
-			empty2 = self:NewDesc(" ", 6, nil, nil, isBarAddOnLoaded),
-			ShowEquipped = self:NewToggle("Show Equipped Border", nil, 7, true, nil, nil, isBarAddOnLoaded),
-			empty3 = self:NewDesc(" ", 8, nil, nil, isBarAddOnLoaded),
-			LoadBlizz = self:NewExecute("Load Blizzard States", "Load the Blizzard Default Bar States.", 9, function() LoadStates(blizzstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
-			LoadLUI = self:NewExecute("Load LUI States", "Load the LUI Default Bar States.", 10, function() LoadStates(defaultstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
-			empty4 = self:NewDesc(" ", 11, nil, nil, isBarAddOnLoaded),
-			ToggleKB = self:NewExecute("Keybinds", "Toggles Keybinding mode.", 12, function() LibKeyBound:Toggle() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
-			empty5 = self:NewDesc(" ", 12),
-			Reset = self:NewExecute("Restore Defaults", "Restores Bar Default Settings. (Does NOT affect Bartender etc! For this go to General->AddOns)", 13, function() module.db:ResetProfile(); self:Refresh() end),
+			HotkeySize = self:NewSlider("Hotkey Size", "Choose your Hotkey Fontsize.", 4, 1, 40, 1, true, nil, nil, disabled.Hotkey, isBarAddOnLoaded),
+			HotkeyFont = self:NewSelect("Hotkey Font", "Choose your Hotkey Font.", 5, widgetLists.font, "LSM30_Font", true, nil, disabled.Hotkey, isBarAddOnLoaded),
+			HotkeyOutline = self:NewSelect("HotkeyFont Flag", "Choose your Hotkey Fontflag.", 6, LUI.FontFlags, nil, dryCall, nil, disabled.Hotkey, isBarAddOnLoaded),
+			empty2 = self:NewDesc(" ", 7, nil, nil, isBarAddOnLoaded),
+			ShowMacro = self:NewToggle("Show Macro Text", nil, 8, true, nil, nil, isBarAddOnLoaded),
+			MacroSize = self:NewSlider("Macro Size", "Choose your Macro Fontsize.", 9, 1, 40, 1, true, nil, nil, disabled.Macro, isBarAddOnLoaded),
+			MacroFont = self:NewSelect("Macro Font", "Choose your Macro Font.", 10, widgetLists.font, "LSM30_Font", true, nil, disabled.Macro, isBarAddOnLoaded),
+			MacroOutline = self:NewSelect("Macro Font Flag", "Choose your Macro Fontflag.", 11, LUI.FontFlags, nil, dryCall, nil, disabled.Macro, isBarAddOnLoaded),
+			empty3 = self:NewDesc(" ", 12, nil, nil, isBarAddOnLoaded),
+			ShowCount = self:NewToggle("Show Count Text", nil, 13, true, nil, nil, isBarAddOnLoaded),
+			CountSize = self:NewSlider("Count Size", "Choose your Count Fontsize.", 14, 1, 40, 1, true, nil, nil, disabled.Count, isBarAddOnLoaded),
+			CountFont = self:NewSelect("Count Font", "Choose your Count Font.", 15, widgetLists.font, "LSM30_Font", true, nil, disabled.Count, isBarAddOnLoaded),
+			CountOutline = self:NewSelect("Count Font Flag", "Choose your Count Fontflag.", 16, LUI.FontFlags, nil, dryCall, nil, disabled.Count, isBarAddOnLoaded),
+			empty2 = self:NewDesc(" ", 17, nil, nil, isBarAddOnLoaded),
+			ShowEquipped = self:NewToggle("Show Equipped Border", nil, 18, true, nil, nil, isBarAddOnLoaded),
+			empty3 = self:NewDesc(" ", 19, nil, nil, isBarAddOnLoaded),
+			LoadBlizz = self:NewExecute("Load Blizzard States", "Load the Blizzard Default Bar States.", 20, function() LoadStates(blizzstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
+			LoadLUI = self:NewExecute("Load LUI States", "Load the LUI Default Bar States.", 21, function() LoadStates(defaultstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
+			empty4 = self:NewDesc(" ", 22, nil, nil, isBarAddOnLoaded),
+			ToggleKB = self:NewExecute("Keybinds", "Toggles Keybinding mode.", 23, function() LibKeyBound:Toggle() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
+			empty5 = self:NewDesc(" ", 24),
+			Reset = self:NewExecute("Restore Defaults", "Restores Bar Default Settings. (Does NOT affect Bartender etc! For this go to General->AddOns)", 25, function() module.db:ResetProfile(); self:Refresh() end),
 		}),
 		TopTexture = self:NewGroup("Top Texture", 2, false, InCombatLockdown, {
 			header1 = self:NewHeader("Top Texture Settings", 0),
@@ -2124,24 +2149,33 @@ function module:Refresh(...)
 		local name = button:GetName()
 		
 		local count = _G[name.."Count"]
-		if db.General.ShowCount then
-			if count then count:Show() end
-		else
-			if count then count:Hide() end
+		if count then
+			count:SetFont(Media:Fetch("font", db.General.CountFont), db.General.CountSize, db.General.CountOutline)
+			if db.General.ShowCount then
+				count:Show()
+			else
+				count:Hide()
+			end
 		end
 		
 		local hotkey = _G[name.."HotKey"]
-		if db.General.ShowHotkey then
-			if hotkey then hotkey:Show() end
-		else
-			if hotkey then hotkey:Hide() end
+		if hotkey then
+			hotkey:SetFont(Media:Fetch("font", db.General.HotkeyFont), db.General.HotkeySize, db.General.HotkeyOutline)
+			if db.General.ShowHotkey then
+				hotkey:Show()
+			else
+				hotkey:Hide()
+			end
 		end
 		
 		local macro = _G[name.."Name"]
-		if db.General.ShowMacro then
-			if macro then macro:Show() end
-		else
-			if macro then macro:Hide() end
+		if macro then
+			macro:SetFont(Media:Fetch("font", db.General.MacroFont), db.General.MacroSize, db.General.MacroOutline)
+			if db.General.ShowMacro then
+				macro:Show()
+			else
+				macro:Hide()
+			end
 		end
 		
 		local border = _G[name.."Border"]
