@@ -783,6 +783,9 @@ end
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self)
 	
+	if LUI.db.profile.Frames then
+		LUI.db.profile.Frames = nil
+	end
 	if LUICONFIG.Versions.panels ~= LUI.Versions.panels then
 		db:ResetProfile()
 		LUICONFIG.Versions.panels = LUI.Versions.panels
