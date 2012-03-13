@@ -542,6 +542,8 @@ function module:ApplyBackground(kind)
 	
 	if not frame then
 		LUI:Print(string.format("Warning! Anchor named %s for %s Frame is not existing!", db[kind].Anchor, kind))
+		backgrounds[kind]:Hide()
+		return
 	end
 	
 	local rc, gc, bc, ac = unpack(Themes.db.profile[strlower(kind)])
