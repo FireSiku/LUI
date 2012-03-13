@@ -3,11 +3,12 @@
 	File.......: frames.lua
 	Description: Frames Module
 	Version....: 1.1
-	Rev Date...: 16/01/2011 [dd/mm/yyyy]
+	Rev Date...: 13/03/2012 [dd/mm/yyyy]
 	
 	Edits:
 		v1.0: Loui
 		v1.1: Zista
+		v1.2: Thaly
 ]] 
 
 -- External references.
@@ -15,64 +16,57 @@ local addonname, LUI = ...
 local module = LUI:Module("Frames")
 local Panels = LUI:Module("Panels")
 local Themes = LUI:Module("Themes")
-local Orb = LUI:Module("Orb")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
 local db
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
+local LUI_Navi = {}
+local LUI_Info = {}
+local LUI_Orb
+
+function module:SetOrbColors()
+	local orb = Themes.db.profile.orb
+	LUI_Orb.Fill:SetVertexColor(unpack(orb))
+	LUI_Orb.Galaxy1.t:SetVertexColor(unpack(orb))
+	LUI_Orb.Galaxy2.t:SetVertexColor(unpack(orb))
+	LUI_Orb.Galaxy3.t:SetVertexColor(unpack(orb))
+end
+
 function module:SetOrbCycleColor()
-	local orb_cycle = Themes.db.profile.orb_cycle
-	LUI_OrbCycle:SetBackdropColor(unpack(orb_cycle))
+	LUI_Orb.Cycle:SetBackdropColor(unpack(Themes.db.profile.orb_cycle))
 end
 
 function module:SetOrbHoverColor()
-	local orb_hover = Themes.db.profile.orb_hover
-	LUI_OrbHover:SetBackdropColor(unpack(orb_hover))
+	LUI_Orb.Hover:SetBackdropColor(unpack(Themes.db.profile.orb_hover))
 end
 
 function module:SetBottomInfoColors()
-	local color_bottom = Themes.db.profile.color_bottom
-	finfo_back:SetBackdropColor(unpack(color_bottom))
-	finfo2_back:SetBackdropColor(unpack(color_bottom))
+	LUI_Info.Left.BG:SetBackdropColor(unpack(Themes.db.profile.color_bottom))
+	LUI_Info.Right.BG:SetBackdropColor(unpack(Themes.db.profile.color_bottom))
 end
 
 function module:SetTopInfoColors()
-	local color_top = Themes.db.profile.color_top
-	finfo3_back:SetBackdropColor(unpack(color_top))
-	finfo4_back:SetBackdropColor(unpack(color_top))
-	top_frame2:SetBackdropColor(unpack(color_top))
+	LUI_Info.Topleft.BG:SetBackdropColor(unpack(Themes.db.profile.color_top))
+	LUI_Info.Topright.BG:SetBackdropColor(unpack(Themes.db.profile.color_top))
+	LUI_Info.Top2:SetBackdropColor(unpack(Themes.db.profile.color_top))
 end
 
 function module:SetNavigationColors()
-	local navi = Themes.db.profile.navi
-	LUI_Navi_Button1:SetBackdropColor(unpack(navi))
-	LUI_Navi_Button2:SetBackdropColor(unpack(navi))
-	LUI_Navi_Button3:SetBackdropColor(unpack(navi))
-	LUI_Navi_Button4:SetBackdropColor(unpack(navi))
+	for _, v in pairs(LUI_Navi) do
+		v:SetBackdropColor(unpack(Themes.db.profile.navi))
+	end
 end
 
 function module:SetNavigationHoverColors()
-	local navi_hover = Themes.db.profile.navi_hover
-	LUI_Navi_Button1_hover:SetBackdropColor(unpack(navi_hover))
-	LUI_Navi_Button2_hover:SetBackdropColor(unpack(navi_hover))
-	LUI_Navi_Button3_hover:SetBackdropColor(unpack(navi_hover))
-	LUI_Navi_Button4_hover:SetBackdropColor(unpack(navi_hover))
+	for _, v in pairs(LUI_Navi) do
+		v.Hover:SetBackdropColor(unpack(Themes.db.profile.navi_hover))
+	end
 end
 
 function module:SetNaviAlpha(frame, value)
-	value = tonumber(value)
-	
-	if frame == "chat" then
-		LUI_Navi_Button1:SetAlpha(value)
-	elseif frame == "tps" then
-		LUI_Navi_Button2:SetAlpha(value)
-	elseif frame == "dps" then
-		LUI_Navi_Button3:SetAlpha(value)
-	elseif frame == "raid" then
-		LUI_Navi_Button4:SetAlpha(value)
-	end
+	LUI_Navi[frame]:SetAlpha(value)
 end
 
 function module:SetColors()
@@ -82,919 +76,604 @@ function module:SetColors()
 	self:SetBottomInfoColors()
 	self:SetOrbCycleColor()
 	self:SetOrbHoverColor()
+	self:SetOrbColors()
 end
 
 local isAllShown = false
 function module:IsAllShown(bool)
-	if bool ~= nil then
-		isAllShown = bool
-	end
+	if bool ~= nil then isAllShown = bool end
 	return isAllShown
 end
 
 function module:SetFrames()
+	local function CreateMeAGalaxy(f, x, y, size, alpha, dur, tex, r, g, b)
+		local h = CreateFrame("Frame", nil, f)
+		h:SetHeight(size)
+		h:SetWidth(size)
+		h:SetPoint("CENTER", x, y - 10)
+		h:SetAlpha(alpha)
+		h:SetFrameLevel(5)
+
+		local t = h:CreateTexture()
+		t:SetAllPoints(h)
+		t:SetTexture("Interface\\AddOns\\LUI\\media\\textures\\orb\\"..tex)
+		t:SetBlendMode("ADD")
+		t:SetVertexColor(r, g, b)
+		h.t = t
+		
+		h.ag = h:CreateAnimationGroup()
+		
+		h.ag.a1 = h.ag:CreateAnimation("Rotation")
+		h.ag.a1:SetDegrees(360)
+		h.ag.a1:SetDuration(dur)
+		
+		h.total = 0
+		h:SetScript("OnUpdate", function(self, elapsed)
+			self.total = self.total + elapsed
+			if self.total >= 1 then
+				h.ag:Play()
+			end
+		end)
+		
+		return h
+	end
+	
 	local navi = Themes.db.profile.navi
 	local navi_hover = Themes.db.profile.navi_hover
 	local orb_hover = Themes.db.profile.orb_hover
 	local color_bottom = Themes.db.profile.color_bottom
 	local color_top = Themes.db.profile.color_top
+	local orb = Themes.db.profile.orb
 	local orb_cycle = Themes.db.profile.orb_cycle
 	
-	local navi_anchor = LUI:CreateMeAFrame("FRAME","navi_anchor",UIParent,100,100,1,"BACKGROUND",1,"TOP",UIParent,"TOP",17,15,1)
-	Orb:CreateMeAnOrb("LUI_Orb",55,navi_anchor,"CENTER",-17,0,1,"orb_filling8",0)
-
-	local top_frame = LUI:CreateMeAFrame("FRAME","top_frame",UIParent,1024,1024,1,"BACKGROUND",1,"TOP",UIParent,"TOP",17,8,1)
-	top_frame:SetBackdrop({
-		bgFile=fdir.."top", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	top_frame:SetBackdropBorderColor(0,0,0,0)
-	top_frame:Show()
+	------------------------------------------------------
+	-- / ORB & TOP PANEL / --
+	------------------------------------------------------
 	
-	local top_frame2 = LUI:CreateMeAFrame("FRAME","top_frame2",UIParent,1035,1024,1,"BACKGROUND",0,"TOP",UIParent,"TOP",17,5,1)
-	top_frame2:SetBackdrop({
-		bgFile=fdir.."top_back", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	top_frame2:SetBackdropColor(unpack(color_top))
-	top_frame2:SetBackdropBorderColor(0,0,0,0)
-	top_frame2:Show()
+	local MainAnchor = LUI:CreateMeAFrame("Frame", nil, UIParent, 100, 100, 1, "BACKGROUND", 1, "TOP", UIParent, "TOP", 17, 15, 1)
 	
-	LUI_OrbHover = LUI:CreateMeAFrame("FRAME","orb_ring",LUI_Orb,68,68,1,"LOW",0,"CENTER",LUI_Orb,"CENTER",1,0,0)
-	LUI_OrbHover:SetBackdrop({
-		bgFile=fdir.."ring_inner", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	LUI_OrbHover:SetBackdropColor(unpack(orb_hover))
-	LUI_OrbHover:SetBackdropBorderColor(0,0,0,0)
-	LUI_OrbHover:Show()
+	LUI_Orb = CreateFrame("Button", nil, MainAnchor)
+	LUI_Orb:SetFrameStrata("BACKGROUND")
+	LUI_Orb:SetFrameLevel(4)
+	LUI_Orb:SetWidth(55)
+	LUI_Orb:SetHeight(55)
+	LUI_Orb:SetPoint("CENTER", -17, 0)
 	
-	local ring2 = LUI:CreateMeAFrame("FRAME","orb_ring2",LUI_Orb,103,103,1,"LOW",1,"CENTER",LUI_Orb,"CENTER",0,-1,1)
-	ring2:SetBackdrop({
-		bgFile=fdir.."ring", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	ring2:SetBackdropColor(0.25,0.25,0.25,1)
-	ring2:SetBackdropBorderColor(0,0,0,0)
-	ring2:Show()
+	LUI_Orb:SetScript("OnEnter", function(self) self.AlphaIn:Show() end)
+	LUI_Orb:SetScript("OnLeave", function(self) self.AlphaOut:Show() end)
 	
-	local ring3 = LUI:CreateMeAFrame("FRAME","orb_ring3",LUI_Orb,107,107,1,"LOW",2,"CENTER",LUI_Orb,"CENTER",1,1,1)
-	ring3:SetBackdrop({
-		bgFile=fdir.."ring_inner", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=-0, right=0, top=0, bottom=0}
-	})
-	ring3:SetBackdropColor(0.25,0.25,0.25,0.7)
-	ring3:SetBackdropBorderColor(0,0,0,0)
-	ring3:Hide()
+	LUI_Orb.Fill = LUI_Orb:CreateTexture(nil, "ARTWORK")
+	LUI_Orb.Fill:SetTexture("Interface\\AddOns\\LUI\\media\\textures\\orb\\orb_filling8")
+	LUI_Orb.Fill:SetPoint("BOTTOM", LUI_Orb, "BOTTOM", 0, 0)
+	LUI_Orb.Fill:SetWidth(LUI_Orb:GetWidth())
+	LUI_Orb.Fill:SetHeight(LUI_Orb:GetHeight())
+	LUI_Orb.Fill:SetVertexColor(unpack(orb))
 	
-	local ring4 = LUI:CreateMeAFrame("FRAME","orb_ring4",LUI_Orb,115,115,1,"LOW",1,"CENTER",LUI_Orb,"CENTER",0,-1,1)
-	ring4:SetBackdrop({
-		bgFile=fdir.."ring_inner2", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	ring4:SetBackdropBorderColor(0,0,0,0)
-	ring4:Show()
+	LUI_Orb.Galaxy1 = CreateMeAGalaxy(LUI_Orb, 0, 13, 40, 0.9, 35, "galaxy2", orb[1], orb[2], orb[3])
+	LUI_Orb.Galaxy2 = CreateMeAGalaxy(LUI_Orb, 0, 10, 65, 0.9, 45, "galaxy", orb[1], orb[2], orb[3])
+	LUI_Orb.Galaxy3 = CreateMeAGalaxy(LUI_Orb, -5, 10, 53, 0.9, 18, "galaxy3", orb[1], orb[2], orb[3])
 	
-	local ring5 = LUI:CreateMeAFrame("FRAME","orb_ring5",LUI_Orb,118,118,1,"LOW",2,"CENTER",LUI_Orb,"CENTER",0,-1,1)
-	ring5:SetBackdrop({
-		bgFile=fdir.."ring_inner3", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	ring5:SetBackdropColor(0.25,0.25,0.25,0.7)
-	ring5:SetBackdropBorderColor(0,0,0,0)
-	ring5:Hide()
-	
-	LUI_OrbCycle = LUI:CreateMeAFrame("FRAME","orb_LUI_OrbCycle",LUI_Orb,115,115,1,"LOW",0,"CENTER",LUI_Orb,"CENTER",0,-1,1)
-	LUI_OrbCycle:SetBackdrop({
-		bgFile=fdir.."ring_inner4", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	LUI_OrbCycle:SetBackdropColor(0.25,0.25,0.25,0.7)
-	LUI_OrbCycle:SetBackdropBorderColor(0,0,0,0)
-	LUI_OrbCycle:Show()
-	
-	local ring7 = LUI:CreateMeAFrame("FRAME","orb_ring7",LUI_Orb,77,75,1,"LOW",3,"CENTER",LUI_Orb,"CENTER",1,-1,1)
-	ring7:SetBackdrop({
-		bgFile=fdir.."ring", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	ring7:SetBackdropBorderColor(0,0,0,0)
-	ring7:Show()
-	
-	LUI_Navi_Button1 = LUI:CreateMeAFrame("FRAME","menu_button_chat",LUI_Orb,126,120,1,"LOW",1,"LEFT",LUI_Orb,"LEFT",-176,73,0)
-	LUI_Navi_Button1:SetBackdrop({
-		bgFile=fdir.."button_left2", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1,
-		insets={left=-0, right=0, top=0, bottom=0}
-	})
-	LUI_Navi_Button1:SetBackdropColor(unpack(navi))
-	LUI_Navi_Button1:SetBackdropBorderColor(0,0,0,0)
-	LUI_Navi_Button1:Show()
-	
-	LUI_Navi_Button1_hover = LUI:CreateMeAFrame("FRAME","menu_button_chat_hover",LUI_Orb,124,120,1,"LOW",1,"LEFT",LUI_Orb,"LEFT",-176,73,0)
-	LUI_Navi_Button1_hover:SetBackdrop({
-		bgFile=fdir.."button_left2_hover", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=-0, right=0, top=0, bottom=0}
-	})
-	LUI_Navi_Button1_hover:SetBackdropColor(unpack(navi_hover))
-	LUI_Navi_Button1_hover:SetBackdropBorderColor(0,0,0,0)
-	LUI_Navi_Button1_hover:Show()
-
-	local LUI_Navi_Button1_frame = CreateFrame("Button","menu_button_chat_frame", menu_button_chat)
-	LUI_Navi_Button1_frame:SetWidth(70)
-	LUI_Navi_Button1_frame:SetHeight(30)
-	LUI_Navi_Button1_frame:SetScale(1)
-	LUI_Navi_Button1_frame:SetFrameStrata("LOW")
-	LUI_Navi_Button1_frame:SetFrameLevel(2)
-	LUI_Navi_Button1_frame:SetPoint("CENTER",menu_button_chat,"CENTER",-5,-42)
-	LUI_Navi_Button1_frame:SetAlpha(0)
-
-	LUI_Navi_Button2 = LUI:CreateMeAFrame("FRAME","menu_button_omen",LUI_Orb,63,67,1,"LOW",1,"LEFT",LUI_Orb,"LEFT",-74,42,0)
-	LUI_Navi_Button2:SetBackdrop({
-		bgFile=fdir.."button_left1", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=-0, right=0, top=0, bottom=0}
-	})
-	LUI_Navi_Button2:SetBackdropColor(unpack(navi))
-	LUI_Navi_Button2:SetBackdropBorderColor(0,0,0,0)
-	LUI_Navi_Button2:Show()
-	
-	LUI_Navi_Button2_hover = LUI:CreateMeAFrame("FRAME","menu_button_omen_hover",LUI_Orb,63,60,1,"LOW",1,"LEFT",LUI_Orb,"LEFT",-74,40,0)
-	LUI_Navi_Button2_hover:SetBackdrop({
-		bgFile=fdir.."button_left1_hover", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=-0, right=0, top=0, bottom=0}
-	})
-	LUI_Navi_Button2_hover:SetBackdropColor(unpack(navi_hover))
-	LUI_Navi_Button2_hover:SetBackdropBorderColor(0,0,0,0)
-	LUI_Navi_Button2_hover:Show()
-	
-	local LUI_Navi_Button2_frame = CreateFrame("Button","menu_button_omen_frame", menu_button_omen)
-	LUI_Navi_Button2_frame:SetWidth(63)
-	LUI_Navi_Button2_frame:SetHeight(30)
-	LUI_Navi_Button2_frame:SetScale(1)
-	LUI_Navi_Button2_frame:SetFrameStrata("LOW")
-	LUI_Navi_Button2_frame:SetFrameLevel(2)
-	LUI_Navi_Button2_frame:SetPoint("CENTER",menu_button_omen,"CENTER",0,-12)
-	LUI_Navi_Button2_frame:SetAlpha(0)
-	
-	LUI_Navi_Button3 = LUI:CreateMeAFrame("FRAME","menu_button_recount",LUI_Orb,63,67,1,"LOW",1,"RIGHT",LUI_Orb,"RIGHT",77,45,0)
-	LUI_Navi_Button3:SetBackdrop({
-		bgFile=fdir.."button_right1", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=-0, right=0, top=0, bottom=0}
-	})
-	LUI_Navi_Button3:SetBackdropColor(unpack(navi))
-	LUI_Navi_Button3:SetBackdropBorderColor(0,0,0,0)
-	LUI_Navi_Button3:Show()
-	
-	LUI_Navi_Button3_hover = LUI:CreateMeAFrame("FRAME","menu_button_recount_hover",LUI_Orb,63,60,1,"LOW",1,"RIGHT",LUI_Orb,"RIGHT",77,43,0)
-	LUI_Navi_Button3_hover:SetBackdrop({
-		bgFile=fdir.."button_right1_hover", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=-0, right=0, top=0, bottom=0}
-	})
-	LUI_Navi_Button3_hover:SetBackdropColor(unpack(navi_hover))
-	LUI_Navi_Button3_hover:SetBackdropBorderColor(0,0,0,0)
-	LUI_Navi_Button3_hover:Show()
-	
-	local LUI_Navi_Button3_frame = CreateFrame("Button","menu_button_recount_frame", menu_button_recount)
-	LUI_Navi_Button3_frame:SetWidth(63)
-	LUI_Navi_Button3_frame:SetHeight(30)
-	LUI_Navi_Button3_frame:SetScale(1)
-	LUI_Navi_Button3_frame:SetFrameStrata("LOW")
-	LUI_Navi_Button3_frame:SetFrameLevel(2)
-	LUI_Navi_Button3_frame:SetPoint("CENTER",menu_button_recount,"CENTER",0,-12)
-	LUI_Navi_Button3_frame:SetAlpha(0)
-	
-	LUI_Navi_Button4 = LUI:CreateMeAFrame("FRAME","menu_button_grid",LUI_Orb,126,120,1,"LOW",1,"RIGHT",LUI_Orb,"RIGHT",184,71,0)
-	LUI_Navi_Button4:SetBackdrop({
-		bgFile=fdir.."button_right2", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=-0, right=0, top=0, bottom=0}
-	})
-	LUI_Navi_Button4:SetBackdropColor(unpack(navi))
-	LUI_Navi_Button4:SetBackdropBorderColor(0,0,0,0)
-	LUI_Navi_Button4:Show()
-	
-	LUI_Navi_Button4_hover = LUI:CreateMeAFrame("FRAME","menu_button_grid_hover",LUI_Orb,124,120,1,"LOW",1,"RIGHT",LUI_Orb,"RIGHT",182,71,0)
-	LUI_Navi_Button4_hover:SetBackdrop({
-		bgFile=fdir.."button_right2_hover", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=-0, right=0, top=0, bottom=0}
-	})
-	LUI_Navi_Button4_hover:SetBackdropColor(unpack(navi_hover))
-	LUI_Navi_Button4_hover:SetBackdropBorderColor(0,0,0,0)
-	LUI_Navi_Button4_hover:Show()
-
-	local LUI_Navi_Button4_frame = CreateFrame("Button","menu_button_grid_frame", menu_button_grid)
-	LUI_Navi_Button4_frame:SetWidth(78)
-	LUI_Navi_Button4_frame:SetHeight(30)
-	LUI_Navi_Button4_frame:SetScale(1)
-	LUI_Navi_Button4_frame:SetFrameStrata("LOW")
-	LUI_Navi_Button4_frame:SetFrameLevel(2)
-	LUI_Navi_Button4_frame:SetPoint("CENTER",menu_button_grid,"CENTER",0,-42)
-	LUI_Navi_Button4_frame:SetAlpha(0)
-	
-	local orbtimerout, orbtimerin = 0,0
-	local orb_timer = 0.3
-	
-	local OrbAlphaIn = CreateFrame("Frame", "OrbAlphaIn", UIParent)
-	OrbAlphaIn:Hide()
-	OrbAlphaIn:SetScript("OnUpdate", function(self,elapsed)
-		orbtimerin = orbtimerin + elapsed
-		if orbtimerin < orb_timer then
-			local alpha = orbtimerin / orb_timer 
-			LUI_OrbHover:SetAlpha(alpha)
+	LUI_Orb.AlphaIn = CreateFrame("Frame", nil, UIParent)
+	LUI_Orb.AlphaIn:Hide()
+	LUI_Orb.AlphaIn.timer = 0
+	LUI_Orb.AlphaIn:SetScript("OnUpdate", function(self, elapsed)
+		self.timer = self.timer + elapsed
+		if self.timer < .3 then
+			LUI_Orb.Hover:SetAlpha(self.timer / .3)
 		else
-			LUI_OrbHover:SetAlpha(1)
-			orbtimerin = 0
+			LUI_Orb.Hover:SetAlpha(1)
+			self.timer = 0
 			self:Hide()
 		end
 	end)
 
-	local OrbAlphaOut = CreateFrame("Frame", "OrbAlphaOut", UIParent)
-	OrbAlphaOut:Hide()
-	OrbAlphaOut:SetScript("OnUpdate", function(self,elapsed)
-		orbtimerout = orbtimerout + elapsed
-		if orbtimerout < orb_timer then
-			local alpha = 1 - orbtimerout / orb_timer
-			LUI_OrbHover:SetAlpha(alpha)
+	LUI_Orb.AlphaOut = CreateFrame("Frame", nil, UIParent)
+	LUI_Orb.AlphaOut:Hide()
+	LUI_Orb.AlphaOut.timer = 0
+	LUI_Orb.AlphaOut:SetScript("OnUpdate", function(self, elapsed)
+		self.timer = self.timer + elapsed
+		if self.timer < .3 then
+			LUI_Orb.Hover:SetAlpha(1 - self.timer / .3)
 		else
-			LUI_OrbHover:SetAlpha(0)
-			orbtimerout = 0
+			LUI_Orb.Hover:SetAlpha(0)
+			self.timer = 0
 			self:Hide()
 		end
 	end)
 	
-	LUI_Navi_Button1_frame:RegisterForClicks("AnyUp")
-	LUI_Navi_Button1_frame:SetScript("OnClick", function(self)
-		if LUI_Navi_Button1:GetAlpha() == 0 then
-			ChatButtonAlphaIn:Show()
-			if db.Chat.SecondChatFrame == true then
-				ChatAlphaAnchor2:Show()
-			end
-			ChatAlphaAnchor:Show()
-			if db.Frames.Chat.Animation == "AlphaSlide" then
-				ChatAlphaIn:Show()
-			else
-				ChatAlphaAnchor:SetAlpha(1)
-				if db.Chat.SecondChatFrame == true then
-					ChatAlphaAnchor2:SetAlpha(1)
+	LUI_Navi.Top = LUI:CreateMeAFrame("Frame", nil, UIParent, 1024, 1024, 1, "BACKGROUND", 1, "TOP", UIParent, "TOP", 17, 8, 1)
+	LUI_Navi.Top:SetBackdrop({
+		bgFile = fdir.."top", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Navi.Top:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Navi.Top:Show()
+	
+	LUI_Navi.Top2 = LUI:CreateMeAFrame("Frame", nil, UIParent, 1035, 1024, 1, "BACKGROUND", 0, "TOP", UIParent, "TOP", 17, 5, 1)
+	LUI_Navi.Top2:SetBackdrop({
+		bgFile = fdir.."top_back", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Navi.Top2:SetBackdropColor(unpack(color_top))
+	LUI_Navi.Top2:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Navi.Top2:Show()
+	
+	LUI_Orb.Hover = LUI:CreateMeAFrame("Frame", nil, LUI_Orb, 68, 68, 1, "LOW", 0, "CENTER", LUI_Orb, "CENTER", 1, 0, 0)
+	LUI_Orb.Hover:SetBackdrop({
+		bgFile = fdir.."ring_inner", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Orb.Hover:SetBackdropColor(unpack(orb_hover))
+	LUI_Orb.Hover:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Orb.Hover:Show()
+	
+	LUI_Orb.Ring2 = LUI:CreateMeAFrame("Frame", nil, LUI_Orb, 103, 103, 1, "LOW", 1, "CENTER", LUI_Orb, "CENTER", 0, -1, 1)
+	LUI_Orb.Ring2:SetBackdrop({
+		bgFile = fdir.."ring", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Orb.Ring2:SetBackdropColor(0.25, 0.25, 0.25, 1)
+	LUI_Orb.Ring2:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Orb.Ring2:Show()
+	
+	--[[
+	LUI_Orb.Ring3 = LUI:CreateMeAFrame("FRAME", nil, LUI_Orb, 107, 107, 1, "LOW", 2, "CENTER", LUI_Orb, "CENTER", 1, 1, 1)
+	LUI_Orb.Ring3:SetBackdrop({
+		bgFile = fdir.."ring_inner", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Orb.Ring3:SetBackdropColor(0.25, 0.25, 0.25, 0.7)
+	LUI_Orb.Ring3:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Orb.Ring3:Show()
+	]]
+	
+	LUI_Orb.Ring4 = LUI:CreateMeAFrame("Frame", nil, LUI_Orb, 115, 115, 1, "LOW", 1, "CENTER", LUI_Orb, "CENTER", 0, -1, 1)
+	LUI_Orb.Ring4:SetBackdrop({
+		bgFile = fdir.."ring_inner2", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Orb.Ring4:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Orb.Ring4:Show()
+	
+	--[[
+	LUI_Orb.Ring5 = LUI:CreateMeAFrame("FRAME", nil, LUI_Orb, 118, 118, 1, "LOW", 2, "CENTER", LUI_Orb, "CENTER", 0, -1, 1)
+	LUI_Orb.Ring5:SetBackdrop({
+		bgFile = fdir.."ring_inner3", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Orb.Ring5:SetBackdropColor(0.25, 0.25, 0.25, 0.7)
+	LUI_Orb.Ring5:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Orb.Ring5:Show()
+	]]
+	
+	LUI_Orb.Cycle = LUI:CreateMeAFrame("Frame", nil, LUI_Orb, 115, 115, 1, "LOW", 0, "CENTER", LUI_Orb, "CENTER", 0, -1, 1)
+	LUI_Orb.Cycle:SetBackdrop({
+		bgFile = fdir.."ring_inner4", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Orb.Cycle:SetBackdropColor(0.25, 0.25, 0.25, 0.7)
+	LUI_Orb.Cycle:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Orb.Cycle:Show()
+	
+	LUI_Orb.Ring7 = LUI:CreateMeAFrame("Frame", nil, LUI_Orb, 77, 75, 1, "LOW", 3, "CENTER", LUI_Orb, "CENTER", 1, -1, 1)
+	LUI_Orb.Ring7:SetBackdrop({
+		bgFile = fdir.."ring", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Orb.Ring7:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Orb.Ring7:Show()
+	
+	LUI_Orb:RegisterForClicks("AnyUp")
+	LUI_Orb:SetScript("OnClick", function(self)
+		isAllShown = (Panels.db.profile.Chat.IsShown and Panels.db.profile.Tps.IsShown and Panels.db.profile.Dps.IsShown and Panels.db.profile.Raid.IsShown)
+		
+		if not isAllShown then
+			isAllShown = true
+			
+			LUI_Orb.Cycle:SetBackdropColor(unpack(orb_cycle))
+			
+			for _, k in pairs({"Chat", "Tps", "Dps", "Raid"}) do
+				local v = LUI_Navi[k]
+				if v:GetAlpha() == 0 then
+					local a = k == "Chat" and "ChatAlphaAnchor" or Panels.db.profile[k].Anchor
+					
+					if _G[a] then
+						v.AlphaIn:Show()
+						Panels:AlphaIn(k)
+					end
 				end
 			end
 			
-			db.Frames.IsChatShown = true
+			if db.Chat.SecondChatFrame then ChatAlphaAnchor2:Show() end
 		else
-			ChatButtonAlphaOut:Show()
+			isAllShown = false
 			
-			if db.Frames.Chat.Animation == "AlphaSlide" then
-				ChatAlphaOut:Show()
-			else
-				ChatAlphaAnchor:SetAlpha(0)
-				ChatAlphaAnchor:Hide()
-				if db.Chat.SecondChatFrame == true then
-					ChatAlphaAnchor2:SetAlpha(0)
-					ChatAlphaAnchor2:Hide()
-				end
-			end
+			LUI_Orb.Cycle:SetBackdropColor(0.25, 0.25, 0.25, 0.7)
 			
-			db.Frames.IsChatShown = false
-		end
-	end)
-	
-	LUI_Navi_Button1_frame:SetScript("OnEnter", function(self)
-		LUI_Navi_Button1_hover:SetAlpha(1)
-	end)
-	
-	LUI_Navi_Button1_frame:SetScript("OnLeave", function(self)
-		LUI_Navi_Button1_hover:SetAlpha(0)
-	end)
-	
-	LUI_Navi_Button2_frame:RegisterForClicks("AnyUp")
-	LUI_Navi_Button2_frame:SetScript("OnClick", function(self)
-		if _G[db.Frames.Tps.Anchor] then 
-			if LUI_Navi_Button2:GetAlpha() == 0 then
-				OmenButtonAlphaIn:Show()
-				
-				_G[db.Frames.Tps.Anchor]:Show()
-				
-				for _, frame in pairs(Panels:LoadAdditional(db.Frames.Tps.Additional)) do
-					_G[frame]:Show()
-				end
-				
-				if db.Frames.Tps.Animation == "AlphaSlide" then
-					OmenAlphaIn:Show()
-				else
-					_G[db.Frames.Tps.Anchor]:SetAlpha(1)
+			for _, k in pairs({"Chat", "Tps", "Dps", "Raid"}) do
+				local v = LUI_Navi[k]
+				if v:GetAlpha() == 1 then
+					local a = k == "Chat" and "ChatAlphaAnchor" or Panels.db.profile[k].Anchor
 					
-					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Tps.Additional)) do
-						_G[frame]:SetAlpha(1)
+					if _G[a] then
+						v.AlphaOut:Show()
+						Panels:AlphaOut(k)
 					end
 				end
-				
-				db.Frames.IsTpsShown = true
-			else
-				OmenButtonAlphaOut:Show()
-				
-				if db.Frames.Tps.Animation == "AlphaSlide" then
-					OmenAlphaOut:Show()
-				else
-					_G[db.Frames.Tps.Anchor]:SetAlpha(0)
-					_G[db.Frames.Tps.Anchor]:Hide()
-					
-					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Tps.Additional)) do
-						_G[frame]:SetAlpha(0)
-						_G[frame]:Hide()
-					end
-				end
-				
-				db.Frames.IsTpsShown = false
 			end
 		end
 	end)
 	
-	LUI_Navi_Button2_frame:SetScript("OnEnter", function(self)
-		LUI_Navi_Button2_hover:SetAlpha(1)
+	------------------------------------------------------
+	-- / CHAT BUTTON / --
+	------------------------------------------------------
+	
+	LUI_Navi.Chat = LUI:CreateMeAFrame("Frame", nil, LUI_Orb, 126, 120, 1, "LOW", 1, "LEFT", LUI_Orb, "LEFT", -176, 73, 0)
+	LUI_Navi.Chat:SetBackdrop({
+		bgFile = fdir.."button_left2", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Navi.Chat:SetBackdropColor(unpack(navi))
+	LUI_Navi.Chat:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Navi.Chat:Show()
+	
+	LUI_Navi.Chat.Hover = LUI:CreateMeAFrame("Frame", nil, LUI_Orb, 124, 120, 1, "LOW", 1, "LEFT", LUI_Orb, "LEFT", -176, 73, 0)
+	LUI_Navi.Chat.Hover:SetBackdrop({
+		bgFile = fdir.."button_left2_hover", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Navi.Chat.Hover:SetBackdropColor(unpack(navi_hover))
+	LUI_Navi.Chat.Hover:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Navi.Chat.Hover:Show()
+	
+	LUI_Navi.Chat.Clicker = CreateFrame("Button", nil, LUI_Navi.Chat)
+	LUI_Navi.Chat.Clicker:SetWidth(70)
+	LUI_Navi.Chat.Clicker:SetHeight(30)
+	LUI_Navi.Chat.Clicker:SetScale(1)
+	LUI_Navi.Chat.Clicker:SetFrameStrata("LOW")
+	LUI_Navi.Chat.Clicker:SetFrameLevel(2)
+	LUI_Navi.Chat.Clicker:SetPoint("CENTER", LUI_Navi.Chat, "CENTER", -5, -42)
+	LUI_Navi.Chat.Clicker:SetAlpha(0)
+	
+	LUI_Navi.Chat.Clicker:RegisterForClicks("AnyUp")
+	LUI_Navi.Chat.Clicker:SetScript("OnEnter", function(self) LUI_Navi.Chat.Hover:SetAlpha(1) end)
+	LUI_Navi.Chat.Clicker:SetScript("OnLeave", function(self) LUI_Navi.Chat.Hover:SetAlpha(0) end)
+	LUI_Navi.Chat.Clicker:SetScript("OnClick", function(self)
+		if LUI_Navi.Chat:GetAlpha() == 0 then
+			LUI_Navi.Chat.AlphaIn:Show()
+			
+			Panels:AlphaIn("Chat")
+			
+			Panels.db.profile.Chat.IsShown = true
+		else
+			LUI_Navi.Chat.AlphaOut:Show()
+			
+			Panels:AlphaOut("Chat")
+			
+			Panels.db.profile.Chat.IsShown = false
+		end
 	end)
 	
-	LUI_Navi_Button2_frame:SetScript("OnLeave", function(self)
-		LUI_Navi_Button2_hover:SetAlpha(0)
-	end)
+	------------------------------------------------------
+	-- / TPS BUTTON / --
+	------------------------------------------------------
 	
-	LUI_Navi_Button3_frame:RegisterForClicks("AnyUp")
-	LUI_Navi_Button3_frame:SetScript("OnClick", function(self)
-		if _G[db.Frames.Dps.Anchor] then 
-			if LUI_Navi_Button3:GetAlpha() == 0 then
-				DPSButtonAlphaIn:Show()
+	LUI_Navi.Tps = LUI:CreateMeAFrame("Frame", nil, LUI_Orb, 63, 67, 1, "LOW", 1, "LEFT", LUI_Orb, "LEFT", -74, 42, 0)
+	LUI_Navi.Tps:SetBackdrop({
+		bgFile = fdir.."button_left1", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Navi.Tps:SetBackdropColor(unpack(navi))
+	LUI_Navi.Tps:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Navi.Tps:Show()
+	
+	LUI_Navi.Tps.Hover = LUI:CreateMeAFrame("Frame", nil, LUI_Orb, 63, 60, 1, "LOW", 1, "LEFT", LUI_Orb, "LEFT", -74, 40, 0)
+	LUI_Navi.Tps.Hover:SetBackdrop({
+		bgFile = fdir.."button_left1_hover", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Navi.Tps.Hover:SetBackdropColor(unpack(navi_hover))
+	LUI_Navi.Tps.Hover:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Navi.Tps.Hover:Show()
+	
+	LUI_Navi.Tps.Clicker = CreateFrame("Button", nil, LUI_Navi.Tps)
+	LUI_Navi.Tps.Clicker:SetWidth(63)
+	LUI_Navi.Tps.Clicker:SetHeight(30)
+	LUI_Navi.Tps.Clicker:SetScale(1)
+	LUI_Navi.Tps.Clicker:SetFrameStrata("LOW")
+	LUI_Navi.Tps.Clicker:SetFrameLevel(2)
+	LUI_Navi.Tps.Clicker:SetPoint("CENTER", LUI_Navi.Tps, "CENTER", 0, -12)
+	LUI_Navi.Tps.Clicker:SetAlpha(0)
+	
+	LUI_Navi.Tps.Clicker:RegisterForClicks("AnyUp")
+	LUI_Navi.Tps.Clicker:SetScript("OnEnter", function(self) LUI_Navi.Tps.Hover:SetAlpha(1) end)
+	LUI_Navi.Tps.Clicker:SetScript("OnLeave", function(self) LUI_Navi.Tps.Hover:SetAlpha(0) end)
+	LUI_Navi.Tps.Clicker:SetScript("OnClick", function(self)
+		if _G[Panels.db.profile.Tps.Anchor] then 
+			if LUI_Navi.Tps:GetAlpha() == 0 then
+				LUI_Navi.Tps.AlphaIn:Show()
 				
-				_G[db.Frames.Dps.Anchor]:Show()
+				Panels:AlphaIn("Tps")
 				
-				for _, frame in pairs(Panels:LoadAdditional(db.Frames.Dps.Additional)) do
-					_G[frame]:Show()
-				end
-				
-				if db.Frames.Dps.Animation == "AlphaSlide" then
-					RecountAlphaIn:Show()
-				else
-					_G[db.Frames.Dps.Anchor]:SetAlpha(1)
-					
-					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Dps.Additional)) do
-						_G[frame]:SetAlpha(1)
-					end
-				end
-				
-				db.Frames.IsDpsShown = true
+				Panels.db.profile.Tps.IsShown = true
 			else
-				DPSButtonAlphaOut:Show()
+				LUI_Navi.Tps.AlphaOut:Show()
 				
-				if db.Frames.Dps.Animation == "AlphaSlide" then
-					RecountAlphaOut:Show()
-				else
-					_G[db.Frames.Dps.Anchor]:SetAlpha(0)
-					_G[db.Frames.Dps.Anchor]:Hide()
-					
-					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Dps.Additional)) do
-						_G[frame]:SetAlpha(0)
-						_G[frame]:Hide()
-					end
-				end
+				Panels:AlphaOut("Tps")
 				
-				db.Frames.IsDpsShown = false
+				Panels.db.profile.Tps.IsShown = false
 			end
 		end
 	end)
 	
-	LUI_Navi_Button3_frame:SetScript("OnEnter", function(self)
-		LUI_Navi_Button3_hover:SetAlpha(1)
-	end)
+	------------------------------------------------------
+	-- / DPS BUTTON / --
+	------------------------------------------------------
 	
-	LUI_Navi_Button3_frame:SetScript("OnLeave", function(self)
-		LUI_Navi_Button3_hover:SetAlpha(0)
-	end)
+	LUI_Navi.Dps = LUI:CreateMeAFrame("Frame", nil, LUI_Orb, 63, 67, 1, "LOW", 1, "RIGHT", LUI_Orb, "RIGHT", 77, 45, 0)
+	LUI_Navi.Dps:SetBackdrop({
+		bgFile = fdir.."button_right1", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Navi.Dps:SetBackdropColor(unpack(navi))
+	LUI_Navi.Dps:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Navi.Dps:Show()
 	
-	LUI_Navi_Button4_frame:RegisterForClicks("AnyUp")
-	LUI_Navi_Button4_frame:SetScript("OnClick", function(self)
-		if _G[db.Frames.Raid.Anchor] then 
-			if LUI_Navi_Button4:GetAlpha() == 0 then
-				GridButtonAlphaIn:Show()
+	LUI_Navi.Dps.Hover = LUI:CreateMeAFrame("Frame", nil, LUI_Orb, 63, 60, 1, "LOW", 1, "RIGHT", LUI_Orb, "RIGHT", 77, 43, 0)
+	LUI_Navi.Dps.Hover:SetBackdrop({
+		bgFile = fdir.."button_right1_hover", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Navi.Dps.Hover:SetBackdropColor(unpack(navi_hover))
+	LUI_Navi.Dps.Hover:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Navi.Dps.Hover:Show()
+	
+	LUI_Navi.Dps.Clicker = CreateFrame("Button", nil, LUI_Navi.Dps)
+	LUI_Navi.Dps.Clicker:SetWidth(63)
+	LUI_Navi.Dps.Clicker:SetHeight(30)
+	LUI_Navi.Dps.Clicker:SetScale(1)
+	LUI_Navi.Dps.Clicker:SetFrameStrata("LOW")
+	LUI_Navi.Dps.Clicker:SetFrameLevel(2)
+	LUI_Navi.Dps.Clicker:SetPoint("CENTER", LUI_Navi.Dps, "CENTER", 0, -12)
+	LUI_Navi.Dps.Clicker:SetAlpha(0)
+	
+	LUI_Navi.Dps.Clicker:RegisterForClicks("AnyUp")
+	LUI_Navi.Dps.Clicker:SetScript("OnEnter", function(self) LUI_Navi.Dps.Hover:SetAlpha(1) end)
+	LUI_Navi.Dps.Clicker:SetScript("OnLeave", function(self) LUI_Navi.Dps.Hover:SetAlpha(0) end)
+	LUI_Navi.Dps.Clicker:SetScript("OnClick", function(self)
+		if _G[Panels.db.profile.Dps.Anchor] then 
+			if LUI_Navi.Dps:GetAlpha() == 0 then
+				LUI_Navi.Dps.AlphaIn:Show()
 				
-				_G[db.Frames.Raid.Anchor]:Show()
+				Panels:AlphaIn("Dps")
 				
-				for _, frame in pairs(Panels:LoadAdditional(db.Frames.Raid.Additional)) do
-					_G[frame]:Show()
-				end
-				
-				if db.Frames.Raid.Animation == "AlphaSlide" then
-					GridAlphaIn:Show()
-				else
-					_G[db.Frames.Raid.Anchor]:SetAlpha(1)
-					
-					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Raid.Additional)) do
-					_G[frame]:SetAlpha(1)
-					end
-				end
-				
-				db.Frames.IsRaidShown = true
+				Panels.db.profile.Dps.IsShown = true
 			else
-				GridButtonAlphaOut:Show()
+				LUI_Navi.Dps.AlphaOut:Show()
 				
-				if db.Frames.Raid.Animation == "AlphaSlide" then
-					GridAlphaOut:Show()
-				else
-					_G[db.Frames.Raid.Anchor]:SetAlpha(0)
-					_G[db.Frames.Raid.Anchor]:Hide()
-					
-					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Raid.Additional)) do
-						_G[frame]:SetAlpha(0)
-						_G[frame]:Hide()
-					end
-				end
+				Panels:AlphaOut("Dps")
 				
-				db.Frames.IsRaidShown = false
+				Panels.db.profile.Dps.IsShown = false
 			end
 		end
 	end)
 	
-	LUI_Navi_Button4_frame:SetScript("OnEnter", function(self)
-		LUI_Navi_Button4_hover:SetAlpha(1)
-	end)
+	------------------------------------------------------
+	-- / RAID BUTTON / --
+	------------------------------------------------------
 	
-	LUI_Navi_Button4_frame:SetScript("OnLeave", function(self)
-		LUI_Navi_Button4_hover:SetAlpha(0)
+	LUI_Navi.Raid = LUI:CreateMeAFrame("Frame", nil, LUI_Orb, 126, 120, 1, "LOW", 1, "RIGHT", LUI_Orb, "RIGHT", 184, 71, 0)
+	LUI_Navi.Raid:SetBackdrop({
+		bgFile = fdir.."button_right2", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Navi.Raid:SetBackdropColor(unpack(navi))
+	LUI_Navi.Raid:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Navi.Raid:Show()
+	
+	LUI_Navi.Raid.Hover = LUI:CreateMeAFrame("Frame", nil, LUI_Orb, 124, 120, 1, "LOW", 1, "RIGHT", LUI_Orb, "RIGHT", 182, 71, 0)
+	LUI_Navi.Raid.Hover:SetBackdrop({
+		bgFile = fdir.."button_right2_hover", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Navi.Raid.Hover:SetBackdropColor(unpack(navi_hover))
+	LUI_Navi.Raid.Hover:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Navi.Raid.Hover:Show()
+
+	LUI_Navi.Raid.Clicker = CreateFrame("Button", nil, LUI_Navi.Raid)
+	LUI_Navi.Raid.Clicker:SetWidth(78)
+	LUI_Navi.Raid.Clicker:SetHeight(30)
+	LUI_Navi.Raid.Clicker:SetScale(1)
+	LUI_Navi.Raid.Clicker:SetFrameStrata("LOW")
+	LUI_Navi.Raid.Clicker:SetFrameLevel(2)
+	LUI_Navi.Raid.Clicker:SetPoint("CENTER", LUI_Navi.Raid, "CENTER", 0, -42)
+	LUI_Navi.Raid.Clicker:SetAlpha(0)
+	
+	LUI_Navi.Raid.Clicker:RegisterForClicks("AnyUp")
+	LUI_Navi.Raid.Clicker:SetScript("OnEnter", function(self) LUI_Navi.Raid.Hover:SetAlpha(1) end)
+	LUI_Navi.Raid.Clicker:SetScript("OnLeave", function(self) LUI_Navi.Raid.Hover:SetAlpha(0) end)
+	LUI_Navi.Raid.Clicker:SetScript("OnClick", function(self)
+		if _G[Panels.db.profile.Raid.Anchor] then 
+			if LUI_Navi.Raid:GetAlpha() == 0 then
+				LUI_Navi.Raid.AlphaIn:Show()
+				
+				Panels:AlphaIn("Raid")
+				
+				Panels.db.profile.Raid.IsShown = true
+			else
+				LUI_Navi.Raid.AlphaOut:Show()
+				
+				Panels:AlphaOut("Raid")
+				
+				Panels.db.profile.Raid.IsShown = false
+			end
+		end
 	end)
 	
 	------------------------------------------------------
 	-- / INFO PANEL LEFT / --
 	------------------------------------------------------
-
-	local finfo_anchor = LUI:CreateMeAFrame("FRAME","finfo_anchor",UIParent,25,25,1,"BACKGROUND",0,"BOTTOMLEFT",UIParent,"BOTTOMLEFT",0,0,1)
-	finfo_anchor:SetBackdrop({
-		bgFile="Interface\\Tooltips\\UI-Tooltip-Background", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	finfo_anchor:SetBackdropColor(0,0,0,0)
-	finfo_anchor:SetBackdropBorderColor(0,0,0,0)
-	finfo_anchor:Show()
 	
-	local finfo = LUI:CreateMeAFrame("FRAME","finfo",finfo_anchor,1024,1024,1,"BACKGROUND",1,"BOTTOMLEFT",finfo_anchor,"BOTTOMLEFT",-30,-31,1)
-	finfo:SetBackdrop({
-		bgFile=fdir.."info_left", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	finfo:SetBackdropColor(0,0,0,0.9)
-	finfo:SetBackdropBorderColor(0,0,0,0)
-	finfo:Show()
+	LUI_Info.Left = LUI:CreateMeAFrame("Frame", nil, UIParent, 25, 25, 1, "BACKGROUND", 0, "BOTTOMLEFT", UIParent, "BOTTOMLEFT", 0, 0, 1)
 	
-	local finfo_back = LUI:CreateMeAFrame("FRAME","finfo_back",finfo_anchor,1024,1024,1,"BACKGROUND",0,"BOTTOMLEFT",finfo_anchor,"BOTTOMLEFT",-23,-23,1)
-	finfo_back:SetBackdrop({
-		bgFile=fdir.."info_left_back", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
+	LUI_Info.Left.Panel = LUI:CreateMeAFrame("FRAME", nil, LUI_Info.Left, 1024, 1024, 1, "BACKGROUND", 1, "BOTTOMLEFT", LUI_Info.Left, "BOTTOMLEFT", -30, -31, 1)
+	LUI_Info.Left.Panel:SetBackdrop({
+		bgFile = fdir.."info_left", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	finfo_back:SetBackdropColor(unpack(color_bottom))
-	finfo_back:SetBackdropBorderColor(0,0,0,0)
-	finfo_back:Show()
-
+	LUI_Info.Left.Panel:SetBackdropColor(0, 0, 0, 0.9)
+	LUI_Info.Left.Panel:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Info.Left.Panel:Show()
+	
+	LUI_Info.Left.BG = LUI:CreateMeAFrame("FRAME", nil, LUI_Info.Left, 1024, 1024, 1, "BACKGROUND", 0, "BOTTOMLEFT", LUI_Info.Left, "BOTTOMLEFT", -23, -23, 1)
+	LUI_Info.Left.BG:SetBackdrop({
+		bgFile = fdir.."info_left_back", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Info.Left.BG:SetBackdropColor(unpack(color_bottom))
+	LUI_Info.Left.BG:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Info.Left.BG:Show()
+	
 	------------------------------------------------------
 	-- / INFO PANEL RIGHT / --
 	------------------------------------------------------
-
-	local finfo2_anchor = LUI:CreateMeAFrame("FRAME","finfo2_anchor",UIParent,25,25,1,"BACKGROUND",0,"BOTTOMRIGHT",UIParent,"BOTTOMRIGHT",0,0,1)
-	finfo2_anchor:SetBackdrop({
-		bgFile="Interface\\Tooltips\\UI-Tooltip-Background", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	finfo2_anchor:SetBackdropColor(0,0,0,0)
-	finfo2_anchor:SetBackdropBorderColor(0,0,0,0)
-	finfo2_anchor:Show() 
 	
-	local finfo2 = LUI:CreateMeAFrame("FRAME","finfo2",finfo2_anchor,1024,1024,1,"BACKGROUND",1,"BOTTOMRIGHT",finfo2_anchor,"BOTTOMRIGHT",36,-31,1)
-	finfo2:SetBackdrop({
-		bgFile=fdir.."info_right", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	finfo2:SetBackdropColor(0,0,0,0.9)
-	finfo2:SetBackdropBorderColor(0,0,0,0)
-	finfo2:Show()
+	LUI_Info.Right = LUI:CreateMeAFrame("Frame", nil, UIParent, 25, 25, 1, "BACKGROUND", 0, "BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", 0, 0, 1)
 	
-	local finfo2_back = LUI:CreateMeAFrame("FRAME","finfo2_back",finfo2_anchor,1024,1024,1,"BACKGROUND",0,"BOTTOMRIGHT",finfo2_anchor,"BOTTOMRIGHT",29,-23,1)
-	finfo2_back:SetBackdrop({
-		bgFile=fdir.."info_right_back", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
+	LUI_Info.Right.Panel = LUI:CreateMeAFrame("FRAME", nil, LUI_Info.Right, 1024, 1024, 1, "BACKGROUND", 1, "BOTTOMRIGHT", LUI_Info.Right, "BOTTOMRIGHT", 36, -31, 1)
+	LUI_Info.Right.Panel:SetBackdrop({
+		bgFile = fdir.."info_right", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	finfo2_back:SetBackdropColor(unpack(color_bottom))
-	finfo2_back:SetBackdropBorderColor(0,0,0,0)
-	finfo2_back:Show()
-
+	LUI_Info.Right.Panel:SetBackdropColor(0, 0, 0, 0.9)
+	LUI_Info.Right.Panel:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Info.Right.Panel:Show()
+	
+	LUI_Info.Right.BG = LUI:CreateMeAFrame("FRAME", nil, LUI_Info.Right, 1024, 1024, 1, "BACKGROUND", 0, "BOTTOMRIGHT", LUI_Info.Right, "BOTTOMRIGHT", 29, -23, 1)
+	LUI_Info.Right.BG:SetBackdrop({
+		bgFile = fdir.."info_right_back", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI_Info.Right.BG:SetBackdropColor(unpack(color_bottom))
+	LUI_Info.Right.BG:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Info.Right.BG:Show()
+	
 	------------------------------------------------------
 	-- / INFO PANEL TOPLEFT / --
 	------------------------------------------------------
 
-	local finfo3_anchor = LUI:CreateMeAFrame("FRAME","finfo3_anchor",UIParent,25,25,1,"BACKGROUND",0,"CENTER",LUI_Orb,"CENTER",-212,30,1)
-	finfo3_anchor:SetBackdrop({
-		bgFile="Interface\\Tooltips\\UI-Tooltip-Background", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	finfo3_anchor:SetBackdropColor(0,0,0,0)
-	finfo3_anchor:SetBackdropBorderColor(0,0,0,0)
-	finfo3_anchor:Show() 
+	LUI_Info.Topleft = LUI:CreateMeAFrame("Frame", nil, UIParent, 25, 25, 1, "BACKGROUND", 0, "CENTER", LUI_Orb, "CENTER", -212, 30, 1)
 	
-	local finfo3 = LUI:CreateMeAFrame("FRAME","finfo3",finfo3_anchor,1024,1024,1,"BACKGROUND",1,"TOPLEFT",finfo3_anchor,"TOPLEFT",400,17,1)
-	finfo3:SetBackdrop({
-		bgFile=fdir.."info_top_right", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
+	LUI_Info.Topleft.BG = LUI:CreateMeAFrame("FRAME", nil, LUI_Info.Topleft, 1012, 1024, 1, "BACKGROUND", 0, "TOPRIGHT", LUI_Info.Topleft, "TOPRIGHT", 9, 11, 1)
+	LUI_Info.Topleft.BG:SetBackdrop({
+		bgFile = fdir.."info_top_left2", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1, 
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	finfo3:SetBackdropBorderColor(0,0,0,0)
-	finfo3:Hide()
-	
-	local finfo3_back = LUI:CreateMeAFrame("FRAME","finfo3_back",finfo3_anchor,1012,1024,1,"BACKGROUND",0,"TOPRIGHT",finfo3_anchor,"TOPRIGHT",9,11,1)
-	finfo3_back:SetBackdrop({
-		bgFile=fdir.."info_top_left2", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	finfo3_back:SetBackdropColor(unpack(color_top))
-	finfo3_back:SetBackdropBorderColor(0,0,0,0)
-	finfo3_back:Show()
+	LUI_Info.Topleft.BG:SetBackdropColor(unpack(color_top))
+	LUI_Info.Topleft.BG:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Info.Topleft.BG:Show()
 	
 	------------------------------------------------------
 	-- / INFO PANEL TOPRIGHT / --
 	------------------------------------------------------
 	
-	local finfo4_anchor = LUI:CreateMeAFrame("FRAME","finfo4_anchor",UIParent,25,25,1,"BACKGROUND",0,"CENTER",LUI_Orb,"CENTER",209,30,1)
-	finfo4_anchor:SetBackdrop({
-		bgFile="Interface\\Tooltips\\UI-Tooltip-Background", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
+	LUI_Info.Topright = LUI:CreateMeAFrame("Frame", nil, UIParent, 25, 25, 1, "BACKGROUND", 0, "CENTER", LUI_Orb, "CENTER", 209, 30, 1)
+	
+	LUI_Info.Topright.BG = LUI:CreateMeAFrame("FRAME", nil, LUI_Info.Topright, 1015, 1024, 1, "BACKGROUND", 0, "TOPLEFT", LUI_Info.Topright, "TOPLEFT", -9, 11, 1)
+	LUI_Info.Topright.BG:SetBackdrop({
+		bgFile = fdir.."info_top_right2", 
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+		tile = 0, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	finfo4_anchor:SetBackdropColor(0,0,0,0)
-	finfo4_anchor:SetBackdropBorderColor(0,0,0,0)
-	finfo4_anchor:Show() 
+	LUI_Info.Topright.BG:SetBackdropColor(unpack(color_top))
+	LUI_Info.Topright.BG:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI_Info.Topright.BG:Show()
 	
-	local finfo4 = LUI:CreateMeAFrame("FRAME","finfo4",finfo4_anchor,1024,1024,1,"BACKGROUND",1,"TOPLEFT",finfo4_anchor,"TOPLEFT",400,17,1)
-	finfo4:SetBackdrop({
-		bgFile=fdir.."info_top_right", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	finfo4:SetBackdropBorderColor(0,0,0,0)
-	finfo4:Hide()
+	------------------------------------------------------
+	-- / SCRIPTS / --
+	------------------------------------------------------
 	
-	local finfo4_back = LUI:CreateMeAFrame("FRAME","finfo4_back",finfo4_anchor,1017,1024,1,"BACKGROUND",0,"TOPLEFT",finfo4_anchor,"TOPLEFT",-9,11,1)
-	finfo4_back:SetBackdrop({
-		bgFile=fdir.."info_top_right2", 
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile=0, tileSize=0, edgeSize=1, 
-		insets={left=0, right=0, top=0, bottom=0}
-	})
-	finfo4_back:SetBackdropColor(unpack(color_top))
-	finfo4_back:SetBackdropBorderColor(0,0,0,0)
-	finfo4_back:Show()
-  
-	local chatbuttontimerout, chatbuttontimerin = 0,0
-	local omenbuttontimerout, omenbuttontimerin = 0,0
-	local dpsbuttontimerout, dpsbuttontimerin = 0,0
-	local gridbuttontimerout, gridbuttontimerin = 0,0
-	local button_timer = 0.4
-	
-	local ChatButtonAlphaIn = CreateFrame("Frame", "ChatButtonAlphaIn", UIParent)
-	ChatButtonAlphaIn:Hide()
-	ChatButtonAlphaIn:SetScript("OnUpdate", function(self,elapsed)
-		chatbuttontimerin = chatbuttontimerin + elapsed
-		if chatbuttontimerin < button_timer then
-			local alpha = chatbuttontimerin / button_timer 
-			LUI_Navi_Button1:SetAlpha(alpha)
+	local alphain = function(self, elapsed)
+		self.timer = self.timer + elapsed
+		if self.timer < .4 then
+			LUI_Navi[self.kind]:SetAlpha(self.timer / .4)
 		else
-			LUI_Navi_Button1:SetAlpha(1)
-			chatbuttontimerin = 0
+			LUI_Navi[self.kind]:SetAlpha(1)
+			self.timer = 0
 			self:Hide()
 		end
-	end)
-	
-	local ChatButtonAlphaOut = CreateFrame("Frame", "ChatButtonAlphaOut", UIParent)
-	ChatButtonAlphaOut:Hide()
-	ChatButtonAlphaOut:SetScript("OnUpdate", function(self,elapsed)
-		chatbuttontimerout = chatbuttontimerout + elapsed
-		if chatbuttontimerout < button_timer then
-			local alpha = 1 - chatbuttontimerout / button_timer
-			LUI_Navi_Button1:SetAlpha(alpha)
+	end
+	local alphaout = function(self, elapsed)
+		self.timer = self.timer + elapsed
+		if self.timer < .4 then
+			LUI_Navi[self.kind]:SetAlpha(1 - self.timer / .4)
 		else
-			LUI_Navi_Button1:SetAlpha(0)
-			chatbuttontimerout = 0
+			LUI_Navi[self.kind]:SetAlpha(0)
+			self.timer = 0
 			self:Hide()
 		end
-	end)
+	end
 	
-	local OmenButtonAlphaIn = CreateFrame("Frame", "OmenButtonAlphaIn", UIParent)
-	OmenButtonAlphaIn:Hide()
-	OmenButtonAlphaIn:SetScript("OnUpdate", function(self,elapsed)
-		omenbuttontimerin = omenbuttontimerin + elapsed
-		if omenbuttontimerin < button_timer then
-			local alpha = omenbuttontimerin / button_timer 
-			LUI_Navi_Button2:SetAlpha(alpha)
-		else
-			LUI_Navi_Button2:SetAlpha(1)
-			omenbuttontimerin = 0
-			self:Hide()
-		end
-	end)
-	
-	local OmenButtonAlphaOut = CreateFrame("Frame", "OmenButtonAlphaOut", UIParent)
-	OmenButtonAlphaOut:Hide()
-	OmenButtonAlphaOut:SetScript("OnUpdate", function(self,elapsed)
-		omenbuttontimerout = omenbuttontimerout + elapsed
-		if omenbuttontimerout < button_timer then
-			local alpha = 1 - omenbuttontimerout / button_timer
-			LUI_Navi_Button2:SetAlpha(alpha)
-		else
-			LUI_Navi_Button2:SetAlpha(0)
-			omenbuttontimerout = 0
-			self:Hide()
-		end
-	end)
-	
-	local DPSButtonAlphaIn = CreateFrame("Frame", "DPSButtonAlphaIn", UIParent)
-	DPSButtonAlphaIn:Hide()
-	DPSButtonAlphaIn:SetScript("OnUpdate", function(self,elapsed)
-		dpsbuttontimerin = dpsbuttontimerin + elapsed
-		if dpsbuttontimerin < button_timer then
-			local alpha = dpsbuttontimerin / button_timer 
-			LUI_Navi_Button3:SetAlpha(alpha)
-		else
-			LUI_Navi_Button3:SetAlpha(1)
-			dpsbuttontimerin = 0
-			self:Hide()
-		end
-	end)
-	
-	local DPSButtonAlphaOut = CreateFrame("Frame", "DPSButtonAlphaOut", UIParent)
-	DPSButtonAlphaOut:Hide()
-	DPSButtonAlphaOut:SetScript("OnUpdate", function(self,elapsed)
-		dpsbuttontimerout = dpsbuttontimerout + elapsed
-		if dpsbuttontimerout < button_timer then
-			local alpha = 1 - dpsbuttontimerout / button_timer
-			LUI_Navi_Button3:SetAlpha(alpha)
-		else
-			LUI_Navi_Button3:SetAlpha(0)
-			dpsbuttontimerout = 0
-			self:Hide()
-		end
-	end)
-	
-	local GridButtonAlphaIn = CreateFrame("Frame", "GridButtonAlphaIn", UIParent)
-	GridButtonAlphaIn:Hide()
-	GridButtonAlphaIn:SetScript("OnUpdate", function(self,elapsed)
-		gridbuttontimerin = gridbuttontimerin + elapsed
-		if gridbuttontimerin < button_timer then
-			local alpha = gridbuttontimerin / button_timer 
-			LUI_Navi_Button4:SetAlpha(alpha)
-		else
-			LUI_Navi_Button4:SetAlpha(1)
-			gridbuttontimerin = 0
-			self:Hide()
-		end
-	end)
-	
-	local GridButtonAlphaOut = CreateFrame("Frame", "GridButtonAlphaOut", UIParent)
-	GridButtonAlphaOut:Hide()
-	GridButtonAlphaOut:SetScript("OnUpdate", function(self,elapsed)
-		gridbuttontimerout = gridbuttontimerout + elapsed
-		if gridbuttontimerout < button_timer then
-			local alpha = 1 - gridbuttontimerout / button_timer
-			LUI_Navi_Button4:SetAlpha(alpha)
-		else
-			LUI_Navi_Button4:SetAlpha(0)
-			gridbuttontimerout = 0
-			self:Hide()
-		end
-	end)
-	
-	LUI_Orb:RegisterForClicks("AnyUp")
-	LUI_Orb:SetScript("OnClick", function(self)
-		if db.Frames.IsChatShown == true and db.Frames.IsTpsShown == true and db.Frames.IsDpsShown == true and db.Frames.IsRaidShown == true then
-			isAllShown = true
-		else
-			isAllShown = false
-		end
+	for _, k in pairs({"Chat", "Tps", "Dps", "Raid"}) do
+		local v = LUI_Navi[k]
 		
-		if not isAllShown then
-			isAllShown = true
-			
-			LUI_OrbCycle:SetBackdropColor(unpack(orb_cycle))
-			
-			if LUI_Navi_Button1:GetAlpha() == 0 then
-				ChatButtonAlphaIn:Show()
-				
-				if db.Chat.SecondChatFrame == true then
-					ChatAlphaAnchor2:Show()
-				end
-				
-				ChatAlphaAnchor:Show()
-				
-				if db.Frames.Chat.Animation == "AlphaSlide" then
-					ChatAlphaIn:Show()
-				else
-					ChatAlphaAnchor:SetAlpha(1)
-					if db.Chat.SecondChatFrame == true then
-						ChatAlphaAnchor2:SetAlpha(1)
-					end
-				end
-				
-				db.Frames.IsChatShown = true
-			end
-			
-			if LUI_Navi_Button2:GetAlpha() == 0 then
-				if _G[db.Frames.Tps.Anchor] then
-					OmenButtonAlphaIn:Show()
-					
-					_G[db.Frames.Tps.Anchor]:Show()
-					
-					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Tps.Additional)) do
-						_G[frame]:Show()
-					end
-				
-					if db.Frames.Tps.Animation == "AlphaSlide" then
-						OmenAlphaIn:Show()
-					else
-						_G[db.Frames.Tps.Anchor]:SetAlpha(1)
-						
-						for _, frame in pairs(Panels:LoadAdditional(db.Frames.Tps.Additional)) do
-							_G[frame]:SetAlpha(1)
-						end
-					end
-				end
-				db.Frames.IsTpsShown = true
-			end
-			
-			if LUI_Navi_Button3:GetAlpha() == 0 then
-				if _G[db.Frames.Dps.Anchor] then
-					DPSButtonAlphaIn:Show()
-					
-					_G[db.Frames.Dps.Anchor]:Show()
-					
-					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Dps.Additional)) do
-						_G[frame]:Show()
-					end
-					
-					if db.Frames.Dps.Animation == "AlphaSlide" then
-						RecountAlphaIn:Show()
-					else
-						_G[db.Frames.Dps.Anchor]:SetAlpha(1)
-						
-						for _, frame in pairs(Panels:LoadAdditional(db.Frames.Dps.Additional)) do
-							_G[frame]:SetAlpha(1)
-						end
-					end
-				end
-				db.Frames.IsDpsShown = true
-			end
-			
-			if LUI_Navi_Button4:GetAlpha() == 0 then
-				if _G[db.Frames.Raid.Anchor] then 
-					GridButtonAlphaIn:Show()
-					
-					_G[db.Frames.Raid.Anchor]:Show()
-					
-					for _, frame in pairs(Panels:LoadAdditional(db.Frames.Raid.Additional)) do
-						_G[frame]:Show()
-					end
-					
-					if db.Frames.Raid.Animation == "AlphaSlide" then
-						GridAlphaIn:Show()
-					else
-						_G[db.Frames.Raid.Anchor]:SetAlpha(1)
-						
-						for _, frame in pairs(Panels:LoadAdditional(db.Frames.Raid.Additional)) do
-							_G[frame]:SetAlpha(1)
-						end
-					end
-				end
-				db.Frames.IsRaidShown = true
-			end
-		else
-			isAllShown = false
-			LUI_OrbCycle:SetBackdropColor(0.25,0.25,0.25,0.7)
-
-			if LUI_Navi_Button1:GetAlpha() == 1 then
-				ChatButtonAlphaOut:Show()
-
-				if db.Frames.Chat.Animation == "AlphaSlide" then
-					ChatAlphaOut:Show()
-				else
-					ChatAlphaAnchor:SetAlpha(0)
-					ChatAlphaAnchor:Hide()
-					if db.Chat.SecondChatFrame == true then
-						ChatAlphaAnchor2:SetAlpha(0)
-						ChatAlphaAnchor2:Hide()
-					end
-				end
-				db.Frames.IsChatShown = false
-			end
-			
-			if LUI_Navi_Button2:GetAlpha() == 1 then
-				if _G[db.Frames.Tps.Anchor] then 
-					OmenButtonAlphaOut:Show()
-
-					if db.Frames.Tps.Animation == "AlphaSlide" then
-						OmenAlphaOut:Show()
-					else
-						_G[db.Frames.Tps.Anchor]:SetAlpha(0)
-						_G[db.Frames.Tps.Anchor]:Hide()
-						
-						for _, frame in pairs(Panels:LoadAdditional(db.Frames.Tps.Additional)) do
-							_G[frame]:SetAlpha(0)
-							_G[frame]:Hide()
-						end
-					end
-				end
-				db.Frames.IsTpsShown = false
-			end
-			
-			if LUI_Navi_Button3:GetAlpha() == 1 then
-				if _G[db.Frames.Dps.Anchor] then 
-					DPSButtonAlphaOut:Show()
-					
-					if db.Frames.Dps.Animation == "AlphaSlide" then
-						RecountAlphaOut:Show()
-					else
-						_G[db.Frames.Dps.Anchor]:SetAlpha(0)
-						_G[db.Frames.Dps.Anchor]:Hide()
-						
-						for _, frame in pairs(Panels:LoadAdditional(db.Frames.Dps.Additional)) do
-							_G[frame]:SetAlpha(0)
-							_G[frame]:Hide()
-						end
-					end
-				end
-				db.Frames.IsDpsShown = false
-			end
-			
-			if LUI_Navi_Button4:GetAlpha() == 1 then
-				if _G[db.Frames.Raid.Anchor] then 
-					GridButtonAlphaOut:Show()
-					
-					if db.Frames.Raid.Animation == "AlphaSlide" then
-						GridAlphaOut:Show()
-					else
-						_G[db.Frames.Raid.Anchor]:SetAlpha(0)
-						_G[db.Frames.Raid.Anchor]:Hide()
-						
-						for _, frame in pairs(Panels:LoadAdditional(db.Frames.Raid.Additional)) do
-							_G[frame]:SetAlpha(0)
-							_G[frame]:Hide()
-						end
-					end
-				end
-				db.Frames.IsRaidShown = false
-			end
-		end
-	end)
+		v.AlphaIn = CreateFrame("Frame", nil, UIParent)
+		v.AlphaIn:Hide()
+		v.AlphaIn.timer = 0
+		v.AlphaIn.kind = k
+		v.AlphaIn:SetScript("OnUpdate", alphain)
+		
+		v.AlphaOut = CreateFrame("Frame", nil, UIParent)
+		v.AlphaOut:Hide()
+		v.AlphaOut.timer = 0
+		v.AlphaOut.kind = k
+		v.AlphaOut:SetScript("OnUpdate", alphaout)
+	end
 end
 
 function module:OnInitialize()

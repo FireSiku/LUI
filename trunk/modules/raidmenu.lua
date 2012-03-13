@@ -14,6 +14,7 @@
 local addonname, LUI = ...
 local module = LUI:Module("RaidMenu")
 local Themes = LUI:Module("Themes")
+local Panels = LUI:Module("Panels")
 local Micromenu = LUI:Module("Micromenu")
 local Media = LibStub("LibSharedMedia-3.0")
 
@@ -45,7 +46,7 @@ function module:OverlapPrevention(frame,action)
 	end
 	
 	local offset = 0
-	if db.RaidMenu.OverlapPrevention == "Offset" and db.Frames.IsMicroMenuShown then
+	if db.RaidMenu.OverlapPrevention == "Offset" and Panels.db.profile.MicroMenu.IsShown then
 		offset = db.RaidMenu.Offset
 	end
 	
@@ -54,14 +55,14 @@ function module:OverlapPrevention(frame,action)
 			if RaidMenu_Parent:IsShown() then
 				RMAlphaOut:Show()
 			else
-				if db.RaidMenu.OverlapPrevention == "Auto-Hide" and db.Frames.IsMicroMenuShown then
+				if db.RaidMenu.OverlapPrevention == "Auto-Hide" and Panels.db.profile.MicroMenu.IsShown then
 					MicroMenu_Clicker:Click()
 				end
 				RaidMenu_Parent:SetPoint("TOPRIGHT",MicroMenu_ButtonLeft,"BOTTOMRIGHT",0,(((Y_Position+offset)/db.RaidMenu.Scale)+17))
 				RMAlphaIn:Show()
 			end
 		elseif action == "slide" then
-			if db.Frames.IsMicroMenuShown then
+			if Panels.db.profile.MicroMenu.IsShown then
 				RMSlideUp:Show()
 			else
 				RMSlideDown:Show()
@@ -69,7 +70,7 @@ function module:OverlapPrevention(frame,action)
 		elseif action == "position" then
 			RaidMenu_Parent:Show()
 			RaidMenu_Parent:SetAlpha(db.RaidMenu.Opacity/100)
-			if db.Frames.IsMicroMenuShown then
+			if Panels.db.profile.MicroMenu.IsShown then
 				if db.RaidMenu.OverlapPrevention == "Auto-Hide" then
 					MicroMenu_Clicker:Click()
 				end
@@ -82,7 +83,7 @@ function module:OverlapPrevention(frame,action)
 			RaidMenu_Parent:SetPoint("TOPRIGHT",MicroMenu_ButtonLeft,"BOTTOMRIGHT",0,(((Y_Position+offset)/db.RaidMenu.Scale)+17))
 		end
 	elseif frame == "MM" then
-		if db.Frames.IsMicroMenuShown then
+		if Panels.db.profile.MicroMenu.IsShown then
 			if db.RaidMenu.OverlapPrevention == "Offset" then
 				RMSlideUp:Show()
 			end
@@ -269,7 +270,7 @@ function module:SetRaidMenu()
 	-- Create frames for Raid Menu
 	local RaidMenu_Parent = LUI:CreateMeAFrame("FRAME","RaidMenu_Parent",MicroMenu_ButtonLeft,256,256,1,"HIGH",0,"TOPRIGHT",MicroMenu_ButtonLeft,"BOTTOMRIGHT",0,((107/db.RaidMenu.Scale)+17),1)
 	RaidMenu_Parent:SetFrameStrata("HIGH")
-	if db.Frames.IsMicroMenuShown and (db.RaidMenu.OverlapPrevention == "Offset") then
+	if Panels.db.profile.MicroMenu.IsShown and (db.RaidMenu.OverlapPrevention == "Offset") then
 		RaidMenu_Parent:SetPoint("TOPRIGHT",MicroMenu_ButtonLeft,"BOTTOMRIGHT",0,(((107+db.RaidMenu.Offset)/db.RaidMenu.Scale)+17))
 	else
 		RaidMenu_Parent:SetPoint("TOPRIGHT",MicroMenu_ButtonLeft,"BOTTOMRIGHT",0,((107/db.RaidMenu.Scale)+17))
@@ -602,154 +603,152 @@ local defaults = {
 -- Load options: Creates an option menu for LUI
 function module:LoadOptions()
 	local options = {
-		RaidMenu = {
-			name = "Raid Menu",
-			type = "group",
-			order = 10,
-			args = {
-				Title = {
-					type = "header",
-					order = 1,
-					name = "Raid Menu v" ..  version,
-				},
-				Enable = {
-					name = "Enable",
-					desc = "Wether you want the RaidMenu enabled or not.",
-					type = "toggle",
-					disabled = function() return not Micromenu end,
-					get = function() return db.RaidMenu.Enable end,
-					set = function(self,Enable)
-						db.RaidMenu.Enable = Enable
-						if Enable then
-							module:SetRaidMenu()
-						else
-							StaticPopup_Show("RELOAD_UI")
-						end
-					end,
-					order = 2,
-				},
-				Settings = {
-					name = "Settings",
-					type = "group",
-					order = 3,
-					disabled = function() return not (Micromenu and db.RaidMenu.Enable) end,
-					guiInline = true,
-					args = {
-						Compact = {
-							name = "Compact Raid Menu",
-							desc = "Use compact version of the Raid Menu",
-							type = "toggle",
-							get = function() return db.RaidMenu.Compact end,
-							set = function(self)
-								db.RaidMenu.Compact = not db.RaidMenu.Compact
-								module:OverlapPrevention("RM", "position")
-								SizeRaidMenu()
-							end,
-							order = 1,
-						},
-						Spacing = {
-							name = "Spacing",
-							desc = "Spacing between buttons of Raid Menu",
-							disabled = function() return not db.RaidMenu.Compact end,
-							type = "range",
-							step = 1,
-							min = 0,
-							max = 10,
-							get = function() return db.RaidMenu.Spacing end,
-							set = function(self, value)
-								db.RaidMenu.Spacing = value
-								module:OverlapPrevention("RM", "position")
-								SizeRaidMenu()
-							end,
-							order = 2,
-						},
-						OverlapPrevention = {
-							name = "Micromenu Overlap Prevention",
-							desc = "\nAuto-Hide: The MicroMenu or Raid Menu should hide when the other is opened\n\nOffset: The Raid Menu should offset itself when the MicroMenu is open",
-							type = "select",
-							values = OverlapPreventionMethods,
-							get = function()
-								for k, v in pairs(OverlapPreventionMethods) do
-									if db.RaidMenu.OverlapPrevention == v then
-										return k
-									end
+		name = "Raid Menu",
+		type = "group",
+		order = 10,
+		args = {
+			Title = {
+				type = "header",
+				order = 1,
+				name = "Raid Menu",
+			},
+			Enable = {
+				name = "Enable",
+				desc = "Wether you want the RaidMenu enabled or not.",
+				type = "toggle",
+				disabled = function() return not Micromenu end,
+				get = function() return db.RaidMenu.Enable end,
+				set = function(self,Enable)
+					db.RaidMenu.Enable = Enable
+					if Enable then
+						module:SetRaidMenu()
+					else
+						StaticPopup_Show("RELOAD_UI")
+					end
+				end,
+				order = 2,
+			},
+			Settings = {
+				name = "Settings",
+				type = "group",
+				order = 3,
+				disabled = function() return not (Micromenu and db.RaidMenu.Enable) end,
+				guiInline = true,
+				args = {
+					Compact = {
+						name = "Compact Raid Menu",
+						desc = "Use compact version of the Raid Menu",
+						type = "toggle",
+						get = function() return db.RaidMenu.Compact end,
+						set = function(self)
+							db.RaidMenu.Compact = not db.RaidMenu.Compact
+							module:OverlapPrevention("RM", "position")
+							SizeRaidMenu()
+						end,
+						order = 1,
+					},
+					Spacing = {
+						name = "Spacing",
+						desc = "Spacing between buttons of Raid Menu",
+						disabled = function() return not db.RaidMenu.Compact end,
+						type = "range",
+						step = 1,
+						min = 0,
+						max = 10,
+						get = function() return db.RaidMenu.Spacing end,
+						set = function(self, value)
+							db.RaidMenu.Spacing = value
+							module:OverlapPrevention("RM", "position")
+							SizeRaidMenu()
+						end,
+						order = 2,
+					},
+					OverlapPrevention = {
+						name = "Micromenu Overlap Prevention",
+						desc = "\nAuto-Hide: The MicroMenu or Raid Menu should hide when the other is opened\n\nOffset: The Raid Menu should offset itself when the MicroMenu is open",
+						type = "select",
+						values = OverlapPreventionMethods,
+						get = function()
+							for k, v in pairs(OverlapPreventionMethods) do
+								if db.RaidMenu.OverlapPrevention == v then
+									return k
 								end
-							end,
-							set = function(self, value)
-								db.RaidMenu.OverlapPrevention = OverlapPreventionMethods[value]
-								module:OverlapPrevention("RM", "position")
-							end,
-							order = 3,
-						},
-						Offset = {
-							name = "Offset",
-							desc = "How far to vertically offset when the MicroMenu is open\n\nDefault: "..LUI.db.defaults.profile.RaidMenu.Offset,
-							disabled = function() return db.RaidMenu.OverlapPrevention == "Auto-Hide" end,
-							type = "range",
-							step = 1,
-							min = -100,
-							max = 0,
-							get = function() return db.RaidMenu.Offset end,
-							set = function(self, value)
-								db.RaidMenu.Offset = value
-								module:OverlapPrevention("RM", "position")
-							end,
-							order = 4,
-						},
-						Scale = {
-							name = "Scale",
-							desc = "The Scale of the Raid Menu",
-							type = "range",
-							step = 0.05,
-							min = 0.5,
-							max = 2.0,
-							get = function() return db.RaidMenu.Scale end,
-							set = function(self, value)
-								db.RaidMenu.Scale = value
-								RaidMenu_Parent:SetScale(db.RaidMenu.Scale)
-								module:OverlapPrevention("RM", "position")
-							end,
-							order = 5,
-						},
-						Opacity = {
-							name = "Opacity",
-							desc = "The Opacity of the Raid Menu\n100% is fully visable",
-							type = "range",
-							step = 10,
-							min = 20,
-							max = 100,
-							get = function() return db.RaidMenu.Opacity end,
-							set = function(self, value)
-								db.RaidMenu.Opacity = value
-								RaidMenu_Parent:SetAlpha(db.RaidMenu.Opacity/100)
-							end,
-							order = 6,
-						},
-						AutoHide = {
-							name = "Auto-Hide Raid Menu",
-							desc = "Weather or not the Raid Menu should hide itself after clicking on a function",
-							type = "toggle",
-							get = function() return db.RaidMenu.AutoHide end,
-							set = function(self) db.RaidMenu.AutoHide = not db.RaidMenu.AutoHide end,
-							order = 7,
-						},
-						ShowToolTips = {
-							name = "Show Tooltips",
-							desc = "Weather or not to show tooltips for the Raid Menu tools",
-							type = "toggle",
-							get = function() return db.RaidMenu.ShowToolTips end,
-							set = function(self) db.RaidMenu.ShowToolTips = not db.RaidMenu.ShowToolTips end,
-							order = 8,
-						},
-						ToggleRaidIcon = {
-							name = "Toggle Raid Icon",
-							desc = "Weather of not Raid Target Icons can be removed by applying the icon the target already has",
-							type = "toggle",
-							width = "full",
-							get = function() return db.RaidMenu.ToggleRaidIcon end,
-							set = function(self) db.RaidMenu.ToggleRaidIcon = not db.RaidMenu.ToggleRaidIcon end,
-							order = 9,
-						},
+							end
+						end,
+						set = function(self, value)
+							db.RaidMenu.OverlapPrevention = OverlapPreventionMethods[value]
+							module:OverlapPrevention("RM", "position")
+						end,
+						order = 3,
+					},
+					Offset = {
+						name = "Offset",
+						desc = "How far to vertically offset when the MicroMenu is open\n\nDefault: "..LUI.db.defaults.profile.RaidMenu.Offset,
+						disabled = function() return db.RaidMenu.OverlapPrevention == "Auto-Hide" end,
+						type = "range",
+						step = 1,
+						min = -100,
+						max = 0,
+						get = function() return db.RaidMenu.Offset end,
+						set = function(self, value)
+							db.RaidMenu.Offset = value
+							module:OverlapPrevention("RM", "position")
+						end,
+						order = 4,
+					},
+					Scale = {
+						name = "Scale",
+						desc = "The Scale of the Raid Menu",
+						type = "range",
+						step = 0.05,
+						min = 0.5,
+						max = 2.0,
+						get = function() return db.RaidMenu.Scale end,
+						set = function(self, value)
+							db.RaidMenu.Scale = value
+							RaidMenu_Parent:SetScale(db.RaidMenu.Scale)
+							module:OverlapPrevention("RM", "position")
+						end,
+						order = 5,
+					},
+					Opacity = {
+						name = "Opacity",
+						desc = "The Opacity of the Raid Menu\n100% is fully visable",
+						type = "range",
+						step = 10,
+						min = 20,
+						max = 100,
+						get = function() return db.RaidMenu.Opacity end,
+						set = function(self, value)
+							db.RaidMenu.Opacity = value
+							RaidMenu_Parent:SetAlpha(db.RaidMenu.Opacity/100)
+						end,
+						order = 6,
+					},
+					AutoHide = {
+						name = "Auto-Hide Raid Menu",
+						desc = "Weather or not the Raid Menu should hide itself after clicking on a function",
+						type = "toggle",
+						get = function() return db.RaidMenu.AutoHide end,
+						set = function(self) db.RaidMenu.AutoHide = not db.RaidMenu.AutoHide end,
+						order = 7,
+					},
+					ShowToolTips = {
+						name = "Show Tooltips",
+						desc = "Weather or not to show tooltips for the Raid Menu tools",
+						type = "toggle",
+						get = function() return db.RaidMenu.ShowToolTips end,
+						set = function(self) db.RaidMenu.ShowToolTips = not db.RaidMenu.ShowToolTips end,
+						order = 8,
+					},
+					ToggleRaidIcon = {
+						name = "Toggle Raid Icon",
+						desc = "Weather of not Raid Target Icons can be removed by applying the icon the target already has",
+						type = "toggle",
+						width = "full",
+						get = function() return db.RaidMenu.ToggleRaidIcon end,
+						set = function(self) db.RaidMenu.ToggleRaidIcon = not db.RaidMenu.ToggleRaidIcon end,
+						order = 9,
 					},
 				},
 			},
@@ -767,7 +766,7 @@ function module:OnInitialize()
 	self.db = LUI.db.profile
 	db = self.db
 	
-	LUI:RegisterFrame(self)
+	LUI:Module("Panels"):RegisterFrame(self)
 end
 
 -- Enable module: Called when addon is enabled; this is where we register module button and create the module

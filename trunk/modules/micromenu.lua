@@ -17,6 +17,7 @@
 local addonname, LUI = ...
 local module = LUI:Module("Micromenu", "AceEvent-3.0")
 local Themes = LUI:Module("Themes")
+local Panels = LUI:Module("Panels")
 local RaidMenu = LUI:Module("RaidMenu")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
@@ -28,10 +29,10 @@ local _, class = UnitClass("player")
 
 function module:SetMicroMenuPosition()
 	MicroMenuAnchor:ClearAllPoints()
-	MicroMenuAnchor:SetPoint("TOPRIGHT",UIParent,"TOPRIGHT",db.Frames.Micromenu.NaviX,db.Frames.Micromenu.NaviY)
+	MicroMenuAnchor:SetPoint("TOPRIGHT",UIParent,"TOPRIGHT",db.Micromenu.NaviX,db.Micromenu.NaviY)
 	
 	MicroMenuButton:ClearAllPoints()
-	MicroMenuButton:SetPoint("TOPRIGHT",UIParent,"TOPRIGHT",db.Frames.Micromenu.X,db.Frames.Micromenu.Y)
+	MicroMenuButton:SetPoint("TOPRIGHT",UIParent,"TOPRIGHT",db.Micromenu.X,db.Micromenu.Y)
 end
 
 function module:SetColors()
@@ -96,7 +97,7 @@ function module:SetMicroMenu()
 	MicroMenuAnchor:SetAlpha(1)
 	MicroMenuAnchor:Show()
 	
-	if db.Frames.IsMicroMenuShown == true then
+	if Panels.db.profile.MicroMenu.IsShown == true then
 		MicroMenuAnchor:SetBackdrop({bgFile = fdir.."micro_anchor3",
 			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
 			tile = false,
@@ -193,10 +194,10 @@ function module:SetMicroMenu()
 		else
 			if Minimap:GetAlpha() == 0 then
 				MinimapAlphaIn:Show()
-				db.Frames.IsMinimapShown = true
+				Panels.db.profile.Minimap.IsShown = true
 			else
 				MinimapAlphaOut:Show()
-				db.Frames.IsMinimapShown = false
+				Panels.db.profile.Minimap.IsShown = false
 			end
 		end
 	end)
@@ -305,9 +306,9 @@ function module:SetMicroMenu()
 		if db.RaidMenu.Enable then
 			RaidMenu:OverlapPrevention("MM")
 		end
-		if db.Frames.IsMicroMenuShown == true then
+		if Panels.db.profile.MicroMenu.IsShown == true then
 			MMAlphaOut:Show()
-			db.Frames.IsMicroMenuShown = false
+			Panels.db.profile.MicroMenu.IsShown = false
 			
 			MicroMenuAnchor:SetBackdrop({bgFile = fdir.."micro_anchor",
 				edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
@@ -320,7 +321,7 @@ function module:SetMicroMenu()
 			MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
 		else
 			MMAlphaIn:Show()
-			db.Frames.IsMicroMenuShown = true
+			Panels.db.profile.MicroMenu.IsShown = true
 			
 			MicroMenuAnchor:SetBackdrop({bgFile = fdir.."micro_anchor3",
 				edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
@@ -335,7 +336,7 @@ function module:SetMicroMenu()
 	end)
 	
 	MicroMenu_Clicker:SetScript("OnEnter", function(self)
-		if db.Frames.IsMicroMenuShown == true then
+		if Panels.db.profile.MicroMenu.IsShown == true then
 			MicroMenuAnchor:SetBackdrop({bgFile = fdir.."micro_anchor4",
 				edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
 				tile = false,
@@ -359,7 +360,7 @@ function module:SetMicroMenu()
 	end)
 		
 	MicroMenu_Clicker:SetScript("OnLeave", function(self)
-		if db.Frames.IsMicroMenuShown == true then
+		if Panels.db.profile.MicroMenu.IsShown == true then
 			MicroMenuAnchor:SetBackdrop({bgFile = fdir.."micro_anchor3",
 				edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
 				tile = false,
@@ -1354,84 +1355,83 @@ local defaults = {
 
 function module:LoadOptions()
 	local options = {
-		Micromenu = {
-			name = "MicroMenu",
-			type = "group",
-			args = {
-				MicroMenuPosition = {
-					name = "Micro Menu",
-					type = "group",
-					order = 1,
-					guiInline = true,
-					args = {
-						MMX = {
-							name = "X Value",
-							desc = "X Value for your MicroMenu.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Frames.Micromenu.X,
-							type = "input",
-							get = function() return db.Frames.Micromenu.X end,
-							set = function(self,MMX)
-									if MMX == nil or MMX == "" then
-										MMX = "0"
-									end
-									db.Frames.Micromenu.X = MMX
-									
-									module:SetMicroMenuPosition()
-								end,
-							order = 1,
-						},
-						MMY = {
-							name = "Y Value",
-							desc = "Y Value for your MicroMenu.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Frames.Micromenu.Y,
-							type = "input",
-							get = function() return db.Frames.Micromenu.Y end,
-							set = function(self,MMY)
-									if MMY == nil or MMY == "" then
-										MMY = "0"
-									end
-									db.Frames.Micromenu.Y = MMY
-									
-									module:SetMicroMenuPosition()
-								end,
-							order = 2,
-						},
+		name = "MicroMenu",
+		type = "group",
+		order = 6,
+		args = {
+			MicroMenuPosition = {
+				name = "Micro Menu",
+				type = "group",
+				order = 1,
+				guiInline = true,
+				args = {
+					MMX = {
+						name = "X Value",
+						desc = "X Value for your MicroMenu.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Micromenu.X,
+						type = "input",
+						get = function() return db.Micromenu.X end,
+						set = function(self,MMX)
+								if MMX == nil or MMX == "" then
+									MMX = "0"
+								end
+								db.Micromenu.X = MMX
+								
+								module:SetMicroMenuPosition()
+							end,
+						order = 1,
+					},
+					MMY = {
+						name = "Y Value",
+						desc = "Y Value for your MicroMenu.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Micromenu.Y,
+						type = "input",
+						get = function() return db.Micromenu.Y end,
+						set = function(self,MMY)
+								if MMY == nil or MMY == "" then
+									MMY = "0"
+								end
+								db.Micromenu.Y = MMY
+								
+								module:SetMicroMenuPosition()
+							end,
+						order = 2,
 					},
 				},
-				MicroMenuNaviPosition = {
-					name = "Micro Menu Navigation",
-					type = "group",
-					order = 2,
-					guiInline = true,
-					args = {
-						MMNaviX = {
-							name = "X Value",
-							desc = "X Value for your MicroMenu Navigation Panel.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Frames.Micromenu.NaviX,
-							type = "input",
-							get = function() return db.Frames.Micromenu.NaviX end,
-							set = function(self,MMNaviX)
-									if MMNaviX == nil or MMNaviX == "" then
-										MMNaviX = "0"
-									end
-									db.Frames.Micromenu.NaviX = MMNaviX
-									
-									module:SetMicroMenuPosition()
-								end,
-							order = 1,
-						},
-						MMNaviY = {
-							name = "Y Value",
-							desc = "Y Value for your MicroMenu Navigation Panel.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Frames.Micromenu.NaviY,
-							type = "input",
-							get = function() return db.Frames.Micromenu.NaviY end,
-							set = function(self,MMNaviY)
-									if MMNaviY == nil or MMNaviY == "" then
-										MMNaviY = "0"
-									end
-									db.Frames.Micromenu.NaviY = MMNaviY
-									
-									module:SetMicroMenuPosition()
-								end,
-							order = 2,
-						},
+			},
+			MicroMenuNaviPosition = {
+				name = "Micro Menu Navigation",
+				type = "group",
+				order = 2,
+				guiInline = true,
+				args = {
+					MMNaviX = {
+						name = "X Value",
+						desc = "X Value for your MicroMenu Navigation Panel.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Micromenu.NaviX,
+						type = "input",
+						get = function() return db.Micromenu.NaviX end,
+						set = function(self,MMNaviX)
+								if MMNaviX == nil or MMNaviX == "" then
+									MMNaviX = "0"
+								end
+								db.Micromenu.NaviX = MMNaviX
+								
+								module:SetMicroMenuPosition()
+							end,
+						order = 1,
+					},
+					MMNaviY = {
+						name = "Y Value",
+						desc = "Y Value for your MicroMenu Navigation Panel.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Micromenu.NaviY,
+						type = "input",
+						get = function() return db.Micromenu.NaviY end,
+						set = function(self,MMNaviY)
+								if MMNaviY == nil or MMNaviY == "" then
+									MMNaviY = "0"
+								end
+								db.Micromenu.NaviY = MMNaviY
+								
+								module:SetMicroMenuPosition()
+							end,
+						order = 2,
 					},
 				},
 			},
@@ -1442,14 +1442,14 @@ function module:LoadOptions()
 end
 
 function module:OnInitialize()
-	LUI:MergeDefaults(LUI.db.defaults.profile.Frames, defaults)
+	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
 	LUI:RefreshDefaults()
 	LUI:Refresh()
 	
 	self.db = LUI.db.profile
 	db = self.db
 	
-	LUI:RegisterFrame(self) -- Look into how to code after changing frame and panels
+	LUI:Module("Panels"):RegisterFrame(self) -- check panels module after rework
 end
 
 function module:OnEnable()

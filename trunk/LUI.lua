@@ -789,60 +789,66 @@ local function getOptions()
 									name = "Show Minimap",
 									desc = "Whether you want to show the Minimap by entering World or not.\n",
 									type = "toggle",
-									get = function() return db.Frames.AlwaysShowMinimap end,
+									get = function() return LUI:Module("Panels").db.profile.MicroMenu.AlwaysShow end,
 									set = function()
-												db.Frames.AlwaysShowMinimap = not db.Frames.AlwaysShowMinimap
-											end,
+											local a = LUI:Module("Panels").db.profile.Minimap
+											a.AlwaysShow = not a.AlwaysShow
+										end,
 									order = 6,
 								},
 								alwaysShowChat = {
 									name = "Show Chat",
-									desc = "Whether you want to show the Chat by entering World or not.\n",
+									desc = "Whether you want to show the Chat Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return db.Frames.AlwaysShowChat end,
+									get = function() return LUI:Module("Panels").db.profile.MicroMenu.AlwaysShow end,
 									set = function()
-												db.Frames.AlwaysShowChat = not db.Frames.AlwaysShowChat
-											end,
+											local a = LUI:Module("Panels").db.profile.Chat
+											a.AlwaysShow = not a.AlwaysShow
+										end,
 									order = 7,
 								},
 								alwaysShowOmen = {
-									name = "Show Omen",
-									desc = "Whether you want to show Omen by entering World or not.\n",
+									name = "Show TPS",
+									desc = "Whether you want to show your TPS Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return db.Frames.AlwaysShowOmen end,
+									get = function() return LUI:Module("Panels").db.profile.MicroMenu.AlwaysShow end,
 									set = function()
-												db.Frames.AlwaysShowOmen = not db.Frames.AlwaysShowOmen
-											end,
+											local a = LUI:Module("Panels").db.profile.Tps
+											a.AlwaysShow = not a.AlwaysShow
+										end,
 									order = 8,
 								},
 								alwaysShowRecount = {
-									name = "Show Recount",
-									desc = "Whether you want to show Recount by entering World or not.\n",
+									name = "Show DPS",
+									desc = "Whether you want to show your DPS Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return db.Frames.AlwaysShowRecount end,
+									get = function() return LUI:Module("Panels").db.profile.MicroMenu.AlwaysShow end,
 									set = function()
-												db.Frames.AlwaysShowRecount = not db.Frames.AlwaysShowRecount
-											end,
+											local a = LUI:Module("Panels").db.profile.Dps
+											a.AlwaysShow = not a.AlwaysShow
+										end,
 									order = 9,
 								},
 								alwaysShowGrid = {
-									name = "Show Grid",
-									desc = "Whether you want to show Grid by entering World or not.\n",
+									name = "Show Raid",
+									desc = "Whether you want to show your Raid Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return db.Frames.AlwaysShowGrid end,
+									get = function() return LUI:Module("Panels").db.profile.MicroMenu.AlwaysShow end,
 									set = function()
-												db.Frames.AlwaysShowGrid = not db.Frames.AlwaysShowGrid
-											end,
+											local a = LUI:Module("Panels").db.profile.Raid
+											a.AlwaysShow = not a.AlwaysShow
+										end,
 									order = 10,
 								},
 								alwaysShowMicroMenu = {
 									name = "Show MicroMenu",
 									desc = "Whether you want to show the Micromenu by entering World or not.\n",
 									type = "toggle",
-									get = function() return db.Frames.AlwaysShowMicroMenu end,
+									get = function() return LUI:Module("Panels").db.profile.MicroMenu.AlwaysShow end,
 									set = function()
-												db.Frames.AlwaysShowMicroMenu = not db.Frames.AlwaysShowMicroMenu
-											end,
+											local a = LUI:Module("Panels").db.profile.MicroMenu
+											a.AlwaysShow = not a.AlwaysShow
+										end,
 									order = 12,
 								},
 								empty22225 = {
@@ -1305,10 +1311,6 @@ local function getOptions()
 				false, function() return not module:IsEnabled() end, type(module.LoadOptions) == "function" and module:LoadOptions() or module.options)
 		end
 		
-		for k,v in pairs(frameOptions) do
-			LUI.options.args.Frames.args = LUI:MergeOptions(LUI.options.args.Frames.args, (type(v) == "function") and v() or v)
-		end
-		
 		for k,v in pairs(unitframeOptions) do
 			LUI.options.args.UnitFrames.args = LUI:MergeOptions(LUI.options.args.UnitFrames.args, (type(v) == "function") and v() or v)
 		end
@@ -1329,10 +1331,6 @@ end
 
 function LUI:RegisterUnitFrame(module)
 	table.insert(unitframeOptions, module.LoadOptions)
-end
-
-function LUI:RegisterFrame(module)
-	table.insert(frameOptions, module.LoadOptions)
 end
 
 function LUI:RegisterModule(module, moduledb, addFunc)
