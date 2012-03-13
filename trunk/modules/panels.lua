@@ -540,6 +540,10 @@ function module:ApplyBackground(kind)
 		frame = _G[db[kind].Anchor]
 	end
 	
+	if not frame then
+		LUI:Print(string.format("Warning! Anchor named %s for %s Frame is not existing!", db[kind].Anchor, kind))
+	end
+	
 	local rc, gc, bc, ac = unpack(Themes.db.profile[strlower(kind)])
 	local r, g, b, a = unpack(Themes.db.profile[strlower(kind.."border")])
 	
