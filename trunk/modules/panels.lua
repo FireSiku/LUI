@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: panels.lua
 	Description: Main Panels Module
-	Version....: 1.1
+	Version....: 1.2
 	Rev Date...: 13/03/2012 [dd/mm/yyyy]
 	
 	Edits:
@@ -23,7 +23,7 @@ local db, dbd
 local frameBackgrounds = {"LEFT", "RIGHT", "NONE"}
 local frameBackgrounds2 = {"LUI v3", "NONE"}
 local animations = {"AlphaSlide", "None"}
-local directions = {"CENTER", "TOPLEFT", "TOP", "TOPRIGHT", "RIGHT", "BOTTOMRIGHT", "BOTTOM", "BOTTOMLEFT", "LEFT"}
+local directions = {"SOLID", "TOPLEFT", "TOP", "TOPRIGHT", "RIGHT", "BOTTOMRIGHT", "BOTTOM", "BOTTOMLEFT", "LEFT"}
 
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
@@ -194,7 +194,7 @@ local function Set(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
 	f:SetHeight(h)
 	f:SetScale(s)
 	
-	if d == "CENTER" then
+	if d == "SOLID" then
 		f.c:SetTexture(fdir.."panelbg1.tga")
 		f.c:SetVertexColor(rc, gc, bc, ac)
 		f.c:SetRotation(0)
@@ -549,6 +549,8 @@ function module:ApplyBackground(kind)
 	local rc, gc, bc, ac = unpack(Themes.db.profile[strlower(kind)])
 	local r, g, b, a = unpack(Themes.db.profile[strlower(kind.."border")])
 	
+	-- temporary for CENTER -> SOLID change
+	if data.Direction == "CENTER" then data.Direction = "SOLID" end
 	backgrounds[kind]:Set(data.Direction, frame, data.Width, data.Height, 1, r, g, b, a, rc, gc, bc, ac)
 	backgrounds[kind]:ClearAllPoints()
 	backgrounds[kind]:SetPoint("TOPLEFT", frame, "TOPLEFT", db[kind].OffsetX, db[kind].OffsetY)
