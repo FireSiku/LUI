@@ -54,9 +54,10 @@ function module:SetTopInfoColors()
 end
 
 function module:SetNavigationColors()
-	for _, v in pairs(LUI_Navi) do
-		v:SetBackdropColor(unpack(Themes.db.profile.navi))
-	end
+	LUI_Navi.Chat.Hover:SetBackdropColor(unpack(Themes.db.profile.navi_hover))
+	LUI_Navi.Tps.Hover:SetBackdropColor(unpack(Themes.db.profile.navi_hover))
+	LUI_Navi.Dps.Hover:SetBackdropColor(unpack(Themes.db.profile.navi_hover))
+	LUI_Navi.Raid.Hover:SetBackdropColor(unpack(Themes.db.profile.navi_hover))
 end
 
 function module:SetNavigationHoverColors()
