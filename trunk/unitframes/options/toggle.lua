@@ -297,7 +297,7 @@ module.ToggleUnit = setmetatable({
 						return
 					end
 					
-					self:UnregisterEvent("PLAYER_REGEN_DISABLED")
+					self:UnregisterEvent("PLAYER_REGEN_ENABLED")
 					
 					if module.db.Party.Enable then
 						if module.db.Party.ShowInRaid then
