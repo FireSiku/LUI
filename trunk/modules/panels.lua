@@ -731,7 +731,7 @@ function module:LoadOptions()
 			} or nil,
 			Anchor = isNotChat and self:NewInput("Anchor", "Type in your "..tag.." Anchor manually.", 4, UIRL) or nil,
 			FrameIdentifierDesc = isNotChat and self:NewDesc("Use the LUI Frame Identifier to search for the Parent Frame of your "..tag.." Addon.\nYou can also use the Blizzard Debug Tool: Type /framestack", 5) or nil,
-			FrameIdentifier = isNotChat and self:NewExecute("LUI Frame Identifier", "Click to show the LUI Frame Identifier", 6, function() LUI_FrameIdentifier:Show() end) or nil,
+			FrameIdentifier = isNotChat and self:NewExecute("LUI Frame Identifier", "Click to show the LUI Frame Identifier", 6, function() LUI_Frame_Identifier:Show() end) or nil,
 			Additional = isNotChat and self:NewInput("Additional Frames", "Type in any additional Frames (seperated by commas), that you would like to show/hide.", 7, function() module:LoadAdditional(db[tag].Additional, true) end) or nil,
 			empty1 = isNotChat and self:NewDesc(" ", 8) or nil,
 			OffsetX = self:NewInputNumber("Offset X", "Choose the X Offset for your "..tag.." Frame to it's Anchor.", 9, dryCall),
