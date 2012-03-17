@@ -33,17 +33,17 @@ local backgrounds = {}
 
 local addonAnchors = {
 	raid = {
-		Grid = 'GridLayoutFrame',
-		Grid2 = 'Grid2LayoutFrame',
-		Healbot = 'HealBot_Action',
-		Vuhdo = 'Vd1',
-		oUF = 'oUF_LUI_raid',
-		Blizzard = 'CompactRaidFrameContainer',
+		Grid = "GridLayoutFrame",
+		Grid2 = "Grid2LayoutFrame",
+		Healbot = "HealBot_Action",
+		Vuhdo = "Vd1",
+		oUF = "oUF_LUI_raid",
+		Blizzard = "CompactRaidFrameContainer",
 	},
 	meter = {
-		Recount = 'Recount_MainWindow',
-		Omen = 'OmenAnchor',
-		Skada = 'SkadaBarWindowSkada',
+		Recount = "Recount_MainWindow",
+		Omen = "OmenAnchor",
+		Skada = "SkadaBarWindowSkada",
 	}
 }
 
@@ -140,11 +140,11 @@ function module:CheckPanels()
 	
 	if LUI:Module("Micromenu", true) then
 		if db.MicroMenu.AlwaysShow or db.MicroMenu.IsShown then
-			MicroMenuButton:SetAlpha(1)
-			MicroMenuButton:Show()
+			LUI.MicroMenu.Button:SetAlpha(1)
+			LUI.MicroMenu.Button:Show()
 		else
-			MicroMenuButton:SetAlpha(0)
-			MicroMenuButton:Hide()
+			LUI.MicroMenu.Button:SetAlpha(0)
+			LUI.MicroMenu.Button:Hide()
 		end
 	end
 end
@@ -188,7 +188,7 @@ function module:LoadAdditional(str, debug)
 	return frames
 end
 
-local function Set(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
+local Set = function(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
 	f:SetParent(p)
 	f:SetWidth(w)
 	f:SetHeight(h)
@@ -325,7 +325,7 @@ end
 
 local bordersize = 9
 local padding = 0
-local function CreateBackground()
+local CreateBackground = function()
 	local f = CreateFrame("Frame", nil, UIParent)
 	
 	f.c = f:CreateTexture(nil, "BACKGROUND")
@@ -655,7 +655,6 @@ module.order = 3
 
 local otherFrames = {}
 function module:RegisterFrame(newmodule)
-	--raidmenu and micromenu ???
 	table.insert(otherFrames, newmodule)
 end
 
@@ -677,7 +676,7 @@ function module:LoadOptions()
 	local dryCall = function() self:Refresh() end
 	local UIRL = function() StaticPopup_Show("RELOAD_UI") end
 	
-	local function CreateOptionsPart(tag, order)
+	local CreateOptionsPart = function(tag, order)
 		local isPrimary = tag ~= "Chat2"
 		local isNotChat = not string.find(tag, "Chat")
 		
@@ -782,7 +781,7 @@ function module:LoadOptions()
 	}
 	
 	for _, newmodule in pairs(otherFrames) do
-		options[newmodule:GetName()] = type(newmodule.LoadOptions) == "function" and newmodule:LoadOptions() or newmodule.LoadOptions
+		options[newmodule:GetName()] = type(newmodule.LoadFrameOptions) == "function" and newmodule:LoadFrameOptions() or newmodule.LoadFrameOptions
 	end
 	
 	return options
@@ -809,7 +808,4 @@ function module:OnEnable()
 		self:CheckPanels()
 		self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	end)
-end
-
-function module:OnDisable()
 end

@@ -672,17 +672,17 @@ end
 -- / OPTIONS MENU / --
 ------------------------------------------------------
 
-local options, moduleList, moduleOptions, newModuleOptions, frameOptions, unitframeOptions = nil, {}, {}, {}, {}, {}
+local options, moduleList, moduleOptions, newModuleOptions, frameOptions = nil, {}, {}, {}, {}
 
 function LUI:MergeOptions(target, source, sort)
 	if type(target) ~= "table" then target = {} end
-	for k,v in pairs(target) do
+	for k, v in pairs(target) do
 		if k == "type" and v ~= "group" then
 			target = {}
 			break
 		end
 	end
-	for k,v in pairs(source) do
+	for k, v in pairs(source) do
 		if type(v) == "table" then
 			target[k] = self:MergeOptions(target[k], v)
 			
@@ -1297,22 +1297,18 @@ local function getOptions()
 			},
 		}
 		
-		for k,v in pairs(moduleList) do
+		for k, v in pairs(moduleList) do
 			LUI.options.args.Modules.args = LUI:MergeOptions(LUI.options.args.Modules.args, (type(v) == "function") and v() or v)
 		end
 		
-		for k,v in pairs(moduleOptions) do
+		for k, v in pairs(moduleOptions) do
 			LUI.options.args = LUI:MergeOptions(LUI.options.args, (type(v) == "function") and v() or v, true)
 		end
 		
-		for k,v in pairs(newModuleOptions) do -- all modules need to be converted over to this
+		for k, v in pairs(newModuleOptions) do -- all modules need to be converted over to this
 			local module = type(v) == "string" and LUI:Module(v) or v
 			LUI.options.args[module:GetName()] = module:NewGroup(module.optionsName or module:GetName(), module.order or 10, module.childGroups or "tab", module.getter or "skip", module.setter or "skip", 
 				false, function() return not module:IsEnabled() end, type(module.LoadOptions) == "function" and module:LoadOptions() or module.options)
-		end
-		
-		for k,v in pairs(unitframeOptions) do
-			LUI.options.args.UnitFrames.args = LUI:MergeOptions(LUI.options.args.UnitFrames.args, (type(v) == "function") and v() or v)
 		end
 	end
 	
@@ -1327,10 +1323,6 @@ function LUI:RegisterAddon(module, addon)
 	if IsAddOnLoaded(addon) then
 		LUI:RegisterOptions(module)
 	end
-end
-
-function LUI:RegisterUnitFrame(module)
-	table.insert(unitframeOptions, module.LoadOptions)
 end
 
 function LUI:RegisterModule(module, moduledb, addFunc)
@@ -1365,7 +1357,7 @@ end
 
 local function mergeOldDB(dest, src)
 	if type(dest) ~= "table" then dest = {} end
-	for k,v in pairs(src) do
+	for k, v in pairs(src) do
 		if type(v) == type(dest[k]) then
 			if type(v) == "table" then
 				dest[k] = mergeOldDB(dest[k], v)
@@ -1377,11 +1369,11 @@ local function mergeOldDB(dest, src)
 	return dest
 end
 
-function LUI:NewNamespace(module, enableButton)
+function LUI:NewNamespace(module, enableButton, noOptions)
 	local mName = module:GetName()
 	
 	-- Add options loader function to list
-	if (not module.addon) or IsAddOnLoaded(module.addon) then
+	if self == LUI and (not module.addon or IsAddOnLoaded(module.addon)) and not noOptions then
 		table.insert(newModuleOptions, mName)
 	end
 	
@@ -1510,12 +1502,12 @@ function LUI:NewNamespace(module, enableButton)
 	return module.db, module.defaults
 end
 
-function LUI:Namespace(module, toggleButton) -- no metatables (note: do not use defaults.Enable for the enabled state, it is handled by the parent module)
+function LUI:Namespace(module, toggleButton, noOptions) -- no metatables (note: do not use defaults.Enable for the enabled state, it is handled by the parent module)
 	local mName = module:GetName()
 	if self.db.children and self.db.children[mName] then return module.db.profile, module.db.defaults.profile end
 	
 	-- Add options loader function to list
-	if self == LUI and (not module.addon or IsAddOnLoaded(module.addon)) then
+	if self == LUI and (not module.addon or IsAddOnLoaded(module.addon)) and not noOptions then
 		table.insert(newModuleOptions, mName)
 	end
 	
@@ -1654,7 +1646,7 @@ end
 
 function LUI:MergeDefaults(target, source)
 	if type(target) ~= "table" then target = {} end
-	for k,v in pairs(source) do
+	for k, v in pairs(source) do
 		if type(v) == "table" then
 			target[k] = self:MergeDefaults(target[k], v)
 		elseif not target[k] then

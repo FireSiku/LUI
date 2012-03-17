@@ -1,9 +1,9 @@
 --[[
 	Project....: LUI NextGenWoWUserInterface
-	File.......: micromenu.lua
+	File.......: LUI_MM.lua
 	Description: Micromenu Module
-	Version....: 1.4
-	Rev Date...: 29/06/2011
+	Version....: 1.5
+	Rev Date...: 14/03/2012
 	
 	Edits:
 		v1.0: Loui
@@ -11,6 +11,7 @@
 		v1.2: Thaly
 		v1.3: Thaly
 		v1.4: Xus
+		v1.5: Thaly
 ]] 
 
 -- External references.
@@ -22,44 +23,49 @@ local RaidMenu = LUI:Module("RaidMenu")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 
-local db
+local db, dbd
+
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
+
+LUI.MicroMenu = {Buttons = {}}
+
+LUI.Versions.micromenu = 1.5
 
 local _, class = UnitClass("player")
 
 function module:SetMicroMenuPosition()
-	MicroMenuAnchor:ClearAllPoints()
-	MicroMenuAnchor:SetPoint("TOPRIGHT",UIParent,"TOPRIGHT",db.Micromenu.NaviX,db.Micromenu.NaviY)
+	LUI.MicroMenu.Anchor:ClearAllPoints()
+	LUI.MicroMenu.Anchor:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.NaviX, db.NaviY)
 	
-	MicroMenuButton:ClearAllPoints()
-	MicroMenuButton:SetPoint("TOPRIGHT",UIParent,"TOPRIGHT",db.Micromenu.X,db.Micromenu.Y)
+	LUI.MicroMenu.Button:ClearAllPoints()
+	LUI.MicroMenu.Button:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.X, db.Y)
 end
 
 function module:SetColors()
 	local r, g, b = unpack(Themes.db.profile.micromenu)
+	local rb, gb, bb, ab = unpack(Themes.db.profile.micromenu_btn)
 	local rc, gc, bc, ac = unpack(Themes.db.profile.micromenu_bg)
 	local rd, gd, bd, ad = unpack(Themes.db.profile.micromenu_bg2)
-	local rb, gb, bb, ab = unpack(Themes.db.profile.micromenu_btn)
 	
-	MicroMenuAnchor:SetBackdropColor(rb, gb, bb, ab)
-	MicroMenu_ButtonRight:SetBackdropColor(rb, gb, bb, ab)
-	MicroMenu_ButtonLeft:SetBackdropColor(rb, gb, bb, ab)
+	LUI.MicroMenu.Anchor:SetBackdropColor(rb, gb, bb, ab)
+	LUI.MicroMenu.ButtonRight:SetBackdropColor(rb, gb, bb, ab)
+	LUI.MicroMenu.ButtonLeft:SetBackdropColor(rb, gb, bb, ab)
 	
-	MicroMenuButton:SetBackdropColor(rc, gc, bc, ac)
-	MicroMenuButtonBG:SetBackdropColor(rd, gd, bd, ad)
+	LUI.MicroMenu.Button:SetBackdropColor(rc, gc, bc, ac)
+	LUI.MicroMenu.Button.BG:SetBackdropColor(rd, gd, bd, ad)
 	
-	MicroMenuButton_Bags:SetBackdropColor(r, g, b, 1)
-	MicroMenuButton_Settings:SetBackdropColor(r, g, b, 1)
-	MicroMenuButton_GM:SetBackdropColor(r, g, b, 1)
-	MicroMenuButton_LFG:SetBackdropColor(r, g, b, 1)
-	MicroMenuButton_Journal:SetBackdropColor(r, g, b, 1)
-	MicroMenuButton_PVP:SetBackdropColor(r, g, b, 1)
-	MicroMenuButton_Guild:SetBackdropColor(r, g, b, 1)
-	MicroMenuButton_Quests:SetBackdropColor(r, g, b, 1)
-	MicroMenuButton_AC:SetBackdropColor(r, g, b, 1)
-	MicroMenuButton_Talents:SetBackdropColor(r, g, b, 1)
-	MicroMenuButton_Spellbook:SetBackdropColor(r, g, b, 1)
-	MicroMenuButton_Player:SetBackdropColor(r, g, b, 1)
+	LUI.MicroMenu.Buttons.Bags:SetBackdropColor(r, g, b, 1)
+	LUI.MicroMenu.Buttons.Settings:SetBackdropColor(r, g, b, 1)
+	LUI.MicroMenu.Buttons.GM:SetBackdropColor(r, g, b, 1)
+	LUI.MicroMenu.Buttons.LFG:SetBackdropColor(r, g, b, 1)
+	LUI.MicroMenu.Buttons.Journal:SetBackdropColor(r, g, b, 1)
+	LUI.MicroMenu.Buttons.PVP:SetBackdropColor(r, g, b, 1)
+	LUI.MicroMenu.Buttons.Guild:SetBackdropColor(r, g, b, 1)
+	LUI.MicroMenu.Buttons.Quests:SetBackdropColor(r, g, b, 1)
+	LUI.MicroMenu.Buttons.AC:SetBackdropColor(r, g, b, 1)
+	LUI.MicroMenu.Buttons.Talents:SetBackdropColor(r, g, b, 1)
+	LUI.MicroMenu.Buttons.Spellbook:SetBackdropColor(r, g, b, 1)
+	LUI.MicroMenu.Buttons.Player:SetBackdropColor(r, g, b, 1)
 	
 	-- talent alert frame
 	TalentMicroButtonAlertBg:SetGradientAlpha("VERTICAL", r/4, g/4, b/4, 1, 0, 0, 0, 1)
@@ -83,112 +89,129 @@ end
 function module:SetMicroMenu()
 	local micro_r, micro_g, micro_b = unpack(Themes.db.profile.micromenu)
 	
-	local MicroMenuAnchor = LUI:CreateMeAFrame("FRAME","MicroMenuAnchor",UIParent,128,128,1,"HIGH",2,"TOPRIGHT",UIParent,"TOPRIGHT",-150,6,1)
-	MicroMenuAnchor:SetBackdrop({
-		bgFile = fdir.."micro_anchor",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Anchor = LUI:CreateMeAFrame("Frame", nil, UIParent, 128, 128, 1, "HIGH", 2, "TOPRIGHT", UIParent, "TOPRIGHT", -150, 6, 1)
+	LUI.MicroMenu.Anchor:SetBackdrop({
+		bgFile = fdir..(Panels.db.profile.MicroMenu.AlwaysShow and "micro_anchor3" or "micro_anchor"),
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0},
 	})
-	MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
-	MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuAnchor:SetAlpha(1)
-	MicroMenuAnchor:Show()
+	LUI.MicroMenu.Anchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
+	LUI.MicroMenu.Anchor:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	if Panels.db.profile.MicroMenu.IsShown == true then
-		MicroMenuAnchor:SetBackdrop({bgFile = fdir.."micro_anchor3",
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-			tile = false,
-			tileSize = 0,
-			edgeSize = 1,
-			insets = { left = 0, right = 0, top = 0, bottom = 0}
-		})
-		MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
-		MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
-	end
-	
-	local MicroMenu_ButtonRight = LUI:CreateMeAFrame("FRAME","MicroMenu_ButtonRight",MicroMenuAnchor,128,128,1,"HIGH",1,"RIGHT",MicroMenuAnchor,"RIGHT",47,-3,1)
-	MicroMenu_ButtonRight:SetBackdrop({bgFile = fdir.."mm_button_right",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Button = LUI:CreateMeAFrame("Frame", nil, UIParent, 550, 512, 1, "BACKGROUND", 1, "TOPRIGHT", UIParent, "TOPRIGHT", 0, -1, 1)
+	LUI.MicroMenu.Button:SetBackdrop({
+		bgFile = fdir.."micro_button",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenu_ButtonRight:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
-	MicroMenu_ButtonRight:SetBackdropBorderColor(0,0,0,0)
-	MicroMenu_ButtonRight:SetAlpha(1)
-	MicroMenu_ButtonRight:Show()
+	LUI.MicroMenu.Button:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg))
+	LUI.MicroMenu.Button:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	local MicroMenu_ButtonLeft = LUI:CreateMeAFrame("FRAME","MicroMenu_ButtonLeft",MicroMenuAnchor,128,128,1,"HIGH",1,"LEFT",MicroMenuAnchor,"LEFT",-47,-3,1)
-	MicroMenu_ButtonLeft:SetBackdrop({bgFile = fdir.."mm_button_left",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Button.BG = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Button, 550, 512, 1, "BACKGROUND", 0, "TOPRIGHT", LUI.MicroMenu.Button, "TOPRIGHT", 0, 0, 1)
+	LUI.MicroMenu.Button.BG:SetBackdrop({
+		bgFile = fdir.."micro_button_bg",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenu_ButtonLeft:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
-	MicroMenu_ButtonLeft:SetBackdropBorderColor(0,0,0,0)
-	MicroMenu_ButtonLeft:SetAlpha(1)
-	MicroMenu_ButtonLeft:Show()
+	LUI.MicroMenu.Button.BG:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg2))
+	LUI.MicroMenu.Button.BG:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.MicroMenu.Button.BG:SetFrameStrata("BACKGROUND")
 	
-	local MicroMenu_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenu_Clicker",MicroMenuAnchor,85,22,1,"HIGH",2,"TOP",MicroMenuAnchor,"TOP",0,0,1)
-	MicroMenu_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Anchor, 85, 22, 1, "HIGH", 2, "TOP", LUI.MicroMenu.Anchor, "TOP", 0, 0, 1)
+	LUI.MicroMenu.Clicker:RegisterForClicks("AnyUp")
+	
+	LUI.MicroMenu.Clicker:SetScript("OnClick", function(self)
+		if RaidMenu.db.profile.Enable then
+			RaidMenu:OverlapPrevention("MM")
+		end
+		if Panels.db.profile.MicroMenu.IsShown then
+			LUI.MicroMenu.AlphaOut:Show()
+			Panels.db.profile.MicroMenu.IsShown = false
+			
+			LUI.MicroMenu.Anchor:SetBackdrop({
+				bgFile = fdir..(GetMouseFocus() == LUI.MicroMenu.Clicker and "micro_anchor2" or "micro_anchor"),
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
+			LUI.MicroMenu.Anchor:SetBackdropBorderColor(0, 0, 0, 0)	
+		else
+			LUI.MicroMenu.AlphaIn:Show()
+			Panels.db.profile.MicroMenu.IsShown = true
+			
+			LUI.MicroMenu.Anchor:SetBackdrop({
+				bgFile = fdir..(GetMouseFocus() == LUI.MicroMenu.Clicker and "micro_anchor4" or "micro_anchor3"),
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
+			LUI.MicroMenu.Anchor:SetBackdropBorderColor(0, 0, 0, 0)	
+		end
+	end)
+	
+	LUI.MicroMenu.Clicker:SetScript("OnEnter", function(self)
+		if Panels.db.profile.MicroMenu.IsShown then
+			LUI.MicroMenu.Anchor:SetBackdrop({
+				bgFile = fdir.."micro_anchor4",
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
+			LUI.MicroMenu.Anchor:SetBackdropBorderColor(0, 0, 0, 0)	
+		else
+			LUI.MicroMenu.Anchor:SetBackdrop({
+				bgFile = fdir.."micro_anchor2",
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
+			LUI.MicroMenu.Anchor:SetBackdropBorderColor(0, 0, 0, 0)	
+		end
+	end)
+	
+	LUI.MicroMenu.Clicker:SetScript("OnLeave", function(self)
+		if Panels.db.profile.MicroMenu.IsShown then
+			LUI.MicroMenu.Anchor:SetBackdrop({
+				bgFile = fdir.."micro_anchor3",
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
+			LUI.MicroMenu.Anchor:SetBackdropBorderColor(0, 0, 0, 0)	
+		else
+			LUI.MicroMenu.Anchor:SetBackdrop({
+				bgFile = fdir.."micro_anchor",
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
+			LUI.MicroMenu.Anchor:SetBackdropBorderColor(0, 0, 0, 0)	
+		end
+	end)
+	
+	LUI.MicroMenu.ButtonRight = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Anchor, 128, 128, 1, "HIGH", 1, "RIGHT", LUI.MicroMenu.Anchor, "RIGHT", 47, -3, 1)
+	LUI.MicroMenu.ButtonRight:SetBackdrop({
+		bgFile = fdir.."mm_button_right",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenu_Clicker:SetBackdropColor(0,0,0,0)
-	MicroMenu_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenu_Clicker:SetAlpha(1)
-	MicroMenu_Clicker:Show()
+	LUI.MicroMenu.ButtonRight:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
+	LUI.MicroMenu.ButtonRight:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	local MicroMenu_ButtonRight_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenu_ButtonRight_Clicker",MicroMenu_ButtonRight,40,12,1,"HIGH",2,"TOP",MicroMenu_ButtonRight,"TOP",22,-5,1)
-	MicroMenu_ButtonRight_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
-	})
-	MicroMenu_ButtonRight_Clicker:SetBackdropColor(0,0,0,0)
-	MicroMenu_ButtonRight_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenu_ButtonRight_Clicker:SetAlpha(1)
-	MicroMenu_ButtonRight_Clicker:Show()
+	LUI.MicroMenu.ButtonRight.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.ButtonRight, 40, 12, 1, "HIGH", 2, "TOP", LUI.MicroMenu.ButtonRight, "TOP", 22, -5, 1)
+	LUI.MicroMenu.ButtonRight.Clicker:RegisterForClicks("AnyUp")
 	
-	local MicroMenu_ButtonLeft_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenu_ButtonLeft_Clicker",MicroMenu_ButtonLeft,40,12,1,"HIGH",2,"TOP",MicroMenu_ButtonLeft,"TOP",-22,-5,1)
-	MicroMenu_ButtonLeft_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
-	})
-	MicroMenu_ButtonLeft_Clicker:SetBackdropColor(0,0,0,0)
-	MicroMenu_ButtonLeft_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenu_ButtonLeft_Clicker:SetAlpha(1)
-	MicroMenu_ButtonLeft_Clicker:Hide()
-	
-	local MicroMenuButton = LUI:CreateMeAFrame("FRAME","MicroMenuButton",UIParent,550,512,1,"BACKGROUND",1,"TOPRIGHT",UIParent,"TOPRIGHT",0,-1,1)
-	MicroMenuButton:SetBackdrop({bgFile = fdir.."micro_button",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
-	})
-	MicroMenuButton:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg))
-	MicroMenuButton:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton:SetAlpha(1)
-	MicroMenuButton:Show()
-	
-	MicroMenu_ButtonRight_Clicker:RegisterForClicks("AnyUp")
-	MicroMenu_ButtonRight_Clicker:SetScript("OnClick", function(self, button)
+	LUI.MicroMenu.ButtonRight.Clicker:SetScript("OnClick", function(self, button)
 		if button == "RightButton" then
 			ToggleFrame(WorldMapFrame)
 		else
@@ -202,35 +225,43 @@ function module:SetMicroMenu()
 		end
 	end)
 	
-	MicroMenu_ButtonRight_Clicker:SetScript("OnEnter", function(self)
-		MicroMenu_ButtonRight:SetBackdrop({bgFile = fdir.."mm_button_right_hover",
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-			tile = false,
-			tileSize = 0,
-			edgeSize = 1,
-			insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.ButtonRight.Clicker:SetScript("OnEnter", function(self)
+		LUI.MicroMenu.ButtonRight:SetBackdrop({
+			bgFile = fdir.."mm_button_right_hover",
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			tile = false, tileSize = 0, edgeSize = 1,
+			insets = {left = 0, right = 0, top = 0, bottom = 0}
 		})
-		MicroMenu_ButtonRight:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
-		MicroMenu_ButtonRight:SetBackdropBorderColor(0,0,0,0)
+		LUI.MicroMenu.ButtonRight:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
+		LUI.MicroMenu.ButtonRight:SetBackdropBorderColor(0, 0, 0, 0)
 	end)
 	
-	MicroMenu_ButtonRight_Clicker:SetScript("OnLeave", function(self)
-		MicroMenu_ButtonRight:SetBackdrop({bgFile = fdir.."mm_button_right",
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-			tile = false,
-			tileSize = 0,
-			edgeSize = 1,
-			insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.ButtonRight.Clicker:SetScript("OnLeave", function(self)
+		LUI.MicroMenu.ButtonRight:SetBackdrop({
+			bgFile = fdir.."mm_button_right",
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			tile = false, tileSize = 0, edgeSize = 1,
+			insets = {left = 0, right = 0, top = 0, bottom = 0}
 		})
-		MicroMenu_ButtonRight:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
-		MicroMenu_ButtonRight:SetBackdropBorderColor(0,0,0,0)
+		LUI.MicroMenu.ButtonRight:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
+		LUI.MicroMenu.ButtonRight:SetBackdropBorderColor(0, 0, 0, 0)
 	end)
 	
-	MicroMenu_ButtonLeft_Clicker:Show()
+	LUI.MicroMenu.ButtonLeft = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Anchor, 128, 128, 1, "HIGH", 1, "LEFT", LUI.MicroMenu.Anchor, "LEFT", -47, -3, 1)
+	LUI.MicroMenu.ButtonLeft:SetBackdrop({
+		bgFile = fdir.."mm_button_left",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI.MicroMenu.ButtonLeft:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
+	LUI.MicroMenu.ButtonLeft:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	MicroMenu_ButtonLeft_Clicker:RegisterForClicks("AnyUp")
-	MicroMenu_ButtonLeft_Clicker:SetScript("OnClick", function(self, button)
-		if (class == "PALADIN") and (IsAddOnLoaded("PallyPower")) and ((button == "RightButton") or (not db.RaidMenu.Enable)) then
+	LUI.MicroMenu.ButtonLeft.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.ButtonLeft, 40, 12, 1, "HIGH", 2, "TOP", LUI.MicroMenu.ButtonLeft, "TOP", -22, -5, 1)
+	LUI.MicroMenu.ButtonLeft.Clicker:RegisterForClicks("AnyUp")
+	
+	LUI.MicroMenu.ButtonLeft.Clicker:SetScript("OnClick", function(self, button)
+		if class == "PALADIN" and IsAddOnLoaded("PallyPower") and (button == "RightButton" or not db.RaidMenu.Enable) then
 			if PallyPowerFrame:IsShown() then
 				PallyPowerFrame:Hide()
 				PallyPowerFrame:SetAlpha(0)
@@ -243,300 +274,171 @@ function module:SetMicroMenu()
 		end
 	end)
 	
-	MicroMenu_ButtonLeft_Clicker:SetScript("OnEnter", function(self)
-		MicroMenu_ButtonLeft:SetBackdrop({bgFile = fdir.."mm_button_left_hover",
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-			tile = false,
-			tileSize = 0,
-			edgeSize = 1,
-			insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.ButtonLeft.Clicker:SetScript("OnEnter", function(self)
+		LUI.MicroMenu.ButtonLeft:SetBackdrop({
+			bgFile = fdir.."mm_button_left_hover",
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			tile = false, tileSize = 0, edgeSize = 1,
+			insets = {left = 0, right = 0, top = 0, bottom = 0}
 		})
-		MicroMenu_ButtonLeft:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
-		MicroMenu_ButtonLeft:SetBackdropBorderColor(0,0,0,0)
+		LUI.MicroMenu.ButtonLeft:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
+		LUI.MicroMenu.ButtonLeft:SetBackdropBorderColor(0, 0, 0, 0)
 	end)
 	
-	MicroMenu_ButtonLeft_Clicker:SetScript("OnLeave", function(self)
-		MicroMenu_ButtonLeft:SetBackdrop({bgFile = fdir.."mm_button_left",
-			edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-			tile = false,
-			tileSize = 0,
-			edgeSize = 1,
-			insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.ButtonLeft.Clicker:SetScript("OnLeave", function(self)
+		LUI.MicroMenu.ButtonLeft:SetBackdrop({
+			bgFile = fdir.."mm_button_left",
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			tile = false, tileSize = 0, edgeSize = 1,
+			insets = {left = 0, right = 0, top = 0, bottom = 0}
 		})
-		MicroMenu_ButtonLeft:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
-		MicroMenu_ButtonLeft:SetBackdropBorderColor(0,0,0,0)
+		LUI.MicroMenu.ButtonLeft:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
+		LUI.MicroMenu.ButtonLeft:SetBackdropBorderColor(0, 0, 0, 0)
 	end)
-
-	local mm_timerout, mm_timerin = 0,0
-	local mm_alpha_timer = 0.5
 	
-	local MMAlphaOut = CreateFrame("Frame", "MMAlphaOut", UIParent)
-	MMAlphaOut:Hide()
-	
-	MMAlphaOut:SetScript("OnUpdate", function(self,elapsed)
-		mm_timerout = mm_timerout + elapsed
-		if mm_timerout < mm_alpha_timer then
-			local alpha = 1 - mm_timerout / mm_alpha_timer 
-			MicroMenuButton:SetAlpha(alpha)
+	LUI.MicroMenu.AlphaOut = CreateFrame("Frame", nil, UIParent)
+	LUI.MicroMenu.AlphaOut:Hide()
+	LUI.MicroMenu.AlphaOut.timer = 0
+	LUI.MicroMenu.AlphaOut:SetScript("OnUpdate", function(self, elapsed)
+		self.timer = self.timer + elapsed
+		if self.timer < .5 then
+			LUI.MicroMenu.Button:SetAlpha(1 - self.timer / .5)
 		else
-			MicroMenuButton:SetAlpha(0)
-			MicroMenuButton:Hide()
-			mm_timerout = 0
+			LUI.MicroMenu.Button:SetAlpha(0)
+			LUI.MicroMenu.Button:Hide()
+			self.timer = 0
 			self:Hide()
 		end
 	end)
 	
-	local MMAlphaIn = CreateFrame("Frame", "MMAlphaIn", UIParent)
-	MMAlphaIn:Hide()
-	
-	MMAlphaIn:SetScript("OnUpdate", function(self,elapsed)
-		MicroMenuButton:Show()
-		mm_timerin = mm_timerin + elapsed
-		if mm_timerin < mm_alpha_timer then
-			local alpha = mm_timerin / mm_alpha_timer 
-			MicroMenuButton:SetAlpha(alpha)
+	LUI.MicroMenu.AlphaIn = CreateFrame("Frame", nil, UIParent)
+	LUI.MicroMenu.AlphaIn:Hide()
+	LUI.MicroMenu.AlphaIn.timer = 0
+	LUI.MicroMenu.AlphaIn:SetScript("OnUpdate", function(self, elapsed)
+		LUI.MicroMenu.Button:Show()
+		self.timer = self.timer + elapsed
+		if self.timer < .5 then
+			LUI.MicroMenu.Button:SetAlpha(self.timer / .5)
 		else
-			MicroMenuButton:SetAlpha(1)
-			mm_timerin = 0
+			LUI.MicroMenu.Button:SetAlpha(1)
+			self.timer = 0
 			self:Hide()
 		end
 	end)
-	
-	MicroMenu_Clicker:SetScript("OnClick", function(self)
-		if db.RaidMenu.Enable then
-			RaidMenu:OverlapPrevention("MM")
-		end
-		if Panels.db.profile.MicroMenu.IsShown == true then
-			MMAlphaOut:Show()
-			Panels.db.profile.MicroMenu.IsShown = false
-			
-			MicroMenuAnchor:SetBackdrop({bgFile = fdir.."micro_anchor",
-				edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0}
-			})
-			MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
-			MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
-		else
-			MMAlphaIn:Show()
-			Panels.db.profile.MicroMenu.IsShown = true
-			
-			MicroMenuAnchor:SetBackdrop({bgFile = fdir.."micro_anchor3",
-				edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0}
-			})
-			MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
-			MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
-		end
-	end)
-	
-	MicroMenu_Clicker:SetScript("OnEnter", function(self)
-		if Panels.db.profile.MicroMenu.IsShown == true then
-			MicroMenuAnchor:SetBackdrop({bgFile = fdir.."micro_anchor4",
-				edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0}
-			})
-			MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
-			MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
-		else
-			MicroMenuAnchor:SetBackdrop({bgFile = fdir.."micro_anchor2",
-				edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0}
-			})
-			MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
-			MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
-		end
-	end)
-		
-	MicroMenu_Clicker:SetScript("OnLeave", function(self)
-		if Panels.db.profile.MicroMenu.IsShown == true then
-			MicroMenuAnchor:SetBackdrop({bgFile = fdir.."micro_anchor3",
-				edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0}
-			})
-			MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
-			MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
-		else
-			MicroMenuAnchor:SetBackdrop({bgFile = fdir.."micro_anchor",
-				edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0}
-			})
-			MicroMenuAnchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
-			MicroMenuAnchor:SetBackdropBorderColor(0,0,0,0)	
-		end
-	end)
-	
-
-	local MicroMenuButtonBG = LUI:CreateMeAFrame("FRAME","MicroMenuButtonBG",MicroMenuButton,550,512,1,"BACKGROUND",0,"TOPRIGHT",MicroMenuButton,"TOPRIGHT",0,0,1)
-	MicroMenuButtonBG:SetBackdrop({bgFile = fdir.."micro_button_bg",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false, tileSize = 0, edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
-	})
-	MicroMenuButtonBG:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg2))
-	MicroMenuButtonBG:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButtonBG:SetFrameStrata("BACKGROUND")
-	MicroMenuButtonBG:Show()
 	
 	--------------------------------------
 	-- MICRO MENU
 	--------------------------------------
 	
 	local bagsFrame
-	
-	local function getBagsFrame()
-		local Bags = LUI:Module("Bags")
-		if Bags.db.profile.Enable == true then
-			bagsFrame = _G["LUIBags"]
+	local getBagsFrame = function()
+		if LUI:Module("Bags").db.profile.Enable then
+			bagsFrame = LUIBags
+		elseif IsAddOnLoaded("Stuffing") then
+			bagsFrame = StuffingFrameBags
+		elseif IsAddOnLoaded("Bagnon") then
+			bagsFrame = BagnonFrameinventory
+		elseif IsAddOnLoaded("ArkInventory") then
+			bagsFrame = ARKINV_Frame1
+		elseif IsAddOnLoaded("OneBag") then
+			bagsFrame = OneBagFrame
 		else
-			if IsAddOnLoaded("Stuffing") then
-				bagsFrame = _G["StuffingFrameBags"]
-			elseif IsAddOnLoaded("Bagnon") then
-				bagsFrame = _G["BagnonFrameinventory"]
-			elseif IsAddOnLoaded("ArkInventory") then
-				bagsFrame = _G["ARKINV_Frame1"]
-			elseif IsAddOnLoaded("OneBag") then
-				bagsFrame = _G["OneBagFrame"]
-			else
-				bagsFrame = nil
-			end
+			bagsFrame = nil
 		end
 	end
 	getBagsFrame()
 	
-	local MicroMenuButton_Bags = LUI:CreateMeAFrame("FRAME","MicroMenuButton_Bags",MicroMenuButton,64,64,1,"BACKGROUND",3,"TOPRIGHT",MicroMenuButton,"TOPRIGHT",0,0,1)
-	MicroMenuButton_Bags:SetBackdrop({bgFile = fdir.."micro_bags",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.Bags = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Button, 64, 64, 1, "BACKGROUND", 3, "TOPRIGHT", LUI.MicroMenu.Button, "TOPRIGHT", 0, 0, 1)
+	LUI.MicroMenu.Buttons.Bags:SetBackdrop({
+		bgFile = fdir.."micro_bags",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0,
+		edgeSize = 1, insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	--MicroMenuButton_Bags:SetBackdropColor(0.6,0.9,1,1)
-	MicroMenuButton_Bags:SetBackdropColor(micro_r, micro_g, micro_b,1)
-	MicroMenuButton_Bags:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Bags:SetAlpha(1)
-	MicroMenuButton_Bags:Show()
+	LUI.MicroMenu.Buttons.Bags:SetBackdropColor(micro_r, micro_g, micro_b, 1)
+	LUI.MicroMenu.Buttons.Bags:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	local MicroMenuButton_Bags_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenuButton_Bags_Clicker",MicroMenuButton_Bags,42,25,1,"BACKGROUND",2,"CENTER",MicroMenuButton_Bags,"CENTER",-8,0,1)
-	MicroMenuButton_Bags_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.Bags.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Buttons.Bags, 42, 25, 1, "BACKGROUND", 2, "CENTER", LUI.MicroMenu.Buttons.Bags, "CENTER", -8, 0, 1)
+	LUI.MicroMenu.Buttons.Bags.Clicker:SetBackdrop({
+		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuButton_Bags_Clicker:SetBackdropColor(0,0,0,1)
-	MicroMenuButton_Bags_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Bags_Clicker:SetFrameStrata("BACKGROUND")
-	MicroMenuButton_Bags_Clicker:SetFrameLevel(2)
-	MicroMenuButton_Bags_Clicker:SetAlpha(0)
-	MicroMenuButton_Bags_Clicker:Show()
+	LUI.MicroMenu.Buttons.Bags.Clicker:SetBackdropColor(0, 0, 0, 1)
+	LUI.MicroMenu.Buttons.Bags.Clicker:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.MicroMenu.Buttons.Bags.Clicker:SetAlpha(0)
 	
-	local MicroMenuButton_Bags_Clicker_State = false
-	
-	MicroMenuButton_Bags_Clicker:SetScript("OnEnter", function(self)
-		MicroMenuButton_Bags_Clicker:SetAlpha(1)
-		MicroMenuButton_Bags_Clicker_State = true
-		GameTooltip:SetOwner(MicroMenuButton_Bags_Clicker, "ANCHOR_NONE ",40,-90)
+	LUI.MicroMenu.Buttons.Bags.Clicker:SetScript("OnEnter", function(self)
+		self:SetAlpha(1)
+		self.State = true
+		GameTooltip:SetOwner(self, "ANCHOR_NONE", 40, -90)
 		GameTooltip:SetText("Bags")
 		GameTooltip:AddLine("Show/Hide your Bags", 1, 1, 1)
 		GameTooltip:Show()
 	end)
-		
-	MicroMenuButton_Bags_Clicker:SetScript("OnLeave", function(self)
+	
+	LUI.MicroMenu.Buttons.Bags.Clicker:SetScript("OnLeave", function(self)
 		getBagsFrame()
 		if bagsFrame and not bagsFrame:IsShown() then
-			MicroMenuButton_Bags_Clicker:SetAlpha(0)
+			self:SetAlpha(0)
 		end
-		MicroMenuButton_Bags_Clicker_State = false
+		self.State = nil
 		GameTooltip:Hide()
 	end)
 	
-	MicroMenuButton_Bags_Clicker:SetScript("OnClick", function(self)
+	LUI.MicroMenu.Buttons.Bags.Clicker:SetScript("OnClick", function(self)
 		ToggleBackpack()
 	end)
 	
-	-- other way is little bit bugging
-	MicroMenuButton_Bags_Clicker:SetScript("OnUpdate", function(self)
-		if bagsFrame then
-			if bagsFrame:IsShown() or MicroMenuButton_Bags_Clicker_State == true then
-				MicroMenuButton_Bags_Clicker:SetAlpha(1)
-			else
-				MicroMenuButton_Bags_Clicker:SetAlpha(0)
-			end
+	LUI.MicroMenu.Buttons.Bags.Clicker:SetScript("OnUpdate", function(self)
+		if (bagsFrame and bagsFrame:IsShown()) or self.State then
+			self:SetAlpha(1)
 		else
-			MicroMenuButton_Bags_Clicker:SetAlpha(0)
+			self:SetAlpha(0)
 		end
 	end)
 	
-	local MicroMenuButton_Settings = LUI:CreateMeAFrame("FRAME","MicroMenuButton_Settings",MicroMenuButton_Bags,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_Bags,"LEFT",-48,0,1)
-	MicroMenuButton_Settings:SetBackdrop({bgFile = fdir.."micro_settings",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.Settings = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Buttons.Bags, 64, 64, 1, "BACKGROUND", 3, "LEFT", LUI.MicroMenu.Buttons.Bags, "LEFT", -48, 0, 1)
+	LUI.MicroMenu.Buttons.Settings:SetBackdrop({
+		bgFile = fdir.."micro_settings",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	--MicroMenuButton_Settings:SetBackdropColor(0.6,0.9,1,1)
-	MicroMenuButton_Settings:SetBackdropColor(micro_r, micro_g, micro_b,1)
-	MicroMenuButton_Settings:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Settings:SetAlpha(1)
-	MicroMenuButton_Settings:Show()
+	LUI.MicroMenu.Buttons.Settings:SetBackdropColor(micro_r, micro_g, micro_b, 1)
+	LUI.MicroMenu.Buttons.Settings:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	local MicroMenuButton_Settings_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenuButton_Settings_Clicker",MicroMenuButton_Settings,30,25,1,"BACKGROUND",2,"CENTER",MicroMenuButton_Settings,"CENTER",-2,0,1)
-	MicroMenuButton_Settings_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.Settings.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Buttons.Settings, 30, 25, 1, "BACKGROUND", 2, "CENTER", LUI.MicroMenu.Buttons.Settings, "CENTER", -2, 0, 1)
+	LUI.MicroMenu.Buttons.Settings.Clicker:SetBackdrop({
+		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuButton_Settings_Clicker:SetBackdropColor(0,0,0,1)
-	MicroMenuButton_Settings_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Settings_Clicker:SetFrameStrata("BACKGROUND")
-	MicroMenuButton_Settings_Clicker:SetFrameLevel(2)
-	MicroMenuButton_Settings_Clicker:SetAlpha(0)
-	MicroMenuButton_Settings_Clicker:Show()
+	LUI.MicroMenu.Buttons.Settings.Clicker:SetBackdropColor(0, 0, 0, 1)
+	LUI.MicroMenu.Buttons.Settings.Clicker:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.MicroMenu.Buttons.Settings.Clicker:SetAlpha(0)
 	
-	MicroMenuButton_Settings_Clicker:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-
-	local MicroMenuButton_Settings_Clicker_State = false
+	LUI.MicroMenu.Buttons.Settings.Clicker:RegisterForClicks("AnyUp")
 	
-	MicroMenuButton_Settings_Clicker:SetScript("OnEnter", function(self)
-		MicroMenuButton_Settings_Clicker:SetAlpha(1)
-		MicroMenuButton_Settings_Clicker_State = true
-		GameTooltip:SetOwner(MicroMenuButton_Settings_Clicker, "ANCHOR_NONE ",40,-90)
-		GameTooltip:SetText("LUI Options")
+	LUI.MicroMenu.Buttons.Settings.Clicker:SetScript("OnEnter", function(self)
+		self:SetAlpha(1)
+		self.State = true
+		GameTooltip:SetOwner(self, "ANCHOR_NONE" ,40, -90)
+		GameTooltip:SetText("Options")
 		GameTooltip:AddLine("Left Click: LUI Option Panel", 1,1,1)
 		GameTooltip:AddLine("Right Click: WoW Option Panel", 1,1,1)
 		GameTooltip:Show()
 	end)
 
-	MicroMenuButton_Settings_Clicker:SetScript("OnLeave", function(self)
-		MicroMenuButton_Settings_Clicker:SetAlpha(0)
-		MicroMenuButton_Settings_Clicker_State = false
+	LUI.MicroMenu.Buttons.Settings.Clicker:SetScript("OnLeave", function(self)
+		self:SetAlpha(0)
+		self.State = nil
 		GameTooltip:Hide()
 	end)
 	
-	MicroMenuButton_Settings_Clicker:SetScript("OnClick", function(self, button)
+	LUI.MicroMenu.Buttons.Settings.Clicker:SetScript("OnClick", function(self, button)
 		if button == "RightButton" then
 			if GameMenuFrame:IsShown() then
 				HideUIPanel(GameMenuFrame)
@@ -548,135 +450,115 @@ function module:SetMicroMenu()
 		end
 	end)
 	
-	MicroMenuButton_Settings_Clicker:SetScript("OnUpdate", function(self)
-		if MicroMenuButton_Settings_Clicker_State == false then
-			if GameMenuFrame:IsShown() or AceConfigDialog.OpenFrames.LUI then
-				MicroMenuButton_Settings_Clicker:SetAlpha(1)
-			else
-				MicroMenuButton_Settings_Clicker:SetAlpha(0)
-			end
+	LUI.MicroMenu.Buttons.Settings.Clicker:SetScript("OnUpdate", function(self)
+		if self.State then return end
+		if GameMenuFrame:IsShown() or AceConfigDialog.OpenFrames.LUI or self.State then
+			self:SetAlpha(1)
+		else
+			self:SetAlpha(0)
 		end
 	end)
 	
-	local MicroMenuButton_GM = LUI:CreateMeAFrame("FRAME","MicroMenuButton_GM",MicroMenuButton_Settings,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_Settings,"LEFT",-33,0,1)
-	MicroMenuButton_GM:SetBackdrop({bgFile = fdir.."micro_gm",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.GM = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Buttons.Settings, 64, 64, 1, "BACKGROUND", 3, "LEFT", LUI.MicroMenu.Buttons.Settings, "LEFT", -33, 0, 1)
+	LUI.MicroMenu.Buttons.GM:SetBackdrop({
+		bgFile = fdir.."micro_gm",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	--MicroMenuButton_GM:SetBackdropColor(0.6,0.9,1,1)
-	MicroMenuButton_GM:SetBackdropColor(micro_r, micro_g, micro_b,1)
-	MicroMenuButton_GM:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_GM:SetAlpha(1)
-	MicroMenuButton_GM:Show()
+	LUI.MicroMenu.Buttons.GM:SetBackdropColor(micro_r, micro_g, micro_b, 1)
+	LUI.MicroMenu.Buttons.GM:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	local MicroMenuButton_GM_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenuButton_GM_Clicker",MicroMenuButton_GM,30,25,1,"BACKGROUND",2,"CENTER",MicroMenuButton_GM,"CENTER",-2,0,1)
-	MicroMenuButton_GM_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.GM.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Buttons.GM, 30, 25, 1, "BACKGROUND", 2, "CENTER", LUI.MicroMenu.Buttons.GM, "CENTER", -2, 0, 1)
+	LUI.MicroMenu.Buttons.GM.Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuButton_GM_Clicker:SetBackdropColor(0,0,0,1)
-	MicroMenuButton_GM_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_GM_Clicker:SetFrameStrata("BACKGROUND")
-	MicroMenuButton_GM_Clicker:SetFrameLevel(2)
-	MicroMenuButton_GM_Clicker:SetAlpha(0)
-	MicroMenuButton_GM_Clicker:Show()
+	LUI.MicroMenu.Buttons.GM.Clicker:SetBackdropColor(0, 0, 0, 1)
+	LUI.MicroMenu.Buttons.GM.Clicker:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.MicroMenu.Buttons.GM.Clicker:SetAlpha(0)
 	
-	local MicroMenuButton_GM_Clicker_State = false
-	
-	MicroMenuButton_GM_Clicker:SetScript("OnEnter", function(self)
-		MicroMenuButton_GM_Clicker:SetAlpha(1)
-		MicroMenuButton_GM_Clicker_State = true
-		GameTooltip:SetOwner(MicroMenuButton_GM_Clicker, "ANCHOR_NONE ",40,-90)
+	LUI.MicroMenu.Buttons.GM.Clicker:SetScript("OnEnter", function(self)
+		self:SetAlpha(1)
+		self.State = true
+		GameTooltip:SetOwner(LUI.MicroMenu.Buttons.GM.Clicker, "ANCHOR_NONE" ,40, -90)
 		GameTooltip:SetText("Help Request")
 		GameTooltip:AddLine("Show/Hide the Help Request Frame", 1, 1, 1)
 		GameTooltip:Show()
 	end)
 		
-	MicroMenuButton_GM_Clicker:SetScript("OnLeave", function(self)
+	LUI.MicroMenu.Buttons.GM.Clicker:SetScript("OnLeave", function(self)
 		if not HelpFrame:IsShown() then
-			MicroMenuButton_GM_Clicker:SetAlpha(0)
+			self:SetAlpha(0)
 		end
-		MicroMenuButton_GM_Clicker_State = false
+		self.State = nil
 		GameTooltip:Hide()
 	end)
 	
-	MicroMenuButton_GM_Clicker:SetScript("OnClick", function(self)
+	LUI.MicroMenu.Buttons.GM.Clicker:SetScript("OnClick", function(self)
 		ToggleHelpFrame()
 	end)
 	
 	HelpFrame:HookScript("OnShow", function(self)
-		MicroMenuButton_GM_Clicker:SetAlpha(1)
+		LUI.MicroMenu.Buttons.GM.Clicker:SetAlpha(1)
 	end)
 	
 	HelpFrame:HookScript("OnHide", function(self)
-		if MicroMenuButton_GM_Clicker_State == false then
-			MicroMenuButton_GM_Clicker:SetAlpha(0)
+		if not LUI.MicroMenu.Buttons.GM.Clicker.State then
+			LUI.MicroMenu.Buttons.GM.Clicker:SetAlpha(0)
 		end
 	end)
 	
-	local MicroMenuButton_LFG = LUI:CreateMeAFrame("FRAME","MicroMenuButton_LFG",MicroMenuButton_GM,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_GM,"LEFT",-33,0,1)
-	MicroMenuButton_LFG:SetBackdrop({bgFile = fdir.."micro_lfg",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.LFG = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Buttons.GM, 64, 64, 1, "BACKGROUND", 3, "LEFT", LUI.MicroMenu.Buttons.GM, "LEFT", -33, 0, 1)
+	LUI.MicroMenu.Buttons.LFG:SetBackdrop({
+		bgFile = fdir.."micro_lfg",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	--MicroMenuButton_LFG:SetBackdropColor(0.6,0.9,1,1)
-	MicroMenuButton_LFG:SetBackdropColor(micro_r, micro_g, micro_b,1)
-	MicroMenuButton_LFG:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_LFG:SetAlpha(1)
-	MicroMenuButton_LFG:Show()
+	LUI.MicroMenu.Buttons.LFG:SetBackdropColor(micro_r, micro_g, micro_b, 1)
+	LUI.MicroMenu.Buttons.LFG:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	local MicroMenuButton_LFG_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenuButton_LFG_Clicker",MicroMenuButton_LFG,30,25,1,"BACKGROUND",2,"CENTER",MicroMenuButton_LFG,"CENTER",-2,0,1)
-	MicroMenuButton_LFG_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.LFG.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Buttons.LFG, 30, 25, 1, "BACKGROUND", 2, "CENTER", LUI.MicroMenu.Buttons.LFG, "CENTER", -2, 0, 1)
+	LUI.MicroMenu.Buttons.LFG.Clicker:SetBackdrop({
+		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuButton_LFG_Clicker:SetBackdropColor(0,0,0,1)
-	MicroMenuButton_LFG_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_LFG_Clicker:SetFrameStrata("BACKGROUND")
-	MicroMenuButton_LFG_Clicker:SetFrameLevel(2)
-	MicroMenuButton_LFG_Clicker:SetAlpha(0)
-	MicroMenuButton_LFG_Clicker:Show()
+	LUI.MicroMenu.Buttons.LFG.Clicker:SetBackdropColor(0, 0, 0, 1)
+	LUI.MicroMenu.Buttons.LFG.Clicker:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.MicroMenu.Buttons.LFG.Clicker:SetAlpha(0)
 	
-	local MicroMenuButton_LFG_Clicker_State = false
-
-	MicroMenuButton_LFG_Clicker:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	LUI.MicroMenu.Buttons.LFG.Clicker:RegisterForClicks("AnyUp")
 	
-	MicroMenuButton_LFG_Clicker:SetScript("OnEnter", function(self)
-		MicroMenuButton_LFG_Clicker:SetAlpha(1)
-		MicroMenuButton_LFG_Clicker_State = true
-		GameTooltip:SetOwner(MicroMenuButton_LFG_Clicker, "ANCHOR_NONE ",40,-90)
+	LUI.MicroMenu.Buttons.LFG.Clicker:SetScript("OnEnter", function(self)
+		self:SetAlpha(1)
+		self.State = true
+		GameTooltip:SetOwner(self, "ANCHOR_NONE", 40, -90)
 		GameTooltip:SetText("Dungeon/Raid Finder")
 		GameTooltip:AddLine("Left-Click: Dungeons/Instances...", 1, 1, 1)
 		GameTooltip:AddLine("Right-Click: Raids...", 1, 1, 1)
 		if UnitLevel("player") < 15 then
 			GameTooltip:AddLine("Available with Level 15", 1, 0, 0)
+		elseif UnitLevel("player") < 85 then
+			GameTooltip:AddLine("Raidfinder available with Level 85", 1, 0, 0)
 		end
 		GameTooltip:Show()
 	end)
 		
-	MicroMenuButton_LFG_Clicker:SetScript("OnLeave", function(self)
+	LUI.MicroMenu.Buttons.LFG.Clicker:SetScript("OnLeave", function(self)
 		if not LFDParentFrame:IsShown() and not RaidParentFrame:IsShown() then
-			MicroMenuButton_LFG_Clicker:SetAlpha(0)
+			self:SetAlpha(0)
 		end
-		MicroMenuButton_LFG_Clicker_State = false
+		self.State = false
 		GameTooltip:Hide()
 	end)
 	
-	MicroMenuButton_LFG_Clicker:SetScript("OnClick", function(self, button)
+	LUI.MicroMenu.Buttons.LFG.Clicker:SetScript("OnClick", function(self, button)
 		if UnitLevel("player") >= 15 then
-			if button == "RightButton" then
+			if button == "RightButton" and UnitLevel("player") >= 85 then
 				ToggleFrame(RaidParentFrame)
 			else
 				ToggleFrame(LFDParentFrame)
@@ -685,74 +567,64 @@ function module:SetMicroMenu()
 	end)
 	
 	LFDParentFrame:HookScript("OnShow", function(self)
-		MicroMenuButton_LFG_Clicker:SetAlpha(1)
+		LUI.MicroMenu.Buttons.LFG.Clicker:SetAlpha(1)
 	end)
 	
 	LFDParentFrame:HookScript("OnHide", function(self)
-		if MicroMenuButton_LFG_Clicker_State == false and not RaidParentFrame:IsShown() then
-			MicroMenuButton_LFG_Clicker:SetAlpha(0)
+		if not LUI.MicroMenu.Buttons.LFG.Clicker.State and not RaidParentFrame:IsShown() then
+			LUI.MicroMenu.Buttons.LFG.Clicker:SetAlpha(0)
 		end
 	end)
 	
 	RaidParentFrame:HookScript("OnShow", function(self)
-		MicroMenuButton_LFG_Clicker:SetAlpha(1)
+		LUI.MicroMenu.Buttons.LFG.Clicker:SetAlpha(1)
 	end)
 	
 	RaidParentFrame:HookScript("OnHide", function(self)
-		if MicroMenuButton_LFG_Clicker_State == false and not LFDParentFrame:IsShown() then
-			MicroMenuButton_LFG_Clicker:SetAlpha(0)
+		if not LUI.MicroMenu.Buttons.LFG.Clicker.State and not LFDParentFrame:IsShown() then
+			LUI.MicroMenu.Buttons.LFG.Clicker:SetAlpha(0)
 		end
 	end)
 	
-	local MicroMenuButton_Journal = LUI:CreateMeAFrame("FRAME","MicroMenuButton_Journal",MicroMenuButton_LFG,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_LFG,"LEFT",-33,0,1)
-	MicroMenuButton_Journal:SetBackdrop({bgFile = fdir.."micro_encounter",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
+	LUI.MicroMenu.Buttons.Journal = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Buttons.LFG, 64, 64, 1, "BACKGROUND", 3, "LEFT", LUI.MicroMenu.Buttons.LFG, "LEFT", -33, 0, 1)
+	LUI.MicroMenu.Buttons.Journal:SetBackdrop({
+		bgFile = fdir.."micro_encounter",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	--MicroMenuButton_Journal:SetBackdropColor(0.6,0.9,1,1)
-	MicroMenuButton_Journal:SetBackdropColor(micro_r, micro_g, micro_b,1)
-	MicroMenuButton_Journal:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Journal:SetAlpha(1)
-	MicroMenuButton_Journal:Show()
+	LUI.MicroMenu.Buttons.Journal:SetBackdropColor(micro_r, micro_g, micro_b, 1)
+	LUI.MicroMenu.Buttons.Journal:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	local MicroMenuButton_Journal_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenuButton_Journal_Clicker",MicroMenuButton_Journal,30,25,1,"BACKGROUND",2,"CENTER",MicroMenuButton_Journal,"CENTER",-2,0,1)
-	MicroMenuButton_Journal_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.Journal.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Buttons.Journal, 30, 25, 1, "BACKGROUND", 2, "CENTER", LUI.MicroMenu.Buttons.Journal, "CENTER", -2, 0, 1)
+	LUI.MicroMenu.Buttons.Journal.Clicker:SetBackdrop({
+		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuButton_Journal_Clicker:SetBackdropColor(0,0,0,1)
-	MicroMenuButton_Journal_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Journal_Clicker:SetFrameStrata("BACKGROUND")
-	MicroMenuButton_Journal_Clicker:SetFrameLevel(2)
-	MicroMenuButton_Journal_Clicker:SetAlpha(0)
-	MicroMenuButton_Journal_Clicker:Show()	
+	LUI.MicroMenu.Buttons.Journal.Clicker:SetBackdropColor(0, 0, 0, 1)
+	LUI.MicroMenu.Buttons.Journal.Clicker:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.MicroMenu.Buttons.Journal.Clicker:SetAlpha(0)
 	
-	local MicroMenuButton_Journal_Clicker_State = false
-	
-	MicroMenuButton_Journal_Clicker:SetScript("OnEnter", function(self)
-		MicroMenuButton_Journal_Clicker:SetAlpha(1)
-		MicroMenuButton_Journal_Clicker_State = true
-		GameTooltip:SetOwner(MicroMenuButton_Journal_Clicker, "ANCHOR_NONE ",40,-90)
-		GameTooltip:SetText("Dungeon Journal")
+	LUI.MicroMenu.Buttons.Journal.Clicker:SetScript("OnEnter", function(self)
+		self:SetAlpha(1)
+		self.State = true
+		GameTooltip:SetOwner(self, "ANCHOR_NONE", 40, -90)
+		GameTooltip:SetText("Encounter Journal")
 		GameTooltip:AddLine("Dungeon & Encounter Journal", 1, 1, 1)
 		GameTooltip:Show()
 	end)
 
-	MicroMenuButton_Journal_Clicker:SetScript("OnLeave", function(self)
+	LUI.MicroMenu.Buttons.Journal.Clicker:SetScript("OnLeave", function(self)
 		if not EncounterJournal or not EncounterJournal:IsShown() then
-			MicroMenuButton_Journal_Clicker:SetAlpha(0)
+			self:SetAlpha(0)
 		end
-		MicroMenuButton_Journal_Clicker_State = false
+		self.State = nil
 		GameTooltip:Hide()
 	end)
 		
-	MicroMenuButton_Journal_Clicker:SetScript("OnClick", function(self)
+	LUI.MicroMenu.Buttons.Journal.Clicker:SetScript("OnClick", function(self)
 		if EncounterJournal then
 			if EncounterJournal:IsShown() then
 				HideUIPanel(EncounterJournal)
@@ -761,72 +633,50 @@ function module:SetMicroMenu()
 			end
 		else
 			LoadAddOn("Blizzard_EncounterJournal")
-			
-			EncounterJournal:HookScript("OnShow", function(self)
-				MicroMenuButton_Journal_Clicker:SetAlpha(1)
-			end)
-				
-			EncounterJournal:HookScript("OnHide", function(self)
-				if MicroMenuButton_Journal_Clicker_State == false then
-					MicroMenuButton_Journal_Clicker:SetAlpha(0)
-				end
-			end)
-			
 			ShowUIPanel(EncounterJournal)
+			self:SetAlpha(1)
 		end
 	end)
 	
-	local function hookEJ(event)
+	module:RegisterEvent("ADDON_LOADED", function(event)
 		if event and not IsAddOnLoaded("Blizzard_EncounterJournal") then return end
-		if event then self:UnregisterEvent(event) end
+		if event then module:UnregisterEvent(event) end
 		
 		EncounterJournal:HookScript("OnShow", function(self)
-			MicroMenuButton_Journal_Clicker:SetAlpha(1)
+			LUI.MicroMenu.Buttons.Journal.Clicker:SetAlpha(1)
 		end)
 		EncounterJournal:HookScript("OnHide", function(self)
-			if MicroMenuButton_Journal_Clicker_State == false then
-				MicroMenuButton_Journal_Clicker:SetAlpha(0)
+			if not LUI.MicroMenu.Buttons.Journal.Clicker.State then
+				LUI.MicroMenu.Buttons.Journal.Clicker:SetAlpha(0)
 			end
 		end)
-	end
-	
-	self:RegisterEvent("ADDON_LOADED", hookEJ)
+	end)
 		
-	local MicroMenuButton_PVP = LUI:CreateMeAFrame("FRAME","MicroMenuButton_PVP",MicroMenuButton_Journal,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_Journal,"LEFT",-33,0,1)
-	MicroMenuButton_PVP:SetBackdrop({bgFile = fdir.."micro_pvp",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.PVP = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Buttons.Journal, 64, 64, 1, "BACKGROUND", 3, "LEFT", LUI.MicroMenu.Buttons.Journal, "LEFT", -33, 0, 1)
+	LUI.MicroMenu.Buttons.PVP:SetBackdrop({
+		bgFile = fdir.."micro_pvp",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	--MicroMenuButton_PVP:SetBackdropColor(0.6,0.9,1,1)
-	MicroMenuButton_PVP:SetBackdropColor(micro_r, micro_g, micro_b,1)
-	MicroMenuButton_PVP:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_PVP:SetAlpha(1)
-	MicroMenuButton_PVP:Show()
+	LUI.MicroMenu.Buttons.PVP:SetBackdropColor(micro_r, micro_g, micro_b, 1)
+	LUI.MicroMenu.Buttons.PVP:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	local MicroMenuButton_PVP_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenuButton_PVP_Clicker",MicroMenuButton_PVP,30,25,1,"BACKGROUND",2,"CENTER",MicroMenuButton_PVP,"CENTER",-2,0,1)
-	MicroMenuButton_PVP_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.PVP.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Buttons.PVP, 30, 25, 1, "BACKGROUND", 2, "CENTER", LUI.MicroMenu.Buttons.PVP, "CENTER", -2, 0, 1)
+	LUI.MicroMenu.Buttons.PVP.Clicker:SetBackdrop({
+		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuButton_PVP_Clicker:SetBackdropColor(0,0,0,1)
-	MicroMenuButton_PVP_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_PVP_Clicker:SetFrameStrata("BACKGROUND")
-	MicroMenuButton_PVP_Clicker:SetFrameLevel(2)
-	MicroMenuButton_PVP_Clicker:SetAlpha(0)
-	MicroMenuButton_PVP_Clicker:Show()
+	LUI.MicroMenu.Buttons.PVP.Clicker:SetBackdropColor(0, 0, 0, 1)
+	LUI.MicroMenu.Buttons.PVP.Clicker:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.MicroMenu.Buttons.PVP.Clicker:SetAlpha(0)
 	
-	local MicroMenuButton_PVP_Clicker_State = false
-	
-	MicroMenuButton_PVP_Clicker:SetScript("OnEnter", function(self)
-		MicroMenuButton_PVP_Clicker:SetAlpha(1)
-		MicroMenuButton_PVP_Clicker_State = true
-		GameTooltip:SetOwner(MicroMenuButton_PVP_Clicker, "ANCHOR_NONE ",40,-90)
+	LUI.MicroMenu.Buttons.PVP.Clicker:SetScript("OnEnter", function(self)
+		self:SetAlpha(1)
+		self.State = true
+		GameTooltip:SetOwner(self, "ANCHOR_NONE", 40, -90)
 		GameTooltip:SetText("PvP")
 		GameTooltip:AddLine("Arena/Battlegrounds...", 1, 1, 1)
 		if UnitLevel("player") < 10 then
@@ -835,15 +685,15 @@ function module:SetMicroMenu()
 		GameTooltip:Show()
 	end)
 		
-	MicroMenuButton_PVP_Clicker:SetScript("OnLeave", function(self)
+	LUI.MicroMenu.Buttons.PVP.Clicker:SetScript("OnLeave", function(self)
 		if not PVPFrame:IsShown() then
-			MicroMenuButton_PVP_Clicker:SetAlpha(0)
+			self:SetAlpha(0)
 		end
-		MicroMenuButton_PVP_Clicker_State = false
+		self.State = nil
 		GameTooltip:Hide()
 	end)
 	
-	MicroMenuButton_PVP_Clicker:SetScript("OnClick", function(self)
+	LUI.MicroMenu.Buttons.PVP.Clicker:SetScript("OnClick", function(self)
 		if UnitLevel("player") >= 10 then
 			if PVPFrame:IsShown() then
 				HideUIPanel(PVPFrame)
@@ -854,67 +704,57 @@ function module:SetMicroMenu()
 	end)
 	
 	PVPFrame:HookScript("OnShow", function(self)
-		MicroMenuButton_PVP_Clicker:SetAlpha(1)
+		LUI.MicroMenu.Buttons.PVP.Clicker:SetAlpha(1)
 	end)
 	
 	PVPFrame:HookScript("OnHide", function(self)
-		if MicroMenuButton_PVP_Clicker_State == false then
-			MicroMenuButton_PVP_Clicker:SetAlpha(0)
+		if not LUI.MicroMenu.Buttons.PVP.Clicker.State then
+			LUI.MicroMenu.Buttons.PVP.Clicker:SetAlpha(0)
 		end
 	end)
 	
-	local MicroMenuButton_Guild = LUI:CreateMeAFrame("FRAME","MicroMenuButton_Guild",MicroMenuButton_PVP,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_PVP,"LEFT",-33,0,1)
-	MicroMenuButton_Guild:SetBackdrop({bgFile = fdir.."micro_guild",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.Guild = LUI:CreateMeAFrame("Frame",nil,LUI.MicroMenu.Buttons.PVP,64,64,1,"BACKGROUND",3,"LEFT",LUI.MicroMenu.Buttons.PVP,"LEFT",-33,0, 1)
+	LUI.MicroMenu.Buttons.Guild:SetBackdrop({
+		bgFile = fdir.."micro_guild",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	--MicroMenuButton_Guild:SetBackdropColor(0.6,0.9,1,1)
-	MicroMenuButton_Guild:SetBackdropColor(micro_r, micro_g, micro_b,1)
-	MicroMenuButton_Guild:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Guild:SetAlpha(1)
-	MicroMenuButton_Guild:Show()
+	LUI.MicroMenu.Buttons.Guild:SetBackdropColor(micro_r, micro_g, micro_b, 1)
+	LUI.MicroMenu.Buttons.Guild:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	local MicroMenuButton_Guild_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenuButton_Guild_Clicker",MicroMenuButton_Guild,30,25,1,"BACKGROUND",2,"CENTER",MicroMenuButton_Guild,"CENTER",-2,0,1)
-	MicroMenuButton_Guild_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.Guild.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Buttons.Guild, 30, 25, 1, "BACKGROUND", 2, "CENTER", LUI.MicroMenu.Buttons.Guild, "CENTER", -2, 0, 1)
+	LUI.MicroMenu.Buttons.Guild.Clicker:SetBackdrop({
+		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuButton_Guild_Clicker:SetBackdropColor(0,0,0,1)
-	MicroMenuButton_Guild_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Guild_Clicker:SetFrameStrata("BACKGROUND")
-	MicroMenuButton_Guild_Clicker:SetFrameLevel(2)
-	MicroMenuButton_Guild_Clicker:SetAlpha(0)
-	MicroMenuButton_Guild_Clicker:Show()
+	LUI.MicroMenu.Buttons.Guild.Clicker:SetBackdropColor(0, 0, 0, 1)
+	LUI.MicroMenu.Buttons.Guild.Clicker:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.MicroMenu.Buttons.Guild.Clicker:SetAlpha(0)
 	
-	local MicroMenuButton_Guild_Clicker_State = false
+	LUI.MicroMenu.Buttons.Guild.Clicker:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	
-	MicroMenuButton_Guild_Clicker:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-	
-	MicroMenuButton_Guild_Clicker:SetScript("OnEnter", function(self)
-		MicroMenuButton_Guild_Clicker:SetAlpha(1)
-		MicroMenuButton_Guild_Clicker_State = true
-		GameTooltip:SetOwner(MicroMenuButton_Guild_Clicker, "ANCHOR_NONE ",40,-90)
+	LUI.MicroMenu.Buttons.Guild.Clicker:SetScript("OnEnter", function(self)
+		self:SetAlpha(1)
+		self.State = true
+		GameTooltip:SetOwner(LUI.MicroMenu.Buttons.Guild.Clicker, "ANCHOR_NONE", 40, -90)
 		GameTooltip:SetText("Guild/Friends")
 		GameTooltip:AddLine("Left Click: Guild Frame", 1, 1, 1)
 		GameTooltip:AddLine("Right Click: Friends Frame", 1, 1, 1)
 		GameTooltip:Show()
 	end)
 		
-	MicroMenuButton_Guild_Clicker:SetScript("OnLeave", function(self)
+	LUI.MicroMenu.Buttons.Guild.Clicker:SetScript("OnLeave", function(self)
 		if not FriendsFrame:IsShown() and not GuildFrame:IsShown() then
-			MicroMenuButton_Guild_Clicker:SetAlpha(0)
+			self:SetAlpha(0)
 		end
-		MicroMenuButton_Guild_Clicker_State = false
+		self.State = nil
 		GameTooltip:Hide()
 	end)
 	
-	MicroMenuButton_Guild_Clicker:SetScript("OnClick", function(self, button)
+	LUI.MicroMenu.Buttons.Guild.Clicker:SetScript("OnClick", function(self, button)
 		if button == "RightButton" then
 			if FriendsFrame:IsShown() then
 				HideUIPanel(FriendsFrame)
@@ -922,7 +762,7 @@ function module:SetMicroMenu()
 				ShowUIPanel(FriendsFrame)
 			end
 		else
-			if GuildFrame:IsShown() or (LookingForGuildFrame and LookingForGuildFrame:IsShown()) then
+			if GuildFrame:IsShown() or LookingForGuildFrame:IsShown() then
 				if IsInGuild() then HideUIPanel(GuildFrame) else HideUIPanel(LookingForGuildFrame) end
 			else
 				if IsInGuild() then ShowUIPanel(GuildFrame) else ShowUIPanel(LookingForGuildFrame) end
@@ -931,12 +771,12 @@ function module:SetMicroMenu()
 	end)
 	
 	FriendsFrame:HookScript("OnShow", function(self)
-		MicroMenuButton_Guild_Clicker:SetAlpha(1)
+		LUI.MicroMenu.Buttons.Guild.Clicker:SetAlpha(1)
 	end)
 	
 	FriendsFrame:HookScript("OnHide", function(self)
-		if not GuildFrame:IsShown() and MicroMenuButton_Guild_Clicker_State == false then
-			MicroMenuButton_Guild_Clicker:SetAlpha(0)
+		if not GuildFrame:IsShown() and not LUI.MicroMenu.Buttons.Guild.Clicker.State then
+			LUI.MicroMenu.Buttons.Guild.Clicker:SetAlpha(0)
 		end
 	end)
 	
@@ -944,64 +784,64 @@ function module:SetMicroMenu()
 	if not LookingForGuildFrame then LoadAddOn("Blizzard_LookingForGuildUI") end
 	
 	GuildFrame:HookScript("OnShow", function(self)
-		MicroMenuButton_Guild_Clicker:SetAlpha(1)
+		LUI.MicroMenu.Buttons.Guild.Clicker:SetAlpha(1)
 	end)
 	
 	GuildFrame:HookScript("OnHide", function(self)
-		if not FriendsFrame:IsShown() and MicroMenuButton_Guild_Clicker_State == false then
-			MicroMenuButton_Guild_Clicker:SetAlpha(0)
+		if not FriendsFrame:IsShown() and not LookingForGuildFrame:IsShown() and not LUI.MicroMenu.Buttons.Guild.Clicker.State then
+			LUI.MicroMenu.Buttons.Guild.Clicker:SetAlpha(0)
 		end
 	end)
 	
-	local MicroMenuButton_Quests = LUI:CreateMeAFrame("FRAME","MicroMenuButton_Quests",MicroMenuButton_Guild,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_Guild,"LEFT",-33,0,1)
-	MicroMenuButton_Quests:SetBackdrop({bgFile = fdir.."micro_quests",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LookingForGuildFrame:HookScript("OnShow", function(self)
+		LUI.MicroMenu.Buttons.Guild.Clicker:SetAlpha(1)
+	end)
+	
+	LookingForGuildFrame:HookScript("OnHide", function(self)
+		if not FriendsFrame:IsShown() and not GuildFrame:IsShown() and not LUI.MicroMenu.Buttons.Guild.Clicker.State then
+			LUI.MicroMenu.Buttons.Guild.Clicker:SetAlpha(0)
+		end
+	end)
+	
+	LUI.MicroMenu.Buttons.Quests = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Buttons.Guild, 64, 64, 1, "BACKGROUND", 3, "LEFT", LUI.MicroMenu.Buttons.Guild, "LEFT", -33, 0, 1)
+	LUI.MicroMenu.Buttons.Quests:SetBackdrop({
+		bgFile = fdir.."micro_quests",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	--MicroMenuButton_Quests:SetBackdropColor(0.6,0.9,1,1)
-	MicroMenuButton_Quests:SetBackdropColor(micro_r, micro_g, micro_b,1)
-	MicroMenuButton_Quests:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Quests:SetAlpha(1)
-	MicroMenuButton_Quests:Show()
+	LUI.MicroMenu.Buttons.Quests:SetBackdropColor(micro_r, micro_g, micro_b, 1)
+	LUI.MicroMenu.Buttons.Quests:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	local MicroMenuButton_Quests_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenuButton_Quests_Clicker",MicroMenuButton_Quests,30,25,1,"BACKGROUND",2,"CENTER",MicroMenuButton_Quests,"CENTER",-2,0,1)
-	MicroMenuButton_Quests_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.Quests.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Buttons.Quests, 30, 25, 1, "BACKGROUND", 2, "CENTER", LUI.MicroMenu.Buttons.Quests, "CENTER", -2, 0, 1)
+	LUI.MicroMenu.Buttons.Quests.Clicker:SetBackdrop({
+		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuButton_Quests_Clicker:SetBackdropColor(0,0,0,1)
-	MicroMenuButton_Quests_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Quests_Clicker:SetFrameStrata("BACKGROUND")
-	MicroMenuButton_Quests_Clicker:SetFrameLevel(2)
-	MicroMenuButton_Quests_Clicker:SetAlpha(0)
-	MicroMenuButton_Quests_Clicker:Show()
+	LUI.MicroMenu.Buttons.Quests.Clicker:SetBackdropColor(0, 0, 0, 1)
+	LUI.MicroMenu.Buttons.Quests.Clicker:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.MicroMenu.Buttons.Quests.Clicker:SetAlpha(0)
 	
-	local MicroMenuButton_Quests_Clicker_State = false
-	
-	MicroMenuButton_Quests_Clicker:SetScript("OnEnter", function(self)
-		MicroMenuButton_Quests_Clicker:SetAlpha(1)
-		MicroMenuButton_Quests_Clicker_State = true
-		GameTooltip:SetOwner(MicroMenuButton_Quests_Clicker, "ANCHOR_NONE ",40,-90)
+	LUI.MicroMenu.Buttons.Quests.Clicker:SetScript("OnEnter", function(self)
+		self:SetAlpha(1)
+		self.State = true
+		GameTooltip:SetOwner(self, "ANCHOR_NONE", 40, -90)
 		GameTooltip:SetText("Quest Log")
 		GameTooltip:AddLine("Show/Hide your Quest Log", 1, 1, 1)
 		GameTooltip:Show()
 	end)
 		
-	MicroMenuButton_Quests_Clicker:SetScript("OnLeave", function(self)
+	LUI.MicroMenu.Buttons.Quests.Clicker:SetScript("OnLeave", function(self)
 		if not QuestLogFrame:IsShown() then
-			MicroMenuButton_Quests_Clicker:SetAlpha(0)
+			self:SetAlpha(0)
 		end
-		MicroMenuButton_Quests_Clicker_State = false
+		self.State = nil
 		GameTooltip:Hide()
 	end)
 	
-	MicroMenuButton_Quests_Clicker:SetScript("OnClick", function(self)
+	LUI.MicroMenu.Buttons.Quests.Clicker:SetScript("OnClick", function(self)
 		if QuestLogFrame:IsShown() then
 			HideUIPanel(QuestLogFrame)
 		else
@@ -1010,112 +850,90 @@ function module:SetMicroMenu()
 	end)
 	
 	QuestLogFrame:HookScript("OnShow", function(self)
-		MicroMenuButton_Quests_Clicker:SetAlpha(1)
+		LUI.MicroMenu.Buttons.Quests.Clicker:SetAlpha(1)
 	end)
 	
 	QuestLogFrame:HookScript("OnHide", function(self)
-		if MicroMenuButton_Quests_Clicker_State == false then
-			MicroMenuButton_Quests_Clicker:SetAlpha(0)
+		if not LUI.MicroMenu.Buttons.Quests.Clicker.State then
+			LUI.MicroMenu.Buttons.Quests.Clicker:SetAlpha(0)
 		end
 	end)
 	
-	local MicroMenuButton_AC = LUI:CreateMeAFrame("FRAME","MicroMenuButton_AC",MicroMenuButton_Quests,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_Quests,"LEFT",-33,0,1)
-	MicroMenuButton_AC:SetBackdrop({bgFile = fdir.."micro_achievements",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.AC = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Buttons.Quests, 64, 64, 1, "BACKGROUND", 3, "LEFT", LUI.MicroMenu.Buttons.Quests, "LEFT", -33, 0, 1)
+	LUI.MicroMenu.Buttons.AC:SetBackdrop({
+		bgFile = fdir.."micro_achievements",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	--MicroMenuButton_AC:SetBackdropColor(0.6,0.9,1,1)
-	MicroMenuButton_AC:SetBackdropColor(micro_r, micro_g, micro_b,1)
-	MicroMenuButton_AC:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_AC:SetAlpha(1)
-	MicroMenuButton_AC:Show()
+	LUI.MicroMenu.Buttons.AC:SetBackdropColor(micro_r, micro_g, micro_b, 1)
+	LUI.MicroMenu.Buttons.AC:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	local MicroMenuButton_AC_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenuButton_AC_Clicker",MicroMenuButton_AC,30,25,1,"BACKGROUND",2,"CENTER",MicroMenuButton_AC,"CENTER",-2,0,1)
-	MicroMenuButton_AC_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.AC.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Buttons.AC, 30, 25, 1, "BACKGROUND", 2, "CENTER", LUI.MicroMenu.Buttons.AC, "CENTER", -2, 0, 1)
+	LUI.MicroMenu.Buttons.AC.Clicker:SetBackdrop({
+		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuButton_AC_Clicker:SetBackdropColor(0,0,0,1)
-	MicroMenuButton_AC_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_AC_Clicker:SetFrameStrata("BACKGROUND")
-	MicroMenuButton_AC_Clicker:SetFrameLevel(2)
-	MicroMenuButton_AC_Clicker:SetAlpha(0)
-	MicroMenuButton_AC_Clicker:Show()
+	LUI.MicroMenu.Buttons.AC.Clicker:SetBackdropColor(0, 0, 0, 1)
+	LUI.MicroMenu.Buttons.AC.Clicker:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.MicroMenu.Buttons.AC.Clicker:SetAlpha(0)
 	
-	local MicroMenuButton_AC_Clicker_State = false
-	
-	MicroMenuButton_AC_Clicker:SetScript("OnEnter", function(self)
-		MicroMenuButton_AC_Clicker:SetAlpha(1)
-		MicroMenuButton_AC_Clicker_State = true
-		GameTooltip:SetOwner(MicroMenuButton_AC_Clicker, "ANCHOR_NONE ",40,-90)
+	LUI.MicroMenu.Buttons.AC.Clicker:SetScript("OnEnter", function(self)
+		self:SetAlpha(1)
+		self.State = true
+		GameTooltip:SetOwner(self, "ANCHOR_NONE", 40, -90)
 		GameTooltip:SetText("Achievements")
 		GameTooltip:AddLine("Show/Hide your Achievements", 1, 1, 1)
 		GameTooltip:Show()
 	end)
 		
-	MicroMenuButton_AC_Clicker:SetScript("OnLeave", function(self)
-		MicroMenuButton_AC_Clicker:SetAlpha(0)
-		MicroMenuButton_AC_Clicker_State = false
+	LUI.MicroMenu.Buttons.AC.Clicker:SetScript("OnLeave", function(self)
+		self:SetAlpha(0)
+		self.State = nil
 		GameTooltip:Hide()
 	end)
 	
-	MicroMenuButton_AC_Clicker:SetScript("OnClick", function(self)
+	LUI.MicroMenu.Buttons.AC.Clicker:SetScript("OnClick", function(self)
 		ToggleAchievementFrame()
 	end)
 	
-	MicroMenuButton_AC_Clicker:SetScript("OnUpdate", function(self)
+	LUI.MicroMenu.Buttons.AC.Clicker:SetScript("OnUpdate", function(self)
 		if IsAddOnLoaded("Blizzard_AchievementUI") then
-			if MicroMenuButton_AC_Clicker_State == false then
-				if AchievementFrame:IsShown() then
-					MicroMenuButton_AC_Clicker:SetAlpha(1)
-				else
-					MicroMenuButton_AC_Clicker:SetAlpha(0)
-				end
+			if not LUI.MicroMenu.Buttons.AC.Clicker.State and AchievementFrame:IsShown() then
+				LUI.MicroMenu.Buttons.AC.Clicker:SetAlpha(1)
+			else
+				LUI.MicroMenu.Buttons.AC.Clicker:SetAlpha(0)
 			end
 		end
 	end)
 	
-	local MicroMenuButton_Talents = LUI:CreateMeAFrame("FRAME","MicroMenuButton_Talents",MicroMenuButton_AC,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_AC,"LEFT",-33,0,1)
-	MicroMenuButton_Talents:SetBackdrop({bgFile = fdir.."micro_talents",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.Talents = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Buttons.AC, 64, 64, 1, "BACKGROUND", 3, "LEFT", LUI.MicroMenu.Buttons.AC, "LEFT", -33, 0, 1)
+	LUI.MicroMenu.Buttons.Talents:SetBackdrop({
+		bgFile = fdir.."micro_talents",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	--MicroMenuButton_Talents:SetBackdropColor(0.6,0.9,1,1)
-	MicroMenuButton_Talents:SetBackdropColor(micro_r, micro_g, micro_b,1)
-	MicroMenuButton_Talents:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Talents:SetAlpha(1)
-	MicroMenuButton_Talents:Show()
+	LUI.MicroMenu.Buttons.Talents:SetBackdropColor(micro_r, micro_g, micro_b, 1)
+	LUI.MicroMenu.Buttons.Talents:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	local MicroMenuButton_Talents_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenuButton_Talents_Clicker",MicroMenuButton_Talents,30,25,1,"BACKGROUND",2,"CENTER",MicroMenuButton_Talents,"CENTER",-2,0,1)
-	MicroMenuButton_Talents_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.Talents.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Buttons.Talents, 30, 25, 1, "BACKGROUND", 2, "CENTER", LUI.MicroMenu.Buttons.Talents, "CENTER", -2, 0, 1)
+	LUI.MicroMenu.Buttons.Talents.Clicker:SetBackdrop({
+		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuButton_Talents_Clicker:SetBackdropColor(0,0,0,1)
-	MicroMenuButton_Talents_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Talents_Clicker:SetFrameStrata("BACKGROUND")
-	MicroMenuButton_Talents_Clicker:SetFrameLevel(2)
-	MicroMenuButton_Talents_Clicker:SetAlpha(0)
-	MicroMenuButton_Talents_Clicker:Show()
+	LUI.MicroMenu.Buttons.Talents.Clicker:SetBackdropColor(0, 0, 0, 1)
+	LUI.MicroMenu.Buttons.Talents.Clicker:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.MicroMenu.Buttons.Talents.Clicker:SetAlpha(0)
 	
-	local MicroMenuButton_Talents_Clicker_State = false
-	
-	MicroMenuButton_Talents_Clicker:SetScript("OnEnter", function(self)
-		MicroMenuButton_Talents_Clicker:SetAlpha(1)
-		MicroMenuButton_Talents_Clicker_State = true
-		GameTooltip:SetOwner(MicroMenuButton_Talents_Clicker, "ANCHOR_NONE ",40,-90)
+	LUI.MicroMenu.Buttons.Talents.Clicker:SetScript("OnEnter", function(self)
+		self:SetAlpha(1)
+		self.State = true
+		GameTooltip:SetOwner(self, "ANCHOR_NONE", 40, -90)
 		GameTooltip:SetText("Talents")
 		GameTooltip:AddLine("Show/Hide your Talent Frame", 1, 1, 1)
 		if UnitLevel("player") < 10 then
@@ -1124,15 +942,15 @@ function module:SetMicroMenu()
 		GameTooltip:Show()
 	end)
 		
-	MicroMenuButton_Talents_Clicker:SetScript("OnLeave", function(self)
+	LUI.MicroMenu.Buttons.Talents.Clicker:SetScript("OnLeave", function(self)
 		if not PlayerTalentFrame:IsShown() then
-			MicroMenuButton_Talents_Clicker:SetAlpha(0)
+			self:SetAlpha(0)
 		end
-		MicroMenuButton_Talents_Clicker_State = false
+		self.State = nil
 		GameTooltip:Hide()
 	end)
 	
-	MicroMenuButton_Talents_Clicker:SetScript("OnClick", function(self)
+	LUI.MicroMenu.Buttons.Talents.Clicker:SetScript("OnClick", function(self)
 		if UnitLevel("player") >= 10 then
 			if PlayerTalentFrame:IsShown() then
 				HideUIPanel(PlayerTalentFrame)
@@ -1150,64 +968,54 @@ function module:SetMicroMenu()
 	end
 	
 	PlayerTalentFrame:HookScript("OnShow", function(self)
-		MicroMenuButton_Talents_Clicker:SetAlpha(1)
+		LUI.MicroMenu.Buttons.Talents.Clicker:SetAlpha(1)
 	end)
 	
 	PlayerTalentFrame:HookScript("OnHide", function(self)
-		if MicroMenuButton_Talents_Clicker_State == false then
-			MicroMenuButton_Talents_Clicker:SetAlpha(0)
+		if not LUI.MicroMenu.Buttons.Talents.Clicker.State then
+			LUI.MicroMenu.Buttons.Talents.Clicker:SetAlpha(0)
 		end
 	end)
 	
-	local MicroMenuButton_Spellbook = LUI:CreateMeAFrame("FRAME","MicroMenuButton_Spellbook",MicroMenuButton_Talents,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_Talents,"LEFT",-33,0,1)
-	MicroMenuButton_Spellbook:SetBackdrop({bgFile = fdir.."micro_spellbook",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.Spellbook = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Buttons.Talents, 64, 64, 1, "BACKGROUND", 3, "LEFT", LUI.MicroMenu.Buttons.Talents, "LEFT", -33, 0, 1)
+	LUI.MicroMenu.Buttons.Spellbook:SetBackdrop({
+		bgFile = fdir.."micro_spellbook",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	--MicroMenuButton_Spellbook:SetBackdropColor(0.6,0.9,1,1)
-	MicroMenuButton_Spellbook:SetBackdropColor(micro_r, micro_g, micro_b,1)
-	MicroMenuButton_Spellbook:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Spellbook:SetAlpha(1)
-	MicroMenuButton_Spellbook:Show()
+	LUI.MicroMenu.Buttons.Spellbook:SetBackdropColor(micro_r, micro_g, micro_b, 1)
+	LUI.MicroMenu.Buttons.Spellbook:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	local MicroMenuButton_Spellbook_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenuButton_Spellbook_Clicker",MicroMenuButton_Spellbook,30,25,1,"BACKGROUND",2,"CENTER",MicroMenuButton_Spellbook,"CENTER",-2,0,1)
-	MicroMenuButton_Spellbook_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.Spellbook.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Buttons.Spellbook, 30, 25, 1, "BACKGROUND", 2, "CENTER", LUI.MicroMenu.Buttons.Spellbook, "CENTER", -2, 0, 1)
+	LUI.MicroMenu.Buttons.Spellbook.Clicker:SetBackdrop({
+		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuButton_Spellbook_Clicker:SetBackdropColor(0,0,0,1)
-	MicroMenuButton_Spellbook_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Spellbook_Clicker:SetFrameStrata("BACKGROUND")
-	MicroMenuButton_Spellbook_Clicker:SetFrameLevel(2)
-	MicroMenuButton_Spellbook_Clicker:SetAlpha(0)
-	MicroMenuButton_Spellbook_Clicker:Show()
+	LUI.MicroMenu.Buttons.Spellbook.Clicker:SetBackdropColor(0, 0, 0, 1)
+	LUI.MicroMenu.Buttons.Spellbook.Clicker:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.MicroMenu.Buttons.Spellbook.Clicker:SetAlpha(0)
 	
-	local MicroMenuButton_Spellbook_Clicker_State = false
-	
-	MicroMenuButton_Spellbook_Clicker:SetScript("OnEnter", function(self)
-		MicroMenuButton_Spellbook_Clicker:SetAlpha(1)
-		MicroMenuButton_Spellbook_Clicker_State = true
-		GameTooltip:SetOwner(MicroMenuButton_Spellbook_Clicker, "ANCHOR_NONE ",40,-90)
+	LUI.MicroMenu.Buttons.Spellbook.Clicker:SetScript("OnEnter", function(self)
+		self:SetAlpha(1)
+		self.State = true
+		GameTooltip:SetOwner(self, "ANCHOR_NONE", 40, -90)
 		GameTooltip:SetText("Spellbook & Abilities")
 		GameTooltip:AddLine("Show/Hide your Spellbook", 1, 1, 1)
 		GameTooltip:Show()
 	end)
 		
-	MicroMenuButton_Spellbook_Clicker:SetScript("OnLeave", function(self)
+	LUI.MicroMenu.Buttons.Spellbook.Clicker:SetScript("OnLeave", function(self)
 		if not SpellBookFrame:IsShown() then
-			MicroMenuButton_Spellbook_Clicker:SetAlpha(0)
+			self:SetAlpha(0)
 		end
-		MicroMenuButton_Spellbook_Clicker_State = false
+		self.State = nil
 		GameTooltip:Hide()
 	end)
 	
-	MicroMenuButton_Spellbook_Clicker:SetScript("OnClick", function(self)
+	LUI.MicroMenu.Buttons.Spellbook.Clicker:SetScript("OnClick", function(self)
 		if InCombatLockdown() then return end
 		if SpellBookFrame:IsShown() then
 			HideUIPanel(SpellBookFrame)
@@ -1217,64 +1025,54 @@ function module:SetMicroMenu()
 	end)
 	
 	SpellBookFrame:HookScript("OnShow", function(self)
-		MicroMenuButton_Spellbook_Clicker:SetAlpha(1)
+		LUI.MicroMenu.Buttons.Spellbook.Clicker:SetAlpha(1)
 	end)
 	
 	SpellBookFrame:HookScript("OnHide", function(self)
-		if MicroMenuButton_Spellbook_Clicker_State == false then
-			MicroMenuButton_Spellbook_Clicker:SetAlpha(0)
+		if not LUI.MicroMenu.Buttons.Spellbook.Clicker.State then
+			LUI.MicroMenu.Buttons.Spellbook.Clicker:SetAlpha(0)
 		end
 	end)
 	
-	local MicroMenuButton_Player = LUI:CreateMeAFrame("FRAME","MicroMenuButton_Player",MicroMenuButton_Spellbook,64,64,1,"BACKGROUND",3,"LEFT",MicroMenuButton_Spellbook,"LEFT",-32,0,1)
-	MicroMenuButton_Player:SetBackdrop({bgFile = fdir.."micro_player",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.Player = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Buttons.Spellbook, 64, 64, 1, "BACKGROUND", 3, "LEFT", LUI.MicroMenu.Buttons.Spellbook, "LEFT", -32, 0, 1)
+	LUI.MicroMenu.Buttons.Player:SetBackdrop({
+		bgFile = fdir.."micro_player",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	--MicroMenuButton_Player:SetBackdropColor(0.6,0.9,1,1)
-	MicroMenuButton_Player:SetBackdropColor(micro_r, micro_g, micro_b,1)
-	MicroMenuButton_Player:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Player:SetAlpha(1)
-	MicroMenuButton_Player:Show()
+	LUI.MicroMenu.Buttons.Player:SetBackdropColor(micro_r, micro_g, micro_b, 1)
+	LUI.MicroMenu.Buttons.Player:SetBackdropBorderColor(0, 0, 0, 0)
 	
-	local MicroMenuButton_Player_Clicker = LUI:CreateMeAFrame("BUTTON","MicroMenuButton_Player_Clicker",MicroMenuButton_Player,42,25,1,"BACKGROUND",2,"CENTER",MicroMenuButton_Player,"CENTER",-8,0,1)
-	MicroMenuButton_Player_Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0}
+	LUI.MicroMenu.Buttons.Player.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Buttons.Player, 42, 25, 1, "BACKGROUND", 2, "CENTER", LUI.MicroMenu.Buttons.Player, "CENTER", -8, 0, 1)
+	LUI.MicroMenu.Buttons.Player.Clicker:SetBackdrop({
+		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	MicroMenuButton_Player_Clicker:SetBackdropColor(0,0,0,1)
-	MicroMenuButton_Player_Clicker:SetBackdropBorderColor(0,0,0,0)
-	MicroMenuButton_Player_Clicker:SetFrameStrata("BACKGROUND")
-	MicroMenuButton_Player_Clicker:SetFrameLevel(2)
-	MicroMenuButton_Player_Clicker:SetAlpha(0)
-	MicroMenuButton_Player_Clicker:Show()
+	LUI.MicroMenu.Buttons.Player.Clicker:SetBackdropColor(0, 0, 0, 1)
+	LUI.MicroMenu.Buttons.Player.Clicker:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.MicroMenu.Buttons.Player.Clicker:SetAlpha(0)
 	
-	local MicroMenuButton_Player_Clicker_State = false
-	
-	MicroMenuButton_Player_Clicker:SetScript("OnEnter", function(self)
-		MicroMenuButton_Player_Clicker:SetAlpha(1)
-		MicroMenuButton_Player_Clicker_State = true
-		GameTooltip:SetOwner(MicroMenuButton_Player_Clicker, "ANCHOR_NONE ",40,-90)
+	LUI.MicroMenu.Buttons.Player.Clicker:SetScript("OnEnter", function(self)
+		self:SetAlpha(1)
+		self.State = true
+		GameTooltip:SetOwner(self, "ANCHOR_NONE ",40,-90)
 		GameTooltip:SetText("Character Info")
 		GameTooltip:AddLine("Show/Hide your Character Pane", 1, 1, 1)
 		GameTooltip:Show()
 	end)
 		
-	MicroMenuButton_Player_Clicker:SetScript("OnLeave", function(self)
+	LUI.MicroMenu.Buttons.Player.Clicker:SetScript("OnLeave", function(self)
 		if not CharacterFrame:IsShown() then
-			MicroMenuButton_Player_Clicker:SetAlpha(0)
+			self:SetAlpha(0)
 		end
-		MicroMenuButton_Player_Clicker_State = false
+		self.State = nil
 		GameTooltip:Hide()
 	end)
 	
-	MicroMenuButton_Player_Clicker:SetScript("OnClick", function(self)
+	LUI.MicroMenu.Buttons.Player.Clicker:SetScript("OnClick", function(self)
 		if CharacterFrame:IsShown() then
 			HideUIPanel(CharacterFrame)
 		else
@@ -1283,12 +1081,12 @@ function module:SetMicroMenu()
 	end)
 	
 	CharacterFrame:HookScript("OnShow", function(self)
-		MicroMenuButton_Player_Clicker:SetAlpha(1)
+		LUI.MicroMenu.Buttons.Player.Clicker:SetAlpha(1)
 	end)
 	
 	CharacterFrame:HookScript("OnHide", function(self)
-		if MicroMenuButton_Player_Clicker_State == false then
-			MicroMenuButton_Player_Clicker:SetAlpha(0)
+		if not LUI.MicroMenu.Buttons.Player.Clicker.State then
+			LUI.MicroMenu.Buttons.Player.Clicker:SetAlpha(0)
 		end
 	end)
 	
@@ -1301,7 +1099,7 @@ function module:SetMicroMenu()
 	
 	-- talent alert frame
 	TalentMicroButtonAlert:ClearAllPoints()
-	TalentMicroButtonAlert:SetPoint("TOP", MicroMenuButton_Talents, "BOTTOM")
+	TalentMicroButtonAlert:SetPoint("TOP", LUI.MicroMenu.Buttons.Talents, "BOTTOM")
 	
 	TalentMicroButtonAlertBg:SetGradientAlpha("VERTICAL", micro_r/4, micro_g/4, micro_b/4, 1, 0, 0, 0, 1)
 	
@@ -1344,16 +1142,16 @@ function module:SetMicroMenu()
 
 end
 
-local defaults = {
-	Micromenu = {
-		X = "0",
-		Y = "-1",
-		NaviX = "-150",
-		NaviY = "6",
+module.defaults = {
+	profile = {
+		X = 0,
+		Y = -1,
+		NaviX = -150,
+		NaviY = 6,
 	}
 }
 
-function module:LoadOptions()
+function module:LoadFrameOptions()
 	local options = {
 		name = "MicroMenu",
 		type = "group",
@@ -1367,14 +1165,14 @@ function module:LoadOptions()
 				args = {
 					MMX = {
 						name = "X Value",
-						desc = "X Value for your MicroMenu.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Micromenu.X,
+						desc = "X Value for your Micro Menu.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..dbd.profile.X,
 						type = "input",
-						get = function() return db.Micromenu.X end,
+						get = function() return tostring(db.X) end,
 						set = function(self,MMX)
 								if MMX == nil or MMX == "" then
-									MMX = "0"
+									MMX = 0
 								end
-								db.Micromenu.X = MMX
+								db.X = tonumber(MMX)
 								
 								module:SetMicroMenuPosition()
 							end,
@@ -1382,14 +1180,14 @@ function module:LoadOptions()
 					},
 					MMY = {
 						name = "Y Value",
-						desc = "Y Value for your MicroMenu.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Micromenu.Y,
+						desc = "Y Value for your Micro Menu.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..dbd.profile.Y,
 						type = "input",
-						get = function() return db.Micromenu.Y end,
+						get = function() return tostring(db.Y) end,
 						set = function(self,MMY)
 								if MMY == nil or MMY == "" then
-									MMY = "0"
+									MMY = 0
 								end
-								db.Micromenu.Y = MMY
+								db.Y = tonumber(MMY)
 								
 								module:SetMicroMenuPosition()
 							end,
@@ -1405,14 +1203,14 @@ function module:LoadOptions()
 				args = {
 					MMNaviX = {
 						name = "X Value",
-						desc = "X Value for your MicroMenu Navigation Panel.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Micromenu.NaviX,
+						desc = "X Value for your Micro Menu Navigation Panel.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..dbd.profile.NaviX,
 						type = "input",
-						get = function() return db.Micromenu.NaviX end,
+						get = function() return tostring(db.NaviX) end,
 						set = function(self,MMNaviX)
 								if MMNaviX == nil or MMNaviX == "" then
-									MMNaviX = "0"
+									MMNaviX = 0
 								end
-								db.Micromenu.NaviX = MMNaviX
+								db.NaviX = tonumber(MMNaviX)
 								
 								module:SetMicroMenuPosition()
 							end,
@@ -1420,14 +1218,14 @@ function module:LoadOptions()
 					},
 					MMNaviY = {
 						name = "Y Value",
-						desc = "Y Value for your MicroMenu Navigation Panel.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Micromenu.NaviY,
+						desc = "Y Value for your Micro Menu Navigation Panel.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..dbd.profile.NaviY,
 						type = "input",
-						get = function() return db.Micromenu.NaviY end,
+						get = function() return tostring(db.NaviY) end,
 						set = function(self,MMNaviY)
 								if MMNaviY == nil or MMNaviY == "" then
-									MMNaviY = "0"
+									MMNaviY = 0
 								end
-								db.Micromenu.NaviY = MMNaviY
+								db.NaviY = tonumber(MMNaviY)
 								
 								module:SetMicroMenuPosition()
 							end,
@@ -1442,19 +1240,16 @@ function module:LoadOptions()
 end
 
 function module:OnInitialize()
-	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
-	LUI:RefreshDefaults()
-	LUI:Refresh()
+	db, dbd = LUI:NewNamespace(self, nil, true)
 	
-	self.db = LUI.db.profile
-	db = self.db
+	if LUICONFIG.Versions.micromenu ~= LUI.Versions.micromenu then
+		db:ResetProfile()
+		LUICONFIG.Versions.micromenu = LUI.Versions.micromenu
+	end
 	
-	LUI:Module("Panels"):RegisterFrame(self) -- check panels module after rework
+	LUI:Module("Panels"):RegisterFrame(self)
 end
 
 function module:OnEnable()
 	self:SetMicroMenu()
-end
-
-function module:OnDisable()
 end
