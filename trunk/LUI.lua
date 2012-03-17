@@ -789,7 +789,7 @@ local function getOptions()
 									name = "Show Minimap",
 									desc = "Whether you want to show the Minimap by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.MicroMenu.AlwaysShow end,
+									get = function() return LUI:Module("Panels").db.profile.Minimap.AlwaysShow end,
 									set = function()
 											local a = LUI:Module("Panels").db.profile.Minimap
 											a.AlwaysShow = not a.AlwaysShow
@@ -800,7 +800,7 @@ local function getOptions()
 									name = "Show Chat",
 									desc = "Whether you want to show the Chat Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.MicroMenu.AlwaysShow end,
+									get = function() return LUI:Module("Panels").db.profile.Chat.AlwaysShow end,
 									set = function()
 											local a = LUI:Module("Panels").db.profile.Chat
 											a.AlwaysShow = not a.AlwaysShow
@@ -811,7 +811,7 @@ local function getOptions()
 									name = "Show TPS",
 									desc = "Whether you want to show your TPS Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.MicroMenu.AlwaysShow end,
+									get = function() return LUI:Module("Panels").db.profile.Tps.AlwaysShow end,
 									set = function()
 											local a = LUI:Module("Panels").db.profile.Tps
 											a.AlwaysShow = not a.AlwaysShow
@@ -822,7 +822,7 @@ local function getOptions()
 									name = "Show DPS",
 									desc = "Whether you want to show your DPS Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.MicroMenu.AlwaysShow end,
+									get = function() return LUI:Module("Panels").db.profile.Dps.AlwaysShow end,
 									set = function()
 											local a = LUI:Module("Panels").db.profile.Dps
 											a.AlwaysShow = not a.AlwaysShow
@@ -833,7 +833,7 @@ local function getOptions()
 									name = "Show Raid",
 									desc = "Whether you want to show your Raid Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.MicroMenu.AlwaysShow end,
+									get = function() return LUI:Module("Panels").db.profile.Raid.AlwaysShow end,
 									set = function()
 											local a = LUI:Module("Panels").db.profile.Raid
 											a.AlwaysShow = not a.AlwaysShow

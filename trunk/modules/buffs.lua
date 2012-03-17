@@ -688,23 +688,43 @@ function module:Refresh(...)
 	local num = db.General.Num_row * db.General.Row_max
 	for i = 1, num do
 		local button = _G["LUIBuffsAuraButton"..i]
-		if button and button.duration and button.count then
-			button.duration:SetFont(Media:Fetch("font", db.Buffs.Duration.Font), db.Buffs.Duration.Size, db.Buffs.Duration.Outline)
-			button.duration:SetTextColor(db.Buffs.Duration.Color.r, db.Buffs.Duration.Color.g, db.Buffs.Duration.Color.b ,1)
-			
-			button.count:SetFont(Media:Fetch("font", db.Buffs.Count.Font), db.Buffs.Count.Size, db.Buffs.Count.Outline)
-			button.count:SetTextColor(db.Buffs.Count.Color.r, db.Buffs.Count.Color.g, db.Buffs.Count.Color.b ,1)
+		if button then
+			if button.duration then
+				button.duration:SetFont(Media:Fetch("font", db.Buffs.Duration.Font), db.Buffs.Duration.Size, db.Buffs.Duration.Outline)
+				button.duration:SetTextColor(db.Buffs.Duration.Color.r, db.Buffs.Duration.Color.g, db.Buffs.Duration.Color.b ,1)
+			end
+			if button.count then
+				button.count:SetFont(Media:Fetch("font", db.Buffs.Count.Font), db.Buffs.Count.Size, db.Buffs.Count.Outline)
+				button.count:SetTextColor(db.Buffs.Count.Color.r, db.Buffs.Count.Color.g, db.Buffs.Count.Color.b ,1)
+			end
+		end
+	end
+	
+	for i = 1, 24 do
+		local button = _G["LUIBuffsConsolidateButton"..i]
+		if button then
+			if button.duration then
+				button.duration:SetFont(Media:Fetch("font", db.Buffs.Duration.Font), db.Buffs.Duration.Size, db.Buffs.Duration.Outline)
+				button.duration:SetTextColor(db.Buffs.Duration.Color.r, db.Buffs.Duration.Color.g, db.Buffs.Duration.Color.b ,1)
+			end
+			if button.count then
+				button.count:SetFont(Media:Fetch("font", db.Buffs.Count.Font), db.Buffs.Count.Size, db.Buffs.Count.Outline)
+				button.count:SetTextColor(db.Buffs.Count.Color.r, db.Buffs.Count.Color.g, db.Buffs.Count.Color.b ,1)
+			end
 		end
 	end
 	
 	for i = 1, db.General.Num_row do
 		local button = _G["LUIDebuffsAuraButton"..i]
-		if button and button.duration and button.count then
-			button.duration:SetFont(Media:Fetch("font", db.Debuffs.Duration.Font), db.Debuffs.Duration.Size, db.Debuffs.Duration.Outline)
-			button.duration:SetTextColor(db.Debuffs.Duration.Color.r, db.Debuffs.Duration.Color.g, db.Debuffs.Duration.Color.b ,1)
-			
-			button.count:SetFont(Media:Fetch("font", db.Debuffs.Count.Font), db.Debuffs.Count.Size, db.Debuffs.Count.Outline)
-			button.count:SetTextColor(db.Debuffs.Count.Color.r, db.Debuffs.Count.Color.g, db.Debuffs.Count.Color.b ,1)
+		if button then
+			if button.duration then
+				button.duration:SetFont(Media:Fetch("font", db.Debuffs.Duration.Font), db.Debuffs.Duration.Size, db.Debuffs.Duration.Outline)
+				button.duration:SetTextColor(db.Debuffs.Duration.Color.r, db.Debuffs.Duration.Color.g, db.Debuffs.Duration.Color.b ,1)
+			end
+			if button.count then
+				button.count:SetFont(Media:Fetch("font", db.Debuffs.Count.Font), db.Debuffs.Count.Size, db.Debuffs.Count.Outline)
+				button.count:SetTextColor(db.Debuffs.Count.Color.r, db.Debuffs.Count.Color.g, db.Debuffs.Count.Color.b ,1)
+			end
 		end
 	end
 	
@@ -725,6 +745,7 @@ function module:LoadOptions()
 			Size = self:NewSlider("Size", "Choose your "..tag.." "..kind.." Fontsize.", 1, 1, 40, 1, true),
 			Font = self:NewSelect("Font", "Choose your "..tag.." "..kind.." Font.", 2, widgetLists.font, "LSM30_Font", true),
 			Outline = self:NewSelect("Font Flag", "Choose your "..tag.." "..kind.." Font Flag.", 3, fontflags, nil, dryCall),
+			Color = self:NewColorNoAlpha(tag, tag.." "..kind, 4, dryCall),
 		})
 		
 		return options
