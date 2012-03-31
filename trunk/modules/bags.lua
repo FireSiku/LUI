@@ -87,6 +87,7 @@ local BagsSlots = {}		--replace self.bagsframe_buttons
 InterfaceOptionsDisplayPanelShowFreeBagSpace:Hide()
 --Making sure the Static Popup uses the good args.
 StaticPopupDialogs["CONFIRM_BUY_BANK_SLOT"] = {
+	preferredIndex = 3
 	text = CONFIRM_BUY_BANK_SLOT,
 	button1 = YES,
 	button2 = NO,

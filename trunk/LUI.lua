@@ -1602,6 +1602,7 @@ function LUI:OnInitialize()
 	end
 	
 	StaticPopupDialogs["RELOAD_UI"] = {
+		preferredIndex = 3
 		text = L["The UI needs to be reloaded!"],
 		button1 = ACCEPT,
 		button2 = CANCEL,
@@ -1612,6 +1613,7 @@ function LUI:OnInitialize()
 	}
 	
 	StaticPopupDialogs["RESTORE_DETAULTS"] = {
+		preferredIndex = 3
 		text = "Do you really want to restore all defaults. All your settings will be lost!",
 		button1 = ACCEPT,
 		button2 = CANCEL,

@@ -874,6 +874,7 @@ function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self)
 	
 	StaticPopupDialogs["INSTALL_FORTE"] = {
+		preferredIndex = 3
 		text = "%s",
 		button1 = YES,
 		button2 = NO,

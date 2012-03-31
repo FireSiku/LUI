@@ -2458,6 +2458,7 @@ function module:SetFriends()
 		-- Script functions
 		stat.OnEnable = function(self)
 			StaticPopupDialogs.SET_BN_BROADCAST = {
+				preferredIndex = 3
 				text = BN_BROADCAST_TOOLTIP,
 				button1 = ACCEPT,
 				button2 = CANCEL,

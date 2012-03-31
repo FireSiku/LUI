@@ -218,6 +218,7 @@ end
 
 local function setStaticPopups()
 	StaticPopupDialogs["LUI_THEMES_ALREADY_EXISTS"] = {
+		preferredIndex = 3
 		text = "That theme already exists.\nPlease choose another name.",
 		button1 = "OK",
 		timeout = 0,
@@ -227,6 +228,7 @@ local function setStaticPopups()
 	}
 	
 	StaticPopupDialogs["LUI_THEMES_SAVE"] = {
+		preferredIndex = 3
 		text = 'Enter the name for your new theme',
 		button1 = "Save Theme",
 		button2 = "Cancel",
@@ -248,6 +250,7 @@ local function setStaticPopups()
 	}
 	
 	StaticPopupDialogs["LUI_THEMES_DELETE"] = {
+		preferredIndex = 3
 		text = 'Are you sure you want to delete the current theme?',
 		button1 = "Yes",
 		button2 = "No",
@@ -258,6 +261,7 @@ local function setStaticPopups()
 	}
 	
 	StaticPopupDialogs["LUI_THEMES_IMPORT"] = {
+		preferredIndex = 3
 		text = 'Enter a name for your new theme',
 		button1 = "Continue",
 		button2 = "Cancel",
@@ -279,6 +283,7 @@ local function setStaticPopups()
 	}
 	
 	StaticPopupDialogs["LUI_THEMES_IMPORT_DATA"] = {
+		preferredIndex = 3
 		text = "Paste (Ctrl + v) the new theme string here:",
 		button1 = "Import Theme",
 		button2 = "Cancel",
@@ -299,6 +304,7 @@ local function setStaticPopups()
 	}
 	
 	StaticPopupDialogs["LUI_THEMES_EXPORT"] = {
+		preferredIndex = 3
 		text = "Copy (Ctrl + c) the following to share it with others:",
 		button1 = "Close",
 		hasEditBox = 1,
@@ -317,6 +323,7 @@ local function setStaticPopups()
 	}
 	
 	StaticPopupDialogs["LUI_THEMES_RESET"] = {
+		preferredIndex = 3
 		text = "Are you sure you want to reset all your themes?",
 		button1 = "Yes",
 		button2 = "No",
