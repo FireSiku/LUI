@@ -1529,7 +1529,7 @@ end
 
 do
 	StaticPopupDialogs["ALREADY_A_LAYOUT"] = {
-		preferredIndex = 3
+		preferredIndex = 3,
 		text = "That layout already exists.\nPlease choose another name.",
 		button1 = "OK",
 		timeout = 0,
@@ -1539,7 +1539,7 @@ do
 	}
 	
 	StaticPopupDialogs["SAVE_LAYOUT"] = {
-		preferredIndex = 3
+		preferredIndex = 3,
 		text = 'Enter the name for your new layout',
 		button1 = "Save Layout",
 		button2 = "Cancel",
@@ -1561,7 +1561,7 @@ do
 	}
 	
 	StaticPopupDialogs["DELETE_LAYOUT"] = {
-		preferredIndex = 3
+		preferredIndex = 3,
 		text = 'Are you sure you want to delete the current layout?',
 		button1 = "Yes",
 		button2 = "No",
@@ -1572,7 +1572,7 @@ do
 	}
 	
 	StaticPopupDialogs["IMPORT_LAYOUT"] = {
-		preferredIndex = 3
+		preferredIndex = 3,
 		text = 'Enter a name for your new layout',
 		button1 = "Continue",
 		button2 = "Cancel",
@@ -1594,7 +1594,7 @@ do
 	}
 	
 	StaticPopupDialogs["IMPORT_LAYOUT_DATA"] = {
-		preferredIndex = 3
+		preferredIndex = 3,
 		text = "Paste the new layout string here:",
 		button1 = "Import Layout",
 		button2 = "Cancel",
@@ -1615,7 +1615,7 @@ do
 	}
 	
 	StaticPopupDialogs["EXPORT_LAYOUT"] = {
-		preferredIndex = 3
+		preferredIndex = 3,
 		text = "Copy the following to share it with others:",
 		button1 = "Close",
 		hasEditBox = 1,
@@ -1634,7 +1634,7 @@ do
 	}
 	
 	StaticPopupDialogs["RESET_LAYOUTS"] = {
-		preferredIndex = 3
+		preferredIndex = 3,
 		text = "Are you sure you want to reset all your layouts?",
 		button1 = "Yes",
 		button2 = "No",

@@ -85,7 +85,7 @@ local settings = {
 }
 	
 StaticPopupDialogs["COPY_SETTINGS"] = {
-	preferredIndex = 3
+	preferredIndex = 3,
 	text = "Are you sure you want to copy the Settings?",
 	button1 = "Yes",
 	button2 = "No",
