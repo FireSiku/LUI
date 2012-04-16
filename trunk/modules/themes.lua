@@ -10,7 +10,7 @@
 		v1.2: Zista
 		v1.3: Zista
 		v1.4: Zista
-]] 
+]]
 
 -- External references.
 local addonname, LUI = ...
@@ -38,7 +38,7 @@ end
 
 function module:Refresh_Colors(name, targetModule) -- (name [, targetModule])
 	targetModule = targetModule or LUI:Module(name, true)
-	
+
 	if targetModule and targetModule:IsEnabled() and targetModule.SetColors then
 		targetModule:SetColors()
 	end
@@ -50,16 +50,16 @@ end
 
 function module:CheckTheme()
 	local theme = db.global[db.theme] and db.theme
-	
+
 	if not theme then
 		local _, class = UnitClass("player")
 		if class == "DEATHKNIGHT" then
 			class = "Death Knight"
 		end
-		
+
 		-- get class theme name
 		db.theme = gsub(class, "(%a)([%w_']*)", function(first, rest) return strupper(first)..strlower(rest) end)
-		
+
 		module:LoadTheme()
 	else
 		for k, v in pairs(db.global[theme]) do
@@ -72,7 +72,7 @@ end
 
 function module:LoadTheme(theme)
 	theme = theme or db.theme
-	
+
 	for k, v in pairs(db.global[theme]) do
 		db[k] = {unpack(v)}
 	end
@@ -85,7 +85,7 @@ function module:SaveTheme(theme)
 	if db.global[theme] and not db.global[theme].deleted then
 		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
 	end
-	
+
 	-- create the new theme
 	db.global[theme] = {}
 	for k, v in pairs(db.profile) do
@@ -93,7 +93,7 @@ function module:SaveTheme(theme)
 	end
 	-- clear the theme value (its in the db but shouldn't be in the theme's table)
 	db.global[theme].theme = nil
-	
+
 	-- set the new theme to be the active one
 	db.theme = theme
 	-- update the options menu
@@ -103,12 +103,12 @@ end
 function module:DeleteTheme(theme)
 	-- check if the theme name is valid (esle use current theme)
 	if theme == nil or theme == "" then theme = db.theme end
-	
+
 	-- check if theme is a class theme (can't be deleted)
 	if tContains(ClassArray, theme) then
 		return LUI:Print("CLASS THEMES CAN NOT BE DELETED!!!")
 	end
-	
+
 	-- remove theme from table (and stop defaults from repopulating)
 	if dbd.global[theme] then
 		db.global[theme].deleted = true
@@ -130,7 +130,7 @@ function module:ImportThemeName(name)
 	if db.global[name] and not db.global[name].deleted then
 		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
 	end
-	
+
 	-- show import data popup
 	local dialog = StaticPopup_Show("LUI_THEMES_IMPORT_DATA")
 	-- hand off theme name
@@ -148,14 +148,14 @@ function module:ImportThemeData(str, name)
 	if db.global[name] and not db.global[name].deleted then
 		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
 	end
-	
+
 	-- decrypt import data
 	local valid, data = self:Deserialize(str)
 	-- check if import data was valid
 	if not valid then
 		return LUI:Print("Error importing theme!")
 	end
-	
+
 	-- import data into themes table
 	db.global[name] = data
 	-- set new theme as the active one
@@ -172,7 +172,7 @@ function module:ExportTheme(theme)
 	if theme == nil or theme == "" then theme = db.theme end
 	-- check if theme exists
 	if not db.global[theme] then return StaticPopup_Hide("LUI_THEMES_EXPORT") end
-	
+
 	-- encrypt data for export
 	local data = self:Serialize(db.global[theme])
 	if not data then return end
@@ -193,7 +193,7 @@ end
 function module.ThemeArray() -- no self in this function
 	local LUIThemeArray = {}
 	local TempThemeArray = {}
-	
+
 	for themeName, theme in pairs(db.global) do
 		if theme and not theme.deleted then -- check for false
 			table.insert((tContains(ClassArray, themeName) and LUIThemeArray or TempThemeArray), themeName)
@@ -201,14 +201,14 @@ function module.ThemeArray() -- no self in this function
 	end
 	table.sort(LUIThemeArray)
 	table.sort(TempThemeArray)
-	
+
 	if #TempThemeArray > 0 then
 		table.insert(LUIThemeArray, "")
 		for _, themeName in pairs(TempThemeArray) do
 			table.insert(LUIThemeArray, themeName)
 		end
 	end
-	
+
 	return LUIThemeArray
 end
 
@@ -226,7 +226,7 @@ local function setStaticPopups()
 		hideOnEscape = true,
 		enterClicksFirstButton = true,
 	}
-	
+
 	StaticPopupDialogs["LUI_THEMES_SAVE"] = {
 		preferredIndex = 3,
 		text = 'Enter the name for your new theme',
@@ -236,19 +236,19 @@ local function setStaticPopups()
 		editBoxWidth = 150,
 		maxLetters = 20,
 		OnAccept = function(self)
-				self:Hide()
-				module:SaveTheme(self.editBox:GetText())
-			end,
+			self:Hide()
+			module:SaveTheme(self.editBox:GetText())
+		end,
 		EditBoxOnEnterPressed = function(self)
-				self:GetParent():Hide()
-				module:SaveTheme(self:GetText())
-			end,
+			self:GetParent():Hide()
+			module:SaveTheme(self:GetText())
+		end,
 		EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
 		timeout = 0,
 		whileDead = true,
 		hideOnEscape = true,
 	}
-	
+
 	StaticPopupDialogs["LUI_THEMES_DELETE"] = {
 		preferredIndex = 3,
 		text = 'Are you sure you want to delete the current theme?',
@@ -259,7 +259,7 @@ local function setStaticPopups()
 		whileDead = true,
 		hideOnEscape = true,
 	}
-	
+
 	StaticPopupDialogs["LUI_THEMES_IMPORT"] = {
 		preferredIndex = 3,
 		text = 'Enter a name for your new theme',
@@ -269,19 +269,19 @@ local function setStaticPopups()
 		editBoxWidth = 150,
 		maxLetters = 20,
 		OnAccept = function(self)
-				self:Hide()
-				module:ImportThemeName(self.editBox:GetText())
-			end,
+			self:Hide()
+			module:ImportThemeName(self.editBox:GetText())
+		end,
 		EditBoxOnEnterPressed = function(self)
-				self:GetParent():Hide()
-				module:ImportThemeName(self:GetText())
-			end,
+			self:GetParent():Hide()
+			module:ImportThemeName(self:GetText())
+		end,
 		EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
 		timeout = 0,
 		whileDead = true,
 		hideOnEscape = true,
 	}
-	
+
 	StaticPopupDialogs["LUI_THEMES_IMPORT_DATA"] = {
 		preferredIndex = 3,
 		text = "Paste (Ctrl + v) the new theme string here:",
@@ -291,18 +291,18 @@ local function setStaticPopups()
 		editBoxWidth = 500,
 		maxLetters = 2000,
 		OnAccept = function(self, data)
-				module:ImportThemeData(self.editBox:GetText(), data)
-			end,
+			module:ImportThemeData(self.editBox:GetText(), data)
+		end,
 		EditBoxOnEnterPressed = function(self, data)
-				self:GetParent():Hide()
-				module:ImportThemeData(self:GetText(), data)
-			end,
+			self:GetParent():Hide()
+			module:ImportThemeData(self:GetText(), data)
+		end,
 		EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
 		timeout = 0,
 		whileDead = true,
 		hideOnEscape = true,
 	}
-	
+
 	StaticPopupDialogs["LUI_THEMES_EXPORT"] = {
 		preferredIndex = 3,
 		text = "Copy (Ctrl + c) the following to share it with others:",
@@ -311,44 +311,44 @@ local function setStaticPopups()
 		editBoxWidth = 500,
 		maxLetters = 2000,
 		OnShow = function(self)
-				self.editBox:SetText(module:ExportTheme())
-				self.editBox:SetFocus()
-				self.editBox:HighlightText()
-			end,
+			self.editBox:SetText(module:ExportTheme())
+			self.editBox:SetFocus()
+			self.editBox:HighlightText()
+		end,
 		EditBoxOnEnterPressed = function(self) self:GetParent():Hide() end,
 		EditBoxOnExitPressed = function(self) self:GetParent():Hide() end,
 		timeout = 0,
 		whileDead = true,
 		hideOnEscape = true,
 	}
-	
+
 	StaticPopupDialogs["LUI_THEMES_RESET"] = {
 		preferredIndex = 3,
 		text = "Are you sure you want to reset all your themes?",
 		button1 = "Yes",
 		button2 = "No",
 		OnAccept = function(self)
-				local function copyDefaults(tar, src)
-					if type(tar) ~= "table" then tar = {} end
-					
-					for k, v in pairs(src) do
-						if type(v) == "table" then
-							tar[k] = copyDefaults(tar[k], v)
-						else
-							tar[k] = v
-						end
+			local function copyDefaults(tar, src)
+				if type(tar) ~= "table" then tar = {} end
+
+				for k, v in pairs(src) do
+					if type(v) == "table" then
+						tar[k] = copyDefaults(tar[k], v)
+					else
+						tar[k] = v
 					end
-					
-					return tar
 				end
-				
-				wipe(db.global)
-				db.global = copyDefaults(db.global, dbd.global)
-				db.theme = ""
-				module:CheckTheme()
-				module:ApplyTheme()
-				ACR:NotifyChange("LUI")
-			end,
+
+				return tar
+			end
+
+			wipe(db.global)
+			db.global = copyDefaults(db.global, dbd.global)
+			db.theme = ""
+			module:CheckTheme()
+			module:ApplyTheme()
+			ACR:NotifyChange("LUI")
+		end,
 		timeout = 0,
 		whileDead = true,
 		hideOnEscape = true,
@@ -837,7 +837,7 @@ module.defaults = {
 
 function module:LoadOptions()
 	setStaticPopups()
-	
+
 	-- disabled functions
 	local function minimapDisabled()
 		local Minimap = LUI:Module("Minimap", true)
@@ -847,7 +847,7 @@ function module:LoadOptions()
 		local Chat = LUI:Module("Chat", true)
 		return not (Chat and Chat:IsEnabled())
 	end
-	
+
 	local disabledFuncs = {}
 	local function createDisabled(toCheck)
 		if not disabledFuncs[toCheck] then
@@ -855,10 +855,10 @@ function module:LoadOptions()
 				return not LUI:Module(toCheck, true)
 			end
 		end
-		
+
 		return disabledFuncs[toCheck]
 	end
-	
+
 	-- get/set functions
 	local function getValue(info)
 		return db[info[#info]]
@@ -866,20 +866,20 @@ function module:LoadOptions()
 	local function setValue(info, val)
 		db[info[#info]] = val
 	end
-	
+
 	local function getColor(info)
 		return unpack(db[info[#info]])
 	end
 	local function setColor(info, r, g, b, a)
 		db[info[#info]] = {r, g, b, a}
 	end
-	
+
 	local function setColorMicromenu(...)
 		setColor(...)
 		self:Refresh_Colors("Micromenu")
 		self:Refresh_Colors("RaidMenu")
 	end
-	
+
 	local setColorFuncs = {}
 	local function createSetColor(toRefresh)
 		if not setColorFuncs[toRefresh] then
@@ -888,10 +888,10 @@ function module:LoadOptions()
 				self:Refresh_Colors(toRefresh)
 			end
 		end
-		
+
 		return setColorFuncs[toRefresh]
 	end
-	
+
 	local options = {
 		Theme = {
 			name = "Theme",
@@ -915,7 +915,7 @@ function module:LoadOptions()
 						if themeArray[val] ~= "" then
 							db.theme = themeArray[val]
 						end
-						
+
 						self:LoadTheme()
 						self:ApplyTheme()
 					end,
@@ -1303,7 +1303,7 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self)
-	
+
 	-- for transition to namespace
 	if LUI.db.profile.Colors then
 		for k, v in pairs(LUI.db.profile.Colors) do
@@ -1311,15 +1311,15 @@ function module:OnInitialize()
 		end
 		LUI.db.profile.Colors = nil
 	end
-	
-	if type(LUI_Themes) == "table" then
-		for k, v in pairs(LUI_Themes) do
+
+	if type(_G.LUI_Themes) == "table" then
+		for k, v in pairs(_G.LUI_Themes) do
 			if not db.global[k] then
 				db.global[k] = v
 			end
 		end
-		LUI_Themes = nil
+		_G.LUI_Themes = nil
 	end
-	
+
 	self:CheckTheme()
 end

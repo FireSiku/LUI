@@ -8,7 +8,7 @@
 	Edits:
 		v1.0: Loui
 		v1.1: Zista
-]] 
+]]
 
 -- External references.
 local addonname, LUI = ...
@@ -37,30 +37,30 @@ local channels = {
 local hooks = { }
 
 local function SetTabsAlpha()
-	CHAT_FRAME_TAB_SELECTED_NOMOUSE_ALPHA = db.Chat.Tabs.ActiveAlpha;
-    CHAT_FRAME_TAB_NORMAL_NOMOUSE_ALPHA = db.Chat.Tabs.NotActiveAlpha;
-	
+	_G.CHAT_FRAME_TAB_SELECTED_NOMOUSE_ALPHA = db.Chat.Tabs.ActiveAlpha;
+	_G.CHAT_FRAME_TAB_NORMAL_NOMOUSE_ALPHA = db.Chat.Tabs.NotActiveAlpha;
+
 	for i = 1, NUM_CHAT_WINDOWS do
-		chatframe = _G[("ChatFrame%d"):format(i)]
+		local chatframe = _G[("ChatFrame%d"):format(i)]
 		if FCF_IsValidChatFrame(chatframe) and not chatframe.oldAlpha then
 			chatframe.oldAlpha = CHAT_FRAME_TAB_NORMAL_NOMOUSE_ALPHA
 		end
 	end
-    
-    for i = 1, NUM_CHAT_WINDOWS do
-		chatframe = _G[("ChatFrame%d"):format(i)]
-       	if FCF_IsValidChatFrame(chatframe) then
+
+	for i = 1, NUM_CHAT_WINDOWS do
+		local chatframe = _G[("ChatFrame%d"):format(i)]
+		if FCF_IsValidChatFrame(chatframe) then
 			local chatTab = _G["ChatFrame"..i.."Tab"]
-            chatTab:Show()
-            chatTab:Hide()
-            --FloatingChatFrame_Update(chatframe:GetID()) 
-            
-            chatTab.mouseOverAlpha = CHAT_FRAME_TAB_SELECTED_MOUSEOVER_ALPHA;            
-	        chatTab.noMouseAlpha = CHAT_FRAME_TAB_SELECTED_NOMOUSE_ALPHA;
-            
-            if chatframe:IsShown() then FCF_FadeOutChatFrame(chatframe) end
-      	end
-    end
+			chatTab:Show()
+			chatTab:Hide()
+			--FloatingChatFrame_Update(chatframe:GetID())
+
+			chatTab.mouseOverAlpha = CHAT_FRAME_TAB_SELECTED_MOUSEOVER_ALPHA;
+			chatTab.noMouseAlpha = CHAT_FRAME_TAB_SELECTED_NOMOUSE_ALPHA;
+
+			if chatframe:IsShown() then FCF_FadeOutChatFrame(chatframe) end
+		end
+	end
 end
 
 local function SetChatFading()
@@ -91,13 +91,13 @@ local function CheckChatMinimizeButton()
 				_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetAlpha(db.Chat.Buttons.MinimizeButton.AlphaOut)
 				_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetScript("OnShow", function(self) self:Show() end)
 				_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:Show()
-				
+
 				_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetScript("OnEnter", function()
-					_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetAlpha(tonumber(db.Chat.Buttons.MinimizeButton.AlphaIn)) 
+					_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetAlpha(tonumber(db.Chat.Buttons.MinimizeButton.AlphaIn))
 				end)
-					
+
 				_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetScript("OnLeave", function()
-					_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetAlpha(tonumber(db.Chat.Buttons.MinimizeButton.AlphaOut)) 
+					_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetAlpha(tonumber(db.Chat.Buttons.MinimizeButton.AlphaOut))
 				end)
 			end
 		end
@@ -116,13 +116,13 @@ local function CheckChatMenuButton()
 		ChatFrameMenuButton:SetPoint("BOTTOM", _G["ChatFrame1ButtonFrame"],"BOTTOM",tonumber(db.Chat.Buttons.MenuButton.X),tonumber(db.Chat.Buttons.MenuButton.Y))
 		ChatFrameMenuButton:SetScript("OnShow", function(self) self:Show() end)
 		ChatFrameMenuButton:Show()
-		
+
 		ChatFrameMenuButton:SetScript("OnEnter", function()
-			ChatFrameMenuButton:SetAlpha(tonumber(db.Chat.Buttons.MenuButton.AlphaIn)) 
+			ChatFrameMenuButton:SetAlpha(tonumber(db.Chat.Buttons.MenuButton.AlphaIn))
 		end)
-			
+
 		ChatFrameMenuButton:SetScript("OnLeave", function()
-			ChatFrameMenuButton:SetAlpha(tonumber(db.Chat.Buttons.MenuButton.AlphaOut)) 
+			ChatFrameMenuButton:SetAlpha(tonumber(db.Chat.Buttons.MenuButton.AlphaOut))
 		end)
 	else
 		ChatFrameMenuButton:Hide()
@@ -138,13 +138,13 @@ local function CheckChatBottomButton()
 			_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetAlpha(db.Chat.Buttons.BottomButton.AlphaOut)
 			_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetScript("OnShow", function(self) self:Show() end)
 			_G["ChatFrame"..i.."ButtonFrameBottomButton"]:Show()
-			
+
 			_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetScript("OnEnter", function()
-				_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetAlpha(tonumber(db.Chat.Buttons.BottomButton.AlphaIn)) 
+				_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetAlpha(tonumber(db.Chat.Buttons.BottomButton.AlphaIn))
 			end)
-				
+
 			_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetScript("OnLeave", function()
-				_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetAlpha(tonumber(db.Chat.Buttons.BottomButton.AlphaOut)) 
+				_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetAlpha(tonumber(db.Chat.Buttons.BottomButton.AlphaOut))
 			end)
 		end
 	else
@@ -175,31 +175,31 @@ local function CheckChatArrows()
 			local buttonUp = _G["ChatFrame"..i.."ButtonFrameUpButton"]
 			local buttonDown = _G["ChatFrame"..i.."ButtonFrameDownButton"]
 			local buttonFrame = _G["ChatFrame"..i.."ButtonFrame"]
-		
+
 			buttonUp:SetAlpha(db.Chat.Buttons.Arrows.AlphaOut)
 			buttonUp:SetScript("OnShow", function(self) self:Show() end)
 			buttonUp:Show()
-			
+
 			buttonDown:ClearAllPoints()
 			buttonDown:SetPoint("BOTTOM", buttonFrame,"BOTTOM",tonumber(db.Chat.Buttons.Arrows.X),tonumber(db.Chat.Buttons.Arrows.Y))
 			buttonDown:SetAlpha(db.Chat.Buttons.Arrows.AlphaOut)
 			buttonDown:SetScript("OnShow", function(self) self:Show() end)
 			buttonDown:Show()
-			
+
 			buttonUp:SetScript("OnEnter", function()
-				buttonUp:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaIn)) 
+				buttonUp:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaIn))
 			end)
-				
+
 			buttonUp:SetScript("OnLeave", function()
-				buttonUp:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaOut)) 
+				buttonUp:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaOut))
 			end)
-			
+
 			buttonDown:SetScript("OnEnter", function()
-				buttonDown:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaIn)) 
+				buttonDown:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaIn))
 			end)
-				
+
 			buttonDown:SetScript("OnLeave", function()
-				buttonDown:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaOut)) 
+				buttonDown:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaOut))
 			end)
 		end
 	else
@@ -219,13 +219,13 @@ local function CheckSocialButton()
 		FriendsMicroButton:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", tonumber(db.Chat.Buttons.SocialButton.X), tonumber(db.Chat.Buttons.SocialButton.Y))
 		FriendsMicroButton:SetScript("OnShow", FriendsMicroButton.Show)
 		FriendsMicroButton:Show()
-		
+
 		FriendsMicroButton:SetScript("OnEnter", function()
-			FriendsMicroButton:SetAlpha(tonumber(db.Chat.Buttons.SocialButton.AlphaIn)) 
+			FriendsMicroButton:SetAlpha(tonumber(db.Chat.Buttons.SocialButton.AlphaIn))
 		end)
-			
+
 		FriendsMicroButton:SetScript("OnLeave", function()
-			FriendsMicroButton:SetAlpha(tonumber(db.Chat.Buttons.SocialButton.AlphaOut)) 
+			FriendsMicroButton:SetAlpha(tonumber(db.Chat.Buttons.SocialButton.AlphaOut))
 		end)
 	else
 		FriendsMicroButton:SetScript("OnShow", FriendsMicroButton.Hide)
@@ -251,7 +251,7 @@ local function SetEditBoxPosition()
 		elseif db.Chat.Editbox.Position.Anchor == "BOTTOM" then
 			editbox:SetPoint("TOPLEFT", ChatFrame1, "BOTTOMLEFT", 0, -8)
 			editbox:SetPoint("TOPRIGHT", ChatFrame1, "BOTTOMRIGHT", 0, -8)
-		else		
+		else
 			editbox:SetPoint("BOTTOMLEFT", ChatFrame1, "TOPLEFT", tonumber(db.Chat.Editbox.Position.X), tonumber(db.Chat.Editbox.Position.Y))
 			editbox:SetPoint("BOTTOMRIGHT", ChatFrame1, "TOPRIGHT", tonumber(db.Chat.Editbox.Position.X), tonumber(db.Chat.Editbox.Position.Y))
 		end
@@ -261,7 +261,7 @@ end
 local function SetEditBoxBackdrop()
 	for i = 1, NUM_CHAT_WINDOWS do
 		local editbox = _G["ChatFrame"..i.."EditBox"]
-		
+
 		editbox:SetBackdrop({
 			bgFile = "Interface/Tooltips/UI-Tooltip-Background",
 			edgeFile = Media:Fetch("border", db.Chat.Editbox.Border.Texture),
@@ -285,7 +285,7 @@ end
 local function SetChatJustify()
 	local SetChatFloating = loadstring("ChatFrame1:SetJustifyH(\""..db.Chat.Justify.."\")")
 	SetChatFloating()
-	
+
 	local SetChatFloating2 = loadstring(db.Chat.SecondChatAnchor..":SetJustifyH(\""..db.Chat.Justify2.."\")")
 	SetChatFloating2()
 end
@@ -297,7 +297,7 @@ function module:SetEditBoxColor()
 		for i = 1, NUM_CHAT_WINDOWS do
 			local editbox = _G["ChatFrame"..i.."EditBox"]
 			local attr = editbox:GetAttribute("chatType")
-			
+
 			if attr == "CHANNEL" then
 				local chan = editbox:GetAttribute("channelTarget")
 				if chan == 0 then
@@ -317,7 +317,7 @@ function module:SetEditBoxColor()
 	else
 		for i = 1, NUM_CHAT_WINDOWS do
 			local editbox = _G["ChatFrame"..i.."EditBox"]
-			
+
 			editbox:SetBackdropColor(r,g,b,a)
 			editbox:SetBackdropBorderColor(r,g,b,a + 0.3)
 		end
@@ -330,13 +330,13 @@ local function SetChatStyle(frame)
 	local id = frame:GetID()
 	local chat = frame:GetName()
 	local tab = _G[chat.."Tab"]
-	
+
 	-- yeah baby
 	_G[chat]:SetClampRectInsets(0,0,0,0)
-	
+
 	-- Removes crap from the bottom of the chatbox so it can go to the bottom of the screen.
 	_G[chat]:SetClampedToScreen(false)
-	
+
 	-- Hide textures
 	for j = 1, #CHAT_FRAME_TEXTURES do
 		_G[chat..CHAT_FRAME_TEXTURES[j]]:SetTexture(nil)
@@ -358,8 +358,8 @@ end
 hooksecurefunc("FCF_OpenTemporaryWindow", SetupTempChat)
 
 function module:SetChat()
-	if db.Chat.Enable ~= true then return end
-	
+	if db.Chat == nil or db.Chat.Enable ~= true then return end
+
 	self:SetChatPosition()
 	SetChatJustify()
 
@@ -385,11 +385,11 @@ function module:SetChat()
 	local ChatFrame1 = ChatFrame1
 	local replace = string.gsub
 	local find = string.find
-	
+
 	-----------------------------------------------------------------------------
 	-- Copy url
 	-----------------------------------------------------------------------------
-	
+
 	module:RawHook("SetItemRef", function(link, text, button, chatFrame)
 		if (strsub(link, 1, 3) == "url") then
 			local ChatFrameEditBox = ChatEdit_ChooseBoxForSend()
@@ -404,18 +404,18 @@ function module:SetChat()
 			module.hooks.SetItemRef(link, text, button, chatFrame)
 		end
 	end, true)
-	
+
 	local ReURL_Color = "b4b4b4"
 	local ReURL_Brackets = false
 	local ReURL_CustomColor = true
-	
+
 	local function ReURL_Link(url)
 		url = "|Hurl:" .. url .. "|h" .. (ReURL_Brackets and "[" or "") .. url .. (ReURL_Brackets and "]" or "") .. "|h"
 		url = (ReURL_CustomColor and " |cff"..ReURL_Color or " ") .. url .. (ReURL_CustomColor and "|r " or " ")
-		
+
 		return url
 	end
-	
+
 	local function ReURL_AddLinkSyntax(chatstring)
 		if (type(chatstring) == "string") then
 			local extraspace;
@@ -432,14 +432,14 @@ function module:SetChat()
 				chatstring = strsub(chatstring, 2);
 			end
 		end
-		
+
 		return chatstring
 	end
-	
+
 	-----------------------------------------------------------------------------
 	-- Short channel names
 	-----------------------------------------------------------------------------
-	
+
 	local replaceschan = {
 		['Гильдия'] = '[Г]',
 		['Группа'] = '[Гр]',
@@ -448,7 +448,7 @@ function module:SetChat()
 		['Объявление рейду'] = '[ОР]',
 		['Офицер'] = '[О]',
 		['Поле боя'] = '[ПБ]',
-		['Лидер поля боя'] = '[ЛПБ]', 
+		['Лидер поля боя'] = '[ЛПБ]',
 		['Guilde'] = '[G]',
 		['Groupe'] = '[GR]',
 		['Chef de raid'] = '[RL]',
@@ -468,27 +468,27 @@ function module:SetChat()
 		['Battleground Leader'] = '[BL]',
 		['(%d+)%. .-'] = '[%1]',
 	}
-	
+
 	local function shortChannelNames(text)
 		if db.Chat.ShortChannelNames == true then
 			for k,v in pairs(replaceschan) do
 				text = text:gsub('|h%['..k..'%]|h', '|h'..v..'|h')
 			end
 		end
-		
+
 		text = replace(text, "has come online.", "is now online!")
 		text = replace(text, "|Hplayer:(.+)|h%[(.+)%]|h has earned", "|Hplayer:%1|h%2|h has earned")
 		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h whispers:", "From [|Hplayer:%1:%2|h%3|h]:")
-		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h says:", "[|Hplayer:%1:%2|h%3|h]:")	
+		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h says:", "[|Hplayer:%1:%2|h%3|h]:")
 		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h yells:", "[|Hplayer:%1:%2|h%3|h]:")
-		
+
 		return text
 	end
-	
+
 	-- Hook into the AddMessage function
 	local function chatFrame_AddMessage(frame, text, ...)
 		text = ReURL_AddLinkSyntax(shortChannelNames(text))
-		
+
 		return self.hooks[frame].AddMessage(frame, text, ...)
 	end
 	for i = 1, NUM_CHAT_WINDOWS do
@@ -497,29 +497,29 @@ function module:SetChat()
 			self:RawHook(chatFrame, "AddMessage", chatFrame_AddMessage, true)
 		end
 	end
-	
+
 	-- WoW or battle.net player status
-	CHAT_FLAG_AFK = "[AFK] "
-	CHAT_FLAG_DND = "[DND] "
-	CHAT_FLAG_GM = "[|cffff0000GM|r] "
-	
+	_G.CHAT_FLAG_AFK = "[AFK] "
+	_G.CHAT_FLAG_DND = "[DND] "
+	_G.CHAT_FLAG_GM = "[|cffff0000GM|r] "
+
 	-----------------------------------------------------------------------------
 	--Hide Blizzard Frames
 	-----------------------------------------------------------------------------
-	
+
 	InterfaceOptionsSocialPanelChatStyle:Hide()
 	InterfaceOptionsSocialPanelConversationMode:Hide()
-	
+
 	CheckChatButtons()
 	CheckSocialButton()
 	CheckChatArrows()
 	CheckChatBottomButton()
 	CheckChatMenuButton()
 	CheckChatMinimizeButton()
-	
+
 	module:RawHook(GeneralDockManagerOverflowButton, "Show", LUI.dummy, true)
 	GeneralDockManagerOverflowButton:Hide()
-	
+
 	-- hide editbox colored round border
 	for i = 1, 10 do
 		local x=({_G["ChatFrame"..i.."EditBox"]:GetRegions()})
@@ -527,72 +527,72 @@ function module:SetChat()
 		x[10]:SetAlpha(0)
 		x[11]:SetAlpha(0)
 	end
-	
+
 	-----------------------------------------------------------------------------
 	--Load Settings
 	-----------------------------------------------------------------------------
-	
+
 	for i = 1, NUM_CHAT_WINDOWS do
 		local chatframe = _G[("ChatFrame%d"):format(i)]
 		_G["ChatFrame"..i]:SetClampRectInsets(0,0,0,0)
 		_G["ChatFrame"..i]:SetWidth(LUI:Scale(tonumber(db.Chat.Width)))
 		_G["ChatFrame"..i]:SetHeight(LUI:Scale(tonumber(db.Chat.Height)))
 		_G["ChatFrame"..i]:SetFrameStrata("LOW")
-		
+
 		-- Hide chat textures backdrop
 		for j = 1, #CHAT_FRAME_TEXTURES do
 			_G["ChatFrame"..i..CHAT_FRAME_TEXTURES[j]]:SetTexture(nil)
 		end
-		
+
 		-- Set Chat Font
 		SetChatFont()
-		
+
 		-- Set Chat Fading
 		SetChatFading()
 
 		-----------------------------------------------------------------------------
 		--EditBox Settings
 		-----------------------------------------------------------------------------
-		
+
 		-- Hide Blizz Textures
 		local editbox = _G["ChatFrame"..i.."EditBox"]
 		local left, mid, right = select(6, editbox:GetRegions())
 		left:Hide(); mid:Hide(); right:Hide()
-		
+
 		editbox.focusLeft:SetTexture([[Interface\ChatFrame\UI-ChatInputBorder-Left2]])
 		editbox.focusRight:SetTexture([[Interface\ChatFrame\UI-ChatInputBorder-Right2]])
 		editbox.focusMid:SetTexture([[Interface\ChatFrame\UI-ChatInputBorder-Mid2]])
-		
+
 		editbox:Hide()
 		editbox:HookScript('OnEnterPressed', function(s) s:Hide() end)
-		
+
 		-- Disable alt key usage
 		editbox:SetAltArrowKeyMode(false)
 	end
-	
+
 	-- Set Editboxes' Positions
 	SetEditBoxPosition()
-	
+
 	--	Color Editboxes
 	SetEditBoxBackdrop()
 	self:SecureHook("ChatEdit_UpdateHeader", "SetEditBoxColor")
 	self:SetEditBoxColor()
-	
+
 	-----------------------------------------------------------------------------
 	--Tab Settings
 	-----------------------------------------------------------------------------
 	SetTabsAlpha()
-	
+
 	------------------------------------------------------------------------
 	--	Lock docked tabs
 	------------------------------------------------------------------------
-	
+
 	local function ChatTab_OnDragStart(self)
 		if IsAltKeyDown() or not _G[self:GetName():sub(1, -4)].isDocked then
 			hooks[self].OnDragStart(self)
 		end
 	end
-	
+
 	local function SetLockDockedTabs()
 		if db.Chat.Tabs.LockDockedTabs == true then
 			for i = 2, NUM_CHAT_WINDOWS do
@@ -607,7 +607,7 @@ function module:SetChat()
 			end
 		else
 			for i = 2, NUM_CHAT_WINDOWS do
-				tab = _G[("ChatFrame%dTab"):format(i)]
+				local tab = _G[("ChatFrame%dTab"):format(i)]
 				if hooks[tab] and hooks[tab].OnDragStart then
 					tab:SetScript("OnDragStart", hooks[tab].OnDragStart)
 					hooks[tab].OnDragStart = nil
@@ -615,13 +615,13 @@ function module:SetChat()
 			end
 		end
 	end
-	
+
 	SetLockDockedTabs()
-	
+
 	-----------------------------------------------------------------------------
 	-- Remember last channel
 	-----------------------------------------------------------------------------
-	
+
 	if db.Chat.Sticky.Enable == true then
 		for k, v in pairs(channels) do
 			ChatTypeInfo[k].sticky = db.Chat.Sticky[k] and 1 or 0
@@ -631,17 +631,17 @@ function module:SetChat()
 			ChatTypeInfo[k].sticky = 0
 		end
 	end
-	
+
 	------------------------------------------------------------------------
 	--	No more click on item chat link
 	------------------------------------------------------------------------
-	
+
 	if db.Chat.ShowItemTooltips == true then
 		local orig1, orig2 = {}, {}
 		local GameTooltip = GameTooltip
-		
+
 		local linktypes = {item = true, enchant = true, spell = true, quest = true, unit = true, talent = true, achievement = true, glyph = true}
-		
+
 		local function OnHyperlinkEnter(frame, link, ...)
 			local linktype = link:match("^([^:]+)")
 			if linktype and linktypes[linktype] then
@@ -649,43 +649,41 @@ function module:SetChat()
 				GameTooltip:SetHyperlink(link)
 				GameTooltip:Show()
 			end
-		
+
 			if orig1[frame] then return orig1[frame](frame, link, ...) end
 		end
-		
+
 		local function OnHyperlinkLeave(frame, ...)
 			GameTooltip:Hide()
 			if orig2[frame] then return orig2[frame](frame, ...) end
 		end
-		
-		
+
+
 		local _G = getfenv(0)
 		for i=1, NUM_CHAT_WINDOWS do
 			local frame = _G["ChatFrame"..i]
 			orig1[frame] = frame:GetScript("OnHyperlinkEnter")
 			frame:SetScript("OnHyperlinkEnter", OnHyperlinkEnter)
-		
+
 			orig2[frame] = frame:GetScript("OnHyperlinkLeave")
 			frame:SetScript("OnHyperlinkLeave", OnHyperlinkLeave)
 		end
 	end
-	
+
 	-----------------------------------------------------------------------------
 	-- Copy Chat
 	-----------------------------------------------------------------------------
-	
+
 	local lines = {}
-	local frame = nil
-	local editBox = nil
-	local isf = nil
+	local frame, editBox, isf
 
 	local function CreatCopyFrame()
 		frame = CreateFrame( "Frame", "CopyFrame", UIParent)
 		frame:SetBackdrop({
-				bgFile = "Interface/Tooltips/UI-Tooltip-Background", 
-				edgeFile = LUI.Media.glowTex, 
-				tile = 0, tileSize = 0, edgeSize = 3, 
-				insets = { left = 2, right = 2, top = 2, bottom = 2 }
+			bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+			edgeFile = LUI.Media.glowTex,
+			tile = 0, tileSize = 0, edgeSize = 3,
+			insets = { left = 2, right = 2, top = 2, bottom = 2 }
 		})
 		frame:SetBackdropColor(0,0,0,0.4)
 		frame:SetBackdropBorderColor(0,0,0,0.8)
@@ -695,11 +693,11 @@ function module:SetChat()
 		frame:SetPoint("CENTER", UIParent, "CENTER", 0,10)
 		frame:Hide()
 		frame:SetFrameStrata("DIALOG")
-	
+
 		local scrollArea = CreateFrame( "ScrollFrame", "CopyScroll", frame, "UIPanelScrollFrameTemplate")
 		scrollArea:SetPoint("TOPLEFT", frame, "TOPLEFT", 8, -30)
 		scrollArea:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -30, 8)
-		
+
 		editBox = CreateFrame( "EditBox", "CopyBox", frame)
 		editBox:SetMultiLine(true)
 		editBox:SetMaxLetters(99999)
@@ -709,15 +707,15 @@ function module:SetChat()
 		editBox:SetWidth(610)
 		editBox:SetHeight(200)
 		editBox:SetScript("OnEscapePressed", function() frame:Hide() end)
-	
+
 		scrollArea:SetScrollChild(editBox)
-	
+
 		local close = CreateFrame( "Button", "CopyCloseButton", frame, "UIPanelCloseButton")
 		close:SetPoint("TOPRIGHT", frame, "TOPRIGHT")
-	
+
 		isf = true
 	end
-	
+
 	local function GetLines(...)
 		local ct = 1
 		for i = select("#", ...), 1, -1 do
@@ -729,7 +727,7 @@ function module:SetChat()
 		end
 		return ct - 1
 	end
-	
+
 	local function Copy(cf)
 		local _, size = cf:GetFont()
 		FCF_SetChatWindowFontSize(cf, cf, 0.01)
@@ -741,7 +739,7 @@ function module:SetChat()
 		editBox:SetText(text)
 		editBox:HighlightText(0)
 	end
-	
+
 	if db.Chat.Buttons.Copy.Enable == true then
 		for i = 1, NUM_CHAT_WINDOWS do
 			local cf = _G[format("ChatFrame%d",  i)]
@@ -751,61 +749,61 @@ function module:SetChat()
 			button:SetWidth(22)
 			button:SetAlpha(db.Chat.Buttons.Copy.AlphaOut)
 			button:SetNormalTexture(LUI.Media.chatcopy)
-			
-			button:SetScript("OnClick", function() 
-				Copy(cf) 
+
+			button:SetScript("OnClick", function()
+				Copy(cf)
 			end)
-			
+
 			button:SetScript("OnEnter", function()
 				button:SetPoint("BOTTOMRIGHT", tonumber(db.Chat.Buttons.Copy.X), tonumber(db.Chat.Buttons.Copy.Y))
-				button:SetAlpha(db.Chat.Buttons.Copy.AlphaIn) 
+				button:SetAlpha(db.Chat.Buttons.Copy.AlphaIn)
 			end)
-			
+
 			button:SetScript("OnLeave", function()
 				button:SetPoint("BOTTOMRIGHT", tonumber(db.Chat.Buttons.Copy.X), tonumber(db.Chat.Buttons.Copy.Y))
-				button:SetAlpha(db.Chat.Buttons.Copy.AlphaOut) 
+				button:SetAlpha(db.Chat.Buttons.Copy.AlphaOut)
 			end)
-			
+
 			local tab = _G[format("ChatFrame%dTab", i)]
-			
+
 			tab:SetScript("OnShow", function()
-				button:SetAlpha(db.Chat.Buttons.Copy.AlphaOut) 
-				button:Show() 
+				button:SetAlpha(db.Chat.Buttons.Copy.AlphaOut)
+				button:Show()
 			end)
-			
+
 			tab:SetScript("OnHide", function()
 				button:SetAlpha(db.Chat.Buttons.Copy.AlphaOut)
-				button:Hide() 
+				button:Hide()
 			end)
 		end
 	end
-	
+
 	------------------------------------------------------------------------
 	--	Rewrite Chatframe mousewheel.
 	------------------------------------------------------------------------
-	
+
 	local normscrollspeed = tonumber(db.Chat.MouseWheel.NormalSpeed)
 	local ctrlscrollspeed = tonumber(db.Chat.MouseWheel.CTRLSpeed)
 	local function scrollFrame(cf, up)
 		if IsShiftKeyDown() then
-	        if up then cf:ScrollToTop() else cf:ScrollToBottom() end
+			if up then cf:ScrollToTop() else cf:ScrollToBottom() end
 		else
-		    if IsControlKeyDown() then
-		        for i = 1,ctrlscrollspeed do
-		            if up then cf:ScrollUp() else cf:ScrollDown() end
-		        end
-		    else
-		        for i = 1,normscrollspeed do
-		            if up then cf:ScrollUp() else cf:ScrollDown() end
-		        end
-		    end
+			if IsControlKeyDown() then
+				for i = 1,ctrlscrollspeed do
+					if up then cf:ScrollUp() else cf:ScrollDown() end
+				end
+			else
+				for i = 1,normscrollspeed do
+					if up then cf:ScrollUp() else cf:ScrollDown() end
+				end
+			end
 		end
 	end
-	
+
 	for i = 1, NUM_CHAT_WINDOWS do
 		local cf = _G[format("ChatFrame%d",  i)]
 		cf:SetScript("OnMouseWheel", function(cf, arg1) scrollFrame(cf, arg1 > 0) end)
-	    cf:EnableMouseWheel(true)
+		cf:EnableMouseWheel(true)
 	end
 end
 
@@ -949,9 +947,9 @@ function module:LoadOptions()
 									width = "full",
 									get = function() return db.Chat.Enable end,
 									set = function()
-											db.Chat.Enable = not db.Chat.Enable
-											StaticPopup_Show("RELOAD_UI")
-										end,
+										db.Chat.Enable = not db.Chat.Enable
+										StaticPopup_Show("RELOAD_UI")
+									end,
 									order = 1,
 								},
 								ShortChannelNames = {
@@ -962,8 +960,8 @@ function module:LoadOptions()
 									width = "full",
 									get = function() return db.Chat.ShortChannelNames end,
 									set = function()
-											db.Chat.ShortChannelNames = not db.Chat.ShortChannelNames
-										end,
+										db.Chat.ShortChannelNames = not db.Chat.ShortChannelNames
+									end,
 									order = 2,
 								},
 								ShowItemTooltips = {
@@ -974,9 +972,9 @@ function module:LoadOptions()
 									width = "full",
 									get = function() return db.Chat.ShowItemTooltips end,
 									set = function()
-											db.Chat.ShowItemTooltips = not db.Chat.ShowItemTooltips
-											StaticPopup_Show("RELOAD_UI")
-										end,
+										db.Chat.ShowItemTooltips = not db.Chat.ShowItemTooltips
+										StaticPopup_Show("RELOAD_UI")
+									end,
 									order = 3,
 								},
 								Fading = {
@@ -987,9 +985,9 @@ function module:LoadOptions()
 									width = "full",
 									get = function() return db.Chat.Fading end,
 									set = function()
-											db.Chat.Fading = not db.Chat.Fading
-											SetChatFading()
-										end,
+										db.Chat.Fading = not db.Chat.Fading
+										SetChatFading()
+									end,
 									order = 4,
 								},
 								SecondChatFrameSettings = {
@@ -1006,9 +1004,9 @@ function module:LoadOptions()
 											width = "full",
 											get = function() return db.Chat.SecondChatFrame end,
 											set = function(info, SecondChatFrame)
-													db.Chat.SecondChatFrame = not db.Chat.SecondChatFrame
-													Panels:CheckSecondChatFrame()
-												end,
+												db.Chat.SecondChatFrame = not db.Chat.SecondChatFrame
+												Panels:CheckSecondChatFrame()
+											end,
 											order = 1,
 										},
 										TextureAnchor = {
@@ -1017,16 +1015,16 @@ function module:LoadOptions()
 											type = "select",
 											values = chatTextureAnchors,
 											get = function()
-													for k, v in pairs(chatTextureAnchors) do
-														if db.Chat.SecondChatAnchor == v then
-															return k
-														end
+												for k, v in pairs(chatTextureAnchors) do
+													if db.Chat.SecondChatAnchor == v then
+														return k
 													end
-												end,
+												end
+											end,
 											set = function(info, TextureAnchor)
-													db.Chat.SecondChatAnchor = chatTextureAnchors[TextureAnchor]
-													Panels:SetSecondChatAnchor()
-												end,
+												db.Chat.SecondChatAnchor = chatTextureAnchors[TextureAnchor]
+												Panels:SetSecondChatAnchor()
+											end,
 											order = 2,
 										},
 										ChatJustify = {
@@ -1035,16 +1033,16 @@ function module:LoadOptions()
 											type = "select",
 											values = chatAlignments,
 											get = function()
-													for k, v in pairs(chatAlignments) do
-														if db.Chat.Justify2 == v then
-															return k
-														end
+												for k, v in pairs(chatAlignments) do
+													if db.Chat.Justify2 == v then
+														return k
 													end
-												end,
+												end
+											end,
 											set = function(info, ChatJustify)
-													db.Chat.Justify2 = chatAlignments[ChatJustify]
-													SetChatJustify()
-												end,
+												db.Chat.Justify2 = chatAlignments[ChatJustify]
+												SetChatJustify()
+											end,
 											order = 3,
 										},
 									},
@@ -1064,12 +1062,12 @@ function module:LoadOptions()
 									dialogControl = "LSM30_Font",
 									values = widgetLists.font,
 									get = function()
-											return db.Chat.Font
-										end,
+										return db.Chat.Font
+									end,
 									set = function(info, font)
-											db.Chat.Font = font
-											SetChatFont()
-										end,
+										db.Chat.Font = font
+										SetChatFont()
+									end,
 									order = 1,
 								},
 								Fontsize = {
@@ -1080,10 +1078,10 @@ function module:LoadOptions()
 									max = 20,
 									step = 1,
 									get = function() return db.Chat.Size end,
-									set = function(_, Fontsize) 
-												db.Chat.Size = Fontsize
-												SetChatFont()
-											end,
+									set = function(_, Fontsize)
+										db.Chat.Size = Fontsize
+										SetChatFont()
+									end,
 									order = 2,
 								},
 								FontFlag = {
@@ -1092,16 +1090,16 @@ function module:LoadOptions()
 									type = "select",
 									values = fontflags,
 									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Chat.Flag == v then
-													return k
-												end
+										for k, v in pairs(fontflags) do
+											if db.Chat.Flag == v then
+												return k
 											end
-										end,
+										end
+									end,
 									set = function(info, FontFlag)
-											db.Chat.Flag = fontflags[FontFlag]
-											SetChatFont()
-										end,
+										db.Chat.Flag = fontflags[FontFlag]
+										SetChatFont()
+									end,
 									order = 3,
 								},
 								ChatJustify = {
@@ -1110,16 +1108,16 @@ function module:LoadOptions()
 									type = "select",
 									values = chatAlignments,
 									get = function()
-											for k, v in pairs(chatAlignments) do
-												if db.Chat.Justify == v then
-													return k
-												end
+										for k, v in pairs(chatAlignments) do
+											if db.Chat.Justify == v then
+												return k
 											end
-										end,
+										end
+									end,
 									set = function(info, ChatJustify)
-											db.Chat.Justify = chatAlignments[ChatJustify]
-											SetChatJustify()
-										end,
+										db.Chat.Justify = chatAlignments[ChatJustify]
+										SetChatJustify()
+									end,
 									order = 4,
 								},
 							},
@@ -1142,11 +1140,11 @@ function module:LoadOptions()
 									type = "input",
 									get = function() return db.Chat.MouseWheel.NormalSpeed end,
 									set = function(info,NormalScroll)
-											if NormalScroll == nil or NormalScroll == "" then
-												NormalScroll = "0"
-											end
-											db.Chat.MouseWheel.NormalSpeed = NormalScroll
-										end,
+										if NormalScroll == nil or NormalScroll == "" then
+											NormalScroll = "0"
+										end
+										db.Chat.MouseWheel.NormalSpeed = NormalScroll
+									end,
 									order = 2,
 								},
 								empty = {
@@ -1161,11 +1159,11 @@ function module:LoadOptions()
 									type = "input",
 									get = function() return db.Chat.MouseWheel.CTRLSpeed end,
 									set = function(info,CTRLScroll)
-											if CTRLScroll == nil or CTRLScroll == "" then
-												CTRLScroll = "0"
-											end
-											db.Chat.MouseWheel.CTRLSpeed = CTRLScroll
-										end,
+										if CTRLScroll == nil or CTRLScroll == "" then
+											CTRLScroll = "0"
+										end
+										db.Chat.MouseWheel.CTRLSpeed = CTRLScroll
+									end,
 									order = 4,
 								},
 							},
@@ -1188,12 +1186,12 @@ function module:LoadOptions()
 									type = "input",
 									get = function() return db.Chat.Width end,
 									set = function(info,Width)
-											if Width == nil or Width == "" then
-												Width = "0"
-											end
-											db.Chat.Width = Width
-											module:SetChatPosition()
-										end,
+										if Width == nil or Width == "" then
+											Width = "0"
+										end
+										db.Chat.Width = Width
+										module:SetChatPosition()
+									end,
 									order = 2,
 								},
 								Height = {
@@ -1202,12 +1200,12 @@ function module:LoadOptions()
 									type = "input",
 									get = function() return db.Chat.Height end,
 									set = function(info,Height)
-											if Height == nil or Height == "" then
-												Height = "0"
-											end
-											db.Chat.Height = Height
-											module:SetChatPosition()
-										end,
+										if Height == nil or Height == "" then
+											Height = "0"
+										end
+										db.Chat.Height = Height
+										module:SetChatPosition()
+									end,
 									order = 3,
 								},
 								header2 = {
@@ -1222,12 +1220,12 @@ function module:LoadOptions()
 									type = "input",
 									get = function() return db.Chat.X end,
 									set = function(info,PosX)
-											if PosX == nil or PosX == "" then
-												PosX = "0"
-											end
-											db.Chat.X = PosX
-											module:SetChatPosition()
-										end,
+										if PosX == nil or PosX == "" then
+											PosX = "0"
+										end
+										db.Chat.X = PosX
+										module:SetChatPosition()
+									end,
 									order = 5,
 								},
 								PosY = {
@@ -1236,12 +1234,12 @@ function module:LoadOptions()
 									type = "input",
 									get = function() return db.Chat.Y end,
 									set = function(info,PosY)
-											if PosY == nil or PosY == "" then
-												PosY = "0"
-											end
-											db.Chat.Y = PosY
-											module:SetChatPosition()
-										end,
+										if PosY == nil or PosY == "" then
+											PosY = "0"
+										end
+										db.Chat.Y = PosY
+										module:SetChatPosition()
+									end,
 									order = 6,
 								},
 							},
@@ -1265,11 +1263,11 @@ function module:LoadOptions()
 									width = "full",
 									get = function() return db.Chat.Sticky.Enable end,
 									set = function(info, Enabled)
-											db.Chat.Sticky.Enable = not db.Chat.Sticky.Enable
-											for k, v in pairs(channels) do
-												ChatTypeInfo[k].sticky = 0
-											end
-										end,
+										db.Chat.Sticky.Enable = not db.Chat.Sticky.Enable
+										for k, v in pairs(channels) do
+											ChatTypeInfo[k].sticky = 0
+										end
+									end,
 									order = 2,
 								},
 								empty = {
@@ -1301,8 +1299,8 @@ function module:LoadOptions()
 									width = "full",
 									get = function() return db.Chat.Editbox.ColorByChannel end,
 									set = function()
-												db.Chat.Editbox.ColorByChannel = not db.Chat.Editbox.ColorByChannel
-											end,
+										db.Chat.Editbox.ColorByChannel = not db.Chat.Editbox.ColorByChannel
+									end,
 									order = 1,
 								},
 								EditBoxColor = {
@@ -1313,10 +1311,10 @@ function module:LoadOptions()
 									hasAlpha = true,
 									get = function() return unpack(Themes.db.profile.editbox) end,
 									set = function(_,r,g,b,a)
-											Themes.db.profile.editbox = {r,g,b,a}
-											
-											module:SetEditBoxColor()
-										end,
+										Themes.db.profile.editbox = {r,g,b,a}
+
+										module:SetEditBoxColor()
+									end,
 									order = 3,
 								},
 							},
@@ -1333,12 +1331,12 @@ function module:LoadOptions()
 									dialogControl = "LSM30_Font",
 									values = widgetLists.font,
 									get = function()
-											return db.Chat.Editbox.Font
-										end,
+										return db.Chat.Editbox.Font
+									end,
 									set = function(info, font)
-											db.Chat.Editbox.Font = font
-											SetChatFont()
-										end,
+										db.Chat.Editbox.Font = font
+										SetChatFont()
+									end,
 									order = 1,
 								},
 								Fontsize = {
@@ -1349,10 +1347,10 @@ function module:LoadOptions()
 									max = 20,
 									step = 1,
 									get = function() return db.Chat.Editbox.Size end,
-									set = function(_, Fontsize) 
-												db.Chat.Editbox.Size = Fontsize
-												SetChatFont()
-											end,
+									set = function(_, Fontsize)
+										db.Chat.Editbox.Size = Fontsize
+										SetChatFont()
+									end,
 									order = 2,
 								},
 								FontFlag = {
@@ -1361,16 +1359,16 @@ function module:LoadOptions()
 									type = "select",
 									values = fontflags,
 									get = function()
-											for k, v in pairs(fontflags) do
-												if db.Chat.Editbox.Flag == v then
-													return k
-												end
+										for k, v in pairs(fontflags) do
+											if db.Chat.Editbox.Flag == v then
+												return k
 											end
-										end,
+										end
+									end,
 									set = function(info, FontFlag)
-											db.Chat.Editbox.Flag = fontflags[FontFlag]
-											SetChatFont()
-										end,
+										db.Chat.Editbox.Flag = fontflags[FontFlag]
+										SetChatFont()
+									end,
 									order = 3,
 								},
 							},
@@ -1388,10 +1386,10 @@ function module:LoadOptions()
 									values = widgetLists.border,
 									get = function() return db.Chat.Editbox.Border.Texture end,
 									set = function(info, BorderTexture)
-											db.Chat.Editbox.Border.Texture = BorderTexture
-											SetEditBoxBackdrop()
-											module:SetEditBoxColor()
-										end,
+										db.Chat.Editbox.Border.Texture = BorderTexture
+										SetEditBoxBackdrop()
+										module:SetEditBoxColor()
+									end,
 									order = 1,
 								},
 								BorderThickness = {
@@ -1401,13 +1399,13 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Editbox.Border.Thickness end,
 									set = function(info,BorderThickness)
-												if BorderThickness == nil or BorderThickness == "" then
-													BorderThickness = "0"
-												end
-												db.Chat.Editbox.Border.Thickness = BorderThickness
-												SetEditBoxBackdrop()
-												module:SetEditBoxColor()
-											end,
+										if BorderThickness == nil or BorderThickness == "" then
+											BorderThickness = "0"
+										end
+										db.Chat.Editbox.Border.Thickness = BorderThickness
+										SetEditBoxBackdrop()
+										module:SetEditBoxColor()
+									end,
 									order = 2,
 								},
 								empty = {
@@ -1423,13 +1421,13 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Editbox.Border.Inset.left end,
 									set = function(info,InsetLeft)
-											if InsetLeft == nil or InsetLeft == "" then
-												InsetLeft = "0"
-											end
-											db.Chat.Editbox.Border.Inset.left = InsetLeft
-											SetEditBoxBackdrop()
-											module:SetEditBoxColor()
-										end,
+										if InsetLeft == nil or InsetLeft == "" then
+											InsetLeft = "0"
+										end
+										db.Chat.Editbox.Border.Inset.left = InsetLeft
+										SetEditBoxBackdrop()
+										module:SetEditBoxColor()
+									end,
 									order = 4,
 								},
 								InsetRight = {
@@ -1439,13 +1437,13 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Editbox.Border.Inset.right end,
 									set = function(info,InsetRight)
-											if InsetRight == nil or InsetRight == "" then
-												InsetRight = "0"
-											end
-											db.Chat.Editbox.Border.Inset.right = InsetRight
-											SetEditBoxBackdrop()
-											module:SetEditBoxColor()
-										end,
+										if InsetRight == nil or InsetRight == "" then
+											InsetRight = "0"
+										end
+										db.Chat.Editbox.Border.Inset.right = InsetRight
+										SetEditBoxBackdrop()
+										module:SetEditBoxColor()
+									end,
 									order = 5,
 								},
 								InsetTop = {
@@ -1455,13 +1453,13 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Editbox.Border.Inset.top end,
 									set = function(info,InsetTop)
-											if InsetTop == nil or InsetTop == "" then
-												InsetTop = "0"
-											end
-											db.Chat.Editbox.Border.Inset.top = InsetTop
-											SetEditBoxBackdrop()
-											module:SetEditBoxColor()
-										end,
+										if InsetTop == nil or InsetTop == "" then
+											InsetTop = "0"
+										end
+										db.Chat.Editbox.Border.Inset.top = InsetTop
+										SetEditBoxBackdrop()
+										module:SetEditBoxColor()
+									end,
 									order = 6,
 								},
 								InsetBottom = {
@@ -1471,13 +1469,13 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Editbox.Border.Inset.bottom end,
 									set = function(info,InsetBottom)
-											if InsetBottom == nil or InsetBottom == "" then
-												InsetBottom = "0"
-											end
-											db.Chat.Editbox.Border.Inset.bottom = InsetBottom
-											SetEditBoxBackdrop()
-											module:SetEditBoxColor()
-										end,
+										if InsetBottom == nil or InsetBottom == "" then
+											InsetBottom = "0"
+										end
+										db.Chat.Editbox.Border.Inset.bottom = InsetBottom
+										SetEditBoxBackdrop()
+										module:SetEditBoxColor()
+									end,
 									order = 7,
 								},
 							},
@@ -1493,16 +1491,16 @@ function module:LoadOptions()
 									type = "select",
 									values = editboxanchors,
 									get = function()
-											for k, v in pairs(editboxanchors) do
-												if db.Chat.Editbox.Position.Anchor == v then
-													return k
-												end
+										for k, v in pairs(editboxanchors) do
+											if db.Chat.Editbox.Position.Anchor == v then
+												return k
 											end
-										end,
+										end
+									end,
 									set = function(info, Anchor)
-											db.Chat.Editbox.Position.Anchor = editboxanchors[Anchor]
-											SetEditBoxPosition()
-										end,
+										db.Chat.Editbox.Position.Anchor = editboxanchors[Anchor]
+										SetEditBoxPosition()
+									end,
 									order = 1,
 								},
 								empty = {
@@ -1525,12 +1523,12 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Editbox.Position.X end,
 									set = function(info,PosX)
-											if PosX == nil or PosX == "" then
-												PosX = "0"
-											end
-											db.Chat.Editbox.Position.X = PosX
-											SetEditBoxPosition()
-										end,
+										if PosX == nil or PosX == "" then
+											PosX = "0"
+										end
+										db.Chat.Editbox.Position.X = PosX
+										SetEditBoxPosition()
+									end,
 									order = 3,
 								},
 								PosY = {
@@ -1547,12 +1545,12 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Editbox.Position.Y end,
 									set = function(info,PosY)
-											if PosY == nil or PosY == "" then
-												PosY = "0"
-											end
-											db.Chat.Editbox.Position.Y = PosY
-											SetEditBoxPosition()
-										end,
+										if PosY == nil or PosY == "" then
+											PosY = "0"
+										end
+										db.Chat.Editbox.Position.Y = PosY
+										SetEditBoxPosition()
+									end,
 									order = 4,
 								},
 							},
@@ -1572,21 +1570,21 @@ function module:LoadOptions()
 							width = "full",
 							get = function() return db.Chat.Buttons.Enable end,
 							set = function(info, Enable)
-										db.Chat.Buttons.Enable = not db.Chat.Buttons.Enable
-										CheckChatButtons()
-										
-										if Enable == true then
-											db.Chat.Buttons.MenuButton.Enable = true
-											db.Chat.Buttons.SocialButton.Enable = true
-											CheckChatMenuButton()
-											CheckSocialButton()
-										else
-											db.Chat.Buttons.MenuButton.Enable = false
-											db.Chat.Buttons.SocialButton.Enable = false
-											CheckChatMenuButton()
-											CheckSocialButton()
-										end
-									end,
+								db.Chat.Buttons.Enable = not db.Chat.Buttons.Enable
+								CheckChatButtons()
+
+								if Enable == true then
+									db.Chat.Buttons.MenuButton.Enable = true
+									db.Chat.Buttons.SocialButton.Enable = true
+									CheckChatMenuButton()
+									CheckSocialButton()
+								else
+									db.Chat.Buttons.MenuButton.Enable = false
+									db.Chat.Buttons.SocialButton.Enable = false
+									CheckChatMenuButton()
+									CheckSocialButton()
+								end
+							end,
 							order = 0,
 						},
 						Arrows = {
@@ -1602,9 +1600,9 @@ function module:LoadOptions()
 									width = "full",
 									get = function() return db.Chat.Buttons.Arrows.Enable end,
 									set = function()
-												db.Chat.Buttons.Arrows.Enable = not db.Chat.Buttons.Arrows.Enable
-												CheckChatArrows()
-											end,
+										db.Chat.Buttons.Arrows.Enable = not db.Chat.Buttons.Arrows.Enable
+										CheckChatArrows()
+									end,
 									order = 1,
 								},
 								AlphaOut = {
@@ -1616,10 +1614,10 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.Arrows.AlphaOut end,
-									set = function(_, AlphaOut) 
-												db.Chat.Buttons.Arrows.AlphaOut = AlphaOut
-												CheckChatArrows()
-											end,
+									set = function(_, AlphaOut)
+										db.Chat.Buttons.Arrows.AlphaOut = AlphaOut
+										CheckChatArrows()
+									end,
 									order = 2,
 								},
 								AlphaIn = {
@@ -1631,10 +1629,10 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.Arrows.AlphaIn end,
-									set = function(_, AlphaIn) 
-												db.Chat.Buttons.Arrows.AlphaIn = AlphaIn
-												CheckChatArrows()
-											end,
+									set = function(_, AlphaIn)
+										db.Chat.Buttons.Arrows.AlphaIn = AlphaIn
+										CheckChatArrows()
+									end,
 									order = 3,
 								},
 								PosX = {
@@ -1645,12 +1643,12 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Buttons.Arrows.X end,
 									set = function(info,PosX)
-											if PosX == nil or PosX == "" then
-												PosX = "0"
-											end
-											db.Chat.Buttons.Arrows.X = PosX
-											CheckChatArrows()
-										end,
+										if PosX == nil or PosX == "" then
+											PosX = "0"
+										end
+										db.Chat.Buttons.Arrows.X = PosX
+										CheckChatArrows()
+									end,
 									order = 4,
 								},
 								PosY = {
@@ -1661,12 +1659,12 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Buttons.Arrows.Y end,
 									set = function(info,PosY)
-											if PosY == nil or PosY == "" then
-												PosY = "0"
-											end
-											db.Chat.Buttons.Arrows.Y = PosY
-											CheckChatArrows()
-										end,
+										if PosY == nil or PosY == "" then
+											PosY = "0"
+										end
+										db.Chat.Buttons.Arrows.Y = PosY
+										CheckChatArrows()
+									end,
 									order = 5,
 								},
 							},
@@ -1684,9 +1682,9 @@ function module:LoadOptions()
 									width = "full",
 									get = function() return db.Chat.Buttons.BottomButton.Enable end,
 									set = function()
-												db.Chat.Buttons.BottomButton.Enable = not db.Chat.Buttons.BottomButton.Enable
-												CheckChatBottomButton()
-											end,
+										db.Chat.Buttons.BottomButton.Enable = not db.Chat.Buttons.BottomButton.Enable
+										CheckChatBottomButton()
+									end,
 									order = 1,
 								},
 								AlphaOut = {
@@ -1698,10 +1696,10 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.BottomButton.AlphaOut end,
-									set = function(_, AlphaOut) 
-												db.Chat.Buttons.BottomButton.AlphaOut = AlphaOut
-												CheckChatBottomButton()
-											end,
+									set = function(_, AlphaOut)
+										db.Chat.Buttons.BottomButton.AlphaOut = AlphaOut
+										CheckChatBottomButton()
+									end,
 									order = 2,
 								},
 								AlphaIn = {
@@ -1713,10 +1711,10 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.BottomButton.AlphaIn end,
-									set = function(_, AlphaIn) 
-												db.Chat.Buttons.BottomButton.AlphaIn = AlphaIn
-												CheckChatBottomButton()
-											end,
+									set = function(_, AlphaIn)
+										db.Chat.Buttons.BottomButton.AlphaIn = AlphaIn
+										CheckChatBottomButton()
+									end,
 									order = 3,
 								},
 								PosX = {
@@ -1727,12 +1725,12 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Buttons.BottomButton.X end,
 									set = function(info,PosX)
-											if PosX == nil or PosX == "" then
-												PosX = "0"
-											end
-											db.Chat.Buttons.BottomButton.X = PosX
-											CheckChatBottomButton()
-										end,
+										if PosX == nil or PosX == "" then
+											PosX = "0"
+										end
+										db.Chat.Buttons.BottomButton.X = PosX
+										CheckChatBottomButton()
+									end,
 									order = 4,
 								},
 								PosY = {
@@ -1743,12 +1741,12 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Buttons.BottomButton.Y end,
 									set = function(info,PosY)
-											if PosY == nil or PosY == "" then
-												PosY = "0"
-											end
-											db.Chat.Buttons.BottomButton.Y = PosY
-											CheckChatBottomButton()
-										end,
+										if PosY == nil or PosY == "" then
+											PosY = "0"
+										end
+										db.Chat.Buttons.BottomButton.Y = PosY
+										CheckChatBottomButton()
+									end,
 									order = 5,
 								},
 							},
@@ -1766,9 +1764,9 @@ function module:LoadOptions()
 									width = "full",
 									get = function() return db.Chat.Buttons.MenuButton.Enable end,
 									set = function()
-												db.Chat.Buttons.MenuButton.Enable = not db.Chat.Buttons.MenuButton.Enable
-												CheckChatMenuButton()
-											end,
+										db.Chat.Buttons.MenuButton.Enable = not db.Chat.Buttons.MenuButton.Enable
+										CheckChatMenuButton()
+									end,
 									order = 1,
 								},
 								AlphaOut = {
@@ -1780,10 +1778,10 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.MenuButton.AlphaOut end,
-									set = function(_, AlphaOut) 
-												db.Chat.Buttons.MenuButton.AlphaOut = AlphaOut
-												CheckChatMenuButton()
-											end,
+									set = function(_, AlphaOut)
+										db.Chat.Buttons.MenuButton.AlphaOut = AlphaOut
+										CheckChatMenuButton()
+									end,
 									order = 2,
 								},
 								AlphaIn = {
@@ -1795,10 +1793,10 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.MenuButton.AlphaIn end,
-									set = function(_, AlphaIn) 
-												db.Chat.Buttons.MenuButton.AlphaIn = AlphaIn
-												CheckChatMenuButton()
-											end,
+									set = function(_, AlphaIn)
+										db.Chat.Buttons.MenuButton.AlphaIn = AlphaIn
+										CheckChatMenuButton()
+									end,
 									order = 3,
 								},
 								PosX = {
@@ -1809,12 +1807,12 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Buttons.MenuButton.X end,
 									set = function(info,PosX)
-											if PosX == nil or PosX == "" then
-												PosX = "0"
-											end
-											db.Chat.Buttons.MenuButton.X = PosX
-											CheckChatMenuButton()
-										end,
+										if PosX == nil or PosX == "" then
+											PosX = "0"
+										end
+										db.Chat.Buttons.MenuButton.X = PosX
+										CheckChatMenuButton()
+									end,
 									order = 4,
 								},
 								PosY = {
@@ -1825,12 +1823,12 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Buttons.MenuButton.Y end,
 									set = function(info,PosY)
-											if PosY == nil or PosY == "" then
-												PosY = "0"
-											end
-											db.Chat.Buttons.MenuButton.Y = PosY
-											CheckChatMenuButton()
-										end,
+										if PosY == nil or PosY == "" then
+											PosY = "0"
+										end
+										db.Chat.Buttons.MenuButton.Y = PosY
+										CheckChatMenuButton()
+									end,
 									order = 5,
 								},
 							},
@@ -1848,9 +1846,9 @@ function module:LoadOptions()
 									width = "full",
 									get = function() return db.Chat.Buttons.MinimizeButton.Enable end,
 									set = function()
-												db.Chat.Buttons.MinimizeButton.Enable = not db.Chat.Buttons.MinimizeButton.Enable
-												CheckChatMinimizeButton()
-											end,
+										db.Chat.Buttons.MinimizeButton.Enable = not db.Chat.Buttons.MinimizeButton.Enable
+										CheckChatMinimizeButton()
+									end,
 									order = 1,
 								},
 								AlphaOut = {
@@ -1862,10 +1860,10 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.MinimizeButton.AlphaOut end,
-									set = function(_, AlphaOut) 
-												db.Chat.Buttons.MinimizeButton.AlphaOut = AlphaOut
-												CheckChatMinimizeButton()
-											end,
+									set = function(_, AlphaOut)
+										db.Chat.Buttons.MinimizeButton.AlphaOut = AlphaOut
+										CheckChatMinimizeButton()
+									end,
 									order = 2,
 								},
 								AlphaIn = {
@@ -1877,10 +1875,10 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.MinimizeButton.AlphaIn end,
-									set = function(_, AlphaIn) 
-												db.Chat.Buttons.MinimizeButton.AlphaIn = AlphaIn
-												CheckChatMinimizeButton()
-											end,
+									set = function(_, AlphaIn)
+										db.Chat.Buttons.MinimizeButton.AlphaIn = AlphaIn
+										CheckChatMinimizeButton()
+									end,
 									order = 3,
 								},
 								PosX = {
@@ -1891,12 +1889,12 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Buttons.MinimizeButton.X end,
 									set = function(info,PosX)
-											if PosX == nil or PosX == "" then
-												PosX = "0"
-											end
-											db.Chat.Buttons.MinimizeButton.X = PosX
-											CheckChatMinimizeButton()
-										end,
+										if PosX == nil or PosX == "" then
+											PosX = "0"
+										end
+										db.Chat.Buttons.MinimizeButton.X = PosX
+										CheckChatMinimizeButton()
+									end,
 									order = 4,
 								},
 								PosY = {
@@ -1907,12 +1905,12 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Buttons.MinimizeButton.Y end,
 									set = function(info,PosY)
-											if PosY == nil or PosY == "" then
-												PosY = "0"
-											end
-											db.Chat.Buttons.MinimizeButton.Y = PosY
-											CheckChatMinimizeButton()
-										end,
+										if PosY == nil or PosY == "" then
+											PosY = "0"
+										end
+										db.Chat.Buttons.MinimizeButton.Y = PosY
+										CheckChatMinimizeButton()
+									end,
 									order = 5,
 								},
 							},
@@ -1930,9 +1928,9 @@ function module:LoadOptions()
 									width = "full",
 									get = function() return db.Chat.Buttons.SocialButton.Enable end,
 									set = function()
-												db.Chat.Buttons.SocialButton.Enable = not db.Chat.Buttons.SocialButton.Enable
-												CheckSocialButton()
-											end,
+										db.Chat.Buttons.SocialButton.Enable = not db.Chat.Buttons.SocialButton.Enable
+										CheckSocialButton()
+									end,
 									order = 1,
 								},
 								AlphaOut = {
@@ -1944,10 +1942,10 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.SocialButton.AlphaOut end,
-									set = function(_, AlphaOut) 
-												db.Chat.Buttons.SocialButton.AlphaOut = AlphaOut
-												CheckSocialButton()
-											end,
+									set = function(_, AlphaOut)
+										db.Chat.Buttons.SocialButton.AlphaOut = AlphaOut
+										CheckSocialButton()
+									end,
 									order = 2,
 								},
 								AlphaIn = {
@@ -1959,10 +1957,10 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.SocialButton.AlphaIn end,
-									set = function(_, AlphaIn) 
-												db.Chat.Buttons.SocialButton.AlphaIn = AlphaIn
-												CheckSocialButton()
-											end,
+									set = function(_, AlphaIn)
+										db.Chat.Buttons.SocialButton.AlphaIn = AlphaIn
+										CheckSocialButton()
+									end,
 									order = 3,
 								},
 								PosX = {
@@ -1973,12 +1971,12 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Buttons.SocialButton.X end,
 									set = function(info,PosX)
-											if PosX == nil or PosX == "" then
-												PosX = "0"
-											end
-											db.Chat.Buttons.SocialButton.X = PosX
-											CheckSocialButton()
-										end,
+										if PosX == nil or PosX == "" then
+											PosX = "0"
+										end
+										db.Chat.Buttons.SocialButton.X = PosX
+										CheckSocialButton()
+									end,
 									order = 4,
 								},
 								PosY = {
@@ -1989,12 +1987,12 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Buttons.SocialButton.Y end,
 									set = function(info,PosY)
-											if PosY == nil or PosY == "" then
-												PosY = "0"
-											end
-											db.Chat.Buttons.SocialButton.Y = PosY
-											CheckSocialButton()
-										end,
+										if PosY == nil or PosY == "" then
+											PosY = "0"
+										end
+										db.Chat.Buttons.SocialButton.Y = PosY
+										CheckSocialButton()
+									end,
 									order = 5,
 								},
 							},
@@ -2011,9 +2009,9 @@ function module:LoadOptions()
 									width = "full",
 									get = function() return db.Chat.Buttons.Copy.Enable end,
 									set = function()
-												db.Chat.Buttons.Copy.Enable = not db.Chat.Buttons.Copy.Enable
-												StaticPopup_Show("RELOAD_UI")
-											end,
+										db.Chat.Buttons.Copy.Enable = not db.Chat.Buttons.Copy.Enable
+										StaticPopup_Show("RELOAD_UI")
+									end,
 									order = 1,
 								},
 								AlphaOut = {
@@ -2025,9 +2023,9 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.Copy.AlphaOut end,
-									set = function(_, AlphaOut) 
-												db.Chat.Buttons.Copy.AlphaOut = AlphaOut
-											end,
+									set = function(_, AlphaOut)
+										db.Chat.Buttons.Copy.AlphaOut = AlphaOut
+									end,
 									order = 2,
 								},
 								AlphaIn = {
@@ -2039,9 +2037,9 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.Copy.AlphaIn end,
-									set = function(_, AlphaIn) 
-												db.Chat.Buttons.Copy.AlphaIn = AlphaIn
-											end,
+									set = function(_, AlphaIn)
+										db.Chat.Buttons.Copy.AlphaIn = AlphaIn
+									end,
 									order = 3,
 								},
 								PosX = {
@@ -2052,11 +2050,11 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Buttons.Copy.X end,
 									set = function(info,PosX)
-											if PosX == nil or PosX == "" then
-												PosX = "0"
-											end
-											db.Chat.Buttons.Copy.X = PosX
-										end,
+										if PosX == nil or PosX == "" then
+											PosX = "0"
+										end
+										db.Chat.Buttons.Copy.X = PosX
+									end,
 									order = 4,
 								},
 								PosY = {
@@ -2067,11 +2065,11 @@ function module:LoadOptions()
 									width = "half",
 									get = function() return db.Chat.Buttons.Copy.Y end,
 									set = function(info,PosY)
-											if PosY == nil or PosY == "" then
-												PosY = "0"
-											end
-											db.Chat.Buttons.Copy.Y = PosY
-										end,
+										if PosY == nil or PosY == "" then
+											PosY = "0"
+										end
+										db.Chat.Buttons.Copy.Y = PosY
+									end,
 									order = 5,
 								},
 								desc = {
@@ -2097,9 +2095,9 @@ function module:LoadOptions()
 							width = "full",
 							get = function() return db.Chat.Tabs.LockDockedTabs end,
 							set = function()
-										db.Chat.Tabs.LockDockedTabs = not db.Chat.Tabs.LockDockedTabs
-										StaticPopup_Show("RELOAD_UI")
-									end,
+								db.Chat.Tabs.LockDockedTabs = not db.Chat.Tabs.LockDockedTabs
+								StaticPopup_Show("RELOAD_UI")
+							end,
 							order = 1,
 						},
 						ActiveAlpha = {
@@ -2110,9 +2108,9 @@ function module:LoadOptions()
 							max = 1,
 							step = 0.05,
 							get = function() return db.Chat.Tabs.ActiveAlpha end,
-							set = function(_, ActiveAlpha) 
-										db.Chat.Tabs.ActiveAlpha = ActiveAlpha
-									end,
+							set = function(_, ActiveAlpha)
+								db.Chat.Tabs.ActiveAlpha = ActiveAlpha
+							end,
 							order = 2,
 						},
 						NotActiveAlpha = {
@@ -2123,9 +2121,9 @@ function module:LoadOptions()
 							max = 1,
 							step = 0.05,
 							get = function() return db.Chat.Tabs.NotActiveAlpha end,
-							set = function(_, NotActiveAlpha) 
-										db.Chat.Tabs.NotActiveAlpha = NotActiveAlpha
-									end,
+							set = function(_, NotActiveAlpha)
+								db.Chat.Tabs.NotActiveAlpha = NotActiveAlpha
+							end,
 							order = 3,
 						}
 					}
@@ -2133,7 +2131,7 @@ function module:LoadOptions()
 			}
 		}
 	}
-	
+
 	local nextOrder = 3
 	for k, v in pairs(channels) do
 		options.Chat.args.ChatSettings.args.StickyChannels.args[k] = {
@@ -2142,9 +2140,9 @@ function module:LoadOptions()
 			type = "toggle",
 			get = function() return db.Chat.Sticky[k] end,
 			set = function(info, Enabled)
-					db.Chat.Sticky[k] = Enabled
-					ChatTypeInfo[k].sticky = Enabled and 1 or 0
-				end,
+				db.Chat.Sticky[k] = Enabled
+				ChatTypeInfo[k].sticky = Enabled and 1 or 0
+			end,
 			order = nextOrder,
 		}
 		nextOrder = nextOrder + 1
@@ -2157,10 +2155,10 @@ function module:OnInitialize()
 	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
 	LUI:RefreshDefaults()
 	LUI:Refresh()
-	
+
 	self.db = LUI.db
 	db = self.db.profile
-	
+
 	LUI:RegisterModule(self)
 end
 

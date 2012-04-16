@@ -3,7 +3,7 @@
 	File.......: bartender.lua
 	Description: Bartender 4 Install Script
 	Version....: 1.0
-]] 
+]]
 
 local addonname, LUI = ...
 
@@ -12,12 +12,12 @@ LUI.Versions.bartender = 3300
 function LUI:InstallBartender()
 	if not IsAddOnLoaded("Bartender4") then return end
 	if LUICONFIG.Versions.bartender == LUI.Versions.bartender then return end
-	
+
 	local CharName = UnitName("player")
 	local ServerName = GetRealmName()
 	local ProfileName = CharName.." - "..ServerName
-	
-	BagBarDefaults = {
+
+	_G.BagBarDefaults = {
 		[CharName] = {
 			["skin"] = {
 				["Colors"] = {
@@ -77,12 +77,12 @@ function LUI:InstallBartender()
 			},
 		},
 	}
-	
+
 	for k,v in pairs(BagBarDefaults) do
 		Bartender4DB.namespaces.BagBar.profiles[k] = v
 	end
 
-	RepBarDefaults = {
+	_G.RepBarDefaults = {
 		[CharName] = {
 			["position"] = {
 				["y"] = 9.999978772832151,
@@ -92,12 +92,12 @@ function LUI:InstallBartender()
 			["version"] = 3,
 		},
 	}
-	
+
 	for k,v in pairs(RepBarDefaults) do
 		Bartender4DB.namespaces.RepBar.profiles[k] = v
 	end
-	
-	XPBarDefaults = {
+
+	_G.XPBarDefaults = {
 		[CharName] = {
 			["position"] = {
 				["y"] = 218.9714880476636,
@@ -111,12 +111,12 @@ function LUI:InstallBartender()
 			["version"] = 3,
 		},
 	}
-	
+
 	for k,v in pairs(XPBarDefaults) do
 		Bartender4DB.namespaces.XPBar.profiles[k] = v
 	end
-	
-	ActionBarsDefaults = {
+
+	_G.ActionBarsDefaults = {
 		[CharName] = {
 			["actionbars"] = {
 				{
@@ -862,12 +862,12 @@ function LUI:InstallBartender()
 			},
 		},
 	}
-		
+
 	for k,v in pairs(ActionBarsDefaults) do
 		Bartender4DB.namespaces.ActionBars.profiles[k] = v
 	end
-	
-	VehicleDefaults = {
+
+	_G.VehicleDefaults = {
 		[CharName] = {
 			["version"] = 3,
 			["fadeoutalpha"] = 1,
@@ -940,12 +940,12 @@ function LUI:InstallBartender()
 			},
 		},
 	}
-	
+
 	for k,v in pairs(VehicleDefaults) do
 		Bartender4DB.namespaces.Vehicle.profiles[k] = v
 	end
-	
-	StanceBarDefaults = {
+
+	_G.StanceBarDefaults = {
 		[CharName] = {
 			["position"] = {
 				["y"] = -16.50000411188517,
@@ -1026,12 +1026,12 @@ function LUI:InstallBartender()
 			["version"] = 3,
 		},
 	}
-	
+
 	for k,v in pairs(StanceBarDefaults) do
 		Bartender4DB.namespaces.StanceBar.profiles[k] = v
 	end
-	
-	PetBarDefaults = {
+
+	_G.PetBarDefaults = {
 		[CharName] = {
 			["rows"] = 2,
 			["hidemacrotext"] = true,
@@ -1108,12 +1108,12 @@ function LUI:InstallBartender()
 			},
 		},
 	}
-	
+
 	for k,v in pairs(PetBarDefaults) do
 		Bartender4DB.namespaces.PetBar.profiles[k] = v
 	end
-	
-	MicroMenuDefaults = {
+
+	_G.MicroMenuDefaults = {
 		[CharName] = {
 			["enabled"] = false,
 			["version"] = 3,
@@ -1144,12 +1144,12 @@ function LUI:InstallBartender()
 			},
 		},
 	}
-	
+
 	for k,v in pairs(MicroMenuDefaults) do
 		Bartender4DB.namespaces.MicroMenu.profiles[k] = v
 	end
 
-	BTProfilesDefaults = {
+	_G.BTProfilesDefaults = {
 		[CharName] = {
 			["minimapIcon"] = {
 				["minimapPos"] = 268,
@@ -1159,17 +1159,17 @@ function LUI:InstallBartender()
 			["buttonlock"] = true,
 		},
 	}
-	
+
 	for k,v in pairs(BTProfilesDefaults) do
 		Bartender4DB.profiles[k] = v
 	end
-	
+
 	if Bartender4DB.profileKeys[ProfileName] == nil then
 		tinsert(Bartender4DB.profileKeys,ProfileName)
 		Bartender4DB.profileKeys[ProfileName] = CharName
 	elseif Bartender4DB.profileKeys[ProfileName] ~= CharName then
 		Bartender4DB.profileKeys[ProfileName] = CharName
 	end
-	
+
 	LUICONFIG.Versions.bartender = LUI.Versions.bartender
 end

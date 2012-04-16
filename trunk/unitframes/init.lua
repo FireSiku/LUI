@@ -6,8 +6,9 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes", "AceHook-3.0", "AceEvent-3.0")
-local Blizzard = module:Module("HideBlizzard")
 local Forte = LUI:Module("Forte")
+
+local Blizzard = LUI.Blizzard
 
 local unitsSpawn = {"Player", "Target", "Focus", "FocusTarget", "ToT", "ToToT", "Pet", "PetTarget", "Boss", "Party", "Maintank", "Arena", "Raid"}
 
@@ -80,13 +81,13 @@ do
 			end
 		end
 	end
-	
+
 	for i = 1, 5 do
 		for j = 1, 5 do
 			table.insert(module.framelist.Raid, "oUF_LUI_raid_25_"..i.."UnitButton"..j)
 		end
 	end
-	
+
 	for i = 1, 8 do
 		for j = 1, 5 do
 			table.insert(module.framelist.Raid, "oUF_LUI_raid_40_"..i.."UnitButton"..j)
@@ -109,11 +110,11 @@ function module:LoadOptions()
 		Layout = self:CreateImportExportOptions(4),
 		XP_Rep = self:CreateXpRepOptions(5),
 	}
-	
+
 	for index, unit in pairs(units) do
 		options[unit] = self:CreateUnitOptions(unit, index)
 	end
-	
+
 	return options
 end
 
@@ -122,19 +123,19 @@ function module:Refresh()
 		self.ToggleUnit(unit)
 		self.ApplySettings(unit)
 	end
-	
+
 	Forte:SetPosForte()
 end
 
 function module:OnInitialize()
 	LUI:NewNamespace(self, true)
-	
+
 	-- look for old namespace and convert
-	if LUI_Layouts then
-		module.db.global = LUI_Layouts
-		LUI_Layouts = nil
+	if _G.LUI_Layouts then
+		module.db.global = _G.LUI_Layouts
+		_G.LUI_Layouts = nil
 	end
-	
+
 	if LUI.db.profile.oUF then
 		local MoveOver
 		function MoveOver(data, prior, stackstring)
@@ -156,9 +157,9 @@ function module:OnInitialize()
 				end
 			end
 		end
-		
+
 		local Bars = {"Health", "Power", "Full", "DruidMana", "Totems", "Runes", "HolyPower", "SoulShards", "Eclipse", "AltPower", "HealPrediction", "ComboPoints"}
-		
+
 		local checkauras = {
 			Enable = "_enable",
 			X = "X",
@@ -180,26 +181,26 @@ function module:OnInitialize()
 		for key, data in pairs(LUI.db.profile.oUF) do
 			if type(data) == "table" and data.Health then
 				data.Bars = {}
-				
+
 				for _, v in pairs(Bars) do
 					if data[v] then
 						data.Bars[v] = data[v]
 						data[v] = nil
 					end
 				end
-				
+
 				for k, v in pairs(data.Bars) do
 					if v.Text then
 						data.Texts[k] = data.Bars[k].Text
 						data.Bars[k].Text = nil
 					end
 				end
-				
+
 				if data.Bars.Full and data.Bars.Full.Color then
 					data.Bars.Full.IndividualColor = data.Bars.Full.Color
 					data.Bars.Full.Color = nil
 				end
-				
+
 				if data.Aura then
 					for _, type in pairs({"Buffs", "Debuffs"}) do
 						data.Aura[type] = {}
@@ -211,7 +212,7 @@ function module:OnInitialize()
 						end
 					end
 				end
-				
+
 				if data.Castbar then
 					for k, v in pairs(data.Castbar) do
 						data.Castbar.General = {}
@@ -220,7 +221,7 @@ function module:OnInitialize()
 							data.Castbar[k] = nil
 						end
 					end
-					
+
 					if data.Castbar.Colors and data.Castbar.Colors.Shield and data.Castbar.Colors.Shield.Enable ~= nil then
 						data.Castbar.General.Shield = data.Castbar.Colors.Shield.Enable
 						data.Castbar.Colors.Shield.Enable = nil
@@ -228,26 +229,26 @@ function module:OnInitialize()
 				end
 			end
 		end
-		
+
 		for _, unit in pairs({"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "BossTarget", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet", "Raid"}) do
 			MoveOver(module.db.profile[unit], LUI.db.profile.oUF[unit], "module.db.profile."..unit)
 		end
-		
+
 		LUI.db.profile.oUF = nil
 	end
 end
 
 function module:OnEnable()
 	for _, unit in pairs(unitsSpawn) do module.ToggleUnit(unit) end
-	
+
 	Forte:SetPosForte()
 end
 
 function module:OnDisable()
 	for _, unit in pairs(unitsSpawn) do module.ToggleUnit(unit, false) end
-	
+
 	if module.db.Settings.HideBlizzRaid then
-		Blizzard:Hide("raid", true)
+		Blizzard:Hide("raid")
 	end
 end
 

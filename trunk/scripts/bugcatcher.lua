@@ -17,7 +17,7 @@ function script:ApplyHook()
 
 	script.old = current
 	script.new = script.new or function(msg)
-		-- Check text hasn't already been added by a previous hook, or that error message is about LUI.
+	-- Check text hasn't already been added by a previous hook, or that error message is about LUI.
 		if not strfind(msg, script.text) and strfind(msg, "LUI") then
 			-- Add LUI version text.
 			msg = msg .. script.text
@@ -30,7 +30,7 @@ function script:ApplyHook()
 	-- Hook error handler.
 	seterrorhandler(script.new)
 
-	-- Check successfull.
+	-- Check successful.
 	if script.new ~= geterrorhandler() then
 		--print("LUI: Could not hook the error handler :(. Someone destroyed the seterrorhandler() function.")
 	end

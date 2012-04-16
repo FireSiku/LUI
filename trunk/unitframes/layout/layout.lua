@@ -11,6 +11,7 @@ local Forte = LUI:Module("Forte")
 local Fader = LUI:Module("Fader")
 
 local L = LUI.L
+local Blizzard = LUI.Blizzard
 
 local oUF = LUI.oUF
 
@@ -119,7 +120,7 @@ do
 			[GetSpellInfo(1949)] = 1, -- Hellfire
 		},
 	}
-	
+
 	channelingTicks = {
 		["First Aid"] = 1 -- Bandages
 	}
@@ -129,15 +130,15 @@ do
 		end
 	end
 	wipe(classChannels)
-	
+
 	if class == "MAGE" then
 		local arcaneMissiles = GetSpellInfo(5143)
-		
+
 		local function talentUpdate()
 			local rank = select(5, GetTalentInfo(1, 10)) -- Missile Barrage talent
 			channelingTicks[arcaneMissiles] = rank == 0 and 0.75 or (0.7 - (rank / 10))
 		end
-		
+
 		module:RegisterEvent("PLAYER_TALENT_UPDATE", talentUpdate)
 		talentUpdate()
 	end
@@ -151,14 +152,14 @@ do
 		LOCK_FOCUS_FRAME = true,
 		UNLOCK_FOCUS_FRAME = true,
 	}
-	
+
 	local insertMenuOptions = {
 		SELF = {
 			"LUI_ROLE_CHECK",
 			"LUI_READY_CHECK",
 		},
 	}
-	
+
 	UnitPopupButtons["LUI_SET_FOCUS"] = {
 		text = L["Type %s to Set Focus"]:format(SLASH_FOCUS1),
 		tooltipText = L["Blizzard currently does not provide a proper way to right-click focus with custom unit frames."],
@@ -170,7 +171,7 @@ do
 		dist = 0,
 	}
 	UnitPopupButtons["LUI_ROLE_CHECK"] = {
-		text = ROLE_POLL, 
+		text = ROLE_POLL,
 		tooltipText = L["Initiate a role check, asking your group members to specify their roles."],
 		dist = 0,
 	}
@@ -179,7 +180,7 @@ do
 		tooltipText = L["Initiate a ready check, asking your group members if they are ready to continue."],
 		dist = 0,
 	}
-	
+
 	hooksecurefunc("UnitPopup_OnClick", function(self)
 		local button = self.value
 		if button == "LUI_ROLE_CHECK" then
@@ -188,14 +189,14 @@ do
 			DoReadyCheck()
 		end
 	end)
-	
+
 	hooksecurefunc("UnitPopup_HideButtons", function()
 		local dropdownMenu = UIDROPDOWNMENU_INIT_MENU
 		local inParty, inRaid, inBG, isLeader, isAssist = GetNumPartyMembers() > 0, GetNumRaidMembers() > 0, UnitInBattleground("player"), IsPartyLeader(), IsRaidOfficer()
 		if inRaid then
 			inParty = true
 		end
-		
+
 		for i, v in ipairs(UnitPopupMenus[UIDROPDOWNMENU_MENU_VALUE] or UnitPopupMenus[dropdownMenu.which]) do
 			if v == "LUI_ROLE_CHECK" or v == "LUI_READY_CHECK" then
 				if (not isLeader and not isAssist) or inBG or (not inParty and not inRaid) then
@@ -204,49 +205,49 @@ do
 			end
 		end
 	end)
-	
+
 	local dropdown = CreateFrame("Frame", "LUI_UnitFrame_DropDown", UIParent, "UIDropDownMenuTemplate")
 	UnitPopupFrames[#UnitPopupFrames+1] = "LUI_UnitFrame_DropDown"
-	
+
 	local function getMenuUnit(unit)
 		if unit == "focus" then return "FOCUS" end
-		
+
 		if UnitIsUnit(unit, "player") then return "SELF" end
-		
+
 		if UnitIsUnit(unit, "vehicle") then return "VEHICLE" end
-		
+
 		if UnitIsUnit(unit, "pet") then return "PET" end
-		
+
 		if not UnitIsPlayer(unit) then return "TARGET" end
-		
+
 		local id = UnitInRaid(unit)
 		if id then
 			return "RAID_PLAYER", id
 		end
-		
+
 		if UnitInParty(unit) then
 			return "PARTY"
 		end
-		
+
 		return "PLAYER"
 	end
-	
+
 	local unitDropDownMenus = {}
 	local function getUnitDropDownMenu(unit)
 		local menu = unitDropDownMenus[unit]
 		if menu then return menu end
-		
+
 		if not UnitPopupMenus then
 			unitDropDownMenus[unit] = unit
 			return unit
 		end
-		
+
 		local data = UnitPopupMenus[unit]
 		if not data then
 			unitDropDownMenus[unit] = unit
 			return unit
 		end
-		
+
 		local found = false
 		for _, v in pairs(data) do
 			if removeMenuOptions[v] then
@@ -254,14 +255,14 @@ do
 				break
 			end
 		end
-		
+
 		local insert = insertMenuOptions[unit]
-		
+
 		if not found and not insert then -- nothing to add or remove
 			unitDropDownMenus[unit] = unit
 			return unit
 		end
-		
+
 		local newData = {}
 		for _, v in ipairs(data) do
 			local blacklisted = removeMenuOptions[v]
@@ -276,24 +277,24 @@ do
 				tinsert(newData, blacklisted)
 			end
 		end
-		
+
 		local newMenuName = "LUI_" .. unit
 		UnitPopupMenus[newMenuName] = newData
 		unitDropDownMenus[unit] = newMenuName
 		return newMenuName
 	end
-	
+
 	local dropdown_unit
 	UIDropDownMenu_Initialize(dropdown, function(frame)
 		if not dropdown_unit then return end
-		
+
 		local unit, id = getMenuUnit(dropdown_unit)
 		if unit then
 			local menu = getUnitDropDownMenu(unit)
 			UnitPopup_ShowMenu(frame, menu, dropdown_unit, nil, id)
 		end
 	end, "MENU")
-	
+
 	menu = function(self, unit)
 		dropdown_unit = unit
 		ToggleDropDownMenu(1, nil, dropdown, "cursor")
@@ -403,18 +404,18 @@ end
 local OverrideHealth = function(self, event, unit, powerType)
 	if self.unit ~= unit then return end
 	local health = self.Health
-	
+
 	local min = UnitHealth(unit)
 	local max = UnitHealthMax(unit)
 	local disconnected = not UnitIsConnected(unit)
 	if min > max then min = max end
-	
+
 	health:SetMinMaxValues(0, max)
-	
+
 	health:SetValue(disconnected and max or min)
-	
+
 	health.disconnected = disconnected
-	
+
 	local _, pToken = UnitClass(unit)
 	local color = module.colors.class[pToken] or {0.5, 0.5, 0.5}
 
@@ -446,7 +447,7 @@ local OverrideHealth = function(self, event, unit, powerType)
 	else
 		health.bg:SetVertexColor(r_*mu, g_*mu, b_*mu)
 	end
-	
+
 	if not UnitIsConnected(unit) then
 		health:SetValue(0)
 		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Offline>|r")
@@ -574,19 +575,19 @@ end
 local OverridePower = function(self, event, unit)
 	if self.unit ~= unit then return end
 	local power = self.Power
-	
+
 	local displayType = GetDisplayPower(power, unit)
 	local min = UnitPower(unit, displayType)
 	local max = UnitPowerMax(unit, displayType)
 	local disconnected = not UnitIsConnected(unit)
 	if min > max then min = max end
-	
+
 	power:SetMinMaxValues(0, max)
 
 	power:SetValue(disconnected and max or min)
-	
+
 	power.disconnected = disconnected
-	
+
 	local _, pType = UnitPowerType(unit)
 	local pClass, pToken = UnitClass(unit)
 	local color = module.colors.class[pToken] or {0.5, 0.5, 0.5}
@@ -864,12 +865,12 @@ local PostCastStart = function(castbar, unit, name)
 		if unit == "target" or unit == "focus" or unit == "pet" then unit = "player" end
 		local pClass, pToken = UnitClass(unit)
 		local color = module.colors.class[pToken]
-		
+
 		castbar:SetStatusBarColor(color[1], color[2], color[3], 0.68)
 		castbar.bg:SetVertexColor(0.15, 0.15, 0.15, 0.75)
 		castbar.Backdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 	end
-	
+
 	if castbar.interrupt and UnitCanAttack("player", unit) and castbar.Colors.ShieldEnable then
 		castbar:SetStatusBarColor(castbar.Colors.Shield.r, castbar.Colors.Shield.g, castbar.Colors.Shield.b, castbar.Colors.Shield.a)
 	end
@@ -893,29 +894,29 @@ local PostChannelStart = function(castbar, unit, name)
 			castbar:HideTicks()
 		end
 	end
-	
+
 	PostCastStart(castbar, unit, name)
 end
 
 local PostChannelUpdate = function(castbar, unit, name)
 	if not castbar.numticks then return end
-	
+
 	local _, _, _, _, startTime, endTime = UnitChannelInfo(unit)
-	
+
 	if castbar.delay < 0 then
 		castbar.numticks = castbar.numticks + 1
-		
+
 		for i = 1, castbar.numticks do
 			local tick = castbar:GetTick(i)
 			tick.ticktime = castbar.tickspeed * i
 			tick.delay = 0
 			tick:Update()
 		end
-		
+
 		castbar.delay = 0
 		return
 	end
-	
+
 	local _duration = castbar.duration + castbar.delay
 	for i = 1, castbar.numticks do
 		local tick = castbar:GetTick(i)
@@ -1131,7 +1132,7 @@ local ArenaEnemyUnseen = function(self, event, unit, state)
 
 		self.Hide = self.Hide_
 	end
-	
+
 	self.Health:ForceUpdate()
 	self.Power:ForceUpdate()
 end
@@ -1168,131 +1169,131 @@ end
 local Reposition = function(V2Tex)
 	local to = V2Tex.to
 	local from = V2Tex.from
-	
+
 	local toL, toR = to:GetLeft(), to:GetRight()
 	local toT, toB = to:GetTop(), to:GetBottom()
 	local toCX, toCY = to:GetCenter()
 	local toS = to:GetEffectiveScale()
-	
+
 	local fromL, fromR = from:GetLeft(), from:GetRight()
 	local fromT, fromB = from:GetTop(), from:GetBottom()
 	local fromCX, fromCY = from:GetCenter()
 	local fromS = from:GetEffectiveScale()
-	
+
 	if not (toL and toR and toT and toB and toCX and toCY and toS and fromL and fromR and fromT and fromB and fromCX and fromCY and fromS) then return end
-	
+
 	toL, toR = toL * toS, toR * toS
 	toT, toB = toT * toS, toB * toS
 	toCX, toCY = toCX * toS, toCY * toS
-	
+
 	fromL, fromR = fromL * fromS, fromR * fromS
 	fromT, fromB = fromT * fromS, fromB * fromS
 	fromCX, fromCY = fromCX * fromS, fromCY * fromS
-	
+
 	local magicValue = to:GetWidth() / 6
-	
+
 	V2Tex:ClearAllPoints()
 	V2Tex.Vertical:ClearAllPoints()
 	V2Tex.Horizontal:ClearAllPoints()
 	V2Tex.Horizontal2:ClearAllPoints()
 	V2Tex.Dot:ClearAllPoints()
-	
+
 	V2Tex:Show()
 	V2Tex.Vertical:Show()
 	V2Tex.Horizontal:Show()
 	V2Tex.Horizontal2:Show()
 	V2Tex.Dot:Show()
-	
+
 	if fromL > toR - magicValue then
 		V2Tex.Dot:SetPoint("CENTER", V2Tex.Horizontal2, "RIGHT")
-		
+
 		V2Tex.Horizontal2:SetPoint("LEFT", from, "RIGHT")
 		V2Tex.Horizontal2:SetWidth(fromL - toR + magicValue)
-		
+
 		if fromCY < toB then
 			V2Tex.Vertical:SetPoint("TOPLEFT", V2Tex, "TOPLEFT")
 			V2Tex.Vertical:SetPoint("BOTTOMLEFT", V2Tex, "BOTTOMLEFT")
-			
+
 			V2Tex.Horizontal:SetPoint("BOTTOMLEFT", V2Tex, "BOTTOMLEFT")
 			V2Tex.Horizontal:SetPoint("BOTTOMRIGHT", V2Tex, "BOTTOMRIGHT")
-			
+
 			V2Tex:SetPoint("TOPLEFT", to, "BOTTOMRIGHT", -magicValue, 0)
 			V2Tex:SetPoint("BOTTOMRIGHT", from, "LEFT", 0, -1)
 		elseif fromCY > toT then
 			V2Tex.Vertical:SetPoint("TOPLEFT", V2Tex, "TOPLEFT")
 			V2Tex.Vertical:SetPoint("BOTTOMLEFT", V2Tex, "BOTTOMLEFT")
-			
+
 			V2Tex.Horizontal:SetPoint("TOPLEFT", V2Tex, "TOPLEFT")
 			V2Tex.Horizontal:SetPoint("TOPRIGHT", V2Tex, "TOPRIGHT")
-			
+
 			V2Tex:SetPoint("BOTTOMLEFT", to, "TOPRIGHT", -magicValue, 0)
 			V2Tex:SetPoint("TOPRIGHT", from, "LEFT", 0, 1)
 		elseif fromCY > toCY then
 			V2Tex.Vertical:Hide()
-			
+
 			V2Tex.Horizontal:SetPoint("TOPLEFT", V2Tex, "TOPLEFT")
 			V2Tex.Horizontal:SetPoint("TOPRIGHT", V2Tex, "TOPRIGHT")
-			
+
 			V2Tex:SetPoint("TOPLEFT", to, "RIGHT", 0, 1)
 			V2Tex:SetPoint("BOTTOMRIGHT", from, "LEFT", 0, -1)
 		else
 			V2Tex.Vertical:Hide()
-			
+
 			V2Tex.Horizontal:SetPoint("BOTTOMLEFT", V2Tex, "BOTTOMLEFT")
 			V2Tex.Horizontal:SetPoint("BOTTOMRIGHT", V2Tex, "BOTTOMRIGHT")
-			
+
 			V2Tex:SetPoint("BOTTOMLEFT", to, "RIGHT", 0, -1)
 			V2Tex:SetPoint("TOPRIGHT", from, "LEFT", 0, 1)
 		end
 	elseif toL > fromR - magicValue then
 		V2Tex.Dot:SetPoint("CENTER", V2Tex.Horizontal2, "LEFT")
-		
+
 		V2Tex.Horizontal2:SetPoint("RIGHT", from, "LEFT")
 		V2Tex.Horizontal2:SetWidth(toL - fromR + magicValue)
-		
+
 		if fromCY < toB then
 			V2Tex.Vertical:SetPoint("TOPRIGHT", V2Tex, "TOPRIGHT")
 			V2Tex.Vertical:SetPoint("BOTTOMRIGHT", V2Tex, "BOTTOMRIGHT")
-			
+
 			V2Tex.Horizontal:SetPoint("BOTTOMLEFT", V2Tex, "BOTTOMLEFT")
 			V2Tex.Horizontal:SetPoint("BOTTOMRIGHT", V2Tex, "BOTTOMRIGHT")
-			
+
 			V2Tex:SetPoint("TOPRIGHT", to, "BOTTOMLEFT", magicValue, 0)
 			V2Tex:SetPoint("BOTTOMLEFT", from, "RIGHT", 0, -1)
 		elseif fromCY > toT then
 			V2Tex.Vertical:SetPoint("TOPRIGHT", V2Tex, "TOPRIGHT")
 			V2Tex.Vertical:SetPoint("BOTTOMRIGHT", V2Tex, "BOTTOMRIGHT")
-			
+
 			V2Tex.Horizontal:SetPoint("TOPLEFT", V2Tex, "TOPLEFT")
 			V2Tex.Horizontal:SetPoint("TOPRIGHT", V2Tex, "TOPRIGHT")
-			
+
 			V2Tex:SetPoint("BOTTOMRIGHT", to, "TOPLEFT", magicValue, 0)
 			V2Tex:SetPoint("TOPLEFT", from, "RIGHT", 0, 1)
 		elseif fromCY > toCY then
 			V2Tex.Vertical:Hide()
-			
+
 			V2Tex.Horizontal:SetPoint("TOPLEFT", V2Tex, "TOPLEFT")
 			V2Tex.Horizontal:SetPoint("TOPRIGHT", V2Tex, "TOPRIGHT")
-			
+
 			V2Tex:SetPoint("TOPRIGHT", to, "LEFT", 0, 1)
 			V2Tex:SetPoint("BOTTOMLEFT", from, "RIGHT", 0, -1)
 		else
 			V2Tex.Vertical:Hide()
-			
+
 			V2Tex.Horizontal:SetPoint("BOTTOMLEFT", V2Tex, "BOTTOMLEFT")
 			V2Tex.Horizontal:SetPoint("BOTTOMRIGHT", V2Tex, "BOTTOMRIGHT")
-			
+
 			V2Tex:SetPoint("BOTTOMRIGHT", to, "LEFT", 0, -1)
 			V2Tex:SetPoint("TOPLEFT", from, "RIGHT", 0, 1)
 		end
 	else
 		V2Tex.Vertical:SetPoint("TOP", V2Tex, "TOP")
 		V2Tex.Vertical:SetPoint("BOTTOM", V2Tex, "BOTTOM")
-		
+
 		V2Tex.Horizontal:Hide()
 		V2Tex.Horizontal2:Hide()
 		V2Tex.Dot:Hide()
-		
+
 		if toCX > fromCX then
 			if toCY > fromCY then
 				V2Tex:SetPoint("TOPRIGHT", to, "BOTTOM")
@@ -1311,7 +1312,7 @@ local Reposition = function(V2Tex)
 			end
 		end
 	end
-	
+
 	if module:IsHooked(from, "Show") then module:Unhook(from, "Show") end
 end
 
@@ -1718,13 +1719,13 @@ module.funcs = {
 	end,
 	ReadyCheck = function(self, unit, oufdb)
 		if not self.ReadyCheck then self.ReadyCheck = self.Overlay:CreateTexture(nil, "OVERLAY") end
-		
+
 		self.ReadyCheck:SetHeight(oufdb.Icons.ReadyCheck.Size)
 		self.ReadyCheck:SetWidth(oufdb.Icons.ReadyCheck.Size)
 		self.ReadyCheck:ClearAllPoints()
 		self.ReadyCheck:SetPoint(oufdb.Icons.ReadyCheck.Point, self, oufdb.Icons.ReadyCheck.Point, oufdb.Icons.ReadyCheck.X, oufdb.Icons.ReadyCheck.Y)
 	end,
-	
+
 	-- player specific
 	Experience = function(self, unit, ouf_xp_rep)
 		if not self.XP then
@@ -1762,7 +1763,7 @@ module.funcs = {
 				local exhaustion = unit == "player" and GetXPExhaustion() or 0
 				self.Experience.Rested:SetMinMaxValues(0, max)
 				self.Experience.Rested:SetValue(math.min(value + exhaustion, max))
-				
+
 				self.Experience.Value:SetFormattedText("%d / %d (%d%%)", value, max, math.floor((value / max) * 100 + 0.5))
 			end
 
@@ -1808,13 +1809,13 @@ module.funcs = {
 				self.XP:SetFrameStrata(frameStrata)
 				GameTooltip:Hide()
 			end)
-			
+
 			self.XP:SetScript("OnMouseUp", function(_, button)
 				if button == "LeftButton" then
 					local level, value, max, rested = UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetXPExhaustion()
 					local msg = "Experience into Level "..level..": "..value.." / "..max.." ("..max - value.." remaining)"..((rested and rested > 0) and (", "..rested.." rested XP") or "")
 					for i=1, NUM_CHAT_WINDOWS do
-						local editbox = _G["ChatFrame"..i.."EditBox"] 
+						local editbox = _G["ChatFrame"..i.."EditBox"]
 						if editbox and editbox:IsShown() then
 							editbox:Insert(msg)
 							return
@@ -1826,7 +1827,7 @@ module.funcs = {
 					self.Rep:Show()
 				end
 			end)
-			
+
 			self.XP.Enable = true
 		end
 
@@ -1870,18 +1871,18 @@ module.funcs = {
 			self.Reputation.bg = self.Reputation:CreateTexture(nil, "BACKGROUND")
 			self.Reputation.bg:SetAllPoints(self.Rep)
 			self.Reputation.bg:SetTexture(normTex)
-			
+
 			self.Reputation.Override = function()
 				local name, standing, min, max, value = GetWatchedFactionInfo()
 				if name then
 					self.Reputation:SetMinMaxValues(min, max)
 					self.Reputation:SetValue(value)
-					
+
 					self.Reputation.Value:SetFormattedText("%d / %d (%d%%)", value - min, max - min, math.floor(((value - min) / (max - min)) * 100 + 0.5))
 				else
 					self.Reputation:SetMinMaxValues(0, 100)
 					self.Reputation:SetValue(0)
-					
+
 					self.Reputation.Value:SetText()
 				end
 			end
@@ -1915,15 +1916,15 @@ module.funcs = {
 				self.Rep:SetFrameStrata(frameStrata)
 				GameTooltip:Hide()
 			end)
-			
+
 			self.Rep:SetScript("OnMouseUp", function(_, button)
 				if button == "LeftButton" then
 					local name, standing, min, max, value = GetWatchedFactionInfo()
 					if not name then return end
-					
+
 					local msg = "Reputation with "..name..": "..value - min.." / "..max - min.." "..standings[standing].." ("..max - value.." remaining)"
 					for i=1, NUM_CHAT_WINDOWS do
-						local editbox = _G["ChatFrame"..i.."EditBox"] 
+						local editbox = _G["ChatFrame"..i.."EditBox"]
 						if editbox and editbox:IsShown() then
 							editbox:Insert(msg)
 							return
@@ -1935,7 +1936,7 @@ module.funcs = {
 					self.XP:Show()
 				end
 			end)
-			
+
 			self.Rep.Enable = true
 		end
 
@@ -1997,9 +1998,9 @@ module.funcs = {
 		self.TotemBar:ClearAllPoints()
 		self.TotemBar:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 		self.TotemBar.colors = module.colors.totembar
-		
+
 		local totemPoints = {2, 0, 1, 3}
-		
+
 		for i = 1, 4 do
 			self.TotemBar[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Totems.Texture))
 			self.TotemBar[i]:SetHeight(oufdb.Bars.Totems.Height)
@@ -2011,7 +2012,7 @@ module.funcs = {
 			else
 				self.TotemBar[i]:SetPoint("LEFT", self.TotemBar[totemPoints[i]], "RIGHT", oufdb.Bars.Totems.Padding, 0)
 			end
-			
+
 			self.TotemBar[i].bg.multiplier = oufdb.Bars.Totems.Multiplier
 		end
 	end,
@@ -2045,9 +2046,9 @@ module.funcs = {
 		self.Runes:SetWidth(oufdb.Bars.Runes.Width)
 		self.Runes:ClearAllPoints()
 		self.Runes:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
-		
+
 		local runePoints = {0, 1, 6, 3, 2, 5}
-		
+
 		for i = 1, 6 do
 			self.Runes[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Runes.Texture))
 			self.Runes[i]:SetStatusBarColor(unpack(module.colors.runes[math.floor((i+1)/2)]))
@@ -2179,7 +2180,7 @@ module.funcs = {
 			if Forte then
 				self.EclipseBar.PostUpdateVisibility = function() if self:GetLeft() then Forte:SetPosForte() end end
 			end
-			
+
 			self.EclipseBar.FrameBackdrop = CreateFrame("Frame", nil, self.EclipseBar)
 			self.EclipseBar.FrameBackdrop:SetPoint("TOPLEFT", self.EclipseBar, "TOPLEFT", -3.5, 3)
 			self.EclipseBar.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.EclipseBar, "BOTTOMRIGHT", 3.5, -3)
@@ -2232,13 +2233,13 @@ module.funcs = {
 		if not self.AltPowerBar then
 			self.AltPowerBar = CreateFrame("StatusBar", nil, self)
 			if unit == "pet" then self.AltPowerBar:SetParent(oUF_LUI_player) end
-			
+
 			self.AltPowerBar.bg = self.AltPowerBar:CreateTexture(nil, "BORDER")
 			self.AltPowerBar.bg:SetAllPoints(self.AltPowerBar)
-			
+
 			self.AltPowerBar.SetPosition = function()
 				if not module.db.Player.Bars.AltPower.OverPower then return end
-				
+
 				if oUF_LUI_player.AltPowerBar:IsShown() or (oUF_LUI_pet and oUF_LUI_pet.AltPowerBar and oUF_LUI_pet.AltPowerBar:IsShown()) then
 					oUF_LUI_player.Power:SetHeight(module.db.Player.Bars.Power.Height/2 - 1)
 					oUF_LUI_player.AltPowerBar:SetHeight(module.db.Player.Bars.Power.Height/2 - 1)
@@ -2269,7 +2270,7 @@ module.funcs = {
 			self.AltPowerBar:SetPoint("TOPLEFT", oUF_LUI_player.AltPowerBar, "TOPLEFT", 0, 0)
 			self.AltPowerBar:SetPoint("BOTTOMRIGHT", oUF_LUI_player.AltPowerBar, "BOTTOMRIGHT", 0, 0)
 		end
-		
+
 		self.AltPowerBar:SetHeight(module.db.Player.Bars.AltPower.Height)
 		self.AltPowerBar:SetWidth(module.db.Player.Bars.AltPower.Width)
 		self.AltPowerBar:SetStatusBarTexture(Media:Fetch("statusbar", module.db.Player.Bars.AltPower.Texture))
@@ -2277,7 +2278,7 @@ module.funcs = {
 		self.AltPowerBar.bg:SetTexture(Media:Fetch("statusbar", module.db.Player.Bars.AltPower.TextureBG))
 		self.AltPowerBar.bg:SetAlpha(module.db.Player.Bars.AltPower.BGAlpha)
 		self.AltPowerBar.bg.multiplier = module.db.Player.Bars.AltPower.BGMultiplier
-		
+
 		self.AltPowerBar.Smooth = module.db.Player.Bars.AltPower.Smooth
 		self.AltPowerBar.color = module.db.Player.Bars.AltPower.Color
 		self.AltPowerBar.colorIndividual = module.db.Player.Bars.AltPower.IndividualColor
@@ -2298,7 +2299,7 @@ module.funcs = {
 		end
 
 		self.AltPowerBar.PostUpdate = PostUpdateAltPower
-		
+
 		self.AltPowerBar.SetPosition()
 	end,
 	DruidMana = function(self, unit, oufdb)
@@ -2320,7 +2321,7 @@ module.funcs = {
 
 			self.DruidMana.SetPosition = function()
 				if not oufdb.Bars.DruidMana.OverPower then return end
-				
+
 				if self.DruidMana:IsShown() then
 					self.Power:SetHeight(oufdb.Bars.Power.Height/2 - 1)
 					self.DruidMana:SetHeight(oufdb.Bars.Power.Height/2 - 1)
@@ -2343,7 +2344,7 @@ module.funcs = {
 		else
 			self.DruidMana:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.Player.Bars.DruidMana.X, module.db.Player.Bars.DruidMana.Y)
 		end
-		
+
 		self.DruidMana:SetHeight(oufdb.Bars.DruidMana.Height)
 		self.DruidMana:SetWidth(oufdb.Bars.DruidMana.Width)
 		self.DruidMana.ManaBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.DruidMana.Texture))
@@ -2365,7 +2366,7 @@ module.funcs = {
 
 		if GetShapeshiftFormID() == CAT_FORM or GetShapeshiftFormID() == BEAR_FORM then self.DruidMana.SetPosition() end
 	end,
-	
+
 	-- target specific
 	CPoints = function(self, unit, oufdb)
 		if not self.CPoints then
@@ -2383,8 +2384,8 @@ module.funcs = {
 			end
 
 			-- if Forte then
-				-- self.CPoints[1]:SetScript("OnShow", function() Forte:SetPosForte() end)
-				-- self.CPoints[1]:SetScript("OnHide", function() Forte:SetPosForte() end)
+			-- self.CPoints[1]:SetScript("OnShow", function() Forte:SetPosForte() end)
+			-- self.CPoints[1]:SetScript("OnHide", function() Forte:SetPosForte() end)
 			-- end
 
 			self.CPoints.FrameBackdrop = CreateFrame("Frame", nil, self.CPoints)
@@ -2441,7 +2442,7 @@ module.funcs = {
 		for k, data in pairs(cornerAuras[class]) do
 			local spellId, onlyPlayer, isDebuff = unpack(data)
 			local spellName = GetSpellInfo(spellId)
-			
+
 			local x = k:find("RIGHT") and - oufdb.CornerAura.Inset or oufdb.CornerAura.Inset
 			local y = k:find("TOP") and - oufdb.CornerAura.Inset or oufdb.CornerAura.Inset
 
@@ -2449,7 +2450,7 @@ module.funcs = {
 				self.SingleAuras[k] = CreateFrame("Frame", nil, self)
 				self.SingleAuras[k]:SetFrameLevel(7)
 			end
-			
+
 			self.SingleAuras[k].spellName = spellName
 			self.SingleAuras[k].onlyPlayer = onlyPlayer
 			self.SingleAuras[k].isDebuff = isDebuff
@@ -2618,14 +2619,14 @@ module.funcs = {
 			castbar.CustomDelayText = FormatCastbarTime
 
 			castbar.Text = SetFontString(castbar, Media:Fetch("font", oufdb.Castbar.Text.Name.Font), oufdb.Castbar.Text.Name.Size)
-			
+
 			castbar.PostCastStart = PostCastStart
 			castbar.PostChannelStart = PostCastStart
-			
+
 			if unit == "player" then
 				castbar.SafeZone = castbar:CreateTexture(nil, "ARTWORK")
 				castbar.SafeZone:SetTexture(normTex)
-				
+
 				if channelingTicks then -- make sure player is a class that has a channeled spell
 					local ticks = {}
 					local function updateTick(self)
@@ -2639,7 +2640,7 @@ module.funcs = {
 							self.delay = 0
 						end
 					end
-					
+
 					castbar.GetTick = function(self, i)
 						local tick = ticks[i]
 						if not tick then
@@ -2661,7 +2662,7 @@ module.funcs = {
 							tick.delay = 0
 						end
 					end
-					
+
 					castbar.PostChannelStart = PostChannelStart
 					castbar.PostChannelUpdate = PostChannelUpdate
 					castbar.PostChannelStop = castbar.HideTicks
@@ -2718,11 +2719,11 @@ module.funcs = {
 				castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 			end
 		end
-		
+
 		castbar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Castbar.General.Texture))
 		castbar:SetHeight(oufdb.Castbar.General.Height)
 		castbar:SetWidth(oufdb.Castbar.General.Width)
-		
+
 		castbar:ClearAllPoints()
 		if unit == "player" or unit == "target" then
 			castbar:SetPoint(oufdb.Castbar.General.Point, UIParent, oufdb.Castbar.General.Point, oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
@@ -2733,9 +2734,9 @@ module.funcs = {
 		else
 			castbar:SetPoint("LEFT", self, "RIGHT", oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
 		end
-		
+
 		castbar.bg:SetTexture(Media:Fetch("statusbar", oufdb.Castbar.General.TextureBG))
-		
+
 		castbar.Backdrop:SetBackdrop({
 			edgeFile = Media:Fetch("border", oufdb.Castbar.Border.Texture),
 			edgeSize = oufdb.Castbar.Border.Thickness,
@@ -2747,7 +2748,7 @@ module.funcs = {
 			}
 		})
 		castbar.Backdrop:SetBackdropColor(0, 0, 0, 0)
-		
+
 		castbar.Colors = {
 			Individual = oufdb.Castbar.General.IndividualColor,
 			ShieldEnable = oufdb.Castbar.General.Shield,
@@ -2756,19 +2757,19 @@ module.funcs = {
 			Border = oufdb.Castbar.Colors.Border,
 			Shield = oufdb.Castbar.Colors.Shield,
 		}
-		
+
 		castbar.Time:SetFont(Media:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
 		castbar.Time:ClearAllPoints()
 		castbar.Time:SetPoint("RIGHT", castbar, "RIGHT", oufdb.Castbar.Text.Time.OffsetX, oufdb.Castbar.Text.Time.OffsetY)
 		castbar.Time:SetTextColor(oufdb.Castbar.Colors.Time.r, oufdb.Castbar.Colors.Time.g, oufdb.Castbar.Colors.Time.b)
 		castbar.Time.ShowMax = oufdb.Castbar.Text.Time.ShowMax
-		
+
 		if oufdb.Castbar.Text.Time.Enable == true then
 			castbar.Time:Show()
 		else
 			castbar.Time:Hide()
 		end
-		
+
 		castbar.Text:SetFont(Media:Fetch("font", oufdb.Castbar.Text.Name.Font), oufdb.Castbar.Text.Name.Size)
 		castbar.Text:ClearAllPoints()
 		castbar.Text:SetPoint("LEFT", castbar, "LEFT", oufdb.Castbar.Text.Name.OffsetX, oufdb.Castbar.Text.Name.OffsetY)
@@ -2884,7 +2885,7 @@ module.funcs = {
 	end,
 
 	V2Textures = function(from, to)
-		if not from.V2Tex then		
+		if not from.V2Tex then
 			local V2Tex = CreateFrame("Frame", nil, from)
 
 			V2Tex.Horizontal = CreateFrame("Frame", nil, V2Tex)
@@ -2923,19 +2924,19 @@ module.funcs = {
 			V2Tex.Dot:SetBackdropColor(0, 0, 0, 1)
 			V2Tex.Dot:SetBackdropBorderColor(0.1, 0.1, 0.1, 1)
 			V2Tex.Dot:Show()
-			
+
 			-- needed for the options
 			from.V2Tex = V2Tex
 			to._V2Tex = V2Tex
 
 			V2Tex.from = from
 			V2Tex.to = to
-			
+
 			V2Tex.Reposition = Reposition
-			
+
 			module:SecureHook(from, "Show", function() V2Tex:Reposition() end)
 		end
-		
+
 		from.V2Tex:Reposition()
 	end,
 }
@@ -3020,7 +3021,7 @@ local SetStyle = function(self, unit, isSingle)
 	module.funcs.Power(self, unit, oufdb)
 	module.funcs.Full(self, unit, oufdb)
 	module.funcs.FrameBackdrop(self, unit, oufdb)
-	
+
 	if oufdb.Bars.HealPrediction and oufdb.Bars.HealPrediction.Enable then module.funcs.HealPrediction(self, unit, oufdb) end
 
 	------------------------------------------------------------------------
@@ -3031,7 +3032,7 @@ local SetStyle = function(self, unit, isSingle)
 	self.Overlay = CreateFrame("Frame", nil, self)
 	self.Overlay:SetFrameLevel(8)
 	self.Overlay:SetAllPoints(self.Health)
-	
+
 	if unit ~= "raid" then
 		module.funcs.Info(self, unit, oufdb)
 	else
@@ -3072,7 +3073,7 @@ local SetStyle = function(self, unit, isSingle)
 		if class == "DEATH KNIGHT" or class == "DEATHKNIGHT" then
 			if oufdb.Bars.Runes.Enable then
 				module.funcs.Runes(self, unit, oufdb)
-				module:Module("HideBlizzard"):Hide("runebar")
+				Blizzard:Hide("runebar")
 			end
 		elseif class == "DRUID" then
 			if oufdb.Bars.Eclipse.Enable then module.funcs.EclipseBar(self, unit, oufdb) end
@@ -3120,11 +3121,11 @@ local SetStyle = function(self, unit, isSingle)
 	if module.db.Settings.Castbars and oufdb.Castbar and oufdb.Castbar.General.Enable then
 		module.funcs.Castbar(self, unit, oufdb)
 		if unit == "player" then
-			module:Module("HideBlizzard"):Hide("castbar")
+			Blizzard:Hide("castbar")
 		end
 	end
 	if oufdb.Border.Aggro then module.funcs.AggroGlow(self, unit, oufdb) end
-	
+
 	if unit == "targettarget" and module.db.Settings.ShowV2Textures then
 		module.funcs.V2Textures(self, oUF_LUI_target)
 	elseif unit == "targettargettarget" and module.db.Settings.ShowV2Textures then
@@ -3138,7 +3139,7 @@ local SetStyle = function(self, unit, isSingle)
 	elseif unit == "partytarget" and module.db.Settings.ShowV2PartyTextures then
 		module.funcs.V2Textures(self, self:GetParent())
 	end
-	
+
 	self.Highlight = self.Health:CreateTexture(nil, "OVERLAY")
 	self.Highlight:SetAllPoints(self)
 	self.Highlight:SetTexture(highlightTex)
@@ -3147,8 +3148,8 @@ local SetStyle = function(self, unit, isSingle)
 	self.Highlight:Hide()
 
 	--if unit == unit:match("arena%d") then
-		--self.Hide_ = self.Hide
-		--self:RegisterEvent("ARENA_OPPONENT_UPDATE", ArenaEnemyUnseen)
+	--self.Hide_ = self.Hide
+	--self:RegisterEvent("ARENA_OPPONENT_UPDATE", ArenaEnemyUnseen)
 	--end
 
 	self:RegisterEvent("PLAYER_FLAGS_CHANGED", function(self) self.Health:ForceUpdate() end)
@@ -3167,7 +3168,7 @@ local SetStyle = function(self, unit, isSingle)
 	end
 
 	if oufdb.Fader and oufdb.Fader.Enable then Fader:RegisterFrame(self, oUF.Fader) end
-	
+
 	if unit == "raid" or (unit == "party" and oufdb.RangeFade and oufdb.Fader and not oufdb.Fader.Enable) then
 		self.Range = {
 			insideAlpha = 1,

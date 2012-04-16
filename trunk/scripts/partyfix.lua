@@ -11,20 +11,20 @@ SLASH_LUIYAIAP1 = "/yaiap"
 
 -- Hook SendAddonMessage.
 script:RawHook("SendAddonMessage", function(prefix, text, chatType, ...)
-	---[[	Removed since causing more issues than solved. I may be a better fix to shorten prefix to 16 characters rather than cause error.
-	--		Re-Added with prefix substring fix.
-	
-	-- Filter messages with oversized parameters.
+---[[	Removed since causing more issues than solved. I may be a better fix to shorten prefix to 16 characters rather than cause error.
+--		Re-Added with prefix substring fix.
+
+-- Filter messages with oversized parameters.
 	if type(prefix) == "string" and #prefix > 16 then
 		if DEBUG then
 			-- Print message error info.
 			print("|c0090ffffLUI|r: YAIAP: ["..strupper(chatType).."] prefix is to large ("..#prefix.."): debugstack = "..debugstack(3, 4, 0))
 
-			-- Pipe errored message to SendAddonMessage to create an error for debug.
+			-- Pipe error message to SendAddonMessage to create an error for debug.
 			script.hooks.SendAddonMessage(prefix, text, chatType, ...)
 		end
-		
-		-- Srink prefix to 16 characters rather than skipping send.
+
+		-- Shrink prefix to 16 characters rather than skipping send.
 		--return
 		prefix = prefix:sub(1, 16)
 	end
@@ -37,7 +37,7 @@ script:RawHook("SendAddonMessage", function(prefix, text, chatType, ...)
 			-- Print message error info.
 			print("|c0090ffffLUI|r: YAIAP: ["..strupper(chatType).."] prefix = |c0000ff00"..prefix.."|r: debugstack = "..debugstack(3, 4, 0))
 
-			-- Pipe errored message to SendAddonMessage to create an erorr for debug.
+			-- Pipe error message to SendAddonMessage to create an error for debug.
 			script.hooks.SendAddonMessage(prefix, text, chatType, ...)
 		end
 		return

@@ -7,8 +7,9 @@
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
 local Fader = LUI:Module("Fader")
-local Blizzard = LUI.Module(module, "HideBlizzard") -- this can be embedded via prototype once we have more modules of modules
+
 local oUF = LUI.oUF
+local Blizzard = LUI.Blizzard
 
 local _, class = UnitClass("player")
 
@@ -60,9 +61,9 @@ module.ToggleUnit = setmetatable({
 	Default = function(override, unit)
 		local x = module.db[unit].X / module.db[unit].Scale
 		local y = module.db[unit].Y / module.db[unit].Scale
-		
+
 		if override == nil then override = module.db[unit].Enable end
-		
+
 		if override then
 			if _G["oUF_LUI_"..ufUnits[unit]] then
 				_G["oUF_LUI_"..ufUnits[unit]]:Enable()
@@ -75,33 +76,33 @@ module.ToggleUnit = setmetatable({
 				f:SetScale(module.db[unit].Scale)
 				f:SetPoint(module.db[unit].Point, UIParent, module.db[unit].Point, x, y)
 			end
-			
-			if Blizzard:IsUnitHideable(unit) then
+
+			if Blizzard:IsHideable(unit) then
 				Blizzard:Hide(unit)
 			end
 		else
-			if Blizzard:IsUnitHideable(unit) then
+			if Blizzard:IsHideable(unit) then
 				Blizzard:Show(unit)
 			end
-			
+
 			if _G["oUF_LUI_"..ufUnits[unit]] then _G["oUF_LUI_"..ufUnits[unit]]:Disable() end
 		end
-		
+
 		module.ApplySettings(unit)
 	end,
-	
+
 	Boss = function(override)
 		if override == nil then override = module.db.Boss.Enable end
-		
+
 		if override then
 			local x = module.db.Boss.X / module.db.Boss.Scale
 			local y = module.db.Boss.Y / module.db.Boss.Scale
-			
+
 			local growdir = module.db.Boss.GrowDirection
 			local opposite = GetOpposite(growdir)
-			
+
 			Blizzard:Hide("boss")
-			
+
 			if oUF_LUI_boss then
 				oUF_LUI_boss:SetScale(module.db.Boss.Scale)
 				oUF_LUI_boss:ClearAllPoints()
@@ -111,7 +112,7 @@ module.ToggleUnit = setmetatable({
 				oUF_LUI_boss:SetAttribute("Height", module.db.Boss.Height)
 				oUF_LUI_boss:SetAttribute("Padding", module.db.Boss.Padding)
 				oUF_LUI_boss:Show()
-				
+
 				for i = 1, 4 do
 					_G["oUF_LUI_boss"..i]:Enable()
 					_G["oUF_LUI_boss"..i]:UpdateAllElements()
@@ -140,7 +141,7 @@ module.ToggleUnit = setmetatable({
 				bossParent:SetAttribute("Height", module.db.Boss.Height)
 				bossParent:SetAttribute("Padding", module.db.Boss.Padding)
 				bossParent:Show()
-				
+
 				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
 				handler:SetFrameRef("boss", bossParent)
 				handler:SetAttribute("_onstate-resize", [[
@@ -151,7 +152,7 @@ module.ToggleUnit = setmetatable({
 				]])
 				RegisterStateDriver(handler, "resize", "[@boss4,exists] 4; [@boss3,exists] 3; [@boss2,exists] 2; 1")
 				bossParent.handler = handler
-				
+
 				local boss = {}
 				for i = 1, 4 do
 					boss[i] = oUF:Spawn("boss"..i, "oUF_LUI_boss"..i)
@@ -172,7 +173,7 @@ module.ToggleUnit = setmetatable({
 					end
 				end
 			end
-			
+
 			module.ToggleUnit("BossTarget")
 		else
 			if module.db.Boss.UseBlizzard then
@@ -180,21 +181,21 @@ module.ToggleUnit = setmetatable({
 			else
 				Blizzard:Hide("boss")
 			end
-			
+
 			if oUF_LUI_boss then
 				oUF_LUI_boss:Hide()
 				for i = 1, 4 do
 					if _G["oUF_LUI_boss"..i] then _G["oUF_LUI_boss"..i]:Disable() end
 				end
 			end
-			
+
 			module.ToggleUnit("BossTarget", false)
 		end
 	end,
-	
+
 	BossTarget = function(override)
 		if override == nil then override = module.db.BossTarget.Enable end
-		
+
 		if override and module.db.Boss.Enable then
 			if oUF_LUI_bosstarget1 then
 				for i = 1, 4 do
@@ -216,17 +217,17 @@ module.ToggleUnit = setmetatable({
 			end
 		end
 	end,
-	
+
 	Party = function(override)
 		if override == nil then override = module.db.Party.Enable end
-		
+
 		if override then
 			local x = module.db.Party.X / module.db.Party.Scale
 			local y = module.db.Party.Y / module.db.Party.Scale
-			
+
 			local growdir = module.db.Party.GrowDirection
 			local opposite = GetOpposite(growdir)
-			
+
 			if oUF_LUI_party then
 				oUF_LUI_party:SetScale(module.db.Party.Scale)
 				oUF_LUI_party:ClearAllPoints()
@@ -250,7 +251,7 @@ module.ToggleUnit = setmetatable({
 						self:SetPoint("]]..module.db.PartyPet.Point..[[", self:GetParent(), "]]..module.db.PartyPet.RelativePoint..[[", ]]..module.db.PartyPet.X..[[, ]]..module.db.PartyPet.Y..[[)
 					end
 				]])
-				
+
 				for i = 1, 5 do
 					if _G["oUF_LUI_partyUnitButton"..i] then
 						_G["oUF_LUI_partyUnitButton"..i]:Enable()
@@ -283,10 +284,10 @@ module.ToggleUnit = setmetatable({
 						end
 					]]
 				)
-				
+
 				party:SetScale(module.db.Party.Scale)
 				party:SetPoint(module.db.Party.Point, UIParent, module.db.Party.Point, x, y)
-				
+
 				local handler = CreateFrame("Frame")
 				handler:RegisterEvent("PLAYER_ENTERING_WORLD")
 				handler:RegisterEvent("PARTY_MEMBERS_CHANGED")
@@ -296,16 +297,16 @@ module.ToggleUnit = setmetatable({
 						self:RegisterEvent("PLAYER_REGEN_ENABLED")
 						return
 					end
-					
+
 					self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-					
+
 					if module.db.Party.Enable then
 						if module.db.Party.ShowInRaid then
 							party:Show()
 						else
 							local numraid = GetNumRaidMembers()
 							local numparty = GetNumPartyMembers()
-							
+
 							if module.db.Party.ShowInRealParty then
 								if numparty and numraid == 0 then
 									party:Show()
@@ -327,10 +328,10 @@ module.ToggleUnit = setmetatable({
 				party.handler = handler
 				handler:GetScript("OnEvent")(handler)
 			end
-			
+
 			SetCVar("useCompactPartyFrames", nil)
 			Blizzard:Hide("party")
-			
+
 			module.ToggleUnit("PartyTarget")
 			module.ToggleUnit("PartyPet")
 		else
@@ -340,7 +341,7 @@ module.ToggleUnit = setmetatable({
 				SetCVar("useCompactPartyFrames", nil)
 				Blizzard:Hide("party")
 			end
-			
+
 			if oUF_LUI_party then
 				for i = 1, 5 do
 					if _G["oUF_LUI_partyUnitButton"..i] then
@@ -350,15 +351,15 @@ module.ToggleUnit = setmetatable({
 				end
 				oUF_LUI_party:Hide()
 			end
-			
+
 			module.ToggleUnit("PartyTarget", false)
 			module.ToggleUnit("PartyPet", false)
 		end
 	end,
-	
+
 	PartyTarget = function(override)
 		if override == nil then override = module.db.PartyTarget.Enable end
-		
+
 		if override and module.db.Party.Enable then
 			for i = 1, 5 do
 				if _G["oUF_LUI_partyUnitButton"..i.."target"] then
@@ -374,10 +375,10 @@ module.ToggleUnit = setmetatable({
 			end
 		end
 	end,
-	
+
 	PartyPet = function(override)
 		if override == nil then override = module.db.PartyPet.Enable end
-		
+
 		if override and module.db.Party.Enable then
 			for i = 1, 5 do
 				if _G["oUF_LUI_partyUnitButton"..i.."pet"] then
@@ -393,17 +394,17 @@ module.ToggleUnit = setmetatable({
 			end
 		end
 	end,
-	
+
 	Arena = function(override)
 		if override == nil then override = module.db.Arena.Enable end
-		
+
 		if override then
 			local x = module.db.Arena.X / module.db.Arena.Scale
 			local y = module.db.Arena.Y / module.db.Arena.Scale
-			
+
 			local growdir = module.db.Arena.GrowDirection
 			local opposite = GetOpposite(growdir)
-			
+
 			if oUF_LUI_arena then
 				oUF_LUI_arena:SetScale(module.db.Arena.Scale)
 				oUF_LUI_arena:ClearAllPoints()
@@ -413,7 +414,7 @@ module.ToggleUnit = setmetatable({
 				oUF_LUI_arena:SetAttribute("Height", module.db.Arena.Height)
 				oUF_LUI_arena:SetAttribute("Padding", module.db.Arena.Padding)
 				oUF_LUI_arena:Show()
-				
+
 				for i = 1, 5 do
 					_G["oUF_LUI_arena"..i]:Enable()
 					_G["oUF_LUI_arena"..i]:ClearAllPoints()
@@ -435,8 +436,9 @@ module.ToggleUnit = setmetatable({
 				end
 			else
 				-- oUF kills it, we save it!
-				Arena_LoadUI_ = ArenaLoadUI
-				
+				-- Should be handled fine by the new hideblizzard tool
+				-- Arena_LoadUI_ = ArenaLoadUI
+
 				local arenaParent = CreateFrame("Frame", "oUF_LUI_arena", UIParent)
 				arenaParent:SetScale(module.db.Arena.Scale)
 				arenaParent:SetPoint(module.db.Arena.Point, UIParent, module.db.Arena.Point, x, y)
@@ -456,7 +458,7 @@ module.ToggleUnit = setmetatable({
 				]])
 				RegisterStateDriver(handler, "resize", "[@arena5,exists] 5; [@arena4,exists] 4; [@arena3,exists] 3; [@arena2,exists] 2; 1")
 				arenaParent.handler = handler
-				
+
 				local arena = {}
 				for i = 1, 5 do
 					arena[i] = oUF:Spawn("arena"..i, "oUF_LUI_arena"..i)
@@ -477,9 +479,9 @@ module.ToggleUnit = setmetatable({
 					end
 				end
 			end
-			
+
 			Blizzard:Hide("arena")
-			
+
 			module.ToggleUnit("ArenaTarget")
 			module.ToggleUnit("ArenaPet")
 		else
@@ -491,22 +493,22 @@ module.ToggleUnit = setmetatable({
 			else
 				Blizzard:Hide("arena")
 			end
-			
+
 			if oUF_LUI_arena then
 				oUF_LUI_arena:Hide()
 				for i = 1, 5 do
 					if _G["oUF_LUI_arena"..i] then _G["oUF_LUI_arena"..i]:Disable() end
 				end
 			end
-			
+
 			module.ToggleUnit("ArenaTarget", false)
 			module.ToggleUnit("ArenaPet", false)
 		end
 	end,
-	
+
 	ArenaTarget = function(override)
 		if override == nil then override = module.db.ArenaTarget.Enable end
-		
+
 		if override and module.db.Arena.Enable then
 			for i = 1, 5 do
 				if _G["oUF_LUI_arenatarget"..i] then
@@ -525,10 +527,10 @@ module.ToggleUnit = setmetatable({
 			end
 		end
 	end,
-	
+
 	ArenaPet = function(override)
 		if override == nil then override = module.db.ArenaPet.Enable end
-		
+
 		if override and module.db.Arena.Enable then
 			for i = 1, 5 do
 				if _G["oUF_LUI_arenapet"..i] then
@@ -547,17 +549,17 @@ module.ToggleUnit = setmetatable({
 			end
 		end
 	end,
-	
+
 	Maintank = function(override)
 		if override == nil then override = module.db.Maintank.Enable end
-		
+
 		if override then
 			local x = module.db.Maintank.X / module.db.Maintank.Scale
 			local y = module.db.Maintank.Y / module.db.Maintank.Scale
-			
+
 			local growdir = module.db.Maintank.GrowDirection
 			local opposite = GetOpposite(growdir)
-			
+
 			if oUF_LUI_maintank then
 				oUF_LUI_maintank:SetScale(module.db.Maintank.Scale)
 				oUF_LUI_maintank:ClearAllPoints()
@@ -581,7 +583,7 @@ module.ToggleUnit = setmetatable({
 					end
 				]])
 				oUF_LUI_maintank:Show()
-				
+
 				for i = 1, 4 do
 					if _G["oUF_LUI_maintankUnitButton"..i] then
 						_G["oUF_LUI_maintankUnitButton"..i]:Enable()
@@ -615,12 +617,12 @@ module.ToggleUnit = setmetatable({
 						end
 					]]
 				)
-				
+
 				tank:SetScale(module.db.Maintank.Scale)
 				tank:SetPoint(module.db.Maintank.Point, UIParent, module.db.Maintank.Point, x, y)
 				tank:Show()
 			end
-			
+
 			module.ToggleUnit("MaintankTarget")
 		else
 			if oUF_LUI_maintank then
@@ -631,14 +633,14 @@ module.ToggleUnit = setmetatable({
 					if _G["oUF_LUI_maintankUnitButton"..i.."targettarget"] then _G["oUF_LUI_maintankUnitButton"..i.."targettarget"]:Disable() end
 				end
 			end
-			
+
 			module.ToggleUnit("MaintankTarget", false)
 		end
 	end,
-	
+
 	MaintankTarget = function(override)
 		if override == nil then override = module.db.MaintankTarget.Enable end
-		
+
 		if override and module.db.Maintank.Enable then
 			for i = 1, 4 do
 				if _G["oUF_LUI_maintankUnitButton"..i.."target"] then
@@ -648,20 +650,20 @@ module.ToggleUnit = setmetatable({
 					_G["oUF_LUI_maintankUnitButton"..i.."target"]:UpdateAllElements()
 				end
 			end
-			
+
 			module.ToggleUnit("MaintankToT")
 		else
 			for i = 1, 4 do
 				if _G["oUF_LUI_maintankUnitButton"..i.."target"] then _G["oUF_LUI_maintankUnitButton"..i.."target"]:Disable() end
 			end
-			
+
 			module.ToggleUnit("MaintankToT", false)
 		end
 	end,
-	
+
 	MaintankToT = function(override)
 		if override == nil then override = module.db.MaintankToT.Enable end
-		
+
 		if override and module.db.MaintankTarget.Enable and module.db.Maintank.Enable then
 			for i = 1, 4 do
 				if _G["oUF_LUI_maintankUnitButton"..i.."targettarget"] then
@@ -680,7 +682,7 @@ module.ToggleUnit = setmetatable({
 
 	Raid = function(override)
 		if override == nil then override = module.db.Raid.Enable end
-		
+
 		if override then
 			if IsAddOnLoaded("Grid") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") then
 				return
@@ -703,9 +705,9 @@ module.ToggleUnit = setmetatable({
 						end
 					end
 				end
-				
+
 				local width40 = (5 * module.db.Raid.Width - 3 * module.db.Raid.GroupPadding) / 8
-				
+
 				for i = 1, 8 do
 					if i ~= 1 then
 						_G["oUF_LUI_raid_40_"..i]:SetPoint("TOPLEFT", _G["oUF_LUI_raid_40_"..i-1], "TOPRIGHT", module.db.Raid.GroupPadding, 0)
@@ -723,11 +725,11 @@ module.ToggleUnit = setmetatable({
 						end
 					end
 				end
-				
+
 				oUF_LUI_raid:ClearAllPoints()
 				oUF_LUI_raid:SetPoint(module.db.Raid.Point, UIParent, module.db.Raid.Point, module.db.Raid.X, module.db.Raid.Y)
 				oUF_LUI_raid:Show()
-				
+
 				RegisterStateDriver(oUF_LUI_raid_25, "visibility", "[@raid26,exists] hide; show")
 				RegisterStateDriver(oUF_LUI_raid_40, "visibility", "[@raid26,exists] show; hide")
 			else
@@ -735,7 +737,7 @@ module.ToggleUnit = setmetatable({
 				raidAnchor:SetWidth(module.db.Raid.Width * 5 + module.db.Raid.GroupPadding * 4)
 				raidAnchor:SetHeight(module.db.Raid.Height * 5 + module.db.Raid.Padding * 4)
 				raidAnchor:SetPoint(module.db.Raid.Point, UIParent, module.db.Raid.Point, module.db.Raid.X, module.db.Raid.Y)
-				
+
 				local raid25 = CreateFrame("Frame", "oUF_LUI_raid_25", raidAnchor, "SecureHandlerStateTemplate")
 				raid25:SetWidth(1)
 				raid25:SetHeight(1)
@@ -762,15 +764,15 @@ module.ToggleUnit = setmetatable({
 						raid25table[i]:SetPoint("TOPLEFT", raid25table[i-1], "TOPRIGHT", module.db.Raid.GroupPadding, 0)
 					end
 				end
-				
+
 				local raid40 = CreateFrame("Frame", "oUF_LUI_raid_40", raidAnchor, "SecureHandlerStateTemplate")
 				raid40:SetWidth(1)
 				raid40:SetHeight(1)
 				raid40:SetPoint("TOPLEFT", raidAnchor, "TOPLEFT", 0, 0)
 				RegisterStateDriver(raid40, "visibility", "[@raid26,exists] show; hide")
-				
+
 				local width40 = (5 * module.db.Raid.Width - 3 * module.db.Raid.GroupPadding) / 8
-				
+
 				local raid40table = {}
 				for i = 1, 8 do
 					raid40table[i] = oUF:SpawnHeader("oUF_LUI_raid_40_"..i, nil, nil,
@@ -793,7 +795,7 @@ module.ToggleUnit = setmetatable({
 					end
 				end
 			end
-			
+
 			Blizzard:Hide("raid")
 		else
 			if module.db.Raid.UseBlizzard == true then
@@ -801,7 +803,7 @@ module.ToggleUnit = setmetatable({
 			else
 				Blizzard:Hide("raid")
 			end
-			
+
 			if oUF_LUI_raid then
 				for i = 1, 5 do
 					for j = 1, 5 do
@@ -809,14 +811,14 @@ module.ToggleUnit = setmetatable({
 						if frame then frame:Disable() end
 					end
 				end
-				
+
 				for i = 1, 8 do
 					for j = 1, 5 do
 						local frame = _G["oUF_LUI_raid_40_"..i.."UnitButton"..j]
 						if frame then frame:Disable() end
 					end
 				end
-				
+
 				if oUF_LUI_raid_25 then
 					UnregisterStateDriver(oUF_LUI_raid_25, "visibility")
 					oUF_LUI_raid_25:Hide()
@@ -825,7 +827,7 @@ module.ToggleUnit = setmetatable({
 					UnregisterStateDriver(oUF_LUI_raid_40, "visibility")
 					oUF_LUI_raid_40:Hide()
 				end
-				
+
 				oUF_LUI_raid:Hide()
 			end
 		end
@@ -834,10 +836,10 @@ module.ToggleUnit = setmetatable({
 
 module.ApplySettings = function(unit)
 	if module.db[unit].Enable == false then return end
-	
+
 	for _, framename in pairs(module.framelist[unit]) do
 		local frame = _G[framename]
-		
+
 		if frame then
 			if framename:find("oUF_LUI_raid_40") then
 				frame:SetWidth((module.db[unit].Width * 5 - module.db[unit].GroupPadding * 3) / 8)
@@ -845,28 +847,28 @@ module.ApplySettings = function(unit)
 				frame:SetWidth(module.db[unit].Width)
 			end
 			frame:SetHeight(module.db[unit].Height)
-			
+
 			-- bars
 			module.funcs.Health(frame, frame.__unit, module.db[unit])
 			module.funcs.Power(frame, frame.__unit, module.db[unit])
 			module.funcs.Full(frame, frame.__unit, module.db[unit])
 			module.funcs.FrameBackdrop(frame, frame.__unit, module.db[unit])
-			
+
 			-- texts
 			if unit == "Raid" then
 				module.funcs.RaidInfo(frame, frame.__unit, module.db[unit])
 			else
 				module.funcs.Info(frame, frame.__unit, module.db[unit])
 			end
-			
+
 			module.funcs.HealthValue(frame, frame.__unit, module.db[unit])
 			module.funcs.HealthPercent(frame, frame.__unit, module.db[unit])
 			module.funcs.HealthMissing(frame, frame.__unit, module.db[unit])
-			
+
 			module.funcs.PowerValue(frame, frame.__unit, module.db[unit])
 			module.funcs.PowerPercent(frame, frame.__unit, module.db[unit])
 			module.funcs.PowerMissing(frame, frame.__unit, module.db[unit])
-			
+
 			-- icons
 			if module.db[unit].Icons then
 				for key, icons in pairs(iconlist) do
@@ -885,13 +887,13 @@ module.ApplySettings = function(unit)
 					end
 				end
 			end
-			
+
 			-- player specific
 			if unit == "Player" then
 				-- exp/rep
 				module.funcs.Experience(frame, frame.__unit, module.db.XP_Rep)
 				module.funcs.Reputation(frame, frame.__unit, module.db.XP_Rep)
-				
+
 				if module.db.XP_Rep.Experience.Enable and UnitLevel("player") ~= MAX_PLAYER_LEVEL then
 					frame.Experience:ForceUpdate()
 					frame.XP:Show()
@@ -905,7 +907,7 @@ module.ApplySettings = function(unit)
 						frame.Rep:Hide()
 					end
 				end
-				
+
 				-- totems
 				if class == "SHAMAN" then
 					module.funcs.TotemBar(frame, frame.__unit, module.db.Player)
@@ -916,7 +918,7 @@ module.ApplySettings = function(unit)
 						frame.TotemBar:Hide()
 					end
 				end
-				
+
 				-- runes
 				if class == "DEATHKNIGHT" or class == "DEATH KNIGHT" then
 					module.funcs.Runes(frame, frame.__unit, module.db.Player)
@@ -927,7 +929,7 @@ module.ApplySettings = function(unit)
 						frame.Runes:Hide()
 					end
 				end
-				
+
 				-- holy power
 				if class == "PALADIN" then
 					module.funcs.HolyPower(frame, frame.__unit, module.db.Player)
@@ -938,7 +940,7 @@ module.ApplySettings = function(unit)
 						frame.HolyPower:Hide()
 					end
 				end
-				
+
 				-- soul shards
 				if class == "WARLOCK" then
 					module.funcs.SoulShards(frame, frame.__unit, module.db.Player)
@@ -949,7 +951,7 @@ module.ApplySettings = function(unit)
 						frame.SoulShards:Hide()
 					end
 				end
-				
+
 				-- druid eclipse
 				if class == "DRUID" then
 					module.funcs.EclipseBar(frame, frame.__unit, module.db.Player)
@@ -960,7 +962,7 @@ module.ApplySettings = function(unit)
 						frame.EclipseBar:Hide()
 					end
 				end
-				
+
 				-- druid mana bar
 				if class == "DRUID" then
 					module.funcs.DruidMana(frame, frame.__unit, module.db.Player)
@@ -972,7 +974,7 @@ module.ApplySettings = function(unit)
 					end
 				end
 			end
-			
+
 			-- target specific
 			if unit == "Target" then
 				module.funcs.CPoints(frame, frame.__unit, module.db.Target)
@@ -983,7 +985,7 @@ module.ApplySettings = function(unit)
 					frame.CPoints:Hide()
 				end
 			end
-			
+
 			-- portrait
 			if module.db[unit].Portrait and module.db[unit].Portrait.Enable then
 				module.funcs.Portrait(frame, frame.__unit, module.db[unit])
@@ -995,7 +997,7 @@ module.ApplySettings = function(unit)
 					frame.Portrait:Hide()
 				end
 			end
-			
+
 			-- alt power
 			if unit == "Player" or unit == "Pet" then
 				if module.db.Player.Bars.AltPower.Enable then
@@ -1009,7 +1011,7 @@ module.ApplySettings = function(unit)
 					end
 				end
 			end
-			
+
 			-- auras
 			if module.db[unit].Aura then
 				if module.db[unit].Aura.Buffs.Enable then
@@ -1017,23 +1019,23 @@ module.ApplySettings = function(unit)
 				else
 					if frame.Buffs then frame.Buffs:Hide() end
 				end
-				
+
 				if module.db[unit].Aura.Debuffs.Enable then
 					module.funcs.Debuffs(frame, frame.__unit, module.db[unit])
 				else
 					if frame.Debuffs then frame.Debuffs:Hide() end
 				end
-				
+
 				if module.db[unit].Aura.Buffs.Enable or module.db[unit].Aura.Debuffs.Enable then
 					frame:EnableElement("Auras")
 				else
 					frame:DisableElement("Auras")
 				end
 			end
-			
+
 			-- combat feedback text
 			if module.db[unit].Texts.Combat then module.funcs.CombatFeedbackText(frame, frame.__unit, module.db[unit]) end
-			
+
 			-- castbar
 			if module.db.Settings.Castbars and module.db[unit].Castbar then
 				if module.db[unit].Castbar.General.Enable then
@@ -1043,7 +1045,7 @@ module.ApplySettings = function(unit)
 					frame:DisableElement("Castbar")
 				end
 			end
-			
+
 			-- aggro glow
 			if module.db[unit].Border.Aggro then
 				module.funcs.AggroGlow(frame, frame.__unit, module.db[unit])
@@ -1051,7 +1053,7 @@ module.ApplySettings = function(unit)
 			else
 				frame:DisableElement("Threat")
 			end
-			
+
 			-- heal prediction
 			if module.db[unit].HealPrediction then
 				if module.db[unit].HealPrediction.Enable then
@@ -1061,7 +1063,7 @@ module.ApplySettings = function(unit)
 					frame:DisableElement("HealPrediction")
 				end
 			end
-			
+
 			if unit == "ToT" or unit == "ToToT" or unit == "FocusTarget" or unit == "Focus" then
 				if not frame.V2Tex then
 					if unit == "ToT" then
@@ -1089,7 +1091,7 @@ module.ApplySettings = function(unit)
 				frame.V2Tex:Reposition()
 				if module.db.Settings.ShowV2BossTextures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
 			end
-			
+
 			-- fader
 			if module.db[unit].Fader then
 				if module.db[unit].Fader.Enable then
@@ -1098,7 +1100,7 @@ module.ApplySettings = function(unit)
 					Fader:UnregisterFrame(frame)
 				end
 			end
-			
+
 			frame:UpdateAllElements()
 		end
 	end

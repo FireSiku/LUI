@@ -30,7 +30,7 @@ function module:ItemExclusion(info, item) -- info = true: remove item from list
 			return OpenAllBags(true)
 		end
 	end
-	
+
 	local _, itemLink, _,_,_,_,_,_,_,_, itemPrice = GetItemInfo(item)
 
 	-- Check item.
@@ -82,22 +82,22 @@ function module:GetItemID(item)
 	-- Get itemLink.
 	local _, itemLink = GetItemInfo(item)
 	if not itemLink then return end
-	
+
 	-- Extract id from itemLink.
 	return tonumber(strmatch(itemLink, "|Hitem:(%d+):"))
 end
 
 function module:AutoRepair()
 	if not db.AutoRepair.Enable then return end
-	
+
 	-- Check if merchant can repair.
 	if not CanMerchantRepair() then return end
-	
+
 	local repairAllCost, canRepair = GetRepairAllCost()
-	
+
 	-- Check if player has any damaged gear and enough money to repair.
 	if not canRepair then return end
-	
+
 	-- Check cost limit.
 	if (not db.AutoRepair.Settings.NoLimit) and (repairAllCost > (db.AutoRepair.Settings.CostLimit * 1000)) then
 		if db.AutoRepair.Settings.ShowError then
@@ -105,28 +105,28 @@ function module:AutoRepair()
 		end
 		return
 	end
-	
+
 	-- Try guild repair.
 	if db.AutoRepair.Settings.UseGuild then
 		RepairAllItems(1)
-		
+
 		-- Check if guild repair worked.
 		local remaining, needed = GetRepairAllCost()
-		
+
 		if remaining < repairAllCost then
 			if db.AutoRepair.Settings.ShowSuccess then
 				print("|cff00ff00Successfully guild repaired armor for:|r "..GetCoinTextureString(repairAllCost - remaining))
 			end
 			repairAllCost = remaining
 		end
-		
+
 		-- Check if additional repairing is needed.
 		if not needed then return end
 	end
-	
+
 	-- Repair remaining.
 	RepairAllItems()
-	
+
 	if db.AutoRepair.Settings.ShowSuccess then
 		print("|cff00ff00Successfully repaired armor for:|r "..GetCoinTextureString(repairAllCost))
 	end
@@ -144,7 +144,7 @@ function module:AutoSell()
 				local _, itemLink, itemQuality, _,_,_,_,_,_,_, itemPrice = GetItemInfo(item)
 
 				if (db.AutoSell.ItemQualities[itemQuality + 1] and not db.AutoSell.Exclusions[item])
-				or ((not db.AutoSell.ItemQualities[itemQuality + 1]) and db.AutoSell.Exclusions[item]) then
+						or ((not db.AutoSell.ItemQualities[itemQuality + 1]) and db.AutoSell.Exclusions[item]) then
 					local _, itemCount  = GetContainerItemInfo(bag, slot)
 					totalPrice = totalPrice + (itemCount * itemPrice)
 
@@ -188,7 +188,7 @@ function module:AutoStock()
 			end
 		end
 	end
-	
+
 	-- Check if shopping cart is empty.
 	if cost <= 0 then return end
 
@@ -203,7 +203,7 @@ function module:AutoStock()
 	-- Buy shopping cart.
 	for item, qty in pairs(cart) do
 		-- But item.
-		BuyMerchantItem(item, qty)		
+		BuyMerchantItem(item, qty)
 	end
 
 	if db.AutoStock.Settings.ShowSuccess then
@@ -280,10 +280,10 @@ function module:LoadOptions()
 		BuyLimit = function() return ((not db.AutoStock.Enable) or db.AutoStock.Settings.NoLimit) end,
 		CostLimit = function() return ((not db.AutoRepair.Enable) or db.AutoRepair.Settings.NoLimit) end,
 	}
-	
+
 	-- option variables
 	local removeExclusionKey
-	
+
 	-- option values
 	local qualities = {}
 	for i=0, 4 do
@@ -299,9 +299,10 @@ function module:LoadOptions()
 	end
 
 	-- Auto Stock functions.
-	stockCurrent, stockList = nil, {}
+	local stockCurrent, stockList = nil, {}
 	local function stockValues()
 		wipe(stockList)
+		--noinspection ArrayElementZero
 		stockList[0] = "None"
 		for id, count in pairs(db.AutoStock.List) do
 			stockList[id] = GetItemInfo(id)
@@ -354,9 +355,9 @@ function module:LoadOptions()
 				db.AutoStock.Count = db.AutoStock.Count + 1
 			end
 			stockCurrent = id
-		end			
+		end
 	end
-	
+
 	-- get/set functions
 	local function exclusionGet(info) return removeExclusionKey end
 	local function exclusionSet(info, value) removeExclusionKey = value end
@@ -366,7 +367,7 @@ function module:LoadOptions()
 			removeExclusionKey = nil
 		end
 	end
-	
+
 	local options = {
 		Title = self:NewHeader("Merchant", 1),
 		Info = self:NewDesc("This Merchant allows you to automatically sell/buy items and/or repair your armor when you open a merchant frame.", 2),
@@ -395,7 +396,7 @@ function module:LoadOptions()
 				6, qualities, nil, nil, disabled.AutoSell),
 			AddExclusion = self:NewGroup("Add Item Exclusion", 7, LUI.dummy, "ItemExclusion", true, disabled.AutoSell, {
 				Description = self:NewDesc("Items in this list will behave opposite of the settings.\nTo add an item to the Exclusion list do one of the following:\n" ..
-					"Drag and drop (leftclick) an item into the box.\nEnter an item id, name or link in the input box.\n\t	You can provide a link by Shift + Leftclicking on an item or link.", 1),
+						"Drag and drop (leftclick) an item into the box.\nEnter an item id, name or link in the input box.\n\t	You can provide a link by Shift + Leftclicking on an item or link.", 1),
 				DropItem = self:NewExecute("Drop an item here!", "Select an item and drop it on this slot. (Leftclick)", 2, "ItemExclusion"),
 				InputItem = self:NewInput("Or enter an id, name or link", "Enter an item id, name or link (Shift + Leftclick an item)", 3, false)
 			}),
@@ -432,13 +433,13 @@ function module:LoadOptions()
 			}),
 		}),
 	}
-	
+
 	local dropitem = options.AutoSell.args.AddExclusion.args.DropItem
 	dropitem.imageWidth = 64
 	dropitem.imageHeight = 64
 	dropitem.imageCoords = {0.15, 0.8, 0.15, 0.8}
 	dropitem.image = "Interface\\Buttons\\UI-Quickslot2"
-	
+
 
 	return options
 end

@@ -6,7 +6,7 @@
 	Notes:
 		Creates a backup of current database settings,
 		invokes a complete reset to defaults (which should remove un-wanted old corruptions... hopefully),
-		then resotres only settings that are used.
+		then restores only settings that are used.
 ]]
 
 
@@ -35,13 +35,13 @@ function module.Apply(dest, source)
 			local sv = source[k]
 
 			-- Check value types are the same.
-			dt, st = type(v), type(sv)			
+			dt, st = type(v), type(sv)
 
 			-- Try to convert.
 			if dt == "number" and st == "string" then
 				local num = tonumber(sv)
 				if num then
-					-- Print mismatch convertion with db stack. (i.e. db.children.Cooldown.profile.Enable).
+					-- Print mismatch conversion with db stack. (i.e. db.children.Cooldown.profile.Enable).
 					mismatches = mismatches + 1
 					print("|c0090ffffLUI: |cffffff00Restore:|r Value converted because of type mismatch: [", dt, "] ~= [", st, "]; Stack =", tconcat(stack, "."))
 
@@ -52,7 +52,7 @@ function module.Apply(dest, source)
 			elseif dt == "string" and st == "number" then
 				local str = tostring(sv)
 				if str and str ~= "" and tonumber(str) == sv then
-					-- Print mismatch convertion with db stack. (i.e. db.children.Cooldown.profile.Enable).
+					-- Print mismatch conversion with db stack. (i.e. db.children.Cooldown.profile.Enable).
 					mismatches = mismatches + 1
 					print("|c0090ffffLUI: |cffffff00Restore:|r Value converted because of type mismatch: [", dt, "] ~= [", st, "]; Stack =", tconcat(stack, "."))
 
@@ -120,7 +120,7 @@ end
 
 local function RemoveDefaults(data, default)
 	if type(data) ~= "table" or type(default) ~= "table" then return end
-	
+
 	for k, v in pairs(data) do
 		if type(v) == "table" then
 			if default[k] then
@@ -224,7 +224,7 @@ function module.Revert()
 	if not backup then
 		return print("|c0090ffffLUI:|r Revert failed because there was not an available backup. Create backup with '/luibackup'")
 	end
-	
+
 	-- Get current db.
 	local db = LUI.db
 

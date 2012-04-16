@@ -4,7 +4,7 @@
 	Version.: 3.403
 	Rev Date: 13/02/2011
 	Author..: Louí [EU-Das Syndikat] <In Fidem>
-]] 
+]]
 
 local addonname, LUI = ...
 local L = LUI.L
@@ -12,7 +12,7 @@ local L = LUI.L
 local AceAddon = LibStub("AceAddon-3.0")
 AceAddon:EmbedLibraries(LUI, "AceComm-3.0", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0")
 
--- this is a temp globalization (should make it check for alpha verion to globalize or not once all other files dont need global)
+-- this is a temp globalization (should make it check for alpha verion to globalize or not once all other files don't need global)
 _G.LUI = LUI
 _G.oUF = LUI.oUF
 
@@ -75,6 +75,18 @@ LUI.FontFlags = {
 	"MONOCHROME",
 }
 
+LUI.Points = {
+	"CENTER",
+	"TOP",
+	"BOTTOM",
+	"LEFT",
+	"RIGHT",
+	"TOPLEFT",
+	"TOPRIGHT",
+	"BOTTOMLEFT",
+	"BOTTOMRIGHT",
+}
+
 local screen_height = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "%d+x(%d+)")
 local screen_width = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "(%d+)x%d+")
 local _, class = UnitClass("player")
@@ -83,7 +95,7 @@ local _, class = UnitClass("player")
 -- / CREATING DEFAULTS / --
 ------------------------------------------------------
 
-LUI.defaults = {   
+LUI.defaults = {
 	profile = {
 		General = {
 			IsConfigured = false,
@@ -120,24 +132,24 @@ local db = setmetatable({}, {
 local function CheckResolution()
 	local ScreenWidth = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "(%d+)x%d+")
 	local ScreenHeight = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "%d+x(%d+)")
-	
+
 	if ScreenWidth == "1280" and ScreenHeight == "1024" then
 		-- Repostion Info Texts
 		local Infotext = LUI:Module("Infotext", true)
-		if Infotext and false then -- broken with false until propper positions have been determinied
+		if Infotext and false then -- broken with false until proper positions have been determined
 			Infotext.db.defaults.profile.Bags.X = -100
 			Infotext.db.defaults.profile.Durability.X = 10
 			Infotext.db.defaults.profile.FPS.X = 120
 			Infotext.db.defaults.profile.Memory.X = 190
 		end
-		
+
 		LUI.defaults.profile.Frames.Dps.X = -968
 		LUI.defaults.profile.Frames.Dps.Y = 863
-		
+
 		LUI.defaults.profile.Frames.Tps.X = 5
 		LUI.defaults.profile.Frames.Tps.Y = 882
-		
-		-- Repositon Auras
+
+		-- Reposition Auras
 		local auras = LUI:Module("Auras")
 		auras.db.General.Anchor = "TOPRIGHT"
 		auras.db.Buffs.X = -170
@@ -177,27 +189,27 @@ function LUI:CreatePanel(f, w, h, a1, p, a2, x, y)
 	f:SetFrameStrata("BACKGROUND")
 	f:SetPoint(a1, p, a2, x, y)
 	f:SetBackdrop({
-		bgFile = LUI.Media.blank, 
-		edgeFile = LUI.Media.blank, 
-		tile = false, tileSize = 0, edgeSize = LUI.mult, 
+		bgFile = LUI.Media.blank,
+		edgeFile = LUI.Media.blank,
+		tile = false, tileSize = 0, edgeSize = LUI.mult,
 		insets = { left = -LUI.mult, right = -LUI.mult, top = -LUI.mult, bottom = -LUI.mult}
 	})
 	f:SetBackdropColor(.1,.1,.1,1)
 	f:SetBackdropBorderColor(.6,.6,.6,1)
 end
 
-function LUI:StyleButton(b, checked) 
-    local name = b:GetName()
- 
-    local button          = _G[name]
-    local icon            = _G[name.."Icon"]
-    local count           = _G[name.."Count"]
-    local border          = _G[name.."Border"]
-    local hotkey          = _G[name.."HotKey"]
-    local cooldown        = _G[name.."Cooldown"]
-    local nametext        = _G[name.."Name"]
-    local flash           = _G[name.."Flash"]
-    local normaltexture   = _G[name.."NormalTexture"]
+function LUI:StyleButton(b, checked)
+	local name = b:GetName()
+
+	local button          = _G[name]
+	local icon            = _G[name.."Icon"]
+	local count           = _G[name.."Count"]
+	local border          = _G[name.."Border"]
+	local hotkey          = _G[name.."HotKey"]
+	local cooldown        = _G[name.."Cooldown"]
+	local nametext        = _G[name.."Name"]
+	local flash           = _G[name.."Flash"]
+	local normaltexture   = _G[name.."NormalTexture"]
 	local icontexture     = _G[name.."IconTexture"]
 
 	local hover = b:CreateTexture("frame", nil, self) -- hover
@@ -215,10 +227,10 @@ function LUI:StyleButton(b, checked)
 	pushed:SetPoint("TOPLEFT",button,2,-2)
 	pushed:SetPoint("BOTTOMRIGHT",button,-2,2)
 	button:SetPushedTexture(pushed)
-	
+
 	local Infotext = self:Module("Infotext", true)
 	count:SetFont(Media:Fetch("font", (Infotext and Infotext.db.profile.FPS.Font or "vibroceb")), (Infotext and Infotext.db.profile.FPS.FontSize or 12), "OUTLINE")
- 
+
 	if checked then
 		local checked = b:CreateTexture("frame", nil, self) -- checked
 		checked:SetTexture(0,1,0,0.3)
@@ -247,7 +259,7 @@ function LUI:CreateMeAFrame(fart,fname,fparent,fwidth,fheight,fscale,fstrata,fle
 	f:SetFrameLevel(flevel)
 	f:SetPoint(fpoint,frelativeFrame,frelativePoint,sx,sy)
 	f:SetAlpha(falpha)
-	return f  
+	return f
 end
 
 ------------------------------------------------------
@@ -257,13 +269,13 @@ end
 function LUI:SyncAddonVersion()
 	local luiversion, version, newVersion = GetAddOnMetadata(addonname, "Version"), "", ""
 	local myRealm, myFaction, inGroup = GetRealmName(), (UnitFactionGroup("player") == "Horde" and 0 or 1), false
-	
+
 	while luiversion ~= nil do
 		local pos = strfind(luiversion, "%.")
 		if pos then
 			version = version .. format("%03d.", strsub(luiversion, 1, pos-1))
-			
-			
+
+
 			luiversion = strsub(luiversion, pos+1)
 		else
 			version = version .. format("%03d", luiversion)
@@ -271,7 +283,7 @@ function LUI:SyncAddonVersion()
 			newVersion = version
 		end
 	end
-	
+
 	local function sendVersion(distribution, target) -- (distribution [, target])
 		if distribution == "WHISPER" and not target then
 			return
@@ -281,10 +293,10 @@ function LUI:SyncAddonVersion()
 				distribution = "BATTLEGROUND"
 			end
 		end
-		
+
 		LUI:SendCommMessage("LUI_Version", version, distribution, target)
 	end
-	
+
 	local function checkVersion(prefix, text, distribution, from)
 		if version < text and newVersion < text then -- your version out of date (only print once)
 			newVersion = text
@@ -293,11 +305,11 @@ function LUI:SyncAddonVersion()
 			sendVersion("WHISPER", from)
 		end
 	end
-	
+
 	local function groupUpdate(groupType)
 		if not groupType then return end
 		if groupType == "Party" and GetNumRaidMembers() > 0 then return end
-		
+
 		if (groupType == "Party" and (GetNumPartyMembers() >= 1) or (GetNumRaidMembers() >= 1)) then
 			if inGroup then return end
 			inGroup = true
@@ -306,9 +318,9 @@ function LUI:SyncAddonVersion()
 			inGroup = false
 		end
 	end
-	
+
 	LUI:RegisterComm("LUI_Version", checkVersion)
-	
+
 	for i = 1, GetNumFriends() do -- send to friends via whisper on login
 		local name, _, _, _, connected = GetFriendInfo(i)
 		if name and connected then
@@ -336,12 +348,12 @@ end
 function LUI:SetDamageFont()
 	local DamageFont = Media:Fetch("font", db.General.DamageFont)
 
-	COMBAT_TEXT_SCROLLSPEED = 1.9
-	COMBAT_TEXT_FADEOUT_TIME = 1.3
-	DAMAGE_TEXT_FONT = DamageFont
-	COMBAT_TEXT_HEIGHT = db.General.DamageFontSize
-	COMBAT_TEXT_CRIT_MAXHEIGHT = db.General.DamageFontSizeCrit
-	COMBAT_TEXT_CRIT_MINHEIGHT = db.General.DamageFontSizeCrit - 2
+	_G.COMBAT_TEXT_SCROLLSPEED = 1.9
+	_G.COMBAT_TEXT_FADEOUT_TIME = 1.3
+	_G.DAMAGE_TEXT_FONT = DamageFont
+	_G.COMBAT_TEXT_HEIGHT = db.General.DamageFontSize
+	_G.COMBAT_TEXT_CRIT_MAXHEIGHT = db.General.DamageFontSizeCrit
+	_G.COMBAT_TEXT_CRIT_MINHEIGHT = db.General.DamageFontSizeCrit - 2
 end
 
 ------------------------------------------------------
@@ -367,36 +379,36 @@ function LUI:Update()
 	updateBG:SetBackdropColor(0,0,0,1)
 	updateBG:SetBackdropBorderColor(0,0,0,0)
 	updateBG:SetAlpha(1)
-	updateBG:Show() 
-	
+	updateBG:Show()
+
 	local updatelogo = LUI:CreateMeAFrame("FRAME","updatelogo",UIParent,512,512,1,"HIGH",6,"CENTER",UIParent,"CENTER",0,150,1)
 	updatelogo:SetBackdrop({bgFile=fdir.."logo", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
 	updatelogo:SetBackdropBorderColor(0,0,0,0)
 	updatelogo:Show()
-	
+
 	local update = LUI:CreateMeAFrame("FRAME","update",updatelogo,512,512,1,"HIGH",6,"BOTTOM",updatelogo,"BOTTOM",0,-130,1)
 	update:SetBackdrop({bgFile=fdir.."update", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
 	update:SetBackdropColor(1,1,1,1)
 	update:SetBackdropBorderColor(0,0,0,0)
 	update:Show()
-	
+
 	local update_hover = LUI:CreateMeAFrame("FRAME","update_hover",updatelogo,512,512,1,"HIGH",7,"BOTTOM",updatelogo,"BOTTOM",0,-130,1)
 	update_hover:SetBackdrop({bgFile=fdir.."update_hover", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
 	update_hover:SetBackdropColor(1,1,1,1)
 	update_hover:SetBackdropBorderColor(0,0,0,0)
 	update_hover:Hide()
-	
+
 	local update_frame = LUI:CreateMeAFrame("BUTTON","update_frame",updatelogo,310,80,1,"HIGH",8,"BOTTOM",updatelogo,"BOTTOM",-5,90,1)
 	update_frame:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
 	update_frame:SetBackdropColor(1,1,1,0)
 	update_frame:SetBackdropBorderColor(0,0,0,0)
 	update_frame:Show()
-	
+
 	update_frame:SetScript("OnEnter", function(self)
 		update:Hide()
 		update_hover:Show()
 	end)
-	
+
 	update_frame:SetScript("OnLeave", function(self)
 		update_hover:Hide()
 		update:Show()
@@ -404,27 +416,27 @@ function LUI:Update()
 
 	update_frame:RegisterForClicks("AnyUp")
 	update_frame:SetScript("OnClick", function(self)
-		
+
 		if IsAddOnLoaded("Grid") then
 			LUICONFIG.Versions.grid = nil
 			LUI:InstallGrid()
 		end
-		
+
 		if IsAddOnLoaded("Recount") then
 			LUICONFIG.Versions.recount = nil
 			LUI:InstallRecount()
 		end
-		
+
 		if IsAddOnLoaded("Omen") or IsAddOnLoaded("Omen3") then
 			LUICONFIG.Versions.omen = nil
 			LUI:InstallOmen()
 		end
-		
+
 		if IsAddOnLoaded("Forte_Core") then
 			LUICONFIG.Versions.forte = nil
 			LUI:InstallForte()
 		end
-	
+
 		LUICONFIG.Versions.lui = LUI.Versions.lui
 		ReloadUI()
 	end)
@@ -438,49 +450,49 @@ function LUI:Configure()
 	if InterfaceOptionsFrame:IsShown() then
 		InterfaceOptionsFrame:Hide()
 	end
-	
+
 	local configureBG = LUI:CreateMeAFrame("FRAME","configureBG",UIParent,2400,2000,1,"HIGH",5,"CENTER",UIParent,"CENTER",0,0,1)
 	configureBG:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
 	configureBG:SetBackdropColor(0,0,0,1)
 	configureBG:SetBackdropBorderColor(0,0,0,0)
 	configureBG:SetAlpha(1)
-	configureBG:Show() 
-	
+	configureBG:Show()
+
 	local logo = LUI:CreateMeAFrame("FRAME","logo",UIParent,512,512,1,"HIGH",6,"CENTER",UIParent,"CENTER",0,150,1)
 	logo:SetBackdrop({bgFile=fdir.."logo", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
 	logo:SetBackdropBorderColor(0,0,0,0)
 	logo:Show()
-	
+
 	local install = LUI:CreateMeAFrame("FRAME","install",logo,512,512,1,"HIGH",6,"BOTTOM",logo,"BOTTOM",0,-130,1)
 	install:SetBackdrop({bgFile=fdir.."install", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
 	install:SetBackdropColor(1,1,1,1)
 	install:SetBackdropBorderColor(0,0,0,0)
 	install:Show()
-	
+
 	local install_hover = LUI:CreateMeAFrame("FRAME","install_hover",logo,512,512,1,"HIGH",7,"BOTTOM",logo,"BOTTOM",0,-130,1)
 	install_hover:SetBackdrop({bgFile=fdir.."install_hover", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
 	install_hover:SetBackdropColor(1,1,1,1)
 	install_hover:SetBackdropBorderColor(0,0,0,0)
 	install_hover:Hide()
-	
+
 	local install_frame = LUI:CreateMeAFrame("BUTTON","install_frame",logo,310,80,1,"HIGH",8,"BOTTOM",logo,"BOTTOM",-5,90,1)
 	install_frame:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=0, tileSize=0, edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
 	install_frame:SetBackdropColor(1,1,1,0)
 	install_frame:SetBackdropBorderColor(0,0,0,0)
 	install_frame:Show()
-	
+
 	install_frame:SetScript("OnEnter", function(self)
 		install:Hide()
 		install_hover:Show()
 	end)
-	
+
 	install_frame:SetScript("OnLeave", function(self)
 		install_hover:Hide()
 		install:Show()
 	end)
 
 	install_frame:RegisterForClicks("AnyUp")
-	install_frame:SetScript("OnClick", function(self) 
+	install_frame:SetScript("OnClick", function(self)
 
 		SetCVar("buffDurations", 1)
 		SetCVar("consolidateBuffs", 0)
@@ -489,11 +501,11 @@ function LUI:Configure()
 		SetCVar("useUiScale", 1)
 		SetCVar("chatMouseScroll", 1)
 		SetCVar("chatStyle", "classic")
-		
+
 		if LUICONFIG.Versions then
 			wipe(LUICONFIG.Versions)
 		end
-		
+
 		LUI:InstallGrid()
 		LUI:InstallRecount()
 		LUI:InstallOmen()
@@ -518,12 +530,12 @@ local function getModulePrototype(parent)
 		SetDBVar = parent.SetDBVar,
 		GetDefaultVal = parent.GetDefaultVal,
 	}
-	
+
 	if parent == LUI then
 		prototype.Module = parent.Module
 		prototype.Namespace = parent.Namespace
 	end
-	
+
 	return prototype
 end
 
@@ -537,7 +549,7 @@ function LUI:Module(name, prototype, ...)
 			AceAddon:EmbedLibraries(module, prototype, ...)
 		elseif type(prototype) == "table" then
 			AceAddon:EmbedLibraries(module, ...)
-			
+
 			-- set prototype
 			local mt = getmetatable(module)
 			mt.__index = prototype
@@ -548,14 +560,14 @@ function LUI:Module(name, prototype, ...)
 			self:SetDefaultModulePrototype(getModulePrototype(self))
 			self:SetDefaultModuleLibraries("LUIDevAPI")
 		end
-		
+
 		module = self:NewModule(name, prototype, ...)
-		
+
 		if self ~= LUI then
 			module.isNestedModule = true
 		end
 	end
-	
+
 	return module
 end
 
@@ -569,7 +581,7 @@ end
 
 function LUI:GetDBVar(info)
 	local value = self.db.profile
-	
+
 	local start = self.isNestedModule and 3 or 2
 	for i=start, #info-1 do
 		value = value[info[i]]
@@ -582,7 +594,7 @@ end
 
 function LUI:SetDBVar(info, value)
 	local dbloc = self.db.profile
-	
+
 	local start = self.isNestedModule and 3 or 2
 	for i=start, #info-1 do
 		dbloc = dbloc[info[i]]
@@ -595,15 +607,27 @@ end
 
 function LUI:GetDefaultVal(info)
 	local dbloc = self.db.defaults.profile
-	
+
 	local start = self.isNestedModule and 3 or 2
 	for i=start, #info-1 do
-		dbloc = dbloc[info[i]]
+		local key = info[i]
+		if not dbloc[key] then
+			key = "*"
+		end
+
+		dbloc = dbloc[key]
+
 		if type(dbloc) ~= "table" then
 			error("Error accessing defaults\nCould not access "..strjoin(".", info[start-1], "db.defaults.profile", unpack(info, start, dbloc == nil and i or i+1)).."\nddfaults layout must be the same as info", 2)
 		end
 	end
-	return dbloc[info[#info]]
+
+	local key = info[#info]
+	if not dbloc[key] == nil then
+		key = "*"
+	end
+
+	return dbloc[key]
 end
 
 local function conflictChecker(...)
@@ -620,7 +644,7 @@ function LUI:CheckConflict(...) -- self is module
 	else
 		conflict = conflictChecker((";"):split(self.conflicts))
 	end
-	
+
 	if conflict then
 		-- disable without calling OnDisable function
 		LibStub("AceAddon-3.0").statuses[self.name] = false
@@ -638,34 +662,36 @@ end
 -- / SCRIPTS / --
 ------------------------------------------------------
 
-local scripts = {}
+do
+	local scripts = {}
 
-function LUI:NewScript(name, ...)
-	local script = {}
-	scripts[name] = script
+	function LUI:NewScript(name, ...)
+		local script = {}
+		scripts[name] = script
 
-	local errormsg
-	for i=1, select("#", ...) do
-		local lib = select(i, ...)
-		if type(lib) ~= "string" then
-			errormsg = "Error generating script: "..name.." - library names must be string values!"
-		elseif not LibStub(lib, true) then
-			errormsg = "Error generating script: "..name.." - '"..lib.."' library does not exist!"
-		elseif type(LibStub(lib).Embed) ~= "function" then
-			errormsg = "Error generating script: "..name.." - '"..lib.."' library is not Embedable!"
+		local errormsg
+		for i=1, select("#", ...) do
+			local lib = select(i, ...)
+			if type(lib) ~= "string" then
+				errormsg = "Error generating script: "..name.." - library names must be string values!"
+			elseif not LibStub(lib, true) then
+				errormsg = "Error generating script: "..name.." - '"..lib.."' library does not exist!"
+			elseif type(LibStub(lib).Embed) ~= "function" then
+				errormsg = "Error generating script: "..name.." - '"..lib.."' library is not Embedable!"
+			end
+			if errormsg then
+				return self:Print(errormsg)
+			end
+
+			LibStub(lib):Embed(script)
 		end
-		if errormsg then
-			return self:Print(errormsg)
-		end
 
-		LibStub(lib):Embed(script)
+		return script
 	end
 
-	return script
-end
-
-function LUI:FetchScript(name)
-	return scripts[name]
+	function LUI:FetchScript(name)
+		return scripts[name]
+	end
 end
 
 ------------------------------------------------------
@@ -685,7 +711,7 @@ function LUI:MergeOptions(target, source, sort)
 	for k, v in pairs(source) do
 		if type(v) == "table" then
 			target[k] = self:MergeOptions(target[k], v)
-			
+
 			-- Sort modules by name if they don't have an order.
 			if sort then target[k].order = target[k].order or 10 end
 		else
@@ -745,9 +771,9 @@ local function getOptions()
 									width = "full",
 									type = "description",
 									name = function()
-											local revision = GetAddOnMetadata(addonname, "X-Curse-Packaged-Version")
-											return L["Revision: "]..(revision or "???")
-										end,
+										local revision = GetAddOnMetadata(addonname, "X-Curse-Packaged-Version")
+										return L["Revision: "]..(revision or "???")
+									end,
 								},
 							},
 						},
@@ -791,9 +817,9 @@ local function getOptions()
 									type = "toggle",
 									get = function() return LUI:Module("Panels").db.profile.Minimap.AlwaysShow end,
 									set = function()
-											local a = LUI:Module("Panels").db.profile.Minimap
-											a.AlwaysShow = not a.AlwaysShow
-										end,
+										local a = LUI:Module("Panels").db.profile.Minimap
+										a.AlwaysShow = not a.AlwaysShow
+									end,
 									order = 6,
 								},
 								alwaysShowChat = {
@@ -802,9 +828,9 @@ local function getOptions()
 									type = "toggle",
 									get = function() return LUI:Module("Panels").db.profile.Chat.AlwaysShow end,
 									set = function()
-											local a = LUI:Module("Panels").db.profile.Chat
-											a.AlwaysShow = not a.AlwaysShow
-										end,
+										local a = LUI:Module("Panels").db.profile.Chat
+										a.AlwaysShow = not a.AlwaysShow
+									end,
 									order = 7,
 								},
 								alwaysShowOmen = {
@@ -813,9 +839,9 @@ local function getOptions()
 									type = "toggle",
 									get = function() return LUI:Module("Panels").db.profile.Tps.AlwaysShow end,
 									set = function()
-											local a = LUI:Module("Panels").db.profile.Tps
-											a.AlwaysShow = not a.AlwaysShow
-										end,
+										local a = LUI:Module("Panels").db.profile.Tps
+										a.AlwaysShow = not a.AlwaysShow
+									end,
 									order = 8,
 								},
 								alwaysShowRecount = {
@@ -824,9 +850,9 @@ local function getOptions()
 									type = "toggle",
 									get = function() return LUI:Module("Panels").db.profile.Dps.AlwaysShow end,
 									set = function()
-											local a = LUI:Module("Panels").db.profile.Dps
-											a.AlwaysShow = not a.AlwaysShow
-										end,
+										local a = LUI:Module("Panels").db.profile.Dps
+										a.AlwaysShow = not a.AlwaysShow
+									end,
 									order = 9,
 								},
 								alwaysShowGrid = {
@@ -835,9 +861,9 @@ local function getOptions()
 									type = "toggle",
 									get = function() return LUI:Module("Panels").db.profile.Raid.AlwaysShow end,
 									set = function()
-											local a = LUI:Module("Panels").db.profile.Raid
-											a.AlwaysShow = not a.AlwaysShow
-										end,
+										local a = LUI:Module("Panels").db.profile.Raid
+										a.AlwaysShow = not a.AlwaysShow
+									end,
 									order = 10,
 								},
 								alwaysShowMicroMenu = {
@@ -846,9 +872,9 @@ local function getOptions()
 									type = "toggle",
 									get = function() return LUI:Module("Panels").db.profile.MicroMenu.AlwaysShow end,
 									set = function()
-											local a = LUI:Module("Panels").db.profile.MicroMenu
-											a.AlwaysShow = not a.AlwaysShow
-										end,
+										local a = LUI:Module("Panels").db.profile.MicroMenu
+										a.AlwaysShow = not a.AlwaysShow
+									end,
 									order = 12,
 								},
 								empty22225 = {
@@ -873,10 +899,10 @@ local function getOptions()
 									width = "double",
 									get = function() return db.General.BlizzFrameScale end,
 									set = function(info, value)
-											if scale == nil or scale == "" then scale = 1 end
-											db.General.BlizzFrameScale = value
-											LUI:FetchScript("BlizzScale"):ADDON_LOADED()
-										end,
+										if scale == nil or scale == "" then scale = 1 end
+										db.General.BlizzFrameScale = value
+										LUI:FetchScript("BlizzScale"):ADDON_LOADED()
+									end,
 									order = 32,
 								},
 								empty3 = {
@@ -892,9 +918,9 @@ local function getOptions()
 									width = "full",
 									get = function() return db.General.HideErrors end,
 									set = function(info, value)
-											db.General.HideErrors = value
-											LUI:FetchScript("ErrorHider"):ErrorMessageHandler()
-										end,
+										db.General.HideErrors = value
+										LUI:FetchScript("ErrorHider"):ErrorMessageHandler()
+									end,
 									order = 34,
 								},
 								HideTalentSpam = {
@@ -904,9 +930,9 @@ local function getOptions()
 									width = "full",
 									get = function() return db.General.HideTalentSpam end,
 									set = function(info, value)
-											db.General.HideTalentSpam = value
-											LUI:FetchScript("TalentSpam"):SetTalentSpam()
-										end,
+										db.General.HideTalentSpam = value
+										LUI:FetchScript("TalentSpam"):SetTalentSpam()
+									end,
 									order = 35,
 								},
 								ModuleMessages = {
@@ -925,9 +951,9 @@ local function getOptions()
 									width = "full",
 									get = function() return db.General.AutoAcceptInvite end,
 									set = function(info, value)
-											db.General.AutoAcceptInvite = value
-											LUI:FetchScript("AutoInvite"):SetAutoAccept()
-										end,
+										db.General.AutoAcceptInvite = value
+										LUI:FetchScript("AutoInvite"):SetAutoAccept()
+									end,
 									order = 37,
 								},
 								AutoInvite = {
@@ -937,9 +963,9 @@ local function getOptions()
 									width = "full",
 									get = function() return db.General.AutoInvite end,
 									set = function(info, value)
-											db.General.AutoInvite = value
-											LUI:FetchScript("AutoInvite"):SetAutoInvite()
-										end,
+										db.General.AutoInvite = value
+										LUI:FetchScript("AutoInvite"):SetAutoInvite()
+									end,
 									order = 38,
 								},
 								AutoInviteOnlyFriend = {
@@ -950,8 +976,8 @@ local function getOptions()
 									disabled = function() return not db.General.AutoInvite end,
 									get = function() return db.General.AutoInviteOnlyFriend end,
 									set = function(info, value)
-											db.General.AutoInviteOnlyFriend = value
-										end,
+										db.General.AutoInviteOnlyFriend = value
+									end,
 									order = 39,
 								},
 								AutoInviteKeyword = {
@@ -961,9 +987,9 @@ local function getOptions()
 									disabled = function() return not db.General.AutoInvite end,
 									get = function() return db.General.AutoInviteKeyword end,
 									set = function(info, value)
-											if value == nil then AutoInviteKeyword = "" end
-											db.General.AutoInviteKeyword = value
-										end,
+										if value == nil then value = "" end
+										db.General.AutoInviteKeyword = value
+									end,
 									order = 40,
 								},
 								header91 = {
@@ -978,11 +1004,11 @@ local function getOptions()
 									dialogControl = "LSM30_Font",
 									values = widgetLists.font,
 									get = function()
-											return db.General.DamageFont
-										end,
+										return db.General.DamageFont
+									end,
 									set = function(self, DamageFont)
-											db.General.DamageFont = DamageFont
-										end,
+										db.General.DamageFont = DamageFont
+									end,
 									order = 46,
 								},
 								empty3445 = {
@@ -999,9 +1025,9 @@ local function getOptions()
 									max = 60,
 									step = 1,
 									get = function() return db.General.DamageFontSize end,
-									set = function(_, DamageFontSize) 
-												db.General.DamageFontSize = DamageFontSize
-											end,
+									set = function(_, DamageFontSize)
+										db.General.DamageFontSize = DamageFontSize
+									end,
 									order = 48,
 								},
 								empty34456 = {
@@ -1018,9 +1044,9 @@ local function getOptions()
 									max = 60,
 									step = 1,
 									get = function() return db.General.DamageFontSizeCrit end,
-									set = function(_, DamageFontSizeCrit) 
-												db.General.DamageFontSizeCrit = DamageFontSizeCrit
-											end,
+									set = function(_, DamageFontSizeCrit)
+										db.General.DamageFontSizeCrit = DamageFontSizeCrit
+									end,
 									order = 50,
 								},
 								empty34457 = {
@@ -1037,13 +1063,13 @@ local function getOptions()
 									disabled = function() return LUI:Module("Unitframes").db.Enable end,
 									get = function() return LUI:Module("Unitframes").db.Settings.HideBlizzRaid end,
 									set = function(info, value)
-											LUI:Module("Unitframes").db.Settings.HideBlizzRaid = value
-											if value then
-												LUI:Module("Unitframes"):Module("HideBlizzard"):Hide("raid", true)
-											else
-												LUI:Module("Unitframes"):Module("HideBlizzard"):Show("raid")
-											end
-										end,
+										LUI:Module("Unitframes").db.Settings.HideBlizzRaid = value
+										if value then
+											LUI:Module("Unitframes"):Module("HideBlizzard"):Hide("raid", true)
+										else
+											LUI:Module("Unitframes"):Module("HideBlizzard"):Show("raid")
+										end
+									end,
 									order = 52,
 								},
 							},
@@ -1122,7 +1148,7 @@ local function getOptions()
 									disabled = function() return not IsAddOnLoaded("Recount") end,
 									hidden = function() return not IsAddOnLoaded("Recount") end,
 									get = function() return db.Recount.FontHack end,
-									set = function() LUI.RecountFontHack:Toggle() end,								
+									set = function() LUI.RecountFontHack:Toggle() end,
 								},
 								RecountFontSize = {
 									name = "Font Size",
@@ -1135,9 +1161,9 @@ local function getOptions()
 									hidden = function() return not IsAddOnLoaded("Recount") end,
 									get = function() return db.Recount.FontSize end,
 									set = function(self, size)
-											db.Recount.FontSize = size
-											Recount:BarsChanged()
-										end,
+										db.Recount.FontSize = size
+										Recount:BarsChanged()
+									end,
 									order = 5,
 								},
 								RecountFont = {
@@ -1149,12 +1175,12 @@ local function getOptions()
 									dialogControl = "LSM30_Font",
 									values = widgetLists.font,
 									get = function()
-											return db.Recount.Font
-										end,
+										return db.Recount.Font
+									end,
 									set = function(self, font)
-											db.Recount.Font = font
-											Recount:BarsChanged()
-										end,
+										db.Recount.Font = font
+										Recount:BarsChanged()
+									end,
 									order = 6,
 								},
 								Header3 = {
@@ -1199,16 +1225,16 @@ local function getOptions()
 		}
 		LUI.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(LUI.db)
 		LUI.options.args.profiles.order = 4
-		
+
 		local disabled = function(info) return info.options.name == addonname end -- all acedb addons use the same table
 		LUI.options.args.profiles.args.new.disabled = disabled -- remove once all modules are using namespaces
 		LUI.options.args.profiles.args.choose.disabled = disabled -- remove once all modules are using namespaces
-		
-		local copyProfile, selectModules = {}
+
+		local copyProfile, selectModules = {}, nil
 		do
 			selectModules = function(...)
 				local name = addonname.."_ProfileCopier"
-				
+
 				local options = {
 					name = "Select Modules",
 					type = "group",
@@ -1254,7 +1280,7 @@ local function getOptions()
 					end
 				end
 				LibStub("AceConfig-3.0"):RegisterOptionsTable(name, options)
-				
+
 				selectModules = function(info, value)
 					copyProfile.name = value
 					local parent = ACD.OpenFrames.LUI
@@ -1296,22 +1322,26 @@ local function getOptions()
 				},
 			},
 		}
-		
+
 		for k, v in pairs(moduleList) do
 			LUI.options.args.Modules.args = LUI:MergeOptions(LUI.options.args.Modules.args, (type(v) == "function") and v() or v)
 		end
-		
+
 		for k, v in pairs(moduleOptions) do
 			LUI.options.args = LUI:MergeOptions(LUI.options.args, (type(v) == "function") and v() or v, true)
 		end
-		
+
 		for k, v in pairs(newModuleOptions) do -- all modules need to be converted over to this
 			local module = type(v) == "string" and LUI:Module(v) or v
-			LUI.options.args[module:GetName()] = module:NewGroup(module.optionsName or module:GetName(), module.order or 10, module.childGroups or "tab", module.getter or "skip", module.setter or "skip", 
-				false, function() return not module:IsEnabled() end, type(module.LoadOptions) == "function" and module:LoadOptions() or module.options)
+			local options = type(module.LoadOptions) == "function" and module:LoadOptions() or module.options
+
+			if options then
+				LUI.options.args[module:GetName()] = module:NewGroup(module.optionsName or module:GetName(), module.order or 10, module.childGroups or "tab",
+					module.getter or "skip", module.setter or "skip", false, function() return not module:IsEnabled() end, options)
+			end
 		end
 	end
-	
+
 	return LUI.options
 end
 
@@ -1328,7 +1358,7 @@ end
 function LUI:RegisterModule(module, moduledb, addFunc)
 	local mName = module:GetName()
 	local moduledb = moduledb and moduledb or mName
-	
+
 	table.insert(moduleList, {
 		[mName] = {
 			type = "execute",
@@ -1349,10 +1379,33 @@ function LUI:RegisterModule(module, moduledb, addFunc)
 			end,
 		},
 	})
-	
+
 	LUI:RegisterOptions(module)
-	
+
 	module:SetEnabledState(db[moduledb].Enable)
+end
+
+local function initDefaults(defaults, parent) -- TODO FIX this thing
+	local mt = parent["**"]
+	if mt then
+		if type(mt) == "table" then
+			for k, v in pairs(mt) do
+				if defaults[k] == nil then
+					defaults[k] = v
+					print(k, v)
+				end
+			end
+		end
+
+		parent["*"] = mt
+		parent["**"] = nil
+	end
+
+	for k, v in pairs(defaults) do
+		if type(v) == "table" then
+			initDefaults(v, defaults)
+		end
+	end
 end
 
 local function mergeOldDB(dest, src)
@@ -1369,17 +1422,17 @@ local function mergeOldDB(dest, src)
 	return dest
 end
 
-function LUI:NewNamespace(module, enableButton, noOptions)
+function LUI:NewNamespace(module, enableButton, version)
 	local mName = module:GetName()
-	
+
 	-- Add options loader function to list
-	if self == LUI and (not module.addon or IsAddOnLoaded(module.addon)) and not noOptions then
+	if self == LUI and (not module.addon or IsAddOnLoaded(module.addon)) then
 		table.insert(newModuleOptions, mName)
 	end
-	
+
 	-- Register namespace
 	local mdb = self.db:RegisterNamespace(mName, module.defaults)
-	
+
 	-- Create db metatable
 	module.db = setmetatable({}, {
 		__index = function(t, k)
@@ -1411,7 +1464,7 @@ function LUI:NewNamespace(module, enableButton, noOptions)
 			end
 		end,
 	})
-	
+
 	-- Create defaults metatable (the module.defaults table was handed off to AceDB and now exists as module.db.defaults)
 	module.defaults = setmetatable({}, {
 		__index = function(t, k)
@@ -1449,30 +1502,30 @@ function LUI:NewNamespace(module, enableButton, noOptions)
 	Profiler.TraceScope(getmetatable(module.db), "db", "LUI."..mName)
 	Profiler.TraceScope(getmetatable(module.defaults), "dbd", "LUI."..mName)
 	--]]
-	
+
 	-- Look for outdated db vars and transfer them over
 	if LUI.db.profile[mName] then
 		mergeOldDB(module.db.profile, LUI.db.profile[mName])
 		LUI.db.profile[mName] = nil
 	end
-	
+
 	-- Set module enabled state
 	if LUI.defaultModuleState ~= false and module.db.profile.Enable ~= nil then
 		module:SetEnabledState(module.db.profile.Enable)
 	end
-	
+
 	-- Hook conflicting addon checker
 	if module.conflicts then
 		LUI:RawHook(module, "OnEnable", LUI.CheckConflict)
 	end
-	
+
 	-- Register Callbacks
 	if type(module.Refresh) == "function" then
 		module.db.RegisterCallback(module, "OnProfileChanged", LUI.RefreshModule, module)
 		module.db.RegisterCallback(module, "OnProfileCopied", LUI.RefreshModule, module)
 		module.db.RegisterCallback(module, "OnProfileReset", LUI.RefreshModule, module)
 	end
-	
+
 	-- Create Enable button for module if applicable
 	if enableButton then
 		table.insert(moduleList, {
@@ -1485,7 +1538,7 @@ function LUI:NewNamespace(module, enableButton, noOptions)
 						local enabled = module.db.profile.Enable
 						module.db:ResetProfile()
 						module.db.profile.Enable = enabled -- keep enabled/disabled state (callback from ResetProfile is based on modules enabled state, not the db var)
-						
+
 						if db.General.ModuleMessages then
 							LUI:Print(mName .. " module settings reset.")
 						end
@@ -1498,40 +1551,57 @@ function LUI:NewNamespace(module, enableButton, noOptions)
 			},
 		})
 	end
-	
+
+	-- Check for module version update
+	if version and version ~= LUICONFIG.Versions[mName] then
+		if module.OnVersionUpdate then
+			module:OnVersionUpdate(LUICONFIG.Versions[mName], version)
+		else
+			module.db:ResetProfile()
+		end
+		LUICONFIG.Versions[mName] = version
+	end
+
 	return module.db, module.defaults
 end
 
-function LUI:Namespace(module, toggleButton, noOptions) -- no metatables (note: do not use defaults.Enable for the enabled state, it is handled by the parent module)
+function LUI:Namespace(module, toggleButton, version) -- no metatables (note: do not use defaults.Enable for the enabled state, it is handled by the parent module)
 	local mName = module:GetName()
 	if self.db.children and self.db.children[mName] then return module.db.profile, module.db.defaults.profile end
-	
+
 	-- Add options loader function to list
-	if self == LUI and (not module.addon or IsAddOnLoaded(module.addon)) and not noOptions then
+	if self == LUI and (not module.addon or IsAddOnLoaded(module.addon)) then
 		table.insert(newModuleOptions, mName)
 	end
-	
+
+	-- Initialize default metatables
+	if module.defaults then
+		for k, v in pairs(module.defaults) do
+			initDefaults(v, module.defaults)
+		end
+	end
+
 	-- Register namespace
 	module.db = LUI.db.RegisterNamespace(self.db, mName, module.defaults)
-	
+
 	-- Look for outdated db vars and transfer them over
 	if self.db.profile[mName] then
 		mergeOldDB(module.db.profile, self.db.profile[mName])
 		self.db.profile[mName] = nil
 	end
-	
+
 	-- Hook conflicting addon checker
 	if module.conflicts then
 		LUI:RawHook(module, "OnEnable", LUI.CheckConflict)
 	end
-	
+
 	-- Register Callbacks
 	if type(module.DBCallback) == "function" then
 		module.db.RegisterCallback(module, "OnProfileChanged", "DBCallback")
 		module.db.RegisterCallback(module, "OnProfileCopied", "DBCallback")
 		module.db.RegisterCallback(module, "OnProfileReset", "DBCallback")
 	end
-	
+
 	-- Create toggle button and set module enabled state
 	if toggleButton then
 		self.db.profile.modules = self.db.profile.modules or {}
@@ -1545,7 +1615,7 @@ function LUI:Namespace(module, toggleButton, noOptions) -- no metatables (note: 
 		if LUI.defaultModuleState ~= false and self.db.profile.modules[mName] ~= nil then
 			module:SetEnabledState(self.db.profile.modules[mName])
 		end
-		
+
 		table.insert(moduleList, {
 			[mName] = {
 				type = "execute",
@@ -1554,13 +1624,13 @@ function LUI:Namespace(module, toggleButton, noOptions) -- no metatables (note: 
 				func = function()
 					if IsShiftKeyDown() then
 						module.db:ResetProfile()
-						
+
 						if db.General.ModuleMessages then
 							LUI:Printf("%s module settings reset.", mName)
 						end
 					elseif module:Toggle() then
 						self.db.profile.modules[mName] = module:IsEnabled()
-						
+
 						if db.General.ModuleMessages then
 							LUI:Printf("%s module |cff%s|r", mName, module:IsEnabled() and "00FF00enabled" or "FF0000disabled")
 						end
@@ -1569,7 +1639,17 @@ function LUI:Namespace(module, toggleButton, noOptions) -- no metatables (note: 
 			},
 		})
 	end
-	
+
+	-- Check for module version update
+	if version and version ~= LUICONFIG.Versions[mName] then
+		if module.OnVersionUpdate then
+			module:OnVersionUpdate(LUICONFIG.Versions[mName], version)
+		else
+			module.db:ResetProfile()
+		end
+		LUICONFIG.Versions[mName] = version
+	end
+
 	return module.db.profile, module.db.defaults.profile
 end
 
@@ -1581,17 +1661,17 @@ end
 function LUI:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("LUIDB", LUI.defaults, true)
 	db_ = self.db.profile
-	
+
 	self.db.RegisterCallback(self, "OnProfileChanged", "Refresh")
 	self.db.RegisterCallback(self, "OnProfileCopied", "Refresh")
 	self.db.RegisterCallback(self, "OnProfileReset", "Refresh")
-	
+
 	self:RegisterChatCommand(addonname, "ChatCommand")
-	
-	LUICONFIG = LUICONFIG or {}
-	LUICONFIG.Versions = LUICONFIG.Versions or {}
-	
-	if LUICONFIG.IsConfigured and LUICONFIG.Versions.lui == LUI.Versions.lui then
+
+	_G.LUICONFIG = _G.LUICONFIG or {}
+	_G.LUICONFIG.Versions = _G.LUICONFIG.Versions or {}
+
+	if _G.LUICONFIG.IsConfigured and _G.LUICONFIG.Versions.lui == LUI.Versions.lui then
 		self:RegisterEvent("ADDON_LOADED", "SetDamageFont", self)
 		self:LoadExtraModules()
 	else
@@ -1600,7 +1680,7 @@ function LUI:OnInitialize()
 			module:SetEnabledState(false)
 		end
 	end
-	
+
 	StaticPopupDialogs["RELOAD_UI"] = {
 		preferredIndex = 3,
 		text = L["The UI needs to be reloaded!"],
@@ -1611,7 +1691,7 @@ function LUI:OnInitialize()
 		whileDead = 1,
 		hideOnEscape = 1
 	}
-	
+
 	StaticPopupDialogs["RESTORE_DETAULTS"] = {
 		preferredIndex = 3,
 		text = "Do you really want to restore all defaults. All your settings will be lost!",
@@ -1627,7 +1707,7 @@ end
 function LUI:OnEnable()
 	db_ = self.db.profile
 	--CheckResolution()
-	
+
 	if not LUICONFIG.IsConfigured then
 		self.db.UnregisterAllCallbacks(self)
 		self.db:SetProfile(UnitName("player").." - "..GetRealmName())
@@ -1641,7 +1721,7 @@ function LUI:OnEnable()
 			print("Welcome on |c0090ffffLUI v3|r for Patch 3.3.5 !")
 			print("For more Information visit www.wow-lui.com")
 		end
-		
+
 		self:SyncAddonVersion()
 	end
 end
@@ -1664,13 +1744,13 @@ end
 
 function LUI:Refresh(dbEvent)
 	db_ = self.db.profile
-	
+
 	if not IsLoggedIn() then return end -- in case db callbacks fire before the OnEnable function
-	
+
 	if dbEvent then -- remove once all modules are using namespaces
 		return ReloadUI()
 	end
-	
+
 	for name, module in self:IterateModules() do
 		if module.db and module.db.profile and module.db.profile.Enable ~= nil then
 			module[module.db.profile.Enable and "Enable" or "Disable"](module)
@@ -1699,10 +1779,10 @@ function LUI:Open(force, ...)
 			end)
 		end
 	end
-	
+
 	LibStub("AceConfig-3.0"):RegisterOptionsTable(addonname, getOptions)
 	ACD:SetDefaultSize(addonname, 720,525)
-	
+
 	local function refreshOptions()
 		if ACD.OpenFrames.LUI then
 			ACR:NotifyChange(addonname)
@@ -1710,7 +1790,7 @@ function LUI:Open(force, ...)
 	end
 	self:RegisterEvent("PLAYER_REGEN_ENABLED", refreshOptions)
 	self:RegisterEvent("PLAYER_REGEN_DISABLED", refreshOptions)
-	
+
 	return LUI:Open(force, ...)
 end
 

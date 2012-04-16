@@ -1233,13 +1233,13 @@ local function updateOverlayTextures(frame, frameName, textureCache, scale, opac
 		end
 		return
 	end
-	
+
 	local pathPrefix = format(texPathTemplate, mapFileName)
 	local overlayMap = global[mapFileName]
-	
+
 	local numOverlays = module.hooks.GetNumMapOverlays()
 	local pathLen = strlen(pathPrefix) + 1
-	
+
 	for i = 1, numOverlays do
 		local texName, texWidth, texHeight, offsetX, offsetY = GetMapOverlayInfo(i)
 		texName = strsub(texName, pathLen)
@@ -1249,14 +1249,14 @@ local function updateOverlayTextures(frame, frameName, textureCache, scale, opac
 			overlayMap[texName] = texData -- AceDB will wipe any values that match the default on logout
 		end
 	end
-	
+
 	local textureCount = 0
 	local r, g, b, a = unpack(db.Color)
-	
+
 	local numOv = #textureCache
 	for texName, texData in pairs(overlayMap) do
 		local texWidth, texHeight, offsetX, offsetY = mod(texData, 2^10), mod(floor(texData / 2^10), 2^10), mod(floor(texData / 2^20), 2^10), floor(texData / 2^30)
-		
+
 		local numTexWide = ceil(texWidth / 256)
 		local numTexTall = ceil(texHeight / 256)
 		local neededTextures = textureCount + (numTexWide * numTexTall)
@@ -1319,11 +1319,11 @@ local function updateOverlayTextures(frame, frameName, textureCache, scale, opac
 			end
 		end
 	end
-	
+
 	for i = textureCount+1, numOv do
 		textureCache[i]:Hide()
 	end
-	
+
 	wipe(discoveredOverlays)
 end
 
@@ -1364,20 +1364,20 @@ end
 function module:HasOverlays()
 	local mapFileName = GetMapInfo()
 	if not mapFileName or not global then return false end
-	
+
 	local overlayMap = global[mapFileName]
 	if overlayMap and next(overlayMap) then return true end
 end
 
 function module:SetWorldMapFogClear()
 	self:SecureHook("WorldMapFrame_Update")
-	
+
 	wipe(worldMapCache)
-	for i = 1, NUM_WORLDMAP_OVERLAYS do
+	for i = 1, _G.NUM_WORLDMAP_OVERLAYS do
 		tinsert(worldMapCache, _G[format("WorldMapOverlay%d", i)])
 	end
-	NUM_WORLDMAP_OVERLAYS = 0
-	
+	_G.NUM_WORLDMAP_OVERLAYS = 0
+
 	if WorldMapFrame:IsShown() then
 		WorldMapFrame_Update()
 	end
@@ -1385,13 +1385,13 @@ end
 
 function module:SetBattleMapFogClear()
 	self:SecureHook("BattlefieldMinimap_Update")
-	
+
 	wipe(battleMapCache)
-	for i = 1, NUM_BATTLEFIELDMAP_OVERLAYS do
+	for i = 1, _G.NUM_BATTLEFIELDMAP_OVERLAYS do
 		tinsert(battleMapCache, _G[format("BattlefieldMinimapOverlay%d", i)])
 	end
-	NUM_BATTLEFIELDMAP_OVERLAYS = 0
-	
+	_G.NUM_BATTLEFIELDMAP_OVERLAYS = 0
+
 	if BattlefieldMinimap:IsShown() then
 		BattlefieldMinimap_Update()
 	end
@@ -1413,16 +1413,16 @@ function module:LoadOptions()
 	local function fogClearDisabled()
 		return not self:IsEnabled()
 	end
-	
+
 	local function updateFogClear()
 		self:Refresh()
 	end
-	
+
 	local options = self:NewGroup("Fog Clear", 5, "generic", "Refresh", {
 		Enable = self:NewToggle("Enable", nil, 1, true, "normal"),
 		Color = self:NewColor("Undiscovered Area", "undiscovered areas of the world", 2, updateFogClear, nil, fogClearDisabled),
 	})
-	
+
 	return options
 end
 
@@ -1431,7 +1431,7 @@ function module:Refresh(info, value)
 		if info[#info] == "Enable" then
 			return self:Toggle()
 		end
-		
+
 		self:SetDBVar(info, value)
 	end
 
@@ -1453,41 +1453,41 @@ module.DBCallback = module.OnInitialize
 
 function module:OnEnable()
 	self:RawHook("GetNumMapOverlays", true)
-	
+
 	if not IsAddOnLoaded("Blizzard_BattlefieldMinimap") then
 		self:RegisterEvent("ADDON_LOADED")
 	else
 		self:SetBattleMapFogClear()
 	end
-	
+
 	self:SetWorldMapFogClear()
 end
 
 function module:OnDisable()
 	self:UnregisterAllEvents()
 	self:UnhookAll()
-	
+
 	local tex
-	NUM_WORLDMAP_OVERLAYS = #worldMapCache
-	for i = 1, NUM_WORLDMAP_OVERLAYS do
+	_G.NUM_WORLDMAP_OVERLAYS = #worldMapCache
+	for i = 1, _G.NUM_WORLDMAP_OVERLAYS do
 		tex = _G[format("WorldMapOverlay%d", i)]
 		tex:SetVertexColor(1, 1, 1)
 		tex:SetAlpha(1)
 		tex:SetDrawLayer("ARTWORK")
 	end
-	
+
 	if WorldMapFrame:IsShown() then
 		WorldMapFrame_Update()
 	end
-	
+
 	if BattlefieldMinimap then
-		NUM_BATTLEFIELDMAP_OVERLAYS = #battleMapCache
-		for i = 1, NUM_BATTLEFIELDMAP_OVERLAYS do
+		_G.NUM_BATTLEFIELDMAP_OVERLAYS = #battleMapCache
+		for i = 1, _G.NUM_BATTLEFIELDMAP_OVERLAYS do
 			tex = _G[format("BattlefieldMinimapOverlay%d", i)]
 			tex:SetVertexColor(1, 1, 1)
 			tex:SetAlpha(1 - BattlefieldMinimapOptions.opacity)
 		end
-		
+
 		if BattlefieldMinimap:IsShown() then
 			BattlefieldMinimap_Update()
 		end

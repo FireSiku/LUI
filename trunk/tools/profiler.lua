@@ -54,7 +54,7 @@ end
 
 -- Profiler.RemoveTrace(func)
 --[[
-	Notes.....: Attempts to remove a function from the profiler. Disabling the profiler and reloading the UI should be prefered however.
+	Notes.....: Attempts to remove a function from the profiler. Disabling the profiler and reloading the UI should be preferred however.
 	Parameters:
 	(function) func: The function to be removed from the profiler. Can be the original function or the new function that was returned by the profiler.
 ]]
@@ -77,7 +77,7 @@ function module.RemoveTrace(func)
 		traces[oldFunc] = nil
 
 		-- Return original function.
-		return oldFunc	
+		return oldFunc
 	else
 		-- Not traced, return the passed function.
 		return func
@@ -88,7 +88,7 @@ end
 --[[
 	Notes.....: This is a wrapper for debugprofilestart and debugprofilestop. It takes their functionality and makes them work similarly to GetTime().
 				We count a time stack so we know when we can refresh the debug timer. Because debugprofilerstart can be called elsewhere; this might not
-				always return the correct time. But a small time error here or there doesn't outwheigh the precision gained.
+				always return the correct time. But a small time error here or there doesn't outweigh the precision gained.
 ]]
 local function timerStart()
 	if timeStack == 0 then
@@ -109,10 +109,10 @@ end
 local function timerStop()
 	-- Get times.
 	local time = debugprofilestop()
-		
+
 	-- Reduce time stack.
 	timeStack = timeStack - 1
-	
+
 	-- Return time.
 	return time
 end
@@ -151,24 +151,24 @@ function module.Trace(func, name, scope, killTime)
 
 	-- Force name to a string value.
 	name = tostring(name)
-    
+
 	-- Create trace.
 	traces[func] = {
 		oldFunc = func,
 		newFunc = function(...) --a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15)
-			-- Check if removed.
+		-- Check if removed.
 			if traces[func].removed then
 				-- Error out with removal reason.
 				return error(traces[func].removed, 2)
 			end
-			
+
 			-- Check for recursion.
 			if traces[func].recurse > 0 then
-				-- Check this recursion loop hasn't been running excesively (n seconds or n recurses).
+				-- Check this recursion loop hasn't been running excessively (n seconds or n recursions).
 				if GetTime() - traces[func].start >= traces[func].killTime --[[or traces[func].recurse > 1000]] then
 					-- Remove function.
 					traces[func].removed = module.CreateError(traces[func].name, format("Recursion: %d calls.", traces[func].recurse))
-				
+
 					-- Print out an error. Using error will hang the client as it reads the call stack.
 					print("|c0090ffffLUI:|r Profiler: |cffff0000Stopping recursive loop of", traces[func].name, "after", traces[func].recurse, "calls with total execution time of", GetTime() - traces[func].start, "seconds.")
 
@@ -190,10 +190,10 @@ function module.Trace(func, name, scope, killTime)
 			-- Get start time and memory.
 			local mem = collectgarbage("count")
 			local time = timerStart()
-            
+
 			-- Run original function.
 			local r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15 = traces[func].oldFunc(...) --a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, 15)
-			
+
 			-- Collect time and memory results.
 			time = timerStop() - time
 			mem = collectgarbage("count") - mem
@@ -209,7 +209,7 @@ function module.Trace(func, name, scope, killTime)
 
 			-- Decrease recurse counter.
 			traces[func].recurse = traces[func].recurse - 1
-            
+
 			-- Update stats.
 			traces[func].count = traces[func].count + 1
 			traces[func].last = time
@@ -219,7 +219,7 @@ function module.Trace(func, name, scope, killTime)
 			-- - Max/Min
 			if not traces[func].max or time > traces[func].max then traces[func].max = time end
 			if not traces[func].min or time < traces[func].min then traces[func].min = time end
-            
+
 			return r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15
 		end,
 
@@ -241,7 +241,7 @@ function module.Trace(func, name, scope, killTime)
 	-- Add new function to excludes.
 	excludes[traces[func].newFunc] = traces[func]
 
-	-- Return new funcion.
+	-- Return new function.
 	return traces[func].newFunc
 end
 
@@ -472,7 +472,7 @@ gui.SetActiveField = function(field)
 	end
 
 	-- Update.
-	gui:OnUpdate(1)	
+	gui:OnUpdate(1)
 end
 
 -- Create fields.
@@ -520,7 +520,7 @@ gui:RegisterForDrag("LeftButton", "RightButton")
 --gui:SetMinResize(725, 400)
 gui:SetMovable(true)
 gui.Sort = function(a, b)
-	-- Sort traces by active field.
+-- Sort traces by active field.
 	local active = gui.Active
 	if active == 1 then
 		return traces[a].name < traces[b].name	-- Name +
@@ -649,14 +649,14 @@ tinsert(UISpecialFrames, gui:GetName())
 	Notes.....: Loads GUI to watch all traced functions, or functions with filer in their name.
 ]]
 gui.Watch = function(filter)
-	-- Clear watched traces.
+-- Clear watched traces.
 	wipe(gui.Sorted)
 
 	-- Check filter.
 	if filter and filter == "" then
 		filter = nil
 	end
-		
+
 	-- Collect traces.
 	for func, info in pairs(traces) do
 		-- Check against filter.
@@ -677,7 +677,7 @@ gui.Watch = function(filter)
 
 	-- Show frame.
 	gui.dt = 1
-	gui:Show()	
+	gui:Show()
 end
 
 -- Create slash command to open Profiler GUI.
@@ -689,7 +689,7 @@ SlashCmdList.LUIPROFILER = gui.Watch
 
 
 -- Old functions for safekeeping. Some of their features have nice functionality we may find interesting.
- 
+
 --[[
 function module.ApplyMetatable(table, name, scope)
 	-- Check excludes.

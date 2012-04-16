@@ -3,15 +3,15 @@
 	File.......: ouf.lua
 	Description: oUF Module
 	Version....: 1.0
-]] 
+]]
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
-local Blizzard = LUI.Module(module, "HideBlizzard") -- this can be embedded via prototype once we have more modules of modules
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
 local oUF = LUI.oUF
+local Blizzard = LUI.Blizzard
 
 module.defaults.profile.Settings = {
 	ShowV2Textures = true,
@@ -50,7 +50,7 @@ function module:CreateSettings(order)
 			end
 		end
 	end
-	
+
 	local toggleV2Party = function(info, Enable)
 		for i = 1, 5 do
 			local f = _G["oUF_LUI_partyUnitButton"..i.."target"]
@@ -64,7 +64,7 @@ function module:CreateSettings(order)
 			end
 		end
 	end
-	
+
 	local toggleV2Arena = function(info, Enable)
 		for i = 1, 5 do
 			local f = _G["oUF_LUI_arenatarget"..i]
@@ -78,7 +78,7 @@ function module:CreateSettings(order)
 			end
 		end
 	end
-	
+
 	local toggleV2Boss = function(info, Enable)
 		for i = 1, MAX_BOSS_FRAMES do
 			local f = _G["oUF_LUI_bosstarget"..i]
@@ -92,7 +92,7 @@ function module:CreateSettings(order)
 			end
 		end
 	end
-	
+
 	local toggleCB = function(info, Enable)
 		for unit, frames in pairs(self.framelist) do
 			if self.defaults[unit].Castbar then
@@ -122,7 +122,7 @@ function module:CreateSettings(order)
 			end
 		end
 	end
-	
+
 	local updateAuraTimer = function()
 		for k, v in pairs(oUF.objects) do
 			if v.Buffs then
@@ -145,7 +145,7 @@ function module:CreateSettings(order)
 			end
 		end
 	end
-	
+
 	local options = self:NewGroup("Settings", order, true, {
 		ShowV2Textures = self:NewToggle("Show LUI v2 Connector Frames", "Whether you want to show LUI v2 Frame Connectors or not.", 1, toggleV2),
 		ShowV2PartyTextures = self:NewToggle("Show LUI v2 Connector Frames for Party Frames", "Whether you want to show LUI v2 Frame Connectors on Party Frames or not.", 2, toggleV2Party),
@@ -160,6 +160,6 @@ function module:CreateSettings(order)
 		empty3 = self:NewDesc(" ", 11),
 		Move = self:NewExecute("Move Unitframes", nil, 12, function() module:MoveUnitFrames() end),
 	})
-	
+
 	return options
 end

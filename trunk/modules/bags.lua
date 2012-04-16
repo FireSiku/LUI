@@ -109,7 +109,7 @@ local function LUIBags_Select(bag)
 end
 
 local function LUIBags_OnShow()
-	module:PLAYERBANKSLOTS_CHANGED(self, 29)	-- XXX: hack to force bag frame update
+	module:PLAYERBANKSLOTS_CHANGED(nil, 29)	-- XXX: hack to force bag frame update
 	module:ReloadLayout("Bags")
 	module:SearchReset()
 
@@ -124,7 +124,7 @@ local function LUIBank_OnHide()
 	CloseBankFrame()
 end
 local function LUIBank_OnShow()
-	module:PLAYERBANKSLOTS_CHANGED(self, 29)
+	module:PLAYERBANKSLOTS_CHANGED(nil, 29)
 end
 
 local function LUIBags_OnHide()  -- Close the Bank if Bags are closed.
@@ -210,8 +210,8 @@ function module:SlotUpdate(item)
 	end
 
 	if (clink) then
-		local iType
-		item.name, _, item.rarity, _, _, iType = GetItemInfo(clink)
+		local name, _, rarity, _, _, iType = GetItemInfo(clink)
+		item.name, item.rarity = name, rarity
 		-- color slot according to item quality
 		if db.Bags.ItemQuality and not item.frame.lock and item.rarity and item.rarity > 1 then
 			item.frame:SetBackdropBorderColor(GetItemQualityColor(item.rarity))
@@ -356,12 +356,12 @@ function module:BagType(bag)
 
 	return ST_NORMAL
 	]]
-	
+
 	local bagType = select(2, GetContainerNumFreeSlots(bag))
 	if bagType and bagType > 0 then
 		return ST_SPECIAL
 	end
-	
+
 	return ST_NORMAL
 end
 
@@ -746,10 +746,10 @@ function module:Layout(bagType)
 							end
 						end)
 
-					--Bag about to be purcahsed.
+						--Bag about to be purcahsed.
 					elseif x == GetNumBankSlots() + 2 then
 
-						b.frame:SetAlpha(1)						
+						b.frame:SetAlpha(1)
 						SetItemButtonTexture(b.frame,GetCoinIcon(cost))
 
 						-- Add the Click-To-Purchase option.
@@ -758,7 +758,7 @@ function module:Layout(bagType)
 							StaticPopup_Show("CONFIRM_BUY_BANK_SLOT");
 						end)
 
-					--Unpurchased Bags.
+						--Unpurchased Bags.
 					elseif x > GetNumBankSlots() + 2 then
 						b.frame:SetAlpha(.2)
 					end
@@ -878,7 +878,7 @@ function module:EnableBags()
 	if db.Enable ~= true then return end
 
 	-- Commented out because key bag no longer exists
-	
+
 	-- hooking and setting key ring bag
 	-- this is just a reskin of Blizzard key bag to fit LUI
 	-- hooking OnShow because sometime key max slot changes.
@@ -931,18 +931,18 @@ function module:EnableBags()
 	end]]
 end
 
-function module:PLAYERBANKBAGSLOTS_CHANGED(self, id)
+function module:PLAYERBANKBAGSLOTS_CHANGED(event, id)
 	module:ReloadLayout("Bank")
 end
 
-function module:PLAYERBANKSLOTS_CHANGED(self, id)
+function module:PLAYERBANKSLOTS_CHANGED(event, id)
 	if id > 28 then
 		for _, v in ipairs(BagsSlots) do
 			if v.frame and v.frame.GetInventorySlot then
 				if v.slot < GetNumBankSlots() + 5 then
 					BankFrameItemButton_Update(v.frame)
 					BankFrameItemButton_UpdateLocked(v.frame)
-				end 
+				end
 				if not v.frame.tooltipText then
 					v.frame.tooltipText = ""
 				end
@@ -958,12 +958,12 @@ function module:PLAYERBANKSLOTS_CHANGED(self, id)
 	end
 end
 
-function module:BAG_UPDATE(self,id)
+function module:BAG_UPDATE(event,id)
 	module:BagSlotUpdate(id)
 
 end
 
-function module:ITEM_LOCK_CHANGED(self, bag, slot)
+function module:ITEM_LOCK_CHANGED(event, bag, slot)
 	if slot == nil then
 		return
 	end
@@ -997,7 +997,7 @@ function module:BANKFRAME_CLOSED()
 	LUIBank:Hide()
 end
 
-function module:BAG_CLOSED(self, id)
+function module:BAG_CLOSED(event, id)
 	local bagId = BagsInfo[id]
 	if bagId then
 		tremove(BagsInfo, id)
@@ -1074,7 +1074,7 @@ end
 -- Note: Do not make new tables inside the Bags and Bank Options.
 --       It would break the CopyBags function that dynamically copy things.
 module.defaults = {
-	profile = { 
+	profile = {
 		Enable = true,
 		CopyBags = true,
 		--Start of Bags Options
@@ -1186,12 +1186,12 @@ function module:LoadOptions()
 			args = {
 				Enable = LUI:NewEnable("Bags", 1, db),
 				Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.",
-							2, db.Bags, "Cols", dbd.Bags, 4, 32, 1, BagOpt),
+					2, db.Bags, "Cols", dbd.Bags, 4, 32, 1, BagOpt),
 				Header = LUI:NewHeader("", 3),
 				Padding = LUI:NewSlider("Bag Padding", "This sets the space between the background border and the adjacent items.",
-							4, db.Bags, "Padding", dbd.Bags, 4, 24, 1, BagOpt),
+					4, db.Bags, "Padding", dbd.Bags, 4, 24, 1, BagOpt),
 				Spacing = LUI:NewSlider("Bag Spacing", "This sets the distance between items.",
-							5, db.Bags, "Spacing", dbd.Bags, 1, 15, 1, BagOpt),
+					5, db.Bags, "Spacing", dbd.Bags, 1, 15, 1, BagOpt),
 				Scale = LUI:NewScale("Bags Frame",6, db.Bags, "Scale", dbd.Bags, BagOpt),
 				BagScale = LUI:NewScale("Bags BagBar",7, db.Bags, "BagScale", dbd.Bags, BagOpt),
 				BagFrame = LUI:NewToggle("Show Bag Bar", nil, 8, db.Bags, "BagFrame", dbd.Bags, BagOpt),
@@ -1211,12 +1211,12 @@ function module:LoadOptions()
 						if db.Bank.CopyBags then module:CopyBags() end
 					end, "double"),
 				Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.", 2,
-							db.Bank, "Cols", dbd.Bank, 4, 32, 1, BankOpt),
+					db.Bank, "Cols", dbd.Bank, 4, 32, 1, BankOpt),
 				Header = LUI:NewHeader("", 3),
 				Padding = LUI:NewSlider("Bank Padding", "This sets the space between the background border and the adjacent items.", 4,
-							db.Bank, "Padding", dbd.Bank, 4, 24, 1, BankOpt, nil, DisabledCopy),
+					db.Bank, "Padding", dbd.Bank, 4, 24, 1, BankOpt, nil, DisabledCopy),
 				Spacing = LUI:NewSlider("Bank Spacing", "This sets the distance between items.", 5,
-							db.Bank, "Spacing", dbd.Bank, 1, 15, 1, BankOpt, nil, DisabledCopy),
+					db.Bank, "Spacing", dbd.Bank, 1, 15, 1, BankOpt, nil, DisabledCopy),
 				Scale = LUI:NewScale("Bank Frame",6, db.Bank, "Scale", dbd.Bank, BankOpt, nil, DisabledCopy),
 				BagScale = LUI:NewScale("Bank BagBar",7, db.Bank, "BagScale", dbd.Bank, BankOpt, nil, DisabledCopy),
 				BagFrame = LUI:NewToggle("Show Bag Bar", nil, 8, db.Bank, "BagFrame", dbd.Bank, BankOpt, nil, DisabledCopy),

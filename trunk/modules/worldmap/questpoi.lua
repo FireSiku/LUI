@@ -41,9 +41,9 @@ end
 local function questObjDropDownOnClick(button)
 	char.QuestObjectives = button.value
 	questObjDropDownUpdate()
-	
+
 	WorldMapQuestShowObjectives:SetChecked(char.QuestObjectives ~= 0)
-	
+
 	SetCVar("questPOI", WorldMapQuestShowObjectives:GetChecked())
 	WorldMapQuestShowObjectives_Toggle()
 	WatchFrame_GetCurrentMapQuests()
@@ -104,19 +104,19 @@ end
 
 function module:WorldMapFrame_DisplayQuests(selectQuestId)
 	if WORLDMAP_SETTINGS.size == WORLDMAP_WINDOWED_SIZE or not (WatchFrame.showObjectives and WorldMapFrame.numQuests > 0) then return end
-	
+
 	if char.QuestObjectives == 2 then
 		WorldMapFrame_SetQuestMapView()
-		
+
 		WorldMapBlobFrame:SetScale(WORLDMAP_QUESTLIST_SIZE)
 	else
 		WorldMapFrame_SetFullMapView()
-		
+
 		WorldMapBlobFrame:SetScale(WORLDMAP_FULLMAP_SIZE)
 	end
-	
+
 	WorldMapBlobFrame.xRatio = nil -- force hit recalculations
-	
+
 	WorldMapFrame_SetPOIMaxBounds()
 	WorldMapFrame_UpdateQuests()
 	-- try to select previously selected quest
@@ -128,9 +128,9 @@ function module:WorldMapFrame_SelectQuestFrame(...)
 	if char.QuestObjectives ~= 2 then
 		WORLDMAP_SETTINGS.size = WORLDMAP_WINDOWED_SIZE
 	end
-	
+
 	self.hooks.WorldMapFrame_SelectQuestFrame(...)
-	
+
 	WORLDMAP_SETTINGS.size = old_size
 end
 
@@ -149,9 +149,9 @@ WorldMap.defaults.profile.General.POIScale = 1
 function module:Refresh()
 	WorldMapQuestShowObjectives:SetChecked(char.QuestObjectives ~= 0)
 	WorldMapQuestShowObjectives_Toggle()
-	
+
 	WorldMapFrame_DisplayQuests()
-	
+
 	if not questObj then return end
 	if char.miniMap then
 		questObj:Hide()
@@ -174,23 +174,25 @@ function module:OnEnable()
 		questObj = CreateFrame("Frame", "LUI_WorldMap_QuestObjectivesDropDown", WorldMapFrame, "UIDropDownMenuTemplate")
 		questObj:SetPoint("BOTTOMRIGHT", "WorldMapPositioningGuide", "BOTTOMRIGHT", -5, -2)
 		_G[questObj:GetName().."Button"]:HookScript("OnClick", WorldMap.DropdownScaleFix)
-		
+
 		local label = questObj:CreateFontString(questObj:GetName().."_Label", "OVERLAY", "GameFontNormalSmall")
 		label:SetText(L["Quest Objectives"])
 		label:SetPoint("RIGHT", questObj, "LEFT", 5, 3)
-		
+
 		-- Init DropDown
 		UIDropDownMenu_Initialize(questObj, questObjDropDownInit)
 		UIDropDownMenu_SetWidth(questObj, 150)
 	end
 	questObjDropDownUpdate()
-	
+
 	self:SecureHook("WorldMapFrame_DisplayQuestPOI")
 	self:SecureHook("WorldMapFrame_DisplayQuests")
 	self:RawHook("WorldMapFrame_SelectQuestFrame", true)
 	self:SecureHook("WorldMapFrame_SetPOIMaxBounds")
 	WorldMapFrame_SetPOIMaxBounds()
-	
+
+	self:SecureHook("EncounterJournal_AddMapButtons", "Refresh")
+
 	self:Refresh()
 end
 
@@ -201,7 +203,7 @@ function module:OnDisable()
 	end)
 	WorldMapFrame_DisplayQuests()
 	self:UnhookAll()
-	
+
 	WorldMapQuestShowObjectives:Show()
 	questObj:Hide()
 end

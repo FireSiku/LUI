@@ -33,6 +33,8 @@ externals:
     url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceSerializer-3.0
   libs/AceTimer-3.0:
     url: svn://svn.wowace.com/wow/ace3/mainline/trunk/AceTimer-3.0
+  libs/LibActionButton-1.0:
+    url: git://git.wowace.com/wow/libactionbutton-1.0/mainline.git
   libs/LibBabble-Zone-3.0:
     url: svn://svn.wowace.com/wow/libbabble-zone-3-0/mainline/trunk
   libs/LibDataBroker-1.1:

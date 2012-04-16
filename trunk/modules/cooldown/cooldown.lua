@@ -1,8 +1,8 @@
 --[[
 	Project....: LUI NextGenWoWUserInterface
 	File.......: cooldown.lua
-	Description: Actionbar Cooldown Module
-]] 
+	Description: Cooldown Timer Module
+]]
 
 -- External references.
 local addonname, LUI = ...
@@ -21,70 +21,8 @@ local pairs, ipairs, next, wipe, GetTime = pairs, ipairs, next, wipe, GetTime
 -- Local Variables
 --------------------------------------------------
 
-local day, hour, minute = 86400, 3600, 60
-local iconSize = 36
-local precision, threshold, minDuration
-
-local timers, cache = {}, {}
+local timers = {}
 local activeUICooldowns = {}
-
-local fontScale = setmetatable({}, {
-	__index = function(t, width)
-		local scale = width / iconSize
-		t[width] = scale > db.General.MinScale and scale * db.Text.Size
-
-		return t[width]
-	end
-})
-
---------------------------------------------------
--- Local Functions
---------------------------------------------------
-
-local function round(num)
-	return floor(num + 0.5)
-end
-
-local getTimer
-do
-	local timerEmbeds = { "Start", "Stop", "Update", "OnUpdate", "ShouldUpdate", "FormatTime", "Scale", "Position" }
-
-	getTimer = function(cd)
-		local timer = tremove(cache)
-
-		if not timer then
-			timer = CreateFrame("Frame")
-			timer:Hide()
-
-			for _, func in pairs(timerEmbeds) do
-				timer[func] = module[func]
-			end
-
-			timer:SetScript("OnUpdate", timer.OnUpdate)
-
-			local text = timer:CreateFontString(nil, "OVERLAY")
-
-			text:SetJustifyH("CENTER")
-			text:SetShadowColor(0, 0, 0, 0.5)
-			text:SetShadowOffset(2, -2)
-
-			timer.text = text
-
-			tinsert(timers, timer)
-		end
-
-		timer.cd = cd
-
-		timer:SetParent(cd)
-		timer:SetFrameStrata(cd:GetFrameStrata())
-		timer:SetFrameLevel(cd:GetFrameLevel() + 10)
-
-		timer:Position()
-
-		cd.timer = timer
-		return timer
-	end
-end
 
 --------------------------------------------------
 -- Hook Functions
@@ -102,8 +40,14 @@ end
 -- Cooldown Functions
 --------------------------------------------------
 
-local updateVars
+local initTimer
 do
+	local day, hour, minute = 86400, 3600, 60
+	local iconSize = 36
+	local precision, threshold, minDuration
+
+	local cache = {}
+
 	local colors = {}
 
 	local timeFormats = {
@@ -113,7 +57,16 @@ do
 		[1] = "%.0f",
 	}
 
-	updateVars = function()
+	local fontScale = setmetatable({}, {
+		__index = function(t, width)
+			local scale = width / iconSize
+			t[width] = scale > db.General.MinScale and scale * db.Text.Size
+
+			return t[width]
+		end
+	})
+
+	function module:UpdateVars()
 		precision = 1 / 10^(db.General.Precision)
 		threshold = db.General.Threshold
 		minDuration = db.General.MinDuration
@@ -129,7 +82,63 @@ do
 		colors[true] = db.Colors.Threshold
 	end
 
-	function module:FormatTime(seconds)
+
+	local function round(num)
+		return floor(num + 0.5)
+	end
+
+
+	local Timer = {}
+
+	function Timer:Start(start, duration)
+		self.start, self.duration, self.enabled = start, duration, true
+
+		if not self:Scale() or not self:Update() then return end
+
+		self:Show()
+	end
+
+	function Timer:Stop()
+		self:Hide()
+
+		self.enabled = nil
+		self.cd.timer = nil
+		self.fontScale = nil -- force update of fontsize on next use
+
+		tinsert(cache, self)
+	end
+
+	function Timer:Update()
+		local remaining = self.duration - (GetTime() - self.start)
+
+		if remaining > 0 then
+			self:FormatTime(remaining)
+			return true
+		end
+
+		self:Stop()
+	end
+
+	function Timer:ShouldUpdate(start, duration)
+		if start ~= self.start or duration ~= self.duration then
+			if duration < minDuration or not self:IsVisible() then
+				self:Stop()
+				return
+			end
+		end
+
+		return true
+	end
+
+	function Timer:OnUpdate(elapsed)
+		self.nextUpdate = self.nextUpdate - elapsed
+
+		if self.nextUpdate > 0 then return end
+
+		self:Update()
+	end
+
+	function Timer:FormatTime(seconds)
 		local factor
 		if seconds < threshold then
 			factor = true
@@ -148,91 +157,75 @@ do
 			self.text:SetTextColor(unpack(self.color))
 		end
 	end
-end
 
-function module:ShouldUpdate(start, duration)
-	if start ~= self.start or duration ~= self.duration then
-		if duration < minDuration or not self:IsVisible() then
-			self:Stop()
-			return
+	function Timer:Scale()
+		local scale = fontScale[round(self.cd:GetWidth())]
+
+		if self.fontScale ~= scale then
+			self.fontScale = scale
+
+			if not scale then
+				self:Stop()
+				return
+			end
+
+			self.text:SetFont(Media:Fetch("font", db.Text.Font), scale, db.Text.Flag)
 		end
-	end
 
-	return true
-end
-
-function module:OnUpdate(elapsed)
-	self.nextUpdate = self.nextUpdate - elapsed
-
-	if self.nextUpdate > 0 then return end
-
-	self:Update()
-end
-
-function module:Update()
-	local remaining = self.duration - (GetTime() - self.start)
-
-	if remaining > 0 then
-		self:FormatTime(remaining)
 		return true
 	end
 
-	self:Stop()
-end
-
-function module:Scale()
-	local scale = fontScale[round(self.cd:GetWidth())]
-
-	if self.fontScale ~= scale then
-		self.fontScale = scale
-
-		if not scale then
-			self:Stop()
-			return
-		end
-		
-		self.text:SetFont(Media:Fetch("font", db.Text.Font), self.fontScale, db.Text.Flag)
+	function Timer:Position()
+		self:SetAllPoints()
+		self.text:SetPoint("CENTER", db.Text.XOffset, db.Text.YOffset)
 	end
 
-	return true
-end
 
-function module:Position()
-	self:SetAllPoints()
-	self.text:SetPoint("CENTER", db.Text.XOffset, db.Text.YOffset)
-end
+	local function getTimer(cd)
+		local timer = tremove(cache)
 
-function module:Start(start, duration)
-	self.start = start
-	self.duration = duration
-	self.enabled = true
-
-	if not self:Scale() or not self:Update() then return end
-
-	self:Show()
-end
-
-function module:Stop()
-	self:Hide()
-
-	self.enabled = nil
-	self.cd.timer = nil
-	self.fontScale = nil -- force update on next use
-
-	tinsert(cache, self)
-end
-
-function module:AssignTimer(cd, start, duration)
-	if cd.noCooldownCount then return end
-
-	if cd.timer then
-		if cd.timer:ShouldUpdate(start, duration) then
-			cd.timer:Start(start, duration)
+		if timer then
+			timer:SetParent(cd)
+		else
+			timer = setmetatable(CreateFrame("Frame", nil, cd, "LUI_Cooldown_Template"), Timer)
+			timer:SetScript("OnUpdate", timer.OnUpdate)
+			tinsert(timers, timer)
 		end
-	elseif duration >= minDuration and cd:IsVisible() and fontScale[round(cd:GetWidth())] then
-		getTimer(cd):Start(start, duration)
+
+		timer.cd = cd
+		cd.timer = timer
+
+		return timer
+	end
+
+	function module:AssignTimer(cd, start, duration)
+		if cd.noCooldownCount then return end
+
+		if cd.timer then
+			if cd.timer:ShouldUpdate(start, duration) then
+				cd.timer.start, cd.timer.duration = start, duration
+				cd.timer:Update()
+			end
+		elseif duration >= minDuration and cd:IsVisible() and fontScale[round(cd:GetWidth())] then
+			getTimer(cd):Start(start, duration)
+		end
+	end
+
+	initTimer = function()
+		if not Timer.__index then
+			local timerFuncs = Timer
+
+			Timer = {__index = CreateFrame("Frame")}
+
+			for k, v in pairs(timerFuncs) do
+				Timer.__index[k] = v
+			end
+		end
+
+		module:SecureHook(getmetatable(ActionButton1Cooldown).__index, "SetCooldown", "AssignTimer")
 	end
 end
+
 
 function module:RegisterActionUIButton(frame)
 	local cd = frame.cooldown
@@ -242,15 +235,18 @@ function module:RegisterActionUIButton(frame)
 	end
 end
 
+
 --------------------------------------------------
 -- Event Functions
 --------------------------------------------------
+
 
 function module:ACTIONBAR_UPDATE_COOLDOWN()
 	for cd, button in pairs(activeUICooldowns) do
 		module:AssignTimer(cd, GetActionCooldown(button.action))
 	end
 end
+
 
 --------------------------------------------------
 -- Module Functions
@@ -259,7 +255,7 @@ end
 
 module.defaults = {
 	profile = {
-		General = {					
+		General = {
 			MinDuration = 3,
 			MinScale = 0.5,
 			Precision = 1,
@@ -268,7 +264,7 @@ module.defaults = {
 		Text = {
 			Font = "vibroceb",
 			Size = 20,
-			Flag = "OUTLINE",			
+			Flag = "OUTLINE",
 			XOffset = 2,
 			YOffset = 0,
 		},
@@ -314,7 +310,7 @@ function module:LoadOptions()
 end
 
 function module:Refresh()
-	updateVars()
+	module:UpdateVars()
 
 	for i, timer in ipairs(timers) do
 		if timer.enabled then
@@ -337,10 +333,9 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
-	updateVars()
+	module:UpdateVars()
 
-	-- Hook the SetCooldown metamethod of all Cooldown frames.
-	module:SecureHook(getmetatable(ActionButton1Cooldown).__index, "SetCooldown", "AssignTimer")
+	initTimer()
 
 	-- Register frames handled by SetActionUIButton
 	if ActionBarButtonEventsFrame.frames then

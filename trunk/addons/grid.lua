@@ -3,7 +3,7 @@
 	File.......: grid.lua
 	Description: Grid Install Script
 	Version....: 1.0
-]] 
+]]
 
 local addonname, LUI = ...
 
@@ -22,25 +22,25 @@ function LUI:InstallGrid()
 	local GridStatusHealth = Grid:GetModule("GridStatus"):GetModule("GridStatusHealth")
 	local GridStatusRange = Grid:GetModule("GridStatus"):GetModule("GridStatusRange")
 	local GridStatusAuras = Grid:GetModule("GridStatus"):GetModule("GridStatusAuras")
-	
+
 	Grid:EnableModule("GridStatus")
 	Grid:EnableModule("GridLayout")
 	Grid:EnableModule("GridFrame")
-	
+
 	local CharName = UnitName("player")
 	local ServerName = GetRealmName()
 	local ProfileName = CharName.." - "..ServerName
-	
+
 	if GridDB.profileKeys ~= nil then
-		local GridOldProfile = nil
-		
+		local GridOldProfile
+
 		for i, v in pairs(GridDB.profileKeys) do
 			if i == ProfileName then
 				GridOldProfile = v
 				break;
 			end
 		end
-		
+
 		if GridOldProfile ~= nil then
 			GridDB.namespaces.GridStatusAuras.profiles[CharName] = GridDB.namespaces.GridStatusAuras.profiles[GridOldProfile]
 		end
@@ -52,7 +52,7 @@ function LUI:InstallGrid()
 	elseif GridDB.profileKeys[ProfileName] ~= CharName then
 		GridDB.profileKeys[ProfileName] = CharName
 	end
-	
+
 	GridDB.profiles[CharName] = ""
 	GridDB.profiles[CharName] = {}
 	GridDB.namespaces.GridFrame.profiles[CharName] = ""
@@ -65,8 +65,8 @@ function LUI:InstallGrid()
 	GridDB.namespaces.GridLayout.profiles[CharName] = {}
 	GridDB.namespaces.GridStatusHealth.profiles[CharName] = ""
 	GridDB.namespaces.GridStatusHealth.profiles[CharName] = {}
-	
-	GridProfileDefaults = {
+
+	_G.GridProfileDefaults = {
 		[CharName] = {
 			["showText"] = false,
 			["showIcon"] = false,
@@ -76,12 +76,12 @@ function LUI:InstallGrid()
 			},
 		},
 	}
-	
+
 	for k,v in pairs(GridProfileDefaults) do
 		GridDB.profiles[k] = v
 	end
-	
-	GridFrameDefaults = {
+
+	_G.GridFrameDefaults = {
 		[CharName] = {
 			["fontSize"] = 12,
 			["statusmap"] = {
@@ -153,12 +153,12 @@ function LUI:InstallGrid()
 			["frameWidth"] = 82,
 		},
 	}
-	
+
 	for k,v in pairs(GridFrameDefaults) do
 		GridDB.namespaces.GridFrame.profiles[k] = v
 	end
-	
-	GridStatusRangeDefaults = {
+
+	_G.GridStatusRangeDefaults = {
 		[CharName] = {
 			["alert_range_100"] = {
 				["color"] = {
@@ -240,12 +240,12 @@ function LUI:InstallGrid()
 			},
 		},
 	}
-	
+
 	for k,v in pairs(GridStatusRangeDefaults) do
 		GridDB.namespaces.GridStatusRange.profiles[k] = v
 	end
-	
-	GridStatusDefaults = {
+
+	_G.GridStatusDefaults = {
 		[CharName] = {
 			["colors"] = {
 				["PALADIN"] = {
@@ -301,12 +301,12 @@ function LUI:InstallGrid()
 			},
 		},
 	}
-	
+
 	for k,v in pairs(GridStatusDefaults) do
 		GridDB.namespaces.GridStatus.profiles[k] = v
 	end
-	
-	GridLayoutDefaults = {
+
+	_G.GridLayoutDefaults = {
 		[CharName] = {
 			["anchorRel"] = "TOPLEFT",
 			["BorderB"] = 0.2470588235294118,
@@ -332,12 +332,12 @@ function LUI:InstallGrid()
 			["PosY"] = -601.9189477952709,
 		},
 	}
-			
+
 	for k,v in pairs(GridLayoutDefaults) do
 		GridDB.namespaces.GridLayout.profiles[k] = v
 	end
-	
-	GridStatusHealthDefaults = {
+
+	_G.GridStatusHealthDefaults = {
 		[CharName] = {
 			["unit_healthDeficit"] = {
 				["threshold"] = 59,
@@ -370,11 +370,11 @@ function LUI:InstallGrid()
 			},
 		},
 	}
-	
+
 	for k,v in pairs(GridStatusHealthDefaults) do
 		GridDB.namespaces.GridStatusHealth.profiles[k] = v
 	end
-	
+
 	GridFrame.db.profile.showTooltip = true
 	GridStatusHealth.db.profile.unit_health.useClassColors = false
 
