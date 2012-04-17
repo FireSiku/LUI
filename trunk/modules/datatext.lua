@@ -1610,7 +1610,7 @@ function module:SetGF()
 			local class, name, level, zone, notes, status, _, rank, realIndex = unpack((stat.IsGuild and guildEntries or friendEntries)[index])
 			button.unit = name
 			button.realIndex = realIndex
-			button.name:SetFormattedText((status and formatedStatusText() or "")..(name or ""), statuses[status])
+			button.name:SetFormattedText((status and formatedStatusText() or ""), (name or ""), statuses[status])
 			if name then
 				local color = RAID_CLASS_COLORS[class]
 				button.name:SetTextColor(color.r, color.g, color.b)
