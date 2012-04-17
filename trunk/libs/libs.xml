@@ -2,7 +2,7 @@
     <Script file="LibStub\LibStub.lua"/>
     <Include file="CallbackHandler-1.0\CallbackHandler-1.0.xml"/>
 
-    <Script file="LibActionButton-1.0\LibActionButton-1.0.lua"/>
+    <!--<Script file="LibActionButton-1.0\LibActionButton-1.0.lua"/>-->
     <Script file="LibDataBroker-1.1\LibDataBroker-1.1.lua"/>
     <Script file="LibWindow-1.1\LibWindow-1.1.lua"/>
 
