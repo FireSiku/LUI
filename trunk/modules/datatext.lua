@@ -1500,9 +1500,9 @@ function module:SetGF()
 		local allianceZones = "Ironforge,Stormwind City,Darnassus,The Exodar,Azuremyst Isle,Bloodmyst Isle,Darkshore,Deeprun Tram,Dun Morogh,Elwynn Forest,Loch Modan,Teldrassil,Westfall,"
 		local sanctuaryZones = "Dalaran,Shatrath,The Maelstrom,"
 
-		local statuses = {
-			[1] = "[Away]",
-			[2] = "[Busy]",
+		local statuses = { -- values inherited from the chat frame (chat module settings)
+			[1] = CHAT_FLAG_AFK,
+			[2] = CHAT_FLAG_DND,
 		}
 
 		local colpairs = {
@@ -1548,9 +1548,13 @@ function module:SetGF()
 			return fs
 		end
 
-		local function formatedStatusText()
+		local function formatedStatusText(status, append)
+			if not statuses[status] then
+				return append or ""
+			end
+
 			local r,g,b = unpack(GF_Colors.Status)
-			return ("|cff%.2x%.2x%.2x%%s|r "):format(r*255,g*255,b*255)
+			return ("|cff%.2x%.2x%.2x%s|r %s"):format(r*255, g*255, b*255, statuses[status], append or "")
 		end
 
 		local function GetZoneColor(zone)
@@ -1610,7 +1614,7 @@ function module:SetGF()
 			local class, name, level, zone, notes, status, _, rank, realIndex = unpack((stat.IsGuild and guildEntries or friendEntries)[index])
 			button.unit = name
 			button.realIndex = realIndex
-			button.name:SetFormattedText((status and formatedStatusText() or ""), (name or ""), statuses[status])
+			button.name:SetText(formatedStatusText(status, name))
 			if name then
 				local color = RAID_CLASS_COLORS[class]
 				button.name:SetTextColor(color.r, color.g, color.b)
@@ -1638,7 +1642,6 @@ function module:SetGF()
 			local toast, bc, color = toasts[index], nil, nil
 			local presenceID, givenName, surname, toonName, toonID, client, isOnline, _, isAFK, isDND, broadcast, notes = BNGetFriendInfo(index)
 			local _, _, _, realm, _, faction, race, class, _, zone, level, gameText = BNGetToonInfo(toonID or 0)
-			local statusText = (isAFK or isDND) and (formatedStatusText()):format(isAFK and CHAT_FLAG_AFK or isDND and CHAT_FLAG_DND) or ""
 
 			if broadcast and broadcast ~= "" then
 				nbBroadcast = nbBroadcast + 1
@@ -1655,7 +1658,7 @@ function module:SetGF()
 
 			SetStatusLayout(toast.status, toast.name)
 
-			client = client == BNET_CLIENT_WOW and WOW or BNET_CLIENT_SC2 and SC2 or 0
+			client = client == BNET_CLIENT_WOW and WOW or client == BNET_CLIENT_SC2 and SC2 or 0
 			toast.client = client
 
 			if client == WOW then
@@ -1688,8 +1691,7 @@ function module:SetGF()
 				toast.zone:SetTextColor(1, 0.77, 0)
 			end
 
-			local rid = "|cff00b2f0"..toast.realID.."|r"
-			toast.name:SetFormattedText(statusText.."%1$s - %2$s", rid, toonName or "")
+			toast.name:SetText(formatedStatusText(isAFK and 1 or isDND and 2, format("|cff00b2f0%s|r - %s", toast.realID, toonName or "")))
 
 			if level and level ~= "" then
 				toast.level:SetText(level)
