@@ -69,6 +69,16 @@ local function questObjDropDownInit()
 	end
 end
 
+local function questObjVisibilityUpdate()
+	if char.miniMap then
+		questObj:Hide()
+		WorldMapQuestShowObjectives:Show()
+	else
+		questObj:Show()
+		WorldMapQuestShowObjectives:Hide()
+	end
+end
+
 --------------------------------------------------
 -- Hook Functions
 --------------------------------------------------
@@ -153,13 +163,7 @@ function module:Refresh()
 	WorldMapFrame_DisplayQuests()
 
 	if not questObj then return end
-	if char.miniMap then
-		questObj:Hide()
-		WorldMapQuestShowObjectives:Show()
-	else
-		questObj:Show()
-		WorldMapQuestShowObjectives:Hide()
-	end
+	questObjVisibilityUpdate()
 end
 
 function module:OnInitialize()
@@ -191,7 +195,7 @@ function module:OnEnable()
 	self:SecureHook("WorldMapFrame_SetPOIMaxBounds")
 	WorldMapFrame_SetPOIMaxBounds()
 
-	self:SecureHook("EncounterJournal_AddMapButtons", "Refresh")
+	self:SecureHook("EncounterJournal_AddMapButtons", questObjVisibilityUpdate)
 
 	self:Refresh()
 end
