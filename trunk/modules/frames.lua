@@ -49,7 +49,7 @@ end
 function module:SetTopInfoColors()
 	LUI.Info.Topleft.BG:SetBackdropColor(unpack(Themes.db.profile.color_top))
 	LUI.Info.Topright.BG:SetBackdropColor(unpack(Themes.db.profile.color_top))
-	LUI.Info.Top2:SetBackdropColor(unpack(Themes.db.profile.color_top))
+	LUI.Navi.Top2:SetBackdropColor(unpack(Themes.db.profile.color_top))
 end
 
 function module:SetNavigationColors()
