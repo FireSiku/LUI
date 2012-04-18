@@ -231,6 +231,8 @@ end
 
 local function WM_OnShow(frame)
 	frame:SetFrameStrata(db.General.Strata)
+
+	LibWindow.RestorePosition(WorldMapFrame)
 end
 
 local function WM_ToggleSizeUp()
@@ -238,7 +240,6 @@ local function WM_ToggleSizeUp()
 	WorldMapFrame:SetParent(UIParent)
 	WorldMapFrame:SetWidth(1024)
 	WorldMapFrame:SetHeight(768)
-	LibWindow.RestorePosition(WorldMapFrame)
 	SetUIPanelAttribute(WorldMapFrame, "allowOtherPanels", true)
 	WorldMapFrame:EnableKeyboard(false)
 	-- adjust map frames
@@ -248,7 +249,7 @@ local function WM_ToggleSizeUp()
 	-- floor dropdown
 	WorldMapLevelDropDown:ClearAllPoints()
 	WorldMapLevelDropDown:SetPoint("TOPRIGHT", WorldMapPositioningGuide, "TOPRIGHT", -50, -35)
-	
+
 	char.miniMap = false
 	module:Refresh()
 end
@@ -257,7 +258,6 @@ local function WM_ToggleSizeDown()
 	-- adjust main frame
 	WorldMapFrame:SetWidth(623)
 	WorldMapFrame:SetHeight(437)
-	LibWindow.RestorePosition(WorldMapFrame)
 	WorldMapFrame:SetMovable(true)
 	WorldMapFrame:EnableMouse(true)
 	-- adjust map frames
@@ -268,7 +268,7 @@ local function WM_ToggleSizeDown()
 	-- floor dropdown
 	WorldMapLevelDropDown:ClearAllPoints()
 	WorldMapLevelDropDown:SetPoint("TOPLEFT", WorldMapDetailFrame, "TOPLEFT", -19, 3)
-	
+
 	char.miniMap = true
 	module:Refresh()
 end
@@ -454,7 +454,7 @@ function module:Refresh(info, value)
 	PlayerArrowFrame:SetModelScale(db.General.ArrowScale)
 	PlayerArrowEffectFrame:SetModelScale(db.General.ArrowScale)
 	
-	LibWindow.RestorePosition(WorldMapFrame, db[module:GetMapSize()].scale)
+	LibWindow.RestorePosition(WorldMapFrame)
 	
 	setMapBorder()
 	
