@@ -535,6 +535,7 @@ function module:ApplyBackground(kind)
 	local frame
 	if kind == "Chat" then
 		frame = ChatAlphaAnchor
+		frame:Raise() -- Fix for Panel being above chat frame
 	--[[
 	elseif kind == "Chat2" then
 		frame = ChatAlphaAnchor2
@@ -565,6 +566,7 @@ function module:SetPanels()
 	ChatAlphaAnchor:SetWidth(30)
 	ChatAlphaAnchor:SetHeight(30)
 	ChatAlphaAnchor:SetFrameStrata("BACKGROUND")
+	ChatAlphaAnchor:SetFrameLevel(0)
 	ChatAlphaAnchor:SetPoint("TOPLEFT", ChatFrame1, "TOPLEFT", -3, 8)
 	ChatAlphaAnchor:SetAlpha(1)
 	ChatAlphaAnchor:Show()
