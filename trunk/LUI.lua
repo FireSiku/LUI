@@ -499,6 +499,7 @@ function LUI:Configure()
 		SetCVar("uiScale", 0.6949)
 		SetCVar("useUiScale", 1)
 		SetCVar("chatMouseScroll", 1)
+		SetCVar("chatStyle", "classic")
 
 		if LUICONFIG.Versions then
 			wipe(LUICONFIG.Versions)

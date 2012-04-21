@@ -67,6 +67,24 @@ end
 local function decorate(editBox)
 	editBox:SetHeight(db.Height)
 
+	if not module:IsHooked(editBox, "OnEnterPressed") then
+		editBox:Hide()
+
+		local name = editBox:GetName()
+		_G[name.."Left"]:Hide()
+		_G[name.."Right"]:Hide()
+		_G[name.."Mid"]:Hide()
+
+		editBox.focusLeft:SetTexture(nil)
+		editBox.focusRight:SetTexture(nil)
+		editBox.focusMid:SetTexture(nil)
+
+		editBox:SetMaxLetters(2048)
+		editBox:SetMaxBytes(2048)
+
+		module:RawHookScript(editBox, "OnEnterPressed")
+	end
+
 	local bg = editBox.bg
 
 	if not bg then
@@ -214,6 +232,8 @@ function module:ChatEdit_SetLastActiveWindow(editBox)
 end
 
 function module:ChatEdit_UpdateHeader(editBox) -- update EditBox Colors
+	if not editBox.bg then return end -- FCF_OpenTemporaryWindow calls this (hook to create editBox.bg hasn't fired yet)
+
 	local r, g, b, a
 
 	if db.ColorByChannel then
@@ -410,22 +430,6 @@ end
 
 function module:OnEnable()
 	Media.RegisterCallback(self, "LibSharedMedia_Registered")
-
-	for i, name in ipairs(CHAT_FRAMES) do
-		local editBox = _G[name].editBox
-		editBox:Hide()
-		_G[name.."EditBoxLeft"]:Hide()
-		_G[name.."EditBoxRight"]:Hide()
-		_G[name.."EditBoxMid"]:Hide()
-		_G[name.."EditBoxFocusLeft"]:SetTexture(nil)
-		_G[name.."EditBoxFocusRight"]:SetTexture(nil)
-		_G[name.."EditBoxFocusMid"]:SetTexture(nil)
-
-		editBox:SetMaxLetters(2048)
-		editBox:SetMaxBytes(2048)
-
-		self:RawHookScript(editBox, "OnEnterPressed")
-	end
 
 	self:SecureHook("FCF_OpenTemporaryWindow", "Refresh")
 	self:SecureHook("ChatEdit_DeactivateChat")

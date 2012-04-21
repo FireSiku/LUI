@@ -84,7 +84,7 @@ local function NewIcon(stat, tex)
 	icon:SetWidth(15)
 	icon:SetHeight(15)
 	icon:SetFrameStrata("HIGH")
-	icon:SetBackdrop({bgFile = tex or "Interface\\Icons\\Spell_Nature_MoonKey", edgeFile = nil, tile = false, edgeSize = 0, insets = {top = 0, bottom, 0, left = 0, right = 0}})
+	icon:SetBackdrop({bgFile = tex or [[Interface\Icons\Spell_Nature_MoonKey]], edgeFile = nil, tile = false, edgeSize = 0, insets = {top = 0, bottom, 0, left = 0, right = 0}})
 	icon:Show()
 
 	stat.icon = icon
@@ -599,7 +599,7 @@ function module:SetCurrency()
 
 		-- Script functions
 		stat.OnEnable = function(self)
-			local tex = "Interface\\PVPFrame\\PVP-Currency-" .. UnitFactionGroup("player")
+			local tex = [[Interface\PVPFrame\PVP-Currency-]] .. UnitFactionGroup("player")
 			self.icon:SetBackdrop({bgFile = tex, edgeFile = nil, tile = false, edgeSize = 0, insets = {top = 0, right = 0, bottom = 0, left = 0}})
 			self.text:SetText("Currency")
 			self:CURRENCY_DISPLAY_UPDATE()
@@ -971,7 +971,7 @@ function module:SetDualSpec()
 					thisCache.mainTabIcon = thisCache[thisCache.primaryTabIndex].icon
 				else
 					thisCache.specName = "|cffff0000Talents undefined!|r"
-					thisCache.mainTabIcon = "Interface\\Icons\\Spell_Nature_MoonKey"
+					thisCache.mainTabIcon = [[Interface\Icons\Spell_Nature_MoonKey]]
 				end
 			end
 
@@ -1493,16 +1493,20 @@ function module:SetGF()
 		local tables, broadcasts, toasts, buttons
 		local slider, highlight, texOrder1, sep, sep2
 
-		local WOW, SC2 = 1, 2
+		local WOW, SC2, D3 = 1, 2, 3
 		local horde = myPlayerFaction == "Horde"
 
 		local hordeZones = "Orgrimmar,Undercity,Thunder Bluff,Silvermoon City,Durotar,Tirisfal Glades,Mulgore,Eversong Woods,Northern Barrens,Silverpine Forest,Ghostlands,Azshara,"
 		local allianceZones = "Ironforge,Stormwind City,Darnassus,The Exodar,Azuremyst Isle,Bloodmyst Isle,Darkshore,Deeprun Tram,Dun Morogh,Elwynn Forest,Loch Modan,Teldrassil,Westfall,"
 		local sanctuaryZones = "Dalaran,Shatrath,The Maelstrom,"
 
-		local statuses = { -- values inherited from the chat frame (chat module settings)
+		local statuses = { -- values inherited from the chat frame
 			[1] = CHAT_FLAG_AFK,
 			[2] = CHAT_FLAG_DND,
+		}
+		local clientIcons = {
+			[SC2] = [[Interface\FriendsFrame\Battlenet-Sc2icon]],
+			[D3] = [[Interface\FriendsFrame\Battlenet-D3icon]],
 		}
 
 		local colpairs = {
@@ -1593,7 +1597,7 @@ function module:SetGF()
 		end
 
 		local function SetClassIcon(tex, class)
-			tex:SetTexture("Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes")
+			tex:SetTexture([[Interface\Glues\CharacterCreate\UI-CharacterCreate-Classes]])
 			local offset, left, right, bottom, top = 0.025, unpack(CLASS_BUTTONS[class])
 			tex:SetTexCoord(left+offset, right-offset, bottom+offset, top-offset)
 		end
@@ -1658,11 +1662,11 @@ function module:SetGF()
 
 			SetStatusLayout(toast.status, toast.name)
 
-			client = client == BNET_CLIENT_WOW and WOW or client == BNET_CLIENT_SC2 and SC2 or 0
+			client = client == BNET_CLIENT_WOW and WOW or client == BNET_CLIENT_SC2 and SC2 or client == BNET_CLIENT_D3 and D3 or 0
 			toast.client = client
 
 			if client == WOW then
-				toast.faction:SetTexture("Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Factions")
+				toast.faction:SetTexture([[Interface\Glues\CharacterCreate\UI-CharacterCreate-Factions]])
 				toast.faction:SetTexCoord(faction == 1 and 0.03 or 0.53, faction == 1 and 0.47 or 0.97, 0.03, 0.97)
 				zone = (zone == nil or zone == "") and UNKNOWN or zone
 				toast.zone:SetPoint("TOPLEFT", toast.faction, "TOPRIGHT", textOffset, 0)
@@ -1681,8 +1685,8 @@ function module:SetGF()
 				else
 					toast.class:SetTexture("")
 				end
-			elseif client == SC2 then
-				toast.class:SetTexture("Interface\\FriendsFrame\\Battlenet-Sc2icon")
+			elseif client == SC2 or client == D3 then
+				toast.class:SetTexture(clientIcons[client])
 				toast.class:SetTexCoord(0.2, 0.8, 0.2, 0.8)
 				toast.name:SetTextColor(0.8, 0.8, 0.8)
 				toast.faction:SetTexture("")
@@ -1706,7 +1710,7 @@ function module:SetGF()
 
 			return toast, client,
 			toast.name:GetStringWidth(),
-			client == SC2 and -gap or toast.level:GetStringWidth(),
+			client == (SC2 or D3) and -gap or toast.level:GetStringWidth(),
 			toast.zone:GetStringWidth(),
 			toast.note:GetStringWidth()
 		end
@@ -1750,7 +1754,7 @@ function module:SetGF()
 				bc:EnableMouseWheel(true)
 				bc:SetScript("OnMouseWheel", stat.OnScroll)
 				bc.icon = CreateTex(bc, nil, iconSize + textOffset)
-				bc.icon:SetTexture("Interface\\FriendsFrame\\BroadcastIcon")
+				bc.icon:SetTexture([[Interface\FriendsFrame\BroadcastIcon]])
 				bc.icon:SetTexCoord(.1,.9,.1,.9)
 				bc.text = CreateFS( bc, "LEFT", bc.icon, textOffset, GF_Colors.Broadcast )
 				bc.text:SetHeight(btnHeight)
@@ -1808,7 +1812,7 @@ function module:SetGF()
 					motd:SetPoint("TOPLEFT", stat, "TOPLEFT", gap, -gap)
 
 					sep = motd:CreateTexture()
-					sep:SetTexture("Interface\\FriendsFrame\\UI-FriendsFrame-OnlineDivider")
+					sep:SetTexture([[Interface\FriendsFrame\UI-FriendsFrame-OnlineDivider]])
 					sep:SetPoint("TOPLEFT", motd, "BOTTOMLEFT", 0, btnHeight)
 					sep:SetPoint("BOTTOMRIGHT", motd, "BOTTOMRIGHT", 0, 0)
 				else
@@ -1830,10 +1834,10 @@ function module:SetGF()
 		-- Frames
 		slider = CreateFrame("Slider", nil, stat)
 		slider:SetWidth(16)
-		slider:SetThumbTexture("Interface\\Buttons\\UI-SliderBar-Button-Horizontal")
+		slider:SetThumbTexture([[Interface\Buttons\UI-SliderBar-Button-Horizontal]])
 		slider:SetBackdrop({
-			bgFile = "Interface\\Buttons\\UI-SliderBar-Background",
-			edgeFile = "Interface\\Buttons\\UI-SliderBar-Border",
+			bgFile = [[Interface\Buttons\UI-SliderBar-Background]],
+			edgeFile = [[Interface\Buttons\UI-SliderBar-Border]],
 			edgeSize = 8, tile = true, tileSize = 8,
 			insets = {left=3, right=3, top=6, bottom=6}
 		})
@@ -1848,16 +1852,16 @@ function module:SetGF()
 
 		-- Textures
 		highlight = stat:CreateTexture()
-		highlight:SetTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
+		highlight:SetTexture([[Interface\QuestFrame\UI-QuestTitleHighlight]])
 		highlight:SetBlendMode("ADD")
 		highlight:SetAlpha(0)
 
 		texOrder1 = stat:CreateTexture()
-		texOrder1:SetTexture("Interface\\Buttons\\WHITE8X8")
+		texOrder1:SetTexture([[Interface\Buttons\WHITE8X8]])
 		texOrder1:SetBlendMode("ADD")
 
 		sep2 = stat:CreateTexture()
-		sep2:SetTexture("Interface\\FriendsFrame\\UI-FriendsFrame-OnlineDivider")
+		sep2:SetTexture([[Interface\FriendsFrame\UI-FriendsFrame-OnlineDivider]])
 
 		-- Stat functions
 		stat.new = function(self, ...)
@@ -1905,7 +1909,7 @@ function module:SetGF()
 					if client == WOW then
 						if lW > lC then lC = lW end
 						if zW > zC then zC = zW end
-					elseif client == SC2 then
+					elseif client == SC2 or client == D3 then
 						if zW > spanZoneC then spanZoneC = zW end
 					end
 
@@ -2031,11 +2035,11 @@ function module:SetGF()
 				button = toasts[i]
 				button:SetWidth( maxWidth )
 				button.name:SetWidth(tnC)
-				if button.client == SC2 then
-					button.zone:SetWidth(spanZoneC)
-				elseif button.client == WOW then
+				if button.client == WOW then
 					button.level:SetWidth(lC)
 					button.zone:SetWidth(zC)
+				elseif button.client == SC2 or button.client == D3 then
+					button.zone:SetWidth(spanZoneC)
 				end
 				button.note:SetWidth(nC)
 			end
@@ -2175,6 +2179,7 @@ function module:SetGF()
 				end
 			elseif IsAltKeyDown() then -- invite unit
 				if b.presenceID then
+					if b.client ~= WOW then return end
 					FriendsFrame_BattlenetInvite(nil, b.presenceID)
 				else
 					InviteUnit(b.unit)
@@ -2207,7 +2212,9 @@ function module:SetGF()
 				end
 				GameTooltip:AddLine"Hints:"
 				GameTooltip:AddLine("|cffff8020Click|r to whisper.", .2,1,.2)
-				GameTooltip:AddLine("|cffff8020Alt+Click|r to invite.", .2,1,.2)
+				if not btn.presenceID or btn.client == WOW then
+				    GameTooltip:AddLine("|cffff8020Alt+Click|r to invite.", .2,1,.2)
+				end
 				if not btn.presenceID then
 					GameTooltip:AddLine("|cffff8020Shift+Click|r to query informations.", .2, 1, .2)
 				end

@@ -569,6 +569,7 @@ function module:SetPanels()
 	ChatAlphaAnchor:SetAlpha(1)
 	ChatAlphaAnchor:Show()
 
+	--[[
 	local ChatAlphaAnchor2 = CreateFrame("Frame", "ChatAlphaAnchor2", UIParent)
 	ChatAlphaAnchor2:SetWidth(30)
 	ChatAlphaAnchor2:SetHeight(30)
@@ -576,6 +577,7 @@ function module:SetPanels()
 	ChatAlphaAnchor2:SetPoint("TOPLEFT", LUI.db.profile.Chat and LUI.db.profile.Chat.SecondChatAnchor or ChatFrame3, "TOPLEFT", -10, 8)
 	ChatAlphaAnchor2:SetAlpha(1)
 	ChatAlphaAnchor2:Hide()
+	--]]
 
 	self:CreateBackground("Chat")
 	--self:CreateBackground("Chat2")
