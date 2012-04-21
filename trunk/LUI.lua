@@ -58,7 +58,6 @@ LUI.Media = {
 	["blank"] = [[Interface\AddOns\LUI\media\textures\blank]],
 	["normTex"] = [[Interface\AddOns\LUI\media\textures\statusbars\normTex]], -- texture used for nameplates healthbar
 	["glowTex"] = [[Interface\AddOns\LUI\media\textures\statusbars\glowTex]], -- the glow texture around some frame.
-	["chatcopy"] = [[Interface\AddOns\LUI\media\textures\icons\chatcopy]], -- the copy icon in your chatframe.
 	["cross"] = [[Interface\AddOns\LUI\media\textures\icons\cross]], -- Worldmap Move Button.
 	["party"] = [[Interface\AddOns\LUI\media\textures\icons\Party]], -- Worldmap Party Icon.
 	["raid"] = [[Interface\AddOns\LUI\media\textures\icons\Raid]], -- Worldmap Raid Icon.
@@ -500,7 +499,6 @@ function LUI:Configure()
 		SetCVar("uiScale", 0.6949)
 		SetCVar("useUiScale", 1)
 		SetCVar("chatMouseScroll", 1)
-		SetCVar("chatStyle", "classic")
 
 		if LUICONFIG.Versions then
 			wipe(LUICONFIG.Versions)
@@ -623,7 +621,7 @@ function LUI:GetDefaultVal(info)
 	end
 
 	local key = info[#info]
-	if not dbloc[key] == nil then
+	if dbloc[key] == nil then
 		key = "*"
 	end
 
@@ -649,6 +647,11 @@ function LUI:CheckConflict(...) -- self is module
 		-- disable without calling OnDisable function
 		LibStub("AceAddon-3.0").statuses[self.name] = false
 		self:SetEnabledState(false)
+		-- same for child modules
+		for name, module in self:IterateModules() do
+			LibStub("AceAddon-3.0").statuses[module.name] = false
+			module:SetEnabledState(false)
+		end
 		if db.General.ModuleMessages then
 			LUI:Print("|cffFF0000" .. self:GetName() .. " could not be enabled because of a conflicting addon: "..conflict..".")
 		end

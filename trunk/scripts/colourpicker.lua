@@ -31,15 +31,15 @@ local function UpdateColorTexts()
 end
 
 local function UpdateAlpha(tbox)
-	local a = tonumber(tbox:GetText()) or 0
+	local a = tonumber(tbox:GetText()) or 1
 	if a > 1 then a = 1 end
 	editingText = true
-	OpacitySliderFrame:SetValue(a)
+	OpacitySliderFrame:SetValue(1 - a)
 	editingText = nil
 end
 
 local function UpdateAlphaText()
-	local a = OpacitySliderFrame:GetValue()
+	local a = 1 - OpacitySliderFrame:GetValue()
 	ColorPickerBoxA:SetText(string.format("%.2f", a))
 end
 

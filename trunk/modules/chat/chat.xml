@@ -1,0 +1,91 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Script file="chat.lua"/>
+    <Script file="buttons.lua"/>
+    <Script file="editbox.lua"/>
+
+    <Button name="LUI_Chat_ScrollButtonTemplate" parentKey="downButton" hidden="true" virtual="true">
+        <Size x="20" y="20"/>
+        <Anchors>
+            <Anchor point="TOPRIGHT"/>
+        </Anchors>
+        <Scripts>
+            <OnClick>
+                self.frame:ScrollToBottom()
+            </OnClick>
+        </Scripts>
+        <NormalTexture file="Interface\ChatFrame\UI-ChatIcon-ScrollEnd-Up"/>
+        <PushedTexture file="Interface\ChatFrame\UI-ChatIcon-ScrollEnd-Down"/>
+        <DisabledTexture file="Interface\ChatFrame\UI-ChatIcon-ScrollEnd-Disabled"/>
+        <HighlightTexture file="Interface\Buttons\UI-Common-MouseHilight" alphaMode="ADD"/>
+    </Button>
+
+    <Button name="LUI_Chat_CopyButtonTemplate" parentKey="copyButton" alpha="0.6" virtual="true">
+        <Size x="10" y="10"/>
+        <Anchors>
+            <Anchor point="BOTTOMRIGHT" y="-5"/>
+        </Anchors>
+        <Scripts>
+            <OnClick>
+                self:onClick(self.frame)
+            </OnClick>
+            <OnEnter>
+                self:SetSize(28, 28)
+                GameTooltip:SetOwner(self)
+                GameTooltip:ClearLines()
+                GameTooltip:AddLine(self.tooltipText)
+                GameTooltip:Show()
+            </OnEnter>
+            <OnLeave>
+                self:SetSize(10, 10)
+                GameTooltip:Hide()
+            </OnLeave>
+        </Scripts>
+        <NormalTexture file="Interface\AddOns\LUI\media\textures\icons\chatcopy"/>
+        <HighlightTexture file="Interface\Buttons\ButtonHighlight-Square"/>
+    </Button>
+
+    <Frame name="LUI_Chat_EditBoxBGTemplate" parentKey="bg" frameStrata="DIALOG" setAllPoints="true" virtual="true">
+        <Frames>
+            <Frame parentKey="lDrag">
+                <Size x="15"/>
+                <Anchors>
+                    <Anchor point="TOPLEFT"/>
+                    <Anchor point="BOTTOMLEFT"/>
+                </Anchors>
+                <Scripts>
+                    <OnMouseDown>
+                        self.editBox:StartSizing("LEFT")
+                    </OnMouseDown>
+                    <OnMouseUp>
+                        self.editBox:StopMovingOrSizing()
+                        self.updateDB(self.editBox)
+                    </OnMouseUp>
+                </Scripts>
+            </Frame>
+            <Frame parentKey="rDrag">
+                <Size x="15"/>
+                <Anchors>
+                    <Anchor point="TOPRIGHT"/>
+                    <Anchor point="BOTTOMRIGHT"/>
+                </Anchors>
+                <Scripts>
+                    <OnMouseDown>
+                        self.editBox:StartSizing("RIGHT")
+                    </OnMouseDown>
+                    <OnMouseUp>
+                        self.editBox:StopMovingOrSizing()
+                        self.updateDB(self.editBox)
+                    </OnMouseUp>
+                </Scripts>
+            </Frame>
+        </Frames>
+        <Scripts>
+            <OnLoad>
+                local level = self:GetParent():GetFrameLevel()
+                self:SetFrameLevel(level-1)
+                self.lDrag:SetFrameLevel(level+1)
+                self.rDrag:SetFrameLevel(level+1)
+            </OnLoad>
+        </Scripts>
+    </Frame>
+</Ui>

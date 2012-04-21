@@ -71,14 +71,14 @@ function module:CheckPanels()
 		Frames:SetNaviAlpha("Chat", 1)
 
 		ChatAlphaAnchor:SetAlpha(1)
-		if LUI.db.profile.Chat.SecondChatFrame then ChatAlphaAnchor2:SetAlpha(1) end
+		--if LUI.db.profile.Chat.SecondChatFrame then ChatAlphaAnchor2:SetAlpha(1) end
 
 		db.Chat.IsShown = true
 	else
 		Frames:SetNaviAlpha("Chat", 0)
 
 		ChatAlphaAnchor:SetAlpha(0)
-		if LUI.db.profile.Chat.SecondChatFrame then ChatAlphaAnchor2:SetAlpha(0) end
+		--if LUI.db.profile.Chat.SecondChatFrame then ChatAlphaAnchor2:SetAlpha(0) end
 
 		db.Chat.IsShown = false
 	end
@@ -397,15 +397,15 @@ function module:AlphaIn(kind)
 	db[kind].IsShown = true
 
 	_G[backgrounds[kind].frame]:Show()
-	if kind == "Chat" and LUI.db.profile.Chat.SecondChatFrame then ChatAlphaAnchor2:Show() end
+	--if kind == "Chat" and LUI.db.profile.Chat.SecondChatFrame then ChatAlphaAnchor2:Show() end
 	for _, f in pairs(self:LoadAdditional(db[kind].Additional)) do _G[f]:Show() end
 
 	if db[kind].Animation == "AlphaSlide" then
 		backgrounds[kind].AlphaIn:Show()
 
-		if kind == "Chat" and LUI.db.profile.Chat.SecondChatFrame then
+		--[[if kind == "Chat" and LUI.db.profile.Chat.SecondChatFrame then
 			backgrounds.Chat2.AlphaIn:Show()
-		end
+		end]]
 	else
 		_G[backgrounds[kind].frame]:SetAlpha(1)
 
@@ -420,17 +420,17 @@ function module:AlphaOut(kind)
 	if db[kind].Animation == "AlphaSlide" then
 		backgrounds[kind].AlphaOut:Show()
 
-		if kind == "Chat" and LUI.db.profile.Chat.SecondChatFrame then
+		--[[if kind == "Chat" and LUI.db.profile.Chat.SecondChatFrame then
 			backgrounds.Chat2.AlphaOut:Show()
-		end
+		end]]
 	else
 		_G[backgrounds[kind].frame]:SetAlpha(0)
 		_G[backgrounds[kind].frame]:Hide()
 
-		if kind == "Chat" and LUI.db.profile.Chat.SecondChatFrame then
+		--[[if kind == "Chat" and LUI.db.profile.Chat.SecondChatFrame then
 			ChatAlphaAnchor2:SetAlpha(0)
 			ChatAlphaAnchor2:Hide()
-		end
+		end]]
 
 		for _, f in pairs(Panels:LoadAdditional(db[kind].Additional)) do
 			_G[f]:SetAlpha(0)
@@ -445,8 +445,10 @@ function module:CreateBackground(kind)
 	local frame
 	if kind == "Chat" then
 		frame = "ChatAlphaAnchor"
+	--[[
 	elseif kind == "Chat2" then
 		frame = "ChatAlphaAnchor2"
+	--]]
 	else
 		frame = db[kind].Anchor
 	end
@@ -533,8 +535,10 @@ function module:ApplyBackground(kind)
 	local frame
 	if kind == "Chat" then
 		frame = ChatAlphaAnchor
+	--[[
 	elseif kind == "Chat2" then
 		frame = ChatAlphaAnchor2
+	--]]
 	else
 		frame = _G[db[kind].Anchor]
 	end
@@ -569,12 +573,12 @@ function module:SetPanels()
 	ChatAlphaAnchor2:SetWidth(30)
 	ChatAlphaAnchor2:SetHeight(30)
 	ChatAlphaAnchor2:SetFrameStrata("BACKGROUND")
-	ChatAlphaAnchor2:SetPoint("TOPLEFT", LUI.db.profile.Chat.SecondChatAnchor, "TOPLEFT", -10, 8)
+	ChatAlphaAnchor2:SetPoint("TOPLEFT", LUI.db.profile.Chat and LUI.db.profile.Chat.SecondChatAnchor or ChatFrame3, "TOPLEFT", -10, 8)
 	ChatAlphaAnchor2:SetAlpha(1)
 	ChatAlphaAnchor2:Hide()
 
 	self:CreateBackground("Chat")
-	self:CreateBackground("Chat2")
+	--self:CreateBackground("Chat2")
 	self:CreateBackground("Tps")
 	self:CreateBackground("Dps")
 	self:CreateBackground("Raid")
@@ -601,6 +605,7 @@ module.defaults = {
 			Width = 409,
 			Height = 181
 		},
+		--[[
 		Chat2 = {
 			OffsetX = 0,
 			OffsetY = 0,
@@ -608,6 +613,7 @@ module.defaults = {
 			Width = 100,
 			Height = 100
 		},
+		--]]
 		Tps = {
 			OffsetX = 0,
 			OffsetY = 0,
@@ -664,7 +670,7 @@ function module:Refresh(...)
 	end
 
 	self:ApplyBackground("Chat")
-	self:ApplyBackground("Chat2")
+	--self:ApplyBackground("Chat2")
 	self:ApplyBackground("Tps")
 	self:ApplyBackground("Dps")
 	self:ApplyBackground("Raid")
@@ -676,8 +682,8 @@ function module:LoadOptions()
 	local UIRL = function() StaticPopup_Show("RELOAD_UI") end
 
 	local CreateOptionsPart = function(tag, order)
-		local isPrimary = tag ~= "Chat2"
-		local isNotChat = not string.find(tag, "Chat")
+		--local isPrimary = tag ~= "Chat2"
+		local isNotChat = tag ~= "Chat" --not string.find(tag, "Chat")
 
 		local options = self:NewGroup(tag, order, {
 			header = self:NewHeader(tag.." Panel", 1),
@@ -736,7 +742,7 @@ function module:LoadOptions()
 			OffsetY = self:NewInputNumber("Offset Y", "Choose the Y Offset for your "..tag.." Frame to it's Anchor.", 10, dryCall),
 			empty2 = self:NewDesc(" ", 11),
 			Direction = self:NewSelect("Direction", "Choose the Direction for your "..tag.." Panel.", 12, directions, nil, dryCall),
-			Animation = isPrimary and self:NewSelect("Animation", "Choose the Animation for your "..tag.." Panel.", 13, animations, nil, dryCall) or nil,
+			Animation = --[[isPrimary and]] self:NewSelect("Animation", "Choose the Animation for your "..tag.." Panel.", 13, animations, nil, dryCall) --[[or nil]],
 			Width = self:NewInputNumber("Width", "Choose the Width for your "..tag.." Panel.", 14, dryCall),
 			Height = self:NewInputNumber("Height", "Choose the Height for your "..tag.." Panel.", 15, dryCall),
 			empty3 = self:NewDesc(" ", 16),
@@ -773,7 +779,7 @@ function module:LoadOptions()
 
 	local options = {
 		Chat = CreateOptionsPart("Chat", 1),
-		Chat2 = CreateOptionsPart("Chat2", 2),
+		--Chat2 = CreateOptionsPart("Chat2", 2),
 		Tps = CreateOptionsPart("Tps", 3),
 		Dps = CreateOptionsPart("Dps", 4),
 		Raid = CreateOptionsPart("Raid", 5),

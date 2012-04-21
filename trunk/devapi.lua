@@ -415,16 +415,18 @@ function devapi:NewToggle(name, desc, order, func, width, disabled, hidden)
 end
 
 --[[
-	values (table|function) - [key]=value pair table to choose from
+	values (table|function|true) - [key]=value pair table to choose from
 		- key is the value passed to "set"
 		- value is the string displayed
+		- only use true (boolean) if using a dcontrol (will use corresponding HashTable)
 	dcontrol (string|false) - AceGUI-3.0 dialog control to use
 		- false (boolean) - no dialog control; use normal style functions instead of values[value] style functions
 		- (nil) - no dialog control; values[value] style functions
 --]]
 function devapi:NewSelect(name, desc, order, values, dcontrol, func, width, disabled, hidden)
-	argcheck(values, "typeof", "table;function")
-	
+	argcheck(values, "typeof", "table;function;boolean")
+
+	if values == true then values = Media:HashTable(strlower(strsub(dcontrol, 7))) end
 	if type(values) == "table" then setmetatable(values, valuesMT) end
 	
 	local t = SetVals("select", name, order)

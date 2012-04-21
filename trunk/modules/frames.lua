@@ -303,7 +303,7 @@ function module:SetFrames()
 				end
 			end
 			
-			if db.Chat.SecondChatFrame then ChatAlphaAnchor2:Show() end
+			--if db.Chat.SecondChatFrame then ChatAlphaAnchor2:Show() end
 		else
 			isAllShown = false
 			

@@ -2174,8 +2174,11 @@ function module:SetGF()
 					RemoveFriend(b.unit)
 				end
 			elseif IsAltKeyDown() then -- invite unit
-				if b.presenceID and not b.sameRealm then return end
-				InviteUnit(b.unit)
+				if b.presenceID then
+					FriendsFrame_BattlenetInvite(nil, b.presenceID)
+				else
+					InviteUnit(b.unit)
+				end
 			elseif IsControlKeyDown() then -- edit note
 				if not stat.IsGuild then
 					FriendsFrame.NotesID = b.presenceID or b.realIndex
@@ -2204,8 +2207,10 @@ function module:SetGF()
 				end
 				GameTooltip:AddLine"Hints:"
 				GameTooltip:AddLine("|cffff8020Click|r to whisper.", .2,1,.2)
-				if (not btn.presenceID or btn.sameRealm) then GameTooltip:AddLine("|cffff8020Alt+Click|r to invite.", .2,1,.2) end
-				if not btn.presenceID then GameTooltip:AddLine("|cffff8020Shift+Click|r to query informations.", .2, 1, .2) end
+				GameTooltip:AddLine("|cffff8020Alt+Click|r to invite.", .2,1,.2)
+				if not btn.presenceID then
+					GameTooltip:AddLine("|cffff8020Shift+Click|r to query informations.", .2, 1, .2)
+				end
 				if (not self.IsGuild or CanEditPublicNote()) then GameTooltip:AddLine("|cffff8020Ctrl+Click|r to edit note.", .2, 1, .2) end
 				if self.IsGuild then
 					if CanEditOfficerNote() then GameTooltip:AddLine("|cffff8020Ctrl+RightClick|r to edit officer note.", .2, 1, .2) end

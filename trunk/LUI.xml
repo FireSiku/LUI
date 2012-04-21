@@ -34,7 +34,7 @@
 	<!-- Extended Modules -->
 	<Include file="modules\buffs.xml"/>
 	<Script file="modules\buffs.lua"/>
-	<Script file="modules\chat.lua"/>
+	<Include file="modules\chat\chat.xml"/>
 	<Script file="modules\minimap.lua"/>
 	<Include file="modules\worldmap\worldmap.xml"/>
 	<Script file="modules\bags.lua"/>
