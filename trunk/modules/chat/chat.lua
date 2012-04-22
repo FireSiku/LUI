@@ -415,9 +415,19 @@ end
 
 local linkTypes = {
 	item = true,
-	enchant = true,
 	spell = true,
+	enchant = true,
+	talent = true,
+	glyph = true,
 	quest = true,
+	achievement = true,
+	instancelock = true,
+	-- trade = true, -- causes the profession window to open on link hover
+	--- invaild link types for GameTooltip:SetHyperlink()
+	-- player = true,
+	-- playerGM = true,
+	-- journal = true,
+	-- levelup = true,
 }
 
 --------------------------------------------------
@@ -457,6 +467,17 @@ end
 local function unclampChatFrame(frame)
 	frame:SetClampRectInsets(0,0,0,0)
 	frame:SetClampedToScreen(false)
+end
+
+local function positionChatFrame()
+	local frame = GENERAL_CHAT_DOCK.primary
+	frame:SetMovable(true)
+	frame:SetUserPlaced(true)
+	frame:SetSize(db.width, db.height)
+	frame:ClearAllPoints()
+	frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", db.x, db.y)
+	FCF_SavePositionAndDimensions(frame)
+	FCF_SetLocked(frame, 1)
 end
 
 local function configureTab(tab, minimalist)
@@ -592,6 +613,21 @@ function module:FCF_OpenTemporaryWindow()
 	end
 end
 
+function module:FCF_SavePositionAndDimensions(chatFrame)
+	if chatFrame ~= GENERAL_CHAT_DOCK.primary then return end
+
+	local width, height = GetChatWindowSavedDimensions(chatFrame:GetID())
+	if (width and height) then
+		db.width, db.height = width, height
+	end
+
+	local point, xOffset, yOffset = GetChatWindowSavedPosition(chatFrame:GetID())
+	if point then
+		db.x = xOffset * GetScreenWidth()
+		db.y = yOffset * GetScreenHeight()
+	end
+end
+
 function module:SetItemRef(link, text, button, ...)
 	if IsAltKeyDown() and sub(link, 1, 6) == "player" then
 		InviteUnit(match(link, "player:([^:]+)"))
@@ -667,6 +703,10 @@ end
 
 module.defaults = {
 	profile = {
+		x = 28,
+		y = 46,
+		width = 404,
+		height = 171,
 		General = {
 			Font = {
 				Font = (function()
@@ -683,6 +723,7 @@ module.defaults = {
 			ShortChannelNames = true,
 			DisableFading = true,
 			MinimalistTabs = true,
+			LinkHover = true,
 			BackgroundColor = {0, 0, 0, 0.4},
 		},
 	},
@@ -701,6 +742,14 @@ function module:LoadOptions()
 	local function refresh()
 		self:Refresh()
 	end
+	local function resetChatPos()
+		db.x = dbd.x
+		db.y = dbd.y
+		db.width = dbd.width
+		db.height = dbd.height
+
+		positionChatFrame()
+	end
 
 	local options = {
 		General = self:NewGroup(L["General Settings"], 1, {
@@ -712,7 +761,9 @@ function module:LoadOptions()
 			ShortChannelNames = self:NewToggle(L["Short channel names"], L["Use abreviated channel names"], 2, true),
 			DisableFading = self:NewToggle(L["Disable fading"], L["Stop the chat from fading out over time"], 3, true),
 			MinimalistTabs = self:NewToggle(L["Minimalist tabs"], L["Use minimalist style tabs"], 4, true),
-			BackgroundColor = self:NewColor(L["Chat Background"], nil, 5, refresh),
+			LinkHover = self:NewToggle(L["Link hover tooltip"], L["Show tooltip when mousing over links in chat"], 5, true),
+			BackgroundColor = self:NewColor(L["Chat Background"], nil, 6, refresh, "full"),
+			ResetPosition = self:NewExecute(L["Reset position"], L["Reset the main chat dock's position"], 7, resetChatPos, L["Are you sure?"]),
 		}),
 		EditBox = EditBox:LoadOptions(),
 		Buttons = Buttons:LoadOptions(),
@@ -737,6 +788,16 @@ function module:Refresh(info, value)
 			self:Unhook(frame, "AddMessage")
 		end
 
+		if db.General.LinkHover then
+			if not self:IsHooked(frame, "OnHyperlinkEnter") then
+				self:HookScript(frame, "OnHyperlinkEnter")
+				self:HookScript(frame, "OnHyperlinkLeave")
+			end
+		else
+			self:Unhook(frame, "OnHyperlinkEnter")
+			self:Unhook(frame, "OnHyperlinkLeave")
+		end
+
 		frame:SetFading(not db.General.DisableFading)
 
 		local r, g, b, a = unpack(db.General.BackgroundColor)
@@ -754,14 +815,13 @@ function module:DBCallback(event, dbobj, profile)
 	db, dbd = LUI:Namespace(self)
 
 	if self:IsEnabled() then
+		positionChatFrame()
 		self:Refresh()
 	end
 end
 
 function module:OnInitialize()
 	db, dbd = LUI:Namespace(self, true)
-
-
 
 	local disabled = not self.enabledState
 	for name, module in self:IterateModules() do
@@ -785,15 +845,15 @@ function module:OnEnable()
 		createStaticPopups()
 	end
 
+	positionChatFrame()
+
+	self:SecureHook("FCF_SavePositionAndDimensions")
 	self:SecureHook("FCF_OpenTemporaryWindow")
 	self:RawHook("SetItemRef", true)
 
 	for i, name in ipairs(CHAT_FRAMES) do
 		local frame = _G[name]
 		unclampChatFrame(frame)
-
-		self:HookScript(frame, "OnHyperlinkEnter")
-		self:HookScript(frame, "OnHyperlinkLeave")
 	end
 
 	for _, event in ipairs(urlEvents) do

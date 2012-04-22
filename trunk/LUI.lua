@@ -1361,7 +1361,7 @@ end
 
 function LUI:RegisterModule(module, moduledb, addFunc)
 	local mName = module:GetName()
-	local moduledb = moduledb and moduledb or mName
+	moduledb = moduledb or mName
 
 	table.insert(moduleList, {
 		[mName] = {
@@ -1386,7 +1386,9 @@ function LUI:RegisterModule(module, moduledb, addFunc)
 
 	LUI:RegisterOptions(module)
 
-	module:SetEnabledState(db[moduledb].Enable)
+	if LUI.defaultModuleState ~= false and db[moduledb].Enable ~= nil then
+		module:SetEnabledState(db[moduledb].Enable)
+	end
 end
 
 local function initDefaults(defaults, parent) -- TODO FIX this thing

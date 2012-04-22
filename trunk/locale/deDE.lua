@@ -39,6 +39,7 @@ L["Enable"] = "Ermöglichen"
 --L["Thickness"] = true
 --L["Adjust the thickness of the border"] = true
 --L["Insets"] = true
+--L["Are you sure?"] = true
 
 -- LUI.lua
 --L["Welcome to LUI v3"] = "Welcome to |c0090ffffLUI v3|r the first and only NextGeneration\nWorld of Warcraft User Interface."
@@ -60,7 +61,11 @@ L["The UI needs to be reloaded!"] = "Die UI neu geladen werden muss!"
 --L["Stop the chat from fading out over time"] = true
 --L["Minimalist tabs"] = true
 --L["Use minimalist style tabs"] = true
+--L["Link hover tooltip"] = true
+--L["Show tooltip when mousing over links in chat"] = "Show tooltip when mousing over links in chat.\n\nLinks: items, spells, enchants, talents, glyphs, quests, achievements, and instancelocks"
 --L["Chat Background"] = true
+--L["Reset position"] = true
+--L["Reset the main chat dock's position"] = true
 --L["Buttons"] = true
 L["Hide Buttons"] = "Verstecken Schaltflächen"
 L["Scroll to bottom button"] = "Blättern Sie nach unten-Taste"
