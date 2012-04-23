@@ -310,6 +310,16 @@ function module:ZoomOut()
 	end
 end
 
+function module:EncounterJournal_AddMapButtons()
+	if select(4, EJ_GetMapEncounter(1)) then
+		WorldMapShowDigSites:Hide()
+		LUI_WorldMap_ShowBossesCheckButton:Show()
+	else
+		WorldMapShowDigSites:Show()
+		LUI_WorldMap_ShowBossesCheckButton:Hide()
+	end
+end
+
 --------------------------------------------------
 -- Module Functions
 --------------------------------------------------
@@ -324,6 +334,10 @@ function module:OnEnable()
 	self:SecureHook("SetMapZoom")
 	self:SecureHook("SetMapToCurrentZone", "SetMapZoom")
 	self:SecureHook("ZoomOut")
+
+	WorldMapShowDropDown.Show = LUI.dummy
+
+	self:SecureHook("EncounterJournal_AddMapButtons")
 end
 
 function module:OnDisable()
@@ -331,4 +345,9 @@ function module:OnDisable()
 	continent, continentId, zoneId = nil, nil, nil
 	WorldMapContinentsDropDown_Update()
 	WorldMapZoneDropDown_Update()
+
+	WorldMapShowDropDown.Show = nil
+	if select(4, EJ_GetMapEncounter(1)) then
+		WorldMapShowDropDown:Show()
+	end
 end
