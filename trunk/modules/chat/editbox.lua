@@ -67,7 +67,7 @@ end
 local function decorate(editBox)
 	editBox:SetHeight(db.Height)
 
-	if not module:IsHooked(editBox, "OnEnterPressed") then
+	if not editBox.decorated then
 		editBox:Hide()
 
 		local name = editBox:GetName()
@@ -82,7 +82,7 @@ local function decorate(editBox)
 		editBox:SetMaxLetters(2048)
 		editBox:SetMaxBytes(2048)
 
-		module:RawHookScript(editBox, "OnEnterPressed")
+		editBox.decorated = true
 	end
 
 	local bg = editBox.bg
@@ -153,43 +153,6 @@ local function anchorEditBox(anchor)
 	end
 end
 
-local getChunk
-do
-	local buf = {}
-
-	function getChunk(text, start)
-		local stack = 0
-		local first
-		buf = wipe(buf)
-		if start > #text then return nil end
-
-		for i = start, start + 256 - 1 do
-			local byte = text:sub(i, i)
-			local bit = text:sub(i, i+1)
-			if bit == "|c" or bit == "|H" then
-				first = first or i
-				stack = stack + 1
-			elseif (bit == "|r" or bit == "|h") and stack > 0 and first then
-				stack = stack - 1
-				if stack == 0 then
-					tinsert(buf, text:sub(first, i))
-					first = nil
-				end
-			elseif (byte == " " or byte == "") and stack == 0 and first then
-				tinsert(buf, text:sub(first or 1, i))
-				first = nil
-			else
-				first = first or i
-			end
-		end
-
-		if #buf == 0 then return nil end
-
-		local str = table.concat(buf, "")
-		return start + #str, str
-	end
-end
-
 --------------------------------------------------
 -- Callback Functions
 --------------------------------------------------
@@ -214,6 +177,12 @@ end
 --------------------------------------------------
 -- Hook Functions
 --------------------------------------------------
+
+function module:FCF_Tab_OnClick(frame, button)
+	if db.Anchor == "TOP" and GetCVar("chatStyle") ~= "classic" then
+		ChatEdit_DeactivateChat(_G[CHAT_FRAMES[frame:GetID()]].editBox)
+	end
+end
 
 function module:ChatEdit_DeactivateChat(editBox)
 	if editBox:IsShown() then
@@ -259,11 +228,75 @@ function module:ChatEdit_UpdateHeader(editBox) -- update EditBox Colors
 	editBox.bg:SetBackdropBorderColor(r, g, b, a+0.3)
 end
 
-function module:FCF_Tab_OnClick(frame, button)
-	if db.Anchor == "TOP" and GetCVar("chatStyle") ~= "classic" then
-		ChatEdit_DeactivateChat(_G[CHAT_FRAMES[frame:GetID()]].editBox)
+--[[
+do
+	local extraText, chunks = {}, {}
+
+	local function splitMsg(text, start)
+		local stack = 0
+		local first
+		wipe(chunks)
+		if start > #text then return nil end
+
+		for i = start, start + 255 do
+			local byte = text:sub(i, i)
+			local bit = text:sub(i, i+1)
+			if bit == "|c" or bit == "|H" then
+				first = first or i
+				stack = stack + 1
+			elseif (bit == "|r" or bit == "|h") and stack > 0 and first then
+				stack = stack - 1
+				if stack == 0 then
+					tinsert(chunks, text:sub(first, i))
+					first = nil
+				end
+			elseif (byte == " " or byte == "") and stack == 0 and first then
+				tinsert(chunks, text:sub(first or 1, i))
+				first = nil
+			else
+				first = first or i
+			end
+		end
+
+		if #chunks == 0 then return nil end
+
+		local str = table.concat(chunks, "")
+		return start + #str, str
+	end
+
+	function module:ChatEdit_ParseText(editBox, send)
+		if send == 0 then return end
+
+		local text = editBox:GetText()
+
+		if #text <= 255 then return end
+
+		self:SecureHook("SendChatMessage")
+
+		wipe(extraText)
+		local first = true
+		for start, chunk in splitMsg, text, 1 do
+			if first then
+				editBox:SetText(chunk)
+				extraText.msg = chunk
+				first = false
+			else
+				tinsert(extraText, chunk)
+			end
+		end
+	end
+
+	function module:SendChatMessage(text, ...)
+		if text == extraText.msg then
+			self:Unhook("SendChatMessage")
+
+			for i, extra in ipairs(extraText) do
+				SendChatMessage(extra, ...)
+			end
+		end
 	end
 end
+--]]
 
 function module:AddHistoryLine(frame, line)
 	if history[#history] == line then return end -- return if this is the same line as the last in the table
@@ -274,28 +307,6 @@ function module:AddHistoryLine(frame, line)
 	for i = 1, #history - frame:GetHistoryLines() do
 		tremove(history, 1)
 	end
-end
-
-function module:OnEnterPressed(editBox) -- Allow for splitting of long messages
-	local text = editBox:GetText()
-	if #text <= 255 then
-		ChatEdit_OnEnterPressed(editBox)
-		return
-	end
-
-	local first = true
-	for start, chunk in getChunk, text, 1 do
-		editBox:SetText(chunk)
-		ChatEdit_SendText(editBox, true, first);
-		first = false
-	end
-
-	local type = editBox:GetAttribute("chatType");
-	if ( ChatTypeInfo[type].sticky == 1 ) then
-		editBox:SetAttribute("stickyType", type);
-	end
-
-	ChatEdit_OnEscapePressed(editBox);
 end
 
 --------------------------------------------------
@@ -432,10 +443,11 @@ function module:OnEnable()
 	Media.RegisterCallback(self, "LibSharedMedia_Registered")
 
 	self:SecureHook("FCF_OpenTemporaryWindow", "Refresh")
+	self:SecureHook("FCF_Tab_OnClick")
 	self:SecureHook("ChatEdit_DeactivateChat")
 	self:SecureHook("ChatEdit_SetLastActiveWindow")
 	self:SecureHook("ChatEdit_UpdateHeader")
-	self:SecureHook("FCF_Tab_OnClick")
+	-- self:SecureHook("ChatEdit_ParseText") -- splitMsg function need rewrite for parsing links
 
 	setHistory(true)
 
@@ -462,6 +474,8 @@ function module:OnDisable()
 		editBox.header:SetFont(Media:Fetch("font", dbd.Font.Font), 14)
 		editBox:SetMaxLetters(256)
 		editBox:SetMaxBytes(256)
+
+		editBox.decorated = nil
 	end
 
 	setHistory(false)

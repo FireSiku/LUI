@@ -48,7 +48,7 @@
 
     <Frame name="LUI_Chat_EditBoxBGTemplate" parentKey="bg" frameStrata="DIALOG" setAllPoints="true" virtual="true">
         <Frames>
-            <Frame parentKey="lDrag">
+            <Frame parentKey="lDrag" toplevel="true">
                 <Size x="15"/>
                 <Anchors>
                     <Anchor point="TOPLEFT"/>
@@ -64,7 +64,7 @@
                     </OnMouseUp>
                 </Scripts>
             </Frame>
-            <Frame parentKey="rDrag">
+            <Frame parentKey="rDrag" toplevel="true">
                 <Size x="15"/>
                 <Anchors>
                     <Anchor point="TOPRIGHT"/>
@@ -83,10 +83,7 @@
         </Frames>
         <Scripts>
             <OnLoad>
-                local level = self:GetParent():GetFrameLevel()
-                self:SetFrameLevel(level-1)
-                self.lDrag:SetFrameLevel(level+1)
-                self.rDrag:SetFrameLevel(level+1)
+                self:SetFrameLevel(self:GetParent():GetFrameLevel()-1)
             </OnLoad>
         </Scripts>
     </Frame>
