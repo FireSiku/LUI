@@ -641,12 +641,12 @@ gui.Slider:SetScript("OnValueChanged", function(self)
 	gui:OnUpdate(1)
 end)
 
--- Add pad to special frames, for "Esc" closure.
+-- Add gui to special frames, for "Esc" closure.
 tinsert(UISpecialFrames, gui:GetName())
 
 -- Profiler.GUI.Watch(filter)
 --[[
-	Notes.....: Loads GUI to watch all traced functions, or functions with filer in their name.
+	Notes.....: Loads GUI to watch all traced functions, or functions with filter in their name.
 ]]
 gui.Watch = function(filter)
 -- Clear watched traces.
