@@ -83,7 +83,7 @@ L["Scroll to bottom button"] = "Blättern Sie nach unten-Taste"
 --L["Use Alt key"] = true
 --L["Requires the Alt key to be held down to move the cursor"] = true
 --L["Color by channel"] = true
---L["Sets the EditBox color to the color of you currently active channel"] = true
+--L["Sets the EditBox color to the color of your currently active channel"] = true
 --L["Adjust the height of the EditBox"] = true
 
 L["Guild"] = "Gilde"

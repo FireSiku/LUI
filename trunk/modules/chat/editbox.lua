@@ -378,7 +378,7 @@ function module:LoadOptions()
 		Anchor = self:NewSelect(L["Anchor Point"], L["Select where the EditBox anchors to the ChatFrame"], 2, anchorPoints, false, refresh),
 		UseAlt = self:NewToggle(L["Use Alt key"], L["Requires the Alt key to be held down to move the cursor"], 3, true, "normal"),
 		History = self:NewToggle(L["Remember history"], L["Remembers the history of the EditBox across sessions"], 4, true, "normal"),
-		ColorByChannel = self:NewToggle(L["Color by channel"], L["Sets the EditBox color to the color of you currently active channel"], 5, true, "normal"),
+		ColorByChannel = self:NewToggle(L["Color by channel"], L["Sets the EditBox color to the color of your currently active channel"], 5, true, "normal"),
 		Height = self:NewSlider(L["Height"], L["Adjust the height of the EditBox"], 6, 5, 50, 1, true, false, "full"),
 		Background = self:NewGroup(L["Background"], 7, true, {
 			Texture = self:NewSelect(L["Texture"], L["Choose a texture"], 1, true, "LSM30_Background", refresh),
