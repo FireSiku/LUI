@@ -12,21 +12,18 @@ local addonname, LUI = ...
 
 local _G = _G
 local format, strfind, gsub = string.format, string.find, string.gsub
-local geterrorhandler, seterrorhandler = geterrorhandler, seterrorhandler
 
 ----------------------------------------------------------------------
 -- Initialize BugCatcher
 ----------------------------------------------------------------------
 
-local BugCatcher = LibStub("AceEvent-3.0"):Embed( {} )
+local BugCatcher = LibStub("AceHook-3.0"):Embed( {} )
 
 local L = LUI.L
 
 ----------------------------------------------------------------------
 -- Local Variables
 ----------------------------------------------------------------------
-
-local errorHandler
 
 local text
 do -- Create format string
@@ -42,64 +39,43 @@ end
 -- Local Functions
 ----------------------------------------------------------------------
 
----	formatError(msg)
+---	formatError(message)
 --	Notes.....: Adds Version and Revision numbers to error strings relating to LUI
 --	Parameters:
---		(string) msg: Message string to have Version and Revision number added to
-local function formatError(msg)
-	if not (msg and strfind(msg, "LUI\\")) then
-		errorHandler(msg)
-		return
+--		(string) message: Message string to have Version and Revision number added to
+local function formatError(message)
+	if message and strfind(message, "LUI\\") then
+		-- Strip out unneeded folder data
+		message = gsub(message, "Interface\\", "")
+		message = gsub(message, "AddOns\\", "")
+		message = gsub(message, "%.%.%.[^\\]+", "")
+		message = gsub(message, "^[\\]?LUI", text)
 	end
 
-	-- Strip out unneeded folder data
-	msg = gsub(msg, "Interface\\", "")
-	msg = gsub(msg, "AddOns\\", "")
-	msg = gsub(msg, "%.%.%.[^\\]+", "")
-	msg = gsub(msg, "^[\\]?LUI", text)
-
-	-- Replace Interface\AddOns\LUI with Version number
-	errorHandler(msg)
+	return message
 end
 
 ----------------------------------------------------------------------
--- Event Functions
+-- Hook Functions
 ----------------------------------------------------------------------
 
-function BugCatcher:PLAYER_ENTERING_WORLD()
-	-- Get current handler
-	local current = geterrorhandler()
+function BugCatcher:ScriptErrorsFrame_OnError(message, ...)
+	DEBUGLOCALS_LEVEL = 6
 
-	-- Check that our function isn't the current handler
-	if current == formatError then return end
-
-	-- Save the handler for use later
-	errorHandler = current
-
-	-- Set our function as the handler
-	seterrorhandler(formatError)
-
-	--@debug@
-	-- Check if someone broke the seterrorhandler() function
-	if geterrorhandler() ~= formatError then
-		LUI:Print("Could not set the error handler :(\nSomeone destroyed the seterrorhandler() function.")
-	end
-	--@end-debug@
+	self.hooks.ScriptErrorsFrame_OnError(formatError(message), ...)
 end
 
--- Set the error handler now in case any errors occur before PEW
-BugCatcher:PLAYER_ENTERING_WORLD()
+LoadAddOn("Blizzard_DebugTools")
+BugCatcher:RawHook("ScriptErrorsFrame_OnError", true)
 
--- Set it again upon PEW in case another addon changed the handler
-BugCatcher:RegisterEvent("PLAYER_ENTERING_WORLD")
-
---[[
--- Register slash command for testing (/lui error)
-LUI.chatcommands.error = function()
--- Hide the ChatEditBox, the error will stop the function that normally does this from running
+-- Register slash command for testing (/luierror)
+--@debug@
+SLASH_LUIERROR1 = "/luierror"
+SlashCmdList.LUIERROR = function()
+	-- Hide the ChatEditBox, the error will stop the function that normally does this from running
 	ChatEdit_OnEscapePressed(ChatEdit_GetActiveWindow())
 
 	-- Send a test error,
 	error("LUI Error Test")
 end
---]]
+--@end-debug@
