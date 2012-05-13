@@ -622,8 +622,8 @@ function module:FCF_SavePositionAndDimensions(chatFrame)
 end
 
 function module:SetItemRef(link, text, button, chatFrame)
-	if IsAltKeyDown() and sub(link, 1, 6) == "player" then
-		InviteUnit(match(link, "player:([^:]+)"))
+	if IsAltKeyDown() and strsub(link, 1, 6) == "player" then
+		InviteUnit(link:match("player:([^:]+)"))
 		return
 	end
 
@@ -692,6 +692,15 @@ function module:OnMouseWheel(tab, direction)
 	FCFDock_SelectWindow(GENERAL_CHAT_DOCK, GENERAL_CHAT_DOCK.DOCKED_CHAT_FRAMES[t])
 end
 
+function module:ScrollFrame_OnMouseWheel(frame, direction)
+	if not IsShiftKeyDown() then return end
+	
+	if direction > 0 then
+		frame:ScrollToTop()
+	else
+		frame:ScrollToBottom()
+	end
+end
 --------------------------------------------------
 -- Module Variables
 --------------------------------------------------
@@ -720,6 +729,7 @@ module.defaults = {
 			MinimalistTabs = true,
 			LinkHover = true,
 			BackgroundColor = {0, 0, 0, 0.4},
+			ShiftMouseScroll = true,
 		},
 	},
 }
@@ -757,8 +767,9 @@ function module:LoadOptions()
 			DisableFading = self:NewToggle(L["Disable fading"], L["Stop the chat from fading out over time"], 3, true),
 			MinimalistTabs = self:NewToggle(L["Minimalist tabs"], L["Use minimalist style tabs"], 4, true),
 			LinkHover = self:NewToggle(L["Link hover tooltip"], L["Show tooltip when mousing over links in chat"], 5, true),
-			BackgroundColor = self:NewColor(L["Chat Background"], nil, 6, refresh, "full"),
-			ResetPosition = self:NewExecute(L["Reset position"], L["Reset the main chat dock's position"], 7, resetChatPos, L["Are you sure?"]),
+			ShiftMouseScroll = self:NewToggle(L["Shift mouse scrolling"], L["Holding shift while mouse scrolling will jump to top or bottom"], 6, refresh),
+			BackgroundColor = self:NewColor(L["Chat Background"], nil, 7, refresh, "full"),
+			ResetPosition = self:NewExecute(L["Reset position"], L["Reset the main chat dock's position"], 8, resetChatPos, L["Are you sure?"]),
 		}),
 		EditBox = EditBox:LoadOptions(),
 		Buttons = Buttons:LoadOptions(),
@@ -791,6 +802,14 @@ function module:Refresh(info, value)
 		else
 			self:Unhook(frame, "OnHyperlinkEnter")
 			self:Unhook(frame, "OnHyperlinkLeave")
+		end
+		
+		if db.General.ShiftMouseScroll then
+			if not self:IsHooked(frame, "OnMouseWheel") then
+				self:HookScript(frame, "OnMouseWheel", "ScrollFrame_OnMouseWheel")
+			end
+		else
+			self:Unhook(frame, "OnMouseWheel")
 		end
 
 		frame:SetFading(not db.General.DisableFading)
