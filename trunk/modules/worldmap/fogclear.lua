@@ -1404,7 +1404,6 @@ end
 module.defaults = {
 	global = zoneData,
 	profile = {
-		Enable = true,
 		Color = {0.6, 0.6, 0.6, 1},
 	},
 }
@@ -1419,7 +1418,7 @@ function module:LoadOptions()
 	end
 
 	local options = self:NewGroup("Fog Clear", 5, "generic", "Refresh", {
-		Enable = self:NewToggle("Enable", nil, 1, true, "normal"),
+		Enable = self:NewEnable("Enable", nil, 1, nil, "normal"),
 		Color = self:NewColor("Undiscovered Area", "undiscovered areas of the world", 2, updateFogClear, nil, fogClearDisabled),
 	})
 

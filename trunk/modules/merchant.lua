@@ -451,7 +451,3 @@ end
 function module:OnEnable()
 	self:RegisterEvent("MERCHANT_SHOW")
 end
-
-function module:OnDisable()
-	self:UnregisterAllEvents()
-end

@@ -141,7 +141,7 @@ function module:LoadOptions()
 					order = 42,
 					width = "full",
 					type = "description",
-					name = "For all other Questions, Problems or Wishes regarding LUI v3\nplease visit |cff8080ffhttp://www.wow-lui.com|r\n\nThanks!",
+					name = "For all other Questions, Problems or Wishes regarding LUI v3\nplease visit |cff8080ffhttp://lui.maydia.org|r\n\nThanks!",
 				}
 			}
 		}

@@ -755,6 +755,3 @@ end
 function module:OnEnable()
 	self:SetTooltip()
 end
-
-function module:OnDisable()
-end

@@ -228,7 +228,6 @@ function module:ChatEdit_UpdateHeader(editBox) -- update EditBox Colors
 	editBox.bg:SetBackdropBorderColor(r, g, b, a+0.3)
 end
 
---[[
 do
 	local extraText, chunks = {}, {}
 
@@ -241,7 +240,15 @@ do
 		for i = start, start + 255 do
 			local byte = text:sub(i, i)
 			local bit = text:sub(i, i+1)
-			if bit == "|c" or bit == "|H" then
+			if bit == "|H" then
+				first = first or i
+				local link = text:sub(i):match("|H(.-|h.-|h)")
+				if link and not link:find("|H") then
+					stack = stack + 2
+				else
+					stack = stack + 1
+				end
+			elseif bit == "|c" then
 				first = first or i
 				stack = stack + 1
 			elseif (bit == "|r" or bit == "|h") and stack > 0 and first then
@@ -296,7 +303,6 @@ do
 		end
 	end
 end
---]]
 
 function module:AddHistoryLine(frame, line)
 	if history[#history] == line then return end -- return if this is the same line as the last in the table
@@ -426,18 +432,12 @@ function module:Refresh(info, value)
 	setHistory()
 end
 
-function module:DBCallback(event, dbobj, profile)
-	db, dbd = Chat:Namespace(self)
-
-	if self:IsEnabled() then
-		self:Refresh()
-	end
-end
-
 function module:OnInitialize()
 	db, dbd = Chat:Namespace(self)
 	history = self.db.factionrealm
 end
+
+module.DBCallback = module.OnInitialize
 
 function module:OnEnable()
 	Media.RegisterCallback(self, "LibSharedMedia_Registered")
@@ -447,7 +447,7 @@ function module:OnEnable()
 	self:SecureHook("ChatEdit_DeactivateChat")
 	self:SecureHook("ChatEdit_SetLastActiveWindow")
 	self:SecureHook("ChatEdit_UpdateHeader")
-	-- self:SecureHook("ChatEdit_ParseText") -- splitMsg function need rewrite for parsing links
+	self:SecureHook("ChatEdit_ParseText")
 
 	setHistory(true)
 

@@ -167,9 +167,11 @@ function module:Refresh()
 end
 
 function module:OnInitialize()
-	db, dbd = LUI:Namespace(WorldMap, true)
+	db, dbd = LUI:Namespace(WorldMap)
 	char = WorldMap.db.char
 end
+
+module.DBCallback = module.OnInitialize
 
 function module:OnEnable()
 	-- HideQuest Objectives CheckBox and replace it with a DropDown

@@ -284,17 +284,11 @@ function module:Refresh(info, value)
 	configCopyButton(db.CopyChat)
 end
 
-function module:DBCallback(event, dbobj, profile)
-	self:OnInitialize()
-
-	if self:IsEnabled() then
-		self:Refresh()
-	end
-end
-
 function module:OnInitialize()
 	db, dbd = Chat:Namespace(self)
 end
+
+module.DBCallback = module.OnInitialize
 
 function module:OnEnable()
 	if db.HideButtons then

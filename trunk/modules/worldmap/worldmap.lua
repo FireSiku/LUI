@@ -111,8 +111,12 @@ do -- ZONE_CHANGED_NEW_AREA
 	function module:ZONE_CHANGED_NEW_AREA() -- Set Map to current zone when changing zones if player isn't looking at another zone.
 		local newZone = GetCurrentMapAreaID()
 		if currentZone == newZone or ((GetCurrentMapZone() > 0 and GetPlayerMapPosition("player")) ~= 0) then
-			SetMapToCurrentZone()
 			currentZone = newZone
+
+			-- Only change the zone if the WorldMap is shown (there are a lot of functions and hook that will get called)
+			if WorldMapFrame:IsShown() then
+				SetMapToCurrentZone()
+			end
 		end
 	end
 end
@@ -353,13 +357,6 @@ function module:SetMap()
 	end
 end
 
-
----[[	PROFILER
--- Add WorldMap functions to the profiler.
-LUI.Profiler.TraceScope(module, "WorldMap", "LUI")
---]]
-
-
 --------------------------------------------------
 -- Module Functions
 --------------------------------------------------
@@ -477,34 +474,26 @@ end
 
 function module:DBCallback(event, dbobj, profile)
 	db, dbd = LUI:Namespace(self)
-	
+
 	for name, module in self:IterateModules() do
-		if not module.db and module.OnInitialize then
-			module:OnInitialize()
+		if module.DBCallback then
+			module:DBCallback()
+		end
+
+		if db.modules[name] ~= nil and db.modules[name] ~= module:IsEnabled() then
+			module:Toggle()
 		end
 	end
-	
+
 	if self:IsEnabled() then
 		self:Refresh()
 	end
 end
 
 function module:OnInitialize()
-	local function merge(target, source)
-		if type(target) ~= "table" then target = {} end
-		for k, v in pairs(source) do
-			if type(v) == "table" then
-				target[k] = merge(target[k], v)
-			else
-				target[k] = v
-			end
-		end
-		return target
-	end
-	
 	db, dbd = LUI:Namespace(self, true)
 	char = self.db.char
-	
+
 	local disabled = not self.enabledState
 	for name, module in self:IterateModules() do
 		---[[	PROFILER
@@ -536,7 +525,7 @@ function module:OnEnable()
 	self:SetMap()
 	
 	for name, module in self:IterateModules() do
-		if not module.db or module.db.profile.Enable then
+		if db.modules[name] ~= false then
 			module:Enable()
 		end
 	end
@@ -547,7 +536,7 @@ function module:OnDisable()
 	if visible then
 		HideUIPanel(WorldMapFrame)
 	end
-	
+
 	self:UnregisterAllEvents()
 	self:UnhookAll()
 	
@@ -577,3 +566,8 @@ function module:OnDisable()
 		end
 	end
 end
+
+---[[	PROFILER
+-- Add WorldMap module functions to the profiler.
+LUI.Profiler.TraceScope(self, "WorldMap", "LUI")
+--]]

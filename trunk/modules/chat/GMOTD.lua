@@ -8,22 +8,36 @@
 local addonname, LUI = ...
 local script = LUI:NewScript("GMOTD", "AceEvent-3.0", "AceHook-3.0")
 
-local gmotd
+local chatFramesRegistered = {}
 
-function script:ChatFrame_DisplayGMOTD(frame, msg)
-	gmotd = msg
-end
+function script:ChatFrame_RegisterForMessages(frame, ...)
+	for i=1, select("#", ...) do
+		if select(i, ...) == "GUILD" then
+			-- force Blizzard's code to skip printing the GMOTD
+			frame.checkedGMOTD = true
 
-function script:PLAYER_ENTERING_WORLD(event)
-	self:UnregisterEvent(event)
-	self:UnhookAll()
-
-	if gmotd then
-		ChatFrame_DisplayGMOTD(ChatFrame1, gmotd)
-		gmotd = nil
+			tinsert(chatFramesRegistered, frame)
+		end
 	end
 end
 
-script:RawHook("ChatFrame_DisplayGMOTD", true)
+function script:PLAYER_ENTERING_WORLD(event)
+	self:UnregisterAllEvents()
+	self:UnhookAll()
+
+	if #chatFramesRegistered == 0 then return end
+
+	local gmotd = GetGuildRosterMOTD()
+
+	if gmotd and gmotd ~= "" then
+		for i, frame in ipairs(chatFramesRegistered) do
+			ChatFrame_DisplayGMOTD(frame, gmotd)
+		end
+	end
+
+	chatFramesRegistered = nil
+end
+
+script:SecureHook("ChatFrame_RegisterForMessages")
 
 script:RegisterEvent("PLAYER_ENTERING_WORLD")

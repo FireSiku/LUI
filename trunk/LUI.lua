@@ -19,6 +19,7 @@ _G.oUF = LUI.oUF
 local Media = LibStub("LibSharedMedia-3.0")
 local Profiler = LUI.Profiler
 local widgetLists = AceGUIWidgetLSMlists
+local AceAddon = LibStub("AceAddon-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
@@ -551,13 +552,22 @@ function LUI:Module(name, prototype, ...)
 
 			-- set prototype
 			local mt = getmetatable(module)
-			mt.__index = prototype
+			if self.defaultModulePrototype then
+				mt.__index = setmetatable(prototype, {__index = self.defaultModulePrototype})
+			else
+				mt.__index = prototype
+			end
 			setmetatable(module, mt)
 		end
 	elseif prototype ~= true then -- check silent
-		if not next(self.modules) then -- set defaultModulePrototype and defaultModuleLibraries for the parent module
-			self:SetDefaultModulePrototype(getModulePrototype(self))
+		if not next(self.modules) then
 			self:SetDefaultModuleLibraries("LUIDevAPI")
+			self:SetDefaultModulePrototype(getModulePrototype(self))
+		end
+
+		-- add the defaultPrototype as a metatable to the prototype if it exists
+		if type(prototype) == "table" and self.defaultModulePrototype then
+			setmetatable(prototype, {__index = self.defaultModulePrototype})
 		end
 
 		module = self:NewModule(name, prototype, ...)
@@ -570,10 +580,16 @@ function LUI:Module(name, prototype, ...)
 	return module
 end
 
-function LUI:Toggle()
-	local success = self[self:IsEnabled() and "Disable" or "Enable"](self)
-	if self.db and self.db.profile and self.db.profile.Enable ~= nil then
-		self.db.profile.Enable = self:IsEnabled()
+function LUI:Toggle(state)
+	if state == nil then
+		state = not self:IsEnabled()
+	end
+	state = state and "Enable" or "Disable"
+
+	local success = self[state](self)
+
+	if self.db.parent then
+		self.db.parent.profile.modules[self:GetName()] = self:IsEnabled()
 	end
 	return success
 end
@@ -617,7 +633,7 @@ function LUI:GetDefaultVal(info)
 		dbloc = dbloc[key]
 
 		if type(dbloc) ~= "table" then
-			error("Error accessing defaults\nCould not access "..strjoin(".", info[start-1], "db.defaults.profile", unpack(info, start, dbloc == nil and i or i+1)).."\nddfaults layout must be the same as info", 2)
+			error("Error accessing defaults\nCould not access "..strjoin(".", info[start-1], "db.defaults.profile", unpack(info, start, dbloc == nil and i or i+1)).."\ndefaults layout must be the same as info", 2)
 		end
 	end
 
@@ -646,11 +662,11 @@ function LUI:CheckConflict(...) -- self is module
 
 	if conflict then
 		-- disable without calling OnDisable function
-		LibStub("AceAddon-3.0").statuses[self.name] = false
+		AceAddon.statuses[self.name] = false
 		self:SetEnabledState(false)
 		-- same for child modules
 		for name, module in self:IterateModules() do
-			LibStub("AceAddon-3.0").statuses[module.name] = false
+			AceAddon.statuses[module.name] = false
 			module:SetEnabledState(false)
 		end
 		if db.General.ModuleMessages then
@@ -1378,8 +1394,8 @@ function LUI:RegisterModule(module, moduledb, addFunc)
 					if db.General.ModuleMessages then LUI:Print(mName.." Module Disabled") end
 				end
 				if addFunc ~= nil then addFunc() end
-				--LUI:Print("The reload UI in the LUI:RegisterModule function can be removed once all the modules have an OnDisable function added and formatted correctly")
-				StaticPopup_Show("RELOAD_UI")
+
+				StaticPopup_Show("RELOAD_UI") -- TODO: This can be removed once all the modules have an OnDisable function added and formatted correctly
 			end,
 		},
 	})
@@ -1388,29 +1404,6 @@ function LUI:RegisterModule(module, moduledb, addFunc)
 
 	if LUI.defaultModuleState ~= false and db[moduledb].Enable ~= nil then
 		module:SetEnabledState(db[moduledb].Enable)
-	end
-end
-
-local function initDefaults(defaults, parent) -- TODO FIX this thing
-	local mt = parent["**"]
-	if mt then
-		if type(mt) == "table" then
-			for k, v in pairs(mt) do
-				if defaults[k] == nil then
-					defaults[k] = v
-					print(k, v)
-				end
-			end
-		end
-
-		parent["*"] = mt
-		parent["**"] = nil
-	end
-
-	for k, v in pairs(defaults) do
-		if type(v) == "table" then
-			initDefaults(v, defaults)
-		end
 	end
 end
 
@@ -1432,7 +1425,7 @@ function LUI:NewNamespace(module, enableButton, version)
 	local mName = module:GetName()
 
 	-- Add options loader function to list
-	if self == LUI and (not module.addon or IsAddOnLoaded(module.addon)) then
+	if not module.isNestedModule then
 		table.insert(newModuleOptions, mName)
 	end
 
@@ -1516,7 +1509,9 @@ function LUI:NewNamespace(module, enableButton, version)
 	end
 
 	-- Set module enabled state
-	if LUI.defaultModuleState ~= false and module.db.profile.Enable ~= nil then
+	if not self.enabledState or (module.addon and not IsAddOnLoaded(module.addon)) then
+		module:SetEnabledState(false)
+	elseif module.db.profile.Enable ~= nil then
 		module:SetEnabledState(module.db.profile.Enable)
 	end
 
@@ -1576,15 +1571,8 @@ function LUI:Namespace(module, toggleButton, version) -- no metatables (note: do
 	if self.db.children and self.db.children[mName] then return module.db.profile, module.db.defaults.profile end
 
 	-- Add options loader function to list
-	if self == LUI and (not module.addon or IsAddOnLoaded(module.addon)) then
+	if not module.isNestedModule and (not module.addon or IsAddOnLoaded(module.addon)) then
 		table.insert(newModuleOptions, mName)
-	end
-
-	-- Initialize default metatables
-	if module.defaults then
-		for k, v in pairs(module.defaults) do
-			initDefaults(v, module.defaults)
-		end
 	end
 
 	-- Register namespace
@@ -1596,54 +1584,66 @@ function LUI:Namespace(module, toggleButton, version) -- no metatables (note: do
 		self.db.profile[mName] = nil
 	end
 
-	-- Hook conflicting addon checker
-	if module.conflicts then
-		LUI:RawHook(module, "OnEnable", LUI.CheckConflict)
-	end
+	-- Create modules table in parent's db if it doesn't exist already
+	self.db.profile.modules = self.db.profile.modules or {}
 
-	-- Register Callbacks
-	if type(module.DBCallback) == "function" then
-		module.db.RegisterCallback(module, "OnProfileChanged", "DBCallback")
-		module.db.RegisterCallback(module, "OnProfileCopied", "DBCallback")
-		module.db.RegisterCallback(module, "OnProfileReset", "DBCallback")
-	end
-
-	-- Create toggle button and set module enabled state
-	if toggleButton then
-		self.db.profile.modules = self.db.profile.modules or {}
-		if self.db.profile.modules[mName] == nil then
-			self.db.profile.modules[mName] = module.defaultState == nil and true or module.defaultState
-		end
-		if rawget(module.db.profile, "Enable") ~= nil then
+	-- Look for incorrect Enable var usage
+	if rawget(module.db.profile, "Enable") ~= nil then
+		if rawget(module.db.defaults.profile, "Enable") ~= nil then
+			module:SetEnabledState(false)
+			error(format("Incorrect use of Enable db var in %s", tostring(module)), 2)
+		elseif self.db.profile.modules[mName] == nil then -- old var in user's SavedVariables (move it over)
 			self.db.profile.modules[mName] = module.db.profile.Enable
-			module.db.profile.Enable = nil
 		end
-		if LUI.defaultModuleState ~= false and self.db.profile.modules[mName] ~= nil then
-			module:SetEnabledState(self.db.profile.modules[mName])
+		module.db.profile.Enable = nil
+	end
+
+	-- Set Enabled state
+	if not self.enabledState or (module.addon and not IsAddOnLoaded(module.addon)) then
+		module:SetEnabledState(false)
+	elseif self.db.profile.modules[mName] ~= nil then
+		module:SetEnabledState(self.db.profile.modules[mName])
+	elseif module.defaultState ~= nil then
+		module:SetEnabledState(module.defaultState)
+		self.db.profile.modules[mName] = module.defaultState
+	end
+
+	if not module.isNestedModule then
+		-- Hook conflicting addon checker
+		if module.conflicts then
+			LUI:RawHook(module, "OnEnable", LUI.CheckConflict)
 		end
 
-		table.insert(moduleList, {
-			[mName] = {
-				type = "execute",
-				name = function() return format("%s: |cff%s|r", mName, module:IsEnabled() and "00FF00Enabled" or "FF0000Disabled") end,
-				desc = "Left Click: Toggle between Enabled and Disabled.\nShift Click: Reset module's settings.",
-				func = function()
-					if IsShiftKeyDown() then
-						module.db:ResetProfile()
+		-- Register DB Callbacks
+		if type(module.DBCallback) == "function" then
+			module.db.RegisterCallback(module, "OnProfileChanged", "DBCallback")
+			module.db.RegisterCallback(module, "OnProfileCopied", "DBCallback")
+			module.db.RegisterCallback(module, "OnProfileReset", "DBCallback")
+		end
 
-						if db.General.ModuleMessages then
-							LUI:Printf("%s module settings reset.", mName)
-						end
-					elseif module:Toggle() then
-						self.db.profile.modules[mName] = module:IsEnabled()
+		-- Create toggle button
+		if toggleButton then
+			table.insert(moduleList, {
+				[mName] = {
+					type = "execute",
+					name = function() return format("%s: |cff%s|r", module.optionsName or mName, module:IsEnabled() and "00FF00Enabled" or "FF0000Disabled") end,
+					desc = "Left Click: Toggle between Enabled and Disabled.\nShift Click: Reset module's settings.",
+					func = function()
+						if IsShiftKeyDown() then
+							module.db:ResetProfile()
 
-						if db.General.ModuleMessages then
-							LUI:Printf("%s module |cff%s|r", mName, module:IsEnabled() and "00FF00enabled" or "FF0000disabled")
+							if db.General.ModuleMessages then
+								LUI:Printf("%s module settings reset.", module.optionsName or mName)
+							end
+						elseif module:Toggle() then
+							if db.General.ModuleMessages then
+								LUI:Printf("%s module |cff%s|r", module.optionsName or mName, module:IsEnabled() and "00FF00enabled" or "FF0000disabled")
+							end
 						end
-					end
-				end,
-			},
-		})
+					end,
+				},
+			})
+		end
 	end
 
 	-- Check for module version update
@@ -1668,26 +1668,27 @@ function LUI:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("LUIDB", LUI.defaults, true)
 	db_ = self.db.profile
 
-	self.db.RegisterCallback(self, "OnProfileChanged", "Refresh")
-	self.db.RegisterCallback(self, "OnProfileCopied", "Refresh")
-	self.db.RegisterCallback(self, "OnProfileReset", "Refresh")
-
-	self:RegisterChatCommand(addonname, "ChatCommand")
-
 	_G.LUICONFIG = _G.LUICONFIG or {}
 	_G.LUICONFIG.Versions = _G.LUICONFIG.Versions or {}
 
-	if _G.LUICONFIG.IsConfigured and _G.LUICONFIG.Versions.lui == LUI.Versions.lui then
+	if not _G.LUICONFIG.IsConfigured then
+		self:Disable()
+		self:Configure()
+	elseif _G.LUICONFIG.Versions.lui ~= LUI.Versions.lui then
+		self:Disable()
+		self:Update()
+	else -- Everything checks out, time to enable
+		self.db.RegisterCallback(self, "OnProfileChanged", "Refresh")
+		self.db.RegisterCallback(self, "OnProfileCopied", "Refresh")
+		self.db.RegisterCallback(self, "OnProfileReset", "Refresh")
+
+		self:RegisterChatCommand(addonname, "ChatCommand")
+
 		self:RegisterEvent("ADDON_LOADED", "SetDamageFont", self)
 		self:LoadExtraModules()
-	else
-		self.defaultModuleState = false
-		for name, module in self:IterateModules() do
-			module:SetEnabledState(false)
-		end
 	end
 
-	StaticPopupDialogs["RELOAD_UI"] = {
+	StaticPopupDialogs["RELOAD_UI"] = { -- TODO: Remove all need for this
 		preferredIndex = 3,
 		text = L["The UI needs to be reloaded!"],
 		button1 = ACCEPT,
@@ -1714,22 +1715,11 @@ function LUI:OnEnable()
 	db_ = self.db.profile
 	--CheckResolution()
 
-	if not LUICONFIG.IsConfigured then
-		self.db.UnregisterAllCallbacks(self)
-		self.db:SetProfile(UnitName("player").." - "..GetRealmName())
-		self:Configure()
-	elseif LUICONFIG.Versions.lui ~= LUI.Versions.lui then
-		self:Update()
-	else
-		local LoginMsg = false
-		if(LoginMsg==true) then
-			print(" ")
-			print("Welcome on |c0090ffffLUI v3|r for Patch 3.3.5 !")
-			print("For more Information visit www.wow-lui.com")
-		end
+--	print(" ")
+--	print("Welcome to |c0090ffffLUI v3|r for Patch 3.3.5 !")
+--	print("For more Information visit lui.maydia.org")
 
-		self:SyncAddonVersion()
-	end
+	self:SyncAddonVersion()
 end
 
 function LUI:MergeDefaults(target, source)

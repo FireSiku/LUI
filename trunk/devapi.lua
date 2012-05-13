@@ -415,10 +415,24 @@ function devapi:NewToggle(name, desc, order, func, width, disabled, hidden)
 end
 
 --[[
+	func (methodname|function)
+		- same as above except boolean will not work
+--]]
+function devapi:NewEnable(name, desc, order, func, width, disabled, hidden)
+	local t = SetVals("toggle", name, order)
+	t.desc = descfuncs(self, func, desc or "Whether or not to "..name..".", function(info) return (self.defaultState == nil or self.defaultState) and "Enabled" or "Disabled" end)
+	t.get = getfuncs(self, func, function(info) return self:IsEnabled() end)
+	t.set = setfuncs(self, func, function(info, value) self:Toggle(value) end)
+
+	SetState(t, width or "full", disabled, hidden)
+	return t
+end
+
+--[[
 	values (table|function|true) - [key]=value pair table to choose from
 		- key is the value passed to "set"
 		- value is the string displayed
-		- only use true (boolean) if using a dcontrol (will use corresponding HashTable)
+		- only use true (boolean) if using a dcontrol (will use corresponding LibSharedMedia HashTable)
 	dcontrol (string|false) - AceGUI-3.0 dialog control to use
 		- false (boolean) - no dialog control; use normal style functions instead of values[value] style functions
 		- (nil) - no dialog control; values[value] style functions
@@ -795,8 +809,9 @@ end
 -- functions to embed
 local mixins = {
 	"NewGroup", "NewHeader", "NewDesc", 
-	"NewToggle", "NewSelect", "NewMultiSelect",
-	"NewExecute", "NewInput", "NewInputNumber",
+	"NewToggle", "NewEnable", "NewExecute",
+	"NewSelect", "NewMultiSelect",
+	"NewInput", "NewInputNumber",
 	"NewSlider", "NewPosition", "NewPosSliders",
 	"NewColor", "NewColorNoAlpha", 
 	"NewFontOptions",

@@ -4,7 +4,6 @@
 	Description: Experimental profiler tools.
 ]]
 
-
 -- External references.
 local addonname, LUI = ...
 
@@ -320,7 +319,7 @@ excludes[module.TraceScope] = true
 -- Create Profilers GUI.
 if not Enabled then return end
 
-module.GUI = CreateFrame("Frame", format("LUI: Profiler (%s)", GetAddOnMetadata(addonname, "X-Curse-Packaged-Version")))
+module.GUI = CreateFrame("Frame", format("LUI: Profiler (%s)", GetAddOnMetadata(addonname, "X-Curse-Packaged-Version") or "Working Copy"))
 local gui = module.GUI
 
 -- Apply frame settings.
@@ -490,6 +489,7 @@ gui:SetBackdropColor(0, 0, 0, 0.5)
 gui:SetHeight(400)
 gui:SetPoint("CENTER", UIParent)
 gui:SetWidth(725)
+gui:SetScale(0.9)
 -- - Title.
 gui.Title:SetPoint("TOP", gui, "TOP", 0, -5)
 gui.Title:SetFontObject(GameFontNormalSmall)
@@ -525,7 +525,7 @@ gui.Sort = function(a, b)
 	if active == 1 then
 		return traces[a].name < traces[b].name	-- Name +
 	elseif active == -1 then
-		return traces[a].name > traces[b].name	-- Name - 
+		return traces[a].name > traces[b].name	-- Name -
 	elseif active == 2 then
 		return traces[a].count > traces[b].count	-- Calls -
 	elseif active == -2 then

@@ -1184,6 +1184,3 @@ function module:OnEnable()
 	self:SetMinimap()
 	self:SetAdditionalFrames()
 end
-
-function module:OnDisable()
-end

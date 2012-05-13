@@ -20,12 +20,10 @@ local db, dbd
 -- Local Variables
 --------------------------------------------------
 
-local currentLink
-
 local urlEvents, urlPatterns
 do
 	local tlds = {
-		ONION = true,
+		ONION = true, -- for all the TOR fags out there
 		-- Copied from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
 		-- Version 2008041301, Last Updated Mon Apr 21 08:07:00 2008 UTC
 		AC = true,
@@ -443,15 +441,10 @@ local function createStaticPopups()
 		editBoxWidth = 400,
 		maxLetters = 1024, -- need this to override after other dialogs set to low numbers
 		OnShow = function(self, data)
-			local editBox = self.editBox
-			editBox:SetText(currentLink)
-			editBox:SetFocus()
-			editBox:HighlightText(0)
-
 			local button = self.button2
 			button:ClearAllPoints()
 			button:SetWidth(200)
-			button:SetPoint("CENTER", editBox, "CENTER", 0, -30)
+			button:SetPoint("CENTER", self.editBox, "CENTER", 0, -30)
 		end,
 		EditBoxOnEscapePressed = function(self)
 			self:GetParent():Hide()
@@ -628,19 +621,21 @@ function module:FCF_SavePositionAndDimensions(chatFrame)
 	end
 end
 
-function module:SetItemRef(link, text, button, ...)
+function module:SetItemRef(link, text, button, chatFrame)
 	if IsAltKeyDown() and sub(link, 1, 6) == "player" then
 		InviteUnit(match(link, "player:([^:]+)"))
-		return nil
+		return
 	end
 
 	if strsub(link, 1, 3) == "url" then
-		currentLink = strsub(link, 5)
-		StaticPopup_Show("LUI_Chat_UrlCopy")
-		return ...
+		local dialog = StaticPopup_Show("LUI_Chat_UrlCopy")
+		dialog.editBox:SetText(strsub(link, 5))
+		dialog.editBox:SetFocus()
+		dialog.editBox:HighlightText(0)
+		return
 	end
 
-	return self.hooks.SetItemRef(link, text, button, ...)
+	return self.hooks.SetItemRef(link, text, button, chatFrame)
 end
 
 function module:AddMessage(frame, text, ...)
@@ -809,10 +804,26 @@ function module:Refresh(info, value)
 	configureTabs(db.General.MinimalistTabs)
 
 	self:LibSharedMedia_Registered("font", db.General.Font.Font)
+
+	for name, module in self:IterateModules() do
+		if module.Refresh and module:IsEnabled() then
+			module:Refresh()
+		end
+	end
 end
 
 function module:DBCallback(event, dbobj, profile)
 	db, dbd = LUI:Namespace(self)
+
+	for name, module in self:IterateModules() do
+		if module.DBCallback then
+			module:DBCallback()
+		end
+
+		if db.modules[name] ~= nil and db.modules[name] ~= module:IsEnabled() then
+			module:Toggle(db.modules)
+		end
+	end
 
 	if self:IsEnabled() then
 		positionChatFrame()
@@ -827,7 +838,7 @@ function module:OnInitialize()
 	for name, module in self:IterateModules() do
 		---[[	PROFILER
 		-- Add Chat module functions to the profiler.
-		LUI.Profiler.TraceScope(module, name, "LUI.WorldMap")
+		LUI.Profiler.TraceScope(module, name, "LUI.Chat")
 		--]]
 
 		if disabled then
@@ -863,7 +874,7 @@ function module:OnEnable()
 	self:Refresh()
 
 	for name, module in self:IterateModules() do
-		if not module.db or module.db.profile.Enable then
+		if db.modules[name] ~= false then
 			module:Enable()
 		end
 	end
@@ -888,3 +899,8 @@ function module:OnDisable()
 		ChatFrame_RemoveMessageEventFilter(event, urlFilterFunc)
 	end
 end
+
+---[[	PROFILER
+-- Add Chat module functions to the profiler.
+LUI.Profiler.TraceScope(self, "Chat", "LUI")
+--]]

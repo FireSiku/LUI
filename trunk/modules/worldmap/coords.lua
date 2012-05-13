@@ -96,7 +96,6 @@ end
 
 module.defaults = {
 	profile = {
-		Enable = true,
 		Accuracy = 1,
 	},
 }
@@ -107,7 +106,7 @@ function module:LoadOptions()
 	end
 
 	local options = self:NewGroup("Coordinates", 4, "generic", "Refresh", {
-		Enable = self:NewToggle("Enable", nil, 1, true, "normal"),
+		Enable = self:NewEnable("Enable", nil, 1, nil, "normal"),
 		Accuracy = self:NewSlider("Accuracy", "Adjust the number of decimal places the coordinates are accurate to.", 2, 0, 2, 1, true, false, nil, coordsDisabled),
 	})
 

@@ -782,6 +782,3 @@ end
 function module:OnEnable()
 	self:SetNameplates()
 end
-
-function module:OnDisable()
-end

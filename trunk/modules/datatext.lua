@@ -2833,7 +2833,7 @@ module.defaults = {
 		Clock = {
 			Enable = true,
 			LocalTime = true,
-			Time24 = true,
+			Time24 = GetLocale() ~= "enUS",
 			ShowInstanceDifficulty = true,
 			X = -55,
 			Y = 0,

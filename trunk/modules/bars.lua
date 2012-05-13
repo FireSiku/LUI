@@ -342,6 +342,18 @@ local GetButton = function(bar, barid, barpos, buttonid)
 	return button
 end
 
+local UpdateUIPanelOffset = function(isLeft)
+	if not db.General.AdjustUIPanels then
+		UIParent:SetAttribute("LEFT_OFFSET", 16)
+	end
+
+	if isLeft then
+		local left1 = (sidebars.Left1 and db.SidebarLeft1.Enable) and sidebars.Left1.ButtonAnchor:GetRight() or 16
+		local left2 = (sidebars.Left2 and db.SidebarLeft2.Enable) and sidebars.Left2.ButtonAnchor:GetRight() or 16
+		UIParent:SetAttribute("LEFT_OFFSET", ceil(max(left1, left2)))
+	end
+end
+
 function module:SetBarColors()
 	LUIBarsTopBG:SetBackdropColor(unpack(Themes.db.bar))
 	LUIBarsBottomBG:SetBackdropColor(unpack(Themes.db.bar2))
@@ -425,6 +437,7 @@ function module:CreateSidebarSlider(side, id)
 			sb.timerout = 0
 			sb.ButtonAlphaIn:Show()
 			self:Hide()
+			UpdateUIPanelOffset(not isRight)
 		end
 	end)
 
@@ -440,6 +453,7 @@ function module:CreateSidebarSlider(side, id)
 			sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, sb.x, sb.y)
 			sb.timerin = 0
 			self:Hide()
+			UpdateUIPanelOffset(not isRight)
 		end
 	end)
 
@@ -602,6 +616,7 @@ function module:CreateSidebarSlider(side, id)
 					SidebarSetAlpha(frame, 1)
 				end
 				sb.SidebarBlock:Hide()
+				UpdateUIPanelOffset(not isRight)
 			else
 				sb.SlideOut:Show()
 				sb.AlphaIn:Show()
@@ -619,6 +634,7 @@ function module:CreateSidebarSlider(side, id)
 					SidebarSetAlpha(frame, 0)
 				end
 				sb.SidebarBlock:Show()
+				UpdateUIPanelOffset(not isRight)
 			else
 				sb.SlideIn:Show()
 				sb.AlphaOut:Show()
@@ -1492,6 +1508,8 @@ function module:SetBars()
 	self:CreateSidebarSlider("Right", 2)
 	self:CreateSidebarSlider("Left", 1)
 	self:CreateSidebarSlider("Left", 2)
+
+	UpdateUIPanelOffset(true)
 end
 
 module.defaults = {
@@ -1499,6 +1517,7 @@ module.defaults = {
 		StatesLoaded = false,
 		General = {
 			Enable = true,
+			AdjustUIPanels = true,
 			ShowHotkey = false,
 			HotkeyFont = "vibrocen",
 			HotkeySize = 12,
@@ -2041,29 +2060,31 @@ function module:LoadOptions()
 			header1 = self:NewHeader("General Settings", 0),
 			Enable = self:NewToggle("Enable", "Whether or not to use LUI's Action Bars.", 1, function() StaticPopup_Show("RELOAD_UI") end),
 			empty1 = self:NewDesc(" ", 2),
-			ShowHotkey = self:NewToggle("Show Hotkey Text", nil, 3, true, nil, nil, isBarAddOnLoaded),
-			HotkeySize = self:NewSlider("Hotkey Size", "Choose your Hotkey Fontsize.", 4, 1, 40, 1, true, nil, nil, disabled.Hotkey, isBarAddOnLoaded),
-			HotkeyFont = self:NewSelect("Hotkey Font", "Choose your Hotkey Font.", 5, widgetLists.font, "LSM30_Font", true, nil, disabled.Hotkey, isBarAddOnLoaded),
-			HotkeyOutline = self:NewSelect("HotkeyFont Flag", "Choose your Hotkey Fontflag.", 6, LUI.FontFlags, nil, dryCall, nil, disabled.Hotkey, isBarAddOnLoaded),
-			empty2 = self:NewDesc(" ", 7, nil, nil, isBarAddOnLoaded),
-			ShowMacro = self:NewToggle("Show Macro Text", nil, 8, true, nil, nil, isBarAddOnLoaded),
-			MacroSize = self:NewSlider("Macro Size", "Choose your Macro Fontsize.", 9, 1, 40, 1, true, nil, nil, disabled.Macro, isBarAddOnLoaded),
-			MacroFont = self:NewSelect("Macro Font", "Choose your Macro Font.", 10, widgetLists.font, "LSM30_Font", true, nil, disabled.Macro, isBarAddOnLoaded),
-			MacroOutline = self:NewSelect("Macro Font Flag", "Choose your Macro Fontflag.", 11, LUI.FontFlags, nil, dryCall, nil, disabled.Macro, isBarAddOnLoaded),
-			empty3 = self:NewDesc(" ", 12, nil, nil, isBarAddOnLoaded),
-			ShowCount = self:NewToggle("Show Count Text", nil, 13, true, nil, nil, isBarAddOnLoaded),
-			CountSize = self:NewSlider("Count Size", "Choose your Count Fontsize.", 14, 1, 40, 1, true, nil, nil, disabled.Count, isBarAddOnLoaded),
-			CountFont = self:NewSelect("Count Font", "Choose your Count Font.", 15, widgetLists.font, "LSM30_Font", true, nil, disabled.Count, isBarAddOnLoaded),
-			CountOutline = self:NewSelect("Count Font Flag", "Choose your Count Fontflag.", 16, LUI.FontFlags, nil, dryCall, nil, disabled.Count, isBarAddOnLoaded),
-			empty2 = self:NewDesc(" ", 17, nil, nil, isBarAddOnLoaded),
-			ShowEquipped = self:NewToggle("Show Equipped Border", nil, 18, true, nil, nil, isBarAddOnLoaded),
-			empty3 = self:NewDesc(" ", 19, nil, nil, isBarAddOnLoaded),
-			LoadBlizz = self:NewExecute("Load Blizzard States", "Load the Blizzard Default Bar States.", 20, function() LoadStates(blizzstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
+			AdjustUIPanels = self:NewToggle("Adjust Blizzard's UI Panel positions", nil, 3, true),
+			empty2 = self:NewDesc(" ", 4),
+			ShowHotkey = self:NewToggle("Show Hotkey Text", nil, 5, true, nil, nil, isBarAddOnLoaded),
+			HotkeySize = self:NewSlider("Hotkey Size", "Choose your Hotkey Fontsize.", 6, 1, 40, 1, true, nil, nil, disabled.Hotkey, isBarAddOnLoaded),
+			HotkeyFont = self:NewSelect("Hotkey Font", "Choose your Hotkey Font.", 7, widgetLists.font, "LSM30_Font", true, nil, disabled.Hotkey, isBarAddOnLoaded),
+			HotkeyOutline = self:NewSelect("HotkeyFont Flag", "Choose your Hotkey Fontflag.", 8, LUI.FontFlags, nil, dryCall, nil, disabled.Hotkey, isBarAddOnLoaded),
+			empty3 = self:NewDesc(" ", 9, nil, nil, isBarAddOnLoaded),
+			ShowMacro = self:NewToggle("Show Macro Text", nil, 10, true, nil, nil, isBarAddOnLoaded),
+			MacroSize = self:NewSlider("Macro Size", "Choose your Macro Fontsize.", 11, 1, 40, 1, true, nil, nil, disabled.Macro, isBarAddOnLoaded),
+			MacroFont = self:NewSelect("Macro Font", "Choose your Macro Font.", 12, widgetLists.font, "LSM30_Font", true, nil, disabled.Macro, isBarAddOnLoaded),
+			MacroOutline = self:NewSelect("Macro Font Flag", "Choose your Macro Fontflag.", 13, LUI.FontFlags, nil, dryCall, nil, disabled.Macro, isBarAddOnLoaded),
+			empty4 = self:NewDesc(" ", 14, nil, nil, isBarAddOnLoaded),
+			ShowCount = self:NewToggle("Show Count Text", nil, 15, true, nil, nil, isBarAddOnLoaded),
+			CountSize = self:NewSlider("Count Size", "Choose your Count Fontsize.", 16, 1, 40, 1, true, nil, nil, disabled.Count, isBarAddOnLoaded),
+			CountFont = self:NewSelect("Count Font", "Choose your Count Font.", 17, widgetLists.font, "LSM30_Font", true, nil, disabled.Count, isBarAddOnLoaded),
+			CountOutline = self:NewSelect("Count Font Flag", "Choose your Count Fontflag.", 18, LUI.FontFlags, nil, dryCall, nil, disabled.Count, isBarAddOnLoaded),
+			empty5 = self:NewDesc(" ", 19, nil, nil, isBarAddOnLoaded),
+			ShowEquipped = self:NewToggle("Show Equipped Border", nil, 20, true, nil, nil, isBarAddOnLoaded),
+			empty6 = self:NewDesc(" ", 21, nil, nil, isBarAddOnLoaded),
+			LoadBlizz = self:NewExecute("Load Blizzard States", "Load the Blizzard Default Bar States.", 22, function() LoadStates(blizzstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
 			LoadLUI = self:NewExecute("Load LUI States", "Load the LUI Default Bar States.", 21, function() LoadStates(defaultstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
-			empty4 = self:NewDesc(" ", 22, nil, nil, isBarAddOnLoaded),
-			ToggleKB = self:NewExecute("Keybinds", "Toggles Keybinding mode.", 23, function() LibKeyBound:Toggle() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
-			empty5 = self:NewDesc(" ", 24),
-			Reset = self:NewExecute("Restore Defaults", "Restores Bar Default Settings. (Does NOT affect Bartender etc! For this go to General->AddOns)", 25, function() module.db:ResetProfile(); self:Refresh() end),
+			empty7 = self:NewDesc(" ", 23, nil, nil, isBarAddOnLoaded),
+			ToggleKB = self:NewExecute("Keybinds", "Toggles Keybinding mode.", 24, function() LibKeyBound:Toggle() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
+			empty8 = self:NewDesc(" ", 25),
+			Reset = self:NewExecute("Restore Defaults", "Restores Bar Default Settings. (Does NOT affect Bartender etc! For this go to General->AddOns)", -1, function() module.db:ResetProfile(); self:Refresh() end),
 		}),
 		TopTexture = self:NewGroup("Top Texture", 2, false, InCombatLockdown, {
 			header1 = self:NewHeader("Top Texture Settings", 0),
@@ -2190,6 +2211,8 @@ function module:Refresh(...)
 	SidebarSetAnchor("Left", 2)
 	SidebarSetAnchor("Right", 1)
 	SidebarSetAnchor("Right", 2)
+
+	UpdateUIPanelOffset(true)
 end
 
 function module:OnInitialize()

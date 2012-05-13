@@ -162,22 +162,22 @@ do
 
 	UnitPopupButtons["LUI_SET_FOCUS"] = {
 		text = L["Type %s to Set Focus"]:format(SLASH_FOCUS1),
-		tooltipText = L["Blizzard currently does not provide a proper way to right-click focus with custom unit frames."],
+		tooltipText = L["Blizzard does not support right-click focus"],
 		dist = 0,
 	}
 	UnitPopupButtons["LUI_CLEAR_FOCUS"] = {
 		text = L["Type %s to Clear Focus"]:format(SLASH_CLEARFOCUS1),
-		tooltipText = L["Blizzard currently does not provide a proper way to right-click focus with custom unit frames."],
+		tooltipText = L["Blizzard does not support right-click focus"],
 		dist = 0,
 	}
 	UnitPopupButtons["LUI_ROLE_CHECK"] = {
 		text = ROLE_POLL,
-		tooltipText = L["Initiate a role check, asking your group members to specify their roles."],
+		tooltipText = L["Initiate a role check"],
 		dist = 0,
 	}
 	UnitPopupButtons["LUI_READY_CHECK"] = {
 		text = READY_CHECK,
-		tooltipText = L["Initiate a ready check, asking your group members if they are ready to continue."],
+		tooltipText = L["Initiate a ready check"],
 		dist = 0,
 	}
 
