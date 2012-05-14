@@ -225,7 +225,7 @@ oUF.TagEvents["druidmana2"] = "UNIT_POWER UNIT_MAXPOWER"
 oUF.Tags["druidmana2"] = function(unit)
 	if unit ~= "player" then return end
 
-	if not db then return "" end
+	if not module.db then return "" end
 
 	local min, max = UnitPower("player", SPELL_POWER_MANA), UnitPowerMax("player", SPELL_POWER_MANA)
 	if module.db.Player.Texts.DruidMana.HideIfFullMana and min == max then return "" end
@@ -254,8 +254,14 @@ oUF.Tags["druidmana2"] = function(unit)
 		text = format("%s/%s", ShortValue(min), ShortValue(max))
 	elseif module.db.Player.Texts.DruidMana.Format == "Absolut Short & Percent" then
 		text = format("%s/%s | %.1f", ShortValue(min), ShortValue(max), perc)
+	elseif module.db.Player.Texts.DruidMana.Format == "Standard" then
+		text = min
+	elseif module.db.Player.Texts.DruidMana.Format == "Standard & Percent" then
+		text = format("%s | %.1f%%", min, perc)
 	elseif module.db.Player.Texts.DruidMana.Format == "Standard Short" then
 		text = ShortValue(min)
+	elseif module.db.Player.Texts.DruidMana.Format == "Standard Short & Percent" then
+		text = format("%s | %.1f%%", ShortValue(min), perc)
 	else
 		text = min
 	end

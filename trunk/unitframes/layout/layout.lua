@@ -486,8 +486,12 @@ local OverrideHealth = function(self, event, unit, powerType)
 					health.value:SetFormattedText("%s/%s | %.1f%%", ShortValue(min),ShortValue(max), healthPercent)
 				elseif health.value.Format == "Standard" then
 					health.value:SetFormattedText("%d", min)
+				elseif health.value.Format == "Standard & Percent" then
+					health.value:SetFormattedText("%d | %.1f%%", min, healthPercent)
 				elseif health.value.Format == "Standard Short" then
 					health.value:SetFormattedText("%s", ShortValue(min))
+				elseif health.value.Format == "Standard Short & Percent" then
+					health.value:SetFormattedText("%s | %.1f%%", ShortValue(min), healthPercent)
 				else
 					health.value:SetFormattedText("%d", min)
 				end
@@ -656,8 +660,12 @@ local OverridePower = function(self, event, unit)
 				power.value:SetFormattedText("%s/%s | %.1f%%", ShortValue(min), ShortValue(max), powerPercent)
 			elseif power.value.Format == "Standard" then
 				power.value:SetFormattedText("%d", min)
+			elseif power.value.Format == "Standard & Percent" then
+				power.value:SetFormattedText("%d | %.1f%%", min, powerPercent)
 			elseif power.value.Format == "Standard Short" then
 				power.value:SetFormattedText("%s", ShortValue(min))
+			elseif power.value.Format == "Standard Short" then
+				power.value:SetFormattedText("%s | %.1f%%", ShortValue(min), powerPercent)
 			else
 				power.value:SetFormattedText("%d", min)
 			end
