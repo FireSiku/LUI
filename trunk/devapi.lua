@@ -474,15 +474,15 @@ function devapi:NewMultiSelect(name, desc, order, values, func, width, disabled,
 	
 	local t = SetVals("multiselect", name, order)
 	t.values = values
-	t.desc = descfuncs(self, func, desc, function(info, key)
+	t.desc = descfuncs(self, func, desc, function(info)
 		local default, defaults = "", self:GetDefaultVal(info)
 		for k, v in pairs(defaults) do
 			default = default.."\n"..values()[k]..": "..(v and "Enabled" or "Disabled")
 		end
 		return default
 	end)
-	t.get = getfuncs(self, func, function(info, key) tinsert(info, key); return self:GetDBVar(info) end)
-	t.set = setfuncs(self, func, function(info, key, value) tinsert(info, key); self:SetDBVar(info, value) end)
+	t.get = getfuncs(self, func, function(info, key) return self:GetDBVar(info)[key] end)
+	t.set = setfuncs(self, func, function(info, key, value) self:GetDBVar(info)[key] = value end)
 	
 	SetState(t, width, disabled, hidden)
 	return t

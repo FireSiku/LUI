@@ -1362,6 +1362,9 @@ local function getOptions()
 		end
 	end
 
+	-- Do a garbage collection, that was a LOT of tables and functions that got created
+	collectgarbage("collect")
+
 	return LUI.options
 end
 

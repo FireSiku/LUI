@@ -65,7 +65,7 @@ function module:ItemExclusion(info, item) -- info = true: remove item from list
 end
 
 function module:ClearExclusions()
-	db.AutoSell.Exclusions = {}
+	wipe(db.AutoSell.Exclusions)
 
 	if db.AutoSell.Settings.ShowExclusion then
 		print("|cff00ff00Successfully cleared the exclusion list.")
@@ -143,8 +143,7 @@ function module:AutoSell()
 			if item then
 				local _, itemLink, itemQuality, _,_,_,_,_,_,_, itemPrice = GetItemInfo(item)
 
-				if (db.AutoSell.ItemQualities[itemQuality + 1] and not db.AutoSell.Exclusions[item])
-						or ((not db.AutoSell.ItemQualities[itemQuality + 1]) and db.AutoSell.Exclusions[item]) then
+				if db.AutoSell.ItemQualities[itemQuality + 1] == not db.AutoSell.Exclusions[item] then -- don't use ~= (itemQuality can be true or false, exclusion can be true or nil (false ~= nil will return true and sell the item))
 					local _, itemCount  = GetContainerItemInfo(bag, slot)
 					totalPrice = totalPrice + (itemCount * itemPrice)
 
@@ -227,7 +226,6 @@ end
 
 module.defaults = {
 	profile = {
-		Enable = false,
 		AutoRepair = {
 			Enable = true,
 			Settings = {
@@ -268,10 +266,15 @@ module.defaults = {
 	},
 }
 
+module.defaultState = false
 module.getter = "generic"
 module.setter = "generic"
 
 function module:LoadOptions()
+	-- option variables
+	local removeExclusionKey
+	local exclusionList = {}
+
 	-- disabled funcs
 	local disabled = {
 		AutoStock = function() return not db.AutoStock.Enable end,
@@ -279,10 +282,9 @@ function module:LoadOptions()
 		AutoSell = function() return not db.AutoSell.Enable end,
 		BuyLimit = function() return ((not db.AutoStock.Enable) or db.AutoStock.Settings.NoLimit) end,
 		CostLimit = function() return ((not db.AutoRepair.Enable) or db.AutoRepair.Settings.NoLimit) end,
+		NoExclusionSelected = function() return not removeExclusionKey end,
+		NoExclusions = function() return not next(exclusionList) end,
 	}
-
-	-- option variables
-	local removeExclusionKey
 
 	-- option values
 	local qualities = {}
@@ -290,12 +292,12 @@ function module:LoadOptions()
 		qualities[i + 1] =  ITEM_QUALITY_COLORS[i]["hex"] .. _G["ITEM_QUALITY" .. i .. "_DESC"] .. "|r"
 	end
 	local function exclusions()
-		local items = {}
+		wipe(exclusionList)
 		for itemID in pairs(db.AutoSell.Exclusions) do
 			local _, itemLink = GetItemInfo(itemID)
-			items[itemID] = itemLink
+			exclusionList[itemID] = itemLink
 		end
-		return items
+		return exclusionList
 	end
 
 	-- Auto Stock functions.
@@ -402,8 +404,8 @@ function module:LoadOptions()
 			}),
 			RemoveExclusion = self:NewGroup("Remove Item Exclusion", 8, exclusionGet, exclusionSet, true, disabled.AutoSell, {
 				Select = self:NewSelect("Select Item", "Select the item which you want to remove from the exclusion list.", 1, exclusions, nil, false, "double"),
-				Remove = self:NewExecute("Remove selected item", "Removes the selected item from the exclusion list.", 2, removeExclusion),
-				Clear = self:NewExecute("Clear excluded items", "Removes the selected item from the exclusion list.", 3, "ClearExclusions", "Do you really want to clear all excluded items?"),
+				Remove = self:NewExecute("Remove selected item", "Removes the selected item from the exclusion list.", 2, removeExclusion, nil, nil, disabled.NoExclusionSelected),
+				Clear = self:NewExecute("Clear excluded items", "Removes the selected item from the exclusion list.", 3, "ClearExclusions", "Do you really want to clear all excluded items?", nil, disabled.NoExclusions),
 			}),
 		}),
 		AutoStock = self:NewGroup("Auto Stock", 4, {
@@ -445,8 +447,10 @@ function module:LoadOptions()
 end
 
 function module:OnInitialize()
-	db, dbd = LUI:NewNamespace(self, true)
+	db, dbd = LUI:Namespace(self, true)
 end
+
+module.DBCallback = module.OnInitialize
 
 function module:OnEnable()
 	self:RegisterEvent("MERCHANT_SHOW")

@@ -73,13 +73,13 @@ end
 --------------------------------------------------
 
 local conditions = {}
-conditions["isin"] = function(alpha, bravo)
+conditions["isin"] = function(alpha, bravo, depth)
 	if type(bravo) == "table" then
 		return bravo[alpha] ~= nil
 	elseif type(bravo) == "string" then
 		return helper(alpha, (";"):split(bravo))
 	else
-		error(("Bad argument #3 to 'argcheck'. Expected %q or %q, got %q"):format("table", "string", type(bravo)))
+		error(("Bad argument #3 to 'argcheck'. Expected %q or %q, got %q"):format("table", "string", type(bravo)), depth or 3)
 	end
 end
 conditions["typeof"] = function(alpha, bravo)
@@ -88,7 +88,7 @@ conditions["typeof"] = function(alpha, bravo)
 		type_alpha = "frame"
 	end
 	
-	return conditions["isin"](type_alpha, bravo)
+	return conditions["isin"](type_alpha, bravo, 4)
 end
 conditions["frametype"] = function(alpha, bravo)
 	if type(bravo) ~= "string" then
