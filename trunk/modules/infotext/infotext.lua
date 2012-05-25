@@ -591,7 +591,7 @@ function module:LoadOptions()
 			Font = self:NewGroup("Font Settings", 4, true, {
 				Font = self:NewSelect("Font", "Select the font to be used by LUI's display texts.", 0, AceGUIWidgetLSMlists.font, "LSM30_Font", fontChange),
 				Size = self:NewSlider("Font Size", "Select the font size to be used by LUI's display texts.", 1, 6, 32, 1, fontChange),
-				Flag = self:NewSelect("Font Outline", "Select the font outline to be used by LUI's display texts.", 2, LUI.FontFlags, nil, fontChange),
+				Flag = self:NewSelect("Font Outline", "Select the font outline to be used by LUI's display texts.", 2, LUI.FontFlags, false, fontChange),
 				Empty = self:NewDesc(" ", 3),
 				Color = self:NewColor("Display Text", nil, 4, fontChange),
 			}),

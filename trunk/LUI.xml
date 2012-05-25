@@ -32,8 +32,7 @@
 	<Script file="addons\recount.lua"/>
 
 	<!-- Extended Modules -->
-	<Include file="modules\buffs.xml"/>
-	<Script file="modules\buffs.lua"/>
+	<Include file="modules\auras\auras.xml"/>
 	<Include file="modules\chat\chat.xml"/>
 	<Script file="modules\minimap.lua"/>
 	<Include file="modules\worldmap\worldmap.xml"/>

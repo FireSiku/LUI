@@ -1669,7 +1669,7 @@ function module:SetGF()
 				toast.faction:SetTexture([[Interface\Glues\CharacterCreate\UI-CharacterCreate-Factions]])
 				toast.faction:SetTexCoord(faction == 1 and 0.03 or 0.53, faction == 1 and 0.47 or 0.97, 0.03, 0.97)
 				zone = (zone == nil or zone == "") and UNKNOWN or zone
-				toast.zone:SetPoint("TOPLEFT", toast.faction, "TOPRIGHT", textOffset, 0)
+				toast.zone:SetPoint("LEFT", toast.faction, "RIGHT", textOffset, 0)
 				toast.zone:SetTextColor(GetZoneColor(zone))
 				toast.sameRealm = realm == myPlayerRealm
 
@@ -1691,7 +1691,7 @@ function module:SetGF()
 				toast.name:SetTextColor(0.8, 0.8, 0.8)
 				toast.faction:SetTexture("")
 				zone = gameText
-				toast.zone:SetPoint("TOPLEFT", toast.name, "TOPRIGHT", gap, 0)
+				toast.zone:SetPoint("LEFT", toast.name, "RIGHT", gap, 0)
 				toast.zone:SetTextColor(1, 0.77, 0)
 			end
 
@@ -1943,7 +1943,7 @@ function module:SetGF()
 					if notesW > notesC then notesC = notesW end
 					if  rankW >  rankC then  rankC = rankW  end
 					if hideNotes then button.note:Hide() else button.note:Show() end
-					button.rank:SetPoint("TOPLEFT", hideNotes and button.zone or button.note, "TOPRIGHT", gap, 0)
+					button.rank:SetPoint("LEFT", hideNotes and button.zone or button.note, "RIGHT", gap, 0) -- If Rank text is out of place, set these back to TOPLEFT and TOPRIGHT
 				end
 			end
 

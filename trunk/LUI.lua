@@ -10,7 +10,6 @@ local addonname, LUI = ...
 local L = LUI.L
 
 local AceAddon = LibStub("AceAddon-3.0")
-AceAddon:EmbedLibraries(LUI, "AceComm-3.0", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0")
 
 -- this is a temp globalization (should make it check for alpha verion to globalize or not once all other files don't need global)
 _G.LUI = LUI
@@ -69,22 +68,46 @@ LUI.Media = {
 }
 
 LUI.FontFlags = {
-	"NONE",
-	"OUTLINE",
-	"THICKOUTLINE",
-	"MONOCHROME",
+	NONE = L["None"],
+	OUTLINE = L["Outline"],
+	THICKOUTLINE = L["Thick Outline"],
+	MONOCHROME = L["Monochrome"],
 }
 
 LUI.Points = {
-	"CENTER",
-	"TOP",
-	"BOTTOM",
-	"LEFT",
-	"RIGHT",
-	"TOPLEFT",
-	"TOPRIGHT",
-	"BOTTOMLEFT",
-	"BOTTOMRIGHT",
+	CENTER = L["Center"],
+	TOP = L["Top"],
+	BOTTOM = L["Bottom"],
+	LEFT = L["Left"],
+	RIGHT = L["Right"],
+	TOPLEFT = L["Top Left"],
+	TOPRIGHT = L["Top Right"],
+	BOTTOMLEFT = L["Bottom Left"],
+	BOTTOMRIGHT = L["Bottom Right"],
+}
+LUI.Corners = {
+	TOPLEFT = L["Top Left"],
+	TOPRIGHT = L["Top Right"],
+	BOTTOMLEFT = L["Bottom Left"],
+	BOTTOMRIGHT = L["Bottom Right"],
+}
+LUI.Sides = {
+	TOP = L["Top"],
+	BOTTOM = L["Bottom"],
+	LEFT = L["Left"],
+	RIGHT = L["Right"],
+}
+LUI.Opposites = {
+	-- Sides
+	TOP = "BOTTOM",
+	BOTTOM = "TOP",
+	LEFT = "RIGHT",
+	RIGHT = "LEFT",
+	-- Corners
+	TOPLEFT = "BOTTOMRIGHT",
+	TOPRIGHT = "BOTTOMLEFT",
+	BOTTOMLEFT = "TOPRIGHT",
+	BOTTOMRIGHT = "TOPLEFT",
 }
 
 local screen_height = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "%d+x(%d+)")
@@ -1238,7 +1261,7 @@ local function getOptions()
 					type = "group",
 					args = {
 						Header = LUI:NewHeader("Module List", 1),
-						UpdatedModules = LUI:NewHeader("New Style Modules", 75),
+						UpdatedModules = LUI:NewHeader("Old Modules", 150),
 					},
 				},
 			},
@@ -1386,7 +1409,7 @@ function LUI:RegisterModule(module, moduledb, addFunc)
 		[mName] = {
 			type = "execute",
 			name = function() return (mName .. ": |cff" .. (db[moduledb].Enable and "00FF00Enabled" or "FF0000Disabled") .. "|r") end,
-			order = 50,
+			order = 200,
 			func = function()
 				db[moduledb].Enable = not db[moduledb].Enable
 				if db[moduledb].Enable then
@@ -1547,8 +1570,13 @@ function LUI:NewNamespace(module, enableButton, version)
 							LUI:Print(mName .. " module settings reset.")
 						end
 					else
-						if module:Toggle() and db.General.ModuleMessages then
-							LUI:Print(mName .. " module |cff" .. (module.db.profile.Enable and "00FF00enabled" or "FF0000disabled") .. "|r.")
+						module.db.profile.Enable = not module.db.profile.Enable
+						if module[module.db.profile.Enable and "Enable" or "Disable"](module) then
+							if db.General.ModuleMessages then
+								LUI:Print(mName .. " module |cff" .. (module.db.profile.Enable and "00FF00enabled" or "FF0000disabled") .. "|r.")
+							end
+						else
+							module.db.profile.Enable = module:IsEnabled()
 						end
 					end
 				end,

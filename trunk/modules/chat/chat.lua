@@ -555,7 +555,7 @@ local function replaceWhisper(msg)
 
 	if not channel or not shortChannelNames[channel] then return msg end
 
-	return shortChannelNames[channel]..gsub(msg, shortWhispers[channel], " %1:")
+	return gsub(msg, shortWhispers[channel], shortChannelNames[channel].." %1:")
 end
 
 --------------------------------------------------
@@ -760,7 +760,7 @@ function module:LoadOptions()
 		General = self:NewGroup(L["General Settings"], 1, {
 			Font = self:NewGroup(L["Font"], 1, true, {
 				Font = self:NewSelect(L["Font"], L["Choose a font"], 1, true, "LSM30_Font", refresh),
-				Flag = self:NewSelect(L["Flag"], L["Choose a font flag"], 2, LUI.FontFlags, nil, refresh),
+				Flag = self:NewSelect(L["Flag"], L["Choose a font flag"], 2, LUI.FontFlags, false, refresh),
 				Size = self:NewSlider(L["Size"], L["Choose a fontsize"], 3, 6, 20, 1, true, false, "full")
 			}),
 			ShortChannelNames = self:NewToggle(L["Short channel names"], L["Use abreviated channel names"], 2, true),
@@ -921,5 +921,5 @@ end
 
 ---[[	PROFILER
 -- Add Chat module functions to the profiler.
-LUI.Profiler.TraceScope(self, "Chat", "LUI")
+LUI.Profiler.TraceScope(module, "Chat", "LUI")
 --]]

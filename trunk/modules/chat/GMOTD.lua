@@ -16,7 +16,7 @@ function script:ChatFrame_RegisterForMessages(frame, ...)
 			-- force Blizzard's code to skip printing the GMOTD
 			frame.checkedGMOTD = true
 
-			tinsert(chatFramesRegistered, frame)
+			chatFramesRegistered[frame] = true
 		end
 	end
 end
@@ -30,7 +30,7 @@ function script:PLAYER_ENTERING_WORLD(event)
 	local gmotd = GetGuildRosterMOTD()
 
 	if gmotd and gmotd ~= "" then
-		for i, frame in ipairs(chatFramesRegistered) do
+		for frame in ipairs(chatFramesRegistered) do
 			ChatFrame_DisplayGMOTD(frame, gmotd)
 		end
 	end

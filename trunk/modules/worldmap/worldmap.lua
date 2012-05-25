@@ -23,6 +23,8 @@ local db, dbd, char
 
 local WorldMapFrame = _G.WorldMapFrame
 
+local currentZone
+
 local elementsHidden, elementHider
 local elementsToHide = {
 	WorldMapFrameCloseButton,
@@ -105,19 +107,12 @@ end
 -- Event Functions
 --------------------------------------------------
 
-do -- ZONE_CHANGED_NEW_AREA
-	local currentZone
-	
-	function module:ZONE_CHANGED_NEW_AREA() -- Set Map to current zone when changing zones if player isn't looking at another zone.
-		local newZone = GetCurrentMapAreaID()
-		if currentZone == newZone or ((GetCurrentMapZone() > 0 and GetPlayerMapPosition("player")) ~= 0) then
-			currentZone = newZone
+function module:ZONE_CHANGED_NEW_AREA() -- Set Map to current zone when changing zones if player isn't looking at another zone.
+	if not WorldMapFrame:IsShown() then return end
 
-			-- Only change the zone if the WorldMap is shown (there are a lot of functions and hook that will get called)
-			if WorldMapFrame:IsShown() then
-				SetMapToCurrentZone()
-			end
-		end
+	if currentZone == GetCurrentMapAreaID() or ((GetCurrentMapZone() > 0 and GetPlayerMapPosition("player")) ~= 0) then
+		SetMapToCurrentZone()
+		currentZone = GetCurrentMapAreaID()
 	end
 end
 
@@ -237,6 +232,8 @@ local function WM_OnShow(frame)
 	frame:SetFrameStrata(db.General.Strata)
 
 	LibWindow.RestorePosition(WorldMapFrame)
+
+	currentZone = GetCurrentMapAreaID()
 end
 
 local function WM_ToggleSizeUp()
@@ -569,5 +566,5 @@ end
 
 ---[[	PROFILER
 -- Add WorldMap module functions to the profiler.
-LUI.Profiler.TraceScope(self, "WorldMap", "LUI")
+LUI.Profiler.TraceScope(module, "WorldMap", "LUI")
 --]]

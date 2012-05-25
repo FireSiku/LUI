@@ -378,7 +378,7 @@ function module:LoadOptions()
 	local options = self:NewGroup(L["EditBox"], 2, "generic", "Refresh", {
 		Font = self:NewGroup(L["Font"], 1, true, {
 			Font = self:NewSelect(L["Font"], L["Choose a font"], 1, true, "LSM30_Font", refresh),
-			Flag = self:NewSelect(L["Flag"], L["Choose a font flag"], 2, LUI.FontFlags, nil, refresh),
+			Flag = self:NewSelect(L["Flag"], L["Choose a font flag"], 2, LUI.FontFlags, false, refresh),
 			Size = self:NewSlider(L["Size"], L["Choose a fontsize"], 3, 6, 20, 1, true, false, "full")
 		}),
 		Anchor = self:NewSelect(L["Anchor Point"], L["Select where the EditBox anchors to the ChatFrame"], 2, anchorPoints, false, refresh),
