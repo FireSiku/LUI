@@ -24,8 +24,6 @@ local argcheck = LUI.argcheck
 
 local profile
 
-local version = 2.0
-
 ----------------------------------------------------------------------
 -- Local Variables
 ----------------------------------------------------------------------
@@ -691,7 +689,7 @@ function module:DBCallback()
 end
 
 function module:OnInitialize()
-	profile = LUI:Namespace(self, true, version)
+	profile = LUI:Namespace(self, true, 2.0)
 end
 
 function module:OnEnable()

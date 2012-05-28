@@ -17,7 +17,7 @@ local L = _G.LibStub("AceLocale-3.0"):NewLocale(addonname, "enUS", true, silent)
 
 
 -- Auras
---localization(locale="enUS", format="lua_additive_table", handle-unlocalized="comment", namespace="Auras", handle-subnamespaces="none", same-key-is-true=true)@
+--@localization(locale="enUS", format="lua_additive_table", handle-unlocalized="comment", namespace="Auras", handle-subnamespaces="none", same-key-is-true=true)@
 
 -- Chat
 --@localization(locale="enUS", format="lua_additive_table", handle-unlocalized="comment", namespace="Chat", handle-subnamespaces="none", same-key-is-true=true)@

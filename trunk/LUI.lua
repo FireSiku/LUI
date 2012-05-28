@@ -693,7 +693,7 @@ function LUI:CheckConflict(...) -- self is module
 			module:SetEnabledState(false)
 		end
 		if db.General.ModuleMessages then
-			LUI:Print("|cffFF0000" .. self:GetName() .. " could not be enabled because of a conflicting addon: "..conflict..".")
+			LUI:Printf("|cffFF0000%s could not be enabled because of a conflicting addon: %s.", self:GetName(), conflict)
 		end
 		return
 	else
