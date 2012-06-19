@@ -349,7 +349,7 @@ end
 
 function module:OnDisable()
 	module:UnhookAll()
-	module:UnregisterAllEvnets()
+	module:UnregisterAllEvents()
 
 	for i, timer in ipairs(timers) do
 		if timer.enabled then
