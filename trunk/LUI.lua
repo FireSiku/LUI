@@ -815,6 +815,11 @@ local function getOptions()
 									type = "description",
 									name = function()
 										local revision = GetAddOnMetadata(addonname, "X-Curse-Packaged-Version")
+										if strmatch(revision,"r%d+") then
+											revision = strmatch(revision,"r%d+")
+										elseif strmatch(revision,"-%d+") then
+											revision = gsub( strmatch(revision,"-%d+"), "-", "r")
+										end
 										return L["Revision: "]..(revision or "???")
 									end,
 								},
