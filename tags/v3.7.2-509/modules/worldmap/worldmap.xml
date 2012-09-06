@@ -1,0 +1,29 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="worldmap.lua"/>
+	<Script file="coords.lua"/>
+	<Script file="questpoi.lua"/>
+	<Script file="fogclear.lua"/>
+	<Script file="instancemaps.lua"/>
+
+    <CheckButton name="LUI_WorldMap_ShowBossesCheckButton" parent="WorldMapFrame" inherits="OptionsCheckButtonTemplate" hidden="true">
+        <Anchors>
+            <Anchor point="TOPLEFT" relativeTo="WorldMapShowDigSites"/>
+            <Anchor point="BOTTOMRIGHT" relativeTo="WorldMapShowDigSites"/>
+        </Anchors>
+        <Scripts>
+            <OnLoad>
+                self:SetChecked(GetCVarBool("showBosses"))
+                _G[self:GetName().."Text"]:SetText(SHOW_BOSSES_ON_MAP_TEXT)
+            </OnLoad>
+            <OnClick>
+                if self:GetChecked() then
+                    PlaySound("igMainMenuOptionCheckBoxOn")
+                else
+                    PlaySound("igMainMenuOptionCheckBoxOff")
+                end
+                SetCVar("showBosses", self:GetChecked())
+                WorldMapFrame_Update()
+            </OnClick>
+        </Scripts>
+    </CheckButton>
+</Ui>
