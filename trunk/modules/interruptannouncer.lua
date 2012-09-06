@@ -64,7 +64,7 @@ function module:PARTY_MEMBERS_CHANGED()
 			return module:Deactivate()
 		end
 		
-		if db.General.AnnounceRaid == "RAID_WARNING" and not IsRaidLeader() and not IsRaidOfficer() then
+		if db.General.AnnounceRaid == "RAID_WARNING" and not UnitIsGroupLeader() and not UnitIsGroupAssistant() then
 			self.channel = "RAID"
 		else
 			self.channel = db.General.AnnounceRaid

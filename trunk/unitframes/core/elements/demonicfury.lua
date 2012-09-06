@@ -6,7 +6,7 @@ local oUF = ns.oUF
 local SPELL_POWER_DEMONIC_FURY = SPELL_POWER_DEMONIC_FURY
 
 local Update = function(self, event, unit, powerType)
-	if(self.unit ~= unit or (powerType and powerType ~= 'DEMONICFURY')) then return end
+	if(self.unit ~= unit or (powerType and powerType ~= 'DEMONIC_FURY')) then return end
 	
 	local df = self.DemonicFury
 	if(df.PreUpdate) then df:PreUpdate(unit) end

@@ -2248,12 +2248,12 @@ module.funcs = {
 			
 		end
 		local function checkSpec(event)
-			self.SoulShards:Hide()
-			self.DemonicFury:Hide()
-			self.BurningEmbers:Hide()
-			if GetSpecialization() == 1 then self.SoulShards:Show() end
-			if GetSpecialization() == 2 then self.DemonicFury:Show() end
-			if GetSpecialization() == 3 then self.BurningEmbers:Show() end
+			if self.SoulShards then self.SoulShards:Hide() end
+			if self.DemonicFury then self.DemonicFury:Hide() end
+			if self.BurningEmbers then self.BurningEmbers:Hide() end
+			if GetSpecialization() == 1 and self.SoulShards then self.SoulShards:Show() end
+			if GetSpecialization() == 2 and self.DemonicFury then self.DemonicFury:Show() end
+			if GetSpecialization() == 3 and self.BurningEmbers then self.BurningEmbers:Show() end
 		end
 		checkShards()
 		checkSpec()
@@ -2331,12 +2331,12 @@ module.funcs = {
 		end
 
 		local function checkSpec(event)
-			self.SoulShards:Hide()
-			self.DemonicFury:Hide()
-			self.BurningEmbers:Hide()
-			if GetSpecialization() == 1 then self.SoulShards:Show() end
-			if GetSpecialization() == 2 then self.DemonicFury:Show() end
-			if GetSpecialization() == 3 then self.BurningEmbers:Show() end
+			if self.SoulShards then self.SoulShards:Hide() end
+			if self.DemonicFury then self.DemonicFury:Hide() end
+			if self.BurningEmbers then self.BurningEmbers:Hide() end
+			if GetSpecialization() == 1 and self.SoulShards then self.SoulShards:Show() end
+			if GetSpecialization() == 2 and self.DemonicFury then self.DemonicFury:Show() end
+			if GetSpecialization() == 3 and self.BurningEmbers then self.BurningEmbers:Show() end
 		end
 		checkEmbers()
 		checkSpec()
@@ -2411,12 +2411,12 @@ module.funcs = {
 		end
 
 		local function checkSpec(event)
-			self.SoulShards:Hide()
-			self.DemonicFury:Hide()
-			self.BurningEmbers:Hide()
-			if GetSpecialization() == 1 then self.SoulShards:Show() end
-			if GetSpecialization() == 2 then self.DemonicFury:Show() end
-			if GetSpecialization() == 3 then self.BurningEmbers:Show() end
+			if self.SoulShards then self.SoulShards:Hide() end
+			if self.DemonicFury then self.DemonicFury:Hide() end
+			if self.BurningEmbers then self.BurningEmbers:Hide() end
+			if GetSpecialization() == 1 and self.SoulShards then self.SoulShards:Show() end
+			if GetSpecialization() == 2 and self.DemonicFury then self.DemonicFury:Show() end
+			if GetSpecialization() == 3 and self.BurningEmbers then self.BurningEmbers:Show() end
 		end
 		checkSpec()
 		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkSpec)

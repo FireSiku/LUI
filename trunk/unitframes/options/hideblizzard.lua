@@ -181,7 +181,7 @@ do
 					if GetDisplayedAllyFrames() == "compact-party" then
 						CompactPartyFrame:Show()
 					end
-				elseif GetCVarBool("useCompactPartyFrames") and GetNumPartyMembers() > 0 and GetNumRaidMembers() == 0 then
+				elseif GetCVarBool("useCompactPartyFrames") and GetNumSubgroupMembers() > 0 and IsInRaid() == 0 then
 					CompactPartyFrame:Show()
 				end
 			end
@@ -194,7 +194,7 @@ do
 				if GetDisplayedAllyFrames() == "raid" then
 					CompactRaidFrameManager:Show()
 				end
-			elseif GetNumRaidMembers() > 0 then
+			elseif GetNumGroupMembers() > 0 then
 				CompactRaidFrameManager:Show()
 			end
 			if compact_raid and compact_raid ~= "0" then
