@@ -1445,6 +1445,7 @@ local GF_Colors = {
 	SanctuaryZone = {0, 1, 1},
 	FriendlyZone = {0, 1, 0},
 	EnemyZone = {1, 0, 0},
+	RemoteChatZone = {0, 1, 1},
 }
 
 -- Localized functions
