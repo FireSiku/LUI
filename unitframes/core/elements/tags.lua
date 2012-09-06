@@ -39,13 +39,13 @@ local tagStrings = {
 	end]],
 
 	["leader"] = [[function(u)
-		if(UnitIsPartyLeader(u)) then
+		if(UnitIsGroupLeader(u)) then
 			return 'L'
 		end
 	end]],
 
 	["leaderlong"]  = [[function(u)
-		if(UnitIsPartyLeader(u)) then
+		if(UnitIsGroupLeader(u)) then
 			return 'Leader'
 		end
 	end]],
@@ -237,11 +237,13 @@ local tagStrings = {
 		if(server and server ~= "") then
 			name = string.format("%s-%s", name, server)
 		end
-
-		for i=1, GetNumRaidMembers() do
-			local raidName, _, group = GetRaidRosterInfo(i)
-			if( raidName == name ) then
-				return group
+		
+		if GetNumGroupMembers() > 0 then
+			for i=1, GetNumGroupMembers() do
+				local raidName, _, group = GetRaidRosterInfo(i)
+				if( raidName == name ) then
+					return group
+				end
 			end
 		end
 	end]],
