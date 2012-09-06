@@ -1,0 +1,16 @@
+## Interface: 50001
+## Version: 3.7.2
+## Title: LUI
+## Author: Chaoslux, Hix, Thaly, Zista
+## FormerAuthor: Louí @EU-Das Syndikat
+## Notes: User Interface Modification
+## SavedVariables: LUIDB, LUIGold, LUI_Themes, LUI_Layouts
+## SavedVariablesPerCharacter: LUICONFIG
+## X-oUF: oUF_LUI
+## X-Curse-Packaged-Version: r507
+## X-Curse-Project-Name: LUI Core
+## X-Curse-Project-ID: lui
+## X-Curse-Repository-ID: wow/lui/mainline
+
+libs\libs.xml
+LUI.xml
