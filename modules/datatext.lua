@@ -329,7 +329,7 @@ function module:SetClock()
 		end
 
 		-- Event functions
-		stat.Events = {"CALENDAR_UPDATE_PENDING_INVITES", "ZONE_CHANGED", "CHAT_MSG_CHANNEL_NOTICE", "PLAYER_ENTERING_WORLD"}
+		stat.Events = {"CALENDAR_UPDATE_PENDING_INVITES", "ZONE_CHANGED", "CHAT_MSG_CHANNEL_NOTICE", "PLAYER_ENTERING_WORLD", "UPDATE_24HOUR", "UPDATE_LOCALTIME"}
 
 		stat.CALENDAR_UPDATE_PENDING_INVITES = function(self) -- A change to number of pending invites for calendar events occurred
 			invitesPending = GameTimeFrame and (GameTimeFrame.pendingCalendarInvites > 0) or false
@@ -381,6 +381,14 @@ function module:SetClock()
 			self:ZONE_CHANGED()
 		end
 
+		stat.UPDATE_24HOUR = function(self)
+			db.Clock.Time24 = not db.Clock.Time24
+		end
+
+		stat.UPDATE_LOCALTIME = function(self)
+			db.Clock.LocalTime = not db.Clock.LocalTime
+		end
+
 		-- Script functions
 		stat.OnEnable = function(self)
 			if db.Clock.ShowInstanceDifficulty then
@@ -394,6 +402,8 @@ function module:SetClock()
 			end
 
 			module:SecureHookScript(GameTimeFrame, "OnClick", stat.CALENDAR_UPDATE_PENDING_INVITES) -- hook the OnClick function of the GameTimeFrame to update the pending invites
+			module:SecureHookScript(TimeManagerMilitaryTimeCheck, "OnClick", stat.UPDATE_24HOUR)
+			module:SecureHookScript(TimeManagerLocalTimeCheck, "OnClick", stat.UPDATE_LOCALTIME)
 			self:CALENDAR_UPDATE_PENDING_INVITES()
 
 			self:PLAYER_ENTERING_WORLD()
@@ -443,6 +453,16 @@ function module:SetClock()
 		stat.OnClick = function(self, button)
 			if button == "RightButton" then -- Toggle TimeManagerFrame
 				TimeManager_Toggle()
+				if (db.Clock.Time24) then -- check 24 Hour Mode
+					TimeManagerMilitaryTimeCheck:SetChecked(true)
+				else
+					TimeManagerMilitaryTimeCheck:SetChecked(false)
+				end
+				if (db.Clock.LocalTime) then -- check Local Time
+					TimeManagerLocalTimeCheck:SetChecked(true)
+				else
+					TimeManagerLocalTimeCheck:SetChecked(false)
+				end
 			else -- Toggle CalendarFrame
 				GameTimeFrame:Click() -- using just :Click() wont fire the hook
 			end

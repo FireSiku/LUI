@@ -1705,6 +1705,7 @@ function LUI:OnInitialize()
 
 	if not _G.LUICONFIG.IsConfigured then
 		self:Disable()
+		self.db:SetProfile(UnitName("player").." - "..GetRealmName())
 		self:Configure()
 	elseif _G.LUICONFIG.Versions.lui ~= LUI.Versions.lui then
 		self:Disable()
