@@ -1073,7 +1073,7 @@ function module:CreateUnitOptions(unit, order)
 				Color = self:NewColor("Border", nil, 1, false),
 				EdgeFile = self:NewSelect("Border Texture", "Choose the Border Texture.", 2, widgetLists.border, "LSM30_Border", false),
 				EdgeSize = self:NewSlider("Edge Size", "Choose the Edge Size for the Frame Border.", 3, 1, 50, 1, false),
-				AggroGlow = (unit == "Player" or unit == "Target" or unit == "Focus" or unit == "Pet" or unit == "Maintank" or unit == "Party" or unit == "PartyPet" or unit == "Raid") and self:NewToggle("Aggro Glow", "Whether you want the border color to change if the unit has aggro or not.", 4, false) or nil,
+				Aggro = (unit == "Player" or unit == "Target" or unit == "Focus" or unit == "Pet" or unit == "Maintank" or unit == "Party" or unit == "PartyPet" or unit == "Raid") and self:NewToggle("Aggro Glow", "Whether you want the border color to change if the unit has aggro or not.", 4, false) or nil,
 				Insets = self:NewGroup("Insets", 5, true, {
 					Left = self:NewInputNumber("Left", "Value for the left Border Inset.", 1, false, "half"),
 					Right = self:NewInputNumber("Right", "Value for the right Border Inset.", 2, false, "half"),
