@@ -43,7 +43,7 @@
             </OnLeave>
         </Scripts>
         <NormalTexture file="Interface\AddOns\LUI\media\textures\icons\chatcopy"/>
-        <HighlightTexture file="Interface\Buttons\ButtonHighlight-Square"/>
+        <HighlightTexture file="Interface\Buttons\ButtonHilight-Square"/>
     </Button>
 
     <Frame name="LUI_Chat_EditBoxBGTemplate" parentKey="bg" frameStrata="DIALOG" setAllPoints="true" virtual="true">
