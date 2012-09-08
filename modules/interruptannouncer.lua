@@ -51,7 +51,7 @@ function module:COMBAT_LOG_EVENT_UNFILTERED(_, timestamp, event, _, sourceGUID, 
 	end
 end
 
-function module:PARTY_MEMBERS_CHANGED()
+function module:GROUP_ROSTER_UPDATE()
 	-- Check if announcer should be enabled/disabled.
 	local _, instanceType = IsInInstance()
 	if (instanceType == "pvp") or IsInActiveWorldPVP() or ((GetNumGroupMembers() == 0) and (GetNumSubgroupMembers() == 0)) then
@@ -59,12 +59,12 @@ function module:PARTY_MEMBERS_CHANGED()
 	end
 	
 	-- Set channel for output.
-	if (GetNumGroupMembers() > 0) then
+	if (IsInRaid()) then
 		if not db.General.EnableRaid then
 			return module:Deactivate()
 		end
 		
-		if db.General.AnnounceRaid == "RAID_WARNING" and not UnitIsGroupLeader() and not UnitIsGroupAssistant() then
+		if db.General.AnnounceRaid == "RAID_WARNING" and not UnitIsGroupLeader("player") and not UnitIsGroupAssistant("player") then
 			self.channel = "RAID"
 		else
 			self.channel = db.General.AnnounceRaid
@@ -176,7 +176,7 @@ function module:LoadOptions()
 	return options
 end
 
-module.Refresh = module.PARTY_MEMBERS_CHANGED
+module.Refresh = module.GROUP_ROSTER_UPDATE
 
 -- Initialize module: Called when the addon should intialize its self; this is where we load in database values.
 function module:OnInitialize()
@@ -191,9 +191,9 @@ end
 -- Enable module: Called when addon is enabled.
 function module:OnEnable()
 	self:RegisterEvent("UNIT_PET")
-	self:RegisterEvent("PARTY_MEMBERS_CHANGED")
-	self:RegisterEvent("PLAYER_ENTERING_WORLD", "PARTY_MEMBERS_CHANGED")
-	self:PARTY_MEMBERS_CHANGED()
+	self:RegisterEvent("GROUP_ROSTER_UPDATE")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", "GROUP_ROSTER_UPDATE")
+	self:GROUP_ROSTER_UPDATE()
 end
 
 function module:OnDisable()
