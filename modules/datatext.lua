@@ -348,10 +348,15 @@ function module:SetClock()
 			local inInstance, instanceType = IsInInstance()
 			if inInstance then
 				local _,_, instanceDifficulty,_, maxPlayers, dynamicMode, isDynamic = GetInstanceInfo()
-				if (instanceType == "raid") then
-					instanceInfo = maxPlayers..(((instanceDifficulty == 3 or instanceDifficulty == 4) or (isDynamic and dynamicMode == 1)) and " |cffff0000H" or " |cff00ff00N")
-				elseif (instanceType == "party") then
-					instanceInfo = maxPlayers..(instanceDifficulty == 1 and " |cff00ff00N" or " |cffff0000H")
+				if (instanceType == "raid" or instanceType == "party") then
+					--[[ 
+						NOTE: merged party and raid as the only difference was dynamicMode and isDynamic
+						- dynamicMode: does not appear to be used anymore
+						- isDynamic:   true for most raids since Icecrown Citadel, tested with 5N, 5H, 10N, 25H
+					]]--
+					instanceInfo = maxPlayers..((instanceDifficulty == 1 or instanceDifficulty == 3 or instanceDifficulty == 4) and " |cffff0000N" or " |cff00ff00H")
+				--elseif (instanceType == "party") then
+					--instanceInfo = maxPlayers..(instanceDifficulty == 1 and " |cff00ff00N" or " |cffff0000H")
 				else
 					instanceInfo = nil
 				end
