@@ -115,7 +115,7 @@ local IsTank = function(bar, event)
 	local masteryIndex = GetSpecialization()
 	
 	if masteryIndex then
-		if class == "DRUID" and masteryIndex == 2 then
+		if class == "DRUID" and masteryIndex == 3 then
 			bar.isTank = true
 		elseif (class == "DEATH KNIGHT" or class == "DEATHKNIGHT") and masteryIndex == 1 then
 			bar.isTank = true
