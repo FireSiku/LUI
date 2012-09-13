@@ -940,32 +940,26 @@ module.ApplySettings = function(unit)
 						frame.HolyPower:Hide()
 					end
 				end
+				
+				-- arcane changes
+				if class == "MAGE" then
+					module.funcs.ArcaneCharges(frame, frame.__unit, module.db.Player)
+					if module.db[unit].Bars.ArcaneCharges.Enable then
+						frame:EnableElement("ArcaneCharges")
+					else
+						frame:DisableElement("ArcaneCharges")
+						frame.ArcaneCharges:Hide()
+					end
+				end
 
 				-- warlock stuff
 				if class == "WARLOCK" then
-					-- soul shards
-					module.funcs.SoulShards(frame, frame.__unit, module.db.Player)
-					if module.db[unit].Bars.SoulShards.Enable then
-						frame:EnableElement("SoulShards")
+					module.funcs.WarlockBar(frame, frame.__unit, module.db.Player)
+					if module.db[unit].Bars.WarlockBar.Enable then
+						frame:EnableElement("WarlockBar")
 					else
-						frame:DisableElement("SoulShards")
-						frame.SoulShards:Hide()
-					end
-					-- demonic fury
-					module.funcs.DemonicFury(frame, frame.__unit, module.db.Player)
-					if module.db[unit].Bars.DemonicFury.Enable then
-						frame:EnableElement("DemonicFury")
-					else
-						frame:DisableElement("DemonicFury")
-						frame.DemonicFury:Hide()
-					end
-					-- burning embers
-					module.funcs.BurningEmbers(frame, frame.__unit, module.db.Player)
-					if module.db[unit].Bars.BurningEmbers.Enable then
-						frame:EnableElement("BurningEmbers")
-					else
-						frame:DisableElement("BurningEmbers")
-						frame.BurningEmbers:Hide()
+						frame:DisableElement("WarlockBar")
+						frame.WarlockBar:Hide()
 					end
 				end
 

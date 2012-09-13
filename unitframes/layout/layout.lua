@@ -983,20 +983,6 @@ local CPointsOverride = function(self, event, unit)
 	end
 end
 
-local SoulShardsOverride = function(self, event, unit, powerType)
-	if self.unit ~= unit or (powerType and powerType ~= "SOUL_SHARDS") then return end
-
-	local num = UnitPower(unit, SPELL_POWER_SOUL_SHARDS)
-
-	for i = 1, self.SoulShards.Shards do
-		if i <= num then
-			self.SoulShards[i]:SetAlpha(1)
-		else
-			self.SoulShards[i]:SetAlpha(.4)
-		end
-	end
-end
-
 local ShadowOrbsOverride = function(self, event, unit, powerType)
 	if self.unit ~= unit or (powerType and powerType ~= "SHADOW_ORBS") then return end
 
@@ -1011,6 +997,79 @@ local ShadowOrbsOverride = function(self, event, unit, powerType)
 	end
 end
 
+local WarlockBarOverride = function(self, event, unit, powerType)
+	local specNum = GetSpecialization() 
+	local spec = self.WarlockBar.SpecInfo[specNum]
+
+	if self.unit ~= unit or (powerType and powerType ~= spec.powerType) then return end
+	local num = UnitPower(unit, spec.unitPower)
+	local text = ""
+	--Affliction
+	if specNum == 1 then
+		for i = 1, self.WarlockBar.Amount do
+			self.WarlockBar[i]:SetValue(spec.maxValue)
+			if i <= num then self.WarlockBar[i]:SetAlpha(1)
+			else self.WarlockBar[i]:SetAlpha(.4)
+			end
+		end
+	--Demonology
+	elseif specNum == 2 then
+		text = num
+		self.WarlockBar[1]:SetAlpha(1)
+		self.WarlockBar[1]:SetValue(num)	
+	--Destruction
+	elseif specNum == 3 then
+		local power = UnitPower(unit, spec.unitPower, true)
+		for i = 1, self.WarlockBar.Amount do
+			local numOver = power - (i-1)*10
+			if i <= num then
+				self.WarlockBar[i]:SetAlpha(1)
+				self.WarlockBar[i]:SetValue(spec.maxValue)
+			elseif numOver > 0 then
+				self.WarlockBar[i]:SetAlpha(.6)
+				self.WarlockBar[i]:SetValue(numOver)
+			else
+				self.WarlockBar[i]:SetAlpha(.6)
+				self.WarlockBar[i]:SetValue(0)
+			end
+		end
+	end
+	if self.WarlockBar.ShowText then
+		self.WarlockBar.Text:SetText(text)
+	end
+end
+
+local ArcaneChargesOverride = function(self, event, unit, powerType)
+	if self.unit ~= unit or not self.ArcaneCharges.Refresh then return end
+
+	local _, _, _, num = UnitDebuff(unit, GetSpellInfo(36032)) -- Arcane Charge
+	for i = 1, self.ArcaneCharges.Charges do
+		if i <= num then
+			self.ArcaneCharges[i]:SetAlpha(1)
+		else
+			self.ArcaneCharges[i]:SetAlpha(.4)
+		end
+	end
+end
+
+
+
+--[[
+
+local SoulShardsOverride = function(self, event, unit, powerType)
+	if self.unit ~= unit or (powerType and powerType ~= "SOUL_SHARDS") then return end
+
+	local num = UnitPower(unit, SPELL_POWER_SOUL_SHARDS)
+
+	for i = 1, self.SoulShards.Shards do
+		if i <= num then
+			self.SoulShards[i]:SetAlpha(1)
+		else
+			self.SoulShards[i]:SetAlpha(.4)
+		end
+	end
+end
+
 local BurningEmbersOverride = function(self, event, unit, powerType)
 	if self.unit ~= unit or (powerType and powerType ~= "BURNING_EMBERS") then return end
 
@@ -1019,7 +1078,7 @@ local BurningEmbersOverride = function(self, event, unit, powerType)
 	for i = 1, self.BurningEmbers.Embers do
 		local numOver = power - (i-1)*10
 		if i <= num then
-			self.BurningEmbers[i]:SetAlpha(1)
+			self.BurningEmbers[i]:SetAlpha(1)ap
 			self.BurningEmbers[i]:SetValue(10)
 		elseif numOver > 0 then
 			self.BurningEmbers[i]:SetAlpha(.6)
@@ -1044,6 +1103,8 @@ local DemonicFuryOverride = function(self, event, unit, powerType)
 	end
 
 end
+--]]
+
 
 local HolyPowerOverride = function(self, event, unit, powerType)
 	if self.unit ~= unit or (powerType and powerType ~= "HOLY_POWER") then return end
@@ -2181,170 +2242,173 @@ module.funcs = {
 
 		module:RegisterEvent("UNIT_LEVEL", checkPowers)
 	end,
-	SoulShards = function(self, unit, oufdb)
+	WarlockBar = function(self, unit, oufdb)
 	
-		if not self.SoulShards then
-			self.SoulShards = CreateFrame("Frame", nil, self)
-			self.SoulShards:SetFrameLevel(6)
+		if not self.WarlockBar then
+			self.WarlockBar = CreateFrame("Frame", nil, self)
+			self.WarlockBar:SetFrameLevel(6)
+			
+			self.WarlockBar.SpecInfo = {
+				{ maxValue = 1, Amount = 3, AmountGlyph = 4, glyph = 63302, powerType = "SOUL_SHARDS", unitPower = SPELL_POWER_SOUL_SHARDS, }, -- Affliction
+				{ maxValue = 1000, Amount = 1, powerType = "DEMONIC_FURY", unitPower = SPELL_POWER_DEMONIC_FURY, }, -- Demonology
+				{ maxValue = 10, Amount = 3, AmountGlyph = 4, glyph = 63304, powerType = "BURNING_EMBERS", unitPower = SPELL_POWER_BURNING_EMBERS, }, -- Destruction
+			}
+			self.WarlockBar.SpecInfo[1].BarColors = { "Shard1", "Shard2", "Shard3", "Shard4" }
+			self.WarlockBar.SpecInfo[2].BarColors = { "Fury", "Fury", "Fury", "Fury" } -- Four time just to not have to add an additional check
+			self.WarlockBar.SpecInfo[3].BarColors = { "Ember1", "Ember2", "Ember3", "Ember4" }
+			local spec = self.WarlockBar.SpecInfo[GetSpecialization()]
+			
+			self.WarlockBar.Amount = spec.Amount
 
-			self.SoulShards.Shards = 3
-			self.SoulShards.ShardsMax = 4
+			for i = 1, 4 do -- Create the max so we dont have to worry about it later.
+				self.WarlockBar[i] = CreateFrame("StatusBar", nil, self.WarlockBar)
+				self.WarlockBar[i]:SetBackdrop(backdrop)
+				self.WarlockBar[i]:SetMinMaxValues(0,0)
+				self.WarlockBar[i]:SetBackdropColor(0.08, 0.08, 0.08)
 
-			for i = 1, self.SoulShards.ShardsMax do -- Always four so it's avaible when we need it.
-				self.SoulShards[i] = CreateFrame("StatusBar", nil, self.SoulShards)
-				self.SoulShards[i]:SetBackdrop(backdrop)
-				self.SoulShards[i]:SetBackdropColor(0.08, 0.08, 0.08)
-
-				self.SoulShards[i]:SetAlpha(.4)
+				self.WarlockBar[i]:SetAlpha(.4)
+				
 			end
 
-			self.SoulShards.FrameBackdrop = CreateFrame("Frame", nil, self.SoulShards)
-			self.SoulShards.FrameBackdrop:SetPoint("TOPLEFT", self.SoulShards, "TOPLEFT", -3.5, 3)
-			self.SoulShards.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.SoulShards, "BOTTOMRIGHT", 3.5, -3)
-			self.SoulShards.FrameBackdrop:SetFrameStrata("BACKGROUND")
-			self.SoulShards.FrameBackdrop:SetBackdrop({
+			self.WarlockBar.Text = SetFontString(self.WarlockBar[1], Media:Fetch("font", oufdb.Texts.WarlockBar.Font), oufdb.Texts.WarlockBar.Size, oufdb.Texts.WarlockBar.Outline)
+			self.WarlockBar.FrameBackdrop = CreateFrame("Frame", nil, self.WarlockBar)
+			self.WarlockBar.FrameBackdrop:SetPoint("TOPLEFT", self.WarlockBar, "TOPLEFT", -3.5, 3)
+			self.WarlockBar.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.WarlockBar, "BOTTOMRIGHT", 3.5, -3)
+			self.WarlockBar.FrameBackdrop:SetFrameStrata("BACKGROUND")
+			self.WarlockBar.FrameBackdrop:SetBackdrop({
 				edgeFile = glowTex, edgeSize = 5,
 				insets = {left = 3, right = 3, top = 3, bottom = 3}
 			})
-			self.SoulShards.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
-			self.SoulShards.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
+			self.WarlockBar.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
+			self.WarlockBar.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
 
-			self.SoulShards.Override = SoulShardsOverride
+			self.WarlockBar.Override = WarlockBarOverride
 		end
 
-		local x = oufdb.Bars.SoulShards.Lock and 0 or oufdb.Bars.SoulShards.X
-		local y = oufdb.Bars.SoulShards.Lock and 0.5 or oufdb.Bars.SoulShards.Y
+		local x = oufdb.Bars.WarlockBar.Lock and 0 or oufdb.Bars.WarlockBar.X
+		local y = oufdb.Bars.WarlockBar.Lock and 0.5 or oufdb.Bars.WarlockBar.Y
 
-		self.SoulShards:SetHeight(oufdb.Bars.SoulShards.Height)
-		self.SoulShards:SetWidth(oufdb.Bars.SoulShards.Width)
-		self.SoulShards:ClearAllPoints()
-		self.SoulShards:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
-		local function checkShards(event)
-			local glyphFound = false
-			for i=1, 6 do
-				local _, _, _, glyphSpell = GetGlyphSocketInfo(i)
-				if glyphSpell == 63302 then -- Glyph of Soul Shards
-					glyphFound = true
-					self.SoulShards.Shards = 4
+		self.WarlockBar:SetHeight(oufdb.Bars.WarlockBar.Height)
+		self.WarlockBar:SetWidth(oufdb.Bars.WarlockBar.Width)
+		self.WarlockBar:ClearAllPoints()
+		self.WarlockBar:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
+		local function checkBar(event)
+
+			local spec = self.WarlockBar.SpecInfo[GetSpecialization()]
+			self.WarlockBar.Amount = spec.Amount
+
+			if spec.glyph then
+				local glyphFound = false
+				for i=1, 6 do
+					local _, _, _, glyphSpell = GetGlyphSocketInfo(i)
+					if glyphSpell == spec.glyph then
+						glyphFound = true
+						if self.WarlockBar then self.WarlockBar.Amount = spec.AmountGlyph end
+					end
 				end
+				if self.WarlockBar and not glyphFound then self.WarlockBar.Amount = spec.Amount end
 			end
-			if not glyphFound then self.SoulShards.Shards = 3 end
-			for i = 1, self.SoulShards.ShardsMax do
-				self.SoulShards[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.SoulShards.Texture))
-				self.SoulShards[i]:SetStatusBarColor(unpack(module.colors.soulshardsbar[i]))
-				self.SoulShards[i]:SetSize(((oufdb.Bars.SoulShards.Width - 2*oufdb.Bars.SoulShards.Padding) / self.SoulShards.Shards), oufdb.Bars.SoulShards.Height)
-
-				self.SoulShards[i]:ClearAllPoints()
-				self.SoulShards[i]:Show()
+			for i = 1, 4 do
+				self.WarlockBar[i]:SetMinMaxValues(0,spec.maxValue)
+				self.WarlockBar[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.WarlockBar.Texture))
+				self.WarlockBar[i]:SetStatusBarColor(unpack(module.colors.WarlockBar[spec.BarColors[i]])) 
+				self.WarlockBar[i]:SetSize(((oufdb.Bars.WarlockBar.Width - 2*oufdb.Bars.WarlockBar.Padding) / self.WarlockBar.Amount), oufdb.Bars.WarlockBar.Height)
+				
+				self.WarlockBar[i]:ClearAllPoints()
+				self.WarlockBar[i]:Show()
 				if i == 1 then
-					self.SoulShards[i]:SetPoint("LEFT", self.SoulShards, "LEFT", 0, 0)
+					self.WarlockBar[i]:SetPoint("LEFT", self.WarlockBar, "LEFT", 0, 0)
 				else
-					self.SoulShards[i]:SetPoint("LEFT", self.SoulShards[i-1], "RIGHT", oufdb.Bars.SoulShards.Padding, 0)
+					self.WarlockBar[i]:SetPoint("LEFT", self.WarlockBar[i-1], "RIGHT", oufdb.Bars.WarlockBar.Padding, 0)
 				end
-				if i > self.SoulShards.Shards then 
-					self.SoulShards[i]:Hide() 
+				if i > self.WarlockBar.Amount then 
+					self.WarlockBar[i]:Hide() 
 				end
 			end
-			
+			self.WarlockBar.Text:SetFont(Media:Fetch("font", oufdb.Texts.WarlockBar.Font), oufdb.Texts.WarlockBar.Size, oufdb.Texts.WarlockBar.Outline)
+			self.WarlockBar.Text:ClearAllPoints()
+			self.WarlockBar.Text:SetPoint("LEFT", self.WarlockBar, "LEFT", oufdb.Texts.WarlockBar.X, oufdb.Texts.WarlockBar.Y)
+			self.WarlockBar.ShowText = oufdb.Texts.WarlockBar.Enable
+			if oufdb.Texts.WarlockBar.Enable == true then
+				self.WarlockBar.Text:Show()
+			else
+				self.WarlockBar.Text:Hide()
+			end
+			WarlockBarOverride(self, "event", unit, spec.powerType)
 		end
-		local function checkSpec(event)
-			if self.SoulShards then self.SoulShards:Hide() end
-			if self.DemonicFury then self.DemonicFury:Hide() end
-			if self.BurningEmbers then self.BurningEmbers:Hide() end
-			if GetSpecialization() == 1 and self.SoulShards then self.SoulShards:Show() end
-			if GetSpecialization() == 2 and self.DemonicFury then self.DemonicFury:Show() end
-			if GetSpecialization() == 3 and self.BurningEmbers then self.BurningEmbers:Show() end
-		end
-		checkShards()
-		checkSpec()
-		module:RegisterEvent("GLYPH_ADDED", checkShards)
-		module:RegisterEvent("GLYPH_REMOVED", checkShards)
-		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkSpec)
+		checkBar()
+		module:RegisterEvent("GLYPH_ADDED", checkBar)
+		module:RegisterEvent("GLYPH_REMOVED", checkBar)
+		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkBar)
 	end,
+	ArcaneCharges = function(self, unit, oufdb)
 	
-	BurningEmbers = function(self, unit, oufdb)
-	
-		if not self.BurningEmbers then
-			self.BurningEmbers = CreateFrame("Frame", nil, self)
-			self.BurningEmbers:SetFrameLevel(6)
+		if not self.ArcaneCharges then
+			self.ArcaneCharges = CreateFrame("Frame", nil, self)
+			self.ArcaneCharges:SetFrameLevel(6)
 
-			self.BurningEmbers.Embers = 3
-			self.BurningEmbers.EmbersMax = 4
+			self.ArcaneCharges.Charges = 6
+			self.ArcaneCharges.Refresh = false
 
-			for i = 1, self.BurningEmbers.EmbersMax do -- Always four so it's avaible when we need it.
-				self.BurningEmbers[i] = CreateFrame("StatusBar", nil, self.BurningEmbers)
-				self.BurningEmbers[i]:SetBackdrop(backdrop)
-				self.BurningEmbers[i]:SetBackdropColor(0.08, 0.08, 0.08)
-				self.BurningEmbers[i]:SetMinMaxValues(0,10)
-				self.BurningEmbers[i]:SetValue(10)
-				self.BurningEmbers[i]:SetAlpha(.4)
+			for i = 1, self.ArcaneCharges.Charges do
+				self.ArcaneCharges[i] = CreateFrame("StatusBar", nil, self.ArcaneCharges)
+				self.ArcaneCharges[i]:SetBackdrop(backdrop)
+				self.ArcaneCharges[i]:SetMinMaxValues(0,0)
+				self.ArcaneCharges[i]:SetBackdropColor(0.08, 0.08, 0.08)
+
+				self.ArcaneCharges[i]:SetAlpha(.4)
 			end
 
-			self.BurningEmbers.FrameBackdrop = CreateFrame("Frame", nil, self.BurningEmbers)
-			self.BurningEmbers.FrameBackdrop:SetPoint("TOPLEFT", self.BurningEmbers, "TOPLEFT", -3.5, 3)
-			self.BurningEmbers.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.BurningEmbers, "BOTTOMRIGHT", 3.5, -3)
-			self.BurningEmbers.FrameBackdrop:SetFrameStrata("BACKGROUND")
-			self.BurningEmbers.FrameBackdrop:SetBackdrop({
+			self.ArcaneCharges.FrameBackdrop = CreateFrame("Frame", nil, self.ArcaneCharges)
+			self.ArcaneCharges.FrameBackdrop:SetPoint("TOPLEFT", self.ArcaneCharges, "TOPLEFT", -3.5, 3)
+			self.ArcaneCharges.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.ArcaneCharges, "BOTTOMRIGHT", 3.5, -3)
+			self.ArcaneCharges.FrameBackdrop:SetFrameStrata("BACKGROUND")
+			self.ArcaneCharges.FrameBackdrop:SetBackdrop({
 				edgeFile = glowTex, edgeSize = 5,
 				insets = {left = 3, right = 3, top = 3, bottom = 3}
 			})
-			self.BurningEmbers.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
-			self.BurningEmbers.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
+			self.ArcaneCharges.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
+			self.ArcaneCharges.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
 
-			self.BurningEmbers.Override = BurningEmbersOverride
+			self.ArcaneCharges.Override = ArcaneChargesOverride
 		end
 
-		local x = oufdb.Bars.BurningEmbers.Lock and 0 or oufdb.Bars.BurningEmbers.X
-		local y = oufdb.Bars.BurningEmbers.Lock and 0.5 or oufdb.Bars.BurningEmbers.Y
+		local x = oufdb.Bars.ArcaneCharges.Lock and 0 or oufdb.Bars.ArcaneCharges.X
+		local y = oufdb.Bars.ArcaneCharges.Lock and 0.5 or oufdb.Bars.ArcaneCharges.Y
 
-		self.BurningEmbers:SetHeight(oufdb.Bars.BurningEmbers.Height)
-		self.BurningEmbers:SetWidth(oufdb.Bars.BurningEmbers.Width)
-		self.BurningEmbers:ClearAllPoints()
-		self.BurningEmbers:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
-		local function checkEmbers(event)
-			local glyphFound = false
-			for i=1, 6 do
-				local _, _, _, glyphSpell = GetGlyphSocketInfo(i)
-				if glyphSpell == 63304 then -- Glyph of Burning Embers
-					glyphFound = true
-					self.BurningEmbers.Embers = 4
-				end
-			end
-			if not glyphFound then self.BurningEmbers.Embers = 3 end
-			for i = 1, self.BurningEmbers.EmbersMax do
-				self.BurningEmbers[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.BurningEmbers.Texture))
-				self.BurningEmbers[i]:SetStatusBarColor(unpack(module.colors.burningembersbar[i]))
-				self.BurningEmbers[i]:SetSize(((oufdb.Bars.BurningEmbers.Width - 2*oufdb.Bars.BurningEmbers.Padding) / self.BurningEmbers.Embers), oufdb.Bars.BurningEmbers.Height)
+		self.ArcaneCharges:SetHeight(oufdb.Bars.ArcaneCharges.Height)
+		self.ArcaneCharges:SetWidth(oufdb.Bars.ArcaneCharges.Width)
+		self.ArcaneCharges:ClearAllPoints()
+		self.ArcaneCharges:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
+		
+		for i = 1, self.ArcaneCharges.ShardsMax do
+			self.ArcaneCharges[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.ArcaneCharges.Texture))
+			self.ArcaneCharges[i]:SetStatusBarColor(unpack(module.colors.ArcaneChargesbar[i]))
+			self.ArcaneCharges[i]:SetSize(((oufdb.Bars.ArcaneCharges.Width - 2*oufdb.Bars.ArcaneCharges.Padding) / self.ArcaneCharges.Shards), oufdb.Bars.ArcaneCharges.Height)
 
-				self.BurningEmbers[i]:ClearAllPoints()
-				self.BurningEmbers[i]:Show()
-				if i == 1 then
-					self.BurningEmbers[i]:SetPoint("LEFT", self.BurningEmbers, "LEFT", 0, 0)
-				else
-					self.BurningEmbers[i]:SetPoint("LEFT", self.BurningEmbers[i-1], "RIGHT", oufdb.Bars.BurningEmbers.Padding, 0)
-				end
-				if i > self.BurningEmbers.Embers then 
-					self.BurningEmbers[i]:Hide() 
-				end
+			self.ArcaneCharges[i]:ClearAllPoints()
+			self.ArcaneCharges[i]:Show()
+			if i == 1 then
+				self.ArcaneCharges[i]:SetPoint("LEFT", self.ArcaneCharges, "LEFT", 0, 0)
+			else
+				self.ArcaneCharges[i]:SetPoint("LEFT", self.ArcaneCharges[i-1], "RIGHT", oufdb.Bars.ArcaneCharges.Padding, 0)
 			end
+		end
 			
-		end
-
 		local function checkSpec(event)
-			if self.SoulShards then self.SoulShards:Hide() end
-			if self.DemonicFury then self.DemonicFury:Hide() end
-			if self.BurningEmbers then self.BurningEmbers:Hide() end
-			if GetSpecialization() == 1 and self.SoulShards then self.SoulShards:Show() end
-			if GetSpecialization() == 2 and self.DemonicFury then self.DemonicFury:Show() end
-			if GetSpecialization() == 3 and self.BurningEmbers then self.BurningEmbers:Show() end
+			if GetSpecialization() == 1 then self.ArcaneCharges:Show()
+			else self.ArcaneCharges:Hide()
+			end
 		end
-		checkEmbers()
+		local function refresh(event)
+			self.ArcaneCharges.Refresh = true
+		end
 		checkSpec()
-		module:RegisterEvent("GLYPH_ADDED", checkEmbers)
-		module:RegisterEvent("GLYPH_REMOVED", checkEmbers)
 		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkSpec)
+		module:RegisterEvent("UNIT_AURA", refresh)
 	end,
 
+	--[[
 	DemonicFury = function(self, unit, oufdb)
 		
 		if not self.DemonicFury then
@@ -2421,6 +2485,7 @@ module.funcs = {
 		checkSpec()
 		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkSpec)
 	end,
+	--]]
 
 	ShadowOrbs = function(self, unit, oufdb)
 		if not self.ShadowOrbs then
@@ -3421,10 +3486,10 @@ local SetStyle = function(self, unit, isSingle)
 			if oufdb.Bars.HolyPower.Enable then module.funcs.HolyPower(self, unit, oufdb) end
 		elseif class == "SHAMAN" then
 			if oufdb.Bars.Totems.Enable then module.funcs.TotemBar(self, unit, oufdb) end
+		elseif class == "MAGE" then
+			if oufdb.Bars.ArcaneCharges.Enable then module.funcs.ArcaneCharges(self, unit, oufdb) end
 		elseif class == "WARLOCK" then
-			if oufdb.Bars.SoulShards.Enable then module.funcs.SoulShards(self, unit, oufdb) end
-			if oufdb.Bars.DemonicFury.Enable then module.funcs.DemonicFury(self, unit, oufdb) end
-			if oufdb.Bars.BurningEmbers.Enable then module.funcs.BurningEmbers(self, unit, oufdb) end
+			if oufdb.Bars.WarlockBar.Enable then module.funcs.WarlockBar(self, unit, oufdb) end
 		elseif class == "PRIEST" then
 			if oufdb.Bars.ShadowOrbs.Enable then module.funcs.ShadowOrbs(self, unit, oufdb) end
 		end

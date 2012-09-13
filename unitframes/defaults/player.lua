@@ -237,7 +237,17 @@ module.defaults.profile.Player = {
 			Padding = 1,
 			Lock = true,
 		},
-		SoulShards = {
+		WarlockBar = {
+			Enable = true,
+			X = 0,
+			Y = 0.5,
+			Height = 8,
+			Width = 250,
+			Texture = "LUI_Gradient",
+			Padding = 2,
+			Lock = true,
+		},
+		ArcaneCharges = {
 			Enable = true,
 			X = 0,
 			Y = 0.5,
@@ -248,26 +258,6 @@ module.defaults.profile.Player = {
 			Lock = true,
 		},
 		ShadowOrbs = {
-			Enable = true,
-			X = 0,
-			Y = 0.5,
-			Height = 8,
-			Width = 250,
-			Texture = "LUI_Gradient",
-			Padding = 1,
-			Lock = true,
-		},
-		DemonicFury = {
-			Enable = true,
-			X = 0,
-			Y = 0.5,
-			Height = 8,
-			Width = 250,
-			Texture = "LUI_Gradient",
-			Padding = 1,
-			Lock = true,
-		},
-		BurningEmbers = {
 			Enable = true,
 			X = 0,
 			Y = 0.5,
@@ -620,7 +610,7 @@ module.defaults.profile.Player = {
 				b = 1,
 			},
 		},
-		DemonicFury = {
+		WarlockBar = {
 			Enable = true,
 			X = 220,
 			Y = 0,

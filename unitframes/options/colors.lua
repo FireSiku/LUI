@@ -62,20 +62,24 @@ module.defaults.profile.Colors = {
 		[4] = {0.90, 0.88, 0.06},
 		[5] = {0.90, 0.88, 0.06},
 	},
-	SoulShardsBar = {
-		[1] = {0.57, 0.22, 1},
-		[2] = {0.57, 0.22, 1},
-		[3] = {0.57, 0.22, 1},
-		[4] = {0.57, 0.22, 1},
+	ArcaneChargesBar = {
+		[1] = {0.12, 0.58, 0.89},
+		[2] = {0.12, 0.58, 0.89},
+		[3] = {0.12, 0.58, 0.89},
+		[4] = {0.12, 0.58, 0.89},
+		[5] = {0.12, 0.58, 0.89},
+		[6] = {0.12, 0.58, 0.89},
 	},
-	DemonicFuryBar = {
-		[1] = {0.8, 0.1, 0.1},
-	},
-	BurningEmbersBar = {
-		[1] = {0.69, 0.31, 0.31},
-		[2] = {0.69, 0.31, 0.31},
-		[3] = {0.69, 0.31, 0.31},
-		[4] = {0.69, 0.31, 0.31},
+	WarlockBar = {
+		["Fury"] = {0.8, 0.1, 0.1},
+		["Shard1"] = {0.57, 0.22, 1},
+		["Shard2"] = {0.57, 0.22, 1},
+		["Shard3"] = {0.57, 0.22, 1},
+		["Shard4"] = {0.57, 0.22, 1},
+		["Ember1"] = {0.69, 0.31, 0.31},
+		["Ember2"] = {0.69, 0.31, 0.31},
+		["Ember3"] = {0.69, 0.31, 0.31},
+		["Ember4"] = {0.69, 0.31, 0.31},
 	},
 	ShadowOrbsBar = {
 		[1] = {0.93, 0.93, 0.93},
@@ -162,24 +166,19 @@ module.colors = setmetatable({
 			return module.db.Colors.HolyPowerBar[k] or oUF.colors.holypowerbar[k]
 		end
 	}),
-	soulshardsbar = setmetatable({}, {
+	warlockbar = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.SoulShardsBar[k] or oUF.colors.soulshardsbar[k]
-		end
-	}),
-	burningembersbar = setmetatable({}, {
-		__index = function(t, k)
-			return module.db.Colors.BurningEmbersBar[k] or oUF.colors.burningembersbar[k]
-		end
-	}),
-	demonicfurybar = setmetatable({}, {
-		__index = function(t, k)
-			return module.db.Colors.DemonicFuryBar[1] or oUF.colors.demonicfurybar[1]
+			return module.db.Colors.WarlockBar[k] or oUF.colors.warlockbar[k]
 		end
 	}),
 	shadoworbsbar = setmetatable({}, {
 		__index = function(t, k)
 			return module.db.Colors.ShadowOrbsBar[k] or oUF.colors.shadoworbsbar[k]
+		end
+	}),
+	arcanechargesbar = setmetatable({}, {
+		__index = function(t, k)
+			return module.db.Colors.ArcaneChargesBar[k] or oUF.colors.arcanechargesbar[k]
 		end
 	}),
 	eclipsebar = setmetatable({}, {
@@ -217,17 +216,15 @@ local function UpdateColors()
 			oUF_LUI_player.HolyPower[i]:SetStatusBarColor(unpack(module.colors.holypowerbar[i]))
 		end
 	end
-	if oUF_LUI_player.SoulShards then
+	if oUF_LUI_player.WarlockBar then
+		local spec = oUF_LUI_player.WarlockBar.SpecInfo[GetSpecialization()]
 		for i = 1, 4 do
-			oUF_LUI_player.SoulShards[i]:SetStatusBarColor(unpack(module.colors.soulshardsbar[i]))
+			oUF_LUI_player.WarlockBar[i]:SetStatusBarColor(unpack(module.colors.warlockbar[spec.BarColors[i]]))
 		end
 	end
-	if oUF_LUI_player.DemonicFury then
-			oUF_LUI_player.DemonicFury[1]:SetStatusBarColor(unpack(module.colors.demonicfurybar[1]))
-	end
-	if oUF_LUI_player.BurningEmbers then
-		for i = 1, 4 do
-			oUF_LUI_player.BurningEmbers[i]:SetStatusBarColor(unpack(module.colors.burningembersbar[i]))
+	if oUF_LUI_player.ArcaneCharges then
+		for i = 1, 6 do
+			oUF_LUI_player.ArcaneCharges[i]:SetStatusBarColor(unpack(module.colors.arcanechargesbar[i]))
 		end
 	end
 	if oUF_LUI_player.ShadowOrbs then
@@ -356,36 +353,22 @@ function module:CreateColorOptions(order)
 				UpdateColors()
 			end),
 		}),
-		SoulShardsBar = self:NewGroup("Soul Shards", 7, nil, nil, class ~= "WARLOCK", {
+		WarlockBar = self:NewGroup("Warlock Bars", 7, nil, nil, class ~= "WARLOCK", {
 			header1 = self:NewHeader("Soul Shard Colors", 1),
-			["1"] = self:NewColorNoAlpha("Part 1", "first part of your Soul Shards Bar", 2, false, "full"),
-			["2"]	= self:NewColorNoAlpha("Part 2", "second part of your Soul Shards Bar", 3, false, "full"),
-			["3"]	= self:NewColorNoAlpha("Part 3", "third part of your Soul Shards Bar", 4, false, "full"),
-			["4"]	= self:NewColorNoAlpha("Part 4", "fourth part of your Soul Shards Bar, glyph required", 4, false, "full"),
-			empty1 = self:NewDesc(" ", 5),
-			Reset = self:NewExecute("Restore Defaults", nil, 6, function()
-				module.db.Colors.SoulShardsBar = module.defaults.Colors.SoulShardsBar
-				UpdateColors()
-			end),
-		}),
-		DemonicFuryBar = self:NewGroup("Demonic Fury", 8, nil, nil, class ~= "WARLOCK", {
-			header1 = self:NewHeader("Demonic Fury Colors", 1),
-			["1"] = self:NewColorNoAlpha("Demonic Fury Bar", "color of your Demonic Fury Bar", 2, false, "full"),
-			empty1 = self:NewDesc(" ", 3),
-			Reset = self:NewExecute("Restore Defaults", nil, 4, function()
-				module.db.Colors.DemonicFuryBar = module.defaults.Colors.DemonicFuryBar
-				UpdateColors()
-			end),
-		}),
-		BurningEmbersBar = self:NewGroup("Burning Embers", 9, nil, nil, class ~= "WARLOCK", {
-			header1 = self:NewHeader("Burning Embers Colors", 1),
-			["1"] = self:NewColorNoAlpha("Part 1", "first part of your Burning Embers Bar", 2, false, "full"),
-			["2"]	= self:NewColorNoAlpha("Part 2", "second part of your Burning Embers Bar", 3, false, "full"),
-			["3"]	= self:NewColorNoAlpha("Part 3", "third part of your Burning Embers Bar", 4, false, "full"),
-			["4"]	= self:NewColorNoAlpha("Part 4", "fourth part of your Burning Embers Bar, glyph required", 4, false, "full"),
-			empty1 = self:NewDesc(" ", 5),
-			Reset = self:NewExecute("Restore Defaults", nil, 6, function()
-				module.db.Colors.BurningEmbersBar = module.defaults.Colors.BurningEmbersBar
+			["Shard1"] = self:NewColorNoAlpha("Part 1", "first part of your Soul Shards Bar", 2, false, "full"),
+			["Shard2"] = self:NewColorNoAlpha("Part 2", "second part of your Soul Shards Bar", 3, false, "full"),
+			["Shard3"] = self:NewColorNoAlpha("Part 3", "third part of your Soul Shards Bar", 4, false, "full"),
+			["Shard4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Soul Shards Bar, glyph required", 5, false, "full"),
+			header2 = self:NewHeader("Demonic Fury Colors", 6),
+			["Fury"] = self:NewColorNoAlpha("Demonic Fury Bar", "color of your Demonic Fury Bar", 7, false, "full"),
+			header3 = self:NewHeader("Burning Embers Colors", 8),
+			["Ember1"] = self:NewColorNoAlpha("Part 1", "first part of your Burning Embers Bar", 9, false, "full"),
+			["Ember2"] = self:NewColorNoAlpha("Part 2", "second part of your Burning Embers Bar", 10, false, "full"),
+			["Ember3"] = self:NewColorNoAlpha("Part 3", "third part of your Burning Embers Bar", 11, false, "full"),
+			["Ember4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Burning Embers Bar, glyph required", 12, false, "full"),
+			empty1 = self:NewDesc(" ", 13),
+			Reset = self:NewExecute("Restore Defaults", nil, 14, function()
+				module.db.Colors.WarlockBar = module.defaults.Colors.WarlockBar
 				UpdateColors()
 			end),
 		}),
@@ -397,6 +380,20 @@ function module:CreateColorOptions(order)
 			empty1 = self:NewDesc(" ", 5),
 			Reset = self:NewExecute("Restore Defaults", nil, 6, function()
 				module.db.Colors.ShadowOrbsBar = module.defaults.Colors.ShadowOrbsBar
+				UpdateColors()
+			end),
+		}),
+		ArcaneChargesBar = self:NewGroup("Arcane Charges", 10, nil, nil, class ~= "PRIEST", {
+			header1 = self:NewHeader("Shadow Orbs Colors", 1),
+			["1"] = self:NewColorNoAlpha("Part 1", "first part of your Arcane Charges Bar", 2, false, "full"),
+			["2"] = self:NewColorNoAlpha("Part 2", "second part of your Arcane Charges Bar", 3, false, "full"),
+			["3"] = self:NewColorNoAlpha("Part 3", "third part of your Arcane Charges Bar", 4, false, "full"),
+			["4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Arcane Charges Bar", 4, false, "full"),
+			["5"] = self:NewColorNoAlpha("Part 5", "fifth part of your Arcane Charges Bar", 4, false, "full"),
+			["6"] = self:NewColorNoAlpha("Part 6", "sixth part of your Arcane Charges Bar", 4, false, "full"),
+			empty1 = self:NewDesc(" ", 5),
+			Reset = self:NewExecute("Restore Defaults", nil, 6, function()
+				module.db.Colors.ArcaneChargesBar = module.defaults.Colors.ArcaneChargesBar
 				UpdateColors()
 			end),
 		}),

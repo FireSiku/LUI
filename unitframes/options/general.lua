@@ -55,25 +55,23 @@ local barKeys = {
 	Totems = "TotemBar",
 	Runes = "Runes",
 	HolyPower = "HolyPower",
-	SoulShards = "SoulShards",
 	Eclipse = "EclipseBar",
 	AltPower = "AltPowerBar",
 	DruidMana = "DruidMana",
 	ShadowOrbs = "ShadowOrbs",
-	DemonicFury = "DemonicFury",
-	BurningEmbers = "BurningEmbers",
+	WarlockBar = "WarlockBar",
+	ArcaneCharges = "ArcaneCharges",
 }
 local barNames = {
 	Totems = "Totems",
 	Runes = "Runes",
 	HolyPower = "Holy Power",
-	SoulShards = "Soulshards",
 	Eclipse = "Eclipse",
 	AltPower = "Alternate Power",
 	DruidMana = "Druid Mana",
 	ShadowOrbs = "Shadow Orbs",
-	DemonicFury = "Demonic Fury",
-	BurningEmbers = "Burning Embers",
+	ArcaneCharges = "Arcane Charges",
+	WarlockBar = "Warlock Bars",
 }
 
 local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
@@ -284,7 +282,7 @@ end
 --barName: Shown Name in the options
 --barType: Key in the options/db
 
---barType: Totems, Runes, HolyPower, SoulShards, Eclipse, ShadowOrbs, BurningEmbers, DemonicFury
+--barType: Totems, Runes, HolyPower, Eclipse, ShadowOrbs, ArcaneCharges, WarlockBars
 function module:CreatePlayerBarOptions(barType, order)
 	local barName = barNames[barType]
 	local barKey = barKeys[barType]
@@ -1095,10 +1093,9 @@ function module:CreateUnitOptions(unit, order)
 			Totems = (class == "SHAMAN" and unit == "Player") and self:CreatePlayerBarOptions("Totems", 13) or nil,
 			Runes = ((class == "DEATHKNIGHT" or class == "DEATH KNIGHT") and unit == "Player") and self:CreatePlayerBarOptions("Runes", 14) or nil,
 			HolyPower = (class == "PALADIN" and unit == "Player") and self:CreatePlayerBarOptions("HolyPower", 15) or nil,
-			SoulShards = (class == "WARLOCK" and unit == "Player") and self:CreatePlayerBarOptions("SoulShards", 16) or nil,
-			DemonicFury = (class == "WARLOCK" and unit == "Player") and self:CreatePlayerBarOptions("DemonicFury", 16) or nil,
-			BurningEmbers = (class == "WARLOCK" and unit == "Player") and self:CreatePlayerBarOptions("BurningEmbers", 16) or nil,
+			WarlockBar = (class == "WARLOCK" and unit == "Player") and self:CreatePlayerBarOptions("WarlockBar", 16) or nil,
 			ShadowOrbs = (class == "PRIEST" and unit == "Player") and self:CreatePlayerBarOptions("ShadowOrbs", 16) or nil,
+			ArcaneCharges = (class == "MAGE" and unit == "Player") and self:CreatePlayerBarOptions("ArcaneCharges", 16) or nil,
 			Eclipse = (class == "DRUID" and unit == "Player") and self:CreatePlayerBarOptions("Eclipse", 17) or nil,
 			ComboPoints = (unit == "Target") and self:CreateComboPointsOptions(18) or nil,
 		}),
@@ -1112,7 +1109,7 @@ function module:CreateUnitOptions(unit, order)
 			PowerMissing = self:CreateTextOptions(unit, 7, "Power", "Missing"),
 			Combat = (unit == "Player" or unit == "Target" or unit == "Focus" or unit == "Pet" or unit == "ToT") and self:CreateCombatTextOptions(unit, 8) or nil,
 			DruidMana = (unit == "Player" and class == "DRUID") and self:CreateDruidManaTimerOptions(9) or nil,
-			DemonicFury = (unit == "Player" and class == "WARLOCK") and self:CreatePlayerBarTextOptions("DemonicFury", 9) or nil,
+			WarlockBar = (unit == "Player" and class == "WARLOCK") and self:CreatePlayerBarTextOptions("WarlockBar", 9) or nil,
 			PvP = (unit == "Player") and self:CreatePvpTimerOptions(10) or nil,
 			Eclipse = (unit == "Player" and class == "DRUID") and self:CreatePlayerBarTextOptions("Eclipse", 11) or nil,
 			AltPower = (unit == "Player") and self:CreatePlayerBarTextOptions("AltPower", 12) or nil,
