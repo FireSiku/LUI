@@ -1052,60 +1052,6 @@ local ArcaneChargesOverride = function(self, event, unit, powerType)
 	end
 end
 
-
-
---[[
-
-local SoulShardsOverride = function(self, event, unit, powerType)
-	if self.unit ~= unit or (powerType and powerType ~= "SOUL_SHARDS") then return end
-
-	local num = UnitPower(unit, SPELL_POWER_SOUL_SHARDS)
-
-	for i = 1, self.SoulShards.Shards do
-		if i <= num then
-			self.SoulShards[i]:SetAlpha(1)
-		else
-			self.SoulShards[i]:SetAlpha(.4)
-		end
-	end
-end
-
-local BurningEmbersOverride = function(self, event, unit, powerType)
-	if self.unit ~= unit or (powerType and powerType ~= "BURNING_EMBERS") then return end
-
-	local num = UnitPower(unit, SPELL_POWER_BURNING_EMBERS)
-	local power = UnitPower(unit, SPELL_POWER_BURNING_EMBERS, true);
-	for i = 1, self.BurningEmbers.Embers do
-		local numOver = power - (i-1)*10
-		if i <= num then
-			self.BurningEmbers[i]:SetAlpha(1)ap
-			self.BurningEmbers[i]:SetValue(10)
-		elseif numOver > 0 then
-			self.BurningEmbers[i]:SetAlpha(.6)
-			self.BurningEmbers[i]:SetValue(numOver)
-		else
-			self.BurningEmbers[i]:SetAlpha(.6)
-			self.BurningEmbers[i]:SetValue(0)
-		end
-	end
-end
-
-local DemonicFuryOverride = function(self, event, unit, powerType)
-	if self.unit ~= unit or (powerType and powerType ~= "DEMONIC_FURY") then return end
-
-	local num = UnitPower(unit, SPELL_POWER_DEMONIC_FURY)
-	for i = 1, self.DemonicFury.Fury do
-		self.DemonicFury[i]:SetValue(num)
-	end
-
-	if self.DemonicFury.ShowText then
-		self.DemonicFury.Text:SetText(num)
-	end
-
-end
---]]
-
-
 local HolyPowerOverride = function(self, event, unit, powerType)
 	if self.unit ~= unit or (powerType and powerType ~= "HOLY_POWER") then return end
 
@@ -2381,10 +2327,10 @@ module.funcs = {
 		self.ArcaneCharges:ClearAllPoints()
 		self.ArcaneCharges:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 		
-		for i = 1, self.ArcaneCharges.ShardsMax do
+		for i = 1, self.ArcaneCharges.Charges do
 			self.ArcaneCharges[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.ArcaneCharges.Texture))
-			self.ArcaneCharges[i]:SetStatusBarColor(unpack(module.colors.ArcaneChargesbar[i]))
-			self.ArcaneCharges[i]:SetSize(((oufdb.Bars.ArcaneCharges.Width - 2*oufdb.Bars.ArcaneCharges.Padding) / self.ArcaneCharges.Shards), oufdb.Bars.ArcaneCharges.Height)
+			self.ArcaneCharges[i]:SetStatusBarColor(unpack(module.colors.arcanechargesbar[i]))
+			self.ArcaneCharges[i]:SetSize(((oufdb.Bars.ArcaneCharges.Width - 2*oufdb.Bars.ArcaneCharges.Padding) / self.ArcaneCharges.Charges), oufdb.Bars.ArcaneCharges.Height)
 
 			self.ArcaneCharges[i]:ClearAllPoints()
 			self.ArcaneCharges[i]:Show()
@@ -2407,85 +2353,6 @@ module.funcs = {
 		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkSpec)
 		module:RegisterEvent("UNIT_AURA", refresh)
 	end,
-
-	--[[
-	DemonicFury = function(self, unit, oufdb)
-		
-		if not self.DemonicFury then
-			self.DemonicFury = CreateFrame("Frame", nil, self)
-			self.DemonicFury:SetFrameLevel(6)
-
-			self.DemonicFury.Fury = 1
-			self.DemonicFury.FuryMax = 1
-
-			for i = 1, self.DemonicFury.FuryMax do -- Always four so it's avaible when we need it.
-				self.DemonicFury[i] = CreateFrame("StatusBar", nil, self.DemonicFury)
-				self.DemonicFury[i]:SetBackdrop(backdrop)
-				self.DemonicFury[i]:SetMinMaxValues(0,1000)
-				self.DemonicFury[i]:SetBackdropColor(0.08, 0.08, 0.08)
-
-				self.DemonicFury[i]:SetAlpha(1)
-				self.DemonicFury.Text = SetFontString(self.DemonicFury[1], Media:Fetch("font", oufdb.Texts.DemonicFury.Font), oufdb.Texts.DemonicFury.Size, oufdb.Texts.DemonicFury.Outline)
-			end
-
-			self.DemonicFury.FrameBackdrop = CreateFrame("Frame", nil, self.DemonicFury)
-			self.DemonicFury.FrameBackdrop:SetPoint("TOPLEFT", self.DemonicFury, "TOPLEFT", -3.5, 3)
-			self.DemonicFury.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.DemonicFury, "BOTTOMRIGHT", 3.5, -3)
-			self.DemonicFury.FrameBackdrop:SetFrameStrata("BACKGROUND")
-			self.DemonicFury.FrameBackdrop:SetBackdrop({
-				edgeFile = glowTex, edgeSize = 5,
-				insets = {left = 3, right = 3, top = 3, bottom = 3}
-			})
-			self.DemonicFury.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
-			self.DemonicFury.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
-
-			self.DemonicFury.Override = DemonicFuryOverride
-
-		end
-
-		local x = oufdb.Bars.DemonicFury.Lock and 0 or oufdb.Bars.DemonicFury.X
-		local y = oufdb.Bars.DemonicFury.Lock and 0.5 or oufdb.Bars.DemonicFury.Y
-
-		self.DemonicFury:SetHeight(oufdb.Bars.DemonicFury.Height)
-		self.DemonicFury:SetWidth(oufdb.Bars.DemonicFury.Width)
-		self.DemonicFury:ClearAllPoints()
-		self.DemonicFury:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
-		for i = 1, self.DemonicFury.FuryMax do
-			self.DemonicFury[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.DemonicFury.Texture))
-			self.DemonicFury[i]:SetStatusBarColor(unpack(module.colors.demonicfurybar[i]))
-			self.DemonicFury[i]:SetSize(((oufdb.Bars.DemonicFury.Width - 2*oufdb.Bars.DemonicFury.Padding) / 1), oufdb.Bars.DemonicFury.Height)
-			
-			self.DemonicFury[i]:ClearAllPoints()
-			self.DemonicFury[i]:Show()
-			if i == 1 then
-				self.DemonicFury[i]:SetPoint("LEFT", self.DemonicFury, "LEFT", 0, 0)
-			else
-				self.DemonicFury[i]:SetPoint("LEFT", self.DemonicFury[i-1], "RIGHT", oufdb.Bars.DemonicFury.Padding, 0)
-			end
-		end
-		
-		self.DemonicFury.Text:SetFont(Media:Fetch("font", oufdb.Texts.DemonicFury.Font), oufdb.Texts.DemonicFury.Size, oufdb.Texts.DemonicFury.Outline)
-		self.DemonicFury.Text:ClearAllPoints()
-		self.DemonicFury.Text:SetPoint("LEFT", self.DemonicFury, "LEFT", oufdb.Texts.DemonicFury.X, oufdb.Texts.DemonicFury.Y)
-		self.DemonicFury.ShowText = oufdb.Texts.DemonicFury.Enable
-		if oufdb.Texts.DemonicFury.Enable == true then
-			self.DemonicFury.Text:Show()
-		else
-			self.DemonicFury.Text:Hide()
-		end
-
-		local function checkSpec(event)
-			if self.SoulShards then self.SoulShards:Hide() end
-			if self.DemonicFury then self.DemonicFury:Hide() end
-			if self.BurningEmbers then self.BurningEmbers:Hide() end
-			if GetSpecialization() == 1 and self.SoulShards then self.SoulShards:Show() end
-			if GetSpecialization() == 2 and self.DemonicFury then self.DemonicFury:Show() end
-			if GetSpecialization() == 3 and self.BurningEmbers then self.BurningEmbers:Show() end
-		end
-		checkSpec()
-		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkSpec)
-	end,
-	--]]
 
 	ShadowOrbs = function(self, unit, oufdb)
 		if not self.ShadowOrbs then
