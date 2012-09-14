@@ -1,5 +1,5 @@
 ## Interface: 50001
-## Version: 3.7.2
+## Version: 3.7.3
 ## Title: LUI
 ## Author: Chaoslux, Hix, Thaly, Zista
 ## FormerAuthor: Louí @EU-Das Syndikat
