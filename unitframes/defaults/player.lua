@@ -254,7 +254,7 @@ module.defaults.profile.Player = {
 			Height = 8,
 			Width = 250,
 			Texture = "LUI_Gradient",
-			Padding = 2,
+			Padding = 1,
 			Lock = true,
 		},
 		ShadowOrbs = {

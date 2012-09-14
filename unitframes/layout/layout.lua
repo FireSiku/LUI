@@ -1040,9 +1040,10 @@ local WarlockBarOverride = function(self, event, unit, powerType)
 end
 
 local ArcaneChargesOverride = function(self, event, unit, powerType)
-	if self.unit ~= unit or not self.ArcaneCharges.Refresh then return end
+	if self.unit ~= unit then return end
 
-	local _, _, _, num = UnitDebuff(unit, GetSpellInfo(36032)) -- Arcane Charge
+	local _, _, _, num = UnitDebuff(unit, GetSpellInfo(36032)) -- Arcane Charges
+	if not num then num = 0 end
 	for i = 1, self.ArcaneCharges.Charges do
 		if i <= num then
 			self.ArcaneCharges[i]:SetAlpha(1)
@@ -2346,12 +2347,8 @@ module.funcs = {
 			else self.ArcaneCharges:Hide()
 			end
 		end
-		local function refresh(event)
-			self.ArcaneCharges.Refresh = true
-		end
 		checkSpec()
 		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkSpec)
-		module:RegisterEvent("UNIT_AURA", refresh)
 	end,
 
 	ShadowOrbs = function(self, unit, oufdb)
