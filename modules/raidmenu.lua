@@ -48,7 +48,7 @@ function module:OverlapPrevention(frame, action)
 		offset = db.Offset
 	end
 	
-	if frame == "RM" then
+	if frame == "RM" and db.profile.Enable then
 		if action == "toggle" then
 			if RaidMenu_Parent:IsShown() then
 				RaidMenu.AlphaOut:Show()
@@ -609,8 +609,8 @@ function module:LoadFrameOptions()
 					db.Enable = Enable
 					if Enable then
 						module:SetRaidMenu()
-					else
-						StaticPopup_Show("RELOAD_UI")
+--					else
+--						StaticPopup_Show("RELOAD_UI")
 					end
 				end,
 				order = 2,
