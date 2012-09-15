@@ -1000,7 +1000,7 @@ end
 local WarlockBarOverride = function(self, event, unit, powerType)
 	local specNum = GetSpecialization() 
 	local spec = self.WarlockBar.SpecInfo[specNum]
-
+	if not spec then return end
 	if self.unit ~= unit or (powerType and powerType ~= spec.powerType) then return end
 	local num = UnitPower(unit, spec.unitPower)
 	local text = ""
@@ -2203,9 +2203,6 @@ module.funcs = {
 			self.WarlockBar.SpecInfo[1].BarColors = { "Shard1", "Shard2", "Shard3", "Shard4" }
 			self.WarlockBar.SpecInfo[2].BarColors = { "Fury", "Fury", "Fury", "Fury" } -- Four time just to not have to add an additional check
 			self.WarlockBar.SpecInfo[3].BarColors = { "Ember1", "Ember2", "Ember3", "Ember4" }
-			local spec = self.WarlockBar.SpecInfo[GetSpecialization()]
-			
-			self.WarlockBar.Amount = spec.Amount
 
 			for i = 1, 4 do -- Create the max so we dont have to worry about it later.
 				self.WarlockBar[i] = CreateFrame("StatusBar", nil, self.WarlockBar)
@@ -2242,6 +2239,14 @@ module.funcs = {
 		local function checkBar(event)
 
 			local spec = self.WarlockBar.SpecInfo[GetSpecialization()]
+			if not spec then
+				self.WarlockBar:Hide()
+				return
+			else
+				if oufdb.Bars.WarlockBar.Enable then
+					self.WarlockBar:Show()
+				end
+			end
 			self.WarlockBar.Amount = spec.Amount
 
 			if spec.glyph then
