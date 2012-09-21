@@ -41,7 +41,7 @@ local function Enable(self)
 		hp.ForceUpdate = ForceUpdate
 
 		self:RegisterEvent('UNIT_POWER', Path)
-
+		hp:Show()
 		return true
 	end
 end
