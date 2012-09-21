@@ -40,7 +40,7 @@ local Enable = function(self)
 
 		self:RegisterEvent('UNIT_COMBO_POINTS', Path)
 		self:RegisterEvent('PLAYER_TARGET_CHANGED', Path)
-
+		cpoints:Show()
 		for index = 1, MAX_COMBO_POINTS do
 			local cpoint = cpoints[index]
 			if(cpoint:IsObjectType'Texture' and not cpoint:GetTexture()) then

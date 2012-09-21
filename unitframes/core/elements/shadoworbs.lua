@@ -40,7 +40,7 @@ local function Enable(self)
 		so.ForceUpdate = ForceUpdate
 
 		self:RegisterEvent('UNIT_POWER', Path)
-
+		so:Show()
 		return true
 	end
 end

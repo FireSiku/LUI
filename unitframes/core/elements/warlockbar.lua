@@ -65,6 +65,7 @@ local function Enable(self)
 		wb.ForceUpdate = ForceUpdate
 
 		self:RegisterEvent('UNIT_POWER', Path)
+		wb:Show()
 		return true
 	end
 end

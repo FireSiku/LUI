@@ -121,7 +121,7 @@ local function Enable(self)
 		self:RegisterEvent('UNIT_AURA', UNIT_AURA)
 		self:RegisterEvent('UNIT_POWER', UNIT_POWER)
 		self:RegisterEvent('UPDATE_SHAPESHIFT_FORM', UPDATE_VISIBILITY)
-
+		eb:Show()
 		return true
 	end
 end
