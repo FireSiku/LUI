@@ -48,7 +48,8 @@ end
 local function Disable(self)
 	local ac = self.ArcaneCharges
 	if(ac) then
-		self:UnregisterEvent('UNIT_POWER', Path)
+		self:UnregisterEvent('UNIT_AURA', Path)
+		ac:Hide()
 	end
 end
 

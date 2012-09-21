@@ -115,6 +115,7 @@ local Disable = function(self)
 
 		self:UnregisterEvent('UNIT_DISPLAYPOWER', Path)
 		self:UnregisterEvent('UNIT_MAXPOWER', Path)
+		druidmana:Hide()
 	end
 end
 

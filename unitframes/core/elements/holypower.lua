@@ -50,6 +50,7 @@ local function Disable(self)
 	local hp = self.HolyPower
 	if(hp) then
 		self:UnregisterEvent('UNIT_POWER', Path)
+		hp:Hide()
 	end
 end
 

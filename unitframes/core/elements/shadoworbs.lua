@@ -49,6 +49,7 @@ local function Disable(self)
 	local so = self.ShadowOrbs
 	if(so) then
 		self:UnregisterEvent('UNIT_POWER', Path)
+		so:Hide()
 	end
 end
 
