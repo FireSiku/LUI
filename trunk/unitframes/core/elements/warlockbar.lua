@@ -73,6 +73,7 @@ local function Disable(self)
 	local wb = self.WarlockBar
 	if(wb) then
 		self:UnregisterEvent('UNIT_POWER', Path)
+		wb:Hide()
 	end
 end
 

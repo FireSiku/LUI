@@ -58,6 +58,7 @@ local Disable = function(self)
 	if(cpoints) then
 		self:UnregisterEvent('UNIT_COMBO_POINTS', Path)
 		self:UnregisterEvent('PLAYER_TARGET_CHANGED', Path)
+		cpoints:Hide()
 	end
 end
 

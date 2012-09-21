@@ -134,6 +134,7 @@ local function Disable(self)
 		self:UnregisterEvent('UNIT_AURA', UNIT_AURA)
 		self:UnregisterEvent('UNIT_POWER', UNIT_POWER)
 		self:UnregisterEvent('UPDATE_SHAPESHIFT_FORM', UPDATE_VISIBILITY)
+		eb:Hide()
 	end
 end
 

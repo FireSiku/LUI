@@ -383,7 +383,7 @@ function module:CreateColorOptions(order)
 				UpdateColors()
 			end),
 		}),
-		ArcaneChargesBar = self:NewGroup("Arcane Charges", 10, nil, nil, class ~= "PRIEST", {
+		ArcaneChargesBar = self:NewGroup("Arcane Charges", 10, nil, nil, class ~= "MAGE", {
 			header1 = self:NewHeader("Shadow Orbs Colors", 1),
 			["1"] = self:NewColorNoAlpha("Part 1", "first part of your Arcane Charges Bar", 2, false, "full"),
 			["2"] = self:NewColorNoAlpha("Part 2", "second part of your Arcane Charges Bar", 3, false, "full"),
