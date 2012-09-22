@@ -293,20 +293,20 @@ function module:CreatePlayerBarOptions(barType, order)
 
 	local applySettings = function(info, Enable)
 		self.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, self.db.Player)
-		if Enable then
-			oUF_LUI_player:EnableElement(barKey)
-			if barType == "Runes" then
-				Blizzard:Hide("runebar")
-			end
-		else
-			oUF_LUI_player:DisableElement(barKey)
-			if barType == "Runes" then
-				Blizzard:Show("runebar")
+		if info[5] == "Enable" then
+			if Enable then
+				oUF_LUI_player:EnableElement(barKey)
+				if barType == "Runes" then
+					Blizzard:Hide("runebar")
+				end
+			else
+				oUF_LUI_player:DisableElement(barKey)
+				if barType == "Runes" then
+					Blizzard:Show("runebar")
+				end
 			end
 		end
-
 		Forte:SetPosForte()
-
 		oUF_LUI_player:UpdateAllElements()
 	end
 
@@ -400,12 +400,14 @@ function module:CreateComboPointsOptions(order)
 
 	local isLocked = function() return not self.db.Target.Bars.ComboPoints.Enable or self.db.Target.Bars.ComboPoints.Lock end
 
-	local applySettings = function()
+	local applySettings = function(info, Enable)
 		module.funcs.CPoints(oUF_LUI_target, oUF_LUI_target.__unit, self.db.Target)
-		if self.db.Target.ComboPoints then
-			oUF_LUI_target:EnableElement("CPoints")
-		else
-			oUF_LUI_target:DisableElement("CPoints")
+		if info[5] == "Enable" then
+			if Enable then
+				oUF_LUI_target:EnableElement("CPoints")
+			else
+				oUF_LUI_target:DisableElement("CPoints")
+			end
 		end
 		Forte:SetPosForte()
 		oUF_LUI_target:UpdateAllElements()
