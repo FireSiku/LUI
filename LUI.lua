@@ -360,8 +360,8 @@ function LUI:SyncAddonVersion()
 		end
 	end
 	sendVersion("GUILD") -- send to guild on login
-	LUI:RegisterEvent("PARTY_MEMBERS_CHANGED", groupUpdate, "Party") -- send to party on join party
-	LUI:RegisterEvent("RAID_ROSTER_UPDATE", groupUpdate, "Raid") -- send to raid on join raid
+	LUI:RegisterEvent("GROUP_ROSTER_UPDATE", groupUpdate, "Party") -- send to party on join party
+	LUI:RegisterEvent("GROUP_ROSTER_UPDATE", groupUpdate, "Raid") -- send to raid on join raid
 end
 
 ------------------------------------------------------

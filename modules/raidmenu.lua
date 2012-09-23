@@ -338,7 +338,7 @@ function module:SetRaidMenu()
 	else
 		ConvertRaid:SetText("Convert to Raid")
 	end
-	local monitoredEvents = {"PARTY_CONVERTED_TO_RAID", "RAID_ROSTER_UPDATE", "PARTY_LEADER_CHANGED", "PARTY_MEMBERS_CHANGED"}
+	local monitoredEvents = {"PARTY_CONVERTED_TO_RAID", "GROUP_ROSTER_UPDATE", "PARTY_LEADER_CHANGED"}
 	for i = 1, #monitoredEvents do
 		ConvertRaid:RegisterEvent(monitoredEvents[i])
 	end
@@ -370,7 +370,7 @@ function module:SetRaidMenu()
 		GameTooltip:Hide()
 	end)
 	ConvertRaid:SetScript("OnClick", function(self)
-		if GetNumGroupMembers() > 0 then
+		if GetNumGroupMembers() > 0 and not IsInRaid() then
 			ConvertToParty()
 		else
 			ConvertToRaid()
