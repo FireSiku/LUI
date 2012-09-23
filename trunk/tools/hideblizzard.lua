@@ -74,10 +74,10 @@ do
 				frame.Show = LUI.dummy
 			end
 
-			UIParent:UnregisterEvent("RAID_ROSTER_UPDATE")
+			UIParent:UnregisterEvent("GROUP_ROSTER_UPDATE")
 
 			if CompactPartyFrame then
-				CompactPartyFrame:UnregisterEvent("RAID_ROSTER_UPDATE")
+				CompactPartyFrame:UnregisterEvent("GROUP_ROSTER_UPDATE")
 				CompactPartyFrame:Hide()
 
 				if hook.party == "CompactPartyFrame_Generate" then
@@ -91,8 +91,7 @@ do
 			end
 		end,
 		raid = function()
-			CompactRaidFrameManager:UnregisterEvent("PARTY_MEMBERS_CHANGED")
-			CompactRaidFrameManager:UnregisterEvent("RAID_ROSTER_UPDATE")
+			CompactRaidFrameManager:UnregisterEvent("GROUP_ROSTER_UPDATE")
 			CompactRaidFrameManager:UnregisterEvent("PLAYER_ENTERING_WORLD")
 			CompactRaidFrameManager:Hide()
 			compact_raid = CompactRaidFrameManager_GetSetting("IsShown")
@@ -190,16 +189,15 @@ do
 				local frame = _G["PartyMemberFrame"..i]
 				frame.Show = nil -- reset access to the frame metatable's show function
 				frame:GetScript("OnLoad")(frame)
-				frame:GetScript("OnEvent")(frame, "PARTY_MEMBERS_CHANGED")
+				frame:GetScript("OnEvent")(frame, "GROUP_ROSTER_UPDATE")
 
 				PartyMemberFrame_UpdateMember(frame)
 			end
 
-			UIParent:RegisterEvent("RAID_ROSTER_UPDATE")
+			UIParent:RegisterEvent("GROUP_ROSTER_UPDATE")
 
 			if CompactPartyFrame then
-				CompactPartyFrame:RegisterEvent("PARTY_MEMBERS_CHANGED")
-				CompactPartyFrame:RegisterEvent("RAID_ROSTER_UPDATE")
+				CompactPartyFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
 				if GetDisplayedAllyFrames then
 					if GetDisplayedAllyFrames() == "compact-party" then
 						CompactPartyFrame:Show()
@@ -210,8 +208,7 @@ do
 			end
 		end,
 		raid = function()
-			CompactRaidFrameManager:RegisterEvent("PARTY_MEMBERS_CHANGED")
-			CompactRaidFrameManager:RegisterEvent("RAID_ROSTER_UPDATE")
+			CompactRaidFrameManager:RegisterEvent("GROUP_ROSTER_UPDATE")
 			CompactRaidFrameManager:RegisterEvent("PLAYER_ENTERING_WORLD")
 			if GetDisplayedAllyFrames then
 				if GetDisplayedAllyFrames() == "raid" then

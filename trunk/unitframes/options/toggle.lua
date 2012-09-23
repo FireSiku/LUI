@@ -290,8 +290,7 @@ module.ToggleUnit = setmetatable({
 
 				local handler = CreateFrame("Frame")
 				handler:RegisterEvent("PLAYER_ENTERING_WORLD")
-				handler:RegisterEvent("PARTY_MEMBERS_CHANGED")
-				handler:RegisterEvent("RAID_ROSTER_UPDATE")
+				handler:RegisterEvent("GROUP_ROSTER_UPDATE")
 				handler:SetScript("OnEvent", function(self, event)
 					if InCombatLockdown() then
 						self:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -304,17 +303,13 @@ module.ToggleUnit = setmetatable({
 						if module.db.Party.ShowInRaid then
 							party:Show()
 						else
-							local numraid = GetNumGroupMembers()
 							local numparty = GetNumSubgroupMembers()
-
 							if module.db.Party.ShowInRealParty then
-								if numparty and numraid == 0 then
+								if numparty and not IsInRaid() then
 									party:Show()
-								else
-									party:Hide()
 								end
 							else
-								if (numraid < 6 and numraid == numparty + 1) or numraid == 0 then
+								if not IsInRaid() then
 									party:Show()
 								else
 									party:Hide()
