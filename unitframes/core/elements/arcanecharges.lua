@@ -40,6 +40,7 @@ local function Enable(self)
 		ac.ForceUpdate = ForceUpdate
 			
 		self:RegisterEvent('UNIT_AURA', Path)
+		
 		ac:Show()
 		return true
 	end

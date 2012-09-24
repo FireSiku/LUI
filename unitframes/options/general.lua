@@ -61,6 +61,7 @@ local barKeys = {
 	ShadowOrbs = "ShadowOrbs",
 	WarlockBar = "WarlockBar",
 	ArcaneCharges = "ArcaneCharges",
+	Chi = "Chi",
 }
 local barNames = {
 	Totems = "Totems",
@@ -72,6 +73,7 @@ local barNames = {
 	ShadowOrbs = "Shadow Orbs",
 	ArcaneCharges = "Arcane Charges",
 	WarlockBar = "Warlock Bars",
+	Chi = "Chi",
 }
 
 local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
@@ -1039,7 +1041,7 @@ function module:CreateUnitOptions(unit, order)
 				UseBlizzard = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Raid") and self:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, false, "full", function() return self.db[unit].Enable end) or nil,
 				ShowPlayer = (unit == "Party") and self:NewToggle("Show Player", "Whether you want to show yourself within the Party Frames or not.", 3, false, nil, disabledFunc) or nil,
 				ShowInRaid = (unit == "Party") and self:NewToggle("Show in Raid", "Whether you want to show the Party Frames in Raid or not.", 4, false, nil, disabledFunc) or nil,
-				ShowInRealParty = (unit == "Party") and self:NewToggle("Show only in real Parties", "Whether you want to show the Party Frames only in real Parties or in Raids with 5 or less players too.", 5, false, nil, function() return not module.db.Party.Enable or module.db.Party.ShowInRaid end) or nil,
+				ShowInRealPartys = (unit == "Party") and self:NewToggle("Show only in real Parties", "Whether you want to show the Party Frames only in real Parties or in Raids with 5 or less players too.", 5, false, nil, function() return not module.db.Party.Enable or module.db.Party.ShowInRaid end) or nil,
 				empty1 = (unit ~= "Player" and unit ~= "Target") and self:NewDesc(" ", 6) or nil,
 				Padding = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Maintank" or unit == "Raid") and self:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.\n\nDefault: "..self.defaults[unit].Padding, 7, false, nil, disabledFunc) or nil,
 				GroupPadding = (unit == "Raid") and self:NewInputNumber("Group Padding", "Choose the Padding between your "..unit.." Groups.\n\nDefault: "..self.defaults[unit].GroupPadding, 8, false, nil, disabledFunc) or nil,
@@ -1098,6 +1100,7 @@ function module:CreateUnitOptions(unit, order)
 			WarlockBar = (class == "WARLOCK" and unit == "Player") and self:CreatePlayerBarOptions("WarlockBar", 16) or nil,
 			ShadowOrbs = (class == "PRIEST" and unit == "Player") and self:CreatePlayerBarOptions("ShadowOrbs", 16) or nil,
 			ArcaneCharges = (class == "MAGE" and unit == "Player") and self:CreatePlayerBarOptions("ArcaneCharges", 16) or nil,
+			Chi = (class == "MONK" and unit == "Player") and self:CreatePlayerBarOptions("Chi", 16) or nil,
 			Eclipse = (class == "DRUID" and unit == "Player") and self:CreatePlayerBarOptions("Eclipse", 17) or nil,
 			ComboPoints = (unit == "Target") and self:CreateComboPointsOptions(18) or nil,
 		}),

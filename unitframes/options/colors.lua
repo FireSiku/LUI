@@ -70,6 +70,13 @@ module.defaults.profile.Colors = {
 		[5] = {0.12, 0.58, 0.89},
 		[6] = {0.12, 0.58, 0.89},
 	},
+	ChiBar = {
+		[1] = {0.00, 1.00, 0.59},
+		[2] = {0.00, 1.00, 0.59},
+		[3] = {0.00, 1.00, 0.59},
+		[4] = {0.00, 1.00, 0.59},
+		[5] = {0.00, 1.00, 0.59},
+	},
 	WarlockBar = {
 		["Fury"] = {0.8, 0.1, 0.1},
 		["Shard1"] = {0.57, 0.22, 1},
@@ -181,6 +188,11 @@ module.colors = setmetatable({
 			return module.db.Colors.ArcaneChargesBar[k] or oUF.colors.arcanechargesbar[k]
 		end
 	}),
+	chibar = setmetatable({}, {
+		__index = function(t, k)
+			return module.db.Colors.ChiBar[k] or oUF.colors.chibar[k]
+		end
+	}),
 	eclipsebar = setmetatable({}, {
 		__index = function(t, k)
 			return module.db.Colors.EclipseBar[k]
@@ -230,6 +242,11 @@ local function UpdateColors()
 	if oUF_LUI_player.ShadowOrbs then
 		for i = 1, 3 do
 			oUF_LUI_player.ShadowOrbs[i]:SetStatusBarColor(unpack(module.colors.shadoworbsbar[i]))
+		end
+	end
+	if oUF_LUI_player.Chi then
+		for i = 1, 5 do
+			oUF_LUI_player.Chi[i]:SetStatusBarColor(unpack(module.colors.chibar[i]))
 		end
 	end
 	for k, obj in pairs(oUF.objects) do
@@ -384,7 +401,7 @@ function module:CreateColorOptions(order)
 			end),
 		}),
 		ArcaneChargesBar = self:NewGroup("Arcane Charges", 10, nil, nil, class ~= "MAGE", {
-			header1 = self:NewHeader("Shadow Orbs Colors", 1),
+			header1 = self:NewHeader("Arcane Charges Colors", 1),
 			["1"] = self:NewColorNoAlpha("Part 1", "first part of your Arcane Charges Bar", 2, false, "full"),
 			["2"] = self:NewColorNoAlpha("Part 2", "second part of your Arcane Charges Bar", 3, false, "full"),
 			["3"] = self:NewColorNoAlpha("Part 3", "third part of your Arcane Charges Bar", 4, false, "full"),
@@ -394,6 +411,19 @@ function module:CreateColorOptions(order)
 			empty1 = self:NewDesc(" ", 5),
 			Reset = self:NewExecute("Restore Defaults", nil, 6, function()
 				module.db.Colors.ArcaneChargesBar = module.defaults.Colors.ArcaneChargesBar
+				UpdateColors()
+			end),
+		}),
+		ChiBar = self:NewGroup("Chi", 10, nil, nil, class ~= "MONK", {
+			header1 = self:NewHeader("Chi Colors", 1),
+			["1"] = self:NewColorNoAlpha("Part 1", "first part of your Chi Bar", 2, false, "full"),
+			["2"] = self:NewColorNoAlpha("Part 2", "second part of your Chi Bar", 3, false, "full"),
+			["3"] = self:NewColorNoAlpha("Part 3", "third part of your Chi Bar", 4, false, "full"),
+			["4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Chi Bar", 4, false, "full"),
+			["5"] = self:NewColorNoAlpha("Part 5", "fifth part of your Chi Bar, talent required.", 4, false, "full"),
+			empty1 = self:NewDesc(" ", 5),
+			Reset = self:NewExecute("Restore Defaults", nil, 6, function()
+				module.db.Colors.ChiBar = module.defaults.Colors.ChiBar
 				UpdateColors()
 			end),
 		}),
