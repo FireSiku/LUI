@@ -32,6 +32,7 @@
 	<Script file='elements\warlockbar.lua' />
 	<Script file='elements\shadoworbs.lua' />
 	<Script file='elements\arcanecharges.lua' />
+	<Script file='elements\chi.lua' />
 	<Script file='elements\picon.lua' />
 	<Script file='elements\readycheck.lua' />
 	<Script file='elements\qicon.lua' />

@@ -237,6 +237,16 @@ module.defaults.profile.Player = {
 			Padding = 1,
 			Lock = true,
 		},
+		Chi= {
+			Enable = true,
+			X = 0,
+			Y = 0.5,
+			Height = 8,
+			Width = 250,
+			Texture = "LUI_Gradient",
+			Padding = 1,
+			Lock = true,
+		},
 		WarlockBar = {
 			Enable = true,
 			X = 0,

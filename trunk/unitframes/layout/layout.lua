@@ -1000,7 +1000,7 @@ end
 local WarlockBarOverride = function(self, event, unit, powerType)
 	local specNum = GetSpecialization() 
 	local spec = self.WarlockBar.SpecInfo[specNum]
-	if not spec then return end
+
 	if self.unit ~= unit or (powerType and powerType ~= spec.powerType) then return end
 	local num = UnitPower(unit, spec.unitPower)
 	local text = ""
@@ -1062,6 +1062,19 @@ local HolyPowerOverride = function(self, event, unit, powerType)
 			 self.HolyPower[i]:SetAlpha(1)
 		 else
 			 self.HolyPower[i]:SetAlpha(.4)
+		 end
+	 end
+end
+
+local ChiOverride = function(self, event, unit, powerType)
+	if self.unit ~= unit or (powerType and powerType ~= "LIGHT_FORCE") then return end
+
+	 local num = UnitPower(unit, SPELL_POWER_LIGHT_FORCE)
+	 for i = 1, self.Chi.Force do
+		 if i <= num then
+			 self.Chi[i]:SetAlpha(1)
+		 else
+			 self.Chi[i]:SetAlpha(.4)
 		 end
 	 end
 end
@@ -2172,7 +2185,7 @@ module.funcs = {
 			else self.HolyPower.Powers = 3
 			end
 
-			for i = 1, self.HolyPower.Powers do
+			for i = 1, 5 do
 				self.HolyPower[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.HolyPower.Texture))
 				self.HolyPower[i]:SetStatusBarColor(unpack(module.colors.holypowerbar[i]))
 				self.HolyPower[i]:SetSize(((oufdb.Bars.HolyPower.Width - 2*oufdb.Bars.HolyPower.Padding) / self.HolyPower.Powers), oufdb.Bars.HolyPower.Height)
@@ -2183,12 +2196,81 @@ module.funcs = {
 				else
 					self.HolyPower[i]:SetPoint("LEFT", self.HolyPower[i-1], "RIGHT", oufdb.Bars.HolyPower.Padding, 0)
 				end
+				self.HolyPower[i]:Show()
+				if i > self.HolyPower.Powers then
+					self.HolyPower[i]:Hide()
+				end
 			end
 		end
 		checkPowers()
 
 		module:RegisterEvent("UNIT_LEVEL", checkPowers)
 	end,
+	
+	Chi = function(self, unit, oufdb)
+		if not self.Chi then
+			self.Chi = CreateFrame("Frame", nil, self)
+			self.Chi:SetFrameLevel(6)
+			self.Chi.Force = 4
+
+			for i = 1, 5 do -- Always create frames for the max possible
+				self.Chi[i] = CreateFrame("StatusBar", nil, self.Chi)
+				self.Chi[i]:SetBackdrop(backdrop)
+				self.Chi[i]:SetBackdropColor(0.08, 0.08, 0.08)
+				self.Chi[i]:SetAlpha(.4)
+			end
+
+			self.Chi.FrameBackdrop = CreateFrame("Frame", nil, self.Chi)
+			self.Chi.FrameBackdrop:SetPoint("TOPLEFT", self.Chi, "TOPLEFT", -3.5, 3)
+			self.Chi.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.Chi, "BOTTOMRIGHT", 3.5, -3)
+			self.Chi.FrameBackdrop:SetFrameStrata("BACKGROUND")
+			self.Chi.FrameBackdrop:SetBackdrop({
+				edgeFile = glowTex, edgeSize = 5,
+				insets = {left = 3, right = 3, top = 3, bottom = 3}
+			})
+			self.Chi.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
+			self.Chi.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
+
+			self.Chi.Override = ChiOverride
+		end
+
+		local x = oufdb.Bars.Chi.Lock and 0 or oufdb.Bars.Chi.X
+		local y = oufdb.Bars.Chi.Lock and 0.5 or oufdb.Bars.Chi.Y
+
+		self.Chi:SetHeight(oufdb.Bars.Chi.Height)
+		self.Chi:SetWidth(oufdb.Bars.Chi.Width)
+		self.Chi:ClearAllPoints()
+		self.Chi:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
+	
+		local function checkChi(event)
+			local ascension = select(5, GetTalentInfo(8)) -- Ascension
+			if ascension then 
+				self.Chi.Force = 5
+			else self.Chi.Force = 4
+			end
+
+			for i = 1, 5 do
+				self.Chi[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Chi.Texture))
+				self.Chi[i]:SetStatusBarColor(unpack(module.colors.chibar[i]))
+				self.Chi[i]:SetSize(((oufdb.Bars.Chi.Width - 2*oufdb.Bars.Chi.Padding) / self.Chi.Force), oufdb.Bars.Chi.Height)
+
+				self.Chi[i]:ClearAllPoints()
+				if i == 1 then
+					self.Chi[i]:SetPoint("LEFT", self.Chi, "LEFT", 0, 0)
+				else
+					self.Chi[i]:SetPoint("LEFT", self.Chi[i-1], "RIGHT", oufdb.Bars.Chi.Padding, 0)
+				end
+				self.Chi[i]:Show()
+				if i > self.Chi.Force then
+					self.Chi[i]:Hide()
+				end
+			end
+		end
+		checkChi()
+
+		module:RegisterEvent("PLAYER_TALENT_UPDATE", checkChi)
+	end,
+
 	WarlockBar = function(self, unit, oufdb)
 	
 		if not self.WarlockBar then
@@ -2203,6 +2285,9 @@ module.funcs = {
 			self.WarlockBar.SpecInfo[1].BarColors = { "Shard1", "Shard2", "Shard3", "Shard4" }
 			self.WarlockBar.SpecInfo[2].BarColors = { "Fury", "Fury", "Fury", "Fury" } -- Four time just to not have to add an additional check
 			self.WarlockBar.SpecInfo[3].BarColors = { "Ember1", "Ember2", "Ember3", "Ember4" }
+			local spec = self.WarlockBar.SpecInfo[GetSpecialization()]
+			
+			self.WarlockBar.Amount = spec.Amount
 
 			for i = 1, 4 do -- Create the max so we dont have to worry about it later.
 				self.WarlockBar[i] = CreateFrame("StatusBar", nil, self.WarlockBar)
@@ -2239,14 +2324,6 @@ module.funcs = {
 		local function checkBar(event)
 
 			local spec = self.WarlockBar.SpecInfo[GetSpecialization()]
-			if not spec then
-				self.WarlockBar:Hide()
-				return
-			else
-				if oufdb.Bars.WarlockBar.Enable then
-					self.WarlockBar:Show()
-				end
-			end
 			self.WarlockBar.Amount = spec.Amount
 
 			if spec.glyph then
@@ -3353,6 +3430,8 @@ local SetStyle = function(self, unit, isSingle)
 			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
 		elseif class == "PALADIN" then
 			if oufdb.Bars.HolyPower.Enable then module.funcs.HolyPower(self, unit, oufdb) end
+		elseif class == "MONK" then
+			if oufdb.Bars.Chi.Enable then module.funcs.Chi(self, unit, oufdb) end
 		elseif class == "SHAMAN" then
 			if oufdb.Bars.Totems.Enable then module.funcs.TotemBar(self, unit, oufdb) end
 		elseif class == "MAGE" then
