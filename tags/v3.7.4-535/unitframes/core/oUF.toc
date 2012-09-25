@@ -1,0 +1,14 @@
+## Interface: 40300
+## Title: oUF
+## Author: Haste
+## Version: 1.5.16
+## OptionalDeps: !ClassColors, Clique
+## X-eMail: troeks@gmail.com
+## X-oUF: oUF
+## Notes: Unit frame framework. Does nothing by itself.
+## X-Curse-Packaged-Version: v3.7.3-525
+## X-Curse-Project-Name: LUI Core
+## X-Curse-Project-ID: lui
+## X-Curse-Repository-ID: wow/lui/mainline
+
+oUF.xml
