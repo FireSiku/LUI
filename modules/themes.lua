@@ -1221,10 +1221,9 @@ function module:LoadOptions()
 					desc = "Choose any Color for your Orb",
 					type = "color",
 					width = "full",
-					disabled = createDisabled("Orb"),
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Orb"),
+					set = createSetColor("Frames"),
 					order = 3,
 				},
 				orb_cycle = {
