@@ -69,9 +69,7 @@ function module:SetColors()
 
 	-- talent alert frame
 	TalentMicroButtonAlertBg:SetGradientAlpha("VERTICAL", r/4, g/4, b/4, 1, 0, 0, 0, 1)
-
 	TalentMicroButtonAlertGlow:SetVertexColor(r, g, b, 0.5)
-
 	--TalentMicroButtonAlertArrowArrow:SetVertexColor(r, g, b)
 
 	TalentMicroButtonAlertGlowTopLeft:SetVertexColor(r, g, b)
@@ -83,6 +81,21 @@ function module:SetColors()
 	TalentMicroButtonAlertGlowBottom:SetVertexColor(r, g, b)
 	TalentMicroButtonAlertGlowLeft:SetVertexColor(r, g, b)
 	TalentMicroButtonAlertGlowRight:SetVertexColor(r, g, b)
+
+	-- companions alert frame
+	CompanionsMicroButtonAlertBg:SetGradientAlpha("VERTICAL", r/4, g/4, b/4, 1, 0, 0, 0, 1)
+	CompanionsMicroButtonAlertGlow:SetVertexColor(r, g, b, 0.5)
+	--CompanionsMicroButtonAlertArrowArrow:SetVertexColor(r, g, b)
+
+	CompanionsMicroButtonAlertGlowTopLeft:SetVertexColor(r, g, b)
+	CompanionsMicroButtonAlertGlowTopRight:SetVertexColor(r, g, b)
+	CompanionsMicroButtonAlertGlowBottomLeft:SetVertexColor(r, g, b)
+	CompanionsMicroButtonAlertGlowBottomRight:SetVertexColor(r, g, b)
+
+	CompanionsMicroButtonAlertGlowTop:SetVertexColor(r, g, b)
+	CompanionsMicroButtonAlertGlowBottom:SetVertexColor(r, g, b)
+	CompanionsMicroButtonAlertGlowLeft:SetVertexColor(r, g, b)
+	CompanionsMicroButtonAlertGlowRight:SetVertexColor(r, g, b)
 
 end
 
@@ -1141,8 +1154,8 @@ function module:SetMicroMenu()
 		TalentMicroButtonAlert:Hide() 
 		LUI.MicroMenu.Buttons.Talents:RegisterEvent("PLAYER_LEVEL_UP")
 	end
-	LUI.MicroMenu.Buttons.Talents:SetScript("OnEvent", function(event) 
-			if UnitLevel("player")+1 < 10 then TalentMicroButtonAlert:Hide() 
+	LUI.MicroMenu.Buttons.Talents:SetScript("OnEvent", function(event, level) 
+			if tonumber(level) < 10 then TalentMicroButtonAlert:Hide() 
 			else 
 				TalentMicroButtonAlert:Show()
 				LUI.MicroMenu.Buttons.Talents:UnregisterEvent("PLAYER_LEVEL_UP")
@@ -1191,6 +1204,23 @@ function module:SetMicroMenu()
 	-- TalentMicroButtonAlertGlowLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
 	-- TalentMicroButtonAlertGlowRight:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
 
+	-- companion alert frame
+	CompanionsMicroButtonAlert:ClearAllPoints()
+	CompanionsMicroButtonAlert:SetPoint("TOP", LUI.MicroMenu.Buttons.Pets, "BOTTOM")
+
+	CompanionsMicroButtonAlertBg:SetGradientAlpha("VERTICAL", micro_r/4, micro_g/4, micro_b/4, 1, 0, 0, 0, 1)
+
+	CompanionsMicroButtonAlertArrow:ClearAllPoints()
+	CompanionsMicroButtonAlertArrow:SetPoint("BOTTOM", CompanionsMicroButtonAlert, "TOP", 0, -6)
+
+	CompanionsMicroButtonAlertGlow:SetTexCoord(0.40625000, 0.66015625, 0.82812500, 0.77343750)
+	CompanionsMicroButtonAlertGlow:SetVertexColor(r, g, b, 0.5)
+	CompanionsMicroButtonAlertGlow:ClearAllPoints()
+	CompanionsMicroButtonAlertGlow:SetPoint("BOTTOM", CompanionsMicroButtonAlertArrow, "BOTTOM", 0, 0)
+
+	-- greyscaled textures
+	CompanionsMicroButtonAlertGlow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+	
 end
 
 module.defaults = {
