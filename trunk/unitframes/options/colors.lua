@@ -230,8 +230,10 @@ local function UpdateColors()
 	end
 	if oUF_LUI_player.WarlockBar then
 		local spec = oUF_LUI_player.WarlockBar.SpecInfo[GetSpecialization()]
-		for i = 1, 4 do
-			oUF_LUI_player.WarlockBar[i]:SetStatusBarColor(unpack(module.colors.warlockbar[spec.BarColors[i]]))
+		if spec then
+			for i = 1, 4 do
+				oUF_LUI_player.WarlockBar[i]:SetStatusBarColor(unpack(module.colors.warlockbar[spec.BarColors[i]]))
+			end
 		end
 	end
 	if oUF_LUI_player.ArcaneCharges then
