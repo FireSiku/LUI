@@ -1052,8 +1052,8 @@ function module:SetDualSpec()
 				local activeSpecGroup = GetActiveSpecGroup()
 				for i = 1, GetNumSpecGroups() do
 					local currSpec = GetSpecialization(false, false, i)
-					text = (((i == 1) and "Primary" or "Secondary") .. " Spec" .. ((i == activeSpecGroup) and " (active):" or ":"))
-					text2 = ((currSpec ~= nil) and specCache[currSpec].name or "None")
+					local text = (((i == 1) and "Primary" or "Secondary") .. " Spec" .. ((i == activeSpecGroup) and " (active):" or ":"))
+					local text2 = ((currSpec ~= nil) and specCache[currSpec].name or "None")
 
 					GameTooltip:AddDoubleLine(text, text2, 1,1,1, 1,1,1)
 				end
