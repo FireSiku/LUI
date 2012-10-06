@@ -31,6 +31,8 @@ local continents = {
 		L["Wrath Raids"],
 		L["Cataclysm Instances"],
 		L["Cataclysm Raids"],
+		L["Pandaria Instances"],
+		L["Pandaria Raids"],
 		L["Battlegrounds"],
 	},
 	tags = {
@@ -42,6 +44,8 @@ local continents = {
 		"raids-wrath",
 		"instances-cataclysm",
 		"raids-cataclysm",
+		"instances-pandaria",
+		"raids-pandaria",
 		"bgs-all",
 	},
 }
@@ -52,7 +56,6 @@ do
 	local instanceMaps = {
 		instances = {
 			classic = {
-				-- 1.1.0
 				["Ragefire Chasm"] = 680,
 				["Zul'Farrak"] = 686,
 				["The Temple of Atal'Hakkar"] = 687,
@@ -60,23 +63,21 @@ do
 				["The Stockade"] = 690,
 				["Gnomeregan"] = 691,
 				["Uldaman"] = 692,
+				["Dire Maul"] = 699,
 				["Blackrock Depths"] = 704,
 				["Blackrock Spire"] = 721,
 				["Wailing Caverns"] = 749,
+				["Maraudon"] = 750,
 				["The Deadmines"] = 756,
 				["Razorfen Downs"] = 760,
 				["Razorfen Kraul"] = 761,
-				["Scarlet Monastery"] = 762,
-				["Scholomance"] = 763,
+				["Scarlet Halls"] = 871,
+				["Scarlet Monastery"] = 874,
+				["Scholomance"] = 898,
 				["Shadowfang Keep"] = 764,
 				["Stratholme"] = 765,
-				-- 1.2.0
-				["Maraudon"] = 750,
-				-- 1.3.0
-				["Dire Maul"] = 699,
 			},
 			bc = {
-				-- 2.0.1
 				["The Shattered Halls"] = 710,
 				["Auchenai Crypts"] = 722,
 				["Sethekk Halls"] = 723,
@@ -92,11 +93,9 @@ do
 				["The Black Morass"] = 733,
 				["Old Hillsbrad Foothills"] = 734,
 				["Hellfire Ramparts"] = 797,
-				-- 2.4.0
 				["Magisters' Terrace"] = 798,
 			},
 			wrath = {
-				-- 3.0.2
 				["The Nexus"] = 520,
 				["The Culling of Stratholme"] = 521,
 				["Ahn'kahet: The Old Kingdom"] = 522,
@@ -109,15 +108,12 @@ do
 				["Azjol-Nerub"] = 533,
 				["Drak'Tharon Keep"] = 534,
 				["The Violet Hold"] = 536,
-				-- 3.2.0
 				["Trial of the Champion"] = 542,
-				-- 3.3.0
 				["The Forge of Souls"] = 601,
 				["Pit of Saron"] = 602,
 				["Halls of Reflection"] = 603,
 			},
 			cataclysm = {
-				-- 4.0.3
 				["Lost City of the Tol'vir"] = 747,
 				["Blackrock Caverns"] = 753,
 				["The Deadmines"] = 756,
@@ -127,83 +123,78 @@ do
 				["Throne of the Tides"] = 767,
 				["The Stonecore"] = 768,
 				["The Vortex Pinnacle"] = 769,
-				-- 4.1
 				["Zul'Aman"] = 781,
 				["Zul'Gurub"] = 793,
-				-- 4.3
-				["Well of Eternity"] = 813,
+				["Well of Eternity"] = 816,
 				["Hour of Twilight"] = 819,
 				["End Time"] = 820,
+			},
+			pandaria = {
+				["Temple of the Jade Serpent"] = 867,
+				["Stormstout Brewery"] = 876,
+				["Mogu'Shan Palace"] = 885,
+				["Shado-pan Monastery"] = 877,
+				["Gate of the Setting Sun"] = 875,
+				["Siege of Niuzao Temple"] = 887,
+				["Scarlet Halls"] = 871,
+				["Scarlet Monastery"] = 874,
+				["Scholomance"] = 898,
 			},
 		},
 		raids = {
 			classic = {
-				-- 1.1.0
 				["Molten Core"] = 696,
-				-- 1.6.0
 				["Blackwing Lair"] = 755,
-				-- 1.9.0
 				["Ruins of Ahn'Qiraj"] = 717,
 				["Ahn'Qiraj"] = 766,
 			},
 			bc = {
-				-- 2.0.3
 				["Hyjal Summit"] = 775,
 				["Gruul's Lair"] = 776,
 				["Magtheridon's Lair"] = 779,
 				["Serpentshrine Cavern"] = 780,
-				["Tempest Keep"] = 782,
-				["Karazhan"] = 799,
-				-- 2.1
-				["Black Temple"] = 796,
-				-- 2.4
+				["The Eye"] = 782,
 				["Sunwell Plateau"] = 789,
+				["Black Temple"] = 796,
+				["Karazhan"] = 799,
 			},
 			wrath = {
-				-- 3.0.2
 				["The Eye of Eternity"] = 527,
+				["Ulduar"] = 529,
 				["The Obsidian Sanctum"] = 531,
 				["Vault of Archavon"] = 532,
 				["Naxxramas"] = 535,
-				-- 3.1.0
-				["Ulduar"] = 529,
-				-- 3.2.0
 				["Trial of the Crusader"] = 543,
-				-- 3.2.2
-				["Onyxia's Lair"] = 718,
-				-- 3.3.0
 				["Icecrown Citadel"] = 604,
-				-- 3.3.5
 				["The Ruby Sanctum"] = 609,
+				["Onyxia's Lair"] = 718,
 			},
 			cataclysm = {
-				-- 4.0.3
 				["Baradin Hold"] = 752,
 				["Blackwing Descent"] = 754,
 				["The Bastion of Twilight"] = 758,
 				["Throne of the Four Winds"] = 773,
-				-- 4.2
 				["Firelands"] = 800,
-				-- 4.3
 				["Dragon Soul"] = 824,
 			},
+			pandaria = {
+				["Terrace of Endless Spring"] = 886,
+				["Mogu'shan Vaults"] = 896,
+				["Heart of Fear"] = 897,
+			}
 		},
 		bgs = {
 			all = {
-				-- 1.5.0
 				["Alterac Valley"] = 401,
 				["Warsong Gulch"] = 443,
-				-- 1.7.0
 				["Arathi Basin"] = 461,
-				-- 2.0.1
 				["Eye of the Storm"] = 482,
-				-- 3.0.2
 				["Strand of the Ancients"] = 512,
-				-- 3.2.0
 				["Isle of Conquest"] = 540,
-				-- 4.0.3
 				["Twin Peaks"] = 626,
 				["The Battle for Gilneas"] = 736,
+				--["Temple of Kotmogu"] = 856,
+				--["Silvershard Mines"] = 860,
 			},
 		},
 	}

@@ -188,6 +188,9 @@ L["Quest Objectives"] = "任务目标"
 L["Show Markers & Panels"] = "显示标记和面板"
 L["Wrath Instances"] = "火焰的愤怒副本"
 L["Wrath Raids"] = "火焰的愤怒团队副本"
+L["Pandaria Instances"] = true -- needs review
+L["Pandaria Raids"] = true -- needs review
+
 
 
 

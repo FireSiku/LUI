@@ -193,6 +193,8 @@ L["Quest Objectives"] = true
 L["Show Markers & Panels"] = true
 L["Wrath Instances"] = true
 L["Wrath Raids"] = true
+L["Pandaria Instances"] = true
+L["Pandaria Raids"] = true
 
 
 
