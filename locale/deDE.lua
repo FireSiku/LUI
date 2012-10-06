@@ -185,6 +185,8 @@ L["Quest Objectives"] = "Questziele"
 L["Show Markers & Panels"] = "Zeige Markierungen & Panels"
 L["Wrath Instances"] = "WotLK Instanzen"
 L["Wrath Raids"] = "WotLK Raids"
+L["Pandaria Instances"] = "Pandaria Instanzen"
+L["Pandaria Raids"] = "Pandaria Raids"
 
 
 
