@@ -88,7 +88,7 @@ local function configCopyButton(show)
 			editBox:SetAutoFocus(false)
 			editBox:SetFontObject(ChatFontNormal)
 			editBox:SetSize(400, 270)
-			editBox:SetScript("OnEscapePressed", function() frame:Hide() end)
+			editBox:SetScript("OnEscapePressed", function() copyFrame:Hide() end)
 			copyFrame.editBox = editBox
 
 			scrollArea:SetScrollChild(editBox)
