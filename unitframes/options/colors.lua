@@ -125,7 +125,9 @@ module.defaults.profile.Colors = {
 		[4] = {0.33, 0.59, 0.33}, -- Target Level GreenQuestRange
 		[5] = {0.55, 0.57, 0.61}, -- Low Level Target
 	},
-	Tapped = {0.55, 0.57, 0.61},
+	Misc = {
+		Tapped = {0.15, 0.15, 0.15},
+	},
 }
 
 module.colors = setmetatable({
@@ -474,7 +476,16 @@ function module:CreateColorOptions(order)
 			["4"] = self:NewColorNoAlpha("Air", "Air Totem", 5, false, "full"),
 			empty1 = self:NewDesc(" ", 6),
 			Reset = self:NewExecute("Restore Defaults", nil, 7, function()
-				module.db.Colors.ComboPoints = module.defaults.Colors.ComboPoints
+				module.db.Colors.TotemBar = module.defaults.Colors.TotemBar
+				UpdateColors()
+			end),
+		}),
+		Misc = self:NewGroup("Misc", 15, {
+			header1 = self:NewHeader("Misc Colors", 1),
+			Tapped = self:NewColorNoAlpha("Tapped", "Tapped Target", 2, false, "full"),
+			empty1 = self:NewDesc(" ", 6),
+			Reset = self:NewExecute("Restore Defaults", nil, 7, function()
+				module.db.Colors.Misc = module.defaults.Colors.Misc
 				UpdateColors()
 			end),
 		}),
