@@ -308,6 +308,7 @@ function module:SetTooltip()
 	end)
 
 	local BorderColor = function(self)
+		local c
 		local GMF = GetMouseFocus()
 		local unit = (select(2, self:GetUnit())) or (GMF and GMF:GetAttribute("unit"))
 			
@@ -326,7 +327,11 @@ function module:SetTooltip()
 			healthBarBG:SetBackdropBorderColor(r, g, b)
 			healthBar:SetStatusBarColor(r, g, b)
 		elseif reaction then
-			local c = LUITooltipColors.reaction[reaction]
+			if tapped then
+				c = {db.Tooltip.Border.Tapped.r,db.Tooltip.Border.Tapped.g,db.Tooltip.Border.Tapped.b}
+			else
+				c = LUITooltipColors.reaction[reaction]
+			end
 			local r, g, b = c[1], c[2], c[3]
 			self:SetBackdropBorderColor(r, g, b)
 			healthBarBG:SetBackdropBorderColor(r, g, b)
@@ -417,6 +422,11 @@ local defaults = {
 				g = 0.3,
 				b = 0.3,
 				a = 1,
+			},
+			Tapped = {
+				r = 0.15,
+				g = 0.15,
+				b = 0.15,
 			},
 		},
 	},
@@ -621,7 +631,6 @@ function module:LoadOptions()
 							name = "Border Color",
 							desc = "Choose a color for your Tooltip's Border",
 							type = "color",
-							width = "full",
 							order = 1,
 							hasAlpha = true,
 							get = function() return db.Tooltip.Border.Color.r, db.Tooltip.Border.Color.g, db.Tooltip.Border.Color.b, db.Tooltip.Border.Color.a end,
@@ -632,11 +641,24 @@ function module:LoadOptions()
 									db.Tooltip.Border.Color.a = a
 								end,									
 						},
+						Tapped = {
+							name = "Tapped Color",
+							desc = "Choose a color for your Tooltip's Border for tapped units",
+							type = "color",
+							order = 2,
+							hasAlpha = false,
+							get = function() return db.Tooltip.Border.Tapped.r, db.Tooltip.Border.Tapped.g, db.Tooltip.Border.Tapped.b end,
+							set = function(self, r, g, b)
+									db.Tooltip.Border.Tapped.r = r
+									db.Tooltip.Border.Tapped.g = g
+									db.Tooltip.Border.Tapped.b = b
+								end,									
+						},
 						Texture = {
 							name = "Texture",
 							desc = "Choose your Tooltip's Border texture.\n\nDefault: "..LUI.defaults.profile.Tooltip.Border.Texture,
 							type = "select",
-							order = 2,
+							order = 3,
 							dialogControl = "LSM30_Border",
 							values = widgetLists.border,
 							get = function() return db.Tooltip.Border.Texture end,
@@ -649,7 +671,7 @@ function module:LoadOptions()
 							name = "Border Size",
 							desc = "Value for your Tooltip's Border size.\n\nDefault: "..LUI.defaults.profile.Tooltip.Border.Size,
 							type = "input",
-							order = 3,
+							order = 4,
 							get = function() return tostring(db.Tooltip.Border.Size) end,
 							set = function(self, size)
 									if (size == nil) or (size == "") then
@@ -663,7 +685,7 @@ function module:LoadOptions()
 							name = "Border Insets",
 							type = "group",
 							guiInline = true,
-							order = 4,
+							order = 5,
 							args = {
 								Description = {
 									name = "Set the insets for your Tooltip's Border.",
