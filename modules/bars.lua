@@ -752,9 +752,10 @@ function module:SetBottomBar(id)
 
 	if id == 1 then
 		bar:Show()
+		RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] hide; show")
 	elseif bardb.Enable then
 		UnregisterStateDriver(bar, "visibility")
-		RegisterStateDriver(bar, "visibility", "[bonusbar:5] hide; show")
+		RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] [bonusbar:5] hide; show")
 	else
 		UnregisterStateDriver(bar, "visibility")
 		bar:Hide()
@@ -810,6 +811,7 @@ function module:SetSideBar(side, id)
 		]])
 
 		RegisterStateDriver(bar, "page", bardb.State[1])
+		RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] hide; show")
 
 		if Masque then
 			local group = Masque:Group("LUI", side.." Sidebar "..id)
@@ -837,7 +839,7 @@ function module:SetPetBar()
 		local bar = CreateFrame("Frame", "LUIPetBar", UIParent, "SecureHandlerStateTemplate")
 		bar.buttons = {}
 
-		RegisterStateDriver(bar, "visibility", "[pet,novehicleui,nobonusbar:5] show; hide")
+		RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] [bonusbar:5] hide; show")
 
 		PetActionBarFrame:SetParent(bar)
 		PetActionBarFrame:EnableMouse(false)
@@ -887,6 +889,8 @@ function module:SetShapeshiftBar()
 	if not LUIShapeshiftBar then
 		local bar = CreateFrame("Frame", "LUIShapeshiftBar", UIParent, "SecureHandlerStateTemplate")
 		bar.buttons = {}
+
+		RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] hide; show")
 
 		StanceBarFrame:SetParent(bar)
 		StanceBarFrame:EnableMouse(false)
@@ -948,6 +952,8 @@ function module:SetTotemBar()
 	if not LUITotemBar then
 		local bar = CreateFrame("Frame", "LUITotemBar", UIParent, "SecureHandlerStateTemplate")
 		bar.buttons = {}
+
+		RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] hide; show")
 
 		MultiCastActionBarFrame:SetParent(bar)
 		MultiCastActionBarFrame:SetAllPoints(bar)
@@ -1030,6 +1036,7 @@ function module:SetExtraActionBar()
 	local bar = LUIExtraActionBar
 	if not LUIExtraActionBar then
 		bar = CreateFrame("Frame", "LUIExtraActionBar", UIParent, "SecureHandlerStateTemplate")
+		RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] hide; show")
 		bar:SetHeight(52)
 		bar:SetWidth(52)
 		bar.content = ExtraActionBarFrame
