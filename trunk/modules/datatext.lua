@@ -136,24 +136,28 @@ local function SetInfoTextFrames()
 	end
 	LUI_Infos_TopLeft:SetAlpha(1)
 	LUI_Infos_TopLeft:Show()
+	RegisterStateDriver(LUI_Infos_TopLeft, "visibility", "[petbattle] hide; show")
 
 	if not LUI_Infos_TopRight then
 		LUI:CreateMeAFrame("FRAME","LUI_Infos_TopRight",UIParent,1,1,1,"HIGH",0,"TOPRIGHT",UIParent,"TOPRIGHT",0,-1,1)
 	end
 	LUI_Infos_TopRight:SetAlpha(1)
 	LUI_Infos_TopRight:Show()
+	RegisterStateDriver(LUI_Infos_TopRight, "visibility", "[petbattle] hide; show")
 
 	if not LUI_Infos_BottomLeft then
 		LUI:CreateMeAFrame("FRAME","LUI_Infos_BottomLeft",UIParent,1,1,1,"HIGH",0,"BOTTOMLEFT",UIParent,"BOTTOMLEFT",0,4,1)
 	end
 	LUI_Infos_BottomLeft:SetAlpha(1)
 	LUI_Infos_BottomLeft:Show()
+	RegisterStateDriver(LUI_Infos_BottomLeft, "visibility", "[petbattle] hide; show")
 
 	if not LUI_Infos_BottomRight then
 		LUI:CreateMeAFrame("FRAME","LUI_Infos_BottomRight",UIParent,1,1,1,"HIGH",0,"BOTTOMRIGHT",UIParent,"BOTTOMRIGHT",0,4,1)
 	end
 	LUI_Infos_BottomRight:SetAlpha(1)
 	LUI_Infos_BottomRight:Show()
+	RegisterStateDriver(LUI_Infos_BottomRight, "visibility", "[petbattle] hide; show")
 end
 
 local function CombatTips()

@@ -77,7 +77,6 @@ function LUI:InstallRecount()
 	RecountSetClassColor("DRUID")
 	RecountSetClassColor("SHAMAN")
 	RecountSetClassColor("DEATHKNIGHT")
-	RecountSetClassColor("MONK")
 	
 	if class == "WARRIOR" then
 		RecountSetClassColor("WARRIOR",1)
@@ -97,10 +96,8 @@ function LUI:InstallRecount()
 		RecountSetClassColor("WARLOCK",1)
 	elseif class == "ROGUE" then
 		RecountSetClassColor("ROGUE",1)
-	elseif class== "DEATHKNIGHT" then
+	elseif class == "DEATHKNIGHT" then
 		RecountSetClassColor("DEATHKNIGHT",1)
-	elseif class== "MONK" then
-		RecountSetClassColor("MONK",1)
 	end
 
 	Recount.db.profile.DetailWindowY = 143.0000041470295
