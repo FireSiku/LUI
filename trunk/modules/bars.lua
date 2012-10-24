@@ -839,7 +839,7 @@ function module:SetPetBar()
 		local bar = CreateFrame("Frame", "LUIPetBar", UIParent, "SecureHandlerStateTemplate")
 		bar.buttons = {}
 
-		RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] [bonusbar:5] hide; show")
+		RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] [bonusbar:5] [nopet] hide; show")
 
 		PetActionBarFrame:SetParent(bar)
 		PetActionBarFrame:EnableMouse(false)
@@ -890,7 +890,11 @@ function module:SetShapeshiftBar()
 		local bar = CreateFrame("Frame", "LUIShapeshiftBar", UIParent, "SecureHandlerStateTemplate")
 		bar.buttons = {}
 
-		RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] hide; show")
+		if UnitClass("player") == "Death Knight" or UnitClass("player") == "Paladin" or UnitClass("player") == "Warrior" or UnitClass("player") == "Monk" or UnitClass("player") == "Hunter" then
+			RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] hide; show")
+		else
+			RegisterStateDriver(bar, "visibility", "hide")
+		end
 
 		StanceBarFrame:SetParent(bar)
 		StanceBarFrame:EnableMouse(false)

@@ -64,6 +64,7 @@ local function InitDestroy(self)
 	end
 end			
 local function UpdateSlot(self, slot)
+	if slot > 4 then return end
 	local totem = self.TotemBar
 
 
