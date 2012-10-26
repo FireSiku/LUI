@@ -884,11 +884,9 @@ local PostCastStart = function(castbar, unit, name)
 	if castbar.interrupt and UnitCanAttack("player", unit) and castbar.Colors.ShieldEnable then
 		castbar:SetStatusBarColor(castbar.Colors.Shield.r, castbar.Colors.Shield.g, castbar.Colors.Shield.b, castbar.Colors.Shield.a)
 		if castbar.Shield then
-			castbar.IconOverlay:Hide()
 			castbar.Shield:Show()
 		end
 	else
-		castbar.IconOverlay:Show()
 		castbar.Shield:Hide()
 	end
 end
