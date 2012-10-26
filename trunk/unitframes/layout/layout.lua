@@ -872,7 +872,7 @@ local PostCastStart = function(castbar, unit, name)
 		castbar.bg:SetVertexColor(castbar.Colors.Background.r, castbar.Colors.Background.g, castbar.Colors.Background.b, castbar.Colors.Background.a)
 		castbar.Backdrop:SetBackdropBorderColor(castbar.Colors.Border.r, castbar.Colors.Border.g, castbar.Colors.Border.b, castbar.Colors.Border.a)
 	else
-		if unit == "target" or unit == "focus" or unit == "pet" then unit = "player" end
+		if unit == "focus" or unit == "pet" then unit = "player" end
 		local pClass, pToken = UnitClass(unit)
 		local color = module.colors.class[pToken]
 
@@ -883,6 +883,13 @@ local PostCastStart = function(castbar, unit, name)
 
 	if castbar.interrupt and UnitCanAttack("player", unit) and castbar.Colors.ShieldEnable then
 		castbar:SetStatusBarColor(castbar.Colors.Shield.r, castbar.Colors.Shield.g, castbar.Colors.Shield.b, castbar.Colors.Shield.a)
+		if castbar.Shield then
+			castbar.IconOverlay:Hide()
+			castbar.Shield:Show()
+		end
+	else
+		castbar.IconOverlay:Show()
+		castbar.Shield:Hide()
 	end
 end
 
@@ -3046,6 +3053,12 @@ module.funcs = {
 				})
 				castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
 				castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
+
+				castbar.Shield = castbar:CreateTexture(nil, "OVERLAY")
+				castbar.Shield:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -15, 30)
+				castbar.Shield:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 45, -30)
+				castbar.Shield:SetTexture("Interface\\CastingBar\\UI-CastingBar-Arena-Shield")
+				castbar.Shield:SetVertexColor(1, 1, 1)
 			else
 				castbar.Icon = castbar:CreateTexture(nil, "ARTWORK")
 				castbar.Icon:SetHeight(20)
