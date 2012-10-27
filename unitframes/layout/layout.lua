@@ -883,11 +883,12 @@ local PostCastStart = function(castbar, unit, name)
 
 	if castbar.interrupt and UnitCanAttack("player", unit) and castbar.Colors.ShieldEnable then
 		castbar:SetStatusBarColor(castbar.Colors.Shield.r, castbar.Colors.Shield.g, castbar.Colors.Shield.b, castbar.Colors.Shield.a)
-		if castbar.Shield then
+--[[		if castbar.Shield then
 			castbar.Shield:Show()
 		end
 	else
 		castbar.Shield:Hide()
+]]--
 	end
 end
 
@@ -3052,11 +3053,12 @@ module.funcs = {
 				castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
 				castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 
-				castbar.Shield = castbar:CreateTexture(nil, "OVERLAY")
+--[[				castbar.Shield = castbar:CreateTexture(nil, "OVERLAY")
 				castbar.Shield:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -15, 30)
 				castbar.Shield:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 45, -30)
 				castbar.Shield:SetTexture("Interface\\CastingBar\\UI-CastingBar-Arena-Shield")
 				castbar.Shield:SetVertexColor(1, 1, 1)
+]]--
 			else
 				castbar.Icon = castbar:CreateTexture(nil, "ARTWORK")
 				castbar.Icon:SetHeight(20)
