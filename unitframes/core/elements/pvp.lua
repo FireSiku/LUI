@@ -10,6 +10,9 @@ local Update = function(self, event, unit)
 			self.PvP:SetTexture[[Interface\TargetingFrame\UI-PVP-FFA]]
 			self.PvP:Show()
 		elseif(factionGroup and UnitIsPVP(unit)) then
+			-- low level Monks are considered Neutral until they select a faction,
+			-- but we know they're not FFA so this should be safe to do
+			if factionGroup == "Neutral" then factionGroup = "FFA" end
 			self.PvP:SetTexture([[Interface\TargetingFrame\UI-PVP-]]..factionGroup)
 			self.PvP:Show()
 		else
