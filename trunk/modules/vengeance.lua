@@ -123,6 +123,8 @@ local IsTank = function(bar, event)
 			bar.isTank = true
 		elseif class == "WARRIOR" and masteryIndex == 3 then
 			bar.isTank = true
+		elseif class == "MONK" and masteryIndex == 1 then
+			bar.isTank = true
 		else
 			bar.isTank = false
 			bar:Hide()
