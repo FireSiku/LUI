@@ -27,7 +27,7 @@ local PAUSED
 LUI.Versions.mirrorbar = 1.0
 Profiler.TraceScope(module, "Mirror Bar", "LUI")
 
-module.conflicts = "Clique"
+--module.conflicts = "Clique"
 
 ------------------------------------------------------------------------
 --	Defaults
