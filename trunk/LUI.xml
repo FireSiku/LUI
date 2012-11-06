@@ -51,6 +51,7 @@
  	<Script file="modules\interruptannouncer.lua"/>
 	<Script file="modules\merchant.lua"/>
 	<Script file="modules\removethatbuff.lua"/>
+	<Script file="modules\mirrorbar.lua"/>
 
 	<!-- Additional Scripts -->
 	<Script file="scripts\errorhider.lua"/>
