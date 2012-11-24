@@ -4,6 +4,7 @@
     <Script file="chat.lua"/>
     <Script file="buttons.lua"/>
     <Script file="editbox.lua"/>
+	<Script file="stickychannels.lua"/>
 
     <Button name="LUI_Chat_ScrollButtonTemplate" parentKey="downButton" hidden="true" virtual="true">
         <Size x="20" y="20"/>

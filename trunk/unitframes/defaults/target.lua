@@ -233,10 +233,10 @@ module.defaults.profile.Target = {
 				a = 0.7,
 			},
 			Shield = {
-				r = 0.5,
-				g = 0,
-				b = 0,
-				a = 0.1,
+				r = 0.13,
+				g = 0.59,
+				b = 1,
+				a = 0.68,
 			},
 			Name = {
 				r = 0.9,

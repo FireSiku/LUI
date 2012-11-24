@@ -268,7 +268,7 @@ function module:CreateBarOptions(unit, order, barType)
 		Smooth = (barType ~= "Full") and self:NewToggle("Enable Smooth Bar Animation", "Whether you want to use Smooth Animations or not.", 8, toggleSmooth, nil, disabledFunc) or nil,
 		IndividualColor = self:NewColorNoAlpha(barType.."bar", barType.."bar", 9, applySettings, nil, disabledColorFunc),
 		Color = (barType ~= "Full") and self:NewSelect("Color", "Choose the Color Option for the "..barType.."bar.", 10, barColors[barType], nil, applySettings, nil, disabledFunc) or nil,
-		Tapping = (unit == "Target" and barType == "Health") and self:NewToggle("Enable Taping", "Whether you want to show tapped Healthbars or not.", 11, applySettings, nil, disabledFunc) or nil,
+		Tapping = (unit == "Target" and barType == "Health") and self:NewToggle("Enable Tapping", "Whether you want to show tapped Healthbars or not.", 11, applySettings, nil, disabledFunc) or nil,
 		empty3 = self:NewDesc(" ", 12),
 		Texture = self:NewSelect("Texture", "Choose the "..barType.."bar Texture.", 13, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc),
 		TextureBG = (barType ~= "Full") and self:NewSelect("Background Texture", "Choose the "..barType.."bar Background Texture.", 14, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc) or nil,

@@ -63,13 +63,13 @@ function module:LoadOptions()
 					order = 8,
 					width = "full",
 					type = "description",
-					name = "|cffFF0000Q:|r There are too may Spells on my Spelltimer and CooldownLine... any suggestion?",
+					name = "|cffFF0000Q:|r There are too may Spells on my Spelltimer and Cooldown line... any suggestion?",
 				},
 				answer3 = {
 					order = 9,
 					width = "full",
 					type = "description",
-					name = "|cff3399ffA:|r Type /fx and choose the spelltimer/cooldowntimer tab at the bottom. Now go to Coloring/Filtering and type in the Spellname. Set it on Ignore or do other stuff.",
+					name = "|cff3399ffA:|r Type /fx and choose the \"Spell Timer\" or \"Cooldown Timer\" tab at the bottom. Expand the \"Spell Coloring/Filtering\" section and type in the Spellname in the \"Customize\" box. Set it to \"Hide\". You can also set colors here too.",
 				},
 				emptyq3 = {
 					name = "   ",
@@ -81,7 +81,7 @@ function module:LoadOptions()
 					order = 17,
 					width = "full",
 					type = "description",
-					name = "|cffFF0000Q:|r Several Blizzard Frames and Fonts are too smale and everything looks too tiny. What should i do?",
+					name = "|cffFF0000Q:|r Several Blizzard Frames and Fonts are too small and everything looks too tiny. What should i do?",
 				},
 				answer6 = {
 					order = 18,

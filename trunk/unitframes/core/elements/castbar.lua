@@ -411,24 +411,24 @@ local Enable = function(object, unit)
 			PetCastingBarFrame:Hide()
 		end
 
-		if(castbar:IsObjectType'StatusBar' and not castbar:GetStatusBarTexture()) then
-			castbar:SetStatusBarTexture[[Interface\TargetingFrame\UI-StatusBar]]
-		end
+--		if(castbar:IsObjectType'StatusBar' and not castbar:GetStatusBarTexture()) then
+--			castbar:SetStatusBarTexture[[Interface\TargetingFrame\UI-StatusBar]]
+--		end
 
-		local spark = castbar.Spark
-		if(spark and spark:IsObjectType'Texture' and not spark:GetTexture()) then
-			spark:SetTexture[[Interface\CastingBar\UI-CastingBar-Spark]]
-		end
+--		local spark = castbar.Spark
+--		if(spark and spark:IsObjectType'Texture' and not spark:GetTexture()) then
+--			spark:SetTexture[[Interface\CastingBar\UI-CastingBar-Spark]]
+--		end
 
-		local shield = castbar.Shield
-		if(shield and shield:IsObjectType'Texture' and not shield:GetTexture()) then
-			shield:SetTexture[[Interface\CastingBar\UI-CastingBar-Small-Shield]]
-		end
+--		local shield = castbar.Shield
+--		if(shield and shield:IsObjectType'Texture' and not shield:GetTexture()) then
+--			shield:SetTexture[[Interface\CastingBar\UI-CastingBar-Small-Shield]]
+--		end
 
-		local sz = castbar.SafeZone
-		if(sz and sz:IsObjectType'Texture' and not sz:GetTexture()) then
-			sz:SetTexture(1, 0, 0)
-		end
+--		local sz = castbar.SafeZone
+--		if(sz and sz:IsObjectType'Texture' and not sz:GetTexture()) then
+--			sz:SetTexture(1, 0, 0)
+--		end
 
 		castbar:Hide()
 
