@@ -882,13 +882,12 @@ local PostCastStart = function(castbar, unit, name)
 	end
 
 	if castbar.interrupt and UnitCanAttack("player", unit) and castbar.Colors.ShieldEnable then
-		castbar:SetStatusBarColor(castbar.Colors.Shield.r, castbar.Colors.Shield.g, castbar.Colors.Shield.b, castbar.Colors.Shield.a)
---[[		if castbar.Shield then
+		--castbar:SetStatusBarColor(castbar.Colors.Shield.r, castbar.Colors.Shield.g, castbar.Colors.Shield.b, castbar.Colors.Shield.a)
+		if castbar.Shield then
 			castbar.Shield:Show()
 		end
-	else
+	elseif castbar.Shield then
 		castbar.Shield:Hide()
-]]--
 	end
 end
 
@@ -2380,6 +2379,7 @@ module.funcs = {
 		module:RegisterEvent("GLYPH_ADDED", checkBar)
 		module:RegisterEvent("GLYPH_REMOVED", checkBar)
 		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkBar)
+		module:RegisterEvent("PLAYER_ENTERING_WORLD", checkBar)
 	end,
 	ArcaneCharges = function(self, unit, oufdb)
 	
@@ -3052,13 +3052,6 @@ module.funcs = {
 				})
 				castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
 				castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
-
---[[				castbar.Shield = castbar:CreateTexture(nil, "OVERLAY")
-				castbar.Shield:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -15, 30)
-				castbar.Shield:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 45, -30)
-				castbar.Shield:SetTexture("Interface\\CastingBar\\UI-CastingBar-Arena-Shield")
-				castbar.Shield:SetVertexColor(1, 1, 1)
-]]--
 			else
 				castbar.Icon = castbar:CreateTexture(nil, "ARTWORK")
 				castbar.Icon:SetHeight(20)
@@ -3086,11 +3079,20 @@ module.funcs = {
 				castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
 				castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 			end
+
 		end
 
 		castbar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Castbar.General.Texture))
 		castbar:SetHeight(oufdb.Castbar.General.Height)
 		castbar:SetWidth(oufdb.Castbar.General.Width)
+
+		if castbar.Shield == nil then
+			castbar.Shield = castbar:CreateTexture(nil, "OVERLAY")
+			castbar.Shield:SetPoint("TOPLEFT", castbar.Backdrop, "TOP", -45, 30)
+			castbar.Shield:SetPoint("BOTTOMRIGHT", castbar.Backdrop, "BOTTOM", 45, -30)
+			castbar.Shield:SetTexture("Interface\\CastingBar\\UI-CastingBar-Arena-Shield")
+			castbar.Shield:SetVertexColor(1, 1, 1)
+		end
 
 		castbar:ClearAllPoints()
 		if unit == "player" or unit == "target" then

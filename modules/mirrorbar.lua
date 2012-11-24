@@ -98,6 +98,21 @@ module.defaults = {
 				},
 			},
 		},
+		Border = {
+			Texture = "glow",
+			Thickness = 2,
+			Color = {
+				r = 0.9,
+				g = 0.9,
+				b = 0.9,
+			},
+			Inset = {
+				left = 2,
+				right = 2,
+				top = 2,
+				bottom = 2,
+			},
+		},
 	},
 }
 
@@ -113,23 +128,23 @@ function module:LoadOptions()
 
 	local options = {
 		Title = self:NewHeader("Mirror Bar", 1),
-		General = self:NewGroup("Bar Settings", 2, {
-			Width = self:NewInputNumber("Width", "Choose the Width for the Mirror Bar.", 3, applyMirrorbar, nil),
-			Height = self:NewInputNumber("Height", "Choose the Height for the Mirror Bar.", 4, applyMirrorbar, nil),
-			X = self:NewInputNumber("X Value", "Choose the X Value for the Mirror Bar.", 5, applyMirrorbar, nil),
-			Y = self:NewInputNumber("Y Value", "Choose the Y Value for the Mirror Bar.", 6, applyMirrorbar, nil),
-			empty2 = self:NewDesc(" ", 8),
-			Texture = self:NewSelect("Texture", "Choose the Mirror Bar Texture.", 9, widgetLists.statusbar, "LSM30_Statusbar", applyMirrorbar, nil),
-			TextureBG = self:NewSelect("Background Texture", "Choose the MirrorBar Background Texture.", 10, widgetLists.statusbar, "LSM30_Statusbar", applyMirrorbar, nil),
+		General = self:NewGroup("General Settings", 2, {
+			Width = self:NewInputNumber("Width", "Choose the Width for the Mirror Bar.", 1, applyMirrorbar, nil),
+			Height = self:NewInputNumber("Height", "Choose the Height for the Mirror Bar.", 2, applyMirrorbar, nil),
+			X = self:NewInputNumber("X Value", "Choose the X Value for the Mirror Bar.", 3, applyMirrorbar, nil),
+			Y = self:NewInputNumber("Y Value", "Choose the Y Value for the Mirror Bar.", 4, applyMirrorbar, nil),
+			empty2 = self:NewDesc(" ", 5),
+			Texture = self:NewSelect("Texture", "Choose the Mirror Bar Texture.", 6, widgetLists.statusbar, "LSM30_Statusbar", applyMirrorbar, nil),
+			TextureBG = self:NewSelect("Background Texture", "Choose the MirrorBar Background Texture.", 7, widgetLists.statusbar, "LSM30_Statusbar", applyMirrorbar, nil),
 		}),
-		Colors = self:NewGroup("Bar Colors", 3, nil, {
+		Colors = self:NewGroup("Bar Colors", 4, nil, {
 			FatigueBar = self:NewColor("Fatigue Bar", "Fatigue Bar", 1, applyMirrorbar),
 			BreathBar = self:NewColor("Breath Bar", "Breath Bar", 2, applyMirrorbar),
 			FeignBar = self:NewColor("Feign Death Bar", "Feign Death Bar", 3, applyMirrorbar),
 			Bar = self:NewColor("Other Bar", "Other Mirror Bars", 4, applyMirrorbar),
 			Background = self:NewColor("Background", "MirrorBar Background", 5, applyMirrorbar),
 		}),
-		Text = self:NewGroup("Text Settings", 4, nil, {
+		Text = self:NewGroup("Text Settings", 5, nil, {
 			Name = self:NewGroup("Name", 1, true, {
 				Font = self:NewSelect("Font", "Choose the Font for the Mirror Name Text.", 2, widgetLists.font, "LSM30_Font", applyMirrorbar, nil),
 				Color = self:NewColorNoAlpha("Name", "Mirror Name", 3, applyMirrorbar, nil),
@@ -138,7 +153,7 @@ function module:LoadOptions()
 				OffsetX = self:NewInputNumber("X Value", "Choose the X Value for the Mirror Name Text.", 6, applyMirrorbar, nil),
 				OffsetY = self:NewInputNumber("Y Value", "Choose the Y Value for the Mirror Name Text.", 7, applyMirrorbar, nil),
 			}),
-			Time = self:NewGroup("Time", 2, true, {
+			Time = self:NewGroup("Time Settings", 2, true, {
 				Font = self:NewSelect("Font", "Choose the Font for the Mirror Time Text.", 2, widgetLists.font, "LSM30_Font", applyMirrorbar, nil),
 				Color = self:NewColorNoAlpha("Time", "Mirror Time", 3, applyMirrorbar, nil),
 				Size = self:NewSlider("Size", "Choose the Font Size for the Mirror Time Text.", 4, 1, 40, 1, applyMirrorbar, nil, nil),
@@ -146,6 +161,18 @@ function module:LoadOptions()
 				OffsetX = self:NewInputNumber("X Value", "Choose the X Value for the Mirror Time Text.", 6, applyMirrorbar, nil),
 				OffsetY = self:NewInputNumber("Y Value", "Choose the Y Value for the Mirror Time Text.", 7, applyMirrorbar, nil),
 			})
+		}),
+		Border = self:NewGroup("Border", 3, {
+			Texture = self:NewSelect("Border Texture", "Choose the Border Texture.", 1, widgetLists.border, "LSM30_Border", applyMirrorbar),
+			Color = self:NewColorNoAlpha("Border", "Border", 2, applyMirrorbar),
+			Thickness = self:NewInputNumber("Border Thickness", "Value for your Castbar Border Thickness.", 3, applyMirrorbar),
+			empty2 = self:NewDesc(" ", 4),
+			Inset = self:NewGroup("Insets", 5, true, {
+				left = self:NewInputNumber("Left", "Value for the left Border Inset.", 1, applyMirrorbar, "half"),
+				right = self:NewInputNumber("Right", "Value for the right Border Inset.", 2, applyMirrorbar, "half"),
+				top = self:NewInputNumber("Top", "Value for the top Border Inset.", 3, applyMirrorbar, "half"),
+				bottom = self:NewInputNumber("Bottom", "Value for the bottom Border Inset.", 4, applyMirrorbar, "half"),
+			}),
 		}),
 	}
 	return options
@@ -240,17 +267,14 @@ end
 
 function module:Refresh(...)
 	for i = 1, MIRRORTIMER_NUMTIMERS do
-		self.MirrorBar[i]:SetHeight(db.General.Height)
-		self.MirrorBar[i]:SetWidth(db.General.Width)
 		if i == 1 then
 			self.MirrorBar[i]:SetPoint('TOP', UIParent, db.General.X, db.General.Y)
+		else
+			self.MirrorBar[i]:SetPoint('TOP', self.MirrorBar[i-1], 'BOTTOM', 0, -5)
 		end
+		self.MirrorBar[i]:SetHeight(db.General.Height)
+		self.MirrorBar[i]:SetWidth(db.General.Width)
 		self.MirrorBar[i]:SetStatusBarTexture(Media:Fetch("statusbar", db.General.Texture))
-		local backdrop = {
-			bgFile = Media:Fetch("statusbar", db.General.TextureBG),
-			insets = {top = -1, left = -1, bottom = -1, right = -1},
-		}
-		self.MirrorBar[i]:SetBackdrop(backdrop)
 		local label = self.MirrorBar[i].Text:GetText()
 		if label then
 			if label == "Feign Death" then
@@ -264,7 +288,20 @@ function module:Refresh(...)
 			barname = "Bar"
 		end
 		self.MirrorBar[i]:SetStatusBarColor(db.Colors[barname].r, db.Colors[barname].g, db.Colors[barname].b, db.Colors[barname].a)
+		local backdrop = {
+			bgFile = Media:Fetch("statusbar", db.General.TextureBG),
+			edgeFile = Media:Fetch("border", db.Border.Texture),
+			edgeSize = db.Border.Thickness,
+			insets = {
+				left = db.Border.Inset.left,
+				right = db.Border.Inset.right,
+				top = db.Border.Inset.top,
+				bottom = db.Border.Inset.bottom,
+			}
+		}
+		self.MirrorBar[i]:SetBackdrop(backdrop)
 		self.MirrorBar[i]:SetBackdropColor(db.Colors.Background.r,db.Colors.Background.g,db.Colors.Background.b, db.Colors.Background.a)
+		self.MirrorBar[i]:SetBackdropBorderColor(db.Border.Color.r, db.Border.Color.g, db.Border.Color.b)
 		self.MirrorBar[i].Text:SetFont(Media:Fetch("font", db.Text.Name.Font), db.Text.Name.Size, 'OUTLINE')
 		self.MirrorBar[i].Text:SetTextColor(db.Text.Name.Color.r, db.Text.Name.Color.g, db.Text.Name.Color.b)
 		self.MirrorBar[i].Text:SetPoint('CENTER', self.MirrorBar[i], db.Text.Name.OffsetX, db.Text.Name.OffsetY)
@@ -296,10 +333,18 @@ function module:CreateMirrorbars(self)
 		self.MirrorBar[i]:SetStatusBarColor(db.Colors.Bar.r, db.Colors.Bar.g, db.Colors.Bar.b, db.Colors.Bar.a)
 		local backdrop = {
 			bgFile = Media:Fetch("statusbar", db.General.TextureBG),
-			insets = {top = -1, left = -1, bottom = -1, right = -1},
+			edgeFile = Media:Fetch("border", db.Border.Texture),
+			edgeSize = db.Border.Thickness,
+			insets = {
+				left = db.Border.Inset.left,
+				right = db.Border.Inset.right,
+				top = db.Border.Inset.top,
+				bottom = db.Border.Inset.bottom,
+			}
 		}
 		self.MirrorBar[i]:SetBackdrop(backdrop)
 		self.MirrorBar[i]:SetBackdropColor(db.Colors.Background.r,db.Colors.Background.g,db.Colors.Background.b, db.Colors.Background.a)
+		self.MirrorBar[i]:SetBackdropBorderColor(db.Border.Color.r, db.Border.Color.g, db.Border.Color.b)
 		self.MirrorBar[i].Text:SetFont(Media:Fetch("font", db.Text.Name.Font), db.Text.Name.Size, 'OUTLINE')
 		self.MirrorBar[i].Text:SetTextColor(db.Text.Name.Color.r, db.Text.Name.Color.g, db.Text.Name.Color.b)
 		self.MirrorBar[i].Text:SetPoint('CENTER', self.MirrorBar[i], db.Text.Name.OffsetX, db.Text.Name.OffsetY)
