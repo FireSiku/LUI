@@ -9,6 +9,7 @@ local addonname, LUI = ...
 local module = LUI:Module("Chat", "AceHook-3.0")
 local Buttons = module:Module("Buttons")
 local EditBox = module:Module("EditBox")
+local StickyChannels = module:Module("StickyChannels")
 local Themes = LUI:Module("Themes")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
@@ -771,6 +772,7 @@ function module:LoadOptions()
 			BackgroundColor = self:NewColor(L["Chat Background"], nil, 7, refresh, "full"),
 			ResetPosition = self:NewExecute(L["Reset position"], L["Reset the main chat dock's position"], 8, resetChatPos, L["Are you sure?"]),
 		}),
+		StickyChannels = StickyChannels:LoadOptions(),
 		EditBox = EditBox:LoadOptions(),
 		Buttons = Buttons:LoadOptions(),
 	}
