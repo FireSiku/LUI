@@ -311,6 +311,8 @@ module.ToggleUnit = setmetatable({
 								else
 									party:Hide()
 								end
+							elseif not IsInRaid() then
+								party:Show()
 							else
 								party:Hide()
 							end
