@@ -41,6 +41,7 @@ module.defaults = {
 			Y = -75,
 			Texture = "LUI_Gradient",
 			TextureBG = "LUI_Minimalist",
+			BarGap = 5,
 		},
 		Colors = {
 			Bar = {
@@ -105,6 +106,7 @@ module.defaults = {
 				r = 0.9,
 				g = 0.9,
 				b = 0.9,
+				a = 0.65,
 			},
 			Inset = {
 				left = 2,
@@ -136,6 +138,7 @@ function module:LoadOptions()
 			empty2 = self:NewDesc(" ", 5),
 			Texture = self:NewSelect("Texture", "Choose the Mirror Bar Texture.", 6, widgetLists.statusbar, "LSM30_Statusbar", applyMirrorbar, nil),
 			TextureBG = self:NewSelect("Background Texture", "Choose the MirrorBar Background Texture.", 7, widgetLists.statusbar, "LSM30_Statusbar", applyMirrorbar, nil),
+			BarGap = self:NewSlider("Spacing", "Select the Spacing between mirror bars when shown.", 8, 0, 40, 1, applyMirrorbar, nil, nil),
 		}),
 		Colors = self:NewGroup("Bar Colors", 4, nil, {
 			FatigueBar = self:NewColor("Fatigue Bar", "Fatigue Bar", 1, applyMirrorbar),
@@ -164,7 +167,7 @@ function module:LoadOptions()
 		}),
 		Border = self:NewGroup("Border", 3, {
 			Texture = self:NewSelect("Border Texture", "Choose the Border Texture.", 1, widgetLists.border, "LSM30_Border", applyMirrorbar),
-			Color = self:NewColorNoAlpha("Border", "Border", 2, applyMirrorbar),
+			Color = self:NewColor("Border", "Border", 2, applyMirrorbar),
 			Thickness = self:NewInputNumber("Border Thickness", "Value for your Castbar Border Thickness.", 3, applyMirrorbar),
 			empty2 = self:NewDesc(" ", 4),
 			Inset = self:NewGroup("Insets", 5, true, {
@@ -270,7 +273,7 @@ function module:Refresh(...)
 		if i == 1 then
 			self.MirrorBar[i]:SetPoint('TOP', UIParent, db.General.X, db.General.Y)
 		else
-			self.MirrorBar[i]:SetPoint('TOP', self.MirrorBar[i-1], 'BOTTOM', 0, -5)
+			self.MirrorBar[i]:SetPoint('TOP', self.MirrorBar[i-1], 'BOTTOM', 0, -db.General.BarGap)
 		end
 		self.MirrorBar[i]:SetHeight(db.General.Height)
 		self.MirrorBar[i]:SetWidth(db.General.Width)
@@ -288,8 +291,9 @@ function module:Refresh(...)
 			barname = "Bar"
 		end
 		self.MirrorBar[i]:SetStatusBarColor(db.Colors[barname].r, db.Colors[barname].g, db.Colors[barname].b, db.Colors[barname].a)
-		local backdrop = {
-			bgFile = Media:Fetch("statusbar", db.General.TextureBG),
+		self.MirrorBar[i].bg:SetTexture(Media:Fetch("statusbar", db.General.TextureBG))
+		self.MirrorBar[i].bg:SetVertexColor(db.Colors.Background.r,db.Colors.Background.g,db.Colors.Background.b, db.Colors.Background.a)
+		self.MirrorBar[i].Backdrop:SetBackdrop({
 			edgeFile = Media:Fetch("border", db.Border.Texture),
 			edgeSize = db.Border.Thickness,
 			insets = {
@@ -298,10 +302,8 @@ function module:Refresh(...)
 				top = db.Border.Inset.top,
 				bottom = db.Border.Inset.bottom,
 			}
-		}
-		self.MirrorBar[i]:SetBackdrop(backdrop)
-		self.MirrorBar[i]:SetBackdropColor(db.Colors.Background.r,db.Colors.Background.g,db.Colors.Background.b, db.Colors.Background.a)
-		self.MirrorBar[i]:SetBackdropBorderColor(db.Border.Color.r, db.Border.Color.g, db.Border.Color.b)
+		})
+		self.MirrorBar[i].Backdrop:SetBackdropBorderColor(db.Border.Color.r, db.Border.Color.g, db.Border.Color.b,db.Border.Color.a)
 		self.MirrorBar[i].Text:SetFont(Media:Fetch("font", db.Text.Name.Font), db.Text.Name.Size, 'OUTLINE')
 		self.MirrorBar[i].Text:SetTextColor(db.Text.Name.Color.r, db.Text.Name.Color.g, db.Text.Name.Color.b)
 		self.MirrorBar[i].Text:SetPoint('CENTER', self.MirrorBar[i], db.Text.Name.OffsetX, db.Text.Name.OffsetY)
@@ -319,20 +321,27 @@ function module:CreateMirrorbars(self)
 			self.MirrorBar[i] = CreateFrame('StatusBar', nil, UIParent)
 			self.MirrorBar[i].Text = self.MirrorBar[i]:CreateFontString(nil, 'OVERLAY')
 			self.MirrorBar[i].Time = self.MirrorBar[i]:CreateFontString(nil, 'OVERLAY')
+			self.MirrorBar[i].bg = self.MirrorBar[i]:CreateTexture(nil, 'BORDER')
+			self.MirrorBar[i].bg:SetAllPoints(self.MirrorBar[i])
+			self.MirrorBar[i].Backdrop = CreateFrame("Frame", nil, self.MirrorBar[i])
+			self.MirrorBar[i].Backdrop:SetPoint("TOPLEFT", self.MirrorBar[i], "TOPLEFT", -4, 3)
+			self.MirrorBar[i].Backdrop:SetPoint("BOTTOMRIGHT", self.MirrorBar[i], "BOTTOMRIGHT", 3, -3.5)
+			self.MirrorBar[i].Backdrop:SetParent(self.MirrorBar[i])
 		end
 	end
 	for i = 1, MIRRORTIMER_NUMTIMERS do
 		if i == 1 then
 			self.MirrorBar[i]:SetPoint('TOP', UIParent, db.General.X, db.General.Y)
 		else
-			self.MirrorBar[i]:SetPoint('TOP', self.MirrorBar[i-1], 'BOTTOM', 0, -5)
+			self.MirrorBar[i]:SetPoint('TOP', self.MirrorBar[i-1], 'BOTTOM', 0, -db.General.BarGap)
 		end
 		self.MirrorBar[i]:SetHeight(db.General.Height)
 		self.MirrorBar[i]:SetWidth(db.General.Width)
 		self.MirrorBar[i]:SetStatusBarTexture(Media:Fetch("statusbar", db.General.Texture))
 		self.MirrorBar[i]:SetStatusBarColor(db.Colors.Bar.r, db.Colors.Bar.g, db.Colors.Bar.b, db.Colors.Bar.a)
-		local backdrop = {
-			bgFile = Media:Fetch("statusbar", db.General.TextureBG),
+		self.MirrorBar[i].bg:SetTexture(Media:Fetch("statusbar", db.General.TextureBG))
+		self.MirrorBar[i].bg:SetVertexColor(db.Colors.Background.r,db.Colors.Background.g,db.Colors.Background.b, db.Colors.Background.a)
+		self.MirrorBar[i].Backdrop:SetBackdrop({
 			edgeFile = Media:Fetch("border", db.Border.Texture),
 			edgeSize = db.Border.Thickness,
 			insets = {
@@ -341,10 +350,8 @@ function module:CreateMirrorbars(self)
 				top = db.Border.Inset.top,
 				bottom = db.Border.Inset.bottom,
 			}
-		}
-		self.MirrorBar[i]:SetBackdrop(backdrop)
-		self.MirrorBar[i]:SetBackdropColor(db.Colors.Background.r,db.Colors.Background.g,db.Colors.Background.b, db.Colors.Background.a)
-		self.MirrorBar[i]:SetBackdropBorderColor(db.Border.Color.r, db.Border.Color.g, db.Border.Color.b)
+		})
+		self.MirrorBar[i].Backdrop:SetBackdropBorderColor(db.Border.Color.r, db.Border.Color.g, db.Border.Color.b,db.Border.Color.a)
 		self.MirrorBar[i].Text:SetFont(Media:Fetch("font", db.Text.Name.Font), db.Text.Name.Size, 'OUTLINE')
 		self.MirrorBar[i].Text:SetTextColor(db.Text.Name.Color.r, db.Text.Name.Color.g, db.Text.Name.Color.b)
 		self.MirrorBar[i].Text:SetPoint('CENTER', self.MirrorBar[i], db.Text.Name.OffsetX, db.Text.Name.OffsetY)
