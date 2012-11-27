@@ -16,7 +16,8 @@ local channels = {
 	OFFICER = { desc = "Officer chat", sticky = true },
 	RAID = { desc = "Raid chat", sticky = true },
 	PARTY = { desc = "Party chat", sticky = true },
-	BATTLEGROUND = { desc = "Battleground chat", sticky = true },
+	-- Tested on the PTR - BATTLEGROUND causes errors, needs to be investigated once API changes are all known
+	--BATTLEGROUND = { desc = "Battleground chat", sticky = true },
 	SAY = { desc = "Say", sticky = true },
 	WHISPER = { desc = "Whispers", sticky = true },
 	EMOTE = { desc = "Emotes", sticky = false },
@@ -66,14 +67,19 @@ function module:Refresh(info, value)
 	if type(info) == "table" then
 		self:SetDBVar(info, value)
 	end
-	
+
+-- Extra checking to make sure we only set the sticky flag on valid channels
 	if db.Enabled == true then
 		for k, v in pairs(channels) do
-			ChatTypeInfo[k].sticky = v.sticky and 1 or 0
+			if ChatTypeInfo[k] then
+				ChatTypeInfo[k].sticky = v.sticky and 1 or 0
+			end
 		end
 	else
 		for k, v in pairs(channels) do
-			ChatTypeInfo[k].sticky = 0
+			if ChatTypeInfo[k] then
+				ChatTypeInfo[k].sticky = 0
+			end
 		end
 	end
 end
