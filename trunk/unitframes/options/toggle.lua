@@ -303,18 +303,24 @@ module.ToggleUnit = setmetatable({
 						if module.db.Party.ShowInRaid then
 							party:Show()
 						else
-							local numraid = GetNumGroupMembers()
-							local numparty = GetNumSubgroupMembers()
-							if module.db.Party.ShowInRealParty then
-								if numparty and numraid == 0 then
-									party:Show()
-								else
-									party:Hide()
-								end
-							elseif not IsInRaid() then
+							if not IsInRaid() then
 								party:Show()
 							else
-								party:Hide()
+								-- GetNumGroupMembers() - total number of players in the group (either party or raid), 0 if not in a group. 
+								-- GetNumSubgroupMembers() - number of players in the player's sub-group, excluding the player. 
+								local numraid = GetNumGroupMembers()
+								local numparty = GetNumSubgroupMembers()
+								if module.db.Party.ShowInRealParty then
+									if IsInRaid() then
+										party:Hide()
+									end
+								else
+									if numraid > 0 and numraid <= 5 then
+										party:Show()
+									else
+										party:Hide()
+									end
+								end
 							end
 						end
 					else
