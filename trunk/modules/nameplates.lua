@@ -34,11 +34,11 @@ function module:SetNameplates()
 	local select = select
 
 	local isValidFrame = function(frame)
-		--if frame:GetName() then return end
-
-		local overlayRegion = select(2, frame:GetRegions())
-
-		return overlayRegion and overlayRegion:GetObjectType() == "Texture" and overlayRegion:GetTexture() == overlayTexture
+		local barFrame, _ = frame:GetChildren()
+		if barFrame then
+			local overlayRegion = select(2, barFrame:GetRegions())
+			return overlayRegion and overlayRegion.GetTexture and overlayRegion:GetTexture() == overlayTexture
+		end
 	end
 
 	local updateTime = function(self, curValue)
@@ -188,12 +188,13 @@ function module:SetNameplates()
 		if frame.done then return end
 
 		frame.nameplate = true
-
-		frame.healthBar, frame.castBar = frame:GetChildren()
+		
+		frame.barFrame, frame.nameFrame = frame:GetChildren()
+		frame.healthBar, frame.castBar = frame.barFrame:GetChildren()
 		local healthBar, castBar = frame.healthBar, frame.castBar
-		--local glowRegion, overlayRegion, castbarOverlay, shieldedRegion, spellIconRegion, highlightRegion, nameTextRegion, levelTextRegion, bossIconRegion, raidIconRegion, stateIconRegion = frame:GetRegions()
-		local glowRegion, overlayRegion, highlightRegion, nameTextRegion, levelTextRegion, bossIconRegion, raidIconRegion, stateIconRegion = frame:GetRegions()
-		local _, castbarOverlay, shieldedRegion, spellIconRegion = frame.castBar:GetRegions();
+		local nameTextRegion = frame.nameFrame:GetRegions()
+		local glowRegion, overlayRegion, highlightRegion, levelTextRegion, bossIconRegion, raidIconRegion, stateIconRegion = frame.barFrame:GetRegions()
+		local _, castbarOverlay, shieldedRegion, spellIconRegion = castBar:GetRegions();
 		local font, fontSize, fontFlag, fontColor = Media:Fetch("font", db.Nameplates.FontSettings.Font), db.Nameplates.FontSettings.Size, db.Nameplates.FontSettings.Flag, db.Nameplates.FontSettings.Color
 
 		local barTexture = LUI.Media.normTex
@@ -324,7 +325,6 @@ function module:SetNameplates()
 			if newNumKids ~= numKids then
 				for i = numKids + 1, newNumKids do
 					local frame = select(i, WorldFrame:GetChildren())
-
 					if isValidFrame(frame) then
 						createPlate(frame)
 					end
