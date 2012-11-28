@@ -1072,9 +1072,9 @@ local HolyPowerOverride = function(self, event, unit, powerType)
 end
 
 local ChiOverride = function(self, event, unit, powerType)
-	if self.unit ~= unit or (powerType and powerType ~= "LIGHT_FORCE") then return end
+	if self.unit ~= unit or (powerType and powerType ~= "CHI") then return end
 
-	 local num = UnitPower(unit, SPELL_POWER_LIGHT_FORCE)
+	 local num = UnitPower(unit, SPELL_POWER_CHI)
 	 for i = 1, self.Chi.Force do
 		 if i <= num then
 			 self.Chi[i]:SetAlpha(1)

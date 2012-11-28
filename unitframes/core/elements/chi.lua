@@ -3,16 +3,16 @@ if(select(2, UnitClass('player')) ~= 'MONK') then return end
 local parent, ns = ...
 local oUF = ns.oUF
 
-local SPELL_POWER_LIGHT_FORCE = SPELL_POWER_LIGHT_FORCE
+local SPELL_POWER_CHI = SPELL_POWER_CHI
 local MAX_CHI = 5
 
 local Update = function(self, event, unit, powerType)
-	if(self.unit ~= unit or (powerType and powerType ~= 'LIGHT_FORCE')) then return end
+	if(self.unit ~= unit or (powerType and powerType ~= 'CHI')) then return end
 
 	local ch = self.HolyPower
 	if(ch.PreUpdate) then ch:PreUpdate(unit) end
 
-	local num = UnitPower('player', SPELL_POWER_LIGHT_FORCE)
+	local num = UnitPower('player', SPELL_POWER_CHI)
 	for i = 1, MAX_CHI do
 		if(i <= num) then
 			ch[i]:SetAlpha(1)
@@ -31,7 +31,7 @@ local Path = function(self, ...)
 end
 
 local ForceUpdate = function(element)
-	return Path(element.__owner, 'ForceUpdate', element.__owner.unit, 'HOLY_POWER')
+	return Path(element.__owner, 'ForceUpdate', element.__owner.unit, 'CHI')
 end
 
 local function Enable(self)
