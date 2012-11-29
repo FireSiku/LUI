@@ -42,7 +42,7 @@ local ValueChanged = function(bar, event, unit)
 		return
 	end
 	
-	local value = select(14, UnitAura("player", vengeance, nil, "PLAYER|HELPFUL"))
+	local value = select(15, UnitAura("player", vengeance, nil, "PLAYER|HELPFUL"))
 
 	if value and value > 0 then
 		if value > bar.max then value = bar.max end
