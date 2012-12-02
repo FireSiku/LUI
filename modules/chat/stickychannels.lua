@@ -70,9 +70,10 @@ function module:Refresh(info, value)
 
 -- Extra checking to make sure we only set the sticky flag on valid channels
 	if db.Enabled == true then
-		for k, v in pairs(channels) do
+		local chans = db.Channels
+		for k, v in pairs(chans) do
 			if ChatTypeInfo[k] then
-				ChatTypeInfo[k].sticky = v.sticky and 1 or 0
+				ChatTypeInfo[k].sticky = v and 1 or 0
 			end
 		end
 	else
