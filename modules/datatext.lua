@@ -2362,7 +2362,7 @@ function module:SetGuild()
 				if isMobile then
 					zone = "Remote Chat"
 				end
-				if connected then
+				if connected or isMobile then
 					local notes = note ~= "" and (offnote == "" and note or ("%s |cffffcc00-|r %s%s"):format(note, offcolor, offnote)) or offnote == "" and "|cffffcc00-" or offcolor..offnote
 					guildEntries[#guildEntries+1] = tooltip:new(tooltip.LocClassNames[class] or "", name or "", level or 0, zone or UNKNOWN, notes, status, rankIndex or 0, rank or 0, isMobile, i)
 				end
