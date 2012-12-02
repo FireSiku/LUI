@@ -701,9 +701,7 @@ function module:CreateCastbarOptions(unit, order)
 	local disabledFunc = function() return self.db.Settings.Castbars == false or self.db[unit].Enable == false end
 	local disabledCastbarFunc = function() return not self.db[unit].Castbar.General.Enable end
 	local disabledCastbarLatencyFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.Latency) end
-	local disabledCastbarShieldFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.Shield.Enable) end
-	local disabledCastbarShieldColorFunc = function() return not (self.db[unit].Castbar.Shield.Enable and self.db[unit].Castbar.Shield.IndividualColor) end
-	local disabledCastbarShieldBorderFunc = function() return not (self.db[unit].Castbar.Shield.Enable and self.db[unit].Castbar.Shield.Border) end
+	local disabledCastbarShieldBorderFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.Shield.Enable) end
 	local disabledCastbarNameFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.Text.Name.Enable) end
 	local disabledCastbarTimeFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.Text.Time.Enable) end
 
@@ -802,7 +800,6 @@ function module:CreateCastbarOptions(unit, order)
 		}),
 		Shield = self:NewGroup("Shield", 6, nil, disabledCastbarFunc, {
 			Enable = self:NewToggle("Show noninterruptible casts", "Whether you want to show noninterruptible casts or not.", 1, applyCastbar, nil, disabledCastbarFunc),
-			--Text = self:NewToggle("Add ** Shielded ** for uninterruptible casts", "Whether you want to add the text ** Shielded ** to casts you cannot interrupt.", 2, applyCastBar, nil, disabledCastbarShieldFunc),
 			Color = self:NewColor("Shielded Border", "noninterruptable casts", 5, applyCastbar, "full", disabledCastbarShieldBorderFunc),
 			Texture = self:NewSelect("Border Texture", "Choose the Border Texture.", 6, widgetLists.border, "LSM30_Border", applyCastbar, nil, disabledCastbarShieldBorderFunc),
 			Thickness = self:NewInputNumber("Border Thickness", "Value for your Castbar Border Thickness.", 7, applyCastbar, nil, disabledCastbarShieldBorderFunc),
