@@ -867,6 +867,7 @@ local CustomFilter = function(icons, unit, icon, name, rank, texture, count, dty
 end
 
 local PostCastStart = function(castbar, unit, name)
+	local unitname, _ = UnitName(unit)
 	if castbar.Colors.Individual == true then
 		castbar:SetStatusBarColor(castbar.Colors.Bar.r, castbar.Colors.Bar.g, castbar.Colors.Bar.b, castbar.Colors.Bar.a)
 		castbar.bg:SetVertexColor(castbar.Colors.Background.r, castbar.Colors.Background.g, castbar.Colors.Background.b, castbar.Colors.Background.a)
@@ -880,14 +881,22 @@ local PostCastStart = function(castbar, unit, name)
 		castbar.bg:SetVertexColor(0.15, 0.15, 0.15, 0.75)
 		castbar.Backdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 	end
-
-	if castbar.interrupt and UnitCanAttack("player", unit) and castbar.Colors.ShieldEnable then
-		--castbar:SetStatusBarColor(castbar.Colors.Shield.r, castbar.Colors.Shield.g, castbar.Colors.Shield.b, castbar.Colors.Shield.a)
-		if castbar.Shield then
-			castbar.Shield:Show()
+	if castbar.notinterruptible and castbar.Shielded.Enable and unitname ~= UnitName("player") then
+		--castbar:SetStatusBarColor(castbar.Shielded.Color.r, castbar.Shielded.Color.g, castbar.Shielded.Color.b, castbar.Shielded.Color.a)
+		castbar.Backdrop:SetBackdrop({
+			edgeFile = Media:Fetch("border", castbar.Shielded.Texture),
+			edgeSize = castbar.Shielded.Thick,
+			insets = {
+				left = castbar.Shielded.Inset.L,
+				right = castbar.Shielded.Inset.R,
+				top = castbar.Shielded.Inset.T,
+				bottom = castbar.Shielded.Inset.B,
+			},
+		})
+		castbar.Backdrop:SetBackdropBorderColor(castbar.Shielded.Color.r, castbar.Shielded.Color.g, castbar.Shielded.Color.b, castbar.Shielded.Color.a)
+		if castbar.Shielded.Text then
+			castbar.Text:SetText(format("%s ** Shielded **", tostring(name)))
 		end
-	elseif castbar.Shield then
-		castbar.Shield:Hide()
 	end
 end
 
@@ -3085,15 +3094,6 @@ module.funcs = {
 		castbar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Castbar.General.Texture))
 		castbar:SetHeight(oufdb.Castbar.General.Height)
 		castbar:SetWidth(oufdb.Castbar.General.Width)
-
-		if castbar.Shield == nil then
-			castbar.Shield = castbar:CreateTexture(nil, "OVERLAY")
-			castbar.Shield:SetPoint("TOPLEFT", castbar.Backdrop, "TOP", -45, 30)
-			castbar.Shield:SetPoint("BOTTOMRIGHT", castbar.Backdrop, "BOTTOM", 45, -30)
-			castbar.Shield:SetTexture("Interface\\CastingBar\\UI-CastingBar-Arena-Shield")
-			castbar.Shield:SetVertexColor(1, 1, 1)
-		end
-
 		castbar:ClearAllPoints()
 		if unit == "player" or unit == "target" then
 			castbar:SetPoint(oufdb.Castbar.General.Point, UIParent, oufdb.Castbar.General.Point, oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
@@ -3121,13 +3121,23 @@ module.funcs = {
 
 		castbar.Colors = {
 			Individual = oufdb.Castbar.General.IndividualColor,
-			ShieldEnable = oufdb.Castbar.General.Shield,
 			Bar = oufdb.Castbar.Colors.Bar,
 			Background = oufdb.Castbar.Colors.Background,
 			Border = oufdb.Castbar.Colors.Border,
-			Shield = oufdb.Castbar.Colors.Shield,
 		}
-
+		castbar.Shielded = {
+			Enable = oufdb.Castbar.Shield.Enable,
+			--Text = oufdb.Castbar.Shield.Text,
+			Color = oufdb.Castbar.Shield.Color,
+			Texture = oufdb.Castbar.Shield.Texture,
+			Thick = oufdb.Castbar.Shield.Thickness,
+			Inset = {
+				L = oufdb.Castbar.Shield.Inset.left,
+				R = oufdb.Castbar.Shield.Inset.right,
+				T = oufdb.Castbar.Shield.Inset.top,
+				B = oufdb.Castbar.Shield.Inset.bottom,
+			},
+		}
 		castbar.Time:SetFont(Media:Fetch("font", oufdb.Castbar.Text.Time.Font), oufdb.Castbar.Text.Time.Size)
 		castbar.Time:ClearAllPoints()
 		castbar.Time:SetPoint("RIGHT", castbar, "RIGHT", oufdb.Castbar.Text.Time.OffsetX, oufdb.Castbar.Text.Time.OffsetY)
