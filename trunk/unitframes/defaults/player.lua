@@ -408,6 +408,26 @@ module.defaults.profile.Player = {
 				b = 0.9,
 			},
 		},
+		Shield = {
+			Enable = true,
+			Text = true,
+			IndividualColor = false,
+			Color = {
+				r = 0.13,
+				g = 0.59,
+				b = 1,
+				a = 0.68,
+			},
+			Border = false,
+			Texture = "glow",
+			Thickness = 4,
+			Inset = {
+				left = 3,
+				right = 3,
+				top = 3,
+				bottom = 3,
+			},
+		},
 	},
 	Portrait = {
 		Enable = false,
