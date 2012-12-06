@@ -64,7 +64,9 @@ function module:GROUP_ROSTER_UPDATE()
 			return module:Deactivate()
 		end
 		
-		if db.General.AnnounceRaid == "RAID_WARNING" and not UnitIsGroupLeader("player") and not UnitIsGroupAssistant("player") then
+		if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
+			self.channel = "INSTANCE_CHAT"
+		elseif db.General.AnnounceRaid == "RAID_WARNING" and not UnitIsGroupLeader("player") and not UnitIsGroupAssistant("player") then
 			self.channel = "RAID"
 		else
 			self.channel = db.General.AnnounceRaid
@@ -74,7 +76,11 @@ function module:GROUP_ROSTER_UPDATE()
 			return module:Deactivate()
 		end
 		
-		self.channel = db.General.AnnounceParty
+		if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
+			self.channel = "INSTANCE_CHAT"
+		else
+			self.channel = db.General.AnnounceParty
+		end
 	end
 	
 	if self.GUID then return end

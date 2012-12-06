@@ -253,6 +253,13 @@ module.defaults.profile.Target = {
 			Enable = true,
 			Text = true,
 			IndividualColor = false,
+			BarColor = {
+				r = 0.13,
+				g = 0.59,
+				b = 1,
+				a = 0.68,
+			},
+			IndividualBorder = true,
 			Color = {
 				r = 0.13,
 				g = 0.59,
