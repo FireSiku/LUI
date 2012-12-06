@@ -701,7 +701,9 @@ function module:CreateCastbarOptions(unit, order)
 	local disabledFunc = function() return self.db.Settings.Castbars == false or self.db[unit].Enable == false end
 	local disabledCastbarFunc = function() return not self.db[unit].Castbar.General.Enable end
 	local disabledCastbarLatencyFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.Latency) end
-	local disabledCastbarShieldBorderFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.Shield.Enable) end
+	local disabledCastbarShieldFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.Shield) end
+	local disabledCastbarShieldColorFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.Shield and self.db[unit].Castbar.Shield.IndividualColor) end
+	local disabledCastbarShieldBorderFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.Shield and self.db[unit].Castbar.Shield.IndividualBorder) end
 	local disabledCastbarNameFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.Text.Name.Enable) end
 	local disabledCastbarTimeFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.Text.Time.Enable) end
 
@@ -759,6 +761,7 @@ function module:CreateCastbarOptions(unit, order)
 			Texture = self:NewSelect("Texture", "Choose the Castbar Texture.", 9, widgetLists.statusbar, "LSM30_Statusbar", applyCastbar, nil, disabledCastbarFunc),
 			TextureBG = self:NewSelect("Background Texture", "Choose the Castbar Background Texture.", 10, widgetLists.statusbar, "LSM30_Statusbar", applyCastbar, nil, disabledCastbarFunc),
 			Latency = (unit == "Player") and self:NewToggle("Latency", "Whether you want to show the Latency or not.", 11, applyCastbar, nil, disabledCastbarFunc) or nil,
+			Shield = self:NewToggle("Show Shielded Casts", "Whether you want to show casts you cannot interrupt.", 12, applyCastbar, nil, disabledCastbarFunc),
 			IndividualColor = self:NewToggle("Individual Color", "Whether you want to use an individual Color or not.", 13, applyCastbar, nil, disabledCastbarFunc),
 			Icon = self:NewToggle("Show Icon", "Whether you want to show the Castbar Icon or not.", 14, applyCastbar, nil, disabledCastbarFunc),
 		}),
@@ -798,12 +801,14 @@ function module:CreateCastbarOptions(unit, order)
 				bottom = self:NewInputNumber("Bottom", "Value for the bottom Border Inset.", 4, applyCastbar, "half"),
 			}),
 		}),
-		Shield = self:NewGroup("Shield", 6, nil, disabledCastbarFunc, {
-			Enable = self:NewToggle("Show noninterruptible casts", "Whether you want to show noninterruptible casts or not.", 1, applyCastbar, nil, disabledCastbarFunc),
-			Color = self:NewColor("Shielded Border", "noninterruptable casts", 5, applyCastbar, "full", disabledCastbarShieldBorderFunc),
-			Texture = self:NewSelect("Border Texture", "Choose the Border Texture.", 6, widgetLists.border, "LSM30_Border", applyCastbar, nil, disabledCastbarShieldBorderFunc),
-			Thickness = self:NewInputNumber("Border Thickness", "Value for your Castbar Border Thickness.", 7, applyCastbar, nil, disabledCastbarShieldBorderFunc),
-			Inset = self:NewGroup("Insets", 8, true, {
+		Shield = self:NewGroup("Shield", 6, nil, disabledCastbarShieldFunc, {
+			IndividualColor = self:NewToggle("Individual Bar Color", "Whether you want to set a different bar color for noninterruptible casts.", 3, applyCastbar, "normal", disabledCastbarShieldFunc),
+			BarColor = self:NewColor("Shielded cast bar", "noninterruptable casts", 4, applyCastbar, "normal", disabledCastbarShieldColorFunc),
+			IndividualBorder = self:NewToggle("Individual Border Color", "Whether you want to set a different border color for noninterruptible casts.", 6, applyCastbar, "normal", disabledCastbarShieldFunc),
+			Color = self:NewColor("Shielded Border", "noninterruptable casts", 7, applyCastbar, "normal", disabledCastbarShieldBorderFunc),
+			Texture = self:NewSelect("Border Texture", "Choose the Border Texture.", 8, widgetLists.border, "LSM30_Border", applyCastbar, nil, disabledCastbarShieldBorderFunc),
+			Thickness = self:NewInputNumber("Border Thickness", "Value for your Castbar Border Thickness.", 9, applyCastbar, nil, disabledCastbarShieldBorderFunc),
+			Inset = self:NewGroup("Insets", 10, true, {
 				left = self:NewInputNumber("Left", "Value for the left Border Inset.", 1, applyCastbar, "half", disabledCastbarShieldBorderFunc),
 				right = self:NewInputNumber("Right", "Value for the right Border Inset.", 2, applyCastbar, "half", disabledCastbarShieldBorderFunc),
 				top = self:NewInputNumber("Top", "Value for the top Border Inset.", 3, applyCastbar, "half", disabledCastbarShieldBorderFunc),

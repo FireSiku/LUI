@@ -882,18 +882,22 @@ local PostCastStart = function(castbar, unit, name)
 		castbar.Backdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 	end
 	if castbar.notinterruptible and castbar.Shielded.Enable and unitname ~= UnitName("player") then
-		--castbar:SetStatusBarColor(castbar.Shielded.Color.r, castbar.Shielded.Color.g, castbar.Shielded.Color.b, castbar.Shielded.Color.a)
-		castbar.Backdrop:SetBackdrop({
-			edgeFile = Media:Fetch("border", castbar.Shielded.Texture),
-			edgeSize = castbar.Shielded.Thick,
-			insets = {
-				left = castbar.Shielded.Inset.L,
-				right = castbar.Shielded.Inset.R,
-				top = castbar.Shielded.Inset.T,
-				bottom = castbar.Shielded.Inset.B,
-			},
-		})
-		castbar.Backdrop:SetBackdropBorderColor(castbar.Shielded.Color.r, castbar.Shielded.Color.g, castbar.Shielded.Color.b, castbar.Shielded.Color.a)
+		if castbar.Shielded.IndividualColor then
+			castbar:SetStatusBarColor(castbar.Shielded.BarColor.r, castbar.Shielded.BarColor.g, castbar.Shielded.BarColor.b, castbar.Shielded.BarColor.a)
+		end
+		if castbar.Shielded.IndividualBorder then
+			castbar.Backdrop:SetBackdrop({
+				edgeFile = Media:Fetch("border", castbar.Shielded.Texture),
+				edgeSize = castbar.Shielded.Thick,
+				insets = {
+					left = castbar.Shielded.Inset.L,
+					right = castbar.Shielded.Inset.R,
+					top = castbar.Shielded.Inset.T,
+					bottom = castbar.Shielded.Inset.B,
+				},
+			})
+			castbar.Backdrop:SetBackdropBorderColor(castbar.Shielded.Color.r, castbar.Shielded.Color.g, castbar.Shielded.Color.b, castbar.Shielded.Color.a)
+		end
 		if castbar.Shielded.Text then
 			castbar.Text:SetText(format("%s ** Shielded **", tostring(name)))
 		end
@@ -3126,7 +3130,10 @@ module.funcs = {
 			Border = oufdb.Castbar.Colors.Border,
 		}
 		castbar.Shielded = {
-			Enable = oufdb.Castbar.Shield.Enable,
+			Enable = oufdb.Castbar.General.Shield,
+			IndividualColor = oufdb.Castbar.Shield.IndividualColor,
+			BarColor = oufdb.Castbar.Shield.BarColor,
+			IndividualBorder = oufdb.Castbar.Shield.IndividualBorder,
 			--Text = oufdb.Castbar.Shield.Text,
 			Color = oufdb.Castbar.Shield.Color,
 			Texture = oufdb.Castbar.Shield.Texture,
