@@ -811,7 +811,6 @@ function module:SetSideBar(side, id)
 		]])
 
 		RegisterStateDriver(bar, "page", bardb.State[1])
-		RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] hide; show")
 
 		if Masque then
 			local group = Masque:Group("LUI", side.." Sidebar "..id)
@@ -886,15 +885,17 @@ function module:SetPetBar()
 end
 
 function module:SetShapeshiftBar()
+	local function isShapeShiftBarClass()
+		local icon, name, active, castable = GetShapeshiftFormInfo(1);
+		if name then
+			return true
+		end
+		return false
+	end
+
 	if not LUIShapeshiftBar then
 		local bar = CreateFrame("Frame", "LUIShapeshiftBar", UIParent, "SecureHandlerStateTemplate")
 		bar.buttons = {}
-
-		if UnitClass("player") == "Death Knight" or UnitClass("player") == "Paladin" or UnitClass("player") == "Warrior" or UnitClass("player") == "Monk" or UnitClass("player") == "Hunter" then
-			RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] hide; show")
-		else
-			RegisterStateDriver(bar, "visibility", "hide")
-		end
 
 		StanceBarFrame:SetParent(bar)
 		StanceBarFrame:EnableMouse(false)
@@ -949,15 +950,13 @@ function module:SetShapeshiftBar()
 		Fader:RegisterFrame(LUIShapeshiftBar, db.ShapeshiftBar.Fader, true)
 	end
 
-	LUIShapeshiftBar[db.ShapeshiftBar.Enable and "Show" or "Hide"](LUIShapeshiftBar)
+	LUIShapeshiftBar[(db.ShapeshiftBar.Enable and isShapeShiftBarClass()) and "Show" or "Hide"](LUIShapeshiftBar)
 end
 
 function module:SetTotemBar()
 	if not LUITotemBar then
 		local bar = CreateFrame("Frame", "LUITotemBar", UIParent, "SecureHandlerStateTemplate")
 		bar.buttons = {}
-
-		RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] hide; show")
 
 		MultiCastActionBarFrame:SetParent(bar)
 		MultiCastActionBarFrame:SetAllPoints(bar)
@@ -1040,7 +1039,6 @@ function module:SetExtraActionBar()
 	local bar = LUIExtraActionBar
 	if not LUIExtraActionBar then
 		bar = CreateFrame("Frame", "LUIExtraActionBar", UIParent, "SecureHandlerStateTemplate")
-		RegisterStateDriver(bar, "visibility", "[petbattle] [vehicleui] hide; show")
 		bar:SetHeight(52)
 		bar:SetWidth(52)
 		bar.content = ExtraActionBarFrame
@@ -2256,9 +2254,15 @@ function module:OnInitialize()
 	end
 end
 
+function module:PLAYER_SPECIALIZATION_CHANGED()
+	module:SetShapeshiftBar()
+end
+
 function module:OnEnable()
 	module:SetBars()
+	self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 end
 
 function module:OnDisable()
+	module:UnRegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 end

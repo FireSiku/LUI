@@ -310,10 +310,9 @@ function LUI:SyncAddonVersion()
 	local function sendVersion(distribution, target) -- (distribution [, target])
 		if distribution == "WHISPER" and not target then
 			return
-		elseif distribution == "RAID" then
-			local zoneType = select(2, IsInInstance())
-			if zoneType == "pvp" or zoneType == "arena" then
-				distribution = "BATTLEGROUND"
+		elseif distribution == "RAID" or distribution == "PARTY" then
+			if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
+				self.channel = "INSTANCE_CHAT"
 			end
 		end
 
