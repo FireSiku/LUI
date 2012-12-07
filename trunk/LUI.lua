@@ -335,7 +335,7 @@ function LUI:SyncAddonVersion()
 		if (groupType == "Party" and (GetNumSubgroupMembers() >= 1) or (GetNumGroupMembers() >= 1)) then
 			if inGroup then return end
 			inGroup = true
-			sendVersion("Raid")
+			sendVersion("RAID")
 		else
 			inGroup = false
 		end
