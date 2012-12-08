@@ -1499,6 +1499,8 @@ function module:SetBars()
 
 		-- because of an ugly bug...
 		module:SecureHook(CharacterFrame, "Show", function() TokenFrame_Update() end)
+		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+
 	else
 		isBarAddOnLoaded = true
 	end
@@ -2260,7 +2262,6 @@ end
 
 function module:OnEnable()
 	module:SetBars()
-	self:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 end
 
 function module:OnDisable()
