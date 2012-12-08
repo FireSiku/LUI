@@ -886,8 +886,8 @@ end
 
 function module:SetShapeshiftBar()
 	local function isShapeShiftBarClass()
-		local icon, name, active, castable = GetShapeshiftFormInfo(1);
-		if name then
+		local numForms = GetNumShapeshiftForms()
+		if numForms > 0 then
 			return true
 		end
 		return false
