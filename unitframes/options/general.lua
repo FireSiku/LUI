@@ -802,10 +802,10 @@ function module:CreateCastbarOptions(unit, order)
 			}),
 		}),
 		Shield = self:NewGroup("Shield", 6, nil, disabledCastbarShieldFunc, {
-			IndividualColor = self:NewToggle("Individual Bar Color", "Whether you want to set a different bar color for noninterruptible casts.", 3, applyCastbar, "normal", disabledCastbarShieldFunc),
-			BarColor = self:NewColor("Shielded cast bar", "noninterruptable casts", 4, applyCastbar, "normal", disabledCastbarShieldColorFunc),
-			IndividualBorder = self:NewToggle("Individual Border Color", "Whether you want to set a different border color for noninterruptible casts.", 6, applyCastbar, "normal", disabledCastbarShieldFunc),
-			Color = self:NewColor("Shielded Border", "noninterruptable casts", 7, applyCastbar, "normal", disabledCastbarShieldBorderFunc),
+			IndividualColor = self:NewToggle("Set Bar Color", "Whether you want to set a different bar color for noninterruptible casts.", 3, applyCastbar, "normal", disabledCastbarShieldFunc),
+			BarColor = self:NewColor("Bar", "noninterruptable casts", 4, applyCastbar, "normal", disabledCastbarShieldColorFunc),
+			IndividualBorder = self:NewToggle("Set Border", "Whether you want to set a different border for noninterruptible casts.", 6, applyCastbar, "normal", disabledCastbarShieldFunc),
+			Color = self:NewColor("Border", "noninterruptable casts", 7, applyCastbar, "normal", disabledCastbarShieldBorderFunc),
 			Texture = self:NewSelect("Border Texture", "Choose the Border Texture.", 8, widgetLists.border, "LSM30_Border", applyCastbar, nil, disabledCastbarShieldBorderFunc),
 			Thickness = self:NewInputNumber("Border Thickness", "Value for your Castbar Border Thickness.", 9, applyCastbar, nil, disabledCastbarShieldBorderFunc),
 			Inset = self:NewGroup("Insets", 10, true, {
