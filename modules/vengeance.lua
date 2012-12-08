@@ -177,7 +177,7 @@ end
 
 module.defaults = {
 	profile = {
-		Enable = true,
+		Enable = false,
 		General = {
 			Width = 384,
 			Height = 6,
