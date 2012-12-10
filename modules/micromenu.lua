@@ -449,7 +449,11 @@ function module:SetMicroMenu()
 				ShowUIPanel(GameMenuFrame)
 			end
 		else
-			LUI:Open()
+			if not InCombatLockdown() or LUI.options then
+				LUI:Open()
+			else
+				LUI:Printf("|cffFF0000Unable to open the options for the first time while in combat.")
+			end
 		end
 	end)
 
