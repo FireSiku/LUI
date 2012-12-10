@@ -4,9 +4,10 @@ local script = LUI:NewScript("TalentSpam", "AceEvent-3.0", "AceHook-3.0")
 local spam1 = gsub(ERR_LEARN_ABILITY_S:gsub("%.", "%."), "%%s", "(.*)")
 local spam2 = gsub(ERR_LEARN_SPELL_S:gsub("%.", "%."), "%%s", "(.*)")
 local spam3 = gsub(ERR_SPELL_UNLEARNED_S:gsub("%.", "%."), "%%s", "(.*)")
+local spam4 = gsub(ERR_LEARN_PASSIVE_S:gsub("%.", "%."), "%%s", "(.*)")
 
 local function spamFilter(self, event, msg)
-	if strfind(msg, spam1) or strfind(msg, spam2) or strfind(msg, spam3) then return true end
+	if strfind(msg, spam1) or strfind(msg, spam2) or strfind(msg, spam3) or strfind(msg, spam4) then return true end
 end
 
 function script:AddFilter(...)
