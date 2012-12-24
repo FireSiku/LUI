@@ -1158,7 +1158,7 @@ function module:SetMicroMenu()
 		TalentMicroButtonAlert:Hide() 
 		LUI.MicroMenu.Buttons.Talents:RegisterEvent("PLAYER_LEVEL_UP")
 	end
-	LUI.MicroMenu.Buttons.Talents:SetScript("OnEvent", function(event, level) 
+	LUI.MicroMenu.Buttons.Talents:SetScript("OnEvent", function(self, event, level) 
 			if not level then level = UnitLevel("player")+1 end
 			if tonumber(level) < 10 then TalentMicroButtonAlert:Hide() 
 			else 
