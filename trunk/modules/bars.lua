@@ -60,6 +60,7 @@ local statetexts = setmetatable({
 	["PRIEST"] = {"Default", "Shadow Form"},
 	["ROGUE"] = {"Default", "Stealth", "Shadowdance"},
 	["WARLOCK"] = {"Default", "Metamorphosis"},
+	["MONK"] = {"Default", "Stance of the Fierce Tiger", "Stance of the Sturdy Ox", "Stance of the Wise Serpent"},
 	["DEFAULT"] = {"Default"},
 }, {
 	__index = function(t, k)
@@ -74,6 +75,7 @@ local defaultstates = setmetatable({
 	["PRIEST"] = {"1", "3"},
 	["ROGUE"] = {"1", "3", "5"},
 	["WARLOCK"] = {"1", "3"},
+	["MONK"] = {"1", "3", "5", "4"},
 	["DEFAULT"] = {"1"}
 }, {
 	__index = function(t, k)
@@ -102,6 +104,7 @@ local blizzstates = setmetatable({
 	["PRIEST"] = {"1", "7"},
 	["ROGUE"] = {"1", "7", "8"},
 	["WARLOCK"] = {"1", "7"},
+	["MONK"] = {"1", "7", "8", "9"},
 	["DEFAULT"] = {"1"}
 }, {
 	__index = function(t, k)
@@ -146,6 +149,11 @@ local Page = {
 	},
 	["WARLOCK"] = {
 		"[form:2] %s; " -- Metamorphosis
+	},
+	["MONK"] = {
+		"[bonusbar:1] %s; ", -- Stance of the Fierce Tiger
+		"[bonusbar:2] %s; ", -- Stance of the Sturdy Ox
+		"[bonusbar:3] %s; ", -- Stance of the Wise Serpent
 	},
 }
 
@@ -1216,10 +1224,10 @@ function module:SetButtons()
 
 		if not db.General.ShowEquipped then border:Hide() end
 
-		if Masque then return end
-
 		button.GetHotkey = GetHotkey
 		button:HookScript("OnEnter", Button_OnEnter)
+
+		if Masque then return end
 
 		-- normal
 		local normal = button:GetNormalTexture()

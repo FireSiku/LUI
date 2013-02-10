@@ -11,6 +11,7 @@ local FogClear = module:Module("FogClear")
 local Coords = module:Module("Coords")
 local Fader = LUI:Module("Fader")
 local Media = LibStub("LibSharedMedia-3.0")
+local internalversion = select(2, GetBuildInfo())
 
 local LibWindow = LibStub("LibWindow-1.1")
 
@@ -445,8 +446,13 @@ function module:Refresh(info, value)
 		self:UnregisterEvent("ZONE_CHANGED_NEW_AREA")
 	end
 	
-	PlayerArrowFrame:SetModelScale(db.General.ArrowScale)
-	PlayerArrowEffectFrame:SetModelScale(db.General.ArrowScale)
+	if tonumber(internalversion) < 16547 then -- if true, it's live WoW and not the PTR
+		PlayerArrowFrame:SetModelScale(db.General.ArrowScale)
+		PlayerArrowEffectFrame:SetModelScale(db.General.ArrowScale)
+	else
+		WorldMapPlayerLower:SetModelScale(db.General.ArrowScale)
+		WorldMapPlayerUpper:SetModelScale(db.General.ArrowScale)
+	end
 	
 	LibWindow.RestorePosition(WorldMapFrame)
 	
