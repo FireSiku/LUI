@@ -570,6 +570,8 @@ local defaults = {
 	},
 }
 
+module.conflicts = "SexyMap"
+
 function module:LoadOptions()
 	local options = {
 		Minimap = {
@@ -1181,6 +1183,10 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	if IsAddOnLoaded("SexyMap") then
+		LUI:Printf("|cffFF0000%s could not be enabled because of a conflicting addon: SexyMap.", self:GetName())
+		return
+	end
 	self:SetMinimap()
 	self:SetAdditionalFrames()
 end

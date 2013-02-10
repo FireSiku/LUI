@@ -536,7 +536,10 @@ function LUI:Configure()
 
 		LUICONFIG.Versions.lui = LUI.Versions.lui
 		LUICONFIG.IsConfigured = true
-		CheckResolution()
+		-- This is commented out for now as it causes issues.
+		-- Sorry, if you're using 1280x1024 things might look
+		-- funky, but LUI will at least install properly.
+		--CheckResolution()
 		ReloadUI()
 	end)
 end

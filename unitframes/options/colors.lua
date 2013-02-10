@@ -22,6 +22,7 @@ module.defaults.profile.Colors = {
 		WARLOCK = {0.57, 0.22, 1},
 		ROGUE = {0.95, 0.86, 0.16},
 		DEATHKNIGHT = {0.8, 0.1, 0.1},
+		MONK = {0.00, 1.00, 0.59},
 	},
 	Power = {
 		MANA = {0.31, 0.45, 0.63},
@@ -290,8 +291,9 @@ function module:CreateColorOptions(order)
 			WARLOCK = self:NewColorNoAlpha("Warlock", "Warlock class", 9, false, "full"),
 			ROGUE = self:NewColorNoAlpha("Rogue", "Rogue class", 10, false, "full"),
 			DEATHKNIGHT = self:NewColorNoAlpha("Death Knight", "Death Knight class", 11, false, "full"),
-			empty1 = self:NewDesc(" ", 12),
-			Reset = self:NewExecute("Restore Defaults", nil, 13, function()
+			MONK = self:NewColorNoAlpha("Monk", "Monk class", 12, false, "full"),
+			empty1 = self:NewDesc(" ", 13),
+			Reset = self:NewExecute("Restore Defaults", nil, 14, function()
 				module.db.Colors.Class = module.defaults.Colors.Class
 				UpdateColors()
 			end),
