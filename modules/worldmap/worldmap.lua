@@ -449,9 +449,9 @@ function module:Refresh(info, value)
 	if tonumber(internalversion) < 16547 then -- if true, it's live WoW and not the PTR
 		PlayerArrowFrame:SetModelScale(db.General.ArrowScale)
 		PlayerArrowEffectFrame:SetModelScale(db.General.ArrowScale)
-	else
-		WorldMapPlayerLower:SetModelScale(db.General.ArrowScale)
-		WorldMapPlayerUpper:SetModelScale(db.General.ArrowScale)
+--	else
+--		WorldMapPlayerLower:SetModelScale(db.General.ArrowScale)
+--		WorldMapPlayerUpper:SetModelScale(db.General.ArrowScale)
 	end
 	
 	LibWindow.RestorePosition(WorldMapFrame)
