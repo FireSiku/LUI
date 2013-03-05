@@ -1,0 +1,174 @@
+﻿<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
+http://wowprogramming.com/FrameXML/UI.xsd">
+
+	<Script file="auras.lua"/>
+
+	<Button name="LUI_Auras_AuraTemplate" inherits="SecureActionButtonTemplate" virtual="true">
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="icon" nonBlocking="true" setAllPoints="true"/>
+			</Layer>
+			<Layer level="OVERLAY">
+				<Texture parentKey="gloss" alphaMode="ADD" alpha="0.5" file="Interface\AddOns\LUI\media\textures\buttons\Gloss">
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+				</Texture>
+				<FontString parentKey="count">
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+					</Anchors>
+					<Shadow>
+						<Offset><AbsDimension x="1" y="-1"/></Offset>
+						<Color r="0" g="0" b="0"/>
+					</Shadow>
+				</FontString>
+				<FontString parentKey="duration">
+					<Anchors>
+						<Anchor point="TOP" relativePoint="BOTTOM">
+							<Offset><AbsDimension x="0" y="-6"/></Offset>
+						</Anchor>
+					</Anchors>
+					<Shadow>
+						<Offset><AbsDimension x="1" y="-1"/></Offset>
+						<Color r="0" g="0" b="0"/>
+					</Shadow>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnLoad>
+				self:GetParent():ChildCreated(self)
+			</OnLoad>
+			<OnEnter>
+				GameTooltip:SetOwner(self, self.TooltipAnchor)
+				self:UpdateTooltip()
+			</OnEnter>
+			<OnLeave function="GameTooltip_Hide"/>
+			<OnHide>
+				self:SetScript('OnUpdate', nil)
+			</OnHide>
+		</Scripts>
+		<NormalTexture parentKey="normalTexture" file="Interface\AddOns\LUI\media\textures\buttons\Normal">
+			<Anchors>
+				<Anchor point="CENTER"/>
+			</Anchors>
+		</NormalTexture>
+	</Button>
+
+	<Button name="LUI_Auras_BuffTemplate" inherits="LUI_Auras_AuraTemplate" virtual="true">
+		<Attributes>
+			<Attribute name="type" value="cancelaura"/>
+		</Attributes>
+		<Frames>
+			<Frame parentKey="blocker" enableMouse="true" setAllPoints="true" hidden="true"/> <!-- Used for blocking mouse clicks on aura buttons that shouldn't exist -->
+		</Frames>
+		<Scripts>
+			<OnLoad>
+				self:RegisterForClicks('RightButtonUp')
+				self:GetParent():ChildCreated(self)
+			</OnLoad>
+		</Scripts>
+	</Button>
+	<Button name="LUI_Auras_DebuffTemplate" inherits="LUI_Auras_AuraTemplate" virtual="true">
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture parentKey="border" file="Interface\AddOns\LUI\media\textures\buttons\Border">
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+	</Button>
+	<Button name="LUI_Auras_WeaponEnchantTemplate" inherits="LUI_Auras_BuffTemplate" virtual="true">
+		<Attributes>
+			<Attribute name="weaponEnchant" value="true"/>
+		</Attributes>
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture parentKey="border" file="Interface\AddOns\LUI\media\textures\buttons\Border">
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+	</Button>
+
+	<Button name="LUI_Auras_ConsolidateProxyTemplate" inherits="SecureHandlerClickTemplate" hidden="true" virtual="true">
+		<Attributes>
+			<Attribute name="proxy" value="true"/>
+			<Attribute name="_onclick" value="local header=self:GetFrameRef('header'); if header:IsShown() then header:Hide() else header:Show() end"/>
+		</Attributes>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture parentKey="icon" nonBlocking="true" file="Interface\Buttons\BuffConsolidation" setAllPoints="true">
+					<TexCoords left="0.1" right="0.4" top="0.2" bottom="0.8"/>
+				</Texture>
+			</Layer>
+			<Layer level="OVERLAY">
+				<Texture parentKey="gloss" alphaMode="ADD" alpha="0.5" file="Interface\AddOns\LUI\media\textures\buttons\Gloss">
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+				</Texture>
+				<FontString parentKey="count">
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+					</Anchors>
+					<Shadow>
+						<Offset><AbsDimension x="1" y="-1"/></Offset>
+						<Color r="0" g="0" b="0"/>
+					</Shadow>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame name="$parentContainer" parentKey="Consolidate" inherits="SecureFrameTemplate" frameStrata="DIALOG" hidden="true">
+				<Size x="1" y="1"/> <!-- The sizing can bug out if you don't set this to something -->
+				<Attributes>
+					<Attribute name="template" value="LUI_Auras_BuffTemplate"/>
+					<Attribute name="wrapAfter" type="number" value="8"/>
+				</Attributes>
+				<Frames>
+					<Frame frameLevel="1">
+						<Anchors>
+							<Anchor point="TOPLEFT">
+								<Offset><AbsDimension x="-10" y="10"/></Offset>
+							</Anchor>
+							<Anchor point="BOTTOMRIGHT">
+								<Offset><AbsDimension x="10" y="-25"/></Offset>
+							</Anchor>
+						</Anchors>
+						<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\AddOns\LUI\media\textures\borders\Stripped_medium">
+							<EdgeSize><AbsValue val="16"/></EdgeSize>
+							<BackgroundInsets><AbsInset left="4" right="4" top="4" bottom="4"/></BackgroundInsets>
+							<BorderColor r="0.3" g="0.3" b="0.3"/>
+						</Backdrop>
+					</Frame>
+				</Frames>
+				<Scripts>
+					<OnShow>
+						self:Update()
+					</OnShow>
+				</Scripts>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnEnter>
+				GameTooltip:SetOwner(self, self.TooltipAnchor)
+
+				GameTooltip:SetText("Consolidated Buffs:")
+				GameTooltip:AddLine("Click to show/hide consolidated buffs")
+				GameTooltip:Show()
+			</OnEnter>
+			<OnLeave function="GameTooltip_Hide"/>
+		</Scripts>
+		<NormalTexture parentKey="normalTexture" file="Interface\AddOns\LUI\media\textures\buttons\Normal">
+			<Anchors>
+				<Anchor point="CENTER"/>
+			</Anchors>
+		</NormalTexture>
+	</Button>
+</Ui>
