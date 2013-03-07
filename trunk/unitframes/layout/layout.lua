@@ -2296,9 +2296,9 @@ module.funcs = {
 			self.WarlockBar:SetFrameLevel(6)
 			
 			self.WarlockBar.SpecInfo = {
-				{ maxValue = 1, Amount = 3, AmountGlyph = 4, glyph = 63302, powerType = "SOUL_SHARDS", unitPower = SPELL_POWER_SOUL_SHARDS, }, -- Affliction
+				{ maxValue = 1, Amount = 4, powerType = "SOUL_SHARDS", unitPower = SPELL_POWER_SOUL_SHARDS, }, -- Affliction
 				{ maxValue = 1000, Amount = 1, powerType = "DEMONIC_FURY", unitPower = SPELL_POWER_DEMONIC_FURY, }, -- Demonology
-				{ maxValue = 10, Amount = 3, AmountGlyph = 4, glyph = 63304, powerType = "BURNING_EMBERS", unitPower = SPELL_POWER_BURNING_EMBERS, }, -- Destruction
+				{ maxValue = 10, Amount = 4, powerType = "BURNING_EMBERS", unitPower = SPELL_POWER_BURNING_EMBERS, }, -- Destruction
 			}
 			self.WarlockBar.SpecInfo[1].BarColors = { "Shard1", "Shard2", "Shard3", "Shard4" }
 			self.WarlockBar.SpecInfo[2].BarColors = { "Fury", "Fury", "Fury", "Fury" } -- Four time just to not have to add an additional check
@@ -2349,17 +2349,6 @@ module.funcs = {
 			end
 			self.WarlockBar.Amount = spec.Amount
 
-			if spec.glyph then
-				local glyphFound = false
-				for i=1, 6 do
-					local _, _, _, glyphSpell = GetGlyphSocketInfo(i)
-					if glyphSpell == spec.glyph then
-						glyphFound = true
-						if self.WarlockBar then self.WarlockBar.Amount = spec.AmountGlyph end
-					end
-				end
-				if self.WarlockBar and not glyphFound then self.WarlockBar.Amount = spec.Amount end
-			end
 			for i = 1, 4 do
 				self.WarlockBar[i]:SetMinMaxValues(0,spec.maxValue)
 				self.WarlockBar[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.WarlockBar.Texture))
@@ -2400,7 +2389,7 @@ module.funcs = {
 			self.ArcaneCharges = CreateFrame("Frame", nil, self)
 			self.ArcaneCharges:SetFrameLevel(6)
 
-			self.ArcaneCharges.Charges = 6
+			self.ArcaneCharges.Charges = 4
 			self.ArcaneCharges.Refresh = false
 
 			for i = 1, self.ArcaneCharges.Charges do
