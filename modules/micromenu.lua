@@ -22,7 +22,6 @@ local Panels = LUI:Module("Panels")
 local RaidMenu = LUI:Module("RaidMenu")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
-local internalversion = select(2, GetBuildInfo())
 
 local db, dbd
 local version = 1.5
@@ -743,13 +742,7 @@ function module:SetMicroMenu()
 	end)
 
 	LUI.MicroMenu.Buttons.PVP.Clicker:SetScript("OnLeave", function(self)
-		local tframe
-		if tonumber(internalversion) < 16562 then -- if true, it's live WoW and not the PTR
-			tframe = PVPFrame
-		else
-			tframe = PVPUIFrame
-		end
-		if not PVPUI and not tframe:IsShown() then
+		if not PVPUI and not PVPUIFrame:IsShown() then
 			self:SetAlpha(0)
 		end
 		self.State = nil
@@ -758,43 +751,23 @@ function module:SetMicroMenu()
 
 	LUI.MicroMenu.Buttons.PVP.Clicker:SetScript("OnClick", function(self)
 		if UnitLevel("player") >= 10 then
-			if tonumber(internalversion) < 16562 then -- if true, it's live WoW and not the PTR
-				if PVPFrame:IsShown() then
-					HideUIPanel(PVPFrame)
-				else
-					ShowUIPanel(PVPFrame)
-				end
-			else
-				TogglePVPUI()
-			end
+			TogglePVPUI()
 		end
 	end)
 
 	module:RegisterEvent("ADDON_LOADED", function(event)
-		if tonumber(internalversion) >= 16562 then -- if true, it's not live WoW but the PTR
-			if event and not IsAddOnLoaded("Blizzard_PVPUI") then LoadAddOn("Blizzard_PVPUI") end
-			if event then module:UnregisterEvent(event) end
-	
-			PVPUIFrame:HookScript("OnShow", function(self)
-				LUI.MicroMenu.Buttons.PVP.Clicker:SetAlpha(1)
-			end)
+		if event and not IsAddOnLoaded("Blizzard_PVPUI") then LoadAddOn("Blizzard_PVPUI") end
+		if event then module:UnregisterEvent(event) end
 
-			PVPUIFrame:HookScript("OnHide", function(self)
-				if not LUI.MicroMenu.Buttons.PVP.Clicker.State then
-					LUI.MicroMenu.Buttons.PVP.Clicker:SetAlpha(0)
-				end
-			end)
-		else
-			PVPFrame:HookScript("OnShow", function(self)
-				LUI.MicroMenu.Buttons.PVP.Clicker:SetAlpha(1)
-			end)
+		PVPUIFrame:HookScript("OnShow", function(self)
+			LUI.MicroMenu.Buttons.PVP.Clicker:SetAlpha(1)
+		end)
 
-			PVPFrame:HookScript("OnHide", function(self)
-				if not LUI.MicroMenu.Buttons.PVP.Clicker.State then
-					LUI.MicroMenu.Buttons.PVP.Clicker:SetAlpha(0)
-				end
-			end)
-		end
+		PVPUIFrame:HookScript("OnHide", function(self)
+			if not LUI.MicroMenu.Buttons.PVP.Clicker.State then
+				LUI.MicroMenu.Buttons.PVP.Clicker:SetAlpha(0)
+			end
+		end)
 	end)
 
 	LUI.MicroMenu.Buttons.Guild = LUI:CreateMeAFrame("Frame",nil,LUI.MicroMenu.Buttons.PVP,64,64,1,"BACKGROUND",3,"LEFT",LUI.MicroMenu.Buttons.PVP,"LEFT",-33,0, 1)
