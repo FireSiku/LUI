@@ -26,7 +26,7 @@ function module:SetNameplates()
 	if db.Nameplates.Enable ~= true then return end
 
 	local tNamePlates = CreateFrame( "Frame", "tNamePlates", UIParent)
-	tNamePlates:SetScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
+	tNamePlates:HookScript("OnEvent", function(self, event, ...) self[event](self, ...) end)
 	SetCVar("bloatthreat", 0) -- stop resizing nameplate according to threat level.
 
 	local overlayTexture = [=[Interface\Tooltips\Nameplate-Border]=]
@@ -305,17 +305,17 @@ function module:SetNameplates()
 		bossIconRegion:SetTexture(nil)
 
 		updatePlate(frame)
-		frame:SetScript("OnShow", updatePlate)
-		frame:SetScript("OnHide", onHide)
+		frame:HookScript("OnShow", updatePlate)
+		frame:HookScript("OnHide", onHide)
 
 		frame.elapsed = 0
-		frame:SetScript("OnUpdate", threatUpdate)
+		frame:HookScript("OnUpdate", threatUpdate)
 	end
 
 	local numKids = 0
 	local lastUpdate = 0
 
-	tNamePlates:SetScript("OnUpdate", function(self, elapsed)
+	tNamePlates:HookScript("OnUpdate", function(self, elapsed)
 		lastUpdate = lastUpdate + elapsed
 
 		if lastUpdate > 0.05 then
