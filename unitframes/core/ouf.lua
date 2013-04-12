@@ -236,7 +236,7 @@ local initObject = function(unit, style, styleFunc, header, ...)
 		if(not header) then
 			-- No header means it's a frame created through :Spawn().
 			object:SetAttribute("*type1", "target")
-			object:SetAttribute('*type2', 'menu')
+			object:SetAttribute("*type2", select(4,GetBuildInfo()) >= 50200 and "togglemenu" or "menu")
 
 			-- No need to enable this for *target frames.
 			if(not (unit:match'target' or suffix == 'target')) then
