@@ -236,7 +236,7 @@ local initObject = function(unit, style, styleFunc, header, ...)
 		if(not header) then
 			-- No header means it's a frame created through :Spawn().
 			object:SetAttribute("*type1", "target")
-			object:SetAttribute("*type2", select(4,GetBuildInfo()) >= 50200 and "togglemenu" or "menu")
+			object:SetAttribute("*type2", "togglemenu")
 
 			-- No need to enable this for *target frames.
 			if(not (unit:match'target' or suffix == 'target')) then
@@ -480,7 +480,7 @@ do
 				end
 
 				frame:SetAttribute('*type1', 'target')
-				frame:SetAttribute('*type2', 'menu')
+				frame:SetAttribute('*type2', 'togglemenu')
 				frame:SetAttribute('toggleForVehicle', true)
 				frame:SetAttribute('oUF-guessUnit', unit)
 			end
