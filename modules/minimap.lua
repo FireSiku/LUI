@@ -450,7 +450,7 @@ function module:SetMinimap()
 
 	local m_coord = CreateFrame( "Frame","m_coord",Minimap)
 	LUI:CreatePanel(m_coord, 40, 20, "BOTTOMLEFT", Minimap, "BOTTOMLEFT",LUI:Scale(2),LUI:Scale(2))
-	m_coord:SetFrameStrata("LOW")
+	m_coord:SetFrameStrata("MEDIUM")
 	m_coord:Hide()
 
 	local m_coord_text = m_coord:CreateFontString("m_coord_text","Overlay")
