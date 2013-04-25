@@ -2063,7 +2063,7 @@ module.funcs = {
 		if not self.TotemBar then
 			self.TotemBar = CreateFrame("Frame", nil, self)
 			self.TotemBar:SetFrameLevel(6)
-			self.TotemBar.Destroy = true
+			self.TotemBar.Destroy = false
 
 			for i = 1, 4 do
 				self.TotemBar[i] = CreateFrame("StatusBar", nil, self.TotemBar)
