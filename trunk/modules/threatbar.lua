@@ -36,12 +36,29 @@ local ToggleTestMode = function()
 end
 
 local UpdateExpMode = function()
+	local bar = LUIThreat
 	local currXP = UnitXP("player")
 	local maxXP = UnitXPMax("player")
 	local percentXP = currXP * 100 / maxXP
-	LUIThreat:SetValue(percentXP)
+	bar:SetValue(percentXP)
 	if db.Text.Enable then
-		LUIThreat.Text:SetFormattedText("%d%%", percentXP)
+		bar.Text:SetFormattedText("%d%%", percentXP)
+	end
+	if UnitLevel("player") == 90 then
+		local name, stand, barMin, barMax, barValue = GetWatchedFactionInfo()
+		local repname = { "Ha", "Ho", "Un", "Ne", "Fr", "Hon", "Rev", "Ex" }
+		if not name then bar:Hide()
+		else if db.Enable then bar:Show() end
+		end
+		barMax = barMax - barMin
+		barValue = barValue - barMin
+		barMin = 0
+		local percentRep = barValue * 100 / barMax
+		bar:SetMinMaxValues(barMin,barMax)
+		bar:SetValue(barValue)
+		if db.Text.Enable then
+			bar.Text:SetFormattedText("%d%% %s", percentRep,repname[stand] or "")
+		end
 	end
 end
 
@@ -56,6 +73,7 @@ local ToggleExpMode = function()
 		LUIThreat:UnregisterEvent("PLAYER_REGEN_ENABLED")
 		LUIThreat:UnregisterEvent("PLAYER_REGEN_DISABLED")
 		LUIThreat:RegisterEvent("PLAYER_XP_UPDATE")
+		LUIThreat:RegisterEvent("UPDATE_FACTION")
 		LUIThreat.expMode = true
 		LUIThreat:Show()
 		LUIThreat:SetAlpha(1)
@@ -159,7 +177,7 @@ local SetThreat = function()
 				self.Testmode = nil
 				LUI:Print("Threatbar Testmode disabled due to combat.")
 			end
-		elseif event == "PLAYER_XP_UPDATE" then
+		elseif event == "PLAYER_XP_UPDATE" or event == "UPDATE_FACTION" then
 			UpdateExpMode()
 		end
 	end)
