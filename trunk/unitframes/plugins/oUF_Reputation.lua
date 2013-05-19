@@ -23,8 +23,8 @@ for tag, func in pairs({
 		return GetWatchedFactionInfo()
 	end,
 }) do
-	oUF.Tags[tag] = func
-	oUF.TagEvents[tag] = 'UPDATE_FACTION'
+	oUF.Tags.Methods[tag] = func
+	oUF.Tags.Events[tag] = 'UPDATE_FACTION'
 end
 
 local function Update(self, event, unit)

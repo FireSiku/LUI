@@ -89,8 +89,8 @@ module.RecreateNameCache = function()
 	end
 end
 
-oUF.TagEvents["GetNameColor"] = "UNIT_HAPPINESS"
-oUF.Tags["GetNameColor"] = function(unit)
+oUF.Tags.Events["GetNameColor"] = "UNIT_HAPPINESS"
+oUF.Tags.Methods["GetNameColor"] = function(unit)
 	local reaction = UnitReaction(unit, "player")
 	local pClass, pToken = UnitClass(unit)
 	local pClass2, pToken2 = UnitPowerType(unit)
@@ -120,8 +120,8 @@ oUF.Tags["GetNameColor"] = function(unit)
 	end
 end
 
-oUF.TagEvents["DiffColor"] = "UNIT_LEVEL"
-oUF.Tags["DiffColor"] = function(unit)
+oUF.Tags.Events["DiffColor"] = "UNIT_LEVEL"
+oUF.Tags.Methods["DiffColor"] = function(unit)
 	local r, g, b
 	local level = UnitLevel(unit)
 	if level < 1 then
@@ -143,14 +143,14 @@ oUF.Tags["DiffColor"] = function(unit)
 	return string.format("|cff%02x%02x%02x", r * 255, g * 255, b * 255)
 end
 
-oUF.TagEvents["level2"] = "UNIT_LEVEL"
-oUF.Tags["level2"] = function(unit)
+oUF.Tags.Events["level2"] = "UNIT_LEVEL"
+oUF.Tags.Methods["level2"] = function(unit)
 	local l = UnitLevel(unit)
 	return l > 0 and l
 end
 
-oUF.TagEvents["NameShort"] = "UNIT_NAME_UPDATE"
-oUF.Tags["NameShort"] = function(unit)
+oUF.Tags.Events["NameShort"] = "UNIT_NAME_UPDATE"
+oUF.Tags.Methods["NameShort"] = function(unit)
 	local name = UnitName(unit)
 	if name then
 		if unit == "pet" and name == "Unknown" then
@@ -161,8 +161,8 @@ oUF.Tags["NameShort"] = function(unit)
 	end
 end
 
-oUF.TagEvents["NameMedium"] = "UNIT_NAME_UPDATE"
-oUF.Tags["NameMedium"] = function(unit)
+oUF.Tags.Events["NameMedium"] = "UNIT_NAME_UPDATE"
+oUF.Tags.Methods["NameMedium"] = function(unit)
 	local name = UnitName(unit)
 	if name then
 		if unit == "pet" and name == "Unknown" then
@@ -173,8 +173,8 @@ oUF.Tags["NameMedium"] = function(unit)
 	end
 end
 
-oUF.TagEvents["NameLong"] = "UNIT_NAME_UPDATE"
-oUF.Tags["NameLong"] = function(unit)
+oUF.Tags.Events["NameLong"] = "UNIT_NAME_UPDATE"
+oUF.Tags.Methods["NameLong"] = function(unit)
 	local name = UnitName(unit)
 	if name then
 		if unit == "pet" and name == "Unknown" then
@@ -185,8 +185,8 @@ oUF.Tags["NameLong"] = function(unit)
 	end
 end
 
-oUF.TagEvents["RaidName25"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
-oUF.Tags["RaidName25"] = function(unit, realunit)
+oUF.Tags.Events["RaidName25"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
+oUF.Tags.Methods["RaidName25"] = function(unit, realunit)
 	if module.db and module.db.Raid.Texts.Name.ShowDead then
 		if not UnitIsConnected(unit) then
 			return "|cffD7BEA5<Offline>|r"
@@ -203,8 +203,8 @@ oUF.Tags["RaidName25"] = function(unit, realunit)
 	return nameCache[name][1]
 end
 
-oUF.TagEvents["RaidName40"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
-oUF.Tags["RaidName40"] = function(unit, realunit)
+oUF.Tags.Events["RaidName40"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
+oUF.Tags.Methods["RaidName40"] = function(unit, realunit)
 	if module.db and module.db.Raid.Texts.Name.ShowDead then
 		if not UnitIsConnected(unit) then
 			return "|cffD7BEA5<Offline>|r"
@@ -221,8 +221,8 @@ oUF.Tags["RaidName40"] = function(unit, realunit)
 	return nameCache[name][2]
 end
 
-oUF.TagEvents["druidmana2"] = "UNIT_POWER UNIT_MAXPOWER"
-oUF.Tags["druidmana2"] = function(unit)
+oUF.Tags.Events["druidmana2"] = "UNIT_POWER UNIT_MAXPOWER"
+oUF.Tags.Methods["druidmana2"] = function(unit)
 	if unit ~= "player" then return end
 
 	if not module.db then return "" end

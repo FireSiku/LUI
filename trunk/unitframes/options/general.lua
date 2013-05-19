@@ -52,7 +52,7 @@ local barColors = {
 }
 
 local barKeys = {
-	Totems = "TotemBar",
+	Totems = "Totems",
 	Runes = "Runes",
 	HolyPower = "HolyPower",
 	Eclipse = "EclipseBar",
@@ -230,6 +230,33 @@ function module:CreateHealPredictionOptions(unit, order)
 	return options
 end
 
+function module:CreateTotalAbsorbOptions(unit, order)
+	local disabledFunc = function() return not self.db[unit].Bars.TotalAbsorb.Enable end
+
+	local applySettings = function()
+		for _, frame in pairs(self.framelist[unit]) do
+			if _G[frame] then
+				module.funcs.TotalAbsorb(_G[frame], _G[frame].__unit, self.db[unit])
+				if self.db[unit].Bars.TotalAbsorb.Enable then
+					_G[frame]:EnableElement("TotalAbsorb")
+				else
+					_G[frame]:DisableElement("TotalAbsorb")
+				end
+				_G[frame]:UpdateAllElements()
+			end
+		end
+	end
+
+	local options = self:NewGroup("Absorb Bar", order, {
+		Enable = self:NewToggle("Enable", "Whether you want to show the Absorb Bar on "..unit.." or not.", 1, applySettings, "full"),
+		MyColor = self:NewColor("My", "Absorb Bar", 2, applySettings, nil, disabledFunc),
+		empty1 = self:NewDesc(" ", 4),
+		Texture = self:NewSelect("Texture", "Choose your Absorb Bar Texture.", 5, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc),
+	})
+
+	return options
+end
+
 -- barType: "Health", "Power", "Full"
 function module:CreateBarOptions(unit, order, barType)
 	local disabledFunc = (barType ~= "Health") and function() return not self.db[unit].Bars[barType].Enable end or nil
@@ -300,11 +327,15 @@ function module:CreatePlayerBarOptions(barType, order)
 				oUF_LUI_player:EnableElement(barKey)
 				if barType == "Runes" then
 					Blizzard:Hide("runebar")
+				elseif barType == "Totems" then
+					oUF_LUI_player[barKey]:Show()
 				end
 			else
 				oUF_LUI_player:DisableElement(barKey)
 				if barType == "Runes" then
 					Blizzard:Show("runebar")
+				elseif barType == "Totems" then
+					oUF_LUI_player[barKey]:Hide()
 				end
 			end
 		end
@@ -323,7 +354,7 @@ function module:CreatePlayerBarOptions(barType, order)
 		empty2 = self:NewDesc(" ", 8),
 		Padding = (barType ~= "Eclipse") and self:NewSlider("Padding", "Choose the Padding between your "..barName.." Elements.", 9, 1, 10, 1, applySettings, nil, nil, disabledFunc) or nil,
 		Texture = self:NewSelect("Texture", "Choose the "..barName.." Texture.", 10, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc),
-		Multiplier = (barType == "TotemBar") and self:NewSlider("Multiplier", "Choose the "..barName.." Background Multiplier.", 11, 0, 1, 0.01, applySettings, nil, nil, disabledFunc) or nil,
+		Multiplier = (barType == "Totems") and self:NewSlider("Multiplier", "Choose the "..barName.." Background Multiplier.", 11, 0, 1, 0.01, applySettings, nil, nil, disabledFunc) or nil,
 	})
 
 	return options
@@ -362,9 +393,9 @@ function module:CreatePlayerBarOverlappingOptions(barType, order)
 	local smoothBar = function(self, Smooth)
 		if barType == "DruidMana" then
 			if Smooth then
-				oUF_LUI_player:SmoothBar(oUF_LUI_player.DruidMana.ManaBar)
+				oUF_LUI_player:SmoothBar(oUF_LUI_player.DruidMana)
 			else
-				oUF_LUI_player.DruidMana.ManaBar.SetValue = oUF_LUI_player.DruidMana.ManaBar.SetValue_
+				oUF_LUI_player.DruidMana.SetValue = oUF_LUI_player.DruidMana.SetValue_
 			end
 		else
 			if Smooth then
@@ -1107,6 +1138,7 @@ function module:CreateUnitOptions(unit, order)
 			Power = self:CreateBarOptions(unit, 2, "Power"),
 			Full = self:CreateBarOptions(unit, 3, "Full"),
 			HealPrediction = self.db[unit].Bars.HealPrediction and self:CreateHealPredictionOptions(unit, 4) or nil,
+			TotalAbsorb = self.db[unit].Bars.TotalAbsorb and self:CreateTotalAbsorbOptions(unit, 5) or nil,
 			DruidMana = (class == "DRUID" and unit == "Player") and self:CreatePlayerBarOverlappingOptions("DruidMana", 11) or nil,
 			AltPower = (unit == "Player") and self:CreatePlayerBarOverlappingOptions("AltPower", 12) or nil,
 			Totems = (class == "SHAMAN" and unit == "Player") and self:CreatePlayerBarOptions("Totems", 13) or nil,

@@ -841,6 +841,7 @@ module.ApplySettings = function(unit)
 
 	for _, framename in pairs(module.framelist[unit]) do
 		local frame = _G[framename]
+		--print(string.format("Updating: _ = %s, framename = %s, frame = %s", tostring(_), tostring(framename), tostring(frame)))
 
 		if frame then
 			if framename:find("oUF_LUI_raid_40") then
@@ -912,12 +913,12 @@ module.ApplySettings = function(unit)
 
 				-- totems
 				if class == "SHAMAN" then
-					module.funcs.TotemBar(frame, frame.__unit, module.db.Player)
+					module.funcs.Totems(frame, frame.__unit, module.db.Player)
 					if module.db[unit].Bars.Totems.Enable then
-						frame:EnableElement("TotemBar")
+						frame:EnableElement("Totems")
 					else
-						frame:DisableElement("TotemBar")
-						frame.TotemBar:Hide()
+						frame:DisableElement("Totems")
+						frame.Totems:Hide()
 					end
 				end
 

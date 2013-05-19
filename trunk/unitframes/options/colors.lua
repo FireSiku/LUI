@@ -113,7 +113,7 @@ module.defaults.profile.Colors = {
 		[4] = {0.95, 0.86, 0.16},
 		[5] = {0.95, 0.86, 0.16},
 	},
-	TotemBar = {
+	Totems = {
 		[1] = {0.752, 0.172, 0.02}, -- Fire
 		[2] = {0.741, 0.580, 0.04}, -- Earth
 		[3] = {0, 0.443, 0.631}, -- Water
@@ -166,9 +166,9 @@ module.colors = setmetatable({
 			return module.db.Colors.Runes[k] or oUF.colors.runes[k]
 		end
 	}),
-	totembar = setmetatable({}, {
+	totems = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.TotemBar[k] or oUF.colors.totembar[k]
+			return module.db.Colors.Totems[k] or oUF.colors.totems[k]
 		end
 	}),
 	holypowerbar = setmetatable({}, {
@@ -470,7 +470,7 @@ function module:CreateColorOptions(order)
 				UpdateColors()
 			end),
 		}),
-		TotemBar = self:NewGroup("Totems", 14, nil, nil, class ~= "SHAMAN", {
+		Totems = self:NewGroup("Totems", 14, nil, nil, class ~= "SHAMAN", {
 			header1 = self:NewHeader("Totem Colors", 1),
 			["1"] = self:NewColorNoAlpha("Fire", "Fire Totem", 2, false, "full"),
 			["2"] = self:NewColorNoAlpha("Earth", "Earth Totem", 3, false, "full"),
@@ -478,7 +478,7 @@ function module:CreateColorOptions(order)
 			["4"] = self:NewColorNoAlpha("Air", "Air Totem", 5, false, "full"),
 			empty1 = self:NewDesc(" ", 6),
 			Reset = self:NewExecute("Restore Defaults", nil, 7, function()
-				module.db.Colors.TotemBar = module.defaults.Colors.TotemBar
+				module.db.Colors.Totems = module.defaults.Colors.Totems
 				UpdateColors()
 			end),
 		}),

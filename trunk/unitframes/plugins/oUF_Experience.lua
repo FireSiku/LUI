@@ -37,8 +37,8 @@ for tag, func in pairs({
 		end
 	end,
 }) do
-	oUF.Tags[tag] = func
-	oUF.TagEvents[tag] = 'PLAYER_XP_UPDATE PLAYER_LEVEL_UP UNIT_PET_EXPERIENCE UPDATE_EXHAUSTION'
+	oUF.Tags.Methods[tag] = func
+	oUF.Tags.Events[tag] = 'PLAYER_XP_UPDATE PLAYER_LEVEL_UP UNIT_PET_EXPERIENCE UPDATE_EXHAUSTION'
 end
 
 local function Unbeneficial(self, unit)
