@@ -171,7 +171,17 @@ module.defaults.profile.Player = {
 				g = 1,
 				b = 0,
 				a = 0.25
-			}
+			},
+		},
+		TotalAbsorb = {
+			Enable = false,
+			Texture = "LUI_Gradient",
+			MyColor = {
+				r = 0,
+				g = 1,
+				b = 0,
+				a = 0.5
+			},
 		},
 		AltPower = {
 			Enable = true,

@@ -28,7 +28,7 @@ local function hook(frame)
 		frame:SmoothBar(frame.Power)
 	end
 	if frame.DruidMana and frame.DruidMana.Smooth then
-		frame:SmoothBar(frame.DruidMana.ManaBar)
+		frame:SmoothBar(frame.DruidMana)
 	end
 end
 

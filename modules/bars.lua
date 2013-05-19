@@ -961,61 +961,6 @@ function module:SetShapeshiftBar()
 	LUIShapeshiftBar[(db.ShapeshiftBar.Enable and isShapeShiftBarClass()) and "Show" or "Hide"](LUIShapeshiftBar)
 end
 
-function module:SetTotemBar()
-	if not LUITotemBar then
-		local bar = CreateFrame("Frame", "LUITotemBar", UIParent, "SecureHandlerStateTemplate")
-		bar.buttons = {}
-
-		MultiCastActionBarFrame:SetParent(bar)
-		MultiCastActionBarFrame:SetAllPoints(bar)
-		MultiCastActionBarFrame.ClearAllPoints = function() end
-		MultiCastActionBarFrame.SetPoint = function() end
-		MultiCastActionBarFrame.SetAllPoints = function() end
-
-		MultiCastSummonSpellButton:ClearAllPoints()
-		MultiCastSummonSpellButton:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
-		bar.buttons[1] = MultiCastSummonSpellButton
-
-		for i = 1, 4 do
-			local button = _G["MultiCastSlotButton"..i]
-			bar.buttons[i+1] = button
-		end
-
-		bar.buttons[6] = MultiCastRecallSpellButton
-
-		local lookup = {2, 1, 3, [0] = 4}
-
-		local function TotemDestroy(self, button)
-			if button ~= "RightButton" then return end
-			DestroyTotem(lookup[self:GetName():match("MultiCastActionButton(%d)") % 4])
-		end
-
-		for i = 1, 12 do
-			local button = _G["MultiCastActionButton"..i]
-			local anchor = _G["MultiCastSlotButton"..(i % 4 == 0 and 4 or i % 4)]
-			button:ClearAllPoints()
-			button:SetPoint("CENTER", anchor, "CENTER", 0, 0)
-			button:HookScript("OnClick", TotemDestroy)
-		end
-	end
-
-	local s = db.TotemBar.Scale
-	LUITotemBar:ClearAllPoints()
-	LUITotemBar:SetPoint(db.TotemBar.Point, UIParent, db.TotemBar.Point, db.TotemBar.X / s, db.TotemBar.Y / s)
-	LUITotemBar:SetScale(s)
-
-	LUITotemBar:SetWidth(190)
-	LUITotemBar:SetHeight(30)
-
-	Configure(LUITotemBar, 6, 6)
-
-	if db.TotemBar.Fader.Enable then
-		Fader:RegisterFrame(LUITotemBar, db.TotemBar.Fader, true)
-	end
-
-	LUITotemBar[db.TotemBar.Enable and "Show" or "Hide"](LUITotemBar)
-end
-
 function module:SetVehicleExit()
 	if not LUIVehicleExit then
 		local bar = CreateFrame("Frame", "LUIVehicleExit", UIParent, "SecureHandlerStateTemplate")
@@ -1497,7 +1442,6 @@ function module:SetBars()
 
 		self:SetPetBar()
 		self:SetShapeshiftBar()
-		self:SetTotemBar()
 		self:SetVehicleExit()
 		self:SetExtraActionBar()
 
@@ -1867,30 +1811,6 @@ module.defaults = {
 				UseGlobalSettings = true,
 			},
 		},
-		TotemBar = {
-			Enable = true,
-			X = 42.5,
-			Y = -267.8,
-			Point = "LEFT",
-			Scale = 0.85,
-			Fader = {
-				Casting = true,
-				Combat = true,
-				Enable = false,
-				Health = true,
-				HealthClip = 1.0,
-				Hover = true,
-				HoverAlpha = 0.75,
-				InAlpha = 1.0,
-				OutAlpha = 0.1,
-				OutDelay = 0.0,
-				OutTime = 1.5,
-				Power = true,
-				PowerClip = 0.9,
-				Targeting = true,
-				UseGlobalSettings = true,
-			},
-		},
 		VehicleExit = {
 			Enable = true,
 			X = -350,
@@ -1920,7 +1840,6 @@ function module:LoadOptions()
 		BottomTex = function() return not db.BottomTexture.Enable end,
 		["Shapeshift Bar"] = function() return not db.ShapeshiftBar.Enable end,
 		["Pet Bar"] = function() return not db.PetBar.Enable end,
-		["Totem Bar"] = function() return not db.TotemBar.Enable end,
 		["Vehicle Exit"] = function() return not db.VehicleExit.Enable end,
 		Hotkey = function() return not db.General.ShowHotkey end,
 		Count = function() return not db.General.ShowCount end,
@@ -2132,7 +2051,6 @@ function module:LoadOptions()
 		SidebarLeft2 = createSideBarOptions("Left", 2, 13),
 		ShapeshiftBar = not isBarAddOnLoaded and createOtherBarOptions("Shapeshift/Stance Bar", 14, "LUIShapeshiftBar", "ShapeshiftBar", true) or nil,
 		PetBar = not isBarAddOnLoaded and createOtherBarOptions("Pet Bar", 15, "LUIPetBar", "PetBar", true) or nil,
-		TotemBar = not isBarAddOnLoaded and createOtherBarOptions("Totem Bar", 16, "LUITotemBar", "TotemBar") or nil,
 		VehicleExit = not isBarAddOnLoaded and createOtherBarOptions("Vehicle Exit Button", 17, "LUIVehicleExit") or nil,
 		ExtraActionBar = not isBarAddOnLoaded and createOtherBarOptions("Extra Action Bar", 18, "LUIExtraActionBar") or nil,
 	}
@@ -2162,7 +2080,6 @@ function module:Refresh(...)
 
 		self:SetPetBar()
 		self:SetShapeshiftBar()
-		self:SetTotemBar()
 		self:SetVehicleExit()
 		self:SetExtraActionBar()
 	end

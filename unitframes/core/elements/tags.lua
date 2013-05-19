@@ -52,6 +52,10 @@ local tagStrings = {
 
 	["level"] = [[function(u)
 		local l = UnitLevel(u)
+		if(UnitIsWildBattlePet(u) or UnitIsBattlePetCompanion(u)) then
+			l = UnitBattlePetLevel(u)
+		end
+
 		if(l > 0) then
 			return l
 		else
@@ -210,12 +214,14 @@ local tagStrings = {
 		local c = UnitClassification(u)
 		if(c == 'rare') then
 			return 'Rare'
-		elseif(c == 'eliterare') then
+		elseif(c == 'rareelite') then
 			return 'Rare Elite'
 		elseif(c == 'elite') then
 			return 'Elite'
 		elseif(c == 'worldboss') then
 			return 'Boss'
+		elseif(c == 'minus') then
+			return 'Affix'
 		end
 	end]],
 
@@ -223,12 +229,14 @@ local tagStrings = {
 		local c = UnitClassification(u)
 		if(c == 'rare') then
 			return 'R'
-		elseif(c == 'eliterare') then
+		elseif(c == 'rareelite') then
 			return 'R+'
 		elseif(c == 'elite') then
 			return '+'
 		elseif(c == 'worldboss') then
 			return 'B'
+		elseif(c == 'minus') then
+			return '-'
 		end
 	end]],
 
@@ -237,13 +245,11 @@ local tagStrings = {
 		if(server and server ~= "") then
 			name = string.format("%s-%s", name, server)
 		end
-		
-		if GetNumGroupMembers() > 0 then
-			for i=1, GetNumGroupMembers() do
-				local raidName, _, group = GetRaidRosterInfo(i)
-				if( raidName == name ) then
-					return group
-				end
+
+		for i=1, GetNumGroupMembers() do
+			local raidName, _, group = GetRaidRosterInfo(i)
+			if( raidName == name ) then
+				return group
 			end
 		end
 	end]],
@@ -272,6 +278,41 @@ local tagStrings = {
 
 	['maxmana'] = [[function(unit)
 		return UnitPowerMax(unit, SPELL_POWER_MANA)
+	end]],
+
+	['soulshards'] = [[function()
+		local num = UnitPower('player', SPELL_POWER_SOUL_SHARDS)
+		if(num > 0) then
+			return num
+		end
+	end]],
+
+	['holypower'] = [[function()
+		local num = UnitPower('player', SPELL_POWER_HOLY_POWER)
+		if(num > 0) then
+			return num
+		end
+	end]],
+
+	['chi'] = [[function()
+		local num = UnitPower('player', SPELL_POWER_CHI)
+		if(num > 0) then
+			return num
+		end
+	end]],
+
+	['shadoworbs'] = [[function()
+		local num = UnitPower('player', SPELL_POWER_SHADOW_ORBS)
+		if(num > 0) then
+			return num
+		end
+	end]],
+
+	['affix'] = [[function(u)
+		local c = UnitClassification(u)
+		if(c == 'minus') then
+			return 'Affix'
+		end
 	end]],
 }
 
@@ -337,6 +378,8 @@ local tagEvents = {
 	["threat"]              = "UNIT_THREAT_SITUATION_UPDATE",
 	["threatcolor"]         = "UNIT_THREAT_SITUATION_UPDATE",
 	['cpoints']             = 'UNIT_COMBO_POINTS PLAYER_TARGET_CHANGED',
+	['affix']				= 'UNIT_CLASSIFICATION_CHANGED',
+	['plus']				= 'UNIT_CLASSIFICATION_CHANGED',
 	['rare']                = 'UNIT_CLASSIFICATION_CHANGED',
 	['classification']      = 'UNIT_CLASSIFICATION_CHANGED',
 	['shortclassification'] = 'UNIT_CLASSIFICATION_CHANGED',
@@ -350,6 +393,10 @@ local tagEvents = {
 	["pereclipse"]          = 'UNIT_POWER',
 	['curmana']             = 'UNIT_POWER UNIT_MAXPOWER',
 	['maxmana']             = 'UNIT_POWER UNIT_MAXPOWER',
+	['soulshards']          = 'UNIT_POWER',
+	['holypower']           = 'UNIT_POWER',
+	['chi']                 = 'UNIT_POWER',
+	['shadoworbs']          = 'UNIT_POWER',
 }
 
 local unitlessEvents = {
@@ -644,9 +691,11 @@ local Untag = function(self, fs)
 	fs.UpdateTag = nil
 end
 
-oUF.Tags = tags
-oUF.TagEvents = tagEvents
-oUF.UnitlessTagEvents = unitlessEvents
+oUF.Tags = {
+	Methods = tags,
+	Events = tagEvents,
+	SharedEvents = unitlessEvents,
 
+}
 oUF:RegisterMetaFunction('Tag', Tag)
 oUF:RegisterMetaFunction('Untag', Untag)

@@ -1,14 +1,11 @@
-## Interface: 40300
+## Interface: 50200
 ## Title: oUF
 ## Author: Haste
-## Version: 1.5.16
-## OptionalDeps: !ClassColors, Clique
+## Version: 1.6.4
+## OptionalDeps: Clique
 ## X-eMail: troeks@gmail.com
 ## X-oUF: oUF
 ## Notes: Unit frame framework. Does nothing by itself.
-## X-Curse-Packaged-Version: v3.7.3-525
-## X-Curse-Project-Name: LUI Core
-## X-Curse-Project-ID: lui
-## X-Curse-Repository-ID: wow/lui/mainline
+## Notes-ruRU: Каркас для модификации фреймов игроков. Сам по себе не делает ничего.
 
 oUF.xml

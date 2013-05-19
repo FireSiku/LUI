@@ -99,15 +99,26 @@
 	<Script file="unitframes\options\showhide.lua"/>
 	<Script file="unitframes\options\toggle.lua"/>
 
-	<Script file="unitframes\plugins\druidmanabar.lua"/>
+	<!-- LUI Unitframe Additions -->
 	<Script file="unitframes\plugins\oUF_CombatFeedback.lua"/>
 	<Script file="unitframes\plugins\oUF_Experience.lua"/>
 	<Script file="unitframes\plugins\oUF_Reputation.lua"/>
 	<Script file="unitframes\plugins\oUF_Smooth.lua"/>
-	<Script file="unitframes\plugins\totem.lua"/>
-	<Script file="unitframes\plugins\singleauras.lua"/>
 	<Script file="unitframes\plugins\oUF_RaidDebuffs.lua"/>
+
+	<!-- to investigate as we may not need these anymore -->
+	<Script file="unitframes\plugins\singleauras.lua"/>
 	<Script file="unitframes\plugins\raiddebuffs.lua"/>
+	<Script file="unitframes\plugins\maintank.lua"/>
+	<Script file="unitframes\plugins\vehicle.lua"/>
+
+	<!-- to possibly move into the core/standard oUF style -->
+	<Script file="unitframes\plugins\arcanecharges.lua"/>
+	<Script file="unitframes\plugins\chi.lua"/>
+	<Script file="unitframes\plugins\holypower.lua"/>
+	<Script file="unitframes\plugins\shadoworbs.lua"/>
+	<Script file="unitframes\plugins\warlockbar.lua"/>
+	<Script file="unitframes\plugins\totalabsorb.lua"/>
 
 	<!-- Unitframe Layout -->
 	<Script file="unitframes\layout\tags.lua"/>

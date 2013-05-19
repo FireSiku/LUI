@@ -8,6 +8,9 @@ local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
 local oUF = LUI.oUF
 
+local fm = string.format
+local ts = tostring
+
 local orig_DisableBlizz = oUF.DisableBlizzard
 oUF.DisableBlizzard = function(self, unit)
 	if not module:IsEnabled() then return orig_DisableBlizz(self, unit) end

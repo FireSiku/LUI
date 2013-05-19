@@ -122,7 +122,7 @@ local Update = function(bar)
 	end
 	
 	if db.Appearance.Color == "Gradient" then
-		local r, g, b = oUF.ColorGradient(threat/100, 0, 1, 0, 1, 1, 0, 1, 0, 0)
+		local r, g, b = oUF.ColorGradient(threat, 100, 0, 1, 0, 1, 1, 0, 1, 0, 0)
 		local mu = db.Appearance.BGMultiplier or 0
 		bar:SetStatusBarColor(r, g, b)
 		if bar.bg then bar.bg:SetVertexColor(r * mu, g * mu, b * mu) end
@@ -133,7 +133,7 @@ local Update = function(bar)
 	end
 	
 	if db.Text.Color == "Gradient" then
-		bar.Text:SetTextColor(oUF.ColorGradient(threat/100, 0, 1, 0, 1, 1, 0, 1, 0, 0))
+		bar.Text:SetTextColor(oUF.ColorGradient(threat, 100, 0, 1, 0, 1, 1, 0, 1, 0, 0))
 	end
 end
 
@@ -242,7 +242,7 @@ function module:LoadOptions()
 			Height = self:NewInputNumber("Height", "Choose the Height for your Threat Bar.", 5, dryCall),
 			empty2 = self:NewDesc(" ", 6),
 			TankHide = self:NewToggle("Hide if Tanking", "Whether you want to hide the Threat Bar if you are tank specced or not.\nOnly works if Vengeance Module is enabled!.", 7, true),
-			expMode = self:NewToggle("Switch to Exp Mode", "If enabled, this will turn your Threat Bar into an experience bar.\nDisable Threat.",8,ToggleExpMode),
+			expMode = self:NewToggle("Switch to Exp Mode", "If enabled, this will turn your Threat Bar into an experience bar.\nIf you are level 90 it will show a reputation bar instead.\nDisable Threat.",8,ToggleExpMode),
 			empty3 = self:NewDesc(" ", 9),
 			Testmode = self:NewExecute("Testmode", "Enable/Disable Threat Bar Testmode", 10, ToggleTestMode),
 		}),

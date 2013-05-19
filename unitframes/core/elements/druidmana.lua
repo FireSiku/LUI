@@ -1,42 +1,90 @@
--- Druid Mana Bar for Cat and Bear forms
--- Authors: Califpornia aka Ennie // some code taken from oUF`s EclipseBar element
+--[[ Element: Druid Mana Bar
+ Handles updating and visibility of a status bar displaying the druid's mana
+ while outside of caster form.
+
+ Widget
+
+ DruidMana - A StatusBar to represent current caster mana.
+
+ Sub-Widgets
+
+ .bg - A Texture which functions as a background. It will inherit the color of
+       the main StatusBar.
+
+ Notes
+
+ The default StatusBar texture will be applied if the UI widget doesn't have a
+ status bar texture or color defined.
+
+ Options
+
+ .colorClass  - Use `self.colors.class[class]` to color the bar. This will
+                always use DRUID as class.
+ .colorSmooth - Use `self.colors.smooth` to color the bar with a smooth
+                gradient based on the players current mana percentage.
+ .colorPower  - Use `self.colors.power[token]` to color the bar. This will
+                always use MANA as token.
+
+ Sub-Widget Options
+
+ .multiplier - Defines a multiplier, which is used to tint the background based
+               on the main widgets R, G and B values. Defaults to 1 if not
+               present.
+
+ Examples
+
+   -- Position and size
+   local DruidMana = CreateFrame("StatusBar", nil, self)
+   DruidMana:SetSize(20, 20)
+   DruidMana:SetPoint('TOP')
+   DruidMana:SetPoint('LEFT')
+   DruidMana:SetPoint('RIGHT')
+   
+   -- Add a background
+   local Background = DruidMana:CreateTexture(nil, 'BACKGROUND')
+   Background:SetAllPoints(DruidMana)
+   Background:SetTexture(1, 1, 1, .5)
+   
+   -- Register it with oUF
+   self.DruidMana = DruidMana
+   self.DruidMana.bg = Background
+
+ Hooks
+
+ Override(self) - Used to completely override the internal update function.
+                  Removing the table key entry will make the element fall-back
+                  to its internal function again.
+
+]]
+
 if(select(2, UnitClass('player')) ~= 'DRUID') then return end
 
 local _, ns = ...
 local oUF = ns.oUF
 
 local function Update(self, event, unit, powertype)
-	--only the player frame will have this unit enabled
-	--i mainly place this check for UNIT_DISPLAYPOWER and entering a vehicle
 	if(unit ~= 'player' or (powertype and powertype ~= 'MANA')) then return end
 
 	local druidmana = self.DruidMana
 	if(druidmana.PreUpdate) then druidmana:PreUpdate(unit) end
 
-	--check form
+	-- Hide the bar if the active power type is mana.
 	if(UnitPowerType('player') == SPELL_POWER_MANA) then
 		return druidmana:Hide()
 	else
 		druidmana:Show()
 	end
 
-	local min, max = UnitPower(unit, SPELL_POWER_MANA), UnitPowerMax(unit, SPELL_POWER_MANA)
-        druidmana.ManaBar:SetMinMaxValues(0, max)
-        druidmana.ManaBar:SetValue(min)
+	local min, max = UnitPower('player', SPELL_POWER_MANA), UnitPowerMax('player', SPELL_POWER_MANA)
+	druidmana:SetMinMaxValues(0, max)
+	druidmana:SetValue(min)
 
 	local r, g, b, t
-	if(druidmana.color == "By Class") then
+	if(druidmana.colorClass) then
 		t = self.colors.class['DRUID']
-	elseif(druidmana.color == "Gradient") then
-		local perc
-		if(max == 0) then
-			perc = 0
-		else
-			perc = min / max
-		end
-
-		r, g, b = self.ColorGradient(perc, unpack(druidmana.smoothGradient or self.colors.smooth))
-	elseif(druidmana.color == "By Type") then
+	elseif(druidmana.colorSmooth) then
+		r, g, b = self.ColorGradient(min, max, unpack(druidmana.smoothGradient or self.colors.smooth))
+	elseif(druidmana.colorPower) then
 		t = self.colors.power['MANA']
 	end
 
@@ -45,7 +93,7 @@ local function Update(self, event, unit, powertype)
 	end
 
 	if(b) then
-		druidmana.ManaBar:SetStatusBarColor(r, g, b)
+		druidmana:SetStatusBarColor(r, g, b)
 
 		local bg = druidmana.bg
 		if(bg) then
@@ -95,7 +143,7 @@ local Enable = function(self, unit)
 
 		self:RegisterEvent('UNIT_DISPLAYPOWER', Path)
 		self:RegisterEvent('UNIT_MAXPOWER', Path)
-		druidmana:Show()
+
 		if(druidmana:IsObjectType'StatusBar' and not druidmana:GetStatusBarTexture()) then
 			druidmana:SetStatusBarTexture[[Interface\TargetingFrame\UI-StatusBar]]
 		end
@@ -115,7 +163,6 @@ local Disable = function(self)
 
 		self:UnregisterEvent('UNIT_DISPLAYPOWER', Path)
 		self:UnregisterEvent('UNIT_MAXPOWER', Path)
-		druidmana:Hide()
 	end
 end
 

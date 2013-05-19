@@ -427,7 +427,7 @@ local OverrideHealth = function(self, event, unit, powerType)
 		elseif module.db.Player.Bars.Health.Color == "Individual" then
 			health:SetStatusBarColor(module.db.Player.Bars.Health.IndividualColor.r, module.db.Player.Bars.Health.IndividualColor.g, module.db.Player.Bars.Health.IndividualColor.b)
 		else
-			health:SetStatusBarColor(oUF.ColorGradient(min/max, module.colors.smooth()))
+			health:SetStatusBarColor(oUF.ColorGradient(min, max, module.colors.smooth()))
 		end
 	else
 		if health.color == "By Class" then
@@ -435,7 +435,7 @@ local OverrideHealth = function(self, event, unit, powerType)
 		elseif health.color == "Individual" then
 			health:SetStatusBarColor(health.colorIndividual.r, health.colorIndividual.g, health.colorIndividual.b)
 		else
-			health:SetStatusBarColor(oUF.ColorGradient(min/max, module.colors.smooth()))
+			health:SetStatusBarColor(oUF.ColorGradient(min, max, module.colors.smooth()))
 		end
 	end
 
@@ -503,7 +503,7 @@ local OverrideHealth = function(self, event, unit, powerType)
 				elseif health.value.color == "Individual" then
 					health.value:SetTextColor(health.value.colorIndividual.r, health.value.colorIndividual.g, health.value.colorIndividual.b)
 				else
-					health.value:SetTextColor(oUF.ColorGradient(min/max, module.colors.smooth()))
+					health.value:SetTextColor(oUF.ColorGradient(min, max, module.colors.smooth()))
 				end
 			else
 				health.value:SetText()
@@ -524,7 +524,7 @@ local OverrideHealth = function(self, event, unit, powerType)
 			elseif health.valuePercent.color == "Individual" then
 				health.valuePercent:SetTextColor(health.valuePercent.colorIndividual.r, health.valuePercent.colorIndividual.g, health.valuePercent.colorIndividual.b)
 			else
-				health.valuePercent:SetTextColor(oUF.ColorGradient(min/max, module.colors.smooth()))
+				health.valuePercent:SetTextColor(oUF.ColorGradient(min, max, module.colors.smooth()))
 			end
 		else
 			health.valuePercent:SetText()
@@ -548,7 +548,7 @@ local OverrideHealth = function(self, event, unit, powerType)
 			elseif health.valueMissing.color == "Individual" then
 				health.valueMissing:SetTextColor(health.valueMissing.colorIndividual.r, health.valueMissing.colorIndividual.g, health.valueMissing.colorIndividual.b)
 			else
-				health.valueMissing:SetTextColor(oUF.ColorGradient(min/max, module.colors.smooth()))
+				health.valueMissing:SetTextColor(oUF.ColorGradient(min, max, module.colors.smooth()))
 			end
 		else
 			health.valueMissing:SetText()
@@ -881,7 +881,7 @@ local PostCastStart = function(castbar, unit, name)
 		castbar.bg:SetVertexColor(0.15, 0.15, 0.15, 0.75)
 		castbar.Backdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 	end
-	if castbar.notinterruptible and castbar.Shielded.Enable and unitname ~= UnitName("player") then
+	if castbar.interrupt and castbar.Shielded.Enable and UnitIsEnemy("player", unit) then
 		if castbar.Shielded.IndividualColor then
 			castbar:SetStatusBarColor(castbar.Shielded.BarColor.r, castbar.Shielded.BarColor.g, castbar.Shielded.BarColor.b, castbar.Shielded.BarColor.a)
 		end
@@ -1084,6 +1084,64 @@ local HolyPowerOverride = function(self, event, unit, powerType)
 	 end
 end
 
+local TotemsOverride = function(self, event, slot)
+	if slot > MAX_TOTEMS then return end
+
+	local totem = self.Totems
+	local total = 0
+	local delay = 0.01
+
+	haveTotem, name, startTime, duration, totemIcon = GetTotemInfo(slot)
+
+	local color = module.colors.totems[slot] or colors[slot]
+	totem[slot]:SetStatusBarColor(unpack(color))
+	totem[slot]:SetValue(0)
+	
+	-- Multipliers
+	if (totem[slot].bg.multiplier) then
+		local mu = totem[slot].bg.multiplier
+		local r, g, b = totem[slot]:GetStatusBarColor()
+		r, g, b = r*mu, g*mu, b*mu
+		totem[slot].bg:SetVertexColor(r, g, b) 
+	end
+	
+	totem[slot].ID = slot
+
+	if(haveTotem) then
+		
+		if totem[slot].Name then
+			totem[slot].Name:SetText(Abbrev(name))
+		end					
+		if(duration >= 0) then	
+			totem[slot]:SetValue(1 - ((GetTime() - startTime) / duration))	
+			-- Status bar update
+			totem[slot]:SetScript("OnUpdate",function(self,elapsed)
+					total = total + elapsed
+					if total >= delay then
+						total = 0
+						haveTotem, name, startTime, duration, totemIcon = GetTotemInfo(self.ID)
+							if (((GetTime() - startTime) == 0) or ( duration == 0 )) then
+								self:SetValue(0)
+							else
+								self:SetValue(1 - ((GetTime() - startTime) / duration))
+							end
+					end
+				end)					
+		else
+			-- There's no need to update because it doesn't have any duration
+			totem[slot]:SetScript("OnUpdate",nil)
+			totem[slot]:SetValue(0)
+		end 
+	else
+		-- No totem = no time 
+		if totem[slot].Name then
+			totem[slot].Name:SetText(" ")
+		end
+		totem[slot]:SetValue(0)
+	end
+
+end
+
 local ChiOverride = function(self, event, unit, powerType)
 	if self.unit ~= unit or (powerType and powerType ~= "CHI") then return end
 
@@ -1095,6 +1153,46 @@ local ChiOverride = function(self, event, unit, powerType)
 			 self.Chi[i]:SetAlpha(.4)
 		 end
 	 end
+end
+
+local DruidManaOverride = function(self, event, unit)
+	if not unit or not UnitIsUnit(self.unit, unit) then return end
+
+	local druidmana = self.DruidMana
+
+	local form = GetShapeshiftFormID()
+	if (form == BEAR_FORM or form == CAT_FORM) then
+		druidmana:Show()
+	else
+		return druidmana:Hide()
+	end
+
+	local min, max = UnitPower('player', SPELL_POWER_MANA), UnitPowerMax('player', SPELL_POWER_MANA)
+
+	druidmana:SetMinMaxValues(0, max)
+	druidmana:SetValue(min)
+
+	local r, g, b
+	if(druidmana.colorClass and UnitIsPlayer(unit)) then
+		r, g, b = unpack(module.colors.class['DRUID'])
+	elseif(druidmana.colorSmooth) then
+		r, g, b = oUF.ColorGradient(min, max, module.colors.smooth())
+	else
+		r, g, b = unpack(module.colors.power['MANA'])
+	end
+	if(b) then
+		druidmana:SetStatusBarColor(r, g, b)
+
+		local bg = druidmana.bg
+		if(bg) then
+			local mu = bg.multiplier or 1
+			bg:SetVertexColor(r * mu, g * mu, b * mu)
+		end
+	end
+
+	if(druidmana.PostUpdatePower) then
+		return druidmana:PostUpdatePower(unit, min, max)
+	end
 end
 
 local PostEclipseUpdate = function(self, unit)
@@ -1185,18 +1283,18 @@ end
 
 local PostUpdateDruidMana = function(druidmana, unit, min, max)
 	if druidmana.color == "By Class" then
-		druidmana.ManaBar:SetStatusBarColor(unpack(module.colors.class.DRUID))
+		druidmana:SetStatusBarColor(unpack(module.colors.class.DRUID))
 	elseif druidmana.color == "By Type" then
-		druidmana.ManaBar:SetStatusBarColor(unpack(module.colors.power.MANA))
+		druidmana:SetStatusBarColor(unpack(module.colors.power.MANA))
 	else
-		druidmana.ManaBar:SetStatusBarColor(oUF.ColorGradient(min/max, module.colors.smooth()))
+		druidmana:SetStatusBarColor(oUF.ColorGradient(min, max, module.colors.smooth()))
 	end
 
 	local bg = druidmana.bg
 
 	if bg then
 		local mu = bg.multiplier or 1
-		local r, g, b = druidmana.ManaBar:GetStatusBarColor()
+		local r, g, b = druidmana:GetStatusBarColor()
 		bg:SetVertexColor(r * mu, g * mu, b * mu)
 	end
 end
@@ -1480,7 +1578,7 @@ module.funcs = {
 		self.Health.colorIndividual = oufdb.Bars.Health.IndividualColor
 		self.Health.Smooth = oufdb.Bars.Health.Smooth
 		self.Health.colorReaction = false
-		self.Health.frequentUpdates = false
+		self.Health.frequentUpdates = true
 	end,
 	Power = function(self, unit, oufdb)
 		if not self.Power then
@@ -2058,60 +2156,60 @@ module.funcs = {
 			self.Reputation.Value:Hide()
 		end
 	end,
+	Totems = function(self, unit, oufdb)
+		if not self.Totems then
+			self.Totems = CreateFrame("Frame", nil, self)
+			self.Totems:SetFrameLevel(6)
+			self.Totems.Destroy = false
 
-	TotemBar = function(self, unit, oufdb)
-		if not self.TotemBar then
-			self.TotemBar = CreateFrame("Frame", nil, self)
-			self.TotemBar:SetFrameLevel(6)
-			self.TotemBar.Destroy = false
+			for i = 1, MAX_TOTEMS do
+				self.Totems[i] = CreateFrame("StatusBar", nil, self.Totems)
+				self.Totems[i]:SetBackdrop(backdrop)
+				self.Totems[i]:SetBackdropColor(0, 0, 0)
+				self.Totems[i]:SetMinMaxValues(0, 1)
 
-			for i = 1, 4 do
-				self.TotemBar[i] = CreateFrame("StatusBar", nil, self.TotemBar)
-				self.TotemBar[i]:SetBackdrop(backdrop)
-				self.TotemBar[i]:SetBackdropColor(0, 0, 0)
-				self.TotemBar[i]:SetMinMaxValues(0, 1)
-
-				self.TotemBar[i].bg = self.TotemBar[i]:CreateTexture(nil, "BORDER")
-				self.TotemBar[i].bg:SetAllPoints(self.TotemBar[i])
-				self.TotemBar[i].bg:SetTexture(normTex)
+				self.Totems[i].bg = self.Totems[i]:CreateTexture(nil, "BORDER")
+				self.Totems[i].bg:SetAllPoints(self.Totems[i])
+				self.Totems[i].bg:SetTexture(normTex)
 			end
 
-			self.TotemBar.FrameBackdrop = CreateFrame("Frame", nil, self.TotemBar)
-			self.TotemBar.FrameBackdrop:SetPoint("TOPLEFT", self.TotemBar, "TOPLEFT", -3.5, 3)
-			self.TotemBar.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.TotemBar, "BOTTOMRIGHT", 3.5, -3)
-			self.TotemBar.FrameBackdrop:SetFrameStrata("BACKGROUND")
-			self.TotemBar.FrameBackdrop:SetBackdrop({
+			self.Totems.FrameBackdrop = CreateFrame("Frame", nil, self.Totems)
+			self.Totems.FrameBackdrop:SetPoint("TOPLEFT", self.Totems, "TOPLEFT", -3.5, 3)
+			self.Totems.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.Totems, "BOTTOMRIGHT", 3.5, -3)
+			self.Totems.FrameBackdrop:SetFrameStrata("BACKGROUND")
+			self.Totems.FrameBackdrop:SetBackdrop({
 				edgeFile = glowTex, edgeSize = 5,
 				insets = {left = 3, right = 3, top = 3, bottom = 3}
 			})
-			self.TotemBar.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
-			self.TotemBar.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
+			self.Totems.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
+			self.Totems.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
+
+			self.Totems.Override = TotemsOverride
 		end
 
 		local x = oufdb.Bars.Totems.Lock and 0 or oufdb.Bars.Totems.X
 		local y = oufdb.Bars.Totems.Lock and 0.5 or oufdb.Bars.Totems.Y
 
-		self.TotemBar:SetHeight(oufdb.Bars.Totems.Height)
-		self.TotemBar:SetWidth(oufdb.Bars.Totems.Width)
-		self.TotemBar:ClearAllPoints()
-		self.TotemBar:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
-		self.TotemBar.colors = module.colors.totembar
+		self.Totems:SetHeight(oufdb.Bars.Totems.Height)
+		self.Totems:SetWidth(oufdb.Bars.Totems.Width)
+		self.Totems:ClearAllPoints()
+		self.Totems:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 
 		local totemPoints = {2, 0, 1, 3}
 
-		for i = 1, 4 do
-			self.TotemBar[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Totems.Texture))
-			self.TotemBar[i]:SetHeight(oufdb.Bars.Totems.Height)
-			self.TotemBar[i]:SetWidth((oufdb.Bars.Totems.Width - 3 * oufdb.Bars.Totems.Padding) / 4)
+		for i = 1, MAX_TOTEMS do
+			self.Totems[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Totems.Texture))
+			self.Totems[i]:SetHeight(oufdb.Bars.Totems.Height)
+			self.Totems[i]:SetWidth((oufdb.Bars.Totems.Width - 3 * oufdb.Bars.Totems.Padding) / 4)
 
-			self.TotemBar[i]:ClearAllPoints()
+			self.Totems[i]:ClearAllPoints()
 			if totemPoints[i] == 0 then
-				self.TotemBar[i]:SetPoint("LEFT", self.TotemBar, "LEFT", 0, 0)
+				self.Totems[i]:SetPoint("LEFT", self.Totems, "LEFT", 0, 0)
 			else
-				self.TotemBar[i]:SetPoint("LEFT", self.TotemBar[totemPoints[i]], "RIGHT", oufdb.Bars.Totems.Padding, 0)
+				self.Totems[i]:SetPoint("LEFT", self.Totems[totemPoints[i]], "RIGHT", oufdb.Bars.Totems.Padding, 0)
 			end
 
-			self.TotemBar[i].bg.multiplier = oufdb.Bars.Totems.Multiplier
+			self.Totems[i].bg.multiplier = oufdb.Bars.Totems.Multiplier
 		end
 	end,
 	Runes = function(self, unit, oufdb)
@@ -2224,7 +2322,6 @@ module.funcs = {
 
 		module:RegisterEvent("UNIT_LEVEL", checkPowers)
 	end,
-	
 	Chi = function(self, unit, oufdb)
 		if not self.Chi then
 			self.Chi = CreateFrame("Frame", nil, self)
@@ -2288,7 +2385,6 @@ module.funcs = {
 
 		module:RegisterEvent("PLAYER_TALENT_UPDATE", checkChi)
 	end,
-
 	WarlockBar = function(self, unit, oufdb)
 	
 		if not self.WarlockBar then
@@ -2445,7 +2541,6 @@ module.funcs = {
 		checkSpec()
 		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkSpec)
 	end,
-
 	ShadowOrbs = function(self, unit, oufdb)
 		if not self.ShadowOrbs then
 			self.ShadowOrbs = CreateFrame("Frame", nil, self)
@@ -2518,7 +2613,6 @@ module.funcs = {
 		module:RegisterEvent("UNIT_LEVEL", checkOrbs)
 		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkOrbs)
 	end,
-	
 	EclipseBar = function(self, unit, oufdb)
 		if not self.EclipseBar then
 			self.EclipseBar = CreateFrame("Frame", nil, self)
@@ -2590,7 +2684,6 @@ module.funcs = {
 			self.EclipseBar.SolarText:Hide()
 		end
 	end,
-
 	AltPowerBar = function(self, unit, oufdb)
 		if not self.AltPowerBar then
 			self.AltPowerBar = CreateFrame("StatusBar", nil, self)
@@ -2666,23 +2759,21 @@ module.funcs = {
 	end,
 	DruidMana = function(self, unit, oufdb)
 		if not self.DruidMana then
-			self.DruidMana = CreateFrame("Frame", nil, self)
-			self.DruidMana:SetFrameLevel(self.Power:GetFrameLevel()-1)
-			self.DruidMana:Hide()
+			local DruidMana = CreateFrame("StatusBar", nil, self)
 
-			self.DruidMana.ManaBar = CreateFrame("StatusBar", nil, self.DruidMana)
-			self.DruidMana.ManaBar:SetAllPoints(self.DruidMana)
-
-			self.DruidMana.bg = self.DruidMana:CreateTexture(nil, "BORDER")
-			self.DruidMana.bg:SetAllPoints(self.DruidMana)
+			local bg = DruidMana:CreateTexture(nil, "BACKGROUND")
+			bg:SetAllPoints(DruidMana)
+			
+			self.DruidMana = DruidMana
+			self.DruidMana.bg = bg
 
 			self.DruidMana.Smooth = oufdb.Bars.DruidMana.Smooth
 
-			self.DruidMana.value = SetFontString(self.DruidMana.ManaBar, Media:Fetch("font", oufdb.Texts.DruidMana.Font), oufdb.Texts.DruidMana.Size, oufdb.Texts.DruidMana.Outline)
+			self.DruidMana.value = SetFontString(self.DruidMana, Media:Fetch("font", oufdb.Texts.DruidMana.Font), oufdb.Texts.DruidMana.Size, oufdb.Texts.DruidMana.Outline)
 			self:Tag(self.DruidMana.value, "[druidmana2]")
 
 			self.DruidMana.SetPosition = function()
-				if not oufdb.Bars.DruidMana.OverPower then return end
+				if not oufdb.Bars.DruidMana.OverPower then return self.Power:SetHeight(oufdb.Bars.Power.Height) end
 
 				if self.DruidMana:IsShown() then
 					self.Power:SetHeight(oufdb.Bars.Power.Height/2 - 1)
@@ -2697,6 +2788,7 @@ module.funcs = {
 			self.DruidMana:SetScript("OnHide", self.DruidMana.SetPosition)
 
 			self.DruidMana.PostUpdatePower = PostUpdateDruidMana
+			self.DruidMana.Override = DruidManaOverride
 		end
 
 		self.DruidMana:ClearAllPoints()
@@ -2710,10 +2802,10 @@ module.funcs = {
 
 		self.DruidMana:SetHeight(oufdb.Bars.DruidMana.Height)
 		self.DruidMana:SetWidth(oufdb.Bars.DruidMana.Width)
-		self.DruidMana.ManaBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.DruidMana.Texture))
+		self.DruidMana:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.DruidMana.Texture))
 
 		self.DruidMana.value:SetFont(Media:Fetch("font", oufdb.Texts.DruidMana.Font), oufdb.Texts.DruidMana.Size, oufdb.Texts.DruidMana.Outline)
-		self.DruidMana.value:SetPoint("CENTER", self.DruidMana.ManaBar, "CENTER")
+		self.DruidMana.value:SetPoint("CENTER", self.DruidMana, "CENTER")
 
 		if oufdb.Texts.DruidMana.Enable == true then
 			self.DruidMana.value:Show()
@@ -2728,6 +2820,11 @@ module.funcs = {
 		self.DruidMana.bg.multiplier = oufdb.Bars.DruidMana.BGMultiplier
 
 		if GetShapeshiftFormID() == CAT_FORM or GetShapeshiftFormID() == BEAR_FORM then self.DruidMana.SetPosition() end
+		if module.db.Player.Bars.DruidMana.Enable then
+			self.DruidMana:Show()
+		else
+			self.DruidMana:Hide()
+		end
 	end,
 
 	-- target specific
@@ -3260,6 +3357,24 @@ module.funcs = {
 		self.HealPrediction.otherBar:SetPoint("BOTTOMLEFT", self.HealPrediction.myBar:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
 	end,
 
+	TotalAbsorb = function(self, unit, oufdb)
+		if not self.TotalAbsorb then
+			self.TotalAbsorb = CreateFrame('StatusBar', nil, self.Health)
+		end
+
+		self.TotalAbsorb.maxOverflow = 1
+		
+		self.TotalAbsorb:SetWidth(oufdb.Bars.Health.Width * self:GetWidth() / oufdb.Width) -- needed for 25/40 man raid width downscaling!
+		self.TotalAbsorb:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.TotalAbsorb.Texture))
+		self.TotalAbsorb:SetStatusBarColor(oufdb.Bars.TotalAbsorb.MyColor.r, oufdb.Bars.TotalAbsorb.MyColor.g, oufdb.Bars.TotalAbsorb.MyColor.b, oufdb.Bars.TotalAbsorb.MyColor.a)
+
+		self.TotalAbsorb:ClearAllPoints()
+		self.TotalAbsorb:SetPoint("TOPLEFT", self.Health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
+		self.TotalAbsorb:SetPoint("BOTTOMLEFT", self.Health:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
+
+		--self.TotalAbsorb.Override = TotalAbsorbOverride
+	end,
+	
 	V2Textures = function(from, to)
 		if not from.V2Tex then
 			local V2Tex = CreateFrame("Frame", nil, from)
@@ -3399,6 +3514,7 @@ local SetStyle = function(self, unit, isSingle)
 	module.funcs.FrameBackdrop(self, unit, oufdb)
 
 	if oufdb.Bars.HealPrediction and oufdb.Bars.HealPrediction.Enable then module.funcs.HealPrediction(self, unit, oufdb) end
+	if oufdb.Bars.TotalAbsorb and oufdb.Bars.TotalAbsorb.Enable then module.funcs.TotalAbsorb(self, unit, oufdb) end
 
 	------------------------------------------------------------------------
 	--	Texts
@@ -3459,7 +3575,7 @@ local SetStyle = function(self, unit, isSingle)
 		elseif class == "MONK" then
 			if oufdb.Bars.Chi.Enable then module.funcs.Chi(self, unit, oufdb) end
 		elseif class == "SHAMAN" then
-			if oufdb.Bars.Totems.Enable then module.funcs.TotemBar(self, unit, oufdb) end
+			if oufdb.Bars.Totems.Enable then module.funcs.Totems(self, unit, oufdb) end
 		elseif class == "MAGE" then
 			if oufdb.Bars.ArcaneCharges.Enable then module.funcs.ArcaneCharges(self, unit, oufdb) end
 		elseif class == "WARLOCK" then
