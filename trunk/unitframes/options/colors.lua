@@ -226,6 +226,12 @@ local function UpdateColors()
 			end
 		end
 	end
+	if oUF_LUI_player.Runes then
+		for i = 1, 6 do
+			local id = oUF_LUI_player.Runes[i].id
+			oUF_LUI_player.Runes[i]:SetStatusBarColor(unpack(module.colors.runes[GetRuneType(id)]))
+		end
+	end
 	if oUF_LUI_player.HolyPower then
 		for i = 1, 5 do
 			oUF_LUI_player.HolyPower[i]:SetStatusBarColor(unpack(module.colors.holypowerbar[i]))
