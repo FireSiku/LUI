@@ -27,12 +27,17 @@ local WorldMapFrame = _G.WorldMapFrame
 local currentZone
 
 local elementsHidden, elementHider
-local elementsToHide = {
+local elementsToHide = tonumber(internalversion) < 16965 and {
 	WorldMapFrameCloseButton,
 	WorldMapFrameSizeUpButton,
 	WorldMapTrackQuest,
 	WorldMapShowDigSites,
 	WorldMapQuestShowObjectives,
+} or {
+	WorldMapFrameCloseButton,
+	WorldMapFrameSizeUpButton,
+	WorldMapTrackQuest,
+	WorldMapShowDropDown,
 }
 module.elementsToHide = elementsToHide
 
@@ -245,8 +250,15 @@ local function WM_ToggleSizeUp()
 	SetUIPanelAttribute(WorldMapFrame, "allowOtherPanels", true)
 	WorldMapFrame:EnableKeyboard(false)
 	-- adjust map frames
-	WorldMapShowDigSites:ClearAllPoints()
-	WorldMapShowDigSites:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 50, 0)
+	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
+		WorldMapShowDigSites:ClearAllPoints()
+		WorldMapShowDigSites:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 50, 0)
+	else
+		WorldMapShowDropDown:ClearAllPoints()
+		WorldMapShowDropDown:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 0, 0)
+		ShowPetTamers:Show()
+		ShowDigSites:Show()
+	end
 	BlackoutWorld:Hide()
 	-- floor dropdown
 	WorldMapLevelDropDown:ClearAllPoints()
@@ -263,8 +275,13 @@ local function WM_ToggleSizeDown()
 	WorldMapFrame:SetMovable(true)
 	WorldMapFrame:EnableMouse(true)
 	-- adjust map frames
-	WorldMapShowDigSites:ClearAllPoints()
-	WorldMapShowDigSites:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 25, 0)
+	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
+		WorldMapShowDigSites:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 25, 0)
+		WorldMapShowDigSites:ClearAllPoints()
+	else
+		ShowPetTamers:Hide()
+		ShowDigSites:Hide()
+	end
 	-- hide big window elements
 	WorldMapTitleButton:Hide()
 	-- floor dropdown
@@ -446,7 +463,7 @@ function module:Refresh(info, value)
 		self:UnregisterEvent("ZONE_CHANGED_NEW_AREA")
 	end
 	
-	if tonumber(internalversion) < 16547 then -- if true, it's live WoW and not the PTR
+	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
 		PlayerArrowFrame:SetModelScale(db.General.ArrowScale)
 		PlayerArrowEffectFrame:SetModelScale(db.General.ArrowScale)
 --	else
@@ -473,6 +490,7 @@ function module:Refresh(info, value)
 			module:Refresh()
 		end
 	end
+	module:PLAYER_REGEN_ENABLED()
 end
 
 function module:DBCallback(event, dbobj, profile)
@@ -548,8 +566,10 @@ function module:OnDisable()
 	WorldMapFrame:SetClampedToScreen(true)
 	WorldMapFrame:SetClampRectInsets(0, 0, 0, -60)
 	
-	PlayerArrowFrame:SetModelScale(1)
-	PlayerArrowEffectFrame:SetModelScale(1)
+	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
+		PlayerArrowFrame:SetModelScale(1)
+		PlayerArrowEffectFrame:SetModelScale(1)
+	end
 	WorldMapFrame:SetScale(1)
 	WorldMapFrame:SetAlpha(1)
 	
@@ -559,9 +579,11 @@ function module:OnDisable()
 	
 	WorldMap_ToggleSizeUp()
 	
-	WorldMapShowDigSites:ClearAllPoints()
-	WorldMapShowDigSites:GetScript("OnLoad")(WorldMapShowDigSites)
-	
+	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
+		WorldMapShowDigSites:ClearAllPoints()
+		WorldMapShowDigSites:GetScript("OnLoad")(WorldMapShowDigSites)
+	end
+
 	if char.miniMap then
 		WorldMap_ToggleSizeDown()
 		if visible then

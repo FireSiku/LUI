@@ -8,6 +8,7 @@
 local addonname, LUI = ...
 local WorldMap = LUI:Module("WorldMap")
 local module = WorldMap:Module("InstanceMaps", "AceHook-3.0")
+local internalversion = select(2, GetBuildInfo())
 
 local L = LUI.L
 
@@ -16,8 +17,6 @@ local L = LUI.L
 --------------------------------------------------
 
 local zoomOverride
-
-local LBZ = LibStub("LibBabble-Zone-3.0"):GetLookupTable()
 
 local continent, continentId, zoneId
 
@@ -33,6 +32,7 @@ local continents = {
 		L["Cataclysm Raids"],
 		L["Pandaria Instances"],
 		L["Pandaria Raids"],
+--		"Pandaria Scenarios",
 		L["Battlegrounds"],
 	},
 	tags = {
@@ -46,6 +46,7 @@ local continents = {
 		"raids-cataclysm",
 		"instances-pandaria",
 		"raids-pandaria",
+--		"scenarios-pandaria",
 		"bgs-all",
 	},
 }
@@ -181,8 +182,30 @@ do
 				["Terrace of Endless Spring"] = 886,
 				["Mogu'shan Vaults"] = 896,
 				["Heart of Fear"] = 897,
+				["Throne of Thunder"] = 930,
 			}
 		},
+--[[		scenarios = {
+			pandaria = {
+				["A Brewing Storm"] = 878,
+				["A Little Patience"] = 912,
+				["Arena of Annihilation"] = 899,
+				["Assault on Zan'vess"] = 883,
+				["Battle on the High Seas"] = 940,
+				["Blood in the Snow"] = 939,
+				["Brewmoon Festival"] = 884,
+				["Crypt of Forgotten Kings"] = 900,
+				["Dagger in the Dark"] = 914,
+				["Dark Heart of Pandaria"] = 937,
+				["Domination Point (H)"] = 920,
+				["Greenstone Village"] = 880,
+				["Lion's Landing (A)"] = 911,
+				["The Secrets of Ragefire"] = 938,
+				["Theramore's Fall (A)"] = 906,
+				["Theramore's Fall (H)"] = 851,
+				["Unga Ingoo"] = 882,
+			},
+		},]]--
 		bgs = {
 			all = {
 				["Alterac Valley"] = 401,
@@ -193,8 +216,8 @@ do
 				["Isle of Conquest"] = 540,
 				["Twin Peaks"] = 626,
 				["The Battle for Gilneas"] = 736,
-				--["Temple of Kotmogu"] = 856,
-				--["Silvershard Mines"] = 860,
+				["Temple of Kotmogu"] = 856,
+				["Silvershard Mines"] = 860,
 			},
 		},
 	}
@@ -206,8 +229,10 @@ do
 			
 			zoneList.names[key], zoneList.data[key] = {}, {}
 			for name, id in pairs(zones) do
-				tinsert(zoneList.names[key], LBZ[name])
-				data[LBZ[name]] = id
+				--tinsert(zoneList.names[key], LBZ[name])
+				--data[LBZ[name]] = id
+				tinsert(zoneList.names[key], GetMapNameByID(id))
+				data[GetMapNameByID(id)] = id
 			end
 			table.sort(zoneList.names[key])
 			for i, name in ipairs(zoneList.names[key]) do
@@ -303,10 +328,14 @@ end
 
 function module:EncounterJournal_AddMapButtons()
 	if select(4, EJ_GetMapEncounter(1)) then
-		WorldMapShowDigSites:Hide()
+		if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
+			WorldMapShowDigSites:Hide()
+		end
 		LUI_WorldMap_ShowBossesCheckButton:Show()
 	else
-		WorldMapShowDigSites:Show()
+		if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
+			WorldMapShowDigSites:Show()
+		end
 		LUI_WorldMap_ShowBossesCheckButton:Hide()
 	end
 end
