@@ -8,6 +8,7 @@
 local addonname, LUI = ...
 local WorldMap = LUI:Module("WorldMap")
 local module = WorldMap:Module("QuestPOI", "AceHook-3.0")
+local internalversion = select(2, GetBuildInfo())
 
 local L = LUI.L
 local db, dbd, char
@@ -22,6 +23,11 @@ local questObjTexts = {
 	[0] = L["Hide Completely"],
 	[1] = L["Only Show Markers"],
 	[2] = L["Show Markers & Panels"],
+}
+
+local worldObjTexts = {
+	[0] = "Toggle Dig Sites",
+	[1] = "Toggle Battle Pet Masters",
 }
 
 local WORLDMAP_POI_MIN_X = 12
@@ -42,10 +48,16 @@ local function questObjDropDownOnClick(button)
 	char.QuestObjectives = button.value
 	questObjDropDownUpdate()
 
-	WorldMapQuestShowObjectives:SetChecked(char.QuestObjectives ~= 0)
+	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
+		WorldMapQuestShowObjectives:SetChecked(char.QuestObjectives ~= 0)
 
-	SetCVar("questPOI", WorldMapQuestShowObjectives:GetChecked())
-	WorldMapQuestShowObjectives_Toggle()
+		SetCVar("questPOI", WorldMapQuestShowObjectives:GetChecked())
+		WorldMapQuestShowObjectives_Toggle()
+	else
+		SetCVar("questPOI", button.value)
+		WorldMapTrackQuest:Hide()
+	end
+
 	WatchFrame_GetCurrentMapQuests()
 	WatchFrame_Update()
 	WorldMapFrame_DisplayQuests()
@@ -72,10 +84,20 @@ end
 local function questObjVisibilityUpdate()
 	if char.miniMap then
 		questObj:Hide()
-		WorldMapQuestShowObjectives:Show()
+		if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
+			WorldMapQuestShowObjectives:Show()
+		else
+			WorldMapShowDropDown:Show()
+			WorldMapTrackQuest:Show()
+		end
 	else
 		questObj:Show()
-		WorldMapQuestShowObjectives:Hide()
+		if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
+			WorldMapQuestShowObjectives:Hide()
+		else
+			WorldMapShowDropDown:Hide()
+			WorldMapTrackQuest:Hide()
+		end
 	end
 end
 
@@ -157,9 +179,10 @@ WorldMap.defaults.char.QuestObjectives = 2
 WorldMap.defaults.profile.General.POIScale = 1
 
 function module:Refresh()
-	WorldMapQuestShowObjectives:SetChecked(char.QuestObjectives ~= 0)
-	WorldMapQuestShowObjectives_Toggle()
-
+	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
+		WorldMapQuestShowObjectives:SetChecked(char.QuestObjectives ~= 0)
+		WorldMapQuestShowObjectives_Toggle()
+	end
 	WorldMapFrame_DisplayQuests()
 
 	if not questObj then return end
@@ -175,7 +198,11 @@ module.DBCallback = module.OnInitialize
 
 function module:OnEnable()
 	-- HideQuest Objectives CheckBox and replace it with a DropDown
-	self:SecureHookScript(WorldMapQuestShowObjectives, "OnClick", WM_QuestShowObjectives_OnClick)
+	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
+		self:SecureHookScript(WorldMapQuestShowObjectives, "OnClick", WM_QuestShowObjectives_OnClick)
+--	else
+--		self:SecureHookScript(WorldMapShowDropDown, "OnClick", WM_QuestShowObjectives_OnClick)
+	end
 	if not questObj then
 		questObj = CreateFrame("Frame", "LUI_WorldMap_QuestObjectivesDropDown", WorldMapFrame, "UIDropDownMenuTemplate")
 		questObj:SetPoint("BOTTOMRIGHT", "WorldMapPositioningGuide", "BOTTOMRIGHT", -5, -2)
@@ -210,6 +237,8 @@ function module:OnDisable()
 	WorldMapFrame_DisplayQuests()
 	self:UnhookAll()
 
-	WorldMapQuestShowObjectives:Show()
+	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
+		WorldMapQuestShowObjectives:Show()
+	end
 	questObj:Hide()
 end
