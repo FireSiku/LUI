@@ -35,8 +35,6 @@ function script:ADDON_LOADED(event, name)
 		LookingForGuildFrame,
 		GuildFrame,
 		FriendsFrame,
-		PVPFrame,
-		LFDParentFrame,
 		RaidParentFrame,
 		HelpFrame,
 		MacroFrame,
@@ -44,6 +42,8 @@ function script:ADDON_LOADED(event, name)
 		VideoOptionsFrame,
 		InterfaceOptionsFrame,
 		KeyBindingFrame,
+		PVEFrame,
+		PVPUIFrame,
 	}
 
 	for _, frame in pairs(blizzFrames) do
