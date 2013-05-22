@@ -37,19 +37,36 @@ end
 
 local UpdateExpMode = function()
 	local bar = LUIThreat
-	local currXP = UnitXP("player")
-	local maxXP = UnitXPMax("player")
-	local percentXP = currXP * 100 / maxXP
-	bar:SetValue(percentXP)
-	if db.Text.Enable then
-		bar.Text:SetFormattedText("%d%%", percentXP)
-	end
-	if UnitLevel("player") == 90 then
-		local name, stand, barMin, barMax, barValue = GetWatchedFactionInfo()
+	if not UnitLevel("player") == 90 then -- EXP MODE
+		local currXP = UnitXP("player")
+		local maxXP = UnitXPMax("player")
+		local percentXP = currXP * 100 / maxXP
+		bar:SetValue(percentXP)
+		if db.Text.Enable then
+			bar.Text:SetFormattedText("%d%%", percentXP)
+		end
+	else -- REP MODE
+		local friend, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID);
+		
+		local name, stand, barMin, barMax, barValue, factionID = GetWatchedFactionInfo()
+
 		local repname = { "Ha", "Ho", "Un", "Ne", "Fr", "Hon", "Rev", "Ex" }
-		if not name then bar:Hide()
+		local repText = repname[stand]
+		if not name then 
+			bar:Hide()
+			return  -- No need to continue execution
 		else if db.Enable then bar:Show() end
 		end
+	
+		--Friendship Support
+		local friend, friendValue, _, _, _, _, friendText, friendMin, friendMax = GetFriendshipReputation(factionID);
+		if friend ~= nil then -- Friendship support
+			if not friendMax then barMin, barMax, barValue = 0, 1, 1 -- Show full bar
+			else barMin, barMax, barValue = friendMin, friendMax, friendValue
+			end
+			repText = friendText
+		end
+		-- Display values
 		barMax = barMax - barMin
 		barValue = barValue - barMin
 		barMin = 0
@@ -57,7 +74,7 @@ local UpdateExpMode = function()
 		bar:SetMinMaxValues(barMin,barMax)
 		bar:SetValue(barValue)
 		if db.Text.Enable then
-			bar.Text:SetFormattedText("%d%% %s", percentRep,repname[stand] or "")
+			bar.Text:SetFormattedText("%d%% %s", percentRep,repText or "")
 		end
 	end
 end
@@ -208,7 +225,7 @@ module.defaults = {
 		},
 		Text = {
 			Enable = true,
-			X = 170,
+			X = 0,
 			Y = 0,
 			Font = "Prototype",
 			Size = 14,
@@ -306,7 +323,7 @@ function module:Refresh(...)
 	
 	LUIThreat.Text:SetFont(Media:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
 	LUIThreat.Text:ClearAllPoints()
-	LUIThreat.Text:SetPoint("CENTER", LUIThreat, "CENTER", LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
+	LUIThreat.Text:SetPoint("RIGHT", LUIThreat, "RIGHT", LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
 	if r then LUIThreat.Text:SetTextColor(r, g, b) end
 	
 	if db.Text.Enable then
