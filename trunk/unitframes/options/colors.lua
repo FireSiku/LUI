@@ -24,6 +24,22 @@ module.defaults.profile.Colors = {
 		DEATHKNIGHT = {0.8, 0.1, 0.1},
 		MONK = {0.00, 1.00, 0.59},
 	},
+	--[[ This section shows the actual real Blizzard colors.
+	     Some people have asked for them so making it easier
+		 for those people to use them.
+	Class = {
+		WARRIOR = {0.78, 0.61, 0.43},
+		PRIEST = {1.00, 1.00, 1.00},
+		DRUID = {1.00, 0.49, 0.04},
+		HUNTER = {0.67, 0.83, 0.45},
+		MAGE = {0.41, 0.80, 0.94},
+		PALADIN = {0.96, 0.55, 0.73},
+		SHAMAN = {0.00, 0.44, 0.87},
+		WARLOCK = {0.58, 0.51, 0.79},
+		ROGUE = {1.00, 0.96, 0.41},
+		DEATHKNIGHT = {0.77, 0.12, 0.23},
+		MONK = {0.00, 1.00, 0.59},
+	},]]--
 	Power = {
 		MANA = {0.31, 0.45, 0.63},
 		RAGE = {0.69, 0.31, 0.31},
