@@ -822,7 +822,7 @@ local PostUpdateAura = function(icons, unit, icon, index, offset)
 		local color = DebuffTypeColor[dtype] or DebuffTypeColor.none
 		icon.auratype:SetVertexColor(color.r, color.g, color.b)
 	else
-		if icon.debuff then
+		if icon.isDebuff then
 			icon.auratype:SetVertexColor(0.69, 0.31, 0.31)
 		else
 			icon.auratype:SetVertexColor(1, 1, 1)
