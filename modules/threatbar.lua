@@ -58,9 +58,9 @@ local UpdateExpMode = function()
 		end
 		if db.Text.Enable then
 			if percentRE ~= 0 and db.General.showRested then
-				bar.Text:SetText(string.format("%.0f%% (R: %.0f%%)", percentXP, percentRE))
+				bar.Text:SetFormattedText("%.0f%% (R: %.0f%%)", percentXP, percentRE)
 			else
-				bar.Text:SetText(string.format("%.0f%%", percentXP))
+				bar.Text:SetFormattedText("%.0f%%", percentXP)
 			end
 		end
 	else -- REP MODE
