@@ -37,7 +37,7 @@ end
 
 local UpdateExpMode = function()
 	local bar = LUIThreat
-	if not UnitLevel("player") == 90 then -- EXP MODE
+	if UnitLevel("player") ~= 90 then -- EXP MODE
 		local currXP = UnitXP("player")
 		local maxXP = UnitXPMax("player")
 		local percentXP = currXP * 100 / maxXP
