@@ -37,13 +37,31 @@ end
 
 local UpdateExpMode = function()
 	local bar = LUIThreat
+	local width = bar:GetWidth()
+	local left
 	if UnitLevel("player") ~= 90 then -- EXP MODE
+		local restXP = GetXPExhaustion() or 0
 		local currXP = UnitXP("player")
 		local maxXP = UnitXPMax("player")
 		local percentXP = currXP * 100 / maxXP
+		local percentRE = restXP * 100 / maxXP
 		bar:SetValue(percentXP)
+		if db.General.showRested then
+			local left = width / 100 * percentXP
+			if ( percentXP + percentRE > 100 ) then
+				right = width - left
+			else
+				right = width / 100 * percentRE
+			end
+			bar.rested:SetPoint("TOPLEFT", LUIThreat, left, 0)
+			bar.rested:SetSize(right, LUIThreat:GetHeight())
+		end
 		if db.Text.Enable then
-			bar.Text:SetFormattedText("%d%%", percentXP)
+			if percentRE ~= 0 and db.General.showRested then
+				bar.Text:SetText(string.format("%.0f%% (R: %.0f%%)", percentXP, percentRE))
+			else
+				bar.Text:SetText(string.format("%.0f%%", percentXP))
+			end
 		end
 	else -- REP MODE
 		local friend, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID);
@@ -74,7 +92,7 @@ local UpdateExpMode = function()
 		bar:SetMinMaxValues(barMin,barMax)
 		bar:SetValue(barValue)
 		if db.Text.Enable then
-			bar.Text:SetFormattedText("%d%% %s", percentRep,repText or "")
+			bar.Text:SetFormattedText("%.0f%% %s", percentRep,repText or "")
 		end
 	end
 end
@@ -86,16 +104,19 @@ local ToggleExpMode = function()
 		LUIThreat:RegisterEvent("PLAYER_REGEN_ENABLED")
 		LUIThreat:RegisterEvent("PLAYER_REGEN_DISABLED")
 		LUIThreat:UnregisterEvent("PLAYER_XP_UPDATE")
+		LUIThreat:UnregisterEvent("UPDATE_EXHAUSTION")
 	else
 		LUIThreat:UnregisterEvent("PLAYER_REGEN_ENABLED")
 		LUIThreat:UnregisterEvent("PLAYER_REGEN_DISABLED")
 		LUIThreat:RegisterEvent("PLAYER_XP_UPDATE")
+		LUIThreat:RegisterEvent("UPDATE_EXHAUSTION")
 		LUIThreat:RegisterEvent("UPDATE_FACTION")
 		LUIThreat.expMode = true
 		LUIThreat:Show()
 		LUIThreat:SetAlpha(1)
 		LUIThreat:SetMinMaxValues(0, 100)
 		LUIThreat.indicator:Hide()
+		LUIThreat.rested:Show()
 
 		UpdateExpMode()
 	end
@@ -184,6 +205,12 @@ local SetThreat = function()
 	LUIThreat.indicator:SetPoint("CENTER", LUIThreat.helper:GetStatusBarTexture(), "RIGHT", 0, 0)
 	LUIThreat.indicator:Show()
 	
+	LUIThreat.rested = LUIThreat:CreateTexture(nil, "OVERLAY")
+	LUIThreat.rested:SetTexture("Interface\\TargetingFrame\\UI-StatusBar")
+	LUIThreat.rested:SetVertexColor(1, 1, 1, 0.2)
+	LUIThreat.rested:SetBlendMode("ADD")
+	LUIThreat.rested:Show()
+
 	LUIThreat:SetScript("OnEvent", function(self, event)
 
 		if event == "PLAYER_REGEN_ENABLED" then
@@ -194,7 +221,7 @@ local SetThreat = function()
 				self.Testmode = nil
 				LUI:Print("Threatbar Testmode disabled due to combat.")
 			end
-		elseif event == "PLAYER_XP_UPDATE" or event == "UPDATE_FACTION" then
+		elseif event == "PLAYER_XP_UPDATE" or event == "UPDATE_FACTION" or event == "UPDATE_EXHAUSTION" then
 			UpdateExpMode()
 		end
 	end)
@@ -211,6 +238,7 @@ module.defaults = {
 			Point = "BOTTOM",
 			TankHide = true,
 			expMode = false,
+			showRested = false,
 		},
 		Appearance = {
 			Texture = "LUI_Gradient",
@@ -247,6 +275,7 @@ module.setter = "Refresh"
 function module:LoadOptions()
 	local disabledTextFunc = function() return not db.Text.Enable end
 	local colorOptions = {"By Class", "Individual", "Gradient"}
+	local disabledExpMode = function() return not db.General.expMode end
 	local dryCall = function() self:Refresh() end
 	
 	local options = {
@@ -260,8 +289,9 @@ function module:LoadOptions()
 			empty2 = self:NewDesc(" ", 6),
 			TankHide = self:NewToggle("Hide if Tanking", "Whether you want to hide the Threat Bar if you are tank specced or not.\nOnly works if Vengeance Module is enabled!.", 7, true),
 			expMode = self:NewToggle("Switch to Exp Mode", "If enabled, this will turn your Threat Bar into an experience bar.\nIf you are level 90 it will show a reputation bar instead.\nDisable Threat.",8,ToggleExpMode),
-			empty3 = self:NewDesc(" ", 9),
-			Testmode = self:NewExecute("Testmode", "Enable/Disable Threat Bar Testmode", 10, ToggleTestMode),
+			showRested = self:NewToggle("Show Rested Experience", "If enabled, this will show your rested experience as well.", 9, dryCall, nil, disabledExpMode),
+			empty3 = self:NewDesc(" ", 10),
+			Testmode = self:NewExecute("Testmode", "Enable/Disable Threat Bar Testmode", 11, ToggleTestMode),
 		}),
 		Appearance = self:NewGroup("Appearance", 2, {
 			header = self:NewHeader("Appearance Options", 0),
@@ -326,6 +356,15 @@ function module:Refresh(...)
 	LUIThreat.Text:SetPoint("RIGHT", LUIThreat, "RIGHT", LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
 	if r then LUIThreat.Text:SetTextColor(r, g, b) end
 	
+	if db.General.expMode then
+		UpdateExpMode()
+		if db.General.showRested then
+			LUIThreat.rested:Show()
+		else
+			LUIThreat.rested:Hide()
+		end
+	end
+
 	if db.Text.Enable then
 		LUIThreat.Text:Show()
 	else
