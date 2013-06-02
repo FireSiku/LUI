@@ -53,8 +53,12 @@ local UpdateExpMode = function()
 			else
 				right = width / 100 * percentRE
 			end
-			bar.rested:SetPoint("TOPLEFT", LUIThreat, left, 0)
-			bar.rested:SetSize(right, LUIThreat:GetHeight())
+			if right == 0 then
+				bar.rested:Hide()
+			else
+				bar.rested:SetPoint("TOPLEFT", LUIThreat, left, 0)
+				bar.rested:SetSize(right, LUIThreat:GetHeight())
+			end
 		end
 		if db.Text.Enable then
 			if percentRE ~= 0 and db.General.showRested then
