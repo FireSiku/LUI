@@ -56,6 +56,9 @@ local UpdateExpMode = function()
 			if right == 0 then
 				bar.rested:Hide()
 			else
+				if not bar.rested:IsShown() then
+					bar.rested:Show()
+				end
 				bar.rested:SetPoint("TOPLEFT", LUIThreat, left, 0)
 				bar.rested:SetSize(right, LUIThreat:GetHeight())
 			end
