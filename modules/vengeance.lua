@@ -64,7 +64,7 @@ local ValueChanged = function(bar, event, unit)
 			
 	if db.Text.Enable then
 		if db.Text.Format == "Absolut" then
-			bar.Text:SetFormattedText("%d/%d", bar.value, mbar.max)
+			bar.Text:SetFormattedText("%d/%d", bar.value, bar.max)
 		else
 			bar.Text:SetFormattedText("%d", bar.value)
 		end
@@ -82,12 +82,10 @@ local BaseChanged = function(bar, event, unit)
 	end
 	
 	local health = UnitHealthMax("player")
-	local _, stamina = UnitStat("player", 3)
 	
-	bar.base = (health - 15 * stamina) * .1
-	bar.max = bar.base + bar.stam
+	bar.max = health
 	bar:SetMinMaxValues(0, bar.max)
-	
+
 	ValueChanged(bar, event, unit)
 end
 
@@ -100,14 +98,12 @@ local StamChanged = function(bar, event, unit)
 	end
 	
 	local health = UnitHealthMax("player")
-	local _, stamina = UnitStat("player", 3)
 	
-	if not health or not stamina then return end
+	if not health then return end
 	
-	bar.stam = stamina
-	bar.max = bar.base + bar.stam
+	bar.max = health
 	bar:SetMinMaxValues(0, bar.max)
-	
+
 	ValueChanged(bar, event, unit)
 end
 
@@ -198,6 +194,7 @@ module.defaults = {
 		},
 		Text = {
 			Enable = false,
+			Format = "Absolut",
 			X = 0,
 			Y = 0,
 			Font = "neuropol",
@@ -220,6 +217,7 @@ module.setter = "Refresh"
 function module:LoadOptions()
 	local disabledTextFunc = function() return not db.Text.Enable end
 	local colorOptions = {"By Class", "Individual", "Gradient"}
+	local formatOptions = {"Absolut", "Standard"}
 	local dryCall = function() self:Refresh() end
 	
 	local options = {
@@ -245,14 +243,15 @@ function module:LoadOptions()
 		Text = self:NewGroup("Text", 3, {
 			header = self:NewHeader("Text Options", 0),
 			Enable = self:NewToggle("Enable Text", "Whether you want to show a Text on your Vengeance Bar or not.", 1, true),
-			empty1 = self:NewDesc(" ", 4),
-			[""] = self:NewPosSliders("Vengeance Bar Text", 2, nil, "LUIVengeanceText", true, nil, disabledTextFunc),
-			Font = self:NewSelect("Font", "Choose the Font for your Vengeance Bar Text.", 3, widgetLists.font, "LSM30_Font", true, nil, disabledTextFunc),
-			Size = self:NewInputNumber("Fontsize", "Choose the Fontsize for your Vengeance Bar Text.", 4, dryCall, nil, disabledTextFunc),
-			Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Vengeance Bar Text Font.", 5, fontflags, nil, dryCall, nil, disabledTextFunc),
-			empty2 = self:NewDesc(" ", 6),
-			Color = self:NewSelect("Color", "Choose the Color option for your Vengeance Bar Text.", 6, colorOptions, nil, dryCall, nil, disabledTextFunc),
-			IndividualColor = self:NewColorNoAlpha("Individual", "Vengeance Bar Text", 7, dryCall, nil, function() return not db.Text.Enable or db.Text.Color ~= "Individual" end),
+			Format = self:NewSelect("Format", "Choose the Format for your Vengeance Bar Text.", 2, formatOptions, nil, dryCall, nil, disabledTextFunc),
+			empty1 = self:NewDesc(" ", 3),
+			[""] = self:NewPosSliders("Vengeance Bar Text", 4, nil, "LUIVengeanceText", true, nil, disabledTextFunc),
+			Font = self:NewSelect("Font", "Choose the Font for your Vengeance Bar Text.", 6, widgetLists.font, "LSM30_Font", true, nil, disabledTextFunc),
+			Size = self:NewInputNumber("Fontsize", "Choose the Fontsize for your Vengeance Bar Text.", 7, dryCall, nil, disabledTextFunc),
+			Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Vengeance Bar Text Font.", 8, fontflags, nil, dryCall, nil, disabledTextFunc),
+			empty2 = self:NewDesc(" ", 9),
+			Color = self:NewSelect("Color", "Choose the Color option for your Vengeance Bar Text.", 10, colorOptions, nil, dryCall, nil, disabledTextFunc),
+			IndividualColor = self:NewColorNoAlpha("Individual", "Vengeance Bar Text", 11, dryCall, nil, function() return not db.Text.Enable or db.Text.Color ~= "Individual" end),
 		}),
 	}
 	
