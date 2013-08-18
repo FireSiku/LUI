@@ -10,6 +10,7 @@ local Fader = LUI:Module("Fader")
 
 local oUF = LUI.oUF
 local Blizzard = LUI.Blizzard
+local MAX_BOSS_FRAMES = MAX_BOSS_FRAMES
 
 local _, class = UnitClass("player")
 
@@ -113,7 +114,7 @@ module.ToggleUnit = setmetatable({
 				oUF_LUI_boss:SetAttribute("Padding", module.db.Boss.Padding)
 				oUF_LUI_boss:Show()
 
-				for i = 1, 4 do
+				for i = 1, MAX_BOSS_FRAMES do
 					_G["oUF_LUI_boss"..i]:Enable()
 					_G["oUF_LUI_boss"..i]:UpdateAllElements()
 					_G["oUF_LUI_boss"..i]:ClearAllPoints()
@@ -154,7 +155,7 @@ module.ToggleUnit = setmetatable({
 				bossParent.handler = handler
 
 				local boss = {}
-				for i = 1, 4 do
+				for i = 1, MAX_BOSS_FRAMES do
 					boss[i] = oUF:Spawn("boss"..i, "oUF_LUI_boss"..i)
 					boss[i]:SetParent(bossParent)
 					if i == 1 then
@@ -184,7 +185,7 @@ module.ToggleUnit = setmetatable({
 
 			if oUF_LUI_boss then
 				oUF_LUI_boss:Hide()
-				for i = 1, 4 do
+				for i = 1, MAX_BOSS_FRAMES do
 					if _G["oUF_LUI_boss"..i] then _G["oUF_LUI_boss"..i]:Disable() end
 				end
 			end
@@ -198,7 +199,7 @@ module.ToggleUnit = setmetatable({
 
 		if override and module.db.Boss.Enable then
 			if oUF_LUI_bosstarget1 then
-				for i = 1, 4 do
+				for i = 1, MAX_BOSS_FRAMES do
 					if _G["oUF_LUI_bosstarget"..i] then
 						_G["oUF_LUI_bosstarget"..i]:Enable()
 						_G["oUF_LUI_bosstarget"..i]:ClearAllPoints()
@@ -206,13 +207,13 @@ module.ToggleUnit = setmetatable({
 					end
 				end
 			else
-				for i = 1, 4 do
+				for i = 1, MAX_BOSS_FRAMES do
 					oUF:Spawn("boss"..i.."target", "oUF_LUI_bosstarget"..i):SetPoint(module.db.BossTarget.Point, _G["oUF_LUI_boss"..i], module.db.BossTarget.RelativePoint, module.db.BossTarget.X, module.db.BossTarget.Y)
 					_G["oUF_LUI_bosstarget"..i]:SetParent(_G["oUF_LUI_boss"..i])
 				end
 			end
 		else
-			for i = 1, 4 do
+			for i = 1, MAX_BOSS_FRAMES do
 				if _G["oUF_LUI_bosstarget"..i] then _G["oUF_LUI_bosstarget"..i]:Disable() end
 			end
 		end
