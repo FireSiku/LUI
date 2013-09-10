@@ -209,6 +209,14 @@ function module:SlotUpdate(item)
 		CooldownFrame_SetTimer(item.Cooldown, cd_start, cd_finish, cd_enable)
 	end
 
+	if _G[item.frame:GetName() .. "NewItemTexture"] then
+		if C_NewItems.IsNewItem(item.bag, item.slot) then
+			_G[item.frame:GetName() .. "NewItemTexture"]:Show()
+		else
+			_G[item.frame:GetName() .. "NewItemTexture"]:Hide()
+		end
+	end
+
 	if (clink) then
 		local name, _, rarity, _, _, iType = GetItemInfo(clink)
 		item.name, item.rarity = name, rarity
