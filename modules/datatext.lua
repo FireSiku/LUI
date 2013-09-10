@@ -351,16 +351,17 @@ function module:SetClock()
 		stat.PLAYER_DIFFICULTY_CHANGED = function(self) -- Instance difficulty changed
 			local inInstance, instanceType = IsInInstance()
 			if inInstance then
-				local _,_, instanceDifficulty,_, maxPlayers, dynamicMode, isDynamic = GetInstanceInfo()
+				local _,_, instanceDifficulty,_, maxPlayers, dynamicMode, isDynamic, _, instanceGroupSize = GetInstanceInfo()
 				if (instanceType == "raid" or instanceType == "party") then
-					--[[ 
-						NOTE: merged party and raid as the only difference was dynamicMode and isDynamic
-						- dynamicMode: does not appear to be used anymore
-						- isDynamic:   true for most raids since Icecrown Citadel, tested with 5N, 5H, 10N, 25H
-					]]--
-					instanceInfo = maxPlayers..((instanceDifficulty == 1 or instanceDifficulty == 3 or instanceDifficulty == 4) and " |cffff0000N" or " |cff00ff00H")
-				--elseif (instanceType == "party") then
-					--instanceInfo = maxPlayers..(instanceDifficulty == 1 and " |cff00ff00N" or " |cffff0000H")
+					if instanceDifficulty == 14 then
+						instanceInfo = instanceGroupSize.." |cffffcc00F"
+					elseif instanceDifficulty == 7 then
+						instanceInfo = maxPlayers.." |cff00ccffL"
+					elseif instanceDifficulty == 1 or instanceDifficulty == 3 or instanceDifficulty == 4 or instanceDifficulty == 12 then
+						instanceInfo = maxPlayers.." |cff00ff00N"
+					else
+						instanceInfo = maxPlayers.." |cffff0000H"
+					end
 				else
 					instanceInfo = nil
 				end
@@ -369,6 +370,8 @@ function module:SetClock()
 			end
 		end
 
+		stat.INSTANCE_GROUP_SIZE_CHANGED = stat.PLAYER_DIFFICULTY_CHANGED -- Flexible raid size changed (I hope)
+		
 		stat.ZONE_CHANGED = function(self)
 			local mapZone = GetCurrentMapAreaID()
 			local trackedID = WORLDMAP_SETTINGS.selectedQuestId
@@ -403,10 +406,12 @@ function module:SetClock()
 			if db.Clock.ShowInstanceDifficulty then
 				self:RegisterEvent("GUILD_PARTY_STATE_UPDATED")
 				self:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
+				self:RegisterEvent("INSTANCE_GROUP_SIZE_CHANGED")
 				self:GUILD_PARTY_STATE_UPDATED()
 			else
 				self:UnregisterEvent("GUILD_PARTY_STATE_UPDATED")
 				self:UnregisterEvent("PLAYER_DIFFICULTY_CHANGED")
+				self:UnregisterEvent("INSTANCE_GROUP_SIZE_CHANGED")
 				instanceInfo, guildParty = nil, ""
 			end
 
