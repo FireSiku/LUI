@@ -253,6 +253,7 @@ function module:SetTooltip()
 
 		local color = GetColor(unit)	
 		if not color then color = "|CFFFFFFFF" end -- just safe mode for when GetColor(unit) return nil for unit too far away
+		if not race then race = "Helpful NPC" end -- For helpful NPCs that join your raid. 
 
 		_G["GameTooltipTextLeft1"]:SetFormattedText("%s%s%s", color, title or name, realm and realm ~= "" and " - "..realm.."|r" or "|r")
 
