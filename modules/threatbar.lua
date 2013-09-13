@@ -38,17 +38,17 @@ end
 local UpdateExpMode = function()
 	local bar = LUIThreat
 	local width = bar:GetWidth()
-	local left
+	local left, percentBar
 	if UnitLevel("player") ~= 90 then -- EXP MODE
 		local restXP = GetXPExhaustion() or 0
 		local currXP = UnitXP("player")
 		local maxXP = UnitXPMax("player")
-		local percentXP = currXP * 100 / maxXP
+		percentBar = currXP * 100 / maxXP
 		local percentRE = restXP * 100 / maxXP
-		bar:SetValue(percentXP)
+		bar:SetValue(percentBar)
 		if db.General.showRested then
-			local left = width / 100 * percentXP
-			if ( percentXP + percentRE > 100 ) then
+			local left = width / 100 * percentBar
+			if ( percentBar + percentRE > 100 ) then
 				right = width - left
 			else
 				right = width / 100 * percentRE
@@ -65,9 +65,9 @@ local UpdateExpMode = function()
 		end
 		if db.Text.Enable then
 			if percentRE ~= 0 and db.General.showRested then
-				bar.Text:SetFormattedText("%.0f%% (R: %.0f%%)", percentXP, percentRE)
+				bar.Text:SetFormattedText("%.0f%% (R: %.0f%%)", percentBar, percentRE)
 			else
-				bar.Text:SetFormattedText("%.0f%%", percentXP)
+				bar.Text:SetFormattedText("%.0f%%", percentBar)
 			end
 		end
 	else -- REP MODE
@@ -95,12 +95,18 @@ local UpdateExpMode = function()
 		barMax = barMax - barMin
 		barValue = barValue - barMin
 		barMin = 0
-		local percentRep = barValue * 100 / barMax
+		percentBar = barValue * 100 / barMax
 		bar:SetMinMaxValues(barMin,barMax)
 		bar:SetValue(barValue)
 		if db.Text.Enable then
-			bar.Text:SetFormattedText("%.0f%% %s", percentRep,repText or "")
+			bar.Text:SetFormattedText("%.0f%% %s", percentBar, repText or "")
 		end
+	end
+	if db.Appearance.Color == "Gradient" then
+		local r, g, b = oUF.ColorGradient((100 - percentBar), 100, 0, 1, 0, 1, 1, 0, 1, 0, 0)
+		local mu = db.Appearance.BGMultiplier or 0
+		bar:SetStatusBarColor(r, g, b)
+		if bar.bg then bar.bg:SetVertexColor(r * mu, g * mu, b * mu) end
 	end
 end
 
