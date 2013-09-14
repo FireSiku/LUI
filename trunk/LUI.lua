@@ -1795,19 +1795,27 @@ function LUI:RefreshModule(...) -- LUI.RefreshModule(module, callback_event, db,
 	end
 end
 
+local optionsLoaded = false
 function LUI:Open(force, ...)
 	function LUI:Open(force, ...)
 		if ACD.OpenFrames.LUI and not force then
 			ACD:Close(addonname)
 		else
-			ACD:Open(addonname, nil, ...)
-			ACD.OpenFrames.LUI.frame:SetScale(db.General.BlizzFrameScale)
-			ACD.OpenFrames.LUI:SetCallback("OnClose", function(widget, event)
-				widget.frame:SetScale(1)
-				local appName = widget:GetUserData("appName")
-				ACD.OpenFrames[appName] = nil
-				LibStub("AceGUI-3.0"):Release(widget)
-			end)
+			-- Do not open options in combat unless already opened before.
+			if InCombatLockdown() and not optionsLoaded then
+			--Find a better way to word this. 
+				LUI:Print("Unable to open the options for the first time while in combat.") 
+			else
+				ACD:Open(addonname, nil, ...)
+				ACD.OpenFrames.LUI.frame:SetScale(db.General.BlizzFrameScale)
+				--ACD.OpenFrames.LUI:SetCallback("OnClose", function(widget, event)
+				--	widget.frame:SetScale(1)
+				----	local appName = widget:GetUserData("appName")
+				--	ACD.OpenFrames[appName] = nil
+				--	LibStub("AceGUI-3.0"):Release(widget)
+				--end)
+				optionsLoaded = true
+			end
 		end
 	end
 
