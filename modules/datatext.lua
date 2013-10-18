@@ -1533,12 +1533,12 @@ function module:SetGF()
 		local tables, broadcasts, toasts, buttons
 		local slider, highlight, texOrder1, sep, sep2
 
-		local WOW, SC2, D3 = 1, 2, 3
+		local WOW, SC2, D3, WTCG = 1, 2, 3, 4
 		local horde = myPlayerFaction == "Horde"
 
 		local hordeZones = "Orgrimmar,Undercity,Thunder Bluff,Silvermoon City,Durotar,Tirisfal Glades,Mulgore,Eversong Woods,Northern Barrens,Silverpine Forest,Ghostlands,Azshara,"
 		local allianceZones = "Ironforge,Stormwind City,Darnassus,The Exodar,Azuremyst Isle,Bloodmyst Isle,Darkshore,Deeprun Tram,Dun Morogh,Elwynn Forest,Loch Modan,Teldrassil,Westfall,"
-		local sanctuaryZones = "Dalaran,Shatrath,The Maelstrom,"
+		local sanctuaryZones = "Dalaran,Shattrath,The Maelstrom,"
 		local mobileZones = "Remote Chat,ed"
 
 		local statuses = { -- values inherited from the chat frame
@@ -1548,6 +1548,7 @@ function module:SetGF()
 		local clientIcons = {
 			[SC2] = [[Interface\FriendsFrame\Battlenet-Sc2icon]],
 			[D3] = [[Interface\FriendsFrame\Battlenet-D3icon]],
+			[WTCG] = [[Interface\FriendsFrame\Battlenet-WTCGicon]],
 		}
 
 		local colpairs = {
@@ -1712,7 +1713,7 @@ function module:SetGF()
 
 			SetStatusLayout(toast.status, toast.name)
 
-			client = client == BNET_CLIENT_WOW and WOW or client == BNET_CLIENT_SC2 and SC2 or client == BNET_CLIENT_D3 and D3 or 0
+			client = client == BNET_CLIENT_WOW and WOW or client == BNET_CLIENT_SC2 and SC2 or client == BNET_CLIENT_D3 and D3 or client == BNET_CLIENT_WTCG and WTCG or 0
 			toast.client = client
 
 			if client == WOW then
@@ -1735,7 +1736,7 @@ function module:SetGF()
 				else
 					toast.class:SetTexture("")
 				end
-			elseif client == SC2 or client == D3 then
+			elseif client == SC2 or client == D3 or client == WTCG then
 				toast.class:SetTexture(clientIcons[client])
 				toast.class:SetTexCoord(0.2, 0.8, 0.2, 0.8)
 				toast.name:SetTextColor(0.8, 0.8, 0.8)
@@ -1760,7 +1761,7 @@ function module:SetGF()
 
 			return toast, client,
 			toast.name:GetStringWidth(),
-			client == (SC2 or D3) and -gap or toast.level:GetStringWidth(),
+			client == (SC2 or D3 or WTCG) and -gap or toast.level:GetStringWidth(),
 			toast.zone:GetStringWidth(),
 			toast.note:GetStringWidth()
 		end
@@ -1959,7 +1960,7 @@ function module:SetGF()
 					if client == WOW then
 						if lW > lC then lC = lW end
 						if zW > zC then zC = zW end
-					elseif client == SC2 or client == D3 then
+					elseif client == SC2 or client == D3 or client == WTCG then
 						if zW > spanZoneC then spanZoneC = zW end
 					end
 
@@ -2089,7 +2090,7 @@ function module:SetGF()
 				if button.client == WOW then
 					button.level:SetWidth(lC)
 					button.zone:SetWidth(zC)
-				elseif button.client == SC2 or button.client == D3 then
+				elseif button.client == SC2 or button.client == D3 or button.client == WTCG then
 					button.zone:SetWidth(spanZoneC)
 				end
 				button.note:SetWidth(nC)
