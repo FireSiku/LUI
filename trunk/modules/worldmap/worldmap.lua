@@ -532,6 +532,7 @@ function module:OnInitialize()
 	})
 	
 	LibWindow.RegisterConfig(WorldMapFrame, db_)
+	setfenv(WorldMapFrame_OnShow, setmetatable({ UpdateMicroButtons = function() end }, { __index = _G }))
 end
 
 function module:OnEnable()
