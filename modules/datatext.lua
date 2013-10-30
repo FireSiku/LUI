@@ -3923,6 +3923,9 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
+
+	-- thanks Blizzard, thanks a lot .. NOT!
+	setfenv(FriendsFrame_OnShow, setmetatable({ UpdateMicroButtons = function() end }, { __index = _G }))
 end
 
 function module:OnEnable()
