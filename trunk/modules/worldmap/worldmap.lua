@@ -532,6 +532,8 @@ function module:OnInitialize()
 	})
 	
 	LibWindow.RegisterConfig(WorldMapFrame, db_)
+
+	-- thanks Blizzard, thanks a lot .. NOT!
 	setfenv(WorldMapFrame_OnShow, setmetatable({ UpdateMicroButtons = function() end }, { __index = _G }))
 end
 
