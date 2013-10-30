@@ -1625,7 +1625,7 @@ function module:SetGF()
 
 		local function EditMOTD()
 			stat:Hide()
-			if not GuildTextEditFrame then LoadAddOn("Blizzard_GuildUI") end
+			if not GuildTextEditFrame then GuildFrame_LoadUI() end
 			local edit = GuildTextEditFrame
 			edit.prevPoint = {edit:GetPoint()}
 			edit.prevParent = edit:GetParent()
@@ -2361,8 +2361,9 @@ function module:SetGuild()
 						GameTooltip:SetOwner(self, isTop(self) and "ANCHOR_BOTTOMRIGHT" or "ANCHOR_RIGHT", (tooltip:GetWidth()-self:GetWidth())/2, 0)
 					end
 					GameTooltip:AddLine("Hints:")
-					GameTooltip:AddLine("|cffff8020Click|r to open Guild Roster.", 0.2, 1, 0.2)
-					GameTooltip:AddLine("|cffff8020RightClick|r to display Guild Information.", 0.2, 1, 0.2)
+					--GameTooltip:AddLine("|cffff8020Click|r to open Guild Roster.", 0.2, 1, 0.2)
+					--GameTooltip:AddLine("|cffff8020RightClick|r to display Guild Information.", 0.2, 1, 0.2)
+					GameTooltip:AddLine("|cffff8020Click|r to display Guild Information.", 0.2, 1, 0.2)
 					GameTooltip:AddLine("|cffff8020Button4|r to toggle notes.", 0.2, 1, 0.2)
 					GameTooltip:AddLine("|cffff8020Button5|r to toggle hints.", 0.2, 1, 0.2)
 					GameTooltip:SetFrameLevel(2) -- keep tooltip above friends/guild list
@@ -2420,11 +2421,13 @@ function module:SetGuild()
 		end
 
 		stat.OnClick = function(self, button)
-			if button == "LeftButton" then -- toggle Guild Roster
-				if not GuildFrame or not GuildFrame:IsShown() or (GuildRosterFrame and GuildRosterFrame:IsShown()) then
+			if not GuildFrame then GuildFrame_LoadUI() end
+			if button == "LeftButton" or button == "RightButton" then -- toggle Guild Roster
+--				if not GuildFrame or not GuildFrame:IsShown() or (GuildRosterFrame and GuildRosterFrame:IsShown()) then
+				if not GuildFrame or not GuildFrame:IsShown() or (GuildMainFrame and GuildMainFrame:IsShown()) then
 					ToggleGuildFrame()
 				end
-				if GuildFrame and GuildFrame:IsShown() then
+--[[				if GuildFrame and GuildFrame:IsShown() then
 					GuildFrameTab2:Click()
 				end
 			elseif button == "RightButton" then -- toggle Guild Info
@@ -2433,7 +2436,7 @@ function module:SetGuild()
 				end
 				if GuildFrame and GuildFrame:IsShown() then
 					GuildFrameTab1:Click()
-				end
+				end ]]--
 			elseif button == "Button4" then -- toggle guild and officer notes
 				db.Guild.ShowNotes = not db.Guild.ShowNotes
 				tooltip:Update()
