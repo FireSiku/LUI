@@ -26,6 +26,10 @@ LUI.Versions = {lui = 3403}
 
 LUI.dummy = function() return end
 
+-- Work around for IsDisabledByParentalControls() errors. Simply hide the frame. It will still error but that's OK.
+UIParent:HookScript("OnEvent", function(s, e, a1, a2) if e:find("ACTION_FORBIDDEN") and ((a1 or "")..(a2 or "")):find("IsDisabledByParentalControls") then StaticPopup_Hide(e) end; end)
+-- Come on Blizzard, please fix this soon!
+
 -- REGISTER FONTS
 Media:Register("font", "vibrocen", [[Interface\Addons\LUI\media\fonts\vibrocen.ttf]])
 Media:Register("font", "vibroceb", [[Interface\Addons\LUI\media\fonts\vibroceb.ttf]])

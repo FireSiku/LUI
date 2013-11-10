@@ -1,4 +1,4 @@
-## Interface: 50401
+## Interface: 50400
 ## Version: 3.8.1
 ## Title: LUI
 ## Author: Chaoslux, Hix, Thaly, Zista

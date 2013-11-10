@@ -2422,12 +2422,11 @@ function module:SetGuild()
 
 		stat.OnClick = function(self, button)
 			if not GuildFrame then GuildFrame_LoadUI() end
-			if button == "LeftButton" or button == "RightButton" then -- toggle Guild Roster
---				if not GuildFrame or not GuildFrame:IsShown() or (GuildRosterFrame and GuildRosterFrame:IsShown()) then
-				if not GuildFrame or not GuildFrame:IsShown() or (GuildMainFrame and GuildMainFrame:IsShown()) then
+			if button == "LeftButton" then -- toggle Guild Roster
+				if not GuildFrame or not GuildFrame:IsShown() or (GuildRosterFrame and GuildRosterFrame:IsShown()) then
 					ToggleGuildFrame()
 				end
---[[				if GuildFrame and GuildFrame:IsShown() then
+				if GuildFrame and GuildFrame:IsShown() then
 					GuildFrameTab2:Click()
 				end
 			elseif button == "RightButton" then -- toggle Guild Info
@@ -2436,7 +2435,7 @@ function module:SetGuild()
 				end
 				if GuildFrame and GuildFrame:IsShown() then
 					GuildFrameTab1:Click()
-				end ]]--
+				end
 			elseif button == "Button4" then -- toggle guild and officer notes
 				db.Guild.ShowNotes = not db.Guild.ShowNotes
 				tooltip:Update()
@@ -3927,8 +3926,6 @@ end
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
 
-	-- thanks Blizzard, thanks a lot .. NOT!
-	setfenv(FriendsFrame_OnShow, setmetatable({ UpdateMicroButtons = function() end }, { __index = _G }))
 end
 
 function module:OnEnable()
