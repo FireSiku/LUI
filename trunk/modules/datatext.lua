@@ -2361,9 +2361,8 @@ function module:SetGuild()
 						GameTooltip:SetOwner(self, isTop(self) and "ANCHOR_BOTTOMRIGHT" or "ANCHOR_RIGHT", (tooltip:GetWidth()-self:GetWidth())/2, 0)
 					end
 					GameTooltip:AddLine("Hints:")
-					--GameTooltip:AddLine("|cffff8020Click|r to open Guild Roster.", 0.2, 1, 0.2)
-					--GameTooltip:AddLine("|cffff8020RightClick|r to display Guild Information.", 0.2, 1, 0.2)
-					GameTooltip:AddLine("|cffff8020Click|r to display Guild Information.", 0.2, 1, 0.2)
+					GameTooltip:AddLine("|cffff8020Click|r to open Guild Roster.", 0.2, 1, 0.2)
+					GameTooltip:AddLine("|cffff8020RightClick|r to display Guild Information.", 0.2, 1, 0.2)
 					GameTooltip:AddLine("|cffff8020Button4|r to toggle notes.", 0.2, 1, 0.2)
 					GameTooltip:AddLine("|cffff8020Button5|r to toggle hints.", 0.2, 1, 0.2)
 					GameTooltip:SetFrameLevel(2) -- keep tooltip above friends/guild list
