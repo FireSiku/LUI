@@ -652,8 +652,12 @@ function module:SetCurrency()
 		stat.Events = { "CURRENCY_DISPLAY_UPDATE" }
 
 		-- Script functions
+		local factionTex
+		if UnitFactionGroup("player") == "Neutral" then factionTex = LUI.blank
+		else factionTex = [[Interface\PVPFrame\PVP-Currency-]] .. UnitFactionGroup("player")
+		end
 		stat.OnEnable = function(self)
-			local tex = [[Interface\PVPFrame\PVP-Currency-]] .. UnitFactionGroup("player")
+			local tex = factionTex
 			self.icon:SetBackdrop({bgFile = tex, edgeFile = nil, tile = false, edgeSize = 0, insets = {top = 0, right = 0, bottom = 0, left = 0}})
 			self.text:SetText("Currency")
 			self:CURRENCY_DISPLAY_UPDATE()
