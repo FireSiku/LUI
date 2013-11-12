@@ -166,7 +166,9 @@ local function LUIBags_ToggleBag(id)
 end
 
 local function LUIBags_StartMoving(self)
-	self:StartMoving()
+	if not db.Lock then
+		self:StartMoving()
+	end
 end
 
 local function LUIBags_StopMoving(self)
@@ -625,6 +627,7 @@ function module:SetBags()
 				--self:GetParent().detail:Show()
 				self:GetParent().gold:Show()
 				self:GetParent().currency:Show()
+				self:GetParent().search:Show()
 				module:SearchReset()
 			end
 		end
@@ -885,59 +888,6 @@ end
 
 function module:EnableBags()
 	if db.Enable ~= true then return end
-
-	-- Commented out because key bag no longer exists
-
-	-- hooking and setting key ring bag
-	-- this is just a reskin of Blizzard key bag to fit LUI
-	-- hooking OnShow because sometime key max slot changes.
-	--[[if not module:IsHooked(ContainerFrame1, "OnShow") then
-		module:HookScript(ContainerFrame1, "OnShow", function(self)
-			local keybackdrop = CreateFrame("Frame", nil, self)
-			keybackdrop:SetPoint("TOPLEFT", LUI:Scale(9), LUI:Scale(-40))
-			keybackdrop:SetPoint("BOTTOMLEFT", 0, 0)
-			keybackdrop:SetSize(LUI:Scale(179),LUI:Scale(215))
-			keybackdrop:SetBackdrop( {
-				bgFile = Media:Fetch("background", LUI.Media.empty),
-				edgeFile = Media:Fetch("border", LUI.Media.empty),
-				tile = false, edgeSize = 0,
-				insets = { left = 0, right = 0, top = 0, bottom = 0 }
-			})
-			keybackdrop:SetBackdropColor(0,0,0,0)
-			keybackdrop:SetBackdropBorderColor(0,0,0,0)
-
-			ContainerFrame1CloseButton:Hide()
-			ContainerFrame1Portrait:Hide()
-			ContainerFrame1Name:Hide()
-			ContainerFrame1BackgroundTop:SetAlpha(0)
-			ContainerFrame1BackgroundMiddle1:SetAlpha(0)
-			ContainerFrame1BackgroundMiddle2:SetAlpha(0)
-			ContainerFrame1BackgroundBottom:SetAlpha(0)
-
-			local bgColor, color = db.Colors.Background, db.Colors.Border -- Shorter vars for colors.
-			for i=1, GetKeyRingSize() do
-				local slot = _G["ContainerFrame1Item"..i]
-				local t = _G["ContainerFrame1Item"..i.."IconTexture"]
-				slot:SetPushedTexture("")
-				slot:SetNormalTexture("")
-				t:SetTexCoord(.08, .92, .08, .92)
-				t:SetPoint("TOPLEFT", slot, LUI:Scale(2), LUI:Scale(-2))
-				t:SetPoint("BOTTOMRIGHT", slot, LUI:Scale(-2), LUI:Scale(2))
-				slot:SetBackdrop( {
-					bgFile = Media:Fetch("background", db.Bags.BackgroundTexture),
-					edgeFile = Media:Fetch("border", db.Bags.BorderTexture),
-					tile = false, edgeSize = 20,
-					insets = { left = 5, right = -3, top = -3, bottom = 5 }
-				})
-				slot:SetBackdropColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a)
-				slot:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
-				LUI:StyleButton(slot, false)
-			end
-
-			self:ClearAllPoints()
-			self:SetPoint("CENTER", UIParent, "CENTER", LUI:Scale(4), LUI:Scale(5))
-		end)
-	end]]
 end
 
 function module:PLAYERBANKBAGSLOTS_CHANGED(event, id)
@@ -1086,6 +1036,7 @@ module.defaults = {
 	profile = {
 		Enable = true,
 		CopyBags = true,
+		Lock = false,
 		--Start of Bags Options
 		Bags = {
 			Font = "AvantGarde_LT_Medium",
@@ -1193,9 +1144,10 @@ function module:LoadOptions()
 			type = "group",
 			order = 3,
 			args = {
-				Enable = LUI:NewEnable("Bags", 1, db),
+				Enable = LUI:NewEnable("Bags", 1, db),	
 				Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.",
 					2, db.Bags, "Cols", dbd.Bags, 4, 32, 1, BagOpt),
+				Lock = LUI:NewToggle("Lock Frames", "Lock the Bags and Bank frames in place", 2, db, "Lock", dbd),
 				Header = LUI:NewHeader("", 3),
 				Padding = LUI:NewSlider("Bag Padding", "This sets the space between the background border and the adjacent items.",
 					4, db.Bags, "Padding", dbd.Bags, 4, 24, 1, BagOpt),
@@ -1218,7 +1170,7 @@ function module:LoadOptions()
 					function()
 						module:CheckBagsCopy()
 						if db.Bank.CopyBags then module:CopyBags() end
-					end, "double"),
+					end, "normal"),
 				Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.", 2,
 					db.Bank, "Cols", dbd.Bank, 4, 32, 1, BankOpt),
 				Header = LUI:NewHeader("", 3),
