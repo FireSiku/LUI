@@ -51,53 +51,23 @@ function LUI:InstallRecount()
 	RecountSetColor("Bar","Bar Text",0.7764705882352941,0.7764705882352941,0.7764705882352941,1)
 	RecountSetColor("Bar","Total Bar",0.7764705882352941,0.7764705882352941,0.7764705882352941,1)
 	
-	local function RecountSetClassColor(ctype,self)
-		if(self==1) then
-			Recount.db.profile.Colors.Class[ctype].r = 0.592156862745098
-			Recount.db.profile.Colors.Class[ctype].g = 0.592156862745098
-			Recount.db.profile.Colors.Class[ctype].b = 0.592156862745098
+	local classList = {"HUNTER", "WARRIOR", "PALADIN", "MAGE", "PRIEST", "ROGUE", "WARLOCK", "DRUID", "SHAMAN", "DEATHKNIGHT", "MONK", "PET", "MOB"}
+	local function RecountSetClassColor(ctype)
+		if (class == ctype) then
+			Recount.db.profile.Colors.Class[ctype].r = 0.592
+			Recount.db.profile.Colors.Class[ctype].g = 0.592
+			Recount.db.profile.Colors.Class[ctype].b = 0.592
 			Recount.db.profile.Colors.Class[ctype].a = 1
 		else
-			Recount.db.profile.Colors.Class[ctype].r = 0.3686274509803922
-			Recount.db.profile.Colors.Class[ctype].g = 0.3686274509803922
-			Recount.db.profile.Colors.Class[ctype].b = 0.3686274509803922
-			Recount.db.profile.Colors.Class[ctype].a = 0.8900000005960465
+			Recount.db.profile.Colors.Class[ctype].r = 0.368
+			Recount.db.profile.Colors.Class[ctype].g = 0.368
+			Recount.db.profile.Colors.Class[ctype].b = 0.368
+			Recount.db.profile.Colors.Class[ctype].a = 0.890
 		end
 	end
 	
-	RecountSetClassColor("HUNTER")
-	RecountSetClassColor("WARRIOR")
-	RecountSetClassColor("PALADIN")
-	RecountSetClassColor("MAGE")
-	RecountSetClassColor("PRIEST")
-	RecountSetClassColor("ROGUE")
-	RecountSetClassColor("WARLOCK")
-	RecountSetClassColor("PET")
-	RecountSetClassColor("MOB")
-	RecountSetClassColor("DRUID")
-	RecountSetClassColor("SHAMAN")
-	RecountSetClassColor("DEATHKNIGHT")
-	
-	if class == "WARRIOR" then
-		RecountSetClassColor("WARRIOR",1)
-	elseif class == "PRIEST" then
-		RecountSetClassColor("PRIEST",1)
-	elseif class == "DRUID" then
-		RecountSetClassColor("DRUID",1)
-	elseif class == "HUNTER" then 
-		RecountSetClassColor("HUNTER",1)
-	elseif class == "MAGE" then
-		RecountSetClassColor("MAGE",1)
-	elseif class == "PALADIN" then
-		RecountSetClassColor("PALADIN",1)
-	elseif class == "SHAMAN" then
-		RecountSetClassColor("SHAMAN",1)
-	elseif class == "WARLOCK" then
-		RecountSetClassColor("WARLOCK",1)
-	elseif class == "ROGUE" then
-		RecountSetClassColor("ROGUE",1)
-	elseif class == "DEATHKNIGHT" then
-		RecountSetClassColor("DEATHKNIGHT",1)
+	for i=1, #classList do
+		RecountSetClassColor(classList[i])
 	end
 
 	Recount.db.profile.DetailWindowY = 143.0000041470295
