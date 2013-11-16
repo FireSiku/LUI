@@ -12,6 +12,11 @@ LUI.Versions.recount = 3300
 local _, class = UnitClass("player")
 local Media = LibStub("LibSharedMedia-3.0")
 
+local function RecountSetColor(Branch,Name,cr,cg,cb,ca)
+	local c = {r=cr, g=cg, b=cb, a=ca,} 
+	Recount.Colors:SetColor(Branch, Name, c)
+end
+
 function LUI:InstallRecount()
 	if not IsAddOnLoaded("Recount") then return end
 	if LUICONFIG.Versions.recount == LUI.Versions.recount then return end
@@ -25,8 +30,8 @@ function LUI:InstallRecount()
 	Recount.db.profile.MainWindow.Buttons.RightButton = false
 	Recount.db.profile.MainWindow.Buttons.ReportButton = false
 	Recount.db.profile.MainWindow.ShowScrollbar = false
-	Recount.db.profile.MainWindow.Position.y = -421.097536516879
-	Recount.db.profile.MainWindow.Position.x = 332.9999067269808
+	Recount.db.profile.MainWindow.Position.y = -421
+	Recount.db.profile.MainWindow.Position.x = 333
 	Recount.db.profile.MainWindow.Position.w = 197
 	Recount.db.profile.MainWindow.Position.h = 245
 	Recount.db.profile.MainWindow.RowHeight = 27
@@ -36,43 +41,25 @@ function LUI:InstallRecount()
 	Recount.db.profile.ReportLines = 4
 	Recount.db.profile.SegmentBosses = true
 	
-	local function RecountSetColor(Branch,Name,r,g,b,a)
-		Recount.db.profile.Colors[Branch][Name].r=r
-		Recount.db.profile.Colors[Branch][Name].g=g
-		Recount.db.profile.Colors[Branch][Name].b=b
-		Recount.db.profile.Colors[Branch][Name].a=a
-	end
-	
 	RecountSetColor("Other Windows","Background",0,0,0)
-	RecountSetColor("Other Windows","Title",0.2980392156862745,0.3058823529411765,0.2980392156862745)
+	RecountSetColor("Other Windows","Title",0.298,0.305,0.298)
 	RecountSetColor("Window","Background",0,0,0,0)
-	RecountSetColor("Window","Title",0.1333333333333333,0.1333333333333333,0.1333333333333333,0)
-	RecountSetColor("Window","Title Text",0.1333333333333333,0.1333333333333333,0.1333333333333333,0)
-	RecountSetColor("Bar","Bar Text",0.7764705882352941,0.7764705882352941,0.7764705882352941,1)
-	RecountSetColor("Bar","Total Bar",0.7764705882352941,0.7764705882352941,0.7764705882352941,1)
+	RecountSetColor("Window","Title",0.133,0.133,0.133,0)
+	RecountSetColor("Window","Title Text",0.133,0.133,0.133,0)
+	RecountSetColor("Bar","Bar Text",0.776,0.776,0.776,1)
+	RecountSetColor("Bar","Total Bar",0.776,0.776,0.776,1)
 	
 	local classList = {"HUNTER", "WARRIOR", "PALADIN", "MAGE", "PRIEST", "ROGUE", "WARLOCK", "DRUID", "SHAMAN", "DEATHKNIGHT", "MONK", "PET", "MOB"}
-	local function RecountSetClassColor(ctype)
-		if (class == ctype) then
-			Recount.db.profile.Colors.Class[ctype].r = 0.592
-			Recount.db.profile.Colors.Class[ctype].g = 0.592
-			Recount.db.profile.Colors.Class[ctype].b = 0.592
-			Recount.db.profile.Colors.Class[ctype].a = 1
+	for i=1, #classList do
+		if class==classList[i] then 
+			RecountSetColor("Class", classList[i], 0.592, 0.592, 0.592, 1)
 		else
-			Recount.db.profile.Colors.Class[ctype].r = 0.368
-			Recount.db.profile.Colors.Class[ctype].g = 0.368
-			Recount.db.profile.Colors.Class[ctype].b = 0.368
-			Recount.db.profile.Colors.Class[ctype].a = 0.890
+			RecountSetColor("Class", classList[i], 0.368, 0.368, 0.368, 1)
 		end
 	end
-	
-	for i=1, #classList do
-		RecountSetClassColor(classList[i])
-	end
-
-	Recount.db.profile.DetailWindowY = 143.0000041470295
+	Recount.db.profile.DetailWindowY = 143
 	Recount.db.profile.ConfirmDeleteGroup = false
-	Recount.db.profile.DetailWindowX = 281.0000099106976
+	Recount.db.profile.DetailWindowX = 281
 	Recount.db.profile.GraphWindowX = 0
 
 	Recount.db.profile.Filters.Show.Pet = true
