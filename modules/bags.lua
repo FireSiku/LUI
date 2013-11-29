@@ -108,6 +108,16 @@ local function LUIBags_Select(bag)
 	if bag == "Bags" and LUIBags then return LUIBags end
 end
 
+local function CheckSortButton()
+	if db.hideSort then 
+		if LUIBank then LUIBank.sortButton:Hide() end
+		if LUIBags then LUIBags.sortButton:Hide() end
+	else 
+		if LUIBank then LUIBank.sortButton:Show() end
+		if LUIBags then LUIBags.sortButton:Show() end
+	end
+end
+
 local function LUIBags_OnShow()
 	module:PLAYERBANKSLOTS_CHANGED(nil, 29)	-- XXX: hack to force bag frame update
 	module:ReloadLayout("Bags")
@@ -118,6 +128,7 @@ local function LUIBags_OnShow()
 	module:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
 	module:RegisterEvent("BAG_CLOSED")
 	module:RegisterEvent("ITEM_LOCK_CHANGED")
+	CheckSortButton()
 end
 
 local function LUIBank_OnHide()
@@ -125,6 +136,7 @@ local function LUIBank_OnHide()
 end
 local function LUIBank_OnShow()
 	module:PLAYERBANKSLOTS_CHANGED(nil, 29)
+	CheckSortButton()
 end
 
 local function LUIBags_OnHide()  -- Close the Bank if Bags are closed.
@@ -486,6 +498,7 @@ function module:CreateBagFrame(bagType)
 	end)
 	sortBtn:RegisterForClicks("AnyUp")
 	frame.sortButton = sortBtn
+	CheckSortButton()
 
 	return frame
 end
@@ -1037,6 +1050,7 @@ module.defaults = {
 		Enable = true,
 		CopyBags = true,
 		Lock = false,
+		hideSort = false,
 		--Start of Bags Options
 		Bags = {
 			Font = "AvantGarde_LT_Medium",
@@ -1147,18 +1161,19 @@ function module:LoadOptions()
 				Enable = LUI:NewEnable("Bags", 1, db),	
 				Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.",
 					2, db.Bags, "Cols", dbd.Bags, 4, 32, 1, BagOpt),
-				Lock = LUI:NewToggle("Lock Frames", "Lock the Bags and Bank frames in place", 2, db, "Lock", dbd),
-				Header = LUI:NewHeader("", 3),
+				Lock = LUI:NewToggle("Lock Frames", "Lock the Bags and Bank frames in place", 3, db, "Lock", dbd,nil,"normal"),
+				hideSort = LUI:NewToggle("Hide Sort Button", "Hide the Stack & Sort button from the bags window", 4, db, "hideSort", dbd, CheckSortButton, "normal"),
+				Header = LUI:NewHeader("", 5),
 				Padding = LUI:NewSlider("Bag Padding", "This sets the space between the background border and the adjacent items.",
-					4, db.Bags, "Padding", dbd.Bags, 4, 24, 1, BagOpt),
+					6, db.Bags, "Padding", dbd.Bags, 4, 24, 1, BagOpt),
 				Spacing = LUI:NewSlider("Bag Spacing", "This sets the distance between items.",
-					5, db.Bags, "Spacing", dbd.Bags, 1, 15, 1, BagOpt),
-				Scale = LUI:NewScale("Bags Frame",6, db.Bags, "Scale", dbd.Bags, BagOpt),
-				BagScale = LUI:NewScale("Bags BagBar",7, db.Bags, "BagScale", dbd.Bags, BagOpt),
-				BagFrame = LUI:NewToggle("Show Bag Bar", nil, 8, db.Bags, "BagFrame", dbd.Bags, BagOpt),
-				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 9, db.Bags, "ItemQuality", dbd.Bags, BagOpt),
+					7, db.Bags, "Spacing", dbd.Bags, 1, 15, 1, BagOpt),
+				Scale = LUI:NewScale("Bags Frame",8, db.Bags, "Scale", dbd.Bags, BagOpt),
+				BagScale = LUI:NewScale("Bags BagBar",9, db.Bags, "BagScale", dbd.Bags, BagOpt),
+				BagFrame = LUI:NewToggle("Show Bag Bar", nil, 10, db.Bags, "BagFrame", dbd.Bags, BagOpt),
+				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 11, db.Bags, "ItemQuality", dbd.Bags, BagOpt),
 				--ShowQuest = LUI:NewToggle("Highlight Quest Items", nil, 10, db.Bags, "ShowQuest", dbd.Bags, BagOpt),
-				ShowQuest = module:NewToggle("Highlight Quest Items", nil, 10, BagOpt),
+				ShowQuest = module:NewToggle("Highlight Quest Items", nil, 12, BagOpt),
 			},
 		},
 		Bank = {
