@@ -1,7 +1,7 @@
 ## Interface: 50400
-## Version: 3.8.1
+## Version: 3.8.2
 ## Title: LUI
-## Author: Chaoslux, Hix, Thaly, Zista
+## Author: Chaoslux, Mule, Hix, Thaly, Zista
 ## FormerAuthor: Louí @EU-Das Syndikat
 ## Notes: User Interface Modification
 ## SavedVariables: LUIDB, LUIGold, LUI_Themes, LUI_Layouts
