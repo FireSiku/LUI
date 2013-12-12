@@ -2388,7 +2388,9 @@ function module:SetGuild()
 			local r,g,b = unpack(GF_Colors.OfficerNote)
 			local offcolor = ("\124cff%.2x%.2x%.2x"):format(r*255, g*255, b*255)
 			for i=1, GetNumGuildMembers(true) do
-				local name, rank, rankIndex, level, class, zone, note, offnote, connected, status, cFN, achiPoints, achiRank, isMobile = GetGuildRosterInfo(i)
+				local fullName, rank, rankIndex, level, class, zone, note, offnote, connected, status, cFN, achiPoints, achiRank, isMobile = GetGuildRosterInfo(i)
+				local displayName, realmName = strsplit("-",fullName)
+				local name = db.Guild.hideRealm and displayName or fullName
 				if isMobile then
 					zone = "Remote Chat"
 				end
@@ -3072,6 +3074,7 @@ module.defaults = {
 				a = 1,
 			},
 			ShowTotal = false,
+			hideRealm = true,
 			ShowHints = true,
 			ShowNotes = true,
 			sortCols = {"class", "name", "name"},
@@ -3826,7 +3829,7 @@ function module:LoadOptions()
 					name = "Show Total",
 					desc = "Whether you want to show total number of Guildmates online or not.",
 					type = "toggle",
-					width = "full",
+					--width = "full",
 					disabled = StatDisabled,
 					get = function() return db.Guild.ShowTotal end,
 					set = function(info, value)
@@ -3835,6 +3838,21 @@ function module:LoadOptions()
 						GuildRoster()
 					end,
 					order = 3,
+				},
+				hideRealm = {
+					name = "Hide Realm Names",
+					desc = "Whether you want to show realm name of Guildmates next to their name.",
+					type = "toggle",
+					--width = "full",
+					disabled = StatDisabled,
+					get = function() return db.Guild.hideRealm end,
+					set = function(info, value)
+						db.Guild.hideRealm = value
+						InfoStats.Guild:GUILD_ROSTER_UPDATE()
+						InfoStats.Guild:UpdateText()
+						GuildRoster()
+					end,
+					order = 4,
 				},
 				ShowHints = {
 					name = "Show Hints",
