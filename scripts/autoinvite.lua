@@ -13,7 +13,7 @@ local function isGuildmate(name)
 	if not IsInGuild() then return end
 
 	for i = 1, GetNumGuildMembers() do
-		if GetGuildRosterInfo(i) == name then
+		if select(1, strsplit("-", GetGuildRosterInfo(i))) == name then
 			return true
 		end
 	end
