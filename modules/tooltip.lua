@@ -221,6 +221,7 @@ function module:SetTooltip()
 	healthBarBG:SetBackdropBorderColor(0,0,0,0)
 
 	module:HookScript(GameTooltip, "OnTooltipSetUnit", function(frame)
+		local genderTable = { "", "Male ", "Female " };
 		local lines = frame:NumLines()
 		local GMF = GetMouseFocus()
 		local unit = (select(2, frame:GetUnit())) or (GMF and GMF:GetAttribute("unit"))
@@ -241,6 +242,7 @@ function module:SetTooltip()
 			unit = "mouseover"
 		end
 
+		local sex = UnitSex(unit)
 		local race = UnitRace(unit)
 		local class = UnitClass(unit)
 		local level = UnitLevel(unit)
@@ -250,7 +252,6 @@ function module:SetTooltip()
 		local classif = UnitClassification(unit)
 		local title = UnitPVPName(unit)
 		local r, g, b = GetQuestDifficultyColor(level).r, GetQuestDifficultyColor(level).g, GetQuestDifficultyColor(level).b
-		
 		local color = GetColor(unit)	
 		if not color then color = "|CFFFFFFFF" end -- just safe mode for when GetColor(unit) return nil for unit too far away
 		--if not race then race = "Helpful NPC" end -- For helpful NPCs that join your raid. 
@@ -273,7 +274,7 @@ function module:SetTooltip()
 
 			for i= offset, lines do
 				if(_G["GameTooltipTextLeft"..i]:GetText():find("^"..LEVEL)) and race then
-					_G["GameTooltipTextLeft"..i]:SetFormattedText("|cff%02x%02x%02x%s|r %s %s%s", r*255, g*255, b*255, level > 0 and level or "??", race, color, class.."|r")
+					_G["GameTooltipTextLeft"..i]:SetFormattedText("|cff%02x%02x%02x%s|r %s%s %s%s", r*255, g*255, b*255, level > 0 and level or "??", (db.Tooltip.ShowSex and genderTable[sex] or ""), race, color, class.."|r")
 					break
 				end
 			end
@@ -395,6 +396,7 @@ local defaults = {
 		Hidebuttons = false,
 		Hideuf = false,
 		Cursor = false,
+		ShowSex = false,
 		X = -150,
 		Y = 0,
 		Point = "RIGHT",
@@ -513,11 +515,22 @@ function module:LoadOptions()
 								end,
 							order = 5,
 						},
+						ShowUnitSex = {
+							name = "Show The Unit's Sex",
+							desc = "If the unit's sex will show in the tooltip.",
+							type = "toggle",
+							width = "full",
+							get = function() return db.Tooltip.ShowSex end,
+							set = function()
+									db.Tooltip.ShowSex = not db.Tooltip.ShowSex
+								end,
+							order = 6,
+						},
 						Scale = {
 							name = "Tooltip Scale",
 							desc = "Choose the scale of your Tooltip.\n\nDefault: "..LUI.defaults.profile.Tooltip.Scale,
 							type = "input",
-							order = 6,
+							order = 7,
 							get = function() return tostring(db.Tooltip.Scale) end,
 							set = function(self, scale)
 									if (scale == nil) or (scale == "") then
