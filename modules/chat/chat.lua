@@ -469,7 +469,7 @@ local function positionChatFrame()
 	frame:SetUserPlaced(true)
 	frame:SetSize(db.width, db.height)
 	frame:ClearAllPoints()
-	frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", db.x, db.y)
+	frame:SetPoint(db.point, UIParent, db.point, db.x, db.y)
 	FCF_SavePositionAndDimensions(frame)
 	FCF_SetLocked(frame, 1)
 end
@@ -619,6 +619,7 @@ function module:FCF_SavePositionAndDimensions(chatFrame)
 	if point then
 		db.x = xOffset * GetScreenWidth()
 		db.y = yOffset * GetScreenHeight()
+		db.point = point
 	end
 end
 
@@ -710,6 +711,7 @@ module.defaults = {
 	profile = {
 		x = 28,
 		y = 46,
+		point = "BOTTOMLEFT",
 		width = 404,
 		height = 171,
 		General = {
@@ -751,6 +753,7 @@ function module:LoadOptions()
 	local function resetChatPos()
 		db.x = dbd.x
 		db.y = dbd.y
+		db.point = dbd.point
 		db.width = dbd.width
 		db.height = dbd.height
 
