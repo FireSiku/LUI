@@ -353,7 +353,7 @@ function module:Refresh(...)
 	LUIThreat:SetStatusBarTexture(Media:Fetch("statusbar", db.Appearance.Texture))
 	if r then LUIThreat:SetStatusBarColor(r, g, b) end
 	
-	LUIThreat.bg:SetTexture(Media:Fetch("statusbar", db.Appearance.TextureBG))
+	LUIThreat.bg:SetTexture(Media:Fetch("statusbar", db.Appearance.BGTexture))
 	if r then LUIThreat.bg:SetVertexColor(r * mu, g * mu, b * mu) end
 	
 	if db.Text.Color == "By Class" then
