@@ -101,7 +101,7 @@ module.defaults = {
 		},
 		Border = {
 			Texture = "glow",
-			Thickness = 2,
+			Thickness = 4,
 			Color = {
 				r = 0.9,
 				g = 0.9,
