@@ -14,7 +14,7 @@ local function isGuildmate(name)
 
 	for i = 1, GetNumGuildMembers() do
 		local fullName = GetGuildRosterInfo(i)
-		local displayName, realmName = strsplit("-", fullName)
+		local displayName, realmName = strsplit("-", fullName, 2)
 		if fullName == name or displayName == name then
 			return true
 		end
