@@ -13,7 +13,9 @@ local function isGuildmate(name)
 	if not IsInGuild() then return end
 
 	for i = 1, GetNumGuildMembers() do
-		if select(1, strsplit("-", GetGuildRosterInfo(i))) == name then
+		local fullName = GetGuildRosterInfo(i)
+		local displayName, realmName = strsplit("-", fullName)
+		if fullName == name or displayName == name then
 			return true
 		end
 	end
