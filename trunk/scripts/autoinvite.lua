@@ -10,12 +10,26 @@ local function isFriend(name)
 end
 
 local function isGuildmate(name)
+	--[[
+	NOTES:
+	GetGuildRosterInfo() returns name as Name-Realm since 5.4.2 so
+	we need to handle that when checking for guild membership.
+	Removed reliance on strsplit as it seemed to be causing random
+	issues - and I think this provides a much more robust system.
+	]]--
 	if not IsInGuild() then return end
 
+	if string.find(name, "-") then
+		-- Name with realm, so either an off realm person or
+		-- somebody in guild from a connected realm
+		name = name:gsub("%-", ".-")
+	else
+		-- Name without a realm, so they are from my realm
+		name = string.format("%s.-", name)
+	end
 	for i = 1, GetNumGuildMembers() do
 		local fullName = GetGuildRosterInfo(i)
-		local displayName, realmName = strsplit("-", fullName, 2)
-		if fullName == name or displayName == name then
+		if string.match(fullName, name) then
 			return true
 		end
 	end
