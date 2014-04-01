@@ -249,10 +249,6 @@ local layouts = setmetatable({
 				},
 			},
 			Texts = {
-				Combat = {
-					Enable = true,
-					Size = 13,
-				},
 				Name = {
 					ColorLevelByDifficulty = false,
 					Font = "neuropol",
@@ -604,10 +600,6 @@ local layouts = setmetatable({
 				Aggro = true,
 			},
 			Texts = {
-				Combat = {
-					Enable = true,
-					Size = 13,
-				},
 				Power = {
 					Y = -48,
 					ShowEmpty = false,
