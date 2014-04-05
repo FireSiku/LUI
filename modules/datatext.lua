@@ -1537,7 +1537,7 @@ function module:SetGF()
 		local tables, broadcasts, toasts, buttons
 		local slider, highlight, texOrder1, sep, sep2
 
-		local WOW, SC2, D3, WTCG = 1, 2, 3, 4
+		local WOW, SC2, D3, WTCG, APP = 1, 2, 3, 4, 5
 		local horde = myPlayerFaction == "Horde"
 
 		local hordeZones = "Orgrimmar,Undercity,Thunder Bluff,Silvermoon City,Durotar,Tirisfal Glades,Mulgore,Eversong Woods,Northern Barrens,Silverpine Forest,Ghostlands,Azshara,"
@@ -1553,6 +1553,7 @@ function module:SetGF()
 			[SC2] = [[Interface\FriendsFrame\Battlenet-Sc2icon]],
 			[D3] = [[Interface\FriendsFrame\Battlenet-D3icon]],
 			[WTCG] = [[Interface\FriendsFrame\Battlenet-WTCGicon]],
+			[APP] = [[Interface\FriendsFrame\Battlenet-Battleneticon]],
 		}
 
 		local colpairs = {
@@ -1717,7 +1718,7 @@ function module:SetGF()
 
 			SetStatusLayout(toast.status, toast.name)
 
-			client = client == BNET_CLIENT_WOW and WOW or client == BNET_CLIENT_SC2 and SC2 or client == BNET_CLIENT_D3 and D3 or client == BNET_CLIENT_WTCG and WTCG or 0
+			client = client == BNET_CLIENT_WOW and WOW or client == BNET_CLIENT_SC2 and SC2 or client == BNET_CLIENT_D3 and D3 or client == BNET_CLIENT_WTCG and WTCG or APP
 			toast.client = client
 
 			if client == WOW then
@@ -1740,7 +1741,7 @@ function module:SetGF()
 				else
 					toast.class:SetTexture("")
 				end
-			elseif client == SC2 or client == D3 or client == WTCG then
+			elseif client == SC2 or client == D3 or client == WTCG or client == APP then
 				toast.class:SetTexture(clientIcons[client])
 				toast.class:SetTexCoord(0.2, 0.8, 0.2, 0.8)
 				toast.name:SetTextColor(0.8, 0.8, 0.8)
@@ -1765,7 +1766,7 @@ function module:SetGF()
 
 			return toast, client,
 			toast.name:GetStringWidth(),
-			client == (SC2 or D3 or WTCG) and -gap or toast.level:GetStringWidth(),
+			client == (SC2 or D3 or WTCG or APP) and -gap or toast.level:GetStringWidth(),
 			toast.zone:GetStringWidth(),
 			toast.note:GetStringWidth()
 		end
