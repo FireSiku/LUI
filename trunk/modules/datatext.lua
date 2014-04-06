@@ -1965,7 +1965,7 @@ function module:SetGF()
 					if client == WOW then
 						if lW > lC then lC = lW end
 						if zW > zC then zC = zW end
-					elseif client == SC2 or client == D3 or client == WTCG then
+					elseif client == SC2 or client == D3 or client == WTCG or client == APP then
 						if zW > spanZoneC then spanZoneC = zW end
 					end
 
@@ -2095,7 +2095,7 @@ function module:SetGF()
 				if button.client == WOW then
 					button.level:SetWidth(lC)
 					button.zone:SetWidth(zC)
-				elseif button.client == SC2 or button.client == D3 or button.client == WTCG then
+				elseif button.client == SC2 or button.client == D3 or button.client == WTCG or button.client == APP then
 					button.zone:SetWidth(spanZoneC)
 				end
 				button.note:SetWidth(nC)
