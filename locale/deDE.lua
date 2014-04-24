@@ -45,9 +45,9 @@ L["None"] = "Nichts"
 L["Outline"] = "Rand"
 L["Please read the FAQ"] = [=[Bei Fragen lesen Sie bitte die FAQ !
 Für weitere Informationen besuchen sie bitte
-|cff8080ffhttp://lui.maydia.org|r
-|cff8080ffhttp://wowinterface.com|r
-|cff8080ffhttp://www.curse.com/addons/wow/lui|r]=]
+|cff8080ffhttp://www.wowlui.com|r
+
+Genießen Sie!]=]
 L["Revision: "] = "Interne Versionsnummer:"
 L["Right"] = "Rechts"
 L["Row Spacing"] = "Versatz innerhalb einer Reihe"

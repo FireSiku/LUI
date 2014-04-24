@@ -45,9 +45,7 @@ L["None"] = "无" -- Needs review
 L["Outline"] = "细描边" -- Needs review
 L["Please read the FAQ"] = [=[如有问题请先阅读”常见问题解答”！
 要了解更多信息请浏览以下网址：
-|cff8080ffhttp://lui.maydia.org|r
-|cff8080ffhttp://wowinterface.com|r
-|cff8080ffhttp://www.curse.com/addons/wow/lui|r
+|cff8080ffhttp://www.wowlui.com|r
 
 尽情享用吧！]=]
 L["Revision: "] = "校订："
