@@ -41,7 +41,7 @@ module.presetList = {
 }
 
 function module:UNIT_AURA(event, unitid, ...)
-	if unitid ~= "player" then
+	if unitid ~= "player" or InCombatLockdown() then
 		return
 	else
 		for v,_ in pairs(db.Buffs) do
