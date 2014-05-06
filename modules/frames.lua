@@ -284,7 +284,8 @@ function module:SetFrames()
 	
 	LUI.Orb:RegisterForClicks("AnyUp")
 	LUI.Orb:SetScript("OnClick", function(self)
-		isAllShown = (Panels.db.profile.Chat.IsShown and Panels.db.profile.Tps.IsShown and Panels.db.profile.Dps.IsShown and Panels.db.profile.Raid.IsShown)
+		-- Commented out to try and fix Orb issues when not all frames are in use
+		--isAllShown = (Panels.db.profile.Chat.IsShown and Panels.db.profile.Tps.IsShown and Panels.db.profile.Dps.IsShown and Panels.db.profile.Raid.IsShown)
 		
 		if not isAllShown then
 			isAllShown = true
