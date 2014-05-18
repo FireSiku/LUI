@@ -81,6 +81,7 @@ local OnLeave = function()
 end
 
 local createAuraIcon = function(icons, index)
+	if not icons.createdIcons then icons.createdIcons = 0 end
 	icons.createdIcons = icons.createdIcons + 1
 
 	local button = CreateFrame("Button", nil, icons)
