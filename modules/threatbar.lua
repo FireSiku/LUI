@@ -39,6 +39,8 @@ local UpdateExpMode = function()
 	local bar = LUIThreat
 	local width = bar:GetWidth()
 	local left, percentBar
+	local txtformat
+	local precision = db.Text.Precision or 0
 	if UnitLevel("player") ~= 90 then -- EXP MODE
 		local restXP = GetXPExhaustion() or 0
 		local currXP = UnitXP("player")
@@ -65,9 +67,11 @@ local UpdateExpMode = function()
 		end
 		if db.Text.Enable then
 			if percentRE ~= 0 and db.General.showRested then
-				bar.Text:SetFormattedText("%.0f%% (R: %.0f%%)", percentBar, percentRE)
+				txtformat = string.format("%%.%df%%%% (R: %%.%df%%%%)", precision, precision) -- "%.0f%% (R: %.0f%%)"
+				bar.Text:SetFormattedText(txtformat, percentBar, percentRE)
 			else
-				bar.Text:SetFormattedText("%.0f%%", percentBar)
+				txtformat = string.format("%%.%df%%%%", precision)
+				bar.Text:SetFormattedText(txtformat, percentBar)
 			end
 		end
 	else -- REP MODE
@@ -99,7 +103,8 @@ local UpdateExpMode = function()
 		bar:SetMinMaxValues(barMin,barMax)
 		bar:SetValue(barValue)
 		if db.Text.Enable then
-			bar.Text:SetFormattedText("%.0f%% %s", percentBar, repText or "")
+			txtformat = string.format("%%.%df%%%% %%s", precision)
+			bar.Text:SetFormattedText(txtformat, percentBar, repText or "")
 		end
 	end
 	if db.Appearance.Color == "Gradient" then
@@ -277,6 +282,7 @@ module.defaults = {
 				g = 1,
 				b = 1,
 			},
+			Precision = 0,
 		},
 	}
 }
@@ -326,6 +332,7 @@ function module:LoadOptions()
 			empty2 = self:NewDesc(" ", 7),
 			Color = self:NewSelect("Color", "Choose the Color option for your Threat Bar Text.", 8, colorOptions, nil, dryCall, nil, disabledTextFunc),
 			IndividualColor = self:NewColorNoAlpha("Individual", "Threat Bar Text", 9, dryCall, nil, function() return not db.Text.Enable or db.Text.Color ~= "Individual" end),
+			Precision = self:NewSlider("Number Precision", "How many decimal places will be shown.", 10, 0, 3, 1, true, false, nil, disabledTextFunc),
 		}),
 	}
 	
