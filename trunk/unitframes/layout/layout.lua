@@ -2997,6 +2997,8 @@ module.funcs = {
 		self.Buffs.PostCreateIcon = PostCreateAura
 		self.Buffs.PostUpdateIcon = PostUpdateAura
 		self.Buffs.CustomFilter = CustomFilter
+		if not self.Buffs.createdIcons then self.Buffs.createdIcons = 0 end
+		if not self.Buffs.anchoredIcons then self.Buffs.anchoredIcons = 0 end
 	end,
 	Debuffs = function(self, unit, oufdb)
 		if not self.Debuffs then self.Debuffs = CreateFrame("Frame", nil, self) end
@@ -3034,6 +3036,8 @@ module.funcs = {
 		self.Debuffs.PostCreateIcon = PostCreateAura
 		self.Debuffs.PostUpdateIcon = PostUpdateAura
 		self.Debuffs.CustomFilter = CustomFilter
+		if not self.Debuffs.createdIcons then self.Debuffs.createdIcons = 0 end
+		if not self.Debuffs.anchoredIcons then self.Debuffs.anchoredIcons = 0 end
 	end,
 
 	CombatFeedbackText = function(self, unit, oufdb)
