@@ -79,6 +79,9 @@ local cornerAuras = {
 	MAGE = {
 		TOPLEFT = {54646}, -- Focus Magic
 	},
+	MONK = {
+		TOPLEFT = {115151, true} -- Renewing Mist
+	},
 	PALADIN = {
 		TOPLEFT = {25771, false, true}, -- Forbearance
 	},
