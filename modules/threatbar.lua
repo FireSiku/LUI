@@ -107,11 +107,17 @@ local UpdateExpMode = function()
 			bar.Text:SetFormattedText(txtformat, percentBar, repText or "")
 		end
 	end
+	if percentBar == -math.huge then
+		percentBar = 0
+	end
 	if db.Appearance.Color == "Gradient" then
 		local r, g, b = oUF.ColorGradient((100 - percentBar), 100, 0, 1, 0, 1, 1, 0, 1, 0, 0)
 		local mu = db.Appearance.BGMultiplier or 0
 		bar:SetStatusBarColor(r, g, b)
 		if bar.bg then bar.bg:SetVertexColor(r * mu, g * mu, b * mu) end
+	end
+	if db.Text.Color == "Gradient" then
+		bar.Text:SetTextColor(oUF.ColorGradient((100 - percentBar), 100, 0, 1, 0, 1, 1, 0, 1, 0, 0))
 	end
 end
 
