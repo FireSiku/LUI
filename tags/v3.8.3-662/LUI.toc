@@ -1,0 +1,12 @@
+## Interface: 50400
+## Version: 3.8.3
+## Title: LUI
+## Author: Chaoslux, Mule, Hix, Thaly, Zista
+## FormerAuthor: Louí @EU-Das Syndikat
+## Notes: User Interface Modification
+## SavedVariables: LUIDB, LUIGold, LUI_Themes, LUI_Layouts
+## SavedVariablesPerCharacter: LUICONFIG
+## X-oUF: oUF_LUI
+
+libs\libs.xml
+LUI.xml
