@@ -27,8 +27,6 @@ local PAUSED
 LUI.Versions.mirrorbar = 1.0
 Profiler.TraceScope(module, "Mirror Bar", "LUI")
 
---module.conflicts = "Clique"
-
 ------------------------------------------------------------------------
 --	Defaults
 ------------------------------------------------------------------------
@@ -42,6 +40,7 @@ module.defaults = {
 			Texture = "LUI_Gradient",
 			TextureBG = "LUI_Minimalist",
 			BarGap = 5,
+			ArchyBar = false,
 		},
 		Colors = {
 			Bar = {
@@ -66,6 +65,12 @@ module.defaults = {
 				r = 0.92,
 				g = 0.63,
 				b = 0,
+				a = 0.7,
+			},
+			ArchyBar = {
+				r = 1,
+				g = .3,
+				b = .4,
 				a = 0.7,
 			},
 			Background = {
@@ -127,6 +132,7 @@ module.setter = "Refresh"
 
 function module:LoadOptions()
 	local applyMirrorbar = function() self:Refresh() end
+	local applyArchybar = function() self:ToggleArchy() end
 
 	local options = {
 		Title = self:NewHeader("Mirror Bar", 1),
@@ -139,13 +145,15 @@ function module:LoadOptions()
 			Texture = self:NewSelect("Texture", "Choose the Mirror Bar Texture.", 6, widgetLists.statusbar, "LSM30_Statusbar", applyMirrorbar, nil),
 			TextureBG = self:NewSelect("Background Texture", "Choose the MirrorBar Background Texture.", 7, widgetLists.statusbar, "LSM30_Statusbar", applyMirrorbar, nil),
 			BarGap = self:NewSlider("Spacing", "Select the Spacing between mirror bars when shown.", 8, 0, 40, 1, applyMirrorbar, nil, nil),
+			ArchyBar = self:NewToggle("Archaeology Progress Bar", "Integrate the Archaeology Progress bar", 9, applyArchybar),
 		}),
 		Colors = self:NewGroup("Bar Colors", 4, nil, {
 			FatigueBar = self:NewColor("Fatigue Bar", "Fatigue Bar", 1, applyMirrorbar),
 			BreathBar = self:NewColor("Breath Bar", "Breath Bar", 2, applyMirrorbar),
 			FeignBar = self:NewColor("Feign Death Bar", "Feign Death Bar", 3, applyMirrorbar),
 			Bar = self:NewColor("Other Bar", "Other Mirror Bars", 4, applyMirrorbar),
-			Background = self:NewColor("Background", "MirrorBar Background", 5, applyMirrorbar),
+			ArchyBar = self:NewColor("Archaeology Progress Bar", "Archaeology Progress Bar", 5, applyMirrorbar),
+			Background = self:NewColor("Background", "MirrorBar Background", 6, applyMirrorbar),
 		}),
 		Text = self:NewGroup("Text Settings", 5, nil, {
 			Name = self:NewGroup("Name", 1, true, {
@@ -201,11 +209,24 @@ end
 local function OnUpdate(self, elps)
 	if PAUSED then return end
 
-	local time = GetMirrorTimerProgress(self.timer) / 1000
-	time = (time < 0) and 0 or (time > self.maxvalue) and self.maxvalue or time
-	self:SetValue(time)
-	if self.Time then
-		self.Time:SetText(formatTime(time))
+	if self.timer == "ARCHY" then
+		if ( not CanScanResearchSite() ) then
+			self:SetScript('OnUpdate', nil)
+			self.timer = nil
+			self:Hide()
+		else
+			local time = string.format("%s / %s", tostring(self.value), tostring(self.maxvalue))
+			if self.Time then
+				self.Time:SetText(time)
+			end
+		end
+	else
+		local time = GetMirrorTimerProgress(self.timer) / 1000
+		time = (time < 0) and 0 or (time > self.maxvalue) and self.maxvalue or time
+		self:SetValue(time)
+		if self.Time then
+			self.Time:SetText(formatTime(time))
+		end
 	end
 end
 
@@ -214,8 +235,13 @@ local function UpdateBar(self, timers, timer, value, maxvalue, scale, paused, la
 	local barname
 	local bar = self.MirrorBar[timers]
 	bar.timer = timer
-	bar.value = value / 1000
-	bar.maxvalue = maxvalue / 1000
+	if bar.timer == "ARCHY" then
+		bar.value = value
+		bar.maxvalue = maxvalue
+	else
+		bar.value = value / 1000
+		bar.maxvalue = maxvalue / 1000
+	end
 	bar.scale = scale
 	bar.label = label
 	if bar.Text then
@@ -225,6 +251,8 @@ local function UpdateBar(self, timers, timer, value, maxvalue, scale, paused, la
 				barname = "FeignBar"
 			elseif label == "Breath" or label == "Fatigue" then
 				barname = label.."Bar"
+			elseif label == "Archaeology Progress" then
+				barname = "ArchyBar"
 			else
 				barname = "Bar"
 			end
@@ -268,6 +296,40 @@ local function MIRROR_TIMER_PAUSE(self, event, paused)
 	PAUSED = paused > 0
 end
 
+local function SURVEY_CAST(self, event, ...)
+	local numFindsCompleted, totalFinds = ...;
+	MIRROR_TIMER_START(self, "ARCHAEOLOGY_SURVEY_CAST", "ARCHY", numFindsCompleted, totalFinds, nil, 0, "Archaeology Progress")
+end
+
+local function SURVEY_COMPLETE(self, event, ...)
+	local numFindsCompleted, totalFinds = ...;
+	if numFindsCompleted == totalFinds then
+		MIRROR_TIMER_STOP(self, "ARCHAEOLOGY_FIND_COMPLETE", "ARCHY")
+	end
+end
+
+function module:ToggleArchy(...)
+	if db.General.ArchyBar then
+		self:RegisterEvent('ARCHAEOLOGY_SURVEY_CAST', SURVEY_CAST, self)
+		self:RegisterEvent('ARCHAEOLOGY_FIND_COMPLETE', SURVEY_COMPLETE, self)
+		UIParent:UnregisterEvent'ARCHAEOLOGY_SURVEY_CAST'
+		if ArcheologyDigsiteProgressBar then
+			ArcheologyDigsiteProgressBar:Hide()
+			ArcheologyDigsiteProgressBar._Show = ArcheologyDigsiteProgressBar.Show
+			ArcheologyDigsiteProgressBar.Show = ArcheologyDigsiteProgressBar.Hide
+		end
+	else
+		MIRROR_TIMER_STOP(self, "ARCHAEOLOGY_FIND_COMPLETE", "ARCHY")
+		self:UnregisterEvent('ARCHAEOLOGY_SURVEY_CAST', SURVEY_CAST)
+		self:UnregisterEvent('ARCHAEOLOGY_FIND_COMPLETE', SURVEY_COMPLETE)
+		UIParent:RegisterAllEvents'ARCHAEOLOGY_SURVEY_CAST'
+		if ArcheologyDigsiteProgressBar then
+			ArcheologyDigsiteProgressBar.Show = ArcheologyDigsiteProgressBar._Show
+			ArcheologyDigsiteProgressBar._Show = nil
+		end
+	end
+end
+
 function module:Refresh(...)
 	for i = 1, MIRRORTIMER_NUMTIMERS do
 		if i == 1 then
@@ -284,6 +346,8 @@ function module:Refresh(...)
 				barname = "FeignBar"
 			elseif label == "Breath" or label == "Fatigue" then
 				barname = label.."Bar"
+			elseif label == "Archaeology Progress" then
+				barname = "ArchyBar"
 			else
 				barname = "Bar"
 			end
@@ -387,6 +451,17 @@ function module:OnEnable()
 	self:RegisterEvent('MIRROR_TIMER_START', MIRROR_TIMER_START, self)
 	self:RegisterEvent('MIRROR_TIMER_STOP', MIRROR_TIMER_STOP, self)
 	self:RegisterEvent('MIRROR_TIMER_PAUSE', MIRROR_TIMER_PAUSE, self)
+	-- Archaeology Update
+	if db.General.ArchyBar then
+		if ArcheologyDigsiteProgressBar then
+			ArcheologyDigsiteProgressBar:Hide()
+			ArcheologyDigsiteProgressBar.ShowBackup = ArcheologyDigsiteProgressBar.Show
+			ArcheologyDigsiteProgressBar.Show = ArcheologyDigsiteProgressBar.Hide
+		end
+		UIParent:UnregisterEvent'ARCHAEOLOGY_SURVEY_CAST'
+		self:RegisterEvent('ARCHAEOLOGY_SURVEY_CAST', SURVEY_CAST, self)
+		self:RegisterEvent('ARCHAEOLOGY_FIND_COMPLETE', SURVEY_COMPLETE, self)
+	end
 end
 
 function module:OnDisable()
@@ -402,4 +477,13 @@ function module:OnDisable()
 	self:UnregisterEvent('MIRROR_TIMER_START', MIRROR_TIMER_START)
 	self:UnregisterEvent('MIRROR_TIMER_STOP', MIRROR_TIMER_STOP)
 	self:UnregisterEvent('MIRROR_TIMER_PAUSE', MIRROR_TIMER_PAUSE)
+	-- Archaeology Update
+	UIParent:RegisterAllEvents'ARCHAEOLOGY_SURVEY_CAST'
+	if ArcheologyDigsiteProgressBar and ArcheologyDigsiteProgressBar.ShowBackup then
+		ArcheologyDigsiteProgressBar.Show = ArcheologyDigsiteProgressBar.ShowBackup
+		ArcheologyDigsiteProgressBar.ShowBackup = nil
+	end
+	MIRROR_TIMER_STOP(self, "ARCHAEOLOGY_FIND_COMPLETE", "ARCHY")
+	self:UnregisterEvent('ARCHAEOLOGY_SURVEY_CAST', SURVEY_CAST)
+	self:UnregisterEvent('ARCHAEOLOGY_FIND_COMPLETE', SURVEY_COMPLETE)
 end
