@@ -310,6 +310,9 @@ end
 
 function module:ToggleArchy(...)
 	if db.General.ArchyBar then
+		if not ArcheologyDigsiteProgressBar then
+			LoadAddOn("Blizzard_ArchaeologyUI")
+		end
 		self:RegisterEvent('ARCHAEOLOGY_SURVEY_CAST', SURVEY_CAST, self)
 		self:RegisterEvent('ARCHAEOLOGY_FIND_COMPLETE', SURVEY_COMPLETE, self)
 		UIParent:UnregisterEvent'ARCHAEOLOGY_SURVEY_CAST'
@@ -453,9 +456,12 @@ function module:OnEnable()
 	self:RegisterEvent('MIRROR_TIMER_PAUSE', MIRROR_TIMER_PAUSE, self)
 	-- Archaeology Update
 	if db.General.ArchyBar then
+		if not ArcheologyDigsiteProgressBar then
+			LoadAddOn("Blizzard_ArchaeologyUI")
+		end
 		if ArcheologyDigsiteProgressBar then
 			ArcheologyDigsiteProgressBar:Hide()
-			ArcheologyDigsiteProgressBar.ShowBackup = ArcheologyDigsiteProgressBar.Show
+			ArcheologyDigsiteProgressBar._Show = ArcheologyDigsiteProgressBar.Show
 			ArcheologyDigsiteProgressBar.Show = ArcheologyDigsiteProgressBar.Hide
 		end
 		UIParent:UnregisterEvent'ARCHAEOLOGY_SURVEY_CAST'
@@ -479,9 +485,9 @@ function module:OnDisable()
 	self:UnregisterEvent('MIRROR_TIMER_PAUSE', MIRROR_TIMER_PAUSE)
 	-- Archaeology Update
 	UIParent:RegisterAllEvents'ARCHAEOLOGY_SURVEY_CAST'
-	if ArcheologyDigsiteProgressBar and ArcheologyDigsiteProgressBar.ShowBackup then
-		ArcheologyDigsiteProgressBar.Show = ArcheologyDigsiteProgressBar.ShowBackup
-		ArcheologyDigsiteProgressBar.ShowBackup = nil
+	if ArcheologyDigsiteProgressBar and ArcheologyDigsiteProgressBar._Show then
+		ArcheologyDigsiteProgressBar.Show = ArcheologyDigsiteProgressBar._Show
+		ArcheologyDigsiteProgressBar._Show = nil
 	end
 	MIRROR_TIMER_STOP(self, "ARCHAEOLOGY_FIND_COMPLETE", "ARCHY")
 	self:UnregisterEvent('ARCHAEOLOGY_SURVEY_CAST', SURVEY_CAST)
