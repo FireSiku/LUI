@@ -1667,8 +1667,8 @@ function module:SetGF()
 				return button, button.name:GetStringWidth()
 			end
 
-			local class, name, level, zone, notes, status, _, rank, isMobile, realIndex = unpack((stat.IsGuild and guildEntries or friendEntries)[index])
-			button.unit = name
+			local class, name, level, zone, notes, status, _, rank, isMobile, realIndex, fullName = unpack((stat.IsGuild and guildEntries or friendEntries)[index])
+			button.unit = fullName
 			button.realIndex = realIndex
 			button.name:SetText(formatedStatusText(status, name, isMobile))
 			if name then
@@ -2397,7 +2397,7 @@ function module:SetGuild()
 				end
 				if connected or isMobile then
 					local notes = note ~= "" and (offnote == "" and note or ("%s |cffffcc00-|r %s%s"):format(note, offcolor, offnote)) or offnote == "" and "|cffffcc00-" or offcolor..offnote
-					guildEntries[#guildEntries+1] = tooltip:new(tooltip.LocClassNames[class] or "", name or "", level or 0, zone or UNKNOWN, notes, status, rankIndex or 0, rank or 0, isMobile, i)
+					guildEntries[#guildEntries+1] = tooltip:new(tooltip.LocClassNames[class] or "", name or "", level or 0, zone or UNKNOWN, notes, status, rankIndex or 0, rank or 0, isMobile, i, fullName)
 				end
 			end
 			self:UpdateText()
