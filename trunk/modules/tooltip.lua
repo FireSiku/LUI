@@ -24,7 +24,7 @@ local widgetLists = AceGUIWidgetLSMlists
 local db
 local hooks = { }
 local GameTooltip, GameTooltipStatusBar = _G["GameTooltip"], _G["GameTooltipStatusBar"]
-local Tooltips = {GameTooltip,ItemRefTooltip,ShoppingTooltip1,ShoppingTooltip2,ShoppingTooltip3,WorldMapTooltip}
+local Tooltips = {GameTooltip,ItemRefTooltip,ItemRefShoppingTooltip1,ItemRefShoppingTooltip2,ShoppingTooltip1,ShoppingTooltip2,WorldMapTooltip,FriendsTooltip,FloatingGarrisonFollowerTooltip}
 local LUITooltipColors
 
 function module:UpdateTooltip()

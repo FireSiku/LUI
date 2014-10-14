@@ -12,7 +12,7 @@
 			self:SetChecked(GetCVarBool("showTamers"))
             local text = _G[self:GetName().."Text"];
             text:SetText("Show Pet Tamers");
-            self:SetPoint("BOTTOMLEFT", WorldMapPositioningGuide, "BOTTOMLEFT", 16, 4);
+            self:SetPoint("BOTTOMLEFT", WorldMapFrame.BorderFrame, "BOTTOMLEFT", 16, 4);
           </OnLoad>
           <OnClick>
             local isChecked = self:GetChecked();
@@ -21,7 +21,7 @@
             else
               PlaySound("igMainMenuOptionCheckBoxOff");
             end        
-            SetCVar("showTamers", isChecked);
+            SetCVar("showTamers", isChecked and "1" or "0");
 			WorldMapFrame_Update();
           </OnClick>
           <OnEnter>
@@ -40,7 +40,7 @@
 			self:SetChecked(GetCVarBool("showTamers"))
             local text = _G[self:GetName().."Text"];
             text:SetText("Show Dig Sites");
-            self:SetPoint("BOTTOMLEFT", WorldMapPositioningGuide, "BOTTOMLEFT", 156, 4);
+            self:SetPoint("BOTTOMLEFT", WorldMapFrame.BorderFrame, "BOTTOMLEFT", 156, 4);
           </OnLoad>
           <OnClick>
             local isChecked = self:GetChecked();
@@ -51,7 +51,7 @@
               PlaySound("igMainMenuOptionCheckBoxOff");
 			  WorldMapArchaeologyDigSites:Hide()
             end        
-            SetCVar("digSites", isChecked);
+            SetCVar("digSites", isChecked and "1" or "0");
 			WorldMapFrame_Update();
           </OnClick>
           <OnEnter>
@@ -74,12 +74,13 @@
                 _G[self:GetName().."Text"]:SetText(SHOW_BOSSES_ON_MAP_TEXT)
             </OnLoad>
             <OnClick>
-                if self:GetChecked() then
+				local isChecked = self:GetChecked()
+                if ( isChecked) then
                     PlaySound("igMainMenuOptionCheckBoxOn")
                 else
                     PlaySound("igMainMenuOptionCheckBoxOff")
                 end
-                SetCVar("showBosses", self:GetChecked())
+                SetCVar("showBosses", isChecked and "1" or "0")
                 WorldMapFrame_Update()
             </OnClick>
         </Scripts>

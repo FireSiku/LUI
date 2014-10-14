@@ -1218,7 +1218,7 @@ function module:LoadOptions()
 								},
 								PosX = {
 									name = "X Value",
-									desc = "X Value for your ChatFrame1.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Chat.X,
+									desc = "X Value for your ChatFrame1.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Chat.X,
 									type = "input",
 									get = function() return db.Chat.X end,
 									set = function(info,PosX)
@@ -1232,7 +1232,7 @@ function module:LoadOptions()
 								},
 								PosY = {
 									name = "Y Value",
-									desc = "Y Value for your ChatFrame1.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Chat.Y,
+									desc = "Y Value for your ChatFrame1.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Chat.Y,
 									type = "input",
 									get = function() return db.Chat.Y end,
 									set = function(info,PosY)
@@ -1513,7 +1513,7 @@ function module:LoadOptions()
 								},
 								PosX = {
 									name = "X Value",
-									desc = "X Value for your Editbox.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Chat.Editbox.Position.X,
+									desc = "X Value for your Editbox.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Chat.Editbox.Position.X,
 									type = "input",
 									disabled = function()
 										if db.Chat.Editbox.Position.Anchor == "INDIVIDUAL" then
@@ -1535,7 +1535,7 @@ function module:LoadOptions()
 								},
 								PosY = {
 									name = "Y Value",
-									desc = "Y Value for your Editbox.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Chat.Editbox.Position.Y,
+									desc = "Y Value for your Editbox.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Chat.Editbox.Position.Y,
 									type = "input",
 									disabled = function()
 										if db.Chat.Editbox.Position.Anchor == "INDIVIDUAL" then
@@ -1639,7 +1639,7 @@ function module:LoadOptions()
 								},
 								PosX = {
 									name = "X Value",
-									desc = "X Value for your Chat Arrows.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Chat.Buttons.Arrows.X,
+									desc = "X Value for your Chat Arrows.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Chat.Buttons.Arrows.X,
 									type = "input",
 									disabled = function() return not db.Chat.Buttons.Arrows.Enable end,
 									width = "half",
@@ -1655,7 +1655,7 @@ function module:LoadOptions()
 								},
 								PosY = {
 									name = "Y Value",
-									desc = "Y Value for your Chat Arrows.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Chat.Buttons.Arrows.Y,
+									desc = "Y Value for your Chat Arrows.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Chat.Buttons.Arrows.Y,
 									type = "input",
 									disabled = function() return not db.Chat.Buttons.Arrows.Enable end,
 									width = "half",
@@ -1721,7 +1721,7 @@ function module:LoadOptions()
 								},
 								PosX = {
 									name = "X Value",
-									desc = "X Value for your Scroll Down Button.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Chat.Buttons.BottomButton.X,
+									desc = "X Value for your Scroll Down Button.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Chat.Buttons.BottomButton.X,
 									type = "input",
 									disabled = function() return not db.Chat.Buttons.BottomButton.Enable end,
 									width = "half",
@@ -1737,7 +1737,7 @@ function module:LoadOptions()
 								},
 								PosY = {
 									name = "Y Value",
-									desc = "Y Value for your Scroll Down Button.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Chat.Buttons.BottomButton.Y,
+									desc = "Y Value for your Scroll Down Button.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Chat.Buttons.BottomButton.Y,
 									type = "input",
 									disabled = function() return not db.Chat.Buttons.BottomButton.Enable end,
 									width = "half",
@@ -1803,7 +1803,7 @@ function module:LoadOptions()
 								},
 								PosX = {
 									name = "X Value",
-									desc = "X Value for your Menu Button.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Chat.Buttons.MenuButton.X,
+									desc = "X Value for your Menu Button.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Chat.Buttons.MenuButton.X,
 									type = "input",
 									disabled = function() return not db.Chat.Buttons.MenuButton.Enable end,
 									width = "half",
@@ -1819,7 +1819,7 @@ function module:LoadOptions()
 								},
 								PosY = {
 									name = "Y Value",
-									desc = "Y Value for your Menu Button.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Chat.Buttons.MenuButton.Y,
+									desc = "Y Value for your Menu Button.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Chat.Buttons.MenuButton.Y,
 									type = "input",
 									disabled = function() return not db.Chat.Buttons.MenuButton.Enable end,
 									width = "half",
@@ -1885,7 +1885,7 @@ function module:LoadOptions()
 								},
 								PosX = {
 									name = "X Value",
-									desc = "X Value for your Minimize Button.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Chat.Buttons.MinimizeButton.X,
+									desc = "X Value for your Minimize Button.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Chat.Buttons.MinimizeButton.X,
 									type = "input",
 									disabled = function() return not db.Chat.Buttons.MinimizeButton.Enable end,
 									width = "half",
@@ -1901,7 +1901,7 @@ function module:LoadOptions()
 								},
 								PosY = {
 									name = "Y Value",
-									desc = "Y Value for your Minimize Button.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Chat.Buttons.MinimizeButton.Y,
+									desc = "Y Value for your Minimize Button.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Chat.Buttons.MinimizeButton.Y,
 									type = "input",
 									disabled = function() return not db.Chat.Buttons.MinimizeButton.Enable end,
 									width = "half",
@@ -1967,7 +1967,7 @@ function module:LoadOptions()
 								},
 								PosX = {
 									name = "X Value",
-									desc = "X Value for your Social Button.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Chat.Buttons.SocialButton.X,
+									desc = "X Value for your Social Button.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Chat.Buttons.SocialButton.X,
 									type = "input",
 									disabled = function() return not db.Chat.Buttons.SocialButton.Enable end,
 									width = "half",
@@ -1983,7 +1983,7 @@ function module:LoadOptions()
 								},
 								PosY = {
 									name = "Y Value",
-									desc = "Y Value for your Social Button.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Chat.Buttons.SocialButton.Y,
+									desc = "Y Value for your Social Button.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Chat.Buttons.SocialButton.Y,
 									type = "input",
 									disabled = function() return not db.Chat.Buttons.SocialButton.Enable end,
 									width = "half",
@@ -2046,7 +2046,7 @@ function module:LoadOptions()
 								},
 								PosX = {
 									name = "X Value",
-									desc = "X Value for your Copy Text Button.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Chat.Buttons.Copy.X,
+									desc = "X Value for your Copy Text Button.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Chat.Buttons.Copy.X,
 									type = "input",
 									disabled = function() return not db.Chat.Buttons.Copy.Enable end,
 									width = "half",
@@ -2061,7 +2061,7 @@ function module:LoadOptions()
 								},
 								PosY = {
 									name = "Y Value",
-									desc = "Y Value for your Copy Text Button.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Chat.Buttons.Copy.Y,
+									desc = "Y Value for your Copy Text Button.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Chat.Buttons.Copy.Y,
 									type = "input",
 									disabled = function() return not db.Chat.Buttons.Copy.Enable end,
 									width = "half",

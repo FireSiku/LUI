@@ -160,6 +160,11 @@ local layouts = setmetatable({
 					Font = "vibroceb",
 					Size = 12,
 				},
+				Combat = {
+					Size = 20,
+					Font = "vibrocen",
+					Outline = "OUTLINE",
+				},
 			},
 		},
 		Target = {
@@ -269,6 +274,11 @@ local layouts = setmetatable({
 					Color = "By Class",
 					Font = "vibroceb",
 				},
+				Combat = {
+					Size = 20,
+					Font = "vibrocen",
+					Outline = "OUTLINE",
+				},
 			},
 		},
 		ToT = {
@@ -323,6 +333,11 @@ local layouts = setmetatable({
 					ColorNameByClass = true,
 					Font = "vibroceb",
 					Size = 12,
+				},
+				Combat = {
+					Size = 20,
+					Font = "vibrocen",
+					Outline = "OUTLINE",
 				},
 			},
 		},
@@ -451,6 +466,11 @@ local layouts = setmetatable({
 				},
 				Name = {
 					Enable = false,
+				},
+				Combat = {
+					Size = 20,
+					Font = "vibrocen",
+					Outline = "OUTLINE",
 				},
 			},
 		},
@@ -617,6 +637,11 @@ local layouts = setmetatable({
 					Y = 5,
 					Color = "By Class",
 					Font = "vibroceb",
+				},
+				Combat = {
+					Size = 20,
+					Font = "vibrocen",
+					Outline = "OUTLINE",
 				},
 			},
 		},

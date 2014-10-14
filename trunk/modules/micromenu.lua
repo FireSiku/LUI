@@ -860,7 +860,7 @@ function module:SetMicroMenu()
 	end)
 
 	LUI.MicroMenu.Buttons.Quests.Clicker:SetScript("OnLeave", function(self)
-		if not QuestLogFrame:IsShown() then
+		if not WorldMapFrame:IsShown() then
 			self:SetAlpha(0)
 		end
 		self.State = nil
@@ -868,18 +868,18 @@ function module:SetMicroMenu()
 	end)
 
 	LUI.MicroMenu.Buttons.Quests.Clicker:SetScript("OnClick", function(self)
-		if QuestLogFrame:IsShown() then
-			HideUIPanel(QuestLogFrame)
+		if WorldMapFrame:IsShown() then
+			HideUIPanel(WorldMapFrame)
 		else
-			ShowUIPanel(QuestLogFrame)
+			ShowUIPanel(WorldMapFrame)
 		end
 	end)
 
-	QuestLogFrame:HookScript("OnShow", function(self)
+	WorldMapFrame:HookScript("OnShow", function(self)
 		LUI.MicroMenu.Buttons.Quests.Clicker:SetAlpha(1)
 	end)
 
-	QuestLogFrame:HookScript("OnHide", function(self)
+	WorldMapFrame:HookScript("OnHide", function(self)
 		if not LUI.MicroMenu.Buttons.Quests.Clicker.State then
 			LUI.MicroMenu.Buttons.Quests.Clicker:SetAlpha(0)
 		end
@@ -1119,9 +1119,9 @@ function module:SetMicroMenu()
 	self:SetMicroMenuPosition()
 
 	-- little hack for the questframe
-	local point, relframe, relpoint, x, y = QuestLogFrame:GetPoint()
-	QuestLogFrame:ClearAllPoints()
-	QuestLogFrame:SetPoint(point, relframe, relpoint, x, -105)
+	--local point, relframe, relpoint, x, y = QuestLogFrame:GetPoint()
+	--QuestLogFrame:ClearAllPoints()
+	--QuestLogFrame:SetPoint(point, relframe, relpoint, x, -105)
 
 	-- talent alert frame
 	if UnitLevel("player") < 10 then 
@@ -1221,7 +1221,7 @@ function module:LoadFrameOptions()
 				args = {
 					MMX = {
 						name = "X Value",
-						desc = "X Value for your Micro Menu.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..dbd.profile.X,
+						desc = "X Value for your Micro Menu.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..dbd.profile.X,
 						type = "input",
 						get = function() return tostring(db.X) end,
 						set = function(self,MMX)
@@ -1236,7 +1236,7 @@ function module:LoadFrameOptions()
 					},
 					MMY = {
 						name = "Y Value",
-						desc = "Y Value for your Micro Menu.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..dbd.profile.Y,
+						desc = "Y Value for your Micro Menu.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..dbd.profile.Y,
 						type = "input",
 						get = function() return tostring(db.Y) end,
 						set = function(self,MMY)
@@ -1259,7 +1259,7 @@ function module:LoadFrameOptions()
 				args = {
 					MMNaviX = {
 						name = "X Value",
-						desc = "X Value for your Micro Menu Navigation Panel.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..dbd.profile.NaviX,
+						desc = "X Value for your Micro Menu Navigation Panel.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..dbd.profile.NaviX,
 						type = "input",
 						get = function() return tostring(db.NaviX) end,
 						set = function(self,MMNaviX)
@@ -1274,7 +1274,7 @@ function module:LoadFrameOptions()
 					},
 					MMNaviY = {
 						name = "Y Value",
-						desc = "Y Value for your Micro Menu Navigation Panel.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..dbd.profile.NaviY,
+						desc = "Y Value for your Micro Menu Navigation Panel.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..dbd.profile.NaviY,
 						type = "input",
 						get = function() return tostring(db.NaviY) end,
 						set = function(self,MMNaviY)
