@@ -70,11 +70,11 @@ local function setMapBorder(disabling)
 		end
 		module:UpdateMapElements()
 	else
-		WorldMapFrameTitle:Show()
-		if char.miniMap then
-			WorldMapFrameMiniBorderLeft:Show()
-			WorldMapFrameMiniBorderRight:Show()
-		end
+		WorldMapFrame.BorderFrame:Show()
+		--if char.miniMap then
+			--WorldMapFrameMiniBorderLeft:Show()
+			--WorldMapFrameMiniBorderRight:Show()
+		--end
 		
 		module:UnregisterEvent("WORLD_MAP_UPDATE")
 		module:WORLD_MAP_UPDATE(disabling)
@@ -165,9 +165,9 @@ do -- PLAYER_REGEN_DISABLED, PLAYER_REGEN_ENABLED
 		if blobWasVisible then
 			WorldMapBlobFrame:Show()
 			WorldMapBlobFrame_CalculateHitTranslations()
-			if WorldMapQuestScrollChildFrame.selected and not WorldMapQuestScrollChildFrame.selected.completed then
-				WorldMapBlobFrame:DrawBlob(WorldMapQuestScrollChildFrame.selected.questId, true)
-			end
+			--if WorldMapQuestScrollChildFrame.selected and not WorldMapQuestScrollChildFrame.selected.completed then
+				--WorldMapBlobFrame:DrawBlob(WorldMapQuestScrollChildFrame.selected.questId, true)
+			--end
 		end
 		if blobNewScale then
 			WorldMapBlobFrame:SetScale(blobNewScale)
@@ -191,9 +191,9 @@ do -- PLAYER_REGEN_DISABLED, PLAYER_REGEN_ENABLED
 			archBlobNewScale = nil
 		end
 		
-		if WorldMapQuestScrollChildFrame.selected then
-			WorldMapBlobFrame:DrawBlob(WorldMapQuestScrollChildFrame.selected.questId, false)
-		end
+		--if WorldMapQuestScrollChildFrame.selected then
+			--WorldMapBlobFrame:DrawBlob(WorldMapQuestScrollChildFrame.selected.questId, false)
+		--end
 	end
 end
 
@@ -250,15 +250,10 @@ local function WM_ToggleSizeUp()
 	SetUIPanelAttribute(WorldMapFrame, "allowOtherPanels", true)
 	WorldMapFrame:EnableKeyboard(false)
 	-- adjust map frames
-	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
-		WorldMapShowDigSites:ClearAllPoints()
-		WorldMapShowDigSites:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 50, 0)
-	else
-		WorldMapShowDropDown:ClearAllPoints()
-		WorldMapShowDropDown:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 0, 0)
-		ShowPetTamers:Show()
-		ShowDigSites:Show()
-	end
+	--WorldMapShowDropDown:ClearAllPoints()
+	--WorldMapShowDropDown:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 0, 0)
+	ShowPetTamers:Show()
+	ShowDigSites:Show()
 	BlackoutWorld:Hide()
 	-- floor dropdown
 	WorldMapLevelDropDown:ClearAllPoints()
@@ -275,13 +270,10 @@ local function WM_ToggleSizeDown()
 	WorldMapFrame:SetMovable(true)
 	WorldMapFrame:EnableMouse(true)
 	-- adjust map frames
-	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
-		WorldMapShowDigSites:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 25, 0)
-		WorldMapShowDigSites:ClearAllPoints()
-	else
-		ShowPetTamers:Hide()
-		ShowDigSites:Hide()
-	end
+	--WorldMapShowDigSites:SetPoint("LEFT", WorldMapTrackQuestText, "RIGHT", 25, 0)
+	--WorldMapShowDigSites:ClearAllPoints()
+	ShowPetTamers:Hide()
+	ShowDigSites:Hide()
 	-- hide big window elements
 	WorldMapTitleButton:Hide()
 	-- floor dropdown
@@ -349,10 +341,10 @@ function module:SetMap()
 	self:SecureHook("WorldMap_ToggleSizeUp", WM_ToggleSizeUp)
 	self:SecureHook("WorldMap_ToggleSizeDown", WM_ToggleSizeDown)
 	
-	self:SecureHookScript(WorldMapContinentDropDownButton, "OnClick", self.DropdownScaleFix)
-	self:SecureHookScript(WorldMapZoneDropDownButton, "OnClick", self.DropdownScaleFix)
-	self:SecureHookScript(WorldMapZoneMinimapDropDownButton, "OnClick", self.DropdownScaleFix)
-	self:SecureHookScript(WorldMapLevelDropDownButton, "OnClick", self.DropdownScaleFix)
+	--self:SecureHookScript(WorldMapContinentDropDownButton, "OnClick", self.DropdownScaleFix)
+	--self:SecureHookScript(WorldMapZoneDropDownButton, "OnClick", self.DropdownScaleFix)
+	--self:SecureHookScript(WorldMapZoneMinimapDropDownButton, "OnClick", self.DropdownScaleFix)
+	--self:SecureHookScript(WorldMapLevelDropDownButton, "OnClick", self.DropdownScaleFix)
 	
 	LibWindow.MakeDraggable(WorldMapFrame)
 	WorldMapFrame:SetClampedToScreen(false)

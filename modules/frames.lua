@@ -186,7 +186,7 @@ function module:SetFrames()
 	LUI.Navi.Top:SetBackdrop({
 		bgFile = fdir.."top", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Navi.Top:SetBackdropBorderColor(0, 0, 0, 0)
@@ -196,7 +196,7 @@ function module:SetFrames()
 	LUI.Navi.Top2:SetBackdrop({
 		bgFile = fdir.."top_back", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Navi.Top2:SetBackdropColor(unpack(color_top))
@@ -207,7 +207,7 @@ function module:SetFrames()
 	LUI.Orb.Hover:SetBackdrop({
 		bgFile = fdir.."ring_inner", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Orb.Hover:SetBackdropColor(unpack(orb_hover))
@@ -218,7 +218,7 @@ function module:SetFrames()
 	LUI.Orb.Ring2:SetBackdrop({
 		bgFile = fdir.."ring", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Orb.Ring2:SetBackdropColor(0.25, 0.25, 0.25, 1)
@@ -230,7 +230,7 @@ function module:SetFrames()
 	LUI.Orb.Ring3:SetBackdrop({
 		bgFile = fdir.."ring_inner", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1,
+		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Orb.Ring3:SetBackdropColor(0.25, 0.25, 0.25, 0.7)
@@ -242,7 +242,7 @@ function module:SetFrames()
 	LUI.Orb.Ring4:SetBackdrop({
 		bgFile = fdir.."ring_inner2", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Orb.Ring4:SetBackdropBorderColor(0, 0, 0, 0)
@@ -253,7 +253,7 @@ function module:SetFrames()
 	LUI.Orb.Ring5:SetBackdrop({
 		bgFile = fdir.."ring_inner3", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Orb.Ring5:SetBackdropColor(0.25, 0.25, 0.25, 0.7)
@@ -265,7 +265,7 @@ function module:SetFrames()
 	LUI.Orb.Cycle:SetBackdrop({
 		bgFile = fdir.."ring_inner4", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Orb.Cycle:SetBackdropColor(0.25, 0.25, 0.25, 0.7)
@@ -276,7 +276,7 @@ function module:SetFrames()
 	LUI.Orb.Ring7:SetBackdrop({
 		bgFile = fdir.."ring", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Orb.Ring7:SetBackdropBorderColor(0, 0, 0, 0)
@@ -332,7 +332,7 @@ function module:SetFrames()
 	LUI.Navi.Chat:SetBackdrop({
 		bgFile = fdir.."button_left2", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1,
+		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Navi.Chat:SetBackdropColor(unpack(navi))
@@ -343,7 +343,7 @@ function module:SetFrames()
 	LUI.Navi.Chat.Hover:SetBackdrop({
 		bgFile = fdir.."button_left2_hover", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Navi.Chat.Hover:SetBackdropColor(unpack(navi_hover))
@@ -382,7 +382,7 @@ function module:SetFrames()
 	LUI.Navi.Tps:SetBackdrop({
 		bgFile = fdir.."button_left1", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Navi.Tps:SetBackdropColor(unpack(navi))
@@ -393,7 +393,7 @@ function module:SetFrames()
 	LUI.Navi.Tps.Hover:SetBackdrop({
 		bgFile = fdir.."button_left1_hover", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Navi.Tps.Hover:SetBackdropColor(unpack(navi_hover))
@@ -434,7 +434,7 @@ function module:SetFrames()
 	LUI.Navi.Dps:SetBackdrop({
 		bgFile = fdir.."button_right1", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Navi.Dps:SetBackdropColor(unpack(navi))
@@ -445,7 +445,7 @@ function module:SetFrames()
 	LUI.Navi.Dps.Hover:SetBackdrop({
 		bgFile = fdir.."button_right1_hover", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Navi.Dps.Hover:SetBackdropColor(unpack(navi_hover))
@@ -486,7 +486,7 @@ function module:SetFrames()
 	LUI.Navi.Raid:SetBackdrop({
 		bgFile = fdir.."button_right2", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Navi.Raid:SetBackdropColor(unpack(navi))
@@ -497,7 +497,7 @@ function module:SetFrames()
 	LUI.Navi.Raid.Hover:SetBackdrop({
 		bgFile = fdir.."button_right2_hover", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Navi.Raid.Hover:SetBackdropColor(unpack(navi_hover))
@@ -540,7 +540,7 @@ function module:SetFrames()
 	LUI.Info.Left.Panel:SetBackdrop({
 		bgFile = fdir.."info_left", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Info.Left.Panel:SetBackdropColor(0, 0, 0, 0.9)
@@ -551,7 +551,7 @@ function module:SetFrames()
 	LUI.Info.Left.BG:SetBackdrop({
 		bgFile = fdir.."info_left_back", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Info.Left.BG:SetBackdropColor(unpack(color_bottom))
@@ -568,7 +568,7 @@ function module:SetFrames()
 	LUI.Info.Right.Panel:SetBackdrop({
 		bgFile = fdir.."info_right", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1,
+		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Info.Right.Panel:SetBackdropColor(0, 0, 0, 0.9)
@@ -579,7 +579,7 @@ function module:SetFrames()
 	LUI.Info.Right.BG:SetBackdrop({
 		bgFile = fdir.."info_right_back", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1,
+		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Info.Right.BG:SetBackdropColor(unpack(color_bottom))
@@ -596,7 +596,7 @@ function module:SetFrames()
 	LUI.Info.Topleft.BG:SetBackdrop({
 		bgFile = fdir.."info_top_left2", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1, 
+		edgeSize = 1, 
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Info.Topleft.BG:SetBackdropColor(unpack(color_top))
@@ -613,7 +613,7 @@ function module:SetFrames()
 	LUI.Info.Topright.BG:SetBackdrop({
 		bgFile = fdir.."info_top_right2", 
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		tile = 0, tileSize = 0, edgeSize = 1,
+		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
 	LUI.Info.Topright.BG:SetBackdropColor(unpack(color_top))

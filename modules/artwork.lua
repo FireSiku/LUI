@@ -39,8 +39,8 @@ function module:LoadOptions()
 	local options = {
 		Title = self:NewHeader("Art Work", 1),
 		UpperArt = self:NewGroup("Upper Art", 2, true, {
-			Orb = self:NewToggle("Disable the Orb", "", 1, toggleArt, nil, true),
-			Note = self:NewDesc("Disabled until the correct frames are completely identified.", 2),
+			--Orb = self:NewToggle("Disable the Orb", "", 1, toggleArt, nil, true),
+			--Note = self:NewDesc("Disabled until the correct frames are completely identified.", 2),
 			NaviBG = self:NewToggle("Disable the Orb navigation background", "", 4, toggleArt),
 			Background = self:NewToggle("Disable the themed background art", "", 7, toggleArt),
 			--NewToggle(name, desc, order, func, width, disabled, hidden)

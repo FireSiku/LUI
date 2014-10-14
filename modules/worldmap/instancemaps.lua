@@ -315,8 +315,7 @@ function module:SetMapZoom()
 	continent, continentId, zoneId = nil, nil, nil
 	
 	if WorldMapFrame:IsShown() then
-		WorldMapContinentsDropDown_Update()
-		WorldMapZoneDropDown_Update()
+		-- do nothing for now
 	end
 end
 
@@ -345,17 +344,17 @@ end
 --------------------------------------------------
 
 function module:OnEnable()
-	self:SecureHook("WorldMapFrame_LoadContinents")
-	self:SecureHook("WorldMapContinentsDropDown_Update")
+	--self:SecureHook("WorldMapFrame_LoadContinents")
+	--self:SecureHook("WorldMapContinentsDropDown_Update")
 	
-	self:RawHook("WorldMapZoneDropDown_Initialize", true)
-	self:SecureHook("WorldMapZoneDropDown_Update")
+	--self:RawHook("WorldMapZoneDropDown_Initialize", true)
+	--self:SecureHook("WorldMapZoneDropDown_Update")
 	
 	self:SecureHook("SetMapZoom")
 	self:SecureHook("SetMapToCurrentZone", "SetMapZoom")
 	self:SecureHook("ZoomOut")
 
-	WorldMapShowDropDown.Show = LUI.dummy
+	--WorldMapShowDropDown.Show = LUI.dummy
 
 	self:SecureHook("EncounterJournal_AddMapButtons")
 end
@@ -363,10 +362,7 @@ end
 function module:OnDisable()
 	self:UnhookAll()
 	continent, continentId, zoneId = nil, nil, nil
-	WorldMapContinentsDropDown_Update()
-	WorldMapZoneDropDown_Update()
 
-	WorldMapShowDropDown.Show = nil
 	if select(4, EJ_GetMapEncounter(1)) then
 		WorldMapShowDropDown:Show()
 	end

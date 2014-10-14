@@ -78,11 +78,11 @@ function module:SetCoords()
 	end
 
 	if WorldMap.db.char.miniMap then
-		coords.cursor:SetPoint("BOTTOMLEFT", WorldMapPositioningGuide, "BOTTOM", 25, 10)
-		coords.player:SetPoint("BOTTOMRIGHT", WorldMapPositioningGuide, "BOTTOM", 10, 10)
+		coords.cursor:SetPoint("BOTTOMLEFT", WorldMapFrame.BorderFrame, "BOTTOM", 25, 10)
+		coords.player:SetPoint("BOTTOMRIGHT", WorldMapFrame.BorderFrame, "BOTTOM", 10, 10)
 	else
-		coords.cursor:SetPoint("BOTTOMLEFT", WorldMapPositioningGuide, "BOTTOM", 50, 10)
-		coords.player:SetPoint("BOTTOMRIGHT", WorldMapPositioningGuide, "BOTTOM", -50, 10)
+		coords.cursor:SetPoint("BOTTOMLEFT", WorldMapFrame.BorderFrame, "BOTTOM", 50, 10)
+		coords.player:SetPoint("BOTTOMRIGHT", WorldMapFrame.BorderFrame, "BOTTOM", -50, 10)
 	end
 
 	coords:Show()

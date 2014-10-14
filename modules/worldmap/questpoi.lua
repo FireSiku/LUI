@@ -48,19 +48,13 @@ local function questObjDropDownOnClick(button)
 	char.QuestObjectives = button.value
 	questObjDropDownUpdate()
 
-	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
-		WorldMapQuestShowObjectives:SetChecked(char.QuestObjectives ~= 0)
+	SetCVar("questPOI", button.value and "1" or "0")
+	QuestMapFrame_UpdateAll();
 
-		SetCVar("questPOI", WorldMapQuestShowObjectives:GetChecked())
-		WorldMapQuestShowObjectives_Toggle()
-	else
-		SetCVar("questPOI", button.value)
-		WorldMapTrackQuest:Hide()
-	end
-
-	WatchFrame_GetCurrentMapQuests()
-	WatchFrame_Update()
-	WorldMapFrame_DisplayQuests()
+	--WatchFrame_GetCurrentMapQuests()
+	--WatchFrame_Update()
+	--WorldMapFrame_DisplayQuests()
+	WorldMapFrame_UpdateMap()
 end
 
 local function questObjDropDownInit()
@@ -84,19 +78,16 @@ end
 local function questObjVisibilityUpdate()
 	if char.miniMap then
 		questObj:Hide()
-		if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
-			WorldMapQuestShowObjectives:Show()
-		else
-			WorldMapShowDropDown:Show()
-			WorldMapTrackQuest:Show()
+		if tonumber(internalversion) < 18716 then -- if true, it's live WoW and not the PTR
+			-- do nothing for now
 		end
 	else
 		questObj:Show()
-		if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
-			WorldMapQuestShowObjectives:Hide()
-		else
+		if tonumber(internalversion) < 18716 then -- if true, it's live WoW and not the PTR
 			WorldMapShowDropDown:Hide()
 			WorldMapTrackQuest:Hide()
+		else
+			-- do nothing for now
 		end
 	end
 end
@@ -183,7 +174,7 @@ function module:Refresh()
 		WorldMapQuestShowObjectives:SetChecked(char.QuestObjectives ~= 0)
 		WorldMapQuestShowObjectives_Toggle()
 	end
-	WorldMapFrame_DisplayQuests()
+	--WorldMapFrame_DisplayQuests()
 
 	if not questObj then return end
 	questObjVisibilityUpdate()
@@ -198,14 +189,13 @@ module.DBCallback = module.OnInitialize
 
 function module:OnEnable()
 	-- HideQuest Objectives CheckBox and replace it with a DropDown
-	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
-		self:SecureHookScript(WorldMapQuestShowObjectives, "OnClick", WM_QuestShowObjectives_OnClick)
---	else
---		self:SecureHookScript(WorldMapShowDropDown, "OnClick", WM_QuestShowObjectives_OnClick)
+	if tonumber(internalversion) < 18716 then -- if true, it's live WoW and not the PTR
+	else
+		-- do nothing for now
 	end
 	if not questObj then
 		questObj = CreateFrame("Frame", "LUI_WorldMap_QuestObjectivesDropDown", WorldMapFrame, "UIDropDownMenuTemplate")
-		questObj:SetPoint("BOTTOMRIGHT", "WorldMapPositioningGuide", "BOTTOMRIGHT", -5, -2)
+		questObj:SetPoint("BOTTOMRIGHT", WorldMapFrame.BorderFrame, "BOTTOMRIGHT", -5, -2)
 		_G[questObj:GetName().."Button"]:HookScript("OnClick", WorldMap.DropdownScaleFix)
 
 		local label = questObj:CreateFontString(questObj:GetName().."_Label", "OVERLAY", "GameFontNormalSmall")
@@ -218,11 +208,11 @@ function module:OnEnable()
 	end
 	questObjDropDownUpdate()
 
-	self:SecureHook("WorldMapFrame_DisplayQuestPOI")
-	self:SecureHook("WorldMapFrame_DisplayQuests")
-	self:RawHook("WorldMapFrame_SelectQuestFrame", true)
-	self:SecureHook("WorldMapFrame_SetPOIMaxBounds")
-	WorldMapFrame_SetPOIMaxBounds()
+	--self:SecureHook("WorldMapFrame_DisplayQuestPOI")
+	--self:SecureHook("WorldMapFrame_DisplayQuests")
+	--self:RawHook("WorldMapFrame_SelectQuestFrame", true)
+	--self:SecureHook("WorldMapFrame_SetPOIMaxBounds")
+	--WorldMapFrame_SetPOIMaxBounds()
 
 	self:SecureHook("EncounterJournal_AddMapButtons", questObjVisibilityUpdate)
 
@@ -231,14 +221,7 @@ end
 
 function module:OnDisable()
 	self:UnhookAll()
-	self:SecureHook("WorldMapFrame_DisplayQuestPOI", function(questFrame)
-		questFrame.poiIcon:SetScale(1)
-	end)
-	WorldMapFrame_DisplayQuests()
 	self:UnhookAll()
 
-	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
-		WorldMapQuestShowObjectives:Show()
-	end
 	questObj:Hide()
 end

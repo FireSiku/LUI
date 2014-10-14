@@ -29,7 +29,7 @@ function module:SetAdditionalFrames()
 	if db.Minimap.Enable ~= true then return end
 	self:SecureHook(DurabilityFrame, "SetPoint", "DurabilityFrame_SetPoint")
 	self:SecureHook(VehicleSeatIndicator, "SetPoint", "VehicleSeatIndicator_SetPoint")
-	self:SecureHook(WatchFrame, "SetPoint", "WatchFrame_SetPoint")
+	self:SecureHook(ObjectiveTrackerFrame, "SetPoint", "ObjectiveTrackerFrame_SetPoint")
 	self:SecureHook(WorldStateAlwaysUpFrame, "SetPoint", "WorldStateAlwaysUpFrame_SetPoint")
 	self:SecureHook(TicketStatusFrame, "SetPoint", "TicketStatusFrame_SetPoint")
 	self:SecureHook("WorldStateAlwaysUpFrame_Update")
@@ -45,7 +45,7 @@ function module:SetPosition(frame)
 	elseif frame == "durability" then
 		DurabilityFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.DurabilityFrameX, db.Minimap.Frames.DurabilityFrameY)
 	elseif frame == "questWatch" then
-		WatchFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.WatchFrameX, db.Minimap.Frames.WatchFrameY)
+		ObjectiveTrackerFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.ObjectiveTrackerFrameX, db.Minimap.Frames.ObjectiveTrackerFrameY)
 	elseif frame == "ticketStatus" then
 		TicketStatusFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.TicketX, db.Minimap.Frames.TicketY)
 	elseif frame == "capture" then
@@ -63,7 +63,7 @@ function module:DurabilityFrame_SetPoint()
 	self:SetPosition('durability')
 end
 
-function module:WatchFrame_SetPoint()
+function module:ObjectiveTrackerFrame_SetPoint()
 	if shouldntSetPoint then return end
 	self:SetPosition('questWatch')
 end
@@ -560,8 +560,8 @@ local defaults = {
 			VehicleSeatIndicatorY = "-225",
 			DurabilityFrameX = "-20",
 			DurabilityFrameY = "-220",
-			WatchFrameX = "-100",
-			WatchFrameY = "-300",
+			ObjectiveTrackerFrameX = "-100",
+			ObjectiveTrackerFrameY = "-300",
 			CaptureX = "-5",
 			CaptureY = "-205",
 			TicketX = "-175",
@@ -657,7 +657,7 @@ function module:LoadOptions()
 								},
 								PosX = {
 									name = "X Value",
-									desc = "X Value for your Minimap.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Minimap.General.Position.X,
+									desc = "X Value for your Minimap.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.General.Position.X,
 									type = "input",
 									get = function() return tostring(db.Minimap.General.Position.X) end,
 									set = function(self,PosX)
@@ -671,7 +671,7 @@ function module:LoadOptions()
 								},
 								PosY = {
 									name = "Y Value",
-									desc = "Y Value for your Minimap.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Minimap.General.Position.Y,
+									desc = "Y Value for your Minimap.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.General.Position.Y,
 									type = "input",
 									get = function() return tostring(db.Minimap.General.Position.Y) end,
 									set = function(self,PosY)
@@ -825,7 +825,7 @@ function module:LoadOptions()
 								},
 								AlwaysUpFrameX = {
 									name = "X Value",
-									desc = "X Value for your AlwaysUpFrame.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.AlwaysUpFrameX,
+									desc = "X Value for your AlwaysUpFrame.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.AlwaysUpFrameX,
 									type = "input",
 									get = function() return db.Minimap.Frames.AlwaysUpFrameX end,
 									set = function(self,AlwaysUpFrameX)
@@ -839,7 +839,7 @@ function module:LoadOptions()
 								},
 								AlwaysUpFrameY = {
 									name = "Y Value",
-									desc = "Y Value for your AlwaysUpFrame.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.AlwaysUpFrameY,
+									desc = "Y Value for your AlwaysUpFrame.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.AlwaysUpFrameY,
 									type = "input",
 									get = function() return db.Minimap.Frames.AlwaysUpFrameY end,
 									set = function(self,AlwaysUpFrameY)
@@ -883,7 +883,7 @@ function module:LoadOptions()
 								},
 								VehicleSeatIndicatorX = {
 									name = "X Value",
-									desc = "X Value for your VehicleSeatIndicator.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.VehicleSeatIndicatorX,
+									desc = "X Value for your VehicleSeatIndicator.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.VehicleSeatIndicatorX,
 									type = "input",
 									get = function() return db.Minimap.Frames.VehicleSeatIndicatorX end,
 									set = function(self,VehicleSeatIndicatorX)
@@ -897,7 +897,7 @@ function module:LoadOptions()
 								},
 								VehicleSeatIndicatorY = {
 									name = "Y Value",
-									desc = "Y Value for your VehicleSeatIndicator.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.VehicleSeatIndicatorY,
+									desc = "Y Value for your VehicleSeatIndicator.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.VehicleSeatIndicatorY,
 									type = "input",
 									get = function() return db.Minimap.Frames.VehicleSeatIndicatorY end,
 									set = function(self,VehicleSeatIndicatorY)
@@ -941,7 +941,7 @@ function module:LoadOptions()
 								},
 								DurabilityFrameX = {
 									name = "X Value",
-									desc = "X Value for your DurabilityFrame.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.DurabilityFrameX,
+									desc = "X Value for your DurabilityFrame.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.DurabilityFrameX,
 									type = "input",
 									get = function() return db.Minimap.Frames.DurabilityFrameX end,
 									set = function(self,DurabilityFrameX)
@@ -955,7 +955,7 @@ function module:LoadOptions()
 								},
 								DurabilityFrameY = {
 									name = "Y Value",
-									desc = "Y Value for your DurabilityFrame.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.DurabilityFrameY,
+									desc = "Y Value for your DurabilityFrame.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.DurabilityFrameY,
 									type = "input",
 									get = function() return db.Minimap.Frames.DurabilityFrameY end,
 									set = function(self,DurabilityFrameY)
@@ -969,8 +969,8 @@ function module:LoadOptions()
 								},
 							},
 						},
-						WatchFrame = {
-							name = "WatchFrame",
+						ObjectiveTrackerFrame = {
+							name = "ObjectiveTrackerFrame",
 							type = "group",
 							disabled = function() return not db.Minimap.Enable end,
 							order = 4,
@@ -980,7 +980,7 @@ function module:LoadOptions()
 									type = "header",
 									order = 1,
 								},
-								WatchFrameText = {
+								ObjectiveTrackerFrameText = {
 									order = 2,
 									width = "full",
 									type = "description",
@@ -997,30 +997,30 @@ function module:LoadOptions()
 									type = "header",
 									order = 4,
 								},
-								WatchFrameX = {
+								ObjectiveTrackerFrameX = {
 									name = "X Value",
-									desc = "X Value for your WatchFrame.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.WatchFrameX,
+									desc = "X Value for your ObjectiveTrackerFrame.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.ObjectiveTrackerFrameX,
 									type = "input",
-									get = function() return db.Minimap.Frames.WatchFrameX end,
-									set = function(self,WatchFrameX)
-												if WatchFrameX == nil or WatchFrameX == "" then
-													WatchFrameX = "0"
+									get = function() return db.Minimap.Frames.ObjectiveTrackerFrameX end,
+									set = function(self,ObjectiveTrackerFrameX)
+												if ObjectiveTrackerFrameX == nil or ObjectiveTrackerFrameX == "" then
+													ObjectiveTrackerFrameX = "0"
 												end
-												db.Minimap.Frames.WatchFrameX = WatchFrameX
+												db.Minimap.Frames.ObjectiveTrackerFrameX = ObjectiveTrackerFrameX
 												module:SetPosition("questWatch")
 											end,
 									order = 5,
 								},
-								WatchFrameY = {
+								ObjectiveTrackerFrameY = {
 									name = "Y Value",
-									desc = "Y Value for your WatchFrame.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.WatchFrameY,
+									desc = "Y Value for your ObjectiveTrackerFrame.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.ObjectiveTrackerFrameY,
 									type = "input",
-									get = function() return db.Minimap.Frames.WatchFrameY end,
-									set = function(self,WatchFrameY)
-												if WatchFrameY == nil or WatchFrameY == "" then
-													WatchFrameY = "0"
+									get = function() return db.Minimap.Frames.ObjectiveTrackerFrameY end,
+									set = function(self,ObjectiveTrackerFrameY)
+												if ObjectiveTrackerFrameY == nil or ObjectiveTrackerFrameY == "" then
+													ObjectiveTrackerFrameY = "0"
 												end
-												db.Minimap.Frames.WatchFrameY = WatchFrameY
+												db.Minimap.Frames.ObjectiveTrackerFrameY = ObjectiveTrackerFrameY
 												module:SetPosition("questWatch")
 											end,
 									order = 6,
@@ -1038,7 +1038,7 @@ function module:LoadOptions()
 									type = "header",
 									order = 1,
 								},
-								WatchFrameText = {
+								ObjectiveTrackerFrameText = {
 									order = 2,
 									width = "full",
 									type = "description",
@@ -1057,7 +1057,7 @@ function module:LoadOptions()
 								},
 								TicketX = {
 									name = "X Value",
-									desc = "X Value for your Ticket Status.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.TicketX,
+									desc = "X Value for your Ticket Status.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.TicketX,
 									type = "input",
 									get = function() return db.Minimap.Frames.TicketX end,
 									set = function(self,TicketX)
@@ -1071,7 +1071,7 @@ function module:LoadOptions()
 								},
 								TicketY = {
 									name = "Y Value",
-									desc = "Y Value for your Ticket Status.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.TicketY,
+									desc = "Y Value for your Ticket Status.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.TicketY,
 									type = "input",
 									get = function() return db.Minimap.Frames.TicketY end,
 									set = function(self,TicketY)
@@ -1114,7 +1114,7 @@ function module:LoadOptions()
 									type = "header",
 									order = 1,
 								},
-								WatchFrameText = {
+								ObjectiveTrackerFrameText = {
 									order = 2,
 									width = "full",
 									type = "description",
@@ -1133,7 +1133,7 @@ function module:LoadOptions()
 								},
 								CaptureX = {
 									name = "X Value",
-									desc = "X Value for your Capture Bar.\n\nNote:\nPositive values = right\nNegativ values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.CaptureX,
+									desc = "X Value for your Capture Bar.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.CaptureX,
 									type = "input",
 									get = function() return db.Minimap.Frames.CaptureX end,
 									set = function(self,CaptureX)
@@ -1147,7 +1147,7 @@ function module:LoadOptions()
 								},
 								CaptureY = {
 									name = "Y Value",
-									desc = "Y Value for your Capture Bar.\n\nNote:\nPositive values = up\nNegativ values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.CaptureY,
+									desc = "Y Value for your Capture Bar.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.CaptureY,
 									type = "input",
 									get = function() return db.Minimap.Frames.CaptureY end,
 									set = function(self,CaptureY)

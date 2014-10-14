@@ -25,6 +25,8 @@
 
 	<!-- Addon Installation Routines -->
 	<Script file="addons\forte.lua"/>
+	<!--Script file="addons\sptimers.lua"/-->
+	<!--Script file="addons\raven.lua"/-->
 	<Script file="addons\pallypower.lua"/>
 	<Script file="addons\bartender.lua"/>
 	<Script file="addons\grid.lua"/>
@@ -41,7 +43,6 @@
     <Include file="modules\cooldown\cooldown.xml"/>
 	<Script file="modules\tooltip.lua"/>
 	<Script file="modules\datatext.lua"/>
-	<!-- <Include file="modules\infotext\infotext.xml"/> -->
 	<Script file="modules\faq.lua"/>
 	<Script file="modules\micromenu.lua"/>
 	<Include file="modules\raidmenu.xml"/>

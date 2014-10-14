@@ -380,7 +380,7 @@ function module:SetClock()
 			UpdateTBControl()
 			SetMapByID(mapZone)
 			WORLDMAP_SETTINGS.selectedQuestId = trackedID
-			QuestPOI_SelectButtonByQuestId("WatchFrameLines", trackedID, true)
+			--QuestPOI_SelectButtonByQuestId("WatchFrameLines", trackedID, true)
 			SetSuperTrackedQuestID(trackedID)
 		end
 
@@ -986,11 +986,11 @@ function module:SetDualSpec()
 			end
 
 			if PlayerTalentFrame and PlayerTalentFrame:IsShown() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 3) then
-				PlayerTalentFrame:Hide()
+				HideUIPanel(PlayerTalentFrame)
 			else
 				PanelTemplates_SetTab(PlayerTalentFrame, 3)
 				PlayerTalentFrame_Refresh()
-				PlayerTalentFrame:Show()
+				ShowUIPanel(PlayerTalentFrame)
 			end
 		end)
 
@@ -1062,11 +1062,11 @@ function module:SetDualSpec()
 		stat.OnClick = function(self, button)
 			if button == "RightButton" then -- Toggle TalentFrame
 				if PlayerTalentFrame:IsVisible() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 1) then
-					PlayerTalentFrame:Hide()
+					HideUIPanel(PlayerTalentFrame)
 				else
 					PanelTemplates_SetTab(PlayerTalentFrame, 1)
 					PlayerTalentFrame_Refresh()
-					PlayerTalentFrame:Show()
+					ShowUIPanel(PlayerTalentFrame)
 				end
 			else -- Switch talent spec
 				if GetNumSpecGroups() < 2 then return	end
@@ -1537,7 +1537,7 @@ function module:SetGF()
 		local tables, broadcasts, toasts, buttons
 		local slider, highlight, texOrder1, sep, sep2
 
-		local WOW, SC2, D3, WTCG, APP = 1, 2, 3, 4, 5
+		local WOW, SC2, D3, WTCG, APP, CLNT, HOTS = 1, 2, 3, 4, 5, 6, 7
 		local horde = myPlayerFaction == "Horde"
 
 		local hordeZones = "Orgrimmar,Undercity,Thunder Bluff,Silvermoon City,Durotar,Tirisfal Glades,Mulgore,Eversong Woods,Northern Barrens,Silverpine Forest,Ghostlands,Azshara,"
@@ -1554,6 +1554,7 @@ function module:SetGF()
 			[D3] = [[Interface\FriendsFrame\Battlenet-D3icon]],
 			[WTCG] = [[Interface\FriendsFrame\Battlenet-WTCGicon]],
 			[APP] = [[Interface\FriendsFrame\Battlenet-Battleneticon]],
+			[HOTS] = [[Interface\FriendsFrame\Battlenet-HotSicon]],
 		}
 
 		local colpairs = {
@@ -1718,7 +1719,7 @@ function module:SetGF()
 
 			SetStatusLayout(toast.status, toast.name)
 
-			client = client == BNET_CLIENT_WOW and WOW or client == BNET_CLIENT_SC2 and SC2 or client == BNET_CLIENT_D3 and D3 or client == BNET_CLIENT_WTCG and WTCG or APP
+			client = client == BNET_CLIENT_WOW and WOW or client == BNET_CLIENT_SC2 and SC2 or client == BNET_CLIENT_D3 and D3 or client == BNET_CLIENT_WTCG and WTCG or client == BNET_CLIENT_HEROES and HOTS or APP
 			toast.client = client
 
 			if client == WOW then
@@ -1741,7 +1742,7 @@ function module:SetGF()
 				else
 					toast.class:SetTexture("")
 				end
-			elseif client == SC2 or client == D3 or client == WTCG or client == APP then
+			elseif client == SC2 or client == D3 or client == WTCG or  client == HOTS or client == APP then
 				toast.class:SetTexture(clientIcons[client])
 				toast.class:SetTexCoord(0.2, 0.8, 0.2, 0.8)
 				toast.name:SetTextColor(0.8, 0.8, 0.8)
@@ -1766,7 +1767,7 @@ function module:SetGF()
 
 			return toast, client,
 			toast.name:GetStringWidth(),
-			client == (SC2 or D3 or WTCG or APP) and -gap or toast.level:GetStringWidth(),
+			client == (SC2 or D3 or WTCG or APP or HOTS) and -gap or toast.level:GetStringWidth(),
 			toast.zone:GetStringWidth(),
 			toast.note:GetStringWidth()
 		end
@@ -1965,7 +1966,7 @@ function module:SetGF()
 					if client == WOW then
 						if lW > lC then lC = lW end
 						if zW > zC then zC = zW end
-					elseif client == SC2 or client == D3 or client == WTCG or client == APP then
+					elseif client == SC2 or client == D3 or client == WTCG or client == APP or client == HOTS then
 						if zW > spanZoneC then spanZoneC = zW end
 					end
 
@@ -2095,7 +2096,7 @@ function module:SetGF()
 				if button.client == WOW then
 					button.level:SetWidth(lC)
 					button.zone:SetWidth(zC)
-				elseif button.client == SC2 or button.client == D3 or button.client == WTCG or button.client == APP then
+				elseif button.client == SC2 or button.client == D3 or button.client == WTCG or button.client == APP or button.client == HOTS then
 					button.zone:SetWidth(spanZoneC)
 				end
 				button.note:SetWidth(nC)

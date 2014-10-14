@@ -104,23 +104,23 @@ do
 		MAGE = {
 			[GetSpellInfo(10)] = 1, -- Blizzard
 			[GetSpellInfo(12051)] = 2, -- Evocation
-			-- [GetSpellInfo(5143)] = 0.75, -- Arcane Missiles			located below do to talents affecting time between ticks
+			--[GetSpellInfo(5143)] = 0.75, -- Arcane Missiles			located below do to talents affecting time between ticks
 		},
 		PRIEST = {
 			[GetSpellInfo(15407)] = 1, -- Mind Flay
 			[GetSpellInfo(48045)] = 1, -- Mind Sear
 			[GetSpellInfo(64843)] = 2, -- Divine Hymn
-			[GetSpellInfo(64901)] = 2, -- Hymn of Hope
+			--[GetSpellInfo(64901)] = 2, -- Hymn of Hope
 			[GetSpellInfo(47540)] = 1, -- Penance
 		},
 		SHAMAN = {
 			[GetSpellInfo(61882)] = 1, -- Earthquake
 		},
 		WARLOCK = {
-			[GetSpellInfo(1120)] = 3, -- Drain Soul
+			--[GetSpellInfo(1120)] = 3, -- Drain Soul
 			[GetSpellInfo(689)] = 1, -- Drain Life
 			[GetSpellInfo(755)] = 1, -- Health Funnel
---			[GetSpellInfo(79268)] = 1, -- Soul Harvest
+			--[GetSpellInfo(79268)] = 1, -- Soul Harvest
 			[GetSpellInfo(5740)] = 2, -- Rain of Fire
 			[GetSpellInfo(1949)] = 1, -- Hellfire
 		},
@@ -2365,12 +2365,8 @@ module.funcs = {
 		self.Chi:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 	
 		local function checkChi(event)
-			local ascension = select(5, GetTalentInfo(8)) -- Ascension
-			if ascension then 
-				self.Chi.Force = 5
-			else self.Chi.Force = 4
-			end
-
+			local _, _, _, ascension = GetTalentInfo(3, 2, GetActiveSpecGroup()) -- Ascension
+			self.Chi.Force = ascension and 5 or 4
 			for i = 1, 5 do
 				self.Chi[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Chi.Texture))
 				self.Chi[i]:SetStatusBarColor(unpack(module.colors.chibar[i]))
