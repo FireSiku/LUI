@@ -64,7 +64,6 @@ local function ColorsAndPercent(a, b, ...)
 
 	local num = select('#', ...) / 3
 	local segment, relperc = math.modf((a/b)*(num-1))
-	--print(string.format("segment = %s, relperc = %s", tostring(segment), tostring(relperc)))
 	return relperc, select((segment*3)+1, ...)
 end
 
