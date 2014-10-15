@@ -215,7 +215,7 @@ end
 
 function module:SlotUpdate(item)
 
-	local texture, count, locked = GetContainerItemInfo(item.bag, item.slot)
+	local texture, count, locked, quality = GetContainerItemInfo(item.bag, item.slot)
 	local clink = GetContainerItemLink(item.bag, item.slot)
 	local color = db.Colors.Border
 
@@ -235,34 +235,49 @@ function module:SlotUpdate(item)
 		local cd_start, cd_finish, cd_enable = GetContainerItemCooldown(item.bag, item.slot)
 		CooldownFrame_SetTimer(item.Cooldown, cd_start, cd_finish, cd_enable)
 	end
-
-	local isNewItem = C_NewItems.IsNewItem(item.bag, item.slot);
-	local isBattlePayItem = IsBattlePayItem(item.bag, item.slot);
-	if isNewItem then
-		if isBattlePayItem then
-			_G[item.frame:GetName()].NewItemTexture:Hide()
-			_G[item.frame:GetName()].BattlepayItemTexture:Show()
+	
+	-- New item code from Blizzard's ContainerFrame.lua
+	local newItemTexture = item.frame.NewItemTexture
+	local battlePayTexture = item.frame.BattlepayItemTexture
+	local flashAnim = item.frame.flashAnim
+	local newItemAnim = item.frame.newitemglowAnim
+	if newItemTexture then
+		if db.Bags.ShowNew and C_NewItems.IsNewItem(item.bag, item.slot) then
+			if IsBattlePayItem(item.bag, item.slot) then
+				newItemTexture:Hide()
+				battlePayTexture:Show()
+			else
+				if quality and NEW_ITEM_ATLAS_BY_QUALITY[quality] then
+					newItemTexture:SetAtlas(NEW_ITEM_ATLAS_BY_QUALITY[quality])
+				else
+					newItemTexture:SetAtlas("bags-glow-white")
+				end
+				newItemTexture:Show()
+				battlePayTexture:Hide()
+			end
+			if not flashAnim:IsPlaying() and not newItemAnim:IsPlaying() then
+				flashAnim:Play()
+				newItemAnim:Play()
+			end
 		else
-			_G[item.frame:GetName()].NewItemTexture:Show()
-			_G[item.frame:GetName()].BattlepayItemTexture:Show()
+			newItemTexture:Hide()
+			battlePayTexture:Hide()
+			if flashAnim:IsPlaying() or newItemAnim:IsPlaying() then
+				flashAnim:Stop()
+				newItemAnim:Stop()
+			end
 		end
-	else
-		if _G[item.frame:GetName()].NewItemTexture or _G[item.frame:GetName()].BattlepayItemTexture then
-			_G[item.frame:GetName()].NewItemTexture:Hide()
-			_G[item.frame:GetName()].BattlepayItemTexture:Hide()
-		end
+		--Make sure that the textures are the same size as the itemframe.
+		battlePayTexture:SetSize(item.frame:GetSize())
+		newItemTexture:SetSize(item.frame:GetSize())
 	end
-
+	
 	if (clink) then
 		local name, _, rarity, _, _, iType = GetItemInfo(clink)
 		item.name, item.rarity = name, rarity
 		-- color slot according to item quality
 		if db.Bags.ItemQuality and not item.frame.lock and item.rarity and item.rarity > 1 then
 			item.frame:SetBackdropBorderColor(GetItemQualityColor(item.rarity))
-		end
-		if db.Bags.ShowQuest and not item.frame.lock and iType == "Quest" then
-			local color = db.Colors.Quest
-			item.frame:SetBackdropBorderColor(color.r, color.g, color.b, color.a)
 		end
 	else
 		item.name, item.rarity = nil, nil
@@ -1159,7 +1174,7 @@ module.defaults = {
 			BagScale = 1,
 			BagFrame = true,
 			ItemQuality = false,
-			ShowQuest = true,
+			ShowNew = false,
 			Locked = 0,
 			CoordX = 0,
 			CoordY = 0,
@@ -1178,8 +1193,6 @@ module.defaults = {
 			Scale = 1,
 			BagScale = 1,
 			BagFrame = true,
-			ItemQuality = false,
-			ShowQuest = true,
 			Locked = 0,
 			CoordX = 0,
 			CoordY = 0,
@@ -1198,8 +1211,6 @@ module.defaults = {
 			Scale = 1,
 			BagScale = 1,
 			BagFrame = true,
-			ItemQuality = false,
-			ShowQuest = true,
 			Locked = 0,
 			CoordX = 0,
 			CoordY = 0,
@@ -1227,12 +1238,6 @@ module.defaults = {
 				r = 0.1,
 				g = 0.5,
 				b = 0.1,
-				a = 1,
-			},
-			Quest = {
-				r = 1,
-				g = 1,
-				b = 0,
 				a = 1,
 			},
 		},
@@ -1289,8 +1294,7 @@ function module:LoadOptions()
 				BagScale = LUI:NewScale("Bags BagBar",9, db.Bags, "BagScale", dbd.Bags, BagOpt),
 				BagFrame = LUI:NewToggle("Show Bag Bar", nil, 10, db.Bags, "BagFrame", dbd.Bags, BagOpt),
 				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 11, db.Bags, "ItemQuality", dbd.Bags, BagOpt),
-				--ShowQuest = LUI:NewToggle("Highlight Quest Items", nil, 10, db.Bags, "ShowQuest", dbd.Bags, BagOpt),
-				ShowQuest = module:NewToggle("Highlight Quest Items", nil, 12, BagOpt),
+				ShowNew = LUI:NewToggle("Show New Item Animation", nil, 12, db.Bags, "ShowNew", dbd.Bags, BagOpt),
 			},
 		},
 		Bank = {
@@ -1313,8 +1317,6 @@ function module:LoadOptions()
 				Scale = LUI:NewScale("Bank Frame",6, db.Bank, "Scale", dbd.Bank, BankOpt, nil, DisabledCopy),
 				BagScale = LUI:NewScale("Bank BagBar",7, db.Bank, "BagScale", dbd.Bank, BankOpt, nil, DisabledCopy),
 				BagFrame = LUI:NewToggle("Show Bag Bar", nil, 8, db.Bank, "BagFrame", dbd.Bank, BankOpt, nil, DisabledCopy),
-				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 9, db.Bank, "ItemQuality", dbd.Bank, BankOpt, nil, DisabledCopy),
-				ShowQuest = LUI:NewToggle("Highlight Quest Items", nil, 10, db.Bank, "ShowQuest", dbd.Bank, BankOpt, nil, DisabledCopy),
 			},
 		},
 		Reagents = {
@@ -1335,10 +1337,6 @@ function module:LoadOptions()
 				Spacing = LUI:NewSlider("Reagents Spacing", "This sets the distance between items.", 5,
 					db.Reagents, "Spacing", dbd.Reagents, 1, 15, 1, BankOpt, nil, DisabledCopy),
 				Scale = LUI:NewScale("Reagents Frame",6, db.Reagents, "Scale", dbd.Reagents, BankOpt, nil, DisabledCopy),
-				--BagScale = LUI:NewScale("Reagents BagBar",7, db.Reagents, "BagScale", dbd.Reagents, BankOpt, nil, DisabledCopy),
-				--BagFrame = LUI:NewToggle("Show Bag Bar", nil, 8, db.Reagents, "BagFrame", dbd.Reagents, BankOpt, nil, DisabledCopy),
-				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 9, db.Reagents, "ItemQuality", dbd.Reagents, BankOpt, nil, DisabledCopy),
-				ShowQuest = LUI:NewToggle("Highlight Quest Items", nil, 10, db.Reagents, "ShowQuest", dbd.Reagents, BankOpt, nil, DisabledCopy),
 			},
 		},
 		Colors = {
@@ -1349,7 +1347,6 @@ function module:LoadOptions()
 				Background = module:NewColor("Background", "Bags Background", 1, ReloadBoth),
 				Border = module:NewColor("Border", "Bags Border", 2, ReloadBoth),
 				Professions = module:NewColor("Profession", "Profession Bags Borders", 3, ReloadBoth),
-				Quest = module:NewColor("Quest", "Quest Item Borders", 4, ReloadBoth),
 				BlackFrameBG = module:NewToggle("Black Frame Background", "This will force the Bags' Frame background to always be black.", 5, ReloadBoth),
 			},
 		},
