@@ -992,11 +992,13 @@ function module:PLAYERREAGENTBANKSLOTS_CHANGED(event, id)
 end
 
 function module:REAGENTBANK_PURCHASED(event, id)
-	LUIBank_ReagentButton:Hide()
-	module:ReloadLayout("Reagents")
-	LUIReagents:Show()
-	LUIReagents:SetAlpha(1)
-	self:UnregisterEvent("REAGENTBANK_PURCHASED")
+	if IsReagentBankUnlocked() then
+		LUIBank_ReagentButton:Hide()
+		module:ReloadLayout("Reagents")
+		LUIReagents:Show()
+		LUIReagents:SetAlpha(1)
+		self:UnregisterEvent("REAGENTBANK_PURCHASED")
+	end
 end
 
 function module:PLAYERBANKSLOTS_CHANGED(event, id)
