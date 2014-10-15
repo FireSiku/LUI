@@ -147,6 +147,93 @@ function module:SetTooltip()
 		end
 	end
 
+	local GetTooltipUnit = function(self)
+		if not self.GetUnit then return end
+		local GMF = GetMouseFocus()
+		local unit = (select(2, self:GetUnit())) or (GMF and GMF:GetAttribute("unit"))
+		if not unit and UnitExists("mouseover") then
+			unit = "mouseover"
+		end
+		return unit
+	end
+	
+	local healthBar = GameTooltipStatusBar
+	healthBar:ClearAllPoints()
+	healthBar:SetHeight(LUI:Scale(6))
+	healthBar:SetPoint("BOTTOMLEFT", healthBar:GetParent(), "TOPLEFT", LUI:Scale(2), LUI:Scale(5))
+	healthBar:SetPoint("BOTTOMRIGHT", healthBar:GetParent(), "TOPRIGHT", -LUI:Scale(2), LUI:Scale(5))
+	healthBar:SetStatusBarTexture(Media:Fetch("statusbar", db.Tooltip.Health.Texture))
+
+	local healthBarBG = CreateFrame( "Frame", "StatusBarBG", healthBar)
+	healthBarBG:SetFrameLevel(healthBar:GetFrameLevel() - 1)
+	healthBarBG:SetPoint("TOPLEFT", -LUI:Scale(2), LUI:Scale(2))
+	healthBarBG:SetPoint("BOTTOMRIGHT", LUI:Scale(2), -LUI:Scale(2))
+	healthBarBG:SetBackdrop( { 
+		bgFile = LUI.Media.blank, 
+		edgeFile = LUI.Media.blank, 
+		tile = false, edgeSize = 0, 
+		insets = { left = 0, right = 0, top = 0, bottom = 0 }
+	})
+	healthBarBG:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
+	healthBarBG:SetBackdropBorderColor(0,0,0,0)
+	
+	local BorderColor = function(self)
+		local c
+		
+		local unit = GetTooltipUnit(self)
+		
+		local reaction = unit and UnitReaction(unit, "player")
+		local player = unit and UnitIsPlayer(unit)
+		local tapped = unit and UnitIsTapped(unit)
+		local tappedbyme = unit and UnitIsTappedByPlayer(unit)
+		local connected = unit and UnitIsConnected(unit)
+		local dead = unit and UnitIsDead(unit)
+
+		if player then
+			local class = select(2, UnitClass(unit))
+			local c = LUITooltipColors.class[class] or {1, 1, 1}
+			local r, g, b = c[1], c[2], c[3]
+			self:SetBackdropBorderColor(r, g, b)
+			healthBarBG:SetBackdropBorderColor(r, g, b)
+			healthBar:SetStatusBarColor(r, g, b)
+		elseif reaction then
+			if tapped then
+				c = {db.Tooltip.Border.Tapped.r,db.Tooltip.Border.Tapped.g,db.Tooltip.Border.Tapped.b}
+			else
+				c = LUITooltipColors.reaction[reaction]
+			end
+			local r, g, b = c[1], c[2], c[3]
+			self:SetBackdropBorderColor(r, g, b)
+			healthBarBG:SetBackdropBorderColor(r, g, b)
+			healthBar:SetStatusBarColor(r, g, b)
+		elseif self.GetItem then
+			local _, link = self:GetItem()
+			local quality = link and select(3, GetItemInfo(link))
+			if quality and quality >= 2 then
+				local r, g, b = GetItemQualityColor(quality)
+				self:SetBackdropBorderColor(r, g, b)
+			else
+				self:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
+				healthBarBG:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
+				healthBar:SetStatusBarColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
+			end
+		else
+			self:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
+			healthBarBG:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
+			healthBar:SetStatusBarColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
+		end
+		
+		-- need this
+		NeedBackdropBorderRefresh = true
+	end
+	
+	local SetStyle = function(self)
+		self:SetScale(db.Tooltip.Scale)
+		self:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
+		self:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
+		BorderColor(self)
+	end
+	
 	-- update HP value on status bar
 	GameTooltipStatusBar:SetScript("OnValueChanged", function(self, value)
 		if not value then
@@ -200,36 +287,13 @@ function module:SetTooltip()
 		end
 	end)
 
-	local healthBar = GameTooltipStatusBar
-	healthBar:ClearAllPoints()
-	healthBar:SetHeight(LUI:Scale(6))
-	healthBar:SetPoint("BOTTOMLEFT", healthBar:GetParent(), "TOPLEFT", LUI:Scale(2), LUI:Scale(5))
-	healthBar:SetPoint("BOTTOMRIGHT", healthBar:GetParent(), "TOPRIGHT", -LUI:Scale(2), LUI:Scale(5))
-	healthBar:SetStatusBarTexture(Media:Fetch("statusbar", db.Tooltip.Health.Texture))
-
-	local healthBarBG = CreateFrame( "Frame", "StatusBarBG", healthBar)
-	healthBarBG:SetFrameLevel(healthBar:GetFrameLevel() - 1)
-	healthBarBG:SetPoint("TOPLEFT", -LUI:Scale(2), LUI:Scale(2))
-	healthBarBG:SetPoint("BOTTOMRIGHT", LUI:Scale(2), -LUI:Scale(2))
-	healthBarBG:SetBackdrop( { 
-		bgFile = LUI.Media.blank, 
-		edgeFile = LUI.Media.blank, 
-		tile = false, edgeSize = 0, 
-		insets = { left = 0, right = 0, top = 0, bottom = 0 }
-	})
-	healthBarBG:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
-	healthBarBG:SetBackdropBorderColor(0,0,0,0)
-
 	module:HookScript(GameTooltip, "OnTooltipSetUnit", function(frame)
 		local genderTable = { "", "Male ", "Female " };
 		local lines = frame:NumLines()
-		local GMF = GetMouseFocus()
-		local unit = (select(2, frame:GetUnit())) or (GMF and GMF:GetAttribute("unit"))
 		
-		-- A mage's mirror images sometimes doesn't return a unit, this would fix it
-		if (not unit) and (UnitExists("mouseover")) then
-			unit = "mouseover"
-		end
+		SetStyle(frame)
+		
+		local unit = GetTooltipUnit(frame)
 		
 		-- Sometimes when you move your mouse quicky over units in the worldframe, we can get here without a unit
 		if not unit then frame:Hide() return end
@@ -310,59 +374,6 @@ function module:SetTooltip()
 		-- Sometimes this wasn't getting reset, the fact a cleanup isn't performed at this point, now that it was moved to "OnTooltipCleared" is very bad, so this is a fix
 		frame.fadeOut = nil
 	end)
-
-	local BorderColor = function(self)
-		local c
-		local GMF = GetMouseFocus()
-		local unit = (select(2, self:GetUnit())) or (GMF and GMF:GetAttribute("unit"))
-			
-		local reaction = unit and UnitReaction(unit, "player")
-		local player = unit and UnitIsPlayer(unit)
-		local tapped = unit and UnitIsTapped(unit)
-		local tappedbyme = unit and UnitIsTappedByPlayer(unit)
-		local connected = unit and UnitIsConnected(unit)
-		local dead = unit and UnitIsDead(unit)
-
-		if player then
-			local class = select(2, UnitClass(unit))
-			local c = LUITooltipColors.class[class] or {1, 1, 1}
-			local r, g, b = c[1], c[2], c[3]
-			self:SetBackdropBorderColor(r, g, b)
-			healthBarBG:SetBackdropBorderColor(r, g, b)
-			healthBar:SetStatusBarColor(r, g, b)
-		elseif reaction then
-			if tapped then
-				c = {db.Tooltip.Border.Tapped.r,db.Tooltip.Border.Tapped.g,db.Tooltip.Border.Tapped.b}
-			else
-				c = LUITooltipColors.reaction[reaction]
-			end
-			local r, g, b = c[1], c[2], c[3]
-			self:SetBackdropBorderColor(r, g, b)
-			healthBarBG:SetBackdropBorderColor(r, g, b)
-			healthBar:SetStatusBarColor(r, g, b)
-		else
-			local _, link = self:GetItem()
-			local quality = link and select(3, GetItemInfo(link))
-			if quality and quality >= 2 then
-				local r, g, b = GetItemQualityColor(quality)
-				self:SetBackdropBorderColor(r, g, b)
-			else
-				self:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
-				healthBarBG:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
-				healthBar:SetStatusBarColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
-			end
-		end
-		
-		-- need this
-		NeedBackdropBorderRefresh = true
-	end
-
-	local SetStyle = function(self)
-		self:SetScale(db.Tooltip.Scale)
-		self:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
-		self:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
-		BorderColor(self)
-	end
 
 	module:RegisterEvent("PLAYER_ENTERING_WORLD", function()
 		for _, tt in pairs(Tooltips) do
