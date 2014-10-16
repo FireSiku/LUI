@@ -18,7 +18,7 @@ local _, class = UnitClass("player")
 local db, dbd
 local LUIVengeance
 
-local vengeance = GetSpellInfo(93098)
+local vengeance = GetSpellInfo(158300)
 
 LUI.Versions.vengeance = 2.0
 
@@ -210,7 +210,7 @@ module.defaults = {
 	}
 }
 
-module.optionsName = "Vengeance Bar"
+module.optionsName = "Resolve Bar"
 module.getter = "generic"
 module.setter = "Refresh"
 
@@ -223,35 +223,35 @@ function module:LoadOptions()
 	local options = {
 		General = self:NewGroup("General", 1, {
 			header = self:NewHeader("General Options", 0),
-			[""] = self:NewPosSliders("Vengeance Bar", 1, nil, "LUIVengeance", true),
-			Point = self:NewSelect("Point", "Choose the Point for your Vengeance Bar.", 2, positions, nil, dryCall),
+			[""] = self:NewPosSliders("Resolve Bar", 1, nil, "LUIVengeance", true),
+			Point = self:NewSelect("Point", "Choose the Point for your Resolve Bar.", 2, positions, nil, dryCall),
 			empty1 = self:NewDesc(" ", 3),
-			Width = self:NewInputNumber("Width", "Choose the Width for your Vengeance Bar.", 3, dryCall),
-			Height = self:NewInputNumber("Height", "Choose the Height for your Vengeance Bar.", 4, dryCall),
+			Width = self:NewInputNumber("Width", "Choose the Width for your Resolve Bar.", 3, dryCall),
+			Height = self:NewInputNumber("Height", "Choose the Height for your Resolve Bar.", 4, dryCall),
 			empty2 = self:NewDesc(" ", 5),
-			Testmode = self:NewExecute("Testmode", "Enable/Disable Vengeance Bar Testmode", 6, ToggleTestMode),
+			Testmode = self:NewExecute("Testmode", "Enable/Disable Resolve Bar Testmode", 6, ToggleTestMode),
 		}),
 		Appearance = self:NewGroup("Appearance", 2, {
 			header = self:NewHeader("Appearance Options", 0),
-			Texture = self:NewSelect("Texture", "Choose the Texture for your Vengeance Bar.", 1, widgetLists.statusbar, "LSM30_Statusbar", true),
-			BGTexture = self:NewSelect("Background Texture", "Choose the Background Texture for your Vengeance Bar.", 2, widgetLists.statusbar, "LSM30_Statusbar", true),
+			Texture = self:NewSelect("Texture", "Choose the Texture for your Resolve Bar.", 1, widgetLists.statusbar, "LSM30_Statusbar", true),
+			BGTexture = self:NewSelect("Background Texture", "Choose the Background Texture for your Resolve Bar.", 2, widgetLists.statusbar, "LSM30_Statusbar", true),
 			BGMultiplier = self:NewSlider("Background Multiplier", "Choose the Multiplier for your Background Color.", 3, 0, 1, 0.01, true, true),
 			empty1 = self:NewDesc(" ", 4),
-			Color = self:NewSelect("Color", "Choose the Color Option for your Vengeance Bar.", 4, colorOptions, nil, dryCall),
-			IndividualColor = self:NewColorNoAlpha("Individual", "Vengeance Bar", 5, dryCall, nil, function() return db.Appearance.Color ~= "Individual" end),
+			Color = self:NewSelect("Color", "Choose the Color Option for your Resolve Bar.", 4, colorOptions, nil, dryCall),
+			IndividualColor = self:NewColorNoAlpha("Individual", "Resolve Bar", 5, dryCall, nil, function() return db.Appearance.Color ~= "Individual" end),
 		}),
 		Text = self:NewGroup("Text", 3, {
 			header = self:NewHeader("Text Options", 0),
-			Enable = self:NewToggle("Enable Text", "Whether you want to show a Text on your Vengeance Bar or not.", 1, true),
-			Format = self:NewSelect("Format", "Choose the Format for your Vengeance Bar Text.", 2, formatOptions, nil, dryCall, nil, disabledTextFunc),
+			Enable = self:NewToggle("Enable Text", "Whether you want to show a Text on your Resolve Bar or not.", 1, true),
+			Format = self:NewSelect("Format", "Choose the Format for your Resolve Bar Text.", 2, formatOptions, nil, dryCall, nil, disabledTextFunc),
 			empty1 = self:NewDesc(" ", 3),
-			[""] = self:NewPosSliders("Vengeance Bar Text", 4, nil, "LUIVengeanceText", true, nil, disabledTextFunc),
-			Font = self:NewSelect("Font", "Choose the Font for your Vengeance Bar Text.", 6, widgetLists.font, "LSM30_Font", true, nil, disabledTextFunc),
-			Size = self:NewInputNumber("Fontsize", "Choose the Fontsize for your Vengeance Bar Text.", 7, dryCall, nil, disabledTextFunc),
-			Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Vengeance Bar Text Font.", 8, fontflags, nil, dryCall, nil, disabledTextFunc),
+			[""] = self:NewPosSliders("Resolve Bar Text", 4, nil, "LUIVengeanceText", true, nil, disabledTextFunc),
+			Font = self:NewSelect("Font", "Choose the Font for your Resolve Bar Text.", 6, widgetLists.font, "LSM30_Font", true, nil, disabledTextFunc),
+			Size = self:NewInputNumber("Fontsize", "Choose the Fontsize for your Resolve Bar Text.", 7, dryCall, nil, disabledTextFunc),
+			Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Resolve Bar Text Font.", 8, fontflags, nil, dryCall, nil, disabledTextFunc),
 			empty2 = self:NewDesc(" ", 9),
-			Color = self:NewSelect("Color", "Choose the Color option for your Vengeance Bar Text.", 10, colorOptions, nil, dryCall, nil, disabledTextFunc),
-			IndividualColor = self:NewColorNoAlpha("Individual", "Vengeance Bar Text", 11, dryCall, nil, function() return not db.Text.Enable or db.Text.Color ~= "Individual" end),
+			Color = self:NewSelect("Color", "Choose the Color option for your Resolve Bar Text.", 10, colorOptions, nil, dryCall, nil, disabledTextFunc),
+			IndividualColor = self:NewColorNoAlpha("Individual", "Resolve Bar Text", 11, dryCall, nil, function() return not db.Text.Enable or db.Text.Color ~= "Individual" end),
 		}),
 	}
 	
