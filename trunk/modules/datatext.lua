@@ -2391,7 +2391,7 @@ function module:SetGuild()
 			local offcolor = ("\124cff%.2x%.2x%.2x"):format(r*255, g*255, b*255)
 			for i=1, GetNumGuildMembers(true) do
 				local fullName, rank, rankIndex, level, class, zone, note, offnote, connected, status, cFN, achiPoints, achiRank, isMobile = GetGuildRosterInfo(i)
-				local displayName, realmName = strsplit("-",fullName)
+				local displayName, realmName = strsplit("-",tostring(fullName))
 				local name = db.Guild.hideRealm and displayName or fullName
 				if isMobile then
 					zone = "Remote Chat"
