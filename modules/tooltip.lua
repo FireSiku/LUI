@@ -280,6 +280,11 @@ function module:SetTooltip()
 		local genderTable = { "", "Male ", "Female " };
 		local lines = frame:NumLines()
 		
+		if db.Tooltip.Hidecombat and InCombatLockdown() then
+			frame:Hide()
+			return
+		end
+		
 		SetStyle(frame)
 		
 		local unit = GetTooltipUnit(frame)
@@ -374,17 +379,15 @@ function module:SetTooltip()
 		module:UnregisterEvent("PLAYER_ENTERING_WORLD")
 		
 		-- Hide tooltips in combat for actions, pet actions and shapeshift
-		if db.Tooltip.Hidebuttons then
-			local CombatHideActionButtonsTooltip = function(self)
-				if not IsShiftKeyDown() then
-					self:Hide()
-				end
+		local CombatHideActionButtonsTooltip = function(self)
+			if db.Tooltip.Hidebuttons and InCombatLockdown() and not IsShiftKeyDown() then
+				self:Hide()
 			end
-		 
-			hooksecurefunc(GameTooltip, "SetAction", CombatHideActionButtonsTooltip)
-			hooksecurefunc(GameTooltip, "SetPetAction", CombatHideActionButtonsTooltip)
-			hooksecurefunc(GameTooltip, "SetShapeshift", CombatHideActionButtonsTooltip)
 		end
+		hooksecurefunc(GameTooltip, "SetAction", CombatHideActionButtonsTooltip)
+		hooksecurefunc(GameTooltip, "SetPetAction", CombatHideActionButtonsTooltip)
+		hooksecurefunc(GameTooltip, "SetShapeshift", CombatHideActionButtonsTooltip)
+		
 	end)
 end
 
