@@ -88,31 +88,16 @@ function module:SetTooltip()
 	local NeedBackdropBorderRefresh = false
 
 	module:SecureHook("GameTooltip_SetDefaultAnchor", function(frame, parent)
-		if db.Tooltip.Cursor == true then
+		if db.Tooltip.Cursor then
 			frame:SetOwner(parent, "ANCHOR_CURSOR")
 		else
 			frame:SetOwner(parent, "ANCHOR_NONE")
+			frame:ClearAllPoints()
 			frame:SetPoint(db.Tooltip.Point, UIParent, db.Tooltip.Point, db.Tooltip.X, db.Tooltip.Y)
 		end
 		frame.default = 1
 	end)
-
-	module:HookScript(GameTooltip, "OnUpdate", function(frame, ...)
-		if frame:GetAnchorType() == "ANCHOR_CURSOR" and NeedBackdropBorderRefresh == true and db.Tooltip.Cursor ~= true then
-			NeedBackdropBorderRefresh = false
-			frame:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
-			frame:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
-		elseif frame:GetAnchorType() == "ANCHOR_NONE" then
-			if InCombatLockdown() and db.Tooltip.Hidecombat == true then
-				frame:SetAlpha(0)
-			else
-				frame:SetAlpha(1)
-				frame:ClearAllPoints()
-				frame:SetPoint(db.Tooltip.Point, UIParent, db.Tooltip.Point, db.Tooltip.X, db.Tooltip.Y)
-			end
-		end
-	end)
-
+	
 	local function Hex(color)
 		return string.format('|cff%02x%02x%02x', color.r * 255, color.g * 255, color.b * 255)
 	end
@@ -228,6 +213,10 @@ function module:SetTooltip()
 	end
 	
 	local SetStyle = function(self)
+		if db.Tooltip.Hidecombat and InCombatLockdown() then
+			self:Hide()
+			return
+		end
 		self:SetScale(db.Tooltip.Scale)
 		self:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
 		self:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
