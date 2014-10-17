@@ -1,0 +1,129 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<!-- Error frame hook -->
+	<Script file="bugcatcher.lua"/>
+
+	<!-- Initialize LUI -->
+	<Include file="locale\locale.xml"/>
+	<Script file="init.lua"/>
+	<Script file="tools\profiler.lua"/>
+	<Script file="debug.lua"/>
+    <Script file="tools\outofcombatwrapper.lua"/>
+	<Script file="devapi.lua"/>
+	<Script file="tools\restore.lua"/>
+    <Script file="tools\hideblizzard.lua"/>
+
+	<!-- Initialize oUF -->
+	<Include file="unitframes\core\ouf.xml"/>
+
+	<!-- Core + Basic Modules -->
+	<Script file="LUI.lua"/>
+	<Script file="modules\themes.lua"/>
+	<Script file="modules\panels.lua"/>
+	<Script file="modules\frames.lua"/>
+	<Script file="modules\fader.lua"/>
+	<Script file="modules\bars.lua"/>
+
+	<!-- Addon Installation Routines -->
+	<Script file="addons\forte.lua"/>
+	<!--Script file="addons\sptimers.lua"/-->
+	<!--Script file="addons\raven.lua"/-->
+	<Script file="addons\pallypower.lua"/>
+	<Script file="addons\bartender.lua"/>
+	<Script file="addons\grid.lua"/>
+	<Script file="addons\omen.lua"/>
+	<Script file="addons\recount.lua"/>
+
+	<!-- Extended Modules -->
+	<Include file="modules\auras\auras.xml"/>
+	<Include file="modules\chat\chat.xml"/>
+	<Script file="modules\minimap.lua"/>
+ 	<Include file="modules\worldmap\worldmap.xml"/>
+	<Script file="modules\bags.lua"/>
+	<Script file="modules\nameplates.lua"/>
+    <Include file="modules\cooldown\cooldown.xml"/>
+	<Script file="modules\tooltip.lua"/>
+	<Script file="modules\datatext.lua"/>
+	<Script file="modules\faq.lua"/>
+	<Script file="modules\micromenu.lua"/>
+	<Include file="modules\raidmenu.xml"/>
+	<Script file="modules\vengeance.lua"/>
+	<Script file="modules\swing.lua"/>
+	<Script file="modules\threatbar.lua"/>
+ 	<Script file="modules\interruptannouncer.lua"/>
+	<Script file="modules\merchant.lua"/>
+	<Script file="modules\removethatbuff.lua"/>
+	<Script file="modules\mirrorbar.lua"/>
+	<Script file="modules\artwork.lua"/>
+
+	<!-- Additional Scripts -->
+	<Script file="scripts\errorhider.lua"/>
+	<Script file="scripts\partyfix.lua"/>
+	<Script file="scripts\colourpicker.lua"/>
+	<Script file="scripts\frameidentifier.lua"/>
+	<Script file="scripts\autoinvite.lua"/>
+	<Script file="scripts\blizzscale.lua"/>
+	<Script file="scripts\talentspam.lua"/>
+	<Script file="scripts\blizzoptionsmover.lua"/>
+
+	<!-- Initialize Unitframes -->
+	<Include file="unitframes\templates.xml"/>
+	<Script file="unitframes\init.lua"/>
+
+	<!-- Unitframe Default Values -->
+	<Script file="unitframes\defaults\player.lua"/>
+	<Script file="unitframes\defaults\target.lua"/>
+	<Script file="unitframes\defaults\tot.lua"/>
+	<Script file="unitframes\defaults\totot.lua"/>
+	<Script file="unitframes\defaults\focus.lua"/>
+	<Script file="unitframes\defaults\focustarget.lua"/>
+	<Script file="unitframes\defaults\pet.lua"/>
+	<Script file="unitframes\defaults\pettarget.lua"/>
+	<Script file="unitframes\defaults\boss.lua"/>
+	<Script file="unitframes\defaults\bosstarget.lua"/>
+	<Script file="unitframes\defaults\party.lua"/>
+	<Script file="unitframes\defaults\partypet.lua"/>
+	<Script file="unitframes\defaults\partytarget.lua"/>
+	<Script file="unitframes\defaults\maintank.lua"/>
+	<Script file="unitframes\defaults\maintanktarget.lua"/>
+	<Script file="unitframes\defaults\maintanktot.lua"/>
+	<Script file="unitframes\defaults\arena.lua"/>
+	<Script file="unitframes\defaults\arenapet.lua"/>
+	<Script file="unitframes\defaults\arenatarget.lua"/>
+	<Script file="unitframes\defaults\raid.lua"/>
+
+	<!-- Unitframe Options -->
+	<Script file="unitframes\options\colors.lua"/>
+	<Script file="unitframes\options\copysettings.lua"/>
+	<Script file="unitframes\options\general.lua"/>
+	<Script file="unitframes\options\importexport.lua"/>
+	<Script file="unitframes\options\movable.lua"/>
+	<Script file="unitframes\options\ouf.lua"/>
+	<Script file="unitframes\options\showhide.lua"/>
+	<Script file="unitframes\options\toggle.lua"/>
+
+	<!-- LUI Unitframe Additions -->
+	<Script file="unitframes\plugins\oUF_CombatFeedback.lua"/>
+	<Script file="unitframes\plugins\oUF_Experience.lua"/>
+	<Script file="unitframes\plugins\oUF_Reputation.lua"/>
+	<Script file="unitframes\plugins\oUF_Smooth.lua"/>
+	<Script file="unitframes\plugins\oUF_RaidDebuffs.lua"/>
+
+	<!-- to investigate as we may not need these anymore -->
+	<Script file="unitframes\plugins\singleauras.lua"/>
+	<Script file="unitframes\plugins\raiddebuffs.lua"/>
+	<Script file="unitframes\plugins\maintank.lua"/>
+	<Script file="unitframes\plugins\vehicle.lua"/>
+
+	<!-- to possibly move into the core/standard oUF style -->
+	<Script file="unitframes\plugins\arcanecharges.lua"/>
+	<Script file="unitframes\plugins\chi.lua"/>
+	<Script file="unitframes\plugins\holypower.lua"/>
+	<Script file="unitframes\plugins\shadoworbs.lua"/>
+	<Script file="unitframes\plugins\warlockbar.lua"/>
+	<Script file="unitframes\plugins\totalabsorb.lua"/>
+
+	<!-- Unitframe Layout -->
+	<Script file="unitframes\layout\tags.lua"/>
+	<Script file="unitframes\layout\meta.lua"/>
+	<Script file="unitframes\layout\layout.lua"/>
+</Ui>
