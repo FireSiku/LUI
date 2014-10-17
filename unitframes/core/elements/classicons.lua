@@ -5,8 +5,8 @@
 
  Widget
 
- ClassIcons - An array consisting of as many UI Textures as the theoretical maximum
- return of `UnitPowerMax`.
+ ClassIcons - An array consisting of as many UI Textures as the theoretical
+ maximum return of `UnitPowerMax`.
 
  Notes
 
@@ -33,20 +33,18 @@
 
  Hooks
 
- Override(self)         - Used to completely override the internal update function.
-                          Removing the table key entry will make the element
-                          fall-back to its internal function again.
+ OverrideVisibility(self) - Used to completely override the internal visibility
+                            function. Removing the table key entry will make
+                            the element fall-back to its internal function
+                            again.
+ Override(self)           - Used to completely override the internal update
+                            function. Removing the table key entry will make the
+                            element fall-back to its internal function again.
+ UpdateTexture(element)   - Used to completely override the internal function
+                            for updating the power icon textures. Removing the
+                            table key entry will make the element fall-back to
+                            its internal function again.
 
- Visibility(self)       - Used to completely override the internal visibility function.
-                          Removing the table key entry will make the element
-                          fall-back to its internal function again.
-
- UpdateTexture(element) - Used to completely override the internal function for
-                          updating the power icon textures. Removing the table key
-                          entry will make the element fall-back to its internal
-                          function again.
-
- Callbacks
 ]]
 
 local parent, ns = ...
@@ -146,8 +144,7 @@ local Update = function(self, event, unit, powerType)
 	end
 end
 
-local Visibility
-Visibility = function(self, event, unit)
+local function Visibility(self, event, unit)
 	local element = self.ClassIcons
 	local shouldEnable
 
@@ -165,7 +162,7 @@ Visibility = function(self, event, unit)
 	local isEnabled = element.isEnabled
 	if(shouldEnable and not isEnabled) then
 		ClassPowerEnable(self)
-	elseif(not shouldEnable and isEnabled) then
+	elseif(not shouldEnable and (isEnabled or isEnabled == nil)) then
 		ClassPowerDisable(self)
 	end
 end
@@ -175,7 +172,7 @@ local Path = function(self, ...)
 end
 
 local VisibilityPath = function(self, ...)
-	return (self.ClassIcons.Visibility or Visibility) (self, ...)
+	return (self.ClassIcons.OverrideVisibility or Visibility) (self, ...)
 end
 
 local ForceUpdate = function(element)
@@ -200,7 +197,7 @@ do
 		end
 
 		Path(self, 'ClassPowerDisable', 'player', ClassPowerType)
-		self.ClassIcons.isEnabled = nil
+		self.ClassIcons.isEnabled = false
 	end
 
 	if(PlayerClass == 'MONK') then
@@ -230,7 +227,7 @@ local Enable = function(self, unit)
 	if(not element) then return end
 
 	element.__owner = self
-	element.__max = 0
+	element.__max = #element
 	element.ForceUpdate = ForceUpdate
 
 	if(RequireSpec) then
