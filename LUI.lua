@@ -955,7 +955,7 @@ local function getOptions()
 									set = function(info, value)
 										if scale == nil or scale == "" then scale = 1 end
 										db.General.BlizzFrameScale = value
-										LUI:FetchScript("BlizzScale"):ADDON_LOADED()
+										LUI:FetchScript("BlizzScale"):ApplyBlizzScaling()
 									end,
 									order = 32,
 								},
