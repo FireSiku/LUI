@@ -1,63 +1,115 @@
 local addonname, LUI = ...
-local script = LUI:NewScript("BlizzScale", "AceEvent-3.0")
+local script = LUI:NewScript("BlizzScale", "AceEvent-3.0", "AceHook-3.0")
 
-function script:ADDON_LOADED(event, name)
-	if event == "ADDON_LOADED" and (name == nil or select(7, GetAddOnInfo(name)) ~= "SECURE") then return end
+local IsAddOnLoaded = IsAddOnLoaded
+local _G = _G
+
+local blizzFrames = {
+	--UI Frames
+	"CharacterFrame",
+	"DressUpFrame",
+	"SpellBookFrame",
+	"PlayerTalentFrame",
+	"GossipFrame",
+	"MerchantFrame",
+	"MailFrame",
+	"OpenMailFrame",
+	"QuestFrame",
+	"TradeFrame",
+	"GuildFrame",
+	"FriendsFrame",
+	"RaidParentFrame",	-- Not sure what this frame is.
+	"PVEFrame",
+	"TaxiFrame",
+	
+	--Settings Frames
+	"GameMenuFrame",
+	"VideoOptionsFrame",
+	"InterfaceOptionsFrame",
+	"KeyBindingFrame",
+	"MacroFrame",
+	"HelpFrame",
+	
+	--LoadOnDemand Frames
+	"CalendarFrame",
+	"AchievementFrame",		-- Blizzard_AchievementUI
+	"InspectFrame",			-- Blizzard_InspectUI
+	"ItemSocketingFrame",	-- Blizzard_ItemSocketingUI
+	"ArchaeologyFrame",		-- Blizzard_ArchaeologyUI
+	"TradeSkillFrame",		-- Blizzard_TradeSkillUI
+	"LookingForGuildFrame",	-- Blizzard_LookingForGuildUI
+	"AuctionFrame",			-- Blizzard_AuctionUI
+	"EncounterJournal",		-- Blizzard_EncounterJournal
+	"PetJournalParent",		-- Blizzard_PetJournal
+	"VoidStorageFrame",
+	"TransmogrifyFrame",
+}
+
+local conflictAddons = {
+	AuctionFrame = "Auc-Advanced"
+}
+
+-- Not Handled: Frames that need secure environment, causes taint.
+local needSecure = {
+	"StoreFrame",
+}
+
+local blizzEvents = {
+	"PLAYER_LOGIN",
+	"ARCHAEOLOGY_TOGGLE",
+	"AUCTION_HOUSE_SHOW",
+	"BARBER_SHOP_OPEN",
+	"INSPECT_READY",
+	"VOID_STORAGE_OPEN",
+	"TRANSMOGRIFY_OPEN",
+	"TRADE_SKILL_SHOW",
+	"SOCKET_INFO_UPDATE",
+}
+
+local blizzHooks = {
+	"AchievementFrame_LoadUI",
+	"ArchaeologyFrame_LoadUI",
+	"Calendar_LoadUI",
+	"PetJournal_LoadUI",
+	"EncounterJournal_LoadUI",
+	"MacroFrame_LoadUI",
+	"KeyBindingFrame_LoadUI",
+}
+
+function script:ApplyBlizzScaling()
+	local scale = LUI.db.profile.General.BlizzFrameScale
+	
 	if InCombatLockdown() then
-		self:RegisterEvent("PLAYER_REGEN_ENABLED", "ADDON_LOADED")
+		script:RegisterEvent("PLAYER_REGEN_ENABLED", "EventHandling")
 		return
-	elseif event == "PLAYER_REGEN_ENABLED" then
-		self:UnregisterEvent(event)
 	end
 	
-	local scale = LUI.db.profile.General.BlizzFrameScale
-	local blizzFrames = {
-		CalendarFrame,
-		CharacterFrame,
-		DressUpFrame,
-		ItemSocketingFrame,
-		InspectFrame,
-		SpellBookFrame,
-		PlayerTalentFrame,
-		QuestLogFrame,
-		QuestFrame,
-		QuestLogDetailFrame,
-		ArchaeologyFrame,
-		GossipFrame,
-		AchievementFrame,
-		MerchantFrame,
-		TradeFrame,
-		MailFrame,
-		OpenMailFrame,
-		TradeSkillFrame,
-		ClassTrainerFrame,
-		ReforgingFrame,
-		LookingForGuildFrame,
-		GuildFrame,
-		FriendsFrame,
-		RaidParentFrame,
-		HelpFrame,
-		MacroFrame,
-		GameMenuFrame,
-		VideoOptionsFrame,
-		InterfaceOptionsFrame,
-		KeyBindingFrame,
-		PVEFrame,
-		PVPUIFrame,
-	}
-
-	for _, frame in pairs(blizzFrames) do
-		if frame then frame:SetScale(scale) end
-	end
-
-	if AuctionFrame and not IsAddOnLoaded("Auc-Advanced") then
-		AuctionFrame:SetScale(scale)
+	for i = 1, #blizzFrames do
+		local frameName = blizzFrames[i]
+		local frame = _G[frameName]
+		--Check if the frame exists
+		if frame then
+			--Check if the frame has no conflicting addons, or that the addon isn't loaded.
+			if not conflictAddons[frameName] or not IsAddOnLoaded(conflictAddons[frameName]) then
+				frame:SetScale(scale)
+			end
+		end
 	end
 end
 
-script:RegisterEvent("PLAYER_LOGIN", function(event)
+function script:EventHandling(event)
 	script:UnregisterEvent(event)
+	script:ApplyBlizzScaling()
+end
 
-	script:RegisterEvent("ADDON_LOADED")
-	script:ADDON_LOADED()
-end)
+do
+	for i = 1, #blizzEvents do
+		script:RegisterEvent(blizzEvents[i], "EventHandling")
+	end
+	for i = 1, #blizzHooks do
+		script:SecureHook(blizzHooks[i], function()
+			script:ApplyBlizzScaling()
+			script:Unhook(blizzHooks[i])
+		end)
+	end
+end
