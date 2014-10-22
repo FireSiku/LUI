@@ -2335,7 +2335,7 @@ module.funcs = {
 			self.Chi:SetFrameLevel(6)
 			self.Chi.Force = 4
 
-			for i = 1, 5 do -- Always create frames for the max possible
+			for i = 1, 6 do -- Always create frames for the max possible
 				self.Chi[i] = CreateFrame("StatusBar", nil, self.Chi)
 				self.Chi[i]:SetBackdrop(backdrop)
 				self.Chi[i]:SetBackdropColor(0.08, 0.08, 0.08)
@@ -2365,9 +2365,12 @@ module.funcs = {
 		self.Chi:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 	
 		local function checkChi(event)
+			self.Chi.Force = 4
+			local empowerChi = IsSpellKnown(157411)
 			local _, _, _, ascension = GetTalentInfo(3, 2, GetActiveSpecGroup()) -- Ascension
-			self.Chi.Force = ascension and 5 or 4
-			for i = 1, 5 do
+			if empowerChi then self.Chi.Force = self.Chi.Force + 1 end
+			if ascension then self.Chi.Force = self.Chi.Force + 1 end
+			for i = 1, 6 do
 				self.Chi[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Chi.Texture))
 				self.Chi[i]:SetStatusBarColor(unpack(module.colors.chibar[i]))
 				self.Chi[i]:SetSize(((oufdb.Bars.Chi.Width - 2*oufdb.Bars.Chi.Padding) / self.Chi.Force), oufdb.Bars.Chi.Height)
@@ -2385,7 +2388,8 @@ module.funcs = {
 			end
 		end
 		checkChi()
-
+		module:RegisterEvent("UNIT_LEVEL", checkChi)
+		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkChi)
 		module:RegisterEvent("PLAYER_TALENT_UPDATE", checkChi)
 	end,
 	WarlockBar = function(self, unit, oufdb)
