@@ -93,6 +93,7 @@ module.defaults.profile.Colors = {
 		[3] = {0.00, 1.00, 0.59},
 		[4] = {0.00, 1.00, 0.59},
 		[5] = {0.00, 1.00, 0.59},
+		[6] = {0.00, 1.00, 0.59},
 	},
 	WarlockBar = {
 		["Fury"] = {0.8, 0.1, 0.1},
@@ -272,7 +273,7 @@ local function UpdateColors()
 		end
 	end
 	if oUF_LUI_player.Chi then
-		for i = 1, 5 do
+		for i = 1, 6 do
 			oUF_LUI_player.Chi[i]:SetStatusBarColor(unpack(module.colors.chibar[i]))
 		end
 	end
@@ -448,7 +449,8 @@ function module:CreateColorOptions(order)
 			["2"] = self:NewColorNoAlpha("Part 2", "second part of your Chi Bar", 3, false, "full"),
 			["3"] = self:NewColorNoAlpha("Part 3", "third part of your Chi Bar", 4, false, "full"),
 			["4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Chi Bar", 4, false, "full"),
-			["5"] = self:NewColorNoAlpha("Part 5", "fifth part of your Chi Bar, talent required.", 4, false, "full"),
+			["5"] = self:NewColorNoAlpha("Part 5", "fifth part of your Chi Bar (Talent or Perk required).", 4, false, "full"),
+			["6"] = self:NewColorNoAlpha("Part 5", "fifth part of your Chi Bar (Talent and Perk required).", 4, false, "full"),
 			empty1 = self:NewDesc(" ", 5),
 			Reset = self:NewExecute("Restore Defaults", nil, 6, function()
 				module.db.Colors.ChiBar = module.defaults.Colors.ChiBar
