@@ -121,6 +121,9 @@ function module:SetNameplates()
 
 		local level, elite, mylevel = tonumber(self.level:GetText()), self.elite:IsShown(), UnitLevel("player")
 		self.level:ClearAllPoints()
+		local point, parent, relativePoint, offsetX, offsetY = self.elite:GetPoint()
+		self.elite:ClearAllPoints()
+		self.elite:SetPoint(point, parent, relativePoint, offsetX-10, offsetY)
 		if not db.Nameplates.ShowElite then self.elite:SetTexture(nil) end
 		self.level:SetPoint("RIGHT", self.healthBar, "LEFT", LUI:Scale(-2), 0)
 		if self.boss:IsShown() then
@@ -281,7 +284,10 @@ function module:SetNameplates()
 		spellIconRegion.IconBackdrop:SetBackdrop(backdrop)
 		spellIconRegion.IconBackdrop:SetBackdropColor(0, 0, 0)
 		spellIconRegion.IconBackdrop:SetBackdropBorderColor(0, 0, 0)
-
+		
+		local upperLeftX, upperLeftY, lowerLeftX, lowerLeftY, upperRightX, upperRightY, lowerRightX, lowerRightY = stateIconRegion:GetTexCoord()
+		stateIconRegion:SetTexCoord(upperRightX, upperLeftY, lowerRightX, lowerLeftY, upperLeftX, upperRightY, lowerLeftX, lowerRightY)		
+		
 		highlightRegion:SetTexture(barTexture)
 		highlightRegion:SetVertexColor(0.25, 0.25, 0.25)
 		frame.highlight = highlightRegion
@@ -302,7 +308,6 @@ function module:SetNameplates()
 		overlayRegion:SetTexture(nil)
 		shieldedRegion:SetTexture(nil)
 		castbarOverlay:SetTexture(nil)
-		stateIconRegion:SetTexture(nil)
 		bossIconRegion:SetTexture(nil)
 
 		updatePlate(frame)
