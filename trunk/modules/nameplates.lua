@@ -127,6 +127,8 @@ function module:SetNameplates()
 			self.level:SetText("B")
 			self.level:SetTextColor(0.8, 0.05, 0)
 			self.level:Show()
+		elseif not elite and level == mylevel then
+			self.level:Hide()
 		else
 			self.level:SetFormattedText("%d%s", level, (elite and "+" or ""))
 		end
