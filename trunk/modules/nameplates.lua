@@ -121,15 +121,14 @@ function module:SetNameplates()
 
 		local level, elite, mylevel = tonumber(self.level:GetText()), self.elite:IsShown(), UnitLevel("player")
 		self.level:ClearAllPoints()
+		if not db.Nameplates.ShowElite then self.elite:SetTexture(nil) end
 		self.level:SetPoint("RIGHT", self.healthBar, "LEFT", LUI:Scale(-2), 0)
 		if self.boss:IsShown() then
 			self.level:SetText("B")
 			self.level:SetTextColor(0.8, 0.05, 0)
 			self.level:Show()
-		elseif not elite and level == mylevel then
-			self.level:Hide()
 		else
-			self.level:SetFormattedText("%d:%s", level, (elite and "+" or ""))
+			self.level:SetFormattedText("%d%s", level, (elite and "+" or ""))
 		end
 	end
 
@@ -354,6 +353,7 @@ local defaults = {
 		Enable = true,
 		HideOutOfCombat = true,
 		ShowEnterCombat = true,
+		ShowElite = false,
 		FontSettings = {
 			Font = "vibroceb",
 			Flag = "OUTLINE",
@@ -445,6 +445,17 @@ function module:LoadOptions()
 									db.Nameplates.ShowEnterCombat = not db.Nameplates.ShowEnterCombat
 								end,
 						},
+						ShowElite = {
+							name = "Show Elite Textures",
+							desc = "Show elite dragon texture around the level of elite mobs.\n\nNote: This setting cannot be applied to currently visible nameplates.",
+							type = "toggle",
+							width = "full",
+							order = 2,
+							get = function() return db.Nameplates.ShowElite end,
+							set = function()
+									db.Nameplates.ShowElite = not db.Nameplates.ShowElite
+								end,
+						},
 						CastBar = {
 							name = "Display Cast Bar",
 							desc = "Enable LUI Nameplates' Cast Bar.\n",
@@ -452,6 +463,7 @@ function module:LoadOptions()
 							width = "full",
 							order = 3,
 							disabled = true,
+							hidden = true,
 							get = function() return db.Nameplates.CastBar.Enable end,
 							set = function()
 									db.Nameplates.CastBar.Enable = not db.Nameplates.CastBar.Enable
@@ -464,6 +476,7 @@ function module:LoadOptions()
 							width = "full",
 							order = 4,
 							disabled = true,
+							hidden = true,
 							get = function() return db.Nameplates.Name.Enable end,
 							set = function()
 									db.Nameplates.Name.Enable = not db.Nameplates.Name.Enable
