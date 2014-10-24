@@ -462,7 +462,9 @@ function module:SetMinimap()
 	
 	if db.Minimap.General.AlwaysShowText then
 		m_zone:Show()
-		m_coord:Show()
+		if db.Minimap.General.ShowCoord then
+			m_coord:Show()
+		end
 	end
 	
 	m_coord:SetScript("OnUpdate", function(self)
@@ -495,11 +497,13 @@ function module:SetMinimap()
 	-- Set Scripts and etc.
 	Minimap:SetScript("OnEnter",function()
 		m_zone:Show()
-		m_coord:Show()
+		if db.Minimap.General.ShowCoord then
+			m_coord:Show()
+		end
 	end)
 	 
 	Minimap:SetScript("OnLeave",function()
-		if db.Minimap.General.AlwaysShowText == false then
+		if not db.Minimap.General.AlwaysShowText then
 			m_zone:Hide()
 			m_coord:Hide()
 		end
@@ -541,6 +545,7 @@ local defaults = {
 			Size = 1,
 			ShowTextures = true,
 			ShowBorder = true,
+			ShowCoord = true,
 		},
 		Font = {
 			Font = "vibroceb",
@@ -592,48 +597,48 @@ function module:LoadOptions()
 							type = "group",
 							args = {
 								ShowTextures = {
-								name = "Show Minimap Textures",
-								desc = "Whether you want to show the Minimap Textures or not.\n",
-								disabled = function() return not db.Minimap.Enable end,
-								type = "toggle",
-								width = "full",
-								get = function() return db.Minimap.General.ShowTextures end,
-								set = function(self, ShowTextures)
-											db.Minimap.General.ShowTextures = not db.Minimap.General.ShowTextures
-											for i=1, 8, 1 do
-												if _G["fminimap_texture"..i] ~= nil then
-													if db.Minimap.General.ShowTextures == true then
-														_G["fminimap_texture"..i]:Show()
-													else
-														_G["fminimap_texture"..i]:Hide()
+									name = "Show Minimap Textures",
+									desc = "Whether you want to show the Minimap Textures or not.\n",
+									disabled = function() return not db.Minimap.Enable end,
+									type = "toggle",
+									width = "full",
+									get = function() return db.Minimap.General.ShowTextures end,
+									set = function(self, ShowTextures)
+												db.Minimap.General.ShowTextures = not db.Minimap.General.ShowTextures
+												for i=1, 8, 1 do
+													if _G["fminimap_texture"..i] ~= nil then
+														if db.Minimap.General.ShowTextures == true then
+															_G["fminimap_texture"..i]:Show()
+														else
+															_G["fminimap_texture"..i]:Hide()
+														end
 													end
 												end
-											end
-										end,
-								order = 1,
+											end,
+									order = 1,
 								},
 								ShowBorder = {
-								name = "Show Minimap Border",
-								desc = "Whether you want to show the Minimap Border or not.\n",
-								disabled = function() return not db.Minimap.Enable end,
-								type = "toggle",
-								width = "full",
-								get = function() return db.Minimap.General.ShowBorder end,
-								set = function(self, ShowBorder)
-											db.Minimap.General.ShowBorder = not db.Minimap.General.ShowBorder
-											if fminimap_border ~= nil then
-												if db.Minimap.General.ShowBorder == true then
-													fminimap_border:Show()
-												else
-													fminimap_border:Hide()
+									name = "Show Minimap Border",
+									desc = "Whether you want to show the Minimap Border or not.\n",
+									disabled = function() return not db.Minimap.Enable end,
+									type = "toggle",
+									width = "full",
+									get = function() return db.Minimap.General.ShowBorder end,
+									set = function(self, ShowBorder)
+												db.Minimap.General.ShowBorder = not db.Minimap.General.ShowBorder
+												if fminimap_border ~= nil then
+													if db.Minimap.General.ShowBorder == true then
+														fminimap_border:Show()
+													else
+														fminimap_border:Hide()
+													end
 												end
-											end
-										end,
-								order = 2,
+											end,
+									order = 2,
 								},
 								AlwaysShow = {
 									name = "Always show Minimap text",
-									desc = "Weather or not the Minimap Location and Coords text to always be shown.\n",
+									desc = "Whether or not the Minimap Location and Coords text to always be shown.\n",
 									disabled = function() return not db.Minimap.Enable end,
 									type = "toggle",
 									width = "full",
@@ -642,7 +647,9 @@ function module:LoadOptions()
 										db.Minimap.General.AlwaysShowText = not db.Minimap.General.AlwaysShowText
 										if db.Minimap.General.AlwaysShowText then
 											m_zone:Show()
-											m_coord:Show()
+											if db.Minimap.General.ShowCoord then
+												m_coord:Show()
+											end
 										else
 											m_zone:Hide()
 											m_coord:Hide()
@@ -650,10 +657,28 @@ function module:LoadOptions()
 									end,
 									order = 3,
 								},
+								ShowCoord = {
+									name = "Show Coordinates",
+									desc = "Whether or not the Minimap Coordinates.\n",
+									disabled = function() return not db.Minimap.Enable end,
+									type = "toggle",
+									width = "full",
+									get = function() return db.Minimap.General.ShowCoord end,
+									set = function(self)
+										db.Minimap.General.ShowCoord= not db.Minimap.General.ShowCoord
+										m_coord:Hide()
+										if db.Minimap.General.AlwaysShowText then
+											if db.Minimap.General.ShowCoord then
+												m_coord:Show()
+											end
+										end
+									end,
+									order = 4,
+								},
 								header1 = {
 									name = "Position",
 									type = "header",
-									order = 3,
+									order = 5,
 								},
 								PosX = {
 									name = "X Value",
@@ -667,7 +692,7 @@ function module:LoadOptions()
 											db.Minimap.General.Position.X = tonumber(PosX)
 											module:SetMinimapPosition()
 										end,
-									order = 4,
+									order = 5,
 								},
 								PosY = {
 									name = "Y Value",
@@ -681,9 +706,9 @@ function module:LoadOptions()
 											db.Minimap.General.Position.Y = tonumber(PosY)
 											module:SetMinimapPosition()
 										end,
-									order = 5,
+									order = 6,
 								},
-								Restore = LUI:NewExecute("Restore Default Position", "Restores Default Minimap Position", 6, function()
+								Restore = LUI:NewExecute("Restore Default Position", "Restores Default Minimap Position", 7, function()
 									db.Minimap.General.Position.RelativePoint = LUI.defaults.profile.Minimap.General.Position.RelativePoint
 									db.Minimap.General.Position.Point = LUI.defaults.profile.Minimap.General.Position.Point
 									db.Minimap.General.Position.X = LUI.defaults.profile.Minimap.General.Position.X
@@ -700,12 +725,12 @@ function module:LoadOptions()
 									set = function(self)
 										db.Minimap.General.Position.UnLocked = not db.Minimap.General.Position.UnLocked
 									end,
-									order = 7,
+									order = 8,
 								},
 								header2 = {
 									name = "Size",
 									type = "header",
-									order = 8
+									order = 9,
 								},	
 								Size = {
 									name = "Size",
@@ -724,7 +749,7 @@ function module:LoadOptions()
 											db.Minimap.General.Size = Size
 											module:SetMinimapSize()
 										end,
-									order = 9,
+									order = 10,
 								},
 							},
 						},
