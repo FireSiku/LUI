@@ -39,14 +39,19 @@ function module:SetPosition(frame)
 	shouldntSetPoint = true
 	
 	if frame == "worldState" then
+		WorldStateAlwaysUpFrame:ClearAllPoints()
 		WorldStateAlwaysUpFrame:SetPoint("TOP", UIParent, "TOP", db.Minimap.Frames.AlwaysUpFrameX, db.Minimap.Frames.AlwaysUpFrameY)
 	elseif frame == "vehicleSeats" then
+		VehicleSeatIndicator:ClearAllPoints()
 		VehicleSeatIndicator:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.VehicleSeatIndicatorX, db.Minimap.Frames.VehicleSeatIndicatorY)
 	elseif frame == "durability" then
+		DurabilityFrame:ClearAllPoints()
 		DurabilityFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.DurabilityFrameX, db.Minimap.Frames.DurabilityFrameY)
 	elseif frame == "questWatch" then
+		ObjectiveTrackerFrame:ClearAllPoints()
 		ObjectiveTrackerFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.ObjectiveTrackerFrameX, db.Minimap.Frames.ObjectiveTrackerFrameY)
 	elseif frame == "ticketStatus" then
+		TicketStatusFrame:ClearAllPoints()
 		TicketStatusFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.TicketX, db.Minimap.Frames.TicketY)
 	elseif frame == "capture" then
 		for i = 1, NUM_EXTENDED_UI_FRAMES do
