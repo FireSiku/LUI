@@ -2153,7 +2153,9 @@ end
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self)
 
-	if LUICONFIG.Versions.bars ~= LUI.Versions.bars then
+	local ProfileName = UnitName("player").." - "..GetRealmName()
+
+	if LUI.db.global.luiconfig[ProfileName].Versions.bars ~= LUI.Versions.bars then
 
 		-- recalc X/Y values for fixed scale options
 		if LUI.Versions.bars < 2.4 then
@@ -2174,10 +2176,10 @@ function module:OnInitialize()
 		end
 
 		-- exclude this time!
-		if not (LUI.Versions.bars == 2.4 and LUICONFIG.Versions.bars == 2.3) then
+		if not (LUI.Versions.bars == 2.4 and LUI.db.global.luiconfig[ProfileName].Versions.bars == 2.3) then
 			db:ResetProfile()
 		end
-		LUICONFIG.Versions.bars = LUI.Versions.bars
+		LUI.db.global.luiconfig[ProfileName].Versions.bars = LUI.Versions.bars
 	end
 end
 

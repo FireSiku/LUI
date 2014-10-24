@@ -187,10 +187,11 @@ module.Refresh = module.GROUP_ROSTER_UPDATE
 -- Initialize module: Called when the addon should intialize its self; this is where we load in database values.
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
+	local ProfileName = UnitName("player").." - "..GetRealmName()
 	
-	if LUICONFIG.Versions.interrupt ~= LUI.Versions.interrupt then
+	if LUI.db.global.luiconfig[ProfileName].Versions.interrupt ~= LUI.Versions.interrupt then
 		db:ResetProfile()
-		LUICONFIG.Versions.interrupt = LUI.Versions.interrupt
+		LUI.db.global.luiconfig[ProfileName].Versions.interrupt = LUI.Versions.interrupt
 	end
 end
 

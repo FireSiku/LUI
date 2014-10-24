@@ -433,10 +433,11 @@ end
 ------------------------------------------------------------------------
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
-
-	if LUICONFIG.Versions.mirrorbar ~= LUI.Versions.mirrorbar then
+	local ProfileName = UnitName("player").." - "..GetRealmName()
+	
+	if LUI.db.global.luiconfig[ProfileName].Versions.mirrorbar ~= LUI.Versions.mirrorbar then
 		db:ResetProfile()
-		LUICONFIG.Versions.mirrorbar = LUI.Versions.mirrorbar
+		LUI.db.global.luiconfig[ProfileName].Versions.mirrorbar = LUI.Versions.mirrorbar
 	end
 end
 

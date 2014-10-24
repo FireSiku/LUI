@@ -11,7 +11,8 @@ LUI.Versions.grid = 3300
 
 function LUI:InstallGrid()
 	if not IsAddOnLoaded("Grid") then return end
-	if LUICONFIG.Versions.grid == LUI.Versions.grid then return end
+	local ProfileName = UnitName("Player").." - "..GetRealmName()
+	if LUI.db.global.luiconfig[ProfileName].Versions.grid == LUI.Versions.grid then return end
 
 	local Grid = LibStub("AceAddon-3.0"):GetAddon("Grid")
 	local GridStatus = Grid:GetModule("GridStatus")
@@ -309,7 +310,6 @@ function LUI:InstallGrid()
 	_G.GridLayoutDefaults = {
 		[CharName] = {
 			["anchorRel"] = "TOPLEFT",
-			["BorderB"] = 0.2470588235294118,
 			["layouts"] = {
 				["party"] = "By Group 25",
 				["solo"] = "By Group 25",
@@ -317,17 +317,22 @@ function LUI:InstallGrid()
 				["bg"] = "By Group 25",
 				["raid"] = "By Group 25",
 			},
-			["BackgroundR"] = 0.3294117647058824,
+			["borderColor"] = {
+				["a"] = 0,
+				["r"] = 0.2470588235294118,
+				["g"] = 0.2470588235294118,
+				["b"] = 0.2470588235294118,
+			},
+			["backgroundColor"] = {
+				["a"] = 0,
+				["r"] = 0.3294117647058824,
+				["g"] = 0.3294117647058824,
+				["b"] = 0.3294117647058824,
+			},
 			["FrameLock"] = true,
-			["BorderA"] = 0,
-			["BorderR"] = 0.2470588235294118,
 			["Spacing"] = 3,
 			["layout"] = "By Group 25",
 			["Padding"] = 0,
-			["BackgroundA"] = 0,
-			["BackgroundB"] = 0.3294117647058824,
-			["BorderG"] = 0.2470588235294118,
-			["BackgroundG"] = 0.3294117647058824,
 			["PosX"] = 939.721672815782,
 			["PosY"] = -601.9189477952709,
 		},
@@ -378,5 +383,5 @@ function LUI:InstallGrid()
 	GridFrame.db.profile.showTooltip = true
 	GridStatusHealth.db.profile.unit_health.useClassColors = false
 
-	LUICONFIG.Versions.grid = LUI.Versions.grid
+	LUI.db.global.luiconfig[ProfileName].Versions.grid = LUI.Versions.grid
 end

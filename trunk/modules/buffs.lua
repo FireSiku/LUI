@@ -763,10 +763,11 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
+	local ProfileName = UnitName("player").." - "..GetRealmName()
 	
-	if LUICONFIG.Versions.auras ~= LUI.Versions.auras then
+	if LUI.db.global.luiconfig[ProfileName].Versions.auras ~= LUI.Versions.auras then
 		db:ResetProfile()
-		LUICONFIG.Versions.auras = LUI.Versions.auras
+		LUI.db.global.luiconfig[ProfileName].Versions.auras = LUI.Versions.auras
 	end
 end
 

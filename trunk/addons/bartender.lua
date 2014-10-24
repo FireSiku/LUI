@@ -11,11 +11,12 @@ LUI.Versions.bartender = 3300
 
 function LUI:InstallBartender()
 	if not IsAddOnLoaded("Bartender4") then return end
-	if LUICONFIG.Versions.bartender == LUI.Versions.bartender then return end
 
 	local CharName = UnitName("player")
 	local ServerName = GetRealmName()
 	local ProfileName = CharName.." - "..ServerName
+
+	if LUI.db.global.luiconfig[ProfileName] and LUI.db.global.luiconfig[ProfileName].Versions.bartender == LUI.Versions.bartender then return end
 
 	_G.BagBarDefaults = {
 		[CharName] = {
@@ -1171,5 +1172,5 @@ function LUI:InstallBartender()
 		Bartender4DB.profileKeys[ProfileName] = CharName
 	end
 
-	LUICONFIG.Versions.bartender = LUI.Versions.bartender
+	if LUI.db.global.luiconfig[ProfileName].Versions then LUI.db.global.luiconfig[ProfileName].Versions.bartender = LUI.Versions.bartender end
 end

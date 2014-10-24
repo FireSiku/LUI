@@ -609,10 +609,11 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
+	local ProfileName = UnitName("player").." - "..GetRealmName()
 	
-	if LUICONFIG.Versions.swing ~= LUI.Versions.swing then
+	if LUI.db.global.luiconfig[ProfileName].Versions.swing ~= LUI.Versions.swing then
 		db:ResetProfile()
-		LUICONFIG.Versions.swing = LUI.Versions.swing
+		LUI.db.global.luiconfig[ProfileName].Versions.swing = LUI.Versions.swing
 	end
 end
 
