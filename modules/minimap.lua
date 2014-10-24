@@ -697,7 +697,7 @@ function module:LoadOptions()
 											db.Minimap.General.Position.X = tonumber(PosX)
 											module:SetMinimapPosition()
 										end,
-									order = 5,
+									order = 6,
 								},
 								PosY = {
 									name = "Y Value",
@@ -711,9 +711,9 @@ function module:LoadOptions()
 											db.Minimap.General.Position.Y = tonumber(PosY)
 											module:SetMinimapPosition()
 										end,
-									order = 6,
+									order = 7,
 								},
-								Restore = LUI:NewExecute("Restore Default Position", "Restores Default Minimap Position", 7, function()
+								Restore = LUI:NewExecute("Restore Default Position", "Restores Default Minimap Position", 8, function()
 									db.Minimap.General.Position.RelativePoint = LUI.defaults.profile.Minimap.General.Position.RelativePoint
 									db.Minimap.General.Position.Point = LUI.defaults.profile.Minimap.General.Position.Point
 									db.Minimap.General.Position.X = LUI.defaults.profile.Minimap.General.Position.X
@@ -730,12 +730,12 @@ function module:LoadOptions()
 									set = function(self)
 										db.Minimap.General.Position.UnLocked = not db.Minimap.General.Position.UnLocked
 									end,
-									order = 8,
+									order = 9,
 								},
 								header2 = {
 									name = "Size",
 									type = "header",
-									order = 9,
+									order = 10,
 								},	
 								Size = {
 									name = "Size",
@@ -754,7 +754,7 @@ function module:LoadOptions()
 											db.Minimap.General.Size = Size
 											module:SetMinimapSize()
 										end,
-									order = 10,
+									order = 11,
 								},
 							},
 						},

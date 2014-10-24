@@ -302,10 +302,11 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
+	local ProfileName = UnitName("player").." - "..GetRealmName()
 	
-	if LUICONFIG.Versions.vengeance ~= LUI.Versions.vengeance then
+	if LUI.db.global.luiconfig[ProfileName].Versions.vengeance ~= LUI.Versions.vengeance then
 		db:ResetProfile()
-		LUICONFIG.Versions.vengeance = LUI.Versions.vengeance
+		LUI.db.global.luiconfig[ProfileName].Versions.vengeance = LUI.Versions.vengeance
 	end
 end
 

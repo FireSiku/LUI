@@ -11,7 +11,8 @@ LUI.Versions.omen = 3300
 
 function LUI:InstallOmen()
 	if (not IsAddOnLoaded("Omen")) and (not IsAddOnLoaded("Omen3")) then return end
-	if LUICONFIG.Versions.omen == LUI.Versions.omen then return end
+	local ProfileName = UnitName("Player").." - "..GetRealmName()
+	if LUI.db.global.luiconfig[ProfileName].Versions.omen == LUI.Versions.omen then return end
 	
 	Omen.db.profile.Shown = true
 	Omen.db.profile.VGrip1 = 155.3166898740382
@@ -70,5 +71,5 @@ function LUI:InstallOmen()
 	Omen.db.profile.PositionW = 198.8860415275098
 	Omen.db.profile.PositionH = 196.9849329984127
 	
-	LUICONFIG.Versions.omen = LUI.Versions.omen
+	LUI.db.global.luiconfig[ProfileName].Versions.omen = LUI.Versions.omen
 end

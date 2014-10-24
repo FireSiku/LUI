@@ -196,7 +196,8 @@ local function ConfigureForte()
 end
 
 local function SetupForte() -- only done on new major version
-	LUICONFIG.Versions.forte = LUI.Versions.forte; -- don't ask again
+	local ProfileName = UnitName("Player").." - "..GetRealmName()
+	LUI.db.global.luiconfig[ProfileName].Versions.forte = LUI.Versions.forte; -- don't ask again
 	-- disable the new frames that are enabled by default
 	if LUI.Versions.forte == "v1.975" then
 		db.Player.Enable = false;
@@ -217,14 +218,16 @@ end
 
 function LUI:InstallForte()
 	if not module:FXLoaded() then return end
-	if LUICONFIG.Versions.forte == LUI.Versions.forte and LUICONFIG.IsForteInstalled == true then return end
+	local LUIprofileOldest = UnitName("Player")
+	local LUIprofileOld = "LUI: "..LUIprofileOldest;
+	local LUIprofileNew = LUIprofileOld.." - "..GetRealmName()
+	local ProfileName = UnitName("Player").." - "..GetRealmName()
+	
+	if LUI.db.global.luiconfig[ProfileName] and LUI.db.global.luiconfig[ProfileName].Versions.forte == LUI.Versions.forte and LUI.db.global.luiconfig[ProfileName].IsForteInstalled == true then return end
 	if not FW.Settings then
 		FW:RegisterVariablesEvent(LUI.InstallForte);
 		return;
 	end
-	local LUIprofileOldest = UnitName("Player");
-	local LUIprofileOld = "LUI: "..LUIprofileOldest;
-	local LUIprofileNew = LUIprofileOld.." - "..GetRealmName();
 	local created_new = false;
 
 	local index = FW:InstanceNameToIndex(LUIprofileNew,FW.Saved.Profiles);
@@ -269,8 +272,8 @@ function LUI:InstallForte()
 		module:Copy(splash_settings,module:GetSplash() ); -- global
 	end
 
-	LUICONFIG.Versions.forte = LUI.Versions.forte
-	LUICONFIG.IsForteInstalled = true
+	LUI.db.global.luiconfig[ProfileName].Versions.forte = LUI.Versions.forte
+	LUI.db.global.luiconfig[ProfileName].IsForteInstalled = true
 end
 
 ------------------------------------------------------
@@ -894,10 +897,10 @@ function module:OnEnable()
 
 	LUI.isForteTimerLoaded = IsAddOnLoaded("Forte_Timer") ~= nil;
 	LUI.isForteCooldownLoaded = IsAddOnLoaded("Forte_Cooldown") ~= nil;
-
+	local ProfileName = UnitName("Player").." - "..GetRealmName()
 	local extra = "\n\nDo you want to apply all LUI Styles to ForteXorcist Spelltimer/Cooldowntimer?\n\nThis will create a new FX profile for LUI (if it hasn't already) and apply LUI's defaults to it, including new timer frames!\n\nYou can also set the LUI defaults later by going to 'General > Addons > Restore ForteXorcist' in the LUI config.";
-	if LUICONFIG.IsForteInstalled then
-		if LUICONFIG.Versions.forte ~= LUI.Versions.forte then
+	if LUI.db.global.luiconfig[ProfileName].IsForteInstalled then
+		if LUI.db.global.luiconfig[ProfileName].Versions.forte ~= LUI.Versions.forte then
 			StaticPopupDialogs["INSTALL_FORTE"].OnCancel = SetupForte; -- run SetForte on cancel to create new instances anyway
 			StaticPopup_Show("INSTALL_FORTE","New major version of ForteXorcist found!"..extra);
 		else

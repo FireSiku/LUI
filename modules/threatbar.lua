@@ -400,10 +400,11 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
+	local ProfileName = UnitName("player").." - "..GetRealmName()
 	
-	if LUICONFIG.Versions.threatbar ~= LUI.Versions.threatbar then
+	if LUI.db.global.luiconfig[ProfileName].Versions.threatbar ~= LUI.Versions.threatbar then
 		db:ResetProfile()
-		LUICONFIG.Versions.threatbar = LUI.Versions.threatbar
+		LUI.db.global.luiconfig[ProfileName].Versions.threatbar = LUI.Versions.threatbar
 	end
 end
 

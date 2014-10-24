@@ -26,6 +26,8 @@ LUI.Versions = {lui = 3403}
 
 LUI.dummy = function() return end
 
+local ProfileName = UnitName("player").." - "..GetRealmName()
+
 -- Work around for IsDisabledByParentalControls() errors. Simply hide the frame. It will still error but that's OK.
 UIParent:HookScript("OnEvent", function(s, e, a1, a2) if e:find("ACTION_FORBIDDEN") and ((a1 or "")..(a2 or "")):find("IsDisabledByParentalControls") then StaticPopup_Hide(e) end; end)
 -- Come on Blizzard, please fix this soon!
@@ -143,7 +145,10 @@ LUI.defaults = {
 			FontHack = true,
 			FontSize = 13,
 		},
-	}
+	},
+	global = {
+		luiconfig = {},
+	},
 }
 
 local db_
@@ -444,26 +449,26 @@ function LUI:Update()
 	update_frame:SetScript("OnClick", function(self)
 
 		if IsAddOnLoaded("Grid") then
-			LUICONFIG.Versions.grid = nil
+			LUI.db.global.luiconfig[ProfileName].Versions.grid = nil
 			LUI:InstallGrid()
 		end
 
 		if IsAddOnLoaded("Recount") then
-			LUICONFIG.Versions.recount = nil
+			LUI.db.global.luiconfig[ProfileName].Versions.recount = nil
 			LUI:InstallRecount()
 		end
 
 		if IsAddOnLoaded("Omen") or IsAddOnLoaded("Omen3") then
-			LUICONFIG.Versions.omen = nil
+			LUI.db.global.luiconfig[ProfileName].Versions.omen = nil
 			LUI:InstallOmen()
 		end
 
 		if IsAddOnLoaded("Forte_Core") then
-			LUICONFIG.Versions.forte = nil
+			LUI.db.global.luiconfig[ProfileName].Versions.forte = nil
 			LUI:InstallForte()
 		end
 
-		LUICONFIG.Versions.lui = LUI.Versions.lui
+		LUI.db.global.luiconfig[ProfileName].Versions.lui = LUI.Versions.lui
 		ReloadUI()
 	end)
 end
@@ -528,8 +533,8 @@ function LUI:Configure()
 		SetCVar("chatMouseScroll", 1)
 		SetCVar("chatStyle", "classic")
 
-		if LUICONFIG.Versions then
-			wipe(LUICONFIG.Versions)
+		if LUI.db.global.luiconfig[ProfileName].Versions then
+			wipe(LUI.db.global.luiconfig[ProfileName].Versions)
 		end
 
 		LUI:InstallGrid()
@@ -538,8 +543,8 @@ function LUI:Configure()
 		LUI:InstallBartender()
 		LUI:InstallForte()
 
-		LUICONFIG.Versions.lui = LUI.Versions.lui
-		LUICONFIG.IsConfigured = true
+		LUI.db.global.luiconfig[ProfileName].Versions.lui = LUI.Versions.lui
+		LUI.db.global.luiconfig[ProfileName].IsConfigured = true
 		-- This is commented out for now as it causes issues.
 		-- Sorry, if you're using 1280x1024 things might look
 		-- funky, but LUI will at least install properly.
@@ -1143,7 +1148,7 @@ local function getOptions()
 									type = "execute",
 									name = "Restore Bartender",
 									func = function()
-										LUICONFIG.Versions.bartender = nil
+										LUI.db.global.luiconfig[ProfileName].Versions.bartender = nil
 										LUI:InstallBartender()
 										StaticPopup_Show("RELOAD_UI")
 									end,
@@ -1153,7 +1158,7 @@ local function getOptions()
 									type = "execute",
 									name = "Restore ForteXorcist",
 									func = function()
-										LUICONFIG.Versions.forte = nil
+										LUI.db.global.luiconfig[ProfileName].Versions.forte = nil
 										LUI:InstallForte()
 										StaticPopup_Show("RELOAD_UI")
 									end,
@@ -1163,7 +1168,7 @@ local function getOptions()
 									type = "execute",
 									name = "Restore Grid",
 									func = function()
-										LUICONFIG.Versions.grid = nil
+										LUI.db.global.luiconfig[ProfileName].Versions.grid = nil
 										LUI:InstallGrid()
 										StaticPopup_Show("RELOAD_UI")
 									end,
@@ -1173,7 +1178,7 @@ local function getOptions()
 									type = "execute",
 									name = "Restore Omen",
 									func = function()
-										LUICONFIG.Versions.omen = nil
+										LUI.db.global.luiconfig[ProfileName].Versions.omen = nil
 										LUI:InstallOmen()
 										StaticPopup_Show("RELOAD_UI")
 									end,
@@ -1183,7 +1188,7 @@ local function getOptions()
 									type = "execute",
 									name = "Restore Recount",
 									func = function()
-										LUICONFIG.Versions.recount = nil
+										LUI.db.global.luiconfig[ProfileName].Versions.recount = nil
 										LUI:InstallRecount()
 										StaticPopup_Show("RELOAD_UI")
 									end,
@@ -1592,13 +1597,13 @@ function LUI:NewNamespace(module, enableButton, version)
 	end
 
 	-- Check for module version update
-	if version and version ~= LUICONFIG.Versions[mName] then
+	if version and version ~= LUI.db.global.luiconfig[ProfileName].Versions[mName] then
 		if module.OnVersionUpdate then
-			module:OnVersionUpdate(LUICONFIG.Versions[mName], version)
+			module:OnVersionUpdate(LUI.db.global.luiconfig[ProfileName].Versions[mName], version)
 		else
 			module.db:ResetProfile()
 		end
-		LUICONFIG.Versions[mName] = version
+		LUI.db.global.luiconfig[ProfileName].Versions[mName] = version
 	end
 
 	return module.db, module.defaults
@@ -1685,13 +1690,13 @@ function LUI:Namespace(module, toggleButton, version) -- no metatables (note: do
 	end
 
 	-- Check for module version update
-	if version and version ~= LUICONFIG.Versions[mName] then
+	if version and version ~= self.db.global.luiconfig[ProfileName].Versions[mName] then
 		if module.OnVersionUpdate then
-			module:OnVersionUpdate(LUICONFIG.Versions[mName], version)
+			module:OnVersionUpdate(self.db.global.luiconfig[ProfileName].Versions[mName], version)
 		else
 			module.db:ResetProfile()
 		end
-		LUICONFIG.Versions[mName] = version
+		LUI.db.global.luiconfig[ProfileName].Versions[mName] = version
 	end
 
 	return module.db.profile, module.db.defaults.profile
@@ -1709,22 +1714,37 @@ function LUI:OnInitialize()
 	_G.LUICONFIG = _G.LUICONFIG or {}
 	_G.LUICONFIG.Versions = _G.LUICONFIG.Versions or {}
 
-	if not _G.LUICONFIG.IsConfigured then
+	if self.db.global.luiconfig[ProfileName] and self.db.global.luiconfig[ProfileName].IsConfigured then
+		if self.db.global.luiconfig[ProfileName].Versions.lui ~= LUI.Versions.lui then
+			print("Updated LUI, need to update stuff")
+			self:Disable()
+			self:Update()
+		else
+			print("No action required, everything is up to date")
+			self.db.RegisterCallback(self, "OnProfileChanged", "Refresh")
+			self.db.RegisterCallback(self, "OnProfileCopied", "Refresh")
+			self.db.RegisterCallback(self, "OnProfileReset", "Refresh")
+
+			self:RegisterChatCommand(addonname, "ChatCommand")
+
+			self:RegisterEvent("ADDON_LOADED", "SetDamageFont", self)
+			self:LoadExtraModules()
+		end
+	elseif _G.LUICONFIG.IsConfigured then
+		print("Old LUI config detected, updating")
+		self.db.global.luiconfig[ProfileName] = CopyTable(_G.LUICONFIG)
+		if self.db.global.luiconfig[ProfileName].IsConfigured then
+			print("LUI config updated")
+		  wipe(_G.LUICONFIG)
+		end
+	else
+		print("New character detected, LUI needs installing")
+		self.db.global.luiconfig[ProfileName] = {
+			Versions = {},
+		}
 		self:Disable()
-		self.db:SetProfile(UnitName("player").." - "..GetRealmName())
+		self.db:SetProfile(ProfileName)
 		self:Configure()
-	elseif _G.LUICONFIG.Versions.lui ~= LUI.Versions.lui then
-		self:Disable()
-		self:Update()
-	else -- Everything checks out, time to enable
-		self.db.RegisterCallback(self, "OnProfileChanged", "Refresh")
-		self.db.RegisterCallback(self, "OnProfileCopied", "Refresh")
-		self.db.RegisterCallback(self, "OnProfileReset", "Refresh")
-
-		self:RegisterChatCommand(addonname, "ChatCommand")
-
-		self:RegisterEvent("ADDON_LOADED", "SetDamageFont", self)
-		self:LoadExtraModules()
 	end
 
 	StaticPopupDialogs["RELOAD_UI"] = { -- TODO: Remove all need for this

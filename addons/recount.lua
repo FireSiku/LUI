@@ -19,7 +19,8 @@ end
 
 function LUI:InstallRecount()
 	if not IsAddOnLoaded("Recount") then return end
-	if LUICONFIG.Versions.recount == LUI.Versions.recount then return end
+	local ProfileName = UnitName("Player").." - "..GetRealmName()
+	if LUI.db.global.luiconfig[ProfileName].Versions.recount == LUI.Versions.recount then return end
 	
 	Recount.db.profile.GraphWindowY = 0
 	Recount.db.profile.MainWindow.Buttons.CloseButton = false
@@ -94,7 +95,7 @@ function LUI:InstallRecount()
 	Recount.db.profile.Locked = true
 	Recount:LockWindows(true)
 	
-	LUICONFIG.Versions.recount = LUI.Versions.recount
+	LUI.db.global.luiconfig[ProfileName].Versions.recount = LUI.Versions.recount
 end
 
 -- Recount font fix without having to edit recount files.
