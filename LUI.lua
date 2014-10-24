@@ -1716,11 +1716,9 @@ function LUI:OnInitialize()
 
 	if self.db.global.luiconfig[ProfileName] and self.db.global.luiconfig[ProfileName].IsConfigured then
 		if self.db.global.luiconfig[ProfileName].Versions.lui ~= LUI.Versions.lui then
-			print("Updated LUI, need to update stuff")
 			self:Disable()
 			self:Update()
 		else
-			print("No action required, everything is up to date")
 			self.db.RegisterCallback(self, "OnProfileChanged", "Refresh")
 			self.db.RegisterCallback(self, "OnProfileCopied", "Refresh")
 			self.db.RegisterCallback(self, "OnProfileReset", "Refresh")
@@ -1731,14 +1729,11 @@ function LUI:OnInitialize()
 			self:LoadExtraModules()
 		end
 	elseif _G.LUICONFIG.IsConfigured then
-		print("Old LUI config detected, updating")
 		self.db.global.luiconfig[ProfileName] = CopyTable(_G.LUICONFIG)
 		if self.db.global.luiconfig[ProfileName].IsConfigured then
-			print("LUI config updated")
 		  wipe(_G.LUICONFIG)
 		end
 	else
-		print("New character detected, LUI needs installing")
 		self.db.global.luiconfig[ProfileName] = {
 			Versions = {},
 		}
