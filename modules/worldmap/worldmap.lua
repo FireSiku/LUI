@@ -486,7 +486,7 @@ function module:DBCallback(event, dbobj, profile)
 			module:DBCallback()
 		end
 
-		if db.modules[name] ~= nil and db.modules[name] ~= module:IsEnabled() then
+		if db.modules and db.modules[name] ~= nil and db.modules[name] ~= module:IsEnabled() then
 			module:Toggle()
 		end
 	end
