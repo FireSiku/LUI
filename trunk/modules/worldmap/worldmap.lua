@@ -11,7 +11,6 @@ local FogClear = module:Module("FogClear")
 local Coords = module:Module("Coords")
 local Fader = LUI:Module("Fader")
 local Media = LibStub("LibSharedMedia-3.0")
-local internalversion = select(2, GetBuildInfo())
 
 local LibWindow = LibStub("LibWindow-1.1")
 
@@ -27,13 +26,7 @@ local WorldMapFrame = _G.WorldMapFrame
 local currentZone
 
 local elementsHidden, elementHider
-local elementsToHide = tonumber(internalversion) < 16965 and {
-	WorldMapFrameCloseButton,
-	WorldMapFrameSizeUpButton,
-	WorldMapTrackQuest,
-	WorldMapShowDigSites,
-	WorldMapQuestShowObjectives,
-} or {
+local elementsToHide = {
 	WorldMapFrameCloseButton,
 	WorldMapFrameSizeUpButton,
 	WorldMapTrackQuest,
@@ -236,6 +229,9 @@ end
 
 local function WM_OnShow(frame)
 	frame:SetFrameStrata(db.General.Strata)
+	WorldMapArchaeologyDigSites:SetFrameLevel(50)
+	WorldMapPlayerLower:SetFrameLevel(50)
+	WorldMapPlayerUpper:SetFrameLevel(50)
 
 	LibWindow.RestorePosition(WorldMapFrame)
 
@@ -468,7 +464,12 @@ function module:Refresh(info, value)
 		Fader:DeleteHoverScript(WorldMapFrame, true)
 		WorldMapFrame:SetAlpha(db[self:GetMapSize()].Alpha)
 	end
-	
+
+	--[[ New code, bug disabled until we sort out Player Arrow scale
+	WorldMapPlayerLower:SetSize();
+	WorldMapPlayerUpper:SetSize();
+	]]
+
 	for name, module in self:IterateModules() do
 		if module.Refresh and module:IsEnabled() then
 			module:Refresh()
@@ -553,10 +554,6 @@ function module:OnDisable()
 	WorldMapFrame:SetClampedToScreen(true)
 	WorldMapFrame:SetClampRectInsets(0, 0, 0, -60)
 	
-	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
-		PlayerArrowFrame:SetModelScale(1)
-		PlayerArrowEffectFrame:SetModelScale(1)
-	end
 	WorldMapFrame:SetScale(1)
 	WorldMapFrame:SetAlpha(1)
 	
@@ -566,11 +563,6 @@ function module:OnDisable()
 	
 	WorldMap_ToggleSizeUp()
 	
-	if tonumber(internalversion) < 16965 then -- if true, it's live WoW and not the PTR
-		WorldMapShowDigSites:ClearAllPoints()
-		WorldMapShowDigSites:GetScript("OnLoad")(WorldMapShowDigSites)
-	end
-
 	if char.miniMap then
 		WorldMap_ToggleSizeDown()
 		if visible then
