@@ -2955,7 +2955,7 @@ module.funcs = {
 		if not self.Portrait then
 			self.Portrait = CreateFrame("PlayerModel", nil, self)
 			self.Portrait:SetFrameLevel(5)
-			self.Portrait.Override = PortraitOverride
+			--self.Portrait.Override = PortraitOverride
 		end
 
 		self.Portrait:SetHeight(oufdb.Portrait.Height)
