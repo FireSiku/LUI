@@ -13,6 +13,8 @@ local widgetLists = AceGUIWidgetLSMlists
 local db, dbd
 local LUIThreat
 
+local LEVEL_CAP = 100
+
 LUI.Versions.threatbar = 2.0
 
 local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
@@ -41,7 +43,7 @@ local UpdateExpMode = function()
 	local left, percentBar
 	local txtformat
 	local precision = db.Text.Precision or 0
-	if UnitLevel("player") ~= 90 then -- EXP MODE
+	if UnitLevel("player") ~= LEVEL_CAP then -- EXP MODE
 		local restXP = GetXPExhaustion() or 0
 		local currXP = UnitXP("player")
 		local maxXP = UnitXPMax("player")
@@ -313,7 +315,7 @@ function module:LoadOptions()
 			Height = self:NewInputNumber("Height", "Choose the Height for your Threat Bar.", 5, dryCall),
 			empty2 = self:NewDesc(" ", 6),
 			TankHide = self:NewToggle("Hide if Tanking", "Whether you want to hide the Threat Bar if you are tank specced or not.\nOnly works if Vengeance Module is enabled!.", 7, true),
-			expMode = self:NewToggle("Switch to Exp Mode", "If enabled, this will turn your Threat Bar into an experience bar.\nIf you are level 90 it will show a reputation bar instead.\nDisable Threat.",8,ToggleExpMode),
+			expMode = self:NewToggle("Switch to Exp Mode", "If enabled, this will turn your Threat Bar into an experience bar.\nIf you are level 100 it will show a reputation bar instead.\nDisable Threat.",8,ToggleExpMode),
 			showRested = self:NewToggle("Show Rested Experience", "If enabled, this will show your rested experience as well.", 9, dryCall, nil, disabledExpMode),
 			empty3 = self:NewDesc(" ", 10),
 			Testmode = self:NewExecute("Testmode", "Enable/Disable Threat Bar Testmode", 11, ToggleTestMode),
