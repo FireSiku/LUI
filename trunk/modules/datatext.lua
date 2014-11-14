@@ -639,7 +639,7 @@ function module:SetCurrency()
 			if CurrencyList then return CurrencyList end
 
 			local CurrencyList = {[0] = "None",}
-			for i=1, 512 do
+			for i=1, 1024 do
 				local n, _,_,_,_,_,d = GetCurrencyInfo(i)
 				if n ~= "" and d then
 					CurrencyList[i] = n
@@ -1672,7 +1672,7 @@ function module:SetGF()
 			button.unit = fullName
 			button.realIndex = realIndex
 			button.name:SetText(formatedStatusText(status, name, isMobile))
-			if name then
+			if name and class and RAID_CLASS_COLORS[class] then
 				local color = RAID_CLASS_COLORS[class]
 				button.name:SetTextColor(color.r, color.g, color.b)
 				SetClassIcon(button.class, class)
