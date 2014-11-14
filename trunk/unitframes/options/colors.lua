@@ -110,6 +110,8 @@ module.defaults.profile.Colors = {
 		[1] = {0.93, 0.93, 0.93},
 		[2] = {0.93, 0.93, 0.93},
 		[3] = {0.93, 0.93, 0.93},
+		[4] = {0.93, 0.93, 0.93},
+		[5] = {0.93, 0.93, 0.93},
 	},
 	EclipseBar = {
 		Lunar = {0.3, 0.52, 0.9},
@@ -268,7 +270,7 @@ local function UpdateColors()
 		end
 	end
 	if oUF_LUI_player.ShadowOrbs then
-		for i = 1, 3 do
+		for i = 1, 5 do
 			oUF_LUI_player.ShadowOrbs[i]:SetStatusBarColor(unpack(module.colors.shadoworbsbar[i]))
 		end
 	end
@@ -423,8 +425,10 @@ function module:CreateColorOptions(order)
 			["1"] = self:NewColorNoAlpha("Part 1", "first part of your Shadow Orbs Bar", 2, false, "full"),
 			["2"]	= self:NewColorNoAlpha("Part 2", "second part of your Shadow Orbs Bar", 3, false, "full"),
 			["3"]	= self:NewColorNoAlpha("Part 3", "third part of your Shadow Orbs Bar", 4, false, "full"),
-			empty1 = self:NewDesc(" ", 5),
-			Reset = self:NewExecute("Restore Defaults", nil, 6, function()
+			["4"]	= self:NewColorNoAlpha("Part 4", "fourth part of your Shadow Orbs Bar (Perk required)", 5, false, "full"),
+			["5"]	= self:NewColorNoAlpha("Part 5", "fifth part of your Shadow Orbs Bar (Perk required)", 6, false, "full"),
+			empty1 = self:NewDesc(" ", 7),
+			Reset = self:NewExecute("Restore Defaults", nil, 8, function()
 				module.db.Colors.ShadowOrbsBar = module.defaults.Colors.ShadowOrbsBar
 				UpdateColors()
 			end),
@@ -449,8 +453,8 @@ function module:CreateColorOptions(order)
 			["2"] = self:NewColorNoAlpha("Part 2", "second part of your Chi Bar", 3, false, "full"),
 			["3"] = self:NewColorNoAlpha("Part 3", "third part of your Chi Bar", 4, false, "full"),
 			["4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Chi Bar", 5, false, "full"),
-			["5"] = self:NewColorNoAlpha("Part 5", "fifth part of your Chi Bar (Talent or Perk required).", 6, false, "full"),
-			["6"] = self:NewColorNoAlpha("Part 6", "sixth part of your Chi Bar (Talent and Perk required).", 7, false, "full"),
+			["5"] = self:NewColorNoAlpha("Part 5", "fifth part of your Chi Bar (Talent or Perk required)", 6, false, "full"),
+			["6"] = self:NewColorNoAlpha("Part 6", "sixth part of your Chi Bar (Talent and Perk required)", 7, false, "full"),
 			empty1 = self:NewDesc(" ", 8),
 			Reset = self:NewExecute("Restore Defaults", nil, 9, function()
 				module.db.Colors.ChiBar = module.defaults.Colors.ChiBar

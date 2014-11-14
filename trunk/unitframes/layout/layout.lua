@@ -1010,7 +1010,7 @@ local ShadowOrbsOverride = function(self, event, unit, powerType)
 
 	local num = UnitPower(unit, SPELL_POWER_SHADOW_ORBS)
 
-	for i = 1, 3 do
+	for i = 1, self.ShadowOrbs.Orbs do
 		if i <= num then
 			self.ShadowOrbs[i]:SetAlpha(1)
 		else
@@ -2555,7 +2555,7 @@ module.funcs = {
 
 			self.ShadowOrbs.Orbs = 0
 
-			for i = 1, 3 do -- Only 3 shadow orbs.
+			for i = 1, 5 do
 				self.ShadowOrbs[i] = CreateFrame("StatusBar", nil, self.ShadowOrbs)
 				self.ShadowOrbs[i]:SetBackdrop(backdrop)
 				self.ShadowOrbs[i]:SetBackdropColor(0.08, 0.08, 0.08)
@@ -2585,18 +2585,20 @@ module.funcs = {
 		self.ShadowOrbs:ClearAllPoints()
 		self.ShadowOrbs:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 		
-		local function checkOrbs(event)
+		local function checkOrbs(event, level)
 			local pLevel = (event == "UNIT_LEVEL") and tonumber(level) or UnitLevel("player")
 			if GetSpecialization() == 3 then
 				if pLevel >= 21 then 
 					self.ShadowOrbs.Orbs = 3
-					module:UnregisterEvent("UNIT_LEVEL")
+					if IsSpellKnown(157217) then
+						self.ShadowOrbs.Orbs = 5
+					end
 				else self.ShadowOrbs.Orbs = 0
 				end
 			else self.ShadowOrbs.Orbs = 0
 			end
 			
-			for i = 1, 3 do
+			for i = 1, self.ShadowOrbs.Orbs do
 				self.ShadowOrbs[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.ShadowOrbs.Texture))
 				self.ShadowOrbs[i]:SetStatusBarColor(unpack(module.colors.shadoworbsbar[i]))
 				self.ShadowOrbs[i]:SetSize(((oufdb.Bars.ShadowOrbs.Width - 2*oufdb.Bars.ShadowOrbs.Padding) / 3), oufdb.Bars.ShadowOrbs.Height)
@@ -2614,7 +2616,6 @@ module.funcs = {
 				else self.ShadowOrbs:Show()
 				end
 			end
-			
 		end
 		checkOrbs()
 		module:RegisterEvent("UNIT_LEVEL", checkOrbs)
