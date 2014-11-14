@@ -279,11 +279,23 @@ function module:SetMinimap()
 	MiniMapMailFrame:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(4))
 	MiniMapMailBorder:Hide()
 	MiniMapMailIcon:SetTexture(LUI.Media.mail)
-
+	
 	-- Move battleground icon
 	QueueStatusMinimapButton:ClearAllPoints()
 	QueueStatusMinimapButton:SetPoint(db.Minimap.Icon.BG, Minimap, LUI:Scale(3), 0)
 	QueueStatusMinimapButtonBorder:Hide()
+	
+	-- Move Garrison icon
+	GarrisonLandingPageMinimapButton:ClearAllPoints();
+	GarrisonLandingPageMinimapButton:SetSize(32,32);
+	GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(4))
+	
+	MiniMapMailFrame:HookScript("OnShow", function(self)
+		GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT")
+	end)
+	MiniMapMailFrame:HookScript("OnHide", function(self)
+		GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(4))
+	end)
 	
 	-- Move GM Ticket Status icon
 	HelpOpenTicketButton:SetParent(Minimap)
