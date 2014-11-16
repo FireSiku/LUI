@@ -2601,7 +2601,7 @@ module.funcs = {
 			for i = 1, self.ShadowOrbs.Orbs do
 				self.ShadowOrbs[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.ShadowOrbs.Texture))
 				self.ShadowOrbs[i]:SetStatusBarColor(unpack(module.colors.shadoworbsbar[i]))
-				self.ShadowOrbs[i]:SetSize(((oufdb.Bars.ShadowOrbs.Width - 2*oufdb.Bars.ShadowOrbs.Padding) / 3), oufdb.Bars.ShadowOrbs.Height)
+				self.ShadowOrbs[i]:SetSize(((oufdb.Bars.ShadowOrbs.Width - 2*oufdb.Bars.ShadowOrbs.Padding) / self.ShadowOrbs.Orbs), oufdb.Bars.ShadowOrbs.Height)
 
 				self.ShadowOrbs[i]:ClearAllPoints()
 				self.ShadowOrbs[i]:Show()
