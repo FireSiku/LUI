@@ -373,15 +373,8 @@ function module:SetClock()
 		stat.INSTANCE_GROUP_SIZE_CHANGED = stat.PLAYER_DIFFICULTY_CHANGED -- Flexible raid size changed (I hope)
 		
 		stat.ZONE_CHANGED = function(self)
-			local mapZone = GetCurrentMapAreaID()
-			local trackedID = WORLDMAP_SETTINGS.selectedQuestId
-			SetMapToCurrentZone()
 			UpdateWGControl()
 			UpdateTBControl()
-			SetMapByID(mapZone)
-			WORLDMAP_SETTINGS.selectedQuestId = trackedID
-			--QuestPOI_SelectButtonByQuestId("WatchFrameLines", trackedID, true)
-			SetSuperTrackedQuestID(trackedID)
 		end
 
 		stat.CHAT_MSG_CHANNEL_NOTICE = stat.ZONE_CHANGED
