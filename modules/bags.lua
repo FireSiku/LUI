@@ -133,6 +133,8 @@ local function LUIBags_OnShow()
 	module:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
 	module:RegisterEvent("BAG_CLOSED")
 	module:RegisterEvent("ITEM_LOCK_CHANGED")
+	module:RegisterEvent("QUEST_ACCEPTED")
+	module:RegisterEvent("UNIT_QUEST_LOG_CHANGED")
 	if not IsReagentBankUnlocked() then
 		module:RegisterEvent("REAGENTBANK_PURCHASED")
 	end
@@ -159,6 +161,8 @@ local function LUIBags_OnHide()  -- Close the Bank if Bags are closed.
 	module:UnregisterEvent("PLAYERBANKSLOTS_CHANGED")
 	module:UnregisterEvent("BAG_CLOSED")
 	module:UnregisterEvent("ITEM_LOCK_CHANGED")
+	module:UnregisterEvent("QUEST_ACCEPTED")
+	module:UnregisterEvent("UNIT_QUEST_LOG_CHANGED")
 	if not IsReagentBankUnlocked() then
 		module:UnregisterEvent("REAGENTBANK_PURCHASED")
 	end
@@ -270,6 +274,22 @@ function module:SlotUpdate(item)
 		--Make sure that the textures are the same size as the itemframe.
 		battlePayTexture:SetSize(item.frame:GetSize())
 		newItemTexture:SetSize(item.frame:GetSize())
+	end
+	
+	-- Quest Item code from Blizzard's ContainerFrame.lua
+	local questTexture = _G[item.frame:GetName().."IconQuestTexture"]
+	if questTexture then
+		questTexture:SetSize(item.frame:GetSize())
+		local isQuestItem, questId, isActive = GetContainerItemQuestInfo(item.bag, item.slot)
+		if questId and not isActive then
+			questTexture:SetTexture(TEXTURE_ITEM_QUEST_BANG)
+			questTexture:Show()
+		elseif questId or isQuestItem then
+			questTexture:SetTexture(TEXTURE_ITEM_QUEST_BORDER)
+			questTexture:Show()
+		else
+			questTexture:Hide()
+		end
 	end
 	
 	if (clink) then
@@ -983,6 +1003,18 @@ function module:EnableBags()
 	if db.Enable ~= true then return end
 end
 
+function module:QUEST_ACCEPTED(event)
+	module:ReloadLayout("Bags")
+	module:ReloadLayout("Bank")
+end
+
+function module:UNIT_QUEST_LOG_CHANGED(event, unit)
+	if unit == "player" then
+		module:ReloadLayout("Bags")
+		module:ReloadLayout("Bank")
+	end
+end
+
 function module:PLAYERBANKBAGSLOTS_CHANGED(event, id)
 	module:ReloadLayout("Bank")
 end
@@ -1031,7 +1063,6 @@ end
 
 function module:BAG_UPDATE(event,id)
 	module:BagSlotUpdate(id)
-
 end
 
 function module:ITEM_LOCK_CHANGED(event, bag, slot)
