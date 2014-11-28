@@ -375,6 +375,7 @@ function module:SetClock()
 		stat.ZONE_CHANGED = function(self)
 			UpdateWGControl()
 			UpdateTBControl()
+			SetMapToCurrentZone()
 		end
 
 		stat.CHAT_MSG_CHANNEL_NOTICE = stat.ZONE_CHANGED
