@@ -136,9 +136,6 @@ function module:SetTooltip()
 		if not self.GetUnit then return end
 		local GMF = GetMouseFocus()
 		local unit = (select(2, self:GetUnit())) or (GMF and GMF:GetAttribute("unit"))
-		if not unit and UnitExists("mouseover") then
-			unit = "mouseover"
-		end
 		return unit
 	end
 	
@@ -163,16 +160,18 @@ function module:SetTooltip()
 	healthBarBG:SetBackdropBorderColor(0,0,0,0)
 	
 	local BorderColor = function(self)
+		
 		local c
+		local r = db.Tooltip.Border.Color.r
+		local g = db.Tooltip.Border.Color.g
+		local b = db.Tooltip.Border.Color.b
+		local a = db.Tooltip.Border.Color.a
 		
 		local unit = GetTooltipUnit(self)
 		
 		local reaction = unit and UnitReaction(unit, "player")
 		local player = unit and UnitIsPlayer(unit)
 		local tapped = unit and UnitIsTapped(unit)
-		local tappedbyme = unit and UnitIsTappedByPlayer(unit)
-		local connected = unit and UnitIsConnected(unit)
-		local dead = unit and UnitIsDead(unit)
 
 		if player then
 			local class = select(2, UnitClass(unit))
@@ -198,14 +197,14 @@ function module:SetTooltip()
 				local r, g, b = GetItemQualityColor(quality)
 				self:SetBackdropBorderColor(r, g, b)
 			else
-				self:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
-				healthBarBG:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
-				healthBar:SetStatusBarColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
+				self:SetBackdropBorderColor(r, g, b, a)
+				healthBarBG:SetBackdropBorderColor(r, g, b, a)
+				healthBar:SetStatusBarColor(r, g, b, a)
 			end
 		else
-			self:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
-			healthBarBG:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
-			healthBar:SetStatusBarColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
+			self:SetBackdropBorderColor(r, g, b, a)
+			healthBarBG:SetBackdropBorderColor(r, g, b, a)
+			healthBar:SetStatusBarColor(r, g, b, a)
 		end
 		
 		-- need this
@@ -221,6 +220,7 @@ function module:SetTooltip()
 		self:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
 		self:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
 		BorderColor(self)
+		self:Show()
 	end
 	
 	-- update HP value on status bar
@@ -296,9 +296,9 @@ function module:SetTooltip()
 		if (frame:GetOwner() ~= UIParent and db.Tooltip.Hideuf) then frame:Hide() return end
 		
 		-- A "mouseover" unit is better to have as we can then safely say the tip should no longer show when it becomes invalid.
-		if (UnitIsUnit(unit,"mouseover")) then
-			unit = "mouseover"
-		end
+		--if (UnitIsUnit(unit,"mouseover")) then
+		--	unit = "mouseover"
+		--end
 
 		local sex = UnitSex(unit)
 		local race = UnitRace(unit)
