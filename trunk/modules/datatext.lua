@@ -354,13 +354,19 @@ function module:SetClock()
 				local _,_, instanceDifficulty,_, maxPlayers, dynamicMode, isDynamic, _, instanceGroupSize = GetInstanceInfo()
 				if (instanceType == "raid" or instanceType == "party") then
 					if instanceDifficulty == 14 then
-						instanceInfo = instanceGroupSize.." |cffffcc00F"
-					elseif instanceDifficulty == 7 then
-						instanceInfo = maxPlayers.." |cff00ccffL"
+						instanceInfo = instanceGroupSize.." |cffffcc00N" -- Flexible renamed Normal in 6.0
+					elseif instanceDifficulty == 7 or instanceDifficulty == 17 then	
+						instanceInfo = maxPlayers.." |cff00ccffL"        -- Looking for Raid
 					elseif instanceDifficulty == 1 or instanceDifficulty == 3 or instanceDifficulty == 4 or instanceDifficulty == 12 then
-						instanceInfo = maxPlayers.." |cff00ff00N"
+						instanceInfo = maxPlayers.." |cff00ff00N"        -- Legacy Normal
+					elseif instanceDifficulty == 15 then
+						instanceInfo = maxPlayers.." |cff00ff00H"        -- Normal renamed Heroic in 6.0
+					elseif instanceDifficulty == 16 then
+						instanceInfo = maxPlayers.." |cffff0000M"        -- Heroic renamed Mythic in 6.0
+					elseif instanceDifficulty == 8 then
+						instanceInfo = maxPlayers.." |cffff0000C"        -- Challenge Mode
 					else
-						instanceInfo = maxPlayers.." |cffff0000H"
+						instanceInfo = maxPlayers.." |cffff0000H"        -- Legacy Heroic
 					end
 				else
 					instanceInfo = nil
