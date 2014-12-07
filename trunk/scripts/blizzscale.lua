@@ -21,6 +21,8 @@ local blizzFrames = {
 	"RaidParentFrame",	-- Not sure what this frame is.
 	"PVEFrame",
 	"TaxiFrame",
+	"ItemTextFrame",
+	"QuestLogPopupDetailFrame",
 	
 	--Settings Frames
 	"GameMenuFrame",
@@ -43,6 +45,11 @@ local blizzFrames = {
 	"PetJournalParent",		-- Blizzard_PetJournal
 	"VoidStorageFrame",
 	"TransmogrifyFrame",
+	
+	--Not sure if LoD
+	"GarrisonMissionFrame",
+	"GarrisonBuildingFrame",
+	
 }
 
 local conflictAddons = {
@@ -74,6 +81,7 @@ local blizzHooks = {
 	"EncounterJournal_LoadUI",
 	"MacroFrame_LoadUI",
 	"KeyBindingFrame_LoadUI",
+	"Garrison_LoadUI",
 }
 
 function script:ApplyBlizzScaling()
