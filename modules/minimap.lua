@@ -37,22 +37,21 @@ end
 
 function module:SetPosition(frame)
 	shouldntSetPoint = true
-	
-	if frame == "worldState" then
+	if frame == "worldState" and db.Minimap.Frames.SetAlwaysUpFrame then
 		WorldStateAlwaysUpFrame:ClearAllPoints()
 		WorldStateAlwaysUpFrame:SetPoint("TOP", UIParent, "TOP", db.Minimap.Frames.AlwaysUpFrameX, db.Minimap.Frames.AlwaysUpFrameY)
-	elseif frame == "vehicleSeats" then
+	elseif frame == "vehicleSeats" and db.Minimap.Frames.SetVehicleSeatIndicator then
 		VehicleSeatIndicator:ClearAllPoints()
 		VehicleSeatIndicator:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.VehicleSeatIndicatorX, db.Minimap.Frames.VehicleSeatIndicatorY)
-	elseif frame == "durability" then
+	elseif frame == "durability" and db.Minimap.Frames.SetDurabilityFrame then
 		DurabilityFrame:ClearAllPoints()
 		DurabilityFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.DurabilityFrameX, db.Minimap.Frames.DurabilityFrameY)
-	elseif frame == "questWatch" then
+	elseif frame == "questWatch" and db.Minimap.Frames.SetObjectiveTrackerFrame then
 		ObjectiveTrackerFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.ObjectiveTrackerFrameX, db.Minimap.Frames.ObjectiveTrackerFrameY)
-	elseif frame == "ticketStatus" then
+	elseif frame == "ticketStatus" and db.Minimap.Frames.SetTicket then
 		TicketStatusFrame:ClearAllPoints()
 		TicketStatusFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.TicketX, db.Minimap.Frames.TicketY)
-	elseif frame == "capture" then
+	elseif frame == "capture" and db.Minimap.Frames.SetCapture then
 		for i = 1, NUM_EXTENDED_UI_FRAMES do
 			_G["WorldStateCaptureBar" .. i]:ClearAllPoints()
 			_G["WorldStateCaptureBar" .. i]:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.CaptureX, db.Minimap.Frames.CaptureY)
@@ -587,6 +586,12 @@ local defaults = {
 			CaptureY = "-205",
 			TicketX = "-175",
 			TicketY = "-70",
+			SetAlwaysUpFrame = true,
+			SetVehicleSeatIndicator = true,
+			SetDurabilityFrame = true,
+			SetObjectiveTrackerFrame = true,
+			SetCapture = true,
+			SetTicket = true,
 		},
 	},
 }
@@ -864,10 +869,24 @@ function module:LoadOptions()
 									type = "header",
 									order = 4,
 								},
+								SetAlwaysUpFrame = {
+									name = "Enabled",
+									desc = "Enable LUI to set the position of the AlwaysUpFrame. \n\nNote:\n If you are using another addon that you believe to be moving this frame, disabling this may solve a conflict.",
+									type = "toggle",
+									width = "full",
+									disabled = function() return not db.Minimap.Frames.SetAlwaysUpFrame end,
+									get = function() return db.Minimap.Frames.SetAlwaysUpFrame end,
+									set = function(self)
+										db.Minimap.Frames.SetAlwaysUpFrame = not db.Minimap.Frames.SetAlwaysUpFrame
+										module:SetPosition("worldState")
+									end,
+									order = 5,
+								},
 								AlwaysUpFrameX = {
 									name = "X Value",
 									desc = "X Value for your AlwaysUpFrame.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.AlwaysUpFrameX,
 									type = "input",
+									disabled = function() return not db.Minimap.Frames.SetAlwaysUpFrame end,
 									get = function() return db.Minimap.Frames.AlwaysUpFrameX end,
 									set = function(self,AlwaysUpFrameX)
 												if AlwaysUpFrameX == nil or AlwaysUpFrameX == "" then
@@ -876,12 +895,13 @@ function module:LoadOptions()
 												db.Minimap.Frames.AlwaysUpFrameX = AlwaysUpFrameX
 												module:SetPosition("worldState")
 											end,
-									order = 5,
+									order = 6,
 								},
 								AlwaysUpFrameY = {
 									name = "Y Value",
 									desc = "Y Value for your AlwaysUpFrame.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.AlwaysUpFrameY,
 									type = "input",
+									disabled = function() return not db.Minimap.Frames.SetAlwaysUpFrame end,
 									get = function() return db.Minimap.Frames.AlwaysUpFrameY end,
 									set = function(self,AlwaysUpFrameY)
 												if AlwaysUpFrameY == nil or AlwaysUpFrameY == "" then
@@ -890,7 +910,7 @@ function module:LoadOptions()
 												db.Minimap.Frames.AlwaysUpFrameY = AlwaysUpFrameY
 												module:SetPosition("worldState")
 											end,
-									order = 6,
+									order = 7,
 								},
 							},
 						},
@@ -922,10 +942,23 @@ function module:LoadOptions()
 									type = "header",
 									order = 4,
 								},
+								SetVehicleSeatIndicator = {
+									name = "Enabled",
+									desc = "Enable LUI to set the position of the VehicleSeatIndicator. \n\nNote:\n If you are using another addon that you believe to be moving this frame, disabling this may solve a conflict.",
+									type = "toggle",
+									width = "full",
+									get = function() return db.Minimap.Frames.SetVehicleSeatIndicator end,
+									set = function(self)
+										db.Minimap.Frames.SetVehicleSeatIndicator = not db.Minimap.Frames.SetVehicleSeatIndicator
+										module:SetPosition("vehicleSeats")
+									end,
+									order = 5,
+								},
 								VehicleSeatIndicatorX = {
 									name = "X Value",
 									desc = "X Value for your VehicleSeatIndicator.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.VehicleSeatIndicatorX,
 									type = "input",
+									disabled = function() return not db.Minimap.Frames.SetVehicleSeatIndicator end,
 									get = function() return db.Minimap.Frames.VehicleSeatIndicatorX end,
 									set = function(self,VehicleSeatIndicatorX)
 												if VehicleSeatIndicatorX == nil or VehicleSeatIndicatorX == "" then
@@ -934,12 +967,13 @@ function module:LoadOptions()
 												db.Minimap.Frames.VehicleSeatIndicatorX = VehicleSeatIndicatorX
 												module:SetPosition("vehicleSeats")
 											end,
-									order = 5,
+									order = 6,
 								},
 								VehicleSeatIndicatorY = {
 									name = "Y Value",
 									desc = "Y Value for your VehicleSeatIndicator.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.VehicleSeatIndicatorY,
 									type = "input",
+									disabled = function() return not db.Minimap.Frames.SetVehicleSeatIndicator end,
 									get = function() return db.Minimap.Frames.VehicleSeatIndicatorY end,
 									set = function(self,VehicleSeatIndicatorY)
 												if VehicleSeatIndicatorY == nil or VehicleSeatIndicatorY == "" then
@@ -948,7 +982,7 @@ function module:LoadOptions()
 												db.Minimap.Frames.VehicleSeatIndicatorY = VehicleSeatIndicatorY
 												module:SetPosition("vehicleSeats")
 											end,
-									order = 6,
+									order = 7,
 								},
 							},
 						},
@@ -980,10 +1014,23 @@ function module:LoadOptions()
 									type = "header",
 									order = 4,
 								},
+								SetDurabilityFrame = {
+									name = "Enabled",
+									desc = "Enable LUI to set the position of the DurabilityFrame. \n\nNote:\n If you are using another addon that you believe to be moving this frame, disabling this may solve a conflict.",
+									type = "toggle",
+									width = "full",
+									get = function() return db.Minimap.Frames.SetDurabilityFrame end,
+									set = function(self)
+										db.Minimap.Frames.SetDurabilityFrame = not db.Minimap.Frames.SetDurabilityFrame
+										module:SetPosition("durability")
+									end,
+									order = 5,
+								},
 								DurabilityFrameX = {
 									name = "X Value",
 									desc = "X Value for your DurabilityFrame.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.DurabilityFrameX,
 									type = "input",
+									disabled = function() return not db.Minimap.Frames.SetDurabilityFrame end,
 									get = function() return db.Minimap.Frames.DurabilityFrameX end,
 									set = function(self,DurabilityFrameX)
 												if DurabilityFrameX == nil or DurabilityFrameX == "" then
@@ -992,12 +1039,13 @@ function module:LoadOptions()
 												db.Minimap.Frames.DurabilityFrameX = DurabilityFrameX
 												module:SetPosition("durability")
 											end,
-									order = 5,
+									order = 6,
 								},
 								DurabilityFrameY = {
 									name = "Y Value",
 									desc = "Y Value for your DurabilityFrame.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.DurabilityFrameY,
 									type = "input",
+									disabled = function() return not db.Minimap.Frames.SetDurabilityFrame end,
 									get = function() return db.Minimap.Frames.DurabilityFrameY end,
 									set = function(self,DurabilityFrameY)
 												if DurabilityFrameY == nil or DurabilityFrameY == "" then
@@ -1006,7 +1054,7 @@ function module:LoadOptions()
 												db.Minimap.Frames.DurabilityFrameY = DurabilityFrameY
 												module:SetPosition("durability")
 											end,
-									order = 6,
+									order = 7,
 								},
 							},
 						},
@@ -1038,10 +1086,23 @@ function module:LoadOptions()
 									type = "header",
 									order = 4,
 								},
+								SetObjectiveTrackerFrame = {
+									name = "Enabled",
+									desc = "Enable LUI to set the position of the ObjectiveTrackerFrame. \n\nNote:\n If you are using another addon that you believe to be moving this frame, disabling this may solve a conflict.",
+									type = "toggle",
+									width = "full",
+									get = function() return db.Minimap.Frames.SetObjectiveTrackerFrame end,
+									set = function(self)
+										db.Minimap.Frames.SetObjectiveTrackerFrame = not db.Minimap.Frames.SetObjectiveTrackerFrame
+										module:SetPosition("questWatch")
+									end,
+									order = 5,
+								},
 								ObjectiveTrackerFrameX = {
 									name = "X Value",
 									desc = "X Value for your ObjectiveTrackerFrame.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.ObjectiveTrackerFrameX,
 									type = "input",
+									disabled = function() return not db.Minimap.Frames.SetObjectiveTrackerFrame end,
 									get = function() return db.Minimap.Frames.ObjectiveTrackerFrameX end,
 									set = function(self,ObjectiveTrackerFrameX)
 												if ObjectiveTrackerFrameX == nil or ObjectiveTrackerFrameX == "" then
@@ -1050,12 +1111,13 @@ function module:LoadOptions()
 												db.Minimap.Frames.ObjectiveTrackerFrameX = ObjectiveTrackerFrameX
 												module:SetPosition("questWatch")
 											end,
-									order = 5,
+									order = 6,
 								},
 								ObjectiveTrackerFrameY = {
 									name = "Y Value",
 									desc = "Y Value for your ObjectiveTrackerFrame.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.ObjectiveTrackerFrameY,
 									type = "input",
+									disabled = function() return not db.Minimap.Frames.SetObjectiveTrackerFrame end,
 									get = function() return db.Minimap.Frames.ObjectiveTrackerFrameY end,
 									set = function(self,ObjectiveTrackerFrameY)
 												if ObjectiveTrackerFrameY == nil or ObjectiveTrackerFrameY == "" then
@@ -1064,7 +1126,7 @@ function module:LoadOptions()
 												db.Minimap.Frames.ObjectiveTrackerFrameY = ObjectiveTrackerFrameY
 												module:SetPosition("questWatch")
 											end,
-									order = 6,
+									order = 7,
 								},
 							},
 						},
@@ -1096,10 +1158,24 @@ function module:LoadOptions()
 									type = "header",
 									order = 4,
 								},
+								SetTicket = {
+									name = "Enabled",
+									desc = "Enable LUI to set the position of the Ticket. \n\nNote:\n If you are using another addon that you believe to be moving this frame, disabling this may solve a conflict.",
+									type = "toggle",
+									width = "full",
+									
+									get = function() return db.Minimap.Frames.SetTicket end,
+									set = function(self)
+										db.Minimap.Frames.SetTicket = not db.Minimap.Frames.SetTicket
+										module:SetPosition("ticketStatus")
+									end,
+									order = 5,
+								},
 								TicketX = {
 									name = "X Value",
 									desc = "X Value for your Ticket Status.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.TicketX,
 									type = "input",
+									disabled = function() return not db.Minimap.Frames.SetTicket end,
 									get = function() return db.Minimap.Frames.TicketX end,
 									set = function(self,TicketX)
 												if TicketX == nil or TicketX == "" then
@@ -1108,12 +1184,13 @@ function module:LoadOptions()
 												db.Minimap.Frames.TicketX = TicketX
 												module:SetPosition("ticketStatus")
 											end,
-									order = 5,
+									order = 6,
 								},
 								TicketY = {
 									name = "Y Value",
 									desc = "Y Value for your Ticket Status.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.TicketY,
 									type = "input",
+									disabled = function() return not db.Minimap.Frames.SetTicket end,
 									get = function() return db.Minimap.Frames.TicketY end,
 									set = function(self,TicketY)
 												if TicketY == nil or TicketY == "" then
@@ -1122,7 +1199,7 @@ function module:LoadOptions()
 												db.Minimap.Frames.TicketY = TicketY
 												module:SetPosition("ticketStatus")
 											end,
-									order = 6,
+									order = 7,
 								},
 								spacer = {
 									order = 7,
@@ -1172,10 +1249,24 @@ function module:LoadOptions()
 									type = "header",
 									order = 4,
 								},
+								SetCapture = {
+									name = "Enabled",
+									desc = "Enable LUI to set the position of the Capture. \n\nNote:\n If you are using another addon that you believe to be moving this frame, disabling this may solve a conflict.",
+									type = "toggle",
+									width = "full",
+									
+									get = function() return db.Minimap.Frames.SetCapture end,
+									set = function(self)
+										db.Minimap.Frames.SetCapture = not db.Minimap.Frames.SetCapture
+										module:SetPosition("capture")
+									end,
+									order = 5,
+								},
 								CaptureX = {
 									name = "X Value",
 									desc = "X Value for your Capture Bar.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.Frames.CaptureX,
 									type = "input",
+									disabled = function() return not db.Minimap.Frames.SetCapture end,
 									get = function() return db.Minimap.Frames.CaptureX end,
 									set = function(self,CaptureX)
 												if CaptureX == nil or CaptureX == "" then
@@ -1184,12 +1275,13 @@ function module:LoadOptions()
 												db.Minimap.Frames.CaptureX = CaptureX
 												module:SetPosition("capture")
 											end,
-									order = 5,
+									order = 6,
 								},
 								CaptureY = {
 									name = "Y Value",
 									desc = "Y Value for your Capture Bar.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.Frames.CaptureY,
 									type = "input",
+									disabled = function() return not db.Minimap.Frames.SetCapture end,
 									get = function() return db.Minimap.Frames.CaptureY end,
 									set = function(self,CaptureY)
 												if CaptureY == nil or CaptureY == "" then
@@ -1198,7 +1290,7 @@ function module:LoadOptions()
 												db.Minimap.Frames.CaptureY = CaptureY
 												module:SetPosition("capture")
 											end,
-									order = 6,
+									order = 7,
 								},
 							},
 						},
