@@ -403,6 +403,7 @@ module.conflicts = "Mapster"
 module.optionsName = "World Map"
 module.getter = "generic"
 module.setter = "Refresh"
+module.defaultState = false
 
 function module:LoadOptions()
 	local function behaviorKept()
