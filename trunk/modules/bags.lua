@@ -281,10 +281,10 @@ function module:SlotUpdate(item)
 	if questTexture then
 		questTexture:SetSize(item.frame:GetSize())
 		local isQuestItem, questId, isActive = GetContainerItemQuestInfo(item.bag, item.slot)
-		if questId and not isActive then
+		if questId and not isActive and db.Bags.ShowQuest then
 			questTexture:SetTexture(TEXTURE_ITEM_QUEST_BANG)
 			questTexture:Show()
-		elseif questId or isQuestItem then
+		elseif (questId or isQuestItem) and db.Bags.ShowQuest then
 			questTexture:SetTexture(TEXTURE_ITEM_QUEST_BORDER)
 			questTexture:Show()
 		else
@@ -1208,6 +1208,7 @@ module.defaults = {
 			BagFrame = true,
 			ItemQuality = false,
 			ShowNew = false,
+			ShowQuest = true,
 			Locked = 0,
 			CoordX = 0,
 			CoordY = 0,
@@ -1328,6 +1329,7 @@ function module:LoadOptions()
 				BagFrame = LUI:NewToggle("Show Bag Bar", nil, 10, db.Bags, "BagFrame", dbd.Bags, BagOpt),
 				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 11, db.Bags, "ItemQuality", dbd.Bags, ReloadBoth),
 				ShowNew = LUI:NewToggle("Show New Item Animation", nil, 12, db.Bags, "ShowNew", dbd.Bags, ReloadBoth),
+				ShowQuest = LUI:NewToggle("Show Quest Highlights", nil, 13, db.Bags, "ShowQuest", dbd.Bags, ReloadBoth),
 			},
 		},
 		Bank = {
