@@ -229,11 +229,12 @@ end
 
 local function WM_OnShow(frame)
 	frame:SetFrameStrata(db.General.Strata)
-	WorldMapArchaeologyDigSites:SetFrameLevel(50)
-	WorldMapPlayerLower:SetFrameLevel(50)
-	WorldMapPlayerUpper:SetFrameLevel(50)
 
 	LibWindow.RestorePosition(WorldMapFrame)
+
+	local frameLevel = WorldMapDetailFrame:GetFrameLevel() + 1
+	WorldMapArchaeologyDigSites:SetFrameLevel(frameLevel)
+	WorldMapPlayersFrame:SetFrameLevel(frameLevel)
 
 	currentZone = GetCurrentMapAreaID()
 end

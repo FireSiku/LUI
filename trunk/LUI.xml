@@ -32,6 +32,7 @@
 	<Script file="addons\grid.lua"/>
 	<Script file="addons\omen.lua"/>
 	<Script file="addons\recount.lua"/>
+	<Script file="addons\details.lua"/>
 
 	<!-- Extended Modules -->
 	<Include file="modules\auras\auras.xml"/>
