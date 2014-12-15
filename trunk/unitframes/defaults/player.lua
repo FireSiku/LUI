@@ -184,7 +184,7 @@ module.defaults.profile.Player = {
 			},
 		},
 		AltPower = {
-			Enable = true,
+			Enable = false,
 			OverPower = false,
 			Height = 10,
 			Width = 250,
