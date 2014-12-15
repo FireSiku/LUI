@@ -43,6 +43,7 @@ local addonAnchors = {
 		Recount = "Recount_MainWindow",
 		Omen = "OmenAnchor",
 		Skada = "SkadaBarWindowSkada",
+		Details = "DetailsBaseFrame1",
 	}
 }
 

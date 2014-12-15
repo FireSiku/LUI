@@ -458,6 +458,11 @@ function LUI:Update()
 			LUI:InstallRecount()
 		end
 
+		if IsAddOnLoaded("Details") then
+			LUICONFIG.Versions.details = nil
+			LUI:InstallDetails()
+		end
+
 		if IsAddOnLoaded("Omen") or IsAddOnLoaded("Omen3") then
 			LUI.db.global.luiconfig[ProfileName].Versions.omen = nil
 			LUI:InstallOmen()
@@ -542,6 +547,7 @@ function LUI:Configure()
 		LUI:InstallOmen()
 		LUI:InstallBartender()
 		LUI:InstallForte()
+		LUI:InstallDetails()
 
 		LUI.db.global.luiconfig[ProfileName].Versions.lui = LUI.Versions.lui
 		LUI.db.global.luiconfig[ProfileName].IsConfigured = true
@@ -1190,6 +1196,16 @@ local function getOptions()
 									func = function()
 										LUI.db.global.luiconfig[ProfileName].Versions.recount = nil
 										LUI:InstallRecount()
+										StaticPopup_Show("RELOAD_UI")
+									end,
+								},
+								ResetDetails = {
+									order = 2,
+									type = "execute",
+									name = "Restore Details!",
+									func = function()
+										LUICONFIG.Versions.details = nil
+										LUI:InstallDetails()
 										StaticPopup_Show("RELOAD_UI")
 									end,
 								},
