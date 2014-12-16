@@ -267,7 +267,7 @@ function module:SetMinimap()
 	TimeManagerClockButton:Hide()
 	LUI:Kill(TimeManagerClockButton)
 
-	-- Hide Tracking Button
+	-- Hide Tracking Button 
 	MiniMapTracking:Hide()
 
 	-- Hide Calendar Button
@@ -275,7 +275,7 @@ function module:SetMinimap()
 
 	-- Move Mail icon
 	MiniMapMailFrame:ClearAllPoints()
-	MiniMapMailFrame:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(4))
+	MiniMapMailFrame:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(6))
 	MiniMapMailBorder:Hide()
 	MiniMapMailIcon:SetTexture(LUI.Media.mail)
 	
@@ -287,13 +287,13 @@ function module:SetMinimap()
 	-- Move Garrison icon
 	GarrisonLandingPageMinimapButton:ClearAllPoints();
 	GarrisonLandingPageMinimapButton:SetSize(32,32);
-	GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(4))
+	GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(12))
 	
 	MiniMapMailFrame:HookScript("OnShow", function(self)
-		GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT")
+		GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-4))
 	end)
 	MiniMapMailFrame:HookScript("OnHide", function(self)
-		GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(4))
+		GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(12))
 	end)
 	
 	-- Move GM Ticket Status icon
