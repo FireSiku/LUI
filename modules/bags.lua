@@ -1300,6 +1300,9 @@ function module:LoadOptions()
 	local function BankOpt()
 		module:ReloadLayout("Bank")
 	end
+	local function ReagentOpt()
+		module:ReloadLayout("Reagents")
+	end
 	local function DisabledCopy()
 		return db.Bank.CopyBags
 	end
@@ -1365,13 +1368,13 @@ function module:LoadOptions()
 						if db.Reagents.CopyBags then module:CopyBags() end
 					end, "normal"),]]
 				Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.", 2,
-					db.Reagents, "Cols", dbd.Reagents, 4, 32, 1, BankOpt),
+					db.Reagents, "Cols", dbd.Reagents, 4, 32, 1, ReagentOpt),
 				Header = LUI:NewHeader("", 3),
 				Padding = LUI:NewSlider("Reagents Padding", "This sets the space between the background border and the adjacent items.", 4,
-					db.Reagents, "Padding", dbd.Reagents, 4, 24, 1, BankOpt, nil, DisabledCopy),
+					db.Reagents, "Padding", dbd.Reagents, 4, 24, 1, ReagentOpt, nil, DisabledCopy),
 				Spacing = LUI:NewSlider("Reagents Spacing", "This sets the distance between items.", 5,
-					db.Reagents, "Spacing", dbd.Reagents, 1, 15, 1, BankOpt, nil, DisabledCopy),
-				Scale = LUI:NewScale("Reagents Frame",6, db.Reagents, "Scale", dbd.Reagents, BankOpt, nil, DisabledCopy),
+					db.Reagents, "Spacing", dbd.Reagents, 1, 15, 1, ReagentOpt, nil, DisabledCopy),
+				Scale = LUI:NewScale("Reagents Frame",6, db.Reagents, "Scale", dbd.Reagents, ReagentOpt, nil, DisabledCopy),
 			},
 		},
 		Colors = {

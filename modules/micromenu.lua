@@ -31,6 +31,7 @@ local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 LUI.MicroMenu = {Buttons = {}}
 
 local _, class = UnitClass("player")
+local build = select(2, GetBuildInfo())
 
 function module:SetMicroMenuPosition()
 	LUI.MicroMenu.Anchor:ClearAllPoints()
@@ -82,21 +83,37 @@ function module:SetColors()
 	TalentMicroButtonAlertGlowLeft:SetVertexColor(r, g, b)
 	TalentMicroButtonAlertGlowRight:SetVertexColor(r, g, b)
 
-	-- companions alert frame
-	CompanionsMicroButtonAlertBg:SetGradientAlpha("VERTICAL", r/4, g/4, b/4, 1, 0, 0, 0, 1)
-	CompanionsMicroButtonAlertGlow:SetVertexColor(r, g, b, 0.5)
-	--CompanionsMicroButtonAlertArrowArrow:SetVertexColor(r, g, b)
+	if tonumber(build) >= 19658 then
+		-- collections alert frame
+		CollectionsMicroButtonAlertBg:SetGradientAlpha("VERTICAL", r/4, g/4, b/4, 1, 0, 0, 0, 1)
+		CollectionsMicroButtonAlertGlow:SetVertexColor(r, g, b, 0.5)
+		--CollectionsMicroButtonAlertArrowArrow:SetVertexColor(r, g, b)
 
-	CompanionsMicroButtonAlertGlowTopLeft:SetVertexColor(r, g, b)
-	CompanionsMicroButtonAlertGlowTopRight:SetVertexColor(r, g, b)
-	CompanionsMicroButtonAlertGlowBottomLeft:SetVertexColor(r, g, b)
-	CompanionsMicroButtonAlertGlowBottomRight:SetVertexColor(r, g, b)
+		CollectionsMicroButtonAlertGlowTopLeft:SetVertexColor(r, g, b)
+		CollectionsMicroButtonAlertGlowTopRight:SetVertexColor(r, g, b)
+		CollectionsMicroButtonAlertGlowBottomLeft:SetVertexColor(r, g, b)
+		CollectionsMicroButtonAlertGlowBottomRight:SetVertexColor(r, g, b)
 
-	CompanionsMicroButtonAlertGlowTop:SetVertexColor(r, g, b)
-	CompanionsMicroButtonAlertGlowBottom:SetVertexColor(r, g, b)
-	CompanionsMicroButtonAlertGlowLeft:SetVertexColor(r, g, b)
-	CompanionsMicroButtonAlertGlowRight:SetVertexColor(r, g, b)
+		CollectionsMicroButtonAlertGlowTop:SetVertexColor(r, g, b)
+		CollectionsMicroButtonAlertGlowBottom:SetVertexColor(r, g, b)
+		CollectionsMicroButtonAlertGlowLeft:SetVertexColor(r, g, b)
+		CollectionsMicroButtonAlertGlowRight:SetVertexColor(r, g, b)
+	else
+		-- companions alert frame
+		CompanionsMicroButtonAlertBg:SetGradientAlpha("VERTICAL", r/4, g/4, b/4, 1, 0, 0, 0, 1)
+		CompanionsMicroButtonAlertGlow:SetVertexColor(r, g, b, 0.5)
+		--CompanionsMicroButtonAlertArrowArrow:SetVertexColor(r, g, b)
 
+		CompanionsMicroButtonAlertGlowTopLeft:SetVertexColor(r, g, b)
+		CompanionsMicroButtonAlertGlowTopRight:SetVertexColor(r, g, b)
+		CompanionsMicroButtonAlertGlowBottomLeft:SetVertexColor(r, g, b)
+		CompanionsMicroButtonAlertGlowBottomRight:SetVertexColor(r, g, b)
+
+		CompanionsMicroButtonAlertGlowTop:SetVertexColor(r, g, b)
+		CompanionsMicroButtonAlertGlowBottom:SetVertexColor(r, g, b)
+		CompanionsMicroButtonAlertGlowLeft:SetVertexColor(r, g, b)
+		CompanionsMicroButtonAlertGlowRight:SetVertexColor(r, g, b)
+	end
 end
 
 function module:SetMicroMenu()
@@ -544,8 +561,13 @@ function module:SetMicroMenu()
 		self:SetAlpha(1)
 		self.State = true
 		GameTooltip:SetOwner(self, "ANCHOR_NONE " ,40, -90)
-		GameTooltip:SetText("Mounts and Pets")
-		GameTooltip:AddLine("Show/Hide your Mounts & Pets", 1, 1, 1)
+		if tonumber(build) >= 19658 then
+			GameTooltip:SetText("Collections")
+			GameTooltip:AddLine("Show/Hide the Collections UI", 1, 1, 1)
+		else
+			GameTooltip:SetText("Mounts and Pets")
+			GameTooltip:AddLine("Show/Hide your Mounts & Pets", 1, 1, 1)
+		end
 		GameTooltip:Show()
 	end)
 
@@ -558,15 +580,29 @@ function module:SetMicroMenu()
 	end)
 	
 	LUI.MicroMenu.Buttons.Pets.Clicker:SetScript("OnClick", function(self)
-		TogglePetJournal()
+		if tonumber(build) >= 19658 then
+			ToggleCollectionsJournal()
+		else
+			TogglePetJournal()
+		end
 	end)
 	
 	LUI.MicroMenu.Buttons.Pets.Clicker:SetScript("OnUpdate", function(self)
-		if IsAddOnLoaded("Blizzard_PetJournal") then
-			if not LUI.MicroMenu.Buttons.Pets.Clicker.State and not PetJournalParent:IsShown() then
-				LUI.MicroMenu.Buttons.Pets.Clicker:SetAlpha(0)
-			else
-				LUI.MicroMenu.Buttons.Pets.Clicker:SetAlpha(1)
+		if tonumber(build) >= 19658 then
+			if IsAddOnLoaded("Blizzard_Collections") then
+				if not LUI.MicroMenu.Buttons.Pets.Clicker.State and not CollectionsJournal:IsShown() then
+					LUI.MicroMenu.Buttons.Pets.Clicker:SetAlpha(0)
+				else
+					LUI.MicroMenu.Buttons.Pets.Clicker:SetAlpha(1)
+				end
+			end
+		else
+			if IsAddOnLoaded("Blizzard_PetJournal") then
+				if not LUI.MicroMenu.Buttons.Pets.Clicker.State and not PetJournalParent:IsShown() then
+					LUI.MicroMenu.Buttons.Pets.Clicker:SetAlpha(0)
+				else
+					LUI.MicroMenu.Buttons.Pets.Clicker:SetAlpha(1)
+				end
 			end
 		end
 	end)
@@ -1179,23 +1215,40 @@ function module:SetMicroMenu()
 	-- TalentMicroButtonAlertGlowLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
 	-- TalentMicroButtonAlertGlowRight:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
 
-	-- companion alert frame
-	CompanionsMicroButtonAlert:ClearAllPoints()
-	CompanionsMicroButtonAlert:SetPoint("TOP", LUI.MicroMenu.Buttons.Pets, "BOTTOM")
+	-- collections alert frame
+	if tonumber(build) >= 19658 then
+		CollectionsMicroButtonAlert:ClearAllPoints()
+		CollectionsMicroButtonAlert:SetPoint("TOP", LUI.MicroMenu.Buttons.Pets, "BOTTOM")
 
-	CompanionsMicroButtonAlertBg:SetGradientAlpha("VERTICAL", micro_r/4, micro_g/4, micro_b/4, 1, 0, 0, 0, 1)
+		CollectionsMicroButtonAlertBg:SetGradientAlpha("VERTICAL", micro_r/4, micro_g/4, micro_b/4, 1, 0, 0, 0, 1)
 
-	CompanionsMicroButtonAlertArrow:ClearAllPoints()
-	CompanionsMicroButtonAlertArrow:SetPoint("BOTTOM", CompanionsMicroButtonAlert, "TOP", 0, -6)
+		CollectionsMicroButtonAlertArrow:ClearAllPoints()
+		CollectionsMicroButtonAlertArrow:SetPoint("BOTTOM", CollectionsMicroButtonAlert, "TOP", 0, -6)
 
-	CompanionsMicroButtonAlertGlow:SetTexCoord(0.40625000, 0.66015625, 0.82812500, 0.77343750)
-	CompanionsMicroButtonAlertGlow:SetVertexColor(r, g, b, 0.5)
-	CompanionsMicroButtonAlertGlow:ClearAllPoints()
-	CompanionsMicroButtonAlertGlow:SetPoint("BOTTOM", CompanionsMicroButtonAlertArrow, "BOTTOM", 0, 0)
+		CollectionsMicroButtonAlertGlow:SetTexCoord(0.40625000, 0.66015625, 0.82812500, 0.77343750)
+		CollectionsMicroButtonAlertGlow:SetVertexColor(r, g, b, 0.5)
+		CollectionsMicroButtonAlertGlow:ClearAllPoints()
+		CollectionsMicroButtonAlertGlow:SetPoint("BOTTOM", CollectionsMicroButtonAlertArrow, "BOTTOM", 0, 0)
 
-	-- greyscaled textures
-	CompanionsMicroButtonAlertGlow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-	
+		-- greyscaled textures
+		CollectionsMicroButtonAlertGlow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+	else
+		CompanionsMicroButtonAlert:ClearAllPoints()
+		CompanionsMicroButtonAlert:SetPoint("TOP", LUI.MicroMenu.Buttons.Pets, "BOTTOM")
+
+		CompanionsMicroButtonAlertBg:SetGradientAlpha("VERTICAL", micro_r/4, micro_g/4, micro_b/4, 1, 0, 0, 0, 1)
+
+		CompanionsMicroButtonAlertArrow:ClearAllPoints()
+		CompanionsMicroButtonAlertArrow:SetPoint("BOTTOM", CompanionsMicroButtonAlert, "TOP", 0, -6)
+
+		CompanionsMicroButtonAlertGlow:SetTexCoord(0.40625000, 0.66015625, 0.82812500, 0.77343750)
+		CompanionsMicroButtonAlertGlow:SetVertexColor(r, g, b, 0.5)
+		CompanionsMicroButtonAlertGlow:ClearAllPoints()
+		CompanionsMicroButtonAlertGlow:SetPoint("BOTTOM", CompanionsMicroButtonAlertArrow, "BOTTOM", 0, 0)
+
+		-- greyscaled textures
+		CompanionsMicroButtonAlertGlow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+	end
 end
 
 module.defaults = {
