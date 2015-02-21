@@ -3,6 +3,7 @@ local script = LUI:NewScript("BlizzScale", "AceEvent-3.0", "AceHook-3.0")
 
 local IsAddOnLoaded = IsAddOnLoaded
 local _G = _G
+local build = select(2, GetBuildInfo())
 
 local blizzFrames = {
 	--UI Frames
@@ -77,7 +78,7 @@ local blizzHooks = {
 	"AchievementFrame_LoadUI",
 	"ArchaeologyFrame_LoadUI",
 	"Calendar_LoadUI",
-	"PetJournal_LoadUI",
+	(tonumber(build) >= 19658  and "CollectionsJournal_LoadUI" or "PetJournal_LoadUI"),
 	"EncounterJournal_LoadUI",
 	"MacroFrame_LoadUI",
 	"KeyBindingFrame_LoadUI",
