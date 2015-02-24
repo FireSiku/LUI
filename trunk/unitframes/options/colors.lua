@@ -265,7 +265,7 @@ local function UpdateColors()
 		end
 	end
 	if oUF_LUI_player.ArcaneCharges then
-		for i = 1, 6 do
+		for i = 1, 4 do
 			oUF_LUI_player.ArcaneCharges[i]:SetStatusBarColor(unpack(module.colors.arcanechargesbar[i]))
 		end
 	end
