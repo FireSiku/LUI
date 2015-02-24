@@ -2259,6 +2259,7 @@ function module:SetGF()
 					local name = b.realID..":"..b.presenceID
 					SetItemRef("BNplayer:"..name, ("|HBNplayer:%1$s|h[%1$s]|h"):format(name), button )
 				else 
+					
 					SetItemRef("player:"..b.unit, ("|Hplayer:%1$s|h[%1$s]|h"):format(b.unit), button )
 				end
 			end
@@ -2522,7 +2523,7 @@ function module:SetFriends()
 			totalFriends, onlineFriends = GetNumFriends()
 			for i = 1, onlineFriends do
 				local name, level, class, zone, connected, status, note = GetFriendInfo(i)
-				friendEntries[i] = tooltip:new(tooltip.LocClassNames[class] or "", name or "", level or 0, zone or UNKNOWN, note or "|cffffcc00-", status, "", "", nil, i)
+				friendEntries[i] = tooltip:new(tooltip.LocClassNames[class] or "", name or "", level or 0, zone or UNKNOWN, note or "|cffffcc00-", status, "", "", nil, i, name or "")
 			end
 			self:UpdateText()
 			if not tooltip.IsGuild and tooltip:IsShown() then tooltip:Update() end
