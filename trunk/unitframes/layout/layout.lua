@@ -428,7 +428,8 @@ local OverrideHealth = function(self, event, unit, powerType)
 		if module.db.Player.Bars.Health.Color == "By Class" then
 			health:SetStatusBarColor(unpack(color))
 		elseif module.db.Player.Bars.Health.Color == "Individual" then
-			health:SetStatusBarColor(module.db.Player.Bars.Health.IndividualColor.r, module.db.Player.Bars.Health.IndividualColor.g, module.db.Player.Bars.Health.IndividualColor.b)
+			local indColor = module.db.Player.Bars.Health.IndividualColor
+			health:SetStatusBarColor(indColor.r, indColor.g, indColor.b)
 		else
 			health:SetStatusBarColor(oUF.ColorGradient(min, max, module.colors.smooth()))
 		end
@@ -439,11 +440,11 @@ local OverrideHealth = function(self, event, unit, powerType)
 			else
 				local reaction = UnitReaction("player", unit)
 				if reaction < 4 then
-					health:SetStatusBarColor(0.7, 0.3, 0.3)
+					health:SetStatusBarColor(unpack(module.db.Colors.Misc["Hostile"]))
 				elseif reaction == 4 then
-					health:SetStatusBarColor(0.7, 0.7, 0.3)
+					health:SetStatusBarColor(unpack(module.db.Colors.Misc["Neutral"]))
 				else
-					health:SetStatusBarColor(0.3, 0.7, 0.3)
+					health:SetStatusBarColor(unpack(module.db.Colors.Misc["Friendly"]))
 				end
 			end
 		elseif health.color == "Individual" then
