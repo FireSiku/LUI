@@ -434,7 +434,18 @@ local OverrideHealth = function(self, event, unit, powerType)
 		end
 	else
 		if health.color == "By Class" then
-			health:SetStatusBarColor(unpack(color))
+			if UnitIsPlayer(unit) then
+				health:SetStatusBarColor(unpack(color))
+			else
+				local reaction = UnitReaction("player", unit)
+				if reaction < 4 then
+					health:SetStatusBarColor(0.7, 0.3, 0.3)
+				elseif reaction == 4 then
+					health:SetStatusBarColor(0.7, 0.7, 0.3)
+				else
+					health:SetStatusBarColor(0.3, 0.7, 0.3)
+				end
+			end
 		elseif health.color == "Individual" then
 			health:SetStatusBarColor(health.colorIndividual.r, health.colorIndividual.g, health.colorIndividual.b)
 		else
