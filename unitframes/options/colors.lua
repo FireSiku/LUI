@@ -147,6 +147,9 @@ module.defaults.profile.Colors = {
 	},
 	Misc = {
 		Tapped = {0.15, 0.15, 0.15},
+		Hostile = {0.7, 0.3, 0.3},
+		Neutral = {0.7, 0.7, 0.3},
+		Friendly = {0.3, 0.7, 0.3},
 	},
 }
 
@@ -513,6 +516,9 @@ function module:CreateColorOptions(order)
 		Misc = self:NewGroup("Misc", 15, {
 			header1 = self:NewHeader("Misc Colors", 1),
 			Tapped = self:NewColorNoAlpha("Tapped", "Tapped Target", 2, false, "full"),
+			Hostile = self:NewColorNoAlpha("Hostile NPC", "Hostile NPC", 3, false, "full"),
+			Neutral = self:NewColorNoAlpha("Neutral NPC", "Neutral NPC", 4, false, "full"),
+			Friendly = self:NewColorNoAlpha("Friendly NPC", "Friendly NPC", 5, false, "full"),
 			empty1 = self:NewDesc(" ", 6),
 			Reset = self:NewExecute("Restore Defaults", nil, 7, function()
 				module.db.Colors.Misc = module.defaults.Colors.Misc
