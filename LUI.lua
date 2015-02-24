@@ -1279,6 +1279,52 @@ local function getOptions()
 								},
 							},
 						},
+						Thanks = {
+							name = "Thanks",
+							type = "group",
+							order = 5,
+							args = {
+								empty5 = {
+									name = " ",
+									width = "full",
+									type = "description",
+									order = 2,
+								},
+								IntroText = {
+									order = 3,
+									width = "full",
+									type = "description",
+									name = "The development and sustained maintenance of LUI V3 wasn't the work of a single so I would like to take the time to list a few people that deserves thanks for their support".."\n",
+								},
+								Staff = {
+									order = 4,
+									width = "full",
+									type = "description",
+									fontSize = "medium",
+									name = "Current V3 Devs: |cffe6cc80Siku (myself), Mule|r\n",
+								},
+								OldStaff = {
+									order = 5,
+									width = "full",
+									type = "description",
+									fontSize = "medium",
+									name = "Former V3 Devs: |cffe6cc80Loui, Sinaris, Zista, hix, Thaly, Shendrela, Darkruler, Yunai|r\n\n",
+								},
+								Donators = {
+									order = 6,
+									width = "full",
+									type = "description",
+									name = "I would also like to thank everyone that donated to the project, you are all wonderful people. A special mention goes to my current Patrons:".."\n",
+								},
+								HighPatrons = {
+									order = 7,
+									width = "full",
+									type = "description",
+									fontSize = "large",
+									name = "|cffa335eesk1nny, Qoke".."\n",
+								},
+							},
+						},
 					},
 				},
 				Space = {
