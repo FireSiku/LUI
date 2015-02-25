@@ -439,9 +439,9 @@ local OverrideHealth = function(self, event, unit, powerType)
 				health:SetStatusBarColor(unpack(color))
 			else
 				local reaction = UnitReaction("player", unit)
-				if reaction < 4 then
+				if reaction and reaction < 4 then
 					health:SetStatusBarColor(unpack(module.db.Colors.Misc["Hostile"]))
-				elseif reaction == 4 then
+				elseif reaction and reaction == 4 then
 					health:SetStatusBarColor(unpack(module.db.Colors.Misc["Neutral"]))
 				else
 					health:SetStatusBarColor(unpack(module.db.Colors.Misc["Friendly"]))
