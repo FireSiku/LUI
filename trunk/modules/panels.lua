@@ -68,6 +68,13 @@ function module:CheckPanels()
 		db.Minimap.IsShown = false
 	end
 
+	for i=1,NUM_CHAT_WINDOWS do 
+		for _,v in pairs{"","Tab"}do 
+			local f=_G["ChatFrame"..i..v]
+			f.ORShow = f.Show --Give every chat frame an ORiginalShow function to allow overwriting of Show later on
+		end
+	end
+	
 	if db.Chat.AlwaysShow or db.Chat.IsShown then
 		Frames:SetNaviAlpha("Chat", 1)
 
@@ -75,6 +82,7 @@ function module:CheckPanels()
 		--if LUI.db.profile.Chat.SecondChatFrame then ChatAlphaAnchor2:SetAlpha(1) end
 
 		db.Chat.IsShown = true
+		LUI:SetChatVisible(true)
 	else
 		Frames:SetNaviAlpha("Chat", 0)
 
@@ -82,8 +90,10 @@ function module:CheckPanels()
 		--if LUI.db.profile.Chat.SecondChatFrame then ChatAlphaAnchor2:SetAlpha(0) end
 
 		db.Chat.IsShown = false
+		LUI:SetChatVisible(false)
 	end
-
+	
+	
 	if (db.Tps.AlwaysShow or db.Tps.IsShown) and _G[db.Tps.Anchor] then
 		Frames:SetNaviAlpha("Tps", 1)
 
@@ -146,6 +156,23 @@ function module:CheckPanels()
 			LUI.MicroMenu.Button:SetAlpha(0)
 			LUI.MicroMenu.Button:Hide()
 		end
+	end
+end
+
+function LUI:SetChatVisible(setVisible)
+	for i=1,NUM_CHAT_WINDOWS do 
+		for _,v in pairs{"","Tab"}do 
+			local f=_G["ChatFrame"..i..v]
+			if setVisible then
+				f.Show = f.ORShow
+			else
+				f.v=f:IsVisible()
+				f.Show = f.Hide
+			end
+			if f.v then
+				f:Show()
+			end
+		end 
 	end
 end
 
