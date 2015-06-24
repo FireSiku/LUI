@@ -367,12 +367,12 @@ function module:SetFrames()
 			LUI.Navi.Chat.AlphaIn:Show()
 			Panels:AlphaIn("Chat")
 			Panels.db.profile.Chat.IsShown = true
-			LUI:SetChatVisible(true)
+			--LUI:SetChatVisible(true)
 		else
 			LUI.Navi.Chat.AlphaOut:Show()
 			Panels:AlphaOut("Chat")
 			Panels.db.profile.Chat.IsShown = false
-			LUI:SetChatVisible(false)
+			--LUI:SetChatVisible(false)
 		end
 	end)
 	
