@@ -301,7 +301,7 @@ function module:SetClock()
 		local invitesPending = false
 
 		-- Event functions
-		stat.Events = {"CALENDAR_UPDATE_PENDING_INVITES", "CHAT_MSG_CHANNEL_NOTICE", "PLAYER_ENTERING_WORLD", "UPDATE_24HOUR", "UPDATE_LOCALTIME"}
+		stat.Events = {"CALENDAR_UPDATE_PENDING_INVITES", "PLAYER_ENTERING_WORLD", "UPDATE_24HOUR", "UPDATE_LOCALTIME"}
 
 		stat.CALENDAR_UPDATE_PENDING_INVITES = function(self) -- A change to number of pending invites for calendar events occurred
 			invitesPending = GameTimeFrame and (GameTimeFrame.pendingCalendarInvites > 0) or false
@@ -346,8 +346,6 @@ function module:SetClock()
 
 		stat.INSTANCE_GROUP_SIZE_CHANGED = stat.PLAYER_DIFFICULTY_CHANGED -- Flexible raid size changed (I hope)
 
-		stat.CHAT_MSG_CHANNEL_NOTICE = stat.ZONE_CHANGED
-
 		stat.PLAYER_ENTERING_WORLD = function(self) -- Zoning in/out or logging in
 			if db.Clock.ShowInstanceDifficulty then
 				self:PLAYER_DIFFICULTY_CHANGED()
@@ -375,10 +373,16 @@ function module:SetClock()
 				self:UnregisterEvent("INSTANCE_GROUP_SIZE_CHANGED")
 				instanceInfo, guildParty = nil, ""
 			end
-
-			module:SecureHookScript(GameTimeFrame, "OnClick", stat.CALENDAR_UPDATE_PENDING_INVITES) -- hook the OnClick function of the GameTimeFrame to update the pending invites
-			module:SecureHookScript(TimeManagerMilitaryTimeCheck, "OnClick", stat.UPDATE_24HOUR)
-			module:SecureHookScript(TimeManagerLocalTimeCheck, "OnClick", stat.UPDATE_LOCALTIME)
+			
+			if not module:IsHooked(GameTimeFrame, "OnClick") then 
+				module:SecureHookScript(GameTimeFrame, "OnClick", stat.CALENDAR_UPDATE_PENDING_INVITES) -- hook the OnClick function of the GameTimeFrame to update the pending invites
+			end
+			if not module:IsHooked(TimeManagerMilitaryTimeCheck, "OnClick") then
+				module:SecureHookScript(TimeManagerMilitaryTimeCheck, "OnClick", stat.UPDATE_24HOUR)
+			end
+			if not module:IsHooked(TimeManagerLocalTimeCheck, "OnClick") then
+				module:SecureHookScript(TimeManagerLocalTimeCheck, "OnClick", stat.UPDATE_LOCALTIME)
+			end
 			self:CALENDAR_UPDATE_PENDING_INVITES()
 
 			self:PLAYER_ENTERING_WORLD()
