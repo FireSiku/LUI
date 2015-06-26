@@ -294,46 +294,14 @@ function module:SetClock()
 	if db.Clock.Enable and not stat.Created then
 		-- Localized functions
 		local tonumber, date, GetGameTime, IsInInstance, GetInstanceInfo = tonumber, date, GetGameTime, IsInInstance, GetInstanceInfo
-		local GetNumWorldPVPAreas, GetWorldPVPAreaInfo, GetNumSavedInstances, GetSavedInstanceInfo = GetNumWorldPVPAreas, GetWorldPVPAreaInfo, GetNumSavedInstances, GetSavedInstanceInfo
+		local GetNumSavedInstances, GetSavedInstanceInfo = GetNumSavedInstances, GetSavedInstanceInfo
 		local gsub, format, floor, strtrim, strmatch = gsub, format, floor, strtrim, strmatch
 
 		local instanceInfo, guildParty = nil, ""
 		local invitesPending = false
-		local pvpControl = {}
-		local pvpColor = setmetatable({
-			default = {1, 1, 1},
-			Horde = {0.8, 0, 0},
-			Alliance = {0, 0.6, 1},
-		}, {
-			__index = function(t, k)
-				return t.default
-			end
-		})
-
-		-- Local functions
-		local function UpdateWGControl()
-			if GetCurrentMapContinent() == 4 then
-				pvpControl["Wintergrasp"] = UnitBuff("player", GetSpellInfo(57940)) and myPlayerFaction or otherFaction
-				return
-			end
-			pvpControl["Wintergrasp"] = nil
-		end
-
-		local function UpdateTBControl()
-			local continent = GetCurrentMapContinent()
-			if continent == 1 or continent == 2 then
-				SetMapByID(708)
-				local name, description = GetMapLandmarkInfo(1)
-				if description then
-					pvpControl["Tol Barad"] = description:find(localeFaction) and myPlayerFaction or otherFaction
-					return
-				end
-			end
-			pvpControl["Tol Barad"] = nil
-		end
 
 		-- Event functions
-		stat.Events = {"CALENDAR_UPDATE_PENDING_INVITES", "ZONE_CHANGED", "CHAT_MSG_CHANNEL_NOTICE", "PLAYER_ENTERING_WORLD", "UPDATE_24HOUR", "UPDATE_LOCALTIME"}
+		stat.Events = {"CALENDAR_UPDATE_PENDING_INVITES", "CHAT_MSG_CHANNEL_NOTICE", "PLAYER_ENTERING_WORLD", "UPDATE_24HOUR", "UPDATE_LOCALTIME"}
 
 		stat.CALENDAR_UPDATE_PENDING_INVITES = function(self) -- A change to number of pending invites for calendar events occurred
 			invitesPending = GameTimeFrame and (GameTimeFrame.pendingCalendarInvites > 0) or false
@@ -377,12 +345,6 @@ function module:SetClock()
 		end
 
 		stat.INSTANCE_GROUP_SIZE_CHANGED = stat.PLAYER_DIFFICULTY_CHANGED -- Flexible raid size changed (I hope)
-		
-		stat.ZONE_CHANGED = function(self)
-			UpdateWGControl()
-			UpdateTBControl()
-			SetMapToCurrentZone()
-		end
 
 		stat.CHAT_MSG_CHANNEL_NOTICE = stat.ZONE_CHANGED
 
@@ -390,7 +352,6 @@ function module:SetClock()
 			if db.Clock.ShowInstanceDifficulty then
 				self:PLAYER_DIFFICULTY_CHANGED()
 			end
-			self:ZONE_CHANGED()
 		end
 
 		stat.UPDATE_24HOUR = function(self)
@@ -487,27 +448,6 @@ function module:SetClock()
 				GameTooltip:SetOwner(self, getOwnerAnchor(self))
 				GameTooltip:ClearLines()
 				GameTooltip:AddLine("Time:", 0.4, 0.78, 1)
-				GameTooltip:AddLine(" ")
-
-				for i = 1, GetNumWorldPVPAreas() do
-					local _, name, inprogress, _, timeleft = GetWorldPVPAreaInfo(i)
-					local inInstance, instanceType = IsInInstance()
-					local color = pvpColor.default
-					if not (instanceType == "none") then
-						timeleft = QUEUE_TIME_UNAVAILABLE
-					elseif inprogress then
-						timeleft = WINTERGRASP_IN_PROGRESS
-					else
-						local hour = tonumber(format("%01.f", floor(timeleft / 3600)))
-						local min = format((hour > 0) and "%02.f" or "%01.f", floor(timeleft / 60 - (hour * 60)))
-						local sec = format("%02.f", floor(timeleft - (hour * 3600) - (min * 60)))
-						timeleft = (hour > 0 and hour..":" or "")..min..":"..sec
-						color = pvpColor[pvpControl[name]]
-					end
-
-					GameTooltip:AddDoubleLine("Time to "..name..":", timeleft, unpack(color))
-				end
-
 				GameTooltip:AddLine(" ")
 
 				local Hr, Min, PM
