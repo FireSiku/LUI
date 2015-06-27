@@ -90,7 +90,8 @@ function module:CheckPanels()
 		--if LUI.db.profile.Chat.SecondChatFrame then ChatAlphaAnchor2:SetAlpha(0) end
 
 		db.Chat.IsShown = false
-		LUI:SetChatVisible(false)
+		--LUI:SetChatVisible(false)
+		LUI:SetChatVisible(true)
 	end
 	
 	
