@@ -1,0 +1,11 @@
+<!--
+Adding InfoText stats.
+Just adding a script file reference at the end of the list following the same structure as the core stats.
+-->
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <!-- Load core file. -->
+  <Script file="infotext.lua"/>
+  
+  <!-- Load stats. -->
+  <Script file="bags.lua"/>
+</Ui>
