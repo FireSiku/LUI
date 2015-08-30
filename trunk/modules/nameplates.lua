@@ -22,6 +22,8 @@ local module = LUI:Module("Nameplates")
 local db
 local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
 
+local wow_version, wow_build, wow_data, tocversion = GetBuildInfo()
+
 function module:SetNameplates()
 	if db.Nameplates.Enable ~= true then return end
 
@@ -194,7 +196,11 @@ function module:SetNameplates()
 		frame.nameplate = true
 		
 		frame.barFrame, frame.nameFrame = frame:GetChildren()
-		frame.healthBar, frame.castBar = frame.barFrame:GetChildren()
+		if tonumber(wow_build) < 20444 then -- WoW 6.2.0 client
+			frame.healthBar, frame.castBar = frame.barFrame:GetChildren()
+		else  -- WoW 6.2.2 client - absorbBar added in 6.2.2 (not used in LUI yet)
+			frame.healthBar, frame.absorbBar, frame.castBar = frame.barFrame:GetChildren()
+		end
 		local healthBar, castBar = frame.healthBar, frame.castBar
 		local nameTextRegion = frame.nameFrame:GetRegions()
 		local glowRegion, overlayRegion, highlightRegion, levelTextRegion, bossIconRegion, raidIconRegion, stateIconRegion = frame.barFrame:GetRegions()

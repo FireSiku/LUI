@@ -18,11 +18,12 @@ local GetTime, ceil, select, unpack, pairs, strfind, strmatch, gsub, format, ton
 
 local module = LUI:Module("Auras")
 local Media = LUI.Lib("LibSharedMedia-3.0")
+local Masque = LibStub("Masque", true) or (LibMasque and LibMasque("Button"))
 
 local L = LUI.L
 local argcheck = LUI.argcheck
 
-local profile
+local profile, group
 
 ----------------------------------------------------------------------
 -- Local Variables
@@ -670,6 +671,51 @@ function module:Refresh()
 	end
 end
 
+local function OnAnyEvent(self, event, addon)
+	for i=1, BUFF_MAX_DISPLAY do
+		local buff = _G["LUI_Auras_BuffsAuraButton"..i]
+		if buff then
+			group:AddButton(buff)
+		end
+		if not buff then break end
+	end
+	
+	for i=1, BUFF_MAX_DISPLAY do
+		local debuff = _G["LUI_Auras_DebuffsAuraButton"..i]
+		if debuff then
+			group:AddButton(debuff)
+		end
+		if not debuff then break end
+	end
+	
+	for i=1, NUM_TEMP_ENCHANT_FRAMES do
+		local f = _G["TempEnchant"..i]
+		if TempEnchant then
+			group:AddButton(f)
+		end
+		_G["TempEnchant"..i.."Border"]:SetVertexColor(.75, 0, 1)
+	end
+	group:ReSkin()
+end
+
+function module:SetupSkins()
+
+	local f = CreateFrame("Frame")
+
+	hooksecurefunc("CreateFrame", function (_, name, parent) --dont need to do this for TempEnchant enchant frames because they are hard created in xml
+		if type(name) ~= "string" then return end
+		if strfind(name, "LUI_Auras") then
+			group:AddButton(_G[name])
+			group:ReSkin() -- Needed to prevent issues with stack text appearing under the frame.
+		end
+	end
+	)
+		
+	f:SetScript("OnEvent", OnAnyEvent)
+	f:RegisterEvent("PLAYER_ENTERING_WORLD")
+	f:RegisterEvent("UNIT_AURA")
+end
+
 ----------------------------------------------------------------------
 -- AceAddon Load Functions
 ----------------------------------------------------------------------
@@ -697,6 +743,10 @@ function module:OnEnable()
 
 	self:NewAuraHeader("Buffs", true)
 	self:NewAuraHeader("Debuffs")
+	if Masque then
+		group = Masque:Group("LUI", "Buffs & Debuffs")
+		self:SetupSkins()
+	end
 end
 
 function module:OnDisable()
