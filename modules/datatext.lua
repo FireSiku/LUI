@@ -583,7 +583,7 @@ function module:SetCurrency()
 			if CurrencyList then return CurrencyList end
 
 			local CurrencyList = {[0] = "None",}
-			for i=1, 1024 do
+			for i=1, 2048 do
 				local n, _,_,_,_,_,d = GetCurrencyInfo(i)
 				if n ~= "" and d then
 					CurrencyList[i] = n
