@@ -2766,6 +2766,64 @@ function module:SetMemory()
 end
 
 
+------------------------------------------------------
+-- / WEAPON INFO USAGE / --
+------------------------------------------------------
+
+function module:SetWeaponInfo()
+	local stat = NewStat("WeaponInfo")
+
+	if db.WeaponInfo.Enable and not stat.Created then
+	
+		stat.Events = {"UNIT_INVENTORY_CHANGED", "UNIT_AURA"}
+		
+		stat.UNIT_INVENTORY_CHANGED = function(self, unit)
+			--print(string.format("Called, unit == %s", tostring(unit)))
+			--if unit ~= "player" then return end
+			local mspeed, ospeed = UnitAttackSpeed("player")
+			local text = string.format("MH: %.2fs", tonumber(mspeed))
+			if ospeed ~= nil and ospeed ~= 0 then
+				text = text .. string.format(", OH: %.2fs", tonumber(ospeed))
+			end
+			self.text:SetFormattedText(text)
+			UpdateTooltip(self)
+		end
+		
+		stat.UNIT_AURA = stat.UNIT_INVENTORY_CHANGED
+		
+		stat.OnEnable = function(self)
+			self:UNIT_INVENTORY_CHANGED(self, "player")
+		end
+		
+		-- Local variables
+		local total
+		local weaponinfo = {}
+
+		stat.UpdateText = function(self)
+			self.text:SetText("Test")
+			UpdateTooltip(self)
+		end
+
+		stat.OnEnter = function(self)
+			if CombatTips() then
+				local mspeed, ospeed = UnitAttackSpeed("player")
+				GameTooltip:SetOwner(self, getOwnerAnchor(self))
+				GameTooltip:ClearLines()
+				GameTooltip:AddLine("Weapon Speed:", 0.4, 0.78, 1)
+				GameTooltip:AddLine("Main Hand Weapon: ", 0.4, 0.78, 1)
+				GameTooltip:AddLine("Offhand Weapon: ", 0.4, 0.78, 1)
+				GameTooltip:AddLine(" ")
+				GameTooltip:Show()
+			end
+		end
+
+		stat.OnLeave = function()
+			GameTooltip:Hide()
+		end
+
+		stat.Created = true
+	end
+end
 
 
 
@@ -3047,6 +3105,24 @@ module.defaults = {
 		},
 		Memory = {
 			Enable = true,
+			X = 610,
+			Y = 0,
+			InfoPanel = {
+				Horizontal = "Left",
+				Vertical = "Top",
+			},
+			Font = "vibroceb",
+			FontSize = 12,
+			Outline = "NONE",
+			Color = {
+				r = 1,
+				g = 1,
+				b = 1,
+				a = 1,
+			},
+		},
+		WeaponInfo = {
+			Enable = false,
 			X = 610,
 			Y = 0,
 			InfoPanel = {
@@ -3878,6 +3954,33 @@ function module:LoadOptions()
 				Reset = ResetOption(5),
 			},
 		},
+		WeaponInfo = {
+			name = function(info) return NameLabel(info, "Weapon Information") end,
+			type = "group",
+			order = 14,
+			args = {
+				Header = {
+					name = "Weapon Information",
+					type = "header",
+					order = 1,
+				},
+				Enable = {
+					name = "Enable",
+					desc = "Whether you want to show your Weapon Information or not.",
+					type = "toggle",
+					width = "full",
+					get = function() return db.WeaponInfo.Enable end,
+					set = function(info, value)
+						db.WeaponInfo.Enable = value
+						ToggleStat("WeaponInfo")
+					end,
+					order = 2,
+				},
+				Position = PositionOptions(3, "Weapon Information"),
+				Font = FontOptions(4, "Weapon Information"),
+				Reset = ResetOption(5),
+			},
+		},
 	}
 
 	return options
@@ -3911,6 +4014,7 @@ function module:OnEnable()
 	EnableStat("Friends")
 	EnableStat("Instance")
 	EnableStat("Memory")
+	EnableStat("WeaponInfo")
 end
 
 function module:OnDisable()
@@ -3924,6 +4028,7 @@ function module:OnDisable()
 	DisableStat("Friends")
 	DisableStat("GF")
 	DisableStat("DPS")
+	DisableStat("WeaponInfo")
 	LUI_Infos_TopLeft:Hide()
 	LUI_Infos_TopRight:Hide()
 	LUI_Infos_BottomLeft:Hide()
