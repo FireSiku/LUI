@@ -1481,7 +1481,7 @@ function module:SetGF()
 		local tables, broadcasts, toasts, buttons
 		local slider, highlight, texOrder1, sep, sep2
 
-		local WOW, SC2, D3, WTCG, APP, CLNT, HOTS = 1, 2, 3, 4, 5, 6, 7
+		local WOW, SC2, D3, WTCG, APP, CLNT, HOTS, OVERWATCH = 1, 2, 3, 4, 5, 6, 7, 8
 		local horde = myPlayerFaction == "Horde"
 
 		local hordeZones = "Orgrimmar,Undercity,Thunder Bluff,Silvermoon City,Durotar,Tirisfal Glades,Mulgore,Eversong Woods,Northern Barrens,Silverpine Forest,Ghostlands,Azshara,"
@@ -1499,6 +1499,7 @@ function module:SetGF()
 			[WTCG] = [[Interface\FriendsFrame\Battlenet-WTCGicon]],
 			[APP] = [[Interface\FriendsFrame\Battlenet-Battleneticon]],
 			[HOTS] = [[Interface\FriendsFrame\Battlenet-HotSicon]],
+			[OVERWATCH] = [[Interface\FriendsFrame\Battlenet-Overwatchicon]],
 		}
 
 		local colpairs = {
@@ -1663,7 +1664,7 @@ function module:SetGF()
 
 			SetStatusLayout(toast.status, toast.name)
 
-			client = client == BNET_CLIENT_WOW and WOW or client == BNET_CLIENT_SC2 and SC2 or client == BNET_CLIENT_D3 and D3 or client == BNET_CLIENT_WTCG and WTCG or client == BNET_CLIENT_HEROES and HOTS or APP
+			client = client == BNET_CLIENT_WOW and WOW or client == BNET_CLIENT_SC2 and SC2 or client == BNET_CLIENT_D3 and D3 or client == BNET_CLIENT_WTCG and WTCG or client == BNET_CLIENT_HEROES and HOTS or client == BNET_CLIENT_OVERWATCH and OVERWATCH or APP
 			toast.client = client
 
 			if client == WOW then
@@ -1686,7 +1687,7 @@ function module:SetGF()
 				else
 					toast.class:SetTexture("")
 				end
-			elseif client == SC2 or client == D3 or client == WTCG or  client == HOTS or client == APP then
+			elseif client == SC2 or client == D3 or client == WTCG or  client == HOTS or client == OVERWATCH or client == APP then
 				toast.class:SetTexture(clientIcons[client])
 				toast.class:SetTexCoord(0.2, 0.8, 0.2, 0.8)
 				toast.name:SetTextColor(0.8, 0.8, 0.8)
@@ -1711,7 +1712,7 @@ function module:SetGF()
 
 			return toast, client,
 			toast.name:GetStringWidth(),
-			client == (SC2 or D3 or WTCG or APP or HOTS) and -gap or toast.level:GetStringWidth(),
+			client == (SC2 or D3 or WTCG or APP or HOTS or OVERWATCH) and -gap or toast.level:GetStringWidth(),
 			toast.zone:GetStringWidth(),
 			toast.note:GetStringWidth()
 		end
@@ -1910,7 +1911,7 @@ function module:SetGF()
 					if client == WOW then
 						if lW > lC then lC = lW end
 						if zW > zC then zC = zW end
-					elseif client == SC2 or client == D3 or client == WTCG or client == APP or client == HOTS then
+					elseif client == SC2 or client == D3 or client == WTCG or client == APP or client == HOTS or client == OVERWATCH then
 						if zW > spanZoneC then spanZoneC = zW end
 					end
 
@@ -2040,7 +2041,7 @@ function module:SetGF()
 				if button.client == WOW then
 					button.level:SetWidth(lC)
 					button.zone:SetWidth(zC)
-				elseif button.client == SC2 or button.client == D3 or button.client == WTCG or button.client == APP or button.client == HOTS then
+				elseif button.client == SC2 or button.client == D3 or button.client == WTCG or button.client == APP or button.client == HOTS or button.client == OVERWATCH then
 					button.zone:SetWidth(spanZoneC)
 				end
 				button.note:SetWidth(nC)
@@ -2680,7 +2681,7 @@ function module:SetMemory()
 
 	if db.Memory.Enable and not stat.Created then
 		-- Localized functions
-		local UpdateAddOnMemoryUsage, IsAddOnLoaded = UpdateAddOnMemoryUsage, IsAddOnLoaded
+		local UpdateAddOnMemoryUsage, IsAddOnLoaded, InCombatLockdown = UpdateAddOnMemoryUsage, IsAddOnLoaded, InCombatLockdown
 		local GetNumAddOns, GetAddOnInfo, GetAddOnMemoryUsage = GetNumAddOns, GetAddOnInfo, GetAddOnMemoryUsage
 		local floor, format, sort, collectgarbage, select = floor, format, sort, collectgarbage, select
 
@@ -2699,6 +2700,7 @@ function module:SetMemory()
 
 		-- Script functions
 		stat.OnUpdate = function(self, deltaTime)
+			if InCombatLockdown() then return end
 			self.dt = self.dt + deltaTime
 			if self.dt > 10 then
 				self.dt = 0
@@ -2724,6 +2726,7 @@ function module:SetMemory()
 		end
 
 		stat.OnClick = function(self) -- run garbagecollect
+			if InCombatLockdown() then return end
 			collectgarbage("collect")
 			self:OnUpdate(10)
 		end
