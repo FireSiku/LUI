@@ -44,7 +44,7 @@ local initTimer
 do
 	local day, hour, minute = 86400, 3600, 60
 	local iconSize = 36
-	local precision, threshold, minDuration
+	local precision, threshold, minDuration, minToSec
 
 	local cache = {}
 
@@ -70,6 +70,7 @@ do
 		precision = 1 / 10^(db.General.Precision)
 		threshold = db.General.Threshold
 		minDuration = db.General.MinDuration
+		minToSec = db.General.MinToSec
 
 		wipe(fontScale)
 
@@ -146,7 +147,7 @@ do
 			self.nextUpdate = precision
 			self.text:SetFormattedText(timeFormats[factor], seconds)
 		else
-			factor = seconds < minute and 1 or seconds < hour and minute or seconds < day and hour or day
+			factor = seconds < minToSec and 1 or seconds < hour and minute or seconds < day and hour or day
 
 			self.nextUpdate = seconds % factor
 			self.text:SetFormattedText(timeFormats[factor], seconds / factor)
@@ -260,6 +261,7 @@ module.defaults = {
 			MinScale = 0.5,
 			Precision = 1,
 			Threshold = 8,
+			MinToSec = 60,
 		},
 		Text = {
 			Font = "vibroceb",
@@ -289,6 +291,7 @@ function module:LoadOptions()
 			MinDuration = self:NewInputNumber("Minimum Duration", "The lowest cooldown duration that timers will be shown for.", 2, func),
 			Precision = self:NewSlider("Cooldown Precision", "How many decimal places will be shown once time is within the cooldown threshold.", 3, 0, 2, 1, func),
 			MinScale = self:NewSlider("Minimum Scale", "The smallest size of icons that timers will be shown for.", 4, 0, 2, 0.1, func),
+			MinToSec = self:NewSlider("Minute to Seconds", "The time at which your cooldown is shown in seconds instead of minutes.", 4, 60, 300, 60, func),
 		}),
 		Text = self:NewGroup("Text Settings", 2, {
 			Font = self:NewSelect("Font", "Select the font to be used by cooldown's texts.", 1, AceGUIWidgetLSMlists.font, "LSM30_Font", func),
