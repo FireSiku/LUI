@@ -535,24 +535,16 @@ function module:SetClock()
 					end
 				end
 				
-				--World Bosses
-				local WorldBosses = {
-					["32098"] = "Galleon",
-					["32099"] = "Sha of Anger",
-					["32518"] = "Nalak, The Storm Lord",
-					["32519"] = "Oondasta",
-				}
-				for id, name in pairs(WorldBosses) do
-
+				-- World Bosses
+				for i = 1, GetNumSavedWorldBosses() do
 					if not oneraid then
 						GameTooltip:AddLine(" ")
 						GameTooltip:AddLine("Saved Raid(s) :")
 						oneraid = true
 					end
-
-					if IsQuestFlaggedCompleted(id) then
-						GameTooltip:AddLine(format("%s |cffaaaaaa(World)", name), 1, 1, 1, 1, 1, 1) 
-					end
+				
+					local name, _, reset = GetSavedWorldBossInfo(i)
+					GameTooltip:AddDoubleLine(format("%s |cffaaaaaa(%s)", name, RAID_INFO_WORLD_BOSS), formatTime(reset), 1,1,1, 1,1,1)
 				end
 
 				GameTooltip:AddLine(" ")
