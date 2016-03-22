@@ -1634,8 +1634,10 @@ function module:SetGF()
 
 		local function SetToastData(index, inGroup)
 			local toast, bc, color = toasts[index], nil, nil
+			--presenceID is the BNAccountID, toonID refers to BNGameAccountID, name preserved for compatibility sake. Clean code in V4.
 			local presenceID, givenName, battletag, isBattletag, toonName, toonID, client, isOnline, lastOnline, isAFK, isDND, broadcast, notes = BNGetFriendInfo(index)
-			local _, _, _, realm, _, faction, race, class, _, zone, level, gameText = BNGetToonInfo(toonID or 0)
+			if not BNGetGameAccountInfo then BNGetGameAccountInfo = BNGetToonInfo end
+			local _, _, _, realm, _, faction, race, class, _, zone, level, gameText = BNGetGameAccountInfo(toonID or 0)
 
 			if faction == 'Alliance' then faction = 1
 			else faction = 0
@@ -2142,7 +2144,7 @@ function module:SetGF()
 		end
 
 		stat.OnBtnClick = function(b, button) -- button arg is mouse button
-			if not(b and b.unit) then return end
+			if not(b) then return end
 			if (stat.IsGuild or not b.presenceID) and button == "RightButton" and not IsControlKeyDown() then -- sort by column
 				local btn, ofx = buttons[1], gap*.25
 				local pos = GetCursorPosition() / b:GetEffectiveScale()
