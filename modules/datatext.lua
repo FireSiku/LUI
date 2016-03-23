@@ -329,10 +329,12 @@ function module:SetClock()
 						instanceInfo = maxPlayers.." |cff00ff00N"        -- Legacy Normal
 					elseif instanceDifficulty == 15 then
 						instanceInfo = maxPlayers.." |cff00ff00H"        -- Normal renamed Heroic in 6.0
-					elseif instanceDifficulty == 16 then
+					elseif instanceDifficulty == 16 or instanceDifficulty == 23 then
 						instanceInfo = maxPlayers.." |cffff0000M"        -- Heroic renamed Mythic in 6.0
 					elseif instanceDifficulty == 8 then
 						instanceInfo = maxPlayers.." |cffff0000C"        -- Challenge Mode
+					elseif instanceDifficulty == 24 then
+						instanceInfo = maxPlayers.." |cff00ff00T"        -- Timewalking Dungeon
 					else
 						instanceInfo = maxPlayers.." |cffff0000H"        -- Legacy Heroic
 					end
