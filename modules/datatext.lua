@@ -1693,7 +1693,11 @@ function module:SetGF()
 				toast.zone:SetTextColor(1, 0.77, 0)
 			end
 
-			toast.name:SetText(formatedStatusText(isAFK and 1 or isDND and 2, format("|cff00b2f0%s|r - %s", toast.realID, toonName or "")))
+			local lineEnd = ""
+			if toonName ~= nil then
+				lineEnd = format(" - %s", toonName)
+			end
+			toast.name:SetText(formatedStatusText(isAFK and 1 or isDND and 2, format("|cff00b2f0%s|r%s", toast.realID, lineEnd or "")))
 
 			if level and level ~= "" then
 				toast.level:SetText(level)
