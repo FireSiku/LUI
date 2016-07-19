@@ -706,9 +706,7 @@ function module:SetMicroMenu()
 	end)
 
 	LUI.MicroMenu.Buttons.PVP.Clicker:SetScript("OnLeave", function(self)
-		if not PVPUI and not PVPUIFrame:IsShown() then
-			self:SetAlpha(0)
-		end
+		self:SetAlpha(0)
 		self.State = nil
 		GameTooltip:Hide()
 	end)
@@ -717,21 +715,6 @@ function module:SetMicroMenu()
 		if UnitLevel("player") >= 10 then
 			TogglePVPUI()
 		end
-	end)
-
-	module:RegisterEvent("ADDON_LOADED", function(event)
-		if event and not IsAddOnLoaded("Blizzard_PVPUI") then LoadAddOn("Blizzard_PVPUI") end
-		if event then module:UnregisterEvent(event) end
-
-		PVPUIFrame:HookScript("OnShow", function(self)
-			LUI.MicroMenu.Buttons.PVP.Clicker:SetAlpha(1)
-		end)
-
-		PVPUIFrame:HookScript("OnHide", function(self)
-			if not LUI.MicroMenu.Buttons.PVP.Clicker.State then
-				LUI.MicroMenu.Buttons.PVP.Clicker:SetAlpha(0)
-			end
-		end)
 	end)
 
 	LUI.MicroMenu.Buttons.Guild = LUI:CreateMeAFrame("Frame",nil,LUI.MicroMenu.Buttons.PVP,64,64,1,"BACKGROUND",3,"LEFT",LUI.MicroMenu.Buttons.PVP,"LEFT",-33,0, 1)
