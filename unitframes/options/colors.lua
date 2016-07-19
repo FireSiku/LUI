@@ -394,10 +394,10 @@ function module:CreateColorOptions(order)
 		HolyPowerBar = self:NewGroup("Holy Power", 6, nil, nil, class ~= "PALADIN", {
 			header1 = self:NewHeader("Holy Power Colors", 1),
 			["1"]	= self:NewColorNoAlpha("Part 1", "first part of your Holy Power Bar", 2, false, "full"),
-			["2"]	= self:NewColorNoAlpha("Part 2", "second part of your Holy Power Bar", 3, false, "full"),
-			["3"]	= self:NewColorNoAlpha("Part 3", "third part of your Holy Power Bar", 4, false, "full"),
-			["4"]	= self:NewColorNoAlpha("Part 4", "fourth part of your Holy Power Bar, requires level 85", 5, false, "full"),
-			["5"]	= self:NewColorNoAlpha("Part 5", "fifth part of your Holy Power Bar, requires level 85", 6, false, "full"),
+			["2"]	= self:NewColorNoAlpha("Part 2", "second part of your Holy Power Bar", 3, false, "full", nil, LUI.Legion),
+			["3"]	= self:NewColorNoAlpha("Part 3", "third part of your Holy Power Bar", 4, false, "full", nil, LUI.Legion),
+			["4"]	= self:NewColorNoAlpha("Part 4", "fourth part of your Holy Power Bar, requires level 85", 5, false, "full", nil, LUI.Legion),
+			["5"]	= self:NewColorNoAlpha("Part 5", "fifth part of your Holy Power Bar, requires level 85", 6, false, "full", nil, LUI.Legion),
 			empty1 = self:NewDesc(" ", 7),
 			Reset = self:NewExecute("Restore Defaults", nil, 8, function()
 				module.db.Colors.HolyPowerBar = module.defaults.Colors.HolyPowerBar
@@ -407,9 +407,9 @@ function module:CreateColorOptions(order)
 		WarlockBar = self:NewGroup("Warlock Bars", 7, nil, nil, class ~= "WARLOCK", {
 			header1 = self:NewHeader("Soul Shard Colors", 1),
 			["Shard1"] = self:NewColorNoAlpha("Part 1", "first part of your Soul Shards Bar", 2, false, "full"),
-			["Shard2"] = self:NewColorNoAlpha("Part 2", "second part of your Soul Shards Bar", 3, false, "full"),
-			["Shard3"] = self:NewColorNoAlpha("Part 3", "third part of your Soul Shards Bar", 4, false, "full"),
-			["Shard4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Soul Shards Bar, glyph required", 5, false, "full"),
+			["Shard2"] = self:NewColorNoAlpha("Part 2", "second part of your Soul Shards Bar", 3, false, "full", nil, LUI.Legion),
+			["Shard3"] = self:NewColorNoAlpha("Part 3", "third part of your Soul Shards Bar", 4, false, "full", nil, LUI.Legion),
+			["Shard4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Soul Shards Bar, glyph required", 5, false, "full", nil, LUI.Legion),
 			header2 = self:NewHeader("Demonic Fury Colors", 6, nil, nil, LUI.Legion),
 			["Fury"] = self:NewColorNoAlpha("Demonic Fury Bar", "color of your Demonic Fury Bar", 7, false, "full", nil, LUI.Legion),
 			header3 = self:NewHeader("Burning Embers Colors", 8, nil, nil, LUI.Legion),
@@ -439,11 +439,11 @@ function module:CreateColorOptions(order)
 		ArcaneChargesBar = self:NewGroup("Arcane Charges", 10, nil, nil, class ~= "MAGE", {
 			header1 = self:NewHeader("Arcane Charges Colors", 1),
 			["1"] = self:NewColorNoAlpha("Part 1", "first part of your Arcane Charges Bar", 2, false, "full"),
-			["2"] = self:NewColorNoAlpha("Part 2", "second part of your Arcane Charges Bar", 3, false, "full"),
-			["3"] = self:NewColorNoAlpha("Part 3", "third part of your Arcane Charges Bar", 4, false, "full"),
-			["4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Arcane Charges Bar", 4, false, "full"),
-			["5"] = self:NewColorNoAlpha("Part 5", "fifth part of your Arcane Charges Bar", 4, false, "full"),
-			["6"] = self:NewColorNoAlpha("Part 6", "sixth part of your Arcane Charges Bar", 4, false, "full"),
+			["2"] = self:NewColorNoAlpha("Part 2", "second part of your Arcane Charges Bar", 3, false, "full", nil, LUI.Legion),
+			["3"] = self:NewColorNoAlpha("Part 3", "third part of your Arcane Charges Bar", 4, false, "full", nil, LUI.Legion),
+			["4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Arcane Charges Bar", 4, false, "full", nil, LUI.Legion),
+			["5"] = self:NewColorNoAlpha("Part 5", "fifth part of your Arcane Charges Bar", 4, false, "full", nil, LUI.Legion),
+			["6"] = self:NewColorNoAlpha("Part 6", "sixth part of your Arcane Charges Bar", 4, false, "full", nil, LUI.Legion),
 			empty1 = self:NewDesc(" ", 5),
 			Reset = self:NewExecute("Restore Defaults", nil, 6, function()
 				module.db.Colors.ArcaneChargesBar = module.defaults.Colors.ArcaneChargesBar
@@ -453,11 +453,11 @@ function module:CreateColorOptions(order)
 		ChiBar = self:NewGroup("Chi", 10, nil, nil, class ~= "MONK", {
 			header1 = self:NewHeader("Chi Colors", 1),
 			["1"] = self:NewColorNoAlpha("Part 1", "first part of your Chi Bar", 2, false, "full"),
-			["2"] = self:NewColorNoAlpha("Part 2", "second part of your Chi Bar", 3, false, "full"),
-			["3"] = self:NewColorNoAlpha("Part 3", "third part of your Chi Bar", 4, false, "full"),
-			["4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Chi Bar", 5, false, "full"),
-			["5"] = self:NewColorNoAlpha("Part 5", "fifth part of your Chi Bar (Talent or Perk required)", 6, false, "full"),
-			["6"] = self:NewColorNoAlpha("Part 6", "sixth part of your Chi Bar (Talent and Perk required)", 7, false, "full"),
+			["2"] = self:NewColorNoAlpha("Part 2", "second part of your Chi Bar", 3, false, "full", nil, LUI.Legion),
+			["3"] = self:NewColorNoAlpha("Part 3", "third part of your Chi Bar", 4, false, "full", nil, LUI.Legion),
+			["4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Chi Bar", 5, false, "full", nil, LUI.Legion),
+			["5"] = self:NewColorNoAlpha("Part 5", "fifth part of your Chi Bar (Talent or Perk required)", 6, false, "full", nil, LUI.Legion),
+			["6"] = self:NewColorNoAlpha("Part 6", "sixth part of your Chi Bar (Talent and Perk required)", 7, false, "full", nil, LUI.Legion),
 			empty1 = self:NewDesc(" ", 8),
 			Reset = self:NewExecute("Restore Defaults", nil, 9, function()
 				module.db.Colors.ChiBar = module.defaults.Colors.ChiBar
@@ -478,9 +478,9 @@ function module:CreateColorOptions(order)
 		}),
 		Runes = self:NewGroup("Runes", 12, nil, nil, class ~= "DEATHKNIGHT" and class ~= "DEATH KNIGHT", {
 			header1 = self:NewHeader("Runes Colors", 1),
-			["1"] = self:NewColorNoAlpha("Blood", "Blood Runes", 2, false, "full"),
-			["2"] = self:NewColorNoAlpha("Unholy", "Unholy Runes", 3, false, "full"),
-			["3"] = self:NewColorNoAlpha("Frost", "Frost Runes", 4, false, "full"),
+			["1"] = self:NewColorNoAlpha("Blood", "Blood Runes", 2, false, "full", nil, LUI.Legion),
+			["2"] = self:NewColorNoAlpha("Unholy", "Unholy Runes", 3, false, "full", nil, LUI.Legion),
+			["3"] = self:NewColorNoAlpha("Frost", "Frost Runes", 4, false, "full", nil, LUI.Legion),
 			["4"] = self:NewColorNoAlpha("Death", "Death Runes", 5, false, "full"),
 			empty1 = self:NewDesc(" ", 6),
 			Reset = self:NewExecute("Restore Defaults", nil, 7, function()
@@ -491,10 +491,10 @@ function module:CreateColorOptions(order)
 		ComboPoints = self:NewGroup("Combo Points", 13, nil, nil, class ~= "ROGUE" and class ~= "DRUID", {
 			header1 = self:NewHeader("Combo Points Colors", 1),
 			["1"] = self:NewColorNoAlpha("Part 1", "first Combo Point", 2, false, "full"),
-			["2"] = self:NewColorNoAlpha("Part 2", "second Combo Point", 3, false, "full"),
-			["3"] = self:NewColorNoAlpha("Part 3", "third Combo Point", 4, false, "full"),
-			["4"] = self:NewColorNoAlpha("Part 4", "fourth Combo Point", 5, false, "full"),
-			["5"] = self:NewColorNoAlpha("Part 5", "fifth Combo Point", 6, false, "full"),
+			["2"] = self:NewColorNoAlpha("Part 2", "second Combo Point", 3, false, "full", nil, LUI.Legion),
+			["3"] = self:NewColorNoAlpha("Part 3", "third Combo Point", 4, false, "full", nil, LUI.Legion),
+			["4"] = self:NewColorNoAlpha("Part 4", "fourth Combo Point", 5, false, "full", nil, LUI.Legion),
+			["5"] = self:NewColorNoAlpha("Part 5", "fifth Combo Point", 6, false, "full", nil, LUI.Legion),
 			empty1 = self:NewDesc(" ", 7),
 			Reset = self:NewExecute("Restore Defaults", nil, 8, function()
 				module.db.Colors.ComboPoints = module.defaults.Colors.ComboPoints
@@ -515,7 +515,7 @@ function module:CreateColorOptions(order)
 		}),
 		Misc = self:NewGroup("Misc", 15, {
 			header1 = self:NewHeader("Misc Colors", 1),
-			Tapped = self:NewColorNoAlpha("Tapped", "Tapped Target", 2, false, "full"),
+			Tapped = self:NewColorNoAlpha("Tapped", "Tapped Target", 2, false, "full", nil, LUI.Legion),
 			Hostile = self:NewColorNoAlpha("Hostile NPC", "Hostile NPC", 3, false, "full"),
 			Neutral = self:NewColorNoAlpha("Neutral NPC", "Neutral NPC", 4, false, "full"),
 			Friendly = self:NewColorNoAlpha("Friendly NPC", "Friendly NPC", 5, false, "full"),
