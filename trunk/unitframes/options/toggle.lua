@@ -913,7 +913,7 @@ module.ApplySettings = function(unit)
 				end
 
 				-- totems
-				if class == "SHAMAN" then
+				if class == "SHAMAN" and not LUI.Legion then
 					module.funcs.Totems(frame, frame.__unit, module.db.Player)
 					if module.db[unit].Bars.Totems.Enable then
 						frame:EnableElement("Totems")
@@ -995,7 +995,7 @@ module.ApplySettings = function(unit)
 				end
 
 				-- shadow orbs
-				if class == "PRIEST" then
+				if class == "PRIEST" and not LUI.Legion then
 					module.funcs.ShadowOrbs(frame, frame.__unit, module.db.Player)
 					if module.db[unit].Bars.ShadowOrbs.Enable then
 						frame:EnableElement("ShadowOrbs")
@@ -1005,7 +1005,7 @@ module.ApplySettings = function(unit)
 					end
 				end
 				-- druid eclipse
-				if class == "DRUID" then
+				if class == "DRUID" and not LUI.Legion then
 					module.funcs.EclipseBar(frame, frame.__unit, module.db.Player)
 					if module.db[unit].Bars.Eclipse.Enable then
 						frame:EnableElement("EclipseBar")
