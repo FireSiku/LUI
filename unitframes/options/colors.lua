@@ -410,20 +410,20 @@ function module:CreateColorOptions(order)
 			["Shard2"] = self:NewColorNoAlpha("Part 2", "second part of your Soul Shards Bar", 3, false, "full"),
 			["Shard3"] = self:NewColorNoAlpha("Part 3", "third part of your Soul Shards Bar", 4, false, "full"),
 			["Shard4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Soul Shards Bar, glyph required", 5, false, "full"),
-			header2 = self:NewHeader("Demonic Fury Colors", 6),
-			["Fury"] = self:NewColorNoAlpha("Demonic Fury Bar", "color of your Demonic Fury Bar", 7, false, "full"),
-			header3 = self:NewHeader("Burning Embers Colors", 8),
-			["Ember1"] = self:NewColorNoAlpha("Part 1", "first part of your Burning Embers Bar", 9, false, "full"),
-			["Ember2"] = self:NewColorNoAlpha("Part 2", "second part of your Burning Embers Bar", 10, false, "full"),
-			["Ember3"] = self:NewColorNoAlpha("Part 3", "third part of your Burning Embers Bar", 11, false, "full"),
-			["Ember4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Burning Embers Bar, glyph required", 12, false, "full"),
+			header2 = self:NewHeader("Demonic Fury Colors", 6, nil, nil, LUI.Legion),
+			["Fury"] = self:NewColorNoAlpha("Demonic Fury Bar", "color of your Demonic Fury Bar", 7, false, "full", nil, LUI.Legion),
+			header3 = self:NewHeader("Burning Embers Colors", 8, nil, nil, LUI.Legion),
+			["Ember1"] = self:NewColorNoAlpha("Part 1", "first part of your Burning Embers Bar", 9, false, "full", nil, LUI.Legion),
+			["Ember2"] = self:NewColorNoAlpha("Part 2", "second part of your Burning Embers Bar", 10, false, "full", nil, LUI.Legion),
+			["Ember3"] = self:NewColorNoAlpha("Part 3", "third part of your Burning Embers Bar", 11, false, "full", nil, LUI.Legion),
+			["Ember4"] = self:NewColorNoAlpha("Part 4", "fourth part of your Burning Embers Bar, glyph required", 12, false, "full", nil, LUI.Legion),
 			empty1 = self:NewDesc(" ", 13),
 			Reset = self:NewExecute("Restore Defaults", nil, 14, function()
 				module.db.Colors.WarlockBar = module.defaults.Colors.WarlockBar
 				UpdateColors()
 			end),
 		}),
-		ShadowOrbsBar = self:NewGroup("Shadow Orbs", 10, nil, nil, class ~= "PRIEST", {
+		ShadowOrbsBar = self:NewGroup("Shadow Orbs", 10, nil, nil, class ~= "PRIEST" or LUI.Legion, {
 			header1 = self:NewHeader("Shadow Orbs Colors", 1),
 			["1"] = self:NewColorNoAlpha("Part 1", "first part of your Shadow Orbs Bar", 2, false, "full"),
 			["2"]	= self:NewColorNoAlpha("Part 2", "second part of your Shadow Orbs Bar", 3, false, "full"),
@@ -464,7 +464,7 @@ function module:CreateColorOptions(order)
 				UpdateColors()
 			end),
 		}),
-		EclipseBar = self:NewGroup("Eclipse Bar", 11, nil, nil, class ~= "DRUID", {
+		EclipseBar = self:NewGroup("Eclipse Bar", 11, nil, nil, class ~= "DRUID" or LUI.Legion, {
 			header1 = self:NewHeader("Eclipse Bar Colors", 1),
 			Lunar = self:NewColorNoAlpha("Lunar", "Lunar Part of your Eclipse Bar", 2, false, "full"),
 			LunarBG = self:NewColorNoAlpha("Lunar BG", "Lunar Part Background of your Eclipse Bar", 3, false, "full"),
@@ -488,7 +488,7 @@ function module:CreateColorOptions(order)
 				UpdateColors()
 			end),
 		}),
-		ComboPoints = self:NewGroup("Combo Points", 13, nil, nil, class ~= "ROGUE", {
+		ComboPoints = self:NewGroup("Combo Points", 13, nil, nil, class ~= "ROGUE" and class ~= "DRUID", {
 			header1 = self:NewHeader("Combo Points Colors", 1),
 			["1"] = self:NewColorNoAlpha("Part 1", "first Combo Point", 2, false, "full"),
 			["2"] = self:NewColorNoAlpha("Part 2", "second Combo Point", 3, false, "full"),
@@ -501,7 +501,7 @@ function module:CreateColorOptions(order)
 				UpdateColors()
 			end),
 		}),
-		Totems = self:NewGroup("Totems", 14, nil, nil, class ~= "SHAMAN", {
+		Totems = self:NewGroup("Totems", 14, nil, nil, class ~= "SHAMAN" or LUI.Legion, {
 			header1 = self:NewHeader("Totem Colors", 1),
 			["1"] = self:NewColorNoAlpha("Fire", "Fire Totem", 2, false, "full"),
 			["2"] = self:NewColorNoAlpha("Earth", "Earth Totem", 3, false, "full"),

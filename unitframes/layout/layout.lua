@@ -2278,7 +2278,118 @@ module.funcs = {
 			end
 		end
 	end,
+	ClassIcons = function(self, unit, oufdb)
+		local _, class = UnitClass("player")
+		local BASE_COUNT = {
+			MAGE = 4,
+			MONK = 5,
+			PALADIN = 3,
+			PRIEST = 3,
+			ROGUE = 5,
+			WARLOCK = 5,
+			DRUID = 5,
+		}
+		-- The maximum of a ressource a given class can have
+		local MAX_COUNT = {
+			MAGE = 4,
+			MONK = 6,
+			PALADIN = 5,
+			PRIEST = 5,
+			ROGUE = 8,
+			WARLOCK = 5,
+			DRUID = 5,
+		}
+		local r, g, b
+		if class == "MONK" then r, g, b = unpack(module.colors.chibar[1])
+		elseif class == "PALADIN" then r, g, b = unpack(module.colors.holypowerbar[1])
+		elseif class == "MAGE" then r, g, b = unpack(module.colors.arcanechargesbar[1])
+		elseif class == "WARLOCK" then r, g, b = unpack(module.colors.warlockbar.Shard1)
+		elseif class == "ROGUE" then r, g, b = unpack(module.colors.combopoints[1])
+		elseif class == "DRUID" then r, g, b = unpack(module.colors.combopoints[1])
+		end
+		
+		if class == "MONK" then oufdb.Bars.ClassIcons = oufdb.Bars.Chi
+		elseif class == "PALADIN" then oufdb.Bars.ClassIcons = oufdb.Bars.HolyPower
+		elseif class == "MAGE" then oufdb.Bars.ClassIcons = oufdb.Bars.ArcaneCharges
+		elseif class == "WARLOCK" then oufdb.Bars.ClassIcons = oufdb.Bars.WarlockBar
+		elseif class == "ROGUE" then oufdb.Bars.ClassIcons = oufdb.Bars.Chi
+		elseif class == "DRUID" then oufdb.Bars.ClassIcons = oufdb.Bars.Chi
+		end
+		
+		unpack(module.colors.holypowerbar[1])
+		if not self.ClassIcons then
+			self.ClassIcons = CreateFrame("Frame", nil, self)
+			self.ClassIcons:SetFrameLevel(6)
+			self.ClassIcons:SetFrameStrata("BACKGROUND")
+			self.ClassIcons:SetBackdrop({
+				bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+			})
+			self.ClassIcons:SetBackdropColor(r * 0.4, g * 0.4, b * 0.4)
+			self.ClassIcons.Count = BASE_COUNT[class]
+
+			for i = 1, MAX_COUNT[class] do -- Always create frames for the max possible
+				self.ClassIcons[i] = self.ClassIcons:CreateTexture(nil, "ARTWORK")
+			end
+		end
+
+		local x = oufdb.Bars.ClassIcons.Lock and 0 or oufdb.Bars.ClassIcons.X
+		local y = oufdb.Bars.ClassIcons.Lock and 0.5 or oufdb.Bars.ClassIcons.Y
+
+		self.ClassIcons:SetHeight(oufdb.Bars.ClassIcons.Height)
+		self.ClassIcons:SetWidth(oufdb.Bars.ClassIcons.Width)
+		self.ClassIcons:ClearAllPoints()
+		self.ClassIcons:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
+	
+		local function checkPowers(event, level)
+			local pLevel = (event == "UNIT_LEVEL") and tonumber(level) or UnitLevel("player")
+			local count = BASE_COUNT[class]
+			if class == "MONK" then
+				local _, _, _, ascension = GetTalentInfo(3, 2, GetActiveSpecGroup())
+				if ascension then count = count + 1 end
+			elseif class == "ROGUE" then
+				--Check for Strategem, increase CPoints to 6.
+				if select(4, GetTalentInfo(3, 1, 1)) then count = 6
+				--Check for Anticipation, increase CPoints to 8.
+				elseif select(4, GetTalentInfo(3, 2, 1)) then count = 8
+				end
+			elseif class == "PALADIN" then
+				if pLevel >= 85 then 
+					count = 5
+					module:UnregisterEvent("UNIT_LEVEL")
+				end
+			end
+			self.ClassIcons.Count = count
+
+			for i = 1, MAX_COUNT[class] do
+				if oufdb.Bars.HolyPower.Texture == "Empty" then
+					self.ClassIcons[i]:SetColorTexture(r, g, b)
+				else
+					self.ClassIcons[i]:SetTexture(Media:Fetch("statusbar", oufdb.Bars.ClassIcons.Texture))
+					self.ClassIcons[i]:SetDesaturated(true)
+					self.ClassIcons[i]:SetVertexColor(r, g, b)
+				end
+				self.ClassIcons[i]:SetSize(((oufdb.Bars.ClassIcons.Width - 2*oufdb.Bars.ClassIcons.Padding) / self.ClassIcons.Count), oufdb.Bars.HolyPower.Height)
+				self.ClassIcons[i]:ClearAllPoints()
+				if i == 1 then
+					self.ClassIcons[i]:SetPoint("LEFT", self.ClassIcons, "LEFT", 0, 0)
+				else
+					self.ClassIcons[i]:SetPoint("LEFT", self.ClassIcons[i-1], "RIGHT", oufdb.Bars.ClassIcons.Padding, 0)
+				end
+				self.ClassIcons[i]:Show()
+				if i > self.ClassIcons.Count then
+					self.ClassIcons[i]:Hide()
+				end
+			end
+		end
+		checkPowers()
+
+		module:RegisterEvent("UNIT_LEVEL", checkPowers)
+		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkPowers)
+		module:RegisterEvent("PLAYER_TALENT_UPDATE", checkPowers)
+		self.ClassIcons.UpdateTexture = checkPowers
+	end,
 	HolyPower = function(self, unit, oufdb)
+		if LUI.Legion then return end
 		if not self.HolyPower then
 			self.HolyPower = CreateFrame("Frame", nil, self)
 			self.HolyPower:SetFrameLevel(6)
@@ -2343,6 +2454,7 @@ module.funcs = {
 		module:RegisterEvent("UNIT_LEVEL", checkPowers)
 	end,
 	Chi = function(self, unit, oufdb)
+		if LUI.Legion then return end
 		if not self.Chi then
 			self.Chi = CreateFrame("Frame", nil, self)
 			self.Chi:SetFrameLevel(6)
@@ -2406,7 +2518,7 @@ module.funcs = {
 		module:RegisterEvent("PLAYER_TALENT_UPDATE", checkChi)
 	end,
 	WarlockBar = function(self, unit, oufdb)
-	
+		if LUI.Legion then return end
 		if not self.WarlockBar then
 			self.WarlockBar = CreateFrame("Frame", nil, self)
 			self.WarlockBar:SetFrameLevel(6)
@@ -2500,7 +2612,7 @@ module.funcs = {
 		module:RegisterEvent("PLAYER_ENTERING_WORLD", checkBar)
 	end,
 	ArcaneCharges = function(self, unit, oufdb)
-	
+		if LUI.Legion then return end
 		if not self.ArcaneCharges then
 			self.ArcaneCharges = CreateFrame("Frame", nil, self)
 			self.ArcaneCharges:SetFrameLevel(6)
@@ -3589,6 +3701,13 @@ local SetStyle = function(self, unit, isSingle)
 		if ouf_xp_rep.Experience.Enable then module.funcs.Experience(self, unit, ouf_xp_rep) end
 		if ouf_xp_rep.Reputation.Enable then module.funcs.Reputation(self, unit, ouf_xp_rep) end
 
+		if LUI.Legion then
+			module.funcs.WarlockBar = module.funcs.ClassIcons
+			module.funcs.ArcaneCharges = module.funcs.ClassIcons
+			module.funcs.HolyPower = module.funcs.ClassIcons
+			module.funcs.Chi = module.funcs.ClassIcons
+		end
+		
 		if class == "DEATH KNIGHT" or class == "DEATHKNIGHT" then
 			if oufdb.Bars.Runes.Enable then
 				module.funcs.Runes(self, unit, oufdb)
@@ -3597,10 +3716,13 @@ local SetStyle = function(self, unit, isSingle)
 		elseif class == "DRUID" then
 			if oufdb.Bars.Eclipse.Enable then module.funcs.EclipseBar(self, unit, oufdb) end
 			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
+			if oufdb.Bars.Chi.Enable and LUI.Legion then module.funcs.ClassIcons(self, unit, oufdb) end
 		elseif class == "PALADIN" then
 			if oufdb.Bars.HolyPower.Enable then module.funcs.HolyPower(self, unit, oufdb) end
 		elseif class == "MONK" then
 			if oufdb.Bars.Chi.Enable then module.funcs.Chi(self, unit, oufdb) end
+		elseif class == "ROGUE" and LUI.Legion then
+			if oufdb.Bars.Chi.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
 		elseif class == "SHAMAN" then
 			if oufdb.Bars.Totems.Enable then module.funcs.Totems(self, unit, oufdb) end
 		elseif class == "MAGE" then

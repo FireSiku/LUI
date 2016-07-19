@@ -936,45 +936,61 @@ module.ApplySettings = function(unit)
 
 				-- holy power
 				if class == "PALADIN" then
-					module.funcs.HolyPower(frame, frame.__unit, module.db.Player)
-					if module.db[unit].Bars.HolyPower.Enable then
-						frame:EnableElement("HolyPower")
+					if LUI.Legion then
+						module.funcs.ClassIcons(frame, frame.__unit, module.db.Player)
 					else
-						frame:DisableElement("HolyPower")
-						frame.HolyPower:Hide()
+						module.funcs.HolyPower(frame, frame.__unit, module.db.Player)
+						if module.db[unit].Bars.HolyPower.Enable then
+							frame:EnableElement("HolyPower")
+						else
+							frame:DisableElement("HolyPower")
+							frame.HolyPower:Hide()
+						end
 					end
 				end
 				
 				-- arcane changes
 				if class == "MAGE" then
-					module.funcs.ArcaneCharges(frame, frame.__unit, module.db.Player)
-					if module.db[unit].Bars.ArcaneCharges.Enable then
-						frame:EnableElement("ArcaneCharges")
+					if LUI.Legion then
+						module.funcs.ClassIcons(frame, frame.__unit, module.db.Player)
 					else
-						frame:DisableElement("ArcaneCharges")
-						frame.ArcaneCharges:Hide()
+						module.funcs.ArcaneCharges(frame, frame.__unit, module.db.Player)
+						if module.db[unit].Bars.ArcaneCharges.Enable then
+							frame:EnableElement("ArcaneCharges")
+						else
+							frame:DisableElement("ArcaneCharges")
+							frame.ArcaneCharges:Hide()
+						end
 					end
 				end
 
 				-- warlock stuff
 				if class == "WARLOCK" then
-					module.funcs.WarlockBar(frame, frame.__unit, module.db.Player)
-					if module.db[unit].Bars.WarlockBar.Enable then
-						frame:EnableElement("WarlockBar")
+					if LUI.Legion then
+						module.funcs.ClassIcons(frame, frame.__unit, module.db.Player)
 					else
-						frame:DisableElement("WarlockBar")
-						frame.WarlockBar:Hide()
+						module.funcs.WarlockBar(frame, frame.__unit, module.db.Player)
+						if module.db[unit].Bars.WarlockBar.Enable then
+							frame:EnableElement("WarlockBar")
+						else
+							frame:DisableElement("WarlockBar")
+							frame.WarlockBar:Hide()
+						end
 					end
 				end
 
 				-- chi
 				if class == "MONK" then
-					module.funcs.Chi(frame, frame.__unit, module.db.Player)
-					if module.db[unit].Bars.Chi.Enable then
-						frame:EnableElement("Chi")
-					else
-						frame:DisableElement("Chi")
-						frame.Chi:Hide()
+					if LUI.Legion then
+						module.funcs.ClassIcons(frame, frame.__unit, module.db.Player)
+						else
+						module.funcs.Chi(frame, frame.__unit, module.db.Player)
+						if module.db[unit].Bars.Chi.Enable then
+							frame:EnableElement("Chi")
+						else
+							frame:DisableElement("Chi")
+							frame.Chi:Hide()
+						end
 					end
 				end
 
