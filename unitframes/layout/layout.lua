@@ -2375,7 +2375,6 @@ module.funcs = {
 				else
 					self.ClassIcons[i]:SetPoint("LEFT", self.ClassIcons[i-1], "RIGHT", oufdb.Bars.ClassIcons.Padding, 0)
 				end
-				self.ClassIcons[i]:Show()
 				if i > self.ClassIcons.Count then
 					self.ClassIcons[i]:Hide()
 				end
