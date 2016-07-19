@@ -20,6 +20,8 @@ local widgetLists = AceGUIWidgetLSMlists
 
 local db, dbd
 
+local CLASS_BUTTONS = (LUI.Legion) and CLASS_ICON_TCOORDS or CLASS_BUTTONS
+
 ------------------------------------------------------
 -- / LOCAL VARIABLES / --
 ------------------------------------------------------
@@ -728,8 +730,8 @@ function module:SetDPS()
 		}
 		local shields = {
 			[GetSpellInfo(17)] = true, -- Power Word: Shield
-			[GetSpellInfo(47515)] = true, -- Divine Aegis
-			[GetSpellInfo(76669)] = true, -- Illuminated Healing
+			--[GetSpellInfo(47515)] = true, -- Divine Aegis
+			--[GetSpellInfo(76669)] = true, -- Illuminated Healing
 		}
 
 		-- Event functions

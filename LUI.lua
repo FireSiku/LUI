@@ -26,6 +26,12 @@ LUI.Versions = {lui = 3403}
 
 LUI.dummy = function() return end
 
+local LIVE_TOC = 60200
+-- Check the TOC number and then compare builds. Live version can end up with a build higher than Beta. 
+local _, CURRENT_BUILD, _, CURRENT_TOC = GetBuildInfo()
+if CURRENT_TOC > LIVE_TOC then
+	LUI.Legion = true
+end
 local ProfileName = UnitName("player").." - "..GetRealmName()
 
 -- Work around for IsDisabledByParentalControls() errors. Simply hide the frame. It will still error but that's OK.
@@ -531,7 +537,9 @@ function LUI:Configure()
 	install_frame:SetScript("OnClick", function(self)
 
 		SetCVar("buffDurations", 1)
-		SetCVar("consolidateBuffs", 0)
+		if not LUI.Legion then
+			SetCVar("consolidateBuffs", 0)
+		end
 		SetCVar("scriptErrors", 1)
 		SetCVar("uiScale", 0.6949)
 		SetCVar("useUiScale", 1)

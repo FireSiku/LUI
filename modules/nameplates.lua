@@ -795,18 +795,22 @@ function module:LoadOptions()
 end
 
 function module:OnInitialize()
-	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
-	LUI:RefreshDefaults()
-	LUI:Refresh()
+	if not LUI.Legion then
+		LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
+		LUI:RefreshDefaults()
+		LUI:Refresh()
 
-	self.db = LUI.db.profile
-	db = self.db
-
-	LUI:RegisterModule(self)
+		self.db = LUI.db.profile
+		db = self.db
+	
+		LUI:RegisterModule(self)
+	end
 end
 
 function module:OnEnable()
-	self:SetNameplates()
+	if not LUI.Legion then
+		self:SetNameplates()
+	end
 end
 
 function module:OnDisable()
