@@ -3740,7 +3740,7 @@ local SetStyle = function(self, unit, isSingle)
 	--	Target Specific Items
 	------------------------------------------------------------------------
 
-	if unit == "target" and oufdb.Bars.ComboPoints.Enable then module.funcs.CPoints(self, unit, oufdb) end
+	if unit == "target" and oufdb.Bars.ComboPoints.Enable and not LUI.Legion then module.funcs.CPoints(self, unit, oufdb) end
 
 	------------------------------------------------------------------------
 	--	Raid Specific Items

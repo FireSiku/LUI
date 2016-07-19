@@ -1028,7 +1028,7 @@ module.ApplySettings = function(unit)
 			end
 
 			-- target specific
-			if unit == "Target" then
+			if unit == "Target" and not LUI.Legion then
 				module.funcs.CPoints(frame, frame.__unit, module.db.Target)
 				if module.db.Target.Bars.ComboPoints.Enable then
 					frame:EnableElement("CPoints")
