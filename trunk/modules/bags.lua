@@ -85,7 +85,9 @@ local BagsSlots = {}		--replace self.bagsframe_buttons
 --local LUIBagsTT = nil
 
 -- hide bags options in default interface
-InterfaceOptionsDisplayPanelShowFreeBagSpace:Hide()
+if not LUI.Legion then
+	InterfaceOptionsDisplayPanelShowFreeBagSpace:Hide()
+end
 --Making sure the Static Popup uses the good args.
 StaticPopupDialogs["CONFIRM_BUY_BANK_SLOT"] = {
 	preferredIndex = 3,
@@ -237,7 +239,11 @@ function module:SlotUpdate(item)
 
 	if item.Cooldown then
 		local cd_start, cd_finish, cd_enable = GetContainerItemCooldown(item.bag, item.slot)
-		CooldownFrame_SetTimer(item.Cooldown, cd_start, cd_finish, cd_enable)
+		if LUI.Legion then
+			CooldownFrame_Set(item.Cooldown, cd_start, cd_finish, cd_enable)
+		else
+			CooldownFrame_SetTimer(item.Cooldown, cd_start, cd_finish, cd_enable)
+		end
 	end
 	
 	-- New item code from Blizzard's ContainerFrame.lua

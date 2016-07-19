@@ -99,10 +99,10 @@ do
 	local classChannels = {
 		DRUID = {
 			[GetSpellInfo(740)] = 2, -- Tranquility
-			[GetSpellInfo(16914)] = 1, -- Hurricane
+			--[GetSpellInfo(16914)] = 1, -- Hurricane
 		},
 		MAGE = {
-			[GetSpellInfo(10)] = 1, -- Blizzard
+			--[GetSpellInfo(10)] = 1, -- Blizzard
 			[GetSpellInfo(12051)] = 2, -- Evocation
 			--[GetSpellInfo(5143)] = 0.75, -- Arcane Missiles			located below do to talents affecting time between ticks
 		},
@@ -122,7 +122,7 @@ do
 			[GetSpellInfo(755)] = 1, -- Health Funnel
 			--[GetSpellInfo(79268)] = 1, -- Soul Harvest
 			[GetSpellInfo(5740)] = 2, -- Rain of Fire
-			[GetSpellInfo(1949)] = 1, -- Hellfire
+			--[GetSpellInfo(1949)] = 1, -- Hellfire
 		},
 	}
 
@@ -2173,6 +2173,7 @@ module.funcs = {
 		end
 	end,
 	Totems = function(self, unit, oufdb)
+		if LUI.Legion then return end
 		if not self.Totems then
 			self.Totems = CreateFrame("Frame", nil, self)
 			self.Totems:SetFrameLevel(6)
@@ -2561,6 +2562,7 @@ module.funcs = {
 		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkSpec)
 	end,
 	ShadowOrbs = function(self, unit, oufdb)
+		if LUI.Legion then return end
 		if not self.ShadowOrbs then
 			self.ShadowOrbs = CreateFrame("Frame", nil, self)
 			self.ShadowOrbs:SetFrameLevel(6)
@@ -2634,6 +2636,7 @@ module.funcs = {
 		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkOrbs)
 	end,
 	EclipseBar = function(self, unit, oufdb)
+		if LUI.Legion then return end
 		if not self.EclipseBar then
 			self.EclipseBar = CreateFrame("Frame", nil, self)
 			self.EclipseBar:SetFrameLevel(6)

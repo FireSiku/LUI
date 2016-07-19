@@ -171,7 +171,7 @@ function module:SetTooltip()
 		
 		local reaction = unit and UnitReaction(unit, "player")
 		local player = unit and UnitIsPlayer(unit)
-		local tapped = unit and UnitIsTapped(unit)
+		local tapped = unit and not LUI.Legion and UnitIsTapped(unit)
 	
 		if player then
 			local class = select(2, UnitClass(unit))
