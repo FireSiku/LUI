@@ -454,7 +454,7 @@ local OverrideHealth = function(self, event, unit, powerType)
 		end
 	end
 
-	if health.colorTapping and UnitIsTapped(unit) and not UnitIsTappedByPlayer(unit) then health:SetStatusBarColor(unpack(module.db.Colors.Misc["Tapped"])) end
+	if health.colorTapping and UnitIsTapped and UnitIsTapped(unit) and not UnitIsTappedByPlayer(unit) then health:SetStatusBarColor(unpack(module.db.Colors.Misc["Tapped"])) end
 
 	local r_, g_, b_ = health:GetStatusBarColor()
 	local mu = health.bg.multiplier or 1
