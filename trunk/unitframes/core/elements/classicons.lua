@@ -103,7 +103,6 @@ local Update = function(self, event, unit, powerType)
 			cur = UnitPower('player', ClassPowerID)
 			max = UnitPowerMax('player', ClassPowerID)
 		end
-
 		for i = 1, max do
 			if(i <= cur) then
 				element[i]:Show()
@@ -191,6 +190,11 @@ do
 		if(UnitHasVehicleUI('player')) then
 			Path(self, 'ClassPowerEnable', 'vehicle', 'COMBO_POINTS')
 		else
+			local element = self.ClassIcons
+			element:Show()
+			for i = 1, #element do
+				element[i]:Hide()
+			end
 			Path(self, 'ClassPowerEnable', 'player', ClassPowerType)
 		end
 		self.ClassIcons.isEnabled = true
@@ -204,6 +208,7 @@ do
 		for i = 1, #element do
 			element[i]:Hide()
 		end
+		element:Hide()
 
 		Path(self, 'ClassPowerDisable', 'player', ClassPowerType)
 		self.ClassIcons.isEnabled = false
