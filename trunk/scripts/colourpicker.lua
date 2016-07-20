@@ -19,7 +19,7 @@ local function UpdateColor(tbox)
 
 	editingText = true
 	ColorPickerFrame:SetColorRGB(r, g, b)
-	ColorSwatch:SetTexture(r, g, b)
+	ColorSwatch:SetColorTexture(r, g, b)
 	editingText = nil
 end
 
@@ -77,13 +77,13 @@ function script:PLAYER_ENTERING_WORLD(event)
 
 	local ColorPickerOldColorSwatch = ColorPickerFrame:CreateTexture("ColorPickerOldColorSwatch")
 	ColorPickerOldColorSwatch:SetSize(w * .75, h * .75)
-	ColorPickerOldColorSwatch:SetTexture(0, 0, 0)
+	ColorPickerOldColorSwatch:SetColorTexture(0, 0, 0)
 	ColorPickerOldColorSwatch:SetDrawLayer("BORDER")
 	ColorPickerOldColorSwatch:SetPoint("BOTTOMLEFT", ColorSwatch, "TOPRIGHT", - w / 2, - h / 3)
 
 	local ColorPickerCopyColorSwatch = ColorPickerFrame:CreateTexture("ColorPickerCopyColorSwatch")
 	ColorPickerCopyColorSwatch:SetSize(w, h)
-	ColorPickerCopyColorSwatch:SetTexture(0, 0, 0)
+	ColorPickerCopyColorSwatch:SetColorTexture(0, 0, 0)
 	ColorPickerCopyColorSwatch:Hide()
 
 	local ColorPickerCopy = CreateFrame("Button", "ColorPickerCopy", ColorPickerFrame, "UIPanelButtonTemplate")
@@ -97,7 +97,7 @@ function script:PLAYER_ENTERING_WORLD(event)
 		colorBuffer.r, colorBuffer.g, colorBuffer.b = ColorPickerFrame:GetColorRGB()
 
 		ColorPickerPaste:Enable()
-		ColorPickerCopyColorSwatch:SetTexture(colorBuffer.r, colorBuffer.g, colorBuffer.b)
+		ColorPickerCopyColorSwatch:SetColorTexture(colorBuffer.r, colorBuffer.g, colorBuffer.b)
 		ColorPickerCopyColorSwatch:Show()
 
 		colorBuffer.a = ColorPickerFrame.hasOpacity and OpacitySliderFrame:GetValue() or nil
@@ -113,7 +113,7 @@ function script:PLAYER_ENTERING_WORLD(event)
 
 	ColorPickerPaste:SetScript("OnClick", function()
 		ColorPickerFrame:SetColorRGB(colorBuffer.r, colorBuffer.g, colorBuffer.b)
-		ColorSwatch:SetTexture(colorBuffer.r, colorBuffer.g, colorBuffer.b)
+		ColorSwatch:SetColorTexture(colorBuffer.r, colorBuffer.g, colorBuffer.b)
 		if ColorPickerFrame.hasOpacity and colorBuffer.a then
 			OpacitySliderFrame:SetValue(colorBuffer.a)
 		end
