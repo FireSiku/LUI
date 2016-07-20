@@ -254,7 +254,7 @@ function LUI:StyleButton(b, checked)
 	local icontexture     = _G[name.."IconTexture"]
 
 	local hover = b:CreateTexture("frame", nil, self) -- hover
-	hover:SetTexture(1,1,1,0.2)
+	hover:SetColorTexture(1,1,1,0.2)
 	hover:SetHeight(button:GetHeight())
 	hover:SetWidth(button:GetWidth())
 	hover:SetPoint("TOPLEFT",button,2,-2)
@@ -262,7 +262,7 @@ function LUI:StyleButton(b, checked)
 	button:SetHighlightTexture(hover)
 
 	local pushed = b:CreateTexture("frame", nil, self) -- pushed
-	pushed:SetTexture(0.9,0.8,0.1,0.3)
+	pushed:SetColorTexture(0.9,0.8,0.1,0.3)
 	pushed:SetHeight(button:GetHeight())
 	pushed:SetWidth(button:GetWidth())
 	pushed:SetPoint("TOPLEFT",button,2,-2)
@@ -274,7 +274,7 @@ function LUI:StyleButton(b, checked)
 
 	if checked then
 		local checked = b:CreateTexture("frame", nil, self) -- checked
-		checked:SetTexture(0,1,0,0.3)
+		checked:SetColorTexture(0,1,0,0.3)
 		checked:SetHeight(button:GetHeight())
 		checked:SetWidth(button:GetWidth())
 		checked:SetPoint("TOPLEFT",button,2,-2)

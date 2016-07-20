@@ -143,7 +143,7 @@ local FormatMarker = function(frame, x, y, r, g, b, id, t1, t2, t3, t4)
 			end
 			textureColor:SetPoint("TOPLEFT", frame, "TOPLEFT", 4, -4)
 			textureColor:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -4, 4)
-			textureColor:SetTexture(r, g, b)
+			textureColor:SetColorTexture(r, g, b)
 		end
 		
 	elseif string.find(frame:GetName(), "RaidIcon") then
