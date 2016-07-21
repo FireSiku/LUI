@@ -320,15 +320,24 @@ function module:BagSlotUpdate(bag)
 	if not ItemSlots then
 		return
 	end
-
-	for _, item in ipairs(ItemSlots) do
-		if item.bag == bag then
-			module:SlotUpdate(item)
+	
+	if bag then 
+		for _, item in ipairs(ItemSlots) do
+			if item.bag == bag then
+				module:SlotUpdate(item)
+			end
 		end
-	end
-	if not bag or (bag >= 0 and bag <= 4) then
+		if (bag >= 0 and bag <= 4) then
+			if LUIBags and LUIBags:IsShown() then
+				module:ReloadLayout("Bags")
+			end
+		end
+	else
 		if LUIBags and LUIBags:IsShown() then
 			module:ReloadLayout("Bags")
+		end
+		if LUIBank and LUIBank:IsShown() then
+			module:ReloadLayout("Bank")
 		end
 	end
 end
