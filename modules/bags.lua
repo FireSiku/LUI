@@ -129,7 +129,7 @@ local function LUIBags_OnShow()
 	module:ReloadLayout("Bags")
 	module:SearchReset()
 
-	module:RegisterEvent("BAG_UPDATE")
+	module:RegisterEvent("BAG_UPDATE_DELAYED")
 	module:RegisterEvent("PLAYERBANKBAGSLOTS_CHANGED")
 	module:RegisterEvent("PLAYERREAGENTBANKSLOTS_CHANGED")
 	module:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
@@ -157,7 +157,7 @@ local function LUIBags_OnHide()  -- Close the Bank if Bags are closed.
 		LUIReagents:Hide()
 	end
 
-	module:UnregisterEvent("BAG_UPDATE")
+	module:UnregisterEvent("BAG_UPDATE_DELAYED")
 	module:UnregisterEvent("PLAYERBANKBAGSLOTS_CHANGED")
 	module:UnregisterEvent("PLAYERREAGENTBANKSLOTS_CHANGED")
 	module:UnregisterEvent("PLAYERBANKSLOTS_CHANGED")
@@ -326,7 +326,7 @@ function module:BagSlotUpdate(bag)
 			module:SlotUpdate(item)
 		end
 	end
-	if bag >= 0 and bag <= 4 then
+	if not bag or (bag >= 0 and bag <= 4) then
 		if LUIBags and LUIBags:IsShown() then
 			module:ReloadLayout("Bags")
 		end
@@ -1067,7 +1067,7 @@ function module:PLAYERBANKSLOTS_CHANGED(event, id)
 	end
 end
 
-function module:BAG_UPDATE(event,id)
+function module:BAG_UPDATE_DELAYED(event,id)
 	module:BagSlotUpdate(id)
 end
 
