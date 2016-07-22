@@ -16,32 +16,18 @@ local function gsubSpam(spamString)
 end
 
 local function spamFilter(self, event, msg)
-	for i = 1, #spam do
-		if strfind(msg, gsubSpam(spam[i])) then return true end
+	if LUI.db.profile.General.HideTalentSpam and PlayerTalentFrame and PlayerTalentFrame:IsShown() then
+		for i = 1, #spam do
+			if strfind(msg, gsubSpam(spam[i])) then return true end
+		end
 	end
-end
-
-function script:AddFilter(...)
-	self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", "RemoveFilter")
-	self:RegisterEvent("UNIT_SPELLCAST_STOP", "RemoveFilter")
-	ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", spamFilter)
-end
-
-function script:RemoveFilter(event, unit)
-	if unit ~= "player" then return end
-
-	self:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-	self:UnregisterEvent("UNIT_SPELLCAST_STOP")
-	ChatFrame_RemoveMessageEventFilter("CHAT_MSG_SYSTEM", spamFilter)
 end
 
 function script:SetTalentSpam()
 	if LUI.db.profile.General.HideTalentSpam then
-		self:SecureHook("SetActiveSpecGroup", "AddFilter")
-		self:SecureHook("SetSpecialization", "AddFilter")
+		ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", spamFilter)
 	else
-		self:Unhook("SetActiveSpecGroup")
-		self:Unhook("SetSpecialization")
+		ChatFrame_RemoveMessageEventFilter("CHAT_MSG_SYSTEM", spamFilter)
 	end
 end
 
