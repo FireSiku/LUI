@@ -24,7 +24,7 @@ local db, dbd
 -- / Local Variables / --
 --------------------------------------------------
 
-local ClassArray = {"Death Knight", "Druid", "Hunter", "Mage", "Monk", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior"}
+local ClassArray = {"Death Knight", "Demon Hunter", "Druid", "Hunter", "Mage", "Monk", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior"}
 
 --------------------------------------------------
 -- / Color Functions / --
@@ -55,6 +55,8 @@ function module:CheckTheme()
 		local _, class = UnitClass("player")
 		if class == "DEATHKNIGHT" then
 			class = "Death Knight"
+		elseif class == "DEMONHUNTER" then
+			class = "Demon Hunter"
 		end
 
 		-- get class theme name
@@ -395,6 +397,35 @@ module.defaults = {
 			orb = {0.80, 0.1, 0.1},
 			orb_cycle = {0.80, 0.1, 0.1, 0.4},
 			orb_hover = {0.80, 0.1, 0.1, 0.4},
+		},
+		["Demon Hunter"] = {
+			color_top = {0.64, 0.19, 0.79, 0.5},
+			color_bottom = {0.64, 0.19, 0.79, 0.5},
+			chat = {0.64, 0.19, 0.79, 0.4},
+			chatborder = {0.64, 0.19, 0.79, 0.4},
+			chat2 = {0.64, 0.19, 0.79, 0.4},
+			chat2border = {0.64, 0.19, 0.79, 0.4},
+			editbox = {0.64, 0.19, 0.79, 0.4},
+			tps = {0.64, 0.19, 0.79, 0.4},
+			tpsborder = {0.64, 0.19, 0.79, 0.4},
+			dps = {0.64, 0.19, 0.79, 0.4},
+			dpsborder = {0.64, 0.19, 0.79, 0.4},
+			raid = {0.64, 0.19, 0.79, 0.4},
+			raidborder = {0.64, 0.19, 0.79, 0.4},
+			bar = {0.64, 0.19, 0.79, 0.8},
+			bar2 = {0.64, 0.19, 0.79, 0.6},
+			sidebar = {0.64, 0.19, 0.79, 0.4},
+			minimap = {0.64, 0.19, 0.79, 1},
+			micromenu = {0.64, 0.19, 0.79},
+			micromenu_bg = {0.48, 0.13, 0.62, 0.8},
+			micromenu_bg2 = {0.1, 0.1, 0.1, 0.8},
+			micromenu_btn = {0.64, 0.19, 0.79, 0.8},
+			micromenu_btn_hover = {0.64, 0.19, 0.79, 0.8},
+			navi = {0.64, 0.19, 0.79, 0.6},
+			navi_hover = {0.64, 0.19, 0.79, 0.4},
+			orb = {0.64, 0.19, 0.79},
+			orb_cycle = {0.64, 0.19, 0.79, 0.4},
+			orb_hover = {0.64, 0.19, 0.79, 0.4},
 		},
 		["Druid"] = {
 			color_top = {1, 0.44, 0.15, 0.5},

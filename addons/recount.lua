@@ -50,7 +50,7 @@ function LUI:InstallRecount()
 	RecountSetColor("Bar","Bar Text",0.776,0.776,0.776,1)
 	RecountSetColor("Bar","Total Bar",0.776,0.776,0.776,1)
 	
-	local classList = {"HUNTER", "WARRIOR", "PALADIN", "MAGE", "PRIEST", "ROGUE", "WARLOCK", "DRUID", "SHAMAN", "DEATHKNIGHT", "MONK", "PET", "MOB"}
+	local classList = {"HUNTER", "WARRIOR", "PALADIN", "MAGE", "PRIEST", "ROGUE", "WARLOCK", "DRUID", "SHAMAN", "DEATHKNIGHT", "MONK", "DEMONHUNTER", "PET", "MOB"}
 	for i=1, #classList do
 		if class==classList[i] then 
 			RecountSetColor("Class", classList[i], 0.592, 0.592, 0.592, 1)
