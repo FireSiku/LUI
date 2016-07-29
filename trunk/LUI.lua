@@ -540,9 +540,6 @@ function LUI:Configure()
 	install_frame:SetScript("OnClick", function(self)
 
 		SetCVar("buffDurations", 1)
-		if not LUI.Legion then
-			SetCVar("consolidateBuffs", 0)
-		end
 		SetCVar("scriptErrors", 1)
 		SetCVar("uiScale", 0.6949)
 		SetCVar("useUiScale", 1)
