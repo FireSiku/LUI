@@ -84,29 +84,28 @@ local UpdateExpMode = function()
 
 		local repname = { "Ha", "Ho", "Un", "Ne", "Fr", "Hon", "Rev", "Ex" }
 		local repText = repname[stand]
-		if not name then 
-			bar:Hide()
-		else if db.Enable then bar:Show() end
-		end
-	
-		--Friendship Support
-		local friend, friendValue, _, _, _, _, friendText, friendMin, friendMax = GetFriendshipReputation(factionID);
-		if friend ~= nil then -- Friendship support
-			if not friendMax then barMin, barMax, barValue = 0, 1, 1 -- Show full bar
-			else barMin, barMax, barValue = friendMin, friendMax, friendValue
+		if name and db.Enable then
+			--Friendship Support
+			local friend, friendValue, _, _, _, _, friendText, friendMin, friendMax = GetFriendshipReputation(factionID);
+			if friend ~= nil then -- Friendship support
+				if not friendMax then barMin, barMax, barValue = 0, 1, 1 -- Show full bar
+				else barMin, barMax, barValue = friendMin, friendMax, friendValue
+				end
+				repText = friendText
 			end
-			repText = friendText
-		end
-		-- Display values
-		barMax = barMax - barMin
-		barValue = barValue - barMin
-		barMin = 0
-		percentBar = barValue * 100 / barMax
-		bar:SetMinMaxValues(barMin,barMax)
-		bar:SetValue(barValue)
-		if db.Text.Enable then
-			txtformat = string.format("%%.%df%%%% %%s", precision)
-			bar.Text:SetFormattedText(txtformat, percentBar, repText or "")
+			-- Display values
+			barMax = barMax - barMin
+			barValue = barValue - barMin
+			barMin = 0
+			percentBar = barValue * 100 / barMax
+			bar:SetMinMaxValues(barMin,barMax)
+			bar:SetValue(barValue)
+			if db.Text.Enable then
+				txtformat = string.format("%%.%df%%%% %%s", precision)
+				bar.Text:SetFormattedText(txtformat, percentBar, repText or "")
+			end
+			bar:Show()
+		else bar:Hide()
 		end
 	end
 	
