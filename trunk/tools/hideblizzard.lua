@@ -17,6 +17,9 @@ local hidden = {}
 
 local show, hide, hook, unhook
 do
+	Blizzard:SecureHook("OrderHall_LoadUI", function()
+		LUI:Kill(OrderHallCommandBar)
+	end)
 	hook = setmetatable({}, {
 		__call = function(t, type, hookto)
 			if t[type] then return end
@@ -29,7 +32,7 @@ do
 		Blizzard:Unhook(hook[type])
 		hook[type] = nil
 	end
-
+	
 	local compact_raid
 
 	local actionbarFrames = {
