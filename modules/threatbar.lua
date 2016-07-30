@@ -175,7 +175,7 @@ local Update = function(bar)
 		bar:SetMinMaxValues(0, 100)
 		bar.helper:SetMinMaxValues(0, 100)
 		bar:SetValue(100)
-	elseif rawthreat / threat < 1.2 then -- melee
+	elseif threat > 0 and rawthreat / threat < 1.2 then -- melee
 		bar:SetMinMaxValues(0, 110)
 		bar.helper:SetMinMaxValues(0, 110)
 		bar:SetValue(rawthreat)
