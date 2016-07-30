@@ -44,7 +44,7 @@ local UpdateExpMode = function()
 	local left, percentBar, percentBar2
 	local txtformat
 	local precision = db.Text.Precision or 0
-	if UnitLevel("player") ~= LEVEL_CAP then -- EXP MODE
+	if UnitLevel("player") ~= LEVEL_CAP and not IsXPUserDisabled() then -- EXP MODE
 		local restXP = GetXPExhaustion() or 0
 		local currXP = UnitXP("player")
 		local maxXP = UnitXPMax("player")
