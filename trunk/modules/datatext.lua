@@ -530,8 +530,12 @@ function module:SetClock()
 							tr, tg, tb = 1, 1, 1
 						end
 
-						if difficulty == 3 or difficulty == 4 then
+						if difficulty == 16 or difficulty == 23 then
+							diff = "M"
+						elseif difficulty == 2 or difficulty == 5 or difficulty == 6 or difficulty == 11 or difficulty == 15 then
 							diff = "H"
+						elseif difficulty == 7 or difficulty == 17 then
+							diff = "L"
 						else
 							diff = "N"
 						end
