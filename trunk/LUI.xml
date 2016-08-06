@@ -38,9 +38,9 @@
 	<Include file="modules\auras\auras.xml"/>
 	<Include file="modules\chat\chat.xml"/>
 	<Script file="modules\minimap.lua"/>
- 	<Include file="modules\worldmap\worldmap.xml"/>
+ 	<!-- <Include file="modules\worldmap\worldmap.xml"/> -->
 	<Script file="modules\bags.lua"/>
-	<Script file="modules\nameplates.lua"/>
+	<!--<Script file="modules\nameplates.lua"/> -->
     <Include file="modules\cooldown\cooldown.xml"/>
 	<Script file="modules\tooltip.lua"/>
 	<Script file="modules\datatext.lua"/>

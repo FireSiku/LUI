@@ -1336,7 +1336,7 @@ local function getOptions()
 									width = "full",
 									type = "description",
 									fontSize = "medium",
-									name = "|cff1eff00BIRDKi, Faeron Whitecomb, John Fredericks, gnuheike".."\n",
+									name = "|cff1eff00BIRDKi, Faeron Whitecomb, John Fredericks, gnuheike, René Hüftlein".."\n",
 								},
 							},
 						},

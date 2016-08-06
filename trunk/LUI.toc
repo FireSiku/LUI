@@ -1,5 +1,5 @@
 ## Interface: 70000
-## Version: 3.9.8
+## Version: 3.9.9
 ## Title: LUI
 ## Author: Chaoslux, Mule, Hix, Thaly, Zista
 ## FormerAuthor: Louí @EU-Das Syndikat
@@ -7,10 +7,6 @@
 ## SavedVariables: LUIDB, LUIGold, LUI_Themes, LUI_Layouts
 ## SavedVariablesPerCharacter: LUICONFIG
 ## X-oUF: oUF_LUI
-## X-Curse-Packaged-Version: v3.9.8-760
-## X-Curse-Project-Name: LUI Core
-## X-Curse-Project-ID: lui
-## X-Curse-Repository-ID: wow/lui/mainline
 
 libs\libs.xml
 LUI.xml
