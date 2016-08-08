@@ -2283,8 +2283,7 @@ module.funcs = {
 		local BASE_COUNT = {
 			MAGE = 4,
 			MONK = 5,
-			PALADIN = 3,
-			PRIEST = 3,
+			PALADIN = 5,
 			ROGUE = 5,
 			WARLOCK = 5,
 			DRUID = 5,
@@ -2294,7 +2293,6 @@ module.funcs = {
 			MAGE = 4,
 			MONK = 6,
 			PALADIN = 5,
-			PRIEST = 5,
 			ROGUE = 8,
 			WARLOCK = 5,
 			DRUID = 5,
@@ -2316,7 +2314,6 @@ module.funcs = {
 		elseif class == "DRUID" then oufdb.Bars.ClassIcons = oufdb.Bars.Chi
 		end
 		
-		unpack(module.colors.holypowerbar[1])
 		if not self.ClassIcons then
 			self.ClassIcons = CreateFrame("Frame", nil, self)
 			self.ClassIcons:SetFrameLevel(6)
@@ -2331,7 +2328,6 @@ module.funcs = {
 				self.ClassIcons[i] = self.ClassIcons:CreateTexture(nil, "ARTWORK")
 			end
 		end
-		_G["ClassIcons"] = self.ClassIcons
 
 		local x = oufdb.Bars.ClassIcons.Lock and 0 or oufdb.Bars.ClassIcons.X
 		local y = oufdb.Bars.ClassIcons.Lock and 0.5 or oufdb.Bars.ClassIcons.Y
@@ -2352,11 +2348,6 @@ module.funcs = {
 				if select(4, GetTalentInfo(3, 1, 1)) then count = 6
 				--Check for Anticipation, increase CPoints to 8.
 				elseif select(4, GetTalentInfo(3, 2, 1)) then count = 8
-				end
-			elseif class == "PALADIN" then
-				if pLevel >= 85 then 
-					count = 5
-					module:UnregisterEvent("UNIT_LEVEL")
 				end
 			end
 			self.ClassIcons.Count = count
