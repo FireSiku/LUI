@@ -1173,11 +1173,11 @@ end
 
 local DruidManaOverride = function(self, event, unit)
 	if not unit or not UnitIsUnit(self.unit, unit) then return end
-
+	local _, class = UnitClass(unit)
 	local druidmana = self.DruidMana
 
 	local form = GetShapeshiftFormID()
-	if (form == BEAR_FORM or form == CAT_FORM) then
+	if self.DruidMana.ShouldEnable(unit) then
 		druidmana:Show()
 	else
 		return druidmana:Hide()
@@ -1190,7 +1190,7 @@ local DruidManaOverride = function(self, event, unit)
 
 	local r, g, b
 	if(druidmana.colorClass and UnitIsPlayer(unit)) then
-		r, g, b = unpack(module.colors.class['DRUID'])
+		r, g, b = unpack(module.colors.class[class])
 	elseif(druidmana.colorSmooth) then
 		r, g, b = oUF.ColorGradient(min, max, module.colors.smooth())
 	else
@@ -1298,8 +1298,9 @@ local PostUpdateAltPower = function(altpowerbar, min, cur, max)
 end
 
 local PostUpdateDruidMana = function(druidmana, unit, min, max)
+	local _, class = UnitClass(unit)
 	if druidmana.color == "By Class" then
-		druidmana:SetStatusBarColor(unpack(module.colors.class.DRUID))
+		druidmana:SetStatusBarColor(unpack(module.colors.class[class]))
 	elseif druidmana.color == "By Type" then
 		druidmana:SetStatusBarColor(unpack(module.colors.power.MANA))
 	else
@@ -2899,7 +2900,21 @@ module.funcs = {
 
 			self.DruidMana.value = SetFontString(self.DruidMana, Media:Fetch("font", oufdb.Texts.DruidMana.Font), oufdb.Texts.DruidMana.Size, oufdb.Texts.DruidMana.Outline)
 			self:Tag(self.DruidMana.value, "[druidmana2]")
-
+			
+			self.DruidMana.ShouldEnable = function(unit)
+				local shouldEnable = false
+				local _, playerClass = UnitClass(unit)
+				if(not UnitHasVehicleUI('player')) then
+					if(UnitPowerMax(unit, ADDITIONAL_POWER_BAR_INDEX) ~= 0) then
+						if(ALT_MANA_BAR_PAIR_DISPLAY_INFO[playerClass]) then
+							local powerType = UnitPowerType(unit)
+							shouldEnable = ALT_MANA_BAR_PAIR_DISPLAY_INFO[playerClass][powerType]
+						end
+					end
+				end
+				return shouldEnable
+			end
+			
 			self.DruidMana.SetPosition = function()
 				if not oufdb.Bars.DruidMana.OverPower then return self.Power:SetHeight(oufdb.Bars.Power.Height) end
 
@@ -2947,7 +2962,7 @@ module.funcs = {
 		self.DruidMana.bg:SetAlpha(oufdb.Bars.DruidMana.BGAlpha)
 		self.DruidMana.bg.multiplier = oufdb.Bars.DruidMana.BGMultiplier
 
-		if GetShapeshiftFormID() == CAT_FORM or GetShapeshiftFormID() == BEAR_FORM then self.DruidMana.SetPosition() end
+		if self.DruidMana.ShouldEnable(unit) then self.DruidMana.SetPosition() end
 		if module.db.Player.Bars.DruidMana.Enable then
 			self.DruidMana:Show()
 		else
@@ -3718,12 +3733,14 @@ local SetStyle = function(self, unit, isSingle)
 			if oufdb.Bars.Chi.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
 		elseif class == "SHAMAN" then
 			if oufdb.Bars.Totems.Enable then module.funcs.Totems(self, unit, oufdb) end
+			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
 		elseif class == "MAGE" then
 			if oufdb.Bars.ArcaneCharges.Enable then module.funcs.ArcaneCharges(self, unit, oufdb) end
 		elseif class == "WARLOCK" then
 			if oufdb.Bars.WarlockBar.Enable then module.funcs.WarlockBar(self, unit, oufdb) end
 		elseif class == "PRIEST" then
 			if oufdb.Bars.ShadowOrbs.Enable then module.funcs.ShadowOrbs(self, unit, oufdb) end
+			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
 		end
 	end
 

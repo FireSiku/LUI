@@ -1016,7 +1016,7 @@ module.ApplySettings = function(unit)
 				end
 
 				-- druid mana bar
-				if class == "DRUID" then
+				if class == "DRUID" or class == "PRIEST" or class == "SHAMAN" then
 					module.funcs.DruidMana(frame, frame.__unit, module.db.Player)
 					if module.db[unit].Bars.DruidMana.Enable then
 						frame:EnableElement("DruidMana")
