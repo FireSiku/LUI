@@ -1,0 +1,88 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="worldmap.lua"/>
+	<Script file="coords.lua"/>
+	<Script file="questpoi.lua"/>
+	<Script file="fogclear.lua"/>
+	<Script file="instancemaps.lua"/>
+
+    <CheckButton name="ShowPetTamers" parent="WorldMapFrame" inherits="OptionsCheckButtonTemplate" hidden="true">
+        <Size x="24" y="24"/>
+        <Scripts>
+          <OnLoad>
+			self:SetChecked(GetCVarBool("showTamers"))
+            local text = _G[self:GetName().."Text"];
+            text:SetText("Show Pet Tamers");
+            self:SetPoint("BOTTOMLEFT", WorldMapFrame.BorderFrame, "BOTTOMLEFT", 16, 4);
+          </OnLoad>
+          <OnClick>
+            local isChecked = self:GetChecked();
+            if ( isChecked ) then
+              PlaySound("igMainMenuOptionCheckBoxOn");
+            else
+              PlaySound("igMainMenuOptionCheckBoxOff");
+            end        
+            SetCVar("showTamers", isChecked and "1" or "0");
+			WorldMapFrame_Update();
+          </OnClick>
+          <OnEnter>
+            WorldMapTooltip:SetOwner(self, "ANCHOR_RIGHT");
+            WorldMapTooltip:SetText(OPTION_TOOLTIP_SHOW_BATTLE_PET_TAMERS_ON_MAP, nil, nil, nil, nil, 1);
+          </OnEnter>
+          <OnLeave>
+            WorldMapTooltip:Hide();
+          </OnLeave>
+        </Scripts>
+      </CheckButton>
+    <CheckButton name="ShowDigSites" parent="WorldMapFrame" inherits="OptionsCheckButtonTemplate" hidden="true">
+        <Size x="24" y="24"/>
+        <Scripts>
+          <OnLoad>
+			self:SetChecked(GetCVarBool("showTamers"))
+            local text = _G[self:GetName().."Text"];
+            text:SetText("Show Dig Sites");
+            self:SetPoint("BOTTOMLEFT", WorldMapFrame.BorderFrame, "BOTTOMLEFT", 156, 4);
+          </OnLoad>
+          <OnClick>
+            local isChecked = self:GetChecked();
+            if ( isChecked ) then
+              PlaySound("igMainMenuOptionCheckBoxOn");
+			  WorldMapArchaeologyDigSites:Show()
+            else
+              PlaySound("igMainMenuOptionCheckBoxOff");
+			  WorldMapArchaeologyDigSites:Hide()
+            end        
+            SetCVar("digSites", isChecked and "1" or "0");
+			WorldMapFrame_Update();
+          </OnClick>
+          <OnEnter>
+            WorldMapTooltip:SetOwner(self, "ANCHOR_RIGHT");
+            WorldMapTooltip:SetText(OPTION_TOOLTIP_SHOW_DIG_SITES_ON_MAP, nil, nil, nil, nil, 1);
+          </OnEnter>
+          <OnLeave>
+            WorldMapTooltip:Hide();
+          </OnLeave>
+        </Scripts>
+      </CheckButton>
+    <CheckButton name="LUI_WorldMap_ShowBossesCheckButton" parent="WorldMapFrame" inherits="OptionsCheckButtonTemplate" hidden="true">
+        <Anchors>
+            <Anchor point="TOPLEFT" relativeTo="WorldMapShowDigSites"/>
+            <Anchor point="BOTTOMRIGHT" relativeTo="WorldMapShowDigSites"/>
+        </Anchors>
+        <Scripts>
+            <OnLoad>
+                self:SetChecked(GetCVarBool("showBosses"))
+                _G[self:GetName().."Text"]:SetText(SHOW_BOSSES_ON_MAP_TEXT)
+            </OnLoad>
+            <OnClick>
+				local isChecked = self:GetChecked()
+                if ( isChecked) then
+                    PlaySound("igMainMenuOptionCheckBoxOn")
+                else
+                    PlaySound("igMainMenuOptionCheckBoxOff")
+                end
+                SetCVar("showBosses", isChecked and "1" or "0")
+                WorldMapFrame_Update()
+            </OnClick>
+        </Scripts>
+    </CheckButton>
+</Ui>
