@@ -601,6 +601,10 @@ function module:CreateBagFrame(bagType)
 	sortBtn:SetPoint("BOTTOMRIGHT", LUI:Scale(-3), LUI:Scale(3))
 	sortBtn:SetScript("OnClick", function(self, button)
 		PlaySound("UI_BagSorting_01");
+		-- Make sure we arent calling bag updates a million times
+		module:UnregisterEvent("PLAYERBANKBAGSLOTS_CHANGED")
+		module:UnregisterEvent("PLAYERBANKSLOTS_CHANGED")
+		module:UnregisterEvent("PLAYERREAGENTBANKSLOTS_CHANGED")
 		-- We can't use the WoD sort function with LUIv3
 		-- SortBankBags();
 		if frameName ~= "LUIReagents" then
@@ -608,6 +612,9 @@ function module:CreateBagFrame(bagType)
 		else
 			SortReagentBankBags()
 		end
+		module:RegisterEvent("PLAYERBANKBAGSLOTS_CHANGED")
+		module:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
+		module:RegisterEvent("PLAYERREAGENTBANKSLOTS_CHANGED")
 	end)
 	sortBtn:RegisterForClicks("AnyUp")
 	frame.sortButton = sortBtn
