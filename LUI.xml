@@ -27,7 +27,6 @@
 	<Script file="addons\forte.lua"/>
 	<!--Script file="addons\sptimers.lua"/-->
 	<!--Script file="addons\raven.lua"/-->
-	<Script file="addons\pallypower.lua"/>
 	<Script file="addons\bartender.lua"/>
 	<Script file="addons\grid.lua"/>
 	<Script file="addons\omen.lua"/>
@@ -47,7 +46,6 @@
 	<Script file="modules\faq.lua"/>
 	<Script file="modules\micromenu.lua"/>
 	<Include file="modules\raidmenu.xml"/>
-	<Script file="modules\vengeance.lua"/>
 	<Script file="modules\swing.lua"/>
 	<Script file="modules\threatbar.lua"/>
  	<Script file="modules\interruptannouncer.lua"/>
