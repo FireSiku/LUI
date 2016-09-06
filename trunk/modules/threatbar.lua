@@ -105,6 +105,7 @@ local UpdateExpMode = function()
 				bar.Text:SetFormattedText(txtformat, percentBar, repText or "")
 			end
 			bar:Show()
+			bar.rested:Hide()
 		else bar:Hide()
 		end
 	end
