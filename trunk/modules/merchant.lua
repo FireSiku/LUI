@@ -143,7 +143,7 @@ function module:AutoSell()
 			if item then
 				local _, itemLink, itemQuality, _,_,_,_,_,_,_, itemPrice = GetItemInfo(item)
 
-				if db.AutoSell.ItemQualities[itemQuality + 1] == not db.AutoSell.Exclusions[item] then -- don't use ~= (itemQuality can be true or false, exclusion can be true or nil (false ~= nil will return true and sell the item))
+				if itemQuality and (db.AutoSell.ItemQualities[itemQuality + 1] == not db.AutoSell.Exclusions[item]) then -- don't use ~= (itemQuality can be true or false, exclusion can be true or nil (false ~= nil will return true and sell the item))
 					local _, itemCount  = GetContainerItemInfo(bag, slot)
 					totalPrice = totalPrice + (itemCount * itemPrice)
 
