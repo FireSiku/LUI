@@ -665,9 +665,10 @@ function module:OnHyperlinkEnter(frame, link)
 end
 
 function module:OnHyperlinkLeave(frame, link)
-	if linkTypes[strmatch(link, "^(.-):")] then
+	--As of 7.1, link returns nil.
+	--if linkTypes[strmatch(link, "^(.-):")] then
 		GameTooltip:Hide()
-	end
+	--end
 end
 
 function module:OnMouseWheel(tab, direction)

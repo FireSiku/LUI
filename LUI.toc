@@ -1,4 +1,4 @@
-## Interface: 70000
+## Interface: 70100
 ## Version: 3.9.10
 ## Title: LUI
 ## Author: Chaoslux, Mule, Hix, Thaly, Zista
