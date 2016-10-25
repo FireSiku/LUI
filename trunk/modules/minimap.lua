@@ -484,11 +484,11 @@ function module:SetMinimap()
 	
 	m_coord:SetScript("OnUpdate", function(self)
 		local x,y = GetPlayerMapPosition("player")
-		x = math.floor(100 * x)
-		y = math.floor(100 * y)
-		if x == 0 and y == 0 then
-			m_coord_text:SetText("X _ X")
+		if not x then
+			m_coord_text:SetText("")
 		else
+			x = math.floor(100 * x)
+			y = math.floor(100 * y)
 			m_coord_text:SetFormattedText("%.2d, %.2d", x, y)
 		end
 	end)
