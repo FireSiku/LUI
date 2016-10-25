@@ -387,7 +387,7 @@ end
 function module:CreateBarBackground()
 	local top = LUI:CreateMeAFrame("FRAME", "LUIBarsTopBG", UIParent, 1024, 64, 1, "BACKGROUND", 2, "BOTTOM", UIParent, "BOTTOM", tonumber(db.TopTexture.X), tonumber(db.TopTexture.Y), db.TopTexture.Alpha)
 	top:SetBackdrop({
-		bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v4\\bar_top.tga",
+		bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v4\\bars_top",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		tile = false,
 		edgeSize = 1,
