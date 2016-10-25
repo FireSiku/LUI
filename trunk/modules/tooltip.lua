@@ -24,7 +24,7 @@ local widgetLists = AceGUIWidgetLSMlists
 local db
 local hooks = { }
 local GameTooltip, GameTooltipStatusBar = _G["GameTooltip"], _G["GameTooltipStatusBar"]
-local Tooltips = {GameTooltip,ItemRefTooltip,ItemRefShoppingTooltip1,ItemRefShoppingTooltip2,ShoppingTooltip1,ShoppingTooltip2,FriendsTooltip,FloatingGarrisonFollowerTooltip,GarrisonFollowerAbilityTooltip, WorldMapTooltip.BackdropFrame}
+local Tooltips = {GameTooltip,ItemRefTooltip,ItemRefShoppingTooltip1,ItemRefShoppingTooltip2,ShoppingTooltip1,ShoppingTooltip2,FriendsTooltip,FloatingGarrisonFollowerTooltip,GarrisonFollowerAbilityTooltip, WorldMapTooltip.BackdropFrame, WorldMapCompareTooltip1, WorldMapCompareTooltip2, }
 local LUITooltipColors
 
 function module:UpdateTooltip()
@@ -135,8 +135,9 @@ function module:SetTooltip()
 
 	local GetTooltipUnit = function(self)
 		if not self.GetUnit then return end
-		local GMF = GetMouseFocus()
-		local unit = (select(2, self:GetUnit())) or (GMF and GMF:GetAttribute("unit"))
+		--local GMF = GetMouseFocus()
+		--local unit = (select(2, self:GetUnit())) or (GMF and GMF:GetAttribute("unit"))
+		local unit = select(2, self:GetUnit())
 		return unit
 	end
 	

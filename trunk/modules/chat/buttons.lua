@@ -132,7 +132,7 @@ local function createScrollButton(frame)
 	module:SecureHook(frame, "ScrollToBottom", "Scroll")
 	module:SecureHook(frame, "PageDown", "Scroll")
 
-	if frame:GetCurrentScroll() ~= 0 then
+	if frame:GetScrollOffset() ~= 0 then
 		button:Show()
 	end
 
@@ -178,8 +178,8 @@ local function configButtons(hide)
 
 		ChatFrameMenuButton.Show = LUI.dummy
 		ChatFrameMenuButton:Hide()
-		FriendsMicroButton.Show = LUI.dummy
-		FriendsMicroButton:Hide()
+		QuickJoinToastButton.Show = LUI.dummy
+		QuickJoinToastButton:Hide()
 
 		for i, name in ipairs(CHAT_FRAMES) do
 			hideButtons(_G[name])
@@ -189,8 +189,8 @@ local function configButtons(hide)
 
 		ChatFrameMenuButton.Show = nil
 		ChatFrameMenuButton:Show()
-		FriendsMicroButton.Show = nil
-		FriendsMicroButton:Show()
+		QuickJoinToastButton.Show = nil
+		QuickJoinToastButton:Show()
 
 		for i, name in ipairs(CHAT_FRAMES) do
 			local frame = _G[name]
@@ -207,7 +207,7 @@ end
 --------------------------------------------------
 
 function module:Scroll(frame)
-	if frame:GetCurrentScroll() == 0 then
+	if frame:GetScrollOffset() == 0 then
 		frame.downButton:Hide()
 	else
 		frame.downButton:Show()
@@ -216,7 +216,7 @@ function module:Scroll(frame)
 end
 
 function module:AddMessage(frame)
-	if frame:GetCurrentScroll() > 0 then
+	if frame:GetScrollOffset() > 0 then
 		frame.downButton:Show()
 		frame.downButton:LockHighlight() -- button glow informing of new message
 	else
