@@ -238,10 +238,10 @@ function module:SetTooltip()
 		local _, unit = GameTooltip:GetUnit()
 		
 		-- fix target of target returning nil
-		if (not unit) then
-			local GMF = GetMouseFocus()
-			unit = GMF and GMF:GetAttribute("unit")
-		end
+		--if (not unit) then
+		--	local GMF = GetMouseFocus()
+		--	unit = GMF and GMF:GetAttribute("unit")
+		--end
 
 		if not self.text then
 			self.text = self:CreateFontString(nil, "OVERLAY")
