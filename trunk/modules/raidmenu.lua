@@ -27,6 +27,7 @@ local bordertex = "Interface\\AddOns\\LUI\\media\\templates\\v3\\raidmenu_border
 LUI.Versions.raidmenu = 2.4
 
 local Y_normal, Y_compact = 107, 101
+local X_normal, X_compact = 0, -50	-- Added X-offsets
 local OverlapPreventionMethods = {"Auto-Hide", "Offset"}
 
 local MarkTarget = function(iconId)
@@ -39,16 +40,19 @@ end
 
 function module:OverlapPrevention(frame, action)
 	local Y_Position = Y_normal
+	local X_Position = X_normal -- Added X-offsets
 	if db.Compact then
 		Y_Position = Y_compact + (db.Spacing / 2)
+		X_Position = X_compact + (db.Spacing / 2) -- Added X-offsets
 	end
 	
 	local offset = 0
 	if db.OverlapPrevention == "Offset" and Panels.db.profile.MicroMenu.IsShown then
 		offset = db.Offset
+		x_offset = db.X_Offset -- Added X-offsets
 	end
 	
-	if frame == "RM" and db.profile.Enable then
+	if frame == "RM" and db.profile.Enable and not InCombatLockdown() then
 		if action == "toggle" then
 			if RaidMenu_Parent:IsShown() then
 				RaidMenu.AlphaOut:Show()
@@ -56,7 +60,7 @@ function module:OverlapPrevention(frame, action)
 				if db.OverlapPrevention == "Auto-Hide" and Panels.db.profile.MicroMenu.IsShown then
 					LUI.MicroMenu.Clicker:Click()
 				end
-				RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", 0, (((Y_Position + offset) / db.Scale) + 17))
+				RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (((X_Position + x_offset) / db.Scale) + 17), (((Y_Position + offset) / db.Scale) + 17)) -- Added X-offsets
 				RaidMenu.AlphaIn:Show()
 			end
 		elseif action == "slide" then
@@ -76,9 +80,10 @@ function module:OverlapPrevention(frame, action)
 				if db.OverlapPrevention == "Offset" then
 					LUI.MicroMenu.Clicker:Click()
 					offset = db.Offset
+					x_offset = db.X_Offset -- Added X-offsets
 				end
 			end
-			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", 0, (((Y_Position + offset) / db.Scale) + 17))
+			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (((X_Position + x_offset) / db.Scale) + 17), (((Y_Position + offset) / db.Scale) + 17)) -- Added X-offsets
 		end
 	elseif frame == "MM" then
 		if Panels.db.profile.MicroMenu.IsShown then
@@ -280,11 +285,11 @@ function module:SetRaidMenu()
 	if not db.profile.Enable or not Micromenu then return end
 	
 	-- Create frames for Raid Menu
-	local RaidMenu_Parent = LUI:CreateMeAFrame("Frame", "RaidMenu_Parent", LUI.MicroMenu.ButtonLeft, 256, 256, 1, "HIGH", 0, "TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", 0, ((107 / db.Scale) + 17), 1)
+	local RaidMenu_Parent = LUI:CreateMeAFrame("Frame", "RaidMenu_Parent", LUI.MicroMenu.ButtonLeft, 256, 256, 1, "HIGH", 0, "TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17), 1)
 	if Panels.db.profile.MicroMenu.IsShown and db.OverlapPrevention == "Offset" then
-		RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", 0, (((107 + db.Offset) / db.Scale) + 17))
+		RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", X_normal, (((Y_normal + db.Offset) / db.Scale) + 17)) -- Added X-offsets and fixed Y-offset from a fixed value
 	else
-		RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", 0, ((107 / db.Scale) + 17))
+		RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17)) -- Added X-offsets and fixed Y-offset from a fixed value
 	end
 	RaidMenu_Parent:SetScale(db.Scale)
 	RaidMenu_Parent:Hide()
@@ -555,15 +560,17 @@ function module:SetRaidMenu()
 		local Y_Position
 		if db.Compact then
 			Y_Position = Y_compact + (db.Spacing / 2)
+			X_Position = X_compact + (db.Spacing / 2)
 		else
 			Y_Position = Y_normal
+			X_Position = X_normal
 		end
 		self.timer = self.timer + elapsed
 		if self.timer < .5 then
 			local offset = (1 - self.timer / .5) * db.Offset
-			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", 0, (((Y_Position + offset) / db.Scale) + 17))
+			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_normal + db.X_Offset), (((Y_Position + offset) / db.Scale) + 17))
 		else
-			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", 0, ((Y_Position / db.Scale) + 17))
+			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_normal + db.X_Offset), ((Y_Position / db.Scale) + 17))
 			self.timer = 0
 			self:Hide()
 		end
@@ -577,15 +584,17 @@ function module:SetRaidMenu()
 		local Y_Position
 		if db.Compact then
 			Y_Position = Y_compact + (db.Spacing / 2)
+			X_Position = X_compact + (db.Spacing / 2)
 		else
 			Y_Position = Y_normal
+			X_Position = X_normal
 		end
 		self.timer = self.timer + elapsed
 		if self.timer < .5 then
 			local offset = (self.timer / .5) * db.Offset
-			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", 0, (((Y_Position + offset) / db.Scale) + 17))
+			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_normal + db.X_Offset), (((Y_Position + offset) / db.Scale) + 17))
 		else
-			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", 0, (((Y_Position + db.Offset) / db.Scale) + 17))
+			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_normal + db.X_Offset), (((Y_Position + db.Offset) / db.Scale) + 17))
 			self.timer = 0
 			self:Hide()
 		end
@@ -601,6 +610,7 @@ module.defaults = {
 		Spacing = 5,
 		OverlapPrevention = "Offset",
 		Offset = -30,
+		X_Offset = 0,
 		Opacity = 100,
 		Scale = 1,
 		ToggleRaidIcon = true,
@@ -689,21 +699,6 @@ function module:LoadFrameOptions()
 						end,
 						order = 3,
 					},
-					Offset = {
-						name = "Offset",
-						desc = "How far to vertically offset when the MicroMenu is open\n\nDefault: "..dbd.Offset,
-						disabled = function() return db.OverlapPrevention == "Auto-Hide" end,
-						type = "range",
-						step = 1,
-						min = -100,
-						max = 0,
-						get = function() return db.Offset end,
-						set = function(self, value)
-							db.Offset = value
-							module:OverlapPrevention("RM", "position")
-						end,
-						order = 4,
-					},
 					Scale = {
 						name = "Scale",
 						desc = "The Scale of the Raid Menu",
@@ -717,7 +712,38 @@ function module:LoadFrameOptions()
 							RaidMenu_Parent:SetScale(db.Scale)
 							module:OverlapPrevention("RM", "position")
 						end,
+						order = 4,
+					},
+					-- Added X-offsets menu-object
+					X_Offset = {
+						name = "X Offset",
+						desc = "How far to horizontally offset when the MicroMenu is open\n\nDefault: "..dbd.X_Offset,
+						disabled = function() return db.OverlapPrevention == "Auto-Hide" end,
+						type = "range",
+						step = 1,
+						min = -200,
+						max = 200,
+						get = function() return db.X_Offset end,
+						set = function(self, value)
+							db.X_Offset = value
+							module:OverlapPrevention("RM", "position")
+						end,
 						order = 5,
+					},
+					Offset = {
+						name = "Y Offset",
+						desc = "How far to vertically offset when the MicroMenu is open\n\nDefault: "..dbd.Offset,
+						disabled = function() return db.OverlapPrevention == "Auto-Hide" end,
+						type = "range",
+						step = 1,
+						min = -200,
+						max = 0,
+						get = function() return db.Offset end,
+						set = function(self, value)
+							db.Offset = value
+							module:OverlapPrevention("RM", "position")
+						end,
+						order = 6,
 					},
 					Opacity = {
 						name = "Opacity",
@@ -731,7 +757,7 @@ function module:LoadFrameOptions()
 							db.Opacity = value
 							RaidMenu_Parent:SetAlpha(db.Opacity/100)
 						end,
-						order = 6,
+						order = 7,
 					},
 					AutoHide = {
 						name = "Auto-Hide Raid Menu",
@@ -739,7 +765,7 @@ function module:LoadFrameOptions()
 						type = "toggle",
 						get = function() return db.AutoHide end,
 						set = function(self) db.AutoHide = not db.AutoHide end,
-						order = 7,
+						order = 8,
 					},
 					ShowToolTips = {
 						name = "Show Tooltips",
@@ -747,7 +773,7 @@ function module:LoadFrameOptions()
 						type = "toggle",
 						get = function() return db.ShowToolTips end,
 						set = function(self) db.ShowToolTips = not db.ShowToolTips end,
-						order = 8,
+						order = 9,
 					},
 					ToggleRaidIcon = {
 						name = "Toggle Raid Icon",
@@ -756,7 +782,7 @@ function module:LoadFrameOptions()
 						width = "full",
 						get = function() return db.ToggleRaidIcon end,
 						set = function(self) db.ToggleRaidIcon = not db.ToggleRaidIcon end,
-						order = 9,
+						order = 10,
 					},
 				},
 			},
