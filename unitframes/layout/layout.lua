@@ -68,7 +68,7 @@ local cornerAuras = {
 		TOPLEFT = {139, true}, -- Renew
 		TOPRIGHT = {17}, -- Power Word: Shield
 		BOTTOMLEFT = {33076}, -- Prayer of Mending
-		BOTTOMRIGHT = {6788, false, true}, -- Weakened Soul
+		BOTTOMRIGHT = {194384, true}, -- Atonement
 	},
 	DRUID = {
 		TOPLEFT = {8936, true}, -- Regrowth
