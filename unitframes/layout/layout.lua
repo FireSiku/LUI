@@ -494,23 +494,23 @@ local OverrideHealth = function(self, event, unit, powerType)
 				if health.value.ShowAlways == false and min == max then
 					health.value:SetText()
 				elseif health.value.Format == "Absolut" then
-					health.value:SetFormattedText("%d/%d", min, max)
+					health.value:SetFormattedText("%s/%s", min, max)
 				elseif health.value.Format == "Absolut & Percent" then
-					health.value:SetFormattedText("%d/%d | %.1f%%", min, max, healthPercent)
+					health.value:SetFormattedText("%s/%s | %.1f%%", min, max, healthPercent)
 				elseif health.value.Format == "Absolut Short" then
 					health.value:SetFormattedText("%s/%s", ShortValue(min), ShortValue(max))
 				elseif health.value.Format == "Absolut Short & Percent" then
 					health.value:SetFormattedText("%s/%s | %.1f%%", ShortValue(min),ShortValue(max), healthPercent)
 				elseif health.value.Format == "Standard" then
-					health.value:SetFormattedText("%d", min)
+					health.value:SetFormattedText("%s", min)
 				elseif health.value.Format == "Standard & Percent" then
-					health.value:SetFormattedText("%d | %.1f%%", min, healthPercent)
+					health.value:SetFormattedText("%s | %.1f%%", min, healthPercent)
 				elseif health.value.Format == "Standard Short" then
 					health.value:SetFormattedText("%s", ShortValue(min))
 				elseif health.value.Format == "Standard Short & Percent" then
 					health.value:SetFormattedText("%s | %.1f%%", ShortValue(min), healthPercent)
 				else
-					health.value:SetFormattedText("%d", min)
+					health.value:SetFormattedText("%s", min)
 				end
 
 				if health.value.color == "By Class" then
@@ -552,7 +552,7 @@ local OverrideHealth = function(self, event, unit, powerType)
 				if health.valueMissing.ShortValue == true then
 					health.valueMissing:SetFormattedText("-%s", ShortValue(healthMissing))
 				else
-					health.valueMissing:SetFormattedText("-%d", healthMissing)
+					health.valueMissing:SetFormattedText("-%s", healthMissing)
 				end
 			else
 				health.valueMissing:SetText()
@@ -3811,7 +3811,6 @@ local SetStyle = function(self, unit, isSingle)
 
 	self:RegisterEvent("PLAYER_FLAGS_CHANGED", function(self) self.Health:ForceUpdate() end)
 	if unit == "player" then self:RegisterEvent("PLAYER_ENTERING_WORLD", function(self) self.Health:ForceUpdate() end) end
-
 	if unit == "pet" then
 		self.elapsed = 0
 		self:SetScript("OnUpdate", function(self, elapsed)
@@ -3832,7 +3831,6 @@ local SetStyle = function(self, unit, isSingle)
 			outsideAlpha = 0.5
 		}
 	end
-
 	self.Health.Override = OverrideHealth
 	self.Power.Override = OverridePower
 
