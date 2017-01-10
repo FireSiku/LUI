@@ -108,7 +108,7 @@ do
 		},
 		PRIEST = {
 			[GetSpellInfo(15407)] = 1, -- Mind Flay
-			[GetSpellInfo(48045)] = 1, -- Mind Sear
+			[GetSpellInfo(234702)] = 1, -- Mind Sear
 			[GetSpellInfo(64843)] = 2, -- Divine Hymn
 			--[GetSpellInfo(64901)] = 2, -- Hymn of Hope
 			[GetSpellInfo(47540)] = 1, -- Penance
@@ -118,7 +118,7 @@ do
 		},
 		WARLOCK = {
 			--[GetSpellInfo(1120)] = 3, -- Drain Soul
-			[GetSpellInfo(689)] = 1, -- Drain Life
+			[GetSpellInfo(234153)] = 1, -- Drain Life
 			[GetSpellInfo(755)] = 1, -- Health Funnel
 			--[GetSpellInfo(79268)] = 1, -- Soul Harvest
 			[GetSpellInfo(5740)] = 2, -- Rain of Fire
