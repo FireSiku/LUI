@@ -178,7 +178,7 @@ do
 
 	function Timer:Position()
 		self:SetAllPoints()
-		self.text:SetPoint("CENTER", db.Text.XOffset, db.Text.YOffset)
+		self.text:SetPoint(db.Text.Align, db.Text.XOffset, db.Text.YOffset)
 	end
 
 
@@ -269,6 +269,7 @@ module.defaults = {
 			Flag = "OUTLINE",
 			XOffset = 2,
 			YOffset = 0,
+			Align = "CENTER",
 		},
 		Colors = {
 			Day = {0.8, 0.8, 0.8},
@@ -284,7 +285,13 @@ module.conflicts = "OmniCC;tullaCooldownCount"
 
 function module:LoadOptions()
 	local func = "Refresh"
-
+	
+	local alignTable = {
+		LEFT = "Left",
+		CENTER = "Center",
+		RIGHT = "Right",
+	}
+	
 	local options = {
 		General = self:NewGroup("General Settings", 1, {
 			Threshold = self:NewInputNumber("Cooldown Threshold", "The time at which your coodown text is colored differnetly and begins using specified precision.", 1, func),
@@ -297,9 +304,10 @@ function module:LoadOptions()
 			Font = self:NewSelect("Font", "Select the font to be used by cooldown's texts.", 1, AceGUIWidgetLSMlists.font, "LSM30_Font", func),
 			Size = self:NewSlider("Font Size", "Select the font size to be used by cooldown's texts.", 2, 6, 32, 1, func),
 			Flag = self:NewSelect("Font Outline", "Select the font outline to be used by cooldown's texts.", 3, LUI.FontFlags, false, func),
-			Offsets = self:NewHeader("Text Position Offsets", 4),
+			Offsets = self:NewHeader("Text Position", 4),
 			XOffset = self:NewInputNumber("X Offset", "Horizontal offset to be applied to the cooldown's texts.", 5, func),
 			YOffset = self:NewInputNumber("Y Offset", "Vertical offset to be applied to the cooldown's texts.", 6, func),
+			Align = self:NewSelect("Alignment", "Alignment to be applied to the cooldown's texts", 7, alignTable, false, func)
 		}),
 		Colors = self:NewGroup("Colors", 3, {
 			Threshold = self:NewColorNoAlpha("Threshold", "The color of cooldown's text under the threshold.", 1, func),
