@@ -2294,7 +2294,7 @@ module.funcs = {
 			MAGE = 4,
 			MONK = 6,
 			PALADIN = 5,
-			ROGUE = 8,
+			ROGUE = 10,
 			WARLOCK = 5,
 			DRUID = 5,
 		}
@@ -2347,8 +2347,8 @@ module.funcs = {
 			elseif class == "ROGUE" then
 				--Check for Strategem, increase CPoints to 6.
 				if select(4, GetTalentInfo(3, 1, 1)) then count = 6
-				--Check for Anticipation, increase CPoints to 8.
-				elseif select(4, GetTalentInfo(3, 2, 1)) then count = 8
+				--Check for Anticipation, increase CPoints to 10.
+				elseif select(4, GetTalentInfo(3, 2, 1)) then count = 10
 				end
 			end
 			self.ClassIcons.Count = count
