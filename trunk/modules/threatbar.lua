@@ -94,7 +94,14 @@ local UpdateExpMode = function()
 				repText = friendText
 			end
 			-- Display values
-			if barMin == barMax then
+			if C_Reputation.IsFactionParagon(factionID) and barMin == barMax then
+				local currentValue, rewardThreshold, _, rewardPending = C_Reputation.GetFactionParagonInfo(factionID)
+				barMin = 0
+				barValue = currentValue
+				barMax = rewardThreshold
+				percentBar = barValue * 100 / rewardThreshold
+				repText = (rewardPending) and "Pa+1" or "Pa"
+			elseif barMin == barMax then
 				barMin, barMax, barValue = 0, 1, 1
 				percentBar = 100
 			else
