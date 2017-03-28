@@ -94,10 +94,15 @@ local UpdateExpMode = function()
 				repText = friendText
 			end
 			-- Display values
-			barMax = barMax - barMin
-			barValue = barValue - barMin
-			barMin = 0
-			percentBar = barValue * 100 / barMax
+			if barMin == barMax then
+				barMin, barMax, barValue = 0, 1, 1
+				percentBar = 100
+			else
+				barMax = barMax - barMin
+				barValue = barValue - barMin
+				barMin = 0
+				percentBar = barValue * 100 / barMax
+			end
 			bar:SetMinMaxValues(barMin,barMax)
 			bar:SetValue(barValue)
 			if db.Text.Enable then
