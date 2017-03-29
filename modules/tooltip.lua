@@ -24,7 +24,7 @@ local widgetLists = AceGUIWidgetLSMlists
 local db
 local hooks = { }
 local GameTooltip, GameTooltipStatusBar = _G["GameTooltip"], _G["GameTooltipStatusBar"]
-local Tooltips = {GameTooltip,ItemRefTooltip,ItemRefShoppingTooltip1,ItemRefShoppingTooltip2,ShoppingTooltip1,ShoppingTooltip2,FriendsTooltip,FloatingGarrisonFollowerTooltip,GarrisonFollowerAbilityTooltip, WorldMapTooltip, WorldMapCompareTooltip1, WorldMapCompareTooltip2, ReputationParagonTooltip}
+local Tooltips = {GameTooltip,ItemRefTooltip,ItemRefShoppingTooltip1,ItemRefShoppingTooltip2,ShoppingTooltip1,ShoppingTooltip2,FriendsTooltip,FloatingGarrisonFollowerTooltip,GarrisonFollowerAbilityTooltip, WorldMapTooltip, WorldMapCompareTooltip1, WorldMapCompareTooltip2, ReputationParagonTooltip, ContributionBuffTooltip, ContributionTooltip}
 local LUITooltipColors
 
 function module:UpdateTooltip()
@@ -390,6 +390,27 @@ function module:SetTooltip()
 		hooksecurefunc(GameTooltip, "SetPetAction", CombatHideActionButtonsTooltip)
 		hooksecurefunc(GameTooltip, "SetShapeshift", CombatHideActionButtonsTooltip)
 		
+	end)
+	
+	-- Contribution frame requires special handling because of the way V3 works, ContributionTooltip is nil at the moment of running UpdateTooltips
+	module:RegisterEvent("CONTRIBUTION_COLLECTOR_OPEN", function()
+		local ccTooltips = { ContributionTooltip, ContributionBuffTooltip }
+		for _, tt in pairs(ccTooltips) do
+			if not module:IsHooked(tt, "OnShow") then
+				module:HookScript(tt, "OnShow", function()
+					tt:SetBackdrop( { 
+						bgFile = Media:Fetch("background", db.Tooltip.Background.Texture), 
+						edgeFile = Media:Fetch("border", db.Tooltip.Border.Texture), 
+						tile = false, edgeSize = db.Tooltip.Border.Size, 
+						insets = { left = db.Tooltip.Border.Insets.Left, right = db.Tooltip.Border.Insets.Right, top = db.Tooltip.Border.Insets.Top, bottom = db.Tooltip.Border.Insets.Bottom }
+					})
+					tt:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
+					tt:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
+					BorderColor(tt)
+				end)
+			end
+		end
+		module:UnregisterEvent("CONTRIBUTION_COLLECTOR_OPEN")
 	end)
 end
 
@@ -797,4 +818,12 @@ end
 
 function module:OnEnable()
 	self:SetTooltip()
+end
+
+function LUIDebug_PrintTooltips()
+	for k, v in pairs(_G) do
+		if strmatch(k, "Tooltip%d?$") and type(v) == "table" then
+			LUI:Print(k)
+		end
+	end
 end
