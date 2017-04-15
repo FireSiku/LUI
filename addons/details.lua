@@ -69,6 +69,11 @@ function LUI:InstallDetails()
       -- Set update speed to 0.3
       Details:SetWindowUpdateSpeed(0.3)
       
+	  -- Set the LUI panel to Details
+	  local panelDB = LUI.db:GetNamespace("Panels")
+	  panelDB.profile.Dps.Anchor = "DetailsBaseFrame1"
+	  LUI:GetModule("Panels"):ApplyBackground("Dps")
+	  
    end
    
 end
