@@ -1166,6 +1166,8 @@ local function getOptions()
 										LUI:InstallBartender()
 										StaticPopup_Show("RELOAD_UI")
 									end,
+									disabled = function() return not IsAddOnLoaded("Bartender4") end,
+									hidden = function() return not IsAddOnLoaded("Bartender4") end,
 								},
 								ResetForte = {
 									order = 2,
@@ -1176,6 +1178,8 @@ local function getOptions()
 										LUI:InstallForte()
 										StaticPopup_Show("RELOAD_UI")
 									end,
+									disabled = function() return not IsAddOnLoaded("ForteXorcist") end,
+									hidden = function() return not IsAddOnLoaded("ForteXorcist") end,
 								},
 								ResetGrid = {
 									order = 2,
@@ -1186,6 +1190,8 @@ local function getOptions()
 										LUI:InstallGrid()
 										StaticPopup_Show("RELOAD_UI")
 									end,
+									disabled = function() return not IsAddOnLoaded("Grid") end,
+									hidden = function() return not IsAddOnLoaded("Grid") end,
 								},
 								ResetOmen = {
 									order = 2,
@@ -1196,6 +1202,8 @@ local function getOptions()
 										LUI:InstallOmen()
 										StaticPopup_Show("RELOAD_UI")
 									end,
+									disabled = function() return not IsAddOnLoaded("Omen") end,
+									hidden = function() return not IsAddOnLoaded("Omen") end,
 								},
 								ResetRecount = {
 									order = 2,
@@ -1206,6 +1214,8 @@ local function getOptions()
 										LUI:InstallRecount()
 										StaticPopup_Show("RELOAD_UI")
 									end,
+									disabled = function() return not IsAddOnLoaded("Recount") end,
+									hidden = function() return not IsAddOnLoaded("Recount") end,
 								},
 								ResetDetails = {
 									order = 2,
@@ -1214,8 +1224,10 @@ local function getOptions()
 									func = function()
 										LUICONFIG.Versions.details = nil
 										LUI:InstallDetails()
-										StaticPopup_Show("RELOAD_UI")
+										--StaticPopup_Show("RELOAD_UI")
 									end,
+									disabled = function() return not IsAddOnLoaded("Details") end,
+									hidden = function() return not IsAddOnLoaded("Details") end,
 								},
 								Header2 = {
 									name = "Recount Settings",
