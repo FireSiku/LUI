@@ -86,7 +86,7 @@ local function NewIcon(stat, tex)
 	icon:SetWidth(15)
 	icon:SetHeight(15)
 	icon:SetFrameStrata("HIGH")
-	icon:SetBackdrop({bgFile = tex or [[Interface\Icons\Spell_Nature_MoonKey]], edgeFile = nil, tile = false, edgeSize = 0, insets = {top = 0, bottom, 0, left = 0, right = 0}})
+	--icon:SetBackdrop({bgFile = tex or [[Interface\Icons\Spell_Nature_MoonKey]], edgeFile = nil, tile = false, edgeSize = 0, insets = {top = 0, bottom, 0, left = 0, right = 0}})
 	icon:Show()
 
 	stat.icon = icon
@@ -924,7 +924,7 @@ function module:SetDualSpec()
 
 	if db.DualSpec.Enable and not stat.Created then
 		NewIcon(stat)
-		stat.icon:SetScript("OnMouseDown", function(self, button) -- Toggle GlyphFrame
+		stat.icon:SetScript("OnMouseDown", function(self, button) -- Toggle Specialization
 			if not PlayerTalentFrame then
 				LoadAddOn("Blizzard_TalentUI")
 			end
@@ -986,7 +986,8 @@ function module:SetDualSpec()
 			local text = " "..curCache.name
 
 			self.text:SetText(text)
-			self.icon:SetBackdrop({bgFile = tostring(curCache.icon), edgeFile = nil, tile = false, edgeSize = 0, insets = {top = 0, right = 0, bottom = 0, left = 0}})
+			self.icon:SetNormalTexture(curCache.icon)
+			--self.icon:SetBackdrop({bgFile = tostring(curCache.icon), edgeFile = nil, tile = false, edgeSize = 0, insets = {top = 0, right = 0, bottom = 0, left = 0}})
 
 			-- Update tooltip if open
 			UpdateTooltip(self)
@@ -1004,18 +1005,12 @@ function module:SetDualSpec()
 		end
 
 		stat.OnClick = function(self, button)
-			if button == "RightButton" then -- Toggle TalentFrame
-				if PlayerTalentFrame:IsVisible() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 1) then
-					HideUIPanel(PlayerTalentFrame)
-				else
-					PanelTemplates_SetTab(PlayerTalentFrame, 1)
-					PlayerTalentFrame_Refresh()
-					ShowUIPanel(PlayerTalentFrame)
-				end
-			else -- Switch talent spec
-				if GetNumSpecGroups() < 2 then return	end
-
-				SetActiveSpecGroup(3 - GetActiveSpecGroup())
+			if PlayerTalentFrame:IsVisible() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 1) then
+				HideUIPanel(PlayerTalentFrame)
+			else
+				PanelTemplates_SetTab(PlayerTalentFrame, 1)
+				PlayerTalentFrame_Refresh()
+				ShowUIPanel(PlayerTalentFrame)
 			end
 		end
 	
