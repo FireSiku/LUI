@@ -44,9 +44,9 @@ local addonAnchors = {
 		Omen = "OmenAnchor",
 		Skada = "SkadaBarWindowSkada",
 		Details = "DetailsBaseFrame1",
+		Details_2nd = "DetailsBaseFrame2",
 	}
 }
-
 function module:CheckPanels()
 	if db.Chat.AlwaysShow and db.Tps.AlwaysShow and db.Dps.AlwaysShow and db.Raid.AlwaysShow then
 		Frames:IsAllShown(true)
@@ -732,7 +732,7 @@ function module:LoadOptions()
 					for k, v in pairs(t) do
 						tinsert(list, k)
 					end
-
+				
 					return list
 				end,
 				get = function()
@@ -758,6 +758,13 @@ function module:LoadOptions()
 					for k, v in pairs(t) do
 						if i == choose then
 							db[tag].Anchor = v
+							if v == "DetailsBaseFrame1" then
+								db[tag].Additional = "DetailsRowFrame1"
+							elseif v == "DetailsBaseFrame2" then
+								db[tag].Additional = "DetailsRowFrame2"
+							else
+								db[tag].Additional = ""
+							end
 						end
 						i = i + 1
 					end
