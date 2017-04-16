@@ -849,4 +849,9 @@ function module:OnEnable()
 		self:CheckPanels()
 		self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	end)
+	
+	-- Update Details users that dont have the AdditionalFrame yet
+	if db.Dps.Anchor == "DetailsBaseFrame1" and db.Dps.Additional == "" then
+		db.Dps.Additional = "DetailsRowFrame1"
+	end
 end
