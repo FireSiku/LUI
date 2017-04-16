@@ -827,14 +827,9 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self)
-	local ProfileName = UnitName("player").." - "..GetRealmName()
 
 	if LUI.db.profile.Frames then
 		LUI.db.profile.Frames = nil
-	end
-	if LUI.db.global.luiconfig[ProfileName].Versions.panels ~= LUI.Versions.panels then
-		db:ResetProfile()
-		LUI.db.global.luiconfig[ProfileName].Versions.panels = LUI.Versions.panels
 	end
 end
 
