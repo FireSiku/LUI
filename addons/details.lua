@@ -72,6 +72,7 @@ function LUI:InstallDetails()
 	  -- Set the LUI panel to Details
 	  local panelDB = LUI.db:GetNamespace("Panels")
 	  panelDB.profile.Dps.Anchor = "DetailsBaseFrame1"
+	  panelDB.profile.Dps.Additional = "DetailsRowFrame1"
 	  panelDB.profile.Dps.OffsetY = 0
 	  
    end
