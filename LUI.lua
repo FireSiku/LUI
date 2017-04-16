@@ -1224,6 +1224,7 @@ local function getOptions()
 									func = function()
 										LUICONFIG.Versions.details = nil
 										LUI:InstallDetails()
+										LUI:GetModule("Panels"):ApplyBackground("Dps")
 										--StaticPopup_Show("RELOAD_UI")
 									end,
 									disabled = function() return not IsAddOnLoaded("Details") end,
