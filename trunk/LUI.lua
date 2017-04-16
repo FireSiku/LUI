@@ -839,7 +839,7 @@ local function getOptions()
 									width = "full",
 									type = "description",
 									name = function()
-										local revision = "@project-revision@"
+										local revision = LUI.Rev
 										if revision and strmatch(revision,"-%d+") then
 											revision = gsub( strmatch(revision,"-%d+"), "-", "r")
 										elseif revision and strmatch(revision, "%d") then
@@ -1348,7 +1348,7 @@ local function getOptions()
 									width = "full",
 									type = "description",
 									fontSize = "medium",
-									name = "|cff1eff00BIRDKi, Faeron Whitecomb, John Fredericks, gnuheike, René Hüftlein".."\n",
+									name = "|cff1eff00BIRDKi, Faeron Whitecomb, Slawomir Baran, Curtis Motzner, Michael Swancott, Shawn Pitts".."\n",
 								},
 							},
 						},
