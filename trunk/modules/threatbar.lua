@@ -127,7 +127,7 @@ local UpdateExpMode = function()
 		local _, _, _, _, totalXP, pointsSpent, _, _, _, _, _, _, tier = C_ArtifactUI.GetEquippedArtifactInfo()
 		local numPoints, xp, xpNextPoint = MainMenuBar_GetNumArtifactTraitsPurchasableFromXP(pointsSpent, totalXP, tier)
 		
-		local percentBar2 = xp * 100 / xpNextPoint
+		percentBar2 = xp * 100 / xpNextPoint
 		bar2:SetMinMaxValues(0, xpNextPoint)
 		bar2:SetValue(xp)
 		if numPoints > 0 then
