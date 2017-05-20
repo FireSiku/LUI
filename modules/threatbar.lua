@@ -97,9 +97,9 @@ local UpdateExpMode = function()
 			if C_Reputation.IsFactionParagon(factionID) and barMin == barMax then
 				local currentValue, rewardThreshold, _, rewardPending = C_Reputation.GetFactionParagonInfo(factionID)
 				barMin = 0
-				barValue = currentValue
+				barValue =  ( currentValue - rewardThreshold ) % rewardThreshold
 				barMax = rewardThreshold
-				percentBar = barValue * 100 / rewardThreshold
+				percentBar = barValue / 100
 				repText = (rewardPending) and "Pa+1" or "Pa"
 			elseif barMin == barMax then
 				barMin, barMax, barValue = 0, 1, 1
