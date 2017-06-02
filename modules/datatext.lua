@@ -2826,6 +2826,59 @@ function module:SetWeaponInfo()
 end
 
 
+------------------------------------------------------
+-- / Equipment Sets / --
+------------------------------------------------------
+
+function module:SetEquipmentSets()
+
+	local stat = NewStat("EquipmentSets")
+
+	if db.EquipmentSets.Enable and not stat.Created then
+	
+		stat.Events = {"UNIT_INVENTORY_CHANGED"}
+		
+		stat.UNIT_INVENTORY_CHANGED = function(self, unit)
+			local text = "No set equipped."
+			for set = 1,GetNumEquipmentSets() do
+				local name, _, setID, isEquipped, _, _, _, numMissing, _ = GetEquipmentSetInfo(set)
+				if isEquipped then
+					text = string.format("Equipped Set: %s", name)
+				end
+			end
+			self.text:SetFormattedText(text)
+			UpdateTooltip(self)
+		end
+		
+		stat.OnEnable = function(self)
+			self:UNIT_INVENTORY_CHANGED(self, "player")
+		end
+
+		--[[stat.OnEnter = function(self)
+			if CombatTips() then
+				GameTooltip:SetOwner(self, getOwnerAnchor(self))
+				GameTooltip:ClearLines()
+				GameTooltip:AddLine(text, 0.4, 0.78, 1)
+				for set = 1,GetNumEquipmentSets() do
+					local name, _, setID, isEquipped, _, _, _, numMissing, _ = GetEquipmentSetInfo(set)
+					GameTooltip:AddLine(string.format("Equipment Set: %s, Equipped: %s", name, tostring(isEquipped)))
+					if numMissing > 0 then
+						GameTooltip:AddLine(string.format("   Missing Items: %s", tostring(missing)))
+					end
+				end
+				GameTooltip:AddLine(" ")
+				GameTooltip:Show()
+			end
+		end
+
+		stat.OnLeave = function()
+			GameTooltip:Hide()
+		end]]--
+
+		stat.Created = true
+	end
+
+end
 
 ------------------------------------------------------
 -- / STAT FUNCTIONS / --
@@ -3122,6 +3175,24 @@ module.defaults = {
 			},
 		},
 		WeaponInfo = {
+			Enable = false,
+			X = 610,
+			Y = 0,
+			InfoPanel = {
+				Horizontal = "Left",
+				Vertical = "Top",
+			},
+			Font = "vibroceb",
+			FontSize = 12,
+			Outline = "NONE",
+			Color = {
+				r = 1,
+				g = 1,
+				b = 1,
+				a = 1,
+			},
+		},
+		EquipmentSets = {
 			Enable = false,
 			X = 610,
 			Y = 0,
@@ -3981,6 +4052,33 @@ function module:LoadOptions()
 				Reset = ResetOption(5),
 			},
 		},
+		EquipmentSets = {
+			name = function(info) return NameLabel(info, "Equipment Sets") end,
+			type = "group",
+			order = 14,
+			args = {
+				Header = {
+					name = "Weapon Information",
+					type = "header",
+					order = 1,
+				},
+				Enable = {
+					name = "Enable",
+					desc = "Whether you want to show your Equipment Set Information or not.",
+					type = "toggle",
+					width = "full",
+					get = function() return db.EquipmentSets.Enable end,
+					set = function(info, value)
+						db.EquipmentSets.Enable = value
+						ToggleStat("EquipmentSets")
+					end,
+					order = 2,
+				},
+				Position = PositionOptions(3, "Equipment Information"),
+				Font = FontOptions(4, "Equipment Information"),
+				Reset = ResetOption(5),
+			},
+		},
 	}
 
 	return options
@@ -4015,6 +4113,7 @@ function module:OnEnable()
 	EnableStat("Instance")
 	EnableStat("Memory")
 	EnableStat("WeaponInfo")
+	EnableStat("EquipmentSets")
 end
 
 function module:OnDisable()
@@ -4029,6 +4128,7 @@ function module:OnDisable()
 	DisableStat("GF")
 	DisableStat("DPS")
 	DisableStat("WeaponInfo")
+	DisableStat("EquipmentSet")
 	LUI_Infos_TopLeft:Hide()
 	LUI_Infos_TopRight:Hide()
 	LUI_Infos_BottomLeft:Hide()
