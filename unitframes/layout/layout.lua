@@ -2288,7 +2288,6 @@ module.funcs = {
 		end
 	end,
 	ClassIcons = function(self, unit, oufdb)
-		LUI:Print("Class Icons Called")
 		local _, class = UnitClass("player")
 		local BASE_COUNT = {
 			MAGE = 4,
@@ -2333,6 +2332,7 @@ module.funcs = {
 			})
 			self.ClassIcons:SetBackdropColor(r * 0.4, g * 0.4, b * 0.4)
 			self.ClassIcons.Count = BASE_COUNT[class]
+			self.ClassIcons.MaxCount = MAX_COUNT[class]
 
 			for i = 1, MAX_COUNT[class] do -- Always create frames for the max possible
 				self.ClassIcons[i] = self.ClassIcons:CreateTexture(nil, "ARTWORK")
@@ -2363,14 +2363,14 @@ module.funcs = {
 			self.ClassIcons.Count = count
 
 			for i = 1, MAX_COUNT[class] do
-				if oufdb.Bars.HolyPower.Texture == "Empty" then
+				if oufdb.Bars.ClassIcons.Texture == "Empty" then
 					self.ClassIcons[i]:SetColorTexture(r, g, b)
 				else
 					self.ClassIcons[i]:SetTexture(Media:Fetch("statusbar", oufdb.Bars.ClassIcons.Texture))
 					self.ClassIcons[i]:SetDesaturated(true)
 					self.ClassIcons[i]:SetVertexColor(r, g, b)
 				end
-				self.ClassIcons[i]:SetSize(((oufdb.Bars.ClassIcons.Width - 2*oufdb.Bars.ClassIcons.Padding) / self.ClassIcons.Count), oufdb.Bars.HolyPower.Height)
+				self.ClassIcons[i]:SetSize(((oufdb.Bars.ClassIcons.Width - 2*oufdb.Bars.ClassIcons.Padding) / self.ClassIcons.Count), oufdb.Bars.ClassIcons.Height)
 				self.ClassIcons[i]:ClearAllPoints()
 				if i == 1 then
 					self.ClassIcons[i]:SetPoint("LEFT", self.ClassIcons, "LEFT", 0, 0)
@@ -3227,12 +3227,12 @@ local SetStyle = function(self, unit, isSingle)
 			end
 		elseif class == "DRUID" then
 			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
-			if oufdb.Bars.Chi.Enable and LUI.Legion then module.funcs.ClassIcons(self, unit, oufdb) end
+			if oufdb.Bars.Chi.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
 		elseif class == "PALADIN" then
 			if oufdb.Bars.HolyPower.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
 		elseif class == "MONK" then
 			if oufdb.Bars.Chi.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
-		elseif class == "ROGUE" and LUI.Legion then
+		elseif class == "ROGUE" then
 			if oufdb.Bars.Chi.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
 		elseif class == "SHAMAN" then
 			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
@@ -3244,13 +3244,7 @@ local SetStyle = function(self, unit, isSingle)
 			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
 		end
 	end
-
-	------------------------------------------------------------------------
-	--	Target Specific Items
-	------------------------------------------------------------------------
-
-	if unit == "target" and oufdb.Bars.ComboPoints.Enable and not LUI.Legion then module.funcs.CPoints(self, unit, oufdb) end
-
+	
 	------------------------------------------------------------------------
 	--	Raid Specific Items
 	------------------------------------------------------------------------

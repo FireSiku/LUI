@@ -52,29 +52,29 @@ local barColors = {
 }
 
 local barKeys = {
-	Totems = "Totems",
 	Runes = "Runes",
-	HolyPower = "HolyPower",
-	Eclipse = "EclipseBar",
+	HolyPower = "ClassIcons",
 	AltPower = "AltPowerBar",
 	DruidMana = "DruidMana",
-	ShadowOrbs = "ShadowOrbs",
-	WarlockBar = "WarlockBar",
-	ArcaneCharges = "ArcaneCharges",
-	Chi = "Chi",
+	WarlockBar = "ClassIcons",
+	ArcaneCharges = "ClassIcons",
+	Chi = "ClassIcons",
 }
+
 local barNames = {
-	Totems = "Totems",
 	Runes = "Runes",
 	HolyPower = "Holy Power",
-	Eclipse = "Eclipse",
 	AltPower = "Alternate Power",
 	DruidMana = "Druid Mana",
-	ShadowOrbs = "Shadow Orbs",
 	ArcaneCharges = "Arcane Charges",
 	WarlockBar = "Warlock Bars",
 	Chi = "Chi",
 }
+
+local _, class = UnitClass("player")
+if class == "ROGUE" or class == "DRUID" then
+	barNames.Chi = "Combo Points"
+end
 
 local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
 local directions = {"TOP", "BOTTOM", "RIGHT", "LEFT"}
