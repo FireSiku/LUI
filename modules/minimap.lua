@@ -874,7 +874,7 @@ function module:LoadOptions()
 									desc = "Enable LUI to set the position of the AlwaysUpFrame. \n\nNote:\n If you are using another addon that you believe to be moving this frame, disabling this may solve a conflict.",
 									type = "toggle",
 									width = "full",
-									disabled = function() return not db.Minimap.Frames.SetAlwaysUpFrame end,
+
 									get = function() return db.Minimap.Frames.SetAlwaysUpFrame end,
 									set = function(self)
 										db.Minimap.Frames.SetAlwaysUpFrame = not db.Minimap.Frames.SetAlwaysUpFrame
