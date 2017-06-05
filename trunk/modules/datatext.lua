@@ -2836,19 +2836,21 @@ function module:SetEquipmentSets()
 
 	if db.EquipmentSets.Enable and not stat.Created then
 	
-		stat.Events = {"UNIT_INVENTORY_CHANGED"}
+		stat.Events = {"UNIT_INVENTORY_CHANGED", "PLAYER_EQUIPMENT_CHANGED"}
 		
 		stat.UNIT_INVENTORY_CHANGED = function(self, unit)
 			local text = "No set equipped."
 			for set = 1,GetNumEquipmentSets() do
 				local name, _, setID, isEquipped, _, _, _, numMissing, _ = GetEquipmentSetInfo(set)
 				if isEquipped then
-					text = string.format("Equipped Set: %s", name)
+					text = string.format("%s%s", db.EquipmentSets.Text, name)
 				end
 			end
 			self.text:SetFormattedText(text)
 			UpdateTooltip(self)
 		end
+		
+		stat.PLAYER_EQUIPMENT_CHANGED = stat.UNIT_INVENTORY_CHANGED
 		
 		stat.OnEnable = function(self)
 			self:UNIT_INVENTORY_CHANGED(self, "player")
@@ -3194,6 +3196,7 @@ module.defaults = {
 		},
 		EquipmentSets = {
 			Enable = false,
+			Text = "Equipped Set: ",
 			X = 610,
 			Y = 0,
 			InfoPanel = {
@@ -4074,9 +4077,22 @@ function module:LoadOptions()
 					end,
 					order = 2,
 				},
-				Position = PositionOptions(3, "Equipment Information"),
-				Font = FontOptions(4, "Equipment Information"),
-				Reset = ResetOption(5),
+				Text = {
+					name = "Text Prefix",
+					desc = "Prefix for equipment set display.",
+					type = "input",
+					disabled = StatDisabled,
+					width = "full",
+					get = function() return db.EquipmentSets.Text end,
+					set = function(info, value)
+						db.EquipmentSets.Text = value
+						ToggleStat("EquipmentSets")
+					end,
+					order = 3,
+				},
+				Position = PositionOptions(4, "Equipment Information"),
+				Font = FontOptions(5, "Equipment Information"),
+				Reset = ResetOption(6),
 			},
 		},
 	}
