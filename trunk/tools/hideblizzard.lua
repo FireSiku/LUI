@@ -133,9 +133,6 @@ do
 		aura = function()
 			BuffFrame:Hide()
 			TemporaryEnchantFrame:Hide()
-			if not LUI.Legion then
-				ConsolidatedBuffs:Hide()
-			end
 			BuffFrame:UnregisterAllEvents()
 		end,
 		actionbars = function()

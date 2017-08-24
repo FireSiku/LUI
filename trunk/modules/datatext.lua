@@ -20,7 +20,7 @@ local widgetLists = AceGUIWidgetLSMlists
 
 local db, dbd
 
-local CLASS_BUTTONS = (LUI.Legion) and CLASS_ICON_TCOORDS or CLASS_BUTTONS
+local CLASS_BUTTONS = CLASS_ICON_TCOORDS
 
 ------------------------------------------------------
 -- / LOCAL VARIABLES / --
