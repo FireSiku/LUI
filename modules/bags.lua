@@ -84,10 +84,6 @@ local BagsSlots = {}		--replace self.bagsframe_buttons
 --At the moment, not sure if tooltip scanning is required.
 --local LUIBagsTT = nil
 
--- hide bags options in default interface
-if not LUI.Legion then
-	InterfaceOptionsDisplayPanelShowFreeBagSpace:Hide()
-end
 --Making sure the Static Popup uses the good args.
 StaticPopupDialogs["CONFIRM_BUY_BANK_SLOT"] = {
 	preferredIndex = 3,
@@ -239,11 +235,7 @@ function module:SlotUpdate(item)
 
 	if item.Cooldown then
 		local cd_start, cd_finish, cd_enable = GetContainerItemCooldown(item.bag, item.slot)
-		if LUI.Legion then
-			CooldownFrame_Set(item.Cooldown, cd_start, cd_finish, cd_enable)
-		else
-			CooldownFrame_SetTimer(item.Cooldown, cd_start, cd_finish, cd_enable)
-		end
+		CooldownFrame_Set(item.Cooldown, cd_start, cd_finish, cd_enable)
 	end
 	
 	-- New item code from Blizzard's ContainerFrame.lua
@@ -571,7 +563,8 @@ function module:CreateBagFrame(bagType)
 		depositBtn:SetHeight(LUI:Scale(depositBtn:GetTextHeight()+10))
 		depositBtn:SetPoint("BOTTOMLEFT", LUI:Scale(3), LUI:Scale(3))
 		depositBtn:SetScript("OnClick", function(self, button)
-			PlaySound("igMainMenuOption");
+			--PlaySound("igMainMenuOption");
+			PlaySound(SOUNDKIT.IG_MAINMENU_OPTION)
 			DepositReagentBank();
 		end)
 		depositBtn:RegisterForClicks("AnyUp")
@@ -586,7 +579,8 @@ function module:CreateBagFrame(bagType)
 		reagentsBtn:SetHeight(LUI:Scale(reagentsBtn:GetTextHeight()+10))
 		reagentsBtn:SetPoint("BOTTOMLEFT", LUI:Scale(3), LUI:Scale(3))
 		reagentsBtn:SetScript("OnClick", function(self, button)
-			PlaySound("igMainMenuOption");
+			--PlaySound("igMainMenuOption");
+			PlaySound(SOUNDKIT.IG_MAINMENU_OPTION)
 			StaticPopup_Show("CONFIRM_BUY_REAGENTBANK_TAB");
 		end)
 		reagentsBtn:RegisterForClicks("AnyUp")
@@ -600,7 +594,8 @@ function module:CreateBagFrame(bagType)
 	sortBtn:SetHeight(LUI:Scale(sortBtn:GetTextHeight()+10))
 	sortBtn:SetPoint("BOTTOMRIGHT", LUI:Scale(-3), LUI:Scale(3))
 	sortBtn:SetScript("OnClick", function(self, button)
-		PlaySound("UI_BagSorting_01");
+		--PlaySound("UI_BagSorting_01");
+		PlaySound(SOUNDKIT.UI_BAG_SORTING_01)
 		-- Make sure we arent calling bag updates a million times
 		module:UnregisterEvent("PLAYERBANKBAGSLOTS_CHANGED")
 		module:UnregisterEvent("PLAYERBANKSLOTS_CHANGED")
