@@ -2181,63 +2181,6 @@ module.funcs = {
 			self.Reputation.Value:Hide()
 		end
 	end,
-	Totems = function(self, unit, oufdb)
-		if LUI.Legion then return end
-		if not self.Totems then
-			self.Totems = CreateFrame("Frame", nil, self)
-			self.Totems:SetFrameLevel(6)
-			self.Totems.Destroy = false
-
-			for i = 1, MAX_TOTEMS do
-				self.Totems[i] = CreateFrame("StatusBar", nil, self.Totems)
-				self.Totems[i]:SetBackdrop(backdrop)
-				self.Totems[i]:SetBackdropColor(0, 0, 0)
-				self.Totems[i]:SetMinMaxValues(0, 1)
-
-				self.Totems[i].bg = self.Totems[i]:CreateTexture(nil, "BORDER")
-				self.Totems[i].bg:SetAllPoints(self.Totems[i])
-				self.Totems[i].bg:SetTexture(normTex)
-			end
-
-			self.Totems.FrameBackdrop = CreateFrame("Frame", nil, self.Totems)
-			self.Totems.FrameBackdrop:SetPoint("TOPLEFT", self.Totems, "TOPLEFT", -3.5, 3)
-			self.Totems.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.Totems, "BOTTOMRIGHT", 3.5, -3)
-			self.Totems.FrameBackdrop:SetFrameStrata("BACKGROUND")
-			self.Totems.FrameBackdrop:SetBackdrop({
-				edgeFile = glowTex, edgeSize = 5,
-				insets = {left = 3, right = 3, top = 3, bottom = 3}
-			})
-			self.Totems.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
-			self.Totems.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
-
-			self.Totems.Override = TotemsOverride
-		end
-
-		local x = oufdb.Bars.Totems.Lock and 0 or oufdb.Bars.Totems.X
-		local y = oufdb.Bars.Totems.Lock and 0.5 or oufdb.Bars.Totems.Y
-
-		self.Totems:SetHeight(oufdb.Bars.Totems.Height)
-		self.Totems:SetWidth(oufdb.Bars.Totems.Width)
-		self.Totems:ClearAllPoints()
-		self.Totems:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
-
-		local totemPoints = {2, 0, 1, 3}
-
-		for i = 1, MAX_TOTEMS do
-			self.Totems[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Totems.Texture))
-			self.Totems[i]:SetHeight(oufdb.Bars.Totems.Height)
-			self.Totems[i]:SetWidth((oufdb.Bars.Totems.Width - 3 * oufdb.Bars.Totems.Padding) / 4)
-
-			self.Totems[i]:ClearAllPoints()
-			if totemPoints[i] == 0 then
-				self.Totems[i]:SetPoint("LEFT", self.Totems, "LEFT", 0, 0)
-			else
-				self.Totems[i]:SetPoint("LEFT", self.Totems[totemPoints[i]], "RIGHT", oufdb.Bars.Totems.Padding, 0)
-			end
-
-			self.Totems[i].bg.multiplier = oufdb.Bars.Totems.Multiplier
-		end
-	end,
 	Runes = function(self, unit, oufdb)
 		if not self.Runes then
 			self.Runes = CreateFrame("Frame", nil, self)
