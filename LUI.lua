@@ -26,8 +26,8 @@ LUI.Versions = {lui = 3403}
 
 LUI.dummy = function() return end
 
-local LIVE_TOC = 70200
-local LIVE_BUILD = 24742
+local LIVE_TOC = 70300
+local LIVE_BUILD = 24920
 -- Check the build to compare with PTR
 local _, CURRENT_BUILD, _, CURRENT_TOC = GetBuildInfo()
 if tonumber(CURRENT_BUILD) > LIVE_BUILD then
@@ -35,14 +35,6 @@ if tonumber(CURRENT_BUILD) > LIVE_BUILD then
 	LUI:Print("Using Code Designed for New Patch")
 end
 local ProfileName = UnitName("player").." - "..GetRealmName()
-
--- 7.3 PlaySound workaround until it comes out
-if not SOUNDKIT then
-	SOUNDKIT = {
-		IG_MAINMENU_OPTION = "igMainMenuOption",
-		UI_BAG_SORTING_01 = "UI_BagSorting_01",
-	}
-end
 
 -- Work around for IsDisabledByParentalControls() errors. Simply hide the frame. It will still error but that's OK.
 UIParent:HookScript("OnEvent", function(s, e, a1, a2) if e:find("ACTION_FORBIDDEN") and ((a1 or "")..(a2 or "")):find("IsDisabledByParentalControls") then StaticPopup_Hide(e) end; end)
