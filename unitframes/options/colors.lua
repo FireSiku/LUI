@@ -23,6 +23,7 @@ module.defaults.profile.Colors = {
 		ROGUE = {0.95, 0.86, 0.16},
 		DEATHKNIGHT = {0.8, 0.1, 0.1},
 		MONK = {0.00, 1.00, 0.59},
+		DEMONHUNTER = {0.64, 0.19, 0.79},
 	},
 	--[[ This section shows the actual real Blizzard colors.
 	     Some people have asked for them so making it easier
@@ -287,19 +288,20 @@ function module:CreateColorOptions(order)
 	local options = self:NewGroup("Colors", order, "tab", colorGetter, colorSetter, {
 		Class = self:NewGroup("Class", 1, {
 			header1 = self:NewHeader("Class Colors", 1),
-			WARRIOR = self:NewColorNoAlpha("Warrior", "Warrior class", 2, false, "full"),
-			PRIEST = self:NewColorNoAlpha("Priest", "Priest class", 3, false, "full"),
-			DRUID = self:NewColorNoAlpha("Druid", "Druid class", 4, false, "full"),
-			HUNTER = self:NewColorNoAlpha("Hunter", "Hunter class", 5, false, "full"),
-			MAGE = self:NewColorNoAlpha("Mage", "Mage class", 6, false, "full"),
-			PALADIN = self:NewColorNoAlpha("Paladin", "Paladin class", 7, false, "full"),
-			SHAMAN = self:NewColorNoAlpha("Shaman", "Shaman class", 8, false, "full"),
-			WARLOCK = self:NewColorNoAlpha("Warlock", "Warlock class", 9, false, "full"),
-			ROGUE = self:NewColorNoAlpha("Rogue", "Rogue class", 10, false, "full"),
-			DEATHKNIGHT = self:NewColorNoAlpha("Death Knight", "Death Knight class", 11, false, "full"),
-			MONK = self:NewColorNoAlpha("Monk", "Monk class", 12, false, "full"),
-			empty1 = self:NewDesc(" ", 13),
-			Reset = self:NewExecute("Restore Defaults", nil, 14, function()
+			WARRIOR = self:NewColorNoAlpha("Warrior", "Warrior class", 2, false, "normal"),
+			PRIEST = self:NewColorNoAlpha("Priest", "Priest class", 3, false, "normal"),
+			DRUID = self:NewColorNoAlpha("Druid", "Druid class", 4, false, "normal"),
+			HUNTER = self:NewColorNoAlpha("Hunter", "Hunter class", 5, false, "normal"),
+			MAGE = self:NewColorNoAlpha("Mage", "Mage class", 6, false, "normal"),
+			PALADIN = self:NewColorNoAlpha("Paladin", "Paladin class", 7, false, "normal"),
+			SHAMAN = self:NewColorNoAlpha("Shaman", "Shaman class", 8, false, "normal"),
+			WARLOCK = self:NewColorNoAlpha("Warlock", "Warlock class", 9, false, "normal"),
+			ROGUE = self:NewColorNoAlpha("Rogue", "Rogue class", 10, false, "normal"),
+			DEATHKNIGHT = self:NewColorNoAlpha("Death Knight", "Death Knight class", 11, false, "normal"),
+			MONK = self:NewColorNoAlpha("Monk", "Monk class", 12, false, "normal"),
+			DEMONHUNTER = self:NewColorNoAlpha("Demon Hunter", "Demon Hunter class", 13, false, "normal"),
+			empty1 = self:NewDesc(" ", 14),
+			Reset = self:NewExecute("Restore Defaults", nil, 15, function()
 				module.db.Colors.Class = module.defaults.Colors.Class
 				UpdateColors()
 			end),
