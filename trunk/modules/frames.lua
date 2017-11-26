@@ -97,7 +97,8 @@ function module:SetFrames()
 
 		local t = h:CreateTexture()
 		t:SetAllPoints(h)
-		t:SetTexture("Interface\\AddOns\\LUI\\media\\textures\\orb\\"..tex)
+		t.path = "Interface\\AddOns\\LUI\\media\\textures\\orb\\"..tex
+		t:SetTexture(t.path)
 		t:SetBlendMode("ADD")
 		t:SetVertexColor(r, g, b)
 		h.t = t
@@ -144,7 +145,8 @@ function module:SetFrames()
 	LUI.Orb:SetScript("OnLeave", function(self) self.AlphaOut:Show() end)
 	
 	LUI.Orb.Fill = LUI.Orb:CreateTexture(nil, "ARTWORK")
-	LUI.Orb.Fill:SetTexture("Interface\\AddOns\\LUI\\media\\textures\\orb\\orb_filling8")
+	LUI.Orb.Fill.path = "Interface\\AddOns\\LUI\\media\\textures\\orb\\orb_filling8"
+	LUI.Orb.Fill:SetTexture(LUI.Orb.Fill.path)
 	LUI.Orb.Fill:SetPoint("BOTTOM", LUI.Orb, "BOTTOM", 0, 0)
 	LUI.Orb.Fill:SetWidth(LUI.Orb:GetWidth())
 	LUI.Orb.Fill:SetHeight(LUI.Orb:GetHeight())
@@ -182,45 +184,35 @@ function module:SetFrames()
 		end
 	end)
 	
+	local function SetFrameBackdrop(frame, fileName)
+		if not frame then LUI:Print("frame not found:", fileName) end
+		frame.Backdrop = {
+			bgFile = fdir..fileName, 
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
+			edgeSize = 1, 
+			insets = {left = 0, right = 0, top = 0, bottom = 0}
+		}
+		frame:SetBackdrop(frame.Backdrop)
+		frame:SetBackdropBorderColor(0,0,0,0)
+	end
+
 	LUI.Navi.Top = LUI:CreateMeAFrame("Frame", nil, UIParent, 1024, 1024, 1, "BACKGROUND", 1, "TOP", UIParent, "TOP", 17, 8, 1)
-	LUI.Navi.Top:SetBackdrop({
-		bgFile = fdir.."top", 
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		edgeSize = 1, 
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
-	LUI.Navi.Top:SetBackdropBorderColor(0, 0, 0, 0)
+	SetFrameBackdrop(LUI.Navi.Top, "top")
 	LUI.Navi.Top:Show()
 	
 	LUI.Navi.Top2 = LUI:CreateMeAFrame("Frame", nil, UIParent, 1035, 1024, 1, "BACKGROUND", 0, "TOP", UIParent, "TOP", 17, 5, 1)
-	LUI.Navi.Top2:SetBackdrop({
-		bgFile = fdir.."top_back", 
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		edgeSize = 1, 
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
+	SetFrameBackdrop(LUI.Navi.Top2, "top_back")
 	LUI.Navi.Top2:SetBackdropColor(unpack(color_top))
-	LUI.Navi.Top2:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.Navi.Top2:Show()
 	
 	LUI.Orb.Hover = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 68, 68, 1, "LOW", 0, "CENTER", LUI.Orb, "CENTER", 1, 0, 0)
-	LUI.Orb.Hover:SetBackdrop({
-		bgFile = fdir.."ring_inner", 
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		edgeSize = 1, 
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
+	SetFrameBackdrop(LUI.Orb.Hover, "ring_inner")
 	LUI.Orb.Hover:SetBackdropColor(unpack(orb_hover))
 	LUI.Orb.Hover:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.Orb.Hover:Show()
 	
 	LUI.Orb.Ring2 = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 103, 103, 1, "LOW", 1, "CENTER", LUI.Orb, "CENTER", 0, -1, 1)
-	LUI.Orb.Ring2:SetBackdrop({
-		bgFile = fdir.."ring", 
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		edgeSize = 1, 
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
+	SetFrameBackdrop(LUI.Orb.Ring2, "ring")
 	LUI.Orb.Ring2:SetBackdropColor(0.25, 0.25, 0.25, 1)
 	LUI.Orb.Ring2:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.Orb.Ring2:Show()
@@ -239,13 +231,7 @@ function module:SetFrames()
 	]]
 	
 	LUI.Orb.Ring4 = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 115, 115, 1, "LOW", 1, "CENTER", LUI.Orb, "CENTER", 0, -1, 1)
-	LUI.Orb.Ring4:SetBackdrop({
-		bgFile = fdir.."ring_inner2", 
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		edgeSize = 1, 
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
-	LUI.Orb.Ring4:SetBackdropBorderColor(0, 0, 0, 0)
+	SetFrameBackdrop(LUI.Orb.Ring4, "ring_inner2")
 	LUI.Orb.Ring4:Show()
 	
 	--[[
@@ -262,24 +248,12 @@ function module:SetFrames()
 	]]
 	
 	LUI.Orb.Cycle = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 115, 115, 1, "LOW", 0, "CENTER", LUI.Orb, "CENTER", 0, -1, 1)
-	LUI.Orb.Cycle:SetBackdrop({
-		bgFile = fdir.."ring_inner4", 
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", 
-		edgeSize = 1, 
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
+	SetFrameBackdrop(LUI.Orb.Cycle, "ring_inner4")
 	LUI.Orb.Cycle:SetBackdropColor(0.25, 0.25, 0.25, 0.7)
-	LUI.Orb.Cycle:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.Orb.Cycle:Show()
 	
 	LUI.Orb.Ring7 = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 77, 75, 1, "LOW", 3, "CENTER", LUI.Orb, "CENTER", 1, -1, 1)
-	LUI.Orb.Ring7:SetBackdrop({
-		bgFile = fdir.."ring", 
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		edgeSize = 1, 
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
-	LUI.Orb.Ring7:SetBackdropBorderColor(0, 0, 0, 0)
+	SetFrameBackdrop(LUI.Orb.Ring7, "ring")
 	LUI.Orb.Ring7:Show()
 	
 	LUI.Orb:RegisterForClicks("AnyUp")
