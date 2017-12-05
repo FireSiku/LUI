@@ -21,6 +21,7 @@ local widgetLists = AceGUIWidgetLSMlists
 local db, dbd
 
 local CLASS_BUTTONS = CLASS_ICON_TCOORDS
+local BNET_CLIENT_WOW = BNET_CLIENT_WOW
 
 ------------------------------------------------------
 -- / LOCAL VARIABLES / --
@@ -1476,7 +1477,6 @@ function module:SetGF()
 		local tables, broadcasts, toasts, buttons
 		local slider, highlight, texOrder1, sep, sep2
 
-		local WOW, SC2, D3, WTCG, APP, CLNT, HOTS, OVERWATCH = 1, 2, 3, 4, 5, 6, 7, 8
 		local horde = myPlayerFaction == "Horde"
 
 		local hordeZones = "Orgrimmar,Undercity,Thunder Bluff,Silvermoon City,Durotar,Tirisfal Glades,Mulgore,Eversong Woods,Northern Barrens,Silverpine Forest,Ghostlands,Azshara,"
@@ -1488,15 +1488,6 @@ function module:SetGF()
 			[1] = CHAT_FLAG_AFK,
 			[2] = CHAT_FLAG_DND,
 		}
-		local clientIcons = {
-			[SC2] = [[Interface\FriendsFrame\Battlenet-Sc2icon]],
-			[D3] = [[Interface\FriendsFrame\Battlenet-D3icon]],
-			[WTCG] = [[Interface\FriendsFrame\Battlenet-WTCGicon]],
-			[APP] = [[Interface\FriendsFrame\Battlenet-Battleneticon]],
-			[HOTS] = [[Interface\FriendsFrame\Battlenet-HotSicon]],
-			[OVERWATCH] = [[Interface\FriendsFrame\Battlenet-Overwatchicon]],
-		}
-
 		local colpairs = {
 			["class"] = 1,
 			["name"] = 2,
@@ -1661,10 +1652,9 @@ function module:SetGF()
 
 			SetStatusLayout(toast.status, toast.name)
 
-			client = client == BNET_CLIENT_WOW and WOW or client == BNET_CLIENT_SC2 and SC2 or client == BNET_CLIENT_D3 and D3 or client == BNET_CLIENT_WTCG and WTCG or client == BNET_CLIENT_HEROES and HOTS or client == BNET_CLIENT_OVERWATCH and OVERWATCH or APP
 			toast.client = client
 
-			if client == WOW then
+			if client == BNET_CLIENT_WOW then
 				toast.faction:SetTexture([[Interface\Glues\CharacterCreate\UI-CharacterCreate-Factions]])
 				toast.faction:SetTexCoord(faction == 1 and 0.03 or 0.53, faction == 1 and 0.47 or 0.97, 0.03, 0.97)
 				zone = (zone == nil or zone == "") and UNKNOWN or zone
@@ -1684,8 +1674,8 @@ function module:SetGF()
 				else
 					toast.class:SetTexture("")
 				end
-			elseif client == SC2 or client == D3 or client == WTCG or  client == HOTS or client == OVERWATCH or client == APP then
-				toast.class:SetTexture(clientIcons[client])
+			else
+				toast.class:SetTexture(BNet_GetClientTexture(client))
 				toast.class:SetTexCoord(0.2, 0.8, 0.2, 0.8)
 				toast.name:SetTextColor(0.8, 0.8, 0.8)
 				toast.faction:SetTexture("")
@@ -1709,7 +1699,7 @@ function module:SetGF()
 
 			return toast, client,
 			toast.name:GetStringWidth(),
-			client == (SC2 or D3 or WTCG or APP or HOTS or OVERWATCH) and -gap or toast.level:GetStringWidth(),
+			client ~= BNET_CLIENT_WOW and -gap or toast.level:GetStringWidth(),
 			toast.zone:GetStringWidth(),
 			toast.note:GetStringWidth()
 		end
@@ -1905,10 +1895,10 @@ function module:SetGF()
 
 					if tnW > tnC then tnC = tnW end
 
-					if client == WOW then
+					if client == BNET_CLIENT_WOW then
 						if lW > lC then lC = lW end
 						if zW > zC then zC = zW end
-					elseif client == SC2 or client == D3 or client == WTCG or client == APP or client == HOTS or client == OVERWATCH then
+					else
 						if zW > spanZoneC then spanZoneC = zW end
 					end
 
@@ -2035,10 +2025,10 @@ function module:SetGF()
 				button = toasts[i]
 				button:SetWidth( maxWidth )
 				button.name:SetWidth(tnC)
-				if button.client == WOW then
+				if button.client == BNET_CLIENT_WOW then
 					button.level:SetWidth(lC)
 					button.zone:SetWidth(zC)
-				elseif button.client == SC2 or button.client == D3 or button.client == WTCG or button.client == APP or button.client == HOTS or button.client == OVERWATCH then
+				else
 					button.zone:SetWidth(spanZoneC)
 				end
 				button.note:SetWidth(nC)
@@ -2179,7 +2169,7 @@ function module:SetGF()
 				end
 			elseif IsAltKeyDown() then -- invite unit
 				if b.presenceID then
-					if b.client ~= WOW then return end
+					if b.client ~= BNET_CLIENT_WOW then return end
 					FriendsFrame_BattlenetInvite(nil, b.presenceID)
 				else
 					InviteUnit(b.unit)
@@ -2217,7 +2207,7 @@ function module:SetGF()
 				end
 				GameTooltip:AddLine"Hints:"
 				GameTooltip:AddLine("|cffff8020Click|r to whisper.", .2,1,.2)
-				if not btn.presenceID or btn.client == WOW then
+				if not btn.presenceID or btn.client == BNET_CLIENT_WOW then
 				    GameTooltip:AddLine("|cffff8020Alt+Click|r to invite.", .2,1,.2)
 				end
 				if not btn.presenceID then
