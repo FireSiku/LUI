@@ -4,11 +4,11 @@
 	Description: Chat Module
 	Version....: 1.1
 	Rev Date...: 19/01/2011 [dd/mm/yyyy]
-	
+
 	Edits:
 		v1.0: Loui
 		v1.1: Zista
-]] 
+]]
 
 -- External references.
 local addonname, LUI = ...
@@ -39,25 +39,25 @@ local hooks = { }
 local function SetTabsAlpha()
 	CHAT_FRAME_TAB_SELECTED_NOMOUSE_ALPHA = db.Chat.Tabs.ActiveAlpha;
     CHAT_FRAME_TAB_NORMAL_NOMOUSE_ALPHA = db.Chat.Tabs.NotActiveAlpha;
-	
+
 	for i = 1, NUM_CHAT_WINDOWS do
 		chatframe = _G[("ChatFrame%d"):format(i)]
 		if FCF_IsValidChatFrame(chatframe) and not chatframe.oldAlpha then
 			chatframe.oldAlpha = CHAT_FRAME_TAB_NORMAL_NOMOUSE_ALPHA
 		end
 	end
-    
+
     for i = 1, NUM_CHAT_WINDOWS do
 		chatframe = _G[("ChatFrame%d"):format(i)]
        	if FCF_IsValidChatFrame(chatframe) then
 			local chatTab = _G["ChatFrame"..i.."Tab"]
             chatTab:Show()
             chatTab:Hide()
-            --FloatingChatFrame_Update(chatframe:GetID()) 
-            
-            chatTab.mouseOverAlpha = CHAT_FRAME_TAB_SELECTED_MOUSEOVER_ALPHA;            
+            --FloatingChatFrame_Update(chatframe:GetID())
+
+            chatTab.mouseOverAlpha = CHAT_FRAME_TAB_SELECTED_MOUSEOVER_ALPHA;
 	        chatTab.noMouseAlpha = CHAT_FRAME_TAB_SELECTED_NOMOUSE_ALPHA;
-            
+
             if chatframe:IsShown() then FCF_FadeOutChatFrame(chatframe) end
       	end
     end
@@ -91,13 +91,13 @@ local function CheckChatMinimizeButton()
 				_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetAlpha(db.Chat.Buttons.MinimizeButton.AlphaOut)
 				_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetScript("OnShow", function(self) self:Show() end)
 				_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:Show()
-				
+
 				_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetScript("OnEnter", function()
-					_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetAlpha(tonumber(db.Chat.Buttons.MinimizeButton.AlphaIn)) 
+					_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetAlpha(tonumber(db.Chat.Buttons.MinimizeButton.AlphaIn))
 				end)
-					
+
 				_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetScript("OnLeave", function()
-					_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetAlpha(tonumber(db.Chat.Buttons.MinimizeButton.AlphaOut)) 
+					_G["ChatFrame"..i.."ButtonFrameMinimizeButton"]:SetAlpha(tonumber(db.Chat.Buttons.MinimizeButton.AlphaOut))
 				end)
 			end
 		end
@@ -116,13 +116,13 @@ local function CheckChatMenuButton()
 		ChatFrameMenuButton:SetPoint("BOTTOM", _G["ChatFrame1ButtonFrame"],"BOTTOM",tonumber(db.Chat.Buttons.MenuButton.X),tonumber(db.Chat.Buttons.MenuButton.Y))
 		ChatFrameMenuButton:SetScript("OnShow", function(self) self:Show() end)
 		ChatFrameMenuButton:Show()
-		
+
 		ChatFrameMenuButton:SetScript("OnEnter", function()
-			ChatFrameMenuButton:SetAlpha(tonumber(db.Chat.Buttons.MenuButton.AlphaIn)) 
+			ChatFrameMenuButton:SetAlpha(tonumber(db.Chat.Buttons.MenuButton.AlphaIn))
 		end)
-			
+
 		ChatFrameMenuButton:SetScript("OnLeave", function()
-			ChatFrameMenuButton:SetAlpha(tonumber(db.Chat.Buttons.MenuButton.AlphaOut)) 
+			ChatFrameMenuButton:SetAlpha(tonumber(db.Chat.Buttons.MenuButton.AlphaOut))
 		end)
 	else
 		ChatFrameMenuButton:Hide()
@@ -138,13 +138,13 @@ local function CheckChatBottomButton()
 			_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetAlpha(db.Chat.Buttons.BottomButton.AlphaOut)
 			_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetScript("OnShow", function(self) self:Show() end)
 			_G["ChatFrame"..i.."ButtonFrameBottomButton"]:Show()
-			
+
 			_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetScript("OnEnter", function()
-				_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetAlpha(tonumber(db.Chat.Buttons.BottomButton.AlphaIn)) 
+				_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetAlpha(tonumber(db.Chat.Buttons.BottomButton.AlphaIn))
 			end)
-				
+
 			_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetScript("OnLeave", function()
-				_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetAlpha(tonumber(db.Chat.Buttons.BottomButton.AlphaOut)) 
+				_G["ChatFrame"..i.."ButtonFrameBottomButton"]:SetAlpha(tonumber(db.Chat.Buttons.BottomButton.AlphaOut))
 			end)
 		end
 	else
@@ -175,31 +175,31 @@ local function CheckChatArrows()
 			local buttonUp = _G["ChatFrame"..i.."ButtonFrameUpButton"]
 			local buttonDown = _G["ChatFrame"..i.."ButtonFrameDownButton"]
 			local buttonFrame = _G["ChatFrame"..i.."ButtonFrame"]
-		
+
 			buttonUp:SetAlpha(db.Chat.Buttons.Arrows.AlphaOut)
 			buttonUp:SetScript("OnShow", function(self) self:Show() end)
 			buttonUp:Show()
-			
+
 			buttonDown:ClearAllPoints()
 			buttonDown:SetPoint("BOTTOM", buttonFrame,"BOTTOM",tonumber(db.Chat.Buttons.Arrows.X),tonumber(db.Chat.Buttons.Arrows.Y))
 			buttonDown:SetAlpha(db.Chat.Buttons.Arrows.AlphaOut)
 			buttonDown:SetScript("OnShow", function(self) self:Show() end)
 			buttonDown:Show()
-			
+
 			buttonUp:SetScript("OnEnter", function()
-				buttonUp:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaIn)) 
+				buttonUp:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaIn))
 			end)
-				
+
 			buttonUp:SetScript("OnLeave", function()
-				buttonUp:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaOut)) 
+				buttonUp:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaOut))
 			end)
-			
+
 			buttonDown:SetScript("OnEnter", function()
-				buttonDown:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaIn)) 
+				buttonDown:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaIn))
 			end)
-				
+
 			buttonDown:SetScript("OnLeave", function()
-				buttonDown:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaOut)) 
+				buttonDown:SetAlpha(tonumber(db.Chat.Buttons.Arrows.AlphaOut))
 			end)
 		end
 	else
@@ -219,13 +219,13 @@ local function CheckSocialButton()
 		FriendsMicroButton:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", tonumber(db.Chat.Buttons.SocialButton.X), tonumber(db.Chat.Buttons.SocialButton.Y))
 		FriendsMicroButton:SetScript("OnShow", FriendsMicroButton.Show)
 		FriendsMicroButton:Show()
-		
+
 		FriendsMicroButton:SetScript("OnEnter", function()
-			FriendsMicroButton:SetAlpha(tonumber(db.Chat.Buttons.SocialButton.AlphaIn)) 
+			FriendsMicroButton:SetAlpha(tonumber(db.Chat.Buttons.SocialButton.AlphaIn))
 		end)
-			
+
 		FriendsMicroButton:SetScript("OnLeave", function()
-			FriendsMicroButton:SetAlpha(tonumber(db.Chat.Buttons.SocialButton.AlphaOut)) 
+			FriendsMicroButton:SetAlpha(tonumber(db.Chat.Buttons.SocialButton.AlphaOut))
 		end)
 	else
 		FriendsMicroButton:SetScript("OnShow", FriendsMicroButton.Hide)
@@ -251,7 +251,7 @@ local function SetEditBoxPosition()
 		elseif db.Chat.Editbox.Position.Anchor == "BOTTOM" then
 			editbox:SetPoint("TOPLEFT", ChatFrame1, "BOTTOMLEFT", 0, -8)
 			editbox:SetPoint("TOPRIGHT", ChatFrame1, "BOTTOMRIGHT", 0, -8)
-		else		
+		else
 			editbox:SetPoint("BOTTOMLEFT", ChatFrame1, "TOPLEFT", tonumber(db.Chat.Editbox.Position.X), tonumber(db.Chat.Editbox.Position.Y))
 			editbox:SetPoint("BOTTOMRIGHT", ChatFrame1, "TOPRIGHT", tonumber(db.Chat.Editbox.Position.X), tonumber(db.Chat.Editbox.Position.Y))
 		end
@@ -261,7 +261,7 @@ end
 local function SetEditBoxBackdrop()
 	for i = 1, NUM_CHAT_WINDOWS do
 		local editbox = _G["ChatFrame"..i.."EditBox"]
-		
+
 		editbox:SetBackdrop({
 			bgFile = "Interface/Tooltips/UI-Tooltip-Background",
 			edgeFile = Media:Fetch("border", db.Chat.Editbox.Border.Texture),
@@ -285,7 +285,7 @@ end
 local function SetChatJustify()
 	local SetChatFloating = loadstring("ChatFrame1:SetJustifyH(\""..db.Chat.Justify.."\")")
 	SetChatFloating()
-	
+
 	local SetChatFloating2 = loadstring(db.Chat.SecondChatAnchor..":SetJustifyH(\""..db.Chat.Justify2.."\")")
 	SetChatFloating2()
 end
@@ -297,7 +297,7 @@ function module:SetEditBoxColor()
 		for i = 1, NUM_CHAT_WINDOWS do
 			local editbox = _G["ChatFrame"..i.."EditBox"]
 			local attr = editbox:GetAttribute("chatType")
-			
+
 			if attr == "CHANNEL" then
 				local chan = editbox:GetAttribute("channelTarget")
 				if chan == 0 then
@@ -317,7 +317,7 @@ function module:SetEditBoxColor()
 	else
 		for i = 1, NUM_CHAT_WINDOWS do
 			local editbox = _G["ChatFrame"..i.."EditBox"]
-			
+
 			editbox:SetBackdropColor(r,g,b,a)
 			editbox:SetBackdropBorderColor(r,g,b,a + 0.3)
 		end
@@ -330,13 +330,13 @@ local function SetChatStyle(frame)
 	local id = frame:GetID()
 	local chat = frame:GetName()
 	local tab = _G[chat.."Tab"]
-	
+
 	-- yeah baby
 	_G[chat]:SetClampRectInsets(0,0,0,0)
-	
+
 	-- Removes crap from the bottom of the chatbox so it can go to the bottom of the screen.
 	_G[chat]:SetClampedToScreen(false)
-	
+
 	-- Hide textures
 	for j = 1, #CHAT_FRAME_TEXTURES do
 		_G[chat..CHAT_FRAME_TEXTURES[j]]:SetTexture(nil)
@@ -359,25 +359,25 @@ hooksecurefunc("FCF_OpenTemporaryWindow", SetupTempChat)
 
 function module:SetChat()
 	if db.Chat.Enable ~= true then return end
-	
+
 	self:SetChatPosition()
 	SetChatJustify()
 
 	--[[
 	local chat_font, editbox_font
-	
+
 	if db.Chat.Font == nil or db.Chat.Font == "" then
 		chat_font = "Fonts\ARIALN.TTF"
 	else
 		chat_font = Media:Fetch("font", db.Chat.Font)
 	end
-	
+
 	if db.Chat.Editbox.Font == nil or db.Chat.Editbox.Font == "" then
 		editbox_font = "Fonts\ARIALN.TTF"
 	else
 		editbox_font = Media:Fetch("font", db.Chat.Editbox.Font)
 	end
-		
+
 	local chat_fontsize = tonumber(db.Chat.Size)
 	local editbox_fontsize = tonumber(db.Chat.Editbox.Size)
 	--]]
@@ -385,11 +385,11 @@ function module:SetChat()
 	local ChatFrame1 = ChatFrame1
 	local replace = string.gsub
 	local find = string.find
-	
+
 	-----------------------------------------------------------------------------
 	-- Copy url
 	-----------------------------------------------------------------------------
-	
+
 	module:RawHook("SetItemRef", function(link, text, button, chatFrame)
 		if (strsub(link, 1, 3) == "url") then
 			local ChatFrameEditBox = ChatEdit_ChooseBoxForSend()
@@ -404,18 +404,18 @@ function module:SetChat()
 			module.hooks.SetItemRef(link, text, button, chatFrame)
 		end
 	end, true)
-	
+
 	local ReURL_Color = "b4b4b4"
 	local ReURL_Brackets = false
 	local ReURL_CustomColor = true
-	
+
 	local function ReURL_Link(url)
 		url = "|Hurl:" .. url .. "|h" .. (ReURL_Brackets and "[" or "") .. url .. (ReURL_Brackets and "]" or "") .. "|h"
 		url = (ReURL_CustomColor and " |cff"..ReURL_Color or " ") .. url .. (ReURL_CustomColor and "|r " or " ")
-		
+
 		return url
 	end
-	
+
 	local function ReURL_AddLinkSyntax(chatstring)
 		if (type(chatstring) == "string") then
 			local extraspace;
@@ -432,14 +432,14 @@ function module:SetChat()
 				chatstring = strsub(chatstring, 2);
 			end
 		end
-		
+
 		return chatstring
 	end
-	
+
 	-----------------------------------------------------------------------------
 	-- Short channel names
 	-----------------------------------------------------------------------------
-	
+
 	local replaceschan = {
 		['Гильдия'] = '[Г]',
 		['Группа'] = '[Гр]',
@@ -448,7 +448,7 @@ function module:SetChat()
 		['Объявление рейду'] = '[ОР]',
 		['Офицер'] = '[О]',
 		['Поле боя'] = '[ПБ]',
-		['Лидер поля боя'] = '[ЛПБ]', 
+		['Лидер поля боя'] = '[ЛПБ]',
 		['Guilde'] = '[G]',
 		['Groupe'] = '[GR]',
 		['Chef de raid'] = '[RL]',
@@ -468,27 +468,27 @@ function module:SetChat()
 		['Battleground Leader'] = '[BL]',
 		['(%d+)%. .-'] = '[%1]',
 	}
-	
+
 	local function shortChannelNames(text)
 		if db.Chat.ShortChannelNames == true then
 			for k,v in pairs(replaceschan) do
 				text = text:gsub('|h%['..k..'%]|h', '|h'..v..'|h')
 			end
 		end
-		
+
 		text = replace(text, "has come online.", "is now online!")
 		text = replace(text, "|Hplayer:(.+)|h%[(.+)%]|h has earned", "|Hplayer:%1|h%2|h has earned")
 		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h whispers:", "From [|Hplayer:%1:%2|h%3|h]:")
-		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h says:", "[|Hplayer:%1:%2|h%3|h]:")	
+		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h says:", "[|Hplayer:%1:%2|h%3|h]:")
 		text = replace(text, "|Hplayer:(.+):(.+)|h%[(.+)%]|h yells:", "[|Hplayer:%1:%2|h%3|h]:")
-		
+
 		return text
 	end
-	
+
 	-- Hook into the AddMessage function
 	local function chatFrame_AddMessage(frame, text, ...)
 		text = ReURL_AddLinkSyntax(shortChannelNames(text))
-		
+
 		return self.hooks[frame].AddMessage(frame, text, ...)
 	end
 	for i = 1, NUM_CHAT_WINDOWS do
@@ -497,29 +497,29 @@ function module:SetChat()
 			self:RawHook(chatFrame, "AddMessage", chatFrame_AddMessage, true)
 		end
 	end
-	
+
 	-- WoW or battle.net player status
 	CHAT_FLAG_AFK = "[AFK] "
 	CHAT_FLAG_DND = "[DND] "
 	CHAT_FLAG_GM = "[|cffff0000GM|r] "
-	
+
 	-----------------------------------------------------------------------------
 	--Hide Blizzard Frames
 	-----------------------------------------------------------------------------
-	
+
 	InterfaceOptionsSocialPanelChatStyle:Hide()
 	InterfaceOptionsSocialPanelConversationMode:Hide()
-	
+
 	CheckChatButtons()
 	CheckSocialButton()
 	CheckChatArrows()
 	CheckChatBottomButton()
 	CheckChatMenuButton()
 	CheckChatMinimizeButton()
-	
+
 	module:RawHook(GeneralDockManagerOverflowButton, "Show", LUI.dummy, true)
 	GeneralDockManagerOverflowButton:Hide()
-	
+
 	-- hide editbox colored round border
 	for i = 1, 10 do
 		local x=({_G["ChatFrame"..i.."EditBox"]:GetRegions()})
@@ -527,72 +527,72 @@ function module:SetChat()
 		x[10]:SetAlpha(0)
 		x[11]:SetAlpha(0)
 	end
-	
+
 	-----------------------------------------------------------------------------
 	--Load Settings
 	-----------------------------------------------------------------------------
-	
+
 	for i = 1, NUM_CHAT_WINDOWS do
 		local chatframe = _G[("ChatFrame%d"):format(i)]
 		_G["ChatFrame"..i]:SetClampRectInsets(0,0,0,0)
 		_G["ChatFrame"..i]:SetWidth(LUI:Scale(tonumber(db.Chat.Width)))
 		_G["ChatFrame"..i]:SetHeight(LUI:Scale(tonumber(db.Chat.Height)))
 		_G["ChatFrame"..i]:SetFrameStrata("LOW")
-		
+
 		-- Hide chat textures backdrop
 		for j = 1, #CHAT_FRAME_TEXTURES do
 			_G["ChatFrame"..i..CHAT_FRAME_TEXTURES[j]]:SetTexture(nil)
 		end
-		
+
 		-- Set Chat Font
 		SetChatFont()
-		
+
 		-- Set Chat Fading
 		SetChatFading()
 
 		-----------------------------------------------------------------------------
 		--EditBox Settings
 		-----------------------------------------------------------------------------
-		
+
 		-- Hide Blizz Textures
 		local editbox = _G["ChatFrame"..i.."EditBox"]
 		local left, mid, right = select(6, editbox:GetRegions())
 		left:Hide(); mid:Hide(); right:Hide()
-		
+
 		editbox.focusLeft:SetTexture([[Interface\ChatFrame\UI-ChatInputBorder-Left2]])
 		editbox.focusRight:SetTexture([[Interface\ChatFrame\UI-ChatInputBorder-Right2]])
 		editbox.focusMid:SetTexture([[Interface\ChatFrame\UI-ChatInputBorder-Mid2]])
-		
+
 		editbox:Hide()
 		editbox:HookScript('OnEnterPressed', function(s) s:Hide() end)
-		
+
 		-- Disable alt key usage
 		editbox:SetAltArrowKeyMode(false)
 	end
-	
+
 	-- Set Editboxes' Positions
 	SetEditBoxPosition()
-	
+
 	--	Color Editboxes
 	SetEditBoxBackdrop()
 	self:SecureHook("ChatEdit_UpdateHeader", "SetEditBoxColor")
 	self:SetEditBoxColor()
-	
+
 	-----------------------------------------------------------------------------
 	--Tab Settings
 	-----------------------------------------------------------------------------
 	SetTabsAlpha()
-	
+
 	------------------------------------------------------------------------
 	--	Lock docked tabs
 	------------------------------------------------------------------------
-	
+
 	local function ChatTab_OnDragStart(self)
 		if IsAltKeyDown() or not _G[self:GetName():sub(1, -4)].isDocked then
 			hooks[self].OnDragStart(self)
 		end
 	end
-	
+
 	local function SetLockDockedTabs()
 		if db.Chat.Tabs.LockDockedTabs == true then
 			for i = 2, NUM_CHAT_WINDOWS do
@@ -615,13 +615,13 @@ function module:SetChat()
 			end
 		end
 	end
-	
+
 	SetLockDockedTabs()
-	
+
 	-----------------------------------------------------------------------------
 	-- Remember last channel
 	-----------------------------------------------------------------------------
-	
+
 	if db.Chat.Sticky.Enable == true then
 		for k, v in pairs(channels) do
 			ChatTypeInfo[k].sticky = db.Chat.Sticky[k] and 1 or 0
@@ -631,17 +631,17 @@ function module:SetChat()
 			ChatTypeInfo[k].sticky = 0
 		end
 	end
-	
+
 	------------------------------------------------------------------------
 	--	No more click on item chat link
 	------------------------------------------------------------------------
-	
+
 	if db.Chat.ShowItemTooltips == true then
 		local orig1, orig2 = {}, {}
 		local GameTooltip = GameTooltip
-		
+
 		local linktypes = {item = true, enchant = true, spell = true, quest = true, unit = true, talent = true, achievement = true, glyph = true}
-		
+
 		local function OnHyperlinkEnter(frame, link, ...)
 			local linktype = link:match("^([^:]+)")
 			if linktype and linktypes[linktype] then
@@ -649,31 +649,31 @@ function module:SetChat()
 				GameTooltip:SetHyperlink(link)
 				GameTooltip:Show()
 			end
-		
+
 			if orig1[frame] then return orig1[frame](frame, link, ...) end
 		end
-		
+
 		local function OnHyperlinkLeave(frame, ...)
 			GameTooltip:Hide()
 			if orig2[frame] then return orig2[frame](frame, ...) end
 		end
-		
-		
+
+
 		local _G = getfenv(0)
 		for i=1, NUM_CHAT_WINDOWS do
 			local frame = _G["ChatFrame"..i]
 			orig1[frame] = frame:GetScript("OnHyperlinkEnter")
 			frame:SetScript("OnHyperlinkEnter", OnHyperlinkEnter)
-		
+
 			orig2[frame] = frame:GetScript("OnHyperlinkLeave")
 			frame:SetScript("OnHyperlinkLeave", OnHyperlinkLeave)
 		end
 	end
-	
+
 	-----------------------------------------------------------------------------
 	-- Copy Chat
 	-----------------------------------------------------------------------------
-	
+
 	local lines = {}
 	local frame = nil
 	local editBox = nil
@@ -682,9 +682,9 @@ function module:SetChat()
 	local function CreatCopyFrame()
 		frame = CreateFrame( "Frame", "CopyFrame", UIParent)
 		frame:SetBackdrop({
-				bgFile = "Interface/Tooltips/UI-Tooltip-Background", 
-				edgeFile = LUI.Media.glowTex, 
-				tile = 0, tileSize = 0, edgeSize = 3, 
+				bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+				edgeFile = LUI.Media.glowTex,
+				tile = 0, tileSize = 0, edgeSize = 3,
 				insets = { left = 2, right = 2, top = 2, bottom = 2 }
 		})
 		frame:SetBackdropColor(0,0,0,0.4)
@@ -695,11 +695,11 @@ function module:SetChat()
 		frame:SetPoint("CENTER", UIParent, "CENTER", 0,10)
 		frame:Hide()
 		frame:SetFrameStrata("DIALOG")
-	
+
 		local scrollArea = CreateFrame( "ScrollFrame", "CopyScroll", frame, "UIPanelScrollFrameTemplate")
 		scrollArea:SetPoint("TOPLEFT", frame, "TOPLEFT", 8, -30)
 		scrollArea:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -30, 8)
-		
+
 		editBox = CreateFrame( "EditBox", "CopyBox", frame)
 		editBox:SetMultiLine(true)
 		editBox:SetMaxLetters(99999)
@@ -709,15 +709,15 @@ function module:SetChat()
 		editBox:SetWidth(610)
 		editBox:SetHeight(200)
 		editBox:SetScript("OnEscapePressed", function() frame:Hide() end)
-	
+
 		scrollArea:SetScrollChild(editBox)
-	
+
 		local close = CreateFrame( "Button", "CopyCloseButton", frame, "UIPanelCloseButton")
 		close:SetPoint("TOPRIGHT", frame, "TOPRIGHT")
-	
+
 		isf = true
 	end
-	
+
 	local function GetLines(...)
 		local ct = 1
 		for i = select("#", ...), 1, -1 do
@@ -729,7 +729,7 @@ function module:SetChat()
 		end
 		return ct - 1
 	end
-	
+
 	local function Copy(cf)
 		local _, size = cf:GetFont()
 		FCF_SetChatWindowFontSize(cf, cf, 0.01)
@@ -741,7 +741,7 @@ function module:SetChat()
 		editBox:SetText(text)
 		editBox:HighlightText(0)
 	end
-	
+
 	if db.Chat.Buttons.Copy.Enable == true then
 		for i = 1, NUM_CHAT_WINDOWS do
 			local cf = _G[format("ChatFrame%d",  i)]
@@ -751,39 +751,39 @@ function module:SetChat()
 			button:SetWidth(22)
 			button:SetAlpha(db.Chat.Buttons.Copy.AlphaOut)
 			button:SetNormalTexture(LUI.Media.chatcopy)
-			
-			button:SetScript("OnClick", function() 
-				Copy(cf) 
+
+			button:SetScript("OnClick", function()
+				Copy(cf)
 			end)
-			
+
 			button:SetScript("OnEnter", function()
 				button:SetPoint("BOTTOMRIGHT", tonumber(db.Chat.Buttons.Copy.X), tonumber(db.Chat.Buttons.Copy.Y))
-				button:SetAlpha(db.Chat.Buttons.Copy.AlphaIn) 
+				button:SetAlpha(db.Chat.Buttons.Copy.AlphaIn)
 			end)
-			
+
 			button:SetScript("OnLeave", function()
 				button:SetPoint("BOTTOMRIGHT", tonumber(db.Chat.Buttons.Copy.X), tonumber(db.Chat.Buttons.Copy.Y))
-				button:SetAlpha(db.Chat.Buttons.Copy.AlphaOut) 
+				button:SetAlpha(db.Chat.Buttons.Copy.AlphaOut)
 			end)
-			
+
 			local tab = _G[format("ChatFrame%dTab", i)]
-			
+
 			tab:SetScript("OnShow", function()
-				button:SetAlpha(db.Chat.Buttons.Copy.AlphaOut) 
-				button:Show() 
+				button:SetAlpha(db.Chat.Buttons.Copy.AlphaOut)
+				button:Show()
 			end)
-			
+
 			tab:SetScript("OnHide", function()
 				button:SetAlpha(db.Chat.Buttons.Copy.AlphaOut)
-				button:Hide() 
+				button:Hide()
 			end)
 		end
 	end
-	
+
 	------------------------------------------------------------------------
 	--	Rewrite Chatframe mousewheel.
 	------------------------------------------------------------------------
-	
+
 	local normscrollspeed = tonumber(db.Chat.MouseWheel.NormalSpeed)
 	local ctrlscrollspeed = tonumber(db.Chat.MouseWheel.CTRLSpeed)
 	local function scrollFrame(cf, up)
@@ -801,7 +801,7 @@ function module:SetChat()
 		    end
 		end
 	end
-	
+
 	for i = 1, NUM_CHAT_WINDOWS do
 		local cf = _G[format("ChatFrame%d",  i)]
 		cf:SetScript("OnMouseWheel", function(cf, arg1) scrollFrame(cf, arg1 > 0) end)
@@ -1080,7 +1080,7 @@ function module:LoadOptions()
 									max = 20,
 									step = 1,
 									get = function() return db.Chat.Size end,
-									set = function(_, Fontsize) 
+									set = function(_, Fontsize)
 												db.Chat.Size = Fontsize
 												SetChatFont()
 											end,
@@ -1314,7 +1314,7 @@ function module:LoadOptions()
 									get = function() return unpack(Themes.db.profile.editbox) end,
 									set = function(_,r,g,b,a)
 											Themes.db.profile.editbox = {r,g,b,a}
-											
+
 											module:SetEditBoxColor()
 										end,
 									order = 3,
@@ -1349,7 +1349,7 @@ function module:LoadOptions()
 									max = 20,
 									step = 1,
 									get = function() return db.Chat.Editbox.Size end,
-									set = function(_, Fontsize) 
+									set = function(_, Fontsize)
 												db.Chat.Editbox.Size = Fontsize
 												SetChatFont()
 											end,
@@ -1574,7 +1574,7 @@ function module:LoadOptions()
 							set = function(info, Enable)
 										db.Chat.Buttons.Enable = not db.Chat.Buttons.Enable
 										CheckChatButtons()
-										
+
 										if Enable == true then
 											db.Chat.Buttons.MenuButton.Enable = true
 											db.Chat.Buttons.SocialButton.Enable = true
@@ -1616,7 +1616,7 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.Arrows.AlphaOut end,
-									set = function(_, AlphaOut) 
+									set = function(_, AlphaOut)
 												db.Chat.Buttons.Arrows.AlphaOut = AlphaOut
 												CheckChatArrows()
 											end,
@@ -1631,7 +1631,7 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.Arrows.AlphaIn end,
-									set = function(_, AlphaIn) 
+									set = function(_, AlphaIn)
 												db.Chat.Buttons.Arrows.AlphaIn = AlphaIn
 												CheckChatArrows()
 											end,
@@ -1698,7 +1698,7 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.BottomButton.AlphaOut end,
-									set = function(_, AlphaOut) 
+									set = function(_, AlphaOut)
 												db.Chat.Buttons.BottomButton.AlphaOut = AlphaOut
 												CheckChatBottomButton()
 											end,
@@ -1713,7 +1713,7 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.BottomButton.AlphaIn end,
-									set = function(_, AlphaIn) 
+									set = function(_, AlphaIn)
 												db.Chat.Buttons.BottomButton.AlphaIn = AlphaIn
 												CheckChatBottomButton()
 											end,
@@ -1780,7 +1780,7 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.MenuButton.AlphaOut end,
-									set = function(_, AlphaOut) 
+									set = function(_, AlphaOut)
 												db.Chat.Buttons.MenuButton.AlphaOut = AlphaOut
 												CheckChatMenuButton()
 											end,
@@ -1795,7 +1795,7 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.MenuButton.AlphaIn end,
-									set = function(_, AlphaIn) 
+									set = function(_, AlphaIn)
 												db.Chat.Buttons.MenuButton.AlphaIn = AlphaIn
 												CheckChatMenuButton()
 											end,
@@ -1862,7 +1862,7 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.MinimizeButton.AlphaOut end,
-									set = function(_, AlphaOut) 
+									set = function(_, AlphaOut)
 												db.Chat.Buttons.MinimizeButton.AlphaOut = AlphaOut
 												CheckChatMinimizeButton()
 											end,
@@ -1877,7 +1877,7 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.MinimizeButton.AlphaIn end,
-									set = function(_, AlphaIn) 
+									set = function(_, AlphaIn)
 												db.Chat.Buttons.MinimizeButton.AlphaIn = AlphaIn
 												CheckChatMinimizeButton()
 											end,
@@ -1944,7 +1944,7 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.SocialButton.AlphaOut end,
-									set = function(_, AlphaOut) 
+									set = function(_, AlphaOut)
 												db.Chat.Buttons.SocialButton.AlphaOut = AlphaOut
 												CheckSocialButton()
 											end,
@@ -1959,7 +1959,7 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.SocialButton.AlphaIn end,
-									set = function(_, AlphaIn) 
+									set = function(_, AlphaIn)
 												db.Chat.Buttons.SocialButton.AlphaIn = AlphaIn
 												CheckSocialButton()
 											end,
@@ -2025,7 +2025,7 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.Copy.AlphaOut end,
-									set = function(_, AlphaOut) 
+									set = function(_, AlphaOut)
 												db.Chat.Buttons.Copy.AlphaOut = AlphaOut
 											end,
 									order = 2,
@@ -2039,7 +2039,7 @@ function module:LoadOptions()
 									max = 1,
 									step = 0.05,
 									get = function() return db.Chat.Buttons.Copy.AlphaIn end,
-									set = function(_, AlphaIn) 
+									set = function(_, AlphaIn)
 												db.Chat.Buttons.Copy.AlphaIn = AlphaIn
 											end,
 									order = 3,
@@ -2110,7 +2110,7 @@ function module:LoadOptions()
 							max = 1,
 							step = 0.05,
 							get = function() return db.Chat.Tabs.ActiveAlpha end,
-							set = function(_, ActiveAlpha) 
+							set = function(_, ActiveAlpha)
 										db.Chat.Tabs.ActiveAlpha = ActiveAlpha
 									end,
 							order = 2,
@@ -2123,7 +2123,7 @@ function module:LoadOptions()
 							max = 1,
 							step = 0.05,
 							get = function() return db.Chat.Tabs.NotActiveAlpha end,
-							set = function(_, NotActiveAlpha) 
+							set = function(_, NotActiveAlpha)
 										db.Chat.Tabs.NotActiveAlpha = NotActiveAlpha
 									end,
 							order = 3,
@@ -2133,7 +2133,7 @@ function module:LoadOptions()
 			}
 		}
 	}
-	
+
 	local nextOrder = 3
 	for k, v in pairs(channels) do
 		options.Chat.args.ChatSettings.args.StickyChannels.args[k] = {
@@ -2157,10 +2157,10 @@ function module:OnInitialize()
 	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
 	LUI:RefreshDefaults()
 	LUI:Refresh()
-	
+
 	self.db = LUI.db
 	db = self.db.profile
-	
+
 	LUI:RegisterModule(self)
 end
 

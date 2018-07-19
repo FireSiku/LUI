@@ -194,7 +194,7 @@ function module:SetNameplates()
 		if frame.done then return end
 
 		frame.nameplate = true
-		
+
 		frame.barFrame, frame.nameFrame = frame:GetChildren()
 		if tonumber(wow_build) < 20444 then -- WoW 6.2.0 client
 			frame.healthBar, frame.castBar = frame.barFrame:GetChildren()
@@ -290,10 +290,10 @@ function module:SetNameplates()
 		spellIconRegion.IconBackdrop:SetBackdrop(backdrop)
 		spellIconRegion.IconBackdrop:SetBackdropColor(0, 0, 0)
 		spellIconRegion.IconBackdrop:SetBackdropBorderColor(0, 0, 0)
-		
+
 		local upperLeftX, upperLeftY, lowerLeftX, lowerLeftY, upperRightX, upperRightY, lowerRightX, lowerRightY = stateIconRegion:GetTexCoord()
-		stateIconRegion:SetTexCoord(upperRightX, upperLeftY, lowerRightX, lowerLeftY, upperLeftX, upperRightY, lowerLeftX, lowerRightY)		
-		
+		stateIconRegion:SetTexCoord(upperRightX, upperLeftY, lowerRightX, lowerLeftY, upperLeftX, upperRightY, lowerLeftX, lowerRightY)
+
 		highlightRegion:SetTexture(barTexture)
 		highlightRegion:SetVertexColor(0.25, 0.25, 0.25)
 		frame.highlight = highlightRegion

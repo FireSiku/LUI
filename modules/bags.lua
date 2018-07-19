@@ -109,11 +109,11 @@ local function LUIBags_Select(bag)
 end
 
 local function CheckSortButton()
-	if db.hideSort then 
+	if db.hideSort then
 		if LUIBank then LUIBank.sortButton:Hide() end
 		if LUIBags then LUIBags.sortButton:Hide() end
 		if LUIReagents then LUIReagents.sortButton:Hide() end
-	else 
+	else
 		if LUIBank then LUIBank.sortButton:Show() end
 		if LUIBags then LUIBags.sortButton:Show() end
 		if LUIReagents then LUIReagents.sortButton:Show() end
@@ -237,7 +237,7 @@ function module:SlotUpdate(item)
 		local cd_start, cd_finish, cd_enable = GetContainerItemCooldown(item.bag, item.slot)
 		CooldownFrame_Set(item.Cooldown, cd_start, cd_finish, cd_enable)
 	end
-	
+
 	-- New item code from Blizzard's ContainerFrame.lua
 	local newItemTexture = item.frame.NewItemTexture
 	local battlePayTexture = item.frame.BattlepayItemTexture
@@ -273,7 +273,7 @@ function module:SlotUpdate(item)
 		battlePayTexture:SetSize(item.frame:GetSize())
 		newItemTexture:SetSize(item.frame:GetSize())
 	end
-	
+
 	-- Quest Item code from Blizzard's ContainerFrame.lua
 	local questTexture = _G[item.frame:GetName().."IconQuestTexture"]
 	if questTexture then
@@ -289,7 +289,7 @@ function module:SlotUpdate(item)
 			questTexture:Hide()
 		end
 	end
-	
+
 	if (clink) then
 		local name, _, rarity, _, _, iType = GetItemInfo(clink)
 		item.name, item.rarity = name, rarity
@@ -312,8 +312,8 @@ function module:BagSlotUpdate(bag)
 	if not ItemSlots then
 		return
 	end
-	
-	if bag then 
+
+	if bag then
 		for _, item in ipairs(ItemSlots) do
 			if item.bag == bag then
 				module:SlotUpdate(item)
@@ -548,7 +548,7 @@ function module:CreateBagFrame(bagType)
 		closeBtn:GetNormalTexture():SetDesaturated(1)
 		frame.closeButton = closeBtn
 	end
-	
+
 	-- Bag Frame
 	local bagsFrame = CreateFrame("Frame", frameName.."_BagsFrame", frame)
 	bagsFrame:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 0, LUI:Scale(2))
@@ -570,7 +570,7 @@ function module:CreateBagFrame(bagType)
 		depositBtn:RegisterForClicks("AnyUp")
 		frame.depositBtn = depositBtn
 	end
-	
+
 	-- Purchase Reagents Bank
 	if frameName == "LUIBank" and not IsReagentBankUnlocked() then
 		local reagentsBtn = CreateFrame("Button", frameName.."_ReagentButton", frame, "UIPanelButtonTemplate")
@@ -586,7 +586,7 @@ function module:CreateBagFrame(bagType)
 		reagentsBtn:RegisterForClicks("AnyUp")
 		frame.reagentsBtn = reagentsBtn
 	end
-	
+
 	-- Sort Button
 	local sortBtn = CreateFrame("Button", frameName.."_SortButton", frame, "UIPanelButtonTemplate")
 	sortBtn:SetText("Stack & Sort");
@@ -1070,7 +1070,7 @@ function module:PLAYERBANKSLOTS_CHANGED(event, id)
 			module:BagSlotUpdate(id)
 		end
 	end
-	
+
 	if LUIReagents and LUIReagents:IsShown() then
 		for _, id in ipairs(GetBags["Reagents"]) do
 			module:BagSlotUpdate(id)
@@ -1334,7 +1334,7 @@ function module:LoadOptions()
 			type = "group",
 			order = 3,
 			args = {
-				Enable = LUI:NewEnable("Bags", 1, db),	
+				Enable = LUI:NewEnable("Bags", 1, db),
 				Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.",
 					2, db.Bags, "Cols", dbd.Bags, 4, 32, 1, BagOpt),
 				Lock = LUI:NewToggle("Lock Frames", "Lock the Bags, Bank and Reagents frames in place", 3, db, "Lock", dbd,nil,"normal"),

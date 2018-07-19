@@ -30,9 +30,9 @@ function module:SetAdditionalFrames()
 	self:SecureHook(DurabilityFrame, "SetPoint", "DurabilityFrame_SetPoint")
 	self:SecureHook(VehicleSeatIndicator, "SetPoint", "VehicleSeatIndicator_SetPoint")
 	self:SecureHook(ObjectiveTrackerFrame, "SetPoint", "ObjectiveTrackerFrame_SetPoint")
-	self:SecureHook(WorldStateAlwaysUpFrame, "SetPoint", "WorldStateAlwaysUpFrame_SetPoint")
+	--self:SecureHook(WorldStateAlwaysUpFrame, "SetPoint", "WorldStateAlwaysUpFrame_SetPoint")
 	self:SecureHook(TicketStatusFrame, "SetPoint", "TicketStatusFrame_SetPoint")
-	self:SecureHook("WorldStateAlwaysUpFrame_Update")
+	--self:SecureHook("WorldStateAlwaysUpFrame_Update")
 end
 
 function module:SetPosition(frame)
@@ -51,11 +51,11 @@ function module:SetPosition(frame)
 	elseif frame == "ticketStatus" and db.Minimap.Frames.SetTicket then
 		TicketStatusFrame:ClearAllPoints()
 		TicketStatusFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.TicketX, db.Minimap.Frames.TicketY)
-	elseif frame == "capture" and db.Minimap.Frames.SetCapture then
+	--[[elseif frame == "capture" and db.Minimap.Frames.SetCapture then
 		for i = 1, NUM_EXTENDED_UI_FRAMES do
 			_G["WorldStateCaptureBar" .. i]:ClearAllPoints()
 			_G["WorldStateCaptureBar" .. i]:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.CaptureX, db.Minimap.Frames.CaptureY)
-		end
+		end]]
 	end
 	
 	shouldntSetPoint = false
@@ -78,7 +78,7 @@ end
 
 function module:WorldStateAlwaysUpFrame_SetPoint()
 	if shouldntSetPoint then return end
-	self:SetPosition('worldState')
+	--self:SetPosition('worldState')
 end
 
 function module:WorldStateCaptureBar_SetPoint()
@@ -255,7 +255,7 @@ function module:SetMinimap()
 	MiniMapInstanceDifficulty:Hide()
 	
 	-- Hide Voice Chat Frame
-	MiniMapVoiceChatFrame:Hide()
+	--MiniMapVoiceChatFrame:Hide()
 
 	-- Hide North texture at top
 	MinimapNorthTag:SetTexture(nil)
@@ -483,7 +483,8 @@ function module:SetMinimap()
 	end
 	
 	m_coord:SetScript("OnUpdate", function(self)
-		local x,y = GetPlayerMapPosition("player")
+		--local x,y = GetPlayerMapPosition("player")
+		local x, y = C_Map.GetPlayerMapPosition( C_Map.GetBestMapForUnit("player"), "player" ):GetXY()
 		if not x then
 			m_coord_text:SetText("")
 		else

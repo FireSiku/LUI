@@ -3,7 +3,6 @@ if(select(2, UnitClass('player')) ~= 'PALADIN') then return end
 local parent, ns = ...
 local oUF = ns.oUF
 
-local SPELL_POWER_HOLY_POWER = SPELL_POWER_HOLY_POWER
 local MAX_HOLY_POWER = 5
 
 local Update = function(self, event, unit, powerType)
@@ -12,7 +11,7 @@ local Update = function(self, event, unit, powerType)
 	local hp = self.HolyPower
 	if(hp.PreUpdate) then hp:PreUpdate(unit) end
 
-	local num = UnitPower('player', SPELL_POWER_HOLY_POWER)
+	local num = UnitPower('player', Enum.PowerType.HolyPower)
 	for i = 1, MAX_HOLY_POWER do
 		if(i <= num) then
 			hp[i]:SetAlpha(1)
@@ -40,7 +39,7 @@ local function Enable(self)
 		hp.__owner = self
 		hp.ForceUpdate = ForceUpdate
 
-		self:RegisterEvent('UNIT_POWER', Path)
+		self:RegisterEvent('UNIT_POWER_UPDATE', Path)
 		hp:Show()
 		return true
 	end
@@ -49,7 +48,7 @@ end
 local function Disable(self)
 	local hp = self.HolyPower
 	if(hp) then
-		self:UnregisterEvent('UNIT_POWER', Path)
+		self:UnregisterEvent('UNIT_POWER_UPDATE', Path)
 		hp:Hide()
 	end
 end

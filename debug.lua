@@ -55,7 +55,7 @@ local function pretty_tostring(value)
 		for k, v in pairs(value) do
 			tinsert(t, "[" .. simple_pretty_tostring(k) .. "] = " .. simple_pretty_tostring(v))
 		end
-	end	
+	end
 	return "{" .. table.concat(t, ", ") .. "}"
 end
 

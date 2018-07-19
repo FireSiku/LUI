@@ -666,12 +666,12 @@ function module:LoadOptions()
 		Splash = "SECONDARY_SPLASH",
 	}
 	local function fxOptionsFunc(info)
-		local goto, index = info[#info - 1], nil
+		local gotoOpt, index = info[#info - 1], nil
 		if info[#info-2] == "SpellTimer" then
-			index = module:GetTimerIndexByName(goto)
-			goto = info[#info-2]
+			index = module:GetTimerIndexByName(gotoOpt)
+			gotoOpt = info[#info-2]
 		end
-		FW:ScrollTo(FW.L[scrollTable[goto]], nil, index)
+		FW:ScrollTo(FW.L[scrollTable[gotoOpt]], nil, index)
 	end
 	local function newFXOptionsButton(order)
 		order = order or 2

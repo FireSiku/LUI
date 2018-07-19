@@ -35,7 +35,7 @@ function LUI:InstallDetails()
       
       -- Change bar's settings
 	  --instance:SetBarSettings (height, texture, colorByClass, fixedcolor, bgTexture, bgColorByClass, bgFixedcolor, alpha, iconfile, barStart, spacement, customtexture)
-      instance:SetBarSettings(24, "Minimalist", false, {0.45, 0.45, 0.45, 0.8}, "Minimalist", false, {0.45, 0.45, 0.45, 0.2}, nil, "Interface\AddOns\Details\images\spec_icons_normal_alpha", false, 0)
+      instance:SetBarSettings(24, "Minimalist", false, {0.45, 0.45, 0.45, 0.8}, "Minimalist", false, {0.45, 0.45, 0.45, 0.2}, nil, "Interface\AddOns\Details\images\spec_icons_normal_alpha", false, 0) -- luacheck: ignore
       
 	  -- Change bar's text settings
 	  --instance:SetBarTextSettings (size, font, fixedcolor, leftcolorbyclass, rightcolorbyclass, leftoutline, rightoutline, customrighttextenabled, customrighttext, percentage_type, 

@@ -74,7 +74,7 @@ L["Top Right"] = true
 L["Version: "] = true
 L["Version %s available for download."] = true
 L["Vertical Position"] = true
-L["Welcome to LUI v3"] = [=[Welcome to |c0090ffffLUI v3|r, a complete 
+L["Welcome to LUI v3"] = [=[Welcome to |c0090ffffLUI v3|r, a complete
 World of Warcraft User Interface overhaul.]=]
 L["Width"] = true
 

@@ -83,40 +83,6 @@ function LUI:InstallBartender()
 		Bartender4DB.namespaces.BagBar.profiles[k] = v
 	end
 
-	_G.RepBarDefaults = {
-		[CharName] = {
-			["position"] = {
-				["y"] = 9.999978772832151,
-				["x"] = 361.714377491161,
-				["point"] = "LEFT",
-			},
-			["version"] = 3,
-		},
-	}
-
-	for k,v in pairs(RepBarDefaults) do
-		Bartender4DB.namespaces.RepBar.profiles[k] = v
-	end
-
-	_G.XPBarDefaults = {
-		[CharName] = {
-			["position"] = {
-				["y"] = 218.9714880476636,
-				["x"] = 398.3903171500545,
-				["point"] = "BOTTOMLEFT",
-				["scale"] = 0.9,
-			},
-			["visibility"] = {
-				["possess"] = false,
-			},
-			["version"] = 3,
-		},
-	}
-
-	for k,v in pairs(XPBarDefaults) do
-		Bartender4DB.namespaces.XPBar.profiles[k] = v
-	end
-
 	_G.ActionBarsDefaults = {
 		[CharName] = {
 			["actionbars"] = {

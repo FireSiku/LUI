@@ -39,7 +39,7 @@ local function Enable(self)
 		so.__owner = self
 		so.ForceUpdate = ForceUpdate
 
-		self:RegisterEvent('UNIT_POWER', Path)
+		self:RegisterEvent('UNIT_POWER_UPDATE', Path)
 		so:Show()
 		return true
 	end
@@ -48,7 +48,7 @@ end
 local function Disable(self)
 	local so = self.ShadowOrbs
 	if(so) then
-		self:UnregisterEvent('UNIT_POWER', Path)
+		self:UnregisterEvent('UNIT_POWER_UPDATE', Path)
 		so:Hide()
 	end
 end

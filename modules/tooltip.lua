@@ -4,7 +4,7 @@
 	Description: Tooltip Module
 	Version....: 1.5
 	Rev Date...: 02/01/2011 [dd/mm/yyyy]
-	
+
 	Edits:
 		v1.0: Loui
 		v1.1: Hix
@@ -13,7 +13,7 @@
 		-  e: Loui/Hix
 		v1.4: Hix
 		v1.5: Zista
-]] 
+]]
 
 -- External references.
 local addonname, LUI = ...
@@ -29,17 +29,17 @@ local LUITooltipColors
 
 function module:UpdateTooltip()
 	for _, tt in pairs(Tooltips) do
-		tt:SetBackdrop( { 
-			bgFile = Media:Fetch("background", db.Tooltip.Background.Texture), 
-			edgeFile = Media:Fetch("border", db.Tooltip.Border.Texture), 
-			tile = false, edgeSize = db.Tooltip.Border.Size, 
+		tt:SetBackdrop( {
+			bgFile = Media:Fetch("background", db.Tooltip.Background.Texture),
+			edgeFile = Media:Fetch("border", db.Tooltip.Border.Texture),
+			tile = false, edgeSize = db.Tooltip.Border.Size,
 			insets = { left = db.Tooltip.Border.Insets.Left, right = db.Tooltip.Border.Insets.Right, top = db.Tooltip.Border.Insets.Top, bottom = db.Tooltip.Border.Insets.Bottom }
 		})
 	end
 end
 
 function module:SetTooltip()
-	
+
 	if db.Tooltip.Enable ~= true then return end
 
 	LUITooltipColors = {
@@ -51,7 +51,7 @@ function module:SetTooltip()
 			[5] = { 75/255,  175/255, 76/255 }, -- Friendly
 			[6] = { 75/255,  175/255, 76/255 }, -- Honored
 			[7] = { 75/255,  175/255, 76/255 }, -- Revered
-			[8] = { 75/255,  175/255, 76/255 }, -- Exalted	
+			[8] = { 75/255,  175/255, 76/255 }, -- Exalted
 		},
 		class = {
 			["DEATHKNIGHT"] = { 196/255,  30/255,  60/255 },
@@ -72,7 +72,7 @@ function module:SetTooltip()
 	local LUITooltip = CreateFrame( "Frame", "tooltip", UIParent)
 
 	local _G = getfenv(0)
-	
+
 	module:UpdateTooltip()
 
 	local gsub, find, format = string.gsub, string.find, string.format
@@ -98,7 +98,7 @@ function module:SetTooltip()
 		end
 		frame.default = 1
 	end)
-	
+
 	local function Hex(color)
 		return string.format('|cff%02x%02x%02x', color.r * 255, color.g * 255, color.b * 255)
 	end
@@ -109,12 +109,12 @@ function module:SetTooltip()
 			local color = RAID_CLASS_COLORS[class]
 			if not color then return end -- sometime unit too far away return nil for color :(
 			local r,g,b = color.r, color.g, color.b
-			return Hex(color), r, g, b	
+			return Hex(color), r, g, b
 		else
 			local color = FACTION_BAR_COLORS[UnitReaction(unit, "player")]
 			if not color then return end -- sometime unit too far away return nil for color :(
-			local r,g,b = color.r, color.g, color.b		
-			return Hex(color), r, g, b		
+			local r,g,b = color.r, color.g, color.b
+			return Hex(color), r, g, b
 		end
 	end
 
@@ -140,7 +140,7 @@ function module:SetTooltip()
 		local unit = select(2, self:GetUnit())
 		return unit
 	end
-	
+
 	local healthBar = GameTooltipStatusBar
 	healthBar:ClearAllPoints()
 	healthBar:SetHeight(LUI:Scale(6))
@@ -152,29 +152,29 @@ function module:SetTooltip()
 	healthBarBG:SetFrameLevel(healthBar:GetFrameLevel() - 1)
 	healthBarBG:SetPoint("TOPLEFT", -LUI:Scale(2), LUI:Scale(2))
 	healthBarBG:SetPoint("BOTTOMRIGHT", LUI:Scale(2), -LUI:Scale(2))
-	healthBarBG:SetBackdrop( { 
-		bgFile = LUI.Media.blank, 
-		edgeFile = LUI.Media.blank, 
-		tile = false, edgeSize = 0, 
+	healthBarBG:SetBackdrop( {
+		bgFile = LUI.Media.blank,
+		edgeFile = LUI.Media.blank,
+		tile = false, edgeSize = 0,
 		insets = { left = 0, right = 0, top = 0, bottom = 0 }
 	})
 	healthBarBG:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
 	healthBarBG:SetBackdropBorderColor(0,0,0,0)
-	
+
 	local BorderColor = function(self)
-		
+
 		local c
 		local r = db.Tooltip.Border.Color.r
 		local g = db.Tooltip.Border.Color.g
 		local b = db.Tooltip.Border.Color.b
 		local a = db.Tooltip.Border.Color.a
-		
+
 		local unit = GetTooltipUnit(self)
-		
+
 		local reaction = unit and UnitReaction(unit, "player")
 		local player = unit and UnitIsPlayer(unit)
 		local tapped = unit and UnitIsTapDenied(unit)
-	
+
 		if player then
 			local class = select(2, UnitClass(unit))
 			local c = LUITooltipColors.class[class] or {1, 1, 1}
@@ -208,11 +208,11 @@ function module:SetTooltip()
 			healthBarBG:SetBackdropBorderColor(r, g, b, a)
 			healthBar:SetStatusBarColor(r, g, b, a)
 		end
-		
+
 		-- need this
 		NeedBackdropBorderRefresh = true
 	end
-	
+
 	local SetStyle = function(self)
 		if db.Tooltip.Hidecombat and InCombatLockdown() then
 			self:Hide()
@@ -224,19 +224,19 @@ function module:SetTooltip()
 		BorderColor(self)
 		self:Show()
 	end
-	
+
 	-- update HP value on status bar
 	GameTooltipStatusBar:SetScript("OnValueChanged", function(self, value)
 		if not value then
 			return
 		end
 		local min, max = self:GetMinMaxValues()
-		
+
 		if (value < min) or (value > max) then
 			return
 		end
 		local _, unit = GameTooltip:GetUnit()
-		
+
 		-- fix target of target returning nil
 		--if (not unit) then
 		--	local GMF = GetMouseFocus()
@@ -281,22 +281,22 @@ function module:SetTooltip()
 	module:HookScript(GameTooltip, "OnTooltipSetUnit", function(frame)
 		local genderTable = { "", "Male ", "Female " };
 		local lines = frame:NumLines()
-		
+
 		if db.Tooltip.Hidecombat and InCombatLockdown() then
 			frame:Hide()
 			return
 		end
-		
+
 		SetStyle(frame)
-		
+
 		local unit = GetTooltipUnit(frame)
-		
+
 		-- Sometimes when you move your mouse quicky over units in the worldframe, we can get here without a unit
 		if not unit then frame:Hide() return end
-		
+
 		-- for hiding tooltip on unitframes
 		if (frame:GetOwner() ~= UIParent and db.Tooltip.Hideuf) then frame:Hide() return end
-		
+
 		-- A "mouseover" unit is better to have as we can then safely say the tip should no longer show when it becomes invalid.
 		--if (UnitIsUnit(unit,"mouseover")) then
 		--	unit = "mouseover"
@@ -312,17 +312,17 @@ function module:SetTooltip()
 		local classif = UnitClassification(unit)
 		local title = UnitPVPName(unit)
 		local r, g, b = GetQuestDifficultyColor(level).r, GetQuestDifficultyColor(level).g, GetQuestDifficultyColor(level).b
-		local color = GetColor(unit)	
+		local color = GetColor(unit)
 		if not color then color = "|CFFFFFFFF" end -- just safe mode for when GetColor(unit) return nil for unit too far away
-		--if not race then race = "Helpful NPC" end -- For helpful NPCs that join your raid. 
-	
-		-- Turns out that Title and name returns nil for spectating pet battles, but if that line is skipped, everything works fine. 
+		--if not race then race = "Helpful NPC" end -- For helpful NPCs that join your raid.
+
+		-- Turns out that Title and name returns nil for spectating pet battles, but if that line is skipped, everything works fine.
 		if name then _G["GameTooltipTextLeft1"]:SetFormattedText("%s%s%s", color, title or name, realm and realm ~= "" and " - "..realm.."|r" or "|r") end
 
 		if(UnitIsPlayer(unit)) then
 			if UnitIsAFK(unit) then
 				frame:AppendText((" %s"):format(CHAT_FLAG_AFK))
-			elseif UnitIsDND(unit) then 
+			elseif UnitIsDND(unit) then
 				frame:AppendText((" %s"):format(CHAT_FLAG_DND))
 			end
 
@@ -366,7 +366,7 @@ function module:SetTooltip()
 			if not r and not g and not b then r, g, b = 1, 1, 1 end
 			GameTooltip:AddLine(UnitName(unit.."target"), r, g, b)
 		end
-		
+
 		-- Sometimes this wasn't getting reset, the fact a cleanup isn't performed at this point, now that it was moved to "OnTooltipCleared" is very bad, so this is a fix
 		frame.fadeOut = nil
 	end)
@@ -377,9 +377,9 @@ function module:SetTooltip()
 				module:HookScript(tt, "OnShow", SetStyle)
 			end
 		end
-		
+
 		module:UnregisterEvent("PLAYER_ENTERING_WORLD")
-		
+
 		-- Hide tooltips in combat for actions, pet actions and shapeshift
 		local CombatHideActionButtonsTooltip = function(self)
 			if db.Tooltip.Hidebuttons and InCombatLockdown() and not IsShiftKeyDown() then
@@ -389,19 +389,19 @@ function module:SetTooltip()
 		hooksecurefunc(GameTooltip, "SetAction", CombatHideActionButtonsTooltip)
 		hooksecurefunc(GameTooltip, "SetPetAction", CombatHideActionButtonsTooltip)
 		hooksecurefunc(GameTooltip, "SetShapeshift", CombatHideActionButtonsTooltip)
-		
+
 	end)
-	
+
 	-- Contribution frame requires special handling because of the way V3 works, ContributionTooltip is nil at the moment of running UpdateTooltips
 	module:RegisterEvent("CONTRIBUTION_COLLECTOR_OPEN", function()
 		local ccTooltips = { ContributionTooltip, ContributionBuffTooltip }
 		for _, tt in pairs(ccTooltips) do
 			if not module:IsHooked(tt, "OnShow") then
 				module:HookScript(tt, "OnShow", function()
-					tt:SetBackdrop( { 
-						bgFile = Media:Fetch("background", db.Tooltip.Background.Texture), 
-						edgeFile = Media:Fetch("border", db.Tooltip.Border.Texture), 
-						tile = false, edgeSize = db.Tooltip.Border.Size, 
+					tt:SetBackdrop( {
+						bgFile = Media:Fetch("background", db.Tooltip.Background.Texture),
+						edgeFile = Media:Fetch("border", db.Tooltip.Border.Texture),
+						tile = false, edgeSize = db.Tooltip.Border.Size,
 						insets = { left = db.Tooltip.Border.Insets.Left, right = db.Tooltip.Border.Insets.Right, top = db.Tooltip.Border.Insets.Top, bottom = db.Tooltip.Border.Insets.Bottom }
 					})
 					tt:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
@@ -562,11 +562,11 @@ function module:LoadOptions()
 									if (scale == nil) or (scale == "") then
 										scale = "0"
 									end
-									
+
 									db.Tooltip.Scale = tonumber(scale)
 								end,
 						},
-					},					
+					},
 				},
 				Position = {
 					name = "Position",
@@ -581,7 +581,7 @@ function module:LoadOptions()
 						},
 						PosX = {
 							name = "X Value",
-							desc = "X value for your Tooltip.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Tooltip.X, 
+							desc = "X value for your Tooltip.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Tooltip.X,
 							type = "input",
 							width = "half",
 							order = 2,
@@ -595,7 +595,7 @@ function module:LoadOptions()
 						},
 						PosY = {
 							name = "Y Value",
-							desc = "Y value for your Tooltip.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Tooltip.Y, 
+							desc = "Y value for your Tooltip.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Tooltip.Y,
 							type = "input",
 							width = "half",
 							order = 3,
@@ -625,7 +625,7 @@ function module:LoadOptions()
 							set = function(self, texture)
 									db.Tooltip.Health.Texture = texture
 									GameTooltipStatusBar:SetStatusBarTexture(Media:Fetch("statusbar", db.Tooltip.Health.Texture))
-								end,						
+								end,
 						},
 					},
 				},
@@ -647,7 +647,7 @@ function module:LoadOptions()
 									db.Tooltip.Background.Color.g = g
 									db.Tooltip.Background.Color.b = b
 									db.Tooltip.Background.Color.a = a
-								end,									
+								end,
 						},
 						Texture = {
 							name = "Texture",
@@ -660,7 +660,7 @@ function module:LoadOptions()
 							set = function(self, texture)
 									db.Tooltip.Background.Texture = texture
 									module:UpdateTooltip()
-								end,						
+								end,
 						},
 					},
 				},
@@ -681,7 +681,7 @@ function module:LoadOptions()
 									db.Tooltip.Border.Color.g = g
 									db.Tooltip.Border.Color.b = b
 									db.Tooltip.Border.Color.a = a
-								end,									
+								end,
 						},
 						Tapped = {
 							name = "Tapped Color",
@@ -694,7 +694,7 @@ function module:LoadOptions()
 									db.Tooltip.Border.Tapped.r = r
 									db.Tooltip.Border.Tapped.g = g
 									db.Tooltip.Border.Tapped.b = b
-								end,									
+								end,
 						},
 						Texture = {
 							name = "Texture",
@@ -707,7 +707,7 @@ function module:LoadOptions()
 							set = function(self, texture)
 									db.Tooltip.Border.Texture = texture
 									module:UpdateTooltip()
-								end,						
+								end,
 						},
 						Size = {
 							name = "Border Size",
@@ -798,7 +798,7 @@ function module:LoadOptions()
 							}
 						},
 					},
-				},			
+				},
 			},
 		},
 	}
@@ -809,10 +809,10 @@ function module:OnInitialize()
 	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
 	LUI:RefreshDefaults()
 	LUI:Refresh()
-	
+
 	self.db = LUI.db.profile
 	db = self.db
-	
+
 	LUI:RegisterModule(self)
 end
 

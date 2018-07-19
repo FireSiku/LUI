@@ -4,7 +4,7 @@
 	Description: Main Panels Module
 	Version....: 1.2
 	Rev Date...: 13/03/2012 [dd/mm/yyyy]
-	
+
 	Edits:
 		v1.0: Loui
 		v1.1: Zista
@@ -12,15 +12,15 @@
 ]]
 
 -- External references.
-local addonname, LUI = ...
+local _, LUI = ...
 local module = LUI:Module("Panels", "AceHook-3.0", "AceEvent-3.0")
 local Frames = LUI:Module("Frames")
 local Themes = LUI:Module("Themes")
-local Media = LibStub("LibSharedMedia-3.0")
+local Media_ = LibStub("LibSharedMedia-3.0")
 
-local db, dbd
-local frameBackgrounds = {"LEFT", "RIGHT", "NONE"}
-local frameBackgrounds2 = {"LUI v3", "NONE"}
+local db, dbd_
+local frameBackgrounds_ = {"LEFT", "RIGHT", "NONE"}
+local frameBackgrounds2_ = {"LUI v3", "NONE"}
 local animations = {"AlphaSlide", "None"}
 local directions = {"SOLID", "TOPLEFT", "TOP", "TOPRIGHT", "RIGHT", "BOTTOMRIGHT", "BOTTOM", "BOTTOMLEFT", "LEFT"}
 
@@ -47,6 +47,7 @@ local addonAnchors = {
 		Details_2nd = "DetailsBaseFrame2",
 	}
 }
+
 function module:CheckPanels()
 	if db.Chat.AlwaysShow and db.Tps.AlwaysShow and db.Dps.AlwaysShow and db.Raid.AlwaysShow then
 		Frames:IsAllShown(true)
@@ -68,13 +69,13 @@ function module:CheckPanels()
 		db.Minimap.IsShown = false
 	end
 
-	for i=1,NUM_CHAT_WINDOWS do 
-		for _,v in pairs{"","Tab"}do 
+	for i=1,NUM_CHAT_WINDOWS do
+		for _,v in pairs{"","Tab"}do
 			local f=_G["ChatFrame"..i..v]
 			f.ORShow = f.Show --Give every chat frame an ORiginalShow function to allow overwriting of Show later on
 		end
 	end
-	
+
 	if db.Chat.AlwaysShow or db.Chat.IsShown then
 		Frames:SetNaviAlpha("Chat", 1)
 
@@ -93,8 +94,8 @@ function module:CheckPanels()
 		--LUI:SetChatVisible(false)
 		LUI:SetChatVisible(true)
 	end
-	
-	
+
+
 	if (db.Tps.AlwaysShow or db.Tps.IsShown) and _G[db.Tps.Anchor] then
 		Frames:SetNaviAlpha("Tps", 1)
 
@@ -161,8 +162,8 @@ function module:CheckPanels()
 end
 
 function LUI:SetChatVisible(setVisible)
-	for i=1,NUM_CHAT_WINDOWS do 
-		for _,v in pairs{"","Tab"}do 
+	for i=1,NUM_CHAT_WINDOWS do
+		for _,v in pairs{"","Tab"}do
 			local f=_G["ChatFrame"..i..v]
 			if setVisible then
 				f.Show = f.ORShow
@@ -173,7 +174,7 @@ function LUI:SetChatVisible(setVisible)
 			if f.v then
 				f:Show()
 			end
-		end 
+		end
 	end
 end
 
@@ -199,7 +200,7 @@ function module:LoadAdditional(str, debug)
 			if _G[part1] then
 				table.insert(frames, part1)
 			elseif debug then
-				LUI:Print("Could not find frame named "..part1)
+		
 			end
 			str = part2
 		end
@@ -208,12 +209,62 @@ function module:LoadAdditional(str, debug)
 		if _G[str] then
 			table.insert(frames, str)
 		elseif debug then
-			LUI:Print("Could not find frame named "..str)
+	
 		end
 	end
 
 	if debug then return end
 	return frames
+end
+
+-- Black voodoo magic used for compatibility for a deprecated function
+local rotationCoords = {
+	[0] = {
+		-0.20710676908493, -- [1]
+		-0.20710676908493, -- [2]
+		-0.20710676908493, -- [3]
+		1.20710682868958, -- [4]
+		1.20710682868958, -- [5]
+		-0.20710676908493, -- [6]
+		1.20710682868958, -- [7]
+		1.20710682868958, -- [8]
+	},
+	[90] = {
+		1.20710682868958, -- [4]
+		-0.20710682868958, -- [6]
+		-0.20710682868958, -- [6]
+		-0.20710676908493, -- [6]
+		1.20710682868958, -- [4]
+		1.20710682868958, -- [4]
+		-0.20710676908493, -- [6]
+		1.20710682868958, -- [4]
+	},
+	[180] = {
+		1.20710682868958, -- [4]
+		1.20710682868958, -- [4]
+		1.20710682868958, -- [4]
+		-0.20710676908493, -- [6]
+		-0.20710676908493, -- [6]
+		1.20710682868958, -- [4]
+		-0.20710676908493, -- [6]
+		-0.20710682868958, -- [6]
+	},
+	[270] = {
+		-0.20710670948029, -- [1]
+		1.20710682868958, -- [4]
+		1.20710682868958, -- [4]
+		1.2071067094803, -- [4]
+		-0.20710682868958, -- [6]
+		-0.20710670948029, -- [6]
+		1.2071067094803, -- [7]
+		-0.20710682868958, -- [6]
+	},
+}
+
+
+function RotateTexture(self, degrees)
+	local r = rotationCoords[degrees]
+	self:SetTexCoord(r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8])
 end
 
 local Set = function(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
@@ -225,7 +276,7 @@ local Set = function(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
 	if d == "SOLID" then
 		f.c:SetTexture(fdir.."panelbg1.tga")
 		f.c:SetVertexColor(rc, gc, bc, ac)
-		f.c:SetRotation(0)
+		RotateTexture(f.c, 0)
 
 		f.tl:SetVertexColor(r, g, b, a)
 		f.tr:SetVertexColor(r, g, b, a)
@@ -239,7 +290,7 @@ local Set = function(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
 	elseif d == "LEFT" then
 		f.c:SetTexture(fdir.."panelbg2.tga")
 		f.c:SetVertexColor(rc, gc, bc, ac)
-		f.c:SetRotation(math.pi / 2)
+		RotateTexture(f.c, 90)
 
 		f.tl:SetVertexColor(r, g, b, a)
 		f.tr:SetVertexColor(r, g, b, 0)
@@ -253,7 +304,7 @@ local Set = function(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
 	elseif d == "TOP" then
 		f.c:SetTexture(fdir.."panelbg2.tga")
 		f.c:SetVertexColor(rc, gc, bc, ac)
-		f.c:SetRotation(0)
+		RotateTexture(f.c, 0)
 
 		f.tl:SetVertexColor(r, g, b, a)
 		f.tr:SetVertexColor(r, g, b, a)
@@ -267,7 +318,7 @@ local Set = function(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
 	elseif d == "RIGHT" then
 		f.c:SetTexture(fdir.."panelbg2.tga")
 		f.c:SetVertexColor(rc, gc, bc, ac)
-		f.c:SetRotation(math.pi * 1.5)
+		RotateTexture(f.c, 270)
 
 		f.tl:SetVertexColor(r, g, b, 0)
 		f.tr:SetVertexColor(r, g, b, a)
@@ -281,7 +332,7 @@ local Set = function(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
 	elseif d == "BOTTOM" then
 		f.c:SetTexture(fdir.."panelbg2.tga")
 		f.c:SetVertexColor(rc, gc, bc, ac)
-		f.c:SetRotation(math.pi)
+		RotateTexture(f.c, 180)
 
 		f.tl:SetVertexColor(r, g, b, 0)
 		f.tr:SetVertexColor(r, g, b, 0)
@@ -295,7 +346,7 @@ local Set = function(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
 	elseif d == "TOPLEFT" then
 		f.c:SetTexture(fdir.."panelbg3.tga")
 		f.c:SetVertexColor(rc, gc, bc, ac)
-		f.c:SetRotation(0)
+		RotateTexture(f.c, 0)
 
 		f.tl:SetVertexColor(r, g, b, a)
 		f.tr:SetVertexColor(r, g, b, 0)
@@ -309,7 +360,7 @@ local Set = function(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
 	elseif d == "TOPRIGHT" then
 		f.c:SetTexture(fdir.."panelbg3.tga")
 		f.c:SetVertexColor(rc, gc, bc, ac)
-		f.c:SetRotation(math.pi * 1.5)
+		RotateTexture(f.c, 270)
 
 		f.tl:SetVertexColor(r, g, b, 0)
 		f.tr:SetVertexColor(r, g, b, a)
@@ -323,7 +374,7 @@ local Set = function(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
 	elseif d == "BOTTOMRIGHT" then
 		f.c:SetTexture(fdir.."panelbg3.tga")
 		f.c:SetVertexColor(rc, gc, bc, ac)
-		f.c:SetRotation(math.pi)
+		RotateTexture(f.c, 180)
 
 		f.tl:SetVertexColor(r, g, b, 0)
 		f.tr:SetVertexColor(r, g, b, 0)
@@ -337,7 +388,7 @@ local Set = function(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
 	elseif d == "BOTTOMLEFT" then
 		f.c:SetTexture(fdir.."panelbg3.tga")
 		f.c:SetVertexColor(rc, gc, bc, ac)
-		f.c:SetRotation(math.pi / 2)
+		RotateTexture(f.c, 90)
 
 		f.tl:SetVertexColor(r, g, b, 0)
 		f.tr:SetVertexColor(r, g, b, 0)
@@ -349,12 +400,13 @@ local Set = function(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
 		f.l:SetGradientAlpha("VERTICAL", r, g, b, a, r, g, b, 0)
 		f.r:SetGradientAlpha("VERTICAL", r, g, b, 0, r, g, b, 0)
 	end
+
 end
 
 local bordersize = 9
 local padding = 0
-local CreateBackground = function()
-	local f = CreateFrame("Frame", nil, UIParent)
+local CreateBackground = function(kind)
+	local f = CreateFrame("Frame", "LUIPanel_"..kind, UIParent)
 
 	f.c = f:CreateTexture(nil, "BACKGROUND")
 	f.c:SetPoint("TOPLEFT", f, "TOPLEFT")
@@ -365,56 +417,56 @@ local CreateBackground = function()
 	f.tl:SetHeight(bordersize)
 	f.tl:SetPoint("BOTTOMRIGHT", f, "TOPLEFT", -padding, padding)
 	f.tl:SetTexture(fdir.."panelcorner.tga")
-	f.tl:SetRotation(0)
+	RotateTexture(f.tl, 0)
 
 	f.tr = f:CreateTexture(nil, "BACKGROUND")
 	f.tr:SetWidth(bordersize)
 	f.tr:SetHeight(bordersize)
 	f.tr:SetPoint("BOTTOMLEFT", f, "TOPRIGHT", padding, padding)
 	f.tr:SetTexture(fdir.."panelcorner.tga")
-	f.tr:SetRotation(math.pi * 1.5)
+	RotateTexture(f.tr, 270)
 
 	f.bl = f:CreateTexture(nil, "BACKGROUND")
 	f.bl:SetWidth(bordersize)
 	f.bl:SetHeight(bordersize)
 	f.bl:SetPoint("TOPRIGHT", f, "BOTTOMLEFT", -padding, -padding)
 	f.bl:SetTexture(fdir.."panelcorner.tga")
-	f.bl:SetRotation(math.pi / 2)
+	RotateTexture(f.bl, 90)
 
 	f.br = f:CreateTexture(nil, "BACKGROUND")
 	f.br:SetWidth(bordersize)
 	f.br:SetHeight(bordersize)
 	f.br:SetPoint("TOPLEFT", f, "BOTTOMRIGHT", padding, -padding)
 	f.br:SetTexture(fdir.."panelcorner.tga")
-	f.br:SetRotation(math.pi)
+	RotateTexture(f.br, 180)
 
 	f.l = f:CreateTexture(nil, "BACKGROUND")
 	f.l:SetWidth(bordersize)
 	f.l:SetPoint("TOPRIGHT", f, "TOPLEFT", -padding, padding)
 	f.l:SetPoint("BOTTOMRIGHT", f, "BOTTOMLEFT", padding, -padding)
 	f.l:SetTexture(fdir.."panelborder.tga")
-	f.l:SetRotation(math.pi / 2)
+	RotateTexture(f.l, 90)
 
 	f.r = f:CreateTexture(nil, "BACKGROUND")
 	f.r:SetWidth(bordersize)
 	f.r:SetPoint("TOPLEFT", f, "TOPRIGHT", padding, padding)
 	f.r:SetPoint("BOTTOMLEFT", f, "BOTTOMRIGHT", padding, -padding)
 	f.r:SetTexture(fdir.."panelborder.tga")
-	f.r:SetRotation(math.pi * 1.5)
+	RotateTexture(f.r, 270)
 
 	f.t = f:CreateTexture(nil, "BACKGROUND")
 	f.t:SetHeight(bordersize)
 	f.t:SetPoint("BOTTOMLEFT", f, "TOPLEFT", -padding, padding)
 	f.t:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT", padding, padding)
 	f.t:SetTexture(fdir.."panelborder.tga")
-	f.t:SetRotation(0)
+	RotateTexture(f.t, 0)
 
 	f.b = f:CreateTexture(nil, "BACKGROUND")
 	f.b:SetHeight(bordersize)
 	f.b:SetPoint("TOPLEFT", f, "BOTTOMLEFT", -padding, -padding)
 	f.b:SetPoint("TOPRIGHT", f, "BOTTOMRIGHT", padding, -padding)
 	f.b:SetTexture(fdir.."panelborder.tga")
-	f.b:SetRotation(math.pi)
+	RotateTexture(f.b, 180)
 
 	f.Set = Set
 
@@ -449,17 +501,9 @@ function module:AlphaOut(kind)
 	if db[kind].Animation == "AlphaSlide" then
 		backgrounds[kind].AlphaOut:Show()
 
-		--[[if kind == "Chat" and LUI.db.profile.Chat.SecondChatFrame then
-			backgrounds.Chat2.AlphaOut:Show()
-		end]]
 	else
 		_G[backgrounds[kind].frame]:SetAlpha(0)
 		_G[backgrounds[kind].frame]:Hide()
-
-		--[[if kind == "Chat" and LUI.db.profile.Chat.SecondChatFrame then
-			ChatAlphaAnchor2:SetAlpha(0)
-			ChatAlphaAnchor2:Hide()
-		end]]
 
 		for _, f in pairs(Panels:LoadAdditional(db[kind].Additional)) do
 			_G[f]:SetAlpha(0)
@@ -474,15 +518,11 @@ function module:CreateBackground(kind)
 	local frame
 	if kind == "Chat" then
 		frame = "ChatAlphaAnchor"
-	--[[
-	elseif kind == "Chat2" then
-		frame = "ChatAlphaAnchor2"
-	--]]
 	else
 		frame = db[kind].Anchor
 	end
 
-	backgrounds[kind] = CreateBackground()
+	backgrounds[kind] = CreateBackground(kind)
 
 	backgrounds[kind].timerout = 0
 	backgrounds[kind].timerin = 0
@@ -565,16 +605,12 @@ function module:ApplyBackground(kind)
 	if kind == "Chat" then
 		frame = ChatAlphaAnchor
 		frame:Raise() -- Fix for Panel being above chat frame
-	--[[
-	elseif kind == "Chat2" then
-		frame = ChatAlphaAnchor2
-	--]]
 	else
 		frame = _G[db[kind].Anchor]
 	end
 
 	if not frame then
-		--LUI:Printf("Warning! Could not find anchor named %s for the %s Frame!", db[kind].Anchor, kind)
+		
 		backgrounds[kind]:Hide()
 		return
 	end
@@ -600,18 +636,7 @@ function module:SetPanels()
 	ChatAlphaAnchor:SetAlpha(1)
 	ChatAlphaAnchor:Show()
 
-	--[[
-	local ChatAlphaAnchor2 = CreateFrame("Frame", "ChatAlphaAnchor2", UIParent)
-	ChatAlphaAnchor2:SetWidth(30)
-	ChatAlphaAnchor2:SetHeight(30)
-	ChatAlphaAnchor2:SetFrameStrata("BACKGROUND")
-	ChatAlphaAnchor2:SetPoint("TOPLEFT", LUI.db.profile.Chat and LUI.db.profile.Chat.SecondChatAnchor or ChatFrame3, "TOPLEFT", -10, 8)
-	ChatAlphaAnchor2:SetAlpha(1)
-	ChatAlphaAnchor2:Hide()
-	--]]
-
 	self:CreateBackground("Chat")
-	--self:CreateBackground("Chat2")
 	self:CreateBackground("Tps")
 	self:CreateBackground("Dps")
 	self:CreateBackground("Raid")
@@ -635,18 +660,9 @@ module.defaults = {
 			IsShown = false,
 			Direction = "TOPRIGHT",
 			Animation = "AlphaSlide",
-			Width = 409,
+			Width = 429,
 			Height = 181
 		},
-		--[[
-		Chat2 = {
-			OffsetX = 0,
-			OffsetY = 0,
-			Direction = "TOPLEFT",
-			Width = 100,
-			Height = 100
-		},
-		--]]
 		Tps = {
 			OffsetX = 0,
 			OffsetY = 0,
@@ -703,7 +719,6 @@ function module:Refresh(...)
 	end
 
 	self:ApplyBackground("Chat")
-	--self:ApplyBackground("Chat2")
 	self:ApplyBackground("Tps")
 	self:ApplyBackground("Dps")
 	self:ApplyBackground("Raid")
@@ -715,7 +730,6 @@ function module:LoadOptions()
 	local UIRL = function() StaticPopup_Show("RELOAD_UI") end
 
 	local CreateOptionsPart = function(tag, order)
-		--local isPrimary = tag ~= "Chat2"
 		local isNotChat = tag ~= "Chat" --not string.find(tag, "Chat")
 
 		local options = self:NewGroup(tag, order, {
@@ -732,7 +746,7 @@ function module:LoadOptions()
 					for k, v in pairs(t) do
 						tinsert(list, k)
 					end
-				
+
 					return list
 				end,
 				get = function()
@@ -849,7 +863,7 @@ function module:OnEnable()
 		self:CheckPanels()
 		self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	end)
-	
+
 	-- Update Details users that dont have the AdditionalFrame yet
 	if db.Dps.Anchor == "DetailsBaseFrame1" and db.Dps.Additional == "" then
 		db.Dps.Additional = "DetailsRowFrame1"

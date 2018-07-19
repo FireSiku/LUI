@@ -304,7 +304,8 @@ function module:SetClock()
 		local invitesPending = false
 
 		-- Event functions
-		stat.Events = {"CALENDAR_UPDATE_PENDING_INVITES", "PLAYER_ENTERING_WORLD", "UPDATE_24HOUR", "UPDATE_LOCALTIME"}
+		stat.Events = {"CALENDAR_UPDATE_PENDING_INVITES", "PLAYER_ENTERING_WORLD"}
+		-- , "UPDATE_24HOUR", "UPDATE_LOCALTIME"
 
 		stat.CALENDAR_UPDATE_PENDING_INVITES = function(self) -- A change to number of pending invites for calendar events occurred
 			invitesPending = GameTimeFrame and (GameTimeFrame.pendingCalendarInvites > 0) or false
@@ -326,7 +327,7 @@ function module:SetClock()
 				if (instanceType == "raid" or instanceType == "party") then
 					if instanceDifficulty == 14 then
 						instanceInfo = instanceGroupSize.." |cffffcc00N" -- Flexible renamed Normal in 6.0
-					elseif instanceDifficulty == 7 or instanceDifficulty == 17 then	
+					elseif instanceDifficulty == 7 or instanceDifficulty == 17 then
 						instanceInfo = maxPlayers.." |cff00ccffL"        -- Looking for Raid
 					elseif instanceDifficulty == 1 or instanceDifficulty == 3 or instanceDifficulty == 4 or instanceDifficulty == 12 then
 						instanceInfo = maxPlayers.." |cff00ff00N"        -- Legacy Normal
@@ -378,8 +379,8 @@ function module:SetClock()
 				self:UnregisterEvent("INSTANCE_GROUP_SIZE_CHANGED")
 				instanceInfo, guildParty = nil, ""
 			end
-			
-			if not module:IsHooked(GameTimeFrame, "OnClick") then 
+
+			if not module:IsHooked(GameTimeFrame, "OnClick") then
 				module:SecureHookScript(GameTimeFrame, "OnClick", stat.CALENDAR_UPDATE_PENDING_INVITES) -- hook the OnClick function of the GameTimeFrame to update the pending invites
 			end
 			if not module:IsHooked(TimeManagerMilitaryTimeCheck, "OnClick") then
@@ -543,7 +544,7 @@ function module:SetClock()
 						GameTooltip:AddDoubleLine(format("%s |cffaaaaaa(%s%s)", name, maxPlayers, diff), formatTime(reset), 1, 1, 1, tr, tg, tb)
 					end
 				end
-				
+
 				-- World Bosses
 				for i = 1, GetNumSavedWorldBosses() do
 					if not oneraid then
@@ -551,7 +552,7 @@ function module:SetClock()
 						GameTooltip:AddLine("Saved Raid(s) :")
 						oneraid = true
 					end
-				
+
 					local name, _, reset = GetSavedWorldBossInfo(i)
 					GameTooltip:AddDoubleLine(format("%s |cffaaaaaa(%s)", name, RAID_INFO_WORLD_BOSS), formatTime(reset), 1,1,1, 1,1,1)
 				end
@@ -1014,7 +1015,7 @@ function module:SetDualSpec()
 				ShowUIPanel(PlayerTalentFrame)
 			end
 		end
-	
+
 		stat.OnEnter = function(self)
 			if CombatTips() then
 				GameTooltip:SetOwner(self, getOwnerAnchor(self))
@@ -1530,7 +1531,7 @@ function module:SetGF()
 			if color then fs:SetTextColor(unpack(color)) end
 			return fs
 		end
-		
+
 		local function formatedStatusText(status, append, isMobile)
 			if (isMobile) then
 				if status == 2 then return MOBILE_BUSY_ICON..(append or "");
@@ -2190,8 +2191,8 @@ function module:SetGF()
 				if b.presenceID then
 					local name = b.realID..":"..b.presenceID
 					SetItemRef("BNplayer:"..name, ("|HBNplayer:%1$s|h[%1$s]|h"):format(name), button )
-				else 
-					
+				else
+
 					SetItemRef("player:"..b.unit, ("|Hplayer:%1$s|h[%1$s]|h"):format(b.unit), button )
 				end
 			end
@@ -2227,7 +2228,7 @@ function module:SetGF()
 			end
 		end
 
-		-- Main Stat functions (Guild Stat and Friends Stat)	
+		-- Main Stat functions (Guild Stat and Friends Stat)
 		stat.OnStatLeave = function(self)
 			self.onBlock = nil
 			GameTooltip:Hide()
@@ -2764,9 +2765,9 @@ function module:SetWeaponInfo()
 	local stat = NewStat("WeaponInfo")
 
 	if db.WeaponInfo.Enable and not stat.Created then
-	
+
 		stat.Events = {"UNIT_INVENTORY_CHANGED", "UNIT_AURA"}
-		
+
 		stat.UNIT_INVENTORY_CHANGED = function(self, unit)
 			--print(string.format("Called, unit == %s", tostring(unit)))
 			--if unit ~= "player" then return end
@@ -2778,13 +2779,13 @@ function module:SetWeaponInfo()
 			self.text:SetFormattedText(text)
 			UpdateTooltip(self)
 		end
-		
+
 		stat.UNIT_AURA = stat.UNIT_INVENTORY_CHANGED
-		
+
 		stat.OnEnable = function(self)
 			self:UNIT_INVENTORY_CHANGED(self, "player")
 		end
-		
+
 		-- Local variables
 		local total
 		local weaponinfo = {}
@@ -2825,12 +2826,12 @@ function module:SetEquipmentSets()
 	local stat = NewStat("EquipmentSets")
 
 	if db.EquipmentSets.Enable and not stat.Created then
-	
+
 		stat.Events = {"UNIT_INVENTORY_CHANGED", "PLAYER_EQUIPMENT_CHANGED"}
-		
+
 		stat.UNIT_INVENTORY_CHANGED = function(self, unit)
 			local text = "No set equipped."
-			for set = 1,GetNumEquipmentSets() do
+			for set = 1,C_EquipmentSet.GetNumEquipmentSets() do
 				local name, _, setID, isEquipped, _, _, _, numMissing, _ = GetEquipmentSetInfo(set)
 				if isEquipped then
 					text = string.format("%s%s", db.EquipmentSets.Text, name)
@@ -2839,9 +2840,9 @@ function module:SetEquipmentSets()
 			self.text:SetFormattedText(text)
 			UpdateTooltip(self)
 		end
-		
+
 		stat.PLAYER_EQUIPMENT_CHANGED = stat.UNIT_INVENTORY_CHANGED
-		
+
 		stat.OnEnable = function(self)
 			self:UNIT_INVENTORY_CHANGED(self, "player")
 		end
@@ -2881,9 +2882,9 @@ function module:SetLootSpec()
 	local stat = NewStat("LootSpec")
 
 	if db.LootSpec.Enable and not stat.Created then
-	
+
 		stat.Events = {"PLAYER_LOOT_SPEC_UPDATED"}
-		
+
 		stat.PLAYER_LOOT_SPEC_UPDATED = function(self, unit)
 			local name = ""
 			local lootspec = GetLootSpecialization()
@@ -2897,7 +2898,7 @@ function module:SetLootSpec()
 			self.text:SetFormattedText(text)
 			UpdateTooltip(self)
 		end
-		
+
 		stat.OnEnable = function(self)
 			self:PLAYER_LOOT_SPEC_UPDATED(self, "player")
 		end

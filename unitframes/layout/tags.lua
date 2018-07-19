@@ -89,7 +89,7 @@ module.RecreateNameCache = function()
 	end
 end
 
-oUF.Tags.Events["GetNameColor"] = "UNIT_HAPPINESS"
+--oUF.Tags.Events["GetNameColor"] = "UNIT_HAPPINESS"
 oUF.Tags.Methods["GetNameColor"] = function(unit)
 	local reaction = UnitReaction(unit, "player")
 	local pClass, pToken = UnitClass(unit)
@@ -221,13 +221,13 @@ oUF.Tags.Methods["RaidName40"] = function(unit, realunit)
 	return nameCache[name][2]
 end
 
-oUF.Tags.Events["druidmana2"] = "UNIT_POWER UNIT_MAXPOWER"
+oUF.Tags.Events["druidmana2"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
 oUF.Tags.Methods["druidmana2"] = function(unit)
 	if unit ~= "player" then return end
 
 	if not module.db then return "" end
 
-	local min, max = UnitPower("player", SPELL_POWER_MANA), UnitPowerMax("player", SPELL_POWER_MANA)
+	local min, max = UnitPower("player", Enum.PowerType.Mana), UnitPowerMax("player", Enum.PowerType.Mana)
 	if module.db.Player.Texts.DruidMana.HideIfFullMana and min == max then return "" end
 	local perc = min / max * 100
 

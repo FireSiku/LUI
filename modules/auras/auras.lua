@@ -118,7 +118,7 @@ do
 	end
 
 	function Aura:Update(...)
-		local name, _, icon, count, dispelType, duration, expires, caster = UnitAura(...)
+		local name, icon, count, dispelType, duration, expires, caster = UnitAura(...)
 		-- Blizzard has a bug with SecureAuraHeaders that causes extra aura buttons to sometimes be shown
 		-- It occurs when the consolidation or tempEnchants are shown, an extra button gets added to the end of the list for each one shown
 		if not name then
@@ -337,7 +337,7 @@ do
 			-- fix for Blizzard's fail coding
 			local i, numShown, numConsolidated = 1, 0, 0
 			while true do
-				local name, _, _, _, _, _, _, _, _, shouldConsolidate = UnitAura(unit, i, filter)
+				local name, _, _, _, _, _, _, _, shouldConsolidate = UnitAura(unit, i, filter)
 				if not name then break end
 				if not shouldConsolidate or not self.settings.Consolidate then
 					numShown = numShown + 1

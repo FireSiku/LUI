@@ -54,7 +54,7 @@
 
 	<!-- Additional Scripts -->
 	<Script file="scripts\errorhider.lua"/>
-	<Script file="scripts\partyfix.lua"/>
+	<!--Script file="scripts\partyfix.lua"/-->
 	<Script file="scripts\colourpicker.lua"/>
 	<Script file="scripts\frameidentifier.lua"/>
 	<Script file="scripts\autoinvite.lua"/>

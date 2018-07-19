@@ -52,7 +52,7 @@ local ECLIPSE_BAR_LUNAR_BUFF = GetSpellInfo(171743)
 local SPELL_POWER_ECLIPSE = SPELL_POWER_ECLIPSE
 local MOONKIN_FORM = MOONKIN_FORM
 
-local UNIT_POWER = function(self, event, unit, powerType)
+local UNIT_POWER_UPDATE = function(self, event, unit, powerType)
 	if(self.unit ~= unit or (event == 'UNIT_POWER_FREQUENT' and powerType ~= 'ECLIPSE')) then return end
 
 	local eb = self.EclipseBar
@@ -172,7 +172,7 @@ local ECLIPSE_DIRECTION_CHANGE = function(self, event, direction)
 end
 
 local Update = function(self, event, ...)
-	UNIT_POWER(self, event, ...)
+	UNIT_POWER_UPDATE(self, event, ...)
 	UNIT_AURA(self, event, ...)
 	ECLIPSE_DIRECTION_CHANGE(self, event)
 	return UPDATE_VISIBILITY(self, event)
@@ -198,7 +198,7 @@ local function Enable(self)
 		self:RegisterEvent('ECLIPSE_DIRECTION_CHANGE', ECLIPSE_DIRECTION_CHANGE, true)
 		self:RegisterEvent('PLAYER_TALENT_UPDATE', UPDATE_VISIBILITY, true)
 		self:RegisterEvent('UNIT_AURA', UNIT_AURA)
-		self:RegisterEvent('UNIT_POWER_FREQUENT', UNIT_POWER)
+		self:RegisterEvent('UNIT_POWER_FREQUENT', UNIT_POWER_UPDATE)
 		self:RegisterEvent('UPDATE_SHAPESHIFT_FORM', UPDATE_VISIBILITY, true)
 
 		return true
@@ -212,7 +212,7 @@ local function Disable(self)
 		self:UnregisterEvent('ECLIPSE_DIRECTION_CHANGE', ECLIPSE_DIRECTION_CHANGE)
 		self:UnregisterEvent('PLAYER_TALENT_UPDATE', UPDATE_VISIBILITY)
 		self:UnregisterEvent('UNIT_AURA', UNIT_AURA)
-		self:UnregisterEvent('UNIT_POWER_FREQUENT', UNIT_POWER)
+		self:UnregisterEvent('UNIT_POWER_FREQUENT', UNIT_POWER_UPDATE)
 		self:UnregisterEvent('UPDATE_SHAPESHIFT_FORM', UPDATE_VISIBILITY)
 	end
 end

@@ -5,15 +5,18 @@
 	Version....: 1.0
 	Rev Date...: 06/10/2012 [dd/mm/yyyy]
 	Author.....: Mule
-	
 ]]
 
--- External references.
-local addonname, LUI = ...
+-- ####################################################################################################################
+-- ##### External references ##########################################################################################
+-- ####################################################################################################################
+local _, LUI = ...
 local module = LUI:Module("RemoveThatBuff", "AceEvent-3.0")
 local Profiler = LUI.Profiler
 
--- Database and defaults shortcuts.
+-- ####################################################################################################################
+-- ##### Database and defaults shortcuts ##############################################################################
+-- ####################################################################################################################
 local db, dbd
 
 Profiler.TraceScope(module, "RemoveThatBuff", "LUI")
@@ -40,7 +43,7 @@ module.presetList = {
 	["Rabbit Costume"] = true,
 }
 
-function module:UNIT_AURA(event, unitid, ...)
+function module:UNIT_AURA(_, unitid, ...)
 	if unitid ~= "player" or InCombatLockdown() then
 		return
 	else
@@ -56,7 +59,7 @@ module.optionsName = "RemoveThatBuff"
 module.getter = "generic"
 module.setter = "generic"
 
-function module:AddBuff(info, buffname)
+function module:AddBuff(_, buffname)
 	db.Buffs[buffname] = true
 end
 
@@ -69,9 +72,9 @@ function module:LoadOptions()
 		NoBuffs = function() return not next(buffList) end,
 	}
 
-	local function buffsGet(info) return removeBuffsKey end
-	local function buffsSet(info, value)  removeBuffsKey = value end
-	local function removeBuffs(info)
+	local function buffsGet(_) return removeBuffsKey end
+	local function buffsSet(_, value)  removeBuffsKey = value end
+	local function removeBuffs()
 		if removeBuffsKey then
 			db.Buffs[removeBuffsKey] = nil
 			removeBuffsKey = nil
@@ -83,7 +86,7 @@ function module:LoadOptions()
 			db.Buffs[name] = true
 		end
 	end
-	
+
 	local function buffs()
 		wipe(buffList)
 		for name, _ in pairs(db.Buffs) do

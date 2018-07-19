@@ -4,7 +4,7 @@
 	Description: Micromenu Module
 	Version....: 1.5
 	Rev Date...: 14/03/2012
-	
+
 	Edits:
 		v1.0: Loui
 		v1.1: Loui/Thaly
@@ -42,7 +42,7 @@ end
 
 function module:SetAlertFramesColors(name)
 	local r, g, b = unpack(Themes.db.profile.micromenu)
-	
+
 	_G[name.."MicroButtonAlertBg"]:SetGradientAlpha("VERTICAL", r/4, g/4, b/4, 1, 0, 0, 0, 1)
 	_G[name.."MicroButtonAlertGlow"]:SetVertexColor(r, g, b, 0.5)
 	--_G[name.."MicroButtonAlertArrowArrow:SetVertexColor(r, g, b)
@@ -84,7 +84,7 @@ function module:SetColors()
 	LUI.MicroMenu.Buttons.Talents:SetBackdropColor(r, g, b, 1)
 	LUI.MicroMenu.Buttons.Spellbook:SetBackdropColor(r, g, b, 1)
 	LUI.MicroMenu.Buttons.Player:SetBackdropColor(r, g, b, 1)
-	
+
 	module:SetAlertFramesColors("Talent")
 	module:SetAlertFramesColors("Collections")
 	module:SetAlertFramesColors("EJ")
@@ -130,9 +130,9 @@ function module:SetMicroMenu()
 	LUI.MicroMenu.Clicker:RegisterForClicks("AnyUp")
 
 	LUI.MicroMenu.Clicker:SetScript("OnClick", function(self)
-		if RaidMenu.db.profile.Enable then
+		--[[if RaidMenu.db.profile.Enable then
 			RaidMenu:OverlapPrevention("MM")
-		end
+		end]]
 		if Panels.db.profile.MicroMenu.IsShown then
 			LUI.MicroMenu.AlphaOut:Show()
 			Panels.db.profile.MicroMenu.IsShown = false
@@ -460,7 +460,7 @@ function module:SetMicroMenu()
 		end
 	end)
 
-	
+
 	LUI.MicroMenu.Buttons.Store = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Buttons.Settings, 64, 64, 1, "BACKGROUND", 3, "LEFT", LUI.MicroMenu.Buttons.Settings, "LEFT", -33, 0, 1)
 	LUI.MicroMenu.Buttons.Store:SetBackdrop({
 		bgFile = fdir.."micro_store",
@@ -470,7 +470,7 @@ function module:SetMicroMenu()
 	})
 	LUI.MicroMenu.Buttons.Store:SetBackdropColor(micro_r, micro_g, micro_b, 1)
 	LUI.MicroMenu.Buttons.Store:SetBackdropBorderColor(0, 0, 0, 0)
-	
+
 	LUI.MicroMenu.Buttons.Store.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Buttons.Store, 30, 25, 1, "BACKGROUND", 2, "CENTER", LUI.MicroMenu.Buttons.Store, "CENTER", -2, 0, 1)
 	LUI.MicroMenu.Buttons.Store.Clicker:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -499,7 +499,7 @@ function module:SetMicroMenu()
 	LUI.MicroMenu.Buttons.Store.Clicker:SetScript("OnClick", function(self)
 		ToggleStoreUI()
 	end)
-	
+
 	LUI.MicroMenu.Buttons.Store.Clicker:SetScript("OnUpdate", function(self)
 		if IsAddOnLoaded("Blizzard_StoreUI") then
 			if not LUI.MicroMenu.Buttons.Store.Clicker.State and not StoreFrame_IsShown() then
@@ -547,11 +547,11 @@ function module:SetMicroMenu()
 		self.State = nil
 		GameTooltip:Hide()
 	end)
-	
+
 	LUI.MicroMenu.Buttons.Pets.Clicker:SetScript("OnClick", function(self)
 		ToggleCollectionsJournal()
 	end)
-	
+
 	LUI.MicroMenu.Buttons.Pets.Clicker:SetScript("OnUpdate", function(self)
 		if IsAddOnLoaded("Blizzard_Collections") then
 			if not LUI.MicroMenu.Buttons.Pets.Clicker.State and not CollectionsJournal:IsShown() then
@@ -582,7 +582,7 @@ function module:SetMicroMenu()
 	LUI.MicroMenu.Buttons.LFG.Clicker:SetBackdropColor(0, 0, 0, 1)
 	LUI.MicroMenu.Buttons.LFG.Clicker:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.MicroMenu.Buttons.LFG.Clicker:SetAlpha(0)
-	
+
 	LUI.MicroMenu.Buttons.LFG.Clicker:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 
 	LUI.MicroMenu.Buttons.LFG.Clicker:SetScript("OnEnter", function(self)
@@ -603,7 +603,7 @@ function module:SetMicroMenu()
 		self.State = nil
 		GameTooltip:Hide()
 	end)
-	
+
 	LUI.MicroMenu.Buttons.LFG.Clicker:SetScript("OnClick", function(self, button)
 		if button == "RightButton" then
 			ToggleRaidBrowser()
@@ -611,7 +611,7 @@ function module:SetMicroMenu()
 			ToggleLFDParentFrame()
 		end
 	end)
-	
+
 	LUI.MicroMenu.Buttons.LFG.Clicker:SetScript("OnUpdate", function(self, button)
 		if RaidBrowserFrame:IsShown() or PVEFrame:IsShown() then
 			LUI.MicroMenu.Buttons.LFG.Clicker:SetAlpha(1)
@@ -621,7 +621,7 @@ function module:SetMicroMenu()
 			end
 		end
 	end)
-	
+
 	LUI.MicroMenu.Buttons.Journal = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Buttons.LFG, 64, 64, 1, "BACKGROUND", 3, "LEFT", LUI.MicroMenu.Buttons.LFG, "LEFT", -33, 0, 1)
 	LUI.MicroMenu.Buttons.Journal:SetBackdrop({
 		bgFile = fdir.."micro_encounter",
@@ -661,7 +661,7 @@ function module:SetMicroMenu()
 	LUI.MicroMenu.Buttons.Journal.Clicker:SetScript("OnClick", function(self)
 		ToggleEncounterJournal()
 	end)
-	
+
 	LUI.MicroMenu.Buttons.Journal.Clicker:SetScript("OnUpdate", function(self)
 		if IsAddOnLoaded("Blizzard_EncounterJournal") then
 			if not LUI.MicroMenu.Buttons.Journal.Clicker.State and not EncounterJournal:IsShown() then
@@ -769,7 +769,7 @@ function module:SetMicroMenu()
 			end
 		end
 	end)
-	
+
 	FriendsFrame:HookScript("OnShow", function(self)
 		LUI.MicroMenu.Buttons.Guild.Clicker:SetAlpha(1)
 	end)
@@ -780,8 +780,9 @@ function module:SetMicroMenu()
 		end
 	end)
 
-	if not GuildFrame then LoadAddOn("Blizzard_GuildUI") end
-	if not LookingForGuildFrame then LoadAddOn("Blizzard_LookingForGuildUI") end
+	if not GuildFrame then
+		LoadAddOn("Blizzard_GuildUI")
+	end
 
 	GuildFrame:HookScript("OnShow", function(self)
 		LUI.MicroMenu.Buttons.Guild.Clicker:SetAlpha(1)
@@ -792,6 +793,11 @@ function module:SetMicroMenu()
 			LUI.MicroMenu.Buttons.Guild.Clicker:SetAlpha(0)
 		end
 	end)
+
+	if not LookingForGuildFrame then
+		LoadAddOn("Blizzard_LookingForGuildUI")
+		LookingForGuildFrame_CreateUIElements()
+	end
 
 	LookingForGuildFrame:HookScript("OnShow", function(self)
 		LUI.MicroMenu.Buttons.Guild.Clicker:SetAlpha(1)
@@ -1098,19 +1104,19 @@ function module:SetMicroMenu()
 	--QuestLogFrame:SetPoint(point, relframe, relpoint, x, -105)
 
 	-- talent alert frame
-	if UnitLevel("player") < 10 then 
-		TalentMicroButtonAlert:Hide() 
+	if UnitLevel("player") < 10 then
+		TalentMicroButtonAlert:Hide()
 		LUI.MicroMenu.Buttons.Talents:RegisterEvent("PLAYER_LEVEL_UP")
 	end
-	LUI.MicroMenu.Buttons.Talents:SetScript("OnEvent", function(self, event, level) 
+	LUI.MicroMenu.Buttons.Talents:SetScript("OnEvent", function(self, event, level)
 			if not level then level = UnitLevel("player")+1 end
-			if tonumber(level) < 10 then TalentMicroButtonAlert:Hide() 
-			else 
+			if tonumber(level) < 10 then TalentMicroButtonAlert:Hide()
+			else
 				TalentMicroButtonAlert:Show()
 				LUI.MicroMenu.Buttons.Talents:UnregisterEvent("PLAYER_LEVEL_UP")
 			end
 	end)
-	
+
 	module:HookAlertFrame("Talent", LUI.MicroMenu.Buttons.Talents)
 	module:HookAlertFrame("Collections", LUI.MicroMenu.Buttons.Pets)
 	module:HookAlertFrame("EJ", LUI.MicroMenu.Buttons.Journal)
@@ -1161,12 +1167,12 @@ end
 
 function module:HookAlertFrame(name, anchor)
 	local r, g, b = unpack(Themes.db.profile.micromenu)
-	
+
 	local alertFrame      = _G[name.."MicroButtonAlert"]
 	local alertFrameBg    = _G[name.."MicroButtonAlertBg"]
 	local alertFrameArrow = _G[name.."MicroButtonAlertArrow"]
 	local alertFrameGlow  = _G[name.."MicroButtonAlertGlow"]
-	
+
 	alertFrame:ClearAllPoints()
 	alertFrame:SetPoint("TOP", anchor, "BOTTOM")
 
@@ -1179,7 +1185,7 @@ function module:HookAlertFrame(name, anchor)
 	alertFrameGlow:SetVertexColor(r, g, b, 0.5)
 	alertFrameGlow:ClearAllPoints()
 	alertFrameGlow:SetPoint("BOTTOM", alertFrameArrow, "BOTTOM", 0, 0)
-	
+
 	-- greyscaled textures
 	alertFrameGlow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
 end
