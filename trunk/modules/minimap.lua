@@ -10,17 +10,17 @@
 		v1.1: Zista
 		v1.2: Darkruler
 		v1.2b: Thaly
-]] 
+]]
 
 -- External references.
-local addonname, LUI = ...
+local _, LUI = ...
 local module = LUI:Module("Minimap", "AceHook-3.0")
 local Themes = LUI:Module("Themes")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
 local db
-local hooks = { }
+local hooks_ = { }
 local shouldntSetPoint = false
 local numHookedCaptureFrames = 0
 local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
@@ -267,7 +267,7 @@ function module:SetMinimap()
 	TimeManagerClockButton:Hide()
 	LUI:Kill(TimeManagerClockButton)
 
-	-- Hide Tracking Button 
+	-- Hide Tracking Button
 	MiniMapTracking:Hide()
 
 	-- Hide Calendar Button
@@ -435,9 +435,9 @@ function module:SetMinimap()
 
 	-- reskin LFG dropdown
 	--[[LFDSearchStatus:SetBackdrop({
-	  bgFile = LUI.Media.blank, 
-	  edgeFile = LUI.Media.blank, 
-	  tile = false, tileSize = 0, edgeSize = mult, 
+	  bgFile = LUI.Media.blank,
+	  edgeFile = LUI.Media.blank,
+	  tile = false, tileSize = 0, edgeSize = mult,
 	  insets = { left = 0, right = 0, top = 0, bottom = 0}
 	})]]
 	QueueStatusFrame:SetBackdropColor(.1,.1,.1,1)
@@ -484,7 +484,10 @@ function module:SetMinimap()
 	
 	m_coord:SetScript("OnUpdate", function(self)
 		--local x,y = GetPlayerMapPosition("player")
-		local x, y = C_Map.GetPlayerMapPosition( C_Map.GetBestMapForUnit("player"), "player" ):GetXY()
+		local m = C_Map.GetPlayerMapPosition( C_Map.GetBestMapForUnit("player"), "player" )
+                        if m then
+                                local x,y = m:GetXY()
+                        end
 		if not x then
 			m_coord_text:SetText("")
 		else
@@ -527,10 +530,10 @@ function module:SetMinimap()
 
 	Minimap:RegisterForDrag('LeftButton')
 	Minimap:SetMovable(true)
-	Minimap:SetScript('OnDragStop', function() if(db.Minimap.General.Position.UnLocked) then 
+	Minimap:SetScript('OnDragStop', function() if(db.Minimap.General.Position.UnLocked) then
 			Minimap:StopMovingOrSizing()
 			self:GetMinimapPosition()
-		end 
+		end
 	end)
 	Minimap:SetScript('OnDragStart', function() if(db.Minimap.General.Position.UnLocked) then Minimap:StartMoving() end end)
 	MinimapCluster:EnableMouse(false)
@@ -539,7 +542,7 @@ end
 
 function module:GetMinimapPosition()
 
-	local point, relativeTo, relativePoint, xOfs, yOfs = Minimap:GetPoint()
+	local point, _, relativePoint, xOfs, yOfs = Minimap:GetPoint()
 	db.Minimap.General.Position.RelativePoint = relativePoint
 	db.Minimap.General.Position.Point = point
 	db.Minimap.General.Position.X = xOfs
@@ -587,7 +590,7 @@ local defaults = {
 			CaptureY = "-205",
 			TicketX = "-175",
 			TicketY = "-70",
-			SetAlwaysUpFrame = true,
+			SetAlwaysUpFrame = false,
 			SetVehicleSeatIndicator = true,
 			SetDurabilityFrame = true,
 			SetObjectiveTrackerFrame = true,
@@ -606,7 +609,7 @@ function module:LoadOptions()
 			type = "group",
 			disabled = function() return not db.Minimap.Enable end,
 			childGroups = "tab",
-			args = {		
+			args = {
 				MinimapSettings = {
 					name = "Minimap",
 					type = "group",
@@ -753,7 +756,7 @@ function module:LoadOptions()
 									name = "Size",
 									type = "header",
 									order = 10,
-								},	
+								},
 								Size = {
 									name = "Size",
 									type = "range",
@@ -779,7 +782,7 @@ function module:LoadOptions()
 							name = "Font",
 							type = "group",
 							order = 2,
-							args = {							
+							args = {
 								Font = {
 									name = "Font",
 									desc = "Choose the Font for your Minimap Location and Coords!\n\nDefault: "..LUI.defaults.profile.Minimap.Font.Font,
@@ -825,18 +828,18 @@ function module:LoadOptions()
 									step = 1,
 									width = "double",
 									get = function() return db.Minimap.Font.FontSize end,
-									set = function(_, FontSize)
+									set = function(self, FontSize)
 										db.Minimap.Font.FontSize = FontSize
 										m_zone_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
 										m_coord_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
 									end,
 									order = 3,
-								},							
+								},
 							},
 						},
 					},
 				},
-				MinimapFrames = {				
+				MinimapFrames = {
 					name = "Minimap Frames",
 					type = "group",
 					order = 3,
@@ -992,7 +995,7 @@ function module:LoadOptions()
 							type = "group",
 							disabled = function() return not db.Minimap.Enable end,
 							order = 3,
-							args = {	
+							args = {
 								header1 = {
 									name = "Description",
 									type = "header",
@@ -1148,7 +1151,7 @@ function module:LoadOptions()
 									type = "description",
 									name = "This Frame occurs when waiting on a ticket response",
 								},
-								spacer = {
+								spacer1 = {
 									name = "",
 									type = "description",
 									width = "full",
@@ -1202,7 +1205,7 @@ function module:LoadOptions()
 											end,
 									order = 7,
 								},
-								spacer = {
+								spacer2 = {
 									order = 7,
 									width = "full",
 									type = "description",
@@ -1295,9 +1298,9 @@ function module:LoadOptions()
 								},
 							},
 						},
-					},	
+					},
 				},
-			},			
+			},
 		},
 	}
 	
