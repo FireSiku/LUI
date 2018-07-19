@@ -2191,7 +2191,7 @@ module.funcs = {
 			MAGE = 4,
 			MONK = 6,
 			PALADIN = 5,
-			ROGUE = 10,
+			ROGUE = 6,
 			WARLOCK = 5,
 			DRUID = 5,
 		}
@@ -2240,13 +2240,13 @@ module.funcs = {
 			local pLevel = (event == "UNIT_LEVEL") and tonumber(level) or UnitLevel("player")
 			local count = BASE_COUNT[class]
 			if class == "MONK" then
-				local _, _, _, ascension = GetTalentInfo(3, 2, GetActiveSpecGroup())
-				if ascension then count = count + 1 end
+				if select(4, GetTalentInfo(3, 1, 1)) then
+					count = count + 1
+				end
 			elseif class == "ROGUE" then
 				--Check for Strategem, increase CPoints to 6.
-				if select(4, GetTalentInfo(3, 1, 1)) then count = 6
-				--Check for Anticipation, increase CPoints to 10.
-				elseif select(4, GetTalentInfo(3, 2, 1)) then count = 10
+				if select(4, GetTalentInfo(3, 2, 1)) then
+					count = 6
 				end
 			end
 			self.ClassIcons.Count = count
