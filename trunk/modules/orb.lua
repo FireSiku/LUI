@@ -4,7 +4,7 @@
 	Description: Orb Module
 	Version....: 1.0
 	Rev Date...: 10/10/2010
-]] 
+]]
 
 -- External references.
 local addonname, LUI = ...
@@ -30,9 +30,9 @@ function module:CreateMeAnOrbFrame(fart,fname,fparent,fstrata,flevel,fwidth,fhei
 	f:SetHeight(fheight)
 	f:SetPoint(fanchor,fxpos,fypos)
 	f:SetScale(fscale)
-	return f 
-end 
-  
+	return f
+end
+
 function module:CreateMeATexture(fhooked,tstrata,tfile,tspecial)
 	local t = fhooked:CreateTexture(nil,tstrata)
 	t:SetTexture(tfile)
@@ -44,7 +44,7 @@ function module:CreateMeATexture(fhooked,tstrata,tfile,tspecial)
 		t:SetAllPoints(fhooked)
 	end
 	return t
-end 
+end
 
 function module:CreateMeAGalaxy(f,x,y,size,alpha,dur,tex,useorb)
 	local h = CreateFrame("Frame",nil,f)
@@ -63,7 +63,7 @@ function module:CreateMeAGalaxy(f,x,y,size,alpha,dur,tex,useorb)
 
 	local ag = h:CreateAnimationGroup()
 	h.ag = ag
-	
+
 	local a1 = h.ag:CreateAnimation("Rotation")
 	a1:SetDegrees(360)
 	a1:SetDuration(dur)
@@ -83,7 +83,7 @@ function module:CreateMeAGalaxy(f,x,y,size,alpha,dur,tex,useorb)
 			h.ag:Play()
 		end
 	end)
-	
+
 	return h
 end
 
@@ -91,30 +91,30 @@ function module:CreateMeAnOrb(orbname,orbsize,orbanchorframe,orbpoint,orbposx,or
 	local default_locked = 1
 	local usegalaxy = 1
 	local frame_to_scale
-	
+
 	local hglow1, hglow2, mglow1, mglow2, hfill, mfill
 	local hgal1,hgal2,hgal3,mgal1,mgal2,mgal3
 	local fog_smoother = 1.3
-	
+
 	local orb_r, orb_g, orb_b = unpack(Themes.db.profile.orb)
-	
+
 	galaxytab[0] = {r = orb_r, g = orb_g, b = orb_b}
-	
+
 	local orbtab = {
-		[0] = {r = orb_r, g = orb_g, b = orb_b, scale = 0.9, z = -12, x = -0.5, y = -0.8, anim = "SPELLS\WhiteRadiationFog.m2"},
+		[0] = {r = orb_r, g = orb_g, b = orb_b, scale = 0.9, z = -12, x = -0.5, y = -0.8, anim = "SPELLS\\WhiteRadiationFog.m2"},
 		[1] = {r = 0.8, g = 0, b = 0, scale = 0.8, z = -12, x = 0.8, y = -1.7, anim = "SPELLS\\RedRadiationFog.m2"}, -- red
 		[2] = {r = 0.2, g = 0.8, b = 0, scale = 0.75, z = -12, x = 0, y = -1.1, anim = "SPELLS\\GreenRadiationFog.m2"}, -- green
 		[3] = {r = 0, g = 0.35,   b = 0.9, scale = 0.75, z = -12, x = 1.2, y = -1, anim = "SPELLS\\BlueRadiationFog.m2"}, -- blue
 		[4] = {r = 0.9, g = 0.7, b = 0.1, scale = 0.75, z = -12, x = -0.3, y = -1.2, anim = "SPELLS\\OrangeRadiationFog.m2"}, -- yellow
 		[5] = {r = 0.1, g = 0.8,   b = 0.7, scale = 0.9, z = -12, x = -0.5, y = -0.8, anim = "SPELLS\\WhiteRadiationFog.m2"}, -- runic
 	}
-	
+
 	local orb1 = self:CreateMeAnOrbFrame("Button",orbname,orbanchorframe,"BACKGROUND",4,orbsize,orbsize,orbpoint,orbposx,orbposy,orbscale,nil)
 
 	orb1:SetScript("OnEnter", function(self)
 		OrbAlphaIn:Show()
 	end)
-	
+
 	orb1:SetScript("OnLeave", function(self)
 		OrbAlphaOut:Show()
 	end)

@@ -5,7 +5,7 @@
 	Version....: 1.0
 	Rev Date...: 08/07/2010
 	Author.....: Louí [EU - Das Syndikat] <In Fidem>
-]] 
+]]
 
 -- External references.
 local addonname, LUI = ...
@@ -105,7 +105,7 @@ function module:LoadOptions()
 					order = 21,
 					width = "full",
 					type = "description",
-					name = "|cff3399ffA:|r Use Keybindings! You can also put your Stances from the Spellbook into on of your Bartender Bars.\ Or type /bt and enable/position the original BT StanceBar.",
+					name = "|cff3399ffA:|r Use Keybindings! You can also put your Stances from the Spellbook into on of your Bartender Bars.\n Or type /bt and enable/position the original BT StanceBar.",
 				},
 				emptyq7 = {
 					name = "   ",

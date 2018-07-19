@@ -96,7 +96,7 @@ local cornerAuras = {
 local channelingTicks -- base time between ticks
 do
 	local classChannels = {
-		DRUID = {
+		--[[DRUID = {
 			[GetSpellInfo(740)] = 2, -- Tranquility
 			--[GetSpellInfo(16914)] = 1, -- Hurricane
 		},
@@ -122,7 +122,7 @@ do
 			--[GetSpellInfo(79268)] = 1, -- Soul Harvest
 			[GetSpellInfo(5740)] = 2, -- Rain of Fire
 			--[GetSpellInfo(1949)] = 1, -- Hellfire
-		},
+		},]]
 	}
 
 	channelingTicks = {
@@ -211,7 +211,7 @@ do
 	end)
 
 	local dropdown = CreateFrame("Frame", "LUI_UnitFrame_DropDown", UIParent, "UIDropDownMenuTemplate")
-	UnitPopupFrames[#UnitPopupFrames+1] = "LUI_UnitFrame_DropDown"
+	--UnitPopupFrames[#UnitPopupFrames+1] = "LUI_UnitFrame_DropDown"
 
 	local function getMenuUnit(unit)
 		if unit == "focus" then return "FOCUS" end
@@ -825,7 +825,7 @@ end
 
 --local PostUpdateAura = function(icons, unit, icon, index, offset, filter, isDebuff, duration, timeLeft) - leaving here just in case I need to revert it
 local PostUpdateAura = function(icons, unit, icon, index, offset)
-	local _, _, _, _, dtype, duration, expirationTime, unitCaster, _ = UnitAura(unit, index, icon.filter)
+	local _, _, _, dtype, duration, expirationTime, unitCaster, _ = UnitAura(unit, index, icon.filter)
 	if not (unitCaster == "player" or unitCaster == "pet" or unitCaster == "vehicle") then
 		if icon.isDebuff then
 			icon.icon:SetDesaturated(icons.fadeOthers)
@@ -1016,20 +1016,6 @@ local CPointsOverride = function(self, event, unit)
 	end
 end
 
-local ShadowOrbsOverride = function(self, event, unit, powerType)
-	if self.unit ~= unit or (powerType and powerType ~= "SHADOW_ORBS") then return end
-
-	local num = UnitPower(unit, SPELL_POWER_SHADOW_ORBS)
-
-	for i = 1, self.ShadowOrbs.Orbs do
-		if i <= num then
-			self.ShadowOrbs[i]:SetAlpha(1)
-		else
-			self.ShadowOrbs[i]:SetAlpha(.4)
-		end
-	end
-end
-
 local WarlockBarOverride = function(self, event, unit, powerType)
 	local specNum = GetSpecialization() 
 	local spec = self.WarlockBar.SpecInfo[specNum]
@@ -1089,7 +1075,7 @@ end
 local HolyPowerOverride = function(self, event, unit, powerType)
 	if self.unit ~= unit or (powerType and powerType ~= "HOLY_POWER") then return end
 
-	 local num = UnitPower(unit, SPELL_POWER_HOLY_POWER)
+	 local num = UnitPower(unit, Enum.PowerType.HolyPower)
 	 for i = 1, self.HolyPower.Powers do
 		 if i <= num then
 			 self.HolyPower[i]:SetAlpha(1)
@@ -1160,7 +1146,7 @@ end
 local ChiOverride = function(self, event, unit, powerType)
 	if self.unit ~= unit or (powerType and powerType ~= "CHI") then return end
 
-	 local num = UnitPower(unit, SPELL_POWER_CHI)
+	 local num = UnitPower(unit, Enum.PowerType.Chi)
 	 for i = 1, self.Chi.Force do
 		 if i <= num then
 			 self.Chi[i]:SetAlpha(1)
@@ -1182,7 +1168,7 @@ local DruidManaOverride = function(self, event, unit)
 		return druidmana:Hide()
 	end
 
-	local min, max = UnitPower('player', SPELL_POWER_MANA), UnitPowerMax('player', SPELL_POWER_MANA)
+	local min, max = UnitPower('player', Enum.PowerType.Mana), UnitPowerMax('player', Enum.PowerType.Mana)
 
 	druidmana:SetMinMaxValues(0, max)
 	druidmana:SetValue(min)
@@ -1207,46 +1193,6 @@ local DruidManaOverride = function(self, event, unit)
 
 	if(druidmana.PostUpdatePower) then
 		return druidmana:PostUpdatePower(unit, min, max)
-	end
-end
-
-local PostEclipseUpdate = function(self, unit)
-	if self.ShowText then
-		if GetEclipseDirection() == "sun" then
-			self.LunarText:SetText(50+math.floor((UnitPower("player", SPELL_POWER_ECLIPSE)+1)/2))
-			self.LunarText:SetTextColor(unpack(module.colors.eclipsebar.LunarBG))
-			self.SolarText:SetText("Starfire!")
-			self.SolarText:SetTextColor(unpack(module.colors.eclipsebar.LunarBG))
-		elseif GetEclipseDirection() == "moon" then
-			self.LunarText:SetText("Wrath!")
-			self.LunarText:SetTextColor(unpack(module.colors.eclipsebar.SolarBG))
-			self.SolarText:SetText(50-math.floor((UnitPower("player", SPELL_POWER_ECLIPSE)+1)/2))
-			self.SolarText:SetTextColor(unpack(module.colors.eclipsebar.SolarBG))
-		elseif self:IsShown() then
-			self.LunarText:SetText(50+math.floor((UnitPower("player", SPELL_POWER_ECLIPSE)+1)/2))
-			self.LunarText:SetTextColor(unpack(module.colors.eclipsebar.SolarBG))
-			self.SolarText:SetText(50-math.floor((UnitPower("player", SPELL_POWER_ECLIPSE)+1)/2))
-			self.SolarText:SetTextColor(unpack(module.colors.eclipsebar.LunarBG))
-		end
-	end
-end
-
-local EclipseBarBuff = function(self, unit)
-	if GetEclipseDirection() == "sun" then
-		self.LunarBar:SetAlpha(1)
-		self.SolarBar:SetAlpha(0.7)
-		self.LunarBar:SetStatusBarColor(unpack(module.colors.eclipsebar.Lunar))
-		self.SolarBar:SetStatusBarColor(unpack(module.colors.eclipsebar.SolarBG))
-	elseif GetEclipseDirection() == "moon" then
-		self.SolarBar:SetAlpha(1)
-		self.LunarBar:SetAlpha(0.7)
-		self.LunarBar:SetStatusBarColor(unpack(module.colors.eclipsebar.LunarBG))
-		self.SolarBar:SetStatusBarColor(unpack(module.colors.eclipsebar.Solar))
-	elseif self:IsShown() then
-		self.LunarBar:SetAlpha(1)
-		self.SolarBar:SetAlpha(1)
-		self.LunarBar:SetStatusBarColor(unpack(module.colors.eclipsebar.LunarBG))
-		self.SolarBar:SetStatusBarColor(unpack(module.colors.eclipsebar.SolarBG))
 	end
 end
 

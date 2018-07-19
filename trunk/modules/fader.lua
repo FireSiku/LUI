@@ -7,25 +7,25 @@
 ------------------------------------------------------
 -- / Notes / --
 ------------------------------------------------------
---[[	
+--[[
 	events:
 		There are a lot of events registered I know. Sadly these are the ones
 		i found most suitable with the least spam (or controllable) while still
 		capturing all possible triggers and situations where the fader will be
 		needed to operate. If you can find more please post them in the according
 		thread on the forums for this module.
-			
+
 	settings changes:
 		When the user makes changes in the options screen, some changes may not take
 		effect till a reloadui. A list of known ones will be here.
 		List:
 			Turning off force global settings from the global fader menu.
-			
+
 	settings:
 		Settings are now passed into the fader when registering a frame. RegisteredFrames now
 		holds reference tables for the settings of each frame. The intent is that along with a frame
 		db.oUF.<frame>.FaderSettings database would be passed with the frame during registering.
-		
+
 	more settings:
 		I dunno if i should add more settings. If we wanted we could add tons more
 		for which a lot of the EventHandler logic would need updated but that shouldn't
@@ -54,7 +54,7 @@ Fader.Status = {
 	casting = false,
 	combat = false,
 	health = false,
-	power = false,	
+	power = false,
 	targeting = false,
 }
 
@@ -75,14 +75,14 @@ function Fader:RegisterFrame(frame, settings, specialHover)
 	if type(frame) ~= "table"  then return end
 
 	-- Apply settings
-	if not settings then settings = db.GlobalSettings end	
+	if not settings then settings = db.GlobalSettings end
 	local usedSettings
 	if db.ForceGlobalSettings then
 		usedSettings = db.GlobalSettings
 	else
 		usedSettings = (settings.UseGlobalSettings and db.GlobalSettings) or settings
 	end
-	
+
 	-- Check if registered frames table exists.
 	if not self.RegisteredFrames then
 		self.RegisteredFrames = {}
@@ -91,7 +91,7 @@ function Fader:RegisterFrame(frame, settings, specialHover)
 		if db.Enable then self:EventsRegister() end
 	else
 		-- Check if frame is already registered.
-		if self.RegisteredFrames[frame] then 
+		if self.RegisteredFrames[frame] then
 			-- Update frame's settings.
 			self.RegisteredFrames[frame] = usedSettings
 		else
@@ -106,14 +106,14 @@ function Fader:RegisterFrame(frame, settings, specialHover)
 
 	-- Check fader is enabled.
 	if not db.Enable then return end
-	
+
 	-- Create fader table.
 	frame.Fader = frame.Fader or {}
 	frame.Fader.PreAlpha = frame.Fader.PreAlpha or frame:GetAlpha()
-		
+
 	-- Attach mouseover scripts to frame.
 	self:AttachHoverScript(frame)
-	
+
 	-- Run fader
 	self:FadeHandler(frame)
 end
@@ -127,7 +127,7 @@ end
 function Fader:UnregisterFrame(frame)
 	-- Check frame is a usable object.
 	if type(frame) ~= "table" then return end
-	
+
 	-- Check if registered frames table exists.
 	if not self.RegisteredFrames then return end
 
@@ -137,13 +137,13 @@ function Fader:UnregisterFrame(frame)
 	-- Remove frame.
 	self.RegisteredFrames[frame] = nil
 	self.RegisteredFrameTotal = self.RegisteredFrameTotal - 1
-	
+
 	-- Remove hooks.
 	self:RemoveHoverScript(frame)
 
 	-- Remove indexer for special frames.
 	frame.FaderSpecialHover = nil
-				
+
 	-- Reset alpha.
 	frame:SetAlpha((frame.Fader and frame.Fader.PreAlpha) or 1)
 
@@ -154,7 +154,7 @@ function Fader:UnregisterFrame(frame)
 
 	-- Remove variables.
 	frame.Fader = nil
-	
+
 	-- Check if there are any registered frames left.
 	if self.RegisteredFrameTotal == 0 then
 		self.RegisteredFrames = nil
@@ -176,7 +176,7 @@ function Fader.Hover_OnEnter(frame)
 
 	-- Check if already fading in.
 	if frame.Fader.fading and frame.Fader.endAlpha >= Fader.RegisteredFrames[frame].HoverAlpha then return end
-		
+
 	-- Cancel any fading.
 	Fader:StopFading(frame)
 
@@ -197,7 +197,7 @@ function Fader.Hover_OnLeave(frame)
 
 	-- Check if already fading out.
 	if frame.Fader.fading and not frame.Fader.fadingIn then return end
-	
+
 	-- Fade out frame.
 	Fader:FadeFrame(frame,	Fader.RegisteredFrames[frame].OutAlpha,
 							Fader.RegisteredFrames[frame].OutTime,
@@ -212,7 +212,7 @@ end
 ]]
 function Fader.SpecialHover_OnEnter(frame)
 	frame = frame.Fader and frame or frame:GetParent()
-	
+
 	if not frame.Fader.mouseHover then
 		Fader.Hover_OnEnter(frame)
 	end
@@ -224,7 +224,7 @@ end
 ]]
 function Fader.SpecialHover_OnLeave(frame)
 	frame = frame.Fader and frame or frame:GetParent()
-	
+
 	if not frame:IsMouseOver() then
 		Fader.Hover_OnLeave(frame)
 	end
@@ -262,12 +262,12 @@ function Fader:AttachHoverScript(frame)
 		self:RemoveHoverScript(frame)
 		return
 	end
-	
+
 	-- Check is special scripts are needed.
 	if frame.FaderSpecialHover then
 		return self:AttachSpecialHoverScript(frame)
 	end
-	
+
 	-- Hook scripts.
 	if not self:IsHooked(frame, "OnEnter") then self:SecureHookScript(frame, "OnEnter", Fader.Hover_OnEnter) end
 	if not self:IsHooked(frame, "OnLeave") then self:SecureHookScript(frame, "OnLeave", Fader.Hover_OnLeave) end
@@ -288,7 +288,7 @@ function Fader:AttachSpecialHoverScript(frame)
 		self.specialHoverFrames = {}
 		self.timerHandle = self:ScheduleRepeatingTimer("CheckMouseHover", 0.1)
 	end
-	
+
 	if not self.specialHoverFrames[frame] then
 		self.specialHoverFrames[frame] = false
 	end
@@ -328,17 +328,17 @@ end
 function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, children)
 	-- Check frame is a usable objects.
 	if type(frame) ~= "table"  then return end
-	
+
 	-- Set defaults.
 	inAlpha = inAlpha or 1
-	
+
 	-- Create upvalues.
 	local mouseHover = false
-	
+
 	-- Create Fader table for frame if it doesn't exist.
 	frame.Fader = frame.Fader or {}
 	frame.FaderHoverScript = true
-	
+
 	-- Create OnEnter/OnLeave functions.
 	local function OnEnter()
 		-- Check if mouseHover is already detected.
@@ -349,7 +349,7 @@ function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, 
 
 		-- Check if already fading in.
 		if frame.Fader.fading and frame.Fader.endAlpha >= inAlpha then return end
-		
+
 		-- Cancel any fading.
 		self:StopFading(frame)
 
@@ -359,7 +359,7 @@ function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, 
 		-- Fade in frame.
 		self:FadeFrame(frame, inAlpha)
 	end
-	
+
 	local function OnLeave()
 		-- Check if mouse is over.
 		if frame:IsMouseOver() then return end
@@ -369,11 +369,11 @@ function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, 
 
 		-- Check if already fading out.
 		if frame.Fader.fading and not frame.Fader.fadingIn then return end
-	
+
 		-- Fade out frame.
 		self:FadeFrame(frame, outAlpha, fadeTime, fadeDelay)
 	end
-	
+
 	if not children then
 		-- Hook scripts.
 		if not self:IsHooked(frame, "OnEnter") then self:SecureHookScript(frame, "OnEnter", OnEnter) end
@@ -391,7 +391,7 @@ function Fader:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, 
 				end
 			end
 		end
-		
+
 		-- Create AceTimer.
 		frame.Fader.timerHandle = self:ScheduleRepeatingTimer(CheckMouseHover, 0.1)
 	end
@@ -407,7 +407,7 @@ end
 function Fader:DeleteHoverScript(frame, children)
 	-- Check frame is a usable objects.
 	if type(frame) ~= "table"  then return end
-	
+
 	if not children then
 		-- Unhook scripts.
 		self:Unhook(frame, "OnEnter")
@@ -475,7 +475,7 @@ function Fader:EventHandler(event)
 	elseif event == "PLAYER_TARGET_CHANGED" then
 		self.Status.targeting = UnitExists("target")
 	end
-	
+
 	-- And now the expensive bit
 	for frame in pairs(self.RegisteredFrames) do
 		self:FadeHandler(frame)
@@ -492,7 +492,7 @@ end
 function Fader:UnitEventHandler(event, unit)
 	-- Check unit for player only.
 	if unit ~= "player" then return end
-	
+
 	-- Collect info on states.
 	if event == "UNIT_HEALTH" then
 		local curHealth, maxHeatlh = UnitHealth("player"), UnitHealthMax("player")
@@ -508,7 +508,7 @@ function Fader:UnitEventHandler(event, unit)
 		-- Check for casting states.
 		self.Status.casting = (UnitCastingInfo("player") ~= nil) or (UnitChannelInfo("player") ~= nil)
 	end
-	
+
 	-- And now the expensive bit.
 	for frame in pairs(self.RegisteredFrames) do
 		self:FadeHandler(frame)
@@ -524,7 +524,7 @@ function Fader:FadeHandler(frame)
 
 	-- Local variables.
 	local fadeIn = false
-	
+
 	-- Check states vs. settings.
 	if self.Status.targeting and self.RegisteredFrames[frame].Targeting then
 		fadeIn = true
@@ -539,7 +539,7 @@ function Fader:FadeHandler(frame)
 	elseif self.Status.casting and self.RegisteredFrames[frame].Casting then
 		fadeIn = true
 	end
-	
+
 	-- Fade according to results.
 	self:FadeOnEvent(frame, fadeIn)
 end
@@ -567,7 +567,7 @@ function Fader:FadeOnEvent(frame, fadeIn)
 
 		-- Check if fade is required.
 		if frame:GetAlpha() <= self.RegisteredFrames[frame].OutAlpha then return end
-		
+
 		-- Set to fade out.
 		self:FadeFrame(frame,	self.RegisteredFrames[frame].OutAlpha,
 								self.RegisteredFrames[frame].OutTime,
@@ -589,7 +589,7 @@ function Fader.Fader_OnUpdate(self, elapsed)
 	if self.Throttle < 0.05 then return end
 	elapsed = self.Throttle
 	self.Throttle = 0
-	
+
 	-- Check if there are frames to fade.
 	if #Fader.Fading == 0 then self:SetScript("OnUpdate", nil) return end
 
@@ -598,7 +598,7 @@ function Fader.Fader_OnUpdate(self, elapsed)
 		-- Manage delay before fading.
 		if frame.Fader.fadeDelay > 0 then
 			frame.Fader.fadeDelay = frame.Fader.fadeDelay - elapsed
-		else	
+		else
 			-- Manage fading.
 			frame.Fader.timeElapsed = frame.Fader.timeElapsed + elapsed
 			if frame.Fader.timeElapsed < frame.Fader.fadeTime then
@@ -625,14 +625,14 @@ end
 function Fader:FadeFrame(frame, endAlpha, fadeTime, fadeDelay, callBack)
 	-- Check frame is a usable object.
 	if type(frame) ~= "table" then return end
-	
+
 	-- Check if fading is needed.
 	if frame:GetAlpha() == (endAlpha or 0) then
 		-- Stop fading.
 		self:StopFading(frame)
 		return
 	end
-	
+
 	-- Setup fader settings.
 	-- Settings equal optional parameters or defaults.
 	frame.Fader = frame.Fader or {}
@@ -678,12 +678,12 @@ function Fader:StopFading(frame)
 		if v == frame then
 			frame.Fader.fading = false
 			tremove(self.Fading, i)
-			
+
 			if frame.Fader.callBack then
 				frame.Fader.callBack()
 				frame.Fader.callBack = nil
 			end
-			
+
 			if not frame.FaderHoverScript and not self.RegisteredFrames[frame] then frame.Fader = nil end
 			return
 		end
@@ -705,7 +705,7 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults, specialHov
 	local frame
 	if type(object) == "table" and not object.GetParent then
 		frame = {}
-	
+
 		local numObjects = 0
 		for k, f in pairs(object) do
 			frame[k] = f
@@ -720,11 +720,11 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults, specialHov
 
 	-- Check frame is an usable object.
 	if (type(frame) ~= "table") and (type(frame) ~= "string") then return end
-	
+
 	-- Shortcut database values.
 	local odb = objectDB
 	local odbD = objectDBdefaults
-		
+
 	-- Create ApplySettings function.
 	local ApplySettings
 	if type(frame) == "table" and not frame.GetParent then
@@ -741,7 +741,7 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults, specialHov
 					oUF_Party = LUI:Module("oUF_Party")
 					break
 				end
-			end			
+			end
 		end
 
 		ApplySettings = function()
@@ -766,7 +766,7 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults, specialHov
 				end
 
 				-- Set Range Fader for Party to correct state
-				if oUF_Party then oUF_Party:ToggleRangeFade() end 
+				if oUF_Party then oUF_Party:ToggleRangeFade() end
 			end
 		end
 	else
@@ -786,7 +786,7 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults, specialHov
 			end
 		end
 	end
-	
+
 	local FaderOptions = {
 		Enable = LUI:NewToggle("Enable Fader", nil, 1, odb, "Enable", odbD, ApplySettings),
 		UseGlobalSettings = LUI:NewToggle("Use Global Settings", nil, 2, odb, "UseGlobalSettings", odbD, ApplySettings, nil, function() return (not odb.Enable) end),
@@ -804,7 +804,7 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults, specialHov
 				Health = LUI:NewToggle("Health Is Low", nil, 5, odb, "Health", odbD, ApplySettings, "normal"),
 				Power = LUI:NewToggle("Power Is Low", nil, 6, odb, "Power", odbD, ApplySettings, "normal"),
 				Targeting = LUI:NewToggle("Targeting", nil, 7, odb, "Targeting", odbD, ApplySettings, "full"),
-				
+
 				Settings = LUI:NewHeader("Settings", 8),
 				InAlpha = LUI:NewSlider("In Alpha", "Set the alpha of the frame while not faded.", 9, odb, "InAlpha", odbD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
 				OutAlpha = LUI:NewSlider("Out Alpha", "Set the alpha of the frame while faded.", 10, odb, "OutAlpha", odbD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
@@ -812,14 +812,14 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults, specialHov
 				OutDelay = LUI:NewSlider("Fade Delay", "Set the delay time before the frame fades out.", 12, odb, "OutDelay", odbD, 0, 5, 0.05, ApplySettings, "normal"),
 				HealthClip = LUI:NewSlider("Health Trigger", "Set the percent at which health is considered low.", 13, odb, "HealthClip", odbD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
 				PowerClip = LUI:NewSlider("Power Trigger", "Set the percent at which power is considered low.", 14, odb, "PowerClip", odbD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
-				
+
 				Hover = LUI:NewHeader("Mouse Hover", 15),
 				HoverEnable = LUI:NewToggle("Fade On Mouse Hover", nil, 16, odb, "Hover", odbD, ApplySettings, "normal"),
 				HoverAlpha = LUI:NewSlider("Hover Alpha", "Set the alpha of the frame while the mouse is hovering over it.", 17, odb, "HoverAlpha", odbD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
 			},
 		},
 	}
-	
+
 	return FaderOptions
 end
 
@@ -860,14 +860,14 @@ function Fader:LoadOptions()
 			-- Re-apply settings to frames.
 			for frame, settings in pairs(Fader.RegisteredFrames) do
 				Fader:RegisterFrame(frame, settings, frame.FaderSpecialHover)
-			end																		
+			end
 		end
 	end
-	
+
 	-- db quick locals
 	local gs = db.GlobalSettings
 	local gsD = dbd.GlobalSettings
-	
+
 	local options = {
 		Header = LUI:NewHeader("Fader", 1),
 		Settings = {
@@ -885,11 +885,11 @@ function Fader:LoadOptions()
 							end
 						else
 							-- Need to reload to gather frames personal settings.
-							StaticPopup_Show("RELOAD_UI")																		
+							StaticPopup_Show("RELOAD_UI")
 						end
 					end),
 				Line = LUI:NewHeader("", 2),
-			},					
+			},
 		},
 		GlobalSettings = {
 			name = "Global Settings",
@@ -902,7 +902,7 @@ function Fader:LoadOptions()
 				Health = LUI:NewToggle("While Health Is Low", nil, 4, gs, "Health", gsD, ApplySettings, "normal"),
 				Power = LUI:NewToggle("While Power Is Low", nil, 5, gs, "Power", gsD, ApplySettings, "normal"),
 				Targeting = LUI:NewToggle("While Targeting", nil, 6, gs, "Targeting", gsD, ApplySettings, "full"),
-						
+
 				Settings = LUI:NewHeader("Settings", 7),
 				InAlpha = LUI:NewSlider("In Alpha", "Set the alpha of the frame while not faded.", 8, gs, "InAlpha", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
 				OutAlpha = LUI:NewSlider("Out Alpha", "Set the alpha of the frame while faded.", 9, gs, "OutAlpha", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
@@ -910,10 +910,10 @@ function Fader:LoadOptions()
 				OutDelay = LUI:NewSlider("Fade Delay", "Set the delay time before the frame fades out.", 11, gs, "OutDelay", gsD, 0, 5, 0.05, ApplySettings, "normal"),
 				HealthClip = LUI:NewSlider("Health Trigger", "Set the percent at which health is considered low.", 12, gs, "HealthClip", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
 				PowerClip = LUI:NewSlider("Power Trigger", "Set the percent at which power is considered low.", 13, gs, "PowerClip", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
-						
+
 				Hover = LUI:NewHeader("Mouse Hover", 14),
 				HoverEnable = LUI:NewToggle("Fade On Mouse Hover", nil, 15, gs, "Hover", gsD, ApplySettings, "normal"),
-				HoverAlpha = LUI:NewSlider("Hover Alpha", "Set the alpha of the frame while the mouse is hovering over it.", 16, gs, "HoverAlpha", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),																								
+				HoverAlpha = LUI:NewSlider("Hover Alpha", "Set the alpha of the frame while the mouse is hovering over it.", 16, gs, "HoverAlpha", gsD, 0, 1, 0.05, ApplySettings, "normal", nil, nil, true),
 			},
 		},
 	}
@@ -928,16 +928,16 @@ function Fader:OnEnable()
 	-- Check if events need to be registered
 	if self.RegisteredFrames then
 		self:EventsRegister()
-		
+
 		-- Enable fader on registered frames.
 		for frame in pairs(self.RegisteredFrames) do
 			-- Create fader table.
 			frame.Fader = frame.Fader or {}
 			frame.Fader.PreAlpha = frame.Fader.PreAlpha or frame:GetAlpha()
-	
+
 			-- Attach mouseover scripts to frame.
 			self:AttachHoverScript(frame)
-	
+
 			-- Run fader
 			self:FadeHandler(frame)
 		end

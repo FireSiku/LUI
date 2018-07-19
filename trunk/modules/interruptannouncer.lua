@@ -5,7 +5,7 @@
 	Version....: 1.8
 	Rev Date...: 09/07/2011 [dd/mm/yyyy]
 	Author.....: Hix [Trollbane] <Lingering>
-	
+
 	Notes:
 		Announces while in a raid or party. Disabled while in battlegrounds and WorldPVP zones (while in battle).
 		This is an evolved version of the Hix: Interrupt Announcer addOn, providing LUI incorporation and additional options.
@@ -30,7 +30,7 @@ function module:COMBAT_LOG_EVENT_UNFILTERED(_, timestamp, event, _, sourceGUID, 
 	if event ~= "SPELL_INTERRUPT" then return end
 	if sourceGUID ~= self.GUID and sourceGUID ~= self.petGUID then return end
 	if timestamp == self.lastTime and interruptedSpellID == self.lastInterrupt then return end
-	
+
 	-- Update variables.
 	self.lastTime, self.lastInterrupt = timestamp, interruptedSpellID
 
@@ -57,13 +57,13 @@ function module:GROUP_ROSTER_UPDATE()
 	if (instanceType == "pvp") or IsInActiveWorldPVP() or ((GetNumGroupMembers() == 0) and (GetNumSubgroupMembers() == 0)) then
 		return module:Deactivate()
 	end
-	
+
 	-- Set channel for output.
 	if (IsInRaid()) then
 		if not db.General.EnableRaid then
 			return module:Deactivate()
 		end
-		
+
 		if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
 			self.channel = "INSTANCE_CHAT"
 		elseif db.General.AnnounceRaid == "RAID_WARNING" and not UnitIsGroupLeader("player") and not UnitIsGroupAssistant("player") then
@@ -75,34 +75,34 @@ function module:GROUP_ROSTER_UPDATE()
 		if not db.General.EnableParty then
 			return module:Deactivate()
 		end
-		
+
 		if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
 			self.channel = "INSTANCE_CHAT"
 		else
 			self.channel = db.General.AnnounceParty
 		end
 	end
-	
+
 	if self.GUID then return end
 
 	-- Collect GUIDs.
 	self.GUID = UnitGUID("player")
 	self:UNIT_PET(_, "player")
-	
+
 	-- Register combat events.
 	self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 end
 
 function module:UNIT_PET(_, unit)
 	if not (db.General.EnablePet and unit == "player" and self.GUID) then return end
-	
+
 	-- Update pet GUID.
 	self.petGUID = UnitGUID("pet")
 end
 
 function module:Deactivate()
 	self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	
+
 	-- Reset variables.
 	self.channel = nil
 	self.GUID = nil
@@ -151,7 +151,7 @@ function module:LoadOptions()
 	local customDisabled = function()
 		return not db.General.EnableFormat
 	end
-	
+
 	local options = {
 		General = self:NewGroup("General", 1, {
 			Title = self:NewHeader("Interrupt Announcer", 1),
@@ -178,7 +178,7 @@ function module:LoadOptions()
 			Format = self:NewInput("Announce Format", "Create a string that becomes the interrupt announcers output format. Use keywords to be replaced by realtime data.", 2, true, "double"),
 		}),
 	}
-	
+
 	return options
 end
 
@@ -188,7 +188,7 @@ module.Refresh = module.GROUP_ROSTER_UPDATE
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
 	local ProfileName = UnitName("player").." - "..GetRealmName()
-	
+
 	if LUI.db.global.luiconfig[ProfileName].Versions.interrupt ~= LUI.Versions.interrupt then
 		db:ResetProfile()
 		LUI.db.global.luiconfig[ProfileName].Versions.interrupt = LUI.Versions.interrupt

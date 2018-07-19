@@ -434,7 +434,7 @@ end
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
 	local ProfileName = UnitName("player").." - "..GetRealmName()
-	
+
 	if LUI.db.global.luiconfig[ProfileName].Versions.mirrorbar ~= LUI.Versions.mirrorbar then
 		db:ResetProfile()
 		LUI.db.global.luiconfig[ProfileName].Versions.mirrorbar = LUI.Versions.mirrorbar

@@ -3,8 +3,6 @@ if(select(2, UnitClass('player')) ~= 'MAGE') then return end
 local parent, ns = ...
 local oUF = ns.oUF
 
-local SPELL_POWER_MANA = SPELL_POWER_MANA 
-
 local Update = function(self, event, unit, powerType)
 	if(self.unit ~= unit) then return end
 	

@@ -6,7 +6,7 @@ local GetSpecialization = GetSpecialization
 
 local spec = GetSpecialization()
 local specPower = { "SOUL_SHARDS", "DEMONIC_FURY", "BURNING_EMBERS" }
-local specType = { SPELL_POWER_SOUL_SHARDS, SPELL_POWER_DEMONIC_FURY, SPELL_POWER_BURNING_EMBERS } 
+local specType = { Enum.PowerType.SoulShards, SPELL_POWER_DEMONIC_FURY, SPELL_POWER_BURNING_EMBERS } 
 
 local Update = function(self, event, unit, powerType)
 	
@@ -64,7 +64,7 @@ local function Enable(self)
 		wb.__owner = self
 		wb.ForceUpdate = ForceUpdate
 
-		self:RegisterEvent('UNIT_POWER', Path)
+		self:RegisterEvent('UNIT_POWER_UPDATE', Path)
 		wb:Show()
 		return true
 	end
@@ -73,7 +73,7 @@ end
 local function Disable(self)
 	local wb = self.WarlockBar
 	if(wb) then
-		self:UnregisterEvent('UNIT_POWER', Path)
+		self:UnregisterEvent('UNIT_POWER_UPDATE', Path)
 		wb:Hide()
 	end
 end

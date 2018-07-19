@@ -18,7 +18,6 @@ _G.oUF = LUI.oUF
 local Media = LibStub("LibSharedMedia-3.0")
 local Profiler = LUI.Profiler
 local widgetLists = AceGUIWidgetLSMlists
-local AceAddon = LibStub("AceAddon-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
@@ -27,12 +26,12 @@ LUI.Versions = {lui = 3403}
 LUI.dummy = function() return end
 
 local LIVE_TOC = 70300
-local LIVE_BUILD = 25549
+local LIVE_BUILD = 26365
 -- Check the build to compare with PTR
 local _, CURRENT_BUILD, _, CURRENT_TOC = GetBuildInfo()
 if tonumber(CURRENT_BUILD) > LIVE_BUILD then
 	LUI.PTR = true
-	LUI:Print("Using Code Designed for New Patch")
+	--LUI:Print("Using Code Designed for New Patch")
 end
 local ProfileName = UnitName("player").." - "..GetRealmName()
 
@@ -150,6 +149,7 @@ LUI.defaults = {
 			DamageFont = "neuropol",
 			DamageFontSize = 25,
 			DamageFontSizeCrit = 34,
+			["*"] = {},
 		},
 		Recount = {
 			Font = "vibrocen",
@@ -1914,8 +1914,8 @@ function LUI:Open(force, ...)
 		else
 			-- Do not open options in combat unless already opened before.
 			if InCombatLockdown() and not optionsLoaded then
-			--Find a better way to word this. 
-				LUI:Print("Unable to open the options for the first time while in combat.") 
+			--Find a better way to word this.
+				LUI:Print("Unable to open the options for the first time while in combat.")
 			else
 				ACD:Open(addonname, nil, ...)
 				ACD.OpenFrames.LUI.frame:SetScale(db.General.BlizzFrameScale)

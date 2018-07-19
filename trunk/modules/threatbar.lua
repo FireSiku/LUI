@@ -13,7 +13,8 @@ local widgetLists = AceGUIWidgetLSMlists
 local db, dbd
 local LUIThreat
 
-local LEVEL_CAP = MAX_PLAYER_LEVEL
+--local LEVEL_CAP = MAX_PLAYER_LEVEL
+local LEVEL_CAP = 110
 
 LUI.Versions.threatbar = 2.0
 
@@ -39,7 +40,7 @@ end
 
 local UpdateExpMode = function()
 	local bar = LUIThreat
-	local bar2 = LUIThreat.artifact
+	--local bar2 = LUIThreat.artifact
 	local width = bar:GetWidth()
 	local left, percentBar, percentBar2
 	local txtformat
@@ -79,7 +80,7 @@ local UpdateExpMode = function()
 		end
 	else -- REP MODE
 		local friend, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID);
-		
+
 		local name, stand, barMin, barMax, barValue, factionID = GetWatchedFactionInfo()
 
 		local repname = { "Ha", "Ho", "Un", "Ne", "Fr", "Hon", "Rev", "Ex" }
@@ -121,78 +122,78 @@ local UpdateExpMode = function()
 		else bar:Hide()
 		end
 	end
-	
+
 	--ARTIFACT MODE
-	if db.General.artifact and HasArtifactEquipped() then
-		local _, _, _, _, totalXP, pointsSpent, _, _, _, _, _, _, tier = C_ArtifactUI.GetEquippedArtifactInfo()
-		local numPoints, xp, xpNextPoint = MainMenuBar_GetNumArtifactTraitsPurchasableFromXP(pointsSpent, totalXP, tier)
-		
-		percentBar2 = xp * 100 / xpNextPoint
-		bar2:SetMinMaxValues(0, xpNextPoint)
-		bar2:SetValue(xp)
-		if numPoints > 0 then
-			bar2.Text:SetFormattedText("%."..precision.."f%% AP +%d" , percentBar2, numPoints)
-		else
-			bar2.Text:SetFormattedText("%."..precision.."f%% AP" , percentBar2)
-		end
-		bar2:Show()
-	else bar2:Hide()
-	end
-	
+	-- if db.General.artifact and HasArtifactEquipped() then
+	-- 	local _, _, _, _, totalXP, pointsSpent, _, _, _, _, _, _, tier = C_ArtifactUI.GetEquippedArtifactInfo()
+	-- 	local numPoints, xp, xpNextPoint = MainMenuBar_GetNumArtifactTraitsPurchasableFromXP(pointsSpent, totalXP, tier)
+
+	-- 	percentBar2 = xp * 100 / xpNextPoint
+	-- 	bar2:SetMinMaxValues(0, xpNextPoint)
+	-- 	bar2:SetValue(xp)
+	-- 	if numPoints > 0 then
+	-- 		bar2.Text:SetFormattedText("%."..precision.."f%% AP +%d" , percentBar2, numPoints)
+	-- 	else
+	-- 		bar2.Text:SetFormattedText("%."..precision.."f%% AP" , percentBar2)
+	-- 	end
+	-- 	bar2:Show()
+	-- else bar2:Hide()
+	-- end
+
 	if not percentBar or percentBar == -math.huge then
 		percentBar = 0
 	end
-	if not percentBar2 or percentBar2 == -math.huge then
-		percentBar2 = 0
-	end
-	
-	if not bar:IsShown() and not bar2:IsShown() then
-		-- Do nothing
-	elseif bar:IsShown() and bar2:IsShown() then
-		local halfWidth = (LUI:Scale(db.General.Width) - 10) * 0.5
-		bar:SetWidth(halfWidth)
-		bar2:SetWidth(halfWidth)
-		bar.rested:SetWidth(halfWidth)
-		bar:ClearAllPoints()
-		bar2:ClearAllPoints()
-		bar.rested:ClearAllPoints()
-		bar:SetPoint("RIGHT", module.anchor, "RIGHT", 0, 0)
-		bar2:SetPoint("LEFT", module.anchor, "LEFT", 0, 0)
-		bar.rested:SetPoint("RIGHT", module.anchor, "RIGHT", 0, 0)
-		bar2:SetReverseFill(true)
-		bar2.Text:ClearAllPoints()
-		bar2.Text:SetPoint("LEFT", bar2, "LEFT", -LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
-	elseif bar:IsShown() and not bar2:IsShown() then
+	-- if not percentBar2 or percentBar2 == -math.huge then
+	-- 	percentBar2 = 0
+	-- end
+
+	-- if not bar:IsShown() and not bar2:IsShown() then
+	-- 	-- Do nothing
+	-- elseif bar:IsShown() and bar2:IsShown() then
+	-- 	local halfWidth = (LUI:Scale(db.General.Width) - 10) * 0.5
+	-- 	bar:SetWidth(halfWidth)
+	-- 	bar2:SetWidth(halfWidth)
+	-- 	bar.rested:SetWidth(halfWidth)
+	-- 	bar:ClearAllPoints()
+	-- 	bar2:ClearAllPoints()
+	-- 	bar.rested:ClearAllPoints()
+	-- 	bar:SetPoint("RIGHT", module.anchor, "RIGHT", 0, 0)
+	-- 	bar2:SetPoint("LEFT", module.anchor, "LEFT", 0, 0)
+	-- 	bar.rested:SetPoint("RIGHT", module.anchor, "RIGHT", 0, 0)
+	-- 	bar2:SetReverseFill(true)
+	-- 	bar2.Text:ClearAllPoints()
+	-- 	bar2.Text:SetPoint("LEFT", bar2, "LEFT", -LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
+	-- elseif bar:IsShown() and not bar2:IsShown() then
 		bar:SetWidth(LUI:Scale(db.General.Width))
 		bar:SetAllPoints(module.anchor)
-	elseif not bar:IsShown() and bar2:IsShown() then	
-		bar2:SetWidth(LUI:Scale(db.General.Width))
-		bar:ClearAllPoints()
-		bar2:SetAllPoints(module.anchor)
-		bar2:SetReverseFill(false)
-		bar2.Text:ClearAllPoints()
-		bar2.Text:SetPoint("RIGHT", bar2, "RIGHT", LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
-	end
-	
+	-- elseif not bar:IsShown() and bar2:IsShown() then
+	-- 	bar2:SetWidth(LUI:Scale(db.General.Width))
+	-- 	bar:ClearAllPoints()
+	-- 	bar2:SetAllPoints(module.anchor)
+	-- 	bar2:SetReverseFill(false)
+	-- 	bar2.Text:ClearAllPoints()
+	-- 	bar2.Text:SetPoint("RIGHT", bar2, "RIGHT", LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
+	-- end
+
 	module.anchor:SetSize(LUI:Scale(db.General.Width), LUI:Scale(db.General.Height))
 	module.anchor:ClearAllPoints()
 	module.anchor:SetPoint(db.General.Point, UIParent, db.General.Point, LUI:Scale(db.General.X), LUI:Scale(db.General.Y))
-	
+
 	if db.Appearance.Color == "Gradient" then
 		local r, g, b = oUF.ColorGradient((100 - percentBar), 100, 0, 1, 0, 1, 1, 0, 1, 0, 0)
-		local r2, g2, b2 = oUF.ColorGradient((100 - percentBar2), 100, 0, 1, 0, 1, 1, 0, 1, 0, 0)
+		--local r2, g2, b2 = oUF.ColorGradient((100 - percentBar2), 100, 0, 1, 0, 1, 1, 0, 1, 0, 0)
 		local mu = db.Appearance.BGMultiplier or 0
 		bar:SetStatusBarColor(r, g, b)
 		if bar.bg then bar.bg:SetVertexColor(r * mu, g * mu, b * mu) end
-		bar2:SetStatusBarColor(r2, g2, b2)
-		if bar2.bg then bar2.bg:SetVertexColor(r2 * mu, g2 * mu, b2 * mu) end
+		-- bar2:SetStatusBarColor(r2, g2, b2)
+		-- if bar2.bg then bar2.bg:SetVertexColor(r2 * mu, g2 * mu, b2 * mu) end
 	end
 	if db.Text.Color == "Gradient" then
 		bar.Text:SetTextColor(oUF.ColorGradient((100 - percentBar), 100, 0, 1, 0, 1, 1, 0, 1, 0, 0))
-		bar2.Text:SetTextColor(oUF.ColorGradient((100 - percentBar2), 100, 0, 1, 0, 1, 1, 0, 1, 0, 0))
+		--bar2.Text:SetTextColor(oUF.ColorGradient((100 - percentBar2), 100, 0, 1, 0, 1, 1, 0, 1, 0, 0))
 	end
-	
-	
+
+
 end
 
 local ToggleExpMode = function()
@@ -205,18 +206,18 @@ local ToggleExpMode = function()
 		LUIThreat:UnregisterEvent("PLAYER_XP_UPDATE")
 		LUIThreat:UnregisterEvent("UPDATE_FACTION")
 		LUIThreat:UnregisterEvent("UPDATE_EXHAUSTION")
-		LUIThreat:UnregisterEvent("ARTIFACT_XP_UPDATE")
-		LUIThreat:UnregisterEvent("ARTIFACT_UPDATE")
-		LUIThreat:UnregisterEvent("PLAYER_EQUIPMENT_CHANGED")
+		-- LUIThreat:UnregisterEvent("ARTIFACT_XP_UPDATE")
+		-- LUIThreat:UnregisterEvent("ARTIFACT_UPDATE")
+		-- LUIThreat:UnregisterEvent("PLAYER_EQUIPMENT_CHANGED")
 	else
 		LUIThreat:UnregisterEvent("PLAYER_REGEN_ENABLED")
 		LUIThreat:UnregisterEvent("PLAYER_REGEN_DISABLED")
 		LUIThreat:RegisterEvent("PLAYER_XP_UPDATE")
 		LUIThreat:RegisterEvent("UPDATE_EXHAUSTION")
 		LUIThreat:RegisterEvent("UPDATE_FACTION")
-		LUIThreat:RegisterEvent("ARTIFACT_XP_UPDATE")
-		LUIThreat:RegisterEvent("ARTIFACT_UPDATE")
-		LUIThreat:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+		-- LUIThreat:RegisterEvent("ARTIFACT_XP_UPDATE")
+		-- LUIThreat:RegisterEvent("ARTIFACT_UPDATE")
+		-- LUIThreat:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 		LUIThreat.expMode = true
 		LUIThreat:Show()
 		LUIThreat:SetAlpha(1)
@@ -237,20 +238,20 @@ local Update = function(bar)
 			bar:SetAlpha(0)
 			return
 		end
-		
+
 		if not UnitAffectingCombat("target") or not UnitCanAttack("player", "target") then
 			bar:SetAlpha(0)
 			return
 		end
 	end
-	
+
 	bar:SetAlpha(1)
-	
+
 	local hasaggro, _, threat, rawthreat = UnitDetailedThreatSituation("player", "target")
-	
+
 	if not threat then return end
 	if not rawthreat then return end
-	
+
 	if hasaggro then -- tanking
 		bar:SetMinMaxValues(0, 100)
 		bar.helper:SetMinMaxValues(0, 100)
@@ -264,18 +265,18 @@ local Update = function(bar)
 		bar.helper:SetMinMaxValues(0, 130)
 		bar:SetValue(rawthreat)
 	end
-	
+
 	if db.Appearance.Color == "Gradient" then
 		local r, g, b = oUF.ColorGradient(threat, 100, 0, 1, 0, 1, 1, 0, 1, 0, 0)
 		local mu = db.Appearance.BGMultiplier or 0
 		bar:SetStatusBarColor(r, g, b)
 		if bar.bg then bar.bg:SetVertexColor(r * mu, g * mu, b * mu) end
 	end
-				
+
 	if db.Text.Enable then
 		bar.Text:SetFormattedText("%d%%", rawthreat)
 	end
-	
+
 	if db.Text.Color == "Gradient" then
 		bar.Text:SetTextColor(oUF.ColorGradient(threat, 100, 0, 1, 0, 1, 1, 0, 1, 0, 0))
 	end
@@ -283,32 +284,32 @@ end
 
 local SetThreat = function()
 	if LUIThreat then return end
-	
+
 	local anchor = CreateFrame("Frame", "LUI_ThreatBarAnchor", UIParent)
 	anchor:SetPoint(db.General.Point, UIParent, db.General.Point, LUI:Scale(db.General.X), LUI:Scale(db.General.Y))
 	anchor:SetSize(LUI:Scale(db.General.Width), LUI:Scale(db.General.Height))
 	module.anchor = anchor
 	module.anchor:Show()
-	
+
 	LUIThreat = CreateFrame("StatusBar", "LUIThreat", anchor)
 	LUIThreat:SetFrameStrata("HIGH")
 	LUIThreat:SetAllPoints(anchor)
-	
+
 	LUIThreat.bg = LUIThreat:CreateTexture(nil, "BORDER")
 	LUIThreat.bg:SetAllPoints(LUIThreat)
-	
+
 	LUIThreat.Text = LUIThreat:CreateFontString("LUIThreatText", "OVERLAY")
 	LUIThreat.Text:SetJustifyH("LEFT")
 	LUIThreat.Text:SetShadowColor(0, 0, 0)
 	LUIThreat.Text:SetShadowOffset(1.25, -1.25)
-	
+
 	LUIThreat.helper = CreateFrame("StatusBar", nil, LUIThreat)
 	LUIThreat.helper:SetAllPoints(LUIThreat)
 	LUIThreat.helper:SetFrameLevel(LUIThreat:GetFrameLevel() - 1)
 	LUIThreat.helper:SetMinMaxValues(0, 100)
 	LUIThreat.helper:SetValue(100)
 	LUIThreat.helper:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-	
+
 	LUIThreat.indicator = LUIThreat:CreateTexture(nil, "OVERLAY")
 	LUIThreat.indicator:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
 	LUIThreat.indicator:SetVertexColor(1, 1, 1, .75)
@@ -317,29 +318,29 @@ local SetThreat = function()
 	LUIThreat.indicator:SetWidth(LUIThreat:GetHeight())
 	LUIThreat.indicator:SetPoint("CENTER", LUIThreat.helper:GetStatusBarTexture(), "RIGHT", 0, 0)
 	LUIThreat.indicator:Show()
-	
+
 	LUIThreat.rested = LUIThreat:CreateTexture(nil, "OVERLAY")
 	LUIThreat.rested:SetTexture("Interface\\TargetingFrame\\UI-StatusBar")
 	LUIThreat.rested:SetVertexColor(0.7, 0.7, 0.7, 0.2)
 	LUIThreat.rested:SetBlendMode("ADD")
 	LUIThreat.rested:Show()
-	
-	LUIThreat.artifact = CreateFrame("StatusBar", "LUIArtifact", anchor)
-	LUIThreat.artifact:SetFrameStrata("HIGH")
-	
-	LUIThreat.artifact.bg = LUIThreat.artifact:CreateTexture(nil, "BORDER")
-	LUIThreat.artifact.bg:SetAllPoints(LUIThreat.artifact)
-		
-	LUIThreat.artifact.Text = LUIThreat.artifact:CreateFontString("LUIArtifactText", "OVERLAY")
-	LUIThreat.artifact.Text:SetJustifyH("RIGHT")
-	LUIThreat.artifact.Text:SetShadowColor(0, 0, 0)
-	LUIThreat.artifact.Text:SetShadowOffset(1.25, -1.25)
-	
+
+	-- LUIThreat.artifact = CreateFrame("StatusBar", "LUIArtifact", anchor)
+	-- LUIThreat.artifact:SetFrameStrata("HIGH")
+
+	-- LUIThreat.artifact.bg = LUIThreat.artifact:CreateTexture(nil, "BORDER")
+	-- LUIThreat.artifact.bg:SetAllPoints(LUIThreat.artifact)
+
+	-- LUIThreat.artifact.Text = LUIThreat.artifact:CreateFontString("LUIArtifactText", "OVERLAY")
+	-- LUIThreat.artifact.Text:SetJustifyH("RIGHT")
+	-- LUIThreat.artifact.Text:SetShadowColor(0, 0, 0)
+	-- LUIThreat.artifact.Text:SetShadowOffset(1.25, -1.25)
+
 	LUIThreat:SetScript("OnEvent", function(self, event)
 
 		if event == "PLAYER_REGEN_ENABLED" then
 			self:Hide()
- 		elseif event == "PLAYER_REGEN_DISABLED" then
+		elseif event == "PLAYER_REGEN_DISABLED" then
 			self:Show()
 			if self.Testmode then
 				self.Testmode = nil
@@ -347,8 +348,8 @@ local SetThreat = function()
 			end
 		elseif event == "PLAYER_XP_UPDATE" or event == "UPDATE_FACTION" or event == "UPDATE_EXHAUSTION" then
 			UpdateExpMode()
-		elseif db.General.artifact and event == "ARTIFACT_UPDATE" or event == "ARTIFACT_XP_UPDATE" or event == "PLAYER_EQUIPMENT_CHANGED" then
-			UpdateExpMode()
+		-- elseif db.General.artifact and event == "ARTIFACT_UPDATE" or event == "ARTIFACT_XP_UPDATE" or event == "PLAYER_EQUIPMENT_CHANGED" then
+		-- 	UpdateExpMode()
 		end
 	end)
 end
@@ -365,7 +366,7 @@ module.defaults = {
 			TankHide = true,
 			expMode = false,
 			showRested = false,
-			artifact = true,
+			artifact = false,
 		},
 		Appearance = {
 			Texture = "LUI_Gradient",
@@ -405,7 +406,7 @@ function module:LoadOptions()
 	local colorOptions = {"By Class", "Individual", "Gradient"}
 	local disabledExpMode = function() return not db.General.expMode end
 	local dryCall = function() self:Refresh() end
-	
+
 	local options = {
 		General = self:NewGroup("General", 1, {
 			header = self:NewHeader("General Options", 0),
@@ -418,7 +419,7 @@ function module:LoadOptions()
 			TankHide = self:NewToggle("Hide if Tanking", "Whether you want to hide the Threat Bar if you are tank specced or not.\nOnly works if Vengeance Module is enabled!.", 7, true),
 			expMode = self:NewToggle("Switch to Exp Mode", "If enabled, this will turn your Threat Bar into an experience bar.\nIf you are level 100 it will show a reputation bar instead.\nDisable Threat.",8,ToggleExpMode),
 			showRested = self:NewToggle("Show Rested Experience", "If enabled, this will show your rested experience as well.", 9, dryCall, nil, disabledExpMode),
-			artifact = self:NewToggle("Show Artifact XP", "If enabled, this will show your experience with currently equipped Artifact. \nHidden if you do not have an artifact equipped.\n\nIf you are tracking XP or Rep, this will be shown along side your XP or Rep.", 10, dryCall, nil, disabledExpMode),
+			--artifact = self:NewToggle("Show Artifact XP", "If enabled, this will show your experience with currently equipped Artifact. \nHidden if you do not have an artifact equipped.\n\nIf you are tracking XP or Rep, this will be shown along side your XP or Rep.", 10, dryCall, nil, disabledExpMode),
 			empty3 = self:NewDesc(" ", 11),
 			Testmode = self:NewExecute("Testmode", "Enable/Disable Threat Bar Testmode", 12, ToggleTestMode),
 		}),
@@ -445,7 +446,7 @@ function module:LoadOptions()
 			Precision = self:NewSlider("Number Precision", "How many decimal places will be shown.", 10, 0, 3, 1, true, false, nil, disabledTextFunc),
 		}),
 	}
-	
+
 	return options
 end
 
@@ -454,7 +455,7 @@ function module:Refresh(...)
 	if type(info) == "table" then
 		db(info, value)
 	end
-	
+
 	local r, g, b
 	local mu = db.Appearance.BGMultiplier
 	if db.Appearance.Color == "By Class" then
@@ -462,26 +463,26 @@ function module:Refresh(...)
 	elseif db.Appearance.Color == "Individual" then
 		r, g, b = db.Appearance.IndividualColor.r, db.Appearance.IndividualColor.g, db.Appearance.IndividualColor.b
 	end
-	
+
 	module.anchor:SetSize(LUI:Scale(db.General.Width), LUI:Scale(db.General.Height))
 	module.anchor:ClearAllPoints()
 	module.anchor:SetPoint(db.General.Point, UIParent, db.General.Point, LUI:Scale(db.General.X), LUI:Scale(db.General.Y))
 	LUIThreat:SetSize(LUI:Scale(db.General.Width), LUI:Scale(db.General.Height))
-	LUIThreat.artifact:SetSize(LUI:Scale(db.General.Width), LUI:Scale(db.General.Height))
 	LUIThreat:SetStatusBarTexture(Media:Fetch("statusbar", db.Appearance.Texture))
-	LUIThreat.artifact:SetStatusBarTexture(Media:Fetch("statusbar", db.Appearance.Texture))
-	if r then 
-		LUIThreat:SetStatusBarColor(r, g, b) 
-		LUIThreat.artifact:SetStatusBarColor(r, g, b) 
-	end
-	
-	LUIThreat.bg:SetTexture(Media:Fetch("statusbar", db.Appearance.BGTexture))
-	LUIThreat.artifact.bg:SetTexture(Media:Fetch("statusbar", db.Appearance.BGTexture))
+	--LUIThreat.artifact:SetSize(LUI:Scale(db.General.Width), LUI:Scale(db.General.Height))
+	--LUIThreat.artifact:SetStatusBarTexture(Media:Fetch("statusbar", db.Appearance.Texture))
 	if r then
-		LUIThreat.bg:SetVertexColor(r * mu, g * mu, b * mu) 
-		LUIThreat.artifact.bg:SetVertexColor(r * mu, g * mu, b * mu) 
+		LUIThreat:SetStatusBarColor(r, g, b)
+		--LUIThreat.artifact:SetStatusBarColor(r, g, b)
 	end
-	
+
+	LUIThreat.bg:SetTexture(Media:Fetch("statusbar", db.Appearance.BGTexture))
+	--LUIThreat.artifact.bg:SetTexture(Media:Fetch("statusbar", db.Appearance.BGTexture))
+	if r then
+		LUIThreat.bg:SetVertexColor(r * mu, g * mu, b * mu)
+		--LUIThreat.artifact.bg:SetVertexColor(r * mu, g * mu, b * mu)
+	end
+
 	if db.Text.Color == "By Class" then
 		r, g, b = unpack(oUFmodule.colors.class[class])
 	elseif db.Text.Color == "Individual" then
@@ -489,17 +490,17 @@ function module:Refresh(...)
 	else
 		r, g, b = nil, nil, nil
 	end
-	
+
 	LUIThreat.Text:SetFont(Media:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
 	LUIThreat.Text:ClearAllPoints()
 	LUIThreat.Text:SetPoint("RIGHT", LUIThreat, "RIGHT", LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
 	if r then LUIThreat.Text:SetTextColor(r, g, b) end
-	
-	LUIThreat.artifact.Text:SetFont(Media:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
-	LUIThreat.artifact.Text:ClearAllPoints()
-	LUIThreat.artifact.Text:SetPoint("LEFT", LUIThreat.artifact, "LEFT", -LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
-	if r then LUIThreat.artifact.Text:SetTextColor(r, g, b) end
-	
+
+	-- LUIThreat.artifact.Text:SetFont(Media:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
+	-- LUIThreat.artifact.Text:ClearAllPoints()
+	-- LUIThreat.artifact.Text:SetPoint("LEFT", LUIThreat.artifact, "LEFT", -LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
+	-- if r then LUIThreat.artifact.Text:SetTextColor(r, g, b) end
+
 	if db.General.expMode then
 		UpdateExpMode()
 		if db.General.showRested then
@@ -511,17 +512,17 @@ function module:Refresh(...)
 
 	if db.Text.Enable then
 		LUIThreat.Text:Show()
-		LUIThreat.artifact.Text:Show()
+		--LUIThreat.artifact.Text:Show()
 	else
 		LUIThreat.Text:Hide()
-		LUIThreat.artifact.Text:Hide()
+		--LUIThreat.artifact.Text:Hide()
 	end
 end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
 	local ProfileName = UnitName("player").." - "..GetRealmName()
-	
+
 	if LUI.db.global.luiconfig[ProfileName].Versions.threatbar ~= LUI.Versions.threatbar then
 		db:ResetProfile()
 		LUI.db.global.luiconfig[ProfileName].Versions.threatbar = LUI.Versions.threatbar
@@ -531,7 +532,7 @@ end
 function module:OnEnable()
 	SetThreat()
 	self:Refresh()
-	
+
 	LUIThreat:RegisterEvent("PLAYER_REGEN_ENABLED")
 	LUIThreat:RegisterEvent("PLAYER_REGEN_DISABLED")
 	LUIThreat:SetScript("OnUpdate", Update)

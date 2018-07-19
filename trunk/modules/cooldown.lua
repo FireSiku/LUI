@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: cooldown.lua
 	Description: Actionbar Cooldown Module
-]] 
+]]
 
 -- External references.
 local addonname, LUI = ...
@@ -190,7 +190,7 @@ function module:Scale()
 			self:Stop()
 			return
 		end
-		
+
 		self.text:SetFont(Media:Fetch("font", db.Text.Font), self.fontScale, db.Text.Flag)
 	end
 
@@ -259,7 +259,7 @@ end
 
 module.defaults = {
 	profile = {
-		General = {					
+		General = {
 			MinDuration = 3,
 			MinScale = 0.5,
 			Precision = 1,
@@ -268,7 +268,7 @@ module.defaults = {
 		Text = {
 			Font = "vibroceb",
 			Size = 20,
-			Flag = "OUTLINE",			
+			Flag = "OUTLINE",
 			XOffset = 2,
 			YOffset = 0,
 		},

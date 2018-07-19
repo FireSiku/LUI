@@ -257,7 +257,7 @@ local function SetVals(stype, sname, sorder)
 	return t
 end
 
---Local command to handle the width/disable/hidden states of all option wrappers. 
+--Local command to handle the width/disable/hidden states of all option wrappers.
 
 local function SetState(t, width, disabled, hidden)
 	argcheck(t, "typeof", "table")
@@ -584,7 +584,7 @@ function devapi:NewPosition(name, order, header, func, width, disabled, hidden)
 	if header == true then header = name end
 	
 	local t = ShadowOption()
-	t.name = function(info) 
+	t.name = function(info)
 		local ParentInfo = GetParentInfo(info)
 		if header then ParentInfo[info[#info].."Header"] = self:NewHeader(header, order, nil, disabled, hidden) end
 		ParentInfo[info[#info].."X"] = self:NewInputNumber("X Value", "Horizontal value for the "..name, order+0.1, func, width, disabled, hidden)
@@ -703,7 +703,7 @@ end
 --	local t = {}
 --	t.type, t.order, t.name = "group", order, name
 --	t.args = {}
---	
+--
 --	local fontdesc = function(info)
 --		local fonttype = info[#info]
 --		if (info[#info] ~= "Font") then fonttype = "Font "..fonttype
@@ -738,7 +738,7 @@ end
 --	t.args["Font"].desc = function(info)
 --		return "Choose a Font to be used for the "..desc..".\n\nDefault: "..self.db.defaults.profile.Fonts[info[#info-1]][info[#info]]
 --	end
---	
+--
 --	-- Not using NewSelect due to changes in info lookup
 --	local fontflags = {"NONE", "OUTLINE", "THICKOUTLINE", "MONOCHROME"}
 --	local flag = {}
@@ -760,9 +760,9 @@ end
 --	end
 --
 --	t.args["Flag"] = flag
---	
+--
 --	t.get = function(info) return self.db.profile.Fonts[info[#info-1]][info[#info]] end
---	t.set = function(info, value) 
+--	t.set = function(info, value)
 --		local opt = self.db.profile.Fonts[info[#info-1]]
 --		opt[info[#info]] = value
 --		if func then func(info, value) end
@@ -808,12 +808,12 @@ end
 
 -- functions to embed
 local mixins = {
-	"NewGroup", "NewHeader", "NewDesc", 
+	"NewGroup", "NewHeader", "NewDesc",
 	"NewToggle", "NewEnable", "NewExecute",
 	"NewSelect", "NewMultiSelect",
 	"NewInput", "NewInputNumber",
 	"NewSlider", "NewPosition", "NewPosSliders",
-	"NewColor", "NewColorNoAlpha", 
+	"NewColor", "NewColorNoAlpha",
 	"NewFontOptions",
 	--Internal
 	
@@ -835,7 +835,7 @@ for target in pairs(devapi.embeds) do
 end
 
 
--- OLD API DOWN HERE. 
+-- OLD API DOWN HERE.
 
 
 --[[
@@ -861,19 +861,19 @@ end
 
 ---- Toggle and Toggle Templates.
 -- #Desc - If nil, it will use the syntax of "Whether or not to " followed by the #name option.
--- #Width - For toggles, this defaults to Full. You may specify "normal" to revert that. 
+-- #Width - For toggles, this defaults to Full. You may specify "normal" to revert that.
 function LUI:NewToggle(name, desc, order, dbt, option, default, func, width, disabled, hidden)
 	local t = {}
 	t.type, t.name, t.order = "toggle", name, order
 	t.desc = desc or "Whether or not to "..name..".\n\nDefault: "..(default[option] and "Enabled" or "Disabled")
 	t.get = function() return dbt[option] end
 	if func then
-		t.set = function(info, toggle) 
+		t.set = function(info, toggle)
 			dbt[option] = not dbt[option]
 			func(info, toggle)
 		end
 	else
-		t.set = function(info, toggle) 
+		t.set = function(info, toggle)
 			dbt[option] = not dbt[option]
 		end
 	end
@@ -939,7 +939,7 @@ function LUI:NewSlider(name, desc, order, dbt, option, default, smin, smax, step
 end
 
 -- Slider Template that can be used generally for scales. Values will be shown in percentages, and range from 50% to 250%. Going by steps of 5%.
--- #name will be appended by "Size". The #desc is automatically filled , tooltip will be "Select the size of the" followed by the #name. 
+-- #name will be appended by "Size". The #desc is automatically filled , tooltip will be "Select the size of the" followed by the #name.
 function LUI:NewScale(name, order, dbt, option, default, func, width, disabled, hidden)
 	local tname, tdesc = name.." Size", "Select the size of the "..name:lower().."."
 	local tmin, tmax, tstep = 0.5, 2.5, 0.05
@@ -947,8 +947,8 @@ function LUI:NewScale(name, order, dbt, option, default, func, width, disabled, 
 end
 
 ---- Color
--- There is no #option because #dbt requires a color table, which must have the r, g, b, a values. 
--- "Color" will be appended at the end of #name. 
+-- There is no #option because #dbt requires a color table, which must have the r, g, b, a values.
+-- "Color" will be appended at the end of #name.
 -- #desc only needs to be the description of what the color will change itself, a "Choose a color for the" will be automatically added.
 function LUI:NewColor(name, desc, order, dbt, default, func, width, disabled, hidden)
 	local t = {}
@@ -1004,16 +1004,16 @@ function LUI:NewInput(name, desc, order, dbt, option, default, func, width, disa
 	return t
 end
 
---Same thing as an input, except it requires a number. 
+--Same thing as an input, except it requires a number.
 -- It will always uses the %.1f format unless specified otherwise. This means that it will display only one floating point.
---   This was done because when you use drag commands for example, it gives  you an insane amount of floating points, which are truncated by %.1f. 
+--   This was done because when you use drag commands for example, it gives  you an insane amount of floating points, which are truncated by %.1f.
 function LUI:NewInputNumber(name, desc, order, dbt, option, default, func, width, disabled, hidden, iformat)
 	local t = {}
 --	tcreate = tcreate + 1
 	t.type, t.order = "input", order
 	t.name, t.desc = name, desc.."\n\nDefault: "..default[option]
 	t.validate = IsNumber
-	t.get = function() 
+	t.get = function()
 		if not iformat then return format("%.1f",dbt[option])
 		else return format(iformat,dbt[option]) end
 	end
@@ -1026,8 +1026,8 @@ function LUI:NewInputNumber(name, desc, order, dbt, option, default, func, width
 	return t
 end
 
---#name for PosX/Y and OffsetX/Y refers to what is going to be changed and displayed in the tooltip. 
---The External name will always be "X (or Y) Value" for Position, and "X (or Y) Offset" for the Offset calls. 
+--#name for PosX/Y and OffsetX/Y refers to what is going to be changed and displayed in the tooltip.
+--The External name will always be "X (or Y) Value" for Position, and "X (or Y) Offset" for the Offset calls.
 --The tooltip is automatically filled with "X/Y Value for your", as well as the notes about positive and negative values.
 function LUI:NewPosX(name, order, dbt, option, default, func, width, disabled, hidden)
 	local tname, tdesc = "X Value", "X Value for your "..name..".\n\nNote:\nPositive Values = right\nNegative Values = left"

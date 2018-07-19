@@ -36,18 +36,18 @@ end
 
 local ValueChanged = function(bar, event, unit)
 	if unit and unit ~= "player" then return end
-	
+
 	if not bar.isTank then
 		bar:Hide()
 		return
 	end
-	
+
 	local value = select(15, UnitAura("player", vengeance, nil, "PLAYER|HELPFUL"))
 
 	if value and value > 0 then
 		if value > bar.max then value = bar.max end
 		if value == bar.value then return end
-			
+
 		bar:SetMinMaxValues(0, bar.max)
 		bar:SetValue(value)
 		bar.value = value
@@ -61,7 +61,7 @@ local ValueChanged = function(bar, event, unit)
 		bar:Hide()
 		bar.value = 0
 	end
-			
+
 	if db.Text.Enable then
 		if db.Text.Format == "Absolut" then
 			bar.Text:SetFormattedText("%d/%d", bar.value, bar.max)
@@ -75,14 +75,14 @@ end
 
 local BaseChanged = function(bar, event, unit)
 	if unit and unit ~= "player" then return end
-	
+
 	if not bar.isTank then
 		bar:Hide()
 		return
 	end
-	
+
 	local health = UnitHealthMax("player")
-	
+
 	bar.max = health
 	bar:SetMinMaxValues(0, bar.max)
 
@@ -91,16 +91,16 @@ end
 
 local StamChanged = function(bar, event, unit)
 	if unit and unit ~= "player" then return end
-	
+
 	if not bar.isTank then
 		bar:Hide()
 		return
 	end
-	
+
 	local health = UnitHealthMax("player")
-	
+
 	if not health then return end
-	
+
 	bar.max = health
 	bar:SetMinMaxValues(0, bar.max)
 
@@ -109,7 +109,7 @@ end
 
 local IsTank = function(bar, event)
 	local masteryIndex = GetSpecialization()
-	
+
 	if masteryIndex then
 		if class == "DRUID" and masteryIndex == 3 then
 			bar.isTank = true
@@ -131,25 +131,25 @@ local IsTank = function(bar, event)
 		bar.isTank = false
 		bar:Hide()
 	end
-	
+
 	StamChanged(bar, event, "player")
 	BaseChanged(bar, event, "player")
 end
 
 local SetVengeance = function()
 	if LUIVengeance then return end
-	
+
 	LUIVengeance = CreateFrame("StatusBar", "LUIVengeance", UIParent)
 	LUIVengeance:SetFrameStrata("HIGH")
-	
+
 	LUIVengeance.bg = LUIVengeance:CreateTexture(nil, "BORDER")
 	LUIVengeance.bg:SetAllPoints(LUIVengeance)
-	
+
 	LUIVengeance.Text = LUIVengeance:CreateFontString(nil, "OVERLAY")
 	LUIVengeance.Text:SetJustifyH("LEFT")
 	LUIVengeance.Text:SetShadowColor(0, 0, 0)
 	LUIVengeance.Text:SetShadowOffset(1.25, -1.25)
-	
+
 	LUIVengeance:SetScript("OnEvent", function(self, event, ...)
 		if self.Testmode then
 			if event == "PLAYER_REGEN_DISABLED" then
@@ -159,7 +159,7 @@ local SetVengeance = function()
 				return
 			end
 		end
-		
+
 		if event == "UNIT_AURA" then
 			ValueChanged(self, event, ...)
 		elseif event == "UNIT_MAXHEALTH" then
@@ -221,7 +221,7 @@ function module:LoadOptions()
 	local colorOptions = {"By Class", "Individual", "Gradient"}
 	local formatOptions = {"Absolut", "Standard"}
 	local dryCall = function() self:Refresh() end
-	
+
 	local options = {
 		General = self:NewGroup("General", 1, {
 			header = self:NewHeader("General Options", 0),
@@ -256,7 +256,7 @@ function module:LoadOptions()
 			IndividualColor = self:NewColorNoAlpha("Individual", "Resolve Bar Text", 11, dryCall, nil, function() return not db.Text.Enable or db.Text.Color ~= "Individual" end),
 		}),
 	}
-	
+
 	return options
 end
 
@@ -265,7 +265,7 @@ function module:Refresh(...)
 	if type(info) == "table" then
 		db(info, value)
 	end
-	
+
 	local r, g, b
 	local mu = db.Appearance.BGMultiplier
 	if db.Appearance.Color == "By Class" then
@@ -273,28 +273,28 @@ function module:Refresh(...)
 	else
 		r, g, b = db.Appearance.IndividualColor.r, db.Appearance.IndividualColor.g, db.Appearance.IndividualColor.b
 	end
-	
+
 	LUIVengeance:SetWidth(LUI:Scale(db.General.Width))
 	LUIVengeance:SetHeight(LUI:Scale(db.General.Height))
 	LUIVengeance:ClearAllPoints()
 	LUIVengeance:SetPoint(db.General.Point, UIParent, db.General.Point, LUI:Scale(db.General.X), LUI:Scale(db.General.Y))
 	LUIVengeance:SetStatusBarTexture(Media:Fetch("statusbar", db.Appearance.Texture))
 	LUIVengeance:SetStatusBarColor(r, g, b)
-	
+
 	LUIVengeance.bg:SetTexture(Media:Fetch("statusbar", db.Appearance.TextureBG))
 	LUIVengeance.bg:SetVertexColor(r * mu, g * mu, b * mu)
-	
+
 	if db.Text.Color == "By Class" then
 		r, g, b = unpack(oUFmodule.colors.class[class])
 	else
 		r, g, b = db.Text.IndividualColor.r, db.Text.IndividualColor.g, db.Text.IndividualColor.b
 	end
-	
+
 	LUIVengeance.Text:SetFont(Media:Fetch("font", db.Text.Font), db.Text.Size, db.Text.Outline)
 	LUIVengeance.Text:ClearAllPoints()
 	LUIVengeance.Text:SetPoint("CENTER", LUIVengeance, "CENTER", LUI:Scale(db.Text.X), LUI:Scale(db.Text.Y))
 	LUIVengeance.Text:SetTextColor(r, g, b)
-	
+
 	if db.Text.Enable then
 		LUIVengeance.Text:Show()
 	else
@@ -305,7 +305,7 @@ end
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
 	local ProfileName = UnitName("player").." - "..GetRealmName()
-	
+
 	if LUI.db.global.luiconfig[ProfileName].Versions.vengeance ~= LUI.Versions.vengeance then
 		db:ResetProfile()
 		LUI.db.global.luiconfig[ProfileName].Versions.vengeance = LUI.Versions.vengeance
@@ -315,17 +315,17 @@ end
 function module:OnEnable()
 	SetVengeance()
 	self:Refresh()
-	
+
 	LUIVengeance.max = 0
 	LUIVengeance.value = 0
 	LUIVengeance.stam = 0
 	LUIVengeance.base = 0
-	
+
 	LUIVengeance:RegisterEvent("UNIT_AURA")
 	LUIVengeance:RegisterEvent("UNIT_MAXHEALTH")
-	LUIVengeance:RegisterEvent("UNIT_LEVEL")	
+	LUIVengeance:RegisterEvent("UNIT_LEVEL")
 	LUIVengeance:RegisterEvent("PLAYER_REGEN_DISABLED")
-	
+
 	LUIVengeance:Hide()
 end
 
