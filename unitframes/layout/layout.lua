@@ -8,7 +8,6 @@
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
 local Forte = LUI:Module("Forte")
-local Fader = LUI:Module("Fader")
 
 local L = LUI.L
 local Blizzard = LUI.Blizzard
@@ -3202,9 +3201,9 @@ local SetStyle = function(self, unit, isSingle)
 		end)
 	end
 
-	if oufdb.Fader and oufdb.Fader.Enable then Fader:RegisterFrame(self, oUF.Fader) end
+	-- if oufdb.Fader and oufdb.Fader.Enable then Fader:RegisterFrame(self, oUF.Fader) end
 
-	if unit == "raid" or (unit == "party" and oufdb.RangeFade and oufdb.Fader and not oufdb.Fader.Enable) then
+	if unit == "raid" or (unit == "party" and oufdb.RangeFade) then
 		self.Range = {
 			insideAlpha = 1,
 			outsideAlpha = 0.5

@@ -8,7 +8,6 @@ local addonname, LUI = ...
 local module = LUI:Module("Bars", "AceHook-3.0", "AceEvent-3.0")
 local Themes = LUI:Module("Themes")
 local Forte = LUI:Module("Forte")
-local Fader = LUI:Module("Fader")
 local Masque = LibStub("Masque", true)
 local Media = LibStub("LibSharedMedia-3.0")
 local LibKeyBound = LibStub("LibKeyBound-1.0")
@@ -730,9 +729,9 @@ function module:SetBottomBar(id)
 
 		RegisterStateDriver(bar, "page", GetBarState(id))
 
-		if bardb.Fader.Enable then
-			Fader:RegisterFrame(bar, bardb.Fader, true)
-		end
+		-- if bardb.Fader.Enable then
+		-- 	Fader:RegisterFrame(bar, bardb.Fader, true)
+		-- end
 
 		if Masque then
 			local group = Masque:Group("LUI", "Bottom Bar "..id)
@@ -885,9 +884,9 @@ function module:SetPetBar()
 
 	Configure(LUIPetBar, 10, db.PetBar.NumPerRow)
 
-	if db.PetBar.Fader.Enable then
-		Fader:RegisterFrame(LUIPetBar, db.PetBar.Fader, true)
-	end
+	-- if db.PetBar.Fader.Enable then
+	-- 	Fader:RegisterFrame(LUIPetBar, db.PetBar.Fader, true)
+	-- end
 
 	LUIPetBar[db.PetBar.Enable and "Show" or "Hide"](LUIPetBar)
 end
@@ -954,9 +953,9 @@ function module:SetShapeshiftBar()
 
 	Configure(LUIShapeshiftBar, 10, db.ShapeshiftBar.NumPerRow)
 
-	if db.ShapeshiftBar.Fader.Enable then
-		Fader:RegisterFrame(LUIShapeshiftBar, db.ShapeshiftBar.Fader, true)
-	end
+	-- if db.ShapeshiftBar.Fader.Enable then
+	-- 	Fader:RegisterFrame(LUIShapeshiftBar, db.ShapeshiftBar.Fader, true)
+	-- end
 
 	LUIShapeshiftBar[(db.ShapeshiftBar.Enable and isShapeShiftBarClass()) and "Show" or "Hide"](LUIShapeshiftBar)
 end
@@ -1014,6 +1013,7 @@ function module:SetExtraActionBar()
 end
 
 function module:HideBlizzard()
+	LUI:Print("Hiding Blizzard frames")
 	MainMenuBar:SetScale(0.00001)
 	MainMenuBar:EnableMouse(false)
 	MainMenuBar:SetAlpha(0)
@@ -1903,7 +1903,7 @@ function module:LoadOptions()
 				Alt = self:NewSelect("Alt", "Choose the Alt State for Action Bar "..num..".\n\nDefault: "..defaultstate["Bottombar"..num][1], 25, statelist, nil, false, nil, disabledFunc),
 				Ctrl = self:NewSelect("Ctrl", "Choose the Ctrl State for Action Bar "..num..".\n\nDefault: "..defaultstate["Bottombar"..num][1], 26, statelist, nil, false, nil, disabledFunc),
 			}),
-			Fader = self:NewGroup("Fader", 12, true, disabledFunc, Fader:CreateFaderOptions(_G["LUIBar"..num], db["Bottombar"..num].Fader, dbd["Bottombar"..num].Fader, true)),
+			--Fader = self:NewGroup("Fader", 12, true, disabledFunc, Fader:CreateFaderOptions(_G["LUIBar"..num], db["Bottombar"..num].Fader, dbd["Bottombar"..num].Fader, true)),
 		})
 
 		if num == 1 then
@@ -1986,7 +1986,7 @@ function module:LoadOptions()
 			DummyBar = specialBar and self:NewExecute("Show Dummy "..name, "Click to show/hide a dummy "..name..".", 6, setDummyBar, nil, disabled[name]) or nil,
 
 			NumPerRow = multiRow and self:NewSlider("Buttons per Row", "Choose the Number of Buttons per Row.", 5, 1, 10, 1, true, nil, nil, nil, disabled[name]) or nil,
-			Fader = (dbName and self:NewGroup("Fader", 6, true, disabled[name], Fader:CreateFaderOptions(_G[frame], db[dbName].Fader, dbd[dbName].Fader, true))) or nil,
+			--Fader = (dbName and self:NewGroup("Fader", 6, true, disabled[name], Fader:CreateFaderOptions(_G[frame], db[dbName].Fader, dbd[dbName].Fader, true))) or nil,
 		})
 
 		return option

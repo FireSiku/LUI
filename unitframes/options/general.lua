@@ -6,7 +6,6 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
-local Fader = LUI:Module("Fader")
 local Forte = LUI:Module("Forte")
 
 local oUF = LUI.oUF
@@ -1103,7 +1102,7 @@ function module:CreateUnitOptions(unit, order)
 				Scale = (unit ~= "Raid" and ufMover[unit]) and self:NewSlider("Scale", "Choose the Scale for your "..unit.." Frame(s).\n\nDefault: 100%", 18, 0.1, 2, 0.01, false, nil, nil, disabledFunc) or nil,
 				empty4 = (unit == "Arena" or unit == "Boss" or unit == "Maintank" or unit == "Party") and self:NewDesc(" ", 19) or nil,
 				Toggle = (unit == "Arena" or unit == "Boss" or unit == "Maintank") and self:NewExecute("Show/Hide", "Toggles the "..unit.." Frames", 20, testFunc, nil, nil, disabledFunc) or nil,
-				RangeFade = (unit == "Party") and self:NewToggle("Fade Out of Range", "Whether you want Party Frames to fade if that player is more than 40 yards away or not.", 21, false, nil, function() return not (self.db.Party.Enable and not self.db.Party.Fader.Enable) end) or nil,
+				RangeFade = (unit == "Party") and self:NewToggle("Fade Out of Range", "Whether you want Party Frames to fade if that player is more than 40 yards away or not.", 21, false, nil, function() return not self.db.Party.Enable end) or nil,
 				empty5 = self:NewHeader("Reset to Defaults", 22),
 				ResetToDefaults = self:NewExecute("Reset to Defaults", "Reset this unitframe's settings to the defaults.\n\nRequires a UI reload.", 23, function() self.db[unit] = {} ReloadUI() end, true),
 			}),
@@ -1130,7 +1129,7 @@ function module:CreateUnitOptions(unit, order)
 				}),
 			}),
 			--platz!
-			AlphaFader = self.db[unit].Fader and self:NewGroup("Fader", 8, Fader:CreateFaderOptions(self.framelist[unit], self.db[unit].Fader, self.defaults[unit].Fader)) or nil,
+			--AlphaFader = self.db[unit].Fader and self:NewGroup("Fader", 8, Fader:CreateFaderOptions(self.framelist[unit], self.db[unit].Fader, self.defaults[unit].Fader)) or nil,
 			CopySettings = self:CreateCopyOptions(unit, 9),
 		}),
 		Bars = self:NewGroup("Bars", 3, "tab", nil, disabledFunc, {
