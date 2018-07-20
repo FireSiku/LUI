@@ -2057,7 +2057,8 @@ function module:SetGF()
 					local a1, r1, g1, b1 = GF_Colors.OrderA[4], unpack(GF_Colors.OrderA)
 					local a2, r2, g2, b2 = 0, GameTooltip:GetBackdropColor()
 					if asc then r1,g1,b1,a1, r2,g2,b2,a2 = r2,g2,b2,a2, r1,g1,b1,a1 end
-					texOrder1:SetGradientAlpha("VERTICAL", r1,g1,b1,a1, r2,g2,b2,a2)
+					-- texOrder1:SetGradientAlpha("VERTICAL", r1,g1,b1,a1, r2,g2,b2,a2)
+					texOrder1:SetAlpha(0)
 				else
 					texOrder1:SetAlpha(0)
 				end
@@ -2832,7 +2833,7 @@ function module:SetEquipmentSets()
 		stat.UNIT_INVENTORY_CHANGED = function(self, unit)
 			local text = "No set equipped."
 			for set = 1,C_EquipmentSet.GetNumEquipmentSets() do
-				local name, _, setID, isEquipped, _, _, _, numMissing, _ = GetEquipmentSetInfo(set)
+				local name, _, setID, isEquipped, _, _, _, numMissing, _ = C_EquipmentSet.GetEquipmentSetInfo(set)
 				if isEquipped then
 					text = string.format("%s%s", db.EquipmentSets.Text, name)
 				end
