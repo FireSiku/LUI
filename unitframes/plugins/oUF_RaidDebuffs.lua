@@ -105,6 +105,8 @@ end
 local function UpdateDebuff(self, name, icon, count, debuffType, duration, endTime)
 	local f = self.RaidDebuffs
 	if name then
+		duration = duration and tonumber(duration)
+		endTime = endTime and tonumber(endTime)
 		f.icon:SetTexture(icon)
 		f.icon:Show()
 

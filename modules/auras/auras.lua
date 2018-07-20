@@ -121,9 +121,9 @@ do
 		local name, icon, count, dispelType, duration, expires, caster = UnitAura(...)
 		-- Blizzard has a bug with SecureAuraHeaders that causes extra aura buttons to sometimes be shown
 		-- It occurs when the consolidation or tempEnchants are shown, an extra button gets added to the end of the list for each one shown
-		if not name then
-			return
-		end
+		if not name then return end
+		duration = duration and tonumber(duration)
+		expires = expires and tonumber(expires)
 
 		if duration and duration > 0 then
 			self.remaining = expires - GetTime()
