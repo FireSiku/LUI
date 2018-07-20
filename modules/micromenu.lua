@@ -590,8 +590,7 @@ function module:SetMicroMenu()
 		self.State = true
 		GameTooltip:SetOwner(self, "ANCHOR_NONE ", 40, -90)
 		GameTooltip:SetText("Dungeon Finder")
-		GameTooltip:AddLine("Left Click: Dungeon Finder", 1, 1, 1)
-		GameTooltip:AddLine("Right Click: Raid Browser", 1, 1, 1)
+		GameTooltip:AddLine("Dungeons & Raids", 1, 1, 1)
 		if UnitLevel("player") < 15 then
 			GameTooltip:AddLine("Available with Level 15", 1, 0, 0)
 		end
@@ -605,15 +604,11 @@ function module:SetMicroMenu()
 	end)
 
 	LUI.MicroMenu.Buttons.LFG.Clicker:SetScript("OnClick", function(self, button)
-		if button == "RightButton" then
-			ToggleRaidBrowser()
-		else
-			ToggleLFDParentFrame()
-		end
+		ToggleLFDParentFrame()
 	end)
 
 	LUI.MicroMenu.Buttons.LFG.Clicker:SetScript("OnUpdate", function(self, button)
-		if RaidBrowserFrame:IsShown() or PVEFrame:IsShown() then
+		if PVEFrame:IsShown() then
 			LUI.MicroMenu.Buttons.LFG.Clicker:SetAlpha(1)
 		else
 			if not LUI.MicroMenu.Buttons.LFG.Clicker.State then
