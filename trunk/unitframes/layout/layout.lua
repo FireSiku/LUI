@@ -2132,14 +2132,10 @@ module.funcs = {
 			self.Runes = CreateFrame("Frame", nil, self)
 			self.Runes:SetFrameLevel(6)
 				
-			--local rid = {1, 2, 5, 6, 3, 4} -- Rune IDs
 			for i = 1, 6 do
 				self.Runes[i] = CreateFrame("StatusBar", nil, self.Runes)
 				self.Runes[i]:SetBackdrop(backdrop)
 				self.Runes[i]:SetBackdropColor(0.08, 0.08, 0.08)
-
-				--Assign Rune frames an ID to identify the runes themselves.
-				--self.Runes[i].id = rid[i]
 			end
 
 			self.Runes.FrameBackdrop = CreateFrame("Frame", nil, self.Runes)
@@ -2163,9 +2159,8 @@ module.funcs = {
 		self.Runes:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 
 		for i = 1, 6 do
-			--local id = self.Runes[i].id
 			self.Runes[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Runes.Texture))
-			self.Runes[i]:SetStatusBarColor(unpack(module.colors.runes[4]))
+			self.Runes[i]:SetStatusBarColor(unpack(module.colors.runes[1]))
 			self.Runes[i]:SetSize(((oufdb.Bars.Runes.Width - 5 * oufdb.Bars.Runes.Padding) / 6), oufdb.Bars.Runes.Height)
 
 			self.Runes[i]:ClearAllPoints()
