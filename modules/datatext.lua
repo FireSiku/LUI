@@ -2832,7 +2832,7 @@ function module:SetEquipmentSets()
 
 		stat.UNIT_INVENTORY_CHANGED = function(self, unit)
 			local text = "No set equipped."
-			for set = 1,C_EquipmentSet.GetNumEquipmentSets() do
+			for set = 1, C_EquipmentSet.GetNumEquipmentSets() do
 				local name, _, setID, isEquipped, _, _, _, numMissing, _ = C_EquipmentSet.GetEquipmentSetInfo(set)
 				if isEquipped then
 					text = string.format("%s%s", db.EquipmentSets.Text, name)
@@ -3205,11 +3205,11 @@ module.defaults = {
 		},
 		WeaponInfo = {
 			Enable = false,
-			X = 610,
+			X = -350,
 			Y = 0,
 			InfoPanel = {
-				Horizontal = "Left",
-				Vertical = "Top",
+				Horizontal = "Right",
+				Vertical = "Bottom",
 			},
 			Font = "vibroceb",
 			FontSize = 12,
@@ -3224,11 +3224,11 @@ module.defaults = {
 		EquipmentSets = {
 			Enable = false,
 			Text = "Equipped Set: ",
-			X = 610,
+			X = -225,
 			Y = 0,
 			InfoPanel = {
-				Horizontal = "Left",
-				Vertical = "Top",
+				Horizontal = "Right",
+				Vertical = "Bottom",
 			},
 			Font = "vibroceb",
 			FontSize = 12,
@@ -3243,11 +3243,11 @@ module.defaults = {
 		LootSpec = {
 			Enable = false,
 			Text = "Loot Spec: ",
-			X = 610,
+			X = -75,
 			Y = 0,
 			InfoPanel = {
-				Horizontal = "Left",
-				Vertical = "Top",
+				Horizontal = "Right",
+				Vertical = "Bottom",
 			},
 			Font = "vibroceb",
 			FontSize = 12,

@@ -208,13 +208,14 @@ function module:ChatEdit_UpdateHeader(editBox) -- update EditBox Colors
 	if db.ColorByChannel then
 		local attr = editBox:GetAttribute("chatType")
 
-
 		if attr == "CHANNEL" then
 			local chan = editBox:GetAttribute("channelTarget")
-			if chan == 0 then
+			if chan and chan == 0 then
 				r, g, b, a = unpack(Themes.db.profile.editbox)
-			else
+			elseif chan then
 				r, g, b = GetMessageTypeColor("CHANNEL"..chan)
+			else
+				r, g, b = GetMessageTypeColor(attr)
 			end
 		else
 			r, g, b = GetMessageTypeColor(attr)

@@ -61,6 +61,7 @@
 	<Script file="scripts\blizzscale.lua"/>
 	<Script file="scripts\talentspam.lua"/>
 	<Script file="scripts\blizzoptionsmover.lua"/>
+	<script file="scripts\WorldMapFix.lua"/>
 
 	<!-- Initialize Unitframes -->
 	<Include file="unitframes\templates.xml"/>
