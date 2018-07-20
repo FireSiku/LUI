@@ -6,7 +6,6 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes", "AceSerializer-3.0")
-local Fader = LUI:Module("Fader")
 local Forte = LUI:Module("Forte")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
@@ -834,9 +833,6 @@ local layouts = setmetatable({
 			Y = 267.2,
 			X = 313.6,
 			Point = "BOTTOMLEFT",
-			Fader = {
-				Enable = true,
-			},
 		},
 		XP_Rep = {
 			Reputation = {
@@ -851,9 +847,6 @@ local layouts = setmetatable({
 			X = -443.6,
 			Point = "BOTTOM",
 			Scale = 0.8,
-			Fader = {
-				Enable = true,
-			},
 		},
 		Party = {
 			Enable = false,
@@ -872,9 +865,6 @@ local layouts = setmetatable({
 				},
 			},
 			Y = 40.5,
-			Fader = {
-				Enable = true,
-			},
 			Aura = {
 				Buffs = {
 					DisableCooldown = true,
@@ -1012,9 +1002,6 @@ local layouts = setmetatable({
 			},
 			Y = 41.7,
 			X = 291.1,
-			Fader = {
-				Enable = true,
-			},
 			Aura = {
 				Debuffs = {
 					Enable = false,
@@ -1149,9 +1136,6 @@ local layouts = setmetatable({
 			},
 			Y = -210,
 			X = -300,
-			Fader = {
-				Enable = true,
-			},
 			Aura = {
 				Debuffs = {
 					Y = 60,
@@ -1211,9 +1195,6 @@ local layouts = setmetatable({
 			},
 			Width = 150,
 			X = -35,
-			Fader = {
-				Enable = true,
-			},
 			Aura = {
 				Debuffs = {
 					Enable = false,
@@ -1261,9 +1242,6 @@ local layouts = setmetatable({
 				},
 			},
 			X = -500,
-			Fader = {
-				Enable = true,
-			},
 			Aura = {
 				Debuffs = {
 					Y = -35,
@@ -1337,9 +1315,6 @@ local layouts = setmetatable({
 					Enable = true,
 				},
 			},
-			Fader = {
-				Enable = true,
-			},
 			Texts = {
 				HealthPercent = {
 					Y = 5,
@@ -1359,9 +1334,6 @@ local layouts = setmetatable({
 				Width = 200,
 			},
 			Scale = 0.85,
-			Fader = {
-				Enable = true,
-			},
 			Icons = {
 				Raid = {
 					Size = 28,
@@ -1378,9 +1350,6 @@ local layouts = setmetatable({
 			X = 25,
 			Point = "LEFT",
 			Scale = 0.85,
-			Fader = {
-				Enable = true,
-			},
 			Portrait = {
 				Enable = true,
 				Alpha = 0.2,
