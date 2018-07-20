@@ -483,9 +483,9 @@ function module:SetMinimap()
 	end
 
 	m_coord:SetScript("OnUpdate", function()
-		--local x,y = GetPlayerMapPosition("player")
 		local uiMap = C_Map.GetBestMapForUnit("player")
-		local x, y = C_Map.GetPlayerMapPosition(uiMap, "player"):GetXY()
+		local position = C_Map.GetPlayerMapPosition(uiMap, "player")
+		local x, y = position and position:GetXY()
 		if not x or not y then
 			m_coord_text:SetText("")
 		else
