@@ -485,14 +485,22 @@ function module:SetMinimap()
 	m_coord:SetScript("OnUpdate", function()
 		local uiMap = C_Map.GetBestMapForUnit("player")
 		local position = C_Map.GetPlayerMapPosition(uiMap, "player")
-		local x, y = position and position:GetXY()
-		if not x or not y then
-			m_coord_text:SetText("")
+		if position then
+			local x, y = position:GetXY()
+			if x and y then
+				x = math.floor(100 * x)
+				y = math.floor(100 * y)
+				m_coord_text:SetFormattedText("%.2d, %.2d", x, y)
+				--LUI:Print("valid Coords:", m_coord_text:GetText())
+			else
+				m_coord_text:SetText("")
+				--LUI:Print("Nil X or Y", x, y)
+			end
 		else
-			x = math.floor(100 * x)
-			y = math.floor(100 * y)
-			m_coord_text:SetFormattedText("%.2d, %.2d", x, y)
+			--LUI:Print("Position is nil", position)
+			m_coord_text:SetText("")
 		end
+		
 	end)
 
 	m_zone:SetScript("OnUpdate", function()
