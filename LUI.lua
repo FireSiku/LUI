@@ -25,8 +25,8 @@ LUI.Versions = {lui = 3403}
 
 LUI.dummy = function() return end
 
-local LIVE_TOC = 70300
-local LIVE_BUILD = 26365
+local LIVE_TOC = 80000
+local LIVE_BUILD = 27101
 -- Check the build to compare with PTR
 local _, CURRENT_BUILD, _, CURRENT_TOC = GetBuildInfo()
 if tonumber(CURRENT_BUILD) > LIVE_BUILD then
@@ -1337,21 +1337,21 @@ local function getOptions()
 									order = 6,
 									width = "full",
 									type = "description",
-									name = "I would also like to thank everyone that donated to the project, you are all wonderful people. A special mention goes to my current Patrons:".."\n",
+									name = "I would also like to thank everyone that donated to the project, you are all wonderful people. A special mention goes to my current and former Patrons:".."\n",
 								},
 								HighPatrons = {
 									order = 7,
 									width = "full",
 									type = "description",
 									fontSize = "large",
-									name = "|cffa335eesk1nny, Qoke, StephenFOlson, apexius".."\n",
+									name = "|cffa335eeSkinny Man Music, Qoke, StephenFOlson, Fearon Whitcomb, Coy Linnerooth".."\n",
 								},
 								OtherPatrons = {
 									order = 8,
 									width = "full",
 									type = "description",
 									fontSize = "medium",
-									name = "|cff1eff00BIRDKi, Faeron Whitecomb, Slawomir Baran, Curtis Motzner, Michael Swancott, Shawn Pitts".."\n",
+									name = "|cff1eff00Angryrice, Anthony Béchard, apexius, Azona, BIRDki, Brandon Burr, Chris Manring, Confatalis, Curtis Motzner, Dalton Matheson, Dochouse, Grant Sundstrom, gnuheike, Ian Huisman, Joseph Arnett, Kris Springer, Lyra, Mathias Reffeldt, Melvin de Grauw, Michael Swancott, Michael Walker, Michelle Larrew, Mike Williams, necr0, Oscar Olofsson, Preston Cheek, Richard Scholten, Saturos Zed, Sean O'Shea, Shawn Pitts, Slawomir Baran, Srg Kuja, Steph Lee, Tobias Lidén, Xenthe, Ziri".."\n",
 								},
 							},
 						},
