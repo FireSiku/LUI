@@ -105,8 +105,9 @@ end
 local function UpdateDebuff(self, name, icon, count, debuffType, duration, endTime)
 	local f = self.RaidDebuffs
 	if name then
-		duration = duration and tonumber(duration)
-		endTime = endTime and tonumber(endTime)
+		-- if (not duration or type(duration) ~= "number") or (not expires or type(expires) ~= "number") then
+		-- 	LUI:Printf("Name: %s, iconID: %s, type: %s, duration: %s, expires: %s, caster: %s", name, icon, count, dispelType, duration, expires, caster)
+		-- end
 		f.icon:SetTexture(icon)
 		f.icon:Show()
 
@@ -154,7 +155,7 @@ local function Update(self, event, unit)
 	local _name, _icon, _count, _dtype, _duration, _endTime
 	local _priority, priority = 0, nil
 	for i = 1, 40 do
-		local name, rank, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, shouldConsolidate, spellId = UnitAura(unit, i, 'HARMFUL')
+		local name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, shouldConsolidate, spellId = UnitAura(unit, i, 'HARMFUL')
 		if (not name) then break end
 
 		if addon.ShowDispelableDebuff and debuffType then
