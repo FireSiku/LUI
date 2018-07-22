@@ -122,8 +122,9 @@ do
 		-- Blizzard has a bug with SecureAuraHeaders that causes extra aura buttons to sometimes be shown
 		-- It occurs when the consolidation or tempEnchants are shown, an extra button gets added to the end of the list for each one shown
 		if not name then return end
-		duration = duration and tonumber(duration)
-		expires = expires and tonumber(expires)
+		-- if (not duration or type(duration) ~= "number") or (not expires or type(expires) ~= "number") then
+		-- 	LUI:Printf("Name: %s, iconID: %s, type: %s, duration: %s, expires: %s, caster: %s", name, icon, count, dispelType, duration, expires, caster)
+		-- end
 
 		if duration and duration > 0 then
 			self.remaining = expires - GetTime()
