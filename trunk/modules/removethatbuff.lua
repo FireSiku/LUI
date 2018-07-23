@@ -47,9 +47,10 @@ function module:UNIT_AURA(_, unitid, ...)
 	if unitid ~= "player" or InCombatLockdown() then
 		return
 	else
-		for v,_ in pairs(db.Buffs) do
-			if UnitAura("player", v) then
-				CancelUnitBuff("player", v);
+		for i = 1, 40 do
+			local name = UnitAura("player", i)
+			if db.Buffs[name] then
+				CancelUnitBuff("player", i)
 			end
 		end
 	end
