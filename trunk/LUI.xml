@@ -103,7 +103,7 @@
 	<Script file="unitframes\plugins\oUF_CombatFeedback.lua"/>
 	<Script file="unitframes\plugins\oUF_Experience.lua"/>
 	<Script file="unitframes\plugins\oUF_Reputation.lua"/>
-	<Script file="unitframes\plugins\oUF_Smooth.lua"/>
+	<!-- <Script file="unitframes\plugins\oUF_Smooth.lua"/> -->
 	<Script file="unitframes\plugins\oUF_RaidDebuffs.lua"/>
 
 	<!-- to investigate as we may not need these anymore -->
