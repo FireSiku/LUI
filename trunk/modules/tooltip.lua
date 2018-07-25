@@ -26,15 +26,11 @@ local hooks = { }
 local GameTooltip, GameTooltipStatusBar = _G["GameTooltip"], _G["GameTooltipStatusBar"]
 local Tooltips = {GameTooltip,ItemRefTooltip,ItemRefShoppingTooltip1,ItemRefShoppingTooltip2,ShoppingTooltip1,ShoppingTooltip2,FriendsTooltip,FloatingGarrisonFollowerTooltip,GarrisonFollowerAbilityTooltip, WorldMapTooltip, WorldMapCompareTooltip1, WorldMapCompareTooltip2, ReputationParagonTooltip, ContributionBuffTooltip, ContributionTooltip}
 local LUITooltipColors
+local LUITooltipColors, LUITooltipBackdrop
 
 function module:UpdateTooltip()
 	for _, tt in pairs(Tooltips) do
-		tt:SetBackdrop( {
-			bgFile = Media:Fetch("background", db.Tooltip.Background.Texture),
-			edgeFile = Media:Fetch("border", db.Tooltip.Border.Texture),
-			tile = false, edgeSize = db.Tooltip.Border.Size,
-			insets = { left = db.Tooltip.Border.Insets.Left, right = db.Tooltip.Border.Insets.Right, top = db.Tooltip.Border.Insets.Top, bottom = db.Tooltip.Border.Insets.Bottom }
-		})
+		tt:SetBackdrop(LUITooltipBackdrop)
 	end
 end
 
@@ -72,6 +68,13 @@ function module:SetTooltip()
 	local LUITooltip = CreateFrame( "Frame", "tooltip", UIParent)
 
 	local _G = getfenv(0)
+
+	LUITooltipBackdrop = {
+		bgFile = Media:Fetch("background", db.Tooltip.Background.Texture),
+		edgeFile = Media:Fetch("border", db.Tooltip.Border.Texture),
+		tile = false, edgeSize = db.Tooltip.Border.Size,
+		insets = { left = db.Tooltip.Border.Insets.Left, right = db.Tooltip.Border.Insets.Right, top = db.Tooltip.Border.Insets.Top, bottom = db.Tooltip.Border.Insets.Bottom }
+	}
 
 	module:UpdateTooltip()
 
@@ -174,11 +177,12 @@ function module:SetTooltip()
 		local reaction = unit and UnitReaction(unit, "player")
 		local player = unit and UnitIsPlayer(unit)
 		local tapped = unit and UnitIsTapDenied(unit)
+		local itemLink = not unit and self:GetItem()
 
 		if player then
 			local class = select(2, UnitClass(unit))
 			local c = LUITooltipColors.class[class] or {1, 1, 1}
-			local r, g, b = c[1], c[2], c[3]
+			r, g, b = c[1], c[2], c[3]
 			self:SetBackdropBorderColor(r, g, b)
 			healthBarBG:SetBackdropBorderColor(r, g, b)
 			healthBar:SetStatusBarColor(r, g, b)
@@ -188,15 +192,15 @@ function module:SetTooltip()
 			else
 				c = LUITooltipColors.reaction[reaction]
 			end
-			local r, g, b = c[1], c[2], c[3]
+			r, g, b = c[1], c[2], c[3]
 			self:SetBackdropBorderColor(r, g, b)
 			healthBarBG:SetBackdropBorderColor(r, g, b)
 			healthBar:SetStatusBarColor(r, g, b)
-		elseif self.GetItem then
+		elseif itemLink then
 			local _, link = self:GetItem()
 			local quality = link and select(3, GetItemInfo(link))
 			if quality and quality >= 2 then
-				local r, g, b = GetItemQualityColor(quality)
+				r, g, b = GetItemQualityColor(quality)
 				self:SetBackdropBorderColor(r, g, b)
 			else
 				self:SetBackdropBorderColor(r, g, b, a)
@@ -208,7 +212,6 @@ function module:SetTooltip()
 			healthBarBG:SetBackdropBorderColor(r, g, b, a)
 			healthBar:SetStatusBarColor(r, g, b, a)
 		end
-
 		-- need this
 		NeedBackdropBorderRefresh = true
 	end
@@ -218,12 +221,14 @@ function module:SetTooltip()
 			self:Hide()
 			return
 		end
+		self:SetBackdrop(LUITooltipBackdrop)
 		self:SetScale(db.Tooltip.Scale)
 		self:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
 		self:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
 		BorderColor(self)
 		self:Show()
 	end
+	module:SecureHook("GameTooltip_UpdateStyle", SetStyle)
 
 	-- update HP value on status bar
 	GameTooltipStatusBar:SetScript("OnValueChanged", function(self, value)
