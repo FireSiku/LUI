@@ -178,6 +178,7 @@ function module:SetTooltip()
 		local player = unit and UnitIsPlayer(unit)
 		local tapped = unit and UnitIsTapDenied(unit)
 		local itemLink = not unit and self:GetItem()
+		local itemLink = (not unit and self.GetItem) and select(2, self:GetItem())
 
 		if player then
 			local class = select(2, UnitClass(unit))
