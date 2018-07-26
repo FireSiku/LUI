@@ -178,6 +178,8 @@ local function configButtons(hide)
 
 		ChatFrameMenuButton.Show = LUI.dummy
 		ChatFrameMenuButton:Hide()
+		ChatFrameChannelButton.Show = LUI.dummy
+		ChatFrameChannelButton:Hide()
 		QuickJoinToastButton.Show = LUI.dummy
 		QuickJoinToastButton:Hide()
 
@@ -189,6 +191,8 @@ local function configButtons(hide)
 
 		ChatFrameMenuButton.Show = nil
 		ChatFrameMenuButton:Show()
+		ChatFrameChannelButton.Show = nil
+		ChatFrameChannelButton:Show()
 		QuickJoinToastButton.Show = nil
 		QuickJoinToastButton:Show()
 
