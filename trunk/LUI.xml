@@ -23,8 +23,6 @@
 
 	<!-- Addon Installation Routines -->
 	<Script file="addons\forte.lua"/>
-	<!--Script file="addons\sptimers.lua"/-->
-	<!--Script file="addons\raven.lua"/-->
 	<Script file="addons\bartender.lua"/>
 	<Script file="addons\grid.lua"/>
 	<Script file="addons\omen.lua"/>
@@ -35,9 +33,7 @@
 	<Include file="modules\auras\auras.xml"/>
 	<Include file="modules\chat\chat.xml"/>
 	<Script file="modules\minimap.lua"/>
- 	<!-- <Include file="modules\worldmap\worldmap.xml"/> -->
 	<Script file="modules\bags.lua"/>
-	<!--<Script file="modules\nameplates.lua"/> -->
     <Include file="modules\cooldown\cooldown.xml"/>
 	<Script file="modules\tooltip.lua"/>
 	<Script file="modules\datatext.lua"/>
@@ -54,7 +50,6 @@
 
 	<!-- Additional Scripts -->
 	<Script file="scripts\errorhider.lua"/>
-	<!--Script file="scripts\partyfix.lua"/-->
 	<Script file="scripts\colourpicker.lua"/>
 	<Script file="scripts\frameidentifier.lua"/>
 	<Script file="scripts\autoinvite.lua"/>
@@ -103,7 +98,6 @@
 	<Script file="unitframes\plugins\oUF_CombatFeedback.lua"/>
 	<Script file="unitframes\plugins\oUF_Experience.lua"/>
 	<Script file="unitframes\plugins\oUF_Reputation.lua"/>
-	<!-- <Script file="unitframes\plugins\oUF_Smooth.lua"/> -->
 	<Script file="unitframes\plugins\oUF_RaidDebuffs.lua"/>
 
 	<!-- to investigate as we may not need these anymore -->
