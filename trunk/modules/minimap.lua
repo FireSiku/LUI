@@ -30,16 +30,15 @@ function module:SetAdditionalFrames()
 	self:SecureHook(DurabilityFrame, "SetPoint", "DurabilityFrame_SetPoint")
 	self:SecureHook(VehicleSeatIndicator, "SetPoint", "VehicleSeatIndicator_SetPoint")
 	self:SecureHook(ObjectiveTrackerFrame, "SetPoint", "ObjectiveTrackerFrame_SetPoint")
-	--self:SecureHook(WorldStateAlwaysUpFrame, "SetPoint", "WorldStateAlwaysUpFrame_SetPoint")
+	self:SecureHook(UIWidgetTopCenterContainerFrame, "SetPoint", "WorldStateAlwaysUpFrame_SetPoint")
 	self:SecureHook(TicketStatusFrame, "SetPoint", "TicketStatusFrame_SetPoint")
-	--self:SecureHook("WorldStateAlwaysUpFrame_Update")
 end
 
 function module:SetPosition(frame)
 	shouldntSetPoint = true
 	if frame == "worldState" and db.Minimap.Frames.SetAlwaysUpFrame then
-		WorldStateAlwaysUpFrame:ClearAllPoints()
-		WorldStateAlwaysUpFrame:SetPoint("TOP", UIParent, "TOP", db.Minimap.Frames.AlwaysUpFrameX, db.Minimap.Frames.AlwaysUpFrameY)
+		UIWidgetTopCenterContainerFrame:ClearAllPoints()
+		UIWidgetTopCenterContainerFrame:SetPoint("TOP", UIParent, "TOP", db.Minimap.Frames.AlwaysUpFrameX, db.Minimap.Frames.AlwaysUpFrameY)
 	elseif frame == "vehicleSeats" and db.Minimap.Frames.SetVehicleSeatIndicator then
 		VehicleSeatIndicator:ClearAllPoints()
 		VehicleSeatIndicator:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.VehicleSeatIndicatorX, db.Minimap.Frames.VehicleSeatIndicatorY)
@@ -78,7 +77,7 @@ end
 
 function module:WorldStateAlwaysUpFrame_SetPoint()
 	if shouldntSetPoint then return end
-	--self:SetPosition('worldState')
+	self:SetPosition('worldState')
 end
 
 function module:WorldStateCaptureBar_SetPoint()
@@ -596,7 +595,7 @@ local defaults = {
 			CaptureY = "-205",
 			TicketX = "-175",
 			TicketY = "-70",
-			SetAlwaysUpFrame = false,
+			SetAlwaysUpFrame = true,
 			SetVehicleSeatIndicator = true,
 			SetDurabilityFrame = true,
 			SetObjectiveTrackerFrame = true,
