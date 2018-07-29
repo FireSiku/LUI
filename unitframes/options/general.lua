@@ -1022,7 +1022,8 @@ function module:CreateUnitOptions(unit, order)
 			else
 				return unpack(t)
 			end
-		elseif info[#info] == "GroupPadding" or info[#info] == "Padding" or info[#info] == "X" or info[#info] == "Y" or info[#info] == "Width" or info[#info] == "Height" or info[#info] == "Left" or info[#info] == "Top" or info[#info] == "Right" or info[#info] == "Left" then
+		elseif info[#info] == "GroupPadding" or info[#info] == "Padding" or info[#info] == "X" or info[#info] == "Y" or info[#info] == "Width" or info[#info] == "Height" or info[#info] == "Left" or info[#info] == "Top" or info[#info] == "Right" or info[#info] == "Bottom" then
+			if type(t) ~= "number" then t = 0 end
 			return tostring(tonumber(string.format("%.1f", t)))
 		elseif info[#info] == "Point" or info[#info] == "RelativePoint" then
 			for k, v in pairs(positions) do
