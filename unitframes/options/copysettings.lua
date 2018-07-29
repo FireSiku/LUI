@@ -66,9 +66,9 @@ local CopyFuncs = {
 		CopySettings(module.db[srcUnit].Portrait, module.db[dstUnit].Portrait, withSizes, withPosition)
 	end,
 	
-	-- Fader = function(srcUnit, dstUnit, withSizes, withPosition)
-	-- 	CopySettings(module.db[srcUnit].Fader, module.db[dstUnit].Fader, withSizes, withPosition)
-	-- end,
+	Fader = function(srcUnit, dstUnit, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].Fader, module.db[dstUnit].Fader, withSizes, withPosition)
+	end,
 	
 	All = function(srcUnit, dstUnit, withSizes, withPosition)
 		CopySettings(module.db[srcUnit], module.db[dstUnit], withSizes, withPosition)
@@ -151,7 +151,7 @@ function module:CreateCopyOptions(unit, order)
 			Background = self:NewExecute("Copy Background", "Move the Background Settings of this Unitframe into the temporary storage.", 12, function() settings.toCopy = "Background"; settings.srcUnit = unit end),
 			Texts = self:NewExecute("Copy Texts", "Move the Text Settings of this Unitframe into the temporary storage.", 13, function() settings.toCopy = "Texts"; settings.srcUnit = unit end),
 			Portrait = self:NewExecute("Copy Portrait", "Move the Portrait Settings of this Unitframe into the temporary storage.", 14, function() settings.toCopy = "Portrait"; settings.srcUnit = unit end),
-			--Fader = self.db[unit].Fader and self:NewExecute("Copy Fader", "Move the Fader Settings of this Unitframe into the temporary storage.", 15, function() settings.toCopy = "Fader"; settings.srcUnit = unit end) or nil,
+			Fader = self.db[unit].Fader and self:NewExecute("Copy Fader", "Move the Fader Settings of this Unitframe into the temporary storage.", 15, function() settings.toCopy = "Fader"; settings.srcUnit = unit end) or nil,
 			All = self:NewExecute("Copy All", "Move all Settings of this Unitframe into the temporary storage.", 16, function() settings.toCopy = "All"; settings.srcUnit = unit end),
 		}
 	}
