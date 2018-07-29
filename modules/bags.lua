@@ -1441,7 +1441,6 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
-	InterfaceOptionsDisplayPanelShowFreeBagSpace:Show()
 
 	--Make the bankframe works again
 	BankFrame:RegisterEvent("BANKFRAME_OPENED")
