@@ -6,6 +6,7 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
+local Fader = LUI:Module("Fader")
 
 local oUF = LUI.oUF
 local Blizzard = LUI.Blizzard
@@ -1085,13 +1086,13 @@ module.ApplySettings = function(unit)
 			end
 
 			-- -- fader
-			-- if module.db[unit].Fader then
-			-- 	if module.db[unit].Fader.Enable then
-			-- 		Fader:RegisterFrame(frame, module.db[unit].Fader)
-			-- 	else
-			-- 		Fader:UnregisterFrame(frame)
-			-- 	end
-			-- end
+			if module.db[unit].Fader then
+				if module.db[unit].Fader.Enable then
+					Fader:RegisterFrame(frame, module.db[unit].Fader)
+				else
+					Fader:UnregisterFrame(frame)
+				end
+			end
 
 			frame:UpdateAllElements()
 		end
