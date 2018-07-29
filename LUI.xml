@@ -48,13 +48,13 @@
 	<Script file="modules\artwork.lua"/>
 
 	<!-- Additional Scripts -->
-	<Script file="scripts\errorhider.lua"/>
-	<Script file="scripts\colourpicker.lua"/>
-	<Script file="scripts\frameidentifier.lua"/>
 	<Script file="scripts\autoinvite.lua"/>
-	<Script file="scripts\blizzscale.lua"/>
-	<Script file="scripts\talentspam.lua"/>
 	<Script file="scripts\blizzoptionsmover.lua"/>
+	<Script file="scripts\blizzscale.lua"/>
+	<Script file="scripts\colourpicker.lua"/>
+	<Script file="scripts\errorhider.lua"/>
+	<Script file="scripts\frameidentifier.lua"/>
+	<Script file="scripts\talentspam.lua"/>
 	<script file="scripts\WorldMapFix.lua"/>
 
 	<!-- Initialize Unitframes -->
@@ -109,7 +109,6 @@
 	<Script file="unitframes\plugins\arcanecharges.lua"/>
 	<Script file="unitframes\plugins\chi.lua"/>
 	<Script file="unitframes\plugins\holypower.lua"/>
-	<Script file="unitframes\plugins\shadoworbs.lua"/>
 	<Script file="unitframes\plugins\warlockbar.lua"/>
 	<Script file="unitframes\plugins\totalabsorb.lua"/>
 
