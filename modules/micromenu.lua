@@ -218,16 +218,20 @@ function module:SetMicroMenu()
 	LUI.MicroMenu.ButtonRight.Clicker:RegisterForClicks("AnyUp")
 
 	LUI.MicroMenu.ButtonRight.Clicker:SetScript("OnClick", function(self, button)
-		if button == "RightButton" then
-			ToggleFrame(WorldMapFrame)
-		else
-			if Minimap:GetAlpha() == 0 then
-				MinimapAlphaIn:Show()
-				Panels.db.profile.Minimap.IsShown = true
+		if LUI:GetModule("Minimap"):IsEnabled() then
+			if button == "RightButton" then
+				ToggleFrame(WorldMapFrame)
 			else
-				MinimapAlphaOut:Show()
-				Panels.db.profile.Minimap.IsShown = false
+				if Minimap:GetAlpha() == 0 then
+					MinimapAlphaIn:Show()
+					Panels.db.profile.Minimap.IsShown = true
+				else
+					MinimapAlphaOut:Show()
+					Panels.db.profile.Minimap.IsShown = false
+				end
 			end
+		else
+			ToggleFrame(WorldMapFrame)
 		end
 	end)
 
