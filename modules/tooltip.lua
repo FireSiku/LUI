@@ -218,15 +218,14 @@ function module:SetTooltip()
 
 	local SetStyle = function(self)
 		if db.Tooltip.Hidecombat and InCombatLockdown() then
-			self:Hide()
-			return
+			return self:Hide()
 		end
 		self:SetBackdrop(LUITooltipBackdrop)
 		self:SetScale(db.Tooltip.Scale)
 		self:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
 		self:SetBackdropBorderColor(db.Tooltip.Border.Color.r,db.Tooltip.Border.Color.g,db.Tooltip.Border.Color.b,db.Tooltip.Border.Color.a)
 		BorderColor(self)
-		self:Show()
+		--self:Show()
 	end
 	module:SecureHook("GameTooltip_UpdateStyle", SetStyle)
 
@@ -288,8 +287,7 @@ function module:SetTooltip()
 		local lines = frame:NumLines()
 
 		if db.Tooltip.Hidecombat and InCombatLockdown() then
-			frame:Hide()
-			return
+			return frame:Hide()
 		end
 
 		SetStyle(frame)
@@ -297,10 +295,14 @@ function module:SetTooltip()
 		local unit = GetTooltipUnit(frame)
 
 		-- Sometimes when you move your mouse quicky over units in the worldframe, we can get here without a unit
-		if not unit then frame:Hide() return end
+		if not unit then
+			return frame:Hide()
+		end
 
 		-- for hiding tooltip on unitframes
-		if (frame:GetOwner() ~= UIParent and db.Tooltip.Hideuf) then frame:Hide() return end
+		if (frame:GetOwner() ~= UIParent and db.Tooltip.Hideuf) then
+			return frame:Hide()
+		end
 
 		-- A "mouseover" unit is better to have as we can then safely say the tip should no longer show when it becomes invalid.
 		--if (UnitIsUnit(unit,"mouseover")) then
@@ -372,8 +374,8 @@ function module:SetTooltip()
 			GameTooltip:AddLine(UnitName(unit.."target"), r, g, b)
 		end
 
-		-- Sometimes this wasn't getting reset, the fact a cleanup isn't performed at this point, now that it was moved to "OnTooltipCleared" is very bad, so this is a fix
-		frame.fadeOut = nil
+		-- -- Sometimes this wasn't getting reset, the fact a cleanup isn't performed at this point, now that it was moved to "OnTooltipCleared" is very bad, so this is a fix
+		-- frame.fadeOut = nil
 	end)
 
 	module:RegisterEvent("PLAYER_ENTERING_WORLD", function()
