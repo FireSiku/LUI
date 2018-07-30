@@ -181,7 +181,7 @@ local voiceButtonNames = {
 }
 
 local voiceHideFunc = function() return false end
-local voiceOrigFunc = function() return C_Voice.IsLoggedIn() end
+local voiceOrigFunc = function() return C_VoiceChat.IsLoggedIn() end
 
 local function configButtons(hide)
 	if hide then
@@ -215,7 +215,7 @@ local function configButtons(hide)
 		for i, name in pairs(voiceButtonNames) do
 			local frame = _G[name]
 			frame:SetVisibilityQueryFunction(voiceOrigFunc)
-			if C_Voice.IsLoggedIn() then
+			if C_VoiceChat.IsLoggedIn() then
 				frame:Show()
 			end
 		end
