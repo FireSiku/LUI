@@ -13,8 +13,7 @@ local widgetLists = AceGUIWidgetLSMlists
 local db, dbd
 local LUIThreat
 
---local LEVEL_CAP = MAX_PLAYER_LEVEL
-local LEVEL_CAP = 110
+local LEVEL_CAP = MAX_PLAYER_LEVEL
 
 LUI.Versions.threatbar = 2.0
 
