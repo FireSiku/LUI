@@ -287,6 +287,7 @@ function module:SetMinimap()
 	GarrisonLandingPageMinimapButton:ClearAllPoints();
 	GarrisonLandingPageMinimapButton:SetSize(32,32);
 	GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(12))
+	GarrisonLandingPageMinimapButton:Hide()
 
 	MiniMapMailFrame:HookScript("OnShow", function()
 		GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-4))
@@ -539,7 +540,6 @@ function module:SetMinimap()
 	end)
 	Minimap:SetScript('OnDragStart', function() if(db.Minimap.General.Position.UnLocked) then Minimap:StartMoving() end end)
 	MinimapCluster:EnableMouse(false)
-
 end
 
 function module:GetMinimapPosition()
@@ -549,8 +549,16 @@ function module:GetMinimapPosition()
 	db.Minimap.General.Position.Point = point
 	db.Minimap.General.Position.X = xOfs
 	db.Minimap.General.Position.Y = yOfs
-
 end
+
+function module:ToggleMissionReport()
+	if db.Minimap.General.MissionReport then
+		GarrisonLandingPageMinimapButton:Show()
+	else
+		GarrisonLandingPageMinimapButton:Hide()
+	end
+end
+
 local defaults = {
 	Minimap = {
 		Enable = true,
@@ -567,6 +575,7 @@ local defaults = {
 			ShowTextures = true,
 			ShowBorder = true,
 			ShowCoord = true,
+			MissionReport = true,
 		},
 		Font = {
 			Font = "vibroceb",
@@ -692,7 +701,7 @@ function module:LoadOptions()
 									width = "full",
 									get = function() return db.Minimap.General.ShowCoord end,
 									set = function(_)
-										db.Minimap.General.ShowCoord= not db.Minimap.General.ShowCoord
+										db.Minimap.General.ShowCoord = not db.Minimap.General.ShowCoord
 										m_coord:Hide()
 										if db.Minimap.General.AlwaysShowText then
 											if db.Minimap.General.ShowCoord then
@@ -701,6 +710,19 @@ function module:LoadOptions()
 										end
 									end,
 									order = 4,
+								},
+								MissionReport = {
+									name = "Show Mission Report Button",
+									desc = "Whether or not the Mission Report in the corner of the minimap.\n\n The button will be in a 'dead' corner of the minimap in which Blizzard will never spawn icons or other information.",
+									disabled = function() return not db.Minimap.Enable end,
+									type = "toggle",
+									width = "full",
+									get = function() return db.Minimap.General.MissionReport end,
+									set = function(_)
+										db.Minimap.General.MissionReport = not db.Minimap.General.MissionReport
+										module:ToggleMissionReport()
+									end,
+									order = 4.5,
 								},
 								header1 = {
 									name = "Position",
@@ -1328,4 +1350,5 @@ function module:OnEnable()
 	end
 	self:SetMinimap()
 	self:SetAdditionalFrames()
+	C_Timer.After(0.1, self.ToggleMissionReport)
 end
