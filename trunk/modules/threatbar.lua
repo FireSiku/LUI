@@ -129,17 +129,17 @@ local UpdateExpMode = function()
 		if itemLocation then
 
 			local xp, totalXP = C_AzeriteItem.GetAzeriteItemXPInfo(itemLocation)
-			local xpNextPoint = totalXP - xp
+			--local xpNextPoint = totalXP - xp
 
-			percentBar2 = xp * 100 / xpNextPoint
-			bar2:SetMinMaxValues(0, xpNextPoint)
+			percentBar2 = xp * 100 / totalXP
+			bar2:SetMinMaxValues(0, totalXP)
 			bar2:SetValue(xp)
 			bar2.Text:SetFormattedText("%."..precision.."f%% AP" , percentBar2)
 			bar2:Show()
 		else
 			bar2:Hide()
 		end
-	else 
+	else
 		bar2:Hide()
 	end
 
@@ -369,7 +369,7 @@ module.defaults = {
 			TankHide = true,
 			expMode = false,
 			showRested = false,
-			artifact = true,
+			artifact = false,
 		},
 		Appearance = {
 			Texture = "LUI_Gradient",
