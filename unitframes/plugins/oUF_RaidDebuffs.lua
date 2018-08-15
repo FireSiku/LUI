@@ -15,7 +15,6 @@ addon.DebuffData = debuff_data
 addon.ShowDispelableDebuff = true
 addon.FilterDispellableDebuff = true
 addon.MatchBySpellName = true
-addon.SHAMAN_CAN_DECURSE = true
 
 local function add(spell, priority)
 	if addon.MatchBySpellName and type(spell) == 'number' then
@@ -58,9 +57,9 @@ do
 			['Disease'] = true,
 		},
 		['SHAMAN'] = {
-			['Poison'] = true,
+			['Magic'] = true,
 			['Disease'] = true,
-			['Curse'] = SHAMAN_CAN_DECURSE,
+			['Curse'] = true,
 		},
 		['PALADIN'] = {
 			['Poison'] = true,
@@ -71,8 +70,14 @@ do
 			['Curse'] = true,
 		},
 		['DRUID'] = {
+			['Magic'] = true,
 			['Curse'] = true,
 			['Poison'] = true,
+		},
+		['MONK'] = {
+			['Poison'] = true,
+			['Magic'] = true,
+			['Disease'] = true,
 		},
 	}
 
