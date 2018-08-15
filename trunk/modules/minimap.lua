@@ -286,7 +286,6 @@ function module:SetMinimap()
 	-- Move Garrison icon
 	GarrisonLandingPageMinimapButton:ClearAllPoints()
 	GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
-	GarrisonLandingPageMinimapButton:Hide()
 	module:SecureHook("GarrisonLandingPageMinimapButton_UpdateIcon", function()
 		GarrisonLandingPageMinimapButton:SetSize(32,32)
 	end)
@@ -555,11 +554,11 @@ end
 
 local emptyFunc = function() return end
 function module:ToggleMissionReport()
+	if C_Garrison.GetLandingPageGarrisonType() == 0 then return end
 	if db.Minimap.General.MissionReport then
-		GarrisonLandingPageMinimapButton.Show = GarrisonLandingPageMinimapButton.OrigShow
+		GarrisonLandingPageMinimapButton.Show = nil
 		GarrisonLandingPageMinimapButton:Show()
 	else
-		GarrisonLandingPageMinimapButton.OrigShow = GarrisonLandingPageMinimapButton.Show
 		GarrisonLandingPageMinimapButton.Show = emptyFunc
 		GarrisonLandingPageMinimapButton:Hide()
 	end
