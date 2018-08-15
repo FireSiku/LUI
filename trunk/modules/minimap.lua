@@ -284,16 +284,18 @@ function module:SetMinimap()
 	QueueStatusMinimapButtonBorder:Hide()
 
 	-- Move Garrison icon
-	GarrisonLandingPageMinimapButton:ClearAllPoints();
-	GarrisonLandingPageMinimapButton:SetSize(32,32);
-	GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(12))
+	GarrisonLandingPageMinimapButton:ClearAllPoints()
+	GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
 	GarrisonLandingPageMinimapButton:Hide()
+	module:SecureHook("GarrisonLandingPageMinimapButton_UpdateIcon", function()
+		GarrisonLandingPageMinimapButton:SetSize(32,32)
+	end)
 
 	MiniMapMailFrame:HookScript("OnShow", function()
-		GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-4))
+		GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-5))
 	end)
 	MiniMapMailFrame:HookScript("OnHide", function()
-		GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(12))
+		GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
 	end)
 
 	-- Move GM Ticket Status icon
@@ -551,10 +553,14 @@ function module:GetMinimapPosition()
 	db.Minimap.General.Position.Y = yOfs
 end
 
+local emptyFunc = function() return end
 function module:ToggleMissionReport()
 	if db.Minimap.General.MissionReport then
+		GarrisonLandingPageMinimapButton.Show = GarrisonLandingPageMinimapButton.OrigShow
 		GarrisonLandingPageMinimapButton:Show()
 	else
+		GarrisonLandingPageMinimapButton.OrigShow = GarrisonLandingPageMinimapButton.Show
+		GarrisonLandingPageMinimapButton.Show = emptyFunc
 		GarrisonLandingPageMinimapButton:Hide()
 	end
 end
