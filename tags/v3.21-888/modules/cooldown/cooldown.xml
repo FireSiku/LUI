@@ -1,0 +1,24 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Script file="cooldown.lua"/>
+
+    <Frame name="LUI_Cooldown_Template" virtual="true" hidden="true">
+        <Layers>
+            <Layer level="OVERLAY">
+                <FontString parentKey="text" justifyH="CENTER" justifyV="MIDDLE">
+                    <Shadow>
+                        <Offset x="2" y="-2"/>
+                        <Color r="0" g="0" b="0" a="0.5"/>
+                    </Shadow>
+                </FontString>
+            </Layer>
+        </Layers>
+        <Scripts>
+            <OnShow>
+                self:SetFrameStrata(self.cd:GetFrameStrata())
+                self:SetFrameLevel(self.cd:GetFrameLevel() + 10)
+
+                self:Position()
+            </OnShow>
+        </Scripts>
+    </Frame>
+</Ui>
