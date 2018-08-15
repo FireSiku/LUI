@@ -422,7 +422,7 @@ function module:LoadOptions()
 			TankHide = self:NewToggle("Hide if Tanking", "Whether you want to hide the Threat Bar if you are tank specced or not.\nOnly works if Vengeance Module is enabled!.", 7, true),
 			expMode = self:NewToggle("Switch to Exp Mode", "If enabled, this will turn your Threat Bar into an experience bar.\nIf you are level 100 it will show a reputation bar instead.\nDisable Threat.",8,ToggleExpMode),
 			showRested = self:NewToggle("Show Rested Experience", "If enabled, this will show your rested experience as well.", 9, dryCall, nil, disabledExpMode),
-			artifact = self:NewToggle("Show Artifact XP", "If enabled, this will show your experience with the Heart of Azeroth. \nHidden if you do not have one. \n\nIf you are tracking XP or Rep, this will be shown along side your XP or Rep.", 10, dryCall, nil, disabledExpMode),
+			artifact = self:NewToggle("Show Azerite XP", "If enabled, this will show your experience with the Heart of Azeroth. \nHidden if you do not have one. \n\nIf you are tracking XP or Rep, this will be shown along side your XP or Rep.", 10, dryCall, nil, disabledExpMode),
 			empty3 = self:NewDesc(" ", 11),
 			Testmode = self:NewExecute("Testmode", "Enable/Disable Threat Bar Testmode", 12, ToggleTestMode),
 		}),
