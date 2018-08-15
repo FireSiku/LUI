@@ -155,7 +155,7 @@ local function Update(self, event, unit)
 	local _name, _icon, _count, _dtype, _duration, _endTime
 	local _priority, priority = 0, nil
 	for i = 1, 40 do
-		local name, icon, count, debuffType, duration, expirationTime, unitCaster, isStealable, shouldConsolidate, spellId = UnitAura(unit, i, 'HARMFUL')
+		local name, icon, count, debuffType, duration, expirationTime, _, _, _, spellId = UnitAura(unit, i, 'HARMFUL')
 		if (not name) then break end
 
 		if addon.ShowDispelableDebuff and debuffType then
@@ -181,14 +181,14 @@ end
 
 local function Enable(self)
 	if self.RaidDebuffs then
-		self:RegisterEvent('UNIT_AURA', Update)
+		self:RegisterEvent('UNIT_AURA_FREQUENT', Update)
 		return true
 	end
 end
 
 local function Disable(self)
 	if self.RaidDebuffs then
-		self:UnregisterEvent('UNIT_AURA', Update)
+		self:UnregisterEvent('UNIT_AURA_FREQUENT', Update)
 		self.RaidDebuffs:Hide()
 	end
 end
