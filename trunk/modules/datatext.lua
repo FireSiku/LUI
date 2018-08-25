@@ -2925,6 +2925,42 @@ function module:SetLootSpec()
 end
 
 ------------------------------------------------------
+-- / Movement Speed / --
+------------------------------------------------------
+
+function module:SetMoveSpeed()
+
+	local stat = NewStat("MoveSpeed")
+
+	if db.MoveSpeed.Enable and not stat.Created then
+
+		local baseSpeed = BASE_MOVEMENT_SPEED
+		-- Script functions
+		stat.OnUpdate = function(self, deltaTime)
+			self.dt = self.dt + deltaTime
+			if self.dt > 0.5 then
+				self.dt = 0
+
+				local unit = "player"
+				if UnitInVehicle("player") then
+					unit = "vehicle"
+				end
+				local speed, runSpeed = GetUnitSpeed(unit)
+				if speed == 0 then
+					speed = runSpeed
+				end
+
+				-- Set value
+				self.text:SetText(format("%d%%", speed / baseSpeed * 100))
+			end
+		end
+
+		stat.Created = true
+	end
+
+end
+
+------------------------------------------------------
 -- / STAT FUNCTIONS / --
 ------------------------------------------------------
 
@@ -3021,10 +3057,28 @@ module.defaults = {
 		},
 		Currency = {
 			Enable = false,
-			X = 180,
+			X = 200,
 			Y = 0,
 			Display = 0,
 			DisplayLimit = 40,
+			InfoPanel = {
+				Horizontal = "Left",
+				Vertical = "Bottom",
+			},
+			Font = "vibroceb",
+			FontSize = 12,
+			Outline = "NONE",
+			Color = {
+				r = 1,
+				g = 1,
+				b = 1,
+				a = 1,
+			},
+		},
+		MoveSpeed = {
+			Enable = false,
+			X = 130,
+			Y = 0,
 			InfoPanel = {
 				Horizontal = "Left",
 				Vertical = "Bottom",
@@ -3697,6 +3751,33 @@ function module:LoadOptions()
 				Reset = ResetOption(7),
 			},
 		},
+		MoveSpeed = {
+			name = NameLabel,
+			type = "group",
+			order = 4,
+			args = {
+				Header = {
+					name = "Movement Speed",
+					type = "header",
+					order = 1,
+				},
+				Enable = {
+					name = "Enable",
+					desc = "Whether you want to show Movement Speed info or not.",
+					type = "toggle",
+					width = "full",
+					get = function() return db.MoveSpeed.Enable end,
+					set = function(info, value)
+						db.MoveSpeed.Enable = value
+						ToggleStat("MoveSpeed")
+					end,
+					order = 2,
+				},
+				Position = PositionOptions(5),
+				Font = FontOptions(6),
+				Reset = ResetOption(7),
+			},
+		},
 		DPS = {
 			name = NameLabel,
 			type = "group",
@@ -4245,6 +4326,7 @@ function module:OnEnable()
 	EnableStat("WeaponInfo")
 	EnableStat("EquipmentSets")
 	EnableStat("LootSpec")
+	EnableStat("MoveSpeed")
 end
 
 function module:OnDisable()
@@ -4261,6 +4343,7 @@ function module:OnDisable()
 	DisableStat("WeaponInfo")
 	DisableStat("EquipmentSet")
 	DisableStat("LootSpec")
+	DisableStat("MoveSpeed")
 	LUI_Infos_TopLeft:Hide()
 	LUI_Infos_TopRight:Hide()
 	LUI_Infos_BottomLeft:Hide()
