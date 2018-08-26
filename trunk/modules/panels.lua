@@ -101,6 +101,10 @@ function module:CheckPanels()
 
 		_G[db.Tps.Anchor]:SetAlpha(1)
 		_G[db.Tps.Anchor]:Show()
+		for _, f in pairs(self:LoadAdditional(db.Tps.Additional)) do
+			_G[f]:SetAlpha(1)
+			_G[f]:Show()
+		end
 
 		db.Tps.IsShown = true
 	else
@@ -109,7 +113,12 @@ function module:CheckPanels()
 		if _G[db.Tps.Anchor] then
 			_G[db.Tps.Anchor]:SetAlpha(0)
 			_G[db.Tps.Anchor]:Hide()
+			for _, f in pairs(self:LoadAdditional(db.Tps.Additional)) do
+				_G[f]:SetAlpha(0)
+				_G[f]:Hide()
+			end
 		end
+		
 
 		db.Tps.IsShown = false
 	end
@@ -119,6 +128,10 @@ function module:CheckPanels()
 
 		_G[db.Dps.Anchor]:SetAlpha(1)
 		_G[db.Dps.Anchor]:Show()
+		for _, f in pairs(self:LoadAdditional(db.Dps.Additional)) do
+			_G[f]:SetAlpha(1)
+			_G[f]:Show()
+		end
 
 		db.Dps.IsShown = true
 	else
@@ -127,6 +140,10 @@ function module:CheckPanels()
 		if _G[db.Dps.Anchor] then
 			_G[db.Dps.Anchor]:SetAlpha(0)
 			_G[db.Dps.Anchor]:Hide()
+			for _, f in pairs(self:LoadAdditional(db.Dps.Additional)) do
+				_G[f]:SetAlpha(0)
+				_G[f]:Hide()
+			end
 		end
 
 		db.Dps.IsShown = false
@@ -137,6 +154,10 @@ function module:CheckPanels()
 
 		_G[db.Raid.Anchor]:SetAlpha(1)
 		_G[db.Raid.Anchor]:Show()
+		for _, f in pairs(self:LoadAdditional(db.Raid.Additional)) do
+			_G[f]:SetAlpha(1)
+			_G[f]:Show()
+		end
 
 		db.Raid.IsShown = true
 	else
@@ -145,6 +166,10 @@ function module:CheckPanels()
 		if _G[db.Raid.Anchor] then
 			_G[db.Raid.Anchor]:SetAlpha(0)
 			_G[db.Raid.Anchor]:Hide()
+			for _, f in pairs(self:LoadAdditional(db.Raid.Additional)) do
+				_G[f]:SetAlpha(0)
+				_G[f]:Hide()
+			end
 		end
 
 		db.Raid.IsShown = false
