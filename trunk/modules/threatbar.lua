@@ -129,12 +129,16 @@ local UpdateExpMode = function()
 		if itemLocation then
 
 			local xp, totalXP = C_AzeriteItem.GetAzeriteItemXPInfo(itemLocation)
-			--local xpNextPoint = totalXP - xp
+			--local xpNextPoint = totalXP - xp, ShowAbsolute
 
 			percentBar2 = xp * 100 / totalXP
 			bar2:SetMinMaxValues(0, totalXP)
 			bar2:SetValue(xp)
-			bar2.Text:SetFormattedText("%."..precision.."f%% AP" , percentBar2)
+			if db.General.ShowAbsolute then
+				bar2.Text:SetFormattedText("%."..precision.."f%% AP (%s / %s)" , percentBar2, xp, totalXP)
+			else
+				bar2.Text:SetFormattedText("%."..precision.."f%% AP" , percentBar2)
+			end
 			bar2:Show()
 		else
 			bar2:Hide()
@@ -370,6 +374,7 @@ module.defaults = {
 			expMode = false,
 			showRested = false,
 			artifact = false,
+			ShowAbsolute = false,
 		},
 		Appearance = {
 			Texture = "LUI_Gradient",
@@ -423,8 +428,9 @@ function module:LoadOptions()
 			expMode = self:NewToggle("Switch to Exp Mode", "If enabled, this will turn your Threat Bar into an experience bar.\nIf you are level 100 it will show a reputation bar instead.\nDisable Threat.",8,ToggleExpMode),
 			showRested = self:NewToggle("Show Rested Experience", "If enabled, this will show your rested experience as well.", 9, dryCall, nil, disabledExpMode),
 			artifact = self:NewToggle("Show Azerite XP", "If enabled, this will show your experience with the Heart of Azeroth. \nHidden if you do not have one. \n\nIf you are tracking XP or Rep, this will be shown along side your XP or Rep.", 10, dryCall, nil, disabledExpMode),
-			empty3 = self:NewDesc(" ", 11),
-			Testmode = self:NewExecute("Testmode", "Enable/Disable Threat Bar Testmode", 12, ToggleTestMode),
+			ShowAbsolute = self:NewToggle("Show Absolute Values", "If enabled, this will show absolute numerical values for current and max Azerite.", 11, dryCall, nil, disabledExpMode),
+			empty3 = self:NewDesc(" ", 12),
+			Testmode = self:NewExecute("Testmode", "Enable/Disable Threat Bar Testmode", 13, ToggleTestMode),
 		}),
 		Appearance = self:NewGroup("Appearance", 2, {
 			header = self:NewHeader("Appearance Options", 0),
