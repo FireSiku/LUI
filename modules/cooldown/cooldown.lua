@@ -200,6 +200,7 @@ do
 	end
 
 	function module:AssignTimer(cd, start, duration)
+		if cd.IsForbidden and cd:IsForbidden() then return end
 		if cd.NextRewardLevel then return end -- Dont show cooldown on honor level.
 		if cd.noCooldownCount then return end
 
