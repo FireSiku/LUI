@@ -946,8 +946,9 @@ function module:SetDualSpec()
 
 		-- Local variables
 
+        local numSpecs = GetNumSpecializations() -- num of specs available
 		local specCache = {}
-		for i = 1, 4 do
+		for i = 1, numSpecs do -- for each spec choice
 			if not specCache[i] then
 				specCache[i] = {}
 				local _, name, _, icon = GetSpecializationInfo(i)
@@ -960,6 +961,7 @@ function module:SetDualSpec()
 				end
 			end
 		end
+        local switch1, switch2, switch3 = nil, nil, nil -- specs to switch to
 
 		-- Event functions
 		stat.Events = (UnitLevel("player") < 10) and {"PLAYER_LEVEL_UP"} or {"PLAYER_TALENT_UPDATE"}
@@ -1007,33 +1009,59 @@ function module:SetDualSpec()
 		end
 
 		stat.OnClick = function(self, button)
-			if PlayerTalentFrame:IsVisible() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 1) then
-				HideUIPanel(PlayerTalentFrame)
-			else
-				PanelTemplates_SetTab(PlayerTalentFrame, 1)
-				PlayerTalentFrame_Refresh()
-				ShowUIPanel(PlayerTalentFrame)
-			end
+            --[[
+            if IsShiftKeyDown() then -- on shift toggle talent frame, function copied from original
+                if PlayerTalentFrame:IsVisible() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 1) then
+    				HideUIPanel(PlayerTalentFrame)
+    			else
+    				PanelTemplates_SetTab(PlayerTalentFrame, 1)
+    				PlayerTalentFrame_Refresh()
+    				ShowUIPanel(PlayerTalentFrame)
+    			end
+            ]]-- comment block is original functionality supported via shift click
+			if button == "LeftButton" and switch1 then -- switch 1 if valid
+                SetSpecialization( switch1 )
+            elseif button == "RightButton" and switch2 then -- switch 2
+                SetSpecialization( switch2 )
+            elseif button == "MiddleButton" and switch3 then -- switch 3
+                SetSpecialization( switch3 )
+            end
 		end
 
 		stat.OnEnter = function(self)
 			if CombatTips() then
 				GameTooltip:SetOwner(self, getOwnerAnchor(self))
 				GameTooltip:ClearLines()
-				GameTooltip:AddLine("Dual Spec:", 0.4, 0.78, 1)
+				GameTooltip:AddLine("Specialization", 0.4, 0.78, 1)
 				GameTooltip:AddLine(" ")
 
-				local activeSpecGroup = GetActiveSpecGroup()
-				for i = 1, GetNumSpecGroups() do
-					local currSpec = GetSpecialization(false, false, i)
-					local text = (((i == 1) and "Primary" or "Secondary") .. " Spec" .. ((i == activeSpecGroup) and " (active):" or ":"))
-					local text2 = ((currSpec ~= nil) and specCache[currSpec].name or "None")
+				local activeSpecGroup = GetSpecialization() -- get current spec ID
+                switch1, switch2, switch3 = nil, nil, nil -- reset switch vars
+
+				for i = 1, numSpecs do -- loop through all specs
+                    if i ~= activeSpecGroup then -- not the active spec, is a switch option
+                        if not switch1 then -- switch1 not set yet, use it
+                            switch1 = i
+                        elseif not switch2 then -- use switch2
+                            switch2 = i
+                        elseif not switch3 then -- use switch3
+                            switch3 = i
+                        end
+                    end
+
+                    local colorY, colorW = "|cFFFFFF00", "|r" -- text color flags
+                    local text = ((( i == activeSpecGroup ) and colorY  or "" ) .. "Spec " .. i .. ":" .. colorW ) -- numerate specs, coloring active
+                    local text2 = ((( i == activeSpecGroup ) and colorY  or "" ) .. ( specCache[ i ].name or "None" ) .. colorW ) -- list spec names, coloring active
 
 					GameTooltip:AddDoubleLine(text, text2, 1,1,1, 1,1,1)
 				end
 
-				GameTooltip:AddLine(" ")
-				GameTooltip:AddLine("Hint:\n- Left-Click to switch talent group.\n- Right-Click to open Talent Frame.\n- Any Click on the Icon to open Glyph.", 0, 1, 0)
+				GameTooltip:AddLine(" \nHint:", 0, 1, 0 ) -- hint shows what spec a click will switch to
+                GameTooltip:AddLine(
+                ( switch1 and "- Left-Click to switch to " .. ( specCache[ switch1 ].name or "Error" ) or "" ) ..
+                ( switch2 and ".\n- Right-Click to switch to " .. ( specCache[ switch2 ].name or "Error" ) or "" ) ..
+                ( switch3 and ".\n- Middle-Click to switch to " .. ( specCache[ switch3 ].name or "Error" ) or "" ) ..
+                --[[ ".\n- Shift-Click to toggle talent frame" .. ]] ".", 0, 1, 0 ) -- original functionality hint commented out
 				GameTooltip:Show()
 			end
 		end
