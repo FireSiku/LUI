@@ -666,258 +666,6 @@ function module:SetCurrency()
 end
 
 ------------------------------------------------------
--- / DPS / --
-------------------------------------------------------
-
-function module:SetDPS()
-	local stat = NewStat("DPS")
-
-	if db.DPS.Enable and not stat.Created then
-		if (type(db.DPS.active) ~= "number" or db.DPS.active > 4) then db.DPS.active = 1 end
-
-		-- Localized functions
-		local UnitGUID, GetTime = UnitGUID, GetTime
-		local strsub, strfind, strlen = strsub, strfind, strlen
-
-		-- Local variables
-		local playerID, petID
-		local combatStartTime, combatTimeElapsed = 0, 1
-		local totalDamage, playerDamage, petDamage = 0, 0, 0
-		local totalHealing, effectiveHealing, overHealing = 0, 0, 0
-		local totalDamageTaken, overKill = 0, 0
-		local totalHealingTaken, effectiveHealingTaken, overHealingTaken = 0, 0, 0
-
-		local function active()
-			return db.DPS.active
-		end
-
-		local textFormat = {
-			[1] = "DPS: %.1f",
-			[2] = "HPS: %.1f",
-			[3] = "DTPS: %.1f",
-			[4] = "HTPS: %.1f",
-		}
-		local formulas = {
-			[1] = function() return totalDamage / combatTimeElapsed end,
-			[2] = function() return totalHealing / combatTimeElapsed end,
-			[3] = function() return totalDamageTaken / combatTimeElapsed end,
-			[4] = function() return totalHealingTaken / combatTimeElapsed end,
-		}
-
-		local events = {
-			[1] = {
-				SWING_DAMAGE = true,
-				RANGE_DAMAGE = true,
-				SPELL_DAMAGE = true,
-				SPELL_PERIODIC_DAMAGE = true,
-				DAMAGE_SHIELD = true,
-				DAMAGE_SPLIT = true,
-			},
-			[2] = {
-				SPELL_PERIODIC_HEAL = true,
-				SPELL_HEAL = true,
-				SPELL_AURA_APPLIED = true,
-				SPELL_AURA_REFRESH = true,
-			},
-			[3] = {
-				SWING_DAMAGE = true,
-				RANGE_DAMAGE = true,
-				SPELL_DAMAGE = true,
-				SPELL_PERIODIC_DAMAGE = true,
-				DAMAGE_SHIELD = true,
-				DAMAGE_SPLIT = true,
-			},
-			[4] = {
-				SPELL_PERIODIC_HEAL = true,
-				SPELL_HEAL = true,
-				SPELL_AURA_APPLIED = true,
-				SPELL_AURA_REFRESH = true,
-			},
-		}
-		local shields = {
-			[GetSpellInfo(17)] = true, -- Power Word: Shield
-			--[GetSpellInfo(47515)] = true, -- Divine Aegis
-			--[GetSpellInfo(76669)] = true, -- Illuminated Healing
-		}
-
-		-- Event functions
-		stat.Events = {"PLAYER_ENTERING_WORLD", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED", "UNIT_PET"}
-
-		stat.PLAYER_ENTERING_WORLD = function(self) -- Zoning in/out or logging in
-			playerID = UnitGUID("player")
-			petID = UnitGUID("pet")
-		end
-
-		stat.PLAYER_REGEN_DISABLED = function(self) -- Entering combat
-			combatStartTime = GetTime()
-			combatTimeElapsed = 0.01
-			totalDamage, playerDamage, petDamage = 0, 0, 0
-			totalHealing, effectiveHealing, overHealing = 0, 0, 0
-			totalDamageTaken, overKill = 0, 0
-			totalHealingTaken, effectiveHealingTaken, overHealingTaken = 0, 0, 0
-
-			self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-			self:SetScript("OnUpdate", self.OnUpdate)
-		end
-
-		stat.PLAYER_REGEN_ENABLED = function(self) -- Leaving combat
-			self:OnUpdate(10)
-
-			self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-			self:SetScript("OnUpdate", nil)
-		end
-
-		stat.UNIT_PET = function(self, unit) -- Pet Changed
-			if unit == "player" then
-				petID = UnitGUID("pet")
-			end
-		end
-
-
-
-		stat.COMBAT_LOG_EVENT_UNFILTERED = function(self, _, event, _, sourceGUID, _, _, _, destGUID, _, _, _, ...)
-			local record = false
-			for mode in pairs(events) do
-				if events[mode][event] then
-					record = true
-					break
-				end
-			end
-			if record == false then return end
-
-			if (event == "SPELL_AURA_APPLIED" or event == "SPELL_AURA_REFRESH") then
-				if not shields[spellName] then return end
-			end
-
-			-- Determine event prefix to get arg order of ...
-			local prefix = strsub(event, 1, strfind(event, "_")-1)
-			if prefix == "SPELL" then
-				local str = prefix .. "_PERIODIC"
-				if strfind(event, str) then
-					prefix = str
-				end
-			elseif prefix == "DAMAGE" then
-				prefix = "SPELL"
-			end
-
-			local suffix = strsub(event, strlen(prefix)+2)
-
-			local amount, amountOver = 0, 0
-			if prefix == "SWING" then
-				amount, amountOver = ...
-			elseif strsub(suffix, 1, 4) ~= "AURA" then -- event prefix is RANGE, SPELL, SPELL_PERIODIC and suffix is not AURA_APPLIED or AURA_REFRESH
-				amount, amountOver = select(4, ...)
-			end
-
-			if sourceGUID == playerID or sourceGUID == petID then -- Player/Pet damage and healing done
-				if events[1][event] then -- Damage
-					totalDamage = totalDamage + amount
-					if sourceGUID == playerID then playerDamage = playerDamage + amount end
-					if sourceGUID == petID then petDamage = petDamage + amount end
-				end
-
-				if events[2][event] then -- Healing
-					totalHealing = totalHealing + amount
-					if amountOver ~= -1 then
-						effectiveHealing = effectiveHealing + (amount - amountOver)
-						overHealing = overHealing + amountOver
-					end
-				end
-			end
-
-			if destGUID == playerID then -- Player damage and healing taken
-				if events[3][event] then -- Damage Taken
-					totalDamageTaken = totalDamageTaken + amount
-					if amountOver ~= -1 then
-						overKill = amountOver or overKill -- Last Death only
-					end
-				end
-
-				if events[4][event] then -- Healing Taken
-					totalHealingTaken = totalHealingTaken + amount
-					if amountOver ~= -1 then
-						effectiveHealingTaken = effectiveHealingTaken + (amount - amountOver)
-						overHealingTaken = overHealingTaken + amountOver
-					end
-				end
-			end
-		end
-
-		-- Script functions
-		stat.OnEnable = function(self)
-			self:PLAYER_ENTERING_WORLD()
-			if not InCombatLockdown() then
-				self:SetScript("OnUpdate", nil)
-			end
-		end
-
-		stat.OnUpdate = function(self, deltaTime)
-			self.dt = self.dt + deltaTime
-			if self.dt > 1 then
-				self.dt = 0
-
-				-- Set value
-				combatTimeElapsed = GetTime() - combatStartTime
-				self.text:SetFormattedText(textFormat[active()], formulas[active()]())
-
-				-- Update tooltip if open
-				UpdateTooltip(self)
-			end
-		end
-
-		stat.OnClick = function(self, button) -- Alternate through modes
-			db.DPS.active = active() < 4 and active() + 1 or 1
-			self.text:SetFormattedText(textFormat[active()], formulas[active()]())
-		end
-
-		stat.OnEnter = function(self)
-			if CombatTips() then
-				GameTooltip:SetOwner(self, getOwnerAnchor(self))
-				GameTooltip:ClearLines()
-				GameTooltip:AddLine("Combat Info", 1, 1, 1)
-
-				if totalDamage > 0 then
-					GameTooltip:AddLine("DPS:", 0.4, 0.78, 1)
-					GameTooltip:AddDoubleLine(myPlayerName..":", format("%.1f", playerDamage / combatTimeElapsed))
-					if petDamage > 0 then
-						GameTooltip:AddDoubleLine("Pet:", format("%.1f", petDamage / combatTimeElapsed))
-					end
-				end
-
-				if totalHealing > 0 then
-					GameTooltip:AddLine("HPS:", 0.4, 0.78, 1)
-					GameTooltip:AddDoubleLine("Effective:", format("%.1f", effectiveHealing / combatTimeElapsed))
-					GameTooltip:AddDoubleLine("Overhealing:", format("%.1f", overHealing / combatTimeElapsed))
-				end
-
-				if totalDamageTaken > 0 then
-					GameTooltip:AddLine("DTPS:", 0.4, 0.78, 1)
-					GameTooltip:AddDoubleLine(myPlayerName..":", format("%.1f", totalDamageTaken / combatTimeElapsed))
-					if overKill > 0 then
-						GameTooltip:AddDoubleLine("OverKill:", format("%.1f", overKill))
-					end
-				end
-
-				if totalHealingTaken > 0 then
-					GameTooltip:AddLine("HTPS:", 0.4, 0.78, 1)
-					GameTooltip:AddDoubleLine("Effective:", format("%.1f", effectiveHealingTaken / combatTimeElapsed))
-					GameTooltip:AddDoubleLine("Overhealing:", format("%.1f", overHealingTaken / combatTimeElapsed))
-				end
-
-				GameTooltip:AddLine(" ")
-				GameTooltip:AddLine("Hint: Click to change meter type.", 0, 1, 0)
-				GameTooltip:Show()
-			end
-		end
-		stat.OnLeave = function()
-			GameTooltip:Hide()
-		end
-
-		stat.Created = true
-	end
-end
-
-------------------------------------------------------
 -- / DUALSPEC / --
 ------------------------------------------------------
 
@@ -2979,7 +2727,7 @@ function module:SetMoveSpeed()
 				end
 
 				-- Set value
-				self.text:SetText(format("%d%%", speed / baseSpeed * 100))
+				self.text:SetText(format("Speed: %d%%", speed / baseSpeed * 100))
 			end
 		end
 
@@ -3085,7 +2833,7 @@ module.defaults = {
 		},
 		Currency = {
 			Enable = false,
-			X = 200,
+			X = 180,
 			Y = 0,
 			Display = 0,
 			DisplayLimit = 40,
@@ -3104,27 +2852,8 @@ module.defaults = {
 			},
 		},
 		MoveSpeed = {
-			Enable = false,
-			X = 130,
-			Y = 0,
-			InfoPanel = {
-				Horizontal = "Left",
-				Vertical = "Bottom",
-			},
-			Font = "vibroceb",
-			FontSize = 12,
-			Outline = "NONE",
-			Color = {
-				r = 1,
-				g = 1,
-				b = 1,
-				a = 1,
-			},
-		},
-		DPS = {
 			Enable = true,
-			active = 1, -- 1 = dps, 2 = hps, 3 = dtps, 4 = htps
-			X = -610,
+			X = -590,
 			Y = 0,
 			InfoPanel = {
 				Horizontal = "Right",
@@ -3806,33 +3535,6 @@ function module:LoadOptions()
 				Reset = ResetOption(7),
 			},
 		},
-		DPS = {
-			name = NameLabel,
-			type = "group",
-			order = 5,
-			args = {
-				Header = {
-					name = "DPS",
-					type = "header",
-					order = 1,
-				},
-				Enable = {
-					name = "Enable",
-					desc = "Whether you want to show your DPS or not.",
-					type = "toggle",
-					width = "full",
-					get = function() return db.DPS.Enable end,
-					set = function(info, value)
-						db.DPS.Enable = value
-						ToggleStat("DPS")
-					end,
-					order = 2,
-				},
-				Position = PositionOptions(3),
-				Font = FontOptions(4),
-				Reset = ResetOption(5),
-			},
-		},
 		DualSpec = {
 			name = function(info) return NameLabel(info, "Dual Spec") end,
 			type = "group",
@@ -4341,7 +4043,6 @@ function module:OnEnable()
 	EnableStat("Bags")
 	EnableStat("Clock")
 	EnableStat("Currency")
-	EnableStat("DPS")
 	EnableStat("DualSpec")
 	EnableStat("Durability")
 	EnableStat("FPS")
@@ -4367,7 +4068,6 @@ function module:OnDisable()
 	DisableStat("Guild")
 	DisableStat("Friends")
 	DisableStat("GF")
-	DisableStat("DPS")
 	DisableStat("WeaponInfo")
 	DisableStat("EquipmentSet")
 	DisableStat("LootSpec")
