@@ -1,0 +1,31 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="raidmenu.lua"/>
+	<Button name="MarkerTemplate" virtual="true">
+		<Size><AbsDimension x="32" y="32"/></Size>
+		<Scripts>
+			<OnEnter>
+				self:SetAlpha(1)
+			</OnEnter>
+			<OnLeave>
+				self:SetAlpha(0.6)
+			</OnLeave>
+		</Scripts>						
+		<PushedTexture alphaMode="ADD" file="Interface\Buttons\UI-Quickslot-Depress"/>
+		<HighlightTexture alphaMode="ADD" file="Interface\Buttons\ButtonHilight-Square"/>
+		<DisabledTexture  alphaMode="ADD" file="Interface\Buttons\UI-Quickslot" />
+	</Button>
+	<Button name="SecureMarkerTemplate" inherits="SecureActionButtonTemplate" virtual="true">
+		<Size><AbsDimension x="32" y="32"/></Size>
+		<Scripts>
+			<OnEnter>
+				self:SetAlpha(1)
+			</OnEnter>
+			<OnLeave>
+				self:SetAlpha(0.6)
+			</OnLeave>
+		</Scripts>
+		<PushedTexture alphaMode="ADD" file="Interface\Buttons\UI-Quickslot-Depress"/>
+		<HighlightTexture alphaMode="ADD" file="Interface\Buttons\ButtonHilight-Square"/>
+		<DisabledTexture  alphaMode="ADD" file="Interface\Buttons\UI-Quickslot" />
+	</Button>
+</Ui>
