@@ -2624,7 +2624,7 @@ function module:SetEquipmentSets()
 		stat.UNIT_INVENTORY_CHANGED = function(self, unit)
 			local text = "No set equipped."
 			for set = 1, C_EquipmentSet.GetNumEquipmentSets() do
-				local name, _, setID, isEquipped, _, _, _, numMissing, _ = C_EquipmentSet.GetEquipmentSetInfo(set)
+				local name, _, setID, isEquipped, _, _, _, numMissing, _ = C_EquipmentSet.GetEquipmentSetInfo(set - 1)
 				if isEquipped then
 					text = string.format("%s%s", db.EquipmentSets.Text, name)
 				end
@@ -2666,6 +2666,34 @@ function module:SetEquipmentSets()
 end
 
 ------------------------------------------------------
+-- / Mail /
+------------------------------------------------------
+-- NOTE just a little module showing number of mails in mailbox and indicates if new mail is present; written as practice by inSpired
+
+function module:SetMail()
+	local stat = NewStat( "Mail" )
+
+	if db.Mail.Enable and not stat.Created then
+		-- Localized functions
+		local GetInboxNumItems, HasNewMail = GetInboxNumItems, HasNewMail
+
+		stat.Events = { "MAIL_INBOX_UPDATE", "UPDATE_PENDING_MAIL" } -- events related to updating mailbox
+
+		stat.MAIL_INBOX_UPDATE = function( self )
+			local numMail, _ = GetInboxNumItems() -- num items in *player* mailbox
+			local hasNew = HasNewMail()
+			self.text:SetText( format( "Mail: %d", numMail ) .. ( hasNew and db.Mail.NewIndic or "" ))
+		end
+
+		stat.UPDATE_PENDING_MAIL = stat.MAIL_INBOX_UPDATE
+
+		stat.OnEnable = stat.MAIL_INBOX_UPDATE
+
+		stat.Created = true
+	end
+end
+
+------------------------------------------------------
 -- / Loot Specialization / --
 ------------------------------------------------------
 
@@ -2675,7 +2703,7 @@ function module:SetLootSpec()
 
 	if db.LootSpec.Enable and not stat.Created then
 
-		stat.Events = {"PLAYER_LOOT_SPEC_UPDATED"}
+		stat.Events = {"PLAYER_LOOT_SPEC_UPDATED", "PLAYER_TALENT_UPDATE"}
 
 		stat.PLAYER_LOOT_SPEC_UPDATED = function(self, unit)
 			local name = ""
@@ -2686,10 +2714,12 @@ function module:SetLootSpec()
 			else
 			   _, name, _, _, _, _ = GetSpecializationInfoByID(lootspec)
 			end
-			text = string.format("%s%s", db.LootSpec.Text, name)
+			text = string.format("%s%s", db.LootSpec.Text, name or UNKNOWN)
 			self.text:SetFormattedText(text)
 			UpdateTooltip(self)
 		end
+
+		stat.PLAYER_TALENT_UPDATE = stat.PLAYER_LOOT_SPEC_UPDATED
 
 		stat.OnEnable = function(self)
 			self:PLAYER_LOOT_SPEC_UPDATED(self, "player")
@@ -2890,7 +2920,7 @@ module.defaults = {
 		},
 		Durability = {
 			Enable = true,
-			X = 345,
+			X = 350,
 			Y = 0,
 			InfoPanel = {
 				Horizontal = "Left",
@@ -3075,6 +3105,25 @@ module.defaults = {
 			InfoPanel = {
 				Horizontal = "Right",
 				Vertical = "Bottom",
+			},
+			Font = "vibroceb",
+			FontSize = 12,
+			Outline = "NONE",
+			Color = {
+				r = 1,
+				g = 1,
+				b = 1,
+				a = 1,
+			},
+		},
+		Mail = {
+			Enable = false,
+			NewIndic = " *",
+			X = 275,
+			Y = 0,
+			InfoPanel = {
+				Horizontal = "Left",
+				Vertical = "Top",
 			},
 			Font = "vibroceb",
 			FontSize = 12,
@@ -4020,6 +4069,46 @@ function module:LoadOptions()
 				Reset = ResetOption(6),
 			},
 		},
+		Mail = {
+			name = NameLabel,
+			type = "group",
+			order = 4,
+			args = {
+				Header = {
+					name = "Mail",
+					type = "header",
+					order = 1,
+				},
+				Enable = {
+					name = "Enable",
+					desc = "Whether you want to show Mail info or not.",
+					type = "toggle",
+					width = "full",
+					get = function() return db.Mail.Enable end,
+					set = function(info, value)
+						db.Mail.Enable = value
+						ToggleStat("Mail")
+					end,
+					order = 2,
+				},
+				NewIndic = {
+					name = "New Indicator",
+					desc = "Indicates there is new mail.",
+					type = "input",
+					disabled = StatDisabled,
+					width = "full",
+					get = function() return db.Mail.NewIndic end,
+					set = function(info, value)
+						db.Mail.NewIndic = value
+						ToggleStat( "Mail" )
+					end,
+					order = 3,
+				},
+				Position = PositionOptions(5),
+				Font = FontOptions(6),
+				Reset = ResetOption(7),
+			},
+		},
 	}
 
 	return options
@@ -4056,6 +4145,7 @@ function module:OnEnable()
 	EnableStat("EquipmentSets")
 	EnableStat("LootSpec")
 	EnableStat("MoveSpeed")
+	EnableStat("Mail")
 end
 
 function module:OnDisable()
@@ -4072,6 +4162,7 @@ function module:OnDisable()
 	DisableStat("EquipmentSet")
 	DisableStat("LootSpec")
 	DisableStat("MoveSpeed")
+	DisableStat("Mail")
 	LUI_Infos_TopLeft:Hide()
 	LUI_Infos_TopRight:Hide()
 	LUI_Infos_BottomLeft:Hide()
