@@ -46,7 +46,7 @@ function module:OverlapPrevention(frame, action)
 		X_Position = X_compact + (db.Spacing / 2) -- Added X-offsets
 	end
 
-	local offset = 0
+	local offset, x_offset = 0, 0
 	if db.OverlapPrevention == "Offset" and Panels.db.profile.MicroMenu.IsShown then
 		offset = db.Offset
 		x_offset = db.X_Offset -- Added X-offsets
