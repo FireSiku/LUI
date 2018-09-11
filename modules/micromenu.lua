@@ -741,11 +741,13 @@ function module:SetMicroMenu()
 
 	LUI.MicroMenu.Buttons.Guild.Clicker:SetScript("OnEnter", function(self)
 		self:SetAlpha(1)
-		self.State = true
+		self.State = truetrue
+
+		local comm = (db.GuildComm and "Communities") or "Friends"
 		GameTooltip:SetOwner(LUI.MicroMenu.Buttons.Guild.Clicker, "ANCHOR_NONE ", 40, -90)
-		GameTooltip:SetText("Guild/Friends")
+		GameTooltip:SetText("Guild/"..comm)
 		GameTooltip:AddLine("Left Click: Guild Frame", 1, 1, 1)
-		GameTooltip:AddLine("Right Click: Friends Frame", 1, 1, 1)
+		GameTooltip:AddLine("Right Click: "..comm.." Frame", 1, 1, 1)
 		GameTooltip:Show()
 	end)
 
@@ -758,7 +760,9 @@ function module:SetMicroMenu()
 	end)
 
 	LUI.MicroMenu.Buttons.Guild.Clicker:SetScript("OnClick", function(self, button)
-		if button == "RightButton" then
+		if button == "RightButton" and db.GuildComm then
+			ToggleGuildFrame() -- Toggle Communities Frame.
+		elseif button == "RightButton" then
 			ToggleFriendsFrame(1)
 		else
 			if GuildFrame:IsShown() or LookingForGuildFrame:IsShown() then
@@ -1195,6 +1199,7 @@ module.defaults = {
 		Y = -1,
 		NaviX = -150,
 		NaviY = 6,
+		GuildComm = true,
 	}
 }
 
@@ -1253,7 +1258,7 @@ function module:LoadFrameOptions()
 						desc = "X Value for your Micro Menu Navigation Panel.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..dbd.profile.NaviX,
 						type = "input",
 						get = function() return tostring(db.NaviX) end,
-						set = function(self,MMNaviX)
+						set = function(self, MMNaviX)
 							if MMNaviX == nil or MMNaviX == "" then
 								MMNaviX = 0
 							end
@@ -1268,7 +1273,7 @@ function module:LoadFrameOptions()
 						desc = "Y Value for your Micro Menu Navigation Panel.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..dbd.profile.NaviY,
 						type = "input",
 						get = function() return tostring(db.NaviY) end,
-						set = function(self,MMNaviY)
+						set = function(self, MMNaviY)
 							if MMNaviY == nil or MMNaviY == "" then
 								MMNaviY = 0
 							end
@@ -1277,6 +1282,18 @@ function module:LoadFrameOptions()
 							module:SetMicroMenuPosition()
 						end,
 						order = 2,
+					},
+					-- option to use Guild/Communities instead of Guild/Friends
+					GuildComm = {
+						name = "Display Communities instead of Friends on Right Click",
+						desc = "Changes the Guild button's right click to show/hide Communities instead of Friends panel.",
+						type = "toggle",
+						width = "full",
+						get = function() return db.GuildComm end,
+						set = function(info, value)
+							db.GuildComm = value
+						end,
+						order = 3,
 					},
 				},
 			},
