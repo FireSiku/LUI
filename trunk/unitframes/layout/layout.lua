@@ -19,6 +19,8 @@ local Media = LibStub("LibSharedMedia-3.0")
 
 local db, colors
 
+local HACK_USE_LOW_STRATA = true
+
 ------------------------------------------------------------------------
 --	Textures and Medias
 ------------------------------------------------------------------------
@@ -3035,6 +3037,9 @@ local SetStyle = function(self, unit, isSingle)
 
 	self:SetScript("OnEnter", UnitFrame_OnEnter)
 	self:SetScript("OnLeave", UnitFrame_OnLeave)
+	if HACK_USE_LOW_STRATA then
+		self:SetFrameStrata("LOW")
+	end
 
 	self.MoveableFrames = ((isSingle and not unit:match("%d")) or unit == "party" or unit == "maintank" or unit == unit:match("%a+1"))
 
