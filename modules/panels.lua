@@ -297,6 +297,7 @@ local Set = function(f, d, p, w, h, s, r, g, b, a, rc, gc, bc, ac)
 	f:SetWidth(w)
 	f:SetHeight(h)
 	f:SetScale(s)
+	f:SetFrameStrata("BACKGROUND")
 
 	if d == "SOLID" then
 		f.c:SetTexture(fdir.."panelbg1.tga")
