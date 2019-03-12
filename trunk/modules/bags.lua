@@ -345,13 +345,11 @@ function module:BagFrameSlotNew(slot, parent, bagType)
 
 	--Make a new slot.
 	local ret = {}
-	local template
 
 	if bagType == "Bank" then
 		ret.slot = slot
 		slot = slot - 4
-		template = "BankItemButtonBagTemplate"
-		ret.frame = CreateFrame("CheckButton", "LUIBank__Bag"..slot, parent, template)
+		ret.frame = CreateFrame("ItemButton", "LUIBank__Bag"..slot, parent, "BankItemButtonBagTemplate")
 		ret.frame:SetID(slot)
 		tinsert(BagsSlots, ret)
 
@@ -362,8 +360,7 @@ function module:BagFrameSlotNew(slot, parent, bagType)
 			ret.frame.tooltipText = ""
 		end
 	else
-		template = "BagSlotButtonTemplate"
-		ret.frame = CreateFrame("CheckButton", "LUIBags__Bag"..slot.."Slot", parent, template)
+		ret.frame = CreateFrame("ItemButton", "LUIBags__Bag"..slot.."Slot", parent, "BagSlotButtonTemplate")
 		ret.slot = slot
 		tinsert(BagsSlots, ret)
 	end
@@ -417,7 +414,7 @@ function module:SlotNew(bag, slot)
 	end
 
 	if not ret.frame then
-		ret.frame = CreateFrame("Button", "LUIBags_Item" .. bag .. "_" .. slot, BagsInfo[bag], template)
+		ret.frame = CreateFrame("ItemButton", "LUIBags_Item" .. bag .. "_" .. slot, BagsInfo[bag], template)
 	end
 
 	ret.bag = bag
