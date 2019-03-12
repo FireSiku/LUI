@@ -9,5 +9,3 @@ for k, v in pairs(children) do
         v:SetFrameStrata("DIALOG")
     end
 end
-WorldMapCompareTooltip1:SetFrameStrata("TOOLTIP")
-WorldMapCompareTooltip2:SetFrameStrata("TOOLTIP")
