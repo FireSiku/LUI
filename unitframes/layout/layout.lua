@@ -19,8 +19,6 @@ local Media = LibStub("LibSharedMedia-3.0")
 
 local db, colors
 
-local HACK_USE_LOW_STRATA = true
-
 ------------------------------------------------------------------------
 --	Textures and Medias
 ------------------------------------------------------------------------
@@ -1607,7 +1605,6 @@ module.funcs = {
 		self.FrameBackdrop:SetPoint("TOPLEFT", self, "TOPLEFT", oufdb.Backdrop.Padding.Left, oufdb.Backdrop.Padding.Top)
 		self.FrameBackdrop:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", oufdb.Backdrop.Padding.Right, oufdb.Backdrop.Padding.Bottom)
 		self.FrameBackdrop:SetFrameStrata("BACKGROUND")
-		self.FrameBackdrop:SetFrameLevel(20)
 		self.FrameBackdrop:SetBackdrop({
 			bgFile = Media:Fetch("background", oufdb.Backdrop.Texture),
 			edgeFile = Media:Fetch("border", oufdb.Border.EdgeFile),
@@ -3037,10 +3034,7 @@ local SetStyle = function(self, unit, isSingle)
 
 	self:SetScript("OnEnter", UnitFrame_OnEnter)
 	self:SetScript("OnLeave", UnitFrame_OnLeave)
-	if HACK_USE_LOW_STRATA then
-		self:SetFrameStrata("LOW")
-	end
-
+	
 	self.MoveableFrames = ((isSingle and not unit:match("%d")) or unit == "party" or unit == "maintank" or unit == unit:match("%a+1"))
 
 	self.SpellRange = true
