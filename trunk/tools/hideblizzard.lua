@@ -94,14 +94,16 @@ do
 			end
 		end,
 		raid = function()
-			CompactRaidFrameManager:UnregisterEvent("GROUP_ROSTER_UPDATE")
-			CompactRaidFrameManager:UnregisterEvent("PLAYER_ENTERING_WORLD")
-			CompactRaidFrameManager:Hide()
-			compact_raid = CompactRaidFrameManager_GetSetting("IsShown")
-			if compact_raid and compact_raid ~= "0" then
-				CompactRaidFrameManager_SetSetting("IsShown", "0")
+			if CompactRaidFrameManager then
+				CompactRaidFrameManager:UnregisterEvent("GROUP_ROSTER_UPDATE")
+				CompactRaidFrameManager:UnregisterEvent("PLAYER_ENTERING_WORLD")
+				CompactRaidFrameManager:Hide()
+				compact_raid = CompactRaidFrameManager_GetSetting("IsShown")
+				if compact_raid and compact_raid ~= "0" then
+					CompactRaidFrameManager_SetSetting("IsShown", "0")
+				end
+				hook("raid", "CompactRaidFrameManager_UpdateShown")
 			end
-			hook("raid", "CompactRaidFrameManager_UpdateShown")
 		end,
 		boss = function()
 			for i = 1, MAX_BOSS_FRAMES do
