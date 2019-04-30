@@ -148,8 +148,9 @@ do
 		end
 
 		self.caster = nil
-		local casterName = UnitName(caster)
-		if caster and casterName then
+		if caster then
+			local casterName = UnitName(caster)
+			if not casterName then return end
 			if UnitIsPlayer(caster) then
 				local _, class = UnitClass(caster)
 				if class then
