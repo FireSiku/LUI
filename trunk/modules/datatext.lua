@@ -2482,7 +2482,7 @@ function module:SetMemory()
 		stat.OnUpdate = function(self, deltaTime)
 			if InCombatLockdown() then return end
 			self.dt = self.dt + deltaTime
-			if self.dt > 10 then
+			if self.dt > 100 then
 				self.dt = 0
 
 				UpdateAddOnMemoryUsage()
