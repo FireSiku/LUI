@@ -148,17 +148,18 @@ do
 		end
 
 		self.caster = nil
-		if caster then
+		local casterName = UnitName(caster)
+		if caster and casterName then
 			if UnitIsPlayer(caster) then
 				local _, class = UnitClass(caster)
 				if class then
 					local c = RAID_CLASS_COLORS[class]
-					self.caster = format(playerCaster, c.r*255, c.g*255, c.b*255, UnitName(caster))
+					self.caster = format(playerCaster, c.r*255, c.g*255, c.b*255, casterName)
 				end
 			elseif caster == "pet" or caster == "vehicle" then
 				local _, class = UnitClass("player")
 				local c = RAID_CLASS_COLORS[class]
-				self.caster = format(petCaster, UnitName(caster), c.r*255, c.g*255, c.b*255, UnitName("player"))
+				self.caster = format(petCaster, casterName, c.r*255, c.g*255, c.b*255, UnitName("player"))
 			else
 				local group = strmatch(caster, "([p]?[ar][ra][ti][yd])pet")
 
@@ -166,14 +167,14 @@ do
 					local owner = group .. strmatch(caster, ".-(%d%d?)$")
 					local _, class = UnitClass(owner)
 					local c = RAID_CLASS_COLORS[class]
-					self.caster = format(petCaster, UnitName(caster), c.r*255, c.g*255, c.b*255, UnitName(owner))
+					self.caster = format(petCaster, casterName, c.r*255, c.g*255, c.b*255, UnitName(owner))
 				end
 			end
 
 			if not self.caster then
 				-- most likely an NPC (color by friendliness)
 				local r, g, b = GameTooltip_UnitColor(caster)
-				self.caster = format(playerCaster, r*255, g*255, b*255, UnitName(caster))
+				self.caster = format(playerCaster, r*255, g*255, b*255, casterName)
 			end
 		end
 	end
