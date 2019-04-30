@@ -103,7 +103,7 @@ do
 		self:Hide()
 
 		self.enabled = nil
-		self.cd.timer = nil
+		self.cd.luitimer = nil
 		self.fontScale = nil -- force update of fontsize on next use
 
 		tinsert(cache, self)
@@ -194,7 +194,7 @@ do
 		end
 
 		timer.cd = cd
-		cd.timer = timer
+		cd.luitimer = timer
 
 		return timer
 	end
@@ -203,11 +203,14 @@ do
 		if cd.IsForbidden and cd:IsForbidden() then return end
 		if cd.NextRewardLevel then return end -- Dont show cooldown on honor level.
 		if cd.noCooldownCount then return end
+		-- Disable LUI cooldowns on WeakAura frames
+		if cd:GetName() and strfind(cd:GetName(), "WeakAuras") then return end
+		--LUI:Print(cd:GetName(), cd:GetDebugName())
 
-		if cd.timer then
-			if cd.timer:ShouldUpdate(start, duration) then
-				cd.timer.start, cd.timer.duration = start, duration
-				cd.timer:Update()
+		if cd.luitimer then
+			if cd.luitimer:ShouldUpdate(start, duration) then
+				cd.luitimer.start, cd.luitimer.duration = start, duration
+				cd.luitimer:Update()
 			end
 		elseif duration >= minDuration and cd:IsVisible() and fontScale[round(cd:GetWidth())] then
 			getTimer(cd):Start(start, duration)
