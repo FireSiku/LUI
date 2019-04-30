@@ -440,23 +440,23 @@ local SetSwing = function()
 	LUISwing.Offhand.Text:SetShadowOffset(1.25, -1.25)
 	LUISwing.Offhand.Text:SetPoint("TOP", LUISwing.Twohand.Text, "CENTER", 0, -1)
 
-    LUISwing:SetScript("OnEvent", function(self, event, ...)
+	LUISwing:SetScript("OnEvent", function(self, event, ...)
 		if event == "PLAYER_REGEN_DISABLED" then
 			if self.Testmode then
 				self.Testmode = nil
 				self:Hide()
 			end
 		elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
-			Ranged(self, event, CombatLogGetCurrentEventInfo())
+			Ranged(self, event, ...)
 		elseif event == "UNIT_RANGEDDAMAGE" then
-			RangedChange(self, event, CombatLogGetCurrentEventInfo())
+			RangedChange(self, event, ...)
 		elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
-			Melee(self, event, CombatLogGetCurrentEventInfo())
-			ParryHaste(self, event, CombatLogGetCurrentEventInfo())
+			Melee(self, event, ...)
+			ParryHaste(self, event, ...)
 		elseif event == "UNIT_ATTACK_SPEED" then
-			MeleeChange(self, event, CombatLogGetCurrentEventInfo())
+			MeleeChange(self, event, ...)
 		elseif event == "PLAYER_REGEN_ENABLED" then
-			Ooc(self, event, CombatLogGetCurrentEventInfo())
+			Ooc(self, event, ...)
 		end
 	end)
 end

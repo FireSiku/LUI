@@ -741,7 +741,7 @@ function module:SetMicroMenu()
 
 	LUI.MicroMenu.Buttons.Guild.Clicker:SetScript("OnEnter", function(self)
 		self:SetAlpha(1)
-		self.State = truetrue
+		self.State = true
 
 		local comm = (db.GuildComm and "Communities") or "Friends"
 		GameTooltip:SetOwner(LUI.MicroMenu.Buttons.Guild.Clicker, "ANCHOR_NONE ", 40, -90)
