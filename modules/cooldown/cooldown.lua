@@ -177,6 +177,7 @@ do
 	end
 
 	function Timer:Position()
+		self:ClearAllPoints()
 		self:SetAllPoints()
 		self.text:SetPoint(db.Text.Align, db.Text.XOffset, db.Text.YOffset)
 	end
