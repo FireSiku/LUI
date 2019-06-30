@@ -135,7 +135,6 @@ do
 		self.nextUpdate = self.nextUpdate - elapsed
 
 		if self.nextUpdate > 0 then return end
-
 		self:Update()
 	end
 
@@ -205,8 +204,7 @@ do
 		if cd.NextRewardLevel then return end -- Dont show cooldown on honor level.
 		if cd.noCooldownCount then return end
 		-- Disable LUI cooldowns on WeakAura frames
-		if cd:GetName() and strfind(cd:GetName(), "WeakAuras") then return end
-		--LUI:Print(cd:GetName(), cd:GetDebugName())
+		if db.General.FilterWA and cd:GetName() and strfind(cd:GetName(), "WeakAuras") then return end
 
 		if cd.luitimer then
 			if cd.luitimer:ShouldUpdate(start, duration) then
@@ -268,6 +266,7 @@ module.defaults = {
 			Precision = 1,
 			Threshold = 8,
 			MinToSec = 60,
+			FilterWA = true,
 		},
 		Text = {
 			Font = "vibroceb",
@@ -305,6 +304,7 @@ function module:LoadOptions()
 			Precision = self:NewSlider("Cooldown Precision", "How many decimal places will be shown once time is within the cooldown threshold.", 3, 0, 2, 1, func),
 			MinScale = self:NewSlider("Minimum Scale", "The smallest size of icons that timers will be shown for.", 4, 0, 2, 0.1, func),
 			MinToSec = self:NewSlider("Minute to Seconds", "The time at which your cooldown is shown in seconds instead of minutes.", 4, 60, 300, 60, func),
+			FilterWA = self:NewToggle("Filter WeakAuras", "Prevent the cooldown module from interacting with WeakAuras to prevent conflict.", 5),
 		}),
 		Text = self:NewGroup("Text Settings", 2, {
 			Font = self:NewSelect("Font", "Select the font to be used by cooldown's texts.", 1, AceGUIWidgetLSMlists.font, "LSM30_Font", func),
