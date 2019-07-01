@@ -22,6 +22,7 @@ local db, dbd
 
 local CLASS_BUTTONS = CLASS_ICON_TCOORDS
 local BNET_CLIENT_WOW = BNET_CLIENT_WOW
+local BNET_CLIENT_MOBILE = "BSAp"
 
 ------------------------------------------------------
 -- / LOCAL VARIABLES / --
@@ -1441,6 +1442,7 @@ function module:SetGF()
 			toast.unit = toonName
 			toast.realID = givenName
 			toast.indexOffset = offset
+			toast.realIndex = index + offset
 
 			SetStatusLayout(toast.status, toast.name)
 
@@ -1520,6 +1522,24 @@ function module:SetGF()
 				return a[si] < b[si]
 			else
 				return a[si] > b[si]
+			end
+		end
+
+		local function ClientPriority(client)
+			if client == BNET_CLIENT_WOW then
+				return 1
+			elseif client == BNET_CLIENT_APP or client == BNET_CLIENT_MOBILE then
+				return 3
+			else
+				return 2
+			end
+		end
+
+		local function sortClients(a, b)
+			if ClientPriority(a.client) == ClientPriority(b.client) then
+				return a.realIndex < b.realIndex
+			else
+				return ClientPriority(a.client) < ClientPriority(b.client)
 			end
 		end
 
@@ -1701,6 +1721,7 @@ function module:SetGF()
 					else indexOffset = indexOffset + 1
 					end
 				end
+				sort(toasts, sortClients)
 
 				realFriendsHeight = (nbRealFriends + nbBroadcast) * btnHeight + (#entries>0 and gap or 0)
 				if hideNotes then nC = -gap end
