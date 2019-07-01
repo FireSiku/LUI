@@ -1241,7 +1241,7 @@ local GF_Colors = {
 -- Localized functions
 local RAID_CLASS_COLORS = CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS
 
-local BNGetFriendInfo, BNGetToonInfo, BNGetNumFriends, BNFeaturesEnabled, BNConnected = BNGetFriendInfo, BNGetToonInfo, BNGetNumFriends, BNFeaturesEnabled, BNConnected
+local BNGetFriendInfo, BNGetGameAccountInfo, BNGetNumFriends, BNFeaturesEnabled, BNConnected = BNGetFriendInfo, BNGetGameAccountInfo, BNGetNumFriends, BNFeaturesEnabled, BNConnected
 local GetNumGroupMembers, GetNumSubgroupMembers, UnitInRaid, UnitInParty, InviteUnit = GetNumGroupMembers, GetNumSubgroupMembers, UnitInRaid, UnitInParty, InviteUnit
 local CanEditMOTD, GetGuildRosterMOTD, CanEditPublicNote, CanEditOfficerNote = CanEditMOTD, GetGuildRosterMOTD, CanEditPublicNote, CanEditOfficerNote
 local GetQuestDifficultyColor, RemoveFriend, SetGuildRosterSelection, SetItemRef = GetQuestDifficultyColor, RemoveFriend, SetGuildRosterSelection, SetItemRef
@@ -1418,18 +1418,17 @@ function module:SetGF()
 			rank and button.rank:GetStringWidth() or -gap
 		end
 
-		local function SetToastData(index, inGroup)
+		local function SetToastData(index, inGroup, offset)
 			local toast, bc, color = toasts[index], nil, nil
 			--presenceID is the BNAccountID, toonID refers to BNGameAccountID, name preserved for compatibility sake. Clean code in V4.
-			local presenceID, givenName, battletag, isBattletag, toonName, toonID, client, isOnline, lastOnline, isAFK, isDND, broadcast, notes = BNGetFriendInfo(index)
-			if not BNGetGameAccountInfo then BNGetGameAccountInfo = BNGetToonInfo end
+			local presenceID, givenName, battletag, isBattletag, toonName, toonID, client, isOnline, lastOnline, isAFK, isDND, broadcast, notes = BNGetFriendInfo(index + offset)
 			local _, _, _, realm, _, faction, race, class, _, zone, level, gameText = BNGetGameAccountInfo(toonID or 0)
 
 			if faction == 'Alliance' then faction = 1
 			else faction = 0
 			end
 
-			if broadcast and broadcast ~= "" then
+			if isOnline and broadcast and broadcast ~= "" then
 				nbBroadcast = nbBroadcast + 1
 				bc = broadcasts[nbBroadcast]
 				bc.text:SetText(broadcast)
@@ -1437,10 +1436,11 @@ function module:SetGF()
 			else
 				toast.bcIndex = nil
 			end
-
+			
 			toast.presenceID = presenceID
 			toast.unit = toonName
 			toast.realID = givenName
+			toast.indexOffset = offset
 
 			SetStatusLayout(toast.status, toast.name)
 
@@ -1489,7 +1489,7 @@ function module:SetGF()
 			toast.zone:SetText(zone)
 			toast.note:SetText(notes)
 
-			return toast, client,
+			return toast, client, isOnline,
 			toast.name:GetStringWidth(),
 			client ~= BNET_CLIENT_WOW and -gap or toast.level:GetStringWidth(),
 			toast.zone:GetStringWidth(),
@@ -1682,19 +1682,24 @@ function module:SetGF()
 
 			if nbRealFriends > 0 then
 				nbBroadcast = 0
-				for i=1, nbRealFriends do
-					local button, client, tnW, lW, zW, nW, spanZoneW = SetToastData(i, inGroup)
+				local i = 1
+				local indexOffset = 0
+				while i <= nbRealFriends do
+					local button, client, isOnline, tnW, lW, zW, nW, spanZoneW = SetToastData(i, inGroup, indexOffset)
 
 					if tnW > tnC then tnC = tnW end
-
 					if client == BNET_CLIENT_WOW then
 						if lW > lC then lC = lW end
 						if zW > zC then zC = zW end
 					else
 						if zW > spanZoneC then spanZoneC = zW end
 					end
-
 					if nW > nC then nC = nW end
+
+					if isOnline then
+						i = i + 1
+					else indexOffset = indexOffset + 1
+					end
 				end
 
 				realFriendsHeight = (nbRealFriends + nbBroadcast) * btnHeight + (#entries>0 and gap or 0)
@@ -1736,7 +1741,8 @@ function module:SetGF()
 			motd = buttons[0] -- fix for errors caused by motd being nil
 			motd:SetScript("OnClick",nil)
 			local guildMOTD = self.IsGuild and GetGuildRosterMOTD()
-			if self.IsGuild and (nbTotalEntries>0 and guildMOTD or nbTotalEntries==0) or not self.IsGuild and (BNFeaturesEnabled() and totalRF>0 or nbTotalEntries==0 or not BNConnected()) then -- TODO look for better way to phrase this
+			if self.IsGuild and (nbTotalEntries>0 and guildMOTD or nbTotalEntries==0) or
+			   not self.IsGuild and (BNFeaturesEnabled() and totalRF>0 or nbTotalEntries==0 or not BNConnected()) then -- TODO look for better way to phrase this
 				motd.name:SetJustifyH("LEFT")
 				motd.name:SetTextColor(unpack(GF_Colors.Title))
 				local r, g, b = unpack(GF_Colors.MotD)
@@ -2115,7 +2121,8 @@ function module:SetGuild()
 			end
 			local r,g,b = unpack(GF_Colors.OfficerNote)
 			local offcolor = ("\124cff%.2x%.2x%.2x"):format(r*255, g*255, b*255)
-			for i=1, GetNumGuildMembers(true) do
+			local guildNum = GetNumGuildMembers()
+			for i=1, guildNum do
 				local fullName, rank, rankIndex, level, class, zone, note, offnote, connected, status, cFN, achiPoints, achiRank, isMobile = GetGuildRosterInfo(i)
 				local displayName, realmName = strsplit("-",tostring(fullName))
 				local name = db.Guild.hideRealm and displayName or fullName
@@ -2145,7 +2152,7 @@ function module:SetGuild()
 		stat.OnUpdate = function(self, deltaTime)
 			self.dt = self.dt + deltaTime
 			if self.dt > 15 then
-				if IsInGuild() then
+				if IsInGuild() and GetNumGuildMembers() then
 					GuildRoster()
 				else
 					self.dt = 0
