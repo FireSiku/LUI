@@ -20,7 +20,9 @@ local function add(spell, priority)
 	if addon.MatchBySpellName and type(spell) == 'number' then
 		spell = GetSpellInfo(spell)
 	end
-	debuff_data[spell] = priority
+	if spell then
+		debuff_data[spell] = priority
+	end
 end
 
 function addon:RegisterDebuffs(t)
