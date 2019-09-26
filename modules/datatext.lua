@@ -1242,7 +1242,6 @@ local GF_Colors = {
 -- Localized functions
 local RAID_CLASS_COLORS = CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS
 
-local BNGetFriendInfo, BNGetGameAccountInfo, BNGetNumFriends, BNFeaturesEnabled, BNConnected = BNGetFriendInfo, BNGetGameAccountInfo, BNGetNumFriends, BNFeaturesEnabled, BNConnected
 local GetNumGroupMembers, GetNumSubgroupMembers, UnitInRaid, UnitInParty, InviteUnit = GetNumGroupMembers, GetNumSubgroupMembers, UnitInRaid, UnitInParty, InviteUnit
 local CanEditMOTD, GetGuildRosterMOTD, CanEditPublicNote, CanEditOfficerNote = CanEditMOTD, GetGuildRosterMOTD, CanEditPublicNote, CanEditOfficerNote
 local GetQuestDifficultyColor, RemoveFriend, SetGuildRosterSelection, SetItemRef = GetQuestDifficultyColor, RemoveFriend, SetGuildRosterSelection, SetItemRef
@@ -1419,11 +1418,42 @@ function module:SetGF()
 			rank and button.rank:GetStringWidth() or -gap
 		end
 
+				--takes table, second arg for recursion. Prints an entire table to default chat.
+		function LUI:PrintFullTable(tbl,msg, recurse)
+			if type(tbl) ~= "table" then return LUI:Print("Tried to Print a nil table.") end
+			if not recurse then LUI:Print("-------------------------") end
+			msg = msg or ""
+			for k,v in pairs(tbl) do
+				if type(v) == "table" then
+					LUI:Print(msg,k,v)
+					LUI:PrintFullTable(v,msg.."-- ", true)
+				else LUI:Print(msg,k,v) end
+			end
+			if not recurse then LUI:Print("-------------------------") end
+		end
+
 		local function SetToastData(index, inGroup, offset)
 			local toast, bc, color = toasts[index], nil, nil
+			--bnetIDAccount, accountName, battleTag, isBattleTagPresence, characterName, bnetIDGameAccount, client, isOnline, lastOnline, isAFK, isDND, messageText, noteText, isRIDFriend, messageTime, canSoR, isReferAFriend, canSummonFriend = BNGetFriendInfo(friendIndex)
+
 			--presenceID is the BNAccountID, toonID refers to BNGameAccountID, name preserved for compatibility sake. Clean code in V4.
-			local presenceID, givenName, battletag, isBattletag, toonName, toonID, client, isOnline, lastOnline, isAFK, isDND, broadcast, notes = BNGetFriendInfo(index + offset)
-			local _, _, _, realm, _, faction, race, class, _, zone, level, gameText = BNGetGameAccountInfo(toonID or 0)
+			
+			--local presenceID, givenName, battletag, isBattletag, toonName, toonID, client, isOnline, lastOnline, isAFK, isDND, broadcast, notes = BNGetFriendInfo(index + offset)
+			--local _, _, _, realm, _, faction, race, class, _, zone, level, gameText = BNGetGameAccountInfo(toonID or 0)
+
+			-- As of 8.2.5 they changed the way you receive BN info.
+			local accountInfo = C_BattleNet.GetFriendAccountInfo(index + offset)
+			local gameInfo = accountInfo.gameAccountInfo
+			local presenceID, givenName, battleTag = accountInfo.bnetAccountID, accountInfo.accountName, accountInfo.battleTag
+			local client, wowProjectID = gameInfo.clientProgram, gameInfo.wowProjectID or 0
+			local isOnline, isAFK, isDND = gameInfo.isOnline, accountInfo.isAFK, accountInfo.isDND
+			local broadcast, notes = accountInfo.customMessage, accountInfo.note
+			local toonName, faction, race, class = gameInfo.characterName or "", gameInfo.factionName or "", gameInfo.raceName or "", gameInfo.className or ""
+			local realm, zone, level, gameText = gameInfo.realmName or "", gameInfo.areaName or "", gameInfo.characterLevel or "", gameInfo.richPresence or ""
+			-- local presenceID, givenName, battletag, isBattletag, toonName, toonID = accountInfo.presenceID, accountInfo.givenName, accountInfo.battletag, accountInfo.isBattletag, accountInfo.toonName, accountInfo.toonID
+			-- local client, isOnline, lastOnline, isAFK, isDND, broadcast, notes = accountInfo.client, accountInfo.isOnline, accountInfo.lastOnline, accountInfo.isAFK, accountInfo.isDND, accountInfo.broadcast, accountInfo.notes
+			-- local gameAccountInfo = C_BattleNet.GetFriendGameAccountInfo(toonID or 0)
+			-- local realm, faction, race, class, zone, level, gameText = gameAccountInfo.realm, gameAccountInfo.faction, gameAccountInfo.race, gameAccountInfo.class, gameAccountInfo.zone, gameAccountInfo.level, gameAccountInfo.gameText
 
 			if faction == 'Alliance' then faction = 1
 			else faction = 0
@@ -1449,15 +1479,16 @@ function module:SetGF()
 			toast.client = client
 
 			if client == BNET_CLIENT_WOW then
+				LUI:Print(battletag, toonName, realm, faction, face, class, zone, level)
 				toast.faction:SetTexture([[Interface\Glues\CharacterCreate\UI-CharacterCreate-Factions]])
 				toast.faction:SetTexCoord(faction == 1 and 0.03 or 0.53, faction == 1 and 0.47 or 0.97, 0.03, 0.97)
 				zone = (zone == nil or zone == "") and UNKNOWN or zone
 				toast.zone:SetPoint("LEFT", toast.faction, "RIGHT", textOffset, 0)
 				toast.zone:SetTextColor(GetZoneColor(zone))
-				toast.sameRealm = realm == myPlayerRealm
-
+				toast.sameRealm = (realm == myPlayerRealm)
 				if not toast.sameRealm then
 					local r,g,b = unpack(GF_Colors.Realm)
+					LUI:Print(toast.sameRealm, zone, realm, r, g,  b)
 					zone = ("%1$s |cff%3$.2x%4$.2x%5$.2x- %2$s"):format(zone, realm, r*255, g*255, b*255)
 				end
 				class = stat.LocClassNames[class]
