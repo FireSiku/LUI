@@ -1479,7 +1479,6 @@ function module:SetGF()
 			toast.client = client
 
 			if client == BNET_CLIENT_WOW then
-				LUI:Print(battletag, toonName, realm, faction, face, class, zone, level)
 				toast.faction:SetTexture([[Interface\Glues\CharacterCreate\UI-CharacterCreate-Factions]])
 				toast.faction:SetTexCoord(faction == 1 and 0.03 or 0.53, faction == 1 and 0.47 or 0.97, 0.03, 0.97)
 				zone = (zone == nil or zone == "") and UNKNOWN or zone
@@ -1488,7 +1487,6 @@ function module:SetGF()
 				toast.sameRealm = (realm == myPlayerRealm)
 				if not toast.sameRealm then
 					local r,g,b = unpack(GF_Colors.Realm)
-					LUI:Print(toast.sameRealm, zone, realm, r, g,  b)
 					zone = ("%1$s |cff%3$.2x%4$.2x%5$.2x- %2$s"):format(zone, realm, r*255, g*255, b*255)
 				end
 				class = stat.LocClassNames[class]
