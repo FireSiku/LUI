@@ -286,6 +286,11 @@ local rotationCoords = {
 	},
 }
 
+function LUI:CanAlterFrame(frame)
+	if not (frame:IsProtected() and InCombatLockdown()) then
+		return true
+	end
+end
 
 function RotateTexture(self, degrees)
 	local r = rotationCoords[degrees]
@@ -504,14 +509,12 @@ function module:AlphaIn(kind)
 	--if _G[backgrounds[kind].frame]:IsProtected() and InCombatLockdown() then return end
 	db[kind].IsShown = true
 
-	if not (_G[backgrounds[kind].frame]:IsProtected() and InCombatLockdown()) then
+	if LUI:CanAlterFrame(_G[backgrounds[kind].frame]) then
 		_G[backgrounds[kind].frame]:Show()
 
 		--if kind == "Chat" and LUI.db.profile.Chat.SecondChatFrame then ChatAlphaAnchor2:Show() end
 		for _, f in pairs(self:LoadAdditional(db[kind].Additional)) do
-			if not (_G[f]:IsProtected() and InCombatLockdown()) then
-				_G[f]:Show()
-			end
+			if LUI:CanAlterFrame(_G[f]) then _G[f]:Show() end
 		end
 	end
 	
@@ -536,12 +539,12 @@ function module:AlphaOut(kind)
 	if db[kind].Animation == "AlphaSlide" then
 		backgrounds[kind].AlphaOut:Show()
 
-	elseif not (_G[backgrounds[kind].frame]:IsProtected() and InCombatLockdown()) then
+	elseif LUI:CanAlterFrame(_G[backgrounds[kind].frame]) then
 		_G[backgrounds[kind].frame]:SetAlpha(0)
 		_G[backgrounds[kind].frame]:Hide()
 
 		for _, f in pairs(Panels:LoadAdditional(db[kind].Additional)) do
-			if not (_G[f]:IsProtected() and InCombatLockdown()) then
+			if LUI:CanAlterFrame(_G[f]) then
 				_G[f]:SetAlpha(0)
 				_G[f]:Hide()
 			end
@@ -576,19 +579,21 @@ function module:CreateBackground(kind)
 		if self.timerout < .5 then
 			local alpha = 1 - self.timerout / .5
 
-			if _G[frame] then
+			if _G[frame] and LUI:CanAlterFrame(_G[frame]) then
 				_G[frame]:SetAlpha(alpha)
 				for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
-					_G[f]:SetAlpha(alpha)
+					if LUI:CanAlterFrame(_G[f]) then _G[f]:SetAlpha(alpha) end
 				end
 			end
 		else
-			if _G[frame] then
+			if _G[frame] and LUI:CanAlterFrame(_G[frame]) then
 				_G[frame]:SetAlpha(0)
 				_G[frame]:Hide()
 				for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
-					_G[f]:SetAlpha(0)
-					_G[f]:Hide()
+					if LUI:CanAlterFrame(_G[f]) then
+						_G[f]:SetAlpha(0)
+						_G[f]:Hide()
+					end
 				end
 			end
 
@@ -606,17 +611,17 @@ function module:CreateBackground(kind)
 		if self.timerin < .5 then
 			local alpha = self.timerin / .5
 
-			if _G[frame] then
+			if _G[frame] and LUI:CanAlterFrame(_G[frame]) then
 				_G[frame]:SetAlpha(alpha)
 				for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
-					_G[f]:SetAlpha(alpha)
+					if LUI:CanAlterFrame(_G[f]) then _G[f]:SetAlpha(alpha) end
 				end
 			end
 		else
-			if _G[frame] then
+			if _G[frame] and LUI:CanAlterFrame(_G[frame]) then
 				_G[frame]:SetAlpha(1)
 				for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
-					_G[f]:SetAlpha(1)
+					if LUI:CanAlterFrame(_G[f]) then _G[f]:SetAlpha(1) end
 				end
 			end
 
