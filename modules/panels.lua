@@ -501,12 +501,20 @@ end
 
 function module:AlphaIn(kind)
 	if not backgrounds[kind] then return end
+	--if _G[backgrounds[kind].frame]:IsProtected() and InCombatLockdown() then return end
 	db[kind].IsShown = true
 
-	_G[backgrounds[kind].frame]:Show()
-	--if kind == "Chat" and LUI.db.profile.Chat.SecondChatFrame then ChatAlphaAnchor2:Show() end
-	for _, f in pairs(self:LoadAdditional(db[kind].Additional)) do _G[f]:Show() end
+	if not (_G[backgrounds[kind].frame]:IsProtected() and InCombatLockdown()) then
+		_G[backgrounds[kind].frame]:Show()
 
+		--if kind == "Chat" and LUI.db.profile.Chat.SecondChatFrame then ChatAlphaAnchor2:Show() end
+		for _, f in pairs(self:LoadAdditional(db[kind].Additional)) do
+			if not (_G[f]:IsProtected() and InCombatLockdown()) then
+				_G[f]:Show()
+			end
+		end
+	end
+	
 	if db[kind].Animation == "AlphaSlide" then
 		backgrounds[kind].AlphaIn:Show()
 
@@ -522,18 +530,21 @@ end
 
 function module:AlphaOut(kind)
 	if not backgrounds[kind] then return end
+	--if _G[backgrounds[kind].frame]:IsProtected() and InCombatLockdown() then return end
 	db[kind].IsShown = false
 
 	if db[kind].Animation == "AlphaSlide" then
 		backgrounds[kind].AlphaOut:Show()
 
-	else
+	elseif not (_G[backgrounds[kind].frame]:IsProtected() and InCombatLockdown()) then
 		_G[backgrounds[kind].frame]:SetAlpha(0)
 		_G[backgrounds[kind].frame]:Hide()
 
 		for _, f in pairs(Panels:LoadAdditional(db[kind].Additional)) do
-			_G[f]:SetAlpha(0)
-			_G[f]:Hide()
+			if not (_G[f]:IsProtected() and InCombatLockdown()) then
+				_G[f]:SetAlpha(0)
+				_G[f]:Hide()
+			end
 		end
 	end
 end
