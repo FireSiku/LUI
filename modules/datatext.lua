@@ -1473,6 +1473,8 @@ function module:SetGF()
 			toast.realID = givenName
 			toast.indexOffset = offset
 			toast.realIndex = index + offset
+			toast.accountInfo = accountInfo
+			toast.gameInfo = gameInfo
 
 			SetStatusLayout(toast.status, toast.name)
 
@@ -2019,7 +2021,8 @@ function module:SetGF()
 			elseif IsAltKeyDown() then -- invite unit
 				if b.presenceID then
 					if b.client ~= BNET_CLIENT_WOW then return end
-					FriendsFrame_BattlenetInvite(nil, b.presenceID)
+					--function FriendsFrame_InviteOrRequestToJoin(guid, gameAccountID)
+					FriendsFrame_InviteOrRequestToJoin(b.gameInfo.playerGuid, b.gameInfo.gameAccountID)
 				else
 					InviteUnit(b.unit)
 				end
