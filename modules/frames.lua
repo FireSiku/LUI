@@ -392,7 +392,7 @@ function module:SetFrames()
 	LUI.Navi.Tps.Clicker:SetScript("OnEnter", function(self) LUI.Navi.Tps.Hover:SetAlpha(1) end)
 	LUI.Navi.Tps.Clicker:SetScript("OnLeave", function(self) LUI.Navi.Tps.Hover:SetAlpha(0) end)
 	LUI.Navi.Tps.Clicker:SetScript("OnClick", function(self)
-		if _G[Panels.db.profile.Tps.Anchor] then
+		if _G[Panels.db.profile.Tps.Anchor] and LUI:CanAlterFrame(_G[Panels.db.profile.Tps.Anchor]) then
 			if LUI.Navi.Tps:GetAlpha() == 0 then
 				LUI.Navi.Tps.AlphaIn:Show()
 				Panels:AlphaIn("Tps")
@@ -444,7 +444,7 @@ function module:SetFrames()
 	LUI.Navi.Dps.Clicker:SetScript("OnEnter", function(self) LUI.Navi.Dps.Hover:SetAlpha(1) end)
 	LUI.Navi.Dps.Clicker:SetScript("OnLeave", function(self) LUI.Navi.Dps.Hover:SetAlpha(0) end)
 	LUI.Navi.Dps.Clicker:SetScript("OnClick", function(self)
-		if _G[Panels.db.profile.Dps.Anchor] then
+		if _G[Panels.db.profile.Dps.Anchor] and LUI:CanAlterFrame(_G[Panels.db.profile.Dps.Anchor]) then
 			if LUI.Navi.Dps:GetAlpha() == 0 then
 				LUI.Navi.Dps.AlphaIn:Show()
 				Panels:AlphaIn("Dps")
@@ -496,7 +496,7 @@ function module:SetFrames()
 	LUI.Navi.Raid.Clicker:SetScript("OnEnter", function(self) LUI.Navi.Raid.Hover:SetAlpha(1) end)
 	LUI.Navi.Raid.Clicker:SetScript("OnLeave", function(self) LUI.Navi.Raid.Hover:SetAlpha(0) end)
 	LUI.Navi.Raid.Clicker:SetScript("OnClick", function(self)
-		if _G[Panels.db.profile.Raid.Anchor] then
+		if _G[Panels.db.profile.Raid.Anchor] and LUI:CanAlterFrame(_G[Panels.db.profile.Raid.Anchor]) then
 			if LUI.Navi.Raid:GetAlpha() == 0 then
 				LUI.Navi.Raid.AlphaIn:Show()
 				Panels:AlphaIn("Raid")
