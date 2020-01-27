@@ -599,7 +599,7 @@ local defaults = {
 			AlwaysUpFrameX = "300",
 			AlwaysUpFrameY = "-35",
 			VehicleSeatIndicatorX = "-10",
-			VehicleSeatIndicatorY = "-225",
+			VehicleSeatIndicatorY = "-260",
 			DurabilityFrameX = "-20",
 			DurabilityFrameY = "-260",
 			ObjectiveTrackerFrameX = "-150",
@@ -689,245 +689,237 @@ function module:LoadOptions()
 			disabled = function() return not db.Minimap.Enable end,
 			childGroups = "tab",
 			args = {
-				MinimapSettings = {
-					name = "Minimap",
-					type = "group",
+				GeneralSettings = {
+					name = "General",
 					order = 1,
-					childGroups = "tab",
+					type = "group",
 					args = {
-						GeneralSettings = {
-							name = "General",
+						ShowTextures = {
+							name = "Show Minimap Textures",
+							desc = "Whether you want to show the Minimap Textures or not.\n",
+							disabled = function() return not db.Minimap.Enable end,
+							type = "toggle",
+							width = "full",
+							get = function() return db.Minimap.General.ShowTextures end,
+							set = function(info, ShowTextures)
+										db.Minimap.General.ShowTextures = not db.Minimap.General.ShowTextures
+										for i=1, 8, 1 do
+											if _G["fminimap_texture"..i] ~= nil then
+												if db.Minimap.General.ShowTextures == true then
+													_G["fminimap_texture"..i]:Show()
+												else
+													_G["fminimap_texture"..i]:Hide()
+												end
+											end
+										end
+									end,
 							order = 1,
-							type = "group",
-							args = {
-								ShowTextures = {
-									name = "Show Minimap Textures",
-									desc = "Whether you want to show the Minimap Textures or not.\n",
-									disabled = function() return not db.Minimap.Enable end,
-									type = "toggle",
-									width = "full",
-									get = function() return db.Minimap.General.ShowTextures end,
-									set = function(info, ShowTextures)
-												db.Minimap.General.ShowTextures = not db.Minimap.General.ShowTextures
-												for i=1, 8, 1 do
-													if _G["fminimap_texture"..i] ~= nil then
-														if db.Minimap.General.ShowTextures == true then
-															_G["fminimap_texture"..i]:Show()
-														else
-															_G["fminimap_texture"..i]:Hide()
-														end
-													end
-												end
-											end,
-									order = 1,
-								},
-								ShowBorder = {
-									name = "Show Minimap Border",
-									desc = "Whether you want to show the Minimap Border or not.\n",
-									disabled = function() return not db.Minimap.Enable end,
-									type = "toggle",
-									width = "full",
-									get = function() return db.Minimap.General.ShowBorder end,
-									set = function(info, ShowBorder)
-												db.Minimap.General.ShowBorder = not db.Minimap.General.ShowBorder
-												if fminimap_border ~= nil then
-													if db.Minimap.General.ShowBorder == true then
-														fminimap_border:Show()
-													else
-														fminimap_border:Hide()
-													end
-												end
-											end,
-									order = 2,
-								},
-								AlwaysShow = {
-									name = "Always show Minimap text",
-									desc = "Whether or not the Minimap Location and Coords text to always be shown.\n",
-									disabled = function() return not db.Minimap.Enable end,
-									type = "toggle",
-									width = "full",
-									get = function() return db.Minimap.General.AlwaysShowText end,
-									set = function(_)
-										db.Minimap.General.AlwaysShowText = not db.Minimap.General.AlwaysShowText
-										if db.Minimap.General.AlwaysShowText then
-											m_zone:Show()
-											if db.Minimap.General.ShowCoord then
-												m_coord:Show()
-											end
-										else
-											m_zone:Hide()
-											m_coord:Hide()
-										end
-									end,
-									order = 3,
-								},
-								ShowCoord = {
-									name = "Show Coordinates",
-									desc = "Whether or not the Minimap Coordinates.\n",
-									disabled = function() return not db.Minimap.Enable end,
-									type = "toggle",
-									width = "full",
-									get = function() return db.Minimap.General.ShowCoord end,
-									set = function(_)
-										db.Minimap.General.ShowCoord = not db.Minimap.General.ShowCoord
-										m_coord:Hide()
-										if db.Minimap.General.AlwaysShowText then
-											if db.Minimap.General.ShowCoord then
-												m_coord:Show()
-											end
-										end
-									end,
-									order = 4,
-								},
-								MissionReport = {
-									name = "Show Mission Report Button",
-									desc = "Whether or not the Mission Report in the corner of the minimap.\n\n The button will be in a 'dead' corner of the minimap in which Blizzard will never spawn icons or other information.",
-									disabled = function() return not db.Minimap.Enable end,
-									type = "toggle",
-									width = "full",
-									get = function() return db.Minimap.General.MissionReport end,
-									set = function(_)
-										db.Minimap.General.MissionReport = not db.Minimap.General.MissionReport
-										module:ToggleMissionReport()
-									end,
-									order = 4.5,
-								},
-								header1 = {
-									name = "Position",
-									type = "header",
-									order = 5,
-								},
-								PosX = {
-									name = "X Value",
-									desc = "X Value for your Minimap.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.General.Position.X,
-									type = "input",
-									get = function() return tostring(db.Minimap.General.Position.X) end,
-									set = function(_,PosX)
-											if PosX == nil or PosX == "" then
-												PosX = "-24"
-											end
-											db.Minimap.General.Position.X = tonumber(PosX)
-											module:SetMinimapPosition()
-										end,
-									order = 6,
-								},
-								PosY = {
-									name = "Y Value",
-									desc = "Y Value for your Minimap.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.General.Position.Y,
-									type = "input",
-									get = function() return tostring(db.Minimap.General.Position.Y) end,
-									set = function(_,PosY)
-											if PosY == nil or PosY == "" then
-												PosY = "-80"
-											end
-											db.Minimap.General.Position.Y = tonumber(PosY)
-											module:SetMinimapPosition()
-										end,
-									order = 7,
-								},
-								Restore = LUI:NewExecute("Restore Default Position", "Restores Default Minimap Position", 8, function()
-									db.Minimap.General.Position.RelativePoint = LUI.defaults.profile.Minimap.General.Position.RelativePoint
-									db.Minimap.General.Position.Point = LUI.defaults.profile.Minimap.General.Position.Point
-									db.Minimap.General.Position.X = LUI.defaults.profile.Minimap.General.Position.X
-									db.Minimap.General.Position.Y = LUI.defaults.profile.Minimap.General.Position.Y
-									module:SetMinimapPosition()
-								end),
-								Unlocked = {
-									name = "Locked",
-									desc = "Weather or not the Minimap is locked or not.\n",
-									disabled = function() return not db.Minimap.Enable end,
-									type = "toggle",
-									width = "full",
-									get = function() return not db.Minimap.General.Position.UnLocked end,
-									set = function(_)
-										db.Minimap.General.Position.UnLocked = not db.Minimap.General.Position.UnLocked
-									end,
-									order = 9,
-								},
-								header2 = {
-									name = "Size",
-									type = "header",
-									order = 10,
-								},
-								Size = {
-									name = "Size",
-									type = "range",
-									min = 0.5,
-									max = 2.5,
-									step = 0.25,
-									isPercent = true,
-									width = "double",
-									desc = "Size for your Minimap.",
-									get = function() return db.Minimap.General.Size end,
-									set = function(_,Size)
-											if Size == nil or Size == "" then
-												Size = LUI.defaults.profile.Minimap.General.Size
-											end
-											db.Minimap.General.Size = Size
-											module:SetMinimapSize()
-										end,
-									order = 11,
-								},
-							},
 						},
-						FontSettings = {
-							name = "Font",
-							type = "group",
-							order = 2,
-							args = {
-								Font = {
-									name = "Font",
-									desc = "Choose the Font for your Minimap Location and Coords!\n\nDefault: "..LUI.defaults.profile.Minimap.Font.Font,
-									disabled = function() return not db.Minimap.Enable end,
-									type = "select",
-									dialogControl = "LSM30_Font",
-									values = widgetLists.font,
-									get = function() return db.Minimap.Font.Font end,
-									set = function(info, Font)
-										db.Minimap.Font.Font = Font
-										m_zone_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
-										m_coord_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
-									end,
-									order = 1,
-								},
-								FontFlag = {
-									name = "Font Flag",
-									desc = "Choose the Font Flag for your Minimap text.\nDefault: "..LUI.defaults.profile.Minimap.Font.FontFlag,
-									disabled = function() return not db.Minimap.Enable end,
-									type = "select",
-									values = fontflags,
-									get = function()
-										for k, v in pairs(fontflags) do
-											if db.Minimap.Font.FontFlag == v then
-												return k
+						ShowBorder = {
+							name = "Show Minimap Border",
+							desc = "Whether you want to show the Minimap Border or not.\n",
+							disabled = function() return not db.Minimap.Enable end,
+							type = "toggle",
+							width = "full",
+							get = function() return db.Minimap.General.ShowBorder end,
+							set = function(info, ShowBorder)
+										db.Minimap.General.ShowBorder = not db.Minimap.General.ShowBorder
+										if fminimap_border ~= nil then
+											if db.Minimap.General.ShowBorder == true then
+												fminimap_border:Show()
+											else
+												fminimap_border:Hide()
 											end
 										end
 									end,
-									set = function(info, FontFlag)
-										db.Minimap.Font.FontFlag = fontflags[FontFlag]
-										m_zone_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
-										m_coord_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
-									end,
-									order = 2,
-								},
-								FontSize = {
-									name = "Font Size",
-									desc = "Choose your Minimap Font Size!\n Default: "..LUI.defaults.profile.Minimap.Font.FontSize,
-									disabled = function() return not db.Minimap.Enable end,
-									type = "range",
-									min = 1,
-									max = 40,
-									step = 1,
-									width = "double",
-									get = function() return db.Minimap.Font.FontSize end,
-									set = function(info, FontSize)
-										db.Minimap.Font.FontSize = FontSize
-										m_zone_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
-										m_coord_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
-									end,
-									order = 3,
-								},
-							},
+							order = 2,
+						},
+						AlwaysShow = {
+							name = "Always show Minimap text",
+							desc = "Whether or not the Minimap Location and Coords text to always be shown.\n",
+							disabled = function() return not db.Minimap.Enable end,
+							type = "toggle",
+							width = "full",
+							get = function() return db.Minimap.General.AlwaysShowText end,
+							set = function(_)
+								db.Minimap.General.AlwaysShowText = not db.Minimap.General.AlwaysShowText
+								if db.Minimap.General.AlwaysShowText then
+									m_zone:Show()
+									if db.Minimap.General.ShowCoord then
+										m_coord:Show()
+									end
+								else
+									m_zone:Hide()
+									m_coord:Hide()
+								end
+							end,
+							order = 3,
+						},
+						ShowCoord = {
+							name = "Show Coordinates",
+							desc = "Whether or not the Minimap Coordinates.\n",
+							disabled = function() return not db.Minimap.Enable end,
+							type = "toggle",
+							width = "full",
+							get = function() return db.Minimap.General.ShowCoord end,
+							set = function(_)
+								db.Minimap.General.ShowCoord = not db.Minimap.General.ShowCoord
+								m_coord:Hide()
+								if db.Minimap.General.AlwaysShowText then
+									if db.Minimap.General.ShowCoord then
+										m_coord:Show()
+									end
+								end
+							end,
+							order = 4,
+						},
+						MissionReport = {
+							name = "Show Mission Report Button",
+							desc = "Whether or not the Mission Report in the corner of the minimap.\n\n The button will be in a 'dead' corner of the minimap in which Blizzard will never spawn icons or other information.",
+							disabled = function() return not db.Minimap.Enable end,
+							type = "toggle",
+							width = "full",
+							get = function() return db.Minimap.General.MissionReport end,
+							set = function(_)
+								db.Minimap.General.MissionReport = not db.Minimap.General.MissionReport
+								module:ToggleMissionReport()
+							end,
+							order = 4.5,
+						},
+						header1 = {
+							name = "Position",
+							type = "header",
+							order = 5,
+						},
+						PosX = {
+							name = "X Value",
+							desc = "X Value for your Minimap.\n\nNote:\nPositive values = right\nNegative values = left\nDefault: "..LUI.defaults.profile.Minimap.General.Position.X,
+							type = "input",
+							get = function() return tostring(db.Minimap.General.Position.X) end,
+							set = function(_,PosX)
+									if PosX == nil or PosX == "" then
+										PosX = "-24"
+									end
+									db.Minimap.General.Position.X = tonumber(PosX)
+									module:SetMinimapPosition()
+								end,
+							order = 6,
+						},
+						PosY = {
+							name = "Y Value",
+							desc = "Y Value for your Minimap.\n\nNote:\nPositive values = up\nNegative values = down\nDefault: "..LUI.defaults.profile.Minimap.General.Position.Y,
+							type = "input",
+							get = function() return tostring(db.Minimap.General.Position.Y) end,
+							set = function(_,PosY)
+									if PosY == nil or PosY == "" then
+										PosY = "-80"
+									end
+									db.Minimap.General.Position.Y = tonumber(PosY)
+									module:SetMinimapPosition()
+								end,
+							order = 7,
+						},
+						Restore = LUI:NewExecute("Restore Default Position", "Restores Default Minimap Position", 8, function()
+							db.Minimap.General.Position.RelativePoint = LUI.defaults.profile.Minimap.General.Position.RelativePoint
+							db.Minimap.General.Position.Point = LUI.defaults.profile.Minimap.General.Position.Point
+							db.Minimap.General.Position.X = LUI.defaults.profile.Minimap.General.Position.X
+							db.Minimap.General.Position.Y = LUI.defaults.profile.Minimap.General.Position.Y
+							module:SetMinimapPosition()
+						end),
+						Unlocked = {
+							name = "Locked",
+							desc = "Weather or not the Minimap is locked or not.\n",
+							disabled = function() return not db.Minimap.Enable end,
+							type = "toggle",
+							width = "full",
+							get = function() return not db.Minimap.General.Position.UnLocked end,
+							set = function(_)
+								db.Minimap.General.Position.UnLocked = not db.Minimap.General.Position.UnLocked
+							end,
+							order = 9,
+						},
+						header2 = {
+							name = "Size",
+							type = "header",
+							order = 10,
+						},
+						Size = {
+							name = "Size",
+							type = "range",
+							min = 0.5,
+							max = 2.5,
+							step = 0.25,
+							isPercent = true,
+							width = "double",
+							desc = "Size for your Minimap.",
+							get = function() return db.Minimap.General.Size end,
+							set = function(_,Size)
+									if Size == nil or Size == "" then
+										Size = LUI.defaults.profile.Minimap.General.Size
+									end
+									db.Minimap.General.Size = Size
+									module:SetMinimapSize()
+								end,
+							order = 11,
+						},
+					},
+				},
+				FontSettings = {
+					name = "Font",
+					type = "group",
+					order = 2,
+					args = {
+						Font = {
+							name = "Font",
+							desc = "Choose the Font for your Minimap Location and Coords!\n\nDefault: "..LUI.defaults.profile.Minimap.Font.Font,
+							disabled = function() return not db.Minimap.Enable end,
+							type = "select",
+							dialogControl = "LSM30_Font",
+							values = widgetLists.font,
+							get = function() return db.Minimap.Font.Font end,
+							set = function(info, Font)
+								db.Minimap.Font.Font = Font
+								m_zone_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
+								m_coord_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
+							end,
+							order = 1,
+						},
+						FontFlag = {
+							name = "Font Flag",
+							desc = "Choose the Font Flag for your Minimap text.\nDefault: "..LUI.defaults.profile.Minimap.Font.FontFlag,
+							disabled = function() return not db.Minimap.Enable end,
+							type = "select",
+							values = fontflags,
+							get = function()
+								for k, v in pairs(fontflags) do
+									if db.Minimap.Font.FontFlag == v then
+										return k
+									end
+								end
+							end,
+							set = function(info, FontFlag)
+								db.Minimap.Font.FontFlag = fontflags[FontFlag]
+								m_zone_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
+								m_coord_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
+							end,
+							order = 2,
+						},
+						FontSize = {
+							name = "Font Size",
+							desc = "Choose your Minimap Font Size!\n Default: "..LUI.defaults.profile.Minimap.Font.FontSize,
+							disabled = function() return not db.Minimap.Enable end,
+							type = "range",
+							min = 1,
+							max = 40,
+							step = 1,
+							width = "double",
+							get = function() return db.Minimap.Font.FontSize end,
+							set = function(info, FontSize)
+								db.Minimap.Font.FontSize = FontSize
+								m_zone_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
+								m_coord_text:SetFont(Media:Fetch("font", db.Minimap.Font.Font), db.Minimap.Font.FontSize, db.Minimap.Font.FontFlag)
+							end,
+							order = 3,
 						},
 					},
 				},
@@ -939,20 +931,20 @@ function module:LoadOptions()
 			childGroups = "tab",
 			disabled = function() return not db.Minimap.Enable end,
 			args = {
-				AlwaysUpFrame = createTemplate("AlwaysUpFrame", 1, "Zone Objectives Frame",
+				ObjectiveTrackerFrame = createTemplate("ObjectiveTrackerFrame", 1, "Objectives Tracker",
+					"This Frame occurs when tracking Quests and Achievements."
+				),
+				AlwaysUpFrame = createTemplate("AlwaysUpFrame", 2, "Zone Objectives Frame",
 					"This Frame occurs in Battlegrounds, Instances and Zone Objectives. Example: Attempts left in Icecrown."
 				),
-				CaptureBar = createTemplate("CaptureBar", 2, "Capture Bar",
+				CaptureBar = createTemplate("CaptureBar", 3, "Capture Bar",
 					"This Frame occurs when trying to capture a pvp objective."
 				),
-				VehicleSeatIndicator = createTemplate("VehicleSeatIndicator", 3, "Vehicle Seat Indicator",
+				VehicleSeatIndicator = createTemplate("VehicleSeatIndicator", 4, "Vehicle Seat Indicator",
 					"This Frame occurs in some special Mounts and Vehicles. Example: Traveler's Tundra Mammoth."
 				),
-				DurabilityFrame = createTemplate("DurabilityFrame", 4, "Durability Frame",
+				DurabilityFrame = createTemplate("DurabilityFrame", 5, "Durability Frame",
 					"This Frame occurs when your gear is damaged or broken."
-				),
-				ObjectiveTrackerFrame = createTemplate("ObjectiveTrackerFrame", 5, "Objectives Tracker",
-					"This Frame occurs when tracking Quests and Achievements."
 				),
 				TicketStatus = createTemplate("TicketStatus", 6, "GM Ticket Status",
 					"This Frame occurs when waiting on a ticket response", {
