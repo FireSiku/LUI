@@ -601,7 +601,7 @@ local defaults = {
 			VehicleSeatIndicatorX = "-10",
 			VehicleSeatIndicatorY = "-225",
 			DurabilityFrameX = "-20",
-			DurabilityFrameY = "-220",
+			DurabilityFrameY = "-260",
 			ObjectiveTrackerFrameX = "-150",
 			ObjectiveTrackerFrameY = "-300",
 			CaptureBarX = "-5",
@@ -931,43 +931,43 @@ function module:LoadOptions()
 						},
 					},
 				},
-				MinimapFrames = {
-					name = "Minimap Frames",
-					type = "group",
-					order = 3,
-					disabled = function() return not db.Minimap.Enable end,
-					args = {
-						AlwaysUpFrame = createTemplate("AlwaysUpFrame", 1, "Zone Objectives Frame",
-							"This Frame occurs in Battlegrounds, Instances and Zone Objectives. Example: Attempts left in Icecrown."
-						),
-						CaptureBar = createTemplate("CaptureBar", 2, "Capture Bar",
-							"This Frame occurs when trying to capture a pvp objective."
-						),
-						VehicleSeatIndicator = createTemplate("VehicleSeatIndicator", 3, "Vehicle Seat Indicator",
-							"This Frame occurs in some special Mounts and Vehicles. Example: Traveler's Tundra Mammoth."
-						),
-						DurabilityFrame = createTemplate("DurabilityFrame", 4, "Durability Frame",
-							"This Frame occurs when your gear is damaged or broken."
-						),
-						ObjectiveTrackerFrame = createTemplate("ObjectiveTrackerFrame", 5, "Objectives Tracker",
-							"This Frame occurs when tracking Quests and Achievements."
-						),
-						TicketStatus = createTemplate("TicketStatus", 6, "GM Ticket Status",
-							"This Frame occurs when waiting on a ticket response", {
-							spacer2 = { name = "", type = "description", order = 8, width = "full", },
-							ShowTicket = {
-								name = "Show/Hide", type = "execute", order = 9,
-								func = function()
-									if TicketStatusFrame:IsShown() then
-										TicketStatusFrame:Hide()
-									else
-										TicketStatusFrame:Show()
-									end
-								end,
-							}
-						}),
-					},
-				},
+			},
+		},
+		MinimapFrames = {
+			name = "UI Elements",
+			type = "group",
+			childGroups = "tab",
+			disabled = function() return not db.Minimap.Enable end,
+			args = {
+				AlwaysUpFrame = createTemplate("AlwaysUpFrame", 1, "Zone Objectives Frame",
+					"This Frame occurs in Battlegrounds, Instances and Zone Objectives. Example: Attempts left in Icecrown."
+				),
+				CaptureBar = createTemplate("CaptureBar", 2, "Capture Bar",
+					"This Frame occurs when trying to capture a pvp objective."
+				),
+				VehicleSeatIndicator = createTemplate("VehicleSeatIndicator", 3, "Vehicle Seat Indicator",
+					"This Frame occurs in some special Mounts and Vehicles. Example: Traveler's Tundra Mammoth."
+				),
+				DurabilityFrame = createTemplate("DurabilityFrame", 4, "Durability Frame",
+					"This Frame occurs when your gear is damaged or broken."
+				),
+				ObjectiveTrackerFrame = createTemplate("ObjectiveTrackerFrame", 5, "Objectives Tracker",
+					"This Frame occurs when tracking Quests and Achievements."
+				),
+				TicketStatus = createTemplate("TicketStatus", 6, "GM Ticket Status",
+					"This Frame occurs when waiting on a ticket response", {
+					spacer2 = { name = "", type = "description", order = 8, width = "full", },
+					ShowTicket = {
+						name = "Show/Hide", type = "execute", order = 9,
+						func = function()
+							if TicketStatusFrame:IsShown() then
+								TicketStatusFrame:Hide()
+							else
+								TicketStatusFrame:Show()
+							end
+						end,
+					}
+				}),
 			},
 		},
 	}
