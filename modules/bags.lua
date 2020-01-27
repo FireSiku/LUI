@@ -1331,7 +1331,6 @@ function module:LoadOptions()
 			type = "group",
 			order = 3,
 			args = {
-				Enable = LUI:NewEnable("Bags", 1, db),
 				Cols = LUI:NewSlider("Items Per Row", "Select how many items will be displayed per rows in your Bags.",
 					2, db.Bags, "Cols", dbd.Bags, 4, 32, 1, BagOpt),
 				Lock = LUI:NewToggle("Lock Frames", "Lock the Bags, Bank and Reagents frames in place", 3, db, "Lock", dbd,nil,"normal"),

@@ -488,18 +488,6 @@ function module:LoadOptions()
 					type = "group",
 					order = 3,
 					args = {
-						Enable = {
-							name = "Enable",
-							desc = "Enable LUI Tooltip.",
-							type = "toggle",
-							width = "full",
-							get = function() return db.Tooltip.Enable end,
-							set = function()
-									db.Tooltip.Enable = not db.Tooltip.Enable
-									StaticPopup_Show("RELOAD_UI")
-								end,
-							order = 1,
-						},
 						HideCombat = {
 							name = "Show In Combat",
 							desc = "If Tooltips will show while in combat or not.",
