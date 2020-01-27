@@ -1,5 +1,5 @@
 ## Interface: 80300
-## Version: 3.24
+## Version: 3.30
 ## Title: LUI
 ## Author: Chaoslux, Mule, Hix, Thaly, Zista
 ## FormerAuthor: Louí @EU-Das Syndikat

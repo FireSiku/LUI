@@ -1347,14 +1347,15 @@ local function getOptions()
 									width = "full",
 									type = "description",
 									fontSize = "large",
-									name = "|cffa335eeSkinny Man Music, Qoke, StephenFOlson, Fearon Whitcomb, Coy Linnerooth, Spencer Sommers".."\n",
+									name = "|cffa335eeQoke, StephenFOlson, Fearon Whitcomb, Ragnarok, Skinny Man Music, David Cook, Dalton Matheson, Curtis Motzner, Christoph Fischer, Michael Rowan, Hansth, Michael Swancott, Steph Lee, rb4havoc, Max McBurn, Michelle Larrew, Grant Sundstrom, Cory Linnerooth, Eagle Billie".."\n",
 								},
+								
 								OtherPatrons = {
 									order = 8,
 									width = "full",
 									type = "description",
 									fontSize = "medium",
-									name = "|cff1eff00Adam Moody, Andrew DePaola, Angryrice, Anthony Béchard, apexius, Azona, BIRDki, Brandon Burr, Chris Manring, Confatalis, Curtis Motzner, Dalton Matheson, David Cook, Dochouse, Grant Sundstrom, gnuheike, Hansth, Ian Huisman, Joseph Arnett, Kris Springer, Lyra, Lysa Richey, Mathias Reffeldt, Max McBurn, Melvin de Grauw, Michael Swancott, Michael Walker, Michelle Larrew, Mike, McCabe, Mike Williams, Nick Giovanni, necr0, Oscar Olofsson, Philipp Rissle, Preston Cheek, Ranarok, Richard Scholten, Romain Gorgibus, Saturos Zed, Scott Crawford,Sean O'Shea, Shawn Pitts, Slawomir Baran, Srg Kuja, Steph Lee, Tobias Lidén, Xenthe, Ziri".."\n",
+									name = "|cff1eff00Adam Moody, Andrew DePaola, Angryrice, Anthony Béchard, apexius, Azona, BIRDki, Brandon Burr, Chris Manring, Confatalis, Dochouse, gnuheike, Ian Huisman, Joseph Arnett, Kris Springer, Lyra, Lysa Richey, Mathias Reffeldt, Max McBurn, Melvin de Grauw, Michael Walker, Mike, McCabe, Mike Williams, Nathan Adams, Nick Giovanni, necr0, Oscar Olofsson, Philipp Rissle, Preston Cheek, Ranarok, Richard Scholten, Romain Gorgibus, Saturos Zed, Scott Crawford, Sean O'Shea, Shawn Pitts, Slawomir Baran, Spencer Sommers, Srg Kuja, Thomas A Hutto, Tobias Lidén, Xenthe, Ziri".."\n",
 								},
 							},
 						},
