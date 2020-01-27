@@ -225,11 +225,19 @@ end
 ----------------------------------------------------------------------
 
 do
+	local function weaponInfo(enchantNum)
+		local _, mhExpiration, mhCharges, _, _, ohExpiration, ohCharges = GetWeaponEnchantInfo()
+		if enchantNum == 1 then
+			return mhExpiration, mhCharges
+		elseif enchantNum == 2 then
+			return ohExpiration, ohCharges
+		end
+	end
 	function WeaponEnchant:OnUpdate_Charges(elapsed)
 		self.nextUpdate = self.nextUpdate - elapsed
 		if self.nextUpdate > 0 then return end
 
-		local remaining, charges = select((self.enchantNum * 3) - 1, GetWeaponEnchantInfo())
+		local remaining, charges = weaponInfo(self.enchantNum)
 		remaining = remaining / 1000
 		self.nextUpdate = remaining % 1 -- update about every second
 
@@ -240,8 +248,8 @@ do
 	function WeaponEnchant:Update(enchantNum, ...)
 		self.icon:SetTexture(GetInventoryItemTexture(...))
 		self.border:SetVertexColor(GetItemQualityColor(GetInventoryItemQuality(...) or 1))
-
-		local remaining, charges = select((enchantNum * 3) - 1, GetWeaponEnchantInfo()) -- GetWeaponEnchantInfo() returns: hasMainHandEnchant, mainHandExpiration, mainHandCharges, hasOffHandEnchant, offHandExpiration, offHandCharges
+		
+		local remaining, charges = weaponInfo(enchantNum)
 		if charges and charges > 1 then
 			self.enchantNum = enchantNum
 			self.nextUpdate = 0 -- force an update
