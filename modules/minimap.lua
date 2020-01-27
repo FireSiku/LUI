@@ -23,15 +23,6 @@ local db
 local shouldntSetPoint = false
 local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
 
-local frameLookup = {
-	AlwaysUpFrame = UIWidgetTopCenterContainerFrame,
-	VehicleSeatIndicator = VehicleSeatIndicator,
-	DurabilityFrame = DurabilityFrame,
-	ObjectiveTrackerFrame = ObjectiveTrackerFrame,
-	TicketStatus = TicketStatusFrame,
-	CaptureBar = UIWidgetBelowMinimapContainerFrame,
-}
-
 function module:SetAdditionalFrames()
 	if db.Minimap.Enable ~= true then return end
 	self:SecureHook(DurabilityFrame, "SetPoint", "DurabilityFrame_SetPoint")
@@ -40,6 +31,8 @@ function module:SetAdditionalFrames()
 	self:SecureHook(UIWidgetTopCenterContainerFrame, "SetPoint", "AlwaysUpFrame_SetPoint")
 	self:SecureHook(TicketStatusFrame, "SetPoint", "TicketStatus_SetPoint")
 	self:SecureHook(UIWidgetBelowMinimapContainerFrame, "SetPoint", "CaptureBar_SetPoint")
+	self:SecureHook(PlayerPowerBarAlt, "SetPoint", "PlayerPowerBarAlt_SetPoint")
+	self:SecureHook(GroupLootContainer, "SetPoint", "GroupLootContainer_SetPoint")
 	
 end
 
@@ -63,12 +56,15 @@ function module:SetPosition(frame)
 	elseif frame == "CaptureBar" and db.Minimap.Frames.SetCaptureBar then
 		UIWidgetBelowMinimapContainerFrame:ClearAllPoints()
 		UIWidgetBelowMinimapContainerFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.CaptureBarX, db.Minimap.Frames.CaptureBarY)
+	elseif frame == "PlayerPowerBarAlt" and db.Minimap.Frames.SetPlayerPowerBarAlt then
+		PlayerPowerBarAlt:ClearAllPoints()
+		PlayerPowerBarAlt:SetPoint("BOTTOM", UIParent, "BOTTOM", db.Minimap.Frames.PlayerPowerBarAltX, db.Minimap.Frames.PlayerPowerBarAltY)
+	elseif frame == "GroupLootContainer" and db.Minimap.Frames.SetGroupLootContainer then
+		GroupLootContainer:ClearAllPoints()
+		GroupLootContainer:SetPoint("BOTTOM", UIParent, "BOTTOM", db.Minimap.Frames.GroupLootContainerX, db.Minimap.Frames.GroupLootContainerY)
 	end
 
 	shouldntSetPoint = false
-end
-
-function module:ShowTestFrame(frame)
 end
 
 function module:DurabilityFrame_SetPoint()
@@ -94,6 +90,16 @@ end
 function module:CaptureBar_SetPoint()
 	if shouldntSetPoint then return end
 	self:SetPosition('CaptureBar')
+end
+
+function module:GroupLootContainer_SetPoint()
+	if shouldntSetPoint then return end
+	self:SetPosition('GroupLootContainer')
+end
+
+function module:PlayerPowerBarAlt_SetPoint()
+	if shouldntSetPoint then return end
+	self:SetPosition('PlayerPowerBarAlt')
 end
 
 function module:TicketStatus_SetPoint()
@@ -608,12 +614,18 @@ local defaults = {
 			CaptureBarY = "-235",
 			TicketStatusX = "-175",
 			TicketStatusY = "-70",
+			PlayerPowerBarAltX = "0",
+			PlayerPowerBarAltY = "160",
+			GroupLootContainerX = "0",
+			GroupLootContainerY = "120",
 			SetAlwaysUpFrame = true,
 			SetVehicleSeatIndicator = true,
 			SetDurabilityFrame = true,
 			SetObjectiveTrackerFrame = true,
 			SetCaptureBar = true,
 			SetTicketStatus = true,
+			SetPlayerPowerBarAlt = false,
+			SetGroupLootContainer = false,
 		},
 	},
 }
@@ -934,19 +946,25 @@ function module:LoadOptions()
 				ObjectiveTrackerFrame = createTemplate("ObjectiveTrackerFrame", 1, "Objectives Tracker",
 					"This Frame occurs when tracking Quests and Achievements."
 				),
-				AlwaysUpFrame = createTemplate("AlwaysUpFrame", 2, "Zone Objectives Frame",
+				PlayerPowerBarAlt = createTemplate("PlayerPowerBarAlt", 2, "Alternate Power Bar",
+					"This Frame is the special bar that appears during certain fights or events. Example: Sanity bar during Visions."
+				),
+				GroupLootContainer = createTemplate("GroupLootContainer", 3, "Group Loot Container",
+					"This Frame is the anchor point for many Loot-based frames such as the Need/Greed and Bonus Roll frames."
+				),
+				AlwaysUpFrame = createTemplate("AlwaysUpFrame", 4, "Zone Objectives Frame",
 					"This Frame occurs in Battlegrounds, Instances and Zone Objectives. Example: Attempts left in Icecrown."
 				),
-				CaptureBar = createTemplate("CaptureBar", 3, "Capture Bar",
+				CaptureBar = createTemplate("CaptureBar", 5, "Capture Bar",
 					"This Frame occurs when trying to capture a pvp objective."
 				),
-				VehicleSeatIndicator = createTemplate("VehicleSeatIndicator", 4, "Vehicle Seat Indicator",
+				VehicleSeatIndicator = createTemplate("VehicleSeatIndicator", 6, "Vehicle Seat Indicator",
 					"This Frame occurs in some special Mounts and Vehicles. Example: Traveler's Tundra Mammoth."
 				),
-				DurabilityFrame = createTemplate("DurabilityFrame", 5, "Durability Frame",
+				DurabilityFrame = createTemplate("DurabilityFrame", 7, "Durability Frame",
 					"This Frame occurs when your gear is damaged or broken."
 				),
-				TicketStatus = createTemplate("TicketStatus", 6, "GM Ticket Status",
+				TicketStatus = createTemplate("TicketStatus", 8, "GM Ticket Status",
 					"This Frame occurs when waiting on a ticket response", {
 					spacer2 = { name = "", type = "description", order = 8, width = "full", },
 					ShowTicket = {
