@@ -24,12 +24,14 @@ local widgetLists = AceGUIWidgetLSMlists
 local db
 local hooks = { }
 local GameTooltip, GameTooltipStatusBar = _G["GameTooltip"], _G["GameTooltipStatusBar"]
-local Tooltips = {GameTooltip,ItemRefTooltip,ItemRefShoppingTooltip1,ItemRefShoppingTooltip2,ShoppingTooltip1,ShoppingTooltip2,FriendsTooltip,FloatingGarrisonFollowerTooltip,GarrisonFollowerAbilityTooltip, ReputationParagonTooltip, ContributionBuffTooltip, ContributionTooltip}
+local Tooltips = {GameTooltip, ItemRefTooltip, ItemRefShoppingTooltip1, ItemRefShoppingTooltip2, ShoppingTooltip1, ShoppingTooltip2, FriendsTooltip,
+				  FloatingGarrisonFollowerTooltip, GarrisonFollowerAbilityTooltip, ReputationParagonTooltip, ContributionBuffTooltip, ContributionTooltip}
 local LUITooltipColors
 local LUITooltipColors, LUITooltipBackdrop
 
 function module:UpdateTooltip()
 	for _, tt in pairs(Tooltips) do
+		if not tt.SetBackdrop then Mixin(tt, BackdropTemplateMixin) end
 		tt:SetBackdrop(LUITooltipBackdrop)
 	end
 end
@@ -65,7 +67,7 @@ function module:SetTooltip()
 		},
 	}
 
-	local LUITooltip = CreateFrame( "Frame", "tooltip", UIParent)
+	local LUITooltip = CreateFrame( "Frame", "tooltip", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
 
 	local _G = getfenv(0)
 
@@ -151,7 +153,7 @@ function module:SetTooltip()
 	healthBar:SetPoint("BOTTOMRIGHT", healthBar:GetParent(), "TOPRIGHT", -LUI:Scale(2), LUI:Scale(5))
 	healthBar:SetStatusBarTexture(Media:Fetch("statusbar", db.Tooltip.Health.Texture))
 
-	local healthBarBG = CreateFrame( "Frame", "StatusBarBG", healthBar)
+	local healthBarBG = CreateFrame( "Frame", "StatusBarBG", healthBar, BackdropTemplateMixin and "BackdropTemplate" or nil)
 	healthBarBG:SetFrameLevel(healthBar:GetFrameLevel() - 1)
 	healthBarBG:SetPoint("TOPLEFT", -LUI:Scale(2), LUI:Scale(2))
 	healthBarBG:SetPoint("BOTTOMRIGHT", LUI:Scale(2), -LUI:Scale(2))
@@ -220,6 +222,7 @@ function module:SetTooltip()
 		if db.Tooltip.Hidecombat and InCombatLockdown() then
 			return self:Hide()
 		end
+		if not self.SetBackdrop then Mixin(self, BackdropTemplateMixin) end
 		self:SetBackdrop(LUITooltipBackdrop)
 		self:SetScale(db.Tooltip.Scale)
 		self:SetBackdropColor(db.Tooltip.Background.Color.r,db.Tooltip.Background.Color.g,db.Tooltip.Background.Color.b,db.Tooltip.Background.Color.a)
@@ -403,6 +406,7 @@ function module:SetTooltip()
 	module:RegisterEvent("CONTRIBUTION_COLLECTOR_OPEN", function()
 		local ccTooltips = { ContributionTooltip, ContributionBuffTooltip }
 		for _, tt in pairs(ccTooltips) do
+			if not tt.SetBackdrop then Mixin(tt, BackdropTemplateMixin) end
 			if not module:IsHooked(tt, "OnShow") then
 				module:HookScript(tt, "OnShow", function()
 					tt:SetBackdrop( {

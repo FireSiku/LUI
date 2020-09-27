@@ -83,7 +83,7 @@ local function NewIcon(stat, tex)
 	if not stat then return end
 	if stat.icon then return stat.icon end
 
-	local icon = CreateFrame("Button", stat:GetName().."Icon", stat)
+	local icon = CreateFrame("Button", stat:GetName().."Icon", stat, BackdropTemplateMixin and "BackdropTemplate" or nil)
 	icon:SetPoint("RIGHT", stat.text, "LEFT", -2, 0)
 	icon:SetWidth(15)
 	icon:SetHeight(15)
@@ -98,7 +98,7 @@ local function NewStat(statDB)
 	if InfoStats[statDB] then return InfoStats[statDB] end
 	if db[statDB] and not db[statDB].Enable then return {Created = false} end
 
-	local stat = CreateFrame("Frame", "LUI_Info_" .. statDB, LUI_Infos_TopRight)
+	local stat = CreateFrame("Frame", "LUI_Info_" .. statDB, LUI_Infos_TopRight, BackdropTemplateMixin and "BackdropTemplate" or nil)
 	stat.db = statDB
 	stat:EnableMouse(true)
 
@@ -1664,7 +1664,7 @@ function module:SetGF()
 		})
 
 		-- Frames
-		slider = CreateFrame("Slider", nil, stat)
+		slider = CreateFrame("Slider", nil, stat, BackdropTemplateMixin and "BackdropTemplate" or nil)
 		slider:SetWidth(16)
 		slider:SetThumbTexture([[Interface\Buttons\UI-SliderBar-Button-Horizontal]])
 		slider:SetBackdrop({

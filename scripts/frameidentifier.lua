@@ -1,7 +1,7 @@
 local addonname, LUI = ...
 local script = LUI:NewScript("FrameIdentifier")
 
-local f = CreateFrame("Frame", "LUI_Frame_Identifier", UIParent)
+local f = CreateFrame("Frame", "LUI_Frame_Identifier", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
 f:SetWidth(320)
 f:SetHeight(20)
 f:SetPoint("CENTER")
@@ -46,7 +46,7 @@ end)
 tinsert(UISpecialFrames,f:GetName())
 
 --[[ MOUSEOVER INFO ]]
-local f2 = CreateFrame("FRAME", "LUI_Frame_MouseInfo", LUI_Frame_Identifier)
+local f2 = CreateFrame("FRAME", "LUI_Frame_MouseInfo", LUI_Frame_Identifier, BackdropTemplateMixin and "BackdropTemplate" or nil)
 f2:SetHeight(32)
 f2:SetWidth(320)
 f2:SetPoint("TOPLEFT", LUI_Frame_Identifier, "BOTTOMLEFT", 0, -3)
@@ -62,7 +62,7 @@ f2:SetBackdrop({
 f2:SetBackdropColor(0,0,0,0.6)
 f2:SetBackdropBorderColor(0,0,0,1)
 
-local f3 = CreateFrame("Button", "LUI_Frame_CloseButton", LUI_Frame_Identifier)
+local f3 = CreateFrame("Button", "LUI_Frame_CloseButton", LUI_Frame_Identifier, BackdropTemplateMixin and "BackdropTemplate" or nil)
 f3:SetPoint("RIGHT",0,0)
 f3:SetText("CLOSE")
 f3:SetNormalFontObject("GameFontNormalSmall")

@@ -310,49 +310,50 @@ function module:SetMinimap()
 	HelpOpenTicketButton:ClearAllPoints()
 	HelpOpenTicketButton:SetPoint(db.Minimap.Icon.GMTicket, Minimap, LUI:Scale(3), LUI:Scale(3))
 
-	local micro_r, micro_g, micro_b = unpack(Themes.db.profile.micromenu)
-	HelpOpenTicketButtonTutorial:ClearAllPoints()
-	HelpOpenTicketButtonTutorial:SetPoint("TOP", HelpOpenTicketButton, "BOTTOM", 0, -HelpOpenTicketButtonTutorialArrow:GetHeight())
+	if not LUI.PTR then
+		local micro_r, micro_g, micro_b = unpack(Themes.db.profile.micromenu)
+		HelpOpenTicketButtonTutorial:ClearAllPoints()
+		HelpOpenTicketButtonTutorial:SetPoint("TOP", HelpOpenTicketButton, "BOTTOM", 0, -HelpOpenTicketButtonTutorialArrow:GetHeight())
 
-	HelpOpenTicketButtonTutorialBg:SetGradientAlpha("VERTICAL", micro_r/4, micro_g/4, micro_b/4, 1, 0, 0, 0, 1)
+		HelpOpenTicketButtonTutorialBg:SetGradientAlpha("VERTICAL", micro_r/4, micro_g/4, micro_b/4, 1, 0, 0, 0, 1)
 
-	HelpOpenTicketButtonTutorialText:SetFont(Media:Fetch("font", "vibrocen"), 14, "NONE")
+		HelpOpenTicketButtonTutorialText:SetFont(Media:Fetch("font", "vibrocen"), 14, "NONE")
 
-	HelpOpenTicketButtonTutorialArrow:ClearAllPoints()
-	HelpOpenTicketButtonTutorialArrow:SetPoint("BOTTOM", HelpOpenTicketButtonTutorial, "TOP", 0, -6)
+		HelpOpenTicketButtonTutorialArrow:ClearAllPoints()
+		HelpOpenTicketButtonTutorialArrow:SetPoint("BOTTOM", HelpOpenTicketButtonTutorial, "TOP", 0, -6)
 
-	HelpOpenTicketButtonTutorialGlow:SetTexCoord(0.40625000, 0.66015625, 0.82812500, 0.77343750)
-	HelpOpenTicketButtonTutorialGlow:SetVertexColor(r, g, b, 0.5)
-	HelpOpenTicketButtonTutorialGlow:ClearAllPoints()
-	HelpOpenTicketButtonTutorialGlow:SetPoint("BOTTOM", HelpOpenTicketButtonTutorialArrow, "BOTTOM", 0, 0)
+		HelpOpenTicketButtonTutorialGlow:SetTexCoord(0.40625000, 0.66015625, 0.82812500, 0.77343750)
+		HelpOpenTicketButtonTutorialGlow:SetVertexColor(r, g, b, 0.5)
+		HelpOpenTicketButtonTutorialGlow:ClearAllPoints()
+		HelpOpenTicketButtonTutorialGlow:SetPoint("BOTTOM", HelpOpenTicketButtonTutorialArrow, "BOTTOM", 0, 0)
 
-	HelpOpenTicketButtonTutorialArrow:SetTexCoord(0.78515625, 0.99218750, 0.58789063, 0.54687500)
-	HelpOpenTicketButtonTutorialArrow:SetVertexColor(micro_r, micro_g, micro_b)
+		HelpOpenTicketButtonTutorialArrow:SetTexCoord(0.78515625, 0.99218750, 0.58789063, 0.54687500)
+		HelpOpenTicketButtonTutorialArrow:SetVertexColor(micro_r, micro_g, micro_b)
 
-	HelpOpenTicketButtonTutorialGlowTopLeft:SetVertexColor(micro_r, micro_g, micro_b)
-	HelpOpenTicketButtonTutorialGlowTopRight:SetVertexColor(micro_r, micro_g, micro_b)
-	HelpOpenTicketButtonTutorialGlowBottomLeft:SetVertexColor(micro_r, micro_g, micro_b)
-	HelpOpenTicketButtonTutorialGlowBottomRight:SetVertexColor(micro_r, micro_g, micro_b)
+		HelpOpenTicketButtonTutorialGlowTopLeft:SetVertexColor(micro_r, micro_g, micro_b)
+		HelpOpenTicketButtonTutorialGlowTopRight:SetVertexColor(micro_r, micro_g, micro_b)
+		HelpOpenTicketButtonTutorialGlowBottomLeft:SetVertexColor(micro_r, micro_g, micro_b)
+		HelpOpenTicketButtonTutorialGlowBottomRight:SetVertexColor(micro_r, micro_g, micro_b)
 
-	HelpOpenTicketButtonTutorialGlowTop:SetVertexColor(micro_r, micro_g, micro_b)
-	HelpOpenTicketButtonTutorialGlowBottom:SetVertexColor(micro_r, micro_g, micro_b)
-	HelpOpenTicketButtonTutorialGlowLeft:SetVertexColor(micro_r, micro_g, micro_b)
-	HelpOpenTicketButtonTutorialGlowRight:SetVertexColor(micro_r, micro_g, micro_b)
+		HelpOpenTicketButtonTutorialGlowTop:SetVertexColor(micro_r, micro_g, micro_b)
+		HelpOpenTicketButtonTutorialGlowBottom:SetVertexColor(micro_r, micro_g, micro_b)
+		HelpOpenTicketButtonTutorialGlowLeft:SetVertexColor(micro_r, micro_g, micro_b)
+		HelpOpenTicketButtonTutorialGlowRight:SetVertexColor(micro_r, micro_g, micro_b)
 
-	-- greyscaled textures
-	HelpOpenTicketButtonTutorialGlow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-	HelpOpenTicketButtonTutorialArrow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+		-- greyscaled textures
+		HelpOpenTicketButtonTutorialGlow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+		HelpOpenTicketButtonTutorialArrow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
 
-	HelpOpenTicketButtonTutorialGlowTopLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-	HelpOpenTicketButtonTutorialGlowTopRight:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-	HelpOpenTicketButtonTutorialGlowBottomLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-	HelpOpenTicketButtonTutorialGlowBottomRight:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+		HelpOpenTicketButtonTutorialGlowTopLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+		HelpOpenTicketButtonTutorialGlowTopRight:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+		HelpOpenTicketButtonTutorialGlowBottomLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+		HelpOpenTicketButtonTutorialGlowBottomRight:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
 
-	HelpOpenTicketButtonTutorialGlowTop:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-HORIZONTAL2")
-	HelpOpenTicketButtonTutorialGlowBottom:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-HORIZONTAL2")
-	HelpOpenTicketButtonTutorialGlowLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
-	HelpOpenTicketButtonTutorialGlowRight:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
-
+		HelpOpenTicketButtonTutorialGlowTop:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-HORIZONTAL2")
+		HelpOpenTicketButtonTutorialGlowBottom:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-HORIZONTAL2")
+		HelpOpenTicketButtonTutorialGlowLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
+		HelpOpenTicketButtonTutorialGlowRight:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
+	end
 	-- Hide world map button
 	MiniMapWorldMapButton:Hide()
 
@@ -449,9 +450,10 @@ function module:SetMinimap()
 	  tile = false, tileSize = 0, edgeSize = mult,
 	  insets = { left = 0, right = 0, top = 0, bottom = 0}
 	})]]
-	QueueStatusFrame:SetBackdropColor(.1,.1,.1,1)
-	QueueStatusFrame:SetBackdropBorderColor(.6,.6,.6,1)
-
+	if not LUI.PTR then
+		QueueStatusFrame:SetBackdropColor(.1,.1,.1,1)
+		QueueStatusFrame:SetBackdropBorderColor(.6,.6,.6,1)
+	end
 	----------------------------------------------------------------------------------------
 	-- Animation Coords and Current Zone. Awesome feature by AlleyKat.
 	----------------------------------------------------------------------------------------

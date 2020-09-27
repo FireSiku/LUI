@@ -89,6 +89,7 @@ local function decorate(editBox)
 
 	if not bg then
 		bg = CreateFrame("Frame", nil, editBox, "LUI_Chat_EditBoxBGTemplate")
+		if BackdropTemplateMixin then Mixin(bg, BackdropTemplateMixin) end
 		bg.lDrag.editBox = editBox
 		bg.rDrag.editBox = editBox
 

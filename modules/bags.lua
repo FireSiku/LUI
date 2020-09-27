@@ -350,6 +350,7 @@ function module:BagFrameSlotNew(slot, parent, bagType)
 		ret.slot = slot
 		slot = slot - 4
 		ret.frame = CreateFrame("ItemButton", "LUIBank__Bag"..slot, parent, "BankItemButtonBagTemplate")
+		if not ret.frame.SetBackdrop then Mixin(ret.frame, BackdropTemplateMixin) end
 		ret.frame:SetID(slot)
 		tinsert(BagsSlots, ret)
 
@@ -361,6 +362,7 @@ function module:BagFrameSlotNew(slot, parent, bagType)
 		end
 	else
 		ret.frame = CreateFrame("ItemButton", "LUIBags__Bag"..slot.."Slot", parent, "BagSlotButtonTemplate")
+		if not ret.frame.SetBackdrop then Mixin(ret.frame, BackdropTemplateMixin) end
 		ret.slot = slot
 		tinsert(BagsSlots, ret)
 	end
@@ -516,7 +518,7 @@ end
 
 function module:CreateBagFrame(bagType)
 	local frameName = "LUI"..bagType -- LUIBags, LUIBank, LUIReagents
-	local frame = CreateFrame("Frame", frameName, UIParent)
+	local frame = CreateFrame("Frame", frameName, UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
 	frame:EnableMouse(1)
 	frame:SetMovable(1)
 	frame:SetToplevel(1)
@@ -659,7 +661,7 @@ function module:SetBags()
 	LUIBags:SetScript("OnHide", LUIBags_OnHide)
 
 	-- Search Editbox
-	local editbox = CreateFrame("EditBox", nil, LUIBags)
+	local editbox = CreateFrame("EditBox", nil, LUIBags, BackdropTemplateMixin and "BackdropTemplate" or nil)
 	editbox:Hide()
 	editbox:SetAutoFocus(true)
 	editbox:SetHeight(LUI:Scale(32))

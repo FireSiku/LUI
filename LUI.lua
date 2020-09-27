@@ -25,7 +25,7 @@ LUI.Versions = {lui = 3403}
 
 LUI.dummy = function() return end
 
-local LIVE_TOC = 80000
+local LIVE_TOC = 80300
 local LIVE_BUILD = 27101
 -- Check the build to compare with PTR
 local _, CURRENT_BUILD, _, CURRENT_TOC = GetBuildInfo()
@@ -234,6 +234,7 @@ function LUI:CreatePanel(f, w, h, a1, p, a2, x, y)
 	f:SetWidth(sw)
 	f:SetFrameStrata("BACKGROUND")
 	f:SetPoint(a1, p, a2, x, y)
+	if not f.SetBackdrop then Mixin(f, BackdropTemplateMixin) end
 	f:SetBackdrop({
 		bgFile = LUI.Media.blank,
 		edgeFile = LUI.Media.blank,
@@ -292,8 +293,10 @@ end
 -- / CREATE ME A FRAME FUNC / --
 ------------------------------------------------------
 
-function LUI:CreateMeAFrame(fart,fname,fparent,fwidth,fheight,fscale,fstrata,flevel,fpoint,frelativeFrame,frelativePoint,fofsx,fofsy,falpha,finherit)
+function LUI:CreateMeAFrame(fart,fname,fparent,fwidth,fheight,fscale,fstrata,flevel,
+							fpoint,frelativeFrame,frelativePoint,fofsx,fofsy,falpha,finherit)
 	local f = CreateFrame(fart,fname,fparent,finherit)
+	if BackdropTemplateMixin then Mixin(f, BackdropTemplateMixin) end
 	local sw = scale(fwidth)
 	local sh = scale(fheight)
 	local sx = scale(fofsx)

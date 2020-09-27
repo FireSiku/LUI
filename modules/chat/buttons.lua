@@ -309,7 +309,7 @@ function module:Refresh(info, value)
 
 	configButtons(db.HideButtons)
 	configScrollButton(db.HideButtons and db.ScrollReminder)
-	configCopyButton(db.CopyChat)
+	--configCopyButton(db.CopyChat)
 end
 
 function module:OnInitialize()
@@ -325,9 +325,9 @@ function module:OnEnable()
 			configScrollButton(true)
 		end
 	end
-	if db.CopyChat then
-		configCopyButton(true)
-	end
+	-- if db.CopyChat then
+	-- 	configCopyButton(true)
+	-- end
 end
 
 function module:OnDisable()
@@ -336,7 +336,7 @@ function module:OnDisable()
 	if db.HideButtons then
 		configButtons(false)
 	end
-	if db.CopyChat then
-		configCopyButton(false)
-	end
+	-- if db.CopyChat then
+	-- 	configCopyButton(false)
+	-- end
 end

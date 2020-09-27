@@ -319,7 +319,7 @@ excludes[module.TraceScope] = true
 -- Create Profilers GUI.
 if not Enabled then return end
 
-module.GUI = CreateFrame("Frame", format("LUI: Profiler (%s)", GetAddOnMetadata(addonname, "X-Curse-Packaged-Version") or "Working Copy"))
+module.GUI = CreateFrame("Frame", format("LUI: Profiler (%s)", GetAddOnMetadata(addonname, "X-Curse-Packaged-Version") or "Working Copy"), nil, BackdropTemplateMixin and "BackdropTemplate" or nil)
 local gui = module.GUI
 
 -- Apply frame settings.
@@ -340,7 +340,7 @@ gui.Totals = gui:CreateFontString()
 -- Creators.
 local fields = {"Name", "Calls", "Time (us)", "Avg. Time (us)", "Min (us)", "Max (us)", "Memory (bytes)"}
 gui.NewField = function(self, field, width)
-	local f = CreateFrame("Frame", self:GetName()..": Field <"..field..">", self)
+	local f = CreateFrame("Frame", self:GetName()..": Field <"..field..">", self, BackdropTemplateMixin and "BackdropTemplate" or nil)
 	local last = self.Fields[#self.Fields]
 	self.Fields[#self.Fields + 1] = f
 	f.Field = #self.Fields

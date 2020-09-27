@@ -202,8 +202,7 @@ do
 			return backdropPool[obj]
 		end
 
-		local backdrop = CreateFrame("Frame")
-		backdrop:SetParent(UIParent)
+		local backdrop = CreateFrame("Frame", nil, UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
 		backdrop:Hide()
 
 		backdrop:SetScale(obj:GetScale())
