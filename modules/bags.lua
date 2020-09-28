@@ -417,6 +417,7 @@ function module:SlotNew(bag, slot)
 
 	if not ret.frame then
 		ret.frame = CreateFrame("ItemButton", "LUIBags_Item" .. bag .. "_" .. slot, BagsInfo[bag], template)
+		if not ret.frame.SetBackdrop then Mixin(ret.frame, BackdropTemplateMixin) end
 	end
 
 	ret.bag = bag
@@ -549,7 +550,7 @@ function module:CreateBagFrame(bagType)
 	end
 
 	-- Bag Frame
-	local bagsFrame = CreateFrame("Frame", frameName.."_BagsFrame", frame)
+	local bagsFrame = CreateFrame("Frame", frameName.."_BagsFrame", frame, BackdropTemplateMixin and "BackdropTemplate" or nil)
 	bagsFrame:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 0, LUI:Scale(2))
 	bagsFrame:SetFrameStrata("HIGH")
 	frame.BagsFrame = bagsFrame
@@ -641,9 +642,16 @@ local function GetTrackedCurrency()
 	local currencyFormat = "%d\124T%s:%d:%d:2:0\124t"
 	local currencyString = {}
 	for i = 1, 3 do -- Only 3 currencies at a time.
-		local name, count, icon = GetBackpackCurrencyInfo(i)
-		if name ~= nil then
-			currencyString[i] = format(currencyFormat,count,icon,0,0)
+		if LUI.PTR then
+			local info = C_CurrencyInfo.GetBackpackCurrencyInfo(i)
+			if info.name then
+				currencyString[i] = format(currencyFormat, info.quantity, info.iconFileID, 0, 0)
+			end
+		else
+			local name, count, icon = GetBackpackCurrencyInfo(i)
+			if name then
+				currencyString[i] = format(currencyFormat, count, icon, 0, 0)
+			end
 		end
 	end
 	local currencyReturn = ""
