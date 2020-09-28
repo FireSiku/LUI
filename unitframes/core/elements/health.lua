@@ -156,12 +156,7 @@ local Enable = function(self, unit)
 		health.__owner = self
 		health.ForceUpdate = ForceUpdate
 
-		if(health.frequentUpdates) then
-			self:RegisterEvent('UNIT_HEALTH_FREQUENT', Path)
-		else
-			self:RegisterEvent('UNIT_HEALTH', Path)
-		end
-
+		self:RegisterEvent('UNIT_HEALTH', Path)
 		self:RegisterEvent("UNIT_MAXHEALTH", Path)
 		self:RegisterEvent('UNIT_CONNECTION', Path)
 
@@ -180,7 +175,6 @@ local Disable = function(self)
 	local health = self.Health
 	if(health) then
 		health:Hide()
-		self:UnregisterEvent('UNIT_HEALTH_FREQUENT', Path)
 		self:UnregisterEvent('UNIT_HEALTH', Path)
 		self:UnregisterEvent('UNIT_MAXHEALTH', Path)
 		self:UnregisterEvent('UNIT_CONNECTION', Path)

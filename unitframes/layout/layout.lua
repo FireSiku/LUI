@@ -310,12 +310,12 @@ end
 ------------------------------------------------------------------------
 
 local GetDisplayPower = function(power, unit)
-	local barType = UnitAlternatePowerInfo(unit)
-	if power.displayAltPower and barType then
-		return ALTERNATE_POWER_INDEX
-	else
+	-- local barType = UnitAlternatePowerInfo(unit)
+	-- if power.displayAltPower and barType then
+	-- 	return ALTERNATE_POWER_INDEX
+	-- else
 		return (UnitPowerType(unit))
-	end
+	-- end
 end
 
 local SetFontString = function(parent, fontName, fontHeight, fontStyle)
@@ -612,7 +612,7 @@ local OverridePower = function(self, event, unit)
 	local pClass, pToken = UnitClass(unit)
 	local color = module.colors.class[pToken] or {0.5, 0.5, 0.5}
 	local color2 = module.colors.power[pType] or {0.5, 0.5, 0.5}
-	local _, r, g, b = UnitAlternatePowerTextureInfo(unit, 2)
+	-- local _, r, g, b = UnitAlternatePowerTextureInfo(unit, 2)
 
 	if unit == "player" and entering == true then
 		if module.db.Player.Bars.Power.Color == "By Class" then
@@ -627,22 +627,20 @@ local OverridePower = function(self, event, unit)
 			power:SetStatusBarColor(unpack(color))
 		elseif power.color == "Individual" then
 			power:SetStatusBarColor(power.colorIndividual.r, power.colorIndividual.g, power.colorIndividual.b)
+		-- elseif unit == unit:match("boss%d") and select(7, UnitAlternatePowerInfo(unit)) then
+		-- 	power:SetStatusBarColor(r, g, b)
 		else
-			if unit == unit:match("boss%d") and select(7, UnitAlternatePowerInfo(unit)) then
-				power:SetStatusBarColor(r, g, b)
-			else
-				power:SetStatusBarColor(unpack(color2))
-			end
+			power:SetStatusBarColor(unpack(color2))
 		end
 	end
 
-	local r_, g_, b_ = power:GetStatusBarColor()
+	local r, g, b = power:GetStatusBarColor()
 	local mu = power.bg.multiplier or 1
 
 	if power.bg.invert == true then
-		power.bg:SetVertexColor(r_+(1-r_)*mu, g_+(1-g_)*mu, b_+(1-b_)*mu)
+		power.bg:SetVertexColor((1-r)*mu, (1-g)*mu, (1-b)*mu)
 	else
-		power.bg:SetVertexColor(r_*mu, g_*mu, b_*mu)
+		power.bg:SetVertexColor(r*mu, g*mu, b*mu)
 	end
 
 	if not UnitIsConnected(unit) then
@@ -1200,7 +1198,7 @@ local PostUpdateAltPower = function(altpowerbar, min, cur, max)
 	local pClass, pToken = UnitClass("player")
 	local color = module.colors.class[pToken] or {0.5, 0.5, 0.5}
 
-	local tex, r, g, b = UnitAlternatePowerTextureInfo("player", 2)
+	local tex, r, g, b = GetUnitPowerBarTextureInfo("player", 3)
 
 	if not tex then return end
 
@@ -2670,56 +2668,38 @@ module.funcs = {
 				end
 			end
 
+			castbar.Icon = castbar:CreateTexture(nil, "ARTWORK")
+			castbar.Icon:SetTexCoord(0, 1, 0, 1) 
 			if unit == "player" or unit == "target" or unit == "focus" or unit == "pet" then
-				castbar.Icon = castbar:CreateTexture(nil, "ARTWORK")
 				castbar.Icon:SetHeight(28.5)
 				castbar.Icon:SetWidth(28.5)
-				castbar.Icon:SetTexCoord(0, 1, 0, 1)
 				castbar.Icon:SetPoint("LEFT", -41.5, 0)
-
-				castbar.IconOverlay = castbar:CreateTexture(nil, "OVERLAY")
-				castbar.IconOverlay:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -1.5, 1)
-				castbar.IconOverlay:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 1, -1)
-				castbar.IconOverlay:SetTexture(buttonTex)
-				castbar.IconOverlay:SetVertexColor(1, 1, 1)
-
-				castbar.IconBackdrop = CreateFrame("Frame", nil, castbar, BackdropTemplateMixin and "BackdropTemplate" or nil)
-				castbar.IconBackdrop:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -4, 3)
-				castbar.IconBackdrop:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 3, -3.5)
-				castbar.IconBackdrop:SetBackdrop({
-					edgeFile = glowTex, edgeSize = 4,
-					insets = {left = 3, right = 3, top = 3, bottom = 3}
-				})
-				castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
-				castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 			else
 				castbar.Icon = castbar:CreateTexture(nil, "ARTWORK")
 				castbar.Icon:SetHeight(20)
 				castbar.Icon:SetWidth(20)
-				castbar.Icon:SetTexCoord(0, 1, 0, 1)
 				if unit == unit:match("arena%d") then
 					castbar.Icon:SetPoint("RIGHT", 30, 0)
 				else
 					castbar.Icon:SetPoint("LEFT", -30, 0)
 				end
-
-				castbar.IconOverlay = castbar:CreateTexture(nil, "OVERLAY")
-				castbar.IconOverlay:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -1.5, 1)
-				castbar.IconOverlay:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 1, -1)
-				castbar.IconOverlay:SetTexture(buttonTex)
-				castbar.IconOverlay:SetVertexColor(1, 1, 1)
-
-				castbar.IconBackdrop = CreateFrame("Frame", nil, castbar)
-				castbar.IconBackdrop:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -4, 3)
-				castbar.IconBackdrop:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 3, -3.5)
-				castbar.IconBackdrop:SetBackdrop({
-					edgeFile = glowTex, edgeSize = 4,
-					insets = {left = 3, right = 3, top = 3, bottom = 3}
-				})
-				castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
-				castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 			end
 
+			castbar.IconOverlay = castbar:CreateTexture(nil, "OVERLAY")
+			castbar.IconOverlay:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -1.5, 1)
+			castbar.IconOverlay:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 1, -1)
+			castbar.IconOverlay:SetTexture(buttonTex)
+			castbar.IconOverlay:SetVertexColor(1, 1, 1)
+
+			castbar.IconBackdrop = CreateFrame("Frame", nil, castbar, BackdropTemplateMixin and "BackdropTemplate" or nil)
+			castbar.IconBackdrop:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -4, 3)
+			castbar.IconBackdrop:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 3, -3.5)
+			castbar.IconBackdrop:SetBackdrop({
+				edgeFile = glowTex, edgeSize = 4,
+				insets = {left = 3, right = 3, top = 3, bottom = 3}
+			})
+			castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
+			castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 		end
 
 		castbar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Castbar.General.Texture))

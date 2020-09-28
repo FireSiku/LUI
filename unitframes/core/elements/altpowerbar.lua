@@ -37,7 +37,7 @@
 local parent, ns = ...
 local oUF = ns.oUF
 
-local ALTERNATE_POWER_INDEX = ALTERNATE_POWER_INDEX
+local ALTERNATE_POWER_INDEX = Enum.PowerType.Alternate or 10
 
 --[[ :UpdateTooltip()
 
@@ -48,8 +48,9 @@ local ALTERNATE_POWER_INDEX = ALTERNATE_POWER_INDEX
  self - The AltPowerBar element.
 ]]
 local UpdateTooltip = function(self)
-	GameTooltip:SetText(self.powerName, 1, 1, 1)
-	GameTooltip:AddLine(self.powerTooltip, nil, nil, nil, 1)
+	local name, tooltip = GetUnitPowerBarStringsByID(self.__barID)
+	GameTooltip:SetText(name or '', 1, 1, 1)
+	GameTooltip:AddLine(tooltip or '', nil, nil, nil, true)
 	GameTooltip:Show()
 end
 
@@ -81,24 +82,37 @@ local UpdatePower = function(self, event, unit, powerType)
 		altpowerbar:PreUpdate()
 	end
 
-	local _, r, g, b
-	if(altpowerbar.colorTexture) then
-		_, r, g, b = UnitAlternatePowerTextureInfo(unit, 2)
+	local cur, max, min
+	local barInfo = altpowerbar.__barInfo
+
+	if(barInfo) then
+		cur = UnitPower(unit, ALTERNATE_POWER_INDEX)
+		max = UnitPowerMax(unit, ALTERNATE_POWER_INDEX)
+		min = barInfo.minPower
+		altpowerbar:SetMinMaxValues(min, max)
+		altpowerbar:SetValue(cur)
 	end
 
-	local cur = UnitPower(unit, ALTERNATE_POWER_INDEX)
-	local max = UnitPowerMax(unit, ALTERNATE_POWER_INDEX)
+	-- local _, r, g, b
+	-- if(altpowerbar.colorTexture) then
+	-- 	_, r, g, b = UnitAlternatePowerTextureInfo(unit, 2)
+	-- end
 
-	local barType, min, _, _, _, _, _, _, _, _, powerName, powerTooltip = UnitAlternatePowerInfo(unit)
-	altpowerbar.barType = barType
-	altpowerbar.powerName = powerName
-	altpowerbar.powerTooltip = powerTooltip
-	altpowerbar:SetMinMaxValues(min, max)
-	altpowerbar:SetValue(math.min(math.max(cur, min), max))
+	-- local cur = UnitPower(unit, ALTERNATE_POWER_INDEX)
+	-- local max = UnitPowerMax(unit, ALTERNATE_POWER_INDEX)
 
-	if(b) then
-		altpowerbar:SetStatusBarColor(r, g, b)
-	end
+	-- local barID = UnitPowerBarID(unit)
+	-- local barInfo = GetUnitPowerBarInfoByID(barID)
+	-- local barType, min, _, _, _, _, _, _, _, _, powerName, powerTooltip = UnitAlternatePowerInfo(unit)
+	-- altpowerbar.barType = barType
+	-- altpowerbar.powerName = powerName
+	-- altpowerbar.powerTooltip = powerTooltip
+	-- altpowerbar:SetMinMaxValues(min, max)
+	-- altpowerbar:SetValue(math.min(math.max(cur, min), max))
+
+	-- if(b) then
+	-- 	altpowerbar:SetStatusBarColor(r, g, b)
+	-- end
 
 	--[[ :PostUpdate(min, cur, max)
 
@@ -135,8 +149,15 @@ local Toggler = function(self, event, unit)
 	if(unit ~= self.unit) then return end
 	local altpowerbar = self.AltPowerBar
 
-	local barType, _, _, _, _, hideFromOthers, showOnRaid = UnitAlternatePowerInfo(unit)
-	if(barType and (showOnRaid and (UnitInParty(unit) or UnitInRaid(unit)) or not hideFromOthers or unit == 'player' or self.realUnit == 'player')) then
+	local barID = UnitPowerBarID(unit)
+	local barInfo = GetUnitPowerBarInfoByID(barID)
+	altpowerbar.__barID = barID
+	altpowerbar.__barInfo = barInfo
+
+	if (barInfo and (barInfo.showOnRaid and (UnitInParty(unit) or UnitInRaid(unit)) or not barInfo.hideFromOthers or
+											 UnitIsUnit(unit, 'player') or UnitIsUnit(self.realUnit, 'player'))) then
+	-- local barType, _, _, _, _, hideFromOthers, showOnRaid = UnitAlternatePowerInfo(unit)
+	--if (barType and (showOnRaid and (UnitInParty(unit) or UnitInRaid(unit)) or not hideFromOthers or unit == 'player' or self.realUnit == 'player')) then
 		self:RegisterEvent('UNIT_POWER_UPDATE', Path)
 		self:RegisterEvent('UNIT_MAXPOWER', Path)
 

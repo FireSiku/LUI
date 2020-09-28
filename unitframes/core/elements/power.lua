@@ -131,12 +131,12 @@ oUF.colors.power[16] = oUF.colors.power.ARCANE_CHARGES
 oUF.colors.power[17] = oUF.colors.power.FURY
 oUF.colors.power[18] = oUF.colors.power.PAIN
 
-local GetDisplayPower = function(unit)
-	local _, min, _, _, _, _, showOnRaid = UnitAlternatePowerInfo(unit)
-	if(showOnRaid) then
-		return ALTERNATE_POWER_INDEX, min
-	end
-end
+-- local GetDisplayPower = function(unit)
+-- 	local _, min, _, _, _, _, showOnRaid = UnitAlternatePowerInfo(unit)
+-- 	if(showOnRaid) then
+-- 		return ALTERNATE_POWER_INDEX, min
+-- 	end
+-- end
 
 local Update = function(self, event, unit)
 	if(self.unit ~= unit) then return end
@@ -145,9 +145,9 @@ local Update = function(self, event, unit)
 	if(power.PreUpdate) then power:PreUpdate(unit) end
 
 	local displayType, min
-	if power.displayAltPower then
-		displayType, min = GetDisplayPower(unit)
-	end
+	-- if power.displayAltPower then
+	-- 	displayType, min = GetDisplayPower(unit)
+	-- end
 	local cur, max = UnitPower(unit, displayType), UnitPowerMax(unit, displayType)
 	local disconnected = not UnitIsConnected(unit)
 	power:SetMinMaxValues(min or 0, max)
