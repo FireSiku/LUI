@@ -51,7 +51,6 @@ local GetMoneyString = GetMoneyString
 local GetContainerNumSlots = GetContainerNumSlots
 local GetContainerItemInfo = GetContainerItemInfo
 local GetContainerItemLink = GetContainerItemLink
-local GetBackpackCurrencyInfo = GetBackpackCurrencyInfo
 local GetContainerItemCooldown = GetContainerItemCooldown
 local GetContainerNumFreeSlots = GetContainerNumFreeSlots
 
@@ -644,7 +643,7 @@ local function GetTrackedCurrency()
 	for i = 1, 3 do -- Only 3 currencies at a time.
 		if LUI.PTR then
 			local info = C_CurrencyInfo.GetBackpackCurrencyInfo(i)
-			if info.name then
+			if info and info.name then
 				currencyString[i] = format(currencyFormat, info.quantity, info.iconFileID, 0, 0)
 			end
 		else
