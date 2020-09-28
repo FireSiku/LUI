@@ -1243,8 +1243,8 @@ local GF_Colors = {
 local RAID_CLASS_COLORS = CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS
 
 local GetNumGroupMembers, GetNumSubgroupMembers, UnitInRaid, UnitInParty, InviteUnit = GetNumGroupMembers, GetNumSubgroupMembers, UnitInRaid, UnitInParty, InviteUnit
-local CanEditMOTD, GetGuildRosterMOTD, CanEditPublicNote, CanEditOfficerNote = CanEditMOTD, GetGuildRosterMOTD, CanEditPublicNote, CanEditOfficerNote
-local GetQuestDifficultyColor, RemoveFriend, SetGuildRosterSelection, SetItemRef = GetQuestDifficultyColor, RemoveFriend, SetGuildRosterSelection, SetItemRef
+local CanEditMOTD, GetGuildRosterMOTD, CanEditPublicNote = CanEditMOTD, GetGuildRosterMOTD, CanEditPublicNote
+local GetQuestDifficultyColor, SetGuildRosterSelection, SetItemRef = GetQuestDifficultyColor, SetGuildRosterSelection, SetItemRef
 local unpack, next, sort, tonumber, format, floor, min, max, wipe, select = unpack, next, sort, tonumber, format, floor, min, max, wipe, select
 
 function module:SetGF()
@@ -2016,7 +2016,7 @@ function module:SetGF()
 				if b.presenceID then
 					StaticPopup_Show("CONFIRM_REMOVE_FRIEND", b.realID, nil, b.presenceID)
 				else
-					RemoveFriend(b.unit)
+					C_FriendList.RemoveFriend(b.unit)
 				end
 			elseif IsAltKeyDown() then -- invite unit
 				if b.presenceID then
@@ -2034,7 +2034,7 @@ function module:SetGF()
 					else
 						StaticPopup_Show("SET_FRIENDNOTE", b.unit)
 					end
-				elseif button == "LeftButton" and CanEditPublicNote() or button ~= "LeftButton" and CanEditOfficerNote() then
+				elseif button == "LeftButton" and CanEditPublicNote() or button ~= "LeftButton" and  C_GuildInfo.CanEditOfficerNote() then
 					SetGuildRosterSelection(b.realIndex)
 					StaticPopup_Show(button == "LeftButton" and "SET_GUILDPLAYERNOTE" or "SET_GUILDOFFICERNOTE")
 				end
@@ -2067,7 +2067,7 @@ function module:SetGF()
 				end
 				if (not self.IsGuild or CanEditPublicNote()) then GameTooltip:AddLine("|cffff8020Ctrl+Click|r to edit note.", .2, 1, .2) end
 				if self.IsGuild then
-					if CanEditOfficerNote() then GameTooltip:AddLine("|cffff8020Ctrl+RightClick|r to edit officer note.", .2, 1, .2) end
+					if  C_GuildInfo.CanEditOfficerNote() then GameTooltip:AddLine("|cffff8020Ctrl+RightClick|r to edit officer note.", .2, 1, .2) end
 				else
 					GameTooltip:AddLine("|cffff8020MiddleClick|r to remove friend.", .2, 1, .2)
 				end
@@ -2088,18 +2088,6 @@ function module:SetGF()
 			end
 		end
 
-		-- Hooks
-		local function guildRoster()
-			if stat.Guild then
-				stat.Guild.dt = 0
-			end
-		end
-		local function showFriends()
-			if stat.Friends then
-				stat.Friends.dt = 0
-			end
-		end
-
 		-- Script functions
 		stat.OnEnable = function(self)
 			self:Hide()
@@ -2107,13 +2095,13 @@ function module:SetGF()
 			for eng, loc in pairs(LOCALIZED_CLASS_NAMES_MALE)   do stat.LocClassNames[loc] = eng end
 			for eng, loc in pairs(LOCALIZED_CLASS_NAMES_FEMALE) do stat.LocClassNames[loc] = eng end
 
-			module:SecureHook("GuildRoster", guildRoster)
-			module:SecureHook("ShowFriends", showFriends)
+			module:SecureHook(C_GuildInfo, "GuildRoster", function() if stat.Guild then stat.Guild.dt = 0 end end)
+			module:SecureHook(C_FriendList, "ShowFriends", function() if stat.Friends then stat.Friends.dt = 0 end end)
 		end
 
 		stat.OnDisable = function(self)
-			module:Unhook("GuildRoster")
-			module:Unhook("ShowFriends")
+			module:Unhook(C_GuildInfo, "GuildRoster")
+			module:Unhook(C_FriendList, "ShowFriends")
 		end
 
 		stat.OnLeave = function(self)
@@ -2193,12 +2181,12 @@ function module:SetGuild()
 
 		stat.PLAYER_GUILD_UPDATE = function(self, unit)
 			if unit and unit ~= "player" then return end
-			if IsInGuild() then GuildRoster() end
+			if IsInGuild() then C_GuildInfo.GuildRoster() end
 		end
 
 		-- Script functions
 		stat.OnEnable = function(self)
-			if IsInGuild() then GuildRoster() end
+			if IsInGuild() then C_GuildInfo.GuildRoster() end
 			self:UpdateText()
 		end
 
@@ -2206,7 +2194,7 @@ function module:SetGuild()
 			self.dt = self.dt + deltaTime
 			if self.dt > 15 then
 				if IsInGuild() and GetNumGuildMembers() then
-					GuildRoster()
+					C_GuildInfo.GuildRoster()
 				else
 					self.dt = 0
 				end
@@ -2240,7 +2228,7 @@ function module:SetGuild()
 
 		stat.OnEnter = function(self)
 			if CombatTips() then
-				if IsInGuild() then GuildRoster() end
+				if IsInGuild() then C_GuildInfo.GuildRoster() end
 				tooltip:Anchor(self, true)
 			end
 		end
@@ -2253,7 +2241,7 @@ function module:SetGuild()
 end
 
 -- Localized functions
-local GetNumFriends, BNGetNumFriends, GetFriendInfo, BNSetCustomMessage = GetNumFriends, BNGetNumFriends, GetFriendInfo, BNSetCustomMessage
+local BNGetNumFriends, BNSetCustomMessage = BNGetNumFriends, BNSetCustomMessage
 local gsub, format = gsub, format
 
 function module:SetFriends()
@@ -2305,17 +2293,28 @@ function module:SetFriends()
 				tooltip:del(v)
 				friendEntries[k]=nil
 			end
-			totalFriends, onlineFriends = GetNumFriends()
+			totalFriends, onlineFriends = C_FriendList.GetNumFriends(), C_FriendList.GetNumOnlineFriends()
 			for i = 1, onlineFriends do
-				local name, level, class, zone, connected, status, note = GetFriendInfo(i)
-				friendEntries[i] = tooltip:new(tooltip.LocClassNames[class] or "", name or "", level or 0, zone or UNKNOWN, note or "|cffffcc00-", status, "", "", nil, i, name or "")
+				local friend = C_FriendList.GetFriendInfoByIndex(i)
+				local name = friend.name or ""
+				local level = friend.level or 0
+				local class = tooltip.LocClassNames[friend.className] or ""
+				local zone = friend.area or UNKNOWN
+				local note = friend.notes or "|cffffcc00-"
+				local status = ""
+				if friend.dnd then
+					status = CHAT_FLAG_DND
+				elseif friend.afk then
+					status = CHAT_FLAG_AFK
+				end
+				friendEntries[i] = tooltip:new(class, name, level, zone, note, status, "", "", nil, i, name or "")
 			end
 			self:UpdateText()
 			if not tooltip.IsGuild and tooltip:IsShown() then tooltip:Update() end
 		end
 
 		stat.CHAT_MSG_SYSTEM = function(self, msg)
-			if msg:find(friendOnline) or msg:find(friendOffline) then ShowFriends() end
+			if msg:find(friendOnline) or msg:find(friendOffline) then C_FriendList.ShowFriends() end
 		end
 
 		stat.BN_FRIEND_INFO_CHANGED = function(self)
@@ -2359,7 +2358,7 @@ function module:SetFriends()
 				hideOnEscape = 1
 			}
 
-			ShowFriends()
+			C_FriendList.ShowFriends()
 			self:UpdateText()
 		end
 
@@ -2367,7 +2366,7 @@ function module:SetFriends()
 			self.dt = self.dt + deltaTime
 
 			if self.dt > 15 then
-				ShowFriends()
+				C_FriendList.ShowFriends()
 			end
 		end
 
@@ -2388,7 +2387,7 @@ function module:SetFriends()
 
 		stat.OnEnter = function(self)
 			if CombatTips() then
-				ShowFriends()
+				C_FriendList.ShowFriends()
 				tooltip:Anchor(self, false)
 			end
 		end
@@ -3783,7 +3782,7 @@ function module:LoadOptions()
 					set = function(info, value)
 						db.Friends.ShowTotal = value
 						InfoStats.Friends:UpdateText()
-						ShowFriends()
+						C_FriendList.ShowFriends()
 					end,
 					order = 3,
 				},
@@ -3926,7 +3925,7 @@ function module:LoadOptions()
 					set = function(info, value)
 						db.Guild.ShowTotal = value
 						InfoStats.Guild:UpdateText()
-						GuildRoster()
+						C_GuildInfo.GuildRoster()
 					end,
 					order = 3,
 				},
@@ -3941,7 +3940,7 @@ function module:LoadOptions()
 						db.Guild.hideRealm = value
 						InfoStats.Guild:GUILD_ROSTER_UPDATE()
 						InfoStats.Guild:UpdateText()
-						GuildRoster()
+						C_GuildInfo.GuildRoster()
 					end,
 					order = 4,
 				},

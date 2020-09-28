@@ -369,18 +369,18 @@ function LUI:SyncAddonVersion()
 
 	LUI:RegisterComm("LUI_Version", checkVersion)
 
-	for i = 1, GetNumFriends() do -- send to friends via whisper on login
-		local name, _, _, _, connected = GetFriendInfo(i)
-		if name and connected then
+	for i = 1, C_FriendList.GetNumFriends() do -- send to friends via whisper on login
+		local friend = C_FriendList.GetFriendInfoByIndex(i)
+		if friend.name and friend.connected then
 			sendVersion("WHISPER", name)
 		end
 	end
 	for i = 1, BNGetNumFriends() do -- send to BN friends (on your realm) via whisper on login
-		local _, _, _, toonName, toonID, client, isOnline = BNGetFriendInfo(i)
-		if toonName and isOnline and client == "WoW" then
-			local _, _, _, realmName, _, faction = BNGetToonInfo(toonID or 0)
-			if realmName == myRealm and faction == myFaction then
-				sendVersion("WHISPER", toonName)
+		local friend = C_BattleNet.GetFriendAccountInfo(i)
+		local toon = friend.gameAccountInfo
+		if toon.characterName and toon.isOnline and toon.clientProgram == "WoW" then
+			if toon.realmName == myRealm and toon.factionName == myFaction then
+				sendVersion("WHISPER", toon.characterName)
 			end
 		end
 	end

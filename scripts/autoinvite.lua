@@ -2,8 +2,8 @@ local addonname, LUI = ...
 local script = LUI:NewScript("AutoInvite", "AceEvent-3.0")
 
 local function isFriend(name)
-	for i = 1, GetNumFriends() do
-		if GetFriendInfo(i) == name then
+	for i = 1, C_FriendList.GetNumFriends() do
+		if C_FriendList.GetFriendInfoByIndex(i).name == name then
 			return true
 		end
 	end
@@ -39,10 +39,12 @@ local function isBNFriend(name)
 	if not BNFeaturesEnabledAndConnected() then return end
 
 	for i = 1, BNGetNumFriends() do
-		local pID, _,_,_,_, client, isOnline = BNGetFriendInfo(i)
-		if isOnline and client == "WoW" then
-			local _, tName = BNGetToonInfo(pID)
-			if tName == name then return true end
+		local friend = C_BattleNet.GetFriendAccountInfo(i)
+		local toon = friend.gameAccountInfo
+		if toon.isOnline and toon.clientProgram == "WoW" then
+			if toon.characterName == name then 
+				return true 
+			end
 		end
 	end
 end
