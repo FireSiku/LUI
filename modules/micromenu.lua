@@ -16,7 +16,7 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("Micromenu", "AceEvent-3.0")
+local module = LUI:Module("Micromenu", "AceEvent-3.0", "AceHook-3.0")
 local Themes = LUI:Module("Themes")
 local Panels = LUI:Module("Panels")
 local RaidMenu = LUI:Module("RaidMenu")
@@ -1120,52 +1120,32 @@ function module:SetMicroMenu()
 			end
 	end)
 
-	module:HookAlertFrame("Talent", LUI.MicroMenu.Buttons.Talents)
-	module:HookAlertFrame("Collections", LUI.MicroMenu.Buttons.Pets)
-	module:HookAlertFrame("EJ", LUI.MicroMenu.Buttons.Journal)
-	--[[
-	TalentMicroButtonAlert:ClearAllPoints()
-	TalentMicroButtonAlert:SetPoint("TOP", LUI.MicroMenu.Buttons.Talents, "BOTTOM")
+	if LUI.PTR then
+		module:SecureHook(HelpTip, "Show", function()
+			for frame in HelpTip.framePool:EnumerateActive() do
+				local parent = frame.relativeRegion:GetName()
+				if parent == "CollectionsMicroButton" then
+					module:AnchorAlertFrame(frame, LUI.MicroMenu.Buttons.Pets)
+				elseif parent == "TalentMicroButton" then
+					module:AnchorAlertFrame(frame, LUI.MicroMenu.Buttons.Talents)
+				elseif parent == "EJMicroButton" then
+					module:AnchorAlertFrame(frame, LUI.MicroMenu.Buttons.Journal)
+				end
+			end
+		end)
+	else
+		module:HookAlertFrame("Talent", LUI.MicroMenu.Buttons.Talents)
+		module:HookAlertFrame("Collections", LUI.MicroMenu.Buttons.Pets)
+		module:HookAlertFrame("EJ", LUI.MicroMenu.Buttons.Journal)
+	end
+end
 
-	TalentMicroButtonAlertBg:SetGradientAlpha("VERTICAL", micro_r/4, micro_g/4, micro_b/4, 1, 0, 0, 0, 1)
-
---	TalentMicroButtonAlertText:SetFont(Media:Fetch("font", "vibrocen"), 14, "NONE")
-
-	TalentMicroButtonAlertArrow:ClearAllPoints()
-	TalentMicroButtonAlertArrow:SetPoint("BOTTOM", TalentMicroButtonAlert, "TOP", 0, -6)
-
-	TalentMicroButtonAlertGlow:SetTexCoord(0.40625000, 0.66015625, 0.82812500, 0.77343750)
-	TalentMicroButtonAlertGlow:SetVertexColor(micro_r, micro_g, micro_b, 0.5)
-	TalentMicroButtonAlertGlow:ClearAllPoints()
-	TalentMicroButtonAlertGlow:SetPoint("BOTTOM", TalentMicroButtonAlertArrow, "BOTTOM", 0, 0)
-
-	-- TalentMicroButtonAlertArrowArrow:SetTexCoord(0.78515625, 0.99218750, 0.58789063, 0.54687500)
-	-- TalentMicroButtonAlertArrowArrow:SetVertexColor(micro_r, micro_g, micro_b)
-
-	-- TalentMicroButtonAlertGlowTopLeft:SetVertexColor(micro_r, micro_g, micro_b)
-	-- TalentMicroButtonAlertGlowTopRight:SetVertexColor(micro_r, micro_g, micro_b)
-	-- TalentMicroButtonAlertGlowBottomLeft:SetVertexColor(micro_r, micro_g, micro_b)
-	-- TalentMicroButtonAlertGlowBottomRight:SetVertexColor(micro_r, micro_g, micro_b)
-
-	-- TalentMicroButtonAlertGlowTop:SetVertexColor(micro_r, micro_g, micro_b)
-	-- TalentMicroButtonAlertGlowBottom:SetVertexColor(micro_r, micro_g, micro_b)
-	-- TalentMicroButtonAlertGlowLeft:SetVertexColor(micro_r, micro_g, micro_b)
-	-- TalentMicroButtonAlertGlowRight:SetVertexColor(micro_r, micro_g, micro_b)
-
-	-- greyscaled textures
-	TalentMicroButtonAlertGlow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-	-- TalentMicroButtonAlertArrowArrow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-
-	-- TalentMicroButtonAlertGlowTopLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-	-- TalentMicroButtonAlertGlowTopRight:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-	-- TalentMicroButtonAlertGlowBottomLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-	-- TalentMicroButtonAlertGlowBottomRight:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-
-	-- TalentMicroButtonAlertGlowTop:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-HORIZONTAL2")
-	-- TalentMicroButtonAlertGlowBottom:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-HORIZONTAL2")
-	-- TalentMicroButtonAlertGlowLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
-	-- TalentMicroButtonAlertGlowRight:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
-	--]]
+function module:AnchorAlertFrame(frame, anchor)
+	frame.relativeRegion = anchor
+	frame:ClearAllPoints()
+	frame:SetPoint("TOP", anchor, "BOTTOM")
+	frame.Arrow:ClearAllPoints()
+	frame.Arrow:SetPoint("BOTTOM", frame, "TOP", 0, -30)
 end
 
 function module:HookAlertFrame(name, anchor)
@@ -1190,7 +1170,7 @@ function module:HookAlertFrame(name, anchor)
 	alertFrameGlow:SetPoint("BOTTOM", alertFrameArrow, "BOTTOM", 0, 0)
 
 	-- greyscaled textures
-	alertFrameGlow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
+	--alertFrameGlow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
 end
 
 module.defaults = {
