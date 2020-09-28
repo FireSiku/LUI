@@ -1121,22 +1121,27 @@ function module:SetMicroMenu()
 	end)
 
 	if LUI.PTR then
-		module:SecureHook(HelpTip, "Show", function()
-			for frame in HelpTip.framePool:EnumerateActive() do
-				local parent = frame.relativeRegion:GetName()
-				if parent == "CollectionsMicroButton" then
-					module:AnchorAlertFrame(frame, LUI.MicroMenu.Buttons.Pets)
-				elseif parent == "TalentMicroButton" then
-					module:AnchorAlertFrame(frame, LUI.MicroMenu.Buttons.Talents)
-				elseif parent == "EJMicroButton" then
-					module:AnchorAlertFrame(frame, LUI.MicroMenu.Buttons.Journal)
-				end
-			end
-		end)
+		module:SecureHook(HelpTip, "Show", "ScanHelpTips")
+		if HelpTip.framePool.numActiveObjects > 0 then
+			module:ScanHelpTips()
+		end
 	else
 		module:HookAlertFrame("Talent", LUI.MicroMenu.Buttons.Talents)
 		module:HookAlertFrame("Collections", LUI.MicroMenu.Buttons.Pets)
 		module:HookAlertFrame("EJ", LUI.MicroMenu.Buttons.Journal)
+	end
+end
+
+function module:ScanHelpTips()
+	for frame in HelpTip.framePool:EnumerateActive() do
+		local parent = frame.relativeRegion:GetName()
+		if parent == "CollectionsMicroButton" then
+			module:AnchorAlertFrame(frame, LUI.MicroMenu.Buttons.Pets)
+		elseif parent == "TalentMicroButton" then
+			module:AnchorAlertFrame(frame, LUI.MicroMenu.Buttons.Talents)
+		elseif parent == "EJMicroButton" then
+			module:AnchorAlertFrame(frame, LUI.MicroMenu.Buttons.Journal)
+		end
 	end
 end
 
