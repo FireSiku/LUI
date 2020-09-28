@@ -26,7 +26,7 @@ LUI.Versions = {lui = 3403}
 LUI.dummy = function() return end
 
 local LIVE_TOC = 80300
-local LIVE_BUILD = 27101
+local LIVE_BUILD = 35662
 -- Check the build to compare with PTR
 local _, CURRENT_BUILD, _, CURRENT_TOC = GetBuildInfo()
 if tonumber(CURRENT_BUILD) > LIVE_BUILD then
