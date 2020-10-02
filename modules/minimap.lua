@@ -305,12 +305,12 @@ function module:SetMinimap()
 		GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
 	end)
 
-	-- Move GM Ticket Status icon
-	HelpOpenTicketButton:SetParent(Minimap)
-	HelpOpenTicketButton:ClearAllPoints()
-	HelpOpenTicketButton:SetPoint(db.Minimap.Icon.GMTicket, Minimap, LUI:Scale(3), LUI:Scale(3))
-
 	if not LUI.PTR then
+		-- Move GM Ticket Status icon
+		HelpOpenTicketButton:SetParent(Minimap)
+		HelpOpenTicketButton:ClearAllPoints()
+		HelpOpenTicketButton:SetPoint(db.Minimap.Icon.GMTicket, Minimap, LUI:Scale(3), LUI:Scale(3))
+
 		local micro_r, micro_g, micro_b = unpack(Themes.db.profile.micromenu)
 		HelpOpenTicketButtonTutorial:ClearAllPoints()
 		HelpOpenTicketButtonTutorial:SetPoint("TOP", HelpOpenTicketButton, "BOTTOM", 0, -HelpOpenTicketButtonTutorialArrow:GetHeight())
