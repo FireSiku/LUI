@@ -1228,19 +1228,15 @@ function module:SetGold()
 					end
 				else
 					for i = 1, MAX_WATCHED_TOKENS do
-						local name, count, icon, itemID = GetBackpackCurrencyInfo(i)
+						local name, count = GetBackpackCurrencyInfo(i)
 
 						if name and i == 1 then
 							GameTooltip:AddLine(" ")
 							GameTooltip:AddLine("Currency:")
 						end
 
-						local r, g, b = 1, 1, 1
-						if itemID then
-							r, g, b = GetItemQualityColor(select(3, GetItemInfo(itemID)))
-						end
 						if name and count then
-							GameTooltip:AddDoubleLine(name, count, r,g,b, 1,1,1)
+							GameTooltip:AddDoubleLine(name, count, 1,1,1, 1,1,1)
 						end
 					end
 				end
