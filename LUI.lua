@@ -485,11 +485,6 @@ function LUI:Update()
 			LUI:InstallOmen()
 		end
 
-		if IsAddOnLoaded("Forte_Core") then
-			LUI.db.global.luiconfig[ProfileName].Versions.forte = nil
-			LUI:InstallForte()
-		end
-
 		LUI.db.global.luiconfig[ProfileName].Versions.lui = LUI.Versions.lui
 		ReloadUI()
 	end)
@@ -562,7 +557,6 @@ function LUI:Configure()
 		LUI:InstallRecount()
 		LUI:InstallOmen()
 		LUI:InstallBartender()
-		LUI:InstallForte()
 		LUI:InstallDetails()
 
 		LUI.db.global.luiconfig[ProfileName].Versions.lui = LUI.Versions.lui
@@ -1177,18 +1171,6 @@ local function getOptions()
 									disabled = function() return not IsAddOnLoaded("Bartender4") end,
 									hidden = function() return not IsAddOnLoaded("Bartender4") end,
 								},
-								ResetForte = {
-									order = 2,
-									type = "execute",
-									name = "Restore ForteXorcist",
-									func = function()
-										LUI.db.global.luiconfig[ProfileName].Versions.forte = nil
-										LUI:InstallForte()
-										StaticPopup_Show("RELOAD_UI")
-									end,
-									disabled = function() return not IsAddOnLoaded("ForteXorcist") end,
-									hidden = function() return not IsAddOnLoaded("ForteXorcist") end,
-								},
 								ResetGrid = {
 									order = 2,
 									type = "execute",
@@ -1296,7 +1278,7 @@ local function getOptions()
 									order = 8,
 									width = "full",
 									type = "description",
-									name = "ATTENTION:\nAll SavedVariables from Grid, Recount, Omen, Bartender and ForteXorcist will be reset!"
+									name = "ATTENTION:\nAll SavedVariables from Grid, Recount, Omen, Bartender and Details will be reset!"
 								},
 								Reset = {
 									order = 9,

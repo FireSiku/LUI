@@ -22,7 +22,6 @@
 	<Script file="modules\bars.lua"/>
 
 	<!-- Addon Installation Routines -->
-	<Script file="addons\forte.lua"/>
 	<Script file="addons\bartender.lua"/>
 	<Script file="addons\grid.lua"/>
 	<Script file="addons\omen.lua"/>

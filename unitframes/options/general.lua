@@ -7,7 +7,6 @@
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
 local Fader = LUI:Module("Fader")
-local Forte = LUI:Module("Forte")
 
 local oUF = LUI.oUF
 local Blizzard = LUI.Blizzard
@@ -339,14 +338,13 @@ function module:CreatePlayerBarOptions(barType, order)
 				end
 			end
 		end
-		Forte:SetPosForte()
 		oUF_LUI_player:UpdateAllElements()
 	end
 
 	local options = self:NewGroup(barName, order, {
 		Enable = self:NewToggle("Enable", "Whether you want to show the "..barName.." or not", 1, applySettings, "full"),
 		empty1 = self:NewDesc(" ", 2),
-		Lock = self:NewToggle("Lock", "Whether you want to lock the "..barName.." to your PlayerFrame or not.\nIf locked, Forte Spelltimer will adjust automaticly", 3, applySettings, "full", disabledFunc),
+		Lock = self:NewToggle("Lock", "Whether you want to lock the "..barName.." to your PlayerFrame or not.", 3, applySettings, "full", disabledFunc),
 		X = self:NewInputNumber("X Value", "Choose the X Value for your "..barName..".", 4, applySettings, nil, isLocked),
 		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..barName..".", 5, applySettings, nil, isLocked),
 		Width = self:NewInputNumber("Width", "Choose the Width for your "..barName..".", 6, applySettings, nil, disabledFunc),
@@ -442,7 +440,6 @@ function module:CreateComboPointsOptions(order)
 				oUF_LUI_target:DisableElement("CPoints")
 			end
 		end
-		Forte:SetPosForte()
 		oUF_LUI_target:UpdateAllElements()
 	end
 
@@ -450,7 +447,7 @@ function module:CreateComboPointsOptions(order)
 		Enable = self:NewToggle("Enable", "Whether you want to show your Combo Points or not.", 1, applySettings, "full"),
 		empty1 = self:NewDesc(" ", 2),
 		ShowAlways = self:NewToggle("Show Always", "Whether you want to always show your Combo Points or not.", 3, applySettings, nil, disabledFunc),
-		Lock = self:NewToggle("Lock", "Whether you want to lock the Combo Points to your TargetFrame or not.\nIf locked, Forte Spelltimer will adjust automaticly", 4, applySettings, "full", disabledFunc),
+		Lock = self:NewToggle("Lock", "Whether you want to lock the Combo Points to your TargetFrame or not.", 4, applySettings, "full", disabledFunc),
 		empty2 = self:NewDesc(" ", 5),
 		X = self:NewInputNumber("X Value", "Choose the X Value for your Combo Points.", 6, applySettings, nil, isLocked),
 		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your Combo Points.", 7, applySettings, nil, isLocked),
@@ -646,7 +643,6 @@ function module:CreatePlayerBarTextOptions(barType, order)
 		else
 			oUF_LUI_player:DisableElement(barKey)
 		end
-		Forte:SetPosForte()
 		oUF_LUI_player:UpdateAllElements()
 	end
 
@@ -1073,10 +1069,6 @@ function module:CreateUnitOptions(unit, order)
 		end
 		module.ToggleUnit(unit)
 		module.ApplySettings(unit)
-
-		if unit == "Player" or unit == "Target" or unit == "Focus" then
-			Forte:SetPosForte();
-		end
 	end
 
 	-- because of special way of get/set funcs, i add the default values manually here

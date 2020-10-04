@@ -6,7 +6,6 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes", "AceHook-3.0", "AceEvent-3.0")
-local Forte = LUI:Module("Forte")
 
 local Blizzard = LUI.Blizzard
 
@@ -123,8 +122,6 @@ function module:Refresh()
 		self.ToggleUnit(unit)
 		self.ApplySettings(unit)
 	end
-
-	Forte:SetPosForte()
 end
 
 function module:OnInitialize()
@@ -240,8 +237,6 @@ end
 
 function module:OnEnable()
 	for _, unit in pairs(unitsSpawn) do module.ToggleUnit(unit) end
-
-	Forte:SetPosForte()
 end
 
 function module:OnDisable()

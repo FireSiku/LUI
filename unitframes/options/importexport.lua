@@ -7,7 +7,6 @@
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes", "AceSerializer-3.0")
 local Fader = LUI:Module("Fader")
-local Forte = LUI:Module("Forte")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
 local importLayoutName

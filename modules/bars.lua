@@ -7,7 +7,6 @@
 local addonname, LUI = ...
 local module = LUI:Module("Bars", "AceHook-3.0", "AceEvent-3.0")
 local Themes = LUI:Module("Themes")
-local Forte = LUI:Module("Forte")
 local Masque = LibStub("Masque", true)
 local Media = LibStub("LibSharedMedia-3.0")
 local LibKeyBound = LibStub("LibKeyBound-1.0")
@@ -1459,13 +1458,6 @@ function module:SetBars()
 
 	self:CreateBarBackground()
 
-	if Forte:IsEnabled() and Forte.db.Cooldown.Lock then
-		local FXCD = FW and FW.Frames.FX_Cooldown1
-		if FXCD and FXCD:IsShown() then
-			LUIBarsTopBG:SetPoint("BOTTOM", UIParent, "BOTTOM", db.TopTexture.X, db.TopTexture.Y + db.TopTexture.AnimationHeight)
-		end
-	end
-
 	self:CreateSidebarSlider("Right", 1)
 	self:CreateSidebarSlider("Right", 2)
 	self:CreateSidebarSlider("Left", 1)
@@ -2029,8 +2021,6 @@ function module:LoadOptions()
 			Alpha = self:NewSlider("Alpha", "Choose your Top Bar Texture Alpha.", 2, nil, nil, nil, true, true, nil, disabled.TopTex),
 			empty1 = self:NewDesc(" ", 3),
 			[""] = self:NewPosSliders("Top Bar Texture", 4, false, "LUIBarsTopBG", nil, nil, disabled.TopTex),
-			Animation = self:NewToggle("Enable Texture Animation", "Whether or not to show the Texture Animation.", 5, true, nil, disabled.TopTex, not LUI.isForteCooldownLoaded),
-			AnimationHeight = self:NewInputNumber("Animation Height", "Choose the Top Bar Texture Animation Height.", 6, nil, nil, disabled.TopTexAnim, not LUI.isForteCooldownLoaded),
 		}),
 		BottomTexture = self:NewGroup("Bottom Texture", 3, false, InCombatLockdown, {
 			header1 = self:NewHeader("Bottom Texture Settings", 0),
@@ -2088,13 +2078,6 @@ function module:Refresh(...)
 	LUIBarsTopBG:ClearAllPoints()
 	LUIBarsTopBG:SetPoint("BOTTOM", UIParent, "BOTTOM", db.TopTexture.X, db.TopTexture.Y)
 	LUIBarsTopBG[db.TopTexture.Enable and "Show" or "Hide"](LUIBarsTopBG)
-
-	if Forte:IsEnabled() and Forte.db.Cooldown.Lock then
-		local FXCD = FW and FW.Frames.FX_Cooldown1
-		if FXCD and FXCD:IsShown() then
-			LUIBarsTopBG:SetPoint("BOTTOM", UIParent, "BOTTOM", db.TopTexture.X, db.TopTexture.Y + db.TopTexture.AnimationHeight)
-		end
-	end
 
 	LUIBarsBottomBG:SetAlpha(db.BottomTexture.Alpha)
 	LUIBarsBottomBG:ClearAllPoints()

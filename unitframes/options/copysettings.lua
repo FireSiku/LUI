@@ -6,7 +6,6 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
-local Forte = LUI:Module("Forte")
 
 local oUF = LUI.oUF
 

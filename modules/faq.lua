@@ -41,42 +41,6 @@ function module:LoadOptions()
 					type = "description",
 					order = 4,
 				},
-				question2 = {
-					order = 5,
-					width = "full",
-					type = "description",
-					name = "|cffFF0000Q:|r The Spelltimer above my PlayerFrame and the CooldownLine above my Mainbars... what Addon is that?",
-				},
-				answer2 = {
-					order = 6,
-					width = "full",
-					type = "description",
-					name = "|cff3399ffA:|r This Addon is called ForteXorcist. Type /fx to open the OptionPanel.",
-				},
-				emptyq2 = {
-					name = "   ",
-					width = "full",
-					type = "description",
-					order = 7,
-				},
-				question3 = {
-					order = 8,
-					width = "full",
-					type = "description",
-					name = "|cffFF0000Q:|r There are too may Spells on my Spelltimer and Cooldown line... any suggestion?",
-				},
-				answer3 = {
-					order = 9,
-					width = "full",
-					type = "description",
-					name = "|cff3399ffA:|r Type /fx and choose the \"Spell Timer\" or \"Cooldown Timer\" tab at the bottom. Expand the \"Spell Coloring/Filtering\" section and type in the Spellname in the \"Customize\" box. Set it to \"Hide\". You can also set colors here too.",
-				},
-				emptyq3 = {
-					name = "   ",
-					width = "full",
-					type = "description",
-					order = 10,
-				},
 				question6 = {
 					order = 17,
 					width = "full",
