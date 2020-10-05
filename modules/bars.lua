@@ -296,6 +296,12 @@ local function SidebarSetAnchor(side, id)
 end
 
 local function Configure(bar, numButtons, numPerRow)
+	if bar then
+		local numRows = math.ceil(numButtons / numPerRow)
+		bar:SetWidth(numPerRow * 36 + (numPerRow - 1) * 2)
+		bar:SetHeight(numRows * 36 + (numRows - 1) * 2)
+	end
+
 	local buttons = bar.buttons
 	for i = 1, #buttons do
 		if i ~= 1 then
@@ -750,10 +756,6 @@ function module:SetBottomBar(id)
 	bar:SetPoint(bardb.Point, UIParent, bardb.Point, bardb.X / bardb.Scale, bardb.Y / bardb.Scale)
 	bar:SetScale(bardb.Scale)
 
-	local numrows = math.ceil(bardb.NumButtons / bardb.NumPerRow)
-	bar:SetWidth(bardb.NumPerRow * 36 + (bardb.NumPerRow - 1) * 2)
-	bar:SetHeight(numrows * 36 + (numrows - 1) * 2)
-
 	Configure(bar, bardb.NumButtons, bardb.NumPerRow)
 
 	if id == 1 then
@@ -877,10 +879,6 @@ function module:SetPetBar()
 	LUIPetBar:SetPoint(db.PetBar.Point, UIParent, db.PetBar.Point, db.PetBar.X / s, db.PetBar.Y / s)
 	LUIPetBar:SetScale(s)
 
-	local numrows = math.ceil(10 / db.PetBar.NumPerRow)
-	LUIPetBar:SetWidth(db.PetBar.NumPerRow * 30 + (db.PetBar.NumPerRow - 1) * 2)
-	LUIPetBar:SetHeight(numrows * 30 + (numrows - 1) * 2)
-
 	Configure(LUIPetBar, 10, db.PetBar.NumPerRow)
 
 	-- if db.PetBar.Fader.Enable then
@@ -918,10 +916,6 @@ function module:SetShapeshiftBar()
 
 		local function MoveShapeshift()
 			if InCombatLockdown() then return end
-
-			local numrows = math.ceil(10 / db.ShapeshiftBar.NumPerRow)
-			bar:SetWidth(db.ShapeshiftBar.NumPerRow * 30 + (db.ShapeshiftBar.NumPerRow - 1) * 2)
-			bar:SetHeight(numrows * 30 + (numrows - 1) * 2)
 
 			StanceButton1:ClearAllPoints()
 			StanceButton1:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
