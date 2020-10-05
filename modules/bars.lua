@@ -693,6 +693,21 @@ function module:CreateSidebarSlider(side, id)
 		end
 	end
 
+local function SetOnStatePage(bar) 
+	bar:Execute([[
+		buttons = table.new()
+		for i = 1, 12 do
+			table.insert(buttons, self:GetFrameRef("Button"..i))
+		end
+	]])
+
+	bar:SetAttribute("_onstate-page", [[
+		for i, button in ipairs(buttons) do
+			button:SetAttribute("actionpage", tonumber(newstate))
+		end
+	]])
+end
+
 function module:SetBottomBar(id)
 	local bardb = db["Bottombar"..id]
 
@@ -722,20 +737,7 @@ function module:SetBottomBar(id)
 		bar:RegisterEvent("PLAYER_ENTERING_WORLD")
 		bar:SetScript("OnEvent", HookGrid)
 
-		local buttons = {}
-
-		bar:Execute([[
-			for i = 1, 12 do
-				table.insert(buttons, self:GetFrameRef("Button"..i))
-			end
-		]])
-
-		bar:SetAttribute("_onstate-page", [[
-			for i, button in ipairs(buttons) do
-				button:SetAttribute("actionpage", tonumber(newstate))
-			end
-		]])
-
+		SetOnStatePage(bar)
 		RegisterStateDriver(bar, "page", GetBarState(id))
 
 		-- if bardb.Fader.Enable then
@@ -808,20 +810,7 @@ function module:SetSideBar(side, id)
 		bar:RegisterEvent("PLAYER_ENTERING_WORLD")
 		bar:SetScript("OnEvent", HookGrid)
 
-		local buttons = {}
-
-		bar:Execute([[
-			for i = 1, 12 do
-				table.insert(buttons, self:GetFrameRef("Button"..i))
-			end
-		]])
-
-		bar:SetAttribute("_onstate-page", [[
-			for i, button in ipairs(buttons) do
-				button:SetAttribute("actionpage", tonumber(newstate))
-			end
-		]])
-
+		SetOnStatePage(bar)
 		RegisterStateDriver(bar, "page", bardb.State[1])
 
 		if Masque then
