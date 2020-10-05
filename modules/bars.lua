@@ -1048,31 +1048,6 @@ function module:HideBlizzard()
 	end)
 end
 
-function module:SetButtons()
-	local mediaPath = [[Interface\AddOns\LUI\media\textures\buttons2\]]
-
-	local normTex = mediaPath..[[Normal.tga]]
-	local backdropTex = mediaPath..[[Backdrop.tga]]
-	local glossTex = mediaPath..[[Gloss.tga]]
-	local pushedTex = mediaPath..[[Normal.tga]]
-	local checkedTex = mediaPath..[[Highlight.tga]]
-	local highlightTex = mediaPath..[[Highlight.tga]]
-	local flashTex = mediaPath..[[Overlay.tga]]
-	local borderTex = mediaPath..[[Border.tga]]
-
-	local font = [[Interface\Addons\LUI\media\fonts\vibrocen.ttf]]
-
-	local dummy = function() end
-
-	-- LibKeyBound stuff
-	local function GetHotkey(button) return GetBindingKey("CLICK "..button:GetName()..":LeftButton") end
-
-	local function Button_OnEnter(button)
-		if button.GetHotkey then
-			LibKeyBound:Set(button)
-		end
-	end
-
 	local function StyleButton(button)
 		if InCombatLockdown() then return end
 		if not button then return end
@@ -1158,16 +1133,20 @@ function module:SetButtons()
 
 		if not db.General.ShowEquipped then border:Hide() end
 
-		button.GetHotkey = GetHotkey
-		button:HookScript("OnEnter", Button_OnEnter)
+	button.GetHotkey = function(button) return GetBindingKey("CLICK "..button:GetName()..":LeftButton") end
+	button:HookScript("OnEnter", function(button)
+		if button.GetHotkey then
+			LibKeyBound:Set(button)
+		end
+	end)
 
 		if Masque then return end
 
 		-- normal
 		local normal = button:GetNormalTexture()
 		normal:SetTexture("")
-		normal.SetTexture_ = normal.SetTexture
-		normal.SetTexture = function(self) self:SetTexture_("") end
+	normal.SetTextureOrig = normal.SetTexture
+	normal.SetTexture = function(self) self:SetTextureOrig("") end
 		normal:Hide()
 		normal.Show = normal.Hide
 		button.SetNormalTexture = dummy
@@ -1290,14 +1269,12 @@ function module:SetButtons()
 
 		button.SetFrameLevel = dummy
 	end
-	module:SecureHook("ActionButton_Update", StyleButton)
 
 	local function StylePetButtons()
 		for i = 1, 10 do
 			StyleButton(_G["PetActionButton"..i])
 		end
 	end
-	module:SecureHook("PetActionBar_Update", StylePetButtons)
 
 	local function StyleShapeshiftButtons()
 		for i = 1, 10 do
@@ -1305,19 +1282,7 @@ function module:SetButtons()
 		end
 	end
 
-	module:SecureHook("StanceBar_Update", StyleShapeshiftButtons)
-	module:SecureHook("StanceBar_UpdateState", StyleShapeshiftButtons)
-
-	local buttons = 0
-	local function SetupFlyoutButton()
-		for i = 1, buttons do
-			if _G["SpellFlyoutButton"..i] then
-				StyleButton(_G["SpellFlyoutButton"..i])
-			end
-		end
-	end
-	SpellFlyout:HookScript("OnShow", SetupFlyoutButton)
-
+local flyoutButtons = 0
 	local function StyleFlyout(self)
 		if not self.FlyoutArrow then return end
 
@@ -1331,7 +1296,7 @@ function module:SetButtons()
 		for i = 1, GetNumFlyouts() do
 			local _, _, numSlots, isKnown = GetFlyoutInfo(GetFlyoutID(i))
 			if isKnown then
-				buttons = numSlots
+			flyoutButtons = numSlots
 				break
 			end
 		end
@@ -1343,7 +1308,14 @@ function module:SetButtons()
 			arrowDistance = 2
 		end
 	end
-	module:SecureHook("ActionButton_UpdateFlyout", StyleFlyout)
+
+local function StyleFlyoutButton()
+	for i = 1, flyoutButtons do
+		if _G["SpellFlyoutButton"..i] then
+			StyleButton(_G["SpellFlyoutButton"..i])
+		end
+	end
+end
 
 	local function UpdateHotkey(self, abt)
 		local gsub = string.gsub
@@ -1373,7 +1345,6 @@ function module:SetButtons()
 			hotkey:SetText(text)
 		end
 	end
-	module:SecureHook("ActionButton_UpdateHotkeys", UpdateHotkey)
 
 	local function Button_UpdateUsable(button)
 		local icon = _G[button:GetName().."Icon"]
@@ -1391,7 +1362,6 @@ function module:SetButtons()
 			icon:SetVertexColor(0.8, 0.1, 0.1)
 		end
 	end
-	module:SecureHook("ActionButton_UpdateUsable", Button_UpdateUsable)
 
 	local function Button_OnUpdate(button, elapsed)
 		button.__elapsed = (button.__elapsed or 0) + elapsed
@@ -1400,15 +1370,47 @@ function module:SetButtons()
 			button.__elapsed = nil
 			Button_UpdateUsable(button)
 		end
+end-
+
+function module:SetButtons()
+	local mediaPath = [[Interface\AddOns\LUI\media\textures\buttons2\]]
+
+	local normTex = mediaPath..[[Normal.tga]]
+	local backdropTex = mediaPath..[[Backdrop.tga]]
+	local glossTex = mediaPath..[[Gloss.tga]]
+	local pushedTex = mediaPath..[[Normal.tga]]
+	local checkedTex = mediaPath..[[Highlight.tga]]
+	local highlightTex = mediaPath..[[Highlight.tga]]
+	local flashTex = mediaPath..[[Overlay.tga]]
+	local borderTex = mediaPath..[[Border.tga]]
+
+	local font = [[Interface\Addons\LUI\media\fonts\vibrocen.ttf]]
+
+	local dummy = function() end
+
+	if LUI.PTR then
+		module:SecureHook(button, "Update", StyleButton)
+	else
+		module:SecureHook("ActionButton_Update", StyleButton)
 	end
 	module:SecureHook("ActionButton_OnUpdate", Button_OnUpdate)
+	module:SecureHook("StanceBar_Update", StyleShapeshiftButtons)
+	module:SecureHook("StanceBar_UpdateState", StyleShapeshiftButtons)
+	module:SecureHook("PetActionBar_Update", StylePetButtons)
+	module:SecureHook("ActionButton_UpdateFlyout", StyleFlyout)
+	module:SecureHook("ActionButton_UpdateHotkeys", UpdateHotkey)
+	module:SecureHook("ActionButton_UpdateUsable", Button_UpdateUsable)
+	SpellFlyout:HookScript("OnShow", StyleFlyoutButton)
+end
+
+function module:LIBKEYBOUND_ENABLED()
+	self.keyBoundMode = true
+end
+function module:LIBKEYBOUND_DISABLED()
+	self.keyBoundMode = nil
 end
 
 function module:SetLibKeyBound()
-	function self:LIBKEYBOUND_ENABLED() self.keyBoundMode = true end
-
-	function self:LIBKEYBOUND_DISABLED() self.keyBoundMode = nil end
-
 	LibKeyBound.RegisterCallback(self, "LIBKEYBOUND_ENABLED")
 	LibKeyBound.RegisterCallback(self, "LIBKEYBOUND_DISABLED")
 	--LibKeyBound.RegisterCallback(self, "LIBKEYBOUND_MODE_COLOR_CHANGED")
@@ -1435,7 +1437,6 @@ function module:SetBars()
 		self:SetExtraActionBar()
 
 		self:HideBlizzard()
-
 		self:SetButtons()
 
 		-- because of an ugly bug...
@@ -1815,20 +1816,6 @@ module.childGroups = "select"
 module.getter = "generic"
 module.setter = "Refresh"
 
-function module:LoadOptions()
-	local disabled = {
-		TopTex = function() return not db.TopTexture.Enable end,
-		TopTexAnim = function() return not db.TopTexture.Enable or not db.TopTexture.Animation end,
-		BottomTex = function() return not db.BottomTexture.Enable end,
-		["Shapeshift Bar"] = function() return not db.ShapeshiftBar.Enable end,
-		["Pet Bar"] = function() return not db.PetBar.Enable end,
-		["Vehicle Exit"] = function() return not db.VehicleExit.Enable end,
-		Hotkey = function() return not db.General.ShowHotkey end,
-		Count = function() return not db.General.ShowCount end,
-		Macro = function() return not db.General.ShowMacro end,
-	}
-	local dryCall = function() module:Refresh() end
-
 	local function getState(info)
 		info[#info] = tonumber(info[#info]) or info[#info]
 		local val = self.db(info)
@@ -1838,6 +1825,11 @@ function module:LoadOptions()
 			end
 		end
 	end
+local function setOptionPoins()
+	self:Refresh()
+	self:UpdatePositionOptions()
+end
+
 	local function setBottombarState(info, value)
 		info[#info] = tonumber(info[#info]) or info[#info]
 		self.db(info, info.option.values()[value])
@@ -1845,25 +1837,6 @@ function module:LoadOptions()
 		local id = tonumber(info[#info-2]:match("%d+"))
 		UnregisterStateDriver(bars[id], "page")
 		RegisterStateDriver(bars[id], "page", GetBarState(id))
-	end
-	local function setSidebarState(info, value)
-		info[#info] = tonumber(info[#info]) or info[#info]
-		local val = info.option.values()[value]
-		self.db(info, val)
-
-		local barname = gsub(info[#info-2], "Sidebar", "LUIBar")
-		UnregisterStateDriver(_G[barname], "page")
-		RegisterStateDriver(_G[barname], "page", val)
-	end
-	local function setPoint(info, value)
-		self:Refresh()
-
-		self:UpdatePositionOptions()
-	end
-	local function setDummyBar()
-		if InCombatLockdown() then return end
-
-		toggleDummyBar(ExtraActionBarFrame)
 	end
 
 	local function createBottomBarOptions(num, order)
@@ -1875,7 +1848,7 @@ function module:LoadOptions()
 			empty1 = (num ~= 1) and  self:NewDesc(" ", 2) or nil,
 			HideEmpty = self:NewToggle("Hide Empty Buttons", nil, 3, true, nil, disabledFunc),
 			[""] = self:NewPosSliders("Action Bar "..num, 4, false, "LUIBar"..num, true, nil, disabledFunc),
-			Point = self:NewSelect("Point", "Choose the Point for your Action Bar "..num, 5, positions, nil, setPoint, nil, disabledFunc),
+		Point = self:NewSelect("Point", "Choose the Point for your Action Bar "..num, 5, positions, nil, setOptionPoints, nil, disabledFunc),
 			empty2 = self:NewDesc(" ", 6),
 			Scale = self:NewSlider("Scale", "Scale of Action Bar "..num..".", 7, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
 			empty3 = self:NewDesc(" ", 8),
@@ -1890,19 +1863,27 @@ function module:LoadOptions()
 
 		if num == 1 then
 			for i, name in ipairs(statetext) do
-				option.args.State.args[tostring(i)] = self:NewSelect(name, "Choose the State for "..name..".\n\nDefaults:\nLUI: "..defaultstate.Bottombar1[i].."\nBlizzard: "..blizzstate.Bottombar1[i],
-					i, statelist, nil, false, nil, disabledFunc)
+			option.args.State.args[tostring(i)] = self:NewSelect(name, format("Choose the State for %s.\n\nDefaults:\nLUI: %s\nBlizzard: %s", name, defaultstate.Bottombar1[i], blizzstate.Bottombar1[i]), i, statelist, nil, false, nil, disabledFunc)
 			end
 			if class == "DRUID" then
 				option.args.State.args[tostring(#statetext)].disabled = true -- disable tree of life
 			end
 		else
-			option.args.State.args["1"] = self:NewSelect("Default", "Choose the State for Action Bar "..num..".\n\nDefaults:\nLUI: "..defaultstate["Bottombar"..num][1].."\nBlizzard: "..blizzstate["Bottombar"..num][1],
-				1, statelist, nil, false, nil, disabledFunc)
+		option.args.State.args["1"] = self:NewSelect("Default", format("Choose the State for Action Bar %s.\n\nDefaults:\nLUI: %s\nBlizzard: %s", num, defaultstate["Bottombar"..num][1], blizzstate["Bottombar"..num][1]), 1, statelist, nil, false, nil, disabledFunc)
 		end
 
 		return option
 	end
+
+local function setSidebarState(info, value)
+	info[#info] = tonumber(info[#info]) or info[#info]
+	local val = info.option.values()[value]
+	self.db(info, val)
+
+	local barname = gsub(info[#info-2], "Sidebar", "LUIBar")
+	UnregisterStateDriver(_G[barname], "page")
+	RegisterStateDriver(_G[barname], "page", val)
+end
 
 	local function createSideBarOptions(side, num, order)
 		local disabledFunc = function() return not db["Sidebar"..side..num].Enable end
@@ -1922,7 +1903,7 @@ function module:LoadOptions()
 			AutoPosEnable = isBarAddOnLoaded and self:NewToggle("Stop touching me!", "Whether or not to have LUI handle your Bar Positioning.", 10, true, nil, disabledFunc) or nil,
 			HideEmpty = not isBarAddOnLoaded and self:NewToggle("Hide Empty Buttons", nil, 11, true, nil, disabledFunc) or nil,
 			empty3 = self:NewDesc(" ", 12),
-			Offset = self:NewInputNumber("Y Offset", "Y Offset for your Sidebar", 13, setPoint, nil, disabledFunc),
+		Offset = self:NewInputNumber("Y Offset", "Y Offset for your Sidebar", 13, setOptionPoints, nil, disabledFunc),
 			OpenInstant = self:NewToggle("Open Instant", "Whether or not to show an open/close animation.", 14, true, nil, disabledFunc),
 			State = not isBarAddOnLoaded and self:NewGroup("State Settings", 15, getState, setSidebarState, true, {
 				["1"] = self:NewSelect("Default", "Choose the State for "..side.." Bar "..num..".\n\nDefaults:\nLUI: "..defaultstate["Sidebar"..side..num][1].."\nBlizzard: "..blizzstate["Sidebar"..side..num][1],
@@ -1956,12 +1937,16 @@ function module:LoadOptions()
 
 	local function createOtherBarOptions(name, order, frame, dbName, multiRow)
 		local specialBar = name == "Extra Action Bar"
+	local function setDummyBar()
+		if InCombatLockdown() then return end
+		toggleDummyBar(ExtraActionBarFrame)
+	end
 
 		local option = self:NewGroup(name, order, false, InCombatLockdown, {
 			header0 = self:NewHeader(name.." Settings", 0),
 			Enable = self:NewToggle("Show "..name, nil, 1, true),
 			[""] = self:NewPosSliders(name, 2, false, frame, true, nil, disabled[name]),
-			Point = self:NewSelect("Point", "Choose the Point for the "..name..".", 3, positions, nil, setPoint, nil, disabled[name]),
+		Point = self:NewSelect("Point", "Choose the Point for the "..name..".", 3, positions, nil, setOptionPoints, nil, disabled[name]),
 			Scale = self:NewSlider("Scale", "Choose the Scale for the "..name..".", 4, 0.1, 1.5, 0.05, true, true, nil, nil, disabled[name]),
 
 			HideTextures = specialBar and self:NewToggle("Hide Textures", "Whether or not to hide "..name.." textures.", 5, true) or nil,
@@ -1973,6 +1958,20 @@ function module:LoadOptions()
 
 		return option
 	end
+
+function module:LoadOptions()
+	local dryCall = function() module:Refresh() end
+	local disabled = {
+		TopTex = function() return not db.TopTexture.Enable end,
+		TopTexAnim = function() return not db.TopTexture.Enable or not db.TopTexture.Animation end,
+		BottomTex = function() return not db.BottomTexture.Enable end,
+		["Shapeshift Bar"] = function() return not db.ShapeshiftBar.Enable end,
+		["Pet Bar"] = function() return not db.PetBar.Enable end,
+		["Vehicle Exit"] = function() return not db.VehicleExit.Enable end,
+		Hotkey = function() return not db.General.ShowHotkey end,
+		Count = function() return not db.General.ShowCount end,
+		Macro = function() return not db.General.ShowMacro end,
+	}
 
 	local options = {
 		General = self:NewGroup("General", 1, false, InCombatLockdown, {
