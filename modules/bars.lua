@@ -253,6 +253,9 @@ local function SidebarSetAlpha(anchor, alpha)
 end
 
 local function SidebarSetAnchor(side, id)
+	local sideID = side..id
+	local bardb = db["Sidebar"..sideID]
+	local sb = sidebars[sideID].Anchor
 
 	if not bardb.Enable then
 		sb:Hide()
@@ -266,14 +269,14 @@ local function SidebarSetAnchor(side, id)
 
 	if bardb.AutoPosEnable ~= true and isBarAddOnLoaded == true then return end
 
-	local anchor = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..side..id
-	sidebars[side..id].Main = anchor
+	local anchorName = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..sideID
+	sidebars[sideID].Main = anchorName
 
 	local xOffset = tonumber(bardb.X)
 	local yOffset = tonumber(bardb.Y)
 	local sbOffset = tonumber(bardb.Offset)
 
-	anchor = GetAnchor(anchor)
+	local anchor = GetAnchor(anchorName)
 
 	if not anchor then return end
 	if not anchor:IsShown() then return end
@@ -407,20 +410,21 @@ function module:CreateBarBackground()
 end
 
 function module:CreateSidebarSlider(side, id)
-	if sidebars[side..id] then return sidebars[side..id] end
+	local sideID = side..id
+	if sidebars[sideID] then return sidebars[sideID] end
 
-	local bardb = db["Sidebar"..side..id]
-	local other = side == "Right" and "Left" or "Right"
-	local fname = side == "Right" and "sidebar" or "sidebar2"
-	local isRight = side == "Right"
+	local isRight = (side == "Right")
+	local bardb = db["Sidebar"..sideID]
+	local other = isRight and "Left" or "Right"
+	local fname = isRight and "sidebar" or "sidebar2"
 
 	local r, g, b, a = unpack(Themes.db.sidebar)
 
 	local sb = {}
 
-	sidebars[side..id] = sb
+	sidebars[sideID] = sb
 
-	sb.Main = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..side..id
+	sb.Main = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..sideID
 	sb.Additional = GetAdditionalAnchors(bardb.Additional)
 
 	sb.timerout, sb.timerin = 0, 0
@@ -428,15 +432,14 @@ function module:CreateSidebarSlider(side, id)
 	sb.pixelpersecond = isRight and -176 or 176
 	sb.animationtime = 0.5
 
-	sb.SlideOut = CreateFrame("Frame", nil, UIParent)
+	sb.SlideOut = CreateFrame("Frame")
 	sb.SlideOut:Hide()
 	sb.SlideOut:SetScript("OnUpdate", function(self, elapsed)
 		sb.timerout = sb.timerout + elapsed
-		if sb.timerout < sb.animationtime then
 			sb.ButtonAnchor:ClearAllPoints()
+		if sb.timerout < sb.animationtime then
 			sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, sb.x + sb.timerout * sb.pixelpersecond, sb.y)
 		else
-			sb.ButtonAnchor:ClearAllPoints()
 			sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, sb.xout, sb.y)
 			sb.timerout = 0
 			sb.ButtonAlphaIn:Show()
@@ -445,7 +448,7 @@ function module:CreateSidebarSlider(side, id)
 		end
 	end)
 
-	sb.SlideIn = CreateFrame("Frame", nil, UIParent)
+	sb.SlideIn = CreateFrame("Frame")
 	sb.SlideIn:Hide()
 	sb.SlideIn:SetScript("OnUpdate", function(self, elapsed)
 		sb.timerin = sb.timerin + elapsed
@@ -709,10 +712,9 @@ function module:SetBottomBar(id)
 		bar:RegisterEvent("PLAYER_ENTERING_WORLD")
 		bar:SetScript("OnEvent", HookGrid)
 
-		local buttons
+		local buttons = {}
 
 		bar:Execute([[
-			buttons = table.new()
 			for i = 1, 12 do
 				table.insert(buttons, self:GetFrameRef("Button"..i))
 			end
@@ -768,10 +770,11 @@ function module:SetBottomBar(id)
 end
 
 function module:SetSideBar(side, id)
-	local bardb = db["Sidebar"..side..id]
+	local sideID = side..id
+	local bardb = db["Sidebar"..sideID]
 
-	if not bars[side..id] then
-		local bar = CreateFrame("Frame", "LUIBar"..side..id, UIParent, "SecureHandlerStateTemplate")
+	if not bars[sideID] then
+		local bar = CreateFrame("Frame", "LUIBar"..sideID, UIParent, "SecureHandlerStateTemplate")
 		bar:SetWidth(1) -- because of way LUI handles
 		bar:SetHeight(1) -- sidebar position calculation
 		bar.buttons = {}
@@ -788,7 +791,7 @@ function module:SetSideBar(side, id)
 			end
 			bar:SetFrameRef("Button"..i, button)
 			bar.buttons[i] = button
-			if button:GetName():find("LUI") then button.buttonType = "LUIBar"..side..id.."Button" end
+			if button:GetName():find("LUI") then button.buttonType = "LUIBar"..sideID.."Button" end
 			button:SetAttribute("flyoutDirection", side == "Left" and "RIGHT" or "LEFT")
 		end
 
@@ -799,10 +802,9 @@ function module:SetSideBar(side, id)
 		bar:RegisterEvent("PLAYER_ENTERING_WORLD")
 		bar:SetScript("OnEvent", HookGrid)
 
-		local buttons
+		local buttons = {}
 
 		bar:Execute([[
-			buttons = table.new()
 			for i = 1, 12 do
 				table.insert(buttons, self:GetFrameRef("Button"..i))
 			end
@@ -823,10 +825,10 @@ function module:SetSideBar(side, id)
 			end
 		end
 
-		bars[side..id] = bar
+		bars[sideID] = bar
 	end
 
-	local bar = bars[side..id]
+	local bar = bars[sideID]
 
 	bar.HideEmpty = bardb.HideEmpty
 
@@ -939,14 +941,10 @@ function module:SetShapeshiftBar()
 		end
 	end
 
-	local s = db.ShapeshiftBar.Scale
+	local scale = db.ShapeshiftBar.Scale
 	LUIShapeshiftBar:ClearAllPoints()
-	LUIShapeshiftBar:SetPoint(db.ShapeshiftBar.Point, UIParent, db.ShapeshiftBar.Point, db.ShapeshiftBar.X / s, db.ShapeshiftBar.Y / s)
-	LUIShapeshiftBar:SetScale(s)
-
-	local numrows = math.ceil(10 / db.ShapeshiftBar.NumPerRow)
-	LUIShapeshiftBar:SetWidth(db.ShapeshiftBar.NumPerRow * 30 + (db.ShapeshiftBar.NumPerRow - 1) * 2)
-	LUIShapeshiftBar:SetHeight(numrows * 30 + (numrows - 1) * 2)
+	LUIShapeshiftBar:SetPoint(db.ShapeshiftBar.Point, UIParent, db.ShapeshiftBar.Point, db.ShapeshiftBar.X / scale, db.ShapeshiftBar.Y / scale)
+	LUIShapeshiftBar:SetScale(scale)
 
 	Configure(LUIShapeshiftBar, 10, db.ShapeshiftBar.NumPerRow)
 
