@@ -295,6 +295,14 @@ local function SidebarSetAnchor(side, id)
 	anchor:SetPoint(side, UIParent, side, x, y)
 end
 
+local function ToggleBar(bar, condition)
+	if condition then
+		bar:Show()
+	else
+		bar:Hide()
+	end
+end
+
 local function Configure(bar, numButtons, numPerRow)
 	if bar then
 		local numRows = math.ceil(numButtons / numPerRow)
@@ -676,18 +684,14 @@ function module:CreateSidebarSlider(side, id)
 		SidebarSetAlpha(frame, 0)
 	end
 
-	if bardb.Enable then
-		sb.Anchor:Show()
-		if bardb.IsOpen == true then
+	ToggleBar(sb.Anchor, bardb.Enable)
+	if bardb.Enable and bardb.IsOpen then
 			sb.sidebaropen = 1
 			sb.SlideOut:Show()
 			sb.AlphaIn:Show()
 			sb.SidebarBlock:Hide()
 		end
-	else
-		sb.Anchor:Hide()
 	end
-end
 
 function module:SetBottomBar(id)
 	local bardb = db["Bottombar"..id]
@@ -768,7 +772,7 @@ function module:SetBottomBar(id)
 		UnregisterStateDriver(bar, "visibility")
 		bar:Hide()
 	end
-	bar[bardb.Enable and "Show" or "Hide"](bar)
+	ToggleBar(bar, bardb.Enable)
 end
 
 function module:SetSideBar(side, id)
@@ -831,14 +835,11 @@ function module:SetSideBar(side, id)
 	end
 
 	local bar = bars[sideID]
-
 	bar.HideEmpty = bardb.HideEmpty
 
 	Configure(bar, 12, 2)
-
 	bar:SetScale(bardb.Scale)
-
-	bar[bardb.Enable and "Show" or "Hide"](bar)
+	ToggleBar(bar, bardb.Enable)
 end
 
 function module:SetPetBar()
@@ -874,29 +875,16 @@ function module:SetPetBar()
 		end
 	end
 
-	local s = db.PetBar.Scale
+	local scale = db.PetBar.Scale
 	LUIPetBar:ClearAllPoints()
-	LUIPetBar:SetPoint(db.PetBar.Point, UIParent, db.PetBar.Point, db.PetBar.X / s, db.PetBar.Y / s)
-	LUIPetBar:SetScale(s)
+	LUIPetBar:SetPoint(db.PetBar.Point, UIParent, db.PetBar.Point, db.PetBar.X / scale, db.PetBar.Y / scale)
+	LUIPetBar:SetScale(scale)
 
 	Configure(LUIPetBar, 10, db.PetBar.NumPerRow)
-
-	-- if db.PetBar.Fader.Enable then
-	-- 	Fader:RegisterFrame(LUIPetBar, db.PetBar.Fader, true)
-	-- end
-
-	LUIPetBar[db.PetBar.Enable and "Show" or "Hide"](LUIPetBar)
+	ToggleBar(LUIPetBar, db.PetBar.Enable)
 end
 
 function module:SetShapeshiftBar()
-	local function isShapeShiftBarClass()
-		local numForms = GetNumShapeshiftForms()
-		if numForms > 0 then
-			return true
-		end
-		return false
-	end
-
 	if not LUIShapeshiftBar then
 		local bar = CreateFrame("Frame", "LUIShapeshiftBar", UIParent, "SecureHandlerStateTemplate")
 		bar.buttons = {}
@@ -941,12 +929,7 @@ function module:SetShapeshiftBar()
 	LUIShapeshiftBar:SetScale(scale)
 
 	Configure(LUIShapeshiftBar, 10, db.ShapeshiftBar.NumPerRow)
-
-	-- if db.ShapeshiftBar.Fader.Enable then
-	-- 	Fader:RegisterFrame(LUIShapeshiftBar, db.ShapeshiftBar.Fader, true)
-	-- end
-
-	LUIShapeshiftBar[(db.ShapeshiftBar.Enable and isShapeShiftBarClass()) and "Show" or "Hide"](LUIShapeshiftBar)
+	ToggleBar(LUIShapeshiftBar, db.ShapeshiftBar.Enable and GetNumShapeshiftForms() > 0)
 end
 
 function module:SetVehicleExit()
@@ -968,12 +951,12 @@ function module:SetVehicleExit()
 		if not UnitInVehicle("player") then bar:Hide() end
 	end
 
-	local s = db.VehicleExit.Scale
+	local scale = db.VehicleExit.Scale
 	LUIVehicleExit:ClearAllPoints()
-	LUIVehicleExit:SetPoint(db.VehicleExit.Point, UIParent, db.VehicleExit.Point, db.VehicleExit.X / s, db.VehicleExit.Y / s)
-	LUIVehicleExit:SetScale(s)
+	LUIVehicleExit:SetPoint(db.VehicleExit.Point, UIParent, db.VehicleExit.Point, db.VehicleExit.X / scale, db.VehicleExit.Y / scale)
+	LUIVehicleExit:SetScale(scale)
 
-	LUIVehicleExit[db.VehicleExit.Enable and "Show" or "Hide"](LUIVehicleExit)
+	ToggleBar(LUIVehicleExit, db.VehicleExit.Enable)
 end
 
 function module:SetExtraActionBar()
@@ -991,14 +974,13 @@ function module:SetExtraActionBar()
 		bar.content:SetPoint("CENTER", bar, "CENTER", 0, 0)
 	end
 
-	local s = db.ExtraActionBar.Scale
+	local scale = db.ExtraActionBar.Scale
 	bar:ClearAllPoints()
-	bar:SetPoint(db.ExtraActionBar.Point, UIParent, db.ExtraActionBar.Point, db.ExtraActionBar.X / s, db.ExtraActionBar.Y / s)
-	bar:SetScale(s)
+	bar:SetPoint(db.ExtraActionBar.Point, UIParent, db.ExtraActionBar.Point, db.ExtraActionBar.X / scale, db.ExtraActionBar.Y / scale)
+	bar:SetScale(scale)
 
-	bar.content.button.style[db.ExtraActionBar.HideTextures and "Hide" or "Show"](bar.content.button.style)
-
-	bar[db.ExtraActionBar.Enable and "Show" or "Hide"](bar)
+	ToggleBar(bar.content.button.style, not db.ExtraActionBar.HideTextures)
+	ToggleBar(bar, db.ExtraActionBar.Enable)
 end
 
 function module:HideBlizzard()
