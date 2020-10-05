@@ -188,7 +188,7 @@ do
 end
 
 local last = "HIDEGRID"
-local HookGrid = function(self, event)
+local function HookGrid(self, event)
 	if event == "ACTIONBAR_SHOWGRID" then
 		for i, button in pairs(self.buttons) do
 			button:SetAlpha(1)
@@ -212,7 +212,7 @@ local HookGrid = function(self, event)
 	end
 end
 
-local LoadStates = function(data)
+local function LoadStates(data)
 	if type(data) ~= "table" then return end
 	for k, v in pairs(data) do
 		db[k].State = {unpack(v)}
@@ -225,7 +225,7 @@ local LoadStates = function(data)
 	db.StatesLoaded = true
 end
 
-local GetAnchor = function(anchor)
+local function GetAnchor(anchor)
 	if string.find(anchor, "Dominos") then
 		if IsAddOnLoaded("Dominos") then
 			return Dominos.ActionBar:Get(string.match(anchor, "%d+"))
@@ -235,7 +235,7 @@ local GetAnchor = function(anchor)
 	end
 end
 
-local GetAdditionalAnchors = function(str)
+local function GetAdditionalAnchors(str)
 	str = string.gsub(str, " ", "")
 	local t = {}
 	local fname
@@ -247,14 +247,12 @@ local GetAdditionalAnchors = function(str)
 	return t
 end
 
-local SidebarSetAlpha = function(anchor, alpha)
+local function SidebarSetAlpha(anchor, alpha)
 	anchor = GetAnchor(anchor)
 	if anchor then anchor:SetAlpha(alpha) end
 end
 
-local SidebarSetAnchor = function(side, id)
-	local bardb = db["Sidebar"..side..id]
-	local sb = sidebars[side..id].Anchor
+local function SidebarSetAnchor(side, id)
 
 	if not bardb.Enable then
 		sb:Hide()
@@ -294,20 +292,20 @@ local SidebarSetAnchor = function(side, id)
 	anchor:SetPoint(side, UIParent, side, x, y)
 end
 
-local Configure = function(bar, n, x)
+local function Configure(bar, numButtons, numPerRow)
 	local buttons = bar.buttons
 	for i = 1, #buttons do
 		if i ~= 1 then
 			buttons[i]:ClearAllPoints()
-			if (i - 1) % x == 0 then
-				buttons[i]:SetPoint("TOPLEFT", buttons[i-x], "BOTTOMLEFT", 0, -2)
+			if (i - 1) % numPerRow == 0 then
+				buttons[i]:SetPoint("TOPLEFT", buttons[i-numPerRow], "BOTTOMLEFT", 0, -2)
 			else
 				buttons[i]:SetPoint("TOPLEFT", buttons[i-1], "TOPRIGHT", 2, 0)
 			end
 		end
 
 		if buttons[i].__IAB then
-			if i > n then
+			if i > numButtons then
 				buttons[i]:SetAttribute("statehidden", 1)
 				buttons[i]:Hide()
 			else
@@ -319,7 +317,7 @@ local Configure = function(bar, n, x)
 	end
 end
 
-local GetBarState = function(id)
+local function GetBarState(id)
 	local bardb = db["Bottombar"..id]
 	local condition = id == 1 and "[bonusbar:5] 11; " or ""
 
@@ -341,14 +339,14 @@ local GetBarState = function(id)
 	return condition
 end
 
-local GetButton = function(bar, barid, barpos, buttonid)
+local function CreateButton(bar, barid, barpos, buttonid)
 	local button = CreateFrame("CheckButton", "LUIBar"..barpos..barid.."Button"..buttonid, bar, "ActionBarButtonTemplate")
 	--button:RegisterForClicks("AnyDown")
 	button:SetID(buttonid)
 	return button
 end
 
-local UpdateUIPanelOffset = function(isLeft)
+local function UpdateUIPanelOffset(isLeft)
 	if not db.General.AdjustUIPanels then
 		UIParent:SetAttribute("LEFT_OFFSET", 16)
 	end
@@ -690,7 +688,7 @@ function module:SetBottomBar(id)
 		bar.buttons = {}
 
 		for i = 1, 12 do
-			local button = GetButton(bar, id, "Bottom", i)
+			local button = CreateButton(bar, id, "Bottom", i)
 			button:UnregisterEvent("ACTIONBAR_SHOWGRID")
 			button:UnregisterEvent("ACTIONBAR_HIDEGRID")
 			button:SetAttribute("showgrid", 100)
@@ -779,7 +777,7 @@ function module:SetSideBar(side, id)
 		bar.buttons = {}
 
 		for i = 1, 12 do
-			local button = GetButton(bar, id, side, i)
+			local button = CreateButton(bar, id, side, i)
 
 			button:UnregisterEvent("ACTIONBAR_SHOWGRID")
 			button:UnregisterEvent("ACTIONBAR_HIDEGRID")
