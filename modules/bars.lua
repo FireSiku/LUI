@@ -52,6 +52,12 @@ local statelist = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
 
 local isBarAddOnLoaded
 
+local FallbackMT = {
+	__index = function(t, k)
+		return t["DEFAULT"]
+	end
+}
+
 local statetexts = setmetatable({
 	["DRUID"] = {"Default", "Bear Form", "Cat Form", "Cat Form (Prowl)", "Moonkin Form", "Tree of Life Form"},
 	["WARRIOR"] = {"Default", "Battle Stance", "Defensive Stance", "Berserker Stance"},
@@ -60,11 +66,8 @@ local statetexts = setmetatable({
 	["WARLOCK"] = {"Default", "Metamorphosis"},
 	["MONK"] = {"Default", "Stance of the Fierce Tiger", "Stance of the Sturdy Ox", "Stance of the Wise Serpent"},
 	["DEFAULT"] = {"Default"},
-}, {
-	__index = function(t, k)
-		return t["DEFAULT"]
-	end,
-})
+}, FallbackMT)
+
 local statetext = statetexts[class]
 
 local defaultstates = setmetatable({
@@ -75,25 +78,19 @@ local defaultstates = setmetatable({
 	["WARLOCK"] = {"1", "3"},
 	["MONK"] = {"1", "3", "5", "4"},
 	["DEFAULT"] = {"1"}
-}, {
-	__index = function(t, k)
-		if type(k) == "number" then
-			return {tostring(k)}
-		end
-		return t["DEFAULT"]
-	end,
-})
+}, FallbackMT)
+
 local defaultstate = {
 	Bottombar1 = defaultstates[class],
-	Bottombar2 = defaultstates[2],
-	Bottombar3 = defaultstates[3],
-	Bottombar4 = defaultstates[4],
-	Bottombar5 = defaultstates[5],
-	Bottombar6 = defaultstates[6],
-	SidebarLeft1 = defaultstates[9],
-	SidebarLeft2 = defaultstates[7],
-	SidebarRight1 = defaultstates[10],
-	SidebarRight2 = defaultstates[8],
+	Bottombar2 = {"2"},
+	Bottombar3 = {"3"},
+	Bottombar4 = {"4"},
+	Bottombar5 = {"5"},
+	Bottombar6 = {"6"},
+	SidebarLeft1 = {"9"},
+	SidebarLeft2 = {"7"},
+	SidebarRight1 = {"10"},
+	SidebarRight2 = {"8"},
 }
 
 local blizzstates = setmetatable({
@@ -104,25 +101,19 @@ local blizzstates = setmetatable({
 	["WARLOCK"] = {"1", "7"},
 	["MONK"] = {"1", "7", "8", "9"},
 	["DEFAULT"] = {"1"}
-}, {
-	__index = function(t, k)
-		if type(k) == "number" then
-			return {tostring(k)}
-		end
-		return t["DEFAULT"]
-	end,
-})
+}, FallbackMT)
+
 local blizzstate = {
 	Bottombar1 = blizzstates[class],
-	Bottombar2 = blizzstates[6],
-	Bottombar3 = blizzstates[5],
-	Bottombar4 = blizzstates[7],
-	Bottombar5 = blizzstates[8],
-	Bottombar6 = blizzstates[9],
-	SidebarLeft1 = blizzstates[3],
-	SidebarLeft2 = blizzstates[1],
-	SidebarRight1 = blizzstates[4],
-	SidebarRight2 = blizzstates[2],
+	Bottombar2 = {"6"},
+	Bottombar3 = {"5"},
+	Bottombar4 = {"7"},
+	Bottombar5 = {"8"},
+	Bottombar6 = {"9"},
+	SidebarLeft1 = {"3"},
+	SidebarLeft2 = {"1"},
+	SidebarRight1 = {"4"},
+	SidebarRight2 = {"2"},
 }
 
 local Page = {
