@@ -351,6 +351,8 @@ local function CreateButton(bar, barid, barpos, buttonid)
 	local button = CreateFrame("CheckButton", "LUIBar"..barpos..barid.."Button"..buttonid, bar, "ActionBarButtonTemplate")
 	--button:RegisterForClicks("AnyDown")
 	button:SetID(buttonid)
+
+	module:HookActionButton(button)
 	return button
 end
 
@@ -1332,7 +1334,23 @@ end
 			button.__elapsed = nil
 			Button_UpdateUsable(button)
 		end
-end-
+end
+
+function module:HookActionButton(button)
+	if LUI.PTR and button then
+		module:SecureHook(button, "Update", StyleButton)
+	else
+		module:SecureHook("ActionButton_Update", StyleButton)
+	end
+	module:SecureHook("ActionButton_OnUpdate", Button_OnUpdate)
+	module:SecureHook("StanceBar_Update", StyleShapeshiftButtons)
+	module:SecureHook("StanceBar_UpdateState", StyleShapeshiftButtons)
+	module:SecureHook("PetActionBar_Update", StylePetButtons)
+	module:SecureHook("ActionButton_UpdateFlyout", StyleFlyout)
+	module:SecureHook("ActionButton_UpdateHotkeys", UpdateHotkey)
+	module:SecureHook("ActionButton_UpdateUsable", Button_UpdateUsable)
+	SpellFlyout:HookScript("OnShow", StyleFlyoutButton)
+end
 
 function module:SetButtons()
 	local mediaPath = [[Interface\AddOns\LUI\media\textures\buttons2\]]
@@ -1347,22 +1365,9 @@ function module:SetButtons()
 	local borderTex = mediaPath..[[Border.tga]]
 
 	local font = [[Interface\Addons\LUI\media\fonts\vibrocen.ttf]]
-
 	local dummy = function() end
 
-	if LUI.PTR then
-		module:SecureHook(button, "Update", StyleButton)
-	else
-		module:SecureHook("ActionButton_Update", StyleButton)
-	end
-	module:SecureHook("ActionButton_OnUpdate", Button_OnUpdate)
-	module:SecureHook("StanceBar_Update", StyleShapeshiftButtons)
-	module:SecureHook("StanceBar_UpdateState", StyleShapeshiftButtons)
-	module:SecureHook("PetActionBar_Update", StylePetButtons)
-	module:SecureHook("ActionButton_UpdateFlyout", StyleFlyout)
-	module:SecureHook("ActionButton_UpdateHotkeys", UpdateHotkey)
-	module:SecureHook("ActionButton_UpdateUsable", Button_UpdateUsable)
-	SpellFlyout:HookScript("OnShow", StyleFlyoutButton)
+	module:HookActionButton(button)
 end
 
 function module:LIBKEYBOUND_ENABLED()
