@@ -14,7 +14,6 @@ local widgetLists = AceGUIWidgetLSMlists
 
 local L = LUI.L
 local db, dbd
-local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
 LUI.Versions.bars = 2.4
 
@@ -254,7 +253,7 @@ local function SidebarSetAnchor(side, id)
 	end
 
 	sb:ClearAllPoints()
-	sb:SetPoint(side, UIParent, side, side == "Right" and 11 or -11, bardb.Offset)
+	sb:SetPoint(side, UIParent, side, NegateIf(-11, side == "Right"), bardb.Offset)
 	sb:SetScale(1 / 0.85 * bardb.Scale)
 	sb:Show()
 
@@ -352,12 +351,21 @@ local function GetBarState(id)
 end
 
 local function CreateButton(bar, barid, barpos, buttonid)
-	local button = CreateFrame("CheckButton", "LUIBar"..barpos..barid.."Button"..buttonid, bar, "ActionBarButtonTemplate")
-	--button:RegisterForClicks("AnyDown")
+	local button = CreateFrame("CheckButton", format("LUIBar%s%sButton%s", barpos, barid, buttonid), bar, "ActionBarButtonTemplate")
 	button:SetID(buttonid)
 
 	module:HookActionButton(button)
 	return button
+end
+
+local function CreateBackdrop(frame, bgSuffix)
+	frame:SetBackdrop({
+		bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"..bgSuffix,
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	frame:SetBackdropBorderColor(0, 0, 0, 0)
 end
 
 local function UpdateUIPanelOffset(isLeft)
@@ -396,28 +404,14 @@ end
 
 function module:CreateBarBackground()
 	local top = LUI:CreateMeAFrame("FRAME", "LUIBarsTopBG", UIParent, 1024, 64, 1, "BACKGROUND", 2, "BOTTOM", UIParent, "BOTTOM", tonumber(db.TopTexture.X), tonumber(db.TopTexture.Y), db.TopTexture.Alpha)
-	top:SetBackdrop({
-		bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v4\\bars_top",
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		edgeSize = 1,
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
+	CreateBackdrop(top, "bars_top")
 	top:SetBackdropColor(unpack(Themes.db.bar))
-	top:SetBackdropBorderColor(0, 0, 0, 0)
-	top[db.TopTexture.Enable and "Show" or "Hide"](top)
+	ToggleBar(top, db.TopTexture.Enable)
 
 	local bottom = LUI:CreateMeAFrame("FRAME", "LUIBarsBottomBG", UIParent, 512, 64, 1, "BACKGROUND", 0, "BOTTOM", UIParent, "BOTTOM", tonumber(db.BottomTexture.X), tonumber(db.BottomTexture.Y), db.BottomTexture.Alpha)
-	bottom:SetBackdrop({
-		bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v4\\bars_bottom",
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		edgeSize = 1,
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
+	CreateBackdrop(bottom, "bars_bottom")
 	bottom:SetBackdropColor(unpack(Themes.db.bar2))
-	bottom:SetBackdropBorderColor(0, 0, 0, 0)
-	bottom[db.BottomTexture.Enable and "Show" or "Hide"](bottom)
+	ToggleBar(bottom, db.BottomTexture.Enable)
 end
 
 function module:CreateSidebarSlider(side, id)
@@ -428,7 +422,6 @@ function module:CreateSidebarSlider(side, id)
 	local bardb = db["Sidebar"..sideID]
 	local other = isRight and "Left" or "Right"
 	local fname = isRight and "sidebar" or "sidebar2"
-
 	local r, g, b, a = unpack(Themes.db.sidebar)
 
 	local sb = {}
@@ -439,15 +432,15 @@ function module:CreateSidebarSlider(side, id)
 	sb.Additional = GetAdditionalAnchors(bardb.Additional)
 
 	sb.timerout, sb.timerin = 0, 0
-	sb.x, sb.y, sb.xout = isRight and -30 or 30, 0, isRight and -118 or 118
-	sb.pixelpersecond = isRight and -176 or 176
+	sb.x, sb.y, sb.xout = NegateIf(30, isRight), 0, NegateIf(118, isRight)
+	sb.pixelpersecond = NegateIf(176, isRight)
 	sb.animationtime = 0.5
 
 	sb.SlideOut = CreateFrame("Frame")
 	sb.SlideOut:Hide()
 	sb.SlideOut:SetScript("OnUpdate", function(self, elapsed)
 		sb.timerout = sb.timerout + elapsed
-			sb.ButtonAnchor:ClearAllPoints()
+		sb.ButtonAnchor:ClearAllPoints()
 		if sb.timerout < sb.animationtime then
 			sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, sb.x + sb.timerout * sb.pixelpersecond, sb.y)
 		else
@@ -527,95 +520,47 @@ function module:CreateSidebarSlider(side, id)
 		end
 	end)
 
-	sb.Anchor = LUI:CreateMeAFrame("FRAME", nil, UIParent, 25, 25, 1 / 0.85 * bardb.Scale, "BACKGROUND", 0, side, UIParent, side, isRight and 11 or -11, bardb.Offset, 1)
+	sb.Anchor = LUI:CreateMeAFrame("FRAME", nil, UIParent, 25, 25, 1 / 0.85 * bardb.Scale, "BACKGROUND", 0, side, UIParent, side, NegateIf(-11, isRight), bardb.Offset, 1)
 	sb.Anchor:Show()
 
-	sb.Sidebar = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 512, 512, 1, "BACKGROUND", 2, other, sb.Anchor, other, isRight and -17 or 17, 0, 1)
-	sb.Sidebar:SetBackdrop({
-		bgFile = fdir..fname,
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
-	sb.Sidebar:SetBackdropBorderColor(0, 0, 0, 0)
+	sb.Sidebar = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 512, 512, 1, "BACKGROUND", 2, other, sb.Anchor, other, NegateIf(17, isRight), 0, 1)
+	CreateBackdrop(sb.Sidebar, fname)
 	sb.Sidebar:Show()
 
-	sb.SidebarBack = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 512, 512, 1, "BACKGROUND", 1, other, sb.Anchor, other, isRight and -25 or 25, 0, 1)
-	sb.SidebarBack:SetBackdrop({
-		bgFile = fdir..fname.."_back",
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
+	sb.SidebarBack = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 512, 512, 1, "BACKGROUND", 1, other, sb.Anchor, other, NegateIf(25, isRight), 0, 1)
+	CreateBackdrop(sb.SidebarBack, fname.."_back")
 	sb.SidebarBack:SetBackdropColor(r, g, b, a)
-	sb.SidebarBack:SetBackdropBorderColor(0, 0, 0, 0)
 	sb.SidebarBack:Show()
 
-	sb.SidebarBack2 = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 512, 512, 1, "BACKGROUND", 3, other, sb.Anchor, other, isRight and -25 or 25, 0, 1)
-	sb.SidebarBack2:SetBackdrop({
-		bgFile = fdir..fname.."_back2",
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
+	sb.SidebarBack2 = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 512, 512, 1, "BACKGROUND", 3, other, sb.Anchor, other, NegateIf(25, isRight), 0, 1)
+	CreateBackdrop(sb.SidebarBack2, fname.."_back2")
 	sb.SidebarBack2:SetBackdropColor(r, g, b, a)
-	sb.SidebarBack2:SetBackdropBorderColor(0, 0, 0, 0)
 	sb.SidebarBack2:Show()
 
-	sb.ButtonAnchor = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 10, 10, 1, "BACKGROUND", 0, other, sb.Anchor, other, isRight and -30 or 30, 0, 1)
+	sb.ButtonAnchor = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 10, 10, 1, "BACKGROUND", 0, other, sb.Anchor, other, NegateIf(30, isRight), 0, 1)
 	sb.ButtonAnchor:Show()
 
-	sb.ButtonBack = LUI:CreateMeAFrame("FRAME", nil, sb.ButtonAnchor, 273, 267, 1, "BACKGROUND", 0, other, sb.ButtonAnchor, other, isRight and 3 or -3, -2, 1)
-	sb.ButtonBack:SetBackdrop({
-		bgFile = fdir..fname.."_bt_back",
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
+	sb.ButtonBack = LUI:CreateMeAFrame("FRAME", nil, sb.ButtonAnchor, 273, 267, 1, "BACKGROUND", 0, other, sb.ButtonAnchor, other, NegateIf(-3, isRight), -2, 1)
+	CreateBackdrop(sb.ButtonBack, fname.."_bt_back")
 	sb.ButtonBack:SetBackdropColor(r, g, b, 1)
-	sb.ButtonBack:SetBackdropBorderColor(0, 0, 0, 0)
 	sb.ButtonBack:SetAlpha(0)
 	sb.ButtonBack:Show()
 
-	sb.SidebarBlock = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 80, 225, 1, "MEDIUM", 4, other, sb.Anchor, other, isRight and -82 or 82, -5, 1)
+	sb.SidebarBlock = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 80, 225, 1, "MEDIUM", 4, other, sb.Anchor, other, NegateIf(82, isRight), -5, 1)
 	sb.SidebarBlock:EnableMouse(true)
 	sb.SidebarBlock:Show()
 
-	sb.ButtonClicker = LUI:CreateMeAFrame("BUTTON", nil, sb.ButtonAnchor, 30, 215, 1, "MEDIUM", 5, other, sb.ButtonAnchor, other, isRight and 6 or -6, -5, 1)
+	sb.ButtonClicker = LUI:CreateMeAFrame("BUTTON", nil, sb.ButtonAnchor, 30, 215, 1, "MEDIUM", 5, other, sb.ButtonAnchor, other, NegateIf(-6, isRight), -5, 1)
 	sb.ButtonClicker:Show()
 
 	sb.Button = LUI:CreateMeAFrame("FRAME", nil, sb.ButtonAnchor, 266, 251, 1, "BACKGROUND", 0, other, sb.ButtonAnchor, other, 0, -2, 1)
-	sb.Button:SetBackdrop({
-		bgFile = fdir..fname.."_button",
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
+	CreateBackdrop(sb.Button, fname.."_button")
 	sb.Button:SetBackdropColor(r, g, b, 1)
-	sb.Button:SetBackdropBorderColor(0, 0, 0, 0)
 	sb.Button:Show()
 
 	sb.ButtonHover = LUI:CreateMeAFrame("FRAME", nil, sb.ButtonAnchor, 266, 251, 1, "BACKGROUND", 0, other, sb.ButtonAnchor, other, 0, -2, 1)
-	sb.ButtonHover:SetBackdrop({
-		bgFile = fdir..fname.."_button_hover",
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
+	CreateBackdrop(sb.ButtonHover, fname.."_button_hover")
 	sb.ButtonHover:SetBackdropColor(r, g, b, 1)
-	sb.ButtonHover:SetBackdropBorderColor(0, 0, 0, 0)
 	sb.ButtonHover:Hide()
 
 	sb.sidebaropen = 0
@@ -627,7 +572,7 @@ function module:CreateSidebarSlider(side, id)
 			bardb.IsOpen = true
 			if bardb.OpenInstant then
 				sb.ButtonAnchor:ClearAllPoints()
-				sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, isRight and -120 or 120, 0)
+				sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, NegateIf(120, isRight), 0)
 				sb.ButtonBack:SetAlpha(1)
 				SidebarSetAlpha(sb.Main, 1)
 				for _, frame in pairs(sb.Additional) do
@@ -645,7 +590,7 @@ function module:CreateSidebarSlider(side, id)
 			bardb.IsOpen = false
 			if bardb.OpenInstant then
 				sb.ButtonAnchor:ClearAllPoints()
-				sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, isRight and -32 or 32, 0)
+				sb.ButtonAnchor:SetPoint(other, sb.Anchor, other, NegateIf(32, isRight), 0)
 				sb.ButtonBack:SetAlpha(0)
 				SidebarSetAlpha(sb.Main, 0)
 				for _, frame in pairs(sb.Additional) do
@@ -683,12 +628,12 @@ function module:CreateSidebarSlider(side, id)
 
 	ToggleBar(sb.Anchor, bardb.Enable)
 	if bardb.Enable and bardb.IsOpen then
-			sb.sidebaropen = 1
-			sb.SlideOut:Show()
-			sb.AlphaIn:Show()
-			sb.SidebarBlock:Hide()
-		end
+		sb.sidebaropen = 1
+		sb.SlideOut:Show()
+		sb.AlphaIn:Show()
+		sb.SidebarBlock:Hide()
 	end
+end
 
 local function SetOnStatePage(bar) 
 	bar:Execute([[
