@@ -963,6 +963,17 @@ local function StyleButton(button)
 	if InCombatLockdown() then return end
 	if not button then return end
 
+	local normTex = [[Interface\AddOns\LUI\media\textures\buttons2\Normal.tga]]
+	local backdropTex = [[Interface\AddOns\LUI\media\textures\buttons2\Backdrop.tga]]
+	local glossTex = [[Interface\AddOns\LUI\media\textures\buttons2\Gloss.tga]]
+	local pushedTex = [[Interface\AddOns\LUI\media\textures\buttons2\Normal.tga]]
+	local checkedTex = [[Interface\AddOns\LUI\media\textures\buttons2\Highlight.tga]]
+	local highlightTex = [[Interface\AddOns\LUI\media\textures\buttons2\Highlight.tga]]
+	local flashTex = [[Interface\AddOns\LUI\media\textures\buttons2\Overlay.tga]]
+	local borderTex = [[Interface\AddOns\LUI\media\textures\buttons2\Border.tga]]
+	local font = [[Interface\Addons\LUI\media\fonts\vibrocen.ttf]]
+	local dummy = function() end
+
 	if button:GetNormalTexture() then
 		button:GetNormalTexture():SetAlpha(0)
 	end
@@ -1305,29 +1316,11 @@ function module:HookActionButton(button)
 	end
 end
 
-function module:SetButtons()
-	local mediaPath = [[Interface\AddOns\LUI\media\textures\buttons2\]]
-
-	local normTex = mediaPath..[[Normal.tga]]
-	local backdropTex = mediaPath..[[Backdrop.tga]]
-	local glossTex = mediaPath..[[Gloss.tga]]
-	local pushedTex = mediaPath..[[Normal.tga]]
-	local checkedTex = mediaPath..[[Highlight.tga]]
-	local highlightTex = mediaPath..[[Highlight.tga]]
-	local flashTex = mediaPath..[[Overlay.tga]]
-	local borderTex = mediaPath..[[Border.tga]]
-
-	local font = [[Interface\Addons\LUI\media\fonts\vibrocen.ttf]]
-	local dummy = function() end
-	
-	module:HookActionButton(button)
-end
-
 function module:LIBKEYBOUND_ENABLED()
-	self.keyBoundMode = true
+	module.keyBoundMode = true
 end
 function module:LIBKEYBOUND_DISABLED()
-	self.keyBoundMode = nil
+	module.keyBoundMode = nil
 end
 
 function module:SetLibKeyBound()
@@ -1357,7 +1350,7 @@ function module:SetBars()
 		module:SetExtraActionBar()
 
 		module:HideBlizzard()
-		module:SetButtons()
+		module:HookActionButton()
 
 		-- because of an ugly bug...
 		module:SecureHook(CharacterFrame, "Show", function() TokenFrame_Update() end)
@@ -1738,21 +1731,21 @@ module.setter = "Refresh"
 
 local function getState(info)
 	info[#info] = tonumber(info[#info]) or info[#info]
-	local val = self.db(info)
+	local val = module.db(info)
 	for k, v in pairs(info.option.values()) do
 		if v == val then
 			return k
 		end
 	end
 end
-local function setOptionPoins()
+local function setOptionPoints()
 	module:Refresh()
 	module:UpdatePositionOptions()
 end
 
 local function setBottombarState(info, value)
 	info[#info] = tonumber(info[#info]) or info[#info]
-	self.db(info, info.option.values()[value])
+	module.db(info, info.option.values()[value])
 
 	local id = tonumber(info[#info-2]:match("%d+"))
 	UnregisterStateDriver(bars[id], "page")
@@ -1760,6 +1753,7 @@ local function setBottombarState(info, value)
 end
 
 local function createBottomBarOptions(num, order)
+	if isBarAddOnLoaded then return end
 	local disabledFunc = function() return not db["Bottombar"..num].Enable end
 
 	local option = module:NewGroup("Action Bar "..num, order, false, InCombatLockdown, {
@@ -1797,12 +1791,24 @@ end
 local function setSidebarState(info, value)
 	info[#info] = tonumber(info[#info]) or info[#info]
 	local val = info.option.values()[value]
-	self.db(info, val)
+	module.db(info, val)
 
 	local barname = gsub(info[#info-2], "Sidebar", "LUIBar")
 	UnregisterStateDriver(_G[barname], "page")
 	RegisterStateDriver(_G[barname], "page", val)
 end
+
+local optIsDisabled = {
+	TopTex = function() return not db.TopTexture.Enable end,
+	TopTexAnim = function() return not db.TopTexture.Enable or not db.TopTexture.Animation end,
+	BottomTex = function() return not db.BottomTexture.Enable end,
+	["Shapeshift Bar"] = function() return not db.ShapeshiftBar.Enable end,
+	["Pet Bar"] = function() return not db.PetBar.Enable end,
+	["Vehicle Exit"] = function() return not db.VehicleExit.Enable end,
+	Hotkey = function() return not db.General.ShowHotkey end,
+	Count = function() return not db.General.ShowCount end,
+	Macro = function() return not db.General.ShowMacro end,
+}
 
 local function createSideBarOptions(side, num, order)
 	local disabledFunc = function() return not db["Sidebar"..side..num].Enable end
@@ -1854,7 +1860,8 @@ local function createSideBarOptions(side, num, order)
 end
 
 local function createOtherBarOptions(name, order, frame, dbName, multiRow)
-	local specialBar = name == "Extra Action Bar"
+	if isBarAddOnLoaded then return end
+	local specialBar = (name == "Extra Action Bar")
 	local function setDummyBar()
 		if InCombatLockdown() then return end
 		toggleDummyBar(ExtraActionBarFrame)
@@ -1863,14 +1870,13 @@ local function createOtherBarOptions(name, order, frame, dbName, multiRow)
 	local option = module:NewGroup(name, order, false, InCombatLockdown, {
 		header0 = module:NewHeader(name.." Settings", 0),
 		Enable = module:NewToggle("Show "..name, nil, 1, true),
-		[""] = module:NewPosSliders(name, 2, false, frame, true, nil, disabled[name]),
-		Point = module:NewSelect("Point", "Choose the Point for the "..name..".", 3, LUI.Points, nil, setOptionPoints, nil, disabled[name]),
-		Scale = module:NewSlider("Scale", "Choose the Scale for the "..name..".", 4, 0.1, 1.5, 0.05, true, true, nil, nil, disabled[name]),
+		[""] = module:NewPosSliders(name, 2, false, frame, true, nil, optIsDisabled[name]),
+		Point = module:NewSelect("Point", "Choose the Point for the "..name..".", 3, LUI.Points, nil, setOptionPoints, nil, optIsDisabled[name]),
+		Scale = module:NewSlider("Scale", "Choose the Scale for the "..name..".", 4, 0.1, 1.5, 0.05, true, true, nil, nil, optIsDisabled[name]),
 
 		HideTextures = specialBar and module:NewToggle("Hide Textures", "Whether or not to hide "..name.." textures.", 5, true) or nil,
-		DummyBar = specialBar and module:NewExecute("Show Dummy "..name, "Click to show/hide a dummy "..name..".", 6, setDummyBar, nil, disabled[name]) or nil,
-
-		NumPerRow = multiRow and module:NewSlider("Buttons per Row", "Choose the Number of Buttons per Row.", 5, 1, 10, 1, true, nil, nil, nil, disabled[name]) or nil,
+		DummyBar = specialBar and module:NewExecute("Show Dummy "..name, "Click to show/hide a dummy "..name..".", 6, setDummyBar, nil, optIsDisabled[name]) or nil,
+		NumPerRow = multiRow and module:NewSlider("Buttons per Row", "Choose the Number of Buttons per Row.", 5, 1, 10, 1, true, nil, nil, nil, optIsDisabled[name]) or nil,
 	})
 
 	return option
@@ -1878,17 +1884,6 @@ end
 
 function module:LoadOptions()
 	local dryCall = function() module:Refresh() end
-	local disabled = {
-		TopTex = function() return not db.TopTexture.Enable end,
-		TopTexAnim = function() return not db.TopTexture.Enable or not db.TopTexture.Animation end,
-		BottomTex = function() return not db.BottomTexture.Enable end,
-		["Shapeshift Bar"] = function() return not db.ShapeshiftBar.Enable end,
-		["Pet Bar"] = function() return not db.PetBar.Enable end,
-		["Vehicle Exit"] = function() return not db.VehicleExit.Enable end,
-		Hotkey = function() return not db.General.ShowHotkey end,
-		Count = function() return not db.General.ShowCount end,
-		Macro = function() return not db.General.ShowMacro end,
-	}
 
 	local options = {
 		General = module:NewGroup("General", 1, false, InCombatLockdown, {
@@ -1898,19 +1893,19 @@ function module:LoadOptions()
 			AdjustUIPanels = module:NewToggle("Adjust Blizzard's UI Panel positions", nil, 3, true),
 			empty2 = module:NewDesc(" ", 4),
 			ShowHotkey = module:NewToggle("Show Hotkey Text", nil, 5, true, nil, nil, isBarAddOnLoaded),
-			HotkeySize = module:NewSlider("Hotkey Size", "Choose your Hotkey Fontsize.", 6, 1, 40, 1, true, nil, nil, disabled.Hotkey, isBarAddOnLoaded),
-			HotkeyFont = module:NewSelect("Hotkey Font", "Choose your Hotkey Font.", 7, widgetLists.font, "LSM30_Font", true, nil, disabled.Hotkey, isBarAddOnLoaded),
-			HotkeyOutline = module:NewSelect("HotkeyFont Flag", "Choose your Hotkey Fontflag.", 8, LUI.FontFlags, false, dryCall, nil, disabled.Hotkey, isBarAddOnLoaded),
+			HotkeySize = module:NewSlider("Hotkey Size", "Choose your Hotkey Fontsize.", 6, 1, 40, 1, true, nil, nil, optIsDisabled.Hotkey, isBarAddOnLoaded),
+			HotkeyFont = module:NewSelect("Hotkey Font", "Choose your Hotkey Font.", 7, widgetLists.font, "LSM30_Font", true, nil, optIsDisabled.Hotkey, isBarAddOnLoaded),
+			HotkeyOutline = module:NewSelect("HotkeyFont Flag", "Choose your Hotkey Fontflag.", 8, LUI.FontFlags, false, dryCall, nil, optIsDisabled.Hotkey, isBarAddOnLoaded),
 			empty3 = module:NewDesc(" ", 9, nil, nil, isBarAddOnLoaded),
 			ShowMacro = module:NewToggle("Show Macro Text", nil, 10, true, nil, nil, isBarAddOnLoaded),
-			MacroSize = module:NewSlider("Macro Size", "Choose your Macro Fontsize.", 11, 1, 40, 1, true, nil, nil, disabled.Macro, isBarAddOnLoaded),
-			MacroFont = module:NewSelect("Macro Font", "Choose your Macro Font.", 12, widgetLists.font, "LSM30_Font", true, nil, disabled.Macro, isBarAddOnLoaded),
-			MacroOutline = module:NewSelect("Macro Font Flag", "Choose your Macro Fontflag.", 13, LUI.FontFlags, false, dryCall, nil, disabled.Macro, isBarAddOnLoaded),
+			MacroSize = module:NewSlider("Macro Size", "Choose your Macro Fontsize.", 11, 1, 40, 1, true, nil, nil, optIsDisabled.Macro, isBarAddOnLoaded),
+			MacroFont = module:NewSelect("Macro Font", "Choose your Macro Font.", 12, widgetLists.font, "LSM30_Font", true, nil, optIsDisabled.Macro, isBarAddOnLoaded),
+			MacroOutline = module:NewSelect("Macro Font Flag", "Choose your Macro Fontflag.", 13, LUI.FontFlags, false, dryCall, nil, optIsDisabled.Macro, isBarAddOnLoaded),
 			empty4 = module:NewDesc(" ", 14, nil, nil, isBarAddOnLoaded),
 			ShowCount = module:NewToggle("Show Count Text", nil, 15, true, nil, nil, isBarAddOnLoaded),
-			CountSize = module:NewSlider("Count Size", "Choose your Count Fontsize.", 16, 1, 40, 1, true, nil, nil, disabled.Count, isBarAddOnLoaded),
-			CountFont = module:NewSelect("Count Font", "Choose your Count Font.", 17, widgetLists.font, "LSM30_Font", true, nil, disabled.Count, isBarAddOnLoaded),
-			CountOutline = module:NewSelect("Count Font Flag", "Choose your Count Fontflag.", 18, LUI.FontFlags, false, dryCall, nil, disabled.Count, isBarAddOnLoaded),
+			CountSize = module:NewSlider("Count Size", "Choose your Count Fontsize.", 16, 1, 40, 1, true, nil, nil, optIsDisabled.Count, isBarAddOnLoaded),
+			CountFont = module:NewSelect("Count Font", "Choose your Count Font.", 17, widgetLists.font, "LSM30_Font", true, nil, optIsDisabled.Count, isBarAddOnLoaded),
+			CountOutline = module:NewSelect("Count Font Flag", "Choose your Count Fontflag.", 18, LUI.FontFlags, false, dryCall, nil, optIsDisabled.Count, isBarAddOnLoaded),
 			empty5 = module:NewDesc(" ", 19, nil, nil, isBarAddOnLoaded),
 			ShowEquipped = module:NewToggle("Show Equipped Border", nil, 20, true, nil, nil, isBarAddOnLoaded),
 			empty6 = module:NewDesc(" ", 21, nil, nil, isBarAddOnLoaded),
@@ -1924,31 +1919,31 @@ function module:LoadOptions()
 		TopTexture = module:NewGroup("Top Texture", 2, false, InCombatLockdown, {
 			header1 = module:NewHeader("Top Texture Settings", 0),
 			Enable = module:NewToggle("Enable", "Whether or not to show the Top Bar Texture.", 1, true),
-			Alpha = module:NewSlider("Alpha", "Choose your Top Bar Texture Alpha.", 2, nil, nil, nil, true, true, nil, disabled.TopTex),
+			Alpha = module:NewSlider("Alpha", "Choose your Top Bar Texture Alpha.", 2, nil, nil, nil, true, true, nil, optIsDisabled.TopTex),
 			empty1 = module:NewDesc(" ", 3),
-			[""] = module:NewPosSliders("Top Bar Texture", 4, false, "LUIBarsTopBG", nil, nil, disabled.TopTex),
+			[""] = module:NewPosSliders("Top Bar Texture", 4, false, "LUIBarsTopBG", nil, nil, optIsDisabled.TopTex),
 		}),
 		BottomTexture = module:NewGroup("Bottom Texture", 3, false, InCombatLockdown, {
 			header1 = module:NewHeader("Bottom Texture Settings", 0),
 			Enable = module:NewToggle("Enable", "Whether or not to show the Bottom Bar Texture.", 1, true),
-			Alpha = module:NewSlider("Alpha", "Choose your Bottom Bar Texture Alpha.", 2, nil, nil, nil, true, true, nil, disabled.BottomTex),
+			Alpha = module:NewSlider("Alpha", "Choose your Bottom Bar Texture Alpha.", 2, nil, nil, nil, true, true, nil, optIsDisabled.BottomTex),
 			empty1 = module:NewDesc(" ", 3),
-			[""] = module:NewPosSliders("Bottom Bar Texture", 4, false, "LUIBarsBottomBG", nil, nil, disabled.BottomTex),
+			[""] = module:NewPosSliders("Bottom Bar Texture", 4, false, "LUIBarsBottomBG", nil, nil, optIsDisabled.BottomTex),
 		}),
-		Bottombar1 = not isBarAddOnLoaded and createBottomBarOptions(1, 4) or nil,
-		Bottombar2 = not isBarAddOnLoaded and createBottomBarOptions(2, 5) or nil,
-		Bottombar3 = not isBarAddOnLoaded and createBottomBarOptions(3, 6) or nil,
-		Bottombar4 = not isBarAddOnLoaded and createBottomBarOptions(4, 7) or nil,
-		Bottombar5 = not isBarAddOnLoaded and createBottomBarOptions(5, 8) or nil,
-		Bottombar6 = not isBarAddOnLoaded and createBottomBarOptions(6, 9) or nil,
+		Bottombar1 = createBottomBarOptions(1, 4),
+		Bottombar2 = createBottomBarOptions(2, 5),
+		Bottombar3 = createBottomBarOptions(3, 6),
+		Bottombar4 = createBottomBarOptions(4, 7),
+		Bottombar5 = createBottomBarOptions(5, 8),
+		Bottombar6 = createBottomBarOptions(6, 9),
 		SidebarRight1 = createSideBarOptions("Right", 1, 10),
 		SidebarRight2 = createSideBarOptions("Right", 2, 11),
 		SidebarLeft1 = createSideBarOptions("Left", 1, 12),
 		SidebarLeft2 = createSideBarOptions("Left", 2, 13),
-		ShapeshiftBar = not isBarAddOnLoaded and createOtherBarOptions("Shapeshift/Stance Bar", 14, "LUIShapeshiftBar", "ShapeshiftBar", true) or nil,
-		PetBar = not isBarAddOnLoaded and createOtherBarOptions("Pet Bar", 15, "LUIPetBar", "PetBar", true) or nil,
-		VehicleExit = not isBarAddOnLoaded and createOtherBarOptions("Vehicle Exit Button", 17, "LUIVehicleExit") or nil,
-		ExtraActionBar = not isBarAddOnLoaded and createOtherBarOptions("Extra Action Bar", 18, "LUIExtraActionBar") or nil,
+		ShapeshiftBar = createOtherBarOptions("Shapeshift/Stance Bar", 14, "LUIShapeshiftBar", "ShapeshiftBar", true),
+		PetBar = createOtherBarOptions("Pet Bar", 15, "LUIPetBar", "PetBar", true),
+		VehicleExit = createOtherBarOptions("Vehicle Exit Button", 17, "LUIVehicleExit"),
+		ExtraActionBar = createOtherBarOptions("Extra Action Bar", 18, "LUIExtraActionBar"),
 	}
 
 	return options
