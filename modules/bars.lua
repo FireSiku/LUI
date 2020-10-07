@@ -319,7 +319,11 @@ local function Configure(bar, numButtons, numPerRow)
 			else
 				buttons[i]:SetAttribute("statehidden", nil)
 				buttons[i]:Show()
-				ActionButton_Update(buttons[i])
+				if LUI.PTR then
+					buttons[i]:Update()
+				else
+					ActionButton_Update(buttons[i])
+				end
 			end
 		end
 	end
@@ -1339,17 +1343,23 @@ end
 function module:HookActionButton(button)
 	if LUI.PTR and button then
 		module:SecureHook(button, "Update", StyleButton)
-	else
+		module:SecureHook(button, "OnUpdate", Button_OnUpdate)
+		module:SecureHook(button, "UpdateHotkeys", UpdateHotkey)
+		module:SecureHook(button, "UpdateUsable", Button_UpdateUsable)
+	elseif not LUI.PTR then
 		module:SecureHook("ActionButton_Update", StyleButton)
+		module:SecureHook("ActionButton_OnUpdate", Button_OnUpdate)
+		module:SecureHook("ActionButton_UpdateHotkeys", UpdateHotkey)
+		module:SecureHook("ActionButton_UpdateUsable", Button_UpdateUsable)
 	end
-	module:SecureHook("ActionButton_OnUpdate", Button_OnUpdate)
-	module:SecureHook("StanceBar_Update", StyleShapeshiftButtons)
-	module:SecureHook("StanceBar_UpdateState", StyleShapeshiftButtons)
-	module:SecureHook("PetActionBar_Update", StylePetButtons)
-	module:SecureHook("ActionButton_UpdateFlyout", StyleFlyout)
-	module:SecureHook("ActionButton_UpdateHotkeys", UpdateHotkey)
-	module:SecureHook("ActionButton_UpdateUsable", Button_UpdateUsable)
-	SpellFlyout:HookScript("OnShow", StyleFlyoutButton)
+	--Prevent rehooking.
+	if not module:IsHooked("StanceBar_Update") then
+		module:SecureHook("StanceBar_Update", StyleShapeshiftButtons)
+		module:SecureHook("StanceBar_UpdateState", StyleShapeshiftButtons)
+		module:SecureHook("PetActionBar_Update", StylePetButtons)
+		module:SecureHook("ActionButton_UpdateFlyout", StyleFlyout)
+		SpellFlyout:HookScript("OnShow", StyleFlyoutButton)
+	end
 end
 
 function module:SetButtons()
