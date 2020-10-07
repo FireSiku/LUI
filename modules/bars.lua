@@ -1012,90 +1012,90 @@ function module:HideBlizzard()
 	end)
 end
 
-	local function StyleButton(button)
-		if InCombatLockdown() then return end
-		if not button then return end
+local function StyleButton(button)
+	if InCombatLockdown() then return end
+	if not button then return end
 
-		if button:GetNormalTexture() then
-			button:GetNormalTexture():SetAlpha(0)
+	if button:GetNormalTexture() then
+		button:GetNormalTexture():SetAlpha(0)
+	end
+
+	if button:GetParent() then
+		if button:GetParent().HideEmpty and not HasAction(button.action) then
+			button:SetAlpha(0)
+		else
+			button:SetAlpha(1)
 		end
+	end
 
-		if button:GetParent() then
-			if button:GetParent().HideEmpty and not HasAction(button.action) then
-				button:SetAlpha(0)
-			else
-				button:SetAlpha(1)
-			end
+	if button.__Styled == true then return end
+
+	table.insert(buttonlist, button)
+	button.__Styled = true
+
+	local parent = button:GetParent()
+	if parent then
+		parent = parent:GetName()
+
+		if parent == "MultiCastActionBarFrame" then return end
+		if parent == "MultiCastActionPage1" then return end
+		if parent == "MultiCastActionPage2" then return end
+		if parent == "MultiCastActionPage3" then return end
+		if parent == "ExtraActionBarFrame" then return end
+	end
+
+	local name = button:GetName()
+	local size = button:GetWidth()
+	local scale = size / 36
+
+	-- first style texts / equipped border, then check for BF/Masque, if not loaded, proceed!
+	-- hotkey
+	local hotkey = _G[name.."HotKey"]
+	hotkey:SetFont(Media:Fetch("font", db.General.HotkeyFont), db.General.HotkeySize, db.General.HotkeyOutline)
+	hotkey:SetDrawLayer("OVERLAY")
+	hotkey:ClearAllPoints()
+	hotkey:SetPoint("TOPRIGHT", button, "TOPRIGHT", -1, -4)
+	hotkey:SetWidth(40)
+	hotkey:SetHeight(10)
+
+	hotkey.Show_ = hotkey.Show
+	hotkey.Show = function()
+		if db.General.ShowHotkey and hotkey:GetText() ~= RANGE_INDICATOR then
+			hotkey:Show_()
 		end
+	end
 
-		if button.__Styled == true then return end
+	if not db.General.ShowHotkey then hotkey:Hide() end
 
-		table.insert(buttonlist, button)
-		button.__Styled = true
+	-- macro
+	local macro = _G[name.."Name"]
+	macro:SetFont(Media:Fetch("font", db.General.MacroFont), db.General.MacroSize, db.General.MacroOutline)
+	macro:SetDrawLayer("OVERLAY")
+	macro:ClearAllPoints()
+	macro:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 4)
+	macro:SetPoint("BOTTOMLEFT", button, "BOTTOMLEFT", 0, 4)
+	macro:SetHeight(10)
 
-		local parent = button:GetParent()
-		if parent then
-			parent = parent:GetName()
+	if not db.General.ShowMacro then macro:Hide() end
 
-			if parent == "MultiCastActionBarFrame" then return end
-			if parent == "MultiCastActionPage1" then return end
-			if parent == "MultiCastActionPage2" then return end
-			if parent == "MultiCastActionPage3" then return end
-			if parent == "ExtraActionBarFrame" then return end
-		end
+	-- count
+	local count = _G[name.."Count"]
+	count:SetFont(Media:Fetch("font", db.General.CountFont), db.General.CountSize, db.General.CountOutline)
+	count:SetDrawLayer("OVERLAY")
+	count:ClearAllPoints()
+	count:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 6)
+	count:SetWidth(40)
+	count:SetHeight(10)
 
-		local name = button:GetName()
-		local size = button:GetWidth()
-		local scale = size / 36
+	if not db.General.ShowCount then count:Hide() end
 
-		-- first style texts / equipped border, then check for BF/Masque, if not loaded, proceed!
-		-- hotkey
-		local hotkey = _G[name.."HotKey"]
-		hotkey:SetFont(Media:Fetch("font", db.General.HotkeyFont), db.General.HotkeySize, db.General.HotkeyOutline)
-		hotkey:SetDrawLayer("OVERLAY")
-		hotkey:ClearAllPoints()
-		hotkey:SetPoint("TOPRIGHT", button, "TOPRIGHT", -1, -4)
-		hotkey:SetWidth(40)
-		hotkey:SetHeight(10)
+	-- border (show/hide functionality)
+	local border = _G[name.."Border"]
 
-		hotkey.Show_ = hotkey.Show
-		hotkey.Show = function()
-			if db.General.ShowHotkey and hotkey:GetText() ~= RANGE_INDICATOR then
-				hotkey:Show_()
-			end
-		end
+	border.Show_ = border.Show
+	border.Show = function() if db.General.ShowEquipped then border:Show_() end end
 
-		if not db.General.ShowHotkey then hotkey:Hide() end
-
-		-- macro
-		local macro = _G[name.."Name"]
-		macro:SetFont(Media:Fetch("font", db.General.MacroFont), db.General.MacroSize, db.General.MacroOutline)
-		macro:SetDrawLayer("OVERLAY")
-		macro:ClearAllPoints()
-		macro:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 4)
-		macro:SetPoint("BOTTOMLEFT", button, "BOTTOMLEFT", 0, 4)
-		macro:SetHeight(10)
-
-		if not db.General.ShowMacro then macro:Hide() end
-
-		-- count
-		local count = _G[name.."Count"]
-		count:SetFont(Media:Fetch("font", db.General.CountFont), db.General.CountSize, db.General.CountOutline)
-		count:SetDrawLayer("OVERLAY")
-		count:ClearAllPoints()
-		count:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 6)
-		count:SetWidth(40)
-		count:SetHeight(10)
-
-		if not db.General.ShowCount then count:Hide() end
-
-		-- border (show/hide functionality)
-		local border = _G[name.."Border"]
-
-		border.Show_ = border.Show
-		border.Show = function() if db.General.ShowEquipped then border:Show_() end end
-
-		if not db.General.ShowEquipped then border:Hide() end
+	if not db.General.ShowEquipped then border:Hide() end
 
 	button.GetHotkey = function(button) return GetBindingKey("CLICK "..button:GetName()..":LeftButton") end
 	button:HookScript("OnEnter", function(button)
@@ -1104,174 +1104,174 @@ end
 		end
 	end)
 
-		if Masque then return end
+	if Masque then return end
 
-		-- normal
-		local normal = button:GetNormalTexture()
-		normal:SetTexture("")
+	-- normal
+	local normal = button:GetNormalTexture()
+	normal:SetTexture("")
 	normal.SetTextureOrig = normal.SetTexture
 	normal.SetTexture = function(self) self:SetTextureOrig("") end
-		normal:Hide()
-		normal.Show = normal.Hide
-		button.SetNormalTexture = dummy
+	normal:Hide()
+	normal.Show = normal.Hide
+	button.SetNormalTexture = dummy
 
-		local newnormal = button:CreateTexture(name.."Normal", "BACKGROUND", 0)
-		newnormal:SetTexture(normTex)
-		newnormal:SetDrawLayer("BORDER", 0)
-		newnormal:SetBlendMode("BLEND")
-		newnormal:SetVertexColor(0.133, 0.133, 0.133, 0.95)
-		newnormal:SetWidth(40 * scale)
-		newnormal:SetHeight(40 * scale)
-		newnormal:ClearAllPoints()
-		newnormal:SetPoint("CENTER", button, "CENTER", 0, 0)
+	local newnormal = button:CreateTexture(name.."Normal", "BACKGROUND", 0)
+	newnormal:SetTexture(normTex)
+	newnormal:SetDrawLayer("BORDER", 0)
+	newnormal:SetBlendMode("BLEND")
+	newnormal:SetVertexColor(0.133, 0.133, 0.133, 0.95)
+	newnormal:SetWidth(40 * scale)
+	newnormal:SetHeight(40 * scale)
+	newnormal:ClearAllPoints()
+	newnormal:SetPoint("CENTER", button, "CENTER", 0, 0)
 
-		-- backdrop
-		local backdrop = button:CreateTexture(name.."Backdrop", "BACKGROUND", 0)
-		backdrop:SetParent(button)
-		backdrop:SetTexture(backdropTex)
-		backdrop:SetBlendMode("BLEND")
-		backdrop:SetVertexColor(0.11, 0.11, 0.11, 1)
-		backdrop:SetWidth(40 * scale)
-		backdrop:SetHeight(40 * scale)
-		backdrop:ClearAllPoints()
-		backdrop:SetPoint("CENTER", button, "CENTER", 0, 0)
+	-- backdrop
+	local backdrop = button:CreateTexture(name.."Backdrop", "BACKGROUND", 0)
+	backdrop:SetParent(button)
+	backdrop:SetTexture(backdropTex)
+	backdrop:SetBlendMode("BLEND")
+	backdrop:SetVertexColor(0.11, 0.11, 0.11, 1)
+	backdrop:SetWidth(40 * scale)
+	backdrop:SetHeight(40 * scale)
+	backdrop:ClearAllPoints()
+	backdrop:SetPoint("CENTER", button, "CENTER", 0, 0)
 
-		-- gloss
-		local gloss = button:CreateTexture(name.."Gloss", "OVERLAY", 0)
-		gloss:SetTexture(glossTex)
-		gloss:SetBlendMode("BLEND")
-		gloss:SetVertexColor(1, 1, 1, 1)
-		gloss:SetAlpha(0.5)
-		gloss:SetWidth(40 * scale)
-		gloss:SetHeight(40 * scale)
-		gloss:ClearAllPoints()
-		gloss:SetPoint("CENTER", button, "CENTER", 0, 0)
+	-- gloss
+	local gloss = button:CreateTexture(name.."Gloss", "OVERLAY", 0)
+	gloss:SetTexture(glossTex)
+	gloss:SetBlendMode("BLEND")
+	gloss:SetVertexColor(1, 1, 1, 1)
+	gloss:SetAlpha(0.5)
+	gloss:SetWidth(40 * scale)
+	gloss:SetHeight(40 * scale)
+	gloss:ClearAllPoints()
+	gloss:SetPoint("CENTER", button, "CENTER", 0, 0)
 
-		-- cooldown
-		local cooldown = _G[name.."Cooldown"]
-		cooldown:SetWidth(33 * scale)
-		cooldown:SetHeight(33 * scale)
-		cooldown:ClearAllPoints()
-		cooldown:SetPoint("CENTER", button, "CENTER", 0, 0)
+	-- cooldown
+	local cooldown = _G[name.."Cooldown"]
+	cooldown:SetWidth(33 * scale)
+	cooldown:SetHeight(33 * scale)
+	cooldown:ClearAllPoints()
+	cooldown:SetPoint("CENTER", button, "CENTER", 0, 0)
 
-		-- pushed
-		local pushed = button:GetPushedTexture()
-		pushed:SetTexture(pushedTex)
-		pushed:SetDrawLayer("BORDER", 5)
-		pushed:SetBlendMode("ALPHAKEY")
-		pushed:SetVertexColor(0.32, 0.32, 0.32, 1)
-		pushed:SetWidth(40 * scale)
-		pushed:SetHeight(40 * scale)
-		pushed:ClearAllPoints()
-		pushed:SetPoint("CENTER", button, "CENTER", 0, 0)
-		button.SetPushedTexture = dummy
+	-- pushed
+	local pushed = button:GetPushedTexture()
+	pushed:SetTexture(pushedTex)
+	pushed:SetDrawLayer("BORDER", 5)
+	pushed:SetBlendMode("ALPHAKEY")
+	pushed:SetVertexColor(0.32, 0.32, 0.32, 1)
+	pushed:SetWidth(40 * scale)
+	pushed:SetHeight(40 * scale)
+	pushed:ClearAllPoints()
+	pushed:SetPoint("CENTER", button, "CENTER", 0, 0)
+	button.SetPushedTexture = dummy
 
-		-- checked
-		local checked = button:GetCheckedTexture()
-		checked:SetTexture(checkedTex)
-		checked:SetDrawLayer("BORDER", 2)
-		checked:SetBlendMode("ADD")
-		checked:SetVertexColor(0.4, 0.4, 0.4, 1)
-		checked:SetWidth(40 * scale)
-		checked:SetHeight(40 * scale)
-		checked:ClearAllPoints()
-		checked:SetPoint("CENTER", button, "CENTER", 0, 0)
-		button.SetCheckedTexture = dummy
+	-- checked
+	local checked = button:GetCheckedTexture()
+	checked:SetTexture(checkedTex)
+	checked:SetDrawLayer("BORDER", 2)
+	checked:SetBlendMode("ADD")
+	checked:SetVertexColor(0.4, 0.4, 0.4, 1)
+	checked:SetWidth(40 * scale)
+	checked:SetHeight(40 * scale)
+	checked:ClearAllPoints()
+	checked:SetPoint("CENTER", button, "CENTER", 0, 0)
+	button.SetCheckedTexture = dummy
 
-		-- highlight
-		local highlight = button:GetHighlightTexture()
-		highlight:SetTexture(highlightTex)
-		highlight:SetDrawLayer("HIGHLIGHT", 0)
-		highlight:SetBlendMode("ADD")
-		highlight:SetVertexColor(0.4, 0.4, 0.4, 1)
-		highlight:SetWidth(40 * scale)
-		highlight:SetHeight(40 * scale)
-		highlight:ClearAllPoints()
-		highlight:SetPoint("CENTER", button, "CENTER", 0, 0)
-		button.SetHightlightTexture = dummy
+	-- highlight
+	local highlight = button:GetHighlightTexture()
+	highlight:SetTexture(highlightTex)
+	highlight:SetDrawLayer("HIGHLIGHT", 0)
+	highlight:SetBlendMode("ADD")
+	highlight:SetVertexColor(0.4, 0.4, 0.4, 1)
+	highlight:SetWidth(40 * scale)
+	highlight:SetHeight(40 * scale)
+	highlight:ClearAllPoints()
+	highlight:SetPoint("CENTER", button, "CENTER", 0, 0)
+	button.SetHightlightTexture = dummy
 
-		-- icon
-		local icon = _G[name.."Icon"]
-		icon:SetParent(button)
-		icon:SetDrawLayer("BORDER", -5)
-		icon:SetBlendMode("BLEND")
-		icon:SetWidth(34 * scale)
-		icon:SetHeight(34 * scale)
-		icon:ClearAllPoints()
-		icon:SetPoint("CENTER", button, "CENTER", 0, 0)
+	-- icon
+	local icon = _G[name.."Icon"]
+	icon:SetParent(button)
+	icon:SetDrawLayer("BORDER", -5)
+	icon:SetBlendMode("BLEND")
+	icon:SetWidth(34 * scale)
+	icon:SetHeight(34 * scale)
+	icon:ClearAllPoints()
+	icon:SetPoint("CENTER", button, "CENTER", 0, 0)
 
-		-- flash
-		local flash = _G[name.."Flash"]
-		flash:SetTexture(flashTex)
-		flash:SetDrawLayer("ARTWORK", 0)
-		flash:SetBlendMode("BLEND")
-		flash:SetVertexColor(1, 0, 0, 1)
-		flash:SetWidth(40 * scale)
-		flash:SetHeight(40 * scale)
-		flash:ClearAllPoints()
-		flash:SetPoint("CENTER", button, "CENTER", 0, 0)
-		flash.SetTexture = dummy
+	-- flash
+	local flash = _G[name.."Flash"]
+	flash:SetTexture(flashTex)
+	flash:SetDrawLayer("ARTWORK", 0)
+	flash:SetBlendMode("BLEND")
+	flash:SetVertexColor(1, 0, 0, 1)
+	flash:SetWidth(40 * scale)
+	flash:SetHeight(40 * scale)
+	flash:ClearAllPoints()
+	flash:SetPoint("CENTER", button, "CENTER", 0, 0)
+	flash.SetTexture = dummy
 
-		-- border (styling)
-		border:SetTexture(borderTex)
-		border.SetTexture = dummy
-		border:SetDrawLayer("ARTWORK", 0)
-		border:SetBlendMode("ADD")
-		border:SetWidth(40 * scale)
-		border:SetHeight(40 * scale)
-		border:ClearAllPoints()
-		border:SetPoint("CENTER", button, "CENTER", 0, 0)
+	-- border (styling)
+	border:SetTexture(borderTex)
+	border.SetTexture = dummy
+	border:SetDrawLayer("ARTWORK", 0)
+	border:SetBlendMode("ADD")
+	border:SetWidth(40 * scale)
+	border:SetHeight(40 * scale)
+	border:ClearAllPoints()
+	border:SetPoint("CENTER", button, "CENTER", 0, 0)
 
-		-- autocast
-		local autocast = _G[name.."Shine"]
-		if autocast then
-			autocast:SetWidth(34 * scale)
-			autocast:SetHeight(34 * scale)
-			autocast:ClearAllPoints()
-			autocast:SetPoint("CENTER", button, "CENTER", 0, 0)
-		end
-
-		button.SetFrameLevel = dummy
+	-- autocast
+	local autocast = _G[name.."Shine"]
+	if autocast then
+		autocast:SetWidth(34 * scale)
+		autocast:SetHeight(34 * scale)
+		autocast:ClearAllPoints()
+		autocast:SetPoint("CENTER", button, "CENTER", 0, 0)
 	end
 
-	local function StylePetButtons()
-		for i = 1, 10 do
-			StyleButton(_G["PetActionButton"..i])
-		end
-	end
+	button.SetFrameLevel = dummy
+end
 
-	local function StyleShapeshiftButtons()
-		for i = 1, 10 do
-			StyleButton(_G['StanceButton'..i])
-		end
+local function StylePetButtons()
+	for i = 1, 10 do
+		StyleButton(_G["PetActionButton"..i])
 	end
+end
+
+local function StyleShapeshiftButtons()
+	for i = 1, 10 do
+		StyleButton(_G['StanceButton'..i])
+	end
+end
 
 local flyoutButtons = 0
-	local function StyleFlyout(self)
-		if not self.FlyoutArrow then return end
+local function StyleFlyout(self)
+	if not self.FlyoutArrow then return end
 
-		self.FlyoutBorder:SetAlpha(0)
-		self.FlyoutBorderShadow:SetAlpha(0)
+	self.FlyoutBorder:SetAlpha(0)
+	self.FlyoutBorderShadow:SetAlpha(0)
 
-		SpellFlyoutHorizontalBackground:SetAlpha(0)
-		SpellFlyoutVerticalBackground:SetAlpha(0)
-		SpellFlyoutBackgroundEnd:SetAlpha(0)
+	SpellFlyoutHorizontalBackground:SetAlpha(0)
+	SpellFlyoutVerticalBackground:SetAlpha(0)
+	SpellFlyoutBackgroundEnd:SetAlpha(0)
 
-		for i = 1, GetNumFlyouts() do
-			local _, _, numSlots, isKnown = GetFlyoutInfo(GetFlyoutID(i))
-			if isKnown then
+	for i = 1, GetNumFlyouts() do
+		local _, _, numSlots, isKnown = GetFlyoutInfo(GetFlyoutID(i))
+		if isKnown then
 			flyoutButtons = numSlots
-				break
-			end
-		end
-
-		local arrowDistance
-		if (SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == self) or GetMouseFocus() == self then
-			arrowDistance = 5
-		else
-			arrowDistance = 2
+			break
 		end
 	end
+
+	local arrowDistance
+	if (SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == self) or GetMouseFocus() == self then
+		arrowDistance = 5
+	else
+		arrowDistance = 2
+	end
+end
 
 local function StyleFlyoutButton()
 	for i = 1, flyoutButtons do
@@ -1281,59 +1281,59 @@ local function StyleFlyoutButton()
 	end
 end
 
-	local function UpdateHotkey(self, abt)
-		local gsub = string.gsub
-		local hotkey = _G[self:GetName().."HotKey"]
-		local text = hotkey:GetText()
+local function UpdateHotkey(self, abt)
+	local gsub = string.gsub
+	local hotkey = _G[self:GetName().."HotKey"]
+	local text = hotkey:GetText()
 
-		if text == nil then text = "" end
+	if text == nil then text = "" end
 
-		text = gsub(text, "(s%-)", "S")
-		text = gsub(text, "(a%-)", "A")
-		text = gsub(text, "(c%-)", "C")
-		text = gsub(text, "(Mouse Button )", "M")
-		text = gsub(text, "(Middle Mouse)", "M3")
-		text = gsub(text, "(Mouse Wheel Down)", "MWD")
-		text = gsub(text, "(Mouse Wheel Up)", "MWU")
-		text = gsub(text, "(Num Pad )", "N")
-		text = gsub(text, "(Page Up)", "PU")
-		text = gsub(text, "(Page Down)", "PD")
-		text = gsub(text, "(Spacebar)", "SpB")
-		text = gsub(text, "(Insert)", "Ins")
-		text = gsub(text, "(Home)", "Hm")
-		text = gsub(text, "(Delete)", "Del")
+	text = gsub(text, "(s%-)", "S")
+	text = gsub(text, "(a%-)", "A")
+	text = gsub(text, "(c%-)", "C")
+	text = gsub(text, "(Mouse Button )", "M")
+	text = gsub(text, "(Middle Mouse)", "M3")
+	text = gsub(text, "(Mouse Wheel Down)", "MWD")
+	text = gsub(text, "(Mouse Wheel Up)", "MWU")
+	text = gsub(text, "(Num Pad )", "N")
+	text = gsub(text, "(Page Up)", "PU")
+	text = gsub(text, "(Page Down)", "PD")
+	text = gsub(text, "(Spacebar)", "SpB")
+	text = gsub(text, "(Insert)", "Ins")
+	text = gsub(text, "(Home)", "Hm")
+	text = gsub(text, "(Delete)", "Del")
 
-		if hotkey:GetText() == _G["RANGE_INDICATOR"] then
-			hotkey:SetText()
-		else
-			hotkey:SetText(text)
-		end
+	if hotkey:GetText() == _G["RANGE_INDICATOR"] then
+		hotkey:SetText()
+	else
+		hotkey:SetText(text)
 	end
+end
 
-	local function Button_UpdateUsable(button)
-		local icon = _G[button:GetName().."Icon"]
-		local isUsable, notEnoughMana = IsUsableAction(button.action)
+local function Button_UpdateUsable(button)
+	local icon = _G[button:GetName().."Icon"]
+	local isUsable, notEnoughMana = IsUsableAction(button.action)
 
-		if IsActionInRange(button.action) ~= 0 then
-			if isUsable then
-				icon:SetVertexColor(1.0, 1.0, 1.0)
-			elseif notEnoughMana then
-				icon:SetVertexColor(0.5, 0.5, 1.0)
-			else
-				icon:SetVertexColor(0.4, 0.4, 0.4)
-			end
+	if IsActionInRange(button.action) ~= 0 then
+		if isUsable then
+			icon:SetVertexColor(1.0, 1.0, 1.0)
+		elseif notEnoughMana then
+			icon:SetVertexColor(0.5, 0.5, 1.0)
 		else
-			icon:SetVertexColor(0.8, 0.1, 0.1)
+			icon:SetVertexColor(0.4, 0.4, 0.4)
 		end
+	else
+		icon:SetVertexColor(0.8, 0.1, 0.1)
 	end
+end
 
-	local function Button_OnUpdate(button, elapsed)
-		button.__elapsed = (button.__elapsed or 0) + elapsed
+local function Button_OnUpdate(button, elapsed)
+	button.__elapsed = (button.__elapsed or 0) + elapsed
 
-		if button.__elapsed > 0.2 then
-			button.__elapsed = nil
-			Button_UpdateUsable(button)
-		end
+	if button.__elapsed > 0.2 then
+		button.__elapsed = nil
+		Button_UpdateUsable(button)
+	end
 end
 
 function module:HookActionButton(button)
@@ -1366,7 +1366,7 @@ function module:SetButtons()
 
 	local font = [[Interface\Addons\LUI\media\fonts\vibrocen.ttf]]
 	local dummy = function() end
-
+	
 	module:HookActionButton(button)
 end
 
@@ -1783,64 +1783,64 @@ module.childGroups = "select"
 module.getter = "generic"
 module.setter = "Refresh"
 
-	local function getState(info)
-		info[#info] = tonumber(info[#info]) or info[#info]
-		local val = self.db(info)
-		for k, v in pairs(info.option.values()) do
-			if v == val then
-				return k
-			end
+local function getState(info)
+	info[#info] = tonumber(info[#info]) or info[#info]
+	local val = self.db(info)
+	for k, v in pairs(info.option.values()) do
+		if v == val then
+			return k
 		end
 	end
+end
 local function setOptionPoins()
 	self:Refresh()
 	self:UpdatePositionOptions()
 end
 
-	local function setBottombarState(info, value)
-		info[#info] = tonumber(info[#info]) or info[#info]
-		self.db(info, info.option.values()[value])
+local function setBottombarState(info, value)
+	info[#info] = tonumber(info[#info]) or info[#info]
+	self.db(info, info.option.values()[value])
 
-		local id = tonumber(info[#info-2]:match("%d+"))
-		UnregisterStateDriver(bars[id], "page")
-		RegisterStateDriver(bars[id], "page", GetBarState(id))
-	end
+	local id = tonumber(info[#info-2]:match("%d+"))
+	UnregisterStateDriver(bars[id], "page")
+	RegisterStateDriver(bars[id], "page", GetBarState(id))
+end
 
-	local function createBottomBarOptions(num, order)
-		local disabledFunc = function() return not db["Bottombar"..num].Enable end
+local function createBottomBarOptions(num, order)
+	local disabledFunc = function() return not db["Bottombar"..num].Enable end
 
-		local option = self:NewGroup("Action Bar "..num, order, false, InCombatLockdown, {
-			header0 = self:NewHeader("Action Bar "..num.." Settings", 0),
-			Enable = (num ~= 1) and self:NewToggle("Show Action Bar "..num, nil, 1, true) or nil,
-			empty1 = (num ~= 1) and  self:NewDesc(" ", 2) or nil,
-			HideEmpty = self:NewToggle("Hide Empty Buttons", nil, 3, true, nil, disabledFunc),
-			[""] = self:NewPosSliders("Action Bar "..num, 4, false, "LUIBar"..num, true, nil, disabledFunc),
-		Point = self:NewSelect("Point", "Choose the Point for your Action Bar "..num, 5, positions, nil, setOptionPoints, nil, disabledFunc),
-			empty2 = self:NewDesc(" ", 6),
-			Scale = self:NewSlider("Scale", "Scale of Action Bar "..num..".", 7, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
-			empty3 = self:NewDesc(" ", 8),
-			NumPerRow = self:NewSlider("Buttons Per Row", "Choose the Number of Buttons per row for your Action Bar "..num..".", 9, 1, 12, 1, true, nil, nil, disabledFunc),
-			NumButtons = self:NewSlider("Number of Buttons", "Choose the Number of Buttons for your Action Bar "..num..".", 10, 1, 12, 1, true, nil, nil, disabledFunc),
-			State = self:NewGroup("State Settings", 11, getState, setBottombarState, true, {
-				Alt = self:NewSelect("Alt", "Choose the Alt State for Action Bar "..num..".\n\nDefault: "..defaultstate["Bottombar"..num][1], 25, statelist, nil, false, nil, disabledFunc),
-				Ctrl = self:NewSelect("Ctrl", "Choose the Ctrl State for Action Bar "..num..".\n\nDefault: "..defaultstate["Bottombar"..num][1], 26, statelist, nil, false, nil, disabledFunc),
-			}),
-			--Fader = self:NewGroup("Fader", 12, true, disabledFunc, Fader:CreateFaderOptions(_G["LUIBar"..num], db["Bottombar"..num].Fader, dbd["Bottombar"..num].Fader, true)),
-		})
+	local option = self:NewGroup("Action Bar "..num, order, false, InCombatLockdown, {
+		header0 = self:NewHeader("Action Bar "..num.." Settings", 0),
+		Enable = (num ~= 1) and self:NewToggle("Show Action Bar "..num, nil, 1, true) or nil,
+		empty1 = (num ~= 1) and  self:NewDesc(" ", 2) or nil,
+		HideEmpty = self:NewToggle("Hide Empty Buttons", nil, 3, true, nil, disabledFunc),
+		[""] = self:NewPosSliders("Action Bar "..num, 4, false, "LUIBar"..num, true, nil, disabledFunc),
+		Point = self:NewSelect("Point", "Choose the Point for your Action Bar "..num, 5, LUI.Points, nil, setOptionPoints, nil, disabledFunc),
+		empty2 = self:NewDesc(" ", 6),
+		Scale = self:NewSlider("Scale", "Scale of Action Bar "..num..".", 7, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
+		empty3 = self:NewDesc(" ", 8),
+		NumPerRow = self:NewSlider("Buttons Per Row", "Choose the Number of Buttons per row for your Action Bar "..num..".", 9, 1, 12, 1, true, nil, nil, disabledFunc),
+		NumButtons = self:NewSlider("Number of Buttons", "Choose the Number of Buttons for your Action Bar "..num..".", 10, 1, 12, 1, true, nil, nil, disabledFunc),
+		State = self:NewGroup("State Settings", 11, getState, setBottombarState, true, {
+			Alt = self:NewSelect("Alt", "Choose the Alt State for Action Bar "..num..".\n\nDefault: "..defaultstate["Bottombar"..num][1], 25, statelist, nil, false, nil, disabledFunc),
+			Ctrl = self:NewSelect("Ctrl", "Choose the Ctrl State for Action Bar "..num..".\n\nDefault: "..defaultstate["Bottombar"..num][1], 26, statelist, nil, false, nil, disabledFunc),
+		}),
+		--Fader = self:NewGroup("Fader", 12, true, disabledFunc, Fader:CreateFaderOptions(_G["LUIBar"..num], db["Bottombar"..num].Fader, dbd["Bottombar"..num].Fader, true)),
+	})
 
-		if num == 1 then
-			for i, name in ipairs(statetext) do
+	if num == 1 then
+		for i, name in ipairs(statetext) do							   
 			option.args.State.args[tostring(i)] = self:NewSelect(name, format("Choose the State for %s.\n\nDefaults:\nLUI: %s\nBlizzard: %s", name, defaultstate.Bottombar1[i], blizzstate.Bottombar1[i]), i, statelist, nil, false, nil, disabledFunc)
-			end
-			if class == "DRUID" then
-				option.args.State.args[tostring(#statetext)].disabled = true -- disable tree of life
-			end
-		else
-		option.args.State.args["1"] = self:NewSelect("Default", format("Choose the State for Action Bar %s.\n\nDefaults:\nLUI: %s\nBlizzard: %s", num, defaultstate["Bottombar"..num][1], blizzstate["Bottombar"..num][1]), 1, statelist, nil, false, nil, disabledFunc)
 		end
-
-		return option
+		if class == "DRUID" then
+			option.args.State.args[tostring(#statetext)].disabled = true -- disable tree of life
+		end
+	else	
+		option.args.State.args["1"] = self:NewSelect("Default", format("Choose the State for Action Bar %s.\n\nDefaults:\nLUI: %s\nBlizzard: %s", num, defaultstate["Bottombar"..num][1], blizzstate["Bottombar"..num][1]), 1, statelist, nil, false, nil, disabledFunc)
 	end
+
+	return option
+end
 
 local function setSidebarState(info, value)
 	info[#info] = tonumber(info[#info]) or info[#info]
@@ -1852,79 +1852,79 @@ local function setSidebarState(info, value)
 	RegisterStateDriver(_G[barname], "page", val)
 end
 
-	local function createSideBarOptions(side, num, order)
-		local disabledFunc = function() return not db["Sidebar"..side..num].Enable end
-		local disabledPosFunc = function() return not db["Sidebar"..side..num].Enable or (isBarAddOnLoaded and not db["Sidebar"..side..num].AutoPosEnable) end
+local function createSideBarOptions(side, num, order)
+	local disabledFunc = function() return not db["Sidebar"..side..num].Enable end
+	local disabledPosFunc = function() return not db["Sidebar"..side..num].Enable or (isBarAddOnLoaded and not db["Sidebar"..side..num].AutoPosEnable) end
 
-		local option = self:NewGroup(side.." Bar "..num, order, false, InCombatLockdown, {
-			header1 = self:NewHeader(side.." Bar "..num.." Settings", 0),
-			Enable = self:NewToggle("Show "..side.." Bar "..num, nil, 1, true),
-			empty1 = self:NewDesc(" ", 2),
-			Intro = isBarAddOnLoaded and self:NewDesc("Which Bar do you want to use for this Sidebar?\nChoose one or type in the MainAnchor manually.\n\nMake sure your Bar is set to 6 buttons/2 columns and isn't used for another Sidebar.\nLUI will position your Bar automatically.", 3) or nil,
-			AnchorDropDown = isBarAddOnLoaded and self:NewSelect("Anchor", nil, 4, barAnchors) or nil,
-			Anchor = isBarAddOnLoaded and self:NewInput("Anchor", "Choose the Bar for this Sidebar.", 5, nil, nil, disabledFunc) or nil,
-			Additional = self:NewInput("Additional Frames", "Type in any additional frame names (seperated by commas), that you would like to show/hide with the Sidebar.", 6, true, nil, disabledFunc),
-			empty2 = self:NewDesc(" ", 7),
-			[""] = self:NewPosSliders(side.." Bar "..num, 8, false, function() return GetAnchor(sidebars[side..num].Main) end, true, nil, disabledPosFunc),
-			Scale = self:NewSlider("Scale", "Choose the Scale for this Sidebar.", 9, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
-			AutoPosEnable = isBarAddOnLoaded and self:NewToggle("Stop touching me!", "Whether or not to have LUI handle your Bar Positioning.", 10, true, nil, disabledFunc) or nil,
-			HideEmpty = not isBarAddOnLoaded and self:NewToggle("Hide Empty Buttons", nil, 11, true, nil, disabledFunc) or nil,
-			empty3 = self:NewDesc(" ", 12),
+	local option = self:NewGroup(side.." Bar "..num, order, false, InCombatLockdown, {
+		header1 = self:NewHeader(side.." Bar "..num.." Settings", 0),
+		Enable = self:NewToggle("Show "..side.." Bar "..num, nil, 1, true),
+		empty1 = self:NewDesc(" ", 2),
+		Intro = isBarAddOnLoaded and self:NewDesc("Which Bar do you want to use for this Sidebar?\nChoose one or type in the MainAnchor manually.\n\nMake sure your Bar is set to 6 buttons/2 columns and isn't used for another Sidebar.\nLUI will position your Bar automatically.", 3) or nil,
+		AnchorDropDown = isBarAddOnLoaded and self:NewSelect("Anchor", nil, 4, barAnchors) or nil,
+		Anchor = isBarAddOnLoaded and self:NewInput("Anchor", "Choose the Bar for this Sidebar.", 5, nil, nil, disabledFunc) or nil,
+		Additional = self:NewInput("Additional Frames", "Type in any additional frame names (seperated by commas), that you would like to show/hide with the Sidebar.", 6, true, nil, disabledFunc),
+		empty2 = self:NewDesc(" ", 7),
+		[""] = self:NewPosSliders(side.." Bar "..num, 8, false, function() return GetAnchor(sidebars[side..num].Main) end, true, nil, disabledPosFunc),
+		Scale = self:NewSlider("Scale", "Choose the Scale for this Sidebar.", 9, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
+		AutoPosEnable = isBarAddOnLoaded and self:NewToggle("Stop touching me!", "Whether or not to have LUI handle your Bar Positioning.", 10, true, nil, disabledFunc) or nil,
+		HideEmpty = not isBarAddOnLoaded and self:NewToggle("Hide Empty Buttons", nil, 11, true, nil, disabledFunc) or nil,
+		empty3 = self:NewDesc(" ", 12),
 		Offset = self:NewInputNumber("Y Offset", "Y Offset for your Sidebar", 13, setOptionPoints, nil, disabledFunc),
-			OpenInstant = self:NewToggle("Open Instant", "Whether or not to show an open/close animation.", 14, true, nil, disabledFunc),
-			State = not isBarAddOnLoaded and self:NewGroup("State Settings", 15, getState, setSidebarState, true, {
-				["1"] = self:NewSelect("Default", "Choose the State for "..side.." Bar "..num..".\n\nDefaults:\nLUI: "..defaultstate["Sidebar"..side..num][1].."\nBlizzard: "..blizzstate["Sidebar"..side..num][1],
-					1, statelist, nil, false, nil, disabledFunc),
-			}) or nil,
-		})
+		OpenInstant = self:NewToggle("Open Instant", "Whether or not to show an open/close animation.", 14, true, nil, disabledFunc),
+		State = not isBarAddOnLoaded and self:NewGroup("State Settings", 15, getState, setSidebarState, true, {
+			["1"] = self:NewSelect("Default", "Choose the State for "..side.." Bar "..num..".\n\nDefaults:\nLUI: "..defaultstate["Sidebar"..side..num][1].."\nBlizzard: "..blizzstate["Sidebar"..side..num][1],
+				1, statelist, nil, false, nil, disabledFunc),
+		}) or nil,
+	})
 
-		if option.args.AnchorDropDown then
-			option.args.AnchorDropDown.desc = function(info)
-				info[#info] = "Anchor"
-				return "Choose the Bar for this Sidebar.\n\nDefault: "..dbd(info)
-			end
-			option.args.AnchorDropDown.get = function(info)
-				info[#info] = "Anchor"
-				local val = db(info)
-				for k, v in pairs(info.option.values()) do
-					if v == val then
-						return k
-					end
+	if option.args.AnchorDropDown then
+		option.args.AnchorDropDown.desc = function(info)
+			info[#info] = "Anchor"
+			return "Choose the Bar for this Sidebar.\n\nDefault: "..dbd(info)
+		end
+		option.args.AnchorDropDown.get = function(info)
+			info[#info] = "Anchor"
+			local val = db(info)
+			for k, v in pairs(info.option.values()) do
+				if v == val then
+					return k
 				end
 			end
-			option.args.AnchorDropDown.set = function(info, value)
-				info[#info] = "Anchor"
-				db(info, info.option.values()[value])
-				SidebarSetAnchor(side, num)
-			end
 		end
-
-		return option
+		option.args.AnchorDropDown.set = function(info, value)
+			info[#info] = "Anchor"
+			db(info, info.option.values()[value])
+			SidebarSetAnchor(side, num)
+		end
 	end
 
-	local function createOtherBarOptions(name, order, frame, dbName, multiRow)
-		local specialBar = name == "Extra Action Bar"
+	return option
+end
+
+local function createOtherBarOptions(name, order, frame, dbName, multiRow)
+	local specialBar = name == "Extra Action Bar"
 	local function setDummyBar()
 		if InCombatLockdown() then return end
 		toggleDummyBar(ExtraActionBarFrame)
 	end
 
-		local option = self:NewGroup(name, order, false, InCombatLockdown, {
-			header0 = self:NewHeader(name.." Settings", 0),
-			Enable = self:NewToggle("Show "..name, nil, 1, true),
-			[""] = self:NewPosSliders(name, 2, false, frame, true, nil, disabled[name]),
-		Point = self:NewSelect("Point", "Choose the Point for the "..name..".", 3, positions, nil, setOptionPoints, nil, disabled[name]),
-			Scale = self:NewSlider("Scale", "Choose the Scale for the "..name..".", 4, 0.1, 1.5, 0.05, true, true, nil, nil, disabled[name]),
+	local option = self:NewGroup(name, order, false, InCombatLockdown, {
+		header0 = self:NewHeader(name.." Settings", 0),
+		Enable = self:NewToggle("Show "..name, nil, 1, true),
+		[""] = self:NewPosSliders(name, 2, false, frame, true, nil, disabled[name]),
+		Point = self:NewSelect("Point", "Choose the Point for the "..name..".", 3, LUI.Points, nil, setOptionPoints, nil, disabled[name]),
+		Scale = self:NewSlider("Scale", "Choose the Scale for the "..name..".", 4, 0.1, 1.5, 0.05, true, true, nil, nil, disabled[name]),
 
-			HideTextures = specialBar and self:NewToggle("Hide Textures", "Whether or not to hide "..name.." textures.", 5, true) or nil,
-			DummyBar = specialBar and self:NewExecute("Show Dummy "..name, "Click to show/hide a dummy "..name..".", 6, setDummyBar, nil, disabled[name]) or nil,
+		HideTextures = specialBar and self:NewToggle("Hide Textures", "Whether or not to hide "..name.." textures.", 5, true) or nil,
+		DummyBar = specialBar and self:NewExecute("Show Dummy "..name, "Click to show/hide a dummy "..name..".", 6, setDummyBar, nil, disabled[name]) or nil,
 
-			NumPerRow = multiRow and self:NewSlider("Buttons per Row", "Choose the Number of Buttons per Row.", 5, 1, 10, 1, true, nil, nil, nil, disabled[name]) or nil,
-			--Fader = (dbName and self:NewGroup("Fader", 6, true, disabled[name], Fader:CreateFaderOptions(_G[frame], db[dbName].Fader, dbd[dbName].Fader, true))) or nil,
-		})
+		NumPerRow = multiRow and self:NewSlider("Buttons per Row", "Choose the Number of Buttons per Row.", 5, 1, 10, 1, true, nil, nil, nil, disabled[name]) or nil,
+		--Fader = (dbName and self:NewGroup("Fader", 6, true, disabled[name], Fader:CreateFaderOptions(_G[frame], db[dbName].Fader, dbd[dbName].Fader, true))) or nil,
+	})
 
-		return option
-	end
+	return option
+end
 
 function module:LoadOptions()
 	local dryCall = function() module:Refresh() end
