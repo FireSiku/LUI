@@ -813,9 +813,9 @@ function module:SetPetBar()
 	ToggleBar(LUIPetBar, db.PetBar.Enable)
 end
 
-function module:SetShapeshiftBar()
-	if not LUIShapeshiftBar then
-		local bar = CreateFrame("Frame", "LUIShapeshiftBar", UIParent, "SecureHandlerStateTemplate")
+function module:SetStanceBar()
+	if not LUIStanceBar then
+		local bar = CreateFrame("Frame", "LUIStanceBar", UIParent, "SecureHandlerStateTemplate")
 		bar.buttons = {}
 
 		StanceBarFrame:SetParent(bar)
@@ -831,18 +831,18 @@ function module:SetShapeshiftBar()
 			bar.buttons[i] = button
 		end
 
-		local function MoveShapeshift()
+		local function MoveStance()
 			if InCombatLockdown() then return end
 
 			StanceButton1:ClearAllPoints()
 			StanceButton1:SetPoint("TOPLEFT", bar, "TOPLEFT", 0, 0)
 
-			Configure(LUIShapeshiftBar, 10, db.ShapeshiftBar.NumPerRow)
+			Configure(LUIStanceBar, 10, db.StanceBar.NumPerRow)
 		end
 
 		-- DO NOT CHANGE
-		hooksecurefunc("StanceBar_Update", MoveShapeshift)
-		hooksecurefunc("StanceBar_UpdateState", MoveShapeshift)
+		hooksecurefunc("StanceBar_Update", MoveStance)
+		hooksecurefunc("StanceBar_UpdateState", MoveStance)
 
 		if Masque then
 			local group = Masque:Group("LUI", "Stance Bar")
@@ -852,13 +852,13 @@ function module:SetShapeshiftBar()
 		end
 	end
 
-	local scale = db.ShapeshiftBar.Scale
-	LUIShapeshiftBar:ClearAllPoints()
-	LUIShapeshiftBar:SetPoint(db.ShapeshiftBar.Point, UIParent, db.ShapeshiftBar.Point, db.ShapeshiftBar.X / scale, db.ShapeshiftBar.Y / scale)
-	LUIShapeshiftBar:SetScale(scale)
+	local scale = db.StanceBar.Scale
+	LUIStanceBar:ClearAllPoints()
+	LUIStanceBar:SetPoint(db.StanceBar.Point, UIParent, db.StanceBar.Point, db.StanceBar.X / scale, db.StanceBar.Y / scale)
+	LUIStanceBar:SetScale(scale)
 
-	Configure(LUIShapeshiftBar, 10, db.ShapeshiftBar.NumPerRow)
-	ToggleBar(LUIShapeshiftBar, db.ShapeshiftBar.Enable and GetNumShapeshiftForms() > 0)
+	Configure(LUIStanceBar, 10, db.StanceBar.NumPerRow)
+	ToggleBar(LUIStanceBar, db.StanceBar.Enable and GetNumShapeshiftForms() > 0)
 end
 
 function module:SetVehicleExit()
@@ -1198,7 +1198,7 @@ local function StylePetButtons()
 	end
 end
 
-local function StyleShapeshiftButtons()
+local function StyleStanceButtons()
 	for i = 1, 10 do
 		StyleButton(_G['StanceButton'..i])
 	end
@@ -1308,8 +1308,8 @@ function module:HookActionButton(button)
 	end
 	--Prevent rehooking.
 	if not module:IsHooked("StanceBar_Update") then
-		module:SecureHook("StanceBar_Update", StyleShapeshiftButtons)
-		module:SecureHook("StanceBar_UpdateState", StyleShapeshiftButtons)
+		module:SecureHook("StanceBar_Update", StyleStanceButtons)
+		module:SecureHook("StanceBar_UpdateState", StyleStanceButtons)
 		module:SecureHook("PetActionBar_Update", StylePetButtons)
 		module:SecureHook("ActionButton_UpdateFlyout", StyleFlyout)
 		SpellFlyout:HookScript("OnShow", StyleFlyoutButton)
@@ -1345,7 +1345,7 @@ function module:SetBars()
 		end
 
 		module:SetPetBar()
-		module:SetShapeshiftBar()
+		module:SetStanceBar()
 		module:SetVehicleExit()
 		module:SetExtraActionBar()
 
@@ -1657,7 +1657,7 @@ module.defaults = {
 				UseGlobalSettings = true,
 			},
 		},
-		ShapeshiftBar = {
+		StanceBar = {
 			Enable = true,
 			X = 42.5,
 			Y = -267.8,
@@ -1802,7 +1802,7 @@ local optIsDisabled = {
 	TopTex = function() return not db.TopTexture.Enable end,
 	TopTexAnim = function() return not db.TopTexture.Enable or not db.TopTexture.Animation end,
 	BottomTex = function() return not db.BottomTexture.Enable end,
-	["Shapeshift Bar"] = function() return not db.ShapeshiftBar.Enable end,
+	["Stance Bar"] = function() return not db.StanceBar.Enable end,
 	["Pet Bar"] = function() return not db.PetBar.Enable end,
 	["Vehicle Exit"] = function() return not db.VehicleExit.Enable end,
 	Hotkey = function() return not db.General.ShowHotkey end,
@@ -1940,7 +1940,7 @@ function module:LoadOptions()
 		SidebarRight2 = createSideBarOptions("Right", 2, 11),
 		SidebarLeft1 = createSideBarOptions("Left", 1, 12),
 		SidebarLeft2 = createSideBarOptions("Left", 2, 13),
-		ShapeshiftBar = createOtherBarOptions("Shapeshift/Stance Bar", 14, "LUIShapeshiftBar", "ShapeshiftBar", true),
+		StanceBar = createOtherBarOptions("Shapeshift/Stance Bar", 14, "LUIStanceBar", "StanceBar", true),
 		PetBar = createOtherBarOptions("Pet Bar", 15, "LUIPetBar", "PetBar", true),
 		VehicleExit = createOtherBarOptions("Vehicle Exit Button", 17, "LUIVehicleExit"),
 		ExtraActionBar = createOtherBarOptions("Extra Action Bar", 18, "LUIExtraActionBar"),
@@ -1970,7 +1970,7 @@ function module:Refresh(...)
 		end
 
 		module:SetPetBar()
-		module:SetShapeshiftBar()
+		module:SetStanceBar()
 		module:SetVehicleExit()
 		module:SetExtraActionBar()
 	end
@@ -2068,7 +2068,7 @@ function module:OnInitialize()
 end
 
 function module:PLAYER_SPECIALIZATION_CHANGED()
-	module:SetShapeshiftBar()
+	module:SetStanceBar()
 end
 
 function module:OnEnable()
