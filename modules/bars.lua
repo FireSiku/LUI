@@ -255,7 +255,7 @@ local function SidebarSetAnchor(side, id)
 	sb:SetScale(1 / 0.85 * bardb.Scale)
 	sb:Show()
 
-	if bardb.AutoPosEnable ~= true and isBarAddOnLoaded == true then return end
+	if not bardb.AutoPosEnable and isBarAddOnLoaded then return end
 
 	local anchorName = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..sideID
 	sidebars[sideID].Main = anchorName
@@ -269,18 +269,24 @@ local function SidebarSetAnchor(side, id)
 	if not anchor then return end
 	if not anchor:IsShown() then return end
 
-	if not isBarAddOnLoaded then anchor:SetScale(bardb.Scale) end
+	if not isBarAddOnLoaded then 
+		anchor:SetScale(bardb.Scale)
+	end
 
 	local scale = anchor:GetEffectiveScale()
 	local scaleUI = UIParent:GetEffectiveScale()
 
-	local x = xOffset + ( scaleUI * math.floor( (side == "Right" and -90 or 20) / scale ) / 0.85 * bardb.Scale)
-	local y = yOffset + ( scaleUI * math.floor( 157 + sbOffset / scale / 0.85 * bardb.Scale ) )
+	local x = LUI:Scale(xOffset - LUI:Scale(5))
+	local y = LUI:Scale(yOffset - LUI:Scale(16))
 
+	-- local x = xOffset + ( scaleUI * math.floor( (side == "Right" and -90 or 20) / scale ) / 0.85 * bardb.Scale)
+	-- local y = yOffset + ( scaleUI * math.floor( 157 + sbOffset / scale / 0.85 * bardb.Scale ) )
+
+	local barAnchor = select(5, sb:GetChildren())
 	anchor:SetFrameStrata("BACKGROUND")
 	anchor:SetFrameLevel(2)
 	anchor:ClearAllPoints()
-	anchor:SetPoint(side, UIParent, side, x, y)
+	anchor:SetPoint("TOP", barAnchor, "TOP", x, y)
 end
 
 local function ToggleBar(bar, condition)
@@ -890,7 +896,7 @@ end
 
 function module:SetExtraActionBar()
 	local bar = LUIExtraActionBar
-	if not LUIExtraActionBar then
+	if not bar then
 		bar = CreateFrame("Frame", "LUIExtraActionBar", UIParent, "SecureHandlerStateTemplate")
 		bar:SetHeight(52)
 		bar:SetWidth(52)
@@ -986,7 +992,7 @@ local function StyleButton(button)
 		end
 	end
 
-	if button.__Styled == true then return end
+	if button.__Styled then return end
 
 	table.insert(buttonlist, button)
 	button.__Styled = true
