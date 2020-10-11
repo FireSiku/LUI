@@ -56,24 +56,17 @@ local FallbackMT = {
 }
 
 local statetexts = setmetatable({
-	["DRUID"] = {"Default", "Bear Form", "Cat Form", "Cat Form (Prowl)", "Moonkin Form", "Tree of Life Form"},
-	["WARRIOR"] = {"Default", "Battle Stance", "Defensive Stance", "Berserker Stance"},
-	["PRIEST"] = {"Default", "Shadow Form"},
-	["ROGUE"] = {"Default", "Stealth", "Shadowdance"},
-	["WARLOCK"] = {"Default", "Metamorphosis"},
-	["MONK"] = {"Default", "Stance of the Fierce Tiger", "Stance of the Sturdy Ox", "Stance of the Wise Serpent"},
+	["DRUID"] = {"Default", "Bear Form", "Cat Form", "Cat Form (Prowl)", "Moonkin Form"},
+	["ROGUE"] = {"Default", "Stealth"},
 	["DEFAULT"] = {"Default"},
 }, FallbackMT)
 
 local statetext = statetexts[class]
 
 local defaultstates = setmetatable({
-	["DRUID"] = {"1", "3", "5", "5", "4", "6"},
+	["DRUID"] = {"1", "3", "5", "5", "4"},
 	["WARRIOR"] = {"1", "3", "5", "4"},
-	["PRIEST"] = {"1", "3"},
-	["ROGUE"] = {"1", "3", "5"},
-	["WARLOCK"] = {"1", "3"},
-	["MONK"] = {"1", "3", "5", "4"},
+	["ROGUE"] = {"1", "3"},
 	["DEFAULT"] = {"1"}
 }, FallbackMT)
 
@@ -91,12 +84,8 @@ local defaultstate = {
 }
 
 local blizzstates = setmetatable({
-	["DRUID"] = {"1", "7", "8", "8", "9", "10"},
-	["WARRIOR"] = {"1", "7", "8", "9"},
-	["PRIEST"] = {"1", "7"},
-	["ROGUE"] = {"1", "7", "8"},
-	["WARLOCK"] = {"1", "7"},
-	["MONK"] = {"1", "7", "8", "9"},
+	["DRUID"] = {"1", "7", "8", "8", "9"},
+	["ROGUE"] = {"1", "7"},
 	["DEFAULT"] = {"1"}
 }, FallbackMT)
 
@@ -119,27 +108,9 @@ local Page = {
 		"[bonusbar:1,nostealth] %s; ", -- Cat Form
 		"[bonusbar:1,stealth] %s; ", -- Cat Form (prowling)
 		"[bonusbar:4] %s; ", -- Moonkin Form
-		"[bonusbar:2] %s; ", -- Tree of Life Form
-	},
-	["WARRIOR"] = {
-		"[bonusbar:1] %s; ", -- Battle Stance
-		"[bonusbar:2] %s; ", -- Berserker Stance
-		"[bonusbar:3] %s; ", -- Defensive Stance
-	},
-	["PRIEST"] = {
-		"[bonusbar:1] %s; " -- Shadow Form
 	},
 	["ROGUE"] = {
 		"[bonusbar:1] %s; ", -- Stealth
-		"[form:3] %s; " -- Shadowdance
-	},
-	["WARLOCK"] = {
-		"[form:2] %s; " -- Metamorphosis
-	},
-	["MONK"] = {
-		"[bonusbar:1] %s; ", -- Stance of the Fierce Tiger
-		"[bonusbar:2] %s; ", -- Stance of the Sturdy Ox
-		"[bonusbar:3] %s; ", -- Stance of the Wise Serpent
 	},
 }
 
@@ -1731,6 +1702,10 @@ module.defaults = {
 	},
 }
 
+function T()
+	return db.Bottombar1.Point
+end
+
 module.childGroups = "select"
 module.getter = "generic"
 module.setter = "Refresh"
@@ -1783,9 +1758,6 @@ local function createBottomBarOptions(num, order)
 	if num == 1 then
 		for i, name in ipairs(statetext) do							   
 			option.args.State.args[tostring(i)] = module:NewSelect(name, format("Choose the State for %s.\n\nDefaults:\nLUI: %s\nBlizzard: %s", name, defaultstate.Bottombar1[i], blizzstate.Bottombar1[i]), i, statelist, nil, false, nil, disabledFunc)
-		end
-		if class == "DRUID" then
-			option.args.State.args[tostring(#statetext)].disabled = true -- disable tree of life
 		end
 	else	
 		option.args.State.args["1"] = module:NewSelect("Default", format("Choose the State for Action Bar %s.\n\nDefaults:\nLUI: %s\nBlizzard: %s", num, defaultstate["Bottombar"..num][1], blizzstate["Bottombar"..num][1]), 1, statelist, nil, false, nil, disabledFunc)
