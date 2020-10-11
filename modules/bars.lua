@@ -46,6 +46,7 @@ local barAnchors = {
 	"Dominos Bar10",
 }
 local statelist = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
+local pointList = {"CENTER", "TOP", "BOTTOM", "LEFT", "RIGHT", "TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT"}
 
 local isBarAddOnLoaded
 
@@ -1743,7 +1744,7 @@ local function createBottomBarOptions(num, order)
 		empty1 = (num ~= 1) and  module:NewDesc(" ", 2) or nil,
 		HideEmpty = module:NewToggle("Hide Empty Buttons", nil, 3, true, nil, disabledFunc),
 		[""] = module:NewPosSliders("Action Bar "..num, 4, false, "LUIBar"..num, true, nil, disabledFunc),
-		Point = module:NewSelect("Point", "Choose the Point for your Action Bar "..num, 5, LUI.Points, nil, setOptionPoints, nil, disabledFunc),
+		Point = module:NewSelect("Point", "Choose the Point for your Action Bar "..num, 5, pointList, nil, setOptionPoints, nil, disabledFunc),
 		empty2 = module:NewDesc(" ", 6),
 		Scale = module:NewSlider("Scale", "Scale of Action Bar "..num..".", 7, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
 		empty3 = module:NewDesc(" ", 8),
@@ -1849,7 +1850,7 @@ local function createOtherBarOptions(name, order, frame, dbName, multiRow)
 		header0 = module:NewHeader(name.." Settings", 0),
 		Enable = module:NewToggle("Show "..name, nil, 1, true),
 		[""] = module:NewPosSliders(name, 2, false, frame, true, nil, optIsDisabled[name]),
-		Point = module:NewSelect("Point", "Choose the Point for the "..name..".", 3, LUI.Points, nil, setOptionPoints, nil, optIsDisabled[name]),
+		Point = module:NewSelect("Point", "Choose the Point for the "..name..".", 3, pointList, nil, setOptionPoints, nil, optIsDisabled[name]),
 		Scale = module:NewSlider("Scale", "Choose the Scale for the "..name..".", 4, 0.1, 1.5, 0.05, true, true, nil, nil, optIsDisabled[name]),
 
 		HideTextures = specialBar and module:NewToggle("Hide Textures", "Whether or not to hide "..name.." textures.", 5, true) or nil,
