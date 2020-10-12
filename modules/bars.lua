@@ -23,9 +23,7 @@ local buttonlist = {}
 local bars = {}
 local sidebars = {}
 
-local isBarAddOnLoaded
-
-local barAnchors = {
+local PRESET_BAR_ANCHORS = {
 	"BT4Bar1",
 	"BT4Bar2",
 	"BT4Bar3",
@@ -47,12 +45,14 @@ local barAnchors = {
 	"Dominos Bar9",
 	"Dominos Bar10",
 }
-local statelist = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
-local pointList = {"CENTER", "TOP", "BOTTOM", "LEFT", "RIGHT", "TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT"}
 
-local statetext = {"Default"}
+local g_isBarAddOnLoaded
+local g_stateList = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
+local g_pointList = {"CENTER", "TOP", "BOTTOM", "LEFT", "RIGHT", "TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT"}
 
-local defaultstate = {
+local g_stateText = {"Default"}
+
+local g_defaultStates = {
 	Bottombar1 = {"1"},
 	Bottombar2 = {"2"},
 	Bottombar3 = {"3"},
@@ -67,11 +67,11 @@ local defaultstate = {
 
 do
 	if class == "DRUID" then
-		statetext = {"Default", "Bear Form", "Cat Form", "Cat Form (Prowl)", "Moonkin Form"}
-		defaultstate.Bottombar1 = {"1", "9", "7", "7", "1"}
+		g_stateText = {"Default", "Bear Form", "Cat Form", "Cat Form (Prowl)", "Moonkin Form"}
+		g_defaultStates.Bottombar1 = {"1", "9", "7", "7", "1"}
 	elseif class == "ROGUE" then
-		statetext = {"Default", "Stealth"}
-		defaultstate.Bottombar1 = {"1", "7"}
+		g_stateText = {"Default", "Stealth"}
+		g_defaultStates.Bottombar1 = {"1", "7"}
 	end
 end
 
@@ -199,9 +199,9 @@ local function SidebarSetAnchor(side, id)
 	sb:SetScale(1 / 0.85 * bardb.Scale)
 	sb:Show()
 
-	if not bardb.AutoPosEnable and isBarAddOnLoaded then return end
+	if not bardb.AutoPosEnable and g_isBarAddOnLoaded then return end
 
-	local anchorName = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..sideID
+	local anchorName = g_isBarAddOnLoaded and bardb.Anchor or "LUIBar"..sideID
 	sidebars[sideID].Main = anchorName
 
 	local xOffset = tonumber(bardb.X)
@@ -213,7 +213,7 @@ local function SidebarSetAnchor(side, id)
 	if not anchor then return end
 	if not anchor:IsShown() then return end
 
-	if not isBarAddOnLoaded then 
+	if not g_isBarAddOnLoaded then 
 		anchor:SetScale(bardb.Scale)
 	end
 
@@ -233,11 +233,11 @@ local function SidebarSetAnchor(side, id)
 	anchor:SetPoint("TOP", barAnchor, "TOP", x, y)
 end
 
-local function ToggleBar(bar, condition)
+local function ShowIf(frame, condition)
 	if condition then
-		bar:Show()
+		frame:Show()
 	else
-		bar:Hide()
+		frame:Hide()
 	end
 end
 
@@ -354,12 +354,12 @@ function module:CreateBarBackground()
 	local top = LUI:CreateMeAFrame("FRAME", "LUIBarsTopBG", UIParent, 1024, 64, 1, "BACKGROUND", 2, "BOTTOM", UIParent, "BOTTOM", tonumber(db.TopTexture.X), tonumber(db.TopTexture.Y), db.TopTexture.Alpha)
 	CreateBackdrop(top, "bars_top")
 	top:SetBackdropColor(unpack(Themes.db.bar))
-	ToggleBar(top, db.TopTexture.Enable)
+	ShowIf(top, db.TopTexture.Enable)
 
 	local bottom = LUI:CreateMeAFrame("FRAME", "LUIBarsBottomBG", UIParent, 512, 64, 1, "BACKGROUND", 0, "BOTTOM", UIParent, "BOTTOM", tonumber(db.BottomTexture.X), tonumber(db.BottomTexture.Y), db.BottomTexture.Alpha)
 	CreateBackdrop(bottom, "bars_bottom")
 	bottom:SetBackdropColor(unpack(Themes.db.bar2))
-	ToggleBar(bottom, db.BottomTexture.Enable)
+	ShowIf(bottom, db.BottomTexture.Enable)
 end
 
 function module:CreateSidebarSlider(side, id)
@@ -376,7 +376,7 @@ function module:CreateSidebarSlider(side, id)
 
 	sidebars[sideID] = sb
 
-	sb.Main = isBarAddOnLoaded and bardb.Anchor or "LUIBar"..sideID
+	sb.Main = g_isBarAddOnLoaded and bardb.Anchor or "LUIBar"..sideID
 	sb.Additional = GetAdditionalAnchors(bardb.Additional)
 
 	sb.timerout, sb.timerin = 0, 0
@@ -574,7 +574,7 @@ function module:CreateSidebarSlider(side, id)
 		SidebarSetAlpha(frame, 0)
 	end
 
-	ToggleBar(sb.Anchor, bardb.Enable)
+	ShowIf(sb.Anchor, bardb.Enable)
 	if bardb.Enable and bardb.IsOpen then
 		sb.sidebaropen = 1
 		sb.SlideOut:Show()
@@ -664,7 +664,7 @@ function module:SetBottomBar(id)
 		UnregisterStateDriver(bar, "visibility")
 		bar:Hide()
 	end
-	ToggleBar(bar, bardb.Enable)
+	ShowIf(bar, bardb.Enable)
 end
 
 function module:SetSideBar(side, id)
@@ -718,7 +718,7 @@ function module:SetSideBar(side, id)
 
 	Configure(bar, 12, 2)
 	bar:SetScale(bardb.Scale)
-	ToggleBar(bar, bardb.Enable)
+	ShowIf(bar, bardb.Enable)
 end
 
 function module:SetPetBar()
@@ -760,7 +760,7 @@ function module:SetPetBar()
 	LUIPetBar:SetScale(scale)
 
 	Configure(LUIPetBar, 10, db.PetBar.NumPerRow)
-	ToggleBar(LUIPetBar, db.PetBar.Enable)
+	ShowIf(LUIPetBar, db.PetBar.Enable)
 end
 
 function module:SetStanceBar()
@@ -808,7 +808,7 @@ function module:SetStanceBar()
 	LUIStanceBar:SetScale(scale)
 
 	Configure(LUIStanceBar, 10, db.StanceBar.NumPerRow)
-	ToggleBar(LUIStanceBar, db.StanceBar.Enable and GetNumShapeshiftForms() > 0)
+	ShowIf(LUIStanceBar, db.StanceBar.Enable and GetNumShapeshiftForms() > 0)
 end
 
 function module:SetVehicleExit()
@@ -835,7 +835,7 @@ function module:SetVehicleExit()
 	LUIVehicleExit:SetPoint(db.VehicleExit.Point, UIParent, db.VehicleExit.Point, db.VehicleExit.X / scale, db.VehicleExit.Y / scale)
 	LUIVehicleExit:SetScale(scale)
 
-	ToggleBar(LUIVehicleExit, db.VehicleExit.Enable)
+	ShowIf(LUIVehicleExit, db.VehicleExit.Enable)
 end
 
 function module:SetExtraActionBar()
@@ -858,8 +858,8 @@ function module:SetExtraActionBar()
 	bar:SetPoint(db.ExtraActionBar.Point, UIParent, db.ExtraActionBar.Point, db.ExtraActionBar.X / scale, db.ExtraActionBar.Y / scale)
 	bar:SetScale(scale)
 
-	ToggleBar(bar.content.button.style, not db.ExtraActionBar.HideTextures)
-	ToggleBar(bar, db.ExtraActionBar.Enable)
+	ShowIf(bar.content.button.style, not db.ExtraActionBar.HideTextures)
+	ShowIf(bar, db.ExtraActionBar.Enable)
 end
 
 function module:HideBlizzard()
@@ -1281,7 +1281,7 @@ end
 
 function module:SetBars()
 	if not (IsAddOnLoaded("Bartender4") or IsAddOnLoaded("Dominos") or IsAddOnLoaded("Macaroon")) and db.General.Enable then
-		if not db.StatesLoaded then LoadStates(defaultstate) end
+		if not db.StatesLoaded then LoadStates(g_defaultStates) end
 
 		module:SetLibKeyBound()
 
@@ -1307,7 +1307,7 @@ function module:SetBars()
 		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 
 	else
-		isBarAddOnLoaded = true
+		g_isBarAddOnLoaded = true
 	end
 
 	module:CreateBarBackground()
@@ -1708,7 +1708,7 @@ local function setBottombarState(info, value)
 end
 
 local function createBottomBarOptions(num, order)
-	if isBarAddOnLoaded then return end
+	if g_isBarAddOnLoaded then return end
 	local disabledFunc = function() return not db["Bottombar"..num].Enable end
 
 	local option = module:NewGroup("Action Bar "..num, order, false, InCombatLockdown, {
@@ -1717,24 +1717,24 @@ local function createBottomBarOptions(num, order)
 		empty1 = (num ~= 1) and  module:NewDesc(" ", 2) or nil,
 		HideEmpty = module:NewToggle("Hide Empty Buttons", nil, 3, true, nil, disabledFunc),
 		[""] = module:NewPosSliders("Action Bar "..num, 4, false, "LUIBar"..num, true, nil, disabledFunc),
-		Point = module:NewSelect("Point", "Choose the Point for your Action Bar "..num, 5, pointList, nil, setOptionPoints, nil, disabledFunc),
+		Point = module:NewSelect("Point", "Choose the Point for your Action Bar "..num, 5, g_pointList, nil, setOptionPoints, nil, disabledFunc),
 		empty2 = module:NewDesc(" ", 6),
 		Scale = module:NewSlider("Scale", "Scale of Action Bar "..num..".", 7, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
 		empty3 = module:NewDesc(" ", 8),
 		NumPerRow = module:NewSlider("Buttons Per Row", "Choose the Number of Buttons per row for your Action Bar "..num..".", 9, 1, 12, 1, true, nil, nil, disabledFunc),
 		NumButtons = module:NewSlider("Number of Buttons", "Choose the Number of Buttons for your Action Bar "..num..".", 10, 1, 12, 1, true, nil, nil, disabledFunc),
 		State = module:NewGroup("State Settings", 11, getState, setBottombarState, true, {
-			Alt = module:NewSelect("Alt", "Choose the Alt State for Action Bar "..num..".\n\nDefault: "..defaultstate["Bottombar"..num][1], 25, statelist, nil, false, nil, disabledFunc),
-			Ctrl = module:NewSelect("Ctrl", "Choose the Ctrl State for Action Bar "..num..".\n\nDefault: "..defaultstate["Bottombar"..num][1], 26, statelist, nil, false, nil, disabledFunc),
+			Alt = module:NewSelect("Alt", "Choose the Alt State for Action Bar "..num..".\n\nDefault: "..g_defaultStates["Bottombar"..num][1], 25, g_stateList, nil, false, nil, disabledFunc),
+			Ctrl = module:NewSelect("Ctrl", "Choose the Ctrl State for Action Bar "..num..".\n\nDefault: "..g_defaultStates["Bottombar"..num][1], 26, g_stateList, nil, false, nil, disabledFunc),
 		}),
 	})
 
 	if num == 1 then
-		for i, name in ipairs(statetext) do							   
-			option.args.State.args[tostring(i)] = module:NewSelect(name, format("Choose the State for %s.\n\nDefaults: %s", name, defaultstate.Bottombar1[i]), i, statelist, nil, false, nil, disabledFunc)
+		for i, name in ipairs(g_stateText) do							   
+			option.args.State.args[tostring(i)] = module:NewSelect(name, format("Choose the State for %s.\n\nDefaults: %s", name, g_defaultStates.Bottombar1[i]), i, g_stateList, nil, false, nil, disabledFunc)
 		end
 	else	
-		option.args.State.args["1"] = module:NewSelect("Default", format("Choose the State for Action Bar %s.\n\nDefaults: %s", num, defaultstate["Bottombar"..num][1]), 1, statelist, nil, false, nil, disabledFunc)
+		option.args.State.args["1"] = module:NewSelect("Default", format("Choose the State for Action Bar %s.\n\nDefaults: %s", num, g_defaultStates["Bottombar"..num][1]), 1, g_stateList, nil, false, nil, disabledFunc)
 	end
 
 	return option
@@ -1764,26 +1764,26 @@ local optIsDisabled = {
 
 local function createSideBarOptions(side, num, order)
 	local disabledFunc = function() return not db["Sidebar"..side..num].Enable end
-	local disabledPosFunc = function() return not db["Sidebar"..side..num].Enable or (isBarAddOnLoaded and not db["Sidebar"..side..num].AutoPosEnable) end
+	local disabledPosFunc = function() return not db["Sidebar"..side..num].Enable or (g_isBarAddOnLoaded and not db["Sidebar"..side..num].AutoPosEnable) end
 
 	local option = module:NewGroup(side.." Bar "..num, order, false, InCombatLockdown, {
 		header1 = module:NewHeader(side.." Bar "..num.." Settings", 0),
 		Enable = module:NewToggle("Show "..side.." Bar "..num, nil, 1, true),
 		empty1 = module:NewDesc(" ", 2),
-		Intro = isBarAddOnLoaded and module:NewDesc("Which Bar do you want to use for this Sidebar?\nChoose one or type in the MainAnchor manually.\n\nMake sure your Bar is set to 6 buttons/2 columns and isn't used for another Sidebar.\nLUI will position your Bar automatically.", 3) or nil,
-		AnchorDropDown = isBarAddOnLoaded and module:NewSelect("Anchor", nil, 4, barAnchors) or nil,
-		Anchor = isBarAddOnLoaded and module:NewInput("Anchor", "Choose the Bar for this Sidebar.", 5, nil, nil, disabledFunc) or nil,
+		Intro = g_isBarAddOnLoaded and module:NewDesc("Which Bar do you want to use for this Sidebar?\nChoose one or type in the MainAnchor manually.\n\nMake sure your Bar is set to 6 buttons/2 columns and isn't used for another Sidebar.\nLUI will position your Bar automatically.", 3) or nil,
+		AnchorDropDown = g_isBarAddOnLoaded and module:NewSelect("Anchor", nil, 4, PRESET_BAR_ANCHORS) or nil,
+		Anchor = g_isBarAddOnLoaded and module:NewInput("Anchor", "Choose the Bar for this Sidebar.", 5, nil, nil, disabledFunc) or nil,
 		Additional = module:NewInput("Additional Frames", "Type in any additional frame names (seperated by commas), that you would like to show/hide with the Sidebar.", 6, true, nil, disabledFunc),
 		empty2 = module:NewDesc(" ", 7),
 		[""] = module:NewPosSliders(side.." Bar "..num, 8, false, function() return GetAnchor(sidebars[side..num].Main) end, true, nil, disabledPosFunc),
 		Scale = module:NewSlider("Scale", "Choose the Scale for this Sidebar.", 9, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
-		AutoPosEnable = isBarAddOnLoaded and module:NewToggle("Stop touching me!", "Whether or not to have LUI handle your Bar Positioning.", 10, true, nil, disabledFunc) or nil,
-		HideEmpty = not isBarAddOnLoaded and module:NewToggle("Hide Empty Buttons", nil, 11, true, nil, disabledFunc) or nil,
+		AutoPosEnable = g_isBarAddOnLoaded and module:NewToggle("Stop touching me!", "Whether or not to have LUI handle your Bar Positioning.", 10, true, nil, disabledFunc) or nil,
+		HideEmpty = not g_isBarAddOnLoaded and module:NewToggle("Hide Empty Buttons", nil, 11, true, nil, disabledFunc) or nil,
 		empty3 = module:NewDesc(" ", 12),
 		Offset = module:NewInputNumber("Y Offset", "Y Offset for your Sidebar", 13, setOptionPoints, nil, disabledFunc),
 		OpenInstant = module:NewToggle("Open Instant", "Whether or not to show an open/close animation.", 14, true, nil, disabledFunc),
-		State = not isBarAddOnLoaded and module:NewGroup("State Settings", 15, getState, setSidebarState, true, {
-			["1"] = module:NewSelect("Default", "Choose the State for "..side.." Bar "..num..".\n\nDefaults: "..defaultstate["Sidebar"..side..num][1], 1, statelist, nil, false, nil, disabledFunc),
+		State = not g_isBarAddOnLoaded and module:NewGroup("State Settings", 15, getState, setSidebarState, true, {
+			["1"] = module:NewSelect("Default", "Choose the State for "..side.." Bar "..num..".\n\nDefaults: "..g_defaultStates["Sidebar"..side..num][1], 1, g_stateList, nil, false, nil, disabledFunc),
 		}) or nil,
 	})
 
@@ -1812,7 +1812,7 @@ local function createSideBarOptions(side, num, order)
 end
 
 local function createOtherBarOptions(name, order, frame, dbName, multiRow)
-	if isBarAddOnLoaded then return end
+	if g_isBarAddOnLoaded then return end
 	local specialBar = (name == "Extra Action Bar")
 	local function setDummyBar()
 		if InCombatLockdown() then return end
@@ -1823,7 +1823,7 @@ local function createOtherBarOptions(name, order, frame, dbName, multiRow)
 		header0 = module:NewHeader(name.." Settings", 0),
 		Enable = module:NewToggle("Show "..name, nil, 1, true),
 		[""] = module:NewPosSliders(name, 2, false, frame, true, nil, optIsDisabled[name]),
-		Point = module:NewSelect("Point", "Choose the Point for the "..name..".", 3, pointList, nil, setOptionPoints, nil, optIsDisabled[name]),
+		Point = module:NewSelect("Point", "Choose the Point for the "..name..".", 3, g_pointList, nil, setOptionPoints, nil, optIsDisabled[name]),
 		Scale = module:NewSlider("Scale", "Choose the Scale for the "..name..".", 4, 0.1, 1.5, 0.05, true, true, nil, nil, optIsDisabled[name]),
 
 		HideTextures = specialBar and module:NewToggle("Hide Textures", "Whether or not to hide "..name.." textures.", 5, true) or nil,
@@ -1844,26 +1844,26 @@ function module:LoadOptions()
 			empty1 = module:NewDesc(" ", 2),
 			AdjustUIPanels = module:NewToggle("Adjust Blizzard's UI Panel positions", nil, 3, true),
 			empty2 = module:NewDesc(" ", 4),
-			ShowHotkey = module:NewToggle("Show Hotkey Text", nil, 5, true, nil, nil, isBarAddOnLoaded),
-			HotkeySize = module:NewSlider("Hotkey Size", "Choose your Hotkey Fontsize.", 6, 1, 40, 1, true, nil, nil, optIsDisabled.Hotkey, isBarAddOnLoaded),
-			HotkeyFont = module:NewSelect("Hotkey Font", "Choose your Hotkey Font.", 7, widgetLists.font, "LSM30_Font", true, nil, optIsDisabled.Hotkey, isBarAddOnLoaded),
-			HotkeyOutline = module:NewSelect("HotkeyFont Flag", "Choose your Hotkey Fontflag.", 8, LUI.FontFlags, false, dryCall, nil, optIsDisabled.Hotkey, isBarAddOnLoaded),
-			empty3 = module:NewDesc(" ", 9, nil, nil, isBarAddOnLoaded),
-			ShowMacro = module:NewToggle("Show Macro Text", nil, 10, true, nil, nil, isBarAddOnLoaded),
-			MacroSize = module:NewSlider("Macro Size", "Choose your Macro Fontsize.", 11, 1, 40, 1, true, nil, nil, optIsDisabled.Macro, isBarAddOnLoaded),
-			MacroFont = module:NewSelect("Macro Font", "Choose your Macro Font.", 12, widgetLists.font, "LSM30_Font", true, nil, optIsDisabled.Macro, isBarAddOnLoaded),
-			MacroOutline = module:NewSelect("Macro Font Flag", "Choose your Macro Fontflag.", 13, LUI.FontFlags, false, dryCall, nil, optIsDisabled.Macro, isBarAddOnLoaded),
-			empty4 = module:NewDesc(" ", 14, nil, nil, isBarAddOnLoaded),
-			ShowCount = module:NewToggle("Show Count Text", nil, 15, true, nil, nil, isBarAddOnLoaded),
-			CountSize = module:NewSlider("Count Size", "Choose your Count Fontsize.", 16, 1, 40, 1, true, nil, nil, optIsDisabled.Count, isBarAddOnLoaded),
-			CountFont = module:NewSelect("Count Font", "Choose your Count Font.", 17, widgetLists.font, "LSM30_Font", true, nil, optIsDisabled.Count, isBarAddOnLoaded),
-			CountOutline = module:NewSelect("Count Font Flag", "Choose your Count Fontflag.", 18, LUI.FontFlags, false, dryCall, nil, optIsDisabled.Count, isBarAddOnLoaded),
-			empty5 = module:NewDesc(" ", 19, nil, nil, isBarAddOnLoaded),
-			ShowEquipped = module:NewToggle("Show Equipped Border", nil, 20, true, nil, nil, isBarAddOnLoaded),
-			empty6 = module:NewDesc(" ", 21, nil, nil, isBarAddOnLoaded),
-			LoadLUI = module:NewExecute("Load LUI States", "Load the default Bar States.", 21, function() LoadStates(defaultstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
-			empty7 = module:NewDesc(" ", 23, nil, nil, isBarAddOnLoaded),
-			ToggleKB = module:NewExecute("Keybinds", "Toggles Keybinding mode.", 24, function() LibKeyBound:Toggle() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
+			ShowHotkey = module:NewToggle("Show Hotkey Text", nil, 5, true, nil, nil, g_isBarAddOnLoaded),
+			HotkeySize = module:NewSlider("Hotkey Size", "Choose your Hotkey Fontsize.", 6, 1, 40, 1, true, nil, nil, optIsDisabled.Hotkey, g_isBarAddOnLoaded),
+			HotkeyFont = module:NewSelect("Hotkey Font", "Choose your Hotkey Font.", 7, widgetLists.font, "LSM30_Font", true, nil, optIsDisabled.Hotkey, g_isBarAddOnLoaded),
+			HotkeyOutline = module:NewSelect("HotkeyFont Flag", "Choose your Hotkey Fontflag.", 8, LUI.FontFlags, false, dryCall, nil, optIsDisabled.Hotkey, g_isBarAddOnLoaded),
+			empty3 = module:NewDesc(" ", 9, nil, nil, g_isBarAddOnLoaded),
+			ShowMacro = module:NewToggle("Show Macro Text", nil, 10, true, nil, nil, g_isBarAddOnLoaded),
+			MacroSize = module:NewSlider("Macro Size", "Choose your Macro Fontsize.", 11, 1, 40, 1, true, nil, nil, optIsDisabled.Macro, g_isBarAddOnLoaded),
+			MacroFont = module:NewSelect("Macro Font", "Choose your Macro Font.", 12, widgetLists.font, "LSM30_Font", true, nil, optIsDisabled.Macro, g_isBarAddOnLoaded),
+			MacroOutline = module:NewSelect("Macro Font Flag", "Choose your Macro Fontflag.", 13, LUI.FontFlags, false, dryCall, nil, optIsDisabled.Macro, g_isBarAddOnLoaded),
+			empty4 = module:NewDesc(" ", 14, nil, nil, g_isBarAddOnLoaded),
+			ShowCount = module:NewToggle("Show Count Text", nil, 15, true, nil, nil, g_isBarAddOnLoaded),
+			CountSize = module:NewSlider("Count Size", "Choose your Count Fontsize.", 16, 1, 40, 1, true, nil, nil, optIsDisabled.Count, g_isBarAddOnLoaded),
+			CountFont = module:NewSelect("Count Font", "Choose your Count Font.", 17, widgetLists.font, "LSM30_Font", true, nil, optIsDisabled.Count, g_isBarAddOnLoaded),
+			CountOutline = module:NewSelect("Count Font Flag", "Choose your Count Fontflag.", 18, LUI.FontFlags, false, dryCall, nil, optIsDisabled.Count, g_isBarAddOnLoaded),
+			empty5 = module:NewDesc(" ", 19, nil, nil, g_isBarAddOnLoaded),
+			ShowEquipped = module:NewToggle("Show Equipped Border", nil, 20, true, nil, nil, g_isBarAddOnLoaded),
+			empty6 = module:NewDesc(" ", 21, nil, nil, g_isBarAddOnLoaded),
+			LoadLUI = module:NewExecute("Load LUI States", "Load the default Bar States.", 21, function() LoadStates(g_defaultStates); module:Refresh() end, nil, nil, g_isBarAddOnLoaded, g_isBarAddOnLoaded),
+			empty7 = module:NewDesc(" ", 23, nil, nil, g_isBarAddOnLoaded),
+			ToggleKB = module:NewExecute("Keybinds", "Toggles Keybinding mode.", 24, function() LibKeyBound:Toggle() end, nil, nil, g_isBarAddOnLoaded, g_isBarAddOnLoaded),
 			empty8 = module:NewDesc(" ", 25),
 			Reset = module:NewExecute("Restore Defaults", "Restores Bar Default Settings. (Does NOT affect Bartender etc! For this go to General->AddOns)", -1, function() module.db:ResetProfile(); module:Refresh() end),
 		}),
@@ -1906,7 +1906,7 @@ function module:Refresh(...)
 		db(info, value)
 	end
 
-	if not isBarAddOnLoaded then
+	if not g_isBarAddOnLoaded then
 		for i = 1, 6 do
 			module:SetBottomBar(i)
 		end
@@ -1929,12 +1929,12 @@ function module:Refresh(...)
 	LUIBarsTopBG:SetAlpha(db.TopTexture.Alpha)
 	LUIBarsTopBG:ClearAllPoints()
 	LUIBarsTopBG:SetPoint("BOTTOM", UIParent, "BOTTOM", db.TopTexture.X, db.TopTexture.Y)
-	LUIBarsTopBG[db.TopTexture.Enable and "Show" or "Hide"](LUIBarsTopBG)
+	ShowIf(LUIBarsTopBG, db.TopTexture.Enable)
 
 	LUIBarsBottomBG:SetAlpha(db.BottomTexture.Alpha)
 	LUIBarsBottomBG:ClearAllPoints()
 	LUIBarsBottomBG:SetPoint("BOTTOM", UIParent, "BOTTOM", db.BottomTexture.X, db.BottomTexture.Y)
-	LUIBarsBottomBG[db.BottomTexture.Enable and "Show" or "Hide"](LUIBarsBottomBG)
+	ShowIf(LUIBarsBottomBG, db.BottomTexture.Enable)
 
 	for _, button in pairs(buttonlist) do
 		local name = button:GetName()
@@ -1942,38 +1942,24 @@ function module:Refresh(...)
 		local count = _G[name.."Count"]
 		if count then
 			count:SetFont(Media:Fetch("font", db.General.CountFont), db.General.CountSize, db.General.CountOutline)
-			if db.General.ShowCount then
-				count:Show()
-			else
-				count:Hide()
-			end
+			ShowIf(count, db.General.ShowCount)
 		end
 
 		local hotkey = _G[name.."HotKey"]
 		if hotkey then
 			hotkey:SetFont(Media:Fetch("font", db.General.HotkeyFont), db.General.HotkeySize, db.General.HotkeyOutline)
-			if db.General.ShowHotkey then
-				hotkey:Show()
-			else
-				hotkey:Hide()
-			end
+			ShowIf(hotkey, db.General.ShowHotkey)
 		end
 
 		local macro = _G[name.."Name"]
 		if macro then
 			macro:SetFont(Media:Fetch("font", db.General.MacroFont), db.General.MacroSize, db.General.MacroOutline)
-			if db.General.ShowMacro then
-				macro:Show()
-			else
-				macro:Hide()
-			end
+			ShowIf(macro, db.General.ShowMacro)
 		end
 
 		local border = _G[name.."Border"]
-		if db.General.ShowEquipped and button.action and IsEquippedAction(button.action) then
-			if border then border:Show() end
-		else
-			if border then border:Hide() end
+		if border then
+			ShowIf(border, db.General.ShowEquipped and button.action and IsEquippedAction(button.action))
 		end
 	end
 
