@@ -23,6 +23,8 @@ local buttonlist = {}
 local bars = {}
 local sidebars = {}
 
+local isBarAddOnLoaded
+
 local barAnchors = {
 	"BT4Bar1",
 	"BT4Bar2",
@@ -48,31 +50,10 @@ local barAnchors = {
 local statelist = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
 local pointList = {"CENTER", "TOP", "BOTTOM", "LEFT", "RIGHT", "TOPLEFT", "TOPRIGHT", "BOTTOMLEFT", "BOTTOMRIGHT"}
 
-local isBarAddOnLoaded
-
-local FallbackMT = {
-	__index = function(t, k)
-		return t["DEFAULT"]
-	end
-}
-
-local statetexts = setmetatable({
-	["DRUID"] = {"Default", "Bear Form", "Cat Form", "Cat Form (Prowl)", "Moonkin Form"},
-	["ROGUE"] = {"Default", "Stealth"},
-	["DEFAULT"] = {"Default"},
-}, FallbackMT)
-
-local statetext = statetexts[class]
-
-local defaultstates = setmetatable({
-	["DRUID"] = {"1", "3", "5", "5", "4"},
-	["WARRIOR"] = {"1", "3", "5", "4"},
-	["ROGUE"] = {"1", "3"},
-	["DEFAULT"] = {"1"}
-}, FallbackMT)
+local statetext = {"Default"}
 
 local defaultstate = {
-	Bottombar1 = defaultstates[class],
+	Bottombar1 = {"1"},
 	Bottombar2 = {"2"},
 	Bottombar3 = {"3"},
 	Bottombar4 = {"4"},
@@ -84,24 +65,15 @@ local defaultstate = {
 	SidebarRight2 = {"8"},
 }
 
-local blizzstates = setmetatable({
-	["DRUID"] = {"1", "7", "8", "8", "9"},
-	["ROGUE"] = {"1", "7"},
-	["DEFAULT"] = {"1"}
-}, FallbackMT)
-
-local blizzstate = {
-	Bottombar1 = blizzstates[class],
-	Bottombar2 = {"6"},
-	Bottombar3 = {"5"},
-	Bottombar4 = {"7"},
-	Bottombar5 = {"8"},
-	Bottombar6 = {"9"},
-	SidebarLeft1 = {"3"},
-	SidebarLeft2 = {"1"},
-	SidebarRight1 = {"4"},
-	SidebarRight2 = {"2"},
-}
+do
+	if class == "DRUID" then
+		statetext = {"Default", "Bear Form", "Cat Form", "Cat Form (Prowl)", "Moonkin Form"}
+		defaultstate.Bottombar1 = {"1", "9", "7", "7", "1"}
+	elseif class == "ROGUE" then
+		statetext = {"Default", "Stealth"}
+		defaultstate.Bottombar1 = {"1", "7"}
+	end
+end
 
 local Page = {
 	["DRUID"] = {
@@ -1453,7 +1425,6 @@ module.defaults = {
 				[3] = "0",
 				[4] = "0",
 				[5] = "0",
-				[6] = "0",
 				Alt = "0",
 				Ctrl = "0",
 			},
@@ -1704,7 +1675,9 @@ module.defaults = {
 }
 
 function T()
-	return db.Bottombar1.Point
+	return "Alt "..db.Bottombar1.State["Alt"], "Ctrl "..db.Bottombar1.State["Ctrl"],
+			db.Bottombar1.State[1], db.Bottombar1.State[2], db.Bottombar1.State[3],
+			db.Bottombar1.State[4], db.Bottombar1.State[5], db.Bottombar1.State[6]
 end
 
 module.childGroups = "select"
@@ -1758,10 +1731,10 @@ local function createBottomBarOptions(num, order)
 
 	if num == 1 then
 		for i, name in ipairs(statetext) do							   
-			option.args.State.args[tostring(i)] = module:NewSelect(name, format("Choose the State for %s.\n\nDefaults:\nLUI: %s\nBlizzard: %s", name, defaultstate.Bottombar1[i], blizzstate.Bottombar1[i]), i, statelist, nil, false, nil, disabledFunc)
+			option.args.State.args[tostring(i)] = module:NewSelect(name, format("Choose the State for %s.\n\nDefaults: %s", name, defaultstate.Bottombar1[i]), i, statelist, nil, false, nil, disabledFunc)
 		end
 	else	
-		option.args.State.args["1"] = module:NewSelect("Default", format("Choose the State for Action Bar %s.\n\nDefaults:\nLUI: %s\nBlizzard: %s", num, defaultstate["Bottombar"..num][1], blizzstate["Bottombar"..num][1]), 1, statelist, nil, false, nil, disabledFunc)
+		option.args.State.args["1"] = module:NewSelect("Default", format("Choose the State for Action Bar %s.\n\nDefaults: %s", num, defaultstate["Bottombar"..num][1]), 1, statelist, nil, false, nil, disabledFunc)
 	end
 
 	return option
@@ -1810,7 +1783,7 @@ local function createSideBarOptions(side, num, order)
 		Offset = module:NewInputNumber("Y Offset", "Y Offset for your Sidebar", 13, setOptionPoints, nil, disabledFunc),
 		OpenInstant = module:NewToggle("Open Instant", "Whether or not to show an open/close animation.", 14, true, nil, disabledFunc),
 		State = not isBarAddOnLoaded and module:NewGroup("State Settings", 15, getState, setSidebarState, true, {
-			["1"] = module:NewSelect("Default", "Choose the State for "..side.." Bar "..num..".\n\nDefaults:\nLUI: "..defaultstate["Sidebar"..side..num][1].."\nBlizzard: "..blizzstate["Sidebar"..side..num][1], 1, statelist, nil, false, nil, disabledFunc),
+			["1"] = module:NewSelect("Default", "Choose the State for "..side.." Bar "..num..".\n\nDefaults: "..defaultstate["Sidebar"..side..num][1], 1, statelist, nil, false, nil, disabledFunc),
 		}) or nil,
 	})
 
@@ -1888,8 +1861,7 @@ function module:LoadOptions()
 			empty5 = module:NewDesc(" ", 19, nil, nil, isBarAddOnLoaded),
 			ShowEquipped = module:NewToggle("Show Equipped Border", nil, 20, true, nil, nil, isBarAddOnLoaded),
 			empty6 = module:NewDesc(" ", 21, nil, nil, isBarAddOnLoaded),
-			LoadBlizz = module:NewExecute("Load Blizzard States", "Load the Blizzard Default Bar States.", 22, function() LoadStates(blizzstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
-			LoadLUI = module:NewExecute("Load LUI States", "Load the LUI Default Bar States.", 21, function() LoadStates(defaultstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
+			LoadLUI = module:NewExecute("Load LUI States", "Load the default Bar States.", 21, function() LoadStates(defaultstate); module:Refresh() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
 			empty7 = module:NewDesc(" ", 23, nil, nil, isBarAddOnLoaded),
 			ToggleKB = module:NewExecute("Keybinds", "Toggles Keybinding mode.", 24, function() LibKeyBound:Toggle() end, nil, nil, isBarAddOnLoaded, isBarAddOnLoaded),
 			empty8 = module:NewDesc(" ", 25),
