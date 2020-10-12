@@ -199,7 +199,7 @@ local function SidebarSetAnchor(side, id)
 	sb:SetScale(1 / 0.85 * bardb.Scale)
 	sb:Show()
 
-	if not bardb.AutoPosEnable and g_isBarAddOnLoaded then return end
+	if bardb.AutoPosDisable and g_isBarAddOnLoaded then return end
 
 	local anchorName = g_isBarAddOnLoaded and bardb.Anchor or "LUIBar"..sideID
 	sidebars[sideID].Main = anchorName
@@ -468,7 +468,7 @@ function module:CreateSidebarSlider(side, id)
 		end
 	end)
 
-	sb.Anchor = LUI:CreateMeAFrame("FRAME", nil, UIParent, 25, 25, 1 / 0.85 * bardb.Scale, "BACKGROUND", 0, side, UIParent, side, NegateIf(-11, isRight), bardb.Offset, 1)
+	sb.Anchor = LUI:CreateMeAFrame("FRAME", "LUISidebarAnchor"..sideID, UIParent, 25, 25, 1 / 0.85 * bardb.Scale, "BACKGROUND", 0, side, UIParent, side, NegateIf(-11, isRight), bardb.Offset, 1)
 	sb.Anchor:Show()
 
 	sb.Sidebar = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 512, 512, 1, "BACKGROUND", 2, other, sb.Anchor, other, NegateIf(17, isRight), 0, 1)
@@ -485,7 +485,7 @@ function module:CreateSidebarSlider(side, id)
 	sb.SidebarBack2:SetBackdropColor(r, g, b, a)
 	sb.SidebarBack2:Show()
 
-	sb.ButtonAnchor = LUI:CreateMeAFrame("FRAME", nil, sb.Anchor, 10, 10, 1, "BACKGROUND", 0, other, sb.Anchor, other, NegateIf(30, isRight), 0, 1)
+	sb.ButtonAnchor = LUI:CreateMeAFrame("FRAME", "LUISidebarBtnAnchor"..sideID, sb.Anchor, 10, 10, 1, "BACKGROUND", 0, other, sb.Anchor, other, NegateIf(30, isRight), 0, 1)
 	sb.ButtonAnchor:Show()
 
 	sb.ButtonBack = LUI:CreateMeAFrame("FRAME", nil, sb.ButtonAnchor, 273, 267, 1, "BACKGROUND", 0, other, sb.ButtonAnchor, other, NegateIf(-3, isRight), -2, 1)
@@ -1361,7 +1361,7 @@ module.defaults = {
 			IsOpen = false,
 			Anchor = "BT4Bar10",
 			Additional = "",
-			AutoPosEnable = true,
+			AutoPosDisable = true,
 			HideEmpty = true,
 			X = 0,
 			Y = 0,
@@ -1375,7 +1375,7 @@ module.defaults = {
 			IsOpen = false,
 			Anchor = "BT4Bar8",
 			Additional = "",
-			AutoPosEnable = true,
+			AutoPosDisable = true,
 			HideEmpty = true,
 			X = 0,
 			Y = 0,
@@ -1389,7 +1389,7 @@ module.defaults = {
 			IsOpen = false,
 			Anchor = "BT4Bar9",
 			Additional = "",
-			AutoPosEnable = true,
+			AutoPosDisable = true,
 			HideEmpty = true,
 			X = 0,
 			Y = 0,
@@ -1403,7 +1403,7 @@ module.defaults = {
 			IsOpen = false,
 			Anchor = "BT4Bar7",
 			Additional = "",
-			AutoPosEnable = true,
+			AutoPosDisable = true,
 			HideEmpty = true,
 			X = 0,
 			Y = 0,
@@ -1764,7 +1764,7 @@ local optIsDisabled = {
 
 local function createSideBarOptions(side, num, order)
 	local disabledFunc = function() return not db["Sidebar"..side..num].Enable end
-	local disabledPosFunc = function() return not db["Sidebar"..side..num].Enable or (g_isBarAddOnLoaded and not db["Sidebar"..side..num].AutoPosEnable) end
+	local disabledPosFunc = function() return not db["Sidebar"..side..num].Enable or (g_isBarAddOnLoaded and db["Sidebar"..side..num].AutoPosDisable) end
 
 	local option = module:NewGroup(side.." Bar "..num, order, false, InCombatLockdown, {
 		header1 = module:NewHeader(side.." Bar "..num.." Settings", 0),
@@ -1777,7 +1777,7 @@ local function createSideBarOptions(side, num, order)
 		empty2 = module:NewDesc(" ", 7),
 		[""] = module:NewPosSliders(side.." Bar "..num, 8, false, function() return GetAnchor(sidebars[side..num].Main) end, true, nil, disabledPosFunc),
 		Scale = module:NewSlider("Scale", "Choose the Scale for this Sidebar.", 9, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
-		AutoPosEnable = g_isBarAddOnLoaded and module:NewToggle("Stop touching me!", "Whether or not to have LUI handle your Bar Positioning.", 10, true, nil, disabledFunc) or nil,
+		AutoPosDisable = g_isBarAddOnLoaded and module:NewToggle("Stop touching me!", "Whether or not to have LUI handle your Bar Positioning.", 10, true, nil, disabledFunc) or nil,
 		HideEmpty = not g_isBarAddOnLoaded and module:NewToggle("Hide Empty Buttons", nil, 11, true, nil, disabledFunc) or nil,
 		empty3 = module:NewDesc(" ", 12),
 		Offset = module:NewInputNumber("Y Offset", "Y Offset for your Sidebar", 13, setOptionPoints, nil, disabledFunc),
