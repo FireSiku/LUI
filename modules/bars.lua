@@ -278,7 +278,7 @@ end
 
 local function GetBarState(id)
 	local bardb = db["Bottombar"..id]
-	local condition = id == 1 and "[bonusbar:5] 11; " or ""
+	local condition = id == 1 and "[vehicleui] 12; [overridebar] 14; [possessbar] [@vehicle, exists] 12; [bonusbar:5] 11; " or ""
 
 	if bardb.State.Alt ~= bardb.State[1] then
 		condition = condition.."[mod:alt] "..bardb.State.Alt.."; "
