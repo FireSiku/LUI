@@ -863,7 +863,7 @@ function module:SetExtraActionBar()
 end
 
 function module:HideBlizzard()
-	LUI:Print("Hiding Blizzard frames")
+	--LUI:Print("Hiding Blizzard frames")
 	MainMenuBar:SetScale(0.00001)
 	MainMenuBar:EnableMouse(false)
 	MainMenuBar:SetAlpha(0)
