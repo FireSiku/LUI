@@ -52,6 +52,8 @@ function LUI:InstallBartender()
 		[CharName] = {
 			["actionbars"] = {
 				{ -- [1]
+					["buttons"] = 12,
+					["rows"] = 1,
 					["skin"] = {
 						["Colors"] = {
 							["Normal"] = {0.133, 0.133, 0.133, 0.950},
@@ -85,6 +87,8 @@ function LUI:InstallBartender()
 					},
 				}, -- [1]
 				{ -- [2]
+					["buttons"] = 12,
+					["rows"] = 1,
 					["skin"] = {
 						["Colors"] = {
 							["Normal"] = {0.133, 0.133, 0.133, 0.950},
@@ -116,6 +120,8 @@ function LUI:InstallBartender()
 					},
 				}, -- [2]
 				{ -- [3]
+					["buttons"] = 12,
+					["rows"] = 1,
 					["skin"] = {
 						["Colors"] = {
 							["Normal"] = {0.133, 0.133, 0.133, 0.950},
@@ -148,6 +154,8 @@ function LUI:InstallBartender()
 					},
 				}, -- [3]
 				{ -- [4]
+					["buttons"] = 12,
+					["rows"] = 1,
 					["skin"] = {
 						["Colors"] = {
 							["Normal"] = {0.133, 0.133, 0.133, 0.950},
@@ -181,6 +189,8 @@ function LUI:InstallBartender()
 					},
 				}, -- [4]
 				{ -- [5]
+					["buttons"] = 12,
+					["rows"] = 1,
 					["skin"] = {
 						["Colors"] = {
 							["Normal"] = {0.133, 0.133, 0.133, 0.950},
@@ -215,6 +225,8 @@ function LUI:InstallBartender()
 					},
 				}, -- [5]
 				{ -- [6]
+					["buttons"] = 12,
+					["rows"] = 1,
 					["skin"] = {
 						["Colors"] = {
 							["Normal"] = {0.133, 0.133, 0.133, 0.950},
@@ -248,6 +260,7 @@ function LUI:InstallBartender()
 					},
 				}, -- [6]
 				{ -- [7]
+					["buttons"] = 12,
 					["rows"] = 6,
 					["skin"] = {
 						["Colors"] = {
@@ -281,6 +294,7 @@ function LUI:InstallBartender()
 					},
 				}, -- [7]
 				{ -- [8]
+					["buttons"] = 12,
 					["rows"] = 6,
 					["skin"] = {
 						["Colors"] = {
@@ -314,6 +328,7 @@ function LUI:InstallBartender()
 					},
 				}, -- [8]
 				{ -- [9]
+					["buttons"] = 12,
 					["rows"] = 6,
 					["skin"] = {
 						["Colors"] = {
@@ -348,6 +363,7 @@ function LUI:InstallBartender()
 					},
 				}, -- [9]
 				{ -- [10]
+					["buttons"] = 12,
 					["rows"] = 6,
 					["skin"] = {
 						["Colors"] = {

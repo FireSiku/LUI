@@ -1762,9 +1762,51 @@ local optIsDisabled = {
 	Macro = function() return not db.General.ShowMacro end,
 }
 
+local btSideBarPresets = {
+	Right1 = { position = { x = -90, y = 95,   point = "RIGHT",    }, enabled = true, buttons = 12, rows = 6, alpha = 1, hidehotkey = true, hidemacrotext = true, visibility = {always = false, possess = false, vehicleui = false}},
+	Left1 =  { position = { x = 20,  y = 95,   point = "LEFT",     }, enabled = true, buttons = 12, rows = 6, alpha = 1, hidehotkey = true, hidemacrotext = true, visibility = {always = false, possess = false, vehicleui = false}},
+	Right2 = { position = { x = -90, y = -210, point = "TOPRIGHT", }, enabled = true, buttons = 12, rows = 6, alpha = 1, hidehotkey = true, hidemacrotext = true, visibility = {always = false, possess = false, vehicleui = false}},
+	Left2 =  { position = { x = 20,  y = -210, point = "TOPLEFT",  }, enabled = true, buttons = 12, rows = 6, alpha = 1, hidehotkey = true, hidemacrotext = true, visibility = {always = false, possess = false, vehicleui = false}},
+}
+
+StaticPopupDialogs["LUI_CONFIRM_SIDEBAR_ADJUST"] = {
+	text = "This will change alter the Bartender4 settings for the selected anchor bar. Are you sure?",
+	button1 = "Yes",
+	button2 = "No",
+	OnAccept = function(self, sideID)
+		local bardb = module.db.profile["Sidebar"..sideID]
+		if not strsub(bardb.Anchor, 1, 3) == "BT4" then return end
+		local _, num = strsplit("r", bardb.Anchor)
+		local barOpt = Bartender4.db:GetNamespace("ActionBars").profile.actionbars[tonumber(num)]
+		--local barOpt = Bartender4DB.namespaces.ActionBars.profiles[Bartender4.db:GetCurrentProfile()].actionbars[tonumber(num)]
+		for k, v in pairs(btSideBarPresets[sideID]) do
+			if type(v) == "table" then
+				for k2, v2 in pairs(v) do
+					barOpt[k][k2] = v2
+				end
+			else
+				barOpt[k] = v
+			end
+		end
+		barOpt.position.scale = bardb.Scale
+		-- Those values were initially taken with sidebar at 0.85 scale, adjust accordingly.
+		barOpt.position.x = barOpt.position.x / 0.85 * bardb.Scale
+		barOpt.position.y = barOpt.position.y / 0.85 * bardb.Scale
+
+		Bartender4:UpdateModuleConfigs()
+	end,
+	timeout = 0,
+	whileDead = true,
+	hideOnEscape = true,
+}
+
 local function createSideBarOptions(side, num, order)
 	local disabledFunc = function() return not db["Sidebar"..side..num].Enable end
 	local disabledPosFunc = function() return not db["Sidebar"..side..num].Enable or (g_isBarAddOnLoaded and db["Sidebar"..side..num].AutoPosDisable) end
+	local showDialog = function()
+		local dialog = StaticPopup_Show("LUI_CONFIRM_SIDEBAR_ADJUST") 
+		dialog.data = side..num
+	end
 
 	local option = module:NewGroup(side.." Bar "..num, order, false, InCombatLockdown, {
 		header1 = module:NewHeader(side.." Bar "..num.." Settings", 0),
@@ -1775,8 +1817,10 @@ local function createSideBarOptions(side, num, order)
 		Anchor = g_isBarAddOnLoaded and module:NewInput("Anchor", "Choose the Bar for this Sidebar.", 5, nil, nil, disabledFunc) or nil,
 		Additional = module:NewInput("Additional Frames", "Type in any additional frame names (seperated by commas), that you would like to show/hide with the Sidebar.", 6, true, nil, disabledFunc),
 		empty2 = module:NewDesc(" ", 7),
-		[""] = module:NewPosSliders(side.." Bar "..num, 8, false, function() return GetAnchor(sidebars[side..num].Main) end, true, nil, disabledPosFunc),
-		Scale = module:NewSlider("Scale", "Choose the Scale for this Sidebar.", 9, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
+		Scale = module:NewSlider("Scale", "Choose the Scale for this Sidebar.", 7.33, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
+		AutoAdjust = module:NewExecute("Auto-Adjust BT4Bar", "If you recently changed the bar anchor, make sure to move the previous bar outside of the Sidebar to prevent overlaps.", 7.66, showDialog, nil, nil, disabledFunc, not IsAddOnLoaded("Bartender4")),
+		empty4 = module:NewDesc(" ", 8),
+		[""] = module:NewPosSliders(side.." Bar "..num, 9, false, function() return GetAnchor(sidebars[side..num].Main) end, true, nil, disabledPosFunc),
 		AutoPosDisable = g_isBarAddOnLoaded and module:NewToggle("Stop touching me!", "Whether or not to have LUI handle your Bar Positioning.", 10, true, nil, disabledFunc) or nil,
 		HideEmpty = not g_isBarAddOnLoaded and module:NewToggle("Hide Empty Buttons", nil, 11, true, nil, disabledFunc) or nil,
 		empty3 = module:NewDesc(" ", 12),
