@@ -4,7 +4,8 @@ LUI.Versions.details = 5
 
 function LUI:InstallDetails()
    
-   if (not IsAddOnLoaded("Details")) then
+   -- HACK: Temporarily disable Details integration until they can be sorted.
+   if (not IsAddOnLoaded("Details")) or true then
       return
    end
    
