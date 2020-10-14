@@ -85,9 +85,11 @@ function module:SetColors()
 	LUI.MicroMenu.Buttons.Spellbook:SetBackdropColor(r, g, b, 1)
 	LUI.MicroMenu.Buttons.Player:SetBackdropColor(r, g, b, 1)
 
-	module:SetAlertFramesColors("Talent")
-	module:SetAlertFramesColors("Collections")
-	module:SetAlertFramesColors("EJ")
+	if not LUI.PTR then
+		module:SetAlertFramesColors("Talent")
+		module:SetAlertFramesColors("Collections")
+		module:SetAlertFramesColors("EJ")
+	end
 end
 
 function module:SetMicroMenu()
@@ -1106,26 +1108,26 @@ function module:SetMicroMenu()
 	--QuestLogFrame:ClearAllPoints()
 	--QuestLogFrame:SetPoint(point, relframe, relpoint, x, -105)
 
-	-- talent alert frame
-	if UnitLevel("player") < 10 then
-		TalentMicroButtonAlert:Hide()
-		LUI.MicroMenu.Buttons.Talents:RegisterEvent("PLAYER_LEVEL_UP")
-	end
-	LUI.MicroMenu.Buttons.Talents:SetScript("OnEvent", function(self, event, level)
-			if not level then level = UnitLevel("player")+1 end
-			if tonumber(level) < 10 then TalentMicroButtonAlert:Hide()
-			else
-				TalentMicroButtonAlert:Show()
-				LUI.MicroMenu.Buttons.Talents:UnregisterEvent("PLAYER_LEVEL_UP")
-			end
-	end)
-
 	if LUI.PTR then
 		module:SecureHook(HelpTip, "Show", "ScanHelpTips")
 		if HelpTip.framePool.numActiveObjects > 0 then
 			module:ScanHelpTips()
 		end
 	else
+		-- talent alert frame
+		if UnitLevel("player") < 10 then
+			TalentMicroButtonAlert:Hide()
+			LUI.MicroMenu.Buttons.Talents:RegisterEvent("PLAYER_LEVEL_UP")
+		end
+		LUI.MicroMenu.Buttons.Talents:SetScript("OnEvent", function(self, event, level)
+				if not level then level = UnitLevel("player")+1 end
+				if tonumber(level) < 10 then TalentMicroButtonAlert:Hide()
+				else
+					TalentMicroButtonAlert:Show()
+					LUI.MicroMenu.Buttons.Talents:UnregisterEvent("PLAYER_LEVEL_UP")
+				end
+		end)
+
 		module:HookAlertFrame("Talent", LUI.MicroMenu.Buttons.Talents)
 		module:HookAlertFrame("Collections", LUI.MicroMenu.Buttons.Pets)
 		module:HookAlertFrame("EJ", LUI.MicroMenu.Buttons.Journal)
