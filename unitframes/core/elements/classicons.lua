@@ -71,7 +71,7 @@ local UpdateTexture = function(element)
 end
 
 local Update = function(self, event, unit, powerType)
-	if(not (unit == 'player' and powerType == ClassPowerType)
+	if(not (unit == 'player' and (not powerType or powerType == ClassPowerType))
 		and not (unit == 'vehicle' and powerType == 'COMBO_POINTS')) then
 		return
 	end
@@ -226,7 +226,6 @@ do
 	elseif(PlayerClass == 'PALADIN') then
 		ClassPowerID = Enum.PowerType.HolyPower or 9
 		ClassPowerType = "HOLY_POWER"
-		RequireSpec = SPEC_PALADIN_RETRIBUTION
 	elseif(PlayerClass == 'WARLOCK') then
 		ClassPowerID = Enum.PowerType.SoulShards or 7
 		ClassPowerType = "SOUL_SHARDS"
