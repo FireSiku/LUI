@@ -15,7 +15,7 @@ local widgetLists = AceGUIWidgetLSMlists
 local L = LUI.L
 local db, dbd
 
-LUI.Versions.bars = 2.4
+LUI.Versions.bars = 2.5
 
 local _, class = UnitClass("player")
 
@@ -1763,37 +1763,46 @@ local optIsDisabled = {
 }
 
 local btSideBarPresets = {
-	Right1 = { position = { x = -90, y = 95,   point = "RIGHT",    }, enabled = true, buttons = 12, rows = 6, alpha = 1, hidehotkey = true, hidemacrotext = true, visibility = {always = false, possess = false, vehicleui = false}},
-	Left1 =  { position = { x = 20,  y = 95,   point = "LEFT",     }, enabled = true, buttons = 12, rows = 6, alpha = 1, hidehotkey = true, hidemacrotext = true, visibility = {always = false, possess = false, vehicleui = false}},
-	Right2 = { position = { x = -90, y = -210, point = "TOPRIGHT", }, enabled = true, buttons = 12, rows = 6, alpha = 1, hidehotkey = true, hidemacrotext = true, visibility = {always = false, possess = false, vehicleui = false}},
-	Left2 =  { position = { x = 20,  y = -210, point = "TOPLEFT",  }, enabled = true, buttons = 12, rows = 6, alpha = 1, hidehotkey = true, hidemacrotext = true, visibility = {always = false, possess = false, vehicleui = false}},
+	Right1 = { position = { x = -90, y = 95,   point = "RIGHT",    }, buttons = 12, rows = 6, alpha = 1, hidehotkey = true, hidemacrotext = true, visibility = {always = false, possess = false, vehicleui = false}},
+	Left1 =  { position = { x = 20,  y = 95,   point = "LEFT",     }, buttons = 12, rows = 6, alpha = 1, hidehotkey = true, hidemacrotext = true, visibility = {always = false, possess = false, vehicleui = false}},
+	Right2 = { position = { x = -90, y = -210, point = "TOPRIGHT", }, buttons = 12, rows = 6, alpha = 1, hidehotkey = true, hidemacrotext = true, visibility = {always = false, possess = false, vehicleui = false}},
+	Left2 =  { position = { x = 20,  y = -210, point = "TOPLEFT",  }, buttons = 12, rows = 6, alpha = 1, hidehotkey = true, hidemacrotext = true, visibility = {always = false, possess = false, vehicleui = false}},
 }
+
+function module:AutoAdjustBT4(sideID)
+	local bardb = module.db.profile["Sidebar"..sideID]
+	if not IsAddOnLoaded("Bartender4") or not strsub(bardb.Anchor, 1, 3) == "BT4" then return end
+	local _, num = strsplit("r", bardb.Anchor)
+	local barOpt = Bartender4.db:GetNamespace("ActionBars").profile.actionbars[tonumber(num)]
+	--local barOpt = Bartender4DB.namespaces.ActionBars.profiles[Bartender4.db:GetCurrentProfile()].actionbars[tonumber(num)]
+	for k, v in pairs(btSideBarPresets[sideID]) do
+		if type(v) == "table" then
+			for k2, v2 in pairs(v) do
+				barOpt[k][k2] = v2
+			end
+		else
+			barOpt[k] = v
+		end
+	end
+	barOpt.enabled = bardb.Enable
+	barOpt.position.scale = bardb.Scale
+	local yOffset = bardb.Offset - module.defaults.profile["Sidebar"..sideID].Offset
+	-- Those values were initially taken with sidebar at 0.85 scale, adjust accordingly.
+	barOpt.position.x = barOpt.position.x / 0.85 * bardb.Scale
+	barOpt.position.y = (barOpt.position.y + yOffset) / 0.85 * bardb.Scale
+
+	Bartender4:UpdateModuleConfigs()
+	if not bardb.IsOpen then
+		SidebarSetAlpha(bardb.Anchor, 0)
+	end
+end
 
 StaticPopupDialogs["LUI_CONFIRM_SIDEBAR_ADJUST"] = {
 	text = "This will change alter the Bartender4 settings for the selected anchor bar. Are you sure?",
 	button1 = "Yes",
 	button2 = "No",
 	OnAccept = function(self, sideID)
-		local bardb = module.db.profile["Sidebar"..sideID]
-		if not strsub(bardb.Anchor, 1, 3) == "BT4" then return end
-		local _, num = strsplit("r", bardb.Anchor)
-		local barOpt = Bartender4.db:GetNamespace("ActionBars").profile.actionbars[tonumber(num)]
-		--local barOpt = Bartender4DB.namespaces.ActionBars.profiles[Bartender4.db:GetCurrentProfile()].actionbars[tonumber(num)]
-		for k, v in pairs(btSideBarPresets[sideID]) do
-			if type(v) == "table" then
-				for k2, v2 in pairs(v) do
-					barOpt[k][k2] = v2
-				end
-			else
-				barOpt[k] = v
-			end
-		end
-		barOpt.position.scale = bardb.Scale
-		-- Those values were initially taken with sidebar at 0.85 scale, adjust accordingly.
-		barOpt.position.x = barOpt.position.x / 0.85 * bardb.Scale
-		barOpt.position.y = barOpt.position.y / 0.85 * bardb.Scale
-
-		Bartender4:UpdateModuleConfigs()
+		module:AutoAdjustBT4(sideID)
 	end,
 	timeout = 0,
 	whileDead = true,
@@ -1801,16 +1810,29 @@ StaticPopupDialogs["LUI_CONFIRM_SIDEBAR_ADJUST"] = {
 }
 
 local function createSideBarOptions(side, num, order)
-	local disabledFunc = function() return not db["Sidebar"..side..num].Enable end
-	local disabledPosFunc = function() return not db["Sidebar"..side..num].Enable or (g_isBarAddOnLoaded and db["Sidebar"..side..num].AutoPosDisable) end
+	local bardb = db["Sidebar"..side..num]
+	local disabledFunc = function() return not bardb.Enable end
+	local disabledPosFunc = function() return not bardb.Enable or (g_isBarAddOnLoaded and bardb.AutoPosDisable) end
 	local showDialog = function()
 		local dialog = StaticPopup_Show("LUI_CONFIRM_SIDEBAR_ADJUST") 
 		dialog.data = side..num
 	end
+	local hideAnchoredBar = function(...)
+		if IsAddOnLoaded("Bartender4") and strsub(bardb.Anchor, 1, 3) == "BT4" then
+			local _, num = strsplit("r", bardb.Anchor)
+			local barOpt = Bartender4.db:GetNamespace("ActionBars").profile.actionbars[tonumber(num)]
+			barOpt.visibility.always = not bardb.Enable
+			Bartender4:UpdateModuleConfigs()
+			if bardb.Enable and not bardb.IsOpen then
+				SidebarSetAlpha(bardb.Anchor, 0)
+			end
+		end
+		module:Refresh(...)
+	end
 
 	local option = module:NewGroup(side.." Bar "..num, order, false, InCombatLockdown, {
 		header1 = module:NewHeader(side.." Bar "..num.." Settings", 0),
-		Enable = module:NewToggle("Show "..side.." Bar "..num, nil, 1, true),
+		Enable = module:NewToggle("Show "..side.." Bar "..num, nil, 1, hideAnchoredBar),
 		empty1 = module:NewDesc(" ", 2),
 		Intro = g_isBarAddOnLoaded and module:NewDesc("Which Bar do you want to use for this Sidebar?\nChoose one or type in the MainAnchor manually.\n\nMake sure your Bar is set to 6 buttons/2 columns and isn't used for another Sidebar.\nLUI will position your Bar automatically.", 3) or nil,
 		AnchorDropDown = g_isBarAddOnLoaded and module:NewSelect("Anchor", nil, 4, PRESET_BAR_ANCHORS) or nil,
@@ -2019,33 +2041,27 @@ function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self)
 
 	local ProfileName = UnitName("player").." - "..GetRealmName()
+	local currentVersion = LUI.db.global.luiconfig[ProfileName].Versions.bars
 
-	if LUI.db.global.luiconfig[ProfileName].Versions.bars ~= LUI.Versions.bars then
+	-- recalc X/Y values for fixed scale options
+	if currentVersion < 2.4 then
+		print("bla")
+		for k, v in pairs(module.db.profile) do
+			if type(v) == "table" then
+				if v.Scale then
+					if v.X ~= module.defaults.profile[k].X then
+						v.X = v.X * v.Scale * v.Scale
+					end
 
-		-- recalc X/Y values for fixed scale options
-		if LUI.Versions.bars < 2.4 then
-			print("bla")
-			for k, v in pairs(module.db.profile) do
-				if type(v) == "table" then
-					if v.Scale then
-						if v.X ~= module.defaults.profile[k].X then
-							v.X = v.X * v.Scale * v.Scale
-						end
-
-						if v.Y ~= module.defaults.profile[k].Y then
-							v.Y = v.Y * v.Scale * v.Scale
-						end
+					if v.Y ~= module.defaults.profile[k].Y then
+						v.Y = v.Y * v.Scale * v.Scale
 					end
 				end
 			end
 		end
-
-		-- exclude this time!
-		if not (LUI.Versions.bars == 2.4 and LUI.db.global.luiconfig[ProfileName].Versions.bars == 2.3) then
-			db:ResetProfile()
-		end
-		LUI.db.global.luiconfig[ProfileName].Versions.bars = LUI.Versions.bars
+		LUI.db.global.luiconfig[ProfileName].Versions.bars = 2.4
 	end
+
 end
 
 function module:PLAYER_SPECIALIZATION_CHANGED()
@@ -2054,6 +2070,16 @@ end
 
 function module:OnEnable()
 	module:SetBars()
+
+	--- This oen needed to be delayed until all addons are loaded.
+	local ProfileName = UnitName("player").." - "..GetRealmName()
+	if LUI.db.global.luiconfig[ProfileName].Versions.bars < LUI.Versions.bars then
+		module:AutoAdjustBT4("Right1")
+		module:AutoAdjustBT4("Right2")
+		module:AutoAdjustBT4("Left1")
+		module:AutoAdjustBT4("Left2")
+		LUI.db.global.luiconfig[ProfileName].Versions.bars = 2.5
+	end
 end
 
 function module:OnDisable()
