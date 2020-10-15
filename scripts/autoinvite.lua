@@ -84,7 +84,7 @@ end
 function script:CHAT_MSG_WHISPER(event, message, sender)
 	if (UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") or (GetNumSubgroupMembers() == 0)) and strlower(message):match(strlower(LUI.db.profile.General.AutoInviteKeyword)) then
 		if LUI.db.profile.General.AutoInviteOnlyFriend == false or (isFriend(sender) or isGuildmate(sender) or isBNFriend(sender)) then
-			InviteUnit(sender)
+			C_PartyInfo.InviteUnit(sender)
 		end
 	end
 end

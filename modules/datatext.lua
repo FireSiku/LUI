@@ -1278,7 +1278,7 @@ local GF_Colors = {
 -- Localized functions
 local RAID_CLASS_COLORS = CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS
 
-local GetNumGroupMembers, GetNumSubgroupMembers, UnitInRaid, UnitInParty, InviteUnit = GetNumGroupMembers, GetNumSubgroupMembers, UnitInRaid, UnitInParty, InviteUnit
+local GetNumGroupMembers, GetNumSubgroupMembers, UnitInRaid, UnitInParty = GetNumGroupMembers, GetNumSubgroupMembers, UnitInRaid, UnitInParty
 local CanEditMOTD, GetGuildRosterMOTD, CanEditPublicNote = CanEditMOTD, GetGuildRosterMOTD, CanEditPublicNote
 local GetQuestDifficultyColor, SetGuildRosterSelection, SetItemRef = GetQuestDifficultyColor, SetGuildRosterSelection, SetItemRef
 local unpack, next, sort, tonumber, format, floor, min, max, wipe, select = unpack, next, sort, tonumber, format, floor, min, max, wipe, select
@@ -2035,7 +2035,7 @@ function module:SetGF()
 					--function FriendsFrame_InviteOrRequestToJoin(guid, gameAccountID)
 					FriendsFrame_InviteOrRequestToJoin(b.gameInfo.playerGuid, b.gameInfo.gameAccountID)
 				else
-					InviteUnit(b.unit)
+					C_PartyInfo.InviteUnit(b.unit)
 				end
 			elseif IsControlKeyDown() then -- edit note
 				if not stat.IsGuild then

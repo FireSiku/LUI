@@ -625,7 +625,7 @@ end
 
 function module:SetItemRef(link, text, button, chatFrame)
 	if IsAltKeyDown() and strsub(link, 1, 6) == "player" then
-		InviteUnit(link:match("player:([^:]+)"))
+		C_PartyInfo.InviteUnit(link:match("player:([^:]+)"))
 		return
 	end
 
