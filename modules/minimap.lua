@@ -292,16 +292,18 @@ function module:SetMinimap()
 	QueueStatusMinimapButtonBorder:Hide()
 
 	-- Move Garrison icon
-	GarrisonLandingPageMinimapButton:ClearAllPoints()
-	GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
 	module:SecureHook("GarrisonLandingPageMinimapButton_UpdateIcon", function()
 		GarrisonLandingPageMinimapButton:SetSize(32,32)
+		GarrisonLandingPageMinimapButton:ClearAllPoints()
+		GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
 	end)
 
 	MiniMapMailFrame:HookScript("OnShow", function()
+		GarrisonLandingPageMinimapButton:ClearAllPoints()
 		GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-5))
 	end)
 	MiniMapMailFrame:HookScript("OnHide", function()
+		GarrisonLandingPageMinimapButton:ClearAllPoints()
 		GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
 	end)
 
