@@ -59,10 +59,13 @@ do
 		-- Only hide the PlayerFrame, do not mess with the events.
 		-- Messing the PlayerFrame ends up spreading taint.
 			PlayerFrame:Hide()
+			PlayerFrame.Show = PlayerFrame.Hide
 		end,
 		target = function()
 			TargetFrame:UnregisterAllEvents()
 			TargetFrame:Hide()
+			TargetFrame.Show = TargetFrame.Hide
+			TargetFrameTextureFrame:Hide()
 			ComboFrame:UnregisterAllEvents()
 		end,
 		focus = function()
