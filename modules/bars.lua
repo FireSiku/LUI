@@ -2044,8 +2044,7 @@ function module:OnInitialize()
 	local currentVersion = LUI.db.global.luiconfig[ProfileName].Versions.bars
 
 	-- recalc X/Y values for fixed scale options
-	if currentVersion < 2.4 then
-		print("bla")
+	if currentVersion and currentVersion < 2.4 then
 		for k, v in pairs(module.db.profile) do
 			if type(v) == "table" then
 				if v.Scale then
@@ -2073,7 +2072,10 @@ function module:OnEnable()
 
 	--- This oen needed to be delayed until all addons are loaded.
 	local ProfileName = UnitName("player").." - "..GetRealmName()
-	if LUI.db.global.luiconfig[ProfileName].Versions.bars < LUI.Versions.bars then
+	local currentVersion = LUI.db.global.luiconfig[ProfileName].Versions.bars
+	if not currentVersion then
+		LUI.db.global.luiconfig[ProfileName].Versions.bars = LUI.Versions.bars
+	elseif currentVersion and currentVersion < LUI.Versions.bars then
 		module:AutoAdjustBT4("Right1")
 		module:AutoAdjustBT4("Right2")
 		module:AutoAdjustBT4("Left1")
