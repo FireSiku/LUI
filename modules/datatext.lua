@@ -634,10 +634,10 @@ function module:SetCurrency()
 				return
 			end
 
-			local name, count = GetCurrencyInfo(db.Currency.Display)
-			name = name:sub(1, db.Currency.DisplayLimit)
+			local info = C_CurrencyInfo.GetCurrencyInfo(db.Currency.Display)
+			local name = info.name:sub(1, db.Currency.DisplayLimit)
 			name = (#name > 0 and name..":") or name
-			self.text:SetFormattedText("%s %d", name, count)
+			self.text:SetFormattedText("%s %d", name, info.quantity)
 		end
 
 		stat.OnEnter = function(self)
