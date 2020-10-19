@@ -55,6 +55,7 @@
 	<Script file="scripts\frameidentifier.lua"/>
 	<Script file="scripts\talentspam.lua"/>
 	<script file="scripts\WorldMapFix.lua"/>
+	<Script file="scripts\newplayerexperience.lua"/>
 
 	<!-- Initialize Unitframes -->
 	<Include file="unitframes\templates.xml"/>
