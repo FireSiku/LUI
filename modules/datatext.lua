@@ -589,7 +589,7 @@ function module:SetCurrency()
 			if LUI.PTR then
 				for i=1, 2048 do
 					local info = C_CurrencyInfo.GetCurrencyInfo(i)
-					if info.name ~= "" and info.isDiscovered then
+					if info and info.name ~= "" and info.isDiscovered then
 						CurrencyList[i] = n
 					end
 				end
@@ -637,7 +637,7 @@ function module:SetCurrency()
 			local info = C_CurrencyInfo.GetCurrencyInfo(db.Currency.Display)
 			local name = info.name:sub(1, db.Currency.DisplayLimit)
 			name = (#name > 0 and name..":") or name
-			self.text:SetFormattedText("%s %d", name, info.quantity)
+			self.text:SetFormattedText("%s %d", name, info and info.quantity or 0)
 		end
 
 		stat.OnEnter = function(self)
@@ -649,10 +649,10 @@ function module:SetCurrency()
 				if LUI.PTR then
 					for i = 1, C_CurrencyInfo.GetCurrencyListSize()  do
 						local info = C_CurrencyInfo.GetCurrencyListInfo(i) 
-						if info.isHeader then
+						if info and info.isHeader then
 							GameTooltip:AddLine(" ")
 							GameTooltip:AddLine(info.name)
-						elseif info.name then
+						elseif info and info.name then
 							if info.quantity and info.quantity ~= 0 then
 								GameTooltip:AddDoubleLine(info.name, info.quantity, 1,1,1, 1,1,1)
 							else
