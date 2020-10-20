@@ -116,7 +116,7 @@ L["Party"] = "Gruppe"
 L["Player"] = "Spieler"
 L["Please read the FAQ"] = [=[Bei Fragen lese bitte die FAQ !
 Für weitere Informationen besuche bitte
-|cff8080ffhttp://lui.maydia.org|r
+|cff8080ffhttps://discord.gg/SR29pjc|r
 |cff8080ffhttp://wowinterface.com|r
 |cff8080ffhttp://www.curse.com/addons/wow/lui|r]=]
 L["Quest Objectives"] = "Questziele"

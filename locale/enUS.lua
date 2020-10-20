@@ -50,7 +50,7 @@ L["None"] = true
 L["Outline"] = true
 L["Please read the FAQ"] = [=[Please read the FAQ if you have Questions!
 For more information please visit
-|cff8080ffhttp://www.wowlui.com|r
+|cff8080ffhttps://discord.gg/SR29pjc|r
 
 Enjoy!]=]
 L["Revision: "] = true

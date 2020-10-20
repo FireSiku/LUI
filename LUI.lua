@@ -834,20 +834,16 @@ local function getOptions()
 									order = 4,
 									width = "full",
 									type = "description",
-									name = L["Version: "]..GetAddOnMetadata(addonname, "Version"),
-								},
-								RevText = {
-									order = 5,
-									width = "full",
-									type = "description",
+									fontSize = "large",
 									name = function()
-										local revision = LUI.Rev
-										if revision and strmatch(revision,"-%d+") then
-											revision = gsub( strmatch(revision,"-%d+"), "-", "r")
-										elseif revision and strmatch(revision, "%d") then
-											revision = "r"..revision
+										local version, alpha, git = strsplit("-", LUI.Rev)
+										if not version then
+											return "Version: "..GetAddOnMetadata(addonname, "Version")
+										elseif not alpha then
+											return "Version: "..version
+										else
+											return format("Version: %s Alpha %s", version, alpha)
 										end
-										return L["Revision: "]..(revision or "???")
 									end,
 								},
 							},
