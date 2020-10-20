@@ -3053,9 +3053,11 @@ local SetStyle = function(self, unit, isSingle)
 
 	if unit == "party" then
 		local sanityBar = _G[format("PartyMemberFrame%dPowerBarAlt", string.sub(self:GetName(), -1))]
-		sanityBar:ClearAllPoints()
-		sanityBar:SetPoint("LEFT", self, "RIGHT", 25, 0)
-		sanityBar:SetParent(self)
+		if sanityBar then
+			sanityBar:ClearAllPoints()
+			sanityBar:SetPoint("LEFT", self, "RIGHT", 25, 0)
+			sanityBar:SetParent(self)
+		end
 	end
 
 	module.funcs.HealthValue(self, unit, oufdb)
