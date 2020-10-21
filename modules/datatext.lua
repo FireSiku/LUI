@@ -585,12 +585,12 @@ function module:SetCurrency()
 		stat.Currencies = function(self)
 			if CurrencyList then return CurrencyList end
 
-			local CurrencyList = {[0] = "None",}
+			CurrencyList = {[0] = "None",}
 			if LUI.PTR then
 				for i=1, 2048 do
 					local info = C_CurrencyInfo.GetCurrencyInfo(i)
-					if info and info.name ~= "" and info.isDiscovered then
-						CurrencyList[i] = n
+					if info and info.name ~= "" and info.discovered then
+						CurrencyList[i] = info.name
 					end
 				end
 			else
@@ -3609,7 +3609,14 @@ function module:LoadOptions()
 					desc = "Select the currency to display",
 					type = "select",
 					order = 3,
-					values = function() return (InfoStats.Currency and InfoStats.Currency.Created and InfoStats.Currency:Currencies()) or {"None"} end,
+					values = function()
+						if InfoStats.Currency and InfoStats.Currency.Created then
+							local currencyList = InfoStats.Currency:Currencies()
+							return currencyList or {"None"}
+						else
+							return {"None"}
+						end
+					end,
 					get = function(info)
 						return db.Currency.Display
 					end,
