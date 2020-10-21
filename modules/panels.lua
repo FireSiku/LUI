@@ -32,7 +32,7 @@ local backgrounds = {}
 
 local addonAnchors = {
 	raid = {
-		Grid = "GridLayoutFrame",
+		Plexus = "PlexusLayoutFrame",
 		Grid2 = "Grid2LayoutFrame",
 		Healbot = "HealBot_Action",
 		Vuhdo = "Vd1",

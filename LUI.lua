@@ -465,9 +465,9 @@ function LUI:Update()
 	update_frame:RegisterForClicks("AnyUp")
 	update_frame:SetScript("OnClick", function(self)
 
-		if IsAddOnLoaded("Grid") then
-			LUI.db.global.luiconfig[ProfileName].Versions.grid = nil
-			LUI:InstallGrid()
+		if IsAddOnLoaded("Plexus") then
+			LUI.db.global.luiconfig[ProfileName].Versions.plexus = nil
+			LUI:InstallPlexus()
 		end
 
 		if IsAddOnLoaded("Recount") then
@@ -553,7 +553,7 @@ function LUI:Configure()
 			wipe(LUI.db.global.luiconfig[ProfileName].Versions)
 		end
 
-		LUI:InstallGrid()
+		LUI:InstallPlexus()
 		LUI:InstallRecount()
 		LUI:InstallOmen()
 		LUI:InstallBartender()
@@ -926,7 +926,7 @@ local function getOptions()
 									end,
 									order = 9,
 								},
-								alwaysShowGrid = {
+								alwaysShowPlexus = {
 									name = "Show Raid",
 									desc = "Whether you want to show your Raid Panel by entering World or not.\n",
 									type = "toggle",
@@ -1167,17 +1167,17 @@ local function getOptions()
 									disabled = function() return not IsAddOnLoaded("Bartender4") end,
 									hidden = function() return not IsAddOnLoaded("Bartender4") end,
 								},
-								ResetGrid = {
+								ResetPlexus = {
 									order = 2,
 									type = "execute",
-									name = "Restore Grid",
+									name = "Restore Plexus",
 									func = function()
-										LUI.db.global.luiconfig[ProfileName].Versions.grid = nil
-										LUI:InstallGrid()
+										LUI.db.global.luiconfig[ProfileName].Versions.plexus = nil
+										LUI:InstallPlexus()
 										StaticPopup_Show("RELOAD_UI")
 									end,
-									disabled = function() return not IsAddOnLoaded("Grid") end,
-									hidden = function() return not IsAddOnLoaded("Grid") end,
+									disabled = function() return not IsAddOnLoaded("Plexus") end,
+									hidden = function() return not IsAddOnLoaded("Plexus") end,
 								},
 								ResetOmen = {
 									order = 2,
@@ -1274,7 +1274,7 @@ local function getOptions()
 									order = 8,
 									width = "full",
 									type = "description",
-									name = "ATTENTION:\nAll SavedVariables from Grid, Recount, Omen, Bartender and Details will be reset!"
+									name = "ATTENTION:\nAll SavedVariables from Plexus, Recount, Omen, Bartender and Details will be reset!"
 								},
 								Reset = {
 									order = 9,
