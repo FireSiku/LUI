@@ -179,11 +179,6 @@ local function GetAdditionalAnchors(str)
 	return t
 end
 
-local function SidebarSetAlpha(anchor, alpha)
-	anchor = GetAnchor(anchor)
-	if anchor then anchor:SetAlpha(alpha) end
-end
-
 local function SidebarSetAnchor(side, id)
 	local sideID = side..id
 	local bardb = db["Sidebar"..sideID]
@@ -238,6 +233,14 @@ local function ShowIf(frame, condition)
 		frame:Show()
 	else
 		frame:Hide()
+	end
+end
+
+local function SidebarSetAlpha(anchor, alpha)
+	anchor = GetAnchor(anchor)
+	if anchor then 
+		anchor:SetAlpha(alpha)
+		ShowIf(anchor, alpha > 0)
 	end
 end
 
