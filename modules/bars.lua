@@ -572,9 +572,11 @@ function module:CreateSidebarSlider(side, id)
 	end)
 
 	SidebarSetAnchor(side, id)
-	SidebarSetAlpha(sb.Main, 0)
-	for _, frame in pairs(sb.Additional) do
-		SidebarSetAlpha(frame, 0)
+	if bardb.Enable then 
+		SidebarSetAlpha(sb.Main, 0)
+		for _, frame in pairs(sb.Additional) do
+			SidebarSetAlpha(frame, 0)
+		end
 	end
 
 	ShowIf(sb.Anchor, bardb.Enable)

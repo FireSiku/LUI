@@ -295,7 +295,11 @@ function module:SetMinimap()
 	module:SecureHook("GarrisonLandingPageMinimapButton_UpdateIcon", function()
 		GarrisonLandingPageMinimapButton:SetSize(32,32)
 		GarrisonLandingPageMinimapButton:ClearAllPoints()
-		GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
+		if MiniMapMailFrame:IsShown() then
+			GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-5))
+		else
+			GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
+		end
 	end)
 
 	MiniMapMailFrame:HookScript("OnShow", function()
