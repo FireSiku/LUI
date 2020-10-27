@@ -19,3 +19,4 @@ libs/
 .vscode
 .luacheckrc
 CHANGES.txt
+/.vs

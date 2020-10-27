@@ -23,7 +23,7 @@
 
 	<!-- Addon Installation Routines -->
 	<Script file="addons\bartender.lua"/>
-	<Script file="addons\grid.lua"/>
+	<Script file="addons\plexus.lua"/>
 	<Script file="addons\omen.lua"/>
 	<Script file="addons\recount.lua"/>
 	<Script file="addons\details.lua"/>
