@@ -518,7 +518,7 @@ end
 
 function module:CreateBagFrame(bagType)
 	local frameName = "LUI"..bagType -- LUIBags, LUIBank, LUIReagents
-	local frame = CreateFrame("Frame", frameName, UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+	local frame = CreateFrame("Frame", frameName, UIParent, "BackdropTemplate")
 	frame:EnableMouse(1)
 	frame:SetMovable(1)
 	frame:SetToplevel(1)
@@ -549,7 +549,7 @@ function module:CreateBagFrame(bagType)
 	end
 
 	-- Bag Frame
-	local bagsFrame = CreateFrame("Frame", frameName.."_BagsFrame", frame, BackdropTemplateMixin and "BackdropTemplate" or nil)
+	local bagsFrame = CreateFrame("Frame", frameName.."_BagsFrame", frame, "BackdropTemplate")
 	bagsFrame:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 0, LUI:Scale(2))
 	bagsFrame:SetFrameStrata("HIGH")
 	frame.BagsFrame = bagsFrame
@@ -641,16 +641,9 @@ local function GetTrackedCurrency()
 	local currencyFormat = "%d\124T%s:%d:%d:2:0\124t"
 	local currencyString = {}
 	for i = 1, 3 do -- Only 3 currencies at a time.
-		if LUI.PTR then
-			local info = C_CurrencyInfo.GetBackpackCurrencyInfo(i)
-			if info and info.name then
-				currencyString[i] = format(currencyFormat, info.quantity, info.iconFileID, 0, 0)
-			end
-		else
-			local name, count, icon = GetBackpackCurrencyInfo(i)
-			if name then
-				currencyString[i] = format(currencyFormat, count, icon, 0, 0)
-			end
+		local info = C_CurrencyInfo.GetBackpackCurrencyInfo(i)
+		if info and info.name then
+			currencyString[i] = format(currencyFormat, info.quantity, info.iconFileID, 0, 0)
 		end
 	end
 	local currencyReturn = ""
@@ -668,7 +661,7 @@ function module:SetBags()
 	LUIBags:SetScript("OnHide", LUIBags_OnHide)
 
 	-- Search Editbox
-	local editbox = CreateFrame("EditBox", nil, LUIBags, BackdropTemplateMixin and "BackdropTemplate" or nil)
+	local editbox = CreateFrame("EditBox", nil, LUIBags, "BackdropTemplate")
 	editbox:Hide()
 	editbox:SetAutoFocus(true)
 	editbox:SetHeight(LUI:Scale(32))

@@ -791,7 +791,7 @@ local CreateAuraTimer = function(self,elapsed)
 end
 
 local PostCreateAura = function(element, button)
-	button.backdrop = CreateFrame("Frame", nil, button, BackdropTemplateMixin and "BackdropTemplate" or nil)
+	button.backdrop = CreateFrame("Frame", nil, button, "BackdropTemplate")
 	button.backdrop:SetPoint("TOPLEFT", button, "TOPLEFT", -3.5, 3)
 	button.backdrop:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 4, -3.5)
 	button.backdrop:SetFrameStrata("BACKGROUND")
@@ -1596,7 +1596,7 @@ module.funcs = {
 		end
 	end,
 	FrameBackdrop = function(self, unit, oufdb)
-		if not self.FrameBackdrop then self.FrameBackdrop = CreateFrame("Frame", nil, self, BackdropTemplateMixin and "BackdropTemplate" or nil) end
+		if not self.FrameBackdrop then self.FrameBackdrop = CreateFrame("Frame", nil, self, "BackdropTemplate") end
 
 		self.FrameBackdrop:ClearAllPoints()
 		self.FrameBackdrop:SetPoint("TOPLEFT", self, "TOPLEFT", oufdb.Backdrop.Padding.Left, oufdb.Backdrop.Padding.Top)
@@ -2129,12 +2129,12 @@ module.funcs = {
 			self.Runes:SetFrameLevel(6)
 				
 			for i = 1, 6 do
-				self.Runes[i] = CreateFrame("StatusBar", nil, self.Runes, BackdropTemplateMixin and "BackdropTemplate" or nil)
+				self.Runes[i] = CreateFrame("StatusBar", nil, self.Runes, "BackdropTemplate")
 				self.Runes[i]:SetBackdrop(backdrop)
 				self.Runes[i]:SetBackdropColor(0.08, 0.08, 0.08)
 			end
 
-			self.Runes.FrameBackdrop = CreateFrame("Frame", nil, self.Runes, BackdropTemplateMixin and "BackdropTemplate" or nil)
+			self.Runes.FrameBackdrop = CreateFrame("Frame", nil, self.Runes, "BackdropTemplate")
 			self.Runes.FrameBackdrop:SetPoint("TOPLEFT", self.Runes, "TOPLEFT", -3.5, 3)
 			self.Runes.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.Runes, "BOTTOMRIGHT", 3.5, -3)
 			self.Runes.FrameBackdrop:SetFrameStrata("BACKGROUND")
@@ -2204,7 +2204,7 @@ module.funcs = {
 		end
 		
 		if not self.ClassIcons then
-			self.ClassIcons = CreateFrame("Frame", nil, self, BackdropTemplateMixin and "BackdropTemplate" or nil)
+			self.ClassIcons = CreateFrame("Frame", nil, self, "BackdropTemplate")
 			self.ClassIcons:SetFrameLevel(6)
 			self.ClassIcons:SetFrameStrata("BACKGROUND")
 			self.ClassIcons:SetBackdrop({
@@ -2456,7 +2456,7 @@ module.funcs = {
 	end,
 	RaidDebuffs = function(self, unit, oufdb)
 		if not self.RaidDebuffs then
-			self.RaidDebuffs = CreateFrame("Frame", nil, self, BackdropTemplateMixin and "BackdropTemplate" or nil)
+			self.RaidDebuffs = CreateFrame("Frame", nil, self, "BackdropTemplate")
 			self.RaidDebuffs:SetPoint("CENTER", self, "CENTER", 0, 0)
 			self.RaidDebuffs:SetFrameLevel(7)
 
@@ -2606,7 +2606,7 @@ module.funcs = {
 			castbar.bg = castbar:CreateTexture(nil, "BORDER")
 			castbar.bg:SetAllPoints(castbar)
 
-			castbar.Backdrop = CreateFrame("Frame", nil, self, BackdropTemplateMixin and "BackdropTemplate" or nil)
+			castbar.Backdrop = CreateFrame("Frame", nil, self, "BackdropTemplate")
 			castbar.Backdrop:SetPoint("TOPLEFT", castbar, "TOPLEFT", -4, 3)
 			castbar.Backdrop:SetPoint("BOTTOMRIGHT", castbar, "BOTTOMRIGHT", 3, -3.5)
 			castbar.Backdrop:SetParent(castbar)
@@ -2690,7 +2690,7 @@ module.funcs = {
 			castbar.IconOverlay:SetTexture(buttonTex)
 			castbar.IconOverlay:SetVertexColor(1, 1, 1)
 
-			castbar.IconBackdrop = CreateFrame("Frame", nil, castbar, BackdropTemplateMixin and "BackdropTemplate" or nil)
+			castbar.IconBackdrop = CreateFrame("Frame", nil, castbar, "BackdropTemplate")
 			castbar.IconBackdrop:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -4, 3)
 			castbar.IconBackdrop:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 3, -3.5)
 			castbar.IconBackdrop:SetBackdrop({
@@ -2899,7 +2899,7 @@ module.funcs = {
 		if not from.V2Tex then
 			local V2Tex = CreateFrame("Frame", nil, from)
 
-			V2Tex.Horizontal = CreateFrame("Frame", nil, V2Tex, BackdropTemplateMixin and "BackdropTemplate" or nil)
+			V2Tex.Horizontal = CreateFrame("Frame", nil, V2Tex, "BackdropTemplate")
 			V2Tex.Horizontal:SetFrameLevel(19)
 			V2Tex.Horizontal:SetFrameStrata("BACKGROUND")
 			V2Tex.Horizontal:SetHeight(2)
@@ -2908,7 +2908,7 @@ module.funcs = {
 			V2Tex.Horizontal:SetBackdropBorderColor(0.1, 0.1, 0.1, 1)
 			V2Tex.Horizontal:Show()
 
-			V2Tex.Vertical = CreateFrame("Frame", nil, V2Tex, BackdropTemplateMixin and "BackdropTemplate" or nil)
+			V2Tex.Vertical = CreateFrame("Frame", nil, V2Tex, "BackdropTemplate")
 			V2Tex.Vertical:SetFrameLevel(19)
 			V2Tex.Vertical:SetFrameStrata("BACKGROUND")
 			V2Tex.Vertical:SetWidth(2)
@@ -2917,7 +2917,7 @@ module.funcs = {
 			V2Tex.Vertical:SetBackdropBorderColor(0.1, 0.1, 0.1, 1)
 			V2Tex.Vertical:Show()
 
-			V2Tex.Horizontal2 = CreateFrame("Frame", nil, V2Tex, BackdropTemplateMixin and "BackdropTemplate" or nil)
+			V2Tex.Horizontal2 = CreateFrame("Frame", nil, V2Tex, "BackdropTemplate")
 			V2Tex.Horizontal2:SetFrameLevel(19)
 			V2Tex.Horizontal2:SetFrameStrata("BACKGROUND")
 			V2Tex.Horizontal2:SetHeight(2)
@@ -2926,7 +2926,7 @@ module.funcs = {
 			V2Tex.Horizontal2:SetBackdropBorderColor(0.1, 0.1, 0.1, 1)
 			V2Tex.Horizontal2:Show()
 
-			V2Tex.Dot = CreateFrame("Frame", nil, V2Tex, BackdropTemplateMixin and "BackdropTemplate" or nil)
+			V2Tex.Dot = CreateFrame("Frame", nil, V2Tex, "BackdropTemplate")
 			V2Tex.Dot:SetFrameLevel(19)
 			V2Tex.Dot:SetFrameStrata("BACKGROUND")
 			V2Tex.Dot:SetHeight(6)

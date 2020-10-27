@@ -67,7 +67,7 @@ function module:SetTooltip()
 		},
 	}
 
-	local LUITooltip = CreateFrame( "Frame", "tooltip", UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
+	local LUITooltip = CreateFrame( "Frame", "tooltip", UIParent, "BackdropTemplate")
 
 	local _G = getfenv(0)
 
@@ -153,7 +153,7 @@ function module:SetTooltip()
 	healthBar:SetPoint("BOTTOMRIGHT", healthBar:GetParent(), "TOPRIGHT", -LUI:Scale(2), LUI:Scale(5))
 	healthBar:SetStatusBarTexture(Media:Fetch("statusbar", db.Tooltip.Health.Texture))
 
-	local healthBarBG = CreateFrame( "Frame", "StatusBarBG", healthBar, BackdropTemplateMixin and "BackdropTemplate" or nil)
+	local healthBarBG = CreateFrame( "Frame", "StatusBarBG", healthBar, "BackdropTemplate")
 	healthBarBG:SetFrameLevel(healthBar:GetFrameLevel() - 1)
 	healthBarBG:SetPoint("TOPLEFT", -LUI:Scale(2), LUI:Scale(2))
 	healthBarBG:SetPoint("BOTTOMRIGHT", LUI:Scale(2), -LUI:Scale(2))

@@ -311,55 +311,6 @@ function module:SetMinimap()
 		GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
 	end)
 
-	if not LUI.PTR then
-		-- Move GM Ticket Status icon
-		HelpOpenTicketButton:SetParent(Minimap)
-		HelpOpenTicketButton:ClearAllPoints()
-		HelpOpenTicketButton:SetPoint(db.Minimap.Icon.GMTicket, Minimap, LUI:Scale(3), LUI:Scale(3))
-
-		local micro_r, micro_g, micro_b = unpack(Themes.db.profile.micromenu)
-		HelpOpenTicketButtonTutorial:ClearAllPoints()
-		HelpOpenTicketButtonTutorial:SetPoint("TOP", HelpOpenTicketButton, "BOTTOM", 0, -HelpOpenTicketButtonTutorialArrow:GetHeight())
-
-		HelpOpenTicketButtonTutorialBg:SetGradientAlpha("VERTICAL", micro_r/4, micro_g/4, micro_b/4, 1, 0, 0, 0, 1)
-
-		HelpOpenTicketButtonTutorialText:SetFont(Media:Fetch("font", "vibrocen"), 14, "NONE")
-
-		HelpOpenTicketButtonTutorialArrow:ClearAllPoints()
-		HelpOpenTicketButtonTutorialArrow:SetPoint("BOTTOM", HelpOpenTicketButtonTutorial, "TOP", 0, -6)
-
-		HelpOpenTicketButtonTutorialGlow:SetTexCoord(0.40625000, 0.66015625, 0.82812500, 0.77343750)
-		HelpOpenTicketButtonTutorialGlow:SetVertexColor(r, g, b, 0.5)
-		HelpOpenTicketButtonTutorialGlow:ClearAllPoints()
-		HelpOpenTicketButtonTutorialGlow:SetPoint("BOTTOM", HelpOpenTicketButtonTutorialArrow, "BOTTOM", 0, 0)
-
-		HelpOpenTicketButtonTutorialArrow:SetTexCoord(0.78515625, 0.99218750, 0.58789063, 0.54687500)
-		HelpOpenTicketButtonTutorialArrow:SetVertexColor(micro_r, micro_g, micro_b)
-
-		HelpOpenTicketButtonTutorialGlowTopLeft:SetVertexColor(micro_r, micro_g, micro_b)
-		HelpOpenTicketButtonTutorialGlowTopRight:SetVertexColor(micro_r, micro_g, micro_b)
-		HelpOpenTicketButtonTutorialGlowBottomLeft:SetVertexColor(micro_r, micro_g, micro_b)
-		HelpOpenTicketButtonTutorialGlowBottomRight:SetVertexColor(micro_r, micro_g, micro_b)
-
-		HelpOpenTicketButtonTutorialGlowTop:SetVertexColor(micro_r, micro_g, micro_b)
-		HelpOpenTicketButtonTutorialGlowBottom:SetVertexColor(micro_r, micro_g, micro_b)
-		HelpOpenTicketButtonTutorialGlowLeft:SetVertexColor(micro_r, micro_g, micro_b)
-		HelpOpenTicketButtonTutorialGlowRight:SetVertexColor(micro_r, micro_g, micro_b)
-
-		-- greyscaled textures
-		HelpOpenTicketButtonTutorialGlow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-		HelpOpenTicketButtonTutorialArrow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-
-		HelpOpenTicketButtonTutorialGlowTopLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-		HelpOpenTicketButtonTutorialGlowTopRight:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-		HelpOpenTicketButtonTutorialGlowBottomLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-		HelpOpenTicketButtonTutorialGlowBottomRight:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
-
-		HelpOpenTicketButtonTutorialGlowTop:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-HORIZONTAL2")
-		HelpOpenTicketButtonTutorialGlowBottom:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-HORIZONTAL2")
-		HelpOpenTicketButtonTutorialGlowLeft:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
-		HelpOpenTicketButtonTutorialGlowRight:SetTexture("Interface\\AddOns\\LUI\\media\\TALENTFRAME-VERTICAL2")
-	end
 	-- Hide world map button
 	MiniMapWorldMapButton:Hide()
 
@@ -402,33 +353,18 @@ function module:SetMinimap()
 
 	local menuFrame = CreateFrame( "Frame", "MinimapRightClickMenu", UIParent, "UIDropDownMenuTemplate")
 	local menuList = {
-		{text = CHARACTER_BUTTON,
-		func = function() ToggleCharacter("PaperDollFrame") end},
-		{text = SPELLBOOK_ABILITIES_BUTTON,
-		func = function() ToggleFrame(SpellBookFrame) end},
-		{text = TALENTS_BUTTON,
-		func = function() ToggleTalentFrame() end},
-		{text = ACHIEVEMENT_BUTTON,
-		func = function() ToggleAchievementFrame() end},
-		{text = QUESTLOG_BUTTON,
-		func = function() ToggleFrame(QuestLogFrame) end},
-		{text = SOCIAL_BUTTON,
-		func = function() ToggleFriendsFrame(1) end},
-		{text = PLAYER_V_PLAYER,
-		func = function() ToggleFrame(PVPFrame) end},
-		{text = ACHIEVEMENTS_GUILD_TAB,
-		func = function() if IsInGuild() then if not GuildFrame then LoadAddOn("Blizzard_GuildUI") end GuildFrame_Toggle() end end},
-		{text = LFG_TITLE,
-		func = function() ToggleFrame(LFDParentFrame) end},
-		{text = L_LFRAID,
-		func = function() ToggleFrame(LFRParentFrame) end},
-		{text = HELP_BUTTON,
-		func = function() ToggleHelpFrame() end},
-		{text = L_CALENDAR,
-		func = function()
-		if(not CalendarFrame) then LoadAddOn("Blizzard_Calendar") end
-			Calendar_Toggle()
-		end},
+		{text = CHARACTER_BUTTON, 			func = function() ToggleCharacter("PaperDollFrame") end},
+		{text = SPELLBOOK_ABILITIES_BUTTON, func = function() ToggleFrame(SpellBookFrame) end},
+		{text = TALENTS_BUTTON, 			func = function() ToggleTalentFrame() end},
+		{text = ACHIEVEMENT_BUTTON, 		func = function() ToggleAchievementFrame() end},
+		{text = QUESTLOG_BUTTON, 			func = function() ToggleFrame(QuestLogFrame) end},
+		{text = SOCIAL_BUTTON, 				func = function() ToggleFriendsFrame(1) end},
+		{text = PLAYER_V_PLAYER, 			func = function() ToggleFrame(PVPFrame) end},
+		{text = ACHIEVEMENTS_GUILD_TAB, 	func = function() if IsInGuild() then if not GuildFrame then LoadAddOn("Blizzard_GuildUI") end GuildFrame_Toggle() end end},
+		{text = LFG_TITLE, 					func = function() ToggleFrame(LFDParentFrame) end},
+		{text = L_LFRAID, 					func = function() ToggleFrame(LFRParentFrame) end},
+		{text = HELP_BUTTON, 				func = function() ToggleHelpFrame() end},
+		{text = L_CALENDAR, 				func = function() if(not CalendarFrame) then LoadAddOn("Blizzard_Calendar") end Calendar_Toggle() end},
 	}
 
 	Minimap:SetScript("OnMouseUp", function(self, btn)
@@ -449,17 +385,6 @@ function module:SetMinimap()
 	--noinspection GlobalCreationOutsideO
 	function GetMinimapShape() return "SQUARE" end
 
-	-- reskin LFG dropdown
-	--[[LFDSearchStatus:SetBackdrop({
-	  bgFile = LUI.Media.blank,
-	  edgeFile = LUI.Media.blank,
-	  tile = false, tileSize = 0, edgeSize = mult,
-	  insets = { left = 0, right = 0, top = 0, bottom = 0}
-	})]]
-	if not LUI.PTR then
-		QueueStatusFrame:SetBackdropColor(.1,.1,.1,1)
-		QueueStatusFrame:SetBackdropBorderColor(.6,.6,.6,1)
-	end
 	----------------------------------------------------------------------------------------
 	-- Animation Coords and Current Zone. Awesome feature by AlleyKat.
 	----------------------------------------------------------------------------------------

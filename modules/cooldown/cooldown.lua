@@ -360,11 +360,7 @@ function module:OnEnable()
 			module:RegisterActionUIButton(frame)
 		end
 	end
-	if LUI.PTR then
-		module:SecureHook(ActionBarButtonEventsFrameMixin, "RegisterFrame", "RegisterActionUIButton")
-	else
-		module:SecureHook("ActionBarButtonEventsFrame_RegisterFrame", "RegisterActionUIButton")
-	end
+	module:SecureHook(ActionBarButtonEventsFrameMixin, "RegisterFrame", "RegisterActionUIButton")
 	module:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 end
 

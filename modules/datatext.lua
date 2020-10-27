@@ -83,7 +83,7 @@ local function NewIcon(stat, tex)
 	if not stat then return end
 	if stat.icon then return stat.icon end
 
-	local icon = CreateFrame("Button", stat:GetName().."Icon", stat, BackdropTemplateMixin and "BackdropTemplate" or nil)
+	local icon = CreateFrame("Button", stat:GetName().."Icon", stat, "BackdropTemplate")
 	icon:SetPoint("RIGHT", stat.text, "LEFT", -2, 0)
 	icon:SetWidth(15)
 	icon:SetHeight(15)
@@ -98,7 +98,7 @@ local function NewStat(statDB)
 	if InfoStats[statDB] then return InfoStats[statDB] end
 	if db[statDB] and not db[statDB].Enable then return {Created = false} end
 
-	local stat = CreateFrame("Frame", "LUI_Info_" .. statDB, LUI_Infos_TopRight, BackdropTemplateMixin and "BackdropTemplate" or nil)
+	local stat = CreateFrame("Frame", "LUI_Info_" .. statDB, LUI_Infos_TopRight, "BackdropTemplate")
 	stat.db = statDB
 	stat:EnableMouse(true)
 
@@ -586,19 +586,10 @@ function module:SetCurrency()
 			if CurrencyList then return CurrencyList end
 
 			CurrencyList = {[0] = "None",}
-			if LUI.PTR then
-				for i=1, 2048 do
-					local info = C_CurrencyInfo.GetCurrencyInfo(i)
-					if info and info.name ~= "" and info.discovered then
-						CurrencyList[i] = info.name
-					end
-				end
-			else
-				for i=1, 2048 do
-					local name, _, _, _, _, _, discovered = GetCurrencyInfo(i)
-					if name ~= "" and discovered then
-						CurrencyList[i] = name
-					end
+			for i=1, 2048 do
+				local info = C_CurrencyInfo.GetCurrencyInfo(i)
+				if info and info.name ~= "" and info.discovered then
+					CurrencyList[i] = info.name
 				end
 			end
 			return CurrencyList
@@ -646,32 +637,16 @@ function module:SetCurrency()
 				GameTooltip:ClearLines()
 				GameTooltip:AddLine("Currency:", 0.4, 0.78, 1)
 				
-				if LUI.PTR then
-					for i = 1, C_CurrencyInfo.GetCurrencyListSize()  do
-						local info = C_CurrencyInfo.GetCurrencyListInfo(i) 
-						if info and info.isHeader then
-							GameTooltip:AddLine(" ")
-							GameTooltip:AddLine(info.name)
-						elseif info and info.name then
-							if info.quantity and info.quantity ~= 0 then
-								GameTooltip:AddDoubleLine(info.name, info.quantity, 1,1,1, 1,1,1)
-							else
-								GameTooltip:AddDoubleLine(info.name, "--", 1,1,1, 1,1,1)
-							end
-						end
-					end
-				else
-					for i = 1, GetCurrencyListSize() do
-						local name, isHeader, _, _, _, count = GetCurrencyListInfo(i)
-						if isHeader then
-							GameTooltip:AddLine(" ")
-							GameTooltip:AddLine(name)
-						elseif name then
-							if count and count ~= 0 then
-								GameTooltip:AddDoubleLine(name, count, 1,1,1, 1,1,1)
-							else
-								GameTooltip:AddDoubleLine(name, "--", 1,1,1, 1,1,1)
-							end
+				for i = 1, C_CurrencyInfo.GetCurrencyListSize()  do
+					local info = C_CurrencyInfo.GetCurrencyListInfo(i) 
+					if info and info.isHeader then
+						GameTooltip:AddLine(" ")
+						GameTooltip:AddLine(info.name)
+					elseif info and info.name then
+						if info.quantity and info.quantity ~= 0 then
+							GameTooltip:AddDoubleLine(info.name, info.quantity, 1,1,1, 1,1,1)
+						else
+							GameTooltip:AddDoubleLine(info.name, "--", 1,1,1, 1,1,1)
 						end
 					end
 				end
@@ -1213,31 +1188,16 @@ function module:SetGold()
 				end
 				GameTooltip:AddDoubleLine("Total:", formatTooltipMoney(factionGold[myPlayerFaction] + factionGold[otherFaction]), 1,1,1, 1,1,1)
 
-				if LUI.PTR then
-					for i = 1, MAX_WATCHED_TOKENS do
-						local info = C_CurrencyInfo.GetBackpackCurrencyInfo(i)
+				for i = 1, MAX_WATCHED_TOKENS do
+					local info = C_CurrencyInfo.GetBackpackCurrencyInfo(i)
 
-						if info and info.name and i == 1 then
-							GameTooltip:AddLine(" ")
-							GameTooltip:AddLine("Currency:")
-						end
-
-						if info and info.name and info.quantity then
-							GameTooltip:AddDoubleLine(info.name, info.quantity, 1,1,1, 1,1,1)
-						end
+					if info and info.name and i == 1 then
+						GameTooltip:AddLine(" ")
+						GameTooltip:AddLine("Currency:")
 					end
-				else
-					for i = 1, MAX_WATCHED_TOKENS do
-						local name, count = GetBackpackCurrencyInfo(i)
 
-						if name and i == 1 then
-							GameTooltip:AddLine(" ")
-							GameTooltip:AddLine("Currency:")
-						end
-
-						if name and count then
-							GameTooltip:AddDoubleLine(name, count, 1,1,1, 1,1,1)
-						end
+					if info and info.name and info.quantity then
+						GameTooltip:AddDoubleLine(info.name, info.quantity, 1,1,1, 1,1,1)
 					end
 				end
 
@@ -1675,7 +1635,7 @@ function module:SetGF()
 		})
 
 		-- Frames
-		slider = CreateFrame("Slider", nil, stat, BackdropTemplateMixin and "BackdropTemplate" or nil)
+		slider = CreateFrame("Slider", nil, stat, "BackdropTemplate")
 		slider:SetWidth(16)
 		slider:SetThumbTexture([[Interface\Buttons\UI-SliderBar-Button-Horizontal]])
 		slider:SetBackdrop({

@@ -270,11 +270,7 @@ local function Configure(bar, numButtons, numPerRow)
 			else
 				buttons[i]:SetAttribute("statehidden", nil)
 				buttons[i]:Show()
-				if LUI.PTR then
-					buttons[i]:Update()
-				else
-					ActionButton_Update(buttons[i])
-				end
+				buttons[i]:Update()
 			end
 		end
 	end
@@ -1251,16 +1247,11 @@ local function Button_OnUpdate(button, elapsed)
 end
 
 function module:HookActionButton(button)
-	if LUI.PTR and button then
+	if button then
 		module:SecureHook(button, "Update", StyleButton)
 		module:SecureHook(button, "OnUpdate", Button_OnUpdate)
 		module:SecureHook(button, "UpdateHotkeys", UpdateHotkey)
 		module:SecureHook(button, "UpdateUsable", Button_UpdateUsable)
-	elseif not LUI.PTR then
-		module:SecureHook("ActionButton_Update", StyleButton)
-		module:SecureHook("ActionButton_OnUpdate", Button_OnUpdate)
-		module:SecureHook("ActionButton_UpdateHotkeys", UpdateHotkey)
-		module:SecureHook("ActionButton_UpdateUsable", Button_UpdateUsable)
 	end
 	--Prevent rehooking.
 	if not module:IsHooked("StanceBar_Update") then

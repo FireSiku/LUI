@@ -40,24 +40,6 @@ function module:SetMicroMenuPosition()
 	LUI.MicroMenu.Button:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.X, db.Y)
 end
 
-function module:SetAlertFramesColors(name)
-	local r, g, b = unpack(Themes.db.profile.micromenu)
-
-	_G[name.."MicroButtonAlertBg"]:SetGradientAlpha("VERTICAL", r/4, g/4, b/4, 1, 0, 0, 0, 1)
-	_G[name.."MicroButtonAlertGlow"]:SetVertexColor(r, g, b, 0.5)
-	--_G[name.."MicroButtonAlertArrowArrow:SetVertexColor(r, g, b)
-
-	_G[name.."MicroButtonAlertGlowTopLeft"]:SetVertexColor(r, g, b)
-	_G[name.."MicroButtonAlertGlowTopRight"]:SetVertexColor(r, g, b)
-	_G[name.."MicroButtonAlertGlowBottomLeft"]:SetVertexColor(r, g, b)
-	_G[name.."MicroButtonAlertGlowBottomRight"]:SetVertexColor(r, g, b)
-
-	_G[name.."MicroButtonAlertGlowTop"]:SetVertexColor(r, g, b)
-	_G[name.."MicroButtonAlertGlowBottom"]:SetVertexColor(r, g, b)
-	_G[name.."MicroButtonAlertGlowLeft"]:SetVertexColor(r, g, b)
-	_G[name.."MicroButtonAlertGlowRight"]:SetVertexColor(r, g, b)
-end
-
 function module:SetColors()
 	local r, g, b = unpack(Themes.db.profile.micromenu)
 	local rb, gb, bb, ab = unpack(Themes.db.profile.micromenu_btn)
@@ -84,12 +66,6 @@ function module:SetColors()
 	LUI.MicroMenu.Buttons.Talents:SetBackdropColor(r, g, b, 1)
 	LUI.MicroMenu.Buttons.Spellbook:SetBackdropColor(r, g, b, 1)
 	LUI.MicroMenu.Buttons.Player:SetBackdropColor(r, g, b, 1)
-
-	if not LUI.PTR then
-		module:SetAlertFramesColors("Talent")
-		module:SetAlertFramesColors("Collections")
-		module:SetAlertFramesColors("EJ")
-	end
 end
 
 function module:SetMicroMenu()
@@ -1103,34 +1079,10 @@ function module:SetMicroMenu()
 
 	self:SetMicroMenuPosition()
 
-	-- little hack for the questframe
-	--local point, relframe, relpoint, x, y = QuestLogFrame:GetPoint()
-	--QuestLogFrame:ClearAllPoints()
-	--QuestLogFrame:SetPoint(point, relframe, relpoint, x, -105)
-
-	if LUI.PTR then
-		module:SecureHook(HelpTip, "Show", "ScanHelpTips")
-		if HelpTip.framePool.numActiveObjects > 0 then
-			module:ScanHelpTips()
-		end
-	else
-		-- talent alert frame
-		if UnitLevel("player") < 10 then
-			TalentMicroButtonAlert:Hide()
-			LUI.MicroMenu.Buttons.Talents:RegisterEvent("PLAYER_LEVEL_UP")
-		end
-		LUI.MicroMenu.Buttons.Talents:SetScript("OnEvent", function(self, event, level)
-				if not level then level = UnitLevel("player")+1 end
-				if tonumber(level) < 10 then TalentMicroButtonAlert:Hide()
-				else
-					TalentMicroButtonAlert:Show()
-					LUI.MicroMenu.Buttons.Talents:UnregisterEvent("PLAYER_LEVEL_UP")
-				end
-		end)
-
-		module:HookAlertFrame("Talent", LUI.MicroMenu.Buttons.Talents)
-		module:HookAlertFrame("Collections", LUI.MicroMenu.Buttons.Pets)
-		module:HookAlertFrame("EJ", LUI.MicroMenu.Buttons.Journal)
+	-- Alert Frames
+	module:SecureHook(HelpTip, "Show", "ScanHelpTips")
+	if HelpTip.framePool.numActiveObjects > 0 then
+		module:ScanHelpTips()
 	end
 end
 
@@ -1153,31 +1105,6 @@ function module:AnchorAlertFrame(frame, anchor)
 	frame:SetPoint("TOP", anchor, "BOTTOM")
 	frame.Arrow:ClearAllPoints()
 	frame.Arrow:SetPoint("BOTTOM", frame, "TOP", 0, -30)
-end
-
-function module:HookAlertFrame(name, anchor)
-	local r, g, b = unpack(Themes.db.profile.micromenu)
-
-	local alertFrame      = _G[name.."MicroButtonAlert"]
-	local alertFrameBg    = _G[name.."MicroButtonAlertBg"]
-	local alertFrameArrow = _G[name.."MicroButtonAlertArrow"]
-	local alertFrameGlow  = _G[name.."MicroButtonAlertGlow"]
-
-	alertFrame:ClearAllPoints()
-	alertFrame:SetPoint("TOP", anchor, "BOTTOM")
-
-	alertFrameBg:SetGradientAlpha("VERTICAL", r/4, g/4, b/4, 1, 0, 0, 0, 1)
-
-	alertFrameArrow:ClearAllPoints()
-	alertFrameArrow:SetPoint("BOTTOM", alertFrame, "TOP", 0, -6)
-
-	alertFrameGlow:SetTexCoord(-0.40625000, 0.66015625, -0.82812500, 0.77343750)
-	alertFrameGlow:SetVertexColor(r, g, b, 0.5)
-	alertFrameGlow:ClearAllPoints()
-	alertFrameGlow:SetPoint("BOTTOM", alertFrameArrow, "BOTTOM", 0, 0)
-
-	-- greyscaled textures
-	--alertFrameGlow:SetTexture("Interface\\AddOns\\LUI\\media\\TalentFrame-Parts")
 end
 
 module.defaults = {
