@@ -96,14 +96,15 @@ do
 		LUI:Print("Dummy "..bar:GetName().." hidden due to combat.")
 	end
 
-	toggleDummyBar = function(bar, show)
-		if show == nil then
-			show = not bar:IsShown()
-		end
+	toggleDummyBar = function(bar, force)
+		local show = not bar:IsShown()
+		if force then show = force end
 
 		local parent = bar:GetParent()
+		if not parent then parent = LUIExtraActionBar end
 
 		if show then
+			if not parent.SetBackdrop then Mixin(parent, BackdropTemplateMixin) end
 			parent:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background"})
 			bar.button:Show()
 			bar:Show()
@@ -112,7 +113,7 @@ do
 
 			module:RegisterEvent("PLAYER_REGEN_DISABLED", playerRegenDisabled, bar)
 		else
-			parent:SetBackdrop({})
+			if parent.SetBackdrop then parent:SetBackdrop({}) end
 			bar.intro:Stop()
 			bar:Hide()
 		end
