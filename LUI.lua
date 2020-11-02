@@ -1328,7 +1328,7 @@ local function getOptions()
 									width = "full",
 									type = "description",
 									fontSize = "large",
-									name = "|cffa335eeQoke, StephenFOlson, Fearon Whitcomb, Ragnarok, Skinny Man Music, David Cook, Dalton Matheson, Curtis Motzner, Christoph Fischer, Michael Rowan, Hansth, Michael Swancott, Steph Lee, rb4havoc, Max McBurn, Michelle Larrew, Grant Sundstrom, Cory Linnerooth, Eagle Billie".."\n",
+									name = "|cffa335eeQoke, StephenFOlson, Fearon Whitcomb, Skinny Man Music, David Cook, Dalton Matheson, Curtis Motzner, Christoph Fischer, Hansth, Michael Swancott, Steph Lee, rb4havoc, Max McBurn, Michelle Larrew, Grant Sundstrom, Cory Linnerooth, Eagle Billie, Angryrice, Ian Huisman, Greta Kratz, Sacrosact Stars, Leisulong, Christopher Rhea".."\n",
 								},
 								
 								OtherPatrons = {
@@ -1336,7 +1336,7 @@ local function getOptions()
 									width = "full",
 									type = "description",
 									fontSize = "medium",
-									name = "|cff1eff00Adam Moody, Andrew DePaola, Angryrice, Anthony Béchard, apexius, Azona, BIRDki, Brandon Burr, Chris Manring, Confatalis, Dochouse, gnuheike, Ian Huisman, Joseph Arnett, Kris Springer, Lyra, Lysa Richey, Mathias Reffeldt, Max McBurn, Melvin de Grauw, Michael Walker, Mike, McCabe, Mike Williams, Nathan Adams, Nick Giovanni, necr0, Oscar Olofsson, Philipp Rissle, Preston Cheek, Ranarok, Richard Scholten, Romain Gorgibus, Saturos Zed, Scott Crawford, Sean O'Shea, Shawn Pitts, Slawomir Baran, Spencer Sommers, Srg Kuja, Thomas A Hutto, Tobias Lidén, Xenthe, Ziri".."\n",
+									name = "|cff1eff00Adam Moody, Andrew DePaola, Anthony Béchard, apexius, Azona, BIRDki, Brandon Burr, Chris Manring, Confatalis, Darkion43, Dochouse, gnuheike, Joseph Arnett, Kris Springer, Lyra, Lysa Richey, Mathias Reffeldt, Melvin de Grauw, Michael Rowan, Michael Walker, Mike, McCabe, Mike Williams, Nathan Adams, Nick Giovanni, necr0, Oscar Olofsson, Philipp Rissle, Ragnarok, Richard Scholten, Romain Gorgibus, Saturos Zed, Scott Crawford, Sean O'Shea, Shawn Pitts, Slawomir Baran, Spencer Sommers, Srg Kuja, Thomas A Hutto, Tobias Lidén, Xenthe, Ziri".."\n",
 								},
 							},
 						},
