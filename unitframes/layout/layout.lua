@@ -823,8 +823,10 @@ end
 --local PostUpdateAura = function(icons, unit, icon, index, offset, filter, isDebuff, duration, timeLeft) - leaving here just in case I need to revert it
 local PostUpdateAura = function(icons, unit, icon, index, offset)
 	local _, _, _, dtype, duration, expirationTime, unitCaster, _ = UnitAura(unit, index, icon.filter)
-	if not (unitCaster == "player" or unitCaster == "pet" or unitCaster == "vehicle") then
-		if icon.isDebuff then
+	if icon.isDebuff then
+		if unitCaster == "player" or unitCaster == "pet" or unitCaster == "vehicle" then
+			icon.icon:SetDesaturated()
+		else
 			icon.icon:SetDesaturated(icons.fadeOthers)
 		end
 	end
