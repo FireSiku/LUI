@@ -893,18 +893,18 @@ function module:HideBlizzard()
 	StanceBarFrame:EnableMouse(false)
 	StanceBarFrame:SetAlpha(0)
 
-	-- local FramesToHide = {
-	-- 	MainMenuBarArtFrame,
-	-- 	BonusActionBarFrame,
-	-- 	PossessBarFrame,
-	-- }
+	local FramesToHide = {
+		MainMenuBarArtFrame,
+		BonusActionBarFrame,
+		PossessBarFrame,
+	}
 
-	-- for _, frame in pairs(FramesToHide) do
-	-- 	if not module:IsHooked(frame, "Show") then
-	-- 		module:RawHook(frame, "Show", LUI.dummy, true)
-	-- 	end
-	-- 	frame:Hide()
-	-- end
+	for _, frame in pairs(FramesToHide) do
+		if not module:IsHooked(frame, "Show") then
+			module:RawHook(frame, "Show", LUI.dummy, true)
+		end
+		frame:Hide()
+	end
 
 	module:SecureHook("TalentFrame_LoadUI", function()
 		PlayerTalentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
