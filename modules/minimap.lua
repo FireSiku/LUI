@@ -14,7 +14,7 @@
 
 -- External references.
 local _, LUI = ...
-local module = LUI:Module("Minimap", "AceHook-3.0")
+local module = LUI:Module("Minimap", "AceHook-3.0", "AceEvent-3.0")
 local Themes = LUI:Module("Themes")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
@@ -22,6 +22,7 @@ local widgetLists = AceGUIWidgetLSMlists
 local db
 local shouldntSetPoint = false
 local fontflags = {'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'NONE'}
+local defaultGarrisonState = false
 
 function module:SetAdditionalFrames()
 	if db.Minimap.Enable ~= true then return end
@@ -493,15 +494,20 @@ function module:GetMinimapPosition()
 	db.Minimap.General.Position.Y = yOfs
 end
 
-local emptyFunc = function() return end
 function module:ToggleMissionReport()
-	if C_Garrison.GetLandingPageGarrisonType() == 0 then return end
+	local button = GarrisonLandingPageMinimapButton
+	if button:IsShown() and not defaultGarrisonState then
+		button:Hide()
+		return
+	elseif not defaultGarrisonState then
+		return
+	end
 	if db.Minimap.General.MissionReport then
-		GarrisonLandingPageMinimapButton.Show = nil
-		GarrisonLandingPageMinimapButton:Show()
+		button.Show = nil
+		button:Show()
 	else
-		GarrisonLandingPageMinimapButton.Show = emptyFunc
-		GarrisonLandingPageMinimapButton:Hide()
+		button.Show = button.Hide
+		button:Hide()
 	end
 end
 
@@ -930,6 +936,14 @@ function module:OnInitialize()
 	LUI:RegisterModule(self)
 end
 
+function module:GARRISON_HIDE_LANDING_PAGE()
+	defaultGarrisonState = false
+end
+
+function module:GARRISON_SHOW_LANDING_PAGE()
+	defaultGarrisonState = true
+end
+
 function module:OnEnable()
 	if IsAddOnLoaded("SexyMap") then
 		LUI:Printf("|cffFF0000%s could not be enabled because of a conflicting addon: SexyMap.", self:GetName())
@@ -937,5 +951,7 @@ function module:OnEnable()
 	end
 	self:SetMinimap()
 	self:SetAdditionalFrames()
+	self:RegisterEvent("GARRISON_HIDE_LANDING_PAGE")
+	self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE")
 	C_Timer.After(0.25, self.ToggleMissionReport)
 end
