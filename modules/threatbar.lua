@@ -25,7 +25,7 @@ local _, class = UnitClass("player")
 
 local aggrocolors = {0, 1, 0, 1, 1, 0, 1, 0, 0}
 
-local ToggleTestMode = function()
+local function ToggleTestMode()
 	if LUIThreat.Testmode then
 		LUIThreat.Testmode = nil
 		LUIThreat:Hide()
@@ -38,7 +38,7 @@ local ToggleTestMode = function()
 	end
 end
 
-local UpdateExpMode = function()
+local function UpdateExpMode()
 	local bar = LUIThreat
 	local bar2 = LUIThreat.artifact
 	local width = bar:GetWidth()
@@ -199,44 +199,43 @@ local UpdateExpMode = function()
 		bar.Text:SetTextColor(oUF.ColorGradient((100 - percentBar), 100, 0, 1, 0, 1, 1, 0, 1, 0, 0))
 		bar2.Text:SetTextColor(oUF.ColorGradient((100 - percentBar2), 100, 0, 1, 0, 1, 1, 0, 1, 0, 0))
 	end
-
-
 end
 
-local ToggleExpMode = function()
-	if LUIThreat.expMode or IsXPUserDisabled() then
-		LUIThreat.expMode = nil
-		LUIThreat:Hide()
-		LUIThreat.artifact:Hide()
-		LUIThreat:RegisterEvent("PLAYER_REGEN_ENABLED")
-		LUIThreat:RegisterEvent("PLAYER_REGEN_DISABLED")
-		LUIThreat:UnregisterEvent("PLAYER_XP_UPDATE")
-		LUIThreat:UnregisterEvent("UPDATE_FACTION")
-		LUIThreat:UnregisterEvent("UPDATE_EXHAUSTION")
-		LUIThreat:UnregisterEvent("PLAYER_ENTERING_WORLD")
-		LUIThreat:UnregisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
-		LUIThreat:UnregisterEvent("CVAR_UPDATE")
+local function ToggleExpMode()
+	local bar = LUIThreat
+	if bar.expMode or IsXPUserDisabled() then
+		bar.expMode = nil
+		bar:Hide()
+		bar.artifact:Hide()
+		bar:RegisterEvent("PLAYER_REGEN_ENABLED")
+		bar:RegisterEvent("PLAYER_REGEN_DISABLED")
+		bar:UnregisterEvent("PLAYER_XP_UPDATE")
+		bar:UnregisterEvent("UPDATE_FACTION")
+		bar:UnregisterEvent("UPDATE_EXHAUSTION")
+		bar:UnregisterEvent("PLAYER_ENTERING_WORLD")
+		bar:UnregisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
+		bar:UnregisterEvent("CVAR_UPDATE")
 	else
-		LUIThreat:UnregisterEvent("PLAYER_REGEN_ENABLED")
-		LUIThreat:UnregisterEvent("PLAYER_REGEN_DISABLED")
-		LUIThreat:RegisterEvent("PLAYER_XP_UPDATE")
-		LUIThreat:RegisterEvent("UPDATE_EXHAUSTION")
-		LUIThreat:RegisterEvent("UPDATE_FACTION")
-		LUIThreat:RegisterEvent("PLAYER_ENTERING_WORLD")
-		LUIThreat:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
-		LUIThreat:RegisterEvent("CVAR_UPDATE")
-		LUIThreat.expMode = true
-		LUIThreat:Show()
-		LUIThreat:SetAlpha(1)
-		LUIThreat:SetMinMaxValues(0, 100)
-		LUIThreat.indicator:Hide()
-		LUIThreat.rested:Show()
+		bar:UnregisterEvent("PLAYER_REGEN_ENABLED")
+		bar:UnregisterEvent("PLAYER_REGEN_DISABLED")
+		bar:RegisterEvent("PLAYER_XP_UPDATE")
+		bar:RegisterEvent("UPDATE_EXHAUSTION")
+		bar:RegisterEvent("UPDATE_FACTION")
+		bar:RegisterEvent("PLAYER_ENTERING_WORLD")
+		bar:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
+		bar:RegisterEvent("CVAR_UPDATE")
+		bar.expMode = true
+		bar:Show()
+		bar:SetAlpha(1)
+		bar:SetMinMaxValues(0, 100)
+		bar.indicator:Hide()
+		bar.rested:Show()
 
 		UpdateExpMode()
 	end
 end
 
-local Update = function(bar)
+local function Update(bar)
 	if bar.Testmode then return end
 	if db.General.expMode then return end
 
@@ -289,7 +288,7 @@ local Update = function(bar)
 	end
 end
 
-local SetThreat = function()
+local function SetThreat()
 	if LUIThreat then return end
 
 	local anchor = CreateFrame("Frame", "LUI_ThreatBarAnchor", UIParent)
@@ -298,53 +297,60 @@ local SetThreat = function()
 	module.anchor = anchor
 	module.anchor:Show()
 
-	LUIThreat = CreateFrame("StatusBar", "LUIThreat", anchor)
-	LUIThreat:SetFrameStrata("HIGH")
-	LUIThreat:SetAllPoints(anchor)
+	local bar = CreateFrame("StatusBar", "LUIThreat", anchor)
+	bar:SetFrameStrata("HIGH")
+	bar:SetAllPoints(anchor)
 
-	LUIThreat.bg = LUIThreat:CreateTexture(nil, "BORDER")
-	LUIThreat.bg:SetAllPoints(LUIThreat)
+	local bg = bar:CreateTexture(nil, "BORDER")
+	bg:SetAllPoints(bar)
+	
+	local text = bar:CreateFontString("LUIThreatText", "OVERLAY")
+	text:SetJustifyH("LEFT")
+	text:SetShadowColor(0, 0, 0)
+	text:SetShadowOffset(1.25, -1.25)
+	
+	local helper = CreateFrame("StatusBar", nil, bar)
+	helper:SetAllPoints(bar)
+	helper:SetFrameLevel(bar:GetFrameLevel() - 1)
+	helper:SetMinMaxValues(0, 100)
+	helper:SetValue(100)
+	helper:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
+	
+	local indicator = bar:CreateTexture(nil, "OVERLAY")
+	indicator:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
+	indicator:SetVertexColor(1, 1, 1, .75)
+	indicator:SetBlendMode("ADD")
+	indicator:SetHeight(bar:GetHeight() * 1.5)
+	indicator:SetWidth(bar:GetHeight())
+	indicator:SetPoint("CENTER", helper:GetStatusBarTexture(), "RIGHT", 0, 0)
+	indicator:Show()
+	
+	local rested = bar:CreateTexture(nil, "OVERLAY")
+	rested:SetTexture("Interface\\TargetingFrame\\UI-StatusBar")
+	rested:SetVertexColor(0.7, 0.7, 0.7, 0.2)
+	rested:SetBlendMode("ADD")
+	rested:Show()
 
-	LUIThreat.Text = LUIThreat:CreateFontString("LUIThreatText", "OVERLAY")
-	LUIThreat.Text:SetJustifyH("LEFT")
-	LUIThreat.Text:SetShadowColor(0, 0, 0)
-	LUIThreat.Text:SetShadowOffset(1.25, -1.25)
+	local artifact = CreateFrame("StatusBar", "LUIArtifact", anchor)
+	artifact:SetFrameStrata("HIGH")
 
-	LUIThreat.helper = CreateFrame("StatusBar", nil, LUIThreat)
-	LUIThreat.helper:SetAllPoints(LUIThreat)
-	LUIThreat.helper:SetFrameLevel(LUIThreat:GetFrameLevel() - 1)
-	LUIThreat.helper:SetMinMaxValues(0, 100)
-	LUIThreat.helper:SetValue(100)
-	LUIThreat.helper:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
+	artifact.bg = artifact:CreateTexture(nil, "BORDER")
+	artifact.bg:SetAllPoints(artifact)
+	
+	artifact.Text = artifact:CreateFontString("LUIArtifactText", "OVERLAY")
+	artifact.Text:SetJustifyH("RIGHT")
+	artifact.Text:SetShadowColor(0, 0, 0)
+	artifact.Text:SetShadowOffset(1.25, -1.25)
 
-	LUIThreat.indicator = LUIThreat:CreateTexture(nil, "OVERLAY")
-	LUIThreat.indicator:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
-	LUIThreat.indicator:SetVertexColor(1, 1, 1, .75)
-	LUIThreat.indicator:SetBlendMode("ADD")
-	LUIThreat.indicator:SetHeight(LUIThreat:GetHeight() * 1.5)
-	LUIThreat.indicator:SetWidth(LUIThreat:GetHeight())
-	LUIThreat.indicator:SetPoint("CENTER", LUIThreat.helper:GetStatusBarTexture(), "RIGHT", 0, 0)
-	LUIThreat.indicator:Show()
-
-	LUIThreat.rested = LUIThreat:CreateTexture(nil, "OVERLAY")
-	LUIThreat.rested:SetTexture("Interface\\TargetingFrame\\UI-StatusBar")
-	LUIThreat.rested:SetVertexColor(0.7, 0.7, 0.7, 0.2)
-	LUIThreat.rested:SetBlendMode("ADD")
-	LUIThreat.rested:Show()
-
-	LUIThreat.artifact = CreateFrame("StatusBar", "LUIArtifact", anchor)
-	LUIThreat.artifact:SetFrameStrata("HIGH")
-
-	LUIThreat.artifact.bg = LUIThreat.artifact:CreateTexture(nil, "BORDER")
-	LUIThreat.artifact.bg:SetAllPoints(LUIThreat.artifact)
-
-	LUIThreat.artifact.Text = LUIThreat.artifact:CreateFontString("LUIArtifactText", "OVERLAY")
-	LUIThreat.artifact.Text:SetJustifyH("RIGHT")
-	LUIThreat.artifact.Text:SetShadowColor(0, 0, 0)
-	LUIThreat.artifact.Text:SetShadowOffset(1.25, -1.25)
+	LUIThreat = bar
+	LUIThreat.bg = bg
+	LUIThreat.Text = text
+	LUIThreat.helper = helper
+	LUIThreat.indicator = indicator
+	LUIThreat.rested = rested
+	LUIThreat.artifact = artifact
 
 	LUIThreat:SetScript("OnEvent", function(self, event)
-
 		if event == "PLAYER_REGEN_ENABLED" then
 			self:Hide()
 		elseif event == "PLAYER_REGEN_DISABLED" then
