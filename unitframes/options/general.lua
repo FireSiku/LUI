@@ -469,7 +469,8 @@ end
 ------------------------------------------------------------------------
 
 function module:CreateNameTextOptions(unit, order)
-	local disabledNameFunc = function() return not self.db[unit].Texts.Name.Enable end
+	local disabledTextFunc = function() return not self.db[unit].Texts.Name.Enable end
+	local disabledClassificationFunc = function() return not self.db[unit].Texts.Name.Enable or not self.db[unit].Texts.Name.ShowClassification end
 
 	local applyInfoText = function()
 		for _, frame in pairs(self.framelist[unit]) do
@@ -503,7 +504,7 @@ function module:CreateNameTextOptions(unit, order)
 		ColorClassByClass = self:NewToggle("Color Class by Class", "Whether you want to color the "..unit.." Class by Class or not.", 16, applyInfoText, nil, disabledTextFunc),
 		ColorLevelByDifficulty = self:NewToggle("Color Level by Difficulty", "Whether you want to color the Level by Difficulty or not.", 17, applyInfoText, nil, disabledTextFunc),
 		ShowClassification = self:NewToggle("Show Classifications", "Whether you want to show Classifications like Elite, Boss or not.", 18, applyInfoText, nil, disabledTextFunc),
-		ShortClassification = self:NewToggle("Short Classifications", "Whether you want to show short Classifications or not.", 19, applyInfoText, nil, disabledTextFunc),
+		ShortClassification = self:NewToggle("Short Classifications", "Whether you want to show short Classifications or not.", 19, applyInfoText, nil, disabledClassificationFunc),
 		empty5 = self:NewDesc(" ", 20),
 		IndividualColor = self:NewColorNoAlpha("Name", "Name Text", 21, applyInfoText, nil, disabledTextFunc),
 	})

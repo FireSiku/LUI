@@ -213,15 +213,15 @@ local tagStrings = {
 	["classification"] = [[function(u)
 		local c = UnitClassification(u)
 		if(c == 'rare') then
-			return 'Rare'
+			return ' Rare'
 		elseif(c == 'rareelite') then
-			return 'Rare Elite'
+			return ' Rare Elite'
 		elseif(c == 'elite') then
-			return 'Elite'
+			return ' Elite'
 		elseif(c == 'worldboss') then
-			return 'Boss'
+			return ' Boss'
 		elseif(c == 'minus') then
-			return 'Affix'
+			return ''
 		end
 	end]],
 
@@ -305,10 +305,10 @@ local tagStrings = {
 		end
 	end]],
 
-	['affix'] = [[function(u)
+	['minus'] = [[function(u)
 		local c = UnitClassification(u)
 		if(c == 'minus') then
-			return 'Affix'
+			return 'Minus'
 		end
 	end]],
 }
@@ -375,7 +375,7 @@ local tagEvents = {
 	["threat"]              = "UNIT_THREAT_SITUATION_UPDATE",
 	["threatcolor"]         = "UNIT_THREAT_SITUATION_UPDATE",
 	['cpoints']             = 'UNIT_POWER_FREQUENT PLAYER_TARGET_CHANGED',
-	['affix']				= 'UNIT_CLASSIFICATION_CHANGED',
+	['minus']				= 'UNIT_CLASSIFICATION_CHANGED',
 	['plus']				= 'UNIT_CLASSIFICATION_CHANGED',
 	['rare']                = 'UNIT_CLASSIFICATION_CHANGED',
 	['classification']      = 'UNIT_CLASSIFICATION_CHANGED',
