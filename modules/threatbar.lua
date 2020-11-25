@@ -25,6 +25,28 @@ local _, class = UnitClass("player")
 
 local aggrocolors = {0, 1, 0, 1, 1, 0, 1, 0, 0}
 
+local PRECISION_FORMAT = {
+	[0] = "%.0f%%",
+	[1] = "%.1f%%",
+	[2] = "%.2f%%",
+	[3] = "%.3f%%",
+}
+
+-- function to short-display HP value on StatusBar
+local function ShortValue(value)
+	if value >= 1e7 then
+		return ('%.1fm'):format(value / 1e6):gsub('%.?0+([km])$', '%1')
+	elseif value >= 1e6 then
+		return ('%.2fm'):format(value / 1e6):gsub('%.?0+([km])$', '%1')
+	elseif value >= 1e5 then
+		return ('%.1fk'):format(value / 1e3)
+	elseif value >= 1e4 then
+		return ('%.2fk'):format(value / 1e3):gsub('%.?0+([km])$', '%1')
+	else
+		return value
+	end
+end
+
 local function ToggleTestMode()
 	if LUIThreat.Testmode then
 		LUIThreat.Testmode = nil
@@ -43,7 +65,6 @@ local function UpdateExpMode()
 	local bar2 = LUIThreat.artifact
 	local width = bar:GetWidth()
 	local left, percentBar, percentBar2
-	local txtformat
 	local precision = db.Text.Precision or 0
 	if UnitLevel("player") ~= LEVEL_CAP and not IsXPUserDisabled() then -- EXP MODE
 		local restXP = GetXPExhaustion() or 0
@@ -71,11 +92,12 @@ local function UpdateExpMode()
 		end
 		if db.Text.Enable then
 			if percentRE ~= 0 and db.General.showRested then
-				txtformat = string.format("%%.%df%%%% (R: %%.%df%%%%)", precision, precision) -- "%.0f%% (R: %.0f%%)"
+				local txtformat = string.format("%s (R: %s)", PRECISION_FORMAT[precision], PRECISION_FORMAT[precision])
 				bar.Text:SetFormattedText(txtformat, percentBar, percentRE)
+			elseif db.General.ShowAbsolute then
+				bar.Text:SetFormattedText(PRECISION_FORMAT[precision].." (%s / %s)" , percentBar, ShortValue(currXP), ShortValue(maxXP))
 			else
-				txtformat = string.format("%%.%df%%%%", precision)
-				bar.Text:SetFormattedText(txtformat, percentBar)
+				bar.Text:SetFormattedText(PRECISION_FORMAT[precision], percentBar)
 			end
 		end
 	else -- REP MODE
@@ -113,9 +135,11 @@ local function UpdateExpMode()
 			end
 			bar:SetMinMaxValues(barMin,barMax)
 			bar:SetValue(barValue)
-			if db.Text.Enable then
-				txtformat = string.format("%%.%df%%%% %%s", precision)
-				bar.Text:SetFormattedText(txtformat, percentBar, repText or "")
+			
+			if db.Text.Enable and db.General.ShowAbsolute then
+				bar.Text:SetFormattedText(PRECISION_FORMAT[precision].." %s (%s / %s)", percentBar, repText or "", ShortValue(barValue), ShortValue(barMax))
+			elseif db.Text.Enable then
+				bar.Text:SetFormattedText(PRECISION_FORMAT[precision].." %s", percentBar, repText or "")
 			end
 			bar:Show()
 			bar.rested:Hide()
@@ -135,7 +159,7 @@ local function UpdateExpMode()
 			bar2:SetMinMaxValues(0, totalXP)
 			bar2:SetValue(xp)
 			if db.General.ShowAbsolute then
-				bar2.Text:SetFormattedText("%."..precision.."f%% AP (%s / %s)" , percentBar2, xp, totalXP)
+				bar2.Text:SetFormattedText("%."..precision.."f%% AP (%s / %s)" , percentBar2, ShortValue(xp), ShortValue(totalXP))
 			else
 				bar2.Text:SetFormattedText("%."..precision.."f%% AP" , percentBar2)
 			end
@@ -433,8 +457,8 @@ function module:LoadOptions()
 			TankHide = self:NewToggle("Hide if Tanking", "Whether you want to hide the Threat Bar if you are tank specced or not.\nOnly works if Vengeance Module is enabled!.", 7, true),
 			expMode = self:NewToggle("Switch to Exp Mode", "If enabled, this will turn your Threat Bar into an experience bar.\nIf you are level 100 it will show a reputation bar instead.\nDisable Threat.",8,ToggleExpMode),
 			showRested = self:NewToggle("Show Rested Experience", "If enabled, this will show your rested experience as well.", 9, dryCall, nil, disabledExpMode),
-			artifact = self:NewToggle("Show Azerite XP", "If enabled, this will show your experience with the Heart of Azeroth. \nHidden if you do not have one. \n\nIf you are tracking XP or Rep, this will be shown along side your XP or Rep.", 10, dryCall, nil, disabledExpMode),
-			ShowAbsolute = self:NewToggle("Show Absolute Values", "If enabled, this will show absolute numerical values for current and max Azerite.", 11, dryCall, nil, disabledExpMode),
+			ShowAbsolute = self:NewToggle("Show Absolute Values", "If enabled, this will show numerical values for current and max values.\n\nNote: Numerical XP values will not be shown if Rested Exp is displayed.", 10, dryCall, nil, disabledExpMode),
+			artifact = self:NewToggle("Show Azerite XP", "If enabled, this will show your experience with the Heart of Azeroth. \nHidden if you do not have one. \n\nIf you are tracking XP or Rep, this will be shown along side your XP or Rep.", 11, dryCall, nil, disabledExpMode),
 			empty3 = self:NewDesc(" ", 12),
 			Testmode = self:NewExecute("Testmode", "Enable/Disable Threat Bar Testmode", 13, ToggleTestMode),
 		}),
@@ -458,7 +482,7 @@ function module:LoadOptions()
 			empty2 = self:NewDesc(" ", 7),
 			Color = self:NewSelect("Color", "Choose the Color option for your Threat Bar Text.", 8, colorOptions, nil, dryCall, nil, disabledTextFunc),
 			IndividualColor = self:NewColorNoAlpha("Individual", "Threat Bar Text", 9, dryCall, nil, function() return not db.Text.Enable or db.Text.Color ~= "Individual" end),
-			Precision = self:NewSlider("Number Precision", "How many decimal places will be shown.", 10, 0, 3, 1, true, false, nil, disabledTextFunc),
+			Precision = self:NewSlider("Percentage Precision", "How many decimal places will be shown in percentages.", 10, 0, 3, 1, true, false, nil, disabledTextFunc),
 		}),
 	}
 
