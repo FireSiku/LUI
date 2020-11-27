@@ -24,7 +24,7 @@ local FormatName = function(self)
 
 	if info.ColorNameByClass then name = "[GetNameColor]"..name.."|r" end
 
-	local level = info.ColorLevelByDifficulty and "[DiffColor][level2]|r" or "[level2]"
+	local level = info.ColorLevelByDifficulty and "[DiffColor][level]|r" or "[level]"
 
 	if info.ShowClassification then
 		level = info.ShortClassification and level.."[shortclassification]" or level.."[classification]"
