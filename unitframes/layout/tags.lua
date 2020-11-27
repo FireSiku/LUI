@@ -143,12 +143,6 @@ oUF.Tags.Methods["DiffColor"] = function(unit)
 	return string.format("|cff%02x%02x%02x", r * 255, g * 255, b * 255)
 end
 
-oUF.Tags.Events["level2"] = "UNIT_LEVEL"
-oUF.Tags.Methods["level2"] = function(unit)
-	local l = UnitLevel(unit)
-	return l > 0 and l
-end
-
 oUF.Tags.Events["NameShort"] = "UNIT_NAME_UPDATE"
 oUF.Tags.Methods["NameShort"] = function(unit)
 	local name = UnitName(unit)

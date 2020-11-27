@@ -212,31 +212,45 @@ local tagStrings = {
 
 	["classification"] = [[function(u)
 		local c = UnitClassification(u)
+		local l = UnitLevel(u)
 		if(c == 'rare') then
-			return ' Rare'
+			return 'Rare'
 		elseif(c == 'rareelite') then
-			return ' Rare Elite'
+			return 'Rare Elite'
+		elseif(c == 'elite' and l == -1) then
+			return 'Boss'
 		elseif(c == 'elite') then
-			return ' Elite'
+			return 'Elite'
 		elseif(c == 'worldboss') then
-			return ' Boss'
+			return 'Boss'
 		elseif(c == 'minus') then
+			return ''
+		elseif(c == 'trivial') then
+			return ''
+		elseif(c == 'normal') then
 			return ''
 		end
 	end]],
 
 	["shortclassification"] = [[function(u)
 		local c = UnitClassification(u)
+		local l = UnitLevel(u)
 		if(c == 'rare') then
 			return 'R'
 		elseif(c == 'rareelite') then
 			return 'R+'
+		elseif(c == 'elite' and l == -1) then
+			return 'B'
 		elseif(c == 'elite') then
 			return '+'
 		elseif(c == 'worldboss') then
 			return 'B'
 		elseif(c == 'minus') then
 			return '-'
+		elseif(c == 'trivial') then
+			return '-'
+		elseif(c == 'normal') then
+			return ''
 		end
 	end]],
 
