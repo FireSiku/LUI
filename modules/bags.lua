@@ -305,6 +305,11 @@ function module:SlotUpdate(item)
 	SetItemButtonDesaturated(item.frame, locked, 0.5, 0.5, 0.5)
 	if db.Bags.ShowOverlay and itemLink then
 		SetItemButtonOverlay(item.frame, itemLink, quality, isBound)
+	else
+		item.frame.IconOverlay:Hide()
+		if item.frame.IconOverlay2 then
+			item.frame.IconOverlay2:Hide()
+		end
 	end
 
 	item.frame:Show()
