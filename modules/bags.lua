@@ -58,6 +58,7 @@ local CreateFrame = CreateFrame
 local OpenEditbox = OpenEditbox
 local SetItemButtonCount = SetItemButtonCount
 local SetItemButtonTexture = SetItemButtonTexture
+local SetItemButtonOverlay = SetItemButtonOverlay
 local SetItemButtonDesaturated = SetItemButtonDesaturated
 
 local BankFrameItemButton_Update = BankFrameItemButton_Update
@@ -216,8 +217,7 @@ end
 
 function module:SlotUpdate(item)
 
-	local texture, count, locked, quality = GetContainerItemInfo(item.bag, item.slot)
-	local clink = GetContainerItemLink(item.bag, item.slot)
+	local texture, count, locked, quality, _, _, itemLink, _, _, _, isBound = GetContainerItemInfo(item.bag, item.slot)
 	local color = db.Colors.Border
 
 	if not item.frame.lock then
@@ -289,12 +289,12 @@ function module:SlotUpdate(item)
 		end
 	end
 
-	if (clink) then
-		local name, _, rarity, _, _, iType = GetItemInfo(clink)
+	if (itemLink) then
+		local name, _, rarity, _, _, iType = GetItemInfo(itemLink)
 		item.name, item.rarity = name, rarity
 		-- color slot according to item quality
-		if db.Bags.ItemQuality and not item.frame.lock and item.rarity and item.rarity > 1 then
-			item.frame:SetBackdropBorderColor(GetItemQualityColor(item.rarity))
+		if db.Bags.ItemQuality and not item.frame.lock and rarity and rarity > 1 then
+			item.frame:SetBackdropBorderColor(GetItemQualityColor(rarity))
 		end
 	else
 		item.name, item.rarity = nil, nil
@@ -303,6 +303,9 @@ function module:SlotUpdate(item)
 	SetItemButtonTexture(item.frame, texture)
 	SetItemButtonCount(item.frame, count)
 	SetItemButtonDesaturated(item.frame, locked, 0.5, 0.5, 0.5)
+	if db.Bags.ShowOverlay and itemLink then
+		SetItemButtonOverlay(item.frame, itemLink, quality, isBound)
+	end
 
 	item.frame:Show()
 end
@@ -1225,6 +1228,7 @@ module.defaults = {
 			ItemQuality = false,
 			ShowNew = false,
 			ShowQuest = true,
+			ShowOverlay = true,
 			Locked = 0,
 			CoordX = 0,
 			CoordY = 0,
@@ -1348,6 +1352,7 @@ function module:LoadOptions()
 				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 11, db.Bags, "ItemQuality", dbd.Bags, ReloadBoth),
 				ShowNew = LUI:NewToggle("Show New Item Animation", nil, 12, db.Bags, "ShowNew", dbd.Bags, ReloadBoth),
 				ShowQuest = LUI:NewToggle("Show Quest Highlights", nil, 13, db.Bags, "ShowQuest", dbd.Bags, ReloadBoth),
+				ShowOverlay = LUI:NewToggle("Show Overlays", nil, 14, db.Bags, "ShowOverlay", dbd.Bags, ReloadBoth),
 			},
 		},
 		Bank = {
