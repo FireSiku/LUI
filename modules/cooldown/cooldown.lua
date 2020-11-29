@@ -17,6 +17,9 @@ local db, dbd
 local floor, format, tinsert, tremove = math.floor, string.format, table.insert, table.remove
 local pairs, ipairs, next, wipe, GetTime = pairs, ipairs, next, wipe, GetTime
 
+local COOLDOWN_TYPE_LOSS_OF_CONTROL = COOLDOWN_TYPE_LOSS_OF_CONTROL or 1
+local COOLDOWN_TYPE_NORMAL = COOLDOWN_TYPE_NORMAL or 2
+
 --------------------------------------------------
 -- Local Variables
 --------------------------------------------------
@@ -199,9 +202,31 @@ do
 		return timer
 	end
 
+	function module:IsSupportedCooldownType(cd)
+		local cdType = cd.currentCooldownType
+		
+		if cdType == COOLDOWN_TYPE_LOSS_OF_CONTROL then
+			return true
+		elseif cdType == COOLDOWN_TYPE_NORMAL then
+			return true
+		end
+
+		-- Spell Charges
+		local parent = cd:GetParent()
+		if parent and parent.chargeCooldown == cd then
+			return true
+		-- Item Cooldowns
+		elseif parent and parent.SetItem then
+			return true
+		end
+
+		--for k, v in pairs(parent) do LUI:Print(k, v) end
+
+		return db.General.SupportAll
+	end
+
 	function module:AssignTimer(cd, start, duration)
 		if cd.IsForbidden and cd:IsForbidden() then return end
-		if cd.NextRewardLevel then return end -- Dont show cooldown on honor level.
 		if cd.noCooldownCount then return end
 		-- Disable LUI cooldowns on WeakAura frames
 		if db.General.FilterWA and cd:GetName() and strfind(cd:GetName(), "WeakAuras") then return end
@@ -211,7 +236,7 @@ do
 				cd.luitimer.start, cd.luitimer.duration = start, duration
 				cd.luitimer:Update()
 			end
-		elseif duration >= minDuration and cd:IsVisible() and fontScale[round(cd:GetWidth())] then
+		elseif module:IsSupportedCooldownType(cd) and duration >= minDuration and cd:IsVisible() and fontScale[round(cd:GetWidth())] then
 			getTimer(cd):Start(start, duration)
 		end
 	end
@@ -267,6 +292,7 @@ module.defaults = {
 			Threshold = 8,
 			MinToSec = 60,
 			FilterWA = true,
+			SupportAll = false,
 		},
 		Text = {
 			Font = "vibroceb",
@@ -305,6 +331,7 @@ function module:LoadOptions()
 			MinScale = self:NewSlider("Minimum Scale", "The smallest size of icons that timers will be shown for.", 4, 0, 2, 0.1, func),
 			MinToSec = self:NewSlider("Minute to Seconds", "The time at which your cooldown is shown in seconds instead of minutes.", 4, 60, 300, 60, func),
 			FilterWA = self:NewToggle("Filter WeakAuras", "Prevent the cooldown module from interacting with WeakAuras to prevent conflict.", 5),
+			SupportAll = self:NewToggle("Support All Cooldown Types", "Show cooldown timers for everything that contains cooldown progress.\n\nNote: Blizzard will sometime use cooldown values to display alternate forms of progress, enabling this could add an unwanted timer on them.", 6),
 		}),
 		Text = self:NewGroup("Text Settings", 2, {
 			Font = self:NewSelect("Font", "Select the font to be used by cooldown's texts.", 1, AceGUIWidgetLSMlists.font, "LSM30_Font", func),
