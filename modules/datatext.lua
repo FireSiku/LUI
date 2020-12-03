@@ -2441,7 +2441,7 @@ function module:SetInstance()
 					FriendsFrame:Hide()
 				end
 			else
-				ToggleFriendsFrame(4)
+				ToggleFriendsFrame(3)
 				RaidInfoFrame:Show()
 			end
 		end
