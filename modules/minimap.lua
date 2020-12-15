@@ -34,7 +34,6 @@ function module:SetAdditionalFrames()
 	self:SecureHook(UIWidgetBelowMinimapContainerFrame, "SetPoint", "CaptureBar_SetPoint")
 	self:SecureHook(PlayerPowerBarAlt, "SetPoint", "PlayerPowerBarAlt_SetPoint")
 	self:SecureHook(GroupLootContainer, "SetPoint", "GroupLootContainer_SetPoint")
-	
 end
 
 function module:SetPosition(frame)
@@ -258,9 +257,15 @@ function module:SetMinimap()
 	GuildInstanceDifficulty.Show = GuildInstanceDifficulty.Hide
 	GuildInstanceDifficulty:Hide()
 
+	-- MiniMapInstanceDifficulty
 	MiniMapInstanceDifficulty.NewShow = MiniMapInstanceDifficulty.Show
 	MiniMapInstanceDifficulty.Show = MiniMapInstanceDifficulty.Hide
 	MiniMapInstanceDifficulty:Hide()
+
+	-- MiniMapChallengeMode
+	MiniMapChallengeMode.NewShow = MiniMapChallengeMode.Show
+	MiniMapChallengeMode.Show = MiniMapChallengeMode.Hide
+	MiniMapChallengeMode:Hide()
 
 	-- Hide Voice Chat Frame
 	--MiniMapVoiceChatFrame:Hide()
@@ -427,7 +432,7 @@ function module:SetMinimap()
 
 	m_coord:SetScript("OnUpdate", function()
 		local uiMap = C_Map.GetBestMapForUnit("player")
-		if uiMap then 
+		if uiMap then
 			local position = C_Map.GetPlayerMapPosition(uiMap, "player")
 			if position then
 				local x, y = position:GetXY()
@@ -572,7 +577,7 @@ local defaults = {
 module.conflicts = "SexyMap"
 
 function module:LoadOptions()
-	
+
 	-- Template Function to ease up maintenance
 	local function createTemplate(frameName, orderNum, friendlyName, frameDesc, extraTables)
 		local frameSet = "Set"..frameName
