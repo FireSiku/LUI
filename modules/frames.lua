@@ -1,19 +1,16 @@
 --[[
 	Project....: LUI NextGenWoWUserInterface
 	File.......: frames.lua
-	Description: Frames Module
+	Description: Frames module.
 	Version....: 1.1
 	Rev Date...: 13/03/2012 [dd/mm/yyyy]
-
 	Edits:
 		v1.0: Loui
 		v1.1: Zista
 		v1.2: Thaly
 ]]
 
--- ####################################################################################################################
--- ##### External references ##########################################################################################
--- ####################################################################################################################
+-- External references.
 local addonname, LUI = ...
 local module = LUI:Module("Frames")
 local Panels = LUI:Module("Panels")
@@ -22,7 +19,7 @@ local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
 local db
-local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
+local directory = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
 LUI.Navi = {}
 LUI.Info = {}
@@ -51,7 +48,8 @@ end
 function module:SetTopInfoColors()
 	LUI.Info.Topleft.BG:SetBackdropColor(unpack(Themes.db.profile.color_top))
 	LUI.Info.Topright.BG:SetBackdropColor(unpack(Themes.db.profile.color_top))
-	LUI.Navi.Top2:SetBackdropColor(unpack(Themes.db.profile.color_top))
+	LUI.Navi.CenterBackground:SetBackdropColor(unpack(Themes.db.profile.color_top))
+	LUI.Navi.CenterBackgroundAlternative:SetBackdropColor(unpack(Themes.db.profile.color_top))
 end
 
 function module:SetNavigationColors()
@@ -130,10 +128,7 @@ function module:SetFrames()
 	local orb = Themes.db.profile.orb
 	local orb_cycle = Themes.db.profile.orb_cycle
 
--- ####################################################################################################################
--- ##### ORB & TOP PANEL ##############################################################################################
--- ####################################################################################################################
-
+-- Orb and top panel.
 	local MainAnchor = LUI:CreateMeAFrame("Frame", nil, UIParent, 100, 100, 1, "BACKGROUND", 1, "TOP", UIParent, "TOP", 17, 15, 1)
 
 	LUI.Orb = CreateFrame("Button", nil, MainAnchor)
@@ -189,7 +184,7 @@ function module:SetFrames()
 	local function SetFrameBackdrop(frame, fileName)
 		if not frame then LUI:Print("frame not found:", fileName) end
 		frame.Backdrop = {
-			bgFile = fdir..fileName,
+			bgFile = directory..fileName,
 			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 			edgeSize = 1,
 			insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -198,14 +193,19 @@ function module:SetFrames()
 		frame:SetBackdropBorderColor(0,0,0,0)
 	end
 
-	LUI.Navi.Top = LUI:CreateMeAFrame("Frame", nil, UIParent, 1024, 1024, 1, "BACKGROUND", 1, "TOP", UIParent, "TOP", 17, 8, 1)
-	SetFrameBackdrop(LUI.Navi.Top, "top")
-	LUI.Navi.Top:Show()
+	LUI.Navi.TopButtonBackground = LUI:CreateMeAFrame("Frame", nil, UIParent, 1024, 1024, 1, "BACKGROUND", 1, "TOP", UIParent, "TOP", 17, 8, 1)
+	SetFrameBackdrop(LUI.Navi.TopButtonBackground, "top")
+	LUI.Navi.TopButtonBackground:Show()
 
-	LUI.Navi.Top2 = LUI:CreateMeAFrame("Frame", nil, UIParent, 1035, 1024, 1, "BACKGROUND", 0, "TOP", UIParent, "TOP", 17, 5, 1)
-	SetFrameBackdrop(LUI.Navi.Top2, "top_back")
-	LUI.Navi.Top2:SetBackdropColor(unpack(color_top))
-	LUI.Navi.Top2:Show()
+	LUI.Navi.CenterBackground = LUI:CreateMeAFrame("Frame", nil, UIParent, 1035, 1024, 1, "BACKGROUND", 0, "TOP", UIParent, "TOP", 17, 5, 1)
+	SetFrameBackdrop(LUI.Navi.CenterBackground, "top_back")
+	LUI.Navi.CenterBackground:SetBackdropColor(unpack(color_top))
+	LUI.Navi.CenterBackground:Show()
+
+	LUI.Navi.CenterBackgroundAlternative = LUI:CreateMeAFrame("Frame", nil, UIParent, 1035, 1024, 1, "BACKGROUND", 0, "TOP", UIParent, "TOP", 17, 5, 1)
+	SetFrameBackdrop(LUI.Navi.CenterBackgroundAlternative, "top_back_complete")
+	LUI.Navi.CenterBackgroundAlternative:SetBackdropColor(unpack(color_top))
+	LUI.Navi.CenterBackgroundAlternative:Hide()
 
 	LUI.Orb.Hover = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 68, 68, 1, "LOW", 0, "CENTER", LUI.Orb, "CENTER", 1, 0, 0)
 	SetFrameBackdrop(LUI.Orb.Hover, "ring_inner")
@@ -219,49 +219,21 @@ function module:SetFrames()
 	LUI.Orb.Ring2:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.Orb.Ring2:Show()
 
-	--[[
-	LUI.Orb.Ring3 = LUI:CreateMeAFrame("FRAME", nil, LUI.Orb, 107, 107, 1, "LOW", 2, "CENTER", LUI.Orb, "CENTER", 1, 1, 1)
-	LUI.Orb.Ring3:SetBackdrop({
-		bgFile = fdir.."ring_inner",
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		edgeSize = 1,
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
-	LUI.Orb.Ring3:SetBackdropColor(0.25, 0.25, 0.25, 0.7)
-	LUI.Orb.Ring3:SetBackdropBorderColor(0, 0, 0, 0)
-	LUI.Orb.Ring3:Show()
-	]]
-
 	LUI.Orb.Ring4 = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 115, 115, 1, "LOW", 1, "CENTER", LUI.Orb, "CENTER", 0, -1, 1)
 	SetFrameBackdrop(LUI.Orb.Ring4, "ring_inner2")
 	LUI.Orb.Ring4:Show()
 
-	--[[
-	LUI.Orb.Ring5 = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 118, 118, 1, "LOW", 2, "CENTER", LUI.Orb, "CENTER", 0, -1, 1)
-	LUI.Orb.Ring5:SetBackdrop({
-		bgFile = fdir.."ring_inner3",
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		edgeSize = 1,
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
-	LUI.Orb.Ring5:SetBackdropColor(0.25, 0.25, 0.25, 0.7)
-	LUI.Orb.Ring5:SetBackdropBorderColor(0, 0, 0, 0)
-	LUI.Orb.Ring5:Show()
-	]]
+	LUI.Orb.Ring7 = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 77, 75, 1, "LOW", 3, "CENTER", LUI.Orb, "CENTER", 1, -1, 1)
+	SetFrameBackdrop(LUI.Orb.Ring7, "ring")
+	LUI.Orb.Ring7:Show()
 
 	LUI.Orb.Cycle = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 115, 115, 1, "LOW", 0, "CENTER", LUI.Orb, "CENTER", 0, -1, 1)
 	SetFrameBackdrop(LUI.Orb.Cycle, "ring_inner4")
 	LUI.Orb.Cycle:SetBackdropColor(0.25, 0.25, 0.25, 0.7)
 	LUI.Orb.Cycle:Show()
 
-	LUI.Orb.Ring7 = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 77, 75, 1, "LOW", 3, "CENTER", LUI.Orb, "CENTER", 1, -1, 1)
-	SetFrameBackdrop(LUI.Orb.Ring7, "ring")
-	LUI.Orb.Ring7:Show()
-
 	LUI.Orb:RegisterForClicks("AnyUp")
 	LUI.Orb:SetScript("OnClick", function(self)
-		-- Commented out to try and fix Orb issues when not all frames are in use
-		--isAllShown = (Panels.db.profile.Chat.IsShown and Panels.db.profile.Tps.IsShown and Panels.db.profile.Dps.IsShown and Panels.db.profile.Raid.IsShown)
 
 		if not isAllShown then
 			isAllShown = true
@@ -279,8 +251,6 @@ function module:SetFrames()
 					end
 				end
 			end
-
-			--if db.Chat.SecondChatFrame then ChatAlphaAnchor2:Show() end
 		else
 			isAllShown = false
 
@@ -300,13 +270,10 @@ function module:SetFrames()
 		end
 	end)
 
--- ####################################################################################################################
--- ##### CHAT BUTTON ##################################################################################################
--- ####################################################################################################################
-
+-- Chat button.
 	LUI.Navi.Chat = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 126, 120, 1, "LOW", 1, "LEFT", LUI.Orb, "LEFT", -176, 73, 0)
 	LUI.Navi.Chat:SetBackdrop({
-		bgFile = fdir.."button_left2",
+		bgFile = directory.."button_left2",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -317,7 +284,7 @@ function module:SetFrames()
 
 	LUI.Navi.Chat.Hover = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 124, 120, 1, "LOW", 1, "LEFT", LUI.Orb, "LEFT", -176, 73, 0)
 	LUI.Navi.Chat.Hover:SetBackdrop({
-		bgFile = fdir.."button_left2_hover",
+		bgFile = directory.."button_left2_hover",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -349,17 +316,13 @@ function module:SetFrames()
 			Panels:AlphaOut("Chat")
 			Panels.db.profile.Chat.IsShown = false
 			LUI:SetChatVisible(true)
-			--LUI:SetChatVisible(false)
 		end
 	end)
 
--- ####################################################################################################################
--- ##### TPS BUTTON ###################################################################################################
--- ####################################################################################################################
-
+-- TPS button.
 	LUI.Navi.Tps = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 63, 67, 1, "LOW", 1, "LEFT", LUI.Orb, "LEFT", -74, 42, 0)
 	LUI.Navi.Tps:SetBackdrop({
-		bgFile = fdir.."button_left1",
+		bgFile = directory.."button_left1",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -370,7 +333,7 @@ function module:SetFrames()
 
 	LUI.Navi.Tps.Hover = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 63, 60, 1, "LOW", 1, "LEFT", LUI.Orb, "LEFT", -74, 40, 0)
 	LUI.Navi.Tps.Hover:SetBackdrop({
-		bgFile = fdir.."button_left1_hover",
+		bgFile = directory.."button_left1_hover",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -405,13 +368,10 @@ function module:SetFrames()
 		end
 	end)
 
--- ####################################################################################################################
--- ##### DPS BUTTON ###################################################################################################
--- ####################################################################################################################
-
+-- DPS button.
 	LUI.Navi.Dps = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 63, 67, 1, "LOW", 1, "RIGHT", LUI.Orb, "RIGHT", 77, 45, 0)
 	LUI.Navi.Dps:SetBackdrop({
-		bgFile = fdir.."button_right1",
+		bgFile = directory.."button_right1",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -422,7 +382,7 @@ function module:SetFrames()
 
 	LUI.Navi.Dps.Hover = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 63, 60, 1, "LOW", 1, "RIGHT", LUI.Orb, "RIGHT", 77, 43, 0)
 	LUI.Navi.Dps.Hover:SetBackdrop({
-		bgFile = fdir.."button_right1_hover",
+		bgFile = directory.."button_right1_hover",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -457,13 +417,11 @@ function module:SetFrames()
 		end
 	end)
 
--- ####################################################################################################################
--- ##### RAID BUTTON ##################################################################################################
--- ####################################################################################################################
 
+-- Raid button.
 	LUI.Navi.Raid = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 126, 120, 1, "LOW", 1, "RIGHT", LUI.Orb, "RIGHT", 184, 71, 0)
 	LUI.Navi.Raid:SetBackdrop({
-		bgFile = fdir.."button_right2",
+		bgFile = directory.."button_right2",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -474,7 +432,7 @@ function module:SetFrames()
 
 	LUI.Navi.Raid.Hover = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 124, 120, 1, "LOW", 1, "RIGHT", LUI.Orb, "RIGHT", 182, 71, 0)
 	LUI.Navi.Raid.Hover:SetBackdrop({
-		bgFile = fdir.."button_right2_hover",
+		bgFile = directory.."button_right2_hover",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -509,15 +467,12 @@ function module:SetFrames()
 		end
 	end)
 
--- ####################################################################################################################
--- ##### INFO PANEL LEFT ##############################################################################################
--- ####################################################################################################################
-
+-- Info panel bottom left.
 	LUI.Info.Left = LUI:CreateMeAFrame("Frame", nil, UIParent, 25, 25, 1, "BACKGROUND", 0, "BOTTOMLEFT", UIParent, "BOTTOMLEFT", 0, 0, 1)
 
 	LUI.Info.Left.Panel = LUI:CreateMeAFrame("FRAME", nil, LUI.Info.Left, 1024, 1024, 1, "BACKGROUND", 1, "BOTTOMLEFT", LUI.Info.Left, "BOTTOMLEFT", -30, -31, 1)
 	LUI.Info.Left.Panel:SetBackdrop({
-		bgFile = fdir.."info_left",
+		bgFile = directory.."info_left",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -528,7 +483,7 @@ function module:SetFrames()
 
 	LUI.Info.Left.BG = LUI:CreateMeAFrame("FRAME", nil, LUI.Info.Left, 1024, 1024, 1, "BACKGROUND", 0, "BOTTOMLEFT", LUI.Info.Left, "BOTTOMLEFT", -23, -23, 1)
 	LUI.Info.Left.BG:SetBackdrop({
-		bgFile = fdir.."info_left_back",
+		bgFile = directory.."info_left_back",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -537,15 +492,12 @@ function module:SetFrames()
 	LUI.Info.Left.BG:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.Info.Left.BG:Show()
 
--- ####################################################################################################################
--- ##### INFO PANEL RIGHT #############################################################################################
--- ####################################################################################################################
-
+-- Info panel bottom right.
 	LUI.Info.Right = LUI:CreateMeAFrame("Frame", nil, UIParent, 25, 25, 1, "BACKGROUND", 0, "BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", 0, 0, 1)
 
 	LUI.Info.Right.Panel = LUI:CreateMeAFrame("FRAME", nil, LUI.Info.Right, 1024, 1024, 1, "BACKGROUND", 1, "BOTTOMRIGHT", LUI.Info.Right, "BOTTOMRIGHT", 36, -31, 1)
 	LUI.Info.Right.Panel:SetBackdrop({
-		bgFile = fdir.."info_right",
+		bgFile = directory.."info_right",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -556,7 +508,7 @@ function module:SetFrames()
 
 	LUI.Info.Right.BG = LUI:CreateMeAFrame("FRAME", nil, LUI.Info.Right, 1024, 1024, 1, "BACKGROUND", 0, "BOTTOMRIGHT", LUI.Info.Right, "BOTTOMRIGHT", 29, -23, 1)
 	LUI.Info.Right.BG:SetBackdrop({
-		bgFile = fdir.."info_right_back",
+		bgFile = directory.."info_right_back",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -565,15 +517,12 @@ function module:SetFrames()
 	LUI.Info.Right.BG:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.Info.Right.BG:Show()
 
--- ####################################################################################################################
--- ##### INFO PANEL TOPLEFT ###########################################################################################
--- ####################################################################################################################
-
+-- Info panel top left.
 	LUI.Info.Topleft = LUI:CreateMeAFrame("Frame", nil, UIParent, 25, 25, 1, "BACKGROUND", 0, "CENTER", LUI.Orb, "CENTER", -212, 30, 1)
 
 	LUI.Info.Topleft.BG = LUI:CreateMeAFrame("FRAME", nil, LUI.Info.Topleft, 1012, 1024, 1, "BACKGROUND", 0, "TOPRIGHT", LUI.Info.Topleft, "TOPRIGHT", 9, 11, 1)
 	LUI.Info.Topleft.BG:SetBackdrop({
-		bgFile = fdir.."info_top_left2",
+		bgFile = directory.."info_top_left2",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -582,15 +531,13 @@ function module:SetFrames()
 	LUI.Info.Topleft.BG:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.Info.Topleft.BG:Show()
 
--- ####################################################################################################################
--- ##### INFO PANEL TOPRIGHT ##########################################################################################
--- ####################################################################################################################
 
+-- Info panel top right.
 	LUI.Info.Topright = LUI:CreateMeAFrame("Frame", nil, UIParent, 25, 25, 1, "BACKGROUND", 0, "CENTER", LUI.Orb, "CENTER", 209, 30, 1)
 
 	LUI.Info.Topright.BG = LUI:CreateMeAFrame("FRAME", nil, LUI.Info.Topright, 1015, 1024, 1, "BACKGROUND", 0, "TOPLEFT", LUI.Info.Topright, "TOPLEFT", -9, 11, 1)
 	LUI.Info.Topright.BG:SetBackdrop({
-		bgFile = fdir.."info_top_right2",
+		bgFile = directory.."info_top_right2",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -599,10 +546,36 @@ function module:SetFrames()
 	LUI.Info.Topright.BG:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.Info.Topright.BG:Show()
 
--- ####################################################################################################################
--- ##### SCRIPTS ######################################################################################################
--- ####################################################################################################################
+-- Info panel top left alternative.
+	LUI.Info.TopleftAlternative = LUI:CreateMeAFrame("Frame", nil, UIParent, 25, 25, 1, "BACKGROUND", 0, "CENTER", LUI.Orb, "CENTER", -212, 30, 1)
 
+	LUI.Info.TopleftAlternative.BG = LUI:CreateMeAFrame("FRAME", nil, LUI.Info.TopleftAlternative, 1012, 1024, 1, "BACKGROUND", 0, "TOPRIGHT", LUI.Info.TopleftAlternative, "TOPRIGHT", 9, 11, 1)
+	LUI.Info.TopleftAlternative.BG:SetBackdrop({
+		bgFile = directory.."info_top_complete",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI.Info.TopleftAlternative.BG:SetBackdropColor(unpack(color_top))
+	LUI.Info.TopleftAlternative.BG:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.Info.TopleftAlternative.BG:Show()
+
+
+-- Info panel top right alternative.
+	LUI.Info.ToprightAlternative = LUI:CreateMeAFrame("Frame", nil, UIParent, 25, 25, 1, "BACKGROUND", 0, "CENTER", LUI.Orb, "CENTER", 209, 30, 1)
+
+	LUI.Info.ToprightAlternative.BG = LUI:CreateMeAFrame("FRAME", nil, LUI.Info.ToprightAlternative, 1015, 1024, 1, "BACKGROUND", 0, "TOPLEFT", LUI.Info.ToprightAlternative, "TOPLEFT", -169, 11, 1)
+	LUI.Info.ToprightAlternative.BG:SetBackdrop({
+		bgFile = directory.."info_top_complete",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0}
+	})
+	LUI.Info.ToprightAlternative.BG:SetBackdropColor(unpack(color_top))
+	LUI.Info.ToprightAlternative.BG:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI.Info.ToprightAlternative.BG:Show()
+
+-- Scripts.
 	local alphain = function(self, elapsed)
 		self.timer = self.timer + elapsed
 		if self.timer < .4 then
@@ -642,7 +615,7 @@ function module:SetFrames()
 end
 
 function module:OnInitialize()
-	-- kill when chat module is rewritten!
+	-- Terminate when the chat module is rewritten.
 	self.db = LUI.db.profile
 	db = self.db
 end
