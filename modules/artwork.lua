@@ -1,34 +1,34 @@
 --[[
 	Project....: LUI NextGenWoWUserInterface
 	File.......: artwork.lua
-	Description: Control the various art work around LUI
+	Description: Control the various artwork around LUI.
 	Version....: 1.0
 	Rev Date...: 04/06/2014 [dd/mm/yyyy]
 	Author.....: Mule
-	
 ]]
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("Art Work")
+local module = LUI:Module("Artwork")
 local Profiler = LUI.Profiler
 
--- Database and defaults shortcuts.
 local db, dbd
 
-Profiler.TraceScope(module, "ArtWork", "LUI")
+Profiler.TraceScope(module, "Artwork", "LUI")
 
+--	Defaults
 module.defaults = {
 	profile = {
-		-- Orb option disable the entire panel. BlankOrb only affect textures.
 		UpperArt = {
-			Orb = false,
-			Background = false,
-			NaviBG = false,
+			Orb = true,
+			Buttons = true,
+			ButtonsBackground = true,
+			CenterBackground = true,
+			Background = true,
 		},
 		LowerArt = {
-			ThemeLine = false,
-			BackGLine = false,
+			BlackLine = true,
+			ThemedLine = true,
 		},
 	},
 }
@@ -38,73 +38,171 @@ module.setter = "generic"
 
 function module:LoadOptions()
 	local options = {
-		Title = self:NewHeader("Art Work", 1),
-		UpperArt = self:NewGroup("Upper Art", 2, true, {
-			Orb = self:NewToggle("Disable the Orb", "", 1, toggleArt),
-			--Note = self:NewDesc("Be careful with this option as you will not have control over the textures provided by the panel buttons.", 2),
-			NaviBG = self:NewToggle("Disable the Orb navigation background", "", 4, toggleArt),
-			Background = self:NewToggle("Disable the themed background art", "", 7, toggleArt),
-			--NewToggle(name, desc, order, func, width, disabled, hidden)
+		Title = self:NewHeader("Artwork", 1),
+		UpperArt = self:NewGroup("Upper Artwork", 2, true, {
+			Orb = self:NewToggle("Show Orb", "When enabled the the central galaxy orb is shown.", 1, ToggleArt),
+			Buttons = self:NewToggle("Show Buttons", "When enabled the central button functionality can be used to show or hide the chat, TPS, DPS and raid window.", 2, ToggleArt),
+			ButtonsBackground = self:NewToggle("Show Buttons Background", "When enabled the central black button background is shown.", 3, ToggleArt),
+			CenterBackground = self:NewToggle("Show Themed Center Background", "When enabled the themed central background is shown.", 4, ToggleArt),
+			Background = self:NewToggle("Show Themed Background", "When enabled the top left and right-hand side themed background is shown.", 5, ToggleArt),
 		}),
-		LowerArt = self:NewGroup("Lower Art", 3, true, {
-			ThemeLine = self:NewToggle("Disable the black foreground line", "", 1, toggleArt),
-			BackGLine = self:NewToggle("Disable the themed background art", "", 4, toggleArt),
+		LowerArt = self:NewGroup("Lower Artwork", 3, true, {
+			BlackLine = self:NewToggle("Show Black Line", "Enable the bottom left and right black line.", 1, ToggleArt),
+			ThemedLine = self:NewToggle("Show Themed Line", "Enable the bottom left and right themed line.", 2, ToggleArt),
 		}),
 	}
 	return options
 end
 
-function toggleArt(what)
-	if not db.UpperArt.Orb or what == "enable" then
+function ToggleArt(status)
+
+	if db.UpperArt.Orb then
 		LUI.Orb.Hover:Show()
 		LUI.Orb.Ring2:Show()
 		LUI.Orb.Ring4:Show()
-		LUI.Orb.Cycle:Show()
 		LUI.Orb.Ring7:Show()
+		LUI.Orb.Cycle:Show()
 		LUI.Orb.Galaxy1:Show()
 		LUI.Orb.Galaxy2:Show()
 		LUI.Orb.Galaxy3:Show()
 		LUI.Orb.Fill:Show()
 		LUI.Orb:EnableMouse(true)
-		--LUI.Orb:Show()
 	else
 		LUI.Orb.Hover:Hide()
 		LUI.Orb.Ring2:Hide()
 		LUI.Orb.Ring4:Hide()
-		LUI.Orb.Cycle:Hide()
 		LUI.Orb.Ring7:Hide()
+		LUI.Orb.Cycle:Hide()
 		LUI.Orb.Galaxy1:Hide()
 		LUI.Orb.Galaxy2:Hide()
 		LUI.Orb.Galaxy3:Hide()
 		LUI.Orb.Fill:Hide()
 		LUI.Orb:EnableMouse(false)
-		--LUI.Orb:Hide()
 	end
-	if not db.UpperArt.Background or what == "enable" then
-		LUI.Navi.Top2:Show()
-		LUI.Info.Topleft:Show()
-		LUI.Info.Topright:Show()
+
+	if db.UpperArt.Buttons then
+		LUI.Navi.Chat:Show()
+		LUI.Navi.Chat.Hover:Show()
+		LUI.Navi.Chat.Clicker:Show()
+		LUI.Navi.Tps:Show()
+		LUI.Navi.Tps.Hover:Show()
+		LUI.Navi.Tps.Clicker:Show()
+		LUI.Navi.Dps:Show()
+		LUI.Navi.Dps.Hover:Show()
+		LUI.Navi.Dps.Clicker:Show()
+		LUI.Navi.Raid:Show()
+		LUI.Navi.Raid.Hover:Show()
+		LUI.Navi.Raid.Clicker:Show()
 	else
-		LUI.Navi.Top2:Hide()
+		LUI.Navi.Chat:Hide()
+		LUI.Navi.Chat.Hover:Hide()
+		LUI.Navi.Chat.Clicker:Hide()
+		LUI.Navi.Tps:Hide()
+		LUI.Navi.Tps.Hover:Hide()
+		LUI.Navi.Tps.Clicker:Hide()
+		LUI.Navi.Dps:Hide()
+		LUI.Navi.Dps.Hover:Hide()
+		LUI.Navi.Dps.Clicker:Hide()
+		LUI.Navi.Raid:Hide()
+		LUI.Navi.Raid.Hover:Hide()
+		LUI.Navi.Raid.Clicker:Hide()
+	end
+
+	if db.UpperArt.ButtonsBackground then
+		LUI.Navi.TopButtonBackground:Show()
+	else
+		LUI.Navi.TopButtonBackground:Hide()
+	end
+
+	if db.UpperArt.CenterBackground then
+		if db.UpperArt.Background then
+			LUI.Navi.CenterBackground:Show()
+			LUI.Navi.CenterBackgroundAlternative:Hide()
+		else
+			LUI.Navi.CenterBackground:Hide()
+			LUI.Navi.CenterBackgroundAlternative:Show()
+		end
+	else
+		LUI.Navi.CenterBackground:Hide()
+		LUI.Navi.CenterBackgroundAlternative:Hide()
+	end
+
+	if db.UpperArt.Background then
+		if db.UpperArt.CenterBackground then
+			LUI.Info.Topleft:Show()
+			LUI.Info.Topright:Show()
+			LUI.Info.TopleftAlternative:Hide()
+			LUI.Info.ToprightAlternative:Hide()
+		else
+			LUI.Info.Topleft:Hide()
+			LUI.Info.Topright:Hide()
+			LUI.Info.TopleftAlternative:Show()
+			LUI.Info.ToprightAlternative:Show()
+		end
+	else
 		LUI.Info.Topleft:Hide()
 		LUI.Info.Topright:Hide()
+		LUI.Info.TopleftAlternative:Hide()
+		LUI.Info.ToprightAlternative:Hide()
 	end
-	if not db.UpperArt.NaviBG or what == "enable" then
-		LUI.Navi.Top:Show()
-	else
-		LUI.Navi.Top:Hide()
-	end
-	if not db.LowerArt.ThemeLine or what == "enable" then
+
+	if db.LowerArt.BlackLine then
 		LUI.Info.Left.Panel:Show()
 		LUI.Info.Right.Panel:Show()
 	else
 		LUI.Info.Left.Panel:Hide()
 		LUI.Info.Right.Panel:Hide()
 	end
-	if not db.LowerArt.BackGLine or what == "enable" then
+
+	if db.LowerArt.ThemedLine then
 		LUI.Info.Left.BG:Show()
 		LUI.Info.Right.BG:Show()
 	else
+		LUI.Info.Left.BG:Hide()
+		LUI.Info.Right.BG:Hide()
+	end
+
+	if status == "disabled" then
+		LUI.Orb.Hover:Hide()
+		LUI.Orb.Ring2:Hide()
+		LUI.Orb.Ring4:Hide()
+		LUI.Orb.Ring7:Hide()
+		LUI.Orb.Cycle:Hide()
+		LUI.Orb.Galaxy1:Hide()
+		LUI.Orb.Galaxy2:Hide()
+		LUI.Orb.Galaxy3:Hide()
+		LUI.Orb.Fill:Hide()
+		LUI.Orb:EnableMouse(false)
+
+		LUI.Navi.Chat:Hide()
+		LUI.Navi.Chat.Hover:Hide()
+		LUI.Navi.Chat.Clicker:Hide()
+		LUI.Navi.Tps:Hide()
+		LUI.Navi.Tps.Hover:Hide()
+		LUI.Navi.Tps.Clicker:Hide()
+		LUI.Navi.Dps:Hide()
+		LUI.Navi.Dps.Hover:Hide()
+		LUI.Navi.Dps.Clicker:Hide()
+		LUI.Navi.Raid:Hide()
+		LUI.Navi.Raid.Hover:Hide()
+		LUI.Navi.Raid.Clicker:Hide()
+
+		LUI.Navi.TopButtonBackground:Hide()
+
+		LUI.Navi.CenterBackground:Hide()
+
+		LUI.Info.Topleft:Hide()
+		LUI.Info.Topright:Hide()
+
+		LUI.Info.TopleftAlternative:Hide()
+		LUI.Info.ToprightAlternative:Hide()
+
+		LUI.Info.Left.Panel:Hide()
+		LUI.Info.Right.Panel:Hide()
+
+		LUI.Info.Left.BG:Show()
+		LUI.Info.Right.BG:Show()
+
 		LUI.Info.Left.BG:Hide()
 		LUI.Info.Right.BG:Hide()
 	end
@@ -115,9 +213,9 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
-	toggleArt()
+	ToggleArt()
 end
 
 function module:OnDisable()
-	toggleArt("enable")
+	ToggleArt("disabled")
 end
