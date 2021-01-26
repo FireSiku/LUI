@@ -513,7 +513,7 @@ function module:AlphaIn(kind)
 		_G[backgrounds[kind].frame]:Show()
 
 		--if kind == "Chat" and LUI.db.profile.Chat.SecondChatFrame then ChatAlphaAnchor2:Show() end
-		for _, f in pairs(self:LoadAdditional(db[kind].Additional)) do
+		for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
 			if LUI:CanAlterFrame(_G[f]) then _G[f]:Show() end
 		end
 	end
@@ -543,7 +543,7 @@ function module:AlphaOut(kind)
 		_G[backgrounds[kind].frame]:SetAlpha(0)
 		_G[backgrounds[kind].frame]:Hide()
 
-		for _, f in pairs(Panels:LoadAdditional(db[kind].Additional)) do
+		for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
 			if LUI:CanAlterFrame(_G[f]) then
 				_G[f]:SetAlpha(0)
 				_G[f]:Hide()
