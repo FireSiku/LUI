@@ -123,16 +123,6 @@ LUI.Opposites = {
 	BOTTOMRIGHT = "TOPLEFT",
 }
 
-local screen_height, screen_width = 1920, 1080
-local screenRes = {GetScreenResolutions()}
-local currentRes = GetCurrentResolution()
-if currentRes == 0 then currentRes = #screenRes end
-if screenRes[currentRes] then
-	screen_height = string.match(screenRes[currentRes], "%d+x(%d+)")
-	screen_width = string.match(screenRes[currentRes], "(%d+)x%d+")
-end
-local _, class = UnitClass("player")
-
 ------------------------------------------------------
 -- / CREATING DEFAULTS / --
 ------------------------------------------------------
@@ -176,10 +166,9 @@ local db = setmetatable({}, {
 })
 
 local function CheckResolution()
-	local ScreenWidth = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "(%d+)x%d+")
-	local ScreenHeight = string.match(({GetScreenResolutions()})[GetCurrentResolution()], "%d+x(%d+)")
+	local uiWidth, uiHeight = GetPhysicalScreenSize()
 
-	if ScreenWidth == "1280" and ScreenHeight == "1024" then
+	if uiWidth == "1280" and uiHeight == "1024" then
 		-- Repostion Info Texts
 		local Infotext = LUI:Module("Infotext", true)
 		if Infotext and false then -- broken with false until proper positions have been determined
@@ -218,8 +207,9 @@ function LUI:Kill(object)
 end
 
 local function scale(x)
+	local uiWidth, uiHeight = GetPhysicalScreenSize()
 	local scaleUI = UIParent:GetEffectiveScale()
-	local mult = 768/screen_height/scaleUI
+	local mult = 768/uiHeight/scaleUI
 	LUI.mult = mult
 	return mult*math.floor(x/mult+.5)
 end
