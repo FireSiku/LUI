@@ -1912,6 +1912,7 @@ module.funcs = {
 				if unit == "vehicle" then unit = "player" end
 
 				local value, max = UnitXP(unit), UnitXPMax(unit)
+				if max == 0 then return end -- Rarely, client will throw this, avoid divide by zero
 
 				self.Experience:SetMinMaxValues(0, max)
 				self.Experience:SetValue(value)
