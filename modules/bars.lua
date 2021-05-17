@@ -317,8 +317,6 @@ end
 local function CreateButton(bar, barid, barpos, buttonid)
 	local button = CreateFrame("CheckButton", format("LUIBar%s%sButton%s", barpos, barid, buttonid), bar, "ActionBarButtonTemplate")
 	button:SetID(buttonid)
-
-	module:HookActionButton(button)
 	return button
 end
 
@@ -621,6 +619,7 @@ function module:SetBottomBar(id)
 
 	if not bars[id] then
 		local bar = CreateFrame("Frame", "LUIBar"..id, UIParent, "SecureHandlerStateTemplate")
+		local group = Masque and Masque:Group("LUI", "Bottom Bar "..id)
 		bar.buttons = {}
 
 		for i = 1, 12 do
@@ -635,6 +634,13 @@ function module:SetBottomBar(id)
 			bar:SetFrameRef("Button"..i, button)
 			bar.buttons[i] = button
 			button.__IAB = true
+
+			if group then
+				group:AddButton(button)
+				button.__MSQ = group
+			end
+
+			module:HookActionButton(button)
 			if button:GetName():find("LUI") then button.buttonType = "LUIBar"..id.."Button" end
 		end
 
@@ -651,13 +657,6 @@ function module:SetBottomBar(id)
 		-- if bardb.Fader.Enable then
 		-- 	Fader:RegisterFrame(bar, bardb.Fader, true)
 		-- end
-
-		if Masque then
-			local group = Masque:Group("LUI", "Bottom Bar "..id)
-			for _, button in pairs(bar.buttons) do
-				group:AddButton(button)
-			end
-		end
 
 		bars[id] = bar
 	end
@@ -691,6 +690,7 @@ function module:SetSideBar(side, id)
 
 	if not bars[sideID] then
 		local bar = CreateFrame("Frame", "LUIBar"..sideID, UIParent, "SecureHandlerStateTemplate")
+		local group = Masque and Masque:Group("LUI", side.." Sidebar "..id)
 		bar:SetWidth(1) -- because of way LUI handles
 		bar:SetHeight(1) -- sidebar position calculation
 		bar.buttons = {}
@@ -709,6 +709,13 @@ function module:SetSideBar(side, id)
 			bar.buttons[i] = button
 			if button:GetName():find("LUI") then button.buttonType = "LUIBar"..sideID.."Button" end
 			button:SetAttribute("flyoutDirection", side == "Left" and "RIGHT" or "LEFT")
+			
+			if group then
+				group:AddButton(button)
+				button.__MSQ = group
+			end
+
+			module:HookActionButton(button)
 		end
 
 		bar:RegisterEvent("ACTIONBAR_SHOWGRID")
@@ -720,13 +727,6 @@ function module:SetSideBar(side, id)
 
 		SetOnStatePage(bar)
 		RegisterStateDriver(bar, "page", bardb.State[1])
-
-		if Masque then
-			local group = Masque:Group("LUI", side.." Sidebar "..id)
-			for _, button in pairs(bar.buttons) do
-				group:AddButton(button)
-			end
-		end
 
 		bars[sideID] = bar
 	end
@@ -767,7 +767,9 @@ function module:SetPetBar()
 		if Masque then
 			local group = Masque:Group("LUI", "Pet Bar")
 			for i = 1, 10 do
-				group:AddButton(_G["PetActionButton"..i])
+				local button = _G["PetActionButton"..i]
+				group:AddButton(button)
+				button.__MSQ = group
 			end
 		end
 	end
@@ -815,7 +817,9 @@ function module:SetStanceBar()
 		if Masque then
 			local group = Masque:Group("LUI", "Stance Bar")
 			for i = 1, 10 do
-				group:AddButton(_G['StanceButton'..i])
+				local button = _G['StanceButton'..i]
+				group:AddButton(button)
+				button.__MSQ = group
 			end
 		end
 	end
@@ -1030,7 +1034,8 @@ local function StyleButton(button)
 		end
 	end)
 
-	if Masque then return end
+	--if Masque then return end
+	if Masque and button.__MSQ and not button.__MSQ.db.Disabled then return end
 
 	-- normal
 	local normal = button:GetNormalTexture()
