@@ -158,6 +158,22 @@ local function LoadStates(data)
 	db.StatesLoaded = true
 end
 
+local function ValidateStates()
+	local invalid = false
+	if not db.StatesLoaded then invalid = true
+	-- If settings from a different class is imported, it can lead to bars being set to an invalid state.
+	elseif class == "DRUID" and db.Bottombar1.State[3] == "0" then invalid = true
+	elseif class == "ROGUE" and db.Bottombar1.State[2] == "0" then invalid = true
+	elseif class == "ROGUE" and db.Bottombar1.State[3] == "7" then invalid = true -- Importing Druid settings on Rogue
+	end
+
+	if invalid then
+		if db.StatesLoaded then LUI:Print("Bars State Configuration was reset") end
+		LoadStates(g_defaultStates)
+	end
+
+end
+
 local function GetAnchor(anchor)
 	if string.find(anchor, "Dominos") then
 		if IsAddOnLoaded("Dominos") then
@@ -585,7 +601,7 @@ function module:CreateSidebarSlider(side, id)
 	end
 end
 
-local function SetOnStatePage(bar) 
+local function SetOnStatePage(bar)
 	bar:Execute([[
 		buttons = table.new()
 		for i = 1, 12 do
@@ -1278,7 +1294,7 @@ end
 
 function module:SetBars()
 	if not (IsAddOnLoaded("Bartender4") or IsAddOnLoaded("Dominos") or IsAddOnLoaded("Macaroon")) and db.General.Enable then
-		if not db.StatesLoaded then LoadStates(g_defaultStates) end
+		ValidateStates()
 
 		module:SetLibKeyBound()
 
