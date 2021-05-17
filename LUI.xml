@@ -116,4 +116,7 @@
 	<Script file="unitframes\layout\tags.lua"/>
 	<Script file="unitframes\layout\meta.lua"/>
 	<Script file="unitframes\layout\layout.lua"/>
+
+	<!-- Embedded Darion -->
+	<Script file="media\Masque_Darion\Darion.lua"/>
 </Ui>
