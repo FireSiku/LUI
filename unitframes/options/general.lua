@@ -1077,7 +1077,7 @@ function module:CreateUnitOptions(unit, order)
 		header1 = self:NewHeader(unit, 1),
 		General = self:NewGroup("General", 2, "tab", generalGet, generalSet, {
 			General = self:NewGroup("General", 1, {
-				Enable = (unit ~= "Player" and unit ~= "Target") and self:NewToggle("Enable", "Whether you want to show "..unit.." Frame(s) or not.\n\nDefault: "..(self.defaults[unit].Enable and "Enabled" or "Disabled"), 1, false, "full") or nil,
+				Enable = self:NewToggle("Enable", "Whether you want to show "..unit.." Frame(s) or not.\n\nDefault: "..(self.defaults[unit].Enable and "Enabled" or "Disabled"), 1, false, "full") or nil,
 				UseBlizzard = (unit == "Party" or unit == "Boss" or unit == "Arena" or unit == "Raid") and self:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, false, "full", function() return self.db[unit].Enable end) or nil,
 				ShowPlayer = (unit == "Party") and self:NewToggle("Show Player", "Whether you want to show yourself within the Party Frames or not.", 3, false, nil, disabledFunc) or nil,
 				ShowInRaid = (unit == "Party") and self:NewToggle("Show in Raid", "Whether you want to show the Party Frames in Raid or not.", 4, false, nil, disabledFunc) or nil,
