@@ -48,6 +48,7 @@ local MAX_WATCHED_TOKENS = MAX_WATCHED_TOKENS
 local GetItemInfo = GetItemInfo
 local GetKeyRingSize = GetKeyRingSize
 local GetMoneyString = GetMoneyString
+local ItemButtonUtil = ItemButtonUtil
 local GetContainerNumSlots = GetContainerNumSlots
 local GetContainerItemInfo = GetContainerItemInfo
 local GetContainerItemLink = GetContainerItemLink
@@ -1440,6 +1441,16 @@ function module:OnEnable()
 	self:RawHook("OpenBackpack", LUIBags_Open, true)
 	self:RawHook("CloseBackpack", LUIBags_Close, true)
 	self:RawHook("CloseAllBags", LUIBags_Close, true)
+	self:RawHook("OpenAllBagsMatchingContext", function()
+		for i = 0, 4 do
+			local result = ItemButtonUtil.GetItemContextMatchResultForContainer(i)
+			if result == ItemButtonUtil.ItemContextMatchResult.Match then
+				LUIBags_Open()
+				return 1
+			end
+		end
+		return 0
+	end, true)
 
 	BankFrame:UnregisterAllEvents()
 
