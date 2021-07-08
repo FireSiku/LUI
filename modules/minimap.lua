@@ -34,6 +34,7 @@ function module:SetAdditionalFrames()
 	self:SecureHook(UIWidgetBelowMinimapContainerFrame, "SetPoint", "CaptureBar_SetPoint")
 	self:SecureHook(PlayerPowerBarAlt, "SetPoint", "PlayerPowerBarAlt_SetPoint")
 	self:SecureHook(GroupLootContainer, "SetPoint", "GroupLootContainer_SetPoint")
+	self:SecureHook(MawBuffsBelowMinimapFrame, "SetPoint", "MawBuffs_SetPoint")
 end
 
 function module:SetPosition(frame)
@@ -62,6 +63,9 @@ function module:SetPosition(frame)
 	elseif frame == "GroupLootContainer" and db.Minimap.Frames.SetGroupLootContainer then
 		GroupLootContainer:ClearAllPoints()
 		GroupLootContainer:SetPoint("BOTTOM", UIParent, "BOTTOM", db.Minimap.Frames.GroupLootContainerX, db.Minimap.Frames.GroupLootContainerY)
+	elseif frame == "MawBuffs" and db.Minimap.Frames.SetMawBuffs then
+		MawBuffsBelowMinimapFrame:ClearAllPoints()
+		MawBuffsBelowMinimapFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.MawBuffsX, db.Minimap.Frames.MawBuffsY)
 	end
 
 	shouldntSetPoint = false
@@ -105,6 +109,11 @@ end
 function module:TicketStatus_SetPoint()
 	if shouldntSetPoint then return end
 	self:SetPosition('TicketStatus')
+end
+
+function module:MawBuffs_SetPoint()
+	if shouldntSetPoint then return end
+	self:SetPosition('MawBuffs')
 end
 
 function module:SetColors()
@@ -262,7 +271,7 @@ function module:SetMinimap()
 	MiniMapInstanceDifficulty.Show = MiniMapInstanceDifficulty.Hide
 	MiniMapInstanceDifficulty:Hide()
 
-	-- MiniMapChallengeMode
+	-- MiniMapChallengeMode 
 	MiniMapChallengeMode.NewShow = MiniMapChallengeMode.Show
 	MiniMapChallengeMode.Show = MiniMapChallengeMode.Hide
 	MiniMapChallengeMode:Hide()
@@ -562,6 +571,8 @@ local defaults = {
 			PlayerPowerBarAltY = "160",
 			GroupLootContainerX = "0",
 			GroupLootContainerY = "120",
+			MawBuffsX = "-180",
+			MawBuffsY = "-70",
 			SetAlwaysUpFrame = true,
 			SetVehicleSeatIndicator = true,
 			SetDurabilityFrame = true,
@@ -570,6 +581,7 @@ local defaults = {
 			SetTicketStatus = true,
 			SetPlayerPowerBarAlt = false,
 			SetGroupLootContainer = false,
+			SetMawBuffs = true,
 		},
 	},
 }
@@ -908,6 +920,9 @@ function module:LoadOptions()
 				DurabilityFrame = createTemplate("DurabilityFrame", 7, "Durability Frame",
 					"This Frame occurs when your gear is damaged or broken."
 				),
+				MawBuffs = createTemplate("MawBuffs", 7, "Sanctum Anima Powers",
+					"This Frame is shown in certain parts of the Sanctum of Domination."
+				),
 				TicketStatus = createTemplate("TicketStatus", 8, "GM Ticket Status",
 					"This Frame occurs when waiting on a ticket response", {
 					spacer2 = { name = "", type = "description", order = 8, width = "full", },
@@ -959,4 +974,5 @@ function module:OnEnable()
 	self:RegisterEvent("GARRISON_HIDE_LANDING_PAGE")
 	self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE")
 	C_Timer.After(0.25, self.ToggleMissionReport)
+	self:SecureHook(MawBuffsBelowMinimapFrameMixin, "OnShow", function() self:SetPosition('MawBuffs') end)
 end
