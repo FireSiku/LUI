@@ -101,8 +101,6 @@ local function UpdateExpMode()
 			end
 		end
 	else -- REP MODE
-		local friend, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID);
-
 		local name, stand, barMin, barMax, barValue, factionID = GetWatchedFactionInfo()
 
 		local repname = { "Ha", "Ho", "Un", "Ne", "Fr", "Hon", "Rev", "Ex" }
@@ -111,9 +109,8 @@ local function UpdateExpMode()
 			--Friendship Support
 			local friend, friendValue, _, _, _, _, friendText, friendMin, friendMax = GetFriendshipReputation(factionID);
 			if friend ~= nil then -- Friendship support
-				if not friendMax then barMin, barMax, barValue = 0, 1, 1 -- Show full bar
-				else barMin, barMax, barValue = friendMin, friendMax, friendValue
-				end
+				--if you're maxed, friendMax will be nil, and value will contain max.
+				barMin, barMax, barValue = friendMin, friendMax or friendValue, friendValue
 				repText = friendText
 			end
 			-- Display values
