@@ -39,7 +39,6 @@
 	<Script file="modules\faq.lua"/>
 	<Script file="modules\micromenu.lua"/>
 	<Include file="modules\raidmenu.xml"/>
-	<Script file="modules\swing.lua"/>
 	<Script file="modules\threatbar.lua"/>
 	<Script file="modules\merchant.lua"/>
 	<Script file="modules\removethatbuff.lua"/>
