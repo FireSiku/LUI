@@ -738,16 +738,10 @@ function module:SetMicroMenu()
 	end)
 
 	LUI.MicroMenu.Buttons.Guild.Clicker:SetScript("OnClick", function(self, button)
-		if button == "RightButton" and db.GuildComm then
-			ToggleGuildFrame() -- Toggle Communities Frame.
-		elseif button == "RightButton" then
+		if button == "RightButton" then
 			ToggleFriendsFrame(1)
 		else
-			if GuildFrame:IsShown() or LookingForGuildFrame:IsShown() then
-				if IsInGuild() then HideUIPanel(GuildFrame) else HideUIPanel(LookingForGuildFrame) end
-			else
-				if IsInGuild() then ShowUIPanel(GuildFrame) else ShowUIPanel(LookingForGuildFrame) end
-			end
+			ToggleGuildFrame()
 		end
 	end)
 
@@ -770,21 +764,20 @@ function module:SetMicroMenu()
 	end)
 
 	GuildFrame:HookScript("OnHide", function(self)
-		if not FriendsFrame:IsShown() and not LookingForGuildFrame:IsShown() and not LUI.MicroMenu.Buttons.Guild.Clicker.State then
+		if not FriendsFrame:IsShown() and not CommunitiesFrame:IsShown() and not LUI.MicroMenu.Buttons.Guild.Clicker.State then
 			LUI.MicroMenu.Buttons.Guild.Clicker:SetAlpha(0)
 		end
 	end)
 
-	if not LookingForGuildFrame then
-		LoadAddOn("Blizzard_LookingForGuildUI")
-		LookingForGuildFrame_CreateUIElements()
+	if not CommunitiesFrame then
+		Communities_LoadUI()
 	end
 
-	LookingForGuildFrame:HookScript("OnShow", function(self)
+	CommunitiesFrame:HookScript("OnShow", function(self)
 		LUI.MicroMenu.Buttons.Guild.Clicker:SetAlpha(1)
 	end)
 
-	LookingForGuildFrame:HookScript("OnHide", function(self)
+	CommunitiesFrame:HookScript("OnHide", function(self)
 		if not FriendsFrame:IsShown() and not GuildFrame:IsShown() and not LUI.MicroMenu.Buttons.Guild.Clicker.State then
 			LUI.MicroMenu.Buttons.Guild.Clicker:SetAlpha(0)
 		end
