@@ -1872,11 +1872,11 @@ function module:SetGF()
 					texOrder1:SetPoint("TOPLEFT", obj, "TOPLEFT", -.25*gap, 2 )
 					texOrder1:SetWidth(obj:GetWidth() + gap*.5)
 					texOrder1:SetHeight(nbEntries * btnHeight + 1)
-					local asc = db[GorF()].sortASC[1]
-					if col == "level" then asc = not asc end
-					local a1, r1, g1, b1 = GF_Colors.OrderA[4], unpack(GF_Colors.OrderA)
-					local a2, r2, g2, b2 = 0, GameTooltip:GetBackdropColor()
-					if asc then r1,g1,b1,a1, r2,g2,b2,a2 = r2,g2,b2,a2, r1,g1,b1,a1 end
+					-- local asc = db[GorF()].sortASC[1]
+					-- if col == "level" then asc = not asc end
+					-- local a1, r1, g1, b1 = GF_Colors.OrderA[4], unpack(GF_Colors.OrderA)
+					-- local a2, r2, g2, b2 = 0, GameTooltip:GetBackdropColor()
+					-- if asc then r1,g1,b1,a1, r2,g2,b2,a2 = r2,g2,b2,a2, r1,g1,b1,a1 end
 					-- texOrder1:SetGradientAlpha("VERTICAL", r1,g1,b1,a1, r2,g2,b2,a2)
 					texOrder1:SetAlpha(0)
 				else
@@ -1928,9 +1928,11 @@ function module:SetGF()
 				self:SetBackdropColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a)
 				self:SetBackdropBorderColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a)
 			else
-				self:SetBackdrop(GameTooltip:GetBackdrop())
-				self:SetBackdropColor(GameTooltip:GetBackdropColor())
-				self:SetBackdropBorderColor(GameTooltip:GetBackdropBorderColor())
+				if not self.GetCenterColor then Mixin(self, NineSlicePanelMixin) end
+				local layout = NineSliceUtil.GetLayout(GameTooltip.layoutType)
+				NineSliceUtil.ApplyLayout(self, layout)
+				self:SetCenterColor(GameTooltip.NineSlice:GetCenterColor())
+				self:SetBorderColor(GameTooltip.NineSlice:GetBorderColor())
 			end
 
 			self:Update()
