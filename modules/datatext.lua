@@ -1930,7 +1930,7 @@ function module:SetGF()
 			else
 				if not self.GetCenterColor then Mixin(self, NineSlicePanelMixin) end
 				local layout = NineSliceUtil.GetLayout(GameTooltip.layoutType)
-				NineSliceUtil.ApplyLayout(self, layout)
+				NineSliceUtil.ApplyLayout(self, layout or "TooltipDefaultLayout")
 				self:SetCenterColor(GameTooltip.NineSlice:GetCenterColor())
 				self:SetBorderColor(GameTooltip.NineSlice:GetBorderColor())
 			end
