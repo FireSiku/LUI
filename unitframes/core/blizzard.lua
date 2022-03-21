@@ -5,15 +5,15 @@ local MAX_ARENA_ENEMIES = MAX_ARENA_ENEMIES or 5
 local MAX_BOSS_FRAMES = MAX_BOSS_FRAMES or 5
 local MAX_PARTY_MEMBERS = MAX_PARTY_MEMBERS or 4
 
-local hiddenParent = CreateFrame("Frame")
+local hiddenParent = CreateFrame("Frame", nil, UIParent)
+hiddenParent:SetAllPoints()
 hiddenParent:Hide()
 
 local function insecureOnShow(self)
 	self:Hide()
 end
 
-local function HandleFrame(baseName, doNotReparent)
-	LUI:Print("Handling Frame")
+local function handleFrame(baseName, doNotReparent)
 	local frame
 	if(type(baseName) == 'string') then
 		frame = _G[baseName]
@@ -57,10 +57,11 @@ local function HandleFrame(baseName, doNotReparent)
 end
 
 function oUF:DisableBlizzard(unit)
+	LUI:Print("oUF Disable:", unit)
 	if(not unit) then return end
 
 	if(unit == 'player') then
-		HandleFrame(PlayerFrame)
+		handleFrame(PlayerFrame)
 
 		-- For the damn vehicle support:
 		PlayerFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
@@ -73,46 +74,45 @@ function oUF:DisableBlizzard(unit)
 		PlayerFrame:SetUserPlaced(true)
 		PlayerFrame:SetDontSavePosition(true)
 	elseif(unit == 'pet') then
-		HandleFrame(PetFrame)
+		handleFrame(PetFrame)
 	elseif(unit == 'target') then
-		HandleFrame(TargetFrame)
-		HandleFrame(TargetFrameTextureFrame)
-		HandleFrame(ComboFrame)
+		handleFrame(TargetFrame)
+		handleFrame(ComboFrame)
 	elseif(unit == 'focus') then
-		HandleFrame(FocusFrame)
-		HandleFrame(TargetofFocusFrame)
+		handleFrame(FocusFrame)
+		handleFrame(TargetofFocusFrame)
 	elseif(unit == 'targettarget') then
-		HandleFrame(TargetFrameToT)
+		handleFrame(TargetFrameToT)
 	elseif(unit:match('boss%d?$')) then
 		local id = unit:match('boss(%d)')
 		if(id) then
-			HandleFrame('Boss' .. id .. 'TargetFrame')
+			handleFrame('Boss' .. id .. 'TargetFrame')
 		else
 			for i = 1, MAX_BOSS_FRAMES do
-				HandleFrame(string.format('Boss%dTargetFrame', i))
+				handleFrame(string.format('Boss%dTargetFrame', i))
 			end
 		end
 	elseif(unit:match('party%d?$')) then
 		local id = unit:match('party(%d)')
 		if(id) then
-			HandleFrame('PartyMemberFrame' .. id)
+			handleFrame('PartyMemberFrame' .. id)
 		else
 			for i = 1, MAX_PARTY_MEMBERS do
-				HandleFrame(string.format('PartyMemberFrame%d', i))
+				handleFrame(string.format('PartyMemberFrame%d', i))
 			end
 		end
 	elseif(unit:match('arena%d?$')) then
 		local id = unit:match('arena(%d)')
 		if(id) then
-			HandleFrame('ArenaEnemyFrame' .. id)
+			handleFrame('ArenaEnemyFrame' .. id)
 		else
 			for i = 1, MAX_ARENA_ENEMIES do
-				HandleFrame(string.format('ArenaEnemyFrame%d', i))
+				handleFrame(string.format('ArenaEnemyFrame%d', i))
 			end
 		end
 
 		-- Blizzard_ArenaUI should not be loaded
-		Arena_LoadUI = function() end
+		_G.Arena_LoadUI = function() end
 		SetCVar('showArenaEnemyFrames', '0', 'SHOW_ARENA_ENEMY_FRAMES_TEXT')
 	elseif(unit:match('nameplate%d+$')) then
 		local frame = C_NamePlate.GetNamePlateForUnit(unit)
@@ -122,7 +122,7 @@ function oUF:DisableBlizzard(unit)
 				frame.UnitFrame.isHooked = true
 			end
 
-			HandleFrame(frame.UnitFrame, true)
+			handleFrame(frame.UnitFrame, true)
 		end
 	end
 end

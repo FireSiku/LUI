@@ -55,47 +55,47 @@ do
 	end
 
 	hide = {
-		player = function()
-		-- Only hide the PlayerFrame, do not mess with the events.
-		-- Messing the PlayerFrame ends up spreading taint.
-			PlayerFrame:Hide()
-			PlayerFrame.Show = PlayerFrame.Hide
-		end,
-		target = function()
-			TargetFrame:UnregisterAllEvents()
-			TargetFrame:Hide()
-			TargetFrame.Show = TargetFrame.Hide
-			TargetFrameTextureFrame:Hide()
-			ComboFrame:UnregisterAllEvents()
-		end,
-		focus = function()
-			FocusFrame:UnregisterAllEvents()
-			FocusFrame:Hide()
-		end,
-		party = function()
-			for i = 1, 4 do
-				local frame = _G["PartyMemberFrame"..i]
-				frame:UnregisterAllEvents()
-				frame:Hide()
-				frame.Show = LUI.dummy
-			end
+		-- player = function()
+		-- -- Only hide the PlayerFrame, do not mess with the events.
+		-- -- Messing the PlayerFrame ends up spreading taint.
+		-- 	PlayerFrame:Hide()
+		-- 	PlayerFrame.Show = PlayerFrame.Hide
+		-- end,
+		-- target = function()
+		-- 	TargetFrame:UnregisterAllEvents()
+		-- 	TargetFrame:Hide()
+		-- 	TargetFrame.Show = TargetFrame.Hide
+		-- 	TargetFrameTextureFrame:Hide()
+		-- 	ComboFrame:UnregisterAllEvents()
+		-- end,
+		-- focus = function()
+		-- 	FocusFrame:UnregisterAllEvents()
+		-- 	FocusFrame:Hide()
+		-- end,
+		-- party = function()
+		-- 	for i = 1, 4 do
+		-- 		local frame = _G["PartyMemberFrame"..i]
+		-- 		frame:UnregisterAllEvents()
+		-- 		frame:Hide()
+		-- 		frame.Show = LUI.dummy
+		-- 	end
 
-			UIParent:UnregisterEvent("GROUP_ROSTER_UPDATE")
+		-- 	UIParent:UnregisterEvent("GROUP_ROSTER_UPDATE")
 
-			if CompactPartyFrame then
-				CompactPartyFrame:UnregisterEvent("GROUP_ROSTER_UPDATE")
-				CompactPartyFrame:Hide()
+		-- 	if CompactPartyFrame then
+		-- 		CompactPartyFrame:UnregisterEvent("GROUP_ROSTER_UPDATE")
+		-- 		CompactPartyFrame:Hide()
 
-				if hook.party == "CompactPartyFrame_Generate" then
-					hook.party = nil
-				end
-				if CompactPartyFrame_UpdateShown then
-					hook("party", "CompactPartyFrame_UpdateShown")
-				end
-			else
-				hook("party", "CompactPartyFrame_Generate")
-			end
-		end,
+		-- 		if hook.party == "CompactPartyFrame_Generate" then
+		-- 			hook.party = nil
+		-- 		end
+		-- 		if CompactPartyFrame_UpdateShown then
+		-- 			hook("party", "CompactPartyFrame_UpdateShown")
+		-- 		end
+		-- 	else
+		-- 		hook("party", "CompactPartyFrame_Generate")
+		-- 	end
+		-- end,
 		raid = function()
 			if CompactRaidFrameManager then
 				CompactRaidFrameManager:UnregisterEvent("GROUP_ROSTER_UPDATE")
@@ -108,33 +108,33 @@ do
 				hook("raid", "CompactRaidFrameManager_UpdateShown")
 			end
 		end,
-		boss = function()
-			for i = 1, MAX_BOSS_FRAMES do
-				local frame = _G["Boss"..i.."TargetFrame"]
-				frame:UnregisterAllEvents()
-				frame:Hide()
-			end
-		end,
-		arena = function()
-			if IsAddOnLoaded("Blizzard_ArenaUI") then
-				ArenaEnemyFrames:UnregisterAllEvents()
-			else
-				hook("arena", "Arena_LoadUI")
-			end
-		end,
-		castbar = function()
-			CastingBarFrame:UnregisterAllEvents()
-			PetCastingBarFrame:UnregisterAllEvents()
-		end,
-		runebar = function()
-			hook("runebar", "PlayerFrame_HideVehicleTexture")
-			RuneFrame:UnregisterAllEvents()
-			RuneFrame:Hide()
-		end,
-		altpower = function()
-			PlayerPowerBarAlt:UnregisterAllEvents()
-			PlayerPowerBarAlt:Hide()
-		end,
+		-- boss = function()
+		-- 	for i = 1, MAX_BOSS_FRAMES do
+		-- 		local frame = _G["Boss"..i.."TargetFrame"]
+		-- 		frame:UnregisterAllEvents()
+		-- 		frame:Hide()
+		-- 	end
+		-- end,
+		-- arena = function()
+		-- 	if IsAddOnLoaded("Blizzard_ArenaUI") then
+		-- 		ArenaEnemyFrames:UnregisterAllEvents()
+		-- 	else
+		-- 		hook("arena", "Arena_LoadUI")
+		-- 	end
+		-- end,
+		-- castbar = function()
+		-- 	CastingBarFrame:UnregisterAllEvents()
+		-- 	PetCastingBarFrame:UnregisterAllEvents()
+		-- end,
+		-- runebar = function()
+		-- 	hook("runebar", "PlayerFrame_HideVehicleTexture")
+		-- 	RuneFrame:UnregisterAllEvents()
+		-- 	RuneFrame:Hide()
+		-- end,
+		-- altpower = function()
+		-- 	PlayerPowerBarAlt:UnregisterAllEvents()
+		-- 	PlayerPowerBarAlt:Hide()
+		-- end,
 		aura = function()
 			BuffFrame:Hide()
 			TemporaryEnchantFrame:Hide()
@@ -179,41 +179,37 @@ do
 		end,
 	}
 	show = {
-		player = function()
-			PlayerFrame:Show()
-		end,
-		target = function()
-			TargetFrame:GetScript("OnLoad")(TargetFrame)
-			ComboFrame:GetScript("OnLoad")(ComboFrame)
-		end,
-		focus = function()
-			FocusFrame:GetScript("OnLoad")(FocusFrame)
-		end,
-		party = function()
-			Blizzard:Unhook("CompactPartyFrame_Generate")
-
-			for i = 1, 4 do
-				local frame = _G["PartyMemberFrame"..i]
-				frame.Show = nil -- reset access to the frame metatable's show function
-				frame:GetScript("OnLoad")(frame)
-				frame:GetScript("OnEvent")(frame, "GROUP_ROSTER_UPDATE")
-
-				PartyMemberFrame_UpdateMember(frame)
-			end
-
-			UIParent:RegisterEvent("GROUP_ROSTER_UPDATE")
-
-			if CompactPartyFrame then
-				CompactPartyFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
-				if GetDisplayedAllyFrames then
-					if GetDisplayedAllyFrames() == "compact-party" then
-						CompactPartyFrame:Show()
-					end
-				elseif GetCVarBool("useCompactPartyFrames") and GetNumSubgroupMembers() > 0 and GetNumGroupMembers() == 0 then
-					CompactPartyFrame:Show()
-				end
-			end
-		end,
+		-- player = function()
+		-- 	PlayerFrame:Show()
+		-- end,
+		-- target = function()
+		-- 	TargetFrame:GetScript("OnLoad")(TargetFrame)
+		-- 	ComboFrame:GetScript("OnLoad")(ComboFrame)
+		-- end,
+		-- focus = function()
+		-- 	FocusFrame:GetScript("OnLoad")(FocusFrame)
+		-- end,
+		-- party = function()
+		-- 	Blizzard:Unhook("CompactPartyFrame_Generate")
+		-- 	for i = 1, 4 do
+		-- 		local frame = _G["PartyMemberFrame"..i]
+		-- 		frame.Show = nil -- reset access to the frame metatable's show function
+		-- 		frame:GetScript("OnLoad")(frame)
+		-- 		frame:GetScript("OnEvent")(frame, "GROUP_ROSTER_UPDATE")
+		-- 		PartyMemberFrame_UpdateMember(frame)
+		-- 	end
+		-- 	UIParent:RegisterEvent("GROUP_ROSTER_UPDATE")
+		-- 	if CompactPartyFrame then
+		-- 		CompactPartyFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+		-- 		if GetDisplayedAllyFrames then
+		-- 			if GetDisplayedAllyFrames() == "compact-party" then
+		-- 				CompactPartyFrame:Show()
+		-- 			end
+		-- 		elseif GetCVarBool("useCompactPartyFrames") and GetNumSubgroupMembers() > 0 and GetNumGroupMembers() == 0 then
+		-- 			CompactPartyFrame:Show()
+		-- 		end
+		-- 	end
+		-- end,
 		raid = function()
 			CompactRaidFrameManager:RegisterEvent("GROUP_ROSTER_UPDATE")
 			CompactRaidFrameManager:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -228,34 +224,34 @@ do
 				CompactRaidFrameManager_SetSetting("IsShown", "1")
 			end
 		end,
-		boss = function()
-			for i = 1, MAX_BOSS_FRAMES do
-				local frame = _G["Boss"..i.."TargetFrame"]
-				frame:GetScript("OnLoad")(frame)
-			end
-		end,
-		arena = function()
-			if IsAddOnLoaded("Blizzard_ArenaUI") then
-				ArenaEnemyFrames:GetScript("OnLoad")(ArenaEnemyFrames)
-				ArenaEnemyFrames:GetScript("OnEvent")(ArenaEnemyFrames, "VARIABLES_LOADED")
-			end
-		end,
-		castbar = function()
-			CastingBarFrame:GetScript("OnLoad")(CastingBarFrame)
-			PetCastingBarFrame:GetScript("OnLoad")(PetCastingBarFrame)
-		end,
-		runebar = function()
-			local _,class = UnitClass("player")
-			if class == "DEATHKNIGHT" then
-				RuneFrame:Show()
-			end
-			RuneFrame:GetScript("OnLoad")(RuneFrame)
-			RuneFrame:GetScript("OnEvent")(RuneFrame, "PLAYER_ENTERING_WORLD")
-		end,
-		altpower = function()
-			PlayerPowerBarAlt:GetScript("OnLoad")(PlayerPowerBarAlt)
-			UnitPowerBarAlt_UpdateAll(PlayerPowerBarAlt)
-		end,
+		-- boss = function()
+		-- 	for i = 1, MAX_BOSS_FRAMES do
+		-- 		local frame = _G["Boss"..i.."TargetFrame"]
+		-- 		frame:GetScript("OnLoad")(frame)
+		-- 	end
+		-- end,
+		-- arena = function()
+		-- 	if IsAddOnLoaded("Blizzard_ArenaUI") then
+		-- 		ArenaEnemyFrames:GetScript("OnLoad")(ArenaEnemyFrames)
+		-- 		ArenaEnemyFrames:GetScript("OnEvent")(ArenaEnemyFrames, "VARIABLES_LOADED")
+		-- 	end
+		-- end,
+		-- castbar = function()
+		-- 	CastingBarFrame:GetScript("OnLoad")(CastingBarFrame)
+		-- 	PetCastingBarFrame:GetScript("OnLoad")(PetCastingBarFrame)
+		-- end,
+		-- runebar = function()
+		-- 	local _,class = UnitClass("player")
+		-- 	if class == "DEATHKNIGHT" then
+		-- 		RuneFrame:Show()
+		-- 	end
+		-- 	RuneFrame:GetScript("OnLoad")(RuneFrame)
+		-- 	RuneFrame:GetScript("OnEvent")(RuneFrame, "PLAYER_ENTERING_WORLD")
+		-- end,
+		-- altpower = function()
+		-- 	PlayerPowerBarAlt:GetScript("OnLoad")(PlayerPowerBarAlt)
+		-- 	UnitPowerBarAlt_UpdateAll(PlayerPowerBarAlt)
+		-- end,
 		aura = function()
 			BuffFrame:Show()
 			if GetCVarBool("consolidateBuffs") then
@@ -327,8 +323,9 @@ end
 function Blizzard:Hide(type)
 	argcheck(type, "typeof", "string")
 	type = type:lower()
-	argcheck(type, "isin", hide)
+	--argcheck(type, "isin", hide)
 
+	if not hide[type] then return end
 	if hidden[type] then return end
 
 	hidden[type] = true
@@ -340,8 +337,9 @@ end
 function Blizzard:Show(type)
 	argcheck(type, "typeof", "string")
 	type = type:lower()
-	argcheck(type, "isin", show)
+	--argcheck(type, "isin", show)
 
+	if not show[type] then return end
 	if not hidden[type] then return end
 
 	hidden[type] = nil
