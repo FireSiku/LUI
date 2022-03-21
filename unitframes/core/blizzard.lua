@@ -57,7 +57,6 @@ local function handleFrame(baseName, doNotReparent)
 end
 
 function oUF:DisableBlizzard(unit)
-	LUI:Print("oUF Disable:", unit)
 	if(not unit) then return end
 
 	if(unit == 'player') then
