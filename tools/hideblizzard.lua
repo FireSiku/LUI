@@ -189,27 +189,27 @@ do
 		-- focus = function()
 		-- 	FocusFrame:GetScript("OnLoad")(FocusFrame)
 		-- end,
-		-- party = function()
-		-- 	Blizzard:Unhook("CompactPartyFrame_Generate")
-		-- 	for i = 1, 4 do
-		-- 		local frame = _G["PartyMemberFrame"..i]
-		-- 		frame.Show = nil -- reset access to the frame metatable's show function
-		-- 		frame:GetScript("OnLoad")(frame)
-		-- 		frame:GetScript("OnEvent")(frame, "GROUP_ROSTER_UPDATE")
-		-- 		PartyMemberFrame_UpdateMember(frame)
-		-- 	end
-		-- 	UIParent:RegisterEvent("GROUP_ROSTER_UPDATE")
-		-- 	if CompactPartyFrame then
-		-- 		CompactPartyFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
-		-- 		if GetDisplayedAllyFrames then
-		-- 			if GetDisplayedAllyFrames() == "compact-party" then
-		-- 				CompactPartyFrame:Show()
-		-- 			end
-		-- 		elseif GetCVarBool("useCompactPartyFrames") and GetNumSubgroupMembers() > 0 and GetNumGroupMembers() == 0 then
-		-- 			CompactPartyFrame:Show()
-		-- 		end
-		-- 	end
-		-- end,
+		party = function()
+			Blizzard:Unhook("CompactPartyFrame_Generate")
+			for i = 1, 4 do
+				local frame = _G["PartyMemberFrame"..i]
+				frame.Show = nil -- reset access to the frame metatable's show function
+				frame:GetScript("OnLoad")(frame)
+				frame:GetScript("OnEvent")(frame, "GROUP_ROSTER_UPDATE")
+				PartyMemberFrame_UpdateMember(frame)
+			end
+			UIParent:RegisterEvent("GROUP_ROSTER_UPDATE")
+			if CompactPartyFrame then
+				CompactPartyFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+				if GetDisplayedAllyFrames then
+					if GetDisplayedAllyFrames() == "compact-party" then
+						CompactPartyFrame:Show()
+					end
+				elseif GetCVarBool("useCompactPartyFrames") and GetNumSubgroupMembers() > 0 and GetNumGroupMembers() == 0 then
+					CompactPartyFrame:Show()
+				end
+			end
+		end,
 		raid = function()
 			CompactRaidFrameManager:RegisterEvent("GROUP_ROSTER_UPDATE")
 			CompactRaidFrameManager:RegisterEvent("PLAYER_ENTERING_WORLD")
