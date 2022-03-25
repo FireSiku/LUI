@@ -72,30 +72,30 @@ do
 		-- 	FocusFrame:UnregisterAllEvents()
 		-- 	FocusFrame:Hide()
 		-- end,
-		-- party = function()
-		-- 	for i = 1, 4 do
-		-- 		local frame = _G["PartyMemberFrame"..i]
-		-- 		frame:UnregisterAllEvents()
-		-- 		frame:Hide()
-		-- 		frame.Show = LUI.dummy
-		-- 	end
+		party = function()
+			for i = 1, 4 do
+				local frame = _G["PartyMemberFrame"..i]
+				frame:UnregisterAllEvents()
+				frame:Hide()
+				frame.Show = LUI.dummy
+			end
 
-		-- 	UIParent:UnregisterEvent("GROUP_ROSTER_UPDATE")
+			UIParent:UnregisterEvent("GROUP_ROSTER_UPDATE")
 
-		-- 	if CompactPartyFrame then
-		-- 		CompactPartyFrame:UnregisterEvent("GROUP_ROSTER_UPDATE")
-		-- 		CompactPartyFrame:Hide()
+			if CompactPartyFrame then
+				CompactPartyFrame:UnregisterEvent("GROUP_ROSTER_UPDATE")
+				CompactPartyFrame:Hide()
 
-		-- 		if hook.party == "CompactPartyFrame_Generate" then
-		-- 			hook.party = nil
-		-- 		end
-		-- 		if CompactPartyFrame_UpdateShown then
-		-- 			hook("party", "CompactPartyFrame_UpdateShown")
-		-- 		end
-		-- 	else
-		-- 		hook("party", "CompactPartyFrame_Generate")
-		-- 	end
-		-- end,
+				if hook.party == "CompactPartyFrame_Generate" then
+					hook.party = nil
+				end
+				if CompactPartyFrame_UpdateShown then
+					hook("party", "CompactPartyFrame_UpdateShown")
+				end
+			else
+				hook("party", "CompactPartyFrame_Generate")
+			end
+		end,
 		raid = function()
 			if CompactRaidFrameManager then
 				CompactRaidFrameManager:UnregisterEvent("GROUP_ROSTER_UPDATE")
@@ -115,13 +115,13 @@ do
 		-- 		frame:Hide()
 		-- 	end
 		-- end,
-		-- arena = function()
-		-- 	if IsAddOnLoaded("Blizzard_ArenaUI") then
-		-- 		ArenaEnemyFrames:UnregisterAllEvents()
-		-- 	else
-		-- 		hook("arena", "Arena_LoadUI")
-		-- 	end
-		-- end,
+		arena = function()
+			if IsAddOnLoaded("Blizzard_ArenaUI") then
+				ArenaEnemyFrames:UnregisterAllEvents()
+			else
+				hook("arena", "Arena_LoadUI")
+			end
+		end,
 		-- castbar = function()
 		-- 	CastingBarFrame:UnregisterAllEvents()
 		-- 	PetCastingBarFrame:UnregisterAllEvents()
@@ -230,12 +230,12 @@ do
 		-- 		frame:GetScript("OnLoad")(frame)
 		-- 	end
 		-- end,
-		-- arena = function()
-		-- 	if IsAddOnLoaded("Blizzard_ArenaUI") then
-		-- 		ArenaEnemyFrames:GetScript("OnLoad")(ArenaEnemyFrames)
-		-- 		ArenaEnemyFrames:GetScript("OnEvent")(ArenaEnemyFrames, "VARIABLES_LOADED")
-		-- 	end
-		-- end,
+		arena = function()
+			if IsAddOnLoaded("Blizzard_ArenaUI") then
+				ArenaEnemyFrames:GetScript("OnLoad")(ArenaEnemyFrames)
+				ArenaEnemyFrames:GetScript("OnEvent")(ArenaEnemyFrames, "VARIABLES_LOADED")
+			end
+		end,
 		-- castbar = function()
 		-- 	CastingBarFrame:GetScript("OnLoad")(CastingBarFrame)
 		-- 	PetCastingBarFrame:GetScript("OnLoad")(PetCastingBarFrame)
