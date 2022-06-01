@@ -147,162 +147,162 @@ do
 	-- end
 end
 
-local menu
-do
-	local removeMenuOptions = {
-		SET_FOCUS = "LUI_SET_FOCUS",
-		CLEAR_FOCUS = "LUI_CLEAR_FOCUS",
-		LOCK_FOCUS_FRAME = true,
-		UNLOCK_FOCUS_FRAME = true,
-	}
+-- local menu
+-- do
+-- 	local removeMenuOptions = {
+-- 		SET_FOCUS = "LUI_SET_FOCUS",
+-- 		CLEAR_FOCUS = "LUI_CLEAR_FOCUS",
+-- 		LOCK_FOCUS_FRAME = true,
+-- 		UNLOCK_FOCUS_FRAME = true,
+-- 	}
 
-	local insertMenuOptions = {
-		SELF = {
-			"LUI_ROLE_CHECK",
-			"LUI_READY_CHECK",
-		},
-	}
+-- 	local insertMenuOptions = {
+-- 		SELF = {
+-- 			"LUI_ROLE_CHECK",
+-- 			"LUI_READY_CHECK",
+-- 		},
+-- 	}
 
-	UnitPopupButtons["LUI_SET_FOCUS"] = {
-		text = L["Type %s to Set Focus"]:format(SLASH_FOCUS1),
-		tooltipText = L["Blizzard does not support right-click focus"],
-		dist = 0,
-	}
-	UnitPopupButtons["LUI_CLEAR_FOCUS"] = {
-		text = L["Type %s to Clear Focus"]:format(SLASH_CLEARFOCUS1),
-		tooltipText = L["Blizzard does not support right-click focus"],
-		dist = 0,
-	}
-	UnitPopupButtons["LUI_ROLE_CHECK"] = {
-		text = ROLE_POLL,
-		tooltipText = L["Initiate a role check"],
-		dist = 0,
-	}
-	UnitPopupButtons["LUI_READY_CHECK"] = {
-		text = READY_CHECK,
-		tooltipText = L["Initiate a ready check"],
-		dist = 0,
-	}
+-- 	-- UnitPopupButtons["LUI_SET_FOCUS"] = {
+-- 	-- 	text = L["Type %s to Set Focus"]:format(SLASH_FOCUS1),
+-- 	-- 	tooltipText = L["Blizzard does not support right-click focus"],
+-- 	-- 	dist = 0,
+-- 	-- }
+-- 	-- UnitPopupButtons["LUI_CLEAR_FOCUS"] = {
+-- 	-- 	text = L["Type %s to Clear Focus"]:format(SLASH_CLEARFOCUS1),
+-- 	-- 	tooltipText = L["Blizzard does not support right-click focus"],
+-- 	-- 	dist = 0,
+-- 	-- }
+-- 	-- UnitPopupButtons["LUI_ROLE_CHECK"] = {
+-- 	-- 	text = ROLE_POLL,
+-- 	-- 	tooltipText = L["Initiate a role check"],
+-- 	-- 	dist = 0,
+-- 	-- }
+-- 	-- UnitPopupButtons["LUI_READY_CHECK"] = {
+-- 	-- 	text = READY_CHECK,
+-- 	-- 	tooltipText = L["Initiate a ready check"],
+-- 	-- 	dist = 0,
+-- 	-- }
 
-	hooksecurefunc("UnitPopup_OnClick", function(self)
-		local button = self.value
-		if button == "LUI_ROLE_CHECK" then
-			InitiateRolePoll()
-		elseif button == "LUI_READY_CHECK" then
-			DoReadyCheck()
-		end
-	end)
+-- 	-- hooksecurefunc("UnitPopup_OnClick", function(self)
+-- 	-- 	local button = self.value
+-- 	-- 	if button == "LUI_ROLE_CHECK" then
+-- 	-- 		InitiateRolePoll()
+-- 	-- 	elseif button == "LUI_READY_CHECK" then
+-- 	-- 		DoReadyCheck()
+-- 	-- 	end
+-- 	-- end)
 
-	hooksecurefunc("UnitPopup_HideButtons", function()
-		local dropdownMenu = UIDROPDOWNMENU_INIT_MENU
-		local inParty, inRaid, inBG, isLeader, isAssist = GetNumSubgroupMembers() > 0, GetNumGroupMembers() > 0, UnitInBattleground("player"), UnitIsGroupLeader("unit" or "player name"), UnitIsGroupAssistant("unit" or "player name")
-		if inRaid then
-			inParty = true
-		end
+-- 	-- hooksecurefunc("UnitPopup_HideButtons", function()
+-- 	-- 	local dropdownMenu = UIDROPDOWNMENU_INIT_MENU
+-- 	-- 	local inParty, inRaid, inBG, isLeader, isAssist = GetNumSubgroupMembers() > 0, GetNumGroupMembers() > 0, UnitInBattleground("player"), UnitIsGroupLeader("unit" or "player name"), UnitIsGroupAssistant("unit" or "player name")
+-- 	-- 	if inRaid then
+-- 	-- 		inParty = true
+-- 	-- 	end
 
-		for i, v in ipairs(UnitPopupMenus[UIDROPDOWNMENU_MENU_VALUE] or UnitPopupMenus[dropdownMenu.which]) do
-			if v == "LUI_ROLE_CHECK" or v == "LUI_READY_CHECK" then
-				if (not isLeader and not isAssist) or inBG or (not inParty and not inRaid) then
-					UnitPopupShown[UIDROPDOWNMENU_MENU_LEVEL][i] = 0
-				end
-			end
-		end
-	end)
+-- 	-- 	for i, v in ipairs(UnitPopupMenus[UIDROPDOWNMENU_MENU_VALUE] or UnitPopupMenus[dropdownMenu.which]) do
+-- 	-- 		if v == "LUI_ROLE_CHECK" or v == "LUI_READY_CHECK" then
+-- 	-- 			if (not isLeader and not isAssist) or inBG or (not inParty and not inRaid) then
+-- 	-- 				UnitPopupShown[UIDROPDOWNMENU_MENU_LEVEL][i] = 0
+-- 	-- 			end
+-- 	-- 		end
+-- 	-- 	end
+-- 	-- end)
 
-	local dropdown = CreateFrame("Frame", "LUI_UnitFrame_DropDown", UIParent, "UIDropDownMenuTemplate")
-	--UnitPopupFrames[#UnitPopupFrames+1] = "LUI_UnitFrame_DropDown"
+-- 	local dropdown = CreateFrame("Frame", "LUI_UnitFrame_DropDown", UIParent, "UIDropDownMenuTemplate")
+-- 	--UnitPopupFrames[#UnitPopupFrames+1] = "LUI_UnitFrame_DropDown"
 
-	local function getMenuUnit(unit)
-		if unit == "focus" then return "FOCUS" end
+-- 	local function getMenuUnit(unit)
+-- 		if unit == "focus" then return "FOCUS" end
 
-		if UnitIsUnit(unit, "player") then return "SELF" end
+-- 		if UnitIsUnit(unit, "player") then return "SELF" end
 
-		if UnitIsUnit(unit, "vehicle") then return "VEHICLE" end
+-- 		if UnitIsUnit(unit, "vehicle") then return "VEHICLE" end
 
-		if UnitIsUnit(unit, "pet") then return "PET" end
+-- 		if UnitIsUnit(unit, "pet") then return "PET" end
 
-		if not UnitIsPlayer(unit) then return "TARGET" end
+-- 		if not UnitIsPlayer(unit) then return "TARGET" end
 
-		local id = UnitInRaid(unit)
-		if id then
-			return "RAID_PLAYER", id
-		end
+-- 		local id = UnitInRaid(unit)
+-- 		if id then
+-- 			return "RAID_PLAYER", id
+-- 		end
 
-		if UnitInParty(unit) then
-			return "PARTY"
-		end
+-- 		if UnitInParty(unit) then
+-- 			return "PARTY"
+-- 		end
 
-		return "PLAYER"
-	end
+-- 		return "PLAYER"
+-- 	end
 
-	local unitDropDownMenus = {}
-	local function getUnitDropDownMenu(unit)
-		local menu = unitDropDownMenus[unit]
-		if menu then return menu end
+-- 	local unitDropDownMenus = {}
+-- 	local function getUnitDropDownMenu(unit)
+-- 		local menu = unitDropDownMenus[unit]
+-- 		if menu then return menu end
 
-		if not UnitPopupMenus then
-			unitDropDownMenus[unit] = unit
-			return unit
-		end
+-- 		if not UnitPopupMenus then
+-- 			unitDropDownMenus[unit] = unit
+-- 			return unit
+-- 		end
 
-		local data = UnitPopupMenus[unit]
-		if not data then
-			unitDropDownMenus[unit] = unit
-			return unit
-		end
+-- 		local data = UnitPopupMenus[unit]
+-- 		if not data then
+-- 			unitDropDownMenus[unit] = unit
+-- 			return unit
+-- 		end
 
-		local found = false
-		for _, v in pairs(data) do
-			if removeMenuOptions[v] then
-				found = true
-				break
-			end
-		end
+-- 		local found = false
+-- 		for _, v in pairs(data) do
+-- 			if removeMenuOptions[v] then
+-- 				found = true
+-- 				break
+-- 			end
+-- 		end
 
-		local insert = insertMenuOptions[unit]
+-- 		local insert = insertMenuOptions[unit]
 
-		if not found and not insert then -- nothing to add or remove
-			unitDropDownMenus[unit] = unit
-			return unit
-		end
+-- 		if not found and not insert then -- nothing to add or remove
+-- 			unitDropDownMenus[unit] = unit
+-- 			return unit
+-- 		end
 
-		local newData = {}
-		for _, v in ipairs(data) do
-			local blacklisted = removeMenuOptions[v]
-			if not blacklisted then
-				if insert and v == "CANCEL" then
-					for _, extra in ipairs(insert) do
-						tinsert(newData, extra)
-					end
-				end
-				tinsert(newData, v)
-			elseif blacklisted ~= true then
-				tinsert(newData, blacklisted)
-			end
-		end
+-- 		local newData = {}
+-- 		for _, v in ipairs(data) do
+-- 			local blacklisted = removeMenuOptions[v]
+-- 			if not blacklisted then
+-- 				if insert and v == "CANCEL" then
+-- 					for _, extra in ipairs(insert) do
+-- 						tinsert(newData, extra)
+-- 					end
+-- 				end
+-- 				tinsert(newData, v)
+-- 			elseif blacklisted ~= true then
+-- 				tinsert(newData, blacklisted)
+-- 			end
+-- 		end
 
-		local newMenuName = "LUI_" .. unit
-		UnitPopupMenus[newMenuName] = newData
-		unitDropDownMenus[unit] = newMenuName
-		return newMenuName
-	end
+-- 		local newMenuName = "LUI_" .. unit
+-- 		UnitPopupMenus[newMenuName] = newData
+-- 		unitDropDownMenus[unit] = newMenuName
+-- 		return newMenuName
+-- 	end
 
-	local dropdown_unit
-	UIDropDownMenu_Initialize(dropdown, function(frame)
-		if not dropdown_unit then return end
+-- 	local dropdown_unit
+-- 	UIDropDownMenu_Initialize(dropdown, function(frame)
+-- 		if not dropdown_unit then return end
 
-		local unit, id = getMenuUnit(dropdown_unit)
-		if unit then
-			local menu = getUnitDropDownMenu(unit)
-			UnitPopup_ShowMenu(frame, menu, dropdown_unit, nil, id)
-		end
-	end, "MENU")
+-- 		local unit, id = getMenuUnit(dropdown_unit)
+-- 		if unit then
+-- 			local menu = getUnitDropDownMenu(unit)
+-- 			UnitPopup_ShowMenu(frame, menu, dropdown_unit, nil, id)
+-- 		end
+-- 	end, "MENU")
 
-	menu = function(self, unit)
-		dropdown_unit = unit
-		ToggleDropDownMenu(1, nil, dropdown, "cursor")
-	end
-end
+-- 	menu = function(self, unit)
+-- 		dropdown_unit = unit
+-- 		ToggleDropDownMenu(1, nil, dropdown, "cursor")
+-- 	end
+-- end
 
 ------------------------------------------------------------------------
 --	Dont edit this if you dont know what you are doing!
