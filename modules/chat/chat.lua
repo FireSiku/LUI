@@ -626,6 +626,20 @@ end
 function module:SetItemRef(link, text, button, chatFrame)
 	if IsAltKeyDown() and strsub(link, 1, 6) == "player" then
 		C_PartyInfo.InviteUnit(link:match("player:([^:]+)"))
+		if ChatEdit_GetActiveWindow() then
+        	ChatEdit_OnEscapePressed(ChatEdit_GetActiveWindow())
+        end
+		return false
+	end
+	return true
+end
+
+function module:SetHyperlink(frame, link, ...)
+	if IsAltKeyDown() and strsub(link, 1, 6) == "player" then
+		C_PartyInfo.InviteUnit(link:match("player:([^:]+)"))
+		if ChatEdit_GetActiveWindow() then
+        	ChatEdit_OnEscapePressed(ChatEdit_GetActiveWindow())
+        end
 		return
 	end
 
@@ -637,7 +651,7 @@ function module:SetItemRef(link, text, button, chatFrame)
 		return
 	end
 
-	return self.hooks.SetItemRef(link, text, button, chatFrame)
+	return self.hooks[frame].SetHyperlink(frame, link, ...)
 end
 
 function module:AddMessage(frame, text, ...)
@@ -883,9 +897,10 @@ function module:OnEnable()
 
 	positionChatFrame()
 
+	self:RawHook(_G.ItemRefTooltip, "SetHyperlink", true)
 	self:SecureHook("FCF_SavePositionAndDimensions")
 	self:SecureHook("FCF_OpenTemporaryWindow")
-	self:RawHook("SetItemRef", true)
+	self:SecureHook("SetItemRef")
 
 	for i, name in ipairs(CHAT_FRAMES) do
 		local frame = _G[name]
