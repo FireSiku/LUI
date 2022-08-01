@@ -1198,7 +1198,8 @@ local function getOptions()
 									type = "execute",
 									name = "Restore Details!",
 									func = function()
-										LUICONFIG.Versions.details = nil
+										LUI.db.global.luiconfig[ProfileName].Versions.Details = nil
+										LUI.ForceDetails = true
 										LUI:InstallDetails()
 										LUI:GetModule("Panels"):ApplyBackground("Dps")
 										--StaticPopup_Show("RELOAD_UI")

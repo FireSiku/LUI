@@ -4,7 +4,6 @@ LUI.Versions.details = 5
 
 function LUI:InstallDetails()
    
-   -- HACK: Temporarily disable Details integration until they can be sorted.
    if (not IsAddOnLoaded("Details")) then
       return
    end
@@ -18,6 +17,11 @@ function LUI:InstallDetails()
    local Details = _G._detalhes
    local instance = Details:GetInstance(1)
    
+   -- Do not install Details if "Use On All Characters" has been configured to prevent overwriting data
+   if Details.always_use_profile and not LUI.ForceDetails then
+      return
+   end
+
    if (instance) then
       
       -- Set the skin to Default and then apply the New Gray.
@@ -75,7 +79,8 @@ function LUI:InstallDetails()
 	   panelDB.profile.Dps.Anchor = "DetailsBaseFrame1"
 	   panelDB.profile.Dps.Additional = "DetailsRowFrame1"
 	   panelDB.profile.Dps.OffsetY = 0
-	  
+      
+      LUI.db.global.luiconfig[ProfileName].Versions.details = LUI.Versions.details
    end
    
 end
