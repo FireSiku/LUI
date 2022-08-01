@@ -71,7 +71,7 @@ end
 function module:SetMicroMenu()
 	local micro_r, micro_g, micro_b = unpack(Themes.db.profile.micromenu)
 
-	LUI.MicroMenu.Anchor = LUI:CreateMeAFrame("Frame", nil, UIParent, 128, 128, 1, "HIGH", 2, "TOPRIGHT", UIParent, "TOPRIGHT", -150, 6, 1)
+	LUI.MicroMenu.Anchor = LUI:CreateMeAFrame("Frame", nil, UIParent, 128, 128, 1, "MEDIUM", 2, "TOPRIGHT", UIParent, "TOPRIGHT", -150, 6, 1)
 	LUI.MicroMenu.Anchor:SetBackdrop({
 		bgFile = fdir..(Panels.db.profile.MicroMenu.AlwaysShow and "micro_anchor3" or "micro_anchor"),
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -104,7 +104,7 @@ function module:SetMicroMenu()
 	LUI.MicroMenu.Button.BG:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.MicroMenu.Button.BG:SetFrameStrata("BACKGROUND")
 
-	LUI.MicroMenu.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Anchor, 85, 22, 1, "HIGH", 2, "TOP", LUI.MicroMenu.Anchor, "TOP", 0, 0, 1)
+	LUI.MicroMenu.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.Anchor, 85, 22, 1, "MEDIUM", 2, "TOP", LUI.MicroMenu.Anchor, "TOP", 0, 0, 1)
 	LUI.MicroMenu.Clicker:RegisterForClicks("AnyUp")
 
 	LUI.MicroMenu.Clicker:SetScript("OnClick", function(self)
@@ -182,7 +182,7 @@ function module:SetMicroMenu()
 		end
 	end)
 
-	LUI.MicroMenu.ButtonRight = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Anchor, 128, 128, 1, "HIGH", 1, "RIGHT", LUI.MicroMenu.Anchor, "RIGHT", 47, -3, 1)
+	LUI.MicroMenu.ButtonRight = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Anchor, 128, 128, 1, "MEDIUM", 1, "RIGHT", LUI.MicroMenu.Anchor, "RIGHT", 47, -3, 1)
 	LUI.MicroMenu.ButtonRight:SetBackdrop({
 		bgFile = fdir.."mm_button_right",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -192,7 +192,7 @@ function module:SetMicroMenu()
 	LUI.MicroMenu.ButtonRight:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
 	LUI.MicroMenu.ButtonRight:SetBackdropBorderColor(0, 0, 0, 0)
 
-	LUI.MicroMenu.ButtonRight.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.ButtonRight, 40, 12, 1, "HIGH", 2, "TOP", LUI.MicroMenu.ButtonRight, "TOP", 22, -5, 1)
+	LUI.MicroMenu.ButtonRight.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.ButtonRight, 40, 12, 1, "MEDIUM", 2, "TOP", LUI.MicroMenu.ButtonRight, "TOP", 22, -5, 1)
 	LUI.MicroMenu.ButtonRight.Clicker:RegisterForClicks("AnyUp")
 
 	LUI.MicroMenu.ButtonRight.Clicker:SetScript("OnClick", function(self, button)
@@ -235,7 +235,7 @@ function module:SetMicroMenu()
 		LUI.MicroMenu.ButtonRight:SetBackdropBorderColor(0, 0, 0, 0)
 	end)
 
-	LUI.MicroMenu.ButtonLeft = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Anchor, 128, 128, 1, "HIGH", 1, "LEFT", LUI.MicroMenu.Anchor, "LEFT", -47, -3, 1)
+	LUI.MicroMenu.ButtonLeft = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Anchor, 128, 128, 1, "MEDIUM", 1, "LEFT", LUI.MicroMenu.Anchor, "LEFT", -47, -3, 1)
 	LUI.MicroMenu.ButtonLeft:SetBackdrop({
 		bgFile = fdir.."mm_button_left",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -245,7 +245,7 @@ function module:SetMicroMenu()
 	LUI.MicroMenu.ButtonLeft:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
 	LUI.MicroMenu.ButtonLeft:SetBackdropBorderColor(0, 0, 0, 0)
 
-	LUI.MicroMenu.ButtonLeft.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.ButtonLeft, 40, 12, 1, "HIGH", 2, "TOP", LUI.MicroMenu.ButtonLeft, "TOP", -22, -5, 1)
+	LUI.MicroMenu.ButtonLeft.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.ButtonLeft, 40, 12, 1, "MEDIUM", 2, "TOP", LUI.MicroMenu.ButtonLeft, "TOP", -22, -5, 1)
 	LUI.MicroMenu.ButtonLeft.Clicker:RegisterForClicks("AnyUp")
 
 	LUI.MicroMenu.ButtonLeft.Clicker:SetScript("OnClick", function(self, button)
