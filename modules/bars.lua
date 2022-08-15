@@ -100,11 +100,10 @@ do
 		local show = not bar:IsShown()
 		if force then show = force end
 
-		local parent = bar:GetParent()
-		if not parent then parent = LUIExtraActionBar end
+		local parent = LUIExtraActionBar
+		if not parent.SetBackdrop then Mixin(parent, BackdropTemplateMixin) end
 
 		if show then
-			if not parent.SetBackdrop then Mixin(parent, BackdropTemplateMixin) end
 			parent:SetBackdrop({bgFile = "Interface\\Tooltips\\UI-Tooltip-Background"})
 			bar.button:Show()
 			bar:Show()
@@ -115,7 +114,9 @@ do
 		else
 			if parent.SetBackdrop then parent:SetBackdrop({}) end
 			bar.intro:Stop()
-			bar:Hide()
+			if not HasExtraActionBar() then
+				bar:Hide()
+			end
 		end
 	end
 end
