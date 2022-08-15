@@ -862,26 +862,36 @@ end
 
 function module:SetExtraActionBar()
 	local bar = LUIExtraActionBar
+	local eadb = db.ExtraActionBar
 	if not bar then
 		bar = CreateFrame("Frame", "LUIExtraActionBar", UIParent, "SecureHandlerStateTemplate")
-		bar:SetHeight(52)
-		bar:SetWidth(52)
-		bar.content = ExtraActionBarFrame
+		bar:SetSize(128, 128)
 
+		bar.content = ExtraAbilityContainer
 		bar.content.ignoreFramePositionManager = true
-
+		bar.content:SetToplevel(false)
 		bar.content:SetParent(bar)
+
 		bar.content:ClearAllPoints()
-		bar.content:SetPoint("CENTER", bar, "CENTER", 0, 0)
+		bar.content:SetPoint("CENTER", bar, "TOPLEFT", 64, -64)
+		-- module:SecureHook("ExtraActionBar_Update", function()
+		-- 	if HasExtraActionBar() then
+		-- 		ExtraActionBarFrame.button.style:SetShown(not eadb.HideTextures)
+		-- 	end
+		-- end)
+	
+		module:SecureHook(ZoneAbilityFrame, "UpdateDisplayedZoneAbilities", function()
+		 	ZoneAbilityFrame.Style:SetShown(not eadb.HideTextures)
+		end)
 	end
 
-	local scale = db.ExtraActionBar.Scale
 	bar:ClearAllPoints()
-	bar:SetPoint(db.ExtraActionBar.Point, UIParent, db.ExtraActionBar.Point, db.ExtraActionBar.X / scale, db.ExtraActionBar.Y / scale)
-	bar:SetScale(scale)
+	bar:SetPoint(eadb.Point, UIParent, eadb.Point, eadb.X / eadb.Scale, eadb.Y / eadb.Scale)
+	bar:SetScale(eadb.Scale)
 
-	ShowIf(bar.content.button.style, not db.ExtraActionBar.HideTextures)
-	ShowIf(bar, db.ExtraActionBar.Enable)
+	ShowIf(ExtraActionBarFrame.button.style, not eadb.HideTextures)
+	ShowIf(ZoneAbilityFrame.Style, not eadb.HideTextures)
+	ShowIf(bar, eadb.Enable)
 end
 
 function module:HideBlizzard()
@@ -1684,9 +1694,9 @@ module.defaults = {
 		ExtraActionBar = {
 			Enable = true,
 			X = 0, -- -314,
-			Y = 245, -- 41,
+			Y = 145, -- 41,
 			Point = "BOTTOM",
-			Scale = 0.85,
+			Scale = 0.9,
 			HideTextures = false,
 		},
 	},
