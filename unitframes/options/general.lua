@@ -58,6 +58,7 @@ local barKeys = {
 	WarlockBar = "ClassIcons",
 	ArcaneCharges = "ClassIcons",
 	Chi = "ClassIcons",
+	Totems = "Totems",
 }
 
 local barNames = {
@@ -68,6 +69,7 @@ local barNames = {
 	ArcaneCharges = "Arcane Charges",
 	WarlockBar = "Warlock Bars",
 	Chi = "Chi",
+	Totems = "Totem Bar",
 }
 
 local _, class = UnitClass("player")
@@ -353,6 +355,7 @@ function module:CreatePlayerBarOptions(barType, order)
 		Padding = (barType ~= "Eclipse") and self:NewSlider("Padding", "Choose the Padding between your "..barName.." Elements.", 9, 1, 10, 1, applySettings, nil, nil, disabledFunc) or nil,
 		Texture = self:NewSelect("Texture", "Choose the "..barName.." Texture.", 10, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc),
 		Multiplier = (barType == "Totems") and self:NewSlider("Multiplier", "Choose the "..barName.." Background Multiplier.", 11, 0, 1, 0.01, applySettings, nil, nil, disabledFunc) or nil,
+		IconScale = (barType == "Totems") and self:NewSlider("Icon Scale", "Choose the size multiplier for the totem icon. Values above 100% will make the icon go above the bar's height.", 12, 0.5, 3, 0.05, applySettings, nil, nil, disabledFunc) or nil,
 	})
 
 	return options
@@ -1141,6 +1144,7 @@ function module:CreateUnitOptions(unit, order)
 			ArcaneCharges = (class == "MAGE" and unit == "Player") and self:CreatePlayerBarOptions("ArcaneCharges", 16) or nil,
 			Chi = ((class == "MONK" or class == "DRUID" or class == "ROGUE") and unit == "Player") and self:CreatePlayerBarOptions("Chi", 16) or nil,
 			ComboPoints = (unit == "Target") and self:CreateComboPointsOptions(18) or nil,
+			Totems = ((class == "SHAMAN") and unit == "Player") and self:CreatePlayerBarOptions("Totems", 19) or nil,
 		}),
 		Texts = self:NewGroup("Texts", 4, "tab", nil, disabledFunc, {
 			Name = (unit ~= "Raid") and self:CreateNameTextOptions(unit, 1) or self:CreateRaidNameTextOptions(1),

@@ -1084,60 +1084,70 @@ local HolyPowerOverride = function(self, event, unit, powerType)
 	 end
 end
 
+local function TotemsUpdate(self, elapsed)
+	self.total = elapsed + (self.total or 0)
+	if self.total >= 0.02 then
+		self.total = 0
+		haveTotem, name, startTime, duration, totemIcon = GetTotemInfo(self.slot)
+		if (((GetTime() - startTime) == 0) or ( duration == 0 )) then
+			self:SetValue(0)
+		else
+			self:SetValue(1 - ((GetTime() - startTime) / duration))
+		end
+	end
+end
+
 local TotemsOverride = function(self, event, slot)
 	if slot > MAX_TOTEMS then return end
 
-	local totem = self.Totems
-	local total = 0
-	local delay = 0.01
+	local totem = self.Totems[slot]
 
 	haveTotem, name, startTime, duration, totemIcon = GetTotemInfo(slot)
 
 	local color = module.colors.totems[slot] or colors[slot]
-	totem[slot]:SetStatusBarColor(unpack(color))
-	totem[slot]:SetValue(0)
-	
+	totem:SetStatusBarColor(unpack(color))
+	totem:SetValue(0)
+
 	-- Multipliers
-	if (totem[slot].bg.multiplier) then
-		local mu = totem[slot].bg.multiplier
-		local r, g, b = totem[slot]:GetStatusBarColor()
+	if (totem.bg.multiplier) then
+		local mu = totem.bg.multiplier
+		local r, g, b = totem:GetStatusBarColor()
 		r, g, b = r*mu, g*mu, b*mu
-		totem[slot].bg:SetVertexColor(r, g, b) 
+		totem.bg:SetVertexColor(r, g, b) 
 	end
-	
-	totem[slot].ID = slot
 
 	if(haveTotem) then
 		
-		if totem[slot].Name then
-			totem[slot].Name:SetText(Abbrev(name))
-		end					
+		if totem.Name then
+			totem.Name:SetText(Abbrev(name))
+		end
 		if(duration >= 0) then	
-			totem[slot]:SetValue(1 - ((GetTime() - startTime) / duration))	
+			totem:SetValue(1 - ((GetTime() - startTime) / duration))
 			-- Status bar update
-			totem[slot]:SetScript("OnUpdate",function(self,elapsed)
-					total = total + elapsed
-					if total >= delay then
-						total = 0
-						haveTotem, name, startTime, duration, totemIcon = GetTotemInfo(self.ID)
-							if (((GetTime() - startTime) == 0) or ( duration == 0 )) then
-								self:SetValue(0)
-							else
-								self:SetValue(1 - ((GetTime() - startTime) / duration))
-							end
-					end
-				end)					
+			totem:SetScript("OnUpdate", TotemsUpdate)
 		else
 			-- There's no need to update because it doesn't have any duration
-			totem[slot]:SetScript("OnUpdate",nil)
-			totem[slot]:SetValue(0)
-		end 
+			totem:SetScript("OnUpdate",nil)
+			totem:SetValue(0)
+		end
+		if totemIcon then
+			totem.icon:SetTexture(totemIcon)
+		end
 	else
 		-- No totem = no time 
-		if totem[slot].Name then
-			totem[slot].Name:SetText(" ")
+		if totem.Name then
+			totem.Name:SetText(" ")
 		end
-		totem[slot]:SetValue(0)
+		totem:SetValue(0)
+	end
+
+	for i = 1, MAX_TOTEMS do
+		local currTotem = self.Totems[i]
+		if GetTotemInfo(i) then
+			currTotem:Show()
+		else
+			currTotem:Hide()
+		end
 	end
 
 end
@@ -2170,6 +2180,78 @@ module.funcs = {
 			end
 		end
 	end,
+	Totems = function(self, unit, oufdb)
+		if not self.Totems then
+			self.Totems = CreateFrame("Frame", nil, self)
+			self.Totems:SetFrameLevel(6)
+
+			for i = 1, MAX_TOTEMS do
+				local bar = CreateFrame("StatusBar", nil, self.Totems, "BackdropTemplate")
+				bar:SetBackdrop(backdrop)
+				bar:SetBackdropColor(0, 0, 0)
+				bar:SetMinMaxValues(0, 1)
+				bar.slot = i
+
+				bar.bg = bar:CreateTexture(nil, "BORDER")
+				bar.bg:SetAllPoints(bar)
+				bar.bg:SetTexture(normTex)
+
+				bar.icon = bar:CreateTexture(nil, "OVERLAY")
+				bar.icon:SetPoint("BOTTOMRIGHT", bar, "BOTTOMRIGHT")
+				bar.icon:SetSize(oufdb.Bars.Totems.Height * oufdb.Bars.Totems.IconScale, oufdb.Bars.Totems.Height * oufdb.Bars.Totems.IconScale)
+
+				local btn = CreateFrame("Button", nil, bar, "SecureActionButtonTemplate")
+				btn:RegisterForClicks("AnyUp")
+				btn:SetAllPoints(bar)
+				btn:SetAttribute("unit", "player")
+				btn:SetAttribute("type", "destroytotem")
+				btn:SetAttribute("totem-slot", i)
+
+				self.Totems[i] = bar
+				self.Totems[i].btn = btn
+			end
+			
+			
+			self.Totems.FrameBackdrop = CreateFrame("Frame", nil, self.Totems, "BackdropTemplate")
+			self.Totems.FrameBackdrop:SetPoint("TOPLEFT", self.Totems, "TOPLEFT", -3.5, 3)
+			self.Totems.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.Totems, "BOTTOMRIGHT", 3.5, -3)
+			self.Totems.FrameBackdrop:SetFrameStrata("BACKGROUND")
+			self.Totems.FrameBackdrop:SetBackdrop({
+				edgeFile = glowTex, edgeSize = 5,
+				insets = {left = 3, right = 3, top = 3, bottom = 3}
+			})
+			self.Totems.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
+			self.Totems.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
+
+			self.Totems.Override = TotemsOverride
+		end
+
+		local x = oufdb.Bars.Totems.Lock and 0 or oufdb.Bars.Totems.X
+		local y = oufdb.Bars.Totems.Lock and 0.5 or oufdb.Bars.Totems.Y
+
+		self.Totems:ClearAllPoints()
+		self.Totems:SetSize(oufdb.Bars.Totems.Width, oufdb.Bars.Totems.Height)
+		self.Totems:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
+
+		local totemPoints = {0, 1, 2, 3}
+
+		for i = 1, MAX_TOTEMS do
+			local bar = self.Totems[i]
+			bar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Totems.Texture))
+			bar:SetHeight(oufdb.Bars.Totems.Height)
+			bar:SetWidth((oufdb.Bars.Totems.Width - 3 * oufdb.Bars.Totems.Padding) / 4)
+			bar.icon:SetSize(oufdb.Bars.Totems.Height * oufdb.Bars.Totems.IconScale, oufdb.Bars.Totems.Height * oufdb.Bars.Totems.IconScale)
+
+			bar:ClearAllPoints()
+			if totemPoints[i] == 0 then
+				bar:SetPoint("LEFT", self.Totems, "LEFT", 0, 0)
+			else
+				bar:SetPoint("LEFT", self.Totems[totemPoints[i]], "RIGHT", oufdb.Bars.Totems.Padding, 0)
+			end
+
+			bar.bg.multiplier = oufdb.Bars.Totems.Multiplier
+		end
+	end,
 	ClassIcons = function(self, unit, oufdb)
 		local _, class = UnitClass("player")
 		local BASE_COUNT = {
@@ -3110,6 +3192,7 @@ local SetStyle = function(self, unit, isSingle)
 			if oufdb.Bars.Chi.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
 		elseif class == "SHAMAN" then
 			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
+			if oufdb.Bars.Totems.Enable then module.funcs.Totems(self, unit, oufdb) end
 		elseif class == "MAGE" then
 			if oufdb.Bars.ArcaneCharges.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
 		elseif class == "WARLOCK" then 
