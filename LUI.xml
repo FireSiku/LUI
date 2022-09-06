@@ -1,25 +1,27 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
 
-	<!-- Initialize LUI -->
+	<!-- Initialize LUI API -->
 	<Include file="locale\locale.xml"/>
 	<Script file="init.lua"/>
-	<Script file="tools\profiler.lua"/>
-	<Script file="debug.lua"/>
-    <Script file="tools\outofcombatwrapper.lua"/>
-	<Script file="devapi.lua"/>
-	<Script file="tools\restore.lua"/>
-    <Script file="tools\hideblizzard.lua"/>
-
+	<Script file="api\profiler.lua"/>
+	<Script file="api\debug.lua"/>
+    <Script file="api\outofcombatwrapper.lua"/>
+	<Script file="api\devapi.lua"/>
+	<Script file="api\restore.lua"/>
+    <Script file="scripts\hideblizzard.lua"/>
+	<Script file="api\frameidentifier.lua"/>
+	
 	<!-- Initialize oUF -->
-	<Include file="unitframes\core\ouf.xml"/>
+	<Include file="api\oUF\ouf.xml"/>
 
 	<!-- Core + Basic Modules -->
 	<Script file="LUI.lua"/>
-	<Script file="modules\themes.lua"/>
-	<Script file="modules\panels.lua"/>
-	<Script file="modules\frames.lua"/>
-	<Script file="modules\fader.lua"/>
-	<Script file="modules\bars.lua"/>
+	<Script file="modules\artwork\themes.lua"/>
+	<Script file="modules\artwork\panels.lua"/>
+	<Script file="modules\artwork\frames.lua"/>
+	<Script file="modules\artwork\artwork.lua"/>
+	<Script file="modules\fader\fader.lua"/>
+	<Script file="modules\bars\bars.lua"/>
 
 	<!-- Addon Installation Routines -->
 	<Script file="addons\bartender.lua"/>
@@ -31,29 +33,27 @@
 	<!-- Extended Modules -->
 	<Include file="modules\auras\auras.xml"/>
 	<Include file="modules\chat\chat.xml"/>
-	<Script file="modules\minimap.lua"/>
-	<Script file="modules\bags.lua"/>
+	<Script file="modules\minimap\minimap.lua"/>
+	<Script file="modules\bags\bags.lua"/>
     <Include file="modules\cooldown\cooldown.xml"/>
-	<Script file="modules\tooltip.lua"/>
-	<Script file="modules\datatext.lua"/>
-	<Script file="modules\faq.lua"/>
-	<Script file="modules\micromenu.lua"/>
-	<Include file="modules\raidmenu.xml"/>
-	<Script file="modules\threatbar.lua"/>
-	<Script file="modules\merchant.lua"/>
-	<Script file="modules\removethatbuff.lua"/>
-	<Script file="modules\mirrorbar.lua"/>
-	<Script file="modules\artwork.lua"/>
+	<Script file="modules\tooltip\tooltip.lua"/>
+	<Script file="modules\infotext\datatext.lua"/>
+	<Script file="modules\uielements\faq.lua"/>
+	<Script file="modules\micromenu\micromenu.lua"/>
+	<Include file="modules\raidmenu\raidmenu.xml"/>
+	<Script file="modules\expbar\threatbar.lua"/>
+	<Script file="modules\uielements\merchant.lua"/>
+	<Script file="modules\uielements\mirrorbar.lua"/>
+	<Script file="modules\uielements\colourpicker.lua"/>
 
 	<!-- Additional Scripts -->
 	<Script file="scripts\autoinvite.lua"/>
 	<Script file="scripts\blizzoptionsmover.lua"/>
 	<Script file="scripts\blizzscale.lua"/>
-	<Script file="scripts\colourpicker.lua"/>
 	<Script file="scripts\errorhider.lua"/>
-	<Script file="scripts\frameidentifier.lua"/>
 	<Script file="scripts\talentspam.lua"/>
 	<Script file="scripts\newplayerexperience.lua"/>
+	<Script file="scripts\removethatbuff.lua"/>
 
 	<!-- Initialize Unitframes -->
 	<Include file="unitframes\templates.xml"/>
