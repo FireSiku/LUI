@@ -8,8 +8,6 @@
     <Script file="api\outofcombatwrapper.lua"/>
 	<Script file="api\devapi.lua"/>
 	<Script file="api\restore.lua"/>
-    <Script file="scripts\hideblizzard.lua"/>
-	<Script file="api\frameidentifier.lua"/>
 	
 	<!-- Initialize oUF -->
 	<Include file="api\oUF\ouf.xml"/>
@@ -54,6 +52,8 @@
 	<Script file="scripts\talentspam.lua"/>
 	<Script file="scripts\newplayerexperience.lua"/>
 	<Script file="scripts\removethatbuff.lua"/>
+	<Script file="scripts\hideblizzard.lua"/>
+	<Script file="api\frameidentifier.lua"/>
 
 	<!-- Initialize Unitframes -->
 	<Include file="unitframes\templates.xml"/>
