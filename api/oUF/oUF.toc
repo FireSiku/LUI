@@ -1,0 +1,15 @@
+## Interface: 60000
+## Title: oUF
+## Author: Haste
+## Version: 1.6.8
+## OptionalDeps: Clique
+## X-eMail: troeks@gmail.com
+## X-oUF: oUF
+## Notes: Unit frame framework. Does nothing by itself.
+## Notes-ruRU: Каркас для модификации фреймов игроков. Сам по себе не делает ничего.
+## X-Curse-Packaged-Version: v3.9.9a-776
+## X-Curse-Project-Name: LUI Core
+## X-Curse-Project-ID: lui
+## X-Curse-Repository-ID: wow/lui/mainline
+
+oUF.xml
