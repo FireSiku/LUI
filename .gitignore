@@ -17,6 +17,5 @@
 libs/
 !libs/libs.xml
 .vscode
-.luacheckrc
 CHANGES.txt
 /.vs
