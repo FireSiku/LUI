@@ -21,9 +21,9 @@ local db
 
 Profiler.TraceScope(module, "RemoveThatBuff", "LUI")
 
-local InCombatLockdown = _G.InCombatLockdown
-local CancelUnitBuff = _G.CancelUnitBuff
 local UnitAura = _G.UnitAura
+local CancelUnitBuff = _G.CancelUnitBuff
+local InCombatLockdown = _G.InCombatLockdown
 
 module.defaults = {
 	profile = {

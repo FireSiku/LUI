@@ -2,16 +2,18 @@ local addonname, LUI = ...
 local script = LUI:NewScript("AutoInvite", "AceEvent-3.0")
 local db = LUI.db.profile.General
 
-local C_FriendList = C_FriendList
 local C_BattleNet = C_BattleNet
+local C_FriendList = C_FriendList
+
 local IsInGuild = _G.IsInGuild
+local BNGetNumFriends = _G.BNGetNumFriends
 local UnitIsGroupLeader = _G.UnitIsGroupLeader
-local UnitIsGroupAssistant = _G.UnitIsGroupAssistant
-local GetNumSubgroupMembers = _G.GetNumSubgroupMembers
 local GetNumGuildMembers = _G.GetNumGuildMembers
 local GetGuildRosterInfo = _G.GetGuildRosterInfo
+local UnitIsGroupAssistant = _G.UnitIsGroupAssistant
+local GetNumSubgroupMembers = _G.GetNumSubgroupMembers
 local BNFeaturesEnabledAndConnected = _G.BNFeaturesEnabledAndConnected
-local BNGetNumFriends = _G.BNGetNumFriends
+
 local STATICPOPUP_NUMDIALOGS = _G.STATICPOPUP_NUMDIALOGS
 
 local function isFriend(name)
