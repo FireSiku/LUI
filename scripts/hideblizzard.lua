@@ -8,6 +8,25 @@ local addonname, LUI = ...
 local Blizzard = {}
 LUI.Blizzard = Blizzard
 
+local GetCVarBool = _G.GetCVarBool
+local IsAddOnLoaded = _G.IsAddOnLoaded
+local GetNumGroupMembers = _G.GetNumGroupMembers
+local GetNumSubgroupMembers = _G.GetNumSubgroupMembers
+
+local BuffFrame = _G.BuffFrame
+local ArenaEnemyFrames = _G.ArenaEnemyFrames
+local CompactPartyFrame = _G.CompactPartyFrame
+local ConsolidatedBuffs = _G.ConsolidatedBuffs
+local PlayerTalentFrame = _G.PlayerTalentFrame
+local OrderHallCommandBar = _G.OrderHallCommandBar
+local TemporaryEnchantFrame = _G.TemporaryEnchantFrame
+local GetDisplayedAllyFrames = _G.GetDisplayedAllyFrames
+local CompactRaidFrameManager = _G.CompactRaidFrameManager
+local PartyMemberFrame_UpdateMember = _G.PartyMemberFrame_UpdateMember
+local CompactPartyFrame_UpdateShown = _G.CompactPartyFrame_UpdateShown
+local CompactRaidFrameManager_GetSetting = _G.CompactRaidFrameManager_GetSetting
+local CompactRaidFrameManager_SetSetting = _G.CompactRaidFrameManager_SetSetting
+
 LibStub("AceHook-3.0"):Embed(Blizzard)
 
 local argcheck = LUI.argcheck

@@ -17,9 +17,13 @@ local Profiler = LUI.Profiler
 -- ####################################################################################################################
 -- ##### Database and defaults shortcuts ##############################################################################
 -- ####################################################################################################################
-local db, dbd
+local db
 
 Profiler.TraceScope(module, "RemoveThatBuff", "LUI")
+
+local InCombatLockdown = _G.InCombatLockdown
+local CancelUnitBuff = _G.CancelUnitBuff
+local UnitAura = _G.UnitAura
 
 module.defaults = {
 	profile = {
@@ -66,6 +70,7 @@ end
 
 function module:LoadOptions()
 	local buffList = {}
+	local removeBuffsKey
 
 	local disabled = {
 		Enable = function() return not db.Enable end,
@@ -112,7 +117,7 @@ function module:LoadOptions()
 end
 
 function module:OnInitialize()
-	db, dbd = LUI:NewNamespace(self, true)
+	db = LUI:NewNamespace(self, true)
 end
 
 function module:OnEnable()

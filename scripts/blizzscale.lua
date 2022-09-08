@@ -1,8 +1,8 @@
 local addonname, LUI = ...
 local script = LUI:NewScript("BlizzScale", "AceEvent-3.0", "AceHook-3.0")
 
-local IsAddOnLoaded = IsAddOnLoaded
-local _G = _G
+local IsAddOnLoaded = _G.IsAddOnLoaded
+local InCombatLockdown = _G.InCombatLockdown
 
 local blizzFrames = {
 	--UI Frames

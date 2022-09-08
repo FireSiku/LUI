@@ -1,5 +1,18 @@
 local addonname, LUI = ...
 local script = LUI:NewScript("AutoInvite", "AceEvent-3.0")
+local db = LUI.db.profile.General
+
+local C_FriendList = C_FriendList
+local C_BattleNet = C_BattleNet
+local IsInGuild = _G.IsInGuild
+local UnitIsGroupLeader = _G.UnitIsGroupLeader
+local UnitIsGroupAssistant = _G.UnitIsGroupAssistant
+local GetNumSubgroupMembers = _G.GetNumSubgroupMembers
+local GetNumGuildMembers = _G.GetNumGuildMembers
+local GetGuildRosterInfo = _G.GetGuildRosterInfo
+local BNFeaturesEnabledAndConnected = _G.BNFeaturesEnabledAndConnected
+local BNGetNumFriends = _G.BNGetNumFriends
+local STATICPOPUP_NUMDIALOGS = _G.STATICPOPUP_NUMDIALOGS
 
 local function isFriend(name)
 	for i = 1, C_FriendList.GetNumFriends() do
@@ -10,12 +23,9 @@ local function isFriend(name)
 end
 
 local function isGuildmate(name)
-	--[[
-	NOTES:
-	GetGuildRosterInfo() returns name as Name-Realm since 5.4.2 so
-	we need to handle that when checking for guild membership.
-	Removed reliance on strsplit as it seemed to be causing random
-	issues - and I think this provides a much more robust system.
+	--[[ NOTES:
+	GetGuildRosterInfo() returns name as Name-Realm since 5.4.2 so we need to handle that when checking for guild membership.
+	Removed reliance on strsplit as it seemed to be causing random issues - and I think this provides a much more robust system.
 	]]--
 	if not IsInGuild() then return end
 
@@ -42,17 +52,17 @@ local function isBNFriend(name)
 		local friend = C_BattleNet.GetFriendAccountInfo(i)
 		local toon = friend.gameAccountInfo
 		if toon.isOnline and toon.clientProgram == "WoW" then
-			if toon.characterName == name then 
-				return true 
+			if toon.characterName == name then
+				return true
 			end
 		end
 	end
 end
 
 local function chatcommand()
-	LUI.db.profile.General.AutoInvite = not LUI.db.profile.General.AutoInvite
+	db.AutoInvite = not db.AutoInvite
 	script:SetAutoInvite()
-	LUI:Print("AutoInvite |cff"..(LUI.db.profile.General.AutoInvite and "00FF00Enabled|r" or "FF0000Disabled|r"))
+	LUI:Print("AutoInvite |cff"..(db.AutoInvite and "00FF00Enabled|r" or "FF0000Disabled|r"))
 	if LibStub("AceConfigDialog-3.0").OpenFrames[addonname] then
 		LibStub("AceConfigRegistry-3.0"):NotifyChange(addonname)
 	end
@@ -60,11 +70,11 @@ end
 
 
 function script:SetAutoAccept()
-	self[LUI.db.profile.General.AutoAcceptInvite and "RegisterEvent" or "UnregisterEvent"](self, "PARTY_INVITE_REQUEST")
+	self[db.AutoAcceptInvite and "RegisterEvent" or "UnregisterEvent"](self, "PARTY_INVITE_REQUEST")
 end
 
 function script:SetAutoInvite()
-	self[LUI.db.profile.General.AutoInvite and "RegisterEvent" or "UnregisterEvent"](self, "CHAT_MSG_WHISPER")
+	self[db.AutoInvite and "RegisterEvent" or "UnregisterEvent"](self, "CHAT_MSG_WHISPER")
 end
 
 
@@ -82,8 +92,8 @@ function script:PARTY_INVITE_REQUEST(event, sender)
 end
 
 function script:CHAT_MSG_WHISPER(event, message, sender)
-	if (UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") or (GetNumSubgroupMembers() == 0)) and strlower(message):match(strlower(LUI.db.profile.General.AutoInviteKeyword)) then
-		if LUI.db.profile.General.AutoInviteOnlyFriend == false or (isFriend(sender) or isGuildmate(sender) or isBNFriend(sender)) then
+	if (UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") or (GetNumSubgroupMembers() == 0)) and strlower(message):match(strlower(db.AutoInviteKeyword)) then
+		if db.AutoInviteOnlyFriend == false or (isFriend(sender) or isGuildmate(sender) or isBNFriend(sender)) then
 			C_PartyInfo.InviteUnit(sender)
 		end
 	end

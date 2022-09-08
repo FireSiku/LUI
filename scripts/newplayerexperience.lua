@@ -4,22 +4,14 @@ local barMod = LUI:GetModule("Bars")
 
 local function S(x) return LUI:Scale(x) end
 
-local function moveUp(self)
-	self:ClearAllPoints()
-	self:SetPoint("CENTER", S(0), S(30))
-end
+local UnitLevel = _G.UnitLevel
+local IsAddOnLoaded = _G.IsAddOnLoaded
+local GetActionInfo = _G.GetActionInfo
+local FlyoutHasSpell = _G.FlyoutHasSpell
+local GetShapeshiftFormInfo = _G.GetShapeshiftFormInfo
 
-local function moveAway(self)
-	self:ClearAllPoints()
-	self:SetPoint("CENTER", S(-300), S(-60))
-end
-
-local function isUsingLUIBars()
-	local db = barMod.db.profile.General
-	if not (IsAddOnLoaded("Bartender4") or IsAddOnLoaded("Dominos") or IsAddOnLoaded("Macaroon")) then
-		return db.Enable
-	end 
-end
+local WorldMapFrame = _G.WorldMapFrame
+local TutorialHelper = _G.TutorialHelper
 
 local TutorialData = {}
 TutorialData.LevelAbilitiesTable = {
@@ -135,6 +127,23 @@ TutorialData.LevelAbilitiesTable = {
 	};
 }
 
+local function moveUp(self)
+	self:ClearAllPoints()
+	self:SetPoint("CENTER", S(0), S(30))
+end
+
+local function moveAway(self)
+	self:ClearAllPoints()
+	self:SetPoint("CENTER", S(-300), S(-60))
+end
+
+local function isUsingLUIBars()
+	local db = barMod.db.profile.General
+	if not (IsAddOnLoaded("Bartender4") or IsAddOnLoaded("Dominos") or IsAddOnLoaded("Macaroon")) then
+		return db.Enable
+	end
+end
+
 -- Required for tutorial to let you point to abilities.
 function script:GetActionButtonBySpellID(helper, spellID)
 	if (type(spellID) ~= "number") then return end
@@ -201,17 +210,17 @@ function script:FindEmptyButton()
 end
 
 function script:SetTutorialFrames()
-	script:SecureHook(NPE_TutorialKeyboardMouseFrame_Frame, "ShowTutorial", moveUp)
-	moveUp(NPE_TutorialKeyboardMouseFrame_Frame)
+	script:SecureHook(_G.NPE_TutorialKeyboardMouseFrame_Frame, "ShowTutorial", moveUp)
+	moveUp(_G.NPE_TutorialKeyboardMouseFrame_Frame)
 
-	script:SecureHook(NPE_TutorialSingleKey_Frame, "ShowTutorial", moveUp)
-	moveUp(NPE_TutorialSingleKey_Frame)
+	script:SecureHook(_G.NPE_TutorialSingleKey_Frame, "ShowTutorial", moveUp)
+	moveUp(_G.NPE_TutorialSingleKey_Frame)
 	
-	script:SecureHook(NPE_TutorialMainFrame_Frame, "ShowTutorial", moveAway)
-	moveAway(NPE_TutorialMainFrame_Frame)
+	script:SecureHook(_G.NPE_TutorialMainFrame_Frame, "ShowTutorial", moveAway)
+	moveAway(_G.NPE_TutorialMainFrame_Frame)
 
-	script:SecureHook(NPE_TutorialWalk_Frame, "ShowTutorial", moveAway)
-	moveAway(NPE_TutorialWalk_Frame)
+	script:SecureHook(_G.NPE_TutorialWalk_Frame, "ShowTutorial", moveAway)
+	moveAway(_G.NPE_TutorialWalk_Frame)
 end
 
 local arrowDirections = {"UP", "LEFT", "RIGHT", "DOWN"}
@@ -248,10 +257,11 @@ function script:ShowPointerArrow(frame, direction)
 end
 
 function script:ShouldReAnchorPointer(frame)
+	local anchor
+	local buttons = LUI.MicroMenu.Buttons
 	local text = frame.Content.Text:GetText()
-	local buttons, anchor = LUI.MicroMenu.Buttons, nil
 	if not frame:IsShown() and text then frame:Show() end
-	if text == NPEV2_SPELLBOOK_TUTORIAL then
+	if text == _G.NPEV2_SPELLBOOK_TUTORIAL then
 		anchor = buttons.Spellbook
 		-- HACK: When using BT4, Spellbook warning would always appear on reload.-
 		if self.BT4 and not script:ShowSpellbook() then
@@ -262,16 +272,16 @@ function script:ShouldReAnchorPointer(frame)
 			end)
 			return
 		end
-	elseif text == format(NPEV2_SHOW_BAGS, TutorialHelper:GetBagBinding()) then
+	elseif text == format(_G.NPEV2_SHOW_BAGS, TutorialHelper:GetBagBinding()) then
 		anchor = buttons.Bags
-	elseif text == NPEV2_LFD_INTRO then
+	elseif text == _G.NPEV2_LFD_INTRO then
 		anchor = buttons.LFG
 		-- Make sure warning is only visible while you're on Exile Reach
 		if WorldMapFrame:GetMapID() ~= 1409 then
 			frame:Hide()
 			return
 		end
-	elseif text == NPEV2_MOUNT_TUTORIAL_P2_NEW_MOUNT_ADDED then
+	elseif text == _G.NPEV2_MOUNT_TUTORIAL_P2_NEW_MOUNT_ADDED then
 		anchor = buttons.Pets
 	else
 		return
@@ -284,7 +294,7 @@ end
 
 -- Make sure the New Player Experience frame is pointing to the right button.
 function script:SetPointerFrame()
-	script:SecureHook(NPE_TutorialPointerFrame, "Show", function(table, content, direction, anchorFrame, x, y, opposite)
+	script:SecureHook(_G.NPE_TutorialPointerFrame, "Show", function(table, content, direction, anchorFrame, x, y, opposite)
 		local newPointer = anchorFrame.currentNPEPointer
 		script:ShouldReAnchorPointer(newPointer)
 	end)
