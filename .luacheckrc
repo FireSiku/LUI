@@ -11,7 +11,8 @@ exclude_files = {
 ignore = {
 	"12.", -- ignore "Setting a read-only global variable/Setting a read-only field of a global variable."
 	"43.", -- Shadowed upvalues happens often when writing scripts or trying to work with another module.
-	"542", -- disable warnings for empty if branches. These are useful sometimes and easy to notice otherwise.	
+	"542", -- disable warnings for empty if branches. These are useful sometimes and easy to notice otherwise.
+	"614", -- disable "Trailing whitespace in a comment", used by language server docs comments
 	"611", -- disable "line contains only whitespace"
 	"21.", -- Disable unused warnings
 }
