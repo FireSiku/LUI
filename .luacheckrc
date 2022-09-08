@@ -46,15 +46,10 @@ stds["WoW"] = {
 
 		-- Common Globals
 		"UIParent", "UISpecialFrames", "CreateFrame", "CreateColor", "CreateFromMixins", "GameTooltip", "UIWidgetManager", 
-		"CopyTable", "GetTime", "GetBuildInfo", "GetRealmName", "LoadAddOn", "ReloadUI", "StaticPopup_Show",
-		-- Object API
-		"Mixin", "Enum", "Spell", "Item", "ItemLocation", "PlayerLocation", "UiMapPoint", 
-		-- Common Conditionals
-		"IsLoggedIn", "IsAddOnLoaded", "InCombatLockdown", "IsForbidden", 
-		-- Unit Functions not moved to a C_ namespace
-		"UnitAura", "UnitRace", "UnitClass", "UnitFactionGroup", "UnitHealth", "UnitPower", "UnitName",
-		"UnitInParty", "UnitInRaid", "UnitIsPvP", "UnitIsUnit", "UnitExists",
+		"CopyTable", "GetTime", "GetBuildInfo", "ReloadUI", "StaticPopup_Show", "IsForbidden", "NegateIf",
 		
+		-- Object API
+		"Mixin", "Enum", "Spell", "Item", "ItemLocation", "PlayerLocation", "UiMapPoint",
 
 		-- C_API Tables
 		"C_ToyBox", "C_NamePlate", "C_AccountInfo", "C_TransmogCollection", "C_ChatBubbles", "C_Console", "C_RecruitAFriend", "C_QuestLine", "C_SocialRestrictions",
