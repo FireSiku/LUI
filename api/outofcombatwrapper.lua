@@ -6,6 +6,8 @@ LibStub("AceEvent-3.0"):Embed(OutOfCombatWrapper)
 local inCombat, inLockdown = false, false
 local actionsToPerform, functionArgs = {}, {}
 
+local InCombatLockdown = _G.InCombatLockdown
+
 OutOfCombatWrapper:RegisterEvent("PLAYER_REGEN_ENABLED", function()
 	inCombat, inLockdown = false, false
 

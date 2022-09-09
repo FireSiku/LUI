@@ -11,24 +11,24 @@ local module = LUI:NewModule("Colors")
 local L = LUI.L
 local db
 
+local UnitReaction = _G.UnitReaction
+local GetQuestDifficultyColor = _G.GetQuestDifficultyColor
+
 -- constants
--- luacheck: push ignore
+local SANCTUARY = _G.SANCTUARY_TERRITORY:sub(2, -2)  -- Removed parenthesis.
+local FACTION_ALLIANCE = _G.FACTION_ALLIANCE
+local FACTION_HORDE = _G.FACTION_HORDE
+local MISCELLANEOUS = _G.MISCELLANEOUS
+local COLORS = _G.COLORS
 
-local SANCTUARY = SANCTUARY_TERRITORY:sub(2, -2)  -- Removed parenthesis.
-local FACTION_ALLIANCE = FACTION_ALLIANCE
-local FACTION_HORDE = FACTION_HORDE
-local MISCELLANEOUS = MISCELLANEOUS
-local COLORS = COLORS
-
-local STANDING_HATED      = FACTION_STANDING_LABEL1
-local STANDING_HOSTILE    = FACTION_STANDING_LABEL2
-local STANDING_UNFRIENDLY = FACTION_STANDING_LABEL3
-local STANDING_NEUTRAL    = FACTION_STANDING_LABEL4
-local STANDING_FRIENDLY   = FACTION_STANDING_LABEL5
-local STANDING_HONORED    = FACTION_STANDING_LABEL6
-local STANDING_REVERED    = FACTION_STANDING_LABEL7
-local STANDING_EXALTED    = FACTION_STANDING_LABEL8
--- luacheck: pop
+local STANDING_HATED      = _G.FACTION_STANDING_LABEL1
+local STANDING_HOSTILE    = _G.FACTION_STANDING_LABEL2
+local STANDING_UNFRIENDLY = _G.FACTION_STANDING_LABEL3
+local STANDING_NEUTRAL    = _G.FACTION_STANDING_LABEL4
+local STANDING_FRIENDLY   = _G.FACTION_STANDING_LABEL5
+local STANDING_HONORED    = _G.FACTION_STANDING_LABEL6
+local STANDING_REVERED    = _G.FACTION_STANDING_LABEL7
+local STANDING_EXALTED    = _G.FACTION_STANDING_LABEL8
 
 -- ####################################################################################################################
 -- ##### Default Settings #############################################################################################

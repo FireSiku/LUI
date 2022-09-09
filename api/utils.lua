@@ -1,7 +1,4 @@
 --- Core API only contains generic API methods found in LUI object.
--- @classmod coreapi
-
--- @type LUI
 
 -- ####################################################################################################################
 -- ##### Setup and Locals #############################################################################################
@@ -12,8 +9,9 @@ local _, LUI = ...
 local type, pairs = type, pairs
 local strmatch, tostring = strmatch, tostring
 local tinsert, tremove = tinsert, tremove
-local min, max, math = min, max, math
-local GetFunctionCPUUsage = GetFunctionCPUUsage
+local math, min, max = math, math.min, math.max
+local GetFunctionCPUUsage = _G.GetFunctionCPUUsage
+local GetCVar = _G.GetCVar
 
 -- Constants
 local MAX_AVG_ENTRIES = 10000
@@ -117,7 +115,7 @@ end
 function LUI:SortTable(sortT, origT, sortFunc)
 	wipe(sortT)
 	for k in pairs(origT) do sortT[#sortT+1] = k end
-	sort(sortT, sortFunc)
+	table.sort(sortT, sortFunc)
 end
 
 --Copy a table recursively.

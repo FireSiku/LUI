@@ -9,11 +9,16 @@ local addonname, LUI = ...
 
 LUI.Versions.plexus = 3300
 
+local IsAddOnLoaded = _G.IsAddOnLoaded
+local GetRealmName = _G.GetRealmName
+local UnitName = _G.UnitName
+
 function LUI:InstallPlexus()
 	if not IsAddOnLoaded("Plexus") then return end
-	local ProfileName = UnitName("Player").." - "..GetRealmName()
+	local CharName = UnitName("Player")
+	local ProfileName = CharName.." - "..GetRealmName()
 	if LUI.db.global.luiconfig[ProfileName].Versions.plexus == LUI.Versions.plexus then return end
-
+	
 	local Plexus = LibStub("AceAddon-3.0"):GetAddon("Plexus")
 	local PlexusStatus = Plexus:GetModule("PlexusStatus")
 	local PlexusLayout = Plexus:GetModule("PlexusLayout")
@@ -23,14 +28,11 @@ function LUI:InstallPlexus()
 	local PlexusStatusHealth = Plexus:GetModule("PlexusStatus"):GetModule("PlexusStatusHealth")
 	local PlexusStatusRange = Plexus:GetModule("PlexusStatus"):GetModule("PlexusStatusRange")
 	local PlexusStatusAuras = Plexus:GetModule("PlexusStatus"):GetModule("PlexusStatusAuras")
+	local PlexusDB = _G.PlexusDB
 
 	Plexus:EnableModule("PlexusStatus")
 	Plexus:EnableModule("PlexusLayout")
 	Plexus:EnableModule("PlexusFrame")
-
-	local CharName = UnitName("player")
-	local ServerName = GetRealmName()
-	local ProfileName = CharName.." - "..ServerName
 
 	if PlexusDB.profileKeys ~= nil then
 		local PlexusOldProfile
@@ -78,7 +80,7 @@ function LUI:InstallPlexus()
 		},
 	}
 
-	for k,v in pairs(PlexusProfileDefaults) do
+	for k,v in pairs(_G.PlexusProfileDefaults) do
 		PlexusDB.profiles[k] = v
 	end
 
@@ -155,7 +157,7 @@ function LUI:InstallPlexus()
 		},
 	}
 
-	for k,v in pairs(PlexusFrameDefaults) do
+	for k,v in pairs(_G.PlexusFrameDefaults) do
 		PlexusDB.namespaces.PlexusFrame.profiles[k] = v
 	end
 
@@ -242,7 +244,7 @@ function LUI:InstallPlexus()
 		},
 	}
 
-	for k,v in pairs(PlexusStatusRangeDefaults) do
+	for k,v in pairs(_G.PlexusStatusRangeDefaults) do
 		PlexusDB.namespaces.PlexusStatusRange.profiles[k] = v
 	end
 
@@ -308,7 +310,7 @@ function LUI:InstallPlexus()
 		},
 	}
 
-	for k,v in pairs(PlexusStatusDefaults) do
+	for k,v in pairs(_G.PlexusStatusDefaults) do
 		PlexusDB.namespaces.PlexusStatus.profiles[k] = v
 	end
 
@@ -343,7 +345,7 @@ function LUI:InstallPlexus()
 		},
 	}
 
-	for k,v in pairs(PlexusLayoutDefaults) do
+	for k,v in pairs(_G.PlexusLayoutDefaults) do
 		PlexusDB.namespaces.PlexusLayout.profiles[k] = v
 	end
 
@@ -381,7 +383,7 @@ function LUI:InstallPlexus()
 		},
 	}
 
-	for k,v in pairs(PlexusStatusHealthDefaults) do
+	for k,v in pairs(_G.PlexusStatusHealthDefaults) do
 		PlexusDB.namespaces.PlexusStatusHealth.profiles[k] = v
 	end
 

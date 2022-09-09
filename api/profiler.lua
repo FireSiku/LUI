@@ -19,6 +19,10 @@ local abs, collectgarbage, error, format, getmetatable, GetTime = math.abs, coll
 local print, setmetatable, strfind, strlower, tsort, tostring, type, wipe = print, setmetatable, string.find, string.lower, table.sort, tostring, type, wipe
 local debugprofilestart, debugprofilestop = debugprofilestart, debugprofilestop
 
+local GetAddOnMetadata = _G.GetAddOnMetadata
+local GameFontNormalSmall = _G.GameFontNormalSmall
+
+
 -- Local variables.
 local defaultKillTime = 0.5
 local weakTable = {__mode = "k"}
@@ -681,12 +685,8 @@ gui.Watch = function(filter)
 end
 
 -- Create slash command to open Profiler GUI.
-SLASH_LUIPROFILER1 = "/luiprofiler"
-SlashCmdList.LUIPROFILER = gui.Watch
-
-
-
-
+_G.SLASH_LUIPROFILER1 = "/luiprofiler"
+_G.SlashCmdList.LUIPROFILER = gui.Watch
 
 -- Old functions for safekeeping. Some of their features have nice functionality we may find interesting.
 

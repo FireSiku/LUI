@@ -98,9 +98,9 @@ LUI.REACTION_NAMES = {
 }
 
 LUI.GENDERS = {
-	UNKNOWN,	-- 1
-	MALE,		-- 2
-	FEMALE,		-- 3
+	_G.UNKNOWN,	-- 1
+	_G.MALE,	-- 2
+	_G.FEMALE,	-- 3
 }
 
 -- As found in the Colors module.
