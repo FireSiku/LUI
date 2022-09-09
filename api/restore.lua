@@ -112,7 +112,7 @@ end
 
 local function IsEmptyTable(data)
 	if type(data) ~= "table" then return end
-	for k, v in pairs(data) do
+	for k, v in pairs(data) do --luacheck: ignore
 		return false
 	end
 	return true
@@ -243,11 +243,11 @@ function module.Revert()
 end
 
 
-SLASH_LUIBACKUP1 = "/luibackup"
-SlashCmdList.LUIBACKUP = module.Backup
+_G.SLASH_LUIBACKUP1 = "/luibackup"
+_G.SlashCmdList.LUIBACKUP = module.Backup
 
-SLASH_LUIRESTORE1 = "/luirestore"
-SlashCmdList.LUIRESTORE = module.Restore
+_G.SLASH_LUIRESTORE1 = "/luirestore"
+_G.SlashCmdList.LUIRESTORE = module.Restore
 
-SLASH_LUIREVERT1 = "/luirevert"
-SlashCmdList.LUIREVERT = module.Revert
+_G.SLASH_LUIREVERT1 = "/luirevert"
+_G.SlashCmdList.LUIREVERT = module.Revert

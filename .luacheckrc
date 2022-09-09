@@ -3,6 +3,7 @@ max_line_length = false
 exclude_files = {
 	"libs",
 	"api\\oUF",
+	"api\\emmy",
 	"unitframes\\core",
     ".luacheckrc",
 	".vsode",
@@ -23,7 +24,7 @@ std = "+LUI+WoW"
 -- either refactored or removed before the big release.
 stds["LUI"] = {
 	globals = {
-		"LUI", "PrintTooltips", "GFind", "GFindValue", "GFindCTables",
+		"LUI", "LUICONFIG", "PrintTooltips", "GFind", "GFindValue", "GFindCTables",
  		"GetMinimapShape", "LUIBank", "LUIReagents", "LUIBags",
 		"oUF_LUI_player", "oUF_LUI_target", "oUF_LUI_pet", "oUF_LUI_focus",  "oUF_LUI_focustarget",
 		"oUF_LUI_party", "oUF_LUI_raid", "oUF_LUI_raid_25", "oUF_LUI_raid_40", "oUF_LUI_boss",

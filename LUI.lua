@@ -21,8 +21,31 @@ local widgetLists = AceGUIWidgetLSMlists
 local ACD = LibStub("AceConfigDialog-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
-LUI.Versions = {lui = 3403}
+local BackdropTemplateMixin = _G.BackdropTemplateMixin
+local GetPhysicalScreenSize = _G.GetPhysicalScreenSize
+local GetNumSubgroupMembers = _G.GetNumSubgroupMembers
+local GetNumGroupMembers = _G.GetNumGroupMembers
+local InCombatLockdown = _G.InCombatLockdown
+local GetAddOnMetadata = _G.GetAddOnMetadata
+local UnitFactionGroup = _G.UnitFactionGroup
+local BNGetNumFriends = _G.BNGetNumFriends
+local IsShiftKeyDown = _G.IsShiftKeyDown
+local IsAddOnLoaded = _G.IsAddOnLoaded
+local GetRealmName = _G.GetRealmName
+local GetNumAddOns = _G.GetNumAddOns
+local GetAddOnInfo = _G.GetAddOnInfo
+local IsLoggedIn = _G.IsLoggedIn
+local LoadAddOn = _G.LoadAddOn
+local IsInGroup = _G.IsInGroup
+local UnitName = _G.UnitName
+local SetCVar = _G.SetCVar
+local strjoin = _G.strjoin
 
+local Configure = _G.Configure
+local ACCEPT = _G.ACCEPT
+local CANCEL = _G.CANCEL
+
+LUI.Versions = {lui = 3403}
 LUI.dummy = function() return end
 
 local LIVE_TOC = 90001
@@ -34,10 +57,6 @@ if tonumber(CURRENT_BUILD) > LIVE_BUILD then
 	--LUI:Print("Using Code Designed for New Patch")
 end
 local ProfileName = UnitName("player").." - "..GetRealmName()
-
--- Work around for IsDisabledByParentalControls() errors. Simply hide the frame. It will still error but that's OK.
-UIParent:HookScript("OnEvent", function(s, e, a1, a2) if e:find("ACTION_FORBIDDEN") and ((a1 or "")..(a2 or "")):find("IsDisabledByParentalControls") then StaticPopup_Hide(e) end; end)
--- Come on Blizzard, please fix this soon!
 
 -- REGISTER FONTS
 Media:Register("font", "vibrocen", [[Interface\Addons\LUI\media\fonts\vibrocen.ttf]])
@@ -269,13 +288,13 @@ function LUI:StyleButton(b, checked)
 	count:SetFont(Media:Fetch("font", (Infotext and Infotext.db.profile.FPS.Font or "vibroceb")), (Infotext and Infotext.db.profile.FPS.FontSize or 12), "OUTLINE")
 
 	if checked then
-		local checked = b:CreateTexture("frame", nil, self) -- checked
-		checked:SetColorTexture(0,1,0,0.3)
-		checked:SetHeight(button:GetHeight())
-		checked:SetWidth(button:GetWidth())
-		checked:SetPoint("TOPLEFT",button,2,-2)
-		checked:SetPoint("BOTTOMRIGHT",button,-2,2)
-		button:SetCheckedTexture(checked)
+		local checkTex = b:CreateTexture("frame", nil, self) -- checked
+		checkTex:SetColorTexture(0,1,0,0.3)
+		checkTex:SetHeight(button:GetHeight())
+		checkTex:SetWidth(button:GetWidth())
+		checkTex:SetPoint("TOPLEFT",button,2,-2)
+		checkTex:SetPoint("BOTTOMRIGHT",button,-2,2)
+		button:SetCheckedTexture(checkTex)
 	end
 end
 
@@ -327,7 +346,7 @@ function LUI:SyncAddonVersion()
 		if distribution == "WHISPER" and not target then
 			return
 		elseif distribution == "RAID" or distribution == "PARTY" then
-			if IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then
+			if IsInGroup(_G.LE_PARTY_CATEGORY_INSTANCE) then
 				self.channel = "INSTANCE_CHAT"
 			end
 		end
@@ -485,8 +504,8 @@ end
 ------------------------------------------------------
 
 function LUI:Configure()
-	if InterfaceOptionsFrame:IsShown() then
-		InterfaceOptionsFrame:Hide()
+	if _G.InterfaceOptionsFrame:IsShown() then
+		_G.InterfaceOptionsFrame:Hide()
 	end
 
 	local configureBG = LUI:CreateMeAFrame("FRAME","configureBG",UIParent,2400,2000,1,"HIGH",5,"CENTER",UIParent,"CENTER",0,0,1)
@@ -693,7 +712,7 @@ local function conflictChecker(...)
 	end
 end
 function LUI:CheckConflict(...) -- self is module
-	local conflict = false
+	local conflict
 	if type(self.conflicts) == "table" then
 		conflict = conflictChecker(unpack(self.conflicts))
 	else
@@ -1235,7 +1254,7 @@ local function getOptions()
 									get = function() return db.Recount.FontSize end,
 									set = function(self, size)
 										db.Recount.FontSize = size
-										Recount:BarsChanged()
+										_G.Recount:BarsChanged()
 									end,
 									order = 5,
 								},
@@ -1252,7 +1271,7 @@ local function getOptions()
 									end,
 									set = function(self, font)
 										db.Recount.Font = font
-										Recount:BarsChanged()
+										_G.Recount:BarsChanged()
 									end,
 									order = 6,
 								},
@@ -1810,7 +1829,7 @@ function LUI:OnInitialize()
 		self:Configure()
 	end
 
-	StaticPopupDialogs["RELOAD_UI"] = { -- TODO: Remove all need for this
+	_G.StaticPopupDialogs["RELOAD_UI"] = { -- TODO: Remove all need for this
 		preferredIndex = 3,
 		text = L["The UI needs to be reloaded!"],
 		button1 = ACCEPT,
@@ -1821,7 +1840,7 @@ function LUI:OnInitialize()
 		hideOnEscape = 1
 	}
 
-	StaticPopupDialogs["RESTORE_DETAULTS"] = {
+	_G.StaticPopupDialogs["RESTORE_DETAULTS"] = {
 		preferredIndex = 3,
 		text = "Do you really want to restore all defaults. All your settings will be lost!",
 		button1 = ACCEPT,

@@ -1,6 +1,9 @@
 local addonname, LUI = ...
 
 LUI.Versions.details = 5
+local IsAddOnLoaded = _G.IsAddOnLoaded
+local GetRealmName = _G.GetRealmName
+local UnitName = _G.UnitName
 
 function LUI:InstallDetails()
    

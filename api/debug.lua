@@ -8,7 +8,8 @@
 
 local addonname, LUI = ...
 
-local version, revision = GetAddOnMetadata(addonname, "Version"), GetAddOnMetadata(addonname, "X-Curse-Packaged-Version")
+local version = _G.GetAddOnMetadata(addonname, "Version")
+local revision = _G.GetAddOnMetadata(addonname, "X-Curse-Packaged-Version")
 LUI.DEBUG = version ~= revision
 -- LUI.DEBUG = true -- for debugging with core releases
 
