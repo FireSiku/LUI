@@ -64,27 +64,33 @@ local needSecure = {
 
 local blizzEvents = {
 	"PLAYER_LOGIN",
-	"ARCHAEOLOGY_TOGGLE",
 	"AUCTION_HOUSE_SHOW",
-	"BARBER_SHOP_OPEN",
 	"INSPECT_READY",
-	"VOID_STORAGE_OPEN",
-	"TRANSMOGRIFY_OPEN",
 	"TRADE_SKILL_SHOW",
 	"SOCKET_INFO_UPDATE",
 }
-
+if IsRetail then
+	local blizzEvents = {
+		"ARCHAEOLOGY_TOGGLE",
+		"BARBER_SHOP_OPEN",
+		"VOID_STORAGE_OPEN",
+		"TRANSMOGRIFY_OPEN",
+	}
+end
 local blizzHooks = {
-	"AchievementFrame_LoadUI",
-	"ArchaeologyFrame_LoadUI",
 	"Calendar_LoadUI",
-	"CollectionsJournal_LoadUI",
-	"EncounterJournal_LoadUI",
 	"MacroFrame_LoadUI",
 	"KeyBindingFrame_LoadUI",
+}
+if IsRetail then
+	local blizzHooks = {
+	"AchievementFrame_LoadUI",
+	"ArchaeologyFrame_LoadUI",
+	"CollectionsJournal_LoadUI",
+	"EncounterJournal_LoadUI",
 	"Garrison_LoadUI",
 }
-
+end
 function script:ApplyBlizzScaling()
 	local scale = LUI.db.profile.General.BlizzFrameScale
 	

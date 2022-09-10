@@ -1,6 +1,5 @@
 local addonname, LUI = ...
 local script = LUI:NewScript("AutoInvite", "AceEvent-3.0")
-local db = LUI.db.profile.General
 
 local C_BattleNet = C_BattleNet
 local C_FriendList = C_FriendList
@@ -62,7 +61,7 @@ local function isBNFriend(name)
 end
 
 local function chatcommand()
-	db.AutoInvite = not db.AutoInvite
+	LUI.db.AutoInvite = not db.AutoInvite
 	script:SetAutoInvite()
 	LUI:Print("AutoInvite |cff"..(db.AutoInvite and "00FF00Enabled|r" or "FF0000Disabled|r"))
 	if LibStub("AceConfigDialog-3.0").OpenFrames[addonname] then
@@ -72,11 +71,11 @@ end
 
 
 function script:SetAutoAccept()
-	self[db.AutoAcceptInvite and "RegisterEvent" or "UnregisterEvent"](self, "PARTY_INVITE_REQUEST")
+	self[LUI.db.AutoAcceptInvite and "RegisterEvent" or "UnregisterEvent"](self, "PARTY_INVITE_REQUEST")
 end
 
 function script:SetAutoInvite()
-	self[db.AutoInvite and "RegisterEvent" or "UnregisterEvent"](self, "CHAT_MSG_WHISPER")
+	self[LUI.db.AutoInvite and "RegisterEvent" or "UnregisterEvent"](self, "CHAT_MSG_WHISPER")
 end
 
 
@@ -95,7 +94,7 @@ end
 
 function script:CHAT_MSG_WHISPER(event, message, sender)
 	if (UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") or (GetNumSubgroupMembers() == 0)) and strlower(message):match(strlower(db.AutoInviteKeyword)) then
-		if db.AutoInviteOnlyFriend == false or (isFriend(sender) or isGuildmate(sender) or isBNFriend(sender)) then
+		if LUI.db.AutoInviteOnlyFriend == false or (isFriend(sender) or isGuildmate(sender) or isBNFriend(sender)) then
 			C_PartyInfo.InviteUnit(sender)
 		end
 	end
