@@ -145,7 +145,9 @@ local Enable = function(self, unit)
 		end
 
 		self:RegisterEvent("RUNE_POWER_UPDATE", Path, true)
-		self:RegisterEvent("RUNE_TYPE_UPDATE", UpdateType, true)
+		if not LUI.IsRetail then
+			self:RegisterEvent("RUNE_TYPE_UPDATE", UpdateType, true)
+		end
 		return true
 	end
 end

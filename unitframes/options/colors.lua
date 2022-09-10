@@ -9,7 +9,6 @@ local module = LUI:Module("Unitframes")
 local oUF = LUI.oUF
 
 local GetQuestDifficultyColor = _G.GetQuestDifficultyColor
-local GetRuneType = _G.GetRuneType
 local UnitLevel = _G.UnitLevel
 local strupper = string.upper
 
@@ -246,11 +245,7 @@ module.colors = setmetatable({
 local function UpdateColors()
 	if oUF_LUI_player.Runes then
 		for i = 1, 6 do
-			if not LUI.IsRetail or LUI.IsBCC then
-				runeType = GetRuneType(i)
-			else
-				runeType = 1
-			end
+			local runeType = (_G.GetRuneType) and _G.GetRuneType(i) or 1
 			oUF_LUI_player.Runes[i]:SetStatusBarColor(unpack(module.colors.runes[runeType]))
 		end
 	end
