@@ -11,8 +11,8 @@ local module = LUI:NewModule("Colors")
 local L = LUI.L
 local db
 
-local UnitReaction = _G.UnitReaction
 local GetQuestDifficultyColor = _G.GetQuestDifficultyColor
+local UnitReaction = _G.UnitReaction
 
 -- constants
 local SANCTUARY = _G.SANCTUARY_TERRITORY:sub(2, -2)  -- Removed parenthesis.
