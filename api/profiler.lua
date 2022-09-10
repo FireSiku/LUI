@@ -19,9 +19,8 @@ local abs, collectgarbage, error, format, getmetatable, GetTime = math.abs, coll
 local print, setmetatable, strfind, strlower, tsort, tostring, type, wipe = print, setmetatable, string.find, string.lower, table.sort, tostring, type, wipe
 local debugprofilestart, debugprofilestop = debugprofilestart, debugprofilestop
 
-local GetAddOnMetadata = _G.GetAddOnMetadata
 local GameFontNormalSmall = _G.GameFontNormalSmall
-
+local GetAddOnMetadata = _G.GetAddOnMetadata
 
 -- Local variables.
 local defaultKillTime = 0.5
