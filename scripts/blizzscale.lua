@@ -70,12 +70,10 @@ local blizzEvents = {
 	"SOCKET_INFO_UPDATE",
 }
 if LUI.IsRetail then
-	local blizzEvents = {
-		"ARCHAEOLOGY_TOGGLE",
-		"BARBER_SHOP_OPEN",
-		"VOID_STORAGE_OPEN",
-		"TRANSMOGRIFY_OPEN",
-	}
+	tinsert(blizzEvents, "ARCHAEOLOGY_TOGGLE")
+	tinsert(blizzEvents, "BARBER_SHOP_OPEN")
+	tinsert(blizzEvents, "VOID_STORAGE_OPEN")
+	tinsert(blizzEvents, "TRANSMOGRIFY_OPEN")
 end
 local blizzHooks = {
 	"Calendar_LoadUI",
@@ -83,14 +81,13 @@ local blizzHooks = {
 	"KeyBindingFrame_LoadUI",
 }
 if LUI.IsRetail then
-	local blizzHooks = {
-	"AchievementFrame_LoadUI",
-	"ArchaeologyFrame_LoadUI",
-	"CollectionsJournal_LoadUI",
-	"EncounterJournal_LoadUI",
-	"Garrison_LoadUI",
-}
+	tinsert(blizzEvents, "AchievementFrame_LoadUI")
+	tinsert(blizzEvents, "ArchaeologyFrame_LoadUI")
+	tinsert(blizzEvents, "CollectionsJournal_LoadUI")
+	tinsert(blizzEvents, "EncounterJournal_LoadUI")
+	tinsert(blizzEvents, "Garrison_LoadUI")
 end
+
 function script:ApplyBlizzScaling()
 	local scale = LUI.db.profile.General.BlizzFrameScale
 	

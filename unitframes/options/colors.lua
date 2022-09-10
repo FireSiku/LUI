@@ -2,13 +2,18 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: colors.lua
 	Description: oUF Colors
-]] 
+]]
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
 local oUF = LUI.oUF
 
-local _, class = UnitClass("player")
+local GetQuestDifficultyColor = _G.GetQuestDifficultyColor
+local GetRuneType = _G.GetRuneType
+local UnitLevel = _G.UnitLevel
+local strupper = string.upper
+
+local _, class = _G.UnitClass("player")
 
 module.defaults.profile.Colors = {
 	Class = {

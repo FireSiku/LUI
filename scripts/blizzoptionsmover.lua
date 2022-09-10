@@ -1,12 +1,12 @@
 local addonname, LUI = ...
 local script = LUI:NewScript("BlizzOptionsMover", "AceEvent-3.0")
 
+local InterfaceOptionsFrame = _G.InterfaceOptionsFrame
+local AudioOptionsFrame = _G.AudioOptionsFrame
+local VideoOptionsFrame = _G.VideoOptionsFrame
 local ChatConfigFrame = _G.ChatConfigFrame
 local MacOptionsFrame = _G.MacOptionsFrame
 local KeyBindingFrame = _G.KeyBindingFrame
-local AudioOptionsFrame = _G.AudioOptionsFrame
-local VideoOptionsFrame = _G.VideoOptionsFrame
-local InterfaceOptionsFrame = _G.InterfaceOptionsFrame
 
 function script:MakeMovable(frame)
 	local mover = CreateFrame("Frame", frame:GetName() .. "Mover", frame)

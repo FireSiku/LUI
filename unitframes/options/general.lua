@@ -7,11 +7,15 @@
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
 local Fader = LUI:Module("Fader")
-
-local oUF = LUI.oUF
 local Blizzard = LUI.Blizzard
+local oUF = LUI.oUF
 
-local _, class = UnitClass("player")
+local UnitClass = _G.UnitClass
+local UnitLevel = _G.UnitLevel
+
+local MAX_PLAYER_LEVEL = _G.MAX_PLAYER_LEVEL
+
+local _, class = _G.UnitClass("player")
 
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -72,7 +76,6 @@ local barNames = {
 	Totems = "Totem Bar",
 }
 
-local _, class = UnitClass("player")
 if class == "ROGUE" or class == "DRUID" then
 	barNames.Chi = "Combo Points"
 end

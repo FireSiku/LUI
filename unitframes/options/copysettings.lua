@@ -82,7 +82,7 @@ local settings = {
 	withPosition = false
 }
 	
-StaticPopupDialogs["COPY_SETTINGS"] = {
+_G.StaticPopupDialogs["COPY_SETTINGS"] = {
 	preferredIndex = 3,
 	text = "Are you sure you want to copy the Settings?",
 	button1 = "Yes",

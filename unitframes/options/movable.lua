@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: movable.lua
 	Description: Unitframe Movable Features (will be converted to an own module)
-]] 
+]]
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
@@ -166,7 +166,7 @@ hider:SetScript("OnEvent", function()
 		for k, bdrop in next, backdropPool do bdrop:Hide() end
 		_LOCK = nil
 		
-		StaticPopup_Hide("DRAG_UNITFRAMES")
+		_G.StaticPopup_Hide("DRAG_UNITFRAMES")
 		LUI:Print("UnitFrame anchors hidden due to combat. The changed positions are NOT saved!")
 		hider:UnregisterEvent("PLAYER_REGEN_DISABLED")
 	end
@@ -224,7 +224,7 @@ do
 		local name = backdrop:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		name:SetPoint("CENTER")
 		name:SetJustifyH("CENTER")
-		name:SetFont(GameFontNormal:GetFont(), 12)
+		name:SetFont(_G.GameFontNormal:GetFont(), 12)
 		name:SetTextColor(1, 1, 1)
 
 		backdrop.name = name
@@ -239,7 +239,7 @@ do
 	end
 end
 
-StaticPopupDialogs["DRAG_UNITFRAMES"] = {
+_G.StaticPopupDialogs["DRAG_UNITFRAMES"] = {
 	preferredIndex = 3,
 	text = "oUF_LUI UnitFrames are dragable.",
 	button1 = "Save",
@@ -261,7 +261,7 @@ StaticPopupDialogs["DRAG_UNITFRAMES"] = {
 }
 
 function module:MoveUnitFrames(override)
-	if InCombatLockdown() and not override then
+	if _G.InCombatLockdown() and not override then
 		return LUI:Print("UnitFrames cannot be moved while in combat.")
 	end
 	
@@ -284,7 +284,7 @@ function module:MoveUnitFrames(override)
 			bdrop:Hide()
 		end
 		
-		StaticPopup_Hide("DRAG_UNITFRAMES")
+		_G.StaticPopup_Hide("DRAG_UNITFRAMES")
 		_LOCK = nil
 		
 		hider:UnregisterEvent("PLAYER_REGEN_DISABLED")
