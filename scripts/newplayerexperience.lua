@@ -4,14 +4,14 @@ local barMod = LUI:GetModule("Bars")
 
 local function S(x) return LUI:Scale(x) end
 
-local UnitLevel = _G.UnitLevel
+local GetShapeshiftFormInfo = _G.GetShapeshiftFormInfo
+local FlyoutHasSpell = _G.FlyoutHasSpell
 local IsAddOnLoaded = _G.IsAddOnLoaded
 local GetActionInfo = _G.GetActionInfo
-local FlyoutHasSpell = _G.FlyoutHasSpell
-local GetShapeshiftFormInfo = _G.GetShapeshiftFormInfo
+local UnitLevel = _G.UnitLevel
 
-local WorldMapFrame = _G.WorldMapFrame
 local TutorialHelper = _G.TutorialHelper
+local WorldMapFrame = _G.WorldMapFrame
 
 local TutorialData = {}
 TutorialData.LevelAbilitiesTable = {
