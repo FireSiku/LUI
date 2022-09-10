@@ -36,9 +36,11 @@ local hidden = {}
 
 local show, hide, hook, unhook
 do
-	Blizzard:SecureHook("OrderHall_LoadUI", function()
-		LUI:Kill(OrderHallCommandBar)
-	end)
+	if IsRetail then
+		Blizzard:SecureHook("OrderHall_LoadUI", function()
+			LUI:Kill(OrderHallCommandBar)
+		end)
+	end
 	hook = setmetatable({}, {
 		__call = function(t, type, hookto)
 			if t[type] then return end

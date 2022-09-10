@@ -1921,7 +1921,7 @@ module.funcs = {
 				if(self.unit ~= unit) then return end
 				if unit == "vehicle" then unit = "player" end
 
-				local value, max = UnitXP(unit), UnitXPMax(unit)
+				local value, max = UnitXP("player"), UnitXPMax("player")
 				if max == 0 then return end -- Rarely, client will throw this, avoid divide by zero
 
 				self.Experience:SetMinMaxValues(0, max)
@@ -2145,6 +2145,8 @@ module.funcs = {
 				self.Runes[i] = CreateFrame("StatusBar", nil, self.Runes, "BackdropTemplate")
 				self.Runes[i]:SetBackdrop(backdrop)
 				self.Runes[i]:SetBackdropColor(0.08, 0.08, 0.08)
+				self.Runes[i]:RegisterEvent("RUNE_POWER_UPDATE")
+
 			end
 
 			self.Runes.FrameBackdrop = CreateFrame("Frame", nil, self.Runes, "BackdropTemplate")
@@ -2168,18 +2170,25 @@ module.funcs = {
 		self.Runes:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 
 		for i = 1, 6 do
+			if IsRetail then
+				runeType = 1
+			else
+				runeType = GetRuneType(i)
+			end
 			self.Runes[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Runes.Texture))
-			self.Runes[i]:SetStatusBarColor(unpack(module.colors.runes[1]))
+			self.Runes[i]:SetStatusBarColor(unpack(module.colors.runes[runeType]))
 			self.Runes[i]:SetSize(((oufdb.Bars.Runes.Width - 5 * oufdb.Bars.Runes.Padding) / 6), oufdb.Bars.Runes.Height)
 
 			self.Runes[i]:ClearAllPoints()
-			if i == 1 then
+			local runePoints = {0, 1, 6, 3, 2, 5}
+			if runePoints[i] == 0 then
 				self.Runes[i]:SetPoint("LEFT", self.Runes, "LEFT", 0, 0)
 			else
-				self.Runes[i]:SetPoint("LEFT", self.Runes[i-1], "RIGHT", oufdb.Bars.Runes.Padding, 0)
+				self.Runes[i]:SetPoint("LEFT", self.Runes[runePoints[i]], "RIGHT", oufdb.Bars.Runes.Padding, 0)
 			end
 		end
 	end,
+
 	Totems = function(self, unit, oufdb)
 		if not self.Totems then
 			self.Totems = CreateFrame("Frame", nil, self)
@@ -2449,7 +2458,7 @@ module.funcs = {
 				local _, playerClass = UnitClass(unit)
 				if(not UnitHasVehicleUI('player')) then
 					if(UnitPowerMax(unit, ADDITIONAL_POWER_BAR_INDEX) ~= 0) then
-						if(ALT_MANA_BAR_PAIR_DISPLAY_INFO[playerClass]) then
+						if IsRetail and (ALT_MANA_BAR_PAIR_DISPLAY_INFO[playerClass]) then
 							local powerType = UnitPowerType(unit)
 							shouldEnable = ALT_MANA_BAR_PAIR_DISPLAY_INFO[playerClass][powerType]
 						end

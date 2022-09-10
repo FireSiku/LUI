@@ -387,7 +387,7 @@ function module:OnEnable()
 			module:RegisterActionUIButton(frame)
 		end
 	end
-	module:SecureHook(ActionBarButtonEventsFrameMixin, "RegisterFrame", "RegisterActionUIButton")
+	-- module:SecureHook(ActionBarButtonEventsFrameMixin, "RegisterFrame", "RegisterActionUIButton")
 	module:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 end
 

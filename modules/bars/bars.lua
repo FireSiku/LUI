@@ -287,7 +287,7 @@ local function Configure(bar, numButtons, numPerRow)
 			else
 				buttons[i]:SetAttribute("statehidden", nil)
 				buttons[i]:Show()
-				buttons[i]:Update()
+				if IsRetail then buttons[i]:Update() end
 			end
 		end
 	end
@@ -862,6 +862,7 @@ function module:SetVehicleExit()
 end
 
 function module:SetExtraActionBar()
+	if not IsRetail then return end
 	local bar = LUIExtraActionBar
 	local eadb = db.ExtraActionBar
 	if not bar then
@@ -880,9 +881,9 @@ function module:SetExtraActionBar()
 		-- 		ExtraActionBarFrame.button.style:SetShown(not eadb.HideTextures)
 		-- 	end
 		-- end)
-	
+
 		module:SecureHook(ZoneAbilityFrame, "UpdateDisplayedZoneAbilities", function()
-		 	ZoneAbilityFrame.Style:SetShown(not eadb.HideTextures)
+			ZoneAbilityFrame.Style:SetShown(not eadb.HideTextures)
 		end)
 	end
 
@@ -1190,6 +1191,7 @@ end
 
 local flyoutButtons = 0
 local function StyleFlyout(self)
+	if not IsRetail then return end
 	if not self.FlyoutArrow then return end
 
 	self.FlyoutBorder:SetAlpha(0)
@@ -1279,7 +1281,7 @@ local function Button_OnUpdate(button, elapsed)
 end
 
 function module:HookActionButton(button)
-	if button then
+	if IsRetail and button then
 		module:SecureHook(button, "Update", StyleButton)
 		module:SecureHook(button, "OnUpdate", Button_OnUpdate)
 		module:SecureHook(button, "UpdateHotkeys", UpdateHotkey)
@@ -1290,8 +1292,10 @@ function module:HookActionButton(button)
 		module:SecureHook("StanceBar_Update", StyleStanceButtons)
 		module:SecureHook("StanceBar_UpdateState", StyleStanceButtons)
 		module:SecureHook("PetActionBar_Update", StylePetButtons)
-		module:SecureHook("ActionButton_UpdateFlyout", StyleFlyout)
-		SpellFlyout:HookScript("OnShow", StyleFlyoutButton)
+		if IsRetail then 
+			module:SecureHook("ActionButton_UpdateFlyout", StyleFlyout)
+			SpellFlyout:HookScript("OnShow", StyleFlyoutButton)
+		end
 	end
 end
 
@@ -1333,7 +1337,7 @@ function module:SetBars()
 
 		-- because of an ugly bug...
 		module:SecureHook(CharacterFrame, "Show", function() TokenFrame_Update() end)
-		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+		if IsRetail then module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED") end
 
 	else
 		g_isBarAddOnLoaded = true
@@ -1871,7 +1875,7 @@ local function createSideBarOptions(side, num, order)
 		Scale = module:NewSlider("Scale", "Choose the Scale for this Sidebar.", 7.33, 0.1, 1.5, 0.05, true, true, nil, disabledFunc),
 		AutoAdjust = module:NewExecute("Auto-Adjust BT4Bar", "If you recently changed the bar anchor, make sure to move the previous bar outside of the Sidebar to prevent overlaps.", 7.66, showDialog, nil, nil, disabledFunc, not IsAddOnLoaded("Bartender4")),
 		empty4 = module:NewDesc(" ", 8),
-		[""] = module:NewPosSliders(side.." Bar "..num, 9, false, function() return GetAnchor(sidebars[side..num].Main) end, true, nil, disabledPosFunc),
+		-- [""] = module:NewPosSliders(side.." Bar "..num, 9, false, function() return GetAnchor(sidebars[side..num].Main) end, true, nil, disabledPosFunc),
 		AutoPosDisable = g_isBarAddOnLoaded and module:NewToggle("Stop touching me!", "Whether or not to have LUI handle your Bar Positioning.", 10, true, nil, disabledFunc) or nil,
 		HideEmpty = not g_isBarAddOnLoaded and module:NewToggle("Hide Empty Buttons", nil, 11, true, nil, disabledFunc) or nil,
 		empty3 = module:NewDesc(" ", 12),

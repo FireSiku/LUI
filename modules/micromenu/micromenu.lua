@@ -590,7 +590,7 @@ function module:SetMicroMenu()
 	end)
 
 	LUI.MicroMenu.Buttons.LFG.Clicker:SetScript("OnUpdate", function(self, button)
-		if PVEFrame:IsShown() then
+		if (IsRetail) and PVEFrame:IsShown() then
 			LUI.MicroMenu.Buttons.LFG.Clicker:SetAlpha(1)
 		else
 			if not LUI.MicroMenu.Buttons.LFG.Clicker.State then
@@ -1073,8 +1073,8 @@ function module:SetMicroMenu()
 	self:SetMicroMenuPosition()
 
 	-- Alert Frames
-	module:SecureHook(HelpTip, "Show", "ScanHelpTips")
-	if HelpTip.framePool.numActiveObjects > 0 then
+	if IsRetail then module:SecureHook(HelpTip, "Show", "ScanHelpTips") end
+	if IsRetail and HelpTip.framePool.numActiveObjects > 0 then
 		module:ScanHelpTips()
 	end
 end

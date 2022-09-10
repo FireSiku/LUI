@@ -67,7 +67,7 @@ end
 local function decorate(editBox)
 	editBox:SetHeight(db.Height)
 
-	if not editBox.decorated then
+	if IsRetail and not editBox.decorated then
 		editBox:Hide()
 
 		local name = editBox:GetName()
