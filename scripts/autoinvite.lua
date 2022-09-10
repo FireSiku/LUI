@@ -1,19 +1,19 @@
 local addonname, LUI = ...
 local script = LUI:NewScript("AutoInvite", "AceEvent-3.0")
 
-local C_BattleNet = C_BattleNet
-local C_FriendList = C_FriendList
+local STATICPOPUP_NUMDIALOGS = _G.STATICPOPUP_NUMDIALOGS
 
-local IsInGuild = _G.IsInGuild
-local BNGetNumFriends = _G.BNGetNumFriends
-local UnitIsGroupLeader = _G.UnitIsGroupLeader
+local BNFeaturesEnabledAndConnected = _G.BNFeaturesEnabledAndConnected
+local GetNumSubgroupMembers = _G.GetNumSubgroupMembers
+local UnitIsGroupAssistant = _G.UnitIsGroupAssistant
 local GetNumGuildMembers = _G.GetNumGuildMembers
 local GetGuildRosterInfo = _G.GetGuildRosterInfo
-local UnitIsGroupAssistant = _G.UnitIsGroupAssistant
-local GetNumSubgroupMembers = _G.GetNumSubgroupMembers
-local BNFeaturesEnabledAndConnected = _G.BNFeaturesEnabledAndConnected
+local UnitIsGroupLeader = _G.UnitIsGroupLeader
+local BNGetNumFriends = _G.BNGetNumFriends
+local IsInGuild = _G.IsInGuild
 
-local STATICPOPUP_NUMDIALOGS = _G.STATICPOPUP_NUMDIALOGS
+local C_FriendList = C_FriendList
+local C_BattleNet = C_BattleNet
 
 local function isFriend(name)
 	for i = 1, C_FriendList.GetNumFriends() do
@@ -61,9 +61,9 @@ local function isBNFriend(name)
 end
 
 local function chatcommand()
-	LUI.db.AutoInvite = not db.AutoInvite
+	LUI.db.AutoInvite = not LUI.db.AutoInvite
 	script:SetAutoInvite()
-	LUI:Print("AutoInvite |cff"..(db.AutoInvite and "00FF00Enabled|r" or "FF0000Disabled|r"))
+	LUI:Print("AutoInvite |cff"..(LUI.db.AutoInvite and "00FF00Enabled|r" or "FF0000Disabled|r"))
 	if LibStub("AceConfigDialog-3.0").OpenFrames[addonname] then
 		LibStub("AceConfigRegistry-3.0"):NotifyChange(addonname)
 	end
@@ -93,7 +93,7 @@ function script:PARTY_INVITE_REQUEST(event, sender)
 end
 
 function script:CHAT_MSG_WHISPER(event, message, sender)
-	if (UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") or (GetNumSubgroupMembers() == 0)) and strlower(message):match(strlower(db.AutoInviteKeyword)) then
+	if (UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") or (GetNumSubgroupMembers() == 0)) and strlower(message):match(strlower(LUI.db.AutoInviteKeyword)) then
 		if LUI.db.AutoInviteOnlyFriend == false or (isFriend(sender) or isGuildmate(sender) or isBNFriend(sender)) then
 			C_PartyInfo.InviteUnit(sender)
 		end
