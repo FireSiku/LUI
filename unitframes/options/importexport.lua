@@ -1401,7 +1401,7 @@ for _, v in pairs(layouts) do
 	v.Version = LUI.Versions.ouf
 end
 
-local _, class = UnitClass("player")
+local _, class = _G.UnitClass("player")
 
 local units = {"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "BossTarget", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet", "Raid"}
 
@@ -1418,7 +1418,7 @@ end
 
 local function IsEmptyTable(data)
 	if type(data) ~= "table" then return end
-	for k, v in pairs(data) do
+	for k, v in pairs(data) do --luacheck: ignore
 		return false
 	end
 	return true
@@ -1522,7 +1522,7 @@ local function ExportLayout(layout)
 	local data = module:Serialize(module.db.global[layout])
 	if data == nil then return end
 	local breakDown
-	for i = 1, math.ceil(strlen(data)/100) do
+	for i = 1, math.ceil(string.len(data)/100) do
 		local part = (strsub(data, (((i-1)*100)+1), (i*100))).." "
 		breakDown = (breakDown and breakDown or "")..part
 	end
@@ -1544,6 +1544,7 @@ local function GetLayoutArray()
 end
 
 do
+	local StaticPopupDialogs = _G.StaticPopupDialogs
 	StaticPopupDialogs["ALREADY_A_LAYOUT"] = {
 		preferredIndex = 3,
 		text = "That layout already exists.\nPlease choose another name.",

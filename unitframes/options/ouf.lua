@@ -35,7 +35,7 @@ function module:CreateSettings(order)
 					if f == "oUF_LUI_targettarget" then
 						module.funcs.V2Textures(oUF_LUI_targettarget, oUF_LUI_target)
 					elseif f == "oUF_LUI_targettargettarget" then
-						module.V2Textures(oUF_LUI_targettargettarget, oUF_LUI_targettarget)
+						module.V2Textures(_G.oUF_LUI_targettargettarget, oUF_LUI_targettarget)
 					elseif f == "oUF_LUI_focustarget" then
 						module.oUF_LUI.funcs.V2Textures(oUF_LUI_focustarget, oUF_LUI_focus)
 					elseif f == "oUF_LUI_focus" then
@@ -80,7 +80,7 @@ function module:CreateSettings(order)
 	end
 
 	local toggleV2Boss = function(info, Enable)
-		for i = 1, MAX_BOSS_FRAMES do
+		for i = 1, _G.MAX_BOSS_FRAMES do
 			local f = _G["oUF_LUI_bosstarget"..i]
 			if f then
 				if not f.V2Tex then module.funcs.V2Textures(f, _G["oUF_LUI_boss"..i]) end

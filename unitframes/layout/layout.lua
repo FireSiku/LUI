@@ -9,14 +9,41 @@ local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
 local Fader = LUI:Module("Fader")
 
-local L = LUI.L
-local Blizzard = LUI.Blizzard
-
-local oUF = LUI.oUF
-
 local Media = LibStub("LibSharedMedia-3.0")
+local Blizzard = LUI.Blizzard
+local oUF = LUI.oUF
+local L = LUI.L
+local db
 
-local db, colors
+local UnitHealth, UnitHealthMax, UnitPower, UnitPowerMax = _G.UnitHealth, _G.UnitHealthMax, _G.UnitPower, _G.UnitPowerMax
+local UnitIsUnit, UnitExists, UnitIsGhost, UnitIsDead = _G.UnitIsUnit, _G.UnitExists, _G.UnitIsGhost, _G.UnitIsDead
+local GetComboPoints, GetRuneType, GetShapeshiftFormID = _G.GetComboPoints, _G.GetRuneType, _G.GetShapeshiftFormID
+local UnitName, UnitGUID, UnitIsPVP, GetPVPTimer = _G.UnitName, _G.UnitGUID, _G.UnitIsPVP, _G.GetPVPTimer
+local UnitIsPlayer, UnitIsEnemy, UnitIsTapDenied = _G.UnitIsPlayer, _G.UnitIsEnemy, _G.UnitIsTapDenied
+local GetSpellInfo, GetTalentInfo, GetTotemInfo = _G.GetSpellInfo, _G.GetTalentInfo, _G.GetTotemInfo
+local UnitIsVisible, UnitIsConnected, UnitIsAFK = _G.UnitIsVisible, _G.UnitIsConnected, _G.UnitIsAFK
+local GetThreatStatusColor, UnitThreatSituation = _G.GetThreatStatusColor, _G.UnitThreatSituation
+local UnitPowerType, GetUnitPowerBarTextureInfo = _G.UnitPowerType, _G.GetUnitPowerBarTextureInfo
+local UnitClass, UnitLevel, GetSpecialization = _G.UnitClass, _G.UnitLevel, _G.GetSpecialization
+local UnitAura, UnitDebuff, DebuffTypeColor = _G.UnitAura, _G.UnitDebuff, _G.DebuffTypeColor
+local SetPortraitTexture, UnitHasVehicleUI = _G.SetPortraitTexture, _G.UnitHasVehicleUI
+local UnitXP, UnitXPMax, GetXPExhaustion = _G.UnitXP, _G.UnitXPMax, _G.GetXPExhaustion
+local UnitReaction, GetWatchedFactionInfo = _G.UnitReaction, _G.GetWatchedFactionInfo
+local UnitSpellHaste, UnitChannelInfo = _G.UnitSpellHaste, _G.UnitChannelInfo
+local GetGlyphSocketInfo = _G.GetGlyphSocketInfo
+local format = string.format
+local floor = math.floor
+
+local ALT_MANA_BAR_PAIR_DISPLAY_INFO = _G.ALT_MANA_BAR_PAIR_DISPLAY_INFO
+local ADDITIONAL_POWER_BAR_INDEX = _G.ADDITIONAL_POWER_BAR_INDEX
+local GameFontHighlight = _G.GameFontHighlight
+local NUM_CHAT_WINDOWS = _G.NUM_CHAT_WINDOWS
+local MAX_PLAYER_LEVEL = _G.MAX_PLAYER_LEVEL
+local MAX_COMBO_POINTS = _G.MAX_COMBO_POINTS
+local MAX_TOTEMS = _G.MAX_TOTEMS
+
+local _, class = UnitClass("player")
+local standings = {"Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted"}
 
 ------------------------------------------------------------------------
 --	Textures and Medias
@@ -24,17 +51,12 @@ local db, colors
 
 local mediaPath = [=[Interface\Addons\LUI\media\]=]
 
-local floor = math.floor
-local format = string.format
-local GetGlyphSocketInfo = GetGlyphSocketInfo 
-
+local highlightTex = mediaPath..[=[textures\statusbars\highlightTex]=]
 local normTex = mediaPath..[=[textures\statusbars\normTex]=]
 local glowTex = mediaPath..[=[textures\statusbars\glowTex]=]
-local highlightTex = mediaPath..[=[textures\statusbars\highlightTex]=]
 local blankTex = mediaPath..[=[textures\statusbars\blank]=]
-
-local aggroTex = mediaPath..[=[textures\aggro]=]
 local buttonTex = mediaPath..[=[textures\buttonTex]=]
+local aggroTex = mediaPath..[=[textures\aggro]=]
 
 local backdrop = {
 	bgFile = blankTex,
@@ -53,8 +75,6 @@ local fontn = mediaPath..[=[fonts\KhmerUI.ttf]=]
 local font2 = mediaPath..[=[Fonts\ARIALN.ttf]=]
 local font3 = mediaPath..[=[fonts\Prototype.ttf]=]
 
-local _, class = UnitClass("player")
-local standings = {"Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted"}
 local highlight = true
 local entering
 
@@ -381,12 +401,12 @@ local utf8sub = function(string, i, dots)
 end
 
 local UnitFrame_OnEnter = function(self)
-	UnitFrame_OnEnter(self)
+	_G.UnitFrame_OnEnter(self)
 	self.Highlight:Show()
 end
 
 local UnitFrame_OnLeave = function(self)
-	UnitFrame_OnLeave(self)
+	_G.UnitFrame_OnLeave(self)
 	self.Highlight:Hide()
 end
 --[[
@@ -1016,7 +1036,7 @@ local CPointsOverride = function(self, event, unit)
 end
 
 local WarlockBarOverride = function(self, event, unit, powerType)
-	local specNum = GetSpecialization() 
+	local specNum = GetSpecialization()
 	local spec = self.WarlockBar.SpecInfo[specNum]
 	if not spec then return end
 	if self.unit ~= unit or (powerType and powerType ~= spec.powerType) then return end
@@ -1034,7 +1054,7 @@ local WarlockBarOverride = function(self, event, unit, powerType)
 	elseif specNum == 2 then
 		text = num
 		self.WarlockBar[1]:SetAlpha(1)
-		self.WarlockBar[1]:SetValue(num)	
+		self.WarlockBar[1]:SetValue(num)
 	--Destruction
 	elseif specNum == 3 then
 		local power = UnitPower(unit, spec.unitPower, true)
@@ -1088,7 +1108,7 @@ local function TotemsUpdate(self, elapsed)
 	self.total = elapsed + (self.total or 0)
 	if self.total >= 0.02 then
 		self.total = 0
-		haveTotem, name, startTime, duration, totemIcon = GetTotemInfo(self.slot)
+		local haveTotem, name, startTime, duration, totemIcon = GetTotemInfo(self.slot)
 		if (((GetTime() - startTime) == 0) or ( duration == 0 )) then
 			self:SetValue(0)
 		else
@@ -1102,9 +1122,9 @@ local TotemsOverride = function(self, event, slot)
 
 	local totem = self.Totems[slot]
 
-	haveTotem, name, startTime, duration, totemIcon = GetTotemInfo(slot)
+	local haveTotem, name, startTime, duration, totemIcon = GetTotemInfo(slot)
 
-	local color = module.colors.totems[slot] or colors[slot]
+	local color = module.colors.totems[slot]
 	totem:SetStatusBarColor(unpack(color))
 	totem:SetValue(0)
 
@@ -1113,15 +1133,15 @@ local TotemsOverride = function(self, event, slot)
 		local mu = totem.bg.multiplier
 		local r, g, b = totem:GetStatusBarColor()
 		r, g, b = r*mu, g*mu, b*mu
-		totem.bg:SetVertexColor(r, g, b) 
+		totem.bg:SetVertexColor(r, g, b)
 	end
 
 	if(haveTotem) then
 		
 		if totem.Name then
-			totem.Name:SetText(Abbrev(name))
+			totem.Name:SetText(name)
 		end
-		if(duration >= 0) then	
+		if(duration >= 0) then
 			totem:SetValue(1 - ((GetTime() - startTime) / duration))
 			-- Status bar update
 			totem:SetScript("OnUpdate", TotemsUpdate)
@@ -1354,7 +1374,7 @@ local Reposition = function(V2Tex)
 	toCX, toCY = toCX * toS, toCY * toS
 
 	fromL, fromR = fromL * fromS, fromR * fromS
-	fromT, fromB = fromT * fromS, fromB * fromS
+	--fromT, fromB = fromT * fromS, fromB * fromS
 	fromCX, fromCY = fromCX * fromS, fromCY * fromS
 
 	local magicValue = to:GetWidth() / 6
@@ -2046,10 +2066,10 @@ module.funcs = {
 						min, max, value = 41000, 42000, 42000
 					end
 					
-					barMax = max - min
-					barValue = value - min
-					barMin = 0
-					percentBar = barValue * 100 / barMax
+					local barMax = max - min
+					local barValue = value - min
+					local barMin = 0
+					local percentBar = barValue * 100 / barMax
 					
 					self.Reputation:SetMinMaxValues(barMin, barMax)
 					self.Reputation:SetValue(barValue)
@@ -2762,7 +2782,7 @@ module.funcs = {
 			end
 
 			castbar.Icon = castbar:CreateTexture(nil, "ARTWORK")
-			castbar.Icon:SetTexCoord(0, 1, 0, 1) 
+			castbar.Icon:SetTexCoord(0, 1, 0, 1)
 			if unit == "player" or unit == "target" or unit == "focus" or unit == "pet" then
 				castbar.Icon:SetHeight(28.5)
 				castbar.Icon:SetWidth(28.5)
@@ -3101,7 +3121,6 @@ local SetStyle = function(self, unit, isSingle)
 		oufdb = module.db.Raid
 	end
 
-	self.menu = unit ~= "raid" and menu or nil
 	self.colors = module.colors
 	self:RegisterForClicks("AnyUp")
 
@@ -3204,9 +3223,9 @@ local SetStyle = function(self, unit, isSingle)
 			if oufdb.Bars.Totems.Enable then module.funcs.Totems(self, unit, oufdb) end
 		elseif class == "MAGE" then
 			if oufdb.Bars.ArcaneCharges.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
-		elseif class == "WARLOCK" then 
+		elseif class == "WARLOCK" then
 			if oufdb.Bars.WarlockBar.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
-		elseif class == "PRIEST" then 
+		elseif class == "PRIEST" then
 			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
 		end
 	end

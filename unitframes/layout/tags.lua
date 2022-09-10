@@ -2,13 +2,19 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: tags.lua
 	Description: oUF Tags
-]] 
+]]
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
 local oUF = LUI.oUF
 
 local Media = LibStub("LibSharedMedia-3.0")
+
+local UnitIsConnected, UnitIsGhost, UnitIsDead, UnitIsAFK = _G.UnitIsConnected, _G.UnitIsGhost, _G.UnitIsDead, _G.UnitIsAFK
+local UnitQuestTrivialLevelRange, GetQuestGreenRange = _G.UnitQuestTrivialLevelRange, _G.GetQuestGreenRange
+local UnitPower, UnitPowerMax, UnitPowerType = _G.UnitPower, _G.UnitPowerMax, _G.UnitPowerType
+local UnitClass, UnitLevel, UnitReaction = _G.UnitClass, _G.UnitLevel, _G.UnitReaction
+local UnitIsPlayer, UnitName = _G.UnitIsPlayer, _G.UnitName
 
 local nameCache = {}
 
