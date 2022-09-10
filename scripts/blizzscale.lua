@@ -69,7 +69,7 @@ local blizzEvents = {
 	"TRADE_SKILL_SHOW",
 	"SOCKET_INFO_UPDATE",
 }
-if IsRetail then
+if LUI.IsRetail then
 	local blizzEvents = {
 		"ARCHAEOLOGY_TOGGLE",
 		"BARBER_SHOP_OPEN",
@@ -82,7 +82,7 @@ local blizzHooks = {
 	"MacroFrame_LoadUI",
 	"KeyBindingFrame_LoadUI",
 }
-if IsRetail then
+if LUI.IsRetail then
 	local blizzHooks = {
 	"AchievementFrame_LoadUI",
 	"ArchaeologyFrame_LoadUI",

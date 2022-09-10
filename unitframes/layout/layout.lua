@@ -2170,7 +2170,7 @@ module.funcs = {
 		self.Runes:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 
 		for i = 1, 6 do
-			if IsRetail then
+			if LUI.IsRetail then
 				runeType = 1
 			else
 				runeType = GetRuneType(i)
@@ -2458,7 +2458,7 @@ module.funcs = {
 				local _, playerClass = UnitClass(unit)
 				if(not UnitHasVehicleUI('player')) then
 					if(UnitPowerMax(unit, ADDITIONAL_POWER_BAR_INDEX) ~= 0) then
-						if IsRetail and (ALT_MANA_BAR_PAIR_DISPLAY_INFO[playerClass]) then
+						if LUI.IsRetail and (ALT_MANA_BAR_PAIR_DISPLAY_INFO[playerClass]) then
 							local powerType = UnitPowerType(unit)
 							shouldEnable = ALT_MANA_BAR_PAIR_DISPLAY_INFO[playerClass][powerType]
 						end

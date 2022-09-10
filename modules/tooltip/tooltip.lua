@@ -403,7 +403,7 @@ function module:SetTooltip()
 	end)
 
 	-- Contribution frame requires special handling because of the way V3 works, ContributionTooltip is nil at the moment of running UpdateTooltips
-	if IsRetail then
+	if LUI.IsRetail then
 		module:RegisterEvent("CONTRIBUTION_COLLECTOR_OPEN", function()
 			local ccTooltips = { ContributionTooltip, ContributionBuffTooltip }
 			for _, tt in pairs(ccTooltips) do

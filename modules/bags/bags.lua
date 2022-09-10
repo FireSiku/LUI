@@ -82,7 +82,7 @@ local BagsSlots = {}		--replace self.bagsframe_buttons
 
 --Button frame type for bag slots create frame functions
 local ButtonType = "ItemButton" --retail frame type
-if IsBCC or IsClassic then
+if LUI.IsBCC or LUI.IsClassic then
 	ButtonType = "checkButton"	-- classic frame type
 end
 
@@ -111,7 +111,7 @@ StaticPopupDialogs["CONFIRM_BUY_BANK_SLOT"] = {
 local function LUIBags_Select(bag)
 	if bag == "Bank" and LUIBank then return LUIBank end
 	if bag == "Bags" and LUIBags then return LUIBags end
-	if IsRetail and bag == "Reagents" and LUIReagents then return LUIReagents end
+	if LUI.IsRetail and bag == "Reagents" and LUIReagents then return LUIReagents end
 end
 
 local function CheckSortButton()
@@ -133,13 +133,13 @@ local function LUIBags_OnShow()
 
 	module:RegisterEvent("BAG_UPDATE_DELAYED")
 	module:RegisterEvent("PLAYERBANKBAGSLOTS_CHANGED")
-	if IsRetail then module:RegisterEvent("PLAYERREAGENTBANKSLOTS_CHANGED") end
+	if LUI.IsRetail then module:RegisterEvent("PLAYERREAGENTBANKSLOTS_CHANGED") end
 	module:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
 	module:RegisterEvent("BAG_CLOSED")
 	module:RegisterEvent("ITEM_LOCK_CHANGED")
 	module:RegisterEvent("QUEST_ACCEPTED")
 	module:RegisterEvent("UNIT_QUEST_LOG_CHANGED")
-	if IsRetail and not IsReagentBankUnlocked() then
+	if LUI.IsRetail and not IsReagentBankUnlocked() then
 		module:RegisterEvent("REAGENTBANK_PURCHASED")
 	end
 	CheckSortButton()
@@ -156,7 +156,7 @@ end
 local function LUIBags_OnHide()  -- Close the Bank if Bags are closed.
 	if LUIBank and LUIBank:IsShown() then
 		LUIBank:Hide()
-		if IsRetail then LUIReagents:Hide() end
+		if LUI.IsRetail then LUIReagents:Hide() end
 	end
 
 	module:UnregisterEvent("BAG_UPDATE_DELAYED")
@@ -166,7 +166,7 @@ local function LUIBags_OnHide()  -- Close the Bank if Bags are closed.
 	module:UnregisterEvent("ITEM_LOCK_CHANGED")
 	module:UnregisterEvent("QUEST_ACCEPTED")
 	module:UnregisterEvent("UNIT_QUEST_LOG_CHANGED")
-	if IsRetail and not IsReagentBankUnlocked() then
+	if LUI.IsRetail and not IsReagentBankUnlocked() then
 		module:UnregisterEvent("REAGENTBANK_PURCHASED")
 		module:UnregisterEvent("PLAYERREAGENTBANKSLOTS_CHANGED")
 	end
@@ -309,7 +309,7 @@ function module:SlotUpdate(item)
 	SetItemButtonTexture(item.frame, texture)
 	SetItemButtonCount(item.frame, count)
 	SetItemButtonDesaturated(item.frame, locked, 0.5, 0.5, 0.5)
-	if IsRetail and db.Bags.ShowOverlay and itemLink then
+	if LUI.IsRetail and db.Bags.ShowOverlay and itemLink then
 		SetItemButtonOverlay(item.frame, itemLink, Quality, isBound)
 	else
 		item.frame.IconOverlay:Hide()
@@ -359,7 +359,7 @@ function module:BagFrameSlotNew(slot, parent, bagType)
 	--Make a new slot.
 	local ret = {}
 	local ButtonType = "ItemButton"
-	if IsBCC or IsClassic then
+	if LUI.IsBCC or LUI.IsClassic then
 		ButtonType = "checkButton"
 	end
 
@@ -571,7 +571,7 @@ function module:CreateBagFrame(bagType)
 	frame.BagsFrame = bagsFrame
 
 	-- Deposit Reagents
-	if IsRetail and frameName == "LUIReagents" then
+	if LUI.IsRetail and frameName == "LUIReagents" then
 		local depositBtn = CreateFrame("Button", frameName.."_SortButton", frame, "UIPanelButtonTemplate")
 		depositBtn:SetText("Deposit Reagents");
 		depositBtn:SetWidth(LUI:Scale(depositBtn:GetTextWidth()+20))
@@ -587,7 +587,7 @@ function module:CreateBagFrame(bagType)
 	end
 
 	-- Purchase Reagents Bank
-	if IsRetail and frameName == "LUIBank" and not IsReagentBankUnlocked() then
+	if LUI.IsRetail and frameName == "LUIBank" and not IsReagentBankUnlocked() then
 		local reagentsBtn = CreateFrame("Button", frameName.."_ReagentButton", frame, "UIPanelButtonTemplate")
 		reagentsBtn:SetText("Purchase Reagents Bank Vault");
 		reagentsBtn:SetWidth(LUI:Scale(reagentsBtn:GetTextWidth()+20))
@@ -619,7 +619,7 @@ function module:CreateBagFrame(bagType)
 		-- SortBankBags();
 		if frameName ~= "LUIReagents" then
 			module:PrepareSort(self:GetParent());
-		elseif IsRetail then
+		elseif LUI.IsRetail then
 			SortReagentBankBags()
 		end
 		module:RegisterEvent("PLAYERBANKBAGSLOTS_CHANGED")
@@ -639,7 +639,7 @@ function module:InitBank()
 	end
 
 	LUIBank = self:CreateBagFrame("Bank")
-	if IsRetail then LUIReagents = self:CreateBagFrame("Reagents") end
+	if LUI.IsRetail then LUIReagents = self:CreateBagFrame("Reagents") end
 	LUIBank:SetScript("OnShow", LUIBank_OnShow)
 	LUIBank:SetScript("OnHide", LUIBank_OnHide)
 end
@@ -657,9 +657,9 @@ local function GetTrackedCurrency()
 	local currencyFormat = "%d\124T%s:%d:%d:2:0\124t"
 	local currencyString = {}
 	for i = 1, 3 do -- Only 3 currencies at a time.
-		if IsRetail then
+		if LUI.IsRetail then
 			local info = C_CurrencyInfo.GetBackpackCurrencyInfo(i)
-		elseif IsBCC or IsClassic then
+		elseif LUI.IsBCC or LUI.IsClassic then
 			local info = GetBackpackCurrencyInfo(i)
 		end
 		if info and info.name then
@@ -750,7 +750,7 @@ function module:SetBags()
 	LUIBags:RegisterEvent("PLAYER_TRADE_MONEY")
 	LUIBags:RegisterEvent("TRADE_MONEY_CHANGED")
 	LUIBags:RegisterEvent("CURRENCY_DISPLAY_UPDATE")
-	if IsRetail then
+	if LUI.IsRetail then
 		LUIBags:RegisterEvent("PLAYER_TRADE_CURRENCY")
 		LUIBags:RegisterEvent("TRADE_CURRENCY_CHANGED")
 	end
@@ -831,7 +831,7 @@ function module:Layout(bagType)
 	end
 
 	local isBank = false
-	if bagType == "Bank" or IsRetail and bagType == "Reagents" then
+	if bagType == "Bank" or LUI.IsRetail and bagType == "Reagents" then
 		isBank = true
 	else
 		frame.gold:SetText(GetMoneyString(GetMoney(), 12))
@@ -1029,7 +1029,7 @@ function module:Layout(bagType)
 	--adjust the size of the frames now.
 	frame:SetScale(db[bagType].Scale)
 	bagsFrame:SetScale(db[bagType].BagScale)
-	if IsRetail and bagType == "Reagents" then
+	if LUI.IsRetail and bagType == "Reagents" then
 		bagsFrame:SetAlpha(0)
 	end
 
@@ -1109,12 +1109,12 @@ function module:PLAYERBANKBAGSLOTS_CHANGED(event, id)
 end
 
 function module:PLAYERREAGENTBANKSLOTS_CHANGED(event, id)
-	if not IsRetail then return end
+	if not LUI.IsRetail then return end
 	module:ReloadLayout("Reagents")
 end
 
 function module:REAGENTBANK_PURCHASED(event, id)
-	if not IsRetail then return end
+	if not LUI.IsRetail then return end
 	if IsReagentBankUnlocked() then
 		LUIBank_ReagentButton:Hide()
 		module:ReloadLayout("Reagents")
@@ -1145,7 +1145,7 @@ function module:PLAYERBANKSLOTS_CHANGED(event, id)
 		end
 	end
 
-	if IsRetail and LUIReagents and LUIReagents:IsShown() then
+	if LUI.IsRetail and LUIReagents and LUIReagents:IsShown() then
 		for _, id in ipairs(GetBags["Reagents"]) do
 			module:BagSlotUpdate(id)
 		end
@@ -1175,7 +1175,7 @@ function module:BANKFRAME_OPENED()
 	end
 
 	module:Layout("Bank")
-	if IsRetail then module:Layout("Reagents") end
+	if LUI.IsRetail then module:Layout("Reagents") end
 	for _, x in ipairs(GetBags["Bank"]) do
 		module:BagSlotUpdate(x)
 	end
@@ -1184,13 +1184,13 @@ function module:BANKFRAME_OPENED()
 	LUIBank:SetAlpha(1)
 
 	-- Show purchase button instead of frame if you haven't bought it yet
-	if IsRetail and IsReagentBankUnlocked() then
+	if LUI.IsRetail and IsReagentBankUnlocked() then
 		for _, x in ipairs(GetBags["Reagents"]) do
 			module:BagSlotUpdate(x)
 		end
 		LUIReagents:Show()
 		LUIReagents:SetAlpha(1)
-	elseif IsRetail then
+	elseif LUI.IsRetail then
 		LUIReagents:Hide()
 	end
 end
@@ -1201,7 +1201,7 @@ function module:BANKFRAME_CLOSED()
 	end
 
 	LUIBank:Hide()
-	if IsRetail then LUIReagents:Hide() end
+	if LUI.IsRetail then LUIReagents:Hide() end
 end
 
 function module:BAG_CLOSED(event, id)
@@ -1424,7 +1424,7 @@ function module:LoadOptions()
 				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 11, db.Bags, "ItemQuality", dbd.Bags, ReloadBoth),
 				ShowNew = LUI:NewToggle("Show New Item Animation", nil, 12, db.Bags, "ShowNew", dbd.Bags, ReloadBoth),
 				ShowQuest = LUI:NewToggle("Show Quest Highlights", nil, 13, db.Bags, "ShowQuest", dbd.Bags, ReloadBoth),
-				ShowOverlay = (IsRetail) and LUI:NewToggle("Show Overlays", nil, 14, db.Bags, "ShowOverlay", dbd.Bags, ReloadBoth),
+				ShowOverlay = (LUI.IsRetail) and LUI:NewToggle("Show Overlays", nil, 14, db.Bags, "ShowOverlay", dbd.Bags, ReloadBoth),
 			},
 		},
 		Bank = {
@@ -1449,7 +1449,7 @@ function module:LoadOptions()
 				BagFrame = LUI:NewToggle("Show Bag Bar", nil, 8, db.Bank, "BagFrame", dbd.Bank, BankOpt, nil, DisabledCopy),
 			},
 		},
-		Reagents = IsRetail and {
+		Reagents = LUI.IsRetail and {
 			name = "Reagents",
 			type = "group",
 			order = 5,
