@@ -17,7 +17,6 @@ local db
 
 local UnitHealth, UnitHealthMax, UnitPower, UnitPowerMax = _G.UnitHealth, _G.UnitHealthMax, _G.UnitPower, _G.UnitPowerMax
 local UnitIsUnit, UnitExists, UnitIsGhost, UnitIsDead = _G.UnitIsUnit, _G.UnitExists, _G.UnitIsGhost, _G.UnitIsDead
-local GetComboPoints, GetRuneType, GetShapeshiftFormID = _G.GetComboPoints, _G.GetRuneType, _G.GetShapeshiftFormID
 local UnitName, UnitGUID, UnitIsPVP, GetPVPTimer = _G.UnitName, _G.UnitGUID, _G.UnitIsPVP, _G.GetPVPTimer
 local UnitIsPlayer, UnitIsEnemy, UnitIsTapDenied = _G.UnitIsPlayer, _G.UnitIsEnemy, _G.UnitIsTapDenied
 local GetSpellInfo, GetTalentInfo, GetTotemInfo = _G.GetSpellInfo, _G.GetTalentInfo, _G.GetTotemInfo
@@ -28,6 +27,7 @@ local UnitClass, UnitLevel, GetSpecialization = _G.UnitClass, _G.UnitLevel, _G.G
 local UnitAura, UnitDebuff, DebuffTypeColor = _G.UnitAura, _G.UnitDebuff, _G.DebuffTypeColor
 local SetPortraitTexture, UnitHasVehicleUI = _G.SetPortraitTexture, _G.UnitHasVehicleUI
 local UnitXP, UnitXPMax, GetXPExhaustion = _G.UnitXP, _G.UnitXPMax, _G.GetXPExhaustion
+local GetComboPoints, GetShapeshiftFormID = _G.GetComboPoints, _G.GetShapeshiftFormID
 local UnitReaction, GetWatchedFactionInfo = _G.UnitReaction, _G.GetWatchedFactionInfo
 local UnitSpellHaste, UnitChannelInfo = _G.UnitSpellHaste, _G.UnitChannelInfo
 local GetGlyphSocketInfo = _G.GetGlyphSocketInfo
@@ -2190,11 +2190,7 @@ module.funcs = {
 		self.Runes:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 
 		for i = 1, 6 do
-			if LUI.IsRetail then
-				runeType = 1
-			else
-				runeType = GetRuneType(i)
-			end
+			local runeType = (_G.GetRuneType) and _G.GetRuneType(i) or 1
 			self.Runes[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Runes.Texture))
 			self.Runes[i]:SetStatusBarColor(unpack(module.colors.runes[runeType]))
 			self.Runes[i]:SetSize(((oufdb.Bars.Runes.Width - 5 * oufdb.Bars.Runes.Padding) / 6), oufdb.Bars.Runes.Height)

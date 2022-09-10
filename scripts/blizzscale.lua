@@ -81,8 +81,8 @@ local blizzHooks = {
 	"KeyBindingFrame_LoadUI",
 }
 if LUI.IsRetail then
-	tinsert(blizzEvents, "AchievementFrame_LoadUI")
-	tinsert(blizzEvents, "ArchaeologyFrame_LoadUI")
+	--/retinsert(blizzEvents, "AchievementFrame_LoadUI")
+	--tinsert(blizzEvents, "ArchaeologyFrame_LoadUI")
 	tinsert(blizzEvents, "CollectionsJournal_LoadUI")
 	tinsert(blizzEvents, "EncounterJournal_LoadUI")
 	tinsert(blizzEvents, "Garrison_LoadUI")
