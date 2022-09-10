@@ -35,7 +35,7 @@ local hidden = {}
 
 local show, hide, hook, unhook
 do
-	if IsRetail then
+	if LUI.IsRetail then
 		Blizzard:SecureHook("OrderHall_LoadUI", function()
 			LUI:Kill(OrderHallCommandBar)
 		end)

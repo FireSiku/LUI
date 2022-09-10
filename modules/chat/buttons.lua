@@ -170,7 +170,7 @@ local function hideButtons(frame)
 	frame.buttonFrame:Hide()
 end
 
-if IsRetail then
+if LUI.IsRetail then
 	chatButtonNames = {
 		"ChatFrameMenuButton",
 		"QuickJoinToastButton",
@@ -200,7 +200,7 @@ local function configButtons(hide)
 			local frame = _G[name]
 			LUI:Kill(frame)
 		end
-		if IsRetail then
+		if LUI.IsRetail then
 			for i, name in pairs(voiceButtonNames) do
 				local frame = _G[name]
 				frame:SetVisibilityQueryFunction(voiceHideFunc)
@@ -218,7 +218,7 @@ local function configButtons(hide)
 			frame.Show = nil
 			frame:Show()
 		end
-		if IsRetail then
+		if LUI.IsRetail then
 			for i, name in pairs(voiceButtonNames) do
 				local frame = _G[name]
 				frame:SetVisibilityQueryFunction(voiceOrigFunc)

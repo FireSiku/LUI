@@ -79,19 +79,19 @@ local function Update(self, event, unit)
 
 	local myIncomingHeal = UnitGetIncomingHeals(unit, 'player') or 0
 	local allIncomingHeal = UnitGetIncomingHeals(unit) or 0
-	if IsRetail then 
+	if LUI.IsRetail then 
 		totalAbsorb = UnitGetTotalAbsorbs(unit) or 0
 		myCurrentHealAbsorb = UnitGetTotalHealAbsorbs(unit) or 0
 	end
 	local health, maxHealth = UnitHealth(unit), UnitHealthMax(unit)
 
 	local overHealAbsorb = false
-	if IsRetail and (health < myCurrentHealAbsorb) then
+	if LUI.IsRetail and (health < myCurrentHealAbsorb) then
 		overHealAbsorb = true
 		myCurrentHealAbsorb = health
 	end
 
-	if IsRetail and (health - myCurrentHealAbsorb + allIncomingHeal > maxHealth * hp.maxOverflow) then
+	if LUI.IsRetail and (health - myCurrentHealAbsorb + allIncomingHeal > maxHealth * hp.maxOverflow) then
 		allIncomingHeal = maxHealth * hp.maxOverflow - health + myCurrentHealAbsorb
 	end
 
@@ -115,9 +115,9 @@ local function Update(self, event, unit)
 		end
 	end
 
-	if IsRetail and (myCurrentHealAbsorb > allIncomingHeal) then
+	if LUI.IsRetail and (myCurrentHealAbsorb > allIncomingHeal) then
 		myCurrentHealAbsorb = myCurrentHealAbsorb - allIncomingHeal
-	elseif IsRetail then
+	elseif LUI.IsRetail then
 		myCurrentHealAbsorb = 0
 	end
 
@@ -171,7 +171,7 @@ local function Enable(self)
 		else
 			self:RegisterEvent('UNIT_HEALTH', Path)
 		end
-		if IsRetail then
+		if LUI.IsRetail then
 			self:RegisterEvent('UNIT_ABSORB_AMOUNT_CHANGED', Path)
 			self:RegisterEvent('UNIT_HEAL_ABSORB_AMOUNT_CHANGED', Path)
 		end
@@ -232,7 +232,7 @@ local function Disable(self)
 		self:UnregisterEvent('UNIT_MAXHEALTH', Path)
 		self:UnregisterEvent('UNIT_HEALTH', Path)
 		self:UnregisterEvent('UNIT_HEALTH_FREQUENT', Path)
-		if IsRetail then
+		if LUI.IsRetail then
 			self:UnregisterEvent('UNIT_ABSORB_AMOUNT_CHANGED', Path)
 			self:UnregisterEvent('UNIT_HEAL_ABSORB_AMOUNT_CHANGED', Path)
 		end

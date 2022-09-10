@@ -287,7 +287,7 @@ local function Configure(bar, numButtons, numPerRow)
 			else
 				buttons[i]:SetAttribute("statehidden", nil)
 				buttons[i]:Show()
-				if IsRetail then buttons[i]:Update() end
+				if LUI.IsRetail then buttons[i]:Update() end
 			end
 		end
 	end
@@ -862,7 +862,7 @@ function module:SetVehicleExit()
 end
 
 function module:SetExtraActionBar()
-	if not IsRetail then return end
+	if not LUI.IsRetail then return end
 	local bar = LUIExtraActionBar
 	local eadb = db.ExtraActionBar
 	if not bar then
@@ -1191,7 +1191,7 @@ end
 
 local flyoutButtons = 0
 local function StyleFlyout(self)
-	if not IsRetail then return end
+	if not LUI.IsRetail then return end
 	if not self.FlyoutArrow then return end
 
 	self.FlyoutBorder:SetAlpha(0)
@@ -1281,7 +1281,7 @@ local function Button_OnUpdate(button, elapsed)
 end
 
 function module:HookActionButton(button)
-	if IsRetail and button then
+	if LUI.IsRetail and button then
 		module:SecureHook(button, "Update", StyleButton)
 		module:SecureHook(button, "OnUpdate", Button_OnUpdate)
 		module:SecureHook(button, "UpdateHotkeys", UpdateHotkey)
@@ -1292,7 +1292,7 @@ function module:HookActionButton(button)
 		module:SecureHook("StanceBar_Update", StyleStanceButtons)
 		module:SecureHook("StanceBar_UpdateState", StyleStanceButtons)
 		module:SecureHook("PetActionBar_Update", StylePetButtons)
-		if IsRetail then 
+		if LUI.IsRetail then 
 			module:SecureHook("ActionButton_UpdateFlyout", StyleFlyout)
 			SpellFlyout:HookScript("OnShow", StyleFlyoutButton)
 		end
@@ -1337,7 +1337,7 @@ function module:SetBars()
 
 		-- because of an ugly bug...
 		module:SecureHook(CharacterFrame, "Show", function() TokenFrame_Update() end)
-		if IsRetail then module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED") end
+		if LUI.IsRetail then module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED") end
 
 	else
 		g_isBarAddOnLoaded = true

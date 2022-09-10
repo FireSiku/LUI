@@ -134,9 +134,9 @@ oUF.Tags.Methods["DiffColor"] = function(unit)
 			r, g, b = unpack(module.colors.leveldiff[2])
 		elseif difference >= -2 then
 			r, g, b = unpack(module.colors.leveldiff[3])
-		elseif IsRetail and (-difference <= UnitQuestTrivialLevelRange("player")) then
+		elseif LUI.IsRetail and (-difference <= UnitQuestTrivialLevelRange("player")) then
 			r, g, b = unpack(module.colors.leveldiff[4])
-		elseif not IsRetail and -difference <= GetQuestGreenRange() then
+		elseif not LUI.IsRetail and -difference <= GetQuestGreenRange() then
 			r, g, b = unpack(module.colors.leveldiff[4])
 		else
 			r, g, b = unpack(module.colors.leveldiff[5])

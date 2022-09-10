@@ -61,7 +61,7 @@ local OnUpdate = function(self, elapsed)
 end
 
 local UpdateType = function(self, event, rune, alt)
-	if IsRetail then return end
+	if LUI.IsRetail then return end
 	local colors = self.colors.runes[GetRuneType(rune) or alt]
 	local rune = self.Runes[rune]
 	local r, g, b = colors[1], colors[2], colors[3]
