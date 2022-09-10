@@ -27,14 +27,16 @@ local defaultGarrisonState = false
 function module:SetAdditionalFrames()
 	if db.Minimap.Enable ~= true then return end
 	self:SecureHook(DurabilityFrame, "SetPoint", "DurabilityFrame_SetPoint")
-	self:SecureHook(VehicleSeatIndicator, "SetPoint", "VehicleSeatIndicator_SetPoint")
-	self:SecureHook(ObjectiveTrackerFrame, "SetPoint", "ObjectiveTrackerFrame_SetPoint")
-	self:SecureHook(UIWidgetTopCenterContainerFrame, "SetPoint", "AlwaysUpFrame_SetPoint")
-	self:SecureHook(TicketStatusFrame, "SetPoint", "TicketStatus_SetPoint")
-	self:SecureHook(UIWidgetBelowMinimapContainerFrame, "SetPoint", "CaptureBar_SetPoint")
-	self:SecureHook(PlayerPowerBarAlt, "SetPoint", "PlayerPowerBarAlt_SetPoint")
-	self:SecureHook(GroupLootContainer, "SetPoint", "GroupLootContainer_SetPoint")
-	self:SecureHook(MawBuffsBelowMinimapFrame, "SetPoint", "MawBuffs_SetPoint")
+	if (IsRetail) then
+		self:SecureHook(VehicleSeatIndicator, "SetPoint", "VehicleSeatIndicator_SetPoint")
+		self:SecureHook(ObjectiveTrackerFrame, "SetPoint", "ObjectiveTrackerFrame_SetPoint")
+		self:SecureHook(UIWidgetTopCenterContainerFrame, "SetPoint", "AlwaysUpFrame_SetPoint")
+		self:SecureHook(TicketStatusFrame, "SetPoint", "TicketStatus_SetPoint")
+		self:SecureHook(UIWidgetBelowMinimapContainerFrame, "SetPoint", "CaptureBar_SetPoint")
+		self:SecureHook(PlayerPowerBarAlt, "SetPoint", "PlayerPowerBarAlt_SetPoint")
+		self:SecureHook(GroupLootContainer, "SetPoint", "GroupLootContainer_SetPoint")
+		self:SecureHook(MawBuffsBelowMinimapFrame, "SetPoint", "MawBuffs_SetPoint")
+	end
 end
 
 function module:SetPosition(frame)
@@ -42,13 +44,13 @@ function module:SetPosition(frame)
 	if frame == "AlwaysUpFrame" and db.Minimap.Frames.SetAlwaysUpFrame then
 		UIWidgetTopCenterContainerFrame:ClearAllPoints()
 		UIWidgetTopCenterContainerFrame:SetPoint("TOP", UIParent, "TOP", db.Minimap.Frames.AlwaysUpFrameX, db.Minimap.Frames.AlwaysUpFrameY)
-	elseif frame == "VehicleSeatIndicator" and db.Minimap.Frames.SetVehicleSeatIndicator then
+	elseif (IsRetail) and frame == "VehicleSeatIndicator" and db.Minimap.Frames.SetVehicleSeatIndicator then
 		VehicleSeatIndicator:ClearAllPoints()
 		VehicleSeatIndicator:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.VehicleSeatIndicatorX, db.Minimap.Frames.VehicleSeatIndicatorY)
 	elseif frame == "DurabilityFrame" and db.Minimap.Frames.SetDurabilityFrame then
 		DurabilityFrame:ClearAllPoints()
 		DurabilityFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.DurabilityFrameX, db.Minimap.Frames.DurabilityFrameY)
-	elseif frame == "ObjectiveTrackerFrame" and db.Minimap.Frames.SetObjectiveTrackerFrame then
+	elseif (IsRetail) and frame == "ObjectiveTrackerFrame" and db.Minimap.Frames.SetObjectiveTrackerFrame then
 		--ObjectiveTrackerFrame:ClearAllPoints() -- Cause a lot of odd behaviors with the quest tracker.
 		ObjectiveTrackerFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.Minimap.Frames.ObjectiveTrackerFrameX, db.Minimap.Frames.ObjectiveTrackerFrameY)
 	elseif frame == "TicketStatus" and db.Minimap.Frames.SetTicketStatus then
@@ -261,21 +263,23 @@ function module:SetMinimap()
 	MinimapZoomOut:Hide()
 
 	-- GuildInstanceDifficulty
-	GuildInstanceDifficulty:UnregisterAllEvents()
-	GuildInstanceDifficulty.NewShow = MiniMapInstanceDifficulty.Show
-	GuildInstanceDifficulty.Show = GuildInstanceDifficulty.Hide
-	GuildInstanceDifficulty:Hide()
-
+	if (IsRetail) then
+		GuildInstanceDifficulty:UnregisterAllEvents()
+		GuildInstanceDifficulty.NewShow = MiniMapInstanceDifficulty.Show
+		GuildInstanceDifficulty.Show = GuildInstanceDifficulty.Hide
+		GuildInstanceDifficulty:Hide()
+	end
 	-- MiniMapInstanceDifficulty
 	MiniMapInstanceDifficulty.NewShow = MiniMapInstanceDifficulty.Show
 	MiniMapInstanceDifficulty.Show = MiniMapInstanceDifficulty.Hide
 	MiniMapInstanceDifficulty:Hide()
 
-	-- MiniMapChallengeMode 
-	MiniMapChallengeMode.NewShow = MiniMapChallengeMode.Show
-	MiniMapChallengeMode.Show = MiniMapChallengeMode.Hide
-	MiniMapChallengeMode:Hide()
-
+	-- MiniMapChallengeMode
+	if (IsRetail) then
+		MiniMapChallengeMode.NewShow = MiniMapChallengeMode.Show
+		MiniMapChallengeMode.Show = MiniMapChallengeMode.Hide
+		MiniMapChallengeMode:Hide()
+	end
 	-- Hide Voice Chat Frame
 	--MiniMapVoiceChatFrame:Hide()
 
@@ -302,20 +306,23 @@ function module:SetMinimap()
 	MiniMapMailIcon:SetTexture(LUI.Media.mail)
 
 	-- Move battleground icon
-	QueueStatusMinimapButton:ClearAllPoints()
-	QueueStatusMinimapButton:SetPoint(db.Minimap.Icon.BG, Minimap, LUI:Scale(3), 0)
-	QueueStatusMinimapButtonBorder:Hide()
-
+	if (IsRetail) then
+		QueueStatusMinimapButton:ClearAllPoints()
+		QueueStatusMinimapButton:SetPoint(db.Minimap.Icon.BG, Minimap, LUI:Scale(3), 0)
+		QueueStatusMinimapButtonBorder:Hide()
+	end
 	-- Move Garrison icon
-	module:SecureHook("GarrisonLandingPageMinimapButton_UpdateIcon", function()
-		GarrisonLandingPageMinimapButton:SetSize(32,32)
-		GarrisonLandingPageMinimapButton:ClearAllPoints()
-		if MiniMapMailFrame:IsShown() then
-			GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-5))
-		else
-			GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
-		end
-	end)
+	if (IsRetail) then
+		module:SecureHook("GarrisonLandingPageMinimapButton_UpdateIcon", function()
+			GarrisonLandingPageMinimapButton:SetSize(32,32)
+			GarrisonLandingPageMinimapButton:ClearAllPoints()
+			if MiniMapMailFrame:IsShown() then
+				GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-5))
+			else
+				GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
+			end
+		end)
+	end
 
 	MiniMapMailFrame:HookScript("OnShow", function()
 		GarrisonLandingPageMinimapButton:ClearAllPoints()
@@ -971,8 +978,10 @@ function module:OnEnable()
 	end
 	self:SetMinimap()
 	self:SetAdditionalFrames()
-	self:RegisterEvent("GARRISON_HIDE_LANDING_PAGE")
-	self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE")
-	C_Timer.After(0.25, self.ToggleMissionReport)
-	self:SecureHook(MawBuffsBelowMinimapFrameMixin, "OnShow", function() self:SetPosition('MawBuffs') end)
+	if IsRetail then
+		self:RegisterEvent("GARRISON_HIDE_LANDING_PAGE")
+		self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE")
+		C_Timer.After(0.25, self.ToggleMissionReport)
+		self:SecureHook(MawBuffsBelowMinimapFrameMixin, "OnShow", function() self:SetPosition('MawBuffs') end)
+	end
 end

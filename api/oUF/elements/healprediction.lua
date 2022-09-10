@@ -79,17 +79,19 @@ local function Update(self, event, unit)
 
 	local myIncomingHeal = UnitGetIncomingHeals(unit, 'player') or 0
 	local allIncomingHeal = UnitGetIncomingHeals(unit) or 0
-	local totalAbsorb = UnitGetTotalAbsorbs(unit) or 0
-	local myCurrentHealAbsorb = UnitGetTotalHealAbsorbs(unit) or 0
+	if IsRetail then 
+		totalAbsorb = UnitGetTotalAbsorbs(unit) or 0
+		myCurrentHealAbsorb = UnitGetTotalHealAbsorbs(unit) or 0
+	end
 	local health, maxHealth = UnitHealth(unit), UnitHealthMax(unit)
 
 	local overHealAbsorb = false
-	if(health < myCurrentHealAbsorb) then
+	if IsRetail and (health < myCurrentHealAbsorb) then
 		overHealAbsorb = true
 		myCurrentHealAbsorb = health
 	end
 
-	if(health - myCurrentHealAbsorb + allIncomingHeal > maxHealth * hp.maxOverflow) then
+	if IsRetail and (health - myCurrentHealAbsorb + allIncomingHeal > maxHealth * hp.maxOverflow) then
 		allIncomingHeal = maxHealth * hp.maxOverflow - health + myCurrentHealAbsorb
 	end
 
@@ -101,7 +103,7 @@ local function Update(self, event, unit)
 	end
 
 	local overAbsorb = false
-	if(health - myCurrentHealAbsorb + allIncomingHeal + totalAbsorb >= maxHealth or health + totalAbsorb >= maxHealth) then
+	if IsRetial and (health - myCurrentHealAbsorb + allIncomingHeal + totalAbsorb >= maxHealth or health + totalAbsorb >= maxHealth) then
 		if(totalAbsorb > 0) then
 			overAbsorb = true
 		end
@@ -113,9 +115,9 @@ local function Update(self, event, unit)
 		end
 	end
 
-	if(myCurrentHealAbsorb > allIncomingHeal) then
+	if IsRetail and (myCurrentHealAbsorb > allIncomingHeal) then
 		myCurrentHealAbsorb = myCurrentHealAbsorb - allIncomingHeal
-	else
+	elseif IsRetail then
 		myCurrentHealAbsorb = 0
 	end
 
@@ -169,9 +171,10 @@ local function Enable(self)
 		else
 			self:RegisterEvent('UNIT_HEALTH', Path)
 		end
-		self:RegisterEvent('UNIT_ABSORB_AMOUNT_CHANGED', Path)
-		self:RegisterEvent('UNIT_HEAL_ABSORB_AMOUNT_CHANGED', Path)
-
+		if IsRetail then
+			self:RegisterEvent('UNIT_ABSORB_AMOUNT_CHANGED', Path)
+			self:RegisterEvent('UNIT_HEAL_ABSORB_AMOUNT_CHANGED', Path)
+		end
 		if(not hp.maxOverflow) then
 			hp.maxOverflow = 1.05
 		end
@@ -229,8 +232,10 @@ local function Disable(self)
 		self:UnregisterEvent('UNIT_MAXHEALTH', Path)
 		self:UnregisterEvent('UNIT_HEALTH', Path)
 		self:UnregisterEvent('UNIT_HEALTH_FREQUENT', Path)
-		self:UnregisterEvent('UNIT_ABSORB_AMOUNT_CHANGED', Path)
-		self:UnregisterEvent('UNIT_HEAL_ABSORB_AMOUNT_CHANGED', Path)
+		if IsRetail then
+			self:UnregisterEvent('UNIT_ABSORB_AMOUNT_CHANGED', Path)
+			self:UnregisterEvent('UNIT_HEAL_ABSORB_AMOUNT_CHANGED', Path)
+		end
 	end
 end
 

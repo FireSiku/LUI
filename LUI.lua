@@ -15,6 +15,10 @@ local AceAddon = LibStub("AceAddon-3.0")
 _G.LUI = LUI
 _G.oUF = LUI.oUF
 
+LUI.IsRetail = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_MAINLINE)
+LUI.IsBCC = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
+LUI.IsClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC)
+
 local Media = LibStub("LibSharedMedia-3.0")
 local Profiler = LUI.Profiler
 local widgetLists = AceGUIWidgetLSMlists

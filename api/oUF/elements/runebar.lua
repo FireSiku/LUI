@@ -60,6 +60,20 @@ local OnUpdate = function(self, elapsed)
 	end
 end
 
+local UpdateType = function(self, event, rune, alt)
+	if IsRetail then return end
+	local colors = self.colors.runes[GetRuneType(rune) or alt]
+	local rune = self.Runes[rune]
+	local r, g, b = colors[1], colors[2], colors[3]
+
+	rune:SetStatusBarColor(r, g, b)
+
+	if(rune.bg) then
+		local mu = rune.bg.multiplier or 1
+		rune.bg:SetVertexColor(r * mu, g * mu, b * mu)
+	end
+end
+
 local Update = function(self, event, rid)
 	local runes = self.Runes
 	local rune = runes[rid]
@@ -131,13 +145,14 @@ local Enable = function(self, unit)
 		end
 
 		self:RegisterEvent("RUNE_POWER_UPDATE", Path, true)
-
+		self:RegisterEvent("RUNE_TYPE_UPDATE", UpdateType, true)
 		return true
 	end
 end
 
 local Disable = function(self)
 	self:UnregisterEvent("RUNE_POWER_UPDATE", Path)
+	self:UnregisterEvent("RUNE_TYPE_UPDATE", Path)
 end
 
 oUF:AddElement("Runes", Path, Enable, Disable)
