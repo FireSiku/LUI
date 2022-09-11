@@ -3,7 +3,7 @@
 ## Title: LUI
 ## Author: Siku, Nitsah
 ## Notes: User Interface Modification
-## SavedVariables: LUIDB, LUIGold, LUI_Themes, LUI_Layouts
+## SavedVariables: LUIDB
 ## SavedVariablesPerCharacter: LUICONFIG
 ## OptionalDeps: Masque, Masque_Darion
 ## X-oUF: oUF_LUI

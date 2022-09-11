@@ -53,10 +53,11 @@ local LOCALIZED_CLASS_NAMES_MALE = LOCALIZED_CLASS_NAMES_MALE
 -- ##### StringUtils: Classes #########################################################################################
 -- ####################################################################################################################
 
+---@type table<string, ClassToken>
 local localClassNames
---- Returns a locale-independant class token from a localized class name.
----@param className string @ locale-dependant class name
----@return ClassToken
+--- Returns a locale-independent class token from a localized class name.
+---@param className string @ locale-dependent class name
+---@return ClassToken classToken locale-indepent class token
 function LUI:GetTokenFromClassName(className)
 	if not localClassNames then
 		localClassNames = {}
@@ -73,8 +74,8 @@ end
 -- ####################################################################################################################
 -- ##### StringUtils: Constant Tables #################################################################################
 -- ####################################################################################################################
--- Make sure Blizzard doesn't have equivalent Enum tables that we could use.
 
+---@enum DBScope
 LUI.DB_TYPES = {
 	"profile",
 	"global",
@@ -104,7 +105,7 @@ LUI.GENDERS = {
 }
 
 -- As found in the Colors module.
-LUI.PowerTypes = {
+LUI.PowerTypeNames = {
 	"MANA",
 	"RAGE",
 	"FOCUS",
@@ -124,7 +125,8 @@ LUI.PowerTypes = {
 	"FUEL",
 }
 
-LUI.Opposites = {
+-- Should not be translated. Meant to be used as locale-independent keys
+LUI.OppositeOf = {
 	-- Sides
 	TOP = "BOTTOM",
 	BOTTOM = "TOP",
@@ -140,7 +142,7 @@ LUI.Opposites = {
 -- ####################################################################################################################
 -- ##### StringUtils: Localized Tables ################################################################################
 -- ####################################################################################################################
-
+--[[
 LUI.FontFlags = {
 	NONE = L["Flag_None"],
 	OUTLINE = L["Flag_Outline"],
@@ -184,3 +186,4 @@ LUI.ColorTypes = {
 	Theme = L["Color_Theme"],
 	Class = L["Color_Class"],
 }
+]]

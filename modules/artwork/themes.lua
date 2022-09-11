@@ -1377,14 +1377,5 @@ function module:OnInitialize()
 		LUI.db.profile.Colors = nil
 	end
 
-	if type(_G.LUI_Themes) == "table" then
-		for k, v in pairs(_G.LUI_Themes) do
-			if not db.global[k] then
-				db.global[k] = v
-			end
-		end
-		_G.LUI_Themes = nil
-	end
-
 	self:CheckTheme()
 end
