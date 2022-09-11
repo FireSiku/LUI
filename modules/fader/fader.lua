@@ -43,6 +43,15 @@ local widgetLists = AceGUIWidgetLSMlists
 -- Database and defaults shortcuts.
 local db, dbd
 
+local UnitChannelInfo = _G.UnitChannelInfo
+local UnitCastingInfo = _G.UnitCastingInfo
+local UnitHealthMax = _G.UnitHealthMax
+local UnitPowerType = _G.UnitPowerType
+local UnitPowerMax = _G.UnitPowerMax
+local UnitExists = _G.UnitExists
+local UnitHealth = _G.UnitHealth
+local UnitPower = _G.UnitPower
+
 -- Fader local variables.
 -- RegisteredFrames[frame] = frameSettings. (e.i. RegisteredFrames = { oUF_LUI_player = db.oUF.Player.Fader, oUF_LUI_target = db.oUF.Target.Fader, etc })
 Fader.Fading = {}
@@ -472,8 +481,8 @@ function Fader:EventHandler(event)
 		self.Status.combat = true
 	elseif event == "PLAYER_REGEN_ENABLED" then
 		self.Status.combat = false
-	elseif event == "PLAYER_TARGET_CHANGED" then
 		self.Status.targeting = UnitExists("target")
+	elseif event == "PLAYER_TARGET_CHANGED" then
 	end
 
 	-- And now the expensive bit

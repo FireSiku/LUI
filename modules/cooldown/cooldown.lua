@@ -11,14 +11,15 @@ local Media = LibStub("LibSharedMedia-3.0")
 local Profiler = LUI.Profiler
 
 -- Database and defaults shortcuts.
-local db, dbd
+local db, dbd --luacheck: ignore
 
 -- Localized API
 local floor, format, tinsert, tremove = math.floor, string.format, table.insert, table.remove
 local pairs, ipairs, next, wipe, GetTime = pairs, ipairs, next, wipe, GetTime
+local GetActionCooldown = _G.GetActionCooldown
 
-local COOLDOWN_TYPE_LOSS_OF_CONTROL = COOLDOWN_TYPE_LOSS_OF_CONTROL or 1
-local COOLDOWN_TYPE_NORMAL = COOLDOWN_TYPE_NORMAL or 2
+local COOLDOWN_TYPE_LOSS_OF_CONTROL = _G.COOLDOWN_TYPE_LOSS_OF_CONTROL or 1
+local COOLDOWN_TYPE_NORMAL = _G.COOLDOWN_TYPE_NORMAL or 2
 
 --------------------------------------------------
 -- Local Variables
@@ -252,7 +253,7 @@ do
 			end
 		end
 
-		module:SecureHook(getmetatable(ActionButton1Cooldown).__index, "SetCooldown", "AssignTimer")
+		module:SecureHook(getmetatable(_G.ActionButton1Cooldown).__index, "SetCooldown", "AssignTimer")
 	end
 end
 
@@ -382,8 +383,8 @@ function module:OnEnable()
 	initTimer()
 
 	-- Register frames handled by SetActionUIButton
-	if ActionBarButtonEventsFrame.frames then
-		for i, frame in pairs(ActionBarButtonEventsFrame.frames) do
+	if _G.ActionBarButtonEventsFrame.frames then
+		for i, frame in pairs(_G.ActionBarButtonEventsFrame.frames) do
 			module:RegisterActionUIButton(frame)
 		end
 	end

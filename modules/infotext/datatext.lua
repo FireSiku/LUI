@@ -20,8 +20,8 @@ local widgetLists = AceGUIWidgetLSMlists
 
 local db, dbd
 
-local CLASS_BUTTONS = CLASS_ICON_TCOORDS
-local BNET_CLIENT_WOW = BNET_CLIENT_WOW
+local CLASS_BUTTONS = _G.CLASS_ICON_TCOORDS
+local BNET_CLIENT_WOW = _G.BNET_CLIENT_WOW
 local BNET_CLIENT_MOBILE = "BSAp"
 
 ------------------------------------------------------

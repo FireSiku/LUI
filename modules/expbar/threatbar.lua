@@ -10,10 +10,10 @@ local oUFmodule = LUI:Module("Unitframes")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
-local db, dbd
+local db, dbd --luacheck:ignore
 local LUIThreat
 
-local LEVEL_CAP = MAX_PLAYER_LEVEL
+local LEVEL_CAP = _G.MAX_PLAYER_LEVEL
 local C_AzeriteItem = C_AzeriteItem
 
 LUI.Versions.threatbar = 2.0
@@ -64,7 +64,7 @@ local function UpdateExpMode()
 	local bar = LUIThreat
 	local bar2 = LUIThreat.artifact
 	local width = bar:GetWidth()
-	local left, percentBar, percentBar2
+	local left, right, percentBar, percentBar2
 	local precision = db.Text.Precision or 0
 	if UnitLevel("player") ~= LEVEL_CAP and not IsXPUserDisabled() then -- EXP MODE
 		local restXP = GetXPExhaustion() or 0
@@ -74,7 +74,7 @@ local function UpdateExpMode()
 		local percentRE = restXP * 100 / maxXP
 		bar:SetValue(percentBar)
 		if db.General.showRested then
-			local left = width / 100 * percentBar
+			left = width / 100 * percentBar
 			if ( percentBar + percentRE > 100 ) then
 				right = width - left
 			else

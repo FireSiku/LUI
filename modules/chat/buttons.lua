@@ -10,14 +10,19 @@ local Chat = LUI:Module("Chat")
 local module = Chat:Module("Buttons", "AceHook-3.0")
 
 local L = LUI.L
-local db, dbd
+local db, dbd --luacheck:ignore
 
 --------------------------------------------------
 -- Local Variables
 --------------------------------------------------
 
-local lines = {}
+local FCF_SetChatWindowFontSize = _G.FCF_SetChatWindowFontSize
+local FCF_GetCurrentChatFrame = _G.FCF_GetCurrentChatFrame
+local ChatFontNormal = _G.ChatFontNormal
+local CHAT_FRAMES = _G.CHAT_FRAMES
+local COMBATLOG = _G.COMBATLOG
 
+local lines = {}
 local copyFrame
 
 --------------------------------------------------
@@ -170,6 +175,7 @@ local function hideButtons(frame)
 	frame.buttonFrame:Hide()
 end
 
+local chatButtonNames, voiceButtonNames
 if LUI.IsRetail then
 	chatButtonNames = {
 		"ChatFrameMenuButton",

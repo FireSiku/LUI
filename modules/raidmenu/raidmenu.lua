@@ -20,10 +20,35 @@ local Media = LibStub("LibSharedMedia-3.0")
 
 local db, dbd
 
+local GetRaidTargetIndex = _G.GetRaidTargetIndex
+local GetNumGroupMembers = _G.GetNumGroupMembers
+local SetRaidTargetIcon = _G.SetRaidTargetIcon
+local InCombatLockdown = _G.InCombatLockdown
+local GetLootThreshold = _G.GetLootThreshold
+local SetLootThreshold = _G.SetLootThreshold
+local InitiateRolePoll = _G.InitiateRolePoll
+local ConvertToParty = _G.ConvertToParty
+local ConvertToRaid = _G.ConvertToRaid
+local GetLootMethod = _G.GetLootMethod
+local SetLootMethod = _G.SetLootMethod
+local SetRaidTarget = _G.SetRaidTarget
+local DoReadyCheck = _G.DoReadyCheck
+local GetRealmName = _G.GetRealmName
+local UnitName = _G.UnitName
+local IsInRaid = _G.IsInRaid
+local EasyMenu = _G.EasyMenu
+
+-- Frame placeholders
+local RaidMenu_Header, RaidMenu_Parent, RaidMenu_Border, RaidMenu_BG, RaidMenu
+local SkullRaidIcon, CrossRaidIcon, SquareRaidIcon, MoonRaidIcon, TriangleRaidIcon
+local DiamondRaidIcon, CircleRaidIcon, StarRaidIcon, ClearRaidIcon
+local BlueWorldMarker, GreenWorldMarker, PurpleWorldMarker, RedWorldMarker, YellowWorldMarker
+local OrangeWorldMarker, SilverWorldMarker, WhiteWorldMarker, ClearWorldMarkers
+local ConvertRaid, LootMethod, LootThreshold, RoleChecker, ReadyChecker
+
 local normtex = "Interface\\AddOns\\LUI\\media\\templates\\v3\\raidmenu"
 local bgtex = "Interface\\AddOns\\LUI\\media\\templates\\v3\\raidmenu_bg"
 local bordertex = "Interface\\AddOns\\LUI\\media\\templates\\v3\\raidmenu_border"
-
 LUI.Versions.raidmenu = 2.4
 
 local Y_normal, Y_compact = 107, 101
@@ -285,7 +310,7 @@ function module:SetRaidMenu()
 	if not db.profile.Enable or not Micromenu then return end
 
 	-- Create frames for Raid Menu
-	local RaidMenu_Parent = LUI:CreateMeAFrame("Frame", "RaidMenu_Parent", LUI.MicroMenu.ButtonLeft, 256, 256, 1, "HIGH", 0, "TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17), 1)
+	RaidMenu_Parent = LUI:CreateMeAFrame("Frame", "RaidMenu_Parent", LUI.MicroMenu.ButtonLeft, 256, 256, 1, "HIGH", 0, "TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17), 1)
 	if Panels.db.profile.MicroMenu.IsShown and db.OverlapPrevention == "Offset" then
 		RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", X_normal, (((Y_normal + db.Offset) / db.Scale) + 17)) -- Added X-offsets and fixed Y-offset from a fixed value
 	else
@@ -294,7 +319,7 @@ function module:SetRaidMenu()
 	RaidMenu_Parent:SetScale(db.Scale)
 	RaidMenu_Parent:Hide()
 
-	local RaidMenu_BG = LUI:CreateMeAFrame("Frame", "RaidMenu_BG", RaidMenu_Parent, 256, 256, 1, "HIGH", 1, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 0, 0, 1)
+	RaidMenu_BG = LUI:CreateMeAFrame("Frame", "RaidMenu_BG", RaidMenu_Parent, 256, 256, 1, "HIGH", 1, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 0, 0, 1)
 	RaidMenu_BG:SetBackdrop({
 		bgFile = bgtex,
 		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
@@ -304,7 +329,7 @@ function module:SetRaidMenu()
 	RaidMenu_BG:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg2))
 	RaidMenu_BG:SetBackdropBorderColor(0, 0, 0, 0)
 
-	local RaidMenu = LUI:CreateMeAFrame("Frame", "RaidMenu", RaidMenu_Parent, 256, 256, 1, "HIGH", 2, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 0, 0, 1)
+	RaidMenu = LUI:CreateMeAFrame("Frame", "RaidMenu", RaidMenu_Parent, 256, 256, 1, "HIGH", 2, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 0, 0, 1)
 	RaidMenu:SetBackdrop({
 		bgFile = normtex,
 		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
@@ -315,7 +340,7 @@ function module:SetRaidMenu()
 	RaidMenu:SetBackdropBorderColor(0, 0, 0, 0)
 
 	local micro_r, micro_g, micro_b = unpack(Themes.db.profile.micromenu)
-	local RaidMenu_Border = LUI:CreateMeAFrame("Frame", "RaidMenu_Border", RaidMenu_Parent, 256, 256, 1, "HIGH", 3, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 2, 1, 1)
+	RaidMenu_Border = LUI:CreateMeAFrame("Frame", "RaidMenu_Border", RaidMenu_Parent, 256, 256, 1, "HIGH", 3, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 2, 1, 1)
 	RaidMenu_Border:SetBackdrop({
 		bgFile = bordertex,
 		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
@@ -328,7 +353,7 @@ function module:SetRaidMenu()
 	local Infotext = LUI:Module("Infotext", true)
 	local font = Infotext and Infotext.db.profile.Clock.Font or "vibroceb"
 	local color = Infotext and Infotext.db.profile.Clock.Color or {r = 1, g = 1, b = 1, a = 1}
-	local RaidMenu_Header = RaidMenu:CreateFontString("RaidMenu_Header", "OVERLAY")
+	RaidMenu_Header = RaidMenu:CreateFontString("RaidMenu_Header", "OVERLAY")
 	RaidMenu_Header:SetFont(Media:Fetch("font", font), LUI:Scale(20), "THICKOUTLINE")
 	RaidMenu_Header:SetPoint("TOP", RaidMenu, "TOP", -5, -25)
 	RaidMenu_Header:SetTextColor(color.r, color.g, color.b, color.a)
@@ -338,27 +363,26 @@ function module:SetRaidMenu()
 	local LootMenuFrame = CreateFrame("Frame", "LootDropDownMenu", RaidMenu_Parent, "UIDropDownMenuTemplate")
 
 	-- Create buttons for Raid Menu
-	local SkullRaidIcon = CreateFrame("Button", "SkullRaidIcon", RaidMenu, "MarkerTemplate")
-	local CrossRaidIcon = CreateFrame("Button", "CrossRaidIcon", RaidMenu, "MarkerTemplate")
-	local SquareRaidIcon = CreateFrame("Button", "SquareRaidIcon", RaidMenu, "MarkerTemplate")
-	local MoonRaidIcon = CreateFrame("Button", "MoonRaidIcon", RaidMenu, "MarkerTemplate")
-	local TriangleRaidIcon = CreateFrame("Button", "TriangleRaidIcon", RaidMenu, "MarkerTemplate")
-	local DiamondRaidIcon = CreateFrame("Button", "DiamondRaidIcon", RaidMenu, "MarkerTemplate")
-	local CircleRaidIcon = CreateFrame("Button", "CircleRaidIcon", RaidMenu, "MarkerTemplate")
-	local StarRaidIcon = CreateFrame("Button", "StarRaidIcon", RaidMenu, "MarkerTemplate")
-	local ClearRaidIcon = CreateFrame("Button", "ClearRaidIcon", RaidMenu, "MarkerTemplate")
+	SkullRaidIcon = CreateFrame("Button", "SkullRaidIcon", RaidMenu, "MarkerTemplate")
+	CrossRaidIcon = CreateFrame("Button", "CrossRaidIcon", RaidMenu, "MarkerTemplate")
+	SquareRaidIcon = CreateFrame("Button", "SquareRaidIcon", RaidMenu, "MarkerTemplate")
+	MoonRaidIcon = CreateFrame("Button", "MoonRaidIcon", RaidMenu, "MarkerTemplate")
+	TriangleRaidIcon = CreateFrame("Button", "TriangleRaidIcon", RaidMenu, "MarkerTemplate")
+	DiamondRaidIcon = CreateFrame("Button", "DiamondRaidIcon", RaidMenu, "MarkerTemplate")
+	CircleRaidIcon = CreateFrame("Button", "CircleRaidIcon", RaidMenu, "MarkerTemplate")
+	StarRaidIcon = CreateFrame("Button", "StarRaidIcon", RaidMenu, "MarkerTemplate")
+	ClearRaidIcon = CreateFrame("Button", "ClearRaidIcon", RaidMenu, "MarkerTemplate")
+	BlueWorldMarker = CreateFrame("Button", "BlueWorldMarker", RaidMenu, "SecureMarkerTemplate")
+	GreenWorldMarker = CreateFrame("Button", "GreenWorldMarker", RaidMenu, "SecureMarkerTemplate")
+	PurpleWorldMarker = CreateFrame("Button", "PurpleWorldMarker", RaidMenu, "SecureMarkerTemplate")
+	RedWorldMarker = CreateFrame("Button", "RedWorldMarker", RaidMenu, "SecureMarkerTemplate")
+	YellowWorldMarker = CreateFrame("Button", "YellowWorldMarker", RaidMenu, "SecureMarkerTemplate")
+	WhiteWorldMarker = CreateFrame("Button", "WhiteWorldMarker", RaidMenu, "SecureMarkerTemplate")
+	OrangeWorldMarker = CreateFrame("Button", "OrangeWorldMarker", RaidMenu, "SecureMarkerTemplate")
+	SilverWorldMarker = CreateFrame("Button", "SilverWorldMarker", RaidMenu, "SecureMarkerTemplate")
+	ClearWorldMarkers = CreateFrame("Button", "ClearWorldMarkers", RaidMenu, "SecureMarkerTemplate")
 
-	local BlueWorldMarker = CreateFrame("Button", "BlueWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	local GreenWorldMarker = CreateFrame("Button", "GreenWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	local PurpleWorldMarker = CreateFrame("Button", "PurpleWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	local RedWorldMarker = CreateFrame("Button", "RedWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	local YelloWorldMarker = CreateFrame("Button", "YellowWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	local WhiteWorldMarker = CreateFrame("Button", "WhiteWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	local OrangeWorldMarker = CreateFrame("Button", "OrangeWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	local SilverWorldMarker = CreateFrame("Button", "SilverWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	local ClearWorldMarkers = CreateFrame("Button", "ClearWorldMarkers", RaidMenu, "SecureMarkerTemplate")
-
-	local ConvertRaid = CreateFrame("Button", "ConvertRaid", RaidMenu, "OptionsButtonTemplate")
+	ConvertRaid = CreateFrame("Button", "ConvertRaid", RaidMenu, "OptionsButtonTemplate")
 	if GetNumGroupMembers() > 0 then
 		ConvertRaid:SetText("Convert to Party")
 	else
@@ -407,7 +431,7 @@ function module:SetRaidMenu()
 		end
 	end)
 
-	local LootMethod = CreateFrame("Button", "LootMethod", RaidMenu, "OptionsButtonTemplate")
+	LootMethod = CreateFrame("Button", "LootMethod", RaidMenu, "OptionsButtonTemplate")
 	LootMethod:SetText("Loot Method")
 	LootMethod:SetScript("OnEnter", function(self)
 		if db.ShowToolTips then
@@ -443,7 +467,7 @@ function module:SetRaidMenu()
 		EasyMenu(LootMethodList, LootMenuFrame, "cursor", 0, 0, "MENU", 1)
 	end)
 
-	local LootThreshold = CreateFrame("Button", "LootThreshold", RaidMenu, "OptionsButtonTemplate")
+	LootThreshold = CreateFrame("Button", "LootThreshold", RaidMenu, "OptionsButtonTemplate")
 	LootThreshold:SetText("Loot Threshold")
 	LootThreshold:SetScript("OnEnter", function(self)
 		if db.ShowToolTips then
@@ -476,7 +500,7 @@ function module:SetRaidMenu()
 		EasyMenu(LootThresholdList, LootMenuFrame, "cursor", 0, 0, "MENU", 1)
 	end)
 
-	local RoleChecker = CreateFrame("BUTTON", "RoleChecker", RaidMenu, "OptionsButtonTemplate")
+	RoleChecker = CreateFrame("BUTTON", "RoleChecker", RaidMenu, "OptionsButtonTemplate")
 	RoleChecker:SetText("Role Check")
 	RoleChecker:SetScript("OnEnter", function(self)
 		if db.ShowToolTips then
@@ -498,7 +522,7 @@ function module:SetRaidMenu()
 		end
 	end)
 
-	local ReadyChecker = CreateFrame("Button", "ReadyChecker", RaidMenu, "OptionsButtonTemplate")
+	ReadyChecker = CreateFrame("Button", "ReadyChecker", RaidMenu, "OptionsButtonTemplate")
 	ReadyChecker:SetText("Ready Check")
 	ReadyChecker:SetScript("OnEnter", function(self)
 		if db.ShowToolTips then
@@ -558,7 +582,7 @@ function module:SetRaidMenu()
 	RaidMenu.SlideUp:Hide()
 
 	RaidMenu.SlideUp:SetScript("OnUpdate", function(self,elapsed)
-		local Y_Position
+		local X_Position, Y_Position
 		if db.Compact then
 			Y_Position = Y_compact + (db.Spacing / 2)
 			X_Position = X_compact + (db.Spacing / 2)
@@ -569,9 +593,9 @@ function module:SetRaidMenu()
 		self.timer = self.timer + elapsed
 		if self.timer < .5 then
 			local offset = (1 - self.timer / .5) * db.Offset
-			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_normal + db.X_Offset), (((Y_Position + offset) / db.Scale) + 17))
+			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), (((Y_Position + offset) / db.Scale) + 17))
 		else
-			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_normal + db.X_Offset), ((Y_Position / db.Scale) + 17))
+			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), ((Y_Position / db.Scale) + 17))
 			self.timer = 0
 			self:Hide()
 		end
@@ -582,7 +606,7 @@ function module:SetRaidMenu()
 	RaidMenu.SlideDown:Hide()
 
 	RaidMenu.SlideDown:SetScript("OnUpdate", function(self,elapsed)
-		local Y_Position
+		local X_Position, Y_Position
 		if db.Compact then
 			Y_Position = Y_compact + (db.Spacing / 2)
 			X_Position = X_compact + (db.Spacing / 2)
@@ -593,9 +617,9 @@ function module:SetRaidMenu()
 		self.timer = self.timer + elapsed
 		if self.timer < .5 then
 			local offset = (self.timer / .5) * db.Offset
-			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_normal + db.X_Offset), (((Y_Position + offset) / db.Scale) + 17))
+			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), (((Y_Position + offset) / db.Scale) + 17))
 		else
-			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_normal + db.X_Offset), (((Y_Position + db.Offset) / db.Scale) + 17))
+			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), (((Y_Position + db.Offset) / db.Scale) + 17))
 			self.timer = 0
 			self:Hide()
 		end

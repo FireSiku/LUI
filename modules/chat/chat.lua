@@ -17,6 +17,30 @@ local widgetLists = AceGUIWidgetLSMlists
 local L = LUI.L
 local db, dbd
 
+local ChatFrame_RemoveMessageEventFilter = _G.ChatFrame_RemoveMessageEventFilter
+local ChatFrame_AddMessageEventFilter = _G.ChatFrame_AddMessageEventFilter
+local FCF_SavePositionAndDimensions = _G.FCF_SavePositionAndDimensions
+local GetChatWindowSavedDimensions = _G.GetChatWindowSavedDimensions
+local GetChatWindowSavedPosition = _G.GetChatWindowSavedPosition
+local ChatEdit_GetActiveWindow = _G.ChatEdit_GetActiveWindow
+local ChatEdit_OnEscapePressed = _G.ChatEdit_OnEscapePressed
+local FCF_GetCurrentChatFrame = _G.FCF_GetCurrentChatFrame
+local FCFDock_SelectWindow = _G.FCFDock_SelectWindow
+local FCFTab_UpdateAlpha = _G.FCFTab_UpdateAlpha
+local FCF_SetWindowAlpha = _G.FCF_SetWindowAlpha
+local FCF_SetWindowColor = _G.FCF_SetWindowColor
+local SetChatWindowColor = _G.SetChatWindowColor
+local GENERAL_CHAT_DOCK = _G.GENERAL_CHAT_DOCK
+local GetScreenHeight = _G.GetScreenHeight
+local GetScreenWidth = _G.GetScreenWidth
+local IsShiftKeyDown = _G.IsShiftKeyDown
+local FCF_SetLocked = _G.FCF_SetLocked
+local PARTY_LEADER = _G.PARTY_LEADER
+local IsAltKeyDown = _G.IsAltKeyDown
+local CHAT_FRAMES = _G.CHAT_FRAMES
+local COMBATLOG = _G.COMBATLOG
+local CLOSE = _G.CLOSE
+
 --------------------------------------------------
 -- Local Variables
 --------------------------------------------------
@@ -434,7 +458,7 @@ local linkTypes = {
 --------------------------------------------------
 
 local function createStaticPopups()
-	StaticPopupDialogs["LUI_Chat_UrlCopy"] = {
+	_G.StaticPopupDialogs["LUI_Chat_UrlCopy"] = {
 		preferredIndex = 3,
 		text = "URL - Ctrl-C to copy",
 		button2 = CLOSE,
@@ -627,8 +651,8 @@ function module:SetItemRef(link, text, button, chatFrame)
 	if IsAltKeyDown() and strsub(link, 1, 6) == "player" then
 		C_PartyInfo.InviteUnit(link:match("player:([^:]+)"))
 		if ChatEdit_GetActiveWindow() then
-        	ChatEdit_OnEscapePressed(ChatEdit_GetActiveWindow())
-        end
+			ChatEdit_OnEscapePressed(ChatEdit_GetActiveWindow())
+		end
 		return false
 	end
 	return true
@@ -638,7 +662,7 @@ function module:SetHyperlink(frame, link, ...)
 	if IsAltKeyDown() and strsub(link, 1, 6) == "player" then
 		C_PartyInfo.InviteUnit(link:match("player:([^:]+)"))
 		if ChatEdit_GetActiveWindow() then
-        	ChatEdit_OnEscapePressed(ChatEdit_GetActiveWindow())
+			ChatEdit_OnEscapePressed(ChatEdit_GetActiveWindow())
         end
 		return
 	end

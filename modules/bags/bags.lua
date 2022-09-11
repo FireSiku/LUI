@@ -34,35 +34,38 @@ local GetBags = {
 local isCreated = {}
 
 --localized API
-local _G = getfenv(0)
 local tinsert = table.insert
 local tremove = table.remove
 local strlower = string.lower
 local strfind = string.find
 local strsub = string.sub
-local format = format
+local format = string.format
 local pairs, ipairs = pairs, ipairs
 
-local MAX_WATCHED_TOKENS = MAX_WATCHED_TOKENS
+local MAX_WATCHED_TOKENS = _G.MAX_WATCHED_TOKENS
+local CONFIRM_BUY_BANK_SLOT = _G.CONFIRM_BUY_BANK_SLOT
+local YES, NO = _G.YES, _G.NO
 
-local GetItemInfo = GetItemInfo
-local GetMoneyString = GetMoneyString
-local ItemButtonUtil = ItemButtonUtil
-local GetContainerNumSlots = GetContainerNumSlots
-local GetContainerItemInfo = GetContainerItemInfo
-local GetContainerItemLink = GetContainerItemLink
-local GetContainerItemCooldown = GetContainerItemCooldown
-local GetContainerNumFreeSlots = GetContainerNumFreeSlots
-
-local CreateFrame = CreateFrame
-local OpenEditbox = OpenEditbox
-local SetItemButtonCount = SetItemButtonCount
-local SetItemButtonTexture = SetItemButtonTexture
-local SetItemButtonOverlay = SetItemButtonOverlay
-local SetItemButtonDesaturated = SetItemButtonDesaturated
-
-local BankFrameItemButton_Update = BankFrameItemButton_Update
-local BankFrameItemButton_UpdateLocked = BankFrameItemButton_UpdateLocked
+local BankFrameItemButton_UpdateLocked = _G.BankFrameItemButton_UpdateLocked
+local BankFrameItemButton_Update = _G.BankFrameItemButton_Update
+local SetItemButtonDesaturated = _G.SetItemButtonDesaturated
+local GetContainerItemCooldown = _G.GetContainerItemCooldown
+local GetContainerNumFreeSlots = _G.GetContainerNumFreeSlots
+local IsReagentBankUnlocked = _G.IsReagentBankUnlocked
+local SetItemButtonTexture = _G.SetItemButtonTexture
+local SetItemButtonOverlay = _G.SetItemButtonOverlay
+local GetContainerNumSlots = _G.GetContainerNumSlots
+local GetContainerItemInfo = _G.GetContainerItemInfo
+local GetContainerItemLink = _G.GetContainerItemLink
+local SetItemButtonCount = _G.SetItemButtonCount
+local StaticPopupDialogs = _G.StaticPopupDialogs
+local MoneyFrame_Update = _G.MoneyFrame_Update
+local GetMoneyString = _G.GetMoneyString
+local ItemButtonUtil = _G.ItemButtonUtil
+local PurchaseSlot = _G.PurchaseSlot
+local GetItemInfo = _G.GetItemInfo
+local CreateFrame = _G.CreateFrame
+local OpenEditbox = _G.OpenEditbox
 
 -- Constants. Do NOT Edit those.
 local ST_NORMAL = 1	--Flagged for possible deletion
