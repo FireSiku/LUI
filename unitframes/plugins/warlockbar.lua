@@ -1,12 +1,13 @@
-if(select(2, UnitClass('player')) ~= 'WARLOCK') then return end
+if(select(2, _G.UnitClass('player')) ~= 'WARLOCK') then return end
 
 local parent, ns = ...
 local oUF = ns.oUF
-local GetSpecialization = GetSpecialization
+local GetSpecialization = _G.GetSpecialization
+local UnitPower = _G.UnitPower
 
 local spec = GetSpecialization()
 local specPower = { "SOUL_SHARDS", "DEMONIC_FURY", "BURNING_EMBERS" }
-local specType = { Enum.PowerType.SoulShards, SPELL_POWER_DEMONIC_FURY, SPELL_POWER_BURNING_EMBERS } 
+local specType = { Enum.PowerType.SoulShards, _G.SPELL_POWER_DEMONIC_FURY, _G.SPELL_POWER_BURNING_EMBERS }
 
 local Update = function(self, event, unit, powerType)
 	
@@ -25,7 +26,7 @@ local Update = function(self, event, unit, powerType)
 		end
 	--Demonology
 	elseif spec == 2 then
-		wb[1]:SetValue(num)	
+		wb[1]:SetValue(num)
 	--Destruction
 	elseif spec == 3 then
 		local power = UnitPower(unit, specType[spec], true)

@@ -1,6 +1,10 @@
 local parent, ns = ...
 local oUF = ns.oUF
 
+local GetRaidRosterInfo = _G.GetRaidRosterInfo
+local UnitHasVehicleUI = _G.UnitHasVehicleUI
+local UnitInRaid = _G.UnitInRaid
+
 local Update = function(self, event)
 	local raidID = UnitInRaid(self.unit)
 	if(not raidID) then return end

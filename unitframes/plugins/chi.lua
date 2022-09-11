@@ -1,8 +1,9 @@
-if(select(2, UnitClass('player')) ~= 'MONK') then return end
+if(select(2, _G.UnitClass('player')) ~= 'MONK') then return end
 
 local parent, ns = ...
 local oUF = ns.oUF
 
+local UnitPower = _G.UnitPower
 local MAX_CHI = 5
 
 local Update = function(self, event, unit, powerType)
