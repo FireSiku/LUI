@@ -162,8 +162,7 @@ do
 					self.caster = format(playerCaster, c.r*255, c.g*255, c.b*255, casterName)
 				end
 			elseif caster == "pet" or caster == "vehicle" then
-				local _, class = UnitClass("player")
-				local c = RAID_CLASS_COLORS[class]
+				local c = RAID_CLASS_COLORS[LUI.playerClass]
 				self.caster = format(petCaster, casterName, c.r*255, c.g*255, c.b*255, UnitName("player"))
 			else
 				local group = strmatch(caster, "([p]?[ar][ra][ti][yd])pet")

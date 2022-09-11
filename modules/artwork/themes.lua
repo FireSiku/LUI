@@ -58,10 +58,10 @@ function module:CheckTheme()
 	local theme = db.global[db.theme] and db.theme
 
 	if not theme then
-		local _, class = UnitClass("player")
-		if class == "DEATHKNIGHT" then
+		local class = LUI.playerClass
+		if LUI.DEATHKNIGHT then
 			class = "Death Knight"
-		elseif class == "DEMONHUNTER" then
+		elseif LUI.DEMONHUNTER then
 			class = "Demon Hunter"
 		end
 

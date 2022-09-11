@@ -21,8 +21,6 @@ LUI.Versions.threatbar = 2.0
 local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
 local positions = { "TOP", "TOPRIGHT", "TOPLEFT", "BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT", "RIGHT", "LEFT", "CENTER"}
 
-local _, class = UnitClass("player")
-
 local aggrocolors = {0, 1, 0, 1, 1, 0, 1, 0, 0}
 
 local PRECISION_FORMAT = {
@@ -495,7 +493,7 @@ function module:Refresh(...)
 	local r, g, b
 	local mu = db.Appearance.BGMultiplier
 	if db.Appearance.Color == "By Class" then
-		r, g, b = unpack(oUFmodule.colors.class[class])
+		r, g, b = unpack(oUFmodule.colors.class[LUI.playerClass])
 	elseif db.Appearance.Color == "Individual" then
 		r, g, b = db.Appearance.IndividualColor.r, db.Appearance.IndividualColor.g, db.Appearance.IndividualColor.b
 	end
@@ -520,7 +518,7 @@ function module:Refresh(...)
 	end
 
 	if db.Text.Color == "By Class" then
-		r, g, b = unpack(oUFmodule.colors.class[class])
+		r, g, b = unpack(oUFmodule.colors.class[LUI.playerClass])
 	elseif db.Text.Color == "Individual" then
 		r, g, b = db.Text.IndividualColor.r, db.Text.IndividualColor.g, db.Text.IndividualColor.b
 	else
@@ -557,11 +555,10 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
-	local ProfileName = UnitName("player").." - "..GetRealmName()
 
-	if LUI.db.global.luiconfig[ProfileName].Versions.threatbar ~= LUI.Versions.threatbar then
+	if LUI.db.global.luiconfig[LUI.profileName].Versions.threatbar ~= LUI.Versions.threatbar then
 		db:ResetProfile()
-		LUI.db.global.luiconfig[ProfileName].Versions.threatbar = LUI.Versions.threatbar
+		LUI.db.global.luiconfig[LUI.profileName].Versions.threatbar = LUI.Versions.threatbar
 	end
 end
 

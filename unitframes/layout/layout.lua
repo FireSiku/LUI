@@ -42,7 +42,6 @@ local MAX_PLAYER_LEVEL = _G.MAX_PLAYER_LEVEL
 local MAX_COMBO_POINTS = _G.MAX_COMBO_POINTS
 local MAX_TOTEMS = _G.MAX_TOTEMS
 
-local _, class = UnitClass("player")
 local standings = {"Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted"}
 
 ------------------------------------------------------------------------
@@ -147,14 +146,14 @@ do
 	channelingTicks = {
 		["First Aid"] = 1 -- Bandages
 	}
-	if classChannels[class] then
-		for k, v in pairs(classChannels[class]) do
+	if classChannels[LUI.playerClass] then
+		for k, v in pairs(classChannels[LUI.playerClass]) do
 			channelingTicks[k] = v
 		end
 	end
 	wipe(classChannels)
 
-	-- if class == "MAGE" then
+	-- if LUI.MAGE then
 		-- local arcaneMissiles = GetSpellInfo(5143)
 -- 
 		-- local function talentUpdate()
@@ -1226,8 +1225,7 @@ local DruidManaOverride = function(self, event, unit)
 end
 
 local PostUpdateAltPower = function(altpowerbar, min, cur, max)
-	local pClass, pToken = UnitClass("player")
-	local color = module.colors.class[pToken] or {0.5, 0.5, 0.5}
+	local color = module.colors.class[LUI.playerClass] or {0.5, 0.5, 0.5}
 
 	local tex, r, g, b = GetUnitPowerBarTextureInfo("player", 3)
 
@@ -2278,7 +2276,6 @@ module.funcs = {
 		end
 	end,
 	ClassIcons = function(self, unit, oufdb)
-		local _, class = UnitClass("player")
 		local BASE_COUNT = {
 			MAGE = 4,
 			MONK = 5,
@@ -2297,20 +2294,20 @@ module.funcs = {
 			DRUID = 5,
 		}
 		local r, g, b
-		if class == "MONK" then r, g, b = unpack(module.colors.chibar[1])
-		elseif class == "PALADIN" then r, g, b = unpack(module.colors.holypowerbar[1])
-		elseif class == "MAGE" then r, g, b = unpack(module.colors.arcanechargesbar[1])
-		elseif class == "WARLOCK" then r, g, b = unpack(module.colors.warlockbar.Shard1)
-		elseif class == "ROGUE" then r, g, b = unpack(module.colors.combopoints[1])
-		elseif class == "DRUID" then r, g, b = unpack(module.colors.combopoints[1])
+		if LUI.MONK then r, g, b = unpack(module.colors.chibar[1])
+		elseif LUI.PALADIN then r, g, b = unpack(module.colors.holypowerbar[1])
+		elseif LUI.MAGE then r, g, b = unpack(module.colors.arcanechargesbar[1])
+		elseif LUI.WARLOCK then r, g, b = unpack(module.colors.warlockbar.Shard1)
+		elseif LUI.ROGUE then r, g, b = unpack(module.colors.combopoints[1])
+		elseif LUI.DRUID then r, g, b = unpack(module.colors.combopoints[1])
 		end
 		
-		if class == "MONK" then oufdb.Bars.ClassIcons = oufdb.Bars.Chi
-		elseif class == "PALADIN" then oufdb.Bars.ClassIcons = oufdb.Bars.HolyPower
-		elseif class == "MAGE" then oufdb.Bars.ClassIcons = oufdb.Bars.ArcaneCharges
-		elseif class == "WARLOCK" then oufdb.Bars.ClassIcons = oufdb.Bars.WarlockBar
-		elseif class == "ROGUE" then oufdb.Bars.ClassIcons = oufdb.Bars.Chi
-		elseif class == "DRUID" then oufdb.Bars.ClassIcons = oufdb.Bars.Chi
+		if LUI.MONK then oufdb.Bars.ClassIcons = oufdb.Bars.Chi
+		elseif LUI.PALADIN then oufdb.Bars.ClassIcons = oufdb.Bars.HolyPower
+		elseif LUI.MAGE then oufdb.Bars.ClassIcons = oufdb.Bars.ArcaneCharges
+		elseif LUI.WARLOCK then oufdb.Bars.ClassIcons = oufdb.Bars.WarlockBar
+		elseif LUI.ROGUE then oufdb.Bars.ClassIcons = oufdb.Bars.Chi
+		elseif LUI.DRUID then oufdb.Bars.ClassIcons = oufdb.Bars.Chi
 		end
 		
 		if not self.ClassIcons then
@@ -2321,10 +2318,10 @@ module.funcs = {
 				bgFile = "Interface/Tooltips/UI-Tooltip-Background",
 			})
 			self.ClassIcons:SetBackdropColor(r * 0.4, g * 0.4, b * 0.4)
-			self.ClassIcons.Count = BASE_COUNT[class]
-			self.ClassIcons.MaxCount = MAX_COUNT[class]
+			self.ClassIcons.Count = BASE_COUNT[LUI.playerClass]
+			self.ClassIcons.MaxCount = MAX_COUNT[LUI.playerClass]
 
-			for i = 1, MAX_COUNT[class] do -- Always create frames for the max possible
+			for i = 1, MAX_COUNT[LUI.playerClass] do -- Always create frames for the max possible
 				self.ClassIcons[i] = self.ClassIcons:CreateTexture(nil, "ARTWORK")
 			end
 		end
@@ -2339,12 +2336,12 @@ module.funcs = {
 	
 		local function checkPowers(event, level)
 			local pLevel = (event == "UNIT_LEVEL") and tonumber(level) or UnitLevel("player")
-			local count = BASE_COUNT[class]
-			if class == "MONK" then
+			local count = BASE_COUNT[LUI.playerClass]
+			if LUI.MONK then
 				if select(4, GetTalentInfo(3, 1, 1)) then
 					count = count + 1
 				end
-			elseif class == "ROGUE" then
+			elseif LUI.ROGUE then
 				--Check for Strategem, increase CPoints to 6.
 				if select(4, GetTalentInfo(3, 2, 1)) then
 					count = 6
@@ -2352,7 +2349,7 @@ module.funcs = {
 			end
 			self.ClassIcons.Count = count
 
-			for i = 1, MAX_COUNT[class] do
+			for i = 1, MAX_COUNT[LUI.playerClass] do
 				if oufdb.Bars.ClassIcons.Texture == "Empty" then
 					self.ClassIcons[i]:SetColorTexture(r, g, b)
 				else
@@ -2540,10 +2537,10 @@ module.funcs = {
 
 	-- raid specific
 	SingleAuras = function(self, unit, oufdb)
-		if not cornerAuras[class] then return end
+		if not cornerAuras[LUI.playerClass] then return end
 		if not self.SingleAuras then self.SingleAuras = {} end
 
-		for k, data in pairs(cornerAuras[class]) do
+		for k, data in pairs(cornerAuras[LUI.playerClass]) do
 			local spellId, onlyPlayer, isDebuff = unpack(data)
 			local spellName = GetSpellInfo(spellId)
 
@@ -2628,7 +2625,7 @@ module.funcs = {
 		self.Buffs["growth-x"] = oufdb.Aura.Buffs.GrowthX
 		self.Buffs.onlyShowPlayer = oufdb.Aura.Buffs.PlayerOnly
 		self.Buffs.includePet = oufdb.Aura.Buffs.IncludePet
-		self.Buffs.showStealableBuffs = (unit ~= "player" and (class == "MAGE" or class == "SHAMAN"))
+		self.Buffs.showStealableBuffs = (unit ~= "player" and (LUI.MAGE or LUI.SHAMAN))
 		self.Buffs.showAuraType = oufdb.Aura.Buffs.ColorByType
 		self.Buffs.showAuratimer = oufdb.Aura.Buffs.AuraTimer
 		self.Buffs.disableCooldown = oufdb.Aura.Buffs.DisableCooldown
@@ -2667,7 +2664,7 @@ module.funcs = {
 		self.Debuffs.onlyShowPlayer = oufdb.Aura.Debuffs.PlayerOnly
 		self.Debuffs.includePet = oufdb.Aura.Debuffs.IncludePet
 		self.Debuffs.fadeOthers = oufdb.Aura.Debuffs.FadeOthers
-		self.Debuffs.showStealableBuffs = (unit ~= "player" and (class == "MAGE" or class == "SHAMAN"))
+		self.Debuffs.showStealableBuffs = (unit ~= "player" and (LUI.MAGE or LUI.SHAMAN))
 		self.Debuffs.showAuraType = oufdb.Aura.Debuffs.ColorByType
 		self.Debuffs.showAuratimer = oufdb.Aura.Debuffs.AuraTimer
 		self.Debuffs.disableCooldown = oufdb.Aura.Debuffs.DisableCooldown
@@ -3200,28 +3197,28 @@ local SetStyle = function(self, unit, isSingle)
 		if ouf_xp_rep.Experience.Enable then module.funcs.Experience(self, unit, ouf_xp_rep) end
 		if ouf_xp_rep.Reputation.Enable then module.funcs.Reputation(self, unit, ouf_xp_rep) end
 		
-		if class == "DEATH KNIGHT" or class == "DEATHKNIGHT" then
+		if LUI.DEATHKNIGHT then
 			if oufdb.Bars.Runes.Enable then
 				module.funcs.Runes(self, unit, oufdb)
 				Blizzard:Hide("runebar")
 			end
-		elseif class == "DRUID" then
+		elseif LUI.DRUID then
 			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
 			if oufdb.Bars.Chi.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
-		elseif class == "PALADIN" then
+		elseif LUI.PALADIN then
 			if oufdb.Bars.HolyPower.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
-		elseif class == "MONK" then
+		elseif LUI.MONK then
 			if oufdb.Bars.Chi.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
-		elseif class == "ROGUE" then
+		elseif LUI.ROGUE then
 			if oufdb.Bars.Chi.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
-		elseif class == "SHAMAN" then
+		elseif LUI.SHAMAN then
 			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
 			if oufdb.Bars.Totems.Enable then module.funcs.Totems(self, unit, oufdb) end
-		elseif class == "MAGE" then
+		elseif LUI.MAGE then
 			if oufdb.Bars.ArcaneCharges.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
-		elseif class == "WARLOCK" then
+		elseif LUI.WARLOCK then
 			if oufdb.Bars.WarlockBar.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
-		elseif class == "PRIEST" then
+		elseif LUI.PRIEST then
 			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
 		end
 	end

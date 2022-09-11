@@ -13,8 +13,6 @@ local widgetLists = AceGUIWidgetLSMlists
 local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
 local positions = { "TOP", "TOPRIGHT", "TOPLEFT", "BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT", "RIGHT", "LEFT", "CENTER"}
 
-local _, class = UnitClass("player")
-
 local db, dbd
 local LUISwing
 
@@ -554,7 +552,7 @@ function module:Refresh(...)
 	local r, g, b
 	local mu = db.Appearance.BGMultiplier
 	if db.Appearance.Color == "By Class" then
-		r, g, b = unpack(oUFmodule.colors.class[class])
+		r, g, b = unpack(oUFmodule.colors.class[LUI.playerClass])
 	else
 		r, g, b = db.Appearance.IndividualColor.r, db.Appearance.IndividualColor.g, db.Appearance.IndividualColor.b
 	end
@@ -580,7 +578,7 @@ function module:Refresh(...)
 	LUISwing.Offhand.bg:SetVertexColor(r*mu, g*mu, b*mu)
 
 	if db.Text.Color == "By Class" then
-		r, g, b = unpack(colors.class[class])
+		r, g, b = unpack(colors.class[LUI.playerClass])
 	else
 		r, g, b = db.Text.IndividualColor.r, db.Text.IndividualColor.g, db.Text.IndividualColor.b
 	end
@@ -609,11 +607,10 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, true)
-	local ProfileName = UnitName("player").." - "..GetRealmName()
 
-	if LUI.db.global.luiconfig[ProfileName].Versions.swing ~= LUI.Versions.swing then
+	if LUI.db.global.luiconfig[LUI.profileName].Versions.swing ~= LUI.Versions.swing then
 		db:ResetProfile()
-		LUI.db.global.luiconfig[ProfileName].Versions.swing = LUI.Versions.swing
+		LUI.db.global.luiconfig[LUI.profileName].Versions.swing = LUI.Versions.swing
 	end
 end
 

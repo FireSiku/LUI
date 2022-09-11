@@ -9,15 +9,10 @@ local addonname, LUI = ...
 
 LUI.Versions.plexus = 3300
 
-local IsAddOnLoaded = _G.IsAddOnLoaded
-local GetRealmName = _G.GetRealmName
-local UnitName = _G.UnitName
-
 function LUI:InstallPlexus()
-	if not IsAddOnLoaded("Plexus") then return end
-	local CharName = UnitName("Player")
-	local ProfileName = CharName.." - "..GetRealmName()
-	if LUI.db.global.luiconfig[ProfileName].Versions.plexus == LUI.Versions.plexus then return end
+	if not _G.IsAddOnLoaded("Plexus") then return end
+	local CharName = LUI.playerName
+	if LUI.db.global.luiconfig[LUI.profileName].Versions.plexus == LUI.Versions.plexus then return end
 	
 	local Plexus = LibStub("AceAddon-3.0"):GetAddon("Plexus")
 	local PlexusStatus = Plexus:GetModule("PlexusStatus")
@@ -38,7 +33,7 @@ function LUI:InstallPlexus()
 		local PlexusOldProfile
 
 		for i, v in pairs(PlexusDB.profileKeys) do
-			if i == ProfileName then
+			if i == LUI.profileName then
 				PlexusOldProfile = v
 				break;
 			end
@@ -49,11 +44,11 @@ function LUI:InstallPlexus()
 		end
 	end
 
-	if PlexusDB.profileKeys[ProfileName] == nil then
-		tinsert(PlexusDB.profileKeys,ProfileName)
-		PlexusDB.profileKeys[ProfileName] = CharName
-	elseif PlexusDB.profileKeys[ProfileName] ~= CharName then
-		PlexusDB.profileKeys[ProfileName] = CharName
+	if PlexusDB.profileKeys[LUI.profileName] == nil then
+		tinsert(PlexusDB.profileKeys,LUI.profileName)
+		PlexusDB.profileKeys[LUI.profileName] = CharName
+	elseif PlexusDB.profileKeys[LUI.profileName] ~= CharName then
+		PlexusDB.profileKeys[LUI.profileName] = CharName
 	end
 
 	PlexusDB.profiles[CharName] = ""
@@ -390,5 +385,5 @@ function LUI:InstallPlexus()
 	PlexusFrame.db.profile.showTooltip = true
 	PlexusStatusHealth.db.profile.unit_health.useClassColors = false
 
-	LUI.db.global.luiconfig[ProfileName].Versions.plexus = LUI.Versions.plexus
+	LUI.db.global.luiconfig[LUI.profileName].Versions.plexus = LUI.Versions.plexus
 end

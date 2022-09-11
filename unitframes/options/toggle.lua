@@ -10,7 +10,7 @@ local Fader = LUI:Module("Fader")
 local Blizzard = LUI.Blizzard
 local oUF = LUI.oUF
 
-local MAX_PLAYER_LEVEL = _G.Max_Poerlevel
+local MAX_PLAYER_LEVEL = _G.MAX_PLAYER_LEVEL
 local MAX_BOSS_FRAMES = _G.MAX_BOSS_FRAMES
 
 local UnregisterStateDriver = _G.UnregisteredStateDriver
@@ -23,8 +23,6 @@ local GetCVarBool = _G.GetCVarBool
 local UnitLevel = _G.UnitLevel
 local IsInRaid = _G.IsInRaid
 local SetCVar = _G.SetCVar
-
-local _, class = _G.UnitClass("player")
 
 local ufUnits = {
 	Player = "player",
@@ -925,7 +923,7 @@ module.ApplySettings = function(unit)
 				end
 
 				-- runes
-				if class == "DEATHKNIGHT" or class == "DEATH KNIGHT" then
+				if LUI.DEATHKNIGHT then
 					module.funcs.Runes(frame, frame.__unit, module.db.Player)
 					if module.db[unit].Bars.Runes.Enable then
 						frame:EnableElement("Runes")
@@ -936,7 +934,7 @@ module.ApplySettings = function(unit)
 				end
 
 				-- holy power
-				if class == "PALADIN" then
+				if LUI.PALADIN then
 					module.funcs.ClassIcons(frame, frame.__unit, module.db.Player)
 					if module.db[unit].Bars.HolyPower.Enable then
 						frame:EnableElement("ClassIcons")
@@ -947,7 +945,7 @@ module.ApplySettings = function(unit)
 				end
 				
 				-- arcane changes
-				if class == "MAGE" then
+				if LUI.MAGE then
 					module.funcs.ClassIcons(frame, frame.__unit, module.db.Player)
 					if module.db[unit].Bars.ArcaneCharges.Enable then
 						frame:EnableElement("ClassIcons")
@@ -958,7 +956,7 @@ module.ApplySettings = function(unit)
 				end
 
 				-- warlock stuff
-				if class == "WARLOCK" then
+				if LUI.WARLOCK then
 					module.funcs.ClassIcons(frame, frame.__unit, module.db.Player)
 					if module.db[unit].Bars.WarlockBar.Enable then
 						frame:EnableElement("ClassIcons")
@@ -969,7 +967,7 @@ module.ApplySettings = function(unit)
 				end
 
 				-- chi
-				if class == "MONK" then
+				if LUI.MONK then
 					module.funcs.ClassIcons(frame, frame.__unit, module.db.Player)
 					if module.db[unit].Bars.Chi.Enable then
 						frame:EnableElement("ClassIcons")
@@ -980,7 +978,7 @@ module.ApplySettings = function(unit)
 				end
 
 				-- druid mana bar
-				if class == "DRUID" or class == "PRIEST" or class == "SHAMAN" then
+				if LUI.DRUID or LUI.PRIEST or LUI.SHAMAN then
 					module.funcs.DruidMana(frame, frame.__unit, module.db.Player)
 					if module.db[unit].Bars.DruidMana.Enable then
 						frame:EnableElement("DruidMana")

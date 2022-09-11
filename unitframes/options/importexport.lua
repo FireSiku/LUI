@@ -1401,8 +1401,6 @@ for _, v in pairs(layouts) do
 	v.Version = LUI.Versions.ouf
 end
 
-local _, class = _G.UnitClass("player")
-
 local units = {"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "BossTarget", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet", "Raid"}
 
 local function CopyData(source, destination)

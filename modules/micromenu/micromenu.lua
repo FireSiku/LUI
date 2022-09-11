@@ -30,8 +30,6 @@ local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
 LUI.MicroMenu = {Buttons = {}}
 
-local _, class = UnitClass("player")
-
 function module:SetMicroMenuPosition()
 	LUI.MicroMenu.Anchor:ClearAllPoints()
 	LUI.MicroMenu.Anchor:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.NaviX, db.NaviY)

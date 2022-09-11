@@ -12,8 +12,6 @@ local GetQuestDifficultyColor = _G.GetQuestDifficultyColor
 local UnitLevel = _G.UnitLevel
 local strupper = string.upper
 
-local _, class = _G.UnitClass("player")
-
 module.defaults.profile.Colors = {
 	Class = {
 		WARRIOR = {1, 0.78, 0.55},
@@ -252,12 +250,12 @@ local function UpdateColors()
 	local classIcons = oUF_LUI_player.ClassIcons
 	if classIcons then
 		local r, g, b
-		if class == "MONK" then r, g, b = unpack(module.colors.chibar[1])
-		elseif class == "PALADIN" then r, g, b = unpack(module.colors.holypowerbar[1])
-		elseif class == "MAGE" then r, g, b = unpack(module.colors.arcanechargesbar[1])
-		elseif class == "WARLOCK" then r, g, b = unpack(module.colors.warlockbar.Shard1)
-		elseif class == "ROGUE" then r, g, b = unpack(module.colors.combopoints[1])
-		elseif class == "DRUID" then r, g, b = unpack(module.colors.combopoints[1])
+		if LUI.MONK then r, g, b = unpack(module.colors.chibar[1])
+		elseif LUI.PALADIN then r, g, b = unpack(module.colors.holypowerbar[1])
+		elseif LUI.MAGE then r, g, b = unpack(module.colors.arcanechargesbar[1])
+		elseif LUI.WARLOCK then r, g, b = unpack(module.colors.warlockbar.Shard1)
+		elseif LUI.ROGUE then r, g, b = unpack(module.colors.combopoints[1])
+		elseif LUI.DRUID then r, g, b = unpack(module.colors.combopoints[1])
 		end
 		
 		classIcons:SetBackdropColor(r * 0.4, g * 0.4, b * 0.4)
@@ -375,7 +373,7 @@ function module:CreateColorOptions(order)
 				UpdateColors()
 			end),
 		}),
-		HolyPowerBar = self:NewGroup("Holy Power", 6, nil, nil, class ~= "PALADIN", {
+		HolyPowerBar = self:NewGroup("Holy Power", 6, nil, nil, not LUI.PALADIN, {
 			header1 = self:NewHeader("Holy Power Colors", 1),
 			["1"]	= self:NewColorNoAlpha("Holy Power", "Holy Power Bar", 2, false, "full"),
 			empty1 = self:NewDesc(" ", 7),
@@ -384,7 +382,7 @@ function module:CreateColorOptions(order)
 				UpdateColors()
 			end),
 		}),
-		WarlockBar = self:NewGroup("Soul Shards", 7, nil, nil, class ~= "WARLOCK", {
+		WarlockBar = self:NewGroup("Soul Shards", 7, nil, nil, not LUI.WARLOCK, {
 			header1 = self:NewHeader("Soul Shard Colors", 1),
 			["Shard1"] = self:NewColorNoAlpha("Soul Shards", "Soul Shards Bar", 2, false, "full"),
 			empty1 = self:NewDesc(" ", 13),
@@ -393,7 +391,7 @@ function module:CreateColorOptions(order)
 				UpdateColors()
 			end),
 		}),
-		ArcaneChargesBar = self:NewGroup("Arcane Charges", 10, nil, nil, class ~= "MAGE", {
+		ArcaneChargesBar = self:NewGroup("Arcane Charges", 10, nil, nil, not LUI.MAGE, {
 			header1 = self:NewHeader("Arcane Charges Colors", 1),
 			["1"] = self:NewColorNoAlpha("Arcane Charges", "Arcane Charges Bar", 2, false, "full"),
 			empty1 = self:NewDesc(" ", 5),
@@ -402,7 +400,7 @@ function module:CreateColorOptions(order)
 				UpdateColors()
 			end),
 		}),
-		ChiBar = self:NewGroup("Chi", 10, nil, nil, class ~= "MONK", {
+		ChiBar = self:NewGroup("Chi", 10, nil, nil, not LUI.MONK, {
 			header1 = self:NewHeader("Chi Colors", 1),
 			["1"] = self:NewColorNoAlpha("Chi", "Chi Bar", 2, false, "full"),
 			empty1 = self:NewDesc(" ", 8),
@@ -411,7 +409,7 @@ function module:CreateColorOptions(order)
 				UpdateColors()
 			end),
 		}),
-		Runes = self:NewGroup("Runes", 12, nil, nil, class ~= "DEATHKNIGHT" and class ~= "DEATH KNIGHT", {
+		Runes = self:NewGroup("Runes", 12, nil, nil, not LUI.DEATHKNIGHT, {
 			header1 = self:NewHeader("Runes Colors", 1),
 			["1"] = not LUI.IsRetail and self:NewColorNoAlpha("Blood", "Runes", 2, false, "full"),
 			["2"] = not LUI.IsRetail and self:NewColorNoAlpha("Frost", "Runes", 3, false, "full"),
@@ -423,7 +421,7 @@ function module:CreateColorOptions(order)
 				UpdateColors()
 			end),
 		}),
-		ComboPoints = self:NewGroup("Combo Points", 13, nil, nil, class ~= "ROGUE" and class ~= "DRUID", {
+		ComboPoints = self:NewGroup("Combo Points", 13, nil, nil, not LUI.ROGUE and not LUI.DRUID, {
 			header1 = self:NewHeader("Combo Points Colors", 1),
 			["1"] = self:NewColorNoAlpha("Combo Points", "Combo Points Bar", 2, false, "full"),
 			empty1 = self:NewDesc(" ", 7),

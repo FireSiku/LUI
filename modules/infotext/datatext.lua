@@ -10,8 +10,6 @@
 		v1.9: Zista
 ]]
 
-if false then return end -- change false to true if working with new infotext module
-
 -- External references.
 local addonname, LUI = ...
 local module = LUI:Module("Infotext", "AceHook-3.0")
@@ -27,11 +25,6 @@ local BNET_CLIENT_MOBILE = "BSAp"
 ------------------------------------------------------
 -- / LOCAL VARIABLES / --
 ------------------------------------------------------
-
-local myPlayerName = UnitName("player")
-local myPlayerFaction, localeFaction = UnitFactionGroup("player")
-local otherFaction = myPlayerFaction == "Horde" and "Alliance" or "Horde"
-local myPlayerRealm = GetRealmName()
 
 local InfoStats = {}
 
@@ -600,8 +593,8 @@ function module:SetCurrency()
 
 		-- Script functions
 		local factionTex
-		if UnitFactionGroup("player") == "Neutral" then factionTex = LUI.blank
-		else factionTex = [[Interface\PVPFrame\PVP-Currency-]] .. UnitFactionGroup("player")
+		if LUI.playerFaction == "Neutral" then factionTex = LUI.blank
+		else factionTex = [[Interface\PVPFrame\PVP-Currency-]] .. LUI.playerFaction
 		end
 		stat.OnEnable = function(self)
 			local tex = factionTex
@@ -638,7 +631,7 @@ function module:SetCurrency()
 				GameTooltip:AddLine("Currency:", 0.4, 0.78, 1)
 				
 				for i = 1, C_CurrencyInfo.GetCurrencyListSize()  do
-					local info = C_CurrencyInfo.GetCurrencyListInfo(i) 
+					local info = C_CurrencyInfo.GetCurrencyListInfo(i)
 					if info and info.isHeader then
 						GameTooltip:AddLine(" ")
 						GameTooltip:AddLine(info.name)
@@ -1079,14 +1072,14 @@ function module:SetGold()
 
 			if player == "ALL" then
 				db.realm.Gold = {
-					[myPlayerFaction] = {
-						[myPlayerName] = GetMoney(),
+					[LUI.playerFaction] = {
+						[LUI.playerName] = GetMoney(),
 					},
-					[otherFaction] = {},
+					[LUI.otherFaction] = {},
 				}
-				goldPlayerArray = {["ALL"] = "ALL", [myPlayerName] = myPlayerName,}
+				goldPlayerArray = {["ALL"] = "ALL", [LUI.playerName] = LUI.playerName,}
 			elseif faction then
-				if player == myPlayerName then
+				if player == LUI.playerName then
 					db.realm.Gold[faction][player] = GetMoney()
 				else
 					db.realm.Gold[faction][player] = nil
@@ -1117,7 +1110,7 @@ function module:SetGold()
 			self.text:SetText(formatMoney(db.Gold.ServerTotal and serverGold or newMoney))
 
 			-- Update gold db
-			db.realm.Gold[myPlayerFaction][myPlayerName] = newMoney
+			db.realm.Gold[LUI.playerFaction][LUI.playerName] = newMoney
 
 			-- Update gold count
 			oldMoney = newMoney
@@ -1171,22 +1164,22 @@ function module:SetGold()
 
 				GameTooltip:AddLine(" ")
 				GameTooltip:AddLine("Character:")
-				for player, gold in pairs(db.realm.Gold[myPlayerFaction]) do
-					GameTooltip:AddDoubleLine(player, formatTooltipMoney(gold), colors[myPlayerFaction].r, colors[myPlayerFaction].g, colors[myPlayerFaction].b, 1,1,1)
-					factionGold[myPlayerFaction] = factionGold[myPlayerFaction] + gold
+				for player, gold in pairs(db.realm.Gold[LUI.playerFaction]) do
+					GameTooltip:AddDoubleLine(player, formatTooltipMoney(gold), colors[LUI.playerFaction].r, colors[LUI.playerFaction].g, colors[LUI.playerFaction].b, 1,1,1)
+					factionGold[LUI.playerFaction] = factionGold[LUI.playerFaction] + gold
 				end
-				for player, gold in pairs(db.realm.Gold[otherFaction]) do
-					GameTooltip:AddDoubleLine(player, formatTooltipMoney(gold), colors[otherFaction].r, colors[otherFaction].g, colors[otherFaction].b, 1,1,1)
-					factionGold[otherFaction] = factionGold[otherFaction] + gold
+				for player, gold in pairs(db.realm.Gold[LUI.otherFaction]) do
+					GameTooltip:AddDoubleLine(player, formatTooltipMoney(gold), colors[LUI.otherFaction].r, colors[LUI.otherFaction].g, colors[LUI.otherFaction].b, 1,1,1)
+					factionGold[LUI.otherFaction] = factionGold[LUI.otherFaction] + gold
 				end
 
 				GameTooltip:AddLine(" ")
 				GameTooltip:AddLine("Server:")
-				if factionGold[otherFaction] > 0 then
-					GameTooltip:AddDoubleLine(myPlayerFaction..":", formatTooltipMoney(factionGold[myPlayerFaction]), colors[myPlayerFaction].r, colors[myPlayerFaction].g, colors[myPlayerFaction].b, 1,1,1)
-					GameTooltip:AddDoubleLine(otherFaction..":", formatTooltipMoney(factionGold[otherFaction]), colors[otherFaction].r, colors[otherFaction].g, colors[otherFaction].b, 1,1,1)
+				if factionGold[LUI.otherFaction] > 0 then
+					GameTooltip:AddDoubleLine(LUI.playerFaction..":", formatTooltipMoney(factionGold[LUI.playerFaction]), colors[LUI.playerFaction].r, colors[LUI.playerFaction].g, colors[LUI.playerFaction].b, 1,1,1)
+					GameTooltip:AddDoubleLine(LUI.otherFaction..":", formatTooltipMoney(factionGold[LUI.otherFaction]), colors[LUI.otherFaction].r, colors[LUI.otherFaction].g, colors[LUI.otherFaction].b, 1,1,1)
 				end
-				GameTooltip:AddDoubleLine("Total:", formatTooltipMoney(factionGold[myPlayerFaction] + factionGold[otherFaction]), 1,1,1, 1,1,1)
+				GameTooltip:AddDoubleLine("Total:", formatTooltipMoney(factionGold[LUI.playerFaction] + factionGold[LUI.otherFaction]), 1,1,1, 1,1,1)
 
 				for i = 1, MAX_WATCHED_TOKENS do
 					local info = C_CurrencyInfo.GetBackpackCurrencyInfo(i)
@@ -1265,7 +1258,7 @@ function module:SetGF()
 		local tables, broadcasts, toasts, buttons
 		local slider, highlight, texOrder1, sep, sep2
 
-		local horde = myPlayerFaction == "Horde"
+		local horde = LUI.playerFaction == "Horde"
 
 		local hordeZones = "Orgrimmar,Undercity,Thunder Bluff,Silvermoon City,Durotar,Tirisfal Glades,Mulgore,Eversong Woods,Northern Barrens,Silverpine Forest,Ghostlands,Azshara,"
 		local allianceZones = "Ironforge,Stormwind City,Darnassus,The Exodar,Azuremyst Isle,Bloodmyst Isle,Darkshore,Deeprun Tram,Dun Morogh,Elwynn Forest,Loch Modan,Teldrassil,Westfall,"
@@ -1454,10 +1447,10 @@ function module:SetGF()
 			if client == BNET_CLIENT_WOW then
 				toast.faction:SetTexture([[Interface\Glues\CharacterCreate\UI-CharacterCreate-Factions]])
 				toast.faction:SetTexCoord(faction == 1 and 0.03 or 0.53, faction == 1 and 0.47 or 0.97, 0.03, 0.97)
-				zone = (zone == nil or zone == "") and UNKNOWN or zone
+				zone = (zone == nil or zone == "") and _G.UNKNOWN or zone
 				toast.zone:SetPoint("LEFT", toast.faction, "RIGHT", textOffset, 0)
 				toast.zone:SetTextColor(GetZoneColor(zone))
-				toast.sameRealm = (realm == myPlayerRealm)
+				toast.sameRealm = (realm == LUI.playerRealm)
 				if not toast.sameRealm then
 					local r,g,b = unpack(GF_Colors.Realm)
 					zone = ("%1$s |cff%3$.2x%4$.2x%5$.2x- %2$s"):format(zone, realm, r*255, g*255, b*255)
@@ -3030,7 +3023,7 @@ module.defaults = {
 				b = 1,
 				a = 1,
 			},
-			PlayerReset = myPlayerName,
+			PlayerReset = LUI.playerName,
 		},
 		Guild = {
 			Enable = true,
@@ -3170,10 +3163,10 @@ module.defaults = {
 	},
 	realm = {
 		Gold = {
-			[myPlayerFaction] = {
-				[myPlayerName] = 0,
+			[LUI.playerFaction] = {
+				[LUI.playerName] = 0,
 			},
-			[otherFaction] = {},
+			[LUI.otherFaction] = {},
 		},
 	}
 }

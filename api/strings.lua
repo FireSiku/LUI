@@ -26,28 +26,28 @@ local LOCALIZED_CLASS_NAMES_MALE = LOCALIZED_CLASS_NAMES_MALE
 -- ####################################################################################################################
 
 ---@alias DBScope
----| '"profile"'
----| '"global"'
----| '"char"'
----| '"realm"'
----| '"class"'
----| '"race"'
----| '"faction"'
----| '"factionrealm"'
+---| "profile"
+---| "global"
+---| "char"
+---| "realm"
+---| "class"
+---| "race"
+---| "faction"
+---| "factionrealm"
 
 ---@alias ClassToken
----| '"DEATHKNIGHT"'
----| '"DEMONHUNTER"'
----| '"DRUID"'
----| '"HUNTER"'
----| '"MAGE"'
----| '"MONK"'
----| '"PALADIN"'
----| '"PRIEST"'
----| '"ROGUE"'
----| '"SHAMAN"'
----| '"WARLOCK"'
----| '"WARRIOR"'
+---| "DEATHKNIGHT"
+---| "DEMONHUNTER"
+---| "DRUID"
+---| "HUNTER"
+---| "MAGE"
+---| "MONK"
+---| "PALADIN"
+---| "PRIEST"
+---| "ROGUE"
+---| "SHAMAN"
+---| "WARLOCK"
+---| "WARRIOR"
 
 -- ####################################################################################################################
 -- ##### StringUtils: Classes #########################################################################################

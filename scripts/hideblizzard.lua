@@ -261,8 +261,7 @@ do
 		-- 	PetCastingBarFrame:GetScript("OnLoad")(PetCastingBarFrame)
 		-- end,
 		-- runebar = function()
-		-- 	local _,class = UnitClass("player")
-		-- 	if class == "DEATHKNIGHT" then
+		-- 	if LUI.DEATHKNIGHT then
 		-- 		RuneFrame:Show()
 		-- 	end
 		-- 	RuneFrame:GetScript("OnLoad")(RuneFrame)
