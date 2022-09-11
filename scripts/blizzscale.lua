@@ -81,11 +81,11 @@ local blizzHooks = {
 	"KeyBindingFrame_LoadUI",
 }
 if LUI.IsRetail then
-	--/retinsert(blizzEvents, "AchievementFrame_LoadUI")
-	--tinsert(blizzEvents, "ArchaeologyFrame_LoadUI")
-	tinsert(blizzEvents, "CollectionsJournal_LoadUI")
-	tinsert(blizzEvents, "EncounterJournal_LoadUI")
-	tinsert(blizzEvents, "Garrison_LoadUI")
+	tinsert(blizzHooks, "AchievementFrame_LoadUI")
+	tinsert(blizzHooks, "ArchaeologyFrame_LoadUI")
+	tinsert(blizzHooks, "CollectionsJournal_LoadUI")
+	tinsert(blizzHooks, "EncounterJournal_LoadUI")
+	tinsert(blizzHooks, "Garrison_LoadUI")
 end
 
 function script:ApplyBlizzScaling()
