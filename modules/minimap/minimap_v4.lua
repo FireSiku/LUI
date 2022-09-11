@@ -5,18 +5,25 @@
 -- ####################################################################################################################
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
+-- luacheck: globals LUIMinimapZone LUIMinimapCoord LUIMinimapBorder
 
 local _, LUI = ...
 local module = LUI:NewModule("Minimap")
 local L = LUI.L
 local db
 
--- luacheck: globals MinimapZoomIn MinimapZoomOut GarrisonLandingPageMinimapButton MiniMapTrackingDropDown
--- luacheck: globals LUIMinimapZone LUIMinimapCoord LUIMinimapBorder Minimap_OnClick
+-- Locals and Constants
+local GarrisonLandingPageMinimapButton = _G.GarrisonLandingPageMinimapButton
+local MiniMapTrackingDropDown = _G.MiniMapTrackingDropDown
+local GetMinimapZoneText = _G.GetMinimapZoneText
+local ToggleDropDownMenu = _G.ToggleDropDownMenu
+local MiniMapMailFrame = _G.MiniMapMailFrame
+local Minimap_OnClick = _G.Minimap_OnClick
+local MinimapZoomOut = _G.MinimapZoomOut
+local MinimapZoomIn = _G.MinimapZoomIn
+local MINIMAP_LABEL = _G.MINIMAP_LABEL
+local Minimap = _G.Minimap
 
--- Constants
-
-local MINIMAP_LABEL = MINIMAP_LABEL
 local MAIL_ICON_TEXTURE = "Interface\\AddOns\\LUI4\\media\\mail.tga"
 local MINIMAP_SQUARE_TEXTURE_MASK = "Interface\\ChatFrame\\ChatFrameBackground"
 local MINIMAP_ROUND_TEXTURE_MASK = "Textures\\MinimapMask"

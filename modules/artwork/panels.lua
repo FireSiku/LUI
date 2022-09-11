@@ -18,13 +18,17 @@ local Frames = LUI:Module("Frames")
 local Themes = LUI:Module("Themes")
 local Media_ = LibStub("LibSharedMedia-3.0")
 
-local db, dbd_
+local db, dbd --luacheck:ignore
 local frameBackgrounds_ = {"LEFT", "RIGHT", "NONE"}
 local frameBackgrounds2_ = {"LUI v3", "NONE"}
 local animations = {"AlphaSlide", "None"}
 local directions = {"SOLID", "TOPLEFT", "TOP", "TOPRIGHT", "RIGHT", "BOTTOMRIGHT", "BOTTOM", "BOTTOMLEFT", "LEFT"}
-
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
+
+local NUM_CHAT_WINDOWS = _G.NUM_CHAT_WINDOWS
+local ChatAlphaAnchor = _G.ChatAlphaAnchor
+local ChatFrame1 = _G.ChatFrame1
+local Minimap = _G.Minimap
 
 LUI.Versions.panels = 1.2
 
@@ -287,12 +291,12 @@ local rotationCoords = {
 }
 
 function LUI:CanAlterFrame(frame)
-	if not (frame:IsProtected() and InCombatLockdown()) then
+	if not (frame:IsProtected() and _G.InCombatLockdown()) then
 		return true
 	end
 end
 
-function RotateTexture(self, degrees)
+local function RotateTexture(self, degrees)
 	local r = rotationCoords[degrees]
 	self:SetTexCoord(r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8])
 end
@@ -831,7 +835,7 @@ function module:LoadOptions()
 			} or nil,
 			Anchor = isNotChat and self:NewInput("Anchor", "Type in your "..tag.." Anchor manually.", 4, UIRL) or nil,
 			FrameIdentifierDesc = isNotChat and self:NewDesc("Use the LUI Frame Identifier to search for the Parent Frame of your "..tag.." Addon.\nYou can also use the Blizzard Debug Tool: Type /framestack", 5) or nil,
-			FrameIdentifier = isNotChat and self:NewExecute("LUI Frame Identifier", "Click to show the LUI Frame Identifier", 6, function() LUI_Frame_Identifier:Show() end) or nil,
+			FrameIdentifier = isNotChat and self:NewExecute("LUI Frame Identifier", "Click to show the LUI Frame Identifier", 6, function() _G.LUI_Frame_Identifier:Show() end) or nil,
 			Additional = isNotChat and self:NewInput("Additional Frames", "Type in any additional Frames (seperated by commas), that you would like to show/hide.", 7, function() module:LoadAdditional(db[tag].Additional, true) end) or nil,
 			empty1 = isNotChat and self:NewDesc(" ", 8) or nil,
 			OffsetX = self:NewInputNumber("Offset X", "Choose the X Offset for your "..tag.." Frame to it's Anchor.", 9, dryCall),

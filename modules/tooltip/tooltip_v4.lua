@@ -10,32 +10,42 @@ local Media = LibStub("LibSharedMedia-3.0")
 local L = LUI.L
 local db
 
-local _G = _G
+local QuestMapLog_GetCampaignTooltip = _G.QuestMapLog_GetCampaignTooltip
+local BreakUpLargeNumbers = _G.BreakUpLargeNumbers
+local GetItemQualityColor = _G.GetItemQualityColor
+local UnitClassification = _G.UnitClassification
+local InCombatLockdown = _G.InCombatLockdown
+local UnitCreatureType = _G.UnitCreatureType
+local UnitHasVehicleUI = _G.UnitHasVehicleUI
+local IsShiftKeyDown = _G.IsShiftKeyDown
+local UnitHealthMax = _G.UnitHealthMax
+local GetGuildInfo = _G.GetGuildInfo
+local UnitIsPlayer = _G.UnitIsPlayer
+local UnitReaction = _G.UnitReaction
+local GetItemInfo = _G.GetItemInfo
+local UnitIsGhost = _G.UnitIsGhost
+local UnitPVPName = _G.UnitPVPName
+local UnitExists = _G.UnitExists
+local UnitHealth = _G.UnitHealth
+local UnitIsDead = _G.UnitIsDead
+local IsInGuild = _G.IsInGuild
+local UnitClass = _G.UnitClass
+local UnitIsAFK = _G.UnitIsAFK
+local UnitIsDND = _G.UnitIsDND
+local UnitLevel = _G.UnitLevel
+local UnitName = _G.UnitName
+local UnitRace = _G.UnitRace
+local UnitSex = _G.UnitSex
 local pairs = pairs
 
-local UnitClassification = UnitClassification
-local UnitCreatureType = UnitCreatureType
-local UnitHasVehicleUI = UnitHasVehicleUI
-local UnitIsPlayer = UnitIsPlayer
-local GetGuildInfo = GetGuildInfo
-local UnitReaction = UnitReaction
-local UnitPVPName = UnitPVPName
-local UnitExists = UnitExists
-local UnitIsDND = UnitIsDND
-local UnitIsAFK = UnitIsAFK
-local UnitLevel = UnitLevel
-local UnitClass = UnitClass
-local IsInGuild = IsInGuild
-local UnitRace = UnitRace
-local UnitName = UnitName
-
 -- Constants
-local CHAT_FLAG_DND = CHAT_FLAG_DND
-local CHAT_FLAG_AFK = CHAT_FLAG_AFK
-local PVP_ENABLED = PVP_ENABLED
-local GUILD = GUILD
-local LEVEL = LEVEL
-local DEAD = DEAD
+local TicketStatusFrame = _G.TicketStatusFrame
+local CHAT_FLAG_DND = _G.CHAT_FLAG_DND
+local CHAT_FLAG_AFK = _G.CHAT_FLAG_AFK
+local PVP_ENABLED = _G.PVP_ENABLED
+local GUILD = _G.GUILD
+local LEVEL = _G.LEVEL
+local DEAD = _G.DEAD
 
 local TOOLTIPS_LIST = {
 	"GameTooltip",
@@ -78,7 +88,7 @@ local TOOLTIPS_LIST = {
 -- Need Localization
 -- was local classification
 local MOB_CLASSIFICATION = {
-	worldboss = BOSS,
+	worldboss = _G.BOSS,
 	rareelite = L["Tooltip_Rare"].."+",
 	elite = "+",
 	rare = L["Tooltip_Rare"],
@@ -143,7 +153,7 @@ function module:RevertTooltipBackdrop()
 
 	-- This tooltip has no name, need to fetch and manually invoke
 	-- It is the tooltip that appears when hovering the campaign at the top of the questlog
-	local campaignFrame = QuestMapLog_GetCampaignTooltip()
+	local campaignFrame = _G.QuestMapLog_GetCampaignTooltip()
 	campaignFrame:SetBackdrop(nil)
 	campaignFrame.NineSlice:SetAlpha(1)
 	campaignFrame:SetScale(1)
@@ -261,7 +271,7 @@ function module:SetTooltip(tooltip, name)
 
 	-- Add backdrop functionality
 	if not tooltip.SetBackdrop then
-		Mixin(tooltip, BackdropTemplateMixin)
+		Mixin(tooltip, _G.BackdropTemplateMixin)
 	end
 
 	-- Store initial scale for future reference

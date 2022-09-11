@@ -8,6 +8,9 @@
 local addonname, LUI = ...
 local script = LUI:NewScript("GMOTD", "AceEvent-3.0", "AceHook-3.0")
 
+local ChatFrame_DisplayGMOTD = _G.ChatFrame_DisplayGMOTD
+local GetGuildRosterMOTD = _G.GetGuildRosterMOTD
+
 local chatFramesRegistered = {}
 
 function script:ChatFrame_RegisterForMessages(frame, ...)

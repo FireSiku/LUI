@@ -18,7 +18,6 @@ local Themes = LUI:Module("Themes")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
-local db
 local directory = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
 LUI.Navi = {}
@@ -615,9 +614,6 @@ function module:SetFrames()
 end
 
 function module:OnInitialize()
-	-- Terminate when the chat module is rewritten.
-	self.db = LUI.db.profile
-	db = self.db
 end
 
 function module:OnEnable()

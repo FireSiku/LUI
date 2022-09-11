@@ -14,6 +14,14 @@ local Media = LibStub("LibSharedMedia-3.0")
 local L = LUI.L
 local db, dbd, history
 
+local DEFAULT_CHAT_FRAME = _G.DEFAULT_CHAT_FRAME
+local BackdropTemplateMixin = _G.BackdropTemplateMixin
+local CHAT_FRAMES = _G.CHAT_FRAMES
+local GetCVar = _G.GetCVar
+local GetMessageTypeColor = _G.GetMessageTypeColor
+local SendChatMessage = _G.SendChatMessage
+local ChatEdit_DeactivateChat = _G.ChatEdit_DeactivateChat
+
 --------------------------------------------------
 -- Local Variables
 --------------------------------------------------
@@ -39,7 +47,7 @@ local function stopMoving(editBox)
 	editBox:StopMovingOrSizing()
 	db.x = editBox:GetLeft()
 	db.y = editBox:GetTop()
-	db.width = max(editBox:GetRight() - editBox:GetLeft(), 10)
+	db.width = math.max(editBox:GetRight() - editBox:GetLeft(), 10)
 end
 
 local function updateDB(editBox)
@@ -114,7 +122,7 @@ local function anchorEditBox(anchor)
 		if anchor == "FREE" or anchor == "LOCK" then
 			db.x = db.x or editBox:GetLeft()
 			db.y = db.y or editBox:GetTop()
-			db.width = db.width or max(editBox:GetWidth(), (editBox:GetRight() or 0) - (editBox:GetLeft() or 0), 10)
+			db.width = db.width or math.max(editBox:GetWidth(), (editBox:GetRight() or 0) - (editBox:GetLeft() or 0), 10)
 		end
 
 		editBox:ClearAllPoints()

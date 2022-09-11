@@ -12,7 +12,8 @@ local addonname, LUI = ...
 local module = LUI:Module("Artwork")
 local Profiler = LUI.Profiler
 
-local db, dbd
+local db, dbd --luacheck:ignore
+local ToggleArt
 
 Profiler.TraceScope(module, "Artwork", "LUI")
 

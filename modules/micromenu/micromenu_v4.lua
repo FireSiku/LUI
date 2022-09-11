@@ -7,9 +7,32 @@ local module = LUI:NewModule("Micromenu", "AceEvent-3.0")
 local L = LUI.L
 local db
 
+local GameMenuFrame = _G.GameMenuFrame
+local ToggleAllBags = _G.ToggleAllBags
+local ToggleStoreUI = _G.ToggleStoreUI
+local ToggleCollectionsJournal = _G.ToggleCollectionsJournal
+local ToggleEncounterJournal = _G.ToggleEncounterJournal
+local TogglePVPUI = _G.TogglePVPUI
+local ToggleLFDParentFrame = _G.ToggleLFDParentFrame
+local ToggleFriendsFrame = _G.ToggleFriendsFrame
+local ToggleGuildFrame = _G.ToggleGuildFrame
+local ToggleWorldMap = _G.ToggleWorldMap
+local ToggleAchievementFrame = _G.ToggleAchievementFrame
+local ToggleTalentFrame = _G.ToggleTalentFrame
+local SpellBookFrame = _G.SpellBookFrame
+local CharacterFrame = _G.CharacterFrame
+local UnitLevel = _G.UnitLevel
+local HideUIPanel = _G.HideUIPanel
+local ShowUIPanel = _G.ShowUIPanel
+local hooksecurefunc = _G.hooksecurefunc
+local IsAddOnLoaded = _G.IsAddOnLoaded
 local format = format
-local microStorage = {}
+local FriendsFrame = _G.FriendsFrame
+local CommunitiesFrame = _G.CommunitiesFrame
+local IsBagOpen = _G.IsBagOpen
+
 local addonLoadedCallbacks = {}
+local microStorage = {}
 
 -- List of buttons, starting from the right.
 local microList = {
@@ -435,7 +458,7 @@ function module:ConsolidateOptionsFrames()
 	if ACD then
 		hooksecurefunc(ACD, "Open", function()
 			-- We get the LUI options frame, if its there
-			optionsFrame = ACD.OpenFrames["LUI4Options"]
+			local optionsFrame = ACD.OpenFrames["LUI4Options"]
 			if optionsFrame then
 				-- Register a callback for when the frame is closed
 				hooksecurefunc(optionsFrame, "Hide", UpdateState)
@@ -479,13 +502,13 @@ function module:ConsolidateBagFrames()
 	-- 	addonBagFrame = LUIBags
 	-- else
 	if IsAddOnLoaded("Stuffing") then
-		addonBagFrame = StuffingFrameBags
+		addonBagFrame = _G.StuffingFrameBags
 	elseif IsAddOnLoaded("Bagnon") then
-		addonBagFrame = BagnonFrameinventory
+		addonBagFrame = _G.BagnonFrameinventory
 	elseif IsAddOnLoaded("ArkInventory") then
-		addonBagFrame = ARKINV_Frame1
+		addonBagFrame = _G.ARKINV_Frame1
 	elseif IsAddOnLoaded("OneBag") then
-		addonBagFrame = OneBagFrame
+		addonBagFrame = _G.OneBagFrame
 	else
 		addonBagFrame = nil
 	end
@@ -587,7 +610,7 @@ function module:SetMicromenuAnchors()
 
 	module.background:ClearAllPoints()
 	-- In case all the buttons are hidden in the options
-	if not firstAnchor then 
+	if not firstAnchor then
 		LUI:Print("Return Early")
 		return
 	end
@@ -620,7 +643,6 @@ function module:SetMicromenu()
 
 	module:SetMicromenuAnchors()
 end
-
 
 --- Fires the stored functions for the frame hooks
 -- Doing it this way instead of loading the required addons in OnEnable

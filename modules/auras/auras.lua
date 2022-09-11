@@ -6,11 +6,15 @@
 local addonName, LUI = ...
 
 -- Localized API
+local UnitName, UnitClass, UnitAura, UnitIsPlayer, GameTooltip_UnitColor = _G.UnitName, _G.UnitClass, _G.UnitAura, _G.UnitIsPlayer, _G.GameTooltip_UnitColor
+local strfind, strmatch, gsub, format, tonumber = string.find, string.match, string.gsub, string.format, _G.tonumber
+local GetInventoryItemTexture, GetWeaponEnchantInfo = _G.GetInventoryItemTexture, _G.GetWeaponEnchantInfo
+local GetInventoryItemQuality, GetItemQualityColor = _G.GetInventoryItemQuality, _G.GetItemQualityColor
+local RAID_CLASS_COLORS, NUM_TEMP_ENCHANT_FRAMES = _G.RAID_CLASS_COLORS, _G.NUM_TEMP_ENCHANT_FRAMES
+local GetTime, ceil, select, unpack, pairs = _G.GetTime, math.ceil, _G.select, _G.unpack, _G.pairs
 local GameTooltip = _G.GameTooltip
-local RAID_CLASS_COLORS, NUM_TEMP_ENCHANT_FRAMES = RAID_CLASS_COLORS, NUM_TEMP_ENCHANT_FRAMES
-local UnitName, UnitClass, UnitAura, UnitIsPlayer, GameTooltip_UnitColor = UnitName, UnitClass, UnitAura, UnitIsPlayer, GameTooltip_UnitColor
-local GetInventoryItemTexture, GetInventoryItemQuality, GetItemQualityColor, GetWeaponEnchantInfo = GetInventoryItemTexture, GetInventoryItemQuality, GetItemQualityColor, GetWeaponEnchantInfo
-local GetTime, ceil, select, unpack, pairs, strfind, strmatch, gsub, format, tonumber = GetTime, math.ceil, select, unpack, pairs, string.find, string.match, string.gsub, string.format, tonumber
+local RegisterAttributeDriver = _G.RegisterAttributeDriver
+local BUFF_MAX_DISPLAY = _G.BUFF_MAX_DISPLAY
 
 ----------------------------------------------------------------------
 -- Initialize
@@ -18,7 +22,7 @@ local GetTime, ceil, select, unpack, pairs, strfind, strmatch, gsub, format, ton
 
 local module = LUI:Module("Auras")
 local Media = LUI.Lib("LibSharedMedia-3.0")
-local Masque = LibStub("Masque", true) or (LibMasque and LibMasque("Button"))
+local Masque = LibStub("Masque", true) or (_G.LibMasque and _G.LibMasque("Button"))
 
 local L = LUI.L
 local argcheck = LUI.argcheck
@@ -64,9 +68,9 @@ local debuffTypeColors = setmetatable({
 local timeFormats
 do
 	timeFormats = {
-		[day] = DAY_ONELETTER_ABBR,
-		[hour] = HOUR_ONELETTER_ABBR,
-		[minute] = MINUTE_ONELETTER_ABBR,
+		[day] = _G.DAY_ONELETTER_ABBR,
+		[hour] = _G.HOUR_ONELETTER_ABBR,
+		[minute] = _G.MINUTE_ONELETTER_ABBR,
 		[1] = "%d",
 	}
 
@@ -346,16 +350,16 @@ do
 			self:UpdateWeaponEnchants("_mainEnchanted")
 
 			-- fix for Blizzard's fail coding
-			local i, numShown, numConsolidated = 1, 0, 0
+			local x, numShown, numConsolidated = 1, 0, 0
 			while true do
-				local name, _, _, _, _, _, _, _, shouldConsolidate = UnitAura(unit, i, filter)
+				local name, _, _, _, _, _, _, _, shouldConsolidate = UnitAura(unit, x, filter)
 				if not name then break end
 				if not shouldConsolidate or not self.settings.Consolidate then
 					numShown = numShown + 1
 				else
 					numConsolidated = numConsolidated + 1
 				end
-				i = i + 1
+				x = x + 1
 			end
 			for i, aura in self:ActiveAuras() do
 				if i > numShown then
@@ -647,7 +651,7 @@ function module:LoadOptions()
 	end
 
 	local function CreateAuraOptions(auraType, order)
-		local options = self:NewGroup(auraType, order, false, InCombatLockdown, {
+		local options = self:NewGroup(auraType, order, false, _G.InCombatLockdown, {
 			header = self:NewHeader(format(L["%s Options"], auraType), 1),
 			Size = self:NewSlider(L["Size"], format(L["Choose the Size for your %s"], auraType), 2, 15, 65, 1, true),
 			Anchor = self:NewSelect(L["Anchor"], format(L["Choose the corner to anchor your %s to"], auraType), 3, LUI.Corners, false, refresh),
@@ -700,9 +704,9 @@ local function OnAnyEvent(self, event, addon)
 	end
 	
 	for i=1, NUM_TEMP_ENCHANT_FRAMES do
-		local f = _G["TempEnchant"..i]
+		local TempEnchant = _G["TempEnchant"..i]
 		if TempEnchant then
-			group:AddButton(f)
+			group:AddButton(TempEnchant)
 		end
 		_G["TempEnchant"..i.."Border"]:SetVertexColor(.75, 0, 1)
 	end
@@ -713,7 +717,7 @@ function module:SetupSkins()
 
 	local f = CreateFrame("Frame")
 
-	hooksecurefunc("CreateFrame", function (_, name, parent) --dont need to do this for TempEnchant enchant frames because they are hard created in xml
+	_G.hooksecurefunc("CreateFrame", function (_, name, parent) --dont need to do this for TempEnchant enchant frames because they are hard created in xml
 		if type(name) ~= "string" then return end
 		if strfind(name, "LUI_Auras") then
 			group:AddButton(_G[name])
