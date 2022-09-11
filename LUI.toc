@@ -3,9 +3,9 @@
 ## Title: LUI
 ## Author: Siku, Nitsah
 ## Notes: User Interface Modification
-## SavedVariables: LUIDB, LUIGold, LUI_Themes, LUI_Layouts
+## SavedVariables: LUIDB
 ## SavedVariablesPerCharacter: LUICONFIG
-## OptionalDeps: Masque, Masque_Darion
+## OptionalDeps: Masque, Masque_Darion, !ClassColors
 ## X-oUF: oUF_LUI
 
 ### Initialize Libs ###
@@ -15,11 +15,16 @@ locale\locale.xml
 
 ### Core + API ###\
 init.lua
+api\curse.lua
+# api\modapi.lua
+# api\colors.lua
+# api\utils.lua
 api\profiler.lua
 api\debug.lua
 api\outofcombatwrapper.lua
 api\devapi.lua
 api\restore.lua
+api\strings.lua
 LUI.lua
 
 ### Artwork ###

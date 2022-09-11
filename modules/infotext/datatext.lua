@@ -733,8 +733,7 @@ function module:SetDualSpec()
 
 			self.text:SetText(text)
 			self.icon:SetNormalTexture(curCache.icon)
-			--self.icon:SetBackdrop({bgFile = tostring(curCache.icon), edgeFile = nil, tile = false, edgeSize = 0, insets = {top = 0, right = 0, bottom = 0, left = 0}})
-
+			
 			-- Update tooltip if open
 			UpdateTooltip(self)
 		end
@@ -751,16 +750,6 @@ function module:SetDualSpec()
 		end
 
 		stat.OnClick = function(self, button)
-            --[[
-            if IsShiftKeyDown() then -- on shift toggle talent frame, function copied from original
-                if PlayerTalentFrame:IsVisible() and (PanelTemplates_GetSelectedTab(PlayerTalentFrame) == 1) then
-    				HideUIPanel(PlayerTalentFrame)
-    			else
-    				PanelTemplates_SetTab(PlayerTalentFrame, 1)
-    				PlayerTalentFrame_Refresh()
-    				ShowUIPanel(PlayerTalentFrame)
-    			end
-            ]]-- comment block is original functionality supported via shift click
 			if button == "LeftButton" and switch1 then -- switch 1 if valid
                 SetSpecialization( switch1 )
             elseif button == "RightButton" and switch2 then -- switch 2
@@ -2586,8 +2575,6 @@ function module:SetWeaponInfo()
 		stat.Events = {"UNIT_INVENTORY_CHANGED", "UNIT_AURA"}
 
 		stat.UNIT_INVENTORY_CHANGED = function(self, unit)
-			--print(string.format("Called, unit == %s", tostring(unit)))
-			--if unit ~= "player" then return end
 			local mspeed, ospeed = UnitAttackSpeed("player")
 			local text = string.format("MH: %.2fs", tonumber(mspeed))
 			if ospeed ~= nil and ospeed ~= 0 then
@@ -2663,27 +2650,6 @@ function module:SetEquipmentSets()
 		stat.OnEnable = function(self)
 			self:UNIT_INVENTORY_CHANGED(self, "player")
 		end
-
-		--[[stat.OnEnter = function(self)
-			if CombatTips() then
-				GameTooltip:SetOwner(self, getOwnerAnchor(self))
-				GameTooltip:ClearLines()
-				GameTooltip:AddLine(text, 0.4, 0.78, 1)
-				for set = 1,GetNumEquipmentSets() do
-					local name, _, setID, isEquipped, _, _, _, numMissing, _ = GetEquipmentSetInfo(set)
-					GameTooltip:AddLine(string.format("Equipment Set: %s, Equipped: %s", name, tostring(isEquipped)))
-					if numMissing > 0 then
-						GameTooltip:AddLine(string.format("   Missing Items: %s", tostring(missing)))
-					end
-				end
-				GameTooltip:AddLine(" ")
-				GameTooltip:Show()
-			end
-		end
-
-		stat.OnLeave = function()
-			GameTooltip:Hide()
-		end]]--
 
 		stat.Created = true
 	end

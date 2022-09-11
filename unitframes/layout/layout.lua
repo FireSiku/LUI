@@ -114,33 +114,6 @@ local cornerAuras = {
 local channelingTicks -- base time between ticks
 do
 	local classChannels = {
-		--[[DRUID = {
-			[GetSpellInfo(740)] = 2, -- Tranquility
-			--[GetSpellInfo(16914)] = 1, -- Hurricane
-		},
-		MAGE = {
-			--[GetSpellInfo(10)] = 1, -- Blizzard
-			[GetSpellInfo(12051)] = 2, -- Evocation
-			--[GetSpellInfo(5143)] = 0.75, -- Arcane Missiles			located below do to talents affecting time between ticks
-		},
-		PRIEST = {
-			[GetSpellInfo(15407)] = 1, -- Mind Flay
-			[GetSpellInfo(234702)] = 1, -- Mind Sear
-			[GetSpellInfo(64843)] = 2, -- Divine Hymn
-			--[GetSpellInfo(64901)] = 2, -- Hymn of Hope
-			[GetSpellInfo(47540)] = 1, -- Penance
-		},
-		SHAMAN = {
-			[GetSpellInfo(61882)] = 1, -- Earthquake
-		},
-		WARLOCK = {
-			--[GetSpellInfo(1120)] = 3, -- Drain Soul
-			[GetSpellInfo(234153)] = 1, -- Drain Life
-			[GetSpellInfo(755)] = 1, -- Health Funnel
-			--[GetSpellInfo(79268)] = 1, -- Soul Harvest
-			[GetSpellInfo(5740)] = 2, -- Rain of Fire
-			--[GetSpellInfo(1949)] = 1, -- Hellfire
-		},]]
 	}
 
 	channelingTicks = {
@@ -152,188 +125,14 @@ do
 		end
 	end
 	wipe(classChannels)
-
-	-- if LUI.MAGE then
-		-- local arcaneMissiles = GetSpellInfo(5143)
--- 
-		-- local function talentUpdate()
-			-- local rank = select(5, GetTalentInfo(1, 10)) -- Missile Barrage talent
-			-- channelingTicks[arcaneMissiles] = rank == 0 and 0.75 or (0.7 - (rank / 10))
-		-- end
--- 
-		-- module:RegisterEvent("PLAYER_TALENT_UPDATE", talentUpdate)
-		-- talentUpdate()
-	-- end
 end
-
--- local menu
--- do
--- 	local removeMenuOptions = {
--- 		SET_FOCUS = "LUI_SET_FOCUS",
--- 		CLEAR_FOCUS = "LUI_CLEAR_FOCUS",
--- 		LOCK_FOCUS_FRAME = true,
--- 		UNLOCK_FOCUS_FRAME = true,
--- 	}
-
--- 	local insertMenuOptions = {
--- 		SELF = {
--- 			"LUI_ROLE_CHECK",
--- 			"LUI_READY_CHECK",
--- 		},
--- 	}
-
--- 	-- UnitPopupButtons["LUI_SET_FOCUS"] = {
--- 	-- 	text = L["Type %s to Set Focus"]:format(SLASH_FOCUS1),
--- 	-- 	tooltipText = L["Blizzard does not support right-click focus"],
--- 	-- 	dist = 0,
--- 	-- }
--- 	-- UnitPopupButtons["LUI_CLEAR_FOCUS"] = {
--- 	-- 	text = L["Type %s to Clear Focus"]:format(SLASH_CLEARFOCUS1),
--- 	-- 	tooltipText = L["Blizzard does not support right-click focus"],
--- 	-- 	dist = 0,
--- 	-- }
--- 	-- UnitPopupButtons["LUI_ROLE_CHECK"] = {
--- 	-- 	text = ROLE_POLL,
--- 	-- 	tooltipText = L["Initiate a role check"],
--- 	-- 	dist = 0,
--- 	-- }
--- 	-- UnitPopupButtons["LUI_READY_CHECK"] = {
--- 	-- 	text = READY_CHECK,
--- 	-- 	tooltipText = L["Initiate a ready check"],
--- 	-- 	dist = 0,
--- 	-- }
-
--- 	-- hooksecurefunc("UnitPopup_OnClick", function(self)
--- 	-- 	local button = self.value
--- 	-- 	if button == "LUI_ROLE_CHECK" then
--- 	-- 		InitiateRolePoll()
--- 	-- 	elseif button == "LUI_READY_CHECK" then
--- 	-- 		DoReadyCheck()
--- 	-- 	end
--- 	-- end)
-
--- 	-- hooksecurefunc("UnitPopup_HideButtons", function()
--- 	-- 	local dropdownMenu = UIDROPDOWNMENU_INIT_MENU
--- 	-- 	local inParty, inRaid, inBG, isLeader, isAssist = GetNumSubgroupMembers() > 0, GetNumGroupMembers() > 0, UnitInBattleground("player"), UnitIsGroupLeader("unit" or "player name"), UnitIsGroupAssistant("unit" or "player name")
--- 	-- 	if inRaid then
--- 	-- 		inParty = true
--- 	-- 	end
-
--- 	-- 	for i, v in ipairs(UnitPopupMenus[UIDROPDOWNMENU_MENU_VALUE] or UnitPopupMenus[dropdownMenu.which]) do
--- 	-- 		if v == "LUI_ROLE_CHECK" or v == "LUI_READY_CHECK" then
--- 	-- 			if (not isLeader and not isAssist) or inBG or (not inParty and not inRaid) then
--- 	-- 				UnitPopupShown[UIDROPDOWNMENU_MENU_LEVEL][i] = 0
--- 	-- 			end
--- 	-- 		end
--- 	-- 	end
--- 	-- end)
-
--- 	local dropdown = CreateFrame("Frame", "LUI_UnitFrame_DropDown", UIParent, "UIDropDownMenuTemplate")
--- 	--UnitPopupFrames[#UnitPopupFrames+1] = "LUI_UnitFrame_DropDown"
-
--- 	local function getMenuUnit(unit)
--- 		if unit == "focus" then return "FOCUS" end
-
--- 		if UnitIsUnit(unit, "player") then return "SELF" end
-
--- 		if UnitIsUnit(unit, "vehicle") then return "VEHICLE" end
-
--- 		if UnitIsUnit(unit, "pet") then return "PET" end
-
--- 		if not UnitIsPlayer(unit) then return "TARGET" end
-
--- 		local id = UnitInRaid(unit)
--- 		if id then
--- 			return "RAID_PLAYER", id
--- 		end
-
--- 		if UnitInParty(unit) then
--- 			return "PARTY"
--- 		end
-
--- 		return "PLAYER"
--- 	end
-
--- 	local unitDropDownMenus = {}
--- 	local function getUnitDropDownMenu(unit)
--- 		local menu = unitDropDownMenus[unit]
--- 		if menu then return menu end
-
--- 		if not UnitPopupMenus then
--- 			unitDropDownMenus[unit] = unit
--- 			return unit
--- 		end
-
--- 		local data = UnitPopupMenus[unit]
--- 		if not data then
--- 			unitDropDownMenus[unit] = unit
--- 			return unit
--- 		end
-
--- 		local found = false
--- 		for _, v in pairs(data) do
--- 			if removeMenuOptions[v] then
--- 				found = true
--- 				break
--- 			end
--- 		end
-
--- 		local insert = insertMenuOptions[unit]
-
--- 		if not found and not insert then -- nothing to add or remove
--- 			unitDropDownMenus[unit] = unit
--- 			return unit
--- 		end
-
--- 		local newData = {}
--- 		for _, v in ipairs(data) do
--- 			local blacklisted = removeMenuOptions[v]
--- 			if not blacklisted then
--- 				if insert and v == "CANCEL" then
--- 					for _, extra in ipairs(insert) do
--- 						tinsert(newData, extra)
--- 					end
--- 				end
--- 				tinsert(newData, v)
--- 			elseif blacklisted ~= true then
--- 				tinsert(newData, blacklisted)
--- 			end
--- 		end
-
--- 		local newMenuName = "LUI_" .. unit
--- 		UnitPopupMenus[newMenuName] = newData
--- 		unitDropDownMenus[unit] = newMenuName
--- 		return newMenuName
--- 	end
-
--- 	local dropdown_unit
--- 	UIDropDownMenu_Initialize(dropdown, function(frame)
--- 		if not dropdown_unit then return end
-
--- 		local unit, id = getMenuUnit(dropdown_unit)
--- 		if unit then
--- 			local menu = getUnitDropDownMenu(unit)
--- 			UnitPopup_ShowMenu(frame, menu, dropdown_unit, nil, id)
--- 		end
--- 	end, "MENU")
-
--- 	menu = function(self, unit)
--- 		dropdown_unit = unit
--- 		ToggleDropDownMenu(1, nil, dropdown, "cursor")
--- 	end
--- end
 
 ------------------------------------------------------------------------
 --	Dont edit this if you dont know what you are doing!
 ------------------------------------------------------------------------
 
 local GetDisplayPower = function(power, unit)
-	-- local barType = UnitAlternatePowerInfo(unit)
-	-- if power.displayAltPower and barType then
-	-- 	return ALTERNATE_POWER_INDEX
-	-- else
 		return (UnitPowerType(unit))
-	-- end
 end
 
 local SetFontString = function(parent, fontName, fontHeight, fontStyle)
@@ -408,21 +207,7 @@ local UnitFrame_OnLeave = function(self)
 	_G.UnitFrame_OnLeave(self)
 	self.Highlight:Hide()
 end
---[[
-local menu = function(self)
-	local unit = self.unit:gsub("(.)", string.upper, 1)
-	if _G[unit.."FrameDropDown"] then
-		ToggleDropDownMenu(1, nil, _G[unit.."FrameDropDown"], "cursor")
-	elseif (self.unit:match("party")) then
-		ToggleDropDownMenu(1, nil, _G["PartyMemberFrame"..self.id.."DropDown"], "cursor")
-	else
-		FriendsDropDown.unit = self.unit
-		FriendsDropDown.id = self.id
-		FriendsDropDown.initialize = RaidFrameDropDown_Initialize
-		ToggleDropDownMenu(1, nil, FriendsDropDown, "cursor")
-	end
-end
-]]
+
 local OverrideHealth = function(self, event, unit, powerType)
 	if self.unit ~= unit then return end
 	local health = self.Health

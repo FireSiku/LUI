@@ -95,23 +95,34 @@ end
 -- ####################################################################################################################
 -- Clean up: It's very likely Blizzard already implemented some of these utilities.
 
---Count the number of entries in a table. This is done because #Table only returns array.
-function LUI:Count(t,isPrint)
+--- Merge given table into module.defaults if it exists. Support all AceDB types
+---@param source table
+---@param name string
+
+--- Count the number of entries in a table. This is done because #Table only returns array.
+---@param t table Table to Count
+---@param isPrint? boolean If provided, the count will be printed.
+---@return integer
+function LUI:Count(t, isPrint)
 	local count = 0
 	if type(t) == "table" then
 		for _ in pairs(t) do count = count + 1 end
 	end
-	if isPrint then
-		LUI:Print(count)
-	else
-		return count
-	end
+
+	if isPrint then LUI:Print(count) end
+	return count
 end
 
 --Give us a sorted table to work with, fill the array with the keys, then sort based on the values in original table
 --then we can just use a for loop to get a sorted result and call original[ sorted[i] ] for the value
 --Went with a return-less approach that you need to provide the sort table because otherwise,
---I would need to create a new table every single call, and that would create needless garbage.
+--I would need to create a new table every single call, and that would create needless garbage.\
+
+--- Returns a sorted table to work it by filling the array portion of `sortT` with the keys of `origT`, then sorting the results.  
+--- Then we can just use a loop to get the sorted results with original[ sorted[i] ] for the value.
+---@param sortT table Table that will be wiped to contain the sorting order.
+---@param origT table Original dictionary table that contains list of keys to be sorted.
+---@param sortFunc function The sorting function to be used.
 function LUI:SortTable(sortT, origT, sortFunc)
 	wipe(sortT)
 	for k in pairs(origT) do sortT[#sortT+1] = k end
@@ -119,6 +130,11 @@ function LUI:SortTable(sortT, origT, sortFunc)
 end
 
 --Copy a table recursively.
+
+--- Copy a table recursively
+---@param source table
+---@param target table
+---@return table
 function LUI:CopyTable(source, target)
 	if type(target) ~= "table" then target = {} end
 	for k, v in pairs(source) do
@@ -132,6 +148,9 @@ function LUI:CopyTable(source, target)
 end
 
 --- Print a table to the chat frame
+
+--- Print a table to the chat frame
+---@param tbl table
 function LUI:PrintTable(tbl)
 	if type(tbl) ~= "table" then return LUI:Print("Tried to Print a nil table.") end
 	LUI:Print("-------------------------")
@@ -142,6 +161,12 @@ function LUI:PrintTable(tbl)
 end
 
 --takes table, second arg for recursion. Prints an entire table to default chat.
+
+--- Print a table recursively, with indentation
+---@param tbl table
+---@param msg string Used by recursion
+---@param recurse string Used by recursion
+---@overload fun(tbl: table)
 function LUI:PrintFullTable(tbl,msg, recurse)
 	if type(tbl) ~= "table" then return LUI:Print("Tried to Print a nil table.") end
 	if not recurse then LUI:Print("-------------------------") end
@@ -194,7 +219,7 @@ end
 --- Return a normalized value for pixel-perfect textures.
 ---@param x number
 ---@return number
-function LUI.Scale(x)
+function LUI.V4Scale(x)
 	return mult * floor(x / mult + 0.5)
 end
 

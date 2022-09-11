@@ -75,23 +75,6 @@ do
 	end
 
 	hide = {
-		-- player = function()
-		-- -- Only hide the PlayerFrame, do not mess with the events.
-		-- -- Messing the PlayerFrame ends up spreading taint.
-		-- 	PlayerFrame:Hide()
-		-- 	PlayerFrame.Show = PlayerFrame.Hide
-		-- end,
-		-- target = function()
-		-- 	TargetFrame:UnregisterAllEvents()
-		-- 	TargetFrame:Hide()
-		-- 	TargetFrame.Show = TargetFrame.Hide
-		-- 	TargetFrameTextureFrame:Hide()
-		-- 	ComboFrame:UnregisterAllEvents()
-		-- end,
-		-- focus = function()
-		-- 	FocusFrame:UnregisterAllEvents()
-		-- 	FocusFrame:Hide()
-		-- end,
 		party = function()
 			for i = 1, 4 do
 				local frame = _G["PartyMemberFrame"..i]
@@ -116,6 +99,7 @@ do
 				hook("party", "CompactPartyFrame_Generate")
 			end
 		end,
+
 		raid = function()
 			if CompactRaidFrameManager then
 				CompactRaidFrameManager:UnregisterEvent("GROUP_ROSTER_UPDATE")
@@ -128,13 +112,7 @@ do
 				hook("raid", "CompactRaidFrameManager_UpdateShown")
 			end
 		end,
-		-- boss = function()
-		-- 	for i = 1, MAX_BOSS_FRAMES do
-		-- 		local frame = _G["Boss"..i.."TargetFrame"]
-		-- 		frame:UnregisterAllEvents()
-		-- 		frame:Hide()
-		-- 	end
-		-- end,
+
 		arena = function()
 			if IsAddOnLoaded("Blizzard_ArenaUI") then
 				ArenaEnemyFrames:UnregisterAllEvents()
@@ -142,19 +120,7 @@ do
 				hook("arena", "Arena_LoadUI")
 			end
 		end,
-		-- castbar = function()
-		-- 	CastingBarFrame:UnregisterAllEvents()
-		-- 	PetCastingBarFrame:UnregisterAllEvents()
-		-- end,
-		-- runebar = function()
-		-- 	hook("runebar", "PlayerFrame_HideVehicleTexture")
-		-- 	RuneFrame:UnregisterAllEvents()
-		-- 	RuneFrame:Hide()
-		-- end,
-		-- altpower = function()
-		-- 	PlayerPowerBarAlt:UnregisterAllEvents()
-		-- 	PlayerPowerBarAlt:Hide()
-		-- end,
+
 		aura = function()
 			BuffFrame:Hide()
 			TemporaryEnchantFrame:Hide()
@@ -176,17 +142,6 @@ do
 				end
 			end
 
-			--[[
-			for i = 1, 6 do
-				_G["VehicleMenuBarActionButton" .. i]:UnregisterAllEvents()
-			end
-
-			for i = 1, 12 do
-				_G["BonusActionButton" .. i]:UnregisterAllEvents()
-				_G["MultiCastActionButton" .. i]:UnregisterEvent("UPDATE_BINDINGS")
-			end
-			--]]
-
 			local talentFrame = PlayerTalentFrame
 			if talentFrame then
 				talentFrame:UnregisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
@@ -199,16 +154,6 @@ do
 		end,
 	}
 	show = {
-		-- player = function()
-		-- 	PlayerFrame:Show()
-		-- end,
-		-- target = function()
-		-- 	TargetFrame:GetScript("OnLoad")(TargetFrame)
-		-- 	ComboFrame:GetScript("OnLoad")(ComboFrame)
-		-- end,
-		-- focus = function()
-		-- 	FocusFrame:GetScript("OnLoad")(FocusFrame)
-		-- end,
 		party = function()
 			Blizzard:Unhook("CompactPartyFrame_Generate")
 			for i = 1, 4 do
@@ -230,6 +175,7 @@ do
 				end
 			end
 		end,
+
 		raid = function()
 			CompactRaidFrameManager:RegisterEvent("GROUP_ROSTER_UPDATE")
 			CompactRaidFrameManager:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -244,33 +190,14 @@ do
 				CompactRaidFrameManager_SetSetting("IsShown", "1")
 			end
 		end,
-		-- boss = function()
-		-- 	for i = 1, MAX_BOSS_FRAMES do
-		-- 		local frame = _G["Boss"..i.."TargetFrame"]
-		-- 		frame:GetScript("OnLoad")(frame)
-		-- 	end
-		-- end,
+
 		arena = function()
 			if IsAddOnLoaded("Blizzard_ArenaUI") then
 				ArenaEnemyFrames:GetScript("OnLoad")(ArenaEnemyFrames)
 				ArenaEnemyFrames:GetScript("OnEvent")(ArenaEnemyFrames, "VARIABLES_LOADED")
 			end
 		end,
-		-- castbar = function()
-		-- 	CastingBarFrame:GetScript("OnLoad")(CastingBarFrame)
-		-- 	PetCastingBarFrame:GetScript("OnLoad")(PetCastingBarFrame)
-		-- end,
-		-- runebar = function()
-		-- 	if LUI.DEATHKNIGHT then
-		-- 		RuneFrame:Show()
-		-- 	end
-		-- 	RuneFrame:GetScript("OnLoad")(RuneFrame)
-		-- 	RuneFrame:GetScript("OnEvent")(RuneFrame, "PLAYER_ENTERING_WORLD")
-		-- end,
-		-- altpower = function()
-		-- 	PlayerPowerBarAlt:GetScript("OnLoad")(PlayerPowerBarAlt)
-		-- 	UnitPowerBarAlt_UpdateAll(PlayerPowerBarAlt)
-		-- end,
+
 		aura = function()
 			BuffFrame:Show()
 			if GetCVarBool("consolidateBuffs") then
@@ -307,21 +234,6 @@ do
 				end
 			end
 
-			--[[ -- TODO: Test these
-			for i = 1, 6 do
-				local button = _G["VehicleMenuBarActionButton" .. i]
-				button:GetScript("OnLoad")(button)
-			end
-
-			for i = 1, 12 do
-				local button = _G["BonusActionButton" .. i]
-				button:GetScript("OnLoad")(button)
-				local multibutton = _G["MultiCastActionButton" .. i]
-				multibutton:RegisterEvent("UPDATE_BINDINGS")
-				multibutton:GetScript("OnEvent", "UPDATE_BINDINGS") -- TODO: find if other args are needed
-			end
-			--]]
-
 			local talentFrame = PlayerTalentFrame
 			if talentFrame then
 				talentFrame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED") -- TODO: find out if we need to force fire this after registering it
@@ -342,7 +254,6 @@ end
 function Blizzard:Hide(type)
 	argcheck(type, "typeof", "string")
 	type = type:lower()
-	--argcheck(type, "isin", hide)
 
 	if not hide[type] then return end
 	if hidden[type] then return end
@@ -356,7 +267,6 @@ end
 function Blizzard:Show(type)
 	argcheck(type, "typeof", "string")
 	type = type:lower()
-	--argcheck(type, "isin", show)
 
 	if not show[type] then return end
 	if not hidden[type] then return end

@@ -1920,12 +1920,6 @@ function LUI:Open(force, ...)
 			else
 				ACD:Open(addonname, nil, ...)
 				ACD.OpenFrames.LUI.frame:SetScale(db.General.BlizzFrameScale)
-				--ACD.OpenFrames.LUI:SetCallback("OnClose", function(widget, event)
-				--	widget.frame:SetScale(1)
-				----	local appName = widget:GetUserData("appName")
-				--	ACD.OpenFrames[appName] = nil
-				--	LibStub("AceGUI-3.0"):Release(widget)
-				--end)
 				optionsLoaded = true
 			end
 		end
