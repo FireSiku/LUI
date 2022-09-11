@@ -1,0 +1,150 @@
+## Interface: 11403
+## Version: 2209
+## Title: LUI
+## Author: Siku, Nitsah
+## Notes: User Interface Modification
+## SavedVariables: LUIDB, LUIGold, LUI_Themes, LUI_Layouts
+## SavedVariablesPerCharacter: LUICONFIG
+## OptionalDeps: Masque, Masque_Darion
+## X-oUF: oUF_LUI
+
+### Initialize Libs ###
+libs\libs.xml
+api\oUF\ouf_Vanilla.xml
+locale\locale.xml
+
+### Core + API ###\
+init.lua
+api\profiler.lua
+api\debug.lua
+api\outofcombatwrapper.lua
+api\devapi.lua
+api\restore.lua
+LUI.lua
+
+### Artwork ###
+modules\artwork\themes.lua
+modules\artwork\panels.lua
+modules\artwork\frames.lua
+modules\artwork\artwork.lua
+
+### Fader ###
+modules\fader\fader.lua
+
+### Bars ###
+modules\bars\bars.lua
+
+### Auras ###
+modules\auras\auras.xml
+
+### Chat ###
+modules\chat\chat.xml
+
+### Minimap ###
+modules\minimap\minimap.lua
+
+### Bags ###
+modules\bags\bags.lua
+
+### Cooldown ###
+modules\cooldown\cooldown.xml
+
+### Tooltip ###
+modules\tooltip\tooltip.lua
+
+### InfoText ###
+modules\infotext\datatext.lua
+
+### Micromenu ###
+modules\micromenu\micromenu.lua
+
+### RaidMenu ###
+modules\raidmenu\raidmenu.xml
+
+### ExpBars ###
+modules\expbar\threatbar.lua
+
+### UIElements ###
+modules\uielements\faq.lua
+modules\uielements\merchant.lua
+modules\uielements\mirrorbar.lua
+modules\uielements\colourpicker.lua
+
+### Additional Scripts ###
+scripts\autoinvite.lua
+scripts\blizzoptionsmover.lua
+scripts\blizzscale.lua
+scripts\errorhider.lua
+scripts\talentspam.lua
+scripts\newplayerexperience.lua
+scripts\removethatbuff.lua
+scripts\hideblizzard.lua
+api\frameidentifier.lua
+
+### Initialize Unitframes ###
+unitframes\templates.xml
+unitframes\init.lua
+
+### Unitframe Default Values ###
+unitframes\defaults\player.lua
+unitframes\defaults\target.lua
+unitframes\defaults\tot.lua
+unitframes\defaults\totot.lua
+unitframes\defaults\focus.lua
+unitframes\defaults\focustarget.lua
+unitframes\defaults\pet.lua
+unitframes\defaults\pettarget.lua
+unitframes\defaults\boss.lua
+unitframes\defaults\bosstarget.lua
+unitframes\defaults\party.lua
+unitframes\defaults\partypet.lua
+unitframes\defaults\partytarget.lua
+unitframes\defaults\maintank.lua
+unitframes\defaults\maintanktarget.lua
+unitframes\defaults\maintanktot.lua
+unitframes\defaults\arena.lua
+unitframes\defaults\arenapet.lua
+unitframes\defaults\arenatarget.lua
+unitframes\defaults\raid.lua
+
+### Unitframe Options ###
+unitframes\options\colors.lua
+unitframes\options\copysettings.lua
+unitframes\options\general.lua
+unitframes\options\importexport.lua
+unitframes\options\movable.lua
+unitframes\options\ouf.lua
+unitframes\options\showhide.lua
+unitframes\options\toggle.lua
+
+### LUI Unitframe Additions ###
+unitframes\plugins\oUF_CombatFeedback.lua
+unitframes\plugins\oUF_Experience.lua
+unitframes\plugins\oUF_Reputation.lua
+unitframes\plugins\oUF_RaidDebuffs.lua
+
+### to investigate as we may not need these anymore ###
+unitframes\plugins\singleauras.lua
+unitframes\plugins\raiddebuffs.lua
+unitframes\plugins\maintank.lua
+unitframes\plugins\vehicle.lua
+unitframes\plugins\arcanecharges.lua
+unitframes\plugins\chi.lua
+unitframes\plugins\holypower.lua
+unitframes\plugins\warlockbar.lua
+unitframes\plugins\totalabsorb.lua
+
+### Unitframe Layout ###
+unitframes\layout\tags.lua
+unitframes\layout\meta.lua
+unitframes\layout\layout.lua
+
+### Embedded Darion ###
+media\Masque_Darion\Darion.lua
+
+### Addon Support ###
+addons\bartender.lua
+addons\plexus.lua
+addons\omen.lua
+addons\recount.lua
+addons\details.lua
