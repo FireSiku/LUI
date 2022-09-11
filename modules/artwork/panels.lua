@@ -26,14 +26,13 @@ local directions = {"SOLID", "TOPLEFT", "TOP", "TOPRIGHT", "RIGHT", "BOTTOMRIGHT
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
 local NUM_CHAT_WINDOWS = _G.NUM_CHAT_WINDOWS
-local ChatAlphaAnchor = _G.ChatAlphaAnchor
 local ChatFrame1 = _G.ChatFrame1
 local Minimap = _G.Minimap
 
 LUI.Versions.panels = 1.2
+local ChatAlphaAnchor
 
 local backgrounds = {}
-
 local addonAnchors = {
 	raid = {
 		Plexus = "PlexusLayoutFrame",
@@ -673,7 +672,7 @@ function module:ApplyBackground(kind)
 end
 
 function module:SetPanels()
-	local ChatAlphaAnchor = CreateFrame("Frame", "ChatAlphaAnchor", UIParent)
+	ChatAlphaAnchor = CreateFrame("Frame", "ChatAlphaAnchor", UIParent)
 	ChatAlphaAnchor:SetWidth(30)
 	ChatAlphaAnchor:SetHeight(30)
 	ChatAlphaAnchor:SetFrameStrata("BACKGROUND")
