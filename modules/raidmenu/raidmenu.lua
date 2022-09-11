@@ -33,8 +33,6 @@ local GetLootMethod = _G.GetLootMethod
 local SetLootMethod = _G.SetLootMethod
 local SetRaidTarget = _G.SetRaidTarget
 local DoReadyCheck = _G.DoReadyCheck
-local GetRealmName = _G.GetRealmName
-local UnitName = _G.UnitName
 local IsInRaid = _G.IsInRaid
 local EasyMenu = _G.EasyMenu
 
@@ -819,11 +817,10 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, nil, true)
-	local ProfileName = UnitName("player").." - "..GetRealmName()
 
-	if LUI.db.global.luiconfig[ProfileName].Versions.raidmenu ~= LUI.Versions.raidmenu then
+	if LUI.db.global.luiconfig[LUI.profileName].Versions.raidmenu ~= LUI.Versions.raidmenu then
 		db:ResetProfile()
-		LUI.db.global.luiconfig[ProfileName].Versions.raidmenu = LUI.Versions.raidmenu
+		LUI.db.global.luiconfig[LUI.profileName].Versions.raidmenu = LUI.Versions.raidmenu
 	end
 
 	LUI:Module("Panels"):RegisterFrame(self)

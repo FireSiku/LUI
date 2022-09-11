@@ -1,18 +1,14 @@
 local addonname, LUI = ...
 
 LUI.Versions.details = 5
-local IsAddOnLoaded = _G.IsAddOnLoaded
-local GetRealmName = _G.GetRealmName
-local UnitName = _G.UnitName
 
 function LUI:InstallDetails()
    
-   if (not IsAddOnLoaded("Details")) then
+   if (not _G.IsAddOnLoaded("Details")) then
       return
    end
    
-   local ProfileName = UnitName("player") .. " - " .. GetRealmName()
-   if (LUI.db.global.luiconfig[ProfileName].Versions.details == LUI.Versions.details) then
+   if (LUI.db.global.luiconfig[LUI.profileName].Versions.details == LUI.Versions.details) then
       return
    end
    
@@ -83,7 +79,7 @@ function LUI:InstallDetails()
 	   panelDB.profile.Dps.Additional = "DetailsRowFrame1"
 	   panelDB.profile.Dps.OffsetY = 0
       
-      LUI.db.global.luiconfig[ProfileName].Versions.details = LUI.Versions.details
+      LUI.db.global.luiconfig[LUI.profileName].Versions.details = LUI.Versions.details
    end
    
 end

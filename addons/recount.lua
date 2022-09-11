@@ -9,12 +9,8 @@ local addonname, LUI = ...
 
 LUI.Versions.recount = 3300
 
-local IsAddOnLoaded = _G.IsAddOnLoaded
-local GetRealmName = _G.GetRealmName
-local UnitName = _G.UnitName
-
-local _, class = _G.UnitClass("player")
 local Media = LibStub("LibSharedMedia-3.0")
+local IsAddOnLoaded = _G.IsAddOnLoaded
 
 local function RecountSetColor(Branch,Name,cr,cg,cb,ca)
 	local c = {r=cr, g=cg, b=cb, a=ca,}
@@ -23,8 +19,8 @@ end
 
 function LUI:InstallRecount()
 	if not IsAddOnLoaded("Recount") then return end
-	local ProfileName = UnitName("Player").." - "..GetRealmName()
-	if LUI.db.global.luiconfig[ProfileName].Versions.recount == LUI.Versions.recount then return end
+
+	if LUI.db.global.luiconfig[LUI.profileName].Versions.recount == LUI.Versions.recount then return end
 	local Recount = _G.Recount
 	local RecountDB = Recount.db.profile
 
@@ -58,7 +54,7 @@ function LUI:InstallRecount()
 	
 	local classList = {"HUNTER", "WARRIOR", "PALADIN", "MAGE", "PRIEST", "ROGUE", "WARLOCK", "DRUID", "SHAMAN", "DEATHKNIGHT", "MONK", "DEMONHUNTER", "PET", "MOB"}
 	for i=1, #classList do
-		if class==classList[i] then
+		if LUI.playerClass == classList[i] then
 			RecountSetColor("Class", classList[i], 0.592, 0.592, 0.592, 1)
 		else
 			RecountSetColor("Class", classList[i], 0.368, 0.368, 0.368, 1)
@@ -101,7 +97,7 @@ function LUI:InstallRecount()
 	RecountDB.Locked = true
 	Recount:LockWindows(true)
 	
-	LUI.db.global.luiconfig[ProfileName].Versions.recount = LUI.Versions.recount
+	LUI.db.global.luiconfig[LUI.profileName].Versions.recount = LUI.Versions.recount
 end
 
 -- Recount font fix without having to edit recount files.

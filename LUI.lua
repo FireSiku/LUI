@@ -15,10 +15,6 @@ local AceAddon = LibStub("AceAddon-3.0")
 _G.LUI = LUI
 _G.oUF = LUI.oUF
 
-LUI.IsRetail = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_MAINLINE)
-LUI.IsBCC = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
-LUI.IsClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC)
-
 local Media = LibStub("LibSharedMedia-3.0")
 local Profiler = LUI.Profiler
 local widgetLists = AceGUIWidgetLSMlists
@@ -31,17 +27,14 @@ local GetNumSubgroupMembers = _G.GetNumSubgroupMembers
 local GetNumGroupMembers = _G.GetNumGroupMembers
 local InCombatLockdown = _G.InCombatLockdown
 local GetAddOnMetadata = _G.GetAddOnMetadata
-local UnitFactionGroup = _G.UnitFactionGroup
 local BNGetNumFriends = _G.BNGetNumFriends
 local IsShiftKeyDown = _G.IsShiftKeyDown
 local IsAddOnLoaded = _G.IsAddOnLoaded
-local GetRealmName = _G.GetRealmName
 local GetNumAddOns = _G.GetNumAddOns
 local GetAddOnInfo = _G.GetAddOnInfo
 local IsLoggedIn = _G.IsLoggedIn
 local LoadAddOn = _G.LoadAddOn
 local IsInGroup = _G.IsInGroup
-local UnitName = _G.UnitName
 local SetCVar = _G.SetCVar
 local strjoin = _G.strjoin
 
@@ -52,15 +45,18 @@ local CANCEL = _G.CANCEL
 LUI.Versions = {lui = 3403}
 LUI.dummy = function() return end
 
-local LIVE_TOC = 90001
-local LIVE_BUILD = 36322 --36322, 90001
--- Check the build to compare with PTR
-local _, CURRENT_BUILD, _, CURRENT_TOC = GetBuildInfo()
-if tonumber(CURRENT_BUILD) > LIVE_BUILD then
-	LUI.PTR = true
-	--LUI:Print("Using Code Designed for New Patch")
-end
-local ProfileName = UnitName("player").." - "..GetRealmName()
+LUI.playerClass = select(2, _G.UnitClass("player"))
+LUI.playerFaction = _G.UnitFactionGroup("player")
+LUI.playerName =  _G.UnitName("player")
+LUI.playerRealm = _G.GetRealmName()
+LUI.playerFullName = format("%s-%s", LUI.playerName, LUI.playerRealm)
+LUI.otherFaction = (LUI.playerFaction == "Horde") and "Alliance" or "Horde"
+
+-- Provide quick access to locale-independent class checks, such as "if LUI.MAGE then"
+LUI[LUI.playerClass] = true
+
+-- Added for Compatibility for the time being
+LUI.profileName = format("%s - %s", LUI.playerName, LUI.playerRealm)
 
 -- REGISTER FONTS
 Media:Register("font", "vibrocen", [[Interface\Addons\LUI\media\fonts\vibrocen.ttf]])
@@ -330,7 +326,7 @@ end
 
 function LUI:SyncAddonVersion()
 	local luiversion, version, newVersion = GetAddOnMetadata(addonname, "Version"), "", ""
-	local myRealm, myFaction, inGroup = GetRealmName(), (UnitFactionGroup("player") == "Horde" and 0 or 1), false
+	local myFaction, inGroup = (LUI.playerFaction == "Horde" and 0 or 1), false
 
 	while luiversion ~= nil do
 		local pos = strfind(luiversion, "%.")
@@ -392,7 +388,7 @@ function LUI:SyncAddonVersion()
 		local friend = C_BattleNet.GetFriendAccountInfo(i)
 		local toon = friend and friend.gameAccountInfo
 		if toon and toon.characterName and toon.isOnline and toon.clientProgram == "WoW" then
-			if toon.realmName == myRealm and toon.factionName == myFaction then
+			if toon.realmName == LUI.playerRealm and toon.factionName == LUI.playerFaction then
 				sendVersion("WHISPER", toon.characterName)
 			end
 		end
@@ -477,14 +473,15 @@ function LUI:Update()
 
 	update_frame:RegisterForClicks("AnyUp")
 	update_frame:SetScript("OnClick", function(self)
-
+		
+		local global_db = LUI.db.global.luiconfig[LUI.profileName]
 		if IsAddOnLoaded("Plexus") then
-			LUI.db.global.luiconfig[ProfileName].Versions.plexus = nil
+			global_db.Versions.plexus = nil
 			LUI:InstallPlexus()
 		end
 
 		if IsAddOnLoaded("Recount") then
-			LUI.db.global.luiconfig[ProfileName].Versions.recount = nil
+			global_db.Versions.recount = nil
 			LUI:InstallRecount()
 		end
 
@@ -494,11 +491,11 @@ function LUI:Update()
 		end
 
 		if IsAddOnLoaded("Omen") or IsAddOnLoaded("Omen3") then
-			LUI.db.global.luiconfig[ProfileName].Versions.omen = nil
+			global_db.Versions.omen = nil
 			LUI:InstallOmen()
 		end
 
-		LUI.db.global.luiconfig[ProfileName].Versions.lui = LUI.Versions.lui
+		global_db.Versions.lui = LUI.Versions.lui
 		ReloadUI()
 	end)
 end
@@ -554,6 +551,7 @@ function LUI:Configure()
 
 	install_frame:RegisterForClicks("AnyUp")
 	install_frame:SetScript("OnClick", function(self)
+		local global_db = LUI.db.global.luiconfig[LUI.profileName]
 
 		SetCVar("buffDurations", 1)
 		SetCVar("scriptErrors", 1)
@@ -562,8 +560,8 @@ function LUI:Configure()
 		SetCVar("chatMouseScroll", 1)
 		SetCVar("chatStyle", "classic")
 
-		if LUI.db.global.luiconfig[ProfileName].Versions then
-			wipe(LUI.db.global.luiconfig[ProfileName].Versions)
+		if global_db.Versions then
+			wipe(global_db.Versions)
 		end
 
 		LUI:InstallPlexus()
@@ -572,8 +570,8 @@ function LUI:Configure()
 		LUI:InstallBartender()
 		LUI:InstallDetails()
 
-		LUI.db.global.luiconfig[ProfileName].Versions.lui = LUI.Versions.lui
-		LUI.db.global.luiconfig[ProfileName].IsConfigured = true
+		global_db.Versions.lui = LUI.Versions.lui
+		global_db.IsConfigured = true
 		-- This is commented out for now as it causes issues.
 		-- Sorry, if you're using 1280x1024 things might look
 		-- funky, but LUI will at least install properly.
@@ -806,6 +804,7 @@ end
 
 local function getOptions()
 	if not LUI.options then
+		local global_db = LUI.db.global.luiconfig[LUI.profileName]
 		LUI.options = {
 			name = "LUI",
 			type = "group",
@@ -1173,7 +1172,7 @@ local function getOptions()
 									type = "execute",
 									name = "Restore Bartender",
 									func = function()
-										LUI.db.global.luiconfig[ProfileName].Versions.bartender = nil
+										global_db.Versions.bartender = nil
 										LUI:InstallBartender()
 										StaticPopup_Show("RELOAD_UI")
 									end,
@@ -1185,7 +1184,7 @@ local function getOptions()
 									type = "execute",
 									name = "Restore Plexus",
 									func = function()
-										LUI.db.global.luiconfig[ProfileName].Versions.plexus = nil
+										global_db.Versions.plexus = nil
 										LUI:InstallPlexus()
 										StaticPopup_Show("RELOAD_UI")
 									end,
@@ -1197,7 +1196,7 @@ local function getOptions()
 									type = "execute",
 									name = "Restore Omen",
 									func = function()
-										LUI.db.global.luiconfig[ProfileName].Versions.omen = nil
+										global_db.Versions.omen = nil
 										LUI:InstallOmen()
 										StaticPopup_Show("RELOAD_UI")
 									end,
@@ -1209,7 +1208,7 @@ local function getOptions()
 									type = "execute",
 									name = "Restore Recount",
 									func = function()
-										LUI.db.global.luiconfig[ProfileName].Versions.recount = nil
+										global_db.Versions.recount = nil
 										LUI:InstallRecount()
 										StaticPopup_Show("RELOAD_UI")
 									end,
@@ -1221,7 +1220,7 @@ local function getOptions()
 									type = "execute",
 									name = "Restore Details!",
 									func = function()
-										LUI.db.global.luiconfig[ProfileName].Versions.Details = nil
+										global_db.Versions.Details = nil
 										LUI.ForceDetails = true
 										LUI:InstallDetails()
 										LUI:GetModule("Panels"):ApplyBackground("Dps")
@@ -1688,13 +1687,14 @@ function LUI:NewNamespace(module, enableButton, version)
 	end
 
 	-- Check for module version update
-	if version and version ~= LUI.db.global.luiconfig[ProfileName].Versions[mName] then
+	local global_db = LUI.db.global.luiconfig[LUI.profileName]
+	if version and version ~= global_db.Versions[mName] then
 		if module.OnVersionUpdate then
-			module:OnVersionUpdate(LUI.db.global.luiconfig[ProfileName].Versions[mName], version)
+			module:OnVersionUpdate(global_db.Versions[mName], version)
 		else
 			module.db:ResetProfile()
 		end
-		LUI.db.global.luiconfig[ProfileName].Versions[mName] = version
+		global_db.Versions[mName] = version
 	end
 
 	return module.db, module.defaults
@@ -1781,13 +1781,14 @@ function LUI:Namespace(module, toggleButton, version) -- no metatables (note: do
 	end
 
 	-- Check for module version update
-	if version and version ~= self.db.global.luiconfig[ProfileName].Versions[mName] then
+	local global_db = LUI.db.global.luiconfig[LUI.profileName]
+	if version and version ~= global_db.Versions[mName] then
 		if module.OnVersionUpdate then
-			module:OnVersionUpdate(self.db.global.luiconfig[ProfileName].Versions[mName], version)
+			module:OnVersionUpdate(global_db.Versions[mName], version)
 		else
 			module.db:ResetProfile()
 		end
-		LUI.db.global.luiconfig[ProfileName].Versions[mName] = version
+		global_db.Versions[mName] = version
 	end
 
 	return module.db.profile, module.db.defaults.profile
@@ -1804,9 +1805,10 @@ function LUI:OnInitialize()
 
 	_G.LUICONFIG = _G.LUICONFIG or {}
 	_G.LUICONFIG.Versions = _G.LUICONFIG.Versions or {}
+	local global_db = LUI.db.global.luiconfig[LUI.profileName]
 
-	if self.db.global.luiconfig[ProfileName] and self.db.global.luiconfig[ProfileName].IsConfigured then
-		if self.db.global.luiconfig[ProfileName].Versions.lui ~= LUI.Versions.lui then
+	if global_db and global_db.IsConfigured then
+		if global_db.Versions.lui ~= LUI.Versions.lui then
 			self:Disable()
 			self:Update()
 		else
@@ -1820,16 +1822,16 @@ function LUI:OnInitialize()
 			self:LoadExtraModules()
 		end
 	elseif _G.LUICONFIG.IsConfigured then
-		self.db.global.luiconfig[ProfileName] = CopyTable(_G.LUICONFIG)
-		if self.db.global.luiconfig[ProfileName].IsConfigured then
+		self.db.global.luiconfig[LUI.profileName] = CopyTable(_G.LUICONFIG)
+		if self.db.global.luiconfig[LUI.profileName].IsConfigured then
 		  wipe(_G.LUICONFIG)
 		end
 	else
-		self.db.global.luiconfig[ProfileName] = {
+		self.db.global.luiconfig[LUI.profileName] = {
 			Versions = {},
 		}
 		self:Disable()
-		self.db:SetProfile(ProfileName)
+		self.db:SetProfile(LUI.profileName)
 		self:Configure()
 	end
 

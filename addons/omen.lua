@@ -8,14 +8,10 @@
 local addonname, LUI = ...
 
 LUI.Versions.omen = 3300
-local IsAddOnLoaded = _G.IsAddOnLoaded
-local GetRealmName = _G.GetRealmName
-local UnitName = _G.UnitName
 
 function LUI:InstallOmen()
-	if (not IsAddOnLoaded("Omen")) and (not IsAddOnLoaded("Omen3")) then return end
-	local ProfileName = UnitName("Player").." - "..GetRealmName()
-	if LUI.db.global.luiconfig[ProfileName].Versions.omen == LUI.Versions.omen then return end
+	if (not _G.IsAddOnLoaded("Omen")) and (not _G.IsAddOnLoaded("Omen3")) then return end
+	if LUI.db.global.luiconfig[LUI.profileName].Versions.omen == LUI.Versions.omen then return end
 	local OmenDB = _G.Omen.db.profile
 
 	OmenDB.Shown = true
@@ -75,5 +71,5 @@ function LUI:InstallOmen()
 	OmenDB.PositionW = 198.8860415275098
 	OmenDB.PositionH = 196.9849329984127
 	
-	LUI.db.global.luiconfig[ProfileName].Versions.omen = LUI.Versions.omen
+	LUI.db.global.luiconfig[LUI.profileName].Versions.omen = LUI.Versions.omen
 end

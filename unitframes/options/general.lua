@@ -10,12 +10,9 @@ local Fader = LUI:Module("Fader")
 local Blizzard = LUI.Blizzard
 local oUF = LUI.oUF
 
-local UnitClass = _G.UnitClass
 local UnitLevel = _G.UnitLevel
 
 local MAX_PLAYER_LEVEL = _G.MAX_PLAYER_LEVEL
-
-local _, class = _G.UnitClass("player")
 
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -76,7 +73,7 @@ local barNames = {
 	Totems = "Totem Bar",
 }
 
-if class == "ROGUE" or class == "DRUID" then
+if LUI.ROGUE or LUI.DRUID then
 	barNames.Chi = "Combo Points"
 end
 
@@ -1139,15 +1136,15 @@ function module:CreateUnitOptions(unit, order)
 			Full = self:CreateBarOptions(unit, 3, "Full"),
 			HealPrediction = self.db[unit].Bars.HealPrediction and self:CreateHealPredictionOptions(unit, 4) or nil,
 			TotalAbsorb = self.db[unit].Bars.TotalAbsorb and self:CreateTotalAbsorbOptions(unit, 5) or nil,
-			DruidMana = ((class == "DRUID" or class == "PRIEST" or class == "SHAMAN") and unit == "Player") and self:CreatePlayerBarOverlappingOptions("DruidMana", 11) or nil,
-			AltPower = LUI.IsRetail and (unit == "Player") and self:CreatePlayerBarOverlappingOptions("AltPower", 12) or nil,
-			Runes = ((class == "DEATHKNIGHT" or class == "DEATH KNIGHT") and unit == "Player") and self:CreatePlayerBarOptions("Runes", 14) or nil,
-			HolyPower = LUI.IsRetail and (class == "PALADIN" and unit == "Player") and self:CreatePlayerBarOptions("HolyPower", 15) or nil,
-			WarlockBar = LUI.IsRetail and (class == "WARLOCK" and unit == "Player") and self:CreatePlayerBarOptions("WarlockBar", 16) or nil,
-			ArcaneCharges = LUI.IsRetail and (class == "MAGE" and unit == "Player") and self:CreatePlayerBarOptions("ArcaneCharges", 16) or nil,
-			Chi = LUI.IsRetail and ((class == "MONK" or class == "DRUID" or class == "ROGUE") and unit == "Player") and self:CreatePlayerBarOptions("Chi", 16) or nil,
+			DruidMana = ((LUI.DRUID or LUI.PRIEST or LUI.SHAMAN) and unit == "Player") and self:CreatePlayerBarOverlappingOptions("DruidMana", 11) or nil,
+			AltPower = (LUI.IsRetail and unit == "Player") and self:CreatePlayerBarOverlappingOptions("AltPower", 12) or nil,
+			Runes = (LUI.DEATHKNIGHT and unit == "Player") and self:CreatePlayerBarOptions("Runes", 14) or nil,
+			HolyPower = (LUI.IsRetail and LUI.PALADIN and unit == "Player") and self:CreatePlayerBarOptions("HolyPower", 15) or nil,
+			WarlockBar = (LUI.IsRetail and LUI.WARLOCK and unit == "Player") and self:CreatePlayerBarOptions("WarlockBar", 16) or nil,
+			ArcaneCharges = (LUI.IsRetail and LUI.MAGE and unit == "Player") and self:CreatePlayerBarOptions("ArcaneCharges", 16) or nil,
+			Chi = (LUI.IsRetail and (LUI.MONK or LUI.DRUID or LUI.ROGUE) and unit == "Player") and self:CreatePlayerBarOptions("Chi", 16) or nil,
 			ComboPoints = (unit == "Target") and self:CreateComboPointsOptions(18) or nil,
-			Totems = ((class == "SHAMAN") and unit == "Player") and self:CreatePlayerBarOptions("Totems", 19) or nil,
+			Totems = (LUI.SHAMAN and unit == "Player") and self:CreatePlayerBarOptions("Totems", 19) or nil,
 		}),
 		Texts = self:NewGroup("Texts", 4, "tab", nil, disabledFunc, {
 			Name = (unit ~= "Raid") and self:CreateNameTextOptions(unit, 1) or self:CreateRaidNameTextOptions(1),
@@ -1158,10 +1155,10 @@ function module:CreateUnitOptions(unit, order)
 			HealthMissing = self:CreateTextOptions(unit, 6, "Health", "Missing"),
 			PowerMissing = self:CreateTextOptions(unit, 7, "Power", "Missing"),
 			Combat = (unit == "Player" or unit == "Target" or unit == "Focus" or unit == "Pet" or unit == "ToT") and self:CreateCombatTextOptions(unit, 8) or nil,
-			DruidMana = (unit == "Player" and (class == "DRUID" or class == "SHAMAN" or class == "PRIEST")) and self:CreateDruidManaTimerOptions(9) or nil,
-			WarlockBar = LUI.IsRetail and (unit == "Player" and class == "WARLOCK") and self:CreatePlayerBarTextOptions("WarlockBar", 9) or nil,
+			DruidMana = (unit == "Player" and (LUI.DRUID or LUI.SHAMAN or LUI.PRIEST)) and self:CreateDruidManaTimerOptions(9) or nil,
+			WarlockBar = (LUI.IsRetail and unit == "Player" and LUI.WARLOCK) and self:CreatePlayerBarTextOptions("WarlockBar", 9) or nil,
 			PvP = (unit == "Player") and self:CreatePvpTimerOptions(10) or nil,
-			AltPower = LUI.IsRetail and (unit == "Player") and self:CreatePlayerBarTextOptions("AltPower", 12) or nil,
+			AltPower = (LUI.IsRetail and unit == "Player") and self:CreatePlayerBarTextOptions("AltPower", 12) or nil,
 		}),
 		Castbar = (self.defaults[unit].Castbar) and self:CreateCastbarOptions(unit, 5) or nil,
 		Aura = (self.defaults[unit].Aura) and self:NewGroup("Auras", 6, "tab", nil, disabledFunc, {

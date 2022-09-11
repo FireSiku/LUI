@@ -17,8 +17,6 @@ local db, dbd
 
 LUI.Versions.bars = 2.5
 
-local _, class = UnitClass("player")
-
 local buttonlist = {}
 local bars = {}
 local sidebars = {}
@@ -66,10 +64,10 @@ local g_defaultStates = {
 }
 
 do
-	if class == "DRUID" then
+	if LUI.DRUID then
 		g_stateText = {"Default", "Bear Form", "Cat Form", "Cat Form (Prowl)", "Moonkin Form"}
 		g_defaultStates.Bottombar1 = {"1", "9", "7", "7", "1"}
-	elseif class == "ROGUE" then
+	elseif LUI.ROGUE then
 		g_stateText = {"Default", "Stealth"}
 		g_defaultStates.Bottombar1 = {"1", "7"}
 	end
@@ -163,9 +161,9 @@ local function ValidateStates()
 	local invalid = false
 	if not db.StatesLoaded then invalid = true
 	-- If settings from a different class is imported, it can lead to bars being set to an invalid state.
-	elseif class == "DRUID" and db.Bottombar1.State[3] == "0" then invalid = true
-	elseif class == "ROGUE" and db.Bottombar1.State[2] == "0" then invalid = true
-	elseif class == "ROGUE" and db.Bottombar1.State[3] == "7" then invalid = true -- Importing Druid settings on Rogue
+	elseif LUI.DRUID and db.Bottombar1.State[3] == "0" then invalid = true
+	elseif LUI.ROGUE and db.Bottombar1.State[2] == "0" then invalid = true
+	elseif LUI.ROGUE and db.Bottombar1.State[3] == "7" then invalid = true -- Importing Druid settings on Rogue
 	end
 
 	if invalid then
@@ -177,8 +175,8 @@ end
 
 local function GetAnchor(anchor)
 	if string.find(anchor, "Dominos") then
-		if IsAddOnLoaded("Dominos") then
-			return Dominos.ActionBar:Get(string.match(anchor, "%d+"))
+		if _G.IsAddOnLoaded("Dominos") then
+			return _G.Dominos.ActionBar:Get(string.match(anchor, "%d+"))
 		end
 	else
 		return _G[anchor]
@@ -305,8 +303,8 @@ local function GetBarState(id)
 		condition = condition.."[mod:ctrl] "..bardb.State.Ctrl.."; "
 	end
 
-	if id == 1 and Page[class] then
-		for num, word in pairs(Page[class]) do
+	if id == 1 and Page[LUI.playerClass] then
+		for num, word in pairs(Page[LUI.playerClass]) do
 			condition = condition..word:format(bardb.State[num+1])
 		end
 	end
@@ -339,7 +337,7 @@ local function UpdateUIPanelOffset(isLeft)
 	if isLeft then
 		local left1 = (sidebars.Left1 and db.SidebarLeft1.Enable) and sidebars.Left1.ButtonAnchor:GetRight() or 16
 		local left2 = (sidebars.Left2 and db.SidebarLeft2.Enable) and sidebars.Left2.ButtonAnchor:GetRight() or 16
-		UIParent:SetAttribute("LEFT_OFFSET", ceil(max(left1, left2)))
+		UIParent:SetAttribute("LEFT_OFFSET", math.ceil(math.max(left1, left2)))
 	end
 end
 
@@ -2073,8 +2071,7 @@ end
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self)
 
-	local ProfileName = UnitName("player").." - "..GetRealmName()
-	local currentVersion = LUI.db.global.luiconfig[ProfileName].Versions.bars
+	local currentVersion = LUI.db.global.luiconfig[LUI.profileName].Versions.bars
 
 	-- recalc X/Y values for fixed scale options
 	if currentVersion and currentVersion < 2.4 then
@@ -2091,7 +2088,7 @@ function module:OnInitialize()
 				end
 			end
 		end
-		LUI.db.global.luiconfig[ProfileName].Versions.bars = 2.4
+		LUI.db.global.luiconfig[LUI.profileName].Versions.bars = 2.4
 	end
 
 end
@@ -2103,17 +2100,16 @@ end
 function module:OnEnable()
 	module:SetBars()
 
-	--- This oen needed to be delayed until all addons are loaded.
-	local ProfileName = UnitName("player").." - "..GetRealmName()
-	local currentVersion = LUI.db.global.luiconfig[ProfileName].Versions.bars
+	--- This one needed to be delayed until all addons are loaded.
+	local currentVersion = LUI.db.global.luiconfig[LUI.profileName].Versions.bars
 	if not currentVersion then
-		LUI.db.global.luiconfig[ProfileName].Versions.bars = LUI.Versions.bars
+		LUI.db.global.luiconfig[LUI.profileName].Versions.bars = LUI.Versions.bars
 	elseif currentVersion and currentVersion < LUI.Versions.bars then
 		module:AutoAdjustBT4("Right1")
 		module:AutoAdjustBT4("Right2")
 		module:AutoAdjustBT4("Left1")
 		module:AutoAdjustBT4("Left2")
-		LUI.db.global.luiconfig[ProfileName].Versions.bars = 2.5
+		LUI.db.global.luiconfig[LUI.profileName].Versions.bars = 2.5
 	end
 end
 
