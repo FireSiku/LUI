@@ -1,15 +1,21 @@
 local _, ns = ...
 local oUF = ns.oUF or oUF
 
-if not oUF then return end
+assert(oUF, 'oUF CombatFeedback was unable to locate oUF install')
+
+local updateFrame, color
+local originalHeight = {}
+local feedback = {}
 
 local damage_format = "-%d"
 local heal_format = "+%d"
 local maxAlpha = 0.6
-local updateFrame
-local feedback = {}
-local originalHeight = {}
-local color 
+
+local CombatFeedbackText = _G.CombatFeedbackText
+local COMBATFEEDBACK_FADEINTIME = _G.COMBATFEEDBACK_FADEINTIME
+local COMBATFEEDBACK_HOLDTIME = _G.COMBATFEEDBACK_HOLDTIME
+local COMBATFEEDBACK_FADEOUTTIME = _G.COMBATFEEDBACK_FADEOUTTIME
+
 local colors = {
 	STANDARD		= { 1, 1, 1 }, -- color for everything not in the list below
 	-- damage colors
@@ -54,7 +60,7 @@ local function createUpdateFrame()
 				object.CombatFeedbackText:Hide()
 				feedback[object] = nil
 			end
-		end		
+		end
 	end)
 end
 
@@ -63,8 +69,8 @@ local function combat(self, event, unit, eventType, flags, amount, dtype)
 	if unit ~= self.unit then return end
 	local FeedbackText = self.CombatFeedbackText
 	local fColors = FeedbackText.colors
-	local font, fontHeight, fontFlags = FeedbackText:GetFont()
-	fontHeight = FeedbackText.origHeight -- always start at original height
+	local font, _, fontFlags = FeedbackText:GetFont()
+	local fontHeight = FeedbackText.origHeight -- always start at original height
 	local text, arg
 	color = fColors and fColors.STANDARD or colors.STANDARD
 	if eventType == "IMMUNE" and not FeedbackText.ignoreImmune then

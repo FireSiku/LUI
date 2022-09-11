@@ -36,7 +36,7 @@
 local _, ns = ...
 local oUF = oUF or ns.oUF
 
-local UnitAura = UnitAura
+local UnitAura = _G.UnitAura
 
 local Update = function(self, event, unit)
 	if not unit or unit ~= self.__owner.unit then return end

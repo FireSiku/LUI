@@ -9,6 +9,10 @@ if not _G.oUF_RaidDebuffs then
 	_G.oUF_RaidDebuffs = addon
 end
 
+local GetSpellInfo = _G.GetSpellInfo
+local UnitClass = _G.UnitClass
+local UnitAura = _G.UnitAura
+
 local debuff_data = {}
 addon.DebuffData = debuff_data
 
@@ -159,8 +163,8 @@ end
 
 local function Update(self, event, unit)
 	if unit ~= self.unit then return end
-	local _name, _icon, _count, _dtype, _duration, _endTime
-	local _priority, priority = 0, nil
+	local _name, _icon, _count, _dtype, _duration, _endTime, priority
+	local _priority = 0
 	for i = 1, 40 do
 		local name, icon, count, debuffType, duration, expirationTime, _, _, _, spellId = UnitAura(unit, i, 'HARMFUL')
 		if (not name) then break end

@@ -1,6 +1,9 @@
 local parent, ns = ...
 local oUF = ns.oUF
 
+local SecureButton_GetUnit = _G.SecureButton_GetUnit
+local SecureButton_GetModifiedUnit = _G.SecureButton_GetModifiedUnit
+
 local Update = function(self, event, unit)
 	if(event == 'VehicleSwitch') then return end
 

@@ -1,7 +1,10 @@
-if(select(2, UnitClass('player')) ~= 'MAGE') then return end
+if(select(2, _G.UnitClass('player')) ~= 'MAGE') then return end
 
 local parent, ns = ...
 local oUF = ns.oUF
+
+local GetSpellInfo = _G.GetSpellInfo
+local UnitDebuff = _G.UnitDebuff
 
 local Update = function(self, event, unit, powerType)
 	if(self.unit ~= unit) then return end

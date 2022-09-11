@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: party.lua
 	Description: oUF Party Defaults
-]] 
+]]
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")

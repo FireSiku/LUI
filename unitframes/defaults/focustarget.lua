@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: focustarget.lua
 	Description: oUF FocusTarget Defaults
-]] 
+]]
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")

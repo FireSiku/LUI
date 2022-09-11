@@ -38,7 +38,11 @@ Hooks
      
 local _, ns = ...
 local oUF = ns.oUF
-     
+
+local UnitGetTotalAbsorbs = _G.UnitGetTotalAbsorbs
+local UnitHealthMax = _G.UnitHealthMax
+local UnitHealth = _G.UnitHealth
+
 local function Update(self, event, unit)
 	if(self.unit ~= unit) then return end
 

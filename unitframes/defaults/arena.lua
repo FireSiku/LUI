@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: arena.lua
 	Description: oUF Arena Defaults
-]] 
+]]
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")

@@ -1,7 +1,15 @@
 local _, ns = ...
 local oUF = ns.oUF or oUF
-
 assert(oUF, 'oUF Experience was unable to locate oUF install')
+
+local MAX_PLAYER_LEVEL = _G.MAX_PLAYER_LEVEL
+local UnitHasVehicleUI = _G.UnitHasVehicleUI
+local GetPetExperience = _G.GetPetExperience
+local GetXPExhaustion = _G.GetXPExhaustion
+local UnitXPMax = _G.UnitXPMax
+local UnitLevel = _G.UnitLevel
+local HasPetUI = _G.HasPetUI
+local UnitXP = _G.UnitXP
 
 for tag, func in pairs({
 	['curxp'] = function(unit)

@@ -2,7 +2,7 @@
 	Project....: LUI NextGenWoWUserInterface
 	File.......: bars.lua
 	Description: Bars Module
-]] 
+]]
 
 local addonname, LUI = ...
 local module = LUI:Module("Bars", "AceHook-3.0", "AceEvent-3.0")
