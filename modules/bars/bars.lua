@@ -1290,7 +1290,7 @@ function module:HookActionButton(button)
 		module:SecureHook("StanceBar_Update", StyleStanceButtons)
 		module:SecureHook("StanceBar_UpdateState", StyleStanceButtons)
 		module:SecureHook("PetActionBar_Update", StylePetButtons)
-		if LUI.IsRetail then 
+		if LUI.IsRetail then
 			module:SecureHook("ActionButton_UpdateFlyout", StyleFlyout)
 			SpellFlyout:HookScript("OnShow", StyleFlyoutButton)
 		end

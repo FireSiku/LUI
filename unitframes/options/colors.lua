@@ -300,8 +300,8 @@ function module:CreateColorOptions(order)
 			WARLOCK = self:NewColorNoAlpha("Warlock", "Warlock class", 9, false, "normal"),
 			ROGUE = self:NewColorNoAlpha("Rogue", "Rogue class", 10, false, "normal"),
 			DEATHKNIGHT = self:NewColorNoAlpha("Death Knight", "Death Knight class", 11, false, "normal"),
-			MONK = LUI.IsRetail and self:NewColorNoAlpha("Monk", "Monk class", 12, false, "normal"),
-			DEMONHUNTER = LUI.IsRetail and self:NewColorNoAlpha("Demon Hunter", "Demon Hunter class", 13, false, "normal"),
+			MONK = LUI.IsRetail and self:NewColorNoAlpha("Monk", "Monk class", 12, false, "normal") or nil,
+			DEMONHUNTER = LUI.IsRetail and self:NewColorNoAlpha("Demon Hunter", "Demon Hunter class", 13, false, "normal") or nil,
 			empty1 = self:NewDesc(" ", 14),
 			Reset = self:NewExecute("Restore Defaults", nil, 15, function()
 				module.db.Colors.Class = module.defaults.Colors.Class
@@ -312,12 +312,12 @@ function module:CreateColorOptions(order)
 			header1 = self:NewHeader("Power Colors", 1),
 			MANA = self:NewColorNoAlpha("Mana", "Mana ressource", 2, false, "full"),
 			RAGE = self:NewColorNoAlpha("Rage", "Rage ressource", 3, false, "full"),
-			FOCUS = LUI.IsRetail and self:NewColorNoAlpha("Focus", "Focus ressource", 4, false, "full"),
+			FOCUS = LUI.IsRetail and self:NewColorNoAlpha("Focus", "Focus ressource", 4, false, "full") or nil,
 			ENERGY = self:NewColorNoAlpha("Energy", "Energy ressource", 5, false, "full"),
 			RUNES = self:NewColorNoAlpha("Runes", "Runes ressource", 6, false, "full"),
 			RUNIC_POWER = self:NewColorNoAlpha("Runic Power", "Runic Power ressource", 7, false, "full"),
-			AMMOSLOT = LUI.IsRetail and self:NewColorNoAlpha("Ammoslot", "Ammoslot ressource", 8, false, "full"),
-			FUEL = LUI.IsRetail and self:NewColorNoAlpha("Fuel", "Fuel ressource", 9, false, "full"),
+			AMMOSLOT = LUI.IsRetail and self:NewColorNoAlpha("Ammoslot", "Ammoslot ressource", 8, false, "full") or nil,
+			FUEL = LUI.IsRetail and self:NewColorNoAlpha("Fuel", "Fuel ressource", 9, false, "full") or nil,
 			empty1 = self:NewDesc(" ", 10),
 			Reset = self:NewExecute("Restore Defaults", nil, 11, function()
 				module.db.Colors.Power = module.defaults.Colors.Power
@@ -411,9 +411,9 @@ function module:CreateColorOptions(order)
 		}),
 		Runes = self:NewGroup("Runes", 12, nil, nil, not LUI.DEATHKNIGHT, {
 			header1 = self:NewHeader("Runes Colors", 1),
-			["1"] = not LUI.IsRetail and self:NewColorNoAlpha("Blood", "Runes", 2, false, "full"),
-			["2"] = not LUI.IsRetail and self:NewColorNoAlpha("Frost", "Runes", 3, false, "full"),
-			["3"] = not LUI.IsRetail and self:NewColorNoAlpha("Unholy", "Runes", 4, false, "full"),
+			["1"] = not LUI.IsRetail and self:NewColorNoAlpha("Blood", "Runes", 2, false, "full") or nil,
+			["2"] = not LUI.IsRetail and self:NewColorNoAlpha("Frost", "Runes", 3, false, "full") or nil,
+			["3"] = not LUI.IsRetail and self:NewColorNoAlpha("Unholy", "Runes", 4, false, "full") or nil,
 			["4"] = self:NewColorNoAlpha("Death", "Runes", 5, false, "full"),
 			empty1 = self:NewDesc(" ", 6),
 			Reset = self:NewExecute("Restore Defaults", nil, 7, function()

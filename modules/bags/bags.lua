@@ -313,7 +313,7 @@ function module:SlotUpdate(item)
 	SetItemButtonCount(item.frame, count)
 	SetItemButtonDesaturated(item.frame, locked, 0.5, 0.5, 0.5)
 	if LUI.IsRetail and db.Bags.ShowOverlay and itemLink then
-		SetItemButtonOverlay(item.frame, itemLink, Quality, isBound)
+		SetItemButtonOverlay(item.frame, itemLink, quality, isBound)
 	else
 		item.frame.IconOverlay:Hide()
 		if item.frame.IconOverlay2 then
@@ -660,10 +660,11 @@ local function GetTrackedCurrency()
 	local currencyFormat = "%d\124T%s:%d:%d:2:0\124t"
 	local currencyString = {}
 	for i = 1, 3 do -- Only 3 currencies at a time.
+		local info
 		if LUI.IsRetail then
-			local info = C_CurrencyInfo.GetBackpackCurrencyInfo(i)
+			info = C_CurrencyInfo.GetBackpackCurrencyInfo(i)
 		elseif LUI.IsBCC or LUI.IsClassic then
-			local info = GetBackpackCurrencyInfo(i)
+			info = _G.GetBackpackCurrencyInfo(i)
 		end
 		if info and info.name then
 			currencyString[i] = format(currencyFormat, info.quantity, info.iconFileID, 0, 0)
@@ -834,7 +835,7 @@ function module:Layout(bagType)
 	end
 
 	local isBank = false
-	if bagType == "Bank" or LUI.IsRetail and bagType == "Reagents" then
+	if bagType == "Bank" or (LUI.IsRetail and bagType == "Reagents") then
 		isBank = true
 	else
 		frame.gold:SetText(GetMoneyString(GetMoney(), 12))
@@ -1427,7 +1428,7 @@ function module:LoadOptions()
 				ItemQuality = LUI:NewToggle("Show Item Quality", nil, 11, db.Bags, "ItemQuality", dbd.Bags, ReloadBoth),
 				ShowNew = LUI:NewToggle("Show New Item Animation", nil, 12, db.Bags, "ShowNew", dbd.Bags, ReloadBoth),
 				ShowQuest = LUI:NewToggle("Show Quest Highlights", nil, 13, db.Bags, "ShowQuest", dbd.Bags, ReloadBoth),
-				ShowOverlay = (LUI.IsRetail) and LUI:NewToggle("Show Overlays", nil, 14, db.Bags, "ShowOverlay", dbd.Bags, ReloadBoth),
+				ShowOverlay = (LUI.IsRetail) and LUI:NewToggle("Show Overlays", nil, 14, db.Bags, "ShowOverlay", dbd.Bags, ReloadBoth) or nil,
 			},
 		},
 		Bank = {
@@ -1471,7 +1472,7 @@ function module:LoadOptions()
 					db.Reagents, "Spacing", dbd.Reagents, 1, 15, 1, ReagentOpt, nil, DisabledCopy),
 				Scale = LUI:NewScale("Reagents Frame",6, db.Reagents, "Scale", dbd.Reagents, ReagentOpt, nil, DisabledCopy),
 			},
-		},
+		} or nil,
 		Colors = {
 			name = "Colors",
 			type = "group",

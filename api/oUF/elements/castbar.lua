@@ -441,11 +441,12 @@ local Enable = function(object, unit)
 		castbar.__owner = object
 		castbar.ForceUpdate = ForceUpdate
 
-		if LUI.IsRetail and (not (unit and unit:match'%wtarget$')) then
-			object:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", UNIT_SPELLCAST_INTERRUPTED)
-			object:RegisterEvent("UNIT_SPELLCAST_INTERRUPTIBLE", UNIT_SPELLCAST_INTERRUPTIBLE)
-			object:RegisterEvent("UNIT_SPELLCAST_NOT_INTERRUPTIBLE", UNIT_SPELLCAST_NOT_INTERRUPTIBLE)
-		elseif (not (unit and unit:match'%wtarget$')) then
+		if (not (unit and unit:match'%wtarget$')) then
+			if LUI.IsRetail then
+				object:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED", UNIT_SPELLCAST_INTERRUPTED)
+				object:RegisterEvent("UNIT_SPELLCAST_INTERRUPTIBLE", UNIT_SPELLCAST_INTERRUPTIBLE)
+				object:RegisterEvent("UNIT_SPELLCAST_NOT_INTERRUPTIBLE", UNIT_SPELLCAST_NOT_INTERRUPTIBLE)
+			end 
 			object:RegisterEvent("UNIT_SPELLCAST_START", UNIT_SPELLCAST_START)
 			object:RegisterEvent("UNIT_SPELLCAST_FAILED", UNIT_SPELLCAST_FAILED)
 			object:RegisterEvent("UNIT_SPELLCAST_STOP", UNIT_SPELLCAST_STOP)
@@ -458,7 +459,7 @@ local Enable = function(object, unit)
 		castbar:SetScript("OnUpdate", castbar.OnUpdate or onUpdate)
 
 		if(object.unit == "player") then
-			CastingBarFrame:UnregisterAllEvents()
+			CastingBarFrame:UnregisterAllEvents()d
 			CastingBarFrame.Show = CastingBarFrame.Hide
 			CastingBarFrame:Hide()
 

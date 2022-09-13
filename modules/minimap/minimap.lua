@@ -262,24 +262,24 @@ function module:SetMinimap()
 	MinimapZoomIn:Hide()
 	MinimapZoomOut:Hide()
 
-	-- GuildInstanceDifficulty
-	if (LUI.IsRetail) then
-		GuildInstanceDifficulty:UnregisterAllEvents()
-		GuildInstanceDifficulty.NewShow = MiniMapInstanceDifficulty.Show
-		GuildInstanceDifficulty.Show = GuildInstanceDifficulty.Hide
-		GuildInstanceDifficulty:Hide()
-	end
 	-- MiniMapInstanceDifficulty
 	MiniMapInstanceDifficulty.NewShow = MiniMapInstanceDifficulty.Show
 	MiniMapInstanceDifficulty.Show = MiniMapInstanceDifficulty.Hide
 	MiniMapInstanceDifficulty:Hide()
 
-	-- MiniMapChallengeMode
 	if (LUI.IsRetail) then
+		-- GuildInstanceDifficulty
+		GuildInstanceDifficulty:UnregisterAllEvents()
+		GuildInstanceDifficulty.NewShow = MiniMapInstanceDifficulty.Show
+		GuildInstanceDifficulty.Show = GuildInstanceDifficulty.Hide
+		GuildInstanceDifficulty:Hide()
+
+		-- MiniMapChallengeMode
 		MiniMapChallengeMode.NewShow = MiniMapChallengeMode.Show
 		MiniMapChallengeMode.Show = MiniMapChallengeMode.Hide
 		MiniMapChallengeMode:Hide()
 	end
+	
 	-- Hide Voice Chat Frame
 	--MiniMapVoiceChatFrame:Hide()
 
