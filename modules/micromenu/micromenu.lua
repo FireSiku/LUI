@@ -588,7 +588,7 @@ function module:SetMicroMenu()
 	end)
 
 	LUI.MicroMenu.Buttons.LFG.Clicker:SetScript("OnUpdate", function(self, button)
-		if not LUI.IsRetail) then return end 
+		if not LUI.IsRetail then return end
 		if PVEFrame:IsShown() then
 			LUI.MicroMenu.Buttons.LFG.Clicker:SetAlpha(1)
 		else
