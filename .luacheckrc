@@ -46,7 +46,7 @@ stds["WoW"] = {
 		"debugprofilestart", "debugprofilestop",
 
 		-- Common Globals
-		"UIParent", "UISpecialFrames", "CreateFrame", "CreateColor", "CreateFromMixins", "GameTooltip", "UIWidgetManager", 
+		"UIParent", "UISpecialFrames", "CreateFrame", "CreateColor", "CreateFont", "CreateFromMixins", "GameTooltip", "UIWidgetManager", 
 		"CopyTable", "GetTime", "GetBuildInfo", "ReloadUI", "StaticPopup_Show", "IsForbidden", "NegateIf",
 		
 		-- Object API
