@@ -16,9 +16,9 @@ locale\locale.xml
 ### Core + API ###\
 init.lua
 api\curse.lua
-# api\modapi.lua
+api\modapi.lua
 # api\colors.lua
-# api\utils.lua
+api\utils.lua
 api\profiler.lua
 api\debug.lua
 api\outofcombatwrapper.lua

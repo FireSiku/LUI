@@ -12,7 +12,7 @@ local L = LUI.L
 local AceAddon = LibStub("AceAddon-3.0")
 
 -- this is a temp globalization (should make it check for alpha verion to globalize or not once all other files don't need global)
-_G.LUI = LUI
+-- _G.LUI = LUI
 _G.oUF = LUI.oUF
 
 local Media = LibStub("LibSharedMedia-3.0")
@@ -167,6 +167,27 @@ LUI.defaults = {
 			Font = "vibrocen",
 			FontHack = true,
 			FontSize = 13,
+		},
+
+		-- V4 integration
+		V4General = {
+			IsConfigured = false, -- Currently unused, will be when Install process is done
+			BlizzFrameScale = 1, -- Not sure if we'll use that, or if it's going to be part of scripts.
+			ModuleMessages = true,
+			MasterFont = "NotoSans-SCB",
+			MasterFlag = "OUTLINE",
+		},
+		V4Snippets = {
+		-- Siku TODO note: Snippet Engine. Dynamic creation and editing of LUIv3's Scripts.
+		},
+		Modules = {
+			["*"] = true,
+		},
+		Installed = {
+			["*"] = false,
+		},
+		Fonts = {
+			Master = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
 		},
 	},
 	global = {
@@ -1503,7 +1524,7 @@ function LUI:RegisterAddon(module, addon)
 	end
 end
 
-function LUI:RegisterModule(module, moduledb, addFunc)
+function LUI:RegisterLegacyModule(module, moduledb, addFunc)
 	local mName = module:GetName()
 	moduledb = moduledb or mName
 
@@ -1820,6 +1841,7 @@ function LUI:OnInitialize()
 
 			self:RegisterEvent("ADDON_LOADED", "SetDamageFont", self)
 			self:LoadExtraModules()
+			LUI:EmbedModule(LUI) -- V4
 		end
 	elseif _G.LUICONFIG.IsConfigured then
 		self.db.global.luiconfig[LUI.profileName] = CopyTable(_G.LUICONFIG)
@@ -1860,20 +1882,20 @@ end
 
 function LUI:OnEnable()
 	db_ = self.db.profile
-	--CheckResolution()
-
---	print(" ")
---	print("Welcome to |c0090ffffLUI v3|r for Patch 3.3.5 !")
---	print("For more Information visit lui.maydia.org")
-
 	self:SyncAddonVersion()
+
+	-- Uncomment when moving modules over.
+	--LUI:CheckInstall()
+	-- local font = db_.Fonts.Master
+	-- LUI.MasterFont = CreateFont("LUIMasterFont")
+	-- LUI.MasterFont:SetFont(font.Name, font.Size, font.Flag)
 end
 
-function LUI:MergeDefaults(target, source)
+function LUI:LegacyMergeDefaults(target, source)
 	if type(target) ~= "table" then target = {} end
 	for k, v in pairs(source) do
 		if type(v) == "table" then
-			target[k] = self:MergeDefaults(target[k], v)
+			target[k] = self:LegacyMergeDefaults(target[k], v)
 		elseif not target[k] then
 			target[k] = v
 		end

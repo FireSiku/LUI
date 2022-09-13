@@ -21,7 +21,7 @@ local BUFF_MAX_DISPLAY = _G.BUFF_MAX_DISPLAY
 ----------------------------------------------------------------------
 
 local module = LUI:Module("Auras")
-local Media = LUI.Lib("LibSharedMedia-3.0")
+local Media = LibStub("LibSharedMedia-3.0")
 local Masque = LibStub("Masque", true) or (_G.LibMasque and _G.LibMasque("Button"))
 
 local L = LUI.L

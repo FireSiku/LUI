@@ -807,14 +807,14 @@ function module:LoadOptions()
 end
 
 function module:OnInitialize()
-	LUI:MergeDefaults(LUI.db.defaults.profile, defaults)
+	LUI:LegacyMergeDefaults(LUI.db.defaults.profile, defaults)
 	LUI:RefreshDefaults()
 	LUI:Refresh()
 
 	self.db = LUI.db.profile
 	db = self.db
 
-	LUI:RegisterModule(self)
+	LUI:RegisterLegacyModule(self)
 end
 
 function module:OnEnable()
