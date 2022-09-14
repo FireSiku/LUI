@@ -260,7 +260,7 @@ function Blizzard:Hide(type)
 
 	hidden[type] = true
 	hide[type]()
-
+	if LUI.IsRetail then MicroButtonAndBagsBar:Hide() end -- does not work with actionbarframes function.
 	return true -- inform that the object was hidden
 end
 
@@ -276,7 +276,7 @@ function Blizzard:Show(type)
 		unhook(type)
 	end
 	show[type]()
-
+	if LUI.IsRetail then MicroButtonAndBagsBar:Show() end
 	return true -- inform that the object was shown
 end
 
