@@ -279,25 +279,13 @@ function module:SetMinimap()
 		MiniMapChallengeMode.Show = MiniMapChallengeMode.Hide
 		MiniMapChallengeMode:Hide()
 	end
-	
-	-- Hide Voice Chat Frame
-	--MiniMapVoiceChatFrame:Hide()
 
-	-- Hide North texture at top
-	MinimapNorthTag:SetTexture(nil)
-
-	-- Hide Zone Frame
-	MinimapZoneTextButton:Hide()
-
-	-- Hide Clock
-	TimeManagerClockButton:Hide()
-	LUI:Kill(TimeManagerClockButton)
-
-	-- Hide Tracking Button
-	MiniMapTracking:Hide()
-
-	-- Hide Calendar Button
-	GameTimeFrame:Hide()
+	MinimapNorthTag:SetTexture(nil) -- Hide North texture at top
+	LUI:Kill(MiniMapWorldMapButton) -- Hide world map button
+	LUI:Kill(MinimapZoneTextButton) -- Hide Zone Frame
+	LUI:Kill(TimeManagerClockButton) -- Hide Clock
+	LUI:Kill(MiniMapTracking) -- Hide Tracking Button
+	LUI:Kill(GameTimeFrame)	-- Hide Calendar Button
 
 	-- Move Mail icon
 	MiniMapMailFrame:ClearAllPoints()
@@ -332,9 +320,6 @@ function module:SetMinimap()
 		GarrisonLandingPageMinimapButton:ClearAllPoints()
 		GarrisonLandingPageMinimapButton:SetPoint(db.Minimap.Icon.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
 	end)
-
-	-- Hide world map button
-	MiniMapWorldMapButton:Hide()
 
 	-- shitty 3.3 flag to move
 	MiniMapInstanceDifficulty:ClearAllPoints()
