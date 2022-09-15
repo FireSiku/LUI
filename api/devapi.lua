@@ -406,7 +406,7 @@ end
 --]]
 function devapi:NewToggle(name, desc, order, func, width, disabled, hidden)
 	local t = SetVals("toggle", name, order)
-	t.desc = descfuncs(self, func, desc or "Whether or not to "..name..".", function(info) return self:GetDefaultVal(info) and "Enabled" or "Disabled" end)
+	t.desc = descfuncs(self, func, desc or ("Whether or not to "..name.."."), function(info) return self:GetDefaultVal(info) and "Enabled" or "Disabled" end)
 	t.get = getfuncs(self, func)
 	t.set = setfuncs(self, func)
 	
@@ -420,7 +420,7 @@ end
 --]]
 function devapi:NewEnable(name, desc, order, func, width, disabled, hidden)
 	local t = SetVals("toggle", name, order)
-	t.desc = descfuncs(self, func, desc or "Whether or not to "..name..".", function(info) return (self.defaultState == nil or self.defaultState) and "Enabled" or "Disabled" end)
+	t.desc = descfuncs(self, func, desc or ("Whether or not to "..name.."."), function(info) return (self.defaultState == nil or self.defaultState) and "Enabled" or "Disabled" end)
 	t.get = getfuncs(self, func, function(info) return self:IsEnabled() end)
 	t.set = setfuncs(self, func, function(info, value) self:Toggle(value) end)
 
@@ -792,7 +792,7 @@ end
 function LUI:NewToggle(name, desc, order, dbt, option, default, func, width, disabled, hidden)
 	local t = {}
 	t.type, t.name, t.order = "toggle", name, order
-	t.desc = desc or "Whether or not to "..name..".\n\nDefault: "..(default[option] and "Enabled" or "Disabled")
+	t.desc = desc or ("Whether or not to "..name..".\n\nDefault: "..(default[option] and "Enabled" or "Disabled"))
 	t.get = function() return dbt[option] end
 	if func then
 		t.set = function(info, toggle)

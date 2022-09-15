@@ -85,7 +85,7 @@ local BagsSlots = {}		--replace self.bagsframe_buttons
 
 --Button frame type for bag slots create frame functions
 local ButtonType = "ItemButton" --retail frame type
-if LUI.IsBCC or LUI.IsClassic then
+if not LUI.IsRetail then
 	ButtonType = "checkButton"	-- classic frame type
 end
 
@@ -361,11 +361,6 @@ function module:BagFrameSlotNew(slot, parent, bagType)
 
 	--Make a new slot.
 	local ret = {}
-	local ButtonType = "ItemButton"
-	if LUI.IsBCC or LUI.IsClassic then
-		ButtonType = "checkButton"
-	end
-
 	if bagType == "Bank" then
 		ret.slot = slot
 		slot = slot - 4

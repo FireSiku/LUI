@@ -15,11 +15,16 @@ locale\locale.xml
 
 ### Core + API ###\
 init.lua
+api\curse.lua
+api\modapi.lua
+api\colors.lua
+api\utils.lua
 api\profiler.lua
 api\debug.lua
 api\outofcombatwrapper.lua
 api\devapi.lua
 api\restore.lua
+api\strings.lua
 LUI.lua
 
 ### Artwork ###
@@ -38,7 +43,7 @@ modules\bars\bars.lua
 modules\auras\auras.xml
 
 ### Chat ###
-modules\chat\chat.xml
+# modules\chat\chat.xml
 
 ### Minimap ###
 modules\minimap\minimap.lua
@@ -50,10 +55,22 @@ modules\bags\bags.lua
 modules\cooldown\cooldown.xml
 
 ### Tooltip ###
-modules\tooltip\tooltip.lua
+modules\tooltip\tooltip_v4.lua
 
 ### InfoText ###
-modules\infotext\datatext.lua
+# modules\infotext\datatext.lua
+modules\InfoText\infotext.lua
+modules\InfoText\bags.lua
+modules\InfoText\clock.lua
+modules\InfoText\currency.lua
+# modules\InfoText\dualspec.lua
+modules\InfoText\durability.lua
+modules\InfoText\fps.lua
+modules\InfoText\friends.lua
+modules\InfoText\gold.lua
+modules\InfoText\guild.lua
+modules\InfoText\infotip.lua
+modules\InfoText\memory.lua
 
 ### Micromenu ###
 modules\micromenu\micromenu.lua
