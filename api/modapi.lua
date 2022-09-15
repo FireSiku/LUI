@@ -232,7 +232,7 @@ function ModuleMixin:ModPrint(...)
 end
 
 --- Toggle a module's enabled state.
-function ModuleMixin:Toggle()
+function ModuleMixin:VToggle()
 	local name = self:GetName()
 	local state = not self:IsEnabled()
 	if state then
