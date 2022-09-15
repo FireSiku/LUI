@@ -17,7 +17,7 @@ locale\locale.xml
 init.lua
 api\curse.lua
 api\modapi.lua
-# api\colors.lua
+api\colors.lua
 api\utils.lua
 api\profiler.lua
 api\debug.lua
@@ -55,7 +55,7 @@ modules\bags\bags.lua
 modules\cooldown\cooldown.xml
 
 ### Tooltip ###
-modules\tooltip\tooltip.lua
+modules\tooltip\tooltip_v4.lua
 
 ### InfoText ###
 modules\infotext\datatext.lua

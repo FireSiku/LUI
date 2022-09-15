@@ -6,6 +6,7 @@
 	Author..: Louí [EU-Das Syndikat] <In Fidem>
 ]]
 
+---@type string, LUIAddon
 local addonname, LUI = ...
 local L = LUI.L
 
@@ -624,35 +625,15 @@ end
 -- LUI:Module(name [, silent]) to get module (if silent is true and the module does not exist, it will not be created)
 -- LUI:Module(name [, prototype] [, libs...]) -- to create module or add to module
 function LUI:Module(name, prototype, ...)
-	local i = 1
 	local module = self:GetModule(name, true)
-	if module then
+	if module and type(prototype) == "string" then
+		AceAddon:EmbedLibraries(module, prototype, ...)
+	elseif not module and prototype ~= true then -- check silent
 		if type(prototype) == "string" then
-			AceAddon:EmbedLibraries(module, prototype, ...)
-		elseif type(prototype) == "table" then
-			AceAddon:EmbedLibraries(module, ...)
-
-			-- set prototype
-			local mt = getmetatable(module)
-			if self.defaultModulePrototype then
-				mt.__index = setmetatable(prototype, {__index = self.defaultModulePrototype})
-			else
-				mt.__index = prototype
-			end
-			setmetatable(module, mt)
+			module = self:NewModule(name, getModulePrototype(self), "LUIDevAPI", prototype, ...)
+		else
+			module = self:NewModule(name, getModulePrototype(self), "LUIDevAPI")
 		end
-	elseif prototype ~= true then -- check silent
-		if not next(self.modules) then
-			self:SetDefaultModuleLibraries("LUIDevAPI")
-			self:SetDefaultModulePrototype(getModulePrototype(self))
-		end
-
-		-- add the defaultPrototype as a metatable to the prototype if it exists
-		if type(prototype) == "table" and self.defaultModulePrototype then
-			setmetatable(prototype, {__index = self.defaultModulePrototype})
-		end
-
-		module = self:NewModule(name, prototype, ...)
 
 		if self ~= LUI then
 			module.isNestedModule = true
@@ -1841,7 +1822,7 @@ function LUI:OnInitialize()
 
 			self:RegisterEvent("ADDON_LOADED", "SetDamageFont", self)
 			self:LoadExtraModules()
-			LUI:EmbedModule(LUI) -- V4
+			--LUI:EmbedModule(LUI) -- V4
 		end
 	elseif _G.LUICONFIG.IsConfigured then
 		self.db.global.luiconfig[LUI.profileName] = CopyTable(_G.LUICONFIG)
