@@ -298,7 +298,7 @@ function module:SetTooltips()
 
 	-- This tooltip has no name, need to fetch and manually invoke
 	-- It is the tooltip that appears when hovering the campaign at the top of the questlog
-	module:SetTooltip(QuestMapLog_GetCampaignTooltip())
+	if LUI.Isretail then module:SetTooltip(QuestMapLog_GetCampaignTooltip()) end
 
 	-- TODO: Yet to solve the StoreTooltip, if possible
 end
