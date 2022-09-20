@@ -46,7 +46,8 @@ modules\auras\auras.xml
 modules\chat\chat.xml
 
 ### Minimap ###
-modules\minimap\minimap.lua
+modules\minimap\minimap_init.lua
+modules\minimap\minimap_v4.lua
 
 ### Bags ###
 modules\bags\bags.lua
@@ -70,10 +71,12 @@ modules\raidmenu\raidmenu.xml
 modules\expbar\threatbar.lua
 
 ### UIElements ###
-modules\uielements\faq.lua
+modules\uielements\uielements_init.lua
+modules\uielements\uielements.lua
 modules\uielements\merchant.lua
 modules\uielements\mirrorbar.lua
 modules\uielements\colourpicker.lua
+modules\uielements\faq.lua
 
 ### Additional Scripts ###
 scripts\autoinvite.lua
