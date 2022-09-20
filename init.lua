@@ -2,7 +2,10 @@
 -- SLASH_RELOADUI1 = "/rl"
 -- SlashCmdList.RELOADUI = ReloadUI
 
+
 local addonName, LUI = ...
+
+---@class LUIAddon : AceAddon
 LUI = LibStub("AceAddon-3.0"):NewAddon(LUI, addonName, "AceComm-3.0", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0")
 LUI.L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 LUI:SetDefaultModuleLibraries("AceEvent-3.0")

@@ -4,12 +4,7 @@
 
 local addonname, LUI = ...
 
-local silent = false
---[===[@debug@
-silent = true
---@end-debug@]===]
-
-local L = _G.LibStub("AceLocale-3.0"):NewLocale(addonname, "enUS", true, silent)
+local L = LibStub("AceLocale-3.0"):NewLocale(addonname, "enUS", true, true)
 
 
 -- Core

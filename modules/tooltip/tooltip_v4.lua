@@ -4,8 +4,11 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
-local module = LUI:NewModule("Tooltip", "AceHook-3.0")
+
+---@type LUIModule
+local module = LUI:NewModule("Tooltip_V4", "AceHook-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 local L = LUI.L
 local db
