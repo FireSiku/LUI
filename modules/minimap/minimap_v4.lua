@@ -8,7 +8,7 @@
 -- luacheck: globals LUIMinimapZone LUIMinimapCoord LUIMinimapBorder
 
 local _, LUI = ...
-local module = LUI:NewModule("Minimap")
+local module = LUI:GetModule("Minimap")
 local L = LUI.L
 local db
 
@@ -18,13 +18,15 @@ local MiniMapTrackingDropDown = _G.MiniMapTrackingDropDown
 local GetMinimapZoneText = _G.GetMinimapZoneText
 local ToggleDropDownMenu = _G.ToggleDropDownMenu
 local MiniMapMailFrame = _G.MiniMapMailFrame
+local MiniMapMailIcon = _G.MiniMapMailIcon
+local MinimapNorthTag = _G.MinimapNorthTag
 local Minimap_OnClick = _G.Minimap_OnClick
 local MinimapZoomOut = _G.MinimapZoomOut
 local MinimapZoomIn = _G.MinimapZoomIn
 local MINIMAP_LABEL = _G.MINIMAP_LABEL
 local Minimap = _G.Minimap
 
-local MAIL_ICON_TEXTURE = "Interface\\AddOns\\LUI4\\media\\mail.tga"
+local MAIL_ICON_TEXTURE = "Interface\\AddOns\\LUI\\modules\\minimap\\mail.tga"
 local MINIMAP_SQUARE_TEXTURE_MASK = "Interface\\ChatFrame\\ChatFrameBackground"
 local MINIMAP_ROUND_TEXTURE_MASK = "Textures\\MinimapMask"
 local ICON_LOCATION = {
@@ -41,40 +43,11 @@ local COORD_FORMAT_LIST = {
 
 -- local variables
 --local MINIMAP_SIZE = 140      -- Base size for the minimap, based on default minimap.
-
+local defaultGarrisonState = false
 local minimapShape = "ROUND"  -- Shape of the minimap, used for GetMinimapShape() community api.
 local oldDefault = {}         -- Keep information on default minimap
 
--- ####################################################################################################################
--- ##### Default Settings #############################################################################################
--- ####################################################################################################################
 
-module.defaults = {
-	profile = {
-		General = {
-			Scale = 1,
-			CoordPrecision = 1,
-			AlwaysShowText = false,
-			HideMissingCoord = true,
-			ShowTextures = true,
-			FontSize = 12,
-		},
-		Position = {
-			X = -24,
-			Y = -80,
-			--RelativePoint = "TOPRIGHT",
-			Point = "TOPRIGHT",
-			Locked = false,
-			Scale = 1,
-		},
-		Fonts = {
-			Text = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
-		},
-		Colors = {
-			Minimap = { r = 0.21, g = 0.22, b = 0.23, a = 1, t = "Class", },
-		},
-	},
-}
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
@@ -83,18 +56,27 @@ module.defaults = {
 -- For others mods with a minimap button, community API to know minimap shape.
 function GetMinimapShape() return minimapShape end
 
--- luacheck: push ignore
+local minimapFrames = {
+	"MinimapCluster",          --Minimap Original Parent, contains ZoneText, InstanceDifficulties
+	"MinimapBorder",           --Borders
+	"MinimapZoomIn",           --Zoom
+	"MinimapZoomOut",
+	"MiniMapWorldMapButton",   --World Map
+	"TimeManagerClockButton",  --Clock
+	"MiniMapTracking",         --Tracking
+	"GameTimeFrame",           --Calendar
+	"MiniMapMailBorder"        --Mail Border
+}
 
 function module:HideDefaultMinimap()
-	-- Hide Several Frames surrounding minimap
-	MinimapCluster:Hide()          --Minimap Original Parent, contains ZoneText, InstanceDifficulties
-	MinimapBorder:Hide()           --Borders
-	MinimapZoomIn:Hide()           --Zoom
-	MinimapZoomOut:Hide()
-	MiniMapWorldMapButton:Hide()   --World Map
-	TimeManagerClockButton:Hide()  --Clock
-	MiniMapTracking:Hide()         --Tracking
-	GameTimeFrame:Hide()           --Calendar
+	-- Hide Several Frames surrounding minimap, after taking note of their state
+	for _, frameName in pairs(minimapFrames) do
+		local frame = _G[frameName]
+		if frame then
+			oldDefault[frameName] = frame:IsShown()
+			LUI:Kill(frame)
+		end
+	end
 
 	--Change Minimap's Parent:
 	oldDefault.scale = Minimap:GetScale()
@@ -112,7 +94,6 @@ function module:HideDefaultMinimap()
 	-- Move Mail icon
 	MiniMapMailFrame:ClearAllPoints()
 	MiniMapMailFrame:SetPoint(ICON_LOCATION.Mail, Minimap, 3, 8)
-	MiniMapMailBorder:Hide()
 	oldDefault.Mail = MiniMapMailIcon:GetTexture()
 	MiniMapMailIcon:SetTexture(MAIL_ICON_TEXTURE)
 
@@ -131,15 +112,16 @@ end
 
 function module:RestoreDefaultMinimap()
 
-	-- Show Several Frames surrounding minimap
-	MinimapCluster:Show()          --Minimap Original Parent
-	MinimapBorder:Show()           --Border
-	MinimapZoomIn:Show()           --Zoom
-	MinimapZoomOut:Show()
-	MiniMapWorldMapButton:Show()   --World Map
-	TimeManagerClockButton:Show()  --Clock
-	MiniMapTracking:Show()         --Tracking
-	GameTimeFrame:Show()           --Calendar
+	-- Show several frames based on their previous state
+	for _, frameName in pairs(minimapFrames) do
+		local frame = _G[frameName]
+		if frame then
+			LUI:Unkill(frame)
+			if oldDefault[frameName] then
+				frame:Show()
+			end
+		end
+	end
 	MinimapNorthTag:SetTexture(oldDefault.NorthTag)	--North Arrow
 
 	--Revert Minimap Parent
@@ -153,7 +135,6 @@ function module:RestoreDefaultMinimap()
 
 	-- Move Mail icon
 	--MiniMapMailFrame:ClearAllPoints()
-	MiniMapMailBorder:Show()
 	MiniMapMailIcon:SetTexture(oldDefault.Mail)
 
 	--Remove module centric frames
@@ -169,13 +150,39 @@ function module:RestoreDefaultMinimap()
 	Minimap:SetPoint(oldDefault.point, oldDefault.relativeTo, oldDefault.relativePoint, oldDefault.X, oldDefault.Y)
 	Minimap:SetSize(oldDefault.width, oldDefault.height)
 end
--- luacheck: pop
+
+---@TODO: Re-evaluate these Garrison functions.
+
+function module:ToggleMissionReport()
+	local button = GarrisonLandingPageMinimapButton
+	if button:IsShown() and not defaultGarrisonState then
+		button:Hide()
+		return
+	elseif not defaultGarrisonState then
+		return
+	end
+	if db.General.MissionReport then
+		LUI:Unkill(button)
+	else
+		LUI:Kill(button)
+	end
+end
+
+function module:GARRISON_HIDE_LANDING_PAGE()
+	defaultGarrisonState = false
+end
+
+function module:GARRISON_SHOW_LANDING_PAGE()
+	defaultGarrisonState = true
+end
 
 -- ####################################################################################################################
 -- ##### Module Setup #################################################################################################
 -- ####################################################################################################################
 
 function module:SetMinimap()
+	db = module.db.profile
+	module:HideDefaultMinimap()
 
 	--Enable Scroll Zooming
 	Minimap:EnableMouseWheel(true)
@@ -261,7 +268,10 @@ function module:SetMinimap()
 
 	--Create other frames around the minimap
 	module:SetMinimapFrames()
-
+	
+	if LUI.IsRetail then
+		self:SecureHook(_G.MawBuffsBelowMinimapFrameMixin, "OnShow", function() self:SetPosition('MawBuffs') end)
+	end
 
 	--Prevent these initialization functions from running again.
 	function module:SetMinimap()
@@ -273,6 +283,7 @@ end
 --If module is disabled and re-enabled, call this instead to prevent re-initializing everything
 function module:SetMinimapAgain()
 	Minimap:EnableMouseWheel(true)
+	module:HideDefaultMinimap()
 	module:ToggleMinimapText()
 	module:ToggleMinimapTextures()
 
@@ -288,7 +299,7 @@ function module:SetMinimapFrames()
 	--Setting up values
 	local borderBackdrop = {
 		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\AddOns\\LUI4\\media\\borders\\glow.tga",
+		edgeFile=LUI.Media.glowTex,
 		tile=0, tileSize=0, edgeSize=7,
 		insets={left=0, right=0, top=0, bottom=0}
 	}
@@ -310,8 +321,8 @@ function module:SetMinimapFrames()
 	--Create Corner Textures (Tex1-Tex4)
 	local textureBackdrop = {
 		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\AddOns\\LUI4\\media\\borders\\glow.tga",
-		tile=0, tileSize=0, edgeSize=6,
+		edgeFile=LUI.Media.glowTex,
+		tile=0, tileSize=0, edgeSize=5,
 		insets={left=3, right=3, top=3, bottom=3}
 	}
 	for i = 1, 4 do
@@ -324,35 +335,43 @@ function module:SetMinimapFrames()
 		minimapTex:SetBackdropBorderColor(r,g,b,a)
 	end
 
-	--Create Shadow Textures (Tex1-Tex4)
-	local shadowBackdrop = {
-		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\AddOns\\LUI4\\media\\borders\\glow.tga",
-		tile=0, tileSize=0, edgeSize=4,
-		insets={left=3, right=3, top=3, bottom=3}
-	}
 	for i = 5, 8 do
 		local minimapTex = CreateFrame("Frame", "LUIMinimapTexture"..i, Minimap, "BackdropTemplate")
 		minimapTex:SetSize(56,56)
 		minimapTex:SetFrameStrata("BACKGROUND")
 		minimapTex:SetPoint(texPoint[i-4], Minimap, texPoint[i-4], texOffX[i], texOffY[i])
 		minimapTex:SetFrameLevel(minimapTex:GetFrameLevel()-1)
-		minimapTex:SetBackdrop(shadowBackdrop)
+		minimapTex:SetBackdrop(textureBackdrop)
 		minimapTex:SetBackdropColor(0,0,0,0)
 		minimapTex:SetBackdropBorderColor(0,0,0,1)
 	end
 
 	-- Move Garrison icon
-	GarrisonLandingPageMinimapButton:ClearAllPoints();
-	GarrisonLandingPageMinimapButton:SetSize(32,32);
-	GarrisonLandingPageMinimapButton:SetPoint(ICON_LOCATION.Mail, Minimap, 3, 12)
+	if (LUI.IsRetail) then
+		module:SecureHook("GarrisonLandingPageMinimapButton_UpdateIcon", function()
+			GarrisonLandingPageMinimapButton:SetSize(32,32)
+			GarrisonLandingPageMinimapButton:ClearAllPoints()
+			if MiniMapMailFrame:IsShown() then
+				GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-5))
+			else
+				GarrisonLandingPageMinimapButton:SetPoint(ICON_LOCATION.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
+			end
+		end)
+		MiniMapMailFrame:HookScript("OnShow", function()
+			GarrisonLandingPageMinimapButton:ClearAllPoints()
+			GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-5))
+		end)
+		MiniMapMailFrame:HookScript("OnHide", function()
+			GarrisonLandingPageMinimapButton:ClearAllPoints()
+			GarrisonLandingPageMinimapButton:SetPoint(ICON_LOCATION.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
+		end)
 
-	MiniMapMailFrame:HookScript("OnShow", function(self)
-		GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, -4)
-	end)
-	MiniMapMailFrame:HookScript("OnHide", function(self)
-		GarrisonLandingPageMinimapButton:SetPoint(ICON_LOCATION.Mail, Minimap, 3, 12)
-	end)
+		self:RegisterEvent("GARRISON_HIDE_LANDING_PAGE")
+		self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE")
+		C_Timer.After(0.25, self.ToggleMissionReport)
+	end
+
+
 end
 
 function module:SetMinimapSize()
@@ -393,22 +412,4 @@ function module:ToggleMinimapTextures()
 			_G["LUIMinimapTexture"..i]:Hide()
 		end
 	end
-end
-
--- ####################################################################################################################
--- ##### Framework Events #############################################################################################
--- ####################################################################################################################
-
-function module:OnInitialize()
-	LUI:RegisterModule(module, true)
-	db = module.db.profile
-end
-
-function module:OnEnable()
-	module:HideDefaultMinimap()
-	module:SetMinimap()
-end
-
-function module:OnDisable()
-	module:RestoreDefaultMinimap()
 end

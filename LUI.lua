@@ -242,9 +242,23 @@ local function RGBToHex(r, g, b)
 	return string.format("%02x%02x%02x", r, g, b)
 end
 
+--- Force a frame to be hidden and prevent attempts to show it again
+---@param object Frame
 function LUI:Kill(object)
-	object.Show = LUI.dummy
+	object.__show = object.Show
+	object.Show = object.Hide
 	object:Hide()
+end
+
+--- Reverse the effects of the :Kill function
+---@param object Frame Frame to revert
+---@param force boolean Force the frame to be shown
+function LUI:Unkill(object, force)
+	if object.__show then
+		object.Show = object.__show
+		object.__show = nil
+		if force then object:Show() end
+	end
 end
 
 local function scale(x)
