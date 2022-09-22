@@ -8,7 +8,7 @@
 local _, LUI = ...
 
 ---@type LUIModule
-local module = LUI:NewModule("Tooltip_V4", "AceHook-3.0")
+local module = LUI:NewModule("Tooltip", "AceHook-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 local L = LUI.L
 local db
@@ -301,7 +301,7 @@ function module:SetTooltips()
 
 	-- This tooltip has no name, need to fetch and manually invoke
 	-- It is the tooltip that appears when hovering the campaign at the top of the questlog
-	if LUI.Isretail then module:SetTooltip(QuestMapLog_GetCampaignTooltip()) end
+	if LUI.IsRetail then module:SetTooltip(QuestMapLog_GetCampaignTooltip()) end
 
 	-- TODO: Yet to solve the StoreTooltip, if possible
 end
