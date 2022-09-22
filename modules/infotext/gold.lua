@@ -12,18 +12,18 @@ local L = LUI.L
 -- local copies
 local pairs, ipairs, mod = pairs, ipairs, mod
 local format, floor, abs = format, floor, abs
-local BreakUpLargeNumbers = BreakUpLargeNumbers
-local GetMoneyString = GetMoneyString
-local GetMoney = GetMoney
+local BreakUpLargeNumbers = _G.BreakUpLargeNumbers
+local GetMoneyString = _G.GetMoneyString
+local GetMoney = _G.GetMoney
 
 -- constants
-local COPPER_AMOUNT_SYMBOL = COPPER_AMOUNT_SYMBOL
-local SILVER_AMOUNT_SYMBOL = SILVER_AMOUNT_SYMBOL
-local GOLD_AMOUNT_SYMBOL = GOLD_AMOUNT_SYMBOL
-local COPPER_PER_SILVER = COPPER_PER_SILVER
-local SILVER_PER_GOLD = SILVER_PER_GOLD
-local COPPER_PER_GOLD = COPPER_PER_GOLD
-local MONEY_COLON = MONEY_COLON
+local COPPER_AMOUNT_SYMBOL = _G.COPPER_AMOUNT_SYMBOL
+local SILVER_AMOUNT_SYMBOL = _G.SILVER_AMOUNT_SYMBOL
+local GOLD_AMOUNT_SYMBOL = _G.GOLD_AMOUNT_SYMBOL
+local COPPER_PER_SILVER = _G.COPPER_PER_SILVER
+local SILVER_PER_GOLD = _G.SILVER_PER_GOLD
+local COPPER_PER_GOLD = _G.COPPER_PER_GOLD
+local MONEY_COLON = _G.MONEY_COLON
 
 local SILVER_COLOR = "|cffc7c7cf"
 local COPPER_COLOR = "|cffeda55f"

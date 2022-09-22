@@ -11,8 +11,8 @@ local L = LUI.L
 
 -- Local copies
 local floor, format = floor, format
-local GetFramerate = GetFramerate
-local GetNetStats = GetNetStats
+local GetFramerate = _G.GetFramerate
+local GetNetStats = _G.GetNetStats
 
 -- Constants
 local MILLISECONDS_ABBR = MILLISECONDS_ABBR

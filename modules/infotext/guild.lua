@@ -11,26 +11,26 @@ local L = LUI.L
 
 -- local copies
 local format, strsplit = format, strsplit
-local PanelTemplates_GetSelectedTab = PanelTemplates_GetSelectedTab
-local SetGuildRosterSelection = SetGuildRosterSelection
-local GetGuildRosterMOTD = GetGuildRosterMOTD
-local GetNumGuildMembers = GetNumGuildMembers
-local GetGuildRosterInfo = GetGuildRosterInfo
-local CanEditOfficerNote = CanEditOfficerNote
-local CanEditPublicNote = CanEditPublicNote
-local StaticPopup_Show = StaticPopup_Show
-local ShowUIPanel = ShowUIPanel
-local HideUIPanel = HideUIPanel
-local GuildRoster = GuildRoster
-local SetItemRef = SetItemRef
-local IsInGuild = IsInGuild
+local PanelTemplates_GetSelectedTab = _G.PanelTemplates_GetSelectedTab
+local SetGuildRosterSelection = _G.SetGuildRosterSelection
+local GetGuildRosterMOTD = _G.GetGuildRosterMOTD
+local GetNumGuildMembers = _G.GetNumGuildMembers
+local GetGuildRosterInfo = _G.GetGuildRosterInfo
+local CanEditOfficerNote = _G.CanEditOfficerNote
+local CanEditPublicNote = _G.CanEditPublicNote
+local StaticPopup_Show = _G.StaticPopup_Show
+local ShowUIPanel = _G.ShowUIPanel
+local HideUIPanel = _G.HideUIPanel
+local GuildRoster = _G.GuildRoster
+local SetItemRef = _G.SetItemRef
+local IsInGuild = _G.IsInGuild
 
 -- constants
-local ERR_GUILD_PLAYER_NOT_IN_GUILD = ERR_GUILD_PLAYER_NOT_IN_GUILD
-local CHAT_FLAG_AFK = CHAT_FLAG_AFK
-local CHAT_FLAG_DND = CHAT_FLAG_DND
-local MOTD_COLON = MOTD_COLON
-local GUILD = GUILD
+local ERR_GUILD_PLAYER_NOT_IN_GUILD = _G.ERR_GUILD_PLAYER_NOT_IN_GUILD
+local CHAT_FLAG_AFK = _G.CHAT_FLAG_AFK
+local CHAT_FLAG_DND = _G.CHAT_FLAG_DND
+local MOTD_COLON = _G.MOTD_COLON
+local GUILD = _G.GUILD
 
 local PLAYER_HYPERLINK_FORMAT = "|Hplayer:%1$s|h[%1$s]|h"
 local PLAYER_LINK_FORMAT = "player:%s"

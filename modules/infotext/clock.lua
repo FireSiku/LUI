@@ -12,14 +12,14 @@ local L = LUI.L
 -- local copies
 local gsub, format = gsub, format
 local tonumber, date = tonumber, date
-local GetNumSavedWorldBosses = GetNumSavedWorldBosses
-local GetSavedWorldBossInfo = GetSavedWorldBossInfo
-local GetSavedInstanceInfo = GetSavedInstanceInfo
-local GetNumSavedInstances = GetNumSavedInstances
+local GetNumSavedWorldBosses = _G.GetNumSavedWorldBosses
+local GetSavedWorldBossInfo = _G.GetSavedWorldBossInfo
+local GetSavedInstanceInfo = _G.GetSavedInstanceInfo
+local GetNumSavedInstances = _G.GetNumSavedInstances
 local TimeBreakDown = ChatFrame_TimeBreakDown
-local GetInstanceInfo = GetInstanceInfo
-local IsInInstance = IsInInstance
-local GetGameTime = GetGameTime
+local GetInstanceInfo = _G.GetInstanceInfo
+local IsInInstance = _G.IsInInstance
+local GetGameTime = _G.GetGameTime
 
 -- local variables
 local cvarLocal, cvarMilitary -- Cache containing CVars

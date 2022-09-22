@@ -21,13 +21,9 @@ local CURRENCY = CURRENCY
 -- locals
 local currencyString = {}
 local getCurrencyInfo = C_CurrencyInfo.GetBackpackCurrencyInfo
-	if not LUI.IsRetail then
-		getCurrencyInfo = GetBackpackCurrencyInfo
-	end
+	if not LUI.IsRetail then getCurrencyInfo = GetBackpackCurrencyInfo end
 local getCurrencyInfoListSize = C_CurrencyInfo.GetCurrencyListSize
-	if not LUI.IsRetail then
-		getCurrencyInfoListSize = GetCurrencyListSize
-	end
+	if not LUI.IsRetail then getCurrencyInfoListSize = GetCurrencyListSize end
 
 -- ####################################################################################################################
 -- ##### Default Settings #############################################################################################
