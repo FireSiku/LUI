@@ -11,8 +11,8 @@ local L = LUI.L
 
 --local copies
 local wipe, format, pairs = wipe, format, pairs
-local GetContainerNumFreeSlots = GetContainerNumFreeSlots
-local GetContainerNumSlots = GetContainerNumSlots
+local GetContainerNumFreeSlots = _G.GetContainerNumFreeSlots
+local GetContainerNumSlots = _G.GetContainerNumSlots
 
 -- Constants
 local NUM_BAG_SLOTS = NUM_BAG_SLOTS

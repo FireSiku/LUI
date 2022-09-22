@@ -1,4 +1,4 @@
--- Memory Infotext
+-- Movement Speed Infotext
 
 -- ####################################################################################################################
 -- ##### Setup and Locals #############################################################################################
@@ -6,45 +6,70 @@
 
 local _, LUI = ...
 local module = LUI:GetModule("Infotext")
-local element = module:NewElement("Memory")
+local element = module:NewElement("MoveSpeed", "AceEvent-3.0")
 local L = LUI.L
-
-local format = format
-local collectgarbage = collectgarbage
-local GetNumAddOns, GetAddOnInfo = _G.GetNumAddOns, _G.GetAddOnInfo
-local UpdateAddOnMemoryUsage = _G.UpdateAddOnMemoryUsage
-local GetAddOnMemoryUsage = _G.GetAddOnMemoryUsage
-local IsAddOnLoaded = _G.IsAddOnLoaded
-
-local totalMemory = 0
-local addonMemory = {} --contains addonTitle, memoryUsage
-local sortedAddons = {} -- Sorting table for addonMemory
-
--- Everything is too green without this multiplier
-local GRADIENT_MULTIPLIER = 1.4
-local MEMORY_UPDATE_TIME = 20
-local KB_PER_MB = 1024
 
 -- ####################################################################################################################
 -- ##### Default Settings #############################################################################################
 -- ####################################################################################################################
 
 element.defaults = {
-	profile = {
-		X = 600,
-	},
-}
-module:MergeDefaults(element.defaults, "Memory")
+    Enable = true,
+    X = -590,
+    Y = 0,
+    InfoPanel = {
+        Horizontal = "Right",
+        Vertical = "Top",
+    },
+    Font = "vibroceb",
+    FontSize = 12,
+    Outline = "NONE",
+    Color = {
+        r = 1,
+        g = 1,
+        b = 1,
+        a = 1,
+    },
+},
+
+module:MergeDefaults(element.defaults, "MoveSpeed")
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
+function module:SetMoveSpeed()
 
-local function addonSort(a, b)
-	return addonMemory[a] > addonMemory[b]
+	local stat = NewStat("MoveSpeed")
+
+	if db.MoveSpeed.Enable and not stat.Created then
+
+		local baseSpeed = BASE_MOVEMENT_SPEED
+		-- Script functions
+		stat.OnUpdate = function(self, deltaTime)
+			self.dt = self.dt + deltaTime
+			if self.dt > 0.5 then
+				self.dt = 0
+
+				local unit = "player"
+				if UnitInVehicle("player") then
+					unit = "vehicle"
+				end
+				local speed, runSpeed = GetUnitSpeed(unit)
+				if speed == 0 then
+					speed = runSpeed
+				end
+
+				-- Set value
+				self.text:SetText(format("Speed: %d%%", speed / baseSpeed * 100))
+			end
+		end
+
+		stat.Created = true
+	end
+
 end
 
-local function formatMemory(kb)
+local function formatMoveSpeed(kb)
 	if kb > KB_PER_MB then
 		return format("%.2fmb", kb / KB_PER_MB)
 	else
@@ -52,7 +77,7 @@ local function formatMemory(kb)
 	end
 end
 
-function element:UpdateMemory()
+function element:UpdateMoveSpeed()
 	UpdateAddOnMemoryUsage()
 	totalMemory = 0
 
@@ -77,7 +102,6 @@ function element.OnClick(frame_, button_)
 	collectgarbage("collect")
 	element:UpdateMemory()
 end
-
 -- ####################################################################################################################
 -- ##### Infotext Display #############################################################################################
 -- ####################################################################################################################
@@ -87,20 +111,19 @@ function element.OnTooltipShow(GameTooltip)
 	for i = 1, #sortedAddons do
 		local addonTitle = sortedAddons[i]
 		local r, g, b = LUI:InverseGradient((addonMemory[addonTitle] / totalMemory) * GRADIENT_MULTIPLIER)
-		GameTooltip:AddDoubleLine(addonTitle, formatMemory(addonMemory[addonTitle]), 1,1,1, r, g, b)
+		GameTooltip:AddDoubleLine(addonTitle, formatMoveSpeed(addonMemory[addonTitle]), 1,1,1, r, g, b)
 	end
 
 	GameTooltip:AddLine(" ")
-	GameTooltip:AddDoubleLine(L["InfoMemory_TotalMemory"], formatMemory(totalMemory), 1,1,1, .8,.8,.8)
+	GameTooltip:AddDoubleLine(L["InfoMemory_TotalMemory"], formatMoveSpeed(totalMemory), 1,1,1, .8,.8,.8)
 
 	element:AddHint(L["InfoMemory_Hint_Any"])
 end
-
 -- ####################################################################################################################
 -- ##### Framework Events #############################################################################################
 -- ####################################################################################################################
 
 function element:OnCreate()
-	element:UpdateMemory()
-	element:AddUpdate("UpdateMemory", MEMORY_UPDATE_TIME)
+	element:UpdateMoveSpeed()
+	element:AddUpdate("UpdateMoveSpeed", MEMORY_UPDATE_TIME)
 end
