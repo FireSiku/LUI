@@ -11,8 +11,8 @@ local L = LUI.L
 
 -- Local copies
 local floor, format, pairs = floor, format, pairs
-local GetInventoryItemDurability = GetInventoryItemDurability
-local ToggleCharacter = ToggleCharacter
+local GetInventoryItemDurability = _G.GetInventoryItemDurability
+local ToggleCharacter = _G.ToggleCharacter
 
 -- Constants
 local ARMOR = ARMOR

@@ -11,26 +11,26 @@ local L = LUI.L
  
 -- local copies
 local format = format
-local C_FriendList, C_PartyInfo = C_FriendList, C_PartyInfo
-local FriendsFrame_BattlenetInvite = FriendsFrame_BattlenetInvite
-local BNet_GetClientTexture = BNet_GetClientTexture
-local ToggleFriendsFrame = ToggleFriendsFrame
-local BNFeaturesEnabled = BNFeaturesEnabled
-local StaticPopup_Show = StaticPopup_Show
-local BNGetNumFriends = BNGetNumFriends
-local BNConnected = BNConnected
-local SetItemRef = SetItemRef
-local BNGetInfo = BNGetInfo
+local C_FriendList, C_PartyInfo = _G.C_FriendList, _G.C_PartyInfo
+local FriendsFrame_BattlenetInvite = _G.FriendsFrame_BattlenetInvite
+local BNet_GetClientTexture = _G.BNet_GetClientTexture
+local ToggleFriendsFrame = _G.ToggleFriendsFrame
+local BNFeaturesEnabled = _G.BNFeaturesEnabled
+local StaticPopup_Show = _G.StaticPopup_Show
+local BNGetNumFriends = _G.BNGetNumFriends
+local BNConnected = _G.BNConnected
+local SetItemRef = _G.SetItemRef
+local BNGetInfo = _G.BNGetInfo
 
 -- constants
-local FRIENDS_OTHER_NAME_COLOR_CODE = FRIENDS_OTHER_NAME_COLOR_CODE
-local FRIENDS_BNET_NAME_COLOR_CODE = FRIENDS_BNET_NAME_COLOR_CODE
---local FRIENDS_PRESENCE_COLOR_CODE = FRIENDS_PRESENCE_COLOR_CODE
-local BATTLENET_UNAVAILABLE = BATTLENET_UNAVAILABLE
-local BATTLENET_BROADCAST = BATTLENET_BROADCAST
-local CHAT_FLAG_AFK = CHAT_FLAG_AFK
-local CHAT_FLAG_DND = CHAT_FLAG_DND
-local FRIENDS = FRIENDS
+local FRIENDS_OTHER_NAME_COLOR_CODE = _G.FRIENDS_OTHER_NAME_COLOR_CODE
+local FRIENDS_BNET_NAME_COLOR_CODE = _G.FRIENDS_BNET_NAME_COLOR_CODE
+--local FRIENDS_PRESENCE_COLOR_CODE = _G.FRIENDS_PRESENCE_COLOR_CODE
+local BATTLENET_UNAVAILABLE = _G.BATTLENET_UNAVAILABLE
+local BATTLENET_BROADCAST = _G.BATTLENET_BROADCAST
+local CHAT_FLAG_AFK = _G.CHAT_FLAG_AFK
+local CHAT_FLAG_DND = _G.CHAT_FLAG_DND
+local FRIENDS = _G.FRIENDS
 local FRIENDS_UPDATE_TIME = 15
 local SOCIAL_TAB_FRIENDS = 1
 -- local BLANK_NOTE = "|cffffcc00-"

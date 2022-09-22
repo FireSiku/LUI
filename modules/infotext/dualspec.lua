@@ -12,19 +12,19 @@ local L = LUI.L
 -- local copies
 local select, format, tconcat = select, format, table.concat
 local strsplit = string.split
-local PanelTemplates_GetSelectedTab = PanelTemplates_GetSelectedTab
-local GetSpecializationInfoByID = GetSpecializationInfoByID
-local GetLootSpecialization = GetLootSpecialization
-local PanelTemplates_SetTab = PanelTemplates_SetTab
-local GetSpecializationInfo = GetSpecializationInfo
-local GetActiveSpecGroup = GetActiveSpecGroup
-local GetSpecialization = GetSpecialization
-local SetSpecialization = SetSpecialization
-local GetMaxTalentTier = GetMaxTalentTier
-local GetNumSpecGroups = GetNumSpecGroups
-local GetTalentInfo = GetTalentInfo
-local ShowUIPanel = ShowUIPanel
-local HideUIPanel = HideUIPanel
+local PanelTemplates_GetSelectedTab = _G.PanelTemplates_GetSelectedTab
+local GetSpecializationInfoByID = _G.GetSpecializationInfoByID
+local GetLootSpecialization = _G.GetLootSpecialization
+local PanelTemplates_SetTab = _G.PanelTemplates_SetTab
+local GetSpecializationInfo = _G.GetSpecializationInfo
+local GetActiveSpecGroup = _G.GetActiveSpecGroup
+local GetSpecialization = _G.GetSpecialization
+local SetSpecialization = _G.SetSpecialization
+local GetMaxTalentTier = _G.GetMaxTalentTier
+local GetNumSpecGroups = _G.GetNumSpecGroups
+local GetTalentInfo = _G.GetTalentInfo
+local ShowUIPanel = _G.ShowUIPanel
+local HideUIPanel = _G.HideUIPanel
 
 -- constants
 local LOOT_SPECIALIZATION_DEFAULT = strsplit("(", LOOT_SPECIALIZATION_DEFAULT):trim()
