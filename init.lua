@@ -44,8 +44,6 @@ _G["LUI"] = LUI
 local Media = LibStub("LibSharedMedia-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
 
---local strmatch = string.match
-local strgsub = string.gsub
 local format, type, select = format, type, select
 local InCombatLockdown = _G.InCombatLockdown
 local GetAddOnMetadata = _G.GetAddOnMetadata
@@ -151,66 +149,72 @@ end
 -- ####################################################################################################################
 -- ##### Options Menu #################################################################################################
 -- ####################################################################################################################
+-- If a handler is not listed for a given command, it will use LUI as the default handler.
 
-local cmdList = {
+LUI.cmdList = {
 	handler = {
-		["dev"] = LUI,
-		["load"] = LUI,
+		--["dev"] = LUI,
 	},
 	commands = {
 		["dev"] = "DevCommands",
 		["load"] = "LoadProfile",
+
+		-- Legacy Commands
+		["debug"] = "Debug",
+		["config"] = "Open",
+		["install"] = "Configure",
 	},
 }
 
--- function LUI:OpenOptions()
--- 	if not IsAddOnLoaded("LUI4Options") then
--- 		LoadAddOn("LUI4Options")
--- 	end
+function LUI:OpenOptions(forceNew)
+	if forceNew then
+		if not IsAddOnLoaded("LUIOptions") then
+			_G.LoadAddOn("LUIOptions")
+		end
 
--- 	self:NewOpen()
--- end
+		self:NewOpen()
+	else
+		self:Open()
+	end
+end
 
 --TODO: Handle of chat command is a mess that need fixing.
 --Future: Make it so that modules can handle chat command through /lui [moduleName] [setting] [value]
 function LUI:ChatCommand(input)
 	if not input or input:trim() == "" then
-		--self:OpenOptions()
+		self:OpenOptions()
 	else
-		local mod, cmd = self:GetArgs(input, 2)
-		local value = strgsub(input, mod, ""):trim()
+		input = input:lower() -- avoid capitalization
+		local mod = self:GetArgs(input)
+		local value = string.gsub(input, mod, ""):trim()
+		local cmd = mod and self.cmdList.commands[mod]
+		
 		if cmd then
-			if (cmdList.commands[mod]) then
-				-- Call the function that will handle the command.
-				cmdList.handler[mod][cmdList.commands[mod]](self, value)
+			-- If no handler is defined, defaults to LUI as the handler
+			local handler = self.cmdList.handler[mod] or self
+			
+			-- Call the function that will handle the command.
+			if handler[cmd] then
+				handler[cmd](handler, value)
 			else
-				--self:OpenOptions()
+				LUI:Print("Invalid command:", cmd)
 			end
+		-- If there are no function associated to the chat command.
+		elseif mod then
+			LUI:Print("Unknown command:", mod)
 		end
 	end
 end
 
--- function LUI:DevCommands(cmd,value)
--- 	LUI:Print("DevCommands: ",self,cmd,value)
+function LUI:DevCommands(cmd, value)
+	if cmd == "config" then
+		self:OpenOptions(true)
+	end
 -- 	--/lui dev installed moduleName
 -- 	--Reverts the installed state of a certain module (or all of them)
 -- 	if cmd == "installed" then
 -- 		LUI:Print(format(L["Core_Dev_RevertState_Format"], value))
--- 	elseif cmd == "save" then
--- 		LUI:SaveLayout("Test", "Siku", "This is going to be the default layout")
--- 	elseif cmd == "load" then
--- 		LUI:LoadLayout(value)
 -- 	end
--- end
-
-function LUI:LoadProfile(value)
-	local profileList = LUI.db:GetProfiles()
-	if tContains(profileList, value) then
-		LUI:Print(format(L["Core_LoadProfileSucess_Format"],value))
-		LUI.db:SetProfile(value)
-	else
-		LUI:Print(format(L["Core_LoadProfileFail_Format"],value))
-	end
 end
 
 -- ####################################################################################################################
@@ -239,6 +243,9 @@ function LUI:RegisterModule(module)
 		--	module.db.RegisterCallback(module, "OnProfileReset", LUI.RefreshModule, module)
 		--end
 	end
+
+	-- To remove when all modules transitioned to new options menu
+	module.registered = true
 end
 
 -- ####################################################################################################################

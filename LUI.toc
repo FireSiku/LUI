@@ -56,7 +56,7 @@ modules\bags\bags.lua
 modules\cooldown\cooldown.xml
 
 ### Tooltip ###
-modules\tooltip\tooltip_v4.lua
+modules\tooltip\tooltip.lua
 
 ### InfoText ###
 modules\infotext\datatext.lua

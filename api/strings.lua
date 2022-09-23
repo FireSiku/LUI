@@ -142,37 +142,36 @@ LUI.OppositeOf = {
 -- ####################################################################################################################
 -- ##### StringUtils: Localized Tables ################################################################################
 -- ####################################################################################################################
---[[
+
 LUI.FontFlags = {
-	NONE = L["Flag_None"],
-	OUTLINE = L["Flag_Outline"],
-	THICKOUTLINE = L["Flag_ThickOutline"],
-	MONOCHROME = L["Flag_Monochrome"],
+	NONE = L["None"],
+	OUTLINE = L["Outline"],
+	THICKOUTLINE = L["Thick Outline"],
+	MONOCHROME = L["Monochrome"],
 }
 
 LUI.Points = {
-	CENTER = L["Point_Center"],
-	TOP = L["Point_Top"],
-	BOTTOM = L["Point_Bottom"],
-	LEFT = L["Point_Left"],
-	RIGHT = L["Point_Right"],
-	TOPLEFT = L["Point_TopLeft"],
-	TOPRIGHT = L["Point_TopRight"],
-	BOTTOMLEFT = L["Point_BottomLeft"],
-	BOTTOMRIGHT = L["Point_BottomRight"],
+	CENTER = L["Center"],
+	TOP = L["Top"],
+	BOTTOM = L["Bottom"],
+	LEFT = L["Left"],
+	RIGHT = L["Right"],
+	TOPLEFT = L["Top Left"],
+	TOPRIGHT = L["Top Right"],
+	BOTTOMLEFT = L["Bottom Left"],
+	BOTTOMRIGHT = L["Bottom Right"],
 }
-
 LUI.Corners = {
-	TOPLEFT = L["Point_TopLeft"],
-	TOPRIGHT = L["Point_TopRight"],
-	BOTTOMLEFT = L["Point_BottomLeft"],
-	BOTTOMRIGHT = L["Point_BottomRight"],
+	TOPLEFT = L["Top Left"],
+	TOPRIGHT = L["Top Right"],
+	BOTTOMLEFT = L["Bottom Left"],
+	BOTTOMRIGHT = L["Bottom Right"],
 }
 LUI.Sides = {
-	TOP = L["Point_Top"],
-	BOTTOM = L["Point_Bottom"],
-	LEFT = L["Point_Left"],
-	RIGHT = L["Point_Right"],
+	TOP = L["Top"],
+	BOTTOM = L["Bottom"],
+	LEFT = L["Left"],
+	RIGHT = L["Right"],
 }
 LUI.Directions = {
 	UP = L["Point_Up"],
@@ -186,4 +185,3 @@ LUI.ColorTypes = {
 	Theme = L["Color_Theme"],
 	Class = L["Color_Class"],
 }
-]]
