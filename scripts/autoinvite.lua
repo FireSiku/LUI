@@ -60,7 +60,7 @@ local function isBNFriend(name)
 	end
 end
 
-local function chatcommand()
+function LUI:InviteCmd()
 	LUI.db.AutoInvite = not LUI.db.AutoInvite
 	script:SetAutoInvite()
 	LUI:Print("AutoInvite |cff"..(LUI.db.AutoInvite and "00FF00Enabled|r" or "FF0000Disabled|r"))
@@ -107,5 +107,5 @@ end
 
 script:RegisterEvent("PLAYER_ENTERING_WORLD")
 
-LUI.chatcommands["invite"] = chatcommand
-LUI.chatcommands["inv"] = chatcommand
+LUI.cmdList["invite"] = "InviteCmd"
+LUI.cmdList["inv"] = "InviteCmd"

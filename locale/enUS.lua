@@ -205,10 +205,6 @@ L["Type %s to Set Focus"] = true
 -- WHEN UPDATING THIS FILE, REMEMBER TO ALSO ADD ANY LINES INTO THE CURSE LOCALIZATION
 -- Otherwise, issues will rise with missing values in translated versions.
 
-local addonname, LUI = ...
-
-local L = LibStub("AceLocale-3.0"):NewLocale(addonname, "enUS", true)
-
 -- Generic
 L["Settings"] = true
 L["Position"] = true

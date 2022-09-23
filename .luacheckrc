@@ -43,7 +43,7 @@ stds["WoW"] = {
 		string = { fields = { "join", "rtgsub", "split", "trim", }},
 		table = { fields = { "removemulti", "wipe", }},
 		"format", "strsub", "strfind", "strmatch", "strsplit", "strlower", "gsub", "wipe", "tinsert", "tremove", "floor", "ceil",
-		"debugprofilestart", "debugprofilestop",
+		"debugprofilestop", "tDeleteItem", "tContains",
 
 		-- Common Globals
 		"UIParent", "UISpecialFrames", "CreateFrame", "CreateColor", "CreateFont", "CreateFromMixins", "GameTooltip", "UIWidgetManager", 

@@ -100,36 +100,6 @@ LUI.Media = {
 	["btn_gloss"] = [[Interface\AddOns\LUI\media\textures\buttons\Gloss]], -- Button Overlay
 }
 
-LUI.FontFlags = {
-	NONE = L["None"],
-	OUTLINE = L["Outline"],
-	THICKOUTLINE = L["Thick Outline"],
-	MONOCHROME = L["Monochrome"],
-}
-
-LUI.Points = {
-	CENTER = L["Center"],
-	TOP = L["Top"],
-	BOTTOM = L["Bottom"],
-	LEFT = L["Left"],
-	RIGHT = L["Right"],
-	TOPLEFT = L["Top Left"],
-	TOPRIGHT = L["Top Right"],
-	BOTTOMLEFT = L["Bottom Left"],
-	BOTTOMRIGHT = L["Bottom Right"],
-}
-LUI.Corners = {
-	TOPLEFT = L["Top Left"],
-	TOPRIGHT = L["Top Right"],
-	BOTTOMLEFT = L["Bottom Left"],
-	BOTTOMRIGHT = L["Bottom Right"],
-}
-LUI.Sides = {
-	TOP = L["Top"],
-	BOTTOM = L["Bottom"],
-	LEFT = L["Left"],
-	RIGHT = L["Right"],
-}
 LUI.Opposites = {
 	-- Sides
 	TOP = "BOTTOM",
@@ -1954,28 +1924,4 @@ function LUI:Open(force, ...)
 	self:RegisterEvent("PLAYER_REGEN_DISABLED", refreshOptions)
 
 	return LUI:Open(force, ...)
-end
-
-LUI.chatcommands = {
-	["debug"] = "Debug",
-	["config"] = "Open",
-	["install"] = "Configure",
-}
-
-function LUI:ChatCommand(input)
-	if not input or input:trim() == "" then
-		self:Open()
-	else
-		local arg = self:GetArgs(input)
-		local cmd = arg and LUI.chatcommands[arg:lower()] or nil
-		if cmd then
-			if type(cmd) == "function" then
-				cmd()
-			else
-				self[cmd](self)
-			end
-		elseif arg then
-			self:Print("Unknown command: "..arg)
-		end
-	end
 end
