@@ -11,7 +11,6 @@ if not module or not module.registered then return end
 -- ##### Utility Functions ############################################################################################
 -- ####################################################################################################################
 
-local colorGet, colorSet = Opt.ColorGetSet(db.Colors)
 
 -- ####################################################################################################################
 -- ##### Options Tables ###############################################################################################
@@ -35,10 +34,10 @@ local ExpBars = {
     Spacer = Opt:Spacer(24, "full"),
     --Text = Opt:Position(L["ExpBar_Options_Text"], 24, nil, "Refresh"),
     AppHeader = Opt:Header("Appearances", 30),
-    Experience = Opt:Color(L["ExpBar_Mode_Experience"], nil, 31, false, nil, nil, nil, colorGet, colorSet),
-    Reputation = Opt:Color(L["ExpBar_Mode_Reputation"], nil, 32, false, nil, nil, nil, colorGet, colorSet),
-    Azerite = Opt:Color(L["ExpBar_Mode_Artifact"], nil, 33, false, nil, nil, nil, colorGet, colorSet),
-    Honor = Opt:Color(L["ExpBar_Mode_Honor"], nil, 34, false, nil, nil, nil, colorGet, colorSet),
+    Experience = Opt:Color(L["ExpBar_Mode_Experience"], nil, 31, false),
+    Reputation = Opt:Color(L["ExpBar_Mode_Reputation"], nil, 32, false),
+    Azerite = Opt:Color(L["ExpBar_Mode_Artifact"], nil, 33, false),
+    Honor = Opt:Color(L["ExpBar_Mode_Honor"], nil, 34, false),
 }
 
 Opt.options.args.ExpBars.args = ExpBars

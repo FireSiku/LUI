@@ -16,7 +16,6 @@ local dropDirections = {
     LEFT = L["Point_Left"],
     RIGHT = L["Point_Right"],
 }
-local colorGet, colorSet = Opt.ColorGetSet(db.Colors)
 
 -- ####################################################################################################################
 -- ##### Options Tables ###############################################################################################
@@ -54,8 +53,8 @@ local Micromenu = {
 
     -- Colors
 	ColorHeader = Opt:Header(L["Colors"], 21),
-    Micromenu = Opt:Color(L["Micro_Name"], nil, 22, true, nil, nil, nil, colorGet, colorSet),
-    Background = Opt:Color(L["Background"], nil, 23, true, nil, nil, nil, colorGet, colorSet),
+    Micromenu = Opt:Color(L["Micro_Name"], nil, 22, true),
+    Background = Opt:Color(L["Background"], nil, 23, true),
 }
 
 Opt.options.args.Micromenu.args = Micromenu

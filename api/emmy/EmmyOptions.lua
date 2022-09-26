@@ -21,7 +21,7 @@
 ---@class InfoTable
 ---@field handler table @ Handler object for the current option
 ---@field type AceOptionType @ Type of the current option
----@field options AceOption @ Pointer for the root of the options table
+---@field options AceOption[] @ Pointer for the root of the options table
 ---@field option AceOption @ Pointer for the current AceOption table
 ---@field arg any @ Value of the current option's "arg" node if it was set.
 ---@field uiType string @ Parameter passed by AceConfigRegistry

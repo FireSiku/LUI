@@ -12,8 +12,6 @@ if not module or not module.registered then return end
 -- ##### Utility Functions ############################################################################################
 -- ####################################################################################################################
 
-local colorGet, colorSet = Opt.ColorGetSet(db.Colors)
-
 local function DisableIfTooltipsHidden()
     return db.HideCombat
 end
@@ -59,14 +57,18 @@ local Tooltip = {
 
     -- Colors
     ColorHeader = Opt:Header(_G.COLORS, 40),
-    Guild = Opt:Color(_G.GUILD, L["Tooltip_Guild_Desc"], 41, false, nil, nil, nil, colorGet, colorSet),
-    MyGuild = Opt:Color(L["Tooltip_MyGuild"], L["Tooltip_MyGuild_Desc"], 42, false, nil, nil, nil, colorGet, colorSet),
+    Guild = Opt:Color(_G.GUILD, L["Tooltip_Guild_Desc"], 41, false),
+    MyGuild = Opt:Color(L["Tooltip_MyGuild"], L["Tooltip_MyGuild_Desc"], 42, false),
     SpacerFour = Opt:Spacer(43),
-    Background = Opt:Color(L["API_BackgroundColor_Name"], nil, 44, true, nil, nil, nil, colorGet, colorSet),
-    BgColorType = Opt:Select(L["API_BackgroundType_Name"], nil, 45, LUI.ColorTypes, nil, nil, nil, function(info) return db.Colors.Background.t end, function(info, value) db.Colors.Background.t = value end),
+    Background = Opt:Color(L["API_BackgroundColor_Name"], nil, 44, true),
+    BgColorType = Opt:Select(L["API_BackgroundType_Name"], nil, 45, LUI.ColorTypes, nil, nil, nil,
+                             function(info) return db.Colors.Background.t end, -- getter
+                             function(info, value) db.Colors.Background.t = value end), -- setter
     SpacerFive = Opt:Spacer(46),
-    Border = Opt:Color(L["API_BorderColor_Name"], nil, 47, true, nil, nil, nil, colorGet, colorSet),
-    BorderColorType = Opt:Select(L["API_BorderType_Name"], nil, 48, LUI.ColorTypes, nil, nil, nil, function(info) return db.Colors.Border.t end, function(info, value) db.Colors.Border.t = value end),
+    Border = Opt:Color(L["API_BorderColor_Name"], nil, 47, true),
+    BorderColorType = Opt:Select(L["API_BorderType_Name"], nil, 48, LUI.ColorTypes, nil, nil, nil,
+                                 function(info) return db.Colors.Border.t end, -- getter
+                                 function(info, value) db.Colors.Border.t = value end), -- setter
 }
 
 Opt.options.args.Tooltip.args = Tooltip
