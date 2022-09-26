@@ -12,8 +12,6 @@ if not module or not module.registered then return end
 -- ##### Utility Functions ############################################################################################
 -- ####################################################################################################################
 
-local colorGet, colorSet = Opt.ColorGetSet(db.Colors)
-
 local function InfoTextGroup(name, order)
     local group = Opt:Group(name, nil, order, nil, nil, nil, Opt.GetSet(db[name]))
     group.args.Header = Opt:Header(name, 1)
@@ -37,8 +35,8 @@ local Infotext = {
 }
 
 Infotext.General.args = {
-	Title = Opt:Color("Title Color", nil, 2, false, nil, nil, nil, colorGet, colorSet),
-	Hint = Opt:Color("Hint Color", nil, 3, false, nil, nil, nil, colorGet, colorSet),
+	Title = Opt:Color("Title Color", nil, 2, false),
+	Hint = Opt:Color("Hint Color", nil, 3, false),
 	--Infotext = Opt:FontMenu("Infotext Font", nil, 4),
 }
 

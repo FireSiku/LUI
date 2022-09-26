@@ -28,19 +28,19 @@ Opt.options.args.Unitframes.args.Header = Opt:Header("Unitframes", 1)
 local function UnitFontMenuGetter(info)
     local unit = info[2]
     local fontName = info[3]
-	local db = info.handler.db.profile.Units[unit].Fonts
+	local dbUnit = info.handler.db.profile.Units[unit]
 	local prop = info[#info]
 	
-	return db[fontName][prop]
+	return dbUnit.Fonts[fontName][prop]
 end
 
 local function UnitFontMenuSetter(info, value)
 	local unit = info[2]
     local fontName = info[3]
-	local db = info.handler.db.profile.Units[unit].Fonts
+	local dbUnit = info.handler.db.profile.Units[unit]
 	local prop = info[#info]
 
-	db[fontName][prop] = value
+	dbUnit.Fonts[fontName][prop] = value
 end
 
 local function UnitFontMenu(name, desc, order, disabled, hidden)
@@ -97,9 +97,10 @@ end
 
 local function NewUnitOptionGroup(unit, order)
     local isPlayer = (unit == "player")
+    local dbUnit = db.Units[unit]
 
     local unitOptions = Opt:Group(unit, nil, order, "tree")
-    unitOptions.args.General = Opt:Group("General", nil, 1, nil, nil, nil, Opt.GetSet(db.Units[unit]))
+    unitOptions.args.General = Opt:Group("General", nil, 1, nil, nil, nil, Opt.GetSet(dbUnit))
     unitOptions.args.General.args = {
         Position = Opt:Header("Position", 1),
         X = Opt:Input("X Value", nil, 2),
@@ -108,7 +109,7 @@ local function NewUnitOptionGroup(unit, order)
         Scale = Opt:Slider("Scale", nil, 5, Opt.ScaleValues),
     }
 
-    unitOptions.args.HealthBar = Opt:Group("Health Bar", nil, 2, nil, nil, nil, Opt.GetSet(db.Units[unit].HealthBar))
+    unitOptions.args.HealthBar = Opt:Group("Health Bar", nil, 2, nil, nil, nil, Opt.GetSet(dbUnit.HealthBar))
     unitOptions.args.HealthBar.args = {
         Width = Opt:Input("Width", nil, 2),
         Height = Opt:Input("Height", nil, 3),
@@ -116,20 +117,20 @@ local function NewUnitOptionGroup(unit, order)
         TextureBG = Opt:MediaStatusbar("Background Texture", nil, 6),
     }
 
-    unitOptions.args.PowerBar = GenerateBarGroup("Power Bar", 3, Opt.GetSet(db.Units[unit].PowerBar))
-    unitOptions.args.AbsorbBar = GenerateBarGroup("Absorb Bar", 4, Opt.GetSet(db.Units[unit].AborbBar))
-    unitOptions.args.ClassPowerBar = GenerateBarGroup("Class Power Bar", 5, Opt.GetSet(db.Units[unit].ClassPowerBar))
+    unitOptions.args.PowerBar = GenerateBarGroup("Power Bar", 3, Opt.GetSet(dbUnit.PowerBar))
+    unitOptions.args.AbsorbBar = GenerateBarGroup("Absorb Bar", 4, Opt.GetSet(dbUnit.AborbBar))
+    unitOptions.args.ClassPowerBar = GenerateBarGroup("Class Power Bar", 5, Opt.GetSet(dbUnit.ClassPowerBar))
     unitOptions.args.ClassPowerBar.args.Smooth = nil
     unitOptions.args.ClassPowerBar.args.Point = nil
-    unitOptions.args.AltManaBar = GenerateBarGroup("Additional Power Bar", 6, Opt.GetSet(db.Units[unit].AltManaBar))
+    unitOptions.args.AltManaBar = GenerateBarGroup("Additional Power Bar", 6, Opt.GetSet(dbUnit.AltManaBar))
 
-    unitOptions.args.NameText = GenerateTextGroup("Name Text", 7, Opt.GetSet(db.Units[unit].NameText))
-    unitOptions.args.HealthText = GenerateTextGroup("Health Text", 8, Opt.GetSet(db.Units[unit].HealthText))
-    unitOptions.args.PowerText = GenerateTextGroup("Power Text", 9, Opt.GetSet(db.Units[unit].PowerText))
-    unitOptions.args.CombatText = GenerateTextGroup("Combat Text", 10, Opt.GetSet(db.Units[unit].CombatText))
+    unitOptions.args.NameText = GenerateTextGroup("Name Text", 7, Opt.GetSet(dbUnit.NameText))
+    unitOptions.args.HealthText = GenerateTextGroup("Health Text", 8, Opt.GetSet(dbUnit.HealthText))
+    unitOptions.args.PowerText = GenerateTextGroup("Power Text", 9, Opt.GetSet(dbUnit.PowerText))
+    unitOptions.args.CombatText = GenerateTextGroup("Combat Text", 10, Opt.GetSet(dbUnit.CombatText))
     -- Use a single entry to handle Value, Percent and Missing?
 
-    unitOptions.args.Portrait = Opt:Group("Portrait", nil, 11, nil, nil, nil, Opt.GetSet(db.Units[unit].Portait))
+    unitOptions.args.Portrait = Opt:Group("Portrait", nil, 11, nil, nil, nil, Opt.GetSet(dbUnit.Portait))
     unitOptions.args.Portrait.args = {
         Width = Opt:Input("Width", nil, 2),
         Height = Opt:Input("Height", nil, 3),
@@ -139,7 +140,7 @@ local function NewUnitOptionGroup(unit, order)
         Alpha = Opt:Slider("Alpha", nil, 7, Opt.PercentValues),
     }
 
-    unitOptions.args.Buffs = Opt:Group("Buffs", nil, 12, nil, nil, nil, Opt.GetSet(db.Units[unit].Buffs))
+    unitOptions.args.Buffs = Opt:Group("Buffs", nil, 12, nil, nil, nil, Opt.GetSet(dbUnit.Buffs))
     unitOptions.args.Buffs.args = {
         NYI = Opt:Desc("Auras Not Yet Implemented", 0.5),
         ColorByType = Opt:Toggle("Color By Type", nil, 1),
@@ -157,7 +158,7 @@ local function NewUnitOptionGroup(unit, order)
         Spacing = Opt:Slider("Spacing", nil, 12, spacingValues),
         Num = Opt:Slider("Amount of Buffs", nil, 13, auraCountValues),
     }
-    unitOptions.args.Debuffs = Opt:Group("Debuffs", nil, 13, nil, nil, nil, Opt.GetSet(db.Units[unit].Debuffs))
+    unitOptions.args.Debuffs = Opt:Group("Debuffs", nil, 13, nil, nil, nil, Opt.GetSet(dbUnit.Debuffs))
     unitOptions.args.Debuffs.args = {
         NYI = Opt:Desc("Auras Not Yet Implemented", 0.5),
         ColorByType = Opt:Toggle("Color By Type", nil, 1),
@@ -176,11 +177,11 @@ local function NewUnitOptionGroup(unit, order)
         Num = Opt:Slider("Amount of Debuffs", nil, 13, auraCountValues),
     }
 
-    unitOptions.args.LeaderIcon = GenerateIconGroup("Leader Icon", 50, Opt.GetSet(db.Units[unit].LeaderIcon))
-    unitOptions.args.RoleIcon = GenerateIconGroup("Role Icon", 50, Opt.GetSet(db.Units[unit].RoleIcon))
-    unitOptions.args.RaidIcon = GenerateIconGroup("Raid Icon", 50, Opt.GetSet(db.Units[unit].RaidIcon))
-    unitOptions.args.PvPIcon = GenerateIconGroup("PvP Icon", 50, Opt.GetSet(db.Units[unit].PvPIcon))
-    --unitOptions.args.RestedIcon = GenerateIconGroup("Leader Icon", 50, Opt.GetSet(db.Units[unit].LeaderIcon))
+    unitOptions.args.LeaderIcon = GenerateIconGroup("Leader Icon", 50, Opt.GetSet(dbUnit.LeaderIcon))
+    unitOptions.args.RoleIcon = GenerateIconGroup("Role Icon", 50, Opt.GetSet(dbUnit.RoleIcon))
+    unitOptions.args.RaidIcon = GenerateIconGroup("Raid Icon", 50, Opt.GetSet(dbUnit.RaidIcon))
+    unitOptions.args.PvPIcon = GenerateIconGroup("PvP Icon", 50, Opt.GetSet(dbUnit.PvPIcon))
+    --unitOptions.args.RestedIcon = GenerateIconGroup("Leader Icon", 50, Opt.GetSet(dbUnit.LeaderIcon))
 
     return unitOptions
 end
