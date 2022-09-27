@@ -3,33 +3,20 @@
 -- ####################################################################################################################
 
 local _, LUI = ...
-local module = LUI:NewModule("Micromenu", "AceEvent-3.0")
+local module = LUI:NewModule("MicromenuV4", "AceEvent-3.0")
 local L = LUI.L
 local db
 
+local CommunitiesFrame = _G.CommunitiesFrame
+local hooksecurefunc = _G.hooksecurefunc
 local GameMenuFrame = _G.GameMenuFrame
-local ToggleAllBags = _G.ToggleAllBags
-local ToggleStoreUI = _G.ToggleStoreUI
-local ToggleCollectionsJournal = _G.ToggleCollectionsJournal
-local ToggleEncounterJournal = _G.ToggleEncounterJournal
-local TogglePVPUI = _G.TogglePVPUI
-local ToggleLFDParentFrame = _G.ToggleLFDParentFrame
-local ToggleFriendsFrame = _G.ToggleFriendsFrame
-local ToggleGuildFrame = _G.ToggleGuildFrame
-local ToggleWorldMap = _G.ToggleWorldMap
-local ToggleAchievementFrame = _G.ToggleAchievementFrame
-local ToggleTalentFrame = _G.ToggleTalentFrame
-local SpellBookFrame = _G.SpellBookFrame
-local CharacterFrame = _G.CharacterFrame
-local UnitLevel = _G.UnitLevel
+local IsAddOnLoaded = _G.IsAddOnLoaded
+local FriendsFrame = _G.FriendsFrame
 local HideUIPanel = _G.HideUIPanel
 local ShowUIPanel = _G.ShowUIPanel
-local hooksecurefunc = _G.hooksecurefunc
-local IsAddOnLoaded = _G.IsAddOnLoaded
-local format = format
-local FriendsFrame = _G.FriendsFrame
-local CommunitiesFrame = _G.CommunitiesFrame
+local UnitLevel = _G.UnitLevel
 local IsBagOpen = _G.IsBagOpen
+local format = format
 
 local addonLoadedCallbacks = {}
 local microStorage = {}
@@ -53,8 +40,8 @@ local microList = {
 
 -- Constants
 
-local TEXTURE_PATH_FORMAT = "Interface\\AddOns\\LUI4\\modules\\micromenu\\micro_%s.tga"
-local BACKGROUND_TEXTURE_PATH = "Interface\\AddOns\\LUI4\\modules\\micromenu\\micro_background.tga"
+local TEXTURE_PATH_FORMAT = "Interface\\AddOns\\LUI\\modules\\micromenu\\micro_%s.tga"
+local BACKGROUND_TEXTURE_PATH = "Interface\\AddOns\\LUI\\modules\\micromenu\\micro_background.tga"
 local FIRST_TEXTURE_SIZE_WIDTH = 46
 local LAST_TEXTURE_SIZE_WIDTH = 48
 local TEXTURE_SIZE_HEIGHT = 28
@@ -134,7 +121,7 @@ local microDefinitions = {
 		any = L["MicroBags_Any"],
 		state = "ConsolidatedBagFrame",
 		OnClick = function(self, btn)
-			ToggleAllBags()
+			_G.ToggleAllBags()
 		end,
 	},
 
@@ -143,7 +130,7 @@ local microDefinitions = {
 		title = L["MicroStore_Name"],
 		any = L["MicroStore_Any"],
 		OnClick = function(self, btn)
-			ToggleStoreUI()
+			_G.ToggleStoreUI()
 		end,
 	},
 
@@ -155,7 +142,7 @@ local microDefinitions = {
 		state = "CollectionsJournal",
 		addon = "Blizzard_CollectionsJournal",
 		OnClick = function(self, btn)
-			ToggleCollectionsJournal()
+			_G.ToggleCollectionsJournal()
 		end,
 	},
 
@@ -167,7 +154,7 @@ local microDefinitions = {
 		state = "EncounterJournal",
 		addon = "Blizzard_EncounterJournal",
 		OnClick = function(self, btn)
-			ToggleEncounterJournal()
+			_G.ToggleEncounterJournal()
 		end,
 	},
 
@@ -180,9 +167,9 @@ local microDefinitions = {
 		state = "PVEFrame",
 		OnClick = function(self, btn)
 			if btn == "RightButton" then
-				TogglePVPUI()
+				_G.TogglePVPUI()
 			else
-				ToggleLFDParentFrame()
+				_G.ToggleLFDParentFrame()
 			end
 		end,
 	},
@@ -195,9 +182,9 @@ local microDefinitions = {
 		state = "ConsolidatedSocialFrame",
 		OnClick = function(self, btn)
 			if btn == "RightButton" then
-				ToggleFriendsFrame()
+				_G.ToggleFriendsFrame()
 			else
-				ToggleGuildFrame()
+				_G.ToggleGuildFrame()
 			end
 		end,
 	},
@@ -207,7 +194,7 @@ local microDefinitions = {
 		title = L["MicroQuest_Name"],
 		any = L["MicroQuest_Any"],
 		OnClick = function(self, btn)
-			ToggleWorldMap()
+			_G.ToggleWorldMap()
 		end,
 	},
 
@@ -218,7 +205,7 @@ local microDefinitions = {
 		state = "AchievementFrame",
 		addon = "Blizzard_AchievementUI",
 		OnClick = function(self, btn)
-			ToggleAchievementFrame()
+			_G.ToggleAchievementFrame()
 		end,
 	},
 
@@ -231,7 +218,7 @@ local microDefinitions = {
 		state = "PlayerTalentFrame",
 		addon = "Blizzard_TalentUI",
 		OnClick = function(self, btn)
-			ToggleTalentFrame()
+			_G.ToggleTalentFrame()
 		end,
 	},
 
@@ -241,7 +228,7 @@ local microDefinitions = {
 		any = L["MicroSpell_Any"],
 		state = "SpellBookFrame",
 		OnClick = function(self, btn)
-			module:TogglePanel(SpellBookFrame)
+			module:TogglePanel(_G.SpellBookFrame)
 		end,
 	},
 
@@ -252,7 +239,7 @@ local microDefinitions = {
 		any = L["MicroPlayer_Any"],
 		state = "CharacterFrame",
 		OnClick = function(self, btn)
-			module:TogglePanel(CharacterFrame)
+			module:TogglePanel(_G.CharacterFrame)
 		end,
 	},
 }
