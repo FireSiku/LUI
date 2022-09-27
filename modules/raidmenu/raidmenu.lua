@@ -13,9 +13,9 @@
 -- External references.
 local addonname, LUI = ...
 local module = LUI:Module("RaidMenu")
-local Themes = LUI:Module("Themes")
-local Panels = LUI:Module("Panels")
-local Micromenu = LUI:Module("Micromenu")
+local Themes = LUI:Module("Themes", true)
+local Panels = LUI:Module("Panels", true)
+local Micromenu = LUI:Module("Micromenu", true)
 local Media = LibStub("LibSharedMedia-3.0")
 
 local db, dbd
@@ -823,7 +823,7 @@ function module:OnInitialize()
 		LUI.db.global.luiconfig[LUI.profileName].Versions.raidmenu = LUI.Versions.raidmenu
 	end
 
-	LUI:Module("Panels"):RegisterFrame(self)
+	LUI:Module("Panels", true):RegisterFrame(self)
 end
 
 function module:OnEnable()

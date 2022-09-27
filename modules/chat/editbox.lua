@@ -8,7 +8,7 @@
 local addonname, LUI = ...
 local Chat = LUI:Module("Chat")
 local module = Chat:Module("EditBox", "AceHook-3.0")
-local Themes = LUI:Module("Themes")
+local Themes = LUI:Module("Themes", true)
 local Media = LibStub("LibSharedMedia-3.0")
 
 local L = LUI.L

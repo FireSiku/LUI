@@ -196,7 +196,7 @@ local function CheckResolution()
 		LUI.defaults.profile.Frames.Tps.Y = 882
 
 		-- Reposition Auras
-		local auras = LUI:Module("Auras")
+		local auras = LUI:Module("Auras", true)
 		auras.db.General.Anchor = "TOPRIGHT"
 		auras.db.Buffs.X = -170
 		auras.db.Buffs.Y = -75
@@ -884,9 +884,9 @@ local function getOptions()
 									name = "Show Minimap",
 									desc = "Whether you want to show the Minimap by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.Minimap.AlwaysShow end,
+									get = function() return LUI:Module("Panels", true).db.profile.Minimap.AlwaysShow end,
 									set = function()
-										local a = LUI:Module("Panels").db.profile.Minimap
+										local a = LUI:Module("Panels", true).db.profile.Minimap
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 6,
@@ -895,9 +895,9 @@ local function getOptions()
 									name = "Show Chat",
 									desc = "Whether you want to show the Chat Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.Chat.AlwaysShow end,
+									get = function() return LUI:Module("Panels", true).db.profile.Chat.AlwaysShow end,
 									set = function()
-										local a = LUI:Module("Panels").db.profile.Chat
+										local a = LUI:Module("Panels", true).db.profile.Chat
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 7,
@@ -906,9 +906,9 @@ local function getOptions()
 									name = "Show TPS",
 									desc = "Whether you want to show your TPS Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.Tps.AlwaysShow end,
+									get = function() return LUI:Module("Panels", true).db.profile.Tps.AlwaysShow end,
 									set = function()
-										local a = LUI:Module("Panels").db.profile.Tps
+										local a = LUI:Module("Panels", true).db.profile.Tps
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 8,
@@ -917,9 +917,9 @@ local function getOptions()
 									name = "Show DPS",
 									desc = "Whether you want to show your DPS Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.Dps.AlwaysShow end,
+									get = function() return LUI:Module("Panels", true).db.profile.Dps.AlwaysShow end,
 									set = function()
-										local a = LUI:Module("Panels").db.profile.Dps
+										local a = LUI:Module("Panels", true).db.profile.Dps
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 9,
@@ -928,9 +928,9 @@ local function getOptions()
 									name = "Show Raid",
 									desc = "Whether you want to show your Raid Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.Raid.AlwaysShow end,
+									get = function() return LUI:Module("Panels", true).db.profile.Raid.AlwaysShow end,
 									set = function()
-										local a = LUI:Module("Panels").db.profile.Raid
+										local a = LUI:Module("Panels", true).db.profile.Raid
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 10,
@@ -939,9 +939,9 @@ local function getOptions()
 									name = "Show MicroMenu",
 									desc = "Whether you want to show the Micromenu by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.MicroMenu.AlwaysShow end,
+									get = function() return LUI:Module("Panels", true).db.profile.MicroMenu.AlwaysShow end,
 									set = function()
-										local a = LUI:Module("Panels").db.profile.MicroMenu
+										local a = LUI:Module("Panels", true).db.profile.MicroMenu
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 12,
@@ -1129,14 +1129,14 @@ local function getOptions()
 									desc = "Hide Blizzard Raid Frames (only available when LUI Unitframes are disabled)",
 									type = "toggle",
 									width = "full",
-									disabled = function() return LUI:Module("Unitframes").db.Enable end,
-									get = function() return LUI:Module("Unitframes").db.Settings.HideBlizzRaid end,
+									disabled = function() return LUI:Module("Unitframes", true).db.Enable end,
+									get = function() return LUI:Module("Unitframes", true).db.Settings.HideBlizzRaid end,
 									set = function(info, value)
-										LUI:Module("Unitframes").db.Settings.HideBlizzRaid = value
+										LUI:Module("Unitframes", true).db.Settings.HideBlizzRaid = value
 										if value then
-											LUI:Module("Unitframes"):Module("HideBlizzard"):Hide("raid", true)
+											LUI:Module("Unitframes", true):Module("HideBlizzard"):Hide("raid", true)
 										else
-											LUI:Module("Unitframes"):Module("HideBlizzard"):Show("raid")
+											LUI:Module("Unitframes", true):Module("HideBlizzard"):Show("raid")
 										end
 									end,
 									order = 52,
@@ -1463,7 +1463,7 @@ local function getOptions()
 		end
 
 		for k, v in pairs(newModuleOptions) do -- all modules need to be converted over to this
-			local module = type(v) == "string" and LUI:Module(v) or v
+			local module = type(v) == "string" and LUI:Module(v, true) or v
 			local options = type(module.LoadOptions) == "function" and module:LoadOptions() or module.options
 
 			if options then

@@ -6,7 +6,7 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Unitframes")
-local Fader = LUI:Module("Fader")
+local Fader = LUI:Module("Fader", true)
 local Blizzard = LUI.Blizzard
 local oUF = LUI.oUF
 

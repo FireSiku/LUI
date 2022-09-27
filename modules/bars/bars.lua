@@ -6,7 +6,7 @@
 
 local addonname, LUI = ...
 local module = LUI:Module("Bars", "AceHook-3.0", "AceEvent-3.0")
-local Themes = LUI:Module("Themes")
+local Themes = LUI:Module("Themes", true)
 local Masque = LibStub("Masque", true)
 local Media = LibStub("LibSharedMedia-3.0")
 local LibKeyBound = LibStub("LibKeyBound-1.0")

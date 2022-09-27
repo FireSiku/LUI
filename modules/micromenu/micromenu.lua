@@ -17,9 +17,9 @@
 -- External references.
 local addonname, LUI = ...
 local module = LUI:Module("Micromenu", "AceEvent-3.0", "AceHook-3.0")
-local Themes = LUI:Module("Themes")
-local Panels = LUI:Module("Panels")
-local RaidMenu = LUI:Module("RaidMenu")
+local Themes = LUI:Module("Themes", true)
+local Panels = LUI:Module("Panels", true)
+local RaidMenu = LUI:Module("RaidMenu", true)
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 
@@ -308,7 +308,7 @@ function module:SetMicroMenu()
 
 	local bagsFrame
 	local getBagsFrame = function()
-		if LUI:Module("Bags").db.profile.Enable then
+		if LUI:Module("Bags", true).db.profile.Enable then
 			bagsFrame = LUIBags
 		elseif IsAddOnLoaded("Stuffing") then
 			bagsFrame = StuffingFrameBags
@@ -1212,7 +1212,7 @@ end
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, nil, version)
 
-	LUI:Module("Panels"):RegisterFrame(self)
+	LUI:Module("Panels", true):RegisterFrame(self)
 end
 
 function module:OnEnable()

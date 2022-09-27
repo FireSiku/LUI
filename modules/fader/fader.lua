@@ -742,12 +742,12 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults, specialHov
 		for _, f in pairs(frame) do
 			if type(f) == "string" then
 				if _G[f] and strfind(_G[f]:GetName(), "oUF_LUI_party") then
-					oUF_Party = LUI:Module("oUF_Party")
+					oUF_Party = LUI:Module("oUF_Party", true)
 					break
 				end
 			else
 				if strfind(f:GetName(), "oUF_LUI_party") then
-					oUF_Party = LUI:Module("oUF_Party")
+					oUF_Party = LUI:Module("oUF_Party", true)
 					break
 				end
 			end
