@@ -15,7 +15,7 @@
 -- External references.
 local _, LUI = ...
 local module = LUI:Module("Minimap", "AceHook-3.0", "AceEvent-3.0")
-local Themes = LUI:Module("Themes")
+local Themes = LUI:Module("Themes", true)
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 

@@ -10,7 +10,7 @@ local module = LUI:Module("Chat", "AceHook-3.0")
 local Buttons = module:Module("Buttons")
 local EditBox = module:Module("EditBox")
 local StickyChannels = module:Module("StickyChannels")
-local Themes = LUI:Module("Themes")
+local Themes = LUI:Module("Themes", true)
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 

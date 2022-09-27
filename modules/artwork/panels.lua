@@ -15,7 +15,7 @@
 local _, LUI = ...
 local module = LUI:Module("Panels", "AceHook-3.0", "AceEvent-3.0")
 local Frames = LUI:Module("Frames")
-local Themes = LUI:Module("Themes")
+local Themes = LUI:Module("Themes", true)
 local Media_ = LibStub("LibSharedMedia-3.0")
 
 local db, dbd --luacheck:ignore
@@ -178,7 +178,7 @@ function module:CheckPanels()
 		db.Raid.IsShown = false
 	end
 
-	if LUI:Module("Micromenu", true) then
+	if LUI:Module("Micromenu", true) and LUI.MicroMenu then
 		if db.MicroMenu.AlwaysShow or db.MicroMenu.IsShown then
 			LUI.MicroMenu.Button:SetAlpha(1)
 			LUI.MicroMenu.Button:Show()

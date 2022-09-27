@@ -399,7 +399,7 @@ function LUI:InstallBartender()
 
 	do
 		--ActionBarsDefaults[CharName].actionbars[10]
-		local bardb = LUI:Module("Bars").db.profile
+		local bardb = LUI:Module("Bars", true).db.profile
 		if bardb.SidebarRight1.Enable and strsub(bardb.SidebarRight1.Anchor, 1, 3) == "BT4" then
 			local _, num = strsplit("r", bardb.SidebarRight1.Anchor)
 			local barOpt = ActionBarsDefaults[CharName].actionbars[tonumber(num)]

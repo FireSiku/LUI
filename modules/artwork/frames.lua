@@ -13,8 +13,8 @@
 -- External references.
 local addonname, LUI = ...
 local module = LUI:Module("Frames")
-local Panels = LUI:Module("Panels")
-local Themes = LUI:Module("Themes")
+local Panels = LUI:Module("Panels", true)
+local Themes = LUI:Module("Themes", true)
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
