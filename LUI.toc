@@ -68,7 +68,13 @@ modules\micromenu\micromenu.lua
 modules\raidmenu\raidmenu.xml
 
 ### ExpBars ###
-modules\expbar\threatbar.lua
+# modules\expbars\threatbar.lua
+modules\expbars\expbars_init.lua
+modules\expbars\expbars.lua
+modules\expbars\experience.lua
+modules\expbars\reputation.lua
+modules\expbars\honor.lua
+modules\expbars\azerite.lua
 
 ### UIElements ###
 modules\uielements\uielements_init.lua
