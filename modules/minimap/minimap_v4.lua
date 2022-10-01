@@ -7,9 +7,12 @@
 -- ####################################################################################################################
 -- luacheck: globals LUIMinimapZone LUIMinimapCoord LUIMinimapBorder
 
+---@type string, LUIAddon
 local _, LUI = ...
-local module = LUI:GetModule("Minimap")
 local L = LUI.L
+
+---@type MinimapModule
+local module = LUI:GetModule("Minimap")
 local db
 
 -- Locals and Constants
@@ -47,13 +50,11 @@ local defaultGarrisonState = false
 local minimapShape = "ROUND"  -- Shape of the minimap, used for GetMinimapShape() community api.
 local oldDefault = {}         -- Keep information on default minimap
 
-
-
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
 
--- For others mods with a minimap button, community API to know minimap shape.
+--- Community API to know minimap shape. For others mods with a minimap button.
 function GetMinimapShape() return minimapShape end
 
 local minimapFrames = {

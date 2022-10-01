@@ -6,14 +6,15 @@
 
 ---@type string, LUIAddon
 local _, LUI = ...
+local L = LUI.L
 
----@type LUIModule
+---@class TooltipModule : LUIModule
 local module = LUI:NewModule("Tooltip", "AceHook-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
-local L = LUI.L
 local db
 
 local QuestMapLog_GetCampaignTooltip = _G.QuestMapLog_GetCampaignTooltip
+local GameTooltipStatusBar = _G.GameTooltipStatusBar
 local BreakUpLargeNumbers = _G.BreakUpLargeNumbers
 local GetItemQualityColor = _G.GetItemQualityColor
 local UnitClassification = _G.UnitClassification
@@ -140,8 +141,6 @@ module.defaults = {
 -- ####################################################################################################################
 -- ##### Revert Functions #############################################################################################
 -- ####################################################################################################################
-
--- luacheck: globals GameTooltipStatusBar
 
 function module:RevertTooltipBackdrop()
 	for i = 1, #TOOLTIPS_LIST do

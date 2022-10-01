@@ -4,10 +4,13 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
+local L = LUI.L
+
+---@type InfotextModule
 local module = LUI:GetModule("Infotext")
 local element = module:NewElement("Guild", "AceEvent-3.0")
-local L = LUI.L
 
 -- local copies
 local format, strsplit = format, strsplit
