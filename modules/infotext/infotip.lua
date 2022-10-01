@@ -4,11 +4,16 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
+local L = LUI.L
+
+---@type InfotextModule
 local module = LUI:GetModule("Infotext")
+
+---@type TooltipModule
 local modTooltip = LUI:GetModule("Tooltip")
 local element = {}
-local L = LUI.L
 
 -- local copies
 local unpack, pairs = unpack, pairs

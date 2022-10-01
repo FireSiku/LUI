@@ -2,9 +2,12 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
-local module = LUI:GetModule("Experience Bars")
 local L = LUI.L
+
+---@type ExpBarModule
+local module = LUI:GetModule("Experience Bars")
 
 local IsPlayerAtEffectiveMaxLevel = _G.IsPlayerAtEffectiveMaxLevel
 local IsXPUserDisabled = _G.IsXPUserDisabled

@@ -4,10 +4,13 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
+local L = LUI.L
+
+---@type InfotextModule
 local module = LUI:GetModule("Infotext")
 local element = module:NewElement("Durability", "AceEvent-3.0")
-local L = LUI.L
 
 -- Local copies
 local floor, format, pairs = floor, format, pairs

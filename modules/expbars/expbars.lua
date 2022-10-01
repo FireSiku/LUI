@@ -17,19 +17,32 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
-local module = LUI:GetModule("Experience Bars")
 local L = LUI.L
+
+---@type ExpBarModule
+local module = LUI:GetModule("Experience Bars")
 local db
 
-local mixinData = {}
+--- Array containing all Data Providers that were loaded
+---@type ExpBarDataProvider[]
+local dataProviderList = {}
+
+--- Contains all Exp Bars that were created.
+---@type ExpBar[]
 local barsList = {}
+
+--- Contains the bars that compose the primary exp bar
+---@type ExpBar[]
 local mainBarList = {}
 
 -- ####################################################################################################################
 -- ##### ExpBarDataProviderMixin ######################################################################################
 -- ####################################################################################################################
 
+---@class ExpBarDataProvider
+---@field BAR_EVENTS WowEvent[] @ Array of events to register
 local ExpBarDataProviderMixin = {
 	BAR_EVENTS = {},
 	barMin = 0,
@@ -37,42 +50,48 @@ local ExpBarDataProviderMixin = {
 	barMax = 1,
 }
 
--- Override this function to update values whenever events are fired.
--- To avoid wasted resources, this is only called when the provider is visible
+--- Updates values whenever events are fired. This is only fired when the provider is visible.
+---@param event WowEvent
 function ExpBarDataProviderMixin:Update(event, ...)
 	self.barMin = 0
 	self.barValue = 0
 	self.barMax = 1
 end
 
+--- Boolean function to know if the provider should be shown right now.
+---@return boolean
 function ExpBarDataProviderMixin:ShouldBeVisible()
 	return false
 end
 
--- Override this function to disable displaying percentage text
+--- Boolean function to enabe/disable displaying percentage text
+---@return boolean
 function ExpBarDataProviderMixin:ShouldDisplayPercentText()
 	return true
 end
 
--- Override this function to determine text being displayed
+--- Determine text being displayed
+---@return string text
 function ExpBarDataProviderMixin:GetDataText()
 	return "No Data"
 end
 
--- Override this function to show a tooltip when hovering the bar
+--- Boolean function to indicate the data provider has a tooltip when hovering the bar
+---@return boolean
 function ExpBarDataProviderMixin:HasTooltip()
 	return false
 end
 
--- Override this function to fill tooltip text
+--- Override this function to fill tooltip text
 function ExpBarDataProviderMixin:SetTooltipInfo(tooltip)
 end
 
 -- ####################################################################################################################
--- ##### ExpBarMixin #################################################################################################
+-- ##### ExpBarMixin ##################################################################################################
 -- ####################################################################################################################
 
-local ExpBarMixin = {}
+---@class ExpBar : ExpBarDataProvider, StatusBar
+local ExpBarMixin = {provider = ""}
 
 function ExpBarMixin:UpdateBar(event, ...)
 	if self:IsVisible() then
@@ -126,18 +145,25 @@ end
 -- ##### Module Setup #################################################################################################
 -- ####################################################################################################################
 
--- Connects an element with a DataProvider together.
+--- Create and register a data provider for the Experience Bars module
+---@param name string
+---@return ExpBarDataProvider dataProvider
 function module:CreateBarDataProvider(name)
-	local newMixin = CreateFromMixins(ExpBarDataProviderMixin)
-	mixinData[name] = newMixin
-	return newMixin
+	local dataProvider = CreateFromMixins(ExpBarDataProviderMixin)
+	dataProviderList[name] = dataProvider
+	return dataProvider
 end
 
+--- Create an Exp Bar based on a given provider
+---@param name string
+---@param dataProvider string
+---@return ExpBar
 function module:CreateBar(name, dataProvider)
-	if not dataProvider or not mixinData[dataProvider] then
+	if not dataProvider or not dataProviderList[dataProvider] then
 		error("Usage: CreateBar(name, dataProvider): dataProvider is not valid")
 	end
 
+	---@type ExpBar
 	local bar = CreateFrame("StatusBar", name, UIParent)
 	bar:SetFrameStrata("HIGH")
 	bar:SetSize(db.Width, db.Height)
@@ -156,10 +182,9 @@ function module:CreateBar(name, dataProvider)
 	bar.text = text
 
 	bar.provider = dataProvider
-	Mixin(bar, ExpBarMixin, mixinData[dataProvider])
+	Mixin(bar, ExpBarMixin, dataProviderList[dataProvider])
 	bar:SetScript("OnEvent", bar.UpdateBar)
 	bar:RegisterEvents()
-	
 	
 	bar:SetBarColor(module:RGB("Experience"))
 	bar:UpdateTextVisibility()
@@ -213,8 +238,8 @@ function module:SetMainBar()
 	end
 
 	module.anchor = anchor
-	module.ExpBar = expBar
-	module.RepBar = repBar
+	module.ExperienceBar = expBar
+	module.ReputationBar = repBar
 	module.HonorBar = honorBar
 	module.AzeriteBar = azeriteBar
 	
@@ -225,35 +250,35 @@ function module:UpdateMainBarVisibility()
 	local barLeft, barRight
 
 	-- Check which bars can be visible at the moment
-	local expShown = module.ExpBar:ShouldBeVisible()
-	local repShown = module.RepBar:ShouldBeVisible()
+	local expShown = module.ExperienceBar:ShouldBeVisible()
+	local repShown = module.ReputationBar:ShouldBeVisible()
 	local honorShown = module.HonorBar:ShouldBeVisible()
 	local apShown = module.AzeriteBar:ShouldBeVisible()
 	
 	-- Decide which bars should be ultimately shown.
 	if expShown then
-		barRight = module.ExpBar
+		barRight = module.ExperienceBar
 		if apShown then
 			barLeft = module.AzeriteBar
 		elseif honorShown then
 			barLeft = module.HonorBar
 		elseif repShown then
-			barLeft = module.RepBar
+			barLeft = module.ReputationBar
 		end
 	elseif apShown then
 		barRight = module.AzeriteBar
 		if honorShown then
 			barLeft = module.HonorBar
 		elseif repShown then
-			barLeft = module.RepBar
+			barLeft = module.ReputationBar
 		end
 	elseif honorShown then
 		barRight = module.HonorBar
 		if repShown then
-			barLeft = module.RepBar
+			barLeft = module.ReputationBar
 		end
 	elseif repShown then
-		barRight = module.RepBar
+		barRight = module.ReputationBar
 	end
 
 	-- Force the main bars to be hidden.

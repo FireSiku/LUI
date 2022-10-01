@@ -2,9 +2,12 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
-local module = LUI:NewModule("MicromenuV4", "AceEvent-3.0")
 local L = LUI.L
+
+---@class MicromenuModule : LUIModule
+local module = LUI:NewModule("MicromenuV4", "AceEvent-3.0")
 local db
 
 local CommunitiesFrame = _G.CommunitiesFrame

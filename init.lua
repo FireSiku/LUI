@@ -2,13 +2,15 @@
 -- SLASH_RELOADUI1 = "/rl"
 -- SlashCmdList.RELOADUI = ReloadUI
 
-
+---@type string
 local addonName, LUI = ...
 
----@class LUIAddon : AceAddon
+---@class LUIAddon : AceAddon, AceEvent-3.0, AceConsole-3.0
 LUI = LibStub("AceAddon-3.0"):NewAddon(LUI, addonName, "AceComm-3.0", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0")
+---@type table @ Localization Table
 LUI.L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 LUI:SetDefaultModuleLibraries("AceEvent-3.0")
+
 local L = LUI.L
 local db
 
@@ -33,7 +35,6 @@ end
 
 --- Core is responsible for handling modules and installation process.
 -- Should be first thing loaded.
--- @module LUI
 
 -- ####################################################################################################################
 -- ##### Setup and Locals #############################################################################################

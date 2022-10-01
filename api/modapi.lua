@@ -6,13 +6,14 @@
 -- ####################################################################################################################
 -- Addon building reference.
 
+---@type string, LUIAddon
 local _, LUI = ...
 local Media = LibStub("LibSharedMedia-3.0")
 
 --local copies
 local pairs = pairs
 
----@class LUIModule
+---@class LUIModule : AceEvent-3.0
 local ModuleMixin = {}
 
 --- Embed the ModuleMixin into target object.  
