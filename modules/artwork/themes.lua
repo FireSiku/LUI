@@ -1044,7 +1044,7 @@ function module:LoadOptions()
 		Frames = {
 			name = "Frames",
 			type = "group",
-			disabled = createDisabled("Frames"),
+			disabled = createDisabled("Panels"),
 			order = 2,
 			args = {
 				color_top = {
@@ -1054,7 +1054,7 @@ function module:LoadOptions()
 					width = "full",
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Frames"),
+					set = createSetColor("Panels"),
 					order = 1,
 				},
 				color_bottom = {
@@ -1064,7 +1064,7 @@ function module:LoadOptions()
 					width = "full",
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Frames"),
+					set = createSetColor("Panels"),
 					order = 2,
 				},
 				minimap = {
@@ -1229,7 +1229,7 @@ function module:LoadOptions()
 		Navigation = {
 			name = "Navigation",
 			type = "group",
-			disabled = createDisabled("Frames"),
+			disabled = createDisabled("Panels"),
 			order = 5,
 			args = {
 				navi = {
@@ -1239,7 +1239,7 @@ function module:LoadOptions()
 					width = "full",
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Frames"),
+					set = createSetColor("Panels"),
 					order = 1,
 				},
 				navi_hover = {
@@ -1249,7 +1249,7 @@ function module:LoadOptions()
 					width = "full",
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Frames"),
+					set = createSetColor("Panels"),
 					order = 2,
 				},
 				orb = {
@@ -1259,7 +1259,7 @@ function module:LoadOptions()
 					width = "full",
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Frames"),
+					set = createSetColor("Panels"),
 					order = 3,
 				},
 				orb_cycle = {
@@ -1269,7 +1269,7 @@ function module:LoadOptions()
 					width = "full",
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Frames"),
+					set = createSetColor("Panels"),
 					order = 4,
 				},
 				orb_hover = {
@@ -1279,7 +1279,7 @@ function module:LoadOptions()
 					width = "full",
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Frames"),
+					set = createSetColor("Panels"),
 					order = 5,
 				},
 			},
