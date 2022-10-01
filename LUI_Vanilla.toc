@@ -25,7 +25,6 @@ LUI.lua
 ### Artwork ###
 modules\artwork\themes.lua
 modules\artwork\panels.lua
-modules\artwork\frames.lua
 modules\artwork\artwork.lua
 
 ### Fader ###
