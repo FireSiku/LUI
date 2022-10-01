@@ -13,10 +13,8 @@
 
 -- External references.
 local _, LUI = ...
-local module = LUI:Module("Panels", "AceHook-3.0", "AceEvent-3.0")
-local Frames = LUI:Module("Frames")
-local Themes = LUI:Module("Themes", true)
-local Media_ = LibStub("LibSharedMedia-3.0")
+local module = LUI:NewModule("Panels", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0", "AceEvent-3.0")
+local ThemesDB
 
 local db, dbd --luacheck:ignore
 local frameBackgrounds_ = {"LEFT", "RIGHT", "NONE"}
@@ -52,6 +50,7 @@ local addonAnchors = {
 }
 
 function module:CheckPanels()
+	local Frames = LUI:GetModule("Frames")
 	if db.Chat.AlwaysShow and db.Tps.AlwaysShow and db.Dps.AlwaysShow and db.Raid.AlwaysShow then
 		Frames:IsAllShown(true)
 		Frames:SetOrbCycleColor()
@@ -178,7 +177,7 @@ function module:CheckPanels()
 		db.Raid.IsShown = false
 	end
 
-	if LUI:Module("Micromenu", true) and LUI.MicroMenu then
+	if LUI:GetModule("Micromenu") and LUI.MicroMenu then
 		if db.MicroMenu.AlwaysShow or db.MicroMenu.IsShown then
 			LUI.MicroMenu.Button:SetAlpha(1)
 			LUI.MicroMenu.Button:Show()
@@ -660,8 +659,8 @@ function module:ApplyBackground(kind)
 		return
 	end
 
-	local rc, gc, bc, ac = unpack(Themes.db.profile[strlower(kind)])
-	local r, g, b, a = unpack(Themes.db.profile[strlower(kind.."border")])
+	local rc, gc, bc, ac = unpack(ThemesDB[strlower(kind)])
+	local r, g, b, a = unpack(ThemesDB[strlower(kind.."border")])
 
 	-- temporary for CENTER -> SOLID change
 	if data.Direction == "CENTER" then data.Direction = "SOLID" end
@@ -850,9 +849,9 @@ function module:LoadOptions()
 				desc = "Choose the Color for your "..tag.." Panel Background.",
 				type = "color",
 				hasAlpha = true,
-				get = function() return unpack(Themes.db.profile[strlower(tag)]) end,
+				get = function() return unpack(ThemesDB[strlower(tag)]) end,
 				set = function(_, r, g, b, a)
-					Themes.db.profile[strlower(tag)] = {r, g, b, a}
+					ThemesDB[strlower(tag)] = {r, g, b, a}
 					module:Refresh()
 				end,
 				order = 17,
@@ -862,9 +861,9 @@ function module:LoadOptions()
 				desc = "Choose the Color for your "..tag.." Panel Border.",
 				type = "color",
 				hasAlpha = true,
-				get = function() return unpack(Themes.db.profile[strlower(tag).."border"]) end,
+				get = function() return unpack(ThemesDB[strlower(tag).."border"]) end,
 				set = function(_, r, g, b, a)
-					Themes.db.profile[strlower(tag).."border"] = {r, g, b, a}
+					ThemesDB[strlower(tag).."border"] = {r, g, b, a}
 					module:Refresh()
 				end,
 				order = 18,
@@ -900,6 +899,8 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	ThemesDB = LUI:GetModule("Themes").db.profile
+
 	if db.MicroMenu.AlwaysShow then db.MicroMenu.IsShown = true end
 
 	self:SetPanels()

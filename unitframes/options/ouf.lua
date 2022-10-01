@@ -6,7 +6,7 @@
 ]]
 
 local addonname, LUI = ...
-local module = LUI:Module("Unitframes")
+local module = LUI:GetModule("Unitframes")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 

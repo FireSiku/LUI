@@ -14,7 +14,7 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("Themes", "AceSerializer-3.0")
+local module = LUI:NewModule("Themes", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceSerializer-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
@@ -42,7 +42,7 @@ function module:ApplyTheme()
 end
 
 function module:Refresh_Colors(name, targetModule) -- (name [, targetModule])
-	targetModule = targetModule or LUI:Module(name, true)
+	targetModule = targetModule or LUI:GetModule(name)
 
 	if targetModule and targetModule:IsEnabled() and targetModule.SetColors then
 		targetModule:SetColors()
@@ -905,11 +905,11 @@ function module:LoadOptions()
 
 	-- disabled functions
 	local function minimapDisabled()
-		local Minimap = LUI:Module("Minimap", true)
+		local Minimap = LUI:GetModule("Minimap")
 		return not (Minimap and Minimap:IsEnabled())
 	end
 	local function chatDisabled()
-		local Chat = LUI:Module("Chat", true)
+		local Chat = LUI:GetModule("Chat")
 		return not (Chat and Chat:IsEnabled())
 	end
 
@@ -917,7 +917,7 @@ function module:LoadOptions()
 	local function createDisabled(toCheck)
 		if not disabledFuncs[toCheck] then
 			disabledFuncs[toCheck] = function()
-				return not LUI:Module(toCheck, true)
+				return not LUI:GetModule(toCheck)
 			end
 		end
 

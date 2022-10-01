@@ -6,8 +6,8 @@
 
 -- External references.
 local addonname, LUI = ...
-local Chat = LUI:Module("Chat")
-local module = Chat:Module("Buttons", "AceHook-3.0")
+local Chat = LUI:GetModule("Chat")
+local module = Chat:NewModule("Buttons", Chat:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0")
 
 local L = LUI.L
 local db, dbd --luacheck:ignore
