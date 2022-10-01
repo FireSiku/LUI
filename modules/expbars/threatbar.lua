@@ -5,8 +5,7 @@
 ]]
 
 local addonname, LUI = ...
-local module = LUI:Module("Threat")
-local oUFmodule = LUI:Module("Unitframes")
+local module = LUI:NewModule("Threat", LUI:GetLegacyPrototype(), "LUIDevAPI")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -485,6 +484,8 @@ function module:LoadOptions()
 end
 
 function module:Refresh(...)
+	local oUFmodule = LUI:GetModule("Unitframes")
+	
 	local info, value = ...
 	if type(info) == "table" then
 		db(info, value)

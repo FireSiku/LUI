@@ -5,7 +5,7 @@
 ]]
 
 local addonname, LUI = ...
-local module = LUI:Module("Unitframes")
+local module = LUI:GetModule("Unitframes")
 
 module.defaults.profile.ArenaPet = {
 	Enable = true,

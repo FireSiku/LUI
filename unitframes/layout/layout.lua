@@ -6,8 +6,8 @@
 ------------------------------------------------------------------------
 
 local addonname, LUI = ...
-local module = LUI:Module("Unitframes")
-local Fader = LUI:Module("Fader")
+local module = LUI:GetModule("Unitframes")
+local Fader = LUI:GetModule("Fader")
 
 local Media = LibStub("LibSharedMedia-3.0")
 local Blizzard = LUI.Blizzard

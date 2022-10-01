@@ -6,11 +6,8 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("Chat", "AceHook-3.0")
-local Buttons = module:Module("Buttons")
-local EditBox = module:Module("EditBox")
-local StickyChannels = module:Module("StickyChannels")
-local Themes = LUI:Module("Themes", true)
+local module = LUI:NewModule("Chat", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0")
+local Themes = LUI:GetModule("Themes")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -588,6 +585,7 @@ end
 --------------------------------------------------
 
 function module:SetColors()
+	local EditBox = module:GetModule("EditBox")
 	for i, name in ipairs(CHAT_FRAMES) do
 		EditBox:ChatEdit_UpdateHeader(_G[name].editBox)
 	end
@@ -814,9 +812,9 @@ function module:LoadOptions()
 			BackgroundColor = self:NewColor(L["Chat Background"], nil, 7, refresh, "full"),
 			ResetPosition = self:NewExecute(L["Reset position"], L["Reset the main chat dock's position"], 8, resetChatPos, L["Are you sure?"]),
 		}),
-		StickyChannels = StickyChannels:LoadOptions(),
-		EditBox = EditBox:LoadOptions(),
-		Buttons = Buttons:LoadOptions(),
+		StickyChannels = module:GetModule("StickyChannels"):LoadOptions(),
+		EditBox = module:GetModule("EditBox"):LoadOptions(),
+		Buttons = module:GetModule("Buttons"):LoadOptions(),
 	}
 
 	return options

@@ -12,11 +12,10 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("Frames")
-local Panels = LUI:Module("Panels", true)
-local Themes = LUI:Module("Themes", true)
-local Media = LibStub("LibSharedMedia-3.0")
-local widgetLists = AceGUIWidgetLSMlists
+local module = LUI:NewModule("Frames", LUI:GetLegacyPrototype(), "LUIDevAPI")
+local Panels = LUI:GetModule("Panels")
+
+local ThemesDB, PanelsDB
 
 local directory = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
@@ -24,7 +23,7 @@ LUI.Navi = {}
 LUI.Info = {}
 
 function module:SetOrbColors()
-	local orb = Themes.db.profile.orb
+	local orb = ThemesDB.orb
 	LUI.Orb.Fill:SetVertexColor(unpack(orb))
 	LUI.Orb.Galaxy1.t:SetVertexColor(unpack(orb))
 	LUI.Orb.Galaxy2.t:SetVertexColor(unpack(orb))
@@ -32,37 +31,37 @@ function module:SetOrbColors()
 end
 
 function module:SetOrbCycleColor()
-	LUI.Orb.Cycle:SetBackdropColor(unpack(Themes.db.profile.orb_cycle))
+	LUI.Orb.Cycle:SetBackdropColor(unpack(ThemesDB.orb_cycle))
 end
 
 function module:SetOrbHoverColor()
-	LUI.Orb.Hover:SetBackdropColor(unpack(Themes.db.profile.orb_hover))
+	LUI.Orb.Hover:SetBackdropColor(unpack(ThemesDB.orb_hover))
 end
 
 function module:SetBottomInfoColors()
-	LUI.Info.Left.BG:SetBackdropColor(unpack(Themes.db.profile.color_bottom))
-	LUI.Info.Right.BG:SetBackdropColor(unpack(Themes.db.profile.color_bottom))
+	LUI.Info.Left.BG:SetBackdropColor(unpack(ThemesDB.color_bottom))
+	LUI.Info.Right.BG:SetBackdropColor(unpack(ThemesDB.color_bottom))
 end
 
 function module:SetTopInfoColors()
-	LUI.Info.Topleft.BG:SetBackdropColor(unpack(Themes.db.profile.color_top))
-	LUI.Info.Topright.BG:SetBackdropColor(unpack(Themes.db.profile.color_top))
-	LUI.Navi.CenterBackground:SetBackdropColor(unpack(Themes.db.profile.color_top))
-	LUI.Navi.CenterBackgroundAlternative:SetBackdropColor(unpack(Themes.db.profile.color_top))
+	LUI.Info.Topleft.BG:SetBackdropColor(unpack(ThemesDB.color_top))
+	LUI.Info.Topright.BG:SetBackdropColor(unpack(ThemesDB.color_top))
+	LUI.Navi.CenterBackground:SetBackdropColor(unpack(ThemesDB.color_top))
+	LUI.Navi.CenterBackgroundAlternative:SetBackdropColor(unpack(ThemesDB.color_top))
 end
 
 function module:SetNavigationColors()
-	LUI.Navi.Chat:SetBackdropColor(unpack(Themes.db.profile.navi))
-	LUI.Navi.Tps:SetBackdropColor(unpack(Themes.db.profile.navi))
-	LUI.Navi.Dps:SetBackdropColor(unpack(Themes.db.profile.navi))
-	LUI.Navi.Raid:SetBackdropColor(unpack(Themes.db.profile.navi))
+	LUI.Navi.Chat:SetBackdropColor(unpack(ThemesDB.navi))
+	LUI.Navi.Tps:SetBackdropColor(unpack(ThemesDB.navi))
+	LUI.Navi.Dps:SetBackdropColor(unpack(ThemesDB.navi))
+	LUI.Navi.Raid:SetBackdropColor(unpack(ThemesDB.navi))
 end
 
 function module:SetNavigationHoverColors()
-	LUI.Navi.Chat.Hover:SetBackdropColor(unpack(Themes.db.profile.navi_hover))
-	LUI.Navi.Tps.Hover:SetBackdropColor(unpack(Themes.db.profile.navi_hover))
-	LUI.Navi.Dps.Hover:SetBackdropColor(unpack(Themes.db.profile.navi_hover))
-	LUI.Navi.Raid.Hover:SetBackdropColor(unpack(Themes.db.profile.navi_hover))
+	LUI.Navi.Chat.Hover:SetBackdropColor(unpack(ThemesDB.navi_hover))
+	LUI.Navi.Tps.Hover:SetBackdropColor(unpack(ThemesDB.navi_hover))
+	LUI.Navi.Dps.Hover:SetBackdropColor(unpack(ThemesDB.navi_hover))
+	LUI.Navi.Raid.Hover:SetBackdropColor(unpack(ThemesDB.navi_hover))
 end
 
 function module:SetNaviAlpha(frame, value)
@@ -119,13 +118,13 @@ function module:SetFrames()
 		return h
 	end
 
-	local navi = Themes.db.profile.navi
-	local navi_hover = Themes.db.profile.navi_hover
-	local orb_hover = Themes.db.profile.orb_hover
-	local color_bottom = Themes.db.profile.color_bottom
-	local color_top = Themes.db.profile.color_top
-	local orb = Themes.db.profile.orb
-	local orb_cycle = Themes.db.profile.orb_cycle
+	local navi = ThemesDB.navi
+	local navi_hover = ThemesDB.navi_hover
+	local orb_hover = ThemesDB.orb_hover
+	local color_bottom = ThemesDB.color_bottom
+	local color_top = ThemesDB.color_top
+	local orb = ThemesDB.orb
+	local orb_cycle = ThemesDB.orb_cycle
 
 -- Orb and top panel.
 	local MainAnchor = LUI:CreateMeAFrame("Frame", nil, UIParent, 100, 100, 1, "BACKGROUND", 1, "TOP", UIParent, "TOP", 17, 15, 1)
@@ -242,7 +241,7 @@ function module:SetFrames()
 			for _, k in pairs({"Chat", "Tps", "Dps", "Raid"}) do
 				local v = LUI.Navi[k]
 				if v:GetAlpha() == 0 then
-					local a = k == "Chat" and "ChatAlphaAnchor" or Panels.db.profile[k].Anchor
+					local a = k == "Chat" and "ChatAlphaAnchor" or PanelsDB[k].Anchor
 
 					if _G[a] then
 						v.AlphaIn:Show()
@@ -258,7 +257,7 @@ function module:SetFrames()
 			for _, k in pairs({"Chat", "Tps", "Dps", "Raid"}) do
 				local v = LUI.Navi[k]
 				if v:GetAlpha() == 1 then
-					local a = k == "Chat" and "ChatAlphaAnchor" or Panels.db.profile[k].Anchor
+					local a = k == "Chat" and "ChatAlphaAnchor" or PanelsDB[k].Anchor
 
 					if _G[a] then
 						v.AlphaOut:Show()
@@ -308,12 +307,12 @@ function module:SetFrames()
 		if LUI.Navi.Chat:GetAlpha() == 0 then
 			LUI.Navi.Chat.AlphaIn:Show()
 			Panels:AlphaIn("Chat")
-			Panels.db.profile.Chat.IsShown = true
+			PanelsDB.Chat.IsShown = true
 			LUI:SetChatVisible(true)
 		else
 			LUI.Navi.Chat.AlphaOut:Show()
 			Panels:AlphaOut("Chat")
-			Panels.db.profile.Chat.IsShown = false
+			PanelsDB.Chat.IsShown = false
 			LUI:SetChatVisible(true)
 		end
 	end)
@@ -354,15 +353,15 @@ function module:SetFrames()
 	LUI.Navi.Tps.Clicker:SetScript("OnEnter", function(self) LUI.Navi.Tps.Hover:SetAlpha(1) end)
 	LUI.Navi.Tps.Clicker:SetScript("OnLeave", function(self) LUI.Navi.Tps.Hover:SetAlpha(0) end)
 	LUI.Navi.Tps.Clicker:SetScript("OnClick", function(self)
-		if _G[Panels.db.profile.Tps.Anchor] and LUI:CanAlterFrame(_G[Panels.db.profile.Tps.Anchor]) then
+		if _G[PanelsDB.Tps.Anchor] and LUI:CanAlterFrame(_G[PanelsDB.Tps.Anchor]) then
 			if LUI.Navi.Tps:GetAlpha() == 0 then
 				LUI.Navi.Tps.AlphaIn:Show()
 				Panels:AlphaIn("Tps")
-				Panels.db.profile.Tps.IsShown = true
+				PanelsDB.Tps.IsShown = true
 			else
 				LUI.Navi.Tps.AlphaOut:Show()
 				Panels:AlphaOut("Tps")
-				Panels.db.profile.Tps.IsShown = false
+				PanelsDB.Tps.IsShown = false
 			end
 		end
 	end)
@@ -403,15 +402,15 @@ function module:SetFrames()
 	LUI.Navi.Dps.Clicker:SetScript("OnEnter", function(self) LUI.Navi.Dps.Hover:SetAlpha(1) end)
 	LUI.Navi.Dps.Clicker:SetScript("OnLeave", function(self) LUI.Navi.Dps.Hover:SetAlpha(0) end)
 	LUI.Navi.Dps.Clicker:SetScript("OnClick", function(self)
-		if _G[Panels.db.profile.Dps.Anchor] and LUI:CanAlterFrame(_G[Panels.db.profile.Dps.Anchor]) then
+		if _G[PanelsDB.Dps.Anchor] and LUI:CanAlterFrame(_G[PanelsDB.Dps.Anchor]) then
 			if LUI.Navi.Dps:GetAlpha() == 0 then
 				LUI.Navi.Dps.AlphaIn:Show()
 				Panels:AlphaIn("Dps")
-				Panels.db.profile.Dps.IsShown = true
+				PanelsDB.Dps.IsShown = true
 			else
 				LUI.Navi.Dps.AlphaOut:Show()
 				Panels:AlphaOut("Dps")
-				Panels.db.profile.Dps.IsShown = false
+				PanelsDB.Dps.IsShown = false
 			end
 		end
 	end)
@@ -453,15 +452,15 @@ function module:SetFrames()
 	LUI.Navi.Raid.Clicker:SetScript("OnEnter", function(self) LUI.Navi.Raid.Hover:SetAlpha(1) end)
 	LUI.Navi.Raid.Clicker:SetScript("OnLeave", function(self) LUI.Navi.Raid.Hover:SetAlpha(0) end)
 	LUI.Navi.Raid.Clicker:SetScript("OnClick", function(self)
-		if _G[Panels.db.profile.Raid.Anchor] and LUI:CanAlterFrame(_G[Panels.db.profile.Raid.Anchor]) then
+		if _G[PanelsDB.Raid.Anchor] and LUI:CanAlterFrame(_G[PanelsDB.Raid.Anchor]) then
 			if LUI.Navi.Raid:GetAlpha() == 0 then
 				LUI.Navi.Raid.AlphaIn:Show()
 				Panels:AlphaIn("Raid")
-				Panels.db.profile.Raid.IsShown = true
+				PanelsDB.Raid.IsShown = true
 			else
 				LUI.Navi.Raid.AlphaOut:Show()
 				Panels:AlphaOut("Raid")
-				Panels.db.profile.Raid.IsShown = false
+				PanelsDB.Raid.IsShown = false
 			end
 		end
 	end)
@@ -617,5 +616,7 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	ThemesDB = LUI:GetModule("Themes").db.profile
+	PanelsDB = LUI:GetModule("Panels").db.profile
 	self:SetFrames()
 end

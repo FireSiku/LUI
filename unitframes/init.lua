@@ -5,7 +5,7 @@
 ]]
 
 local addonname, LUI = ...
-local module = LUI:Module("Unitframes", "AceHook-3.0", "AceEvent-3.0")
+local module = LUI:NewModule("Unitframes", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0", "AceSerializer-3.0")
 
 local Blizzard = LUI.Blizzard
 

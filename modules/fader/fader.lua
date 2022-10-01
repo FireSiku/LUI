@@ -35,10 +35,8 @@
 
 -- External references.
 local addonname, LUI = ...
-local Fader = LUI:Module("Fader", "AceEvent-3.0", "AceHook-3.0", "AceTimer-3.0")
-local Media = LibStub("LibSharedMedia-3.0")
+local Fader = LUI:NewModule("Fader", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0", "AceTimer-3.0")
 local Profiler = LUI.Profiler
-local widgetLists = AceGUIWidgetLSMlists
 
 -- Database and defaults shortcuts.
 local db, dbd
@@ -742,12 +740,12 @@ function Fader:CreateFaderOptions(object, objectDB, objectDBdefaults, specialHov
 		for _, f in pairs(frame) do
 			if type(f) == "string" then
 				if _G[f] and strfind(_G[f]:GetName(), "oUF_LUI_party") then
-					oUF_Party = LUI:Module("oUF_Party", true)
+					oUF_Party = LUI:GetModule("oUF_Party", true)
 					break
 				end
 			else
 				if strfind(f:GetName(), "oUF_LUI_party") then
-					oUF_Party = LUI:Module("oUF_Party", true)
+					oUF_Party = LUI:GetModule("oUF_Party", true)
 					break
 				end
 			end

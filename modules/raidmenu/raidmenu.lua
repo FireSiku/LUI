@@ -12,10 +12,10 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("RaidMenu")
-local Themes = LUI:Module("Themes", true)
-local Panels = LUI:Module("Panels", true)
-local Micromenu = LUI:Module("Micromenu", true)
+local module = LUI:NewModule("RaidMenu", LUI:GetLegacyPrototype(), "LUIDevAPI")
+local Themes = LUI:GetModule("Themes")
+local Panels = LUI:GetModule("Panels")
+local Micromenu = LUI:GetModule("Micromenu")
 local Media = LibStub("LibSharedMedia-3.0")
 
 local db, dbd
@@ -348,7 +348,7 @@ function module:SetRaidMenu()
 	RaidMenu_Border:SetBackdropColor(micro_r, micro_g, micro_b, 1)
 	RaidMenu_Border:SetBackdropBorderColor(0, 0, 0, 0)
 
-	local Infotext = LUI:Module("Infotext", true)
+	local Infotext = LUI:GetModule("Infotext")
 	local font = Infotext and Infotext.db.profile.Clock.Font or "vibroceb"
 	local color = Infotext and Infotext.db.profile.Clock.Color or {r = 1, g = 1, b = 1, a = 1}
 	RaidMenu_Header = RaidMenu:CreateFontString("RaidMenu_Header", "OVERLAY")
@@ -823,7 +823,7 @@ function module:OnInitialize()
 		LUI.db.global.luiconfig[LUI.profileName].Versions.raidmenu = LUI.Versions.raidmenu
 	end
 
-	LUI:Module("Panels", true):RegisterFrame(self)
+	LUI:GetModule("Panels"):RegisterFrame(self)
 end
 
 function module:OnEnable()
