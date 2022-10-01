@@ -1822,7 +1822,7 @@ function LUI:OnInitialize()
 		self:Configure()
 	end
 
-	_G.StaticPopupDialogs["RELOAD_UI"] = { -- TODO: Remove all need for this
+	StaticPopupDialogs["RELOAD_UI"] = { -- TODO: Remove all need for this
 		preferredIndex = 3,
 		text = L["The UI needs to be reloaded!"],
 		button1 = ACCEPT,
@@ -1833,7 +1833,7 @@ function LUI:OnInitialize()
 		hideOnEscape = 1
 	}
 
-	_G.StaticPopupDialogs["RESTORE_DETAULTS"] = {
+	StaticPopupDialogs["RESTORE_DETAULTS"] = {
 		preferredIndex = 3,
 		text = "Do you really want to restore all defaults. All your settings will be lost!",
 		button1 = ACCEPT,

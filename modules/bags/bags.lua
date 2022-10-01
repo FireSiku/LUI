@@ -58,7 +58,6 @@ local GetContainerNumSlots = _G.GetContainerNumSlots
 local GetContainerItemInfo = _G.GetContainerItemInfo
 local GetContainerItemLink = _G.GetContainerItemLink
 local SetItemButtonCount = _G.SetItemButtonCount
-local StaticPopupDialogs = _G.StaticPopupDialogs
 local MoneyFrame_Update = _G.MoneyFrame_Update
 local GetMoneyString = _G.GetMoneyString
 local ItemButtonUtil = _G.ItemButtonUtil

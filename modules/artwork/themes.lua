@@ -19,7 +19,6 @@ local Media = LibStub("LibSharedMedia-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
 local db, dbd
-local StaticPopupDialogs = _G.StaticPopupDialogs
 local StaticPopup_Hide = _G.StaticPopup_Hide
 local UnitClass = _G.UnitClass
 local tContains = _G.tContains

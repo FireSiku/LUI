@@ -1542,7 +1542,6 @@ local function GetLayoutArray()
 end
 
 do
-	local StaticPopupDialogs = _G.StaticPopupDialogs
 	StaticPopupDialogs["ALREADY_A_LAYOUT"] = {
 		preferredIndex = 3,
 		text = "That layout already exists.\nPlease choose another name.",

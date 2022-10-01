@@ -51,7 +51,7 @@ end
 
 function LineMixin:SetClassIcon(tex, class)
 	tex:SetTexture(CLASS_ICONS_TEXTURE)
-	local offset, left, right, bottom, top = 0.025, unpack(CLASS_ICON_TCOORDS[class])
+	local offset, left, right, bottom, top = 0.025, unpack(_G.CLASS_ICON_TCOORDS[class])
 	tex:SetTexCoord(left+offset, right-offset, bottom+offset, top-offset)
 end
 

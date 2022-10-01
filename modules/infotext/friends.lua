@@ -13,17 +13,24 @@ local module = LUI:GetModule("Infotext")
 local element = module:NewElement("Friends", "AceEvent-3.0")
 
 -- local copies
-local format = format
+local format, max = format, math.max
 local C_FriendList, C_PartyInfo = _G.C_FriendList, _G.C_PartyInfo
 local FriendsFrame_BattlenetInvite = _G.FriendsFrame_BattlenetInvite
 local BNet_GetClientTexture = _G.BNet_GetClientTexture
 local ToggleFriendsFrame = _G.ToggleFriendsFrame
+local BNSetCustomMessage = _G.BNSetCustomMessage
 local BNFeaturesEnabled = _G.BNFeaturesEnabled
 local StaticPopup_Show = _G.StaticPopup_Show
+local IsControlKeyDown = _G.IsControlKeyDown
 local BNGetNumFriends = _G.BNGetNumFriends
+local BNGetFriendInfo = _G.BNGetFriendInfo
+local IsAltKeyDown = _G.IsAltKeyDown
 local BNConnected = _G.BNConnected
 local SetItemRef = _G.SetItemRef
 local BNGetInfo = _G.BNGetInfo
+
+local BNGetNumFriendGameAccounts = _G.BNGetNumFriendGameAccounts
+local BNGetFriendGameAccountInfo = _G.BNGetFriendGameAccountInfo
 
 -- constants
 local FRIENDS_OTHER_NAME_COLOR_CODE = _G.FRIENDS_OTHER_NAME_COLOR_CODE
@@ -49,12 +56,12 @@ local GAP = 10
 
 
 -- BNET_CLIENT Constants
-local BNET_CLIENT_WOW       = BNET_CLIENT_WOW
+local BNET_CLIENT_WOW       = _G.BNET_CLIENT_WOW
+local BNET_CLIENT_APP       = _G.BNET_CLIENT_APP
 -- local BNET_CLIENT_SC        = BNET_CLIENT_SC
 -- local BNET_CLIENT_SC2       = BNET_CLIENT_SC2
 -- local BNET_CLIENT_D3        = BNET_CLIENT_D3
 -- local BNET_CLIENT_WTCG      = BNET_CLIENT_WTCG
--- local BNET_CLIENT_APP       = BNET_CLIENT_APP
 -- local BNET_CLIENT_HEROES    = BNET_CLIENT_HEROES
 -- local BNET_CLIENT_OVERWATCH = BNET_CLIENT_OVERWATCH
 -- local BNET_CLIENT_DESTINY2  = BNET_CLIENT_DESTINY2
@@ -71,9 +78,9 @@ local onBlock
 
 --Add new Static Dialog, called once, no need to have local copies.
 StaticPopupDialogs["SET_BN_BROADCAST"] = {
-	text = BN_BROADCAST_TOOLTIP,
-	button1 = ACCEPT,
-	button2 = CANCEL,
+	text = _G.BN_BROADCAST_TOOLTIP,
+	button1 = _G.ACCEPT,
+	button2 = _G.CANCEL,
 	exclusive = true,
 	whileDead = true,
 	hideOnEscape = true,
@@ -396,7 +403,7 @@ function element.OnBNFriendButtonClick(bnfriend, button)
 		if bnfriend.client ~= BNET_CLIENT_WOW then return end
 		FriendsFrame_BattlenetInvite(nil, bnfriend.accountID)
 	elseif IsControlKeyDown() then
-		FriendsFrame.NotesID = bnfriend.accountID
+		_G.FriendsFrame.NotesID = bnfriend.accountID
 		StaticPopup_Show("SET_BNFRIENDNOTE", bnfriend.accountName)
 	elseif button == "MiddleButton" then
 		StaticPopup_Show("CONFIRM_REMOVE_FRIEND", bnfriend.accountName, nil, bnfriend.accountID)
@@ -505,7 +512,7 @@ function element.OnFriendButtonClick(friend, button)
 	if IsAltKeyDown() then
 		C_PartyInfo.InviteUnit(friend.unit)
 	elseif IsControlKeyDown() then
-		FriendsFrame.NotesID = friend.index
+		_G.FriendsFrame.NotesID = friend.index
 		StaticPopup_Show("SET_FRIENDNOTE", friend.unit)
 	elseif button == "MiddleButton" then
 		C_FriendList.RemoveFriend(friend.unit)
@@ -542,7 +549,7 @@ end
 --Button4 to toggle notes.
 function element.OnClick(frame_, button)
 	if button == "RightButton" then
-		FriendsFrameAddFriendButton:Click()
+		_G.FriendsFrameAddFriendButton:Click()
 	elseif button == "Button4" then
 		--db.showNotes = not db.showNotes
 		--tooltip:Update()

@@ -60,6 +60,18 @@ modules\tooltip\tooltip.lua
 
 ### InfoText ###
 modules\infotext\datatext.lua
+# modules\InfoText\infotext.lua
+# modules\InfoText\bags.lua
+# modules\InfoText\clock.lua
+# modules\InfoText\currency.lua
+# modules\InfoText\dualspec.lua
+# modules\InfoText\durability.lua
+# modules\InfoText\fps.lua
+# modules\InfoText\friends.lua
+# modules\InfoText\gold.lua
+# modules\InfoText\guild.lua
+# modules\InfoText\infotip.lua
+# modules\InfoText\memory.lua
 
 ### Micromenu ###
 modules\micromenu\micromenu.lua
