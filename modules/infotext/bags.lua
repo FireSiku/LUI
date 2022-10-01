@@ -18,7 +18,7 @@ local GetContainerNumFreeSlots = _G.GetContainerNumFreeSlots
 local GetContainerNumSlots = _G.GetContainerNumSlots
 
 -- Constants
-local NUM_BAG_SLOTS = NUM_BAG_SLOTS
+local NUM_BAG_SLOTS = _G.NUM_BAG_SLOTS
 local BAG_TYPES = { -- List of bagType Bitfields
 	[0x0000] = L["BagType_Normal"],            -- 0
 	[0x0001] = L["BagType_Quiver"],            -- 1
@@ -71,7 +71,7 @@ function element:UpdateBags()
 end
 
 function element.OnClick(frame_, button_)
-	ToggleAllBags()
+	_G.ToggleAllBags()
 end
 
 -- ####################################################################################################################

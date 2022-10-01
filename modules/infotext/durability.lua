@@ -18,7 +18,7 @@ local GetInventoryItemDurability = _G.GetInventoryItemDurability
 local ToggleCharacter = _G.ToggleCharacter
 
 -- Constants
-local ARMOR = ARMOR
+local ARMOR = _G.ARMOR
 
 -- Local variables
 local itemDurability = {} --Holds the changing information based on slot.
@@ -26,16 +26,16 @@ local sortedItems = {} -- Sorting table for itemDurability
 
 -- Contains Constant Information about equipment.
 local EQUIP_SLOTS = {
-	[(INVTYPE_HEAD)] = 1,
-	[(INVTYPE_SHOULDER)] = 3,
-	[(INVTYPE_CHEST)] = 5,
-	[(INVTYPE_WAIST)] = 6,
-	[(INVTYPE_LEGS)] = 7,
-	[(INVTYPE_FEET)] = 8,
-	[(INVTYPE_WRIST)] = 9,
-	[(INVTYPE_HAND)] = 10,
-	[(INVTYPE_WEAPONMAINHAND)] = 16,
-	[(INVTYPE_WEAPONOFFHAND)] = 17,
+	[(_G.INVTYPE_HEAD)] = 1,
+	[(_G.INVTYPE_SHOULDER)] = 3,
+	[(_G.INVTYPE_CHEST)] = 5,
+	[(_G.INVTYPE_WAIST)] = 6,
+	[(_G.INVTYPE_LEGS)] = 7,
+	[(_G.INVTYPE_FEET)] = 8,
+	[(_G.INVTYPE_WRIST)] = 9,
+	[(_G.INVTYPE_HAND)] = 10,
+	[(_G.INVTYPE_WEAPONMAINHAND)] = 16,
+	[(_G.INVTYPE_WEAPONOFFHAND)] = 17,
 }
 
 -- ####################################################################################################################

@@ -348,6 +348,6 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
-	LUIInfotext_topAnchor:Hide()
-	LUIInfotext_bottomAnchor:Hide()
+	_G.LUIInfotext_topAnchor:Hide()
+	_G.LUIInfotext_bottomAnchor:Hide()
 end

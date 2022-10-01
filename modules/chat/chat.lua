@@ -458,7 +458,7 @@ local linkTypes = {
 --------------------------------------------------
 
 local function createStaticPopups()
-	_G.StaticPopupDialogs["LUI_Chat_UrlCopy"] = {
+	StaticPopupDialogs["LUI_Chat_UrlCopy"] = {
 		preferredIndex = 3,
 		text = "URL - Ctrl-C to copy",
 		button2 = CLOSE,

@@ -13,8 +13,8 @@ local module = LUI:GetModule("Infotext")
 local element = module:NewElement("Gold", "AceEvent-3.0")
 
 -- local copies
-local pairs, ipairs, mod = pairs, ipairs, mod
-local format, floor, abs = format, floor, abs
+local pairs, ipairs, mod = pairs, ipairs, math.fmod
+local format, floor, abs = format, floor, math.abs
 local BreakUpLargeNumbers = _G.BreakUpLargeNumbers
 local GetMoneyString = _G.GetMoneyString
 local GetMoney = _G.GetMoney

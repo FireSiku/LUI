@@ -42,12 +42,12 @@ stds["WoW"] = {
 		-- Lua Additions
 		string = { fields = { "join", "rtgsub", "split", "trim", }},
 		table = { fields = { "removemulti", "wipe", }},
-		"format", "strsub", "strfind", "strmatch", "strsplit", "strlower", "gsub", "wipe", "tinsert", "tremove", "floor", "ceil",
+		"format", "strsub", "strfind", "strmatch", "strsplit", "strlower", "gsub", "wipe", "tinsert", "tremove", "floor", "ceil", "date",
 		"debugprofilestop", "tDeleteItem", "tContains",
 
 		-- Common Globals
-		"UIParent", "UISpecialFrames", "CreateFrame", "CreateColor", "CreateFont", "CreateFromMixins", "GameTooltip", "UIWidgetManager", 
-		"CopyTable", "GetTime", "GetBuildInfo", "ReloadUI", "StaticPopup_Show", "IsForbidden", "NegateIf",
+		"UIParent", "UISpecialFrames", "CreateFrame", "CreateColor", "CreateFont", "CreateFromMixins", "GameTooltip", "UIWidgetManager",
+		"CopyTable", "GetTime", "GetBuildInfo", "ReloadUI", "StaticPopupDialogs", "StaticPopup_Show", "IsForbidden", "NegateIf",
 		
 		-- Object API
 		"Mixin", "Enum", "Spell", "Item", "ItemLocation", "PlayerLocation", "UiMapPoint",

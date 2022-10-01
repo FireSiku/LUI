@@ -17,16 +17,16 @@ local wipe, format, tconcat = wipe, format, table.concat
 local C_CurrencyInfo = C_CurrencyInfo
 
 -- Constants
-local MAX_WATCHED_TOKENS = MAX_WATCHED_TOKENS
+local MAX_WATCHED_TOKENS = _G.MAX_WATCHED_TOKENS
 local CURRENCY_FORMAT = "%d\124T%s:%d:%d:2:0\124t"
-local CURRENCY = CURRENCY
+local CURRENCY = _G.CURRENCY
 
 -- locals
 local currencyString = {}
 local getCurrencyInfo = C_CurrencyInfo.GetBackpackCurrencyInfo
-	if not LUI.IsRetail then getCurrencyInfo = GetBackpackCurrencyInfo end
-local getCurrencyInfoListSize = C_CurrencyInfo.GetCurrencyListSize
-	if not LUI.IsRetail then getCurrencyInfoListSize = GetCurrencyListSize end
+	if not LUI.IsRetail then getCurrencyInfo = _G.GetBackpackCurrencyInfo end
+-- local getCurrencyInfoListSize = C_CurrencyInfo.GetCurrencyListSize
+-- 	if not LUI.IsRetail then getCurrencyInfoListSize = _G.GetCurrencyListSize end
 
 -- ####################################################################################################################
 -- ##### Default Settings #############################################################################################
@@ -58,7 +58,7 @@ end
 
 -- Click: Open Currency Frame
 function element.OnClick(frame_, button_)
-	ToggleCharacter("TokenFrame")
+	_G.ToggleCharacter("TokenFrame")
 end
 
 -- ####################################################################################################################
