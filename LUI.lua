@@ -67,6 +67,7 @@ Media:Register("font", "neuropol", [[Interface\AddOns\LUI\media\fonts\neuropol.t
 Media:Register("font", "AvantGarde_LT_Medium", [[Interface\AddOns\LUI\media\fonts\AvantGarde_LT_Medium.ttf]])
 Media:Register("font", "Arial Narrow", [[Interface\AddOns\LUI\media\fonts\ARIALN.TTF]])
 Media:Register("font", "Pepsi", [[Interface\AddOns\LUI\media\fonts\pepsi.ttf]])
+Media:Register("font", "NotoSans-SCB", [[Interface\AddOns\LUI\media\fonts\NotoSans-SemiCondensedBold.ttf]])
 
 -- REGISTER BORDERS
 Media:Register("border", "glow", [[Interface\Addons\LUI\media\textures\borders\glow.tga]])
