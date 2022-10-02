@@ -21,7 +21,7 @@ local dropDirections = {
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.Micromenu = Opt:Group("Micromenu", nil, nil, "tab", Opt.IsModDisableda1, nil, Opt.GetSet(db))
+Opt.options.args.Micromenu = Opt:Group("Micromenu", nil, nil, "tab", Opt.IsModDisabled, nil, Opt.GetSet(db))
 Opt.options.args.Micromenu.handler = module
 
 local Micromenu = {

@@ -5,15 +5,18 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
--- External references.
-local addonname, LUI = ...
-local module = LUI:NewModule("RaidMenu")
+---@type string, LUIAddon
+local _, LUI = ...
+local L = LUI.L
+
+---@type RaidMenuModule
+local module = LUI:GetModule("RaidMenu")
+local db, dbd
+
 local Themes = LUI:GetModule("Themes")
 local Panels = LUI:GetModule("Panels")
 local Micromenu = LUI:GetModule("Micromenu")
 local Media = LibStub("LibSharedMedia-3.0")
-
-local db, dbd
 
 local GetRaidTargetIndex = _G.GetRaidTargetIndex
 local GetNumGroupMembers = _G.GetNumGroupMembers
@@ -47,26 +50,6 @@ LUI.Versions.raidmenu = 2.4
 local Y_normal, Y_compact = 107, 101
 local X_normal, X_compact = 0, -50
 local OverlapPreventionMethods = {"Auto-Hide", "Offset"}
-
--- ####################################################################################################################
--- ##### Default Settings #############################################################################################
--- ####################################################################################################################
-
-module.defaults = {
-	profile = {
-		Enable = true,
-		Compact = true,
-		Spacing = 5,
-		OverlapPrevention = "Offset",
-		Offset = -30,
-		X_Offset = 0,
-		Opacity = 100,
-		Scale = 1,
-		ToggleRaidIcon = true,
-		ShowToolTips = false,
-		AutoHide = false,
-	},
-}
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
@@ -311,6 +294,8 @@ function module:SetColors()
 end
 
 function module:SetRaidMenu()
+	db, dbd = module.db.profile, module.db.defaults.profile
+
 	if not db.Enable or not Micromenu then return end
 
 	-- Create frames for Raid Menu
@@ -634,6 +619,12 @@ function module:SetRaidMenu()
 	SizeRaidMenu()
 end
 
+function module:Refresh()
+	module:OverlapPrevention("RM", "position")
+	SizeRaidMenu()
+	RaidMenu_Parent:SetAlpha(db.Opacity/100)
+end
+
 -- ####################################################################################################################
 -- ##### Legacy Frame Options #########################################################################################
 -- ####################################################################################################################
@@ -808,20 +799,4 @@ function module:LoadFrameOptions()
 	}
 
 	return options
-end
-
--- ####################################################################################################################
--- ##### Framework Events #############################################################################################
--- ####################################################################################################################
-
-function module:OnInitialize()
-	db, dbd = LUI:NewNamespace(self, nil, true)
-	LUI:RegisterModule(module, true)
-	db = module.db.profile
-
-	LUI:GetModule("Panels"):RegisterFrame(self)
-end
-
-function module:OnEnable()
-	self:SetRaidMenu()
 end
