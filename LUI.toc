@@ -33,6 +33,7 @@ modules\artwork\panels.lua
 modules\artwork\artwork.lua
 
 ### Fader ###
+modules\fader\fader_init.lua
 modules\fader\fader.lua
 
 ### Bars ###
