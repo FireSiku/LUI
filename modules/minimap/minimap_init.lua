@@ -50,7 +50,7 @@ module.defaults = {
 -- ####################################################################################################################
 
 function module:OnInitialize()
-	LUI:RegisterModule(module, true)
+	LUI:RegisterModule(module)
 end
 
 function module:OnEnable()
