@@ -94,7 +94,7 @@ function module:OverlapPrevention(frame, action)
 		x_offset = db.X_Offset
 	end
 
-	if frame == "RM" and db.profile.Enable and not InCombatLockdown() then
+	if frame == "RM" and db.Enable and not InCombatLockdown() then
 		if action == "toggle" then
 			if RaidMenu_Parent:IsShown() then
 				RaidMenu.AlphaOut:Show()
@@ -145,15 +145,14 @@ function module:OverlapPrevention(frame, action)
 end
 
 local function FormatMarker(frame, x, y, r, g, b, id, t1, t2, t3, t4)
-	if frame == nil then return end
+	if not frame then return end
 	local width, height
 	if db.Compact then
 		width, height = 24, 24
 	else
 		width, height = 32, 32
 	end
-	frame:SetWidth(width)
-	frame:SetHeight(height)
+	frame:SetSize(width, height)
 	frame:SetScale(1)
 	frame:SetFrameStrata("HIGH")
 	frame:SetFrameLevel(4)
@@ -172,12 +171,11 @@ local function FormatMarker(frame, x, y, r, g, b, id, t1, t2, t3, t4)
 		end
 
 		local texture = _G[frame:GetName().."MarkerTex"]
-		if texture == nil then
+		if not texture then
 			texture = frame:CreateTexture(frame:GetName().."MarkerTex")
 		end
 		texture:SetPoint("TOPLEFT", frame,"TOPLEFT",0,0)
-		texture:SetWidth(width)
-		texture:SetHeight(height)
+		texture:SetSize(width, height)
 		texture:SetTexture("Interface\\Buttons\\UI-Quickslot")
 		texture:SetTexCoord(0.15, 0.85, 0.15, 0.85)
 		if frame:GetName() == "ClearWorldMarkers" then
@@ -185,7 +183,7 @@ local function FormatMarker(frame, x, y, r, g, b, id, t1, t2, t3, t4)
 			texture:SetTexCoord(0, 1, 0, 1)
 		else
 			local textureColor = _G[frame:GetName().."TextureColor"]
-			if textureColor == nil then
+			if not textureColor then
 				textureColor = frame:CreateTexture(frame:GetName().."TextureColor")
 			end
 			textureColor:SetPoint("TOPLEFT", frame, "TOPLEFT", 4, -4)
@@ -203,12 +201,11 @@ local function FormatMarker(frame, x, y, r, g, b, id, t1, t2, t3, t4)
 		end)
 
 		local texture = _G[frame:GetName().."MarkerTex"]
-		if texture == nil then
+		if not texture then
 			texture = frame:CreateTexture(frame:GetName().."MarkerTex")
 		end
 		texture:SetPoint("TOPLEFT", frame, "TOPLEFT", 2, -2)
-		texture:SetWidth(width - 4)
-		texture:SetHeight(height - 4)
+		texture:SetSize(width - 4, height - 4)
 		if frame:GetName() == "ClearRaidIcon" then
 			texture:SetTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Up")
 		else
@@ -223,27 +220,22 @@ local function FormatMarker(frame, x, y, r, g, b, id, t1, t2, t3, t4)
 		else
 			width = 120
 		end
-		frame:SetWidth(width)
-		frame:SetHeight(LUI:Scale(20))
+		frame:SetSize(width, LUI:Scale(20))
 		frame:SetAlpha(1)
 	end
 end
 
 local function SizeRaidMenu(compact)
-	if compact == nil then compact = db.Compact end
+	if not compact then compact = db.Compact end
 	if compact then
 		local x_spacing = db.Spacing
 		local y_spacing = -db.Spacing
 		local frameWidth =  190 + db.Spacing * 6
 		local frameHeight = 210 + db.Spacing * 6
-		RaidMenu_Parent:SetWidth(frameWidth)
-		RaidMenu_Parent:SetHeight(frameHeight)
-		RaidMenu_BG:SetWidth(frameWidth)
-		RaidMenu_BG:SetHeight(frameHeight)
-		RaidMenu:SetWidth(frameWidth)
-		RaidMenu:SetHeight(frameHeight)
-		RaidMenu_Border:SetWidth(frameWidth)
-		RaidMenu_Border:SetHeight(frameHeight)
+		RaidMenu_Parent:SetSize(frameWidth, frameHeight)
+		RaidMenu_BG:SetSize(frameWidth, frameHeight)
+		RaidMenu:SetSize(frameWidth, frameHeight)
+		RaidMenu_Border:SetSize(frameWidth, frameHeight)
 		RaidMenu_Header:Hide()
 
 	--	FormatMarker(frame,             x,                    y,                     r,   g,   b,  id, t1,   t2,   t3,   t4)
@@ -277,14 +269,10 @@ local function SizeRaidMenu(compact)
 	else
 		local frameWidth = 256
 		local frameHeight = 291
-		RaidMenu_Parent:SetWidth(frameWidth)
-		RaidMenu_Parent:SetHeight(frameHeight)
-		RaidMenu_BG:SetWidth(frameWidth)
-		RaidMenu_BG:SetHeight(frameHeight)
-		RaidMenu:SetWidth(frameWidth)
-		RaidMenu:SetHeight(frameHeight)
-		RaidMenu_Border:SetWidth(frameWidth)
-		RaidMenu_Border:SetHeight(frameHeight)
+		RaidMenu_Parent:SetSize(frameWidth, frameHeight)
+		RaidMenu_BG:SetSize(frameWidth, frameHeight)
+		RaidMenu:SetSize(frameWidth, frameHeight)
+		RaidMenu_Border:SetSize(frameWidth, frameHeight)
 		RaidMenu_Header:Show()
 	--	FormatMarker(frame,             x,   y,    r,   g,   b,  id, t1,   t2,   t3,   t4)
 		FormatMarker(SkullRaidIcon,     20,  -50,  0,   0,   0,   8, 0.75, 1,    0.25, 0.5)
@@ -305,16 +293,16 @@ local function SizeRaidMenu(compact)
 		FormatMarker(SilverWorldMarker, 110, -245, 0.7, 0.7, 0.7, 7)
 		FormatMarker(WhiteWorldMarker,  145, -245, 1,   1,   1,   8)
 		FormatMarker(ClearWorldMarkers, 180, -245, 0,   0,   0,   9)
-		FormatMarker(ConvertRaid,       105, -50)
-		FormatMarker(LootMethod,        105, -75)
-		FormatMarker(LootThreshold,     105, -100)
-		FormatMarker(RoleChecker,       105, -125)
-		FormatMarker(ReadyChecker,      105, -150)
+		FormatMarker(ReadyChecker,      105, -50)
+		FormatMarker(RoleChecker,       105, -75)
+		FormatMarker(ConvertRaid,       105, -100)
+		FormatMarker(LootMethod,        105, -125)
+		FormatMarker(LootThreshold,     105, -150)
 	end
 end
 
 function module:SetColors()
-	if not db.profile.Enable or not Micromenu then return end
+	if not db.Enable or not Micromenu then return end
 
 	RaidMenu_Parent:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg2))
 	RaidMenu:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg))
@@ -323,7 +311,7 @@ function module:SetColors()
 end
 
 function module:SetRaidMenu()
-	if not db.profile.Enable or not Micromenu then return end
+	if not db.Enable or not Micromenu then return end
 
 	-- Create frames for Raid Menu
 	RaidMenu_Parent = LUI:CreateMeAFrame("Frame", "RaidMenu_Parent", LUI.MicroMenu.ButtonLeft, 256, 256, 1, "HIGH", 0, "TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17), 1)
@@ -828,6 +816,8 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, nil, true)
+	LUI:RegisterModule(module, true)
+	db = module.db.profile
 
 	LUI:GetModule("Panels"):RegisterFrame(self)
 end

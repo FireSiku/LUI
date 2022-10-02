@@ -223,7 +223,7 @@ end
 -- ####################################################################################################################
 
 --Function that will create a namespace for each module.
-function LUI:RegisterModule(module)
+function LUI:RegisterModule(module, dev_skipDB)
 	local mName = module:GetName()
 
 	--If a module hasn't been installed yet and should be disabled by default, disable it.
@@ -233,7 +233,7 @@ function LUI:RegisterModule(module)
 	end
 	module:SetEnabledState(self.db.profile. Modules[mName])
 
-	if module.defaults then
+	if module.defaults and not dev_skipDB then
 		module.db = self.db:RegisterNamespace(mName, module.defaults)
 
 		-- Register Callbacks
