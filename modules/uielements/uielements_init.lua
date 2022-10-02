@@ -24,7 +24,7 @@ module.defaults = {
 			X = -90,
 			Y = 0,
 			ManagePosition = false,
-			HideFrame = true,
+			HideFrame = false,
 		},
 
 		AlwaysUpFrame = {
