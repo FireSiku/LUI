@@ -77,19 +77,10 @@ function module:SetFader()
 	end
 end
 
-
-------------------------------------------------------
--- / Fader Utilities / --
-------------------------------------------------------
-
--- Fader:RegisterFrame(frame, settings[, specialHover])
---[[
-	Notes.....: registers a given frame to the fader logic.
-	Parameters:
-		frame: Frame to be registered to the fader.
-		settings: Settings for the frame.
-		specialHover: Adds special mouse hover script setups for frames with children.
-]]
+--- Registers a given frame to the fader logic.
+---@param frame Frame @ Frame to be registered to the fader
+---@param settings table @ Settings for the frame
+---@param specialHover boolean @ Adds special mouseover script setup for frames with children
 function module:RegisterFrame(frame, settings, specialHover)
 	-- Check frame is a usable objects.
 	if type(frame) ~= "table"  then return end
@@ -138,12 +129,8 @@ function module:RegisterFrame(frame, settings, specialHover)
 	self:FadeHandler(frame)
 end
 
--- Fader:UnregisterFrame(frame)
---[[
-	Notes.....: Unregisters a given frame from the fader logic.
-	Parameters:
-		frame: Frame to be unregistered from the fader.
-]]
+--- Unregisters a given frame from the fader logic.
+---@param frame Frame
 function module:UnregisterFrame(frame)
 	-- Check frame is a usable object.
 	if type(frame) ~= "table" then return end
@@ -182,35 +169,33 @@ function module:UnregisterFrame(frame)
 	end
 end
 
-------------------------------------------------------
--- / Fader Mouse Hover Scripts / --
-------------------------------------------------------
+-- ####################################################################################################################
+-- ##### Fader Mouseover Scripts ######################################################################################
+-- ####################################################################################################################
 
--- Fader.Hover_OnEnter(frame)
---[[
-	Notes.....: Fades the frame when the mouse enters the frame.
-]]
+--- Fades the frame when the mouse enters the frame.
+---@param frame Frame
 function module.Hover_OnEnter(frame)
+	local regFrame = module.RegisteredFrames[frame]
+	
 	-- Set mouse hover.
 	frame.Fader.mouseHover = true
 
 	-- Check if already fading in.
-	if frame.Fader.fading and frame.Fader.endAlpha >= module.RegisteredFrames[frame].HoverAlpha then return end
+	if frame.Fader.fading and frame.Fader.endAlpha >= regFrame.HoverAlpha then return end
 
 	-- Cancel any fading.
 	module:StopFading(frame)
 
 	-- Check if fade is required.
-	if frame:GetAlpha() >= module.RegisteredFrames[frame].HoverAlpha then return end
+	if frame:GetAlpha() >= regFrame.HoverAlpha then return end
 
 	-- Fade in frame.
-	module:FadeFrame(frame, module.RegisteredFrames[frame].HoverAlpha)
+	module:FadeFrame(frame, regFrame.HoverAlpha)
 end
 
--- Fader.Hover_OnLeave(frame)
---[[
-	Notes.....: Fades out the frame when the mouse leaves the frame.
-]]
+--- Fades out the frame when the mouse leaves the frame.
+---@param frame Frame
 function module.Hover_OnLeave(frame)
 	-- Set mouse hover.
 	frame.Fader.mouseHover = false
@@ -218,43 +203,13 @@ function module.Hover_OnLeave(frame)
 	-- Check if already fading out.
 	if frame.Fader.fading and not frame.Fader.fadingIn then return end
 
+	local regFrame = module.RegisteredFrames[frame]
 	-- Fade out frame.
-	module:FadeFrame(frame,	module.RegisteredFrames[frame].OutAlpha,
-							module.RegisteredFrames[frame].OutTime,
-							module.RegisteredFrames[frame].OutDelay)
+	module:FadeFrame(frame,	regFrame.OutAlpha, regFrame.OutTime, regFrame.OutDelay)
 	module:FadeHandler(frame)
 end
 
---[=[
--- Fader.SpecialHover_OnEnter(frame) -- not being used
---[[
-	Notes.....: Fades the frame when the mouse enters the frame or any child of the frame.
-]]
-function Fader.SpecialHover_OnEnter(frame)
-	frame = frame.Fader and frame or frame:GetParent()
-
-	if not frame.Fader.mouseHover then
-		Fader.Hover_OnEnter(frame)
-	end
-end
-
--- Fader.SpecialHover_OnLeave(frame) -- not being used
---[[
-	Notes.....: Fades out the frame when the mouse leaves the frame or any child of the frame.
-]]
-function Fader.SpecialHover_OnLeave(frame)
-	frame = frame.Fader and frame or frame:GetParent()
-
-	if not frame:IsMouseOver() then
-		Fader.Hover_OnLeave(frame)
-	end
-end
---]=]
-
--- Fader:CheckMouseHover()
---[[
-	Notes.....: Checks special frames to see if the mouseover of that frame has changed.
-]]
+--- Checks special frames to see if the mouseover of that frame has changed.
 function module:CheckMouseHover()
 	for frame, mouseHover in pairs(self.specialHoverFrames) do
 		local isMouseOver = frame:IsMouseOver()
@@ -269,12 +224,8 @@ function module:CheckMouseHover()
 	end
 end
 
--- Fader:AttachHoverScript(frame)
---[[
-	Notes.....: Registers a mouseover script to a given frame if needed.
-	Parameters:
-		frame: Frame to be given hover scripts.
-]]
+--- Registers a mouseover script to a given frame if needed.
+---@param frame Frame
 function module:AttachHoverScript(frame)
 	-- Check settings.
 	if not self.RegisteredFrames[frame].Hover then
@@ -296,12 +247,8 @@ function module:AttachHoverScript(frame)
 	frame:GetScript("OnLeave")(frame)
 end
 
--- Fader:AttachSpecialHoverScript(frame)
---[[
-	Notes.....: Registers a mouseover script to a given frame that has children if needed.
-	Parameters:
-		frame: Frame to be given hover scripts.
-]]
+--- Registers a mouseover script to a given frame that has children if needed
+---@param frame Frame
 function module:AttachSpecialHoverScript(frame)
 	-- Create timer and specialHoverFrames table if they doesn't exist.
 	if not self.timerHandle then
@@ -314,12 +261,8 @@ function module:AttachSpecialHoverScript(frame)
 	end
 end
 
--- Fader:RemoveHoverScript(frame)
---[[
-	Notes.....: Unregisters the mouseover script from the given frame.
-	Parameters:
-		frame: Frame to remove hover scripts from.
-]]
+--- Unregisters the mouseover script from the given frame
+---@param frame Frame
 function module:RemoveHoverScript(frame)
 	if self.specialHoverFrames and (self.specialHoverFrames[frame] ~= nil) then
 		self.specialHoverFrames[frame] = nil
@@ -334,17 +277,13 @@ function module:RemoveHoverScript(frame)
 	end
 end
 
---	Fader:CreateHoverScripts(frame[, inAlpha[, outAlpha[, fadeTime[, fadeDelay[, children]]]]])
---[[
-	Notes.....: Creates mousehover scripts for a frame that does not need other fader features.
-	Parameters:
-		frame: The frame to create hover scripts for.
-		inAlpha: The alpha to be set when the frame is being hovered over.
-		outAlpha: The alpha to be set when the frame is not being hovered over.
-		fadeTime: The time period to fade out over.
-		fadeDelay: The time period before fading out.
-		children: To attach scripts to child frames; much like SpecialHoverScripts.
-]]
+--- Create mouseover scripts for frames that does not need other fader features
+---@param frame Frame @ Frame to create mouseover script for
+---@param inAlpha number @ Alpha to be set when the frame is being hovered over.
+---@param outAlpha number @ Alpha to be set when the frame is not being hovered over.
+---@param fadeTime number @ Time (in seconds) to fade out over
+---@param fadeDelay number @ Time (in seconds) before fading out
+---@param children boolean @ To attach scripts to child frames, like SpecialHoverScripts
 function module:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay, children)
 	-- Check frame is a usable objects.
 	if type(frame) ~= "table"  then return end
@@ -417,13 +356,9 @@ function module:CreateHoverScript(frame, inAlpha, outAlpha, fadeTime, fadeDelay,
 	end
 end
 
---	Fader:DeleteHoverScript(frame[, children])
---[[
-	Notes.....: Deletes mousehover scripts for a frame that has had hover scripts created for it.
-	Parameters:
-		frame: The frame to delete hover scripts from.
-		children: To delete scripts from child frames; much like SpecialHoverScripts.
-]]
+--- Deletes mousehover scripts for a frame that has had them.
+---@param frame Frame @ Frame to delete scripts from
+---@param children boolean? @ To delete scripts from child frames; like SpecialHoverScripts 
 function module:DeleteHoverScript(frame, children)
 	-- Check frame is a usable objects.
 	if type(frame) ~= "table"  then return end
@@ -444,14 +379,11 @@ function module:DeleteHoverScript(frame, children)
 	frame.FaderHoverScript = nil
 end
 
-------------------------------------------------------
--- / Fade / Event Handlers / --
-------------------------------------------------------
+-- ####################################################################################################################
+-- ##### Event Handling ###############################################################################################
+-- ####################################################################################################################
 
--- Fader:EventsRegister()
---[[
-	Notes.....: Register all the event triggers for the fader.
-]]
+--- Register all the event triggers for the fader.
 function module:EventsRegister()
 	-- Register event triggers
 	self:RegisterEvent("PLAYER_REGEN_DISABLED", "EventHandler")
@@ -465,10 +397,7 @@ function module:EventsRegister()
 	self:RegisterEvent("UNIT_SPELLCAST_STOP", "UnitEventHandler")
 end
 
--- Fader:EventsUnregister()
---[[
-	Notes.....: Unregister all the event triggers for the fader.
-]]
+--- Unregister all the event triggers for the fader.
 function module:EventsUnregister()
 	-- Unregister event triggers
 	self:UnregisterEvent("PLAYER_REGEN_DISABLED")
@@ -482,10 +411,8 @@ function module:EventsUnregister()
 	self:UnregisterEvent("UNIT_SPELLCAST_STOP")
 end
 
--- Fader:EventHandler()
---[[
-	Notes.....: Handles a passed event, checks frame fade triggers.
-]]
+--- Handles a passed event, checks frame fade triggers
+---@param event WowEvent
 function module:EventHandler(event)
 	-- Collect info on states.
 	if event == "PLAYER_REGEN_DISABLED" then
@@ -502,13 +429,9 @@ function module:EventHandler(event)
 	end
 end
 
--- Fader:UnitEventHandler(eventname, unit)
---[[
-	Notes.....: Handles a passed event that recieves a unit parameter and checks if it is the player unit.
-	Parameters:
-		eventname: Name of the event passed.
-		unit: arg1, or unitid for UNIT_* events.
-]]
+--- Handles a passed event that receives a unit parameter and checks if it is the player unit
+---@param event WowEvent @ Name of the event passed
+---@param unit UnitId
 function module:UnitEventHandler(event, unit)
 	-- Check unit for player only.
 	if unit ~= "player" then return end
@@ -535,28 +458,27 @@ function module:UnitEventHandler(event, unit)
 	end
 end
 
--- Fader:FadeHandler(frame)
---[[
-	Notes.....: Handles fading of a frame using the options of that frame.
-]]
+--- Handles fading of a frame using the options of that frame
+---@param frame Frame
 function module:FadeHandler(frame)
 	if frame.Fader.mouseHover then return end
 
 	-- Local variables.
 	local fadeIn = false
+	local regFrame = self.RegisteredFrames[frame]
 
 	-- Check states vs. settings.
-	if self.Status.targeting and self.RegisteredFrames[frame].Targeting then
+	if self.Status.targeting and regFrame.Targeting then
 		fadeIn = true
-	elseif self.Status.combat and self.RegisteredFrames[frame].Combat then
+	elseif self.Status.combat and regFrame.Combat then
 		fadeIn = true
-	elseif self.Status.power and self.RegisteredFrames[frame].Power
-		and (self.Status.power < self.RegisteredFrames[frame].PowerClip) then
+	elseif self.Status.power and regFrame.Power
+		and (self.Status.power < regFrame.PowerClip) then
 		fadeIn = true
-	elseif self.Status.health and self.RegisteredFrames[frame].Health
-		and (self.Status.health < self.RegisteredFrames[frame].HealthClip) then
+	elseif self.Status.health and regFrame.Health
+		and (self.Status.health < regFrame.HealthClip) then
 		fadeIn = true
-	elseif self.Status.casting and self.RegisteredFrames[frame].Casting then
+	elseif self.Status.casting and regFrame.Casting then
 		fadeIn = true
 	end
 
@@ -564,45 +486,39 @@ function module:FadeHandler(frame)
 	self:FadeOnEvent(frame, fadeIn)
 end
 
--- Fader:FadeOnEvent(frame[, fadeIn])
---[[
-	Notes.....: Fades a frame dependant on events.
-	Parameters:
-		frame: The frame to fade.
-		fadeIn: If the frame is fading in.
-]]
+--- Fades a frame dependant on events
+---@param frame Frame @ Frame to fade
+---@param fadeIn? boolean @ If the frame is fading in
 function module:FadeOnEvent(frame, fadeIn)
+	local regFrame = self.RegisteredFrames[frame]
 	if fadeIn then
 		-- Check if already fading in.
 		if frame.Fader.fading and frame.Fader.fadingIn then return end
 
 		-- Check if fade is required.
-		if frame:GetAlpha() >= self.RegisteredFrames[frame].InAlpha then self:StopFading(frame) return end
+		if frame:GetAlpha() >= regFrame.InAlpha then self:StopFading(frame) return end
 
 		-- Set to fade in.
-		self:FadeFrame(frame, self.RegisteredFrames[frame].InAlpha)
+		self:FadeFrame(frame, regFrame.InAlpha)
 	else
 		-- Check if frame is fadingIn or for mouse hover.
 		if frame.Fader.mouseHover or (frame.Fader.fading and not frame.Fader.fadingIn) then return end
 
 		-- Check if fade is required.
-		if frame:GetAlpha() <= self.RegisteredFrames[frame].OutAlpha then return end
+		if frame:GetAlpha() <= regFrame.OutAlpha then return end
 
 		-- Set to fade out.
-		self:FadeFrame(frame,	self.RegisteredFrames[frame].OutAlpha,
-								self.RegisteredFrames[frame].OutTime,
-								self.RegisteredFrames[frame].OutDelay)
+		self:FadeFrame(frame, regFrame.OutAlpha, regFrame.OutTime, regFrame.OutDelay)
 	end
 end
 
-------------------------------------------------------
--- / Frame Fader / --
-------------------------------------------------------
+-- ####################################################################################################################
+-- ##### Frame Fader ##################################################################################################
+-- ####################################################################################################################
 
--- Fader.Fade_OnUpdate(self, elapsed)
---[[
-	Notes.....: Fades running frames over time.
-]]
+--- Fades running frames over time.
+---@param self Frame
+---@param elapsed number
 function module.Fader_OnUpdate(self, elapsed)
 	-- Check fader throttle.
 	self.Throttle = self.Throttle + elapsed
@@ -632,23 +548,18 @@ function module.Fader_OnUpdate(self, elapsed)
 	end
 end
 
--- Fader:FadeFrame(frame[, endalpha[, fadetime[, fadedelay])
---[[
-	Notes.....: Takes a frame and fades it with the given parameters.
-	Parameters:
-		frame: Frame to fade.
-		endAlpha: Alpha value to fade to.
-		fadeTime: Time (seconds) to fade over.
-		fadeDelay: Delay (seconds) before fading.
-		callBack: Function to call upon finishing the fade.
-]]
+--- Takes a frame and fades it with the given parameters
+---@param frame Frame @ Frame to fade
+---@param endAlpha? number @ Alpha value to fade to
+---@param fadeTime? number @ Time (in seconds) to fade over
+---@param fadeDelay? number @ Time (in seconds) before fading occurs
+---@param callBack? function @ Function to call upon finishing the fade.
 function module:FadeFrame(frame, endAlpha, fadeTime, fadeDelay, callBack)
 	-- Check frame is a usable object.
 	if type(frame) ~= "table" then return end
 
-	-- Check if fading is needed.
+	-- Check if fading is needed and stop if not 
 	if frame:GetAlpha() == (endAlpha or 0) then
-		-- Stop fading.
 		self:StopFading(frame)
 		return
 	end
@@ -669,11 +580,9 @@ function module:FadeFrame(frame, endAlpha, fadeTime, fadeDelay, callBack)
 	self:StartFading(frame)
 end
 
--- Fader:StartFading(frame)
---[[
-	Notes.....: Adds a frame to the fading table.
-]]
-function Fader:StartFading(frame)
+--- Adds a frame to the fading table
+---@param frame Frame
+function module:StartFading(frame)
 	-- Check frame isn't already fading.
 	if frame.Fader.fading then return end
 
@@ -688,11 +597,9 @@ function Fader:StartFading(frame)
 	tinsert(self.Fading, frame)
 end
 
--- Fader:StopFading(frame)
---[[
-	Notes.....: Removes a frame to the fading table.
-]]
-function Fader:StopFading(frame)
+--- Removes a frame from the fading table
+---@param frame Frame
+function module:StopFading(frame)
 	-- Find and remove frame.
 	for i, v in ipairs(self.Fading) do
 		if v == frame then
@@ -717,9 +624,9 @@ Profiler.TraceScope(module, "Fader", "LUI")
 --]]
 
 
-------------------------------------------------------
--- / Module Settings / --
-------------------------------------------------------
+-- ####################################################################################################################
+-- ##### Module Options ###############################################################################################
+-- ####################################################################################################################
 
 function module:CreateFaderOptions(object, objectDB, objectDBdefaults, specialHover)
 	local frame
