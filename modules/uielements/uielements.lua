@@ -16,7 +16,6 @@ local db
 
 local orderUI = false
 
-local DurabilityFrame_SetAlerts = _G.DurabilityFrame_SetAlerts
 local ObjectiveTrackerFrame = _G.ObjectiveTrackerFrame
 local DurabilityFrame = _G.DurabilityFrame
 local Minimap = _G.Minimap
@@ -48,13 +47,10 @@ function module:SetHiddenFrames()
 		LUI:Kill(DurabilityFrame)
 	else
 		LUI:Unkill(DurabilityFrame)
-		DurabilityFrame_SetAlerts()
 		if db.DurabilityFrame.ManagePosition then
 			DurabilityFrame:ClearAllPoints()
 			-- Not Working. Figure out why.
 			DurabilityFrame:SetPoint("RIGHT", Minimap, "LEFT", db.DurabilityFrame.X, db.DurabilityFrame.Y)
-		else
-			DurabilityFrame_SetAlerts()
 		end
 	end
 
