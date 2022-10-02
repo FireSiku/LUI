@@ -76,7 +76,9 @@ modules\infotext\datatext.lua
 modules\micromenu\micromenu.lua
 
 ### RaidMenu ###
+modules\raidmenu\raidmenu_init.lua
 modules\raidmenu\raidmenu.xml
+modules\raidmenu\raidmenu.lua
 
 ### ExpBars ###
 # modules\expbars\threatbar.lua

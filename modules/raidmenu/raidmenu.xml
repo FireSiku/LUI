@@ -1,5 +1,4 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-	<Script file="raidmenu.lua"/>
 	<Button name="MarkerTemplate" virtual="true">
 		<Size><AbsDimension x="32" y="32"/></Size>
 		<Scripts>
