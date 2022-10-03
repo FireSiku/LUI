@@ -98,6 +98,22 @@ function module:HideDefaultMinimap()
 	oldDefault.Mail = MiniMapMailIcon:GetTexture()
 	MiniMapMailIcon:SetTexture(MAIL_ICON_TEXTURE)
 
+	-- Move battleground icon
+	if (LUI.IsRetail) then
+		local point, relativeTo, relativePoint, xOff, yOff = _G.QueueStatusMinimapButton:GetPoint(1)
+		oldDefault.QueueStatusPosition = {
+			point = point,
+			relativeTo = relativeTo,
+			relativePoint = relativePoint,
+			X = xOff,
+			Y = yOff,
+		}
+
+		_G.QueueStatusMinimapButton:ClearAllPoints()
+		_G.QueueStatusMinimapButton:SetPoint(ICON_LOCATION.LFG, Minimap, LUI:Scale(3), 0)
+		_G.QueueStatusMinimapButtonBorder:Hide()
+	end
+
 	--Size and Position
 
 	local point, relativeTo, relativePoint, xOff, yOff = Minimap:GetPoint(1)
@@ -144,6 +160,21 @@ function module:RestoreDefaultMinimap()
 	LUIMinimapBorder:Hide()
 	for i = 1, 8 do
 		_G["LUIMinimapTexture"..i]:Hide()
+	end
+
+	if (LUI.IsRetail) then
+		local point, relativeTo, relativePoint, xOff, yOff = _G.QueueStatusMinimapButton:GetPoint(1)
+		oldDefault.QueueStatusPosition = {
+			point = point,
+			relativeTo = relativeTo,
+			relativePoint = relativePoint,
+			X = xOff,
+			Y = yOff,
+		}
+		local pos = oldDefault.QueueStatusPosition
+		_G.QueueStatusMinimapButton:ClearAllPoints()
+		_G.QueueStatusMinimapButton:SetPoint(pos.point, pos.relativeTo, pos.relativePoint, pos.X, pos.Y)
+		_G.QueueStatusMinimapButtonBorder:Hide()
 	end
 
 	--Reset Position and Size
