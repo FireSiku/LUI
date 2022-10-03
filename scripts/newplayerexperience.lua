@@ -10,7 +10,6 @@ local IsAddOnLoaded = _G.IsAddOnLoaded
 local GetActionInfo = _G.GetActionInfo
 local UnitLevel = _G.UnitLevel
 
-local TutorialHelper = _G.TutorialHelper
 local WorldMapFrame = _G.WorldMapFrame
 
 local TutorialData = {}
@@ -272,7 +271,7 @@ function script:ShouldReAnchorPointer(frame)
 			end)
 			return
 		end
-	elseif text == format(_G.NPEV2_SHOW_BAGS, TutorialHelper:GetBagBinding()) then
+	elseif text == format(_G.NPEV2_SHOW_BAGS, _G.TutorialHelper:GetBagBinding()) then
 		anchor = buttons.Bags
 	elseif text == _G.NPEV2_LFD_INTRO then
 		anchor = buttons.LFG
@@ -308,12 +307,12 @@ function script:SetPointerFrame()
 end
 
 function script:ShowSpellbook()
-	local LevelUpTutorial_spellIDlookUp = TutorialHelper:FilterByClass(TutorialData.LevelAbilitiesTable);
+	local LevelUpTutorial_spellIDlookUp = _G.TutorialHelper:FilterByClass(TutorialData.LevelAbilitiesTable);
 	local playerLevel = UnitLevel("player");
 	for startLevel = 1, playerLevel do
 		local spellID = LevelUpTutorial_spellIDlookUp[startLevel];
 
-		local button = TutorialHelper:GetActionButtonBySpellID(spellID);
+		local button = _G.TutorialHelper:GetActionButtonBySpellID(spellID);
 		if not button then
 			return true
 		end
@@ -324,8 +323,8 @@ function script:ADDON_LOADED(event, addon)
 	if addon == "Blizzard_NewPlayerExperience" then
 		if IsAddOnLoaded("Bartender4") then self.BT4 = true end
 		if isUsingLUIBars() or self.BT4 then
-			script:RawHook(TutorialHelper, "GetActionButtonBySpellID", "GetActionButtonBySpellID", true)
-			script:RawHook(TutorialHelper, "FindEmptyButton", "FindEmptyButton", true)
+			script:RawHook(_G.TutorialHelper, "GetActionButtonBySpellID", "GetActionButtonBySpellID", true)
+			script:RawHook(_G.TutorialHelper, "FindEmptyButton", "FindEmptyButton", true)
 		end
 		
 		script:SetTutorialFrames()

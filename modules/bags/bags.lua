@@ -21,7 +21,7 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("Bags", "AceHook-3.0", "AceEvent-3.0")
+local module = LUI:NewModule("Bags", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -58,7 +58,6 @@ local GetContainerNumSlots = _G.GetContainerNumSlots
 local GetContainerItemInfo = _G.GetContainerItemInfo
 local GetContainerItemLink = _G.GetContainerItemLink
 local SetItemButtonCount = _G.SetItemButtonCount
-local StaticPopupDialogs = _G.StaticPopupDialogs
 local MoneyFrame_Update = _G.MoneyFrame_Update
 local GetMoneyString = _G.GetMoneyString
 local ItemButtonUtil = _G.ItemButtonUtil
@@ -1041,7 +1040,7 @@ function module:EnableBags()
 	-- hooking and setting key ring bag
 	-- this is just a reskin of Blizzard key bag to fit LUI
 	-- hooking OnShow because sometime key max slot changes.
-	if not module:IsHooked(ContainerFrame1, "OnShow") then
+	if not LUI.IsRetail and not module:IsHooked(ContainerFrame1, "OnShow") then
 		module:HookScript(ContainerFrame1, "OnShow", function(self)
 			local keybackdrop = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
 			keybackdrop:SetPoint("TOPLEFT", LUI:Scale(9), LUI:Scale(-40))

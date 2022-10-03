@@ -6,8 +6,8 @@
 
 -- External references.
 local addonname, LUI = ...
-local Chat = LUI:Module("Chat")
-local module = Chat:Module("StickyChannels", "AceHook-3.0")
+local Chat = LUI:GetModule("Chat")
+local module = Chat:NewModule("StickyChannels", Chat:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0")
 
 local db, dbd --luacheck:ignore
 local ChatTypeInfo = _G.ChatTypeInfo

@@ -11,7 +11,7 @@
 -- External references.
 ------------------------------------------------------------------------
 local addonname, LUI = ...
-local module = LUI:Module("Mirror Bar", "AceEvent-3.0")
+local module = LUI:NewModule("Mirror Bar", LUI:GetLegacyPrototype(), "LUIDevAPI")
 local Profiler = LUI.Profiler
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists

@@ -21,11 +21,8 @@ local CompactPartyFrame_UpdateShown = _G.CompactPartyFrame_UpdateShown
 local CompactRaidFrameManager = _G.CompactRaidFrameManager
 local GetDisplayedAllyFrames = _G.GetDisplayedAllyFrames
 local TemporaryEnchantFrame = _G.TemporaryEnchantFrame
-local OrderHallCommandBar = _G.OrderHallCommandBar
-local CompactPartyFrame = _G.CompactPartyFrame
 local ConsolidatedBuffs = _G.ConsolidatedBuffs
 local PlayerTalentFrame = _G.PlayerTalentFrame
-local ArenaEnemyFrames = _G.ArenaEnemyFrames
 local BuffFrame = _G.BuffFrame
 
 local oocWrapper = LUI.OutOfCombatWrapper
@@ -37,7 +34,7 @@ local show, hide, hook, unhook
 do
 	if LUI.IsRetail then
 		Blizzard:SecureHook("OrderHall_LoadUI", function()
-			LUI:Kill(OrderHallCommandBar)
+			LUI:Kill(_G.OrderHallCommandBar)
 		end)
 	end
 	hook = setmetatable({}, {
@@ -85,9 +82,9 @@ do
 
 			UIParent:UnregisterEvent("GROUP_ROSTER_UPDATE")
 
-			if CompactPartyFrame then
-				CompactPartyFrame:UnregisterEvent("GROUP_ROSTER_UPDATE")
-				CompactPartyFrame:Hide()
+			if _G.CompactPartyFrame then
+				_G.CompactPartyFrame:UnregisterEvent("GROUP_ROSTER_UPDATE")
+				_G.CompactPartyFrame:Hide()
 
 				if hook.party == "CompactPartyFrame_Generate" then
 					hook.party = nil
@@ -115,7 +112,7 @@ do
 
 		arena = function()
 			if IsAddOnLoaded("Blizzard_ArenaUI") then
-				ArenaEnemyFrames:UnregisterAllEvents()
+				_G.ArenaEnemyFrames:UnregisterAllEvents()
 			else
 				hook("arena", "Arena_LoadUI")
 			end
@@ -164,14 +161,14 @@ do
 				PartyMemberFrame_UpdateMember(frame)
 			end
 			UIParent:RegisterEvent("GROUP_ROSTER_UPDATE")
-			if CompactPartyFrame then
-				CompactPartyFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+			if _G.CompactPartyFrame then
+				_G.CompactPartyFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
 				if GetDisplayedAllyFrames then
 					if GetDisplayedAllyFrames() == "compact-party" then
-						CompactPartyFrame:Show()
+						_G.CompactPartyFrame:Show()
 					end
 				elseif GetCVarBool("useCompactPartyFrames") and GetNumSubgroupMembers() > 0 and GetNumGroupMembers() == 0 then
-					CompactPartyFrame:Show()
+					_G.CompactPartyFrame:Show()
 				end
 			end
 		end,
@@ -193,8 +190,8 @@ do
 
 		arena = function()
 			if IsAddOnLoaded("Blizzard_ArenaUI") then
-				ArenaEnemyFrames:GetScript("OnLoad")(ArenaEnemyFrames)
-				ArenaEnemyFrames:GetScript("OnEvent")(ArenaEnemyFrames, "VARIABLES_LOADED")
+				_G.ArenaEnemyFrames:GetScript("OnLoad")(_G.ArenaEnemyFrames)
+				_G.ArenaEnemyFrames:GetScript("OnEvent")(_G.ArenaEnemyFrames, "VARIABLES_LOADED")
 			end
 		end,
 
@@ -260,7 +257,7 @@ function Blizzard:Hide(type)
 
 	hidden[type] = true
 	hide[type]()
-	if LUI.IsRetail then MicroButtonAndBagsBar:Hide() end -- does not work with actionbarframes function.
+	if LUI.IsRetail then _G.MicroButtonAndBagsBar:Hide() end -- does not work with actionbarframes function.
 	return true -- inform that the object was hidden
 end
 
@@ -276,7 +273,7 @@ function Blizzard:Show(type)
 		unhook(type)
 	end
 	show[type]()
-	if LUI.IsRetail then MicroButtonAndBagsBar:Show() end
+	if LUI.IsRetail then _G.MicroButtonAndBagsBar:Show() end
 	return true -- inform that the object was shown
 end
 

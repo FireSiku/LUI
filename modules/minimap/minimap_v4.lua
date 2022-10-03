@@ -7,9 +7,12 @@
 -- ####################################################################################################################
 -- luacheck: globals LUIMinimapZone LUIMinimapCoord LUIMinimapBorder
 
+---@type string, LUIAddon
 local _, LUI = ...
-local module = LUI:GetModule("Minimap")
 local L = LUI.L
+
+---@type MinimapModule
+local module = LUI:GetModule("Minimap")
 local db
 
 -- Locals and Constants
@@ -47,13 +50,11 @@ local defaultGarrisonState = false
 local minimapShape = "ROUND"  -- Shape of the minimap, used for GetMinimapShape() community api.
 local oldDefault = {}         -- Keep information on default minimap
 
-
-
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
 
--- For others mods with a minimap button, community API to know minimap shape.
+--- Community API to know minimap shape. For others mods with a minimap button.
 function GetMinimapShape() return minimapShape end
 
 local minimapFrames = {
@@ -96,6 +97,22 @@ function module:HideDefaultMinimap()
 	MiniMapMailFrame:SetPoint(ICON_LOCATION.Mail, Minimap, 3, 8)
 	oldDefault.Mail = MiniMapMailIcon:GetTexture()
 	MiniMapMailIcon:SetTexture(MAIL_ICON_TEXTURE)
+
+	-- Move battleground icon
+	if (LUI.IsRetail) then
+		local point, relativeTo, relativePoint, xOff, yOff = _G.QueueStatusMinimapButton:GetPoint(1)
+		oldDefault.QueueStatusPosition = {
+			point = point,
+			relativeTo = relativeTo,
+			relativePoint = relativePoint,
+			X = xOff,
+			Y = yOff,
+		}
+
+		_G.QueueStatusMinimapButton:ClearAllPoints()
+		_G.QueueStatusMinimapButton:SetPoint(ICON_LOCATION.LFG, Minimap, LUI:Scale(3), 0)
+		_G.QueueStatusMinimapButtonBorder:Hide()
+	end
 
 	--Size and Position
 
@@ -143,6 +160,21 @@ function module:RestoreDefaultMinimap()
 	LUIMinimapBorder:Hide()
 	for i = 1, 8 do
 		_G["LUIMinimapTexture"..i]:Hide()
+	end
+
+	if (LUI.IsRetail) then
+		local point, relativeTo, relativePoint, xOff, yOff = _G.QueueStatusMinimapButton:GetPoint(1)
+		oldDefault.QueueStatusPosition = {
+			point = point,
+			relativeTo = relativeTo,
+			relativePoint = relativePoint,
+			X = xOff,
+			Y = yOff,
+		}
+		local pos = oldDefault.QueueStatusPosition
+		_G.QueueStatusMinimapButton:ClearAllPoints()
+		_G.QueueStatusMinimapButton:SetPoint(pos.point, pos.relativeTo, pos.relativePoint, pos.X, pos.Y)
+		_G.QueueStatusMinimapButtonBorder:Hide()
 	end
 
 	--Reset Position and Size

@@ -4,22 +4,28 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
-local module = LUI:GetModule("Infotext")
-local element = module:NewElement("Clock", "AceEvent-3.0", "AceHook-3.0")
 local L = LUI.L
 
+---@type InfotextModule
+local module = LUI:GetModule("Infotext")
+local element = module:NewElement("Clock", "AceEvent-3.0", "AceHook-3.0")
+
 -- local copies
-local gsub, format = gsub, format
-local tonumber, date = tonumber, date
+local gsub, format, tonumber, date = gsub, format, tonumber, date
 local GetNumSavedWorldBosses = _G.GetNumSavedWorldBosses
 local GetSavedWorldBossInfo = _G.GetSavedWorldBossInfo
 local GetSavedInstanceInfo = _G.GetSavedInstanceInfo
 local GetNumSavedInstances = _G.GetNumSavedInstances
-local TimeBreakDown = ChatFrame_TimeBreakDown
+local TimeManager_Toggle = _G.TimeManager_Toggle
+local TimeBreakDown = _G.ChatFrame_TimeBreakDown
 local GetInstanceInfo = _G.GetInstanceInfo
+local GameTimeFrame = _G.GameTimeFrame
+local InGuildParty = _G.InGuildParty
 local IsInInstance = _G.IsInInstance
 local GetGameTime = _G.GetGameTime
+local GetCVarBool = _G.GetCVarBool
 
 -- local variables
 local cvarLocal, cvarMilitary -- Cache containing CVars
@@ -28,12 +34,12 @@ local instanceInfo       -- Any instance tag would go in this.
 local invitesPending = false
 
 -- constants
-local GAMETIME_TOOLTIP_TOGGLE_CALENDAR = GAMETIME_TOOLTIP_TOGGLE_CALENDAR
-local TIMEMANAGER_TOOLTIP_LOCALTIME = TIMEMANAGER_TOOLTIP_LOCALTIME
-local TIMEMANAGER_TOOLTIP_REALMTIME = TIMEMANAGER_TOOLTIP_REALMTIME
-local TIMEMANAGER_TITLE = TIMEMANAGER_TITLE
-local TIMEMANAGER_PM = TIMEMANAGER_PM
-local TIMEMANAGER_AM = TIMEMANAGER_AM
+local GAMETIME_TOOLTIP_TOGGLE_CALENDAR = _G.GAMETIME_TOOLTIP_TOGGLE_CALENDAR
+local TIMEMANAGER_TOOLTIP_LOCALTIME = _G.TIMEMANAGER_TOOLTIP_LOCALTIME
+local TIMEMANAGER_TOOLTIP_REALMTIME = _G.TIMEMANAGER_TOOLTIP_REALMTIME
+local TIMEMANAGER_TITLE = _G.TIMEMANAGER_TITLE
+local TIMEMANAGER_PM = _G.TIMEMANAGER_PM
+local TIMEMANAGER_AM = _G.TIMEMANAGER_AM
 local CVAR_MILITARY = "timeMgrUseMilitaryTime"
 local CVAR_LOCAL = "timeMgrUseLocalTime"
 
@@ -41,7 +47,7 @@ local CLOCK_UPDATE_TIME = 1
 
 --Instance Difficulty constants
 --local TAG_GUILD_GROUP = " |cff66c7ffG|r"
-local RAID_INFO_WORLD_BOSS = RAID_INFO_WORLD_BOSS
+local RAID_INFO_WORLD_BOSS = _G.RAID_INFO_WORLD_BOSS
 
 --Do not localize those strings. All of them have an associated localized InfoClock_Instance_* entry
 local INSTANCE_DIFFICULTY_FORMAT = {

@@ -6,9 +6,9 @@ local AudioOptionsFrame = _G.AudioOptionsFrame
 local VideoOptionsFrame = _G.VideoOptionsFrame
 local ChatConfigFrame = _G.ChatConfigFrame
 local MacOptionsFrame = _G.MacOptionsFrame
-local KeyBindingFrame = _G.KeyBindingFrame
 
 function script:MakeMovable(frame)
+	if not frame then return end --failsafe for MacOptions and other frames.
 	local mover = CreateFrame("Frame", frame:GetName() .. "Mover", frame)
 	mover:EnableMouse(true)
 	mover:SetPoint("TOP", frame, "TOP", 0, 10)
@@ -30,16 +30,14 @@ function script:PLAYER_ENTERING_WORLD(event)
 	self:MakeMovable(ChatConfigFrame)
 	self:MakeMovable(AudioOptionsFrame)
 	self:MakeMovable(VideoOptionsFrame)
-	if MacOptionsFrame then
-	   self:MakeMovable(MacOptionsFrame)
-	end
+	self:MakeMovable(MacOptionsFrame)
 end
 
 function script:ADDON_LOADED(event, addon)
 	if addon == "Blizzard_BindingUI" then
 		self:UnregisterEvent(event)
 		
-		self:MakeMovable(KeyBindingFrame)
+		self:MakeMovable(_G.KeyBindingFrame)
 	end
 end
 

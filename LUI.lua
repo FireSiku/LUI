@@ -67,6 +67,7 @@ Media:Register("font", "neuropol", [[Interface\AddOns\LUI\media\fonts\neuropol.t
 Media:Register("font", "AvantGarde_LT_Medium", [[Interface\AddOns\LUI\media\fonts\AvantGarde_LT_Medium.ttf]])
 Media:Register("font", "Arial Narrow", [[Interface\AddOns\LUI\media\fonts\ARIALN.TTF]])
 Media:Register("font", "Pepsi", [[Interface\AddOns\LUI\media\fonts\pepsi.ttf]])
+Media:Register("font", "NotoSans-SCB", [[Interface\AddOns\LUI\media\fonts\NotoSans-SemiCondensedBold.ttf]])
 
 -- REGISTER BORDERS
 Media:Register("border", "glow", [[Interface\Addons\LUI\media\textures\borders\glow.tga]])
@@ -100,36 +101,6 @@ LUI.Media = {
 	["btn_gloss"] = [[Interface\AddOns\LUI\media\textures\buttons\Gloss]], -- Button Overlay
 }
 
-LUI.FontFlags = {
-	NONE = L["None"],
-	OUTLINE = L["Outline"],
-	THICKOUTLINE = L["Thick Outline"],
-	MONOCHROME = L["Monochrome"],
-}
-
-LUI.Points = {
-	CENTER = L["Center"],
-	TOP = L["Top"],
-	BOTTOM = L["Bottom"],
-	LEFT = L["Left"],
-	RIGHT = L["Right"],
-	TOPLEFT = L["Top Left"],
-	TOPRIGHT = L["Top Right"],
-	BOTTOMLEFT = L["Bottom Left"],
-	BOTTOMRIGHT = L["Bottom Right"],
-}
-LUI.Corners = {
-	TOPLEFT = L["Top Left"],
-	TOPRIGHT = L["Top Right"],
-	BOTTOMLEFT = L["Bottom Left"],
-	BOTTOMRIGHT = L["Bottom Right"],
-}
-LUI.Sides = {
-	TOP = L["Top"],
-	BOTTOM = L["Bottom"],
-	LEFT = L["Left"],
-	RIGHT = L["Right"],
-}
 LUI.Opposites = {
 	-- Sides
 	TOP = "BOTTOM",
@@ -211,7 +182,7 @@ local function CheckResolution()
 
 	if uiWidth == "1280" and uiHeight == "1024" then
 		-- Repostion Info Texts
-		local Infotext = LUI:Module("Infotext", true)
+		local Infotext = LUI:GetModule("Infotext")
 		if Infotext and false then -- broken with false until proper positions have been determined
 			Infotext.db.defaults.profile.Bags.X = -100
 			Infotext.db.defaults.profile.Durability.X = 10
@@ -226,7 +197,7 @@ local function CheckResolution()
 		LUI.defaults.profile.Frames.Tps.Y = 882
 
 		-- Reposition Auras
-		local auras = LUI:Module("Auras")
+		local auras = LUI:GetModule("Auras")
 		auras.db.General.Anchor = "TOPRIGHT"
 		auras.db.Buffs.X = -170
 		auras.db.Buffs.Y = -75
@@ -320,7 +291,7 @@ function LUI:StyleButton(b, checked)
 	pushed:SetPoint("BOTTOMRIGHT",button,-2,2)
 	button:SetPushedTexture(pushed)
 
-	local Infotext = self:Module("Infotext", true)
+	local Infotext = self:GetModule("Infotext")
 	count:SetFont(Media:Fetch("font", (Infotext and Infotext.db.profile.FPS.Font or "vibroceb")), (Infotext and Infotext.db.profile.FPS.FontSize or 12), "OUTLINE")
 
 	if checked then
@@ -620,41 +591,23 @@ end
 -- / MODULES / --
 ------------------------------------------------------
 
-local function getModulePrototype(parent)
+function LUI:GetLegacyPrototype()
 	local prototype = {
-		Toggle = parent.Toggle,
-		GetDBVar = parent.GetDBVar,
-		SetDBVar = parent.SetDBVar,
-		GetDefaultVal = parent.GetDefaultVal,
+		Toggle = self.Toggle,
+		GetDBVar = self.GetDBVar,
+		SetDBVar = self.SetDBVar,
+		GetDefaultVal = self.GetDefaultVal,
 	}
 
-	if parent == LUI then
-		prototype.Module = parent.Module
-		prototype.Namespace = parent.Namespace
+	if self == LUI then
+		prototype.Module = self.Module
+		prototype.Namespace = self.Namespace
+		prototype.GetLegacyPrototype = self.GetLegacyPrototype
+	else
+		prototype.isNestedModule = true
 	end
 
 	return prototype
-end
-
--- LUI:Module(name [, silent]) to get module (if silent is true and the module does not exist, it will not be created)
--- LUI:Module(name [, prototype] [, libs...]) -- to create module or add to module
-function LUI:Module(name, prototype, ...)
-	local module = self:GetModule(name, true)
-	if module and type(prototype) == "string" then
-		AceAddon:EmbedLibraries(module, prototype, ...)
-	elseif not module and prototype ~= true then -- check silent
-		if type(prototype) == "string" then
-			module = self:NewModule(name, getModulePrototype(self), "LUIDevAPI", prototype, ...)
-		else
-			module = self:NewModule(name, getModulePrototype(self), "LUIDevAPI")
-		end
-
-		if self ~= LUI then
-			module.isNestedModule = true
-		end
-	end
-
-	return module
 end
 
 function LUI:Toggle(state)
@@ -914,9 +867,9 @@ local function getOptions()
 									name = "Show Minimap",
 									desc = "Whether you want to show the Minimap by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.Minimap.AlwaysShow end,
+									get = function() return LUI:GetModule("Panels").db.profile.Minimap.AlwaysShow end,
 									set = function()
-										local a = LUI:Module("Panels").db.profile.Minimap
+										local a = LUI:GetModule("Panels").db.profile.Minimap
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 6,
@@ -925,9 +878,9 @@ local function getOptions()
 									name = "Show Chat",
 									desc = "Whether you want to show the Chat Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.Chat.AlwaysShow end,
+									get = function() return LUI:GetModule("Panels").db.profile.Chat.AlwaysShow end,
 									set = function()
-										local a = LUI:Module("Panels").db.profile.Chat
+										local a = LUI:GetModule("Panels").db.profile.Chat
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 7,
@@ -936,9 +889,9 @@ local function getOptions()
 									name = "Show TPS",
 									desc = "Whether you want to show your TPS Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.Tps.AlwaysShow end,
+									get = function() return LUI:GetModule("Panels").db.profile.Tps.AlwaysShow end,
 									set = function()
-										local a = LUI:Module("Panels").db.profile.Tps
+										local a = LUI:GetModule("Panels").db.profile.Tps
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 8,
@@ -947,9 +900,9 @@ local function getOptions()
 									name = "Show DPS",
 									desc = "Whether you want to show your DPS Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.Dps.AlwaysShow end,
+									get = function() return LUI:GetModule("Panels").db.profile.Dps.AlwaysShow end,
 									set = function()
-										local a = LUI:Module("Panels").db.profile.Dps
+										local a = LUI:GetModule("Panels").db.profile.Dps
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 9,
@@ -958,9 +911,9 @@ local function getOptions()
 									name = "Show Raid",
 									desc = "Whether you want to show your Raid Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.Raid.AlwaysShow end,
+									get = function() return LUI:GetModule("Panels").db.profile.Raid.AlwaysShow end,
 									set = function()
-										local a = LUI:Module("Panels").db.profile.Raid
+										local a = LUI:GetModule("Panels").db.profile.Raid
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 10,
@@ -969,9 +922,9 @@ local function getOptions()
 									name = "Show MicroMenu",
 									desc = "Whether you want to show the Micromenu by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:Module("Panels").db.profile.MicroMenu.AlwaysShow end,
+									get = function() return LUI:GetModule("Panels").db.profile.MicroMenu.AlwaysShow end,
 									set = function()
-										local a = LUI:Module("Panels").db.profile.MicroMenu
+										local a = LUI:GetModule("Panels").db.profile.MicroMenu
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 12,
@@ -1159,14 +1112,14 @@ local function getOptions()
 									desc = "Hide Blizzard Raid Frames (only available when LUI Unitframes are disabled)",
 									type = "toggle",
 									width = "full",
-									disabled = function() return LUI:Module("Unitframes").db.Enable end,
-									get = function() return LUI:Module("Unitframes").db.Settings.HideBlizzRaid end,
+									disabled = function() return LUI:GetModule("Unitframes").db.Enable end,
+									get = function() return LUI:GetModule("Unitframes").db.Settings.HideBlizzRaid end,
 									set = function(info, value)
-										LUI:Module("Unitframes").db.Settings.HideBlizzRaid = value
+										LUI:GetModule("Unitframes").db.Settings.HideBlizzRaid = value
 										if value then
-											LUI:Module("Unitframes"):Module("HideBlizzard"):Hide("raid", true)
+											LUI.Blizzard:Hide("raid", true)
 										else
-											LUI:Module("Unitframes"):Module("HideBlizzard"):Show("raid")
+											LUI.Blizzard:Show("raid")
 										end
 									end,
 									order = 52,
@@ -1412,7 +1365,7 @@ local function getOptions()
 							func = function()
 								for k, v in pairs(copyProfile) do
 									if k ~= "name" and v == true then
-										local module = LUI:Module(k, true)
+										local module = LUI:GetModule(k)
 										if module then
 											LUI.db.CopyProfile(module.db, copyProfile.name)
 										end
@@ -1429,7 +1382,7 @@ local function getOptions()
 					get = function(info) return copyProfile[info[#info]] end,
 					set = function(info, value) copyProfile[info[#info]] = value end,
 					disabled = function(info)
-						local module = LUI:Module(info[#info], true)
+						local module = LUI:GetModule(info[#info])
 						if module then
 							return (not(module.db and module.db.profiles and module.db.profiles[copyProfile.name]) and true or false)
 						end
@@ -1493,7 +1446,7 @@ local function getOptions()
 		end
 
 		for k, v in pairs(newModuleOptions) do -- all modules need to be converted over to this
-			local module = type(v) == "string" and LUI:Module(v) or v
+			local module = type(v) == "string" and LUI:GetModule(v) or v
 			local options = type(module.LoadOptions) == "function" and module:LoadOptions() or module.options
 
 			if options then
@@ -1852,7 +1805,7 @@ function LUI:OnInitialize()
 		self:Configure()
 	end
 
-	_G.StaticPopupDialogs["RELOAD_UI"] = { -- TODO: Remove all need for this
+	StaticPopupDialogs["RELOAD_UI"] = { -- TODO: Remove all need for this
 		preferredIndex = 3,
 		text = L["The UI needs to be reloaded!"],
 		button1 = ACCEPT,
@@ -1863,7 +1816,7 @@ function LUI:OnInitialize()
 		hideOnEscape = 1
 	}
 
-	_G.StaticPopupDialogs["RESTORE_DETAULTS"] = {
+	StaticPopupDialogs["RESTORE_DETAULTS"] = {
 		preferredIndex = 3,
 		text = "Do you really want to restore all defaults. All your settings will be lost!",
 		button1 = ACCEPT,
@@ -1954,28 +1907,4 @@ function LUI:Open(force, ...)
 	self:RegisterEvent("PLAYER_REGEN_DISABLED", refreshOptions)
 
 	return LUI:Open(force, ...)
-end
-
-LUI.chatcommands = {
-	["debug"] = "Debug",
-	["config"] = "Open",
-	["install"] = "Configure",
-}
-
-function LUI:ChatCommand(input)
-	if not input or input:trim() == "" then
-		self:Open()
-	else
-		local arg = self:GetArgs(input)
-		local cmd = arg and LUI.chatcommands[arg:lower()] or nil
-		if cmd then
-			if type(cmd) == "function" then
-				cmd()
-			else
-				self[cmd](self)
-			end
-		elseif arg then
-			self:Print("Unknown command: "..arg)
-		end
-	end
 end

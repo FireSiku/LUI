@@ -12,7 +12,7 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("Infotext", "AceHook-3.0")
+local module = LUI:NewModule("Infotext", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -1889,7 +1889,7 @@ function module:SetGF()
 			self:ClearAllPoints()
 			self:SetPoint(isTop(frame) and "TOP" or "BOTTOM", frame, isTop(frame) and "BOTTOM" or "TOP")
 
-			local Tooltip = LUI:Module("Tooltip", true)
+			local Tooltip = LUI:GetModule("Tooltip")
 			if Tooltip and Tooltip:IsEnabled() then
 				local backdrop = {
 					bgFile = Media:Fetch("background", LUI.db.profile.Tooltip.Background.Texture),

@@ -4,10 +4,13 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
+local L = LUI.L
+
+---@type InfotextModule
 local module = LUI:GetModule("Infotext")
 local element = module:NewElement("Memory")
-local L = LUI.L
 
 local format = format
 local collectgarbage = collectgarbage

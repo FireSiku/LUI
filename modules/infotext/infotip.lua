@@ -4,11 +4,16 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
+local L = LUI.L
+
+---@type InfotextModule
 local module = LUI:GetModule("Infotext")
+
+---@type TooltipModule
 local modTooltip = LUI:GetModule("Tooltip")
 local element = {}
-local L = LUI.L
 
 -- local copies
 local unpack, pairs = unpack, pairs
@@ -46,7 +51,7 @@ end
 
 function LineMixin:SetClassIcon(tex, class)
 	tex:SetTexture(CLASS_ICONS_TEXTURE)
-	local offset, left, right, bottom, top = 0.025, unpack(CLASS_ICON_TCOORDS[class])
+	local offset, left, right, bottom, top = 0.025, unpack(_G.CLASS_ICON_TCOORDS[class])
 	tex:SetTexCoord(left+offset, right-offset, bottom+offset, top-offset)
 end
 

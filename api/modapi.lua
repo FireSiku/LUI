@@ -6,13 +6,14 @@
 -- ####################################################################################################################
 -- Addon building reference.
 
+---@type string, LUIAddon
 local _, LUI = ...
 local Media = LibStub("LibSharedMedia-3.0")
 
 --local copies
 local pairs = pairs
 
----@class LUIModule
+---@class LUIModule : AceEvent-3.0
 local ModuleMixin = {}
 
 --- Embed the ModuleMixin into target object.  
@@ -79,6 +80,7 @@ function ModuleMixin:Color(colorName)
 end
 
 --- Fetch a color and wrap text with its color code.
+---@param text string
 ---@param colorName string @ check module db first, then color module.
 ---@return string coloredText
 function ModuleMixin:ColorText(text, colorName)
@@ -90,6 +92,7 @@ function ModuleMixin:ColorText(text, colorName)
 end
 
 --- Wrapper around SharedMedia's `:Fetch("statusbar")`
+---@param name string
 function ModuleMixin:FetchStatusBar(name)
 	local db = self:GetDB("StatusBars")
 	if db and db[name] then
@@ -100,6 +103,7 @@ function ModuleMixin:FetchStatusBar(name)
 end
 
 --- Wrapper around SharedMedia's `:Fetch("border")`
+---@param name string
 function ModuleMixin:FetchBorder(name)
 	local db = self:GetDB("Borders")
 	if db and db[name] then
@@ -110,6 +114,7 @@ function ModuleMixin:FetchBorder(name)
 end
 
 --- Wrapper around SharedMedia's `:Fetch("background")`
+---@param name string
 function ModuleMixin:FetchBackground(name)
 	local db = self:GetDB("Backgrounds")
 	if db and db[name] then
@@ -161,6 +166,8 @@ function ModuleMixin:FetchBackdrop(name, tile, tileSize, l, r, t, b)
 end
 
 --- Function that fetch and set Backdrop, along with setting color and border color.
+---@param name string @ Name of the backdrop to fetch
+---@param frame Frame
 function ModuleMixin:UpdateFrameBackdrop(name, frame, ...)
 	self:FetchBackdrop()
 	local backdrop = self:FetchBackdrop(name, ...)
@@ -200,7 +207,7 @@ end
 
 --- Returns the profile database table.
 ---@param subTable string? @ Return the requested subtable if found. Otherwise return the module's db.
----@return AceDB
+---@return AceDB-3.0
 function ModuleMixin:GetDB(subTable)
 	local db
 	if self.db then
@@ -213,8 +220,8 @@ function ModuleMixin:GetDB(subTable)
 end
 
 --- Returns a database scope table. Defaults to profile.
----@param scope DBScope
----@return AceDB
+---@param scope? DBScope
+---@return AceDB-3.0
 function ModuleMixin:GetDBScope(scope)
 	scope = scope or "profile"
 	if self.db then

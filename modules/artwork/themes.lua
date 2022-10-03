@@ -14,12 +14,11 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("Themes", "AceSerializer-3.0")
+local module = LUI:NewModule("Themes", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceSerializer-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
 local db, dbd
-local StaticPopupDialogs = _G.StaticPopupDialogs
 local StaticPopup_Hide = _G.StaticPopup_Hide
 local UnitClass = _G.UnitClass
 local tContains = _G.tContains
@@ -43,7 +42,7 @@ function module:ApplyTheme()
 end
 
 function module:Refresh_Colors(name, targetModule) -- (name [, targetModule])
-	targetModule = targetModule or LUI:Module(name, true)
+	targetModule = targetModule or LUI:GetModule(name)
 
 	if targetModule and targetModule:IsEnabled() and targetModule.SetColors then
 		targetModule:SetColors()
@@ -906,11 +905,11 @@ function module:LoadOptions()
 
 	-- disabled functions
 	local function minimapDisabled()
-		local Minimap = LUI:Module("Minimap", true)
+		local Minimap = LUI:GetModule("Minimap")
 		return not (Minimap and Minimap:IsEnabled())
 	end
 	local function chatDisabled()
-		local Chat = LUI:Module("Chat", true)
+		local Chat = LUI:GetModule("Chat")
 		return not (Chat and Chat:IsEnabled())
 	end
 
@@ -918,7 +917,7 @@ function module:LoadOptions()
 	local function createDisabled(toCheck)
 		if not disabledFuncs[toCheck] then
 			disabledFuncs[toCheck] = function()
-				return not LUI:Module(toCheck, true)
+				return not LUI:GetModule(toCheck)
 			end
 		end
 
@@ -1045,7 +1044,7 @@ function module:LoadOptions()
 		Frames = {
 			name = "Frames",
 			type = "group",
-			disabled = createDisabled("Frames"),
+			disabled = createDisabled("Panels"),
 			order = 2,
 			args = {
 				color_top = {
@@ -1055,7 +1054,7 @@ function module:LoadOptions()
 					width = "full",
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Frames"),
+					set = createSetColor("Panels"),
 					order = 1,
 				},
 				color_bottom = {
@@ -1065,7 +1064,7 @@ function module:LoadOptions()
 					width = "full",
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Frames"),
+					set = createSetColor("Panels"),
 					order = 2,
 				},
 				minimap = {
@@ -1230,7 +1229,7 @@ function module:LoadOptions()
 		Navigation = {
 			name = "Navigation",
 			type = "group",
-			disabled = createDisabled("Frames"),
+			disabled = createDisabled("Panels"),
 			order = 5,
 			args = {
 				navi = {
@@ -1240,7 +1239,7 @@ function module:LoadOptions()
 					width = "full",
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Frames"),
+					set = createSetColor("Panels"),
 					order = 1,
 				},
 				navi_hover = {
@@ -1250,7 +1249,7 @@ function module:LoadOptions()
 					width = "full",
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Frames"),
+					set = createSetColor("Panels"),
 					order = 2,
 				},
 				orb = {
@@ -1260,7 +1259,7 @@ function module:LoadOptions()
 					width = "full",
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Frames"),
+					set = createSetColor("Panels"),
 					order = 3,
 				},
 				orb_cycle = {
@@ -1270,7 +1269,7 @@ function module:LoadOptions()
 					width = "full",
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Frames"),
+					set = createSetColor("Panels"),
 					order = 4,
 				},
 				orb_hover = {
@@ -1280,7 +1279,7 @@ function module:LoadOptions()
 					width = "full",
 					hasAlpha = true,
 					get = getColor,
-					set = createSetColor("Frames"),
+					set = createSetColor("Panels"),
 					order = 5,
 				},
 			},

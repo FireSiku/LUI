@@ -6,7 +6,11 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
+local L = LUI.L
+
+---@class MinimapModule : LUIModule
 local module = LUI:NewModule("Minimap", "AceHook-3.0")
 
 -- ####################################################################################################################
@@ -18,7 +22,7 @@ module.defaults = {
 		General = {
 			Scale = 1,
 			CoordPrecision = 1,
-			AlwaysShowText = false,
+			AlwaysShowText = true,
 			HideMissingCoord = true,
 			ShowTextures = true,
 			FontSize = 12,
@@ -46,7 +50,7 @@ module.defaults = {
 -- ####################################################################################################################
 
 function module:OnInitialize()
-	LUI:RegisterModule(module, true)
+	LUI:RegisterModule(module)
 end
 
 function module:OnEnable()

@@ -5,8 +5,8 @@
 ]]
 
 local addonname, LUI = ...
-local module = LUI:Module("Unitframes", "AceSerializer-3.0")
-local Fader = LUI:Module("Fader")
+local module = LUI:GetModule("Unitframes")
+local Fader = LUI:GetModule("Fader")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
 local importLayoutName
@@ -1542,7 +1542,6 @@ local function GetLayoutArray()
 end
 
 do
-	local StaticPopupDialogs = _G.StaticPopupDialogs
 	StaticPopupDialogs["ALREADY_A_LAYOUT"] = {
 		preferredIndex = 3,
 		text = "That layout already exists.\nPlease choose another name.",

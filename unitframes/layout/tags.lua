@@ -5,7 +5,7 @@
 ]]
 
 local addonname, LUI = ...
-local module = LUI:Module("Unitframes")
+local module = LUI:GetModule("Unitframes")
 local oUF = LUI.oUF
 
 local Media = LibStub("LibSharedMedia-3.0")

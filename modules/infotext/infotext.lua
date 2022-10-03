@@ -6,12 +6,16 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
+local L = LUI.L
+
+---@class InfotextModule : LUIModule
 local module = LUI:NewModule("Infotext", "AceHook-3.0")
+
 local LDB = LibStub:GetLibrary("LibDataBroker-1.1")
 module.RegisterLDBCallback = LDB.RegisterCallback
 module.LDB = LDB
-local L = LUI.L
 local db
 
 local select, pairs = select, pairs
@@ -344,6 +348,6 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
-	LUIInfotext_topAnchor:Hide()
-	LUIInfotext_bottomAnchor:Hide()
+	_G.LUIInfotext_topAnchor:Hide()
+	_G.LUIInfotext_bottomAnchor:Hide()
 end

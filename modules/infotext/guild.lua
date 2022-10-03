@@ -4,13 +4,16 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
-local module = LUI:GetModule("Infotext")
-local element = module:NewElement("Guild", "AceEvent-3.0")
 local L = LUI.L
 
+---@type InfotextModule
+local module = LUI:GetModule("Infotext")
+local element = module:NewElement("Guild", "AceEvent-3.0")
+
 -- local copies
-local format, strsplit = format, strsplit
+local format, strsplit, max = format, string.split, math.max
 local PanelTemplates_GetSelectedTab = _G.PanelTemplates_GetSelectedTab
 local SetGuildRosterSelection = _G.SetGuildRosterSelection
 local GetGuildRosterMOTD = _G.GetGuildRosterMOTD
@@ -18,17 +21,20 @@ local GetNumGuildMembers = _G.GetNumGuildMembers
 local GetGuildRosterInfo = _G.GetGuildRosterInfo
 local CanEditOfficerNote = _G.CanEditOfficerNote
 local CanEditPublicNote = _G.CanEditPublicNote
-local StaticPopup_Show = _G.StaticPopup_Show
+local IsControlKeyDown = _G.IsControlKeyDown
+local IsAltKeyDown = _G.IsAltKeyDown
 local ShowUIPanel = _G.ShowUIPanel
 local HideUIPanel = _G.HideUIPanel
 local GuildRoster = _G.GuildRoster
 local SetItemRef = _G.SetItemRef
+local GuildFrame = _G.GuildFrame
 local IsInGuild = _G.IsInGuild
 
 -- constants
 local ERR_GUILD_PLAYER_NOT_IN_GUILD = _G.ERR_GUILD_PLAYER_NOT_IN_GUILD
 local CHAT_FLAG_AFK = _G.CHAT_FLAG_AFK
 local CHAT_FLAG_DND = _G.CHAT_FLAG_DND
+local REMOTE_CHAT = _G.REMOTE_CHAT
 local MOTD_COLON = _G.MOTD_COLON
 local GUILD = _G.GUILD
 
@@ -45,7 +51,8 @@ local GAP = 10
 
 -- locals
 --local guildEntries = {}
-local totalGuild = 0
+---@TODO: Allow displaying totalGuild in infotext
+local totalGuild = 0 --luacheck: ignore
 local onlineGuild = 0
 local infotip
 local onBlock
@@ -159,13 +166,13 @@ function element:GetStatusString(status, isMobile)
 	elseif status == STATUS_AFK then
 		statusString = module:ColorText(CHAT_FLAG_AFK..MOBILE_AWAY_ICON, "Status")
 	elseif isMobile then
-		statusString = ChatFrame_GetMobileEmbeddedTexture(73/255, 177/255, 73/255)
+		statusString = _G.ChatFrame_GetMobileEmbeddedTexture(73/255, 177/255, 73/255)
 	end
 	return statusString
 end
 
 function element:ToggleGuildTab(tabID)
-	if not GuildFrame then GuildFrame_LoadUI() end
+	if not GuildFrame then _G.GuildFrame_LoadUI() end
 	if GuildFrame and GuildFrame:IsShown() then
 		if PanelTemplates_GetSelectedTab(GuildFrame) == tabID then
 			return HideUIPanel(GuildFrame)
@@ -206,7 +213,7 @@ end
 -- Shift-LeftClick: /who
 function element.OnGuildButtonClick(member, button)
 	if IsAltKeyDown() then
-		InviteUnit(member.unit)
+		_G.InviteUnit(member.unit)
 	elseif IsControlKeyDown() then
 		if button == "LeftButton" and CanEditPublicNote() then
 			SetGuildRosterSelection(member.guildIndex)
@@ -229,7 +236,7 @@ end
 function element.OnClick(frame_, button)
 	-- If you arent in a guild, toggle the guild finder.
 	if not IsInGuild() then
-		ToggleGuildFrame()
+		_G.ToggleGuildFrame()
 	elseif button == "RightButton" then
 		element:ToggleGuildTab(GUILD_TAB_INFO)
 	elseif button == "Button4" then
@@ -275,7 +282,7 @@ function element.OnEnter(frame_)
 		local motd = element:CreateMOTD()
 		local motdPrefix = CreateColor(1, 1, 1):WrapTextInColorCode(MOTD_COLON)
 		motd.name:SetText(format("%s %s", motdPrefix, GetGuildRosterMOTD()))
-		maxWidth = motd.name:GetStringWidth() + GAP * 2
+		--maxWidth = motd.name:GetStringWidth() + GAP * 2
 		maxHeight = motd:GetHeight() + infotip.sep:GetHeight() + GAP * 2
 
 		local classIconWidth, nameColumnWidth, levelColumnWidth = 0, 0, 0

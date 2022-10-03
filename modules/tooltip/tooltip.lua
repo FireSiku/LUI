@@ -17,7 +17,7 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("Tooltip", "AceHook-3.0", "AceEvent-3.0")
+local module = LUI:NewModule("Tooltip", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
@@ -253,7 +253,7 @@ function module:SetTooltip()
 		if not self.text then
 			self.text = self:CreateFontString(nil, "OVERLAY")
 			self.text:SetPoint("CENTER", GameTooltipStatusBar, 0, LUI:Scale(6))
-			local Infotext = LUI:Module(Infotext, true)
+			local Infotext = LUI:GetModule("Infotext")
 			self.text:SetFont(Media:Fetch("font", (Infotext and Infotext.db.profile.Bags.Font or "vibroceb")), 12, "THINOUTLINE")
 			self.text:Show()
 			if unit then

@@ -30,10 +30,10 @@ LUI.lua
 ### Artwork ###
 modules\artwork\themes.lua
 modules\artwork\panels.lua
-modules\artwork\frames.lua
 modules\artwork\artwork.lua
 
 ### Fader ###
+modules\fader\fader_init.lua
 modules\fader\fader.lua
 
 ### Bars ###
@@ -56,19 +56,39 @@ modules\bags\bags.lua
 modules\cooldown\cooldown.xml
 
 ### Tooltip ###
-modules\tooltip\tooltip_v4.lua
+modules\tooltip\tooltip.lua
 
 ### InfoText ###
 modules\infotext\datatext.lua
+# modules\InfoText\infotext.lua
+# modules\InfoText\bags.lua
+# modules\InfoText\clock.lua
+# modules\InfoText\currency.lua
+# modules\InfoText\dualspec.lua
+# modules\InfoText\durability.lua
+# modules\InfoText\fps.lua
+# modules\InfoText\friends.lua
+# modules\InfoText\gold.lua
+# modules\InfoText\guild.lua
+# modules\InfoText\infotip.lua
+# modules\InfoText\memory.lua
 
 ### Micromenu ###
 modules\micromenu\micromenu.lua
 
 ### RaidMenu ###
+modules\raidmenu\raidmenu_init.lua
 modules\raidmenu\raidmenu.xml
+modules\raidmenu\raidmenu.lua
 
 ### ExpBars ###
-modules\expbar\threatbar.lua
+# modules\expbars\threatbar.lua
+modules\expbars\expbars_init.lua
+modules\expbars\expbars.lua
+modules\expbars\experience.lua
+modules\expbars\reputation.lua
+modules\expbars\honor.lua
+modules\expbars\azerite.lua
 
 ### UIElements ###
 modules\uielements\uielements_init.lua

@@ -5,7 +5,7 @@
 ]]
 
 local addonname, LUI = ...
-local module = LUI:Module("Unitframes")
+local module = LUI:GetModule("Unitframes")
 
 local oUF = LUI.oUF
 
@@ -239,7 +239,7 @@ do
 	end
 end
 
-_G.StaticPopupDialogs["DRAG_UNITFRAMES"] = {
+StaticPopupDialogs["DRAG_UNITFRAMES"] = {
 	preferredIndex = 3,
 	text = "oUF_LUI UnitFrames are dragable.",
 	button1 = "Save",

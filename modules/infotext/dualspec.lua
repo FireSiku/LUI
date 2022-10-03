@@ -4,19 +4,24 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
+local L = LUI.L
+
+---@type InfotextModule
 local module = LUI:GetModule("Infotext")
 local element = module:NewElement("Dualspec", "AceEvent-3.0")
-local L = LUI.L
 
 -- local copies
 local select, format, tconcat = select, format, table.concat
 local strsplit = string.split
 local PanelTemplates_GetSelectedTab = _G.PanelTemplates_GetSelectedTab
+local PlayerTalentFrame_Refresh = _G.PlayerTalentFrame_Refresh
 local GetSpecializationInfoByID = _G.GetSpecializationInfoByID
 local GetLootSpecialization = _G.GetLootSpecialization
 local PanelTemplates_SetTab = _G.PanelTemplates_SetTab
 local GetSpecializationInfo = _G.GetSpecializationInfo
+local GetNumSpecializations = _G.GetNumSpecializations
 local GetActiveSpecGroup = _G.GetActiveSpecGroup
 local GetSpecialization = _G.GetSpecialization
 local SetSpecialization = _G.SetSpecialization
@@ -27,10 +32,10 @@ local ShowUIPanel = _G.ShowUIPanel
 local HideUIPanel = _G.HideUIPanel
 
 -- constants
-local LOOT_SPECIALIZATION_DEFAULT = strsplit("(", LOOT_SPECIALIZATION_DEFAULT):trim()
-local SELECT_LOOT_SPECIALIZATION = SELECT_LOOT_SPECIALIZATION
-local NUM_TALENT_COLUMNS = NUM_TALENT_COLUMNS
-local LEVEL_UP_DUALSPEC = LEVEL_UP_DUALSPEC
+local LOOT_SPECIALIZATION_DEFAULT = strsplit("(", _G.LOOT_SPECIALIZATION_DEFAULT):trim()
+local SELECT_LOOT_SPECIALIZATION = _G.SELECT_LOOT_SPECIALIZATION
+local NUM_TALENT_COLUMNS = _G.NUM_TALENT_COLUMNS
+local LEVEL_UP_DUALSPEC = _G.LEVEL_UP_DUALSPEC
 local MAX_SPECS -- Set this during OnCreate
 local TALENT_DELIMITER = ""
 
@@ -68,15 +73,16 @@ function element:CacheSpecInfo()
 end
 
 function element:ToggleTalentTab(tabID)
-	TalentFrame_LoadUI()
-	if PlayerTalentFrame and PlayerTalentFrame:IsShown() then
-		if PanelTemplates_GetSelectedTab(PlayerTalentFrame) == tabID then
-			return HideUIPanel(PlayerTalentFrame)
+	_G.TalentFrame_LoadUI()
+	local talentFrame = _G.PlayerTalentFrame
+	if talentFrame and talentFrame:IsShown() then
+		if PanelTemplates_GetSelectedTab(talentFrame) == tabID then
+			return HideUIPanel(talentFrame)
 		end
 	end
-	PanelTemplates_SetTab(PlayerTalentFrame, tabID)
+	PanelTemplates_SetTab(talentFrame, tabID)
 	PlayerTalentFrame_Refresh()
-	ShowUIPanel(PlayerTalentFrame)
+	ShowUIPanel(talentFrame)
 end
 
 function element:GetTalentString(index)

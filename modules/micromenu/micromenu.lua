@@ -16,12 +16,10 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("Micromenu", "AceEvent-3.0", "AceHook-3.0")
-local Themes = LUI:Module("Themes")
-local Panels = LUI:Module("Panels")
-local RaidMenu = LUI:Module("RaidMenu")
+local module = LUI:NewModule("Micromenu", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0")
+local Themes = LUI:GetModule("Themes")
+local Panels = LUI:GetModule("Panels")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-local Media = LibStub("LibSharedMedia-3.0")
 
 local db, dbd
 local version = 1.5
@@ -67,16 +65,18 @@ function module:SetColors()
 end
 
 function module:SetMicroMenu()
-	local micro_r, micro_g, micro_b = unpack(Themes.db.profile.micromenu)
+	local ThemesDB = Themes.db.profile
+	local PanelsDB = Panels.db.profile
+	local micro_r, micro_g, micro_b = unpack(ThemesDB.micromenu)
 
 	LUI.MicroMenu.Anchor = LUI:CreateMeAFrame("Frame", nil, UIParent, 128, 128, 1, "MEDIUM", 2, "TOPRIGHT", UIParent, "TOPRIGHT", -150, 6, 1)
 	LUI.MicroMenu.Anchor:SetBackdrop({
-		bgFile = fdir..(Panels.db.profile.MicroMenu.AlwaysShow and "micro_anchor3" or "micro_anchor"),
+		bgFile = fdir..(PanelsDB.MicroMenu.AlwaysShow and "micro_anchor3" or "micro_anchor"),
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		tile = false, tileSize = 0, edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0},
 	})
-	LUI.MicroMenu.Anchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
+	LUI.MicroMenu.Anchor:SetBackdropColor(unpack(ThemesDB.micromenu_btn))
 	LUI.MicroMenu.Anchor:SetBackdropBorderColor(0, 0, 0, 0)
 
 	--LUI.MicroMenu.Button = LUI:CreateMeAFrame("Frame", nil, UIParent, 640, 512, 1, "BACKGROUND", 1, "TOPRIGHT", UIParent, "TOPRIGHT", 0, -1, 1)
@@ -87,7 +87,7 @@ function module:SetMicroMenu()
 		tile = false, tileSize = 0, edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	LUI.MicroMenu.Button:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg))
+	LUI.MicroMenu.Button:SetBackdropColor(unpack(ThemesDB.micromenu_bg))
 	LUI.MicroMenu.Button:SetBackdropBorderColor(0, 0, 0, 0)
 
 	--LUI.MicroMenu.Button.BG = LUI:CreateMeAFrame("Frame", nil, LUI.MicroMenu.Button, 640, 512, 1, "BACKGROUND", 0, "TOPRIGHT", LUI.MicroMenu.Button, "TOPRIGHT", 0, 0, 1)
@@ -98,7 +98,7 @@ function module:SetMicroMenu()
 		tile = false, tileSize = 0, edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	LUI.MicroMenu.Button.BG:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg2))
+	LUI.MicroMenu.Button.BG:SetBackdropColor(unpack(ThemesDB.micromenu_bg2))
 	LUI.MicroMenu.Button.BG:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.MicroMenu.Button.BG:SetFrameStrata("BACKGROUND")
 
@@ -109,9 +109,9 @@ function module:SetMicroMenu()
 		--[[if RaidMenu.db.profile.Enable then
 			RaidMenu:OverlapPrevention("MM")
 		end]]
-		if Panels.db.profile.MicroMenu.IsShown then
+		if PanelsDB.MicroMenu.IsShown then
 			LUI.MicroMenu.AlphaOut:Show()
-			Panels.db.profile.MicroMenu.IsShown = false
+			PanelsDB.MicroMenu.IsShown = false
 
 			LUI.MicroMenu.Anchor:SetBackdrop({
 				bgFile = fdir..(GetMouseFocus() == LUI.MicroMenu.Clicker and "micro_anchor2" or "micro_anchor"),
@@ -119,11 +119,11 @@ function module:SetMicroMenu()
 				tile = false, tileSize = 0, edgeSize = 1,
 				insets = {left = 0, right = 0, top = 0, bottom = 0}
 			})
-			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
+			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(ThemesDB.micromenu_btn_hover))
 			LUI.MicroMenu.Anchor:SetBackdropBorderColor(0, 0, 0, 0)
 		else
 			LUI.MicroMenu.AlphaIn:Show()
-			Panels.db.profile.MicroMenu.IsShown = true
+			PanelsDB.MicroMenu.IsShown = true
 
 			LUI.MicroMenu.Anchor:SetBackdrop({
 				bgFile = fdir..(GetMouseFocus() == LUI.MicroMenu.Clicker and "micro_anchor4" or "micro_anchor3"),
@@ -131,20 +131,20 @@ function module:SetMicroMenu()
 				tile = false, tileSize = 0, edgeSize = 1,
 				insets = {left = 0, right = 0, top = 0, bottom = 0}
 			})
-			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
+			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(ThemesDB.micromenu_btn_hover))
 			LUI.MicroMenu.Anchor:SetBackdropBorderColor(0, 0, 0, 0)
 		end
 	end)
 
 	LUI.MicroMenu.Clicker:SetScript("OnEnter", function(self)
-		if Panels.db.profile.MicroMenu.IsShown then
+		if PanelsDB.MicroMenu.IsShown then
 			LUI.MicroMenu.Anchor:SetBackdrop({
 				bgFile = fdir.."micro_anchor4",
 				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 				tile = false, tileSize = 0, edgeSize = 1,
 				insets = {left = 0, right = 0, top = 0, bottom = 0}
 			})
-			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
+			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(ThemesDB.micromenu_btn_hover))
 			LUI.MicroMenu.Anchor:SetBackdropBorderColor(0, 0, 0, 0)
 		else
 			LUI.MicroMenu.Anchor:SetBackdrop({
@@ -153,20 +153,20 @@ function module:SetMicroMenu()
 				tile = false, tileSize = 0, edgeSize = 1,
 				insets = {left = 0, right = 0, top = 0, bottom = 0}
 			})
-			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
+			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(ThemesDB.micromenu_btn_hover))
 			LUI.MicroMenu.Anchor:SetBackdropBorderColor(0, 0, 0, 0)
 		end
 	end)
 
 	LUI.MicroMenu.Clicker:SetScript("OnLeave", function(self)
-		if Panels.db.profile.MicroMenu.IsShown then
+		if PanelsDB.MicroMenu.IsShown then
 			LUI.MicroMenu.Anchor:SetBackdrop({
 				bgFile = fdir.."micro_anchor3",
 				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 				tile = false, tileSize = 0, edgeSize = 1,
 				insets = {left = 0, right = 0, top = 0, bottom = 0}
 			})
-			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
+			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(ThemesDB.micromenu_btn))
 			LUI.MicroMenu.Anchor:SetBackdropBorderColor(0, 0, 0, 0)
 		else
 			LUI.MicroMenu.Anchor:SetBackdrop({
@@ -175,7 +175,7 @@ function module:SetMicroMenu()
 				tile = false, tileSize = 0, edgeSize = 1,
 				insets = {left = 0, right = 0, top = 0, bottom = 0}
 			})
-			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
+			LUI.MicroMenu.Anchor:SetBackdropColor(unpack(ThemesDB.micromenu_btn))
 			LUI.MicroMenu.Anchor:SetBackdropBorderColor(0, 0, 0, 0)
 		end
 	end)
@@ -187,7 +187,7 @@ function module:SetMicroMenu()
 		tile = false, tileSize = 0, edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	LUI.MicroMenu.ButtonRight:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
+	LUI.MicroMenu.ButtonRight:SetBackdropColor(unpack(ThemesDB.micromenu_btn))
 	LUI.MicroMenu.ButtonRight:SetBackdropBorderColor(0, 0, 0, 0)
 
 	LUI.MicroMenu.ButtonRight.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.ButtonRight, 40, 12, 1, "MEDIUM", 2, "TOP", LUI.MicroMenu.ButtonRight, "TOP", 22, -5, 1)
@@ -200,10 +200,10 @@ function module:SetMicroMenu()
 			else
 				if Minimap:GetAlpha() == 0 then
 					MinimapAlphaIn:Show()
-					Panels.db.profile.Minimap.IsShown = true
+					PanelsDB.Minimap.IsShown = true
 				else
 					MinimapAlphaOut:Show()
-					Panels.db.profile.Minimap.IsShown = false
+					PanelsDB.Minimap.IsShown = false
 				end
 			end
 		else
@@ -218,7 +218,7 @@ function module:SetMicroMenu()
 			tile = false, tileSize = 0, edgeSize = 1,
 			insets = {left = 0, right = 0, top = 0, bottom = 0}
 		})
-		LUI.MicroMenu.ButtonRight:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
+		LUI.MicroMenu.ButtonRight:SetBackdropColor(unpack(ThemesDB.micromenu_btn_hover))
 		LUI.MicroMenu.ButtonRight:SetBackdropBorderColor(0, 0, 0, 0)
 	end)
 
@@ -229,7 +229,7 @@ function module:SetMicroMenu()
 			tile = false, tileSize = 0, edgeSize = 1,
 			insets = {left = 0, right = 0, top = 0, bottom = 0}
 		})
-		LUI.MicroMenu.ButtonRight:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
+		LUI.MicroMenu.ButtonRight:SetBackdropColor(unpack(ThemesDB.micromenu_btn))
 		LUI.MicroMenu.ButtonRight:SetBackdropBorderColor(0, 0, 0, 0)
 	end)
 
@@ -240,14 +240,14 @@ function module:SetMicroMenu()
 		tile = false, tileSize = 0, edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	LUI.MicroMenu.ButtonLeft:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
+	LUI.MicroMenu.ButtonLeft:SetBackdropColor(unpack(ThemesDB.micromenu_btn))
 	LUI.MicroMenu.ButtonLeft:SetBackdropBorderColor(0, 0, 0, 0)
 
 	LUI.MicroMenu.ButtonLeft.Clicker = LUI:CreateMeAFrame("Button", nil, LUI.MicroMenu.ButtonLeft, 40, 12, 1, "MEDIUM", 2, "TOP", LUI.MicroMenu.ButtonLeft, "TOP", -22, -5, 1)
 	LUI.MicroMenu.ButtonLeft.Clicker:RegisterForClicks("AnyUp")
 
 	LUI.MicroMenu.ButtonLeft.Clicker:SetScript("OnClick", function(self, button)
-			RaidMenu:OverlapPrevention("RM", "toggle")
+		LUI:GetModule("RaidMenu"):OverlapPrevention("RM", "toggle")
 	end)
 
 	LUI.MicroMenu.ButtonLeft.Clicker:SetScript("OnEnter", function(self)
@@ -257,7 +257,7 @@ function module:SetMicroMenu()
 			tile = false, tileSize = 0, edgeSize = 1,
 			insets = {left = 0, right = 0, top = 0, bottom = 0}
 		})
-		LUI.MicroMenu.ButtonLeft:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn_hover))
+		LUI.MicroMenu.ButtonLeft:SetBackdropColor(unpack(ThemesDB.micromenu_btn_hover))
 		LUI.MicroMenu.ButtonLeft:SetBackdropBorderColor(0, 0, 0, 0)
 	end)
 
@@ -268,7 +268,7 @@ function module:SetMicroMenu()
 			tile = false, tileSize = 0, edgeSize = 1,
 			insets = {left = 0, right = 0, top = 0, bottom = 0}
 		})
-		LUI.MicroMenu.ButtonLeft:SetBackdropColor(unpack(Themes.db.profile.micromenu_btn))
+		LUI.MicroMenu.ButtonLeft:SetBackdropColor(unpack(ThemesDB.micromenu_btn))
 		LUI.MicroMenu.ButtonLeft:SetBackdropBorderColor(0, 0, 0, 0)
 	end)
 
@@ -308,7 +308,7 @@ function module:SetMicroMenu()
 
 	local bagsFrame
 	local getBagsFrame = function()
-		if LUI:Module("Bags").db.profile.Enable then
+		if LUI:GetModule("Bags").db.profile.Enable then
 			bagsFrame = LUIBags
 		elseif IsAddOnLoaded("Stuffing") then
 			bagsFrame = StuffingFrameBags
@@ -1212,7 +1212,7 @@ end
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self, nil, version)
 
-	LUI:Module("Panels"):RegisterFrame(self)
+	LUI:GetModule("Panels"):RegisterFrame(self)
 end
 
 function module:OnEnable()

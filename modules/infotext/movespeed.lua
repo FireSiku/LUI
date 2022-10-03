@@ -4,10 +4,13 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
+local L = LUI.L
+
+---@type InfotextModule
 local module = LUI:GetModule("Infotext")
 local element = module:NewElement("MoveSpeed", "AceEvent-3.0")
-local L = LUI.L
 
 -- ####################################################################################################################
 -- ##### Default Settings #############################################################################################
@@ -30,7 +33,7 @@ element.defaults = {
         b = 1,
         a = 1,
     },
-},
+}
 
 module:MergeDefaults(element.defaults, "MoveSpeed")
 

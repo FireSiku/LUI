@@ -9,7 +9,7 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:Module("FAQ")
+local module = LUI:NewModule("FAQ", LUI:GetLegacyPrototype(), "LUIDevAPI")
 
 function module:LoadOptions()
 	local options = {
