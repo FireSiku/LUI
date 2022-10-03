@@ -13,8 +13,8 @@ if not module or not module.registered then return end
 -- ####################################################################################################################
 
 local OverlapPreventionMethods = {
-	["Auto-Hide"] = L["Auto-Hide"],
-	["Offset"] = L["Offset"],
+	AutoHide = L["AutoHide"],
+	Offset = L["Offset"],
 }
 
 local function IsUsingAutoHide() return db.OverlapPrevention == "AutoHide" end
