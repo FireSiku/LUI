@@ -49,7 +49,7 @@ LUI.Versions.raidmenu = 2.4
 
 local Y_normal, Y_compact = 107, 101
 local X_normal, X_compact = 0, -50
-local OverlapPreventionMethods = {"Auto-Hide", "Offset"}
+local OverlapPreventionMethods = {"AutoHide", "Offset"}
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
@@ -82,7 +82,7 @@ function module:OverlapPrevention(frame, action)
 			if RaidMenu_Parent:IsShown() then
 				RaidMenu.AlphaOut:Show()
 			else
-				if db.OverlapPrevention == "Auto-Hide" and Panels.db.profile.MicroMenu.IsShown then
+				if db.OverlapPrevention == "AutoHide" and Panels.db.profile.MicroMenu.IsShown then
 					LUI.MicroMenu.Clicker:Click()
 				end
 				RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (((X_Position + x_offset) / db.Scale) + 17), (((Y_Position + offset) / db.Scale) + 17))
@@ -98,7 +98,7 @@ function module:OverlapPrevention(frame, action)
 			RaidMenu_Parent:Show()
 			RaidMenu_Parent:SetAlpha(db.Opacity / 100)
 			if Panels.db.profile.MicroMenu.IsShown then
-				if db.OverlapPrevention == "Auto-Hide" then
+				if db.OverlapPrevention == "AutoHide" then
 					LUI.MicroMenu.Clicker:Click()
 				end
 			else
@@ -116,7 +116,7 @@ function module:OverlapPrevention(frame, action)
 				RaidMenu.SlideUp:Show()
 			end
 		else
-			if db.OverlapPrevention == "Auto-Hide" then
+			if db.OverlapPrevention == "AutoHide" then
 				if RaidMenu_Parent:IsShown() then
 					LUI.MicroMenu.ButtonLeft.Clicker:Click()
 				end
@@ -693,7 +693,7 @@ function module:LoadFrameOptions()
 					},
 					OverlapPrevention = {
 						name = "Micromenu Overlap Prevention",
-						desc = "\nAuto-Hide: The MicroMenu or Raid Menu should hide when the other is opened\n\nOffset: The Raid Menu should offset itself when the MicroMenu is open",
+						desc = "\nAutoHide: The MicroMenu or Raid Menu should hide when the other is opened\n\nOffset: The Raid Menu should offset itself when the MicroMenu is open",
 						type = "select",
 						values = OverlapPreventionMethods,
 						get = function()
@@ -727,7 +727,7 @@ function module:LoadFrameOptions()
 					X_Offset = {
 						name = "X Offset",
 						desc = "How far to horizontally offset when the MicroMenu is open\n\nDefault: "..dbd.X_Offset,
-						disabled = function() return db.OverlapPrevention == "Auto-Hide" end,
+						disabled = function() return db.OverlapPrevention == "AutoHide" end,
 						type = "range",
 						step = 1,
 						min = -200,
@@ -742,7 +742,7 @@ function module:LoadFrameOptions()
 					Offset = {
 						name = "Y Offset",
 						desc = "How far to vertically offset when the MicroMenu is open\n\nDefault: "..dbd.Offset,
-						disabled = function() return db.OverlapPrevention == "Auto-Hide" end,
+						disabled = function() return db.OverlapPrevention == "AutoHide" end,
 						type = "range",
 						step = 1,
 						min = -200,
@@ -769,7 +769,7 @@ function module:LoadFrameOptions()
 						order = 7,
 					},
 					AutoHide = {
-						name = "Auto-Hide Raid Menu",
+						name = "AutoHide Raid Menu",
 						desc = "Weather or not the Raid Menu should hide itself after clicking on a function",
 						type = "toggle",
 						get = function() return db.AutoHide end,
