@@ -16,6 +16,7 @@ Auras.lua
 Bags.lua
 Chat.lua
 ExpBars.lua
+Fader.lua
 Infotexts.lua
 Micromenu.lua
 Raidmenu.lua
