@@ -175,6 +175,19 @@ function OptionMixin:Group(name, desc, order, childGroups, disabled, hidden, get
 end
 
 ---@param name string|function
+---@param desc? string|function
+---@param order number
+---@param childGroups? string|"tree"|"tab"|"select"
+---@param disabled? boolean|function
+---@param hidden? boolean|function
+---@param get? function
+---@param set? function
+---@return AceOptionGroup
+function OptionMixin:InlineGroup(name, desc, order, childGroups, disabled, hidden, get, set)
+	return { type = "group", childGroups = childGroups, name = name, desc = desc, order = order, disabled = disabled, hidden = hidden, get = get, set = set, inline = true, args = {} }
+end
+
+---@param name string|function
 ---@param order number
 ---@param hidden? boolean|function
 ---@return AceOptionHeader

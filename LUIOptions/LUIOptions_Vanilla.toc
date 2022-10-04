@@ -16,9 +16,12 @@ Auras.lua
 Bags.lua
 Chat.lua
 ExpBars.lua
+Fader.lua
 Infotexts.lua
 Micromenu.lua
+Raidmenu.lua
 Minimap.lua
+MirrorBar.lua
 Tooltip.lua
 UIElements.lua
 Unitframes.lua

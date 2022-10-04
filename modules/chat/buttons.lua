@@ -338,7 +338,6 @@ function module:OnEnable()
 			configScrollButton(true)
 		end
 	end
-	LUI:Print("Chat Buttons", self.isNestedModule)
 	-- if db.CopyChat then
 	-- 	configCopyButton(true)
 	-- end

@@ -21,6 +21,7 @@ Infotexts.lua
 Micromenu.lua
 Raidmenu.lua
 Minimap.lua
+MirrorBar.lua
 Tooltip.lua
 UIElements.lua
 Unitframes.lua

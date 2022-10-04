@@ -368,6 +368,7 @@ end
 -- ####################################################################################################################
 function module:OnInitialize()
 	db = LUI:NewNamespace(self, true)
+	LUI:RegisterModule(self, true)
 end
 
 function module:OnEnable()
@@ -376,7 +377,7 @@ function module:OnEnable()
 		f:UnregisterAllEvents()
 	end
 	UIParent:UnregisterEvent('MIRROR_TIMER_START')
-	module:CreateMirrorbars(self)
+	module:CreateMirrorbars()
 	for i = 1, MIRRORTIMER_NUMTIMERS do
 		self.MirrorBar[i]:Hide()
 	end
