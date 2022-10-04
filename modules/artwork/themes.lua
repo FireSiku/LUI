@@ -14,7 +14,7 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:NewModule("Themes", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceSerializer-3.0")
+local module = LUI:NewModule("Themes", "LUIDevAPI", "AceSerializer-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
 

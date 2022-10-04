@@ -231,7 +231,7 @@ function LUI:RegisterModule(module, dev_skipDB)
 	if module.defaultDisabled and not db.Installed[mName] then
 		db.Modules[mName] = false
 	end
-	module:SetEnabledState(self.db.profile. Modules[mName])
+	module:SetEnabledState(self.db.profile.Modules[mName])
 
 	if module.defaults and not dev_skipDB then
 		module.db = self.db:RegisterNamespace(mName, module.defaults)

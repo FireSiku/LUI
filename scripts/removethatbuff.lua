@@ -11,7 +11,7 @@
 -- ##### External references ##########################################################################################
 -- ####################################################################################################################
 local _, LUI = ...
-local module = LUI:NewModule("RemoveThatBuff", LUI:GetLegacyPrototype(), "LUIDevAPI")
+local module = LUI:NewModule("RemoveThatBuff", "LUIDevAPI")
 local Profiler = LUI.Profiler
 
 -- ####################################################################################################################

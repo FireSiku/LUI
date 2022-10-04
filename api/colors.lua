@@ -5,10 +5,13 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
--- Addon building reference.
+---@type string, LUIAddon
 local _, LUI = ...
-local module = LUI:NewModule("Colors")
 local L = LUI.L
+
+---@class ColorModule : LUIModule
+local module = LUI:NewModule("Colors")
+
 local db
 
 local GetQuestDifficultyColor = _G.GetQuestDifficultyColor

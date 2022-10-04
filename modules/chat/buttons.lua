@@ -7,7 +7,7 @@
 -- External references.
 local addonname, LUI = ...
 local Chat = LUI:GetModule("Chat")
-local module = Chat:NewModule("Buttons", Chat:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0")
+local module = Chat:NewModule("Buttons", "LUIDevAPI", "AceHook-3.0")
 
 local L = LUI.L
 local db, dbd --luacheck:ignore
@@ -338,6 +338,7 @@ function module:OnEnable()
 			configScrollButton(true)
 		end
 	end
+	LUI:Print("Chat Buttons", self.isNestedModule)
 	-- if db.CopyChat then
 	-- 	configCopyButton(true)
 	-- end

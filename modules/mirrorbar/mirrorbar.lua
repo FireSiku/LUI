@@ -1,35 +1,34 @@
---[[
-	Project....: LUI NextGenWoWUserInterface
-	File.......: mirrorbar.lua
-	Description: Customization of the Mirror Bar
-	Version....: 1.0
-	Rev Date...: 06/11/2012 [dd/mm/yyyy]
-	LUI Version: Mule
-]]
+-- ####################################################################################################################
+-- ##### Setup and Locals #############################################################################################
+-- ####################################################################################################################
 
-------------------------------------------------------------------------
--- External references.
-------------------------------------------------------------------------
+---@type string, LUIAddon
 local addonname, LUI = ...
-local module = LUI:NewModule("Mirror Bar", LUI:GetLegacyPrototype(), "LUIDevAPI")
-local Profiler = LUI.Profiler
+
+---@type LUIModule
+local module = LUI:NewModule("Mirror Bar", "LUIDevAPI")
+local db
+
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
-------------------------------------------------------------------------
--- Database and defaults shortcuts.
-------------------------------------------------------------------------
-local db, dbd
-local floor = math.floor
+local GetMirrorTimerProgress = _G.GetMirrorTimerProgress
+local CanScanResearchSite = _G.CanScanResearchSite
+local LoadAddOn = _G.LoadAddOn
 local format = string.format
+local floor = math.floor
+
+local MIRRORTIMER_NUMTIMERS = _G.MIRRORTIMER_NUMTIMERS
+
 local PAUSED
 
-LUI.Versions.mirrorbar = 1.0
+local Profiler = LUI.Profiler
 Profiler.TraceScope(module, "Mirror Bar", "LUI")
 
-------------------------------------------------------------------------
---	Defaults
-------------------------------------------------------------------------
+-- ####################################################################################################################
+-- ##### Default Settings #############################################################################################
+-- ####################################################################################################################
+
 module.defaults = {
 	profile = {
 		General = {
@@ -43,89 +42,30 @@ module.defaults = {
 			ArchyBar = false,
 		},
 		Colors = {
-			Bar = {
-				r = 0.13,
-				g = 0.59,
-				b = 1,
-				a = 0.7,
-			},
-			FatigueBar = {
-				r = 1,
-				g = 1,
-				b = 0.5,
-				a = 0.7,
-			},
-			BreathBar = {
-				r = 0,
-				g = 0.6,
-				b = 1,
-				a = 0.7,
-			},
-			FeignBar = {
-				r = 0.92,
-				g = 0.63,
-				b = 0,
-				a = 0.7,
-			},
-			ArchyBar = {
-				r = 1,
-				g = .3,
-				b = .4,
-				a = 0.7,
-			},
-			Background = {
-				r = 0.15,
-				g = 0.15,
-				b = 0.15,
-				a = 0.67,
-			},
+			Bar = { r = 0.13, g = 0.59, b = 1, a = 0.7, },
+			FatigueBar = { r = 1, g = 1, b = 0.5, a = 0.7, },
+			BreathBar = { r = 0, g = 0.6, b = 1, a = 0.7, },
+			FeignBar = { r = 0.92, g = 0.63, b = 0, a = 0.7, },
+			ArchyBar = { r = 1, g = .3, b = .4, a = 0.7, },
+			Background = { r = 0.15, g = 0.15, b = 0.15, a = 0.67, },
 		},
 		Text = {
-			Name = {
-				Font = "neuropol",
-				Size = 13,
-				OffsetX = 5,
-				OffsetY = 1,
-				Color = {
-					r = 0.9,
-					g = 0.9,
-					b = 0.9,
-				},
-			},
-			Time = {
-				Font = "neuropol",
-				Size = 13,
-				OffsetX = -5,
-				OffsetY = 1,
-				Color = {
-					r = 0.9,
-					g = 0.9,
-					b = 0.9,
-				},
-			},
+			Name = { Font = "neuropol", Size = 13, OffsetX = 5, OffsetY = 1, Color = { r = 0.9, g = 0.9, b = 0.9, } },
+			Time = { Font = "neuropol", Size = 13, OffsetX = -5, OffsetY = 1, Color = { r = 0.9, g = 0.9, b = 0.9, } },
 		},
 		Border = {
 			Texture = "glow",
 			Thickness = 4,
-			Color = {
-				r = 0.9,
-				g = 0.9,
-				b = 0.9,
-				a = 0.65,
-			},
-			Inset = {
-				left = 2,
-				right = 2,
-				top = 2,
-				bottom = 2,
-			},
+			Color = { r = 0.9, g = 0.9, b = 0.9, a = 0.65, },
+			Inset = { left = 2, right = 2, top = 2, bottom = 2, },
 		},
 	},
 }
 
-------------------------------------------------------------------------
--- Options
-------------------------------------------------------------------------
+-- ####################################################################################################################
+-- ##### Module Options ###############################################################################################
+-- ####################################################################################################################
+
 module.optionsName = "Mirror Bar"
 module.getter = "generic"
 module.setter = "Refresh"
@@ -189,9 +129,10 @@ function module:LoadOptions()
 	return options
 end
 
-------------------------------------------------------------------------
--- Functions
-------------------------------------------------------------------------
+-- ####################################################################################################################
+-- ##### Module Functions #############################################################################################
+-- ####################################################################################################################
+
 local function formatTime(time)
 	local hour = floor(time/3600)
 	local min = floor(time/60)
@@ -308,33 +249,27 @@ local function SURVEY_COMPLETE(self, event, ...)
 	end
 end
 
-function module:ToggleArchy(...)
+function module:ToggleArchy()
 	if db.General.ArchyBar then
-		if not ArcheologyDigsiteProgressBar then
+		if not _G.ArcheologyDigsiteProgressBar then
 			LoadAddOn("Blizzard_ArchaeologyUI")
 		end
 		self:RegisterEvent('ARCHAEOLOGY_SURVEY_CAST', SURVEY_CAST, self)
 		self:RegisterEvent('ARCHAEOLOGY_FIND_COMPLETE', SURVEY_COMPLETE, self)
-		UIParent:UnregisterEvent'ARCHAEOLOGY_SURVEY_CAST'
-		if ArcheologyDigsiteProgressBar then
-			ArcheologyDigsiteProgressBar:Hide()
-			ArcheologyDigsiteProgressBar._Show = ArcheologyDigsiteProgressBar.Show
-			ArcheologyDigsiteProgressBar.Show = ArcheologyDigsiteProgressBar.Hide
-		end
+		UIParent:UnregisterEvent('ARCHAEOLOGY_SURVEY_CAST')
+		LUI:Kill(_G.ArcheologyDigsiteProgressBar)
 	else
 		MIRROR_TIMER_STOP(self, "ARCHAEOLOGY_FIND_COMPLETE", "ARCHY")
 		self:UnregisterEvent('ARCHAEOLOGY_SURVEY_CAST', SURVEY_CAST)
 		self:UnregisterEvent('ARCHAEOLOGY_FIND_COMPLETE', SURVEY_COMPLETE)
-		UIParent:RegisterAllEvents'ARCHAEOLOGY_SURVEY_CAST'
-		if ArcheologyDigsiteProgressBar then
-			ArcheologyDigsiteProgressBar.Show = ArcheologyDigsiteProgressBar._Show
-			ArcheologyDigsiteProgressBar._Show = nil
-		end
+		UIParent:RegisterEvent('ARCHAEOLOGY_SURVEY_CAST')
+		LUI:Unkill(_G.ArcheologyDigsiteProgressBar)
 	end
 end
 
 function module:Refresh(...)
 	for i = 1, MIRRORTIMER_NUMTIMERS do
+		local barname
 		if i == 1 then
 			self.MirrorBar[i]:SetPoint('TOP', UIParent, db.General.X, db.General.Y)
 		else
@@ -380,7 +315,7 @@ function module:Refresh(...)
 	end
 end
 
-function module:CreateMirrorbars(self)
+function module:CreateMirrorbars()
 	local mirrorbar = self.MirrorBar
 	if not mirrorbar then
 		self.MirrorBar = {}
@@ -428,16 +363,11 @@ function module:CreateMirrorbars(self)
 	end
 end
 
-------------------------------------------------------------------------
--- Module Initialization
-------------------------------------------------------------------------
+-- ####################################################################################################################
+-- ##### Framework Events #############################################################################################
+-- ####################################################################################################################
 function module:OnInitialize()
-	db, dbd = LUI:NewNamespace(self, true)
-
-	if LUI.db.global.luiconfig[LUI.profileName].Versions.mirrorbar ~= LUI.Versions.mirrorbar then
-		db:ResetProfile()
-		LUI.db.global.luiconfig[LUI.profileName].Versions.mirrorbar = LUI.Versions.mirrorbar
-	end
+	db = LUI:NewNamespace(self, true)
 end
 
 function module:OnEnable()
@@ -445,7 +375,7 @@ function module:OnEnable()
 		local f = _G['MirrorTimer'..i]
 		f:UnregisterAllEvents()
 	end
-	UIParent:UnregisterEvent'MIRROR_TIMER_START'
+	UIParent:UnregisterEvent('MIRROR_TIMER_START')
 	module:CreateMirrorbars(self)
 	for i = 1, MIRRORTIMER_NUMTIMERS do
 		self.MirrorBar[i]:Hide()
@@ -456,15 +386,11 @@ function module:OnEnable()
 	self:RegisterEvent('MIRROR_TIMER_PAUSE', MIRROR_TIMER_PAUSE, self)
 	-- Archaeology Update
 	if db.General.ArchyBar then
-		if not ArcheologyDigsiteProgressBar then
+		if not _G.ArcheologyDigsiteProgressBar then
 			LoadAddOn("Blizzard_ArchaeologyUI")
 		end
-		if ArcheologyDigsiteProgressBar then
-			ArcheologyDigsiteProgressBar:Hide()
-			ArcheologyDigsiteProgressBar._Show = ArcheologyDigsiteProgressBar.Show
-			ArcheologyDigsiteProgressBar.Show = ArcheologyDigsiteProgressBar.Hide
-		end
-		UIParent:UnregisterEvent'ARCHAEOLOGY_SURVEY_CAST'
+		LUI:Kill(_G.ArcheologyDigsiteProgressBar)
+		UIParent:UnregisterEvent('ARCHAEOLOGY_SURVEY_CAST')
 		self:RegisterEvent('ARCHAEOLOGY_SURVEY_CAST', SURVEY_CAST, self)
 		self:RegisterEvent('ARCHAEOLOGY_FIND_COMPLETE', SURVEY_COMPLETE, self)
 	end
@@ -474,21 +400,20 @@ function module:OnDisable()
 	for i = 1, MIRRORTIMER_NUMTIMERS do
 		local f = _G['MirrorTimer'..i]
 		f:Hide()
-		f:RegisterAllEvents'MIRROR_TIMER_PAUSE'
-		f:RegisterAllEvents'MIRROR_TIMER_STOP'
-		f:RegisterAllEvents'PLAYER_ENTERING_WORLD'
+		f:RegisterEvents('MIRROR_TIMER_PAUSE')
+		f:RegisterEvents('MIRROR_TIMER_STOP')
+		f:RegisterEvents('PLAYER_ENTERING_WORLD')
 	end
-	UIParent:RegisterEvent'MIRROR_TIMER_START'
+	UIParent:RegisterEvent('MIRROR_TIMER_START')
 
 	self:UnregisterEvent('MIRROR_TIMER_START', MIRROR_TIMER_START)
 	self:UnregisterEvent('MIRROR_TIMER_STOP', MIRROR_TIMER_STOP)
 	self:UnregisterEvent('MIRROR_TIMER_PAUSE', MIRROR_TIMER_PAUSE)
+
 	-- Archaeology Update
-	UIParent:RegisterAllEvents'ARCHAEOLOGY_SURVEY_CAST'
-	if ArcheologyDigsiteProgressBar and ArcheologyDigsiteProgressBar._Show then
-		ArcheologyDigsiteProgressBar.Show = ArcheologyDigsiteProgressBar._Show
-		ArcheologyDigsiteProgressBar._Show = nil
-	end
+	LUI:Unkill(_G.ArcheologyDigsiteProgressBar)
+	UIParent:RegisterAllEvents('ARCHAEOLOGY_SURVEY_CAST')
+	
 	MIRROR_TIMER_STOP(self, "ARCHAEOLOGY_FIND_COMPLETE", "ARCHY")
 	self:UnregisterEvent('ARCHAEOLOGY_SURVEY_CAST', SURVEY_CAST)
 	self:UnregisterEvent('ARCHAEOLOGY_FIND_COMPLETE', SURVEY_COMPLETE)
