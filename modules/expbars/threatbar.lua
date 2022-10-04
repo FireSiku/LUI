@@ -5,7 +5,7 @@
 ]]
 
 local addonname, LUI = ...
-local module = LUI:NewModule("Threat", LUI:GetLegacyPrototype(), "LUIDevAPI")
+local module = LUI:NewModule("Threat", "LUIDevAPI")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 

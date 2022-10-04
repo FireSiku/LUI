@@ -732,18 +732,79 @@ function devapi:UpdatePositionOptions(specific) -- specific - update specific op
 	ACR:NotifyChange(addonname)
 end
 
+function devapi:Toggle(state)
+	if state == nil then
+		state = not self:IsEnabled()
+	end
+	state = state and "Enable" or "Disable"
+
+	local success = self[state](self)
+
+	if self.db.parent then
+		self.db.parent.profile.modules[self:GetName()] = self:IsEnabled()
+	end
+	return success
+end
+
+function devapi:GetDBVar(info)
+	local value = self.db.profile
+
+	local start = self.isNestedModule and 3 or 2
+	for i=start, #info-1 do
+		value = value[info[i]]
+		if type(value) ~= "table" then
+			error("Error accessing db\nCould not access "..strjoin(".", info[start-1], "db.profile", unpack(info, start, value == nil and i or i+1)).."\ndb layout must be the same as info", 2)
+		end
+	end
+	return value[info[#info]]
+end
+
+function devapi:SetDBVar(info, value)
+	local dbloc = self.db.profile
+
+	local start = self.isNestedModule and 3 or 2
+	for i=start, #info-1 do
+		dbloc = dbloc[info[i]]
+		if type(dbloc) ~= "table" then
+			error("Error accessing db\nCould not access "..strjoin(".", info[start-1], "db.profile", unpack(info, start, dbloc == nil and i or i+1)).."\ndb layout must be the same as info", 2)
+		end
+	end
+	dbloc[info[#info]] = value
+end
+
+function devapi:GetDefaultVal(info)
+	local dbloc = self.db.defaults.profile
+
+	local start = self.isNestedModule and 3 or 2
+	for i=start, #info-1 do
+		local key = info[i]
+		if not dbloc[key] then
+			key = "*"
+		end
+
+		dbloc = dbloc[key]
+
+		if type(dbloc) ~= "table" then
+			error("Error accessing defaults\nCould not access "..strjoin(".", info[start-1], "db.defaults.profile", unpack(info, start, dbloc == nil and i or i+1)).."\ndefaults layout must be the same as info", 2)
+		end
+	end
+
+	local key = info[#info]
+	if dbloc[key] == nil then
+		key = "*"
+	end
+
+	return dbloc[key]
+end
 
 -- functions to embed
 local mixins = {
-	"NewGroup", "NewHeader", "NewDesc",
-	"NewToggle", "NewEnable", "NewExecute",
-	"NewSelect", "NewMultiSelect",
-	"NewInput", "NewInputNumber",
+	"NewGroup", "NewHeader", "NewDesc", "NewToggle", "NewEnable", "NewExecute",
+	"NewSelect", "NewMultiSelect", "NewInput", "NewInputNumber",
 	"NewSlider", "NewPosition", "NewPosSliders",
-	"NewColor", "NewColorNoAlpha",
-	"NewFontOptions",
+	"NewColor", "NewColorNoAlpha", "NewFontOptions",
 	--Internal
-	
+	"Toggle", "GetDBVar", "SetDBVar", "GetDefaultVal",
 }
 
 -- Embeds devapi into the target object making the functions from the mixins list available on target:..

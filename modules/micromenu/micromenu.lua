@@ -16,7 +16,7 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:NewModule("Micromenu", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0")
+local module = LUI:NewModule("Micromenu", "LUIDevAPI", "AceHook-3.0")
 local Themes = LUI:GetModule("Themes")
 local Panels = LUI:GetModule("Panels")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")

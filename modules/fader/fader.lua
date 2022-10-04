@@ -19,9 +19,11 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
--- External references.
-local addonname, LUI = ...
---local module = LUI:NewModule("Fader", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0", "AceTimer-3.0")
+---@type string, LUIAddon
+local _, LUI = ...
+local L = LUI.L
+
+---@type FaderModule
 local module = LUI:GetModule("Fader")
 local Profiler = LUI.Profiler
 

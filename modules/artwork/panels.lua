@@ -13,7 +13,7 @@
 
 -- External references.
 local _, LUI = ...
-local module = LUI:NewModule("Panels", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0", "AceEvent-3.0")
+local module = LUI:NewModule("Panels", "LUIDevAPI", "AceHook-3.0", "AceEvent-3.0")
 local ThemesDB
 
 local db, dbd --luacheck:ignore

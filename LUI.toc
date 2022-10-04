@@ -90,11 +90,15 @@ modules\expbars\reputation.lua
 modules\expbars\honor.lua
 modules\expbars\azerite.lua
 
+### Merchant ###
+modules\merchant\merchant.lua
+
+### MirrorBars ###
+modules\mirrorbar\mirrorbar.lua
+
 ### UIElements ###
 modules\uielements\uielements_init.lua
 modules\uielements\uielements.lua
-modules\uielements\merchant.lua
-modules\uielements\mirrorbar.lua
 modules\uielements\colourpicker.lua
 modules\uielements\faq.lua
 

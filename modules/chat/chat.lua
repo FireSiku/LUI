@@ -6,7 +6,7 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:NewModule("Chat", LUI:GetLegacyPrototype(), "LUIDevAPI", "AceHook-3.0")
+local module = LUI:NewModule("Chat", "LUIDevAPI", "AceHook-3.0")
 local Themes = LUI:GetModule("Themes")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
