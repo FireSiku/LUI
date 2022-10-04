@@ -6,7 +6,7 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:NewModule("Merchant", LUI:GetLegacyPrototype(), "LUIDevAPI")
+local module = LUI:NewModule("Merchant", "LUIDevAPI")
 
 -- Database and defaults shortcuts.
 local db, dbd

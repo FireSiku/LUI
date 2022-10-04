@@ -5,7 +5,7 @@
 ]]
 
 local addonname, LUI = ...
-local module = LUI:NewModule("Swing", LUI:GetLegacyPrototype(), "LUIDevAPI")
+local module = LUI:NewModule("Swing", "LUIDevAPI")
 local oUFmodule = LUI:GetModule("Unitframes")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists

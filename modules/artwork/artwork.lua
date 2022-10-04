@@ -9,7 +9,7 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:NewModule("Artwork", LUI:GetLegacyPrototype(), "LUIDevAPI")
+local module = LUI:NewModule("Artwork", "LUIDevAPI")
 local Profiler = LUI.Profiler
 
 local db, dbd --luacheck:ignore

@@ -20,7 +20,7 @@ local BUFF_MAX_DISPLAY = _G.BUFF_MAX_DISPLAY
 -- Initialize
 ----------------------------------------------------------------------
 
-local module = LUI:NewModule("Auras", LUI:GetLegacyPrototype(), "LUIDevAPI")
+local module = LUI:NewModule("Auras", "LUIDevAPI")
 local Media = LibStub("LibSharedMedia-3.0")
 local Masque = LibStub("Masque", true) or (_G.LibMasque and _G.LibMasque("Button"))
 
