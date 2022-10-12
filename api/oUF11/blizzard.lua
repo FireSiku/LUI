@@ -1,4 +1,5 @@
 local _, ns = ...
+if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 
 -- sourced from Blizzard_ArenaUI/Blizzard_ArenaUI.lua

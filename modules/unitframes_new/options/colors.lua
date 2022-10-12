@@ -103,8 +103,8 @@ local function UpdateColors()
 			oUF_LUI_player.Runes[i]:SetStatusBarColor(unpack(module.colors.runes[runeType]))
 		end
 	end
-	local classIcons = oUF_LUI_player.ClassIcons
-	if classIcons then
+	local classPower = oUF_LUI_player.ClassPower
+	if classPower then
 		local r, g, b
 		if LUI.MONK then r, g, b = unpack(module.colors.chibar[1])
 		elseif LUI.PALADIN then r, g, b = unpack(module.colors.holypowerbar[1])
@@ -114,13 +114,13 @@ local function UpdateColors()
 		elseif LUI.DRUID then r, g, b = unpack(module.colors.combopoints[1])
 		end
 		
-		classIcons:SetBackdropColor(r * 0.4, g * 0.4, b * 0.4)
-		for i = 1, classIcons.MaxCount do
-			classIcons[i]:SetVertexColor(r, g, b)
+		classPower:SetBackdropColor(r * 0.4, g * 0.4, b * 0.4)
+		for i = 1, classPower.MaxCount do
+			classPower[i]:SetVertexColor(r, g, b)
 		end
 	end
 	for k, obj in pairs(oUF.objects) do
-		obj:UpdateAllElements()
+		obj:UpdateAllElements('refreshUnit')
 	end
 end
 

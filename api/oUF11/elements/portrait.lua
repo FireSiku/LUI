@@ -37,6 +37,7 @@ the unit.
 --]]
 
 local _, ns = ...
+if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 
 local function Update(self, event, unit)

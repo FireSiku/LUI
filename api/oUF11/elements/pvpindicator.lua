@@ -33,6 +33,7 @@ The `Badge` sub-widget has to be on a lower sub-layer than the `PvP` texture.
 --]]
 
 local _, ns = ...
+if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 
 local function Update(self, event, unit)

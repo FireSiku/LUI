@@ -17,7 +17,7 @@ local db
 
 local UnitHealth, UnitHealthMax, UnitPower, UnitPowerMax = _G.UnitHealth, _G.UnitHealthMax, _G.UnitPower, _G.UnitPowerMax
 local UnitIsUnit, UnitExists, UnitIsGhost, UnitIsDead = _G.UnitIsUnit, _G.UnitExists, _G.UnitIsGhost, _G.UnitIsDead
-local UnitName, UnitGUID, UnitIsPVP, GetPVPTimer = _G.UnitName, _G.UnitGUID, _G.UnitIsPVP, _G.GetPVPTimer
+local UnitName, UnitGUID, UnitIsPVP, UnitReaction = _G.UnitName, _G.UnitGUID, _G.UnitIsPVP, _G.UnitReaction
 local UnitIsPlayer, UnitIsEnemy, UnitIsTapDenied = _G.UnitIsPlayer, _G.UnitIsEnemy, _G.UnitIsTapDenied
 local GetSpellInfo, GetTalentInfo, GetTotemInfo = _G.GetSpellInfo, _G.GetTalentInfo, _G.GetTotemInfo
 local UnitIsVisible, UnitIsConnected, UnitIsAFK = _G.UnitIsVisible, _G.UnitIsConnected, _G.UnitIsAFK
@@ -26,11 +26,9 @@ local UnitPowerType, GetUnitPowerBarTextureInfo = _G.UnitPowerType, _G.GetUnitPo
 local UnitClass, UnitLevel, GetSpecialization = _G.UnitClass, _G.UnitLevel, _G.GetSpecialization
 local UnitAura, UnitDebuff, DebuffTypeColor = _G.UnitAura, _G.UnitDebuff, _G.DebuffTypeColor
 local SetPortraitTexture, UnitHasVehicleUI = _G.SetPortraitTexture, _G.UnitHasVehicleUI
-local UnitXP, UnitXPMax, GetXPExhaustion = _G.UnitXP, _G.UnitXPMax, _G.GetXPExhaustion
 local GetComboPoints, GetShapeshiftFormID = _G.GetComboPoints, _G.GetShapeshiftFormID
-local UnitReaction, GetWatchedFactionInfo = _G.UnitReaction, _G.GetWatchedFactionInfo
 local UnitSpellHaste, UnitChannelInfo = _G.UnitSpellHaste, _G.UnitChannelInfo
-local GetGlyphSocketInfo = _G.GetGlyphSocketInfo
+local GetPVPTimer, GetGlyphSocketInfo =_G.GetPVPTimer, _G.GetGlyphSocketInfo
 local format = string.format
 local floor = math.floor
 
@@ -624,7 +622,6 @@ local PostCreateAura = function(element, button)
 	button.auratype:SetTexCoord(0, 1, 0.02, 1)
 end
 
---local PostUpdateAura = function(icons, unit, icon, index, offset, filter, isDebuff, duration, timeLeft) - leaving here just in case I need to revert it
 local PostUpdateAura = function(icons, unit, icon, index, offset)
 	local _, _, _, dtype, duration, expirationTime, unitCaster, _ = UnitAura(unit, index, icon.filter)
 	if icon.isDebuff then
@@ -699,7 +696,7 @@ local PostCastStart = function(castbar, unit, name)
 		castbar.bg:SetVertexColor(0.15, 0.15, 0.15, 0.75)
 		castbar.Backdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 	end
-	if castbar.interrupt and castbar.Shielded.Enable and UnitIsEnemy("player", unit) then
+	if castbar.notInterruptible and castbar.Shielded.Enable and UnitIsEnemy("player", unit) then
 		if castbar.Shielded.IndividualColor then
 			castbar:SetStatusBarColor(castbar.Shielded.BarColor.r, castbar.Shielded.BarColor.g, castbar.Shielded.BarColor.b, castbar.Shielded.BarColor.a)
 		end
@@ -785,11 +782,11 @@ local ThreatOverride = function(self, event, unit)
 	if(status and status > 0) then
 		local r, g, b = GetThreatStatusColor(status)
 		for i = 1, 8 do
-			self.Threat[i]:SetVertexColor(r, g, b)
+			self.ThreatIndicator[i]:SetVertexColor(r, g, b)
 		end
-		self.Threat:Show()
+		self.ThreatIndicator:Show()
 	else
-		self.Threat:Hide()
+		self.ThreatIndicator:Hide()
 	end
 end
 
@@ -969,47 +966,47 @@ local ChiOverride = function(self, event, unit, powerType)
 	 end
 end
 
-local DruidManaOverride = function(self, event, unit)
+local AdditionalPowerOverride = function(self, event, unit)
 	if not unit or not UnitIsUnit(self.unit, unit) then return end
 	local _, class = UnitClass(unit)
-	local druidmana = self.DruidMana
+	local additionalpower = self.AdditionalPower
 
 	local form = GetShapeshiftFormID()
-	if self.DruidMana.ShouldEnable(unit) then
-		druidmana:Show()
+	if self.AdditionalPower.ShouldEnable(unit) then
+		additionalpower:Show()
 	else
-		return druidmana:Hide()
+		return additionalpower:Hide()
 	end
 
-	local min, max = UnitPower('player', Enum.PowerType.Mana), UnitPowerMax('player', Enum.PowerType.Mana)
+	local cur, max = UnitPower('player', Enum.PowerType.Mana), UnitPowerMax('player', Enum.PowerType.Mana)
 
-	druidmana:SetMinMaxValues(0, max)
-	druidmana:SetValue(min)
+	additionalpower:SetMinMaxValues(0, max)
+	additionalpower:SetValue(cur)
 
 	local r, g, b
-	if(druidmana.colorClass and UnitIsPlayer(unit)) then
+	if(additionalpower.colorClass and UnitIsPlayer(unit)) then
 		r, g, b = unpack(module.colors.class[class])
-	elseif(druidmana.colorSmooth) then
-		r, g, b = oUF.ColorGradient(min, max, module.colors.smooth())
+	elseif(additionalpower.colorSmooth) then
+		r, g, b = oUF.ColorGradient(cur, max, module.colors.smooth())
 	else
 		r, g, b = unpack(module.colors.power['MANA'])
 	end
 	if(b) then
-		druidmana:SetStatusBarColor(r, g, b)
+		additionalpower:SetStatusBarColor(r, g, b)
 
-		local bg = druidmana.bg
+		local bg = additionalpower.bg
 		if(bg) then
 			local mu = bg.multiplier or 1
 			bg:SetVertexColor(r * mu, g * mu, b * mu)
 		end
 	end
 
-	if(druidmana.PostUpdatePower) then
-		return druidmana:PostUpdatePower(unit, min, max)
+	if(additionalpower.PostUpdatePower) then
+		return additionalpower:PostUpdatePower(unit, cur, max)
 	end
 end
 
-local PostUpdateAltPower = function(altpowerbar, min, cur, max)
+local PostUpdateAlternativePower = function(altpowerbar, unit, cur, min, max)
 	local color = module.colors.class[LUI.playerClass] or {0.5, 0.5, 0.5}
 
 	local tex, r, g, b = GetUnitPowerBarTextureInfo("player", 3)
@@ -1054,21 +1051,21 @@ local PostUpdateAltPower = function(altpowerbar, min, cur, max)
 	end
 end
 
-local PostUpdateDruidMana = function(druidmana, unit, min, max)
+local PostUpdateAdditionalPower = function(additionalpower, unit, cur, max)
 	local _, class = UnitClass(unit)
-	if druidmana.color == "By Class" then
-		druidmana:SetStatusBarColor(unpack(module.colors.class[class]))
-	elseif druidmana.color == "By Type" then
-		druidmana:SetStatusBarColor(unpack(module.colors.power.MANA))
+	if additionalpower.color == "By Class" then
+		additionalpower:SetStatusBarColor(unpack(module.colors.class[class]))
+	elseif additionalpower.color == "By Type" then
+		additionalpower:SetStatusBarColor(unpack(module.colors.power.MANA))
 	else
-		druidmana:SetStatusBarColor(oUF.ColorGradient(min, max, module.colors.smooth()))
+		additionalpower:SetStatusBarColor(oUF.ColorGradient(cur, max, module.colors.smooth()))
 	end
 
-	local bg = druidmana.bg
+	local bg = additionalpower.bg
 
 	if bg then
 		local mu = bg.multiplier or 1
-		local r, g, b = druidmana:GetStatusBarColor()
+		local r, g, b = additionalpower:GetStatusBarColor()
 		bg:SetVertexColor(r * mu, g * mu, b * mu)
 	end
 end
@@ -1381,7 +1378,7 @@ module.funcs = {
 		self.Power.Smooth = oufdb.Bars.Power.Smooth
 		self.Power.colorReaction = false
 		self.Power.frequentUpdates = true
-		self.Power.displayAltPower = unit == unit:match("boss%d")
+		self.Power.displayAlternativePower = unit == unit:match("boss%d")
 
 		if oufdb.Bars.Power.Enable == true then
 			self.Power:Show()
@@ -1585,360 +1582,108 @@ module.funcs = {
 		self.Power.valueMissing.colorIndividual = oufdb.Texts.PowerMissing.IndividualColor
 	end,
 
-	-- icons
-	Leader = function(self, unit, oufdb)
-		if not self.Leader then
-			self.Leader = self.Overlay:CreateTexture(nil, "OVERLAY")
-			self.Assistant = self.Overlay:CreateTexture(nil, "OVERLAY")
+	-- Indicators
+	LeaderIndicator = function(self, unit, oufdb)
+		if not self.LeaderIndicator then
+			self.LeaderIndicator = self.Overlay:CreateTexture(nil, "OVERLAY")
+			self.AssistantIndicator = self.Overlay:CreateTexture(nil, "OVERLAY")
 		end
 
-		self.Leader:SetHeight(oufdb.Icons.Leader.Size)
-		self.Leader:SetWidth(oufdb.Icons.Leader.Size)
-		self.Leader:ClearAllPoints()
-		self.Leader:SetPoint(oufdb.Icons.Leader.Point, self, oufdb.Icons.Leader.Point, oufdb.Icons.Leader.X, oufdb.Icons.Leader.Y)
+		self.LeaderIndicator:SetHeight(oufdb.Indicators.Leader.Size)
+		self.LeaderIndicator:SetWidth(oufdb.Indicators.Leader.Size)
+		self.LeaderIndicator:ClearAllPoints()
+		self.LeaderIndicator:SetPoint(oufdb.Indicators.Leader.Point, self, oufdb.Indicators.Leader.Point, oufdb.Indicators.Leader.X, oufdb.Indicators.Leader.Y)
 
-		self.Assistant:SetHeight(oufdb.Icons.Leader.Size)
-		self.Assistant:SetWidth(oufdb.Icons.Leader.Size)
-		self.Assistant:ClearAllPoints()
-		self.Assistant:SetPoint(oufdb.Icons.Leader.Point, self, oufdb.Icons.Leader.Point, oufdb.Icons.Leader.X, oufdb.Icons.Leader.Y)
+		self.AssistantIndicator:SetHeight(oufdb.Indicators.Leader.Size)
+		self.AssistantIndicator:SetWidth(oufdb.Indicators.Leader.Size)
+		self.AssistantIndicator:ClearAllPoints()
+		self.AssistantIndicator:SetPoint(oufdb.Indicators.Leader.Point, self, oufdb.Indicators.Leader.Point, oufdb.Indicators.Leader.X, oufdb.Indicators.Leader.Y)
 	end,
-	MasterLooter = function(self, unit, oufdb)
-		if not self.MasterLooter then self.MasterLooter = self.Overlay:CreateTexture(nil, "OVERLAY") end
-
-		self.MasterLooter:SetHeight(oufdb.Icons.Lootmaster.Size)
-		self.MasterLooter:SetWidth(oufdb.Icons.Lootmaster.Size)
-		self.MasterLooter:ClearAllPoints()
-		self.MasterLooter:SetPoint(oufdb.Icons.Lootmaster.Point, self, oufdb.Icons.Lootmaster.Point, oufdb.Icons.Lootmaster.X, oufdb.Icons.Lootmaster.Y)
-	end,
-	RaidIcon = function(self, unit, oufdb)
-		if not self.RaidIcon then
-			self.RaidIcon = self.Overlay:CreateTexture(nil, "OVERLAY")
-			self.RaidIcon:SetTexture("Interface\\AddOns\\LUI\\media\\textures\\icons\\raidicons.blp")
+	RaidTargetIndicator = function(self, unit, oufdb)
+		if not self.RaidTargetIndicator then
+			self.RaidTargetIndicator = self.Overlay:CreateTexture(nil, "OVERLAY")
+			self.RaidTargetIndicator:SetTexture("Interface\\AddOns\\LUI\\media\\textures\\icons\\raidicons.blp")
 		end
 
-		self.RaidIcon:SetHeight(oufdb.Icons.Raid.Size)
-		self.RaidIcon:SetWidth(oufdb.Icons.Raid.Size)
-		self.RaidIcon:ClearAllPoints()
-		self.RaidIcon:SetPoint(oufdb.Icons.Raid.Point, self, oufdb.Icons.Raid.Point, oufdb.Icons.Raid.X, oufdb.Icons.Raid.Y)
+		self.RaidTargetIndicator:SetHeight(oufdb.Indicators.Raid.Size)
+		self.RaidTargetIndicator:SetWidth(oufdb.Indicators.Raid.Size)
+		self.RaidTargetIndicator:ClearAllPoints()
+		self.RaidTargetIndicator:SetPoint(oufdb.Indicators.Raid.Point, self, oufdb.Indicators.Raid.Point, oufdb.Indicators.Raid.X, oufdb.Indicators.Raid.Y)
 	end,
-	LFDRole = function(self, unit, oufdb)
-		if not self.LFDRole then self.LFDRole = self.Overlay:CreateTexture(nil, "OVERLAY") end
+	GroupRoleIndicator = function(self, unit, oufdb)
+		if not self.GroupRoleIndicator then self.GroupRoleIndicator = self.Overlay:CreateTexture(nil, "OVERLAY") end
 
-		self.LFDRole:SetHeight(oufdb.Icons.Role.Size)
-		self.LFDRole:SetWidth(oufdb.Icons.Role.Size)
-		self.LFDRole:ClearAllPoints()
-		self.LFDRole:SetPoint(oufdb.Icons.Role.Point, self, oufdb.Icons.Role.Point, oufdb.Icons.Role.X, oufdb.Icons.Role.Y)
+		self.GroupRoleIndicator:SetHeight(oufdb.Indicators.Role.Size)
+		self.GroupRoleIndicator:SetWidth(oufdb.Indicators.Role.Size)
+		self.GroupRoleIndicator:ClearAllPoints()
+		self.GroupRoleIndicator:SetPoint(oufdb.Indicators.Role.Point, self, oufdb.Indicators.Role.Point, oufdb.Indicators.Role.X, oufdb.Indicators.Role.Y)
 	end,
-	PvP = function(self, unit, oufdb)
-		if not self.PvP then
-			self.PvP = self.Overlay:CreateTexture(nil, "OVERLAY")
+	PvPIndicator = function(self, unit, oufdb)
+		if not self.PvPIndicator then
+			self.PvPIndicator = self.Overlay:CreateTexture(nil, "OVERLAY")
 			if unit == "player" then
-				self.PvP.Timer = SetFontString(self.Overlay, Media:Fetch("font", oufdb.Texts.PvP.Font), oufdb.Texts.PvP.Size, oufdb.Texts.PvP.Outline)
+				self.PvPIndicator.Timer = SetFontString(self.Overlay, Media:Fetch("font", oufdb.Texts.PvP.Font), oufdb.Texts.PvP.Size, oufdb.Texts.PvP.Outline)
 				self.Health:HookScript("OnUpdate", function(_, elapsed)
-					if UnitIsPVP(unit) and oufdb.Icons.PvP.Enable and oufdb.Texts.PvP.Enable then
+					if UnitIsPVP(unit) and oufdb.Indicators.PvP.Enable and oufdb.Texts.PvP.Enable then
 						if (GetPVPTimer() == 301000 or GetPVPTimer() == -1) then
-							if self.PvP.Timer:IsShown() then
-								self.PvP.Timer:Hide()
+							if self.PvPIndicator.Timer:IsShown() then
+								self.PvPIndicator.Timer:Hide()
 							end
 						else
-							self.PvP.Timer:Show()
+							self.PvPIndicator.Timer:Show()
 							local min = math.floor(GetPVPTimer()/1000/60)
 							local sec = (math.floor(GetPVPTimer()/1000))-(min*60)
-							self.PvP.Timer:SetFormattedText("%d:%.2d", min, sec)
+							self.PvPIndicator.Timer:SetFormattedText("%d:%.2d", min, sec)
 						end
-					elseif self.PvP.Timer:IsShown() then
-						self.PvP.Timer:Hide()
+					elseif self.PvPIndicator.Timer:IsShown() then
+						self.PvPIndicator.Timer:Hide()
 					end
 				end)
 			end
 		end
 
-		self.PvP:SetHeight(oufdb.Icons.PvP.Size)
-		self.PvP:SetWidth(oufdb.Icons.PvP.Size)
-		self.PvP:ClearAllPoints()
-		self.PvP:SetPoint(oufdb.Icons.PvP.Point, self, oufdb.Icons.PvP.Point, oufdb.Icons.PvP.X, oufdb.Icons.PvP.Y)
+		self.PvPIndicator:SetHeight(oufdb.Indicators.PvP.Size)
+		self.PvPIndicator:SetWidth(oufdb.Indicators.PvP.Size)
+		self.PvPIndicator:ClearAllPoints()
+		self.PvPIndicator:SetPoint(oufdb.Indicators.PvP.Point, self, oufdb.Indicators.PvP.Point, oufdb.Indicators.PvP.X, oufdb.Indicators.PvP.Y)
 
-		if self.PvP.Timer then
-			self.PvP.Timer:SetFont(Media:Fetch("font", oufdb.Texts.PvP.Font), oufdb.Texts.PvP.Size, oufdb.Texts.PvP.Outline)
-			self.PvP.Timer:SetPoint("CENTER", self.PvP, "CENTER", oufdb.Texts.PvP.X, oufdb.Texts.PvP.Y)
-			self.PvP.Timer:SetTextColor(oufdb.Texts.PvP.Color.r, oufdb.Texts.PvP.Color.g, oufdb.Texts.PvP.Color.b)
+		if self.PvPIndicator.Timer then
+			self.PvPIndicator.Timer:SetFont(Media:Fetch("font", oufdb.Texts.PvP.Font), oufdb.Texts.PvP.Size, oufdb.Texts.PvP.Outline)
+			self.PvPIndicator.Timer:SetPoint("CENTER", self.PvPIndicator, "CENTER", oufdb.Texts.PvP.X, oufdb.Texts.PvP.Y)
+			self.PvPIndicator.Timer:SetTextColor(oufdb.Texts.PvP.Color.r, oufdb.Texts.PvP.Color.g, oufdb.Texts.PvP.Color.b)
 
-			if oufdb.Icons.PvP.Enable and oufdb.Texts.PvP.Enable then
-				self.PvP.Timer:Show()
+			if oufdb.Indicators.PvP.Enable and oufdb.Texts.PvP.Enable then
+				self.PvPIndicator.Timer:Show()
 			else
-				self.PvP.Timer:Hide()
+				self.PvPIndicator.Timer:Hide()
 			end
 		end
 	end,
-	Resting = function(self, unit, oufdb)
-		if not self.Resting then self.Resting = self.Overlay:CreateTexture(nil, "OVERLAY") end
+	RestingIndicator = function(self, unit, oufdb)
+		if not self.RestingIndicator then self.RestingIndicator = self.Overlay:CreateTexture(nil, "OVERLAY") end
 
-		self.Resting:SetHeight(oufdb.Icons.Resting.Size)
-		self.Resting:SetWidth(oufdb.Icons.Resting.Size)
-		self.Resting:ClearAllPoints()
-		self.Resting:SetPoint(oufdb.Icons.Resting.Point, self, oufdb.Icons.Resting.Point, oufdb.Icons.Resting.X, oufdb.Icons.Resting.Y)
+		self.RestingIndicator:SetHeight(oufdb.Indicators.Resting.Size)
+		self.RestingIndicator:SetWidth(oufdb.Indicators.Resting.Size)
+		self.RestingIndicator:ClearAllPoints()
+		self.RestingIndicator:SetPoint(oufdb.Indicators.Resting.Point, self, oufdb.Indicators.Resting.Point, oufdb.Indicators.Resting.X, oufdb.Indicators.Resting.Y)
 	end,
-	Combat = function(self, unit, oufdb)
-		if not self.Combat then self.Combat = self.Overlay:CreateTexture(nil, "OVERLAY") end
+	CombatIndicator = function(self, unit, oufdb)
+		if not self.CombatIndicator then self.CombatIndicator = self.Overlay:CreateTexture(nil, "OVERLAY") end
 
-		self.Combat:SetHeight(oufdb.Icons.Combat.Size)
-		self.Combat:SetWidth(oufdb.Icons.Combat.Size)
-		self.Combat:ClearAllPoints()
-		self.Combat:SetPoint(oufdb.Icons.Combat.Point, self, oufdb.Icons.Combat.Point, oufdb.Icons.Combat.X, oufdb.Icons.Combat.Y)
+		self.CombatIndicator:SetHeight(oufdb.Indicators.Combat.Size)
+		self.CombatIndicator:SetWidth(oufdb.Indicators.Combat.Size)
+		self.CombatIndicator:ClearAllPoints()
+		self.CombatIndicator:SetPoint(oufdb.Indicators.Combat.Point, self, oufdb.Indicators.Combat.Point, oufdb.Indicators.Combat.X, oufdb.Indicators.Combat.Y)
 	end,
-	ReadyCheck = function(self, unit, oufdb)
-		if not self.ReadyCheck then self.ReadyCheck = self.Overlay:CreateTexture(nil, "OVERLAY") end
+	ReadyCheckIndicator = function(self, unit, oufdb)
+		if not self.ReadyCheckIndicator then self.ReadyCheckIndicator = self.Overlay:CreateTexture(nil, "OVERLAY") end
 
-		self.ReadyCheck:SetHeight(oufdb.Icons.ReadyCheck.Size)
-		self.ReadyCheck:SetWidth(oufdb.Icons.ReadyCheck.Size)
-		self.ReadyCheck:ClearAllPoints()
-		self.ReadyCheck:SetPoint(oufdb.Icons.ReadyCheck.Point, self, oufdb.Icons.ReadyCheck.Point, oufdb.Icons.ReadyCheck.X, oufdb.Icons.ReadyCheck.Y)
+		self.ReadyCheckIndicator:SetHeight(oufdb.Indicators.ReadyCheck.Size)
+		self.ReadyCheckIndicator:SetWidth(oufdb.Indicators.ReadyCheck.Size)
+		self.ReadyCheckIndicator:ClearAllPoints()
+		self.ReadyCheckIndicator:SetPoint(oufdb.Indicators.ReadyCheck.Point, self, oufdb.Indicators.ReadyCheck.Point, oufdb.Indicators.ReadyCheck.X, oufdb.Indicators.ReadyCheck.Y)
 	end,
 
-	-- player specific
-	Experience = function(self, unit, ouf_xp_rep)
-		if not self.XP then
-			self.XP = CreateFrame("Frame", nil, self)
-			self.XP:SetFrameLevel(self:GetFrameLevel() + 2)
-			self.XP:SetHeight(17)
-			self.XP:SetPoint("TOPLEFT", self, "BOTTOMLEFT", 2, -2)
-			self.XP:SetPoint("TOPRIGHT", self, "BOTTOMRIGHT", -2, -2)
-
-			self.Experience = CreateFrame("StatusBar",  nil, self.XP)
-			self.Experience:SetStatusBarTexture(normTex)
-			self.Experience:SetAllPoints(self.XP)
-
-			self.Experience.Value = SetFontString(self.Experience, Media:Fetch("font", ouf_xp_rep.General.Font), ouf_xp_rep.General.FontSize, ouf_xp_rep.General.FontFlag)
-			self.Experience.Value:SetAllPoints(self.XP)
-			self.Experience.Value:SetFontObject(GameFontHighlight)
-
-			self.Experience.Rested = CreateFrame("StatusBar", nil, self.Experience)
-			self.Experience.Rested:SetAllPoints(self.XP)
-			self.Experience.Rested:SetStatusBarTexture(normTex)
-
-			self.Experience.bg = self.XP:CreateTexture(nil, "BACKGROUND")
-			self.Experience.bg:SetAllPoints(self.XP)
-			self.Experience.bg:SetTexture(normTex)
-
-			self.Experience.Override = function(_, event, unit)
-				if(self.unit ~= unit) then return end
-				if unit == "vehicle" then unit = "player" end
-
-				local value, max = UnitXP("player"), UnitXPMax("player")
-				if max == 0 then return end -- Rarely, client will throw this, avoid divide by zero
-
-				self.Experience:SetMinMaxValues(0, max)
-				self.Experience:SetValue(value)
-
-				local exhaustion = unit == "player" and GetXPExhaustion() or 0
-				self.Experience.Rested:SetMinMaxValues(0, max)
-				self.Experience.Rested:SetValue(math.min(value + exhaustion, max))
-
-				self.Experience.Value:SetFormattedText("%d / %d (%d%%)", value, max, math.floor((value / max) * 100 + 0.5))
-			end
-
-			if UnitLevel("player") == MAX_PLAYER_LEVEL then
-				self.XP:Hide()
-			else
-				self.XP:RegisterEvent("PLAYER_LEVEL_UP")
-				self.XP:SetScript("OnEvent", function(_, event, level)
-					if level == MAX_PLAYER_LEVEL then
-						self.XP:Hide()
-						if self.Rep and ouf_xp_rep.Reputation.Enable then
-							self.Rep:Show()
-						end
-					end
-				end)
-			end
-
-			local frameStrata = self.XP:GetFrameStrata()
-			self.XP:SetScript("OnEnter", function()
-				self.XP:SetAlpha(ouf_xp_rep.Experience.Alpha)
-
-				-- Set frame strata to raise frame above health text.
-				frameStrata = self.XP:GetFrameStrata()
-				self.XP:SetFrameStrata("TOOLTIP")
-
-				local level, value, max, rested = UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetXPExhaustion()
-				GameTooltip:SetOwner(self.XP, "ANCHOR_LEFT")
-				GameTooltip:ClearLines()
-				GameTooltip:AddLine("Level "..level)
-				if (rested and rested > 0) then
-					GameTooltip:AddLine("Rested: "..rested)
-				end
-				GameTooltip:AddLine("Remaining: "..max - value)
-				GameTooltip:Show()
-			end)
-
-			self.XP:SetScript("OnLeave", function()
-				if not ouf_xp_rep.Experience.AlwaysShow then
-					self.XP:SetAlpha(0)
-				end
-
-				-- Reset frame strata back to normal level.
-				self.XP:SetFrameStrata(frameStrata)
-				GameTooltip:Hide()
-			end)
-
-			self.XP:SetScript("OnMouseUp", function(_, button)
-				if button == "LeftButton" then
-					local level, value, max, rested = UnitLevel("player"), UnitXP("player"), UnitXPMax("player"), GetXPExhaustion()
-					local msg = "Experience into Level "..level..": "..value.." / "..max.." ("..max - value.." remaining)"..((rested and rested > 0) and (", "..rested.." rested XP") or "")
-					for i=1, NUM_CHAT_WINDOWS do
-						local editbox = _G["ChatFrame"..i.."EditBox"]
-						if editbox and editbox:IsShown() then
-							editbox:Insert(msg)
-							return
-						end
-					end
-					print(msg)
-				elseif button == "RightButton" and self.Rep and self.Rep.Enable then
-					self.XP:Hide()
-					self.Rep:Show()
-				end
-			end)
-
-			self.XP.Enable = true
-		end
-
-		self.Experience:SetStatusBarColor(ouf_xp_rep.Experience.FillColor.r, ouf_xp_rep.Experience.FillColor.g, ouf_xp_rep.Experience.FillColor.b, ouf_xp_rep.Experience.FillColor.a)
-
-		self.Experience.Value:SetFont(Media:Fetch("font", ouf_xp_rep.General.Font), ouf_xp_rep.General.FontSize, ouf_xp_rep.General.FontFlag)
-		self.Experience.Value:SetJustifyH(ouf_xp_rep.General.FontJustify)
-		self.Experience.Value:SetTextColor(ouf_xp_rep.General.FontColor.r, ouf_xp_rep.General.FontColor.g, ouf_xp_rep.General.FontColor.b, ouf_xp_rep.General.FontColor.a)
-
-		self.Experience.Rested:SetStatusBarColor(ouf_xp_rep.Experience.RestedColor.r, ouf_xp_rep.Experience.RestedColor.g, ouf_xp_rep.Experience.RestedColor.b, ouf_xp_rep.Experience.RestedColor.a)
-		self.Experience.bg:SetVertexColor(ouf_xp_rep.Experience.BGColor.r, ouf_xp_rep.Experience.BGColor.g, ouf_xp_rep.Experience.BGColor.b, ouf_xp_rep.Experience.BGColor.a)
-
-		if ouf_xp_rep.Experience.AlwaysShow then
-			self.XP:SetAlpha(ouf_xp_rep.Experience.Alpha)
-		else
-			self.XP:SetAlpha(0)
-		end
-
-		if ouf_xp_rep.Experience.ShowValue then
-			self.Experience.Value:Show()
-		else
-			self.Experience.Value:Hide()
-		end
-	end,
-	Reputation = function(self, unit, ouf_xp_rep)
-		if not self.Rep then
-			self.Rep = CreateFrame("Frame", nil, self)
-			self.Rep:SetFrameLevel(self:GetFrameLevel() + 2)
-			self.Rep:SetHeight(17)
-			self.Rep:SetPoint("TOPLEFT", self, "BOTTOMLEFT", 2, -2)
-			self.Rep:SetPoint("TOPRIGHT", self, "BOTTOMRIGHT", -2, -2)
-
-			self.Reputation = CreateFrame("StatusBar", nil, self.Rep)
-			self.Reputation:SetStatusBarTexture(normTex)
-			self.Reputation:SetAllPoints(self.Rep)
-
-			self.Reputation.Value = SetFontString(self.Reputation, Media:Fetch("font", ouf_xp_rep.General.Font), ouf_xp_rep.General.FontSize, ouf_xp_rep.General.FontFlag)
-			self.Reputation.Value:SetAllPoints(self.Rep)
-			self.Reputation.Value:SetFontObject(GameFontHighlight)
-
-			self.Reputation.bg = self.Reputation:CreateTexture(nil, "BACKGROUND")
-			self.Reputation.bg:SetAllPoints(self.Rep)
-			self.Reputation.bg:SetTexture(normTex)
-
-			self.Reputation.Override = function()
-				local name, standing, min, max, value = GetWatchedFactionInfo()
-				if name then
-					if min == max then
-						min, max, value = 41000, 42000, 42000
-					end
-					
-					local barMax = max - min
-					local barValue = value - min
-					local barMin = 0
-					local percentBar = barValue * 100 / barMax
-					
-					self.Reputation:SetMinMaxValues(barMin, barMax)
-					self.Reputation:SetValue(barValue)
-					self.Reputation.Value:SetFormattedText("%d / %d (%d%%)", barValue, barMax, percentBar)
-					--math.floor(((value - min) / (max - min)) * 100 + 0.5)
-				else
-					self.Reputation:SetMinMaxValues(0, 100)
-					self.Reputation:SetValue(0)
-
-					self.Reputation.Value:SetText()
-				end
-			end
-
-			local frameStrata = self.Rep:GetFrameStrata()
-			self.Rep:SetScript("OnEnter", function()
-				self.Rep:SetAlpha(ouf_xp_rep.Reputation.Alpha)
-
-				-- Set frame strata to raise frame above health text.
-				frameStrata = self.Rep:GetFrameStrata()
-				self.Rep:SetFrameStrata("TOOLTIP")
-
-				GameTooltip:SetOwner(self.Rep, "ANCHOR_LEFT")
-				GameTooltip:ClearLines()
-				if GetWatchedFactionInfo() then
-					local name, standing, min, max, value = GetWatchedFactionInfo()
-					GameTooltip:AddLine(name..": "..standings[standing])
-					GameTooltip:AddLine("Remaining: "..max - value)
-				else
-					GameTooltip:AddLine("You are not tracking any factions")
-				end
-				GameTooltip:Show()
-			end)
-
-			self.Rep:SetScript("OnLeave", function()
-				if ouf_xp_rep.Reputation.AlwaysShow ~= true then
-					self.Rep:SetAlpha(0)
-				end
-
-				-- Reset frame strata back to normal level.
-				self.Rep:SetFrameStrata(frameStrata)
-				GameTooltip:Hide()
-			end)
-
-			self.Rep:SetScript("OnMouseUp", function(_, button)
-				if button == "LeftButton" then
-					local name, standing, min, max, value = GetWatchedFactionInfo()
-					if not name then return end
-
-					local msg = "Reputation with "..name..": "..value - min.." / "..max - min.." "..standings[standing].." ("..max - value.." remaining)"
-					for i=1, NUM_CHAT_WINDOWS do
-						local editbox = _G["ChatFrame"..i.."EditBox"]
-						if editbox and editbox:IsShown() then
-							editbox:Insert(msg)
-							return
-						end
-					end
-					print(msg)
-				elseif button == "RightButton" and self.XP and self.XP.Enable and UnitLevel("player") ~= MAX_PLAYER_LEVEL then
-					self.Rep:Hide()
-					self.XP:Show()
-				end
-			end)
-
-			self.Rep.Enable = true
-		end
-
-		self.Reputation:SetStatusBarColor(ouf_xp_rep.Reputation.FillColor.r, ouf_xp_rep.Reputation.FillColor.g, ouf_xp_rep.Reputation.FillColor.b, ouf_xp_rep.Reputation.FillColor.a)
-
-		self.Reputation.Value:SetFont(Media:Fetch("font", ouf_xp_rep.General.Font), ouf_xp_rep.General.FontSize, ouf_xp_rep.General.FontFlag)
-		self.Reputation.Value:SetJustifyH(ouf_xp_rep.General.FontJustify)
-		self.Reputation.Value:SetTextColor(ouf_xp_rep.General.FontColor.r, ouf_xp_rep.General.FontColor.g, ouf_xp_rep.General.FontColor.b, ouf_xp_rep.General.FontColor.a)
-
-		self.Reputation.bg:SetVertexColor(ouf_xp_rep.Reputation.BGColor.r, ouf_xp_rep.Reputation.BGColor.g, ouf_xp_rep.Reputation.BGColor.b, ouf_xp_rep.Reputation.BGColor.a)
-
-		if ouf_xp_rep.Reputation.AlwaysShow == true then
-			self.Rep:SetAlpha(ouf_xp_rep.Reputation.Alpha)
-		else
-			self.Rep:SetAlpha(0)
-		end
-
-		if ouf_xp_rep.Reputation.ShowValue == true then
-			self.Reputation.Value:Show()
-		else
-			self.Reputation.Value:Hide()
-		end
-	end,
 	Runes = function(self, unit, oufdb)
 		if not self.Runes then
 			self.Runes = CreateFrame("Frame", nil, self)
@@ -2060,7 +1805,7 @@ module.funcs = {
 			bar.bg.multiplier = oufdb.Bars.Totems.Multiplier
 		end
 	end,
-	ClassIcons = function(self, unit, oufdb)
+	ClassPower = function(self, unit, oufdb)
 		local BASE_COUNT = {
 			MAGE = 4,
 			MONK = 5,
@@ -2087,37 +1832,29 @@ module.funcs = {
 		elseif LUI.DRUID then r, g, b = unpack(module.colors.combopoints[1])
 		end
 		
-		if LUI.MONK then oufdb.Bars.ClassIcons = oufdb.Bars.Chi
-		elseif LUI.PALADIN then oufdb.Bars.ClassIcons = oufdb.Bars.HolyPower
-		elseif LUI.MAGE then oufdb.Bars.ClassIcons = oufdb.Bars.ArcaneCharges
-		elseif LUI.WARLOCK then oufdb.Bars.ClassIcons = oufdb.Bars.WarlockBar
-		elseif LUI.ROGUE then oufdb.Bars.ClassIcons = oufdb.Bars.Chi
-		elseif LUI.DRUID then oufdb.Bars.ClassIcons = oufdb.Bars.Chi
-		end
-		
-		if not self.ClassIcons then
-			self.ClassIcons = CreateFrame("Frame", nil, self, "BackdropTemplate")
-			self.ClassIcons:SetFrameLevel(6)
-			self.ClassIcons:SetFrameStrata("BACKGROUND")
-			self.ClassIcons:SetBackdrop({
+		if not self.ClassPower then
+			self.ClassPower = CreateFrame("Frame", nil, self, "BackdropTemplate")
+			self.ClassPower:SetFrameLevel(6)
+			self.ClassPower:SetFrameStrata("BACKGROUND")
+			self.ClassPower:SetBackdrop({
 				bgFile = "Interface/Tooltips/UI-Tooltip-Background",
 			})
-			self.ClassIcons:SetBackdropColor(r * 0.4, g * 0.4, b * 0.4)
-			self.ClassIcons.Count = BASE_COUNT[LUI.playerClass]
-			self.ClassIcons.MaxCount = MAX_COUNT[LUI.playerClass]
+			self.ClassPower:SetBackdropColor(r * 0.4, g * 0.4, b * 0.4)
+			self.ClassPower.Count = BASE_COUNT[LUI.playerClass]
+			self.ClassPower.MaxCount = MAX_COUNT[LUI.playerClass]
 
 			for i = 1, MAX_COUNT[LUI.playerClass] do -- Always create frames for the max possible
-				self.ClassIcons[i] = self.ClassIcons:CreateTexture(nil, "ARTWORK")
+				self.ClassPower[i] = self.ClassPower:CreateTexture(nil, "ARTWORK")
 			end
 		end
 
-		local x = oufdb.Bars.ClassIcons.Lock and 0 or oufdb.Bars.ClassIcons.X
-		local y = oufdb.Bars.ClassIcons.Lock and 0.5 or oufdb.Bars.ClassIcons.Y
+		local x = oufdb.Bars.ClassPower.Lock and 0 or oufdb.Bars.ClassPower.X
+		local y = oufdb.Bars.ClassPower.Lock and 0.5 or oufdb.Bars.ClassPower.Y
 
-		self.ClassIcons:SetHeight(oufdb.Bars.ClassIcons.Height)
-		self.ClassIcons:SetWidth(oufdb.Bars.ClassIcons.Width)
-		self.ClassIcons:ClearAllPoints()
-		self.ClassIcons:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
+		self.ClassPower:SetHeight(oufdb.Bars.ClassPower.Height)
+		self.ClassPower:SetWidth(oufdb.Bars.ClassPower.Width)
+		self.ClassPower:ClearAllPoints()
+		self.ClassPower:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 	
 		local function checkPowers(event, level)
 			local pLevel = (event == "UNIT_LEVEL") and tonumber(level) or UnitLevel("player")
@@ -2132,27 +1869,27 @@ module.funcs = {
 					count = 6
 				end
 			end
-			self.ClassIcons.Count = count
+			self.ClassPower.Count = count
 
 			for i = 1, MAX_COUNT[LUI.playerClass] do
-				if oufdb.Bars.ClassIcons.Texture == "Empty" then
-					self.ClassIcons[i]:SetColorTexture(r, g, b)
+				if oufdb.Bars.ClassPower.Texture == "Empty" then
+					self.ClassPower[i]:SetColorTexture(r, g, b)
 				else
-					self.ClassIcons[i]:SetTexture(Media:Fetch("statusbar", oufdb.Bars.ClassIcons.Texture))
-					self.ClassIcons[i]:SetDesaturated(true)
-					self.ClassIcons[i]:SetVertexColor(r, g, b)
+					self.ClassPower[i]:SetTexture(Media:Fetch("statusbar", oufdb.Bars.ClassPower.Texture))
+					self.ClassPower[i]:SetDesaturated(true)
+					self.ClassPower[i]:SetVertexColor(r, g, b)
 				end
-				self.ClassIcons[i]:SetSize(((oufdb.Bars.ClassIcons.Width - 2*oufdb.Bars.ClassIcons.Padding) / self.ClassIcons.Count), oufdb.Bars.ClassIcons.Height)
-				self.ClassIcons[i]:ClearAllPoints()
+				self.ClassPower[i]:SetSize(((oufdb.Bars.ClassPower.Width - 2*oufdb.Bars.ClassPower.Padding) / self.ClassPower.Count), oufdb.Bars.ClassPower.Height)
+				self.ClassPower[i]:ClearAllPoints()
 				if i == 1 then
-					self.ClassIcons[i]:SetPoint("LEFT", self.ClassIcons, "LEFT", 0, 0)
+					self.ClassPower[i]:SetPoint("LEFT", self.ClassPower, "LEFT", 0, 0)
 				else
-					self.ClassIcons[i]:SetPoint("LEFT", self.ClassIcons[i-1], "RIGHT", oufdb.Bars.ClassIcons.Padding, 0)
+					self.ClassPower[i]:SetPoint("LEFT", self.ClassPower[i-1], "RIGHT", oufdb.Bars.ClassPower.Padding, 0)
 				end
 				--LUI:Print("ClassIcon["..i.."] Is Shown")
-				--self.ClassIcons[i]:Show()
-				if i > self.ClassIcons.Count then
-					self.ClassIcons[i]:Hide()
+				--self.ClassPower[i]:Show()
+				if i > self.ClassPower.Count then
+					self.ClassPower[i]:Hide()
 				end
 			end
 		end
@@ -2161,97 +1898,97 @@ module.funcs = {
 		module:RegisterEvent("UNIT_LEVEL", checkPowers)
 		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkPowers)
 		module:RegisterEvent("PLAYER_TALENT_UPDATE", checkPowers)
-		self.ClassIcons.UpdateTexture = checkPowers
+		self.ClassPower.UpdateTexture = checkPowers
 	end,
-	AltPowerBar = function(self, unit, oufdb)
-		if not self.AltPowerBar then
-			self.AltPowerBar = CreateFrame("StatusBar", nil, self)
-			if unit == "pet" then self.AltPowerBar:SetParent(oUF_LUI_player) end
+	AlternativePower = function(self, unit, oufdb)
+		if not self.AlternativePower then
+			self.AlternativePower = CreateFrame("StatusBar", nil, self)
+			if unit == "pet" then self.AlternativePower:SetParent(oUF_LUI_player) end
 
-			self.AltPowerBar.bg = self.AltPowerBar:CreateTexture(nil, "BORDER")
-			self.AltPowerBar.bg:SetAllPoints(self.AltPowerBar)
+			self.AlternativePower.bg = self.AlternativePower:CreateTexture(nil, "BORDER")
+			self.AlternativePower.bg:SetAllPoints(self.AlternativePower)
 
-			self.AltPowerBar.SetPosition = function()
-				if not module.db.Player.Bars.AltPower.OverPower then return end
+			self.AlternativePower.SetPosition = function()
+				if not module.db.Player.Bars.AlternativePower.OverPower then return end
 
-				if oUF_LUI_player.AltPowerBar:IsShown() or (oUF_LUI_pet and oUF_LUI_pet.AltPowerBar and oUF_LUI_pet.AltPowerBar:IsShown()) then
+				if oUF_LUI_player.AlternativePower:IsShown() or (oUF_LUI_pet and oUF_LUI_pet.AlternativePower and oUF_LUI_pet.AlternativePower:IsShown()) then
 					oUF_LUI_player.Power:SetHeight(module.db.Player.Bars.Power.Height/2 - 1)
-					oUF_LUI_player.AltPowerBar:SetHeight(module.db.Player.Bars.Power.Height/2 - 1)
+					oUF_LUI_player.AlternativePower:SetHeight(module.db.Player.Bars.Power.Height/2 - 1)
 				else
 					oUF_LUI_player.Power:SetHeight(module.db.Player.Bars.Power.Height)
-					oUF_LUI_player.AltPowerBar:SetHeight(module.db.Player.Bars.AltPower.Height)
+					oUF_LUI_player.AlternativePower:SetHeight(module.db.Player.Bars.AlternativePower.Height)
 				end
 			end
 
-			self.AltPowerBar:SetScript("OnShow", function()
-				self.AltPowerBar.SetPosition()
-				self.AltPowerBar:ForceUpdate()
+			self.AlternativePower:SetScript("OnShow", function()
+				self.AlternativePower.SetPosition()
+				self.AlternativePower:ForceUpdate()
 			end)
-			self.AltPowerBar:SetScript("OnHide", self.AltPowerBar.SetPosition)
+			self.AlternativePower:SetScript("OnHide", self.AlternativePower.SetPosition)
 
-			self.AltPowerBar.Text = SetFontString(self.AltPowerBar, Media:Fetch("font", module.db.Player.Texts.AltPower.Font), module.db.Player.Texts.AltPower.Size, module.db.Player.Texts.AltPower.Outline)
+			self.AlternativePower.Text = SetFontString(self.AlternativePower, Media:Fetch("font", module.db.Player.Texts.AlternativePower.Font), module.db.Player.Texts.AlternativePower.Size, module.db.Player.Texts.AlternativePower.Outline)
 		end
 
-		self.AltPowerBar:ClearAllPoints()
+		self.AlternativePower:ClearAllPoints()
 		if unit == "player" then
-			if module.db.Player.Bars.AltPower.OverPower then
-				self.AltPowerBar:SetPoint("TOPLEFT", self.Power, "BOTTOMLEFT", 0, -2)
-				self.AltPowerBar:SetPoint("TOPRIGHT", self.Power, "BOTTOMRIGHT", 0, -2)
+			if module.db.Player.Bars.AlternativePower.OverPower then
+				self.AlternativePower:SetPoint("TOPLEFT", self.Power, "BOTTOMLEFT", 0, -2)
+				self.AlternativePower:SetPoint("TOPRIGHT", self.Power, "BOTTOMRIGHT", 0, -2)
 			else
-				self.AltPowerBar:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.Player.Bars.AltPower.X, module.db.Player.Bars.AltPower.Y)
+				self.AlternativePower:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.Player.Bars.AlternativePower.X, module.db.Player.Bars.AlternativePower.Y)
 			end
 		else
-			self.AltPowerBar:SetPoint("TOPLEFT", oUF_LUI_player.AltPowerBar, "TOPLEFT", 0, 0)
-			self.AltPowerBar:SetPoint("BOTTOMRIGHT", oUF_LUI_player.AltPowerBar, "BOTTOMRIGHT", 0, 0)
+			self.AlternativePower:SetPoint("TOPLEFT", oUF_LUI_player.AlternativePower, "TOPLEFT", 0, 0)
+			self.AlternativePower:SetPoint("BOTTOMRIGHT", oUF_LUI_player.AlternativePower, "BOTTOMRIGHT", 0, 0)
 		end
 
-		self.AltPowerBar:SetHeight(module.db.Player.Bars.AltPower.Height)
-		self.AltPowerBar:SetWidth(module.db.Player.Bars.AltPower.Width)
-		self.AltPowerBar:SetStatusBarTexture(Media:Fetch("statusbar", module.db.Player.Bars.AltPower.Texture))
+		self.AlternativePower:SetHeight(module.db.Player.Bars.AlternativePower.Height)
+		self.AlternativePower:SetWidth(module.db.Player.Bars.AlternativePower.Width)
+		self.AlternativePower:SetStatusBarTexture(Media:Fetch("statusbar", module.db.Player.Bars.AlternativePower.Texture))
 
-		self.AltPowerBar.bg:SetTexture(Media:Fetch("statusbar", module.db.Player.Bars.AltPower.TextureBG))
-		self.AltPowerBar.bg:SetAlpha(module.db.Player.Bars.AltPower.BGAlpha)
-		self.AltPowerBar.bg.multiplier = module.db.Player.Bars.AltPower.BGMultiplier
+		self.AlternativePower.bg:SetTexture(Media:Fetch("statusbar", module.db.Player.Bars.AlternativePower.TextureBG))
+		self.AlternativePower.bg:SetAlpha(module.db.Player.Bars.AlternativePower.BGAlpha)
+		self.AlternativePower.bg.multiplier = module.db.Player.Bars.AlternativePower.BGMultiplier
 
-		self.AltPowerBar.Smooth = module.db.Player.Bars.AltPower.Smooth
-		self.AltPowerBar.color = module.db.Player.Bars.AltPower.Color
-		self.AltPowerBar.colorIndividual = module.db.Player.Bars.AltPower.IndividualColor
+		self.AlternativePower.Smooth = module.db.Player.Bars.AlternativePower.Smooth
+		self.AlternativePower.color = module.db.Player.Bars.AlternativePower.Color
+		self.AlternativePower.colorIndividual = module.db.Player.Bars.AlternativePower.IndividualColor
 		
-		self.AltPowerBar.Text:SetFont(Media:Fetch("font", module.db.Player.Texts.AltPower.Font), module.db.Player.Texts.AltPower.Size, module.db.Player.Texts.AltPower.Outline)
-		self.AltPowerBar.Text:ClearAllPoints()
-		self.AltPowerBar.Text:SetPoint("CENTER", self.AltPowerBar, "CENTER", module.db.Player.Texts.AltPower.X, module.db.Player.Texts.AltPower.Y)
+		self.AlternativePower.Text:SetFont(Media:Fetch("font", module.db.Player.Texts.AlternativePower.Font), module.db.Player.Texts.AlternativePower.Size, module.db.Player.Texts.AlternativePower.Outline)
+		self.AlternativePower.Text:ClearAllPoints()
+		self.AlternativePower.Text:SetPoint("CENTER", self.AlternativePower, "CENTER", module.db.Player.Texts.AlternativePower.X, module.db.Player.Texts.AlternativePower.Y)
 
-		self.AltPowerBar.Text.Enable = module.db.Player.Texts.AltPower.Enable
-		self.AltPowerBar.Text.Format = module.db.Player.Texts.AltPower.Format
-		self.AltPowerBar.Text.color = module.db.Player.Texts.AltPower.Color
-		self.AltPowerBar.Text.colorIndividual = module.db.Player.Texts.AltPower.IndividualColor
+		self.AlternativePower.Text.Enable = module.db.Player.Texts.AlternativePower.Enable
+		self.AlternativePower.Text.Format = module.db.Player.Texts.AlternativePower.Format
+		self.AlternativePower.Text.color = module.db.Player.Texts.AlternativePower.Color
+		self.AlternativePower.Text.colorIndividual = module.db.Player.Texts.AlternativePower.IndividualColor
 
-		if module.db.Player.Texts.AltPower.Enable then
-			self.AltPowerBar.Text:Show()
+		if module.db.Player.Texts.AlternativePower.Enable then
+			self.AlternativePower.Text:Show()
 		else
-			self.AltPowerBar.Text:Hide()
+			self.AlternativePower.Text:Hide()
 		end
 
-		self.AltPowerBar.PostUpdate = PostUpdateAltPower
+		self.AlternativePower.PostUpdate = PostUpdateAlternativePower
 
-		self.AltPowerBar.SetPosition()
+		self.AlternativePower.SetPosition()
 	end,
-	DruidMana = function(self, unit, oufdb)
-		if not self.DruidMana then
-			local DruidMana = CreateFrame("StatusBar", nil, self)
+	AdditionalPower = function(self, unit, oufdb)
+		if not self.AdditionalPower then
+			local AdditionalPower = CreateFrame("StatusBar", nil, self)
 
-			local bg = DruidMana:CreateTexture(nil, "BACKGROUND")
-			bg:SetAllPoints(DruidMana)
+			local bg = AdditionalPower:CreateTexture(nil, "BACKGROUND")
+			bg:SetAllPoints(AdditionalPower)
 			
-			self.DruidMana = DruidMana
-			self.DruidMana.bg = bg
+			self.AdditionalPower = AdditionalPower
+			self.AdditionalPower.bg = bg
 
-			self.DruidMana.Smooth = oufdb.Bars.DruidMana.Smooth
+			self.AdditionalPower.Smooth = oufdb.Bars.AdditionalPower.Smooth
 
-			self.DruidMana.value = SetFontString(self.DruidMana, Media:Fetch("font", oufdb.Texts.DruidMana.Font), oufdb.Texts.DruidMana.Size, oufdb.Texts.DruidMana.Outline)
-			self:Tag(self.DruidMana.value, "[druidmana2]")
+			self.AdditionalPower.value = SetFontString(self.AdditionalPower, Media:Fetch("font", oufdb.Texts.AdditionalPower.Font), oufdb.Texts.AdditionalPower.Size, oufdb.Texts.AdditionalPower.Outline)
+			self:Tag(self.AdditionalPower.value, "[additionalpower2]")
 			
-			self.DruidMana.ShouldEnable = function(unit)
+			self.AdditionalPower.ShouldEnable = function(unit)
 				local shouldEnable = false
 				local _, playerClass = UnitClass(unit)
 				if(not UnitHasVehicleUI('player')) then
@@ -2265,58 +2002,58 @@ module.funcs = {
 				return shouldEnable
 			end
 			
-			self.DruidMana.SetPosition = function()
-				if not oufdb.Bars.DruidMana.OverPower then return self.Power:SetHeight(oufdb.Bars.Power.Height) end
+			self.AdditionalPower.SetPosition = function()
+				if not oufdb.Bars.AdditionalPower.OverPower then return self.Power:SetHeight(oufdb.Bars.Power.Height) end
 
-				if self.DruidMana:IsShown() then
+				if self.AdditionalPower:IsShown() then
 					self.Power:SetHeight(oufdb.Bars.Power.Height/2 - 1)
-					self.DruidMana:SetHeight(oufdb.Bars.DruidMana.Height/2 - 1)
+					self.AdditionalPower:SetHeight(oufdb.Bars.AdditionalPower.Height/2 - 1)
 				else
 					self.Power:SetHeight(oufdb.Bars.Power.Height)
-					self.DruidMana:SetHeight(oufdb.Bars.DruidMana.Height)
+					self.AdditionalPower:SetHeight(oufdb.Bars.AdditionalPower.Height)
 				end
 			end
 
-			self.DruidMana:SetScript("OnShow", self.DruidMana.SetPosition)
-			self.DruidMana:SetScript("OnHide", self.DruidMana.SetPosition)
+			self.AdditionalPower:SetScript("OnShow", self.AdditionalPower.SetPosition)
+			self.AdditionalPower:SetScript("OnHide", self.AdditionalPower.SetPosition)
 
-			self.DruidMana.PostUpdatePower = PostUpdateDruidMana
-			self.DruidMana.Override = DruidManaOverride
+			self.AdditionalPower.PostUpdatePower = PostUpdateAdditionalPower
+			self.AdditionalPower.Override = AdditionalPowerOverride
 		end
 
-		self.DruidMana:ClearAllPoints()
-		if oufdb.Bars.DruidMana.OverPower then
-			self.DruidMana:SetPoint("TOPLEFT", self.Power, "BOTTOMLEFT", 0, -2)
-			self.DruidMana:SetPoint("TOPRIGHT", self.Power, "BOTTOMRIGHT", 0, -2)
+		self.AdditionalPower:ClearAllPoints()
+		if oufdb.Bars.AdditionalPower.OverPower then
+			self.AdditionalPower:SetPoint("TOPLEFT", self.Power, "BOTTOMLEFT", 0, -2)
+			self.AdditionalPower:SetPoint("TOPRIGHT", self.Power, "BOTTOMRIGHT", 0, -2)
 		else
 			self.Power:SetHeight(oufdb.Bars.Power.Height)
-			self.DruidMana:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.Player.Bars.DruidMana.X, module.db.Player.Bars.DruidMana.Y)
+			self.AdditionalPower:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.Player.Bars.AdditionalPower.X, module.db.Player.Bars.AdditionalPower.Y)
 		end
 
-		self.DruidMana:SetHeight(oufdb.Bars.DruidMana.Height)
-		self.DruidMana:SetWidth(oufdb.Bars.DruidMana.Width)
-		self.DruidMana:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.DruidMana.Texture))
+		self.AdditionalPower:SetHeight(oufdb.Bars.AdditionalPower.Height)
+		self.AdditionalPower:SetWidth(oufdb.Bars.AdditionalPower.Width)
+		self.AdditionalPower:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.AdditionalPower.Texture))
 
-		self.DruidMana.value:SetFont(Media:Fetch("font", oufdb.Texts.DruidMana.Font), oufdb.Texts.DruidMana.Size, oufdb.Texts.DruidMana.Outline)
-		self.DruidMana.value:SetPoint("CENTER", self.DruidMana, "CENTER")
+		self.AdditionalPower.value:SetFont(Media:Fetch("font", oufdb.Texts.AdditionalPower.Font), oufdb.Texts.AdditionalPower.Size, oufdb.Texts.AdditionalPower.Outline)
+		self.AdditionalPower.value:SetPoint("CENTER", self.AdditionalPower, "CENTER")
 
-		if oufdb.Texts.DruidMana.Enable == true then
-			self.DruidMana.value:Show()
+		if oufdb.Texts.AdditionalPower.Enable == true then
+			self.AdditionalPower.value:Show()
 		else
-			self.DruidMana.value:Hide()
+			self.AdditionalPower.value:Hide()
 		end
 
-		self.DruidMana.color = oufdb.Bars.DruidMana.Color
+		self.AdditionalPower.color = oufdb.Bars.AdditionalPower.Color
 
-		self.DruidMana.bg:SetTexture(Media:Fetch("statusbar", oufdb.Bars.DruidMana.TextureBG))
-		self.DruidMana.bg:SetAlpha(oufdb.Bars.DruidMana.BGAlpha)
-		self.DruidMana.bg.multiplier = oufdb.Bars.DruidMana.BGMultiplier
+		self.AdditionalPower.bg:SetTexture(Media:Fetch("statusbar", oufdb.Bars.AdditionalPower.TextureBG))
+		self.AdditionalPower.bg:SetAlpha(oufdb.Bars.AdditionalPower.BGAlpha)
+		self.AdditionalPower.bg.multiplier = oufdb.Bars.AdditionalPower.BGMultiplier
 
-		if self.DruidMana.ShouldEnable(unit) then self.DruidMana.SetPosition() end
-		if module.db.Player.Bars.DruidMana.Enable then
-			self.DruidMana:Show()
+		if self.AdditionalPower.ShouldEnable(unit) then self.AdditionalPower.SetPosition() end
+		if module.db.Player.Bars.AdditionalPower.Enable then
+			self.AdditionalPower:Show()
 		else
-			self.DruidMana:Hide()
+			self.AdditionalPower:Hide()
 		end
 	end,
 
@@ -2691,82 +2428,82 @@ module.funcs = {
 	end,
 
 	AggroGlow = function(self, unit, oufdb)
-		if self.Threat then return end
+		if self.ThreatIndicator then return end
 
-		self.Threat = CreateFrame("Frame", nil, self)
-		self.Threat:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
-		self.Threat:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", 0, 0)
-		self.Threat:SetFrameLevel(self.Health:GetFrameLevel() - 1)
+		self.ThreatIndicator = CreateFrame("Frame", nil, self)
+		self.ThreatIndicator:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
+		self.ThreatIndicator:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", 0, 0)
+		self.ThreatIndicator:SetFrameLevel(self.Health:GetFrameLevel() - 1)
 
 		for i = 1, 8 do
-			self.Threat[i] = self.Threat:CreateTexture(nil, "BACKGROUND")
-			self.Threat[i]:SetTexture(aggroTex)
-			self.Threat[i]:SetWidth(20)
-			self.Threat[i]:SetHeight(20)
+			self.ThreatIndicator[i] = self.ThreatIndicator:CreateTexture(nil, "BACKGROUND")
+			self.ThreatIndicator[i]:SetTexture(aggroTex)
+			self.ThreatIndicator[i]:SetWidth(20)
+			self.ThreatIndicator[i]:SetHeight(20)
 		end
 
 		-- topleft corner
-		self.Threat[1]:SetTexCoord(0, 1/3, 0, 1/3)
-		self.Threat[1]:SetPoint("TOPLEFT", self.Threat, -8, 8)
+		self.ThreatIndicator[1]:SetTexCoord(0, 1/3, 0, 1/3)
+		self.ThreatIndicator[1]:SetPoint("TOPLEFT", self.ThreatIndicator, -8, 8)
 
 		-- topright corner
-		self.Threat[2]:SetTexCoord(2/3, 1, 0, 1/3)
-		self.Threat[2]:SetPoint("TOPRIGHT", self.Threat, 8, 8)
+		self.ThreatIndicator[2]:SetTexCoord(2/3, 1, 0, 1/3)
+		self.ThreatIndicator[2]:SetPoint("TOPRIGHT", self.ThreatIndicator, 8, 8)
 
 		-- bottomleft corner
-		self.Threat[3]:SetTexCoord(0, 1/3, 2/3, 1)
-		self.Threat[3]:SetPoint("BOTTOMLEFT", self.Threat, -8, -8)
+		self.ThreatIndicator[3]:SetTexCoord(0, 1/3, 2/3, 1)
+		self.ThreatIndicator[3]:SetPoint("BOTTOMLEFT", self.ThreatIndicator, -8, -8)
 
 		-- bottomright corner
-		self.Threat[4]:SetTexCoord(2/3, 1, 2/3, 1)
-		self.Threat[4]:SetPoint("BOTTOMRIGHT", self.Threat, 8, -8)
+		self.ThreatIndicator[4]:SetTexCoord(2/3, 1, 2/3, 1)
+		self.ThreatIndicator[4]:SetPoint("BOTTOMRIGHT", self.ThreatIndicator, 8, -8)
 
 		-- top edge
-		self.Threat[5]:SetTexCoord(1/3, 2/3, 0, 1/3)
-		self.Threat[5]:SetPoint("TOPLEFT", self.Threat[1], "TOPRIGHT")
-		self.Threat[5]:SetPoint("TOPRIGHT", self.Threat[2], "TOPLEFT")
+		self.ThreatIndicator[5]:SetTexCoord(1/3, 2/3, 0, 1/3)
+		self.ThreatIndicator[5]:SetPoint("TOPLEFT", self.ThreatIndicator[1], "TOPRIGHT")
+		self.ThreatIndicator[5]:SetPoint("TOPRIGHT", self.ThreatIndicator[2], "TOPLEFT")
 
 		-- bottom edge
-		self.Threat[6]:SetTexCoord(1/3, 2/3, 2/3, 1)
-		self.Threat[6]:SetPoint("BOTTOMLEFT", self.Threat[3], "BOTTOMRIGHT")
-		self.Threat[6]:SetPoint("BOTTOMRIGHT", self.Threat[4], "BOTTOMLEFT")
+		self.ThreatIndicator[6]:SetTexCoord(1/3, 2/3, 2/3, 1)
+		self.ThreatIndicator[6]:SetPoint("BOTTOMLEFT", self.ThreatIndicator[3], "BOTTOMRIGHT")
+		self.ThreatIndicator[6]:SetPoint("BOTTOMRIGHT", self.ThreatIndicator[4], "BOTTOMLEFT")
 
 		-- left edge
-		self.Threat[7]:SetTexCoord(0, 1/3, 1/3, 2/3)
-		self.Threat[7]:SetPoint("TOPLEFT", self.Threat[1], "BOTTOMLEFT")
-		self.Threat[7]:SetPoint("BOTTOMLEFT", self.Threat[3], "TOPLEFT")
+		self.ThreatIndicator[7]:SetTexCoord(0, 1/3, 1/3, 2/3)
+		self.ThreatIndicator[7]:SetPoint("TOPLEFT", self.ThreatIndicator[1], "BOTTOMLEFT")
+		self.ThreatIndicator[7]:SetPoint("BOTTOMLEFT", self.ThreatIndicator[3], "TOPLEFT")
 
 		-- right edge
-		self.Threat[8]:SetTexCoord(2/3, 1, 1/3, 2/3)
-		self.Threat[8]:SetPoint("TOPRIGHT", self.Threat[2], "BOTTOMRIGHT")
-		self.Threat[8]:SetPoint("BOTTOMRIGHT", self.Threat[4], "TOPRIGHT")
+		self.ThreatIndicator[8]:SetTexCoord(2/3, 1, 1/3, 2/3)
+		self.ThreatIndicator[8]:SetPoint("TOPRIGHT", self.ThreatIndicator[2], "BOTTOMRIGHT")
+		self.ThreatIndicator[8]:SetPoint("BOTTOMRIGHT", self.ThreatIndicator[4], "TOPRIGHT")
 
-		self.Threat.Override = ThreatOverride
+		self.ThreatIndicator.Override = ThreatOverride
 	end,
 
-	HealPrediction = function(self, unit, oufdb)
-		if not self.HealPrediction then
-			self.HealPrediction = {
+	HealthPrediction = function(self, unit, oufdb)
+		if not self.HealthPrediction then
+			self.HealthPrediction = {
 				myBar = CreateFrame("StatusBar", nil, self.Health),
 				otherBar = CreateFrame("StatusBar", nil, self.Health),
 				maxOverflow = 1,
 			}
 		end
 
-		self.HealPrediction.myBar:SetWidth(oufdb.Bars.Health.Width * self:GetWidth() / oufdb.Width) -- needed for 25/40 man raid width downscaling!
-		self.HealPrediction.myBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.HealPrediction.Texture))
-		self.HealPrediction.myBar:SetStatusBarColor(oufdb.Bars.HealPrediction.MyColor.r, oufdb.Bars.HealPrediction.MyColor.g, oufdb.Bars.HealPrediction.MyColor.b, oufdb.Bars.HealPrediction.MyColor.a)
+		self.HealthPrediction.myBar:SetWidth(oufdb.Bars.Health.Width * self:GetWidth() / oufdb.Width) -- needed for 25/40 man raid width downscaling!
+		self.HealthPrediction.myBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.HealthPrediction.Texture))
+		self.HealthPrediction.myBar:SetStatusBarColor(oufdb.Bars.HealthPrediction.MyColor.r, oufdb.Bars.HealthPrediction.MyColor.g, oufdb.Bars.HealthPrediction.MyColor.b, oufdb.Bars.HealthPrediction.MyColor.a)
 
-		self.HealPrediction.otherBar:SetWidth(oufdb.Bars.Health.Width * self:GetWidth() / oufdb.Width) -- needed for 25/40 man raid width downscaling!
-		self.HealPrediction.otherBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.HealPrediction.Texture))
-		self.HealPrediction.otherBar:SetStatusBarColor(oufdb.Bars.HealPrediction.OtherColor.r, oufdb.Bars.HealPrediction.OtherColor.g, oufdb.Bars.HealPrediction.OtherColor.b, oufdb.Bars.HealPrediction.OtherColor.a)
+		self.HealthPrediction.otherBar:SetWidth(oufdb.Bars.Health.Width * self:GetWidth() / oufdb.Width) -- needed for 25/40 man raid width downscaling!
+		self.HealthPrediction.otherBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.HealthPrediction.Texture))
+		self.HealthPrediction.otherBar:SetStatusBarColor(oufdb.Bars.HealthPrediction.OtherColor.r, oufdb.Bars.HealthPrediction.OtherColor.g, oufdb.Bars.HealthPrediction.OtherColor.b, oufdb.Bars.HealthPrediction.OtherColor.a)
 
-		self.HealPrediction.myBar:ClearAllPoints()
-		self.HealPrediction.myBar:SetPoint("TOPLEFT", self.Health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
-		self.HealPrediction.myBar:SetPoint("BOTTOMLEFT", self.Health:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
+		self.HealthPrediction.myBar:ClearAllPoints()
+		self.HealthPrediction.myBar:SetPoint("TOPLEFT", self.Health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
+		self.HealthPrediction.myBar:SetPoint("BOTTOMLEFT", self.Health:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
 
-		self.HealPrediction.otherBar:SetPoint("TOPLEFT", self.HealPrediction.myBar:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
-		self.HealPrediction.otherBar:SetPoint("BOTTOMLEFT", self.HealPrediction.myBar:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
+		self.HealthPrediction.otherBar:SetPoint("TOPLEFT", self.HealthPrediction.myBar:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
+		self.HealthPrediction.otherBar:SetPoint("BOTTOMLEFT", self.HealthPrediction.myBar:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
 	end,
 
 	TotalAbsorb = function(self, unit, oufdb)
@@ -2849,11 +2586,10 @@ module.funcs = {
 ------------------------------------------------------------------------
 
 local SetStyle = function(self, unit, isSingle)
-	local oufdb, ouf_xp_rep
+	local oufdb
 
 	if unit == "player" or unit == "vehicle" then
 		oufdb = module.db.Player
-		ouf_xp_rep = module.db.XP_Rep
 	elseif unit == "targettarget" then
 		oufdb = module.db.ToT
 	elseif unit == "targettargettarget" then
@@ -2924,7 +2660,7 @@ local SetStyle = function(self, unit, isSingle)
 	module.funcs.Full(self, unit, oufdb)
 	module.funcs.FrameBackdrop(self, unit, oufdb)
 
-	if oufdb.Bars.HealPrediction and oufdb.Bars.HealPrediction.Enable then module.funcs.HealPrediction(self, unit, oufdb) end
+	if oufdb.Bars.HealthPrediction and oufdb.Bars.HealthPrediction.Enable then module.funcs.HealthPrediction(self, unit, oufdb) end
 	if oufdb.Bars.TotalAbsorb and oufdb.Bars.TotalAbsorb.Enable then module.funcs.TotalAbsorb(self, unit, oufdb) end
 
 	------------------------------------------------------------------------
@@ -2960,18 +2696,17 @@ local SetStyle = function(self, unit, isSingle)
 	module.funcs.PowerMissing(self, unit, oufdb)
 
 	------------------------------------------------------------------------
-	--	Icons
+	--	Indicators
 	------------------------------------------------------------------------
 
-	if oufdb.Icons then
-		if oufdb.Icons.Leader and oufdb.Icons.Leader.Enable then module.funcs.Leader(self, unit, oufdb) end
-		if oufdb.Icons.Lootmaster and oufdb.Icons.Lootmaster.Enable then module.funcs.MasterLooter(self, unit, oufdb) end
-		if oufdb.Icons.Raid and oufdb.Icons.Raid.Enable then module.funcs.RaidIcon(self, unit, oufdb) end
-		if oufdb.Icons.Role and oufdb.Icons.Role.Enable then module.funcs.LFDRole(self, unit, oufdb) end
-		if oufdb.Icons.PvP and oufdb.Icons.PvP.Enable then module.funcs.PvP(self, unit, oufdb) end
-		if oufdb.Icons.Resting and oufdb.Icons.Resting.Enable then module.funcs.Resting(self, unit, oufdb) end
-		if oufdb.Icons.Combat and oufdb.Icons.Combat.Enable then module.funcs.Combat(self, unit, oufdb) end
-		if oufdb.Icons.ReadyCheck and oufdb.Icons.ReadyCheck.Enable then module.funcs.ReadyCheck(self, unit, oufdb) end
+	if oufdb.Indicators then
+		if oufdb.Indicators.Leader and oufdb.Indicators.Leader.Enable then module.funcs.LeaderIndicator(self, unit, oufdb) end
+		if oufdb.Indicators.Raid and oufdb.Indicators.Raid.Enable then module.funcs.RaidTargetIndicator(self, unit, oufdb) end
+		if oufdb.Indicators.Role and oufdb.Indicators.Role.Enable then module.funcs.GroupRoleIndicator(self, unit, oufdb) end
+		if oufdb.Indicators.PvP and oufdb.Indicators.PvP.Enable then module.funcs.PvPIndicator(self, unit, oufdb) end
+		if oufdb.Indicators.Resting and oufdb.Indicators.Resting.Enable then module.funcs.RestingIndicator(self, unit, oufdb) end
+		if oufdb.Indicators.Combat and oufdb.Indicators.Combat.Enable then module.funcs.CombatIndicator(self, unit, oufdb) end
+		if oufdb.Indicators.ReadyCheck and oufdb.Indicators.ReadyCheck.Enable then module.funcs.ReadyCheckIndicator(self, unit, oufdb) end
 	end
 
 	------------------------------------------------------------------------
@@ -2979,8 +2714,6 @@ local SetStyle = function(self, unit, isSingle)
 	------------------------------------------------------------------------
 
 	if unit == "player" then
-		if ouf_xp_rep.Experience.Enable then module.funcs.Experience(self, unit, ouf_xp_rep) end
-		if ouf_xp_rep.Reputation.Enable then module.funcs.Reputation(self, unit, ouf_xp_rep) end
 		
 		if LUI.DEATHKNIGHT then
 			if oufdb.Bars.Runes.Enable then
@@ -2988,23 +2721,17 @@ local SetStyle = function(self, unit, isSingle)
 				Blizzard:Hide("runebar")
 			end
 		elseif LUI.DRUID then
-			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
-			if oufdb.Bars.Chi.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
-		elseif LUI.PALADIN then
-			if oufdb.Bars.HolyPower.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
-		elseif LUI.MONK then
-			if oufdb.Bars.Chi.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
-		elseif LUI.ROGUE then
-			if oufdb.Bars.Chi.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
+			if oufdb.Bars.AdditionalPower.Enable then module.funcs.AdditionalPower(self, unit, oufdb) end
+			if oufdb.Bars.ClassPower.Enable then module.funcs.ClassPower(self, unit, oufdb) end
+		elseif LUI.PALADIN or LUI.MONK or LUI.ROGUE or LUI.WARLOCK then
+			if oufdb.Bars.ClassPower.Enable then module.funcs.ClassPower(self, unit, oufdb) end
 		elseif LUI.SHAMAN then
-			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
+			if oufdb.Bars.AdditionalPower.Enable then module.funcs.AdditionalPower(self, unit, oufdb) end
 			if oufdb.Bars.Totems.Enable then module.funcs.Totems(self, unit, oufdb) end
 		elseif LUI.MAGE then
-			if oufdb.Bars.ArcaneCharges.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
-		elseif LUI.WARLOCK then
-			if oufdb.Bars.WarlockBar.Enable then module.funcs.ClassIcons(self, unit, oufdb) end
+			--if oufdb.Bars.ClassPower.Enable then module.funcs.ClassPower(self, unit, oufdb) end
 		elseif LUI.PRIEST then
-			if oufdb.Bars.DruidMana.Enable then module.funcs.DruidMana(self, unit, oufdb) end
+			if oufdb.Bars.AdditionalPower.Enable then module.funcs.AdditionalPower(self, unit, oufdb) end
 		end
 	end
 	
@@ -3024,7 +2751,7 @@ local SetStyle = function(self, unit, isSingle)
 	if oufdb.Portrait.Enable then module.funcs.Portrait(self, unit, oufdb) end
 
 	if unit == "player" or unit == "pet" then
-		if module.db.Player.Bars.AltPower.Enable then module.funcs.AltPowerBar(self, unit, oufdb) end
+		if module.db.Player.Bars.AlternativePower.Enable then module.funcs.AlternativePower(self, unit, oufdb) end
 	end
 
 	if oufdb.Aura then
@@ -3073,7 +2800,7 @@ local SetStyle = function(self, unit, isSingle)
 		self.elapsed = 0
 		self:SetScript("OnUpdate", function(self, elapsed)
 			if self.elapsed > 2.5 then
-				self:UpdateAllElements()
+				self:UpdateAllElements('refreshUnit')
 				self.elapsed = 0
 			else
 				self.elapsed = self.elapsed + elapsed

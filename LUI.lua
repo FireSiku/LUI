@@ -161,6 +161,8 @@ LUI.defaults = {
 		Fonts = {
 			Master = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
 		},
+		dbVersion = 0,
+		New = 15,
 	},
 	global = {
 		luiconfig = {},
@@ -1756,6 +1758,7 @@ end
 function LUI:OnEnable()
 	db_ = self.db.profile
 	self:SyncAddonVersion()
+	self:CheckUpdate()
 
 	-- Uncomment when moving modules over.
 	--LUI:CheckInstall()
