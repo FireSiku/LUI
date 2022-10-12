@@ -36,14 +36,13 @@ local ufUnits = {
 }
 
 local iconlist = {
-	PvP = {"PvP"},
-	Combat = {"Combat"},
-	Resting = {"Resting"},
-	Lootmaster = {"MasterLooter"},
-	Leader = {"Leader", "Assistant"},
-	Role = {"LFDRole"},
-	Raid = {"RaidIcon"},
-	ReadyCheck = {"ReadyCheck"},
+	PvP = {"PvPIndicator"},
+	Combat = {"CombatIndicator"},
+	Resting = {"RestingIndicator"},
+	Leader = {"LeaderIndicator", "AssistantIndicator"},
+	Role = {"GroupRoleIndicator"},
+	Raid = {"RaidTargetIndicator"},
+	ReadyCheck = {"ReadyCheckIndicator"},
 }
 
 local function GetOpposite(dir)
@@ -78,7 +77,7 @@ module.ToggleUnit = setmetatable({
 		if override then
 			if _G["oUF_LUI_"..ufUnits[unit]] then
 				_G["oUF_LUI_"..ufUnits[unit]]:Enable()
-				_G["oUF_LUI_"..ufUnits[unit]]:UpdateAllElements()
+				_G["oUF_LUI_"..ufUnits[unit]]:UpdateAllElements('refreshUnit')
 				_G["oUF_LUI_"..ufUnits[unit]]:ClearAllPoints()
 				_G["oUF_LUI_"..ufUnits[unit]]:SetScale(module.db[unit].Scale)
 				_G["oUF_LUI_"..ufUnits[unit]]:SetPoint(module.db[unit].Point, UIParent, module.db[unit].Point, x, y)
@@ -126,7 +125,7 @@ module.ToggleUnit = setmetatable({
 
 				for i = 1, MAX_BOSS_FRAMES do
 					_G["oUF_LUI_boss"..i]:Enable()
-					_G["oUF_LUI_boss"..i]:UpdateAllElements()
+					_G["oUF_LUI_boss"..i]:UpdateAllElements('refreshUnit')
 					_G["oUF_LUI_boss"..i]:ClearAllPoints()
 					if i == 1 then
 						local point = (growdir == "LEFT" or growdir == "TOP") and "BOTTOMRIGHT" or "TOPLEFT"
@@ -266,7 +265,7 @@ module.ToggleUnit = setmetatable({
 				for i = 1, 5 do
 					if _G["oUF_LUI_partyUnitButton"..i] then
 						_G["oUF_LUI_partyUnitButton"..i]:Enable()
-						_G["oUF_LUI_partyUnitButton"..i]:UpdateAllElements()
+						_G["oUF_LUI_partyUnitButton"..i]:UpdateAllElements('refreshUnit')
 					end
 				end
 				oUF_LUI_party.handler:GetScript("OnEvent")(oUF_LUI_party.handler)
@@ -377,7 +376,7 @@ module.ToggleUnit = setmetatable({
 			for i = 1, 5 do
 				if _G["oUF_LUI_partyUnitButton"..i.."target"] then
 					_G["oUF_LUI_partyUnitButton"..i.."target"]:Enable()
-					_G["oUF_LUI_partyUnitButton"..i.."target"]:UpdateAllElements()
+					_G["oUF_LUI_partyUnitButton"..i.."target"]:UpdateAllElements('refreshUnit')
 					_G["oUF_LUI_partyUnitButton"..i.."target"]:ClearAllPoints()
 					_G["oUF_LUI_partyUnitButton"..i.."target"]:SetPoint(module.db.PartyTarget.Point, _G["oUF_LUI_partyUnitButton"..i], module.db.PartyTarget.RelativePoint, module.db.PartyTarget.X, module.db.PartyTarget.Y)
 				end
@@ -396,7 +395,7 @@ module.ToggleUnit = setmetatable({
 			for i = 1, 5 do
 				if _G["oUF_LUI_partyUnitButton"..i.."pet"] then
 					_G["oUF_LUI_partyUnitButton"..i.."pet"]:Enable()
-					_G["oUF_LUI_partyUnitButton"..i.."pet"]:UpdateAllElements()
+					_G["oUF_LUI_partyUnitButton"..i.."pet"]:UpdateAllElements('refreshUnit')
 					_G["oUF_LUI_partyUnitButton"..i.."pet"]:ClearAllPoints()
 					_G["oUF_LUI_partyUnitButton"..i.."pet"]:SetPoint(module.db.PartyPet.Point, _G["oUF_LUI_partyUnitButton"..i], module.db.PartyPet.RelativePoint, module.db.PartyPet.X, module.db.PartyPet.Y)
 				end
@@ -431,7 +430,7 @@ module.ToggleUnit = setmetatable({
 				for i = 1, 5 do
 					_G["oUF_LUI_arena"..i]:Enable()
 					_G["oUF_LUI_arena"..i]:ClearAllPoints()
-					_G["oUF_LUI_arena"..i]:UpdateAllElements()
+					_G["oUF_LUI_arena"..i]:UpdateAllElements('refreshUnit')
 					if i == 1 then
 						local point = (growdir == "LEFT" or growdir == "TOP") and "BOTTOMRIGHT" or "TOPLEFT"
 						_G["oUF_LUI_arena"..i]:SetPoint(point, oUF_LUI_arena, point, 0, 0)
@@ -526,7 +525,7 @@ module.ToggleUnit = setmetatable({
 			for i = 1, 5 do
 				if _G["oUF_LUI_arenatarget"..i] then
 					_G["oUF_LUI_arenatarget"..i]:Enable()
-					_G["oUF_LUI_arenatarget"..i]:UpdateAllElements()
+					_G["oUF_LUI_arenatarget"..i]:UpdateAllElements('refreshUnit')
 					_G["oUF_LUI_arenatarget"..i]:ClearAllPoints()
 					_G["oUF_LUI_arenatarget"..i]:SetPoint(module.db.ArenaTarget.Point, _G["oUF_LUI_arena"..i], module.db.ArenaTarget.RelativePoint, module.db.ArenaTarget.X, module.db.ArenaTarget.Y)
 				else
@@ -548,7 +547,7 @@ module.ToggleUnit = setmetatable({
 			for i = 1, 5 do
 				if _G["oUF_LUI_arenapet"..i] then
 					_G["oUF_LUI_arenapet"..i]:Enable()
-					_G["oUF_LUI_arenapet"..i]:UpdateAllElements()
+					_G["oUF_LUI_arenapet"..i]:UpdateAllElements('refreshUnit')
 					_G["oUF_LUI_arenapet"..i]:ClearAllPoints()
 					_G["oUF_LUI_arenapet"..i]:SetPoint(module.db.ArenaPet.Point, _G["oUF_LUI_arena"..i], module.db.ArenaPet.RelativePoint, module.db.ArenaPet.X, module.db.ArenaPet.Y)
 				else
@@ -601,7 +600,7 @@ module.ToggleUnit = setmetatable({
 					if _G["oUF_LUI_maintankUnitButton"..i] then
 						_G["oUF_LUI_maintankUnitButton"..i]:Enable()
 						_G["oUF_LUI_maintankUnitButton"..i]:ClearAllPoints()
-						_G["oUF_LUI_maintankUnitButton"..i]:UpdateAllElements()
+						_G["oUF_LUI_maintankUnitButton"..i]:UpdateAllElements('refreshUnit')
 					end
 				end
 			else
@@ -660,7 +659,7 @@ module.ToggleUnit = setmetatable({
 					_G["oUF_LUI_maintankUnitButton"..i.."target"]:ClearAllPoints()
 					_G["oUF_LUI_maintankUnitButton"..i.."target"]:SetPoint(module.db.MaintankTarget.Point, _G["oUF_LUI_maintankUnitButton"..i], module.db.MaintankTarget.RelativePoint, module.db.MaintankTarget.X, module.db.MaintankTarget.Y)
 					_G["oUF_LUI_maintankUnitButton"..i.."target"]:Enable()
-					_G["oUF_LUI_maintankUnitButton"..i.."target"]:UpdateAllElements()
+					_G["oUF_LUI_maintankUnitButton"..i.."target"]:UpdateAllElements('refreshUnit')
 				end
 			end
 
@@ -683,7 +682,7 @@ module.ToggleUnit = setmetatable({
 					_G["oUF_LUI_maintankUnitButton"..i.."targettarget"]:ClearAllPoints()
 					_G["oUF_LUI_maintankUnitButton"..i.."targettarget"]:SetPoint(module.db.MaintankToT.Point, _G["oUF_LUI_maintankUnitButton"..i.."target"], module.db.MaintankToT.RelativePoint, module.db.MaintankToT.X, module.db.MaintankToT.Y)
 					_G["oUF_LUI_maintankUnitButton"..i.."targettarget"]:Enable()
-					_G["oUF_LUI_maintankUnitButton"..i.."targettarget"]:UpdateAllElements()
+					_G["oUF_LUI_maintankUnitButton"..i.."targettarget"]:UpdateAllElements('refreshUnit')
 				end
 			end
 		else
@@ -714,7 +713,7 @@ module.ToggleUnit = setmetatable({
 						local frame = _G["oUF_LUI_raid_25_"..i.."UnitButton"..j]
 						if frame then
 							frame:Enable()
-							frame:UpdateAllElements()
+							frame:UpdateAllElements('refreshUnit')
 						end
 					end
 				end
@@ -734,7 +733,7 @@ module.ToggleUnit = setmetatable({
 						local frame = _G["oUF_LUI_raid_40_"..i.."UnitButton"..j]
 						if frame then
 							frame:Enable()
-							frame:UpdateAllElements()
+							frame:UpdateAllElements('refreshUnit')
 						end
 					end
 				end
@@ -884,10 +883,10 @@ module.ApplySettings = function(unit)
 			module.funcs.PowerMissing(frame, frame.__unit, module.db[unit])
 
 			-- icons
-			if module.db[unit].Icons then
+			if module.db[unit].Indicators then
 				for key, icons in pairs(iconlist) do
-					if module.db[unit].Icons[key] then
-						if module.db[unit].Icons[key].Enable then
+					if module.db[unit].Indicators[key] then
+						if module.db[unit].Indicators[key].Enable then
 							module.funcs[icons[1]](frame, frame.__unit, module.db[unit])
 							frame:EnableElement(icons[1])
 							if icons[2] then frame:EnableElement(icons[2]) end
@@ -904,23 +903,6 @@ module.ApplySettings = function(unit)
 
 			-- player specific
 			if unit == "Player" then
-				-- exp/rep
-				module.funcs.Experience(frame, frame.__unit, module.db.XP_Rep)
-				module.funcs.Reputation(frame, frame.__unit, module.db.XP_Rep)
-
-				if module.db.XP_Rep.Experience.Enable and UnitLevel("player") ~= MAX_PLAYER_LEVEL then
-					frame.Experience:ForceUpdate()
-					frame.XP:Show()
-					frame.Rep:Hide()
-				else
-					frame.XP:Hide()
-					if module.db.XP_Rep.Reputation.Enable then
-						frame.Reputation:ForceUpdate()
-						frame.Rep:Show()
-					else
-						frame.Rep:Hide()
-					end
-				end
 
 				-- runes
 				if LUI.DEATHKNIGHT then
@@ -933,58 +915,25 @@ module.ApplySettings = function(unit)
 					end
 				end
 
-				-- holy power
-				if LUI.PALADIN then
-					module.funcs.ClassIcons(frame, frame.__unit, module.db.Player)
-					if module.db[unit].Bars.HolyPower.Enable then
-						frame:EnableElement("ClassIcons")
+				-- ClassPower
+				if LUI.PALADIN or LUI.WARLOCK or LUI.MONK or LUI.ROGUE then
+					module.funcs.ClassPower(frame, frame.__unit, module.db.Player)
+					if module.db[unit].Bars.ClassPower.Enable then
+						frame:EnableElement("ClassPower")
 					else
-						frame:DisableElement("ClassIcons")
-						frame.ClassIcons:Hide()
-					end
-				end
-				
-				-- arcane changes
-				if LUI.MAGE then
-					module.funcs.ClassIcons(frame, frame.__unit, module.db.Player)
-					if module.db[unit].Bars.ArcaneCharges.Enable then
-						frame:EnableElement("ClassIcons")
-					else
-						frame:DisableElement("ClassIcons")
-						frame.ClassIcons:Hide()
+						frame:DisableElement("ClassPower")
+						frame.ClassPower:Hide()
 					end
 				end
 
-				-- warlock stuff
-				if LUI.WARLOCK then
-					module.funcs.ClassIcons(frame, frame.__unit, module.db.Player)
-					if module.db[unit].Bars.WarlockBar.Enable then
-						frame:EnableElement("ClassIcons")
-					else
-						frame:DisableElement("ClassIcons")
-						frame.ClassIcons:Hide()
-					end
-				end
-
-				-- chi
-				if LUI.MONK then
-					module.funcs.ClassIcons(frame, frame.__unit, module.db.Player)
-					if module.db[unit].Bars.Chi.Enable then
-						frame:EnableElement("ClassIcons")
-					else
-						frame:DisableElement("ClassIcons")
-						frame.ClassIcons:Hide()
-					end
-				end
-
-				-- druid mana bar
+				-- Additional Power
 				if LUI.DRUID or LUI.PRIEST or LUI.SHAMAN then
-					module.funcs.DruidMana(frame, frame.__unit, module.db.Player)
-					if module.db[unit].Bars.DruidMana.Enable then
-						frame:EnableElement("DruidMana")
+					module.funcs.AdditionalPower(frame, frame.__unit, module.db.Player)
+					if module.db[unit].Bars.AdditionalPower.Enable then
+						frame:EnableElement("AdditionalPower")
 					else
-						frame:DisableElement("DruidMana")
-						frame.DruidMana.SetPosition()
+						frame:DisableElement("AdditionalPower")
+						frame.AdditionalPower.SetPosition()
 					end
 				end
 			end
@@ -1003,14 +952,14 @@ module.ApplySettings = function(unit)
 
 			-- alt power
 			if unit == "Player" or unit == "Pet" then
-				if module.db.Player.Bars.AltPower.Enable then
-					module.funcs.AltPowerBar(frame, frame.__unit, module.db[unit])
-					frame:EnableElement("AltPowerBar")
-					frame.AltPowerBar.SetPosition()
+				if module.db.Player.Bars.AlternativePower.Enable then
+					module.funcs.AlternativePower(frame, frame.__unit, module.db[unit])
+					frame:EnableElement("AlternativePower")
+					frame.AlternativePower.SetPosition()
 				else
-					if frame.AltPowerBar then
-						frame:DisableElement("AltPowerBar")
-						frame.AltPowerBar.SetPosition()
+					if frame.AlternativePower then
+						frame:DisableElement("AlternativePower")
+						frame.AlternativePower.SetPosition()
 					end
 				end
 			end
@@ -1058,12 +1007,12 @@ module.ApplySettings = function(unit)
 			end
 
 			-- heal prediction
-			if module.db[unit].HealPrediction then
-				if module.db[unit].HealPrediction.Enable then
-					module.funcs.HealPrediction(frame, frame.__unit, module.db[unit])
-					frame:EnableElement("HealPrediction")
+			if module.db[unit].HealthPrediction then
+				if module.db[unit].HealthPrediction.Enable then
+					module.funcs.HealthPrediction(frame, frame.__unit, module.db[unit])
+					frame:EnableElement("HealthPrediction")
 				else
-					frame:DisableElement("HealPrediction")
+					frame:DisableElement("HealthPrediction")
 				end
 			end
 
@@ -1104,7 +1053,7 @@ module.ApplySettings = function(unit)
 				end
 			end
 
-			frame:UpdateAllElements()
+			frame:UpdateAllElements('refreshUnit')
 		end
 	end
 end

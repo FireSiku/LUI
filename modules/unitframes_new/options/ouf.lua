@@ -116,7 +116,7 @@ function module:CreateSettings(order)
 								end
 							end
 						end
-						frame:UpdateAllElements()
+						frame:UpdateAllElements('refreshUnit')
 					end
 				end
 			end

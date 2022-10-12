@@ -41,6 +41,7 @@ A default texture will be applied if the widget is a StatusBar and doesn't have 
 --]]
 
 local _, ns = ...
+if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 
 -- sourced from FrameXML/AlternatePowerBar.lua

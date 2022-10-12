@@ -43,7 +43,7 @@ local layouts = setmetatable({
 			Width = 170,
 			Y = 65,
 			X = -150,
-			Icons = {
+			Indicators = {
 				Raid = {
 					Y = 6,
 					Size = 35,
@@ -141,7 +141,7 @@ local layouts = setmetatable({
 					Texture = "RenaitreMinion",
 				},
 			},
-			Icons = {
+			Indicators = {
 				Raid = {
 					Size = 30,
 				},
@@ -214,7 +214,7 @@ local layouts = setmetatable({
 					TextureBG = "Otravi",
 					Texture = "Otravi",
 				},
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = true,
 				},
 				ComboPoints = {
@@ -229,7 +229,7 @@ local layouts = setmetatable({
 					Texture = "Otravi",
 				},
 			},
-			Icons = {
+			Indicators = {
 				Role = {
 					Y = 6,
 					X = -6,
@@ -245,11 +245,6 @@ local layouts = setmetatable({
 					X = 5,
 					Point = "LEFT",
 					Size = 15,
-				},
-				Lootmaster = {
-					Y = 7,
-					X = 22,
-					Point = "LEFT",
 				},
 			},
 			Texts = {
@@ -315,7 +310,7 @@ local layouts = setmetatable({
 					Texture = "RenaitreMinion",
 				},
 			},
-			Icons = {
+			Indicators = {
 				Raid = {
 					Size = 30,
 				},
@@ -385,7 +380,7 @@ local layouts = setmetatable({
 			},
 		},
 		PartyTarget = {
-			Icons = {
+			Indicators = {
 				Raid = {
 					Size = 30,
 				},
@@ -435,7 +430,7 @@ local layouts = setmetatable({
 			Y = -220,
 			Height = 42,
 			Bars = {
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = true,
 				},
 				Health = {
@@ -477,7 +472,7 @@ local layouts = setmetatable({
 			Backdrop = {
 				Texture = "Solid",
 			},
-			Icons = {
+			Indicators = {
 				Raid = {
 					Enable = true,
 					Size = 20,
@@ -487,7 +482,7 @@ local layouts = setmetatable({
 				Alpha = 0.15,
 			},
 			Bars = {
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = true,
 				},
 				Health = {
@@ -510,7 +505,7 @@ local layouts = setmetatable({
 			Enable = false,
 		},
 		Player = {
-			Icons = {
+			Indicators = {
 				Role = {
 					Y = 6,
 					X = -6,
@@ -520,11 +515,6 @@ local layouts = setmetatable({
 				Raid = {
 					Y = 6,
 					Size = 35,
-				},
-				Lootmaster = {
-					Y = 7,
-					X = 22,
-					Point = "LEFT",
 				},
 				Leader = {
 					Y = 7,
@@ -554,15 +544,15 @@ local layouts = setmetatable({
 					TextureBG = "Otravi",
 					Texture = "Otravi",
 				},
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = true,
 				},
-				DruidMana = {
+				AdditionalPower = {
 					OverPower = false,
 					TextureBG = "Otravi",
 					Texture = "Otravi",
 				},
-				AltPower = {
+				AlternativePower = {
 					OverPower = true,
 					TextureBG = "Otravi",
 					Texture = "Otravi",
@@ -624,7 +614,7 @@ local layouts = setmetatable({
 					ShowEmpty = false,
 					Size = 20,
 				},
-				DruidMana = {
+				AdditionalPower = {
 					Enable = false,
 				},
 				Health = {
@@ -772,7 +762,7 @@ local layouts = setmetatable({
 				Full = {
 					Y = -32,
 				},
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = true,
 				},
 				Health = {
@@ -790,7 +780,7 @@ local layouts = setmetatable({
 					Texture = "Otravi",
 				},
 			},
-			Icons = {
+			Indicators = {
 				Role = {
 					Y = 6,
 					X = -6,
@@ -806,11 +796,6 @@ local layouts = setmetatable({
 					X = 5,
 					Point = "LEFT",
 					Size = 15,
-				},
-				Lootmaster = {
-					Y = 7,
-					X = 22,
-					Point = "LEFT",
 				},
 			},
 			Texts = {
@@ -865,7 +850,7 @@ local layouts = setmetatable({
 				},
 			},
 			Scale = 0.75,
-			Icons = {
+			Indicators = {
 				PvP = {
 					Enable = true,
 				},
@@ -884,7 +869,7 @@ local layouts = setmetatable({
 				Alpha = 0.6,
 			},
 			Bars = {
-				AltPower = {
+				AlternativePower = {
 					Enable = false,
 				},
 			},
@@ -1004,7 +989,7 @@ local layouts = setmetatable({
 				},
 			},
 			Scale = 0.75,
-			Icons = {
+			Indicators = {
 				PvP = {
 					Enable = true,
 				},
@@ -1116,7 +1101,7 @@ local layouts = setmetatable({
 					Color = "Gradient",
 				},
 			},
-			Icons = {
+			Indicators = {
 				ReadyCheck = {
 					Y = 2,
 					Point = "RIGHT",
@@ -1163,11 +1148,11 @@ local layouts = setmetatable({
 				},
 			},
 			Bars = {
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = true,
 				},
 			},
-			Icons = {
+			Indicators = {
 				Role = {
 					Size = 20,
 				},
@@ -1203,7 +1188,7 @@ local layouts = setmetatable({
 					},
 				},
 			},
-			Icons = {
+			Indicators = {
 				Raid = {
 					Size = 24,
 				},
@@ -1280,7 +1265,7 @@ local layouts = setmetatable({
 				Alpha = 0.2,
 				Width = 200,
 			},
-			Icons = {
+			Indicators = {
 				Raid = {
 					Size = 28,
 				},
@@ -1302,7 +1287,7 @@ local layouts = setmetatable({
 				},
 			},
 			Scale = 0.85,
-			Icons = {
+			Indicators = {
 				Raid = {
 					Point = "TOP",
 					Size = 28,
@@ -1332,7 +1317,7 @@ local layouts = setmetatable({
 				Health = {
 					Tapping = true,
 				},
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = true,
 				},
 			},
@@ -1361,7 +1346,7 @@ local layouts = setmetatable({
 			Fader = {
 				Enable = true,
 			},
-			Icons = {
+			Indicators = {
 				Raid = {
 					Size = 28,
 				},

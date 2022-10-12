@@ -223,14 +223,14 @@ oUF.Tags.Methods["RaidName40"] = function(unit, realunit)
 	return nameCache[name][2]
 end
 
-oUF.Tags.Events["druidmana2"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
-oUF.Tags.Methods["druidmana2"] = function(unit)
+oUF.Tags.Events["additionalpower2"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
+oUF.Tags.Methods["additionalpower2"] = function(unit)
 	if unit ~= "player" then return end
 
 	if not module.db then return "" end
 
 	local min, max = UnitPower("player", Enum.PowerType.Mana), UnitPowerMax("player", Enum.PowerType.Mana)
-	if module.db.Player.Texts.DruidMana.HideIfFullMana and min == max then return "" end
+	if module.db.Player.Texts.AdditionalPower.HideIfFullMana and min == max then return "" end
 	local perc = min / max * 100
 
 	local _, pType = UnitPowerType(unit)
@@ -240,29 +240,29 @@ oUF.Tags.Methods["druidmana2"] = function(unit)
 
 	local r, g, b, text
 
-	if module.db.Player.Texts.DruidMana.Color == "" then
+	if module.db.Player.Texts.AdditionalPower.Color == "" then
 		r, g, b = color[1]*255,color[2]*255,color[3]*255
-	elseif module.db.Player.Texts.DruidMana.Color == "" then
+	elseif module.db.Player.Texts.AdditionalPower.Color == "" then
 		r, g, b = color2[1]*255,color2[2]*255,color2[3]*255
 	else
-		r, g, b = module.db.Player.Texts.DruidMana.IndividualColor.r*255,module.db.Player.Texts.DruidMana.IndividualColor.g*255,module.db.Player.Texts.DruidMana.IndividualColor.b*255
+		r, g, b = module.db.Player.Texts.AdditionalPower.IndividualColor.r*255,module.db.Player.Texts.AdditionalPower.IndividualColor.g*255,module.db.Player.Texts.AdditionalPower.IndividualColor.b*255
 	end
 
-	if module.db.Player.Texts.DruidMana.Format == "Absolut" then
+	if module.db.Player.Texts.AdditionalPower.Format == "Absolut" then
 		text = format("%d/%d", min, max)
-	elseif module.db.Player.Texts.DruidMana.Format == "Absolut & Percent" then
+	elseif module.db.Player.Texts.AdditionalPower.Format == "Absolut & Percent" then
 		text = format("%d/%d | %.1f", min, max, perc)
-	elseif module.db.Player.Texts.DruidMana.Format == "Absolut Short" then
+	elseif module.db.Player.Texts.AdditionalPower.Format == "Absolut Short" then
 		text = format("%s/%s", ShortValue(min), ShortValue(max))
-	elseif module.db.Player.Texts.DruidMana.Format == "Absolut Short & Percent" then
+	elseif module.db.Player.Texts.AdditionalPower.Format == "Absolut Short & Percent" then
 		text = format("%s/%s | %.1f", ShortValue(min), ShortValue(max), perc)
-	elseif module.db.Player.Texts.DruidMana.Format == "Standard" then
+	elseif module.db.Player.Texts.AdditionalPower.Format == "Standard" then
 		text = min
-	elseif module.db.Player.Texts.DruidMana.Format == "Standard & Percent" then
+	elseif module.db.Player.Texts.AdditionalPower.Format == "Standard & Percent" then
 		text = format("%s | %.1f%%", min, perc)
-	elseif module.db.Player.Texts.DruidMana.Format == "Standard Short" then
+	elseif module.db.Player.Texts.AdditionalPower.Format == "Standard Short" then
 		text = ShortValue(min)
-	elseif module.db.Player.Texts.DruidMana.Format == "Standard Short & Percent" then
+	elseif module.db.Player.Texts.AdditionalPower.Format == "Standard Short & Percent" then
 		text = format("%s | %.1f%%", ShortValue(min), perc)
 	else
 		text = min
