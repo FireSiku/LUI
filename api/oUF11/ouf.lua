@@ -1,4 +1,5 @@
 local parent, ns = ...
+if not ns.DF then return end ---@DF
 local global = GetAddOnMetadata(parent, 'X-oUF')
 local _VERSION = '@project-version@'
 if(_VERSION:find('project%-version')) then

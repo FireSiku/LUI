@@ -70,6 +70,7 @@ button.isPlayer - indicates if the aura caster is the player or their vehicle (b
 --]]
 
 local _, ns = ...
+if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 
 local function UpdateTooltip(self)

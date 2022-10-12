@@ -8,7 +8,7 @@ local addonname, LUI = ...
 local module = LUI:GetModule("Unitframes")
 local oUF = LUI.oUF
 
-local FormatName = function(self)
+local function FormatName(self)
 	if not self or not self.Info then return end
 
 	local info = self.Info
@@ -35,11 +35,11 @@ local FormatName = function(self)
 	local class = info.ColorClassByClass and "[GetNameColor][smartclass]|r" or "[smartclass]"
 
 	self:Tag(info, info.Format:gsub(" %+ ", " "):gsub("Name", name):gsub("Level", level):gsub("Race", race):gsub("Class", class))
-	self:UpdateAllElements()
+	self:UpdateAllElements('refreshUnit')
 end
 oUF:RegisterMetaFunction("FormatName", FormatName)
 
-local FormatRaidName = function(self)
+local function FormatRaidName(self)
 	if not self or not self.Info then return end
 
 	local info = self.Info
@@ -50,6 +50,6 @@ local FormatRaidName = function(self)
 	if info.ColorByClass then tag = "[GetNameColor]"..tag.."|r" end
 
 	self:Tag(info, tag)
-	self:UpdateAllElements()
+	self:UpdateAllElements('refreshUnit')
 end
 oUF:RegisterMetaFunction("FormatRaidName", FormatRaidName)

@@ -88,6 +88,7 @@ A default texture will be applied to the StatusBar and Texture widgets if they d
 --]]
 
 local _, ns = ...
+if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 
 local FALLBACK_ICON = 136243 -- Interface\ICONS\Trade_Engineering

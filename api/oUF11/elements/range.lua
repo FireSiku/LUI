@@ -26,6 +26,7 @@ Offline units are handled as if they are in range.
 --]]
 
 local _, ns = ...
+if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 
 local _FRAMES = {}

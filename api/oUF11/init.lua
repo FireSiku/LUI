@@ -1,3 +1,5 @@
 local _, ns = ...
-ns.oUF = {}
-ns.oUF.Private = {}
+if not ns.oUF then
+    ns.oUF = {}
+    ns.oUF.Private = {}
+end

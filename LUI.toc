@@ -11,8 +11,9 @@
 ### Initialize Libs ###
 libs\libs.xml
 locale\locale.xml
-api\oUF\ouf.xml
-# api\oUF11\ouf.xml
+# api\oUF\ouf.xml
+api\oUF10\ouf.xml
+api\oUF11\ouf.xml
 
 ### Core + API ###\
 init.lua
@@ -27,6 +28,7 @@ api\devapi.lua
 api\restore.lua
 api\strings.lua
 LUI.lua
+update.lua
 
 ### Artwork ###
 modules\artwork\themes.lua
@@ -115,87 +117,85 @@ scripts\hideblizzard.lua
 api\frameidentifier.lua
 
 ### Initialize Unitframes ###
-unitframes\templates.xml
-unitframes\init.lua
-
-### Unitframe Default Values ###
-unitframes\defaults\player.lua
-unitframes\defaults\target.lua
-unitframes\defaults\tot.lua
-unitframes\defaults\totot.lua
-unitframes\defaults\focus.lua
-unitframes\defaults\focustarget.lua
-unitframes\defaults\pet.lua
-unitframes\defaults\pettarget.lua
-unitframes\defaults\boss.lua
-unitframes\defaults\bosstarget.lua
-unitframes\defaults\party.lua
-unitframes\defaults\partypet.lua
-unitframes\defaults\partytarget.lua
-unitframes\defaults\maintank.lua
-unitframes\defaults\maintanktarget.lua
-unitframes\defaults\maintanktot.lua
-unitframes\defaults\arena.lua
-unitframes\defaults\arenapet.lua
-unitframes\defaults\arenatarget.lua
-unitframes\defaults\raid.lua
-
-### Unitframe Options ###
-unitframes\options\colors.lua
-unitframes\options\copysettings.lua
-unitframes\options\general.lua
-unitframes\options\importexport.lua
-unitframes\options\movable.lua
-unitframes\options\ouf.lua
-unitframes\options\showhide.lua
-unitframes\options\toggle.lua
-
-### LUI Unitframe Additions ###
-unitframes\plugins\oUF_CombatFeedback.lua
-unitframes\plugins\oUF_Experience.lua
-unitframes\plugins\oUF_Reputation.lua
-unitframes\plugins\oUF_RaidDebuffs.lua
-
-### to investigate as we may not need these anymore ###
-unitframes\plugins\singleauras.lua
-unitframes\plugins\raiddebuffs.lua
-unitframes\plugins\maintank.lua
-unitframes\plugins\vehicle.lua
-unitframes\plugins\arcanecharges.lua
-unitframes\plugins\chi.lua
-unitframes\plugins\holypower.lua
-unitframes\plugins\warlockbar.lua
-unitframes\plugins\totalabsorb.lua
-
-### Unitframe Layout ###
-unitframes\layout\tags.lua
-unitframes\layout\meta.lua
-unitframes\layout\layout.lua
-
-### Initialize Unitframes ###
 # unitframes\templates.xml
-# modules\unitframes_new\unitframes_init.lua
+# unitframes\init.lua
+
+# ### Unitframe Default Values ###
+# unitframes\defaults\player.lua
+# unitframes\defaults\target.lua
+# unitframes\defaults\tot.lua
+# unitframes\defaults\totot.lua
+# unitframes\defaults\focus.lua
+# unitframes\defaults\focustarget.lua
+# unitframes\defaults\pet.lua
+# unitframes\defaults\pettarget.lua
+# unitframes\defaults\boss.lua
+# unitframes\defaults\bosstarget.lua
+# unitframes\defaults\party.lua
+# unitframes\defaults\partypet.lua
+# unitframes\defaults\partytarget.lua
+# unitframes\defaults\maintank.lua
+# unitframes\defaults\maintanktarget.lua
+# unitframes\defaults\maintanktot.lua
+# unitframes\defaults\arena.lua
+# unitframes\defaults\arenapet.lua
+# unitframes\defaults\arenatarget.lua
+# unitframes\defaults\raid.lua
 
 # ### Unitframe Options ###
-# modules\unitframes_new\options\colors.lua
-# modules\unitframes_new\options\copysettings.lua
-# modules\unitframes_new\options\general.lua
-# modules\unitframes_new\options\importexport.lua
-# modules\unitframes_new\options\movable.lua
-# modules\unitframes_new\options\ouf.lua
-# modules\unitframes_new\options\showhide.lua
-# modules\unitframes_new\options\toggle.lua
+# unitframes\options\colors.lua
+# unitframes\options\copysettings.lua
+# unitframes\options\general.lua
+# unitframes\options\importexport.lua
+# unitframes\options\movable.lua
+# unitframes\options\ouf.lua
+# unitframes\options\showhide.lua
+# unitframes\options\toggle.lua
 
 # ### LUI Unitframe Additions ###
-# modules\unitframes_new\plugins\oUF_CombatFeedback.lua
-# modules\unitframes_new\plugins\oUF_Experience.lua
-# modules\unitframes_new\plugins\oUF_Reputation.lua
-# modules\unitframes_new\plugins\oUF_RaidDebuffs.lua
+# unitframes\plugins\oUF_CombatFeedback.lua
+# unitframes\plugins\oUF_Experience.lua
+# unitframes\plugins\oUF_Reputation.lua
+# unitframes\plugins\oUF_RaidDebuffs.lua
+
+# ### to investigate as we may not need these anymore ###
+# unitframes\plugins\singleauras.lua
+# unitframes\plugins\raiddebuffs.lua
+# unitframes\plugins\maintank.lua
+# unitframes\plugins\vehicle.lua
+# unitframes\plugins\arcanecharges.lua
+# unitframes\plugins\chi.lua
+# unitframes\plugins\holypower.lua
+# unitframes\plugins\warlockbar.lua
+# unitframes\plugins\totalabsorb.lua
 
 # ### Unitframe Layout ###
-# modules\unitframes_new\layout\tags.lua
-# modules\unitframes_new\layout\meta.lua
-# modules\unitframes_new\layout\layout.lua
+# unitframes\layout\tags.lua
+# unitframes\layout\meta.lua
+# unitframes\layout\layout.lua
+
+### Initialize Unitframes ###
+unitframes\templates.xml
+modules\unitframes_new\unitframes_init.lua
+
+### Unitframe Options ###
+modules\unitframes_new\options\colors.lua
+modules\unitframes_new\options\copysettings.lua
+modules\unitframes_new\options\general.lua
+modules\unitframes_new\options\importexport.lua
+modules\unitframes_new\options\movable.lua
+modules\unitframes_new\options\ouf.lua
+modules\unitframes_new\options\showhide.lua
+modules\unitframes_new\options\toggle.lua
+
+### LUI Unitframe Additions ###
+modules\unitframes_new\plugins\oUF_CombatFeedback.lua
+modules\unitframes_new\plugins\oUF_RaidDebuffs.lua
+
+### Unitframe Layout ###
+modules\unitframes_new\layout\tags.lua
+modules\unitframes_new\layout\meta.lua
+modules\unitframes_new\layout\layout.lua
 
 ### Embedded Darion ###
 media\Masque_Darion\Darion.lua

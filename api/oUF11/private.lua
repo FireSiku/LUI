@@ -1,4 +1,5 @@
 local _, ns = ...
+if not ns.DF then return end ---@DF
 local Private = ns.oUF.Private
 
 function Private.argcheck(value, num, ...)

@@ -45,11 +45,11 @@ local CopyFuncs = {
 		CopySettings(module.db[srcUnit].Health, module.db[dstUnit].Health, withSizes, withPosition)
 		CopySettings(module.db[srcUnit].Power, module.db[dstUnit].Power, withSizes, withPosition)
 		CopySettings(module.db[srcUnit].Full, module.db[dstUnit].Full, withSizes, withPosition)
-		CopySettings(module.db[srcUnit].HealPrediction, module.db[dstUnit].HealPrediction, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].HealthPrediction, module.db[dstUnit].HealthPrediction, withSizes, withPosition)
 	end,
 	
-	Icons = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(module.db[srcUnit].Icons, module.db[dstUnit].Icons, withSizes, withPosition)
+	Indicators = function(srcUnit, dstUnit, withSizes, withPosition)
+		CopySettings(module.db[srcUnit].Indicators, module.db[dstUnit].Indicators, withSizes, withPosition)
 	end,
 	
 	Background = function(srcUnit, dstUnit, withSizes, withPosition)
@@ -146,7 +146,7 @@ function module:CreateCopyOptions(unit, order)
 			Castbar = self.db[unit].Castbar and self:NewExecute("Copy Castbar", "Move the Castbar Settings of this Unitframe into the temporary storage.", 8, function() settings.toCopy = "Castbar"; settings.srcUnit = unit end) or nil,
 			Aura = self.db[unit].Aura and self:NewExecute("Copy Aura", "Move the Aura Settings of this Unitframe into the temporary storage.", 9, function() settings.toCopy = "Auras"; settings.srcUnit = unit end) or nil,
 			Bars = self:NewExecute("Copy Bars", "Move the Bar Settings of this Unitframe into the temporary storage.", 10, function() settings.toCopy = "Bars"; settings.srcUnit = unit end),
-			Icons = self.db[unit].Icons and self:NewExecute("Copy Icons", "Move the Icon Settings of this Unitframe into the temporary storage.", 11, function() settings.toCopy = "Icons"; settings.srcUnit = unit end) or nil,
+			Indicators = self.db[unit].Indicators and self:NewExecute("Copy Indicators", "Move the Icon Settings of this Unitframe into the temporary storage.", 11, function() settings.toCopy = "Indicators"; settings.srcUnit = unit end) or nil,
 			Background = self:NewExecute("Copy Background", "Move the Background Settings of this Unitframe into the temporary storage.", 12, function() settings.toCopy = "Background"; settings.srcUnit = unit end),
 			Texts = self:NewExecute("Copy Texts", "Move the Text Settings of this Unitframe into the temporary storage.", 13, function() settings.toCopy = "Texts"; settings.srcUnit = unit end),
 			Portrait = self:NewExecute("Copy Portrait", "Move the Portrait Settings of this Unitframe into the temporary storage.", 14, function() settings.toCopy = "Portrait"; settings.srcUnit = unit end),

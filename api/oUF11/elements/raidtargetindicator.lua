@@ -23,6 +23,7 @@ A default texture will be applied if the widget is a Texture and doesn't have a 
 --]]
 
 local _, ns = ...
+if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 
 local GetRaidTargetIndex = GetRaidTargetIndex

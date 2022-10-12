@@ -6,7 +6,11 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
-local addonname, LUI = ...
+---@type string, LUIAddon
+local addonName, LUI = ...
+local L = LUI.L
+
+---@class UnitFrameModule : LUIModule
 local module = LUI:NewModule("Unitframes", "LUIDevAPI", "AceHook-3.0", "AceSerializer-3.0")
 
 local Blizzard = LUI.Blizzard
@@ -15,84 +19,81 @@ local unitsSpawn = {"Player", "Target", "Focus", "FocusTarget", "ToT", "ToToT", 
 
 local units = {"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "BossTarget", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet", "Raid"}
 
-LUI.Versions.ouf = 3600
 
-do
-	module.framelist = {
-		Player = {"oUF_LUI_player"},
-		Target = {"oUF_LUI_target"},
-		ToT = {"oUF_LUI_targettarget"},
-		ToToT = {"oUF_LUI_targettargettarget"},
-		Focus = {"oUF_LUI_focus"},
-		FocusTarget = {"oUF_LUI_focustarget"},
-		Pet = {"oUF_LUI_pet"},
-		PetTarget = {"oUF_LUI_pettarget"},
-		Party = {},
-		PartyTarget = {},
-		PartyPet = {},
-		Boss = {},
-		BossTarget ={},
-		Maintank = {},
-		MaintankTarget = {},
-		MaintankToT = {},
-		Arena = {},
-		ArenaTarget = {},
-		ArenaPet = {},
-		Raid = {},
-	}
+module.framelist = {
+	Player = {"oUF_LUI_player"},
+	Target = {"oUF_LUI_target"},
+	ToT = {"oUF_LUI_targettarget"},
+	ToToT = {"oUF_LUI_targettargettarget"},
+	Focus = {"oUF_LUI_focus"},
+	FocusTarget = {"oUF_LUI_focustarget"},
+	Pet = {"oUF_LUI_pet"},
+	PetTarget = {"oUF_LUI_pettarget"},
+	Party = {},
+	PartyTarget = {},
+	PartyPet = {},
+	Boss = {},
+	BossTarget ={},
+	Maintank = {},
+	MaintankTarget = {},
+	MaintankToT = {},
+	Arena = {},
+	ArenaTarget = {},
+	ArenaPet = {},
+	Raid = {},
+}
 
-	local Prefix = {
-		Party = "oUF_LUI_partyUnitButton",
-		PartyTarget = "oUF_LUI_partyUnitButton",
-		PartyPet = "oUF_LUI_partyUnitButton",
-		Boss = "oUF_LUI_boss",
-		BossTarget = "oUF_LUI_bosstarget",
-		Maintank = "oUF_LUI_maintankUnitButton",
-		MaintankTarget = "oUF_LUI_maintankUnitButton",
-		MaintankToT = "oUF_LUI_maintankUnitButton",
-		Arena = "oUF_LUI_arena",
-		ArenaTarget = "oUF_LUI_arenatarget",
-		ArenaPet = "oUF_LUI_arenapet",
-	}
-	local Suffix = {
-		PartyTarget = "target",
-		PartyPet = "pet",
-		MaintankTarget = "target",
-		MaintankToT = "targettarget",
-	}
-	local Count = {
-		Party = 5,
-		PartyTarget = 5,
-		PartyPet = 5,
-		Boss = 4,
-		BossTarget = 4,
-		Maintank = 3,
-		MaintankTarget = 3,
-		MaintankToT = 3,
-		Arena = 5,
-		ArenaTarget = 5,
-		ArenaPet = 5,
-	}
+local Prefix = {
+	Party = "oUF_LUI_partyUnitButton",
+	PartyTarget = "oUF_LUI_partyUnitButton",
+	PartyPet = "oUF_LUI_partyUnitButton",
+	Boss = "oUF_LUI_boss",
+	BossTarget = "oUF_LUI_bosstarget",
+	Maintank = "oUF_LUI_maintankUnitButton",
+	MaintankTarget = "oUF_LUI_maintankUnitButton",
+	MaintankToT = "oUF_LUI_maintankUnitButton",
+	Arena = "oUF_LUI_arena",
+	ArenaTarget = "oUF_LUI_arenatarget",
+	ArenaPet = "oUF_LUI_arenapet",
+}
+local Suffix = {
+	PartyTarget = "target",
+	PartyPet = "pet",
+	MaintankTarget = "target",
+	MaintankToT = "targettarget",
+}
+local Count = {
+	Party = 5,
+	PartyTarget = 5,
+	PartyPet = 5,
+	Boss = 4,
+	BossTarget = 4,
+	Maintank = 3,
+	MaintankTarget = 3,
+	MaintankToT = 3,
+	Arena = 5,
+	ArenaTarget = 5,
+	ArenaPet = 5,
+}
 
-	-- adding group frames
-	for k, v in pairs(module.framelist) do
-		if Count[k] then
-			for i = 1, Count[k] do
-				module.framelist[k][i] = Prefix[k]..i..(Suffix[k] or "")
-			end
+-- adding group frames
+for k, v in pairs(module.framelist) do
+	if Count[k] then
+		for i = 1, Count[k] do
+			module.framelist[k][i] = Prefix[k]..i..(Suffix[k] or "")
 		end
 	end
+end
 
-	for i = 1, 5 do
-		for j = 1, 5 do
-			table.insert(module.framelist.Raid, "oUF_LUI_raid_25_"..i.."UnitButton"..j)
-		end
+for i = 1, 5 do
+	for j = 1, 5 do
+		table.insert(module.framelist.Raid, "oUF_LUI_raid_25_"..i.."UnitButton"..j)
 	end
+end
 
-	for i = 1, 8 do
-		for j = 1, 5 do
-			table.insert(module.framelist.Raid, "oUF_LUI_raid_40_"..i.."UnitButton"..j)
-		end
+for i = 1, 8 do
+	for j = 1, 5 do
+		table.insert(module.framelist.Raid, "oUF_LUI_raid_40_"..i.."UnitButton"..j)
 	end
 end
 
@@ -103,6 +104,7 @@ end
 module.childGroups = "tree"
 module.defaults = {
 	profile = {
+		Enable = true,
 		General = {},
 		-- ### Player ###
 		Player = {
@@ -117,33 +119,13 @@ module.defaults = {
 				Aggro = false,
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -158,11 +140,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = true,
@@ -177,11 +155,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -191,40 +165,20 @@ module.defaults = {
 					Y = -42,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 0.5,
-						b = 0,
-						a = 0.25
-					},
-					OtherColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.25
-					},
+					MyColor = { r = 0, g = 0.5, b = 0, a = 0.25 },
+					OtherColor = { r = 0, g = 1, b = 0, a = 0.25 },
 				},
 				TotalAbsorb = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.5
-					},
+					MyColor = { r = 0, g = 1, b = 0, a = 0.5 },
 				},
-				AltPower = {
+				AlternativePower = {
 					Enable = false,
 					OverPower = false,
 					Height = 10,
@@ -232,18 +186,14 @@ module.defaults = {
 					X = 0,
 					Y = -44,
 					Color = "By Type",
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Texture = "LUI_Gradient",
 					TextureBG = "LUI_Gradient",
 					BGAlpha = 1,
 					BGMultiplier = 0.4,
 					Smooth = true,
 				},
-				DruidMana = {
+				AdditionalPower = {
 					Enable = true,
 					OverPower = true,
 					Height = 10,
@@ -279,7 +229,7 @@ module.defaults = {
 					Padding = 1,
 					Lock = true,
 				},
-				HolyPower = {
+				ClassPower = {
 					Enable = true,
 					X = 0,
 					Y = 0.5,
@@ -287,55 +237,6 @@ module.defaults = {
 					Width = 250,
 					Texture = "LUI_Gradient",
 					Padding = 1,
-					Lock = true,
-				},
-				Chi= {
-					Enable = true,
-					X = 0,
-					Y = 0.5,
-					Height = 8,
-					Width = 250,
-					Texture = "LUI_Gradient",
-					Padding = 1,
-					Lock = true,
-				},
-				WarlockBar = {
-					Enable = true,
-					X = 0,
-					Y = 0.5,
-					Height = 8,
-					Width = 250,
-					Texture = "LUI_Gradient",
-					Padding = 2,
-					Lock = true,
-				},
-				ArcaneCharges = {
-					Enable = true,
-					X = 0,
-					Y = 0.5,
-					Height = 8,
-					Width = 250,
-					Texture = "LUI_Gradient",
-					Padding = 1,
-					Lock = true,
-				},
-				ShadowOrbs = {
-					Enable = true,
-					X = 0,
-					Y = 0.5,
-					Height = 8,
-					Width = 250,
-					Texture = "LUI_Gradient",
-					Padding = 1,
-					Lock = true,
-				},
-				Eclipse = {
-					Enable = true,
-					X = 0,
-					Y = 0.5,
-					Height = 8,
-					Width = 250,
-					Texture = "LUI_Minimalist",
 					Lock = true,
 				},
 			},
@@ -411,81 +312,28 @@ module.defaults = {
 				Border = {
 					Texture = "glow",
 					Thickness = 4,
-					Inset = {
-						left = 3,
-						right = 3,
-						top = 3,
-						bottom = 3,
-					},
+					Inset = { left = 3, right = 3, top = 3, bottom = 3 },
 				},
 				Colors = {
-					Bar = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
-					Background = {
-						r = 0.15,
-						g = 0.15,
-						b = 0.15,
-						a = 0.67,
-					},
-					Latency = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 0.74,
-					},
-					Border = {
-						r = 0,
-						g = 0,
-						b = 0,
-						a = 0.7,
-					},
-					Shield = {
-						r = 0.5,
-						g = 0,
-						b = 0,
-						a = 0.1,
-					},
-					Name = {
-						r = 0.9,
-						g = 0.9,
-						b = 0.9,
-					},
-					Time = {
-						r = 0.9,
-						g = 0.9,
-						b = 0.9,
-					},
+					Bar = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
+					Background = { r = 0.15, g = 0.15, b = 0.15, a = 0.67 },
+					Latency = { r = 0.11, g = 0.11, b = 0.11, a = 0.74 },
+					Border = { r = 0, g = 0, b = 0, a = 0.7 },
+					Shield = { r = 0.5, g = 0, b = 0, a = 0.1 },
+					Name = { r = 0.9, g = 0.9, b = 0.9 },
+					Time = { r = 0.9, g = 0.9, b = 0.9 },
 				},
 				Shield = {
 					Enable = true,
 					Text = true,
 					IndividualColor = false,
-					BarColor = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
+					BarColor = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
 					IndividualBorder = true,
-					Color = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
+					Color = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
 					Border = false,
 					Texture = "glow",
 					Thickness = 4,
-					Inset = {
-						left = 3,
-						right = 3,
-						top = 3,
-						bottom = 3,
-					},
+					Inset = { left = 3, right = 3, top = 3, bottom = 3 },
 				},
 			},
 			Portrait = {
@@ -496,56 +344,13 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Lootmaster = {
-					Enable = true,
-					Size = 15,
-					X = 16,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
-				Leader = {
-					Enable = true,
-					Size = 17,
-					X = 0,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
-				Role = {
-					Enable = true,
-					Size = 22,
-					X = 15,
-					Y = 10,
-					Point = "TOPRIGHT",
-				},
-				Raid = {
-					Enable = true,
-					Size = 55,
-					X = 0,
-					Y = 10,
-					Point = "CENTER",
-				},
-				Resting = {
-					Enable = false,
-					Size = 27,
-					X = -12,
-					Y = 13,
-					Point = "TOPLEFT",
-				},
-				Combat = {
-					Enable = false,
-					Size = 27,
-					X = -15,
-					Y = -30,
-					Point = "BOTTOMLEFT",
-				},
-				PvP = {
-					Enable = false,
-					Size = 35,
-					X = -12,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
+			Indicators = {
+				Leader = { Enable = true, Size = 17, X = 0, Y = 10, Point = "TOPLEFT" },
+				Role = { Enable = true, Size = 22, X = 15, Y = 10, Point = "TOPRIGHT" },
+				Raid = { Enable = true, Size = 55, X = 0, Y = 10, Point = "CENTER" },
+				Resting = { Enable = false, Size = 27, X = -12, Y = 13, Point = "TOPLEFT" },
+				Combat = { Enable = false, Size = 27, X = -15, Y = -30, Point = "BOTTOMLEFT" },
+				PvP = { Enable = false, Size = 35, X = -12, Y = 10, Point = "TOPLEFT" },
 			},
 			Texts = {
 				Name = {
@@ -554,11 +359,7 @@ module.defaults = {
 					Size = 24,
 					X = 0,
 					Y = 0,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -578,11 +379,7 @@ module.defaults = {
 					Y = -31,
 					Color = "Individual",
 					ShowAlways = true,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "BOTTOMRIGHT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -598,11 +395,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "BOTTOMRIGHT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -616,11 +409,7 @@ module.defaults = {
 					Y = 6,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -635,11 +424,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -653,11 +438,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "BOTTOMRIGHT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -672,16 +453,12 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
 				},
-				DruidMana = {
+				AdditionalPower = {
 					Enable = true,
 					Font = "Prototype",
 					Outline = "NONE",
@@ -693,11 +470,7 @@ module.defaults = {
 					Format = "Standard",
 					HideIfFullMana = true,
 					Color = "Individual",
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 				},
 				WarlockBar = {
 					Enable = true,
@@ -730,13 +503,9 @@ module.defaults = {
 					Size = 12,
 					X = 20,
 					Y = 5,
-					Color = {
-						r = 1.0,
-						g = 0.1,
-						b = 0.1,
-					},
+					Color = { r = 1.0, g = 0.1, b = 0.1 },
 				},
-				AltPower = {
+				AlternativePower = {
 					Enable = false,
 					X = 0,
 					Y = 0,
@@ -745,19 +514,7 @@ module.defaults = {
 					Size = 10,
 					Outline = "NONE",
 					Color = "Individual",
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
-				},
-				Eclipse = {
-					Enable = true,
-					Font = "neuropol",
-					Size = 12,
-					Outline = "NONE",
-					X = 0,
-					Y = 0,
+					IndividualColor = { r = 1, g = 1, b = 1 },
 				},
 			},
 			Fader = {
@@ -778,63 +535,6 @@ module.defaults = {
 				UseGlobalSettings = true,
 			},
 		},
-		-- ### XP/Rep. Deprecated. ###
-		XP_Rep = {
-			General = {
-				Font = "vibrocen",
-				FontSize = 14,
-				FontFlag = "NONE",
-				FontJustify = "CENTER",
-				FontColor = {
-					r = 0,
-					g = 1,
-					b = 1,
-					a = 1,
-				},
-			},
-			Experience = {
-				Enable = true,
-				ShowValue = true,
-				AlwaysShow = false,
-				Alpha = 1,
-				BGColor = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 0.7,
-				},
-				FillColor = {
-					r = 0.33,
-					g = 0.33,
-					b = 0.33,
-					a = 1,
-				},
-				RestedColor = {
-					r = 0,
-					g = 0.39,
-					b = 0.88,
-					a = 0.5,
-				},
-			},
-			Reputation = {
-				Enable = true,
-				ShowValue = true,
-				AlwaysShow = false,
-				Alpha = 1,
-				BGColor = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 0.7,
-				},
-				FillColor = {
-					r = 0.33,
-					g = 0.33,
-					b = 0.33,
-					a = 1,
-				},
-			},
-		},
 		--- ### Target ###
 		Target = {
 			Enable = true,
@@ -848,33 +548,13 @@ module.defaults = {
 				Aggro = false,
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -890,11 +570,7 @@ module.defaults = {
 					BGInvert = false,
 					Smooth = true,
 					Tapping = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = true,
@@ -909,11 +585,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -923,38 +595,18 @@ module.defaults = {
 					Y = -42,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 0.5,
-						b = 0,
-						a = 0.25
-					},
-					OtherColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.25
-					},
+					MyColor = { r = 0, g = 0.5, b = 0, a = 0.25 },
+					OtherColor = { r = 0, g = 1, b = 0, a = 0.25 },
 				},
 				TotalAbsorb = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.5
-					},
+					MyColor = { r = 0, g = 1, b = 0, a = 0.5 },
 				},
 				ComboPoints = {
 					Enable = true,
@@ -967,11 +619,7 @@ module.defaults = {
 					Padding = 1,
 					Multiplier = 0.4,
 					IndividualBGColor = true,
-					BackgroundColor = {
-						r = 0.23,
-						g = 0.23,
-						b = 0.23,
-					},
+					BackgroundColor = { r = 0.23, g = 0.23, b = 0.23 },
 				},
 			},
 			Aura = {
@@ -1045,75 +693,27 @@ module.defaults = {
 				Border = {
 					Texture = "glow",
 					Thickness = 4,
-					Inset = {
-						left = 3,
-						right = 3,
-						top = 3,
-						bottom = 3,
-					},
+					Inset = { left = 3, right = 3, top = 3, bottom = 3 },
 				},
 				Colors = {
-					Bar = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
-					Background = {
-						r = 0.15,
-						g = 0.15,
-						b = 0.15,
-						a = 0.67,
-					},
-					Border = {
-						r = 0,
-						g = 0,
-						b = 0,
-						a = 0.7,
-					},
-					Shield = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
-					Name = {
-						r = 0.9,
-						g = 0.9,
-						b = 0.9,
-					},
-					Time = {
-						r = 0.9,
-						g = 0.9,
-						b = 0.9,
-					},
+					Bar = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
+					Background = { r = 0.15, g = 0.15, b = 0.15, a = 0.67 },
+					Border = { r = 0, g = 0, b = 0, a = 0.7 },
+					Shield = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
+					Name = { r = 0.9, g = 0.9, b = 0.9 },
+					Time = { r = 0.9, g = 0.9, b = 0.9 },
 				},
 				Shield = {
 					Enable = true,
 					Text = true,
 					IndividualColor = false,
-					BarColor = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
+					BarColor = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
 					IndividualBorder = true,
-					Color = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
+					Color = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
 					Border = false,
 					Texture = "glow",
 					Thickness = 4,
-					Inset = {
-						left = 3,
-						right = 3,
-						top = 3,
-						bottom = 3,
-					},
+					Inset = { left = 3, right = 3, top = 3, bottom = 3 },
 				},
 			},
 			Portrait = {
@@ -1124,42 +724,11 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Lootmaster = {
-					Enable = true,
-					Size = 15,
-					X = 16,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
-				Leader = {
-					Enable = true,
-					Size = 17,
-					X = 0,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
-				Role = {
-					Enable = true,
-					Size = 22,
-					X = 15,
-					Y = 10,
-					Point = "TOPRIGHT",
-				},
-				Raid = {
-					Enable = true,
-					Size = 55,
-					X = 0,
-					Y = 10,
-					Point = "CENTER",
-				},
-				PvP = {
-					Enable = false,
-					Size = 35,
-					X = -12,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
+			Indicators = {
+				Leader = { Enable = true, Size = 17, X = 0, Y = 10, Point = "TOPLEFT" },
+				Role = { Enable = true, Size = 22, X = 15, Y = 10, Point = "TOPRIGHT" },
+				Raid = { Enable = true, Size = 55, X = 0, Y = 10, Point = "CENTER" },
+				PvP = { Enable = false, Size = 35, X = -12, Y = 10, Point = "TOPLEFT" },
 			},
 			Texts = {
 				Name = {
@@ -1168,11 +737,7 @@ module.defaults = {
 					Size = 25,
 					X = 5,
 					Y = 0,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -1192,11 +757,7 @@ module.defaults = {
 					Y = -31,
 					Color = "Individual",
 					ShowAlways = true,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMLEFT",
@@ -1212,11 +773,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMLEFT",
@@ -1230,11 +787,7 @@ module.defaults = {
 					Y = 6,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -1249,11 +802,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -1267,11 +816,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -1286,11 +831,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -1343,33 +884,13 @@ module.defaults = {
 				Aggro = false,
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -1384,11 +905,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = true,
@@ -1403,11 +920,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -1417,38 +930,18 @@ module.defaults = {
 					Y = -42,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 0.5,
-						b = 0,
-						a = 0.25
-					},
-					OtherColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.25
-					},
+					MyColor = { r = 0, g = 0.5, b = 0, a = 0.25 },
+					OtherColor = { r = 0, g = 1, b = 0, a = 0.25 },
 				},
 				TotalAbsorb = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.5
-					},
+					MyColor = { r = 0, g = 1, b = 0, a = 0.5 },
 				},
 			},
 			Castbar = {
@@ -1485,75 +978,27 @@ module.defaults = {
 				Border = {
 					Texture = "glow",
 					Thickness = 4,
-					Inset = {
-						left = 3,
-						right = 3,
-						top = 3,
-						bottom = 3,
-					},
+					Inset = { left = 3, right = 3, top = 3, bottom = 3 },
 				},
 				Colors = {
-					Bar = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
-					Background = {
-						r = 0.15,
-						g = 0.15,
-						b = 0.15,
-						a = 0.67,
-					},
-					Border = {
-						r = 0,
-						g = 0,
-						b = 0,
-						a = 0.7,
-					},
-					Shield = {
-						r = 0.5,
-						g = 0,
-						b = 0,
-						a = 0.1,
-					},
-					Name = {
-						r = 0.9,
-						g = 0.9,
-						b = 0.9,
-					},
-					Time = {
-						r = 0.9,
-						g = 0.9,
-						b = 0.9,
-					},
+					Bar = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
+					Background = { r = 0.15, g = 0.15, b = 0.15, a = 0.67 },
+					Border = { r = 0, g = 0, b = 0, a = 0.7 },
+					Shield = { r = 0.5, g = 0, b = 0, a = 0.1 },
+					Name = { r = 0.9, g = 0.9, b = 0.9 },
+					Time = { r = 0.9, g = 0.9, b = 0.9 },
 				},
 				Shield = {
 					Enable = true,
 					Text = true,
 					IndividualColor = false,
-					BarColor = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
+					BarColor = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
 					IndividualBorder = true,
-					Color = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
+					Color = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
 					Border = false,
 					Texture = "glow",
 					Thickness = 4,
-					Inset = {
-						left = 3,
-						right = 3,
-						top = 3,
-						bottom = 3,
-					},
+					Inset = { left = 3, right = 3, top = 3, bottom = 3 },
 				},
 			},
 			Aura = {
@@ -1601,42 +1046,11 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Lootmaster = {
-					Enable = false,
-					Size = 15,
-					X = 16,
-					Y = 0,
-					Point = "TOPLEFT",
-				},
-				Leader = {
-					Enable = false,
-					Size = 17,
-					X = 0,
-					Y = 0,
-					Point = "TOPLEFT",
-				},
-				Role = {
-					Enable = false,
-					Size = 22,
-					X = 15,
-					Y = 10,
-					Point = "TOPRIGHT",
-				},
-				Raid = {
-					Enable = false,
-					Size = 55,
-					X = 0,
-					Y = 10,
-					Point = "CENTER",
-				},
-				PvP = {
-					Enable = false,
-					Size = 35,
-					X = -12,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
+			Indicators = {
+				Leader = { Enable = false, Size = 17, X = 0, Y = 0, Point = "TOPLEFT" },
+				Role = { Enable = false, Size = 22, X = 15, Y = 10, Point = "TOPRIGHT" },
+				Raid = { Enable = false, Size = 55, X = 0, Y = 10, Point = "CENTER" },
+				PvP = { Enable = false, Size = 35, X = -12, Y = 10, Point = "TOPLEFT" },
 			},
 			Texts = {
 				Name = {
@@ -1645,11 +1059,7 @@ module.defaults = {
 					Size = 19,
 					X = 0,
 					Y = -22,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -1669,11 +1079,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -1689,11 +1095,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -1707,11 +1109,7 @@ module.defaults = {
 					Y = 6,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -1726,11 +1124,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -1744,11 +1138,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -1763,11 +1153,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -1820,33 +1206,13 @@ module.defaults = {
 				Aggro = false,
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -1861,11 +1227,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.3,
-						g = 0.3,
-						b = 0.3,
-					},
+					IndividualColor = { r = 0.3, g = 0.3, b = 0.3 },
 				},
 				Power = {
 					Enable = false,
@@ -1880,11 +1242,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -1894,38 +1252,18 @@ module.defaults = {
 					Y = -36,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 0.5,
-						b = 0,
-						a = 0.25
-					},
-					OtherColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.25
-					},
+					MyColor = { r = 0, g = 0.5, b = 0, a = 0.25 },
+					OtherColor = { r = 0, g = 1, b = 0, a = 0.25 },
 				},
 				TotalAbsorb = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.5
-					},
+					MyColor = { r = 0, g = 1, b = 0, a = 0.5 },
 				},
 			},
 			Castbar = {
@@ -1961,75 +1299,27 @@ module.defaults = {
 				Border = {
 					Texture = "glow",
 					Thickness = 4,
-					Inset = {
-						left = 3,
-						right = 3,
-						top = 3,
-						bottom = 3,
-					},
+					Inset = { left = 3, right = 3, top = 3, bottom = 3 },
 				},
 				Colors = {
-					Bar = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
-					Background = {
-						r = 0.15,
-						g = 0.15,
-						b = 0.15,
-						a = 0.67,
-					},
-					Border = {
-						r = 0,
-						g = 0,
-						b = 0,
-						a = 0.7,
-					},
-					Shield = {
-						r = 0.5,
-						g = 0,
-						b = 0,
-						a = 0.1,
-					},
-					Name = {
-						r = 0.9,
-						g = 0.9,
-						b = 0.9,
-					},
-					Time = {
-						r = 0.9,
-						g = 0.9,
-						b = 0.9,
-					},
+					Bar = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
+					Background = { r = 0.15, g = 0.15, b = 0.15, a = 0.67 },
+					Border = { r = 0, g = 0, b = 0, a = 0.7 },
+					Shield = { r = 0.5, g = 0, b = 0, a = 0.1 },
+					Name = { r = 0.9, g = 0.9, b = 0.9 },
+					Time = { r = 0.9, g = 0.9, b = 0.9 },
 				},
 				Shield = {
 					Enable = true,
 					Text = true,
 					IndividualColor = false,
-					BarColor = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
+					BarColor = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
 					IndividualBorder = true,
-					Color = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
+					Color = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
 					Border = false,
 					Texture = "glow",
 					Thickness = 4,
-					Inset = {
-						left = 3,
-						right = 3,
-						top = 3,
-						bottom = 3,
-					},
+					Inset = { left = 3, right = 3, top = 3, bottom = 3 },
 				},
 			},
 			Aura = {
@@ -2077,42 +1367,11 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Lootmaster = {
-					Enable = false,
-					Size = 15,
-					X = 16,
-					Y = 0,
-					Point = "TOPLEFT",
-				},
-				Leader = {
-					Enable = false,
-					Size = 17,
-					X = 0,
-					Y = 0,
-					Point = "TOPLEFT",
-				},
-				Role = {
-					Enable = false,
-					Size = 22,
-					X = 15,
-					Y = 10,
-					Point = "TOPRIGHT",
-				},
-				Raid = {
-					Enable = true,
-					Size = 55,
-					X = 0,
-					Y = 0,
-					Point = "CENTER",
-				},
-				PvP = {
-					Enable = false,
-					Size = 35,
-					X = -12,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
+			Indicators = {
+				Leader = { Enable = false, Size = 17, X = 0, Y = 0, Point = "TOPLEFT" },
+				Role = { Enable = false, Size = 22, X = 15, Y = 10, Point = "TOPRIGHT" },
+				Raid = { Enable = true, Size = 55, X = 0, Y = 0, Point = "CENTER" },
+				PvP = { Enable = false, Size = 35, X = -12, Y = 10, Point = "TOPLEFT" },
 			},
 			Texts = {
 				Name = {
@@ -2121,11 +1380,7 @@ module.defaults = {
 					Size = 15,
 					X = 5,
 					Y = 0,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "LEFT",
 					RelativePoint = "LEFT",
@@ -2145,11 +1400,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -2165,11 +1416,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -2183,11 +1430,7 @@ module.defaults = {
 					Y = 0,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -2202,11 +1445,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -2220,11 +1459,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -2239,11 +1474,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -2303,33 +1534,13 @@ module.defaults = {
 				Aggro = false,
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -2344,11 +1555,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = true,
@@ -2363,11 +1570,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -2377,38 +1580,18 @@ module.defaults = {
 					Y = -42,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 0.5,
-						b = 0,
-						a = 0.25
-					},
-					OtherColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.25
-					},
+					MyColor = { r = 0, g = 0.5, b = 0, a = 0.25 },
+					OtherColor = { r = 0, g = 1, b = 0, a = 0.25 },
 				},
 				TotalAbsorb = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.5
-					},
+					MyColor = { r = 0, g = 1, b = 0, a = 0.5 },
 				},
 			},
 			Aura = {
@@ -2481,75 +1664,27 @@ module.defaults = {
 				Border = {
 					Texture = "glow",
 					Thickness = 4,
-					Inset = {
-						left = 3,
-						right = 3,
-						top = 3,
-						bottom = 3,
-					},
+					Inset = { left = 3, right = 3, top = 3, bottom = 3 },
 				},
 				Colors = {
-					Bar = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
-					Background = {
-						r = 0.15,
-						g = 0.15,
-						b = 0.15,
-						a = 0.67,
-					},
-					Border = {
-						r = 0,
-						g = 0,
-						b = 0,
-						a = 0.7,
-					},
-					Shield = {
-						r = 0.5,
-						g = 0,
-						b = 0,
-						a = 0.1,
-					},
-					Name = {
-						r = 0.9,
-						g = 0.9,
-						b = 0.9,
-					},
-					Time = {
-						r = 0.9,
-						g = 0.9,
-						b = 0.9,
-					},
+					Bar = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
+					Background = { r = 0.15, g = 0.15, b = 0.15, a = 0.67 },
+					Border = { r = 0, g = 0, b = 0, a = 0.7 },
+					Shield = { r = 0.5, g = 0, b = 0, a = 0.1 },
+					Name = { r = 0.9, g = 0.9, b = 0.9 },
+					Time = { r = 0.9, g = 0.9, b = 0.9 },
 				},
 				Shield = {
 					Enable = true,
 					Text = true,
 					IndividualColor = false,
-					BarColor = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
+					BarColor = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
 					IndividualBorder = true,
-					Color = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
+					Color = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
 					Border = false,
 					Texture = "glow",
 					Thickness = 4,
-					Inset = {
-						left = 3,
-						right = 3,
-						top = 3,
-						bottom = 3,
-					},
+					Inset = { left = 3, right = 3, top = 3, bottom = 3 },
 				},
 			},
 			Portrait = {
@@ -2560,49 +1695,12 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Lootmaster = {
-					Enable = true,
-					Size = 16,
-					X = 17,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
-				Leader = {
-					Enable = true,
-					Size = 17,
-					X = 0,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
-				Role = {
-					Enable = true,
-					Size = 22,
-					X = 15,
-					Y = 10,
-					Point = "TOPRIGHT",
-				},
-				Raid = {
-					Enable = true,
-					Size = 55,
-					X = 0,
-					Y = 10,
-					Point = "CENTER",
-				},
-				PvP = {
-					Enable = false,
-					Size = 35,
-					X = -12,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
-				ReadyCheck = {
-					Enable = true,
-					Size = 20,
-					X = 0,
-					Y = 0,
-					Point = "CENTER",
-				},
+			Indicators = {
+				Leader = { Enable = true, Size = 17, X = 0, Y = 10, Point = "TOPLEFT" },
+				Role = { Enable = true, Size = 22, X = 15, Y = 10, Point = "TOPRIGHT" },
+				Raid = { Enable = true, Size = 55, X = 0, Y = 10, Point = "CENTER" },
+				PvP = { Enable = false, Size = 35, X = -12, Y = 10, Point = "TOPLEFT" },
+				ReadyCheck = { Enable = true, Size = 20, X = 0, Y = 0, Point = "CENTER" },
 			},
 			Texts = {
 				Name = {
@@ -2611,11 +1709,7 @@ module.defaults = {
 					Size = 19,
 					X = 0,
 					Y = -20,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "OUTLINE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -2635,11 +1729,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -2655,11 +1745,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -2673,11 +1759,7 @@ module.defaults = {
 					Y = 6,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -2692,11 +1774,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -2710,11 +1788,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -2729,11 +1803,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -2770,33 +1840,13 @@ module.defaults = {
 				Aggro = false,
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -2811,11 +1861,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = false,
@@ -2830,11 +1876,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -2844,38 +1886,18 @@ module.defaults = {
 					Y = -36,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 0.5,
-						b = 0,
-						a = 0.25
-					},
-					OtherColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.25
-					},
+					MyColor = { r = 0, g = 0.5, b = 0, a = 0.25 },
+					OtherColor = { r = 0, g = 1, b = 0, a = 0.25 },
 				},
 				TotalAbsorb = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.5
-					},
+					MyColor = { r = 0, g = 1, b = 0, a = 0.5 },
 				},
 			},
 			Aura = {
@@ -2923,14 +1945,8 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Raid = {
-					Enable = true,
-					Size = 55,
-					X = 0,
-					Y = 0,
-					Point = "CENTER",
-				},
+			Indicators = {
+				Raid = { Enable = true, Size = 55, X = 0, Y = 0, Point = "CENTER" },
 			},
 			Texts = {
 				Name = {
@@ -2939,11 +1955,7 @@ module.defaults = {
 					Size = 15,
 					X = 0,
 					Y = 0,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -2963,11 +1975,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -2983,11 +1991,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -3001,11 +2005,7 @@ module.defaults = {
 					Y = 0,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -3020,11 +2020,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -3038,11 +2034,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -3057,11 +2049,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -3084,33 +2072,13 @@ module.defaults = {
 				Target = true,
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -3125,11 +2093,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = true,
@@ -3144,11 +2108,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -3158,38 +2118,18 @@ module.defaults = {
 					Y = -38,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 0.5,
-						b = 0,
-						a = 0.25
-					},
-					OtherColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.25
-					},
+					MyColor = { r = 0, g = 0.5, b = 0, a = 0.25 },
+					OtherColor = { r = 0, g = 1, b = 0, a = 0.25 },
 				},
 				TotalAbsorb = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.5
-					},
+					MyColor = { r = 0, g = 1, b = 0, a = 0.5 },
 				},
 			},
 			CornerAura = {
@@ -3209,53 +2149,18 @@ module.defaults = {
 				Y = 0,
 				Alpha = 0.5,
 			},
-			Icons = {
-				Lootmaster = {
-					Enable = false,
-					Size = 12,
-					X = 14,
-					Y = 4,
-					Point = "TOPLEFT",
-				},
-				Leader = {
-					Enable = false,
-					Size = 14,
-					X = 0,
-					Y = 4,
-					Point = "TOPLEFT",
-				},
-				Role = {
-					Enable = false,
-					Size = 14,
-					X = 2,
-					Y = 2,
-					Point = "TOPRIGHT",
-				},
-				Raid = {
-					Enable = false,
-					Size = 14,
-					X = 0,
-					Y = 4,
-					Point = "CENTER",
-				},
-				ReadyCheck = {
-					Enable = true,
-					Size = 20,
-					X = 0,
-					Y = 0,
-					Point = "CENTER",
-				},
+			Indicators = {
+				Leader = { Enable = false, Size = 14, X = 0, Y = 4, Point = "TOPLEFT" },
+				Role = { Enable = false, Size = 14, X = 2, Y = 2, Point = "TOPRIGHT" },
+				Raid = { Enable = false, Size = 14, X = 0, Y = 4, Point = "CENTER" },
+				ReadyCheck = { Enable = true, Size = 20, X = 0, Y = 0, Point = "CENTER" },
 			},
 			Texts = {
 				Name = {
 					Enable = true,
 					Font = "Prototype",
 					Size = 12,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Format = "Name",
 					Length = "Medium",
@@ -3271,11 +2176,7 @@ module.defaults = {
 					Y = 0,
 					Color = "By Class",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -3291,11 +2192,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "BOTTOM",
@@ -3309,11 +2206,7 @@ module.defaults = {
 					Y = 0,
 					Color = "By Class",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -3328,11 +2221,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "BOTTOM",
@@ -3346,11 +2235,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 1, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -3365,11 +2250,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0.75,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0.75, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "BOTTOM",
@@ -3391,33 +2272,13 @@ module.defaults = {
 			Border = {
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -3432,11 +2293,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = false,
@@ -3451,11 +2308,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -3465,12 +2318,7 @@ module.defaults = {
 					Y = -36,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
 			},
 			Aura = {
@@ -3543,75 +2391,27 @@ module.defaults = {
 				Border = {
 					Texture = "glow",
 					Thickness = 4,
-					Inset = {
-						left = 3,
-						right = 3,
-						top = 3,
-						bottom = 3,
-					},
+					Inset = { left = 3, right = 3, top = 3, bottom = 3 },
 				},
 				Colors = {
-					Bar = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
-					Background = {
-						r = 0.15,
-						g = 0.15,
-						b = 0.15,
-						a = 0.67,
-					},
-					Border = {
-						r = 0,
-						g = 0,
-						b = 0,
-						a = 0.7,
-					},
-					Shield = {
-						r = 0.5,
-						g = 0,
-						b = 0,
-						a = 0.1,
-					},
-					Name = {
-						r = 0.9,
-						g = 0.9,
-						b = 0.9,
-					},
-					Time = {
-						r = 0.9,
-						g = 0.9,
-						b = 0.9,
-					},
+					Bar = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
+					Background = { r = 0.15, g = 0.15, b = 0.15, a = 0.67 },
+					Border = { r = 0, g = 0, b = 0, a = 0.7 },
+					Shield = { r = 0.5, g = 0, b = 0, a = 0.1 },
+					Name = { r = 0.9, g = 0.9, b = 0.9 },
+					Time = { r = 0.9, g = 0.9, b = 0.9 },
 				},
 				Shield = {
 					Enable = true,
 					Text = true,
 					IndividualColor = false,
-					BarColor = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
+					BarColor = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
 					IndividualBorder = true,
-					Color = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
+					Color = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
 					Border = false,
 					Texture = "glow",
 					Thickness = 4,
-					Inset = {
-						left = 3,
-						right = 3,
-						top = 3,
-						bottom = 3,
-					},
+					Inset = { left = 3, right = 3, top = 3, bottom = 3 },
 				},
 			},
 			Portrait = {
@@ -3622,14 +2422,8 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Raid = {
-					Enable = true,
-					Size = 55,
-					X = 0,
-					Y = 0,
-					Point = "CENTER",
-				},
+			Indicators = {
+				Raid = { Enable = true, Size = 55, X = 0, Y = 0, Point = "CENTER" },
 			},
 			Texts = {
 				Name = {
@@ -3638,11 +2432,7 @@ module.defaults = {
 					Size = 15,
 					X = 0,
 					Y = 0,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -3662,11 +2452,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -3682,11 +2468,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -3700,11 +2482,7 @@ module.defaults = {
 					Y = 0,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -3719,11 +2497,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -3737,11 +2511,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -3756,11 +2526,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -3799,33 +2565,13 @@ module.defaults = {
 				Aggro = false,
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -3840,11 +2586,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = false,
@@ -3859,11 +2601,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -3873,38 +2611,18 @@ module.defaults = {
 					Y = -36,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 0.5,
-						b = 0,
-						a = 0.25
-					},
-					OtherColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.25
-					},
+					MyColor = { r = 0, g = 0.5, b = 0, a = 0.25 },
+					OtherColor = { r = 0, g = 1, b = 0, a = 0.25 },
 				},
 				TotalAbsorb = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.5
-					},
+					MyColor = { r = 0, g = 1, b = 0, a = 0.5 },
 				},
 			},
 			Aura = {
@@ -3952,42 +2670,11 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Lootmaster = {
-					Enable = false,
-					Size = 15,
-					X = 16,
-					Y = 0,
-					Point = "TOPLEFT",
-				},
-				Leader = {
-					Enable = false,
-					Size = 17,
-					X = 0,
-					Y = 0,
-					Point = "TOPLEFT",
-				},
-				Role = {
-					Enable = false,
-					Size = 22,
-					X = 15,
-					Y = 10,
-					Point = "TOPRIGHT",
-				},
-				Raid = {
-					Enable = false,
-					Size = 55,
-					X = 0,
-					Y = 0,
-					Point = "CENTER",
-				},
-				PvP = {
-					Enable = false,
-					Size = 35,
-					X = -12,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
+			Indicators = {
+				Leader = { Enable = false, Size = 17, X = 0, Y = 0, Point = "TOPLEFT" },
+				Role = { Enable = false, Size = 22, X = 15, Y = 10, Point = "TOPRIGHT" },
+				Raid = { Enable = false, Size = 55, X = 0, Y = 0, Point = "CENTER" },
+				PvP = { Enable = false, Size = 35, X = -12, Y = 10, Point = "TOPLEFT" },
 			},
 			Texts = {
 				Name = {
@@ -3996,11 +2683,7 @@ module.defaults = {
 					Size = 15,
 					X = 0,
 					Y = 0,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -4020,11 +2703,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -4040,11 +2719,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -4058,11 +2733,7 @@ module.defaults = {
 					Y = 0,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -4077,11 +2748,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -4095,11 +2762,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -4114,11 +2777,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -4157,33 +2816,13 @@ module.defaults = {
 			Border = {
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -4198,11 +2837,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = true,
@@ -4217,11 +2852,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -4231,12 +2862,7 @@ module.defaults = {
 					Y = -36,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
 			},
 			Aura = {
@@ -4309,75 +2935,27 @@ module.defaults = {
 				Border = {
 					Texture = "glow",
 					Thickness = 4,
-					Inset = {
-						left = 3,
-						right = 3,
-						top = 3,
-						bottom = 3,
-					},
+					Inset = { left = 3, right = 3, top = 3, bottom = 3 },
 				},
 				Colors = {
-					Bar = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
-					Background = {
-						r = 0.15,
-						g = 0.15,
-						b = 0.15,
-						a = 0.67,
-					},
-					Border = {
-						r = 0,
-						g = 0,
-						b = 0,
-						a = 0.7,
-					},
-					Shield = {
-						r = 0.5,
-						g = 0,
-						b = 0,
-						a = 0.1,
-					},
-					Name = {
-						r = 0.9,
-						g = 0.9,
-						b = 0.9,
-					},
-					Time = {
-						r = 0.9,
-						g = 0.9,
-						b = 0.9,
-					},
+					Bar = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
+					Background = { r = 0.15, g = 0.15, b = 0.15, a = 0.67 },
+					Border = { r = 0, g = 0, b = 0, a = 0.7 },
+					Shield = { r = 0.5, g = 0, b = 0, a = 0.1 },
+					Name = { r = 0.9, g = 0.9, b = 0.9 },
+					Time = { r = 0.9, g = 0.9, b = 0.9 },
 				},
 				Shield = {
 					Enable = true,
 					Text = true,
 					IndividualColor = false,
-					BarColor = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
+					BarColor = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
 					IndividualBorder = true,
-					Color = {
-						r = 0.13,
-						g = 0.59,
-						b = 1,
-						a = 0.68,
-					},
+					Color = { r = 0.13, g = 0.59, b = 1, a = 0.68 },
 					Border = false,
 					Texture = "glow",
 					Thickness = 4,
-					Inset = {
-						left = 3,
-						right = 3,
-						top = 3,
-						bottom = 3,
-					},
+					Inset = { left = 3, right = 3, top = 3, bottom = 3 },
 				},
 			},
 			Portrait = {
@@ -4395,11 +2973,7 @@ module.defaults = {
 					Size = 19,
 					X = 0,
 					Y = -20,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "OUTLINE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -4419,11 +2993,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -4439,11 +3009,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -4457,11 +3023,7 @@ module.defaults = {
 					Y = 6,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -4476,11 +3038,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -4494,11 +3052,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -4513,11 +3067,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -4553,33 +3103,13 @@ module.defaults = {
 			Border = {
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -4594,11 +3124,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = false,
@@ -4613,11 +3139,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -4627,12 +3149,7 @@ module.defaults = {
 					Y = -36,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
 			},
 			Aura = {
@@ -4687,11 +3204,7 @@ module.defaults = {
 					Size = 15,
 					X = 0,
 					Y = 0,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -4711,11 +3224,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -4731,11 +3240,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -4749,11 +3254,7 @@ module.defaults = {
 					Y = 0,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -4768,11 +3269,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -4786,11 +3283,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -4805,11 +3298,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -4829,33 +3318,13 @@ module.defaults = {
 			Border = {
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -4870,11 +3339,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = false,
@@ -4889,11 +3354,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -4903,12 +3364,7 @@ module.defaults = {
 					Y = -36,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
 			},
 			Portrait = {
@@ -4919,42 +3375,11 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Lootmaster = {
-					Enable = false,
-					Size = 15,
-					X = 16,
-					Y = 0,
-					Point = "TOPLEFT",
-				},
-				Leader = {
-					Enable = false,
-					Size = 17,
-					X = 0,
-					Y = 0,
-					Point = "TOPLEFT",
-				},
-				Role = {
-					Enable = false,
-					Size = 22,
-					X = 15,
-					Y = 10,
-					Point = "TOPRIGHT",
-				},
-				Raid = {
-					Enable = true,
-					Size = 55,
-					X = 0,
-					Y = 0,
-					Point = "CENTER",
-				},
-				PvP = {
-					Enable = false,
-					Size = 35,
-					X = -12,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
+			Indicators = {
+				Leader = { Enable = false, Size = 17, X = 0, Y = 0, Point = "TOPLEFT" },
+				Role = { Enable = false, Size = 22, X = 15, Y = 10, Point = "TOPRIGHT" },
+				Raid = { Enable = true, Size = 55, X = 0, Y = 0, Point = "CENTER" },
+				PvP = { Enable = false, Size = 35, X = -12, Y = 10, Point = "TOPLEFT" },
 			},
 			Texts = {
 				Name = {
@@ -4963,11 +3388,7 @@ module.defaults = {
 					Size = 15,
 					X = 0,
 					Y = 0,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -4987,11 +3408,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -5007,11 +3424,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -5025,11 +3438,7 @@ module.defaults = {
 					Y = 0,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -5044,11 +3453,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -5062,11 +3467,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -5081,11 +3482,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -5121,33 +3518,13 @@ module.defaults = {
 			Border = {
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -5162,11 +3539,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = false,
@@ -5181,11 +3554,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -5195,12 +3564,7 @@ module.defaults = {
 					Y = -36,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
 			},
 			Portrait = {
@@ -5211,14 +3575,8 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Raid = {
-					Enable = true,
-					Size = 55,
-					X = 0,
-					Y = 0,
-					Point = "CENTER",
-				},
+			Indicators = {
+				Raid = { Enable = true, Size = 55, X = 0, Y = 0, Point = "CENTER" },
 			},
 			Texts = {
 				Name = {
@@ -5227,11 +3585,7 @@ module.defaults = {
 					Size = 15,
 					X = 5,
 					Y = 1,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "LEFT",
 					RelativePoint = "LEFT",
@@ -5251,11 +3605,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -5271,11 +3621,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -5289,11 +3635,7 @@ module.defaults = {
 					Y = 6,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -5308,11 +3650,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -5326,11 +3664,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -5345,11 +3679,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -5368,33 +3698,13 @@ module.defaults = {
 			Border = {
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -5409,11 +3719,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.3,
-						g = 0.3,
-						b = 0.3,
-					},
+					IndividualColor = { r = 0.3, g = 0.3, b = 0.3 },
 				},
 				Power = {
 					Enable = false,
@@ -5428,11 +3734,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -5442,38 +3744,18 @@ module.defaults = {
 					Y = -36,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 0.5,
-						b = 0,
-						a = 0.25
-					},
-					OtherColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.25
-					},
+					MyColor = { r = 0, g = 0.5, b = 0, a = 0.25 },
+					OtherColor = { r = 0, g = 1, b = 0, a = 0.25 },
 				},
 				TotalAbsorb = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.5
-					},
+					MyColor = { r = 0, g = 1, b = 0, a = 0.5 },
 				},
 			},
 			Aura = {
@@ -5521,42 +3803,11 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Lootmaster = {
-					Enable = false,
-					Size = 15,
-					X = 16,
-					Y = 0,
-					Point = "TOPLEFT",
-				},
-				Leader = {
-					Enable = false,
-					Size = 17,
-					X = 0,
-					Y = 0,
-					Point = "TOPLEFT",
-				},
-				Role = {
-					Enable = false,
-					Size = 22,
-					X = 15,
-					Y = 10,
-					Point = "TOPRIGHT",
-				},
-				Raid = {
-					Enable = true,
-					Size = 55,
-					X = 0,
-					Y = 0,
-					Point = "CENTER",
-				},
-				PvP = {
-					Enable = false,
-					Size = 35,
-					X = -12,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
+			Indicators = {
+				Leader = { Enable = false, Size = 17, X = 0, Y = 0, Point = "TOPLEFT" },
+				Role = { Enable = false, Size = 22, X = 15, Y = 10, Point = "TOPRIGHT" },
+				Raid = { Enable = true, Size = 55, X = 0, Y = 0, Point = "CENTER" },
+				PvP = { Enable = false, Size = 35, X = -12, Y = 10, Point = "TOPLEFT" },
 			},
 			Texts = {
 				Name = {
@@ -5565,11 +3816,7 @@ module.defaults = {
 					Size = 15,
 					X = 5,
 					Y = 0,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "LEFT",
 					RelativePoint = "LEFT",
@@ -5589,11 +3836,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -5609,11 +3852,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -5627,11 +3866,7 @@ module.defaults = {
 					Y = 0,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -5646,11 +3881,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -5664,11 +3895,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -5683,11 +3910,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -5723,33 +3946,13 @@ module.defaults = {
 			Border = {
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -5764,11 +3967,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = false,
@@ -5783,11 +3982,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -5797,12 +3992,7 @@ module.defaults = {
 					Y = -36,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
 			},
 			Portrait = {
@@ -5820,11 +4010,7 @@ module.defaults = {
 					Size = 15,
 					X = 5,
 					Y = 1,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "LEFT",
 					RelativePoint = "LEFT",
@@ -5844,11 +4030,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -5864,11 +4046,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -5882,11 +4060,7 @@ module.defaults = {
 					Y = 6,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -5901,11 +4075,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -5919,11 +4089,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -5938,11 +4104,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -5961,33 +4123,13 @@ module.defaults = {
 			Border = {
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -6002,11 +4144,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = false,
@@ -6021,11 +4159,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -6035,12 +4169,7 @@ module.defaults = {
 					Y = -36,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
 			},
 			Portrait = {
@@ -6051,14 +4180,8 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Raid = {
-					Enable = false,
-					Size = 55,
-					X = 0,
-					Y = 0,
-					Point = "CENTER",
-				},
+			Indicators = {
+				Raid = { Enable = false, Size = 55, X = 0, Y = 0, Point = "CENTER" },
 			},
 			Texts = {
 				Name = {
@@ -6067,11 +4190,7 @@ module.defaults = {
 					Size = 15,
 					X = 0,
 					Y = 0,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -6091,11 +4210,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -6111,11 +4226,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -6129,11 +4240,7 @@ module.defaults = {
 					Y = 0,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -6148,11 +4255,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -6166,11 +4269,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -6185,11 +4284,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -6208,33 +4303,13 @@ module.defaults = {
 			Border = {
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -6249,11 +4324,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = false,
@@ -6268,11 +4339,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -6282,12 +4349,7 @@ module.defaults = {
 					Y = -36,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
 			},
 			Portrait = {
@@ -6305,11 +4367,7 @@ module.defaults = {
 					Size = 15,
 					X = 5,
 					Y = 1,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "LEFT",
 					RelativePoint = "LEFT",
@@ -6329,11 +4387,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -6349,11 +4403,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -6367,11 +4417,7 @@ module.defaults = {
 					Y = 6,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -6386,11 +4432,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -6404,11 +4446,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -6423,11 +4461,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -6446,33 +4480,13 @@ module.defaults = {
 			Border = {
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -6487,11 +4501,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.3,
-						g = 0.3,
-						b = 0.3,
-					},
+					IndividualColor = { r = 0.3, g = 0.3, b = 0.3 },
 				},
 				Power = {
 					Enable = false,
@@ -6506,11 +4516,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -6520,38 +4526,18 @@ module.defaults = {
 					Y = -31,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
-				HealPrediction = {
+				HealthPrediction = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 0.5,
-						b = 0,
-						a = 0.25
-					},
-					OtherColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.25
-					},
+					MyColor = { r = 0, g = 0.5, b = 0, a = 0.25 },
+					OtherColor = { r = 0, g = 1, b = 0, a = 0.25 },
 				},
 				TotalAbsorb = {
 					Enable = false,
 					Texture = "LUI_Gradient",
-					MyColor = {
-						r = 0,
-						g = 1,
-						b = 0,
-						a = 0.5
-					},
+					MyColor = { r = 0, g = 1, b = 0, a = 0.5 },
 				},
 			},
 			Aura = {
@@ -6599,42 +4585,11 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Lootmaster = {
-					Enable = false,
-					Size = 15,
-					X = 16,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
-				Leader = {
-					Enable = false,
-					Size = 17,
-					X = 0,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
-				Role = {
-					Enable = false,
-					Size = 22,
-					X = 15,
-					Y = 10,
-					Point = "TOPRIGHT",
-				},
-				Raid = {
-					Enable = true,
-					Size = 55,
-					X = 0,
-					Y = 0,
-					Point = "CENTER",
-				},
-				PvP = {
-					Enable = false,
-					Size = 35,
-					X = -12,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
+			Indicators = {
+				Leader = { Enable = false, Size = 17, X = 0, Y = 10, Point = "TOPLEFT" },
+				Role = { Enable = false, Size = 22, X = 15, Y = 10, Point = "TOPRIGHT" },
+				Raid = { Enable = true, Size = 55, X = 0, Y = 0, Point = "CENTER" },
+				PvP = { Enable = false, Size = 35, X = -12, Y = 10, Point = "TOPLEFT" },
 			},
 			Texts = {
 				Name = {
@@ -6643,11 +4598,7 @@ module.defaults = {
 					Size = 15,
 					X = 5,
 					Y = 0,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "LEFT",
 					RelativePoint = "LEFT",
@@ -6667,11 +4618,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -6687,11 +4634,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -6705,11 +4648,7 @@ module.defaults = {
 					Y = 0,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -6724,11 +4663,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -6742,11 +4677,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -6761,11 +4692,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -6817,33 +4744,13 @@ module.defaults = {
 			Border = {
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -6858,11 +4765,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.3,
-						g = 0.3,
-						b = 0.3,
-					},
+					IndividualColor = { r = 0.3, g = 0.3, b = 0.3 },
 				},
 				Power = {
 					Enable = false,
@@ -6877,11 +4780,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -6891,12 +4790,7 @@ module.defaults = {
 					Y = -36,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
 			},
 			Aura = {
@@ -6944,42 +4838,11 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Lootmaster = {
-					Enable = false,
-					Size = 15,
-					X = 16,
-					Y = 0,
-					Point = "TOPLEFT",
-				},
-				Leader = {
-					Enable = false,
-					Size = 17,
-					X = 0,
-					Y = 0,
-					Point = "TOPLEFT",
-				},
-				Role = {
-					Enable = false,
-					Size = 22,
-					X = 15,
-					Y = 10,
-					Point = "TOPRIGHT",
-				},
-				Raid = {
-					Enable = true,
-					Size = 55,
-					X = 0,
-					Y = 0,
-					Point = "CENTER",
-				},
-				PvP = {
-					Enable = false,
-					Size = 35,
-					X = -12,
-					Y = 10,
-					Point = "TOPLEFT",
-				},
+			Indicators = {
+				Leader = { Enable = false, Size = 17, X = 0, Y = 0, Point = "TOPLEFT" },
+				Role = { Enable = false, Size = 22, X = 15, Y = 10, Point = "TOPRIGHT" },
+				Raid = { Enable = true, Size = 55, X = 0, Y = 0, Point = "CENTER" },
+				PvP = { Enable = false, Size = 35, X = -12, Y = 10, Point = "TOPLEFT" },
 			},
 			Texts = {
 				Name = {
@@ -6988,11 +4851,7 @@ module.defaults = {
 					Size = 15,
 					X = 5,
 					Y = 0,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "LEFT",
 					RelativePoint = "LEFT",
@@ -7012,11 +4871,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -7032,11 +4887,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -7050,11 +4901,7 @@ module.defaults = {
 					Y = 0,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -7069,11 +4916,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -7087,11 +4930,7 @@ module.defaults = {
 					Color = "Individual",
 					ShortValue = true,
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -7106,11 +4945,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -7146,33 +4981,13 @@ module.defaults = {
 			Border = {
 				EdgeFile = "glow",
 				EdgeSize = 5,
-				Insets = {
-					Left = 3,
-					Right = 3,
-					Top = 3,
-					Bottom = 3,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Insets = { Left = 3, Right = 3, Top = 3, Bottom = 3 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Backdrop = {
 				Texture = "Blizzard Tooltip",
-				Padding = {
-					Left = -4,
-					Right = 4,
-					Top = 4,
-					Bottom = -4,
-				},
-				Color = {
-					r = 0,
-					g = 0,
-					b = 0,
-					a = 1,
-				},
+				Padding = { Left = -4, Right = 4, Top = 4, Bottom = -4 },
+				Color = { r = 0, g = 0, b = 0, a = 1 },
 			},
 			Bars = {
 				Health = {
@@ -7187,11 +5002,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.25,
-						g = 0.25,
-						b = 0.25,
-					},
+					IndividualColor = { r = 0.25, g = 0.25, b = 0.25 },
 				},
 				Power = {
 					Enable = false,
@@ -7206,11 +5017,7 @@ module.defaults = {
 					BGMultiplier = 0.4,
 					BGInvert = false,
 					Smooth = true,
-					IndividualColor = {
-						r = 0.8,
-						g = 0.8,
-						b = 0.8,
-					},
+					IndividualColor = { r = 0.8, g = 0.8, b = 0.8 },
 				},
 				Full = {
 					Enable = false,
@@ -7220,12 +5027,7 @@ module.defaults = {
 					Y = -36,
 					Texture = "LUI_Minimalist",
 					Alpha = 1,
-					IndividualColor = {
-						r = 0.11,
-						g = 0.11,
-						b = 0.11,
-						a = 1,
-					},
+					IndividualColor = { r = 0.11, g = 0.11, b = 0.11, a = 1 },
 				},
 			},
 			Portrait = {
@@ -7236,14 +5038,8 @@ module.defaults = {
 				Y = 0,
 				Alpha = 1,
 			},
-			Icons = {
-				Raid = {
-					Enable = true,
-					Size = 55,
-					X = 0,
-					Y = 0,
-					Point = "CENTER",
-				},
+			Indicators = {
+				Raid = { Enable = true, Size = 55, X = 0, Y = 0, Point = "CENTER" },
 			},
 			Texts = {
 				Name = {
@@ -7252,11 +5048,7 @@ module.defaults = {
 					Size = 15,
 					X = 0,
 					Y = 0,
-					IndividualColor = {
-						r = 1,
-						g = 1,
-						b = 1,
-					},
+					IndividualColor = { r = 1, g = 1, b = 1 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -7276,11 +5068,7 @@ module.defaults = {
 					Y = -43,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -7296,11 +5084,7 @@ module.defaults = {
 					Color = "By Class",
 					ShowFull = true,
 					ShowEmpty = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "BOTTOMLEFT",
 					RelativePoint = "BOTTOMRIGHT",
@@ -7314,11 +5098,7 @@ module.defaults = {
 					Y = 0,
 					Color = "Individual",
 					ShowAlways = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -7333,11 +5113,7 @@ module.defaults = {
 					Color = "Individual",
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "CENTER",
 					RelativePoint = "CENTER",
@@ -7350,11 +5126,7 @@ module.defaults = {
 					Y = 0,
 					Color = "Individual",
 					ShortValue = true,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -7369,11 +5141,7 @@ module.defaults = {
 					ShortValue = true,
 					ShowFull = false,
 					ShowEmpty = false,
-					IndividualColor = {
-						r = 0,
-						g = 0,
-						b = 0,
-					},
+					IndividualColor = { r = 0, g = 0, b = 0 },
 					Outline = "NONE",
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -7537,7 +5305,7 @@ function module:LoadOptions()
 		Settings = self:CreateSettings(2),
 		Colors = self:CreateColorOptions(3),
 		Layout = self:CreateImportExportOptions(4),
-		XP_Rep = self:CreateXpRepOptions(5),
+		-- XP_Rep = self:CreateXpRepOptions(5),
 	}
 
 	for index, unit in pairs(units) do
