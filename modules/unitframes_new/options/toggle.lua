@@ -1053,6 +1053,7 @@ module.ApplySettings = function(unit)
 				end
 			end
 
+			LUI.Profiler.TraceScope(frame, unit, "Unitframes", 2)
 			frame:UpdateAllElements('refreshUnit')
 		end
 	end

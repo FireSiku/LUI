@@ -1216,5 +1216,6 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	LUI.Profiler.TraceScope(module, "Micromenu", "LUI", 2)
 	self:SetMicroMenu()
 end

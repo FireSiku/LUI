@@ -245,6 +245,9 @@ function LUI:RegisterModule(module, dev_skipDB)
 		--end
 	end
 
+	--Add the module to the LUI Profiler
+	LUI.Profiler.TraceScope(module, mName, "LUI", 2)
+
 	-- To remove when all modules transitioned to new options menu
 	module.registered = true
 end

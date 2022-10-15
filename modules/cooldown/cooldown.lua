@@ -8,7 +8,6 @@
 local addonname, LUI = ...
 local module = LUI:NewModule("Cooldown", "LUIDevAPI", "AceHook-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
-local Profiler = LUI.Profiler
 
 -- Database and defaults shortcuts.
 local db, dbd --luacheck: ignore
@@ -378,6 +377,7 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	LUI.Profiler.TraceScope(module, "Cooldown", "LUI", 2)
 	module:UpdateVars()
 
 	initTimer()

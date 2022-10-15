@@ -818,6 +818,7 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	LUI.Profiler.TraceScope(module, "Tooltip", "LUI", 2)
 	self:SetTooltip()
 end
 
