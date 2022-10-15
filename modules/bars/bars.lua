@@ -2098,6 +2098,7 @@ function module:PLAYER_SPECIALIZATION_CHANGED()
 end
 
 function module:OnEnable()
+	LUI.Profiler.TraceScope(module, "Bars", "LUI", 2)
 	module:SetBars()
 
 	--- This one needed to be delayed until all addons are loaded.

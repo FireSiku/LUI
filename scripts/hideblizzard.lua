@@ -282,3 +282,5 @@ function Blizzard:IsHideable(type)
 
 	return hide[type:lower()] ~= nil
 end
+
+LUI.Profiler.TraceScope(Blizzard, "HideBlizzard", "LUI", 2)

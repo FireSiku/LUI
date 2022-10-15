@@ -5327,6 +5327,7 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	LUI.Profiler.TraceScope(module, "Unitframes", "LUI", 2)
 	for _, unit in pairs(unitsSpawn) do module.ToggleUnit(unit) end
 end
 

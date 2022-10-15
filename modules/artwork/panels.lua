@@ -1480,6 +1480,7 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	LUI.Profiler.TraceScope(module, "Panels", "LUI", 2)
 	ThemesDB = LUI:GetModule("Themes").db.profile
 
 	if db.MicroMenu.AlwaysShow then db.MicroMenu.IsShown = true end

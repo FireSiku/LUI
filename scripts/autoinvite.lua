@@ -101,6 +101,7 @@ function script:CHAT_MSG_WHISPER(event, message, sender)
 end
 
 function script:PLAYER_ENTERING_WORLD(event)
+	LUI.Profiler.TraceScope(script, "AutoInvite", "LUI", 2)
 	script:SetAutoInvite()
 	script:SetAutoAccept()
 end

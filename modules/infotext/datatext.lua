@@ -4126,6 +4126,8 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	LUI.Profiler.TraceScope(module, "Datatext", "LUI", 2)
+
 	SetInfoTextFrames()
 	EnableStat("Bags")
 	EnableStat("Clock")
@@ -4144,6 +4146,10 @@ function module:OnEnable()
 	EnableStat("LootSpec")
 	EnableStat("MoveSpeed")
 	EnableStat("Mail")
+
+	for stat in pairs(InfoStats) do
+		LUI.Profiler.TraceScope(InfoStats[stat], stat, "Datatext", 2)
+	end
 end
 
 function module:OnDisable()

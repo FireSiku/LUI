@@ -22,8 +22,6 @@ local MIRRORTIMER_NUMTIMERS = _G.MIRRORTIMER_NUMTIMERS
 
 local PAUSED
 
-local Profiler = LUI.Profiler
-Profiler.TraceScope(module, "Mirror Bar", "LUI")
 
 -- ####################################################################################################################
 -- ##### Default Settings #############################################################################################

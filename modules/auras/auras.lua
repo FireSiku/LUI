@@ -753,6 +753,7 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	LUI.Profiler.TraceScope(module, "Auras", "LUI", 2)
 	LUI.Blizzard:Hide("aura")
 
 	self:NewAuraHeader("Buffs", true)
