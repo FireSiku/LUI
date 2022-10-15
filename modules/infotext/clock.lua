@@ -11,6 +11,7 @@ local L = LUI.L
 ---@type InfotextModule
 local module = LUI:GetModule("Infotext")
 local element = module:NewElement("Clock", "AceEvent-3.0", "AceHook-3.0")
+LUI.Profiler.TraceScope(module, "Clock", "Infotext", 2)
 
 -- local copies
 local gsub, format, tonumber, date = gsub, format, tonumber, date

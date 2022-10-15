@@ -894,13 +894,12 @@ end
 
 function module:OnInitialize()
 	db, dbd = LUI:Namespace(self, true)
+	LUI.Profiler.TraceScope(module, "Chat", "LUI", 2)
 
 	local disabled = not self.enabledState
 	for name, module in self:IterateModules() do
-		---[[	PROFILER
 		-- Add Chat module functions to the profiler.
-		LUI.Profiler.TraceScope(module, name, "LUI.Chat")
-		--]]
+		LUI.Profiler.TraceScope(module, name, "Chat", 2)
 
 		if disabled then
 			module:SetEnabledState(false)
@@ -911,6 +910,7 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	
 	Media.RegisterCallback(self, "LibSharedMedia_Registered")
 
 	if createStaticPopups then
@@ -961,8 +961,3 @@ function module:OnDisable()
 		ChatFrame_RemoveMessageEventFilter(event, urlFilterFunc)
 	end
 end
-
----[[	PROFILER
--- Add Chat module functions to the profiler.
-LUI.Profiler.TraceScope(module, "Chat", "LUI")
---]]

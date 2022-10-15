@@ -1378,3 +1378,7 @@ function module:OnInitialize()
 
 	self:CheckTheme()
 end
+
+function module:OnEnable()
+	LUI.Profiler.TraceScope(module, "Themes", "LUI", 2)
+end

@@ -12,14 +12,11 @@
 -- ####################################################################################################################
 local _, LUI = ...
 local module = LUI:NewModule("RemoveThatBuff", "LUIDevAPI")
-local Profiler = LUI.Profiler
 
 -- ####################################################################################################################
 -- ##### Database and defaults shortcuts ##############################################################################
 -- ####################################################################################################################
 local db
-
-Profiler.TraceScope(module, "RemoveThatBuff", "LUI")
 
 local InCombatLockdown = _G.InCombatLockdown
 local CancelUnitBuff = _G.CancelUnitBuff
@@ -121,6 +118,7 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	LUI.Profiler.TraceScope(module, "RemoveThatBuff", "LUI", 2)
 	self:RegisterEvent("UNIT_AURA")
 end
 

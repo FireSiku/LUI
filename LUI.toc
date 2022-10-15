@@ -18,10 +18,10 @@ api\oUF11\ouf.xml
 ### Core + API ###\
 init.lua
 api\curse.lua
+api\profiler.lua
 api\modapi.lua
 api\colors.lua
 api\utils.lua
-api\profiler.lua
 api\debug.lua
 api\outofcombatwrapper.lua
 api\devapi.lua

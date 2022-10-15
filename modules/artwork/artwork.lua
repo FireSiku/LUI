@@ -10,12 +10,9 @@
 -- External references.
 local addonname, LUI = ...
 local module = LUI:NewModule("Artwork", "LUIDevAPI")
-local Profiler = LUI.Profiler
 
 local db, dbd --luacheck:ignore
 local ToggleArt
-
-Profiler.TraceScope(module, "Artwork", "LUI")
 
 --	Defaults
 module.defaults = {
@@ -214,6 +211,7 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	LUI.Profiler.TraceScope(module, "Artwork", "LUI", 2)
 	ToggleArt()
 end
 

@@ -1489,6 +1489,7 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
+	LUI.Profiler.TraceScope(module, "Bags", "LUI", 2)
 
 	module:RegisterEvent("BANKFRAME_OPENED")
 	module:RegisterEvent("BANKFRAME_CLOSED")
