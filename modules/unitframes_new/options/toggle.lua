@@ -853,7 +853,6 @@ module.ApplySettings = function(unit)
 			-- bars
 			module.funcs.Health(frame, frame.__unit, module.db[unit])
 			module.funcs.Power(frame, frame.__unit, module.db[unit])
-			module.funcs.Full(frame, frame.__unit, module.db[unit])
 			module.funcs.FrameBackdrop(frame, frame.__unit, module.db[unit])
 
 			-- texts

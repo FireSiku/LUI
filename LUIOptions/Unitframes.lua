@@ -5,7 +5,7 @@
 ---@type string, Opt
 local optName, Opt = ...
 local L, module, db = Opt:GetLUIModule("Unitframes")
-if not module or not module.registered then return end
+if not module then return end
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -28,7 +28,7 @@ Opt.options.args.Unitframes.args.Header = Opt:Header("Unitframes", 1)
 local function UnitFontMenuGetter(info)
     local unit = info[2]
     local fontName = info[3]
-	local dbUnit = info.handler.db.profile.Units[unit]
+	local dbUnit = info.handler.db.profile[unit]
 	local prop = info[#info]
 	
 	return dbUnit.Fonts[fontName][prop]
@@ -37,7 +37,7 @@ end
 local function UnitFontMenuSetter(info, value)
 	local unit = info[2]
     local fontName = info[3]
-	local dbUnit = info.handler.db.profile.Units[unit]
+	local dbUnit = info.handler.db.profile[unit]
 	local prop = info[#info]
 
 	dbUnit.Fonts[fontName][prop] = value
@@ -97,7 +97,8 @@ end
 
 local function NewUnitOptionGroup(unit, order)
     local isPlayer = (unit == "player")
-    local dbUnit = db.Units[unit]
+    local dbUnit = db[unit]
+    LUI:Print(db, unit, db[unit])
 
     local unitOptions = Opt:Group(unit, nil, order, "tree")
     unitOptions.args.General = Opt:Group("General", nil, 1, nil, nil, nil, Opt.GetSet(dbUnit))
@@ -186,8 +187,8 @@ local function NewUnitOptionGroup(unit, order)
     return unitOptions
 end
 
-for i = 1, #module.unitSpawns do
-    local unit = module.unitSpawns[i]
+for i = 1, #module.unitsSpawn do
+    local unit = module.unitsSpawn[i]
     Opt.options.args.Unitframes.args[unit] = NewUnitOptionGroup(unit, i+10)
 end
 
