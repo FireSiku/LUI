@@ -61,13 +61,13 @@ local testframe = CreateFrame("Frame")
 local teststring = testframe:CreateFontString(nil, "OVERLAY")
 
 local function ShortenName(name)
-	teststring:SetFont(Media:Fetch("font", module.db.Raid.Texts.Name.Font), module.db.Raid.Texts.Name.Size, module.db.Raid.Texts.Name.Outline)
+	teststring:SetFont(Media:Fetch("font", module.db.raid.Texts.Name.Font), module.db.raid.Texts.Name.Size, module.db.raid.Texts.Name.Outline)
 	teststring:SetText(name)
 
 	if not nameCache[name] then nameCache[name] = {} end
 
 	local shortname = name
-	local maxwidth = module.db.Raid.Width * 0.9
+	local maxwidth = module.db.raid.Width * 0.9
 
 	local l = name:len()
 	while maxwidth < teststring:GetStringWidth() do
@@ -78,7 +78,7 @@ local function ShortenName(name)
 
 	nameCache[name][1] = shortname
 
-	maxwidth = ((module.db.Raid.Width * 5 - module.db.Raid.GroupPadding * 3) / 8) * 0.9
+	maxwidth = ((module.db.raid.Width * 5 - module.db.raid.GroupPadding * 3) / 8) * 0.9
 
 	while maxwidth < teststring:GetStringWidth() do
 		shortname = shortname:sub(1, l)
@@ -189,7 +189,7 @@ end
 
 oUF.Tags.Events["RaidName25"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
 oUF.Tags.Methods["RaidName25"] = function(unit, realunit)
-	if module.db and module.db.Raid.Texts.Name.ShowDead then
+	if module.db and module.db.raid.Texts.Name.ShowDead then
 		if not UnitIsConnected(unit) then
 			return "|cffD7BEA5<Offline>|r"
 		elseif UnitIsGhost(unit) then
@@ -207,7 +207,7 @@ end
 
 oUF.Tags.Events["RaidName40"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
 oUF.Tags.Methods["RaidName40"] = function(unit, realunit)
-	if module.db and module.db.Raid.Texts.Name.ShowDead then
+	if module.db and module.db.raid.Texts.Name.ShowDead then
 		if not UnitIsConnected(unit) then
 			return "|cffD7BEA5<Offline>|r"
 		elseif UnitIsGhost(unit) then
