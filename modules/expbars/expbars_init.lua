@@ -39,6 +39,7 @@ module.defaults = {
 		ShowRested = false,
 		ShowText = true,
 		ShowAzerite = true,
+		ShowGenesis = false,
 		Precision = 2,
 		TextX = -2,
 		TextY = 0,

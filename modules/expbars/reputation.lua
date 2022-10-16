@@ -24,7 +24,7 @@ local GetWatchedFactionInfo = _G.GetWatchedFactionInfo
 local C_Reputation = C_Reputation
 
 -- ####################################################################################################################
--- ##### ReputationDataProvider ##########################################################################################
+-- ##### ReputationDataProvider #######################################################################################
 -- ####################################################################################################################
 -- Blizzard store reputation in an interesting way.
 -- barMin represents the minimum bound for the current standing, barMax represents the maximum bound.
