@@ -225,10 +225,10 @@ local OverrideHealth = function(self, event, unit, powerType)
 	local color = module.colors.class[pToken] or {0.5, 0.5, 0.5}
 
 	if unit == "player" and entering == true then
-		if module.db.Player.Bars.Health.Color == "By Class" then
+		if module.db.player.Bars.Health.Color == "By Class" then
 			health:SetStatusBarColor(unpack(color))
-		elseif module.db.Player.Bars.Health.Color == "Individual" then
-			local indColor = module.db.Player.Bars.Health.IndividualColor
+		elseif module.db.player.Bars.Health.Color == "Individual" then
+			local indColor = module.db.player.Bars.Health.IndividualColor
 			health:SetStatusBarColor(indColor.r, indColor.g, indColor.b)
 		else
 			health:SetStatusBarColor(oUF.ColorGradient(min, max, module.colors.smooth()))
@@ -416,10 +416,10 @@ local OverridePower = function(self, event, unit)
 	-- local _, r, g, b = UnitAlternatePowerTextureInfo(unit, 2)
 
 	if unit == "player" and entering == true then
-		if module.db.Player.Bars.Power.Color == "By Class" then
+		if module.db.player.Bars.Power.Color == "By Class" then
 			power:SetStatusBarColor(unpack(color))
-		elseif module.db.Player.Bars.Power.Color == "Individual" then
-			power:SetStatusBarColor(module.db.Player.Bars.Power.IndividualColor.r, module.db.Player.Bars.Power.IndividualColor.g, module.db.Player.Bars.Power.IndividualColor.b)
+		elseif module.db.player.Bars.Power.Color == "Individual" then
+			power:SetStatusBarColor(module.db.player.Bars.Power.IndividualColor.r, module.db.player.Bars.Power.IndividualColor.g, module.db.player.Bars.Power.IndividualColor.b)
 		else
 			power:SetStatusBarColor(unpack(color2))
 		end
@@ -1875,14 +1875,14 @@ module.funcs = {
 			self.AlternativePower.bg:SetAllPoints(self.AlternativePower)
 
 			self.AlternativePower.SetPosition = function()
-				if not module.db.Player.Bars.AlternativePower.OverPower then return end
+				if not module.db.player.Bars.AlternativePower.OverPower then return end
 
 				if oUF_LUI_player.AlternativePower:IsShown() or (oUF_LUI_pet and oUF_LUI_pet.AlternativePower and oUF_LUI_pet.AlternativePower:IsShown()) then
-					oUF_LUI_player.Power:SetHeight(module.db.Player.Bars.Power.Height/2 - 1)
-					oUF_LUI_player.AlternativePower:SetHeight(module.db.Player.Bars.Power.Height/2 - 1)
+					oUF_LUI_player.Power:SetHeight(module.db.player.Bars.Power.Height/2 - 1)
+					oUF_LUI_player.AlternativePower:SetHeight(module.db.player.Bars.Power.Height/2 - 1)
 				else
-					oUF_LUI_player.Power:SetHeight(module.db.Player.Bars.Power.Height)
-					oUF_LUI_player.AlternativePower:SetHeight(module.db.Player.Bars.AlternativePower.Height)
+					oUF_LUI_player.Power:SetHeight(module.db.player.Bars.Power.Height)
+					oUF_LUI_player.AlternativePower:SetHeight(module.db.player.Bars.AlternativePower.Height)
 				end
 			end
 
@@ -1892,44 +1892,44 @@ module.funcs = {
 			end)
 			self.AlternativePower:SetScript("OnHide", self.AlternativePower.SetPosition)
 
-			self.AlternativePower.Text = SetFontString(self.AlternativePower, Media:Fetch("font", module.db.Player.Texts.AlternativePower.Font), module.db.Player.Texts.AlternativePower.Size, module.db.Player.Texts.AlternativePower.Outline)
+			self.AlternativePower.Text = SetFontString(self.AlternativePower, Media:Fetch("font", module.db.player.Texts.AlternativePower.Font), module.db.player.Texts.AlternativePower.Size, module.db.player.Texts.AlternativePower.Outline)
 		end
 
 		self.AlternativePower:ClearAllPoints()
 		if unit == "player" then
-			if module.db.Player.Bars.AlternativePower.OverPower then
+			if module.db.player.Bars.AlternativePower.OverPower then
 				self.AlternativePower:SetPoint("TOPLEFT", self.Power, "BOTTOMLEFT", 0, -2)
 				self.AlternativePower:SetPoint("TOPRIGHT", self.Power, "BOTTOMRIGHT", 0, -2)
 			else
-				self.AlternativePower:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.Player.Bars.AlternativePower.X, module.db.Player.Bars.AlternativePower.Y)
+				self.AlternativePower:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.player.Bars.AlternativePower.X, module.db.player.Bars.AlternativePower.Y)
 			end
 		else
 			self.AlternativePower:SetPoint("TOPLEFT", oUF_LUI_player.AlternativePower, "TOPLEFT", 0, 0)
 			self.AlternativePower:SetPoint("BOTTOMRIGHT", oUF_LUI_player.AlternativePower, "BOTTOMRIGHT", 0, 0)
 		end
 
-		self.AlternativePower:SetHeight(module.db.Player.Bars.AlternativePower.Height)
-		self.AlternativePower:SetWidth(module.db.Player.Bars.AlternativePower.Width)
-		self.AlternativePower:SetStatusBarTexture(Media:Fetch("statusbar", module.db.Player.Bars.AlternativePower.Texture))
+		self.AlternativePower:SetHeight(module.db.player.Bars.AlternativePower.Height)
+		self.AlternativePower:SetWidth(module.db.player.Bars.AlternativePower.Width)
+		self.AlternativePower:SetStatusBarTexture(Media:Fetch("statusbar", module.db.player.Bars.AlternativePower.Texture))
 
-		self.AlternativePower.bg:SetTexture(Media:Fetch("statusbar", module.db.Player.Bars.AlternativePower.TextureBG))
-		self.AlternativePower.bg:SetAlpha(module.db.Player.Bars.AlternativePower.BGAlpha)
-		self.AlternativePower.bg.multiplier = module.db.Player.Bars.AlternativePower.BGMultiplier
+		self.AlternativePower.bg:SetTexture(Media:Fetch("statusbar", module.db.player.Bars.AlternativePower.TextureBG))
+		self.AlternativePower.bg:SetAlpha(module.db.player.Bars.AlternativePower.BGAlpha)
+		self.AlternativePower.bg.multiplier = module.db.player.Bars.AlternativePower.BGMultiplier
 
-		self.AlternativePower.Smooth = module.db.Player.Bars.AlternativePower.Smooth
-		self.AlternativePower.color = module.db.Player.Bars.AlternativePower.Color
-		self.AlternativePower.colorIndividual = module.db.Player.Bars.AlternativePower.IndividualColor
+		self.AlternativePower.Smooth = module.db.player.Bars.AlternativePower.Smooth
+		self.AlternativePower.color = module.db.player.Bars.AlternativePower.Color
+		self.AlternativePower.colorIndividual = module.db.player.Bars.AlternativePower.IndividualColor
 		
-		self.AlternativePower.Text:SetFont(Media:Fetch("font", module.db.Player.Texts.AlternativePower.Font), module.db.Player.Texts.AlternativePower.Size, module.db.Player.Texts.AlternativePower.Outline)
+		self.AlternativePower.Text:SetFont(Media:Fetch("font", module.db.player.Texts.AlternativePower.Font), module.db.player.Texts.AlternativePower.Size, module.db.player.Texts.AlternativePower.Outline)
 		self.AlternativePower.Text:ClearAllPoints()
-		self.AlternativePower.Text:SetPoint("CENTER", self.AlternativePower, "CENTER", module.db.Player.Texts.AlternativePower.X, module.db.Player.Texts.AlternativePower.Y)
+		self.AlternativePower.Text:SetPoint("CENTER", self.AlternativePower, "CENTER", module.db.player.Texts.AlternativePower.X, module.db.player.Texts.AlternativePower.Y)
 
-		self.AlternativePower.Text.Enable = module.db.Player.Texts.AlternativePower.Enable
-		self.AlternativePower.Text.Format = module.db.Player.Texts.AlternativePower.Format
-		self.AlternativePower.Text.color = module.db.Player.Texts.AlternativePower.Color
-		self.AlternativePower.Text.colorIndividual = module.db.Player.Texts.AlternativePower.IndividualColor
+		self.AlternativePower.Text.Enable = module.db.player.Texts.AlternativePower.Enable
+		self.AlternativePower.Text.Format = module.db.player.Texts.AlternativePower.Format
+		self.AlternativePower.Text.color = module.db.player.Texts.AlternativePower.Color
+		self.AlternativePower.Text.colorIndividual = module.db.player.Texts.AlternativePower.IndividualColor
 
-		if module.db.Player.Texts.AlternativePower.Enable then
+		if module.db.player.Texts.AlternativePower.Enable then
 			self.AlternativePower.Text:Show()
 		else
 			self.AlternativePower.Text:Hide()
@@ -1993,7 +1993,7 @@ module.funcs = {
 			self.AdditionalPower:SetPoint("TOPRIGHT", self.Power, "BOTTOMRIGHT", 0, -2)
 		else
 			self.Power:SetHeight(oufdb.Bars.Power.Height)
-			self.AdditionalPower:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.Player.Bars.AdditionalPower.X, module.db.Player.Bars.AdditionalPower.Y)
+			self.AdditionalPower:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.player.Bars.AdditionalPower.X, module.db.player.Bars.AdditionalPower.Y)
 		end
 
 		self.AdditionalPower:SetHeight(oufdb.Bars.AdditionalPower.Height)
@@ -2016,7 +2016,7 @@ module.funcs = {
 		self.AdditionalPower.bg.multiplier = oufdb.Bars.AdditionalPower.BGMultiplier
 
 		if self.AdditionalPower.ShouldEnable(unit) then self.AdditionalPower.SetPosition() end
-		if module.db.Player.Bars.AdditionalPower.Enable then
+		if module.db.player.Bars.AdditionalPower.Enable then
 			self.AdditionalPower:Show()
 		else
 			self.AdditionalPower:Hide()
@@ -2554,52 +2554,24 @@ module.funcs = {
 local SetStyle = function(self, unit, isSingle)
 	local oufdb
 
-	if unit == "player" or unit == "vehicle" then
-		oufdb = module.db.Player
-	elseif unit == "targettarget" then
-		oufdb = module.db.ToT
-	elseif unit == "targettargettarget" then
-		oufdb = module.db.ToToT
-	elseif unit == "target" then
-		oufdb = module.db.Target
-	elseif unit == "focustarget" then
-		oufdb = module.db.FocusTarget
-	elseif unit == "focus" then
-		oufdb = module.db.Focus
-	elseif unit == "pettarget" then
-		oufdb = module.db.PetTarget
-	elseif unit == "pet" then
-		oufdb = module.db.Pet
-
-	elseif unit == "party" then
-		oufdb = module.db.Party
-	elseif unit == "partytarget" then
-		oufdb = module.db.PartyTarget
-	elseif unit == "partypet" then
-		oufdb = module.db.PartyPet
-
-	elseif unit == "maintank" then
-		oufdb = module.db.Maintank
-	elseif unit == "maintanktarget" then
-		oufdb = module.db.MaintankTarget
-	elseif unit == "maintanktargettarget" then
-		oufdb = module.db.MaintankToT
-
+	if unit == "vehicle" then
+		oufdb = module.db.player
 	elseif unit == unit:match("arena%d") then
-		oufdb = module.db.Arena
+		oufdb = module.db.arena
 	elseif unit == unit:match("arena%dtarget") then
-		oufdb = module.db.ArenaTarget
+		oufdb = module.db.arenatarget
 	elseif unit == unit:match("arena%dpet") then
-		oufdb = module.db.ArenaPet
+		oufdb = module.db.arenapet
 
 	elseif unit == unit:match("boss%d") then
-		oufdb = module.db.Boss
+		oufdb = module.db.boss
 	elseif unit == unit:match("boss%dtarget") then
-		oufdb = module.db.BossTarget
-
-	elseif unit == "raid" then
-		oufdb = module.db.Raid
+		oufdb = module.db.bosstarget
+	
+	else
+		oufdb = module.db[unit]
 	end
+
 
 	self.colors = module.colors
 	self:RegisterForClicks("AnyUp")
@@ -2717,7 +2689,7 @@ local SetStyle = function(self, unit, isSingle)
 	if oufdb.Portrait.Enable then module.funcs.Portrait(self, unit, oufdb) end
 
 	if unit == "player" or unit == "pet" then
-		if module.db.Player.Bars.AlternativePower.Enable then module.funcs.AlternativePower(self, unit, oufdb) end
+		if module.db.player.Bars.AlternativePower.Enable then module.funcs.AlternativePower(self, unit, oufdb) end
 	end
 
 	if oufdb.Aura then

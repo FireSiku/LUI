@@ -8,28 +8,28 @@ local db, default
 local DB_VERSION = 1
 
 StaticPopupDialogs["LUI_DB_UPDATE"] = {
-    preferredIndex = 3,
-    text = "This version of LUI contains settings that uses a different format. Do you want LUI to convert the affected settings to the new format?\n\nNote: Do not downgrade the version of LUI after conversion has been done. Behavior may be unexpected.",
-    button1 = ACCEPT,
-    button2 = CANCEL,
-    OnAccept = function() LUI:ApplyUpdate(db.dbVersion) end,
-    timeout = 0,
-    whileDead = 1,
-    hideOnEscape = 0,
+	preferredIndex = 3,
+	text = "This version of LUI contains settings that uses a different format. Do you want LUI to convert the affected settings to the new format?\n\nNote: Do not downgrade the version of LUI after conversion has been done. Behavior may be unexpected.",
+	button1 = ACCEPT,
+	button2 = CANCEL,
+	OnAccept = function() LUI:ApplyUpdate(db.dbVersion) end,
+	timeout = 0,
+	whileDead = 1,
+	hideOnEscape = 0,
 }
 
 function LUI:CheckUpdate()
-    db = LUI.db.profile
-    default = LUI.defaults.profile
+	db = LUI.db.profile
+	default = LUI.defaults.profile
 
-    if DB_VERSION > db.dbVersion then
-        StaticPopup_Show("LUI_DB_UPDATE")
-    end
+	if DB_VERSION > db.dbVersion then
+		StaticPopup_Show("LUI_DB_UPDATE")
+	end
 end
 
 --Test function
 function LUI:_Resync()
-    LUI:ApplyUpdate(0)
+	LUI:ApplyUpdate(0)
 end
 
 -- For the most part, conversion should be in this format. 
@@ -44,45 +44,72 @@ end
 ---@param new_name string @ The new name of the setting that should be updated
 ---@param new_db table? @ If the new setting is in different table. If missing, it will use old_db as the destination
 local function Convert(old_db, old_name, new_name, new_db)
-    if not old_db then return end -- Nothing to convert.
+	if not old_db then return end -- Nothing to convert.
 
-    assert(type(old_db) == "table", "Setting conversion failed for "..old_name..". Expected table, received "..type(old_db))
-    if not new_db then new_db = old_db end
-    if old_db[old_name] then
-        new_db[new_name] = old_db[old_name]
-        --old_db[old_name] = nil
-    end
+	assert(type(old_db) == "table", "Setting conversion failed for "..old_name..". Expected table, received "..type(old_db))
+	if not new_db then new_db = old_db end
+	if old_db[old_name] then
+		new_db[new_name] = old_db[old_name]
+		--old_db[old_name] = nil
+	end
 end
 
 function LUI:ApplyUpdate(ver)
-    
-    if ver < 1 then
-        -- Unitframes conversions
-        local uf_db = LUI:GetModule("Unitframes").db.profile
-        local units = {"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "BossTarget", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet", "Raid"}
+	
+	if ver < 1 then
+		-- Unitframes conversions
+		local uf_db = LUI:GetModule("Unitframes").db.profile
+		local units = {
+			Player = "player",
+			Pet = "pet",
+			Focus = "focus",
+			Target = "target",
+			ToT = "targettarget",
+			ToToT = "targettargettarget",
+			Party = "party",
+			Raid = "raid",
+			Boss = "boss",
+			Arena = "arena",
+			Maintank = "maintank",
+			ArenaPet = "arenapet",
+			PartyPet = "partypet",
+			PetTarget = "pettarget",
+			BossTarget = "bosstarget",
+			FocusTarget = "focustarget",
+			PartyTarget = "partytarget",
+			ArenaTarget = "arenatarget",
+			MaintankTarget = "maintanktarget",
+			MaintankToT = "maintanktargettarget",
+		}
+		
+		if uf_db.Player then
+			Convert(uf_db.Player.Bars,  "HealPrediction", "HealthPrediction")
+			Convert(uf_db.Player.Bars,  "DruidMana",      "AdditionalPower")
+			Convert(uf_db.Player.Texts, "DruidMana",      "AdditionalPower")
+			Convert(uf_db.Player.Bars,  "AltPower",       "AlternativePower")
+			Convert(uf_db.Player.Texts, "AltPower",       "AlternativePower")
+			Convert(uf_db.Player.Bars,  "HolyPower",      "ClassPower")
+			Convert(uf_db.Player.Bars,  "Chi",            "ClassPower")
+			Convert(uf_db.Player.Bars,  "WarlockBar",     "ClassPower")
+			Convert(uf_db.Player.Bars,  "ArcaneCharges",  "ClassPower")
 
-        Convert(uf_db.Player.Bars, "HealPrediction", "HealthPrediction")
-        Convert(uf_db.Player.Bars, "DruidMana", "AdditionalPower")
-        Convert(uf_db.Player.Texts, "DruidMana", "AdditionalPower")
-        Convert(uf_db.Player.Bars, "AltPower", "AlternativePower")
-        Convert(uf_db.Player.Texts, "AltPower", "AlternativePower")
-        Convert(uf_db.Player.Bars, "HolyPower", "ClassPower")
-        Convert(uf_db.Player.Bars, "Chi", "ClassPower")
-        Convert(uf_db.Player.Bars, "WarlockBar", "ClassPower")
-        Convert(uf_db.Player.Bars, "ArcaneCharges", "ClassPower")
-       
-        for _, unit in ipairs(units) do
-            Convert(uf_db[unit], "Icons", "Indicators")
-            Convert(uf_db[unit].Texts, "Combat", "CombatFeedback")
-            Convert(uf_db[unit].Icons, "Raid", "RaidIcon")
-        end
-        uf_db.Player.Bars.ShadowOrbs = nil
-        uf_db.Player.Bars.Eclipse = nil
-        uf_db.Player.Texts.Eclipse = nil
-        uf_db.Player.Texts.WarlockBar = nil
-    end
+			uf_db.Player.Bars.ShadowOrbs = nil
+			uf_db.Player.Bars.Eclipse = nil
+			uf_db.Player.Texts.Eclipse = nil
+			uf_db.Player.Texts.WarlockBar = nil
+		end
 
-    ver = DB_VERSION
+		for oldUnit, unitId in pairs(units) do
+			Convert(uf_db, oldUnit, unitId)
+			Convert(uf_db[unitId],       "Icons",  "Indicators")
+			Convert(uf_db[unitId].Texts, "Combat", "CombatFeedback")
+			Convert(uf_db[unitId].Icons, "Raid",   "RaidIcon")
+			--- Convert the tables to use unitId keys, changes Player -> player,  ToT > targettargettarget and so on.
+			
+		end
+	end
+
+	ver = DB_VERSION
 end
 
 --[[

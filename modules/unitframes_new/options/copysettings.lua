@@ -9,8 +9,6 @@ local module = LUI:GetModule("Unitframes")
 
 local oUF = LUI.oUF
 
-local units = {"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "BossTarget", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet", "Raid"}
-
 local function CopySettings(srcTable, dstTable, withSizes, withPosition)
 	if type(srcTable) ~= "table" then return end
 	if type(dstTable) ~= "table" then return end

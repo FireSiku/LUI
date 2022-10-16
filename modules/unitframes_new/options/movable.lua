@@ -10,20 +10,20 @@ local module = LUI:GetModule("Unitframes")
 local oUF = LUI.oUF
 
 local ufNames = {
-	Player = "oUF_LUI_player",
-	Target = "oUF_LUI_target",
-	ToT = "oUF_LUI_targettarget",
-	ToToT = "oUF_LUI_targettargettarget",
-	Focus = "oUF_LUI_focus",
-	FocusTarget = "oUF_LUI_focustarget",
-	Pet = "oUF_LUI_pet",
-	PetTarget = "oUF_LUI_pettarget",
-	Party = "oUF_LUI_party",
-	Maintank = "oUF_LUI_maintank",
-	Boss = "oUF_LUI_boss",
-	Player_Castbar = "oUF_LUI_player_Castbar",
-	Target_Castbar = "oUF_LUI_target_Castbar",
-	Arena = "oUF_LUI_arena"
+	player = "oUF_LUI_player",
+	target = "oUF_LUI_target",
+	targettarget = "oUF_LUI_targettarget",
+	targettargettarget = "oUF_LUI_targettargettarget",
+	focus = "oUF_LUI_focus",
+	focustarget = "oUF_LUI_focustarget",
+	pet = "oUF_LUI_pet",
+	pettarget = "oUF_LUI_pettarget",
+	party = "oUF_LUI_party",
+	maintank = "oUF_LUI_maintank",
+	boss = "oUF_LUI_boss",
+	player_Castbar = "oUF_LUI_player_Castbar",
+	target_Castbar = "oUF_LUI_target_Castbar",
+	arena = "oUF_LUI_arena"
 }
 
 local _LOCK
