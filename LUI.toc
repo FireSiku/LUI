@@ -92,6 +92,7 @@ modules\expbars\experience.lua
 modules\expbars\reputation.lua
 modules\expbars\honor.lua
 modules\expbars\azerite.lua
+modules\expbars\genesis.lua
 
 ### Merchant ###
 modules\merchant\merchant.lua

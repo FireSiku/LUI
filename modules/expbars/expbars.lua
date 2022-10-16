@@ -231,7 +231,8 @@ function module:SetMainBar()
 	local repBar = module:CreateBar("LUI_ExpBarsRep", "Reputation")
 	local honorBar = module:CreateBar("LUI_ExpBarsHonor", "Honor")
 	local azeriteBar = module:CreateBar("LUI_ExpBarsAzerite", "Azerite")
-	mainBarList = {expBar, repBar, honorBar, azeriteBar}
+	local genesisBar = module:CreateBar("LUI_ExpBarsGenesis", "Genesis") ---@TEST: Genesis
+	mainBarList = {expBar, repBar, honorBar, azeriteBar, genesisBar}
 
 	for bar in module:IterateMainBars() do
 		bar:SetPoint("RIGHT", anchor, "RIGHT")
@@ -242,7 +243,8 @@ function module:SetMainBar()
 	module.ReputationBar = repBar
 	module.HonorBar = honorBar
 	module.AzeriteBar = azeriteBar
-	
+	module.GenesisBar = genesisBar ---@TEST: Genesis
+
 	return true -- mainBarsCreated
 end
 
@@ -254,6 +256,7 @@ function module:UpdateMainBarVisibility()
 	local repShown = module.ReputationBar:ShouldBeVisible()
 	local honorShown = module.HonorBar:ShouldBeVisible()
 	local apShown = module.AzeriteBar:ShouldBeVisible()
+	local gnShown = module.GenesisBar:ShouldBeVisible()
 	
 	-- Decide which bars should be ultimately shown.
 	if expShown then
@@ -280,6 +283,7 @@ function module:UpdateMainBarVisibility()
 	elseif repShown then
 		barRight = module.ReputationBar
 	end
+	if gnShown then barRight = module.GenesisBar end
 
 	-- Force the main bars to be hidden.
 	for bar in module:IterateMainBars() do
