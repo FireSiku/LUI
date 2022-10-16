@@ -1352,27 +1352,6 @@ module.funcs = {
 			self.Power:Hide()
 		end
 	end,
-	Full = function(self, unit, oufdb)
-		if not self.Full then
-			self.Full = CreateFrame("StatusBar", nil, self)
-			self.Full:SetFrameLevel(2)
-			self.Full:SetValue(100)
-		end
-
-		self.Full:SetHeight(oufdb.Bars.Full.Height)
-		self.Full:SetWidth(oufdb.Bars.Full.Width * self:GetWidth() / oufdb.Width) -- needed for 25/40 man raid width downscaling!
-		self.Full:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Bars.Full.Texture))
-		self.Full:SetStatusBarColor(oufdb.Bars.Full.IndividualColor.r, oufdb.Bars.Full.IndividualColor.g, oufdb.Bars.Full.IndividualColor.b, oufdb.Bars.Full.IndividualColor.a)
-		self.Full:ClearAllPoints()
-		self.Full:SetPoint("TOPLEFT", self, "TOPLEFT", oufdb.Bars.Full.X * self:GetWidth() / oufdb.Width, oufdb.Bars.Full.Y) -- needed for 25/40 man raid width downscaling!
-		self.Full:SetAlpha(oufdb.Bars.Full.Alpha)
-
-		if oufdb.Bars.Full.Enable == true then
-			self.Full:Show()
-		else
-			self.Full:Hide()
-		end
-	end,
 	FrameBackdrop = function(self, unit, oufdb)
 		if not self.FrameBackdrop then self.FrameBackdrop = CreateFrame("Frame", nil, self, "BackdropTemplate") end
 
@@ -2595,7 +2574,6 @@ local SetStyle = function(self, unit, isSingle)
 
 	module.funcs.Health(self, unit, oufdb)
 	module.funcs.Power(self, unit, oufdb)
-	module.funcs.Full(self, unit, oufdb)
 	module.funcs.FrameBackdrop(self, unit, oufdb)
 
 	if oufdb.Bars.HealthPrediction and oufdb.Bars.HealthPrediction.Enable then module.funcs.HealthPrediction(self, unit, oufdb) end
