@@ -15,65 +15,64 @@ local module = LUI:NewModule("Unitframes", "LUIDevAPI", "AceHook-3.0", "AceSeria
 
 local Blizzard = LUI.Blizzard
 
-local unitsSpawn = {"Player", "Target", "Focus", "FocusTarget", "ToT", "ToToT", "Pet", "PetTarget", "Boss", "Party", "Maintank", "Arena", "Raid"}
+local unitsSpawn = {"player", "target", "focus", "focustarget", "targettarget", "targettargettarget", "pet", "pettarget", "boss", "party", "maintank", "arena", "raid"}
 
-local units = {"Player", "Target", "ToT", "ToToT", "Focus", "FocusTarget", "Pet", "PetTarget", "Party", "PartyTarget", "PartyPet", "Boss", "BossTarget", "Maintank", "MaintankTarget", "MaintankToT", "Arena", "ArenaTarget", "ArenaPet", "Raid"}
-
+module.units = {"player", "target", "targettarget", "targettargettarget", "focus", "focustarget", "pet", "pettarget", "party", "partytarget", "partypet", "boss", "bosstarget", "maintank", "maintanktarget", "maintanktargettarget", "arena", "arenatarget", "arenapet", "raid"}
 
 module.framelist = {
-	Player = {"oUF_LUI_player"},
-	Target = {"oUF_LUI_target"},
-	ToT = {"oUF_LUI_targettarget"},
-	ToToT = {"oUF_LUI_targettargettarget"},
-	Focus = {"oUF_LUI_focus"},
-	FocusTarget = {"oUF_LUI_focustarget"},
-	Pet = {"oUF_LUI_pet"},
-	PetTarget = {"oUF_LUI_pettarget"},
-	Party = {},
-	PartyTarget = {},
-	PartyPet = {},
-	Boss = {},
-	BossTarget ={},
-	Maintank = {},
-	MaintankTarget = {},
-	MaintankToT = {},
-	Arena = {},
-	ArenaTarget = {},
-	ArenaPet = {},
-	Raid = {},
+	player = {"oUF_LUI_player"},
+	target = {"oUF_LUI_target"},
+	targettarget = {"oUF_LUI_targettarget"},
+	targettargettarget = {"oUF_LUI_targettargettarget"},
+	focus = {"oUF_LUI_focus"},
+	focustarget = {"oUF_LUI_focustarget"},
+	pet = {"oUF_LUI_pet"},
+	pettarget = {"oUF_LUI_pettarget"},
+	party = {},
+	partytarget = {},
+	partypet = {},
+	boss = {},
+	bosstarget ={},
+	maintank = {},
+	maintanktarget = {},
+	maintanktargettarget = {},
+	arena = {},
+	arenatarget = {},
+	arenapet = {},
+	raid = {},
 }
 
 local Prefix = {
-	Party = "oUF_LUI_partyUnitButton",
-	PartyTarget = "oUF_LUI_partyUnitButton",
-	PartyPet = "oUF_LUI_partyUnitButton",
-	Boss = "oUF_LUI_boss",
-	BossTarget = "oUF_LUI_bosstarget",
-	Maintank = "oUF_LUI_maintankUnitButton",
-	MaintankTarget = "oUF_LUI_maintankUnitButton",
-	MaintankToT = "oUF_LUI_maintankUnitButton",
-	Arena = "oUF_LUI_arena",
-	ArenaTarget = "oUF_LUI_arenatarget",
-	ArenaPet = "oUF_LUI_arenapet",
+	party = "oUF_LUI_partyUnitButton",
+	partytarget = "oUF_LUI_partyUnitButton",
+	partypet = "oUF_LUI_partyUnitButton",
+	boss = "oUF_LUI_boss",
+	bosstarget = "oUF_LUI_bosstarget",
+	maintank = "oUF_LUI_maintankUnitButton",
+	maintanktarget = "oUF_LUI_maintankUnitButton",
+	maintanktargettarget = "oUF_LUI_maintankUnitButton",
+	arena = "oUF_LUI_arena",
+	arenatarget = "oUF_LUI_arenatarget",
+	arenapet = "oUF_LUI_arenapet",
 }
 local Suffix = {
-	PartyTarget = "target",
-	PartyPet = "pet",
-	MaintankTarget = "target",
-	MaintankToT = "targettarget",
+	partytarget = "target",
+	partypet = "pet",
+	maintanktarget = "target",
+	maintanktargettarget = "targettarget",
 }
 local Count = {
-	Party = 5,
-	PartyTarget = 5,
-	PartyPet = 5,
-	Boss = 4,
-	BossTarget = 4,
-	Maintank = 3,
-	MaintankTarget = 3,
-	MaintankToT = 3,
-	Arena = 5,
-	ArenaTarget = 5,
-	ArenaPet = 5,
+	party = 5,
+	partytarget = 5,
+	partypet = 5,
+	boss = 4,
+	bosstarget = 4,
+	maintank = 3,
+	maintanktarget = 3,
+	maintanktargettarget = 3,
+	arena = 5,
+	arenatarget = 5,
+	arenapet = 5,
 }
 
 -- adding group frames
@@ -87,13 +86,13 @@ end
 
 for i = 1, 5 do
 	for j = 1, 5 do
-		table.insert(module.framelist.Raid, "oUF_LUI_raid_25_"..i.."UnitButton"..j)
+		table.insert(module.framelist.raid, "oUF_LUI_raid_25_"..i.."UnitButton"..j)
 	end
 end
 
 for i = 1, 8 do
 	for j = 1, 5 do
-		table.insert(module.framelist.Raid, "oUF_LUI_raid_40_"..i.."UnitButton"..j)
+		table.insert(module.framelist.raid, "oUF_LUI_raid_40_"..i.."UnitButton"..j)
 	end
 end
 
@@ -107,7 +106,7 @@ module.defaults = {
 		Enable = true,
 		General = {},
 		-- ### Player ###
-		Player = {
+		player = {
 			Enable = true,
 			Height = 43,
 			Width = 250,
@@ -536,7 +535,7 @@ module.defaults = {
 			},
 		},
 		--- ### Target ###
-		Target = {
+		target = {
 			Enable = true,
 			Height = 43,
 			Width = 250,
@@ -872,7 +871,7 @@ module.defaults = {
 			},
 		},
 		--- ### Player Pet
-		Pet = {
+		pet = {
 			Enable = true,
 			Height = 43,
 			Width = 130,
@@ -1194,7 +1193,7 @@ module.defaults = {
 			},
 		},
 		--- ### Focus
-		Focus = {
+		focus = {
 			Enable = true,
 			Height = 24,
 			Width = 200,
@@ -1515,7 +1514,7 @@ module.defaults = {
 			},
 		},
 		--- ### Party
-		Party = {
+		party = {
 			Enable = true,
 			UseBlizzard = false,
 			Height = 43,
@@ -1828,7 +1827,7 @@ module.defaults = {
 			},
 		},
 		--- ### Party Pets
-		PartyPet = {
+		partypet = {
 			Enable = true,
 			Height = 24,
 			Width = 130,
@@ -2057,7 +2056,7 @@ module.defaults = {
 			},
 		},
 		--- ### Raid
-		Raid = {
+		raid = {
 			Enable = true,
 			UseBlizzard = false,
 			Height = 33,
@@ -2258,7 +2257,7 @@ module.defaults = {
 			},
 		},
 		--- ### Boss
-		Boss = {
+		boss = {
 			Enable = true,
 			UseBlizzard = false,
 			Height = 24,
@@ -2551,7 +2550,7 @@ module.defaults = {
 			},
 		},
 		--- ## Maintank
-		Maintank = {
+		maintank = {
 			Enable = false,
 			Height = 24,
 			Width = 130,
@@ -2802,7 +2801,7 @@ module.defaults = {
 			},
 		},
 		-- ### Arena
-		Arena = {
+		arena = {
 			Enable = true,
 			UseBlizzard = false,
 			Height = 43,
@@ -3092,7 +3091,7 @@ module.defaults = {
 			},
 		},
 		--- ### Arena Pets
-		ArenaPet = {
+		arenapet = {
 			Enable = true,
 			Height = 24,
 			Width = 130,
@@ -3307,7 +3306,7 @@ module.defaults = {
 		},
 		--- ### Target / Target of Target Section ###
 		--- ### Pet Target
-		PetTarget = {
+		pettarget = {
 			Enable = true,
 			Height = 24,
 			Width = 130,
@@ -3507,7 +3506,7 @@ module.defaults = {
 			},
 		},
 		--- ### Party Target
-		PartyTarget = {
+		partytarget = {
 			Enable = true,
 			Height = 24,
 			Width = 130,
@@ -3687,7 +3686,7 @@ module.defaults = {
 			},
 		},
 		--- ### FocusTarget
-		FocusTarget = {
+		focustarget = {
 			Enable = false,
 			Height = 24,
 			Width = 200,
@@ -3935,7 +3934,7 @@ module.defaults = {
 			},
 		},
 		--- ### Boss Target
-		BossTarget = {
+		bosstarget = {
 			Enable = false,
 			Height = 24,
 			Width = 130,
@@ -4112,7 +4111,7 @@ module.defaults = {
 			},
 		},
 		--- #MainTank Target
-		MaintankTarget = {
+		maintanktarget = {
 			Enable = true,
 			Height = 24,
 			Width = 130,
@@ -4292,7 +4291,7 @@ module.defaults = {
 			},
 		},
 		--- #Arena Target
-		ArenaTarget = {
+		arenatarget = {
 			Enable = true,
 			Height = 24,
 			Width = 130,
@@ -4469,7 +4468,7 @@ module.defaults = {
 			},
 		},
 		--- ### Target of Target
-		ToT = {
+		targettarget = {
 			Enable = true,
 			Height = 24,
 			Width = 200,
@@ -4733,7 +4732,7 @@ module.defaults = {
 			},
 		},
 		--- # Target of Target of Target
-		ToToT = {
+		targettargettarget = {
 			Enable = false,
 			Height = 24,
 			Width = 200,
@@ -4970,7 +4969,7 @@ module.defaults = {
 			},
 		},
 		--- ### MainTank Target of Target
-		MaintankToT = {
+		maintanktargettarget = {
 			Enable = false,
 			Height = 24,
 			Width = 130,
