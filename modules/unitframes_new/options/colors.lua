@@ -18,73 +18,73 @@ module.colors = setmetatable({
 		["POWER_TYPE_PYRITE"] = {0.60, 0.09, 0.17},
 	}, {
 		__index = function(t, k)
-			return module.db.Colors.Power[k] or oUF.colors.power[k]
+			return module.db.profile.Colors.Power[k] or oUF.colors.power[k]
 		end
 	}),
 	class = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.Class[k] or oUF.colors.class[k] or {0.5, 0.5, 0.5, 1}
+			return module.db.profile.Colors.Class[k] or oUF.colors.class[k] or {0.5, 0.5, 0.5, 1}
 		end
 	}),
 	leveldiff = setmetatable({}, {
 		__index = function(t, k)
 			local diffColor = GetQuestDifficultyColor(UnitLevel("target"))
-			return module.db.Colors.LevelDiff[k] or {diffColor.r, diffColor.g, diffColor.b}
+			return module.db.profile.Colors.LevelDiff[k] or {diffColor.r, diffColor.g, diffColor.b}
 		end
 	}),
 	combattext = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.CombatText[k]
+			return module.db.profile.Colors.CombatText[k]
 		end
 	}),
 	combopoints = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.ComboPoints[k] or oUF.colors.combopoints[k]
+			return module.db.profile.Colors.ComboPoints[k] or oUF.colors.combopoints[k]
 		end
 	}),
 	runes = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.Runes[k] or oUF.colors.runes[k]
+			return module.db.profile.Colors.Runes[k] or oUF.colors.runes[k]
 		end
 	}),
 	totems = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.Totems[k] or oUF.colors.totems[k]
+			return module.db.profile.Colors.Totems[k] or oUF.colors.totems[k]
 		end
 	}),
 	holypowerbar = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.HolyPowerBar[k] or oUF.colors.holypowerbar[k]
+			return module.db.profile.Colors.HolyPowerBar[k] or oUF.colors.holypowerbar[k]
 		end
 	}),
 	warlockbar = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.WarlockBar[k] or oUF.colors.warlockbar[k]
+			return module.db.profile.Colors.WarlockBar[k] or oUF.colors.warlockbar[k]
 		end
 	}),
 	shadoworbsbar = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.ShadowOrbsBar[k] or oUF.colors.shadoworbsbar[k]
+			return module.db.profile.Colors.ShadowOrbsBar[k] or oUF.colors.shadoworbsbar[k]
 		end
 	}),
 	arcanechargesbar = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.ArcaneChargesBar[k] or oUF.colors.arcanechargesbar[k]
+			return module.db.profile.Colors.ArcaneChargesBar[k] or oUF.colors.arcanechargesbar[k]
 		end
 	}),
 	chibar = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.ChiBar[k] or oUF.colors.chibar[k]
+			return module.db.profile.Colors.ChiBar[k] or oUF.colors.chibar[k]
 		end
 	}),
 	eclipsebar = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.EclipseBar[k]
+			return module.db.profile.Colors.EclipseBar[k]
 		end
 	}),
 	smooth = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.Colors.Smooth[math.ceil(k/3)][(k-1)%3+1]
+			return module.db.profile.Colors.Smooth[math.ceil(k/3)][(k-1)%3+1]
 		end,
 		__call = function(t)
 			return t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8], t[9]
@@ -92,7 +92,7 @@ module.colors = setmetatable({
 	}),
 }, {
 	__index = function(t, k)
-		return module.db.Colors[k and (k:gsub("^%a", strupper)) or k] or oUF.colors[k]
+		return module.db.profile.Colors[k and (k:gsub("^%a", strupper)) or k] or oUF.colors[k]
 	end
 })
 
@@ -125,7 +125,7 @@ local function UpdateColors()
 end
 
 local colorGetter = function(info)
-	local t = module.db.Colors[info[#info-1]][tonumber(info[#info]) or info[#info]]
+	local t = module.db.profile.Colors[info[#info-1]][tonumber(info[#info]) or info[#info]]
 	if t.r then
 		return t.r, t.g, t.b, t.a
 	else
@@ -133,7 +133,7 @@ local colorGetter = function(info)
 	end
 end
 local colorSetter = function(info, r, g, b, a)
-	local t = module.db.Colors[info[#info-1]][tonumber(info[#info]) or info[#info]]
+	local t = module.db.profile.Colors[info[#info-1]][tonumber(info[#info]) or info[#info]]
 	if t.r then
 		t.r, t.g, t.b, t.a = r, g, b, a
 	else
@@ -160,7 +160,7 @@ function module:CreateColorOptions(order)
 			DEMONHUNTER = LUI.IsRetail and self:NewColorNoAlpha("Demon Hunter", "Demon Hunter class", 13, false, "normal") or nil,
 			empty1 = self:NewDesc(" ", 14),
 			Reset = self:NewExecute("Restore Defaults", nil, 15, function()
-				module.db.Colors.Class = module.defaults.Colors.Class
+				module.db.profile.Colors.Class = module.defaults.Colors.Class
 				UpdateColors()
 			end),
 		}),
@@ -176,7 +176,7 @@ function module:CreateColorOptions(order)
 			FUEL = LUI.IsRetail and self:NewColorNoAlpha("Fuel", "Fuel ressource", 9, false, "full") or nil,
 			empty1 = self:NewDesc(" ", 10),
 			Reset = self:NewExecute("Restore Defaults", nil, 11, function()
-				module.db.Colors.Power = module.defaults.Colors.Power
+				module.db.profile.Colors.Power = module.defaults.Colors.Power
 				UpdateColors()
 			end),
 		}),
@@ -187,7 +187,7 @@ function module:CreateColorOptions(order)
 			["3"] = self:NewColorNoAlpha("High Health", nil, 4, false, "full"),
 			empty1 = self:NewDesc(" ", 5),
 			Reset = self:NewExecute("Restore Defaults", nil, 6, function()
-				module.db.Colors.Smooth = module.defaults.Colors.Smooth
+				module.db.profile.Colors.Smooth = module.defaults.Colors.Smooth
 				UpdateColors()
 			end),
 		}),
@@ -212,7 +212,7 @@ function module:CreateColorOptions(order)
 			STANDARD = self:NewColorNoAlpha("Other", "Choose the Color for other events", 18, false, "full"),
 			empty4 = self:NewDesc(" ", 19),
 			Reset = self:NewExecute("Restore Defaults", nil, 20, function()
-				module.db.Colors.CombatText = module.defaults.Colors.CombatText
+				module.db.profile.Colors.CombatText = module.defaults.Colors.CombatText
 				UpdateColors()
 			end),
 		}),
@@ -225,7 +225,7 @@ function module:CreateColorOptions(order)
 			["5"] = self:NewColorNoAlpha("Low Level Target", nil, 6, false, "full"),
 			empty1 = self:NewDesc(" ", 7),
 			Reset = self:NewExecute("Restore Defaults", nil, 8, function()
-				module.db.Colors.LevelDiff = module.defaults.Colors.LevelDiff
+				module.db.profile.Colors.LevelDiff = module.defaults.Colors.LevelDiff
 				UpdateColors()
 			end),
 		}),
@@ -234,7 +234,7 @@ function module:CreateColorOptions(order)
 			["1"]	= self:NewColorNoAlpha("Holy Power", "Holy Power Bar", 2, false, "full"),
 			empty1 = self:NewDesc(" ", 7),
 			Reset = self:NewExecute("Restore Defaults", nil, 8, function()
-				module.db.Colors.HolyPowerBar = module.defaults.Colors.HolyPowerBar
+				module.db.profile.Colors.HolyPowerBar = module.defaults.Colors.HolyPowerBar
 				UpdateColors()
 			end),
 		}),
@@ -243,7 +243,7 @@ function module:CreateColorOptions(order)
 			["Shard1"] = self:NewColorNoAlpha("Soul Shards", "Soul Shards Bar", 2, false, "full"),
 			empty1 = self:NewDesc(" ", 13),
 			Reset = self:NewExecute("Restore Defaults", nil, 14, function()
-				module.db.Colors.WarlockBar = module.defaults.Colors.WarlockBar
+				module.db.profile.Colors.WarlockBar = module.defaults.Colors.WarlockBar
 				UpdateColors()
 			end),
 		}),
@@ -252,7 +252,7 @@ function module:CreateColorOptions(order)
 			["1"] = self:NewColorNoAlpha("Arcane Charges", "Arcane Charges Bar", 2, false, "full"),
 			empty1 = self:NewDesc(" ", 5),
 			Reset = self:NewExecute("Restore Defaults", nil, 6, function()
-				module.db.Colors.ArcaneChargesBar = module.defaults.Colors.ArcaneChargesBar
+				module.db.profile.Colors.ArcaneChargesBar = module.defaults.Colors.ArcaneChargesBar
 				UpdateColors()
 			end),
 		}),
@@ -261,7 +261,7 @@ function module:CreateColorOptions(order)
 			["1"] = self:NewColorNoAlpha("Chi", "Chi Bar", 2, false, "full"),
 			empty1 = self:NewDesc(" ", 8),
 			Reset = self:NewExecute("Restore Defaults", nil, 9, function()
-				module.db.Colors.ChiBar = module.defaults.Colors.ChiBar
+				module.db.profile.Colors.ChiBar = module.defaults.Colors.ChiBar
 				UpdateColors()
 			end),
 		}),
@@ -273,7 +273,7 @@ function module:CreateColorOptions(order)
 			["4"] = self:NewColorNoAlpha("Death", "Runes", 5, false, "full"),
 			empty1 = self:NewDesc(" ", 6),
 			Reset = self:NewExecute("Restore Defaults", nil, 7, function()
-				module.db.Colors.Runes = module.defaults.Colors.Runes
+				module.db.profile.Colors.Runes = module.defaults.Colors.Runes
 				UpdateColors()
 			end),
 		}),
@@ -282,7 +282,7 @@ function module:CreateColorOptions(order)
 			["1"] = self:NewColorNoAlpha("Combo Points", "Combo Points Bar", 2, false, "full"),
 			empty1 = self:NewDesc(" ", 7),
 			Reset = self:NewExecute("Restore Defaults", nil, 8, function()
-				module.db.Colors.ComboPoints = module.defaults.Colors.ComboPoints
+				module.db.profile.Colors.ComboPoints = module.defaults.Colors.ComboPoints
 				UpdateColors()
 			end),
 		}),
@@ -294,7 +294,7 @@ function module:CreateColorOptions(order)
 			Friendly = self:NewColorNoAlpha("Friendly NPC", "Friendly NPC", 5, false, "full"),
 			empty1 = self:NewDesc(" ", 6),
 			Reset = self:NewExecute("Restore Defaults", nil, 7, function()
-				module.db.Colors.Misc = module.defaults.Colors.Misc
+				module.db.profile.Colors.Misc = module.defaults.Colors.Misc
 				UpdateColors()
 			end),
 		}),

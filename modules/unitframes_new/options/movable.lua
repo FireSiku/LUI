@@ -35,22 +35,22 @@ local setAllPositions = function()
 	for k, v in pairs(ufNames) do
 		local k2 = nil
 		if strfind(k, "Castbar") then k, k2 = strsplit("_", k) end
-		if _G[v] and module.db[k] then
+		if _G[v] and module.db.profile[k] then
 			local point, _, rpoint, x, y = backdropPool[_G[v]]:GetPoint()
 			
 			if k2 then
-				if module.db[k][k2] then
-					module.db[k][k2].General.X = x
-					module.db[k][k2].General.Y = y
-					module.db[k][k2].General.Point = point
+				if module.db.profile[k][k2] then
+					module.db.profile[k][k2].General.X = x
+					module.db.profile[k][k2].General.Y = y
+					module.db.profile[k][k2].General.Point = point
 				end
 			else
-				module.db[k].X = x * (module.db[k].Scale or 1)
-				module.db[k].Y = y * (module.db[k].Scale or 1)
-				module.db[k].Point = point
+				module.db.profile[k].X = x * (module.db.profile[k].Scale or 1)
+				module.db.profile[k].Y = y * (module.db.profile[k].Scale or 1)
+				module.db.profile[k].Point = point
 			end
 			
-			local scale = module.db[k].Scale or 1
+			local scale = module.db.profile[k].Scale or 1
 			_G[v]:ClearAllPoints()
 			_G[v]:SetPoint(point, UIParent, rpoint, x, y)
 		end
@@ -65,17 +65,17 @@ local resetAllPositions = function()
 	for k, v in pairs(ufNames) do
 		local k2 = nil
 		if strfind(k, "Castbar") then k, k2 = strsplit("_", k) end
-		if _G[v] and module.db[k] then
+		if _G[v] and module.db.profile[k] then
 			if backdropPool[_G[v]] then backdropPool[_G[v]]:ClearAllPoints() end
 			
 			if k2 then
-				if module.db[k][k2] then
+				if module.db.profile[k][k2] then
 					_G[v]:ClearAllPoints()
-					_G[v]:SetPoint(module.db[k][k2].General.Point, UIParent, module.db[k][k2].General.Point, module.db[k][k2].General.X, module.db[k][k2].General.Y)
+					_G[v]:SetPoint(module.db.profile[k][k2].General.Point, UIParent, module.db.profile[k][k2].General.Point, module.db.profile[k][k2].General.X, module.db.profile[k][k2].General.Y)
 				end
 			else
 				_G[v]:ClearAllPoints()
-				_G[v]:SetPoint(module.db[k].Point, UIParent, module.db[k].Point, module.db[k].X / (module.db[k].Scale or 1), module.db[k].Y / (module.db[k].Scale or 1))
+				_G[v]:SetPoint(module.db.profile[k].Point, UIParent, module.db.profile[k].Point, module.db.profile[k].X / (module.db.profile[k].Scale or 1), module.db.profile[k].Y / (module.db.profile[k].Scale or 1))
 			end
 		end
 	end

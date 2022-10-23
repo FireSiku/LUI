@@ -61,13 +61,13 @@ local testframe = CreateFrame("Frame")
 local teststring = testframe:CreateFontString(nil, "OVERLAY")
 
 local function ShortenName(name)
-	teststring:SetFont(Media:Fetch("font", module.db.raid.Texts.Name.Font), module.db.raid.Texts.Name.Size, module.db.raid.Texts.Name.Outline)
+	teststring:SetFont(Media:Fetch("font", module.db.profile.raid.NameText.Font), module.db.profile.raid.NameText.Size, module.db.profile.raid.NameText.Outline)
 	teststring:SetText(name)
 
 	if not nameCache[name] then nameCache[name] = {} end
 
 	local shortname = name
-	local maxwidth = module.db.raid.Width * 0.9
+	local maxwidth = module.db.profile.raid.Width * 0.9
 
 	local l = name:len()
 	while maxwidth < teststring:GetStringWidth() do
@@ -78,7 +78,7 @@ local function ShortenName(name)
 
 	nameCache[name][1] = shortname
 
-	maxwidth = ((module.db.raid.Width * 5 - module.db.raid.GroupPadding * 3) / 8) * 0.9
+	maxwidth = ((module.db.profile.raid.Width * 5 - module.db.profile.raid.GroupPadding * 3) / 8) * 0.9
 
 	while maxwidth < teststring:GetStringWidth() do
 		shortname = shortname:sub(1, l)
@@ -189,7 +189,7 @@ end
 
 oUF.Tags.Events["RaidName25"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
 oUF.Tags.Methods["RaidName25"] = function(unit, realunit)
-	if module.db and module.db.raid.Texts.Name.ShowDead then
+	if module.db.profile and module.db.profile.raid.NameText.ShowDead then
 		if not UnitIsConnected(unit) then
 			return "|cffD7BEA5<Offline>|r"
 		elseif UnitIsGhost(unit) then
@@ -207,7 +207,7 @@ end
 
 oUF.Tags.Events["RaidName40"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
 oUF.Tags.Methods["RaidName40"] = function(unit, realunit)
-	if module.db and module.db.raid.Texts.Name.ShowDead then
+	if module.db.profile and module.db.profile.raid.NameText.ShowDead then
 		if not UnitIsConnected(unit) then
 			return "|cffD7BEA5<Offline>|r"
 		elseif UnitIsGhost(unit) then
@@ -227,10 +227,10 @@ oUF.Tags.Events["additionalpower2"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
 oUF.Tags.Methods["additionalpower2"] = function(unit)
 	if unit ~= "player" then return end
 
-	if not module.db then return "" end
+	if not module.db.profile then return "" end
 
 	local min, max = UnitPower("player", Enum.PowerType.Mana), UnitPowerMax("player", Enum.PowerType.Mana)
-	if module.db.Player.Texts.AdditionalPower.HideIfFullMana and min == max then return "" end
+	if module.db.profile.player.AdditionalPowerText.HideIfFullMana and min == max then return "" end
 	local perc = min / max * 100
 
 	local _, pType = UnitPowerType(unit)
@@ -240,29 +240,29 @@ oUF.Tags.Methods["additionalpower2"] = function(unit)
 
 	local r, g, b, text
 
-	if module.db.Player.Texts.AdditionalPower.Color == "" then
+	if module.db.profile.player.AdditionalPowerText.Color == "" then
 		r, g, b = color[1]*255,color[2]*255,color[3]*255
-	elseif module.db.Player.Texts.AdditionalPower.Color == "" then
+	elseif module.db.profile.player.AdditionalPowerText.Color == "" then
 		r, g, b = color2[1]*255,color2[2]*255,color2[3]*255
 	else
-		r, g, b = module.db.Player.Texts.AdditionalPower.IndividualColor.r*255,module.db.Player.Texts.AdditionalPower.IndividualColor.g*255,module.db.Player.Texts.AdditionalPower.IndividualColor.b*255
+		r, g, b = module.db.profile.player.AdditionalPowerText.IndividualColor.r*255,module.db.player.AdditionalPowerText.IndividualColor.g*255,module.db.player.AdditionalPowerText.IndividualColor.b*255
 	end
 
-	if module.db.Player.Texts.AdditionalPower.Format == "Absolut" then
+	if module.db.profile.player.AdditionalPowerText.Format == "Absolut" then
 		text = format("%d/%d", min, max)
-	elseif module.db.Player.Texts.AdditionalPower.Format == "Absolut & Percent" then
+	elseif module.db.profile.player.AdditionalPowerText.Format == "Absolut & Percent" then
 		text = format("%d/%d | %.1f", min, max, perc)
-	elseif module.db.Player.Texts.AdditionalPower.Format == "Absolut Short" then
+	elseif module.db.profile.player.AdditionalPowerText.Format == "Absolut Short" then
 		text = format("%s/%s", ShortValue(min), ShortValue(max))
-	elseif module.db.Player.Texts.AdditionalPower.Format == "Absolut Short & Percent" then
+	elseif module.db.profile.player.AdditionalPowerText.Format == "Absolut Short & Percent" then
 		text = format("%s/%s | %.1f", ShortValue(min), ShortValue(max), perc)
-	elseif module.db.Player.Texts.AdditionalPower.Format == "Standard" then
+	elseif module.db.profile.player.AdditionalPowerText.Format == "Standard" then
 		text = min
-	elseif module.db.Player.Texts.AdditionalPower.Format == "Standard & Percent" then
+	elseif module.db.profile.player.AdditionalPowerText.Format == "Standard & Percent" then
 		text = format("%s | %.1f%%", min, perc)
-	elseif module.db.Player.Texts.AdditionalPower.Format == "Standard Short" then
+	elseif module.db.profile.player.AdditionalPowerText.Format == "Standard Short" then
 		text = ShortValue(min)
-	elseif module.db.Player.Texts.AdditionalPower.Format == "Standard Short & Percent" then
+	elseif module.db.profile.player.AdditionalPowerText.Format == "Standard Short & Percent" then
 		text = format("%s | %.1f%%", ShortValue(min), perc)
 	else
 		text = min
