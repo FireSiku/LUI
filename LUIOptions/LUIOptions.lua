@@ -21,6 +21,7 @@ local OPTION_PANEL_HEIGHT = 660
 
 -- Avoid extraneous Libstub calls
 Opt.LUI = LUI
+Opt.ACR = ACR
 
 ---@class OptionMixin
 local OptionMixin = {}
@@ -95,10 +96,13 @@ OptionMixin.PercentValues = {min = 0, max = 1, step = 0.01, bigStep = 0.05, isPe
 -- ##### Options: Generators ##########################################################################################
 -- ####################################################################################################################
 
+local function ShortNum(num) return format(tonumber(num) < 1 and "%.2f" or "%d", tonumber(num)) end
+
 --- Generate Get/Set functions based on a database table.
 ---@param db AceDB-3.0
 ---@return function Get, function Set
 function OptionMixin.GetSet(db)
+	assert(type(db) == "table", "OptionMixin.GetSet argument #1 expected table, got "..type(db))
 	local get = function(info)
 		local value = db[info[#info]]
 		if info.type == "input" then return tostring(value) end
@@ -117,8 +121,6 @@ function OptionMixin.GetSet(db)
 	
 	return get, set
 end
-
-local function ShortNum(num) return format(tonumber(num) < 1 and "%.2f" or "%d", tonumber(num)) end
 
 --- Generate Get/Set functions for color options based on a database table.
 --- Additionally, if handler is defined, will attempt to call RefreshColors if it exists.

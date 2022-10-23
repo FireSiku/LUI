@@ -1391,7 +1391,7 @@ local function CopyData(source, destination)
 		if type(v) == "table" then
 			if not destination[k] then destination[k] = {} end
 			CopyData(source[k], destination[k])
-		elseif k ~= "Layout" then -- so the module.db.Layout will not be copied
+		elseif k ~= "Layout" then -- so the module.db.profile.Layout will not be copied
 			destination[k] = source[k]
 		end
 	end
@@ -1657,7 +1657,7 @@ function module:CreateImportExportOptions(order)
 		name = "Layout",
 		type = "group",
 		order = order,
-		disabled = function() return not module.db.Enable end,
+		disabled = function() return not module.db.profile.Enable end,
 		args = {
 			desc = self:NewDesc("This is the Layout import/export page. Here you can import and export Unitframe Settings as you like.\n\n\nAttention! Sometimes importing a layout causes heavy lag, especially if the layout differs strongly from the default LUI layout.", 1),
 			empty1 = self:NewDesc(" ", 2),
@@ -1669,7 +1669,7 @@ function module:CreateImportExportOptions(order)
 				get = function()
 						local LayoutArray = GetLayoutArray()
 						for k, v in pairs(LayoutArray) do
-							if v == module.db.Layout then
+							if v == module.db.profile.Layout then
 								return k
 							end
 						end
@@ -1679,7 +1679,7 @@ function module:CreateImportExportOptions(order)
 						for k, v in pairs(LayoutArray) do
 							if k == chosen then
 								if v ~= "" then
-									module.db.Layout = v
+									module.db.profile.Layout = v
 									LoadLayout(v)
 								end
 							end

@@ -92,20 +92,53 @@ function LUI:ApplyUpdate(ver)
 			Convert(uf_db.Player.Bars,  "Chi",            "ClassPower")
 			Convert(uf_db.Player.Bars,  "WarlockBar",     "ClassPower")
 			Convert(uf_db.Player.Bars,  "ArcaneCharges",  "ClassPower")
+			Convert(uf_db.Player.Texts, "WarlockBar",     "ClassPower")
 
 			uf_db.Player.Bars.ShadowOrbs = nil
 			uf_db.Player.Bars.Eclipse = nil
 			uf_db.Player.Texts.Eclipse = nil
 			uf_db.Player.Texts.WarlockBar = nil
+			uf_db.Colors.ShadowOrbsBar = nil
+			uf_db.Colors.EclipseBar = nil
 		end
 
 		for oldUnit, unitId in pairs(units) do
-			Convert(uf_db, oldUnit, unitId)
-			Convert(uf_db[unitId],       "Icons",  "Indicators")
-			Convert(uf_db[unitId].Texts, "Combat", "CombatFeedback")
-			Convert(uf_db[unitId].Icons, "Raid",   "RaidIcon")
 			--- Convert the tables to use unitId keys, changes Player -> player,  ToT > targettargettarget and so on.
-			
+			Convert(uf_db, oldUnit, unitId)
+			local unit_db = uf_db[unitId]
+
+			Convert(unit_db.Bars,  "Health", "HealthBar", unit_db)
+			Convert(unit_db.Bars,  "Power",  "PowerBar", unit_db)
+			Convert(unit_db.Bars,  "TotalAbsorb", "TotalAbsorbBar", unit_db)
+			Convert(unit_db.Bars,  "HealthPrediction", "HealthPredictionBar", unit_db)
+			Convert(unit_db.Bars,  "AlternativePower", "AlternativePowerBar", unit_db)
+			Convert(unit_db.Bars,  "AdditionalPower", "AdditionalPowerBar", unit_db)
+			Convert(unit_db.Bars,  "ClassPower", "ClassPowerBar", unit_db)
+			Convert(unit_db.Bars,  "ComboPoints", "ComboPointsBar", unit_db)
+			Convert(unit_db.Bars,  "Totemsw", "TotemsBar", unit_db)
+			Convert(unit_db.Bars,  "Runes", "RunesBar", unit_db)
+			Convert(unit_db.Texts, "Combat", "CombatFeedback", unit_db)
+			Convert(unit_db.Texts, "Name", "NameText", unit_db)
+			Convert(unit_db.Texts, "Health", "HealthText", unit_db)
+			Convert(unit_db.Texts, "Power", "PowerText", unit_db)
+			Convert(unit_db.Texts, "PvP", "PvPText", unit_db)
+			Convert(unit_db.Texts, "HealthPercent", "HealthPercentText", unit_db)
+			Convert(unit_db.Texts, "HealthMissing", "HealthMissingText", unit_db)
+			Convert(unit_db.Texts, "PowerPercent", "PowerPercentText", unit_db)
+			Convert(unit_db.Texts, "PowerMissing", "PowerMissingText", unit_db)
+			Convert(unit_db.Texts, "AlternativePower", "AlternativePowerText", unit_db)
+			Convert(unit_db.Texts, "AdditionalPower", "AdditionalPowerText", unit_db)
+			Convert(unit_db.Texts, "ClassPower", "ClassPowerText", unit_db)
+			Convert(unit_db.Icons, "Leader", "LeaderIndicator", unit_db)
+			Convert(unit_db.Icons, "Role", "GroupRoleIndicator", unit_db)
+			Convert(unit_db.Icons, "Raid", "RaidMarkerIndicator", unit_db)
+			Convert(unit_db.Icons, "Resting", "RestingIndicator", unit_db)
+			Convert(unit_db.Icons, "Combat", "CombatIndicator", unit_db)
+			Convert(unit_db.Icons, "PvP", "PvIndicator", unit_db)
+			if unit_db.Castbar then
+				Convert(unit_db.Castbar.Text, "Name", "NameText", unit_db.Castbar)
+				Convert(unit_db.Castbar.Text, "Time", "TimeText", unit_db.Castbar)
+			end
 		end
 	end
 
@@ -138,7 +171,7 @@ Player.Bars.ArcaneCharges
 Lootmaster	-> MasterLooter
 Leader		-> Leader
 Role		-> GroupRole
-Raid		-> RaidRole
+Raid		-> RaidMarker
 Resting		-> Resting
 Combat		-> Combat
 PvP		

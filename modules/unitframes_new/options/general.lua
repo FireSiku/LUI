@@ -85,7 +85,7 @@ local growthY = {"UP", "DOWN"}
 local growthX = {"LEFT", "RIGHT"}
 
 function module.ToggleRangeFadeParty(enable) -- when the option calls this func, self will be info arg, so don't use self in here.
-	enable = enable or module.db.party.RangeFade
+	enable = enable or module.db.profile.party.RangeFade
 
 	for i, frame in ipairs(oUF_LUI_party) do
 		if enable then
@@ -104,110 +104,14 @@ end
 --  Bar Option Constructors
 --------------------------------------------------------------------------
 
--- -- barType: "XP", "Rep"
--- function module:CreateXpRepOptionsPart(barType, order)
--- 	local barKey = (barType == "XP") and "Experience" or "Reputation"
-
--- 	local disabledFunc = function() return not self.db.XP_Rep[barKey].Enable end
-
--- 	local toggleFunc
--- 	if barType == "XP" then
--- 		toggleFunc = function()
--- 			if not oUF_LUI_player.XP then module.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit) end
--- 			if self.db.XP_Rep.Experience.Enable and UnitLevel("player") ~= MAX_PLAYER_LEVEL then
--- 				oUF_LUI_player.Experience:ForceUpdate()
--- 				oUF_LUI_player.XP:Show()
--- 				if oUF_LUI_player.Rep then oUF_LUI_player.Rep:Hide() end
--- 			else
--- 				oUF_LUI_player.XP:Hide()
--- 				if oUF_LUI_player.Rep then
--- 					if self.db.XP_Rep.Reputation.Enable then
--- 						oUF_LUI_player.Rep:Show()
--- 					else
--- 						oUF_LUI_player.Rep:Hide()
--- 					end
--- 				end
--- 			end
--- 			oUF_LUI_player.XP.Enable = self.db.XP_Rep.Experience.Enable
--- 		end
--- 	else
--- 		toggleFunc = function()
--- 			if not oUF_LUI_player.Rep then module.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit) end
--- 			if self.db.XP_Rep.Reputation.Enable then
--- 				oUF_LUI_player.Reputation:ForceUpdate()
--- 				oUF_LUI_player.Rep:Show()
--- 				if oUF_LUI_player.XP then oUF_LUI_player.XP:Hide() end
--- 			else
--- 				oUF_LUI_player.Rep:Hide()
--- 				if oUF_LUI_player.XP then
--- 					if self.db.XP_Rep.Experience.Enable and UnitLevel("player") ~= MAX_PLAYER_LEVEL then
--- 						oUF_LUI_player.XP:Show()
--- 					else
--- 						oUF_LUI_player.XP:Hide()
--- 					end
--- 				end
--- 			end
--- 			oUF_LUI_player.Rep.Enable = self.db.XP_Rep.Reputation.Enable
--- 		end
--- 	end
-
--- 	local applySettings = function()
--- 		if oUF_LUI_player.XP then module.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, self.db.XP_Rep) end
--- 		if oUF_LUI_player.Rep then module.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, self.db.XP_Rep) end
--- 	end
-
--- 	local options = self:NewGroup(barType, order, {
--- 		Enable = self:NewToggle("Enable", "Whether you want to show the "..barType.." Bar or not.", 1, toggleFunc, "full"),
--- 		empty1 = self:NewDesc(" ", 2),
--- 		ShowValue = self:NewToggle("Show Value", "Whether you want to show how much "..barType.." you have in the "..barType.." bar or not.", 3, applySettings, nil, disabledFunc),
--- 		AlwaysShow = self:NewToggle("Always Show", "Whether you want the "..barType.." bar to show always or not.", 4, applySettings, nil, disabledFunc),
--- 		BGColor = self:NewColor("Background", barType.."bar Background", 5, applySettings, nil, disabledFunc),
--- 		FillColor = self:NewColor("Fill", barType.."bar Fill", 6, applySettings, nil, disabledFunc),
--- 		RestedColor = (barType == "XP") and self:NewColor("Rested", barType.."bar Rested.", 7, applySettings, "full", disabledFunc) or nil,
--- 		Alpha = self:NewSlider("Alpha", "Select the alpha of the "..barType.." bar when shown.", 8, 0, 1, 0.01, applySettings, true, nil, disabledFunc),
--- 	})
-
--- 	return options
--- end
-
--- function module:CreateXpRepOptions(order)
--- 	local resetFunc = function()
--- 		self.db.profile.XP_Rep = self.defaults.profile.XP_Rep
--- 		StaticPopup_Show("RELOAD_UI")
--- 	end
-
--- 	local applySettings = function()
--- 		if oUF_LUI_player.XP then module.funcs.Experience(oUF_LUI_player, oUF_LUI_player.__unit, self.db.XP_Rep) end
--- 		if oUF_LUI_player.Rep then module.funcs.Reputation(oUF_LUI_player, oUF_LUI_player.__unit, self.db.XP_Rep) end
--- 	end
-
--- 	local options = self:NewGroup("XP / Rep", order, "tab", {
--- 		Info = self:NewGroup("Info", 1, {
--- 			About = self:NewDesc("The XP and Rep bars are located below the Player UnitFrame and will show on mouseover.\nThe Experience Bar will only be shown if you are not yet Level "..MAX_PLAYER_LEVEL..".\n\nIf you are not yet Level "..MAX_PLAYER_LEVEL.." you can right click on either bar to switch to the other.\nWhen you left click on one of the bars, information about that bar will be copied into your Chat EditBox if it is open and added to the Chat Window if not.\n\n\n", 1),
--- 			Reset = self:NewExecute("Reset", nil, 2, resetFunc),
--- 		}),
--- 		Experience = self:CreateXpRepOptionsPart("XP", 2),
--- 		Reputation = self:CreateXpRepOptionsPart("Rep", 3),
--- 		General = self:NewGroup("Font", 4, {
--- 			Font = self:NewSelect("Font", "Choose the Font for the XP/Rep text.", 1, widgetLists.font, "LSM30_Font", applySettings),
--- 			FontSize = self:NewSlider("Font Size", "Choose the Font Size for the XP/Rep text.", 2, 6, 20, 1, applySettings),
--- 			FontFlag = self:NewSelect("Font Flag", "Choose the Font Flag for the XP/Rep text.", 3, fontflags, nil, applySettings),
--- 			FontJustify = self:NewSelect("Font Justify", "Choose the Font Justification for the XP/Rep text.", 4, justifications, nil, applySettings),
--- 			FontColor = self:NewColor("Font", "XP/Rep text", 5, applySettings),
--- 		}),
--- 	})
-
--- 	return options
--- end
-
 function module:CreateHealthPredictionOptions(unit, order)
-	local disabledFunc = function() return not self.db[unit].Bars.HealthPrediction.Enable end
+	local disabledFunc = function() return not self.db[unit].HealthPredictionBar.Enable end
 
 	local applySettings = function()
 		for _, frame in pairs(self.framelist[unit]) do
 			if _G[frame] then
 				module.funcs.HealthPrediction(_G[frame], _G[frame].__unit, self.db[unit])
-				if self.db[unit].Bars.HealthPrediction.Enable then
+				if self.db[unit].HealthPredictionBar.Enable then
 					_G[frame]:EnableElement("HealthPrediction")
 				else
 					_G[frame]:DisableElement("HealthPrediction")
@@ -229,13 +133,13 @@ function module:CreateHealthPredictionOptions(unit, order)
 end
 
 function module:CreateTotalAbsorbOptions(unit, order)
-	local disabledFunc = function() return not self.db[unit].Bars.TotalAbsorb.Enable end
+	local disabledFunc = function() return not self.db[unit].TotalAbsorbBar.Enable end
 
 	local applySettings = function()
 		for _, frame in pairs(self.framelist[unit]) do
 			if _G[frame] then
 				module.funcs.TotalAbsorb(_G[frame], _G[frame].__unit, self.db[unit])
-				if self.db[unit].Bars.TotalAbsorb.Enable then
+				if self.db[unit].TotalAbsorbBar.Enable then
 					_G[frame]:EnableElement("TotalAbsorb")
 				else
 					_G[frame]:DisableElement("TotalAbsorb")
@@ -255,10 +159,10 @@ function module:CreateTotalAbsorbOptions(unit, order)
 	return options
 end
 
--- barType: "Health", "Power", "Full"
+-- barType: "Health", "Power"
 function module:CreateBarOptions(unit, order, barType)
-	local disabledFunc = (barType ~= "Health") and function() return not self.db[unit].Bars[barType].Enable end or nil
-	local disabledColorFunc = (barType ~= "Full") and function() return not (self.db[unit].Bars[barType].Enable ~= false and self.db[unit].Bars[barType].Color == "Individual") end or nil
+	local disabledFunc = (barType ~= "Health") and function() return not self.db[unit][barType.."Bar"].Enable end or nil
+	local disabledColorFunc = function() return not (self.db[unit][barType.."Bar"].Enable ~= false and self.db[unit][barType.."Bar"].Color == "Individual") end or nil
 
 	local applySettings = function()
 		for _, frame in pairs(self.framelist[unit]) do
@@ -314,9 +218,9 @@ function module:CreatePlayerBarOptions(barType, order)
 	local barName = barNames[barType]
 	local barKey = barKeys[barType]
 
-	local isLocked = function() return not self.db.player.Bars[barType].Enable or self.db.player.Bars[barType].Lock end
+	local isLocked = function() return not self.db.player[barType.."Bar"].Enable or self.db.player[barType.."Bar"].Lock end
 
-	local disabledFunc = function() return not self.db.player.Bars[barType].Enable end
+	local disabledFunc = function() return not self.db.player[barType.."Bar"].Enable end
 
 	local applySettings = function(info, Enable)
 		self.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, self.db.player)
@@ -363,8 +267,8 @@ function module:CreatePlayerBarOverlappingOptions(barType, order)
 	local barName = barNames[barType]
 	local barKey = barKeys[barType]
 
-	local disabledFunc = function() return not module.db.player.Bars[barType].Enable end
-	local disabledFunc2 = function() return not (module.db.player.Bars[barType].Enable or not module.db.player.Bars[barType].OverPower) end
+	local disabledFunc = function() return not module.db.profile.player[barType.."Bar"].Enable end
+	local disabledFunc2 = function() return not (module.db.profile.player[barType.."Bar"].Enable or not module.db.player[barType.."Bar"].OverPower) end
 
 	local values = (barType == "AdditionalPower") and {
 		["By Class"] = "By Class",
@@ -379,7 +283,7 @@ function module:CreatePlayerBarOverlappingOptions(barType, order)
 	local applySettings = function()
 		module.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, self.db.player)
 		if oUF_LUI_pet and barType == "AlternativePower" then module.funcs[barKey](oUF_LUI_pet, oUF_LUI_pet.__unit, self.db.player) end
-		if self.db.player.Bars[barType].Enable then
+		if self.db.player[barType.."Bar"].Enable then
 			oUF_LUI_player:EnableElement(barKey)
 			if oUF_LUI_pet and barType == "AlternativePower" then oUF_LUI_pet:EnableElement(barKey) end
 		else
@@ -427,9 +331,9 @@ function module:CreatePlayerBarOverlappingOptions(barType, order)
 end
 
 function module:CreateComboPointsOptions(order)
-	local disabledFunc = function() return not self.db.target.Bars.ComboPoints.Enable end
+	local disabledFunc = function() return not self.db.target.ComboPointsBar.Enable end
 
-	local isLocked = function() return not self.db.target.Bars.ComboPoints.Enable or self.db.target.Bars.ComboPoints.Lock end
+	local isLocked = function() return not self.db.target.ComboPointsBar.Enable or self.db.target.ComboPointsBar.Lock end
 
 	local applySettings = function(info, Enable)
 		module.funcs.CPoints(oUF_LUI_target, oUF_LUI_target.__unit, self.db.Target)
@@ -458,7 +362,7 @@ function module:CreateComboPointsOptions(order)
 		Texture = self:NewSelect("Texture", "Choose your Combo Points Texture.", 12, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc),
 		Multiplier = self:NewSlider("Multiplier", "Choose your Combo Points Background Multiplier", 13, 0, 1, 0.01, applySettings, true, nil, disabledFunc),
 		IndividualBGColor = self:NewToggle("Individual Background Color", "Whether you want to use an individual Background Color or not.", 14, applySettings, nil, disabledFunc),
-		BackgroundColor = self:NewColorNoAlpha("Combo Points Background", nil, 15, applySettings, nil, function() return not (self.db.target.Bars.ComboPoints.Enable or self.db.target.Bars.ComboPoints.IndividualColor) end),
+		BackgroundColor = self:NewColorNoAlpha("Combo Points Background", nil, 15, applySettings, nil, function() return not (self.db.target.ComboPointsBar.Enable or self.db.target.ComboPointsBar.IndividualColor) end),
 	})
 
 	return options
@@ -469,14 +373,14 @@ end
 ------------------------------------------------------------------------
 
 function module:CreateNameTextOptions(unit, order)
-	local disabledTextFunc = function() return not self.db[unit].Texts.Name.Enable end
-	local disabledClassificationFunc = function() return not self.db[unit].Texts.Name.Enable or not self.db[unit].Texts.Name.ShowClassification end
+	local disabledTextFunc = function() return not self.db[unit].NameText.Enable end
+	local disabledClassificationFunc = function() return not self.db[unit].NameText.Enable or not self.db[unit].NameText.ShowClassification end
 
 	local applyInfoText = function()
 		for _, frame in pairs(self.framelist[unit]) do
 			if _G[frame] then
 				module.funcs.Info(_G[frame], _G[frame].__unit, self.db[unit])
-				if self.db[unit].Texts.Name.Enable then
+				if self.db[unit].NameText.Enable then
 					_G[frame].Info:Show()
 				else
 					_G[frame].Info:Hide()
@@ -513,15 +417,15 @@ function module:CreateNameTextOptions(unit, order)
 end
 
 function module:CreateRaidNameTextOptions(order)
-	local disabledFunc = function() return not module.db.raid.Texts.Name.Enable end
+	local disabledFunc = function() return not module.db.profile.raid.NameText.Enable end
 
-	local disabledColorFunc = function() return not (self.db.raid.Texts.Name.Enable and self.db.raid.Texts.Name.ColorByClass) end
+	local disabledColorFunc = function() return not (self.db.raid.NameText.Enable and self.db.raid.NameText.ColorByClass) end
 
 	local applySettings = function()
 		for _, frame in pairs(self.framelist.raid) do
 			if _G[frame] then
 				module.funcs.RaidInfo(_G[frame], _G[frame].__unit, self.db.raid)
-				if self.db.raid.Texts.Name.Enable then
+				if self.db.raid.NameText.Enable then
 					_G[frame].Info:Show()
 				else
 					_G[frame].Info:Hide()
@@ -564,8 +468,14 @@ function module:CreateTextOptions(unit, order, parentName, textType)
 		end
 	end
 
-	local disabledFunc = function() return not self.db[unit].Texts[textKey].Enable end
-	local disabledColorFunc = function() return not self.db[unit].Texts[textKey].Enable or self.db[unit].Texts[textKey].Color ~= "Individual" end
+	local disabledFunc = function()
+		if textType == "CombatFeedback" then return self.db[unit].CombatFeedback.Enable end
+		return not self.db[unit][textKey.."Text"].Enable
+	end
+	local disabledColorFunc = function()
+		if textType == "CombatFeedback" then return not self.db[unit].CombatFeedback.Enable or self.db[unit].CombatFeedback.Color ~= "Individual" end
+		return not self.db[unit][textKey.."Text"].Enable or self.db[unit][textKey.."Text"].Color ~= "Individual"
+	end
 
 	local options = self:NewGroup(textName, order, {
 		Enable = self:NewToggle("Enable", "Whether you want to show "..textName.." Value or not.", 1, applySettings, "full"),
@@ -593,7 +503,7 @@ function module:CreateTextOptions(unit, order, parentName, textType)
 end
 
 function module:CreateCombatTextOptions(unit, order)
-	local disabledCombatFunc = function() return not self.db[unit].Texts.Combat.Enable end
+	local disabledCombatFunc = function() return not self.db[unit].CombatText.Enable end
 
 	local applyCombatFeedback = function()
 		for _, frame in pairs(self.framelist[unit]) do
@@ -635,11 +545,11 @@ function module:CreatePlayerBarTextOptions(barType, order)
 		Standard = "Standard"
 	}
 
-	local disabledFunc = function() return not self.db.player.Texts[barType].Enable end
+	local disabledFunc = function() return not self.db.player[barType.."Text"].Enable end
 
 	local applySettings = function()
 		module.funcs[barKey](oUF_LUI_player, oUF_LUI_player.__unit, self.db.player)
-		if self.db.player.Bars[barType].Enable then
+		if self.db.player[barType.."Bar"].Enable then
 			oUF_LUI_player:EnableElement(barKey)
 		else
 			oUF_LUI_player:DisableElement(barKey)
@@ -647,7 +557,7 @@ function module:CreatePlayerBarTextOptions(barType, order)
 		oUF_LUI_player:UpdateAllElements('refreshUnit')
 	end
 
-	local options = self:NewGroup(barName, order, nil, function() return not self.db.player.Bars[barType].Enable end, {
+	local options = self:NewGroup(barName, order, nil, function() return not self.db.player[barType.."Bar"].Enable end, {
 		Enable = self:NewToggle("Enable", "Whether you want to show the "..barType.." Bar Text or not.", 1, applySettings, "full"),
 		empty1 = self:NewDesc(" ", 2),
 		Font = self:NewSelect("Font", "Choose your "..barType.." Bar Text Font.", 3, widgetLists.font, "LSM30_Font", applySettings, nil, disabledFunc),
@@ -666,7 +576,7 @@ function module:CreatePlayerBarTextOptions(barType, order)
 end
 
 function module:CreatePvpTimerOptions(order)
-	local disabledFunc = function() return not self.db.player.Texts.PvP.Enable end
+	local disabledFunc = function() return not self.db.player.PvPText.Enable end
 
 	local applySettings = function()
 		module.funcs.PvP(oUF_LUI_player, oUF_LUI_player.__unit, self.db.player)
@@ -690,8 +600,8 @@ function module:CreatePvpTimerOptions(order)
 end
 
 function module:CreateAdditionalPowerTimerOptions(order)
-	local disabledFunc = function() return not self.db.player.Texts.AdditionalPower.Enable end
-	local disabledColorFunc = function() return not self.db.player.Texts.AdditionalPower.Enable or self.db.player.Texts.AdditionalPower.Color ~= "Individual" end
+	local disabledFunc = function() return not self.db.player.AdditionalPowerText.Enable end
+	local disabledColorFunc = function() return not self.db.player.AdditionalPowerText.Enable or self.db.player.AdditionalPowerText.Color ~= "Individual" end
 
 	local applySettings = function()
 		module.funcs.AdditionalPower(oUF_LUI_player, oUF_LUI_player.__unit, self.db.player)
@@ -700,7 +610,7 @@ function module:CreateAdditionalPowerTimerOptions(order)
 		oUF_LUI_player:UpdateAllElements('refreshUnit')
 	end
 
-	local options = self:NewGroup("Additional Power", order, nil, function() return not self.db.player.Bars.AdditionalPower.Enable end, {
+	local options = self:NewGroup("Additional Power", order, nil, function() return not self.db.player.AdditionalPowerBar.Enable end, {
 		Enable = self:NewToggle("Enable", "Whether you want to show your Additional Power Value while in Cat/Bear or not.", 2, applySettings),
 		empty1 = self:NewDesc(" ", 2),
 		Font = self:NewSelect("Font", "Choose your Additional Power Bar Text Font.", 3, widgetLists.font, "LSM30_Font", applySettings, nil, disabledFunc),
@@ -732,8 +642,8 @@ function module:CreateCastbarOptions(unit, order)
 	local disabledCastbarShieldFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.Shield) end
 	local disabledCastbarShieldColorFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.Shield and self.db[unit].Castbar.Shield.IndividualColor) end
 	local disabledCastbarShieldBorderFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.General.Shield and self.db[unit].Castbar.Shield.IndividualBorder) end
-	local disabledCastbarNameFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.Text.Name.Enable) end
-	local disabledCastbarTimeFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.Text.Time.Enable) end
+	local disabledCastbarNameFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.NameText.Enable) end
+	local disabledCastbarTimeFunc = function() return not (self.db[unit].Castbar.General.Enable and self.db[unit].Castbar.TimeText.Enable) end
 
 	local applyCastbar = function()
 		for _, frame in pairs(self.framelist[unit]) do
@@ -1007,7 +917,7 @@ function module:CreateUnitOptions(unit, order)
 			x = i
 			if info[i] == unit then break end
 		end
-		local t = module.db[unit]
+		local t = module.db.profile[unit]
 		for i = x+1, #info do
 			if info[i] ~= "General" then
 				t = t[info[i]]
@@ -1041,7 +951,7 @@ function module:CreateUnitOptions(unit, order)
 			x = i
 			if info[i] == unit then break end
 		end
-		local t = module.db[unit]
+		local t = module.db.profile[unit]
 		for i = x+1, #info-1 do
 			if info[i] ~= "General" then
 				t = t[info[i]]
@@ -1081,7 +991,7 @@ function module:CreateUnitOptions(unit, order)
 				UseBlizzard = (unit == "party" or unit == "Boss" or unit == "arena" or unit == "raid") and self:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, false, "full", function() return self.db[unit].Enable end) or nil,
 				ShowPlayer = (unit == "party") and self:NewToggle("Show Player", "Whether you want to show yourself within the Party Frames or not.", 3, false, nil, disabledFunc) or nil,
 				ShowInRaid = (unit == "party") and self:NewToggle("Show in Raid", "Whether you want to show the Party Frames in Raid or not.", 4, false, nil, disabledFunc) or nil,
-				ShowInRealPartys = (unit == "party") and self:NewToggle("Show only in real Parties", "Whether you want to show the Party Frames only in real Parties or in Raids with 5 or less players too.", 5, false, nil, function() return not module.db.party.Enable or module.db.party.ShowInRaid end) or nil,
+				ShowInRealPartys = (unit == "party") and self:NewToggle("Show only in real Parties", "Whether you want to show the Party Frames only in real Parties or in Raids with 5 or less players too.", 5, false, nil, function() return not module.db.profile.party.Enable or module.db.party.ShowInRaid end) or nil,
 				empty1 = (unit ~= "player" and unit ~= "target") and self:NewDesc(" ", 6) or nil,
 				Padding = (unit == "party" or unit == "Boss" or unit == "arena" or unit == "maintank" or unit == "raid") and self:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.", 7, false, nil, disabledFunc) or nil,
 				GroupPadding = (unit == "raid") and self:NewInputNumber("Group Padding", "Choose the Padding between your "..unit.." Groups.", 8, false, nil, disabledFunc) or nil,
@@ -1130,8 +1040,8 @@ function module:CreateUnitOptions(unit, order)
 		Bars = self:NewGroup("Bars", 3, "tab", nil, disabledFunc, {
 			Health = self:CreateBarOptions(unit, 1, "Health"),
 			Power = self:CreateBarOptions(unit, 2, "Power"),
-			HealthPrediction = self.db[unit].Bars.HealthPrediction and self:CreateHealthPredictionOptions(unit, 4) or nil,
-			TotalAbsorb = self.db[unit].Bars.TotalAbsorb and self:CreateTotalAbsorbOptions(unit, 5) or nil,
+			HealthPrediction = self.db[unit].HealthPredictionBar and self:CreateHealthPredictionOptions(unit, 4) or nil,
+			TotalAbsorb = self.db[unit].TotalAbsorbBar and self:CreateTotalAbsorbOptions(unit, 5) or nil,
 			AdditionalPower = ((LUI.DRUID or LUI.PRIEST or LUI.SHAMAN) and unit == "player") and self:CreatePlayerBarOverlappingOptions("AdditionalPower", 11) or nil,
 			AlternativePower = (LUI.IsRetail and unit == "player") and self:CreatePlayerBarOverlappingOptions("AlternativePower", 12) or nil,
 			Runes = (LUI.DEATHKNIGHT and unit == "player") and self:CreatePlayerBarOptions("Runes", 14) or nil,

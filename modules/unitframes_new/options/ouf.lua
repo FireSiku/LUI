@@ -100,8 +100,8 @@ function module:CreateSettings(order)
 					if _G[frame] then
 						frame = _G[frame]
 						if Enable then
-							if module.db[unit].Castbar.Enable ~= false then
-								if not frame.Castbar then module.funcs.Castbar(frame, frame.__unit, module.db[unit]) end
+							if module.db.profile[unit].Castbar.Enable ~= false then
+								if not frame.Castbar then module.funcs.Castbar(frame, frame.__unit, module.db.profile[unit]) end
 								frame:EnableElement("Castbar")
 								if unit == "Player" then
 									Blizzard:Hide("castbar")
@@ -128,7 +128,7 @@ function module:CreateSettings(order)
 			if v.Buffs then
 				for i = 1, 50 do
 					if v.Buffs[i] then
-						v.Buffs[i].remaining:SetFont(Media:Fetch("font",  module.db.Settings.AuratimerFont), module.db.Settings.AuratimerSize, module.db.Settings.AuratimerFlag)
+						v.Buffs[i].remaining:SetFont(Media:Fetch("font",  module.db.profile.Settings.AuratimerFont), module.db.Settings.AuratimerSize, module.db.Settings.AuratimerFlag)
 					else
 						break
 					end
@@ -137,7 +137,7 @@ function module:CreateSettings(order)
 			if v.Debuffs then
 				for i = 1, 50 do
 					if v.Debuffs[i] then
-						v.Debuffs[i].remaining:SetFont(Media:Fetch("font",  module.db.Settings.AuratimerFont), module.db.Settings.AuratimerSize, module.db.Settings.AuratimerFlag)
+						v.Debuffs[i].remaining:SetFont(Media:Fetch("font",  module.db.profile.Settings.AuratimerFont), module.db.Settings.AuratimerSize, module.db.Settings.AuratimerFlag)
 					else
 						break
 					end
