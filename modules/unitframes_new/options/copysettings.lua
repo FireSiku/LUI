@@ -32,43 +32,43 @@ end
 
 local CopyFuncs = {
 	Castbar = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(module.db[srcUnit].Castbar, module.db[dstUnit].Castbar, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].Castbar, module.db.profile[dstUnit].Castbar, withSizes, withPosition)
 	end,
 	
 	Auras = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(module.db[srcUnit].Aura, module.db[dstUnit].Aura, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].Aura, module.db.profile[dstUnit].Aura, withSizes, withPosition)
 	end,
 	
 	Bars = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(module.db[srcUnit].Health, module.db[dstUnit].Health, withSizes, withPosition)
-		CopySettings(module.db[srcUnit].Power, module.db[dstUnit].Power, withSizes, withPosition)
-		CopySettings(module.db[srcUnit].Full, module.db[dstUnit].Full, withSizes, withPosition)
-		CopySettings(module.db[srcUnit].HealthPrediction, module.db[dstUnit].HealthPrediction, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].Health, module.db.profile[dstUnit].Health, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].Power, module.db.profile[dstUnit].Power, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].Full, module.db.profile[dstUnit].Full, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].HealthPrediction, module.db.profile[dstUnit].HealthPrediction, withSizes, withPosition)
 	end,
 	
 	Indicators = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(module.db[srcUnit].Indicators, module.db[dstUnit].Indicators, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].Indicators, module.db.profile[dstUnit].Indicators, withSizes, withPosition)
 	end,
 	
 	Background = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(module.db[srcUnit].Backdrop, module.db[dstUnit].Backdrop, withSizes, withPosition)
-		CopySettings(module.db[srcUnit].Border, module.db[dstUnit].Border, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].Backdrop, module.db.profile[dstUnit].Backdrop, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].Border, module.db.profile[dstUnit].Border, withSizes, withPosition)
 	end,
 	
 	Texts = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(module.db[srcUnit].Texts, module.db[dstUnit].Texts, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].Texts, module.db.profile[dstUnit].Texts, withSizes, withPosition)
 	end,
 	
 	Portrait = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(module.db[srcUnit].Portrait, module.db[dstUnit].Portrait, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].Portrait, module.db.profile[dstUnit].Portrait, withSizes, withPosition)
 	end,
 	
 	Fader = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(module.db[srcUnit].Fader, module.db[dstUnit].Fader, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].Fader, module.db.profile[dstUnit].Fader, withSizes, withPosition)
 	end,
 	
 	All = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(module.db[srcUnit], module.db[dstUnit], withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit], module.db.profile[dstUnit], withSizes, withPosition)
 	end
 }
 
@@ -110,7 +110,7 @@ end
 function module:CreateCopyOptions(unit, order)
 	local disabledFunc = function()
 		if settings.toCopy == "All" or settings.toCopy == "Background" then return false end
-		if module.db[unit][settings.toCopy] then return false end
+		if module.db.profile[unit][settings.toCopy] then return false end
 		return true
 	end
 	
