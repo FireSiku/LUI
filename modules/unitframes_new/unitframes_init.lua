@@ -218,7 +218,7 @@ module.defaults = {
 				},
 			},
 			Portrait = {
-				Width = 110,
+				Width = 250,
 			},
 			LeaderIndicator = { Enable = true, Size = 17, X = 0, Y = 10, Point = "TOPLEFT" },
 			GroupRoleIndicator = { Enable = true, Size = 22, X = 15, Y = 10, Point = "TOPRIGHT" },
@@ -425,7 +425,7 @@ module.defaults = {
 				},
 			},
 			Portrait = {
-				Width = 110,
+				Width = 250,
 			},
 			LeaderIndicator = { Enable = true, Size = 17, X = 0, Y = 10, Point = "TOPLEFT" },
 			GroupRoleIndicator = { Enable = true, Size = 22, X = 15, Y = 10, Point = "TOPRIGHT" },
@@ -873,7 +873,6 @@ module.defaults = {
 			Portrait = {
 				Height = 33,
 				Width = 77.5,
-				Alpha = 0.5,
 			},
 			LeaderIndicator = { Enable = false, Size = 14, X = 0, Y = 4, Point = "TOPLEFT" },
 			GroupRoleIndicator = { Enable = false, Size = 14, X = 2, Y = 2, Point = "TOPRIGHT" },
@@ -1561,7 +1560,7 @@ module.defaults = {
 				Width = 90,
 				X = 0,
 				Y = 0,
-				Alpha = 1,
+				Alpha = 0.5,
 			},
 			LeaderIndicator = { Enable = false, Size = 17, X = 0, Y = 0, Point = "TOPLEFT" },
 			GroupRoleIndicator = { Enable = false, Size = 22, X = 15, Y = 10, Point = "TOPRIGHT" },
