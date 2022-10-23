@@ -295,6 +295,8 @@ local function NewUnitOptionGroup(unit, order)
     if dbUnit.RaidMarkerIndicator then unitOptions.args.RaidMarkerIndicator = GenerateIndicatorGroup("Raid Icon", 52, Opt.GetSet(dbUnit.RaidMarkerIndicator)) end
     if dbUnit.PvPIndicator then unitOptions.args.PvPIndicator = GenerateIndicatorGroup("PvP Icon", 53, Opt.GetSet(dbUnit.PvPIndicator)) end
     if dbUnit.RestingIndicator then unitOptions.args.RestingIndicator = GenerateIndicatorGroup("Resting Icon", 54, Opt.GetSet(dbUnit.RestingIndicator)) end
+    if dbUnit.ReadyCheckIndicator then unitOptions.args.ReadyCheckIndicator = GenerateIndicatorGroup("Ready Check Icon", 54, Opt.GetSet(dbUnit.ReadyCheckIndicator)) end
+
 
     return unitOptions
 end
@@ -304,13 +306,3 @@ for i = 1, #module.unitsSpawn do
     local t = NewUnitOptionGroup(unit, i+10)
     Opt.options.args.Unitframes.args[unit] = t
 end
-
---[[
-
-	Portrait = opt:NewGroup("Portrait", 4, "tab", nil, {
-			Size = opt:NewUnitframeSize(nil, 1, true),
-			Position = opt:NewPosition("Position", 2, true),
-			Point = opt:NewSelect(L["Anchor"], nil, 3, LUI.Points),
-			Alpha = opt:NewSlider("Alpha", nil, 4, 0, 1, 0.05, true),
-        }),
-]]
