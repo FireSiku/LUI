@@ -11,7 +11,6 @@
 ### Initialize Libs ###
 libs\libs.xml
 locale\locale.xml
-# api\oUF\ouf.xml
 api\oUF10\ouf.xml
 api\oUF11\ouf.xml
 
@@ -33,7 +32,7 @@ update.lua
 ### Artwork ###
 modules\artwork\themes.lua
 modules\artwork\panels.lua
-modules\artwork\artwork.lua
+modules\artwork\artwork_v3.lua
 
 ### Fader ###
 modules\fader\fader_init.lua
@@ -53,16 +52,16 @@ modules\minimap\minimap_init.lua
 modules\minimap\minimap_v4.lua
 
 ### Bags ###
-modules\bags\bags.lua
+modules\bags\bags_v3.lua
 
 ### Cooldown ###
 modules\cooldown\cooldown.xml
 
 ### Tooltip ###
-modules\tooltip\tooltip.lua
+modules\tooltip\tooltip_v3.lua
 
 ### InfoText ###
-modules\infotext\datatext.lua
+modules\infotext\datatext_v3.lua
 # modules\InfoText\infotext.lua
 # modules\InfoText\bags.lua
 # modules\InfoText\clock.lua
@@ -77,7 +76,7 @@ modules\infotext\datatext.lua
 # modules\InfoText\memory.lua
 
 ### Micromenu ###
-modules\micromenu\micromenu.lua
+modules\micromenu\micromenu_v3.lua
 
 ### RaidMenu ###
 modules\raidmenu\raidmenu_init.lua
@@ -118,85 +117,27 @@ scripts\hideblizzard.lua
 api\frameidentifier.lua
 
 ### Initialize Unitframes ###
-# unitframes\templates.xml
-# unitframes\init.lua
-
-# ### Unitframe Default Values ###
-# unitframes\defaults\player.lua
-# unitframes\defaults\target.lua
-# unitframes\defaults\tot.lua
-# unitframes\defaults\totot.lua
-# unitframes\defaults\focus.lua
-# unitframes\defaults\focustarget.lua
-# unitframes\defaults\pet.lua
-# unitframes\defaults\pettarget.lua
-# unitframes\defaults\boss.lua
-# unitframes\defaults\bosstarget.lua
-# unitframes\defaults\party.lua
-# unitframes\defaults\partypet.lua
-# unitframes\defaults\partytarget.lua
-# unitframes\defaults\maintank.lua
-# unitframes\defaults\maintanktarget.lua
-# unitframes\defaults\maintanktot.lua
-# unitframes\defaults\arena.lua
-# unitframes\defaults\arenapet.lua
-# unitframes\defaults\arenatarget.lua
-# unitframes\defaults\raid.lua
-
-# ### Unitframe Options ###
-# unitframes\options\colors.lua
-# unitframes\options\copysettings.lua
-# unitframes\options\general.lua
-# unitframes\options\importexport.lua
-# unitframes\options\movable.lua
-# unitframes\options\ouf.lua
-# unitframes\options\showhide.lua
-# unitframes\options\toggle.lua
-
-# ### LUI Unitframe Additions ###
-# unitframes\plugins\oUF_CombatFeedback.lua
-# unitframes\plugins\oUF_Experience.lua
-# unitframes\plugins\oUF_Reputation.lua
-# unitframes\plugins\oUF_RaidDebuffs.lua
-
-# ### to investigate as we may not need these anymore ###
-# unitframes\plugins\singleauras.lua
-# unitframes\plugins\raiddebuffs.lua
-# unitframes\plugins\maintank.lua
-# unitframes\plugins\vehicle.lua
-# unitframes\plugins\arcanecharges.lua
-# unitframes\plugins\chi.lua
-# unitframes\plugins\holypower.lua
-# unitframes\plugins\warlockbar.lua
-# unitframes\plugins\totalabsorb.lua
-
-# ### Unitframe Layout ###
-# unitframes\layout\tags.lua
-# unitframes\layout\meta.lua
-# unitframes\layout\layout.lua
-
-### Initialize Unitframes ###
-unitframes\templates.xml
-modules\unitframes_new\unitframes_init.lua
+modules\unitframes\templates.xml
+modules\unitframes\unitframes_init.lua
 
 ### Unitframe Options ###
-modules\unitframes_new\options\colors.lua
-modules\unitframes_new\options\copysettings.lua
-modules\unitframes_new\options\general.lua
-modules\unitframes_new\options\importexport.lua
-modules\unitframes_new\options\movable.lua
-modules\unitframes_new\options\ouf.lua
-modules\unitframes_new\options\showhide.lua
-modules\unitframes_new\options\toggle.lua
+modules\unitframes\options\colors.lua
+modules\unitframes\options\copysettings.lua
+modules\unitframes\options\general.lua
+modules\unitframes\options\importexport.lua
+modules\unitframes\options\movable.lua
+modules\unitframes\options\ouf.lua
+modules\unitframes\options\showhide.lua
+modules\unitframes\options\toggle.lua
 
 ### LUI Unitframe Additions ###
-modules\unitframes_new\plugins\oUF_CombatFeedback.lua
-modules\unitframes_new\plugins\oUF_RaidDebuffs.lua
+modules\unitframes\plugins\oUF_CombatFeedback.lua
+modules\unitframes\plugins\oUF_RaidDebuffs.lua
 
 ### Unitframe Layout ###
-modules\unitframes_new\layout\tags.lua
-modules\unitframes_new\layout\meta.lua
-modules\unitframes_new\layout\layout.lua
+modules\unitframes\layout\tags.lua
+modules\unitframes\layout\meta.lua
+modules\unitframes\layout\layout.lua
 
 ### Embedded Darion ###
 media\Masque_Darion\Darion.lua
