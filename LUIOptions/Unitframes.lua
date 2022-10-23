@@ -84,7 +84,7 @@ local function GenerateBarGroup(unit, name, colorTypes, order)
     local optName = string.gsub(name, "Bar", " Bar")
     local group = Opt:Group(optName, nil, order, nil, nil, nil, Opt.GetSet(dbBar))
     group.args = {
-        Enabled = Opt:Toggle("Enabled", nil, 1, nil, "full"),
+        Enable = Opt:Toggle("Enabled", nil, 1, nil, "full"),
         Width = Opt:Input("Width", nil, 2),
         Height = Opt:Input("Height", nil, 3),
         X = Opt:Input("X Value", nil, 4),
@@ -112,7 +112,7 @@ local function GenerateTextGroup(unit, name, colorTypes, order)
     local optName = string.gsub(name, "Text", " Text")
     local group = Opt:Group(optName, nil, order, nil, nil, nil, Opt.GetSet(dbText))
     group.args = {
-        Enabled = Opt:Toggle("Enabled", nil, 1, nil, "full"),
+        Enable = Opt:Toggle("Enabled", nil, 1, nil, "full"),
         X = Opt:Input("X Value", nil, 4),
         Y = Opt:Input("Y Value", nil, 5),
         Point = Opt:Select(L["Anchor"], nil, 6, LUI.Points),
@@ -163,7 +163,7 @@ local function GenerateClassBarGroup(unit, name, order)
     local optName = string.gsub(name, "Bar", " Bar")
     local group = Opt:Group(optName, nil, order, nil, nil, nil, Opt.GetSet(dbBar))
     group.args = {
-        Enabled = Opt:Toggle("Enabled", nil, 1, nil, "full"),
+        Enable = Opt:Toggle("Enabled", nil, 1, nil, "full"),
         Width = Opt:Input("Width", nil, 2),
         Height = Opt:Input("Height", nil, 3),
         X = Opt:Input("X Value", nil, 4),
@@ -189,7 +189,7 @@ local function GenerateIndicatorGroup(unit, name, order)
     local optName = string.gsub(name, "Indicator", " Indicator")
     local group = Opt:Group(name, nil, order, nil, nil, nil, Opt.GetSet(dbIcon))
     group.args = {
-        Enabled = Opt:Toggle("Enabled", nil, 1, nil, "full"),
+        Enable = Opt:Toggle("Enabled", nil, 1, nil, "full"),
         X = Opt:Input("X Value", nil, 2),
         Y = Opt:Input("Y Value", nil, 3),
         Size = Opt:Slider("Size", nil, 4, sizeValues),
@@ -243,7 +243,7 @@ local function NewUnitOptionGroup(unit, order)
     if dbUnit.Portrait then
         unitOptions.args.Portrait = Opt:Group("Portrait", nil, 30, nil, nil, nil, Opt.GetSet(dbUnit.Portrait))
         unitOptions.args.Portrait.args = {
-            Enabled = Opt:Toggle("Enabled", nil, 1, nil, "full"),
+            Enable = Opt:Toggle("Enabled", nil, 1, nil, "full"),
             Width = Opt:Input("Width", nil, 2),
             Height = Opt:Input("Height", nil, 3),
             X = Opt:Input("X Value", nil, 4),

@@ -14,7 +14,7 @@ local importLayoutName
 local layouts = setmetatable({
 	LUI = {},
 	Shandrela = {
-		Boss = {
+		boss = {
 			Portrait = {
 				Height = 30,
 				Enable = true,
@@ -43,63 +43,57 @@ local layouts = setmetatable({
 			Width = 170,
 			Y = 65,
 			X = -150,
-			Indicators = {
-				Raid = {
-					Y = 6,
-					Size = 35,
-				},
+			RaidMarkerIndicator = {
+				Y = 6,
+				Size = 35,
 			},
 			Height = 42,
 			Padding = 50,
-			Bars = {
-				Health = {
-					TextureBG = "Empty",
-					Width = 170,
-					Height = 30,
-					IndividualColor = {
-						b = 0.4,
-						g = 0.4,
-						r = 0.4,
-					},
-					BGMultiplier = 0,
-					Texture = "RenaitreMinion",
+			HealthBar = {
+				TextureBG = "Empty",
+				Width = 170,
+				Height = 30,
+				IndividualColor = {
+					b = 0.4,
+					g = 0.4,
+					r = 0.4,
 				},
-				Power = {
-					TextureBG = "Otravi",
-					Color = "By Type",
-					Enable = true,
-					Width = 170,
-					Y = -32,
-					Texture = "Otravi",
-				},
+				BGMultiplier = 0,
+				Texture = "RenaitreMinion",
 			},
-			Texts = {
-				HealthPercent = {
-					Outline = "OUTLINE",
-					Color = "By Class",
-					Y = 5,
-					Font = "vibroceb",
-					Enable = true,
-					IndividualColor = {
-						b = 1,
-						g = 1,
-						r = 1,
-					},
-					Size = 16,
+			PowerBar = {
+				TextureBG = "Otravi",
+				Color = "By Type",
+				Enable = true,
+				Width = 170,
+				Y = -32,
+				Texture = "Otravi",
+			},
+			HealthPercentText = {
+				Outline = "OUTLINE",
+				Color = "By Class",
+				Y = 5,
+				Font = "vibroceb",
+				Enable = true,
+				IndividualColor = {
+					b = 1,
+					g = 1,
+					r = 1,
 				},
-				Name = {
-					Outline = "OUTLINE",
-					ColorNameByClass = true,
-					Y = -20,
-					Length = "Medium",
-					Size = 19,
-				},
+				Size = 16,
+			},
+			NameText = {
+				Outline = "OUTLINE",
+				ColorNameByClass = true,
+				Y = -20,
+				Length = "Medium",
+				Size = 19,
 			},
 		},
-		PartyPet = {
+		partypet = {
 			Enable = false,
 		},
-		Focus = {
+		focus = {
 			Portrait = {
 				Height = 24,
 				Enable = true,
@@ -128,45 +122,39 @@ local layouts = setmetatable({
 					Size = 18,
 				},
 			},
-			Bars = {
-				Health = {
-					TextureBG = "Empty",
-					Color = "Individual",
-					IndividualColor = {
-						b = 0.4,
-						g = 0.4,
-						r = 0.4,
-					},
-					BGMultiplier = 0,
-					Texture = "RenaitreMinion",
+			HealthBar = {
+				TextureBG = "Empty",
+				Color = "Individual",
+				IndividualColor = {
+					b = 0.4,
+					g = 0.4,
+					r = 0.4,
 				},
+				BGMultiplier = 0,
+				Texture = "RenaitreMinion",
 			},
-			Indicators = {
-				Raid = {
-					Size = 30,
-				},
+			RaidMarkerIndicator = {
+				Size = 30,
 			},
-			Texts = {
-				HealthPercent = {
-					Outline = "OUTLINE",
-					Font = "vibroceb",
-					Color = "By Class",
-					Size = 12,
-				},
-				Name = {
-					Outline = "OUTLINE",
-					ColorNameByClass = true,
-					Font = "vibroceb",
-					Size = 12,
-				},
-				Combat = {
-					Size = 20,
-					Font = "vibrocen",
-					Outline = "OUTLINE",
-				},
+			HealthPercentText = {
+				Outline = "OUTLINE",
+				Font = "vibroceb",
+				Color = "By Class",
+				Size = 12,
+			},
+			NameText = {
+				Outline = "OUTLINE",
+				ColorNameByClass = true,
+				Font = "vibroceb",
+				Size = 12,
+			},
+			CombatFeedback = {
+				Size = 20,
+				Font = "vibrocen",
+				Outline = "OUTLINE",
 			},
 		},
-		Target = {
+		target = {
 			Portrait = {
 				Height = 30,
 				Enable = true,
@@ -198,84 +186,78 @@ local layouts = setmetatable({
 				},
 			},
 			Height = 42,
-			Bars = {
-				Health = {
-					TextureBG = "Empty",
-					Tapping = true,
-					IndividualColor = {
-						b = 0.4,
-						g = 0.4,
-						r = 0.4,
-					},
-					BGMultiplier = 0,
-					Texture = "RenaitreMinion",
+			HealthBar = {
+				TextureBG = "Empty",
+				Tapping = true,
+				IndividualColor = {
+					b = 0.4,
+					g = 0.4,
+					r = 0.4,
 				},
-				Power = {
-					TextureBG = "Otravi",
-					Texture = "Otravi",
-				},
-				HealthPrediction = {
-					Enable = true,
-				},
-				ComboPoints = {
-					Y = -4,
-					X = 25,
-					Width = 200,
-					Height = 8,
-					Multiplier = 0,
-					BackgroundColor = {
-						Enable = false,
-					},
-					Texture = "Otravi",
-				},
+				BGMultiplier = 0,
+				Texture = "RenaitreMinion",
 			},
-			Indicators = {
-				Role = {
-					Y = 6,
-					X = -6,
-					Point = "RIGHT",
-					Size = 15,
-				},
-				Raid = {
-					Y = 6,
-					Size = 35,
-				},
-				Leader = {
-					Y = 7,
-					X = 5,
-					Point = "LEFT",
-					Size = 15,
-				},
+			PowerBar = {
+				TextureBG = "Otravi",
+				Texture = "Otravi",
 			},
-			Texts = {
-				Name = {
-					ColorLevelByDifficulty = false,
-					Font = "neuropol",
-					ShortClassification = true,
+			HealthPredictionBar = {
+				Enable = true,
+			},
+			ClassPowerBar = {
+				Y = -4,
+				X = 25,
+				Width = 200,
+				Height = 8,
+				Multiplier = 0,
+				BackgroundColor = {
+					Enable = false,
 				},
-				Power = {
-					Y = -47,
-					ShowEmpty = false,
-					Size = 20,
-				},
-				Health = {
-					Y = -27,
-					Size = 24,
-				},
-				HealthPercent = {
-					Outline = "OUTLINE",
-					Y = 5,
-					Color = "By Class",
-					Font = "vibroceb",
-				},
-				Combat = {
-					Size = 20,
-					Font = "vibrocen",
-					Outline = "OUTLINE",
-				},
+				Texture = "Otravi",
+			},
+			GroupRoleIndicator ={
+				Y = 6,
+				X = -6,
+				Point = "RIGHT",
+				Size = 15,
+			},
+			RaidMarkerIndicator = {
+				Y = 6,
+				Size = 35,
+			},
+			LeaderIndicator = {
+				Y = 7,
+				X = 5,
+				Point = "LEFT",
+				Size = 15,
+			},
+			NameText = {
+				ColorLevelByDifficulty = false,
+				Font = "neuropol",
+				ShortClassification = true,
+			},
+			PowerText = {
+				Y = -47,
+				ShowEmpty = false,
+				Size = 20,
+			},
+			HealthText = {
+				Y = -27,
+				Size = 24,
+			},
+			HealthPercentText = {
+				Outline = "OUTLINE",
+				Y = 5,
+				Color = "By Class",
+				Font = "vibroceb",
+			},
+			CombatFeedback = {
+				Size = 20,
+				Font = "vibrocen",
+				Outline = "OUTLINE",
 			},
 		},
-		ToT = {
+		targettarget = {
 			Portrait = {
 				Height = 24,
 				Enable = true,
@@ -297,66 +279,58 @@ local layouts = setmetatable({
 					Size = 18,
 				},
 			},
-			Bars = {
-				Health = {
-					TextureBG = "Empty",
-					Color = "Individual",
-					IndividualColor = {
-						b = 0.4,
-						g = 0.4,
-						r = 0.4,
-					},
-					BGMultiplier = 0,
-					Texture = "RenaitreMinion",
+			HealthBar = {
+				TextureBG = "Empty",
+				Color = "Individual",
+				IndividualColor = {
+					b = 0.4,
+					g = 0.4,
+					r = 0.4,
 				},
+				BGMultiplier = 0,
+				Texture = "RenaitreMinion",
 			},
-			Indicators = {
-				Raid = {
-					Size = 30,
-				},
+			RaidMarkerIndicator = {
+				Size = 30,
 			},
-			Texts = {
-				HealthPercent = {
-					Outline = "OUTLINE",
-					Font = "vibroceb",
-					Color = "By Class",
-					Size = 12,
-				},
-				Name = {
-					Outline = "OUTLINE",
-					ColorNameByClass = true,
-					Font = "vibroceb",
-					Size = 12,
-				},
-				Combat = {
-					Size = 20,
-					Font = "vibrocen",
-					Outline = "OUTLINE",
-				},
+			HealthPercentText = {
+				Outline = "OUTLINE",
+				Font = "vibroceb",
+				Color = "By Class",
+				Size = 12,
+			},
+			NamText = {
+				Outline = "OUTLINE",
+				ColorNameByClass = true,
+				Font = "vibroceb",
+				Size = 12,
+			},
+			CombatFeedback = {
+				Size = 20,
+				Font = "vibrocen",
+				Outline = "OUTLINE",
 			},
 		},
-		FocusTarget = {
+		focustarget = {
 			Backdrop = {
 				Texture = "Solid",
 			},
 		},
-		BossTarget = {
+		bosstarget = {
 			Enable = true,
 			Backdrop = {
 				Texture = "Solid",
 			},
-			Bars = {
-				Health = {
-					TextureBG = "Empty",
-					Color = "Individual",
-					IndividualColor = {
-						b = 0.4,
-						g = 0.4,
-						r = 0.4,
-					},
-					BGMultiplier = 0,
-					Texture = "RenaitreMinion",
+			HealthBar = {
+				TextureBG = "Empty",
+				Color = "Individual",
+				IndividualColor = {
+					b = 0.4,
+					g = 0.4,
+					r = 0.4,
 				},
+				BGMultiplier = 0,
+				Texture = "RenaitreMinion",
 			},
 			Portrait = {
 				Height = 24,
@@ -364,14 +338,12 @@ local layouts = setmetatable({
 				Alpha = 0.15,
 				Width = 130,
 			},
-			Texts = {
-				Name = {
-					Outline = "OUTLINE",
-					ColorNameByClass = true,
-					Y = 0,
-					Font = "vibroceb",
-					Size = 12,
-				},
+			NameText = {
+				Outline = "OUTLINE",
+				ColorNameByClass = true,
+				Y = 0,
+				Font = "vibroceb",
+				Size = 12,
 			},
 			Castbar = {
 				General = {
@@ -379,27 +351,23 @@ local layouts = setmetatable({
 				},
 			},
 		},
-		PartyTarget = {
-			Indicators = {
-				Raid = {
-					Size = 30,
-				},
+		partytarget = {
+			RaidMarkerIndicator = {
+				Size = 30,
 			},
 			Backdrop = {
 				Texture = "Solid",
 			},
-			Bars = {
-				Health = {
-					TextureBG = "Empty",
-					Color = "Individual",
-					IndividualColor = {
-						b = 0.4,
-						g = 0.4,
-						r = 0.4,
-					},
-					BGMultiplier = 0,
-					Texture = "RenaitreMinion",
+			HealthBar = {
+				TextureBG = "Empty",
+				Color = "Individual",
+				IndividualColor = {
+					b = 0.4,
+					g = 0.4,
+					r = 0.4,
 				},
+				BGMultiplier = 0,
+				Texture = "RenaitreMinion",
 			},
 			Portrait = {
 				Height = 24,
@@ -407,17 +375,15 @@ local layouts = setmetatable({
 				Alpha = 0.15,
 				Width = 130,
 			},
-			Texts = {
-				Name = {
-					Outline = "OUTLINE",
-					ColorNameByClass = true,
-					Y = 0,
-					Font = "vibroceb",
-					Size = 12,
-				},
+			NameText = {
+				Outline = "OUTLINE",
+				ColorNameByClass = true,
+				Y = 0,
+				Font = "vibroceb",
+				Size = 12,
 			},
 		},
-		Pet = {
+		pet = {
 			Portrait = {
 				Height = 30,
 				Enable = true,
@@ -429,11 +395,10 @@ local layouts = setmetatable({
 			},
 			Y = -220,
 			Height = 42,
-			Bars = {
-				HealthPrediction = {
+				HealthPredictionBar = {
 					Enable = true,
 				},
-				Health = {
+				HealthBar = {
 					TextureBG = "Empty",
 					IndividualColor = {
 						b = 0.4,
@@ -443,49 +408,43 @@ local layouts = setmetatable({
 					BGMultiplier = 0,
 					Texture = "RenaitreMinion",
 				},
-				Power = {
+				PowerBar = {
 					TextureBG = "Otravi",
 					Texture = "Otravi",
 				},
-			},
 			Border = {
 				Aggro = true,
 			},
-			Texts = {
-				HealthPercent = {
+				HealthPercentText = {
 					Outline = "OUTLINE",
 					Y = 5,
 					Color = "By Class",
 					Font = "vibroceb",
 				},
-				Name = {
+				NameText = {
 					Enable = false,
 				},
-				Combat = {
+				CombatText = {
 					Size = 20,
 					Font = "vibrocen",
 					Outline = "OUTLINE",
 				},
-			},
 		},
-		Raid = {
+		raid = {
 			Backdrop = {
 				Texture = "Solid",
 			},
-			Indicators = {
-				Raid = {
+				RaidMarkerIndicator = {
 					Enable = true,
 					Size = 20,
 				},
-			},
 			Portrait = {
 				Alpha = 0.15,
 			},
-			Bars = {
-				HealthPrediction = {
+				HealthPredictionBar = {
 					Enable = true,
 				},
-				Health = {
+				HealthBar = {
 					TextureBG = "Empty",
 					IndividualColor = {
 						b = 0.4,
@@ -495,34 +454,31 @@ local layouts = setmetatable({
 					BGMultiplier = 0,
 					Texture = "RenaitreMinion",
 				},
-				Power = {
+				PowerBar = {
 					TextureBG = "Otravi",
 					Texture = "Otravi",
 				},
-			},
 		},
-		ArenaPet = {
+		arenapet = {
 			Enable = false,
 		},
-		Player = {
-			Indicators = {
-				Role = {
+		player = {
+				GroupRoleIndicator ={
 					Y = 6,
 					X = -6,
 					Point = "RIGHT",
 					Size = 15,
 				},
-				Raid = {
+				RaidMarkerIndicator = {
 					Y = 6,
 					Size = 35,
 				},
-				Leader = {
+				LeaderIndicator = {
 					Y = 7,
 					X = 5,
 					Point = "LEFT",
 					Size = 15,
 				},
-			},
 			Portrait = {
 				Height = 30,
 				Enable = true,
@@ -539,25 +495,24 @@ local layouts = setmetatable({
 			},
 			Y = -220,
 			Height = 42,
-			Bars = {
-				Power = {
+				PowerBar = {
 					TextureBG = "Otravi",
 					Texture = "Otravi",
 				},
-				HealthPrediction = {
+				HealthPredictionBar = {
 					Enable = true,
 				},
-				AdditionalPower = {
+				AdditionalPowerBar = {
 					OverPower = false,
 					TextureBG = "Otravi",
 					Texture = "Otravi",
 				},
-				AlternativePower = {
+				AlternativePowerBar = {
 					OverPower = true,
 					TextureBG = "Otravi",
 					Texture = "Otravi",
 				},
-				Health = {
+				HealthBar = {
 					TextureBG = "Empty",
 					IndividualColor = {
 						b = 0.4,
@@ -567,14 +522,14 @@ local layouts = setmetatable({
 					BGMultiplier = 0,
 					Texture = "RenaitreMinion",
 				},
-				Runes = {
+				RunesBar = {
 					Y = -4,
 					X = 25,
 					Lock = false,
 					Texture = "Otravi",
 					Width = 200,
 				},
-				Totems = {
+				TotemsBar = {
 					X = 25,
 					Y = -4,
 					Width = 200,
@@ -582,59 +537,41 @@ local layouts = setmetatable({
 					Texture = "Otravi",
 					Multiplier = 0,
 				},
-				HolyPower = {
+				ClassPowerBar = {
 					X = 25,
 					Y = -4,
 					Width = 200,
 					Lock = false,
 					Texture = "Otravi",
 				},
-				SoulShards = {
-					X = 25,
-					Y = -4,
-					Width = 200,
-					Lock = false,
-					Texture = "Otravi",
-					Padding = 1,
-				},
-				Eclipse = {
-					X = 25,
-					Y = -4,
-					Width = 200,
-					Lock = false,
-					Texture = "Otravi",
-				},
-			},
 			Border = {
 				Aggro = true,
 			},
-			Texts = {
-				Power = {
+				PowerText = {
 					Y = -48,
 					ShowEmpty = false,
 					Size = 20,
 				},
-				AdditionalPower = {
+				AdditionalPowerText = {
 					Enable = false,
 				},
-				Health = {
+				HealthText = {
 					Y = -27,
 					Size = 24,
 				},
-				HealthPercent = {
+				HealthPercentText = {
 					Outline = "OUTLINE",
 					Y = 5,
 					Color = "By Class",
 					Font = "vibroceb",
 				},
-				Combat = {
+				CombatFeedback = {
 					Size = 20,
 					Font = "vibrocen",
 					Outline = "OUTLINE",
 				},
-			},
 		},
-		Arena = {
+		arena = {
 			Aura = {
 				Debuffs = {
 					Num = 4,
@@ -658,8 +595,7 @@ local layouts = setmetatable({
 				Width = 170,
 			},
 			Height = 42,
-			Bars = {
-				Health = {
+				HealthBar = {
 					TextureBG = "Empty",
 					IndividualColor = {
 						b = 0.4,
@@ -669,31 +605,27 @@ local layouts = setmetatable({
 					BGMultiplier = 0,
 					Texture = "RenaitreMinion",
 				},
-				Power = {
+				PowerBar = {
 					TextureBG = "Otravi",
 					Texture = "Otravi",
 				},
-			},
-			Texts = {
-				HealthPercent = {
+				HealthPercentText = {
 					Outline = "OUTLINE",
 					Y = 5,
 					Color = "By Class",
 					Font = "vibroceb",
 				},
-			},
 			Castbar = {
 				General = {
 					Enable = false,
 				},
 			},
 		},
-		ArenaTarget = {
+		arenatarget = {
 			Backdrop = {
 				Texture = "Solid",
 			},
-			Bars = {
-				Health = {
+				HealthBar = {
 					TextureBG = "Empty",
 					Color = "Individual",
 					IndividualColor = {
@@ -702,8 +634,6 @@ local layouts = setmetatable({
 						r = 0.4,
 					},
 					BGMultiplier = 0,
-					Texture = "RenaitreMinion",
-				},
 			},
 			Portrait = {
 				Height = 24,
@@ -711,23 +641,21 @@ local layouts = setmetatable({
 				Alpha = 0.15,
 				Width = 130,
 			},
-			Texts = {
-				Name = {
+				NameText = {
 					Outline = "OUTLINE",
 					ColorNameByClass = true,
 					Y = 0,
 					Font = "vibroceb",
 					Size = 12,
 				},
-			},
 		},
 		Maintank = {
 			Enable = false,
 		},
-		PetTarget = {
+		pettarget = {
 			Enable = false,
 		},
-		Party = {
+		party = {
 			ShowPlayer = true,
 			Border = {
 				Aggro = true,
@@ -758,14 +686,10 @@ local layouts = setmetatable({
 				Width = 170,
 			},
 			Height = 42,
-			Bars = {
-				Full = {
-					Y = -32,
-				},
-				HealthPrediction = {
+				HealthPredictionBar = {
 					Enable = true,
 				},
-				Health = {
+				HealthBar = {
 					TextureBG = "Empty",
 					IndividualColor = {
 						b = 0.4,
@@ -775,37 +699,32 @@ local layouts = setmetatable({
 					BGMultiplier = 0,
 					Texture = "RenaitreMinion",
 				},
-				Power = {
+				PowerBar = {
 					TextureBG = "Otravi",
 					Texture = "Otravi",
 				},
-			},
-			Indicators = {
-				Role = {
+				GroupRoleIndicator ={
 					Y = 6,
 					X = -6,
 					Point = "RIGHT",
 					Size = 15,
 				},
-				Raid = {
+				RaidMarkerIndicator = {
 					Y = 6,
 					Size = 35,
 				},
-				Leader = {
+				LeaderIndicator = {
 					Y = 7,
 					X = 5,
 					Point = "LEFT",
 					Size = 15,
 				},
-			},
-			Texts = {
-				HealthPercent = {
+				HealthPercentText = {
 					Outline = "OUTLINE",
 					Y = 5,
 					Color = "By Class",
 					Font = "vibroceb",
 				},
-			},
 			Castbar = {
 				General = {
 					Enable = false,
@@ -814,7 +733,7 @@ local layouts = setmetatable({
 		},
 	},
 	Yunai = {
-		PetTarget = {
+		pettarget = {
 			Y = 267.2,
 			X = 313.6,
 			Point = "BOTTOMLEFT",
@@ -822,15 +741,7 @@ local layouts = setmetatable({
 				Enable = true,
 			},
 		},
-		XP_Rep = {
-			Reputation = {
-				Enable = false,
-			},
-			Experience = {
-				Enable = false,
-			},
-		},
-		Pet = {
+		pet = {
 			Y = 40.5,
 			X = -443.6,
 			Point = "BOTTOM",
@@ -839,10 +750,10 @@ local layouts = setmetatable({
 				Enable = true,
 			},
 		},
-		Party = {
+		party = {
 			Enable = false,
 		},
-		Player = {
+		player = {
 			Point = "BOTTOM",
 			Castbar = {
 				General = {
@@ -850,10 +761,8 @@ local layouts = setmetatable({
 				},
 			},
 			Scale = 0.75,
-			Indicators = {
-				PvP = {
+				PvPIndicator = {
 					Enable = true,
-				},
 			},
 			Y = 40.5,
 			Fader = {
@@ -868,47 +777,43 @@ local layouts = setmetatable({
 			Portrait = {
 				Alpha = 0.6,
 			},
-			Bars = {
-				AlternativePower = {
+				AlternativePowerBar = {
 					Enable = false,
 				},
-			},
 			X = -291.1,
-			Texts = {
-				PowerPercent = {
+				PowerPercentText = {
 					Enable = true,
 					ShowFull = true,
 					ShowEmpty = true,
 				},
-				Name = {
+				NameText = {
 					Y = 50,
 					X = -50,
 					Size = 12,
 				},
-				Power = {
+				PowerText = {
 					Enable = false,
 				},
-				HealthPercent = {
+				HealthPercentText = {
 					ShowAlways = true,
 				},
-				Health = {
+				HealthText = {
 					Enable = false,
 					ShowDead = true,
 					Size = 20,
 				},
-				HealthMissing = {
+				HealthMissingText = {
 					Y = 20,
 					ShowAlways = true,
 					Enable = true,
 				},
-				PowerMissing = {
+				PowerMissingText = {
 					Enable = true,
 					ShowFull = true,
 					ShowEmpty = true,
 				},
-			},
 		},
-		Boss = {
+		boss = {
 			Y = -280,
 			X = -16.2,
 			Portrait = {
@@ -917,24 +822,20 @@ local layouts = setmetatable({
 				Alpha = 0.3,
 				Enable = true,
 			},
-			Bars = {
-				Health = {
+				HealthBar = {
 					IndividualColor = {
 						b = 1,
 						g = 1,
 						r = 1,
 					},
 				},
-				Power = {
+				PowerBar = {
 					Enable = true,
 					Height = 2,
 				},
-			},
-			Texts = {
-				Name = {
+				NameText = {
 					X = -100,
 				},
-			},
 		},
 		Settings = {
 			show_v2_party_textures = false,
@@ -942,7 +843,7 @@ local layouts = setmetatable({
 			Castbars = false,
 			show_v2_textures = false,
 		},
-		Focus = {
+		focus = {
 			Portrait = {
 				Height = 30,
 				X = 55,
@@ -959,8 +860,7 @@ local layouts = setmetatable({
 					AuraTimer = true,
 				},
 			},
-			Bars = {
-				Power = {
+				PowerBar = {
 					Color = "Individual",
 					IndividualColor = {
 						b = 1,
@@ -970,16 +870,13 @@ local layouts = setmetatable({
 					Height = 6,
 					Enable = true,
 				},
-			},
 			Point = "RIGHT",
-			Texts = {
-				HealthPercent = {
+				HealthPercentText = {
 					ShowDead = true,
 					ShowAlways = true,
 				},
-			},
 		},
-		Target = {
+		target = {
 			Portrait = {
 				Alpha = 0.6,
 				X = 140,
@@ -989,10 +886,8 @@ local layouts = setmetatable({
 				},
 			},
 			Scale = 0.75,
-			Indicators = {
-				PvP = {
+				PvPIndicator = {
 					Enable = true,
-				},
 			},
 			Y = 41.7,
 			X = 291.1,
@@ -1018,14 +913,11 @@ local layouts = setmetatable({
 					AuraTimer = true,
 				},
 			},
-			Bars = {
-				Health = {
+				HealthBar = {
 					Tapping = true,
 				},
-			},
 			Point = "BOTTOM",
-			Texts = {
-				PowerPercent = {
+				PowerPercentText = {
 					Y = -16,
 					ShowEmpty = true,
 					Enable = true,
@@ -1037,7 +929,7 @@ local layouts = setmetatable({
 					ShowFull = true,
 					Size = 14,
 				},
-				Name = {
+				NameText = {
 					Outline = "OUTLINE",
 					X = -250,
 					ShortClassification = true,
@@ -1045,16 +937,16 @@ local layouts = setmetatable({
 					Y = -50,
 					Size = 20,
 				},
-				Power = {
+				PowerText = {
 					Enable = false,
 				},
-				Health = {
+				HealthText = {
 					Enable = false,
 				},
-				HealthPercent = {
+				HealthPercentText = {
 					ShowAlways = true,
 				},
-				HealthMissing = {
+				HealthMissingText = {
 					Y = 5,
 					X = -200,
 					Enable = true,
@@ -1066,7 +958,7 @@ local layouts = setmetatable({
 					},
 					Size = 15,
 				},
-				PowerMissing = {
+				PowerMissingText = {
 					Y = -15,
 					X = -200,
 					ShowEmpty = true,
@@ -1079,45 +971,40 @@ local layouts = setmetatable({
 					ShowFull = true,
 					Size = 13,
 				},
-			},
 		},
-		Raid = {
+		raid = {
 			Enable = false,
 		},
-		Arena = {
+		arena = {
 			Enable = false,
 		},
-		ToT = {
+		targettarget = {
 			Enable = false,
 		},
 	},
 	Hix = {
-		PetTarget = {
+		pettarget = {
 			Enable = false,
 		},
-		Raid = {
-			Bars = {
-				Health = {
+		raid = {
+				HealthBar = {
 					Color = "Gradient",
 				},
-			},
-			Indicators = {
-				ReadyCheck = {
+				ReadyCheckIndicator = {
 					Y = 2,
 					Point = "RIGHT",
 				},
-				Raid = {
+				RaidMarkerIndicator = {
 					Y = 5,
 					Enable = true,
 					Point = "TOP",
 					Size = 14,
 				},
-			},
 		},
-		Arena = {
+		arena = {
 			Enable = false,
 		},
-		Player = {
+		player = {
 			Portrait = {
 				Enable = true,
 				Alpha = 0.1,
@@ -1147,27 +1034,21 @@ local layouts = setmetatable({
 					AuraTimer = true,
 				},
 			},
-			Bars = {
-				HealthPrediction = {
+				HealthPredictionBar = {
 					Enable = true,
 				},
-			},
-			Indicators = {
-				Role = {
+				GroupRoleIndicator ={
 					Size = 20,
 				},
-				Raid = {
+				RaidMarkerIndicator = {
 					Point = "TOP",
 					Size = 28,
 				},
-			},
-			Texts = {
-				HealthPercent = {
+				HealthPercentText = {
 					Y = 5,
 				},
-			},
 		},
-		Boss = {
+		boss = {
 			Portrait = {
 				Height = 24,
 				Enable = true,
@@ -1188,11 +1069,9 @@ local layouts = setmetatable({
 					},
 				},
 			},
-			Indicators = {
-				Raid = {
+				RaidMarkerIndicator = {
 					Size = 24,
 				},
-			},
 			Width = 150,
 			X = -35,
 			Fader = {
@@ -1203,17 +1082,14 @@ local layouts = setmetatable({
 					Enable = false,
 				},
 			},
-			Bars = {
-				Health = {
+				HealthBar = {
 					Color = "Gradient",
 					Width = 150,
 				},
-				Power = {
+				PowerBar = {
 					Width = 150,
 				},
-			},
-			Texts = {
-				HealthPercent = {
+				HealthPercentText = {
 					X = -5,
 					Point = "RIGHT",
 					RelativePoint = "RIGHT",
@@ -1225,12 +1101,11 @@ local layouts = setmetatable({
 					},
 					Size = 12,
 				},
-				Name = {
+				NameText = {
 					X = 5,
 					Point = "LEFT",
 					RelativePoint = "LEFT",
 				},
-			},
 		},
 		Colors = {
 			Smooth = {
@@ -1239,7 +1114,7 @@ local layouts = setmetatable({
 				{0.25, 0.25, 0.25},
 			},
 		},
-		Focus = {
+		focus = {
 			Castbar = {
 				General = {
 				},
@@ -1265,18 +1140,14 @@ local layouts = setmetatable({
 				Alpha = 0.2,
 				Width = 200,
 			},
-			Indicators = {
-				Raid = {
+				RaidMarkerIndicator = {
 					Size = 28,
 				},
-			},
-			Texts = {
-				HealthPercent = {
+				HealthPercentText = {
 					ShowDead = true,
 				},
-			},
 		},
-		Target = {
+		target = {
 			Portrait = {
 				Enable = true,
 				Alpha = 0.1,
@@ -1287,15 +1158,13 @@ local layouts = setmetatable({
 				},
 			},
 			Scale = 0.85,
-			Indicators = {
-				Raid = {
+				RaidMarkerIndicator = {
 					Point = "TOP",
 					Size = 28,
 				},
-				Role = {
+				GroupRoleIndicator ={
 					Size = 20,
 				},
-			},
 			Y = -210,
 			X = 300,
 			Aura = {
@@ -1313,28 +1182,24 @@ local layouts = setmetatable({
 					AuraTimer = true,
 				},
 			},
-			Bars = {
-				Health = {
+				HealthBar = {
 					Tapping = true,
 				},
-				HealthPrediction = {
+				HealthPredictionBar = {
 					Enable = true,
 				},
-			},
 			Fader = {
 				Enable = true,
 			},
-			Texts = {
-				HealthPercent = {
+				HealthPercentText = {
 					Y = 5,
 				},
-				Name = {
+				NameText = {
 					Format = "Level + Name + Race + Class",
 					Length = "Long",
 				},
-			},
 		},
-		ToT = {
+		targettarget = {
 			X = 500,
 			Portrait = {
 				Height = 24,
@@ -1346,18 +1211,14 @@ local layouts = setmetatable({
 			Fader = {
 				Enable = true,
 			},
-			Indicators = {
-				Raid = {
+				RaidMarkerIndicator = {
 					Size = 28,
 				},
-			},
-			Texts = {
-				HealthPercent = {
+				HealthPercentText = {
 					ShowDead = true,
 				},
-			},
 		},
-		Pet = {
+		pet = {
 			Y = -210,
 			X = 25,
 			Point = "LEFT",
@@ -1370,13 +1231,11 @@ local layouts = setmetatable({
 				Alpha = 0.2,
 				Width = 130,
 			},
-			Texts = {
-				HealthPercent = {
-					Y = 5,
-				},
+			HealthPercentText = {
+				Y = 5,
 			},
 		},
-		Party = {
+		party = {
 			Enable = false,
 		},
 	},
