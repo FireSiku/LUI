@@ -48,6 +48,10 @@ For more information please visit
 |cff8080ffhttps://discord.gg/SR29pjc|r
 
 Enjoy!]=]
+L["For more info, visit Discord"] = [=[If you have any issues, questions or suggestions, 
+Please visit |cff8080ffhttps://discord.gg/SR29pjc|r
+
+Enjoy!]=]
 L["Revision: "] = true
 L["Right"] = true
 L["Row Spacing"] = true
