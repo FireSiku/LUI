@@ -36,6 +36,12 @@ module.defaults = {
 			Locked = false,
 			Scale = 1,
 		},
+		Icons = {
+			Mail = "BOTTOMLEFT",
+			BG = "BOTTOMRIGHT",
+			LFG = "TOPRIGHT",
+			GMTicket = "TOPLEFT",
+		},
 		Fonts = {
 			Text = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
 		},

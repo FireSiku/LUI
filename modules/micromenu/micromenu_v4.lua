@@ -581,7 +581,6 @@ function module:SetMicromenuAnchors()
 			end
 		end
 	end
-	LUI:Print("Finished Iterating")
 
 	-- In order to update the last button, we need to iterate from the back of the list,
 	-- check for the first shown button that we find and update accordingly
@@ -601,14 +600,13 @@ function module:SetMicromenuAnchors()
 	module.background:ClearAllPoints()
 	-- In case all the buttons are hidden in the options
 	if not firstAnchor then
-		LUI:Print("Return Early")
 		return
 	end
 
 	local point = "TOP"..db.Direction
 	module.background:SetPoint(point, firstAnchor, point)
 	module.background:SetPoint(LUI.Opposites[point], previousAnchor, LUI.Opposites[point])
-	LUI:Print("Background has been set.", module.background:GetDebugName())
+	--LUI:Print("Background has been set.", module.background:GetDebugName())
 end
 
 function module:SetMicromenu()
