@@ -1,10 +1,9 @@
 ## Interface: 90207
-## Version: 2209
+## Version: 2210
 ## Title: LUI
 ## Author: Siku, Nitsah
 ## Notes: User Interface Modification
 ## SavedVariables: LUIDB
-## SavedVariablesPerCharacter: LUICONFIG
 ## OptionalDeps: Masque, Masque_Darion, !ClassColors
 ## X-oUF: oUF_LUI
 
