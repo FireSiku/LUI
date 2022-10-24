@@ -30,10 +30,10 @@ local Tooltip = {
 
     --General
     Header = Opt:Header(L["Tooltip_Name"], 1),
-    HideCombat = Opt:Toggle(L["Tooltip_HideCombat_Name"], L["Tooltip_HideCombat_Desc"], 2, nil, "double"),
+	HideUF = Opt:Toggle(L["Tooltip_HideUF_Name"], L["Tooltip_HideUF_Desc"], 2, nil, "double"),
+    HideCombat = Opt:Toggle(L["Tooltip_HideCombat_Name"], L["Tooltip_HideCombat_Desc"], 3, nil, "double"),
 	HideCombatSkills = Opt:Toggle(L["Tooltip_HideCombatSkills_Name"], L["Tooltip_HideCombatSkills_Desc"], 3, nil, "double", DisableIfTooltipsHidden),
 	HideCombatUnit = Opt:Toggle(L["Tooltip_HideCombatUnit_Name"], L["Tooltip_HideCombatUnit_Desc"], 4, nil, "double", DisableIfTooltipsHidden),
-	HideUF = Opt:Toggle(L["Tooltip_HideUF_Name"], L["Tooltip_HideUF_Desc"], 5, nil, "double"),
 	HidePVP = Opt:Toggle(L["Tooltip_HidePVP_Name"], L["Tooltip_HidePVP_Desc"], 6, nil, "double"),
     ShowSex = Opt:Toggle(L["Tooltip_ShowSex_Name"], L["Tooltip_ShowSex_Desc"], 7),
     SpacerOne = Opt:Spacer(8, "full"),

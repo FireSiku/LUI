@@ -54,9 +54,138 @@ local function Convert(old_db, old_name, new_name, new_db)
 	end
 end
 
+local function AreColorsEqual(color1, color2)
+	local r1, r2, g1, g2, b1, b2
+	if color1.r then
+		r1, g1, b1 = color1.r, color1.g, color1.b
+	else
+		r1, g1, b1 = color1[1], color1[2], color1[3]
+	end
+	if color2.r then
+		r2, g2, b2 = color2.r, color2.g, color2.b
+	else
+		r2, g2, b2 = color2[1], color2[2], color2[3]
+	end
+
+	return r1 == r2 and g1 == g2 and b1 == b2
+end
+
 function LUI:ApplyUpdate(ver)
-	
+	local lui_db = LUI.db.profile
+
 	if ver < 1 then
+		-- Tooltip and Minimap used to be part of LUI.db, so they need to be converted
+		local tt_db = LUI:GetModule("Tooltip").db.profile
+		if lui_db.Tooltip then
+			Convert(lui_db.Tooltip, "Hidecombat", "HideCombat", tt_db)
+			Convert(lui_db.Tooltip, "Hidebuttons", "HideCombatSkills", tt_db)
+			Convert(lui_db.Tooltip, "Hideuf", "HideUF", tt_db)
+			Convert(lui_db.Tooltip, "ShowSex", "ShowSex", tt_db)
+			Convert(lui_db.Tooltip, "Cursor", "Cursor", tt_db)
+			Convert(lui_db.Tooltip, "Point", "Point", tt_db)
+			Convert(lui_db.Tooltip, "Scale", "Scale", tt_db)
+			Convert(lui_db.Tooltip, "X", "X", tt_db)
+			Convert(lui_db.Tooltip, "Y", "Y", tt_db)
+			Convert(lui_db.Tooltip.Health, "Texture", "HealthBar", tt_db)
+			Convert(lui_db.Tooltip.Background, "Texture", "BgTexture", tt_db)
+			Convert(lui_db.Tooltip.Background, "Color", "Background", tt_db.Colors)	
+			Convert(lui_db.Tooltip.Border, "Texture", "BorderTexture", tt_db)
+			Convert(lui_db.Tooltip.Border, "Size", "BorderSize", tt_db)
+			Convert(lui_db.Tooltip.Border, "Color", "Border", tt_db.Colors)
+		end
+
+		local mm_db = LUI:GetModule("Minimap").db.profile
+		if lui_db.Minimap then
+			Convert(lui_db.Minimap.General, "AlwaysShowText", "AlwaysShowText", mm_db.General)
+			Convert(lui_db.Minimap.General, "Size", "Scale", mm_db.General)
+			Convert(lui_db.Minimap.General, "ShowTextures", "ShowTextures", mm_db.General)
+			Convert(lui_db.Minimap.General, "MissionReport", "MissionReport", mm_db.General)
+
+			if lui_db.Minimap.General then
+				Convert(lui_db.Minimap.General.Position, "X", "X", mm_db.Position)
+				Convert(lui_db.Minimap.General.Position, "Y", "Y", mm_db.Position)
+				Convert(lui_db.Minimap.General.Position, "Point", "Point", mm_db.Position)
+				Convert(lui_db.Minimap.General.Position, "UnLocked", "Locked", mm_db.Position)
+				mm_db.Position.Locked = not mm_db.PositionLocked -- Converted setting was opposite
+			end
+
+			Convert(lui_db.Minimap.Font, "Font", "Name", mm_db.Fonts.Text)
+			Convert(lui_db.Minimap.Font, "FontSize", "Size", mm_db.Fonts.Text)
+			Convert(lui_db.Minimap.Font, "FontFlag", "Flag", mm_db.Fonts.Text)
+			Convert(lui_db.Minimap, "Icon", "Icons", mm_db)
+		
+			-- Minimap Frames got moved to UI Elements
+			if lui_db.Minimap.Frames then
+				local ui_db = LUI:GetModule("UI Elements").db.profile
+				
+				Convert(lui_db.Minimap.Frames,    "AlwaysUpFrameX",         "X",              ui_db.AlwaysUpFrame)
+				Convert(lui_db.Minimap.Frames,    "AlwaysUpFrameY",         "Y",              ui_db.AlwaysUpFrame)
+				Convert(lui_db.Minimap.Frames, "SetAlwaysUpFrame",          "ManagePosition", ui_db.AlwaysUpFrame)
+				Convert(lui_db.Minimap.Frames,    "VehicleSeatIndicatorX",  "X",              ui_db.VehicleSeatIndicator)
+				Convert(lui_db.Minimap.Frames,    "VehicleSeatIndicatorY",  "Y",              ui_db.VehicleSeatIndicator)
+				Convert(lui_db.Minimap.Frames, "SetVehicleSeatIndicator",   "ManagePosition", ui_db.VehicleSeatIndicator)
+				Convert(lui_db.Minimap.Frames,    "DurabilityFrameX",       "X",              ui_db.DurabilityFrame)
+				Convert(lui_db.Minimap.Frames,    "DurabilityFrameY",       "Y",              ui_db.DurabilityFrame)
+				Convert(lui_db.Minimap.Frames, "SetDurabilityFrame",        "ManagePosition", ui_db.DurabilityFrame)
+				Convert(lui_db.Minimap.Frames,    "ObjectiveTrackerFrameX", "X",              ui_db.ObjectiveTrackerFrame)
+				Convert(lui_db.Minimap.Frames,    "ObjectiveTrackerFrameY", "Y",              ui_db.ObjectiveTrackerFrame)
+				Convert(lui_db.Minimap.Frames, "SetObjectiveTrackerFrame",  "ManagePosition", ui_db.ObjectiveTrackerFrame)
+				Convert(lui_db.Minimap.Frames,    "CaptureBarX",            "X",              ui_db.CaptureBar)
+				Convert(lui_db.Minimap.Frames,    "CaptureBarY",            "Y",              ui_db.CaptureBar)
+				Convert(lui_db.Minimap.Frames, "SetCaptureBar",             "ManagePosition", ui_db.CaptureBar)
+				Convert(lui_db.Minimap.Frames,    "TicketStatusX",          "X",              ui_db.TicketStatus)
+				Convert(lui_db.Minimap.Frames,    "TicketStatusY",          "Y",              ui_db.TicketStatus)
+				Convert(lui_db.Minimap.Frames, "SetTicketStatus",           "ManagePosition", ui_db.TicketStatus)
+				Convert(lui_db.Minimap.Frames,    "PlayerPowerBarAltX",     "X",              ui_db.PlayerPowerBarAlt)
+				Convert(lui_db.Minimap.Frames,    "PlayerPowerBarAltY",     "Y",              ui_db.PlayerPowerBarAlt)
+				Convert(lui_db.Minimap.Frames, "SetPlayerPowerBarAlt",      "ManagePosition", ui_db.PlayerPowerBarAlt)
+				Convert(lui_db.Minimap.Frames,    "GroupLootContainerX",    "X",              ui_db.GroupLootContainer)
+				Convert(lui_db.Minimap.Frames,    "GroupLootContainerY",    "Y",              ui_db.GroupLootContainer)
+				Convert(lui_db.Minimap.Frames, "SetGroupLootContainer",     "ManagePosition", ui_db.GroupLootContainer)
+				Convert(lui_db.Minimap.Frames,    "MawBuffsX",              "X",              ui_db.MawBuffs)
+				Convert(lui_db.Minimap.Frames,    "MawBuffsY",              "Y",              ui_db.MawBuffs)
+				Convert(lui_db.Minimap.Frames, "SetMawBuffs",               "ManagePosition", ui_db.MawBuffs)
+			end
+		end
+
+		local theme_db = lui_db:GetNamespace("Themes").profile
+		if theme_db and theme_db.minimap then
+			if AreColorsEqual(theme_db.minimap, colorMod:Color(LUI.playerClass)) then
+				mm_db.Colors.Minimap.t = "Class"
+			else
+				mm_db.Colors.Minimap.r = theme_db.minimap[1]
+				mm_db.Colors.Minimap.g = theme_db.minimap[2]
+				mm_db.Colors.Minimap.b = theme_db.minimap[3]
+				mm_db.Colors.Minimap.t = "Individual"
+			end
+			theme_db.minimap = nil
+		end
+		
+		local micro_db = LUI:GetModule("Micromenu").db.profile
+		if theme_db and theme_db.micromenu then
+			if AreColorsEqual(theme_db.micromenu, colorMod:Color(LUI.playerClass)) then
+				micro_db.Colors.Micromenu.t = "Class"
+			else
+				micro_db.Colors.Micromenu.r = theme_db.micromenu[1]
+				micro_db.Colors.Micromenu.g = theme_db.micromenu[2]
+				micro_db.Colors.Micromenu.b = theme_db.micromenu[3]
+				micro_db.Colors.Micromenu.t = "Individual"
+			end
+			if AreColorsEqual(theme_db.micromenu_bg, colorMod:Color(LUI.playerClass)) then
+				micro_db.Colors.Micromenu.t = "Class"
+			else
+				micro_db.Colors.Background.r = theme_db.micromenu_bg[1]
+				micro_db.Colors.Background.g = theme_db.micromenu_bg[2]
+				micro_db.Colors.Background.b = theme_db.micromenu_bg[3]
+				micro_db.Colors.Background.t = "Individual"
+			end
+			theme_db.micromenu = nil
+			theme_db.micromenu_bg = nil
+			theme_db.micromenu_bg2 = nil
+			theme_db.micromenu_btn = nil
+			theme_db.micromenu_btn_hover = nil
+		end
+		
 		-- Unitframes conversions
 		local uf_db = LUI:GetModule("Unitframes").db.profile
 		local units = {

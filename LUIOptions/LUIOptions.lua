@@ -16,7 +16,7 @@ local ACR = LibStub("AceConfigRegistry-3.0")
 --local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI4")
 local L = LUI.L
 
-local OPTION_PANEL_WIDTH = 920
+local OPTION_PANEL_WIDTH = 930
 local OPTION_PANEL_HEIGHT = 660
 
 -- Avoid extraneous Libstub calls
