@@ -21,12 +21,11 @@ module.defaults = {
 			HideFrame = true,
 		},
 		DurabilityFrame = {
-			X = -90,
-			Y = 0,
-			ManagePosition = false,
+			X = -20,
+			Y = -260,
+			ManagePosition = true,
 			HideFrame = false,
 		},
-
 		AlwaysUpFrame = {
 			X = 300,
 			Y = -35,
