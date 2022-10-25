@@ -296,7 +296,7 @@ MicroButtonClickerMixin.clickerBackdrop = {
 
 -- 	alertFrame:ClearAllPoints()
 -- 	alertFrame:SetPoint("TOP", anchor, "BOTTOM", 0, -12)
--- 	alertFrameBg:SetGradientAlpha("VERTICAL", r/4, g/4, b/4, 1, 0, 0, 0, 1)
+-- 	alertFrameBg:SetGradient("VERTICAL", CreateColor(r/4, g/4, b/4, 1), CreateColor(0, 0, 0, 1))
 -- 	alertFrameArrow:ClearAllPoints()
 -- 	alertFrameArrow:SetPoint("BOTTOM", alertFrame, "TOP", 0, -10)
 -- 	alertFrameArrow:SetDesaturated(true)
@@ -312,7 +312,7 @@ MicroButtonClickerMixin.clickerBackdrop = {
 -- local gAlertGlows = {"TopLeft", "TopRight", "BottomLeft", "BottomRight", "Top", "Bottom", "Left", "Right"}
 -- function module:SetAlertFrameColors(name)
 -- 	local r, g, b, a = module:RGBA("Micromenu")
--- 	_G[name.."MicroButtonAlertBg"]:SetGradientAlpha("VERTICAL", r/4, g/4, b/4, 1, 0, 0, 0, 1)
+-- 	_G[name.."MicroButtonAlertBg"]:SetGradient("VERTICAL", CreateColor(r/4, g/4, b/4, 1), CreateColor(0, 0, 0, 1))
 -- 	_G[name.."MicroButtonAlertArrow"]:SetVertexColor(r, g, b, a * ALERT_ALPHA_MULT)
 -- 	_G[name.."MicroButtonAlertGlow"]:SetVertexColor(r, g, b, a * ALERT_ALPHA_MULT)
 -- 	for i = 1, #gAlertGlows do
