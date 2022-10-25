@@ -26,7 +26,7 @@ element.defaults = {
     },
     Font = "vibroceb",
     FontSize = 12,
-    Outline = "NONE",
+    Outline = "",
     Color = {
         r = 1,
         g = 1,

@@ -1116,7 +1116,7 @@ end
 function LUI:NewFontFlags(name, order, dbt, defaults, func, width, disabled, hidden)
 	local tname = "Font Flag"
 	local desc = "Select the font flag to use with your "..name.."'s font."
-	local values = { "OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE" }
+	local values = { "OUTLINE", "THICKOUTLINE", "MONOCHROME", "" }
 	return LUI:NewSelect(tname, desc, order, values, nil, dbt, "Outline", defaults, func, width, disabled, hidden)
 end
 

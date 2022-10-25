@@ -2823,7 +2823,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
@@ -2844,7 +2844,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
@@ -2864,7 +2864,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
@@ -2882,7 +2882,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
@@ -2901,7 +2901,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
@@ -2919,7 +2919,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
@@ -2938,7 +2938,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
@@ -2956,7 +2956,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
@@ -2980,7 +2980,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			ColorType = false,
 			Shorten = false,
 			Color = {
@@ -3001,7 +3001,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
@@ -3025,7 +3025,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
@@ -3043,7 +3043,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
@@ -3061,7 +3061,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
@@ -3080,7 +3080,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
@@ -3099,7 +3099,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
@@ -3118,7 +3118,7 @@ module.defaults = {
 			},
 			Font = "vibroceb",
 			FontSize = 12,
-			Outline = "NONE",
+			Outline = "",
 			Color = {
 				r = 1,
 				g = 1,
