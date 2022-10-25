@@ -7,7 +7,7 @@ local _, LUI = ...
 local L = LUI.L
 
 ---@class MicromenuModule : LUIModule
-local module = LUI:NewModule("MicromenuV4", "AceEvent-3.0")
+local module = LUI:NewModule("Micromenu", "AceEvent-3.0")
 local db
 
 local CommunitiesFrame = _G.CommunitiesFrame
@@ -531,7 +531,6 @@ end
 -- ####################################################################################################################
 
 function module:SetMicromenuAnchors()
-	LUI:Print("Set Micromenu Anchors")
 	local firstAnchor, previousAnchor
 	
 	-- Need to invert this depending on direction, or it will increase one and shrink the other
@@ -609,6 +608,214 @@ function module:SetMicromenuAnchors()
 	--LUI:Print("Background has been set.", module.background:GetDebugName())
 end
 
+function module:SetMicromenuExtraButtons()
+	local ThemesDB = LUI:GetModule("Themes").db.profile
+	local PanelsDB = LUI:GetModule("Panels").db.profile
+	local minimapMod = LUI:GetModule("Minimap", true)
+	local buttonLeft, buttonMiddle, buttonRight
+
+	local buttonMiddle = CreateFrame("Frame", "LUIMicromenu_buttonMiddle", UIParent, "BackdropTemplate")
+	buttonMiddle:SetSize(128, 128)
+	buttonMiddle:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -150, 6)
+	buttonMiddle:SetBackdrop({
+		bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"..(PanelsDB.MicroMenu.AlwaysShow and "micro_anchor3" or "micro_anchor"),
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		tile = false, tileSize = 0, edgeSize = 1,
+		insets = {left = 0, right = 0, top = 0, bottom = 0},
+	})
+	buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
+	buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
+
+	local clickerMiddle = CreateFrame("Button", "LUIMicromenu_clickerMiddle", buttonMiddle, "BackdropTemplate")
+	clickerMiddle:SetSize(85, 22)
+	clickerMiddle:SetPoint("TOP", buttonMiddle, "TOP", 0, 0)
+	clickerMiddle:RegisterForClicks("AnyUp")
+
+	clickerMiddle:SetScript("OnClick", function(self)
+		--[[if RaidMenu.db.profile.Enable then
+			RaidMenu:OverlapPrevention("MM")
+		end]]
+		if PanelsDB.MicroMenu.IsShown then
+			PanelsDB.MicroMenu.IsShown = false
+
+			buttonMiddle:SetBackdrop({
+				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"..(GetMouseFocus() == clickerMiddle and "micro_anchor2" or "micro_anchor"),
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
+			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
+		else
+			PanelsDB.MicroMenu.IsShown = true
+
+			buttonMiddle:SetBackdrop({
+				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"..(GetMouseFocus() == clickerMiddle and "micro_anchor4" or "micro_anchor3"),
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
+			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
+		end
+	end)
+
+	clickerMiddle:SetScript("OnEnter", function(self)
+		if PanelsDB.MicroMenu.IsShown then
+			buttonMiddle:SetBackdrop({
+				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\micro_anchor4",
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
+			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
+		else
+			buttonMiddle:SetBackdrop({
+				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\micro_anchor2",
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
+			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
+		end
+	end)
+
+	clickerMiddle:SetScript("OnLeave", function(self)
+		if PanelsDB.MicroMenu.IsShown then
+			buttonMiddle:SetBackdrop({
+				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\micro_anchor3",
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
+			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
+		else
+			buttonMiddle:SetBackdrop({
+				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\micro_anchor",
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
+			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
+		end
+	end)
+
+	if minimapMod then
+		buttonRight = CreateFrame("Frame", "LUIMicromenu_Right", buttonMiddle, "BackdropTemplate")
+		buttonRight:SetSize(128, 128)
+		buttonRight:SetPoint("RIGHT", buttonMiddle, "RIGHT", 47, -3)
+		buttonRight:SetBackdrop({
+			bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\mm_button_right",
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			tile = false, tileSize = 0, edgeSize = 1,
+			insets = {left = 0, right = 0, top = 0, bottom = 0}
+		})
+		buttonRight:SetBackdropColor(module:RGB("Micromenu"))
+		buttonRight:SetBackdropBorderColor(0, 0, 0, 0)
+
+		local clickerRight = CreateFrame("Button", "LUIMicromenu_clickerRight", buttonRight, "BackdropTemplate")
+		clickerRight:SetSize(40, 12)
+		clickerRight:SetPoint("TOP", buttonRight, "TOP", 22, -5)
+		clickerRight:RegisterForClicks("AnyUp")
+
+		clickerRight:SetScript("OnClick", function(self, button)
+			if minimapMod:IsEnabled() then
+				if button == "RightButton" then
+					ToggleFrame(WorldMapFrame)
+				else
+					if Minimap:GetAlpha() == 0 then
+						--MinimapAlphaIn:Show()
+						PanelsDB.Minimap.IsShown = true
+					else
+						--MinimapAlphaOut:Show()
+						PanelsDB.Minimap.IsShown = false
+					end
+				end
+			else
+				ToggleFrame(WorldMapFrame)
+			end
+		end)
+
+		clickerRight:SetScript("OnEnter", function(self)
+			buttonRight:SetBackdrop({
+				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\mm_button_right_hover",
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			buttonRight:SetBackdropColor(module:RGB("Micromenu"))
+			buttonRight:SetBackdropBorderColor(0, 0, 0, 0)
+		end)
+
+		clickerRight:SetScript("OnLeave", function(self)
+			buttonRight:SetBackdrop({
+				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\mm_button_right",
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			buttonRight:SetBackdropColor(module:RGB("Micromenu"))
+			buttonRight:SetBackdropBorderColor(0, 0, 0, 0)
+		end)
+	end
+
+	local raidmenu_mod = LUI:GetModule("RaidMenu", true)
+	if raidmenu_mod then
+		local buttonLeft = CreateFrame("Frame", "LUIMicromenu_buttonLeft", buttonMiddle, "BackdropTemplate")
+		buttonLeft:SetSize(128, 128)
+		buttonLeft:SetPoint("LEFT", buttonMiddle, "LEFT", -47, -3)
+		buttonLeft:SetBackdrop({
+			bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\mm_button_left",
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			tile = false, tileSize = 0, edgeSize = 1,
+			insets = {left = 0, right = 0, top = 0, bottom = 0}
+		})
+		buttonLeft:SetBackdropColor(module:RGB("Micromenu"))
+		buttonLeft:SetBackdropBorderColor(0, 0, 0, 0)
+
+		local leftClicker = CreateFrame("Button", "LUIMicromenu_leftClicker", buttonLeft, "BackdropTemplate")
+		leftClicker:SetSize(40, 12)
+		leftClicker:SetPoint("TOP", buttonLeft, "TOP", -22, -5)
+		leftClicker:RegisterForClicks("AnyUp")
+
+		leftClicker:SetScript("OnClick", function(self, button)
+			raidmenu_mod:OverlapPrevention("RM", "toggle")
+		end)
+
+		leftClicker:SetScript("OnEnter", function(self)
+			buttonLeft:SetBackdrop({
+				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\mm_button_left_hover",
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			buttonLeft:SetBackdropColor(module:RGB("Micromenu"))
+			buttonLeft:SetBackdropBorderColor(0, 0, 0, 0)
+		end)
+
+		leftClicker:SetScript("OnLeave", function(self)
+			buttonLeft:SetBackdrop({
+				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\mm_button_left",
+				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+				tile = false, tileSize = 0, edgeSize = 1,
+				insets = {left = 0, right = 0, top = 0, bottom = 0}
+			})
+			buttonLeft:SetBackdropColor(module:RGB("Micromenu"))
+			buttonLeft:SetBackdropBorderColor(0, 0, 0, 0)
+		end)
+	end
+
+	module.buttonMiddle = buttonMiddle
+	module.buttonLeft = buttonLeft
+	module.buttonRight = buttonRight
+	module.clickerLeft = clickerLeft
+	module.clickerRight = clickerRight
+end
+
 function module:SetMicromenu()
 
 	-- Create Micromenu background
@@ -630,6 +837,7 @@ function module:SetMicromenu()
 	end
 
 	module:SetMicromenuAnchors()
+	module:SetMicromenuExtraButtons()
 end
 
 --- Fires the stored functions for the frame hooks
