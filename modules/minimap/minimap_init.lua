@@ -30,7 +30,7 @@ module.defaults = {
 		},
 		Position = {
 			X = -24,
-			Y = -80,
+			Y = -72,
 			--RelativePoint = "TOPRIGHT",
 			Point = "TOPRIGHT",
 			Locked = false,
