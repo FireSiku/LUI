@@ -50,9 +50,16 @@ local function Convert(old_db, old_name, new_name, new_db)
 	assert(type(old_db) == "table", "Setting conversion failed for "..old_name..". Expected table, received "..type(old_db))
 	if not new_db then new_db = old_db end
 	if old_db[old_name] then
+		if type(old_db[old_name]) == "table" then
+		if old_db["Fake123"] and tCompare(old_db["Fake123"], old_db[old_name], 2) then
+			--- This checks if old_db is tripping over an AceDB wildcard match
+			return
+		end
+		MergeTable(new_db[new_name], old_db[old_name])
+	else
 		new_db[new_name] = old_db[old_name]
-		old_db[old_name] = nil
 	end
+	old_db[old_name] = nil
 end
 
 local function AreColorsEqual(color1, color2)
