@@ -24,7 +24,7 @@ local framePositionOrder = {
 
 local framePositionList = {
 	ObjectiveTrackerFrame = "Objectives Tracker",
-	QueueStatusButton = "Queue Status Button"
+	QueueStatusButton = "Queue Status Button",
 	PlayerPowerBarAlt = "Alternate Power Bar",
 	AlwaysUpFrame = "Zone Objectives Frame",
 	DurabilityFrame = "Durability Frame",
@@ -37,7 +37,7 @@ local framePositionList = {
 
 local framePositionDescs = {
 	ObjectiveTrackerFrame = "This Frame occurs when tracking Quests and Achievements.",
-	QueueStatusButton = "This button appears when you queue up when searching for groups or instances"
+	QueueStatusButton = "This button appears when you queue up when searching for groups or instances",
 	PlayerPowerBarAlt = "This Frame is the special bar that appears during certain fights or events. Example: Sanity bar during Visions.",
 	AlwaysUpFrame = "This Frame occurs in Battlegrounds, Instances and Zone Objectives. Example: Attempts left in Icecrown.",
 	DurabilityFrame = "This Frame occurs when your gear is damaged or broken.",

@@ -14,7 +14,7 @@ LUI:SetDefaultModuleLibraries("AceEvent-3.0")
 local L = LUI.L
 local db
 
-LUI.Rev = "2209"
+LUI.Rev = "2210"
 LUI.IsRetail = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_MAINLINE)
 LUI.IsBCC = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 LUI.IsClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC)
@@ -167,8 +167,8 @@ LUI.cmdList = {
 	},
 }
 
-function LUI:OpenOptions(forceNew)
-	if forceNew then
+function LUI:OpenOptions(forceOld)
+	if not forceOld then
 		if not IsAddOnLoaded("LUIOptions") then
 			_G.LoadAddOn("LUIOptions")
 		end

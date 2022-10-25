@@ -1,5 +1,8 @@
 package-as: LUI
 
+move-folders:
+  LUI/LUIOptions: LUIOptions
+
 externals:
   libs/LibStub:
     url: svn://svn.wowace.com/wow/libstub/mainline/trunk

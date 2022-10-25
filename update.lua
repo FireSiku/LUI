@@ -22,7 +22,6 @@ function LUI:CheckUpdate()
 	db = LUI.db.profile
 	default = LUI.defaults.profile
 
-	LUI:Print(DB_VERSION, ">", db.dbVersion)
 	if DB_VERSION > db.dbVersion then
 		StaticPopup_Show("LUI_DB_UPDATE")
 	end
@@ -51,15 +50,16 @@ local function Convert(old_db, old_name, new_name, new_db)
 	if not new_db then new_db = old_db end
 	if old_db[old_name] then
 		if type(old_db[old_name]) == "table" then
-		if old_db["Fake123"] and tCompare(old_db["Fake123"], old_db[old_name], 2) then
-			--- This checks if old_db is tripping over an AceDB wildcard match
-			return
+			if old_db["Fake123"] and tCompare(old_db["Fake123"], old_db[old_name], 2) then
+				--- This checks if old_db is tripping over an AceDB wildcard match
+				return
+			end
+			MergeTable(new_db[new_name], old_db[old_name])
+		else
+			new_db[new_name] = old_db[old_name]
 		end
-		MergeTable(new_db[new_name], old_db[old_name])
-	else
-		new_db[new_name] = old_db[old_name]
+		old_db[old_name] = nil
 	end
-	old_db[old_name] = nil
 end
 
 local function AreColorsEqual(color1, color2)
@@ -288,7 +288,6 @@ function LUI:ApplyUpdate(ver)
 	end
 
 	db.dbVersion = DB_VERSION
-	LUI:Print(db.dbVersion)
 end
 
 --[[
