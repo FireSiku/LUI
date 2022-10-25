@@ -22,7 +22,6 @@ local GetMinimapZoneText = _G.GetMinimapZoneText
 local ToggleDropDownMenu = _G.ToggleDropDownMenu
 local MiniMapMailFrame = _G.MiniMapMailFrame
 local MiniMapMailIcon = _G.MiniMapMailIcon
-local MinimapNorthTag = _G.MinimapNorthTag
 local Minimap_OnClick = _G.Minimap_OnClick
 local MinimapZoomOut = _G.MinimapZoomOut
 local MinimapZoomIn = _G.MinimapZoomIn
@@ -89,8 +88,7 @@ function module:HideDefaultMinimap()
 	minimapShape = "SQUARE"
 
 	-- Change textures around, keep old textures around.
-	oldDefault.NorthTag = MinimapNorthTag:GetTexture()
-	MinimapNorthTag:SetTexture(nil)	--North Arrow
+	LUI:Kill(_G.MinimapCompassTexture)
 
 	-- Move Mail icon
 	MiniMapMailFrame:ClearAllPoints()
@@ -139,7 +137,7 @@ function module:RestoreDefaultMinimap()
 			end
 		end
 	end
-	MinimapNorthTag:SetTexture(oldDefault.NorthTag)	--North Arrow
+	LUI:Unkill(_G.MinimapCompassTexture)
 
 	--Revert Minimap Parent
 	Minimap:SetParent(oldDefault.parent)
