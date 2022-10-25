@@ -1859,7 +1859,7 @@ function module:SetGF()
 					-- local a1, r1, g1, b1 = GF_Colors.OrderA[4], unpack(GF_Colors.OrderA)
 					-- local a2, r2, g2, b2 = 0, GameTooltip:GetBackdropColor()
 					-- if asc then r1,g1,b1,a1, r2,g2,b2,a2 = r2,g2,b2,a2, r1,g1,b1,a1 end
-					-- texOrder1:SetGradientAlpha("VERTICAL", r1,g1,b1,a1, r2,g2,b2,a2)
+					-- texOrder1:SetGradient("VERTICAL", CreateColor(r1,g1,b1,a1), CreateColor(r2,g2,b2,a2))
 					texOrder1:SetAlpha(0)
 				else
 					texOrder1:SetAlpha(0)
