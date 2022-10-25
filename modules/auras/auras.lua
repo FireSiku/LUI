@@ -592,7 +592,7 @@ module.defaults = {
 			Duration = {
 				Font = "vibrocen",
 				Size = 12,
-				Flag = "NONE",
+				Flag = "",
 				Color = {1, 1, 1},
 			},
 		},
@@ -616,7 +616,7 @@ module.defaults = {
 			Duration = {
 				Font = "vibrocen",
 				Size = 12,
-				Flag = "NONE",
+				Flag = "",
 				Color = {1, 1, 1},
 			},
 		},

@@ -538,7 +538,7 @@ local defaults = {
 		Font = {
 			Font = "vibroceb",
 			FontSize = 12,
-			FontFlag = "NONE",
+			FontFlag = "",
 		},
 		Icon = {
 			Mail = "BOTTOMLEFT", -- LFG and MAIL icon positions changed for better visibilty of the Tooltip

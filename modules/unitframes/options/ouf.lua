@@ -25,7 +25,7 @@ module.defaults.profile.Settings = {
 	AuratimerFlag = "OUTLINE",
 }
 
-local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
+local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", ""}
 
 function module:CreateSettings(order)
 	local toggleV2 = function(info, Enable)
