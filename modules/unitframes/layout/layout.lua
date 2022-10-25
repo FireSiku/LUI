@@ -10,7 +10,6 @@ local module = LUI:GetModule("Unitframes")
 local Fader = LUI:GetModule("Fader", true)
 
 local Media = LibStub("LibSharedMedia-3.0")
-local Blizzard = LUI.Blizzard
 local oUF = LUI.oUF
 local L = LUI.L
 local db
@@ -2638,7 +2637,6 @@ local SetStyle = function(self, unit, isSingle)
 		if LUI.DEATHKNIGHT then
 			if oufdb.RunesBar.Enable then
 				module.funcs.Runes(self, unit, oufdb)
-				Blizzard:Hide("runebar")
 			end
 		elseif LUI.DRUID then
 			if oufdb.AdditionalPowerBar.Enable then module.funcs.AdditionalPower(self, unit, oufdb) end
@@ -2682,9 +2680,6 @@ local SetStyle = function(self, unit, isSingle)
 	if oufdb.CombatFeedback then module.funcs.CombatFeedbackText(self, unit, oufdb) end
 	if module.db.profile.Settings.Castbars and oufdb.Castbar and oufdb.Castbar.General.Enable then
 		module.funcs.Castbar(self, unit, oufdb)
-		if unit == "player" then
-			Blizzard:Hide("castbar")
-		end
 	end
 	if oufdb.Border.Aggro then module.funcs.AggroGlow(self, unit, oufdb) end
 

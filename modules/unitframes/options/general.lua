@@ -7,7 +7,6 @@
 local addonname, LUI = ...
 local module = LUI:GetModule("Unitframes")
 local Fader = LUI:GetModule("Fader", true)
-local Blizzard = LUI.Blizzard
 local oUF = LUI.oUF
 
 local UnitLevel = _G.UnitLevel
@@ -226,16 +225,12 @@ function module:CreatePlayerBarOptions(barType, order)
 		if info[5] == "Enable" then
 			if Enable then
 				oUF_LUI_player:EnableElement(barKey)
-				if barType == "Runes" then
-					Blizzard:Hide("runebar")
-				elseif barType == "Totems" then
+				if barType == "Totems" then
 					oUF_LUI_player[barKey]:Show()
 				end
 			else
 				oUF_LUI_player:DisableElement(barKey)
-				if barType == "Runes" then
-					Blizzard:Show("runebar")
-				elseif barType == "Totems" then
+				if barType == "Totems" then
 					oUF_LUI_player[barKey]:Hide()
 				end
 			end
@@ -650,15 +645,9 @@ function module:CreateCastbarOptions(unit, order)
 				module.funcs.Castbar(_G[frame], _G[frame].__unit, self.db[unit])
 				if self.db[unit].Castbar.General.Enable then
 					_G[frame]:EnableElement("Castbar")
-					if unit == "player" then
-						Blizzard:Hide("castbar")
-					end
 				else
 					_G[frame]:DisableElement("Castbar")
 					_G[frame].Castbar:Hide()
-					if unit == "player" then
-						Blizzard:Show("castbar")
-					end
 				end
 				_G[frame]:UpdateAllElements('refreshUnit')
 			end
