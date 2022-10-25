@@ -79,8 +79,8 @@ modules\cooldown\cooldown.xml
 modules\tooltip\tooltip_v4.lua
 
 ### InfoText ###
-modules\infotext\datatext_v3.lua
-# modules\InfoText\infotext.lua
+# modules\infotext\datatext_v3.lua
+modules\InfoText\infotext.lua
 # modules\InfoText\bags.lua
 # modules\InfoText\clock.lua
 # modules\InfoText\currency.lua
@@ -94,7 +94,7 @@ modules\infotext\datatext_v3.lua
 # modules\InfoText\memory.lua
 
 ### Micromenu ###
-modules\micromenu\micromenu_v3.lua
+modules\micromenu\micromenu_v4.lua
 
 ### RaidMenu ###
 modules\raidmenu\raidmenu_init.lua

@@ -162,7 +162,6 @@ LUI.defaults = {
 			Master = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
 		},
 		dbVersion = 0,
-		New = 15,
 	},
 	global = {
 		luiconfig = {},
@@ -516,9 +515,9 @@ end
 ------------------------------------------------------
 
 function LUI:Configure()
-	if _G.InterfaceOptionsFrame:IsShown() then
-		_G.InterfaceOptionsFrame:Hide()
-	end
+	-- if _G.InterfaceOptionsFrame:IsShown() then
+	-- 	_G.InterfaceOptionsFrame:Hide()
+	-- end
 
 	local configureBG = LUI:CreateMeAFrame("FRAME","configureBG",UIParent,2400,2000,1,"HIGH",5,"CENTER",UIParent,"CENTER",0,0,1)
 	configureBG:SetBackdrop({bgFile="Interface\\Tooltips\\UI-Tooltip-Background", edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", edgeSize=1, insets={left=0, right=0, top=0, bottom=0}})
