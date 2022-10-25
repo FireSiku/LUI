@@ -131,7 +131,7 @@ scripts\errorhider.lua
 scripts\talentspam.lua
 scripts\newplayerexperience.lua
 scripts\removethatbuff.lua
-scripts\hideblizzard.lua
+# scripts\hideblizzard.lua
 api\frameidentifier.lua
 
 ### Initialize Unitframes ###

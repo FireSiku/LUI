@@ -13,8 +13,6 @@ local L = LUI.L
 ---@class UnitFrameModule : LUIModule
 local module = LUI:NewModule("Unitframes", "LUIDevAPI", "AceHook-3.0", "AceSerializer-3.0")
 
-local Blizzard = LUI.Blizzard
-
 module.unitsSpawn = {"player", "target", "focus", "focustarget", "targettarget", "targettargettarget", "pet", "pettarget", "boss", "party", "maintank", "arena", "raid"}
 
 module.units = {"player", "target", "targettarget", "targettargettarget", "focus", "focustarget", "pet", "pettarget", "party", "partytarget", "partypet", "boss", "bosstarget", "maintank", "maintanktarget", "maintanktargettarget", "arena", "arenatarget", "arenapet", "raid"}
@@ -1862,8 +1860,4 @@ end
 
 function module:OnDisable()
 	for _, unit in pairs(module.unitsSpawn) do module.ToggleUnit(unit, false) end
-
-	if module.db.profile.Settings.HideBlizzRaid then
-		Blizzard:Hide("raid")
-	end
 end
