@@ -339,7 +339,7 @@ function module:SetRaidMenu()
 	RaidMenu_Border:SetBackdropColor(micro_r, micro_g, micro_b, 1)
 	RaidMenu_Border:SetBackdropBorderColor(0, 0, 0, 0)
 
-	local Infotext = LUI:GetModule("Infotext")
+	local Infotext = LUI:GetModule("Infotext", true)
 	local font = Infotext and Infotext.db.profile.Clock.Font or "vibroceb"
 	local color = Infotext and Infotext.db.profile.Clock.Color or {r = 1, g = 1, b = 1, a = 1}
 	RaidMenu_Header = RaidMenu:CreateFontString("RaidMenu_Header", "OVERLAY")
@@ -371,7 +371,7 @@ function module:SetRaidMenu()
 	SilverWorldMarker = CreateFrame("Button", "SilverWorldMarker", RaidMenu, "SecureMarkerTemplate")
 	ClearWorldMarkers = CreateFrame("Button", "ClearWorldMarkers", RaidMenu, "SecureMarkerTemplate")
 
-	ConvertRaid = CreateFrame("Button", "ConvertRaid", RaidMenu, "OptionsButtonTemplate")
+	ConvertRaid = CreateFrame("Button", "ConvertRaid", RaidMenu, "UIPanelButtonTemplate")
 	if GetNumGroupMembers() > 0 then
 		ConvertRaid:SetText("Convert to Party")
 	else
@@ -421,7 +421,7 @@ function module:SetRaidMenu()
 	end)
 
 	if not LUI.IsRetail then
-		LootMethod = CreateFrame("Button", "LootMethod", RaidMenu, "OptionsButtonTemplate")
+		LootMethod = CreateFrame("Button", "LootMethod", RaidMenu, "UIPanelButtonTemplate")
 		LootMethod:SetText("Loot Method")
 		LootMethod:SetScript("OnEnter", function(self)
 			if db.ShowToolTips then
@@ -457,7 +457,7 @@ function module:SetRaidMenu()
 			EasyMenu(LootMethodList, LootMenuFrame, "cursor", 0, 0, "MENU", 1)
 		end)
 
-		LootThreshold = CreateFrame("Button", "LootThreshold", RaidMenu, "OptionsButtonTemplate")
+		LootThreshold = CreateFrame("Button", "LootThreshold", RaidMenu, "UIPanelButtonTemplate")
 		LootThreshold:SetText("Loot Threshold")
 		LootThreshold:SetScript("OnEnter", function(self)
 			if db.ShowToolTips then
@@ -491,7 +491,7 @@ function module:SetRaidMenu()
 		end)
 	end
 
-	RoleChecker = CreateFrame("BUTTON", "RoleChecker", RaidMenu, "OptionsButtonTemplate")
+	RoleChecker = CreateFrame("BUTTON", "RoleChecker", RaidMenu, "UIPanelButtonTemplate")
 	RoleChecker:SetText("Role Check")
 	RoleChecker:SetScript("OnEnter", function(self)
 		if db.ShowToolTips then
@@ -513,7 +513,7 @@ function module:SetRaidMenu()
 		end
 	end)
 
-	ReadyChecker = CreateFrame("Button", "ReadyChecker", RaidMenu, "OptionsButtonTemplate")
+	ReadyChecker = CreateFrame("Button", "ReadyChecker", RaidMenu, "UIPanelButtonTemplate")
 	ReadyChecker:SetText("Ready Check")
 	ReadyChecker:SetScript("OnEnter", function(self)
 		if db.ShowToolTips then

@@ -72,7 +72,6 @@ local blizzEvents = {
 if LUI.IsRetail then
 	tinsert(blizzEvents, "ARCHAEOLOGY_TOGGLE")
 	tinsert(blizzEvents, "BARBER_SHOP_OPEN")
-	tinsert(blizzEvents, "VOID_STORAGE_OPEN")
 	tinsert(blizzEvents, "TRANSMOGRIFY_OPEN")
 end
 local blizzHooks = {
