@@ -140,29 +140,6 @@ end
 
 ---@TODO: Re-evaluate these Garrison functions.
 
-function module:ToggleMissionReport()
-	local button = GarrisonLandingPageMinimapButton
-	if button:IsShown() and not defaultGarrisonState then
-		button:Hide()
-		return
-	elseif not defaultGarrisonState then
-		return
-	end
-	if db.General.MissionReport then
-		LUI:Unkill(button)
-	else
-		LUI:Kill(button)
-	end
-end
-
-function module:GARRISON_HIDE_LANDING_PAGE()
-	defaultGarrisonState = false
-end
-
-function module:GARRISON_SHOW_LANDING_PAGE()
-	defaultGarrisonState = true
-end
-
 -- ####################################################################################################################
 -- ##### Module Setup #################################################################################################
 -- ####################################################################################################################
@@ -204,10 +181,15 @@ function module:SetMinimap()
 		minimapZoneText:SetText(GetMinimapZoneText())
 	end)
 
+	-- Add an offset to the Garrison/Covenant button so it does not cover the coordinates
+	local expansionButton = _G.ExpansionLandingPageMinimapButton
+	local expPoint, expParent, expRelativePoint, expOffsetX, expOffsetY = expansionButton:GetPoint(1)
+	expansionButton:SetPoint(expPoint, expParent, expRelativePoint, expOffsetX, expOffsetY + 20)
+
 	-- Set Coord Text
 	local minimapCoord = CreateFrame("Frame", "LUIMinimapCoord", Minimap)
 	minimapCoord:SetSize(40, 20)
-	minimapCoord:SetPoint("BOTTOMLEFT", Minimap, "BOTTOMLEFT", 4, 2)
+	minimapCoord:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", -24, 2)
 
 	local minimapCoordText = module:SetFontString(minimapCoord, "LUIMinimapCoordText", "Text", "Overlay", "LEFT", "MIDDLE")
 	minimapCoordText:SetPoint("LEFT", -1, 0)
@@ -332,33 +314,7 @@ function module:SetMinimapFrames()
 		minimapTex:SetBackdropColor(0,0,0,0)
 		minimapTex:SetBackdropBorderColor(0,0,0,1)
 	end
-
-	-- Move Garrison icon
-	if (LUI.IsRetail) then
-		module:SecureHook("GarrisonLandingPageMinimapButton_UpdateIcon", function()
-			GarrisonLandingPageMinimapButton:SetSize(32,32)
-			GarrisonLandingPageMinimapButton:ClearAllPoints()
-			-- if MiniMapMailFrame:IsShown() then
-			-- 	GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-5))
-			-- else
-				GarrisonLandingPageMinimapButton:SetPoint(ICON_LOCATION.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
-			-- end
-		end)
-		-- MiniMapMailFrame:HookScript("OnShow", function()
-		-- 	GarrisonLandingPageMinimapButton:ClearAllPoints()
-		-- 	GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-5))
-		-- end)
-		-- MiniMapMailFrame:HookScript("OnHide", function()
-		-- 	GarrisonLandingPageMinimapButton:ClearAllPoints()
-		-- 	GarrisonLandingPageMinimapButton:SetPoint(ICON_LOCATION.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
-		-- end)
-
-		self:RegisterEvent("GARRISON_HIDE_LANDING_PAGE")
-		self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE")
-		C_Timer.After(0.25, self.ToggleMissionReport)
-	end
-
-
+	
 end
 
 function module:SetMinimapSize()
