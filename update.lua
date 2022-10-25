@@ -22,6 +22,7 @@ function LUI:CheckUpdate()
 	db = LUI.db.profile
 	default = LUI.defaults.profile
 
+	LUI:Print(DB_VERSION, ">", db.dbVersion)
 	if DB_VERSION > db.dbVersion then
 		StaticPopup_Show("LUI_DB_UPDATE")
 	end
@@ -50,7 +51,7 @@ local function Convert(old_db, old_name, new_name, new_db)
 	if not new_db then new_db = old_db end
 	if old_db[old_name] then
 		new_db[new_name] = old_db[old_name]
-		--old_db[old_name] = nil
+		old_db[old_name] = nil
 	end
 end
 
@@ -148,7 +149,9 @@ function LUI:ApplyUpdate(ver)
 			end
 		end
 
-		local theme_db = lui_db:GetNamespace("Themes").profile
+		local colorMod = LUI:GetModule("Colors")
+
+		local theme_db = LUI.db:GetNamespace("Themes").profile
 		if theme_db and theme_db.minimap then
 			if AreColorsEqual(theme_db.minimap, colorMod:Color(LUI.playerClass)) then
 				mm_db.Colors.Minimap.t = "Class"
@@ -223,12 +226,18 @@ function LUI:ApplyUpdate(ver)
 			Convert(uf_db.Player.Bars,  "ArcaneCharges",  "ClassPower")
 			Convert(uf_db.Player.Texts, "WarlockBar",     "ClassPower")
 
-			uf_db.Player.Bars.ShadowOrbs = nil
-			uf_db.Player.Bars.Eclipse = nil
-			uf_db.Player.Texts.Eclipse = nil
-			uf_db.Player.Texts.WarlockBar = nil
-			uf_db.Colors.ShadowOrbsBar = nil
-			uf_db.Colors.EclipseBar = nil
+			if uf_db.Player.Bars then
+				uf_db.Player.Bars.ShadowOrbs = nil
+				uf_db.Player.Bars.Eclipse = nil
+			end
+			if uf_db.Player.Texts then
+				uf_db.Player.Texts.Eclipse = nil
+				uf_db.Player.Texts.WarlockBar = nil
+			end
+			if uf_db.Colors then
+				uf_db.Colors.ShadowOrbsBar = nil
+				uf_db.Colors.EclipseBar = nil
+			end
 		end
 
 		for oldUnit, unitId in pairs(units) do
@@ -271,7 +280,8 @@ function LUI:ApplyUpdate(ver)
 		end
 	end
 
-	ver = DB_VERSION
+	db.dbVersion = DB_VERSION
+	LUI:Print(db.dbVersion)
 end
 
 --[[

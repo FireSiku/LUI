@@ -83,9 +83,9 @@ function module:OverlapPrevention(frame, action)
 				RaidMenu.AlphaOut:Show()
 			else
 				if db.OverlapPrevention == "AutoHide" and Panels.db.profile.MicroMenu.IsShown then
-					LUI.MicroMenu.Clicker:Click()
+					Micromenu.clickerMiddle:Click()
 				end
-				RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (((X_Position + x_offset) / db.Scale) + 17), (((Y_Position + offset) / db.Scale) + 17))
+				RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", (((X_Position + x_offset) / db.Scale) + 17), (((Y_Position + offset) / db.Scale) + 17))
 				RaidMenu.AlphaIn:Show()
 			end
 		elseif action == "slide" then
@@ -99,16 +99,16 @@ function module:OverlapPrevention(frame, action)
 			RaidMenu_Parent:SetAlpha(db.Opacity / 100)
 			if Panels.db.profile.MicroMenu.IsShown then
 				if db.OverlapPrevention == "AutoHide" then
-					LUI.MicroMenu.Clicker:Click()
+					Micromenu.clickerMiddle:Click()
 				end
 			else
 				if db.OverlapPrevention == "Offset" then
-					LUI.MicroMenu.Clicker:Click()
+					Micromenu.clickerMiddle:Click()
 					offset = db.Offset
 					x_offset = db.X_Offset
 				end
 			end
-			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (((X_Position + x_offset) / db.Scale) + 17), (((Y_Position + offset) / db.Scale) + 17))
+			RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", (((X_Position + x_offset) / db.Scale) + 17), (((Y_Position + offset) / db.Scale) + 17))
 		end
 	elseif frame == "MM" then
 		if Panels.db.profile.MicroMenu.IsShown then
@@ -118,7 +118,7 @@ function module:OverlapPrevention(frame, action)
 		else
 			if db.OverlapPrevention == "AutoHide" then
 				if RaidMenu_Parent:IsShown() then
-					LUI.MicroMenu.ButtonLeft.Clicker:Click()
+					Micromenu.clickerLeft:Click()
 				end
 			else
 				RaidMenu.SlideDown:Show()
@@ -178,7 +178,7 @@ local function FormatMarker(frame, x, y, r, g, b, id, t1, t2, t3, t4)
 		frame:SetID(id)
 		frame:SetScript("OnClick", function(self)
 			if db.AutoHide then
-				LUI.MicroMenu.ButtonLeft.Clicker:Click()
+				Micromenu.clickerLeft:Click()
 			end
 			MarkTarget(frame:GetID())
 		end)
@@ -299,11 +299,11 @@ function module:SetRaidMenu()
 	if not db.Enable or not Micromenu then return end
 
 	-- Create frames for Raid Menu
-	RaidMenu_Parent = LUI:CreateMeAFrame("Frame", "RaidMenu_Parent", LUI.MicroMenu.ButtonLeft, 256, 256, 1, "HIGH", 0, "TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17), 1)
+	RaidMenu_Parent = LUI:CreateMeAFrame("Frame", "RaidMenu_Parent", Micromenu.buttonLeft, 256, 256, 1, "HIGH", 0, "TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17), 1)
 	if Panels.db.profile.MicroMenu.IsShown and db.OverlapPrevention == "Offset" then
-		RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", X_normal, (((Y_normal + db.Offset) / db.Scale) + 17))
+		RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", X_normal, (((Y_normal + db.Offset) / db.Scale) + 17))
 	else
-		RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17))
+		RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17))
 	end
 	RaidMenu_Parent:SetScale(db.Scale)
 	RaidMenu_Parent:Hide()
@@ -315,7 +315,7 @@ function module:SetRaidMenu()
 		tile=false, tileSize = 0, edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	RaidMenu_BG:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg2))
+	RaidMenu_BG:SetBackdropColor(Micromenu:RGB("Background"))
 	RaidMenu_BG:SetBackdropBorderColor(0, 0, 0, 0)
 
 	RaidMenu = LUI:CreateMeAFrame("Frame", "RaidMenu", RaidMenu_Parent, 256, 256, 1, "HIGH", 2, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 0, 0, 1)
@@ -325,10 +325,10 @@ function module:SetRaidMenu()
 		tile=false, tileSize = 0, edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0}
 	})
-	RaidMenu:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg))
+	RaidMenu:SetBackdropColor(Micromenu:RGB("Background"))
 	RaidMenu:SetBackdropBorderColor(0, 0, 0, 0)
 
-	local micro_r, micro_g, micro_b = unpack(Themes.db.profile.micromenu)
+	local micro_r, micro_g, micro_b = Micromenu:RGB("Micromenu")
 	RaidMenu_Border = LUI:CreateMeAFrame("Frame", "RaidMenu_Border", RaidMenu_Parent, 256, 256, 1, "HIGH", 3, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 2, 1, 1)
 	RaidMenu_Border:SetBackdrop({
 		bgFile = RAIDMENU_BORDER_TEXTURE,
@@ -416,7 +416,7 @@ function module:SetRaidMenu()
 			ConvertToRaid()
 		end
 		if db.AutoHide then
-			LUI.MicroMenu.ButtonLeft.Clicker:Click()
+			Micromenu.clickerLeft:Click()
 		end
 	end)
 
@@ -440,19 +440,19 @@ function module:SetRaidMenu()
 			local LootMethodList = {
 				{text = "Group Loot",
 				checked = (GetLootMethod() == "group"),
-				func = function() SetLootMethod("group") if db.AutoHide then LUI.MicroMenu.ButtonLeft.Clicker:Click() end end},
+				func = function() SetLootMethod("group") if db.AutoHide then Micromenu.clickerLeft:Click() end end},
 				{text = "Free-For-All",
 				checked = (GetLootMethod() == "freeforall"),
-				func = function() SetLootMethod("freeforall") if db.AutoHide then LUI.MicroMenu.ButtonLeft.Clicker:Click() end end},
+				func = function() SetLootMethod("freeforall") if db.AutoHide then Micromenu.clickerLeft:Click() end end},
 				{text = "Master Looter",
 				checked = (GetLootMethod() == "master"),
-				func = function() SetLootMethod("master", "player") if db.AutoHide then LUI.MicroMenu.ButtonLeft.Clicker:Click() end end},
+				func = function() SetLootMethod("master", "player") if db.AutoHide then Micromenu.clickerLeft:Click() end end},
 				{text = "Need Before Greed",
 				checked = (GetLootMethod() == "needbeforegreed"),
-				func = function() SetLootMethod("needbeforegreed") if db.AutoHide then LUI.MicroMenu.ButtonLeft.Clicker:Click() end end},
+				func = function() SetLootMethod("needbeforegreed") if db.AutoHide then Micromenu.clickerLeft:Click() end end},
 				{text = "Round Robin",
 				checked = (GetLootMethod() == "roundrobin"),
-				func = function() SetLootMethod("roundrobin") if db.AutoHide then LUI.MicroMenu.ButtonLeft.Clicker:Click() end end}
+				func = function() SetLootMethod("roundrobin") if db.AutoHide then Micromenu.clickerLeft:Click() end end}
 			}
 			EasyMenu(LootMethodList, LootMenuFrame, "cursor", 0, 0, "MENU", 1)
 		end)
@@ -476,16 +476,16 @@ function module:SetRaidMenu()
 			local LootThresholdList = {
 				{text = "|cff1EFF00Uncommon|r",
 				checked = (GetLootThreshold() == 2),
-				func = function() SetLootThreshold("2") if db.AutoHide then LUI.MicroMenu.ButtonLeft.Clicker:Click() end end},
+				func = function() SetLootThreshold("2") if db.AutoHide then Micromenu.clickerLeft:Click() end end},
 				{text = "|cff0070FFRare|r",
 				checked = (GetLootThreshold() == 3),
-				func = function() SetLootThreshold("3") if db.AutoHide then LUI.MicroMenu.ButtonLeft.Clicker:Click() end end},
+				func = function() SetLootThreshold("3") if db.AutoHide then Micromenu.clickerLeft:Click() end end},
 				{text = "|cffA335EEEpic|r",
 				checked = (GetLootThreshold() == 4),
-				func = function() SetLootThreshold("4") if db.AutoHide then LUI.MicroMenu.ButtonLeft.Clicker:Click() end end},
+				func = function() SetLootThreshold("4") if db.AutoHide then Micromenu.clickerLeft:Click() end end},
 				{text = "|cffFF8000Legendary|r",
 				checked = (GetLootThreshold() == 5),
-				func = function() SetLootThreshold("5") if db.AutoHide then LUI.MicroMenu.ButtonLeft.Clicker:Click() end end}
+				func = function() SetLootThreshold("5") if db.AutoHide then Micromenu.clickerLeft:Click() end end}
 			}
 			EasyMenu(LootThresholdList, LootMenuFrame, "cursor", 0, 0, "MENU", 1)
 		end)
@@ -509,7 +509,7 @@ function module:SetRaidMenu()
 	RoleChecker:SetScript("OnClick", function(self)
 		InitiateRolePoll()
 		if db.AutoHide then
-			LUI.MicroMenu.ButtonLeft.Clicker:Click()
+			Micromenu.clickerLeft:Click()
 		end
 	end)
 
@@ -531,7 +531,7 @@ function module:SetRaidMenu()
 	ReadyChecker:SetScript("OnClick", function(self)
 		DoReadyCheck()
 		if db.AutoHide then
-			LUI.MicroMenu.ButtonLeft.Clicker:Click()
+			Micromenu.clickerLeft:Click()
 		end
 	end)
 
@@ -584,9 +584,9 @@ function module:SetRaidMenu()
 		self.timer = self.timer + elapsed
 		if self.timer < .5 then
 			local offset = (1 - self.timer / .5) * db.Offset
-			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), (((Y_Position + offset) / db.Scale) + 17))
+			RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), (((Y_Position + offset) / db.Scale) + 17))
 		else
-			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), ((Y_Position / db.Scale) + 17))
+			RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), ((Y_Position / db.Scale) + 17))
 			self.timer = 0
 			self:Hide()
 		end
@@ -608,9 +608,9 @@ function module:SetRaidMenu()
 		self.timer = self.timer + elapsed
 		if self.timer < .5 then
 			local offset = (self.timer / .5) * db.Offset
-			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), (((Y_Position + offset) / db.Scale) + 17))
+			RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), (((Y_Position + offset) / db.Scale) + 17))
 		else
-			RaidMenu_Parent:SetPoint("TOPRIGHT", LUI.MicroMenu.ButtonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), (((Y_Position + db.Offset) / db.Scale) + 17))
+			RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), (((Y_Position + db.Offset) / db.Scale) + 17))
 			self.timer = 0
 			self:Hide()
 		end
