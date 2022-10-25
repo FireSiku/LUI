@@ -6,7 +6,7 @@
 
 local addonname, LUI = ...
 local module = LUI:GetModule("Unitframes")
-local Fader = LUI:GetModule("Fader")
+local Fader = LUI:GetModule("Fader", true)
 local Blizzard = LUI.Blizzard
 local oUF = LUI.oUF
 
@@ -1052,7 +1052,7 @@ module.ApplySettings = function(unit)
 			end
 
 			-- -- fader
-			if dbUnit.Fader then
+			if Fader and dbUnit.Fader then
 				if dbUnit.Fader.Enable then
 					Fader:RegisterFrame(frame, dbUnit.Fader)
 				else

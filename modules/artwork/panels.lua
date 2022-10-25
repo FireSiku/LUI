@@ -187,7 +187,7 @@ function module:CheckPanels()
 		db.Raid.IsShown = false
 	end
 
-	if LUI:GetModule("Micromenu") and LUI.MicroMenu then
+	if LUI:GetModule("Micromenu", true) and LUI.MicroMenu then
 		if db.MicroMenu.AlwaysShow or db.MicroMenu.IsShown then
 			LUI.MicroMenu.Button:SetAlpha(1)
 			LUI.MicroMenu.Button:Show()

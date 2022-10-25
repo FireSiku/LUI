@@ -399,23 +399,24 @@ function LUI:InstallBartender()
 
 	do
 		--ActionBarsDefaults[CharName].actionbars[10]
-		local bardb = LUI:GetModule("Bars").db.profile
-		if bardb.SidebarRight1.Enable and strsub(bardb.SidebarRight1.Anchor, 1, 3) == "BT4" then
+		local bar_mod = LUI:GetModule("Bars", true)
+		local bardb = bar_mod and bar_mod.db.profile
+		if bardb and bardb.SidebarRight1.Enable and strsub(bardb.SidebarRight1.Anchor, 1, 3) == "BT4" then
 			local _, num = strsplit("r", bardb.SidebarRight1.Anchor)
 			local barOpt = ActionBarsDefaults[CharName].actionbars[tonumber(num)]
 			barOpt.enabled = true
 		end
-		if bardb.SidebarRight2.Enable and strsub(bardb.SidebarRight2.Anchor, 1, 3) == "BT4" then
+		if bardb and bardb.SidebarRight2.Enable and strsub(bardb.SidebarRight2.Anchor, 1, 3) == "BT4" then
 			local _, num = strsplit("r", bardb.SidebarRight2.Anchor)
 			local barOpt = ActionBarsDefaults[CharName].actionbars[tonumber(num)]
 			barOpt.enabled = true
 		end
-		if bardb.SidebarLeft1.Enable and strsub(bardb.SidebarLeft1.Anchor, 1, 3) == "BT4" then
+		if bardb and bardb.SidebarLeft1.Enable and strsub(bardb.SidebarLeft1.Anchor, 1, 3) == "BT4" then
 			local _, num = strsplit("r", bardb.SidebarLeft1.Anchor)
 			local barOpt = ActionBarsDefaults[CharName].actionbars[tonumber(num)]
 			barOpt.enabled = true
 		end
-		if bardb.SidebarLeft2.Enable and strsub(bardb.SidebarLeft2.Anchor, 1, 3) == "BT4" then
+		if bardb and bardb.SidebarLeft2.Enable and strsub(bardb.SidebarLeft2.Anchor, 1, 3) == "BT4" then
 			local _, num = strsplit("r", bardb.SidebarLeft2.Anchor)
 			local barOpt = ActionBarsDefaults[CharName].actionbars[tonumber(num)]
 			barOpt.enabled = true

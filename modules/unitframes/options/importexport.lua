@@ -6,7 +6,6 @@
 
 local addonname, LUI = ...
 local module = LUI:GetModule("Unitframes")
-local Fader = LUI:GetModule("Fader")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
 local importLayoutName

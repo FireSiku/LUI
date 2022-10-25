@@ -8,10 +8,29 @@
 ## X-oUF: oUF_LUI
 
 ### Initialize Libs ###
-libs\libs.xml
-locale\locale.xml
+libs\LibStub\LibStub.lua
+libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+# libs\LibActionButton-1.0\LibActionButton-1.0.lua
+libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+libs\LibWindow-1.1\LibWindow-1.1.lua
+# libs\LibKeyBound-1.0\lib.xml
+libs\LibSharedMedia-3.0\lib.xml
+libs\AceAddon-3.0\AceAddon-3.0.xml
+libs\AceGUI-3.0\AceGUI-3.0.xml
+libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
+libs\AceDB-3.0\AceDB-3.0.xml
+libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
+libs\AceConfig-3.0\AceConfig-3.0.xml
+libs\AceConsole-3.0\AceConsole-3.0.xml
+libs\AceComm-3.0\AceComm-3.0.xml
+libs\AceEvent-3.0\AceEvent-3.0.xml
+libs\AceHook-3.0\AceHook-3.0.xml
+libs\AceLocale-3.0\AceLocale-3.0.xml
+libs\AceSerializer-3.0\AceSerializer-3.0.xml
+libs\AceTimer-3.0\AceTimer-3.0.xml
 api\oUF10\ouf.xml
 api\oUF11\ouf.xml
+locale\locale.xml
 
 ### Core + API ###\
 init.lua
@@ -34,14 +53,14 @@ modules\artwork\panels.lua
 modules\artwork\artwork_v3.lua
 
 ### Fader ###
-modules\fader\fader_init.lua
-modules\fader\fader.lua
+# modules\fader\fader_init.lua
+# modules\fader\fader.lua
 
 ### Bars ###
-modules\bars\bars.lua
+## modules\bars\bars.lua
 
 ### Auras ###
-modules\auras\auras.xml
+## modules\auras\auras.xml
 
 ### Chat ###
 modules\chat\chat.xml
@@ -51,7 +70,7 @@ modules\minimap\minimap_init.lua
 modules\minimap\minimap_v4.lua
 
 ### Bags ###
-modules\bags\bags_v3.lua
+## modules\bags\bags_v3.lua
 
 ### Cooldown ###
 modules\cooldown\cooldown.xml
