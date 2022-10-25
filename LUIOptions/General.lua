@@ -64,7 +64,9 @@ General.Welcome.args = {
     IntroText = Opt:Desc(L["For more info, visit Discord"].."\n\n\n", 3, "medium"),
     --IntroText = Opt:Desc(L["Core_IntroText"], 3),
     VerText = Opt:Desc(GetVersionText(), 4, "large"),
-    Header = Opt:Header("General Settings", 10, true),
+    Header = Opt:Header("General Settings", 10),
+    OldOptionsDesc = Opt:Desc("\n\nDue to some time contraints, the new Options panel does not have all the new modules yet.\nYou can access what remains of the old options here:", 11, "medium"),
+    OldOptionsButton = Opt:Execute("Old LUI Options", nil, 12, function() LUI:OpenOptions(true) end),
     Master = Opt:FontMenu("Master Font", nil, 11, true, true),
 }
 
