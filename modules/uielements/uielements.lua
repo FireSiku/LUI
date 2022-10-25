@@ -39,6 +39,7 @@ function module:SetUIElements()
 	module:SetPosition('ObjectiveTrackerFrame')
 	module:SetPosition('DurabilityFrame')
 	module:SetPosition('PlayerPowerBarAlt')
+	module:SetPosition('QueueStatusButton')
 end
 
 function module:SetHiddenFrames()
@@ -87,6 +88,7 @@ function module:SetAdditionalFrames()
 		self:SecureHook(PlayerPowerBarAlt, "SetPoint", "PlayerPowerBarAlt_SetPoint")
 		self:SecureHook(GroupLootContainer, "SetPoint", "GroupLootContainer_SetPoint")
 		self:SecureHook(MawBuffsBelowMinimapFrame, "SetPoint", "MawBuffs_SetPoint")
+		self:SecureHook(QueueStatusButton, "SetPoint", "QueueStatusButton_SetPoint")
 	end
 end
 
@@ -121,6 +123,10 @@ function module:SetPosition(frame)
 	elseif frame == "MawBuffs" and db.MawBuffs.ManagePosition then
 		MawBuffsBelowMinimapFrame:ClearAllPoints()
 		MawBuffsBelowMinimapFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.MawBuffs.X, db.MawBuffs.Y)
+	elseif frame == "QueueStatusButton" and db.QueueStatusButton.ManagePosition then
+		QueueStatusButton:ClearAllPoints()
+		QueueStatusButton:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.QueueStatusButton.X, db.QueueStatusButton.Y)
+	
 	end
 
 	shouldntSetPoint = false
@@ -169,6 +175,11 @@ end
 function module:MawBuffs_SetPoint()
 	if shouldntSetPoint then return end
 	self:SetPosition('MawBuffs')
+end
+
+function module:QueueStatusButton_SetPoint()
+	if shouldntSetPoint then return end
+	self:SetPosition('QueueStatusButton')
 end
 
 -- ####################################################################################################################

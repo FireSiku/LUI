@@ -20,11 +20,7 @@ local GarrisonLandingPageMinimapButton = _G.GarrisonLandingPageMinimapButton
 local MiniMapTrackingDropDown = _G.MiniMapTrackingDropDown
 local GetMinimapZoneText = _G.GetMinimapZoneText
 local ToggleDropDownMenu = _G.ToggleDropDownMenu
-local MiniMapMailFrame = _G.MiniMapMailFrame
-local MiniMapMailIcon = _G.MiniMapMailIcon
 local Minimap_OnClick = _G.Minimap_OnClick
-local MinimapZoomOut = _G.MinimapZoomOut
-local MinimapZoomIn = _G.MinimapZoomIn
 local MINIMAP_LABEL = _G.MINIMAP_LABEL
 local Minimap = _G.Minimap
 
@@ -59,13 +55,11 @@ function GetMinimapShape() return minimapShape end
 local minimapFrames = {
 	"MinimapCluster",          --Minimap Original Parent, contains ZoneText, InstanceDifficulties
 	"MinimapBorder",           --Borders
-	"MinimapZoomIn",           --Zoom
-	"MinimapZoomOut",
-	"MiniMapWorldMapButton",   --World Map
+--	"MiniMapWorldMapButton",   --World Map
 	"TimeManagerClockButton",  --Clock
 	"MiniMapTracking",         --Tracking
 	"GameTimeFrame",           --Calendar
-	"MiniMapMailBorder"        --Mail Border
+	"MinimapCompassTexture"		-- Dragonflight Minimap Frame
 }
 
 function module:HideDefaultMinimap()
@@ -88,29 +82,9 @@ function module:HideDefaultMinimap()
 	minimapShape = "SQUARE"
 
 	-- Change textures around, keep old textures around.
-	LUI:Kill(_G.MinimapCompassTexture)
-
-	-- Move Mail icon
-	MiniMapMailFrame:ClearAllPoints()
-	MiniMapMailFrame:SetPoint(ICON_LOCATION.Mail, Minimap, 3, 8)
-	oldDefault.Mail = MiniMapMailIcon:GetTexture()
-	MiniMapMailIcon:SetTexture(MAIL_ICON_TEXTURE)
-
-	-- Move battleground icon
-	if (LUI.IsRetail) then
-		local point, relativeTo, relativePoint, xOff, yOff = _G.QueueStatusMinimapButton:GetPoint(1)
-		oldDefault.QueueStatusPosition = {
-			point = point,
-			relativeTo = relativeTo,
-			relativePoint = relativePoint,
-			X = xOff,
-			Y = yOff,
-		}
-
-		_G.QueueStatusMinimapButton:ClearAllPoints()
-		_G.QueueStatusMinimapButton:SetPoint(ICON_LOCATION.LFG, Minimap, LUI:Scale(3), 0)
-		_G.QueueStatusMinimapButtonBorder:Hide()
-	end
+	LUI:Kill(Minimap.ZoomHitArea)
+	LUI:Kill(Minimap.ZoomIn)
+	LUI:Kill(Minimap.ZoomOut)
 
 	--Size and Position
 
@@ -137,7 +111,9 @@ function module:RestoreDefaultMinimap()
 			end
 		end
 	end
-	LUI:Unkill(_G.MinimapCompassTexture)
+	LUI:Unkill(Minimap.ZoomHitArea)
+	LUI:Unkill(Minimap.ZoomIn)
+	LUI:Unkill(Minimap.ZoomOut)
 
 	--Revert Minimap Parent
 	Minimap:SetParent(oldDefault.parent)
@@ -148,31 +124,12 @@ function module:RestoreDefaultMinimap()
 	Minimap:SetMaskTexture(MINIMAP_ROUND_TEXTURE_MASK)
 	minimapShape = "ROUND"
 
-	-- Move Mail icon
-	--MiniMapMailFrame:ClearAllPoints()
-	MiniMapMailIcon:SetTexture(oldDefault.Mail)
-
 	--Remove module centric frames
 	LUIMinimapZone:Hide()
 	LUIMinimapCoord:Hide()
 	LUIMinimapBorder:Hide()
 	for i = 1, 8 do
 		_G["LUIMinimapTexture"..i]:Hide()
-	end
-
-	if (LUI.IsRetail) then
-		local point, relativeTo, relativePoint, xOff, yOff = _G.QueueStatusMinimapButton:GetPoint(1)
-		oldDefault.QueueStatusPosition = {
-			point = point,
-			relativeTo = relativeTo,
-			relativePoint = relativePoint,
-			X = xOff,
-			Y = yOff,
-		}
-		local pos = oldDefault.QueueStatusPosition
-		_G.QueueStatusMinimapButton:ClearAllPoints()
-		_G.QueueStatusMinimapButton:SetPoint(pos.point, pos.relativeTo, pos.relativePoint, pos.X, pos.Y)
-		_G.QueueStatusMinimapButtonBorder:Hide()
 	end
 
 	--Reset Position and Size
@@ -220,9 +177,9 @@ function module:SetMinimap()
 	Minimap:SetScript("OnMouseWheel", function(self, delta)
 		if module:IsEnabled() then
 			if delta > 0 then
-				MinimapZoomIn:Click()
+				Minimap.ZoomIn:Click()
 			elseif delta < 0 then
-				MinimapZoomOut:Click()
+				Minimap.ZoomOut:Click()
 			end
 		end
 	end)
@@ -381,20 +338,20 @@ function module:SetMinimapFrames()
 		module:SecureHook("GarrisonLandingPageMinimapButton_UpdateIcon", function()
 			GarrisonLandingPageMinimapButton:SetSize(32,32)
 			GarrisonLandingPageMinimapButton:ClearAllPoints()
-			if MiniMapMailFrame:IsShown() then
-				GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-5))
-			else
+			-- if MiniMapMailFrame:IsShown() then
+			-- 	GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-5))
+			-- else
 				GarrisonLandingPageMinimapButton:SetPoint(ICON_LOCATION.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
-			end
+			-- end
 		end)
-		MiniMapMailFrame:HookScript("OnShow", function()
-			GarrisonLandingPageMinimapButton:ClearAllPoints()
-			GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-5))
-		end)
-		MiniMapMailFrame:HookScript("OnHide", function()
-			GarrisonLandingPageMinimapButton:ClearAllPoints()
-			GarrisonLandingPageMinimapButton:SetPoint(ICON_LOCATION.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
-		end)
+		-- MiniMapMailFrame:HookScript("OnShow", function()
+		-- 	GarrisonLandingPageMinimapButton:ClearAllPoints()
+		-- 	GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", MiniMapMailFrame, "TOPLEFT", 0, LUI:Scale(-5))
+		-- end)
+		-- MiniMapMailFrame:HookScript("OnHide", function()
+		-- 	GarrisonLandingPageMinimapButton:ClearAllPoints()
+		-- 	GarrisonLandingPageMinimapButton:SetPoint(ICON_LOCATION.Mail, Minimap, LUI:Scale(3), LUI:Scale(15))
+		-- end)
 
 		self:RegisterEvent("GARRISON_HIDE_LANDING_PAGE")
 		self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE")
