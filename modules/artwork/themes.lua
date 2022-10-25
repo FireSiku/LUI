@@ -809,7 +809,7 @@ function module:LoadOptions()
 	local function createDisabled(toCheck)
 		if not disabledFuncs[toCheck] then
 			disabledFuncs[toCheck] = function()
-				return not LUI:GetModule(toCheck)
+				return not LUI:GetModule(toCheck, true)
 			end
 		end
 

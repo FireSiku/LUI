@@ -30,7 +30,7 @@ local Micromenu = {
 	Spacing = Opt:Slider(L["Spacing"], L["MicroOptions_Spacing_Desc"], 2, { min = -10, max = 10, step = 1}),
 	
     -- Buttons
-    ButtonsHeader = Opt:Header(L["Buttons"], 3),
+    ButtonsHeader = Opt:Header(L["Hide Buttons"], 3),
 	HidePlayer = Opt:Toggle(L["MicroOptions_Player"], nil, 4),
 	HideSpellbook = Opt:Toggle(L["MicroOptions_Spellbook"], nil, 5),
 	HideTalents = Opt:Toggle(L["MicroOptions_Talents"], nil, 6),
