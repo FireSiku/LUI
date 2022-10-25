@@ -67,6 +67,12 @@ module.defaults = {
 			Y = -70,
 			ManagePosition = true,
 			HideFrame = false,
+		},
+		QueueStatusButton = {
+			X = -235,
+			Y = -70,
+			ManagePosition = true,
+			HideFrame = false,
 		}
 	},
 }
