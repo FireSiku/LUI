@@ -184,7 +184,7 @@ local function CheckResolution()
 
 	if uiWidth == "1280" and uiHeight == "1024" then
 		-- Repostion Info Texts
-		local Infotext = LUI:GetModule("Infotext")
+		local Infotext = LUI:GetModule("Infotext", true)
 		if Infotext and false then -- broken with false until proper positions have been determined
 			Infotext.db.defaults.profile.Bags.X = -100
 			Infotext.db.defaults.profile.Durability.X = 10
@@ -199,12 +199,14 @@ local function CheckResolution()
 		LUI.defaults.profile.Frames.Tps.Y = 882
 
 		-- Reposition Auras
-		local auras = LUI:GetModule("Auras")
-		auras.db.General.Anchor = "TOPRIGHT"
-		auras.db.Buffs.X = -170
-		auras.db.Buffs.Y = -75
-		auras.db.Debuffs.X = -170
-		auras.db.Debuffs.Y = -185
+		local Auras = LUI:GetModule("Auras", true)
+		if Auras then
+			auras.db.General.Anchor = "TOPRIGHT"
+			auras.db.Buffs.X = -170
+			auras.db.Buffs.Y = -75
+			auras.db.Debuffs.X = -170
+			auras.db.Debuffs.Y = -185
+		end
 	end
 end
 
@@ -293,7 +295,7 @@ function LUI:StyleButton(b, checked)
 	pushed:SetPoint("BOTTOMRIGHT",button,-2,2)
 	button:SetPushedTexture(pushed)
 
-	local Infotext = self:GetModule("Infotext")
+	local Infotext = self:GetModule("Infotext", true)
 	count:SetFont(Media:Fetch("font", (Infotext and Infotext.db.profile.FPS.Font or "vibroceb")), (Infotext and Infotext.db.profile.FPS.FontSize or 12), "OUTLINE")
 
 	if checked then

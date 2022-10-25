@@ -253,7 +253,7 @@ function module:SetTooltip()
 		if not self.text then
 			self.text = self:CreateFontString(nil, "OVERLAY")
 			self.text:SetPoint("CENTER", GameTooltipStatusBar, 0, LUI:Scale(6))
-			local Infotext = LUI:GetModule("Infotext")
+			local Infotext = LUI:GetModule("Infotext", true)
 			self.text:SetFont(Media:Fetch("font", (Infotext and Infotext.db.profile.Bags.Font or "vibroceb")), 12, "THINOUTLINE")
 			self.text:Show()
 			if unit then

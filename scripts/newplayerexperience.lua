@@ -1,6 +1,6 @@
 local addonname, LUI = ...
 local script = LUI:NewScript("NewPlayerExp", "AceEvent-3.0", "AceHook-3.0")
-local barMod = LUI:GetModule("Bars")
+local barMod = LUI:GetModule("Bars", true)
 
 local function S(x) return LUI:Scale(x) end
 
@@ -137,9 +137,9 @@ local function moveAway(self)
 end
 
 local function isUsingLUIBars()
-	local db = barMod.db.profile.General
+	if not barMod then return end
 	if not (IsAddOnLoaded("Bartender4") or IsAddOnLoaded("Dominos") or IsAddOnLoaded("Macaroon")) then
-		return db.Enable
+		return barMod.db.profile.General.Enable
 	end
 end
 

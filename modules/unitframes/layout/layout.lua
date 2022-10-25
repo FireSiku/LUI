@@ -7,7 +7,7 @@
 
 local addonname, LUI = ...
 local module = LUI:GetModule("Unitframes")
-local Fader = LUI:GetModule("Fader")
+local Fader = LUI:GetModule("Fader", true)
 
 local Media = LibStub("LibSharedMedia-3.0")
 local Blizzard = LUI.Blizzard
@@ -2728,7 +2728,7 @@ local SetStyle = function(self, unit, isSingle)
 		end)
 	end
 
-	if oufdb.Fader and oufdb.Fader.Enable then Fader:RegisterFrame(self, oUF.Fader) end
+	if Fader and oufdb.Fader and oufdb.Fader.Enable then Fader:RegisterFrame(self, oUF.Fader) end
 
 	if unit == "raid" or (unit == "party" and oufdb.RangeFade and oufdb.Fader and not oufdb.Fader.Enable) then
 		self.Range = {
