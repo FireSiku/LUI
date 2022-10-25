@@ -10,18 +10,20 @@ LUIOptions.lua
 General.lua
 Colors.lua
 CPanel.lua
-ActionBars.lua
+# ActionBars.lua
 Artwork.lua
-Auras.lua
-Bags.lua
+# Auras.lua
+# Bags.lua
 Chat.lua
+Cooldown.lua
 ExpBars.lua
-Fader.lua
+# Fader.lua
 Infotexts.lua
+Merchant.lua
 Micromenu.lua
-Raidmenu.lua
 Minimap.lua
 MirrorBar.lua
+Raidmenu.lua
 Tooltip.lua
 UIElements.lua
 Unitframes.lua
