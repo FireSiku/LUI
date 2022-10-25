@@ -11,7 +11,6 @@ local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
 local oUF = LUI.oUF
-local Blizzard = LUI.Blizzard
 
 module.defaults.profile.Settings = {
 	ShowV2Textures = true,
@@ -103,17 +102,11 @@ function module:CreateSettings(order)
 							if module.db.profile[unit].Castbar.Enable ~= false then
 								if not frame.Castbar then module.funcs.Castbar(frame, frame.__unit, module.db.profile[unit]) end
 								frame:EnableElement("Castbar")
-								if unit == "Player" then
-									Blizzard:Hide("castbar")
-								end
 							end
 						else
 							if frame.Castbar then
 								frame:DisableElement("Castbar")
 								frame.Castbar:Hide()
-								if unit == "Player" then
-									Blizzard:Show("castbar")
-								end
 							end
 						end
 						frame:UpdateAllElements('refreshUnit')

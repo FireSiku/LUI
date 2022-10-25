@@ -1036,23 +1036,6 @@ local function getOptions()
 									type = "description",
 									order = 51,
 								},
-								HideBlizzardRaid = {
-									name = "Hide Blizzard Raid Frames",
-									desc = "Hide Blizzard Raid Frames (only available when LUI Unitframes are disabled)",
-									type = "toggle",
-									width = "full",
-									disabled = function() return LUI:GetModule("Unitframes").db.Enable end,
-									get = function() return LUI:GetModule("Unitframes").db.Settings.HideBlizzRaid end,
-									set = function(info, value)
-										LUI:GetModule("Unitframes").db.Settings.HideBlizzRaid = value
-										if value then
-											LUI.Blizzard:Hide("raid", true)
-										else
-											LUI.Blizzard:Show("raid")
-										end
-									end,
-									order = 52,
-								},
 							},
 						},
 						Addons = {

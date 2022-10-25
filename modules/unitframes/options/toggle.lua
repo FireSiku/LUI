@@ -7,7 +7,6 @@
 local addonname, LUI = ...
 local module = LUI:GetModule("Unitframes")
 local Fader = LUI:GetModule("Fader", true)
-local Blizzard = LUI.Blizzard
 local oUF = LUI.oUF
 
 local MAX_PLAYER_LEVEL = _G.MAX_PLAYER_LEVEL
@@ -82,14 +81,7 @@ module.ToggleUnit = setmetatable({
 				f:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
 			end
 
-			if Blizzard:IsHideable(unit) then
-				Blizzard:Hide(unit)
-			end
 		else
-			if Blizzard:IsHideable(unit) then
-				Blizzard:Show(unit)
-			end
-
 			if _G["oUF_LUI_"..unit] then _G["oUF_LUI_"..unit]:Disable() end
 		end
 
@@ -106,8 +98,6 @@ module.ToggleUnit = setmetatable({
 
 			local growdir = dbUnit.GrowDirection
 			local opposite = GetOpposite(growdir)
-
-			Blizzard:Hide("boss")
 
 			if oUF_LUI_boss then
 				oUF_LUI_boss:SetScale(dbUnit.Scale)
@@ -182,12 +172,6 @@ module.ToggleUnit = setmetatable({
 
 			module.ToggleUnit("bosstarget")
 		else
-			if dbUnit.UseBlizzard then
-				Blizzard:Show("boss")
-			else
-				Blizzard:Hide("boss")
-			end
-
 			if oUF_LUI_boss then
 				oUF_LUI_boss:Hide()
 				for i = 1, MAX_BOSS_FRAMES do
@@ -340,18 +324,10 @@ module.ToggleUnit = setmetatable({
 			end
 
 			SetCVar("useCompactPartyFrames", nil)
-			Blizzard:Hide("party")
 
 			module.ToggleUnit("partytarget")
 			module.ToggleUnit("partypet")
 		else
-			if dbUnit.UseBlizzard then
-				Blizzard:Show("party")
-			else
-				SetCVar("useCompactPartyFrames", nil)
-				Blizzard:Hide("party")
-			end
-
 			if oUF_LUI_party then
 				for i = 1, 5 do
 					if _G["oUF_LUI_partyUnitButton"..i] then
@@ -493,18 +469,13 @@ module.ToggleUnit = setmetatable({
 				end
 			end
 
-			Blizzard:Hide("arena")
-
 			module.ToggleUnit("Arenatarget")
 			module.ToggleUnit("Arenapet")
 		else
 			if dbUnit.UseBlizzard == true then
-				Blizzard:Show("arena")
 				if not GetCVarBool("showArenaEnemyFrames") then
 					print("Notice: Blizzard's Arena frames are disabled under the Unit Frames section of your Interface options")
 				end
-			else
-				Blizzard:Hide("arena")
 			end
 
 			if oUF_LUI_arena then
@@ -815,14 +786,7 @@ module.ToggleUnit = setmetatable({
 				end
 			end
 
-			Blizzard:Hide("raid")
 		else
-			if dbUnit.UseBlizzard == true then
-				Blizzard:Show("raid")
-			else
-				Blizzard:Hide("raid")
-			end
-
 			if oUF_LUI_raid then
 				for i = 1, 5 do
 					for j = 1, 5 do
