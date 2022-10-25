@@ -67,7 +67,7 @@ modules\chat\chat.xml
 
 ### Minimap ###
 modules\minimap\minimap_init.lua
-modules\minimap\minimap_v4.lua
+modules\minimap\minimap.lua
 
 ### Bags ###
 ## modules\bags\bags_v3.lua
@@ -76,7 +76,7 @@ modules\minimap\minimap_v4.lua
 modules\cooldown\cooldown.xml
 
 ### Tooltip ###
-modules\tooltip\tooltip_v4.lua
+modules\tooltip\tooltip.lua
 
 ### InfoText ###
 # modules\infotext\datatext_v3.lua
@@ -94,7 +94,7 @@ modules\InfoText\gold.lua
 modules\InfoText\memory.lua
 
 ### Micromenu ###
-modules\micromenu\micromenu_v4.lua
+modules\micromenu\micromenu.lua
 
 ### RaidMenu ###
 modules\raidmenu\raidmenu_init.lua
