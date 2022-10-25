@@ -66,7 +66,7 @@ module.defaults = {
 		},
 		Fonts = {
 			Infotext = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
-			Infotip =  { Name = "NotoSans-SCB", Size = 12, Flag = "NONE",    },
+			Infotip =  { Name = "NotoSans-SCB", Size = 12, Flag = "",    },
 		},
 	},
 }

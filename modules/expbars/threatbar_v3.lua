@@ -17,7 +17,6 @@ local C_AzeriteItem = C_AzeriteItem
 
 LUI.Versions.threatbar = 2.0
 
-local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
 local positions = { "TOP", "TOPRIGHT", "TOPLEFT", "BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT", "RIGHT", "LEFT", "CENTER"}
 
 local aggrocolors = {0, 1, 0, 1, 1, 0, 1, 0, 0}
@@ -417,7 +416,7 @@ module.defaults = {
 			Y = 0,
 			Font = "Prototype",
 			Size = 14,
-			Outline = "NONE",
+			Outline = "",
 			Color = "Individual",
 			IndividualColor = {
 				r = 1,
@@ -472,7 +471,7 @@ function module:LoadOptions()
 			[""] = self:NewPosSliders("Threat Bar Text", 3, nil, "LUIThreatText", true, nil, disabledTextFunc),
 			Font = self:NewSelect("Font", "Choose the Font for your Threat Bar Text.", 4, widgetLists.font, "LSM30_Font", true, nil, disabledTextFunc),
 			Size = self:NewInputNumber("Fontsize", "Choose the Fontsize for your Threat Bar Text.", 5, dryCall, nil, disabledTextFunc),
-			Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Threat Bar Text Font.", 6, fontflags, nil, dryCall, nil, disabledTextFunc),
+			Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Threat Bar Text Font.", 6, LUI.FontFlags, nil, dryCall, nil, disabledTextFunc),
 			empty2 = self:NewDesc(" ", 7),
 			Color = self:NewSelect("Color", "Choose the Color option for your Threat Bar Text.", 8, colorOptions, nil, dryCall, nil, disabledTextFunc),
 			IndividualColor = self:NewColorNoAlpha("Individual", "Threat Bar Text", 9, dryCall, nil, function() return not db.Text.Enable or db.Text.Color ~= "Individual" end),

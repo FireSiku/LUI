@@ -500,28 +500,28 @@ local function configureTab(tab, minimalist)
 		if module:IsHooked(tab, "OnMouseWheel") then return end
 
 		tab:SetHeight(29)
-		tab.leftTexture:Hide()
-		tab.middleTexture:Hide()
-		tab.rightTexture:Hide()
-		tab.leftSelectedTexture:SetAlpha(0)
-		tab.rightSelectedTexture:SetAlpha(0)
-		tab.middleSelectedTexture:SetAlpha(0)
-		tab.leftHighlightTexture:SetAlpha(0)
-		tab.middleHighlightTexture:SetAlpha(0)
-		tab.rightHighlightTexture:SetAlpha(0)
+		--tab.leftTexture:Hide()
+		--tab.middleTexture:Hide()
+		--tab.rightTexture:Hide()
+		--tab.leftSelectedTexture:SetAlpha(0)
+		--tab.rightSelectedTexture:SetAlpha(0)
+		--tab.middleSelectedTexture:SetAlpha(0)
+		--tab.leftHighlightTexture:SetAlpha(0)
+		--tab.middleHighlightTexture:SetAlpha(0)
+		--tab.rightHighlightTexture:SetAlpha(0)
 		tab:EnableMouseWheel(true)
 		module:HookScript(tab, "OnMouseWheel")
 	else
 		tab:SetHeight(32)
-		tab.leftTexture:Show()
-		tab.middleTexture:Show()
-		tab.rightTexture:Show()
-		tab.leftSelectedTexture:SetAlpha(1)
-		tab.rightSelectedTexture:SetAlpha(1)
-		tab.middleSelectedTexture:SetAlpha(1)
-		tab.leftHighlightTexture:SetAlpha(1)
-		tab.middleHighlightTexture:SetAlpha(1)
-		tab.rightHighlightTexture:SetAlpha(1)
+		--tab.leftTexture:Show()
+		--tab.middleTexture:Show()
+		--tab.rightTexture:Show()
+		--tab.leftSelectedTexture:SetAlpha(1)
+		--tab.rightSelectedTexture:SetAlpha(1)
+		--tab.middleSelectedTexture:SetAlpha(1)
+		--tab.leftHighlightTexture:SetAlpha(1)
+		--tab.middleHighlightTexture:SetAlpha(1)
+		--tab.rightHighlightTexture:SetAlpha(1)
 		tab:EnableMouseWheel(false)
 		module:Unhook(tab, "OnMouseWheel")
 	end
@@ -762,7 +762,7 @@ module.defaults = {
 					end
 				end)(),
 				Size = 14,
-				Flag = "NONE",
+				Flag = "",
 			},
 			ShortChannelNames = true,
 			DisableFading = true,

@@ -10,7 +10,6 @@ local oUFmodule = LUI:GetModule("Unitframes")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
-local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
 local positions = { "TOP", "TOPRIGHT", "TOPLEFT", "BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT", "RIGHT", "LEFT", "CENTER"}
 
 local db, dbd
@@ -486,7 +485,7 @@ module.defaults = {
 			Y = 0,
 			Font = "neuropol",
 			Size = 10,
-			Outline = "NONE",
+			Outline = "",
 			Color = "Individual",
 			IndividualColor = {
 				r = 1,
@@ -533,7 +532,7 @@ function module:LoadOptions()
 			[""] = self:NewPosSliders("Swing Timer Text", 3, nil, "LUISwingText", true, nil, disabledTextFunc),
 			Font = self:NewSelect("Font", "Choose the Font for your Swing Timer Text.", 4, widgetLists.font, "LSM30_Font", true, nil, disabledTextFunc),
 			Size = self:NewInputNumber("Fontsize", "Choose the Fontsize for your Swing Timer Text.", 5, dryCall, nil, disabledTextFunc),
-			Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Swing Timer Text Font.", 6, fontflags, nil, dryCall, nil, disabledTextFunc),
+			Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Swing Timer Text Font.", 6, LUI.FontFlags, nil, dryCall, nil, disabledTextFunc),
 			empty2 = self:NewDesc(" ", 7),
 			Color = self:NewSelect("Color", "Choose the Color option for your Swing Timer Text.", 8, colorOptions, nil, dryCall, nil, disabledTextFunc),
 			IndividualColor = self:NewColorNoAlpha("Individual", "Swing Timer Text", 9, dryCall, nil, function() return not db.Text.Enable or db.Text.Color ~= "Individual" end),

@@ -74,7 +74,6 @@ if LUI.ROGUE or LUI.DRUID then
 	barNames.Chi = "Combo Points"
 end
 
-local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", "NONE"}
 local directions = {"TOP", "BOTTOM", "RIGHT", "LEFT"}
 local positions = {"TOP", "TOPRIGHT", "TOPLEFT", "BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT", "RIGHT", "LEFT", "CENTER"}
 local justifications = {"RIGHT", "LEFT", "CENTER"}
@@ -394,7 +393,7 @@ function module:CreateNameTextOptions(unit, order)
 		empty1 = self:NewDesc(" ", 2),
 		Font = self:NewSelect("Font", "Choose the Font for "..unit.." Name.", 3, widgetLists.font, "LSM30_Font", applyInfoText, nil, disabledTextFunc),
 		Size = self:NewSlider("Size", "Choose the "..unit.." Name Fontsize.", 4, 1, 40, 1, applyInfoText, nil, nil, disabledTextFunc),
-		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for "..unit.." Name.", 5, fontflags, nil, applyInfoText, nil, disabledTextFunc),
+		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for "..unit.." Name.", 5, LUI.FontFlags, nil, applyInfoText, nil, disabledTextFunc),
 		empty2 = self:NewDesc(" ", 6),
 		X = self:NewInputNumber("X Value", "Choose the X Value for your "..unit.." Name.", 7, applyInfoText, nil, disabledTextFunc),
 		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..unit.." Name.", 8, applyInfoText, nil, disabledTextFunc),
@@ -439,7 +438,7 @@ function module:CreateRaidNameTextOptions(order)
 		empty1 = self:NewDesc(" ", 2),
 		Font = self:NewSelect("Font", "Choose the Font for the Raid Name.", 3, widgetLists.font, "LSM30_Font", applySettings, nil, disabledFunc),
 		Size = self:NewSlider("Size", "Choose the Raid Name Fontsize.", 4, 1, 40, 1, applySettings, nil, nil, disabledFunc),
-		Outline = self:NewSelect("Font Flag", "Choose the Raid Name Fontflag.", 5, fontflags, nil, applySettings, nil, disabledFunc),
+		Outline = self:NewSelect("Font Flag", "Choose the Raid Name Fontflag.", 5, LUI.FontFlags, nil, applySettings, nil, disabledFunc),
 		empty2 = self:NewDesc(" ", 6),
 		ColorByClass = self:NewToggle("Color Name by Class", "Whether you want to color the Raid Name by Class or not.", 7, applySettings, nil, disabledFunc),
 		IndividualColor = self:NewColorNoAlpha("", "Name Text", 8, applySettings, nil, disabledColorFunc),
@@ -482,7 +481,7 @@ function module:CreateTextOptions(unit, order, parentName, textType)
 		empty1 = self:NewDesc(" ", 2),
 		Font = self:NewSelect("Font", "Choose the "..unit.." "..textName.." Font.", 3, widgetLists.font, "LSM30_Font", applySettings, nil, disabledFunc),
 		Size = self:NewSlider("Font Size", "Choose the "..unit.." "..textName.." Fontsize.", 4, 1, 40, 1, applySettings, nil, nil, disabledFunc),
-		Outline = self:NewSelect("Font Flag", "Choose the "..unit.." "..textName.." Fontflag.", 5, fontflags, nil, applySettings, nil, disabledFunc),
+		Outline = self:NewSelect("Font Flag", "Choose the "..unit.." "..textName.." Fontflag.", 5, LUI.FontFlags, nil, applySettings, nil, disabledFunc),
 		empty2 = self:NewDesc(" ", 6),
 		X = self:NewInputNumber("X Value", "Choose the X Value for your "..textName..".", 7, applySettings, nil, disabledFunc),
 		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..textName..".", 8, applySettings, nil, disabledFunc),
@@ -516,7 +515,7 @@ function module:CreateCombatTextOptions(unit, order)
 		empty1 = self:NewDesc(" ", 2),
 		Size = self:NewSlider("Size", "Choose the "..unit.." Combat Text Fontsize.", 3, 1, 40, 1, applyCombatFeedback, nil, nil, disabledCombatFunc),
 		Font = self:NewSelect("Font", "Choose the Font for "..unit.." Combat Text.", 4, widgetLists.font, "LSM30_Font", applyCombatFeedback, nil, disabledCombatFunc),
-		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for "..unit.." Combat Text.", 5, fontflags, nil, applyCombatFeedback, nil, disabledCombatFunc),
+		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for "..unit.." Combat Text.", 5, LUI.FontFlags, nil, applyCombatFeedback, nil, disabledCombatFunc),
 		empty2 = self:NewDesc(" ", 6),
 		X = self:NewInputNumber("X Value", "Choose the X Value for your "..unit.." Combat Text.", 7, applyCombatFeedback, nil, disabledCombatFunc),
 		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..unit.." Combat Text.", 8, applyCombatFeedback, nil, disabledCombatFunc),
@@ -562,7 +561,7 @@ function module:CreatePlayerBarTextOptions(barType, order)
 		empty1 = self:NewDesc(" ", 2),
 		Font = self:NewSelect("Font", "Choose your "..barType.." Bar Text Font.", 3, widgetLists.font, "LSM30_Font", applySettings, nil, disabledFunc),
 		Size = self:NewSlider("Size", "Choose your "..barType.." Bar Text Fontsize.", 4, 1, 40, 1, applySettings, nil, nil, disabledFunc),
-		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the "..barType.." Bar Text.", 5, fontflags, nil, applySettings, nil, disabledFunc),
+		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the "..barType.." Bar Text.", 5, LUI.FontFlags, nil, applySettings, nil, disabledFunc),
 		empty2 = self:NewDesc(" ", 6),
 		X = self:NewInputNumber("X Value", "Choose the X Value for your "..barName.." Bar Text.", 7, applySettings, nil, disabledFunc),
 		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..barName.." Bar Text.", 8, applySettings, nil, disabledFunc),
@@ -588,7 +587,7 @@ function module:CreatePvpTimerOptions(order)
 		empty1 = self:NewDesc(" ", 2),
 		Font = self:NewSelect("Font", "Choose your PvP Timer Text Font.", 3, widgetLists.font, "LSM30_Font", applySettings, nil, disabledFunc),
 		Size = self:NewSlider("Size", "Choose your PvP Timer Text Fontsize.", 4, 1, 40, 1, applySettings, nil, nil, disabledFunc),
-		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the PvP Timer Text.", 5, fontflags, nil, applySettings, nil, disabledFunc),
+		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the PvP Timer Text.", 5, LUI.FontFlags, nil, applySettings, nil, disabledFunc),
 		empty2 = self:NewDesc(" ", 6),
 		X = self:NewInputNumber("X Value", "Choose the X Value for your PvP Timer Text.", 7, applySettings, nil, disabledFunc),
 		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your PvP Timer Text.", 8, applySettings, nil, disabledFunc),
@@ -615,7 +614,7 @@ function module:CreateAdditionalPowerTimerOptions(order)
 		empty1 = self:NewDesc(" ", 2),
 		Font = self:NewSelect("Font", "Choose your Additional Power Bar Text Font.", 3, widgetLists.font, "LSM30_Font", applySettings, nil, disabledFunc),
 		Size = self:NewSlider("Size", "Choose your Additional Power Bar Text Fontsize.", 4, 1, 40, 1, applySettings, nil, nil, disabledFunc),
-		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Additional Power Bar Text.", 5, fontflags, nil, applySettings, nil, disabledFunc),
+		Outline = self:NewSelect("Font Flag", "Choose the Font Flag for the Additional Power Bar Text.", 5, LUI.FontFlags, nil, applySettings, nil, disabledFunc),
 		empty2 = self:NewDesc(" ", 6),
 		X = self:NewInputNumber("X Value", "Choose the X Value for your Additional Power Bar Text.", 7, applySettings, nil, disabledFunc),
 		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your Additional Power Bar Text.", 8, applySettings, nil, disabledFunc),
