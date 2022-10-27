@@ -10,8 +10,8 @@
 local _, LUI = ...
 local L = LUI.L
 
----@class InfotextModule : LUIModule
-local module = LUI:NewModule("Infotext", "AceHook-3.0")
+---@type InfotextModule
+local module = LUI:GetModule("Infotext")
 
 local LDB = LibStub:GetLibrary("LibDataBroker-1.1")
 module.RegisterLDBCallback = LDB.RegisterCallback
@@ -42,34 +42,6 @@ function module:SetFriends()   -- Need Clickable Tooltips (Infotip)
 --]]
 
 local defaultPositions = 0
-
--- ####################################################################################################################
--- ##### Default Settings #############################################################################################
--- ####################################################################################################################
-
-module.defaults = {
-	profile = {
-		['**'] = {
-			Enable = true, -- Placeholder
-			Y = 0,
-			X = 0,
-		},
-		General = {
-			AllowY = false,
-		},
-		Colors = {
-			Title  = { r = 0.4, g = 0.8, b = 1  , },
-			Hint   = { r = 0  , g = 1  , b = 0  , },
-			Status = { r = 0.7, g = 0.7, b = 0.7, },
-			
-			Panels = { r = 0.12, g = 0.58,  b = 0.89, a = 0.5, t = "Class", },
-		},
-		Fonts = {
-			Infotext = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
-			Infotip =  { Name = "NotoSans-SCB", Size = 12, Flag = "",    },
-		},
-	},
-}
 
 -- ####################################################################################################################
 -- ##### InfoMixin ####################################################################################################
@@ -147,8 +119,9 @@ function module:GetAnchor(position)
 	return _G[format("LUIInfotext_%sAnchor", position:lower())]
 end
 
---This is actually a dummy anchor frame.
-local function SetInfoPanels()
+function module:SetInfoPanels()
+	db = module.db.profile
+
 	local topAnchor = module:GetAnchor("top")
 	local bottomAnchor = module:GetAnchor("bottom")
 	if not topAnchor then
@@ -180,6 +153,17 @@ local function SetInfoPanels()
 	end
 	topAnchor:Show()
 	bottomAnchor:Show()
+	module.topAnchor = topAnchor
+	module.bottomAnchor = bottomAnchor
+
+	-- Make sure all objects created before the callback gets properly initialized.
+	for name, element in LDB:DataObjectIterator() do
+		if not elementFrames[name] then
+			self:DataObjectCreated(name, element)
+		end
+	end
+
+	module:RegisterLDBCallback("LibDataBroker_DataObjectCreated", "DataObjectCreated")
 end
 
 -- TODO: Change elemnent style to be more akin to data providers? (which is what they are)
@@ -321,33 +305,4 @@ function module:ToggleInfotext(name)
 		frame:Show()
 		db[name].Enable = true
 	end
-end
-
--- ####################################################################################################################
--- ##### Framework Events #############################################################################################
--- ####################################################################################################################
-
-module.enableButton = true
-
-function module:OnInitialize()
-	LUI:RegisterModule(module)
-	db = module.db.profile
-end
-
-function module:OnEnable()
-	SetInfoPanels()
-
-	-- Make sure all objects created before the callback gets properly initialized.
-	for name, element in LDB:DataObjectIterator() do
-		if not elementFrames[name] then
-			self:DataObjectCreated(name, element)
-		end
-	end
-
-	module:RegisterLDBCallback("LibDataBroker_DataObjectCreated", "DataObjectCreated")
-end
-
-function module:OnDisable()
-	_G.LUIInfotext_topAnchor:Hide()
-	_G.LUIInfotext_bottomAnchor:Hide()
 end

@@ -80,6 +80,7 @@ modules\tooltip\tooltip.lua
 
 ### InfoText ###
 # modules\infotext\datatext_v3.lua
+modules\InfoText\infotext_init.lua
 modules\InfoText\infotext.lua
 modules\InfoText\bags.lua
 modules\InfoText\clock.lua
