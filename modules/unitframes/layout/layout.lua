@@ -128,11 +128,11 @@ end
 --	Dont edit this if you dont know what you are doing!
 ------------------------------------------------------------------------
 
-local GetDisplayPower = function(power, unit)
+local function GetDisplayPower(power, unit)
 		return (UnitPowerType(unit))
 end
 
-local SetFontString = function(parent, fontName, fontHeight, fontStyle)
+local function SetFontString(parent, fontName, fontHeight, fontStyle)
 	local fs = parent:CreateFontString(nil, "OVERLAY")
 	fs:SetFont(fontName, fontHeight, fontStyle)
 	fs:SetJustifyH("LEFT")
@@ -141,7 +141,7 @@ local SetFontString = function(parent, fontName, fontHeight, fontStyle)
 	return fs
 end
 
-local FormatTime = function(s)
+local function FormatTime(s)
 	local day, hour, minute = 86400, 3600, 60
 	if s >= day then
 		return format("%dd", floor(s/day + 1)), s % day
@@ -156,7 +156,7 @@ local FormatTime = function(s)
 	return format("%.1f", s), (s * 100 - floor(s * 100))/100
 end
 
-local ShortValue = function(value)
+local function ShortValue(value)
 	if value >= 1e6 then
 		return ("%.1fm"):format(value / 1e6):gsub("%.?0+([km])$", "%1")
 	elseif value >= 1e3 or value <= -1e3 then
@@ -166,7 +166,7 @@ local ShortValue = function(value)
 	end
 end
 
-local utf8sub = function(string, i, dots)
+local function utf8sub(string, i, dots)
 	local bytes = string:len()
 	if bytes <= i then
 		return string
@@ -195,17 +195,17 @@ local utf8sub = function(string, i, dots)
 	end
 end
 
-local UnitFrame_OnEnter = function(self)
+local function UnitFrame_OnEnter(self)
 	_G.UnitFrame_OnEnter(self)
 	self.Highlight:Show()
 end
 
-local UnitFrame_OnLeave = function(self)
+local function UnitFrame_OnLeave(self)
 	_G.UnitFrame_OnLeave(self)
 	self.Highlight:Hide()
 end
 
-local OverrideHealth = function(self, event, unit, powerType)
+local function OverrideHealth(self, event, unit, powerType)
 	if self.unit ~= unit then return end
 	local health = self.Health
 
@@ -392,7 +392,7 @@ local OverrideHealth = function(self, event, unit, powerType)
 	end
 end
 
-local OverridePower = function(self, event, unit)
+local function OverridePower(self, event, unit)
 	if self.unit ~= unit then return end
 	local power = self.Power
 
@@ -537,7 +537,7 @@ local OverridePower = function(self, event, unit)
 	end
 end
 
-local FormatCastbarTime = function(self, duration)
+local function FormatCastbarTime(self, duration)
 	if self.delay ~= 0 then
 		if self.channeling then
 			if self.Time.ShowMax == true then
@@ -569,7 +569,7 @@ local FormatCastbarTime = function(self, duration)
 	end
 end
 
-local CreateAuraTimer = function(self,elapsed)
+local function CreateAuraTimer(self,elapsed)
 	if self.timeLeft then
 		self.elapsed = (self.elapsed or 0) + elapsed
 		if self.elapsed >= 0.1 then
@@ -591,7 +591,7 @@ local CreateAuraTimer = function(self,elapsed)
 	end
 end
 
-local PostCreateAura = function(element, button)
+local function PostCreateAura(element, button)
 	button.backdrop = CreateFrame("Frame", nil, button, "BackdropTemplate")
 	button.backdrop:SetPoint("TOPLEFT", button, "TOPLEFT", -3.5, 3)
 	button.backdrop:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 4, -3.5)
@@ -602,17 +602,17 @@ local PostCreateAura = function(element, button)
 	})
 	button.backdrop:SetBackdropColor(0, 0, 0, 0)
 	button.backdrop:SetBackdropBorderColor(0, 0, 0)
-	button.count:SetPoint("BOTTOMRIGHT", -1, 2)
-	button.count:SetJustifyH("RIGHT")
-	button.count:SetFont(font3, 16, "OUTLINE")
-	button.count:SetTextColor(0.84, 0.75, 0.65)
+	button.Count:SetPoint("BOTTOMRIGHT", -1, 2)
+	button.Count:SetJustifyH("RIGHT")
+	button.Count:SetFont(font3, 16, "OUTLINE")
+	button.Count:SetTextColor(0.84, 0.75, 0.65)
 
 	button.remaining = SetFontString(button, Media:Fetch("font", module.db.profile.Settings.AuratimerFont), module.db.profile.Settings.AuratimerSize, module.db.profile.Settings.AuratimerFlag)
 	button.remaining:SetPoint("TOPLEFT", 1, -1)
 
-	button.cd.noCooldownCount = true
+	button.Cooldown.noCooldownCount = true
 
-	button.overlay:Hide()
+	button.Overlay:Hide()
 
 	button.auratype = button:CreateTexture(nil, "OVERLAY")
 	button.auratype:SetTexture(buttonTex)
@@ -621,66 +621,84 @@ local PostCreateAura = function(element, button)
 	button.auratype:SetTexCoord(0, 1, 0.02, 1)
 end
 
-local PostUpdateAura = function(icons, unit, icon, index, offset)
-	local _, _, _, dtype, duration, expirationTime, unitCaster, _ = UnitAura(unit, index, icon.filter)
-	if icon.isDebuff then
-		if unitCaster == "player" or unitCaster == "pet" or unitCaster == "vehicle" then
-			icon.icon:SetDesaturated()
+--- PostUpdate for Auras (Buffs/Debuffs)
+---@param element ufAuras
+---@param button ufAuraButton
+---@param unit UnitId
+---@param data UnitAuraInfo
+---@param position number
+local function PostUpdateAura(element, button, unit, data, position)
+	if button.isHarmful then
+		if data.sourceUnit == "player" or data.sourceUnit == "pet" or data.sourceUnit == "vehicle" then
+			button.Icon:SetDesaturated()
 		else
-			icon.icon:SetDesaturated(icons.fadeOthers)
+			button.Icon:SetDesaturated(element.fadeOthers)
 		end
 	end
 
-	if icons.showAuraType and dtype then
-		local color = DebuffTypeColor[dtype] or DebuffTypeColor.none
-		icon.auratype:SetVertexColor(color.r, color.g, color.b)
+	if element.showAuraType and data.dispelName then
+		local color = DebuffTypeColor[data.dispelName] or DebuffTypeColor.none
+		button.auratype:SetVertexColor(color.r, color.g, color.b)
 	else
-		if icon.isDebuff then
-			icon.auratype:SetVertexColor(0.69, 0.31, 0.31)
+		if button.isHarmful then
+			button.auratype:SetVertexColor(0.69, 0.31, 0.31)
 		else
-			icon.auratype:SetVertexColor(1, 1, 1)
+			button.auratype:SetVertexColor(1, 1, 1)
 		end
 	end
 
-	if icons.disableCooldown or (not duration) or duration <= 0 then
-		icon.cd:Hide()
+	if element.disableCooldown or (not data.duration) or data.duration <= 0 then
+		button.Cooldown:Hide()
 	else
-		icon.cd:Show()
+		button.Cooldown:Show()
 	end
 
-	icon.cd:SetReverse(icons.cooldownReverse)
+	button.Cooldown:SetReverse(element.cooldownReverse)
 
-	if duration and duration > 0 then
-		if icons.showAuratimer then
-			icon.remaining:Show()
+	if data.duration and data.duration > 0 then
+		if element.showAuratimer then
+			button.remaining:Show()
 		else
-			icon.remaining:Hide()
+			button.remaining:Hide()
 		end
 	else
-		icon.remaining:Hide()
+		button.remaining:Hide()
 	end
 
-	icon.duration = duration
-	icon.timeLeft = expirationTime
-	icon.first = true
+	button.duration = data.duration
+	button.timeLeft = data.expirationTime
+	button.first = true
 	icon:SetScript("OnUpdate", CreateAuraTimer)
 end
 
-local CustomFilter = function(icons, unit, icon, name, rank, texture, count, dtype, duration, timeLeft, caster)
-	local isPlayer, isPet
+--- Aura Filtering function
+---@param element ufAuras
+---@param unit UnitId
+---@param data UnitAuraInfo
+---@return boolean show @ indicates whether the aura button should be shown
+local function FilterAura(element, unit, data)
+	local caster = data.sourceUnit
 
-	if caster == "player" or caster == "vehicle" then isPlayer = true end
-	if caster == "pet" then isPet = true end
-
-	if icons.onlyShowPlayer and (isPlayer or (isPet and icons.includePet)) or (not icons.onlyShowPlayer and name) then
-		icon.isPlayer = isPlayer
-		icon.isPet = isPet
-		icon.owner = caster
+	-- When OnlyShowPlayer is used, only show auras that comes from the player (or when they're in a vehicle)
+	if element.onlyShowPlayer and (caster == "player" or caster == "vehicle") then
 		return true
+
+	-- When IncludePet is used show auras that comes from the player's pet as well.
+	elseif element.includePet and caster == "pet" then
+		return true
+
+	-- Show all named auras when OnlyShowPlayer is not being used
+	elseif data.name and not element.onlyShowPlayer then
+		return true
+
 	end
 end
 
-local PostCastStart = function(castbar, unit, name)
+--- Castbar callback after a cast starts
+---@param element ufCastbar
+---@param unit UnitId
+---@param name string @ name of the spell being cast
+local function PostCastStart(castbar, unit, name)
 	local unitname, _ = UnitName(unit)
 	if castbar.Colors.Individual == true then
 		castbar:SetStatusBarColor(castbar.Colors.Bar.r, castbar.Colors.Bar.g, castbar.Colors.Bar.b, castbar.Colors.Bar.a)
@@ -718,7 +736,11 @@ local PostCastStart = function(castbar, unit, name)
 	end
 end
 
-local PostChannelStart = function(castbar, unit, name)
+--- Castbar callback after a cast starts
+---@param element ufCastbar
+---@param unit UnitId
+---@param name string @ name of the spell being cast
+local function PostChannelStart(castbar, unit, name)
 	local _, _, _, _, startTime, endTime = UnitChannelInfo(unit)
 	if castbar.channeling then
 		if channelingTicks[name] then
@@ -740,7 +762,11 @@ local PostChannelStart = function(castbar, unit, name)
 	PostCastStart(castbar, unit, name)
 end
 
-local PostChannelUpdate = function(castbar, unit, name)
+--- Castbar callback after a cast starts
+---@param element ufCastbar
+---@param unit UnitId
+---@param name string @ name of the spell being cast
+local function PostChannelUpdate(castbar, unit, name)
 	if not castbar.numticks then return end
 
 	local _, _, _, _, startTime, endTime = UnitChannelInfo(unit)
@@ -771,7 +797,7 @@ local PostChannelUpdate = function(castbar, unit, name)
 	end
 end
 
-local ThreatOverride = function(self, event, unit)
+local function ThreatOverride(self, event, unit)
 	if unit ~= self.unit then return end
 	if unit == "vehicle" then unit = "player" end
 
@@ -789,101 +815,6 @@ local ThreatOverride = function(self, event, unit)
 	end
 end
 
-local CPointsOverride = function(self, event, unit)
-	if unit == "pet" then return end
-
-	local cp
-	if UnitExists("vehicle") then
-		cp = GetComboPoints("vehicle", "target")
-	else
-		cp = GetComboPoints("player", "target")
-	end
-
-	local cpoints = self.CPoints
-	if cp == 0 and not cpoints.showAlways then
-		return cpoints:Hide()
-	elseif not cpoints:IsShown() then
-		cpoints:Show()
-	end
-
-	for i = 1, MAX_COMBO_POINTS do
-		if i <= cp then
-			cpoints[i]:SetValue(1)
-		else
-			cpoints[i]:SetValue(0)
-		end
-	end
-end
-
-local WarlockBarOverride = function(self, event, unit, powerType)
-	local specNum = GetSpecialization()
-	local spec = self.WarlockBar.SpecInfo[specNum]
-	if not spec then return end
-	if self.unit ~= unit or (powerType and powerType ~= spec.powerType) then return end
-	local num = UnitPower(unit, spec.unitPower)
-	local text = ""
-	--Affliction
-	if specNum == 1 then
-		for i = 1, self.WarlockBar.Amount do
-			self.WarlockBar[i]:SetValue(spec.maxValue)
-			if i <= num then self.WarlockBar[i]:SetAlpha(1)
-			else self.WarlockBar[i]:SetAlpha(.4)
-			end
-		end
-	--Demonology
-	elseif specNum == 2 then
-		text = num
-		self.WarlockBar[1]:SetAlpha(1)
-		self.WarlockBar[1]:SetValue(num)
-	--Destruction
-	elseif specNum == 3 then
-		local power = UnitPower(unit, spec.unitPower, true)
-		for i = 1, self.WarlockBar.Amount do
-			local numOver = power - (i-1)*10
-			if i <= num then
-				self.WarlockBar[i]:SetAlpha(1)
-				self.WarlockBar[i]:SetValue(spec.maxValue)
-			elseif numOver > 0 then
-				self.WarlockBar[i]:SetAlpha(.6)
-				self.WarlockBar[i]:SetValue(numOver)
-			else
-				self.WarlockBar[i]:SetAlpha(.6)
-				self.WarlockBar[i]:SetValue(0)
-			end
-		end
-	end
-	if self.WarlockBar.ShowText then
-		self.WarlockBar.Text:SetText(text)
-	end
-end
-
-local ArcaneChargesOverride = function(self, event, unit, powerType)
-	if self.unit ~= unit then return end
-
-	local _, _, _, num = UnitDebuff(unit, GetSpellInfo(36032)) -- Arcane Charges
-	if not num then num = 0 end
-	for i = 1, self.ArcaneCharges.Charges do
-		if i <= num then
-			self.ArcaneCharges[i]:SetAlpha(1)
-		else
-			self.ArcaneCharges[i]:SetAlpha(.4)
-		end
-	end
-end
-
-local HolyPowerOverride = function(self, event, unit, powerType)
-	if self.unit ~= unit or (powerType and powerType ~= "HOLY_POWER") then return end
-
-	 local num = UnitPower(unit, Enum.PowerType.HolyPower)
-	 for i = 1, self.HolyPower.Powers do
-		 if i <= num then
-			 self.HolyPower[i]:SetAlpha(1)
-		 else
-			 self.HolyPower[i]:SetAlpha(.4)
-		 end
-	 end
-end
-
 local function TotemsUpdate(self, elapsed)
 	self.total = elapsed + (self.total or 0)
 	if self.total >= 0.02 then
@@ -897,7 +828,7 @@ local function TotemsUpdate(self, elapsed)
 	end
 end
 
-local TotemsOverride = function(self, event, slot)
+local function TotemsOverride(self, event, slot)
 	if slot > MAX_TOTEMS then return end
 
 	local totem = self.Totems[slot]
@@ -952,7 +883,7 @@ local TotemsOverride = function(self, event, slot)
 
 end
 
-local ChiOverride = function(self, event, unit, powerType)
+local function ChiOverride(self, event, unit, powerType)
 	if self.unit ~= unit or (powerType and powerType ~= "CHI") then return end
 
 	 local num = UnitPower(unit, Enum.PowerType.Chi)
@@ -965,7 +896,7 @@ local ChiOverride = function(self, event, unit, powerType)
 	 end
 end
 
-local AdditionalPowerOverride = function(self, event, unit)
+local function AdditionalPowerOverride(self, event, unit)
 	if not unit or not UnitIsUnit(self.unit, unit) then return end
 	local _, class = UnitClass(unit)
 	local additionalpower = self.AdditionalPower
@@ -1005,7 +936,7 @@ local AdditionalPowerOverride = function(self, event, unit)
 	end
 end
 
-local PostUpdateAlternativePower = function(altpowerbar, unit, cur, min, max)
+local function PostUpdateAlternativePower(altpowerbar, unit, cur, min, max)
 	local color = module.colors.class[LUI.playerClass] or {0.5, 0.5, 0.5}
 
 	local tex, r, g, b = GetUnitPowerBarTextureInfo("player", 3)
@@ -1050,7 +981,7 @@ local PostUpdateAlternativePower = function(altpowerbar, unit, cur, min, max)
 	end
 end
 
-local PostUpdateAdditionalPower = function(additionalpower, unit, cur, max)
+local function PostUpdateAdditionalPower(additionalpower, unit, cur, max)
 	local _, class = UnitClass(unit)
 	if additionalpower.color == "By Class" then
 		additionalpower:SetStatusBarColor(unpack(module.colors.class[class]))
@@ -1069,7 +1000,7 @@ local PostUpdateAdditionalPower = function(additionalpower, unit, cur, max)
 	end
 end
 
-local ArenaEnemyUnseen = function(self, event, unit, state)
+local function ArenaEnemyUnseen(self, event, unit, state)
 	if unit ~= self.unit then return end
 
 	if state == "unseen" then
@@ -1103,7 +1034,7 @@ local ArenaEnemyUnseen = function(self, event, unit, state)
 	self.Power:ForceUpdate()
 end
 
-local PortraitOverride = function(self, event, unit)
+local function PortraitOverride(self, event, unit)
 	if not unit or not UnitIsUnit(self.unit, unit) then return end
 
 	local portrait = self.Portrait
@@ -1132,7 +1063,7 @@ local PortraitOverride = function(self, event, unit)
 	portrait:SetAlpha(a)
 end
 
-local Reposition = function(V2Tex)
+local function Reposition(V2Tex)
 	local to = V2Tex.to
 	local from = V2Tex.from
 
@@ -2098,11 +2029,11 @@ module.funcs = {
 		self.Buffs.disableCooldown = oufdb.Aura.Buffs.DisableCooldown
 		self.Buffs.cooldownReverse = oufdb.Aura.Buffs.CooldownReverse
 
-		self.Buffs.PostCreateIcon = PostCreateAura
-		self.Buffs.PostUpdateIcon = PostUpdateAura
-		self.Buffs.CustomFilter = CustomFilter
-		if not self.Buffs.createdIcons then self.Buffs.createdIcons = 0 end
-		if not self.Buffs.anchoredIcons then self.Buffs.anchoredIcons = 0 end
+		self.Buffs.PostCreateButton = PostCreateAura
+		self.Buffs.PostUpdateButton = PostUpdateAura
+		self.Buffs.FilterAura = FilterAura
+		if not self.Buffs.createdButtons then self.Buffs.createdButtons = 0 end
+		if not self.Buffs.anchoredButtons then self.Buffs.anchoredButtons = 0 end
 	end,
 	Debuffs = function(self, unit, oufdb)
 		if not self.Debuffs then self.Debuffs = CreateFrame("Frame", nil, self) end
@@ -2137,11 +2068,11 @@ module.funcs = {
 		self.Debuffs.disableCooldown = oufdb.Aura.Debuffs.DisableCooldown
 		self.Debuffs.cooldownReverse = oufdb.Aura.Debuffs.CooldownReverse
 
-		self.Debuffs.PostCreateIcon = PostCreateAura
-		self.Debuffs.PostUpdateIcon = PostUpdateAura
-		self.Debuffs.CustomFilter = CustomFilter
-		if not self.Debuffs.createdIcons then self.Debuffs.createdIcons = 0 end
-		if not self.Debuffs.anchoredIcons then self.Debuffs.anchoredIcons = 0 end
+		self.Debuffs.PostCreateButton = PostCreateAura
+		self.Debuffs.PostUpdateButton = PostUpdateAura
+		self.Debuffs.FilterAura = FilterAura
+		if not self.Debuffs.createdButtons then self.Debuffs.createdButtons = 0 end
+		if not self.Debuffs.anchoredButtons then self.Debuffs.anchoredButtons = 0 end
 	end,
 
 	CombatFeedbackText = function(self, unit, oufdb)
@@ -2533,7 +2464,7 @@ module.funcs = {
 --	Style Func
 ------------------------------------------------------------------------
 
-local SetStyle = function(self, unit, isSingle)
+local function SetStyle(self, unit, isSingle)
 	local oufdb
 
 	if unit == "vehicle" then

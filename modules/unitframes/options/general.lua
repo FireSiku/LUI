@@ -324,44 +324,6 @@ function module:CreatePlayerBarOverlappingOptions(barType, order)
 	return options
 end
 
-function module:CreateComboPointsOptions(order)
-	local disabledFunc = function() return not self.db.target.ComboPointsBar.Enable end
-
-	local isLocked = function() return not self.db.target.ComboPointsBar.Enable or self.db.target.ComboPointsBar.Lock end
-
-	local applySettings = function(info, Enable)
-		module.funcs.CPoints(oUF_LUI_target, oUF_LUI_target.__unit, self.db.Target)
-		if info[5] == "Enable" then
-			if Enable then
-				oUF_LUI_target:EnableElement("CPoints")
-			else
-				oUF_LUI_target:DisableElement("CPoints")
-			end
-		end
-		oUF_LUI_target:UpdateAllElements('refreshUnit')
-	end
-
-	local options = self:NewGroup("Combo Points", order, {
-		Enable = self:NewToggle("Enable", "Whether you want to show your Combo Points or not.", 1, applySettings, "full"),
-		empty1 = self:NewDesc(" ", 2),
-		ShowAlways = self:NewToggle("Show Always", "Whether you want to always show your Combo Points or not.", 3, applySettings, nil, disabledFunc),
-		Lock = self:NewToggle("Lock", "Whether you want to lock the Combo Points to your TargetFrame or not.", 4, applySettings, "full", disabledFunc),
-		empty2 = self:NewDesc(" ", 5),
-		X = self:NewInputNumber("X Value", "Choose the X Value for your Combo Points.", 6, applySettings, nil, isLocked),
-		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your Combo Points.", 7, applySettings, nil, isLocked),
-		Width = self:NewInputNumber("Width", "Choose the Width for your Combo Points.", 8, applySettings, nil, disabledFunc),
-		Height = self:NewInputNumber("Height", "Choose the Height for your Combo Points.", 9, applySettings, nil, disabledFunc),
-		Padding = self:NewInputNumber("Padding", "Choose the Padding between your Combo Point Segments.", 10, applySettings, nil, disabledFunc),
-		empty3 = self:NewDesc(" ", 11),
-		Texture = self:NewSelect("Texture", "Choose your Combo Points Texture.", 12, widgetLists.statusbar, "LSM30_Statusbar", applySettings, nil, disabledFunc),
-		Multiplier = self:NewSlider("Multiplier", "Choose your Combo Points Background Multiplier", 13, 0, 1, 0.01, applySettings, true, nil, disabledFunc),
-		IndividualBGColor = self:NewToggle("Individual Background Color", "Whether you want to use an individual Background Color or not.", 14, applySettings, nil, disabledFunc),
-		BackgroundColor = self:NewColorNoAlpha("Combo Points Background", nil, 15, applySettings, nil, function() return not (self.db.target.ComboPointsBar.Enable or self.db.target.ComboPointsBar.IndividualColor) end),
-	})
-
-	return options
-end
-
 ------------------------------------------------------------------------
 --	Text Options Constructors
 ------------------------------------------------------------------------
@@ -1037,7 +999,6 @@ function module:CreateUnitOptions(unit, order)
 			WarlockBar = (LUI.IsRetail and LUI.WARLOCK and unit == "player") and self:CreatePlayerBarOptions("WarlockBar", 16) or nil,
 			ArcaneCharges = (LUI.IsRetail and LUI.MAGE and unit == "player") and self:CreatePlayerBarOptions("ArcaneCharges", 16) or nil,
 			Chi = (LUI.IsRetail and (LUI.MONK or LUI.DRUID or LUI.ROGUE) and unit == "player") and self:CreatePlayerBarOptions("Chi", 16) or nil,
-			ComboPoints = (unit == "target") and self:CreateComboPointsOptions(18) or nil,
 			Totems = (LUI.SHAMAN and unit == "player") and self:CreatePlayerBarOptions("Totems", 19) or nil,
 		}),
 		Texts = self:NewGroup("Texts", 4, "tab", nil, disabledFunc, {
