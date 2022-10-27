@@ -39,7 +39,6 @@ local IsInGroup = _G.IsInGroup
 local SetCVar = _G.SetCVar
 local strjoin = _G.strjoin
 
-local Configure = _G.Configure
 local ACCEPT = _G.ACCEPT
 local CANCEL = _G.CANCEL
 
@@ -580,12 +579,10 @@ function LUI:Configure()
 		LUI:InstallBartender()
 		LUI:InstallDetails()
 
+		LUI.db.profile.dbVersion = LUI:GetDBVersion()
 		global_db.Versions.lui = LUI.Versions.lui
 		global_db.IsConfigured = true
-		-- This is commented out for now as it causes issues.
-		-- Sorry, if you're using 1280x1024 things might look
-		-- funky, but LUI will at least install properly.
-		--CheckResolution()
+		
 		ReloadUI()
 	end)
 end
@@ -1683,8 +1680,6 @@ function LUI:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("LUIDB", LUI.defaults, true)
 	db_ = self.db.profile
 
-	_G.LUICONFIG = _G.LUICONFIG or {}
-	_G.LUICONFIG.Versions = _G.LUICONFIG.Versions or {}
 	local global_db = LUI.db.global.luiconfig[LUI.profileName]
 
 	if global_db and global_db.IsConfigured then
@@ -1701,11 +1696,6 @@ function LUI:OnInitialize()
 			self:RegisterEvent("ADDON_LOADED", "SetDamageFont", self)
 			self:LoadExtraModules()
 			--LUI:EmbedModule(LUI) -- V4
-		end
-	elseif _G.LUICONFIG.IsConfigured then
-		self.db.global.luiconfig[LUI.profileName] = CopyTable(_G.LUICONFIG)
-		if self.db.global.luiconfig[LUI.profileName].IsConfigured then
-		  wipe(_G.LUICONFIG)
 		end
 	else
 		self.db.global.luiconfig[LUI.profileName] = {
@@ -1732,7 +1722,7 @@ function LUI:OnInitialize()
 		text = "Do you really want to restore all defaults. All your settings will be lost!",
 		button1 = ACCEPT,
 		button2 = CANCEL,
-		OnAccept = Configure,
+		OnAccept = LUI.Configure,
 		timeout = 0,
 		whileDead = 1,
 		hideOnEscape = 1

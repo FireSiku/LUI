@@ -62,7 +62,7 @@ module.defaults = {
 			X = 180,
 			Display = 0,
 			DisplayLimit = 40,
-		}
+		},
 		DualSpec = {
 			X = 1000,
 			Y = -800,
@@ -166,14 +166,18 @@ module.defaults = {
 	},
 	--Keeps tracks of characters on current realm
 	realm = {
-		Alliance = {},
-		Horde = {},
-		Neutral = {},
+		Gold = {
+			Alliance = {},
+			Horde = {},
+		 	Neutral = {},
+		}
 	},
 	--Keep tracks of server totals
 	global = {
-		Alliance = {},
-		Horde = {},
+		Gold = {
+			Alliance = {},
+			Horde = {},
+		}
 	},
 }
 

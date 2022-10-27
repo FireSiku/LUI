@@ -1,12 +1,11 @@
-## Interface: 30400
-## Version: 2209
-## Title: LUI
-## Author: Siku, Nitsah
-## Notes: User Interface Modification
-## SavedVariables: LUIDB
-## SavedVariablesPerCharacter: LUICONFIG
-## OptionalDeps: Masque, Masque_Darion
-## X-oUF: oUF_LUI
+# Interface: 30400
+# Version: 2209
+# Title: LUI
+# Author: Siku, Nitsah
+# Notes: User Interface Modification
+# SavedVariables: LUIDB
+# OptionalDeps: Masque, Masque_Darion, !ClassColors
+# X-oUF: oUF_LUI
 
 ### Initialize Libs ###
 libs\libs.xml

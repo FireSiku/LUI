@@ -110,7 +110,7 @@ function module:SetPosition(frame)
 		TicketStatusFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.TicketStatus.X, db.TicketStatus.Y)
 	elseif (LUI.IsRetail) and frame == "ObjectiveTrackerFrame" and db.ObjectiveTracker.ManagePosition then
 		--ObjectiveTrackerFrame:ClearAllPoints() -- Cause a lot of odd behaviors with the quest tracker.
-		ObjectiveTrackerFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.ObjectiveTracker.OffsetX, db.ObjectiveTracker.OffsetY)
+		ObjectiveTrackerFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.ObjectiveTracker.X, db.ObjectiveTracker.Y)
 	elseif frame == "CaptureBar" and db.CaptureBar.ManagePosition then
 		UIWidgetBelowMinimapContainerFrame:ClearAllPoints()
 		UIWidgetBelowMinimapContainerFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.CaptureBar.X, db.CaptureBar.Y)
@@ -120,10 +120,10 @@ function module:SetPosition(frame)
 	elseif frame == "GroupLootContainer" and db.GroupLootContainer.ManagePosition then
 		GroupLootContainer:ClearAllPoints()
 		GroupLootContainer:SetPoint("BOTTOM", UIParent, "BOTTOM", db.GroupLootContainer.X, db.GroupLootContainer.Y)
-	elseif frame == "MawBuffs" and db.MawBuffs.ManagePosition then
+	elseif (LUI.IsRetail) and frame == "MawBuffs" and db.MawBuffs.ManagePosition then
 		MawBuffsBelowMinimapFrame:ClearAllPoints()
 		MawBuffsBelowMinimapFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.MawBuffs.X, db.MawBuffs.Y)
-	elseif frame == "QueueStatusButton" and db.QueueStatusButton.ManagePosition then
+	elseif (LUI.IsRetail) and frame == "QueueStatusButton" and db.QueueStatusButton.ManagePosition then
 		QueueStatusButton:ClearAllPoints()
 		QueueStatusButton:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.QueueStatusButton.X, db.QueueStatusButton.Y)
 	
