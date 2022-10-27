@@ -10,7 +10,6 @@ local L = LUI.L
 local module = LUI:NewModule("Micromenu", "AceEvent-3.0")
 local db
 
-local CommunitiesFrame = _G.CommunitiesFrame
 local hooksecurefunc = _G.hooksecurefunc
 local GameMenuFrame = _G.GameMenuFrame
 local IsAddOnLoaded = _G.IsAddOnLoaded
@@ -464,7 +463,7 @@ function module:ConsolidateSocialFrames()
 
 	-- When hooked frames are shown or hidden, check if any frame is currently open and update consolidated state
 	local function UpdateState()
-		if FriendsFrame:IsShown() or (CommunitiesFrame and CommunitiesFrame:IsShown()) then
+		if FriendsFrame:IsShown() or (_G.CommunitiesFrame and _G.CommunitiesFrame:IsShown()) then
 			socialFrames:Show()
 		else
 			socialFrames:Hide()
@@ -477,8 +476,8 @@ function module:ConsolidateSocialFrames()
 
 	-- Hook OnShow and OnHide from the communities frame once its available
 	addonLoadedCallbacks["Blizzard_Communities"] = function()
-		CommunitiesFrame:HookScript("OnShow", UpdateState)
-		CommunitiesFrame:HookScript("OnHide", UpdateState)
+		_G.CommunitiesFrame:HookScript("OnShow", UpdateState)
+		_G.CommunitiesFrame:HookScript("OnHide", UpdateState)
 	end
 end
 
