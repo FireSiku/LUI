@@ -224,11 +224,11 @@ function LUI:RGBGradient(perc)
 	local segment, relperc = math.modf(perc * 2)
 	local r1, r2, g1, g2, b1, b2
 	if segment == 0 then
-		r1, g1, b1 = LUI:RGB("Bad")
-		r2, g2, b2 = LUI:RGB("Medium")
+		r1, g1, b1 = GetColorRGB("Bad")
+		r2, g2, b2 = GetColorRGB("Medium")
 	elseif segment == 1 then
-		r1, g1, b1 = LUI:RGB("Medium")
-		r2, g2, b2 = LUI:RGB("Good")
+		r1, g1, b1 = GetColorRGB("Medium")
+		r2, g2, b2 = GetColorRGB("Good")
 	end
 
 	local r = r1 + (r2 - r1) * relperc
