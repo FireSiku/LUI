@@ -11,7 +11,7 @@ local module = LUI:NewModule("UI Elements", "AceHook-3.0")
 
 module.defaults = {
 	profile = {
-		ObjectiveTracker = {
+		ObjectiveTrackerFrame = {
 			X = -150,
 			Y = -300,
 			HeaderColor = true,

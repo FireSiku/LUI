@@ -52,7 +52,7 @@ local framePositionDescs = {
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.UIElements = Opt:Group("UI Elements", nil, nil, "tab", true, nil, Opt.GetSet(db))
+Opt.options.args.UIElements = Opt:Group("UI Elements", nil, nil, "tab", nil, nil, Opt.GetSet(db))
 Opt.options.args.UIElements.handler = module
 
 local function GenerateFramePositionGroup(frame, name, order)

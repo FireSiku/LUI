@@ -108,9 +108,9 @@ function module:SetPosition(frame)
 	elseif frame == "TicketStatus" and db.TicketStatus.ManagePosition then
 		TicketStatusFrame:ClearAllPoints()
 		TicketStatusFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.TicketStatus.X, db.TicketStatus.Y)
-	elseif (LUI.IsRetail) and frame == "ObjectiveTrackerFrame" and db.ObjectiveTracker.ManagePosition then
+	elseif (LUI.IsRetail) and frame == "ObjectiveTrackerFrame" and db.ObjectiveTrackerFrame.ManagePosition then
 		--ObjectiveTrackerFrame:ClearAllPoints() -- Cause a lot of odd behaviors with the quest tracker.
-		ObjectiveTrackerFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.ObjectiveTracker.X, db.ObjectiveTracker.Y)
+		ObjectiveTrackerFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.ObjectiveTrackerFrame.X, db.ObjectiveTrackerFrame.Y)
 	elseif frame == "CaptureBar" and db.CaptureBar.ManagePosition then
 		UIWidgetBelowMinimapContainerFrame:ClearAllPoints()
 		UIWidgetBelowMinimapContainerFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.CaptureBar.X, db.CaptureBar.Y)
