@@ -232,8 +232,7 @@ end
 --- Print exclusively for Module Messages.
 --- Those prints will not appear if ModuleMessages is disabled
 function ModuleMixin:ModPrint(...)
-	local db = LUI:GetDB("General")
-	if db.ModuleMessages then
+	if LUI.db.profile.General.ModuleMessages then
 		LUI:Print(self:GetName()..":", ...)
 	end
 end

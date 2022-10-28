@@ -775,6 +775,7 @@ module.defaults = {
 }
 
 module.conflicts = "Chatter;Prat |cff8080ff3.0|r"
+module.enableButton = true
 
 module.getter = "generic"
 module.setter = "Refresh"

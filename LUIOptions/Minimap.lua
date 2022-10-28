@@ -17,7 +17,7 @@ if not module or not module.registered then return end
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.Minimap = Opt:Group("Minimap", nil, nil, "tab", Opt.IsModDisabled, nil, Opt.GetSet(db))
+Opt.options.args.Minimap = Opt:Group("Minimap", nil, nil, "tab", Opt.IsModDisabled, nil, Opt.GetSet(db.General))
 Opt.options.args.Minimap.handler = module
 
 local Minimap = {
@@ -28,7 +28,7 @@ local Minimap = {
     CoordPrecision = Opt:Slider(L["Minimap_CoordPrecision_Name"], L["Minimap_CoordPrecision_Desc"], 10, {min = 0, max = 2, step = 1}),
 	MinimapColorType = Opt:Select("Minimap Color", nil, 11, LUI.ColorTypes, nil, nil, nil,
 	                              function(info) return db.Colors.Minimap.t end, --getter
-	                              function(info, value) db.Colors.Minimap.t = value end), --setter
+	                              function(info, value) db.Colors.Minimap.t = value; module:RefreshColors() end), --setter
 	Minimap = Opt:Color("Individual Color", nil, 12, true),
 	
 	Header2 = Opt:Header("Appearance", 13),

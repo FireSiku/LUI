@@ -24,8 +24,11 @@ local function GenerateModuleButtons()
 						mod.db:ResetProfile()
 						mod:ModPrint(L["Core_ModuleReset"])
 					else
-						mod:Toggle()
+						if mod.VToggle then mod:VToggle()
+						elseif mod.Toggle then mod:Toggle()
+						end
 						mod:ModPrint( (mod:IsEnabled()) and L["API_BtnEnabled"] or L["API_BtnDisabled"])
+						StaticPopup_Show("RELOAD_UI")
 					end
 				end
 			)

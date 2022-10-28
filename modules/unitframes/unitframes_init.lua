@@ -12,6 +12,7 @@ local L = LUI.L
 
 ---@class UnitFrameModule : LUIModule
 local module = LUI:NewModule("Unitframes", "LUIDevAPI", "AceHook-3.0", "AceSerializer-3.0")
+module.enableButton = true
 
 module.unitsSpawn = {"player", "target", "focus", "focustarget", "targettarget", "targettargettarget", "pet", "pettarget", "boss", "party", "maintank", "arena", "raid"}
 

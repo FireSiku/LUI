@@ -16,11 +16,9 @@ local module = LUI:GetModule("Minimap")
 local db
 
 -- Locals and Constants
-local GarrisonLandingPageMinimapButton = _G.GarrisonLandingPageMinimapButton
 local MiniMapTrackingDropDown = _G.MiniMapTrackingDropDown
 local GetMinimapZoneText = _G.GetMinimapZoneText
 local ToggleDropDownMenu = _G.ToggleDropDownMenu
-local Minimap_OnClick = _G.Minimap_OnClick
 local MINIMAP_LABEL = _G.MINIMAP_LABEL
 local Minimap = _G.Minimap
 
@@ -189,10 +187,10 @@ function module:SetMinimap()
 	-- Set Coord Text
 	local minimapCoord = CreateFrame("Frame", "LUIMinimapCoord", Minimap)
 	minimapCoord:SetSize(40, 20)
-	minimapCoord:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", -24, 2)
+	minimapCoord:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", -5, 5)
 
-	local minimapCoordText = module:SetFontString(minimapCoord, "LUIMinimapCoordText", "Text", "Overlay", "LEFT", "MIDDLE")
-	minimapCoordText:SetPoint("LEFT", -1, 0)
+	local minimapCoordText = module:SetFontString(minimapCoord, "LUIMinimapCoordText", "Text", "Overlay", "RIGHT", "MIDDLE")
+	minimapCoordText:SetPoint("RIGHT", -1, 0)
 	minimapCoordText:SetText("00,00")
 
 	minimapCoord:SetScript("OnUpdate", function(self)
@@ -326,13 +324,6 @@ function module:SetMinimapPosition()
 	LUI:RestorePosition(Minimap)
 end
 
-function module:SetColors()
-	local r, g, b, a = module:RGBA("Minimap")
-	for i = 1, 4 do
-		_G["LUIMinimapTexture"..i]:SetBackdropBorderColor(r,g,b,a)
-	end
-end
-
 function module:ToggleMinimapText()
 	if db.General.AlwaysShowText then
 		LUIMinimapZone:Show()
@@ -354,5 +345,21 @@ function module:ToggleMinimapTextures()
 		for i = 1, 8 do
 			_G["LUIMinimapTexture"..i]:Hide()
 		end
+	end
+end
+
+function module:Refresh()
+	module:ToggleMinimapText()
+	module:RefreshFontString(_G.LUIMinimapCoordText, "Text")
+	module:RefreshFontString(_G.LUIMinimapZoneText, "Text")
+	module:ToggleMinimapTextures()
+	module:SetMinimapPosition()
+	module:RefreshColors()
+end
+
+function module:RefreshColors()
+	local r, g, b, a = module:RGBA("Minimap")
+	for i = 1, 4 do
+		_G["LUIMinimapTexture"..i]:SetBackdropBorderColor(r,g,b,a)
 	end
 end

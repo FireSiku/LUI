@@ -266,6 +266,7 @@ module.defaults = {
 	},
 }
 
+module.enableButton = true
 module.defaultState = false
 module.getter = "generic"
 module.setter = "generic"
