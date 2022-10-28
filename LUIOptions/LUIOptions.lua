@@ -23,6 +23,8 @@ local OPTION_PANEL_HEIGHT = 660
 Opt.LUI = LUI
 Opt.ACR = ACR
 
+local RoundToSignificantDigits = _G.RoundToSignificantDigits
+
 ---@class OptionMixin
 local OptionMixin = {}
 
@@ -95,9 +97,6 @@ OptionMixin.PercentValues = {min = 0, max = 1, step = 0.01, bigStep = 0.05, isPe
 -- ####################################################################################################################
 -- ##### Options: Generators ##########################################################################################
 -- ####################################################################################################################
-
-local function ShortNum(num) return format(tonumber(num) < 1 and "%.2f" or "%d", tonumber(num)) end
-
 --- Generate Get/Set functions based on a database table.
 ---@param db AceDB-3.0
 ---@return function Get, function Set
@@ -134,8 +133,8 @@ function Opt.ColorGetSet(db)
 	
 	local set = function(info, r, g, b, a)
 		local c = db[info[#info]]
-		c.r, c.g, c.b = ShortNum(r), ShortNum(g), ShortNum(b)
-		if info.option.hasAlpha then c.a = ShortNum(a) end
+		c.r, c.g, c.b = RoundToSignificantDigits(r, 2), RoundToSignificantDigits(g, 2), RoundToSignificantDigits(b, 2)
+		if info.option.hasAlpha then c.a = RoundToSignificantDigits(a, 2) end
 		if info.handler.RefreshColors then info.handler:RefreshColors() end
 	end
 		
@@ -154,8 +153,8 @@ end
 ---@param info InfoTable
 local function defaultColorSet(info, r, g, b, a)
 	local c = info.handler.db.profile.Colors[info[#info]]
-	c.r, c.g, c.b = ShortNum(r), ShortNum(g), ShortNum(b)
-	if info.option.hasAlpha then c.a = ShortNum(a) end
+	c.r, c.g, c.b = RoundToSignificantDigits(r, 2), RoundToSignificantDigits(g, 2), RoundToSignificantDigits(b, 2)
+	if info.option.hasAlpha then c.a = RoundToSignificantDigits(a, 2) end
 	if info.handler.RefreshColors then info.handler:RefreshColors() end
 end
 
@@ -438,6 +437,9 @@ local function FontMenuSetter(info, value)
 	
 	--for k, v in pairs(info) do LUI:Print(k, v) end
 	db[font][prop] = value
+	if info.handler.Refresh then
+		info.handler:Refresh()
+	end
 end
 
 local sizeValues = {min = 4, max = 72, step = 1, softMin = 8, softMax = 36}
@@ -484,11 +486,16 @@ local function ColorMenuSetter(info, value, g, b, a)
 	local db = info.handler.db.profile.Colors
 	local c = db[string.sub(info.option.name,0, -7)]
 	if info.type == "color" then
-		c.r, c.g, c.b, c.a = value, g, b, a
+		c.r, c.g = RoundToSignificantDigits(value, 2), RoundToSignificantDigits(g, 2) 
+		c.b, c.a = RoundToSignificantDigits(b, 2), RoundToSignificantDigits(a, 2)		
 	elseif info.type == "select" then
+		LUI:Print("ct value")
 		c.t = value
 	elseif info.type == "range" then
 		c.a = value
+	end
+	if info.handler.RefreshColors then
+		info.handler.RefreshColors()
 	end
 end
 

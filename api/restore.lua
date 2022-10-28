@@ -98,7 +98,7 @@ function module.Set(dest, source)
 		if source[k] ~= nil then
 			-- Force apply backup values.
 			if type(source[k]) == "table" then
-				if not type(v) == "table" then
+				if type(v) ~= "table" then
 					dest[k] = source[k]
 				else
 					module.Set(dest[k], source[k])

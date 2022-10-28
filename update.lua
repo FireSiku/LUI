@@ -5,7 +5,7 @@ local db, default
 
 -- Increase whenever there are changes that would require remediation
 -- The changes related to the version should be appended in an new IF block of the ApplyUpdate function.
-local DB_VERSION = 2
+local DB_VERSION = 3
 
 function LUI:GetDBVersion()
 	return DB_VERSION
@@ -417,7 +417,9 @@ function LUI:ApplyUpdate(ver)
 		ConvertColorArray("Cooldown.Colors.Min", cd_db.Colors.Min)
 		ConvertColorArray("Cooldown.Colors.Sec", cd_db.Colors.Sec)
 		ConvertColorArray("Cooldown.Colors.Threshold", cd_db.Colors.Threshold)
-
+	end
+	
+	if ver < 3 then
 		-- Some very old profiles had string-based number values. Now that Blizzard is more strict about this, we have to sanitize it.
 		local saneCount = 0
 
@@ -486,7 +488,8 @@ function LUI:ApplyUpdate(ver)
 					Sanitize(db[k], {"X", "Y"})
 				end
 			elseif modName == "Unitframes" then
-				local uf_db = uf_db.db.profile
+				local uf_mod = LUI:GetModule("Unitframes")
+				local uf_db = uf_mod.db.profile
 				for i, unitId in ipairs(uf_mod.units) do
 					-- Brute force method, due to the sheer size of settings in unitframes
 					local valueList = {"Height", "Width", "X", "Y", "BGMultiplier", "BGAlpha", "Size", "Spacing", "Num", "OffsetX", "OffsetY", "Thickness", "Alpha", "Left", "Right", "Top", "Bottom", "r", "g", "b", "a"}
@@ -516,6 +519,7 @@ function LUI:ApplyUpdate(ver)
 		else
 			LUI:Printf("This profile was not affected by this issue.")
 		end
+		requireReload = true
 	end
 
 	db.dbVersion = DB_VERSION

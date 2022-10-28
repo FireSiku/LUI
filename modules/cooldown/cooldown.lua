@@ -157,7 +157,7 @@ do
 
 		if self.color ~= colors[factor] then
 			self.color = colors[factor]
-			self.text:SetTextColor(unpack(self.color))
+			self.text:SetTextColor(self.color.r, self.color.g, self.color.b)
 		end
 	end
 
@@ -282,7 +282,6 @@ end
 -- Module Functions
 --------------------------------------------------
 
-
 module.defaults = {
 	profile = {
 		General = {
@@ -313,6 +312,7 @@ module.defaults = {
 }
 
 module.conflicts = "OmniCC;tullaCooldownCount"
+module.enableButton = true
 
 function module:LoadOptions()
 	local func = "Refresh"

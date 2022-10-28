@@ -1802,7 +1802,7 @@ local btSideBarPresets = {
 
 function module:AutoAdjustBT4(sideID)
 	local bardb = module.db.profile["Sidebar"..sideID]
-	if not IsAddOnLoaded("Bartender4") or not strsub(bardb.Anchor, 1, 3) == "BT4" then return end
+	if not IsAddOnLoaded("Bartender4") or not (strsub(bardb.Anchor, 1, 3) == "BT4") then return end
 	local _, num = strsplit("r", bardb.Anchor)
 	local barOpt = Bartender4.db:GetNamespace("ActionBars").profile.actionbars[tonumber(num)]
 	--local barOpt = Bartender4DB.namespaces.ActionBars.profiles[Bartender4.db:GetCurrentProfile()].actionbars[tonumber(num)]

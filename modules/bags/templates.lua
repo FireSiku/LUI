@@ -165,7 +165,7 @@ function module:CreateSearchBar(container)
 
 	-- Search Text
 	local search = container:CreateFontString(nil, "OVERLAY", "GameFonthighlightLarge")
-	local searchText = LUI:ColorText(SEARCH, "Search")
+	local searchText = module:ColorText(SEARCH, "Search")
 	search:SetPoint("TOPLEFT", container, db.Padding, -10)
 	search:SetPoint("TOPRIGHT", -40, 0)
 	search:SetJustifyH("LEFT")
