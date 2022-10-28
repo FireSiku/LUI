@@ -103,16 +103,16 @@ local microDefinitions = {
 	{ -- [1]
 		name = "Settings",
 		title = L["Options"],
-		left = L["MicroSettings_Left"],
-		right = L["MicroSettings_Right"],
+		left = L["MicroSettings_Right"],
+		right = L["MicroSettings_Left"],
 		state = "ConsolidatedOptionsFrame",
 		OnClick = function(self, btn)
 			if btn == "RightButton" then
-				--LUI Option Panel
-				LUI:OpenOptions()
-			else
 				--WoW Option Panel
 				module:TogglePanel(GameMenuFrame)
+			else
+				--LUI Option Panel
+				LUI:OpenOptions()
 			end
 		end,
 	},
