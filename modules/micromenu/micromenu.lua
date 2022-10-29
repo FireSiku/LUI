@@ -648,7 +648,6 @@ function module:SetMicromenuExtraButtons()
 			})
 			buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
 			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
-			print("micro background hide")
 			LUIMicromenu_Background:Hide()
 		else
 			PanelsDB.MicroMenu.IsShown = true
@@ -661,7 +660,6 @@ function module:SetMicromenuExtraButtons()
 			})
 			buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
 			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
-			print("micro background Show")
 			LUIMicromenu_Background:Show()
 
 		end
