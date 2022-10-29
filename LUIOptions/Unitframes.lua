@@ -122,13 +122,13 @@ local function GenerateTextGroup(unit, name, colorTypes, order)
         IndividualColor = Opt:Color(optName.." Color", nil, 13, false, nil, IsIndividualColorSelected(dbText), nil, Opt.ColorGetSet(dbText))
     }
     ---@FIXME: Streamline those options to be more Common
-    if dbText.ShowAlways then 
+    if dbText.ShowAlways ~= nil then 
         group.args.ShowAlways = Opt:Toggle("Show when full", nil, 31)
     end
-    if dbText.ShowDead then 
+    if dbText.ShowDead ~= nil then 
         group.args.ShowDead = Opt:Toggle("Show when dead", nil, 32)
     end
-    if dbText.ShowFull then 
+    if dbText.ShowFull  ~= nil then 
         group.args.ShowFull = Opt:Toggle("Show when full", nil, 31)
         group.args.ShowEmpty = Opt:Toggle("Show when empty", nil, 32)
     end
@@ -227,15 +227,14 @@ local function NewUnitOptionGroup(unit, order)
     unitOptions.args.AdditionalPowerBar = GenerateBarGroup(unit, "AdditionalPowerBar", powerColorTypes, 10)
     unitOptions.args.AlternativePowerBar = GenerateBarGroup(unit, "AlternativePowerBar", powerColorTypes, 10)
     
-
     -- Use a single entry to handle Value, Percent and Missing?
     if dbUnit.NameText then unitOptions.args.NameText = GenerateTextGroup(unit, "NameText", nil, 20) end
     if dbUnit.HealthText then unitOptions.args.HealthText = GenerateTextGroup(unit, "HealthText", healthColorTypes, 21) end
     if dbUnit.PowerText then unitOptions.args.PowerText = GenerateTextGroup(unit, "PowerText", powerColorTypes, 22) end
-    if dbUnit.HealthPercentText then unitOptions.args.PowerText = GenerateTextGroup(unit, "HealthPercentText", healthColorTypes, 23) end
-    if dbUnit.HealthMissingText then unitOptions.args.PowerText = GenerateTextGroup(unit, "HealthMissingText", healthColorTypes, 24) end
-    if dbUnit.PowerPercentText then unitOptions.args.PowerText = GenerateTextGroup(unit, "PowerPercentText", powerColorTypes, 25) end
-    if dbUnit.PowerMissingText then unitOptions.args.PowerText = GenerateTextGroup(unit, "PowerMissingText", powerColorTypes, 26) end
+    if dbUnit.HealthPercentText then unitOptions.args.HealthPercentText = GenerateTextGroup(unit, "HealthPercentText", healthColorTypes, 23) end
+    if dbUnit.PowerPercentText then unitOptions.args.PowerPercentText = GenerateTextGroup(unit, "PowerPercentText", powerColorTypes, 24) end
+    if dbUnit.HealthMissingText then unitOptions.args.HealthMissingText = GenerateTextGroup(unit, "HealthMissingText", healthColorTypes, 25) end
+    if dbUnit.PowerMissingText then unitOptions.args.PowerMissingText = GenerateTextGroup(unit, "PowerMissingText", powerColorTypes, 26) end
     if dbUnit.CombatFeedback then
         unitOptions.args.CombatFeedback = GenerateTextGroup(unit, "CombatFeedback", nil, 27)
     end

@@ -120,7 +120,7 @@ Identifier:SetScript("OnUpdate", function(self)
 	if parent == nil or parent == " " then
 		MouseActiveParent:SetText("Not Defined")
 	else
-		MouseActiveParent:SetText(parent:GetName())
+		MouseActiveParent:SetText(parent:GetName() or "")
 	end
 end)
 tinsert(UISpecialFrames,Identifier:GetName())
