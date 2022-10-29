@@ -368,6 +368,7 @@ function module:NewMicroButton(buttonData)
 
 	local button = CreateFrame("Frame", "LUIMicromenu_"..name, UIParent)
 	button:SetSize(TEXTURE_SIZE_WIDTH, TEXTURE_SIZE_HEIGHT)
+	button:SetParent(LUIMicromenu_Background)
 	Mixin(button, buttonData)
 
 	-- Make an icon for the button
@@ -636,7 +637,7 @@ function module:SetMicromenuExtraButtons()
 		--[[if RaidMenu.db.profile.Enable then
 			RaidMenu:OverlapPrevention("MM")
 		end]]
-		if PanelsDB.MicroMenu.IsShown then
+		if LUIMicromenu_Background:IsVisible() then
 			PanelsDB.MicroMenu.IsShown = false
 
 			buttonMiddle:SetBackdrop({
@@ -647,6 +648,8 @@ function module:SetMicromenuExtraButtons()
 			})
 			buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
 			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
+			print("micro background hide")
+			LUIMicromenu_Background:Hide()
 		else
 			PanelsDB.MicroMenu.IsShown = true
 
@@ -658,6 +661,9 @@ function module:SetMicromenuExtraButtons()
 			})
 			buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
 			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
+			print("micro background Show")
+			LUIMicromenu_Background:Show()
+
 		end
 	end)
 
@@ -728,12 +734,10 @@ function module:SetMicromenuExtraButtons()
 				if button == "RightButton" then
 					ToggleFrame(WorldMapFrame)
 				else
-					if Minimap:GetAlpha() == 0 then
-						--MinimapAlphaIn:Show()
-						PanelsDB.Minimap.IsShown = true
+					if Minimap:IsVisible() then
+						Minimap:Hide()
 					else
-						--MinimapAlphaOut:Show()
-						PanelsDB.Minimap.IsShown = false
+						Minimap:Show()
 					end
 				end
 			else
