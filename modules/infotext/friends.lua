@@ -269,7 +269,7 @@ function element:DisplayBNFriends()
 				bnfriend.accountID = accountID
 				bnfriend.accountName = accountName
 				bnfriend.client = client
-				bnfriend.note:SetText(note)
+				bnfriend.note:SetText(note or "")
 
 				-- WoW BN Friends have additional information about their currently active toon.
 				if client == BNET_CLIENT_WOW then
@@ -280,7 +280,7 @@ function element:DisplayBNFriends()
 					bnfriend.name:SetText(format("%s%s - %s",statusString, btagString, nameString))
 
 					-- Level/Faction Column - Only displayed for WoW toons.
-					bnfriend.level:SetText(level)
+					bnfriend.level:SetText(level or "")
 					bnfriend.level:SetTextColor(LUI:GetDifficultyColor(level))
 					element:SetFactionIcon(bnfriend, faction)
 
@@ -306,7 +306,7 @@ function element:DisplayBNFriends()
 					else
 						bnfriend.name:SetText(format("%s%s", statusString, btagString))
 					end
-					bnfriend.gameText:SetText(gameText)
+					bnfriend.gameText:SetText(gameText or "")
 					-- Hide wow-centric fontstrings
 					bnfriend.level:Hide()
 					bnfriend.faction:Hide()
@@ -455,10 +455,10 @@ function element:DisplayFriends()
 		friend.name:SetTextColor(element:RGB(class))
 		friend:SetClassIcon(friend.class, class)
 
-		friend.level:SetText(info.level)
+		friend.level:SetText(info.level or "")
 		friend.level:SetTextColor(LUI:GetDifficultyColor(info.level))
 
-		friend.zone:SetText(info.area)
+		friend.zone:SetText(info.area or _G.UNKNOWN)
 		friend.note:SetText(info.notes or "-")
 
 		nameColumnWidth  = max(nameColumnWidth,  friend.name:GetStringWidth())

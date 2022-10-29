@@ -136,7 +136,7 @@ do
 			self:SetScript('OnUpdate', self.OnUpdate)
 		else
 			self:SetScript('OnUpdate', nil)
-			self.duration:SetText()
+			self.duration:SetText("")
 		end
 
 		self.icon:SetTexture(icon)
@@ -148,7 +148,7 @@ do
 		if count and count > 1 then
 			self.count:SetFormattedText("%d", count)
 		else
-			self.count:SetText()
+			self.count:SetText("")
 		end
 
 		self.caster = nil
@@ -263,7 +263,7 @@ do
 			self:SetScript('OnUpdate', self.OnUpdate)
 		else
 			self:SetScript('OnUpdate', nil)
-			self.duration:SetText()
+			self.duration:SetText("")
 		end
 	end
 
@@ -284,7 +284,7 @@ do
 		if count > 1 then
 			self.count:SetFormattedText("%d", count)
 		else
-			self.count:SetText()
+			self.count:SetText("")
 		end
 
 		if self.Consolidate:IsShown() then

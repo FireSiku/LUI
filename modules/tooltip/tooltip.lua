@@ -389,7 +389,7 @@ function module.OnStatusBarValueChanged(frame, value_)
 		if UnitIsGhost(unit) then
 			frame.text:SetText(L["Tooltip_Ghost"])
 		elseif minValue == 0 or UnitIsDead(unit) then
-			frame.text:SetText(DEAD)
+			frame.text:SetText(_G.DEAD)
 		else
 			frame.text:SetFormattedText("%s / %s", BreakUpLargeNumbers(minValue), BreakUpLargeNumbers(maxValue))
 		end
@@ -444,7 +444,7 @@ function module:OnGameTooltipSetUnit(frame)
 	local unitColor = CreateColor(module:GetUnitColor(unit))
 
 	local tooltipText = unitColor:WrapTextInColorCode((title or name)..realmSuffix)
-	GameTooltipTextLeft1:SetText(tooltipText)
+	GameTooltipTextLeft1:SetText(tooltipText or "")
 
 	local offset = 2
 	if UnitIsPlayer(unit) then
@@ -492,7 +492,7 @@ function module:OnGameTooltipSetUnit(frame)
 				line:SetFormattedText("%s%s %s", levelText, classificationString, creatureType or "")
 			-- Remove the PVP line if the option is set
 			elseif line:GetText() == PVP_ENABLED and db.HidePVP then
-				line:SetText()
+				line:SetText("")
 			end
 		end
 	end

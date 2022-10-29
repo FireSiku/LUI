@@ -121,7 +121,7 @@ do
 						self.Text:SetFormattedText("%.1f", self.max - now)
 					end
 				else
-					self.Text:SetText()
+					self.Text:SetText("")
 				end
 			end
 		end

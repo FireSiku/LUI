@@ -291,19 +291,19 @@ function element.OnEnter(frame_)
 				member:SetClassIcon(member.class, class)
 
 				--Level Column
-				member.level:SetText(level)
+				member.level:SetText(level or "")
 				member.level:SetTextColor(LUI:GetDifficultyColor(level))
 
 				--Zone Column
 				if isMobile and not isOnline then zone = REMOTE_CHAT end
-				member.zone:SetText(zone)
+				member.zone:SetText(zone or _G.UNKNOWN)
 
 				--Note Column
 				member.note:SetText(note or "-")
 				if db.hideNotes then member.note:Hide() else member.note:Show() end
 
 				--Rank Column
-				member.rank:SetText(rank)
+				member.rank:SetText(rank or "")
 				--member.rank:SetPoint("LEFT", db.hideNotes and member.zone or member.note, "RIGHT", GAP)
 
 				--Check if this member has any column larger than the current ones.

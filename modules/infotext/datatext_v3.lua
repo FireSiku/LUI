@@ -1383,10 +1383,10 @@ function module:SetGF()
 				button.zone:SetTextColor(GetZoneColor(zone))
 			end
 
-			button.level:SetText(level)
-			button.zone:SetText(zone)
-			button.note:SetText(notes)
-			button.rank:SetText(rank)
+			button.level:SetText(level or "")
+			button.zone:SetText(zone or "")
+			button.note:SetText(notes or "")
+			button.rank:SetText(rank or "")
 
 			return button,
 			button.name:GetStringWidth(),
@@ -1469,11 +1469,11 @@ function module:SetGF()
 				color = GetQuestDifficultyColor(tonumber(level))
 				toast.level:SetTextColor(color.r, color.g, color.b)
 			else
-				toast.level:SetText()
+				toast.level:SetText("")
 			end
 
-			toast.zone:SetText(zone)
-			toast.note:SetText(notes)
+			toast.zone:SetText(zone or "")
+			toast.note:SetText(notes or "")
 
 			return toast, client, isOnline,
 			toast.name:GetStringWidth(),
@@ -1784,7 +1784,7 @@ function module:SetGF()
 				buttons[1]:SetPoint("TOPLEFT", motd, "BOTTOMLEFT", 0, -realFriendsHeight)
 			else
 				extraHeight = 0
-				motd.name:SetText()
+				motd.name:SetText("")
 				motd:SetHeight(1)
 				motd:SetWidth(maxWidth)
 				buttons[1]:SetPoint("TOPLEFT", self, "TOPLEFT", gap, -gap)

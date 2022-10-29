@@ -108,7 +108,7 @@ function ExpBarMixin:UpdateText()
 		local percentText = format("%."..db.Precision.."f%%", percentBar)
 		return self.text:SetText(format("%s %s", percentText, self:GetDataText() or ""))
 	end
-	return self.text:SetText(self:GetDataText())
+	return self.text:SetText(self:GetDataText() or "")
 end
 
 function ExpBarMixin:UpdateVisibility()

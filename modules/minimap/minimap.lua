@@ -176,7 +176,7 @@ function module:SetMinimap()
 
 	--Add pvp coloring later. Make customizable.
 	minimapZone:SetScript("OnUpdate", function(self)
-		minimapZoneText:SetText(GetMinimapZoneText())
+		minimapZoneText:SetText(GetMinimapZoneText() or "")
 	end)
 
 	-- Add an offset to the Garrison/Covenant button so it does not cover the coordinates

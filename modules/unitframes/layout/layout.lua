@@ -285,13 +285,13 @@ local function OverrideHealth(self, event, unit, powerType)
 		-- Check if name should only be displayed when health is full.
 		if self.Info.OnlyWhenFull and min ~= max then
 			-- Just set to nil, as name tags are updated when ever anything happens? Inefficient but works for us here.
-			self.Info:SetText()
+			self.Info:SetText("")
 		end
 
 		if health.value.Enable == true then
 			if min >= 1 then
 				if health.value.ShowAlways == false and min == max then
-					health.value:SetText()
+					health.value:SetText("")
 				elseif health.value.Format == "Absolut" then
 					health.value:SetFormattedText("%s/%s", min, max)
 				elseif health.value.Format == "Absolut & Percent" then
@@ -320,17 +320,17 @@ local function OverrideHealth(self, event, unit, powerType)
 					health.value:SetTextColor(oUF.ColorGradient(min, max, module.colors.smooth()))
 				end
 			else
-				health.value:SetText()
+				health.value:SetText("")
 			end
 		else
-			health.value:SetText()
+			health.value:SetText("")
 		end
 
 		if health.valuePercent.Enable == true then
 			if min ~= max or health.valuePercent.ShowAlways == true then
 				health.valuePercent:SetFormattedText("%.1f%%", healthPercent)
 			else
-				health.valuePercent:SetText()
+				health.valuePercent:SetText("")
 			end
 
 			if health.valuePercent.color == "By Class" then
@@ -341,7 +341,7 @@ local function OverrideHealth(self, event, unit, powerType)
 				health.valuePercent:SetTextColor(oUF.ColorGradient(min, max, module.colors.smooth()))
 			end
 		else
-			health.valuePercent:SetText()
+			health.valuePercent:SetText("")
 		end
 
 		if health.valueMissing.Enable == true then
@@ -354,7 +354,7 @@ local function OverrideHealth(self, event, unit, powerType)
 					health.valueMissing:SetFormattedText("-%s", healthMissing)
 				end
 			else
-				health.valueMissing:SetText()
+				health.valueMissing:SetText("")
 			end
 
 			if health.valueMissing.color == "By Class" then
@@ -365,7 +365,7 @@ local function OverrideHealth(self, event, unit, powerType)
 				health.valueMissing:SetTextColor(oUF.ColorGradient(min, max, module.colors.smooth()))
 			end
 		else
-			health.valueMissing:SetText()
+			health.valueMissing:SetText("")
 		end
 	end
 
@@ -445,25 +445,25 @@ local function OverridePower(self, event, unit)
 
 	if not UnitIsConnected(unit) then
 		power:SetValue(0)
-		power.valueMissing:SetText()
-		power.valuePercent:SetText()
-		power.value:SetText()
+		power.valueMissing:SetText("")
+		power.valuePercent:SetText("")
+		power.value:SetText("")
 	elseif UnitIsGhost(unit) then
 		power:SetValue(0)
-		power.valueMissing:SetText()
-		power.valuePercent:SetText()
-		power.value:SetText()
+		power.valueMissing:SetText("")
+		power.valuePercent:SetText("")
+		power.value:SetText("")
 	elseif UnitIsDead(unit) then
 		power:SetValue(0)
-		power.valueMissing:SetText()
-		power.valuePercent:SetText()
-		power.value:SetText()
+		power.valueMissing:SetText("")
+		power.valuePercent:SetText("")
+		power.value:SetText("")
 	else
 		local powerPercent = max == 0 and 0 or 100 * (min / max)
 
 		if power.value.Enable == true then
 			if (power.value.ShowFull == false and min == max) or (power.value.ShowEmpty == false and min == 0) then
-				power.value:SetText()
+				power.value:SetText("")
 			elseif power.value.Format == "Absolut" then
 				power.value:SetFormattedText("%d/%d", min, max)
 			elseif power.value.Format == "Absolut & Percent" then
@@ -492,12 +492,12 @@ local function OverridePower(self, event, unit)
 				power.value:SetTextColor(unpack(color2))
 			end
 		else
-			power.value:SetText()
+			power.value:SetText("")
 		end
 
 		if power.valuePercent.Enable == true then
 			if (power.valuePercent.ShowFull == false and min == max) or (power.valuePercent.ShowEmpty == false and min == 0) then
-				power.valuePercent:SetText()
+				power.valuePercent:SetText("")
 			else
 				power.valuePercent:SetFormattedText("%.1f%%", powerPercent)
 			end
@@ -510,14 +510,14 @@ local function OverridePower(self, event, unit)
 				power.valuePercent:SetTextColor(unpack(color2))
 			end
 		else
-			power.valuePercent:SetText()
+			power.valuePercent:SetText("")
 		end
 
 		if power.valueMissing.Enable == true then
 			local powerMissing = max-min
 
 			if (power.valueMissing.ShowFull == false and min == max) or (power.valueMissing.ShowEmpty == false and min == 0) then
-				power.valueMissing:SetText()
+				power.valueMissing:SetText("")
 			elseif power.valueMissing.ShortValue == true then
 				power.valueMissing:SetFormattedText("-%s", ShortValue(powerMissing))
 			else
@@ -532,7 +532,7 @@ local function OverridePower(self, event, unit)
 				power.valueMissing:SetTextColor(unpack(color2))
 			end
 		else
-			power.valueMissing:SetText()
+			power.valueMissing:SetText("")
 		end
 	end
 end
@@ -958,7 +958,7 @@ local function PostUpdateAlternativePower(altpowerbar, unit, cur, min, max)
 	if altpowerbar.Text then
 		if altpowerbar.Text.Enable then
 			if altpowerbar.Text.ShowAlways == false and (cur == max or cur == min) then
-				altpowerbar.Text:SetText()
+				altpowerbar.Text:SetText("")
 			elseif altpowerbar.Text.Format == "Absolut" then
 				altpowerbar.Text:SetFormattedText("%d/%d", cur, max)
 			elseif altpowerbar.Text.Format == "Percent" then
@@ -976,7 +976,7 @@ local function PostUpdateAlternativePower(altpowerbar, unit, cur, min, max)
 			end
 
 		else
-			altpowerbar.Text:SetText()
+			altpowerbar.Text:SetText("")
 		end
 	end
 end
@@ -1008,17 +1008,17 @@ local function ArenaEnemyUnseen(self, event, unit, state)
 			health:SetValue(0)
 			health:SetStatusBarColor(0.5, 0.5, 0.5, 1)
 			health.bg:SetVertexColor(0.5, 0.5, 0.5, 1)
-			health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Unseen>|r")
-			health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Unseen>|r")
-			health.valueMissing:SetText()
+			health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Unseen>|r" or "")
+			health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Unseen>|r" or "")
+			health.valueMissing:SetText("")
 		end
 		self.Power.Override = function(power)
 			power:SetValue(0)
 			power:SetStatusBarColor(0.5, 0.5, 0.5, 1)
 			power.bg:SetVertexColor(0.5, 0.5, 0.5, 1)
-			power.value:SetText()
-			power.valuePercent:SetText()
-			power.valueMissing:SetText()
+			power.value:SetText("")
+			power.valuePercent:SetText("")
+			power.valueMissing:SetText("")
 		end
 
 		self.Hide = self.Show

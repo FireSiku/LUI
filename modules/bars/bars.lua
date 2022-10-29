@@ -1246,7 +1246,7 @@ local function UpdateHotkey(self, abt)
 	text = gsub(text, "(Delete)", "Del")
 
 	if hotkey:GetText() == _G["RANGE_INDICATOR"] then
-		hotkey:SetText()
+		hotkey:SetText("")
 	else
 		hotkey:SetText(text)
 	end

@@ -365,7 +365,7 @@ function module:SetTooltip()
 			local text = _G["GameTooltipTextLeft"..i]:GetText()
 			if text and text == PVP_ENABLED then
 				pvpLine = _G["GameTooltipTextLeft"..i]
-				pvpLine:SetText()
+				pvpLine:SetText("")
 				break
 			end
 		end
