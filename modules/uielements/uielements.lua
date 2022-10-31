@@ -40,6 +40,7 @@ function module:SetUIElements()
 	module:SetPosition('DurabilityFrame')
 	module:SetPosition('PlayerPowerBarAlt')
 	module:SetPosition('QueueStatusButton')
+	module:SecureHook(_G.HelpTipTemplateMixin, "Init", "AlertHandler")
 end
 
 function module:SetHiddenFrames()
@@ -62,6 +63,14 @@ function module:SetHiddenFrames()
 		orderUI = true
 	end
 end
+
+function module:AlertHandler(frame, parent, info, relativeRegion)
+	if relativeRegion == _G.QueueStatusButton then
+		LUI:Print(relativeRegion, relativeRegion:GetName())
+		frame:AnchorAndRotate(_G.HelpTip.Point.LeftEdgeCenter)
+	end
+end
+
 -- ####################################################################################################################
 -- ##### UIElements: Force Positioning ################################################################################
 -- ####################################################################################################################
