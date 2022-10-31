@@ -313,7 +313,7 @@ end
 ---@param name string|function
 ---@param desc? string|function
 ---@param order number
----@param values table|function|"[key]=value table"|"Key is passed to Set, Value is text displayed"
+---@param values table|function @ is a key-value table where Key is what will be saved and Value is what is being displayed to the user.
 ---@param width? string|"normal"|"half"|"double"|"full"-
 ---@param disabled? boolean|function
 ---@param hidden? boolean|function
@@ -450,7 +450,7 @@ local sizeValues = {min = 4, max = 72, step = 1, softMin = 8, softMax = 36}
 ---@param order number
 ---@param disabled? boolean|function
 ---@param hidden? boolean|function
----@param customFontLocation table @ table reference where the font settings (Size, Name, Flag) are being saved)
+---@param customFontLocation table @ table reference where the font settings (Size/Name/Flag) are being saved
 ---@return AceOptionGroup
 function OptionMixin:FontMenu(name, desc, order, disabled, hidden, customFontLocation)
 	local group = Opt:Group(name, desc, order, nil, disabled, hidden)

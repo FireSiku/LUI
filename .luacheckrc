@@ -3,7 +3,7 @@ max_line_length = false
 exclude_files = {
 	"libs",
 	"api\\oUF",
-	"api\\oUF11"
+	"api\\oUF11",
 	"api\\emmy",
 	"unitframes\\core",
     ".luacheckrc",

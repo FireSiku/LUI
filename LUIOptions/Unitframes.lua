@@ -38,6 +38,12 @@ local function UnitFontMenuGetter(info)
 	local dbUnit = info.handler.db.profile[unit]
 	local prop = info[#info]
 	
+    -- HACK: Untill fonts are centralized inside Unitframes
+    if fontName == "CastbarNameText" or fontName == "CastbarTimeText" then
+        dbUnit = info.handler.db.profile[unit].Castbar
+        fontName = string.sub(fontName, 8)
+    end
+
 	return dbUnit[fontName][prop]
 end
 
@@ -47,14 +53,20 @@ local function UnitFontMenuSetter(info, value)
 	local dbUnit = info.handler.db.profile[unit]
 	local prop = info[#info]
 
+    -- HACK: Untill fonts are centralized inside Unitframes
+    if fontName == "CastbarNameText" or fontName == "CastbarTimeText" then
+        dbUnit = info.handler.db.profile[unit].Castbar
+        fontName = string.sub(fontName, 8)
+    end
+
 	dbUnit[fontName][prop] = value
 end
 
 local function UnitFontMenu(name, desc, order, disabled, hidden)
     local group = Opt:Group(name, desc, order, nil, disabled, hidden)
 	group.args.Size = Opt:Slider("Size", nil, 1, sizeValues, nil, disabled, hidden, UnitFontMenuGetter, UnitFontMenuSetter)
-	group.args.Name = Opt:MediaFont("Font", nil, 2, nil, disabled, hidden, UnitFontMenuGetter, UnitFontMenuSetter)
-	group.args.Flag = Opt:Select("Outline", nil, 3, LUI.FontFlags, nil, disabled, hidden, UnitFontMenuGetter, UnitFontMenuSetter)
+	group.args.Font = Opt:MediaFont("Font", nil, 2, nil, disabled, hidden, UnitFontMenuGetter, UnitFontMenuSetter)
+	group.args.Outline = Opt:Select("Outline", nil, 3, LUI.FontFlags, nil, disabled, hidden, UnitFontMenuGetter, UnitFontMenuSetter)
 	group.inline = true
 	return group
 end
@@ -85,10 +97,10 @@ local function GenerateBarGroup(unit, name, colorTypes, order)
     local group = Opt:Group(optName, nil, order, nil, nil, nil, Opt.GetSet(dbBar))
     group.args = {
         Enable = Opt:Toggle("Enabled", nil, 1, nil, "full"),
-        Width = Opt:Input("Width", nil, 2),
-        Height = Opt:Input("Height", nil, 3),
-        X = Opt:Input("X Value", nil, 4),
-        Y = Opt:Input("Y Value", nil, 5),
+        Width = Opt:InputNumber("Width", nil, 2),
+        Height = Opt:InputNumber("Height", nil, 3),
+        X = Opt:InputNumber("X Value", nil, 4),
+        Y = Opt:InputNumber("Y Value", nil, 5),
         Texture = Opt:MediaStatusbar("Bar Texture", nil, 7),
         TextureBG = Opt:MediaStatusbar("Background Texture", nil, 8),
         Smooth = Opt:Toggle("Smooth Gradient", nil, 9),
@@ -113,8 +125,8 @@ local function GenerateTextGroup(unit, name, colorTypes, order)
     local group = Opt:Group(optName, nil, order, nil, nil, nil, Opt.GetSet(dbText))
     group.args = {
         Enable = Opt:Toggle("Enabled", nil, 1, nil, "full"),
-        X = Opt:Input("X Value", nil, 4),
-        Y = Opt:Input("Y Value", nil, 5),
+        X = Opt:InputNumber("X Value", nil, 4),
+        Y = Opt:InputNumber("Y Value", nil, 5),
         Point = Opt:Select(L["Anchor"], nil, 6, LUI.Points),
         RelativePoint = Opt:Select("Attach To", nil, 7, LUI.Points),
         Font = UnitFontMenu("Text Font", nil, 20),
@@ -122,13 +134,13 @@ local function GenerateTextGroup(unit, name, colorTypes, order)
         IndividualColor = Opt:Color(optName.." Color", nil, 13, false, nil, IsIndividualColorSelected(dbText), nil, Opt.ColorGetSet(dbText))
     }
     ---@FIXME: Streamline those options to be more Common
-    if dbText.ShowAlways ~= nil then 
+    if dbText.ShowAlways ~= nil then
         group.args.ShowAlways = Opt:Toggle("Show when full", nil, 31)
     end
-    if dbText.ShowDead ~= nil then 
+    if dbText.ShowDead ~= nil then
         group.args.ShowDead = Opt:Toggle("Show when dead", nil, 32)
     end
-    if dbText.ShowFull  ~= nil then 
+    if dbText.ShowFull  ~= nil then
         group.args.ShowFull = Opt:Toggle("Show when full", nil, 31)
         group.args.ShowEmpty = Opt:Toggle("Show when empty", nil, 32)
     end
@@ -164,10 +176,10 @@ local function GenerateClassBarGroup(unit, name, order)
     local group = Opt:Group(optName, nil, order, nil, nil, nil, Opt.GetSet(dbBar))
     group.args = {
         Enable = Opt:Toggle("Enabled", nil, 1, nil, "full"),
-        Width = Opt:Input("Width", nil, 2),
-        Height = Opt:Input("Height", nil, 3),
-        X = Opt:Input("X Value", nil, 4),
-        Y = Opt:Input("Y Value", nil, 5),
+        Width = Opt:InputNumber("Width", nil, 2),
+        Height = Opt:InputNumber("Height", nil, 3),
+        X = Opt:InputNumber("X Value", nil, 4),
+        Y = Opt:InputNumber("Y Value", nil, 5),
         Texture = Opt:MediaStatusbar("Bar Texture", nil, 6),
         Lock = Opt:Toggle("Lock", nil, 7, nil, "full"),
         Padding = Opt:Slider("Padding", nil, 8, {min=1, max=10, step=1}),
@@ -190,12 +202,104 @@ local function GenerateIndicatorGroup(unit, name, order)
     local group = Opt:Group(name, nil, order, nil, nil, nil, Opt.GetSet(dbIcon))
     group.args = {
         Enable = Opt:Toggle("Enabled", nil, 1, nil, "full"),
-        X = Opt:Input("X Value", nil, 2),
-        Y = Opt:Input("Y Value", nil, 3),
+        X = Opt:InputNumber("X Value", nil, 2),
+        Y = Opt:InputNumber("Y Value", nil, 3),
         Size = Opt:Slider("Size", nil, 4, sizeValues),
         Point = Opt:Select(L["Anchor"], nil, 5, LUI.Points),
     }
 
+    return group
+end
+
+local function GenerateCastbarGroup(unit, order)
+    local dbCast = db[unit].Castbar
+    if not dbCast then return end    -- If that unit does not have options for that bar, nil it
+
+    local colorGet, colorSet = Opt.ColorGetSet(dbCast.Colors)
+    local nameGet, nameSet = Opt.GetSet(dbCast.NameText)
+    local timeGet, timeSet = Opt.GetSet(dbCast.TimeText)
+
+    local group = Opt:Group("Cast Bar", nil, order, nil, nil, nil, Opt.GetSet(dbCast.General))
+    group.args = {
+        Enable = Opt:Toggle("Enabled", nil, 1, nil, "full"),
+        Width = Opt:InputNumber("Width", nil, 2),
+        Height = Opt:InputNumber("Height", nil, 3),
+        X = Opt:InputNumber("X Value", nil, 4),
+        Y = Opt:InputNumber("Y Value", nil, 5),
+        Point = Opt:Select("Anchor Point", nil, 6, LUI.Points),
+        IndividualColor = Opt:Toggle("Individual Color", "If unchecked, Class Color will be used", 7, nil, "full"),
+        Icon = Opt:Toggle("Show Icon", nil, 8, nil, "full"),
+        Shielded = Opt:Toggle("Show Shielded Casts", "Whether you want to show casts you cannot interrupt.", 9, nil, "full", nil, nil,
+        function() return dbCast.General.Shield end, function(info, value)
+            dbCast.General.Shield = value
+            if info.handler.Refresh then info.handler:Refresh() end
+        end),
+        AestheticHeader = Opt:Header("Appearance", 20),
+        Texture = Opt:MediaStatusbar("Bar Texture", nil, 21),
+        TextureBG = Opt:MediaStatusbar("Background Texture", nil, 22),
+        --HACK: Using manual Get/Set for the Border options until they can be renamed
+        BorderTexture = Opt:MediaBorder("Border Texture", nil, 23, nil, nil, nil, function() return dbCast.Border.Texture end,
+        function(info, value) -- BorderTexture Set 
+            dbCast.Border.Texture = value
+            if info.handler.Refresh then info.handler:Refresh() end
+        end),
+        BorderThickness = Opt:InputNumber("Border Thickness", nil, 24, nil, nil, nil, nil, function() return dbCast.Border.Thickness end,
+        function(info, value) -- BorderThickness Set
+            dbCast.Border.Thickness = value
+            if info.handler.Refresh then info.handler:Refresh() end
+        end),
+        ColorHeader = Opt:Header("Appearance", 30),
+        Bar = Opt:Color("Castbar Color", nil, 31, true, nil, nil, nil, colorGet, colorSet),
+        Background = Opt:Color("Background Color", nil, 32, true, nil, nil, nil, colorGet, colorSet),
+        Border = Opt:Color("Border Color", nil, 33, true, nil, nil, nil, colorGet, colorSet),
+        Shield = Opt:Color("Shield Color", nil, 34, true, nil, nil, nil, colorGet, colorSet),
+    }
+
+    return group
+end
+
+local function GenerateCastbarTextGroup(unit, name, order)
+    local dbCast = db[unit].Castbar
+    if not dbCast then return end    -- If that unit does not have options for that bar, nil it
+
+    local optName = string.gsub("Cast Bar "..name, "Text", " Text")
+    local colorGet, colorSet = Opt.ColorGetSet(dbCast.Colors)
+    local textGet, textSet = Opt.GetSet(dbCast[name])
+
+    local group = Opt:Group(optName, nil, order, nil, nil, nil, textGet, textSet)
+    group.args = {
+        Enable = Opt:Toggle("Enabled", nil, 1, nil, "full"),
+        OffsetX = Opt:InputNumber("X Offset", nil, 2),
+        OffsetY = Opt:InputNumber("Y Offset", nil, 3),
+        Font = UnitFontMenu(name, nil, 5),
+    }
+    if name == "TimeText" then
+        group.args.ShowMax = Opt:Toggle("Show Max", nil, 4, nil, "full")
+    end
+    return group
+end
+
+local function GenerateCastbarShieldGroup(unit, order)
+    local dbCast = db[unit].Castbar
+    if not dbCast then return end    -- If that unit does not have options for that bar, nil it
+
+    local colorGet, colorSet = Opt.ColorGetSet(dbCast.Shield)
+
+    local group = Opt:Group("Shielded Cast Bar", nil, order, nil, nil, nil, Opt.GetSet(dbCast.Shield))
+    group.args = {
+        Explain = Opt:Desc("Additional settings when the cast bar cannot be interrupted.", 1),
+        Enable = Opt:Toggle("Enabled", nil, 2, nil, "full"),
+        Text = Opt:Toggle("Text", nil, 3, nil, "full"),
+        IndividualColor = Opt:Toggle("Override Bar Color", "Change the color of the cast bar when the cast cannot be interrupted.", 4),
+        BarColor = Opt:Color("Shielded Cast Color", nil, 5, true, nil, nil, nil, colorGet, colorSet),
+        Spacer = Opt:Spacer(6),
+        IndividualBorder = Opt:Toggle("Override Bar Border Color", "Change the border color of the cast bar when the cast cannot be interrupted.", 7),
+        Color = Opt:Color("Shielded Border Color", nil, 8, true, nil, nil, nil, colorGet, colorSet),
+        Spacer2 = Opt:Spacer(9),
+        Border = Opt:Toggle("Border", nil, 10, nil, "full"),
+        Texture = Opt:MediaBorder("Border Texture", nil, 11),
+        Thickness = Opt:InputNumber("Thickness", nil, 12),
+    }
     return group
 end
 
@@ -216,7 +320,7 @@ local function NewUnitOptionGroup(unit, order)
     unitOptions.args.HealthBar = GenerateBarGroup(unit, "HealthBar", healthColorTypes, 3)
     unitOptions.args.PowerBar = GenerateBarGroup(unit, "PowerBar", powerColorTypes, 4)
     
-    if unit == "player" then 
+    if unit == "player" then
         unitOptions.args.ClassPowerBar = GenerateClassBarGroup(unit, "ClassPowerBar", 5)
         if LUI.DEATHKNIGHT then unitOptions.args.RunesBar = GenerateClassBarGroup(unit, "RunesBar", 6) end
         if LUI.SHAMAN then unitOptions.args.TotemsBar = GenerateClassBarGroup(unit, "TotemsBar", 7) end
@@ -296,6 +400,12 @@ local function NewUnitOptionGroup(unit, order)
     if dbUnit.RestingIndicator then unitOptions.args.RestingIndicator = GenerateIndicatorGroup("Resting Icon", 54, Opt.GetSet(dbUnit.RestingIndicator)) end
     if dbUnit.ReadyCheckIndicator then unitOptions.args.ReadyCheckIndicator = GenerateIndicatorGroup("Ready Check Icon", 54, Opt.GetSet(dbUnit.ReadyCheckIndicator)) end
 
+    if dbUnit.Castbar then
+        unitOptions.args.Castbar = GenerateCastbarGroup(unit, 61)
+        unitOptions.args.CastbarNameText = GenerateCastbarTextGroup(unit, "NameText", 62)
+        unitOptions.args.CastbarTimeText = GenerateCastbarTextGroup(unit, "TimeText", 63)
+        unitOptions.args.CastbarShield = GenerateCastbarShieldGroup(unit, 64)
+    end
 
     return unitOptions
 end

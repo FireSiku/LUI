@@ -294,7 +294,7 @@ module.defaults = {
 				X = 0,
 				Y = 0,
 				Format = "Standard",
-				Font = "neuropol",
+				Font = "Prototype",
 				Size = 10,
 				Outline = "",
 				Color = "Individual",
@@ -512,7 +512,6 @@ module.defaults = {
 			Castbar = {
 				General = {
 					Enable = false,
-					UseBlizzard = true,
 					Height = 26,
 					Width = 130,
 				},
@@ -1514,15 +1513,17 @@ module.defaults = {
 				},
 				NameText = {
 					Enable = true,
-					Font = "neuropol",
+					Font = "Prototype",
 					Size = 15,
+					Outline = "",
 					OffsetX = 5,
 					OffsetY = 1,
 				},
 				TimeText = {
 					Enable = true,
 					ShowMax = true,
-					Font = "neuropol",
+					Font = "Prototype",
+					Outline = "",
 					Size = 13,
 					OffsetX = -5,
 					OffsetY = 1,

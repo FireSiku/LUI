@@ -134,7 +134,7 @@ end
 
 local function SetFontString(parent, fontName, fontHeight, fontStyle)
 	local fs = parent:CreateFontString(nil, "OVERLAY")
-	fs:SetFont(fontName, fontHeight, fontStyle)
+	fs:SetFont(fontName, fontHeight, fontStyle or "")
 	fs:SetJustifyH("LEFT")
 	fs:SetShadowColor(0, 0, 0)
 	fs:SetShadowOffset(1.25, -1.25)
@@ -668,7 +668,7 @@ local function PostUpdateAura(element, button, unit, data, position)
 	button.duration = data.duration
 	button.timeLeft = data.expirationTime
 	button.first = true
-	icon:SetScript("OnUpdate", CreateAuraTimer)
+	button:SetScript("OnUpdate", CreateAuraTimer)
 end
 
 --- Aura Filtering function
@@ -2283,7 +2283,8 @@ module.funcs = {
 		end
 
 		if unit == "player" then
-			if oufdb.Castbar.General.Latency == true then
+			-- HACK: Disable Latency until properly re-implemented
+			if oufdb.Castbar.General.Latency == true and false then
 				castbar.SafeZone:Show()
 				if oufdb.Castbar.General.IndividualColor == true then
 					castbar.SafeZone:SetVertexColor(oufdb.Castbar.Colors.Latency.r,oufdb.Castbar.Colors.Latency.g,oufdb.Castbar.Colors.Latency.b,oufdb.Castbar.Colors.Latency.a)
@@ -2510,8 +2511,8 @@ local function SetStyle(self, unit, isSingle)
 	module.funcs.Power(self, unit, oufdb)
 	module.funcs.FrameBackdrop(self, unit, oufdb)
 
-	if oufdb.HealthPredictionBar and oufdb.HealthPredictionBar.Enable then module.funcs.HealthPrediction(self, unit, oufdb) end
-	if oufdb.TotalAbsorbBar and oufdb.TotalAbsorbBar.Enable then module.funcs.TotalAbsorb(self, unit, oufdb) end
+	if oufdb.HealthPredictionBar and oufdb.HealthPredictionBar.Enable and false then module.funcs.HealthPrediction(self, unit, oufdb) end
+	if oufdb.TotalAbsorbBar and oufdb.TotalAbsorbBar.Enable and false then module.funcs.TotalAbsorb(self, unit, oufdb) end
 
 	------------------------------------------------------------------------
 	--	Texts
