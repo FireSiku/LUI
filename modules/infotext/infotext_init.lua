@@ -50,7 +50,7 @@ module.defaults = {
 			X = 150,
 		},
 		Clock = {
-			X = 1660,
+			X = 1880,
 			instanceDifficulty = true,
 			showSavedRaids = true,
 			showWorldBosses = true,
