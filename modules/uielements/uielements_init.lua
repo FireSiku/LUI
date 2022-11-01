@@ -14,8 +14,8 @@ module.defaults = {
 		ObjectiveTrackerFrame = {
 			X = -150,
 			Y = -300,
-			HeaderColor = true,
-			ManagePosition = true,
+			HeaderColor = false,
+			ManagePosition = false,
 		},
 		OrderHallCommandBar = {
 			HideFrame = true,
