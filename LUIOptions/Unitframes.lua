@@ -315,6 +315,7 @@ local function NewUnitOptionGroup(unit, order)
         Y = Opt:Input("Y Value", nil, 3),
         Point = Opt:Select(L["Anchor"], nil, 4, LUI.Points),
         Scale = Opt:Slider("Scale", nil, 5, Opt.ScaleValues),
+        Enable = Opt:Toggle("Enabled", nil, 6, nil, "full"),
     }
 
     unitOptions.args.HealthBar = GenerateBarGroup(unit, "HealthBar", healthColorTypes, 3)
