@@ -1,5 +1,4 @@
 local _, ns = ...
-if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 local Private = oUF.Private
 

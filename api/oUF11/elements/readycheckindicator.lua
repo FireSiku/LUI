@@ -37,7 +37,6 @@ Default textures will be applied if the layout does not provide custom ones. See
 --]]
 
 local _, ns = ...
-if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 local Private = oUF.Private
 

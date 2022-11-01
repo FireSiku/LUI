@@ -23,7 +23,6 @@ This element updates by changing the texture.
 --]]
 
 local _, ns = ...
-if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 
 -- sourced from Blizzard_APIDocumentation/IncomingSummonDocumentation.lua

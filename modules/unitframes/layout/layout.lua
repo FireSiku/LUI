@@ -2053,7 +2053,7 @@ module.funcs = {
 
 		self.Buffs.PostCreateButton = PostCreateAura
 		self.Buffs.PostUpdateButton = PostUpdateAura
-		self.Buffs.FilterAura = FilterAura
+		--self.Buffs.FilterAura = FilterAura
 		if not self.Buffs.createdButtons then self.Buffs.createdButtons = 0 end
 		if not self.Buffs.anchoredButtons then self.Buffs.anchoredButtons = 0 end
 	end,
@@ -2092,7 +2092,7 @@ module.funcs = {
 
 		self.Debuffs.PostCreateButton = PostCreateAura
 		self.Debuffs.PostUpdateButton = PostUpdateAura
-		self.Debuffs.FilterAura = FilterAura
+		--self.Debuffs.FilterAura = FilterAura
 		if not self.Debuffs.createdButtons then self.Debuffs.createdButtons = 0 end
 		if not self.Debuffs.anchoredButtons then self.Debuffs.anchoredButtons = 0 end
 	end,

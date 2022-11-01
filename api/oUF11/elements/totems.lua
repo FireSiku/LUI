@@ -46,7 +46,6 @@ OnEnter and OnLeave script handlers will be set to display a Tooltip if the `Tot
 --]]
 
 local _, ns = ...
-if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 
 local function UpdateTooltip(self)

@@ -45,7 +45,6 @@ A default texture will be applied if the sub-widgets are StatusBars and don't ha
 if(select(2, UnitClass('player')) ~= 'DEATHKNIGHT') then return end
 
 local _, ns = ...
-if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 
 local runemap = {1, 2, 3, 4, 5, 6}

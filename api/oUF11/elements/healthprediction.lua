@@ -79,7 +79,6 @@ A default texture will be applied to the Texture widgets if they don't have a te
 --]]
 
 local _, ns = ...
-if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 
 local function Update(self, event, unit)

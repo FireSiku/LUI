@@ -55,7 +55,6 @@ The following options are listed by priority. The first check that returns true 
 --]]
 
 local _, ns = ...
-if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 
 local _, playerClass = UnitClass('player')

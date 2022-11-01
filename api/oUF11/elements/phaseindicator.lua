@@ -34,7 +34,6 @@ OnEnter and/or OnLeave handlers.
 --]]
 
 local _, ns = ...
-if not ns.DF then return end ---@DF
 local oUF = ns.oUF
 
 --[[ Override: PhaseIndicator:UpdateTooltip()
