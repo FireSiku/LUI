@@ -15,10 +15,11 @@ if not module or not module.registered then return end
 local function InfoTextGroup(name, order)
     local group = Opt:Group(name, nil, order, nil, nil, nil, Opt.GetSet(db[name]))
     group.args.Header = Opt:Header(name, 1)
-    group.args.Enable = Opt:Toggle("Enable", nil, 2)
-	group.args.X = Opt:Input("X Value", nil, 3)
-
-    return group
+    group.args.Enable = Opt:Toggle("Enable", nil, 2, nil, "full", function(name) return db[name].Enable end, function (name, value) db[name].Enable = value end)
+	group.args.X = Opt:Input("X Value", nil, 3, nil, "half", function(name) return db[name].X end, function (name, value) db[name].X = value end)
+	group.args.Y = Opt:Input("Y Value", nil, 4, nil, "half", function(name) return db[name].Y end, function (name, value) db[name].Y = value end)
+	group.args.Point = Opt:Select(L["Anchor Point"],  "Set which part of the screen the "..name.." infotext will be anchored to.", 5, LUI.Corners) --input for now
+	return group
 end
 
 -- ####################################################################################################################

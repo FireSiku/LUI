@@ -128,7 +128,7 @@ end
 -- ####################################################################################################################
 
 local function ShowGuild()
-	if IsInGuild() then GuildRoster() end
+	if IsInGuild() then C_GuildInfo.GuildRoster() end
 end
 
 function element:GetStatusString(status, isMobile)

@@ -200,7 +200,7 @@ end
 -- RightClick: Open Time Manager
 function element.OnClick(frame_, button)
 	if button == "RightButton" then
-		TimeManager_Toggle()
+		ToggleTimeManager()
 	else
 		GameTimeFrame:Click()
 	end

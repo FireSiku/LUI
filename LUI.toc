@@ -78,20 +78,25 @@ modules\cooldown\cooldown.xml
 modules\tooltip\tooltip.lua
 
 ### InfoText ###
-# modules\infotext\datatext_v3.lua
 modules\InfoText\infotext_init.lua
 modules\InfoText\infotext.lua
+modules\infotext\infotip.lua
 modules\InfoText\bags.lua
 modules\InfoText\clock.lua
-# modules\InfoText\currency.lua
-# modules\InfoText\dualspec.lua
-modules\InfoText\durability.lua
-modules\InfoText\fps.lua
-# modules\InfoText\friends.lua
-modules\InfoText\gold.lua
-# modules\InfoText\guild.lua
-# modules\InfoText\infotip.lua
-modules\InfoText\memory.lua
+modules\InfoText\currency.lua
+modules\infotext\dualspec.lua
+modules\infotext\durability.lua
+modules\infotext\equipmentsets.lua
+modules\infotext\fps.lua
+modules\infotext\friends.lua
+modules\infotext\gold.lua
+modules\infotext\guild.lua
+modules\infotext\instance.lua
+modules\infotext\lootspec.lua
+modules\infotext\mail.lua
+modules\infotext\memory.lua
+modules\infotext\movespeed.lua
+modules\infotext\weaponspeed.lua
 
 ### Micromenu ###
 modules\micromenu\micromenu.lua

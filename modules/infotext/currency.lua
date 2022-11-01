@@ -91,6 +91,6 @@ end
 
 function element:OnCreate()
 	element:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")
-	element:SecureHook("BackpackTokenFrame_Update", "UpdateCurrency")
+	-- element:SecureHook("BackpackTokenFrame_Update", "UpdateCurrency")
 	element:UpdateCurrency()
 end

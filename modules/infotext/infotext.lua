@@ -151,7 +151,9 @@ function module:SetInfoPanels()
 		bottomAnchor:SetFrameStrata("HIGH")
 		bottomAnchor:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 0, 4)
 	end
+	topAnchor:Hide()
 	topAnchor:Show()
+	bottomAnchor:Hide()
 	bottomAnchor:Show()
 	module.topAnchor = topAnchor
 	module.bottomAnchor = bottomAnchor
@@ -189,6 +191,17 @@ function module:IsPositionSet(name)
 	return (db[name].X ~= 0) and true or false
 end
 
+function module:SetPosition(name, frame)
+	if module:IsPositionSet(name) then
+		-- To remove "or 0" when nil issue is fixed.
+		frame.text:SetPoint(db[name].Point, UIParent, db[name].Point, db[name].X, db[name].Y or 5)
+	else
+		local anchor = module:GetAnchor("bottom")
+		defaultPositions = defaultPositions + 1
+		local defaultX = -100 + (145 * defaultPositions)
+		frame.text:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", defaultX, db[name].Y or 5)
+	end
+end
 -- ####################################################################################################################
 -- ##### LDB Handling #################################################################################################
 -- ####################################################################################################################
@@ -218,18 +231,8 @@ function module:DataObjectCreated(name, element)
 	if elementStorage[name] then LUI:EmbedModule(element) end
 	if element.OnCreate then element:OnCreate(frame) end
 
-	if module:IsPositionSet(name) then
-		local anchor = module:GetAnchor("top")
-		frame:SetParent(anchor)
-		-- To remove "or 0" when nil issue is fixed.
-		frame.text:SetPoint("TOPLEFT", anchor, "TOPLEFT", db[name].X, db[name].Y or 0)
-	else
-		local anchor = module:GetAnchor("bottom")
-		frame:SetParent(anchor)
-		defaultPositions = defaultPositions + 1
-		local defaultX = -100 + (145 * defaultPositions)
-		frame.text:SetPoint("BOTTOMLEFT", anchor, "BOTTOMLEFT", defaultX, db[name].Y)
-	end
+	module:SetPosition(name, frame)
+
 	frame:SetAllPoints(frame.text)
 
 	frame.text:SetText(element.text)
@@ -305,4 +308,8 @@ function module:ToggleInfotext(name)
 		frame:Show()
 		db[name].Enable = true
 	end
+end
+
+function module:Refresh()
+	module:SetInfoPanels()
 end
