@@ -1689,83 +1689,96 @@ module.funcs = {
 			ROGUE = 5,
 			WARLOCK = 5,
 			DRUID = 5,
+			DEFAULT = 5,
 		}
 		-- The maximum of a ressource a given class can have
 		local MAX_COUNT = {
 			MAGE = 4,
 			MONK = 6,
 			PALADIN = 5,
-			ROGUE = 6,
+			ROGUE = 7,
 			WARLOCK = 5,
 			DRUID = 5,
+			DEFAULT = 5,
 		}
 		local r, g, b
 		if LUI.MONK then r, g, b = unpack(module.colors.chibar[1])
 		elseif LUI.PALADIN then r, g, b = unpack(module.colors.holypowerbar[1])
 		elseif LUI.MAGE then r, g, b = unpack(module.colors.arcanechargesbar[1])
 		elseif LUI.WARLOCK then r, g, b = unpack(module.colors.warlockbar.Shard1)
-		elseif LUI.ROGUE then r, g, b = unpack(module.colors.combopoints[1])
-		elseif LUI.DRUID then r, g, b = unpack(module.colors.combopoints[1])
+		else r, g, b = unpack(module.colors.combopoints[1])
 		end
 		
-		if not self.ClassPower then
-			self.ClassPower = CreateFrame("Frame", nil, self, "BackdropTemplate")
-			self.ClassPower:SetFrameLevel(6)
-			self.ClassPower:SetFrameStrata("BACKGROUND")
-			self.ClassPower:SetBackdrop({
+		local classPower = self.ClassPower
+		if not classPower then
+			classPower = CreateFrame("Frame", nil, self, "BackdropTemplate")
+			-- classPower:SetFrameLevel(6)
+			classPower:SetFrameStrata("BACKGROUND")
+			classPower:SetBackdrop({
 				bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+				edgeFile = glowTex, tile = false, tileSize = 0, edgeSize = 1,
 			})
-			self.ClassPower:SetBackdropColor(r * 0.4, g * 0.4, b * 0.4)
-			self.ClassPower.Count = BASE_COUNT[LUI.playerClass]
-			self.ClassPower.MaxCount = MAX_COUNT[LUI.playerClass]
+			classPower:SetBackdropColor(r * 0.35, g * 0.35, b * 0.35)
+			classPower:SetBackdropBorderColor(0, 0, 0)
+			classPower.bg = classPower:CreateTexture(nil, "BACKGROUND")
+			classPower.bg:SetTexture(Media:Fetch("statusbar", oufdb.ClassPowerBar.Texture))
 
-			for i = 1, MAX_COUNT[LUI.playerClass] do -- Always create frames for the max possible
-				self.ClassPower[i] = self.ClassPower:CreateTexture(nil, "ARTWORK")
+			classPower.multiplier = 0.35
+			classPower.Count = BASE_COUNT[LUI.playerClass] or BASE_COUNT.DEFAULT
+			classPower.MaxCount = MAX_COUNT[LUI.playerClass] or MAX_COUNT.DEFAULT
+
+			for i = 1, classPower.MaxCount do -- Always create frames for the max possible
+				classPower[i] = CreateFrame("StatusBar", nil, classPower, "BackdropTemplate")
+				classPower[i]:SetBackdrop(backdrop)
+				classPower[i]:SetBackdropColor(0.08, 0.08, 0.08)
 			end
+
+			self.ClassPower = classPower
 		end
 
 		local x = oufdb.ClassPowerBar.Lock and 0 or oufdb.ClassPowerBar.X
 		local y = oufdb.ClassPowerBar.Lock and 0.5 or oufdb.ClassPowerBar.Y
 
-		self.ClassPower:SetHeight(oufdb.ClassPowerBar.Height)
-		self.ClassPower:SetWidth(oufdb.ClassPowerBar.Width)
-		self.ClassPower:ClearAllPoints()
-		self.ClassPower:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
+		classPower:SetHeight(oufdb.ClassPowerBar.Height)
+		classPower:SetWidth(oufdb.ClassPowerBar.Width)
+		classPower:ClearAllPoints()
+		classPower:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
 	
 		local function checkPowers(event, level)
 			local pLevel = (event == "UNIT_LEVEL") and tonumber(level) or UnitLevel("player")
 			local count = BASE_COUNT[LUI.playerClass]
-			if LUI.MONK then
-				if select(4, GetTalentInfo(3, 1, 1)) then
-					count = count + 1
-				end
-			elseif LUI.ROGUE then
-				--Check for Strategem, increase CPoints to 6.
-				if select(4, GetTalentInfo(3, 2, 1)) then
-					count = 6
-				end
-			end
-			self.ClassPower.Count = count
+			--- @TODO: Revisit talents alterations.
+			-- if LUI.MONK then
+			-- 	if select(4, GetTalentInfo(3, 1, 1)) then
+			-- 		count = count + 1Power
+			-- 	end
+			-- elseif LUI.ROGUE then
+			-- 	--Check for Strategem, increase CPoints to 6.
+			-- 	if select(4, GetTalentInfo(3, 2, 1)) then
+			-- 		count = 6
+			-- 	end
+			-- end
+			classPower.Count = count
 
-			for i = 1, MAX_COUNT[LUI.playerClass] do
+			for i = 1, classPower.MaxCount do
+				local classPoint = classPower[i] ---@type StatusBar
 				if oufdb.ClassPowerBar.Texture == "Empty" then
-					self.ClassPower[i]:SetColorTexture(r, g, b)
+					classPoint:SetStatusBarColor(r, g, b)
 				else
-					self.ClassPower[i]:SetTexture(Media:Fetch("statusbar", oufdb.ClassPowerBar.Texture))
-					self.ClassPower[i]:SetDesaturated(true)
-					self.ClassPower[i]:SetVertexColor(r, g, b)
+					classPoint:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.ClassPowerBar.Texture))
+					classPoint:SetStatusBarColor(r, g, b)
 				end
-				self.ClassPower[i]:SetSize(((oufdb.ClassPowerBar.Width - 2*oufdb.ClassPowerBar.Padding) / self.ClassPower.Count), oufdb.ClassPowerBar.Height)
-				self.ClassPower[i]:ClearAllPoints()
+				classPoint:SetSize(((oufdb.ClassPowerBar.Width - 2*oufdb.ClassPowerBar.Padding) / classPower.Count), oufdb.ClassPowerBar.Height)
+				classPoint:ClearAllPoints()
 				if i == 1 then
-					self.ClassPower[i]:SetPoint("LEFT", self.ClassPower, "LEFT", 0, 0)
+					classPoint:SetPoint("LEFT", classPower, "LEFT", 0, 0)
 				else
-					self.ClassPower[i]:SetPoint("LEFT", self.ClassPower[i-1], "RIGHT", oufdb.ClassPowerBar.Padding, 0)
+					classPoint:SetPoint("LEFT", classPower[i-1], "RIGHT", oufdb.ClassPowerBar.Padding, 0)
 				end
 				--LUI:Print("ClassIcon["..i.."] Is Shown")
-				--self.ClassPower[i]:Show()
-				if i > self.ClassPower.Count then
-					self.ClassPower[i]:Hide()
+				--classPoint:Show()
+				if i > classPower.Count then
+					classPoint:Hide()
 				end
 			end
 		end
@@ -1774,7 +1787,16 @@ module.funcs = {
 		module:RegisterEvent("UNIT_LEVEL", checkPowers)
 		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkPowers)
 		module:RegisterEvent("PLAYER_TALENT_UPDATE", checkPowers)
-		self.ClassPower.UpdateTexture = checkPowers
+		classPower.UpdateTexture = checkPowers
+
+		function self.ClassPower.PostVisibility(element, enabled)
+			if enabled then
+				self.ClassPower:Show()
+			else
+				self.ClassPower:Hide()
+			end
+		end
+		
 	end,
 	AlternativePower = function(self, unit, oufdb)
 		if not self.AlternativePower then
@@ -2579,7 +2601,7 @@ local function SetStyle(self, unit, isSingle)
 			if oufdb.AdditionalPowerBar.Enable then module.funcs.AdditionalPower(self, unit, oufdb) end
 			if oufdb.TotemsBar.Enable then module.funcs.Totems(self, unit, oufdb) end
 		elseif LUI.MAGE then
-			--if oufdb.ClassPowerBar.Enable then module.funcs.ClassPower(self, unit, oufdb) end
+			if oufdb.ClassPowerBar.Enable then module.funcs.ClassPower(self, unit, oufdb) end
 		elseif LUI.PRIEST then
 			if oufdb.AdditionalPowerBar.Enable then module.funcs.AdditionalPower(self, unit, oufdb) end
 		end
