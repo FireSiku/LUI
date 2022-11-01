@@ -22,7 +22,7 @@ module.defaults = {
 			Buttons = true,
 			ButtonsBackground = true,
 			CenterBackground = true,
-			Background = true,
+			Background = false,
 		},
 		LowerArt = {
 			BlackLine = true,
