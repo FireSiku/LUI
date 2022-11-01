@@ -849,16 +849,16 @@ function module:SetFrames()
 		frame:SetBackdropBorderColor(0,0,0,0)
 	end
 
-	LUI.Navi.TopButtonBackground = LUI:CreateMeAFrame("Frame", nil, UIParent, 1024, 1024, 1, "BACKGROUND", 1, "TOP", UIParent, "TOP", 17, 8, 1)
+	LUI.Navi.TopButtonBackground = LUI:CreateMeAFrame("Frame", nil, UIParent, 1024, 1024, 1, "BACKGROUND", 1, "TOP", UIParent, "TOP", 17, -16, 1)
 	SetFrameBackdrop(LUI.Navi.TopButtonBackground, "top")
 	LUI.Navi.TopButtonBackground:Show()
 
-	LUI.Navi.CenterBackground = LUI:CreateMeAFrame("Frame", nil, UIParent, 1035, 1024, 1, "BACKGROUND", 0, "TOP", UIParent, "TOP", 17, 5, 1)
+	LUI.Navi.CenterBackground = LUI:CreateMeAFrame("Frame", nil, UIParent, 1035, 1024, 1, "BACKGROUND", 0, "TOP", UIParent, "TOP", 17, -17, 1)
 	SetFrameBackdrop(LUI.Navi.CenterBackground, "top_back")
 	LUI.Navi.CenterBackground:SetBackdropColor(unpack(color_top))
 	LUI.Navi.CenterBackground:Show()
 
-	LUI.Navi.CenterBackgroundAlternative = LUI:CreateMeAFrame("Frame", nil, UIParent, 1035, 1024, 1, "BACKGROUND", 0, "TOP", UIParent, "TOP", 17, 5, 1)
+	LUI.Navi.CenterBackgroundAlternative = LUI:CreateMeAFrame("Frame", nil, UIParent, 1035, 1024, 1, "BACKGROUND", 0, "TOP", UIParent, "TOP", 17, -17, 1)
 	SetFrameBackdrop(LUI.Navi.CenterBackgroundAlternative, "top_back_complete")
 	LUI.Navi.CenterBackgroundAlternative:SetBackdropColor(unpack(color_top))
 	LUI.Navi.CenterBackgroundAlternative:Hide()
@@ -927,7 +927,7 @@ function module:SetFrames()
 	end)
 
 -- Chat button.
-	LUI.Navi.Chat = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 126, 120, 1, "LOW", 1, "LEFT", LUI.Orb, "LEFT", -176, 73, 0)
+	LUI.Navi.Chat = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 126, 120, 1, "LOW", 1, "LEFT", LUI.Orb, "LEFT", -176, 49, 0)
 	LUI.Navi.Chat:SetBackdrop({
 		bgFile = directory.."button_left2",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -938,7 +938,7 @@ function module:SetFrames()
 	LUI.Navi.Chat:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.Navi.Chat:Show()
 
-	LUI.Navi.Chat.Hover = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 124, 120, 1, "LOW", 1, "LEFT", LUI.Orb, "LEFT", -176, 73, 0)
+	LUI.Navi.Chat.Hover = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 124, 120, 1, "LOW", 1, "LEFT", LUI.Orb, "LEFT", -176, 49, 0)
 	LUI.Navi.Chat.Hover:SetBackdrop({
 		bgFile = directory.."button_left2_hover",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -976,7 +976,7 @@ function module:SetFrames()
 	end)
 
 -- TPS button.
-	LUI.Navi.Tps = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 63, 67, 1, "LOW", 1, "LEFT", LUI.Orb, "LEFT", -74, 42, 0)
+	LUI.Navi.Tps = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 63, 67, 1, "LOW", 1, "LEFT", LUI.Orb, "LEFT", -74, 18, 0)
 	LUI.Navi.Tps:SetBackdrop({
 		bgFile = directory.."button_left1",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -987,7 +987,7 @@ function module:SetFrames()
 	LUI.Navi.Tps:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.Navi.Tps:Show()
 
-	LUI.Navi.Tps.Hover = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 63, 60, 1, "LOW", 1, "LEFT", LUI.Orb, "LEFT", -74, 40, 0)
+	LUI.Navi.Tps.Hover = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 63, 60, 1, "LOW", 1, "LEFT", LUI.Orb, "LEFT", -74, 16, 0)
 	LUI.Navi.Tps.Hover:SetBackdrop({
 		bgFile = directory.."button_left1_hover",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -1025,7 +1025,7 @@ function module:SetFrames()
 	end)
 
 -- DPS button.
-	LUI.Navi.Dps = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 63, 67, 1, "LOW", 1, "RIGHT", LUI.Orb, "RIGHT", 77, 45, 0)
+	LUI.Navi.Dps = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 63, 67, 1, "LOW", 1, "RIGHT", LUI.Orb, "RIGHT", 77, 21, 0)
 	LUI.Navi.Dps:SetBackdrop({
 		bgFile = directory.."button_right1",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -1036,7 +1036,7 @@ function module:SetFrames()
 	LUI.Navi.Dps:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.Navi.Dps:Show()
 
-	LUI.Navi.Dps.Hover = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 63, 60, 1, "LOW", 1, "RIGHT", LUI.Orb, "RIGHT", 77, 43, 0)
+	LUI.Navi.Dps.Hover = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 63, 60, 1, "LOW", 1, "RIGHT", LUI.Orb, "RIGHT", 77, 19, 0)
 	LUI.Navi.Dps.Hover:SetBackdrop({
 		bgFile = directory.."button_right1_hover",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -1075,7 +1075,7 @@ function module:SetFrames()
 
 
 -- Raid button.
-	LUI.Navi.Raid = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 126, 120, 1, "LOW", 1, "RIGHT", LUI.Orb, "RIGHT", 184, 71, 0)
+	LUI.Navi.Raid = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 126, 120, 1, "LOW", 1, "RIGHT", LUI.Orb, "RIGHT", 184, 47, 0)
 	LUI.Navi.Raid:SetBackdrop({
 		bgFile = directory.."button_right2",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -1086,7 +1086,7 @@ function module:SetFrames()
 	LUI.Navi.Raid:SetBackdropBorderColor(0, 0, 0, 0)
 	LUI.Navi.Raid:Show()
 
-	LUI.Navi.Raid.Hover = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 124, 120, 1, "LOW", 1, "RIGHT", LUI.Orb, "RIGHT", 182, 71, 0)
+	LUI.Navi.Raid.Hover = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 124, 120, 1, "LOW", 1, "RIGHT", LUI.Orb, "RIGHT", 182, 47, 0)
 	LUI.Navi.Raid.Hover:SetBackdrop({
 		bgFile = directory.."button_right2_hover",
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
