@@ -234,7 +234,11 @@ function module:DataObjectCreated(name, element)
 	frame:SetAllPoints(frame.text)
 
 	frame.text:SetText(element.text)
-	frame:Show()
+	if db[name].Enable then
+		frame:Show()
+	else
+		frame:Hide()
+	end
 
 	--This allow me to unregister callbacks based on element instead of filtering using the global one.
 	module:RegisterLDBCallback("LibDataBroker_AttributeChanged_"..name, "AttributeChanged")

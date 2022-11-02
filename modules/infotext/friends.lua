@@ -279,7 +279,7 @@ function element:DisplayBNFriends()
 				-- Name Column
 				local class = LUI:GetTokenFromClassName(game.className)
 				bnfriend:SetClassIcon(bnfriend.class, class)
-				local nameString = element:ColorText(game.characterName, class)
+				local nameString = module:ColorText(game.characterName, class)
 				bnfriend.name:SetText(format("%s%s - %s",statusString, btagString, nameString))
 
 				-- Level/Faction Column - Only displayed for WoW toons.
@@ -290,7 +290,7 @@ function element:DisplayBNFriends()
 				-- Zone Column - Also display Realm if they are on a different one.
 				local realmString = ""
 				if game.realmName ~= LUI.playerRealm then
-					realmString = element:ColorText(" - "..(game.realmName or ""), "GameText")
+					realmString = module:ColorText(" - "..(game.realmName or ""), "GameText")
 				end
 				bnfriend.zone:SetText(game.areaName..realmString)
 

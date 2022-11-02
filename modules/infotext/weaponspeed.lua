@@ -33,9 +33,9 @@ function module:SetWeaponSpeed()
     local f = CreateFrame("Frame")
     f:SetScript("OnEvent", function()
         local mspeed, ospeed = UnitAttackSpeed("player")
-        element.text = format("MH: %.2fs", tonumber(mspeed))
+        element.text = format("AS: %.2fs", tonumber(mspeed))
         if ospeed ~= nil and ospeed ~= 0 then
-            element.text = format("MH: %.2fs, OH: %.2fs", tonumber(mspeed), tonumber(ospeed))
+            element.text = format("AS: %.2fs / %.2fs", tonumber(mspeed), tonumber(ospeed))
         end
 
     end)
