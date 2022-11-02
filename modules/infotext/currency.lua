@@ -34,7 +34,8 @@ local getCurrencyInfo = C_CurrencyInfo.GetBackpackCurrencyInfo
 
 function element:GetCurrencyString()
 	wipe(currencyString)
-	for i = 1, MAX_WATCHED_TOKENS do
+	-- local numCurrencies = GetNumWatchedTokens()
+	for i = 1, GetNumWatchedTokens() do
 		local info = getCurrencyInfo(i)
 		if info.name and info.discovered then
 			currencyString[i] = format(CURRENCY_FORMAT, info.quantity, info.iconFielID, 0, 0)
@@ -46,9 +47,10 @@ end
 function element:UpdateCurrency()
 	--Make sure you are watching at least one currency
 	if getCurrencyInfo(1) then
-		element.text = element:GetCurrencyString()
+		-- element.text = element:GetCurrencyString()
+		element.text = format("Currencies: "..GetNumWatchedTokens())
 	else
-		element.text = CURRENCY
+		element.text = format("Currencies: 0")
 	end
 end
 
@@ -91,6 +93,7 @@ end
 
 function element:OnCreate()
 	element:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")
-	-- element:SecureHook("BackpackTokenFrame_Update", "UpdateCurrency")
+	element:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateCurrency")
+	-- element:HookFunction("BackpackTokenFrame:Update", "UpdateCurrency")
 	element:UpdateCurrency()
 end

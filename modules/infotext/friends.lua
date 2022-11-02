@@ -251,9 +251,13 @@ function element:DisplayBNFriends()
 	local levelColumnWidth, factionIconWidth, zoneColumnWidth = 0, 0, 0
 	infotip.bnIndex = 0 -- BNFriends
 	infotip.bcIndex = 0 -- Friend Broadcasts
+	local total, bnetOnline, fav, favOnline = BNGetNumFriends()
+	local favOffset = fav - favOnline
 
-	for i = 1, BNGetNumFriends() do
-		local acc = C_BattleNet.GetFriendAccountInfo(i)
+	for i = 1, bnetOnline do
+		-- Since offline favorites show before other online friends, we need to offset to skip over those
+		local offset = (i > favOnline) and favOffset or 0
+		local acc = C_BattleNet.GetFriendAccountInfo(i+offset)
 		local game = acc.gameAccountInfo
 
 		local btagString = format("%s%s|r", FRIENDS_BNET_NAME_COLOR_CODE, acc.accountName)
@@ -263,15 +267,17 @@ function element:DisplayBNFriends()
 			infotip.bnIndex = infotip.bnIndex + 1
 			local bnfriend = element:CreateBNFriend(infotip.bnIndex)
 			bnfriend.unit = game.characterName
-			bnfriend.accountID = acc.accountID
+			bnfriend.accountID = acc.bnetAccountID
 			bnfriend.accountName = acc.accountName
 			bnfriend.client = game.clientProgram
 			bnfriend.note:SetText(acc.note or "")
+			bnfriend.lastOnline = acc.lastOnlineTime
+			bnfriend.isOnline = acc.isOnline
 
 			-- WoW BN Friends have additional information about their currently active toon.
 			if game.clientProgram == BNET_CLIENT_WOW then
 				-- Name Column
-				class = LUI:GetTokenFromClassName(game.className)
+				local class = LUI:GetTokenFromClassName(game.className)
 				bnfriend:SetClassIcon(bnfriend.class, class)
 				local nameString = element:ColorText(game.characterName, class)
 				bnfriend.name:SetText(format("%s%s - %s",statusString, btagString, nameString))
@@ -284,9 +290,9 @@ function element:DisplayBNFriends()
 				-- Zone Column - Also display Realm if they are on a different one.
 				local realmString = ""
 				if game.realmName ~= LUI.playerRealm then
-					realmString = element:ColorText(" - "..(game.realmName), "GameText")
+					realmString = element:ColorText(" - "..(game.realmName or ""), "GameText")
 				end
-				bnfriend.zone:SetText(zone..realmString)
+				bnfriend.zone:SetText(game.areaName..realmString)
 
 				--Hide GameText, only used for other clients.
 				bnfriend.gameText:Hide()
@@ -326,7 +332,7 @@ function element:DisplayBNFriends()
 			bnfriend.hasBroadcast = true
 			infotip.bcIndex = infotip.bcIndex + 1
 			bnfriend.broadcast = element:CreateFriendBroadcast(infotip.bcIndex)
-			bnfriend.broadcast.text:SetText(acc.broadcast)
+			bnfriend.broadcast.text:SetText(acc.customMessage)
 			-- Adjust height if string gets wrapped.
 			if bnfriend.broadcast:GetHeight() < bnfriend.broadcast.text:GetStringHeight() then
 			-- 3 seems to be the difference between StringHeight and Height for non-wrapped lines

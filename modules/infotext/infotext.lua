@@ -151,9 +151,7 @@ function module:SetInfoPanels()
 		bottomAnchor:SetFrameStrata("HIGH")
 		bottomAnchor:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 0, 4)
 	end
-	topAnchor:Hide()
 	topAnchor:Show()
-	bottomAnchor:Hide()
 	bottomAnchor:Show()
 	module.topAnchor = topAnchor
 	module.bottomAnchor = bottomAnchor
@@ -193,13 +191,12 @@ end
 
 function module:SetPosition(name, frame)
 	if module:IsPositionSet(name) then
-		-- To remove "or 0" when nil issue is fixed.
-		frame.text:SetPoint(db[name].Point, UIParent, db[name].Point, db[name].X, db[name].Y or 5)
+		frame.text:SetPoint(db[name].Point, UIParent, db[name].Point, db[name].X, db[name].Y)
 	else
 		local anchor = module:GetAnchor("bottom")
 		defaultPositions = defaultPositions + 1
-		local defaultX = -100 + (145 * defaultPositions)
-		frame.text:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", defaultX, db[name].Y or 5)
+		local defaultX = -25 + (50 * defaultPositions)
+		frame.text:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", defaultX, 5)
 	end
 end
 -- ####################################################################################################################
@@ -232,6 +229,7 @@ function module:DataObjectCreated(name, element)
 	if element.OnCreate then element:OnCreate(frame) end
 
 	module:SetPosition(name, frame)
+	-- module:SetLDBPosition(name, frame)
 
 	frame:SetAllPoints(frame.text)
 
@@ -311,5 +309,13 @@ function module:ToggleInfotext(name)
 end
 
 function module:Refresh()
-	module:SetInfoPanels()
+    defaultPositions = 0
+    for name, obj in module:IterateModules() do
+        module:SetPosition(name, obj)
+        if db[name].Enable then
+            obj:Show()
+        else
+            obj:Hide()
+        end
+    end
 end

@@ -214,15 +214,9 @@ end
 --Button4 to toggle notes.
 function element.OnClick(frame_, button)
 	-- If you arent in a guild, toggle the guild finder.
-	if not IsInGuild() then
-		_G.ToggleGuildFrame()
-	elseif button == "RightButton" then
-		element:ToggleGuildTab(GUILD_TAB_INFO)
-	elseif button == "Button4" then
-		--db.showNotes = not db.showNotes
-		--tooltip:Update()
+	if button == "RightButton" then
 	else
-		element:ToggleGuildTab(GUILD_TAB_ROSTER)
+		_G.ToggleGuildFrame()
 	end
 end
 
