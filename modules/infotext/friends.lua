@@ -14,7 +14,7 @@ local element = module:NewElement("Friends", "AceEvent-3.0")
 
 -- local copies
 local format, max = format, math.max
-local C_FriendList, C_PartyInfo = _G.C_FriendList, _G.C_PartyInfo
+local C_FriendList, C_PartyInfo, C_BattleNet = _G.C_FriendList, _G.C_PartyInfo, _G.C_BattleNet
 local FriendsFrame_BattlenetInvite = _G.FriendsFrame_BattlenetInvite
 local BNet_GetClientTexture = _G.BNet_GetClientTexture
 local ToggleFriendsFrame = _G.ToggleFriendsFrame
@@ -228,8 +228,8 @@ end
 -- Boolean function to see if a given client for BNFriend should be shown.
 -- Note: This could allow for not filtering out app clients in the future.
 function element:IsBNClientShown(i, index)
-	local numAccounts = BNGetNumFriendGameAccounts(i)
-	local _, _, client = BNGetFriendGameAccountInfo(i, index)
+	local numAccounts = C_BattleNet.GetFriendNumGameAccounts(i)
+	local _, _, client = C_BattleNet.GetFriendGameAccountInfo(i, index)
 
 	-- Friend only has one account
 	if numAccounts == 1 then return true end
@@ -238,7 +238,7 @@ function element:IsBNClientShown(i, index)
 	if (numAccounts > 1 and client ~= BNET_CLIENT_APP and client ~= BNET_CLIENT_MOBILE) then return true end
 
 	--Previous check filters out people connected on mobile and app at same time, or connected on two apps.
-	local _, _, nextClient = BNGetFriendGameAccountInfo(i, index + 1)
+	local _, _, nextClient = C_BattleNet.GetFriendGameAccountInfo(i, index + 1)
 	if numAccounts == 2 and client == BNET_CLIENT_APP and
 	    (nextClient == BNET_CLIENT_MOBILE or nextClient == BNET_CLIENT_APP) then
 		return true
@@ -251,85 +251,88 @@ function element:DisplayBNFriends()
 	local levelColumnWidth, factionIconWidth, zoneColumnWidth = 0, 0, 0
 	infotip.bnIndex = 0 -- BNFriends
 	infotip.bcIndex = 0 -- Friend Broadcasts
+	local total, bnetOnline, fav, favOnline = BNGetNumFriends()
+	local favOffset = fav - favOnline
 
-	for i = 1, onlineBNFriends do
-		local accountID, accountName, _, _, _, _, _, _, _, isAFK, isDND, broadcast, note = BNGetFriendInfo(i)
-		local btagString = format("%s%s|r", FRIENDS_BNET_NAME_COLOR_CODE, accountName)
-		local statusString = element:GetBNFriendStatusString(isAFK, isDND)
+	for i = 1, bnetOnline do
+		-- Since offline favorites show before other online friends, we need to offset to skip over those
+		local offset = (i > favOnline) and favOffset or 0
+		local acc = C_BattleNet.GetFriendAccountInfo(i+offset)
+		local game = acc.gameAccountInfo
 
-		local numAccounts = BNGetNumFriendGameAccounts(i)
-		-- Problem: If a friend has 2+ accounts that are all only signed into the app, they get ignored and shit gets fucked.
+		local btagString = format("%s%s|r", FRIENDS_BNET_NAME_COLOR_CODE, acc.accountName)
+		local statusString = element:GetBNFriendStatusString(acc.isAFK, acc.isDND)
 
-		for accountIndex = 1, numAccounts do
-			local _, charName, client, realmName, _, faction, _, class, _, zone, level, gameText = BNGetFriendGameAccountInfo(i, accountIndex)
-			if element:IsBNClientShown(i, accountIndex) then
-				infotip.bnIndex = infotip.bnIndex + 1
-				local bnfriend = element:CreateBNFriend(infotip.bnIndex)
-				bnfriend.unit = charName
-				bnfriend.accountID = accountID
-				bnfriend.accountName = accountName
-				bnfriend.client = client
-				bnfriend.note:SetText(note or "")
+		-- if element:IsBNClientShown(i, accountIndex) then
+			infotip.bnIndex = infotip.bnIndex + 1
+			local bnfriend = element:CreateBNFriend(infotip.bnIndex)
+			bnfriend.unit = game.characterName
+			bnfriend.accountID = acc.bnetAccountID
+			bnfriend.accountName = acc.accountName
+			bnfriend.client = game.clientProgram
+			bnfriend.note:SetText(acc.note or "")
+			bnfriend.lastOnline = acc.lastOnlineTime
+			bnfriend.isOnline = acc.isOnline
 
-				-- WoW BN Friends have additional information about their currently active toon.
-				if client == BNET_CLIENT_WOW then
-					-- Name Column
-					class = LUI:GetTokenFromClassName(class)
-					bnfriend:SetClassIcon(bnfriend.class, class)
-					local nameString = element:ColorText(charName, class)
-					bnfriend.name:SetText(format("%s%s - %s",statusString, btagString, nameString))
+			-- WoW BN Friends have additional information about their currently active toon.
+			if game.clientProgram == BNET_CLIENT_WOW then
+				-- Name Column
+				local class = LUI:GetTokenFromClassName(game.className)
+				bnfriend:SetClassIcon(bnfriend.class, class)
+				local nameString = element:ColorText(game.characterName, class)
+				bnfriend.name:SetText(format("%s%s - %s",statusString, btagString, nameString))
 
-					-- Level/Faction Column - Only displayed for WoW toons.
-					bnfriend.level:SetText(level or "")
-					bnfriend.level:SetTextColor(LUI:GetDifficultyColor(level))
-					element:SetFactionIcon(bnfriend, faction)
+				-- Level/Faction Column - Only displayed for WoW toons.
+				bnfriend.level:SetText(game.characterLevel or "")
+				bnfriend.level:SetTextColor(LUI:GetDifficultyColor(game.characterLevel))
+				element:SetFactionIcon(bnfriend, game.factionName)
 
-					-- Zone Column - Also display Realm if they are on a different one.
-					local realmString = ""
-					if realmName ~= LUI.playerRealm then
-						realmString = element:ColorText(" - "..realmName, "GameText")
-					end
-					bnfriend.zone:SetText(zone..realmString)
-
-					--Hide GameText, only used for other clients.
-					bnfriend.gameText:Hide()
-					bnfriend.faction:Show()
-					bnfriend.level:Show()
-					bnfriend.zone:Show()
-				else
-					bnfriend.class:SetTexture(BNet_GetClientTexture(client))
-					bnfriend.class:SetTexCoord(0.2, 0.8, 0.2, 0.8)
-					-- if no character name is given, it will be an empty string instead of nil.
-					if charName and not charName == "" then
-						local nameString = FRIENDS_OTHER_NAME_COLOR_CODE..charName
-						bnfriend.name:SetText(format("%s%s - %s", statusString, btagString, nameString))
-					else
-						bnfriend.name:SetText(format("%s%s", statusString, btagString))
-					end
-					bnfriend.gameText:SetText(gameText or "")
-					-- Hide wow-centric fontstrings
-					bnfriend.level:Hide()
-					bnfriend.faction:Hide()
-					bnfriend.zone:Hide()
-					bnfriend.gameText:Show()
+				-- Zone Column - Also display Realm if they are on a different one.
+				local realmString = ""
+				if game.realmName ~= LUI.playerRealm then
+					realmString = element:ColorText(" - "..(game.realmName or ""), "GameText")
 				end
+				bnfriend.zone:SetText(game.areaName..realmString)
 
-				nameColumnWidth  = max(nameColumnWidth,  bnfriend.name:GetStringWidth())
-				levelColumnWidth = max(levelColumnWidth, bnfriend.level:GetStringWidth())
-				zoneColumnWidth  = max(zoneColumnWidth,  bnfriend.zone:GetStringWidth())
-				noteColumnWidth  = max(noteColumnWidth,  bnfriend.note:GetStringWidth())
-				classIconWidth   = max(classIconWidth,   bnfriend.class:GetWidth())
-				gameColumnWidth  = max(gameColumnWidth,  bnfriend.gameText:GetStringWidth())
+				--Hide GameText, only used for other clients.
+				bnfriend.gameText:Hide()
+				bnfriend.faction:Show()
+				bnfriend.level:Show()
+				bnfriend.zone:Show()
+			else
+				-- bnfriend.class:SetTexture(BNet_GetClientTexture(client))
+				bnfriend.class:SetTexCoord(0.2, 0.8, 0.2, 0.8)
+				-- if no character name is given, it will be an empty string instead of nil.
+				if game.characterName and not game.characterName == "" then
+					local nameString = FRIENDS_OTHER_NAME_COLOR_CODE..(game.characterName)
+					bnfriend.name:SetText(format("%s%s - %s", statusString, btagString, nameString))
+				else
+					bnfriend.name:SetText(format("%s%s", statusString, btagString))
+				end
+				bnfriend.gameText:SetText(game.richPresence or "")
+				-- Hide wow-centric fontstrings
+				bnfriend.level:Hide()
+				bnfriend.faction:Hide()
+				bnfriend.zone:Hide()
+				bnfriend.gameText:Show()
 			end
-		end
+
+			nameColumnWidth  = max(nameColumnWidth,  bnfriend.name:GetStringWidth())
+			levelColumnWidth = max(levelColumnWidth, bnfriend.level:GetStringWidth())
+			zoneColumnWidth  = max(zoneColumnWidth,  bnfriend.zone:GetStringWidth())
+			noteColumnWidth  = max(noteColumnWidth,  bnfriend.note:GetStringWidth())
+			classIconWidth   = max(classIconWidth,   bnfriend.class:GetWidth())
+			gameColumnWidth  = max(gameColumnWidth,  bnfriend.gameText:GetStringWidth())
+		-- end
+
 
 		local bnfriend = infotip.BNFriends[infotip.bnIndex]
 		--Make sure to only display broaawdcast once per friend.
-		if broadcast and broadcast ~= "" then
+		if acc.broadcast and acc.broadcast ~= "" then
 			bnfriend.hasBroadcast = true
 			infotip.bcIndex = infotip.bcIndex + 1
 			bnfriend.broadcast = element:CreateFriendBroadcast(infotip.bcIndex)
-			bnfriend.broadcast.text:SetText(broadcast)
+			bnfriend.broadcast.text:SetText(acc.customMessage)
 			-- Adjust height if string gets wrapped.
 			if bnfriend.broadcast:GetHeight() < bnfriend.broadcast.text:GetStringHeight() then
 			-- 3 seems to be the difference between StringHeight and Height for non-wrapped lines

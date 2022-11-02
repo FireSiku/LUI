@@ -8,6 +8,7 @@
 
 ---@type string, LUIAddon
 local _, LUI = ...
+local L = LUI.L
 
 ---@class InfotextModule : LUIModule
 local module = LUI:NewModule("Infotext", "AceHook-3.0")
@@ -22,10 +23,7 @@ module.defaults = {
 			Enable = true,
 			Y = 0,
 			X = 0,
-			InfoPanel = {
-				Horizontal = "Left",
-				Vertical = "Top",
-			},
+			Point = "TOPLEFT",
 			Color = { r = 1, g = 1, b = 1, a = 1, },
 			Font = "vibroceb",
 			FontSize = 12,
@@ -38,7 +36,6 @@ module.defaults = {
 			Title  = { r = 0.4, g = 0.8, b = 1  , },
 			Hint   = { r = 0  , g = 1  , b = 0  , },
 			Status = { r = 0.7, g = 0.7, b = 0.7, },
-			
 			Panels = { r = 0.12, g = 0.58,  b = 0.89, a = 0.5, t = "Class", },
 		},
 		Fonts = {
@@ -47,10 +44,16 @@ module.defaults = {
 		},
 		-- Settings from each elements:
 		Bags = {
+			Enable = true,
+			Y = 0,
 			X = 150,
+			Point = "TOPLEFT",
 		},
 		Clock = {
-			X = 1660,
+			Enable = true,
+			Y = 0,
+			X = -25,
+			Point = "TOPRIGHT",
 			instanceDifficulty = true,
 			showSavedRaids = true,
 			showWorldBosses = true,
@@ -58,29 +61,47 @@ module.defaults = {
 			Time24 = false,
 		},
 		Currency = {
-			Enable = false,
+			Enable = true,
+			Y = 5,
 			X = 180,
+			Point = "BOTTOMLEFT",
 			Display = 0,
 			DisplayLimit = 40,
 		},
-		DualSpec = {
-			X = 1000,
-			Y = -800,
+		Dualspec = {
+			Enable = true,
+			Y = 0,
+			X = -625,
+			Point = "TOPRIGHT",
 			lootSpec = true,
 			ShowSpentPoints = true,
-			InfoPanel = {
-				Vertical = "Bottom",
-			},
 		},
 		Durability = {
-			X = 300,
+			Enable = true,
+			Y = 0,
+			X = 400,
+			Point = "TOPLEFT",
+		},
+		EquipmentSets = {
+			Enable = false,
+			Text = "Equipped Set: ",
+			SetName = "",
+			Y = 5,
+			X = -25,
+			Point = "BOTTOMRIGHT",
 		},
 		FPS = {
-			X = 450,
+			Enable = true,
+			Y = 0,
+			X = 550,
+			Point = "TOPLEFT",
 			MSValue = "Both",
 		},
 		Friends = {
-			X = 1350,
+			Enable = true,
+			Y = 0,
+			X = -350,
+			Point = "TOPRIGHT",
 			showTotal = false,
 			hideApp = true,
 			Colors = {
@@ -95,14 +116,20 @@ module.defaults = {
 			ShowNotes = true,
 		},
 		Gold = {
+			Enable = true,
+			Y = 0,
 			X = 15,
+			Point = "TOPLEFT",
 			showRealm = false,
 			useBlizzard = false,
 			showCopper = false,
 			coloredSymbols = false,
 		},
 		Guild = {
-			X = 1250,
+			Enable = true,
+			Y = 0,
+			X = -475,
+			Point = "TOPRIGHT",
 			showTotal = false,
 			hideRealm = true,
 			hideNotes = false,
@@ -115,53 +142,42 @@ module.defaults = {
 			},
 		},
 		Instance = {
-			Enable = false,
-			X = 60,
-			InfoPanel = {
-				Vertical = "Bottom",
-			},
-		},
-		Memory = {
-			X = 600,
-		},
-		MoveSpeed = {
-			X = -590,
-			InfoPanel = {
-				Horizontal = "Right",
-				Vertical = "Top",
-			},
-		},
-		WeaponInfo = {
-			Enable = false,
-			X = -350,
-			InfoPanel = {
-				Horizontal = "Right",
-				Vertical = "Bottom",
-			},
-		},
-		EquipmentSets = {
-			Enable = false,
-			Text = "Equipped Set: ",
-			X = -225,
-			InfoPanel = {
-				Horizontal = "Right",
-				Vertical = "Bottom",
-			},
+			Enable = true,
+			Y = 5,
+			X = 325,
+			Point = "BOTTOMLEFT",
 		},
 		LootSpec = {
-			Enable = false,
+			Enable = true,
 			Text = "Loot Spec: ",
-			X = -75,
-			InfoPanel = {
-				Horizontal = "Right",
-				Vertical = "Bottom",
-			},
+			Y = 0,
+			X = -725,
+			Point = "TOPRIGHT",
 		},
 		Mail = {
-			Enable = false,
+			Enable = true,
 			NewIndic = " *",
-			X = 275,
 			Y = 0,
+			X = 275,
+			Point = "TOPLEFT",
+		},
+		Memory = {
+			Enable = true,
+			Y = 0,
+			X = 700,
+			Point = "TOPLEFT",
+		},
+		MoveSpeed = {
+			Enable = false,
+			Y = 5,
+			X = -300,
+			Point = "BOTTOMLEFT",
+		},
+		WeaponSpeed = {
+			Enable = false,
+			Y = 5,
+			X = -250,
+			Point = "BOTTOMRIGHT",
 		},
 	},
 	--Keeps tracks of characters on current realm
@@ -170,7 +186,7 @@ module.defaults = {
 			Alliance = {},
 			Horde = {},
 		 	Neutral = {},
-		}
+		},
 	},
 	--Keep tracks of server totals
 	global = {

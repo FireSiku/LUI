@@ -1,4 +1,4 @@
--- EquipmentSets Infotext
+-- WeaponSpeed Infotext
 
 -- ####################################################################################################################
 -- ##### Setup and Locals #############################################################################################
@@ -10,7 +10,10 @@ local L = LUI.L
 
 ---@type InfotextModule
 local module = LUI:GetModule("Infotext")
-local element = module:NewElement("EquipmentSets")
+local element = module:NewElement("WeaponSpeed")
+
+local total
+local WeaponSpeed = {}
 
 -- ####################################################################################################################
 -- ##### Default Settings #############################################################################################
@@ -20,32 +23,25 @@ local element = module:NewElement("EquipmentSets")
 --     profile = {
 --     }
 -- }
--- module:MergeDefaults(element.defaults, "EquipmentSets")
+-- module:MergeDefaults(element.defaults, "WeaponSpeed")
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
 
-function module:SetEquipmentSets(setID)
+function module:SetWeaponSpeed()
     local f = CreateFrame("Frame")
-    f:SetScript("OnEvent", function(self, event, addon, ...)
-        local db = module.db.profile.EquipmentSets
-        for set = 1, C_EquipmentSet.GetNumEquipmentSets() do
-            local name, setID, isEquipped = C_EquipmentSet.GetEquipmentSetInfo(set - 1)
-            if (event=="EQUIPMENT_SWAP_FINISHED") then
-                local setID = select(1,...)
-                local name = C_EquipmentSet.GetEquipmentSetInfo(setID)
-                element.text = format(db.Text..name)
-                db.SetName = (db.Text..name)            -- saves variable for next world load
-            elseif (event=="PLAYER_ENTERING_WORLD") and db.SetName ~= "" then
-                element.text = format(db.SetName or "Equipped Set:")
-            else
-                element.text = format("No Equipped Set")
-            end
+    f:SetScript("OnEvent", function()
+        local mspeed, ospeed = UnitAttackSpeed("player")
+        element.text = format("MH: %.2fs", tonumber(mspeed))
+        if ospeed ~= nil and ospeed ~= 0 then
+            element.text = format("MH: %.2fs, OH: %.2fs", tonumber(mspeed), tonumber(ospeed))
         end
+
     end)
+    f:RegisterEvent("UNIT_ATTACK_SPEED")
     f:RegisterEvent("PLAYER_ENTERING_WORLD")
-    f:RegisterEvent("EQUIPMENT_SWAP_FINISHED", SetEquipmentSets)
+    -- f:RegisterEvent("EQUIPMENT_SWAP_FINISHED")
 end
 
 -- ####################################################################################################################
@@ -60,6 +56,5 @@ end
 -- ####################################################################################################################
 
 function element:OnCreate()
-    element.text = format("Equipped Set:")
-    module:SetEquipmentSets()
+    module:SetWeaponSpeed()
 end
