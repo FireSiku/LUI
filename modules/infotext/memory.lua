@@ -14,10 +14,11 @@ local element = module:NewElement("Memory")
 
 local format = format
 local collectgarbage = collectgarbage
-local GetNumAddOns, GetAddOnInfo = _G.GetNumAddOns, _G.GetAddOnInfo
 local UpdateAddOnMemoryUsage = _G.UpdateAddOnMemoryUsage
 local GetAddOnMemoryUsage = _G.GetAddOnMemoryUsage
 local IsAddOnLoaded = _G.IsAddOnLoaded
+local GetNumAddOns = _G.GetNumAddOns
+local GetAddOnInfo = _G.GetAddOnInfo
 
 local totalMemory = 0
 local addonMemory = {} --contains addonTitle, memoryUsage
@@ -45,7 +46,6 @@ local function formatMemory(kb)
 end
 
 function element:UpdateMemory()
-	UpdateAddOnMemoryUsage()
 	totalMemory = 0
 
 	for i = 1, GetNumAddOns() do
@@ -65,7 +65,10 @@ function element:UpdateMemory()
 	element:UpdateTooltip()
 end
 
-function element.OnClick(frame_, button_)
+function element.OnClick(frame, button)
+	if button == "RightButton" then
+		UpdateAddOnMemoryUsage()
+	end
 	collectgarbage("collect")
 	element:UpdateMemory()
 end

@@ -12,17 +12,8 @@ local L = LUI.L
 local module = LUI:GetModule("Infotext")
 local element = module:NewElement("Mail")
 
-local GetInboxNumItems, HasNewMail = _G.GetInboxNumItems, _G.HasNewMail
-
--- ####################################################################################################################
--- ##### Default Settings #############################################################################################
--- ####################################################################################################################
-
--- element.defaults = {
---     profile = {
---     }
--- }
--- module:MergeDefaults(element.defaults, "Mail")
+local GetInboxNumItems = _G.GetInboxNumItems
+local HasNewMail = _G.HasNewMail
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
@@ -36,8 +27,8 @@ function module:SetMail()
         local hasNew = HasNewMail()
         element.text = format("Mail: "..numMail.."/"..totalItems) .. ( hasNew and db.NewIndic or "" )
     end)
-    f:RegisterEvent("MAIL_INBOX_UPDATE", InboxUpdate)
-    f:RegisterEvent("UPDATE_PENDING_MAIL", InboxUpdate)
+    f:RegisterEvent("MAIL_INBOX_UPDATE")
+    f:RegisterEvent("UPDATE_PENDING_MAIL")
 
 end
 

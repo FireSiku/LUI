@@ -12,6 +12,11 @@ local L = LUI.L
 local module = LUI:GetModule("Infotext")
 local element = module:NewElement("LootSpec", "AceEvent-3.0")
 
+local GetSpecializationInfoByID = _G.GetSpecializationInfoByID
+local GetSpecializationInfo = _G.GetSpecializationInfo
+local GetLootSpecialization = _G.GetLootSpecialization
+local GetSpecialization = _G.GetSpecialization
+
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
@@ -19,11 +24,12 @@ local element = module:NewElement("LootSpec", "AceEvent-3.0")
 function element:SetLootSpec()
     local db = module.db.profile
     local lootspec = GetLootSpecialization()
+    local curspec = GetSpecialization()
+    local role
         if lootspec == 0 then
-            local curspec = GetSpecialization()
-            _, name, _, _, role = GetSpecializationInfo(curspec)
+            _, _, _, _, role = GetSpecializationInfo(curspec)
         else
-            _, name, _, _, role = GetSpecializationInfoByID(lootspec)
+            _, _, _, _, role = GetSpecializationInfoByID(lootspec)
         end
         element.text = string.format((db.LootSpec.Text).." "..role)
 end
