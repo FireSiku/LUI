@@ -72,7 +72,6 @@ local font2 = mediaPath..[=[Fonts\ARIALN.ttf]=]
 local font3 = mediaPath..[=[fonts\Prototype.ttf]=]
 
 local highlight = true
-local entering
 
 local cornerAuras = {
 	WARRIOR = {
@@ -223,34 +222,23 @@ local function OverrideHealth(self, event, unit, powerType)
 	local _, pToken = UnitClass(unit)
 	local color = module.colors.class[pToken] or {0.5, 0.5, 0.5}
 
-	if unit == "player" and entering == true then
-		if module.db.profile.player.HealthBar.Color == "By Class" then
+	if health.color == "By Class" then
+		if UnitIsPlayer(unit) then
 			health:SetStatusBarColor(unpack(color))
-		elseif module.db.profile.player.HealthBar.Color == "Individual" then
-			local indColor = module.db.profile.player.HealthBar.IndividualColor
-			health:SetStatusBarColor(indColor.r, indColor.g, indColor.b)
 		else
-			health:SetStatusBarColor(oUF.ColorGradient(min, max, module.colors.smooth()))
-		end
-	else
-		if health.color == "By Class" then
-			if UnitIsPlayer(unit) then
-				health:SetStatusBarColor(unpack(color))
+			local reaction = UnitReaction("player", unit)
+			if reaction and reaction < 4 then
+				health:SetStatusBarColor(unpack(module.db.profile.Colors.Misc["Hostile"]))
+			elseif reaction and reaction == 4 then
+				health:SetStatusBarColor(unpack(module.db.profile.Colors.Misc["Neutral"]))
 			else
-				local reaction = UnitReaction("player", unit)
-				if reaction and reaction < 4 then
-					health:SetStatusBarColor(unpack(module.db.profile.Colors.Misc["Hostile"]))
-				elseif reaction and reaction == 4 then
-					health:SetStatusBarColor(unpack(module.db.profile.Colors.Misc["Neutral"]))
-				else
-					health:SetStatusBarColor(unpack(module.db.profile.Colors.Misc["Friendly"]))
-				end
+				health:SetStatusBarColor(unpack(module.db.profile.Colors.Misc["Friendly"]))
 			end
-		elseif health.color == "Individual" then
-			health:SetStatusBarColor(health.colorIndividual.r, health.colorIndividual.g, health.colorIndividual.b)
-		else
-			health:SetStatusBarColor(oUF.ColorGradient(min, max, module.colors.smooth()))
 		end
+	elseif health.color == "Individual" then
+		health:SetStatusBarColor(health.colorIndividual.r, health.colorIndividual.g, health.colorIndividual.b)
+	else
+		health:SetStatusBarColor(oUF.ColorGradient(min, max, module.colors.smooth()))
 	end
 
 	if health.colorTapping and UnitIsTapDenied and UnitIsTapDenied(unit) then health:SetStatusBarColor(unpack(module.db.profile.Colors.Misc["Tapped"])) end
@@ -414,24 +402,14 @@ local function OverridePower(self, event, unit)
 	local color2 = module.colors.power[pType] or {0.5, 0.5, 0.5}
 	-- local _, r, g, b = UnitAlternatePowerTextureInfo(unit, 2)
 
-	if unit == "player" and entering == true then
-		if module.db.profile.player.PowerBar.Color == "By Class" then
-			power:SetStatusBarColor(unpack(color))
-		elseif module.db.profile.player.PowerBar.Color == "Individual" then
-			power:SetStatusBarColor(module.db.profile.player.PowerBar.IndividualColor.r, module.db.player.PowerBar.IndividualColor.g, module.db.player.PowerBar.IndividualColor.b)
-		else
-			power:SetStatusBarColor(unpack(color2))
-		end
+	if power.color == "By Class" then
+		power:SetStatusBarColor(unpack(color))
+	elseif power.color == "Individual" then
+		power:SetStatusBarColor(power.colorIndividual.r, power.colorIndividual.g, power.colorIndividual.b)
+	-- elseif unit == unit:match("boss%d") and select(7, UnitAlternatePowerInfo(unit)) then
+	-- 	power:SetStatusBarColor(r, g, b)
 	else
-		if power.color == "By Class" then
-			power:SetStatusBarColor(unpack(color))
-		elseif power.color == "Individual" then
-			power:SetStatusBarColor(power.colorIndividual.r, power.colorIndividual.g, power.colorIndividual.b)
-		-- elseif unit == unit:match("boss%d") and select(7, UnitAlternatePowerInfo(unit)) then
-		-- 	power:SetStatusBarColor(r, g, b)
-		else
-			power:SetStatusBarColor(unpack(color2))
-		end
+		power:SetStatusBarColor(unpack(color2))
 	end
 
 	local r, g, b = power:GetStatusBarColor()
@@ -1824,7 +1802,7 @@ module.funcs = {
 			end)
 			self.AlternativePower:SetScript("OnHide", self.AlternativePower.SetPosition)
 
-			self.AlternativePower.Text = SetFontString(self.AlternativePower, Media:Fetch("font", module.db.profile.player.AlternativePowerText.Font), module.db.player.AlternativePowerText.Size, module.db.player.AlternativePowerText.Outline)
+			self.AlternativePower.Text = SetFontString(self.AlternativePower, Media:Fetch("font", module.db.profile.player.AlternativePowerText.Font), module.db.profile.player.AlternativePowerText.Size, module.db.profile.player.AlternativePowerText.Outline)
 		end
 
 		self.AlternativePower:ClearAllPoints()
@@ -1833,7 +1811,7 @@ module.funcs = {
 				self.AlternativePower:SetPoint("TOPLEFT", self.Power, "BOTTOMLEFT", 0, -2)
 				self.AlternativePower:SetPoint("TOPRIGHT", self.Power, "BOTTOMRIGHT", 0, -2)
 			else
-				self.AlternativePower:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.profile.player.AlternativePowerBar.X, module.db.player.AlternativePowerBar.Y)
+				self.AlternativePower:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.profile.player.AlternativePowerBar.X, module.db.profile.player.AlternativePowerBar.Y)
 			end
 		else
 			self.AlternativePower:SetPoint("TOPLEFT", oUF_LUI_player.AlternativePower, "TOPLEFT", 0, 0)
@@ -1852,9 +1830,9 @@ module.funcs = {
 		self.AlternativePower.color = module.db.profile.player.AlternativePowerBar.Color
 		self.AlternativePower.colorIndividual = module.db.profile.player.AlternativePowerBar.IndividualColor
 		
-		self.AlternativePower.Text:SetFont(Media:Fetch("font", module.db.profile.player.AlternativePowerText.Font), module.db.player.AlternativePowerText.Size, module.db.player.AlternativePowerText.Outline)
+		self.AlternativePower.Text:SetFont(Media:Fetch("font", module.db.profile.player.AlternativePowerText.Font), module.db.profile.player.AlternativePowerText.Size, module.db.profile.player.AlternativePowerText.Outline)
 		self.AlternativePower.Text:ClearAllPoints()
-		self.AlternativePower.Text:SetPoint("CENTER", self.AlternativePower, "CENTER", module.db.profile.player.AlternativePowerText.X, module.db.player.AlternativePowerText.Y)
+		self.AlternativePower.Text:SetPoint("CENTER", self.AlternativePower, "CENTER", module.db.profile.player.AlternativePowerText.X, module.db.profile.player.AlternativePowerText.Y)
 
 		self.AlternativePower.Text.Enable = module.db.profile.player.AlternativePowerText.Enable
 		self.AlternativePower.Text.Format = module.db.profile.player.AlternativePowerText.Format
@@ -1925,7 +1903,7 @@ module.funcs = {
 			self.AdditionalPower:SetPoint("TOPRIGHT", self.Power, "BOTTOMRIGHT", 0, -2)
 		else
 			self.Power:SetHeight(oufdb.PowerBar.Height)
-			self.AdditionalPower:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.profile.player.AdditionalPowerBar.X, module.db.player.AdditionalPowerBar.Y)
+			self.AdditionalPower:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.profile.player.AdditionalPowerBar.X, module.db.profile.player.AdditionalPowerBar.Y)
 		end
 
 		self.AdditionalPower:SetHeight(oufdb.AdditionalPowerBar.Height)
