@@ -19,6 +19,7 @@ local GetAddOnMemoryUsage = _G.GetAddOnMemoryUsage
 local IsAddOnLoaded = _G.IsAddOnLoaded
 local GetNumAddOns = _G.GetNumAddOns
 local GetAddOnInfo = _G.GetAddOnInfo
+local C_Timer = C_Timer
 
 local totalMemory = 0
 local addonMemory = {} --contains addonTitle, memoryUsage
@@ -27,6 +28,7 @@ local sortedAddons = {} -- Sorting table for addonMemory
 -- Everything is too green without this multiplier
 local GRADIENT_MULTIPLIER = 1.4
 local MEMORY_UPDATE_TIME = 20
+local USAGE_UPDATE_TIME = 600
 local KB_PER_MB = 1024
 
 -- ####################################################################################################################
@@ -96,6 +98,17 @@ end
 -- ####################################################################################################################
 
 function element:OnCreate()
-	element:UpdateMemory()
 	element:AddUpdate("UpdateMemory", MEMORY_UPDATE_TIME)
+
+	-- This ensures that all addons are loaded at the time of updating memory usage.
+	C_Timer.After(1, function()
+		UpdateAddOnMemoryUsage()
+		element:UpdateMemory()
+	end)
+	-- Update usage once every 10 minutes, outside of combat.
+	C_Timer.NewTicker(USAGE_UPDATE_TIME, function()
+		if not _G.InCombatLockdown() then
+			UpdateAddOnMemoryUsage()
+		end
+	end)
 end
