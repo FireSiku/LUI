@@ -1253,7 +1253,6 @@ module.funcs = {
 		self.Power.Smooth = oufdb.PowerBar.Smooth
 		self.Power.colorReaction = false
 		self.Power.frequentUpdates = true
-		self.Power.displayAlternativePower = unit == unit:match("boss%d")
 
 		if oufdb.PowerBar.Enable == true then
 			self.Power:Show()
