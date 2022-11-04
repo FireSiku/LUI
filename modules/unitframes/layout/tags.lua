@@ -245,7 +245,7 @@ oUF.Tags.Methods["additionalpower2"] = function(unit)
 	elseif module.db.profile.player.AdditionalPowerText.Color == "" then
 		r, g, b = color2[1]*255,color2[2]*255,color2[3]*255
 	else
-		r, g, b = module.db.profile.player.AdditionalPowerText.IndividualColor.r*255,module.db.player.AdditionalPowerText.IndividualColor.g*255,module.db.player.AdditionalPowerText.IndividualColor.b*255
+		r, g, b = module.db.profile.player.AdditionalPowerText.IndividualColor.r*255,module.db.profile.player.AdditionalPowerText.IndividualColor.g*255,module.db.profile.player.AdditionalPowerText.IndividualColor.b*255
 	end
 
 	if module.db.profile.player.AdditionalPowerText.Format == "Absolut" then

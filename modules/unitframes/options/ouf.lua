@@ -12,18 +12,6 @@ local widgetLists = AceGUIWidgetLSMlists
 
 local oUF = LUI.oUF
 
-module.defaults.profile.Settings = {
-	ShowV2Textures = true,
-	ShowV2PartyTextures = true,
-	ShowV2ArenaTextures = true,
-	ShowV2BossTextures = true,
-	Castbars = true,
-	HideBlizzRaid = false,
-	AuratimerFont = "Prototype",
-	AuratimerSize = 12,
-	AuratimerFlag = "OUTLINE",
-}
-
 local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", ""}
 
 function module:CreateSettings(order)
@@ -118,21 +106,18 @@ function module:CreateSettings(order)
 
 	local updateAuraTimer = function()
 		for k, v in pairs(oUF.objects) do
+			local aura_db = module.db.profile.Settings
 			if v.Buffs then
 				for i = 1, 50 do
 					if v.Buffs[i] then
-						v.Buffs[i].remaining:SetFont(Media:Fetch("font",  module.db.profile.Settings.AuratimerFont), module.db.Settings.AuratimerSize, module.db.Settings.AuratimerFlag)
-					else
-						break
+						v.Buffs[i].remaining:SetFont(Media:Fetch("font",  aura_db.AuratimerFont), aura_db.AuratimerSize, aura_db.AuratimerFlag)
 					end
 				end
 			end
 			if v.Debuffs then
 				for i = 1, 50 do
 					if v.Debuffs[i] then
-						v.Debuffs[i].remaining:SetFont(Media:Fetch("font",  module.db.profile.Settings.AuratimerFont), module.db.Settings.AuratimerSize, module.db.Settings.AuratimerFlag)
-					else
-						break
+						v.Debuffs[i].remaining:SetFont(Media:Fetch("font",  aura_db.AuratimerFont), aura_db.AuratimerSize, aura_db.AuratimerFlag)
 					end
 				end
 			end

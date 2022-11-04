@@ -262,7 +262,7 @@ function module:CreatePlayerBarOverlappingOptions(barType, order)
 	local barKey = barKeys[barType]
 
 	local disabledFunc = function() return not module.db.profile.player[barType.."Bar"].Enable end
-	local disabledFunc2 = function() return not (module.db.profile.player[barType.."Bar"].Enable or not module.db.player[barType.."Bar"].OverPower) end
+	local disabledFunc2 = function() return not (module.db.profile.player[barType.."Bar"].Enable or not module.db.profile.player[barType.."Bar"].OverPower) end
 
 	local values = (barType == "AdditionalPower") and {
 		["By Class"] = "By Class",
@@ -941,7 +941,7 @@ function module:CreateUnitOptions(unit, order)
 				UseBlizzard = (unit == "party" or unit == "Boss" or unit == "arena" or unit == "raid") and self:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, false, "full", function() return self.db[unit].Enable end) or nil,
 				ShowPlayer = (unit == "party") and self:NewToggle("Show Player", "Whether you want to show yourself within the Party Frames or not.", 3, false, nil, disabledFunc) or nil,
 				ShowInRaid = (unit == "party") and self:NewToggle("Show in Raid", "Whether you want to show the Party Frames in Raid or not.", 4, false, nil, disabledFunc) or nil,
-				ShowInRealPartys = (unit == "party") and self:NewToggle("Show only in real Parties", "Whether you want to show the Party Frames only in real Parties or in Raids with 5 or less players too.", 5, false, nil, function() return not module.db.profile.party.Enable or module.db.party.ShowInRaid end) or nil,
+				ShowInRealPartys = (unit == "party") and self:NewToggle("Show only in real Parties", "Whether you want to show the Party Frames only in real Parties or in Raids with 5 or less players too.", 5, false, nil, function() return not module.db.profile.party.Enable or module.db.profile.party.ShowInRaid end) or nil,
 				empty1 = (unit ~= "player" and unit ~= "target") and self:NewDesc(" ", 6) or nil,
 				Padding = (unit == "party" or unit == "Boss" or unit == "arena" or unit == "maintank" or unit == "raid") and self:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.", 7, false, nil, disabledFunc) or nil,
 				GroupPadding = (unit == "raid") and self:NewInputNumber("Group Padding", "Choose the Padding between your "..unit.." Groups.", 8, false, nil, disabledFunc) or nil,
