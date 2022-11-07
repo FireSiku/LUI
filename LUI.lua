@@ -742,13 +742,13 @@ local function getOptions()
 									type = "description",
 									fontSize = "large",
 									name = function()
-										local version, alpha, git = strsplit("-", LUI.Rev)
+										local version, alpha, git = strsplit("-", LUI.curseVersion)
 										if not version then
 											return "Version: "..GetAddOnMetadata(addonname, "Version")
 										elseif not alpha then
 											return "Version: "..version
 										else
-											return format("Version: %s Alpha %s", version, alpha)
+											return format("Version: %s, Alpha %s", version, alpha)
 										end
 									end,
 								},

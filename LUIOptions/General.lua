@@ -47,13 +47,13 @@ Opt.options.args.General.handler = LUI
 local General = Opt.options.args.General.args
 
 local function GetVersionText()
-    local version, apha, git = strsplit("-", LUI.curseVersion)
+    local version, alpha, git = strsplit("-", LUI.curseVersion)
     if not version then
         return format("%s: %s", GAME_VERSION_LABEL, GetAddOnMetadata("LUI", "Version"))
     elseif not alpha then
         return format("%s: %s", GAME_VERSION_LABEL, GetAddOnMetadata("LUI", "Version"))
     else
-        return format("%s %s, Alpha %s", GAME_VERSION_LABEL, version, alpha)
+        return format("%s: %s, Alpha %s", GAME_VERSION_LABEL, version, alpha)
     end
 end
 
