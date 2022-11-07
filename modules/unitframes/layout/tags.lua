@@ -11,14 +11,23 @@ local oUF = LUI.oUF
 local Media = LibStub("LibSharedMedia-3.0")
 
 local UnitIsConnected, UnitIsGhost, UnitIsDead, UnitIsAFK = _G.UnitIsConnected, _G.UnitIsGhost, _G.UnitIsDead, _G.UnitIsAFK
-local UnitQuestTrivialLevelRange, GetQuestGreenRange = _G.UnitQuestTrivialLevelRange, _G.GetQuestGreenRange
 local UnitPower, UnitPowerMax, UnitPowerType = _G.UnitPower, _G.UnitPowerMax, _G.UnitPowerType
 local UnitClass, UnitLevel, UnitReaction = _G.UnitClass, _G.UnitLevel, _G.UnitReaction
+local UnitQuestTrivialLevelRange = _G.UnitQuestTrivialLevelRange
 local UnitIsPlayer, UnitName = _G.UnitIsPlayer, _G.UnitName
+
+--- Classic Compatibility
+-- This updates our local copy, does not conflict with other addons.
+if not LUI.IsRetail then
+	UnitQuestTrivialLevelRange = _G.GetQuestGreenRange
+end
 
 local nameCache = {}
 
-local ShortValue = function(value)
+local TagMethods = oUF.Tags.Methods
+local TagEvents = oUF.Tags.Events
+
+local function ShortValue(value)
 	if value >= 1e6 then
 		return ("%.1fm"):format(value / 1e6):gsub("%.?0+([km])$", "%1")
 	elseif value >= 1e3 or value <= -1e3 then
@@ -28,7 +37,7 @@ local ShortValue = function(value)
 	end
 end
 
-local utf8sub = function(string, i, dots)
+local function utf8sub(string, i, dots)
 	local bytes = string:len()
 	if bytes <= i then
 		return string
@@ -89,14 +98,14 @@ local function ShortenName(name)
 	nameCache[name][2] = shortname
 end
 
-module.RecreateNameCache = function()
+function module.RecreateNameCache()
 	for name, shortened in pairs(nameCache) do
 		ShortenName(name)
 	end
 end
 
---oUF.Tags.Events["GetNameColor"] = "UNIT_HAPPINESS"
-oUF.Tags.Methods["GetNameColor"] = function(unit)
+--TagEvents["GetNameColor"] = "UNIT_HAPPINESS"
+function TagMethods.GetNameColor(unit)
 	local reaction = UnitReaction(unit, "player")
 	local pClass, pToken = UnitClass(unit)
 	local pClass2, pToken2 = UnitPowerType(unit)
@@ -126,8 +135,8 @@ oUF.Tags.Methods["GetNameColor"] = function(unit)
 	end
 end
 
-oUF.Tags.Events["DiffColor"] = "UNIT_LEVEL"
-oUF.Tags.Methods["DiffColor"] = function(unit)
+TagEvents["DiffColor"] = "UNIT_LEVEL"
+function TagMethods.DiffColor(unit)
 	local r, g, b
 	local level = UnitLevel(unit)
 	if level < 1 then
@@ -140,9 +149,7 @@ oUF.Tags.Methods["DiffColor"] = function(unit)
 			r, g, b = unpack(module.colors.leveldiff[2])
 		elseif difference >= -2 then
 			r, g, b = unpack(module.colors.leveldiff[3])
-		elseif LUI.IsRetail and (-difference <= UnitQuestTrivialLevelRange("player")) then
-			r, g, b = unpack(module.colors.leveldiff[4])
-		elseif not LUI.IsRetail and -difference <= GetQuestGreenRange() then
+		elseif -difference <= UnitQuestTrivialLevelRange("player") then
 			r, g, b = unpack(module.colors.leveldiff[4])
 		else
 			r, g, b = unpack(module.colors.leveldiff[5])
@@ -151,8 +158,8 @@ oUF.Tags.Methods["DiffColor"] = function(unit)
 	return string.format("|cff%02x%02x%02x", r * 255, g * 255, b * 255)
 end
 
-oUF.Tags.Events["NameShort"] = "UNIT_NAME_UPDATE"
-oUF.Tags.Methods["NameShort"] = function(unit)
+TagEvents["NameShort"] = "UNIT_NAME_UPDATE"
+function TagMethods.NameShort(unit)
 	local name = UnitName(unit)
 	if name then
 		if unit == "pet" and name == "Unknown" then
@@ -163,8 +170,8 @@ oUF.Tags.Methods["NameShort"] = function(unit)
 	end
 end
 
-oUF.Tags.Events["NameMedium"] = "UNIT_NAME_UPDATE"
-oUF.Tags.Methods["NameMedium"] = function(unit)
+TagEvents["NameMedium"] = "UNIT_NAME_UPDATE"
+function TagMethods.NameMedium(unit)
 	local name = UnitName(unit)
 	if name then
 		if unit == "pet" and name == "Unknown" then
@@ -175,8 +182,8 @@ oUF.Tags.Methods["NameMedium"] = function(unit)
 	end
 end
 
-oUF.Tags.Events["NameLong"] = "UNIT_NAME_UPDATE"
-oUF.Tags.Methods["NameLong"] = function(unit)
+TagEvents["NameLong"] = "UNIT_NAME_UPDATE"
+function TagMethods.NameLong(unit)
 	local name = UnitName(unit)
 	if name then
 		if unit == "pet" and name == "Unknown" then
@@ -187,8 +194,8 @@ oUF.Tags.Methods["NameLong"] = function(unit)
 	end
 end
 
-oUF.Tags.Events["RaidName25"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
-oUF.Tags.Methods["RaidName25"] = function(unit, realunit)
+TagEvents["RaidName25"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
+function TagMethods.RaidName25(unit, relativeUnit)
 	if module.db.profile and module.db.profile.raid.NameText.ShowDead then
 		if not UnitIsConnected(unit) then
 			return "|cffD7BEA5<Offline>|r"
@@ -200,13 +207,13 @@ oUF.Tags.Methods["RaidName25"] = function(unit, realunit)
 			return "|cffD7BEA5<AFK>|r"
 		end
 	end
-	local name = unit == "vehicle" and UnitName(realunit or unit) or UnitName(unit)
+	local name = unit == "vehicle" and UnitName(relativeUnit or unit) or UnitName(unit)
 	if not nameCache[name] then ShortenName(name) end
 	return nameCache[name][1]
 end
 
-oUF.Tags.Events["RaidName40"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
-oUF.Tags.Methods["RaidName40"] = function(unit, realunit)
+TagEvents["RaidName40"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
+function TagMethods.RaidName40(unit, relativeUnit)
 	if module.db.profile and module.db.profile.raid.NameText.ShowDead then
 		if not UnitIsConnected(unit) then
 			return "|cffD7BEA5<Offline>|r"
@@ -218,19 +225,20 @@ oUF.Tags.Methods["RaidName40"] = function(unit, realunit)
 			return "|cffD7BEA5<AFK>|r"
 		end
 	end
-	local name = unit == "vehicle" and UnitName(realunit or unit) or UnitName(unit)
+	local name = unit == "vehicle" and UnitName(relativeUnit or unit) or UnitName(unit)
 	if not nameCache[name] then ShortenName(name) end
 	return nameCache[name][2]
 end
 
-oUF.Tags.Events["additionalpower2"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
-oUF.Tags.Methods["additionalpower2"] = function(unit)
+TagEvents["additionalpower2"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"
+function TagMethods.additionalpower2(unit)
 	if unit ~= "player" then return end
 
 	if not module.db.profile then return "" end
+	local db = module.db.profile.player.AdditionalPowerText
 
 	local min, max = UnitPower("player", Enum.PowerType.Mana), UnitPowerMax("player", Enum.PowerType.Mana)
-	if module.db.profile.player.AdditionalPowerText.HideIfFullMana and min == max then return "" end
+	if db.HideIfFullMana and min == max then return "" end
 	local perc = min / max * 100
 
 	local _, pType = UnitPowerType(unit)
@@ -240,29 +248,29 @@ oUF.Tags.Methods["additionalpower2"] = function(unit)
 
 	local r, g, b, text
 
-	if module.db.profile.player.AdditionalPowerText.Color == "" then
+	if db.Color == "" then
 		r, g, b = color[1]*255,color[2]*255,color[3]*255
-	elseif module.db.profile.player.AdditionalPowerText.Color == "" then
+	elseif db.Color == "" then
 		r, g, b = color2[1]*255,color2[2]*255,color2[3]*255
 	else
-		r, g, b = module.db.profile.player.AdditionalPowerText.IndividualColor.r*255,module.db.profile.player.AdditionalPowerText.IndividualColor.g*255,module.db.profile.player.AdditionalPowerText.IndividualColor.b*255
+		r, g, b = db.IndividualColor.r*255, db.IndividualColor.g*255, db.IndividualColor.b*255
 	end
 
-	if module.db.profile.player.AdditionalPowerText.Format == "Absolut" then
+	if db.Format == "Absolut" then
 		text = format("%d/%d", min, max)
-	elseif module.db.profile.player.AdditionalPowerText.Format == "Absolut & Percent" then
+	elseif db.Format == "Absolut & Percent" then
 		text = format("%d/%d | %.1f", min, max, perc)
-	elseif module.db.profile.player.AdditionalPowerText.Format == "Absolut Short" then
+	elseif db.Format == "Absolut Short" then
 		text = format("%s/%s", ShortValue(min), ShortValue(max))
-	elseif module.db.profile.player.AdditionalPowerText.Format == "Absolut Short & Percent" then
+	elseif db.Format == "Absolut Short & Percent" then
 		text = format("%s/%s | %.1f", ShortValue(min), ShortValue(max), perc)
-	elseif module.db.profile.player.AdditionalPowerText.Format == "Standard" then
+	elseif db.Format == "Standard" then
 		text = min
-	elseif module.db.profile.player.AdditionalPowerText.Format == "Standard & Percent" then
+	elseif db.Format == "Standard & Percent" then
 		text = format("%s | %.1f%%", min, perc)
-	elseif module.db.profile.player.AdditionalPowerText.Format == "Standard Short" then
+	elseif db.Format == "Standard Short" then
 		text = ShortValue(min)
-	elseif module.db.profile.player.AdditionalPowerText.Format == "Standard Short & Percent" then
+	elseif db.Format == "Standard Short & Percent" then
 		text = format("%s | %.1f%%", ShortValue(min), perc)
 	else
 		text = min

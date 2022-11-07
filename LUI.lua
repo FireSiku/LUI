@@ -199,11 +199,11 @@ local function CheckResolution()
 		-- Reposition Auras
 		local Auras = LUI:GetModule("Auras", true)
 		if Auras then
-			auras.db.General.Anchor = "TOPRIGHT"
-			auras.db.Buffs.X = -170
-			auras.db.Buffs.Y = -75
-			auras.db.Debuffs.X = -170
-			auras.db.Debuffs.Y = -185
+			Auras.db.General.Anchor = "TOPRIGHT"
+			Auras.db.Buffs.X = -170
+			Auras.db.Buffs.Y = -75
+			Auras.db.Debuffs.X = -170
+			Auras.db.Debuffs.Y = -185
 		end
 	end
 end

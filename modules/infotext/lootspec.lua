@@ -31,7 +31,7 @@ function element:SetLootSpec()
         else
             _, _, _, _, role = GetSpecializationInfoByID(lootspec)
         end
-        element.text = string.format((db.LootSpec.Text).." "..role)
+        element.text = string.format("%s %s", db.LootSpec.Text, role or "UNKNOWN")
 end
 
 -- ####################################################################################################################
