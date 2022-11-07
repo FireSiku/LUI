@@ -29,7 +29,7 @@ local strlen = string.len
 -- / Local Variables / --
 --------------------------------------------------
 
-local ClassArray = {"Death Knight", "Demon Hunter", "Druid", "Hunter", "Mage", "Monk", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior"}
+local ClassArray = {"Death Knight", "Demon Hunter", "Druid", "Evoker", "Hunter", "Mage", "Monk", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior"}
 
 --------------------------------------------------
 -- / Color Functions / --
@@ -465,6 +465,29 @@ module.defaults = {
 			orb = {0.22, 0.91, 0.18},
 			orb_cycle = {0.22, 0.91, 0.18, 0.4},
 			orb_hover = {0.22, 0.91, 0.18, 0.4},
+		},
+		["Evoker"] = {
+			color_top = {0.2, 0.58, 0.5, 0.5},
+			color_bottom = {0.2, 0.58, 0.5, 0.5},
+			chat = {0.2, 0.58, 0.5, 0.4},
+			chatborder = {0.2, 0.58, 0.5, 0.4},
+			chat2 = {0.2, 0.58, 0.5, 0.4},
+			chat2border = {0.2, 0.58, 0.5, 0.4},
+			editbox = {0.2, 0.58, 0.5, 0.4},
+			tps = {0.2, 0.58, 0.5, 0.4},
+			tpsborder = {0.2, 0.58, 0.5, 0.4},
+			dps = {0.2, 0.58, 0.5, 0.4},
+			dpsborder = {0.2, 0.58, 0.5, 0.4},
+			raid = {0.2, 0.58, 0.5, 0.4},
+			raidborder = {0.2, 0.58, 0.5, 0.4},
+			bar = {0.2, 0.58, 0.5, 0.8},
+			bar2 = {0.2, 0.58, 0.5, 0.6},
+			sidebar = {0.2, 0.58, 0.5, 0.4},
+			navi = {0.2, 0.58, 0.5,  0.6},
+			navi_hover = {0.2, 0.58, 0.5, 0.4},
+			orb = {0.2, 0.58, 0.5,},
+			orb_cycle = {0.2, 0.58, 0.5, 0.4},
+			orb_hover = {0.2, 0.58, 0.5, 0.4},
 		},
 		["Mage"] = {
 			color_top = {0.12, 0.58, 0.89, 0.5},

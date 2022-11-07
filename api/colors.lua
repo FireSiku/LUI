@@ -45,7 +45,9 @@ module.defaults = {
 		Colors = {
 			-- Class Colors
 			DEATHKNIGHT = { r = 0.8,  g = 0.1,  b = 0.1,  },
+			DEMONHUNTER = { r = 0.65, g = 0.2,  b = 0.8   },
 			DRUID =       { r = 1,    g = 0.44, b = 0.15, },
+			EVOKER =      { r = 0.2,  g = 0.58, b = 0.5   },
 			HUNTER =      { r = 0.22, g = 0.91, b = 0.18, },
 			MAGE =        { r = 0.12, g = 0.58, b = 0.89, },
 			MONK =        { r = 0.00, g = 1.00, b = 0.59, },
@@ -55,13 +57,16 @@ module.defaults = {
 			SHAMAN =      { r = 0.04, g = 0.39, b = 0.98, },
 			WARLOCK =     { r = 0.57, g = 0.22, b = 1,    },
 			WARRIOR =     { r = 1,    g = 0.78, b = 0.55, },
-			DEMONHUNTER = { r = 0.65, g = 0.2,  b = 0.8   },
 
 			-- Faction Colors
-			Alliance  = { r = 0,   g = 0.6, b = 1,   },
-			Horde     = { r = 1,   g = 0.3, b = 0.3, },
-			Neutral   = { r = 0.9, g = 0.7, b = 0,   },
-			Sanctuary = { r = 0,   g = 1,   b = 1,   },
+			Alliance  = { r = 0,    g = 0.6,  b = 1,    },
+			Horde     = { r = 1,    g = 0.3,  b = 0.3,  },
+			Neutral   = { r = 0.9,  g = 0.7,  b = 0,    },
+			Sanctuary = { r = 0,    g = 1,    b = 1,    },
+			Kyrian =    { r = 0.25, g = 0.78, b = 0.92, },
+			Necrolord = { r = 0.05, g = 0.97, b = 0.6,  },
+			NightFae =  { r = 0.64, g = 0.19, b = 0.79, },
+			Venthyr =   { r = 0.77, g = 0.07, b = 0.23, },
 
 			-- Reaction Colors
 			Standing1 = { r = 1,   g = 0.3, b = 0.3, }, -- Hated
