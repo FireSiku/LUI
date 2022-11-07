@@ -292,7 +292,7 @@ function element:DisplayBNFriends()
 				if game.realmName ~= LUI.playerRealm then
 					realmString = module:ColorText(" - "..(game.realmName or ""), "GameText")
 				end
-				bnfriend.zone:SetText(game.areaName..realmString)
+				bnfriend.zone:SetText((game.areaName or "")..realmString)
 
 				--Hide GameText, only used for other clients.
 				bnfriend.gameText:Hide()
