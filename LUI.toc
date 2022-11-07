@@ -161,6 +161,11 @@ modules\unitframes\plugins\oUF_RaidDebuffs.lua
 modules\unitframes\layout\tags.lua
 modules\unitframes\layout\meta.lua
 modules\unitframes\layout\layout.lua
+modules\unitframes\layout\unitbars.lua
+modules\unitframes\layout\classbars.lua
+modules\unitframes\layout\castbars.lua
+modules\unitframes\layout\unitauras.lua
+modules\unitframes\layout\style.lua
 
 ### Embedded Darion ###
 media\Masque_Darion\Darion.lua

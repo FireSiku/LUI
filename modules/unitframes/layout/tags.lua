@@ -27,7 +27,7 @@ local nameCache = {}
 local TagMethods = oUF.Tags.Methods
 local TagEvents = oUF.Tags.Events
 
-local function ShortValue(value)
+function module.ShortValue(value)
 	if value >= 1e6 then
 		return ("%.1fm"):format(value / 1e6):gsub("%.?0+([km])$", "%1")
 	elseif value >= 1e3 or value <= -1e3 then
@@ -261,17 +261,17 @@ function TagMethods.additionalpower2(unit)
 	elseif db.Format == "Absolut & Percent" then
 		text = format("%d/%d | %.1f", min, max, perc)
 	elseif db.Format == "Absolut Short" then
-		text = format("%s/%s", ShortValue(min), ShortValue(max))
+		text = format("%s/%s", module.ShortValue(min), module.ShortValue(max))
 	elseif db.Format == "Absolut Short & Percent" then
-		text = format("%s/%s | %.1f", ShortValue(min), ShortValue(max), perc)
+		text = format("%s/%s | %.1f", module.ShortValue(min), module.ShortValue(max), perc)
 	elseif db.Format == "Standard" then
 		text = min
 	elseif db.Format == "Standard & Percent" then
 		text = format("%s | %.1f%%", min, perc)
 	elseif db.Format == "Standard Short" then
-		text = ShortValue(min)
+		text = module.ShortValue(min)
 	elseif db.Format == "Standard Short & Percent" then
-		text = format("%s | %.1f%%", ShortValue(min), perc)
+		text = format("%s | %.1f%%", module.ShortValue(min), perc)
 	else
 		text = min
 	end
