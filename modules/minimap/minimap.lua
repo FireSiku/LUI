@@ -264,10 +264,11 @@ end
 --Set Frames surrounding the minimap.
 function module:SetMinimapFrames()
 	--Setting up values
+	local borderEdgeSize = 5
 	local borderBackdrop = {
 		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
 		edgeFile=LUI.Media.glowTex,
-		tile=0, tileSize=0, edgeSize=7,
+		tile=0, tileSize=0, edgeSize=borderEdgeSize,
 		insets={left=0, right=0, top=0, bottom=0}
 	}
 
@@ -278,7 +279,8 @@ function module:SetMinimapFrames()
 
 	--Create Border
 	local minimapBorder = CreateFrame("Frame", "LUIMinimapBorder", Minimap, "BackdropTemplate")
-	minimapBorder:SetSize(143,143)
+	local borderSize = Minimap:GetSize() * (1 + borderEdgeSize/100)
+	minimapBorder:SetSize(borderSize, borderSize)
 	minimapBorder:SetFrameStrata("BACKGROUND")
 	minimapBorder:SetPoint("CENTER", Minimap, "CENTER", 0, 0)
 	minimapBorder:SetBackdrop(borderBackdrop)
