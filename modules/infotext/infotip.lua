@@ -83,7 +83,7 @@ end
 
 function InfotipMixin:NewLine()
 	local lineName = format("%sLine%d",self:GetName(),self.totalLines + 1)
-	local newline = CreateFrame("Button", lineName, self)
+	local newline = CreateFrame("Button", lineName, self, "BackdropTemplate")
 	for k, v in pairs(LineMixin) do
 		newline[k] = v
 	end
@@ -175,7 +175,7 @@ function module:EnforceMinWidth(infotip, value)
 end
 
 function element:AddSlider(newtip)
-	local slider = CreateFrame("Slider", nil, newtip)
+	local slider = CreateFrame("Slider", nil, newtip, "BackdropTemplate")
 	slider:SetWidth(SLIDER_WIDTH)
 	slider:SetThumbTexture([[Interface\Buttons\UI-SliderBar-Button-Horizontal]])
 	slider:SetBackdrop({
