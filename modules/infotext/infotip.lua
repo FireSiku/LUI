@@ -177,13 +177,13 @@ end
 function element:AddSlider(newtip)
 	local slider = CreateFrame("Slider", nil, newtip, "BackdropTemplate")
 	slider:SetWidth(SLIDER_WIDTH)
-	slider:SetThumbTexture([[Interface\Buttons\UI-SliderBar-Button-Horizontal]])
 	slider:SetBackdrop({
 		bgFile = [[Interface\Buttons\UI-SliderBar-Background]],
 		edgeFile = [[Interface\Buttons\UI-SliderBar-Border]],
 		edgeSize = 8, tile = true, tileSize = 8,
 		insets = {left=3, right=3, top=6, bottom=6}
 	})
+	-- deleted line 180 Pahn slider:SetThumbTexture([[Interface\Buttons\UI-SliderBar-Button-Horizontal]])
 	slider:SetValueStep(1)
 	local infotext = newtip.infotext
 	slider:SetScript("OnValueChanged", function(self, value_)
