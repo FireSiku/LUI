@@ -16,7 +16,6 @@ local module = LUI:GetModule("Minimap")
 local db
 
 -- Locals and Constants
-local MiniMapTrackingDropDown = _G.MiniMapTrackingDropDown
 local GetMinimapZoneText = _G.GetMinimapZoneText
 local ToggleDropDownMenu = _G.ToggleDropDownMenu
 local MINIMAP_LABEL = _G.MINIMAP_LABEL
@@ -228,14 +227,14 @@ function module:SetMinimap()
 	Minimap:SetScript("OnMouseUp", function(self, button)
 		--Right Click shows the Tracking dropdown, only if module is enabled.
 		if button == "RightButton" and module:IsEnabled() then
-			ToggleDropDownMenu(1, nil, MiniMapTrackingDropDown, self)
-		else Minimap_OnClick(self)
+			ToggleDropDownMenu(1, nil, MinimapCluster.Tracking.DropDown, MinimapCluster.Tracking, 8, 5);
+		else Minimap:OnClick(self)
 		end
 	end)
 
 	--Create other frames around the minimap
 	module:SetMinimapFrames()
-	
+
 	if LUI.IsRetail then
 		self:SecureHook(_G.MawBuffsBelowMinimapFrameMixin, "OnShow", function() self:SetPosition('MawBuffs') end)
 	end
@@ -314,7 +313,6 @@ function module:SetMinimapFrames()
 		minimapTex:SetBackdropColor(0,0,0,0)
 		minimapTex:SetBackdropBorderColor(0,0,0,1)
 	end
-	
 end
 
 function module:SetMinimapSize()
