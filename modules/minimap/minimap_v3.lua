@@ -380,7 +380,7 @@ function module:SetMinimap()
 		elseif btn == "MiddleButton" then
 			EasyMenu(menuList, menuFrame, "cursor", 0, 0, "MENU", 2)
 		else
-			Minimap_OnClick(self)
+			Minimap:OnClick(self)
 		end
 	end)
 
