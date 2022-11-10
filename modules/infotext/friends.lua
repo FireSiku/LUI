@@ -446,7 +446,7 @@ function element:DisplayFriends()
 	local zoneColumnWidth, noteColumnWidth = 0, 0
 	for i = 1, onlineFriends do
 		--local name, level, class, zone, _, status, note = GetFriendInfo(i)
-		local info = C_FriendList.GetFriendInfo(i)
+		local info = C_FriendList.GetFriendInfoByIndex(i)
 		local statusString = element:GetFriendStatusString(info)
 		--GetFriendInfo returns a localized class name, we need a token to work with.
 		local class = LUI:GetTokenFromClassName(info.className)
