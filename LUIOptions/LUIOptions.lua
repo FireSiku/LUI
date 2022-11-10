@@ -563,9 +563,9 @@ Opt.options = options
 
 local optionsLoaded = false
 function LUI:NewOpen(force, ...)
-	-- if ACD.OpenFrames.LUI and not force then
-	-- 	ACD:Close(optName)
-	-- else
+	if ACD.OpenFrames[optName] and not force then
+		ACD:Close(optName)
+	else
 		-- Do not open options in combat unless already opened before.
 		-- TODO: Find a better way to word the arning.
 		if _G.InCombatLockdown() and not optionsLoaded then
@@ -574,7 +574,7 @@ function LUI:NewOpen(force, ...)
 			ACD:Open(optName, nil, ...)
 			optionsLoaded = true
 		end
-	--end
+	end
 end
 
 --- Utility function to avoid having too much boilerplate.

@@ -11,6 +11,8 @@ local module = LUI:NewModule("Micromenu", "AceEvent-3.0")
 local db
 
 local hooksecurefunc = _G.hooksecurefunc
+local GetMouseFocus = _G.GetMouseFocus
+local WorldMapFrame = _G.WorldMapFrame
 local GameMenuFrame = _G.GameMenuFrame
 local IsAddOnLoaded = _G.IsAddOnLoaded
 local FriendsFrame = _G.FriendsFrame
@@ -18,6 +20,7 @@ local HideUIPanel = _G.HideUIPanel
 local ShowUIPanel = _G.ShowUIPanel
 local UnitLevel = _G.UnitLevel
 local IsBagOpen = _G.IsBagOpen
+local Minimap = _G.Minimap
 local format = format
 
 local addonLoadedCallbacks = {}
@@ -366,9 +369,8 @@ function module:NewMicroButton(buttonData)
 	local r, g, b, a_ = module:RGBA("Micromenu")
 	local name = buttonData.name
 
-	local button = CreateFrame("Frame", "LUIMicromenu_"..name, UIParent)
+	local button = CreateFrame("Frame", "LUIMicromenu_"..name, _G.LUIMicromenu_Background)
 	button:SetSize(TEXTURE_SIZE_WIDTH, TEXTURE_SIZE_HEIGHT)
-	button:SetParent(LUIMicromenu_Background)
 	Mixin(button, buttonData)
 
 	-- Make an icon for the button
@@ -402,12 +404,8 @@ function module:NewMicroButton(buttonData)
 	end
 	-- This is a bit of a mess and can probably be modified
 	if button.state then
-		if button.addon then
-			if not IsAddOnLoaded(button.addon) then
-				addonLoadedCallbacks[button.addon] = function()
-					module:ClickerStateUpdateHandler(button, button.state)
-				end
-			else
+		if button.addon and not IsAddOnLoaded(button.addon) then
+			addonLoadedCallbacks[button.addon] = function()
 				module:ClickerStateUpdateHandler(button, button.state)
 			end
 		else
@@ -435,7 +433,7 @@ function module:ConsolidateOptionsFrames()
 
 	local function UpdateState()
 		-- When hooked frames are shown or hidden, check if any frame is currently open and update consolidated state
-		if GameMenuFrame:IsShown() or ACD.OpenFrames["LUI4Options"] then
+		if GameMenuFrame:IsShown() or ACD.OpenFrames["LUIOptions"] then
 			optionsFrames:Show()
 		else
 			optionsFrames:Hide()
@@ -450,7 +448,7 @@ function module:ConsolidateOptionsFrames()
 	if ACD then
 		hooksecurefunc(ACD, "Open", function()
 			-- We get the LUI options frame, if its there
-			local optionsFrame = ACD.OpenFrames["LUI4Options"]
+			local optionsFrame = ACD.OpenFrames["LUIOptions"]
 			if optionsFrame then
 				-- Register a callback for when the frame is closed
 				hooksecurefunc(optionsFrame, "Hide", UpdateState)
@@ -615,8 +613,9 @@ function module:SetMicromenuExtraButtons()
 	local PanelsDB = LUI:GetModule("Panels").db.profile
 	local minimapMod = LUI:GetModule("Minimap", true)
 	local buttonLeft, buttonMiddle, buttonRight
+	local clickerLeft, clickerMiddle, clickerRight
 
-	local buttonMiddle = CreateFrame("Frame", "LUIMicromenu_buttonMiddle", UIParent, "BackdropTemplate")
+	buttonMiddle = CreateFrame("Frame", "LUIMicromenu_buttonMiddle", UIParent, "BackdropTemplate")
 	buttonMiddle:SetSize(128, 128)
 	buttonMiddle:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -150, 6)
 	buttonMiddle:SetBackdrop({
@@ -628,7 +627,7 @@ function module:SetMicromenuExtraButtons()
 	buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
 	buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
 
-	local clickerMiddle = CreateFrame("Button", "LUIMicromenu_clickerMiddle", buttonMiddle, "BackdropTemplate")
+	clickerMiddle = CreateFrame("Button", "LUIMicromenu_clickerMiddle", buttonMiddle, "BackdropTemplate")
 	clickerMiddle:SetSize(85, 22)
 	clickerMiddle:SetPoint("TOP", buttonMiddle, "TOP", 0, 0)
 	clickerMiddle:RegisterForClicks("AnyUp")
@@ -637,7 +636,7 @@ function module:SetMicromenuExtraButtons()
 		--[[if RaidMenu.db.profile.Enable then
 			RaidMenu:OverlapPrevention("MM")
 		end]]
-		if LUIMicromenu_Background:IsVisible() then
+		if _G.LUIMicromenu_Background:IsVisible() then
 			PanelsDB.MicroMenu.IsShown = false
 
 			buttonMiddle:SetBackdrop({
@@ -648,7 +647,7 @@ function module:SetMicromenuExtraButtons()
 			})
 			buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
 			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
-			LUIMicromenu_Background:Hide()
+			_G.LUIMicromenu_Background:Hide()
 		else
 			PanelsDB.MicroMenu.IsShown = true
 
@@ -660,7 +659,7 @@ function module:SetMicromenuExtraButtons()
 			})
 			buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
 			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
-			LUIMicromenu_Background:Show()
+			_G.LUIMicromenu_Background:Show()
 
 		end
 	end)
@@ -722,7 +721,7 @@ function module:SetMicromenuExtraButtons()
 		buttonRight:SetBackdropColor(module:RGB("Micromenu"))
 		buttonRight:SetBackdropBorderColor(0, 0, 0, 0)
 
-		local clickerRight = CreateFrame("Button", "LUIMicromenu_clickerRight", buttonRight, "BackdropTemplate")
+		clickerRight = CreateFrame("Button", "LUIMicromenu_clickerRight", buttonRight, "BackdropTemplate")
 		clickerRight:SetSize(40, 12)
 		clickerRight:SetPoint("TOP", buttonRight, "TOP", 22, -5)
 		clickerRight:RegisterForClicks("AnyUp")
@@ -730,7 +729,7 @@ function module:SetMicromenuExtraButtons()
 		clickerRight:SetScript("OnClick", function(self, button)
 			if minimapMod:IsEnabled() then
 				if button == "RightButton" then
-					ToggleFrame(WorldMapFrame)
+					_G.ToggleFrame(_G.WorldMapFrame)
 				else
 					if Minimap:IsVisible() then
 						Minimap:Hide()
@@ -739,7 +738,7 @@ function module:SetMicromenuExtraButtons()
 					end
 				end
 			else
-				ToggleFrame(WorldMapFrame)
+				_G.ToggleFrame(_G.WorldMapFrame)
 			end
 		end)
 
@@ -768,7 +767,7 @@ function module:SetMicromenuExtraButtons()
 
 	local raidmenu_mod = LUI:GetModule("RaidMenu", true)
 	if raidmenu_mod then
-		local buttonLeft = CreateFrame("Frame", "LUIMicromenu_buttonLeft", buttonMiddle, "BackdropTemplate")
+		buttonLeft = CreateFrame("Frame", "LUIMicromenu_buttonLeft", buttonMiddle, "BackdropTemplate")
 		buttonLeft:SetSize(128, 128)
 		buttonLeft:SetPoint("LEFT", buttonMiddle, "LEFT", -47, -3)
 		buttonLeft:SetBackdrop({
@@ -780,16 +779,16 @@ function module:SetMicromenuExtraButtons()
 		buttonLeft:SetBackdropColor(module:RGB("Micromenu"))
 		buttonLeft:SetBackdropBorderColor(0, 0, 0, 0)
 
-		local leftClicker = CreateFrame("Button", "LUIMicromenu_leftClicker", buttonLeft, "BackdropTemplate")
-		leftClicker:SetSize(40, 12)
-		leftClicker:SetPoint("TOP", buttonLeft, "TOP", -22, -5)
-		leftClicker:RegisterForClicks("AnyUp")
+		clickerLeft = CreateFrame("Button", "LUIMicromenu_clickerLeft", buttonLeft, "BackdropTemplate")
+		clickerLeft:SetSize(40, 12)
+		clickerLeft:SetPoint("TOP", buttonLeft, "TOP", -22, -5)
+		clickerLeft:RegisterForClicks("AnyUp")
 
-		leftClicker:SetScript("OnClick", function(self, button)
+		clickerLeft:SetScript("OnClick", function(self, button)
 			raidmenu_mod:OverlapPrevention("RM", "toggle")
 		end)
 
-		leftClicker:SetScript("OnEnter", function(self)
+		clickerLeft:SetScript("OnEnter", function(self)
 			buttonLeft:SetBackdrop({
 				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\mm_button_left_hover",
 				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -800,7 +799,7 @@ function module:SetMicromenuExtraButtons()
 			buttonLeft:SetBackdropBorderColor(0, 0, 0, 0)
 		end)
 
-		leftClicker:SetScript("OnLeave", function(self)
+		clickerLeft:SetScript("OnLeave", function(self)
 			buttonLeft:SetBackdrop({
 				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\mm_button_left",
 				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -817,6 +816,7 @@ function module:SetMicromenuExtraButtons()
 	module.buttonRight = buttonRight
 	module.clickerLeft = clickerLeft
 	module.clickerRight = clickerRight
+	module.clickerMiddle = clickerMiddle
 end
 
 function module:SetMicromenu()

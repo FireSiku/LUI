@@ -13,9 +13,8 @@ local L = LUI.L
 local module = LUI:GetModule("RaidMenu")
 local db, dbd
 
-local Themes = LUI:GetModule("Themes")
 local Panels = LUI:GetModule("Panels")
-local Micromenu = LUI:GetModule("Micromenu")
+local Micromenu = LUI:GetModule("Micromenu", true)
 local Media = LibStub("LibSharedMedia-3.0")
 
 local GetRaidTargetIndex = _G.GetRaidTargetIndex
@@ -65,7 +64,7 @@ end
 
 function module:OverlapPrevention(frame, action)
 	local Y_Position = Y_normal
-	local X_Position = X_normal
+	local X_Position = X_compact
 	if db.Compact then
 		Y_Position = Y_compact + (db.Spacing / 2)
 		X_Position = X_compact + (db.Spacing / 2)
@@ -286,11 +285,9 @@ end
 
 function module:SetColors()
 	if not db.Enable or not Micromenu then return end
-
-	RaidMenu_Parent:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg2))
-	RaidMenu:SetBackdropColor(unpack(Themes.db.profile.micromenu_bg))
-	local r, g, b = unpack(Themes.db.profile.micromenu)
-	RaidMenu_Border:SetBackdropColor(r, g, b, 1)
+	RaidMenu_Parent:SetBackdropColor(Micromenu:RGB("Background"))
+	RaidMenu:SetBackdropColor(Micromenu:RGB("Background"))
+	RaidMenu_Border:SetBackdropColor(Micromenu:RGB("Micromenu"))
 end
 
 function module:SetRaidMenu()
