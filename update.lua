@@ -265,11 +265,11 @@ function LUI:ApplyUpdate(ver)
 			end
 			LUI:Printf("Micromenu.Colors.Background has been restored (used to be Themes.Colors.MicroMenu.micromenu_bg)")
 
-			tinsert(cleanUp[theme_db], "minimap")
-			tinsert(cleanUp[theme_db], "minimap_bg")
-			tinsert(cleanUp[theme_db], "minimap_bg2")
-			tinsert(cleanUp[theme_db], "minimap_btn")
-			tinsert(cleanUp[theme_db], "minimap_btn_hover")
+			tinsert(cleanUp[theme_db], "micromenu")
+			tinsert(cleanUp[theme_db], "micromenu_bg")
+			tinsert(cleanUp[theme_db], "micromenu_bg2")
+			tinsert(cleanUp[theme_db], "micromenu_btn")
+			tinsert(cleanUp[theme_db], "micromenu_btn_hover")
 
 			if type(micro_mod.Refresh) == "function" then micro_mod:Refresh() end
 		end

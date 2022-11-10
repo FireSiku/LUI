@@ -311,6 +311,24 @@ end
 -- / CREATE ME A FRAME FUNC / --
 ------------------------------------------------------
 
+--- Function to simplify creating a frame
+---@generic T, Tp
+---@param fart `T` | FrameType
+---@param fname string
+---@param fparent any
+---@param fwidth number
+---@param fheight number
+---@param fscale number
+---@param fstrata FrameStrata
+---@param flevel number
+---@param fpoint AnchorPoint
+---@param frelativeFrame any
+---@param frelativePoint AnchorPoint
+---@param fofsx number
+---@param fofsy number
+---@param falpha number
+---@param finherit `Tp` | TemplateType
+---@return T|Tp
 function LUI:CreateMeAFrame(fart,fname,fparent,fwidth,fheight,fscale,fstrata,flevel,
 							fpoint,frelativeFrame,frelativePoint,fofsx,fofsy,falpha,finherit)
 	local f = CreateFrame(fart,fname,fparent,finherit)
