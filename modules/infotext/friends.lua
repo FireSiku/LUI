@@ -630,6 +630,7 @@ end
 
 function element:OnCreate()
 	element:AddUpdate(C_FriendList.ShowFriends, FRIENDS_UPDATE_TIME)
+	element:FriendlistUpdate()
 	element:RegisterEvent("FRIENDLIST_UPDATE", "FriendlistUpdate")
 	C_FriendList.ShowFriends()
 
