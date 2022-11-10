@@ -192,7 +192,7 @@ end
 -- Shift-LeftClick: /who
 function element.OnGuildButtonClick(member, button)
 	if IsAltKeyDown() then
-		_G.InviteUnit(member.unit)
+		C_PartyInfo.InviteUnit(member.unit)
 	elseif IsControlKeyDown() then
 		if button == "LeftButton" and CanEditPublicNote() then
 			SetGuildRosterSelection(member.guildIndex)
