@@ -18,6 +18,8 @@ local db
 -- Locals and Constants
 local GetMinimapZoneText = _G.GetMinimapZoneText
 local ToggleDropDownMenu = _G.ToggleDropDownMenu
+local TrackingFrame = _G.MinimapCluster.Tracking
+local MailFrame = _G.MinimapCluster.MailFrame
 local MINIMAP_LABEL = _G.MINIMAP_LABEL
 local Minimap = _G.Minimap
 
@@ -50,11 +52,9 @@ local oldDefault = {}         -- Keep information on default minimap
 function GetMinimapShape() return minimapShape end
 
 local minimapFrames = {
-	"MinimapCluster",          --Minimap Original Parent, contains ZoneText, InstanceDifficulties
-	"MinimapBorder",           --Borders
---	"MiniMapWorldMapButton",   --World Map
+	"MinimapCluster",          --Minimap Original Parent, contains ZoneText, MailFrame, Tracking, InstanceDifficulties
+	--"MinimapBackdrop",           --Borders, contains Garrison button however.
 	"TimeManagerClockButton",  --Clock
-	"MiniMapTracking",         --Tracking
 	"GameTimeFrame",           --Calendar
 	"MinimapCompassTexture"		-- Dragonflight Minimap Frame
 }
@@ -74,6 +74,10 @@ function module:HideDefaultMinimap()
 	oldDefault.parent = Minimap:GetParent()
 	Minimap:SetParent(UIParent)
 
+	--Reparent Mail and Tracking
+	MailFrame:SetParent(Minimap)
+	--TrackingFrame:SetParent(Minimap)
+	
 	--Turn the Minimap into a square
 	Minimap:SetMaskTexture(MINIMAP_SQUARE_TEXTURE_MASK)
 	minimapShape = "SQUARE"
@@ -180,8 +184,13 @@ function module:SetMinimap()
 
 	-- Add an offset to the Garrison/Covenant button so it does not cover the coordinates
 	local expansionButton = _G.ExpansionLandingPageMinimapButton
-	local expPoint, expParent, expRelativePoint, expOffsetX, expOffsetY = expansionButton:GetPoint(1)
-	expansionButton:SetPoint(expPoint, expParent, expRelativePoint, expOffsetX, expOffsetY + 20)
+	-- local expPoint, expParent, expRelativePoint, expOffsetX, expOffsetY = expansionButton:GetPoint(1)
+	-- expansionButton:ClearAllPoints()
+	-- expansionButton:SetPoint(expPoint, expParent, expRelativePoint, expOffsetX, expOffsetY + 20)
+
+	-- -- Move the Mail
+	MailFrame:ClearAllPoints()
+	MailFrame:SetPoint("BOTTOMLEFT", expansionButton, "TOPLEFT", 15, 0)
 
 	-- Set Coord Text
 	local minimapCoord = CreateFrame("Frame", "LUIMinimapCoord", Minimap)
@@ -227,7 +236,7 @@ function module:SetMinimap()
 	Minimap:SetScript("OnMouseUp", function(self, button)
 		--Right Click shows the Tracking dropdown, only if module is enabled.
 		if button == "RightButton" and module:IsEnabled() then
-			ToggleDropDownMenu(1, nil, MinimapCluster.Tracking.DropDown, MinimapCluster.Tracking, 8, 5);
+			ToggleDropDownMenu(1, nil, TrackingFrame.DropDown, self);
 		else Minimap:OnClick(self)
 		end
 	end)
