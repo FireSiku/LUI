@@ -8,6 +8,7 @@
 
 local _, LUI = ...
 local module = LUI:GetModule("UI Elements")
+local Micromenu = LUI:GetModule("Micromenu", true)
 local db
 
 --local NUM_OBJECTIVE_HEADERS = 3
@@ -19,6 +20,23 @@ local orderUI = false
 local ObjectiveTrackerFrame = _G.ObjectiveTrackerFrame
 local DurabilityFrame = _G.DurabilityFrame
 local Minimap = _G.Minimap
+
+local BlizzMicroButtons = {
+	CharacterMicroButton = "LUIMicromenu_Player",
+	SpellbookMicroButton = "LUIMicromenu_Spellbook",
+	TalentMicroButton = "LUIMicromenu_Talents",
+	AchievementMicroButton = "LUIMicromenu_Achievements",
+	QuestLogMicroButton = "LUIMicromenu_Quests",
+	GuildMicroButton = "LUIMicromenu_Guild",
+	LFDMicroButton = "LUIMicromenu_LFG",
+	EJMicroButton = "LUIMicromenu_EJ",
+	CollectionsMicroButton = "LUIMicromenu_Collections",
+	CollectionsJournalTab1 = "LUIMicromenu_Collections",
+	CollectionsJournalTab2 = "LUIMicromenu_Collections",
+	CollectionsJournalTab3 = "LUIMicromenu_Collections",
+	CollectionsJournalTab4 = "LUIMicromenu_Collections",
+	CollectionsJournalTab5 = "LUIMicromenu_Collections",
+}
 
 
 -- ####################################################################################################################
@@ -41,6 +59,10 @@ function module:SetUIElements()
 	module:SetPosition('PlayerPowerBarAlt')
 	module:SetPosition('QueueStatusButton')
 	module:SecureHook(_G.HelpTipTemplateMixin, "Init", "AlertHandler")
+	-- It is possible for it to execute before we hooked it, run AlertHandler for active ones as well.
+	for alert in _G.HelpTip.framePool:EnumerateActive() do
+		module:AlertHandler(alert, alert:GetParent(), alert.info, alert.relativeRegion)
+	end
 end
 
 function module:SetHiddenFrames()
@@ -64,10 +86,30 @@ function module:SetHiddenFrames()
 	end
 end
 
+--- @TODO: Develop this more into its own API that allows all modules to register or reorganize frames. 
 function module:AlertHandler(frame, parent, info, relativeRegion)
 	if relativeRegion == _G.QueueStatusButton then
-		LUI:Print(relativeRegion, relativeRegion:GetName())
 		frame:AnchorAndRotate(_G.HelpTip.Point.LeftEdgeCenter)
+	end
+	if Micromenu and Micromenu:IsEnabled() then
+		local micro_db = Micromenu.db.profile
+		for blizzardFrame, microFrame in pairs(BlizzMicroButtons) do
+			if relativeRegion == _G[blizzardFrame] then
+				LUI:Print(frame.appliedTargetPoint, frame.info.targetPoint, _G.HelpTip.Point.BottomEdgeCenter)
+				frame.relativeRegion = _G[microFrame]
+				frame.info.targetPoint = _G.HelpTip.Point.BottomEdgeCenter
+				--frame:AnchorAndRotate(_G.HelpTip.Point.BottomEdgeCenter) -- Does not appear to work for MicroButtons? 
+				--LUI:Print(frame.appliedTargetPoint, frame.info.targetPoint, _G.HelpTip.Point.BottomEdgeCenter)
+			end
+		end
+	end
+end
+
+function module:DebugAlert()
+	-- It is possible for it to execute before we hooked it, run AlertHandler for active ones as well.
+	LUI:ModPrint("Listing all current alerts")
+	for alert in _G.HelpTip.framePool:EnumerateActive() do
+		LUI:Print(alert.relativeRegion.GetName and alert.relativeRegion:GetName() or alert.relativeRegion:GetDebugName())
 	end
 end
 

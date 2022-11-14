@@ -486,8 +486,8 @@ local function ColorMenuSetter(info, value, g, b, a)
 	local db = info.handler.db.profile.Colors
 	local c = db[string.sub(info.option.name,0, -7)]
 	if info.type == "color" then
-		c.r, c.g = RoundToSignificantDigits(value, 2), RoundToSignificantDigits(g, 2) 
-		c.b, c.a = RoundToSignificantDigits(b, 2), RoundToSignificantDigits(a, 2)		
+		c.r, c.g = RoundToSignificantDigits(value, 2), RoundToSignificantDigits(g, 2)
+		c.b, c.a = RoundToSignificantDigits(b, 2), RoundToSignificantDigits(a, 2)
 	elseif info.type == "select" then
 		LUI:Print("ct value")
 		c.t = value
