@@ -232,7 +232,7 @@ module.defaults = {
 			LeaderIndicator = { Enable = true, Size = 17, X = 0, Y = 10, Point = "TOPLEFT" },
 			GroupRoleIndicator = { Enable = true, Size = 22, X = 15, Y = 10, Point = "TOPRIGHT" },
 			RaidMarkerIndicator = { Enable = true, Size = 55, X = 0, Y = 10, Point = "CENTER" },
-			RestingIndicator = { Enable = false, Size = 27, X = -12, Y = 13, Point = "TOPLEFT" },
+			RestingIndicator = { Enable = true, Size = 27, X = -12, Y = 13, Point = "TOPLEFT" },
 			CombatIndicator = { Enable = false, Size = 27, X = -15, Y = -30, Point = "BOTTOMLEFT" },
 			NameText = {
 				Enable = false,

@@ -2549,15 +2549,13 @@ local function SetStyle(self, unit, isSingle)
 	--	Indicators
 	------------------------------------------------------------------------
 
-	if oufdb.Indicators then
-		if oufdb.LeaderIndicator and oufdb.LeaderIndicator.Enable then module.funcs.LeaderIndicator(self, unit, oufdb) end
-		if oufdb.RaidMarkerIndicator and oufdb.RaidMarkerIndicator.Enable then module.funcs.RaidTargetIndicator(self, unit, oufdb) end
-		if oufdb.GroupRoleIndicator and oufdb.GroupRoleIndicator.Enable then module.funcs.GroupRoleIndicator(self, unit, oufdb) end
-		if oufdb.PvPIndicator and oufdb.PvPIndicator.Enable then module.funcs.PvPIndicator(self, unit, oufdb) end
-		if oufdb.RestingIndicator and oufdb.RestingIndicator.Enable then module.funcs.RestingIndicator(self, unit, oufdb) end
-		if oufdb.CombatIndicator and oufdb.CombatIndicator.Enable then module.funcs.CombatIndicator(self, unit, oufdb) end
-		if oufdb.ReadyCheckIndicator and oufdb.ReadyCheckIndicator.Enable then module.funcs.ReadyCheckIndicator(self, unit, oufdb) end
-	end
+	if oufdb.LeaderIndicator and oufdb.LeaderIndicator.Enable then module.funcs.LeaderIndicator(self, unit, oufdb) end
+	if oufdb.RaidMarkerIndicator and oufdb.RaidMarkerIndicator.Enable then module.funcs.RaidTargetIndicator(self, unit, oufdb) end
+	if oufdb.GroupRoleIndicator and oufdb.GroupRoleIndicator.Enable then module.funcs.GroupRoleIndicator(self, unit, oufdb) end
+	if oufdb.PvPIndicator and oufdb.PvPIndicator.Enable then module.funcs.PvPIndicator(self, unit, oufdb) end
+	if oufdb.RestingIndicator and oufdb.RestingIndicator.Enable then module.funcs.RestingIndicator(self, unit, oufdb) end
+	if oufdb.CombatIndicator and oufdb.CombatIndicator.Enable then module.funcs.CombatIndicator(self, unit, oufdb) end
+	if oufdb.ReadyCheckIndicator and oufdb.ReadyCheckIndicator.Enable then module.funcs.ReadyCheckIndicator(self, unit, oufdb) end
 
 	------------------------------------------------------------------------
 	--	Player Specific Items

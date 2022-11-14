@@ -194,12 +194,10 @@ local function GenerateClassBarGroup(unit, name, order)
     return group
 end
 
-local function GenerateIndicatorGroup(unit, name, order)
-    local dbIcon = db[unit][name]
-    if not dbIcon then return end    -- If that unit does not have options for that bar, nil it
-
+local function GenerateIndicatorGroup(unit, name, order, get, set)
+    if not get or not set then return end
     local optName = string.gsub(name, "Indicator", " Indicator")
-    local group = Opt:Group(name, nil, order, nil, nil, nil, Opt.GetSet(dbIcon))
+    local group = Opt:Group(name, nil, order, nil, nil, nil, get, set)
     group.args = {
         Enable = Opt:Toggle("Enabled", nil, 1, nil, "full"),
         X = Opt:InputNumber("X Value", nil, 2),
@@ -394,12 +392,12 @@ local function NewUnitOptionGroup(unit, order)
         }
     end
 
-    if dbUnit.LeaderIndicator then unitOptions.args.LeaderIndicator = GenerateIndicatorGroup("Leader Icon", 50, Opt.GetSet(dbUnit.LeaderIndicator)) end
-    if dbUnit.GroupRoleIndicator then unitOptions.args.GroupRoleIndicator = GenerateIndicatorGroup("Role Icon", 51, Opt.GetSet(dbUnit.GroupRoleIndicator)) end
-    if dbUnit.RaidMarkerIndicator then unitOptions.args.RaidMarkerIndicator = GenerateIndicatorGroup("Raid Icon", 52, Opt.GetSet(dbUnit.RaidMarkerIndicator)) end
-    if dbUnit.PvPIndicator then unitOptions.args.PvPIndicator = GenerateIndicatorGroup("PvP Icon", 53, Opt.GetSet(dbUnit.PvPIndicator)) end
-    if dbUnit.RestingIndicator then unitOptions.args.RestingIndicator = GenerateIndicatorGroup("Resting Icon", 54, Opt.GetSet(dbUnit.RestingIndicator)) end
-    if dbUnit.ReadyCheckIndicator then unitOptions.args.ReadyCheckIndicator = GenerateIndicatorGroup("Ready Check Icon", 54, Opt.GetSet(dbUnit.ReadyCheckIndicator)) end
+    if dbUnit.LeaderIndicator then unitOptions.args.LeaderIndicator = GenerateIndicatorGroup(unit, "Leader Icon", 50, Opt.GetSet(dbUnit.LeaderIndicator)) end
+    if dbUnit.GroupRoleIndicator then unitOptions.args.GroupRoleIndicator = GenerateIndicatorGroup(unit, "Role Icon", 51, Opt.GetSet(dbUnit.GroupRoleIndicator)) end
+    if dbUnit.RaidMarkerIndicator then unitOptions.args.RaidMarkerIndicator = GenerateIndicatorGroup(unit, "Raid Icon", 52, Opt.GetSet(dbUnit.RaidMarkerIndicator)) end
+    if dbUnit.PvPIndicator then unitOptions.args.PvPIndicator = GenerateIndicatorGroup(unit, "PvP Icon", 53, Opt.GetSet(dbUnit.PvPIndicator)) end
+    if dbUnit.RestingIndicator then unitOptions.args.RestingIndicator = GenerateIndicatorGroup(unit, "Resting Icon", 54, Opt.GetSet(dbUnit.RestingIndicator)) end
+    if dbUnit.ReadyCheckIndicator then unitOptions.args.ReadyCheckIndicator = GenerateIndicatorGroup(unit, "Ready Check Icon", 54, Opt.GetSet(dbUnit.ReadyCheckIndicator)) end
 
     if dbUnit.Castbar then
         unitOptions.args.Castbar = GenerateCastbarGroup(unit, 61)
