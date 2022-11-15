@@ -113,30 +113,18 @@ function ToggleArt(status)
 	end
 
 	if db.UpperArt.CenterBackground then
-		if db.UpperArt.Background then
-			LUI.Navi.CenterBackground:Show()
-			LUI.Navi.CenterBackgroundAlternative:Hide()
-		else
-			LUI.Navi.CenterBackground:Hide()
-			LUI.Navi.CenterBackgroundAlternative:Show()
-		end
+		LUI.Navi.CenterBackground:Hide()
+		LUI.Navi.CenterBackgroundAlternative:Show()
 	else
 		LUI.Navi.CenterBackground:Hide()
 		LUI.Navi.CenterBackgroundAlternative:Hide()
 	end
 
 	if db.UpperArt.Background then
-		if db.UpperArt.CenterBackground then
-			LUI.Info.Topleft:Show()
-			LUI.Info.Topright:Show()
-			LUI.Info.TopleftAlternative:Hide()
-			LUI.Info.ToprightAlternative:Hide()
-		else
-			LUI.Info.Topleft:Hide()
-			LUI.Info.Topright:Hide()
-			LUI.Info.TopleftAlternative:Show()
-			LUI.Info.ToprightAlternative:Show()
-		end
+		LUI.Info.Topleft:Hide()
+		LUI.Info.Topright:Hide()
+		LUI.Info.TopleftAlternative:Show()
+		LUI.Info.ToprightAlternative:Show()
 	else
 		LUI.Info.Topleft:Hide()
 		LUI.Info.Topright:Hide()

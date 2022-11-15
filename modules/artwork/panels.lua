@@ -1474,6 +1474,35 @@ function module:LoadOptions()
 	return options
 end
 
+function module:AdjustTopPanel()
+	local Infotext = LUI:GetModule("Infotext", true)
+	if Infotext and Infotext:IsEnabled() then
+		LUI.Navi.TopButtonBackground:SetPoint("TOP", UIParent, "TOP", 17, -16)
+		LUI.Navi.CenterBackground:SetPoint("TOP", UIParent, "TOP", 17, -17)
+		LUI.Navi.CenterBackgroundAlternative:SetPoint("TOP", UIParent, "TOP", 17, -17)
+		LUI.Navi.Chat:SetPoint("LEFT", LUI.Orb, "LEFT", -176, 49)
+		LUI.Navi.Tps:SetPoint("LEFT", LUI.Orb, "LEFT", -74,  18)
+		LUI.Navi.Dps:SetPoint("RIGHT", LUI.Orb, "RIGHT", 77,  21)
+		LUI.Navi.Raid:SetPoint("RIGHT", LUI.Orb, "RIGHT", 184, 47)
+		LUI.Navi.Chat.Hover:SetPoint("LEFT", LUI.Orb, "LEFT", -176, 49)
+		LUI.Navi.Tps.Hover:SetPoint("LEFT", LUI.Orb, "LEFT", -74,  16)
+		LUI.Navi.Dps.Hover:SetPoint("RIGHT", LUI.Orb, "RIGHT", 77,  19)
+		LUI.Navi.Raid.Hover:SetPoint("RIGHT", LUI.Orb, "RIGHT", 184, 47)
+	else
+		LUI.Navi.TopButtonBackground:SetPoint("TOP", UIParent, "TOP", 17, 8)
+		LUI.Navi.CenterBackground:SetPoint("TOP", UIParent, "TOP", 17, 5)
+		LUI.Navi.CenterBackgroundAlternative:SetPoint("TOP", UIParent, "TOP", 17, 5)
+		LUI.Navi.Chat:SetPoint("LEFT", LUI.Orb, "LEFT", -176, 73)
+		LUI.Navi.Tps:SetPoint("LEFT", LUI.Orb, "LEFT", -74,  42)
+		LUI.Navi.Dps:SetPoint("RIGHT", LUI.Orb, "RIGHT", 77,  45)
+		LUI.Navi.Raid:SetPoint("RIGHT", LUI.Orb, "RIGHT", 184, 71)
+		LUI.Navi.Chat.Hover:SetPoint("LEFT", LUI.Orb, "LEFT", -176, 73)
+		LUI.Navi.Tps.Hover:SetPoint("LEFT", LUI.Orb, "LEFT", -74,  40)
+		LUI.Navi.Dps.Hover:SetPoint("RIGHT", LUI.Orb, "RIGHT", 77,  43)
+		LUI.Navi.Raid.Hover:SetPoint("RIGHT", LUI.Orb, "RIGHT", 184, 71)
+	end
+end
+
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self)
 
@@ -1501,4 +1530,5 @@ function module:OnEnable()
 	end
 
 	self:SetFrames()
+	module:AdjustTopPanel()
 end

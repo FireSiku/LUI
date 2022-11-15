@@ -12,6 +12,7 @@ local L = LUI.L
 
 ---@class InfotextModule : LUIModule
 local module = LUI:NewModule("Infotext", "AceHook-3.0")
+local Panels = LUI:GetModule("Panels", true)
 
 -- ####################################################################################################################
 -- ##### Default Settings #############################################################################################
@@ -204,9 +205,15 @@ end
 
 function module:OnEnable()
 	module:SetInfoPanels()
+	if Panels and Panels:IsEnabled() then
+		Panels:AdjustTopPanel()
+	end
 end
 
 function module:OnDisable()
 	module.topAnchor:Hide()
 	module.bottomAnchor:Hide()
+	if Panels and Panels:IsEnabled() then
+		Panels:AdjustTopPanel()
+	end
 end
