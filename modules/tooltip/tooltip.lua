@@ -403,6 +403,9 @@ function module:OnTooltipShow(frame)
 	if db.HideCombat and InCombatLockdown() then
 		return frame:Hide()
 	end
+	
+	---@TODO: Investigate why a frame with no name would be called for this function. Issue #46
+	if not frame.GetName then return end
 
 	--If a frame has a smaller scale than normal for any reasons, make sure that's respected.
 	if initialScale[frame:GetName()] then
