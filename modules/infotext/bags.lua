@@ -16,6 +16,7 @@ local element = module:NewElement("Bags", "AceEvent-3.0")
 local wipe, format, pairs = wipe, format, pairs
 local GetContainerNumFreeSlots = _G.GetContainerNumFreeSlots
 local GetContainerNumSlots = _G.GetContainerNumSlots
+local C_Container = _G.C_Container
 
 -- Constants
 local NUM_BAG_SLOTS = _G.NUM_BAG_SLOTS
@@ -51,8 +52,8 @@ local totalSlots = {}
 function element:UpdateBags()
 	local free, total = 0, 0
 	for i = 0, NUM_BAG_SLOTS do
-		free = free + GetContainerNumFreeSlots(i)
-		total = total + GetContainerNumSlots(i)
+		free = free + C_Container.GetContainerNumFreeSlots(i)
+		total = total + C_Container.GetContainerNumSlots(i)
 	end
 	element.text = format(L["InfoBags_Text_Format"], total - free, total)
 	element:UpdateTooltip()
@@ -71,8 +72,8 @@ function element.OnTooltipShow(GameTooltip)
 	wipe(freeSlots)
 	wipe(totalSlots)
 	for i=0, NUM_BAG_SLOTS do
-		local free, bagType = GetContainerNumFreeSlots(i)
-		local total = GetContainerNumSlots(i)
+		local free, bagType = C_Container.GetContainerNumFreeSlots(i)
+		local total = C_Container.GetContainerNumSlots(i)
 		if bagType then
 			freeSlots[bagType] = (freeSlots[bagType] and freeSlots[bagType] + free) or free
 			totalSlots[bagType] = (totalSlots[bagType] and totalSlots[bagType] + total) or total
