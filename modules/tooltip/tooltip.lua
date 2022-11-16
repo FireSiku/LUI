@@ -14,10 +14,12 @@ local Media = LibStub("LibSharedMedia-3.0")
 local db
 
 local QuestMapLog_GetCampaignTooltip = _G.QuestMapLog_GetCampaignTooltip
+local TooltipDataProcessor = _G.TooltipDataProcessor
 local GameTooltipStatusBar = _G.GameTooltipStatusBar
 local BreakUpLargeNumbers = _G.BreakUpLargeNumbers
 local GetItemQualityColor = _G.GetItemQualityColor
 local UnitClassification = _G.UnitClassification
+local UnitTokenFromGUID = _G.UnitTokenFromGUID
 local InCombatLockdown = _G.InCombatLockdown
 local UnitCreatureType = _G.UnitCreatureType
 local UnitHasVehicleUI = _G.UnitHasVehicleUI
@@ -26,6 +28,7 @@ local UnitHealthMax = _G.UnitHealthMax
 local GetGuildInfo = _G.GetGuildInfo
 local UnitIsPlayer = _G.UnitIsPlayer
 local UnitReaction = _G.UnitReaction
+local TooltipUtil = _G.TooltipUtil
 local GetItemInfo = _G.GetItemInfo
 local UnitIsGhost = _G.UnitIsGhost
 local UnitPVPName = _G.UnitPVPName
@@ -50,6 +53,7 @@ local PVP_ENABLED = _G.PVP_ENABLED
 local GUILD = _G.GUILD
 local LEVEL = _G.LEVEL
 local DEAD = _G.DEAD
+local BOSS = _G.BOSS
 
 local TOOLTIPS_LIST = {
 	"GameTooltip",
@@ -245,26 +249,6 @@ end
 -- ##### Module Setup #################################################################################################
 -- ####################################################################################################################
 
--- function module:SetTooltip()
--- 	module:SecureHook("GameTooltip_SetDefaultAnchor", function(frame, parent)
--- 		if db.Cursor then
--- 			frame:SetOwner(parent, "ANCHOR_CURSOR")
--- 		else
--- 			frame:SetOwner(parent, "ANCHOR_NONE")
--- 			frame:ClearAllPoints()
--- 			frame:SetPoint(db.Point, UIParent, db.X, db.Y)
--- 		end
--- 	end)
-
--- 	module:SetStatusHealthBar()
--- 	module:HookScript(GameTooltip, "OnTooltipSetUnit", "OnGameTooltipSetUnit")
-
--- 	--Hide ability tooltips if option is enabled
--- 	module:SecureHook(GameTooltip, "SetAction", "HideCombatSkillTooltips")
--- 	module:SecureHook(GameTooltip, "SetPetAction", "HideCombatSkillTooltips")
--- 	module:SecureHook(GameTooltip, "SetShapeshift", "HideCombatSkillTooltips")
--- end
-
 function module:SetTooltip(tooltip, name)
 	-- Hide the textures
 	if tooltip.NineSlice then
@@ -418,13 +402,17 @@ function module:OnTooltipShow(frame)
 	module:SetBorderColor(frame)
 end
 
--- luacheck: globals GameTooltipTextLeft1 GameTooltipTextLeft2
-function module:OnGameTooltipSetUnit(frame)
+--- Tooltip Processing function
+---@param frame GameTooltip
+---@param data TooltipData
+function module.OnGameTooltipSetUnit(frame, data)
+	-- luacheck: globals GameTooltipTextLeft1 GameTooltipTextLeft2
 	if db.HideCombatUnit and InCombatLockdown() then
 		return frame:Hide()
 	end
+	TooltipUtil.SurfaceArgs(data)
 
-	local unit = GetTooltipUnit(frame)
+	local unit = UnitTokenFromGUID(data.guid)
 	if not unit then return frame:Hide() end
 
 	-- Hide tooltip on unitframes if that option is enabled
@@ -471,9 +459,10 @@ function module:OnGameTooltipSetUnit(frame)
 	-- The line with level information isnt always the same, so we need to do some scanning.
 	for i = offset, frame:NumLines() do
 		local line = _G["GameTooltipTextLeft"..i]
-		if line:GetText() then
+		local text = line:GetText()
+		if text then
 			-- Level line for players
-			if line:GetText():find("^"..LEVEL) and race then
+			if text:find(LEVEL) and race then
 				local levelString = (level > 0 and level) or "??"
 				local levelText = diffColor:WrapTextInColorCode(levelString)
 				local classText = unitColor:WrapTextInColorCode(localizedClass)
@@ -481,11 +470,12 @@ function module:OnGameTooltipSetUnit(frame)
 				line:SetFormattedText("%s %s%s %s", levelText, sexString, race, classText)
 
 			-- Level line for creatures
-			elseif line:GetText():find("^"..LEVEL) or (creatureType and line:GetText():find("^"..creatureType)) then
+			elseif text:find(LEVEL) or (creatureType and text:find(creatureType)) then
 				--HACK: Not sure if needed anymore.
 				--if level == -1 and classification == "elite" then classification = "worldboss" end
-				if classification == "worldboss" then
+				if text:find(BOSS) then
 					-- Always color world bosses as skulls.
+					classification = "worldboss"
 					diffColor:SetRGB(module:RGB("DiffSkull"))
 				end
 
@@ -494,7 +484,7 @@ function module:OnGameTooltipSetUnit(frame)
 				local classificationString = diffColor:WrapTextInColorCode(MOB_CLASSIFICATION[classification])
 				line:SetFormattedText("%s%s %s", levelText, classificationString, creatureType or "")
 			-- Remove the PVP line if the option is set
-			elseif line:GetText() == PVP_ENABLED and db.HidePVP then
+			elseif text == PVP_ENABLED and db.HidePVP then
 				line:SetText("")
 			end
 		end
@@ -544,20 +534,12 @@ function module:OnEnable()
 	module:SecureHook("SharedTooltip_SetBackdropStyle", module.UpdateTooltipBackdrop)
 
 	module:SetStatusHealthBar()
-	module:HookScript(GameTooltip, "OnTooltipSetUnit", "OnGameTooltipSetUnit")
-
-	module:SecureHook("GameTooltip_UpdateStyle", function(frame)
-		module:OnTooltipShow(frame)
-	end)
+	TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, module.OnGameTooltipSetUnit)
 
 	--Hide ability tooltips if option is enabled
 	module:SecureHook(GameTooltip, "SetAction", "HideCombatSkillTooltips")
 	module:SecureHook(GameTooltip, "SetPetAction", "HideCombatSkillTooltips")
 	module:SecureHook(GameTooltip, "SetShapeshift", "HideCombatSkillTooltips")
-
-	--TODO: Move Elsewhere. Likely will be part of the UIElements Module
-	TicketStatusFrame:ClearAllPoints()
-	TicketStatusFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -175, -70)
 end
 
 function module:OnDisable()
