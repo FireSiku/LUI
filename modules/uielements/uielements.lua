@@ -95,11 +95,9 @@ function module:AlertHandler(frame, parent, info, relativeRegion)
 		local micro_db = Micromenu.db.profile
 		for blizzardFrame, microFrame in pairs(BlizzMicroButtons) do
 			if relativeRegion == _G[blizzardFrame] then
-				LUI:Print(frame.appliedTargetPoint, frame.info.targetPoint, _G.HelpTip.Point.BottomEdgeCenter)
 				frame.relativeRegion = _G[microFrame]
 				frame.info.targetPoint = _G.HelpTip.Point.BottomEdgeCenter
 				--frame:AnchorAndRotate(_G.HelpTip.Point.BottomEdgeCenter) -- Does not appear to work for MicroButtons? 
-				--LUI:Print(frame.appliedTargetPoint, frame.info.targetPoint, _G.HelpTip.Point.BottomEdgeCenter)
 			end
 		end
 	end
