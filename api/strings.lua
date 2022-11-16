@@ -185,3 +185,10 @@ LUI.ColorTypes = {
 	Theme = L["Color_Theme"],
 	Class = L["Color_Class"],
 }
+
+LUI.Strata = {
+	BACKGROUND = L["Background"],
+	LOW = L["Low"],
+	MEDIUM = L["Medium"],
+	HIGH = L["High"],
+}

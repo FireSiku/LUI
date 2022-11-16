@@ -1,108 +1,19 @@
+--[[
+	Module.....: Artwork
+	Description: Adds panels and buttons to different UI elements.
+]]
 -- ####################################################################################################################
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
+-- luacheck: 
 
+---@type string, LUIAddon
 local _, LUI = ...
-local module = LUI:NewModule("Artwork")
 local L = LUI.L
+
+---@type MinimapModule
+local module = LUI:GetModule("Artwork")
 local db
-
--- ####################################################################################################################
--- ##### Default Settings #############################################################################################
--- ####################################################################################################################
-
-module.defaults = {
-	profile = {
-		Textures = {
-			ChatBG = {
-				Anchored = true,
-				TexMode = 1,
-				Texture = "panel_corner.tga",
-				Point = "TOPRIGHT",
-				Parent = "ChatFrame1",
-				RelativePoint = "TOPRIGHT",
-				CustomTexCoords = false,
-				HorizontalFlip = true,
-				VerticalFlip = false,
-				Width = 409,
-				Height = 182,
-				Order = 1,
-				X = 3,
-				Y = 4,
-				Left = 0,
-				Right = 1,
-				Up = 0,
-				Down = 1,
-			},
-		--[[	TestBG = {
-				Anchored = true,
-				TexMode = 1,
-				Texture = "panel_corner.tga",
-				Point = "TOPLEFT",
-				Parent = "ObjectiveTrackerFrame",
-				RelativePoint = "TOPLEFT",
-				CustomTexCoords = false,
-				HorizontalFlip = false,
-				VerticalFlip = false,
-				Width = 409,
-				Height = 182,
-				Order = 2,
-				X = -25,
-				Y = -2,
-				Left = 0,
-				Right = 1,
-				Up = 0,
-				Down = 1,
-			},]]
-			["Top Bar"] = {
-				Anchored = false,
-				TexMode = 1,
-				Texture = "bar_top.tga",
-				Point = "BOTTOM",
-				Parent = "UIParent",
-				RelativePoint = "BOTTOM",
-				CustomTexCoords = false,
-				HorizontalFlip = false,
-				VerticalFlip = false,
-				Width = 702,
-				Height = 36,
-				Order = 3,
-				X = 0,
-				Y = 120,
-				Left = 0,
-				Right = 1,
-				Up = 0,
-				Down = 1,
-			},
-			['*'] = {
-				Anchored = true,
-				TexMode = 1,
-				Texture = "panel_corner.tga",
-				Point = "CENTER",
-				Parent = "UIParent",
-				RelativePoint = "CENTER",
-				CustomTexCoords = false,
-				HorizontalFlip = false,
-				VerticalFlip = false,
-				Width = 400,
-				Height = 300,
-				Order = 100,
-				X = 0,
-				Y = 0,
-				Scale = 1,
-				Left = 0,
-				Right = 1,
-				Up = 0,
-				Down = 1,
-			},
-		},
-		Colors = {
-			ChatBG = { r = 0.12, g = 0.12,  b = 0.12, a = 0.5, t = "Class", },
-			["Top Bar"] = { r = 0.12, g = 0.12,  b = 0.12, a = 0.5, t = "Class", },
-			['*'] = { r = 0.12, g = 0.12,  b = 0.12, a = 1, t = "Class", },
-		}
-	},
-}
 
 -- ####################################################################################################################
 -- ##### Constant Tables ##############################################################################################
@@ -112,19 +23,21 @@ module.defaults = {
 -- First four are tex coords (Left, Right, Up, Down)
 -- next two are Width/Length of the visible texture.
 local LUI_TEXTURES_INFO = {
-	["left_border.tga"] =         {20/1024,  595/1024, 231/512, 492/512, 575, 261},
-	["left_border_back.tga"] =    {20/1024,  595/1024, 231/512, 492/512, 575, 261},
+	["left_border.tga"] =         {0, 1, 0, 1, 575, 261},
+	["left_border_back.tga"] =    {0, 1, 0, 1, 575, 261},
 	["panel_corner.tga"] =        {22/512,   372/512,  12/256,  183/256, 350, 85 },
 	["panel_corner_border.tga"] = {14/512,   341/512,  5/256,   145/256, 327, 140},
 	["panel_center_border.tga"] = {10/256,   246/256,  9/256,   168/256, 236, 159},
 	["bar_top.tga"] =             {161/1024, 863/1024, 13/64,   52/64,   702, 34 },
+	["bar_bottom.tga"] =          {0, 1, 0, 1,  702, 34},
+	["info_text.tga"] =			  {0, 1, 0, 1, 2000, 32},
 }
 
 --Table to hold all panels frames.
 local _panels = {}
 
 -- LUI Textures Directory
-local LUI_TEX_DIR = "Interface\\AddOns\\LUI4\\media\\textures\\"
+local LUI_TEX_DIR = "Interface\\AddOns\\LUI\\media\\textures\\infopanel\\"
 
 -- ####################################################################################################################
 -- ##### Panel Mixin ##################################################################################################
@@ -187,6 +100,8 @@ function PanelMixin:Refresh()
 	LUI:RestorePosition(self)
 	self:SetParent(parent)
 	self:SetAlpha(a)
+	self:SetFrameStrata(self.db.Strata)
+	self:SetFrameLevel(self.db.FrameLevel)
 
 	self.tex:SetTexture(self:GetTexture())
 	self.tex:SetTexCoord(self:GetTexCoord())
@@ -222,6 +137,7 @@ end
 
 function module:setPanels()
 	module.panelList = {}
+	db = module.db.profile
 
 	for name, paneldb in pairs(db.Textures) do
 		local frame = module:CreateNewPanel(name, paneldb)
@@ -240,20 +156,4 @@ function module:Refresh()
 	for name, panel in pairs(_panels) do
 		panel:Refresh()
 	end
-end
-
--- ####################################################################################################################
--- ##### Framework Events #############################################################################################
--- ####################################################################################################################
-
-function module:OnInitialize()
-	LUI:RegisterModule(module)
-	db = module.db.profile
-end
-
-function module:OnEnable()
-	module:setPanels()
-end
-
-function module:OnDisable()
 end

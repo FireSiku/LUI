@@ -45,18 +45,26 @@ api\restore.lua
 api\strings.lua
 LUI.lua
 update.lua
-
-### Artwork ###
 modules\artwork\themes.lua
 modules\artwork\panels.lua
-modules\artwork\artwork_v3.lua
+
+### Additional Scripts ###
+scripts\autoinvite.lua
+scripts\blizzoptionsmover.lua
+scripts\blizzscale.lua
+scripts\errorhider.lua
+scripts\talentspam.lua
+scripts\newplayerexperience.lua
+scripts\removethatbuff.lua
+# scripts\hideblizzard.lua
+api\frameidentifier.lua
 
 ### Fader ###
 # modules\fader\fader_init.lua
 # modules\fader\fader.lua
 
 ### Bars ###
-## modules\bars\bars.lua
+# modules\bars\bars.lua
 
 ### Auras ###
 ## modules\auras\auras.xml
@@ -128,17 +136,6 @@ modules\uielements\uielements.lua
 modules\uielements\colourpicker.lua
 modules\uielements\faq.lua
 
-### Additional Scripts ###
-scripts\autoinvite.lua
-scripts\blizzoptionsmover.lua
-scripts\blizzscale.lua
-scripts\errorhider.lua
-scripts\talentspam.lua
-scripts\newplayerexperience.lua
-scripts\removethatbuff.lua
-# scripts\hideblizzard.lua
-api\frameidentifier.lua
-
 ### Initialize Unitframes ###
 modules\unitframes\templates.xml
 modules\unitframes\unitframes_init.lua
@@ -171,3 +168,8 @@ addons\plexus.lua
 addons\omen.lua
 addons\recount.lua
 addons\details.lua
+
+### Artwork ###
+modules\artwork\artwork_init.lua
+modules\artwork\artwork_v3.lua
+modules\artwork\artwork.lua
