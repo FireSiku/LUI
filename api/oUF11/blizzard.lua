@@ -7,6 +7,7 @@ local MAX_ARENA_ENEMIES = _G.MAX_ARENA_ENEMIES or 5
 -- sourced from FrameXML/TargetFrame.lua
 local MAX_BOSS_FRAMES = _G.MAX_BOSS_FRAMES or 5
 
+local isArenaHooked = false
 local isPartyHooked = false
 
 local hiddenParent = CreateFrame('Frame', nil, UIParent)
@@ -58,7 +59,7 @@ local function handleFrame(baseName, doNotReparent)
 			buffFrame:UnregisterAllEvents()
 		end
 
-		local petFrame = frame.PetFrame
+		local petFrame = frame.petFrame or frame.PetFrame
 		if(petFrame) then
 			petFrame:UnregisterAllEvents()
 		end
@@ -66,6 +67,11 @@ local function handleFrame(baseName, doNotReparent)
 		local totFrame = frame.totFrame
 		if(totFrame) then
 			totFrame:UnregisterAllEvents()
+		end
+
+		local classPowerBar = frame.classPowerBar
+		if(classPowerBar) then
+			classPowerBar:UnregisterAllEvents()
 		end
 	end
 end
@@ -76,16 +82,6 @@ function oUF:DisableBlizzard(unit)
 	if(unit == 'player') then
 		handleFrame(PlayerFrame)
 
-		-- For the damn vehicle support:
-		PlayerFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
-		PlayerFrame:RegisterEvent('UNIT_ENTERING_VEHICLE')
-		PlayerFrame:RegisterEvent('UNIT_ENTERED_VEHICLE')
-		PlayerFrame:RegisterEvent('UNIT_EXITING_VEHICLE')
-		PlayerFrame:RegisterEvent('UNIT_EXITED_VEHICLE')
-
-		-- User placed frames don't animate
-		PlayerFrame:SetUserPlaced(true)
-		PlayerFrame:SetDontSavePosition(true)
 	elseif(unit == 'pet') then
 		handleFrame(PetFrame)
 	elseif(unit == 'target') then
@@ -98,7 +94,7 @@ function oUF:DisableBlizzard(unit)
 			handleFrame('Boss' .. id .. 'TargetFrame')
 		else
 			for i = 1, MAX_BOSS_FRAMES do
-				handleFrame(string.format('Boss%dTargetFrame', i))
+				handleFrame('Boss' .. i .. 'TargetFrame')
 			end
 		end
 	elseif(unit:match('party%d?$')) then
@@ -112,17 +108,23 @@ function oUF:DisableBlizzard(unit)
 			end
 		end
 	elseif(unit:match('arena%d?$')) then
-		local id = unit:match('arena(%d)')
-		if(id) then
-			handleFrame('ArenaEnemyMatchFrame' .. id)
-		else
+		if(not isArenaHooked) then
+			isArenaHooked = true
+
+			-- this disables ArenaEnemyFramesContainer
+			SetCVar('showArenaEnemyFrames', '0')
+			SetCVar('showArenaEnemyPets', '0')
+
+			-- but still UAE all containers
+			ArenaEnemyFramesContainer:UnregisterAllEvents()
+			ArenaEnemyPrepFramesContainer:UnregisterAllEvents()
+			ArenaEnemyMatchFramesContainer:UnregisterAllEvents()
+
 			for i = 1, MAX_ARENA_ENEMIES do
-				handleFrame(string.format('ArenaEnemyMatchFrame%d', i))
+				handleFrame('ArenaEnemyMatchFrame' .. i)
+				handleFrame('ArenaEnemyPrepFrame' .. i)
 			end
 		end
-
-		-- this disables ArenaEnemyFramesContainer
-		SetCVar('showArenaEnemyFrames', '0')
 	elseif(unit:match('nameplate%d+$')) then
 		local frame = C_NamePlate.GetNamePlateForUnit(unit)
 		if(frame and frame.UnitFrame) then
