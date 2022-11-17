@@ -1666,6 +1666,7 @@ module.funcs = {
 			ROGUE = 5,
 			WARLOCK = 5,
 			DRUID = 5,
+			EVOKER = 5,
 			DEFAULT = 5,
 		}
 		-- The maximum of a ressource a given class can have
@@ -1676,6 +1677,7 @@ module.funcs = {
 			ROGUE = 7,
 			WARLOCK = 5,
 			DRUID = 5,
+			EVOKER = 5,
 			DEFAULT = 5,
 		}
 		local r, g, b
@@ -2576,6 +2578,8 @@ local function SetStyle(self, unit, isSingle)
 			if oufdb.AdditionalPowerBar.Enable then module.funcs.AdditionalPower(self, unit, oufdb) end
 			if oufdb.TotemsBar.Enable then module.funcs.Totems(self, unit, oufdb) end
 		elseif LUI.MAGE then
+			if oufdb.ClassPowerBar.Enable then module.funcs.ClassPower(self, unit, oufdb) end
+		elseif LUI.EVOKER then
 			if oufdb.ClassPowerBar.Enable then module.funcs.ClassPower(self, unit, oufdb) end
 		elseif LUI.PRIEST then
 			if oufdb.AdditionalPowerBar.Enable then module.funcs.AdditionalPower(self, unit, oufdb) end
