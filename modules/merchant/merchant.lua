@@ -19,7 +19,7 @@ local db, dbd
 local select, strfind, strmatch, tonumber, tostring, type = select, strfind, strmatch, tonumber, tostring, type
 local GetItemCount, GetItemInfo, GetMerchantItemInfo, GetMerchantNumItems = GetItemCount, GetItemInfo, GetMerchantItemInfo, GetMerchantNumItems
 local CanMerchantRepair, GetCoinTextureString, GetRepairAllCost, RepairAllItems = CanMerchantRepair, GetCoinTextureString, GetRepairAllCost, RepairAllItems
-local GetContainerItemID, GetContainerItemInfo, GetContainerNumSlots, UseContainerItem =  GetContainerItemID, GetContainerItemInfo, GetContainerNumSlots, UseContainerItem
+local C_Container = C_Container
 
 function module:ItemExclusion(info, item) -- info = true: remove item from list
 	if type(info) == "table" and not GetItemInfo(item) then
@@ -137,18 +137,18 @@ function module:AutoSell()
 
 	local totalPrice = 0
 	for bag = 0, NUM_BAG_SLOTS do
-		for slot = 1, GetContainerNumSlots(bag) do
-			local item = GetContainerItemID(bag, slot)
+		for slot = 1, C_Container.GetContainerNumSlots(bag) do
+			local item = C_Container.GetContainerItemID(bag, slot)
 
 			if item then
 				local _, itemLink, itemQuality, _,_,_,_,_,_,_, itemPrice = GetItemInfo(item)
 
 				if itemQuality and (db.AutoSell.ItemQualities[itemQuality + 1] == not db.AutoSell.Exclusions[item]) then -- don't use ~= (itemQuality can be true or false, exclusion can be true or nil (false ~= nil will return true and sell the item))
-					local _, itemCount  = GetContainerItemInfo(bag, slot)
+					local _, itemCount  = C_Container.GetContainerItemInfo(bag, slot)
 					totalPrice = totalPrice + (itemCount * itemPrice)
 
 					-- Sell item.
-					UseContainerItem(bag, slot)
+					C_Container.UseContainerItem(bag, slot)
 				end
 			end
 		end
