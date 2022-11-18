@@ -316,6 +316,7 @@ function module:SetStatusHealthBar()
 end
 
 function module:SetBorderColor(frame)
+	if not frame.SetBackdropColor then return end
 	local unit = GetTooltipUnit(frame)
 	local health = GameTooltipStatusBar
 	local itemLink = (not unit and frame.GetItem) and select(2, frame:GetItem())
@@ -407,6 +408,10 @@ end
 ---@param data TooltipData
 function module.OnGameTooltipSetUnit(frame, data)
 	-- luacheck: globals GameTooltipTextLeft1 GameTooltipTextLeft2
+	
+	-- We're only interested in setting up the GameTooltip itself, not all frames of that type.
+	if not frame.GetName or frame:GetName() ~= "GameTooltip" then return end
+	
 	if db.HideCombatUnit and InCombatLockdown() then
 		return frame:Hide()
 	end
@@ -459,7 +464,7 @@ function module.OnGameTooltipSetUnit(frame, data)
 	-- The line with level information isnt always the same, so we need to do some scanning.
 	for i = offset, frame:NumLines() do
 		local line = _G["GameTooltipTextLeft"..i]
-		local text = line:GetText()
+		local text = line and line:GetText()
 		if text then
 			-- Level line for players
 			if text:find(LEVEL) and race then
