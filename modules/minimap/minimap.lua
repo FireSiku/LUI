@@ -220,13 +220,13 @@ function module:SetMinimap()
 	module:ToggleMinimapText()	-- Refresh the Show/Hide for those two.
 
 	--Script to add text when you mouseover the minimap
-	Minimap:SetScript("OnEnter",function()
+	Minimap:HookScript("OnEnter",function()
 		if module:IsEnabled() then
 			LUIMinimapZone:Show()
 			LUIMinimapCoord:Show()
 		end
 	end)
-	Minimap:SetScript("OnLeave",function()
+	Minimap:HookScript("OnLeave",function()
 		if not db.General.AlwaysShowText then
 			LUIMinimapZone:Hide()
 			LUIMinimapCoord:Hide()
