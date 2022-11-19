@@ -1677,7 +1677,7 @@ module.funcs = {
 			ROGUE = 7,
 			WARLOCK = 5,
 			DRUID = 5,
-			EVOKER = 5,
+			EVOKER = 6,
 			DEFAULT = 5,
 		}
 		local r, g, b
