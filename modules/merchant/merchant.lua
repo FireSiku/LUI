@@ -16,18 +16,30 @@ local db, dbd
 ------------------------------------------------------
 
 -- Localised functions.
-local select, strfind, strmatch, tonumber, tostring, type = select, strfind, strmatch, tonumber, tostring, type
-local GetItemCount, GetItemInfo, GetMerchantItemInfo, GetMerchantNumItems = GetItemCount, GetItemInfo, GetMerchantItemInfo, GetMerchantNumItems
-local CanMerchantRepair, GetCoinTextureString, GetRepairAllCost, RepairAllItems = CanMerchantRepair, GetCoinTextureString, GetRepairAllCost, RepairAllItems
-local C_Container = C_Container
+local GetCoinTextureString = _G.GetCoinTextureString
+local GetMerchantItemLink = _G.GetMerchantItemLink
+local GetMerchantItemInfo = _G.GetMerchantItemInfo
+local GetMerchantNumItems = _G.GetMerchantNumItems
+local CanMerchantRepair = _G.CanMerchantRepair
+local GetRepairAllCost = _G.GetRepairAllCost
+local BuyMerchantItem = _G.BuyMerchantItem
+local RepairAllItems = _G.RepairAllItems
+local GetCursorInfo = _G.GetCursorInfo
+local CursorHasItem = _G.CursorHasItem
+local GetItemCount = _G.GetItemCount
+local GetItemInfo = _G.GetItemInfo
+local ClearCursor = _G.ClearCursor
+local tostring = tostring
+local tonumber = tonumber
+local select= select
 
 function module:ItemExclusion(info, item) -- info = true: remove item from list
 	if type(info) == "table" and not GetItemInfo(item) then
 		if CursorHasItem() then
 			item = select(2, GetCursorInfo())
 			ClearCursor()
-		elseif strfind(item, "Button") then
-			return OpenAllBags(true)
+		elseif string.find(item, "Button") then
+			return _G.OpenAllBags(true)
 		end
 	end
 
@@ -84,7 +96,7 @@ function module:GetItemID(item)
 	if not itemLink then return end
 
 	-- Extract id from itemLink.
-	return tonumber(strmatch(itemLink, "|Hitem:(%d+):"))
+	return tonumber(string.match(itemLink, "|Hitem:(%d+):"))
 end
 
 function module:AutoRepair()
@@ -136,17 +148,15 @@ function module:AutoSell()
 	if not db.AutoSell.Enable then return end
 
 	local totalPrice = 0
-	for bag = 0, NUM_BAG_SLOTS do
+	for bag = 0, _G.NUM_BAG_SLOTS do
 		for slot = 1, C_Container.GetContainerNumSlots(bag) do
 			local item = C_Container.GetContainerItemID(bag, slot)
+			local itemInfo = C_Container.GetContainerItemInfo(bag, slot)
 
-			if item then
-				local _, itemLink, itemQuality, _,_,_,_,_,_,_, itemPrice = GetItemInfo(item)
-
-				if itemQuality and (db.AutoSell.ItemQualities[itemQuality + 1] == not db.AutoSell.Exclusions[item]) then -- don't use ~= (itemQuality can be true or false, exclusion can be true or nil (false ~= nil will return true and sell the item))
-					local _, itemCount  = C_Container.GetContainerItemInfo(bag, slot)
-					totalPrice = totalPrice + (itemCount * itemPrice)
-
+			if itemInfo and itemInfo.itemID then
+				if itemInfo.quality and (db.AutoSell.ItemQualities[itemInfo.quality + 1] == not db.AutoSell.Exclusions[itemInfo.itemID]) then
+					local itemName, _, _, _,_,_,_,_,_,_, itemPrice = GetItemInfo(itemInfo.itemID)
+					totalPrice = totalPrice + (itemInfo.stackCount * itemPrice)
 					-- Sell item.
 					C_Container.UseContainerItem(bag, slot)
 				end
@@ -171,7 +181,7 @@ function module:AutoStock()
 		local id = self:GetItemID(GetMerchantItemLink(i))
 
 		-- Check item is in list.
-		local count = 0
+		local count = 0  --luacheck: ignore
 		if id and db.AutoStock.List[id] then
 			-- Add to shopping cart.
 			count = db.AutoStock.List[id] - GetItemCount(id)
@@ -290,7 +300,7 @@ function module:LoadOptions()
 	-- option values
 	local qualities = {}
 	for i=0, 4 do
-		qualities[i + 1] =  ITEM_QUALITY_COLORS[i]["hex"] .. _G["ITEM_QUALITY" .. i .. "_DESC"] .. "|r"
+		qualities[i + 1] =  _G.ITEM_QUALITY_COLORS[i]["hex"] .. _G["ITEM_QUALITY" .. i .. "_DESC"] .. "|r"
 	end
 	local function exclusions()
 		wipe(exclusionList)
