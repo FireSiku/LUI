@@ -51,20 +51,28 @@ stds["WoW"] = {
 		"CopyTable", "GetTime", "GetBuildInfo", "ReloadUI", "StaticPopupDialogs", "StaticPopup_Show", "IsForbidden", "NegateIf",
 		
 		-- Object API
-		"Mixin", "Enum", "Spell", "Item", "ItemLocation", "PlayerLocation", "UiMapPoint",
+		"Mixin", "Enum", "ContinuableContainer", "Item", "ItemLocation", "PlayerLocation", "Spell", "UiMapPoint",
 
 		-- C_API Tables
-		"C_ToyBox", "C_NamePlate", "C_AccountInfo", "C_TransmogCollection", "C_ChatBubbles", "C_Console", "C_RecruitAFriend", "C_QuestLine", "C_SocialRestrictions",
-		"C_MapExplorationInfo", "C_SocialQueue", "C_FriendList", "C_CVar", "C_QuestLog", "C_PetJournal", "C_CreatureInfo", "C_Club", "C_NewItems", "C_SpellBook",
-		"C_UI", "C_ItemSocketInfo", "C_AchievementInfo", "C_AuctionHouse", "C_BattleNet", "C_Scenario", "C_PartyInfo", "C_ClubFinder", "C_ChallengeMode", "C_PrototypeDialog",
-		"C_AzeriteItem", "C_WowTokenUI", "C_LootJournal", "C_KeyBindings", "C_Timer", "C_LFGuildInfo", "C_LossOfControl", "C_ResearchInfo", "C_LevelLink", "C_ItemUpgrade",
-		"C_VignetteInfo", "C_PetBattles", "C_ItemInteraction", "C_AdventureMap", "C_BlackMarket", "C_ArtifactUI", "C_GossipInfo", "C_InvasionInfo", "C_IslandsQueue",
-		"C_Map", "C_Commentator", "C_LFGList", "C_PartyPose", "C_EquipmentSet", "C_PvP", "C_Calendar", "C_DateAndTime", "C_ModelInfo", "C_Transmog", "C_CampaignInfo",
-		"C_StorePublic", "C_LootHistory", "C_TransmogSets", "C_Social", "C_ToyBoxInfo", "C_WowTokenPublic", "C_Trophy", "C_ClassColor", "C_AlliedRaces", "C_Item",
-		"C_SummonInfo", "C_TaskQuest", "C_TaxiMap", "C_Texture", "C_AzeriteEssence", "C_QuestChoice", "C_SharedCharacterServices", "C_EncounterJournal", "C_ActionBar",
-		"C_MountJournal", "C_Spell", "C_Cursor", "C_ChatInfo", "C_VideoOptions", "C_CharacterServicesPublic", "C_ContributionCollector", "C_ReportSystem", "C_PetInfo",
-		"C_Widget", "C_Loot", "C_CurrencyInfo", "C_IncomingSummon", "C_AzeriteEmpoweredItem", "C_RaidLocks", "C_TradeSkillUI", "C_PlayerInfo", "C_DeathInfo", "C_TalkingHead",
-		"C_MerchantFrame", "C_QuestSession", "C_GuildInfo", "C_Mail", "C_Debug", "C_VoiceChat", "C_FogOfWar", "C_MythicPlus", "C_LFGInfo", "C_UIWidgetManager", "C_Reputation",
-		"C_AreaPoiInfo", "C_AdventureJournal", "C_PaperDollInfo", "C_ClassTrial", "C_ScrappingMachineUI", "C_Garrison", "C_Heirloom", "C_SpecializationInfo", "C_CharacterServices",
+		"C_ToyBox", "C_NamePlate", "C_AccountInfo", "C_TransmogCollection", "C_PlayerInteractionManager", "C_Console", "C_RecruitAFriend", "C_QuestLine", "C_ModifiedInstance",
+		"C_SocialRestrictions", "C_ClassTalents", "C_MapExplorationInfo", "C_WeeklyRewards", "C_SocialQueue", "C_FriendList", "C_CVar", "C_PlayerMentorship", "C_Navigation", 
+		"C_System", "C_QuestLog", "C_PetJournal", "C_CreatureInfo", "C_Club", "C_NewItems", "C_SpellBook", "C_WowTokenUI", "C_Covenants", "C_ItemSocketInfo", "C_ReturningPlayerUI",
+		"C_Debug", "C_FunctionContainers", "C_TaxiMap", "C_AuctionHouse", "C_BattleNet", "C_PartyInfo", "C_ClubFinder", "C_SystemVisibilityManager", "C_ChallengeMode",
+		"C_ChromieTime", "C_PrototypeDialog", "C_AzeriteItem", "C_ScriptedAnimations", "C_LootJournal", "C_KeyBindings", "C_LevelSquish", "C_ClassTrial", "C_InvasionInfo", 
+		"C_GamePad", "C_LossOfControl", "C_ResearchInfo", "C_CharacterServicesPublic", "C_EventUtils", "C_ItemUpgrade", "C_PetBattles", "C_SuperTrack", "C_CovenantCallings",
+		"C_ItemInteraction", "C_UnitAuras", "C_AdventureMap", "C_ScenarioInfo", "C_BlackMarket", "C_GossipInfo", "C_GuildInfo", "C_PvP", "C_IslandsQueue", "C_UIColor",
+		"C_Map", "C_Commentator", "C_LFGList", "C_PartyPose", "C_EquipmentSet", "C_BarberShop", "C_Sound", "C_AnimaDiversion", "C_LoreText", "C_FogOfWar", "C_Calendar",
+		"C_LegendaryCrafting", "C_FrameManager", "C_CameraDefaults", "C_ModelInfo", "C_CovenantPreview", "C_Transmog", "C_CampaignInfo", "C_Traits", "C_StorePublic",
+		"C_LootHistory", "C_TooltipComparison", "C_TransmogSets", "C_Social", "C_AchievementInfo", "C_WowTokenPublic", "C_TooltipInfo", "C_Trophy", "C_ClassColor",
+		"C_AlliedRaces", "C_Item", "C_SummonInfo", "C_PaperDollInfo", "C_Texture", "C_AzeriteEssence", "C_ArdenwealdGardening", "C_Soulbinds", "C_EncounterJournal",
+		"C_HeirloomInfo", "C_Cursor", "C_ActionBar", "C_ZoneAbility", "C_XMLUtil", "C_Spell", "C_ChatInfo", "C_MountJournal", "C_ChatBubbles", "C_VoiceChat",
+		"C_ContributionCollector", "C_LevelLink", "C_SplashScreen", "C_MajorFactions", "C_ReportSystem", "C_PetInfo", "C_Widget", "C_StableInfo", "C_VideoOptions",
+		"C_Loot", "C_ProfSpecs", "C_CurrencyInfo", "C_IncomingSummon", "C_VignetteInfo", "C_AzeriteEmpoweredItem", "C_DeathInfo", "C_CraftingOrders", "C_RaidLocks",
+		"C_PlayerInfo", "C_TradeSkillUI", "C_TalkingHead", "C_Timer", "C_EditMode", "C_DateAndTime", "C_MerchantFrame", "C_EventToastManager", "C_ToyBoxInfo", "C_Mail",
+		"C_QuestOffer", "C_SharedCharacterServices", "C_Minimap", "C_Tutorial", "C_TaskQuest", "C_QuestSession", "C_MythicPlus", "C_Container", "C_LFGInfo", "C_UIWidgetManager",
+		"C_AreaPoiInfo", "C_CovenantSanctumUI", "C_AdventureJournal", "C_Garrison", "C_Heirloom", "C_ScrappingMachineUI", "C_QuestItemUse", "C_PlayerChoice", "C_ClickBindings",
+		"C_ArtifactUI", "C_UserFeedback", "C_UI", "C_TTSSettings", "C_SpecializationInfo", "C_CharacterServices", "C_Scenario", "C_BehavioralMessaging", "C_Reputation",
 	}
 }
+
+		
