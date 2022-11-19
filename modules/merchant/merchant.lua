@@ -155,7 +155,7 @@ function module:AutoSell()
 
 			if itemInfo and itemInfo.itemID then
 				if itemInfo.quality and (db.AutoSell.ItemQualities[itemInfo.quality + 1] == not db.AutoSell.Exclusions[itemInfo.itemID]) then
-					local itemName, _, _, _,_,_,_,_,_,_, itemPrice = GetItemInfo(itemInfo.itemID)
+					local itemName, _, _, _,_,_,_,_,_,_, itemPrice = GetItemInfo(itemInfo.hyperlink)
 					totalPrice = totalPrice + (itemInfo.stackCount * itemPrice)
 					-- Sell item.
 					C_Container.UseContainerItem(bag, slot)
