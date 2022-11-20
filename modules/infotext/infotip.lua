@@ -202,8 +202,8 @@ function element:ApplyBackdropColors()
 			infotip:SetBackdropColor(colorDB.Background.r, colorDB.Background.g, colorDB.Background.b)
 			infotip:SetBackdropBorderColor(colorDB.Border.r, colorDB.Border.g, colorDB.Border.b)
 		else
-			infotip:SetBackdropColor(GameTooltip:GetBackdropColor())
-			infotip:SetBackdropBorderColor(GameTooltip:GetBackdropBorderColor())
+			infotip:SetBackdropColor(GameTooltip.NineSlice:GetCenterColor())
+			infotip:SetBackdropBorderColor(GameTooltip.NineSlice:GetBorderColor())
 		end
 	end
 end
@@ -220,7 +220,7 @@ function module:NewInfotip(infotext)
 	local name = infotext:GetName()
 	local parent = infotext:GetFrame()
 
-	local newtip = CreateFrame("Frame",format("LUIInfo_%sInfotip", name), parent, "BackdropTemplate")
+	local newtip = CreateFrame("Frame", format("LUIInfo_%sInfotip", name), parent, "TooltipBackdropTemplate")
 	infotipStorage[name] = newtip
 	newtip.infotext = infotext
 	for k, v in pairs(InfotipMixin) do
@@ -236,7 +236,7 @@ function module:NewInfotip(infotext)
 	newtip:SetPoint("TOP", parent, "BOTTOM")
 
 	-- Make frame looks like a tooltip.
-	newtip:SetBackdrop(GameTooltip:GetBackdrop())
+	SharedTooltip_SetBackdropStyle(newtip, "TooltipDefaultLayout")
 	element:ApplyBackdropColors()
 	--Trigger the element's OnLeave when you leave the infotip
 	newtip:SetScript("OnLeave", infotext.OnLeave)
