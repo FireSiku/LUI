@@ -48,7 +48,7 @@ For more information please visit
 |cff8080ffhttps://discord.gg/SR29pjc|r
 
 Enjoy!]=]
-L["For more info, visit Discord"] = [=[If you have any issues, questions or suggestions, 
+L["For more info, visit Discord"] = [=[If you have any issues, questions or suggestions,
 Please visit |cff8080ffhttps://discord.gg/SR29pjc|r
 
 Enjoy!]=]
@@ -495,7 +495,6 @@ L["InfoBags_Hint_Any"] = "Click to open Bags."
 L["InfoClock_Instance_Normal"] = "N"
 L["InfoClock_Instance_Heroic"] = "H"
 L["InfoClock_Instance_LFR"] = "L"
-L["InfoClock_Instance_Challenge"] = "C"
 L["InfoClock_Instance_Mythic"] = "M"
 L["InfoClock_Instance_Event"] = "E"
 L["InfoClock_Instance_Timewalk"] = "T"

@@ -19,7 +19,6 @@ local GetNumSavedWorldBosses = _G.GetNumSavedWorldBosses
 local GetSavedWorldBossInfo = _G.GetSavedWorldBossInfo
 local GetSavedInstanceInfo = _G.GetSavedInstanceInfo
 local GetNumSavedInstances = _G.GetNumSavedInstances
-local TimeManager_Toggle = _G.TimeManager_Toggle
 local TimeBreakDown = _G.ChatFrame_TimeBreakDown
 local GetInstanceInfo = _G.GetInstanceInfo
 local GameTimeFrame = _G.GameTimeFrame
@@ -50,7 +49,8 @@ local CLOCK_UPDATE_TIME = 1
 --local TAG_GUILD_GROUP = " |cff66c7ffG|r"
 local RAID_INFO_WORLD_BOSS = _G.RAID_INFO_WORLD_BOSS
 
---Do not localize those strings. All of them have an associated localized InfoClock_Instance_* entry
+-- Do not localize those strings. All of them have an associated localized InfoClock_Instance_* entry
+-- List as per  https://wowpedia.fandom.com/wiki/DifficultyID
 local INSTANCE_DIFFICULTY_FORMAT = {
 	[1]  = "Normal",    -- 5man Normal
 	[2]  = "Heroic",    -- 5man Heroic
@@ -59,29 +59,33 @@ local INSTANCE_DIFFICULTY_FORMAT = {
 	[5]  = "Heroic",    -- 10man Heroic (Legacy)
 	[6]  = "Heroic",    -- 25man Heroic (Legacy)
 	[7]  = "LFR",       -- 25man Raid Finder (Legacy)
-	[8]  = "Challenge", -- 5man Challenge Mode
+	[8]  = "Mythic", 	-- 5man Mythic Keystone / Challenge Mode 
 	[9]  = "Normal",    -- 40man Normal
-	[10] = "Unused",    -- Unused (Do not break array)
 	[11] = "Heroic",    -- 3man Heroic Scenario
 	[12] = "Normal",    -- 3man Scenario
-	[13] = "Unused",    -- Unused (Do not break array)
 	[14] = "Normal",    -- Flexible Normal
 	[15] = "Heroic",    -- Flexible Heroic
 	[16] = "Mythic",    -- 20man Mythic
 	[17] = "LFR",       -- Flexible Raid Finder
-	-- No clue what difficulty 18-20 are used for.
-	[18] = "Event",     -- Event
-	[19] = "Event",     -- Event
+	[18] = "Event",     -- Event Party
+	[19] = "Event",     -- Event Raid
 	[20] = "Event",     -- Event Scenario
-	[21] = "Unused",    -- Unused (Do not break array)
-	[22] = "Unused",    -- Unused (Do not break array)
 	[23] = "Mythic",    -- 5man Mythic
-	[24] = "Timewalk",  -- Timewalking
-	[25] = "Event",     -- World PVP Event
-	[26] = "Unused",    -- Unused (Do not break array)
-	[27] = "Unused",    -- Unused (Do not break array)
-	[28] = "Unused",    -- Unused (Do not break array)
+	[24] = "Timewalk",  -- Timewalking Dungeons
+	[25] = "Event",     -- World PVP Scenario
 	[29] = "Event",     -- PvEvP Scenario
+	[30] = "Event",     -- Event
+	[32] = "Event",     -- World PVP Scenario
+	[33] = "Timewalk",  -- Timewalking Raid
+	[34] = "Normal",    -- PvP
+	[38] = "Normal",    -- Normal Scenario
+	[39] = "Heroic",    -- Heroic Scenario
+	[40] = "Mythic",    -- Mythic Scenario
+	[45] = "Heroic",    -- PvP Scenario (DisplayHeroic)
+	[147] = "Normal",    -- Normal Warfronts
+	[149] = "Heroic",    -- Heroic Warfronts
+	[150] = "Normal",   -- Normal Party
+	[151] = "Timewalk", -- Timewalking LFR
 }
 
 local COLOR_CODES = {
@@ -89,14 +93,10 @@ local COLOR_CODES = {
 	Normal = "|cff00ff00",
 	Heroic = "|cffff0000",
 	LFR = "|cffaaaaaa",
-	Challenge = "|cffff0000",
 	Mythic = "|cffff0000",
 	Event = "|cffaaaaaa",
 	Timewalk = "|cffaaaaaa",
 }
-
--- TODO: Look into changing the Instance Difficulty Format using GetDifficultyInfo
--- name, groupType, isHeroic, isChallengeMode, displayHeroic, displayMythic, toggleDifficultyID = GetDifficultyInfo(id)
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
@@ -130,12 +130,10 @@ if LUI.IsRetail then
 	function element:UpdateInvites()
 		invitesPending = (GameTimeFrame and GameTimeFrame.pendingCalendarInvites > 0) and true or false
 	end
-end
 
-if LUI.IsRetail then
 	function element:UpdateGuildParty()
 		--local TAG_GUILD_GROUP = " |cff66c7ffG|r"
-		guildParty = InGuildParty() and format(" %s%s|r", COLOR_CODES.Guild, L["InfoClock_Instance_Guild"]) or nil
+		guildParty = InGuildParty() and string.format(" %s%s|r", COLOR_CODES.Guild, L["InfoClock_Instance_Guild"]) or nil
 	end
 end
 
@@ -144,8 +142,8 @@ function element:UpdateInstanceInfo()
 	if isInstance then
 		local _, _, difficulty, _, _, _, _, _, groupSize = GetInstanceInfo()
 		local localizedDiff, colorCode = GetLocalizedDifficulty(difficulty)
-		if instanceType == "raid" or instanceType == "party" then
-			instanceInfo = format("%d %s%s|r", groupSize, colorCode, localizedDiff)
+		if localizedDiff and (instanceType == "raid" or instanceType == "party") then
+			instanceInfo = string.format("%d %s%s|r", groupSize, colorCode, localizedDiff)
 			return
 		end
 	end
@@ -200,7 +198,7 @@ end
 -- RightClick: Open Time Manager
 function element.OnClick(frame_, button)
 	if button == "RightButton" then
-		ToggleTimeManager()
+		_G.ToggleTimeManager()
 	else
 		GameTimeFrame:Click()
 	end
