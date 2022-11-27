@@ -12,6 +12,8 @@ local oUF = LUI.oUF
 local DebuffTypeColor = _G.DebuffTypeColor
 local GetSpellInfo = _G.GetSpellInfo
 
+local prototypeFont = [=[Interface\Addons\LUI\media\fonts\Prototype.ttf]=]
+
 local cornerAuras = {
 	WARRIOR = {
 		TOPLEFT = {50720, true},
@@ -106,7 +108,7 @@ local function PostCreateAura(element, button)
 	button.backdrop:SetBackdropBorderColor(0, 0, 0)
 	button.Count:SetPoint("BOTTOMRIGHT", -1, 2)
 	button.Count:SetJustifyH("RIGHT")
-	button.Count:SetFont(module.font3, 16, "OUTLINE")
+	button.Count:SetFont(prototypeFont, 16, "OUTLINE")
 	button.Count:SetTextColor(0.84, 0.75, 0.65)
 
 	button.remaining = module.SetFontString(button, Media:Fetch("font", module.db.profile.Settings.AuratimerFont), module.db.profile.Settings.AuratimerSize, module.db.profile.Settings.AuratimerFlag)
