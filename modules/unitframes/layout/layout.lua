@@ -128,35 +128,6 @@ local function ThreatOverride(self, event, unit)
 	end
 end
 
-local function PortraitOverride(self, event, unit)
-	if not unit or not UnitIsUnit(self.unit, unit) then return end
-
-	local portrait = self.Portrait
-
-	if(portrait:IsObjectType"Model") then
-		local guid = UnitGUID(unit)
-		if not UnitExists(unit) or not UnitIsConnected(unit) or not UnitIsVisible(unit) then
-			portrait:SetModelScale(4.25)
-			portrait:SetPosition(0, 0, -1.5)
-			portrait:SetModel("Interface\\Buttons\\talktomequestionmark.mdx")
-			portrait.guid = nil
-		elseif(portrait.guid ~= guid or event == "UNIT_MODEL_CHANGED") then
-			portrait:SetUnit(unit)
-			portrait:SetCamera(portrait:GetModel() == "character\\worgen\\male\\worgenmale.m2" and 1 or 0)
-
-			portrait.guid = guid
-		else
-			portrait:SetCamera(portrait:GetModel() == "character\\worgen\\male\\worgenmale.m2" and 1 or 0)
-		end
-	else
-		SetPortraitTexture(portrait, unit)
-	end
-
-	local a = portrait:GetAlpha()
-	portrait:SetAlpha(0)
-	portrait:SetAlpha(a)
-end
-
 local function Reposition(V2Tex)
 	local to = V2Tex.to
 	local from = V2Tex.from
@@ -484,7 +455,6 @@ module.funcs = {
 		if not self.Portrait then
 			self.Portrait = CreateFrame("PlayerModel", nil, self)
 			self.Portrait:SetFrameLevel(5)
-			--self.Portrait.Override = PortraitOverride
 		end
 
 		self.Portrait:SetHeight(oufdb.Portrait.Height)
