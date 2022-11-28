@@ -41,6 +41,12 @@ local MAX_TOTEMS = _G.MAX_TOTEMS
 
 local standings = {"Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted"}
 
+local EVOKER_POWER_NEXUS_NODE = 68574
+local MONK_ASCENSION_NODE = 80612
+local ROGUE_SECRET_STRATEGEM_NODE = 90722
+local ROGUE_DEEPER_STRATAGEM_NODE = 90750
+local ROGUE_DEEPER_STRATAGEM_ENTRY = 112642
+
 ------------------------------------------------------------------------
 --	Textures and Medias
 ------------------------------------------------------------------------
@@ -192,6 +198,42 @@ local function utf8sub(string, i, dots)
 			return string
 		end
 	end
+end
+
+function module:DebugTalents()
+	local configId = C_ClassTalents.GetActiveConfigID()
+	local configInfo = C_Traits.GetConfigInfo(configId)
+	for i, treeId in ipairs(configInfo.treeIDs) do
+		local nodes = C_Traits.GetTreeNodes(treeId)
+		for ii, nodeId in ipairs(nodes) do
+			local node = C_Traits.GetNodeInfo(configId, nodeId)
+			if node.ID > 0 then
+				for iii, entryId in ipairs(node.entryIDs) do
+					local entryInfo = C_Traits.GetEntryInfo(configId, entryId)
+					local definitionInfo = C_Traits.GetDefinitionInfo(entryInfo.definitionID)
+					local rank = node.activeRank
+					local spellId = definitionInfo.spellID
+					local spellName, _, icon = GetSpellInfo(spellId)
+					if node.activeEntry and node.activeEntry.entryID ~= entryId then
+						rank = 0
+					end
+					LUI:Print(spellName, "NodeId", nodeId, "EntryId", entryId, "Rank:", rank)
+				end
+			end
+		end
+	end
+end
+
+function module:GetTalentRank(nodeId, entryId)
+	local configId = C_ClassTalents.GetActiveConfigID()
+	local nodeInfo = C_Traits.GetNodeInfo(configId, nodeId)
+	if not nodeInfo then return false, 0 end
+	if #nodeInfo.entryIDs > 1 then
+		if entryId and nodeInfo.activeEntry and nodeInfo.activeEntry.entryID ~= entryId then
+			return false, 0
+		end
+	end
+	return (nodeInfo.activeRank > 0), nodeInfo.activeRank
 end
 
 local function UnitFrame_OnEnter(self)
@@ -1726,17 +1768,18 @@ module.funcs = {
 		local function checkPowers(event, level)
 			local pLevel = (event == "UNIT_LEVEL") and tonumber(level) or UnitLevel("player")
 			local count = BASE_COUNT[LUI.playerClass]
-			--- @TODO: Revisit talents alterations.
-			-- if LUI.MONK then
-			-- 	if select(4, GetTalentInfo(3, 1, 1)) then
-			-- 		count = count + 1Power
-			-- 	end
-			-- elseif LUI.ROGUE then
-			-- 	--Check for Strategem, increase CPoints to 6.
-			-- 	if select(4, GetTalentInfo(3, 2, 1)) then
-			-- 		count = 6
-			-- 	end
-			-- end
+			if LUI.EVOKER and module:GetTalentRank(EVOKER_POWER_NEXUS_NODE) then
+				count = 6
+			elseif LUI.MONK and module:GetTalentRank(MONK_ASCENSION_NODE) then
+				count = count + 1
+			elseif LUI.ROGUE then
+				if module:GetTalentRank(ROGUE_SECRET_STRATEGEM_NODE) then
+					count = count + 1
+				end
+				if module:GetTalentRank(ROGUE_DEEPER_STRATAGEM_NODE, ROGUE_DEEPER_STRATAGEM_ENTRY) then
+					count = count + 1
+				end
+			end
 			classPower.Count = count
 
 			for i = 1, classPower.MaxCount do
