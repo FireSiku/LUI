@@ -560,7 +560,7 @@ function element.OnEnter(frame_)
 			local broadcast = element:CreateBroadcast()
 			local _, _, _, currentBroadcast = BNGetInfo()
 			local broadcastPrefix = CreateColor(1, 1, 1):WrapTextInColorCode(BATTLENET_BROADCAST..":")
-			broadcast.name:SetText( format("%s %s", broadcastPrefix, currentBroadcast) )
+			broadcast.name:SetText( format("%s %s", broadcastPrefix or "", currentBroadcast or "") )
 			infotip.sep:SetPoint("TOPLEFT", broadcast, "BOTTOMLEFT")
 			infotip.maxWidth = broadcast.name:GetStringWidth() + GAP * 2
 			infotip.maxHeight = broadcast:GetHeight() + infotip.sep:GetHeight() + GAP * 2
