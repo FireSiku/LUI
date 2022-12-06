@@ -62,6 +62,21 @@ function ReputationDataProvider:GetParagonValues(factionID)
 	end
 end
 
+function ReputationDataProvider:GetMajorValues(factionID)
+	local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID)
+	
+	self.repText = "R+" .. majorFactionData.renownLevel
+	return majorFactionData.renownReputationEarned, majorFactionData.renownLevelThreshold
+end
+
+function ReputationDataProvider:GetFriendshipValues(factionID)
+	local reputationInfo = C_GossipInfo.GetFriendshipReputation(factionID)
+	local barMax = reputationInfo.nextThreshold - reputationInfo.reactionThreshold
+	local barValue = reputationInfo.standing - reputationInfo.reactionThreshold
+	
+	self.repText = reputationInfo.reaction
+	return barValue, barMax
+end
 
 function ReputationDataProvider:Update()
 	local _, standing, barMin, barMax, barValue, factionID = GetWatchedFactionInfo()
@@ -70,10 +85,18 @@ function ReputationDataProvider:Update()
 
 	if C_Reputation.IsFactionParagon(factionID) and barMin == barMax then
 		barValue, barMax = self:GetParagonValues(factionID)
+
+	elseif C_Reputation.IsMajorFaction(factionID) then
+		barValue, barMax = self:GetMajorValues(factionID)
+
+	elseif C_GossipInfo.GetFriendshipReputation(factionID).maxRep > 0 then
+		barValue, barMax = self:GetFriendshipValues(factionID)
 	
 	elseif barMin == barMax then
 		barValue, barMax = 1, 1
 	else
+		-- For regular reputations, barValue is the cumulative of all ranks.
+		-- barMin is the value for all ranks before the current one.
 		barMax = barMax - barMin
 		barValue = barValue - barMin
 	end
