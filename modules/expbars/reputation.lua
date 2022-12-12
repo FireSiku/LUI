@@ -82,16 +82,18 @@ function ReputationDataProvider:Update()
 	local _, standing, barMin, barMax, barValue, factionID = GetWatchedFactionInfo()
 
 	self.repText = SHORT_REPUTATION_NAMES[standing]
+	local friendshipInfo = C_GossipInfo.GetFriendshipReputation(factionID)
 
+	-- Check for the various types of reputations
 	if C_Reputation.IsFactionParagon(factionID) and barMin == barMax then
 		barValue, barMax = self:GetParagonValues(factionID)
 
 	elseif C_Reputation.IsMajorFaction(factionID) then
 		barValue, barMax = self:GetMajorValues(factionID)
 
-	elseif C_GossipInfo.GetFriendshipReputation(factionID).maxRep > 0 then
+	elseif friendshipInfo and friendshipInfo.maxRep > 0 then
 		barValue, barMax = self:GetFriendshipValues(factionID)
-	
+		
 	elseif barMin == barMax then
 		barValue, barMax = 1, 1
 	else
