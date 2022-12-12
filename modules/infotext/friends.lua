@@ -452,10 +452,12 @@ function element:DisplayFriends()
 		local class = LUI:GetTokenFromClassName(info.className)
 		local friend = element:CreateFriend(i)
 
+		local r, g, b = element:RGB(class)
+
 		-- Name Column
 		friend.unit = info.name
 		friend.name:SetText(statusString..info.name)
-		friend.name:SetTextColor(element:RGB(class))
+		friend.name:SetTextColor(r or 1, g or 1, b or 1)
 		friend:SetClassIcon(friend.class, class)
 
 		friend.level:SetText(info.level or "")
