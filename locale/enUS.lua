@@ -6,6 +6,87 @@ local addonname, LUI = ...
 
 local L = LibStub("AceLocale-3.0"):NewLocale(addonname, "enUS", true, true)
 
+-- Module Names
+L["Artwork"] = true
+L["Auras"] = true
+L["Bags"] = true
+L["Chat"] = true
+L["Colors"] = true
+L["Cooldown"] = true
+L["ExpBars"] = true
+L["Fader"] = true
+L["Infotext"] = true
+L["Merchant"] = true
+L["Micromenu"] = true
+L["Minimap"] = true
+L["UIElements"] = true
+L["MirrorBar"] = true
+L["RaidMenu"] = true
+L["Tooltip"] = true
+L["Unitframes"] = true
+
+-- Points
+L["Top"] = true
+L["Top Left"] = true
+L["Top Right"] = true
+L["Left"] = true
+L["Bottom"] = true
+L["Bottom Left"] = true
+L["Bottom Right"] = true
+L["Center"] = true
+L["Right"] = true
+
+L["Cursor"] = true
+L["Name"] = true
+L["Guild"] = true
+
+-- Generic Settings
+L["Enable"] = true
+L["General"] = true
+L["Options"] = true
+L["Settings"] = true
+L["Position"] = true
+L["Color"] = true
+L["Colors"] = true
+L["Height"] = true
+L["Width"] = true
+L["Anchor"] = true
+L["Anchor Point"] = true
+L["Relative Anchor"] = true
+L["Background"] = true
+L["Border"] = true
+L["Insets"] = true
+L["Texture"] = true
+L["Textures"] = true
+L["Buttons"] = true
+L["Font"] = true
+L["Flag"] = true
+L["None"] = true
+L["Outline"] = true
+L["Monochrome"] = true
+L["Thick Outline"] = true
+L["Padding"] = true
+L["Spacing"] = true
+L["Scale"] = true
+L["Size"] = true
+L["Tile"] = true
+L["Tile Size"] = true
+L["Horizontal Position"] = true
+L["Vertical Position"] = true
+L["Duration"] = true
+L["Parent"] = true
+
+-- Unit Tokens
+L["Player"] = true
+L["Party"] = true
+L["Raid"] = true
+L["player"] = true
+L["party"] = true
+L["raid"] = true
+L["boss"] = true
+L["target"] = true
+L["focus"] = true
+L["arena"] = true
 
 -- Core
 L["Adjust the bottom inset of the background"] = true
@@ -16,33 +97,14 @@ L["Adjust the size of each tile of the background texture"] = true
 L["Adjust the thickness of the border"] = true
 L["Adjust the top inset of the background"] = true
 L["Adjust the vertical position"] = true
-L["Anchor"] = true
-L["Anchor Point"] = true
 L["Are you sure?"] = true
-L["Background"] = true
-L["Border"] = true
-L["Bottom"] = true
-L["Bottom Left"] = true
-L["Bottom Right"] = true
-L["Center"] = true
 L["Choose a font"] = true
 L["Choose a font flag"] = true
 L["Choose a fontsize"] = true
 L["Choose a texture"] = true
 L["Choose the Size for your %s"] = true
-L["Enable"] = true
-L["Flag"] = true
-L["Font"] = true
 L["General Settings"] = true
-L["Height"] = true
-L["Horizontal Position"] = true
 L["Index"] = true
-L["Insets"] = true
-L["Left"] = true
-L["Monochrome"] = true
-L["Name"] = true
-L["None"] = true
-L["Outline"] = true
 L["Please read the FAQ"] = [=[Please read the FAQ if you have Questions!
 For more information please visit
 |cff8080ffhttps://discord.gg/SR29pjc|r
@@ -52,35 +114,22 @@ L["For more info, visit Discord"] = [=[If you have any issues, questions or sugg
 Please visit |cff8080ffhttps://discord.gg/SR29pjc|r
 
 Enjoy!]=]
-L["Revision: "] = true
-L["Right"] = true
-L["Row Spacing"] = true
-L["Scale"] = true
-L["Should the background texture be tiled over the area"] = true
-L["Size"] = true
-L["%s Options"] = true
-L["Spacing"] = true
-L["Texture"] = true
-L["The UI needs to be reloaded!"] = true
-L["Thickness"] = true
-L["Thick Outline"] = true
-L["Tile"] = true
-L["Tile Size"] = true
-L["Time"] = true
-L["Top"] = true
-L["Top Left"] = true
-L["Top Right"] = true
-L["Version: "] = true
-L["Version %s available for download."] = true
-L["Vertical Position"] = true
 L["Welcome to LUI v3"] = [=[Welcome to |c0090ffffLUI v3|r, a complete
 World of Warcraft User Interface overhaul.]=]
-L["Width"] = true
-
-
+L["Revision: "] = true
+L["Version: "] = true
+L["Version %s available for download."] = true
+L["Row Spacing"] = true
+L["Should the background texture be tiled over the area"] = true
+L["%s Options"] = true
+L["The UI needs to be reloaded!"] = true
+L["Thickness"] = true
+L["Time"] = true
 
 -- Auras
+L["Count"] = true
 L["Buffs"] = true
+L["Debuffs"] = true
 L["Choose the amount of space between each of your %s"] = true
 L["Choose the amount of space between each row of your %s"] = true
 L["Choose the corner to anchor your %s to"] = true
@@ -90,63 +139,62 @@ L["Choose the sorting order for your %s"] = true
 L["Choose whether you want to consolidate your %s or not"] = true
 L["Choose whether you want to reverse the sorting order or not"] = true
 L["Consolidate %s"] = true
-L["Count"] = true
-L["Debuffs"] = true
-L["Duration"] = true
 L["Number of rows"] = true
 L["Number per row"] = true
 L["Reverse Sorting"] = true
 L["Sorting Order"] = true
 
-
 -- Chat
 L["Adjust the height of the EditBox"] = true
 L["Battleground"] = true
 L["Battleground Leader"] = true
+L["[O]"] = true
+L["[G]"] = true
+L["[P]"] = true
+L["[R]"] = true
+L["[RL]"] = true
+L["[RW]"] = true
+L["[DG]"] = true
 L["[BG]"] = true
 L["[BL]"] = true
-L["[BN:From]"] = true
+L["[PL]"] = true
+L["[LFG]"] = true
 L["[BN:To]"] = true
-L["Buttons"] = true
+L["[BN:From]"] = true
+L["[W:To]"] = true
+L["[W:From]"] = true
+L["To (|HBNplayer.-|h):"] = true
+L["To (|Hplayer.-|h):"] = true
+L["(|HBNplayer.-|h) whispers:"] = true
+L["(|Hplayer.-|h) whispers:"] = true
+L["[General]"] = true
+L["[Trade]"] = true
+L["[LocalDefense]"] = true
+L["[WorldDefense]"] = true
+L["Officer"] = true
+L["WorldDefense"] = true
+L["Dungeon Guide"] = true
+L["LocalDefense"] = true
+L["Trade"] = true
+L["LookingForGroup"] = true
+L["Raid Leader"] = true
+L["Raid Warning"] = true
 L["Chat Background"] = true
 L["Color by channel"] = true
 L["Copy chat button"] = true
-L["[DG]"] = true
 L["Disable fading"] = true
-L["Dungeon Guide"] = true
 L["EditBox"] = true
 L["Free-floating"] = true
 L["Free-floating (Locked)"] = true
-L["[G]"] = true
-L["General"] = true
-L["[General]"] = true
-L["Guild"] = true
-L["(|HBNplayer.-|h) whispers:"] = true
 L["Hide Buttons"] = true
 L["Holding shift while mouse scrolling will jump to top or bottom"] = true
-L["(|Hplayer.-|h) whispers:"] = true
-L["[LFG]"] = true
 L["Link hover tooltip"] = true
-L["LocalDefense"] = true
-L["[LocalDefense]"] = true
-L["LookingForGroup"] = true
 L["Minimalist tabs"] = true
-L["[O]"] = true
-L["Officer"] = true
-L["[P]"] = true
-L["Party"] = true
-L["[PL]"] = true
-L["[R]"] = true
-L["Raid"] = true
-L["Raid Leader"] = true
-L["Raid Warning"] = true
 L["Remember history"] = true
 L["Remembers the history of the EditBox across sessions"] = true
 L["Requires the Alt key to be held down to move the cursor"] = true
 L["Reset position"] = true
 L["Reset the main chat dock's position"] = true
-L["[RL]"] = true
-L["[RW]"] = true
 L["Scale of the copy chat button"] = true
 L["Scale of the scroll to bottom button"] = true
 L["Scroll to bottom button"] = true
@@ -160,17 +208,9 @@ L["Show tooltip when mousing over links in chat"] = [=[Show tooltip when mousing
 
 Links: items, spells, enchants, talents, glyphs, quests, achievements, and instancelocks]=]
 L["Stop the chat from fading out over time"] = true
-L["To (|HBNplayer.-|h):"] = true
-L["To (|Hplayer.-|h):"] = true
-L["Trade"] = true
-L["[Trade]"] = true
 L["Use abreviated channel names"] = true
 L["Use Alt key"] = true
 L["Use minimalist style tabs"] = true
-L["[W:From]"] = true
-L["WorldDefense"] = true
-L["[WorldDefense]"] = true
-L["[W:To]"] = true
 
 
 
@@ -182,10 +222,8 @@ L["Cataclysm Instances"] = true
 L["Cataclysm Raids"] = true
 L["Classic Instances"] = true
 L["Classic Raids"] = true
-L["Cursor"] = true
 L["Hide Completely"] = true
 L["Only Show Markers"] = true
-L["Player"] = true
 L["Quest Objectives"] = true
 L["Show Markers & Panels"] = true
 L["Wrath Instances"] = true
@@ -210,25 +248,9 @@ L["Type %s to Set Focus"] = true
 -- Otherwise, issues will rise with missing values in translated versions.
 
 -- Generic
-L["Settings"] = true
-L["Position"] = true
-L["Texture"] = true
-L["Textures"] = true
-L["Color"] = true
-L["Colors"] = true
-L["Background"] = true
-L["Border"] = true
+
 L["Tapped"] = true
-L["Padding"] = true
-L["Spacing"] = true
-L["Scale"] = true
 L["Precision"] = true
-L["Options"] = true
-L["Anchor"] = true
-L["Width"] = true
-L["Height"] = true
-L["Parent"] = true
-L["Relative Anchor"] = true
 L["Health Bar"] = true
 L["BackgroundDesc"] = "Choose the background texture."
 L["BorderDesc"] = "Choose the border texture."
@@ -474,7 +496,7 @@ L["Panels_Options_CustomTexCoords_Desc"] = "Let you speciwfy custom texture coor
 
 -- Infotext
 L["Info_Hint"] = "Hint:"
-L["InfoArmor_Display_Format"] = "Armor: %d%%"
+L["InfoArmor_Display_Format"] = "Armor: %d%%"   
 L["InfoArmor_Hint_Any"] = "Click to open Character Frame."
 L["InfoMemory_Header"] = "Memory:"
 L["InfoMemory_TotalMemory"] = "Total Memory Usage:"
@@ -498,6 +520,7 @@ L["InfoClock_Instance_LFR"] = "L"
 L["InfoClock_Instance_Mythic"] = "M"
 L["InfoClock_Instance_Event"] = "E"
 L["InfoClock_Instance_Timewalk"] = "T"
+L["InfoClock_Instance_Guild"] = "G"
 L["InfoClock_InvitePending"] = "(Inv. Pending!)"
 L["InfoClock_TimeUntil_Format"] = "Time until %s:"
 L["InfoClock_SavedRaids"] = "Saved Raid(s) :"
@@ -535,8 +558,8 @@ L["InfoGold_Hint_Right"] = "Right-Click to reset current Session."
 -- Micromenu
 L["Micro_Name"] = "Micromenu"
 L["Micro_PlayerReq"] = "Available at level %d"
-L["MicroSettings_Right"] = "Right Click: LUI Option Panel"
-L["MicroSettings_Left"] = "Left Click: WoW Option Panel"
+L["MicroSettings_Right"] = "Left Click: LUI Option Panel"
+L["MicroSettings_Left"] = "Right Click: WoW Option Panel"
 L["MicroBags_Any"] = "Show/Hide your bags"
 L["MicroStore_Name"] = "Blizzard Store"
 L["MicroStore_Any"] = "Show/Hide the Blizzard Store Frame"
