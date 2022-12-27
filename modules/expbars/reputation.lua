@@ -71,10 +71,16 @@ end
 
 function ReputationDataProvider:GetFriendshipValues(factionID)
 	local reputationInfo = C_GossipInfo.GetFriendshipReputation(factionID)
+	self.repText = reputationInfo.reaction
+	-- If the friendship is maxed, there will not be a next threshold, so we can just return a full bar.
+	if not reputationInfo.nextThreshold then return 1, 1 end
+
+	-- reactionThreshold is the amount that was needead to get to the current friendship rank.
+	-- nextThreshold is the amount needed to get to the next threshold
+	-- Standing is the current total reputation. 
 	local barMax = reputationInfo.nextThreshold - reputationInfo.reactionThreshold
 	local barValue = reputationInfo.standing - reputationInfo.reactionThreshold
-	
-	self.repText = reputationInfo.reaction
+
 	return barValue, barMax
 end
 
