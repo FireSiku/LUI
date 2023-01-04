@@ -6,9 +6,19 @@ local _, LUI = ...
 local module = LUI:GetModule("Bags")
 
 local format = format
+local PurchaseSlot = _G.PurchaseSlot
+local CloseBankFrame = _G.CloseBankFrame
+local GetNumBankSlots = _G.GetNumBankSlots
+local GetBankSlotCost = _G.GetBankSlotCost
+local PutItemInBag = _G.PutItemInBag
+local GetCoinIcon = _G.GetCoinIcon
+local GetMoneyString = _G.GetMoneyString
 
--- Constants
--- luacheck: globals CONFIRM_BUY_BANK_SLOT BANK_BAG_PURCHASE
+local COSTS_LABEL = _G.COSTS_LABEL
+local CONFIRM_BUY_BANK_SLOT = _G.CONFIRM_BUY_BANK_SLOT
+local YES = _G.YES
+local NO = _G.NO
+local BANK_BAG_PURCHASE = _G.BANK_BAG_PURCHASE
 
 local BANK_SLOT_MAIN_TEMPLATE = "BankItemButtonGenericTemplate"
 local BANK_SLOT_TEMPLATE = "ContainerFrameItemButtonTemplate"
@@ -27,7 +37,7 @@ StaticPopupDialogs["CONFIRM_BUY_BANK_SLOT"] = {
 		PurchaseSlot();
 	end,
 	OnShow = function(self)
-		MoneyFrame_Update(self.moneyFrame, LUIBank.bankCost);
+		_G.MoneyFrame_Update(self.moneyFrame, LUIBank.bankCost);
 	end,
 	hasMoneyFrame = 1,
 	timeout = 0,
@@ -41,7 +51,7 @@ StaticPopupDialogs["CONFIRM_BUY_BANK_SLOT"] = {
 local Bank = {
 	--Constants
 	NUM_BAG_IDS = 8,
-	BAG_ID_LIST = { -1, 5, 6, 7, 8, 9, 10, 11, },
+	BAG_ID_LIST = { -1, 6, 7, 8, 9, 10, 11, 12},
 
 	-- vars
 	name = "Bank",
@@ -94,7 +104,7 @@ function Bank:Layout()
 					GameTooltip:Show()
 				end)
 				bagSlot:SetScript("OnLeave", function()
-					GameTooltip_Hide()
+					_G.GameTooltip_Hide()
 				end)
 
 			-- Unpurchased bags
@@ -158,7 +168,7 @@ function Bank:CreateUtilBar()
 	local utilBar = self.utilBar
 
 	--CleanUp
-	local button = module:CreateCleanUpButton("LUIBank_CleanUp", utilBar, SortBankBags)
+	local button = module:CreateCleanUpButton("LUIBank_CleanUp", utilBar, C_Container.SortBankBags)
 	utilBar:AddNewButton(button)
 end
 
