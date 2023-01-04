@@ -5,9 +5,18 @@
 local _, LUI = ...
 local module = LUI:GetModule("Bags")
 
+local GetInventoryItemTexture = _G.GetInventoryItemTexture
+local GetInventorySlotInfo = _G.GetInventorySlotInfo
+local PickupBagFromSlot = _G.PickupBagFromSlot
+local PutItemInBag = _G.PutItemInBag
+local ResetCursor = _G.ResetCursor
+local PlaySound = _G.PlaySound
+
 local CLEANUP_TEXTURE_ATLAS = "bags-button-autosort-up"
 local CLEANUP_TEXTURE = "Interface\\ContainerFrame\\Bags"
-local CLEANUP_SOUND = SOUNDKIT.UI_BAG_SORTING_01
+local CLEANUP_SOUND = _G.SOUNDKIT.UI_BAG_SORTING_01
+
+local SEARCH = _G.SEARCH
 
 --luacheck: globals BAG_CLEANUP_BAGS BAG_CLEANUP_BANK BAG_CLEANUP_REAGENT_BANK
 --luacheck: globals PaperDollItemSlotButton_OnEvent PaperDollItemSlotButton_OnShow PaperDollItemSlotButton_OnHide
@@ -62,7 +71,7 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 		--BagSlotTemplate other events, unchecked.
 		button:SetScript("OnEvent", function(self, event, ...)
 			if event == "BAG_UPDATE_DELAYED" then
-				PaperDollItemSlotButton_Update(self)
+				_G.PaperDollItemSlotButton_Update(self)
 				self:SetBackdropBorderColor(module:RGBA("Border"))
 			else
 				PaperDollItemSlotButton_OnEvent(self, event, ...)
@@ -77,8 +86,8 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 	elseif button.container == "Bank" then
 		button:SetID(id-4)
 
-		button.GetInventorySlot = ButtonInventorySlot;
-		button.UpdateTooltip = BankFrameItemButton_OnEnter
+		button.GetInventorySlot = _G.ButtonInventorySlot;
+		button.UpdateTooltip = _G.BankFrameItemButton_OnEnter
 		button.inventoryID = button:GetInventorySlot()
 
 		button:SetScript("OnEvent", function(self, event)
@@ -90,9 +99,9 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 				LUIBank:Layout()
 			end
 		end)
-		button:SetScript("OnDragStart", BankFrameItemButtonBag_Pickup)
-		button:SetScript("OnReceiveDrag", BankFrameItemButtonBag_OnClick)
-		button:SetScript("OnEnter", BankFrameItemButton_OnEnter)
+		button:SetScript("OnDragStart", _G.BankFrameItemButtonBag_Pickup)
+		button:SetScript("OnReceiveDrag", _G.BankFrameItemButtonBag_OnClick)
+		button:SetScript("OnEnter", _G.BankFrameItemButton_OnEnter)
 
 		button:SetScript("OnShow", function(self)
 			module:BankBagButtonUpdate(self)
@@ -100,7 +109,7 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 
 		--BankFrameItemButton_Update(button)
 		module:BankBagButtonUpdate(button)
-		BankFrameItemButton_UpdateLocked(button)
+		_G.BankFrameItemButton_UpdateLocked(button)
 		button.tooltipText = button.tooltipText or ""
 	end
 
@@ -146,7 +155,7 @@ function module:CreateCleanUpButton(name, parent, sortFunc)
 			GameTooltip:SetText(CLEANUP_TEXT[name])
 			GameTooltip:Show()
 		end)
-	button:SetScript("OnLeave", GameTooltip_Hide)
+	button:SetScript("OnLeave", _G.GameTooltip_Hide)
 
 	--Adjust the icon to fit CleanUp.
 	button.icon:SetTexCoord(LUI:GetCoordAtlas("CleanUp"))

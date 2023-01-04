@@ -69,7 +69,12 @@ modules\minimap\minimap_init.lua
 modules\minimap\minimap.lua
 
 ### Bags ###
-## modules\bags\bags_v3.lua
+modules\bags\bags_init.lua
+modules\bags\bags.lua
+modules\bags\templates.lua
+modules\bags\backpack.lua
+## modules\bags\reagents.lua
+## modules\bags\bank.lua
 
 ### Cooldown ###
 modules\cooldown\cooldown.xml

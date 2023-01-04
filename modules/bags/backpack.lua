@@ -6,14 +6,14 @@ local _, LUI = ...
 local module = LUI:GetModule("Bags")
 local Media = LibStub("LibSharedMedia-3.0")
 
-local format, tinsert, wipe = format, tinsert, wipe
-local GetBackpackCurrencyInfo = GetBackpackCurrencyInfo
-local GetMoneyString = GetMoneyString
-local GetMoney = GetMoney
+local GetNumWatchedTokens = _G.GetNumWatchedTokens
+local GetMoneyString = _G.GetMoneyString
+local C_CurrencyInfo = C_CurrencyInfo
+local C_Container = C_Container
+local GetMoney = _G.GetMoney
+
 
 -- Constants
-local MAX_WATCHED_TOKENS = MAX_WATCHED_TOKENS
-
 local BACKPACK_TOKEN_UPDATE_FUNC = "BackpackTokenFrame_Update"
 local BAG_SLOT_TEMPLATE = "ContainerFrameItemButtonTemplate"
 local BAG_SLOT_NAME_FORMAT = "LUIBags_Item%d_%d"
@@ -24,10 +24,11 @@ local BAG_BAGBAR_NAME_FORMAT = "LUIBags_Bag%d"
 -- ##### Bag Container Object #########################################################################################
 -- ####################################################################################################################
 
+LUI:Print(Enum.BagIndex.ReagentBag)
 local Bags = {
 	--Constants
-	NUM_BAG_IDS = 5,
-	BAG_ID_LIST = { 0, 1, 2, 3, 4 },
+	NUM_BAG_IDS = 6,
+	BAG_ID_LIST = { 0, 1, 2, 3, 4, 5 },
 
 	-- vars
 	name = "Bags",
@@ -41,8 +42,8 @@ end
 
 function Bags:Layout()
 	self:UpdateCurrencies()
-	self.bagsBar:SetAnchors()
-	self.utilBar:SetAnchors()
+	-- self.bagsBar:SetAnchors()
+	-- self.utilBar:SetAnchors()
 end
 
 function Bags:NewItemSlot(id, slot)
@@ -51,7 +52,7 @@ function Bags:NewItemSlot(id, slot)
 		return self.itemList[id][slot]
 	end
 
-	local name = format(BAG_SLOT_NAME_FORMAT, id, slot)
+	local name = string.format(BAG_SLOT_NAME_FORMAT, id, slot)
 	local itemSlot = module:CreateSlot(name, self.bagList[id], BAG_SLOT_TEMPLATE)
 	--local itemSlot = CreateFrame("Button", name, self.bagList[id], BAG_SLOT_TEMPLATE)
 
@@ -98,7 +99,7 @@ function Bags:CreateTitleBar()
 
 	--Hooking this function allows to update watched currencies without a ReloadUI
 	local updateFunc = function() self:UpdateCurrencies() end
-	module:SecureHook(BACKPACK_TOKEN_UPDATE_FUNC, updateFunc)
+	--module:SecureHook(BACKPACK_TOKEN_UPDATE_FUNC, updateFunc)
 	self:SetScript("OnEvent", updateFunc)
 	self:RegisterEvent("PLAYER_MONEY")
 	self:RegisterEvent("PLAYER_LOGIN")
@@ -114,11 +115,11 @@ end
 
 local currencyString = {}
 function Bags:GetCurrencyString()
-	wipe(currencyString)
-	for i = 1, MAX_WATCHED_TOKENS do
-		local name, count, icon = GetBackpackCurrencyInfo(i)
-		if name then
-			currencyString[i] = format(CURRENCY_FORMAT,count,icon)
+	table.wipe(currencyString)
+	for i = 1, GetNumWatchedTokens() do
+		local data = C_CurrencyInfo.GetBackpackCurrencyInfo(i)
+		if data.name then
+			currencyString[i] = string.format(CURRENCY_FORMAT, data.quantity, data.iconFileID)
 		end
 	end
 	return table.concat(currencyString, "  ")
@@ -137,7 +138,7 @@ function Bags:CreateBagBar()
 	-- Starting at 2 because we don't need backpack on the BagBar
 	for i = 2, self.NUM_BAG_IDS do
 		local id = self.BAG_ID_LIST[i]
-		local name = format(BAG_BAGBAR_NAME_FORMAT, id)
+		local name = string.format(BAG_BAGBAR_NAME_FORMAT, id)
 		-- index must starts at 0, but we start the loop at 2.
 		local bagsSlot = module:BagBarSlotButtonTemplate(i - 2, id, name, self.bagsBar)
 		self.bagsBar.slotList[i-1] = bagsSlot
@@ -150,7 +151,7 @@ function Bags:CreateUtilBar()
 	local utilBar = self.utilBar
 
 	--CleanUp
-	local button = module:CreateCleanUpButton("LUIBags_CleanUp", utilBar, SortBags)
+	local button = module:CreateCleanUpButton("LUIBags_CleanUp", utilBar, C_Container.SortBags)
 	utilBar:AddNewButton(button)
 end
 
@@ -158,19 +159,21 @@ end
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
 
-local function OpenBags()
+function module.OpenBags()
+	LUI:Print("Opening Bags")
 	LUIBags:Open()
 end
 
-local function CloseBags()
+function module.CloseBags()
+	LUI:Print("Closing Bags")
 	LUIBags:Close()
 end
 
-local function ToggleBags()
+function module.ToggleBags()
 	if LUIBags:IsShown() then
-		CloseBags()
+		module.CloseBags()
 	else
-		OpenBags()
+		module.OpenBags()
 	end
 end
 

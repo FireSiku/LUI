@@ -1,7 +1,7 @@
---[[ File: Bags\Container.lua, contains core of bags module.
+--[[ File: Bags\Bags.lua, contains core of bags module.
 
 This file contains the basic of the Bags module, and the Container prototype, that will be used to make bag frames.
-Keep as geneneric as possible to allow possible expansions. (Guild Bank, Void Storage)
+Keep as geneneric as possible to allow possible expansions. (Guild Bank, Void Storage), code specific to a container should be in their own files.
 
 Container Members:
 - type - Type of container, ie: Bags, Bank
@@ -16,21 +16,33 @@ Container Members:
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
-local module = LUI:NewModule("Bags", "AceHook-3.0")
-local Media = LibStub("LibSharedMedia-3.0")
 local L = LUI.L
+
+---@type BagsModule
+local module = LUI:GetModule("Bags")
+local Media = LibStub("LibSharedMedia-3.0")
 local db
 
+-- Locals and Constants
 local format, pairs = format, pairs
-local GetContainerNumFreeSlots = GetContainerNumFreeSlots
-local CreateFrame = CreateFrame
+local C_Container = C_Container
+local SetItemButtonDesaturated = _G.SetItemButtonDesaturated
+local ClearItemButtonOverlay = _G.ClearItemButtonOverlay
+local SetItemButtonOverlay = _G.SetItemButtonOverlay
+local SetItemButtonTexture = _G.SetItemButtonTexture
+local SetItemButtonCount = _G.SetItemButtonCount
+local GetItemInfo = _G.GetItemInfo
+local GetItemQualityColor = _G.GetItemQualityColor
+
+local TEXTURE_ITEM_QUEST_BANG = _G.TEXTURE_ITEM_QUEST_BANG
+local TEXTURE_ITEM_QUEST_BORDER = _G.TEXTURE_ITEM_QUEST_BORDER
+local NEW_ITEM_ATLAS_BY_QUALITY = _G.NEW_ITEM_ATLAS_BY_QUALITY
+local SEARCH = _G.SEARCH
 
 -- Constants
---local BACKPACK_TOOLTIP = BACKPACK_TOOLTIP
--- luacheck: globals BankFrame TEXTURE_ITEM_QUEST_BORDER TEXTURE_ITEM_QUEST_BANG NEW_ITEM_ATLAS_BY_QUALITY
-
-local BUTTON_SLOT_TEMPLATE = "ItemButtonTemplate"
+local BUTTON_SLOT_TEMPLATE = "ContainerFrameItemButtonTemplate"
 local BAG_UPDATE_TIME = 0.05
 local BAG_TEXTURE_SIZE = 36
 local LAYOUT_OFFSET = 26
@@ -41,56 +53,6 @@ local BACKGROUND_MULTIPLIER = 0.4
 
 -- Local variables
 local containerStorage = {}
-
-
--- ####################################################################################################################
--- ##### Default Settings #############################################################################################
--- ####################################################################################################################
-
-module.defaults = {
-	profile = {
-		--Container Settings
-		Lock = false,
-		RowSize = 16,
-		Padding = 8,
-		Spacing = 4,
-		Scale = 1,
-		BagBar = true,
-		ItemQuality = true,
-		BagNewline = false,
-		ShowNew = false,
-		ShowQuest = true,
-		BackgroundTexture = "Blizzard Tooltip",
-		BorderTexture = "Stripped_medium",
-		BorderSize = 5,
-		-- Keep track of frame positions
-		Position = {
-			["*"] = {
-				X = 0,
-				Y = 0,
-			},
-		},
-		Textures = {
-			BackgroundTex = "Blizzard Tooltip",
-			BorderTex = "Stripped_medium",
-			BorderSize = 5,
-		},
-		-- Fonts and Colors
-		Fonts = {
-			Bags = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
-		},
-		Colors = {
-			Search =         { r = 0.6,  g = 0.6,  b = 1,    a = 1,   t = "Class",      },
-			Border =         { r = 0.2,  g = 0.2,  b = 0.2,  a = 1,   t = "Individual", },
-			Background =     { r = 0.18, g = 0.18, b = 0.18, a = 0.8, t = "Class",      },
-			ItemBackground = { r = 0.18, g = 0.18, b = 0.18, a = 0.8, t = "Individual", },
-			Professions = { r = 0.1, g = 0.5, b = 0.2, },
-			Bags =        { r = 1,   g = 1,   b = 1,   },
-			--TODO: Add support for FrameBorder and FrameBackground
-			--FrameBackground = { r = 0.09, g = 0.09, b = 0.09, a = 0.8, t = "Individual", },
-		},
-	},
-}
 
 -- ####################################################################################################################
 -- ##### Container Mixin ##############################################################################################
@@ -167,7 +129,7 @@ function ContainerMixin:Layout()
 		local id = self.BAG_ID_LIST[i]
 		local itemList = self.itemList[id]
 		--get a new bagCount in case bags changed.
-		local bagCount = GetContainerNumSlots(id)
+		local bagCount = C_Container.GetContainerNumSlots(id)
 		if bagCount > 0 then
 			self.bagList[id]:Show()
 			for j = 1, bagCount do
@@ -236,9 +198,11 @@ end
 -- ##### Container: Slot Update #######################################################################################
 -- ####################################################################################################################
 
+--- Base function for updating items.
+---@param itemSlot ItemButton
 function ContainerMixin:SlotUpdate(itemSlot)
 	local id, slot = itemSlot.id, itemSlot.slot
-	local texture, count, locked, quality = GetContainerItemInfo(id, slot)
+	local data = C_Container.GetContainerItemInfo(id, slot)
 
 	-- Default Border when items are locked.
 	if not itemSlot.lock then
@@ -251,10 +215,9 @@ function ContainerMixin:SlotUpdate(itemSlot)
 
 	-- Add the cooldown to our item slots.
 	if itemSlot.cooldown then
-		local start, duration, enable = GetContainerItemCooldown(id, slot)
-		CooldownFrame_Set(itemSlot.cooldown, start, duration, enable)
+		local start, duration, enable = C_Container.GetContainerItemCooldown(id, slot)
+		_G.CooldownFrame_Set(itemSlot.cooldown, start, duration, enable)
 	end
-
 	-- New item code from Blizzard's ContainerFrame.lua
 	local newItemTexture = itemSlot.NewItemTexture
 	local battlePayTexture = itemSlot.BattlepayItemTexture
@@ -263,12 +226,12 @@ function ContainerMixin:SlotUpdate(itemSlot)
 	-- Not all item slots have a newItemTexture
 	if newItemTexture then
 		if self:GetOption("ShowNew") and C_NewItems.IsNewItem(id, slot) then
-			if IsBattlePayItem(id, slot) then
+			if _G.IsBattlePayItem(id, slot) then
 				newItemTexture:Hide()
 				battlePayTexture:Show()
 			else
-				if quality and NEW_ITEM_ATLAS_BY_QUALITY[quality] then
-					newItemTexture:SetAtlas(NEW_ITEM_ATLAS_BY_QUALITY[quality])
+				if data.quality and NEW_ITEM_ATLAS_BY_QUALITY[data.quality] then
+					newItemTexture:SetAtlas(NEW_ITEM_ATLAS_BY_QUALITY[data.quality])
 				else
 					newItemTexture:SetAtlas("bags-glow-white")
 				end
@@ -297,11 +260,12 @@ function ContainerMixin:SlotUpdate(itemSlot)
 	local questTexture = _G[itemSlot:GetName().."IconQuestTexture"]
 	if questTexture then
 		questTexture:SetSize(itemSlot:GetSize())
-		local isQuestItem, questId, isActive = GetContainerItemQuestInfo(id, slot)
-		if questId and not isActive and self:GetOption("ShowQuest") then
+		--local isQuestItem, questId, isActive = C_Container.GetContainerItemQuestInfo(id, slot)
+		local questInfo = C_Container.GetContainerItemQuestInfo(id, slot)
+		if questInfo.questID and not questInfo.isActive and self:GetOption("ShowQuest") then
 			questTexture:SetTexture(TEXTURE_ITEM_QUEST_BANG)
 			questTexture:Show()
-		elseif (questId or isQuestItem) and self:GetOption("ShowQuest") then
+		elseif (questInfo.questID or questInfo.isQuestItem) and self:GetOption("ShowQuest") then
 			questTexture:SetTexture(TEXTURE_ITEM_QUEST_BORDER)
 			questTexture:Show()
 		else
@@ -310,7 +274,7 @@ function ContainerMixin:SlotUpdate(itemSlot)
 	end
 
 	-- Color Border according to quality
-	local itemLink = GetContainerItemLink(id, slot)
+	local itemLink = C_Container.GetContainerItemLink(id, slot)
 	if itemLink then
 		-- Do not use earlier quality var, GetContainerInfo returns inacurate information for unusable items.
 		-- Store the name and quality for easy searching and border coloring.
@@ -324,17 +288,28 @@ function ContainerMixin:SlotUpdate(itemSlot)
 		itemSlot.name = nil
 		itemSlot.quality = nil
 	end
+	
+	if data then
+		SetItemButtonTexture(itemSlot, data.iconFileID)
+		SetItemButtonCount(itemSlot, data.stackCount)
+		SetItemButtonDesaturated(itemSlot, data.isLocked, 0.5, 0.5, 0.5)
 
-	SetItemButtonTexture(itemSlot, texture)
-	SetItemButtonCount(itemSlot, count)
-	SetItemButtonDesaturated(itemSlot, locked, 0.5, 0.5, 0.5)
+		if LUI.IsRetail and db.Bags.ShowOverlay and itemLink then
+			SetItemButtonOverlay(itemSlot, itemLink, data.quality, data.isBound)
+		else
+			ClearItemButtonOverlay(itemSlot)
+		end
+	else
+		itemSlot:Reset()
+	end
 
 	itemSlot:Show()
 end
 
 function ContainerMixin:SetItemSlotBorderColor(itemSlot)
 	if self:GetOption("ItemQuality") and itemSlot.quality and itemSlot.quality > 1 and not itemSlot.lock then
-		itemSlot:SetBackdropBorderColor(GetItemQualityColor(itemSlot.quality))
+		local r, g, b = GetItemQualityColor(itemSlot.quality)
+		itemSlot:SetBackdropBorderColor(r, g, b)
 	else
 		itemSlot:SetBackdropBorderColor(module:RGBA("Border"))
 	end
@@ -394,7 +369,7 @@ function ContainerMixin:SetAnchors()
 	local padding = self:GetOption("Padding")
 	local spacing = self:GetOption("Spacing")
 	local rowSize = self:GetOption("RowSize")
-
+	LUI:Print(padding, spacing, rowSize, self.NUM_BAG_IDS)
 	for i = 1, self.NUM_BAG_IDS do
 		local id = self.BAG_ID_LIST[i]
 		--TODO: Add Option to newline on new bag
@@ -447,12 +422,14 @@ function ContainerMixin:SetAnchors()
 	end -- end of itemList for the last ID
 
 	-- Set anchors of the background frame to cover all the items.
+	self.background:ClearAllPoints()
 	self.background:SetPoint("LEFT", lineAnchor, "LEFT", -padding, 0)
 	self.background:SetPoint("RIGHT", rightAnchor, "RIGHT", padding, 0)
 	self.background:SetPoint("BOTTOM", lineAnchor, "BOTTOM", 0, -padding)
 	self.background:SetPoint("TOP", rightAnchor, "TOP", 0, LAYOUT_OFFSET + padding)
 	-- Then set the size of the container frame to be equal to the background.
 	self:SetSize(self.background:GetWidth(), self.background:GetHeight())
+	LUI:Print(self.background:GetWidth())
 end
 
 -- ####################################################################################################################
@@ -555,7 +532,7 @@ function ToolbarMixin:SetButtonTooltip(button, text)
 			GameTooltip:SetText(text)
 			GameTooltip:Show()
 		end)
-	button:SetScript("OnLeave", GameTooltip_Hide)
+	button:SetScript("OnLeave", _G.GameTooltip_Hide)
 end
 
 function ContainerMixin:CreateToolBar(name)
@@ -563,9 +540,9 @@ function ContainerMixin:CreateToolBar(name)
 	toolBar:SetClampedToScreen(true)
 	toolBar:SetSize(1,1)
 
-	local bgFrame = CreateFrame("Frame", nil, toolBar)
-	--Force it to the lowest frame level to prevent layering issues
-	bgFrame:SetFrameLevel(toolBar:GetParent():GetFrameLevel())
+	local bgFrame = CreateFrame("Frame", nil, toolBar, "BackdropTemplate")
+	-- --Force it to the lowest frame level to prevent layering issues
+	-- bgFrame:SetFrameLevel(toolBar:GetParent():GetFrameLevel())
 	bgFrame:SetClampedToScreen(true)
 
 	bgFrame:SetBackdrop(module.bagBackdrop)
@@ -589,9 +566,10 @@ end
 -- ####################################################################################################################
 
 -- Funciton to create a blank slot used for tool bars, items, etc.
--- Template is optional and defaults to "ItemButtonTemplate" if missing.
+-- Template is optional and defaults to "ContainerFrameItemButtonTemplate" if missing.
 function module:CreateSlot(name, parent, template)
-	local button = CreateFrame("Button", name, parent, template or BUTTON_SLOT_TEMPLATE)
+	local button = CreateFrame("ItemButton", name, parent, template or BUTTON_SLOT_TEMPLATE)
+	Mixin(button, _G.BackdropTemplateMixin)
 	button:SetSize(BAG_TEXTURE_SIZE, BAG_TEXTURE_SIZE)
 	button:SetPushedTexture("")
 	button:SetNormalTexture("")
@@ -618,6 +596,7 @@ function module:CreateSlot(name, parent, template)
 end
 
 function module:CreateNewContainer(name, obj)
+	LUI:Print(name, obj)
 	if containerStorage[name] then return end
 
 	-- Create the frame and set properties
@@ -630,8 +609,8 @@ function module:CreateNewContainer(name, obj)
 	frame:SetSize(1,1)
 
 	-- Background frame
-	local bgFrame = CreateFrame("Frame", nil, frame)
-	-- TODO: When Bags and Bank are opened at the same time, there is overlap happening. FIgure a better way to fix it.
+	local bgFrame = CreateFrame("Frame", nil, frame, "BackdropTemplate")
+	-- HACK: When Bags and Bank are opened at the same time, there is overlap happening. FIgure a better way to fix it.
 	bgFrame:SetFrameLevel(frame:GetParent():GetFrameLevel()+1)
 	bgFrame:SetClampedToScreen(true)
 	frame.background = bgFrame
@@ -671,6 +650,7 @@ function module:CreateNewContainer(name, obj)
 	-- Craete Search Box
 	module:CreateSearchBar(frame)
 
+	--[[
 	-- Create the Bag Bar
 	if frame.CreateBagBar then
 		frame:CreateToolBar("bagsBar")
@@ -688,7 +668,7 @@ function module:CreateNewContainer(name, obj)
 		end
 		frame:CreateUtilBar()
 	end
-
+]]
 	--Preliminary table creation.
 	frame.bagList = {}
 	frame.itemList = {}
@@ -716,7 +696,7 @@ function module:CreateSearchEditBox(parent)
 end
 
 function module:IsProfessionBag(id)
-	local _, bagType = GetContainerNumFreeSlots(id)
+	local _, bagType = C_Container.GetContainerNumFreeSlots(id)
 	if bagType and bagType > 0 then
 		return true
 	end
@@ -730,7 +710,7 @@ end
 
 function module:Refresh()
 	for _, container in pairs(containerStorage) do
-		if container.forceRefresh or container:IsShown() then
+		--if container.forceRefresh then
 			-- Refresh Settings
 			container:SetScale(container:GetOption("Scale"))
 			container:SetAnchors()
@@ -766,7 +746,7 @@ function module:Refresh()
 			-- Refresh Colors
 			module:RefreshColors()
 			container.forceRefresh = false
-		end
+		--end
 	end
 end
 
@@ -816,56 +796,16 @@ function module:RefreshColors()
 	end
 end
 
--- ####################################################################################################################
--- ##### Framework Events #############################################################################################
--- ####################################################################################################################
-
-module.enableButton = true
-
-function module:OnInitialize()
-	LUI:RegisterModule(module)
+function module:SetBags()
 	db = module.db.profile
-end
-
-function module:OnEnable()
-	module:RefreshBackdrops()
 
 	-- Bags
-	-- Create container
 	module:CreateNewContainer("Bags", module.BagsContainer)
 	LUIBags:CreateTitleBar()
-	tinsert(UISpecialFrames, "LUIBags")
-	module:RawHook("ToggleBag",      module.ToggleBags, true)
-	module:RawHook("ToggleBackpack", module.ToggleBags, true)
-	module:RawHook("OpenAllBags",    module.ToggleBags, true)
-	module:RawHook("ToggleAllBags",  module.ToggleBags, true)
-	module:RawHook("OpenBackpack",   module.OpenBags,   true)
-	module:RawHook("CloseBackpack",  module.CloseBags,  true)
-	module:RawHook("CloseAllBags",   module.CloseBags,  true)
 
 	-- Bank
-	module:CreateNewContainer("Bank", module.BankContainer)
-	tinsert(UISpecialFrames, "LUIBank")
-	module:RegisterEvent("BANKFRAME_OPENED", module.OpenBank)
-	module:RegisterEvent("BANKFRAME_CLOSED", module.CloseBank)
-	--module:HookScript(LUIBags, "OnHide", CloseBank)
-	-- TODO: Shouldn't it be the bank frame that registers this event?
-	module:RegisterEvent("PLAYERBANKSLOTS_CHANGED", module.BankContainer.BankSlotsUpdate)
-	BankFrame:UnregisterAllEvents()
+	-- module:CreateNewContainer("Bank", module.BankContainer)
+	-- module:CreateNewContainer("Reagent", module.BankReagentContainer)
 
-	-- Reagents
-	module:CreateNewContainer("Reagent", module.BankReagentContainer)
-	tinsert(UISpecialFrames, "LUIReagent")
-	module:RegisterEvent("PLAYERREAGENTBANKSLOTS_CHANGED", module.BankReagentContainer.BankSlotsUpdate)
-
-	-- close bags before Enabling/Disabling the module
-	CloseAllBags()
-end
-
-function module:OnDisable()
-	CloseAllBags()
-
-	-- Bank
-	BankFrame:RegisterEvent("BANKFRAME_OPENED")
-	BankFrame:RegisterEvent("BANKFRAME_CLOSED")
+	module:Refresh()
 end

@@ -6,12 +6,18 @@
 local _, LUI = ...
 local module = LUI:GetModule("Bags")
 
-local format = format
+local IsReagentBankUnlocked = _G.IsReagentBankUnlocked
+local GetReagentBankCost = _G.GetReagentBankCost
+local DepositReagentBank = _G.DepositReagentBank
+local GetMoneyString = _G.GetMoneyString
+local PlaySound = _G.PlaySound
+
+local COSTS_LABEL = _G.COSTS_LABEL
 
 -- Constants
 local REAGENTS_SLOT_TEMPLATE = "ReagentBankItemButtonGenericTemplate"
 local REAGENTS_SLOT_NAME_FORMAT = "LUIReagent_Item%d_%d"
-local REAGENTS_DEPOSIT_SOUND = SOUNDKIT.IG_MAINMENU_OPTION
+local REAGENTS_DEPOSIT_SOUND = _G.SOUNDKIT.IG_MAINMENU_OPTION
 local REAGENTS_DEPOSIT_ICON = 413587 -- Mobile Banking Icon
 --luacheck: globals REAGENTBANK_DEPOSIT REAGENTBANK_PURCHASE_TEXT REAGENT_BANK BANKSLOTPURCHASE
 
@@ -32,7 +38,7 @@ function Reagent:OnShow()
 end
 
 function Reagent:OnHide()
-	CloseBankFrame()
+	_G.CloseBankFrame()
 end
 
 function Reagent:Layout()
@@ -52,7 +58,7 @@ function Reagent:NewItemSlot(id, slot)
 		return self.itemList[id][slot]
 	end
 
-	local name = format(REAGENTS_SLOT_NAME_FORMAT, id, slot)
+	local name = string.format(REAGENTS_SLOT_NAME_FORMAT, id, slot)
 	local template = REAGENTS_SLOT_TEMPLATE
 	local itemSlot = module:CreateSlot(name, self.bagList[id], template)
 
@@ -72,7 +78,7 @@ function Reagent:CreateUtilBar()
 	local utilBar = self.utilBar
 
 	-- CleanUp
-	local cleanUpButton = module:CreateCleanUpButton("LUIReagent_CleanUp", utilBar, SortReagentBankBags)
+	local cleanUpButton = module:CreateCleanUpButton("LUIReagent_CleanUp", utilBar, C_Container.SortReagentBankBags)
 	utilBar:AddNewButton(cleanUpButton)
 
 	-- Deposit
@@ -120,7 +126,7 @@ function Reagent:CreateUnlockInfo()
 	button:SetText(BANKSLOTPURCHASE)
 	button:SetPoint("LEFT", tabCost, "RIGHT", 10, 0)
 	button:SetScript("OnClick", function()
-		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION);
+		PlaySound(_G.SOUNDKIT.IG_MAINMENU_OPTION);
         StaticPopup_Show("CONFIRM_BUY_REAGENTBANK_TAB");
 	end)
 	button:Show()
