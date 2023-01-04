@@ -60,7 +60,6 @@ local TOOLTIPS_LIST = {
 	"ItemRefTooltip",
 	"ItemRefShoppingTooltip1",
 	"ItemRefShoppingTooltip2",
-	"EmbeddedItemTooltip",
 	"ShoppingTooltip1",
 	"ShoppingTooltip2",
 	"FriendsTooltip",
