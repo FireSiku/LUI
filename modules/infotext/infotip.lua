@@ -50,6 +50,7 @@ function LineMixin:AddTexture(anchor, offsetX)
 end
 
 function LineMixin:SetClassIcon(tex, class)
+	if not tex or not class then return end
 	tex:SetTexture(CLASS_ICONS_TEXTURE)
 	local offset, left, right, bottom, top = 0.025, unpack(_G.CLASS_ICON_TCOORDS[class])
 	tex:SetTexCoord(left+offset, right-offset, bottom+offset, top-offset)
