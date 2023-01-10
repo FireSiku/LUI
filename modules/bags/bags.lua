@@ -804,8 +804,8 @@ function module:SetBags()
 	LUIBags:CreateTitleBar()
 
 	-- Bank
-	-- module:CreateNewContainer("Bank", module.BankContainer)
-	-- module:CreateNewContainer("Reagent", module.BankReagentContainer)
+	module:CreateNewContainer("Bank", module.BankContainer)
+	module:CreateNewContainer("Reagent", module.BankReagentContainer)
 
 	module:Refresh()
 end
