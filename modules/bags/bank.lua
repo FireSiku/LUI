@@ -65,6 +65,7 @@ function Bank:OnHide()
 end
 
 function Bank:Layout()
+	if true then return end
 	self.bagsBar:SetAnchors()
 	self.utilBar:SetAnchors()
 

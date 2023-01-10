@@ -73,8 +73,8 @@ modules\bags\bags_init.lua
 modules\bags\bags.lua
 modules\bags\templates.lua
 modules\bags\backpack.lua
-## modules\bags\reagents.lua
-## modules\bags\bank.lua
+modules\bags\reagents.lua
+modules\bags\bank.lua
 
 ### Cooldown ###
 modules\cooldown\cooldown.xml
