@@ -20,7 +20,7 @@ Container Members:
 local _, LUI = ...
 local L = LUI.L
 
----@type BagsModule
+---@class BagsModule
 local module = LUI:GetModule("Bags")
 local Media = LibStub("LibSharedMedia-3.0")
 local db
@@ -32,13 +32,13 @@ local SetItemButtonDesaturated = _G.SetItemButtonDesaturated
 local ClearItemButtonOverlay = _G.ClearItemButtonOverlay
 local SetItemButtonOverlay = _G.SetItemButtonOverlay
 local SetItemButtonTexture = _G.SetItemButtonTexture
+local GetItemQualityColor = _G.GetItemQualityColor
 local SetItemButtonCount = _G.SetItemButtonCount
 local GetItemInfo = _G.GetItemInfo
-local GetItemQualityColor = _G.GetItemQualityColor
 
-local TEXTURE_ITEM_QUEST_BANG = _G.TEXTURE_ITEM_QUEST_BANG
 local TEXTURE_ITEM_QUEST_BORDER = _G.TEXTURE_ITEM_QUEST_BORDER
 local NEW_ITEM_ATLAS_BY_QUALITY = _G.NEW_ITEM_ATLAS_BY_QUALITY
+local TEXTURE_ITEM_QUEST_BANG = _G.TEXTURE_ITEM_QUEST_BANG
 local SEARCH = _G.SEARCH
 
 -- Constants

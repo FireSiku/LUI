@@ -2,7 +2,10 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
+
+---@class BagsModule
 local module = LUI:GetModule("Bags")
 
 local GetInventoryItemTexture = _G.GetInventoryItemTexture

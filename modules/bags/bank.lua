@@ -2,7 +2,10 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
+
+---@type BagsModule
 local module = LUI:GetModule("Bags")
 
 local format = format
@@ -14,11 +17,11 @@ local PutItemInBag = _G.PutItemInBag
 local GetCoinIcon = _G.GetCoinIcon
 local GetMoneyString = _G.GetMoneyString
 
-local COSTS_LABEL = _G.COSTS_LABEL
 local CONFIRM_BUY_BANK_SLOT = _G.CONFIRM_BUY_BANK_SLOT
+local BANK_BAG_PURCHASE = _G.BANK_BAG_PURCHASE
+local COSTS_LABEL = _G.COSTS_LABEL
 local YES = _G.YES
 local NO = _G.NO
-local BANK_BAG_PURCHASE = _G.BANK_BAG_PURCHASE
 
 local BANK_SLOT_MAIN_TEMPLATE = "BankItemButtonGenericTemplate"
 local BANK_SLOT_TEMPLATE = "ContainerFrameItemButtonTemplate"
@@ -50,8 +53,18 @@ StaticPopupDialogs["CONFIRM_BUY_BANK_SLOT"] = {
 
 local Bank = {
 	--Constants
-	NUM_BAG_IDS = 8,
-	BAG_ID_LIST = { -1, 6, 7, 8, 9, 10, 11, 12},
+	NUM_BAG_IDS = 9,
+	BAG_ID_LIST = {
+		Enum.BagIndex.Bank,
+		Enum.BagIndex.BankBag_1,
+		Enum.BagIndex.BankBag_2,
+		Enum.BagIndex.BankBag_3,
+		Enum.BagIndex.BankBag_4,
+		Enum.BagIndex.BankBag_5,
+		Enum.BagIndex.BankBag_6,
+		Enum.BagIndex.BankBag_7,
+		Enum.BagIndex.Bankbag,
+	},
 
 	-- vars
 	name = "Bank",
