@@ -70,6 +70,7 @@ modules\minimap\minimap.lua
 
 ### Bags ###
 modules\bags\bags_init.lua
+modules\bags\toolbars.lua
 modules\bags\bags.lua
 modules\bags\templates.lua
 modules\bags\backpack.lua
