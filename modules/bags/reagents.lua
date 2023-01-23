@@ -3,7 +3,10 @@
 -- ####################################################################################################################
 --luacheck: globals LUIReagent
 
+---@type string, LUIAddon
 local _, LUI = ...
+
+---@type BagsModule
 local module = LUI:GetModule("Bags")
 
 local IsReagentBankUnlocked = _G.IsReagentBankUnlocked
@@ -28,7 +31,7 @@ local REAGENTS_DEPOSIT_ICON = 413587 -- Mobile Banking Icon
 local Reagent = {
 	--Constants
 	NUM_BAG_IDS = 1,
-	BAG_ID_LIST = { -3, },
+	BAG_ID_LIST = { Enum.BagIndex.Reagentbank },
 
 	-- vars
 	name = "Reagent",

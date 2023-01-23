@@ -2,7 +2,10 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
+---@type string, LUIAddon
 local _, LUI = ...
+
+---@type BagsModule
 local module = LUI:GetModule("Bags")
 local Media = LibStub("LibSharedMedia-3.0")
 
@@ -24,15 +27,25 @@ local BAG_BAGBAR_NAME_FORMAT = "LUIBags_Bag%d"
 -- ##### Bag Container Object #########################################################################################
 -- ####################################################################################################################
 
-LUI:Print(Enum.BagIndex.ReagentBag)
 local Bags = {
 	--Constants
-	NUM_BAG_IDS = 6,
-	BAG_ID_LIST = { 0, 1, 2, 3, 4, 5 },
+	NUM_BAG_IDS = 5,
+	BAG_ID_LIST = {
+		Enum.BagIndex.Backpack,
+		Enum.BagIndex.Bag_1,
+		Enum.BagIndex.Bag_2,
+		Enum.BagIndex.Bag_3,
+		Enum.BagIndex.Bag_4,
+	},
 
 	-- vars
 	name = "Bags",
 }
+
+if LUI.IsRetail then
+	table.insert(Bags.BAG_ID_LIST, Enum.BagIndex.ReagentBag)
+	Bags.NUM_BAG_IDS = 6
+end
 
 function Bags:OnShow()
 end
