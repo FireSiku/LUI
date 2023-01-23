@@ -53,7 +53,7 @@ StaticPopupDialogs["CONFIRM_BUY_BANK_SLOT"] = {
 
 local Bank = {
 	--Constants
-	NUM_BAG_IDS = 9,
+	NUM_BAG_IDS = 8,
 	BAG_ID_LIST = {
 		Enum.BagIndex.Bank,
 		Enum.BagIndex.BankBag_1,
@@ -63,7 +63,6 @@ local Bank = {
 		Enum.BagIndex.BankBag_5,
 		Enum.BagIndex.BankBag_6,
 		Enum.BagIndex.BankBag_7,
-		Enum.BagIndex.Bankbag,
 	},
 
 	-- vars

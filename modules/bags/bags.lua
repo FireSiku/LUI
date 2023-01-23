@@ -58,7 +58,9 @@ local containerStorage = {}
 -- ##### Container Mixin ##############################################################################################
 -- ####################################################################################################################
 
+---@class ContainerMixin
 local ContainerMixin = {}
+
 function ContainerMixin:Open()
 	self:Show()
 end
@@ -471,102 +473,14 @@ function ContainerMixin:SearchReset()
 end
 
 -- ####################################################################################################################
--- ##### Container: Toolbars ##########################################################################################
--- ####################################################################################################################
--- Toolbars is the generic names for any bar that will be around the main container frame.
--- By default, this should be the Bags Bar and the utility bar.
-
-local ToolbarMixin = {}
-
-function ToolbarMixin:SetAnchors()
-	local padding = self.container:GetOption("Padding")
-	local spacing = self.container:GetOption("Spacing")
-	local previousAnchor, firstAnchor
-	for i = 1, #self.slotList do
-		local slot = self.slotList[i]
-		slot:ClearAllPoints()
-
-		if not slot.hidden then
-			slot:Show()
-			if not previousAnchor then -- first slot
-				slot:SetPoint("TOPLEFT", self, "TOPLEFT", padding, -padding)
-				previousAnchor = slot
-				firstAnchor = slot
-			else
-				slot:SetPoint("LEFT", previousAnchor, "RIGHT", spacing, 0)
-				previousAnchor = slot
-			end
-		else
-			slot:Hide()
-		end
-	end
-
-	self.background:SetPoint("LEFT", firstAnchor, "LEFT", -padding, 0)
-	self.background:SetPoint("TOP", firstAnchor, "TOP", 0, padding)
-	self.background:SetPoint("BOTTOM", firstAnchor, "BOTTOM", 0, -padding)
-	self.background:SetPoint("RIGHT", previousAnchor, "RIGHT", padding, 0)
-
-	self:SetSize(self.background:GetWidth(), self.background:GetHeight())
-	self:Show()
-end
-
---Simple function to add a new button to the toolbar.
-function ToolbarMixin:AddNewButton(newButton)
-	self.slotList[self.nextIndex] = newButton
-	self.nextIndex = self.nextIndex + 1
-end
-
-function ToolbarMixin:ShowButton(button)
-	button.hidden = false
-	self:SetAnchors()
-end
-
-function ToolbarMixin:HideButton(button)
-	button.hidden = true
-	self:SetAnchors()
-end
-
-function ToolbarMixin:SetButtonTooltip(button, text)
-	button:SetScript("OnEnter", function()
-			GameTooltip:SetOwner(button)
-			GameTooltip:SetText(text)
-			GameTooltip:Show()
-		end)
-	button:SetScript("OnLeave", _G.GameTooltip_Hide)
-end
-
-function ContainerMixin:CreateToolBar(name)
-	local toolBar = CreateFrame("Frame", nil, self)
-	toolBar:SetClampedToScreen(true)
-	toolBar:SetSize(1,1)
-
-	local bgFrame = CreateFrame("Frame", nil, toolBar, "BackdropTemplate")
-	-- --Force it to the lowest frame level to prevent layering issues
-	-- bgFrame:SetFrameLevel(toolBar:GetParent():GetFrameLevel())
-	bgFrame:SetClampedToScreen(true)
-
-	bgFrame:SetBackdrop(module.bagBackdrop)
-	bgFrame:SetBackdropColor(module:RGBA("Background"))
-	bgFrame:SetBackdropBorderColor(module:RGBA("Border"))
-
-	toolBar.slotList = {}
-	toolBar.nextIndex = 1
-	toolBar.container = self
-	toolBar.background = bgFrame
-	self.toolbars[name] = toolBar
-	if not self[name] then self[name] = toolBar end
-
-	for k, v in pairs(ToolbarMixin) do
-		toolBar[k] = v
-	end
-end
-
--- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
 
--- Funciton to create a blank slot used for tool bars, items, etc.
--- Template is optional and defaults to "ContainerFrameItemButtonTemplate" if missing.
+--- Function to create a blank slot used for tool bars, items, etc.
+---@param name string
+---@param parent Frame
+---@param template? string @ Frame template to use. Defaults to "ContainerFrameItemButtonTemplate"
+---@return ItemButton
 function module:CreateSlot(name, parent, template)
 	local button = CreateFrame("ItemButton", name, parent, template or BUTTON_SLOT_TEMPLATE)
 	Mixin(button, _G.BackdropTemplateMixin)
@@ -650,17 +564,16 @@ function module:CreateNewContainer(name, obj)
 	-- Craete Search Box
 	module:CreateSearchBar(frame)
 
-	--[[
 	-- Create the Bag Bar
 	if frame.CreateBagBar then
-		frame:CreateToolBar("bagsBar")
+		module:CreateToolBar(frame, "bagsBar")
 		frame.bagsBar:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 0, 2)
 		frame:CreateBagBar()
 	end
 
 	-- Create the Utility Bar
 	if frame.CreateUtilBar then
-		frame:CreateToolBar("utilBar")
+		module:CreateToolBar(frame, "utilBar")
 		if frame.bagsBar then
 			frame.utilBar:SetPoint("LEFT", frame.bagsBar, "RIGHT", 4, 0)
 		else
@@ -668,7 +581,7 @@ function module:CreateNewContainer(name, obj)
 		end
 		frame:CreateUtilBar()
 	end
-]]
+
 	--Preliminary table creation.
 	frame.bagList = {}
 	frame.itemList = {}
