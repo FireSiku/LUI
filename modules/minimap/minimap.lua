@@ -19,7 +19,7 @@ local db
 local GetMinimapZoneText = _G.GetMinimapZoneText
 local ToggleDropDownMenu = _G.ToggleDropDownMenu
 local TrackingFrame = _G.MinimapCluster.Tracking
-local MailFrame = _G.MinimapCluster.MailFrame
+local MailFrame = _G.MinimapCluster.IndicatorFrame
 local MINIMAP_LABEL = _G.MINIMAP_LABEL
 local Minimap = _G.Minimap
 
