@@ -35,12 +35,40 @@ module.defaults = {
 		BackgroundTexture = "Blizzard Tooltip",
 		BorderTexture = "Stripped_medium",
 		BorderSize = 5,
-		-- Keep track of frame positions
-		Position = {
-			["*"] = {
-				X = 0,
-				Y = 0,
-			},
+		Bags = {
+			RowSize = 16,
+			Padding = 8,
+			Spacing = 4,
+			Scale = 1,
+			BagBar = true,
+			ItemQuality = true,
+			BagNewline = false,
+			ShowNew = false,
+			ShowQuest = true,
+			ShowOverlay = true,
+			BackgroundTexture = "Blizzard Tooltip",
+			BorderTexture = "Stripped_medium",
+			BorderSize = 5,
+			X = 0,
+			Y = 0,
+		},
+		Bank = {
+			Lock = false,
+			RowSize = 16,
+			Padding = 8,
+			Spacing = 4,
+			Scale = 1,
+			BagBar = true,
+			ItemQuality = true,
+			BagNewline = false,
+			ShowNew = false,
+			ShowQuest = true,
+			ShowOverlay = true,
+			BackgroundTexture = "Blizzard Tooltip",
+			BorderTexture = "Stripped_medium",
+			BorderSize = 5,
+			X = 0,
+			Y = 0,
 		},
 		Textures = {
 			BackgroundTex = "Blizzard Tooltip",
@@ -50,6 +78,7 @@ module.defaults = {
 		-- Fonts and Colors
 		Fonts = {
 			Bags = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
+			Stack = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
 		},
 		Colors = {
 			Search =         { r = 0.6,  g = 0.6,  b = 1,    a = 1,   t = "Class",      },
