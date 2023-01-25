@@ -243,6 +243,8 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 			if event == "BAG_UPDATE_DELAYED" then
 				_G.PaperDollItemSlotButton_Update(self)
 				self:SetBackdropBorderColor(module:RGBA("Border"))
+			elseif event == "INVENTORY_SEARCH_UPDATE" then
+				self:SetMatchesSearch(not IsContainerFiltered(self.id));
 			else
 				PaperDollItemSlotButton_OnEvent(self, event, ...)
 			end
