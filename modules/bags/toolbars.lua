@@ -199,12 +199,14 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 	local button = module:CreateSlot(name, parent, "")
 	button.isBag = 1 -- Blizzard API support
 	button.id = id
+	button:SetBagID(id)
 	button.index = index
 	button.container = parent:GetParent().name
 
 	button:RegisterForDrag("LeftButton")
 	button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-	--button:RegisterBagButtonUpdateItemContextMatching()
+	button:RegisterBagButtonUpdateItemContextMatching()
+	button:RegisterEvent("BAG_UPDATE_DELAYED")
 
 	button:SetScript("OnClick", function(self) PutItemInBag(self.inventoryID) end)
 	button:SetScript("OnLeave", function()
@@ -214,24 +216,19 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 
 	--Try to have as few type-specific settings as possible
 	if button.container == "Bags" then
-
-		--(1)
+		
 		--PaperDollItemSlotButton_OnLoad
 		--slotName uses id - 1 due to Bag1-4 are refered as Bag0-Bag3
 		local slotName = string.format("BAG%dSLOT", index)
-		LUI:Print("BagSlot", index, id, slotName)
-		--local inventoryID, textureName = GetInventorySlotInfo(slotName)
 		button.inventoryID = C_Container.ContainerIDToInventoryID(id)
 		button:SetID(button.inventoryID)
 
 		local texture = _G[name.."IconTexture"]
 		local textureName = GetInventoryItemTexture("player", button.inventoryID)
 		texture:SetTexture(textureName)
-		button.backgroundTextureName = textureName
 
 		--Rest of BagSlotTemplate OnLoad
-		button:RegisterEvent("BAG_UPDATE_DELAYED")
-		--button:RegisterEvent("INVENTORY_SEARCH_UPDATE")
+		button:RegisterEvent("INVENTORY_SEARCH_UPDATE")
 
 		button.UpdateTooltip = BagSlotButton_OnEnter
 		button.IconBorder:SetTexture("")
@@ -261,6 +258,7 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 		button.GetInventorySlot = _G.ButtonInventorySlot;
 		button.UpdateTooltip = _G.BankFrameItemButton_OnEnter
 		button.inventoryID = button:GetInventorySlot()
+		button:RegisterEvent("PLAYERBANKBAGSLOTS_CHANGED")
 
 		button:SetScript("OnEvent", function(self, event)
 			if event == "BAG_UPDATE_DELAYED" then
@@ -291,7 +289,6 @@ end
 function module:BankBagButtonUpdate(button)
 	local texture = button.icon
 	local textureName = GetInventoryItemTexture("player", button.inventoryID)
-	LUI:Print("BankBagUpdate", "BAG"..button.invSlotName)
 	local _, slotTextureName = GetInventorySlotInfo(button.invSlotName)
 
 	if textureName then

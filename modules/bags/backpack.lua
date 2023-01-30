@@ -173,12 +173,10 @@ end
 -- ####################################################################################################################
 
 function module.OpenBags()
-	LUI:Print("Opening Bags")
 	LUIBags:Open()
 end
 
 function module.CloseBags()
-	LUI:Print("Closing Bags")
 	LUIBags:Close()
 end
 
