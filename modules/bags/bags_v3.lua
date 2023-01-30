@@ -49,14 +49,9 @@ local YES, NO = _G.YES, _G.NO
 local BankFrameItemButton_UpdateLocked = _G.BankFrameItemButton_UpdateLocked
 local BankFrameItemButton_Update = _G.BankFrameItemButton_Update
 local SetItemButtonDesaturated = _G.SetItemButtonDesaturated
-local GetContainerItemCooldown = _G.GetContainerItemCooldown
-local GetContainerNumFreeSlots = _G.GetContainerNumFreeSlots
 local IsReagentBankUnlocked = _G.IsReagentBankUnlocked
 local SetItemButtonTexture = _G.SetItemButtonTexture
 local SetItemButtonOverlay = _G.SetItemButtonOverlay
-local GetContainerNumSlots = _G.GetContainerNumSlots
-local GetContainerItemInfo = _G.GetContainerItemInfo
-local GetContainerItemLink = _G.GetContainerItemLink
 local SetItemButtonCount = _G.SetItemButtonCount
 local MoneyFrame_Update = _G.MoneyFrame_Update
 local GetMoneyString = _G.GetMoneyString
@@ -65,6 +60,7 @@ local PurchaseSlot = _G.PurchaseSlot
 local GetItemInfo = _G.GetItemInfo
 local CreateFrame = _G.CreateFrame
 local OpenEditbox = _G.OpenEditbox
+local C_Container = _G.C_Container
 
 -- Constants. Do NOT Edit those.
 local ST_NORMAL = 1	--Flagged for possible deletion
@@ -225,7 +221,7 @@ end
 
 function module:SlotUpdate(item)
 
-	local texture, count, locked, quality, _, _, itemLink, _, _, _, isBound = GetContainerItemInfo(item.bag, item.slot)
+	local texture, count, locked, quality, _, _, itemLink, _, _, _, isBound = C_Container.GetContainerItemInfo(item.bag, item.slot)
 	local color = db.Colors.Border
 
 	if not item.frame.lock then
@@ -241,7 +237,7 @@ function module:SlotUpdate(item)
 	end
 
 	if item.Cooldown then
-		local cd_start, cd_finish, cd_enable = GetContainerItemCooldown(item.bag, item.slot)
+		local cd_start, cd_finish, cd_enable = C_Container.GetContainerItemCooldown(item.bag, item.slot)
 		CooldownFrame_Set(item.Cooldown, cd_start, cd_finish, cd_enable)
 	end
 
@@ -285,7 +281,7 @@ function module:SlotUpdate(item)
 	local questTexture = _G[item.frame:GetName().."IconQuestTexture"]
 	if questTexture then
 		questTexture:SetSize(item.frame:GetSize())
-		local isQuestItem, questId, isActive = GetContainerItemQuestInfo(item.bag, item.slot)
+		local isQuestItem, questId, isActive = C_Container.GetContainerItemQuestInfo(item.bag, item.slot)
 		if questId and not isActive and db.Bags.ShowQuest then
 			questTexture:SetTexture(TEXTURE_ITEM_QUEST_BANG)
 			questTexture:Show()
@@ -374,7 +370,7 @@ function module:BagFrameSlotNew(slot, parent, bagType)
 			ret.frame.tooltipText = ""
 		end
 	else
-		ret.frame = CreateFrame(ButtonType, "LUIBags__Bag"..slot.."Slot", parent, "BagSlotButtonTemplate")
+		ret.frame = CreateFrame(ButtonType, "LUIBags__Bag"..slot.."Slot", parent, "ContainerFrameItemButtonTemplate")
 		ret.slot = slot
 		tinsert(BagsSlots, ret)
 	end
@@ -457,7 +453,7 @@ function module:BagType(bag)
 	return ST_NORMAL
 	]]
 
-	local bagType = select(2, GetContainerNumFreeSlots(bag))
+	local bagType = select(2, C_Container.GetContainerNumFreeSlots(bag))
 	if bagType and bagType > 0 then
 		return ST_SPECIAL
 	end
@@ -738,10 +734,10 @@ function module:SetBags()
 	end)
 
 	--Hooking this function allows to update watched currencies without a ReloadUI
-	function module:BackpackTokenFrame_Update()
+	function module:TokenTracker_Update()
 		currency:SetText(GetTrackedCurrency())
 	end
-	module:SecureHook("BackpackTokenFrame_Update")
+	module:SecureHook(ContainerFrameSettingsManager.TokenTracker, "Update", module.TokenTracker_Update)
 
 	LUIBags:RegisterEvent("PLAYER_MONEY")
 	LUIBags:RegisterEvent("PLAYER_LOGIN")
@@ -833,7 +829,7 @@ function module:Layout(bagType)
 		isBank = true
 	else
 		frame.gold:SetText(GetMoneyString(GetMoney(), 12))
-		frame.editbox:SetFont(Media:Fetch("font", db.Bags.Font), 12)
+-- 		frame.editbox:SetFont(Media:Fetch("font", db.Bags.Font), 12)
 		frame.search:SetFont(Media:Fetch("font", db.Bags.Font), 12)
 		frame.gold:SetFont(Media:Fetch("font", db.Bags.Font), 12)
 		frame.currency:SetFont(Media:Fetch("font", db.Bags.Font), 12)
@@ -933,13 +929,13 @@ function module:Layout(bagType)
 		end
 
 		for _, id in ipairs(bagId) do
-			local bagCount = GetContainerNumSlots(id)
+			local bagCount = C_Container.GetContainerNumSlots(id)
 			if bagCount > 0 then
 				if not BagsInfo[id] then
 					BagsInfo[id] = module:BagNew(id, frame)
 				end
 
-				slots = slots + GetContainerNumSlots(id)
+				slots = slots + C_Container.GetContainerNumSlots(id)
 			end
 		end
 
@@ -961,7 +957,7 @@ function module:Layout(bagType)
 
 	local idx = 0
 	for _, id in ipairs(bagId) do
-		local bagCount = GetContainerNumSlots(id)
+		local bagCount = C_Container.GetContainerNumSlots(id)
 
 		if bagCount > 0 then
 			BagsInfo[id] = module:BagNew(id, frame)
@@ -1578,10 +1574,10 @@ function module:PrepareSort(frame)
 	local specialBags = {};
 
 	for _, v in pairs(bagOrder) do
-		local maxSlots = GetContainerNumSlots(v);
+		local maxSlots = C_Container.GetContainerNumSlots(v);
 
 		if maxSlots > 0 then
-			local bagFamily = select(2, GetContainerNumFreeSlots(v));
+			local bagFamily = select(2, C_Container.GetContainerNumFreeSlots(v));
 
 			if bagFamily > 0 then
 				table.insert(specialBags, {bagId = v, slot = maxSlots, maxSlots = maxSlots, bagFamily = bagFamily});
@@ -1596,11 +1592,11 @@ function module:PrepareSort(frame)
 	end
 
 	for _, bag in pairs(self.sortBags) do
-		for j = 1, GetContainerNumSlots(bag.bagId) do
-			local itemId = GetContainerItemID(bag.bagId, j);
+		for j = 1, C_Container.GetContainerNumSlots(bag.bagId) do
+			local itemId = C_Container.GetContainerItemID(bag.bagId, j);
 
 			if itemId then
-				local _, count, locked = GetContainerItemInfo(bag.bagId, j);
+				local _, count, locked = C_Container.GetContainerItemInfo(bag.bagId, j);
 
 				if locked then
 					return;
@@ -1714,7 +1710,7 @@ function module:Sort(elapsed)
 	while module.sortItems[key] do
 		local item = module.sortItems[key];
 
-		if not select(3, GetContainerItemInfo(item.sBag, item.sSlot)) and not select(3, GetContainerItemInfo(item.tBag, item.tSlot)) then
+		if not select(3, C_Container.GetContainerItemInfo(item.sBag, item.sSlot)) and not select(3, C_Container.GetContainerItemInfo(item.tBag, item.tSlot)) then
 			if item.sBag ~= item.tBag or item.sSlot ~= item.tSlot then
 				PickupContainerItem(item.sBag, item.sSlot);
 				PickupContainerItem(item.tBag, item.tSlot);
