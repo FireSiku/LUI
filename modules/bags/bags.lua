@@ -86,8 +86,8 @@ end
 function ContainerMixin:StopMovingFrame()
 	self:StopMovingOrSizing()
 	local x, y = self:GetCenter()
-	self.db.Position[self.name].X = format("%.1f", x)
-	self.db.Position[self.name].Y = format("%.1f", y)
+	self.db[self.name].X = RoundToSignificantDigits(x, 2)
+	self.db[self.name].Y = RoundToSignificantDigits(y, 2)
 end
 
 function ContainerMixin:OnShow()
