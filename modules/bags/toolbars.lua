@@ -196,7 +196,7 @@ end
 ---@return ItemButton
 function module:BagBarSlotButtonTemplate(index, id, name, parent)
 	-- TODO: Clean up and make more uniform, stop relying on Blizzard API.
-	local button = module:CreateSlot(name, parent)
+	local button = module:CreateSlot(name, parent, "")
 	button.isBag = 1 -- Blizzard API support
 	button.id = id
 	button.index = index
@@ -204,7 +204,7 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 
 	button:RegisterForDrag("LeftButton")
 	button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-	button:RegisterBagButtonUpdateItemContextMatching()
+	--button:RegisterBagButtonUpdateItemContextMatching()
 
 	button:SetScript("OnClick", function(self) PutItemInBag(self.inventoryID) end)
 	button:SetScript("OnLeave", function()
