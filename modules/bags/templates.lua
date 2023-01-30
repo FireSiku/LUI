@@ -36,7 +36,7 @@ local CLEANUP_TEXT = {
 }
 
 function module:CreateCleanUpButton(name, parent, sortFunc)
-	local button = module:CreateSlot(name, parent)
+	local button = module:CreateSlot(name, parent, "")
 	--module:ApplyBackdrop(button, module.itemBackdrop)
 	button:SetScript("OnClick", function()
 			PlaySound(CLEANUP_SOUND)
