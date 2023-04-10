@@ -16,16 +16,129 @@ if not module or not module.registered then return end
 -- ##### Options Table ################################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.Bags = Opt:Group("Bags", nil, nil, "tab", true, nil, Opt.GetSet(db))
+Opt.options.args.Bags = Opt:Group("Bags", nil, nil, "tab", nil, nil, Opt.GetSet(db))
 Opt.options.args.Bags.handler = module
 local Bags = {
+	Header = Opt:Header(L["Bags_Name"], 1),
+	Settings = Opt:Group(L["General Settings"], nil, 2, nil, nil, true, Opt.GetSet(db)),
+	Backpack = Opt:Group(L["Backpack Options"], nil, 3, nil, nil, nil, Opt.GetSet(db.Bags)),
+	Bank = Opt:Group(L["Bank Options"], nil, 4, nil, nil, nil, Opt.GetSet(db.Bank)),
+	Reagents = Opt:Group(L["Reagents Options"], nil, 5, nil, nil, true, Opt.GetSet(db.Reagents)),
+	Textures = Opt:Group(L["Textures"], nil, 6, nil, nil, nil, Opt.GetSet(db.Textures)),
+}
+
+local function GenerateBagsOptions(kind)
+	local options = {
+		RowSize = Opt:Slider("Items Per Row", "Select how many items will be displayed per rows.", 1, { min = 1, max = 32, step = 1 }),
+		Spacer = Opt:Spacer(3),
+		Padding = Opt:Slider("Padding", "Distance between the frame's edge and the items.", 4, { min = 0, max = 32, step = 1 }),
+		Spacing = Opt:Slider("Spacing", "Distance between items.", 5, { min = 0, max = 32, step = 1 }),
+		Scale = Opt:Slider("Scale", "Overall size of the container frame", 6, { min = 0.5, max = 2, step = 0.1 }),
+		Spacer2 = Opt:Spacer(7),
+		Lock = Opt:Toggle("Lock Frame",  "Lock the frame in place", 8),
+		BagBar = Opt:Toggle("Show Bag Bar", "Show the Bags bar", 9),
+		BagNewline = Opt:Toggle("Newline After Bags", "Starts a new row for each bag.", 10),
+		Spacer3 = Opt:Spacer(11),
+		ItemQuality = Opt:Toggle("Show Item Quality", "Colors item borders by their quality", 11, nil, "full"),
+		ShowNew = Opt:Toggle("Show New Item Animation", "Highlights items marked as 'new'", 12, nil,  "full"),
+		ShowQuest = Opt:Toggle("Show Quest Items", "Highlights items that are part of a quest", 13, nil, "full"),
+		ShowOverlay = Opt:Toggle("Show Item Overlay", "Display the overlay used for various types of items like Cosmetics and Crafting Quality.", 14, nil,  "full"),
+	}
+	return options
+end
+
+local Settings = {
+
+}
+
+local Textures = {
 
 }
 
 Opt.options.args.Bags.args = Bags
+Opt.options.args.Bags.args.Settings.args = Settings
+Opt.options.args.Bags.args.Backpack.args = GenerateBagsOptions("Backpack")
+Opt.options.args.Bags.args.Bank.args = GenerateBagsOptions("Bank")
+Opt.options.args.Bags.args.Reagents.args = GenerateBagsOptions("Reagents")
+Opt.options.args.Bags.args.Textures.args = Textures
 
 
 --[[
+module.defaults = {
+	profile = {
+		--Container Settings
+		Lock = false,
+		RowSize = 16,
+		Padding = 8,
+		Spacing = 4,
+		Scale = 1,
+		ShowBagBar = true,
+		ShowItemQuality = true,
+		BagNewline = false,
+		ShowNew = false,
+		ShowQuest = true,
+		BackgroundTexture = "Blizzard Tooltip",
+		BorderTexture = "Stripped_medium",
+		BorderSize = 5,
+		Bags = {
+			RowSize = 16,
+			Padding = 8,
+			Spacing = 4,
+			Scale = 1,
+			BagBar = true,
+			ItemQuality = true,
+			BagNewline = false,
+			ShowNew = false,
+			ShowQuest = true,
+			ShowOverlay = true,
+			BackgroundTexture = "Blizzard Tooltip",
+			BorderTexture = "Stripped_medium",
+			BorderSize = 5,
+			X = 0,
+			Y = 0,
+		},
+		Bank = {
+			Lock = false,
+			RowSize = 16,
+			Padding = 8,
+			Spacing = 4,
+			Scale = 1,
+			BagBar = true,
+			ItemQuality = true,
+			BagNewline = false,
+			ShowNew = false,
+			ShowQuest = true,
+			ShowOverlay = true,
+			BackgroundTexture = "Blizzard Tooltip",
+			BorderTexture = "Stripped_medium",
+			BorderSize = 5,
+			X = 0,
+			Y = 0,
+		},
+		Textures = {
+			BackgroundTex = "Blizzard Tooltip",
+			BorderTex = "Stripped_medium",
+			BorderSize = 5,
+		},
+		-- Fonts and Colors
+		Fonts = {
+			Bags = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
+			Stack = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
+		},
+		Colors = {
+			Search =         { r = 0.6,  g = 0.6,  b = 1,    a = 1,   t = "Class",      },
+			Border =         { r = 0.2,  g = 0.2,  b = 0.2,  a = 1,   t = "Individual", },
+			Background =     { r = 0.18, g = 0.18, b = 0.18, a = 0.8, t = "Class",      },
+			ItemBackground = { r = 0.18, g = 0.18, b = 0.18, a = 0.8, t = "Individual", },
+			Professions = { r = 0.1, g = 0.5, b = 0.2, },
+			Bags =        { r = 1,   g = 1,   b = 1,   },
+			--TODO: Add support for FrameBorder and FrameBackground
+			--FrameBackground = { r = 0.09, g = 0.09, b = 0.09, a = 0.8, t = "Individual", },
+		},
+	},
+}
+
+
 	NEW DESIGN?
 function module:LoadOptions()
 	local options = {

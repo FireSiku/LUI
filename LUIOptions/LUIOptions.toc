@@ -13,7 +13,7 @@ CPanel.lua
 # ActionBars.lua
 Artwork.lua
 # Auras.lua
-# Bags.lua
+Bags.lua
 Chat.lua
 Cooldown.lua
 ExpBars.lua

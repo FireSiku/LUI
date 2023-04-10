@@ -10,6 +10,7 @@ local module = LUI:GetModule("Bags")
 
 local GetInventoryItemTexture = _G.GetInventoryItemTexture
 local GetInventorySlotInfo = _G.GetInventorySlotInfo
+local IsContainerFiltered = _G.IsContainerFiltered
 local PickupBagFromSlot = _G.PickupBagFromSlot
 local PutItemInBag = _G.PutItemInBag
 local ResetCursor = _G.ResetCursor

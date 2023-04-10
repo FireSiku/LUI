@@ -23,11 +23,11 @@ local L = LUI.L
 ---@class BagsModule
 local module = LUI:GetModule("Bags")
 local Media = LibStub("LibSharedMedia-3.0")
-local db
 
 -- Locals and Constants
 local format, pairs = format, pairs
 local C_Container = C_Container
+local RoundToSignificantDigits = _G.RoundToSignificantDigits
 local SetItemButtonDesaturated = _G.SetItemButtonDesaturated
 local ClearItemButtonOverlay = _G.ClearItemButtonOverlay
 local SetItemButtonOverlay = _G.SetItemButtonOverlay
@@ -86,8 +86,8 @@ end
 function ContainerMixin:StopMovingFrame()
 	self:StopMovingOrSizing()
 	local x, y = self:GetCenter()
-	self.db[self.name].X = RoundToSignificantDigits(x, 2)
-	self.db[self.name].Y = RoundToSignificantDigits(y, 2)
+	self.db.X = RoundToSignificantDigits(x, 2)
+	self.db.Y = RoundToSignificantDigits(y, 2)
 end
 
 function ContainerMixin:OnShow()
@@ -163,8 +163,7 @@ function ContainerMixin:SetBagsProperties()
 	--local bagsBar = self.BagsBar
 
 	-- Set Position
-	local position = self.db.Position[self.name] or {}
-	self:SetPoint("CENTER", UIParent, "BOTTOMLEFT", position.X or 0, position.Y or 0)
+	self:SetPoint("CENTER", UIParent, "BOTTOMLEFT", self.db.X or 0, self.db.Y or 0)
 
 	self.forceRefresh = true
 	module:Refresh()
@@ -228,7 +227,7 @@ function ContainerMixin:SlotUpdate(itemSlot)
 	-- Not all item slots have a newItemTexture
 	if newItemTexture then
 		if self:GetOption("ShowNew") and C_NewItems.IsNewItem(id, slot) then
-			if _G.IsBattlePayItem(id, slot) then
+			if C_Container.IsBattlePayItem(id, slot) then
 				newItemTexture:Hide()
 				battlePayTexture:Show()
 			else
@@ -296,7 +295,7 @@ function ContainerMixin:SlotUpdate(itemSlot)
 		SetItemButtonCount(itemSlot, data.stackCount)
 		SetItemButtonDesaturated(itemSlot, data.isLocked, 0.5, 0.5, 0.5)
 
-		if LUI.IsRetail and db.Bags.ShowOverlay and itemLink then
+		if LUI.IsRetail and self.db.ShowOverlay and itemLink then
 			SetItemButtonOverlay(itemSlot, itemLink, data.quality, data.isBound)
 		else
 			ClearItemButtonOverlay(itemSlot)
@@ -371,7 +370,6 @@ function ContainerMixin:SetAnchors()
 	local padding = self:GetOption("Padding")
 	local spacing = self:GetOption("Spacing")
 	local rowSize = self:GetOption("RowSize")
-	LUI:Print(padding, spacing, rowSize, self.NUM_BAG_IDS)
 	for i = 1, self.NUM_BAG_IDS do
 		local id = self.BAG_ID_LIST[i]
 		--TODO: Add Option to newline on new bag
@@ -431,7 +429,6 @@ function ContainerMixin:SetAnchors()
 	self.background:SetPoint("TOP", rightAnchor, "TOP", 0, LAYOUT_OFFSET + padding)
 	-- Then set the size of the container frame to be equal to the background.
 	self:SetSize(self.background:GetWidth(), self.background:GetHeight())
-	LUI:Print(self.background:GetWidth())
 end
 
 -- ####################################################################################################################
@@ -510,7 +507,6 @@ function module:CreateSlot(name, parent, template)
 end
 
 function module:CreateNewContainer(name, obj)
-	LUI:Print(name, obj)
 	if containerStorage[name] then return end
 
 	-- Create the frame and set properties
@@ -553,7 +549,7 @@ function module:CreateNewContainer(name, obj)
 	end
 	--Add AceBucket to the Container to process bag updates.
 	LibStub("AceBucket-3.0"):Embed(frame)
-	frame.db = db
+	frame.db = module.db.profile[name]
 
 	--Set up scripts
 	frame:SetScript("OnShow", frame.OnShow)
@@ -627,7 +623,7 @@ function module:Refresh()
 			-- Refresh Settings
 			container:SetScale(container:GetOption("Scale"))
 			container:SetAnchors()
-			-- container:SetBagBarAnchors() -- Fix issues
+			--container:SetBagBarAnchors() -- Fix issues
 
 			-- Re-adjust containers' editbox character limit.
 			container.editbox:SetMaxLetters(container:GetOption("RowSize") * 5)
@@ -710,7 +706,6 @@ function module:RefreshColors()
 end
 
 function module:SetBags()
-	db = module.db.profile
 
 	-- Bags
 	module:CreateNewContainer("Bags", module.BagsContainer)

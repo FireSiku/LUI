@@ -21,21 +21,8 @@ module.enableButton = true
 
 module.defaults = {
 	profile = {
-		--Container Settings
-		Lock = false,
-		RowSize = 16,
-		Padding = 8,
-		Spacing = 4,
-		Scale = 1,
-		BagBar = true,
-		ItemQuality = true,
-		BagNewline = false,
-		ShowNew = false,
-		ShowQuest = true,
-		BackgroundTexture = "Blizzard Tooltip",
-		BorderTexture = "Stripped_medium",
-		BorderSize = 5,
 		Bags = {
+			Lock = false,
 			RowSize = 16,
 			Padding = 8,
 			Spacing = 4,
@@ -53,6 +40,24 @@ module.defaults = {
 			Y = 0,
 		},
 		Bank = {
+			Lock = false,
+			RowSize = 16,
+			Padding = 8,
+			Spacing = 4,
+			Scale = 1,
+			BagBar = true,
+			ItemQuality = true,
+			BagNewline = false,
+			ShowNew = false,
+			ShowQuest = true,
+			ShowOverlay = true,
+			BackgroundTexture = "Blizzard Tooltip",
+			BorderTexture = "Stripped_medium",
+			BorderSize = 5,
+			X = 0,
+			Y = 0,
+		},
+		Reagent = {
 			Lock = false,
 			RowSize = 16,
 			Padding = 8,
@@ -111,6 +116,7 @@ function module:OnEnable()
 	module:RawHook("OpenAllBags",    module.ToggleBags, true)
 	module:RawHook("ToggleAllBags",  module.ToggleBags, true)
 	module:RawHook("OpenBackpack",   module.OpenBags,   true)
+	module:RawHook("OpenBag",        module.OpenBags,   true)
 	module:RawHook("CloseBackpack",  module.CloseBags,  true)
 	module:RawHook("CloseAllBags",   module.CloseBags,  true)
 
