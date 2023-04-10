@@ -62,7 +62,7 @@ end
 -- ####################################################################################################################
 
 function module:CreateSearchBar(container)
-	local db = module.db.profile
+	local db = module.db.profile.Bags
 
 	-- Search Text
 	local search = container:CreateFontString(nil, "OVERLAY", "GameFonthighlightLarge")
