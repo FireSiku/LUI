@@ -15,7 +15,7 @@ local element = module:NewElement("Friends", "AceEvent-3.0")
 -- local copies
 local format, max = format, math.max
 local C_FriendList, C_PartyInfo, C_BattleNet = _G.C_FriendList, _G.C_PartyInfo, _G.C_BattleNet
-local FriendsFrame_BattlenetInvite = _G.FriendsFrame_BattlenetInvite
+local FriendsFrame_BattlenetInviteByIndex = _G.FriendsFrame_BattlenetInviteByIndex
 local BNet_GetClientTexture = _G.BNet_GetClientTexture
 local ToggleFriendsFrame = _G.ToggleFriendsFrame
 local BNSetCustomMessage = _G.BNSetCustomMessage
@@ -384,7 +384,7 @@ end
 function element.OnBNFriendButtonClick(bnfriend, button)
 	if IsAltKeyDown() then
 		if bnfriend.client ~= BNET_CLIENT_WOW then return end
-		FriendsFrame_BattlenetInvite(nil, bnfriend.accountID)
+		FriendsFrame_BattlenetInviteByIndex(bnfriend.index)
 	elseif IsControlKeyDown() then
 		_G.FriendsFrame.NotesID = bnfriend.accountID
 		StaticPopup_Show("SET_BNFRIENDNOTE", bnfriend.accountName)
