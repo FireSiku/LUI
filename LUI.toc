@@ -31,7 +31,7 @@ libs\AceTimer-3.0\AceTimer-3.0.xml
 api\oUF11\ouf.xml
 locale\locale.xml
 
-### Core + API ###\
+### Core + API ###
 init.lua
 api\curse.lua
 api\profiler.lua
