@@ -228,8 +228,8 @@ function LUI:RegisterModule(module, dev_skipDB)
 
 	--If a module hasn't been installed yet and should be disabled by default, disable it.
 	--Otherwise, modules are enabled by default, and db.modules[name] should be true.
-	if module.defaultDisabled and not db.Installed[mName] then
-		db.Modules[mName] = false
+	if module.defaultDisabled and not self.db.profile.Modules[mName] then
+		self.db.profile.Modules[mName] = false
 	end
 	module:SetEnabledState(self.db.profile.Modules[mName])
 
