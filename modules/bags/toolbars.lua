@@ -10,10 +10,14 @@ local module = LUI:GetModule("Bags")
 
 local GetInventoryItemTexture = _G.GetInventoryItemTexture
 local GetInventorySlotInfo = _G.GetInventorySlotInfo
+local GameTooltip_SetTitle = _G.GameTooltip_SetTitle
 local IsContainerFiltered = _G.IsContainerFiltered
 local PickupBagFromSlot = _G.PickupBagFromSlot
 local PutItemInBag = _G.PutItemInBag
 local ResetCursor = _G.ResetCursor
+
+local BAGINDEX_BACKPACK = Enum.BagIndex.Backpack or 0
+local BAGINDEX_BANK = Enum.BagIndex.Bank or 1
 
 --luacheck: globals PaperDollItemSlotButton_OnEvent PaperDollItemSlotButton_OnShow PaperDollItemSlotButton_OnHide
 --luacheck: globals BagSlotButton_OnEnter BankFrameItemButton_OnEnter BankFrameItemButtonBag_OnClick
@@ -189,6 +193,39 @@ end
 -- This is to avoid potential taint. Bags and Bank use different APIs sometimes.
 -- Note: Probably good idea to replace button with bagsSlot
 
+--- Called when the mouse enters a BagBar slot button.
+---@param self ItemButton
+local function BarBarSlotOnEnter(self)
+	_G.EventRegistry:TriggerEvent("BagSlot.OnEnter", self)
+	GameTooltip:SetOwner(self, 'ANCHOR_LEFT')
+	
+	local bagId = self:GetBagID()
+	if bagId == BAGINDEX_BACKPACK then
+        GameTooltip_SetTitle(GameTooltip, BACKPACK_TOOLTIP)
+    elseif bagId == BAGINDEX_BANK then
+        GameTooltip_SetTitle(GameTooltip, BANK)
+    else
+        local hasItem = GameTooltip:SetInventoryItem('player', self.inventoryID)
+        if not hasItem then
+			local isBank = self.container == "Bank"
+            if self.purchaseCost then
+                GameTooltip:ClearLines()
+                GameTooltip_SetTitle(GameTooltip, BANK_BAG_PURCHASE)
+                GameTooltip:AddDoubleLine(COSTS_LABEL, GetCoinTextureString(self.purchaseCost))
+            elseif bagId == Enum.BagIndex.ReagentBag then
+                GameTooltip_SetTitle(GameTooltip, EQUIP_CONTAINER_REAGENT)
+            elseif isBank and bagId > GetNumBankSlots() + NUM_TOTAL_EQUIPPED_BAG_SLOTS then
+                GameTooltip_SetTitle(GameTooltip, BANK_BAG_PURCHASE)
+            elseif isBank then
+                GameTooltip_SetTitle(GameTooltip, BANK_BAG)
+            else
+                GameTooltip_SetTitle(GameTooltip, EQUIP_CONTAINER)
+            end
+        end
+    end
+    GameTooltip:Show()
+end
+
 --- Create an ItemButton specific to the BagBar
 ---@param index number
 ---@param id number
@@ -208,12 +245,26 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 	button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	button:RegisterBagButtonUpdateItemContextMatching()
 	button:RegisterEvent("BAG_UPDATE_DELAYED")
+	button.GetIsBarExpanded = function() return true end
 
-	button:SetScript("OnClick", function(self) PutItemInBag(self.inventoryID) end)
+	button:SetScript("OnClick", function(self)
+		local bagID = self:GetBagID()
+		if CursorHasItem() and not self.purchaseCost then
+			PutItemInBag(self.inventoryID)
+		elseif self.purchaseCost then
+			PlaySound(SOUNDKIT.IG_MAINMENU_OPTION)
+			BankFrame.nextSlotCost = self.purchaseCost
+			StaticPopup_Show('CONFIRM_BUY_BANK_SLOT')
+		elseif bagID ~= Enum.BagIndex.Backpack and bagID ~= Enum.BagIndex.Bank then
+			PickupBagFromSlot(self.inventoryID)
+		end
+	end)
 	button:SetScript("OnLeave", function()
 		GameTooltip:Hide()
 		ResetCursor()
+		_G.EventRegistry:TriggerEvent("BagSlot.OnLeave", button)
 	end)
+	button:SetScript("OnEnter", BarBarSlotOnEnter)
 
 	--Try to have as few type-specific settings as possible
 	if button.container == "Bags" then
