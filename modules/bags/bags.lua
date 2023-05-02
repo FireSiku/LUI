@@ -274,6 +274,11 @@ function ContainerMixin:SlotUpdate(itemSlot)
 		end
 	end
 
+	-- Make sure to not keep name/quality info from previous item
+	itemSlot.name = nil
+	itemSlot.quality = nil
+	itemSlot.level = nil
+
 	-- Color Border according to quality
 	local itemLink = C_Container.GetContainerItemLink(id, slot)
 	if itemLink then
@@ -282,17 +287,17 @@ function ContainerMixin:SlotUpdate(itemSlot)
 		local name, _, itemQuality = GetItemInfo(itemLink)
 		itemSlot.name = name
 		itemSlot.quality = itemQuality
+		if self.db.ItemLevel and C_Item.GetItemInventoryTypeByID(itemLink) > 1 then
+			itemSlot.level = GetDetailedItemLevelInfo(itemLink)
+		end
 
 		self:SetItemSlotBorderColor(itemSlot)
-	else
-		-- Make sure to not keep name/quality info from previous item
-		itemSlot.name = nil
-		itemSlot.quality = nil
+		
 	end
 	
 	if data then
 		SetItemButtonTexture(itemSlot, data.iconFileID)
-		SetItemButtonCount(itemSlot, data.stackCount)
+		SetItemButtonCount(itemSlot, itemSlot.level or data.stackCount)
 		SetItemButtonDesaturated(itemSlot, data.isLocked, 0.5, 0.5, 0.5)
 
 		if LUI.IsRetail and self.db.ShowOverlay and itemLink then

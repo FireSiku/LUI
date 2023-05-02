@@ -24,7 +24,7 @@ local Bags = {
 	Backpack = Opt:Group(L["Backpack Options"], nil, 3, nil, nil, nil, Opt.GetSet(db.Bags)),
 	Bank = Opt:Group(L["Bank Options"], nil, 4, nil, nil, nil, Opt.GetSet(db.Bank)),
 	Reagents = Opt:Group(L["Reagents Options"], nil, 5, nil, nil, true, Opt.GetSet(db.Reagent)),
-	Textures = Opt:Group(L["Textures"], nil, 6, nil, nil, nil, Opt.GetSet(db.Textures)),
+	Textures = Opt:Group(L["Textures"], nil, 6, nil, nil, true, Opt.GetSet(db.Textures)),
 }
 
 local function GenerateBagsOptions(kind)
@@ -43,6 +43,7 @@ local function GenerateBagsOptions(kind)
 		ShowNew = Opt:Toggle("Show New Item Animation", "Highlights items marked as 'new'", 12, nil,  "full"),
 		ShowQuest = Opt:Toggle("Show Quest Items", "Highlights items that are part of a quest", 13, nil, "full"),
 		ShowOverlay = Opt:Toggle("Show Item Overlay", "Display the overlay used for various types of items like Cosmetics and Crafting Quality.", 14, nil,  "full"),
+		ItemLevel = Opt:Toggle("Show Item Level", "Add Item Levels indicators for equipment", 15, nil, "full"),
 	}
 	return options
 end
