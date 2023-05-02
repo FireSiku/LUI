@@ -185,6 +185,70 @@ function BaseBagSlotButtonMixin:BagSlotOnEvent(event, ...)
 	end
 end
 ]]
+-- ####################################################################################################################
+-- ##### Templates: BagBar Fiter Dropdown #############################################################################
+-- ####################################################################################################################
+-- The Filter Dropdown code is taken from the ContainerFrame.lua file, and modified to work with our buttons.
+-- The FrameXML declares them as local functions, so we have to copy them here.
+local function OnBagFilterClicked(bagID, filterID, value)
+	C_Container.SetBagSlotFlag(bagID, filterID, value);
+	ContainerFrameSettingsManager:SetFilterFlag(bagID, filterID, value);
+end
+
+local function BagFilterDropDown(self, level)
+	local bagID = self:GetParent():GetBagID()
+	if not ContainerFrame_CanContainerUseFilterMenu(bagID) then
+		return;
+	end
+	
+	-- Filter Assignment Header
+	local info = UIDropDownMenu_CreateInfo();
+	info.text = BAG_FILTER_ASSIGN_TO;
+	info.isTitle = 1;
+	info.notCheckable = 1;
+	UIDropDownMenu_AddButton(info, level);
+
+	-- Filter Assignment Options
+	info = UIDropDownMenu_CreateInfo();
+	local activeBagFilter = ContainerFrameSettingsManager:GetFilterFlag(bagID);
+	for i, flag in ContainerFrameUtil_EnumerateBagGearFilters() do
+		info.text = BAG_FILTER_LABELS[flag];
+		info.checked = activeBagFilter == flag;
+		info.func = function(_, _, _, value)
+			return OnBagFilterClicked(bagID, flag, not value);
+		end
+		UIDropDownMenu_AddButton(info, level);
+	end
+
+	-- CleanUp Header
+	info = UIDropDownMenu_CreateInfo();
+	info.text = BAG_FILTER_CLEANUP;
+	info.isTitle = 1;
+	info.notCheckable = 1;
+	UIDropDownMenu_AddButton(info, level);
+
+	-- CleanUp Options
+	info = UIDropDownMenu_CreateInfo();
+	info.text = BAG_FILTER_IGNORE;
+	info.func = function(_, _, _, value)
+		if bagID == BAGINDEX_BANK then
+			C_Container.SetBankAutosortDisabled(not value);
+		elseif bagID == BAGINDEX_BACKPACK then
+			C_Container.SetBackpackAutosortDisabled(not value);
+		else
+			C_Container.SetBagSlotFlag(bagID, Enum.BagSlotFlags.DisableAutoSort, not value);
+		end
+	end
+	if bagID == BAGINDEX_BANK then
+		info.checked = C_Container.GetBankAutosortDisabled();
+	elseif bagID == BAGINDEX_BACKPACK then
+		info.checked = C_Container.GetBackpackAutosortDisabled();
+	else
+		info.checked = C_Container.GetBagSlotFlag(bagID, Enum.BagSlotFlags.DisableAutoSort);
+	end
+	UIDropDownMenu_AddButton(info, level);
+
+end
 
 -- ####################################################################################################################
 -- ##### Templates: BagBar Slot Button ################################################################################
@@ -246,10 +310,14 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 	button:RegisterBagButtonUpdateItemContextMatching()
 	button:RegisterEvent("BAG_UPDATE_DELAYED")
 	button.GetIsBarExpanded = function() return true end
+	button.FilterDropDown = CreateFrame("Frame", "$parentFilterDropDown", button, "UIDropDownMenuTemplate")
+	UIDropDownMenu_SetInitializeFunction(button.FilterDropDown, BagFilterDropDown)
 
-	button:SetScript("OnClick", function(self)
+	button:SetScript("OnClick", function(self, btn)
 		local bagID = self:GetBagID()
-		if CursorHasItem() and not self.purchaseCost then
+		if btn == "RightButton" then
+			ToggleDropDownMenu(1, nil, self.FilterDropDown, self, 0, 0)
+		elseif CursorHasItem() and not self.purchaseCost then
 			PutItemInBag(self.inventoryID)
 		elseif self.purchaseCost then
 			PlaySound(SOUNDKIT.IG_MAINMENU_OPTION)
@@ -303,7 +371,6 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 		button:SetScript("OnHide", PaperDollItemSlotButton_OnHide)
 		button:SetScript("OnDragStart", function(self) PickupBagFromSlot(self.inventoryID) end)
 		button:SetScript("OnReceiveDrag", function(self) PutItemInBag(self.inventoryID) end)
-		button:SetScript("OnEnter", BagSlotButton_OnEnter)
 	elseif button.container == "Bank" then
 		button:SetID(id-5)
 		button.invSlotName = "BAG"..id-5
@@ -323,7 +390,6 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 		end)
 		button:SetScript("OnDragStart", _G.BankFrameItemButtonBag_Pickup)
 		button:SetScript("OnReceiveDrag", _G.BankFrameItemButtonBag_OnClick)
-		button:SetScript("OnEnter", _G.BankFrameItemButton_OnEnter)
 
 		button:SetScript("OnShow", function(self)
 			module:BankBagButtonUpdate(self)

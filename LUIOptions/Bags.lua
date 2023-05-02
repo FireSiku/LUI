@@ -23,7 +23,7 @@ local Bags = {
 	Settings = Opt:Group(L["General Settings"], nil, 2, nil, nil, true, Opt.GetSet(db)),
 	Backpack = Opt:Group(L["Backpack Options"], nil, 3, nil, nil, nil, Opt.GetSet(db.Bags)),
 	Bank = Opt:Group(L["Bank Options"], nil, 4, nil, nil, nil, Opt.GetSet(db.Bank)),
-	Reagents = Opt:Group(L["Reagents Options"], nil, 5, nil, nil, true, Opt.GetSet(db.Reagents)),
+	Reagents = Opt:Group(L["Reagents Options"], nil, 5, nil, nil, true, Opt.GetSet(db.Reagent)),
 	Textures = Opt:Group(L["Textures"], nil, 6, nil, nil, nil, Opt.GetSet(db.Textures)),
 }
 
