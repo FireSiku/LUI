@@ -19,7 +19,7 @@ end
 
 local framePositionOrder = {
 	"ObjectiveTrackerFrame", "QueueStatusButton", "PlayerPowerBarAlt", "AlwaysUpFrame", "DurabilityFrame", 
-	"CaptureBar", "VehicleSeatIndicator", "GroupLootContainer", "TicketStatus", "MawBuffs"
+	"CaptureBar", "VehicleSeatIndicator", "GroupLootContainer", "TicketStatus"
 }
 
 local framePositionList = {
@@ -32,7 +32,6 @@ local framePositionList = {
 	VehicleSeatIndicator = "Vehicle Seat Indicator",
 	GroupLootContainer = "Group Loot Container",
 	TicketStatus = "GM Ticket Status",
-	MawBuffs = "Sanctum Anima Powers",
 }
 
 local framePositionDescs = {
@@ -45,7 +44,6 @@ local framePositionDescs = {
 	VehicleSeatIndicator = "This Frame occurs in some special Mounts and Vehicles. Example: Traveler's Tundra Mammoth.",
 	GroupLootContainer = "This Frame is the anchor point for many Loot-based frames such as the Need/Greed and Bonus Roll frames.",
 	TicketStatus = "This Frame occurs when waiting on a ticket response",
-	MawBuffs = "This Frame is shown in certain parts of the Sanctum of Domination.",
 }
 
 -- ####################################################################################################################

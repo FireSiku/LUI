@@ -217,9 +217,6 @@ function LUI:ApplyUpdate(ver)
 				Convert("UIElements.GroupLootContainer",    lui_db.Minimap.Frames,    "GroupLootContainerX",    "X",              ui_db.GroupLootContainer)
 				Convert("UIElements.GroupLootContainer",    lui_db.Minimap.Frames,    "GroupLootContainerY",    "Y",              ui_db.GroupLootContainer)
 				Convert("UIElements.GroupLootContainer",    lui_db.Minimap.Frames, "SetGroupLootContainer",     "ManagePosition", ui_db.GroupLootContainer)
-				Convert("UIElements.MawBuffs",              lui_db.Minimap.Frames,    "MawBuffsX",              "X",              ui_db.MawBuffs)
-				Convert("UIElements.MawBuffs",              lui_db.Minimap.Frames,    "MawBuffsY",              "Y",              ui_db.MawBuffs)
-				Convert("UIElements.MawBuffs",              lui_db.Minimap.Frames, "SetMawBuffs",               "ManagePosition", ui_db.MawBuffs)
 				
 				if ui_mod.Refresh then ui_mod:Refresh() end
 			end

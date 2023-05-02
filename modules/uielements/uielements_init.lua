@@ -62,12 +62,6 @@ module.defaults = {
 			ManagePosition = false,
 			HideFrame = false,
 		},
-		MawBuffs = {
-			X = -180,
-			Y = -70,
-			ManagePosition = true,
-			HideFrame = false,
-		},
 		QueueStatusButton = {
 			X = -235,
 			Y = -70,

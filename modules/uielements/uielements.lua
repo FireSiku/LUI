@@ -52,7 +52,6 @@ function module:SetUIElements()
 	module:SetPosition('AlwaysUpFrame')
 	module:SetPosition('CaptureBar')
 	module:SetPosition('TicketStatus')
-	module:SetPosition('MawBuffs')
 	module:SetPosition('PlayerPowerBarAlt')
 	module:SetPosition('ObjectiveTrackerFrame')
 	module:SetPosition('DurabilityFrame')
@@ -118,7 +117,6 @@ end
 
 local UIWidgetBelowMinimapContainerFrame = _G.UIWidgetBelowMinimapContainerFrame
 local UIWidgetTopCenterContainerFrame = _G.UIWidgetTopCenterContainerFrame
-local MawBuffsBelowMinimapFrame = _G.MawBuffsBelowMinimapFrame
 local VehicleSeatIndicator = _G.VehicleSeatIndicator
 local TicketStatusFrame = _G.TicketStatusFrame
 local PlayerPowerBarAlt = _G.PlayerPowerBarAlt
@@ -136,7 +134,6 @@ function module:SetAdditionalFrames()
 		self:SecureHook(UIWidgetBelowMinimapContainerFrame, "SetPoint", "CaptureBar_SetPoint")
 		self:SecureHook(PlayerPowerBarAlt, "SetPoint", "PlayerPowerBarAlt_SetPoint")
 		self:SecureHook(GroupLootContainer, "SetPoint", "GroupLootContainer_SetPoint")
-		self:SecureHook(MawBuffsBelowMinimapFrame, "SetPoint", "MawBuffs_SetPoint")
 		self:SecureHook(QueueStatusButton, "SetPoint", "QueueStatusButton_SetPoint")
 	end
 end
@@ -169,13 +166,9 @@ function module:SetPosition(frame)
 	elseif frame == "GroupLootContainer" and db.GroupLootContainer.ManagePosition then
 		GroupLootContainer:ClearAllPoints()
 		GroupLootContainer:SetPoint("BOTTOM", UIParent, "BOTTOM", db.GroupLootContainer.X, db.GroupLootContainer.Y)
-	elseif (LUI.IsRetail) and frame == "MawBuffs" and db.MawBuffs.ManagePosition then
-		MawBuffsBelowMinimapFrame:ClearAllPoints()
-		MawBuffsBelowMinimapFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.MawBuffs.X, db.MawBuffs.Y)
 	elseif (LUI.IsRetail) and frame == "QueueStatusButton" and db.QueueStatusButton.ManagePosition then
 		QueueStatusButton:ClearAllPoints()
 		QueueStatusButton:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.QueueStatusButton.X, db.QueueStatusButton.Y)
-	
 	end
 
 	shouldntSetPoint = false
@@ -219,11 +212,6 @@ end
 function module:TicketStatus_SetPoint()
 	if shouldntSetPoint then return end
 	self:SetPosition('TicketStatus')
-end
-
-function module:MawBuffs_SetPoint()
-	if shouldntSetPoint then return end
-	self:SetPosition('MawBuffs')
 end
 
 function module:QueueStatusButton_SetPoint()

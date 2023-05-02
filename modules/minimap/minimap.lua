@@ -244,10 +244,6 @@ function module:SetMinimap()
 	--Create other frames around the minimap
 	module:SetMinimapFrames()
 
-	if LUI.IsRetail then
-		self:SecureHook(_G.MawBuffsBelowMinimapFrameMixin, "OnShow", function() self:SetPosition('MawBuffs') end)
-	end
-
 	--Prevent these initialization functions from running again.
 	function module:SetMinimap()
 		module:SetMinimapPosition()
