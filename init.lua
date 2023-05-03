@@ -14,20 +14,16 @@ LUI:SetDefaultModuleLibraries("AceEvent-3.0")
 local L = LUI.L
 local db
 
-LUI.Rev = "2210"
 LUI.IsRetail = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_MAINLINE)
 LUI.IsBCC = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 LUI.IsClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC)
 
-local LIVE_TOC = 90207
-local LIVE_BUILD = 45338
-local BETA_TOC = 100000
+local LIVE_TOC = 100100
+local LIVE_BUILD = 49407
 
 local _, patchBuild, _, patchTOC = GetBuildInfo()
 
-if tonumber(patchTOC) > BETA_TOC then
-    LUI.IsBeta = true
-elseif tonumber(patchTOC) > LIVE_TOC then
+if tonumber(patchTOC) > LIVE_TOC then
     LUI.isPTR = true
 elseif tonumber(patchBuild) > LIVE_BUILD then
     LUI.isPTR = true
