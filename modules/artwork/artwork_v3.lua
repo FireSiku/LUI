@@ -9,7 +9,8 @@
 
 -- External references.
 local addonname, LUI = ...
-local module = LUI:NewModule("Artwork", "LUIDevAPI")
+-- renamed to prevent confusion
+local module = LUI:NewModule("Artwork_v3", "LUIDevAPI")
 
 local db, dbd --luacheck:ignore
 local ToggleArt

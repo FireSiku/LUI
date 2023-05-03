@@ -22,6 +22,8 @@ local PRESET_LUI_TEXTURES = {
 	["panel_corner_border.tga"] = L["Panels_Tex_Border_Corner"],
 	["panel_center_border.tga"] = L["Panels_Tex_Border_Center"],
 	["bar_top.tga"] = L["Panels_Tex_Bar_Top"],
+	["info_text.tga"] = L["Panels_Tex_Info_Bar"],
+	["bar_bottom.tga"] = L["Panels_Tex_Bottom_Bar"],
 }
 
 local nameInput
@@ -84,11 +86,13 @@ local function CreatePanelGroup(name)
 		Height = Opt:InputNumber(L["Height"], nil, 32),
 		X = Opt:InputNumber("X", nil, 31),
 		Y = Opt:InputNumber("Y", nil, 32),
-		LineBreak = Opt:Spacer(33),
+		FrameLevel = Opt:Slider("Frame Level", nil, 33, {min = 0, max = 10000, step = 1}),
+		Strata = Opt:Select("Frame Strata", nil, 33, LUI.Strata),
+		LineBreak = Opt:Spacer(34),
 		--[(name)] = Opt:ColorMenu(L["Color"], 34, true, RefreshPanel),
 		PosHeader = Opt:Header(L["Position"], 40),
 		Point = Opt:Select(L["Anchor"], nil, 41, LUI.Points),
-		RelativePoint = Opt:Select(L["Anchor"], nil, 42, LUI.Points),
+		RelativePoint = Opt:Select(L["Anchor"], nil, 41, LUI.Points),
 		LineBreak5 = Opt:Spacer(50, "full"),
 		DeletePanel = Opt:Execute("Delete Panel", nil, 52, DeleteNewPanel)
 	}
@@ -125,7 +129,8 @@ Opt.options.args.Artwork.handler = module
 local Artwork = {
 	Header = Opt:Header("Artwork", 1),
 	Custom = Opt:Group("Custom Panels", nil, 2, "tree"),
-	Builtin = Opt:Group("LUI Panels", nil, 3, "tree", nil, true),
+	Buttons = Opt:Group("Buttons", nil, 3),
+	Builtin = Opt:Group("LUI Panels", nil, 4, "tree", nil, true),
 }
 
 Artwork.Custom.args.NewDesc = Opt:Desc("    Add Custom Panels:", 1, "medium", nil, nil, nil, nil, "normal")
@@ -134,6 +139,13 @@ Artwork.Custom.args.NewPanel = Opt:Execute("Create Panel", nil, 3, CreateNewPane
 for i = 1, #module.panelList do
 	local name = module.panelList[i]
 	Artwork.Custom.args[name] = CreatePanelGroup(name)
+end
+
+local buttonsList = {"place_holder"}
+
+for i = 1, #buttonsList do
+	local name = buttonsList[i]
+	Artwork.Buttons.args[name] = CreatePanelGroup(name)
 end
 
 Opt.options.args.Artwork.args = Artwork
