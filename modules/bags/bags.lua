@@ -287,7 +287,10 @@ function ContainerMixin:SlotUpdate(itemSlot)
 		local name, _, itemQuality = GetItemInfo(itemLink)
 		itemSlot.name = name
 		itemSlot.quality = itemQuality
-		if self.db.ItemLevel and C_Item.GetItemInventoryTypeByID(itemLink) > 1 then
+		
+		-- Get the item level for equippable items
+		local itemType = C_Item.GetItemInventoryTypeByID(itemLink)
+		if self.db.ItemLevel and itemType and itemType > 1 then
 			itemSlot.level = GetDetailedItemLevelInfo(itemLink)
 		end
 
