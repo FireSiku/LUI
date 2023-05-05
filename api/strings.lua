@@ -150,6 +150,13 @@ LUI.FontFlags = {
 	MONOCHROME = L["Monochrome"],
 }
 
+LUI.Strata = {
+	BACKGROUND = L["Background"],
+	LOW = L["Low"],
+	MEDIUM = L["Medium"],
+	HIGH = L["High"],
+}
+
 LUI.Points = {
 	CENTER = L["Center"],
 	TOP = L["Top"],

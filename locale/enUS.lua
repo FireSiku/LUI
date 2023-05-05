@@ -36,6 +36,12 @@ L["Bottom Right"] = true
 L["Center"] = true
 L["Right"] = true
 
+-- Stratas
+L["Background"] = true
+L["Low"] = true
+L["Medium"] = true
+L["High"] = true
+
 L["Cursor"] = true
 L["Name"] = true
 L["Guild"] = true
@@ -461,6 +467,7 @@ L["BagType_MiningBag"] = "Mining Bag"
 L["BagType_VanityPets"] = "Vanity Pets"
 L["BagType_TackleBox"] = "Tackle Box"
 L["BagType_CookingBag"] = "Cooking Bag"
+L["BagType_ReagentBag"] = "Reagent Bag"
 
 -- Panels
 L["Panels_Name"] = "Panels"
@@ -475,6 +482,8 @@ L["Panels_Tex_Panel_Center"] = "Center Panel"
 L["Panels_Tex_Border_Corner"] = "Corner Panel Border"
 L["Panels_Tex_Border_Center"] = "Center Panel Border"
 L["Panels_Tex_Bar_Top"] = "Bar Top"
+L["Panels_Tex_Info_Bar"] = "Info Bar"
+L["Panels_Tex_Bottom_Bar"] = "Bottom Bar"
 L["Panels_Options_InputName"] = "Enter New Name"
 L["Panels_Options_NewPanel"] = "New Panel"
 L["Panels_Options_DeletePanel"] = "Delete Panel"

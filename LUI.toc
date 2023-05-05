@@ -48,8 +48,10 @@ update.lua
 
 ### Artwork ###
 modules\artwork\themes.lua
-modules\artwork\panels.lua
-modules\artwork\artwork_v3.lua
+modules\artwork\artwork_init.lua
+modules\artwork\artwork.lua
+# modules\artwork\panels.lua
+# modules\artwork\artwork_v3.lua
 
 ### Fader ###
 # modules\fader\fader_init.lua
@@ -108,9 +110,9 @@ modules\infotext\weaponspeed.lua
 modules\micromenu\micromenu.lua
 
 ### RaidMenu ###
-modules\raidmenu\raidmenu_init.lua
-modules\raidmenu\raidmenu.xml
-modules\raidmenu\raidmenu.lua
+# modules\raidmenu\raidmenu_init.lua
+# modules\raidmenu\raidmenu.xml
+# modules\raidmenu\raidmenu.lua
 
 ### ExpBars ###
 # modules\expbars\threatbar.lua
