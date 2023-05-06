@@ -272,11 +272,12 @@ function element:OnCreate()
 	-- Transfer db.realm to DevGold
 	if module.db.realm.Gold then
 		for faction, realmDB in pairs(module.db.realm.Gold) do
+			module.db.global.Gold[faction][LUI.playerRealm] = {}
 			for player, money in pairs(realmDB) do
 				module.db.global.Gold[faction][LUI.playerRealm][player] = money
 			end
 		end
-		--module.db.realm.Gold = nil
+		module.db.realm.Gold = nil
 	end
 	
 	element:CacheConnectedRealms()
