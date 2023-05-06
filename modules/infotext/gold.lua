@@ -52,6 +52,7 @@ local FACTION_ORDER_GLOBAL = {
 local moneyProfit = 0
 local moneySpent = 0
 local previousMoney = 0
+local realmMoney = 0
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
@@ -84,12 +85,38 @@ function element:FormatMoney(money, color)
 
 end
 
+function element:CacheConnectedRealms()
+	local connectedRealms = GetAutoCompleteRealms()
+	local goldDB = module.db.global.Gold[LUI.playerFaction]
+	local realmDB = module.db.global.ConnectedRealms
+
+	if connectedRealms then
+		local realmShown, realmChars
+		for i = 1, #connectedRealms do
+			local realm = connectedRealms[i]
+			-- Copy the list of connected realms and remove itself from the list
+			realmDB[realm] = CopyTable(connectedRealms)
+			table.remove(realmDB[realm], i)
+			if i == 1 then
+				realmDB[realm].Show = true
+				realmChars = LUI:Count(goldDB[realm])
+				realmShown = realm
+			elseif i > 1 and LUI:Count(goldDB[realm]) > realmChars then
+				realmDB[realmShown].Show = false
+				realmDB[realm].Show = true
+				realmShown = realm
+			else
+				realmDB[realm].Show = false
+			end
+		end
+	end
+end
+
 function element:UpdateGold()
 	local db = module.db.profile.Gold
 	local realm = LUI.playerRealm
 	local faction = LUI.playerFaction
-	local realmDB = module:GetDBScope("realm").Gold[faction]
-	local globalDB = module:GetDBScope("global").Gold[faction]
+	local goldDB = module.db.global.Gold[faction]
 
 	local newMoney = GetMoney()
 
@@ -104,30 +131,35 @@ function element:UpdateGold()
 
 	--Update gold count
 	previousMoney = newMoney
-	realmDB[LUI.playerName] = newMoney
 	if SUPPORTED_FACTION[faction] then
-		globalDB[realm] = globalDB[realm] + change
+		goldDB[realm][LUI.playerName] = newMoney
+		realmMoney = realmMoney + change
 	end
 
-	local money = (db.showRealm and globalDB[realm]) or newMoney
+	local money = (db.showRealm and realmMoney) or newMoney
 	element.text = element:FormatMoney(money)
 	element:UpdateTooltip()
 end
 
 function element:UpdateRealmMoney()
 	local faction = LUI.playerFaction
-	local realmDB = module:GetDBScope("realm").Gold[faction]
-	local globalDB = module:GetDBScope("global").Gold[faction]
+	local goldDB = module.db.global.Gold[faction]
 	
 	--Update for current character
-	realmDB[LUI.playerName] = GetMoney()
-	--Update for realm list
-	local realmGold = 0
-	for _, money in pairs(realmDB) do
-		realmGold = realmGold + money
-	end
 	if SUPPORTED_FACTION[faction] then
-		globalDB[LUI.playerRealm] = realmGold
+		--goldDB[LUI.playerRealm][LUI.playerName] = GetMoney()
+		local total = 0
+		for player, money in pairs(goldDB[LUI.playerRealm]) do
+			total = total + money
+		end
+		if module.db.profile.Gold.ShowConnected then
+			for _, connectedRealm in ipairs(module.db.global.ConnectedRealms[LUI.playerRealm]) do
+				for player, money in pairs(goldDB[connectedRealm]) do
+					total = total + money
+				end
+			end
+		end
+		realmMoney = total
 	end
 end
 
@@ -140,6 +172,22 @@ function element.OnClick(frame_, button)
 		local db = module.db.profile.Gold
 		db.showRealm = not db.showRealm
 		element:UpdateGold()
+	end
+end
+
+--- Determine if a realm should be shown in the tooltip
+function element:ShouldRealmBeShown(realmName)
+	-- All realms are shown when not connecting realms
+	if not module.db.profile.Gold.ShowConnected then
+		return true
+	-- If the realm is not connected, it should be shown
+	elseif not module.db.global.ConnectedRealms[realmName] then
+		return true
+	-- Check the connected realms table to know if the realm should be shown
+	elseif module.db.global.ConnectedRealms[realmName] and module.db.global.ConnectedRealms[realmName].Show then
+		return true
+	else
+		return false
 	end
 end
 
@@ -165,9 +213,9 @@ function element.OnTooltipShow(GameTooltip)
 
 	GameTooltip:AddLine(" ")
 	GameTooltip:AddLine(L["InfoGold_Characters"] )
-	for i, faction in ipairs(FACTION_ORDER_REALM) do
-		local realmDB = module:GetDBScope("realm").Gold
-		for name, money in pairs(realmDB[faction]) do
+	local realmDB = module.db.global.Gold
+	for i, faction in ipairs(FACTION_ORDER_GLOBAL) do
+		for name, money in pairs(realmDB[faction][LUI.playerRealm]) do
 			local r, g, b = LUI:GetFactionColor(faction)
 			GameTooltip:AddDoubleLine(name, element:FormatMoney(money, true), r, g, b, 1,1,1)
 		end
@@ -175,10 +223,24 @@ function element.OnTooltipShow(GameTooltip)
 	GameTooltip:AddLine(" ")
 	GameTooltip:AddLine(L["InfoGold_Realms"])
 	for i, faction in ipairs(FACTION_ORDER_GLOBAL) do
-		local globalDB = module:GetDBScope("global").Gold
-		for realm, money in pairs(globalDB[faction]) do
-			local r, g, b = LUI:GetFactionColor(faction)
-			GameTooltip:AddDoubleLine(format("%s-%s", realm, faction), element:FormatMoney(money, true), r, g, b, 1,1,1)
+		for realm, realmData in pairs(realmDB[faction]) do
+			if element:ShouldRealmBeShown(realm) then
+				local r, g, b = LUI:GetFactionColor(faction)
+				local total = 0
+				for player, money in pairs(realmDB[faction][realm]) do
+					total = total + money
+				end
+				if module.db.profile.Gold.ShowConnected then
+					for _, connectedRealm in ipairs(module.db.global.ConnectedRealms[realm]) do
+						for player, money in pairs(realmDB[faction][connectedRealm]) do
+							total = total + money
+						end
+					end
+				end
+				if total > 0 then
+					GameTooltip:AddDoubleLine(format("%s-%s", realm, faction), element:FormatMoney(total, true), r, g, b, 1,1,1)
+				end
+			end
 		end
 	end
 
@@ -192,6 +254,32 @@ end
 function element:OnCreate()
 	previousMoney = GetMoney()
 
+	-- This makes sure that realm tables are always created without a ton of nil checks.
+	local autocreateRealm = {
+		__index = function(t, k)
+			-- Remove spaces found in the name
+			local r = string.gsub(k, " ", "")
+			-- Check if it already exists
+			if rawget(t, r) then return t[r] end
+
+			t[r] = {}
+			return t[r]
+		end
+	}
+	setmetatable(module.db.global.Gold.Alliance, autocreateRealm)
+	setmetatable(module.db.global.Gold.Horde, autocreateRealm)
+
+	-- Transfer db.realm to DevGold
+	if module.db.realm.Gold then
+		for faction, realmDB in pairs(module.db.realm.Gold) do
+			for player, money in pairs(realmDB) do
+				module.db.global.Gold[faction][LUI.playerRealm][player] = money
+			end
+		end
+		--module.db.realm.Gold = nil
+	end
+	
+	element:CacheConnectedRealms()
 	element:RegisterEvent("PLAYER_MONEY", "UpdateGold")
 	element:UpdateRealmMoney()
 	element:UpdateGold()

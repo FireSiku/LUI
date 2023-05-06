@@ -180,6 +180,11 @@ function module:NewElement(name, ...)
 	return element
 end
 
+-- function to retrieve element
+function module:GetElement(name)
+	return elementStorage[name]
+end
+
 --Override the module iterator
 function module:IterateModules()
 	return pairs(elementFrames)

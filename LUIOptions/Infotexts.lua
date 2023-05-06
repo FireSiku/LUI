@@ -49,6 +49,52 @@ end
 
 Opt.options.args.Infotext.args = Infotext
 
+-- ####################################################################################################################
+-- ##### Gold Infotext ################################################################################################
+-- ####################################################################################################################
+
+local goldDB = module.db.global.Gold
+local goldPlayerReset = ""
+local goldPlayerArray = {}
+for faction, realmData in pairs(goldDB) do
+	for realm, playerData in pairs(realmData) do
+		for player, money in pairs(playerData) do
+			goldPlayerArray[realm.."-"..player] = realm.."-"..player
+		end
+	end
+end
+
+-- Rewrite the function above after removing the self argument
+local function ResetGold()
+	local player = goldPlayerReset
+	local realm, name = strsplit("-", player)
+	for faction, factionData in pairs(goldDB) do
+		if factionData[realm][name] then
+			if name == LUI.playerName then
+				goldDB[faction][realm][name] = GetMoney()
+			else
+				goldDB[faction][realm][name] = nil
+				goldPlayerArray[player] = nil
+			end
+			break
+		end
+	end
+
+	module:GetElement("Gold"):UpdateRealmMoney()
+	module:GetElement("Gold"):UpdateGold()
+end
+
+local GoldInfotext = Infotext.Settings.args.Gold.args
+GoldInfotext.ShowConnected = Opt:Toggle("Include Connected Realms in Server Total when possible", "Realms that are connected to your character's realm will show as a single entry in the realm list", 6, nil, "full")
+GoldInfotext.GoldPlayerReset = Opt:Select("Reset Player", "Choose the player you want to clear Gold data for.", 7, goldPlayerArray, nil, nil, nil,
+											function() return goldPlayerArray[goldPlayerReset] end, -- Get
+											function(info, value) goldPlayerReset = value end) -- Set
+GoldInfotext.GoldResetButton = Opt:Execute("Reset", "Clear Gold data for selected character.", 8, ResetGold)
+
+-- ####################################################################################################################
+-- ##### Clock Infotext ###############################################################################################
+-- ####################################################################################################################
+
 --[[
 	function element:LoadOptions()
 	local function MilitaryTime(info_, value)

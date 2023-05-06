@@ -126,6 +126,7 @@ module.defaults = {
 			useBlizzard = false,
 			showCopper = false,
 			coloredSymbols = false,
+			ShowConnected = true,
 		},
 		Guild = {
 			Enable = true,
@@ -188,7 +189,8 @@ module.defaults = {
 		Gold = {
 			Alliance = {},
 			Horde = {},
-		}
+		},
+		ConnectedRealms = {},
 	},
 }
 
