@@ -1,0 +1,180 @@
+## Interface: 100100
+## Version: 2304
+## Title: LUI
+## Author: Siku, Nitsah
+## Notes: User Interface Modification
+## SavedVariables: LUIDB
+## OptionalDeps: Masque, Masque_Darion, !ClassColors
+## X-oUF: oUF_LUI
+
+### Initialize Libs ###
+libs\LibStub\LibStub.lua
+libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+# libs\LibActionButton-1.0\LibActionButton-1.0.lua
+libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+libs\LibWindow-1.1\LibWindow-1.1.lua
+# libs\LibKeyBound-1.0\lib.xml
+libs\LibSharedMedia-3.0\lib.xml
+libs\AceAddon-3.0\AceAddon-3.0.xml
+libs\AceGUI-3.0\AceGUI-3.0.xml
+libs\AceGUI-3.0-SharedMediaWidgets\widget.xml
+libs\AceDB-3.0\AceDB-3.0.xml
+libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
+libs\AceConfig-3.0\AceConfig-3.0.xml
+libs\AceConsole-3.0\AceConsole-3.0.xml
+libs\AceComm-3.0\AceComm-3.0.xml
+libs\AceEvent-3.0\AceEvent-3.0.xml
+libs\AceHook-3.0\AceHook-3.0.xml
+libs\AceLocale-3.0\AceLocale-3.0.xml
+libs\AceSerializer-3.0\AceSerializer-3.0.xml
+libs\AceTimer-3.0\AceTimer-3.0.xml
+libs\AceBucket-3.0\AceBucket-3.0.xml
+api\oUF11\ouf.xml
+locale\locale.xml
+
+### Core + API ###
+init.lua
+api\curse.lua
+api\profiler.lua
+api\modapi.lua
+api\colors.lua
+api\utils.lua
+api\debug.lua
+api\outofcombatwrapper.lua
+api\devapi.lua
+api\restore.lua
+api\strings.lua
+LUI.lua
+update.lua
+
+### Artwork ###
+modules\artwork\themes.lua
+modules\artwork\panels.lua
+modules\artwork\artwork_v3.lua
+
+### Fader ###
+# modules\fader\fader_init.lua
+# modules\fader\fader.lua
+
+### Bars ###
+## modules\bars\bars.lua
+
+### Auras ###
+## modules\auras\auras.xml
+
+### Chat ###
+modules\chat\chat.xml
+
+### Minimap ###
+modules\minimap\minimap_init.lua
+modules\minimap\minimap.lua
+
+### Bags ###
+modules\bags\bags_init.lua
+modules\bags\toolbars.lua
+modules\bags\bags.lua
+modules\bags\templates.lua
+modules\bags\backpack.lua
+modules\bags\reagent.lua
+modules\bags\bank.lua
+
+### Cooldown ###
+modules\cooldown\cooldown.xml
+
+### Tooltip ###
+modules\tooltip\tooltip.lua
+
+### InfoText ###
+modules\InfoText\infotext_init.lua
+modules\InfoText\infotext.lua
+modules\infotext\infotip.lua
+modules\InfoText\bags.lua
+modules\InfoText\clock.lua
+modules\InfoText\currency.lua
+modules\infotext\dualspec.lua
+modules\infotext\durability.lua
+modules\infotext\equipmentsets.lua
+modules\infotext\fps.lua
+modules\infotext\friends.lua
+modules\infotext\gold.lua
+modules\infotext\guild.lua
+modules\infotext\instance.lua
+modules\infotext\lootspec.lua
+modules\infotext\mail.lua
+modules\infotext\memory.lua
+modules\infotext\movespeed.lua
+modules\infotext\weaponspeed.lua
+
+### Micromenu ###
+modules\micromenu\micromenu.lua
+
+### RaidMenu ###
+modules\raidmenu\raidmenu_init.lua
+modules\raidmenu\raidmenu.xml
+modules\raidmenu\raidmenu.lua
+
+### ExpBars ###
+# modules\expbars\threatbar.lua
+modules\expbars\expbars_init.lua
+modules\expbars\expbars.lua
+modules\expbars\experience.lua
+modules\expbars\reputation.lua
+modules\expbars\honor.lua
+modules\expbars\azerite.lua
+modules\expbars\genesis.lua
+
+### Merchant ###
+modules\merchant\merchant.lua
+
+### MirrorBars ###
+modules\mirrorbar\mirrorbar.lua
+
+### UIElements ###
+modules\uielements\uielements_init.lua
+modules\uielements\uielements.lua
+modules\uielements\colourpicker.lua
+modules\uielements\faq.lua
+
+### Additional Scripts ###
+scripts\autoinvite.lua
+scripts\blizzoptionsmover.lua
+scripts\blizzscale.lua
+scripts\errorhider.lua
+scripts\talentspam.lua
+scripts\newplayerexperience.lua
+scripts\removethatbuff.lua
+# scripts\hideblizzard.lua
+api\frameidentifier.lua
+
+### Initialize Unitframes ###
+modules\unitframes\templates.xml
+modules\unitframes\unitframes_init.lua
+
+### Unitframe Options ###
+modules\unitframes\options\colors.lua
+modules\unitframes\options\copysettings.lua
+modules\unitframes\options\general.lua
+modules\unitframes\options\importexport.lua
+modules\unitframes\options\movable.lua
+modules\unitframes\options\ouf.lua
+modules\unitframes\options\showhide.lua
+modules\unitframes\options\toggle.lua
+
+### LUI Unitframe Additions ###
+modules\unitframes\plugins\oUF_CombatFeedback.lua
+modules\unitframes\plugins\oUF_RaidDebuffs.lua
+
+### Unitframe Layout ###
+modules\unitframes\layout\tags.lua
+modules\unitframes\layout\meta.lua
+modules\unitframes\layout\layout.lua
+
+### Embedded Darion ###
+media\Masque_Darion\Darion.lua
+
+### Addon Support ###
+addons\bartender.lua
+addons\plexus.lua
+addons\omen.lua
+addons\recount.lua
+addons\details.lua

@@ -152,7 +152,7 @@ function element:UpdateRealmMoney()
 		for player, money in pairs(goldDB[LUI.playerRealm]) do
 			total = total + money
 		end
-		if module.db.profile.Gold.ShowConnected then
+		if module.db.profile.Gold.ShowConnected and module.db.global.ConnectedRealms[LUI.playerRealm] then
 			for _, connectedRealm in ipairs(module.db.global.ConnectedRealms[LUI.playerRealm]) do
 				for player, money in pairs(goldDB[connectedRealm]) do
 					total = total + money
