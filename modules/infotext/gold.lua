@@ -226,10 +226,11 @@ function element.OnTooltipShow(GameTooltip)
 	GameTooltip:AddLine(L["InfoGold_Realms"])
 	for i, faction in ipairs(FACTION_ORDER_GLOBAL) do
 		for realm, realmData in pairs(realmDB[faction]) do
-			if element:ShouldRealmBeShown(realm) then
+			if type(realmData) ~= "table" then realmDB[faction][realm] = nil
+			elseif element:ShouldRealmBeShown(realm) then
 				local r, g, b = LUI:GetFactionColor(faction)
 				local total = 0
-				for player, money in pairs(realmDB[faction][realm]) do
+				for player, money in pairs(realmData) do
 					total = total + money
 				end
 				if module.db.profile.Gold.ShowConnected and module.db.global.ConnectedRealms[realm] then
