@@ -176,14 +176,6 @@ module.defaults = {
 			Point = "TOPRIGHT",
 		},
 	},
-	--Keeps tracks of characters on current realm
-	realm = {
-		Gold = {
-			Alliance = {},
-			Horde = {},
-			Neutral = {},
-		},
-	},
 	--Keep tracks of server totals
 	global = {
 		Gold = {

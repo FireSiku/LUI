@@ -177,14 +177,16 @@ end
 
 --- Determine if a realm should be shown in the tooltip
 function element:ShouldRealmBeShown(realmName)
+	local goldDB = module.db.global.Gold
+	local realmDB = module.db.global.ConnectedRealms
 	-- All realms are shown when not connecting realms
 	if not module.db.profile.Gold.ShowConnected then
 		return true
-	-- If the realm is not connected, it should be shown
-	elseif not module.db.global.ConnectedRealms[realmName] then
+	-- If the realm has gold information but is not connected, it should be shown
+	elseif (goldDB.Alliance[realmName] or goldDB.Horde[realmName]) and not realmDB[realmName] then
 		return true
 	-- Check the connected realms table to know if the realm should be shown
-	elseif module.db.global.ConnectedRealms[realmName] and module.db.global.ConnectedRealms[realmName].Show then
+	elseif realmDB[realmName] and realmDB[realmName].Show then
 		return true
 	else
 		return false
@@ -230,7 +232,7 @@ function element.OnTooltipShow(GameTooltip)
 				for player, money in pairs(realmDB[faction][realm]) do
 					total = total + money
 				end
-				if module.db.profile.Gold.ShowConnected then
+				if module.db.profile.Gold.ShowConnected and module.db.global.ConnectedRealms[realm] then
 					for _, connectedRealm in ipairs(module.db.global.ConnectedRealms[realm]) do
 						for player, money in pairs(realmDB[faction][connectedRealm]) do
 							total = total + money
@@ -269,12 +271,14 @@ function element:OnCreate()
 	setmetatable(module.db.global.Gold.Alliance, autocreateRealm)
 	setmetatable(module.db.global.Gold.Horde, autocreateRealm)
 
-	-- Transfer db.realm to DevGold
+	-- Transfer db.realm to db.global
 	if module.db.realm.Gold then
 		for faction, realmDB in pairs(module.db.realm.Gold) do
-			module.db.global.Gold[faction][LUI.playerRealm] = {}
-			for player, money in pairs(realmDB) do
-				module.db.global.Gold[faction][LUI.playerRealm][player] = money
+			if SUPPORTED_FACTION[faction] then
+				module.db.global.Gold[faction][LUI.playerRealm] = {}
+				for player, money in pairs(realmDB) do
+					module.db.global.Gold[faction][LUI.playerRealm][player] = money
+				end
 			end
 		end
 		module.db.realm.Gold = nil
