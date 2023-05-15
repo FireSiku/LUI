@@ -606,7 +606,7 @@ function module:CreateSearchEditBox(parent)
 	local search = parent:CreateFontString(nil, "OVERLAY", "GameFonthighlightLarge")
 	local searchText = module:ColorText(SEARCH, "Search")
 
-	search:SetPoint("TOPLEFT", parent, db.Padding, -10)
+	search:SetPoint("TOPLEFT", parent, module.db.profile.Bags.Padding, -10)
 	search:SetPoint("TOPRIGHT", -40, 0)
 	search:SetJustifyH("LEFT")
 	search:SetText(searchText)
