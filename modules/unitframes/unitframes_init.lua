@@ -1138,7 +1138,7 @@ module.defaults = {
 		},
 		--- ### Party Target
 		partytarget = {
-			Enable = true,
+			Enable = false,
 			Height = 24,
 			Width = 130,
 			X = 8,

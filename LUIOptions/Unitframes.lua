@@ -424,8 +424,17 @@ local General = {
 }
 Opt.options.args.Unitframes.args.General.args = General
 
-for i = 1, #module.unitsSpawn do
+local numSpawns = #module.unitsSpawn
+for i = 1, numSpawns do
     local unit = module.unitsSpawn[i]
     local t = NewUnitOptionGroup(unit, i+10)
+    Opt.options.args.Unitframes.args[unit] = t
+end
+
+-- Add the missing entries that aren't part of unitsSpawn
+local missingUnits = {"partytarget", "partypet", "bosstarget", "arenatarget", "arenapet", "maintanktarget", "maintanktargettarget"}
+for i = 1, #missingUnits do
+    local unit = missingUnits[i]
+    local t = NewUnitOptionGroup(unit, i+numSpawns+10)
     Opt.options.args.Unitframes.args[unit] = t
 end
