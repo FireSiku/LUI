@@ -60,6 +60,10 @@ local function UnitFontMenuSetter(info, value)
     end
 
 	dbUnit[fontName][prop] = value
+
+    if info.handler.Refresh then
+        info.handler:Refresh()
+    end
 end
 
 local function UnitFontMenu(name, desc, order, disabled, hidden)
@@ -88,6 +92,7 @@ Opt.options.args.Unitframes = Opt:Group("Unitframes", nil, nil, "tab")
 Opt.options.args.Unitframes.handler = module
 
 Opt.options.args.Unitframes.args.Header = Opt:Header("Unitframes", 1)
+Opt.options.args.Unitframes.args.General = Opt:Group(L["General Settings"], nil, 2, nil, nil, nil, Opt.GetSet(db))
 
 local function GenerateBarGroup(unit, name, colorTypes, order)
     local dbBar = db[unit][name]
@@ -408,6 +413,16 @@ local function NewUnitOptionGroup(unit, order)
 
     return unitOptions
 end
+
+local General = {
+    ShowV2Textures = Opt:Toggle("Show LUI v2 Connector Frames", "Whether you want to show LUI v2 Frame Connectors or not.", 1, nil, "full"),
+    ShowV2PartyTextures = Opt:Toggle("Show LUI v2 Connector Frames for Party Frames", "Whether you want to show LUI v2 Frame Connectors on Party Frames or not.", 2, nil, "full"),
+    ShowV2ArenaTextures = Opt:Toggle("Show LUI v2 Connector Frames for Arena Frames", "Whether you want to show LUI v2 Frame Connectors on Arena Frames or not.", 3, nil, "full"),
+    ShowV2bossTextures = Opt:Toggle("Show LUI v2 Connector Frames for Boss Frames", "Whether you want to show LUI v2 Frame Connectors on Boss Frames or not.", 4, nil, "full"),
+    Empty = Opt:Spacer(5),
+    Move = Opt:Execute("Move Unitframes", nil, 6, function() module:MoveUnitFrames() end),
+}
+Opt.options.args.Unitframes.args.General.args = General
 
 for i = 1, #module.unitsSpawn do
     local unit = module.unitsSpawn[i]

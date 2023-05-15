@@ -1029,9 +1029,3 @@ module.ApplySettings = function(unit)
 		end
 	end
 end
-
-function module:Refresh(info)
-	for unit, frame in pairs(module.framelist) do
-			module.ApplySettings(unit)
-	end
-end

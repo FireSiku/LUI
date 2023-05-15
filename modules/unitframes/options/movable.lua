@@ -8,6 +8,7 @@ local addonname, LUI = ...
 local module = LUI:GetModule("Unitframes")
 
 local oUF = LUI.oUF
+local RoundToSignificantDigits = _G.RoundToSignificantDigits
 
 local ufNames = {
 	player = "oUF_LUI_player",
@@ -37,20 +38,22 @@ local setAllPositions = function()
 		if strfind(k, "Castbar") then k, k2 = strsplit("_", k) end
 		if _G[v] and module.db.profile[k] then
 			local point, _, rpoint, x, y = backdropPool[_G[v]]:GetPoint()
-			
+			local scale = module.db.profile[k].Scale or 1
+			x, y = RoundToSignificantDigits(x, 1), RoundToSignificantDigits(y, 1)
+
 			if k2 then
 				if module.db.profile[k][k2] then
 					module.db.profile[k][k2].General.X = x
+
 					module.db.profile[k][k2].General.Y = y
 					module.db.profile[k][k2].General.Point = point
 				end
 			else
-				module.db.profile[k].X = x * (module.db.profile[k].Scale or 1)
-				module.db.profile[k].Y = y * (module.db.profile[k].Scale or 1)
+				module.db.profile[k].X = RoundToSignificantDigits(x * scale, 1)
+				module.db.profile[k].Y = RoundToSignificantDigits(y * scale, 1)
 				module.db.profile[k].Point = point
 			end
 			
-			local scale = module.db.profile[k].Scale or 1
 			_G[v]:ClearAllPoints()
 			_G[v]:SetPoint(point, UIParent, rpoint, x, y)
 		end
@@ -180,10 +183,6 @@ do
 
 	local OnDragStart = function(self)
 		self:StartMoving()
-
-		local frame = self.obj
-		frame:ClearAllPoints()
-		frame:SetPoint("TOPLEFT", self)
 	end
 
 	local OnDragStop = function(self)
