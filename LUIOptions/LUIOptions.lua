@@ -532,8 +532,20 @@ end
 -- ####################################################################################################################
 Mixin(Opt, OptionMixin)
 
+local titleName = "New LUI Options"
+do
+    local version, alpha, git = strsplit("-", LUI.curseVersion)
+	if LUI.curseVersion == "@project-version@" then
+		titleName = format("%s %s (Dev)", titleName, GetAddOnMetadata("LUI", "Version"))
+	elseif not version or not alpha then
+		titleName = format("%s %s (Release)", titleName, GetAddOnMetadata("LUI", "Version"))
+    else
+        titleName = format("%s %s (Alpha %s)", titleName, version, alpha)
+    end
+end
+
 local options = {
-	name = "New LUI Options",
+	name = titleName,
 	type = "group",
 	get = "getter",
 	set = "setter",
