@@ -32,6 +32,17 @@ local healthColorTypes = {
     ["Gradient"] = "Gradient",
 }
 
+local valueFormat = {
+    ["Standard"] = "Standard",
+    ["Standard Short"] = "Standard Short",
+    ["Standard & Percent"] = "Standard & Percent",
+    ["Standard Short & Percent"] = "Standard Short & Percent",
+    ["Absolut"] = "Absolute",
+    ["Absolut Short"] = "Absolute Short",
+    ["Absolut & Percent"] = "Absolute & Percent",
+    ["Absolut Short & Percent"] = "Absolute Short & Percent",
+}
+
 local function UnitFontMenuGetter(info)
     local unit = info[2]
     local fontName = info[3]
@@ -148,6 +159,10 @@ local function GenerateTextGroup(unit, name, colorTypes, order)
     if dbText.ShowFull  ~= nil then
         group.args.ShowFull = Opt:Toggle("Show when full", nil, 31)
         group.args.ShowEmpty = Opt:Toggle("Show when empty", nil, 32)
+    end
+
+    if name == "HealthText" or name == "PowerText" then
+        group.args.Format = Opt:Select("Format", nil, 41, valueFormat)
     end
 
     if name == "NameText" then
