@@ -1,5 +1,5 @@
 ## Interface: 100100
-## Version: 2304
+## Version: 2305
 ## Title: LUIOptions
 ## Author: Siku, Nitsah
 ## Notes: Options Menu for LUI v2210 and above
