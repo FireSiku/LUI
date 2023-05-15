@@ -226,8 +226,7 @@ function element.OnTooltipShow(GameTooltip)
 	GameTooltip:AddLine(L["InfoGold_Realms"])
 	for i, faction in ipairs(FACTION_ORDER_GLOBAL) do
 		for realm, realmData in pairs(realmDB[faction]) do
-			if type(realmData) ~= "table" then realmDB[faction][realm] = nil
-			elseif element:ShouldRealmBeShown(realm) then
+			if element:ShouldRealmBeShown(realm) then
 				local r, g, b = LUI:GetFactionColor(faction)
 				local total = 0
 				for player, money in pairs(realmData) do
@@ -272,11 +271,19 @@ function element:OnCreate()
 	setmetatable(module.db.global.Gold.Alliance, autocreateRealm)
 	setmetatable(module.db.global.Gold.Horde, autocreateRealm)
 
+	-- Previous version of this module used a different structure for saving Gold per realm. Those can be removed.
+	for faction, data in pairs(module.db.global.Gold) do
+		for realm, realmData in pairs(data) do
+			if type(realmData) ~= "table" then
+				module.db.global.Gold[faction][realm] = nil
+			end
+		end
+	end
+
 	-- Transfer db.realm to db.global
 	if module.db.realm.Gold then
 		for faction, realmDB in pairs(module.db.realm.Gold) do
 			if SUPPORTED_FACTION[faction] then
-				module.db.global.Gold[faction][LUI.playerRealm] = {}
 				for player, money in pairs(realmDB) do
 					module.db.global.Gold[faction][LUI.playerRealm][player] = money
 				end
