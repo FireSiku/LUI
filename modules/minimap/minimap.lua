@@ -7,11 +7,11 @@
 -- ####################################################################################################################
 -- luacheck: globals LUIMinimapZone LUIMinimapCoord LUIMinimapBorder
 
----@type string, LUIAddon
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local L = LUI.L
 
----@type MinimapModule
+---@class LUI.Minimap
 local module = LUI:GetModule("Minimap")
 local db
 

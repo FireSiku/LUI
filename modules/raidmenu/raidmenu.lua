@@ -5,16 +5,16 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, LUIAddon
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local L = LUI.L
 
----@type RaidMenuModule
+---@class LUI.RaidMenu
 local module = LUI:GetModule("RaidMenu")
 local db, dbd
 
 local Panels = LUI:GetModule("Panels")
-local Micromenu = LUI:GetModule("Micromenu", true)
+local Micromenu = LUI:GetModule("Micromenu", true) --[[@as MicromenuModule]]
 local Media = LibStub("LibSharedMedia-3.0")
 
 local GetRaidTargetIndex = _G.GetRaidTargetIndex

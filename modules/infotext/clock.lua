@@ -4,11 +4,11 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, LUIAddon
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local L = LUI.L
 
----@type InfotextModule
+---@class InfotextModule
 local module = LUI:GetModule("Infotext")
 local element = module:NewElement("Clock", "AceEvent-3.0", "AceHook-3.0")
 LUI.Profiler.TraceScope(module, "Clock", "Infotext", 2)

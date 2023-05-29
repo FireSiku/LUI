@@ -4,12 +4,14 @@
 	Description: Show/Hide functionality for testing purposes
 ]]
 
-local addonname, LUI = ...
-local module = LUI:GetModule("Unitframes")
-local oUF = LUI.oUF
+---@class LUIAddon
+local LUI = select(2, ...)
 
-local fm = string.format
-local ts = tostring
+---@class LUI.Unitframes
+local module = LUI:GetModule("Unitframes")
+
+---@class oUF
+local oUF = LUI.oUF
 
 local togglers = {
 	Arena = CreateFrame("Frame"),

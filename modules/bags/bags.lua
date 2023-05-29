@@ -16,16 +16,15 @@ Container Members:
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, LUIAddon
-local _, LUI = ...
-local L = LUI.L
+---@class LUIAddon
+local LUI = select(2, ...)
 
----@class BagsModule
+---@class LUI.Bags
 local module = LUI:GetModule("Bags")
 local Media = LibStub("LibSharedMedia-3.0")
 
 -- Locals and Constants
-local format, pairs = format, pairs
+local pairs = pairs
 local C_Container = C_Container
 local RoundToSignificantDigits = _G.RoundToSignificantDigits
 local SetItemButtonDesaturated = _G.SetItemButtonDesaturated
@@ -58,7 +57,7 @@ local containerStorage = {}
 -- ##### Container Mixin ##############################################################################################
 -- ####################################################################################################################
 
----@class ContainerMixin
+---@class ContainerMixin : Frame
 local ContainerMixin = {}
 
 function ContainerMixin:Open()
@@ -514,6 +513,20 @@ function module:CreateSlot(name, parent, template)
 	return button
 end
 
+--- Function to create a blank container frame.
+---@param frame Frame
+---@return Frame|ContainerMixin mix=
+local function HookMixin(frame)
+	for k, v in pairs(ContainerMixin) do
+		if frame[k] then
+			module:Hook(frame, k, ContainerMixin[k])
+		else
+			frame[k] = v
+		end
+	end
+	return frame
+end
+
 function module:CreateNewContainer(name, obj)
 	if containerStorage[name] then return end
 
@@ -554,7 +567,10 @@ function module:CreateNewContainer(name, obj)
 		else
 			frame[k] = v
 		end
+		
 	end
+	---@cast frame ContainerMixin
+
 	--Add AceBucket to the Container to process bag updates.
 	LibStub("AceBucket-3.0"):Embed(frame)
 	frame.db = module.db.profile[name]

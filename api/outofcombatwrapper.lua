@@ -1,4 +1,5 @@
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local OutOfCombatWrapper = {}
 
 LibStub("AceEvent-3.0"):Embed(OutOfCombatWrapper)

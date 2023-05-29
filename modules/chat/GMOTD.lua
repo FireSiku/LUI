@@ -5,7 +5,8 @@
 ]]
 
 -- External references.
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local script = LUI:NewScript("GMOTD", "AceEvent-3.0", "AceHook-3.0")
 
 local ChatFrame_DisplayGMOTD = _G.ChatFrame_DisplayGMOTD

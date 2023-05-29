@@ -4,11 +4,13 @@
 	Description: Unitframe Movable Features (will be converted to an own module)
 ]]
 
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class LUI.Unitframes
 local module = LUI:GetModule("Unitframes")
 
-local oUF = LUI.oUF
-local RoundToSignificantDigits = _G.RoundToSignificantDigits
+local RoundToSignificantDigits = _G.RoundToSignificantDigits --[[@as function]]
 
 local ufNames = {
 	player = "oUF_LUI_player",

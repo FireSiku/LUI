@@ -4,10 +4,11 @@
 	Description: oUF Copy Settings
 ]]
 
-local addonname, LUI = ...
-local module = LUI:GetModule("Unitframes")
+---@class LUIAddon
+local LUI = select(2, ...)
 
-local oUF = LUI.oUF
+---@class LUI.Unitframes
+local module = LUI:GetModule("Unitframes")
 
 local function CopySettings(srcTable, dstTable, withSizes, withPosition)
 	if type(srcTable) ~= "table" then return end

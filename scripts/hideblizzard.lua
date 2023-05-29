@@ -4,7 +4,8 @@
 	Description: Blizzard Frame Hider
 ]]
 
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local Blizzard = {}
 LUI.Blizzard = Blizzard
 LibStub("AceHook-3.0"):Embed(Blizzard)

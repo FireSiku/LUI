@@ -5,33 +5,17 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, LUIAddon
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local L = LUI.L
 
----@class ColorModule : LUIModule
+---@class LUI.Colors : LUIModule
 local module = LUI:NewModule("Colors")
 
 local db
 
 local GetQuestDifficultyColor = _G.GetQuestDifficultyColor
 local UnitReaction = _G.UnitReaction
-
--- constants
-local SANCTUARY = _G.SANCTUARY_TERRITORY:sub(2, -2)  -- Removed parenthesis.
-local FACTION_ALLIANCE = _G.FACTION_ALLIANCE
-local FACTION_HORDE = _G.FACTION_HORDE
-local MISCELLANEOUS = _G.MISCELLANEOUS
-local COLORS = _G.COLORS
-
-local STANDING_HATED      = _G.FACTION_STANDING_LABEL1
-local STANDING_HOSTILE    = _G.FACTION_STANDING_LABEL2
-local STANDING_UNFRIENDLY = _G.FACTION_STANDING_LABEL3
-local STANDING_NEUTRAL    = _G.FACTION_STANDING_LABEL4
-local STANDING_FRIENDLY   = _G.FACTION_STANDING_LABEL5
-local STANDING_HONORED    = _G.FACTION_STANDING_LABEL6
-local STANDING_REVERED    = _G.FACTION_STANDING_LABEL7
-local STANDING_EXALTED    = _G.FACTION_STANDING_LABEL8
 
 -- ####################################################################################################################
 -- ##### Default Settings #############################################################################################

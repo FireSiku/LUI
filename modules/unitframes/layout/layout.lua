@@ -5,14 +5,16 @@
 --	DO NOT USE THIS LAYOUT WITHOUT LUI
 ------------------------------------------------------------------------
 
-local addonname, LUI = ...
-local module = LUI:GetModule("Unitframes")
-local Fader = LUI:GetModule("Fader", true)
+---@class LUIAddon
+local LUI = select(2, ...)
 
+---@class LUI.Unitframes
+local module = LUI:GetModule("Unitframes")
+local Fader = LUI:GetModule("Fader", true) --[[@as LUI.Fader]]
 local Media = LibStub("LibSharedMedia-3.0")
+
+---@class oUF
 local oUF = LUI.oUF
-local L = LUI.L
-local db
 
 local UnitHealth, UnitHealthMax, UnitPower, UnitPowerMax = _G.UnitHealth, _G.UnitHealthMax, _G.UnitPower, _G.UnitPowerMax
 local UnitIsUnit, UnitExists, UnitIsGhost, UnitIsDead = _G.UnitIsUnit, _G.UnitExists, _G.UnitIsGhost, _G.UnitIsDead

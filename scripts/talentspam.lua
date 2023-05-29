@@ -1,4 +1,5 @@
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local script = LUI:NewScript("TalentSpam", "AceEvent-3.0", "AceHook-3.0")
 
 local PlayerTalentFrame = _G.PlayerTalentFrame

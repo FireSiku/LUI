@@ -5,11 +5,11 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, LUIAddon
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local L = LUI.L
 
----@class FaderModule : LUIModule
+---@class LUI.Fader : LUIModule, AceHook-3.0, AceTimer-3.0
 local module = LUI:NewModule("Fader", "LUIDevAPI", "AceHook-3.0", "AceTimer-3.0")
 
 -- ####################################################################################################################

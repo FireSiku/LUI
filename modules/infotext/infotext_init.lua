@@ -6,11 +6,11 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, LUIAddon
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local L = LUI.L
 
----@class InfotextModule : LUIModule
+---@class LUI.Infotext: LUIModule, AceHook-3.0
 local module = LUI:NewModule("Infotext", "AceHook-3.0")
 local Panels = LUI:GetModule("Panels", true)
 

@@ -17,10 +17,11 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, LUIAddon
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+local L = LUI.L
 
----@class ExpBarModule : LUIModule
+---@class LUI.ExperienceBars : LUIModule, AceHook-3.0
 local module = LUI:NewModule("Experience Bars", "AceHook-3.0")
 
 local mainBarsCreated = false

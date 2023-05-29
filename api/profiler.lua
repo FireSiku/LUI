@@ -5,7 +5,9 @@
 ]]
 
 -- External references.
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+local addonname = ...
 
 -- Profiler state.
 local Enabled = false

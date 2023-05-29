@@ -5,9 +5,9 @@
 ---@type string
 local addonName, LUI = ...
 
----@class LUIAddon : AceAddon, AceEvent-3.0, AceConsole-3.0
+---@class LUIAddon : AceAddon, AceEvent-3.0, AceConsole-3.0, AceComm-3.0, AceHook-3.0
+---@field db AceDBObject-3.0
 LUI = LibStub("AceAddon-3.0"):NewAddon(LUI, addonName, "AceComm-3.0", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0")
----@type table @ Localization Table
 LUI.L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 LUI:SetDefaultModuleLibraries("AceEvent-3.0")
 

@@ -5,16 +5,19 @@
 ]]
 
 -- External references.
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class LUI.Cooldown: LUIModule, AceHook-3.0
 local module = LUI:NewModule("Cooldown", "LUIDevAPI", "AceHook-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 
 -- Database and defaults shortcuts.
-local db, dbd --luacheck: ignore
+local db --luacheck: ignore
 
 -- Localized API
 local floor, format, tinsert, tremove = math.floor, string.format, table.insert, table.remove
-local pairs, ipairs, next, wipe, GetTime = pairs, ipairs, next, wipe, GetTime
+local pairs, ipairs, wipe, GetTime = pairs, ipairs, wipe, GetTime
 local GetActionCooldown = _G.GetActionCooldown
 
 local COOLDOWN_TYPE_LOSS_OF_CONTROL = _G.COOLDOWN_TYPE_LOSS_OF_CONTROL or 1

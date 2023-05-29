@@ -5,12 +5,15 @@
 ]]
 
 -- External references.
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class LUI.Chat
 local Chat = LUI:GetModule("Chat")
 local module = Chat:NewModule("Buttons", "LUIDevAPI", "AceHook-3.0")
 
 local L = LUI.L
-local db, dbd --luacheck:ignore
+local db --luacheck:ignore
 
 --------------------------------------------------
 -- Local Variables

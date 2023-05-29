@@ -2,10 +2,10 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, LUIAddon
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 
----@type LUIModule
+---@class LUI.MirrorBar: LUIModule
 local module = LUI:NewModule("Mirror Bar", "LUIDevAPI")
 local db
 
@@ -21,7 +21,6 @@ local floor = math.floor
 local MIRRORTIMER_NUMTIMERS = _G.MIRRORTIMER_NUMTIMERS
 
 local PAUSED
-
 
 -- ####################################################################################################################
 -- ##### Default Settings #############################################################################################

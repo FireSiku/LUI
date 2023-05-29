@@ -1,4 +1,5 @@
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local script = LUI:NewScript("BlizzOptionsMover", "AceEvent-3.0")
 
 local InterfaceOptionsFrame = _G.InterfaceOptionsFrame

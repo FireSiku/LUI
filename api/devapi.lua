@@ -15,6 +15,7 @@ local Media = LibStub("LibSharedMedia-3.0")
 
 devapi.embeds = devapi.embeds or {}
 
+---@class LUIAddon
 local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local addonname = LUI:GetName()
 local argcheck = LUI.argcheck

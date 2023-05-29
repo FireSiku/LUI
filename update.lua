@@ -1,5 +1,5 @@
----@type string, LUIAddon
-local addonName, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local L = LUI.L
 local db, default
 

@@ -4,7 +4,10 @@
 	Description: oUF Import/Export
 ]]
 
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class LUI.Unitframes
 local module = LUI:GetModule("Unitframes")
 local ACR = LibStub("AceConfigRegistry-3.0")
 

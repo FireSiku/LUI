@@ -4,8 +4,10 @@
 	Description: oUF Meta Functions
 ]]
 
-local addonname, LUI = ...
-local module = LUI:GetModule("Unitframes")
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class oUF
 local oUF = LUI.oUF
 
 local function FormatName(self)

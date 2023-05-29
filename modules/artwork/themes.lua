@@ -12,15 +12,15 @@
 		v1.4: Zista
 ]]
 
--- External references.
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class LUI.Themes : LUIModule, AceSerializer-3.0
 local module = LUI:NewModule("Themes", "LUIDevAPI", "AceSerializer-3.0")
-local Media = LibStub("LibSharedMedia-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
 local db, dbd
 local StaticPopup_Hide = _G.StaticPopup_Hide
-local UnitClass = _G.UnitClass
 local tContains = _G.tContains
 local strupper = string.upper
 local strlen = string.len

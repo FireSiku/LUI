@@ -4,12 +4,16 @@
 	Description: Toggle Functions
 ]]
 
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class LUI.Unitframes
 local module = LUI:GetModule("Unitframes")
-local Fader = LUI:GetModule("Fader", true)
+local Fader = LUI:GetModule("Fader", true) --[[@as LUI.Fader]]
+
+---@class oUF
 local oUF = LUI.oUF
 
-local MAX_PLAYER_LEVEL = _G.MAX_PLAYER_LEVEL
 local MAX_BOSS_FRAMES = _G.MAX_BOSS_FRAMES
 
 local UnregisterStateDriver = _G.UnregisteredStateDriver

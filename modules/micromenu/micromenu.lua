@@ -2,12 +2,12 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, LUIAddon
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local L = LUI.L
 
----@class MicromenuModule : LUIModule
-local module = LUI:NewModule("Micromenu", "AceEvent-3.0")
+---@class LUI.Micromenu : LUIModule
+local module = LUI:NewModule("Micromenu")
 local db
 
 local hooksecurefunc = _G.hooksecurefunc

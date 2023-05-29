@@ -4,11 +4,16 @@
 	Description: oUF Colors
 ]]
 
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class LUI.Unitframes
 local module = LUI:GetModule("Unitframes")
+
+---@class oUF
 local oUF = LUI.oUF
 
-local GetQuestDifficultyColor = _G.GetQuestDifficultyColor
+local GetQuestDifficultyColor = _G.GetQuestDifficultyColor --[[@as function]]
 local UnitLevel = _G.UnitLevel
 local strupper = string.upper
 

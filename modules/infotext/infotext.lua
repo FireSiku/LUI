@@ -6,11 +6,11 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, LUIAddon
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local L = LUI.L
 
----@type InfotextModule
+---@class LUI.Infotext
 local module = LUI:GetModule("Infotext")
 
 local LDB = LibStub:GetLibrary("LibDataBroker-1.1")

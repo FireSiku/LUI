@@ -6,7 +6,10 @@
 -- ##### Setup and Defaults ###########################################################################################
 -- ####################################################################################################################
 
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class LUI.UIElements : LUIModule, AceHook-3.0
 local module = LUI:NewModule("UI Elements", "AceHook-3.0")
 
 module.defaults = {

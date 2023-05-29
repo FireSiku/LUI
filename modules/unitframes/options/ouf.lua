@@ -5,13 +5,17 @@
 	Version....: 1.0
 ]]
 
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class LUI.Unitframes
 local module = LUI:GetModule("Unitframes")
 local Media = LibStub("LibSharedMedia-3.0")
-local widgetLists = AceGUIWidgetLSMlists
 
+---@class oUF
 local oUF = LUI.oUF
 
+local widgetLists = AceGUIWidgetLSMlists
 local fontflags = {"OUTLINE", "THICKOUTLINE", "MONOCHROME", ""}
 
 function module:CreateSettings(order)

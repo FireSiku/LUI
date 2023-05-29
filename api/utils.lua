@@ -4,7 +4,8 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 
 local type, pairs = type, pairs
 local strmatch, tostring = strmatch, tostring
@@ -94,10 +95,6 @@ end
 -- ##### Generic Utility API ##########################################################################################
 -- ####################################################################################################################
 -- Clean up: It's very likely Blizzard already implemented some of these utilities.
-
---- Merge given table into module.defaults if it exists. Support all AceDB types
----@param source table
----@param name string
 
 --- Count the number of entries in a table. This is done because #Table only returns array.
 ---@param t table Table to Count

@@ -4,12 +4,14 @@
 	Description: Merchant Module
 ]]
 
--- External references.
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class LUI.Merchant : LUIModule
 local module = LUI:NewModule("Merchant", "LUIDevAPI")
 
 -- Database and defaults shortcuts.
-local db, dbd
+local db
 
 ------------------------------------------------------
 -- / Create Module / --

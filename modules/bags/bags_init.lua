@@ -6,11 +6,10 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, LUIAddon
-local _, LUI = ...
-local L = LUI.L
+---@class LUIAddon
+local LUI = select(2, ...)
 
----@class BagsModule : LUIModule
+---@class LUI.Bags : LUIModule, AceHook-3.0
 local module = LUI:NewModule("Bags", "AceHook-3.0")
 
 module.enableButton = true

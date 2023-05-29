@@ -6,11 +6,10 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, LUIAddon
-local addonName, LUI = ...
-local L = LUI.L
+---@class LUIAddon
+local LUI = select(2, ...)
 
----@class UnitFrameModule : LUIModule
+---@class LUI.Unitframes : LUIModule, AceHook-3.0, AceSerializer-3.0
 local module = LUI:NewModule("Unitframes", "AceHook-3.0", "AceSerializer-3.0")
 module.enableButton = true
 
@@ -1837,21 +1836,21 @@ module.defaults = {
 -- ##### Framework Events #############################################################################################
 -- ####################################################################################################################
 
-function module:LoadOptions()
-	local options = {
-		header = self:NewHeader("Unit Frames", 1),
-		Settings = self:CreateSettings(2),
-		Colors = self:CreateColorOptions(3),
-		Layout = self:CreateImportExportOptions(4),
-		-- XP_Rep = self:CreateXpRepOptions(5),
-	}
+-- function module:LoadOptions()
+-- 	local options = {
+-- 		header = self:NewHeader("Unit Frames", 1),
+-- 		Settings = self:CreateSettings(2),
+-- 		Colors = self:CreateColorOptions(3),
+-- 		Layout = self:CreateImportExportOptions(4),
+-- 		-- XP_Rep = self:CreateXpRepOptions(5),
+-- 	}
 
-	for index, unit in pairs(module.units) do
-		options[unit] = self:CreateUnitOptions(unit, index)
-	end
+-- 	for index, unit in pairs(module.units) do
+-- 		options[unit] = self:CreateUnitOptions(unit, index)
+-- 	end
 
-	return options
-end
+-- 	return options
+-- end
 
 function module:Refresh()
 	for _, unit in pairs(module.unitsSpawn) do

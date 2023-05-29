@@ -8,10 +8,13 @@
 ]]
 
 -- External references.
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class LUI.V3Artwork : LUIModule
 local module = LUI:NewModule("Artwork", "LUIDevAPI")
 
-local db, dbd --luacheck:ignore
+local db --luacheck:ignore
 local ToggleArt
 
 --	Defaults

@@ -4,14 +4,12 @@
 	Description: oUF General Options
 ]]
 
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class LUI.Unitframes
 local module = LUI:GetModule("Unitframes")
-local Fader = LUI:GetModule("Fader", true)
-local oUF = LUI.oUF
-
-local UnitLevel = _G.UnitLevel
-
-local MAX_PLAYER_LEVEL = _G.MAX_PLAYER_LEVEL
+local Fader = LUI:GetModule("Fader", true) --[[@as LUI.Fader]]
 
 local widgetLists = AceGUIWidgetLSMlists
 

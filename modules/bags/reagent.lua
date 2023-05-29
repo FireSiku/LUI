@@ -3,10 +3,10 @@
 -- ####################################################################################################################
 --luacheck: globals LUIReagent
 
----@type string, LUIAddon
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 
----@type BagsModule
+---@class LUI.Bags
 local module = LUI:GetModule("Bags")
 
 local IsReagentBankUnlocked = _G.IsReagentBankUnlocked

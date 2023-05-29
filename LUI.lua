@@ -6,11 +6,14 @@
 	Author..: Louí [EU-Das Syndikat] <In Fidem>
 ]]
 
----@type string, LUIAddon
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local L = LUI.L
 
 local AceAddon = LibStub("AceAddon-3.0")
+
+---@type string
+local addonname = ...
 
 -- this is a temp globalization (should make it check for alpha verion to globalize or not once all other files don't need global)
 -- _G.LUI = LUI

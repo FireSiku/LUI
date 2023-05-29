@@ -2,11 +2,11 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, LUIAddon
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local L = LUI.L
 
----@type ExpBarModule
+---@class LUI.ExperienceBars
 local module = LUI:GetModule("Experience Bars")
 
 local C_AzeriteItem = C_AzeriteItem

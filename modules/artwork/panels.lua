@@ -11,14 +11,14 @@
 		v1.2: Thaly
 ]]
 
--- External references.
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class LUI.Panel : LUIModule, AceHook-3.0, AceEvent-3.0
 local module = LUI:NewModule("Panels", "LUIDevAPI", "AceHook-3.0", "AceEvent-3.0")
 local ThemesDB
 
-local db, dbd --luacheck:ignore
-local frameBackgrounds_ = {"LEFT", "RIGHT", "NONE"}
-local frameBackgrounds2_ = {"LUI v3", "NONE"}
+local db --luacheck:ignore
 local animations = {"AlphaSlide", "None"}
 local directions = {"SOLID", "TOPLEFT", "TOP", "TOPRIGHT", "RIGHT", "BOTTOMRIGHT", "BOTTOM", "BOTTOMLEFT", "LEFT"}
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"

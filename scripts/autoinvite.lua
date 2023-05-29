@@ -1,4 +1,7 @@
-local addonname, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+---@type string
+local addonname = ...
 local script = LUI:NewScript("AutoInvite", "AceEvent-3.0")
 
 local STATICPOPUP_NUMDIALOGS = _G.STATICPOPUP_NUMDIALOGS

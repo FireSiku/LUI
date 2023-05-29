@@ -1,5 +1,8 @@
 -- LUI Color Picker based on ColorPickerPlus
-local addonname, LUI = ...
+
+---@class LUIAddon
+local LUI = select(2, ...)
+
 local script = LUI:NewScript("ColorPicker", "AceEvent-3.0")
 
 local colorBuffer = {}

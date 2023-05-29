@@ -4,11 +4,15 @@
 	Description: oUF Tags
 ]]
 
-local addonname, LUI = ...
-local module = LUI:GetModule("Unitframes")
-local oUF = LUI.oUF
+---@class LUIAddon
+local LUI = select(2, ...)
 
+---@class LUI.Unitframes
+local module = LUI:GetModule("Unitframes")
 local Media = LibStub("LibSharedMedia-3.0")
+
+---@class oUF
+local oUF = LUI.oUF
 
 local UnitIsConnected, UnitIsGhost, UnitIsDead, UnitIsAFK = _G.UnitIsConnected, _G.UnitIsGhost, _G.UnitIsDead, _G.UnitIsAFK
 local UnitPower, UnitPowerMax, UnitPowerType = _G.UnitPower, _G.UnitPowerMax, _G.UnitPowerType

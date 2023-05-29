@@ -6,14 +6,13 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
+
+---@class LUI.UIElements
 local module = LUI:GetModule("UI Elements")
-local Micromenu = LUI:GetModule("Micromenu", true)
+local Micromenu = LUI:GetModule("Micromenu", true) --[[@as LUI.Micromenu]]
 local db
-
---local NUM_OBJECTIVE_HEADERS = 3
-
---local origInfo = {}
 
 local orderUI = false
 
@@ -139,7 +138,7 @@ function module:SetAdditionalFrames()
 end
 
 --- Force the position of a given supported frame
----@param frame Frame
+---@param frame string The name of the frame to force position
 function module:SetPosition(frame)
 	shouldntSetPoint = true
 	if frame == "AlwaysUpFrame" and db.AlwaysUpFrame.ManagePosition then
