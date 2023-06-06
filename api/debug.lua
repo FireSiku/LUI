@@ -5,8 +5,10 @@
 	Version....: 0.1
 	Rev Date...: 14/08/11
 ]]
-
-local addonname, LUI = ...
+---@diagnostic disable
+---@class LUIAddon
+local LUI = select(2, ...)
+local addonname = ...
 
 local version = _G.GetAddOnMetadata(addonname, "Version")
 local revision = _G.GetAddOnMetadata(addonname, "X-Curse-Packaged-Version")

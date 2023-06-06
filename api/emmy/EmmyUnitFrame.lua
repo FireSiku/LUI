@@ -63,7 +63,7 @@ function oUF:AddElement(name, update, enable, disable) end
 --- If **oUF.useHCYColorGradient** is set to true, HCY color values will be expected instead.
 ---@param a number @ value used as numerator to calculate the percentage
 ---@param b number @ value usedas denominator to calculate the percentage
----@param ... @ List of RGB percent values. At least 6 values should be passed [0-1]
+---@param ... table @ List of RGB percent values. At least 6 values should be passed [0-1]
 ---@vararg number
 function oUF:ColorGradient(a, b, ...) end
 
@@ -117,7 +117,7 @@ function UnitFrame:DisableElement(name) end
 function UnitFrame:IsElementEnabled(name) end
 
 --- Toggle the visibility of a UnitFrame based on the existence of its unit. This is a reference to `RegisterUnitWatch`
----@param asState  @ if true, the frame's "state-unitexists" attribute will be set to a boolean value denoting whether the unit exists; if false, the frame will be shown if its unit exists, and hidden if it does not (boolean)
+---@param asState boolean @ if true, the frame's "state-unitexists" attribute will be set to a boolean value denoting whether the unit exists; if false, the frame will be shown if its unit exists, and hidden if it does not (boolean)
 function UnitFrame:Enable(asState) end
 
 --- UnregisterUnitWatch for the given frame and hide it
@@ -138,7 +138,7 @@ function UnitFrame:UpdateAllElements(event) end
 --- If **oUF.useHCYColorGradient** is set to true, HCY color values will be expected instead.
 ---@param a number @ value used as numerator to calculate the percentage
 ---@param b number @ value usedas denominator to calculate the percentage
----@param ... @ List of RGB percent values. At least 6 values should be passed [0-1]
+---@param ... table @ List of RGB percent values. At least 6 values should be passed [0-1]
 ---@vararg number
 function UnitFrame:ColorGradient(a, b, ...) end
 
@@ -166,9 +166,9 @@ local UnitFrameHeader = {}
 -- ####################################################################################################################
 
 --- Create nameplates and apply the currently active style to them.
----@param prefix string? @ prefix for the global name of the nameplate. Defaults to an auto-generated prefix
----@param callback function? @ function to be called after a nameplate unit or the player's target has changed. The arguments passed to the callback are the updated nameplate, if any, the event that triggered the update, and the new unit (function?)
----@param variables table? @ list of console variable-value pairs to be set when the player logs in
+---@param namePrefix string? @ prefix for the global name of the nameplate. Defaults to an auto-generated prefix
+---@param nameplateCallback function? @ function to be called after a nameplate unit or the player's target has changed. The arguments passed to the callback are the updated nameplate, if any, the event that triggered the update, and the new unit (function?)
+---@param nameplateCVars table? @ list of console variable-value pairs to be set when the player logs in
 ---@return NamePlate
 function oUF:SpawnNamePlates(namePrefix, nameplateCallback, nameplateCVars) end
 

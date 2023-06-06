@@ -13,7 +13,7 @@
 		v1.4: Xus
 		v1.5: Thaly
 ]]
-
+---@diagnostic disable
 -- External references.
 local addonname, LUI = ...
 local module = LUI:NewModule("Micromenu", "LUIDevAPI", "AceHook-3.0")

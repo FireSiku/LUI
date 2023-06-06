@@ -88,7 +88,7 @@ end
 
 --- Function to determine if the Individual Color option should be disabled
 ---@param dbOpt table @ db table of the color to look up
----@param select string @ if the Color select has a different name than "Color"
+---@param colorSelect string @ if the Color select has a different name than "Color"
 ---@return function
 local function IsIndividualColorSelected(dbOpt, colorSelect)
     colorSelect = colorSelect or "Color"

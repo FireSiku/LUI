@@ -9,7 +9,7 @@
 		v1.8: Hix
 		v1.9: Zista
 ]]
-
+---@diagnostic disable
 -- External references.
 local addonname, LUI = ...
 local module = LUI:NewModule("Infotext", "LUIDevAPI", "AceHook-3.0")

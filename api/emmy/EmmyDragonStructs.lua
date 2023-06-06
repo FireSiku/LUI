@@ -29,7 +29,7 @@
 ---@field name string @ The localized name of the aura, otherwise nil if there is no aura for the index.
 ---@field nameplateShowAll boolean @ If the aura should be shown on nameplates.
 ---@field nameplateShowPersonal boolean @ If the aura should be shown on the player/pet/vehicle nameplate.
----@field points array @ Variable returns - Some auras return additional values that typically correspond to something shown in the tooltip, such as the remaining strength of an absorption effect.
+---@field points table @ Variable returns - Some auras return additional values that typically correspond to something shown in the tooltip, such as the remaining strength of an absorption effect.
 ---@field sourceUnit UnitId? @ The unit that applied the aura.
 ---@field spellId number @ The spell ID for e.g. GetSpellInfo()
 ---@field timeMod number @ The scaling factor used for displaying time left.

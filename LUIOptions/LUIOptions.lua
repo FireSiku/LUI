@@ -164,7 +164,7 @@ end
 
 ---@param name string|function
 ---@param desc? string|function
----@param order number
+---@param order? number
 ---@param childGroups? string|"tree"|"tab"|"select"
 ---@param disabled? boolean|function
 ---@param hidden? boolean|function
@@ -214,7 +214,6 @@ function OptionMixin:Color(name, desc, order, alpha, width, disabled, hidden, ge
 	return { type = "color", name = name, desc = desc, order = order, hasAlpha = alpha, width = width, disabled = disabled, hidden = hidden, get = get, set = set }
 end
 
----@param name string|function
 ---@param order number
 ---@param width? string|"normal"|"half"|"double"|"full"
 ---@return AceOptionDesc
@@ -226,7 +225,7 @@ end
 ---@param order number
 ---@param fontSize? string|"small"|"medium"|"large"
 ---@param image? string|function
----@param imageCoords? table|TexCoord|function
+---@param imageCoords? table|function|methodname
 ---@param imageWidth? number
 ---@param imageHeight? number
 ---@param width? string|"normal"|"half"|"double"|"full"
@@ -333,7 +332,7 @@ end
 ---@param hidden? boolean|function
 ---@param get? function
 ---@param set? function
----@return AceOptionMultiSelect
+---@return AceOptionMultiselect
 function OptionMixin:MultiSelect(name, desc, order, values, width, disabled, hidden, get, set)
 	return { type = "multiselect", name = name, desc = desc, order = order, values = values, width = width, disabled = disabled, hidden = hidden, get = get, set = set }
 end
@@ -595,7 +594,7 @@ end
 ---@return LUIModule @ Module Object
 ---@return table @ DB Profile table for the given module
 function Opt:GetLUIModule(name)
-	local module = LUI:GetModule(name, true)
+	local module = LUI:GetModule(name, true) --[[@as LUIModule]]
 	local db
 	if module and module.db then
 		db = module.db.profile

@@ -8,6 +8,7 @@
 ]]
 
 -- External references.
+---@diagnostic disable
 local addonname, LUI = ...
 local module = LUI:NewModule("FAQ", "LUIDevAPI")
 

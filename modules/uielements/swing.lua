@@ -3,7 +3,7 @@
 	File.......: swing.lua
 	Description: LUI Swing Timer
 ]]
-
+---@diagnostic disable
 local addonname, LUI = ...
 local module = LUI:NewModule("Swing", "LUIDevAPI")
 local oUFmodule = LUI:GetModule("Unitframes")

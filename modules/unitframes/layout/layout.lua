@@ -717,7 +717,7 @@ local function FilterAura(element, unit, data)
 end
 
 --- Castbar callback after a cast starts
----@param element ufCastbar
+---@param castbar ufCastbar
 ---@param unit UnitId
 ---@param name string @ name of the spell being cast
 local function PostCastStart(castbar, unit, name)
@@ -759,7 +759,7 @@ local function PostCastStart(castbar, unit, name)
 end
 
 --- Castbar callback after a cast starts
----@param element ufCastbar
+---@param castbar ufCastbar
 ---@param unit UnitId
 ---@param name string @ name of the spell being cast
 local function PostChannelStart(castbar, unit, name)
@@ -785,7 +785,7 @@ local function PostChannelStart(castbar, unit, name)
 end
 
 --- Castbar callback after a cast starts
----@param element ufCastbar
+---@param castbar ufCastbar
 ---@param unit UnitId
 ---@param name string @ name of the spell being cast
 local function PostChannelUpdate(castbar, unit, name)

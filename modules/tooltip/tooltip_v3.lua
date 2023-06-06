@@ -14,7 +14,7 @@
 		v1.4: Hix
 		v1.5: Zista
 ]]
-
+---@diagnostic disable
 -- External references.
 local addonname, LUI = ...
 local module = LUI:NewModule("Tooltip", "LUIDevAPI", "AceHook-3.0")

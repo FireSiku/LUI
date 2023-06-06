@@ -3,7 +3,7 @@
 	File.......: bars.lua
 	Description: Bars Module
 ]]
-
+---@diagnostic disable
 local addonname, LUI = ...
 local module = LUI:NewModule("Bars", "LUIDevAPI", "AceHook-3.0")
 local Themes = LUI:GetModule("Themes")

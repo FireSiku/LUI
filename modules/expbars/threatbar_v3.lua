@@ -3,7 +3,7 @@
 	File.......: threat.lua
 	Description: LUI Threat Bar
 ]]
-
+---@diagnostic disable
 local addonname, LUI = ...
 local module = LUI:NewModule("Threat", "LUIDevAPI")
 local Media = LibStub("LibSharedMedia-3.0")

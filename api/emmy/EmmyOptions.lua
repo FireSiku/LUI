@@ -7,7 +7,7 @@
 
 ---@class InfoTable
 ---@field handler table @ Handler object for the current option
----@field type  AceConfigTypes @ Type of the current option
+---@field type AceConfig.OptionsTable.Type @ Type of the current option
 ---@field options AceOption[] @ Pointer for the root of the options table
 ---@field option AceOption @ Pointer for the current AceOption table
 ---@field arg any @ Value of the current option's "arg" node if it was set.
@@ -17,7 +17,7 @@
 
 ---[AceConfig Options Table Documentation](https://www.wowace.com/projects/ace3/pages/ace-config-3-0-options-tables)
 ---@class AceOption
----@field type AceConfigTypes @ the type of the option
+---@field type AceConfig.OptionsTable.Type @ the type of the option
 ---@field name string|function @ display name for the option
 ---@field desc string|function @ description for the option (or nil for a self-describing name)
 ---@field descStyle string @ `"inline"` if you want the description to show below the option in a GUI (rather than as a tooltip). Currently only supported by AceGUI "Toggle"
@@ -30,11 +30,11 @@
 ---@field icon string|function @ path to icon texture
 ---@field iconCoords table|methodname|function @ arguments to pass to SetTexCoord, e.g. {0.1,0.9,0.1,0.9}.
 ---@field handler table @ object on which functions are called if they are declared as strings rather than function references. Child options will inherit this value unless overridden.
----@field width Ace3Width|number @ provide a hint for how wide this option needs to be. Full make the option the full width of the window. Number is a multiplier of the default width.
+---@field width AceConfig.OptionsTable.Width|number @ provide a hint for how wide this option needs to be. Full make the option the full width of the window. Number is a multiplier of the default width.
 ---@field arg any @ Information that will be passed down to the InfoTable
 local AceOption = {}
 AceOption.width = "normal"
-AceOption.descStyle = 100
+AceOption.descStyle = "tooltip"
 AceOption.order = 100
 AceOption.disabled = false
 AceOption.hidden = false
@@ -137,7 +137,7 @@ local AceOptionHeader = {}
 ---@field imageWidth number @ Width of the displayed image
 ---@field imageHeight number @ Height of the displayed image
 local AceOptionDesc = {}
-AceOptionDesc = "small"
+AceOptionDesc.fontSzie = "small"
 
 ---The first table in an AceOptions table is implicitly a group. You can have more levels of groups by simply adding another table with type="group" under the first args table.
 ---- [AceConfig Options Table Documentation](https://www.wowace.com/projects/ace3/pages/ace-config-3-0-options-tables)

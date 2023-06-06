@@ -2,7 +2,7 @@
 --  Name ...... : Auras
 --  Description : Player Buffs, Debuffs, and Weapon Enchants
 --
-
+---@diagnostic disable
 local addonName, LUI = ...
 
 -- Localized API

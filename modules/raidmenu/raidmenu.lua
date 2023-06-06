@@ -14,7 +14,7 @@ local module = LUI:GetModule("RaidMenu")
 local db, dbd
 
 local Panels = LUI:GetModule("Panels")
-local Micromenu = LUI:GetModule("Micromenu", true) --[[@as MicromenuModule]]
+local Micromenu = LUI:GetModule("Micromenu", true) --[[@as LUI.Micromenu]]
 local Media = LibStub("LibSharedMedia-3.0")
 
 local GetRaidTargetIndex = _G.GetRaidTargetIndex

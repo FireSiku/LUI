@@ -19,11 +19,11 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, LUIAddon
-local _, LUI = ...
+---@class LUIAddon
+local LUI = select(2, ...)
 local L = LUI.L
 
----@type FaderModule
+---@class LUI.Fader
 local module = LUI:GetModule("Fader")
 local Profiler = LUI.Profiler
 

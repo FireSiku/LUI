@@ -49,7 +49,7 @@ end
 
 --- Fetch a color and return the r, g, b, a values.
 ---@param colorName string @ check module db first, then color module.
----@return number R, number G, number B
+---@return number R, number G, number B, number A
 function ModuleMixin:RGBA(colorName)
 	local db = self:GetDB("Colors")
 
@@ -136,7 +136,7 @@ end
 ---@param r number @ How far from the edge bg is drawn. (Higher = Thicker)
 ---@param t number @ How far from the edge bg is drawn. (Higher = Thicker)
 ---@param b number @ How far from the edge bg is drawn. (Higher = Thicker)
----@return BackdropTable
+---@return backdropInfo backdrop
 function ModuleMixin:FetchBackdrop(name, tile, tileSize, l, r, t, b)
 	local db = self:GetDB("Backdrop")
 	if db and db[name] then
@@ -181,8 +181,8 @@ end
 --- Quickly Setup a FontString widget
 ---@param frame Frame
 ---@param name string
----@param mFont FontName
----@param layer FrameLayer|nil @ Layer font should be drawn in. Defaults to ARTWORK
+---@param mFont string @ Name of the entry to search in `module.db.Fonts`
+---@param layer DrawLayer @ Layer font should be drawn in. Defaults to ARTWORK
 ---@param hJustify boolean|nil
 ---@param vJustify boolean|nil
 ---@return FontString
@@ -196,6 +196,7 @@ function ModuleMixin:SetFontString(frame, name, mFont, layer, hJustify, vJustify
 	return fs
 end
 
+
 --- Reapply the font settings of a FontString based on the given font name.
 ---@param fs FontString
 ---@param mFont string @ Name of the entry to search in `module.db.Fonts`
@@ -208,7 +209,7 @@ end
 
 --- Returns the profile database table.
 ---@param subTable string? @ Return the requested subtable if found. Otherwise return the module's db.
----@return AceDB-3.0
+---@return AceDB.Schema
 function ModuleMixin:GetDB(subTable)
 	local db
 	if self.db then
@@ -222,9 +223,9 @@ end
 
 --- Returns a database scope table. Defaults to profile.
 ---@param scope? DBScope
----@return AceDB-3.0
+---@return table
 function ModuleMixin:GetDBScope(scope)
-	scope = scope or "profile"
+	scope = scope or "profile" --[[@as DBScope]]
 	if self.db then
 		return self.db[scope]
 	end

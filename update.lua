@@ -72,8 +72,8 @@ end
 --- Helper function to reduce the overall number of IF statements
 ---@param display_name string @ Name that displayed to user in the format display_name.new_name
 ---@param old_db table @ Table that contains the old setting.
----@param old_name string @ The old name of the setting to look up in the db
----@param new_name string @ The new name of the setting that should be updated
+---@param old_name string|number @ The old name of the setting to look up in the db
+---@param new_name string|number @ The new name of the setting that should be updated
 ---@param new_db table? @ If the new setting is in different table. If missing, it will use old_db as the destination
 local function Convert(display_name, old_db, old_name, new_name, new_db)
 	if not old_db then return end -- Nothing to convert.
@@ -450,41 +450,41 @@ function LUI:ApplyUpdate(ver)
 					Sanitize(font, {"Size"})
 				end
 			end
-			if modName == "Panels" then
+			if db and modName == "Panels" then
 				local keys = {"OffsetX", "OffsetY", "Width", "Height"}
 				Sanitize(db.Chat, keys)
 				Sanitize(db.Tps, keys)
 				Sanitize(db.Dps, keys)
 				Sanitize(db.Raid, keys)
-			elseif modName == "Chat" then
+			elseif db and modName == "Chat" then
 				Sanitize(db, {"x", "y", "width", "height"})
 				Sanitize(db.General.Font, {"Size"})
 				Sanitize(db.General.BackgroundColor, colorArray)
-			elseif modName == "Cooldown" then
+			elseif db and modName == "Cooldown" then
 				Sanitize(db.General, {"MinDuration", "MinScale", "Precision", "Threshold", "MinToSec"})
-			elseif modName == "Merchant" then
+			elseif db and modName == "Merchant" then
 				Sanitize(db.AutoRepair.Settings, {"CostLimit"})
 				Sanitize(db.AutoStock.Settings, {"CostLimit"})
-			elseif modName == "Micromenu" then
+			elseif db and modName == "Micromenu" then
 				Sanitize(db, {"X", "Y"})
-			elseif modName == "Minimap" then
+			elseif db and modName == "Minimap" then
 				Sanitize(db.General, {"Scale", "CoordPrecision", "FontSize"})
 				Sanitize(db.Position, {"X", "Y", "Scale"})
-			elseif modName == "Mirror Bar" then
+			elseif db and modName == "Mirror Bar" then
 				Sanitize(db.General, {"Width", "Height", "X", "Y", "BarGap"})
 				Sanitize(db.Text, {"Size", "OffsetX", "OffsetY"})
 				Sanitize(db.Text.Color, colorList)
 				Sanitize(db.Border.Color, colorList)
 				Sanitize(db.Border.Inset, insetList)
-			elseif modName == "RaidMenu" then
+			elseif db and modName == "RaidMenu" then
 				Sanitize(db, "Spacing", "Offset", "X_Offset", "Opacity", "Scale")
-			elseif modName == "Tooltip" then
+			elseif db and modName == "Tooltip" then
 				Sanitize(db, "Scale", "X", "Y", "HealthFontSize", "BorderSize")
-			elseif modName == "UI Elements" then
+			elseif db and modName == "UI Elements" then
 				for k, v in pairs(db) do
 					Sanitize(db[k], {"X", "Y"})
 				end
-			elseif modName == "Unitframes" then
+			elseif db and modName == "Unitframes" then
 				local uf_mod = LUI:GetModule("Unitframes")
 				local uf_db = uf_mod.db.profile
 				for i, unitId in ipairs(uf_mod.units) do

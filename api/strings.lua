@@ -26,16 +26,6 @@ local LOCALIZED_CLASS_NAMES_MALE = LOCALIZED_CLASS_NAMES_MALE
 -- ##### StringUtils: EmmyLua #########################################################################################
 -- ####################################################################################################################
 
----@alias DBScope
----| "profile"
----| "global"
----| "char"
----| "realm"
----| "class"
----| "race"
----| "faction"
----| "factionrealm"
-
 ---@alias ClassToken
 ---| "DEATHKNIGHT"
 ---| "DEMONHUNTER"

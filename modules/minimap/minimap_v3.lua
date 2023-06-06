@@ -12,6 +12,7 @@
 		v1.2b: Thaly
 ]]
 
+---@diagnostic disable
 -- External references.
 local _, LUI = ...
 local module = LUI:NewModule("Minimap", "LUIDevAPI", "AceHook-3.0")
