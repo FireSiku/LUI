@@ -33,7 +33,7 @@ local GetPVPTimer, GetGlyphSocketInfo =_G.GetPVPTimer, _G.GetGlyphSocketInfo
 local format = string.format
 local floor = math.floor
 
-local ALT_MANA_BAR_PAIR_DISPLAY_INFO = _G.ALT_MANA_BAR_PAIR_DISPLAY_INFO
+local ALT_POWER_BAR_PAIR_DISPLAY_INFO = _G.ALT_POWER_BAR_PAIR_DISPLAY_INFO
 local ADDITIONAL_POWER_BAR_INDEX = _G.ADDITIONAL_POWER_BAR_INDEX
 local GameFontHighlight = _G.GameFontHighlight
 local NUM_CHAT_WINDOWS = _G.NUM_CHAT_WINDOWS
@@ -1915,9 +1915,9 @@ module.funcs = {
 				local _, playerClass = UnitClass(unit)
 				if(not UnitHasVehicleUI('player')) then
 					if(UnitPowerMax(unit, ADDITIONAL_POWER_BAR_INDEX) ~= 0) then
-						if LUI.IsRetail and (ALT_MANA_BAR_PAIR_DISPLAY_INFO[playerClass]) then
+						if LUI.IsRetail and (ALT_POWER_BAR_PAIR_DISPLAY_INFO[playerClass]) then
 							local powerType = UnitPowerType(unit)
-							shouldEnable = ALT_MANA_BAR_PAIR_DISPLAY_INFO[playerClass][powerType]
+							shouldEnable = ALT_POWER_BAR_PAIR_DISPLAY_INFO[playerClass][powerType]
 						end
 					end
 				end
