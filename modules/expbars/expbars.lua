@@ -104,7 +104,7 @@ end
 
 function ExpBarMixin:UpdateText()
 	if self.ShouldDisplayPercentText() then
-		local precision = module.db.profile.Precision
+		local precision = module.db.profile.Precision or 2
 		local percentBar = self.barValue / self.barMax * 100
 		local percentText = format("%."..precision.."f%%", percentBar)
 		return self.text:SetText(format("%s %s", percentText, self:GetDataText() or ""))
