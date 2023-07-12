@@ -29,8 +29,10 @@ libs\AceLocale-3.0\AceLocale-3.0.xml
 libs\AceSerializer-3.0\AceSerializer-3.0.xml
 libs\AceTimer-3.0\AceTimer-3.0.xml
 libs\AceBucket-3.0\AceBucket-3.0.xml
-api\oUF11\ouf.xml
 locale\locale.xml
+
+## oUF ## Current Version 11.2.1 - 89817c269838e501e54e82512005c07517d7fba3
+api\oUF11\ouf.xml
 
 ### Core + API ###
 init.lua

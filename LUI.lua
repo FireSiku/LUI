@@ -15,10 +15,6 @@ local AceAddon = LibStub("AceAddon-3.0")
 ---@type string
 local addonname = ...
 
--- this is a temp globalization (should make it check for alpha verion to globalize or not once all other files don't need global)
--- _G.LUI = LUI
-_G.oUF = LUI.oUF
-
 local Media = LibStub("LibSharedMedia-3.0")
 local Profiler = LUI.Profiler
 local widgetLists = AceGUIWidgetLSMlists
