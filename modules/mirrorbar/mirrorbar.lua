@@ -18,7 +18,7 @@ local LoadAddOn = _G.LoadAddOn
 local format = string.format
 local floor = math.floor
 
-local MIRRORTIMER_NUMTIMERS = _G.MIRRORTIMER_NUMTIMERS
+local MIRRORTIMER_NUMTIMERS = 3 -- MirrorTimer.lua -> numMirrorTimerTypes
 
 local PAUSED
 
@@ -47,8 +47,8 @@ module.defaults = {
 			Background = { r = 0.15, g = 0.15, b = 0.15, a = 0.67, },
 		},
 		Text = {
-			Name = { Font = "neuropol", Size = 13, OffsetX = 5, OffsetY = 1, Color = { r = 0.9, g = 0.9, b = 0.9, } },
-			Time = { Font = "neuropol", Size = 13, OffsetX = -5, OffsetY = 1, Color = { r = 0.9, g = 0.9, b = 0.9, } },
+			Name = { Font = "NotoSans-SCB", Size = 13, OffsetX = 5, OffsetY = 1, Color = { r = 0.9, g = 0.9, b = 0.9, } },
+			Time = { Font = "NotoSans-SCB", Size = 13, OffsetX = -5, OffsetY = 1, Color = { r = 0.9, g = 0.9, b = 0.9, } },
 		},
 		Border = {
 			Texture = "glow",
@@ -369,11 +369,7 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
-	for i = 1, MIRRORTIMER_NUMTIMERS do
-		local f = _G['MirrorTimer'..i]
-		f:UnregisterAllEvents()
-	end
-	UIParent:UnregisterEvent('MIRROR_TIMER_START')
+	MirrorTimerContainer:UnregisterEvent('MIRROR_TIMER_START')
 	module:CreateMirrorbars()
 	for i = 1, MIRRORTIMER_NUMTIMERS do
 		self.MirrorBar[i]:Hide()
@@ -395,14 +391,7 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
-	for i = 1, MIRRORTIMER_NUMTIMERS do
-		local f = _G['MirrorTimer'..i]
-		f:Hide()
-		f:RegisterEvents('MIRROR_TIMER_PAUSE')
-		f:RegisterEvents('MIRROR_TIMER_STOP')
-		f:RegisterEvents('PLAYER_ENTERING_WORLD')
-	end
-	UIParent:RegisterEvent('MIRROR_TIMER_START')
+	MirrorTimerContainer:RegisterEvent('MIRROR_TIMER_START')
 
 	self:UnregisterEvent('MIRROR_TIMER_START', MIRROR_TIMER_START)
 	self:UnregisterEvent('MIRROR_TIMER_STOP', MIRROR_TIMER_STOP)
