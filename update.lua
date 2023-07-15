@@ -341,7 +341,7 @@ function LUI:ApplyUpdate(ver)
 		end
 
 		-- Push a refresh of all units
-		for k, obj in pairs(oUF.objects) do
+		for k, obj in pairs(LUI.oUF.objects) do
 			obj:UpdateAllElements('SettingsConversion')
 		end
 	end
