@@ -376,7 +376,7 @@ function module:DBCallback(event, dbobj, profile)
 end
 
 function module:OnInitialize()
-	db, dbd = LUI:Namespace(self, true)
+	db = LUI:Namespace(self, true)
 end
 
 function module:OnEnable()

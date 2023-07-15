@@ -55,13 +55,13 @@ function module:ItemExclusion(info, item) -- info = true: remove item from list
 
 	local itemID = tonumber(string.match(itemLink, "item:(%d+)"))
 
-	if info == true then -- remove
+	if itemID and info == true then -- remove
 		db.AutoSell.Exclusions[itemID] = nil
 
 		if db.AutoSell.Settings.ShowExclusion then
 			print("|cff00ff00Successfully removed|r "..itemLink.." |cff00ff00from the exclusion list.")
 		end
-	else
+	elseif itemID then
 		if db.AutoSell.Exclusions[itemID] then
 			if db.AutoSell.Settings.ShowExclusion then
 				print(itemLink.." |cffff0000 is already in the exclusion list.")
@@ -460,7 +460,7 @@ function module:LoadOptions()
 end
 
 function module:OnInitialize()
-	db, dbd = LUI:Namespace(self, true)
+	db = LUI:Namespace(self, true)
 end
 
 module.DBCallback = module.OnInitialize

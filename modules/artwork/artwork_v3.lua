@@ -198,7 +198,7 @@ function ToggleArt(status)
 end
 
 function module:OnInitialize()
-	db, dbd = LUI:NewNamespace(self, true)
+	db = LUI:NewNamespace(self, true)
 end
 
 function module:OnEnable()

@@ -90,7 +90,7 @@ function module:Refresh(info, value)
 end
 
 function module:OnInitialize()
-	db, dbd = Chat:Namespace(self)
+	db = Chat:Namespace(self)
 end
 
 module.DBCallback = module.OnInitialize
