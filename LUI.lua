@@ -893,7 +893,7 @@ local function getOptions()
 									width = "double",
 									get = function() return db.General.BlizzFrameScale end,
 									set = function(info, value)
-										if scale == nil or scale == "" then scale = 1 end
+										if value == nil or value == "" then value = 1 end
 										db.General.BlizzFrameScale = value
 										LUI:FetchScript("BlizzScale"):ApplyBlizzScaling()
 									end,
