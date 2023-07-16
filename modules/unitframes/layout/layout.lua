@@ -228,6 +228,7 @@ end
 
 function module:GetTalentRank(nodeId, entryId)
 	local configId = C_ClassTalents.GetActiveConfigID()
+	if not configId then return false, 0 end
 	local nodeInfo = C_Traits.GetNodeInfo(configId, nodeId)
 	if not nodeInfo then return false, 0 end
 	if #nodeInfo.entryIDs > 1 then
