@@ -657,6 +657,10 @@ end
 do
 	local scripts = {}
 
+	--- Create a new script object.
+	---@param name any
+	---@param ... unknown
+	---@return table
 	function LUI:NewScript(name, ...)
 		local script = {}
 		scripts[name] = script
@@ -672,7 +676,7 @@ do
 				errormsg = "Error generating script: "..name.." - '"..lib.."' library is not Embedable!"
 			end
 			if errormsg then
-				return self:Print(errormsg)
+				return {}, self:Print(errormsg)
 			end
 
 			LibStub(lib):Embed(script)

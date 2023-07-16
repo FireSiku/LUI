@@ -1,7 +1,7 @@
 ---@class LUIAddon
 local LUI = select(2, ...)
 local script = LUI:NewScript("NewPlayerExp", "AceEvent-3.0", "AceHook-3.0")
-local barMod = LUI:GetModule("Bars", true)
+local Micromenu = LUI:GetModule("Micromenu", true) --[[@as LUI.Micromenu]]
 
 local function S(x) return LUI:Scale(x) end
 
@@ -10,8 +10,6 @@ local FlyoutHasSpell = _G.FlyoutHasSpell
 local IsAddOnLoaded = _G.IsAddOnLoaded
 local GetActionInfo = _G.GetActionInfo
 local UnitLevel = _G.UnitLevel
-
-local WorldMapFrame = _G.WorldMapFrame
 
 local TutorialData = {}
 TutorialData.LevelAbilitiesTable = {
@@ -35,7 +33,7 @@ TutorialData.LevelAbilitiesTable = {
 		26573,	-- Consecration, level 6
 		85673,	-- Word of Glory, level 7
 		nil,	-- 327977, Judgement Rank 2, level 8
-		633,	-- Lay on Hands, level 8
+		62124,	-- Hand of Reckoning, level 9
 	};
 	HUNTER = {
 		56641,	-- Start with Steady Shot
@@ -53,7 +51,7 @@ TutorialData.LevelAbilitiesTable = {
 		196819,	-- Eviscerate, level 2
 		nil,	-- 1833 Cheap Shot, level 3 - Rogues also get Stealth, 1784
 		nil,	-- 
-		2983,	-- Sq, level 5
+		2983,	-- Sprint, level 5
 		1766,	-- Kick, level 6
 		nil,	-- 8676, Ambush, level 7
 		185311,	-- Crimson Vial, level 8
@@ -98,7 +96,7 @@ TutorialData.LevelAbilitiesTable = {
 		688,	-- Summon Imp, level 3
 		104773,	-- Unending Resolve, level 4
 		5782,	-- Fear, level 5
-		702,	-- Curse of Weakness, level 6
+		nil,	-- 
 		6201,	-- Create Healthstone, level 7
 		755,	-- Health Funnel, level 8
 		234153,	-- Drain Life, level 9
@@ -137,46 +135,39 @@ local function moveAway(self)
 	self:SetPoint("CENTER", S(-300), S(-60))
 end
 
-local function isUsingLUIBars()
-	if not barMod then return end
-	if not (IsAddOnLoaded("Bartender4") or IsAddOnLoaded("Dominos") or IsAddOnLoaded("Macaroon")) then
-		return barMod.db.profile.General.Enable
-	end
+function script:SetTutorialFrames()
+	script:SecureHook(_G.TutorialKeyboardMouseFrame_Frame, "ShowTutorial", moveUp)
+	moveUp(_G.TutorialKeyboardMouseFrame_Frame)
+
+	script:SecureHook(_G.TutorialSingleKey_Frame, "ShowTutorial", moveUp)
+	moveUp(_G.TutorialSingleKey_Frame)
+	
+	script:SecureHook(_G.TutorialMainFrame_Frame, "ShowTutorial", moveAway)
+	moveAway(_G.TutorialMainFrame_Frame)
+
+	script:SecureHook(_G.TutorialWalk_Frame, "ShowTutorial", moveAway)
+	moveAway(_G.TutorialWalk_Frame)
 end
 
--- Required for tutorial to let you point to abilities.
+-- Required for tutorial to let you point to abilities, adjusted for Bartender4.
+-- https://www.townlong-yak.com/framexml/live/Blizzard_TutorialManager/Blizzard_TutorialHelper.lua
 function script:GetActionButtonBySpellID(helper, spellID)
 	if (type(spellID) ~= "number") then return end
-	if self.BT4 then
-		-- Bartender4 path, until this feature has been added in BT4 proper.
-		for i = 1, 24 do
-			local btn = _G["BT4Button"..i]
-			if btn and btn:IsVisible() then
-				local actionType, sID, subType = GetActionInfo(btn:CalculateAction())
-				if (sID == spellID) then
-					return btn
-				elseif (actionType == "flyout" and FlyoutHasSpell(sID, spellID)) then
-					return btn
-				end
-			end
-		end
-	else
-		-- LUI Bars
-		for i = 1, 12 do
-			local btn = _G["LUIBarBottom1Button"..i]
-			if btn and btn:IsVisible() then
-				local actionType, sID, subType = GetActionInfo(btn.action)
-				if (sID == spellID) then
-					return btn
-				elseif (actionType == "flyout" and FlyoutHasSpell(sID, spellID)) then
-					return btn
-				end
+	-- Bartender4 path, until this feature has been added in BT4 proper.
+	for i = 1, 24 do
+		local btn = _G["BT4Button"..i]
+		if btn and btn:IsVisible() then
+			local actionType, sID, subType = GetActionInfo(btn:CalculateAction())
+			if (sID == spellID) then
+				return btn
+			elseif (actionType == "flyout" and FlyoutHasSpell(sID, spellID)) then
+				return btn
 			end
 		end
 	end
 	-- backup for stance bars
 	for i = 1, 10 do
-		local btn = self.BT4 and _G["BT4StanceButton"..i] or _G["StanceButton"..i]
+		local btn =  _G["BT4StanceButton"..i]
 		local icon, isActive, isCastable, sID = GetShapeshiftFormInfo(btn:GetID())
 		if (sID == spellID) then
 			return btn
@@ -184,43 +175,39 @@ function script:GetActionButtonBySpellID(helper, spellID)
 	end
 end
 
-function script:FindEmptyButton()
-	if self.BT4 then
-		for i = 1, 24 do
-			local btn = _G["BT4Button"..i]
-			if btn then
-				local _, sID = GetActionInfo(btn:CalculateAction())
-				if not sID then
-					return btn;
-				end
+function script:FormatString(helper, str)
+	-- Spell Names and Icons e.g. {$1234}
+	str = string.gsub(str, "{%$(%d+)}", function(spellID)
+			local name, _, icon = GetSpellInfo(spellID)
+			return string.format("|cFF00FFFF%s|r", name)
+		end)
+	-- Spell Keybindings e.g. {KB|1234}
+	str = string.gsub(str, "{KB|(%d+)}", function(spellID)
+			local bindingString;
+			if (spellID) then
+				local btn = TutorialHelper:GetActionButtonBySpellID(tonumber(spellID))
+				if btn then bindingString = btn:GetHotkey() end
 			end
-		end
-	else
-		-- LUI Bars
-		for i = 1, 12 do
-			local btn = _G["LUIBarBottom1Button"..i]
-			if btn then
-				local _, sID = GetActionInfo(btn.action)
-				if not sID then
-					return btn;
-				end
+			return string.format("%s", bindingString or "?")
+		end)
+	-- Atlas icons e.g. {Atlas|NPE_RightClick:16}
+	str = string.gsub(str, "{Atlas|([%w_-]+):?(%d*)}", function(atlasName, size)
+				size = tonumber(size) or 0
+				return CreateAtlasMarkup(atlasName, size, size)
+			end)
+	return str
+end
+
+function script:FindEmptyButton()
+	for i = 1, 24 do
+		local btn = _G["BT4Button"..i]
+		if btn then
+			local _, sID = GetActionInfo(btn:CalculateAction())
+			if not sID then
+				return btn;
 			end
 		end
 	end
-end
-
-function script:SetTutorialFrames()
-	script:SecureHook(_G.NPE_TutorialKeyboardMouseFrame_Frame, "ShowTutorial", moveUp)
-	moveUp(_G.NPE_TutorialKeyboardMouseFrame_Frame)
-
-	script:SecureHook(_G.NPE_TutorialSingleKey_Frame, "ShowTutorial", moveUp)
-	moveUp(_G.NPE_TutorialSingleKey_Frame)
-	
-	script:SecureHook(_G.NPE_TutorialMainFrame_Frame, "ShowTutorial", moveAway)
-	moveAway(_G.NPE_TutorialMainFrame_Frame)
-
-	script:SecureHook(_G.NPE_TutorialWalk_Frame, "ShowTutorial", moveAway)
-	moveAway(_G.NPE_TutorialWalk_Frame)
 end
 
 local arrowDirections = {"UP", "LEFT", "RIGHT", "DOWN"}
@@ -256,15 +243,26 @@ function script:ShowPointerArrow(frame, direction)
 	-- end)
 end
 
+local MicroButtons = {
+	Character = "LUIMicromenu_Player",
+	Spellbook = "LUIMicromenu_Spellbook",
+	Talents = "LUIMicromenu_Talents",
+	Achievement = "LUIMicromenu_Achievements",
+	QuestLog = "LUIMicromenu_Quests",
+	Guild = "LUIMicromenu_Guild",
+	LFD = "LUIMicromenu_LFG",
+	EJ = "LUIMicromenu_EJ",
+	Collections = "LUIMicromenu_Collections",
+}
+
 function script:ShouldReAnchorPointer(frame)
 	local anchor
-	local buttons = LUI.MicroMenu.Buttons
 	local text = frame.Content.Text:GetText()
 	if not frame:IsShown() and text then frame:Show() end
-	if text == _G.NPEV2_SPELLBOOK_TUTORIAL then
-		anchor = buttons.Spellbook
-		-- HACK: When using BT4, Spellbook warning would always appear on reload.-
-		if self.BT4 and not script:ShowSpellbook() then
+	if text == _G.NPEV2_SPELLBOOK_TUTORIAL or text:find(NPEV2_SPELLBOOK_ADD_SPELL:gsub("%%s", "")) then
+		anchor = MicroButtons.Spellbook
+		-- HACK: Spellbook warning would always appear on reload.-
+		if not script:ShowSpellbook() then
 			frame:Hide()
 			-- This function isn't always called on level up, make sure to show it if needed.
 			script:RegisterEvent("PLAYER_LEVEL_CHANGED", function()
@@ -273,20 +271,20 @@ function script:ShouldReAnchorPointer(frame)
 			return
 		end
 	elseif text == format(_G.NPEV2_SHOW_BAGS, _G.TutorialHelper:GetBagBinding()) then
-		anchor = buttons.Bags
+		anchor = MicroButtons.Bags
 	elseif text == _G.NPEV2_LFD_INTRO then
-		anchor = buttons.LFG
+		anchor = MicroButtons.LFG
 		-- Make sure warning is only visible while you're on Exile Reach
 		if WorldMapFrame:GetMapID() ~= 1409 then
 			frame:Hide()
 			return
 		end
 	elseif text == _G.NPEV2_MOUNT_TUTORIAL_P2_NEW_MOUNT_ADDED then
-		anchor = buttons.Pets
+		anchor = MicroButtons.Collections
 	else
 		return
 	end
-	frame.currentTarget = anchor
+	frame.currentTarget = _G[anchor]
 	frame:ClearAllPoints()
 	frame:SetPoint("TOP", anchor, "BOTTOM", 0, -100)
 	script:ShowPointerArrow(frame, "UP")
@@ -294,9 +292,11 @@ end
 
 -- Make sure the New Player Experience frame is pointing to the right button.
 function script:SetPointerFrame()
-	script:SecureHook(_G.NPE_TutorialPointerFrame, "Show", function(table, content, direction, anchorFrame, x, y, opposite)
-		local newPointer = anchorFrame.currentNPEPointer
-		script:ShouldReAnchorPointer(newPointer)
+	script:SecureHook(_G.TutorialPointerFrame, "Show", function(table, content, direction, anchorFrame, x, y, opposite)
+		if Micromenu and Micromenu:IsEnabled() then
+			local newPointer = anchorFrame.currentNPEPointer
+			script:ShouldReAnchorPointer(newPointer)
+		end
 	end)
 	-- If the frames already exist, hook will not be called so we have to check manually.
 	for i = 1, 3 do
@@ -323,7 +323,8 @@ end
 function script:ADDON_LOADED(event, addon)
 	if addon == "Blizzard_NewPlayerExperience" then
 		if IsAddOnLoaded("Bartender4") then self.BT4 = true end
-		if isUsingLUIBars() or self.BT4 then
+		if self.BT4 then
+			script:RawHook(_G.TutorialHelper, "FormatString", "FormatString", true)
 			script:RawHook(_G.TutorialHelper, "GetActionButtonBySpellID", "GetActionButtonBySpellID", true)
 			script:RawHook(_G.TutorialHelper, "FindEmptyButton", "FindEmptyButton", true)
 		end

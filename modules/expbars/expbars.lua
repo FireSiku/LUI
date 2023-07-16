@@ -293,26 +293,32 @@ function module:UpdateMainBarVisibility()
 
 	-- Adjust size and visibility
 	if barRight then
+		--- HACK: This is a hack to provide default values in the rare cases where the UI makes some calls to the EXP bar before everything is loaded.
+		local width = db.Width or 475
+		local spacing = db.Spacing or 10
+		local textX = db.TextX or -2
+		local textY = db.TextY or 0
+
 		barRight:ClearAllPoints()
 		barRight:SetReverseFill(false)
 		barRight:SetPoint("RIGHT", module.anchor, "RIGHT")
 		barRight.text:ClearAllPoints()
-		barRight.text:SetPoint("RIGHT", barRight, "RIGHT", db.TextX, db.TextY)
+		barRight.text:SetPoint("RIGHT", barRight, "RIGHT", textX, textY)
 		barRight:Show()
 		barRight:UpdateBar()
 		if barLeft then
-			local halfWidth = (db.Width - db.Spacing) * 0.5
+			local halfWidth = (width - spacing) * 0.5
 			barRight:SetWidth(halfWidth)
 			barLeft:SetWidth(halfWidth)
 			barLeft:ClearAllPoints()
 			barLeft:SetReverseFill(true)
 			barLeft:SetPoint("LEFT", module.anchor, "LEFT")
 			barLeft.text:ClearAllPoints()
-			barLeft.text:SetPoint("LEFT", barLeft, "LEFT", -db.TextX, db.TextY)
+			barLeft.text:SetPoint("LEFT", barLeft, "LEFT", -textX, textY)
 			barLeft:Show()
 			barLeft:UpdateBar()
 		else
-			barRight:SetWidth(db.Width)
+			barRight:SetWidth(width)
 		end
 	end
 end
