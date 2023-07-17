@@ -134,6 +134,7 @@ modules\mirrorbar\mirrorbar.lua
 ### UIElements ###
 modules\uielements\uielements_init.lua
 modules\uielements\uielements.lua
+modules\uielements\uialerts.lua
 modules\uielements\colourpicker.lua
 modules\uielements\faq.lua
 

@@ -253,6 +253,7 @@ local MicroButtons = {
 	LFD = "LUIMicromenu_LFG",
 	EJ = "LUIMicromenu_EJ",
 	Collections = "LUIMicromenu_Collections",
+	Bags = "LUIMicromenu_Bags",
 }
 
 function script:ShouldReAnchorPointer(frame)

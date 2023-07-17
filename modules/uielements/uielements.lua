@@ -56,11 +56,7 @@ function module:SetUIElements()
 	module:SetPosition('DurabilityFrame')
 	module:SetPosition('PlayerPowerBarAlt')
 	module:SetPosition('QueueStatusButton')
-	module:SecureHook(_G.HelpTipTemplateMixin, "Init", "AlertHandler")
-	-- It is possible for it to execute before we hooked it, run AlertHandler for active ones as well.
-	for alert in _G.HelpTip.framePool:EnumerateActive() do
-		module:AlertHandler(alert, alert:GetParent(), alert.info, alert.relativeRegion)
-	end
+	module:SetAlerts()
 end
 
 function module:SetHiddenFrames()
@@ -81,31 +77,6 @@ function module:SetHiddenFrames()
 			LUI:Kill(_G.OrderHallCommandBar)
 		end)
 		orderUI = true
-	end
-end
-
---- @TODO: Develop this more into its own API that allows all modules to register or reorganize frames. 
-function module:AlertHandler(frame, parent, info, relativeRegion)
-	if relativeRegion == _G.QueueStatusButton then
-		frame:AnchorAndRotate(_G.HelpTip.Point.LeftEdgeCenter)
-	end
-	if Micromenu and Micromenu:IsEnabled() then
-		local micro_db = Micromenu.db.profile
-		for blizzardFrame, microFrame in pairs(BlizzMicroButtons) do
-			if relativeRegion == _G[blizzardFrame] then
-				frame.relativeRegion = _G[microFrame]
-				frame.info.targetPoint = _G.HelpTip.Point.BottomEdgeCenter
-				--frame:AnchorAndRotate(_G.HelpTip.Point.BottomEdgeCenter) -- Does not appear to work for MicroButtons? 
-			end
-		end
-	end
-end
-
-function module:DebugAlert()
-	-- It is possible for it to execute before we hooked it, run AlertHandler for active ones as well.
-	LUI:ModPrint("Listing all current alerts")
-	for alert in _G.HelpTip.framePool:EnumerateActive() do
-		LUI:Print(alert.relativeRegion.GetName and alert.relativeRegion:GetName() or alert.relativeRegion:GetDebugName())
 	end
 end
 
