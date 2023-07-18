@@ -1,8 +1,8 @@
 ## Interface: 100105
-## Version: 2305
+## Version: 2307
 ## Title: LUIOptions
 ## Author: Siku, Nitsah
-## Notes: Options Menu for LUI v2210 and above
+## Notes: Options Menu for LUI v2305 and above
 ## LoadOnDemand: 1
 ## X-Website: https://www.wowlui.com
 
