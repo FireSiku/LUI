@@ -20,24 +20,24 @@ Opt.options.args.ExpBars = Opt:Group("Experience Bars", nil, nil, "tab",  Opt.Is
 Opt.options.args.ExpBars.handler = module
 
 local ExpBars = {
-    Header = Opt:Header(L["ExpBar_Name"], 1),
-    ShowAzerite = Opt:Toggle("Show Azerite XP", nil, 2),
+    Header = Opt:Header({name = L["ExpBar_Name"]}),
+    ShowAzerite = Opt:Toggle({name = "Show Azerite XP"}),
 			
-	-- PositionHeader = Opt:Header(L["Position"], 10),
-	-- Position = Opt:Position(L["ExpBar_Name"], 11, true, "Refresh"),
-	-- Point = Opt:Select(L["Anchor"], nil, 12, LUI.Points, nil, "Refresh"),
-	-- RelativePoint = Opt:Select(L["Relative Anchor"], nil, 13, LUI.Points, nil, "Refresh"),
-	--Spacing = Opt:Slider(L["Spacing"], L["ExpBar_Options_Spacing_Desc"], 14, {0, 20, 1}, false, "Refresh"),
-    TextPositionHeader = Opt:Header(L["ExpBar_Options_TextPosition"], 20),
-	ShowText = Opt:Toggle(L["ExpBar_Options_ShowText"] , nil, 21),
-	Precision = Opt:Slider(L["Precision"], nil, 22, {min = 0, max = 3, softMax = 2, step = 1}),
+	-- PositionHeader = Opt:Header({name = L["Position"]}),
+	-- Position = Opt:Position({name = L["ExpBar_Name"], true, "Refresh"}),
+	-- Point = Opt:Select({name = L["Anchor"], LUI.Points, nil, "Refresh"}),
+	-- RelativePoint = Opt:Select({name = L["Relative Anchor"], LUI.Points, nil, "Refresh"}),
+	--Spacing = Opt:Slider({name = L["Spacing"], desc = L["ExpBar_Options_Spacing_Desc"], {0, 20, 1}, false, "Refresh"}),
+    TextPositionHeader = Opt:Header({name = L["ExpBar_Options_TextPosition"]}),
+	ShowText = Opt:Toggle({name = L["ExpBar_Options_ShowText"]}),
+	Precision = Opt:Slider({name = L["Precision"], min = 0, max = 3, softMax = 2, step = 1}),
     Spacer = Opt:Spacer(24, "full"),
-    --Text = Opt:Position(L["ExpBar_Options_Text"], 24, nil, "Refresh"),
-    AppHeader = Opt:Header("Appearances", 30),
-    Experience = Opt:Color(L["ExpBar_Mode_Experience"], nil, 31, false),
-    Reputation = Opt:Color(L["ExpBar_Mode_Reputation"], nil, 32, false),
-    Azerite = Opt:Color(L["ExpBar_Mode_Artifact"], nil, 33, false),
-    Honor = Opt:Color(L["ExpBar_Mode_Honor"], nil, 34, false),
+    --Text = Opt:Position({name = L["ExpBar_Options_Text"], nil, "Refresh"}),
+    AppHeader = Opt:Header({name = "Appearances"}),
+    Experience = Opt:Color({name = L["ExpBar_Mode_Experience"], hasAlpha = false}),
+    Reputation = Opt:Color({name = L["ExpBar_Mode_Reputation"], hasAlpha = false}),
+    Azerite = Opt:Color({name = L["ExpBar_Mode_Artifact"], hasAlpha = false}),
+    Honor = Opt:Color({name = L["ExpBar_Mode_Honor"], hasAlpha = false}),
 }
 
 Opt.options.args.ExpBars.args = ExpBars

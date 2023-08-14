@@ -57,37 +57,35 @@ local function GetVersionText()
     end
 end
 
-General.Welcome = Opt:Group(L["Core_Welcome"], nil, 1)
-General.Welcome.args = {
-    IntroImage = Opt:Desc(" ", 1, nil, [=[Interface\AddOns\LUI\media\textures\logo2.tga]=], {0, 1, 0, 1}, 512, 128, "full"),
-    Spacer1 = Opt:Spacer(2),
-    IntroText = Opt:Desc(L["For more info, visit Discord"].."\n\n\n", 3, "medium"),
-    --IntroText = Opt:Desc(L["Core_IntroText"], 3),
-    VerText = Opt:Desc(GetVersionText(), 4, "large"),
-    Header = Opt:Header("General Settings", 10),
-    OldOptionsDesc = Opt:Desc("\n\nDue to some time contraints, the new Options panel does not have all the new modules yet.\nYou can access what remains of the old options here:", 11, "medium"),
-    OldOptionsButton = Opt:Execute("Old LUI Options", nil, 12, function() LUI:OpenOptions(true) end),
-    Master = Opt:FontMenu("Master Font", nil, 11, true, true),
-}
+General.Welcome = Opt:Group({name = L["Core_Welcome"], args = {
+    IntroImage = Opt:Desc({name = " ", image = [=[Interface\AddOns\LUI\media\textures\logo2.tga]=], imageCoords = {0, 0, 1}, imageWidth = 512, imageHeight = 128, width = "full"}),
+    Spacer1 = Opt:Spacer({}),
+    IntroText = Opt:Desc({name = L["For more info, visit Discord"].."\n\n\n", fontSize = "medium"}),
+    --IntroText = Opt:Desc({name = L["Core_IntroText"]}),
+    VerText = Opt:Desc({name = GetVersionText(), fontSize = "large"}),
+    Header = Opt:Header({name = "General Settings"}),
+    OldOptionsDesc = Opt:Desc({name = "\n\nDue to some time contraints, the new Options panel does not have all the new modules yet.\nYou can access what remains of the old options here:", fontSize = "medium"}),
+    OldOptionsButton = Opt:Execute({name = "Old LUI Options", func = function() LUI:OpenOptions(true) end}),
+    Master = Opt:FontMenu({name = "Master Font", disabled = true, hidden = true}),
+}})
 
 local HIGH_PATRONS = "|cffa335eeQoke, StephenFOlson, Fearon Whitcomb, Skinny Man Music, David Cook, Dalton Matheson, Curtis Motzner, Christoph Fischer, Hansth, Michael Swancott, Steph Lee, rb4havoc, Max McBurn, Michelle Larrew, Grant Sundstrom, Cory Linnerooth, Eagle Billie, Angryrice, Ian Huisman, Greta Kratz, Sacrosact Stars, Leisulong, Christopher Rhea"
 local OTHER_PATRONS = "|cff1eff00Adam Moody, Andrew DePaola, Anthony Béchard, apexius, Azona, BIRDki, Brandon Burr, Chris Manring, Confatalis, Darkion43, Dochouse, gnuheike, Joseph Arnett, Kris Springer, Lyra, Lysa Richey, Mathias Reffeldt, Melvin de Grauw, Michael Rowan, Michael Walker, Mike, McCabe, Mike Williams, Nathan Adams, Nick Giovanni, necr0, Oscar Olofsson, Philipp Rissle, Ragnarok, Richard Scholten, Romain Gorgibus, Saturos Zed, Scott Crawford, Sean O'Shea, Shawn Pitts, Slawomir Baran, Spencer Sommers, Srg Kuja, Thomas A Hutto, Tobias Lidén, Xenthe, Ziri"
 
-General.Thanks = Opt:Group("Thanks", nil, 2)
-General.Thanks.args = {
-    Empty = Opt:Spacer(2),
-    IntroText = Opt:Desc( "The development and sustained maintenance of LUI wasn't the work of a single person, so let's take the time to list the people that deserves thanks for their support".."\n\n", 3, "medium"),
-    Staff = Opt:Desc("Current LUI Devs: |cffe6cc80Siku, Nitsah|r\n", 4, "large"),
-    OldStaff = Opt:Desc("Former V3 Devs: |cffe6cc80Loui, Sinaris, hix, Zista, Shendrela, Thaly, Darkruler, Yunai, Mule|r\n\n", 5, "medium"),
-    Donors = Opt:Desc("I would also like to thank everyone that donated to the project, you are all wonderful people. A special mention goes to current and former Patrons:\n", 6, "medium"),
-    HighPatrons = Opt:Desc(HIGH_PATRONS.."\n", 7, "large"),
-    OtherPatrons = Opt:Desc(OTHER_PATRONS.."\n", 8, "medium"),
-    Discord = Opt:Desc("\n& Everyone who contributes to the discord server or helps other people when the devs are not available.", 9, "large")
-}
+General.Thanks = Opt:Group({name = "Thanks", args = {
+    Empty = Opt:Spacer({}),
+    IntroText = Opt:Desc({name =  "The development and sustained maintenance of LUI wasn't the work of a single person, so let's take the time to list the people that deserves thanks for their support".."\n\n", fontSize = "medium"}),
+    Staff = Opt:Desc({name = "Current LUI Devs: |cffe6cc80Siku, Nitsah|r\n", fontSize = "large"}),
+    OldStaff = Opt:Desc({name = "Former V3 Devs: |cffe6cc80Loui, Sinaris, hix, Zista, Shendrela, Thaly, Darkruler, Yunai, Mule|r\n\n", fontSize = "medium"}),
+    Donors = Opt:Desc({name = "I would also like to thank everyone that donated to the project, you are all wonderful people. A special mention goes to current and former Patrons:\n", fontSize = "medium"}),
+    HighPatrons = Opt:Desc({name = HIGH_PATRONS.."\n", fontSize = "large"}),
+    OtherPatrons = Opt:Desc({name = OTHER_PATRONS.."\n", fontSize = "medium"}),
+    Discord = Opt:Desc({name = "\n& Everyone who contributes to the discord server or helps other people when the devs are not available.", fontSize = "large"})
+}})
 
 -- General.Dev = Opt:Group("Development", nil, 3, nil, nil, true)
 -- General.Dev.args = {
---     Desc = Opt:Desc("This tab shouldn't be visible, but if you do see it, pay this no mind.", 1),
+--     Desc = Opt:Desc({name = "This tab shouldn't be visible, but if you do see it, desc = pay this no mind."}),
 --     Editbox = Opt:Input("Test", nil, 2, 20, "full", nil, nil, nil, GetEditBoxText)
 -- }
 

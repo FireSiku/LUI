@@ -13,12 +13,13 @@ if not module or not module.registered then return end
 -- ####################################################################################################################
 
 local function InfoTextGroup(name, order)
-    local group = Opt:Group(name, nil, order, nil, nil, nil, Opt.GetSet(db[name]))
-    group.args.Header = Opt:Header(name, 1)
-    group.args.Enable = Opt:Toggle("Enable", nil, 2, nil, "full")
-	group.args.X = Opt:Input("X Value", nil, 3, nil, "half")
-	group.args.Y = Opt:Input("Y Value", nil, 4, nil, "half")
-	group.args.Point = Opt:Select(L["Anchor Point"],  "Set which part of the screen the "..name.." infotext will be anchored to.", 5, LUI.Corners) --input for now
+    local group = Opt:Group({name = name, db = db[name], args = {
+		Header = Opt:Header({name = name}),
+		Enable = Opt:Toggle({name = "Enable", width = "full"}),
+		X = Opt:Input({name = "X Value", width = "half"}),
+		Y = Opt:Input({name = "Y Value", width = "half"}),
+		Point = Opt:Select({name = L["Anchor Point"], desc = "Set which part of the screen the "..name.." infotext will be anchored to.", values = LUI.Corners}), --input for now
+	}})
 	return group
 end
 
@@ -30,15 +31,15 @@ Opt.options.args.Infotext = Opt:Group("Infotexts", nil, nil, "tab", Opt.IsModDis
 Opt.options.args.Infotext.handler = module
 
 local Infotext = {
-	Header = Opt:Header("Infotext", 1),
-	Settings = Opt:Group("Individual Settings", nil, 2),
-	General = Opt:Group("Global Settings", nil, 3),
+	Header = Opt:Header({name = "Infotext"}),
+	Settings = Opt:Group({name = "Individual Settings"}),
+	General = Opt:Group({name = "Global Settings"}),
 }
 
 Infotext.General.args = {
-	Title = Opt:Color("Title Color", nil, 2, false),
-	Hint = Opt:Color("Hint Color", nil, 3, false),
-	--Infotext = Opt:FontMenu("Infotext Font", nil, 4),
+	Title = Opt:Color({name = "Title Color", hasAlpha = false}),
+	Hint = Opt:Color({name = "Hint Color", hasAlpha = false}),
+	--Infotext = Opt:FontMenu({name = "Infotext Font"}),
 }
 
 local count = 10
@@ -85,11 +86,12 @@ local function ResetGold()
 end
 
 local GoldInfotext = Infotext.Settings.args.Gold.args
-GoldInfotext.ShowConnected = Opt:Toggle("Include Connected Realms in Server Total when possible", "Realms that are connected to your character's realm will show as a single entry in the realm list", 6, nil, "full")
-GoldInfotext.GoldPlayerReset = Opt:Select("Reset Player", "Choose the player you want to clear Gold data for.", 7, goldPlayerArray, nil, nil, nil,
-											function() return goldPlayerArray[goldPlayerReset] end, -- Get
-											function(info, value) goldPlayerReset = value end) -- Set
-GoldInfotext.GoldResetButton = Opt:Execute("Reset", "Clear Gold data for selected character.", 8, ResetGold)
+GoldInfotext.ShowConnected = Opt:Toggle({name = "Include Connected Realms in Server Total when possible", width = "full",
+	desc = "Realms that are connected to your character's realm will show as a single entry in the realm list"})
+GoldInfotext.GoldPlayerReset = Opt:Select({name = "Reset Player", desc = "Choose the player you want to clear Gold data for.", values = goldPlayerArray,
+											get = function() return goldPlayerArray[goldPlayerReset] end, -- Get
+											set = function(info, value) goldPlayerReset = value end}) -- Set
+GoldInfotext.GoldResetButton = Opt:Execute({name = "Reset", desc = "Clear Gold data for selected character.", func = ResetGold})
 
 -- ####################################################################################################################
 -- ##### Clock Infotext ###############################################################################################
@@ -121,8 +123,8 @@ GoldInfotext.GoldResetButton = Opt:Execute("Reset", "Clear Gold data for selecte
 	local localMeta = { get = LocalTime, set = LocalTime }
 
 	local options = {
-		setClock24h = element:NewToggle(TIMEMANAGER_24HOURMODE, nil, 1, militaryMeta, "normal"),
-		setClockLocal = element:NewToggle(TIMEMANAGER_LOCALTIME, nil, 2, localMeta, "normal"),
+		setClock24h = element:NewToggle({name = TIMEMANAGER_24HOURMODE, militaryMeta, "normal"}),
+		setClockLocal = element:NewToggle({name = TIMEMANAGER_LOCALTIME, localMeta, "normal"}),
 		instanceDifficulty = element:NewToggle(L["InfoClock_InstanceDifficulty_Name"],
 		                                       L["InfoClock_InstanceDifficulty_Desc"], 3, "UpdateClock"),
 		showSavedRaids = element:NewToggle(L["InfoClock_ShowSavedRaids_Name"],

@@ -57,20 +57,19 @@ local function GenerateFramePositionGroup(frame, name, order)
 	local dbFrame = db[frame]
     if not dbFrame then return end    -- If that unit does not have options for that bar, nil it
 
-    local group = Opt:Group(name, nil, order, nil, nil, nil, Opt.GetSet(dbFrame))
-    group.args = {
-		Desc = Opt:Desc(framePositionDescs[frame], 1),
-        ManagePosition = Opt:Toggle("Manage This Frame's Position", nil, 2, nil, "full"),
-        X = Opt:Input("X Value", nil, 3),
-        Y = Opt:Input("Y Value", nil, 4),
-    }
+    local group = Opt:Group({name = name, db = dbFrame, args = {
+		Desc = Opt:Desc({name = framePositionDescs[frame]}),
+        ManagePosition = Opt:Toggle({name = "Manage This Frame's Position", width = "full"}),
+        X = Opt:Input({name = "X Value"}),
+        Y = Opt:Input({name = "Y Value"}),
+    }})
 
     return group
 end
 
 local UIElements = {
-	Header = Opt:Header("UI Elements", 1),
-	Elements = Opt:Group("Frame Positions", nil, 2, "tree")
+	Header = Opt:Header({name = "UI Elements"}),
+	Elements = Opt:Group({name = "Frame Positions", childGroups = "tree"})
 }
 
 for i, name in ipairs(framePositionOrder) do

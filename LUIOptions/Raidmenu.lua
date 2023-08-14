@@ -28,22 +28,22 @@ Opt.options.args.RaidMenu.handler = module
 
 local RaidMenu = {
     -- General
-    Header = Opt:Header(L["Raid Menu"], 1),
+    Header = Opt:Header({name = L["Raid Menu"]}),
 	
-	Compact = Opt:Toggle(L["Compact Raid Menu"], L["Use compact version of the Raid Menu"], 2),
+	Compact = Opt:Toggle({name = L["Compact Raid Menu"], desc = L["Use compact version of the Raid Menu"]}),
 
-	Spacing = Opt:Slider(L["Spacing"], L["MicroOptions_Spacing_Desc"], 3, { min = 0, max = 10, step = 1}),
-	Scale = Opt:Slider(L["Scale"], L["ize of the Raid Menu"], 4, Opt.ScaleValues),
-	Spacer1 = Opt:Spacer(5),
-	OverlapPrevention = Opt:Select(L["Micromenu Overlap Prevention"], L["\n\nAuto-Hide: The MicroMenu or Raid Menu should hide when the other is opened\n\nOffset: The Raid Menu should offset itself when the MicroMenu is open"],
-								   11, OverlapPreventionMethods),
-	X_Offset = Opt:Slider(L["X Offset"], L["How far to horizontally offset when the MicroMenu is open"], 12, { min = -200, max = 200, step = 1}, nil, IsUsingAutoHide),
-	Offset = Opt:Slider(L["Y Offset"], L["How far to horizontally offset when the MicroMenu is open"], 13, { min = -200, max = 200, step = 1}, nil, IsUsingAutoHide),
-	Spacer2 = Opt:Spacer(15),
-	Opacity = Opt:Slider(L["Opacity"], L["How far to vertically offset when the MicroMenu is open"], 21, { min = 20, max = 100, step = 10}, nil, IsUsingAutoHide),
-	AutoHide = Opt:Toggle(L["Auto-Hide Raid Menu"], L["Wether or not the Raid Menu should hide itself after clicking on a function"], 22, nil, "full"),
-	ShowTooltips = Opt:Toggle(L["Show Tooltips"], L["Wether or not to show tooltips for the Raid Menu tools"], 23, nil, "full"),
-	ToggleRaidIcon = Opt:Toggle(L["Toggle Raid Icon"], L["Wether of not Raid Target Icons can be removed by applying the icon the target already has"], 24, nil, "full"),
+	Spacing = Opt:Slider({name = L["Spacing"], desc = L["MicroOptions_Spacing_Desc"], min = 0, max = 10, step = 1}),
+	Scale = Opt:Slider({name = L["Scale"], desc = L["ize of the Raid Menu"], values = Opt.ScaleValues}),
+	Spacer1 = Opt:Spacer({}),
+	OverlapPrevention = Opt:Select({name = L["Micromenu Overlap Prevention"], values = OverlapPreventionMethods,
+		desc = L["\n\nAuto-Hide: The MicroMenu or Raid Menu should hide when the other is opened\n\nOffset: The Raid Menu should offset itself when the MicroMenu is open"]}),
+	X_Offset = Opt:Slider({name = L["X Offset"], desc = L["How far to horizontally offset when the MicroMenu is open"], min = -200, max = 200, step = 1, disabled = IsUsingAutoHide}),
+	Offset = Opt:Slider({name = L["Y Offset"], desc = L["How far to horizontally offset when the MicroMenu is open"], min = -200, max = 200, step = 1, disabled = IsUsingAutoHide}),
+	Spacer2 = Opt:Spacer({}),
+	Opacity = Opt:Slider({name = L["Opacity"], desc = L["How far to vertically offset when the MicroMenu is open"], min = 20, max = 100, step = 10, disabled = IsUsingAutoHide}),
+	AutoHide = Opt:Toggle({name = L["Auto-Hide Raid Menu"], desc = L["Wether or not the Raid Menu should hide itself after clicking on a function"], width = "full"}),
+	ShowTooltips = Opt:Toggle({name = L["Show Tooltips"], desc = L["Wether or not to show tooltips for the Raid Menu tools"], width = "full"}),
+	ToggleRaidIcon = Opt:Toggle({name = L["Toggle Raid Icon"], desc = L["Wether of not Raid Target Icons can be removed by applying the icon the target already has"], width = "full"}),
 }
 
 Opt.options.args.RaidMenu.args = RaidMenu

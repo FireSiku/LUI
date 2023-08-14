@@ -52,15 +52,15 @@ end
 local addonMod = LUI:GetModule("Addons", true)
 local function GenerateAddonSupportButtons()
 	local args = {}
-	args.Desc = Opt:Desc(L["CPanel_AddonDesc"], 1)
-	args.Break = Opt:Spacer(2, "full")
+	args.Desc = Opt:Desc({name = L["CPanel_AddonDesc"]})
+	args.Break = Opt:Spacer({width = "full"})
 	for name, mod in addonMod:IterateModules() do
-		args[name] = Opt:Execute(format(L["CPanel_AddonReset"], name), nil, nil,
-			function()
+		args[name] = Opt:Execute({name = format(L["CPanel_AddonReset"], name),
+			func = function()
 				--addonMod.db.Installed[name] = nil
 				addonMod:OnEnable()
 			end
-		)
+		})
 	end
 	return args
 end
@@ -72,12 +72,11 @@ end
 Opt.options.args.CPanel = Opt:Group("Control Panel", nil, 3, "tab")
 Opt.options.args.CPanel.handler = LUI
 local CPanel = {
-	Modules = Opt:Group(L["CPanel_Modules"], nil, 1),
-	Infotext = Opt:Group(L["CPanel_Infotext"], nil, 2, nil, function() return infotext and infotext.registered end),
-	Addons = Opt:Group(L["CPanel_Addons"], nil, 3, nil, function() return addonMod and addonMod.registered end),
+	Modules = Opt:Group({name = L["CPanel_Modules"], args = GenerateModuleButtons()}),
+	Infotext = Opt:Group({name = L["CPanel_Infotext"], disabled = function() return infotext and infotext.registered end}),
+	Addons = Opt:Group({name = L["CPanel_Addons"], disabled = function() return addonMod and addonMod.registered end}),
 }
 
-CPanel.Modules.args = GenerateModuleButtons()
 if infotext and infotext.registered then CPanel.Infotext.args = GenerateInfotextButtons() end
 if addonMod and addonMod.registered then CPanel.Addons.args = GenerateAddonSupportButtons() end
 

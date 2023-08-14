@@ -21,78 +21,59 @@ Opt.options.args.MirrorBar.handler = module
 
 local MirrorBar = {
     -- General
-    Header = Opt:Header(L["Mirror Bar"], 1),
-	General = Opt:Group("General Settings", nil, 2, nil, nil, nil, Opt.GetSet(db.General)),
-	Border = Opt:Group("Border", nil, 3, nil, nil, nil, Opt.GetSet(db.Border)),
-	Colors = Opt:Group("Bar Colors", nil, 4, nil, nil, nil, Opt.GetSet(db.Colors)),
-	NameText = Opt:Group("Name Text Settings", nil, 5, nil, nil, nil, Opt.GetSet(db.Text.Name)),
-	TimeText = Opt:Group("Time Text Settings", nil, 5, nil, nil, nil, Opt.GetSet(db.Text.Time)),
-}
-
-local GeneralTab = {
-	Width = Opt:InputNumber("Width", "Choose the Width for the Mirror Bar.", 1),
-	Height = Opt:InputNumber("Height", "Choose the Height for the Mirror Bar.", 2),
-	empty1 = Opt:Desc(" ", 3),
-	X = Opt:InputNumber("X Value", "Choose the X Value for the Mirror Bar.", 4),
-	Y = Opt:InputNumber("Y Value", "Choose the Y Value for the Mirror Bar.", 5),
-	empty2 = Opt:Desc(" ", 6),
-	Texture = Opt:MediaStatusbar("Texture", "Choose the Mirror Bar Texture.", 7),
-	TextureBG = Opt:MediaStatusbar("Background Texture", "Choose the MirrorBar Background Texture.", 8),
-	BarGap = Opt:Slider("Spacing", "Select the Spacing between mirror bars when shown.", 9, {min = 0, max = 40, step = 1}),
-	ArchyBar = Opt:Toggle("Archaeology Progress Bar", "Integrate the Archaeology Progress bar", 10, nil, "full"),
-}
-
-local ColorTab = {
-	FatigueBar = Opt:Color("Fatigue Bar", "Fatigue Bar", 1),
-	BreathBar = Opt:Color("Breath Bar", "Breath Bar", 2),
-	FeignBar = Opt:Color("Feign Death Bar", "Feign Death Bar", 3),
-	Bar = Opt:Color("Other Bar", "Other Mirror Bars", 4),
-	ArchyBar = Opt:Color("Archaeology Progress Bar", "Archaeology Progress Bar", 5),
-	Background = Opt:Color("Background", "MirrorBar Background", 6),
-}
-
-local NameText = {
-	Font = Opt:MediaFont("Font", "Choose the Font for the Mirror Name Text.", 2),
-	Color = Opt:Color("Name", "Mirror Name", 4, false, nil, nil, nil, Opt.ColorGetSet(db.Text.Name)),
-	Size = Opt:Slider("Size", "Choose the Font Size for the Mirror Name Text.", 3, {min = 6, max = 40, step = 1}),
-	empty2 = Opt:Desc(" ", 5),
-	OffsetX = Opt:InputNumber("X Value", "Choose the X Value for the Mirror Name Text.", 6),
-	OffsetY = Opt:InputNumber("Y Value", "Choose the Y Value for the Mirror Name Text.", 7),
-}
-
-local TimeText = {
-	Font = Opt:MediaFont("Font", "Choose the Font for the Mirror Time Text.", 2),
-	Color = Opt:Color("Time", "Mirror Time", 4, false, nil, nil, nil, Opt.ColorGetSet(db.Text.Time)),
-	Size = Opt:Slider("Size", "Choose the Font Size for the Mirror Time Text.", 3, {min = 6, max = 40, step = 1}),
-	empty2 = Opt:Desc(" ", 5),
-	OffsetX = Opt:InputNumber("X Value", "Choose the X Value for the Mirror Time Text.", 6),
-	OffsetY = Opt:InputNumber("Y Value", "Choose the Y Value for the Mirror Time Text.", 7),
-}
-
-local BorderTab = {
-	Texture = Opt:MediaBorder("Border Texture", "Choose the Border Texture.", 1),
-	Color = Opt:Color("Border", "Border", 2, nil, nil, nil, Opt.ColorGetSet(db.Border)),
-	Thickness = Opt:InputNumber("Border Thickness", "Value for your Castbar Border Thickness.", 3),
-	empty2 = Opt:Desc(" ", 4),
-	Inset = Opt:InlineGroup("Insets", nil, 5, nil, nil, nil, Opt.GetSet(db.Border.Inset))
-}
-
-local BorderInsets = {
-	left = Opt:InputNumber("Left", "Value for the left Border Inset.", 1, nil, "half"),
-	right = Opt:InputNumber("Right", "Value for the right Border Inset.", 2, nil, "half"),
-	top = Opt:InputNumber("Top", "Value for the top Border Inset.", 3, nil, "half"),
-	bottom = Opt:InputNumber("Bottom", "Value for the bottom Border Inset.", 4, nil, "half"),
+    Header = Opt:Header({name = L["Mirror Bar"]}),
+	General = Opt:Group({name = "General Settings", db = db.General, args = {
+		Width = Opt:InputNumber({name = "Width", desc = "Choose the Width for the Mirror Bar."}),
+		Height = Opt:InputNumber({name = "Height", desc = "Choose the Height for the Mirror Bar."}),
+		empty1 = Opt:Spacer(),
+		X = Opt:InputNumber({name = "X Value", desc = "Choose the X Value for the Mirror Bar."}),
+		Y = Opt:InputNumber({name = "Y Value", desc = "Choose the Y Value for the Mirror Bar."}),
+		empty2 = Opt:Spacer(),
+		Texture = Opt:MediaStatusbar({name = "Texture", desc = "Choose the Mirror Bar Texture."}),
+		TextureBG = Opt:MediaStatusbar({name = "Background Texture", desc = "Choose the MirrorBar Background Texture."}),
+		BarGap = Opt:Slider({name = "Spacing", desc = "Select the Spacing between mirror bars when shown.", min = 0, max = 40, step = 1}),
+		ArchyBar = Opt:Toggle({name = "Archaeology Progress Bar", desc = "Integrate the Archaeology Progress bar", width = "full"}),
+	}}),
+	Border = Opt:Group({name = "Border", db = db.Border, args = {
+		Texture = Opt:MediaBorder({name = "Border Texture", desc = "Choose the Border Texture."}),
+		Color = Opt:Color({name = "Border", desc = "Border", hasAlpha = false, db = db.Border}),
+		Thickness = Opt:InputNumber({name = "Border Thickness", desc = "Value for your Castbar Border Thickness."}),
+		empty2 = Opt:Spacer(),
+		Inset = Opt:InlineGroup({name = "Insets", db = db.Border.Inset, args = {
+			left = Opt:InputNumber({name = "Left", desc = "Value for the left Border Inset.", width = "half"}),
+			right = Opt:InputNumber({name = "Right", desc = "Value for the right Border Inset.", width = "half"}),
+			top = Opt:InputNumber({name = "Top", desc = "Value for the top Border Inset.", width = "half"}),
+			bottom = Opt:InputNumber({name = "Bottom", desc = "Value for the bottom Border Inset.", width = "half"}),
+		}})
+	}}),
+	Colors = Opt:Group({name = "Bar Colors", db = db.Colors, args = {
+		FatigueBar = Opt:Color({name = "Fatigue Bar", desc = "Fatigue Bar"}),
+		BreathBar = Opt:Color({name = "Breath Bar", desc = "Breath Bar"}),
+		FeignBar = Opt:Color({name = "Feign Death Bar", desc = "Feign Death Bar"}),
+		Bar = Opt:Color({name = "Other Bar", desc = "Other Mirror Bars"}),
+		ArchyBar = Opt:Color({name = "Archaeology Progress Bar", desc = "Archaeology Progress Bar"}),
+		Background = Opt:Color({name = "Background", desc = "MirrorBar Background"}),
+	}}),
+	NameText = Opt:Group({name = "Name Text Settings", db = db.Text.Name, args = {
+		Font = Opt:MediaFont({name = "Font", desc = "Choose the Font for the Mirror Name Text."}),
+		Color = Opt:Color({name = "Name", desc = "Mirror Name", hasAlpha = false, db = db.Text.Name}),
+		Size = Opt:Slider({name = "Size", desc = "Choose the Font Size for the Mirror Name Text.", min = 6, max = 40, step = 1}),
+		empty2 = Opt:Spacer(),
+		OffsetX = Opt:InputNumber({name = "X Value", desc = "Choose the X Value for the Mirror Name Text."}),
+		OffsetY = Opt:InputNumber({name = "Y Value", desc = "Choose the Y Value for the Mirror Name Text."}),
+	}}),
+	TimeText = Opt:Group({name = "Time Text Settings", db = db.Text.Time, args = {
+		Font = Opt:MediaFont({name = "Font", desc = "Choose the Font for the Mirror Time Text."}),
+		Color = Opt:Color({name = "Time", desc = "Mirror Time", hasAlpha = false, db = db.Text.Time}),
+		Size = Opt:Slider({name = "Size", desc = "Choose the Font Size for the Mirror Time Text.", min = 6, max = 40, step = 1}),
+		empty2 = Opt:Spacer(),
+		OffsetX = Opt:InputNumber({name = "X Value", desc = "Choose the X Value for the Mirror Time Text."}),
+		OffsetY = Opt:InputNumber({name = "Y Value", desc = "Choose the Y Value for the Mirror Time Text."}),
+	}}),
 }
 
 Opt.options.args.MirrorBar.args = MirrorBar
 
---- Link the groups together.
-MirrorBar.General.args = GeneralTab
-MirrorBar.Colors.args = ColorTab
-MirrorBar.NameText.args = NameText
-MirrorBar.TimeText.args = TimeText
-MirrorBar.Border.args = BorderTab
-BorderTab.Inset.args = BorderInsets
 
 -- ####################################################################################################################
 -- ##### Old Options ###############################################################################################

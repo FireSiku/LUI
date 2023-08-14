@@ -6,14 +6,13 @@
 
 local optName, Opt = ...
 
-
 ---@class Opt: OptionMixin
 Opt = LibStub("AceAddon-3.0"):NewAddon(Opt, optName, "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0")
 local LSM = LibStub("LibSharedMedia-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
---local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI4")
+--local LUI = LibStub("AceAddon-3.0"):GetAddon("LUI")
 local L = LUI.L
 
 local OPTION_PANEL_WIDTH = 930
@@ -27,6 +26,14 @@ local RoundToSignificantDigits = _G.RoundToSignificantDigits
 
 ---@class OptionMixin
 local OptionMixin = {}
+
+-- Increase with each option call.
+local nextOrder = 1
+
+---@class LUIOption : AceConfig.OptionsTable
+---@field db? table @ The database table to use for this option's get/set functions.
+---@field onlyIf? boolean @ SHould be written as a condition. If false, the option will not be added to the table.
+local LUIOptionMeta = {}
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -85,6 +92,32 @@ function OptionMixin.IsNumber(info, num)
 	return true
 end
 
+--- Process data coming from Option API and turn it into a proper AceOption table with auto-incrementing order.
+---@param data LUIOption
+---@param optionType string @ AceConfigType
+---@return LUIOption
+local function AddShared(data, optionType)
+	-- No need to process data if it fails the conditional, clear it otherwise
+	if data.onlyIf == false then return end
+	data.onlyIf = nil
+
+	-- Handle generic AceOptions properties
+	data.type = optionType
+	if not data.order then data.order = nextOrder end
+
+	-- If db is provided, generate get/set functions accordingly
+	if data.db then
+		if data.type == "color" then
+			data.get, data.set = OptionMixin.ColorGetSet(data.db)
+		else
+			data.get, data.set = OptionMixin.GetSet(data.db)
+		end
+		data.db = nil
+	end
+	nextOrder = nextOrder + 1
+	return data
+end
+
 --- Force AceOptions to refresh the option panel.
 function OptionMixin:RefreshOptionsPanel()
 	ACR:NotifyChange(optName)
@@ -125,7 +158,7 @@ end
 --- Additionally, if handler is defined, will attempt to call RefreshColors if it exists.
 ---@param db AceDB-3.0
 ---@return function Get, function Set
-function Opt.ColorGetSet(db)
+function OptionMixin.ColorGetSet(db)
 	local get = function(info)
 		local c = db[info[#info]]
 		return c.r, c.g, c.b, c.a
@@ -162,7 +195,7 @@ end
 -- ##### Options: Helper Functions ####################################################################################
 -- ####################################################################################################################
 
----@param name string|function
+---@param data string|function
 ---@param desc? string|function
 ---@param order? number
 ---@param childGroups? string|"tree"|"tab"|"select"
@@ -171,11 +204,16 @@ end
 ---@param get? function
 ---@param set? function
 ---@return AceOptionGroup
-function OptionMixin:Group(name, desc, order, childGroups, disabled, hidden, get, set)
-	return { type = "group", childGroups = childGroups, name = name, desc = desc, order = order, disabled = disabled, hidden = hidden, get = get, set = set, args = {} }
+function OptionMixin:Group(data, desc, order, childGroups, disabled, hidden, get, set)
+	if type(data) == "table" then
+		AddShared(data, "group")
+		if not data.args then data.args = {} end
+		return data
+	end
+	return { type = "group", childGroups = childGroups, name = data, desc = desc, order = order, disabled = disabled, hidden = hidden, get = get, set = set, args = {} }
 end
 
----@param name string|function
+---@param data string|function
 ---@param desc? string|function
 ---@param order number
 ---@param childGroups? string|"tree"|"tab"|"select"
@@ -184,237 +222,156 @@ end
 ---@param get? function
 ---@param set? function
 ---@return AceOptionGroup
-function OptionMixin:InlineGroup(name, desc, order, childGroups, disabled, hidden, get, set)
-	return { type = "group", childGroups = childGroups, name = name, desc = desc, order = order, disabled = disabled, hidden = hidden, get = get, set = set, inline = true, args = {} }
-end
-
----@param name string|function
----@param order number
----@param hidden? boolean|function
----@return AceOptionHeader
-function OptionMixin:Header(name, order, hidden)
-	return { type = "header", name = name, order = order, hidden = hidden }
-end
-
----@param name string|function
----@param desc? string|function
----@param order number
----@param alpha? boolean
----@param width? string|"normal"|"half"|"double"|"full"
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param get? function
----@param set? function
----@return AceOptionColor
-function OptionMixin:Color(name, desc, order, alpha, width, disabled, hidden, get, set)
-	if not get then
-		get = defaultColorGet
-		set = defaultColorSet
+function OptionMixin:InlineGroup(data, desc, order, childGroups, disabled, hidden, get, set)
+	if type(data) == "table" then
+		AddShared(data, "group")
+		data.inline = true
+		if not data.args then data.args = {} end
+		return data
 	end
-	return { type = "color", name = name, desc = desc, order = order, hasAlpha = alpha, width = width, disabled = disabled, hidden = hidden, get = get, set = set }
+	return { type = "group", childGroups = childGroups, name = data, desc = desc, order = order, disabled = disabled, hidden = hidden, get = get, set = set, inline = true, args = {} }
 end
 
----@param order number
----@param width? string|"normal"|"half"|"double"|"full"
----@return AceOptionDesc
-function OptionMixin:Spacer(order, width)
-	return { name = "", type = "description", order = order, width = width }
+---@param data LUIOption
+function OptionMixin:Header(data)
+	data = AddShared(data, "header")
+	return data
 end
 
----@param name string|function
----@param order number
----@param fontSize? string|"small"|"medium"|"large"
----@param image? string|function
----@param imageCoords? table|function|methodname
----@param imageWidth? number
----@param imageHeight? number
----@param width? string|"normal"|"half"|"double"|"full"
----@param hidden? boolean|function
----@return AceOptionDesc
-function OptionMixin:Desc(name, order, fontSize, image, imageCoords, imageWidth, imageHeight, width, hidden)
-	return { type = "description", name = name, order = order, fontSize = fontSize, image = image, imageCoords = imageCoords, imageWidth = imageWidth, imageHeight = imageHeight, width = width, hidden = hidden }
-end
-
----@param name string|function
----@param desc? string|function
----@param order number
----@param tristate? boolean
----@param width? string|"normal"|"half"|"double"|"full"
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param get? function
----@param set? function
----@return AceOptionToggle
-function OptionMixin:Toggle(name, desc, order, tristate, width, disabled, hidden, get, set)
-	return { type = "toggle", name = name, desc = desc, order = order, tristate = tristate, width = width, disabled = disabled, hidden = hidden, get = get, set = set }
-end
-
----@param name string|function
----@param desc? string|function
----@param order number
----@param func function
----@param width? string|"normal"|"half"|"double"|"full"
----@param disabled? boolean|function
----@param hidden? boolean|function
----@return AceOptionExecute
-function OptionMixin:Execute(name, desc, order, func, width, disabled, hidden)
-	return { type = "execute", name = name, desc = desc, order = order, func = func, width = width, disabled = disabled, hidden = hidden }
-end
-
----@param name string|function
----@param desc? string|function
----@param order number
----@param multiline? boolean|number
----@param width? string|"normal"|"half"|"double"|"full"
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param validate? boolean
----@param get? function
----@param set? function
----@return AceOptionInput
-function OptionMixin:Input(name, desc, order, multiline, width, disabled, hidden, validate, get, set)
-	return { type = "input", name = name, desc = desc, order = order, multiline = multiline, width = width, disabled = disabled, hidden = hidden, validate = validate, get = get, set = set }
-end
-
----@param name string|function
----@param desc? string|function
----@param order number
----@param multiline? boolean|number
----@param width? string|"normal"|"half"|"double"|"full"
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param get? function
----@param set? function
----@return AceOptionInput
-function OptionMixin:InputNumber(name, desc, order, multiline, width, disabled, hidden, get, set)
-	return { type = "input", name = name, desc = desc, order = order, multiline = multiline, width = width, disabled = disabled, hidden = hidden, validate = Opt.IsNumber, get = get, set = set }
-end
-
----@param name string|function
----@param desc? string|function
----@param order number
----@param values table @ `{ smin, smax, min, max, step, bigStep, isPercent }`
----@param width? string|"normal"|"half"|"double"|"full"
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param get? function
----@param set? function
----@return AceOptionRange
-function OptionMixin:Slider(name, desc, order, values, width, disabled, hidden, get, set)
-	local t = { type = "range", name = name, desc = desc, order = order, width = width, disabled = disabled, hidden = hidden, get = get, set = set }
-	for key, value in pairs(values) do
-		t[key] = value
+---@param data LUIOption
+function OptionMixin:Color(data)
+	AddShared(data, "color")
+	if not data.get then
+		data.get = defaultColorGet
+		data.set = defaultColorSet
 	end
-
-	return t
+	return data
 end
 
----@param name string|function
----@param desc? string|function
----@param order number
----@param values table|function @ is a key-value table where Key is what will be saved and Value is what is being displayed to the user.
----@param width? string|"normal"|"half"|"double"|"full"-
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param get? function
----@param set? function
----@return AceOptionSelect
-function OptionMixin:Select(name, desc, order, values, width, disabled, hidden, get, set)
-	return { type = "select", name = name, desc = desc, order = order, values = values, width = width, disabled = disabled, hidden = hidden, get = get, set = set }
+---@param data LUIOption
+function OptionMixin:Spacer(data)
+	if not data then data = {} end
+	AddShared(data, "description")
+	data.name = ""
+	return data
 end
 
----@param name string|function
----@param desc? string|function
----@param order number
----@param values table|function|"[key]=value table"|"Key is passed to Set, Value is text displayed"
----@param width? string|"normal"|"half"|"double"|"full"
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param get? function
----@param set? function
----@return AceOptionMultiselect
-function OptionMixin:MultiSelect(name, desc, order, values, width, disabled, hidden, get, set)
-	return { type = "multiselect", name = name, desc = desc, order = order, values = values, width = width, disabled = disabled, hidden = hidden, get = get, set = set }
+---@param data LUIOption
+function OptionMixin:Desc(data)
+	AddShared(data, "description")
+	return data
 end
 
----@param name string|function
----@param desc? string|function
----@param order number
----@param width? string|"normal"|"half"|"double"|"full"
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param get? function
----@param set? function
----@return AceOptionSelect
-function OptionMixin:MediaBackground(name, desc, order, width, disabled, hidden, get, set)
-	return { type = "select", dialogControl = "LSM30_Background", name = name, desc = desc, order = order, width = width, disabled = disabled, hidden = hidden, get = get, set = set, values = function() return LSM:HashTable("background") end }
+---@param data LUIOption
+function OptionMixin:Toggle(data)
+	data = AddShared(data, "toggle")
+	return data
 end
 
----@param name string|function
----@param desc? string|function
----@param order number
----@param width? string|"normal"|"half"|"double"|"full"
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param get? function
----@param set? function
----@return AceOptionSelect
-function OptionMixin:MediaBorder(name, desc, order, width, disabled, hidden, get, set)
-	return { type = "select", dialogControl = "LSM30_Border", name = name, desc = desc, order = order, width = width, disabled = disabled, hidden = hidden, get = get, set = set, values = function() return LSM:HashTable("border") end }
+---@param data LUIOption
+function OptionMixin:Execute(data)
+	AddShared(data, "execute")
+	return data
 end
 
----@param name string|function
----@param desc? string|function
----@param order number
----@param width? string|"normal"|"half"|"double"|"full"
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param get? function
----@param set? function
----@return AceOptionSelect
-function OptionMixin:MediaStatusbar(name, desc, order, width, disabled, hidden, get, set)
-	return { type = "select", dialogControl = "LSM30_Statusbar", name = name, desc = desc, order = order, width = width, disabled = disabled, hidden = hidden, get = get, set = set, values = function() return LSM:HashTable("statusbar") end }
+---@param data LUIOption
+function OptionMixin:Input(data)
+	AddShared(data, "input")
+	return data
 end
 
----@param name string|function
----@param desc? string|function
----@param order number
----@param width? string|"normal"|"half"|"double"|"full"
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param get? function
----@param set? function
----@return AceOptionSelect
-function OptionMixin:MediaSound(name, desc, order, width, disabled, hidden, get, set)
-	return { type = "select", dialogControl = "LSM30_Sound", name = name, desc = desc, order = order, width = width, disabled = disabled, hidden = hidden, get = get, set = set, values = function() return LSM:HashTable("sound") end }
+---@param data LUIOption
+function OptionMixin:InputNumber(data)
+	AddShared(data, "input")
+	data.validate = self.IsNumber
+	return data
 end
 
----@param name string|function
----@param desc? string|function
----@param order number
----@param width? string|"normal"|"half"|"double"|"full"
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param get? function
----@param set? function
----@return AceOptionSelect
-function OptionMixin:MediaFont(name, desc, order, width, disabled, hidden, get, set)
-	return { type = "select", dialogControl = "LSM30_Font", name = name, desc = desc, order = order, width = width, disabled = disabled, hidden = hidden, get = get, set = set, values = function() return LSM:HashTable("font") end }
+---@param data LUIOption
+function OptionMixin:Slider(data)
+	AddShared(data, "range")
+	-- Range doesnt support the values field, but this let us easily do reusable slider settings.
+	if data.values then
+		for key, value in pairs(data.values) do
+			data[key] = value
+		end
+		data.values = nil
+	end
+	return data
+end
+
+---@param data LUIOption
+function OptionMixin:Select(data)
+	AddShared(data, "select")
+	return data
+end
+
+---@param data LUIOption
+function OptionMixin:MultiSelect(data)
+	AddShared(data, "multiselect")
+	return data
+end
+
+---@param data LUIOption
+function OptionMixin:MediaBackground(data)
+	AddShared(data, "select")
+	data.dialogControl = "LSM30_Background"
+	data.values = function() return LSM:HashTable("background") end
+	return data
+end
+
+---@param data LUIOption
+function OptionMixin:MediaBorder(data)
+	AddShared(data, "select")
+	data.dialogControl = "LSM30_Border"
+	data.values = function() return LSM:HashTable("border") end
+	return data
+end
+
+---@param data LUIOption
+function OptionMixin:MediaStatusbar(data)
+	AddShared(data, "select")
+	data.dialogControl = "LSM30_Statusbar"
+	data.values = function() return LSM:HashTable("statusbar") end
+	return data
+end
+
+---@param data LUIOption
+function OptionMixin:MediaSound(data)
+	AddShared(data, "select")
+	data.dialogControl = "LSM30_Sound"
+	data.values = function() return LSM:HashTable("sound") end
+	return data
+end
+
+---@param data LUIOption
+function OptionMixin:MediaFont(data)
+	AddShared(data, "select")
+	data.dialogControl = "LSM30_Font"
+	data.values = function() return LSM:HashTable("font") end
+	return data
 end
 
 --- Special Execute for the control panel
----@param name string
+---@param data string
 ---@param desc? string|function
 ---@param order number
 ---@param enableFunc function @ Function to determine whether the target is enabled or disabled
 ---@param func function @ Function to call when button is clicked
 ---@param hidden? boolean|function
----@return AceOptionExecute
-function OptionMixin:EnableButton(name, desc, order, enableFunc, func, hidden)
-	local nameFunc = function()
-		return format("%s: %s", name, (enableFunc() and L["API_BtnEnabled"] or L["API_BtnDisabled"]))
+---@return LUIOption
+function OptionMixin:EnableButton(data, desc, order, enableFunc, func, hidden)
+	if type(data) == "table" then
+		AddShared(data, "execute")
+		data.name = function()
+			return format("%s: %s", data.name, (data.enableFunc() and L["API_BtnEnabled"] or L["API_BtnDisabled"]))
+		end
+		return data
 	end
-	return self:Execute(nameFunc, desc, order, func, nil, nil, hidden)
+	local nameFunc = function()
+		return format("%s: %s", data, (enableFunc() and L["API_BtnEnabled"] or L["API_BtnDisabled"]))
+	end
+	return self:Execute({name = nameFunc, desc = desc, func = func, hidden = hidden})
 end
 
 -- ####################################################################################################################
@@ -444,25 +401,16 @@ end
 local sizeValues = {min = 4, max = 72, step = 1, softMin = 8, softMax = 36}
 
 --- Create an inline group containing font settings.
----@param name string
----@param desc? string|function
----@param order number
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param customFontLocation table @ table reference where the font settings (Size/Name/Flag) are being saved
----@return AceOptionGroup
-function OptionMixin:FontMenu(name, desc, order, disabled, hidden, customFontLocation)
-	local group = Opt:Group(name, desc, order, nil, disabled, hidden)
-	group.args.Size = Opt:Slider("Size", nil, 1, sizeValues, nil, disabled, hidden, FontMenuGetter, FontMenuSetter)
-	group.args.Name = Opt:MediaFont("Font", nil, 2, nil, disabled, hidden, FontMenuGetter, FontMenuSetter)
-	group.args.Flag = Opt:Select("Outline", nil, 3, LUI.FontFlags, nil, disabled, hidden, FontMenuGetter, FontMenuSetter)
-	group.inline = true
-	if customFontLocation then
-		group.args.Size.arg = customFontLocation
-		group.args.Name.arg = customFontLocation
-		group.args.Flag.arg = customFontLocation
-	end
-	return group
+---@param data LUIOption
+function OptionMixin:FontMenu(data)
+	AddShared(data, "group")
+	data.inline = true
+	data.args = {
+		Size = Opt:Slider({name = "Size", values = sizeValues, get = FontMenuGetter, set = FontMenuSetter, arg = data.customFontLocation}),
+		Name = Opt:MediaFont({name = "Font", get = FontMenuGetter, set = FontMenuSetter, arg = data.customFontLocation}),
+		Flag = Opt:Select({name = "Outline", values = LUI.FontFlags, get = FontMenuGetter, set = FontMenuSetter, arg = data.customFontLocation}),
+	}
+	return data
 end
 
 -- ####################################################################################################################
@@ -507,11 +455,10 @@ end
 ---@return AceOptionSelect
 function OptionMixin:ColorMenu(parent, color, desc, order, disabled)
 	-- TODO: Show Alpha Slider when using Theme/Class Colors.
-
 	local hiddenFunc = function(info)
 		local db = info.handler.db.profile.Colors
 		
-		local c = db[color]
+		local c = (type(color) == "string" and db[color] or color.db)
 		if info.type == "color" then
 			return c.t ~= "Individual"
 		elseif info.type == "range" then
@@ -519,9 +466,22 @@ function OptionMixin:ColorMenu(parent, color, desc, order, disabled)
 		end
 	end
 
+	if type(color) == "table" then
+		AddShared(color, "select")
+		local name = color.name
+		color.name = name.." Color"
+		color.values = LUI.ColorTypes
+		color.get, color.set = ColorMenuGetter, ColorMenuSetter
+		parent[name.."Picker"] = self:Color({name = "Color", desc = color.desc, disabled = color.disabled, hidden = hiddenFunc, get = ColorMenuGetter, set = ColorMenuSetter, hasAlpha = true})
+		parent[name.."Slider"] = self:Slider({name = "Opacity", desc = color.desc, disabled = color.disabled, hidden = hiddenFunc, get = ColorMenuGetter, set = ColorMenuSetter, values = self.PercentValues})
+		parent[name.."Break"] = self:Spacer({width = "full"})
+		ACR:NotifyChange(optName)
+		return color
+	end
+
 	local t = self:Select(color.." Color", desc, order, LUI.ColorTypes, nil, disabled, nil, ColorMenuGetter, ColorMenuSetter)
 	parent[color.."Picker"] = self:Color("Color", desc, order+0.1, true, nil, disabled, hiddenFunc, ColorMenuGetter, ColorMenuSetter)
-	parent[color.."Slider"] = self:Slider("Opacity", desc, order+0.1, Opt.PercentValues, nil, disabled, hiddenFunc, ColorMenuGetter, ColorMenuSetter)
+	parent[color.."Slider"] = self:Slider("Opacity", desc, order+0.1, self.PercentValues, nil, disabled, hiddenFunc, ColorMenuGetter, ColorMenuSetter)
 	parent[color.."Break"] = self:Spacer(order+0.2, "full")
 	ACR:NotifyChange(optName)
 	return t
@@ -572,6 +532,18 @@ Opt.options = options
 -- ####################################################################################################################
 -- ##### Framework Functions ##########################################################################################
 -- ####################################################################################################################
+
+--- Set up a module's options table.
+---@param name string @ Name of the module. Will display result of L["Module_"..name] in the options.
+---@param module LUIModule
+---@return LUIOption
+function Opt:CreateModuleOptions(name, module, hidden)
+    local options = self:Group({name = name, childGroups = "tab", disabled = Opt.IsModDisabled, hidden = hidden, db = module.db.profile})
+    Opt.options.args[name] = options -- Add it to the overall options table
+    options.handler = module
+    return options
+end
+
 
 local optionsLoaded = false
 function LUI:NewOpen(force, ...)

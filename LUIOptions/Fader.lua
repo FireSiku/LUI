@@ -23,27 +23,26 @@ local function ApplySettings()
 end
 
 function module:ImportFaderSettings(name, order, get, set)
-    local group = Opt:Group(name, nil, order, nil, nil, nil, get, set)
-    group.args = {
-		FadeInHeader = Opt:Header("Fade In", 11),
-		Casting = Opt:Toggle("While Casting", nil, 12),
-		InCombat = Opt:Toggle("While In Combat", nil, 13),
-		Health = Opt:Toggle("While Health Is Low", nil, 14),
-		Power = Opt:Toggle("While Power Is Low", nil, 15),
-		Targeting = Opt:Toggle("While Targeting", nil, 16),
+    local group = Opt:Group({name = name, get = get, db = set, args = {
+		FadeInHeader = Opt:Header({name = "Fade In"}),
+		Casting = Opt:Toggle({name = "While Casting"}),
+		InCombat = Opt:Toggle({name = "While In Combat"}),
+		Health = Opt:Toggle({name = "While Health Is Low"}),
+		Power = Opt:Toggle({name = "While Power Is Low"}),
+		Targeting = Opt:Toggle({name = "While Targeting"}),
 
-		Settings = Opt:Header("Settings", 21),
-		InAlpha = Opt:Slider("In Alpha", "Set the alpha of the frame while not faded.", 22, Opt.PercentValues),
-		OutAlpha = Opt:Slider("Out Alpha", "Set the alpha of the frame while faded.", 23, Opt.PercentValues),
-		OutTime = Opt:Slider("Fade Time", "Set the time it takes to fade out.", 24, Opt.PercentValues),
-		OutDelay = Opt:Slider("Fade Delay", "Set the delay time before the frame fades out.", 25, Opt.PercentValues),
-		HealthClip = Opt:Slider("Health Trigger", "Set the percent at which health is considered low.", 26, Opt.PercentValues),
-		PowerClip = Opt:Slider("Power Trigger", "Set the percent at which power is considered low.", 28, Opt.PercentValues),
+		Settings = Opt:Header({name = "Settings"}),
+		InAlpha = Opt:Slider({name = "In Alpha", desc = "Set the alpha of the frame while not faded.", values = Opt.PercentValues}),
+		OutAlpha = Opt:Slider({name = "Out Alpha", desc = "Set the alpha of the frame while faded.", values = Opt.PercentValues}),
+		OutTime = Opt:Slider({name = "Fade Time", desc = "Set the time it takes to fade out.", values = Opt.PercentValues}),
+		OutDelay = Opt:Slider({name = "Fade Delay", desc = "Set the delay time before the frame fades out.", values = Opt.PercentValues}),
+		HealthClip = Opt:Slider({name = "Health Trigger", desc = "Set the percent at which health is considered low.", values = Opt.PercentValues}),
+		PowerClip = Opt:Slider({name = "Power Trigger", desc = "Set the percent at which power is considered low.", values = Opt.PercentValues}),
 
-		Hover = Opt:Header("Mouse Hover", 31),
-		HoverEnable = Opt:Toggle("Fade On Mouse Hover", nil, 32),
-		HoverAlpha = Opt:Slider("Hover Alpha", "Set the alpha of the frame while the mouse is hovering over it.", 33, Opt.PercentValues),
-    }
+		Hover = Opt:Header({name = "Mouse Hover"}),
+		HoverEnable = Opt:Toggle({name = "Fade On Mouse Hover"}),
+		HoverAlpha = Opt:Slider({name = "Hover Alpha", desc = "Set the alpha of the frame while the mouse is hovering over it.", values = Opt.PercentValues}),
+    }})
 
     return group
 end
@@ -56,7 +55,7 @@ Opt.options.args.Fader = Opt:Group("Fader", nil, nil, "tab", Opt.IsModDisabled, 
 Opt.options.args.Fader.handler = module
 
 local Fader = module:ImportFaderSettings("Fader").args
-Fader.ModuleHeader = Opt:Header("Fader", 1)
-Fader.ForceGlobalSettings = Opt:Toggle("Force These Global Settings:", nil, 2, nil, "double", nil, nil, Opt.GetSet(db))
+Fader.ModuleHeader = Opt:Header({"Fader"})
+Fader.ForceGlobalSettings = Opt:Toggle({name = "Force These Global Settings:", width = "double", db = db})
 
 Opt.options.args.Fader.args = Fader

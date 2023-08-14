@@ -2,24 +2,23 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, Opt
-local optName, Opt = ...
-local L, module, db = Opt:GetLUIModule("ActionBars")
+---@class Opt
+local Opt = select(2, ...)
+
+---@class LUI.Bags
+local module = Opt.LUI:GetModule("Bags")
 if not module or not module.registered then return end
+local db = module.db.profile
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
 -- ####################################################################################################################
 
-
 -- ####################################################################################################################
 -- ##### Options Table ################################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.ActionBars = Opt:Group("Cooldown", nil, nil, "tab", true, nil, Opt.GetSet(db))
-Opt.options.args.ActionBars.handler = module
-local ActionBars = {
+local ActionBars = Opt:CreateModuleOptions("ActionBars", module, true)
+ActionBars.args =  {
 
 }
-
-Opt.options.args.ActionBars.args = ActionBars

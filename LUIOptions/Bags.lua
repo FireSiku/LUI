@@ -2,10 +2,13 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, Opt
-local optName, Opt = ...
-local L, module, db = Opt:GetLUIModule("Bags")
+---@class Opt
+local Opt = select(2, ...)
+
+---@class LUI.Bags
+local module = Opt.LUI:GetModule("Bags")
 if not module or not module.registered then return end
+local db = module.db.profile
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -16,53 +19,63 @@ if not module or not module.registered then return end
 -- ##### Options Table ################################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.Bags = Opt:Group("Bags", nil, nil, "tab", nil, nil, Opt.GetSet(db))
-Opt.options.args.Bags.handler = module
-local Bags = {
-	Header = Opt:Header(L["Bags_Name"], 1),
-	Settings = Opt:Group(L["General Settings"], nil, 2, nil, nil, true, Opt.GetSet(db)),
-	Backpack = Opt:Group(L["Backpack Options"], nil, 3, nil, nil, nil, Opt.GetSet(db.Bags)),
-	Bank = Opt:Group(L["Bank Options"], nil, 4, nil, nil, nil, Opt.GetSet(db.Bank)),
-	Reagents = Opt:Group(L["Reagents Options"], nil, 5, nil, nil, true, Opt.GetSet(db.Reagent)),
-	Textures = Opt:Group(L["Textures"], nil, 6, nil, nil, true, Opt.GetSet(db.Textures)),
-}
+local Bags = Opt:CreateModuleOptions("Bags", module)
 
 local function GenerateBagsOptions(kind)
 	local options = {
-		RowSize = Opt:Slider("Items Per Row", "Select how many items will be displayed per rows.", 1, { min = 1, max = 32, step = 1 }),
-		Spacer = Opt:Spacer(3),
-		Padding = Opt:Slider("Padding", "Distance between the frame's edge and the items.", 4, { min = 0, max = 32, step = 1 }),
-		Spacing = Opt:Slider("Spacing", "Distance between items.", 5, { min = 0, max = 32, step = 1 }),
-		Scale = Opt:Slider("Scale", "Overall size of the container frame", 6, { min = 0.5, max = 2, step = 0.1 }),
-		Spacer2 = Opt:Spacer(7),
-		Lock = Opt:Toggle("Lock Frame",  "Lock the frame in place", 8),
-		BagBar = Opt:Toggle("Show Bag Bar", "Show the Bags bar", 9),
-		BagNewline = Opt:Toggle("Newline After Bags", "Starts a new row for each bag.", 10),
-		Spacer3 = Opt:Spacer(11),
-		ItemQuality = Opt:Toggle("Show Item Quality", "Colors item borders by their quality", 11, nil, "full"),
-		ShowNew = Opt:Toggle("Show New Item Animation", "Highlights items marked as 'new'", 12, nil,  "full"),
-		ShowQuest = Opt:Toggle("Show Quest Items", "Highlights items that are part of a quest", 13, nil, "full"),
-		ShowOverlay = Opt:Toggle("Show Item Overlay", "Display the overlay used for various types of items like Cosmetics and Crafting Quality.", 14, nil,  "full"),
-		ItemLevel = Opt:Toggle("Show Item Level", "Add Item Levels indicators for equipment", 15, nil, "full"),
+		RowSize = Opt:Slider({name = "Items Per Row", desc = "Select how many items will be displayed per rows.", min = 1, max = 32, step = 1}),
+		Spacer = Opt:Spacer({}),
+		Padding = Opt:Slider({name = "Padding", desc = "Distance between the frame's edge and the items.", min = 0, max = 32, step = 1 }),
+		Spacing = Opt:Slider({name = "Spacing", desc = "Distance between items.", min = 0, max = 32, step = 1}),
+		Scale = Opt:Slider({name = "Scale", desc = "Overall size of the container frame", min = 0.5, max = 2, step = 0.1}),
+		Spacer2 = Opt:Spacer({}),
+		Lock = Opt:Toggle({name = "Lock Frame", desc = "Lock the frame in place"}),
+		BagBar = Opt:Toggle({name = "Show Bag Bar", desc = "Show the Bags bar"}),
+		BagNewline = Opt:Toggle({name = "Newline After Bags", desc = "Starts a new row for each bag."}),
+		Spacer3 = Opt:Spacer({}),
+		ItemQuality = Opt:Toggle({name = "Show Item Quality", desc = "Colors item borders by their quality", width = "full"}),
+		ShowNew = Opt:Toggle({name = "Show New Item Animation", desc = "Highlights items marked as 'new'", width = "full"}),
+		ShowQuest = Opt:Toggle({name = "Show Quest Items", desc = "Highlights items that are part of a quest", width = "full"}),
+		ShowOverlay = Opt:Toggle({name = "Show Item Overlay", desc = "Display the overlay used for various types of items like Cosmetics and Crafting Quality.", width = "full"}),
+		ItemLevel = Opt:Toggle({name = "Show Item Level", desc = "Add Item Levels indicators for equipment", width = "full"}),
 	}
 	return options
 end
 
 local Settings = {
-
 }
 
 local Textures = {
-
 }
 
-Opt.options.args.Bags.args = Bags
-Opt.options.args.Bags.args.Settings.args = Settings
-Opt.options.args.Bags.args.Backpack.args = GenerateBagsOptions("Backpack")
-Opt.options.args.Bags.args.Bank.args = GenerateBagsOptions("Bank")
-Opt.options.args.Bags.args.Reagents.args = GenerateBagsOptions("Reagents")
-Opt.options.args.Bags.args.Textures.args = Textures
+Bags.args = {
+	Header = Opt:Header({name = L["Bags_Name"]}),
+	Settings = Opt:Group({name = L["General Settings"], hidden = true, db = db, args = Settings}),
+	Backpack = Opt:Group({name = L["Backpack Options"], db = db.Bags, args = GenerateBagsOptions("Backpack")}),
+	Bank = Opt:Group({name = L["Bank Options"], db = db.Bank, args = GenerateBagsOptions("Bank")}),
+	Reagents = Opt:Group({name = L["Reagents Options"], hidden = true, db = db.Reagent, args = GenerateBagsOptions("Reagents")}),
+	Textures = Opt:Group({name = L["Textures"], hidden = true, db = db.Textures, args = Textures}),
+}
 
+--[[
+	local options = {
+		RowSize = Opt:Slider({name = "Items Per Row", desc = "Select how many items will be displayed per rows.", min = 1, max = 32, step = 1 }),
+		Spacer = Opt:Spacer(3),
+		Padding = Opt:Slider({name = "Padding", desc = "Distance between the frame's edge and the items.", { min = 0, max = 32, step = 1 }}),
+		Spacing = Opt:Slider({name = "Spacing", desc = "Distance between items.", { min = 0, max = 32, step = 1 }}),
+		Scale = Opt:Slider({name = "Scale", desc = "Overall size of the container frame", { min = 0.5, max = 2, step = 0.1 }}),
+		Spacer2 = Opt:Spacer(7),
+		Lock = Opt:Toggle("Lock Frame",  "Lock the frame in place", 8),
+		BagBar = Opt:Toggle({name = "Show Bag Bar", desc = "Show the Bags bar"}),
+		BagNewline = Opt:Toggle({name = "Newline After Bags", desc = "Starts a new row for each bag."}),
+		Spacer3 = Opt:Spacer(11),
+		ItemQuality = Opt:Toggle({name = "Show Item Quality", desc = "Colors item borders by their quality", width = "full"}),
+		ShowNew = Opt:Toggle({name = "Show New Item Animation", desc = "Highlights items marked as 'new'", width = "full"}),
+		ShowQuest = Opt:Toggle({name = "Show Quest Items", desc = "Highlights items that are part of a quest", width = "full"}),
+		ShowOverlay = Opt:Toggle({name = "Show Item Overlay", desc = "Display the overlay used for various types of items like Cosmetics and Crafting Quality.", width = "full"}),
+		ItemLevel = Opt:Toggle({name = "Show Item Level", desc = "Add Item Levels indicators for equipment", width = "full"}),
+	}
+]]
 
 --[[
 module.defaults = {
