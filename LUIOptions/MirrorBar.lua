@@ -2,10 +2,15 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, Opt
-local optName, Opt = ...
+---@class Opt
+local Opt = select(2, ...)
+
+---@type AceLocale.Localizations, LUI.MirrorBar, AceDB-3.0
 local L, module, db = Opt:GetLUIModule("Mirror Bar")
 if not module or not module.registered then return end
+
+local MirrorBar = Opt:CreateModuleOptions("Mirror Bar", module)
+
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -16,10 +21,7 @@ if not module or not module.registered then return end
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.MirrorBar = Opt:Group("Mirror Bar", nil, nil, "tab", Opt.IsModDisabled, nil, Opt.GetSet(db))
-Opt.options.args.MirrorBar.handler = module
-
-local MirrorBar = {
+MirrorBar.args = {
     -- General
     Header = Opt:Header({name = L["Mirror Bar"]}),
 	General = Opt:Group({name = "General Settings", db = db.General, args = {
@@ -71,8 +73,6 @@ local MirrorBar = {
 		OffsetY = Opt:InputNumber({name = "Y Value", desc = "Choose the Y Value for the Mirror Time Text."}),
 	}}),
 }
-
-Opt.options.args.MirrorBar.args = MirrorBar
 
 
 -- ####################################################################################################################

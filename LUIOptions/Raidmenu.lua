@@ -2,11 +2,14 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, Opt
-local optName, Opt = ...
+---@class Opt
+local Opt = select(2, ...)
+
+---@type AceLocale.Localizations, LUI.RaidMenu, AceDB-3.0
 local L, module, db = Opt:GetLUIModule("RaidMenu")
 if not module or not module.registered then return end
 
+local RaidMenu = Opt:CreateModuleOptions("RaidMenu", module)
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -23,10 +26,7 @@ local function IsUsingAutoHide() return db.OverlapPrevention == "AutoHide" end
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.RaidMenu = Opt:Group("Raid Menu", nil, nil, "tab", Opt.IsModDisabled, nil, Opt.GetSet(db))
-Opt.options.args.RaidMenu.handler = module
-
-local RaidMenu = {
+RaidMenu.args = {
     -- General
     Header = Opt:Header({name = L["Raid Menu"]}),
 	
@@ -45,5 +45,3 @@ local RaidMenu = {
 	ShowTooltips = Opt:Toggle({name = L["Show Tooltips"], desc = L["Wether or not to show tooltips for the Raid Menu tools"], width = "full"}),
 	ToggleRaidIcon = Opt:Toggle({name = L["Toggle Raid Icon"], desc = L["Wether of not Raid Target Icons can be removed by applying the icon the target already has"], width = "full"}),
 }
-
-Opt.options.args.RaidMenu.args = RaidMenu

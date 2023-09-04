@@ -240,25 +240,25 @@ end
 
 ---@param data LUIOption
 function OptionMixin:Color(data)
-	AddShared(data, "color")
-	if not data.get then
+	data = AddShared(data, "color")
+	if data and not data.get then
 		data.get = defaultColorGet
 		data.set = defaultColorSet
 	end
 	return data
 end
 
----@param data LUIOption
+---@param data? LUIOption
 function OptionMixin:Spacer(data)
 	if not data then data = {} end
-	AddShared(data, "description")
+	data = AddShared(data, "description")
 	data.name = ""
 	return data
 end
 
 ---@param data LUIOption
 function OptionMixin:Desc(data)
-	AddShared(data, "description")
+	data = AddShared(data, "description")
 	return data
 end
 
@@ -270,28 +270,28 @@ end
 
 ---@param data LUIOption
 function OptionMixin:Execute(data)
-	AddShared(data, "execute")
+	data = AddShared(data, "execute")
 	return data
 end
 
 ---@param data LUIOption
 function OptionMixin:Input(data)
-	AddShared(data, "input")
+	data = AddShared(data, "input")
 	return data
 end
 
 ---@param data LUIOption
 function OptionMixin:InputNumber(data)
-	AddShared(data, "input")
+	data = AddShared(data, "input")
 	data.validate = self.IsNumber
 	return data
 end
 
 ---@param data LUIOption
 function OptionMixin:Slider(data)
-	AddShared(data, "range")
+	data = AddShared(data, "range")
 	-- Range doesnt support the values field, but this let us easily do reusable slider settings.
-	if data.values then
+	if data and data.values then
 		for key, value in pairs(data.values) do
 			data[key] = value
 		end
@@ -302,19 +302,19 @@ end
 
 ---@param data LUIOption
 function OptionMixin:Select(data)
-	AddShared(data, "select")
+	data = AddShared(data, "select")
 	return data
 end
 
 ---@param data LUIOption
 function OptionMixin:MultiSelect(data)
-	AddShared(data, "multiselect")
+	data = AddShared(data, "multiselect")
 	return data
 end
 
 ---@param data LUIOption
 function OptionMixin:MediaBackground(data)
-	AddShared(data, "select")
+	data = AddShared(data, "select")
 	data.dialogControl = "LSM30_Background"
 	data.values = function() return LSM:HashTable("background") end
 	return data
@@ -322,7 +322,7 @@ end
 
 ---@param data LUIOption
 function OptionMixin:MediaBorder(data)
-	AddShared(data, "select")
+	data = AddShared(data, "select")
 	data.dialogControl = "LSM30_Border"
 	data.values = function() return LSM:HashTable("border") end
 	return data
@@ -330,7 +330,7 @@ end
 
 ---@param data LUIOption
 function OptionMixin:MediaStatusbar(data)
-	AddShared(data, "select")
+	data = AddShared(data, "select")
 	data.dialogControl = "LSM30_Statusbar"
 	data.values = function() return LSM:HashTable("statusbar") end
 	return data
@@ -338,7 +338,7 @@ end
 
 ---@param data LUIOption
 function OptionMixin:MediaSound(data)
-	AddShared(data, "select")
+	data = AddShared(data, "select")
 	data.dialogControl = "LSM30_Sound"
 	data.values = function() return LSM:HashTable("sound") end
 	return data
@@ -346,32 +346,26 @@ end
 
 ---@param data LUIOption
 function OptionMixin:MediaFont(data)
-	AddShared(data, "select")
+	data = AddShared(data, "select")
 	data.dialogControl = "LSM30_Font"
 	data.values = function() return LSM:HashTable("font") end
 	return data
 end
 
 --- Special Execute for the control panel
----@param data string
----@param desc? string|function
----@param order number
----@param enableFunc function @ Function to determine whether the target is enabled or disabled
----@param func function @ Function to call when button is clicked
----@param hidden? boolean|function
----@return LUIOption
-function OptionMixin:EnableButton(data, desc, order, enableFunc, func, hidden)
-	if type(data) == "table" then
-		AddShared(data, "execute")
-		data.name = function()
-			return format("%s: %s", data.name, (data.enableFunc() and L["API_BtnEnabled"] or L["API_BtnDisabled"]))
-		end
-		return data
+---@param data LUIOption
+function OptionMixin:EnableButton(data)
+	data = AddShared(data, "execute")
+
+	-- Store info in locals to create closures.
+	local name = data.name
+	local enableFunc = data.enableFunc
+	data.enableFunc = nil
+	data.name = function()
+		return format("%s: %s", name, (enableFunc() and L["API_BtnEnabled"] or L["API_BtnDisabled"]))
 	end
-	local nameFunc = function()
-		return format("%s: %s", data, (enableFunc() and L["API_BtnEnabled"] or L["API_BtnDisabled"]))
-	end
-	return self:Execute({name = nameFunc, desc = desc, func = func, hidden = hidden})
+
+	return data
 end
 
 -- ####################################################################################################################
@@ -403,7 +397,7 @@ local sizeValues = {min = 4, max = 72, step = 1, softMin = 8, softMax = 36}
 --- Create an inline group containing font settings.
 ---@param data LUIOption
 function OptionMixin:FontMenu(data)
-	AddShared(data, "group")
+	data = AddShared(data, "group")
 	data.inline = true
 	data.args = {
 		Size = Opt:Slider({name = "Size", values = sizeValues, get = FontMenuGetter, set = FontMenuSetter, arg = data.customFontLocation}),
@@ -533,18 +527,6 @@ Opt.options = options
 -- ##### Framework Functions ##########################################################################################
 -- ####################################################################################################################
 
---- Set up a module's options table.
----@param name string @ Name of the module. Will display result of L["Module_"..name] in the options.
----@param module LUIModule
----@return LUIOption
-function Opt:CreateModuleOptions(name, module, hidden)
-    local options = self:Group({name = name, childGroups = "tab", disabled = Opt.IsModDisabled, hidden = hidden, db = module.db.profile})
-    Opt.options.args[name] = options -- Add it to the overall options table
-    options.handler = module
-    return options
-end
-
-
 local optionsLoaded = false
 function LUI:NewOpen(force, ...)
 	if ACD.OpenFrames[optName] and not force then
@@ -573,6 +555,18 @@ function Opt:GetLUIModule(name)
 		db = module.db.profile
 	end
 	return L, module, db
+end
+
+--- Set up a module's options table.
+---@param name string @ Name of the module. Will display result of L["Module_"..name] in the options.
+---@param module LUIModule
+---@return LUIOption
+function Opt:CreateModuleOptions(name, module, hidden)
+    local options = self:Group({name = name, childGroups = "tab", disabled = Opt.IsModDisabled, hidden = hidden, db = module.db.profile})
+    Opt.options.args[name] = options -- Add it to the overall options table
+    options.handler = module
+	LUI:PrintTable(options)
+    return options
 end
 
 function Opt:OnEnable()

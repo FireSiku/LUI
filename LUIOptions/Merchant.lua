@@ -2,10 +2,14 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, Opt
-local optName, Opt = ...
+---@class Opt
+local Opt = select(2, ...)
+
+---@type AceLocale.Localizations, LUI.Merchant, AceDB-3.0
 local L, module, db = Opt:GetLUIModule("Merchant")
 if not module or not module.registered then return end
+
+local Merchant = Opt:CreateModuleOptions("Merchant", module)
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -16,10 +20,7 @@ if not module or not module.registered then return end
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.Merchant = Opt:Group("Merchant", nil, nil, "tab", Opt.IsModDisabled, nil, Opt.GetSet(db))
-Opt.options.args.Merchant.handler = module
-
-local Merchant = {
+Merchant.args = {
     -- General
     Header = Opt:Header({name = L["Merchant"]}),
 	General = Opt:Group({name = "General Settings", db = db.General}),
@@ -27,43 +28,36 @@ local Merchant = {
 	Colors = Opt:Group({name = "Bar Colors", db = db.Colors}),
 }
 
-local GeneralTab = {
-	Width = Opt:InputNumber({name = "Width", desc = "Choose the Width for the Merchant."}),
-	Height = Opt:InputNumber({name = "Height", desc = "Choose the Height for the Merchant."}),
-	empty1 = Opt:Spacer({}),
-	X = Opt:InputNumber({name = "X Value", desc = "Choose the X Value for the Merchant."}),
-	Y = Opt:InputNumber({name = "Y Value", desc = "Choose the Y Value for the Merchant."}),
-	empty2 = Opt:Spacer({}),
-	Texture = Opt:MediaStatusbar({name = "Texture", desc = "Choose the Merchant Texture."}),
-	TextureBG = Opt:MediaStatusbar({name = "Background Texture", desc = "Choose the Merchant Background Texture."}),
-	BarGap = Opt:Slider({name = "Spacing", desc = "Select the Spacing between mirror bars when shown.", min = 0, max = 40, step = 1}),
-	ArchyBar = Opt:Toggle({name = "Archaeology Progress Bar", desc = "Integrate the Archaeology Progress bar", width = "full"}),
-}
+-- local GeneralTab = {
+-- 	Width = Opt:InputNumber({name = "Width", desc = "Choose the Width for the Merchant."}),
+-- 	Height = Opt:InputNumber({name = "Height", desc = "Choose the Height for the Merchant."}),
+-- 	empty1 = Opt:Spacer({}),
+-- 	X = Opt:InputNumber({name = "X Value", desc = "Choose the X Value for the Merchant."}),
+-- 	Y = Opt:InputNumber({name = "Y Value", desc = "Choose the Y Value for the Merchant."}),
+-- 	empty2 = Opt:Spacer({}),
+-- 	Texture = Opt:MediaStatusbar({name = "Texture", desc = "Choose the Merchant Texture."}),
+-- 	TextureBG = Opt:MediaStatusbar({name = "Background Texture", desc = "Choose the Merchant Background Texture."}),
+-- 	BarGap = Opt:Slider({name = "Spacing", desc = "Select the Spacing between mirror bars when shown.", min = 0, max = 40, step = 1}),
+-- 	ArchyBar = Opt:Toggle({name = "Archaeology Progress Bar", desc = "Integrate the Archaeology Progress bar", width = "full"}),
+-- }
 
-local ColorTab = {
-	FatigueBar = Opt:Color({name = "Fatigue Bar", desc = "Fatigue Bar"}),
-	BreathBar = Opt:Color({name = "Breath Bar", desc = "Breath Bar"}),
-	FeignBar = Opt:Color({name = "Feign Death Bar", desc = "Feign Death Bar"}),
-	Bar = Opt:Color({name = "Other Bar", desc = "Other Merchants"}),
-	ArchyBar = Opt:Color({name = "Archaeology Progress Bar", desc = "Archaeology Progress Bar"}),
-	Background = Opt:Color({name = "Background", desc = "Merchant Background"}),
-}
+-- local ColorTab = {
+-- 	FatigueBar = Opt:Color({name = "Fatigue Bar", desc = "Fatigue Bar"}),
+-- 	BreathBar = Opt:Color({name = "Breath Bar", desc = "Breath Bar"}),
+-- 	FeignBar = Opt:Color({name = "Feign Death Bar", desc = "Feign Death Bar"}),
+-- 	Bar = Opt:Color({name = "Other Bar", desc = "Other Merchants"}),
+-- 	ArchyBar = Opt:Color({name = "Archaeology Progress Bar", desc = "Archaeology Progress Bar"}),
+-- 	Background = Opt:Color({name = "Background", desc = "Merchant Background"}),
+-- }
 
-local NameText = {
-	Font = Opt:MediaFont({name = "Font", desc = "Choose the Font for the Mirror Name Text."}),
-	Color = Opt:Color({name = "Name", desc = "Mirror Name", hasAlpha = false, db = db.Text.Name}),
-	Size = Opt:Slider({name = "Size", desc = "Choose the Font Size for the Mirror Name Text.", min = 6, max = 40, step = 1}),
-	empty2 = Opt:Spacer({}),
-	OffsetX = Opt:InputNumber({name = "X Value", desc = "Choose the X Value for the Mirror Name Text."}),
-	OffsetY = Opt:InputNumber({name = "Y Value", desc = "Choose the Y Value for the Mirror Name Text."}),
-}
-
-Opt.options.args.Merchant.args = Merchant
-
---- Link the groups together.
-Merchant.General.args = GeneralTab
-Merchant.Colors.args = ColorTab
-Merchant.NameText.args = NameText
+-- local NameText = {
+-- 	Font = Opt:MediaFont({name = "Font", desc = "Choose the Font for the Mirror Name Text."}),
+-- 	Color = Opt:Color({name = "Name", desc = "Mirror Name", hasAlpha = false, db = db.Text.Name}),
+-- 	Size = Opt:Slider({name = "Size", desc = "Choose the Font Size for the Mirror Name Text.", min = 6, max = 40, step = 1}),
+-- 	empty2 = Opt:Spacer({}),
+-- 	OffsetX = Opt:InputNumber({name = "X Value", desc = "Choose the X Value for the Mirror Name Text."}),
+-- 	OffsetY = Opt:InputNumber({name = "Y Value", desc = "Choose the Y Value for the Mirror Name Text."}),
+-- }
 
 -- ####################################################################################################################
 -- ##### Old Options ###############################################################################################

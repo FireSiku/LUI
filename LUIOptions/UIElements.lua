@@ -2,11 +2,14 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, Opt
-local optName, Opt = ...
-local L, module, db = Opt:GetLUIModule("UI Elements")
+---@class Opt
+local Opt = select(2, ...)
+
+---@type AceLocale.Localizations, LUI.UIElements, AceDB-3.0
+local L, module, db = Opt:GetLUIModule("UIElements")
 if not module or not module.registered then return end
 
+local UIElements = Opt:CreateModuleOptions("UIElements", module)
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -50,9 +53,6 @@ local framePositionDescs = {
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.UIElements = Opt:Group("UI Elements", nil, nil, "tab", nil, nil, Opt.GetSet(db))
-Opt.options.args.UIElements.handler = module
-
 local function GenerateFramePositionGroup(frame, name, order)
 	local dbFrame = db[frame]
     if not dbFrame then return end    -- If that unit does not have options for that bar, nil it
@@ -67,7 +67,7 @@ local function GenerateFramePositionGroup(frame, name, order)
     return group
 end
 
-local UIElements = {
+UIElements.args = {
 	Header = Opt:Header({name = "UI Elements"}),
 	Elements = Opt:Group({name = "Frame Positions", childGroups = "tree"})
 }
@@ -75,8 +75,6 @@ local UIElements = {
 for i, name in ipairs(framePositionOrder) do
 	UIElements.Elements.args[name] = GenerateFramePositionGroup(name, framePositionList[name], i+5)
 end
-
-Opt.options.args.UIElements.args = UIElements
 
 --[[
     

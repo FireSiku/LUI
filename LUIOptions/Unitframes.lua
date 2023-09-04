@@ -4,8 +4,12 @@
 
 ---@class Opt
 local Opt = select(2, ...)
+
+---@type AceLocale.Localizations, LUI.Unitframes, AceDB-3.0
 local L, module, db = Opt:GetLUIModule("Unitframes")
-if not module then return end
+if not module or not module.registered then return end
+
+local Unitframes = Opt:CreateModuleOptions("Unitframes", module)
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -99,11 +103,8 @@ end
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.Unitframes = Opt:Group("Unitframes", nil, nil, "tab")
-Opt.options.args.Unitframes.handler = module
-
-Opt.options.args.Unitframes.args.Header = Opt:Header({name = "Unitframes"})
-Opt.options.args.Unitframes.args.General = Opt:Group(L["General Settings"], nil, 2, nil, nil, nil, Opt.GetSet(db))
+Unitframes.args.Header = Opt:Header({name = "Unitframes"})
+Unitframes.args.General = Opt:Group({name = L["General Settings"], db = db})
 
 local function GenerateBarGroup(unit, name, colorTypes, order)
     local dbBar = db[unit][name]
@@ -185,8 +186,7 @@ local function GenerateClassBarGroup(unit, name, order)
     if not dbBar then return end    -- If that unit does not have options for that bar, nil it
 
     local optName = string.gsub(name, "Bar", " Bar")
-    local group = Opt:Group({name = optName, db = dbBar})
-    group.args = {
+    local group = Opt:Group({name = optName, db = dbBar, args = {
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
         Width = Opt:InputNumber({name = "Width"}),
         Height = Opt:InputNumber({name = "Height"}),
@@ -197,11 +197,9 @@ local function GenerateClassBarGroup(unit, name, order)
         Padding = Opt:Slider({name = "Padding", min=1, max=10, step=1}),
         -- Color = Opt:Select({name = "Color Type", colorTypes}),
         -- IndividualColor = Opt:Color({name = optName.." Color", false, nil, IsIndividualColorSelected(dbBar}), nil, Opt.ColorGetSet(dbBar))
-    }
-
-    if name == "TotemsBar" then
-        group.args.IconScale = Opt:Slider("Icon Scale", "Choose the size multiplier for the totem icons. Values above 100% will make the icon go above the bar's height.", 12, Opt.ScaleValues)
-    end
+        IconScale = Opt:Slider({name = "Icon Scale", desc = "Choose the size multiplier for the totem icons. Values above 100% will make the icon go above the bar's height.",
+            values = Opt.ScaleValues, onlyIf=(name == "TotemsBar")})
+    }})
 
     return group
 end
@@ -289,8 +287,7 @@ local function GenerateCastbarShieldGroup(unit, order)
 
     local colorGet, colorSet = Opt.ColorGetSet(dbCast.Shield)
 
-    local group = Opt:Group({name = "Shielded Cast Bar", db = dbCast.Shield})
-    group.args = {
+    local group = Opt:Group({name = "Shielded Cast Bar", db = dbCast.Shield, args = {
         Explain = Opt:Desc({name = "Additional settings when the cast bar cannot be interrupted."}),
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
         Text = Opt:Toggle({name = "Text", width = "full"}),
@@ -303,7 +300,7 @@ local function GenerateCastbarShieldGroup(unit, order)
         Border = Opt:Toggle({name = "Border", width = "full"}),
         Texture = Opt:MediaBorder({name = "Border Texture"}),
         Thickness = Opt:InputNumber({name = "Thickness"}),
-    }
+    }})
     return group
 end
 
@@ -419,13 +416,13 @@ local General = {
     Empty = Opt:Spacer({}),
     Move = Opt:Execute({name = "Move Unitframes", func = function() module:MoveUnitFrames() end}),
 }
-Opt.options.args.Unitframes.args.General.args = General
+Unitframes.args.General.args = General
 
 local numSpawns = #module.unitsSpawn
 for i = 1, numSpawns do
     local unit = module.unitsSpawn[i]
     local t = NewUnitOptionGroup(unit, i+10)
-    Opt.options.args.Unitframes.args[unit] = t
+    Unitframes.args[unit] = t
 end
 
 -- Add the missing entries that aren't part of unitsSpawn
@@ -433,5 +430,5 @@ local missingUnits = {"partytarget", "partypet", "bosstarget", "arenatarget", "a
 for i = 1, #missingUnits do
     local unit = missingUnits[i]
     local t = NewUnitOptionGroup(unit, i+numSpawns+10)
-    Opt.options.args.Unitframes.args[unit] = t
+    Unitframes.args[unit] = t
 end

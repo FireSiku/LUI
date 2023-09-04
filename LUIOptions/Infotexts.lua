@@ -2,11 +2,14 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, Opt
-local optName, Opt = ...
+---@class Opt
+local Opt = select(2, ...)
+
+---@type AceLocale.Localizations, LUI.Infotext, AceDB-3.0
 local L, module, db = Opt:GetLUIModule("Infotext")
 if not module or not module.registered then return end
 
+local Infotext = Opt:CreateModuleOptions("Infotxt", module)
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################

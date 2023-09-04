@@ -2,11 +2,15 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, Opt
-local optName, Opt = ...
+---@class Opt
+local Opt = select(2, ...)
+
+---@type AceLocale.Localizations, LUI.Minimap, AceDB-3.0
 local L, module, db = Opt:GetLUIModule("Minimap")
 if not module or not module.registered then return end
 
+local Minimap = Opt:CreateModuleOptions("Minimap", module)
+Minimap.get, Minimap.set = Opt.GetSet(db.General)
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -17,10 +21,7 @@ if not module or not module.registered then return end
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.Minimap = Opt:Group("Minimap", nil, nil, "tab", Opt.IsModDisabled, nil, Opt.GetSet(db.General))
-Opt.options.args.Minimap.handler = module
-
-local Minimap = {
+Minimap.args = {
     Header = Opt:Header({name = _G.MINIMAP_LABEL}),
     AlwaysShowText = Opt:Toggle({name = L["Minimap_AlwaysShowText_Name"], desc = L["Minimap_AlwaysShowText_Desc"], width = "full"}),
     ShowTextures = Opt:Toggle({name = L["Minimap_ShowTextures_Name"], desc = L["Minimap_ShowTextures_Desc"], width = "full"}),
@@ -35,7 +36,6 @@ local Minimap = {
 	Text = Opt:FontMenu({name = "Text Font"})
 }
 
-Opt.options.args.Minimap.args = Minimap
 --[[
 		Position = module:NewGroup(L["Position"], 3, nil, nil, {
 			Position = module:NewPosition(L["Position"], 1, true, "SetMinimapSize"),

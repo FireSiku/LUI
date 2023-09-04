@@ -2,11 +2,14 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, Opt
-local optName, Opt = ...
+---@class Opt
+local Opt = select(2, ...)
+
+---@type AceLocale.Localizations, LUI.Micromenu, AceDB-3.0
 local L, module, db = Opt:GetLUIModule("Micromenu")
 if not module or not module.registered then return end
 
+local Micromenu = Opt:CreateModuleOptions("Micromenu", module)
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -21,10 +24,7 @@ local dropDirections = {
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.Micromenu = Opt:Group("Micromenu", nil, nil, "tab", Opt.IsModDisabled, nil, Opt.GetSet(db))
-Opt.options.args.Micromenu.handler = module
-
-local Micromenu = {
+Micromenu.args = {
     -- General
     Header = Opt:Header({name = L["Micro_Name"]}),
 	Spacing = Opt:Slider({name = L["Spacing"], desc = L["MicroOptions_Spacing_Desc"], min = -10, max = 10, step = 1}),
@@ -56,5 +56,3 @@ local Micromenu = {
     Micromenu = Opt:Color({name = L["Micro_Name"], hasAlpha = true}),
     Background = Opt:Color({name = L["Background"], hasAlpha = true}),
 }
-
-Opt.options.args.Micromenu.args = Micromenu

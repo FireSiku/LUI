@@ -5,10 +5,11 @@
 ---@class Opt
 local Opt = select(2, ...)
 
----@class LUI.Bags
-local module = Opt.LUI:GetModule("Bags")
+---@type AceLocale.Localizations, LUI.Bags, AceDB-3.0
+local L, module, db = Opt:GetLUIModule("Bags")
 if not module or not module.registered then return end
-local db = module.db.profile
+
+local Bags = Opt:CreateModuleOptions("Bags", module)
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -18,8 +19,6 @@ local db = module.db.profile
 -- ####################################################################################################################
 -- ##### Options Table ################################################################################################
 -- ####################################################################################################################
-
-local Bags = Opt:CreateModuleOptions("Bags", module)
 
 local function GenerateBagsOptions(kind)
 	local options = {

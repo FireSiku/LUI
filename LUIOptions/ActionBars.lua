@@ -6,7 +6,7 @@
 local Opt = select(2, ...)
 
 ---@class LUI.Bags
-local module = Opt.LUI:GetModule("Bags")
+local module = Opt.LUI:GetModule("ActionBars")
 if not module or not module.registered then return end
 local db = module.db.profile
 

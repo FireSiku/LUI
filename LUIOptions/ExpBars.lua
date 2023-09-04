@@ -2,8 +2,10 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, Opt
-local optName, Opt = ...
+---@class Opt
+local Opt = select(2, ...)
+
+---@type AceLocale.Localizations, LUI.ExperienceBars, AceDB-3.0
 local L, module, db = Opt:GetLUIModule("ExpBars")
 if not module or not module.registered then return end
 
@@ -13,13 +15,12 @@ if not module or not module.registered then return end
 
 
 -- ####################################################################################################################
--- ##### Options Tables ###############################################################################################
+-- ##### Options Table ################################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.ExpBars = Opt:Group("Experience Bars", nil, nil, "tab",  Opt.IsModDisabled, nil, Opt.GetSet(db))
-Opt.options.args.ExpBars.handler = module
+local ExpBars = Opt:CreateModuleOptions("ExpBars", module)
 
-local ExpBars = {
+ExpBars.args = {
     Header = Opt:Header({name = L["ExpBar_Name"]}),
     ShowAzerite = Opt:Toggle({name = "Show Azerite XP"}),
 			
@@ -39,5 +40,3 @@ local ExpBars = {
     Azerite = Opt:Color({name = L["ExpBar_Mode_Artifact"], hasAlpha = false}),
     Honor = Opt:Color({name = L["ExpBar_Mode_Honor"], hasAlpha = false}),
 }
-
-Opt.options.args.ExpBars.args = ExpBars

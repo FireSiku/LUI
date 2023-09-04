@@ -2,8 +2,10 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, Opt
-local optName, Opt = ...
+---@class Opt
+local Opt = select(2, ...)
+
+---@type LUIAddon
 local LUI = Opt.LUI
 local L = LUI.L
 
@@ -17,9 +19,9 @@ local function GenerateModuleButtons()
     local args = {}
     for name, mod in LUI:IterateModules() do
         if mod.enableButton then
-			args[name] = Opt:EnableButton(name, L["Core_ModuleClickHint"], nil,
-				function() return mod:IsEnabled() end,
-				function(info, btn)
+			args[name] = Opt:EnableButton({name = name, desc = L["Core_ModuleClickHint"],
+				enableFunc = function() return mod:IsEnabled() end,
+				func = function(info, btn)
 					if IsShiftKeyDown() then
 						mod.db:ResetProfile()
 						mod:ModPrint(L["Core_ModuleReset"])
@@ -31,7 +33,7 @@ local function GenerateModuleButtons()
 						StaticPopup_Show("RELOAD_UI")
 					end
 				end
-			)
+			})
         end
     end
     return args
@@ -41,10 +43,10 @@ local infotext = LUI:GetModule("Infotext", true)
 local function GenerateInfotextButtons()
 	local args = {}
 	for name, obj in infotext.LDB:DataObjectIterator() do
-		args[name] = Opt:EnableButton(name, nil, nil,
-			function() return true end,
-			function() infotext:ToggleInfotext(name) end
-		)
+		args[name] = Opt:EnableButton({name = name,
+			enableFunc = function() return true end,
+			func = function() infotext:ToggleInfotext(name) end
+		})
 	end
 	return args
 end
@@ -69,6 +71,7 @@ end
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
+-- local Cooldown = Opt:CreateModuleOptions("Cooldown", LUI)
 Opt.options.args.CPanel = Opt:Group("Control Panel", nil, 3, "tab")
 Opt.options.args.CPanel.handler = LUI
 local CPanel = {

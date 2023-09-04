@@ -2,11 +2,14 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, Opt
-local optName, Opt = ...
+---@class Opt
+local Opt = select(2, ...)
+
+---@type AceLocale.Localizations, LUI.Tooltip, AceDB-3.0
 local L, module, db = Opt:GetLUIModule("Tooltip")
 if not module or not module.registered then return end
 
+local Tooltip = Opt:CreateModuleOptions("Tooltip", module)
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -24,9 +27,7 @@ end
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.Tooltip = Opt:Group("Tooltip", nil, nil, "tab", Opt.IsModDisabled, nil, Opt.GetSet(db))
-Opt.options.args.Tooltip.handler = module
-local Tooltip = {
+Tooltip.args = {
 
     --General
     Header = Opt:Header({name = L["Tooltip_Name"]}),
@@ -66,9 +67,7 @@ local Tooltip = {
         set = function(info, value) db.Colors.Background.t = value end}), -- setter
     SpacerFive = Opt:Spacer({}),
     Border = Opt:Color({name = L["API_BorderColor_Name"], hasAlpha = true}),
-    BorderColorType = Opt:Select({name = L["API_BorderType_Name"], values = LUI.ColorTypes, 
+    BorderColorType = Opt:Select({name = L["API_BorderType_Name"], values = LUI.ColorTypes,
         get = function(info) return db.Colors.Border.t end, -- getter
         set = function(info, value) db.Colors.Border.t = value end}), -- setter
 }
-
-Opt.options.args.Tooltip.args = Tooltip
