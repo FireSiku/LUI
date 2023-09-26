@@ -15,7 +15,7 @@ local module = Chat:NewModule("StickyChannels", "LUIDevAPI", "AceHook-3.0")
 local db --luacheck:ignore
 local ChatTypeInfo = _G.ChatTypeInfo
 
-local channels = {
+module.channels = {
 	GUILD = { desc = "Guild chat", sticky = true },
 	OFFICER = { desc = "Officer chat", sticky = true },
 	RAID = { desc = "Raid chat", sticky = true },
@@ -41,7 +41,7 @@ module.defaults = {
 		Channels = {}
 	},
 }
-for k, v in pairs(channels) do
+for k, v in pairs(module.channels) do
 	module.defaults.profile.Channels[k] = v.sticky
 end
 
@@ -60,7 +60,7 @@ function module:LoadOptions()
 		Channels = self:NewGroup("Sticky Channels", 2, true, funcs.Enabled, {}),
 	})
 	for k, v in pairs(chans) do
-		options.args.Channels.args[k] = self:NewToggle(channels[k].desc, "Enable sticky flag for " .. channels[k].desc, nextOrder, true, "normal")
+		options.args.Channels.args[k] = self:NewToggle(module.channels[k].desc, "Enable sticky flag for " .. module.channels[k].desc, nextOrder, true, "normal")
 		nextOrder = nextOrder + 1
 	end
 
@@ -81,7 +81,7 @@ function module:Refresh(info, value)
 			end
 		end
 	else
-		for k, v in pairs(channels) do
+		for k, v in pairs(module.channels) do
 			if ChatTypeInfo[k] then
 				ChatTypeInfo[k].sticky = 0
 			end
