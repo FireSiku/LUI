@@ -53,7 +53,11 @@ function module:SetAlerts()
 			module:ShouldReAnchorPointer(newPointer)
 		end
 	end)
-	module:DebugAlert()
+	--- Hack-ish way of catching any other alerts that might be missed after a reload
+	C_Timer.After(1, function()
+		for alert in _G.HelpTip.framePool:EnumerateActive() do module:AlertHandler(alert, alert:GetParent(), alert.info, alert.relativeRegion) end
+	end)
+	--module:DebugAlert()
 end
 
 --- @TODO: Develop this more into its own API that allows all modules to register or reorganize frames. 
@@ -147,7 +151,6 @@ function module:ShouldReAnchorPointer(frame)
 				frame:Hide()
 				return
 			end
-
 		-- New mount added to your collection
 		elseif text == _G.NPEV2_MOUNT_TUTORIAL_P2_NEW_MOUNT_ADDED then
 			anchor = BlizzMicroButtons.CollectionsMicroButton
