@@ -103,9 +103,6 @@ end
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
-Unitframes.args.Header = Opt:Header({name = "Unitframes"})
-Unitframes.args.General = Opt:Group({name = L["General Settings"], db = db})
-
 local function GenerateBarGroup(unit, name, colorTypes, order)
     local dbBar = db[unit][name]
     if not dbBar then return end    -- If that unit does not have options for that bar, nil it
@@ -408,15 +405,18 @@ local function NewUnitOptionGroup(unit, order)
     return unitOptions
 end
 
-local General = {
-    ShowV2Textures = Opt:Toggle({name = "Show LUI v2 Connector Frames", desc = "Whether you want to show LUI v2 Frame Connectors or not.", width = "full"}),
-    ShowV2PartyTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Party Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Party Frames or not.", width = "full"}),
-    ShowV2ArenaTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Arena Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Arena Frames or not.", width = "full"}),
-    ShowV2bossTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Boss Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Boss Frames or not.", width = "full"}),
-    Empty = Opt:Spacer({}),
-    Move = Opt:Execute({name = "Move Unitframes", func = function() module:MoveUnitFrames() end}),
+
+Unitframes.args = {
+    Header = Opt:Header({name = "Unitframes"}),
+    General = Opt:Group({name = L["General Settings"], db = db, args = {
+        ShowV2Textures = Opt:Toggle({name = "Show LUI v2 Connector Frames", desc = "Whether you want to show LUI v2 Frame Connectors or not.", width = "full"}),
+        ShowV2PartyTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Party Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Party Frames or not.", width = "full"}),
+        ShowV2ArenaTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Arena Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Arena Frames or not.", width = "full"}),
+        ShowV2bossTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Boss Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Boss Frames or not.", width = "full"}),
+        Empty = Opt:Spacer({}),
+        Move = Opt:Execute({name = "Move Unitframes", func = function() module:MoveUnitFrames() end}),
+    }})
 }
-Unitframes.args.General.args = General
 
 local numSpawns = #module.unitsSpawn
 for i = 1, numSpawns do

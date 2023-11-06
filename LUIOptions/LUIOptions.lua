@@ -178,6 +178,7 @@ end
 ---@param info InfoTable
 ---@return number R, number G, number B, number A
 local function defaultColorGet(info)
+	assert(type(info.handler.db.profile.Colors) == "table", info[#info]..": Could not find 'Colors' table for handler "..info.handler:GetName())
 	local c = info.handler.db.profile.Colors[info[#info]]
 	return c.r, c.g, c.b, c.a
 end
@@ -195,41 +196,20 @@ end
 -- ##### Options: Helper Functions ####################################################################################
 -- ####################################################################################################################
 
----@param data string|function
----@param desc? string|function
----@param order? number
----@param childGroups? string|"tree"|"tab"|"select"
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param get? function
----@param set? function
----@return AceOptionGroup
-function OptionMixin:Group(data, desc, order, childGroups, disabled, hidden, get, set)
-	if type(data) == "table" then
-		AddShared(data, "group")
-		if not data.args then data.args = {} end
-		return data
-	end
-	return { type = "group", childGroups = childGroups, name = data, desc = desc, order = order, disabled = disabled, hidden = hidden, get = get, set = set, args = {} }
+---@param data LUIOption
+function OptionMixin:Group(data)
+	data = AddShared(data, "group")
+	if not data.args then data.args = {} end
+	if not data.childGroups then data.childGroups = "tab" end
+	return data
 end
 
----@param data string|function
----@param desc? string|function
----@param order number
----@param childGroups? string|"tree"|"tab"|"select"
----@param disabled? boolean|function
----@param hidden? boolean|function
----@param get? function
----@param set? function
----@return AceOptionGroup
-function OptionMixin:InlineGroup(data, desc, order, childGroups, disabled, hidden, get, set)
-	if type(data) == "table" then
-		AddShared(data, "group")
-		data.inline = true
-		if not data.args then data.args = {} end
-		return data
-	end
-	return { type = "group", childGroups = childGroups, name = data, desc = desc, order = order, disabled = disabled, hidden = hidden, get = get, set = set, inline = true, args = {} }
+---@param data LUIOption
+function OptionMixin:InlineGroup(data)
+	data = AddShared(data, "group")
+	data.inline = true
+	if not data.args then data.args = {} end
+	return data
 end
 
 ---@param data LUIOption
@@ -565,7 +545,6 @@ function Opt:CreateModuleOptions(name, module, hidden)
     local options = self:Group({name = name, childGroups = "tab", disabled = Opt.IsModDisabled, hidden = hidden, db = module.db.profile})
     Opt.options.args[name] = options -- Add it to the overall options table
     options.handler = module
-	LUI:PrintTable(options)
     return options
 end
 

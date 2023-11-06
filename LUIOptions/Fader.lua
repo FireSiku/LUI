@@ -10,6 +10,7 @@ local L, module, db = Opt:GetLUIModule("Fader")
 if not module or not module.registered then return end
 
 local Fader = Opt:CreateModuleOptions("Fader", module)
+Fader.get, Fader.set = Opt.GetSet(db.GlobalSettings)
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -54,11 +55,6 @@ end
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.Fader = Opt:Group("Fader", nil, nil, "tab", Opt.IsModDisabled, nil, Opt.GetSet(db.GlobalSettings))
-Opt.options.args.Fader.handler = module
-
-local Fader = module:ImportFaderSettings("Fader").args
-Fader.ModuleHeader = Opt:Header({"Fader"})
-Fader.ForceGlobalSettings = Opt:Toggle({name = "Force These Global Settings:", width = "double", db = db})
-
-Opt.options.args.Fader.args = Fader
+Fader.args = module:ImportFaderSettings("Fader").args
+Fader.args.ModuleHeader = Opt:Header({"Fader"})
+Fader.args.ForceGlobalSettings = Opt:Toggle({name = "Force These Global Settings:", width = "double", db = db})

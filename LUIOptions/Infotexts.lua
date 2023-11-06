@@ -15,7 +15,7 @@ local Infotext = Opt:CreateModuleOptions("Infotxt", module)
 -- ##### Utility Functions ############################################################################################
 -- ####################################################################################################################
 
-local function InfoTextGroup(name, order)
+local function InfoTextGroup(name)
     local group = Opt:Group({name = name, db = db[name], args = {
 		Header = Opt:Header({name = name}),
 		Enable = Opt:Toggle({name = "Enable", width = "full"}),
@@ -30,28 +30,20 @@ end
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.Infotext = Opt:Group("Infotexts", nil, nil, "tab", Opt.IsModDisabled, nil, Opt.GetSet(db))
-Opt.options.args.Infotext.handler = module
-
-local Infotext = {
-	Header = Opt:Header({name = "Infotext"}),
-	Settings = Opt:Group({name = "Individual Settings"}),
-	General = Opt:Group({name = "Global Settings"}),
-}
-
-Infotext.General.args = {
-	Title = Opt:Color({name = "Title Color", hasAlpha = false}),
-	Hint = Opt:Color({name = "Hint Color", hasAlpha = false}),
-	--Infotext = Opt:FontMenu({name = "Infotext Font"}),
-}
-
-local count = 10
+local SettingsArgs = {}
 for name, obj in module:IterateModules() do
-    Infotext.Settings.args[name] = InfoTextGroup(name, count)
-    count = count + 1
+    SettingsArgs[name] = InfoTextGroup(name)
 end
 
-Opt.options.args.Infotext.args = Infotext
+Infotext.args = {
+	Header = Opt:Header({name = "Infotext"}),
+	Settings = Opt:Group({name = "Individual Settings", args = SettingsArgs}),
+	General = Opt:Group({name = "Global Settings", args = {
+		Title = Opt:Color({name = "Title Color", hasAlpha = false}),
+		Hint = Opt:Color({name = "Hint Color", hasAlpha = false}),
+		--Infotext = Opt:FontMenu({name = "Infotext Font"}),
+	}}),
+}
 
 -- ####################################################################################################################
 -- ##### Gold Infotext ################################################################################################
@@ -88,7 +80,7 @@ local function ResetGold()
 	module:GetElement("Gold"):UpdateGold()
 end
 
-local GoldInfotext = Infotext.Settings.args.Gold.args
+local GoldInfotext = Infotext.args.Settings.args.Gold.args
 GoldInfotext.ShowConnected = Opt:Toggle({name = "Include Connected Realms in Server Total when possible", width = "full",
 	desc = "Realms that are connected to your character's realm will show as a single entry in the realm list"})
 GoldInfotext.GoldPlayerReset = Opt:Select({name = "Reset Player", desc = "Choose the player you want to clear Gold data for.", values = goldPlayerArray,

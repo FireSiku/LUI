@@ -2,8 +2,10 @@
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
----@type string, Opt
-local optName, Opt = ...
+---@class Opt
+local Opt = select(2, ...)
+
+---@type AceLocale.Localizations, LUI.Artwork, AceDB-3.0
 local L, module, db = Opt:GetLUIModule("Artwork")
 if not module or not module.registered then return end
 
@@ -25,6 +27,8 @@ local PRESET_LUI_TEXTURES = {
 }
 
 local nameInput
+
+local Artwork = Opt:CreateModuleOptions("Artwork", module)
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -59,39 +63,45 @@ end
 
 local function CreatePanelGroup(name)
 	local texDB = db.Textures[name]
-	local group = Opt:Group(name, nil, 10, nil, nil, nil, Opt.GetSet(texDB))
-	group.args = {
-		TextureHeader = Opt:Header(L["Texture"], 1),
+	local function textureGet(info)
+		return texDB.Texture
+	end
+	local function textureSet(info, value)
+		texDB.Texture = value
+	end
+
+	local group = Opt:Group({name = name, db = texDB, args = {
+		TextureHeader = Opt:Header({name = L["Texture"]}),
 		--ImageDesc = Opt:Desc({name = "", 2, nil, GetOptionImageTexture, desc = GetOptionTexCoords, 128}),
-		TexMode = Opt:Select({name = L["Panels_Options_Category"], TEX_MODE_SELECT}),
-		Texture = Opt:Input({name = L["Texture"], desc = L["Panels_Options_Texture_Desc"], nil, nil, nil, IsTextureInputHidden}),
-		TextureSelect = Opt:Select(L["Panels_Options_TextureSelect"], L["Panels_Options_TextureSelect_Desc"], 4, PRESET_LUI_TEXTURES, nil, nil, IsTextureSelectHidden,
-			function(info) return texDB.Texture end, function(info, value) texDB.Texture = value end),
-		LineBreakTex = Opt:Spacer(10),
-		Anchored = Opt:Toggle({name = L["Panels_Options_Anchored"], desc = L["Panels_Options_Anchored_Desc"], nil, "normal"}),
-		Parent = Opt:Input({name = L["Parent"], desc = L["Panels_Options_Parent_Desc"], nil, nil, IsAnchorParentDisabled}),
-		LineBreakFlip = Opt:Spacer(13),
+		TexMode = Opt:Select({name = L["Panels_Options_Category"], values = TEX_MODE_SELECT}),
+		Texture = Opt:Input({name = L["Texture"], desc = L["Panels_Options_Texture_Desc"], hidden = IsTextureInputHidden}),
+		TextureSelect = Opt:Select({name = L["Panels_Options_TextureSelect"], desc = L["Panels_Options_TextureSelect_Desc"],
+			values = PRESET_LUI_TEXTURES, hidden = IsTextureSelectHidden, get = textureGet, set = textureSet}),
+		LineBreakTex = Opt:Spacer(),
+		Anchored = Opt:Toggle({name = L["Panels_Options_Anchored"], desc = L["Panels_Options_Anchored_Desc"], width = "normal"}),
+		Parent = Opt:Input({name = L["Parent"], desc = L["Panels_Options_Parent_Desc"], disabled = IsAnchorParentDisabled}),
+		LineBreakFlip = Opt:Spacer(),
 		HorizontalFlip = Opt:Toggle({name = L["Panels_Options_HorizontalFlip"], desc = L["Panels_Options_HorizontalFlip_Desc"]}),
 		VerticalFlip = Opt:Toggle({name = L["Panels_Options_VerticalFlip"], desc = L["Panels_Options_VerticalFlip_Desc"]}),
-		CustomTexCoords = Opt:Toggle({name = L["Panels_Options_CustomTexCoords"], desc = L["Panels_Options_CustomTexCoords_Desc"], nil, nil, nil, IsCustomTexCoordsHidden}),
-		LineBreakCoord = Opt:Spacer(17),
-		Left = Opt:Input({name = L["Point_Left"], nil, "half", nil, IsTexCoordsHidden}),
-		Right = Opt:Input({name = L["Point_Right"], nil, "half", nil, IsTexCoordsHidden}),
-		Up = Opt:Input({name = L["Point_Up"], nil, "half", nil, IsTexCoordsHidden}),
-		Down = Opt:Input({name = L["Point_Down"], nil, "half", nil, IsTexCoordsHidden}),
-		SettingsHeader = Opt:Header(L["Settings"], 30),
-		Width = Opt:InputNumber({name = L["Width"], desc = nil}),
-		Height = Opt:InputNumber({name = L["Height"], desc = nil}),
-		X = Opt:InputNumber({name = "X", desc = nil}),
-		Y = Opt:InputNumber({name = "Y", desc = nil}),
-		LineBreak = Opt:Spacer(33),
+		CustomTexCoords = Opt:Toggle({name = L["Panels_Options_CustomTexCoords"], desc = L["Panels_Options_CustomTexCoords_Desc"], hidden = IsCustomTexCoordsHidden}),
+		LineBreakCoord = Opt:Spacer(),
+		Left = Opt:Input({name = L["Point_Left"], width = "half", hidden = IsTexCoordsHidden}),
+		Right = Opt:Input({name = L["Point_Right"], width = "half", hidden = IsTexCoordsHidden}),
+		Up = Opt:Input({name = L["Point_Up"], width = "half", hidden = IsTexCoordsHidden}),
+		Down = Opt:Input({name = L["Point_Down"], width = "half", hidden = IsTexCoordsHidden}),
+		SettingsHeader = Opt:Header({name = L["Settings"]}),
+		Width = Opt:InputNumber({name = L["Width"]}),
+		Height = Opt:InputNumber({name = L["Height"]}),
+		X = Opt:InputNumber({name = "X"}),
+		Y = Opt:InputNumber({name = "Y"}),
+		LineBreak = Opt:Spacer(),
 		--[(name)] = Opt:ColorMenu(L["Color"], 34, true, RefreshPanel),
-		PosHeader = Opt:Header(L["Position"], 40),
-		Point = Opt:Select({name = L["Anchor"], LUI.Points}),
-		RelativePoint = Opt:Select({name = L["Anchor"], LUI.Points}),
-		LineBreak5 = Opt:Spacer(50, "full"),
-		DeletePanel = Opt:Execute("Delete Panel", nil, 52, DeleteNewPanel)
-	}
+		PosHeader = Opt:Header({name = L["Position"]}),
+		Point = Opt:Select({name = L["Anchor"], values = LUI.Points}),
+		RelativePoint = Opt:Select({name = L["Anchor"], values = LUI.Points}),
+		LineBreak5 = Opt:Spacer({width = "full"}),
+		DeletePanel = Opt:Execute({name = "Delete Panel", func = DeleteNewPanel})
+	}})
 	return group
 end
 
@@ -120,9 +130,7 @@ end
 -- ##### Options Table ################################################################################################
 -- ####################################################################################################################
 
-Opt.options.args.Artwork = Opt:Group("Artwork", nil, nil, "tab", nil, nil, Opt.GetSet(db))
-Opt.options.args.Artwork.handler = module
-local Artwork = {
+Artwork.args = {
 	Header = Opt:Header({name = "Artwork"}),
 	Custom = Opt:Group({name = "Custom Panels", childGroups = "tree", args = {
 		NewDesc = Opt:Desc({name = "    Add Custom Panels:", fontSize = "medium", width = "normal"}),
@@ -136,5 +144,3 @@ for i = 1, #module.panelList do
 	local name = module.panelList[i]
 	Artwork.Custom.args[name] = CreatePanelGroup(name)
 end
-
-Opt.options.args.Artwork.args = Artwork

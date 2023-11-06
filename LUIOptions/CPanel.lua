@@ -5,11 +5,14 @@
 ---@class Opt
 local Opt = select(2, ...)
 
----@type LUIAddon
+---@class LUIAddon
 local LUI = Opt.LUI
 local L = LUI.L
 
 local IsShiftKeyDown = _G.IsShiftKeyDown
+
+local CPanel = Opt:CreateModuleOptions("Control Panel", LUI)
+CPanel.order = 3
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -71,16 +74,11 @@ end
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
--- local Cooldown = Opt:CreateModuleOptions("Cooldown", LUI)
-Opt.options.args.CPanel = Opt:Group("Control Panel", nil, 3, "tab")
-Opt.options.args.CPanel.handler = LUI
-local CPanel = {
+CPanel.args = {
 	Modules = Opt:Group({name = L["CPanel_Modules"], args = GenerateModuleButtons()}),
 	Infotext = Opt:Group({name = L["CPanel_Infotext"], disabled = function() return infotext and infotext.registered end}),
 	Addons = Opt:Group({name = L["CPanel_Addons"], disabled = function() return addonMod and addonMod.registered end}),
 }
 
-if infotext and infotext.registered then CPanel.Infotext.args = GenerateInfotextButtons() end
-if addonMod and addonMod.registered then CPanel.Addons.args = GenerateAddonSupportButtons() end
-
-Opt.options.args.CPanel.args = CPanel
+if infotext and infotext.registered then CPanel.args.Infotext.args = GenerateInfotextButtons() end
+if addonMod and addonMod.registered then CPanel.args.Addons.args = GenerateAddonSupportButtons() end
