@@ -31,8 +31,8 @@ Cooldown.args = {
 		Precision = Opt:Slider({name = "Cooldown Precision", desc = "How many decimal places will be shown once time is within the cooldown threshold.", min = 0, max = 2, step = 1}),
 		MinScale = Opt:Slider({name = "Minimum Scale", desc = "The smallest size of icons that timers will be shown for.", min = 0, max = 2, step = 0.1}),
 		MinToSec = Opt:Slider({name = "Minute to Seconds", desc = "The time at which your cooldown is shown in seconds instead of minutes.", min = 60, max = 300, step = 60}),
-		FilterWA = Opt:Toggle({name = "Filter WeakAuras", desc = "Prevent the cooldown module from interacting with WeakAuras to prevent conflict."}),
-		SupportAll = Opt:Toggle({name = "Support All Cooldown Types", desc = "Show cooldown timers for everything that contains cooldown progress.\n\nNote: Blizzard will sometime use cooldown values to display alternate forms of progress, enabling this could add an unwanted timer on them."}),
+		FilterWA = Opt:Toggle({name = "Filter WeakAuras", desc = "Prevent the cooldown module from interacting with WeakAuras to prevent conflict.", width = "full"}),
+		SupportAll = Opt:Toggle({name = "Support All Cooldown Types", desc = "Show cooldown timers for everything that contains cooldown progress.\n\nNote: Blizzard will sometime use cooldown values to display alternate forms of progress, enabling this could add an unwanted timer on them.", width = "full"}),
 	}}),
 	Text = Opt:Group({name = "Text Settings", db = db.Text, args = {
 		Font = Opt:MediaFont({name = "Font", desc = "Select the font to be used by cooldown's texts."}),

@@ -1,4 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <Script file="cooldown_init.lua"/>
     <Script file="cooldown.lua"/>
 
     <Frame name="LUI_Cooldown_Template" virtual="true" hidden="true">

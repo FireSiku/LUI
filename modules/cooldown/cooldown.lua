@@ -4,13 +4,19 @@
 	Description: Cooldown Timer Module
 ]]
 
--- External references.
+-- ####################################################################################################################
+-- ##### Setup and Locals #############################################################################################
+-- ####################################################################################################################
+
 ---@class LUIAddon
 local LUI = select(2, ...)
+local L = LUI.L
 
----@class LUI.Cooldown: LUIModule, AceHook-3.0
-local module = LUI:NewModule("Cooldown", "LUIDevAPI", "AceHook-3.0")
+---@class LUI.Cooldown
+local module = LUI:GetModule("Cooldown")
 local Media = LibStub("LibSharedMedia-3.0")
+
+module.timers = {}
 
 -- Database and defaults shortcuts.
 local db --luacheck: ignore
@@ -27,7 +33,6 @@ local COOLDOWN_TYPE_NORMAL = _G.COOLDOWN_TYPE_NORMAL or 2
 -- Local Variables
 --------------------------------------------------
 
-local timers = {}
 local activeUICooldowns = {}
 
 --------------------------------------------------
@@ -46,7 +51,6 @@ end
 -- Cooldown Functions
 --------------------------------------------------
 
-local initTimer
 do
 	local day, hour, minute = 86400, 3600, 60
 	local iconSize = 36
@@ -73,6 +77,8 @@ do
 	})
 
 	function module:UpdateVars()
+		db = module.db.profile
+
 		precision = 1 / 10^(db.General.Precision)
 		threshold = db.General.Threshold
 		minDuration = db.General.MinDuration
@@ -196,7 +202,7 @@ do
 		else
 			timer = setmetatable(CreateFrame("Frame", nil, cd, "LUI_Cooldown_Template"), Timer)
 			timer:SetScript("OnUpdate", timer.OnUpdate)
-			tinsert(timers, timer)
+			tinsert(module.timers, timer)
 		end
 
 		timer.cd = cd
@@ -244,7 +250,7 @@ do
 		end
 	end
 
-	initTimer = function()
+	function module.initTimer()
 		if not Timer.__index then
 			local timerFuncs = Timer
 
@@ -277,131 +283,5 @@ end
 function module:ACTIONBAR_UPDATE_COOLDOWN()
 	for cd, button in pairs(activeUICooldowns) do
 		module:AssignTimer(cd, GetActionCooldown(button.action))
-	end
-end
-
-
---------------------------------------------------
--- Module Functions
---------------------------------------------------
-
-module.defaults = {
-	profile = {
-		General = {
-			MinDuration = 3,
-			MinScale = 0.5,
-			Precision = 1,
-			Threshold = 8,
-			MinToSec = 60,
-			FilterWA = true,
-			SupportAll = false,
-		},
-		Text = {
-			Font = "vibroceb",
-			Size = 20,
-			Flag = "OUTLINE",
-			XOffset = 2,
-			YOffset = 0,
-			Align = "CENTER",
-		},
-		Colors = {
-			Day =       {r = 0.8, g = 0.8, b = 0.8},
-			Hour =      {r = 0.8, g = 0.8, b = 1.0},
-			Min =       {r = 1.0, g = 1.0, b = 1.0},
-			Sec =       {r = 1.0, g = 1.0, b = 0.0},
-			Threshold = {r = 1.0, g = 0.0, b = 0.0},
-		},
-	},
-}
-
-module.conflicts = "OmniCC;tullaCooldownCount"
-module.enableButton = true
-
-function module:LoadOptions()
-	local func = "Refresh"
-	
-	local alignTable = {
-		LEFT = "Left",
-		CENTER = "Center",
-		RIGHT = "Right",
-	}
-	
-	local options = {
-		General = self:NewGroup("General Settings", 1, {
-			Threshold = self:NewInputNumber("Cooldown Threshold", "The time at which your coodown text is colored differnetly and begins using specified precision.", 1, func),
-			MinDuration = self:NewInputNumber("Minimum Duration", "The lowest cooldown duration that timers will be shown for.", 2, func),
-			Precision = self:NewSlider("Cooldown Precision", "How many decimal places will be shown once time is within the cooldown threshold.", 3, 0, 2, 1, func),
-			MinScale = self:NewSlider("Minimum Scale", "The smallest size of icons that timers will be shown for.", 4, 0, 2, 0.1, func),
-			MinToSec = self:NewSlider("Minute to Seconds", "The time at which your cooldown is shown in seconds instead of minutes.", 4, 60, 300, 60, func),
-			FilterWA = self:NewToggle("Filter WeakAuras", "Prevent the cooldown module from interacting with WeakAuras to prevent conflict.", 5),
-			SupportAll = self:NewToggle("Support All Cooldown Types", "Show cooldown timers for everything that contains cooldown progress.\n\nNote: Blizzard will sometime use cooldown values to display alternate forms of progress, enabling this could add an unwanted timer on them.", 6),
-		}),
-		Text = self:NewGroup("Text Settings", 2, {
-			Font = self:NewSelect("Font", "Select the font to be used by cooldown's texts.", 1, AceGUIWidgetLSMlists.font, "LSM30_Font", func),
-			Size = self:NewSlider("Font Size", "Select the font size to be used by cooldown's texts.", 2, 6, 32, 1, func),
-			Flag = self:NewSelect("Font Outline", "Select the font outline to be used by cooldown's texts.", 3, LUI.FontFlags, false, func),
-			Offsets = self:NewHeader("Text Position", 4),
-			XOffset = self:NewInputNumber("X Offset", "Horizontal offset to be applied to the cooldown's texts.", 5, func),
-			YOffset = self:NewInputNumber("Y Offset", "Vertical offset to be applied to the cooldown's texts.", 6, func),
-			Align = self:NewSelect("Alignment", "Alignment to be applied to the cooldown's texts", 7, alignTable, false, func)
-		}),
-		Colors = self:NewGroup("Colors", 3, {
-			Threshold = self:NewColorNoAlpha("Threshold", "The color of cooldown's text under the threshold.", 1, func),
-			Sec = self:NewColorNoAlpha("Seconds", "The color of cooldown's text when representing seconds.", 2, func),
-			Min = self:NewColorNoAlpha("Minutes", "The color of cooldown's text when representing minutes.", 3, func),
-			Hour = self:NewColorNoAlpha("Hours", "The color of cooldown's text when representing hours.", 4, func),
-			Day = self:NewColorNoAlpha("Days", "The color of cooldown's text when representing days.", 5, func),
-		}),
-	}
-	return options
-end
-
-function module:Refresh()
-	module:UpdateVars()
-
-	for i, timer in ipairs(timers) do
-		if timer.enabled then
-			timer.fontScale = nil -- force update
-			if timer:Scale() then
-				timer:Position()
-			end
-		end
-	end
-end
-
-function module:DBCallback(event, dbobj, profile)
-	module:OnInitialize()
-
-	module:Refresh()
-end
-
-function module:OnInitialize()
-	db = LUI:Namespace(self, true)
-end
-
-function module:OnEnable()
-	LUI.Profiler.TraceScope(module, "Cooldown", "LUI", 2)
-	module:UpdateVars()
-
-	initTimer()
-
-	-- Register frames handled by SetActionUIButton
-	if _G.ActionBarButtonEventsFrame.frames then
-		for i, frame in pairs(_G.ActionBarButtonEventsFrame.frames) do
-			module:RegisterActionUIButton(frame)
-		end
-	end
-	-- module:SecureHook(ActionBarButtonEventsFrameMixin, "RegisterFrame", "RegisterActionUIButton")
-	module:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
-end
-
-function module:OnDisable()
-	module:UnhookAll()
-	module:UnregisterAllEvents()
-
-	for i, timer in ipairs(timers) do
-		if timer.enabled then
-			timer:Stop()
-		end
 	end
 end
