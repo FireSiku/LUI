@@ -1,6 +1,6 @@
 local parent, ns = ...
 local global = C_AddOns.GetAddOnMetadata(parent, 'X-oUF')
-local _VERSION = '11.2.1'
+local _VERSION = '11.2.3'
 if(_VERSION:find('project%-version')) then
 	_VERSION = 'devel'
 end
@@ -302,6 +302,16 @@ local function initObject(unit, style, styleFunc, header, ...)
 			object:SetAttribute('*type2', 'togglemenu')
 			object:SetAttribute('toggleForVehicle', true)
 
+			--[[ frame.IsPingable
+			This boolean can be set to false to disable the frame from being pingable. Enabled by default.
+			--]]
+			--[[ Override: frame:GetContextualPingType()
+			Used to define which contextual ping is used for the frame.
+
+			By default this wraps `C_Ping.GetContextualPingTypeForUnit(UnitGUID(frame.unit))`.
+			--]]
+			object:SetAttribute('ping-receiver', true)
+
 			if(isEventlessUnit(objectUnit)) then
 				oUF:HandleEventlessUnit(object)
 			else
@@ -345,6 +355,8 @@ local function initObject(unit, style, styleFunc, header, ...)
 		for _, func in next, callback do
 			func(object)
 		end
+
+		Mixin(object, PingableType_UnitFrameMixin)
 
 		-- Make Clique kinda happy
 		if(not object.isNamePlate) then
@@ -594,6 +606,8 @@ do
 				frame:SetAttribute('*type1', 'target')
 				frame:SetAttribute('*type2', 'togglemenu')
 				frame:SetAttribute('oUF-guessUnit', unit)
+
+				frame:SetAttribute('ping-receiver', true)
 			end
 
 			local body = header:GetAttribute('oUF-initialConfigFunction')
