@@ -43,7 +43,9 @@ local MAX_TOTEMS = _G.MAX_TOTEMS
 
 local standings = {"Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted"}
 
-local EVOKER_POWER_NEXUS_NODE = 68574
+local EVOKER_DPS_POWER_NEXUS_NODE = 68574
+local EVOKER_AUG_POWER_NEXUS_NODE = 93201
+local EVOKER_HEAL_POWER_NEXUS_NODE = 93249
 local MONK_ASCENSION_NODE = 80612
 local ROGUE_SECRET_STRATEGEM_NODE = 90722
 local ROGUE_DEEPER_STRATAGEM_NODE = 90750
@@ -1783,10 +1785,16 @@ module.funcs = {
 		local function checkPowers(event, level)
 			local pLevel = (event == "UNIT_LEVEL") and tonumber(level) or UnitLevel("player")
 			local count = BASE_COUNT[LUI.playerClass]
-			if LUI.EVOKER and module:GetTalentRank(EVOKER_POWER_NEXUS_NODE) then
-				count = 6
+			if LUI.EVOKER then 
+				if module:GetTalentRank(EVOKER_DPS_POWER_NEXUS_NODE) then
+					count = 6
+				elseif module:GetTalentRank(EVOKER_AUG_POWER_NEXUS_NODE) then
+					count = 6
+				elseif module:GetTalentRank(EVOKER_HEAL_POWER_NEXUS_NODE) then
+					count = 6
+				end
 			elseif LUI.MONK and module:GetTalentRank(MONK_ASCENSION_NODE) then
-				count = count + 1
+				count = 6
 			elseif LUI.ROGUE then
 				if module:GetTalentRank(ROGUE_SECRET_STRATEGEM_NODE) then
 					count = count + 1
