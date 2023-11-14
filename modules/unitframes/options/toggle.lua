@@ -224,6 +224,10 @@ module.ToggleUnit = setmetatable({
 			local growdir = dbUnit.GrowDirection
 			local opposite = GetOpposite(growdir)
 
+			local dbParty = module.db.profile.party
+			local dbPartyTarget = module.db.profile.partytarget
+			local dbPartyPet = module.db.profile.partypet
+
 			if oUF_LUI_party then
 				oUF_LUI_party:SetScale(dbUnit.Scale)
 				oUF_LUI_party:ClearAllPoints()
@@ -235,16 +239,16 @@ module.ToggleUnit = setmetatable({
 				oUF_LUI_party:SetAttribute("oUF-initialConfigFunction", [[
 					local unit = ...
 					if unit == "party" then
-						self:SetHeight(]]..dbUnit.Height..[[)
-						self:SetWidth(]]..dbUnit.Width..[[)
+						self:SetHeight(]]..dbParty.Height..[[)
+						self:SetWidth(]]..dbParty.Width..[[)
 					elseif unit == "partytarget" then
-						self:SetHeight(]]..dbUnit.Height..[[)
-						self:SetWidth(]]..dbUnit.Width..[[)
-						self:SetPoint("]]..dbUnit.Point..[[", self:GetParent(), "]]..dbUnit.RelativePoint..[[", ]]..dbUnit.X..[[, ]]..dbUnit.Y..[[)
+						self:SetHeight(]]..dbPartyTarget.Height..[[)
+						self:SetWidth(]]..dbPartyTarget.Width..[[)
+						self:SetPoint("]]..dbPartyTarget.Point..[[", self:GetParent(), "]]..dbPartyTarget.RelativePoint..[[", ]]..dbPartyTarget.X..[[, ]]..dbPartyTarget.Y..[[)
 					elseif unit == "partypet" then
-						self:SetHeight(]]..dbUnit.Height..[[)
-						self:SetWidth(]]..dbUnit.Width..[[)
-						self:SetPoint("]]..dbUnit.Point..[[", self:GetParent(), "]]..dbUnit.RelativePoint..[[", ]]..dbUnit.X..[[, ]]..dbUnit.Y..[[)
+						self:SetHeight(]]..dbPartyPet.Height..[[)
+						self:SetWidth(]]..dbPartyPet.Width..[[)
+						self:SetPoint("]]..dbPartyPet.Point..[[", self:GetParent(), "]]..dbPartyPet.RelativePoint..[[", ]]..dbPartyPet.X..[[, ]]..dbPartyPet.Y..[[)
 					end
 				]])
 
@@ -267,16 +271,16 @@ module.ToggleUnit = setmetatable({
 					"oUF-initialConfigFunction", [[
 						local unit = ...
 						if unit == "party" then
-							self:SetHeight(]]..dbUnit.Height..[[)
-							self:SetWidth(]]..dbUnit.Width..[[)
+							self:SetHeight(]]..dbParty.Height..[[)
+							self:SetWidth(]]..dbParty.Width..[[)
 						elseif unit == "partytarget" then
-							self:SetHeight(]]..dbUnit.Height..[[)
-							self:SetWidth(]]..dbUnit.Width..[[)
-							self:SetPoint("]]..dbUnit.Point..[[", self:GetParent(), "]]..dbUnit.RelativePoint..[[", ]]..dbUnit.X..[[, ]]..dbUnit.Y..[[)
+							self:SetHeight(]]..dbPartyTarget.Height..[[)
+							self:SetWidth(]]..dbPartyTarget.Width..[[)
+							self:SetPoint("]]..dbPartyTarget.Point..[[", self:GetParent(), "]]..dbPartyTarget.RelativePoint..[[", ]]..dbPartyTarget.X..[[, ]]..dbPartyTarget.Y..[[)
 						elseif unit == "partypet" then
-							self:SetHeight(]]..dbUnit.Height..[[)
-							self:SetWidth(]]..dbUnit.Width..[[)
-							self:SetPoint("]]..dbUnit.Point..[[", self:GetParent(), "]]..dbUnit.RelativePoint..[[", ]]..dbUnit.X..[[, ]]..dbUnit.Y..[[)
+							self:SetHeight(]]..dbPartyPet.Height..[[)
+							self:SetWidth(]]..dbPartyPet.Width..[[)
+							self:SetPoint("]]..dbPartyPet.Point..[[", self:GetParent(), "]]..dbPartyPet.RelativePoint..[[", ]]..dbPartyPet.X..[[, ]]..dbPartyPet.Y..[[)
 						end
 					]]
 				)

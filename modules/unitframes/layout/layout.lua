@@ -1250,13 +1250,19 @@ module.funcs = {
 			self.Health.bg = self.Health:CreateTexture(nil, "BORDER")
 			self.Health.bg:SetAllPoints(self.Health)
 		end
-
+		
 		self.Health:SetHeight(oufdb.HealthBar.Height)
-		if not oufdb.HealthBar.Width then LUI:Print(unit, oufdb.HealthBar.Width, oufdb.Width) end
-		self.Health:SetWidth(oufdb.HealthBar.Width * self:GetWidth() / oufdb.Width) -- needed for 25/40 man raid width downscaling!
 		self.Health:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.HealthBar.Texture))
+		self.Health:SetWidth(oufdb.HealthBar.Width)
 		self.Health:ClearAllPoints()
-		self.Health:SetPoint("TOPLEFT", self, "TOPLEFT", oufdb.HealthBar.X * self:GetWidth() / oufdb.Width, oufdb.HealthBar.Y) -- needed for 25/40 man raid width downscaling!
+		self.Health:SetPoint("TOPLEFT", self, "TOPLEFT", oufdb.HealthBar.X, oufdb.HealthBar.Y)
+
+		if unit == "raid" then
+			self.Health:ClearAllPoints()
+			self.Health:SetWidth(oufdb.HealthBar.Width * self:GetWidth() / oufdb.Width) -- needed for 25/40 man raid width downscaling!
+			self.Health:SetPoint("TOPLEFT", self, "TOPLEFT", oufdb.HealthBar.X * self:GetWidth() / oufdb.Width, oufdb.HealthBar.Y) -- needed for 25/40 man raid width downscaling!
+		end
+		
 
 		self.Health.bg:SetTexture(Media:Fetch("statusbar", oufdb.HealthBar.TextureBG))
 		self.Health.bg:SetAlpha(oufdb.HealthBar.BGAlpha)
@@ -1280,10 +1286,16 @@ module.funcs = {
 		end
 
 		self.Power:SetHeight(oufdb.PowerBar.Height)
-		self.Power:SetWidth(oufdb.PowerBar.Width * self:GetWidth() / oufdb.Width) -- needed for 25/40 man raid width downscaling!
+		self.Power:SetWidth(oufdb.PowerBar.Width)
 		self.Power:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.PowerBar.Texture))
 		self.Power:ClearAllPoints()
-		self.Power:SetPoint("TOPLEFT", self, "TOPLEFT", oufdb.PowerBar.X * self:GetWidth() / oufdb.Width, oufdb.PowerBar.Y) -- needed for 25/40 man raid width downscaling!
+		self.Power:SetPoint("TOPLEFT", self, "TOPLEFT", oufdb.PowerBar.X, oufdb.PowerBar.Y)
+
+		if unit == "raid" then
+			self.Power:ClearAllPoints()
+			self.Power:SetWidth(oufdb.PowerBar.Width * self:GetWidth() / oufdb.Width) -- needed for 25/40 man raid width downscaling!
+			self.Power:SetPoint("TOPLEFT", self, "TOPLEFT", oufdb.PowerBar.X * self:GetWidth() / oufdb.Width, oufdb.PowerBar.Y) -- needed for 25/40 man raid width downscaling!
+		end
 
 		self.Power.bg:SetTexture(Media:Fetch("statusbar", oufdb.PowerBar.TextureBG))
 		self.Power.bg:SetAlpha(oufdb.PowerBar.BGAlpha)
