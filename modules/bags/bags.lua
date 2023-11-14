@@ -268,6 +268,10 @@ function ContainerMixin:SlotUpdate(itemSlot)
 		elseif (questInfo.questID or questInfo.isQuestItem) and self:GetOption("ShowQuest") then
 			questTexture:SetTexture(TEXTURE_ITEM_QUEST_BORDER)
 			questTexture:Show()
+		-- elseif data and not data.isBound then
+		-- 	questTexture:SetTexture(TEXTURE_ITEM_QUEST_BORDER)
+		-- 	questTexture:SetDesaturated(true)
+		-- 	questTexture:Show()
 		else
 			questTexture:Hide()
 		end
@@ -515,7 +519,7 @@ end
 
 --- Function to create a blank container frame.
 ---@param frame Frame
----@return Frame|ContainerMixin mix=
+---@return ContainerMixin mix
 local function HookMixin(frame)
 	for k, v in pairs(ContainerMixin) do
 		if frame[k] then
@@ -524,7 +528,7 @@ local function HookMixin(frame)
 			frame[k] = v
 		end
 	end
-	return frame
+	return frame ---@cast frame ContainerMixin
 end
 
 function module:CreateNewContainer(name, obj)
@@ -537,7 +541,12 @@ function module:CreateNewContainer(name, obj)
 	frame:SetMovable(true)
 	frame:SetToplevel(true)
 	frame:SetClampedToScreen(true)
-	frame:SetSize(1,1)
+	frame:SetSize(600, 600)
+	--LUI:Print(BackpackTokenFrame:GetWidth())
+	if BackpackTokenFrame:GetWidth() == 1 then
+		BackpackTokenFrame:SetWidth(frame:GetWidth())
+		--LUI:Print(BackpackTokenFrame:GetMaxTokensWatched())
+	end
 
 	-- Background frame
 	local bgFrame = CreateFrame("Frame", nil, frame, "BackdropTemplate")

@@ -106,7 +106,7 @@ function Bags:CreateTitleBar()
 	-- Watched Currency Display, next to gold
 	local currency = self:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge")
 	currency:SetJustifyH("RIGHT")
-	currency:SetPoint("RIGHT", gold, "LEFT", -10, 0)
+	currency:SetPoint("RIGHT", gold, "LEFT", -25, 0)
 	currency:SetText(self:GetCurrencyString())
 	currency:SetFont(Media:Fetch("font", db.Bags.Name), db.Bags.Size, db.Bags.Flag)
 
@@ -139,6 +139,8 @@ function Bags:GetCurrencyString()
 end
 
 function Bags:UpdateCurrencies()
+	-- Blizzard now determines the amount of currencies you can watched based on the size of the Token Frame, even if it isn't shown
+	BackpackTokenFrame:SetWidth(self:GetWidth())
 	self.gold:SetText(GetMoneyString(GetMoney()))
 	self.currency:SetText(self:GetCurrencyString())
 end
