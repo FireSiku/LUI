@@ -555,6 +555,10 @@ module.ToggleUnit = setmetatable({
 			local growdir = dbUnit.GrowDirection
 			local opposite = GetOpposite(growdir)
 
+			local dbTank = module.db.profile.maintank
+			local dbTankTarget = module.db.profile.maintanktarget
+			local dbTankToT = module.db.profile.maintanktargettarget
+
 			if oUF_LUI_maintank then
 				oUF_LUI_maintank:SetScale(dbUnit.Scale)
 				oUF_LUI_maintank:ClearAllPoints()
@@ -565,16 +569,16 @@ module.ToggleUnit = setmetatable({
 				oUF_LUI_maintank:SetAttribute("oUF-initialConfigFunction", [[
 					local unit = ...
 					if unit == "maintanktargettarget" then
-						self:SetHeight(]]..dbUnit.Height..[[)
-						self:SetWidth(]]..dbUnit.Width..[[)
-						self:SetPoint("]]..dbUnit.Point..[[", self:GetParent(), "]]..dbUnit.RelativePoint..[[", ]]..dbUnit.X..[[, ]]..dbUnit.Y..[[)
+						self:SetHeight(]]..dbTankToT.Height..[[)
+						self:SetWidth(]]..dbTankToT.Width..[[)
+						self:SetPoint("]]..dbTankToT.Point..[[", self:GetParent(), "]]..dbTankToT.RelativePoint..[[", ]]..dbTankToT.X..[[, ]]..dbTankToT.Y..[[)
 					elseif unit == "maintanktarget" then
-						self:SetHeight(]]..dbUnit.Height..[[)
-						self:SetWidth(]]..dbUnit.Width..[[)
-						self:SetPoint("]]..dbUnit.Point..[[", self:GetParent(), "]]..dbUnit.RelativePoint..[[", ]]..dbUnit.X..[[, ]]..dbUnit.Y..[[)
+						self:SetHeight(]]..dbTankTarget.Height..[[)
+						self:SetWidth(]]..dbTankTarget.Width..[[)
+						self:SetPoint("]]..dbTankTarget.Point..[[", self:GetParent(), "]]..dbTankTarget.RelativePoint..[[", ]]..dbTankTarget.X..[[, ]]..dbTankTarget.Y..[[)
 					elseif unit == "maintank" then
-						self:SetHeight(]]..dbUnit.Height..[[)
-						self:SetWidth(]]..dbUnit.Width..[[)
+						self:SetHeight(]]..dbTank.Height..[[)
+						self:SetWidth(]]..dbTank.Width..[[)
 					end
 				]])
 				oUF_LUI_maintank:Show()
@@ -599,16 +603,16 @@ module.ToggleUnit = setmetatable({
 					"oUF-initialConfigFunction", [[
 						local unit = ...
 						if unit == "maintanktargettarget" then
-							self:SetHeight(]]..dbUnit.Height..[[)
-							self:SetWidth(]]..dbUnit.Width..[[)
-							self:SetPoint("]]..dbUnit.Point..[[", self:GetParent(), "]]..dbUnit.RelativePoint..[[", ]]..dbUnit.X..[[, ]]..dbUnit.Y..[[)
+							self:SetHeight(]]..dbTankToT.Height..[[)
+							self:SetWidth(]]..dbTankToT.Width..[[)
+							self:SetPoint("]]..dbTankToT.Point..[[", self:GetParent(), "]]..dbTankToT.RelativePoint..[[", ]]..dbTankToT.X..[[, ]]..dbTankToT.Y..[[)
 						elseif unit == "maintanktarget" then
-							self:SetHeight(]]..dbUnit.Height..[[)
-							self:SetWidth(]]..dbUnit.Width..[[)
-							self:SetPoint("]]..dbUnit.Point..[[", self:GetParent(), "]]..dbUnit.RelativePoint..[[", ]]..dbUnit.X..[[, ]]..dbUnit.Y..[[)
+							self:SetHeight(]]..dbTankTarget.Height..[[)
+							self:SetWidth(]]..dbTankTarget.Width..[[)
+							self:SetPoint("]]..dbTankTarget.Point..[[", self:GetParent(), "]]..dbTankTarget.RelativePoint..[[", ]]..dbTankTarget.X..[[, ]]..dbTankTarget.Y..[[)
 						elseif unit == "maintank" then
-							self:SetHeight(]]..dbUnit.Height..[[)
-							self:SetWidth(]]..dbUnit.Width..[[)
+							self:SetHeight(]]..dbTank.Height..[[)
+							self:SetWidth(]]..dbTank.Width..[[)
 						end
 					]]
 				)
