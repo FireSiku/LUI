@@ -307,7 +307,10 @@ local function NewUnitOptionGroup(unit, order)
 
     local unitOptions = Opt:Group({name = unit, childGroups = "tree"})
     unitOptions.args.General = Opt:Group({name = "General", db = dbUnit, args = {
-        Position = Opt:Header({name = "Position"}),
+        Position = Opt:Header({name = "Size & Position"}),
+        Width = Opt:InputNumber({name = "Width"}),
+        Height = Opt:InputNumber({name = "Height"}),
+        Spacer = Opt:Spacer({}),
         X = Opt:Input({name = "X Value"}),
         Y = Opt:Input({name = "Y Value"}),
         Point = Opt:Select({name = L["Anchor"], values = LUI.Points}),
