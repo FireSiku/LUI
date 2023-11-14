@@ -188,7 +188,7 @@ module.ToggleUnit = setmetatable({
 	end,
 
 	bosstarget = function(override)
-		local dbUnit = module.db.profile.bosstargert
+		local dbUnit = module.db.profile.bosstarget
 		if override == nil then override = dbUnit.Enable end
 
 		if override and dbUnit.Enable then
