@@ -123,28 +123,29 @@ Merchant.args = {
     -- General
     Header = Opt:Header({name = L["Merchant"]}),
 	Info = Opt:Desc({name = "This Merchant allows you to automatically sell/buy items and/or repair your armor when you open a merchant frame."}),
-	AutoRepair = Opt:Group({name = "Auto Repair", args = {
+	AutoRepair = Opt:Group({name = "Auto Repair", db = db.AutoRepair, args = {
 		Title = Opt:Header({name = "Auto Repair Settings"}),
 		Info = Opt:Desc({name = "Set your Auto Repair options. If a guild repair fails it will not prevent a normal repair. Additionally you may also set a cost limit."}),
 		Enable = Opt:Toggle({name = "Enable Auto Repair"}),
-		Settings = Opt:Group({name = "Settings", disabled = disabled.AutoRepair, args = {
-			UseGuild = Opt:Toggle({name = "Use Guild Repair"}),
-			NoLimit = Opt:Toggle({name = "No Cost Limit"}),
-			CostLimit = Opt:Slider({name = "Cost Limit", desc = "The cost limit in gold after which the repair won't happen automatically.", min = 0, max = 500, step = 10, disabled = disabled.CostLimit}),
-			ShowError = Opt:Toggle({name = "Show Limit Error"}),
-			ShowSuccess = Opt:Toggle({name = "Show Success Messages"}),
+		Settings = Opt:InlineGroup({name = "Settings",  db = db.AutoRepair.Settings, disabled = disabled.AutoRepair,args = {
+			ShowSuccess = Opt:Toggle({name = "Show Success Messages", width = "full"}),
+			UseGuild = Opt:Toggle({name = "Use Guild Repair", width = "full"}),
+			NoLimit = Opt:Toggle({name = "No Cost Limit", width = "full"}),
+			ShowError = Opt:Toggle({name = "Show Limit Error", disabled = disabled.CostLimit}),
+			CostLimit = Opt:Slider({name = "Cost Limit", min = 0, max = 500, step = 10, disabled = disabled.CostLimit, desc = "The cost limit in gold after which the repair won't happen automatically."}),
 		}}),
 	}}),
-	AutoSell = Opt:Group({name = "Auto Sell", args = {
+	AutoSell = Opt:Group({name = "Auto Sell", db = db.AutoSell, args = {
 		Title = Opt:Header({name = "Auto Sell Settings"}),
 		Info = Opt:Desc({name = "Set your Auto Sell options."}),
-		Enable = Opt:Toggle({name = "Enable Auto Sell"}),
-		Settings = Opt:Group({name = "Settings", disabled = disabled.AutoSell, args = {
-			ShowSuccess = Opt:Toggle({name = "Show Success Messages"}),
-			ShowExclusion = Opt:Toggle({name = "Show Exclusion Messages"}),
+		Enable = Opt:Toggle({name = "Enable Auto Sell", width = "full"}),
+		Settings = Opt:InlineGroup({name = "Settings", db = db.AutoSell.Settings, disabled = disabled.AutoSell, args = {
+			ShowSuccess = Opt:Toggle({name = "Show Success Messages", width = "full"}),
+			ShowExclusion = Opt:Toggle({name = "Show Exclusion Messages", width = "full"}),
 		}}),
 		Warning = Opt:Desc({name = "|cffff9933Warning:|r You really shouldn't enable other item qualities unless you are very sure that you won't sell anything of value."}),
-		ItemQualities = Opt:MultiSelect({name = "Item Qualities", desc = "Changes the item quality from which everything automatically will be sold when opening a merchant frame.",
+		--- @TODO: ItemQualities is not pulling DB correctly. 
+		ItemQualities = Opt:MultiSelect({name = "Item Qualities", db = db.AutoSell, desc = "Changes the item quality from which everything automatically will be sold when opening a merchant frame.",
 			values = qualities, disabled = disabled.AutoSell}),
 		AddExclusion = Opt:InlineGroup({name = "Add Item Exclusion", set = module.ItemExclusion, disabled = disabled.AutoSell, args = {
 			Description = Opt:Desc({name = "Items in this list will behave opposite of the settings.\nTo add an item to the Exclusion list do one of the following:\n" ..
@@ -152,7 +153,7 @@ Merchant.args = {
 				"You can provide a link by Shift + Leftclicking on an item or link."}),
 			DropItem = Opt:Execute({name = "Drop an item here!", desc = "Select an item and drop it on this slot. (Leftclick)", func = module.ItemExclusion,
 				imageWidth = 64, imageHeight = 64, imageCoords = {0.15, 0.8, 0.15, 0.8}, image = "Interface\\Buttons\\UI-Quickslot2"}),
-			InputItem = Opt:Input({name = "Or enter an id, name or link", "Enter an item id, name or link (Shift + Leftclick an item)"})
+			InputItem = Opt:Input({name = "Or enter an id, name or link", desc = "Enter an item id, name or link (Shift + Leftclick an item)"})
 		}}),
 		RemoveExclusion = Opt:InlineGroup({name = "Remove Item Exclusion", get = exclusionGet, set = exclusionSet, disabled = disabled.AutoSell, args = {
 			Select = Opt:Select({name = "Select Item", desc = "Select the item which you want to remove from the exclusion list.", values = exclusions, width = "double"}),
@@ -161,19 +162,19 @@ Merchant.args = {
 		}}),
 	}}),
 
-	AutoStock = Opt:Group({name = "Auto Stock", args = {
+	AutoStock = Opt:Group({name = "Auto Stock", db = db.AutoStock, args = {
 		Title = Opt:Header({name = "Auto Stock Settings"}),
 		Info = Opt:Desc({name = "Set your Auto Stock options. Additionally you may also set a cost limit."}),
-		Enable = Opt:Toggle({name = "Enable Auto Stock"}),
+		Enable = Opt:Toggle({name = "Enable Auto Stock", width = "full"}),
 		Items = Opt:Select({name = "Stock List", desc = "List of all items that will automatically be restocked.", values = stockValues, get = stockGet, set = stockSet, disabled = disabled.AutoStock}),
 		Update = Opt:Input({name = "Count & New Item", desc = "Type in the amount to buy of the selected item, or type in a new item name, link or id to add a new item to the list. If entering an item id please enter like so: \"id:1234\".", 
 			get = stockUpdateGet, set = stockUpdateSet, disabled = disabled.AutoStock }),
-		Settings = Opt:InlineGroup({name = "Settings", disabled = disabled.AutoStock, args = {
-			NoLimit = Opt:Toggle({name = "No Cost Limit"}),
+		Settings = Opt:InlineGroup({name = "Settings", db = db.AutoStock.Settings, disabled = disabled.AutoStock, args = {
+			ShowSuccess = Opt:Toggle({name = "Show Success Messages", width = "full"}),
+			NoLimit = Opt:Toggle({name = "No Cost Limit", width = "full"}),
+			ShowError = Opt:Toggle({name = "Show Limit Error", disabled = disabled.BuyLimit}),
 			CostLimit = Opt:Slider({name = "Cost Limit", desc = "The cost limit in gold after which buying items won't happen automatically.", 
 				min = 0, max = 500, step = 10, disabled = disabled.BuyLimit}),
-			ShowError = Opt:Toggle({name = "Show Limit Error"}),
-			ShowSuccess = Opt:Toggle({name = "Show Success Messages"}),
 		}}),
 	}}),
 }

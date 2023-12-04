@@ -92,6 +92,32 @@ function OptionMixin.IsNumber(info, num)
 	return true
 end
 
+--- Getter/Setter for debugging purposes
+local function debugGetSet(db)
+
+	local function debugGet(info, test)
+		local value = db[info[#info]]
+		if info.type == "input" then return tostring(value) end
+		LUI:Print("Get", info[#info], value, type(value), test)
+		if type(value) == "table" then LUI:PrintTable(value) end
+		LUI:PrintTable(info)
+		return value
+	end
+
+	local function debugSet(info, value)
+		if tonumber(value) then
+			value = tonumber(value)
+		end
+		LUI:Print("Set", info[#info], value, type(value))
+		db[info[#info]] = value
+		if info.handler.Refresh then
+			info.handler:Refresh()
+		end
+	end
+
+	return debugGet, debugSet
+end
+
 --- Process data coming from Option API and turn it into a proper AceOption table with auto-incrementing order.
 ---@param data LUIOption
 ---@param optionType string @ AceConfigType
@@ -104,6 +130,12 @@ local function AddShared(data, optionType)
 	-- Handle generic AceOptions properties
 	data.type = optionType
 	if not data.order then data.order = nextOrder end
+
+	-- Provides a quick way to debug options
+	if data.debug then
+		data.get, data.get = debugGetSet(data.debug)
+		data.debug = nil
+	end
 
 	-- If db is provided, generate get/set functions accordingly
 	if data.db then
@@ -135,17 +167,22 @@ OptionMixin.PercentValues = {min = 0, max = 1, step = 0.01, bigStep = 0.05, isPe
 ---@return function Get, function Set
 function OptionMixin.GetSet(db)
 	assert(type(db) == "table", "OptionMixin.GetSet argument #1 expected table, got "..type(db))
-	local get = function(info)
+	local get = function(info, key)
 		local value = db[info[#info]]
+		if info.type == "multiselect" then return value[key] end
 		if info.type == "input" then return tostring(value) end
 		return value
 	end
 
-	local set = function(info, value)
+	local set = function(info, value, state)
 		if tonumber(value) then
 			value = tonumber(value)
 		end
-		db[info[#info]] = value
+		if info.type == "multiselect" then
+			db[info[#info]][value] = state
+		else
+			db[info[#info]] = value
+		end
 		if info.handler.Refresh then
 			info.handler:Refresh()
 		end
