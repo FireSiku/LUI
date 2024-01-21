@@ -5,11 +5,16 @@ local LUI = select(2, ...)
 
 local script = LUI:NewScript("ColorPicker", "AceEvent-3.0")
 
+local EXTRA_HEIGHT = 25
+local TEXT_FRAME_OFFSET = 25
+
 local colorBuffer = {}
 local editingText
 
+local ColorPickerFrame = ColorPickerFrame --[[ @as ColorPickerFrameMixin ]]
+
 local function UpdateColor(tbox)
-	local r, g, b = ColorPickerFrame:GetColorRGB()
+	local r, g, b = ColorPickerFrame.Content.ColorPicker:GetColorRGB()
 	local id = tbox:GetID()
 
 	if id == 1 then
@@ -21,41 +26,40 @@ local function UpdateColor(tbox)
 	end
 
 	editingText = true
-	ColorPickerFrame:SetColorRGB(r, g, b)
-	ColorSwatch:SetColorTexture(r, g, b)
+	ColorPickerFrame.Content.ColorPicker:SetColorRGB(r, g, b)
+	-- ColorSwatch:SetColorTexture(r, g, b)
 	editingText = nil
 end
 
-local function UpdateColorTexts()
-	local r, g, b = ColorPickerFrame:GetColorRGB()
+local function UpdateColorTexts(r, g, b)
+	if not r then return end
 	ColorPickerBoxR:SetText(string.format("%.2f", r))
 	ColorPickerBoxG:SetText(string.format("%.2f", g))
 	ColorPickerBoxB:SetText(string.format("%.2f", b))
+
+	-- Note: When alpha slider is update, OnColorSelect is called with just one argument, so it's more clear to pull it directly.
+	local a = ColorPickerFrame:GetColorAlpha()
+	ColorPickerBoxA:SetText(string.format("%.2f", a))
 end
 
 local function UpdateAlpha(tbox)
 	local a = tonumber(tbox:GetText()) or 1
 	if a > 1 then a = 1 end
 	editingText = true
-	OpacitySliderFrame:SetValue(1 - a)
+	ColorPickerFrame.Content.ColorPicker:SetColorAlpha(a)
 	editingText = nil
-end
-
-local function UpdateAlphaText()
-	local a = 1 - OpacitySliderFrame:GetValue()
-	ColorPickerBoxA:SetText(string.format("%.2f", a))
 end
 
 function script:PLAYER_ENTERING_WORLD(event)
 	self:UnregisterEvent(event)
+	local colorPicker = ColorPickerFrame.Content.ColorPicker
 
 	ColorPickerFrame:HookScript("OnShow", function(self)
-		ColorPickerOldColorSwatch:SetTexture(ColorPickerFrame:GetColorRGB())
+		-- ColorPickerOldColorSwatch:SetTexture(ColorPickerFrame:GetColorRGB())
 
 		if ColorPickerFrame.hasOpacity then
 			ColorPickerBoxA:Show()
 			ColorPickerBoxLabelA:Show()
-			UpdateAlphaText()
 		else
 			ColorPickerBoxA:Hide()
 			ColorPickerBoxLabelA:Hide()
@@ -63,71 +67,14 @@ function script:PLAYER_ENTERING_WORLD(event)
 		UpdateColorTexts()
 	end)
 
-	ColorPickerFrame:HookScript("OnColorSelect", function()
-		if not editingText then UpdateColorTexts() end
+	colorPicker:HookScript("OnColorSelect", function(colorPicker, r, g, b)
+		if not editingText then UpdateColorTexts(r, g, b) end
 	end)
 
-	OpacitySliderFrame:HookScript("OnValueChanged", function()
-		if not editingText then UpdateAlphaText() end
-	end)
-
-	ColorPickerFrame:SetHeight(ColorPickerFrame:GetHeight() + 40)
-
-	ColorSwatch:ClearAllPoints()
-	ColorSwatch:SetPoint("TOPLEFT", ColorPickerFrame, "TOPLEFT", 230, -45)
-
-	local w, h = ColorSwatch:GetSize()
-
-	local ColorPickerOldColorSwatch = ColorPickerFrame:CreateTexture("ColorPickerOldColorSwatch")
-	ColorPickerOldColorSwatch:SetSize(w * .75, h * .75)
-	ColorPickerOldColorSwatch:SetColorTexture(0, 0, 0)
-	ColorPickerOldColorSwatch:SetDrawLayer("BORDER")
-	ColorPickerOldColorSwatch:SetPoint("BOTTOMLEFT", ColorSwatch, "TOPRIGHT", - w / 2, - h / 3)
-
-	local ColorPickerCopyColorSwatch = ColorPickerFrame:CreateTexture("ColorPickerCopyColorSwatch")
-	ColorPickerCopyColorSwatch:SetSize(w, h)
-	ColorPickerCopyColorSwatch:SetColorTexture(0, 0, 0)
-	ColorPickerCopyColorSwatch:Hide()
-
-	local ColorPickerCopy = CreateFrame("Button", "ColorPickerCopy", ColorPickerFrame, "UIPanelButtonTemplate")
-	ColorPickerCopy:SetText("Copy")
-	ColorPickerCopy:SetWidth(70)
-	ColorPickerCopy:SetHeight(20)
-	ColorPickerCopy:SetScale(.8)
-	ColorPickerCopy:SetPoint("TOPLEFT", ColorSwatch, "BOTTOMLEFT", -15, -5)
-
-	ColorPickerCopy:SetScript("OnClick", function()
-		colorBuffer.r, colorBuffer.g, colorBuffer.b = ColorPickerFrame:GetColorRGB()
-
-		ColorPickerPaste:Enable()
-		ColorPickerCopyColorSwatch:SetColorTexture(colorBuffer.r, colorBuffer.g, colorBuffer.b)
-		ColorPickerCopyColorSwatch:Show()
-
-		colorBuffer.a = ColorPickerFrame.hasOpacity and OpacitySliderFrame:GetValue() or nil
-	end)
-
-	local ColorPickerPaste = CreateFrame("Button", "ColorPickerPaste", ColorPickerFrame, "UIPanelButtonTemplate")
-	ColorPickerPaste:SetText("Paste")
-	ColorPickerPaste:SetWidth(70)
-	ColorPickerPaste:SetHeight(22)
-	ColorPickerPaste:SetScale(.8)
-	ColorPickerPaste:SetPoint("TOPLEFT", ColorPickerCopy, "BOTTOMLEFT", 0, -7)
-	ColorPickerPaste:Disable()
-
-	ColorPickerPaste:SetScript("OnClick", function()
-		ColorPickerFrame:SetColorRGB(colorBuffer.r, colorBuffer.g, colorBuffer.b)
-		ColorSwatch:SetColorTexture(colorBuffer.r, colorBuffer.g, colorBuffer.b)
-		if ColorPickerFrame.hasOpacity and colorBuffer.a then
-			OpacitySliderFrame:SetValue(colorBuffer.a)
-		end
-	end)
-
-	ColorPickerCopyColorSwatch:SetPoint("LEFT", ColorSwatch, "LEFT")
-	ColorPickerCopyColorSwatch:SetPoint("TOP", ColorPickerPaste, "BOTTOM", 0, -5)
-
-	OpacitySliderFrame:ClearAllPoints()
-	OpacitySliderFrame:SetPoint("BOTTOM", ColorPickerCopyColorSwatch, "BOTTOM", 0, 10)
-	OpacitySliderFrame:SetPoint("RIGHT", ColorPickerFrame, "RIGHT", -35, 13)
+	ColorPickerFrame:SetHeight(ColorPickerFrame:GetHeight() + EXTRA_HEIGHT)
+	-- Get Hexbox Anchor points and adjust it
+	local a1, p, a2, x, y = ColorPickerFrame.Content.HexBox:GetPoint()
+	ColorPickerFrame.Content.HexBox:SetPoint(a1, p, a2, x, y + EXTRA_HEIGHT)
 
 	local boxes = {"R", "G", "B", "A"}
 	for i = 1, #boxes do
@@ -148,8 +95,8 @@ function script:PLAYER_ENTERING_WORLD(event)
 		label:SetText(boxes[i])
 
 		if i == 4 then
-			box:SetScript("OnEscapePressed", function(self) self:ClearFocus() UpdateAlphaText() end)
-			box:SetScript("OnEnterPressed", function(self) self:ClearFocus() UpdateAlphaText() end)
+			box:SetScript("OnEscapePressed", function(self) self:ClearFocus() UpdateColorTexts() end)
+			box:SetScript("OnEnterPressed", function(self) self:ClearFocus() UpdateColorTexts() end)
 			box:SetScript("OnTextChanged", function(self) UpdateAlpha(self) end)
 		else
 			box:SetScript("OnEscapePressed", function(self) self:ClearFocus() UpdateColorTexts() end)
@@ -164,10 +111,10 @@ function script:PLAYER_ENTERING_WORLD(event)
 		box:Show()
 	end
 
-	ColorPickerBoxB:SetPoint("TOP", ColorPickerPaste, "BOTTOM", 0, -45)
-	ColorPickerBoxG:SetPoint("RIGHT", ColorPickerBoxB, "LEFT", -25, 0)
-	ColorPickerBoxR:SetPoint("RIGHT", ColorPickerBoxG, "LEFT", -25, 0)
-	ColorPickerBoxA:SetPoint("LEFT", ColorPickerBoxB, "RIGHT", 25, 0)
+	ColorPickerBoxR:SetPoint("TOPLEFT", colorPicker, "BOTTOMLEFT", TEXT_FRAME_OFFSET, 0)
+	ColorPickerBoxG:SetPoint("LEFT", ColorPickerBoxR, "RIGHT", TEXT_FRAME_OFFSET, 0)
+	ColorPickerBoxB:SetPoint("LEFT", ColorPickerBoxG, "RIGHT", TEXT_FRAME_OFFSET, 0)
+	ColorPickerBoxA:SetPoint("LEFT", ColorPickerBoxB, "RIGHT", TEXT_FRAME_OFFSET, 0)
 
 	ColorPickerBoxR:SetScript("OnTabPressed", function(self) ColorPickerBoxG:SetFocus() end)
 	ColorPickerBoxG:SetScript("OnTabPressed", function(self) ColorPickerBoxB:SetFocus()  end)
