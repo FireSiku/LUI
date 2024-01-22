@@ -75,6 +75,10 @@ L["Horizontal Position"] = true
 L["Vertical Position"] = true
 L["Duration"] = true
 L["Parent"] = true
+L["Show Current"] = true
+L["Show Max"] = true
+L["Show Percent"] = true
+L["Short Numbers"] = true
 
 -- Unit Tokens
 L["Player"] = true

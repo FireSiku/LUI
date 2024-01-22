@@ -64,12 +64,6 @@ function ExpBarDataProviderMixin:ShouldBeVisible()
 	return false
 end
 
---- Boolean function to enabe/disable displaying percentage text
----@return boolean
-function ExpBarDataProviderMixin:ShouldDisplayPercentText()
-	return true
-end
-
 --- Determine text being displayed
 ---@return string text
 function ExpBarDataProviderMixin:GetDataText()
@@ -102,12 +96,36 @@ function ExpBarMixin:UpdateBar(event, ...)
 	end
 end
 
+local function ShortValue(value)
+	if value >= 1e6 then
+		return ("%.1fm"):format(value / 1e6):gsub("%.?0+([km])$", "%1")
+	elseif value >= 1e3 or value <= -1e3 then
+		return ("%.1fk"):format(value / 1e3):gsub("%.?0+([km])$", "%1")
+	else
+		return value
+	end
+end
+
 function ExpBarMixin:UpdateText()
-	if self.ShouldDisplayPercentText() then
-		local precision = module.db.profile.Precision or 2
+	local db = module.db.profile --[[@as table]]
+	local percentText = ""
+	if db.ShowPercent then
+		local precision = db.Precision or 2
 		local percentBar = self.barValue / self.barMax * 100
-		local percentText = format("%."..precision.."f%%", percentBar)
-		return self.text:SetText(format("%s %s", percentText, self:GetDataText() or ""))
+		percentText = format("%."..precision.."f%%", percentBar)
+		if not db.ShowCurrent then
+			return self.text:SetText(format("%s %s", percentText, self:GetDataText() or ""))
+		end
+	end
+	if db.ShowCurrent then
+		local text = db.ShortNumbers and ShortValue(self.barValue) or self.barValue --[[@as string]]
+		if db.ShowMax then 
+			text = format("%s/%s", text, db.ShortNumbers and ShortValue(self.barMax) or self.barMax)
+		end
+		if db.ShowPercent then
+			text = format("%s (%s)", text, percentText)
+		end
+		return self.text:SetText(format("%s %s", text, self:GetDataText() or ""))
 	end
 	return self.text:SetText(self:GetDataText() or "")
 end
