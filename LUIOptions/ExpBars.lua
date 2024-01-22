@@ -6,7 +6,7 @@
 local Opt = select(2, ...)
 
 ---@type AceLocale.Localizations, LUI.ExperienceBars, AceDB-3.0
-local L, module, db = Opt:GetLUIModule("ExpBars")
+local L, module, db = Opt:GetLUIModule("Experience Bars")
 if not module or not module.registered then return end
 
 -- ####################################################################################################################
@@ -18,7 +18,7 @@ if not module or not module.registered then return end
 -- ##### Options Table ################################################################################################
 -- ####################################################################################################################
 
-local ExpBars = Opt:CreateModuleOptions("ExpBars", module)
+local ExpBars = Opt:CreateModuleOptions("Experience Bars", module)
 
 ExpBars.args = {
     Header = Opt:Header({name = L["ExpBar_Name"]}),
@@ -32,7 +32,7 @@ ExpBars.args = {
     TextPositionHeader = Opt:Header({name = L["ExpBar_Options_TextPosition"]}),
 	ShowText = Opt:Toggle({name = L["ExpBar_Options_ShowText"]}),
 	Precision = Opt:Slider({name = L["Precision"], min = 0, max = 3, softMax = 2, step = 1}),
-    Spacer = Opt:Spacer(24, "full"),
+    Spacer2 = Opt:Spacer({}),
     --Text = Opt:Position({name = L["ExpBar_Options_Text"], nil, "Refresh"}),
     AppHeader = Opt:Header({name = "Appearances"}),
     Experience = Opt:Color({name = L["ExpBar_Mode_Experience"], hasAlpha = false}),
