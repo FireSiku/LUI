@@ -211,7 +211,7 @@ function module:IterateMainBars()
 end
 
 function module:SetMainBar()
-	db = module.db.profile
+	db = module.db.profile --[[@as table]]
 
 	local anchor = CreateFrame("Frame", "LUI_MainExpBar", UIParent)
 	anchor:SetPoint(db.Point, UIParent, db.RelativePoint, db.X, db.Y)
@@ -233,7 +233,7 @@ function module:SetMainBar()
 	local honorBar = module:CreateBar("LUI_ExpBarsHonor", "Honor")
 	local azeriteBar = module:CreateBar("LUI_ExpBarsAzerite", "Azerite")
 	local genesisBar = module:CreateBar("LUI_ExpBarsGenesis", "Genesis") ---@TEST: Genesis
-	mainBarList = {expBar, repBar, honorBar, azeriteBar, genesisBar}
+	mainBarList = {expBar, repBar, honorBar, azeriteBar}
 
 	for bar in module:IterateMainBars() do
 		bar:SetPoint("RIGHT", anchor, "RIGHT")
@@ -306,7 +306,7 @@ function module:UpdateMainBarVisibility()
 		barRight.text:SetPoint("RIGHT", barRight, "RIGHT", textX, textY)
 		barRight:Show()
 		barRight:UpdateBar()
-		if barLeft then
+		if db.SplitTracker and barLeft then
 			local halfWidth = (width - spacing) * 0.5
 			barRight:SetWidth(halfWidth)
 			barLeft:SetWidth(halfWidth)

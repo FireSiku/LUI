@@ -37,6 +37,7 @@ module.defaults = {
 		Y = 6,
 		Point = "BOTTOM",
 		RelativePoint = "BOTTOM",
+		SplitTracker = true,
 		ShowRested = false,
 		ShowText = true,
 		ShowAzerite = true,
