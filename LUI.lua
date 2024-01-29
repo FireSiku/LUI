@@ -68,35 +68,35 @@ Media:Register("font", "Pepsi", [[Interface\AddOns\LUI\media\fonts\pepsi.ttf]])
 Media:Register("font", "NotoSans-SCB", [[Interface\AddOns\LUI\media\fonts\NotoSans-SemiCondensedBold.ttf]])
 
 -- REGISTER BORDERS
-Media:Register("border", "glow", [[Interface\Addons\LUI\media\textures\borders\glow.tga]])
-Media:Register("border", "Stripped", [[Interface\Addons\LUI\media\textures\borders\Stripped.tga]])
-Media:Register("border", "Stripped_hard", [[Interface\Addons\LUI\media\textures\borders\Stripped_hard.tga]])
-Media:Register("border", "Stripped_medium", [[Interface\Addons\LUI\media\textures\borders\Stripped_medium.tga]])
+Media:Register("border", "glow", [[Interface\Addons\LUI\media\borders\glow.tga]])
+Media:Register("border", "Stripped", [[Interface\Addons\LUI\media\\borders\Stripped.tga]])
+Media:Register("border", "Stripped_hard", [[Interface\Addons\LUI\media\borders\Stripped_hard.tga]])
+Media:Register("border", "Stripped_medium", [[Interface\Addons\LUI\media\borders\Stripped_medium.tga]])
 
 -- REGISTER STATUSBARS
-Media:Register("statusbar", "oUF LUI", [[Interface\AddOns\LUI\media\textures\statusbars\oUF_LUI.tga]])
-Media:Register("statusbar", "LUI_Gradient", [[Interface\AddOns\LUI\media\textures\statusbars\gradient32x32.tga]])
-Media:Register("statusbar", "LUI_Minimalist", [[Interface\AddOns\LUI\media\textures\statusbars\Minimalist.tga]])
-Media:Register("statusbar", "LUI_Ruben", [[Interface\AddOns\LUI\media\textures\statusbars\Ruben.tga]])
-Media:Register("statusbar", "Smelly", [[Interface\AddOns\LUI\media\textures\statusbars\Smelly.tga]])
-Media:Register("statusbar", "Neal", [[Interface\AddOns\LUI\media\textures\statusbars\Neal]])
-Media:Register("statusbar", "RenaitreMinion", [[Interface\AddOns\LUI\media\textures\statusbars\RenaitreMinion.tga]])
-Media:Register("statusbar", "Otravi", [[Interface\AddOns\LUI\media\textures\statusbars\Otravi.tga]])
-Media:Register("statusbar", "Empty", [[Interface\AddOns\LUI\media\textures\blank]])
+Media:Register("statusbar", "oUF LUI", [[Interface\AddOns\LUI\media\statusbars\Minimalist.tga]]) --Deprecated. Will be removed in the future.
+Media:Register("statusbar", "LUI_Gradient", [[Interface\AddOns\LUI\media\statusbars\Gradient.tga]])
+Media:Register("statusbar", "LUI_Minimalist", [[Interface\AddOns\LUI\media\statusbars\Minimalist.tga]])
+Media:Register("statusbar", "LUI_Ruben", [[Interface\AddOns\LUI\media\statusbars\Ruben.tga]])
+Media:Register("statusbar", "Smelly", [[Interface\AddOns\LUI\media\statusbars\Smelly.tga]])
+Media:Register("statusbar", "Neal", [[Interface\AddOns\LUI\media\statusbars\Neal]])
+Media:Register("statusbar", "RenaitreMinion", [[Interface\AddOns\LUI\media\statusbars\RenaitreMinion.tga]])
+Media:Register("statusbar", "Otravi", [[Interface\AddOns\LUI\media\statusbars\Otravi.tga]])
+Media:Register("statusbar", "Empty", [[Interface\AddOns\LUI\media\textures\blank.tga]])
 
 local fdir = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 
 LUI.Media = {
-	["blank"] = [[Interface\AddOns\LUI\media\textures\blank]],
-	["normTex"] = [[Interface\AddOns\LUI\media\textures\statusbars\normTex]], -- texture used for nameplates healthbar
-	["glowTex"] = [[Interface\AddOns\LUI\media\textures\statusbars\glowTex]], -- the glow texture around some frame.
-	["cross"] = [[Interface\AddOns\LUI\media\textures\icons\cross]], -- Worldmap Move Button.
-	["party"] = [[Interface\AddOns\LUI\media\textures\icons\Party]], -- Worldmap Party Icon.
-	["raid"] = [[Interface\AddOns\LUI\media\textures\icons\Raid]], -- Worldmap Raid Icon.
-	["mail"] = [[Interface\AddOns\LUI\media\textures\icons\mail]], -- Minimap Mail Icon.
-	["btn_normal"] = [[Interface\AddOns\LUI\media\textures\buttons\Normal]], -- Standard Button Texture example: Auras
-	["btn_border"] = [[Interface\AddOns\LUI\media\textures\buttons\Border]], -- Button Border
-	["btn_gloss"] = [[Interface\AddOns\LUI\media\textures\buttons\Gloss]], -- Button Overlay
+	["blank"] = [[Interface\AddOns\LUI\media\textures\blank.tga]],
+	["glowTex"] = [[Interface\AddOns\LUI\media\borders\glow.tga]], -- the glow texture around some frame.
+	["normTex"] = [[Interface\AddOns\LUI\media\statusbars\ufNameplates.tga]], -- texture used for nameplates healthbar
+	["cross"] = [[Interface\AddOns\LUI\media\textures\worldmap_cross.tga]], -- Worldmap Move Button.
+	["party"] = [[Interface\AddOns\LUI\media\textures\worldmap_party.tga]], -- Worldmap Party Icon.
+	["raid"] = [[Interface\AddOns\LUI\media\textures\worldmap_raid.tga]], -- Worldmap Raid Icon.
+	["mail"] = [[Interface\AddOns\LUI\media\textures\minimap_mail.tga]], -- Minimap Mail Icon.
+	["btn_normal"] = [[Interface\AddOns\LUI\media\buttons\Normal.tga]], -- Standard Button Texture example: Auras
+	["btn_border"] = [[Interface\AddOns\LUI\media\buttons\Border.tga]], -- Button Border
+	["btn_gloss"] = [[Interface\AddOns\LUI\media\buttons\Gloss.tga]], -- Button Overlay
 }
 
 LUI.Opposites = {

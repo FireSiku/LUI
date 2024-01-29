@@ -945,14 +945,14 @@ local function StyleButton(button)
 	if InCombatLockdown() then return end
 	if not button then return end
 
-	local normTex = [[Interface\AddOns\LUI\media\textures\buttons2\Normal.tga]]
-	local backdropTex = [[Interface\AddOns\LUI\media\textures\buttons2\Backdrop.tga]]
-	local glossTex = [[Interface\AddOns\LUI\media\textures\buttons2\Gloss.tga]]
-	local pushedTex = [[Interface\AddOns\LUI\media\textures\buttons2\Normal.tga]]
-	local checkedTex = [[Interface\AddOns\LUI\media\textures\buttons2\Highlight.tga]]
-	local highlightTex = [[Interface\AddOns\LUI\media\textures\buttons2\Highlight.tga]]
-	local flashTex = [[Interface\AddOns\LUI\media\textures\buttons2\Overlay.tga]]
-	local borderTex = [[Interface\AddOns\LUI\media\textures\buttons2\Border.tga]]
+	local normTex = [[Interface\AddOns\LUI\media\buttons\v3bars\Normal.tga]]
+	local backdropTex = [[Interface\AddOns\LUI\media\buttons\v3bars\Backdrop.tga]]
+	local glossTex = [[Interface\AddOns\LUI\media\buttons\v3bars\Gloss.tga]]
+	local pushedTex = [[Interface\AddOns\LUI\media\buttons\v3bars\Normal.tga]]
+	local checkedTex = [[Interface\AddOns\LUI\media\buttons\v3bars\Highlight.tga]]
+	local highlightTex = [[Interface\AddOns\LUI\media\buttons\v3bars\Highlight.tga]]
+	local flashTex = [[Interface\AddOns\LUI\media\buttons\v3bars\Overlay.tga]]
+	local borderTex = [[Interface\AddOns\LUI\media\buttons\v3bars\Border.tga]]
 	local font = [[Interface\Addons\LUI\media\fonts\vibrocen.ttf]]
 	local dummy = function() end
 

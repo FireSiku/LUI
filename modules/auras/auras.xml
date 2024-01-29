@@ -9,7 +9,7 @@ http://wowprogramming.com/FrameXML/UI.xsd">
 				<Texture parentKey="icon" nonBlocking="true" setAllPoints="true"/>
 			</Layer>
 			<Layer level="OVERLAY">
-				<Texture parentKey="gloss" alphaMode="ADD" alpha="0.5" file="Interface\AddOns\LUI\media\textures\buttons\Gloss">
+				<Texture parentKey="gloss" alphaMode="ADD" alpha="0.5" file="Interface\AddOns\LUI\media\buttons\Gloss">
 					<Anchors>
 						<Anchor point="CENTER"/>
 					</Anchors>
@@ -49,7 +49,7 @@ http://wowprogramming.com/FrameXML/UI.xsd">
 				self:SetScript('OnUpdate', nil)
 			</OnHide>
 		</Scripts>
-		<NormalTexture parentKey="normalTexture" file="Interface\AddOns\LUI\media\textures\buttons\Normal">
+		<NormalTexture parentKey="normalTexture" file="Interface\AddOns\LUI\media\buttons\Normal">
 			<Anchors>
 				<Anchor point="CENTER"/>
 			</Anchors>
@@ -73,7 +73,7 @@ http://wowprogramming.com/FrameXML/UI.xsd">
 	<Button name="LUI_Auras_DebuffTemplate" inherits="LUI_Auras_AuraTemplate" virtual="true">
 		<Layers>
 			<Layer level="ARTWORK">
-				<Texture parentKey="border" file="Interface\AddOns\LUI\media\textures\buttons\Border">
+				<Texture parentKey="border" file="Interface\AddOns\LUI\media\buttons\Border">
 					<Anchors>
 						<Anchor point="CENTER"/>
 					</Anchors>
@@ -87,7 +87,7 @@ http://wowprogramming.com/FrameXML/UI.xsd">
 		</Attributes>
 		<Layers>
 			<Layer level="ARTWORK">
-				<Texture parentKey="border" file="Interface\AddOns\LUI\media\textures\buttons\Border">
+				<Texture parentKey="border" file="Interface\AddOns\LUI\media\buttons\Border">
 					<Anchors>
 						<Anchor point="CENTER"/>
 					</Anchors>
@@ -108,7 +108,7 @@ http://wowprogramming.com/FrameXML/UI.xsd">
 				</Texture>
 			</Layer>
 			<Layer level="OVERLAY">
-				<Texture parentKey="gloss" alphaMode="ADD" alpha="0.5" file="Interface\AddOns\LUI\media\textures\buttons\Gloss">
+				<Texture parentKey="gloss" alphaMode="ADD" alpha="0.5" file="Interface\AddOns\LUI\media\buttons\Gloss">
 					<Anchors>
 						<Anchor point="CENTER"/>
 					</Anchors>
@@ -141,7 +141,7 @@ http://wowprogramming.com/FrameXML/UI.xsd">
 								<Offset><AbsDimension x="10" y="-25"/></Offset>
 							</Anchor>
 						</Anchors>
-						<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\AddOns\LUI\media\textures\borders\Stripped_medium">
+						<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\AddOns\LUI\media\borders\Stripped_medium">
 							<EdgeSize><AbsValue val="16"/></EdgeSize>
 							<BackgroundInsets><AbsInset left="4" right="4" top="4" bottom="4"/></BackgroundInsets>
 							<BorderColor r="0.3" g="0.3" b="0.3"/>
@@ -165,7 +165,7 @@ http://wowprogramming.com/FrameXML/UI.xsd">
 			</OnEnter>
 			<OnLeave function="GameTooltip_Hide"/>
 		</Scripts>
-		<NormalTexture parentKey="normalTexture" file="Interface\AddOns\LUI\media\textures\buttons\Normal">
+		<NormalTexture parentKey="normalTexture" file="Interface\AddOns\LUI\media\buttons\Normal">
 			<Anchors>
 				<Anchor point="CENTER"/>
 			</Anchors>

@@ -57,12 +57,12 @@ local ROGUE_DEEPER_STRATAGEM_ENTRY = 112642
 
 local mediaPath = [=[Interface\Addons\LUI\media\]=]
 
-local highlightTex = mediaPath..[=[textures\statusbars\highlightTex]=]
-local normTex = mediaPath..[=[textures\statusbars\normTex]=]
-local glowTex = mediaPath..[=[textures\statusbars\glowTex]=]
-local blankTex = mediaPath..[=[textures\statusbars\blank]=]
-local buttonTex = mediaPath..[=[textures\buttonTex]=]
-local aggroTex = mediaPath..[=[textures\aggro]=]
+local highlightTex = mediaPath..[=[statusbars\highlightTex.tga]=]
+local normTex = mediaPath..[=[statusbars\ufNameplates.tga]=]
+local buttonTex = mediaPath..[=[buttons\ufAura.tga]=]
+local aggroTex = mediaPath..[=[textures\ufAggro.tga]=]
+local glowTex = LUI.Media.glowTex
+local blankTex = LUI.Media.blank
 
 local backdrop = {
 	bgFile = blankTex,
