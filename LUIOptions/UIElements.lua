@@ -6,10 +6,10 @@
 local Opt = select(2, ...)
 
 ---@type AceLocale.Localizations, LUI.UIElements, AceDB-3.0
-local L, module, db = Opt:GetLUIModule("UIElements")
+local L, module, db = Opt:GetLUIModule("UI Elements")
 if not module or not module.registered then return end
 
-local UIElements = Opt:CreateModuleOptions("UIElements", module)
+local UIElements = Opt:CreateModuleOptions("UI Elements", module)
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -73,7 +73,7 @@ UIElements.args = {
 }
 
 for i, name in ipairs(framePositionOrder) do
-	UIElements.Elements.args[name] = GenerateFramePositionGroup(name, framePositionList[name], i+5)
+	UIElements.args.Elements.args[name] = GenerateFramePositionGroup(name, framePositionList[name], i+5)
 end
 
 --[[

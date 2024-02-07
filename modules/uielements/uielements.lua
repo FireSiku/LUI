@@ -44,19 +44,10 @@ local BlizzMicroButtons = {
 
 function module:SetUIElements()
 	db = module.db.profile
-	module:SetHiddenFrames()
 	--module:SetObjectiveFrame()
 	module:SetAdditionalFrames()
-	module:SetPosition('VehicleSeatIndicator')
-	module:SetPosition('AlwaysUpFrame')
-	module:SetPosition('CaptureBar')
-	module:SetPosition('TicketStatus')
-	module:SetPosition('PlayerPowerBarAlt')
-	module:SetPosition('ObjectiveTrackerFrame')
-	module:SetPosition('DurabilityFrame')
-	module:SetPosition('PlayerPowerBarAlt')
-	module:SetPosition('QueueStatusButton')
 	module:SetAlerts()
+	module:Refresh()
 end
 
 function module:SetHiddenFrames()
@@ -221,4 +212,13 @@ end
 
 function module:Refresh()
 	module:SetHiddenFrames()
+	module:SetPosition('VehicleSeatIndicator')
+	module:SetPosition('AlwaysUpFrame')
+	module:SetPosition('CaptureBar')
+	module:SetPosition('TicketStatus')
+	module:SetPosition('PlayerPowerBarAlt')
+	module:SetPosition('ObjectiveTrackerFrame')
+	module:SetPosition('DurabilityFrame')
+	module:SetPosition('PlayerPowerBarAlt')
+	module:SetPosition('QueueStatusButton')
 end
