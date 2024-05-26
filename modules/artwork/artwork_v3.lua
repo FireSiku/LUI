@@ -12,7 +12,7 @@
 local LUI = select(2, ...)
 
 ---@class LUI.V3Artwork : LUIModule
-local module = LUI:NewModule("Artwork", "LUIDevAPI")
+local module = LUI:NewModule("ArtworkV3", "LUIDevAPI")
 
 local db --luacheck:ignore
 local ToggleArt

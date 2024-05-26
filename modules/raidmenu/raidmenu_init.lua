@@ -39,7 +39,7 @@ function module:OnInitialize()
 	LUI:NewNamespace(self, nil, true)
 	LUI:RegisterModule(module, true)
 
-	LUI:GetModule("Panels"):RegisterFrame(self)
+	--LUI:GetModule("Panels"):RegisterFrame(self)
 end
 
 function module:OnEnable()

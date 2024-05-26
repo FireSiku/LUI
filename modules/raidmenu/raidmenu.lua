@@ -13,7 +13,7 @@ local L = LUI.L
 local module = LUI:GetModule("RaidMenu")
 local db, dbd
 
-local Panels = LUI:GetModule("Panels")
+local Panels = LUI:GetModule("Panels", true)
 local Micromenu = LUI:GetModule("Micromenu", true) --[[@as LUI.Micromenu]]
 local Media = LibStub("LibSharedMedia-3.0")
 
@@ -293,7 +293,7 @@ end
 function module:SetRaidMenu()
 	db, dbd = module.db.profile, module.db.defaults.profile
 
-	if not db.Enable or not Micromenu then return end
+	if not db.Enable or not Micromenu or not Panels then return end
 
 	-- Create frames for Raid Menu
 	RaidMenu_Parent = LUI:CreateMeAFrame("Frame", "RaidMenu_Parent", Micromenu.buttonLeft, 256, 256, 1, "HIGH", 0, "TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17), 1)

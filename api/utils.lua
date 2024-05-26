@@ -25,11 +25,15 @@ local MS_PER_SECOND = 1000
 -- Instead of having TexCoords Constants peppered amongst various files, keep them all centralized in here
 -- TexCoords are calculated such as 2/64 means 2 pixels to the left of a 64px file.
 local gTexCoordAtlas = {
-	MicroBtn_Default = { 125/256, 159/256, 2/32, 30/32 },
-	MicroBtn_First 	 = { 1/256, 47/256, 2/32, 30/32 },
-	MicroBtn_Last 	 = { 62/256, 111/256, 2/32, 30/32 },
-	MicroBtn_Icon	 = { 0/32, 32/32, 0/32, 32/32 },
-	CleanUp =          {  4/28, 24/28, 3/26, 22/26 },
+	MicroBtn_Default =     { 125/256, 159/256, 2/32, 30/32 },
+	MicroBtn_First 	 =     {  1/256,   47/256, 2/32, 30/32 },
+	MicroBtn_Last 	 =     { 62/256,  111/256, 2/32, 30/32 },
+	MicroBtn_Icon	 =     {   0/32,    32/32, 0/32, 32/32 },
+	CleanUp =              {   4/28,    24/28, 3/26, 22/26 },
+	sidebar_base =         { 195/256, 252/256,  78/512, 443/512,},
+	sidebar_drawer =       { 113/256, 213/256, 136/512, 383/512, },
+	sidebar_button =       { 104/256, 124/256, 138/512, 381/512, },
+	sidebar_button_hover = { 103/256, 125/256, 137/512, 382/512, },
 }
 
 --- Returns TexCoords based on the given string that matches the table above
@@ -164,7 +168,7 @@ end
 ---@param msg string Used by recursion
 ---@param recurse string Used by recursion
 ---@overload fun(tbl: table)
-function LUI:PrintFullTable(tbl,msg, recurse)
+function LUI:PrintFullTable(tbl, msg, recurse)
 	if type(tbl) ~= "table" then return LUI:Print("Tried to Print a nil table.") end
 	if not recurse then LUI:Print("-------------------------") end
 	msg = msg or ""
@@ -173,6 +177,24 @@ function LUI:PrintFullTable(tbl,msg, recurse)
 			LUI:Print(msg,k,v)
 			LUI:PrintFullTable(v,msg.."-- ", true)
 		else LUI:Print(msg,k,v) end
+	end
+	if not recurse then LUI:Print("-------------------------") end
+end
+
+--- Print a table recursively, with indentation
+---@param tbl table
+---@param msg string Used by recursion
+---@param recurse string Used by recursion
+---@overload fun(tbl: table)
+function LUI:PrintObjectTree(tbl, msg, recurse)
+	if type(tbl) ~= "table" then return LUI:Print("Tried to Print a nil table.") end
+	if not recurse then LUI:Print("-------------------------") end
+	msg = msg or ""
+	for k,v in pairs(tbl) do
+		if type(v) == "table" then
+			LUI:Print(msg, k, type(v), v.GetObjectType and v:GetObjectType())
+			LUI:PrintFullTable(v, msg.."-- ", true)
+		else LUI:Print(msg,k,type(v), v) end
 	end
 	if not recurse then LUI:Print("-------------------------") end
 end
@@ -186,7 +208,7 @@ end
 function LUI:HighlightBorder(frame)
 	local glowBackdrop = {
 		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\AddOns\\LUI4\\media\\borders\\glow.tga",
+		edgeFile="Interface\\AddOns\\LUI\\media\\borders\\glow.tga",
 		--tile=0, tileSize=0,
 		edgeSize=5,
 		insets={left=3, right=3, top=3, bottom=3}

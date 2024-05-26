@@ -1,13 +1,12 @@
 -- ####################################################################################################################
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
-
 ---@class Opt
 local Opt = select(2, ...)
 
 ---@type AceLocale.Localizations, LUI.Artwork, AceDB-3.0
 local L, module, db = Opt:GetLUIModule("Artwork")
-if not module or not module.registered then return end
+-- if not module or not module.registered then return end
 
 local TEX_MODE_SELECT = {
 	L["Panels_TexMode_LUI"],
@@ -19,8 +18,8 @@ local PRESET_LUI_TEXTURES = {
 	["left_border.tga"] = L["Panels_Tex_Border_Screen"],
 	["left_border_back.tga"] = L["Panels_Tex_Border_ScreenBack"],
 	["panel_solid.tga"] = L["Panels_Tex_Panel_Solid"] ,
-	["panel_corner.tga"] = L["Panels_Tex_Panel_Corner"],
-	["panel_center.tga"] = L["Panels_Tex_Panel_Center"],
+	["panel_corner_fill.tga"] = L["Panels_Tex_Panel_Corner"],
+	["panel_center_fill.tga"] = L["Panels_Tex_Panel_Center"],
 	["panel_corner_border.tga"] = L["Panels_Tex_Border_Corner"],
 	["panel_center_border.tga"] = L["Panels_Tex_Border_Center"],
 	["bar_top.tga"] = L["Panels_Tex_Bar_Top"],
@@ -29,6 +28,7 @@ local PRESET_LUI_TEXTURES = {
 local nameInput
 
 local Artwork = Opt:CreateModuleOptions("Artwork", module)
+local CustomArgs
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -56,7 +56,7 @@ local function DeleteNewPanel(info)
 	db.Textures[panelName] = nil
 	db.Colors[panelName] = nil
 	-- Get the parent node and remove panel options.
-	Opt.options.args.Artwork.args.Custom.args[panelName] = nil
+	CustomArgs[panelName] = nil
 	Opt:RefreshOptionsPanel()
 	module:ModPrint("Deleted panel:", panelName)
 end
@@ -71,6 +71,7 @@ local function CreatePanelGroup(name)
 	end
 
 	local group = Opt:Group({name = name, db = texDB, args = {
+		Enabled = Opt:Toggle({name = "Enabled"}),
 		TextureHeader = Opt:Header({name = L["Texture"]}),
 		--ImageDesc = Opt:Desc({name = "", 2, nil, GetOptionImageTexture, desc = GetOptionTexCoords, 128}),
 		TexMode = Opt:Select({name = L["Panels_Options_Category"], values = TEX_MODE_SELECT}),
@@ -120,7 +121,7 @@ local function CreateNewPanel(info)
 	module:CreateNewPanel(nameInput, panelDB)
 
 	-- Update options
-	Opt.options.args.Artwork.args.Custom.args[nameInput] = CreatePanelGroup(nameInput)
+	CustomArgs[nameInput] = CreatePanelGroup(nameInput)
 	Opt:RefreshOptionsPanel()
 
 	module:ModPrint("Created new panel:", nameInput)
@@ -130,17 +131,19 @@ end
 -- ##### Options Table ################################################################################################
 -- ####################################################################################################################
 
+CustomArgs = {
+	NewDesc = Opt:Desc({name = "    Add Custom Panels:", fontSize = "medium", width = "normal"}),
+	NameInput = Opt:Input({name = "Panel Name", get = function() return nameInput or "" end, set = function(_, value) nameInput = value end}),
+	NewPanel = Opt:Execute({name = "Create Panel", func = CreateNewPanel, disabled = IsNewPanelDisabled}),
+}
+
 Artwork.args = {
 	Header = Opt:Header({name = "Artwork"}),
-	Custom = Opt:Group({name = "Custom Panels", childGroups = "tree", args = {
-		NewDesc = Opt:Desc({name = "    Add Custom Panels:", fontSize = "medium", width = "normal"}),
-		NameInput = Opt:Input({name = "Panel Name", get = function() return nameInput or "" end, set = function(_, value) nameInput = value end}),
-		NewPanel = Opt:Execute({name = "Create Panel", func = CreateNewPanel, disabled = IsNewPanelDisabled}),
-	}}),
+	Custom = Opt:Group({name = "Custom Panels", childGroups = "tree", args = CustomArgs}),
 	Builtin = Opt:Group({name = "LUI Panels", childGroups = "tree", hidden = true}),
 }
 
 for i = 1, #module.panelList do
 	local name = module.panelList[i]
-	Artwork.Custom.args[name] = CreatePanelGroup(name)
+	CustomArgs[name] = CreatePanelGroup(name)
 end
