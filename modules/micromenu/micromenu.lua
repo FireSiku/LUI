@@ -616,8 +616,9 @@ function module:SetMicromenuAnchors()
 end
 
 function module:SetMicromenuExtraButtons()
-	local ThemesDB = LUI:GetModule("Themes").db.profile
-	local PanelsDB = LUI:GetModule("Panels").db.profile
+	local panelsMod = LUI:GetModule("Panels", true)
+	if not panelsMod then return end
+	local PanelsDB = panelsMod.db.profile
 	local minimapMod = LUI:GetModule("Minimap", true)
 	local buttonLeft, buttonMiddle, buttonRight
 	local clickerLeft, clickerMiddle, clickerRight
