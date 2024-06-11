@@ -21,7 +21,7 @@ local SidebarMixin = {}
 local _sidebars = {}
 
 local BUTTON_OFFSET = 85
-local ANIM_DURATION = 0.4
+local ANIM_DURATION = 0.5
 
 -- ####################################################################################################################
 -- ##### Mixin Functions ##############################################################################################
@@ -165,7 +165,8 @@ function module:CreateNewSideBar(name, side)
 	---@type SidebarMixin
 	local sidebar = CreateFrame("Frame", "LUISidebar"..name)
 
-	local other = "LEFT"
+	local isRight = (side == "Right")
+	local other = isRight and "LEFT" or "RIGHT"
 
 	local sidedb = module.db.profile.SideBars[name]
 	local sbarName = "LUISidebar"..name
@@ -241,7 +242,8 @@ function module:CreateNewSideBar(name, side)
 	local a1 = drawerAlphaIn:CreateAnimation("Alpha")
 	a1:SetFromAlpha(0)
 	a1:SetToAlpha(1)
-	a1:SetDuration(ANIM_DURATION)
+	a1:SetDuration(ANIM_DURATION/2)
+	a1:SetStartDelay(ANIM_DURATION/2)
 	drawerAlphaIn:SetScript("OnFinished", function() drawer:SetAlpha(1) end)
 
 	local drawOpen = btnAnchor:CreateAnimationGroup()
@@ -271,6 +273,7 @@ function module:CreateNewSideBar(name, side)
 	local a4 = drawClose:CreateAnimation("Translation")
 	a4:SetOffset(BUTTON_OFFSET, 0)
 	a4:SetDuration(ANIM_DURATION)
+	a4:SetStartDelay(ANIM_DURATION/4)
 	drawClose:SetScript("OnPlay", function()
 		drawerAlphaOut:Play()
 		if not InCombatLockdown() then
@@ -296,14 +299,12 @@ function module:CreateNewSideBar(name, side)
 
 	btnAnchor:SetScript("OnClick", function() sidebar:Toggle() end)
 	SecureHandlerWrapScript(btnAnchor, "PostClick", btnAnchor, sidebar:SecureToggle(true))
-	--btnAnchor:SetAttribute("_onclick", sidebar:SecureToggle(true))
 	btnAnchor:RegisterForClicks("AnyUp")
 	btnAnchor:SetFrameRef("anchor", _G[sidedb.Anchor])
 	btnAnchor:SetFrameRef("otherFrame", btnAnchorOpen)
 
 	btnAnchorOpen:SetScript("OnClick", function() sidebar:Toggle() end)
 	SecureHandlerWrapScript(btnAnchorOpen, "PostClick", btnAnchorOpen, sidebar:SecureToggle(false))
-	--btnAnchorOpen:SetAttribute("_onclick", sidebar:SecureToggle(false))
 	btnAnchorOpen:RegisterForClicks("AnyUp")
 	btnAnchorOpen:SetFrameRef("anchor", _G[sidedb.Anchor])
 	btnAnchorOpen:SetFrameRef("otherFrame", btnAnchor)
@@ -324,4 +325,10 @@ function module:CreateNewSideBar(name, side)
 	sidebar:Refresh()
 	
 	return sidebar
+end
+
+--- Iterate over all sidebars
+---@return fun(table: table<<K>, <V>>, index?: <K>):<K>, <V>
+function module:IterateSidebars()
+	return pairs(_sidebars)
 end

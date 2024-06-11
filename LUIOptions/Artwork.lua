@@ -28,7 +28,7 @@ local PRESET_LUI_TEXTURES = {
 local nameInput
 
 local Artwork = Opt:CreateModuleOptions("Artwork", module)
-local CustomArgs
+local CustomArgs, SidebarArgs
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -127,6 +127,18 @@ local function CreateNewPanel(info)
 	module:ModPrint("Created new panel:", nameInput)
 end
 
+function CreateSidebarOptions(name, barDB)
+	return Opt:Group({name = name, db = barDB, args = {
+		Header = Opt:Header({name = name}),
+		Enable = Opt:Toggle({name = "Enabled"}),
+		Scale = Opt:Slider({name = "Scale", desc = format("The scale of the sidebar. For best results, this should match the Pixel-To-UI factor.\n\nFor your resolution: %.f%%", PixelUtil.GetPixelToUIUnitFactor()*100), values = Opt.ScaleValues}),
+		Spacer = Opt:Spacer(),
+		Anchor = Opt:Input({name = "Anchor", desc = "Frame that will be anchored to the sidebar"}),
+		---@TODO: Point will only be there for additional sidebars.
+		--Point = Opt:Select({name = "Anchor Point that the sidebar will be tied to.", values = LUI.Points}),
+	}})
+end
+
 -- ####################################################################################################################
 -- ##### Options Table ################################################################################################
 -- ####################################################################################################################
@@ -137,10 +149,16 @@ CustomArgs = {
 	NewPanel = Opt:Execute({name = "Create Panel", func = CreateNewPanel, disabled = IsNewPanelDisabled}),
 }
 
+SidebarArgs = {
+	RightSidebar = CreateSidebarOptions("Right Sidebar", db.SideBars.Right),
+
+}
+
 Artwork.args = {
 	Header = Opt:Header({name = "Artwork"}),
 	Custom = Opt:Group({name = "Custom Panels", childGroups = "tree", args = CustomArgs}),
 	Builtin = Opt:Group({name = "LUI Panels", childGroups = "tree", hidden = true}),
+	SideBars = Opt:Group({name = "Side Bars", childGroups = "tab", args = SidebarArgs}),
 }
 
 for i = 1, #module.panelList do

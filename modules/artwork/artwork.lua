@@ -58,4 +58,7 @@ function module:Refresh()
 	for name, panel in pairs(_panels) do
 		panel:Refresh()
 	end
+	for name, sidebar in module:IterateSidebars() do
+		sidebar:Refresh()
+	end
 end
