@@ -94,12 +94,26 @@ module.defaults = {
 				IsOpen = false,
 				Anchor = "BT4Bar10",
 				Additional = "",
-				AutoPosDisable = true,
+				AutoPosition = false,
 				HideEmpty = true,
 				X = 15,
 				Y = 0,
 				Scale = 0.711,
 				Point = "RIGHT",
+			},
+			Left = {
+				Enable = true,
+				OpenInstant = false,
+				Offset = 0,
+				IsOpen = false,
+				Anchor = "BT4Bar9",
+				Additional = "",
+				AutoPosition = false,
+				HideEmpty = true,
+				X = 15,
+				Y = 0,
+				Scale = 0.711,
+				Point = "LEFT",
 			},
 		},
 		Textures = {
@@ -147,7 +161,7 @@ end
 function module:OnEnable()
 	module:setPanels()
 	local bar = module:CreateNewSideBar("Right", "Right")
-	bar:BT4Adjust()
+	--local bar2 = module:CreateNewSideBar("Left", "Left")
 end
 
 function module:OnDisable()

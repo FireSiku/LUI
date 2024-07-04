@@ -27,35 +27,36 @@ local ANIM_DURATION = 0.5
 -- ##### Mixin Functions ##############################################################################################
 -- ####################################################################################################################
 
---- Get the parent frame of the panel.
----@return Frame parent
-function SidebarMixin:GetAnchor()
-	--TODO: Add support for LibWindow for proper texture scaling when not anchored.
-	if self.db.Anchored then
-		return _G[self.db.Parent]
-	else
-		return UIParent
-	end
-end
-
-function SidebarMixin:AddBarToDrawer()
-end
-
-function SidebarMixin:RemoveBarFromDrawer()
-end
-
 function SidebarMixin:Open()
-	if self:IsOpen() then return end
 	if not self.OpenAnim:IsPlaying() then
-		self.OpenAnim:Play()
+		-- Open Instantly if the option is set or we are in combat.
+		-- Additionally, if called while already open, force it without playing the animation.
+		if self.db.OpenInstant or InCombatLockdown() or self:IsOpen() then
+			self.Drawer:SetAlpha(1)
+			self.BtnAnchorOpen:Show()
+			self.BtnAnchor:Hide()
+			local anchoredFrame = _G[self.db.Anchor]
+			if anchoredFrame then anchoredFrame:Show() end
+		else
+			self.OpenAnim:Play()
+		end
 		self.db.IsOpen = true
 	end
 end
 
 function SidebarMixin:Close()
-	if not self:IsOpen() then return end
 	if not self.CloseAnim:IsPlaying() then
-		self.CloseAnim:Play()
+		-- Close Instantly if the option is set or we are in combat.
+		-- Additionally, if called while already closed, force it without playing the animation.
+		if self.db.OpenInstant or InCombatLockdown() or not self:IsOpen() then
+			self.Drawer:SetAlpha(0)
+			self.BtnAnchorOpen:Hide()
+			self.BtnAnchor:Show()
+			local anchoredFrame = _G[self.db.Anchor]
+			if anchoredFrame then anchoredFrame:Hide() end
+		else
+			self.CloseAnim:Play()
+		end
 		self.db.IsOpen = false
 	end
 end
@@ -106,12 +107,21 @@ function SidebarMixin:Refresh()
 		self:Show()
 		-- If Sidebar is shown, make sure it is in the right state.
 		if self:IsOpen() then
-			self.OpenAnim:Play()
+			self:Open()
 		else
-			self.CloseAnim:Play()
+			self:Close()
 		end
 	else
 		self:Hide()
+	end
+
+	if _G[self.db.Anchor] then
+		self.BtnAnchor:SetFrameRef("anchor", _G[self.db.Anchor])
+		self.BtnAnchorOpen:SetFrameRef("anchor", _G[self.db.Anchor])
+	end
+
+	if self.db.AutoPosition then
+		self:AutoAdjust()
 	end
 end
 
@@ -130,23 +140,35 @@ function SidebarMixin:BT4Adjust()
 	local _, num = strsplit("r", self.db.Anchor)
 	local barOpt = Bartender4.db:GetNamespace("ActionBars").profile.actionbars[tonumber(num)]
 	local point, parent, relativePoint, x, y = self:GetPoint()
-	local _, _, texWidth, texHeight = self:GetRect()
-	local _, _, drawWidth, drawHeight = self.Drawer:GetRect()
+	local texLeft, texBottom, texWidth, texHeight = self:GetRect()
+	local drawLeft, drawBottom, drawWidth, drawHeight = self.Drawer:GetRect()
 	
+	--- For both the Tex and Drawer sizes, we need to account for the UI Scale, then reapply the frame scale to get proper values
+	local barScale = self:GetScale()
+	local uiScale = UIParent:GetScale()
+
 	-- X is the leftmost point of the sidebar artwork. The nature of the drawer artwork means adjustments are needed.
-	-- The proper offset to remove 60% of the width of the drawer texture.
-	local texOffset = self.side == "RIGHT" and texWidth or 0
-	local barX = x - texOffset - drawWidth*0.6
+	-- The proper offset is equal to 62.5% of the width of the drawer texture.
+	local texOffset = (self.side == "Right") and texWidth or 0
+	local barX = (x - texOffset - drawWidth*0.625) /uiScale * barScale
 	
 	-- Y is the halfway point, so we have to add half the height of the drawer to the y position.
 	-- Then we can adjust based on a fixed offset based on the top of the drawer texture.
-	local barY = y + drawHeight*0.4
+	local barY = (y + drawHeight*0.41) / uiScale * barScale
 
+	-- LUI:Print(format("BT4Adjust(%d) Normal: texWidth: %.2f, drawWidth: %.2f, drawHeight: %.2f, x: %.2f, y: %.2f", num, texWidth, drawWidth, drawHeight, x, y))
+	-- LUI:Print(format("Reccommended Position: BarX: %.2f, BarY: %.2f", barX, barY))
+	
+	-- Update Bartender settings.
 	barOpt.enabled = self.db.Enable
-	for k, v in pairs({}) do
-		barOpt[k] = v
-	end
+	barOpt.buttons = 12
+	barOpt.rows = 6
+	barOpt.alpha = 1
+	barOpt.position.x = barX
+	barOpt.position.y = barY
+	barOpt.position.point = (self.side == "Right") and "RIGHT" or "LEFT"
 	barOpt.position.scale = self.db.Scale
+	Bartender4:UpdateModuleConfigs()
 end
 
 module.SidebarMixin = SidebarMixin
@@ -278,7 +300,7 @@ function module:CreateNewSideBar(name, side)
 		drawerAlphaOut:Play()
 		if not InCombatLockdown() then
 			local anchoredFrame = _G[sidebar.db.Anchor]
-			if anchoredFrame then 
+			if anchoredFrame then
 				anchoredFrame:Hide()
 			end
 		end
@@ -300,13 +322,12 @@ function module:CreateNewSideBar(name, side)
 	btnAnchor:SetScript("OnClick", function() sidebar:Toggle() end)
 	SecureHandlerWrapScript(btnAnchor, "PostClick", btnAnchor, sidebar:SecureToggle(true))
 	btnAnchor:RegisterForClicks("AnyUp")
-	btnAnchor:SetFrameRef("anchor", _G[sidedb.Anchor])
+	
 	btnAnchor:SetFrameRef("otherFrame", btnAnchorOpen)
 
 	btnAnchorOpen:SetScript("OnClick", function() sidebar:Toggle() end)
 	SecureHandlerWrapScript(btnAnchorOpen, "PostClick", btnAnchorOpen, sidebar:SecureToggle(false))
 	btnAnchorOpen:RegisterForClicks("AnyUp")
-	btnAnchorOpen:SetFrameRef("anchor", _G[sidedb.Anchor])
 	btnAnchorOpen:SetFrameRef("otherFrame", btnAnchor)
 
 	sidebar.name = name
@@ -328,7 +349,7 @@ function module:CreateNewSideBar(name, side)
 end
 
 --- Iterate over all sidebars
----@return fun(table: table<<K>, <V>>, index?: <K>):<K>, <V>
+---@return  fun(table: table<K, V>, index?: K):K, V
 function module:IterateSidebars()
 	return pairs(_sidebars)
 end
