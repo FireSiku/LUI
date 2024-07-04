@@ -25,10 +25,36 @@ local PRESET_LUI_TEXTURES = {
 	["bar_top.tga"] = L["Panels_Tex_Bar_Top"],
 }
 
+local PRESET_BAR_ANCHORS = {
+	BT4Bar1 = "BT4 Bar1 (Bar 1)",
+	BT4Bar2 = "BT4 Bar2 (Bonus Action Bar)",
+	BT4Bar3 = "BT4 Bar3 (Bar 4)",
+	BT4Bar4 = "BT4 Bar4 (Bar 5)",
+	BT4Bar5 = "BT4 Bar5 (Bar 3)",
+	BT4Bar6 = "BT4 Bar6 (Bar 2)",
+	BT4Bar7 = "BT4 Bar7 (Class Bar 1)",
+	BT4Bar8 = "BT4 Bar8 (Class Bar 2)",
+	BT4Bar9 = "BT4 Bar9 (Class Bar 3)",
+	BT4Bar10 = "BT4 Bar10 (Class Bar 4)",
+	BT4Bar13 = "BT4 Bar13 (Bar 6)",
+	BT4Bar14 = "BT4 Bar14 (Bar 7)",
+	BT4Bar15 = "BT4 Bar15 (Bar 8)",
+	["Dominos Bar1"] = "Dominos Bar 1",
+	["Dominos Bar2"] = "Dominos Bar 2",
+	["Dominos Bar3"] = "Dominos Bar 3",
+	["Dominos Bar4"] = "Dominos Bar 4",
+	["Dominos Bar5"] = "Dominos Bar 5",
+	["Dominos Bar6"] = "Dominos Bar 6",
+	["Dominos Bar7"] = "Dominos Bar 7",
+	["Dominos Bar8"] = "Dominos Bar 8",
+	["Dominos Bar9"] = "Dominos Bar 9",
+	["Dominos Bar10"] = "Dominos Bar10",
+}
+
 local nameInput
 
 local Artwork = Opt:CreateModuleOptions("Artwork", module)
-local CustomArgs, SidebarArgs
+local CustomArgs, SidebarArgs = {}, {}
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -127,13 +153,43 @@ local function CreateNewPanel(info)
 	module:ModPrint("Created new panel:", nameInput)
 end
 
-function CreateSidebarOptions(name, barDB)
-	return Opt:Group({name = name, db = barDB, args = {
+--- Create the options for the Sidebar.
+---@param name string
+---@param bar SidebarMixin
+---@param barDB SidebarDBOptions
+---@return LUIOption
+function CreateSidebarOptions(name, bar, barDB)
+	local function IsSideBarDisabled() return not barDB.Enable end
+	
+	local function presetDropdownGet(info)
+		return barDB.Anchor
+	end
+
+	local function presetDropdownSet(info, value)
+		if barDB.Anchor == value then return end
+		barDB.AutoPosition = false
+		barDB.Anchor = value
+	end
+
+	local function autoAdjustFunc()
+		bar:AutoAdjust()
+	end
+
+	return Opt:Group({name = name, db = barDB, arg = bar, args = {
 		Header = Opt:Header({name = name}),
 		Enable = Opt:Toggle({name = "Enabled"}),
-		Scale = Opt:Slider({name = "Scale", desc = format("The scale of the sidebar. For best results, this should match the Pixel-To-UI factor.\n\nFor your resolution: %.f%%", PixelUtil.GetPixelToUIUnitFactor()*100), values = Opt.ScaleValues}),
+		OpenInstant = Opt:Toggle({name = "Open Instantly", desc = "If enabled, there will be no delay or animation when opening or closing the sidebar.\n\nNote: During combat, the sidebar always open instantly.", disabled = IsSideBarDisabled}),
 		Spacer = Opt:Spacer(),
-		Anchor = Opt:Input({name = "Anchor", desc = "Frame that will be anchored to the sidebar"}),
+		Scale = Opt:Slider({name = "Scale", desc = format("The scale of the sidebar. For best results, this should match the Pixel-To-UI factor.\n\nFor your resolution: %.f%%", PixelUtil.GetPixelToUIUnitFactor()*100), values = Opt.ScaleValues, disabled = IsSideBarDisabled}),
+		Y = Opt:InputNumber({name = "Y Offset", desc = "Vertical position of the sidebar.", disabled = IsSideBarDisabled}),
+		SpacerAnchor = Opt:Spacer(),
+		Intro = Opt:Desc({name = "\nWhich Bar do you want to use for this Sidebar?\nChoose one or type in the frame to be anchored manually.\n\nMake sure your Bar is set to 6 buttons/2 columns and isn't used for another Sidebar.", disabled = IsSideBarDisabled}),
+		AnchorPreset = Opt:Select({name = "Bar Preset", values = PRESET_BAR_ANCHORS, get = presetDropdownGet, set = presetDropdownSet, disabled = IsSideBarDisabled}),
+		Anchor = Opt:Input({name = "Anchor", desc = "Frame that will be anchored to the sidebar", disabled = IsSideBarDisabled}),
+		SpacerAdjust = Opt:Spacer(),
+		AutoAdjust = Opt:Execute({name = "Auto-Adjust Position", desc = "If you recently changed the bar anchor, make sure to move the previous bar outside of the Sidebar to prevent overlaps.", func = autoAdjustFunc, disabled = IsSideBarDisabled}),
+		AutoPosition = Opt:Toggle({name = "Auto-Position", desc = "If enabled, LUI will automatically position the sidebar anchor. This option automatically turns off if you change the anchor to avoid errors.", disabled = IsSideBarDisabledww}),
+
 		---@TODO: Point will only be there for additional sidebars.
 		--Point = Opt:Select({name = "Anchor Point that the sidebar will be tied to.", values = LUI.Points}),
 	}})
@@ -149,10 +205,9 @@ CustomArgs = {
 	NewPanel = Opt:Execute({name = "Create Panel", func = CreateNewPanel, disabled = IsNewPanelDisabled}),
 }
 
-SidebarArgs = {
-	RightSidebar = CreateSidebarOptions("Right Sidebar", db.SideBars.Right),
-
-}
+for name, sidebar in module:IterateSidebars() do
+	SidebarArgs[name] = CreateSidebarOptions(name.." Sidebar", sidebar, db.SideBars[name])
+end
 
 Artwork.args = {
 	Header = Opt:Header({name = "Artwork"}),
