@@ -464,7 +464,7 @@ end
 ---@param desc? string
 ---@param order number
 ---@param disabled? boolean|function
----@return AceOptionSelect
+---@return LUIOption
 function OptionMixin:ColorMenu(parent, color, desc, order, disabled)
 	-- TODO: Show Alpha Slider when using Theme/Class Colors.
 	local hiddenFunc = function(info)
