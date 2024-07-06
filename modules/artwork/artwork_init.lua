@@ -145,6 +145,8 @@ module.defaults = {
 		Colors = {
 			ChatBG = { r = 0.12, g = 0.12,  b = 0.12, a = 0.5, t = "Class", },
 			["Top Bar"] = { r = 0.12, g = 0.12,  b = 0.12, a = 0.5, t = "Class", },
+			SidebarRight = { r = 0.12, g = 0.12,  b = 0.12, a = 1, t = "Class", },
+			SidebarLeft = { r = 0.12, g = 0.12,  b = 0.12, a = 1, t = "Class", },
 			['*'] = { r = 0.12, g = 0.12,  b = 0.12, a = 1, t = "Class", },
 		}
 	},
@@ -162,6 +164,8 @@ function module:OnEnable()
 	module:setPanels()
 	local bar = module:CreateNewSideBar("Right", "Right")
 	--local bar2 = module:CreateNewSideBar("Left", "Left")
+	module:CreateOrb()
+	module:CreateNavBar()
 end
 
 function module:OnDisable()
