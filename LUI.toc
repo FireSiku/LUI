@@ -56,7 +56,8 @@ modules\artwork\artwork_v3.lua
 modules\artwork\artwork_init.lua
 modules\artwork\PanelMixin.lua
 modules\artwork\SidebarMixin.lua
-# modules\artwork\sidebars.lua
+modules\artwork\artwork_orb.lua
+modules\artwork\artwork_navbar.lua
 modules\artwork\artwork.lua
 
 ### Fader ###
