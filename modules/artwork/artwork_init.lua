@@ -18,6 +18,10 @@ local db
 module.defaults = {
 	profile = {
 		LUITextures = {
+			Orb = {
+				Enabled = true,
+				LostGalaxy = false,
+			},
 			["Chat Background"] = {
 				Created = true,
 				Enabled = true,
