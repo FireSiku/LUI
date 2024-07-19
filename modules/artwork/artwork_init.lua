@@ -22,6 +22,51 @@ module.defaults = {
 				Enabled = true,
 				LostGalaxy = false,
 			},
+			NavBar = {
+
+			},
+			Chat = {
+				OffsetX = 0,
+				OffsetY = 0,
+				AlwaysShow = false,
+				IsShown = false,
+				Direction = "TOPRIGHT",
+				Width = 429,
+				Height = 181
+			},
+			Tps = {
+				OffsetX = 0,
+				OffsetY = 0,
+				Anchor = "OmenAnchor",
+				Additional = "",
+				AlwaysShow = false,
+				IsShown = false,
+				Direction = "TOP",
+				Width = 193,
+				Height = 181
+			},
+			Dps = {
+				OffsetX = 0,
+				OffsetY = -30,
+				Anchor = "Recount_MainWindow",
+				Additional = "",
+				AlwaysShow = false,
+				IsShown = false,
+				Direction = "TOP",
+				Width = 193,
+				Height = 181
+			},
+			Raid = {
+				OffsetX = 0,
+				OffsetY = 0,
+				Anchor = "oUF_LUI_raid",
+				Additional = "",
+				AlwaysShow = false,
+				IsShown = false,
+				Direction = "TOPLEFT",
+				Width = 409,
+				Height = 181
+			},
 			["Chat Background"] = {
 				Created = true,
 				Enabled = true,
