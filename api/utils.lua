@@ -26,14 +26,19 @@ local MS_PER_SECOND = 1000
 -- TexCoords are calculated such as 2/64 means 2 pixels to the left of a 64px file.
 local gTexCoordAtlas = {
 	MicroBtn_Default =     { 125/256, 159/256, 2/32, 30/32 },
-	MicroBtn_First 	 =     {  1/256,   47/256, 2/32, 30/32 },
-	MicroBtn_Last 	 =     { 62/256,  111/256, 2/32, 30/32 },
-	MicroBtn_Icon	 =     {   0/32,    32/32, 0/32, 32/32 },
-	CleanUp =              {   4/28,    24/28, 3/26, 22/26 },
+	MicroBtn_First 	 =     {   1/256,  47/256, 2/32, 30/32 },
+	MicroBtn_Last 	 =     {  62/256, 111/256, 2/32, 30/32 },
+	MicroBtn_Icon	 =     {    0/32,   32/32, 0/32, 32/32 },
+	CleanUp =              {    4/28,   24/28, 3/26, 22/26 },
 	sidebar_base =         { 195/256, 252/256,  78/512, 443/512,},
 	sidebar_drawer =       { 113/256, 213/256, 136/512, 383/512, },
 	sidebar_button =       { 104/256, 124/256, 138/512, 381/512, },
 	sidebar_button_hover = { 103/256, 125/256, 137/512, 382/512, },
+	nav_button_left2 =     {  23/128,  97/128, 103/128, 128/128 },		-- 74, 25
+	nav_button_right2 =    {  29/128, 102/128, 101/128, 126/128 },		-- 74, 25
+	nav_button_left1 =     {    1/64,   61/64, 37/64, 61/64 },			-- 60, 24
+	nav_button_right1 =    {    3/64,   63/64, 40/64, 64/64 },			-- 60, 24
+
 }
 
 --- Returns TexCoords based on the given string that matches the table above
