@@ -61,4 +61,6 @@ function module:Refresh()
 	for name, sidebar in module:IterateSidebars() do
 		sidebar:Refresh()
 	end
+	module:RefreshNavBar()
+	module:RefreshOrb()
 end
