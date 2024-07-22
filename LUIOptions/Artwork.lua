@@ -94,6 +94,7 @@ local function CreatePanelGroup(name)
 	end
 	local function textureSet(info, value)
 		texDB.Texture = value
+		module:Refresh()
 	end
 
 	local group = Opt:Group({name = name, db = texDB, args = {
@@ -107,6 +108,10 @@ local function CreatePanelGroup(name)
 		LineBreakTex = Opt:Spacer(),
 		Anchored = Opt:Toggle({name = L["Panels_Options_Anchored"], desc = L["Panels_Options_Anchored_Desc"], width = "normal"}),
 		Parent = Opt:Input({name = L["Parent"], desc = L["Panels_Options_Parent_Desc"], disabled = IsAnchorParentDisabled}),
+		ColorType = Opt:Select({name = "Panel Color", values = LUI.ColorTypes,
+			get = function(info) return db.Colors[name].t end, --getter
+			set = function(info, value) db.Colors[name].t = value; module:Refresh() end}), --setter
+		[(name)] = Opt:Color({name = "Individual Color", hasAlpha = true}),
 		LineBreakFlip = Opt:Spacer(),
 		HorizontalFlip = Opt:Toggle({name = L["Panels_Options_HorizontalFlip"], desc = L["Panels_Options_HorizontalFlip_Desc"]}),
 		VerticalFlip = Opt:Toggle({name = L["Panels_Options_VerticalFlip"], desc = L["Panels_Options_VerticalFlip_Desc"]}),
@@ -211,8 +216,8 @@ end
 
 Artwork.args = {
 	Header = Opt:Header({name = "Artwork"}),
+	Builtin = Opt:Group({name = "LUI Panels", childGroups = "tree"}),
 	Custom = Opt:Group({name = "Custom Panels", childGroups = "tree", args = CustomArgs}),
-	Builtin = Opt:Group({name = "LUI Panels", childGroups = "tree", hidden = true}),
 	SideBars = Opt:Group({name = "Side Bars", childGroups = "tab", args = SidebarArgs}),
 }
 

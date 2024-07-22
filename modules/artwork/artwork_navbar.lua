@@ -59,10 +59,66 @@ function module:CreateNavBar()
 	topPanelTex:SetBackdropBorderColor(0, 0, 0, 0)
 	topPanelTex:Show()
 
+	-- Bottom corner Textures, since they require Backdrop for now.
+	local leftBorder = CreateFrame("Frame", "LUIArtwork_LeftBorder", UIParent, "BackdropTemplate")
+	leftBorder:SetSize(1024, 1024)
+	leftBorder:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", -30, -31)
+	leftBorder:SetFrameStrata("BACKGROUND")
+	leftBorder:SetBackdrop({
+		bgFile =[[Interface\AddOns\LUI\media\templates\v3\info_left]],
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		edgeSize = 1,
+	})
+	leftBorder:SetBackdropColor(0, 0, 0, 0.9)
+	leftBorder:SetBackdropBorderColor(0, 0, 0, 0)
+	leftBorder:Show()
+
+	local leftBorderBack = CreateFrame("Frame", "LUIArtwork_LeftBorderBack", leftBorder, "BackdropTemplate")
+	leftBorderBack:SetSize(1024, 1024)
+	leftBorderBack:SetPoint("BOTTOMLEFT", leftBorder, "BOTTOMLEFT", 7, 8)
+	leftBorderBack:SetFrameStrata("BACKGROUND")
+	leftBorderBack:SetBackdrop({
+		bgFile =[[Interface\AddOns\LUI\media\templates\v3\info_left_back]],
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		edgeSize = 1,
+	})
+	leftBorderBack:SetBackdropBorderColor(0, 0, 0, 0)
+	leftBorderBack:SetFrameLevel(leftBorder:GetFrameLevel() - 1)
+
+	-- Bottom corner Textures, since they require Backdrop for now.
+	local rightBorder = CreateFrame("Frame", "LUIArtwork_LeftBorder", UIParent, "BackdropTemplate")
+	rightBorder:SetSize(1024, 1024)
+	rightBorder:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", 36, -31)
+	rightBorder:SetFrameStrata("BACKGROUND")
+	rightBorder:SetBackdrop({
+		bgFile =[[Interface\AddOns\LUI\media\templates\v3\info_right]],
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		edgeSize = 1,
+	})
+	rightBorder:SetBackdropColor(0, 0, 0, 0.9)
+	rightBorder:SetBackdropBorderColor(0, 0, 0, 0)
+	rightBorder:Show()
+
+	local rightBorderBack = CreateFrame("Frame", "LUIArtwork_LeftBorderBack", rightBorder, "BackdropTemplate")
+	rightBorderBack:SetSize(1024, 1024)
+	rightBorderBack:SetPoint("BOTTOMRIGHT", rightBorder, "BOTTOMRIGHT", -7, 8)
+	rightBorderBack:SetFrameStrata("BACKGROUND")
+	rightBorderBack:SetBackdrop({
+		bgFile =[[Interface\AddOns\LUI\media\templates\v3\info_right_back]],
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		edgeSize = 1,
+	})
+	rightBorderBack:SetBackdropBorderColor(0, 0, 0, 0)
+	rightBorderBack:SetFrameLevel(rightBorder:GetFrameLevel() - 1)
+
 	topBackground:SetFrameLevel(centerBackground:GetFrameLevel() + 1)
 	module.NavBar = topBackground
 	module.NavBarCenter = centerBackground
 	module.TopPanel = topPanelTex
+	module.LeftBorder = leftBorder
+	module.LeftBorderBack = leftBorderBack
+	module.RightBorder = rightBorder
+	module.RightBorderBack = rightBorderBack
 
 	module:CreateNavButton("Chat", "left2", -164, -7)
 	module:CreateNavButton("Tps", "left1", -88, -7)
@@ -166,6 +222,8 @@ function module:RefreshNavBar()
 	local r, g, b = LUI:GetClassColor(LUI.playerClass)
 	module.NavBarCenter:SetBackdropColor(r, g, b, ALPHA)
 	module.TopPanel:SetBackdropColor(r, g, b, ALPHA)
+	module.LeftBorderBack:SetBackdropColor(r, g, b, ALPHA)
+	module.RightBorderBack:SetBackdropColor(r, g, b, ALPHA)
 
 	for kind, button in pairs(_navButtons) do
 		local db = module.db.profile.LUITextures[kind]
