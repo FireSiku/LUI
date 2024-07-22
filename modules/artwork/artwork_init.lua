@@ -215,6 +215,7 @@ end
 
 function module:OnEnable()
 	module:setPanels()
+	module:setMainPanels()
 	local bar = module:CreateNewSideBar("Right", "Right")
 	--local bar2 = module:CreateNewSideBar("Left", "Left")
 	module:CreateOrb()
