@@ -11,9 +11,12 @@ local module = LUI:GetModule("Artwork")
 local TEX_DIR = [[Interface\AddOns\LUI\media\templates\v4\]]
 local OLD_DIR = [[Interface\AddOns\LUI\media\templates\v3\]]
 local ANIM_DURATION = 0.5
-local ALPHA = 0.7
+local ALPHA = 0.75
 
----@type table<string, SidebarMixin>
+-- constants
+local INFOPANEL_TEXTURE = "Interface\\AddOns\\LUI\\media\\textures\\infopanel"
+
+---@type table<string, Frame|BackdropTemplate>
 local _navButtons = {}
 
 -- ####################################################################################################################
@@ -32,21 +35,34 @@ function module:CreateNavBar()
 	local topBackground = CreateFrame("Frame", "LUIArtwork_NavBarTopBackground", UIParent, "BackdropTemplate")
 	topBackground:SetSize(1024, 1024)
 	topBackground:SetFrameStrata("BACKGROUND")
-	topBackground:SetPoint("TOP", UIParent, "TOP", 17, -16)
+	topBackground:SetPoint("TOP", UIParent, "TOP", 17, -18)
 	SetFrameBackdrop(topBackground, "top")
 	topBackground:SetAlpha(ALPHA)
 
 	local centerBackground = CreateFrame("Frame", "LUIArtwork_NavBarCenterBackground", UIParent, "BackdropTemplate")
 	centerBackground:SetSize(1035, 1024)
 	centerBackground:SetFrameStrata("BACKGROUND")
-	centerBackground:SetPoint("TOP", UIParent, "TOP", 17, -17)
+	centerBackground:SetPoint("TOP", UIParent, "TOP", 17, -18)
 	SetFrameBackdrop(centerBackground, "top_back_complete")
 	--SetFrameBackdrop(centerBackground, "top_back")
 	centerBackground:SetAlpha(ALPHA)
 
+	local topPanelTex = CreateFrame("Frame", "LUIArtwork_InfoPanel", UIParent, "BackdropTemplate")
+	topPanelTex:SetSize(32, 32)
+	topPanelTex:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, 8)
+	topPanelTex:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", 0, 8)
+	topPanelTex:SetFrameStrata("BACKGROUND")
+	topPanelTex:SetBackdrop({
+		bgFile = INFOPANEL_TEXTURE, edgeSize = 1,
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+	})
+	topPanelTex:SetBackdropBorderColor(0, 0, 0, 0)
+	topPanelTex:Show()
+
 	topBackground:SetFrameLevel(centerBackground:GetFrameLevel() + 1)
 	module.NavBar = topBackground
 	module.NavBarCenter = centerBackground
+	module.TopPanel = topPanelTex
 
 	module:CreateNavButton("Chat", "left2", -164, -7)
 	module:CreateNavButton("Tps", "left1", -88, -7)
@@ -125,17 +141,12 @@ end
 
 function module:RefreshNavBar()
 	local r, g, b = LUI:GetClassColor(LUI.playerClass)
-	module.NavBarCenter:SetBackdropColor(r, g, b)
+	module.NavBarCenter:SetBackdropColor(r, g, b, ALPHA)
+	module.TopPanel:SetBackdropColor(r, g, b, ALPHA)
 
 	for kind, button in pairs(_navButtons) do
 		local db = module.db.profile.LUITextures[kind]
-		if db.IsShown then
-			button.tex:SetAlpha(ALPHA)
-		else
-			button.tex:SetAlpha(0)
-		end
-
-		button.tex:SetVertexColor(r, g, b)
-		button.hover:SetVertexColor(r, g, b)
+		button.tex:SetVertexColor(r, g, b, ALPHA)
+		button.hover:SetVertexColor(r, g, b, 0)
 	end
 end

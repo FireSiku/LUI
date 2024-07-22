@@ -20,9 +20,6 @@ local db
 
 local select, pairs = select, pairs
 
--- constants
-local INFOPANEL_TEXTURE = "Interface\\AddOns\\LUI\\media\\textures\\infopanel"
-
 -- local variables
 local elementFrames = {} -- Holds all the LDB frames.
 local elementStorage = {} -- Will hold the infotext's elements for iteration.
@@ -129,21 +126,6 @@ function module:SetInfoPanels()
 		topAnchor:SetSize(1, 1)
 		topAnchor:SetFrameStrata("HIGH")
 		topAnchor:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, -1)
-
-		local topPanelTex = CreateFrame("Frame", "LUIInfotext_topPanel", topAnchor, "BackdropTemplate")
-		topPanelTex:SetSize(32, 32)
-		topPanelTex:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, 8)
-		topPanelTex:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", 0, 8)
-		topPanelTex:SetFrameStrata("BACKGROUND")
-		topPanelTex:SetBackdrop({
-			bgFile = INFOPANEL_TEXTURE,
-			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-			edgeSize = 1,
-			insets = {left = 0, right = 0, top = 0, bottom = 0}
-		})
-		topPanelTex:SetBackdropColor(module:RGBA("Panels"))
-		topPanelTex:SetBackdropBorderColor(0, 0, 0, 0)
-		topPanelTex:Show()
 	end
 	if not bottomAnchor then
 		bottomAnchor = CreateFrame("FRAME", "LUIInfotext_bottomAnchor", UIParent)
