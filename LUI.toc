@@ -51,11 +51,12 @@ update.lua
 
 ### Artwork ###
 modules\artwork\themes.lua
-modules\artwork\panels.lua
-modules\artwork\artwork_v3.lua
+# modules\artwork\panels.lua
+# modules\artwork\artwork_v3.lua
 modules\artwork\artwork_init.lua
 modules\artwork\PanelMixin.lua
 modules\artwork\SidebarMixin.lua
+modules\artwork\artwork_mainpanels.lua
 modules\artwork\artwork_orb.lua
 modules\artwork\artwork_navbar.lua
 modules\artwork\artwork.lua

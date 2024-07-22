@@ -69,7 +69,7 @@ function module:CreateNavBar()
 	module:CreateNavButton("Dps", "right1", 58, -7)
 	module:CreateNavButton("Raid", "right2", 135, -7)
 
-	module:RefreshNavBar()
+	C_Timer.After(0.1, function() module:RefreshNavBar() end)
 end
 
 --- Create the NavBar buttons.
@@ -79,7 +79,7 @@ function module:CreateNavButton(kind, side, x, y)
 	local isWide = (side == "left2" or side == "right2")
 
 
-	local clicker = CreateFrame("Button", "LUIArtwork_NavBar"..side.."Clicker", UIParent)
+	local clicker = CreateFrame("Button", "LUIArtwork_NavBar"..side.."Clicker", UIParent, "SecureHandlerClickTemplate")
 	clicker:SetSize(isWide and 70 or 63, 30)
 	clicker:SetFrameStrata("LOW")
 	clicker:SetPoint("TOP", module.NavBar, "TOP", x, y)
@@ -119,21 +119,44 @@ function module:CreateNavButton(kind, side, x, y)
 		tex:SetSize(60, 24)
 		hover:SetSize(60, 24)
 	end
-
 	clicker:RegisterForClicks("AnyUp")
 	clicker:SetScript("OnEnter", function() hover:SetAlpha(ALPHA) end)
 	clicker:SetScript("OnLeave", function() hover:SetAlpha(0) end)
 	clicker:SetScript("OnClick", function()
-		---@TODO: Make these SecureActions
-		if tex:GetAlpha() == 0 and not alphaIn:IsPlaying() then
-			db[kind].IsShown = true
+		if tex:GetAlpha() == 0 then
 			alphaIn:Play()
-		elseif not alphaOut:IsPlaying() then
-			db[kind].IsShown = false
+			module:AlphaIn(kind, self)
+			db[kind].IsShown = true
+			
+			if kind == "Chat" then
+				module:SetChatVisible(true)
+			end
+		else
 			alphaOut:Play()
+			module:AlphaOut(kind, self)
+			db[kind].IsShown = false
+			if kind == "Chat" then
+				module:SetChatVisible(false)
+			end
 		end
 	end)
-	
+	if kind ~= "Chat" then 
+		SecureHandlerWrapScript(clicker, "PostClick", clicker, [[
+			local frame = self:GetFrameRef("frame")
+			if frame and not frame:IsShown() then
+				self:GetFrameRef("frame"):Show()
+				if self:GetFrameRef("additional1") then self:GetFrameRef("additional1"):Show() end
+				if self:GetFrameRef("additional2") then self:GetFrameRef("additional2"):Show() end
+				if self:GetFrameRef("additional3") then self:GetFrameRef("additional3"):Show() end
+			elseif frame then
+				self:GetFrameRef("frame"):Hide()
+				if self:GetFrameRef("additional1") then self:GetFrameRef("additional1"):Hide() end
+				if self:GetFrameRef("additional2") then self:GetFrameRef("additional2"):Hide() end
+				if self:GetFrameRef("additional3") then self:GetFrameRef("additional3"):Hide() end
+			end
+		]])
+	end
+
 	clicker.tex = tex
 	clicker.hover = hover
 	_navButtons[kind] = clicker
@@ -148,5 +171,20 @@ function module:RefreshNavBar()
 		local db = module.db.profile.LUITextures[kind]
 		button.tex:SetVertexColor(r, g, b, ALPHA)
 		button.hover:SetVertexColor(r, g, b, 0)
+
+		if not db.IsShown then button.tex:SetAlpha(0) end
+		
+		-- If the anchor is a protected frame, we need to use the secure code path
+		if _G[db.Anchor] and _G[db.Anchor]:IsProtected() then
+			button:SetFrameRef("frame", _G[db.Anchor])
+
+			if _G[db.Additional] and _G[db.Additional] ~= "" then
+				local additionalFrames = module:LoadAdditional(db.Additional)
+				if _G[additionalFrames[1]] then button:SetFrameRef("additional1", _G[additionalFrames[1]]) end
+				if _G[additionalFrames[2]] then button:SetFrameRef("additional2", _G[additionalFrames[2]]) end
+				if _G[additionalFrames[3]] then button:SetFrameRef("additional3", _G[additionalFrames[3]]) end
+			end
+		end
+
 	end
 end
