@@ -22,7 +22,7 @@ local print, setmetatable, strfind, strlower, tsort, tostring, type, wipe = prin
 local debugprofilestart, debugprofilestop = debugprofilestart, debugprofilestop
 
 local GameFontNormalSmall = _G.GameFontNormalSmall
-local GetAddOnMetadata = _G.GetAddOnMetadata
+local GetAddOnMetadata = C_AddOns.GetAddOnMetadata
 
 -- Local variables.
 local defaultKillTime = 0.5

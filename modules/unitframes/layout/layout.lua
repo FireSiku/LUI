@@ -25,11 +25,11 @@ local UnitIsVisible, UnitIsConnected, UnitIsAFK = _G.UnitIsVisible, _G.UnitIsCon
 local GetThreatStatusColor, UnitThreatSituation = _G.GetThreatStatusColor, _G.UnitThreatSituation
 local UnitPowerType, GetUnitPowerBarTextureInfo = _G.UnitPowerType, _G.GetUnitPowerBarTextureInfo
 local UnitClass, UnitLevel, GetSpecialization = _G.UnitClass, _G.UnitLevel, _G.GetSpecialization
-local UnitAura, UnitDebuff, DebuffTypeColor = _G.UnitAura, _G.UnitDebuff, _G.DebuffTypeColor
 local SetPortraitTexture, UnitHasVehicleUI = _G.SetPortraitTexture, _G.UnitHasVehicleUI
 local GetComboPoints, GetShapeshiftFormID = _G.GetComboPoints, _G.GetShapeshiftFormID
 local UnitSpellHaste, UnitChannelInfo = _G.UnitSpellHaste, _G.UnitChannelInfo
 local GetPVPTimer, GetGlyphSocketInfo =_G.GetPVPTimer, _G.GetGlyphSocketInfo
+local DebuffTypeColor =  _G.DebuffTypeColor
 local format = string.format
 local floor = math.floor
 

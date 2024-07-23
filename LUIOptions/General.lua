@@ -13,7 +13,7 @@ local db = LUI.db.profile
 local L = LUI.L
 
 local GAME_VERSION_LABEL = _G.GAME_VERSION_LABEL
-local GetAddOnMetadata = _G.GetAddOnMetadata
+local GetAddOnMetadata = C_AddOns.GetAddOnMetadata
 
 local General = Opt:CreateModuleOptions("General", LUI)
 General.order = 1

@@ -2,7 +2,7 @@
 
 local MSQ = LibStub("Masque", true)
 if not MSQ then return end
-if IsAddOnLoaded("Masque_Darion") then return end
+if C_AddOns.IsAddOnLoaded("Masque_Darion") then return end
 
 -- Darion
 MSQ:AddSkin("Darion", {

@@ -11,7 +11,14 @@ end
 
 local GetSpellInfo = _G.GetSpellInfo
 local UnitClass = _G.UnitClass
-local UnitAura = _G.UnitAura
+-- Taken from https://www.townlong-yak.com/framexml/54604/Blizzard_Deprecated/Deprecated_10_2_5.lua
+local UnitAura = function(unitToken, index, filter)
+	local auraData = C_UnitAuras.GetAuraDataByIndex(unitToken, index, filter);
+	if not auraData then
+		return nil;
+	end
+	return AuraUtil.UnpackAuraData(auraData);
+end
 
 local debuff_data = {}
 addon.DebuffData = debuff_data

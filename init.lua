@@ -18,8 +18,8 @@ LUI.IsRetail = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_MAINLINE)
 LUI.IsBCC = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 LUI.IsClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC)
 
-local LIVE_TOC = 100100
-local LIVE_BUILD = 49407
+local LIVE_TOC = 100207
+local LIVE_BUILD = 54604
 
 local _, patchBuild, _, patchTOC = GetBuildInfo()
 
@@ -43,8 +43,8 @@ local ACD = LibStub("AceConfigDialog-3.0")
 
 local format, type, select = format, type, select
 local InCombatLockdown = _G.InCombatLockdown
-local GetAddOnMetadata = _G.GetAddOnMetadata
-local IsAddOnLoaded = _G.IsAddOnLoaded
+local GetAddOnMetadata = C_AddOns.GetAddOnMetadata
+local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 
 -- Constants
 
@@ -166,7 +166,7 @@ LUI.cmdList = {
 function LUI:OpenOptions(forceOld)
 	if not forceOld then
 		if not IsAddOnLoaded("LUIOptions") then
-			_G.LoadAddOn("LUIOptions")
+			C_AddOns.LoadAddon("LUIOptions")
 		end
 
 		self:NewOpen()

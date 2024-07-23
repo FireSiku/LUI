@@ -6,7 +6,7 @@ local function S(x) return LUI:Scale(x) end
 
 local GetShapeshiftFormInfo = _G.GetShapeshiftFormInfo
 local FlyoutHasSpell = _G.FlyoutHasSpell
-local IsAddOnLoaded = _G.IsAddOnLoaded
+local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 local GetActionInfo = _G.GetActionInfo
 
 local function moveUp(self)

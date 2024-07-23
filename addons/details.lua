@@ -4,7 +4,7 @@ LUI.Versions.details = 5
 
 function LUI:InstallDetails()
    
-   if (not _G.IsAddOnLoaded("Details")) then
+   if (not C_AddOns.IsAddOnLoaded("Details")) then
       return
    end
    

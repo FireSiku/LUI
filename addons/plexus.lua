@@ -10,7 +10,7 @@ local addonname, LUI = ...
 LUI.Versions.plexus = 3300
 
 function LUI:InstallPlexus()
-	if not _G.IsAddOnLoaded("Plexus") then return end
+	if not C_AddOns.IsAddOnLoaded("Plexus") then return end
 	local CharName = LUI.playerName
 	if LUI.db.global.luiconfig[LUI.profileName].Versions.plexus == LUI.Versions.plexus then return end
 	

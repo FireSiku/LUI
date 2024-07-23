@@ -3,7 +3,7 @@ local LUI = select(2, ...)
 local script = LUI:NewScript("BlizzScale", "AceEvent-3.0", "AceHook-3.0")
 
 local InCombatLockdown = _G.InCombatLockdown
-local IsAddOnLoaded = _G.IsAddOnLoaded
+local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 
 local blizzFrames = {
 	--UI Frames

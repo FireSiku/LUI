@@ -10,7 +10,7 @@ local addonname, LUI = ...
 LUI.Versions.recount = 3300
 
 local Media = LibStub("LibSharedMedia-3.0")
-local IsAddOnLoaded = _G.IsAddOnLoaded
+local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 
 local function RecountSetColor(Branch,Name,cr,cg,cb,ca)
 	local c = {r=cr, g=cg, b=cb, a=ca,}

@@ -761,7 +761,7 @@ function module:SetMicroMenu()
 	end)
 
 	if not GuildFrame then
-		LoadAddOn("Blizzard_GuildUI")
+		C_AddOns.LoadAddon("Blizzard_GuildUI")
 	end
 
 	GuildFrame:HookScript("OnShow", function(self)
@@ -946,7 +946,7 @@ function module:SetMicroMenu()
 	end)
 
 	if not PlayerTalentFrame then
-		LoadAddOn("Blizzard_TalentUI")
+		C_AddOns.LoadAddon("Blizzard_TalentUI")
 		-- Fix for Events firing before TalentFrame is fully loaded (aka: blizz fail with patch 4.0.6)
 		ShowUIPanel(PlayerTalentFrame)
 		HideUIPanel(PlayerTalentFrame)

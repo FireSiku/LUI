@@ -368,11 +368,11 @@ function module:SetMinimap()
 		{text = QUESTLOG_BUTTON, 			func = function() ToggleFrame(QuestLogFrame) end},
 		{text = SOCIAL_BUTTON, 				func = function() ToggleFriendsFrame(1) end},
 		{text = PLAYER_V_PLAYER, 			func = function() ToggleFrame(PVPFrame) end},
-		{text = ACHIEVEMENTS_GUILD_TAB, 	func = function() if IsInGuild() then if not GuildFrame then LoadAddOn("Blizzard_GuildUI") end GuildFrame_Toggle() end end},
+		{text = ACHIEVEMENTS_GUILD_TAB, 	func = function() if IsInGuild() then if not GuildFrame then C_AddOns.LoadAddon("Blizzard_GuildUI") end GuildFrame_Toggle() end end},
 		{text = LFG_TITLE, 					func = function() ToggleFrame(LFDParentFrame) end},
 		{text = L_LFRAID, 					func = function() ToggleFrame(LFRParentFrame) end},
 		{text = HELP_BUTTON, 				func = function() ToggleHelpFrame() end},
-		{text = L_CALENDAR, 				func = function() if(not CalendarFrame) then LoadAddOn("Blizzard_Calendar") end Calendar_Toggle() end},
+		{text = L_CALENDAR, 				func = function() if(not CalendarFrame) then C_AddOns.LoadAddon("Blizzard_Calendar") end Calendar_Toggle() end},
 	}
 
 	Minimap:SetScript("OnMouseUp", function(self, btn)
@@ -958,7 +958,7 @@ function module:GARRISON_SHOW_LANDING_PAGE()
 end
 
 function module:OnEnable()
-	if IsAddOnLoaded("SexyMap") then
+	if C_AddOns.IsAddOnLoaded("SexyMap") then
 		LUI:Printf("|cffFF0000%s could not be enabled because of a conflicting addon: SexyMap.", self:GetName())
 		return
 	end

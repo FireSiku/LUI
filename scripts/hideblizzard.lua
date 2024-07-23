@@ -12,7 +12,7 @@ LibStub("AceHook-3.0"):Embed(Blizzard)
 
 local GetNumSubgroupMembers = _G.GetNumSubgroupMembers
 local GetNumGroupMembers = _G.GetNumGroupMembers
-local IsAddOnLoaded = _G.IsAddOnLoaded
+local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 local GetCVarBool = _G.GetCVarBool
 
 local CompactRaidFrameManager_GetSetting = _G.CompactRaidFrameManager_GetSetting

@@ -14,7 +14,7 @@ local widgetLists = AceGUIWidgetLSMlists
 
 local GetMirrorTimerProgress = _G.GetMirrorTimerProgress
 local CanScanResearchSite = _G.CanScanResearchSite
-local LoadAddOn = _G.LoadAddOn
+local LoadAddOn = C_AddOns.LoadAddon
 local format = string.format
 local floor = math.floor
 

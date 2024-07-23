@@ -16,9 +16,9 @@ local format = format
 local collectgarbage = collectgarbage
 local UpdateAddOnMemoryUsage = _G.UpdateAddOnMemoryUsage
 local GetAddOnMemoryUsage = _G.GetAddOnMemoryUsage
-local IsAddOnLoaded = _G.IsAddOnLoaded
-local GetNumAddOns = _G.GetNumAddOns
-local GetAddOnInfo = _G.GetAddOnInfo
+local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
+local GetNumAddOns = C_AddOns.GetNumAddOns
+local GetAddOnInfo = C_AddOns.GetAddOnInfo
 local C_Timer = C_Timer
 
 local totalMemory = 0

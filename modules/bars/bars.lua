@@ -175,7 +175,7 @@ end
 
 local function GetAnchor(anchor)
 	if string.find(anchor, "Dominos") then
-		if _G.IsAddOnLoaded("Dominos") then
+		if C_AddOns.IsAddOnLoaded("Dominos") then
 			return _G.Dominos.ActionBar:Get(string.match(anchor, "%d+"))
 		end
 	else

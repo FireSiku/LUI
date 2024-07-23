@@ -23,6 +23,7 @@ Opt.LUI = LUI
 Opt.ACR = ACR
 
 local RoundToSignificantDigits = _G.RoundToSignificantDigits
+local GetAddOnMetadata = C_AddOns.GetAddOnMetadata
 
 ---@class OptionMixin
 local OptionMixin = {}

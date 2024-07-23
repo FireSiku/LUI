@@ -414,7 +414,6 @@ function module.OnGameTooltipSetUnit(frame, data)
 	if db.HideCombatUnit and InCombatLockdown() then
 		return frame:Hide()
 	end
-	TooltipUtil.SurfaceArgs(data)
 
 	local unit = UnitTokenFromGUID(data.guid)
 	if not unit then return frame:Hide() end
