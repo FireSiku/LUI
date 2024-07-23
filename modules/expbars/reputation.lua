@@ -20,7 +20,10 @@ local SHORT_REPUTATION_NAMES = {
 	L["ExpBar_ShortName_Exalted"],		-- Ex
 }
 
-local GetWatchedFactionInfo = _G.GetWatchedFactionInfo
+local GetWatchedFactionInfo = function()
+	local data = C_Reputation.GetWatchedFactionData()
+	return data.name, data.reaction, data.currentReactionThreshold, data.currentStanding, data.nextReactionThreshold, data.factionID
+end
 local C_Reputation = C_Reputation
 
 -- ####################################################################################################################

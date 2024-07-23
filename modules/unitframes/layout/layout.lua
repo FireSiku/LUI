@@ -20,15 +20,15 @@ local UnitHealth, UnitHealthMax, UnitPower, UnitPowerMax = _G.UnitHealth, _G.Uni
 local UnitIsUnit, UnitExists, UnitIsGhost, UnitIsDead = _G.UnitIsUnit, _G.UnitExists, _G.UnitIsGhost, _G.UnitIsDead
 local UnitName, UnitGUID, UnitIsPVP, UnitReaction = _G.UnitName, _G.UnitGUID, _G.UnitIsPVP, _G.UnitReaction
 local UnitIsPlayer, UnitIsEnemy, UnitIsTapDenied = _G.UnitIsPlayer, _G.UnitIsEnemy, _G.UnitIsTapDenied
-local GetSpellInfo, GetTalentInfo, GetTotemInfo = _G.GetSpellInfo, _G.GetTalentInfo, _G.GetTotemInfo
+local GetSpellInfo, GetTotemInfo = C_Spell.GetSpellName, _G.GetTotemInfo
 local UnitIsVisible, UnitIsConnected, UnitIsAFK = _G.UnitIsVisible, _G.UnitIsConnected, _G.UnitIsAFK
 local GetThreatStatusColor, UnitThreatSituation = _G.GetThreatStatusColor, _G.UnitThreatSituation
 local UnitPowerType, GetUnitPowerBarTextureInfo = _G.UnitPowerType, _G.GetUnitPowerBarTextureInfo
-local UnitClass, UnitLevel, GetSpecialization = _G.UnitClass, _G.UnitLevel, _G.GetSpecialization
+local UnitClass, UnitLevel = _G.UnitClass, _G.UnitLevel
 local SetPortraitTexture, UnitHasVehicleUI = _G.SetPortraitTexture, _G.UnitHasVehicleUI
-local GetComboPoints, GetShapeshiftFormID = _G.GetComboPoints, _G.GetShapeshiftFormID
+local GetShapeshiftFormID = _G.GetShapeshiftFormID
 local UnitSpellHaste, UnitChannelInfo = _G.UnitSpellHaste, _G.UnitChannelInfo
-local GetPVPTimer, GetGlyphSocketInfo =_G.GetPVPTimer, _G.GetGlyphSocketInfo
+local GetPVPTimer =_G.GetPVPTimer
 local DebuffTypeColor =  _G.DebuffTypeColor
 local format = string.format
 local floor = math.floor
@@ -217,7 +217,7 @@ function module:DebugTalents()
 					local definitionInfo = C_Traits.GetDefinitionInfo(entryInfo.definitionID)
 					local rank = node.activeRank
 					local spellId = definitionInfo.spellID
-					local spellName, _, icon = GetSpellInfo(spellId)
+					local spellName, _, icon = C_Spell.GetSpellName(spellId)
 					if node.activeEntry and node.activeEntry.entryID ~= entryId then
 						rank = 0
 					end
@@ -2007,7 +2007,7 @@ module.funcs = {
 
 		for k, data in pairs(cornerAuras[LUI.playerClass]) do
 			local spellId, onlyPlayer, isDebuff = unpack(data)
-			local spellName = GetSpellInfo(spellId)
+			local spellName = C_Spell.GetSpellName(spellId)
 
 			local x = k:find("RIGHT") and - oufdb.CornerAura.Inset or oufdb.CornerAura.Inset
 			local y = k:find("TOP") and - oufdb.CornerAura.Inset or oufdb.CornerAura.Inset

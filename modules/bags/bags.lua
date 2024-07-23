@@ -31,9 +31,9 @@ local SetItemButtonDesaturated = _G.SetItemButtonDesaturated
 local ClearItemButtonOverlay = _G.ClearItemButtonOverlay
 local SetItemButtonOverlay = _G.SetItemButtonOverlay
 local SetItemButtonTexture = _G.SetItemButtonTexture
-local GetItemQualityColor = _G.GetItemQualityColor
+local GetItemQualityColor = C_Item.GetItemQualityColor
 local SetItemButtonCount = _G.SetItemButtonCount
-local GetItemInfo = _G.GetItemInfo
+local GetItemInfo = C_Item.GetItemInfo
 
 local TEXTURE_ITEM_QUEST_BORDER = _G.TEXTURE_ITEM_QUEST_BORDER
 local NEW_ITEM_ATLAS_BY_QUALITY = _G.NEW_ITEM_ATLAS_BY_QUALITY
@@ -745,8 +745,8 @@ function module:SetBags()
 	LUIBags:CreateTitleBar()
 
 	-- Bank
-	module:CreateNewContainer("Bank", module.BankContainer)
-	module:CreateNewContainer("Reagent", module.BankReagentContainer)
+	-- module:CreateNewContainer("Bank", module.BankContainer)
+	-- module:CreateNewContainer("Reagent", module.BankReagentContainer)
 
 	module:Refresh()
 end

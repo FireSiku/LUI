@@ -122,17 +122,17 @@ function module:OnEnable()
 	module:SecureHook("CloseBackpack",  module.CloseBags,  true)
 	module:SecureHook("CloseAllBags",   module.CloseBags,  true)
 
-	module:RegisterEvent("BANKFRAME_OPENED", module.OpenBank)
-	module:RegisterEvent("BANKFRAME_CLOSED", module.CloseBank)
-	module:RegisterEvent("PLAYERBANKSLOTS_CHANGED", module.BankContainer.BankSlotsUpdate)
-	module:RegisterEvent("PLAYERREAGENTBANKSLOTS_CHANGED", module.BankReagentContainer.BankSlotsUpdate)
+	-- module:RegisterEvent("BANKFRAME_OPENED", module.OpenBank)
+	-- module:RegisterEvent("BANKFRAME_CLOSED", module.CloseBank)
+	-- module:RegisterEvent("PLAYERBANKSLOTS_CHANGED", module.BankContainer.BankSlotsUpdate)
+	-- module:RegisterEvent("PLAYERREAGENTBANKSLOTS_CHANGED", module.BankReagentContainer.BankSlotsUpdate)
 
 	tinsert(UISpecialFrames, "LUIBags")
-	tinsert(UISpecialFrames, "LUIBank")
-	tinsert(UISpecialFrames, "LUIReagent")
+	-- tinsert(UISpecialFrames, "LUIBank")
+	-- tinsert(UISpecialFrames, "LUIReagent")
 
 	-- Close bags before Enabling/Disabling the module
-	_G.BankFrame:UnregisterAllEvents()
+	-- _G.BankFrame:UnregisterAllEvents()
 	_G.CloseAllBags()
 end
 
@@ -140,6 +140,6 @@ function module:OnDisable()
 	_G.CloseAllBags()
 
 	-- Bank
-	_G.BankFrame:RegisterEvent("BANKFRAME_OPENED")
-	_G.BankFrame:RegisterEvent("BANKFRAME_CLOSED")
+	-- _G.BankFrame:RegisterEvent("BANKFRAME_OPENED")
+	-- _G.BankFrame:RegisterEvent("BANKFRAME_CLOSED")
 end

@@ -10,6 +10,8 @@ local oUFmodule = LUI:GetModule("Unitframes")
 local Media = LibStub("LibSharedMedia-3.0")
 local widgetLists = AceGUIWidgetLSMlists
 
+local SpellInfo = C_SpellBook.C_Spell.GetSpellName
+
 local positions = { "TOP", "TOPRIGHT", "TOPLEFT", "BOTTOM", "BOTTOMRIGHT", "BOTTOMLEFT", "RIGHT", "LEFT", "CENTER"}
 
 local db, dbd
@@ -60,7 +62,7 @@ do
 	local slamelapsed = 0
 	local slamtime = 0
 	local now
-	local slam = GetSpellInfo(1464)
+	local slam = C_Spell.GetSpellName(1464)
 	function OnDurationUpdate(self, elapsed)
 		now = GetTime()
 
@@ -242,7 +244,7 @@ end
 
 local Ranged = function(bar, event, unit, spellName)
 	if unit ~= "player" then return end
-	if spellName ~= GetSpellInfo(75) and spellName ~= GetSpellInfo(5019) then return end
+	if spellName ~= C_Spell.GetSpellName(75) and spellName ~= C_Spell.GetSpellName(5019) then return end
 
 	local swing = bar.Twohand
 	local swingMH = bar.Mainhand

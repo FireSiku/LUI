@@ -165,8 +165,8 @@ LUI.cmdList = {
 
 function LUI:OpenOptions(forceOld)
 	if not forceOld then
-		if not IsAddOnLoaded("LUIOptions") then
-			C_AddOns.LoadAddon("LUIOptions")
+		if not C_AddOns.IsAddOnLoaded("LUIOptions") then
+			C_AddOns.LoadAddOn("LUIOptions")
 		end
 
 		self:NewOpen()

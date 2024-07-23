@@ -9,7 +9,7 @@ if not _G.oUF_RaidDebuffs then
 	_G.oUF_RaidDebuffs = addon
 end
 
-local GetSpellInfo = _G.GetSpellInfo
+local GetSpellInfo = C_Spell.GetSpellName
 local UnitClass = _G.UnitClass
 -- Taken from https://www.townlong-yak.com/framexml/54604/Blizzard_Deprecated/Deprecated_10_2_5.lua
 local UnitAura = function(unitToken, index, filter)
