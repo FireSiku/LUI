@@ -171,8 +171,9 @@ LUI.Directions = {
 	RIGHT = L["Point_Right"],
 }
 
+---@TODO: Add Theme back when possible.
 LUI.ColorTypes = {
 	Individual = L["Color_Individual"],
-	Theme = L["Color_Theme"],
+	--Theme = L["Color_Theme"],
 	Class = L["Color_Class"],
 }

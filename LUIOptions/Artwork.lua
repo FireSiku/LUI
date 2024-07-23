@@ -51,6 +51,22 @@ local PRESET_BAR_ANCHORS = {
 	["Dominos Bar10"] = "Dominos Bar10",
 }
 
+local PRESET_RAID_ANCHORS = {
+	Plexus = "PlexusLayoutFrame",
+	Grid2 = "Grid2LayoutFrame",
+	Healbot = "f1_HealBot_Action",
+	Vuhdo = "Vd1",
+	oUF = "oUF_LUI_raid",
+	Blizzard = "CompactRaidFrameContainer",
+}
+local PRESET_METER_ANCHORS = {
+	Recount = "Recount_MainWindow",
+	Omen = "OmenAnchor",
+	Skada = "SkadaBarWindowSkada",
+	Details = "DetailsBaseFrame1",
+	Details_2nd = "DetailsBaseFrame2",
+}
+
 local nameInput
 
 local Artwork = Opt:CreateModuleOptions("Artwork", module)
@@ -87,8 +103,8 @@ local function DeleteNewPanel(info)
 	module:ModPrint("Deleted panel:", panelName)
 end
 
-local function CreatePanelGroup(name)
-	local texDB = db.Textures[name]
+local function CreatePanelGroup(name, isNative)
+	local texDB = isNative and db.LUITextures[name] or db.Textures[name]
 	local function textureGet(info)
 		return texDB.Texture
 	end
@@ -99,24 +115,25 @@ local function CreatePanelGroup(name)
 
 	local group = Opt:Group({name = name, db = texDB, args = {
 		Enabled = Opt:Toggle({name = "Enabled"}),
-		TextureHeader = Opt:Header({name = L["Texture"]}),
+		TextureHeader = Opt:Header({name = L["Texture"], onlyIf = (not isNative)}),
 		--ImageDesc = Opt:Desc({name = "", 2, nil, GetOptionImageTexture, desc = GetOptionTexCoords, 128}),
-		TexMode = Opt:Select({name = L["Panels_Options_Category"], values = TEX_MODE_SELECT}),
-		Texture = Opt:Input({name = L["Texture"], desc = L["Panels_Options_Texture_Desc"], hidden = IsTextureInputHidden}),
+		TexMode = Opt:Select({name = L["Panels_Options_Category"], values = TEX_MODE_SELECT, onlyIf = (not isNative)}),
+		Texture = Opt:Input({name = L["Texture"], desc = L["Panels_Options_Texture_Desc"], hidden = IsTextureInputHidden, onlyIf = (not isNative)}),
 		TextureSelect = Opt:Select({name = L["Panels_Options_TextureSelect"], desc = L["Panels_Options_TextureSelect_Desc"],
-			values = PRESET_LUI_TEXTURES, hidden = IsTextureSelectHidden, get = textureGet, set = textureSet}),
-		LineBreakTex = Opt:Spacer(),
+			values = PRESET_LUI_TEXTURES, hidden = IsTextureSelectHidden, get = textureGet, set = textureSet, onlyIf = (not isNative)}),
+		LineBreakTex = Opt:Spacer({}),
 		Anchored = Opt:Toggle({name = L["Panels_Options_Anchored"], desc = L["Panels_Options_Anchored_Desc"], width = "normal"}),
 		Parent = Opt:Input({name = L["Parent"], desc = L["Panels_Options_Parent_Desc"], disabled = IsAnchorParentDisabled}),
-		ColorType = Opt:Select({name = "Panel Color", values = LUI.ColorTypes,
-			get = function(info) return db.Colors[name].t end, --getter
-			set = function(info, value) db.Colors[name].t = value; module:Refresh() end}), --setter
+		-- ColorType = Opt:Select({name = "Panel Color", values = LUI.ColorTypes,
+		-- 	get = function(info) return db.Colors[name].t end, --getter
+		-- 	set = function(info, value) db.Colors[name].t = value; module:Refresh() end}), --setter
+		ColorType = Opt:ColorSelect({name = "Panel Color", arg = name}),
 		[(name)] = Opt:Color({name = "Individual Color", hasAlpha = true}),
-		LineBreakFlip = Opt:Spacer(),
+		LineBreakFlip = Opt:Spacer({}),
 		HorizontalFlip = Opt:Toggle({name = L["Panels_Options_HorizontalFlip"], desc = L["Panels_Options_HorizontalFlip_Desc"]}),
 		VerticalFlip = Opt:Toggle({name = L["Panels_Options_VerticalFlip"], desc = L["Panels_Options_VerticalFlip_Desc"]}),
-		CustomTexCoords = Opt:Toggle({name = L["Panels_Options_CustomTexCoords"], desc = L["Panels_Options_CustomTexCoords_Desc"], hidden = IsCustomTexCoordsHidden}),
-		LineBreakCoord = Opt:Spacer(),
+		CustomTexCoords = Opt:Toggle({onlyIf = (not isNative), name = L["Panels_Options_CustomTexCoords"], desc = L["Panels_Options_CustomTexCoords_Desc"], hidden = IsCustomTexCoordsHidden}),
+		LineBreakCoord = Opt:Spacer({}),
 		Left = Opt:Input({name = L["Point_Left"], width = "half", hidden = IsTexCoordsHidden}),
 		Right = Opt:Input({name = L["Point_Right"], width = "half", hidden = IsTexCoordsHidden}),
 		Up = Opt:Input({name = L["Point_Up"], width = "half", hidden = IsTexCoordsHidden}),
@@ -126,14 +143,15 @@ local function CreatePanelGroup(name)
 		Height = Opt:InputNumber({name = L["Height"]}),
 		X = Opt:InputNumber({name = "X"}),
 		Y = Opt:InputNumber({name = "Y"}),
-		LineBreak = Opt:Spacer(),
+		LineBreak = Opt:Spacer({}),
 		--[(name)] = Opt:ColorMenu(L["Color"], 34, true, RefreshPanel),
 		PosHeader = Opt:Header({name = L["Position"]}),
 		Point = Opt:Select({name = L["Anchor"], values = LUI.Points}),
 		RelativePoint = Opt:Select({name = L["Anchor"], values = LUI.Points}),
 		LineBreak5 = Opt:Spacer({width = "full"}),
-		DeletePanel = Opt:Execute({name = "Delete Panel", func = DeleteNewPanel})
+		DeletePanel = Opt:Execute({name = "Delete Panel", func = DeleteNewPanel, onlyIf = (not isNative)})
 	}})
+
 	return group
 end
 
@@ -163,7 +181,7 @@ end
 ---@param bar SidebarMixin
 ---@param barDB SidebarDBOptions
 ---@return LUIOption
-function CreateSidebarOptions(name, bar, barDB)
+local function CreateSidebarOptions(name, bar, barDB)
 	local function IsSideBarDisabled() return not barDB.Enable end
 	
 	local function presetDropdownGet(info)
@@ -184,14 +202,14 @@ function CreateSidebarOptions(name, bar, barDB)
 		Header = Opt:Header({name = name}),
 		Enable = Opt:Toggle({name = "Enabled"}),
 		OpenInstant = Opt:Toggle({name = "Open Instantly", desc = "If enabled, there will be no delay or animation when opening or closing the sidebar.\n\nNote: During combat, the sidebar always open instantly.", disabled = IsSideBarDisabled}),
-		Spacer = Opt:Spacer(),
+		Spacer = Opt:Spacer({}),
 		Scale = Opt:Slider({name = "Scale", desc = format("The scale of the sidebar. For best results, this should match the Pixel-To-UI factor.\n\nFor your resolution: %.f%%", PixelUtil.GetPixelToUIUnitFactor()*100), values = Opt.ScaleValues, disabled = IsSideBarDisabled}),
 		Y = Opt:InputNumber({name = "Y Offset", desc = "Vertical position of the sidebar.", disabled = IsSideBarDisabled}),
-		SpacerAnchor = Opt:Spacer(),
+		SpacerAnchor = Opt:Spacer({}),
 		Intro = Opt:Desc({name = "\nWhich Bar do you want to use for this Sidebar?\nChoose one or type in the frame to be anchored manually.\n\nMake sure your Bar is set to 6 buttons/2 columns and isn't used for another Sidebar.", disabled = IsSideBarDisabled}),
 		AnchorPreset = Opt:Select({name = "Bar Preset", values = PRESET_BAR_ANCHORS, get = presetDropdownGet, set = presetDropdownSet, disabled = IsSideBarDisabled}),
 		Anchor = Opt:Input({name = "Anchor", desc = "Frame that will be anchored to the sidebar", disabled = IsSideBarDisabled}),
-		SpacerAdjust = Opt:Spacer(),
+		SpacerAdjust = Opt:Spacer({}),
 		AutoAdjust = Opt:Execute({name = "Auto-Adjust Position", desc = "If you recently changed the bar anchor, make sure to move the previous bar outside of the Sidebar to prevent overlaps.", func = autoAdjustFunc, disabled = IsSideBarDisabled}),
 		AutoPosition = Opt:Toggle({name = "Auto-Position", desc = "If enabled, LUI will automatically position the sidebar anchor. This option automatically turns off if you change the anchor to avoid errors.", disabled = IsSideBarDisabled}),
 
@@ -200,9 +218,57 @@ function CreateSidebarOptions(name, bar, barDB)
 	}})
 end
 
+local function CreateMainPanelOptions(kind)
+	local isNotChat = kind ~= "Chat"
+	local function presetDropdownGet(info)
+		return db.LUITextures[kind].Anchor
+	end
+
+	local function presetDropdownSet(info, value)
+		db.LUITextures[kind].Anchor = value
+		if value == "DetailsBaseFrame1" then
+			db.LUITextures[kind].Additional = "DetailsRowFrame1"
+		elseif value == "DetailsBaseFrame2" then
+			db.LUITextures[kind].Additional = "DetailsRowFrame2"
+		else
+			db.LUITextures[kind].Additional = ""
+		end
+	end
+
+	return Opt:Group({name = kind, db = db.LUITextures[kind], args = {
+		Header = Opt:Header({name = kind}),
+		addon = Opt:Desc({onlyIf = isNotChat, name = "Which "..kind.." Addon do you prefer?\nChoose one or type in the Anchor manually.\n"}),
+		AnchorPreset = Opt:Select({onlyIf = isNotChat, name = "Bar Preset", values = (kind == "Raid") and PRESET_RAID_ANCHORS or PRESET_METER_ANCHORS, get = presetDropdownGet, set = presetDropdownSet}),
+		Anchor = Opt:Input({onlyIf = isNotChat, name = "Anchor", desc = "Type in your "..kind.." Anchor manually."}),
+		FrameIdentifierDesc = Opt:Desc({onlyIf = isNotChat, name = "Use the LUI Frame Identifier to search for the Parent Frame of your "..kind.." Addon.\nYou can also use the Blizzard Debug Tool: Type /framestack"}),
+		FrameIdentifier = Opt:Execute({onlyIf = isNotChat, name = "LUI Frame Identifier", desc = "Click to show the LUI Frame Identifier", func = function() _G.LUI_Frame_Identifier:Show() end }),
+		Additional = Opt:Input({onlyIf = isNotChat, name = "Additional Frames", desc = "Type in any additional Frames (seperated by commas), that you would like to show/hide."}),
+		Spacer1 = Opt:Spacer({}),
+		OffsetX = Opt:InputNumber({name = "Offset X", desc = "Choose the X Offset for your "..kind.." Frame to it's Anchor."}),
+		OffsetY = Opt:InputNumber({name = "Offset Y", desc = "Choose the Y Offset for your "..kind.." Frame to it's Anchor."}),
+		Spacer2 = Opt:Spacer({}),
+		Direction = Opt:Select({name = "Direction", values = LUI.Directions}),
+		Animation = Opt:Toggle({name = "Fade Animation", desc = "Enable a fade animation when showing or hiding the panel. Protected frames such as raid frames do not support this setting.", disabled = (kind == "raid")}),
+		Width = Opt:InputNumber({name = "Width", desc = "Choose the Width for your "..kind.." Panel."}),
+		Height = Opt:InputNumber({name = "Height", desc = "Choose the Height for your "..kind.." Panel."}),
+		Spacer3 = Opt:Spacer({}),
+		BGColor = Opt:Color({name = "BG Color", desc = "Choose the Color for your "..kind.." Panel Background."}),
+		BorderColor = Opt:Color({name = "Border Color", desc = "Choose the Color for your "..kind.." Panel Border."}),
+	}})
+end
+
 -- ####################################################################################################################
 -- ##### Options Table ################################################################################################
 -- ####################################################################################################################
+
+local BuiltinArgs = {
+	NavBar = Opt:Group({name = "NavBar", db = db.LUITextures.NavBar, args = {}}),
+	Chat = CreateMainPanelOptions("Chat"),
+	Tps = CreateMainPanelOptions("Tps"),
+	Dps = CreateMainPanelOptions("Dps"),
+	Raid = CreateMainPanelOptions("Raid"),
+	ActionBarTopTexture = CreatePanelGroup("ActionBarTopTexture", true),
+}
 
 CustomArgs = {
 	NewDesc = Opt:Desc({name = "    Add Custom Panels:", fontSize = "medium", width = "normal"}),
@@ -216,7 +282,7 @@ end
 
 Artwork.args = {
 	Header = Opt:Header({name = "Artwork"}),
-	Builtin = Opt:Group({name = "LUI Panels", childGroups = "tree"}),
+	Builtin = Opt:Group({name = "LUI Panels", childGroups = "tree", args = BuiltinArgs}),
 	Custom = Opt:Group({name = "Custom Panels", childGroups = "tree", args = CustomArgs}),
 	SideBars = Opt:Group({name = "Side Bars", childGroups = "tab", args = SidebarArgs}),
 }
