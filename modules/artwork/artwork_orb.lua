@@ -113,7 +113,6 @@ function module:CreateOrb()
 	})
 	middleRing:SetBackdropBorderColor(0, 0, 0, 0)
 
-	--LUI.Orb.Ring7 = LUI:CreateMeAFrame("Frame", nil, LUI.Orb, 77, 75, 1, "LOW", 3, "CENTER", LUI.Orb, "CENTER", 1, -1, 1)
 	local innerRing = CreateFrame("Frame", "LUIArtwork_OrbInnerRing", orb, "BackdropTemplate")
 	innerRing:SetSize(77, 75)
 	innerRing:SetPoint("CENTER", orb, "CENTER", 1, -1)
@@ -141,10 +140,10 @@ function module:SetOrbRingColor(r, g, b)
 end
 
 function module:RefreshOrb()
-	local db = self.db.profile.LUITextures.Orb
+	local db = self.db.profile.LUITextures.NavBar
 	local orb = module.Orb
 	
-	if not db.Enabled then
+	if not db.ShowOrb then
 		orb:Hide()
 		return
 	else

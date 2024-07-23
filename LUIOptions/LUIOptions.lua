@@ -206,7 +206,11 @@ function OptionMixin.ColorGetSet(db)
 		local c = db[info[#info]]
 		c.r, c.g, c.b = RoundToSignificantDigits(r, 2), RoundToSignificantDigits(g, 2), RoundToSignificantDigits(b, 2)
 		if info.option.hasAlpha then c.a = RoundToSignificantDigits(a, 2) end
-		if info.handler.RefreshColors then info.handler:RefreshColors() end
+		if info.handler.RefreshColors then 
+			info.handler:RefreshColors()
+		elseif info.handler.Refresh then
+			info.handler:Refresh()
+		end
 	end
 		
 	return get, set
@@ -227,7 +231,11 @@ local function defaultColorSet(info, r, g, b, a)
 	local c = info.handler.db.profile.Colors[info[#info]]
 	c.r, c.g, c.b = RoundToSignificantDigits(r, 2), RoundToSignificantDigits(g, 2), RoundToSignificantDigits(b, 2)
 	if info.option.hasAlpha then c.a = RoundToSignificantDigits(a, 2) end
-	if info.handler.RefreshColors then info.handler:RefreshColors() end
+	if info.handler.RefreshColors then 
+		info.handler:RefreshColors()
+	elseif info.handler.Refresh then
+		info.handler:Refresh()
+	end
 end
 
 -- ####################################################################################################################
@@ -428,6 +436,35 @@ end
 -- ####################################################################################################################
 -- ##### Option Templates: Color Menu #################################################################################
 -- ####################################################################################################################
+-- ColorType = Opt:Select({name = "Panel Color", values = LUI.ColorTypes,
+-- get = function(info) return db.Colors[name].t end, --getter
+-- set = function(info, value) db.Colors[name].t = value; module:Refresh() end}), --setter
+
+local defaultColorSelectGet = function(info)
+	local db = info.handler.db.profile.Colors
+	local c = db[info.arg]
+	return c.t
+end
+
+local defaultColorSelectSet = function(info, value)
+	local db = info.handler.db.profile.Colors
+	db[info.arg].t = value
+	if info.handler.RefreshColors then
+		info.handler:RefreshColors()
+	elseif info.handler.Refresh then
+		info.handler:Refresh()
+	end
+end
+
+function OptionMixin:ColorSelect(data)
+	data = AddShared(data, "select")
+	data.values = LUI.ColorTypes
+	if data and not data.get then
+		data.get = defaultColorSelectGet
+		data.set = defaultColorSelectSet
+	end
+	return data
+end
 
 local function ColorMenuGetter(info)
 	local db = info.handler.db.profile.Colors

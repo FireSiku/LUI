@@ -18,12 +18,15 @@ local db
 module.defaults = {
 	profile = {
 		LUITextures = {
-			Orb = {
-				Enabled = true,
-				LostGalaxy = false,
-			},
 			NavBar = {
-
+				Enabled = true,
+				ShowOrb = true,
+				ShowButtons = true,
+				TopBackground = true,
+				CenterBackground = true,
+				ThemedLines = true,
+				BlackLines = true,
+				LostGalaxy = false,
 			},
 			Chat = {
 				OffsetX = 0,
@@ -71,10 +74,10 @@ module.defaults = {
 				Width = 409,
 				Height = 181
 			},
-			["Top Bar"] = {
+			["ActionBarTopTexture"] = {
 				Created = true,
 				Enabled = true,
-				Anchored = false,
+				Anchored = true,
 				TexMode = 1,
 				Texture = "bar_top.tga",
 				Point = "BOTTOM",
@@ -83,11 +86,11 @@ module.defaults = {
 				CustomTexCoords = false,
 				HorizontalFlip = false,
 				VerticalFlip = false,
-				Width = 702,
-				Height = 36,
+				Width = 500,
+				Height = 32,
 				Order = 3,
 				X = 0,
-				Y = 120,
+				Y = 110,
 				Left = 0,
 				Right = 1,
 				Up = 0,
@@ -152,10 +155,24 @@ module.defaults = {
 			},
 		},
 		Colors = {
-			ChatBG = { r = 0.12, g = 0.12,  b = 0.12, a = 0.5, t = "Class", },
-			["Top Bar"] = { r = 0.12, g = 0.12,  b = 0.12, a = 0.5, t = "Class", },
+			ActionBarTopTexture = { r = 0.12, g = 0.12,  b = 0.12, a = 0.5, t = "Class", },
 			SidebarRight = { r = 0.12, g = 0.12,  b = 0.12, a = 1, t = "Class", },
 			SidebarLeft = { r = 0.12, g = 0.12,  b = 0.12, a = 1, t = "Class", },
+			NavButtons = { r = 0.12, g = 0.12,  b = 0.12, a = 1, t = "Class", },
+			Chat = { r = 0.12, g = 0.12,  b = 0.12, a = 0.4, t = "Class", },
+			Tps = { r = 0.12, g = 0.12,  b = 0.12, a = 0.4, t = "Class", },
+			Dps = { r = 0.12, g = 0.12,  b = 0.12, a = 0.4, t = "Class", },
+			Raid = { r = 0.12, g = 0.12,  b = 0.12, a = 0.4, t = "Class", },
+			ChatBorder = { r = 0.12, g = 0.12,  b = 0.12, a = 0.4, t = "Class", },
+			TpsBorder = { r = 0.12, g = 0.12,  b = 0.12, a = 0.4, t = "Class", },
+			DpsBorder = { r = 0.12, g = 0.12,  b = 0.12, a = 0.4, t = "Class", },
+			RaidBorder = { r = 0.12, g = 0.12,  b = 0.12, a = 0.4, t = "Class", },
+			Orb = { r = 0.12, g = 0.12,  b = 0.12, a = 1, t = "Class", },
+			TopPanel = { r = 0.12, g = 0.12,  b = 0.12, a = 1, t = "Class", },
+			LeftBorder = { r = 0, g = 0,  b = 0, a = 1, t = "Individual", },
+			RightBorder = { r = 0, g = 0,  b = 0, a = 1, t = "Individual", },
+			LeftBorderBack = { r = 0.12, g = 0.12,  b = 0.12, a = 1, t = "Class", },
+			RightBorderBack = { r = 0.12, g = 0.12,  b = 0.12, a = 1, t = "Class", },
 			['*'] = { r = 0.12, g = 0.12,  b = 0.12, a = 1, t = "Class", },
 		}
 	},
