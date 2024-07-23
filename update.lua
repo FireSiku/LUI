@@ -325,11 +325,11 @@ function LUI:ApplyUpdate(ver)
 				Convert(currUnit, unit_db.Bars,  "ArcaneCharges",  "ClassPowerBar", unit_db)
 				Convert(currUnit, unit_db.Texts, "WarlockBar",     "ClassPowerText", unit_db)
 
-				if uf_db.Player.Bars then
+				if uf_db.Player and uf_db.Player.Bars then
 					table.insert(cleanUp[uf_db.Player.Bars], "ShadowOrbs")
 					table.insert(cleanUp[uf_db.Player.Bars], "Eclipse")
 				end
-				if uf_db.Player.Texts then
+				if uf_db.Player and uf_db.Player.Texts then
 					table.insert(cleanUp[uf_db.Player.Texts], "Eclipse")
 					table.insert(cleanUp[uf_db.Player.Texts], "WarlockBar")
 				end
