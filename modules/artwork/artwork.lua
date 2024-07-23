@@ -48,6 +48,8 @@ function module:setPanels()
 	sort(module.panelList, function(a, b)
 		return db.Textures[a].Order < db.Textures[b].Order
 	end)
+
+	module.ActionBarTop = module:CreateNewPanel("ActionBarTopTexture", db.LUITextures.ActionBarTopTexture)
 end
 
 function module:GetPanelByName(name)
@@ -58,9 +60,11 @@ function module:Refresh()
 	for name, panel in pairs(_panels) do
 		panel:Refresh()
 	end
+	module.ActionBarTop:Refresh()
 	for name, sidebar in module:IterateSidebars() do
 		sidebar:Refresh()
 	end
 	module:RefreshNavBar()
 	module:RefreshOrb()
+	module:RefreshMainPanels()
 end

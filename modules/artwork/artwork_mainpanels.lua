@@ -475,9 +475,9 @@ function module:ApplyBackground(kind)
 		return
 	end
 
-	local rc, gc, bc, ac = unpack(ThemesDB[strlower(kind)])
-	local r, g, b, a = unpack(ThemesDB[strlower(kind.."border")])
-
+	local rc, gc, bc, ac = module:RGBA(kind)
+	local r, g, b, a = module:RGBA(kind.."Border")
+	
 	-- temporary for CENTER -> SOLID change
 	if data.Direction == "CENTER" then data.Direction = "SOLID" end
 	_mainPanels[kind]:Set(data.Direction, frame, data.Width, data.Height, 1, r, g, b, a, rc, gc, bc, ac)
@@ -506,7 +506,6 @@ function module:setMainPanels()
 end
 
 function module:RefreshMainPanels()
-	local r, g, b = LUI:GetClassColor(LUI.playerClass)
 	self:ApplyBackground("Chat")
 	self:ApplyBackground("Tps")
 	self:ApplyBackground("Dps")
