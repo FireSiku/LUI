@@ -19,6 +19,7 @@ local db
 local BlizzMicroButtons = {
 	CharacterMicroButton = "LUIMicromenu_Player",
 	SpellbookMicroButton = "LUIMicromenu_Spellbook",
+	PlayerSpellsMicroButton = "LUIMicromenu_Spellbook",
 	TalentMicroButton = "LUIMicromenu_Talents",
 	AchievementMicroButton = "LUIMicromenu_Achievements",
 	QuestLogMicroButton = "LUIMicromenu_Quests",
