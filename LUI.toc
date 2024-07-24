@@ -58,12 +58,6 @@ modules\artwork\artwork_v3.lua
 # modules\fader\fader_init.lua
 # modules\fader\fader.lua
 
-### Bars ###
-## modules\bars\bars.lua
-
-### Auras ###
-## modules\auras\auras.xml
-
 ### Chat ###
 modules\chat\chat.xml
 
@@ -116,7 +110,6 @@ modules\raidmenu\raidmenu.xml
 modules\raidmenu\raidmenu.lua
 
 ### ExpBars ###
-# modules\expbars\threatbar.lua
 modules\expbars\expbars_init.lua
 modules\expbars\expbars.lua
 modules\expbars\experience.lua
