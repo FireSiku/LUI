@@ -11,8 +11,6 @@ local module = LUI:NewModule("Micromenu")
 local db
 
 local hooksecurefunc = _G.hooksecurefunc
-local GetMouseFocus = _G.GetMouseFocus
-local WorldMapFrame = _G.WorldMapFrame
 local GameMenuFrame = _G.GameMenuFrame
 local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 local FriendsFrame = _G.FriendsFrame
@@ -371,7 +369,7 @@ function module:NewMicroButton(buttonData)
 
 	local button = CreateFrame("Frame", "LUIMicromenu_"..name, _G.LUIMicromenu_Background)
 	button:SetSize(TEXTURE_SIZE_WIDTH, TEXTURE_SIZE_HEIGHT)
-	Mixin(button, buttonData)
+	button = Mixin(button, buttonData) --[[@as MicroButton]]
 
 	-- Make an icon for the button
 	button.icon = button:CreateTexture(nil, "ARTWORK")
@@ -640,7 +638,7 @@ function module:SetMicromenuExtraButtons()
 			PanelsDB.MicroMenu.IsShown = false
 
 			buttonMiddle:SetBackdrop({
-				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"..(GetMouseFocus() == clickerMiddle and "micro_anchor2" or "micro_anchor"),
+				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"..(clickerMiddle:IsMouseMotionFocus() and "micro_anchor2" or "micro_anchor"),
 				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 				tile = false, tileSize = 0, edgeSize = 1,
 				insets = {left = 0, right = 0, top = 0, bottom = 0}
@@ -652,7 +650,7 @@ function module:SetMicromenuExtraButtons()
 			PanelsDB.MicroMenu.IsShown = true
 
 			buttonMiddle:SetBackdrop({
-				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"..(GetMouseFocus() == clickerMiddle and "micro_anchor4" or "micro_anchor3"),
+				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"..(clickerMiddle:IsMouseMotionFocus() and "micro_anchor4" or "micro_anchor3"),
 				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 				tile = false, tileSize = 0, edgeSize = 1,
 				insets = {left = 0, right = 0, top = 0, bottom = 0}

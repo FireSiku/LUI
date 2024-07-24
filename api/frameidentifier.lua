@@ -2,7 +2,7 @@
 local LUI = select(2, ...)
 local script = LUI:NewScript("FrameIdentifier")
 
-local GetMouseFocus = _G.GetMouseFocus
+local GetMouseFoci = _G.GetMouseFoci
 
 local Identifier = CreateFrame("Frame", "LUI_Frame_Identifier", UIParent, "BackdropTemplate")
 Identifier:SetWidth(320)
@@ -104,11 +104,12 @@ MouseActiveParent:SetPoint("LEFT", MouseParent, "RIGHT")
 MouseInfo.activeParentText = MouseActiveParent
 
 Identifier:SetScript("OnUpdate", function(self)
-	if GetMouseFocus() == nil then return end
+	local mouseFocus = GetMouseFoci()
+	if not mouseFocus[1] then return end
 	
-	local name = GetMouseFocus():GetName()
+	local name = mouseFocus[1]:GetName()
 	
-	if name == nil then
+	if not name then
 		MouseActive:SetText("Not Defined")
 		MouseActiveParent:SetText("Unavailable")
 		return
@@ -118,7 +119,7 @@ Identifier:SetScript("OnUpdate", function(self)
 	
 	local _, parent = _G[name]:GetPoint()
 	
-	if parent == nil or parent == " " then
+	if not parent or parent:trim() == "" then
 		MouseActiveParent:SetText("Not Defined")
 	else
 		MouseActiveParent:SetText(parent:GetName() or "")
