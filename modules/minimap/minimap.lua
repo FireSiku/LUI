@@ -18,7 +18,7 @@ local db
 -- Locals and Constants
 local GetMinimapZoneText = _G.GetMinimapZoneText
 local ToggleDropDownMenu = _G.ToggleDropDownMenu
-local TrackingFrame = _G.MinimapCluster.TrackingFrame
+local TrackingFrame = _G.MinimapCluster.Tracking.Button
 local MailFrame = _G.MinimapCluster.IndicatorFrame
 local MINIMAP_LABEL = _G.MINIMAP_LABEL
 local Minimap = _G.Minimap
@@ -233,10 +233,13 @@ function module:SetMinimap()
 		end
 	end)
 
+	local trackingAnchor = AnchorUtil.CreateAnchor("TOPRIGHT", Minimap, "TOPLEFT", -10, 8)
 	Minimap:SetScript("OnMouseUp", function(self, button)
 		--Right Click shows the Tracking dropdown, only if module is enabled.
 		if button == "RightButton" and module:IsEnabled() then
-			ToggleDropDownMenu(1, nil, TrackingFrame.DropDown, self);
+			--ToggleDropDownMenu(1, nil, TrackingFrame.DropDown, self);
+			Menu.GetManager():OpenMenu(Minimap, TrackingFrame.menuDescription, trackingAnchor)
+			--TrackingFrame:OpenMenu()
 		else Minimap:OnClick(self)
 		end
 	end)
