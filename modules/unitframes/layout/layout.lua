@@ -20,28 +20,20 @@ local UnitHealth, UnitHealthMax, UnitPower, UnitPowerMax = _G.UnitHealth, _G.Uni
 local UnitIsUnit, UnitExists, UnitIsGhost, UnitIsDead = _G.UnitIsUnit, _G.UnitExists, _G.UnitIsGhost, _G.UnitIsDead
 local UnitName, UnitGUID, UnitIsPVP, UnitReaction = _G.UnitName, _G.UnitGUID, _G.UnitIsPVP, _G.UnitReaction
 local UnitIsPlayer, UnitIsEnemy, UnitIsTapDenied = _G.UnitIsPlayer, _G.UnitIsEnemy, _G.UnitIsTapDenied
-local GetSpellInfo, GetTotemInfo = C_Spell.GetSpellName, _G.GetTotemInfo
 local UnitIsVisible, UnitIsConnected, UnitIsAFK = _G.UnitIsVisible, _G.UnitIsConnected, _G.UnitIsAFK
 local GetThreatStatusColor, UnitThreatSituation = _G.GetThreatStatusColor, _G.UnitThreatSituation
 local UnitPowerType, GetUnitPowerBarTextureInfo = _G.UnitPowerType, _G.GetUnitPowerBarTextureInfo
-local UnitClass, UnitLevel = _G.UnitClass, _G.UnitLevel
 local SetPortraitTexture, UnitHasVehicleUI = _G.SetPortraitTexture, _G.UnitHasVehicleUI
-local GetShapeshiftFormID = _G.GetShapeshiftFormID
+local UnitClass, UnitLevel, GetPVPTimer = _G.UnitClass, _G.UnitLevel, _G.GetPVPTimer
+local GetShapeshiftFormID, GetTotemInfo = _G.GetShapeshiftFormID, _G.GetTotemInfo
 local UnitSpellHaste, UnitChannelInfo = _G.UnitSpellHaste, _G.UnitChannelInfo
-local GetPVPTimer =_G.GetPVPTimer
 local DebuffTypeColor =  _G.DebuffTypeColor
 local format = string.format
 local floor = math.floor
 
 local ALT_POWER_BAR_PAIR_DISPLAY_INFO = _G.ALT_POWER_BAR_PAIR_DISPLAY_INFO
 local ADDITIONAL_POWER_BAR_INDEX = _G.ADDITIONAL_POWER_BAR_INDEX
-local GameFontHighlight = _G.GameFontHighlight
-local NUM_CHAT_WINDOWS = _G.NUM_CHAT_WINDOWS
-local MAX_PLAYER_LEVEL = _G.MAX_PLAYER_LEVEL
-local MAX_COMBO_POINTS = _G.MAX_COMBO_POINTS
 local MAX_TOTEMS = _G.MAX_TOTEMS
-
-local standings = {"Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted"}
 
 local EVOKER_DPS_POWER_NEXUS_NODE = 68574
 local EVOKER_AUG_POWER_NEXUS_NODE = 93201
@@ -80,8 +72,6 @@ local font = mediaPath..[=[fonts\vibrocen.ttf]=]
 local fontn = mediaPath..[=[fonts\KhmerUI.ttf]=]
 local font2 = mediaPath..[=[Fonts\ARIALN.ttf]=]
 local font3 = mediaPath..[=[fonts\Prototype.ttf]=]
-
-local highlight = true
 
 local cornerAuras = {
 	WARRIOR = {
@@ -1832,6 +1822,7 @@ module.funcs = {
 		module:RegisterEvent("UNIT_LEVEL", checkPowers)
 		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkPowers)
 		module:RegisterEvent("PLAYER_TALENT_UPDATE", checkPowers)
+		module:RegisterEvent("TRAIT_CONFIG_UPDATED", checkPowers)
 		classPower.UpdateTexture = checkPowers
 
 		function self.ClassPower.PostVisibility(element, enabled)
