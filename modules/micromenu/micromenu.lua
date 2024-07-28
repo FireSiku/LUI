@@ -10,6 +10,7 @@ local L = LUI.L
 local module = LUI:NewModule("Micromenu")
 local db
 
+local PlayerSpellsUtil = _G.PlayerSpellsUtil
 local hooksecurefunc = _G.hooksecurefunc
 local GameMenuFrame = _G.GameMenuFrame
 local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
@@ -20,6 +21,9 @@ local UnitLevel = _G.UnitLevel
 local IsBagOpen = _G.IsBagOpen
 local Minimap = _G.Minimap
 local format = format
+
+local TALENT_TAB = PlayerSpellsUtil.FrameTabs.ClassTalents or 2
+local SPELL_TAB = PlayerSpellsUtil.FrameTabs.SpellBook or 3
 
 local addonLoadedCallbacks = {}
 local microStorage = {}
@@ -199,7 +203,7 @@ local microDefinitions = {
 		title = L["MicroQuest_Name"],
 		any = L["MicroQuest_Any"],
 		OnClick = function(self, btn)
-			_G.ToggleWorldMap()
+			_G.ToggleQuestLog()
 		end,
 	},
 
@@ -219,21 +223,26 @@ local microDefinitions = {
 		alertFrame = "Talent",
 		level = TALENT_LEVEL_REQ,
 		title = L["MicroTalents_Name"],
-		any = L["MicroTalents_Any"],
-		state = "PlayerTalentFrame",
+		left = L["MicroTalents_Left"],
+		right = L["MicroTalents_Right"],
+		state = "PlayerSpellsFrame",
 		addon = "Blizzard_TalentUI",
 		OnClick = function(self, btn)
-			_G.ToggleTalentFrame()
+			if btn == "RightButton" then
+				PlayerSpellsUtil.TogglePlayerSpellsFrame(SPELL_TAB)
+			else
+				PlayerSpellsUtil.TogglePlayerSpellsFrame(TALENT_TAB)
+			end
 		end,
 	},
 
 	{ -- [11]
 		name = "Spellbook",
-		title = L["MicroSpell_Name"],
-		any = L["MicroSpell_Any"],
-		state = "SpellBookFrame",
+		title = L["MicroProfession_Name"],
+		any = L["MicroProfession_Any"],
+		state = "ProfessionsBookFrame",
 		OnClick = function(self, btn)
-			module:TogglePanel(_G.SpellBookFrame)
+			_G.ToggleProfessionsBook()
 		end,
 	},
 
@@ -244,7 +253,7 @@ local microDefinitions = {
 		any = L["MicroPlayer_Any"],
 		state = "CharacterFrame",
 		OnClick = function(self, btn)
-			module:TogglePanel(_G.CharacterFrame)
+			_G.ToggleCharacter("PaperDollFrame");
 		end,
 	},
 }
