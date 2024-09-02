@@ -110,7 +110,7 @@ module.defaults = {
 				HideEmpty = true,
 				X = 15,
 				Y = 0,
-				Scale = 0.711,
+				Scale = 1,
 				Point = "RIGHT",
 			},
 			Left = {
@@ -124,7 +124,7 @@ module.defaults = {
 				HideEmpty = true,
 				X = 15,
 				Y = 0,
-				Scale = 0.711,
+				Scale = 1,
 				Point = "LEFT",
 			},
 		},
