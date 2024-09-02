@@ -142,9 +142,9 @@ function SidebarMixin:BT4Adjust()
 	local point, parent, relativePoint, x, y = self:GetPoint()
 	local texLeft, texBottom, texWidth, texHeight = self:GetRect()
 	local drawLeft, drawBottom, drawWidth, drawHeight = self.Drawer:GetRect()
-	
+
 	--- For both the Tex and Drawer sizes, we need to account for the UI Scale, then reapply the frame scale to get proper values
-	local barScale = self:GetScale()
+	local barScale = self:GetEffectiveScale()
 	local uiScale = UIParent:GetScale()
 
 	-- X is the leftmost point of the sidebar artwork. The nature of the drawer artwork means adjustments are needed.
@@ -167,7 +167,7 @@ function SidebarMixin:BT4Adjust()
 	barOpt.position.x = barX
 	barOpt.position.y = barY
 	barOpt.position.point = (self.side == "Right") and "RIGHT" or "LEFT"
-	barOpt.position.scale = self.db.Scale
+	barOpt.position.scale = barScale
 	Bartender4:UpdateModuleConfigs()
 end
 
@@ -185,7 +185,7 @@ function module:CreateNewSideBar(name, side)
 	if _sidebars[name] then return _sidebars[name] end
 
 	---@type SidebarMixin
-	local sidebar = CreateFrame("Frame", "LUISidebar"..name)
+	local sidebar = CreateFrame("Frame", "LUISidebar"..name, UIParent)
 
 	local isRight = (side == "Right")
 	local other = isRight and "LEFT" or "RIGHT"
