@@ -209,7 +209,7 @@ local function BagFilterDropDown(self, level)
 
 	-- Filter Assignment Options
 	info = UIDropDownMenu_CreateInfo();
-	local activeBagFilter = ContainerFrameSettingsManager:GetFilterFlag(bagID);
+	local activeBagFilter = ContainerFrameSettingsManager:GenerateFilterList(bagID);
 	for i, flag in ContainerFrameUtil_EnumerateBagGearFilters() do
 		info.text = BAG_FILTER_LABELS[flag];
 		info.checked = activeBagFilter == flag;
