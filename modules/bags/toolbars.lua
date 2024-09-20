@@ -11,7 +11,6 @@ local module = LUI:GetModule("Bags")
 local GetInventoryItemTexture = _G.GetInventoryItemTexture
 local GetInventorySlotInfo = _G.GetInventorySlotInfo
 local GameTooltip_SetTitle = _G.GameTooltip_SetTitle
-local IsContainerFiltered = _G.IsContainerFiltered
 local PickupBagFromSlot = _G.PickupBagFromSlot
 local PutItemInBag = _G.PutItemInBag
 local ResetCursor = _G.ResetCursor
@@ -361,7 +360,7 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 				_G.PaperDollItemSlotButton_Update(self)
 				self:SetBackdropBorderColor(module:RGBA("Border"))
 			elseif event == "INVENTORY_SEARCH_UPDATE" then
-				self:SetMatchesSearch(not IsContainerFiltered(self.id));
+				self:SetMatchesSearch(not C_Container.IsContainerFiltered(self.id));
 			else
 				PaperDollItemSlotButton_OnEvent(self, event, ...)
 			end
