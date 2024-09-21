@@ -20,24 +20,6 @@ local ObjectiveTrackerFrame = _G.ObjectiveTrackerFrame
 local DurabilityFrame = _G.DurabilityFrame
 local Minimap = _G.Minimap
 
-local BlizzMicroButtons = {
-	CharacterMicroButton = "LUIMicromenu_Player",
-	SpellbookMicroButton = "LUIMicromenu_Spellbook",
-	TalentMicroButton = "LUIMicromenu_Talents",
-	AchievementMicroButton = "LUIMicromenu_Achievements",
-	QuestLogMicroButton = "LUIMicromenu_Quests",
-	GuildMicroButton = "LUIMicromenu_Guild",
-	LFDMicroButton = "LUIMicromenu_LFG",
-	EJMicroButton = "LUIMicromenu_EJ",
-	CollectionsMicroButton = "LUIMicromenu_Collections",
-	CollectionsJournalTab1 = "LUIMicromenu_Collections",
-	CollectionsJournalTab2 = "LUIMicromenu_Collections",
-	CollectionsJournalTab3 = "LUIMicromenu_Collections",
-	CollectionsJournalTab4 = "LUIMicromenu_Collections",
-	CollectionsJournalTab5 = "LUIMicromenu_Collections",
-}
-
-
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################

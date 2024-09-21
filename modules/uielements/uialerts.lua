@@ -18,8 +18,8 @@ local db
 
 local BlizzMicroButtons = {
 	CharacterMicroButton = "LUIMicromenu_Player",
-	SpellbookMicroButton = "LUIMicromenu_Spellbook",
-	PlayerSpellsMicroButton = "LUIMicromenu_Spellbook",
+	SpellbookMicroButton = "LUIMicromenu_Talents",
+	PlayerSpellsMicroButton = "LUIMicromenu_Talents",
 	TalentMicroButton = "LUIMicromenu_Talents",
 	AchievementMicroButton = "LUIMicromenu_Achievements",
 	QuestLogMicroButton = "LUIMicromenu_Quests",
@@ -133,7 +133,7 @@ function module:ShouldReAnchorPointer(frame)
 		end
 	end
 
-	-- Text-matching fallback in case.
+	-- Text-matching fallback in case. Mostly for the Exile Reach's guided approach
 	--- @TODO: Verify if this is still needed.
 	if not anchorFound then
 		-- Unspent Talent Points
