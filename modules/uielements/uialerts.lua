@@ -18,6 +18,7 @@ local db
 
 local BlizzMicroButtons = {
 	CharacterMicroButton = "LUIMicromenu_Player",
+	ProfessionMicroButton = "LUIMicromenu_Spellbook",
 	SpellbookMicroButton = "LUIMicromenu_Talents",
 	PlayerSpellsMicroButton = "LUIMicromenu_Talents",
 	TalentMicroButton = "LUIMicromenu_Talents",
@@ -33,6 +34,7 @@ local BlizzMicroButtons = {
 	CollectionsJournalTab3 = "LUIMicromenu_Collections",
 	CollectionsJournalTab4 = "LUIMicromenu_Collections",
 	CollectionsJournalTab5 = "LUIMicromenu_Collections",
+	MainMenuBarBackpackButton = "LUIMicromenu_Bags",
 }
 
 
