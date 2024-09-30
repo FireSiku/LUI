@@ -115,12 +115,12 @@ local function CreatePanelGroup(name, isNative)
 
 	local group = Opt:Group({name = name, db = texDB, args = {
 		Enabled = Opt:Toggle({name = "Enabled"}),
-		TextureHeader = Opt:Header({name = L["Texture"], onlyIf = (not isNative)}),
+		TextureHeader = Opt:Header({name = L["Texture"]}),
 		--ImageDesc = Opt:Desc({name = "", 2, nil, GetOptionImageTexture, desc = GetOptionTexCoords, 128}),
-		TexMode = Opt:Select({name = L["Panels_Options_Category"], values = TEX_MODE_SELECT, onlyIf = (not isNative)}),
+		TexMode = Opt:Select({name = L["Panels_Options_Category"], values = TEX_MODE_SELECT, disabled = isNative}),
 		Texture = Opt:Input({name = L["Texture"], desc = L["Panels_Options_Texture_Desc"], hidden = IsTextureInputHidden, onlyIf = (not isNative)}),
 		TextureSelect = Opt:Select({name = L["Panels_Options_TextureSelect"], desc = L["Panels_Options_TextureSelect_Desc"],
-			values = PRESET_LUI_TEXTURES, hidden = IsTextureSelectHidden, get = textureGet, set = textureSet, onlyIf = (not isNative)}),
+			values = PRESET_LUI_TEXTURES, hidden = IsTextureSelectHidden, get = textureGet, set = textureSet, disabled = isNative}),
 		LineBreakTex = Opt:Spacer({}),
 		Anchored = Opt:Toggle({name = L["Panels_Options_Anchored"], desc = L["Panels_Options_Anchored_Desc"], width = "normal"}),
 		Parent = Opt:Input({name = L["Parent"], desc = L["Panels_Options_Parent_Desc"], disabled = IsAnchorParentDisabled}),
@@ -198,6 +198,9 @@ local function CreateSidebarOptions(name, bar, barDB)
 		bar:AutoAdjust()
 	end
 
+	local dbName = "Sidebar"..string.gsub(name, " Sidebar", "")
+	local barColorDB = module.db.profile.Colors[dbName]
+
 	return Opt:Group({name = name, db = barDB, arg = bar, args = {
 		Header = Opt:Header({name = name}),
 		Enable = Opt:Toggle({name = "Enabled"}),
@@ -212,7 +215,11 @@ local function CreateSidebarOptions(name, bar, barDB)
 		SpacerAdjust = Opt:Spacer({}),
 		AutoAdjust = Opt:Execute({name = "Auto-Adjust Position", desc = "If you recently changed the bar anchor, make sure to move the previous bar outside of the Sidebar to prevent overlaps.", func = autoAdjustFunc, disabled = IsSideBarDisabled}),
 		AutoPosition = Opt:Toggle({name = "Auto-Position", desc = "If enabled, LUI will automatically position the sidebar anchor. This option automatically turns off if you change the anchor to avoid errors.", disabled = IsSideBarDisabled}),
-
+		SpacerColor = Opt:Spacer({}),
+		ColorType = Opt:Select({name = "Sidebar Texture Color", values = LUI.ColorTypes,
+			get = function(info) return barColorDB.t end, --getter
+			set = function(info, value) barColorDB.t = value; module:RefreshColors() end}), --setter
+		[(dbName)] = Opt:Color({name = "Individual Color", hasAlpha = true}),
 		---@TODO: Point will only be there for additional sidebars.
 		--Point = Opt:Select({name = "Anchor Point that the sidebar will be tied to.", values = LUI.Points}),
 	}})
@@ -262,7 +269,19 @@ end
 -- ####################################################################################################################
 
 local BuiltinArgs = {
-	NavBar = Opt:Group({name = "NavBar", db = db.LUITextures.NavBar, args = {}}),
+	NavBar = Opt:Group({name = "Navigation", db = db.LUITextures.NavBar, args = {
+		OrbHeader = Opt:Header({name = "Orb"}),
+		ShowOrb = Opt:Toggle({name = "Show Orb", desc = "When enabled the the central galaxy orb is shown.", width = "full"}),
+		LostGalaxy = Opt:Toggle({name = "Show Lost Galaxy", desc = "When enabled, the orb has an extra texture to make it look brighter.", width = "full"}),
+		NavHeader = Opt:Header({name = "NavBar"}),
+		ShowButtons = Opt:Toggle({name = "Show Buttons", desc = "When enabled the central button functionality can be used to show or hide the chat, TPS, DPS and raid window.", width = "full"}),
+		TopBackground = Opt:Toggle({name = "Show Buttons Background", desc = "When enabled the central black button background is shown.", width = "full"}),
+		CenterBackground = Opt:Toggle({name = "Show Themed Center Background", desc = "When enabled the themed central background is shown.", width = "full"}),
+		Background = Opt:Toggle({name = "Show Themed Background", desc = "When enabled the top left and right-hand side themed background is shown.", width = "full"}),
+		LineHeader = Opt:Header({name = "Bottom Lines"}),
+		BlackLines = Opt:Toggle({name = "Show Black Lines", desc = "Enable the bottom left and right black line.", width = "full"}),
+		ThemedLines = Opt:Toggle({name = "Show Themed Lines", desc = "Enable the bottom left and right themed line.", width = "full"}),
+	}}),
 	Chat = CreateMainPanelOptions("Chat"),
 	Tps = CreateMainPanelOptions("Tps"),
 	Dps = CreateMainPanelOptions("Dps"),
@@ -277,14 +296,13 @@ CustomArgs = {
 }
 
 for name, sidebar in module:IterateSidebars() do
-	SidebarArgs[name] = CreateSidebarOptions(name.." Sidebar", sidebar, db.SideBars[name])
+	BuiltinArgs[name] = CreateSidebarOptions(name.." Sidebar", sidebar, db.SideBars[name])
 end
 
 Artwork.args = {
 	Header = Opt:Header({name = "Artwork"}),
 	Builtin = Opt:Group({name = "LUI Panels", childGroups = "tree", args = BuiltinArgs}),
 	Custom = Opt:Group({name = "Custom Panels", childGroups = "tree", args = CustomArgs}),
-	SideBars = Opt:Group({name = "Side Bars", childGroups = "tab", args = SidebarArgs}),
 }
 
 for i = 1, #module.panelList do
