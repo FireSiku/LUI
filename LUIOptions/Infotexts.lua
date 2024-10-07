@@ -9,7 +9,7 @@ local Opt = select(2, ...)
 local L, module, db = Opt:GetLUIModule("Infotext")
 if not module or not module.registered then return end
 
-local Infotext = Opt:CreateModuleOptions("Infotxt", module)
+local Infotext = Opt:CreateModuleOptions("Infotext", module)
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
