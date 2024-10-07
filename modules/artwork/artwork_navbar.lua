@@ -219,16 +219,46 @@ function module:CreateNavButton(kind, side, x, y)
 end
 
 function module:RefreshNavBar()
-	local r, g, b = LUI:GetClassColor(LUI.playerClass)
-	module.NavBarCenter:SetBackdropColor(r, g, b, ALPHA)
-	module.TopPanel:SetBackdropColor(r, g, b, ALPHA)
-	module.LeftBorderBack:SetBackdropColor(r, g, b, ALPHA)
-	module.RightBorderBack:SetBackdropColor(r, g, b, ALPHA)
+	local db = module.db.profile.LUITextures
+	module.NavBarCenter:SetBackdropColor(self:RGBA("TopPanel"))
+	module.TopPanel:SetBackdropColor(self:RGBA("TopPanel"))
+	module.LeftBorderBack:SetBackdropColor(self:RGBA("LeftBorderBack"))
+	module.RightBorderBack:SetBackdropColor(self:RGBA("RightBorderBack"))
 
+	if db.NavBar.TopBackground then
+		module.NavBar:Show()
+	else
+		module.NavBar:Hide()
+	end
+
+	if db.NavBar.CenterBackground then
+		module.NavBarCenter:Show()
+	else
+		module.NavBarCenter:Hide()
+	end
+
+	if db.NavBar.BlackLines then
+		module.LeftBorder:Show()
+		module.RightBorder:Show()
+	else
+		module.LeftBorder:Hide()
+		module.RightBorder:Hide()
+	end
+
+	if db.NavBar.ThemedLines then
+		module.LeftBorderBack:Show()
+		module.RightBorderBack:Show()
+	else
+		module.LeftBorderBack:Hide()
+		module.RightBorderBack:Hide()
+	end
+	local showButtons = db.NavBar.ShowButtons
 	for kind, button in pairs(_navButtons) do
 		local db = module.db.profile.LUITextures[kind]
-		button.tex:SetVertexColor(r, g, b, ALPHA)
+		local r, g, b, a = self:RGBA("NavButtons")
+		button.tex:SetVertexColor(r, g, b, a)
 		button.hover:SetVertexColor(r, g, b, 0)
+		if showButtons then button:Show() else button:Hide() end
 
 		if not db.IsShown then button.tex:SetAlpha(0) end
 		
