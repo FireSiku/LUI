@@ -277,7 +277,7 @@ local BuiltinArgs = {
 		ShowButtons = Opt:Toggle({name = "Show Buttons", desc = "When enabled the central button functionality can be used to show or hide the chat, TPS, DPS and raid window.", width = "full"}),
 		TopBackground = Opt:Toggle({name = "Show Buttons Background", desc = "When enabled the central black button background is shown.", width = "full"}),
 		CenterBackground = Opt:Toggle({name = "Show Themed Center Background", desc = "When enabled the themed central background is shown.", width = "full"}),
-		Background = Opt:Toggle({name = "Show Themed Background", desc = "When enabled the top left and right-hand side themed background is shown.", width = "full"}),
+		--Background = Opt:Toggle({name = "Show Themed Background", desc = "When enabled the top left and right-hand side themed background is shown.", width = "full"}),
 		LineHeader = Opt:Header({name = "Bottom Lines"}),
 		BlackLines = Opt:Toggle({name = "Show Black Lines", desc = "Enable the bottom left and right black line.", width = "full"}),
 		ThemedLines = Opt:Toggle({name = "Show Themed Lines", desc = "Enable the bottom left and right themed line.", width = "full"}),
