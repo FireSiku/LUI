@@ -19,15 +19,13 @@ local SetGuildRosterSelection = _G.SetGuildRosterSelection
 local GetGuildRosterMOTD = _G.GetGuildRosterMOTD
 local GetNumGuildMembers = _G.GetNumGuildMembers
 local GetGuildRosterInfo = _G.GetGuildRosterInfo
-local CanEditOfficerNote = _G.CanEditOfficerNote
+local CanEditOfficerNote = C_GuildInfo.CanEditOfficerNote
 local CanEditPublicNote = _G.CanEditPublicNote
 local IsControlKeyDown = _G.IsControlKeyDown
 local IsAltKeyDown = _G.IsAltKeyDown
 local ShowUIPanel = _G.ShowUIPanel
 local HideUIPanel = _G.HideUIPanel
-local GuildRoster = _G.GuildRoster
 local SetItemRef = _G.SetItemRef
-local GuildFrame = _G.GuildFrame
 local IsInGuild = _G.IsInGuild
 
 -- constants
@@ -166,10 +164,10 @@ function element:UpdateGuild()
 		element.text = L["InfoGuild_NoGuild"]
 		return
 	end
-	local totalNumGuild, guildNumOnline_, guildNumOnlineRemote = GetNumGuildMembers()
+	local totalNumGuild, guildNumOnline = GetNumGuildMembers()
 	local formatString = (module.db.profile.showTotal) and "%s: %d/%d" or "%s: %d"
 
-	element.text = format(formatString, GUILD, guildNumOnlineRemote, totalNumGuild)
+	element.text = format(formatString, GUILD, guildNumOnline, totalNumGuild)
 	element:UpdateInfotip()
 end
 
@@ -178,9 +176,9 @@ function element:GuildRosterUpdate()
 	--Make sure we don't query the server more than once per update time.
 	element:ResetUpdateTimer()
 
-	local numGuildMembers, _, numOnlineAndMobile =  GetNumGuildMembers()
+	local numGuildMembers, guildNumOnline =  GetNumGuildMembers()
 	totalGuild = numGuildMembers
-	onlineGuild = numOnlineAndMobile
+	onlineGuild = guildNumOnline
 
 	element:UpdateGuild()
 end
