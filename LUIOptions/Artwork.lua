@@ -301,8 +301,8 @@ end
 
 Artwork.args = {
 	Header = Opt:Header({name = "Artwork"}),
-	Builtin = Opt:Group({name = "LUI Panels", childGroups = "tree", args = BuiltinArgs}),
-	Custom = Opt:Group({name = "Custom Panels", childGroups = "tree", args = CustomArgs}),
+	Builtin = Opt:Group({name = "LUI Panels", childGroups = "tab", args = BuiltinArgs}),
+	Custom = Opt:Group({name = "Custom Panels", childGroups = "tab", args = CustomArgs}),
 }
 
 for i = 1, #module.panelList do
