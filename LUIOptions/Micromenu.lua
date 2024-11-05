@@ -53,6 +53,9 @@ Micromenu.args = {
 
     -- Colors
 	ColorHeader = Opt:Header({name = L["Colors"]}),
-    Micromenu = Opt:Color({name = L["Micro_Name"], hasAlpha = true}),
-    Background = Opt:Color({name = L["Background"], hasAlpha = true}),
+	ColorType = Opt:ColorSelect({name = L["Micro_Name"], arg = "Minimap"}),
+	Micromenu = Opt:Color({name = "Individual Color", hasAlpha = true}),
+	Spacer = Opt:Spacer({}),
+	BGColorType = Opt:ColorSelect({name = L["Background"], arg = "Minimap"}),
+	Background = Opt:Color({name = "Individual Color", hasAlpha = true}),
 }
