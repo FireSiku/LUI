@@ -5,7 +5,7 @@ local db, default
 
 -- Increase whenever there are changes that would require remediation
 -- The changes related to the version should be appended in an new IF block of the ApplyUpdate function.
-local DB_VERSION = 3
+local DB_VERSION = 4
 
 function LUI:GetDBVersion()
 	return DB_VERSION
@@ -477,9 +477,9 @@ function LUI:ApplyUpdate(ver)
 				Sanitize(db.Border.Color, colorList)
 				Sanitize(db.Border.Inset, insetList)
 			elseif db and modName == "RaidMenu" then
-				Sanitize(db, "Spacing", "Offset", "X_Offset", "Opacity", "Scale")
+				Sanitize(db,  {"Spacing", "Offset", "X_Offset", "Opacity", "Scale"})
 			elseif db and modName == "Tooltip" then
-				Sanitize(db, "Scale", "X", "Y", "HealthFontSize", "BorderSize")
+				Sanitize(db, {"Scale", "X", "Y", "HealthFontSize", "BorderSize"})
 			elseif db and modName == "UI Elements" then
 				for k, v in pairs(db) do
 					Sanitize(db[k], {"X", "Y"})
@@ -517,6 +517,101 @@ function LUI:ApplyUpdate(ver)
 			LUI:Printf("This profile was not affected by this issue.")
 		end
 		requireReload = true
+	end
+
+	-- Artwork/Panel module conversions
+	if ver < 4 then
+			-- Check for the Panels SV and compare it with the new artwork SV
+		local profileName = LUI.db:GetCurrentProfile()
+		local PanelsSV = LUI.db.sv.namespaces.Panels.profiles[profileName]
+		local ArtworkSV = LUI.db.sv.namespaces.ArtworkV3.profiles[profileName]
+
+		local artModule = LUI:GetModule("Artwork")
+		local oldPanelDefaults = {
+			Chat = {
+				OffsetX = 0, OffsetY = 0,
+				AlwaysShow = false, IsShown = false,
+				Direction = "TOPRIGHT",
+				Animation = "AlphaSlide",
+				Width = 429, Height = 181
+			},
+			Tps = {
+				OffsetX = 0, OffsetY = 0,
+				Width = 193, Height = 181,
+				AlwaysShow = false, IsShown = false,
+				Anchor = "OmenAnchor",
+				Additional = "",
+				Direction = "TOP",
+				Animation = "AlphaSlide",
+			},
+			Dps = {
+				OffsetX = 0, OffsetY = -30,
+				Width = 193, Height = 181,
+				AlwaysShow = false, IsShown = false,
+				Anchor = "Recount_MainWindow",
+				Additional = "",
+				Direction = "TOP",
+				Animation = "AlphaSlide",
+			},
+			Raid = {
+				OffsetX = 0, OffsetY = 0,
+				Width = 409, Height = 181,
+				AlwaysShow = false, IsShown = false,
+				Anchor = "oUF_LUI_raid",
+				Additional = "",
+				Direction = "TOPLEFT",
+				Animation = "AlphaSlide",
+			},
+		}
+		local oldArtworkDefaults = {
+			UpperArt = {
+				Orb = true,
+				Buttons = true,
+				ButtonsBackground = true,
+				CenterBackground = true,
+			},
+			LowerArt = {
+				BlackLine = true,
+				ThemedLine = true,
+			},
+		}
+		local matchingArtworkSetting = {
+			Orb = "ShowOrb",
+			Buttons = "ShowButtons",
+			ButtonsBackground = "TopBackground",
+			CenterBackground = "CenterBackground",
+			BlackLine = "BlackLines",
+			ThemedLine = "ThemedLines",
+		}
+		
+		for panel, v in pairs(oldPanelDefaults) do
+			if PanelsSV[panel] then
+				for setting, value in pairs(v) do
+					if PanelsSV[panel][setting] and PanelsSV[panel][setting] ~= value and setting ~= "Animation"then
+						artModule.db.profile.LUITextures[panel][setting] = PanelsSV[panel][setting]
+					end
+				end
+				PanelsSV[panel] = nil
+			end
+		end
+		if ArtworkSV.UpperArt then
+			for setting, value in pairs(oldArtworkDefaults.UpperArt) do
+				if ArtworkSV.UpperArt[setting] and ArtworkSV.UpperArt[setting] ~= value then
+					local matchingSetting = matchingArtworkSetting[setting]
+					artModule.db.profile.LUITextures.NavBar[matchingSetting] = ArtworkSV.UpperArt[setting]
+				end
+			end
+			ArtworkSV.UpperArt = nil
+		end
+		if ArtworkSV.LowerArt then
+			for setting, value in pairs(oldArtworkDefaults.LowerArt) do
+				if ArtworkSV.LowerArt[setting] and ArtworkSV.LowerArt[setting] ~= value then
+					local matchingSetting = matchingArtworkSetting[setting]
+					artModule.db.profile.LUITextures.NavBar[matchingSetting] = ArtworkSV.LowerArt[setting]
+				end
+			end
+			ArtworkSV.LowerArt = nil
+		end
 	end
 
 	db.dbVersion = DB_VERSION
