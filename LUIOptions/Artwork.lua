@@ -216,9 +216,7 @@ local function CreateSidebarOptions(name, bar, barDB)
 		AutoAdjust = Opt:Execute({name = "Auto-Adjust Position", desc = "If you recently changed the bar anchor, make sure to move the previous bar outside of the Sidebar to prevent overlaps.", func = autoAdjustFunc, disabled = IsSideBarDisabled}),
 		AutoPosition = Opt:Toggle({name = "Auto-Position", desc = "If enabled, LUI will automatically position the sidebar anchor. This option automatically turns off if you change the anchor to avoid errors.", disabled = IsSideBarDisabled}),
 		SpacerColor = Opt:Spacer({}),
-		ColorType = Opt:Select({name = "Sidebar Texture Color", values = LUI.ColorTypes,
-			get = function(info) return barColorDB.t end, --getter
-			set = function(info, value) barColorDB.t = value; module:RefreshColors() end}), --setter
+		ColorType = Opt:ColorSelect({name = "Sidebar Texture Color", arg = dbName}),
 		[(dbName)] = Opt:Color({name = "Individual Color", hasAlpha = true}),
 		---@TODO: Point will only be there for additional sidebars.
 		--Point = Opt:Select({name = "Anchor Point that the sidebar will be tied to.", values = LUI.Points}),
@@ -256,11 +254,15 @@ local function CreateMainPanelOptions(kind)
 		Spacer2 = Opt:Spacer({}),
 		Direction = Opt:Select({name = "Direction", values = LUI.Directions}),
 		Animation = Opt:Toggle({name = "Fade Animation", desc = "Enable a fade animation when showing or hiding the panel. Protected frames such as raid frames do not support this setting.", disabled = (kind == "raid")}),
+		Spacer3 = Opt:Spacer({}),
 		Width = Opt:InputNumber({name = "Width", desc = "Choose the Width for your "..kind.." Panel."}),
 		Height = Opt:InputNumber({name = "Height", desc = "Choose the Height for your "..kind.." Panel."}),
-		Spacer3 = Opt:Spacer({}),
-		BGColor = Opt:Color({name = "BG Color", desc = "Choose the Color for your "..kind.." Panel Background."}),
-		BorderColor = Opt:Color({name = "Border Color", desc = "Choose the Color for your "..kind.." Panel Border."}),
+		Spacer4 = Opt:Spacer({}),
+		BGColorType = Opt:ColorSelect({name = "BG Color", desc = "Choose the Color for your "..kind.." Panel Background.", arg = kind}),
+		[(kind)] = Opt:Color({name = "Individual Color", hasAlpha = true}),
+		Spacer5 = Opt:Spacer({}),
+		BorderColorType = Opt:ColorSelect({name = "Border Color", desc = "Choose the Color for your "..kind.." Panel Border.", arg = kind.."Border"}),
+		[(kind.."Border")] = Opt:Color({name = "Individual Color", hasAlpha = true}),
 	}})
 end
 
