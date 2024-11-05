@@ -92,7 +92,7 @@ end
 
 --- Refresh the sidebar's settings and position
 function SidebarMixin:Refresh()
-	local r, g, b, a = module:RGBA("MAGE")
+	local r, g, b, a = module:RGBA("SidebarRight")
 
 	LUI:RegisterConfig(self, self.db)
 	LUI:RestorePosition(self)

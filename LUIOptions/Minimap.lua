@@ -27,11 +27,8 @@ Minimap.args = {
     ShowTextures = Opt:Toggle({name = L["Minimap_ShowTextures_Name"], desc = L["Minimap_ShowTextures_Desc"], width = "full"}),
     --Spacer = Opt:Spacer(9, "full"),
     CoordPrecision = Opt:Slider({name = L["Minimap_CoordPrecision_Name"], desc = L["Minimap_CoordPrecision_Desc"], min = 0, max = 2, step = 1}),
-	MinimapColorType = Opt:Select({name = "Minimap Color", values = LUI.ColorTypes,
-		get = function(info) return db.Colors.Minimap.t end, --getter
-		set = function(info, value) db.Colors.Minimap.t = value; module:RefreshColors() end}), --setter
+	ColorType = Opt:ColorSelect({name = "Minimap Color", arg = "Minimap"}),
 	Minimap = Opt:Color({name = "Individual Color", hasAlpha = true}),
-	
 	Header2 = Opt:Header({name = "Appearance"}),
 	Text = Opt:FontMenu({name = "Text Font"})
 }
