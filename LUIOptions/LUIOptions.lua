@@ -442,6 +442,7 @@ end
 
 local defaultColorSelectGet = function(info)
 	local db = info.handler.db.profile.Colors
+	if not info.arg then error("ColorSelect missing 'arg' option to specify the color for " .. info.handler:GetName() .. "'s " .. info[#info]); return end
 	local c = db[info.arg]
 	return c.t
 end
