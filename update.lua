@@ -523,8 +523,8 @@ function LUI:ApplyUpdate(ver)
 	if ver < 4 then
 			-- Check for the Panels SV and compare it with the new artwork SV
 		local profileName = LUI.db:GetCurrentProfile()
-		local PanelsSV = LUI.db.sv.namespaces.Panels.profiles[profileName]
-		local ArtworkSV = LUI.db.sv.namespaces.ArtworkV3.profiles[profileName]
+		local PanelsSV = (LUI.db and LUI.db.sv.namespaces.Panels) and LUI.db.sv.namespaces.Panels.profiles[profileName]
+		local ArtworkSV = (LUI.db and LUI.db.sv.namespaces.ArtworkV3) and LUI.db.sv.namespaces.ArtworkV3.profiles[profileName]
 
 		local artModule = LUI:GetModule("Artwork")
 		local oldPanelDefaults = {
@@ -585,7 +585,7 @@ function LUI:ApplyUpdate(ver)
 		}
 		
 		for panel, v in pairs(oldPanelDefaults) do
-			if PanelsSV[panel] then
+			if PanelsSV and PanelsSV[panel] then
 				for setting, value in pairs(v) do
 					if PanelsSV[panel][setting] and PanelsSV[panel][setting] ~= value and setting ~= "Animation"then
 						artModule.db.profile.LUITextures[panel][setting] = PanelsSV[panel][setting]
@@ -594,7 +594,7 @@ function LUI:ApplyUpdate(ver)
 				PanelsSV[panel] = nil
 			end
 		end
-		if ArtworkSV.UpperArt then
+		if ArtworkSV and ArtworkSV.UpperArt then
 			for setting, value in pairs(oldArtworkDefaults.UpperArt) do
 				if ArtworkSV.UpperArt[setting] and ArtworkSV.UpperArt[setting] ~= value then
 					local matchingSetting = matchingArtworkSetting[setting]
@@ -603,7 +603,7 @@ function LUI:ApplyUpdate(ver)
 			end
 			ArtworkSV.UpperArt = nil
 		end
-		if ArtworkSV.LowerArt then
+		if ArtworkSV and ArtworkSV.LowerArt then
 			for setting, value in pairs(oldArtworkDefaults.LowerArt) do
 				if ArtworkSV.LowerArt[setting] and ArtworkSV.LowerArt[setting] ~= value then
 					local matchingSetting = matchingArtworkSetting[setting]
