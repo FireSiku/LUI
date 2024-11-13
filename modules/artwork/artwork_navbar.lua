@@ -223,7 +223,7 @@ function module:RefreshNavBar()
 	module.NavBarCenter:SetBackdropColor(self:RGBA("TopPanel"))
 	module.TopPanel:SetBackdropColor(self:RGBA("TopPanel"))
 	module.LeftBorderBack:SetBackdropColor(self:RGBA("LeftBorderBack"))
-	module.RightBorderBack:SetBackdropColor(self:RGBA("RightBorderBack"))
+	module.RightBorderBack:SetBackdropColor(self:RGBA("LeftBorderBack"))
 
 	if db.NavBar.TopBackground then
 		module.NavBar:Show()

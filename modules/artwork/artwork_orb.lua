@@ -150,7 +150,7 @@ function module:RefreshOrb()
 		orb:Show()
 	end
 
-	local r, g, b = LUI:GetClassColor("MAGE")
+	local r, g, b = self:RGBA("Orb")
 	orb.Back:SetVertexColor(r, g, b, 1)
 	orb.Galaxy1:SetVertexColor(r, g, b, 1)
 	orb.Galaxy2:SetVertexColor(r, g, b, 1)
