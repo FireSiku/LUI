@@ -74,10 +74,10 @@ function LUI:InstallDetails()
       Details:SetWindowUpdateSpeed(0.3)
       
 	   -- Set the LUI panel to Details
-	   local panelDB = LUI.db:GetNamespace("Panels")
-	   panelDB.profile.Dps.Anchor = "DetailsBaseFrame1"
-	   panelDB.profile.Dps.Additional = "DetailsRowFrame1"
-	   panelDB.profile.Dps.OffsetY = 0
+      local artworkMod = LUI:GetModule("Artwork")
+      artworkMod.db.profile.LUITextures.Dps.Anchor = "DetailsBaseFrame1"
+      artworkMod.db.profile.LUITextures.Dps.Additional = "DetailsRowFrame1"
+      artworkMod.db.profile.LUITextures.Dps.OffsetY = 0
       
       LUI.db.global.luiconfig[LUI.profileName].Versions.details = LUI.Versions.details
    end
