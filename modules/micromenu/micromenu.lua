@@ -616,9 +616,7 @@ function module:SetMicromenuAnchors()
 end
 
 function module:SetMicromenuExtraButtons()
-	local panelsMod = LUI:GetModule("Panels", true)
-	if not panelsMod then return end
-	local PanelsDB = panelsMod.db.profile
+	local LUIDB = LUI.db.profile.MicroMenu
 	local minimapMod = LUI:GetModule("Minimap", true)
 	local buttonLeft, buttonMiddle, buttonRight
 	local clickerLeft, clickerMiddle, clickerRight
@@ -627,7 +625,7 @@ function module:SetMicromenuExtraButtons()
 	buttonMiddle:SetSize(128, 128)
 	buttonMiddle:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -150, 6)
 	buttonMiddle:SetBackdrop({
-		bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"..(PanelsDB.MicroMenu.AlwaysShow and "micro_anchor3" or "micro_anchor"),
+		bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"..(LUIDB.AlwaysShow and "micro_anchor3" or "micro_anchor"),
 		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 		tile = false, tileSize = 0, edgeSize = 1,
 		insets = {left = 0, right = 0, top = 0, bottom = 0},
@@ -645,7 +643,7 @@ function module:SetMicromenuExtraButtons()
 			RaidMenu:OverlapPrevention("MM")
 		end]]
 		if _G.LUIMicromenu_Background:IsVisible() then
-			PanelsDB.MicroMenu.IsShown = false
+			LUIDB.IsShown = false
 
 			buttonMiddle:SetBackdrop({
 				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"..(clickerMiddle:IsMouseMotionFocus() and "micro_anchor2" or "micro_anchor"),
@@ -657,7 +655,7 @@ function module:SetMicromenuExtraButtons()
 			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
 			_G.LUIMicromenu_Background:Hide()
 		else
-			PanelsDB.MicroMenu.IsShown = true
+			LUIDB.IsShown = true
 
 			buttonMiddle:SetBackdrop({
 				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"..(clickerMiddle:IsMouseMotionFocus() and "micro_anchor4" or "micro_anchor3"),
@@ -673,7 +671,7 @@ function module:SetMicromenuExtraButtons()
 	end)
 
 	clickerMiddle:SetScript("OnEnter", function(self)
-		if PanelsDB.MicroMenu.IsShown then
+		if LUIDB.IsShown then
 			buttonMiddle:SetBackdrop({
 				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\micro_anchor4",
 				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -695,7 +693,7 @@ function module:SetMicromenuExtraButtons()
 	end)
 
 	clickerMiddle:SetScript("OnLeave", function(self)
-		if PanelsDB.MicroMenu.IsShown then
+		if LUIDB.IsShown then
 			buttonMiddle:SetBackdrop({
 				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\micro_anchor3",
 				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",

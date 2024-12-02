@@ -133,6 +133,14 @@ LUI.defaults = {
 			DamageFontSizeCrit = 34,
 			["*"] = {},
 		},
+		Minimap = {
+			AlwaysShow = true,
+			IsShown = true,
+		},
+		MicroMenu = {
+			AlwaysShow = true,
+			IsShown = true,
+		},
 		Recount = {
 			Font = "vibrocen",
 			FontHack = true,
@@ -797,7 +805,7 @@ local function getOptions()
 									type = "description",
 									order = 3,
 								},
-								AlwaysShowDesc = {
+								AsShowDesc = {
 									order = 4,
 									width = "full",
 									type = "description",
@@ -813,9 +821,9 @@ local function getOptions()
 									name = "Show Minimap",
 									desc = "Whether you want to show the Minimap by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:GetModule("Panels").db.profile.Minimap.AlwaysShow end,
+									get = function() return LUI.db.profile.Minimap.AlwaysShow end,
 									set = function()
-										local a = LUI:GetModule("Panels").db.profile.Minimap
+										local a = LUI.db.profile.Minimap
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 6,
@@ -824,9 +832,9 @@ local function getOptions()
 									name = "Show Chat",
 									desc = "Whether you want to show the Chat Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:GetModule("Panels").db.profile.Chat.AlwaysShow end,
+									get = function() return LUI:GetModule("Artwork").db.profile.LUITextures.Chat.AlwaysShow end,
 									set = function()
-										local a = LUI:GetModule("Panels").db.profile.Chat
+										local a = LUI:GetModule("Artwork").db.profile.LUITextures.Chat
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 7,
@@ -835,9 +843,9 @@ local function getOptions()
 									name = "Show TPS",
 									desc = "Whether you want to show your TPS Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:GetModule("Panels").db.profile.Tps.AlwaysShow end,
+									get = function() return LUI:GetModule("Artwork").db.profile.LUITextures.Tps.AlwaysShow end,
 									set = function()
-										local a = LUI:GetModule("Panels").db.profile.Tps
+										local a = LUI:GetModule("Artwork").db.profile.LUITextures.Tps
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 8,
@@ -846,9 +854,9 @@ local function getOptions()
 									name = "Show DPS",
 									desc = "Whether you want to show your DPS Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:GetModule("Panels").db.profile.Dps.AlwaysShow end,
+									get = function() return LUI:GetModule("Artwork").db.profile.LUITextures.Dps.AlwaysShow end,
 									set = function()
-										local a = LUI:GetModule("Panels").db.profile.Dps
+										local a = LUI:GetModule("Artwork").db.profile.LUITextures.Dps
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 9,
@@ -857,9 +865,9 @@ local function getOptions()
 									name = "Show Raid",
 									desc = "Whether you want to show your Raid Panel by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:GetModule("Panels").db.profile.Raid.AlwaysShow end,
+									get = function() return LUI:GetModule("Artwork").db.profile.LUITextures.Raid.AlwaysShow end,
 									set = function()
-										local a = LUI:GetModule("Panels").db.profile.Raid
+										local a = LUI:GetModule("Artwork").db.profile.LUITextures.Raid
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 10,
@@ -868,9 +876,9 @@ local function getOptions()
 									name = "Show MicroMenu",
 									desc = "Whether you want to show the Micromenu by entering World or not.\n",
 									type = "toggle",
-									get = function() return LUI:GetModule("Panels").db.profile.MicroMenu.AlwaysShow end,
+									get = function() return LUI.db.profile.MicroMenu.AlwaysShow end,
 									set = function()
-										local a = LUI:GetModule("Panels").db.profile.MicroMenu
+										local a = LUI.db.profile.MicroMenu
 										a.AlwaysShow = not a.AlwaysShow
 									end,
 									order = 12,
