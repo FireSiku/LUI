@@ -252,7 +252,7 @@ local function CreateMainPanelOptions(kind)
 		OffsetX = Opt:InputNumber({name = "Offset X", desc = "Choose the X Offset for your "..kind.." Frame to it's Anchor."}),
 		OffsetY = Opt:InputNumber({name = "Offset Y", desc = "Choose the Y Offset for your "..kind.." Frame to it's Anchor."}),
 		Spacer2 = Opt:Spacer({}),
-		Direction = Opt:Select({name = "Direction", values = LUI.Directions}),
+		Direction = Opt:Select({name = "Direction", values = LUI.Points}),
 		Animation = Opt:Toggle({name = "Fade Animation", desc = "Enable a fade animation when showing or hiding the panel. Protected frames such as raid frames do not support this setting.", disabled = (kind == "raid")}),
 		Spacer3 = Opt:Spacer({}),
 		Width = Opt:InputNumber({name = "Width", desc = "Choose the Width for your "..kind.." Panel."}),
