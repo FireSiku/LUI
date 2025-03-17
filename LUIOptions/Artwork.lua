@@ -52,19 +52,19 @@ local PRESET_BAR_ANCHORS = {
 }
 
 local PRESET_RAID_ANCHORS = {
-	Plexus = "PlexusLayoutFrame",
-	Grid2 = "Grid2LayoutFrame",
-	Healbot = "f1_HealBot_Action",
-	Vuhdo = "Vd1",
-	oUF = "oUF_LUI_raid",
-	Blizzard = "CompactRaidFrameContainer",
+	PlexusLayoutFrame = "Plexus",
+	Grid2LayoutFrame = "Grid2",
+	f1_HealBot_Action = "Healbot",
+	Vd1 = "Vuhdo",
+	oUF_LUI_raid = "oUF",
+	CompactRaidFrameContainer = "Blizzard",
 }
 local PRESET_METER_ANCHORS = {
-	Recount = "Recount_MainWindow",
-	Omen = "OmenAnchor",
-	Skada = "SkadaBarWindowSkada",
-	Details = "DetailsBaseFrame1",
-	Details_2nd = "DetailsBaseFrame2",
+	Recount_MainWindow = "Recount",
+	OmenAnchor = "Omen",
+	SkadaBarWindowSkada = "Skada",
+	DetailsBaseFrame1 = "Details",
+	DetailsBaseFrame2 = "Details_2nd",
 }
 
 local nameInput
