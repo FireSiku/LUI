@@ -179,21 +179,21 @@ function module:CreateNavButton(kind, side, x, y)
 	clicker:SetScript("OnEnter", function() hover:SetAlpha(ALPHA) end)
 	clicker:SetScript("OnLeave", function() hover:SetAlpha(0) end)
 	clicker:SetScript("OnClick", function()
-		if tex:GetAlpha() == 0 then
+		local frame = _G[db[kind].Anchor]
+		if frame and not frame:IsShown() then
+			if kind == "Chat" and not (alphaOut:IsPlaying() or alphaIn:IsPlaying()) then
+				module:SetChatVisible(true)
+			end
 			alphaIn:Play()
 			module:AlphaIn(kind, self)
 			db[kind].IsShown = true
-			
-			if kind == "Chat" then
-				module:SetChatVisible(true)
+		elseif frame and frame:IsShown() then
+			if kind == "Chat" and not (alphaOut:IsPlaying() or alphaIn:IsPlaying()) then
+				module:SetChatVisible(false)
 			end
-		else
 			alphaOut:Play()
 			module:AlphaOut(kind, self)
 			db[kind].IsShown = false
-			if kind == "Chat" then
-				module:SetChatVisible(false)
-			end
 		end
 	end)
 	if kind ~= "Chat" then 

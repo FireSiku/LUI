@@ -83,6 +83,7 @@ function module:SetChatVisible(setVisible)
 	for i=1,NUM_CHAT_WINDOWS do
 		for _,v in pairs{"","Tab"}do
 			local f=_G["ChatFrame"..i..v]
+			if not f.ORShow then f.ORShow = f.Show end
 			if setVisible then
 				f.Show = f.ORShow
 			else
@@ -331,7 +332,7 @@ function module:AlphaIn(kind, button)
 	db[kind].IsShown = true
 	local frame = _G[_mainPanels[kind].frame]
 
-	if frame and not frame:IsProtected() then
+	if frame and (not frame.IsProtected or not frame:IsProtected()) then
 		_G[_mainPanels[kind].frame]:Show()
 
 		for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
@@ -352,7 +353,7 @@ function module:AlphaOut(kind, button)
 	db[kind].IsShown = false
 	local frame = _G[_mainPanels[kind].frame]
 
-	if frame and not frame:IsProtected() then
+	if frame and (not frame.IsProtected or not frame:IsProtected()) then
 		if db[kind].Animation then
 			_mainPanels[kind].AlphaOut:Show()
 
@@ -375,10 +376,9 @@ function module:CreateBackground(kind)
 
 	local frame
 	if kind == "Chat" then
-		frame = "ChatAlphaAnchor"
-	else
-		frame = db[kind].Anchor
+		db[kind].Anchor = "ChatAlphaAnchor"
 	end
+	frame = db[kind].Anchor
 
 	_mainPanels[kind] = CreateBackground(kind)
 
@@ -470,7 +470,6 @@ function module:ApplyBackground(kind)
 	end
 
 	if not frame then
-		
 		_mainPanels[kind]:Hide()
 		return
 	end
