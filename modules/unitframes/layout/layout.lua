@@ -667,7 +667,8 @@ local function PostUpdateAura(element, button, unit, data, position)
 	else
 		button.Cooldown:Show()
 	end
-
+	--Todo: Add an option to toggle this.
+	button.Cooldown:SetHideCountdownNumbers(true)
 	button.Cooldown:SetReverse(element.cooldownReverse)
 
 	if data.duration and data.duration > 0 then
