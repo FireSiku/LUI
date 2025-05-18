@@ -27,10 +27,16 @@ Minimap.args = {
     ShowTextures = Opt:Toggle({name = L["Minimap_ShowTextures_Name"], desc = L["Minimap_ShowTextures_Desc"], width = "full"}),
     --Spacer = Opt:Spacer(9, "full"),
     CoordPrecision = Opt:Slider({name = L["Minimap_CoordPrecision_Name"], desc = L["Minimap_CoordPrecision_Desc"], min = 0, max = 2, step = 1}),
+	Header2 = Opt:Header({name = "Appearance"}),
 	ColorType = Opt:ColorSelect({name = "Minimap Color", arg = "Minimap"}),
 	Minimap = Opt:Color({name = "Individual Color", hasAlpha = true}),
-	Header2 = Opt:Header({name = "Appearance"}),
-	Text = Opt:FontMenu({name = "Text Font"})
+	Text = Opt:FontMenu({name = "Text Font"}),
+	    -- Position
+    PositionHeader = Opt:Header({name = L["Position"]}),
+    X = Opt:Input({name = L["API_XValue_Name"], desc = format(L["API_XValue_Desc"], _G.MINIMAP_LABEL), db = db.Position}),
+    Y = Opt:Input({name = L["API_YValue_Name"], desc = format(L["API_YValue_Desc"], _G.MINIMAP_LABEL), db = db.Position}),
+	Point = Opt:Select({name = L["Anchor"], values = LUI.Points, db = db.Position}),
+	Scale = Opt:Slider({name = L["Minimap_Scale_Name"], desc = L["Minimap/;_Scale_Desc"], values = Opt.ScaleValues, db = db.Position}),
 }
 
 --[[

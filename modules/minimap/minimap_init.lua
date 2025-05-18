@@ -22,13 +22,10 @@ module.enableButton = true
 module.defaults = {
 	profile = {
 		General = {
-			Scale = 1,
 			CoordPrecision = 1,
 			AlwaysShowText = true,
-			HideMissingCoord = true,
 			ShowTextures = true,
 			FontSize = 12,
-			MissionReport = true,
 		},
 		Position = {
 			X = -24,
@@ -37,12 +34,6 @@ module.defaults = {
 			Point = "TOPRIGHT",
 			Locked = false,
 			Scale = 1,
-		},
-		Icons = {
-			Mail = "BOTTOMLEFT",
-			BG = "BOTTOMRIGHT",
-			LFG = "TOPRIGHT",
-			GMTicket = "TOPLEFT",
 		},
 		Fonts = {
 			Text = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
