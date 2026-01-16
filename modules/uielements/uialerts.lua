@@ -74,7 +74,7 @@ function module:AlertHandler(frame, parent, info, relativeRegion)
 			if relativeRegion == _G[blizzardFrame] then
 				frame.relativeRegion = _G[microFrame]
 				frame.info.targetPoint = _G.HelpTip.Point.BottomEdgeCenter
-				--frame:AnchorAndRotate(_G.HelpTip.Point.BottomEdgeCenter) -- Does not appear to work for MicroButtons? 
+				frame:AnchorAndRotate(_G.HelpTip.Point.BottomEdgeCenter)
 			end
 		end
 	end
