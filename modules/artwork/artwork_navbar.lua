@@ -215,7 +215,13 @@ function module:CreateNavButton(kind, side, x, y)
 
 	clicker.tex = tex
 	clicker.hover = hover
+	clicker.tex.alphaIn = alphaIn
+	clicker.tex.alphaOut = alphaOut
 	_navButtons[kind] = clicker
+end
+
+function module:IterateNavButtons()
+	return pairs(_navButtons)
 end
 
 function module:RefreshNavBar()
@@ -253,18 +259,23 @@ function module:RefreshNavBar()
 		module.RightBorderBack:Hide()
 	end
 	local showButtons = db.NavBar.ShowButtons
-	for kind, button in pairs(_navButtons) do
+	for kind, button in module:IterateNavButtons() do
 		local db = module.db.profile.LUITextures[kind]
 		local r, g, b, a = self:RGBA("NavButtons")
+		local anchor = _G[db.Anchor]
+
 		button.tex:SetVertexColor(r, g, b, a)
 		button.hover:SetVertexColor(r, g, b, 0)
 		if showButtons then button:Show() else button:Hide() end
 
-		if not db.IsShown then button.tex:SetAlpha(0) end
+		if not db.IsShown then
+			button.tex:SetAlpha(0)
+			if anchor then anchor:Hide() end
+		end
 		
 		-- If the anchor is a protected frame, we need to use the secure code path
-		if _G[db.Anchor] and _G[db.Anchor]:IsProtected() then
-			button:SetFrameRef("frame", _G[db.Anchor])
+		if anchor and anchor:IsProtected() then
+			button:SetFrameRef("frame", anchor)
 
 			if _G[db.Additional] and _G[db.Additional] ~= "" then
 				local additionalFrames = module:LoadAdditional(db.Additional)

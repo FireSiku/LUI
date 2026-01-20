@@ -91,6 +91,70 @@ function module:CreateOrb()
 	cycleRing:SetBackdropColor(0.25, 0.25, 0.25, 0.75)
 	cycleRing:SetBackdropBorderColor(0, 0, 0, 0)
 
+	-- Clicker
+	local orbClicker = CreateFrame("Button", "LUIArtwork_OrbClicker", orb, "SecureHandlerClickTemplate")
+	orbClicker:SetSize(115, 115)
+	orbClicker:SetPoint("CENTER", orb, "CENTER", 0, -1)
+	orbClicker:SetFrameStrata("BACKGROUND")
+	
+	local tex = orbClicker:CreateTexture(nil, "ARTWORK")
+	tex:SetPoint("CENTER", orb, "CENTER", 0, -1)
+	tex:SetTexture(OLD_DIR.."ring_inner4")
+
+	-- Animations, taken from navbar
+	local ANIM_DURATION = 0.5
+	local ALPHA = 0.75
+	local alphaIn = tex:CreateAnimationGroup()
+	local a1 = alphaIn:CreateAnimation("Alpha")
+	a1:SetFromAlpha(0)
+	a1:SetToAlpha(ALPHA)
+	a1:SetDuration(ANIM_DURATION)
+	alphaIn:SetScript("OnFinished", function() tex:SetAlpha(ALPHA) end)
+
+	local alphaOut = tex:CreateAnimationGroup()
+	local a2 = alphaOut:CreateAnimation("Alpha")
+	a2:SetFromAlpha(ALPHA)
+	a2:SetToAlpha(0)
+	a2:SetDuration(ANIM_DURATION)
+	alphaOut:SetScript("OnFinished", function() tex:SetAlpha(0) end)
+
+	local locked = false -- To prevent rapid clicking issues
+	orbClicker:RegisterForClicks("AnyUp")
+	orbClicker:SetScript("OnClick", function()
+		if locked then return end
+		local forceShow = false
+		if tex:GetAlpha() == 0 then
+			locked = true
+			alphaIn:Play()
+			forceShow = true
+		elseif math.floor(tex:GetAlpha()*100+0.5) == ALPHA*100 then
+			locked = true
+			alphaOut:Play()
+		end
+		locked = false
+		for kind, button in module:IterateNavButtons() do
+			local db = module.db.profile.LUITextures[kind]
+			local frame = _G[db.Anchor]
+			if forceShow and frame and not frame:IsShown() then
+				if kind == "Chat" and not (button.tex.alphaOut:IsPlaying() or button.tex.alphaIn:IsPlaying()) then
+					module:SetChatVisible(true)
+				end
+				button.tex.alphaIn:Play()
+				module:AlphaIn(kind, button)
+				db.IsShown = true
+			elseif not forceShow and frame and frame:IsShown() then
+				if kind == "Chat" and not (button.tex.alphaOut:IsPlaying() or button.tex.alphaIn:IsPlaying()) then
+					module:SetChatVisible(false)
+				end
+				button.tex.alphaOut:Play()
+				module:AlphaOut(kind, button)
+				db.IsShown = false
+			end
+		end
+		
+	end)
+
+	-- Additional textures around the Orb
 	local outerRing = CreateFrame("Frame", "LUIArtwork_OrbOuterRing", orb, "BackdropTemplate")
 	outerRing:SetSize(103, 103)
 	outerRing:SetPoint("CENTER", orb, "CENTER", 0, -1)
@@ -131,6 +195,8 @@ function module:CreateOrb()
 	orb.Galaxy3 = galaxy3Tex
 	orb.LostGalaxy = galaxy3
 	orb.Cycle = cycleRing
+	orb.Clicker = orbClicker
+	orb.ClickerTex = tex
 
 	module:RefreshOrb()
 end
@@ -155,6 +221,7 @@ function module:RefreshOrb()
 	orb.Galaxy1:SetVertexColor(r, g, b, 1)
 	orb.Galaxy2:SetVertexColor(r, g, b, 1)
 	orb.Galaxy3:SetVertexColor(r, g, b, 1)
+	orb.ClickerTex:SetVertexColor(r, g, b, 0.75)
 	--orb.Cycle:SetBackdropColor(unpack(db.orb_cycle))
 
 	if db.LostGalaxy then
