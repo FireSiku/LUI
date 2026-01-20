@@ -1,5 +1,5 @@
-## Interface: 110000
-## Version: 2407
+## Interface: 110207
+## Version: 2512
 ## Title: LUI
 ## Author: Siku, Nitsah
 ## Notes: User Interface Modification
