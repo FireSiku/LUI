@@ -331,8 +331,6 @@ local function OverrideHealth(self, event, unit, powerType)
 		end
 		
 		if health.value.Enable == true then
-			-- if health.value.ShowAlways == false and current == max then
-			-- 	health.value:SetText("")
 			if health.value.Format == "Absolut" then
 				health.value:SetFormattedText("%s/%s", current, max)
 			elseif health.value.Format == "Absolut & Percent" then
@@ -445,21 +443,20 @@ local function OverridePower(self, event, unit)
 	local power = self.Power
 
 	local displayType = GetDisplayPower(power, unit)
-	local min = UnitPower(unit, displayType)
+	local current = UnitPower(unit, displayType)
 	local max = UnitPowerMax(unit, displayType)
 	local disconnected = not UnitIsConnected(unit)
-	if min > max then min = max end
 
 	power:SetMinMaxValues(0, max)
 
-	power:SetValue(disconnected and max or min)
+	power:SetValue(disconnected and max or current)
 
 	power.disconnected = disconnected
 
-	local _, pType = UnitPowerType(unit)
+	local pType, pName = UnitPowerType(unit)
 	local pClass, pToken = UnitClass(unit)
 	local color = module.colors.class[pToken] or {0.5, 0.5, 0.5}
-	local color2 = module.colors.power[pType] or {0.5, 0.5, 0.5}
+	local color2 = module.colors.power[pName] or {0.5, 0.5, 0.5}
 	-- local _, r, g, b = UnitAlternatePowerTextureInfo(unit, 2)
 
 	if power.color == "By Class" then
@@ -497,29 +494,27 @@ local function OverridePower(self, event, unit)
 		power.valuePercent:SetText("")
 		power.value:SetText("")
 	else
-		local powerPercent = max == 0 and 0 or 100 * (min / max)
-
+		local powerPercent = UnitPowerPercent(unit, pType, false, PercentCurve)
+	
 		if power.value.Enable == true then
-			if (power.value.ShowFull == false and min == max) or (power.value.ShowEmpty == false and min == 0) then
-				power.value:SetText("")
-			elseif power.value.Format == "Absolut" then
-				power.value:SetFormattedText("%d/%d", min, max)
+			if power.value.Format == "Absolut" then
+				power.value:SetFormattedText("%d/%d", current, max)
 			elseif power.value.Format == "Absolut & Percent" then
-				power.value:SetFormattedText("%d/%d | %.1f%%", min, max, powerPercent)
+				power.value:SetFormattedText("%d/%d | %.1f%%", current, max, powerPercent)
 			elseif power.value.Format == "Absolut Short" then
-				power.value:SetFormattedText("%s/%s", AbbreviateNumbers(min), AbbreviateNumbers(max))
+				power.value:SetFormattedText("%s/%s", AbbreviateNumbers(current), AbbreviateNumbers(max))
 			elseif power.value.Format == "Absolut Short & Percent" then
-				power.value:SetFormattedText("%s/%s | %.1f%%", AbbreviateNumbers(min), AbbreviateNumbers(max), powerPercent)
+				power.value:SetFormattedText("%s/%s | %.1f%%", AbbreviateNumbers(current), AbbreviateNumbers(max), powerPercent)
 			elseif power.value.Format == "Standard" then
-				power.value:SetFormattedText("%d", min)
+				power.value:SetFormattedText("%d", current)
 			elseif power.value.Format == "Standard & Percent" then
-				power.value:SetFormattedText("%d | %.1f%%", min, powerPercent)
+				power.value:SetFormattedText("%d | %.1f%%", current, powerPercent)
 			elseif power.value.Format == "Standard Short" then
-				power.value:SetFormattedText("%s", AbbreviateNumbers(min))
+				power.value:SetFormattedText("%s", AbbreviateNumbers(current))
 			elseif power.value.Format == "Standard Short" then
-				power.value:SetFormattedText("%s | %.1f%%", AbbreviateNumbers(min), powerPercent)
+				power.value:SetFormattedText("%s | %.1f%%", AbbreviateNumbers(current), powerPercent)
 			else
-				power.value:SetFormattedText("%d", min)
+				power.value:SetFormattedText("%d", current)
 			end
 
 			if power.value.color == "By Class" then
@@ -529,12 +524,22 @@ local function OverridePower(self, event, unit)
 			else
 				power.value:SetTextColor(unpack(color2))
 			end
+
+			local powerCurve = C_CurveUtil.CreateCurve()
+			powerCurve:SetType(Enum.LuaCurveType.Step)
+			powerCurve:AddPoint(0, power.value.ShowEmpty and 1 or 0)
+			powerCurve:AddPoint(0.001, 1)
+			powerCurve:AddPoint(0.999, 1)
+			powerCurve:AddPoint(1, power.value.ShowFull and 1 or 0)
+			
+			local powerAlpha = UnitPowerPercent(unit, pType, false, powerCurve)
+			power.value:SetAlpha(powerAlpha)
 		else
 			power.value:SetText("")
 		end
 
 		if power.valuePercent.Enable == true then
-			if (power.valuePercent.ShowFull == false and min == max) or (power.valuePercent.ShowEmpty == false and min == 0) then
+			if (power.valuePercent.ShowFull == false and current == max) or (power.valuePercent.ShowEmpty == false and current == 0) then
 				power.valuePercent:SetText("")
 			else
 				power.valuePercent:SetFormattedText("%.1f%%", powerPercent)
@@ -547,14 +552,24 @@ local function OverridePower(self, event, unit)
 			else
 				power.valuePercent:SetTextColor(unpack(color2))
 			end
+
+			local powerCurve = C_CurveUtil.CreateCurve()
+			powerCurve:SetType(Enum.LuaCurveType.Step)
+			powerCurve:AddPoint(0, power.valuePercent.ShowEmpty and 1 or 0)
+			powerCurve:AddPoint(0.001, 1)
+			powerCurve:AddPoint(0.999, 1)
+			powerCurve:AddPoint(1, power.valuePercent.ShowFull and 1 or 0)
+			
+			local powerAlpha = UnitPowerPercent(unit, pType, false, powerCurve)
+			power.valuePercent:SetAlpha(powerAlpha)
 		else
 			power.valuePercent:SetText("")
 		end
 
 		if power.valueMissing.Enable == true then
-			local powerMissing = max-min
+			local powerMissing = max-current
 
-			if (power.valueMissing.ShowFull == false and min == max) or (power.valueMissing.ShowEmpty == false and min == 0) then
+			if (power.valueMissing.ShowFull == false and current == max) or (power.valueMissing.ShowEmpty == false and current == 0) then
 				power.valueMissing:SetText("")
 			elseif power.valueMissing.ShortValue == true then
 				power.valueMissing:SetFormattedText("-%s", AbbreviateNumbers(powerMissing))
@@ -569,6 +584,16 @@ local function OverridePower(self, event, unit)
 			else
 				power.valueMissing:SetTextColor(unpack(color2))
 			end
+
+			local powerCurve = C_CurveUtil.CreateCurve()
+			powerCurve:SetType(Enum.LuaCurveType.Step)
+			powerCurve:AddPoint(0, power.valueMissing.ShowEmpty and 1 or 0)
+			powerCurve:AddPoint(0.001, 1)
+			powerCurve:AddPoint(0.999, 1)
+			powerCurve:AddPoint(1, power.valueMissing.ShowFull and 1 or 0)
+			
+			local powerAlpha = UnitPowerPercent(unit, pType, false, powerCurve)
+			power.valueMissing:SetAlpha(powerAlpha)
 		else
 			power.valueMissing:SetText("")
 		end
@@ -2730,7 +2755,7 @@ local function SetStyle(self, unit, isSingle)
 		}
 	end
 	self.Health.Override = OverrideHealth
-	--self.Power.Override = OverridePower
+	self.Power.Override = OverridePower
 
 	self.__unit = unit
 
