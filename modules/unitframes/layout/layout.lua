@@ -542,34 +542,18 @@ local function OverridePower(self, event, unit)
 	end
 end
 
-local function FormatCastbarTime(self, duration)
+local function FormatCastbarTime(self, durationObject)
 	if self.delay ~= 0 then
-		if self.channeling then
 			if self.Time.ShowMax == true then
-				self.Time:SetFormattedText("%.1f / %.1f |cffff0000%.1f|r", duration, self.max, -self.delay)
+			self.Time:SetFormattedText("%.1f / %.1f |cffff0000-%.1f|r", durationObject:GetRemainingDuration(), durationObject:GetTotalDuration(), self.delay)
 			else
-				self.Time:SetFormattedText("%.1f |cffff0000%.1f|r", duration, -self.delay)
+			self.Time:SetFormattedText("%.1f |cffff0000-%.1f|r", durationObject:GetRemainingDuration(), self.delay)
 			end
-		elseif self.casting then
+			else
 			if self.Time.ShowMax == true then
-				self.Time:SetFormattedText("%.1f / %.1f |cffff0000%.1f|r", self.max - duration, self.max, -self.delay)
-			else
-				self.Time:SetFormattedText("%.1f |cffff0000%.1f|r", self.max - duration, -self.delay)
-			end
-		end
-	else
-		if self.channeling then
-			if self.Time.ShowMax == true then
-				self.Time:SetFormattedText("%.1f / %.1f", duration, self.max)
-			else
-				self.Time:SetFormattedText("%.1f", duration)
-			end
-		elseif self.casting then
-			if self.Time.ShowMax == true then
-				self.Time:SetFormattedText("%.1f / %.1f", self.max - duration, self.max)
-			else
-				self.Time:SetFormattedText("%.1f", self.max - duration)
-			end
+			self.Time:SetFormattedText("%.1f / %.1f", durationObject:GetRemainingDuration(), durationObject:GetTotalDuration())
+		else
+			self.Time:SetFormattedText("%.1f", durationObject:GetRemainingDuration())
 		end
 	end
 end
@@ -628,12 +612,12 @@ end
 
 --- PostUpdate for Auras (Buffs/Debuffs)
 ---@param element ufAuras
----@param button ufAuraButton
 ---@param unit UnitId
+---@param button ufAuraButton
 ---@param data UnitAuraInfo
 ---@param position number
-local function PostUpdateAura(element, button, unit, data, position)
-	if button.isHarmful then
+local function PostUpdateAura(element, unit, button, data, position)
+	if button.isHarmfulAura then
 		if data.sourceUnit == "player" or data.sourceUnit == "pet" or data.sourceUnit == "vehicle" then
 			button.Icon:SetDesaturated()
 		else
@@ -645,7 +629,7 @@ local function PostUpdateAura(element, button, unit, data, position)
 		local color = DebuffTypeColor[data.dispelName] or DebuffTypeColor.none
 		button.auratype:SetVertexColor(color.r, color.g, color.b)
 	else
-		if button.isHarmful then
+		if button.isHarmfulAura then
 			button.auratype:SetVertexColor(0.69, 0.31, 0.31)
 		else
 			button.auratype:SetVertexColor(1, 1, 1)
@@ -2078,8 +2062,8 @@ module.funcs = {
 		self.Buffs.disableCooldown = oufdb.Aura.Buffs.DisableCooldown
 		self.Buffs.cooldownReverse = oufdb.Aura.Buffs.CooldownReverse
 
-		self.Buffs.PostCreateButton = PostCreateAura
-		self.Buffs.PostUpdateButton = PostUpdateAura
+		-- self.Buffs.PostCreateButton = PostCreateAura
+		-- self.Buffs.PostUpdateButton = PostUpdateAura
 		--self.Buffs.FilterAura = FilterAura
 		if not self.Buffs.createdButtons then self.Buffs.createdButtons = 0 end
 		if not self.Buffs.anchoredButtons then self.Buffs.anchoredButtons = 0 end
@@ -2117,8 +2101,8 @@ module.funcs = {
 		self.Debuffs.disableCooldown = oufdb.Aura.Debuffs.DisableCooldown
 		self.Debuffs.cooldownReverse = oufdb.Aura.Debuffs.CooldownReverse
 
-		self.Debuffs.PostCreateButton = PostCreateAura
-		self.Debuffs.PostUpdateButton = PostUpdateAura
+		-- self.Debuffs.PostCreateButton = PostCreateAura
+		-- self.Debuffs.PostUpdateButton = PostUpdateAura
 		--self.Debuffs.FilterAura = FilterAura
 		if not self.Debuffs.createdButtons then self.Debuffs.createdButtons = 0 end
 		if not self.Debuffs.anchoredButtons then self.Debuffs.anchoredButtons = 0 end

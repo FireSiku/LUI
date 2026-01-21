@@ -300,33 +300,33 @@ module.ToggleUnit = setmetatable({
 
 					self:UnregisterEvent("PLAYER_REGEN_ENABLED")
 
-					if dbUnit.Enable then
-						if dbUnit.ShowInRaid and UnitInParty("player") then
-							party:Show()
-						else
-							if not IsInRaid() and UnitInParty("player") then
-								party:Show()
-							else
-								-- GetNumGroupMembers() - total number of players in the group (either party or raid), 0 if not in a group. 
-								-- GetNumSubgroupMembers() - number of players in the player's sub-group, excluding the player. 
-								local numraid = GetNumGroupMembers()
-								local numparty = GetNumSubgroupMembers()
-								if dbUnit.ShowInRealParty and UnitInParty("player") then
-									if IsInRaid() then
-										party:Hide()
-									end
-								else
-									if numraid > 0 and numraid <= 5 then
-										party:Show()
-									else
-										party:Hide()
-									end
-								end
-							end
-						end
-					else
-						party:Hide()
-					end
+					-- if dbUnit.Enable then
+					-- 	if dbUnit.ShowInRaid and UnitInParty("player") then
+					-- 		party:Show()
+					-- 	else
+					-- 		if not IsInRaid() and UnitInParty("player") then
+					-- 			party:Show()
+					-- 		else
+					-- 			-- GetNumGroupMembers() - total number of players in the group (either party or raid), 0 if not in a group. 
+					-- 			-- GetNumSubgroupMembers() - number of players in the player's sub-group, excluding the player. 
+					-- 			local numraid = GetNumGroupMembers()
+					-- 			local numparty = GetNumSubgroupMembers()
+					-- 			if dbUnit.ShowInRealParty and UnitInParty("player") then
+					-- 				if IsInRaid() then
+					-- 					party:Hide()
+					-- 				end
+					-- 			else
+					-- 				if numraid > 0 and numraid <= 5 then
+					-- 					party:Show()
+					-- 				else
+					-- 					party:Hide()
+					-- 				end
+					-- 			end
+					-- 		end
+					-- 	end
+					-- else
+					-- 	party:Hide()
+					-- end
 				end)
 				party.handler = handler
 				handler:GetScript("OnEvent")(handler)
