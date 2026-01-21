@@ -2217,8 +2217,8 @@ module.funcs = {
 
 			castbar.Text = SetFontString(castbar, Media:Fetch("font", oufdb.Castbar.NameText.Font), oufdb.Castbar.NameText.Size)
 
-			-- castbar.PostCastStart = PostCastStart
-			-- castbar.PostChannelStart = PostCastStart
+			castbar.PostCastStart = PostCastStart
+			castbar.PostChannelStart = PostCastStart
 
 			if unit == "player" then
 				castbar.SafeZone = castbar:CreateTexture(nil, "ARTWORK")
@@ -2260,9 +2260,9 @@ module.funcs = {
 						end
 					end
 
-					-- castbar.PostChannelStart = PostChannelStart
-					-- castbar.PostChannelUpdate = PostChannelUpdate
-					-- castbar.PostChannelStop = castbar.HideTicks
+					castbar.PostChannelStart = PostChannelStart
+					castbar.PostChannelUpdate = PostChannelUpdate
+					castbar.PostChannelStop = castbar.HideTicks
 				end
 			end
 
