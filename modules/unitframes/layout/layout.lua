@@ -127,6 +127,30 @@ end
 --	Dont edit this if you dont know what you are doing!
 ------------------------------------------------------------------------
 
+local PercentCurve = C_CurveUtil.CreateCurve()
+PercentCurve:SetType(Enum.LuaCurveType.Linear)
+PercentCurve:AddPoint(0, 0)
+PercentCurve:AddPoint(1, 100)
+
+-- We cannot compare Health/Power values to know if something is full or not.
+-- However we can have a curve that is 1 for everything below 100% using HealthPercent/PowerPercent and use the result as an alpha value to control visibility.
+local NotFullCurve = C_CurveUtil.CreateCurve()
+NotFullCurve:SetType(Enum.LuaCurveType.Step)
+NotFullCurve:AddPoint(0.999, 1)
+NotFullCurve:AddPoint(1, 0)
+
+-- Show only when full
+local IsFullCurve = C_CurveUtil.CreateCurve()
+IsFullCurve:SetType(Enum.LuaCurveType.Step)
+IsFullCurve:AddPoint(0.999, 0)
+IsFullCurve:AddPoint(1, 1)
+
+-- Hide when empty
+local IsEmptyCurve = C_CurveUtil.CreateCurve()
+IsEmptyCurve:SetType(Enum.LuaCurveType.Step)
+IsEmptyCurve:AddPoint(0.01, 1)
+IsEmptyCurve:AddPoint(0, 0)
+
 local function GetDisplayPower(power, unit)
 		return (UnitPowerType(unit))
 end
@@ -235,14 +259,13 @@ local function OverrideHealth(self, event, unit, powerType)
 	if self.unit ~= unit then return end
 	local health = self.Health
 
-	local min = UnitHealth(unit)
+	local current = UnitHealth(unit)
 	local max = UnitHealthMax(unit)
 	local disconnected = not UnitIsConnected(unit)
-	if min > max then min = max end
 
 	health:SetMinMaxValues(0, max)
 
-	health:SetValue(disconnected and max or min)
+	health:SetValue(disconnected and max or current)
 
 	health.disconnected = disconnected
 
@@ -265,18 +288,18 @@ local function OverrideHealth(self, event, unit, powerType)
 	elseif health.color == "Individual" then
 		health:SetStatusBarColor(health.colorIndividual.r, health.colorIndividual.g, health.colorIndividual.b)
 	else
-		health:SetStatusBarColor(oUF.ColorGradient(min, max, module.colors.smooth()))
+		health:SetStatusBarColor(oUF.ColorGradient(current, max, module.colors.smooth()))
 	end
 
 	if health.colorTapping and UnitIsTapDenied and UnitIsTapDenied(unit) then health:SetStatusBarColor(unpack(module.db.profile.Colors.Misc["Tapped"])) end
 
-	local r_, g_, b_ = health:GetStatusBarColor()
+	local r, g, b = health:GetStatusBarColor()
 	local mu = health.bg.multiplier or 1
 
 	if health.bg.invert == true then
-		health.bg:SetVertexColor(r_+(1-r_)*mu, g_+(1-g_)*mu, b_+(1-b_)*mu)
+		health.bg:SetVertexColor(r+(1-r)*mu, g+(1-g)*mu, b+(1-b)*mu)
 	else
-		health.bg:SetVertexColor(r_*mu, g_*mu, b_*mu)
+		health.bg:SetVertexColor(r*mu, g*mu, b*mu)
 	end
 
 	if not UnitIsConnected(unit) then
@@ -295,81 +318,85 @@ local function OverrideHealth(self, event, unit, powerType)
 		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Dead>|r" or "")
 		health.valueMissing:SetText("")
 	else
-		local healthPercent = 100 * (min / max)
+		local healthPercent = UnitHealthPercent(unit, false, PercentCurve)
+		local notFullAlpha = UnitHealthPercent(unit, true, NotFullCurve)
+		local gradientColor = UnitHealthPercent(unit, true, oUF.colors.health:GetCurve())
 
-		-- Check if name should only be displayed when health is full.
-		if self.Info.OnlyWhenFull and min ~= max then
-			-- Just set to nil, as name tags are updated when ever anything happens? Inefficient but works for us here.
-			self.Info:SetText("")
+		-- Raid Name Text, if health is not full, hide it
+		if self.Info.OnlyWhenFull then
+			local fullHealthAlpha = UnitHealthPercent(unit, false, IsFullCurve)
+			self.Info:SetAlpha(fullHealthAlpha)
+		else
+			self.Info:SetAlpha(1)
 		end
-
+		
 		if health.value.Enable == true then
-			if min >= 1 then
-				if health.value.ShowAlways == false and min == max then
-					health.value:SetText("")
-				elseif health.value.Format == "Absolut" then
-					health.value:SetFormattedText("%s/%s", min, max)
-				elseif health.value.Format == "Absolut & Percent" then
-					health.value:SetFormattedText("%s/%s | %.1f%%", min, max, healthPercent)
-				elseif health.value.Format == "Absolut Short" then
-					health.value:SetFormattedText("%s/%s", AbbreviateNumbers(min), AbbreviateNumbers(max))
-				elseif health.value.Format == "Absolut Short & Percent" then
-					health.value:SetFormattedText("%s/%s | %.1f%%", AbbreviateNumbers(min),AbbreviateNumbers(max), healthPercent)
-				elseif health.value.Format == "Standard" then
-					health.value:SetFormattedText("%s", min)
-				elseif health.value.Format == "Standard & Percent" then
-					health.value:SetFormattedText("%s | %.1f%%", min, healthPercent)
-				elseif health.value.Format == "Standard Short" then
-					health.value:SetFormattedText("%s", AbbreviateNumbers(min))
-				elseif health.value.Format == "Standard Short & Percent" then
-					health.value:SetFormattedText("%s | %.1f%%", AbbreviateNumbers(min), healthPercent)
-				else
-					health.value:SetFormattedText("%s", min)
-				end
-
-				if health.value.color == "By Class" then
-					health.value:SetTextColor(unpack(color))
-				elseif health.value.color == "Individual" then
-					health.value:SetTextColor(health.value.colorIndividual.r, health.value.colorIndividual.g, health.value.colorIndividual.b)
-				else
-					health.value:SetTextColor(oUF.ColorGradient(min, max, module.colors.smooth()))
-				end
+			-- if health.value.ShowAlways == false and current == max then
+			-- 	health.value:SetText("")
+			if health.value.Format == "Absolut" then
+				health.value:SetFormattedText("%s/%s", current, max)
+			elseif health.value.Format == "Absolut & Percent" then
+				health.value:SetFormattedText("%s/%s | %.1f%%", current, max, healthPercent)
+			elseif health.value.Format == "Absolut Short" then
+				health.value:SetFormattedText("%s/%s", AbbreviateNumbers(current), AbbreviateNumbers(max))
+			elseif health.value.Format == "Absolut Short & Percent" then
+				health.value:SetFormattedText("%s/%s | %.1f%%", AbbreviateNumbers(current),AbbreviateNumbers(max), healthPercent)
+			elseif health.value.Format == "Standard" then
+				health.value:SetFormattedText("%s", current)
+			elseif health.value.Format == "Standard & Percent" then
+				health.value:SetFormattedText("%s | %.1f%%", current, healthPercent)
+			elseif health.value.Format == "Standard Short" then
+				health.value:SetFormattedText("%s", AbbreviateNumbers(current))
+			elseif health.value.Format == "Standard Short & Percent" then
+				health.value:SetFormattedText("%s | %.1f%%", AbbreviateNumbers(current), healthPercent)
 			else
-				health.value:SetText("")
+				health.value:SetFormattedText("%s", current)
+			end
+
+			if health.value.color == "By Class" then
+				health.value:SetTextColor(unpack(color))
+			elseif health.value.color == "Individual" then
+				health.value:SetTextColor(health.value.colorIndividual.r, health.value.colorIndividual.g, health.value.colorIndividual.b)
+			else
+				health.value:SetTextColor(gradientColor.r, gradientColor.g, gradientColor.b)
+			end
+
+			if health.value.ShowAlways then
+				health.value:SetAlpha(1)
+			else
+				health.value:SetAlpha(notFullAlpha)
 			end
 		else
 			health.value:SetText("")
 		end
 
 		if health.valuePercent.Enable == true then
-			if min ~= max or health.valuePercent.ShowAlways == true then
-				health.valuePercent:SetFormattedText("%.1f%%", healthPercent)
-			else
-				health.valuePercent:SetText("")
-			end
+			health.valuePercent:SetFormattedText("%.1f%%", healthPercent)
 
 			if health.valuePercent.color == "By Class" then
 				health.valuePercent:SetTextColor(unpack(color))
 			elseif health.valuePercent.color == "Individual" then
 				health.valuePercent:SetTextColor(health.valuePercent.colorIndividual.r, health.valuePercent.colorIndividual.g, health.valuePercent.colorIndividual.b)
 			else
-				health.valuePercent:SetTextColor(oUF.ColorGradient(min, max, module.colors.smooth()))
+				health.valuePercent:SetTextColor(gradientColor.r, gradientColor.g, gradientColor.b)
+			end
+
+			if health.valuePercent.ShowAlways then
+				health.valuePercent:SetAlpha(1)
+			else
+				health.valuePercent:SetAlpha(notFullAlpha)
 			end
 		else
 			health.valuePercent:SetText("")
 		end
 
 		if health.valueMissing.Enable == true then
-			local healthMissing = max-min
+			local healthMissing = UnitHealthMissing(unit)
 
-			if healthMissing > 0 or health.valueMissing.ShowAlways == true then
-				if health.valueMissing.ShortValue == true then
-					health.valueMissing:SetFormattedText("-%s", AbbreviateNumbers(healthMissing))
-				else
-					health.valueMissing:SetFormattedText("-%s", healthMissing)
-				end
+			if health.valueMissing.ShortValue == true then
+				health.valueMissing:SetFormattedText("-%s", AbbreviateNumbers(healthMissing))
 			else
-				health.valueMissing:SetText("")
+				health.valueMissing:SetFormattedText("-%s", healthMissing)
 			end
 
 			if health.valueMissing.color == "By Class" then
@@ -377,7 +404,13 @@ local function OverrideHealth(self, event, unit, powerType)
 			elseif health.valueMissing.color == "Individual" then
 				health.valueMissing:SetTextColor(health.valueMissing.colorIndividual.r, health.valueMissing.colorIndividual.g, health.valueMissing.colorIndividual.b)
 			else
-				health.valueMissing:SetTextColor(oUF.ColorGradient(min, max, module.colors.smooth()))
+				health.valueMissing:SetTextColor(gradientColor.r, gradientColor.g, gradientColor.b)
+			end
+
+			if health.valueMissing.ShowAlways then
+				health.valueMissing:SetAlpha(1)
+			else
+				health.valueMissing:SetAlpha(notFullAlpha)
 			end
 		else
 			health.valueMissing:SetText("")
@@ -387,19 +420,19 @@ local function OverrideHealth(self, event, unit, powerType)
 	if UnitIsAFK(unit) then
 		if health.value.ShowDead == true then
 			if health.value:GetText() then
-				if not strfind(health.value:GetText(), "AFK") then
+				--if not strfind(health.value:GetText(), "AFK") then
 					health.value:SetFormattedText("|cffffffff<AFK>|r %s", health.value:GetText())
-				end
+				--end
 			else
-				health.value:SetText("|cffffffff<AFK>|r")
+				health.value:SetText("|cffffffff<AFK>|r)")
 			end
 		end
 
 		if health.valuePercent.ShowDead == true then
 			if health.valuePercent:GetText() then
-				if not strfind(health.valuePercent:GetText(), "AFK") then
+				--if not strfind(health.valuePercent:GetText(), "AFK") then
 					health.valuePercent:SetFormattedText("|cffffffff<AFK>|r %s", health.valuePercent:GetText())
-				end
+				--end
 			else
 				health.valuePercent:SetText("|cffffffff<AFK>|r")
 			end
@@ -941,9 +974,9 @@ local function PostUpdateAlternativePower(altpowerbar, unit, cur, min, max)
 		altpowerbar:SetStatusBarColor(r, g, b)
 	end
 
-	local r_, g_, b_ = altpowerbar:GetStatusBarColor()
+	local r, g, b = altpowerbar:GetStatusBarColor()
 	local mu = altpowerbar.bg.multiplier or 1
-	altpowerbar.bg:SetVertexColor(r_*mu, g_*mu, b_*mu)
+	altpowerbar.bg:SetVertexColor(r*mu, g*mu, b*mu)
 
 	if altpowerbar.Text then
 		if altpowerbar.Text.Enable then
@@ -1878,7 +1911,7 @@ module.funcs = {
 			self.AlternativePower.Text:Hide()
 		end
 
-		self.AlternativePower.PostUpdate = PostUpdateAlternativePower
+		-- self.AlternativePower.PostUpdate = PostUpdateAlternativePower
 
 		self.AlternativePower.SetPosition()
 	end,
@@ -1926,7 +1959,7 @@ module.funcs = {
 			self.AdditionalPower:SetScript("OnShow", self.AdditionalPower.SetPosition)
 			self.AdditionalPower:SetScript("OnHide", self.AdditionalPower.SetPosition)
 
-			self.AdditionalPower.PostUpdatePower = PostUpdateAdditionalPower
+			-- self.AdditionalPower.PostUpdatePower = PostUpdateAdditionalPower
 			--self.AdditionalPower.Override = AdditionalPowerOverride
 		end
 
@@ -2159,8 +2192,8 @@ module.funcs = {
 
 			castbar.Text = SetFontString(castbar, Media:Fetch("font", oufdb.Castbar.NameText.Font), oufdb.Castbar.NameText.Size)
 
-			castbar.PostCastStart = PostCastStart
-			castbar.PostChannelStart = PostCastStart
+			-- castbar.PostCastStart = PostCastStart
+			-- castbar.PostChannelStart = PostCastStart
 
 			if unit == "player" then
 				castbar.SafeZone = castbar:CreateTexture(nil, "ARTWORK")
@@ -2202,9 +2235,9 @@ module.funcs = {
 						end
 					end
 
-					castbar.PostChannelStart = PostChannelStart
-					castbar.PostChannelUpdate = PostChannelUpdate
-					castbar.PostChannelStop = castbar.HideTicks
+					-- castbar.PostChannelStart = PostChannelStart
+					-- castbar.PostChannelUpdate = PostChannelUpdate
+					-- castbar.PostChannelStop = castbar.HideTicks
 				end
 			end
 
@@ -2696,8 +2729,8 @@ local function SetStyle(self, unit, isSingle)
 			outsideAlpha = 0.5
 		}
 	end
-	-- self.Health.Override = OverrideHealth
-	-- self.Power.Override = OverridePower
+	self.Health.Override = OverrideHealth
+	--self.Power.Override = OverridePower
 
 	self.__unit = unit
 
