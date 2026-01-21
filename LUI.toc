@@ -31,8 +31,8 @@ libs\AceTimer-3.0\AceTimer-3.0.xml
 libs\AceBucket-3.0\AceBucket-3.0.xml
 locale\locale.xml
 
-## oUF ## Current Version 11.2.1 - 89817c269838e501e54e82512005c07517d7fba3
-api\oUF11\ouf.xml
+## oUF ## Current Version 13.0.0
+api\oUF13\ouf.xml
 
 ### Core + API ###
 init.lua
