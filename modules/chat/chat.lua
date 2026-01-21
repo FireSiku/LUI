@@ -486,14 +486,14 @@ local function unclampChatFrame(frame)
 end
 
 local function positionChatFrame()
-	local frame = GENERAL_CHAT_DOCK.primary
-	frame:SetMovable(true)
-	frame:SetUserPlaced(true)
-	frame:SetSize(db.width, db.height)
-	frame:ClearAllPoints()
-	frame:SetPoint(db.point, UIParent, db.point, db.x, db.y)
-	FCF_SavePositionAndDimensions(frame)
-	FCF_SetLocked(frame, 1)
+	-- local frame = GENERAL_CHAT_DOCK.primary
+	-- frame:SetMovable(true)
+	-- frame:SetUserPlaced(true)
+	-- frame:SetSize(db.width, db.height)
+	-- frame:ClearAllPoints()
+	-- frame:SetPoint(db.point, UIParent, db.point, db.x, db.y)
+	-- FCF_SavePositionAndDimensions(frame)
+	-- FCF_SetLocked(frame, 1)
 end
 
 local function configureTab(tab, minimalist)
@@ -811,8 +811,8 @@ function module:LoadOptions()
 			MinimalistTabs = self:NewToggle(L["Minimalist tabs"], L["Use minimalist style tabs"], 4, true),
 			LinkHover = self:NewToggle(L["Link hover tooltip"], L["Show tooltip when mousing over links in chat"], 5, true),
 			ShiftMouseScroll = self:NewToggle(L["Shift mouse scrolling"], L["Holding shift while mouse scrolling will jump to top or bottom"], 6, refresh),
-			BackgroundColor = self:NewColor(L["Chat Background"], nil, 7, refresh, "full"),
-			ResetPosition = self:NewExecute(L["Reset position"], L["Reset the main chat dock's position"], 8, resetChatPos, L["Are you sure?"]),
+			--BackgroundColor = self:NewColor(L["Chat Background"], nil, 7, refresh, "full"),
+			--ResetPosition = self:NewExecute(L["Reset position"], L["Reset the main chat dock's position"], 8, resetChatPos, L["Are you sure?"]),
 		}),
 		StickyChannels = module:GetModule("StickyChannels"):LoadOptions(),
 		EditBox = module:GetModule("EditBox"):LoadOptions(),
@@ -858,10 +858,10 @@ function module:Refresh(info, value)
 
 		frame:SetFading(not db.General.DisableFading)
 
-		local r, g, b, a = unpack(db.General.BackgroundColor)
-		FCF_SetWindowColor(frame, r, g, b)
-		SetChatWindowColor(i, r, g, b)
-		FCF_SetWindowAlpha(frame, a)
+		-- local r, g, b, a = unpack(db.General.BackgroundColor)
+		-- FCF_SetWindowColor(frame, r, g, b)
+		-- SetChatWindowColor(i, r, g, b)
+		-- FCF_SetWindowAlpha(frame, a)
 	end
 
 	configureTabs(db.General.MinimalistTabs)
