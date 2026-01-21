@@ -96,16 +96,6 @@ function ExpBarMixin:UpdateBar(event, ...)
 	end
 end
 
-local function ShortValue(value)
-	if value >= 1e6 then
-		return ("%.1fm"):format(value / 1e6):gsub("%.?0+([km])$", "%1")
-	elseif value >= 1e3 or value <= -1e3 then
-		return ("%.1fk"):format(value / 1e3):gsub("%.?0+([km])$", "%1")
-	else
-		return value
-	end
-end
-
 function ExpBarMixin:UpdateText()
 	local db = module.db.profile --[[@as table]]
 	local percentText = ""
@@ -118,9 +108,9 @@ function ExpBarMixin:UpdateText()
 		end
 	end
 	if db.ShowCurrent then
-		local text = db.ShortNumbers and ShortValue(self.barValue) or self.barValue --[[@as string]]
+		local text = db.ShortNumbers and AbbreviateNumbers(self.barValue) or self.barValue --[[@as string]]
 		if db.ShowMax then 
-			text = format("%s/%s", text, db.ShortNumbers and ShortValue(self.barMax) or self.barMax)
+			text = format("%s/%s", text, db.ShortNumbers and AbbreviateNumbers(self.barMax) or self.barMax)
 		end
 		if db.ShowPercent then
 			text = format("%s (%s)", text, percentText)

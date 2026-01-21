@@ -31,16 +31,6 @@ local nameCache = {}
 local TagMethods = oUF.Tags.Methods
 local TagEvents = oUF.Tags.Events
 
-local function ShortValue(value)
-	if value >= 1e6 then
-		return ("%.1fm"):format(value / 1e6):gsub("%.?0+([km])$", "%1")
-	elseif value >= 1e3 or value <= -1e3 then
-		return ("%.1fk"):format(value / 1e3):gsub("%.?0+([km])$", "%1")
-	else
-		return value
-	end
-end
-
 local function utf8sub(string, i, dots)
 	local bytes = string:len()
 	if bytes <= i then
@@ -242,8 +232,8 @@ function TagMethods.additionalpower2(unit)
 	local db = module.db.profile.player.AdditionalPowerText
 
 	local min, max = UnitPower("player", Enum.PowerType.Mana), UnitPowerMax("player", Enum.PowerType.Mana)
-	if db.HideIfFullMana and min == max then return "" end
-	local perc = min / max * 100
+	--if db.HideIfFullMana and min == max then return "" end
+	local perc = UnitPowerPercent("player", Enum.PowerType.Mana)
 
 	local _, pType = UnitPowerType(unit)
 	local pClass, pToken = UnitClass(unit)
@@ -265,17 +255,17 @@ function TagMethods.additionalpower2(unit)
 	elseif db.Format == "Absolut & Percent" then
 		text = format("%d/%d | %.1f", min, max, perc)
 	elseif db.Format == "Absolut Short" then
-		text = format("%s/%s", ShortValue(min), ShortValue(max))
+		text = format("%s/%s", AbbreviateNumbers(min), AbbreviateNumbers(max))
 	elseif db.Format == "Absolut Short & Percent" then
-		text = format("%s/%s | %.1f", ShortValue(min), ShortValue(max), perc)
+		text = format("%s/%s | %.1f", AbbreviateNumbers(min), AbbreviateNumbers(max), perc)
 	elseif db.Format == "Standard" then
 		text = min
 	elseif db.Format == "Standard & Percent" then
 		text = format("%s | %.1f%%", min, perc)
 	elseif db.Format == "Standard Short" then
-		text = ShortValue(min)
+		text = AbbreviateNumbers(min)
 	elseif db.Format == "Standard Short & Percent" then
-		text = format("%s | %.1f%%", ShortValue(min), perc)
+		text = format("%s | %.1f%%", AbbreviateNumbers(min), perc)
 	else
 		text = min
 	end

@@ -155,16 +155,6 @@ local function FormatTime(s)
 	return format("%.1f", s), (s * 100 - floor(s * 100))/100
 end
 
-local function ShortValue(value)
-	if value >= 1e6 then
-		return ("%.1fm"):format(value / 1e6):gsub("%.?0+([km])$", "%1")
-	elseif value >= 1e3 or value <= -1e3 then
-		return ("%.1fk"):format(value / 1e3):gsub("%.?0+([km])$", "%1")
-	else
-		return value
-	end
-end
-
 local function utf8sub(string, i, dots)
 	local bytes = string:len()
 	if bytes <= i then
@@ -322,17 +312,17 @@ local function OverrideHealth(self, event, unit, powerType)
 				elseif health.value.Format == "Absolut & Percent" then
 					health.value:SetFormattedText("%s/%s | %.1f%%", min, max, healthPercent)
 				elseif health.value.Format == "Absolut Short" then
-					health.value:SetFormattedText("%s/%s", ShortValue(min), ShortValue(max))
+					health.value:SetFormattedText("%s/%s", AbbreviateNumbers(min), AbbreviateNumbers(max))
 				elseif health.value.Format == "Absolut Short & Percent" then
-					health.value:SetFormattedText("%s/%s | %.1f%%", ShortValue(min),ShortValue(max), healthPercent)
+					health.value:SetFormattedText("%s/%s | %.1f%%", AbbreviateNumbers(min),AbbreviateNumbers(max), healthPercent)
 				elseif health.value.Format == "Standard" then
 					health.value:SetFormattedText("%s", min)
 				elseif health.value.Format == "Standard & Percent" then
 					health.value:SetFormattedText("%s | %.1f%%", min, healthPercent)
 				elseif health.value.Format == "Standard Short" then
-					health.value:SetFormattedText("%s", ShortValue(min))
+					health.value:SetFormattedText("%s", AbbreviateNumbers(min))
 				elseif health.value.Format == "Standard Short & Percent" then
-					health.value:SetFormattedText("%s | %.1f%%", ShortValue(min), healthPercent)
+					health.value:SetFormattedText("%s | %.1f%%", AbbreviateNumbers(min), healthPercent)
 				else
 					health.value:SetFormattedText("%s", min)
 				end
@@ -374,7 +364,7 @@ local function OverrideHealth(self, event, unit, powerType)
 
 			if healthMissing > 0 or health.valueMissing.ShowAlways == true then
 				if health.valueMissing.ShortValue == true then
-					health.valueMissing:SetFormattedText("-%s", ShortValue(healthMissing))
+					health.valueMissing:SetFormattedText("-%s", AbbreviateNumbers(healthMissing))
 				else
 					health.valueMissing:SetFormattedText("-%s", healthMissing)
 				end
@@ -484,17 +474,17 @@ local function OverridePower(self, event, unit)
 			elseif power.value.Format == "Absolut & Percent" then
 				power.value:SetFormattedText("%d/%d | %.1f%%", min, max, powerPercent)
 			elseif power.value.Format == "Absolut Short" then
-				power.value:SetFormattedText("%s/%s", ShortValue(min), ShortValue(max))
+				power.value:SetFormattedText("%s/%s", AbbreviateNumbers(min), AbbreviateNumbers(max))
 			elseif power.value.Format == "Absolut Short & Percent" then
-				power.value:SetFormattedText("%s/%s | %.1f%%", ShortValue(min), ShortValue(max), powerPercent)
+				power.value:SetFormattedText("%s/%s | %.1f%%", AbbreviateNumbers(min), AbbreviateNumbers(max), powerPercent)
 			elseif power.value.Format == "Standard" then
 				power.value:SetFormattedText("%d", min)
 			elseif power.value.Format == "Standard & Percent" then
 				power.value:SetFormattedText("%d | %.1f%%", min, powerPercent)
 			elseif power.value.Format == "Standard Short" then
-				power.value:SetFormattedText("%s", ShortValue(min))
+				power.value:SetFormattedText("%s", AbbreviateNumbers(min))
 			elseif power.value.Format == "Standard Short" then
-				power.value:SetFormattedText("%s | %.1f%%", ShortValue(min), powerPercent)
+				power.value:SetFormattedText("%s | %.1f%%", AbbreviateNumbers(min), powerPercent)
 			else
 				power.value:SetFormattedText("%d", min)
 			end
@@ -534,7 +524,7 @@ local function OverridePower(self, event, unit)
 			if (power.valueMissing.ShowFull == false and min == max) or (power.valueMissing.ShowEmpty == false and min == 0) then
 				power.valueMissing:SetText("")
 			elseif power.valueMissing.ShortValue == true then
-				power.valueMissing:SetFormattedText("-%s", ShortValue(powerMissing))
+				power.valueMissing:SetFormattedText("-%s", AbbreviateNumbers(powerMissing))
 			else
 				power.valueMissing:SetFormattedText("-%d", powerMissing)
 			end
