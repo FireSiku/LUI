@@ -372,7 +372,7 @@ function module.OnStatusBarValueChanged(frame, value_)
 		local minValue, maxValue = UnitHealth(unit), UnitHealthMax(unit)
 		if UnitIsGhost(unit) then
 			frame.text:SetText(L["Tooltip_Ghost"])
-		elseif minValue == 0 or UnitIsDead(unit) then
+		elseif UnitIsDead(unit) then
 			frame.text:SetText(_G.DEAD)
 		else
 			frame.text:SetFormattedText("%s / %s", BreakUpLargeNumbers(minValue), BreakUpLargeNumbers(maxValue))
