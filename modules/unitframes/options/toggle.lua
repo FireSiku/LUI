@@ -301,17 +301,17 @@ module.ToggleUnit = setmetatable({
 					self:UnregisterEvent("PLAYER_REGEN_ENABLED")
 
 					if dbUnit.Enable then
-						if dbUnit.ShowInRaid then
+						if dbUnit.ShowInRaid and UnitInParty("player") then
 							party:Show()
 						else
-							if not IsInRaid() then
+							if not IsInRaid() and UnitInParty("player") then
 								party:Show()
 							else
 								-- GetNumGroupMembers() - total number of players in the group (either party or raid), 0 if not in a group. 
 								-- GetNumSubgroupMembers() - number of players in the player's sub-group, excluding the player. 
 								local numraid = GetNumGroupMembers()
 								local numparty = GetNumSubgroupMembers()
-								if dbUnit.ShowInRealParty then
+								if dbUnit.ShowInRealParty and UnitInParty("player") then
 									if IsInRaid() then
 										party:Hide()
 									end
@@ -731,7 +731,7 @@ module.ToggleUnit = setmetatable({
 
 				oUF_LUI_raid:ClearAllPoints()
 				oUF_LUI_raid:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, dbUnit.X, dbUnit.Y)
-				oUF_LUI_raid:Show()
+				--oUF_LUI_raid:Show()
 
 				RegisterStateDriver(oUF_LUI_raid_25, "visibility", "[@raid26,exists] hide; show")
 				RegisterStateDriver(oUF_LUI_raid_40, "visibility", "[@raid26,exists] show; hide")
@@ -760,7 +760,7 @@ module.ToggleUnit = setmetatable({
 						]]
 					)
 					raid25table[i]:SetParent(raid25)
-					raid25table[i]:Show()
+					--raid25table[i]:Show()
 					if i == 1 then
 						raid25table[i]:SetPoint("TOPLEFT", raid25, "TOPLEFT", 0, 0)
 					else
@@ -790,7 +790,7 @@ module.ToggleUnit = setmetatable({
 						]]
 					)
 					raid40table[i]:SetParent(raid40)
-					raid40table[i]:Show()
+					--raid40table[i]:Show()
 					if i == 1 then
 						raid40table[i]:SetPoint("TOPLEFT", raid40, "TOPLEFT", 0, 0)
 					else

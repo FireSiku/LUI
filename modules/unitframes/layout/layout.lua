@@ -1669,7 +1669,7 @@ module.funcs = {
 			self.Totems.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
 			self.Totems.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
 
-			self.Totems.Override = TotemsOverride
+			--self.Totems.Override = TotemsOverride
 		end
 
 		local x = oufdb.TotemsBar.Lock and 0 or oufdb.TotemsBar.X
@@ -1943,7 +1943,7 @@ module.funcs = {
 			self.AdditionalPower:SetScript("OnHide", self.AdditionalPower.SetPosition)
 
 			self.AdditionalPower.PostUpdatePower = PostUpdateAdditionalPower
-			self.AdditionalPower.Override = AdditionalPowerOverride
+			--self.AdditionalPower.Override = AdditionalPowerOverride
 		end
 
 		self.AdditionalPower:ClearAllPoints()
@@ -2407,7 +2407,7 @@ module.funcs = {
 		self.ThreatIndicator[8]:SetPoint("TOPRIGHT", self.ThreatIndicator[2], "BOTTOMRIGHT")
 		self.ThreatIndicator[8]:SetPoint("BOTTOMRIGHT", self.ThreatIndicator[4], "TOPRIGHT")
 
-		self.ThreatIndicator.Override = ThreatOverride
+		--self.ThreatIndicator.Override = ThreatOverride
 	end,
 
 	HealthPrediction = function(self, unit, oufdb)
@@ -2712,8 +2712,8 @@ local function SetStyle(self, unit, isSingle)
 			outsideAlpha = 0.5
 		}
 	end
-	self.Health.Override = OverrideHealth
-	self.Power.Override = OverridePower
+	-- self.Health.Override = OverrideHealth
+	-- self.Power.Override = OverridePower
 
 	self.__unit = unit
 
