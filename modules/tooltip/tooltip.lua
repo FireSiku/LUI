@@ -315,7 +315,7 @@ end
 
 function module:SetBorderColor(frame)
 	if not frame.SetBackdropColor then return end
-	local unit = GetTooltipUnit(frame)
+	local unit = UnitExists("mouseover") and "mouseover" or nil
 	local health = GameTooltipStatusBar
 	local itemLink = (not unit and frame.GetItem) and select(2, frame:GetItem())
 
@@ -324,14 +324,15 @@ function module:SetBorderColor(frame)
 	health:SetStatusBarColor(module:RGB("Border"))
 
 	-- Tooltip is a player unit
-	if unit and UnitIsPlayer(unit) then
+	local playerUnit = UnitIsPlayer(unit)
+	if unit and not issecretvalue(playerUnit) and playerUnit then
 		local _, class = UnitClass(unit)
 		local r, g, b = module:RGB(class)
 		frame:SetBackdropBorderColor(r, g, b)
 		health:SetStatusBarColor(r, g, b)
 
 	-- Tooltip is a NPC unit
-	elseif unit and UnitReaction(unit, "player") then
+	elseif unit and not issecretvalue(UnitReaction(unit, "player")) and UnitReaction(unit, "player") then
 		local r, g, b = LUI:GetReactionColor(unit)
 		frame:SetBackdropBorderColor(r, g, b)
 		health:SetStatusBarColor(r, g, b)
