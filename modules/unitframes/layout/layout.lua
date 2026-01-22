@@ -761,27 +761,29 @@ local function PostCastStart(castbar, unit, name)
 		castbar.bg:SetVertexColor(0.15, 0.15, 0.15, 0.75)
 		castbar.Backdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 	end
-	if castbar.notInterruptible and castbar.Shielded.Enable and UnitIsEnemy("player", unit) then
-		if castbar.Shielded.IndividualColor then
-			castbar:SetStatusBarColor(castbar.Shielded.BarColor.r, castbar.Shielded.BarColor.g, castbar.Shielded.BarColor.b, castbar.Shielded.BarColor.a)
-		end
-		if castbar.Shielded.IndividualBorder then
-			castbar.Backdrop:SetBackdrop({
-				edgeFile = Media:Fetch("border", castbar.Shielded.Texture),
-				edgeSize = castbar.Shielded.Thick,
-				insets = {
-					left = castbar.Shielded.Inset.L,
-					right = castbar.Shielded.Inset.R,
-					top = castbar.Shielded.Inset.T,
-					bottom = castbar.Shielded.Inset.B,
-				},
-			})
-			castbar.Backdrop:SetBackdropBorderColor(castbar.Shielded.Color.r, castbar.Shielded.Color.g, castbar.Shielded.Color.b, castbar.Shielded.Color.a)
-		end
-		if castbar.Shielded.Text then
-			castbar.Text:SetText(format("%s ** Shielded **", tostring(name)))
-		end
-	end
+	-- NEED TO REWRITE SHIELDED ELEMENT TO BE ALPHA BASED.
+	-- Then use element.Shield:SetAlphaFromBoolean(castbar.otInterruptible, 1, 0)
+	-- if castbar.notInterruptible and castbar.Shielded.Enable and UnitIsEnemy("player", unit) then
+	-- 	if castbar.Shielded.IndividualColor then
+	-- 		castbar:SetStatusBarColor(castbar.Shielded.BarColor.r, castbar.Shielded.BarColor.g, castbar.Shielded.BarColor.b, castbar.Shielded.BarColor.a)
+	-- 	end
+	-- 	if castbar.Shielded.IndividualBorder then
+	-- 		castbar.Backdrop:SetBackdrop({
+	-- 			edgeFile = Media:Fetch("border", castbar.Shielded.Texture),
+	-- 			edgeSize = castbar.Shielded.Thick,
+	-- 			insets = {
+	-- 				left = castbar.Shielded.Inset.L,
+	-- 				right = castbar.Shielded.Inset.R,
+	-- 				top = castbar.Shielded.Inset.T,
+	-- 				bottom = castbar.Shielded.Inset.B,
+	-- 			},
+	-- 		})
+	-- 		castbar.Backdrop:SetBackdropBorderColor(castbar.Shielded.Color.r, castbar.Shielded.Color.g, castbar.Shielded.Color.b, castbar.Shielded.Color.a)
+	-- 	end
+	-- 	if castbar.Shielded.Text then
+	-- 		castbar.Text:SetText(format("%s ** Shielded **", tostring(name)))
+	-- 	end
+	-- end
 end
 
 --- Castbar callback after a cast starts
