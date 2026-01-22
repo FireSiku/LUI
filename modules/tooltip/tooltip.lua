@@ -183,12 +183,11 @@ end
 -- Get a unit token out of a tooltip frame for use in many Unit functions.
 local function GetTooltipUnit(frame)
 	if not frame.GetUnit then return end
-	local _, unit = frame:GetUnit()
+	--local _, unit = frame:GetUnit() -- Do not use GetUnit because unit is secret
 	-- If GetUnit fails, look for a mouseover target.
-	if not unit and UnitExists("mouseover") then
+	if UnitExists("mouseover") then
 		return "mouseover"
 	end
-	return unit
 end
 
 function module:UpdateTooltipBackdrop(frame)
@@ -369,13 +368,12 @@ function module.OnStatusBarValueChanged(frame, value_)
 	end
 
 	if unit then
-		local minValue, maxValue = UnitHealth(unit), UnitHealthMax(unit)
 		if UnitIsGhost(unit) then
 			frame.text:SetText(L["Tooltip_Ghost"])
 		elseif UnitIsDead(unit) then
 			frame.text:SetText(_G.DEAD)
 		else
-			frame.text:SetFormattedText("%s / %s", BreakUpLargeNumbers(minValue), BreakUpLargeNumbers(maxValue))
+			frame.text:SetFormattedText("%s / %s", BreakUpLargeNumbers(UnitHealth(unit)), BreakUpLargeNumbers(UnitHealthMax(unit)))
 		end
 		frame:Show()
 	else
@@ -406,6 +404,7 @@ end
 ---@param frame GameTooltip
 ---@param data TooltipData
 function module.OnGameTooltipSetUnit(frame, data)
+	if frame:IsForbidden() then return end
 	-- luacheck: globals GameTooltipTextLeft1 GameTooltipTextLeft2
 	
 	-- We're only interested in setting up the GameTooltip itself, not all frames of that type.
@@ -414,9 +413,11 @@ function module.OnGameTooltipSetUnit(frame, data)
 	if db.HideCombatUnit and InCombatLockdown() then
 		return frame:Hide()
 	end
+	local unit = "mouseover"
+	if not UnitExists(unit) then return end
 
-	local unit = UnitTokenFromGUID(data.guid)
-	if not unit then return frame:Hide() end
+	-- local unit = UnitTokenFromGUID(data.guid)
+	-- if not unit then return frame:Hide() end
 
 	-- Hide tooltip on unitframes if that option is enabled
 	if frame:GetOwner() == UIParent and db.HideUF then
@@ -464,33 +465,38 @@ function module.OnGameTooltipSetUnit(frame, data)
 		local line = _G["GameTooltipTextLeft"..i]
 		local text = line and line:GetText()
 		if text then
-			-- Level line for players
-			if text:find(LEVEL) and race then
-				local levelString = (level > 0 and level) or "??"
-				local levelText = diffColor:WrapTextInColorCode(levelString)
-				local classText = unitColor:WrapTextInColorCode(localizedClass)
-				local sexString = (db.ShowSex) and LUI.GENDERS[sex].." " or ""
-				line:SetFormattedText("%s %s%s %s", levelText, sexString, race, classText)
-
-			-- Level line for creatures
-			elseif text:find(LEVEL) or (creatureType and text:find(creatureType)) then
-				--HACK: Not sure if needed anymore.
-				--if level == -1 and classification == "elite" then classification = "worldboss" end
-				if text:find(BOSS) then
-					-- Always color world bosses as skulls.
-					classification = "worldboss"
-					diffColor:SetRGB(module:RGB("DiffSkull"))
-				end
-
-				local levelString = (level > 0 and level) or ""
-				local levelText = diffColor:WrapTextInColorCode(levelString)
-				local classificationString = diffColor:WrapTextInColorCode(MOB_CLASSIFICATION[classification])
-				line:SetFormattedText("%s%s %s", levelText, classificationString, creatureType or "")
-			-- Remove the PVP line if the option is set
-			elseif text == PVP_ENABLED and db.HidePVP then
-				line:SetText("")
-			end
+			line:SetFormattedText("%s", text)
 		end
+
+		-- if text then
+		-- 	-- Level line for players
+		-- 	-- if text:find(LEVEL) and race then
+		-- 	if race then
+		-- 		local levelString = (level > 0 and level) or "??"
+		-- 		local levelText = diffColor:WrapTextInColorCode(levelString)
+		-- 		local classText = unitColor:WrapTextInColorCode(localizedClass)
+		-- 		local sexString = (db.ShowSex) and LUI.GENDERS[sex].." " or ""
+		-- 		line:SetFormattedText("%s %s%s %s", levelText, sexString, race, classText)
+
+		-- 	-- Level line for creatures
+		-- 	-- elseif text:find(LEVEL) or (creatureType and text:find(creatureType)) then
+		-- 	elseif creatureType then
+		-- 		-- Need to find a new way to detect world bosses
+		-- 		-- if text:find(BOSS) then
+		-- 		-- 	-- Always color world bosses as skulls.
+		-- 		-- 	classification = "worldboss"
+		-- 		-- 	diffColor:SetRGB(module:RGB("DiffSkull"))
+		-- 		-- end
+
+		-- 		local levelString = (level > 0 and level) or ""
+		-- 		local levelText = diffColor:WrapTextInColorCode(levelString)
+		-- 		local classificationString = diffColor:WrapTextInColorCode(MOB_CLASSIFICATION[classification])
+		-- 		line:SetFormattedText("%s%s %s", levelText, classificationString, creatureType or "")
+		-- 	-- Remove the PVP line if the option is set
+		-- 	elseif text == PVP_ENABLED and db.HidePVP then
+		-- 		line:SetText("")
+		-- 	end
+		-- end
 	end
 
 	--Add ToT Line
