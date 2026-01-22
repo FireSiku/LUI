@@ -261,7 +261,7 @@ module.ToggleUnit = setmetatable({
 				end
 				oUF_LUI_party.handler:GetScript("OnEvent")(oUF_LUI_party.handler)
 			else
-				local party = oUF:SpawnHeader("oUF_LUI_party", nil, nil,
+				local party = oUF:SpawnHeader("oUF_LUI_party", nil,
 					"showParty", true,
 					"showPlayer", dbUnit.ShowPlayer,
 					"showSolo", false,
@@ -731,7 +731,7 @@ module.ToggleUnit = setmetatable({
 
 				oUF_LUI_raid:ClearAllPoints()
 				oUF_LUI_raid:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, dbUnit.X, dbUnit.Y)
-				--oUF_LUI_raid:Show()
+				oUF_LUI_raid:Show()
 
 				RegisterStateDriver(oUF_LUI_raid_25, "visibility", "[@raid26,exists] hide; show")
 				RegisterStateDriver(oUF_LUI_raid_40, "visibility", "[@raid26,exists] show; hide")
@@ -748,7 +748,7 @@ module.ToggleUnit = setmetatable({
 				RegisterStateDriver(raid25, "visibility", "[@raid26,exists] hide; show")
 				local raid25table = {}
 				for i = 1, 5 do
-					raid25table[i] = oUF:SpawnHeader("oUF_LUI_raid_25_"..i, nil, nil,
+					raid25table[i] = oUF:SpawnHeader("oUF_LUI_raid_25_"..i, nil,
 						"showRaid", true,
 						"showPlayer", true,
 						"showSolo", true,
@@ -760,7 +760,7 @@ module.ToggleUnit = setmetatable({
 						]]
 					)
 					raid25table[i]:SetParent(raid25)
-					--raid25table[i]:Show()
+					raid25table[i]:Show()
 					if i == 1 then
 						raid25table[i]:SetPoint("TOPLEFT", raid25, "TOPLEFT", 0, 0)
 					else
@@ -778,7 +778,7 @@ module.ToggleUnit = setmetatable({
 
 				local raid40table = {}
 				for i = 1, 8 do
-					raid40table[i] = oUF:SpawnHeader("oUF_LUI_raid_40_"..i, nil, nil,
+					raid40table[i] = oUF:SpawnHeader("oUF_LUI_raid_40_"..i, nil,
 						"showRaid", true,
 						"showPlayer", true,
 						"showSolo", true,
@@ -790,7 +790,7 @@ module.ToggleUnit = setmetatable({
 						]]
 					)
 					raid40table[i]:SetParent(raid40)
-					--raid40table[i]:Show()
+					raid40table[i]:Show()
 					if i == 1 then
 						raid40table[i]:SetPoint("TOPLEFT", raid40, "TOPLEFT", 0, 0)
 					else
