@@ -155,7 +155,9 @@ end
 TagEvents["NameShort"] = "UNIT_NAME_UPDATE"
 function TagMethods.NameShort(unit)
 	local name = UnitName(unit)
-	if name then
+	if name and issecretvalue(name) then
+		return name
+	elseif name then
 		if unit == "pet" and name == "Unknown" then
 			return "Pet"
 		else
@@ -167,7 +169,9 @@ end
 TagEvents["NameMedium"] = "UNIT_NAME_UPDATE"
 function TagMethods.NameMedium(unit)
 	local name = UnitName(unit)
-	if name then
+	if name and issecretvalue(name) then
+		return name
+	elseif name then
 		if unit == "pet" and name == "Unknown" then
 			return "Pet"
 		else
@@ -179,7 +183,9 @@ end
 TagEvents["NameLong"] = "UNIT_NAME_UPDATE"
 function TagMethods.NameLong(unit)
 	local name = UnitName(unit)
-	if name then
+	if name and issecretvalue(name) then
+		return name
+	elseif name then
 		if unit == "pet" and name == "Unknown" then
 			return "Pet"
 		else
@@ -191,13 +197,13 @@ end
 TagEvents["RaidName25"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
 function TagMethods.RaidName25(unit, relativeUnit)
 	if module.db.profile and module.db.profile.raid.NameText.ShowDead then
-		if not UnitIsConnected(unit) then
+		if not issecretvalue(UnitIsConnected(unit)) and not UnitIsConnected(unit) then
 			return "|cffD7BEA5<Offline>|r"
-		elseif UnitIsGhost(unit) then
+		elseif not issecretvalue(UnitIsGhost(unit)) and UnitIsGhost(unit) then
 			return "|cffD7BEA5<Ghost>|r"
-		elseif UnitIsDead(unit) then
+		elseif not issecretvalue(UnitIsDead(unit)) and UnitIsDead(unit) then
 			return "|cffD7BEA5<Dead>|r"
-		elseif UnitIsAFK(unit) then
+		elseif not issecretvalue(UnitIsAFK(unit)) and UnitIsAFK(unit) then
 			return "|cffD7BEA5<AFK>|r"
 		end
 	end
@@ -209,13 +215,13 @@ end
 TagEvents["RaidName40"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
 function TagMethods.RaidName40(unit, relativeUnit)
 	if module.db.profile and module.db.profile.raid.NameText.ShowDead then
-		if not UnitIsConnected(unit) then
+		if not issecretvalue(UnitIsConnected(unit)) and not UnitIsConnected(unit) then
 			return "|cffD7BEA5<Offline>|r"
-		elseif UnitIsGhost(unit) then
+		elseif not issecretvalue(UnitIsGhost(unit)) and UnitIsGhost(unit) then
 			return "|cffD7BEA5<Ghost>|r"
-		elseif UnitIsDead(unit) then
+		elseif not issecretvalue(UnitIsDead(unit)) and UnitIsDead(unit) then
 			return "|cffD7BEA5<Dead>|r"
-		elseif UnitIsAFK(unit) then
+		elseif not issecretvalue(UnitIsAFK(unit)) and UnitIsAFK(unit) then
 			return "|cffD7BEA5<AFK>|r"
 		end
 	end
