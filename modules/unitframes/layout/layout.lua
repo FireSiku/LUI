@@ -539,11 +539,7 @@ local function OverridePower(self, event, unit)
 		end
 
 		if power.valuePercent.Enable == true then
-			if (power.valuePercent.ShowFull == false and current == max) or (power.valuePercent.ShowEmpty == false and current == 0) then
-				power.valuePercent:SetText("")
-			else
-				power.valuePercent:SetFormattedText("%.1f%%", powerPercent)
-			end
+			power.valuePercent:SetFormattedText("%.1f%%", powerPercent)
 
 			if power.valuePercent.color == "By Class" then
 				power.valuePercent:SetTextColor(unpack(color))
@@ -567,11 +563,9 @@ local function OverridePower(self, event, unit)
 		end
 
 		if power.valueMissing.Enable == true then
-			local powerMissing = max-current
+			local powerMissing = UnitPowerMissing(unit, pType)
 
-			if (power.valueMissing.ShowFull == false and current == max) or (power.valueMissing.ShowEmpty == false and current == 0) then
-				power.valueMissing:SetText("")
-			elseif power.valueMissing.ShortValue == true then
+			if power.valueMissing.ShortValue == true then
 				power.valueMissing:SetFormattedText("-%s", AbbreviateNumbers(powerMissing))
 			else
 				power.valueMissing:SetFormattedText("-%d", powerMissing)
