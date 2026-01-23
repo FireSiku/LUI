@@ -270,7 +270,7 @@ local function OverrideHealth(self, event, unit, powerType)
 	health.disconnected = disconnected
 
 	local _, pToken = UnitClass(unit)
-	local color = module.colors.class[pToken] or {0.5, 0.5, 0.5}
+	local color = {LUI:GetClassColor(pToken)}
 
 	if health.color == "By Class" then
 		if UnitIsPlayer(unit) then
@@ -455,9 +455,8 @@ local function OverridePower(self, event, unit)
 
 	local pType, pName = UnitPowerType(unit)
 	local pClass, pToken = UnitClass(unit)
-	local color = module.colors.class[pToken] or {0.5, 0.5, 0.5}
-	local color2 = module.colors.power[pName] or {0.5, 0.5, 0.5}
-	-- local _, r, g, b = UnitAlternatePowerTextureInfo(unit, 2)
+	local color = {LUI:GetClassColor(pToken)}
+	local color2 = {LUI:GetFallbackRGB(pName)}
 
 	if power.color == "By Class" then
 		power:SetStatusBarColor(unpack(color))
@@ -749,7 +748,7 @@ local function PostCastStart(castbar, unit, name)
 	else
 		if unit == "pet" then unit = "player" end
 		local pClass, pToken = UnitClass(unit)
-		local color = module.colors.class[pToken]
+		local color = {LUI:GetClassColor(pToken)}
 
 		castbar:SetStatusBarColor(color[1], color[2], color[3], 0.68)
 		castbar.bg:SetVertexColor(0.15, 0.15, 0.15, 0.75)
@@ -959,7 +958,7 @@ local function AdditionalPowerOverride(self, event, unit)
 
 	local r, g, b
 	if(additionalpower.colorClass and UnitIsPlayer(unit)) then
-		r, g, b = unpack(module.colors.class[class])
+		r, g, b = LUI:GetClassColor(class)
 	elseif(additionalpower.colorSmooth) then
 		r, g, b = oUF.ColorGradient(cur, max, module.colors.smooth())
 	else
@@ -981,7 +980,7 @@ local function AdditionalPowerOverride(self, event, unit)
 end
 
 local function PostUpdateAlternativePower(altpowerbar, unit, cur, min, max)
-	local color = module.colors.class[LUI.playerClass] or {0.5, 0.5, 0.5}
+	local color = {LUI:GetClassColor(LUI.playerClass)}
 
 	local tex, r, g, b = GetUnitPowerBarTextureInfo("player", 3)
 
@@ -1028,7 +1027,7 @@ end
 local function PostUpdateAdditionalPower(additionalpower, unit, cur, max)
 	local _, class = UnitClass(unit)
 	if additionalpower.color == "By Class" then
-		additionalpower:SetStatusBarColor(unpack(module.colors.class[class]))
+		additionalpower:SetStatusBarColor(LUI:GetClassColor(class))
 	elseif additionalpower.color == "By Type" then
 		additionalpower:SetStatusBarColor(unpack(module.colors.power.MANA))
 	else

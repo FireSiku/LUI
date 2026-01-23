@@ -103,8 +103,8 @@ function TagMethods.GetNameColor(unit)
 	local reaction = UnitReaction(unit, "player")
 	local pClass, pToken = UnitClass(unit)
 	local pClass2, pToken2 = UnitPowerType(unit)
-	local color = module.colors.class[pToken]
-	local color2 = module.colors.power[pToken2]
+	local color = {LUI:GetClassColor(pToken)}
+	local color2 = {LUI:GetFallbackRGB(pToken2)}
 	
 	if UnitIsPlayer(unit) then
 		if color then
@@ -243,8 +243,8 @@ function TagMethods.additionalpower2(unit)
 
 	local _, pType = UnitPowerType(unit)
 	local pClass, pToken = UnitClass(unit)
-	local color = module.colors.class[pToken]
-	local color2 = module.colors.power[pType]
+	local color = {LUI:GetClassColor(pToken)}
+	local color2 = {LUI:GetFallbackRGB(pType)}
 
 	local r, g, b, text
 
