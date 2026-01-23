@@ -2027,54 +2027,54 @@ module.funcs = {
 		end
 	end,
 
-	-- raid specific
-	SingleAuras = function(self, unit, oufdb)
-		if not cornerAuras[LUI.playerClass] then return end
-		if not self.SingleAuras then self.SingleAuras = {} end
+	-- -- raid specific
+	-- SingleAuras = function(self, unit, oufdb)
+	-- 	if not cornerAuras[LUI.playerClass] then return end
+	-- 	if not self.SingleAuras then self.SingleAuras = {} end
 
-		for k, data in pairs(cornerAuras[LUI.playerClass]) do
-			local spellId, onlyPlayer, isDebuff = unpack(data)
-			local spellName = C_Spell.GetSpellName(spellId)
+	-- 	for k, data in pairs(cornerAuras[LUI.playerClass]) do
+	-- 		local spellId, onlyPlayer, isDebuff = unpack(data)
+	-- 		local spellName = C_Spell.GetSpellName(spellId)
 
-			local x = k:find("RIGHT") and - oufdb.CornerAura.Inset or oufdb.CornerAura.Inset
-			local y = k:find("TOP") and - oufdb.CornerAura.Inset or oufdb.CornerAura.Inset
+	-- 		local x = k:find("RIGHT") and - oufdb.CornerAura.Inset or oufdb.CornerAura.Inset
+	-- 		local y = k:find("TOP") and - oufdb.CornerAura.Inset or oufdb.CornerAura.Inset
 
-			if not self.SingleAuras[k] then
-				self.SingleAuras[k] = CreateFrame("Frame", nil, self)
-				self.SingleAuras[k]:SetFrameLevel(7)
-			end
+	-- 		if not self.SingleAuras[k] then
+	-- 			self.SingleAuras[k] = CreateFrame("Frame", nil, self)
+	-- 			self.SingleAuras[k]:SetFrameLevel(7)
+	-- 		end
 
-			self.SingleAuras[k].spellName = spellName
-			self.SingleAuras[k].onlyPlayer = onlyPlayer
-			self.SingleAuras[k].isDebuff = isDebuff
-			self.SingleAuras[k]:SetWidth(oufdb.CornerAura.Size)
-			self.SingleAuras[k]:SetHeight(oufdb.CornerAura.Size)
-			self.SingleAuras[k]:ClearAllPoints()
-			self.SingleAuras[k]:SetPoint(k, self, k, x, y)
-		end
-	end,
-	RaidDebuffs = function(self, unit, oufdb)
-		if not self.RaidDebuffs then
-			self.RaidDebuffs = CreateFrame("Frame", nil, self, "BackdropTemplate")
-			self.RaidDebuffs:SetPoint("CENTER", self, "CENTER", 0, 0)
-			self.RaidDebuffs:SetFrameLevel(7)
+	-- 		self.SingleAuras[k].spellName = spellName
+	-- 		self.SingleAuras[k].onlyPlayer = onlyPlayer
+	-- 		self.SingleAuras[k].isDebuff = isDebuff
+	-- 		self.SingleAuras[k]:SetWidth(oufdb.CornerAura.Size)
+	-- 		self.SingleAuras[k]:SetHeight(oufdb.CornerAura.Size)
+	-- 		self.SingleAuras[k]:ClearAllPoints()
+	-- 		self.SingleAuras[k]:SetPoint(k, self, k, x, y)
+	-- 	end
+	-- end,
+	-- RaidDebuffs = function(self, unit, oufdb)
+	-- 	if not self.RaidDebuffs then
+	-- 		self.RaidDebuffs = CreateFrame("Frame", nil, self, "BackdropTemplate")
+	-- 		self.RaidDebuffs:SetPoint("CENTER", self, "CENTER", 0, 0)
+	-- 		self.RaidDebuffs:SetFrameLevel(7)
 
-			self.RaidDebuffs:SetBackdrop({
-				bgFile = [=[Interface\ChatFrame\ChatFrameBackground]=],
-				insets = {top = -1, left = -1, bottom = -1, right = -1},
-			})
+	-- 		self.RaidDebuffs:SetBackdrop({
+	-- 			bgFile = [=[Interface\ChatFrame\ChatFrameBackground]=],
+	-- 			insets = {top = -1, left = -1, bottom = -1, right = -1},
+	-- 		})
 
-			self.RaidDebuffs.icon = self.RaidDebuffs:CreateTexture(nil, "OVERLAY")
-			self.RaidDebuffs.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
-			self.RaidDebuffs.icon:SetAllPoints(self.RaidDebuffs)
+	-- 		self.RaidDebuffs.icon = self.RaidDebuffs:CreateTexture(nil, "OVERLAY")
+	-- 		self.RaidDebuffs.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
+	-- 		self.RaidDebuffs.icon:SetAllPoints(self.RaidDebuffs)
 
-			self.RaidDebuffs.cd = CreateFrame("Cooldown", nil, self.RaidDebuffs)
-			self.RaidDebuffs.cd:SetAllPoints(self.RaidDebuffs)
-		end
+	-- 		self.RaidDebuffs.cd = CreateFrame("Cooldown", nil, self.RaidDebuffs)
+	-- 		self.RaidDebuffs.cd:SetAllPoints(self.RaidDebuffs)
+	-- 	end
 
-		self.RaidDebuffs:SetHeight(oufdb.RaidDebuff.Size)
-		self.RaidDebuffs:SetWidth(oufdb.RaidDebuff.Size)
-	end,
+	-- 	self.RaidDebuffs:SetHeight(oufdb.RaidDebuff.Size)
+	-- 	self.RaidDebuffs:SetWidth(oufdb.RaidDebuff.Size)
+	-- end,
 
 	-- others
 	Portrait = function(self, unit, oufdb)
@@ -2684,8 +2684,8 @@ local function SetStyle(self, unit, isSingle)
 	------------------------------------------------------------------------
 
 	if unit == "raid" then
-		if oufdb.CornerAura.Enable then module.funcs.SingleAuras(self, unit, oufdb) end
-		if oufdb.RaidDebuff.Enable then module.funcs.RaidDebuffs(self, unit, oufdb) end
+		--if oufdb.CornerAura.Enable then module.funcs.SingleAuras(self, unit, oufdb) end
+		--if oufdb.RaidDebuff.Enable then module.funcs.RaidDebuffs(self, unit, oufdb) end
 	end
 	
 	------------------------------------------------------------------------

@@ -164,7 +164,7 @@ modules\unitframes\options\toggle.lua
 
 ### LUI Unitframe Additions ###
 modules\unitframes\plugins\oUF_CombatFeedback.lua
-modules\unitframes\plugins\oUF_RaidDebuffs.lua
+## modules\unitframes\plugins\oUF_RaidDebuffs.lua
 
 ### Unitframe Layout ###
 modules\unitframes\layout\tags.lua
