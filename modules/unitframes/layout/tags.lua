@@ -107,20 +107,20 @@ function TagMethods.GetNameColor(unit)
 	local color2 = {LUI:GetFallbackRGB(pToken2)}
 	
 	if UnitIsPlayer(unit) then
-		if color then
+		if color and next(color) then
 			return string.format("|cff%02x%02x%02x", color[1] * 255, color[2] * 255, color[3] * 255)
 		else
-			if color2 then
+			if color2 and next(color2) then
 				return string.format("|cff%02x%02x%02x", color2[1] * 255, color2[2] * 255, color2[3] * 255)
 			else
 				return string.format("|cff%02x%02x%02x", 0.8 * 255, 0.8 * 255, 0.8 * 255)
 			end
 		end
 	else
-		if color2 then
+		if color2 and next(color2) then
 			return string.format("|cff%02x%02x%02x", color2[1] * 255, color2[2] * 255, color2[3] * 255)
 		else
-			if color then
+			if color and next(color) then
 				return string.format("|cff%02x%02x%02x", color[1] * 255, color[2] * 255, color[3] * 255)
 			else
 				return string.format("|cff%02x%02x%02x", 0.8 * 255, 0.8 * 255, 0.8 * 255)
