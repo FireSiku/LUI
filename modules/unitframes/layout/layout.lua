@@ -35,10 +35,10 @@ local ALT_POWER_BAR_PAIR_DISPLAY_INFO = _G.ALT_POWER_BAR_PAIR_DISPLAY_INFO
 local ADDITIONAL_POWER_BAR_INDEX = _G.ADDITIONAL_POWER_BAR_INDEX
 local MAX_TOTEMS = _G.MAX_TOTEMS
 
-local EVOKER_DPS_POWER_NEXUS_NODE = 68574
+local EVOKER_DPS_POWER_NEXUS_NODE = 93276
 local EVOKER_AUG_POWER_NEXUS_NODE = 93201
 local EVOKER_HEAL_POWER_NEXUS_NODE = 93249
-local MONK_ASCENSION_NODE = 80612
+local MONK_ASCENSION_NODE = 101037
 local ROGUE_SECRET_STRATEGEM_NODE = 90722
 local ROGUE_DEEPER_STRATAGEM_NODE = 90750
 local ROGUE_DEEPER_STRATAGEM_ENTRY = 112642
@@ -208,9 +208,11 @@ local function utf8sub(string, i, dots)
 	end
 end
 
-function module:DebugTalents()
+function LUI:DebugTalents()
 	local configId = C_ClassTalents.GetActiveConfigID()
 	local configInfo = C_Traits.GetConfigInfo(configId)
+	LUI:Print("---Talents---")
+	if not LUI_Talents then LUI_Talents = {} end
 	for i, treeId in ipairs(configInfo.treeIDs) do
 		local nodes = C_Traits.GetTreeNodes(treeId)
 		for ii, nodeId in ipairs(nodes) do
@@ -221,11 +223,17 @@ function module:DebugTalents()
 					local definitionInfo = C_Traits.GetDefinitionInfo(entryInfo.definitionID)
 					local rank = node.activeRank
 					local spellId = definitionInfo.spellID
-					local spellName, _, icon = C_Spell.GetSpellName(spellId)
+					local spellName, _, icon = spellId and C_Spell.GetSpellName(spellId) or "Unknown"
 					if node.activeEntry and node.activeEntry.entryID ~= entryId then
 						rank = 0
 					end
 					LUI:Print(spellName, "NodeId", nodeId, "EntryId", entryId, "Rank:", rank)
+					LUI_Talents[spellName] = {
+						nodeId = nodeId,
+						entryId = entryId,
+						rank = rank,
+						spellId = spellId,
+					}
 				end
 			end
 		end
