@@ -678,7 +678,7 @@ function module:SetHyperlink(frame, link, ...)
 end
 
 function module:AddMessage(frame, text, ...)
-	if text then
+	if text and not issecretvalue(text) then
 		if text:match("|Hchannel:") then
 			text = gsub(text, "|Hchannel:(%S-)|h(%[([%d. ]*)([^%]]+)%])|h ", replaceChannel)
 		elseif text:match("WHISPER:.-|h") then
