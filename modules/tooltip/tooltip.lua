@@ -181,11 +181,15 @@ end
 -- ####################################################################################################################
 
 -- Get a unit token out of a tooltip frame for use in many Unit functions.
-local function GetTooltipUnit(frame)
-	if not frame.GetUnit then return end
-	--local _, unit = frame:GetUnit() -- Do not use GetUnit because unit is secret
-	-- If GetUnit fails, look for a mouseover target.
-	if UnitExists("mouseover") then
+
+--- Get a unit token out of a tooltip frame for use in many Unit functions. Returns "mouseover" if the unit is secret.
+---@param data TooltipData
+---@return string?
+function module:GetTooltipUnit(data)
+	local unit = data.guid and UnitTokenFromGUID(data.guid)
+	if unit and not issecretvalue(unit) then
+		return unit
+	elseif UnitExists("mouseover") then
 		return "mouseover"
 	end
 end
@@ -315,36 +319,45 @@ end
 
 function module:SetBorderColor(frame)
 	if not frame.SetBackdropColor then return end
-	local unit = UnitExists("mouseover") and "mouseover" or nil
+	
 	local health = GameTooltipStatusBar
-	local itemLink = (not unit and frame.GetItem) and select(2, frame:GetItem())
-
+	local tooltipData = frame.GetTooltipData and frame:GetTooltipData()
+	local tooltipType = tooltipData and tooltipData.type
 	frame:SetBackdropColor(module:RGB("Background"))
 	frame:SetBackdropBorderColor(module:RGB("Border"))
 	health:SetStatusBarColor(module:RGB("Border"))
 
-	-- Tooltip is a player unit
-	local playerUnit = UnitIsPlayer(unit)
-	if unit and not issecretvalue(playerUnit) and playerUnit then
-		local _, class = UnitClass(unit)
-		local r, g, b = module:RGB(class)
-		frame:SetBackdropBorderColor(r, g, b)
-		health:SetStatusBarColor(r, g, b)
+	if not issecretvalue(tooltipType) then
+		
+		if tooltipType == Enum.TooltipDataType.Unit then
+			local unit = module:GetTooltipUnit(tooltipData)
+			local playerUnit = UnitIsPlayer(unit)
+			local reaction = unit and UnitReaction(unit, "player")
+			if not issecretvalue(playerUnit) and playerUnit then
+				-- Tooltip is a Player
+				local _, class = UnitClass(unit)
+				local r, g, b = module:RGB(class)
+				frame:SetBackdropBorderColor(r, g, b)
+				health:SetStatusBarColor(r, g, b)
+			elseif not issecretvalue(reaction) and reaction then
+				-- Tooltip is an NPC
+				local r, g, b = LUI:GetReactionColor(unit)
+				frame:SetBackdropBorderColor(r, g, b)
+				health:SetStatusBarColor(r, g, b)
+			end
 
-	-- Tooltip is a NPC unit
-	elseif unit and not issecretvalue(UnitReaction(unit, "player")) and UnitReaction(unit, "player") then
-		local r, g, b = LUI:GetReactionColor(unit)
-		frame:SetBackdropBorderColor(r, g, b)
-		health:SetStatusBarColor(r, g, b)
-
-	-- Tooltip is an item
-	elseif itemLink then
-		local _, _, quality = GetItemInfo(itemLink)
-		-- Only need to change border color for Uncommon and above.
-		if quality and quality >= 2 then
-			local r, g, b = GetItemQualityColor(quality)
-			frame:SetBackdropBorderColor(r, g, b)
+		elseif tooltipType == Enum.TooltipDataType.Item then
+			local itemLink = tooltipData.guid and C_Item.GetItemLinkByGUID(tooltipData.guid) or tooltipData.hyperlink
+			if itemLink then
+				local _, _, quality = GetItemInfo(itemLink)
+				-- Only need to change border color for Uncommon and above.
+				if quality and quality >= 2 then
+					local r, g, b = GetItemQualityColor(quality)
+					frame:SetBackdropBorderColor(r, g, b)
+				end
+			end
 		end
+
 	end
 end
 
@@ -359,7 +372,7 @@ end
 -- ####################################################################################################################
 
 function module.OnStatusBarValueChanged(frame, value_)
-	local unit = GetTooltipUnit(GameTooltip)
+	local unit = module:GetTooltipUnit(GameTooltip:GetTooltipData())
 	if not unit then return end
 
 	if not frame.text then
