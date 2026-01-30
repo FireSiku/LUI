@@ -186,6 +186,7 @@ end
 ---@param data TooltipData
 ---@return string?
 function module:GetTooltipUnit(data)
+	if not data then return end
 	local unit = data.guid and UnitTokenFromGUID(data.guid)
 	if unit and not issecretvalue(unit) then
 		return unit
@@ -427,11 +428,8 @@ function module.OnGameTooltipSetUnit(frame, data)
 	if db.HideCombatUnit and InCombatLockdown() then
 		return frame:Hide()
 	end
-	local unit = "mouseover"
-	if not UnitExists(unit) then return end
-
-	-- local unit = UnitTokenFromGUID(data.guid)
-	-- if not unit then return frame:Hide() end
+	local unit = module:GetTooltipUnit(data)
+	if not unit then return frame:Hide() end
 
 	-- Hide tooltip on unitframes if that option is enabled
 	if frame:GetOwner() == UIParent and db.HideUF then
