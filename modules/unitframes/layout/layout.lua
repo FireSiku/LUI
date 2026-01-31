@@ -303,7 +303,7 @@ local function OverrideHealth(self, event, unit, powerType)
 
 	if health.colorTapping and UnitIsTapDenied and UnitIsTapDenied(unit) then healthColorTex:SetVertexColor(unpack(module.db.profile.Colors.Misc["Tapped"])) end
 
-	local r, g, b = healthColorTex:GetVertexColor()
+	local r, g, b = health:GetStatusBarColor()
 	local mu = health.bg.multiplier or 1
 
 	if health.bg.invert == true then
@@ -478,7 +478,7 @@ local function OverridePower(self, event, unit)
 		powerColorTex:SetVertexColor(unpack(color2))
 	end
 
-	local r, g, b = powerColorTex:GetVertexColor()
+	local r, g, b = power:GetStatusBarColor()
 	local mu = power.bg.multiplier or 1
 
 	if power.bg.invert == true then
