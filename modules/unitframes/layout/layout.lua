@@ -752,7 +752,7 @@ local function PostCastStart(castbar, unit, name)
 	if castbar.Colors.Individual == true then
 		castbar:SetStatusBarColor(castbar.Colors.Bar.r, castbar.Colors.Bar.g, castbar.Colors.Bar.b, castbar.Colors.Bar.a)
 		castbar.bg:SetVertexColor(castbar.Colors.Background.r, castbar.Colors.Background.g, castbar.Colors.Background.b, castbar.Colors.Background.a)
-		castbar.Backdrop:SetBackdropBorderColor(castbar.Colors.Border.r, castbar.Colors.Border.g, castbar.Colors.Border.b, castbar.Colors.Border.a)
+		-- castbar.Backdrop:SetBackdropBorderColor(castbar.Colors.Border.r, castbar.Colors.Border.g, castbar.Colors.Border.b, castbar.Colors.Border.a)
 	else
 		if unit == "pet" then unit = "player" end
 		local pClass, pToken = UnitClass(unit)
@@ -760,7 +760,7 @@ local function PostCastStart(castbar, unit, name)
 
 		castbar:SetStatusBarColor(color[1], color[2], color[3], 0.68)
 		castbar.bg:SetVertexColor(0.15, 0.15, 0.15, 0.75)
-		castbar.Backdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
+		-- castbar.Backdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 	end
 	-- NEED TO REWRITE SHIELDED ELEMENT TO BE ALPHA BASED.
 	-- Then use element.Shield:SetAlphaFromBoolean(castbar.otInterruptible, 1, 0)
@@ -2208,10 +2208,10 @@ module.funcs = {
 			castbar.bg = castbar:CreateTexture(nil, "BORDER")
 			castbar.bg:SetAllPoints(castbar)
 
-			castbar.Backdrop = CreateFrame("Frame", nil, self, "BackdropTemplate")
-			castbar.Backdrop:SetPoint("TOPLEFT", castbar, "TOPLEFT", -4, 3)
-			castbar.Backdrop:SetPoint("BOTTOMRIGHT", castbar, "BOTTOMRIGHT", 3, -3.5)
-			castbar.Backdrop:SetParent(castbar)
+			-- castbar.Backdrop = CreateFrame("Frame", nil, self, "BackdropTemplate")
+			-- castbar.Backdrop:SetPoint("TOPLEFT", castbar, "TOPLEFT", -4, 3)
+			-- castbar.Backdrop:SetPoint("BOTTOMRIGHT", castbar, "BOTTOMRIGHT", 3, -3.5)
+			-- castbar.Backdrop:SetParent(castbar)
 
 			castbar.Time = SetFontString(castbar, Media:Fetch("font", oufdb.Castbar.TimeText.Font), oufdb.Castbar.TimeText.Size)
 			castbar.Time:SetJustifyH("RIGHT")
@@ -2292,15 +2292,15 @@ module.funcs = {
 			castbar.IconOverlay:SetTexture(buttonTex)
 			castbar.IconOverlay:SetVertexColor(1, 1, 1)
 
-			castbar.IconBackdrop = CreateFrame("Frame", nil, castbar, "BackdropTemplate")
-			castbar.IconBackdrop:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -4, 3)
-			castbar.IconBackdrop:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 3, -3.5)
-			castbar.IconBackdrop:SetBackdrop({
-				edgeFile = glowTex, edgeSize = 4,
-				insets = {left = 3, right = 3, top = 3, bottom = 3}
-			})
-			castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
-			castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
+			-- castbar.IconBackdrop = CreateFrame("Frame", nil, castbar, "BackdropTemplate")
+			-- castbar.IconBackdrop:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -4, 3)
+			-- castbar.IconBackdrop:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 3, -3.5)
+			-- castbar.IconBackdrop:SetBackdrop({
+			-- 	edgeFile = glowTex, edgeSize = 4,
+			-- 	insets = {left = 3, right = 3, top = 3, bottom = 3}
+			-- })
+			-- castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
+			-- castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 		end
 
 		castbar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Castbar.General.Texture))
@@ -2319,17 +2319,17 @@ module.funcs = {
 
 		castbar.bg:SetTexture(Media:Fetch("statusbar", oufdb.Castbar.General.TextureBG))
 
-		castbar.Backdrop:SetBackdrop({
-			edgeFile = Media:Fetch("border", oufdb.Castbar.Border.Texture),
-			edgeSize = oufdb.Castbar.Border.Thickness,
-			insets = {
-				left = oufdb.Castbar.Border.Inset.left,
-				right = oufdb.Castbar.Border.Inset.right,
-				top = oufdb.Castbar.Border.Inset.top,
-				bottom = oufdb.Castbar.Border.Inset.bottom
-			}
-		})
-		castbar.Backdrop:SetBackdropColor(0, 0, 0, 0)
+		-- castbar.Backdrop:SetBackdrop({
+		-- 	edgeFile = Media:Fetch("border", oufdb.Castbar.Border.Texture),
+		-- 	edgeSize = oufdb.Castbar.Border.Thickness,
+		-- 	insets = {
+		-- 		left = oufdb.Castbar.Border.Inset.left,
+		-- 		right = oufdb.Castbar.Border.Inset.right,
+		-- 		top = oufdb.Castbar.Border.Inset.top,
+		-- 		bottom = oufdb.Castbar.Border.Inset.bottom
+		-- 	}
+		-- })
+		-- castbar.Backdrop:SetBackdropColor(0, 0, 0, 0)
 
 		castbar.Colors = {
 			Individual = oufdb.Castbar.General.IndividualColor,
@@ -2393,11 +2393,11 @@ module.funcs = {
 		if oufdb.Castbar.General.Icon then
 			castbar.Icon:Show()
 			castbar.IconOverlay:Show()
-			castbar.IconBackdrop:Show()
+			-- castbar.IconBackdrop:Show()
 		else
 			castbar.Icon:Hide()
 			castbar.IconOverlay:Hide()
-			castbar.IconBackdrop:Hide()
+			-- castbar.IconBackdrop:Hide()
 		end
 	end,
 
