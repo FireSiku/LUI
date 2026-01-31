@@ -279,29 +279,31 @@ local function OverrideHealth(self, event, unit, powerType)
 
 	local _, pToken = UnitClass(unit)
 	local color = {LUI:GetClassColor(pToken)}
+	local gradientColor = UnitHealthPercent(unit, true, self.colors.health:GetCurve()) --[[@as ColorMixin]]
+	local healthColorTex = health:GetStatusBarTexture()
 
 	if health.color == "By Class" then
 		if UnitIsPlayer(unit) then
-			health:SetStatusBarColor(unpack(color))
+			healthColorTex:SetVertexColor(unpack(color))
 		else
 			local reaction = UnitReaction("player", unit)
 			if reaction and reaction < 4 then
-				health:SetStatusBarColor(unpack(module.db.profile.Colors.Misc["Hostile"]))
+				healthColorTex:SetVertexColor(unpack(module.db.profile.Colors.Misc["Hostile"]))
 			elseif reaction and reaction == 4 then
-				health:SetStatusBarColor(unpack(module.db.profile.Colors.Misc["Neutral"]))
+				healthColorTex:SetVertexColor(unpack(module.db.profile.Colors.Misc["Neutral"]))
 			else
-				health:SetStatusBarColor(unpack(module.db.profile.Colors.Misc["Friendly"]))
+				healthColorTex:SetVertexColor(unpack(module.db.profile.Colors.Misc["Friendly"]))
 			end
 		end
 	elseif health.color == "Individual" then
-		health:SetStatusBarColor(health.colorIndividual.r, health.colorIndividual.g, health.colorIndividual.b)
+		healthColorTex:SetVertexColor(health.colorIndividual.r, health.colorIndividual.g, health.colorIndividual.b)
 	else
-		health:SetStatusBarColor(oUF.ColorGradient(current, max, module.colors.smooth()))
+		healthColorTex:SetVertexColor(gradientColor:GetRGB())
 	end
 
-	if health.colorTapping and UnitIsTapDenied and UnitIsTapDenied(unit) then health:SetStatusBarColor(unpack(module.db.profile.Colors.Misc["Tapped"])) end
+	if health.colorTapping and UnitIsTapDenied and UnitIsTapDenied(unit) then healthColorTex:SetVertexColor(unpack(module.db.profile.Colors.Misc["Tapped"])) end
 
-	local r, g, b = health:GetStatusBarColor()
+	local r, g, b = healthColorTex:GetVertexColor()
 	local mu = health.bg.multiplier or 1
 
 	if health.bg.invert == true then
@@ -328,7 +330,6 @@ local function OverrideHealth(self, event, unit, powerType)
 	else
 		local healthPercent = UnitHealthPercent(unit, false, PercentCurve)
 		local notFullAlpha = UnitHealthPercent(unit, true, NotFullCurve)
-		local gradientColor = UnitHealthPercent(unit, true, oUF.colors.health:GetCurve())
 
 		-- Raid Name Text, if health is not full, hide it
 		if self.Info.OnlyWhenFull then
@@ -465,18 +466,19 @@ local function OverridePower(self, event, unit)
 	local pClass, pToken = UnitClass(unit)
 	local color = {LUI:GetClassColor(pToken)}
 	local color2 = {LUI:GetFallbackRGB(pName)}
+	local powerColorTex = power:GetStatusBarTexture()
 
 	if power.color == "By Class" then
-		power:SetStatusBarColor(unpack(color))
+		powerColorTex:SetVertexColor(unpack(color))
 	elseif power.color == "Individual" then
-		power:SetStatusBarColor(power.colorIndividual.r, power.colorIndividual.g, power.colorIndividual.b)
+		powerColorTex:SetVertexColor(power.colorIndividual.r, power.colorIndividual.g, power.colorIndividual.b)
 	-- elseif unit == unit:match("boss%d") and select(7, UnitAlternatePowerInfo(unit)) then
-	-- 	power:SetStatusBarColor(r, g, b)
+	-- 	powerColorTex:SetVertexColor(r, g, b)
 	else
-		power:SetStatusBarColor(unpack(color2))
+		powerColorTex:SetVertexColor(unpack(color2))
 	end
 
-	local r, g, b = power:GetStatusBarColor()
+	local r, g, b = powerColorTex:GetVertexColor()
 	local mu = power.bg.multiplier or 1
 
 	if power.bg.invert == true then
@@ -750,7 +752,7 @@ end
 local function PostCastStart(castbar, unit, name)
 	local unitname, _ = UnitName(unit)
 	if castbar.Colors.Individual == true then
-		castbar:SetStatusBarColor(castbar.Colors.Bar.r, castbar.Colors.Bar.g, castbar.Colors.Bar.b, castbar.Colors.Bar.a)
+		castbar:GetStatusBarTexture():SetVertexColor(castbar.Colors.Bar.r, castbar.Colors.Bar.g, castbar.Colors.Bar.b, castbar.Colors.Bar.a)
 		castbar.bg:SetVertexColor(castbar.Colors.Background.r, castbar.Colors.Background.g, castbar.Colors.Background.b, castbar.Colors.Background.a)
 		-- castbar.Backdrop:SetBackdropBorderColor(castbar.Colors.Border.r, castbar.Colors.Border.g, castbar.Colors.Border.b, castbar.Colors.Border.a)
 	else
@@ -758,7 +760,7 @@ local function PostCastStart(castbar, unit, name)
 		local pClass, pToken = UnitClass(unit)
 		local color = {LUI:GetClassColor(pToken)}
 
-		castbar:SetStatusBarColor(color[1], color[2], color[3], 0.68)
+		castbar:GetStatusBarTexture():SetVertexColor(color[1], color[2], color[3], 0.68)
 		castbar.bg:SetVertexColor(0.15, 0.15, 0.15, 0.75)
 		-- castbar.Backdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 	end
@@ -766,7 +768,7 @@ local function PostCastStart(castbar, unit, name)
 	-- Then use element.Shield:SetAlphaFromBoolean(castbar.otInterruptible, 1, 0)
 	-- if castbar.notInterruptible and castbar.Shielded.Enable and UnitIsEnemy("player", unit) then
 	-- 	if castbar.Shielded.IndividualColor then
-	-- 		castbar:SetStatusBarColor(castbar.Shielded.BarColor.r, castbar.Shielded.BarColor.g, castbar.Shielded.BarColor.b, castbar.Shielded.BarColor.a)
+	-- 		castbar:GetStatusBarTexture():SetVertexColor(castbar.Shielded.BarColor.r, castbar.Shielded.BarColor.g, castbar.Shielded.BarColor.b, castbar.Shielded.BarColor.a)
 	-- 	end
 	-- 	if castbar.Shielded.IndividualBorder then
 	-- 		castbar.Backdrop:SetBackdrop({
@@ -887,7 +889,7 @@ local function TotemsOverride(self, event, slot)
 	local haveTotem, name, startTime, duration, totemIcon = GetTotemInfo(slot)
 
 	local color = module.colors.totems[slot]
-	totem:SetStatusBarColor(unpack(color))
+	totem:GetStatusBarTexture():SetVertexColor(unpack(color))
 	totem:SetValue(0)
 
 	-- Multipliers
@@ -973,7 +975,7 @@ local function AdditionalPowerOverride(self, event, unit)
 		r, g, b = unpack(module.colors.power['MANA'])
 	end
 	if(b) then
-		additionalpower:SetStatusBarColor(r, g, b)
+		additionalpower:GetStatusBarTexture():SetVertexColor(r, g, b)
 
 		local bg = additionalpower.bg
 		if(bg) then
@@ -995,11 +997,11 @@ local function PostUpdateAlternativePower(altpowerbar, unit, cur, min, max)
 	if not tex then return end
 
 	if altpowerbar.color == "By Class" then
-		altpowerbar:SetStatusBarColor(unpack(color))
+		altpowerbar:GetStatusBarTexture():SetVertexColor(unpack(color))
 	elseif altpowerbar.color == "Individual" then
-		altpowerbar:SetStatusBarColor(altpowerbar.colorIndividual.r, altpowerbar.colorIndividual.g, altpowerbar.colorIndividual.b)
+		altpowerbar:GetStatusBarTexture():SetVertexColor(altpowerbar.colorIndividual.r, altpowerbar.colorIndividual.g, altpowerbar.colorIndividual.b)
 	else
-		altpowerbar:SetStatusBarColor(r, g, b)
+		altpowerbar:GetStatusBarTexture():SetVertexColor(r, g, b)
 	end
 
 	local r, g, b = altpowerbar:GetStatusBarColor()
@@ -1035,11 +1037,11 @@ end
 local function PostUpdateAdditionalPower(additionalpower, unit, cur, max)
 	local _, class = UnitClass(unit)
 	if additionalpower.color == "By Class" then
-		additionalpower:SetStatusBarColor(LUI:GetClassColor(class))
+		additionalpower:GetStatusBarTexture():SetVertexColor(LUI:GetClassColor(class))
 	elseif additionalpower.color == "By Type" then
-		additionalpower:SetStatusBarColor(unpack(module.colors.power.MANA))
+		additionalpower:GetStatusBarTexture():SetVertexColor(unpack(module.colors.power.MANA))
 	else
-		additionalpower:SetStatusBarColor(oUF.ColorGradient(cur, max, module.colors.smooth()))
+		additionalpower:GetStatusBarTexture():SetVertexColor(oUF.ColorGradient(cur, max, module.colors.smooth()))
 	end
 
 	local bg = additionalpower.bg
@@ -1057,7 +1059,7 @@ local function ArenaEnemyUnseen(self, event, unit, state)
 	if state == "unseen" then
 		self.Health.Override = function(health)
 			health:SetValue(0)
-			health:SetStatusBarColor(0.5, 0.5, 0.5, 1)
+			health:GetStatusBarTexture():SetVertexColor(0.5, 0.5, 0.5, 1)
 			health.bg:SetVertexColor(0.5, 0.5, 0.5, 1)
 			health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Unseen>|r" or "")
 			health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Unseen>|r" or "")
@@ -1065,7 +1067,7 @@ local function ArenaEnemyUnseen(self, event, unit, state)
 		end
 		self.Power.Override = function(power)
 			power:SetValue(0)
-			power:SetStatusBarColor(0.5, 0.5, 0.5, 1)
+			power:GetStatusBarTexture():SetVertexColor(0.5, 0.5, 0.5, 1)
 			power.bg:SetVertexColor(0.5, 0.5, 0.5, 1)
 			power.value:SetText("")
 			power.valuePercent:SetText("")
@@ -1658,7 +1660,7 @@ module.funcs = {
 		for i = 1, 6 do
 			local runeType = (_G.GetRuneType) and _G.GetRuneType(i) or 1
 			self.Runes[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.RunesBar.Texture))
-			self.Runes[i]:SetStatusBarColor(unpack(module.colors.runes[runeType]))
+			self.Runes[i]:GetStatusBarTexture():SetVertexColor(unpack(module.colors.runes[runeType]))
 			self.Runes[i]:SetSize(((oufdb.RunesBar.Width - 5 * oufdb.RunesBar.Padding) / 6), oufdb.RunesBar.Height)
 
 			self.Runes[i]:ClearAllPoints()
@@ -1834,10 +1836,10 @@ module.funcs = {
 			for i = 1, classPower.MaxCount do
 				local classPoint = classPower[i] ---@type StatusBar
 				if oufdb.ClassPowerBar.Texture == "Empty" then
-					classPoint:SetStatusBarColor(r, g, b)
+					classPoint:GetStatusBarTexture():SetVertexColor(r, g, b)
 				else
 					classPoint:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.ClassPowerBar.Texture))
-					classPoint:SetStatusBarColor(r, g, b)
+					classPoint:GetStatusBarTexture():SetVertexColor(r, g, b)
 				end
 				classPoint:SetSize(((oufdb.ClassPowerBar.Width - 2*oufdb.ClassPowerBar.Padding) / classPower.Count), oufdb.ClassPowerBar.Height)
 				classPoint:ClearAllPoints()
@@ -2466,11 +2468,11 @@ module.funcs = {
 
 		self.HealthPrediction.myBar:SetWidth(oufdb.HealthBar.Width * self:GetWidth() / oufdb.Width) -- needed for 25/40 man raid width downscaling!
 		self.HealthPrediction.myBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.HealthPredictionBar.Texture))
-		self.HealthPrediction.myBar:SetStatusBarColor(oufdb.HealthPredictionBar.MyColor.r, oufdb.HealthPredictionBar.MyColor.g, oufdb.HealthPredictionBar.MyColor.b, oufdb.HealthPredictionBar.MyColor.a)
+		self.HealthPrediction.myBar:GetStatusBarTexture():SetVertexColor(oufdb.HealthPredictionBar.MyColor.r, oufdb.HealthPredictionBar.MyColor.g, oufdb.HealthPredictionBar.MyColor.b, oufdb.HealthPredictionBar.MyColor.a)
 
 		self.HealthPrediction.otherBar:SetWidth(oufdb.HealthBar.Width * self:GetWidth() / oufdb.Width) -- needed for 25/40 man raid width downscaling!
 		self.HealthPrediction.otherBar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.HealthPredictionBar.Texture))
-		self.HealthPrediction.otherBar:SetStatusBarColor(oufdb.HealthPredictionBar.OtherColor.r, oufdb.HealthPredictionBar.OtherColor.g, oufdb.HealthPredictionBar.OtherColor.b, oufdb.HealthPredictionBar.OtherColor.a)
+		self.HealthPrediction.otherBar:GetStatusBarTexture():SetVertexColor(oufdb.HealthPredictionBar.OtherColor.r, oufdb.HealthPredictionBar.OtherColor.g, oufdb.HealthPredictionBar.OtherColor.b, oufdb.HealthPredictionBar.OtherColor.a)
 
 		self.HealthPrediction.myBar:ClearAllPoints()
 		self.HealthPrediction.myBar:SetPoint("TOPLEFT", self.Health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
@@ -2489,7 +2491,7 @@ module.funcs = {
 		
 		self.TotalAbsorb:SetWidth(oufdb.HealthBar.Width * self:GetWidth() / oufdb.Width) -- needed for 25/40 man raid width downscaling!
 		self.TotalAbsorb:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.TotalAbsorbBar.Texture))
-		self.TotalAbsorb:SetStatusBarColor(oufdb.TotalAbsorbBar.MyColor.r, oufdb.TotalAbsorbBar.MyColor.g, oufdb.TotalAbsorbBar.MyColor.b, oufdb.TotalAbsorbBar.MyColor.a)
+		self.TotalAbsorb:GetStatusBarTexture():SetVertexColor(oufdb.TotalAbsorbBar.MyColor.r, oufdb.TotalAbsorbBar.MyColor.g, oufdb.TotalAbsorbBar.MyColor.b, oufdb.TotalAbsorbBar.MyColor.a)
 
 		self.TotalAbsorb:ClearAllPoints()
 		self.TotalAbsorb:SetPoint("TOPLEFT", self.Health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)

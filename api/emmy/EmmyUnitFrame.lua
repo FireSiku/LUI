@@ -130,18 +130,6 @@ function UnitFrame:IsEnabled() end
 ---@param event string @ event name to pass to the elements' update functions 
 function UnitFrame:UpdateAllElements(event) end
 
---- Used to convert a percent value (the quotient of `a` and `b`) into a gradient from 2 or more RGB colors. A RGB color is a sequence of 3 consecutive RGB percent values in the range [0-1].  
---- If more than 2 colors are passed, the gradient will be between the two colors which percent lies in an evenly divided range.  
---- If `a` is negative or `b` is zero then the first 3 RGB values are returned. If `a` is bigger than or equal to `b`, then the last 3 RGB values are returend.  
---- http://www.wowwiki.com/ColorGradient  
---- 
---- If **oUF.useHCYColorGradient** is set to true, HCY color values will be expected instead.
----@param a number @ value used as numerator to calculate the percentage
----@param b number @ value usedas denominator to calculate the percentage
----@param ... table @ List of RGB percent values. At least 6 values should be passed [0-1]
----@vararg number
-function UnitFrame:ColorGradient(a, b, ...) end
-
 -- ####################################################################################################################
 -- ##### oUF Group Headers ############################################################################################
 -- ####################################################################################################################
@@ -153,9 +141,8 @@ function UnitFrame:ColorGradient(a, b, ...) end
 ---- **oUF-onlyProcessChildren** (boolean) can be used to force headers to only process children
 ---@param overrideName string? @ unique global name to be used for the header. Defaults to an auto-generated name based on the name of the active style and other arguments passed to `:SpawnHeader` (string?)
 ---@param template string? @ name of a template to be used for creating the header. Defaults to `'SecureGroupHeaderTemplate'`
----@param visibility string @ macro conditional(s) which define when to display the header. Further argument pairs. Consult [Group Headers](http://wowprogramming.com/docs/secure_template/Group_Headers.html) for possible values. In addition to the standard group headers, oUF implements some of its own attributes. These can be supplied by the layout, but are optional.
 ---@return UnitFrameHeader
-function oUF:SpawnHeader(overrideName, template, visibility, ...) end
+function oUF:SpawnHeader(overrideName, template, ...) end
 
 ---@class UnitFrameHeader : Frame
 local UnitFrameHeader = {}
