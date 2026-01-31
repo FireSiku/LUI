@@ -466,6 +466,7 @@ local function OverridePower(self, event, unit)
 	local pClass, pToken = UnitClass(unit)
 	local color = {LUI:GetClassColor(pToken)}
 	local color2 = {LUI:GetFallbackRGB(pName)}
+	if color and not color2 then color2 = color end
 	local powerColorTex = power:GetStatusBarTexture()
 
 	if power.color == "By Class" then

@@ -127,6 +127,7 @@ end
 --- Utility function for other modules to fetch a color stored in Color module.
 ---@return number R, number G, number B
 function LUI:GetFallbackRGB(colorName)
+	if not colorName then return end
 	--HACK: Sometimes NPCs will have a PowerType of "POWER_TYPE_xxx", so we need to strip that.
 	if strfind(colorName, "POWER_TYPE_") then colorName = string.split("_", colorName)[3] end
 	return GetColorRGB(colorName)
