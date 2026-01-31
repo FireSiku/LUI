@@ -47,6 +47,19 @@ local valueFormat = {
     ["Absolut Short & Percent"] = "Absolute Short & Percent",
 }
 
+local nameFormats = {
+    ["Name"] = "Name",
+    ["Name + Level"] = "Name + Level",
+    ["Name + Level + Class"] = "Name + Level + Class",
+    ["Name + Level + Race + Class"] = "Name + Level + Race + Class",
+    ["Level"] = "Level",
+    ["Level + Name"] = "Level + Name",
+    ["Level + Name + Class"] = "Level + Name + Class",
+    ["Level + Class + Name"] = "Level + Class + Name",
+    ["Level + Race + Class + Name"] = "Level + Race + Class + Name",
+}
+
+
 local function UnitFontMenuGetter(info)
     local unit = info[2]
     local fontName = info[3]
@@ -141,6 +154,7 @@ local function GenerateTextGroup(unit, name, colorTypes, order)
         Y = Opt:InputNumber({name = "Y Value"}),
         Point = Opt:Select({name = L["Anchor"], values = LUI.Points}),
         RelativePoint = Opt:Select({name = "Attach To", values = LUI.Points}),
+        Format = Opt:Select({name = "Format", desc = "Choose the Format for your "..unit.." Name.", values = nameFormats, onlyIf = (name == "NameText")}),
         Color = Opt:Select({name = "Color Type", values = colorTypes}),
         IndividualColor = Opt:Color({name = optName.." Color", hasAlpha = false, disabled = IsIndividualColorSelected(dbText), db = dbText}),
         Font = UnitFontMenu({name = "Text Font"}),
@@ -148,7 +162,7 @@ local function GenerateTextGroup(unit, name, colorTypes, order)
         ShowAlways = Opt:Toggle({name = "Show when full", onlyIf = (dbText.ShowAlways ~= nil)}),
         ShowDead = Opt:Toggle({name = "Show when dead", onlyIf = (dbText.ShowDead ~= nil)}),
         ShowFull = Opt:Toggle({name = unit..name.." Show when full", onlyIf = (dbText.ShowFull ~= nil)}),
-        ShowEmpty = Opt:Toggle({name = "Show when empty", onlyIf = (dbText.ShowFull ~= nil)}),
+        ShowEmpty = Opt:Toggle({name = "Show when empty", onlyIf = (dbText.ShowEmpty ~= nil)}),
     }})
 
     if name == "HealthText" or name == "PowerText" then
@@ -156,11 +170,14 @@ local function GenerateTextGroup(unit, name, colorTypes, order)
     end
 
     if name == "NameText" then
+        local disabledClassificationFunc = function() return not dbText.ShowClassification end
+
         group.args.ColorNameByClass = Opt:Toggle({name = "Color Name By Class"})
         group.args.ColorClassByClass = Opt:Toggle({name = "Color Color By Class"})
         group.args.ColorLevelByDifficulty = Opt:Toggle({name = "Color Level By Difficulty"})
         group.args.ShowClassification = Opt:Toggle({name = "Show Classification"})
-        group.args.ShortClassification = Opt:Toggle({name = "Short Classification"})
+        group.args.ShortClassification = Opt:Toggle({name = "Short Classification", disabled = disabledClassificationFunc})
+        group.args.IndividualColor = nil
         group.args.Color = nil
     end
 
@@ -315,12 +332,19 @@ local function NewUnitOptionGroup(unit, order)
         Y = Opt:Input({name = "Y Value"}),
         Point = Opt:Select({name = L["Anchor"], values = LUI.Points}),
         Scale = Opt:Slider({name = "Scale", values = Opt.ScaleValues}),
+        -- Groups Options
+        Spacer2 = Opt:Spacer({onlyIf = (unit == "party" or unit == "Boss" or unit == "arena" or unit == "maintank" or unit == "raid")}),
+        Padding = Opt:InputNumber({name = "Padding", desc = "Choose the Padding between your "..unit.." Frames.", onlyIf = (unit == "party" or unit == "Boss" or unit == "arena" or unit == "maintank" or unit == "raid")}),
+        GroupPadding = Opt:InputNumber({name = "Group Padding", desc = "Choose the Padding between your "..unit.." Groups.", onlyIf = (unit == "raid")}),
+        GrowDirection = Opt:Select({name = "Grow Direction", desc = "Choose the Grow Direction for your "..unit.." Frames.", values = LUI.Sides, onlyIf = (unit == "party" or unit == "Boss"or unit == "arena" or unit == "maintank")}),
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
+        -- Party-only options
         ShowPlayer = Opt:Toggle({name = "Show Player", desc = "Whether you want to show yourself within the Party Frames or not.", onlyIf = (unit == "party")}),
         ShowInRaid = Opt:Toggle({name = "Show in Raid", desc = "Whether you want to show the Party Frames in Raid or not.", onlyIf = (unit == "party")}),
         ShowInRealPartys = Opt:Toggle({name = "Show only in real Parties", desc = "Whether you want to show the Party Frames only in real Parties or in Raids with 5 or less players too.", onlyIf = (unit == "party")}),
         RangeFade = Opt:Toggle({name = "Fade Out of Range", desc = "Whether you want Party Frames to fade if that player is more than 40 yards away or not.", onlyIf = (unit == "party")}),
-        -- UseBlizzard = (unit == "party" or unit == "Boss" or unit == "arena" or unit == "raid") and self:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, false, "full", function() return self.db[unit].Enable end) or nil,
+       
+        --UseBlizzard = Opt:Toggle({name = "Use Blizzard "..unit.." Frames", desc = "Whether you want to use Blizzard "..unit.." Frames or not.", width = "full", onlyIf = (unit == "party")})
     }})
 
     unitOptions.args.HealthBar = GenerateBarGroup(unit, "HealthBar", healthColorTypes, 3)
