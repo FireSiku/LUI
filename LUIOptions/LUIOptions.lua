@@ -245,6 +245,8 @@ end
 ---@param data LUIOption
 function OptionMixin:Group(data)
 	data = AddShared(data, "group")
+	if not data then return end
+
 	if not data.args then data.args = {} end
 	if not data.childGroups then data.childGroups = "tab" end
 	return data
@@ -253,6 +255,8 @@ end
 ---@param data LUIOption
 function OptionMixin:InlineGroup(data)
 	data = AddShared(data, "group")
+	if not data then return end
+
 	data.inline = true
 	if not data.args then data.args = {} end
 	return data
@@ -276,8 +280,9 @@ end
 
 ---@param data? LUIOption
 function OptionMixin:Spacer(data)
-	if not data then data = {} end
-	data = AddShared(data, "description")
+	data = AddShared(data or {}, "description")
+	if not data then return end
+	
 	data.name = ""
 	return data
 end
@@ -309,6 +314,8 @@ end
 ---@param data LUIOption
 function OptionMixin:InputNumber(data)
 	data = AddShared(data, "input")
+	if not data then return end
+
 	data.validate = self.IsNumber
 	return data
 end
@@ -341,6 +348,8 @@ end
 ---@param data LUIOption
 function OptionMixin:MediaBackground(data)
 	data = AddShared(data, "select")
+	if not data then return end
+
 	data.dialogControl = "LSM30_Background"
 	data.values = function() return LSM:HashTable("background") end
 	return data
@@ -349,6 +358,8 @@ end
 ---@param data LUIOption
 function OptionMixin:MediaBorder(data)
 	data = AddShared(data, "select")
+	if not data then return end
+
 	data.dialogControl = "LSM30_Border"
 	data.values = function() return LSM:HashTable("border") end
 	return data
@@ -357,6 +368,8 @@ end
 ---@param data LUIOption
 function OptionMixin:MediaStatusbar(data)
 	data = AddShared(data, "select")
+	if not data then return end
+
 	data.dialogControl = "LSM30_Statusbar"
 	data.values = function() return LSM:HashTable("statusbar") end
 	return data
@@ -365,6 +378,8 @@ end
 ---@param data LUIOption
 function OptionMixin:MediaSound(data)
 	data = AddShared(data, "select")
+	if not data then return end
+
 	data.dialogControl = "LSM30_Sound"
 	data.values = function() return LSM:HashTable("sound") end
 	return data
@@ -373,6 +388,8 @@ end
 ---@param data LUIOption
 function OptionMixin:MediaFont(data)
 	data = AddShared(data, "select")
+	if not data then return end
+
 	data.dialogControl = "LSM30_Font"
 	data.values = function() return LSM:HashTable("font") end
 	return data
@@ -382,6 +399,7 @@ end
 ---@param data LUIOption
 function OptionMixin:EnableButton(data)
 	data = AddShared(data, "execute")
+	if not data then return end
 
 	-- Store info in locals to create closures.
 	local name = data.name
