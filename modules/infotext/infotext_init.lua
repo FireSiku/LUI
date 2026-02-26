@@ -164,7 +164,7 @@ module.defaults = {
 			Point = "TOPLEFT",
 		},
 		MoveSpeed = {
-			Enable = false,
+			Enable = true,
 			Y = 0,
 			X = -575,
 			Point = "TOPRIGHT",
