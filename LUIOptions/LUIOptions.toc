@@ -15,7 +15,7 @@ Artwork.lua
 # Auras.lua
 Bags.lua
 Chat.lua
-Cooldown.lua
+# Cooldown.lua
 ExpBars.lua
 # Fader.lua
 Infotexts.lua

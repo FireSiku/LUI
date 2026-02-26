@@ -76,6 +76,9 @@ do
 		end
 	})
 
+	local alphaCurve = C_CurveUtil.CreateCurve()
+	alphaCurve:SetType(Enum.LuaCurveType.Step)
+
 	function module:UpdateVars()
 		db = module.db.profile
 
@@ -93,6 +96,9 @@ do
 		colors[minute] = db.Colors.Min
 		colors[1] = db.Colors.Sec
 		colors[true] = db.Colors.Threshold
+
+		alphaCurve:AddPoint(3, 0)
+		alphaCurve:AddPoint(minDuration + 0.01, 1)
 	end
 
 
@@ -100,11 +106,12 @@ do
 		return floor(num + 0.5)
 	end
 
-
 	local Timer = {}
 
-	function Timer:Start(start, duration)
-		self.start, self.duration, self.enabled = start, duration, true
+	function Timer:Start(durationObject)
+		self.durationObject = durationObject
+		self.enabled = true
+		self.cd:SetAlpha(durationObject:EvaluateRemainingDuration(alphaCurve) or 1)
 
 		if not self:Scale() or not self:Update() then return end
 
@@ -121,27 +128,28 @@ do
 		tinsert(cache, self)
 	end
 
-	function Timer:Update()
-		local remaining = self.duration - (GetTime() - self.start)
-
-		if remaining > 0 then
-			self:FormatTime(remaining)
-			return true
+	function Timer:Update()	
+		if self.durationObject:IsZero() then
+			LUI:Print("Stopping cooldown timer")
+			self:Stop()
+			return
 		end
-
-		self:Stop()
-	end
-
-	function Timer:ShouldUpdate(start, duration)
-		if start ~= self.start or duration ~= self.duration then
-			if duration < minDuration or not self:IsVisible() then
-				self:Stop()
-				return
-			end
-		end
-
+		-- duration >= minDuration need alpha curve
+		
+		self:FormatTime(self.durationObject:GetRemainingDuration())
 		return true
 	end
+
+	-- function Timer:ShouldUpdate(start, duration)
+	-- 	if start ~= self.start or duration ~= self.duration then
+	-- 		if duration < minDuration or not self:IsVisible() then
+	-- 			self:Stop()
+	-- 			return
+	-- 		end
+	-- 	end
+
+	-- 	return true
+	-- end
 
 	function Timer:OnUpdate(elapsed)
 		self.nextUpdate = self.nextUpdate - elapsed
@@ -177,6 +185,7 @@ do
 			self.fontScale = scale
 
 			if not scale then
+				LUI:Print("Stopping cooldown timer via Scale", self.cd:GetName())
 				self:Stop()
 				return
 			end
@@ -212,7 +221,7 @@ do
 	end
 
 	function module:IsSupportedCooldownType(cd)
-		local cdType = cd.currentCooldownType
+		local cdType = cd.cooldownType
 		
 		if cdType == COOLDOWN_TYPE_LOSS_OF_CONTROL then
 			return true
@@ -222,14 +231,15 @@ do
 
 		-- Spell Charges
 		local parent = cd:GetParent()
+		if parent and parent.cooldown == cd then
+			return true
+		end
 		if parent and parent.chargeCooldown == cd then
 			return true
 		-- Item Cooldowns
 		elseif parent and parent.SetItem then
 			return true
 		end
-
-		--for k, v in pairs(parent) do LUI:Print(k, v) end
 
 		return db.General.SupportAll
 	end
@@ -240,13 +250,16 @@ do
 		-- Disable LUI cooldowns on WeakAura frames
 		if db.General.FilterWA and cd:GetName() and strfind(cd:GetName(), "WeakAuras") then return end
 
+		local durationObject = C_DurationUtil.CreateDuration()
+		durationObject:SetTimeFromStart(start, duration)
+
 		if cd.luitimer then
-			if cd.luitimer:ShouldUpdate(start, duration) then
-				cd.luitimer.start, cd.luitimer.duration = start, duration
+			--if cd.luitimer:ShouldUpdate(durationObject) then
+				cd.luitimer.durationObject = durationObject
 				cd.luitimer:Update()
-			end
-		elseif module:IsSupportedCooldownType(cd) and duration >= minDuration and cd:IsVisible() and fontScale[round(cd:GetWidth())] then
-			getTimer(cd):Start(start, duration)
+			--end
+		elseif module:IsSupportedCooldownType(cd) and cd:IsVisible() then
+			getTimer(cd):Start(durationObject)
 		end
 	end
 

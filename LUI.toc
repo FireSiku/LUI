@@ -81,7 +81,7 @@ modules\bags\backpack.lua
 # modules\bags\bank.lua
 
 ### Cooldown ###
-modules\cooldown\cooldown.xml
+# modules\cooldown\cooldown.xml
 
 ### Tooltip ###
 modules\tooltip\tooltip.lua
