@@ -59,7 +59,7 @@ local function UpdateColor(self, event, unit)
 	end
 
 	if(color) then
-		element:GetStatusBarTexture():SetVertexColor(color:GetRGB())
+		element:SetStatusBarColor(color:GetRGB())
 	end
 
 	--[[ Callback: Stagger:PostUpdateColor(color)
@@ -117,7 +117,9 @@ local function Path(self, ...)
 	* event - the event triggering the update (string)
 	* unit  - the unit accompanying the event (string)
 	--]]
-	(self.Stagger.Override or Update)(self, ...);
+	do
+		(self.Stagger.Override or Update)(self, ...)
+	end
 
 	--[[ Override: Stagger.UpdateColor(self, event, unit)
 	Used to completely override the internal function for updating the widgets' colors.

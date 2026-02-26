@@ -38,6 +38,7 @@ At least one of the above widgets must be present for the element to work.
 .showBuffType             - Show Overlay texture colored by oUF.colors.dispel when it's a buff. Exclusive with .showType (boolean)
 .minCount                 - Minimum number of aura applications for the Count text to be visible. Defaults to 2 (number)
 .maxCount                 - Maximum number of aura applications for the Count text, anything above renders "*". Defaults to 999 (number)
+.maxCols                  - Maximum number of aura button columns before wrapping to a new row. Defaults to element width divided by aura button size (number)
 
 ## Options Auras
 
@@ -157,7 +158,7 @@ local function SetPosition(element, from, to)
 	local anchor = element.initialAnchor or 'BOTTOMLEFT'
 	local growthX = (element.growthX == 'LEFT' and -1) or 1
 	local growthY = (element.growthY == 'DOWN' and -1) or 1
-	local cols = math.floor(element:GetWidth() / sizeX + 0.5)
+	local cols = element.maxCols or math.floor(element:GetWidth() / sizeX + 0.5)
 
 	for i = from, to do
 		local button = element[i]
@@ -208,6 +209,11 @@ local function updateAura(element, unit, data, position)
 	if(button.Overlay) then
 		if(element.showType or (data.isHarmfulAura and element.showDebuffType) or (not data.isHarmfulAura and element.showBuffType)) then
 			local color = C_UnitAuras.GetAuraDispelTypeColor(unit, data.auraInstanceID, element.dispelColorCurve)
+			if color == nil then
+				-- BUG: this shouldn't happen but color can be nil, so default to None color
+				color = element.dispelColorCurve:Evaluate(0)
+			end
+
 			button.Overlay:SetVertexColor(color:GetRGBA())
 			button.Overlay:Show()
 		else
@@ -267,7 +273,7 @@ local function processData(element, unit, data, filter)
 	if(not data) then return end
 
 	data.isPlayerAura = not C_UnitAuras.IsAuraFilteredOutByInstanceID(unit, data.auraInstanceID, filter .. '|PLAYER')
-	data.isHarmfulAura = filter == 'HARMFUL' -- "isHarmful" is a secret, use a different name
+	data.isHarmfulAura = filter:find('HARMFUL') and true -- "isHarmful" is a secret, use a different name
 
 	--[[ Callback: Auras:PostProcessAuraData(unit, data, filter)
 	Called after the aura data has been processed.
@@ -294,6 +300,9 @@ local function UpdateAuras(self, event, unit, updateInfo)
 
 	local auras = self.Auras
 	if(auras) then
+		isFullUpdate = auras.needFullUpdate or isFullUpdate
+		auras.needFullUpdate = false
+
 		--[[ Callback: Auras:PreUpdate(unit, isFullUpdate)
 		Called before the element has been updated.
 
@@ -578,6 +587,9 @@ local function UpdateAuras(self, event, unit, updateInfo)
 
 	local buffs = self.Buffs
 	if(buffs) then
+		isFullUpdate = buffs.needFullUpdate or isFullUpdate
+		buffs.needFullUpdate = false
+
 		if(buffs.PreUpdate) then buffs:PreUpdate(unit, isFullUpdate) end
 
 		local buffsChanged = false
@@ -687,6 +699,9 @@ local function UpdateAuras(self, event, unit, updateInfo)
 
 	local debuffs = self.Debuffs
 	if(debuffs) then
+		isFullUpdate = debuffs.needFullUpdate or isFullUpdate
+		debuffs.needFullUpdate = false
+
 		if(debuffs.PreUpdate) then debuffs:PreUpdate(unit, isFullUpdate) end
 
 		local debuffsChanged = false
@@ -839,12 +854,15 @@ local function Enable(self)
 			auras.anchoredButtons = 0
 			auras.visibleButtons = 0
 			auras.tooltipAnchor = auras.tooltipAnchor or 'ANCHOR_BOTTOMRIGHT'
+			auras.needFullUpdate = true
 
-			auras.dispelColorCurve = auras.dispelColorCurve or C_CurveUtil.CreateColorCurve()
-			auras.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
-			for _, dispelIndex in next, oUF.Enum.DispelType do
-				if(self.colors.dispel[dispelIndex]) then
-					auras.dispelColorCurve:AddPoint(dispelIndex, self.colors.dispel[dispelIndex])
+			if(not auras.dispelColorCurve) then
+				auras.dispelColorCurve = C_CurveUtil.CreateColorCurve()
+				auras.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
+				for _, dispelIndex in next, oUF.Enum.DispelType do
+					if(self.colors.dispel[dispelIndex]) then
+						auras.dispelColorCurve:AddPoint(dispelIndex, self.colors.dispel[dispelIndex])
+					end
 				end
 			end
 
@@ -862,12 +880,15 @@ local function Enable(self)
 			buffs.anchoredButtons = 0
 			buffs.visibleButtons = 0
 			buffs.tooltipAnchor = buffs.tooltipAnchor or 'ANCHOR_BOTTOMRIGHT'
+			buffs.needFullUpdate = true
 
-			buffs.dispelColorCurve = buffs.dispelColorCurve or C_CurveUtil.CreateColorCurve()
-			buffs.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
-			for _, dispelIndex in next, oUF.Enum.DispelType do
-				if(self.colors.dispel[dispelIndex]) then
-					buffs.dispelColorCurve:AddPoint(dispelIndex, self.colors.dispel[dispelIndex])
+			if(not buffs.dispelColorCurve) then
+				buffs.dispelColorCurve = C_CurveUtil.CreateColorCurve()
+				buffs.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
+				for _, dispelIndex in next, oUF.Enum.DispelType do
+					if(self.colors.dispel[dispelIndex]) then
+						buffs.dispelColorCurve:AddPoint(dispelIndex, self.colors.dispel[dispelIndex])
+					end
 				end
 			end
 
@@ -885,12 +906,15 @@ local function Enable(self)
 			debuffs.anchoredButtons = 0
 			debuffs.visibleButtons = 0
 			debuffs.tooltipAnchor = debuffs.tooltipAnchor or 'ANCHOR_BOTTOMRIGHT'
+			debuffs.needFullUpdate = true
 
-			debuffs.dispelColorCurve = debuffs.dispelColorCurve or C_CurveUtil.CreateColorCurve()
-			debuffs.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
-			for _, dispelIndex in next, oUF.Enum.DispelType do
-				if(self.colors.dispel[dispelIndex]) then
-					debuffs.dispelColorCurve:AddPoint(dispelIndex, self.colors.dispel[dispelIndex])
+			if(not debuffs.dispelColorCurve) then
+				debuffs.dispelColorCurve = C_CurveUtil.CreateColorCurve()
+				debuffs.dispelColorCurve:SetType(Enum.LuaCurveType.Step)
+				for _, dispelIndex in next, oUF.Enum.DispelType do
+					if(self.colors.dispel[dispelIndex]) then
+						debuffs.dispelColorCurve:AddPoint(dispelIndex, self.colors.dispel[dispelIndex])
+					end
 				end
 			end
 

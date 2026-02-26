@@ -3,6 +3,8 @@
 
 Handles the visibility and updating of incoming heals and heal/damage absorbs.
 
+**WARNING**: this element is deprecated, please use sub-widgets of Health element instead.
+
 ## Widget
 
 HealthPrediction - A `table` containing references to sub-widgets and options.
@@ -46,6 +48,7 @@ This example does not contain all widgets or options, just a selection.
     healingAll:SetPoint('BOTTOM')
     healingAll:SetPoint('LEFT', self.Health:GetStatusBarTexture(), 'RIGHT')
     healingAll:SetWidth(200)
+    healingAll:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 
     local damageAbsorb = CreateFrame('StatusBar', nil, self.Health)
     damageAbsorb:SetPoint('TOP')
