@@ -281,29 +281,33 @@ local function OverrideHealth(self, event, unit, powerType)
 	local color = {LUI:GetClassColor(pToken)}
 	local gradientColor = UnitHealthPercent(unit, true, self.colors.health:GetCurve()) --[[@as ColorMixin]]
 	local healthColorTex = health:GetStatusBarTexture()
+	local r, g, b = health.colorIndividual.r, health.colorIndividual.g, health.colorIndividual.b
 
 	if health.color == "By Class" then
 		if UnitIsPlayer(unit) then
-			healthColorTex:SetVertexColor(unpack(color))
+			r, g, b = unpack(color)
+			healthColorTex:SetVertexColor(r, g, b)
 		else
 			local reaction = UnitReaction("player", unit)
 			if reaction and reaction < 4 then
-				healthColorTex:SetVertexColor(unpack(module.db.profile.Colors.Misc["Hostile"]))
+				r, g, b = unpack(module.db.profile.Colors.Misc["Hostile"])
+				healthColorTex:SetVertexColor(r, g, b)
 			elseif reaction and reaction == 4 then
-				healthColorTex:SetVertexColor(unpack(module.db.profile.Colors.Misc["Neutral"]))
+				r, g, b = unpack(module.db.profile.Colors.Misc["Neutral"])
+				healthColorTex:SetVertexColor(r, g, b)
 			else
-				healthColorTex:SetVertexColor(unpack(module.db.profile.Colors.Misc["Friendly"]))
+				r, g, b = unpack(module.db.profile.Colors.Misc["Friendly"])
+				healthColorTex:SetVertexColor(r, g, b)
 			end
 		end
 	elseif health.color == "Individual" then
-		healthColorTex:SetVertexColor(health.colorIndividual.r, health.colorIndividual.g, health.colorIndividual.b)
+		healthColorTex:SetVertexColor(r, g, b)
 	else
 		healthColorTex:SetVertexColor(gradientColor:GetRGB())
 	end
 
 	if health.colorTapping and UnitIsTapDenied and UnitIsTapDenied(unit) then healthColorTex:SetVertexColor(unpack(module.db.profile.Colors.Misc["Tapped"])) end
 
-	local r, g, b = health:GetStatusBarColor()
 	local mu = health.bg.multiplier or 1
 
 	if health.bg.invert == true then
@@ -474,17 +478,19 @@ local function OverridePower(self, event, unit)
 	if color and not color2 then color2 = color end
 	local powerColorTex = power:GetStatusBarTexture()
 
-	if power.color == "By Class" then
-		powerColorTex:SetVertexColor(unpack(color))
+	local r, g, b = power.colorIndividual.r, power.colorIndividual.g, power.colorIndividual.b
+	if color and power.color == "By Class" then
+		r, g, b = unpack(color)
+		powerColorTex:SetVertexColor(r, g, b)
 	elseif power.color == "Individual" then
-		powerColorTex:SetVertexColor(power.colorIndividual.r, power.colorIndividual.g, power.colorIndividual.b)
+		powerColorTex:SetVertexColor(r, g, b)
 	-- elseif unit == unit:match("boss%d") and select(7, UnitAlternatePowerInfo(unit)) then
 	-- 	powerColorTex:SetVertexColor(r, g, b)
 	else
-		powerColorTex:SetVertexColor(unpack(color2))
+		r, g, b = unpack(color2)
+		powerColorTex:SetVertexColor(r, g, b)
 	end
 
-	local r, g, b = power:GetStatusBarColor()
 	local mu = power.bg.multiplier or 1
 
 	if power.bg.invert == true then
