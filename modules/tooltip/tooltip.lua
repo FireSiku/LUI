@@ -456,9 +456,9 @@ function module.OnGameTooltipSetUnit(frame, data)
 	local offset = 2
 	if UnitIsPlayer(unit) then
 		-- Display status next to name
-		if UnitIsDND(unit) then
+		if not issecretvalue(UnitIsDND(unit)) and UnitIsDND(unit) then
 			frame:AppendText(" "..CHAT_FLAG_DND)
-		elseif UnitIsAFK(unit) then
+		elseif not issecretvalue(UnitIsAFK(unit)) and UnitIsAFK(unit) then
 			frame:AppendText(" "..CHAT_FLAG_AFK)
 		end
 		if guild then
