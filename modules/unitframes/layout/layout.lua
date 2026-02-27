@@ -312,17 +312,22 @@ local function OverrideHealth(self, event, unit, powerType)
 		health.bg:SetVertexColor(r*mu, g*mu, b*mu)
 	end
 
-	if not UnitIsConnected(unit) then
+	local unitConnected = UnitIsConnected(unit)
+	local unitGhost = UnitIsGhost(unit)
+	local unitDead = UnitIsDead(unit)
+	local unitAFK = UnitIsAFK(unit)
+
+	if not issecretvalue(unitConnected) and not unitConnected then
 		health:SetValue(0)
 		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Offline>|r" or "")
 		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Offline>|r" or "")
 		health.valueMissing:SetText("")
-	elseif UnitIsGhost(unit) then
+	elseif not issecretvalue(unitGhost) and unitGhost then
 		health:SetValue(0)
 		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Ghost>|r" or "")
 		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Ghost>|r" or "")
 		health.valueMissing:SetText("")
-	elseif UnitIsDead(unit) then
+	elseif not issecretvalue(unitDead) and unitDead then
 		health:SetValue(0)
 		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Dead>|r" or "")
 		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Dead>|r" or "")
@@ -424,7 +429,7 @@ local function OverrideHealth(self, event, unit, powerType)
 		end
 	end
 
-	if UnitIsAFK(unit) then
+	if not issecretvalue(unitAFK) and unitAFK then
 		if health.value.ShowDead == true then
 			if health.value:GetText() then
 				--if not strfind(health.value:GetText(), "AFK") then
@@ -488,17 +493,17 @@ local function OverridePower(self, event, unit)
 		power.bg:SetVertexColor(r*mu, g*mu, b*mu)
 	end
 
-	if not UnitIsConnected(unit) then
+	if not issecretvalue(UnitIsConnected(unit)) and not UnitIsConnected(unit) then
 		power:SetValue(0)
 		power.valueMissing:SetText("")
 		power.valuePercent:SetText("")
 		power.value:SetText("")
-	elseif UnitIsGhost(unit) then
+	elseif not issecretvalue(UnitIsGhost(unit)) and UnitIsGhost(unit) then
 		power:SetValue(0)
 		power.valueMissing:SetText("")
 		power.valuePercent:SetText("")
 		power.value:SetText("")
-	elseif UnitIsDead(unit) then
+	elseif not issecretvalue(UnitIsDead(unit)) and UnitIsDead(unit) then
 		power:SetValue(0)
 		power.valueMissing:SetText("")
 		power.valuePercent:SetText("")
