@@ -475,7 +475,7 @@ local function OverridePower(self, event, unit)
 	local pClass, pToken = UnitClass(unit)
 	local color = {LUI:GetClassColor(pToken)}
 	local color2 = {LUI:GetFallbackRGB(pName)}
-	if color and not color2 then color2 = color end
+	if color and not next(color2) then color2 = color end
 	local powerColorTex = power:GetStatusBarTexture()
 
 	local r, g, b = power.colorIndividual.r, power.colorIndividual.g, power.colorIndividual.b
@@ -487,7 +487,7 @@ local function OverridePower(self, event, unit)
 	-- elseif unit == unit:match("boss%d") and select(7, UnitAlternatePowerInfo(unit)) then
 	-- 	powerColorTex:SetVertexColor(r, g, b)
 	else
-		r, g, b = unpack(color2)
+		if color2 then r, g, b = unpack(color2) end
 		powerColorTex:SetVertexColor(r, g, b)
 	end
 
