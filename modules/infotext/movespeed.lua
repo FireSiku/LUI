@@ -23,8 +23,13 @@ function element:SetMoveSpeed()
 		speed = runSpeed
 	end
 
-	element.text = format("Speed: %d%%", speed / baseSpeed * 100)
+	element.text = format("Speed: %d", speed)
 	element:UpdateTooltip()
+end
+
+function element.OnTooltipShow(GameTooltip)
+	element:TooltipHeader(_G.STAT_MOVEMENT_SPEED)
+	element:AddHint("Speed is shown in yards per second.\nA value of 7 is 100% movement speed, 14 is 200%, etc.")
 end
 
 -- ####################################################################################################################

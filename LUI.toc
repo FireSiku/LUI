@@ -105,7 +105,7 @@ modules\infotext\lootspec.lua
 modules\infotext\mail.lua
 modules\infotext\memory.lua
 modules\infotext\movespeed.lua
-modules\infotext\weaponspeed.lua
+# modules\infotext\weaponspeed.lua
 
 ### Micromenu ###
 modules\micromenu\micromenu.lua
