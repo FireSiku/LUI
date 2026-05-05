@@ -500,7 +500,7 @@ module.defaults = {
 			},
 			AdditionalPowerText = {
 				Enable = true,
-				Outline = "NONE",
+				Outline = "",
 				Size = 14,
 				X = 0,
 				Y = 0,
