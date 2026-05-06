@@ -19,8 +19,14 @@ local element = module:NewElement("MoveSpeed", "AceEvent-3.0")
 function element:SetMoveSpeed()
 	local baseSpeed = BASE_MOVEMENT_SPEED
 	local speed, runSpeed = GetUnitSpeed("player")
+	local text = "Speed: [Secret]"
+	
+	if not issecretvalue(speed) then
+		if speed == 0 then speed = runSpeed end
+		text = format("Speed: %d%%", speed / baseSpeed * 100)
+	end
 
-	element.text = format("Speed: %d", speed)
+	element.text = text
 	element:UpdateTooltip()
 end
 
