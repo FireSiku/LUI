@@ -34,8 +34,8 @@ end
 ---@return number R, number G, number B
 function ModuleMixin:RGB(colorName)
 	if not colorName or issecretvalue(colorName) then
-		return
-	end
+	return 1, 1, 1
+end
 	local db = self:GetDB("Colors")
 	if db and db[colorName] then
 		-- TODO: Check for all planned types (.t)
