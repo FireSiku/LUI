@@ -108,6 +108,10 @@ module.defaults = {
 ---@param colorName string
 ---@return number R, number G, number B
 local function GetColorRGB(colorName)
+	if not colorName or issecretvalue(colorName) then
+		return
+	end
+
 	local color = db.Colors[colorName]
 	if color then
 		return color.r, color.g, color.b
