@@ -123,10 +123,14 @@ do
 	for i = 1, #blizzEvents do
 		script:RegisterEvent(blizzEvents[i], "EventHandling")
 	end
+
 	for i = 1, #blizzHooks do
-		script:SecureHook(blizzHooks[i], function()
-			script:ApplyBlizzScaling()
-			script:Unhook(blizzHooks[i])
-		end)
+		local hookName = blizzHooks[i]
+		if _G[hookName] then
+			script:SecureHook(hookName, function()
+				script:ApplyBlizzScaling()
+				script:Unhook(hookName)
+			end)
+		end
 	end
 end
