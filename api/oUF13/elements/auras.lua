@@ -297,7 +297,9 @@ local function UpdateAuras(self, event, unit, updateInfo)
 	if(self.unit ~= unit) then return end
 
 	local isFullUpdate = not updateInfo or updateInfo.isFullUpdate
-
+if issecretvalue(isFullUpdate) then
+	return
+end
 	local auras = self.Auras
 	if(auras) then
 		isFullUpdate = auras.needFullUpdate or isFullUpdate
@@ -604,7 +606,13 @@ local function UpdateAuras(self, event, unit, updateInfo)
 			buffs.active = table.wipe(buffs.active or {})
 			buffsChanged = true
 
-			local slots = {C_UnitAuras.GetAuraSlots(unit, buffFilter)}
+			local success, slots = pcall(function()
+	return {C_UnitAuras.GetAuraSlots(unit, buffFilter)}
+end)
+
+if not success then
+	return
+end
 			for i = 2, #slots do
 				local data = processData(buffs, unit, C_UnitAuras.GetAuraDataBySlot(unit, slots[i]), buffFilter)
 				buffs.all[data.auraInstanceID] = data
