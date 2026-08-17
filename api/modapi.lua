@@ -33,7 +33,9 @@ end
 ---@param colorName string @ check module db first, then color module.
 ---@return number R, number G, number B
 function ModuleMixin:RGB(colorName)
-	--  TODO: Fix the issue with RGB colors as RGBA colors in the options
+	if not colorName or issecretvalue(colorName) then
+		return
+	end
 	local db = self:GetDB("Colors")
 	if db and db[colorName] then
 		-- TODO: Check for all planned types (.t)
