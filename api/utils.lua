@@ -237,8 +237,14 @@ local mult = 1
 
 --- Updates the scale factor for Scaling calculations. Only needs to be called at login or when resolution changes.
 function LUI:UpdateScaleMultiplier()
-	local screenHeight = string.match(GetCVar("gxWindowedResolution"), "%d+x(%d+)")
+	local resolution = GetCVar("gxWindowedResolution")
+	local screenHeight = resolution and tonumber(string.match(resolution, "%d+x(%d+)"))
 	local uiScale = UIParent:GetScale()
+
+	if not screenHeight or screenHeight == 0 then
+		screenHeight = UIParent:GetHeight()
+	end
+
 	mult = 768 / screenHeight / uiScale
 end
 
