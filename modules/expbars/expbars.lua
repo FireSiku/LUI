@@ -259,7 +259,11 @@ end
 
 function module:UpdateMainBarVisibility()
 	local barLeft, barRight
-
+	if not module.ExperienceBar or not module.ReputationBar
+		or not module.HonorBar or not module.AzeriteBar
+		or not module.GenesisBar then
+		return
+	end
 	-- Check which bars can be visible at the moment
 	local expShown = module.ExperienceBar:ShouldBeVisible()
 	local repShown = module.ReputationBar:ShouldBeVisible()
