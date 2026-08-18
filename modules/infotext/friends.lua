@@ -87,6 +87,7 @@ local onlineFriends = 0
 local totalBNFriends = 0
 local onlineBNFriends = 0
 local infotip
+local legendTip
 local onBlock
 
 --Add new Static Dialog, called once, no need to have local copies.
@@ -268,7 +269,9 @@ end
 
 function element:UpdateBNFriendAnchorPoints(i)
 	local bnfriend = infotip.BNFriends[i]
-	if i == 1 then
+	local sliderOffset = infotip:GetSliderOffset()
+	
+	if i == sliderOffset or i == 1 then
 		bnfriend:SetPoint("TOPLEFT", infotip.sep, "BOTTOMLEFT", GAP)
 	else
 		-- Check if the previous BNFriend has a broadcast.
@@ -705,6 +708,10 @@ function element.OnLeave(frame_)
 	if not infotip:IsMouseOver() then
 		infotip:Hide()
 		onBlock = false
+	end
+	
+		if legendTip then
+		legendTip:Hide()
 	end
 end
 
