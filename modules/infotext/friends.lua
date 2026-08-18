@@ -165,6 +165,13 @@ end
 function element:CreateBroadcast()
 	if infotip.broadcast then return infotip.broadcast end
 	local bc = infotip:NewLine()
+	bc:EnableMouse(true)
+	bc:SetScript("OnMouseUp", function(self, button)
+		if button == "LeftButton" then
+			StaticPopup_Show("SET_BN_BROADCAST")
+		end
+	end)
+	
 	bc.name = bc:AddFontString("LEFT", element:RGB("Broadcast"))
 	bc.name:SetJustifyV("TOP")
 	bc.name:SetPoint("TOPLEFT")
@@ -636,9 +643,6 @@ function element.OnEnter(frame_)
 
 			-- Show Broadcast
 			local broadcast = element:CreateBroadcast()
-			broadcast:SetScript("OnMouseDown", function()
-	    		StaticPopup_Show("SET_BN_BROADCAST")
-            end)
 			
 			local _, _, _, currentBroadcast = BNGetInfo()
 			local broadcastPrefix = CreateColor(1, 1, 1):WrapTextInColorCode(BATTLENET_BROADCAST..":")
