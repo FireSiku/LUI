@@ -293,25 +293,11 @@ local function processData(element, unit, data, filter)
 	return data
 end
 
-local function GetAuraSlotsSafe(unit, filter)
-	local success, slots = pcall(function()
-		return {C_UnitAuras.GetAuraSlots(unit, filter)}
-	end)
-
-	if not success then
-		return
-	end
-
-	return slots
-end
-
 local function UpdateAuras(self, event, unit, updateInfo)
 	if(self.unit ~= unit) then return end
 
 	local isFullUpdate = not updateInfo or updateInfo.isFullUpdate
-if issecretvalue(isFullUpdate) then
-	return
-end
+
 	local auras = self.Auras
 	if(auras) then
 		isFullUpdate = auras.needFullUpdate or isFullUpdate
@@ -347,8 +333,7 @@ end
 			auras.activeBuffs = table.wipe(auras.activeBuffs or {})
 			buffsChanged = true
 
-			local slots = GetAuraSlotsSafe(unit, buffFilter)
-			if not slots then return end
+			local slots = {C_UnitAuras.GetAuraSlots(unit, buffFilter)}
 			for i = 2, #slots do -- #1 return is continuationToken, we don't care about it
 				local data = processData(auras, unit, C_UnitAuras.GetAuraDataBySlot(unit, slots[i]), buffFilter)
 				auras.allBuffs[data.auraInstanceID] = data
@@ -374,8 +359,7 @@ end
 			auras.activeDebuffs = table.wipe(auras.activeDebuffs or {})
 			debuffsChanged = true
 
-			slots = GetAuraSlotsSafe(unit, debuffFilter)
-			if not slots then return end
+			slots = {C_UnitAuras.GetAuraSlots(unit, debuffFilter)}
 			for i = 2, #slots do
 				local data = processData(auras, unit, C_UnitAuras.GetAuraDataBySlot(unit, slots[i]), debuffFilter)
 				auras.allDebuffs[data.auraInstanceID] = data
@@ -620,8 +604,7 @@ end
 			buffs.active = table.wipe(buffs.active or {})
 			buffsChanged = true
 
-			local slots = GetAuraSlotsSafe(unit, buffFilter)
-			if not slots then return end
+			local slots = {C_UnitAuras.GetAuraSlots(unit, buffFilter)}
 			for i = 2, #slots do
 				local data = processData(buffs, unit, C_UnitAuras.GetAuraDataBySlot(unit, slots[i]), buffFilter)
 				buffs.all[data.auraInstanceID] = data
@@ -732,9 +715,8 @@ end
 			debuffs.all = table.wipe(debuffs.all or {})
 			debuffs.active = table.wipe(debuffs.active or {})
 			debuffsChanged = true
-			
-			local slots = GetAuraSlotsSafe(unit, debuffFilter)
-			if not slots then return end
+
+			local slots = {C_UnitAuras.GetAuraSlots(unit, debuffFilter)}
 			for i = 2, #slots do
 				local data = processData(debuffs, unit, C_UnitAuras.GetAuraDataBySlot(unit, slots[i]), debuffFilter)
 				debuffs.all[data.auraInstanceID] = data
