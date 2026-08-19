@@ -59,17 +59,14 @@ local function Update(self, event)
 		isLeader = UnitLeadsAnyGroup(unit)
 	end
 
-	if(isLeader) then
-		if(isInLFGInstance) then
-			element:SetAtlas('UI-HUD-UnitFrame-Player-Group-GuideIcon', element.useAtlasSize)
-		else
-			element:SetAtlas('UI-HUD-UnitFrame-Player-Group-LeaderIcon', element.useAtlasSize)
-		end
-
-		element:Show()
+	if(isInLFGInstance) then
+		element:SetAtlas('UI-HUD-UnitFrame-Player-Group-GuideIcon', element.useAtlasSize)
 	else
-		element:Hide()
+		element:SetAtlas('UI-HUD-UnitFrame-Player-Group-LeaderIcon', element.useAtlasSize)
 	end
+
+	element:Show()
+	element:SetAlphaFromBoolean(isLeader, 1, 0)
 
 	--[[ Callback: LeaderIndicator:PostUpdate(isLeader)
 	Called after the element has been updated.
