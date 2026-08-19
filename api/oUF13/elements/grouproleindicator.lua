@@ -42,6 +42,12 @@ local function Update(self, event)
 	end
 
 	local role = UnitGroupRolesAssigned(self.unit)
+
+	if issecretvalue(role) then
+		element:Hide()
+		return
+	end
+	
 	if(role == 'TANK') then
 		element:SetAtlas('UI-LFG-RoleIcon-Tank-Micro-Raid', element.useAtlasSize)
 		element:Show()
