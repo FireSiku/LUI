@@ -9,7 +9,7 @@ local L = LUI.L
 ---@class LUI.ExperienceBars
 local module = LUI:GetModule("Experience Bars")
 
-local IsPlayerAtEffectiveMaxLevel = _G.IsPlayerAtEffectiveMaxLevel
+local IsPlayerAtEffectiveMaxLevel = GameRulesUtil.IsPlayerAtEffectiveMaxLevel
 local IsXPUserDisabled = _G.IsXPUserDisabled
 local UnitXPMax = _G.UnitXPMax
 local UnitXP = _G.UnitXP
