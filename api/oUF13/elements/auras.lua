@@ -717,7 +717,7 @@ local function UpdateAuras(self, event, unit, updateInfo)
 	end
 
 	local debuffs = self.Debuffs
-	if(debuffs) then
+	if(debuffs and not debuffs.hasDebuffGroup) then
 		isFullUpdate = debuffs.needFullUpdate or isFullUpdate
 		debuffs.needFullUpdate = false
 
