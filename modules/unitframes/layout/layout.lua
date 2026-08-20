@@ -2154,6 +2154,12 @@ module.funcs = {
 		if not self.Debuffs.hasDebuffGroup then
 			self.Debuffs:AddAuraGroup("debuffs", "HARMFUL|PLAYER", {
 				maxFrameCount = oufdb.Aura.Debuffs.Num,
+				layout = {
+						elementWidth = oufdb.Aura.Debuffs.Size,
+						elementHeight = oufdb.Aura.Debuffs.Size,
+						elementSpacing = oufdb.Aura.Debuffs.Spacing,
+						lineSpacing = oufdb.Aura.Debuffs.Spacing,
+				},
 				initializeFrame = function(button)
 					button:SetSize(oufdb.Aura.Debuffs.Size, oufdb.Aura.Debuffs.Size)
 
