@@ -41,10 +41,10 @@ local CopyFuncs = {
 	end,
 	
 	Bars = function(srcUnit, dstUnit, withSizes, withPosition)
-		CopySettings(module.db.profile[srcUnit].Health, module.db.profile[dstUnit].Health, withSizes, withPosition)
-		CopySettings(module.db.profile[srcUnit].Power, module.db.profile[dstUnit].Power, withSizes, withPosition)
-		CopySettings(module.db.profile[srcUnit].Full, module.db.profile[dstUnit].Full, withSizes, withPosition)
-		CopySettings(module.db.profile[srcUnit].HealthPrediction, module.db.profile[dstUnit].HealthPrediction, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].HealthBar, module.db.profile[dstUnit].HealthBar, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].PowerBar, module.db.profile[dstUnit].PowerBar, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].HealthPredictionBar, module.db.profile[dstUnit].HealthPredictionBar, withSizes, withPosition)
+		CopySettings(module.db.profile[srcUnit].TotalAbsorbBar, module.db.profile[dstUnit].TotalAbsorbBar, withSizes, withPosition)
 	end,
 	
 	Indicators = function(srcUnit, dstUnit, withSizes, withPosition)

@@ -9,7 +9,7 @@ local addonname, LUI = ...
 
 LUI.Versions.bartender = 3300
 
-function LUI:InstallBartender()
+local function InstallBartender(self)
 	if not C_AddOns.IsAddOnLoaded("Bartender4") then return end
 
 	local CharName = LUI.playerName
@@ -597,3 +597,7 @@ function LUI:InstallBartender()
 
 	if LUI.db.global.luiconfig[LUI.profileName].Versions then LUI.db.global.luiconfig[LUI.profileName].Versions.bartender = LUI.Versions.bartender end
 end
+
+-- Updating Bartender's module configuration rebuilds secure action buttons.
+-- Defer the complete operation when the installer is invoked in combat.
+LUI.InstallBartender = LUI.OutOfCombatWrapper(InstallBartender)

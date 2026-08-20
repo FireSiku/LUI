@@ -101,10 +101,10 @@ end
 --TagEvents["GetNameColor"] = "UNIT_HAPPINESS"
 function TagMethods.GetNameColor(unit)
 	local reaction = UnitReaction(unit, "player")
-	local pClass, pToken = UnitClass(unit)
-	local pClass2, pToken2 = UnitPowerType(unit)
-	local color = {LUI:GetClassColor(pToken)}
-	local color2 = {LUI:GetFallbackRGB(pToken2)}
+	local _, pToken = UnitClass(unit)
+	local _, pToken2 = UnitPowerType(unit)
+	local color = (pToken ~= nil and not issecretvalue(pToken)) and {LUI:GetClassColor(pToken)} or {1, 1, 1}
+	local color2 = (pToken2 ~= nil and not issecretvalue(pToken2)) and {LUI:GetFallbackRGB(pToken2)} or {1, 1, 1}
 	
 	if UnitIsPlayer(unit) then
 		if color and next(color) then
@@ -133,10 +133,15 @@ TagEvents["DiffColor"] = "UNIT_LEVEL"
 function TagMethods.DiffColor(unit)
 	local r, g, b
 	local level = UnitLevel(unit)
+	if level == nil or issecretvalue(level) then
+		return "|cffcccccc"
+	end
 	if level < 1 then
 		r, g, b = unpack(module.colors.leveldiff[1])
 	else
-		local difference = level - UnitLevel("player")
+		local playerLevel = UnitLevel("player")
+		if playerLevel == nil or issecretvalue(playerLevel) then return "|cffcccccc" end
+		local difference = level - playerLevel
 		if difference >= 5 then
 			r, g, b = unpack(module.colors.leveldiff[1])
 		elseif difference >= 3 then
@@ -208,6 +213,8 @@ function TagMethods.RaidName25(unit, relativeUnit)
 		end
 	end
 	local name = unit == "vehicle" and UnitName(relativeUnit or unit) or UnitName(unit)
+	if name == nil then return "" end
+	if issecretvalue(name) then return name end
 	if not nameCache[name] then ShortenName(name) end
 	return nameCache[name][1]
 end
@@ -226,6 +233,8 @@ function TagMethods.RaidName40(unit, relativeUnit)
 		end
 	end
 	local name = unit == "vehicle" and UnitName(relativeUnit or unit) or UnitName(unit)
+	if name == nil then return "" end
+	if issecretvalue(name) then return name end
 	if not nameCache[name] then ShortenName(name) end
 	return nameCache[name][2]
 end
@@ -238,13 +247,13 @@ function TagMethods.additionalpower2(unit)
 	local db = module.db.profile.player.AdditionalPowerText
 
 	local min, max = UnitPower("player", Enum.PowerType.Mana), UnitPowerMax("player", Enum.PowerType.Mana)
-	--if db.HideIfFullMana and min == max then return "" end
 	local perc = UnitPowerPercent("player", Enum.PowerType.Mana)
+	if issecretvalue(min) or issecretvalue(max) or issecretvalue(perc) then return "" end
 
 	local _, pType = UnitPowerType(unit)
-	local pClass, pToken = UnitClass(unit)
-	local color = {LUI:GetClassColor(pToken)}
-	local color2 = {LUI:GetFallbackRGB(pType)}
+	local _, pToken = UnitClass(unit)
+	local color = (pToken ~= nil and not issecretvalue(pToken)) and {LUI:GetClassColor(pToken)} or {1, 1, 1}
+	local color2 = (pType ~= nil and not issecretvalue(pType)) and {LUI:GetFallbackRGB(pType)} or {1, 1, 1}
 
 	local r, g, b, text
 

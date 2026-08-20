@@ -59,7 +59,8 @@ function module:UNIT_AURA(_, unitid, ...)
 		return
 	else
 		for i = 1, 40 do
-			local name = UnitAura("player", i)
+			local auraData = C_UnitAuras.GetAuraDataByIndex("player", i, "HELPFUL")
+		local name = auraData and auraData.name
 			if db.Buffs[name] then
 				CancelUnitBuff("player", i)
 			end

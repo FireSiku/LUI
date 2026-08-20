@@ -449,9 +449,6 @@ local SetSwing = function()
 			Ranged(self, event, ...)
 		elseif event == "UNIT_RANGEDDAMAGE" then
 			RangedChange(self, event, ...)
-		elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
-			Melee(self, event, ...)
-			ParryHaste(self, event, ...)
 		elseif event == "UNIT_ATTACK_SPEED" then
 			MeleeChange(self, event, ...)
 		elseif event == "PLAYER_REGEN_ENABLED" then
@@ -621,7 +618,7 @@ function module:OnEnable()
 
 	LUISwing:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED") -- Ranged
 	LUISwing:RegisterEvent("UNIT_RANGEDDAMAGE") -- RangedChange
-	LUISwing:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED") -- Melee, ParryHaste
+	-- WoW 12.x: COMBAT_LOG_EVENT_UNFILTERED is forbidden to addons; melee/parry-haste tracking is unavailable.
 	LUISwing:RegisterEvent("UNIT_ATTACK_SPEED") -- MeleeChange
 	LUISwing:RegisterEvent("PLAYER_REGEN_ENABLED") -- Ooc
 

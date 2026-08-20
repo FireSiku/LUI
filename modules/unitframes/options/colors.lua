@@ -17,23 +17,56 @@ local GetQuestDifficultyColor = _G.GetQuestDifficultyColor --[[@as function]]
 local UnitLevel = _G.UnitLevel
 local strupper = string.upper
 
+-- oUF 14 uses Blizzard ColorMixin objects for element colors. Keep LUI's
+-- profile format compatible with its existing options while exposing the
+-- ColorMixin API expected by oUF elements.
+local compatibleColorCache = setmetatable({}, {__mode = "k"})
+local fallbackClassColor = {0.5, 0.5, 0.5, 1}
+local specialPowerColors = {
+	["POWER_TYPE_STEAM"] = {0.55, 0.57, 0.61},
+	["POWER_TYPE_PYRITE"] = {0.60, 0.09, 0.17},
+}
+
+local function GetCompatibleColor(color)
+	if not color then return end
+
+	if color.GetRGB then
+		local r, g, b = color:GetRGB()
+		local a = color.a or 1
+		color[1], color[2], color[3], color[4] = r, g, b, a
+		return color
+	end
+
+	local r, g, b = color.r or color[1], color.g or color[2], color.b or color[3]
+	if not r or not g or not b then return color end
+	local a = color.a or color[4] or 1
+	local cached = compatibleColorCache[color]
+
+	if not cached or cached[1] ~= r or cached[2] ~= g or cached[3] ~= b or cached[4] ~= a then
+		local compatible = oUF:CreateColor(r, g, b, a)
+		compatible[1], compatible[2], compatible[3], compatible[4] = r, g, b, a
+		cached = compatible
+		compatibleColorCache[color] = cached
+	end
+
+	return cached
+end
+
 module.colors = setmetatable({
-	power = setmetatable({
-		["POWER_TYPE_STEAM"] = {0.55, 0.57, 0.61},
-		["POWER_TYPE_PYRITE"] = {0.60, 0.09, 0.17},
-	}, {
+	power = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.profile.Colors.Power[k] or oUF.colors.power[k]
+			return GetCompatibleColor(specialPowerColors[k] or module.db.profile.Colors.Power[k] or oUF.colors.power[k])
 		end
 	}),
 	class = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.profile.Colors.Class[k] or oUF.colors.class[k] or {0.5, 0.5, 0.5, 1}
+			return GetCompatibleColor(module.db.profile.Colors.Class[k] or oUF.colors.class[k] or fallbackClassColor)
 		end
 	}),
 	leveldiff = setmetatable({}, {
 		__index = function(t, k)
-			local diffColor = GetQuestDifficultyColor(UnitLevel("target"))
+			local targetLevel = UnitLevel("target")
+			local diffColor = not issecretvalue(targetLevel) and GetQuestDifficultyColor(targetLevel) or NORMAL_FONT_COLOR
 			return module.db.profile.Colors.LevelDiff[k] or {diffColor.r, diffColor.g, diffColor.b}
 		end
 	}),
@@ -49,7 +82,7 @@ module.colors = setmetatable({
 	}),
 	runes = setmetatable({}, {
 		__index = function(t, k)
-			return module.db.profile.Colors.Runes[k] or oUF.colors.runes[k]
+			return GetCompatibleColor(module.db.profile.Colors.Runes[k] or oUF.colors.runes[k])
 		end
 	}),
 	totems = setmetatable({}, {

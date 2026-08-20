@@ -169,12 +169,19 @@ local function UpdateDebuff(self, name, icon, count, debuffType, duration, endTi
 end
 
 local function Update(self, event, unit)
-	if unit ~= self.unit then return end
+	if unit ~= self.__unit then return end
 	local _name, _icon, _count, _dtype, _duration, _endTime, priority
 	local _priority = 0
 	for i = 1, 40 do
-		local name, icon, count, debuffType, duration, expirationTime, _, _, _, spellId = UnitAura(unit, i, 'HARMFUL')
-		if (not name) then break end
+		local auraData = C_UnitAuras.GetAuraDataByIndex(unit, i, 'HARMFUL')
+		if not auraData then break end
+		local name = auraData.name
+		local icon = auraData.icon
+		local count = auraData.applications
+		local debuffType = auraData.dispelName
+		local duration = auraData.duration
+		local expirationTime = auraData.expirationTime
+		local spellId = auraData.spellId
 
 		if addon.ShowDispelableDebuff and debuffType then
 			if addon.FilterDispellableDebuff then

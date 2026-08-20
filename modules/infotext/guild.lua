@@ -279,7 +279,14 @@ function element.OnEnter(frame_)
 				member.unit = fullName
 				member.guildIndex = i
 				member.name:SetText(statusString..name)
-				member.name:SetTextColor(element:RGB(class))
+				-- Current clients normally return the locale-independent class
+				-- token here. Keep compatibility with clients returning the
+				-- localized class name so guild names do not fall back to white.
+				local classToken = class
+				if class and not issecretvalue(class) then
+					classToken = LUI:GetTokenFromClassName(class) or class
+				end
+				member.name:SetTextColor(LUI:GetClassColor(classToken))
 				member:SetClassIcon(member.class, class)
 
 				--Level Column

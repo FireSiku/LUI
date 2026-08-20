@@ -1,0 +1,23 @@
+LUI oUF 14.0.1 / Blizzard 12.1 compatibility notes
+
+Base: FireSiku LUI Retail.
+Framework: official oUF 14.0.1 core and element load list.
+
+LUI compatibility changes include:
+- legacy unit/realUnit/id aliases for the original FireSiku layout
+- Blizzard 12.1 AuraContainer filtering, duration text and cooldowns
+- oUF 14 DurationObject castbars and totem cooldowns
+- secret-safe Health/Power percent and missing-value display paths
+- oUF 14 Health healing/absorb subwidgets
+- oUF 14 interpolation and element names
+- complete LUIOptions activation controls for every Unitframe aura page
+- live refresh for party/boss/arena/maintank child frames
+- corrected arena/maintank toggle routing and child-frame names/counts
+- combat-safe Unitframe option and mover updates
+- functional indicators, range fading and class-specific resource pages
+- functional castbar borders, text colors and secret-safe shield presentation
+- disabled Power bars stay hidden after native oUF updates while their
+  secret-safe text updates remain active
+- secure out-of-combat previews for individual, party, raid, boss, arena and
+  main-tank unitframe layouts
+- the Control Panel now mirrors every registered module with an options page

@@ -45,9 +45,14 @@ local function FormatRaidName(self)
 	if not self or not self.Info then return end
 
 	local info = self.Info
+	local parent = self:GetParent()
+	local grandParent = parent and parent:GetParent()
+	local groupName = grandParent and grandParent:GetName()
 
-	local index = self:GetParent():GetParent():GetName() == "oUF_LUI_raid_25" and 1 or 2
-	local tag = self:GetParent():GetParent():GetName() == "oUF_LUI_raid_25" and "[RaidName25]" or "[RaidName40]"
+	-- Normal raid frames are children of the 25/40-player raid headers. Preview
+	-- frames are spawned as standalone frames, so they intentionally have no
+	-- raid-header grandparent and use the 25-player name format.
+	local tag = groupName == "oUF_LUI_raid_40" and "[RaidName40]" or "[RaidName25]"
 
 	if info.ColorByClass then tag = "[GetNameColor]"..tag.."|r" end
 

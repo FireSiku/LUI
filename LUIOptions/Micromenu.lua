@@ -37,6 +37,7 @@ Micromenu.args = {
 	HideAchievements = Opt:Toggle({name = L["MicroOptions_Achievements"]}),
 	HideQuests = Opt:Toggle({name = L["MicroOptions_Quests"]}),
 	HideGuild = Opt:Toggle({name = L["MicroOptions_Guild"]}),
+	HideHousing = Opt:Toggle({name = _G.HOUSING_MICRO_BUTTON or "Housing"}),
 	HideLFG = Opt:Toggle({name = L["MicroOptions_LFG"]}),
 	HideEJ = Opt:Toggle({name = L["MicroOptions_EJ"]}),
 	HideCollections = Opt:Toggle({name = L["MicroOptions_Collections"]}),

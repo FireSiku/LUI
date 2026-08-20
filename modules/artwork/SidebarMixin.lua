@@ -33,10 +33,14 @@ function SidebarMixin:Open()
 		-- Additionally, if called while already open, force it without playing the animation.
 		if self.db.OpenInstant or InCombatLockdown() or self:IsOpen() then
 			self.Drawer:SetAlpha(1)
-			self.BtnAnchorOpen:Show()
-			self.BtnAnchor:Hide()
-			local anchoredFrame = _G[self.db.Anchor]
-			if anchoredFrame then anchoredFrame:Show() end
+			-- Protected Bartender/action-bar frames are toggled by the secure
+			-- PostClick wrapper while in combat.
+			if not InCombatLockdown() then
+				self.BtnAnchorOpen:Show()
+				self.BtnAnchor:Hide()
+				local anchoredFrame = _G[self.db.Anchor]
+				if anchoredFrame then anchoredFrame:Show() end
+			end
 		else
 			self.OpenAnim:Play()
 		end
@@ -50,10 +54,14 @@ function SidebarMixin:Close()
 		-- Additionally, if called while already closed, force it without playing the animation.
 		if self.db.OpenInstant or InCombatLockdown() or not self:IsOpen() then
 			self.Drawer:SetAlpha(0)
-			self.BtnAnchorOpen:Hide()
-			self.BtnAnchor:Show()
-			local anchoredFrame = _G[self.db.Anchor]
-			if anchoredFrame then anchoredFrame:Hide() end
+			-- Protected Bartender/action-bar frames are toggled by the secure
+			-- PostClick wrapper while in combat.
+			if not InCombatLockdown() then
+				self.BtnAnchorOpen:Hide()
+				self.BtnAnchor:Show()
+				local anchoredFrame = _G[self.db.Anchor]
+				if anchoredFrame then anchoredFrame:Hide() end
+			end
 		else
 			self.CloseAnim:Play()
 		end
@@ -115,7 +123,7 @@ function SidebarMixin:Refresh()
 		self:Hide()
 	end
 
-	if _G[self.db.Anchor] then
+	if not InCombatLockdown() and _G[self.db.Anchor] then
 		self.BtnAnchor:SetFrameRef("anchor", _G[self.db.Anchor])
 		self.BtnAnchorOpen:SetFrameRef("anchor", _G[self.db.Anchor])
 	end
@@ -135,7 +143,7 @@ function SidebarMixin:AutoAdjust()
 	end
 end
 
-function SidebarMixin:BT4Adjust()
+local function ApplyBT4Adjust(self)
 	if not C_AddOns.IsAddOnLoaded("Bartender4") or not (strsub(self.db.Anchor,1, 3) == "BT4") then return end
 	local _, num = strsplit("r", self.db.Anchor)
 	local barOpt = Bartender4.db:GetNamespace("ActionBars").profile.actionbars[tonumber(num)]
@@ -156,8 +164,6 @@ function SidebarMixin:BT4Adjust()
 	-- Then we can adjust based on a fixed offset based on the top of the drawer texture.
 	local barY = (y + drawHeight*0.41) / uiScale * barScale
 
-	-- LUI:Print(format("BT4Adjust(%d) Normal: texWidth: %.2f, drawWidth: %.2f, drawHeight: %.2f, x: %.2f, y: %.2f", num, texWidth, drawWidth, drawHeight, x, y))
-	-- LUI:Print(format("Reccommended Position: BarX: %.2f, BarY: %.2f", barX, barY))
 	
 	-- Update Bartender settings.
 	barOpt.enabled = self.db.Enable
@@ -170,6 +176,10 @@ function SidebarMixin:BT4Adjust()
 	barOpt.position.scale = barScale
 	Bartender4:UpdateModuleConfigs()
 end
+
+-- Bartender rebuilds secure action-button state from UpdateModuleConfigs.
+-- Never invoke it during combat; apply the latest sidebar values on leaving.
+SidebarMixin.BT4Adjust = LUI.OutOfCombatWrapper(ApplyBT4Adjust)
 
 module.SidebarMixin = SidebarMixin
 

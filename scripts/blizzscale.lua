@@ -78,7 +78,6 @@ end
 local blizzHooks = {
 	"Calendar_LoadUI",
 	"MacroFrame_LoadUI",
-	"KeyBindingFrame_LoadUI",
 }
 if LUI.IsRetail then
 	tinsert(blizzHooks, "AchievementFrame_LoadUI")

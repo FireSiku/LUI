@@ -6,7 +6,6 @@ local Opt = select(2, ...)
 
 ---@type AceLocale.Localizations, LUI.Artwork, AceDB-3.0
 local L, module, db = Opt:GetLUIModule("Artwork")
--- if not module or not module.registered then return end
 
 local TEX_MODE_SELECT = {
 	L["Panels_TexMode_LUI"],
@@ -81,9 +80,6 @@ local function IsAnchorParentDisabled(info) return not db.Textures[info[#info-1]
 local function IsTexCoordsHidden(info) return not db.Textures[info[#info-1]].CustomTexCoords end
 local function IsTextureInputHidden(info) return db.Textures[info[#info-1]].TexMode == 1 end
 local function IsTextureSelectHidden(info) return db.Textures[info[#info-1]].TexMode ~= 1 end
--- local function GetOptionTexCoords(info) return setPanels[info[#info-1]]:GetTexCoord() end
--- local function GetOptionImageTexture(info) return setPanels[info[#info-1]]:GetTexture() end
--- local function RefreshPanel(info) return setPanels[info[#info-1]]:Refresh() end
 
 -- LUI preset textures have their tex coords provided.
 local function IsCustomTexCoordsHidden(info)
@@ -116,7 +112,6 @@ local function CreatePanelGroup(name, isNative)
 	local group = Opt:Group({name = name, db = texDB, args = {
 		Enabled = Opt:Toggle({name = "Enabled"}),
 		TextureHeader = Opt:Header({name = L["Texture"]}),
-		--ImageDesc = Opt:Desc({name = "", 2, nil, GetOptionImageTexture, desc = GetOptionTexCoords, 128}),
 		TexMode = Opt:Select({name = L["Panels_Options_Category"], values = TEX_MODE_SELECT, disabled = isNative}),
 		Texture = Opt:Input({name = L["Texture"], desc = L["Panels_Options_Texture_Desc"], hidden = IsTextureInputHidden, onlyIf = (not isNative)}),
 		TextureSelect = Opt:Select({name = L["Panels_Options_TextureSelect"], desc = L["Panels_Options_TextureSelect_Desc"],
@@ -124,9 +119,6 @@ local function CreatePanelGroup(name, isNative)
 		LineBreakTex = Opt:Spacer({}),
 		Anchored = Opt:Toggle({name = L["Panels_Options_Anchored"], desc = L["Panels_Options_Anchored_Desc"], width = "normal"}),
 		Parent = Opt:Input({name = L["Parent"], desc = L["Panels_Options_Parent_Desc"], disabled = IsAnchorParentDisabled}),
-		-- ColorType = Opt:Select({name = "Panel Color", values = LUI.ColorTypes,
-		-- 	get = function(info) return db.Colors[name].t end, --getter
-		-- 	set = function(info, value) db.Colors[name].t = value; module:Refresh() end}), --setter
 		ColorType = Opt:ColorSelect({name = "Panel Color", arg = name}),
 		[(name)] = Opt:Color({name = "Individual Color", hasAlpha = true}),
 		LineBreakFlip = Opt:Spacer({}),
@@ -218,8 +210,6 @@ local function CreateSidebarOptions(name, bar, barDB)
 		SpacerColor = Opt:Spacer({}),
 		ColorType = Opt:ColorSelect({name = "Sidebar Texture Color", arg = dbName}),
 		[(dbName)] = Opt:Color({name = "Individual Color", hasAlpha = true}),
-		---@TODO: Point will only be there for additional sidebars.
-		--Point = Opt:Select({name = "Anchor Point that the sidebar will be tied to.", values = LUI.Points}),
 	}})
 end
 
@@ -286,7 +276,6 @@ local BuiltinArgs = {
 		Spacer = Opt:Spacer({}),
 		NavColorType = Opt:ColorSelect({name = "Buttons Color", arg = "NavButtons"}),
 		NavButtons = Opt:Color({name = "Individual Color", hasAlpha = true}),
-		--Background = Opt:Toggle({name = "Show Themed Background", desc = "When enabled the top left and right-hand side themed background is shown.", width = "full"}),
 		LineHeader = Opt:Header({name = "Bottom Lines"}),
 		BlackLines = Opt:Toggle({name = "Show Black Lines", desc = "Enable the bottom left and right black line.", width = "full"}),
 		ThemedLines = Opt:Toggle({name = "Show Themed Lines", desc = "Enable the bottom left and right themed line.", width = "full"}),

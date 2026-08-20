@@ -184,6 +184,9 @@ end
 ---@return number R, number G, number B
 function LUI:GetReactionColor(unit, otherUnit)
 	local reaction = UnitReaction(unit, otherUnit or "player")
+	if issecretvalue(reaction) or type(reaction) ~= "number" then
+		return 1, 1, 1
+	end
 	local colorName = format("Standing%d", reaction)
 
 	local r, g, b = GetColorRGB(colorName)

@@ -107,12 +107,9 @@ function module:CreateHealthPredictionOptions(unit, order)
 		for _, frame in pairs(self.framelist[unit]) do
 			if _G[frame] then
 				module.funcs.HealthPrediction(_G[frame], _G[frame].__unit, self.db[unit])
-				if self.db[unit].HealthPredictionBar.Enable then
-					_G[frame]:EnableElement("HealthPrediction")
-				else
-					_G[frame]:DisableElement("HealthPrediction")
-				end
-				_G[frame]:UpdateAllElements('refreshUnit')
+				_G[frame]:DisableElement("Health")
+				_G[frame]:EnableElement("Health")
+				_G[frame].Health:ForceUpdate()
 			end
 		end
 	end
@@ -135,12 +132,9 @@ function module:CreateTotalAbsorbOptions(unit, order)
 		for _, frame in pairs(self.framelist[unit]) do
 			if _G[frame] then
 				module.funcs.TotalAbsorb(_G[frame], _G[frame].__unit, self.db[unit])
-				if self.db[unit].TotalAbsorbBar.Enable then
-					_G[frame]:EnableElement("TotalAbsorb")
-				else
-					_G[frame]:DisableElement("TotalAbsorb")
-				end
-				_G[frame]:UpdateAllElements('refreshUnit')
+				_G[frame]:DisableElement("Health")
+				_G[frame]:EnableElement("Health")
+				_G[frame].Health:ForceUpdate()
 			end
 		end
 	end
@@ -164,8 +158,11 @@ function module:CreateBarOptions(unit, order, barType)
 		for _, frame in pairs(self.framelist[unit]) do
 			if _G[frame] then
 				module.funcs[barType](_G[frame], _G[frame].__unit, self.db[unit])
-				if barType == "Health" and _G[frame].HealthPrediction then
+				if barType == "Health" and self.db[unit].HealthPredictionBar then
 					module.funcs.HealthPrediction(_G[frame], _G[frame].__unit, self.db[unit])
+					if self.db[unit].TotalAbsorbBar then
+						module.funcs.TotalAbsorb(_G[frame], _G[frame].__unit, self.db[unit])
+					end
 				end
 				_G[frame]:UpdateAllElements('refreshUnit')
 			end
@@ -174,10 +171,11 @@ function module:CreateBarOptions(unit, order, barType)
 
 	local toggleSmooth = function(info, Smooth)
 		for _, frame in pairs(self.framelist[unit]) do
-			if Smooth then
-				if _G[frame] then _G[frame]:SmoothBar(_G[frame][barType]) end
-			else
-				if _G[frame] then _G[frame][barType].SetValue = _G[frame][barType].SetValue_ end
+			if _G[frame] and _G[frame][barType] then
+				_G[frame][barType].smoothing = Smooth
+					and Enum.StatusBarInterpolation.ExponentialEaseOut
+					or Enum.StatusBarInterpolation.Immediate
+				if _G[frame][barType].ForceUpdate then _G[frame][barType]:ForceUpdate() end
 			end
 		end
 	end
@@ -285,19 +283,17 @@ function module:CreatePlayerBarOverlappingOptions(barType, order)
 	end
 
 	local smoothBar = function(self, Smooth)
+		local smoothing = Smooth and Enum.StatusBarInterpolation.ExponentialEaseOut
+			or Enum.StatusBarInterpolation.Immediate
 		if barType == "AdditionalPower" then
-			if Smooth then
-				oUF_LUI_player:SmoothBar(oUF_LUI_player.AdditionalPower)
-			else
-				oUF_LUI_player.AdditionalPower.SetValue = oUF_LUI_player.AdditionalPower.SetValue_
-			end
+			oUF_LUI_player.AdditionalPower.smoothing = smoothing
+			if oUF_LUI_player.AdditionalPower.ForceUpdate then oUF_LUI_player.AdditionalPower:ForceUpdate() end
 		else
-			if Smooth then
-				oUF_LUI_player:SmoothBar(oUF_LUI_player.AlternativePower)
-				if oUF_LUI_pet then oUF_LUI_pet:SmoothBar(oUF_LUI_pet.AlternativePower) end
-			else
-				oUF_LUI_player.AlternativePower.SetValue = oUF_LUI_player.AlternativePower.SetValue_
-				if oUF_LUI_pet then oUF_LUI_pet.AlternativePower.SetValue = oUF_LUI_pet.AlternativePower.SetValue_ end
+			oUF_LUI_player.AlternativePower.smoothing = smoothing
+			if oUF_LUI_player.AlternativePower.ForceUpdate then oUF_LUI_player.AlternativePower:ForceUpdate() end
+			if oUF_LUI_pet and oUF_LUI_pet.AlternativePower then
+				oUF_LUI_pet.AlternativePower.smoothing = smoothing
+				if oUF_LUI_pet.AlternativePower.ForceUpdate then oUF_LUI_pet.AlternativePower:ForceUpdate() end
 			end
 		end
 	end
@@ -618,13 +614,11 @@ function module:CreateCastbarOptions(unit, order)
 		if _G[self.framelist[unit][1]]:IsShown() then
 			for _, frame in pairs(self.framelist[unit]) do
 				if _G[frame] and _G[frame].Castbar then
-					_G[frame].Castbar.max = 60
-					_G[frame].Castbar.duration = 0
-					_G[frame].Castbar.delay = 0
 					_G[frame].Castbar:SetMinMaxValues(0, 60)
-					_G[frame].Castbar.casting = true
+					_G[frame].Castbar:SetValue(30, Enum.StatusBarInterpolation.Immediate)
 					_G[frame].Castbar.Text:SetText("Dummy Castbar")
-					_G[frame].Castbar:PostCastStart(_G[frame].__unit, "Dummy Castbar")
+					_G[frame].Castbar.Time:SetText("30.0")
+					_G[frame].Castbar:PostCastStart(_G[frame].__unit, nil, false, "Dummy Castbar", nil, false)
 					_G[frame].Castbar:Show()
 				end
 			end
@@ -714,25 +708,13 @@ function module:CreateAuraOptions(unit, order, type)
 	local disabledCDFunc = function() return not self.db[unit].Aura[type].Enable or self.db[unit].Aura[type].DisableCooldown end
 
 	local applySettings = function()
-		for _, frame in pairs(self.framelist[unit]) do
-			if _G[frame] then
-				module.funcs[type](_G[frame], _G[frame].__unit, self.db[unit])
-				if self.db[unit].Aura[type].Enable then
-					_G[frame]:EnableElement("Aura")
-					_G[frame][type]:Show()
-				else
-					if self.db[unit].Aura.Buffs.Enable == false and self.db[unit].Aura.Debuffs.Enable == false then
-						_G[frame]:DisableElement("Aura")
-					end
-					_G[frame][type]:Hide()
-				end
-				_G[frame]:UpdateAllElements('refreshUnit')
-			end
-		end
+		module.ApplySettings(unit)
 	end
 
 	local options = self:NewGroup(type, order, {
-		Enable = self:NewToggle("Enable", "Whether you want to show "..unit.." "..type.." or not.", 1, applySettings, "full"),
+		-- Order 1 is clipped by the current unitframe options layout. Keep the
+		-- enable switch with the other aura checkboxes where it stays visible.
+		Enable = self:NewToggle("Enable "..type, "Whether you want to show "..unit.." "..type.." or not.", 13, applySettings, "full"),
 		empty1 = self:NewDesc(" ", 2),
 		X = self:NewInputNumber("X Value", "Choose the X Value for your "..unit.." "..type..".", 3, applySettings, nil, disabledFunc),
 		Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..unit.." "..type..".", 4, applySettings, nil, disabledFunc),
@@ -936,15 +918,15 @@ function module:CreateUnitOptions(unit, order)
 		General = self:NewGroup("General", 2, "tab", generalGet, generalSet, {
 			General = self:NewGroup("General", 1, {
 				Enable = self:NewToggle("Enable", "Whether you want to show "..unit.." Frame(s) or not.", 1, false, "full") or nil,
-				UseBlizzard = (unit == "party" or unit == "Boss" or unit == "arena" or unit == "raid") and self:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, false, "full", function() return self.db[unit].Enable end) or nil,
+				UseBlizzard = (unit == "party" or unit == "boss" or unit == "arena" or unit == "raid") and self:NewToggle("Use Blizzard "..unit.." Frames", "Whether you want to use Blizzard "..unit.." Frames or not.", 2, false, "full", function() return self.db[unit].Enable end) or nil,
 				ShowPlayer = (unit == "party") and self:NewToggle("Show Player", "Whether you want to show yourself within the Party Frames or not.", 3, false, nil, disabledFunc) or nil,
 				ShowInRaid = (unit == "party") and self:NewToggle("Show in Raid", "Whether you want to show the Party Frames in Raid or not.", 4, false, nil, disabledFunc) or nil,
-				ShowInRealPartys = (unit == "party") and self:NewToggle("Show only in real Parties", "Whether you want to show the Party Frames only in real Parties or in Raids with 5 or less players too.", 5, false, nil, function() return not module.db.profile.party.Enable or module.db.profile.party.ShowInRaid end) or nil,
+				ShowInRealParty = (unit == "party") and self:NewToggle("Show only in real Parties", "Whether you want to show the Party Frames only in real Parties or in Raids with 5 or less players too.", 5, false, nil, function() return not module.db.profile.party.Enable or module.db.profile.party.ShowInRaid end) or nil,
 				empty1 = (unit ~= "player" and unit ~= "target") and self:NewDesc(" ", 6) or nil,
-				Padding = (unit == "party" or unit == "Boss" or unit == "arena" or unit == "maintank" or unit == "raid") and self:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.", 7, false, nil, disabledFunc) or nil,
+				Padding = (unit == "party" or unit == "boss" or unit == "arena" or unit == "maintank" or unit == "raid") and self:NewInputNumber("Padding", "Choose the Padding between your "..unit.." Frames.", 7, false, nil, disabledFunc) or nil,
 				GroupPadding = (unit == "raid") and self:NewInputNumber("Group Padding", "Choose the Padding between your "..unit.." Groups.", 8, false, nil, disabledFunc) or nil,
-				GrowDirection = (unit == "party" or unit == "Boss"or unit == "arena" or unit == "maintank") and self:NewSelect("Grow Direction", "Choose the Grow Direction for your "..unit.." Frames.", 9, directions, nil, false, nil, disabledFunc) or nil,
-				empty2 = (unit == "party" or unit == "Boss" or unit == "arena" or unit == "maintank" or unit == "raid") and self:NewDesc(" ", 10) or nil,
+				GrowDirection = (unit == "party" or unit == "boss" or unit == "arena" or unit == "maintank") and self:NewSelect("Grow Direction", "Choose the Grow Direction for your "..unit.." Frames.", 9, directions, nil, false, nil, disabledFunc) or nil,
+				empty2 = (unit == "party" or unit == "boss" or unit == "arena" or unit == "maintank" or unit == "raid") and self:NewDesc(" ", 10) or nil,
 				X = self:NewInputNumber("X Value", "Choose the X Value for your "..unit.." Frame(s).", 11, false, nil, disabledFunc),
 				Y = self:NewInputNumber("Y Value", "Choose the Y Value for your "..unit.." Frame(s).", 12, false, nil, disabledFunc),
 				Point = self:NewSelect("Point", "Choose the Point for your "..unit.." Frame(s).", 13, positions, nil, false, nil, disabledFunc),
@@ -953,8 +935,8 @@ function module:CreateUnitOptions(unit, order)
 				Height = self:NewInputNumber("Height", "Choose the Height for your "..unit.." Frame(s).", 16, false, nil, disabledFunc),
 				Width = self:NewInputNumber("Width", "Choose the Width for your "..unit.." Frame(s).", 17, false, nil, disabledFunc),
 				Scale = (unit ~= "raid" and ufMover[unit]) and self:NewSlider("Scale", "Choose the Scale for your "..unit.." Frame(s).\n\nDefault: 100%", 18, 0.1, 2, 0.01, false, nil, nil, disabledFunc) or nil,
-				empty4 = (unit == "arena" or unit == "Boss" or unit == "maintank" or unit == "party") and self:NewDesc(" ", 19) or nil,
-				Toggle = (unit == "arena" or unit == "Boss" or unit == "maintank") and self:NewExecute("Show/Hide", "Toggles the "..unit.." Frames", 20, testFunc, nil, nil, disabledFunc) or nil,
+				empty4 = (unit == "arena" or unit == "boss" or unit == "maintank" or unit == "party") and self:NewDesc(" ", 19) or nil,
+				Toggle = (unit == "arena" or unit == "boss" or unit == "maintank") and self:NewExecute("Show/Hide", "Toggles the "..unit.." Frames", 20, testFunc, nil, nil, disabledFunc) or nil,
 				RangeFade = (unit == "party") and self:NewToggle("Fade Out of Range", "Whether you want Party Frames to fade if that player is more than 40 yards away or not.", 21, false, nil, function() return not (self.db.party.Enable and not self.db.party.Fader.Enable) end) or nil,
 				empty5 = self:NewHeader("Reset to Defaults", 22),
 				ResetToDefaults = self:NewExecute("Reset to Defaults", "Reset this unitframe's settings to the defaults.\n\nRequires a UI reload.", 23, function() self.db[unit] = {} ReloadUI() end, true),

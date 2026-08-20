@@ -7,7 +7,6 @@ local Opt = select(2, ...)
 
 ---@type AceLocale.Localizations, LUI.Cooldown, AceDB-3.0
 local L, module, db = Opt:GetLUIModule("Cooldown")
---if not module or not module.registered then return end
 
 local Cooldown = Opt:CreateModuleOptions("Cooldown", module)
 

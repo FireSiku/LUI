@@ -33,7 +33,6 @@ function LUI:CheckUpdate()
 	end
 end
 
---Test function
 function LUI:_Resync()
 	LUI:ApplyUpdate(0)
 end

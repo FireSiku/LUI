@@ -31,7 +31,7 @@ local oUF = ns.oUF
 
 local function Update(self, event)
 	local element = self.LeaderIndicator
-	local unit = self.unit
+	local unit = self.__unit
 
 	--[[ Callback: LeaderIndicator:PreUpdate()
 	Called before the element has been updated.
@@ -59,14 +59,21 @@ local function Update(self, event)
 		isLeader = UnitLeadsAnyGroup(unit)
 	end
 
-	if(isInLFGInstance) then
-		element:SetAtlas('UI-HUD-UnitFrame-Player-Group-GuideIcon', element.useAtlasSize)
-	else
-		element:SetAtlas('UI-HUD-UnitFrame-Player-Group-LeaderIcon', element.useAtlasSize)
+	if(issecretvalue(isLeader)) then
+		isLeader = false
 	end
 
-	element:Show()
-	element:SetAlphaFromBoolean(isLeader, 1, 0)
+	if(isLeader) then
+		if(isInLFGInstance) then
+			element:SetAtlas('UI-HUD-UnitFrame-Player-Group-GuideIcon', element.useAtlasSize)
+		else
+			element:SetAtlas('UI-HUD-UnitFrame-Player-Group-LeaderIcon', element.useAtlasSize)
+		end
+
+		element:Show()
+	else
+		element:Hide()
+	end
 
 	--[[ Callback: LeaderIndicator:PostUpdate(isLeader)
 	Called after the element has been updated.

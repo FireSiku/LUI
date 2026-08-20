@@ -1,5 +1,5 @@
-## Interface: 120001
-## Version: 2601
+## Interface: 120100
+## Version: v2601b
 ## Title: LUI
 ## Author: Siku, Nitsah
 ## Notes: User Interface Modification
@@ -10,10 +10,8 @@
 ### Initialize Libs ###
 libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
-# libs\LibActionButton-1.0\LibActionButton-1.0.lua
 libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 libs\LibWindow-1.1\LibWindow-1.1.lua
-# libs\LibKeyBound-1.0\lib.xml
 libs\LibSharedMedia-3.0\lib.xml
 libs\AceAddon-3.0\AceAddon-3.0.xml
 libs\AceGUI-3.0\AceGUI-3.0.xml
@@ -31,8 +29,8 @@ libs\AceTimer-3.0\AceTimer-3.0.xml
 libs\AceBucket-3.0\AceBucket-3.0.xml
 locale\locale.xml
 
-## oUF ## Current Version 13.0.0
-api\oUF13\ouf.xml
+## oUF ## Current Version 14.0.1
+api\ouf13\oUF.xml
 
 ### Core + API ###
 init.lua
@@ -51,8 +49,6 @@ update.lua
 
 ### Artwork ###
 modules\artwork\themes.lua
-# modules\artwork\panels.lua
-# modules\artwork\artwork_v3.lua
 modules\artwork\artwork_init.lua
 modules\artwork\PanelMixin.lua
 modules\artwork\SidebarMixin.lua
@@ -60,10 +56,6 @@ modules\artwork\artwork_mainpanels.lua
 modules\artwork\artwork_navbar.lua
 modules\artwork\artwork_orb.lua
 modules\artwork\artwork.lua
-
-### Fader ###
-# modules\fader\fader_init.lua
-# modules\fader\fader.lua
 
 ### Chat ###
 modules\chat\chat.xml
@@ -78,21 +70,17 @@ modules\bags\toolbars.lua
 modules\bags\bags.lua
 modules\bags\templates.lua
 modules\bags\backpack.lua
-# modules\bags\bank.lua
-
-### Cooldown ###
-# modules\cooldown\cooldown.xml
 
 ### Tooltip ###
 modules\tooltip\tooltip.lua
 
 ### InfoText ###
-modules\InfoText\infotext_init.lua
-modules\InfoText\infotext.lua
+modules\infotext\infotext_init.lua
+modules\infotext\infotext.lua
 modules\infotext\infotip.lua
-modules\InfoText\bags.lua
-modules\InfoText\clock.lua
-modules\InfoText\currency.lua
+modules\infotext\bags.lua
+modules\infotext\clock.lua
+modules\infotext\currency.lua
 modules\infotext\dualspec.lua
 modules\infotext\durability.lua
 modules\infotext\equipmentsets.lua
@@ -105,7 +93,6 @@ modules\infotext\lootspec.lua
 modules\infotext\mail.lua
 modules\infotext\memory.lua
 modules\infotext\movespeed.lua
-# modules\infotext\weaponspeed.lua
 
 ### Micromenu ###
 modules\micromenu\micromenu.lua
@@ -144,13 +131,33 @@ scripts\blizzscale.lua
 scripts\errorhider.lua
 scripts\talentspam.lua
 scripts\newplayerexperience.lua
-scripts\removethatbuff.lua
-# scripts\hideblizzard.lua
 api\frameidentifier.lua
 
 ### Initialize Unitframes ###
 modules\unitframes\templates.xml
 modules\unitframes\unitframes_init.lua
+modules\unitframes\defaults\Settings.lua
+modules\unitframes\defaults\player.lua
+modules\unitframes\defaults\target.lua
+modules\unitframes\defaults\pet.lua
+modules\unitframes\defaults\focus.lua
+modules\unitframes\defaults\party.lua
+modules\unitframes\defaults\partypet.lua
+modules\unitframes\defaults\raid.lua
+modules\unitframes\defaults\boss.lua
+modules\unitframes\defaults\maintank.lua
+modules\unitframes\defaults\arena.lua
+modules\unitframes\defaults\arenapet.lua
+modules\unitframes\defaults\pettarget.lua
+modules\unitframes\defaults\partytarget.lua
+modules\unitframes\defaults\focustarget.lua
+modules\unitframes\defaults\bosstarget.lua
+modules\unitframes\defaults\maintanktarget.lua
+modules\unitframes\defaults\arenatarget.lua
+modules\unitframes\defaults\targettarget.lua
+modules\unitframes\defaults\targettargettarget.lua
+modules\unitframes\defaults\maintanktargettarget.lua
+modules\unitframes\defaults\Colors.lua
 
 ### Unitframe Options ###
 modules\unitframes\options\colors.lua
@@ -170,6 +177,7 @@ modules\unitframes\plugins\oUF_CombatFeedback.lua
 modules\unitframes\layout\tags.lua
 modules\unitframes\layout\meta.lua
 modules\unitframes\layout\layout.lua
+modules\unitframes\layout\auras_12_1.lua
 
 ### Embedded Darion ###
 media\Masque_Darion\Darion.lua

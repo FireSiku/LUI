@@ -120,70 +120,6 @@ function module:CreateToolBar(container, name)
 
 	return Mixin(toolBar, ToolbarMixin)
 end
-
---[[
-	function PaperDollItemSlotButton_OnLoad(self)
-		self:RegisterForDrag("LeftButton");
-		self:RegisterForClicks("LeftButtonUp", "RightButtonUp");
-		
-		local slotName = PaperDollItemSlotButton_GetSlotName(self);
-		local id, textureName, checkRelic = GetInventorySlotInfo(slotName);
-		self:SetID(id);
-		local texture = self.icon;
-		texture:SetTexture(textureName);
-		self.backgroundTextureName = textureName;
-		self.checkRelic = checkRelic;
-		self.UpdateTooltip = PaperDollItemSlotButton_OnEnter;
-		itemSlotButtons[id] = self;
-		self.verticalFlyout = VERTICAL_FLYOUTS[id];
-		local popoutButton = self.popoutButton;
-		if ( popoutButton ) then
-			if ( self.verticalFlyout ) then
-				popoutButton:SetHeight(16);
-				popoutButton:SetWidth(38);
-				popoutButton:GetNormalTexture():SetTexCoord(0.15625, 0.84375, 0.5, 0);
-				popoutButton:GetHighlightTexture():SetTexCoord(0.15625, 0.84375, 1, 0.5);
-				popoutButton:ClearAllPoints();
-				popoutButton:SetPoint("TOP", self, "BOTTOM", 0, 4);
-			else
-				popoutButton:SetHeight(38);
-				popoutButton:SetWidth(16);
-				popoutButton:GetNormalTexture():SetTexCoord(0.15625, 0.5, 0.84375, 0.5, 0.15625, 0, 0.84375, 0);
-				popoutButton:GetHighlightTexture():SetTexCoord(0.15625, 1, 0.84375, 1, 0.15625, 0.5, 0.84375, 0.5);
-				popoutButton:ClearAllPoints();
-				popoutButton:SetPoint("LEFT", self, "RIGHT", -8, 0);
-			end
-		end
-	end
-
-function BaseBagSlotButtonMixin:OnLoadInternal()
-	PaperDollItemSlotButton_OnLoad(self);
-	self:RegisterForClicks("AnyUp");
-	self:RegisterEvent("BAG_UPDATE_DELAYED");
-	self:RegisterEvent("INVENTORY_SEARCH_UPDATE");
-	self.isBag = 1;
-	self.maxDisplayCount = 999;
-	self.UpdateTooltip = self.BagSlotOnEnter;
-	self.Count:ClearAllPoints();
-	self.Count:SetPoint("BOTTOMRIGHT", -2, 2);
-	self:RegisterBagButtonUpdateItemContextMatching();
-end
-function BaseBagSlotButtonMixin:BagSlotOnEvent(event, ...)
-	if event == "ITEM_PUSH" then
-		local bagSlot, iconFileID = ...;
-		if self:GetID() == bagSlot then
-			self.AnimIcon:SetTexture(iconFileID);
-			self.FlyIn:Play(true);
-		end
-	elseif event == "BAG_UPDATE_DELAYED" then
-		PaperDollItemSlotButton_Update(self);
-	elseif event == "INVENTORY_SEARCH_UPDATE" then
-		self:SetMatchesSearch(not IsContainerFiltered(self:GetBagID()));
-	else
-		PaperDollItemSlotButton_OnEvent(self, event, ...);
-	end
-end
-]]
 -- ####################################################################################################################
 -- ##### Templates: BagBar Fiter Dropdown #############################################################################
 -- ####################################################################################################################
@@ -296,7 +232,6 @@ end
 ---@param parent Frame @ Should be a container's BagBar.
 ---@return ItemButton
 function module:BagBarSlotButtonTemplate(index, id, name, parent)
-	-- TODO: Clean up and make more uniform, stop relying on Blizzard API.
 	local button = module:CreateSlot(name, parent, "")
 	button.isBag = 1 -- Blizzard API support
 	button.id = id
@@ -353,7 +288,6 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 		button.IconBorder:SetTexture("")
 		button.IconBorder:SetSize(1,1)
 
-		--TODO: Remove PaperDoll calls
 		--BagSlotTemplate other events, unchecked.
 		button:SetScript("OnEvent", function(self, event, ...)
 			if event == "BAG_UPDATE_DELAYED" then

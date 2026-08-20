@@ -68,7 +68,7 @@ local function UpdateSize(self, event, unit)
 end
 
 local function Update(self, event, unit)
-	if(self.unit ~= unit) then return end
+	if(self.__unit ~= unit) then return end
 
 	local element = self.PowerPrediction
 

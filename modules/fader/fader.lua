@@ -441,10 +441,16 @@ function module:UnitEventHandler(event, unit)
 	-- Collect info on states.
 	if event == "UNIT_HEALTH" then
 		local curHealth, maxHeatlh = UnitHealth("player"), UnitHealthMax("player")
-		self.Status.health = (curHealth < maxHeatlh) and (curHealth / maxHeatlh)
+		if issecretvalue(curHealth) or issecretvalue(maxHeatlh) or maxHeatlh == 0 then
+			self.Status.health = nil
+		else
+			self.Status.health = (curHealth < maxHeatlh) and (curHealth / maxHeatlh)
+		end
 	elseif event == "UNIT_POWER" then
 		local powerType, curPower, maxPower = UnitPowerType("player"), UnitPower("player"), UnitPowerMax("player")
-		if (powerType == 0) or (powerType == 3) then
+		if issecretvalue(powerType) or issecretvalue(curPower) or issecretvalue(maxPower) or maxPower == 0 then
+			self.Status.power = nil
+		elseif (powerType == 0) or (powerType == 3) then
 			self.Status.power = (curPower < maxPower) and (curPower / maxPower)
 		elseif (powerType == 1) or (powerType == 6) then
 			self.Status.power = (curPower > 0) and ((maxPower - curPower) / maxPower)

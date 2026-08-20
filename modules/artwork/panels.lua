@@ -655,7 +655,6 @@ function module:ApplyBackground(kind)
 	local rc, gc, bc, ac = unpack(ThemesDB[strlower(kind)])
 	local r, g, b, a = unpack(ThemesDB[strlower(kind.."border")])
 
-	-- temporary for CENTER -> SOLID change
 	if data.Direction == "CENTER" then data.Direction = "SOLID" end
 	backgrounds[kind]:Set(data.Direction, frame, data.Width, data.Height, 1, r, g, b, a, rc, gc, bc, ac)
 	backgrounds[kind]:ClearAllPoints()
