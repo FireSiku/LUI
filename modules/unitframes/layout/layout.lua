@@ -2171,6 +2171,7 @@ module.funcs = {
 					cooldown:SetAllPoints(button)
 					cooldown:SetHideCountdownNumbers(false)
 					cooldown:SetMinimumCountdownDuration(0)
+					cooldown:SetReverse(oufdb.Aura.Debuffs.CooldownReverse)
 
 					button:SetDurationCooldown(cooldown)
 				end,
