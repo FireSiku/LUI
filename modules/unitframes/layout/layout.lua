@@ -2181,7 +2181,6 @@ module.funcs = {
 		end
 
 		self.Debuffs:SetUnit(unit)
-		self.Debuffs:UpdateAllAuras()
 
 		for i = 1, #self.Debuffs do
 			local button = self.Debuffs[i]
