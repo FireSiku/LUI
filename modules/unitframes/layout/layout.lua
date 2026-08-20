@@ -2144,13 +2144,37 @@ module.funcs = {
 		if not self.Buffs.anchoredButtons then self.Buffs.anchoredButtons = 0 end
 	end,
 	Debuffs = function(self, unit, oufdb)
-		if not self.Debuffs then self.Debuffs = CreateFrame("Frame", nil, self) end
+		if not self.Debuffs then self.Debuffs = CreateFrame("AuraContainer", nil, self, "CustomAuraContainerTemplate") end
 
 		self.Debuffs:SetHeight(oufdb.Aura.Debuffs.Size)
 		self.Debuffs:SetWidth(oufdb.Width)
 		self.Debuffs.size = oufdb.Aura.Debuffs.Size
 		self.Debuffs.spacing = oufdb.Aura.Debuffs.Spacing
 		self.Debuffs.num = oufdb.Aura.Debuffs.Num
+		if not self.Debuffs.hasDebuffGroup then
+			self.Debuffs:AddAuraGroup("debuffs", "HARMFUL|PLAYER", {
+				maxFrameCount = oufdb.Aura.Debuffs.Num,
+				initializeFrame = function(button)
+					button:SetSize(oufdb.Aura.Debuffs.Size, oufdb.Aura.Debuffs.Size)
+
+					local icon = button:CreateTexture(nil, "ARTWORK")
+					icon:SetAllPoints(button)
+					button:SetIcon(icon)
+
+					local cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
+					cooldown:SetAllPoints(button)
+					cooldown:SetHideCountdownNumbers(false)
+					cooldown:SetMinimumCountdownDuration(0)
+
+					button:SetDurationCooldown(cooldown)
+				end,
+			})
+
+			self.Debuffs.hasDebuffGroup = true
+		end
+
+		self.Debuffs:SetUnit(unit)
+		self.Debuffs:UpdateAllAuras()
 
 		for i = 1, #self.Debuffs do
 			local button = self.Debuffs[i]
