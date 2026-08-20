@@ -80,7 +80,7 @@ end
 function ColorPickerHexBoxMixin:OnTextChanged()
 end
 
-function ColorPickerHexBoxMixin:OnEnterPressed();
+function ColorPickerHexBoxMixin:OnEnterPressed()
 end
 
 ---@param r number

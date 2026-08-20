@@ -41,7 +41,6 @@ Infotext.args = {
 	General = Opt:Group({name = "Global Settings", args = {
 		Title = Opt:Color({name = "Title Color", hasAlpha = false}),
 		Hint = Opt:Color({name = "Hint Color", hasAlpha = false}),
-		--Infotext = Opt:FontMenu({name = "Infotext Font"}),
 	}}),
 }
 
@@ -87,47 +86,3 @@ GoldInfotext.GoldPlayerReset = Opt:Select({name = "Reset Player", desc = "Choose
 											get = function() return goldPlayerArray[goldPlayerReset] end, -- Get
 											set = function(info, value) goldPlayerReset = value end}) -- Set
 GoldInfotext.GoldResetButton = Opt:Execute({name = "Reset", desc = "Clear Gold data for selected character.", func = ResetGold})
-
--- ####################################################################################################################
--- ##### Clock Infotext ###############################################################################################
--- ####################################################################################################################
-
---[[
-	function element:LoadOptions()
-	local function MilitaryTime(info_, value)
-		--Set
-		if type(value) == "boolean" then
-			SetCVar(CVAR_MILITARY, value and 1 or 0, true)
-			element:UpdateCVar()
-		--Get
-		else
-			return cvarMilitary
-		end
-	end
-	local function LocalTime(info_, value)
-		--Set
-		if type(value) == "boolean" then
-			SetCVar(CVAR_LOCAL, value and 1 or 0, true)
-			element:UpdateCVar()
-		--Get
-		else
-			return cvarLocal
-		end
-	end
-	local militaryMeta = { get = MilitaryTime, set = MilitaryTime }
-	local localMeta = { get = LocalTime, set = LocalTime }
-
-	local options = {
-		setClock24h = element:NewToggle({name = TIMEMANAGER_24HOURMODE, militaryMeta, "normal"}),
-		setClockLocal = element:NewToggle({name = TIMEMANAGER_LOCALTIME, localMeta, "normal"}),
-		instanceDifficulty = element:NewToggle(L["InfoClock_InstanceDifficulty_Name"],
-		                                       L["InfoClock_InstanceDifficulty_Desc"], 3, "UpdateClock"),
-		showSavedRaids = element:NewToggle(L["InfoClock_ShowSavedRaids_Name"],
-		                                   L["InfoClock_ShowSavedRaids_Desc"], 5, "UpdateTooltip"),
-		showWorldBosses = element:NewToggle(L["InfoClock_ShowWorldBosses_Name"],
-		                                    L["InfoClock_ShowWorldBosses_Desc"], 6, "UpdateTooltip"),
-
-	}
-	return options
-end
-]]

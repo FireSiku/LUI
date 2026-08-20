@@ -123,13 +123,3 @@ Colors.args = {
         DiffLow = Opt:Color({name = L["Color_DiffLow"], width = "full"}),
     }}),
 }
-
---[[
-			Advanced = module:NewAdvancedGroup({
-				BGMult = module:NewSlider({name = "Background Color Multiplier", 0.05, 1, 0.05, true, "Refresh"}),
-				ResetColors = module:NewExecute("Reset Colors", nil, 1, function() module.db:ResetProfile() end)
-			}),
-		}
-	return options
-end
-]]

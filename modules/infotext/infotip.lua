@@ -30,7 +30,6 @@ local GAP = 10
 
 -- locals
 local infotipStorage = {}
-local highlight
 
 -- ####################################################################################################################
 -- ##### Infotip: Line Mixin ##########################################################################################
@@ -87,6 +86,7 @@ function InfotipMixin:NewLine()
 	for k, v in pairs(LineMixin) do
 		newline[k] = v
 	end
+
 	newline:SetHeight(BUTTON_HEIGHT)
 
 	newline:EnableMouseWheel(true)
@@ -154,16 +154,24 @@ function element.OnLineScroll(line, delta)
 end
 
 function element.OnLineEnter(line)
+	local infotip = line:GetParent()
+	local highlight = infotip.highlight
+
 	highlight:ClearAllPoints()
 	highlight:SetAllPoints(line)
 	highlight:Show()
 end
 
 function element.OnLineLeave(line)
+	local infotip = line:GetParent()
+	local highlight = infotip.highlight
+
 	highlight:ClearAllPoints()
 	highlight:Hide()
-	local infotip = line:GetParent()
-	if not infotip:IsMouseOver() then infotip:Hide() end
+
+	if not infotip:IsMouseOver() then
+		infotip:Hide()
+	end
 end
 
 -- To revisit later, originally wanted a customizable minWidth. (default 300 to match V3 layout)
@@ -210,7 +218,7 @@ end
 
 function module:NewInfotip(infotext)
 	-- Hook relevant functions from the tooltip module to maintain tooltip look if it hasnt been done yet.
-	
+
 	if not module:IsHooked(modTooltip, "OnEnable") then
 		module:SecureHook(modTooltip, "UpdateBackdropColors", element.ApplyBackdropColors)
 		module:SecureHook(modTooltip, "OnEnable",  element.ApplyBackdropColors)
@@ -238,13 +246,28 @@ function module:NewInfotip(infotext)
 	-- Make frame looks like a tooltip.
 	SharedTooltip_SetBackdropStyle(newtip, "TooltipDefaultLayout")
 	element:ApplyBackdropColors()
+
+	-- Give every Infotip its own highlight texture.
+	newtip.highlight = newtip:CreateTexture()
+	newtip.highlight:SetTexture([[Interface\QuestFrame\UI-QuestTitleHighlight]])
+	newtip.highlight:SetBlendMode("ADD")
+	newtip.highlight:Hide()
+
+	-- Only one Infotip may be visible at a time.
+	newtip:HookScript("OnShow", function(self)
+		for _, otherTip in pairs(infotipStorage) do
+			if otherTip ~= self and otherTip:IsShown() then
+				otherTip:Hide()
+			end
+		end
+	end)
+
+	newtip:HookScript("OnHide", function(self)
+		self.highlight:Hide()
+	end)
+
 	--Trigger the element's OnLeave when you leave the infotip
 	newtip:SetScript("OnLeave", infotext.OnLeave)
-
-	-- Load highlight texture
-	highlight = newtip:CreateTexture()
-	highlight:SetTexture([[Interface\QuestFrame\UI-QuestTitleHighlight]])
-	highlight:SetBlendMode("ADD")
 
 	-- Enforce Infotip minimum width.
 	newtip.minWidth = INFOTIP_MIN_WIDTH

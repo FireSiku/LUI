@@ -144,7 +144,6 @@ Merchant.args = {
 			ShowExclusion = Opt:Toggle({name = "Show Exclusion Messages", width = "full"}),
 		}}),
 		Warning = Opt:Desc({name = "|cffff9933Warning:|r You really shouldn't enable other item qualities unless you are very sure that you won't sell anything of value."}),
-		--- @TODO: ItemQualities is not pulling DB correctly. 
 		ItemQualities = Opt:MultiSelect({name = "Item Qualities", db = db.AutoSell, desc = "Changes the item quality from which everything automatically will be sold when opening a merchant frame.",
 			values = qualities, disabled = disabled.AutoSell}),
 		AddExclusion = Opt:InlineGroup({name = "Add Item Exclusion", set = module.ItemExclusion, disabled = disabled.AutoSell, args = {

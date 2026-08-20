@@ -187,10 +187,14 @@ end
 ---@return string?
 function module:GetTooltipUnit(data)
 	if not data then return end
-	local unit = data.guid and UnitTokenFromGUID(data.guid)
-	if unit and not issecretvalue(unit) then
-		return unit
-	elseif UnitExists("mouseover") then
+	local guid = data.guid
+	if not issecretvalue(guid) and guid then
+		local unit = UnitTokenFromGUID(guid)
+		if unit and not issecretvalue(unit) then
+			return unit
+		end
+	end
+	if UnitExists("mouseover") then
 		return "mouseover"
 	end
 end
@@ -239,9 +243,32 @@ function LUI:ForceTooltipUpdate(ttip)
 	module:UpdateTooltipBackdrop()
 end
 
+local function CanQueryGuildInfo(unit)
+	if type(unit) ~= "string" then return false end
+	return unit == "player"
+		or unit == "target"
+		or unit == "focus"
+		or unit == "mouseover"
+		or unit:match("^party%d+$") ~= nil
+		or unit:match("^raid%d+$") ~= nil
+end
+
+local function IsGuildQueryableUnit(unit)
+	if type(unit) ~= "string" then return false end
+	if unit == "player" or unit == "pet" or unit == "vehicle" then return true end
+	if unit:match("^party%d+$") or unit:match("^raid%d+$") or unit:match("^boss%d+$") then return true end
+	if unit == "target" or unit == "focus" then return true end
+	return false
+end
+
 function module:GetUnitColor(unit)
-	if UnitIsPlayer(unit) and not UnitHasVehicleUI(unit) then
+	local isPlayer = UnitIsPlayer(unit)
+	local hasVehicleUI = UnitHasVehicleUI(unit)
+	if issecretvalue(isPlayer) or issecretvalue(hasVehicleUI) then
+		return 1, 1, 1
+	elseif isPlayer and not hasVehicleUI then
 		local _, class = UnitClass(unit)
+		if issecretvalue(class) then return 1, 1, 1 end
 		return module:RGB(class)
 	else
 		return LUI:GetReactionColor(unit)
@@ -337,6 +364,7 @@ function module:SetBorderColor(frame)
 			if not issecretvalue(playerUnit) and playerUnit then
 				-- Tooltip is a Player
 				local _, class = UnitClass(unit)
+				if issecretvalue(class) then return end
 				local r, g, b = module:RGB(class)
 				frame:SetBackdropBorderColor(r, g, b)
 				health:SetStatusBarColor(r, g, b)
@@ -383,12 +411,21 @@ function module.OnStatusBarValueChanged(frame, value_)
 	end
 
 	if unit then
-		if UnitIsGhost(unit) then
+		local isGhost = UnitIsGhost(unit)
+		local isDead = UnitIsDead(unit)
+		if issecretvalue(isGhost) or issecretvalue(isDead) then
+			frame.text:SetText("")
+		elseif isGhost then
 			frame.text:SetText(L["Tooltip_Ghost"])
-		elseif UnitIsDead(unit) then
+		elseif isDead then
 			frame.text:SetText(_G.DEAD)
 		else
-			frame.text:SetFormattedText("%s / %s", BreakUpLargeNumbers(UnitHealth(unit)), BreakUpLargeNumbers(UnitHealthMax(unit)))
+			local current, maximum = UnitHealth(unit), UnitHealthMax(unit)
+			if issecretvalue(current) or issecretvalue(maximum) then
+				frame.text:SetText("")
+			else
+				frame.text:SetFormattedText("%s / %s", BreakUpLargeNumbers(current), BreakUpLargeNumbers(maximum))
+			end
 		end
 		frame:Show()
 	else
@@ -429,7 +466,9 @@ function module.OnGameTooltipSetUnit(frame, data)
 		return frame:Hide()
 	end
 	local unit = module:GetTooltipUnit(data)
-	if not unit then return frame:Hide() end
+	-- Blizzard can populate a valid tooltip even when its protected GUID cannot
+	-- be resolved back to a public unit token. Keep that native tooltip intact.
+	if not unit then return end
 
 	-- Hide tooltip on unitframes if that option is enabled
 	if frame:GetOwner() == UIParent and db.HideUF then
@@ -440,11 +479,21 @@ function module.OnGameTooltipSetUnit(frame, data)
 	local race = UnitRace(unit)
 	local level = UnitLevel(unit)
 	local title = UnitPVPName(unit)
-	local guild = GetGuildInfo(unit)
+	local guild = IsGuildQueryableUnit(unit) and CanQueryGuildInfo(unit) and GetGuildInfo(unit) or nil
 	local name, realm = UnitName(unit)
 	local creatureType = UnitCreatureType(unit)
 	local localizedClass, class_ = UnitClass(unit)
 	local classification = UnitClassification(unit)
+	local isPlayer = UnitIsPlayer(unit)
+
+	-- Identity fields can be secret in 12.1. Do not concatenate/index them.
+	if issecretvalue(sex) or issecretvalue(race) or issecretvalue(level)
+		or issecretvalue(title) or issecretvalue(name) or issecretvalue(realm)
+		or issecretvalue(localizedClass) or issecretvalue(class_)
+		or issecretvalue(classification) or issecretvalue(creatureType)
+		or issecretvalue(guild) or issecretvalue(isPlayer) then
+		return
+	end
 	local realmSuffix = (realm and " - "..realm) or ""
 
 	local diffColor = CreateColor(LUI:GetDifficultyColor(level))
@@ -454,7 +503,7 @@ function module.OnGameTooltipSetUnit(frame, data)
 	GameTooltipTextLeft1:SetText(tooltipText or "")
 
 	local offset = 2
-	if UnitIsPlayer(unit) then
+	if isPlayer then
 		-- Display status next to name
 		if not issecretvalue(UnitIsDND(unit)) and UnitIsDND(unit) then
 			frame:AppendText(" "..CHAT_FLAG_DND)
@@ -512,8 +561,12 @@ function module.OnGameTooltipSetUnit(frame, data)
 	end
 
 	--Add ToT Line
-	if UnitExists(unit.."target") and unit~="player" then
-		GameTooltip:AddLine(UnitName(unit.."target"), module:GetUnitColor(unit.."target"))
+	local targetExists = UnitExists(unit.."target")
+	if not issecretvalue(targetExists) and targetExists and unit~="player" then
+		local targetName = UnitName(unit.."target")
+		if targetName ~= nil and not issecretvalue(targetName) then
+			GameTooltip:AddLine(targetName, module:GetUnitColor(unit.."target"))
+		end
 	end
 
 	module:SetBorderColor(frame)

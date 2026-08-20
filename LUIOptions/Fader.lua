@@ -20,7 +20,6 @@ local function ApplySettings()
 	if not module.RegisteredFrames then return end
 	-- Re-apply settings to frames.
 	for frame, settings in pairs(module.RegisteredFrames) do
-		---@TODO: Refactor how global settings are enforcedd, as passing nil does not convey it properly.
 		local appliedSettings = (not db.ForceGlobalSettings) and settings or nil
 		module:RegisterFrame(frame, appliedSettings, frame.FaderSpecialHover)
 	end

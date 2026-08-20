@@ -1,7 +1,3 @@
--- -- Register the Reload UI Slash Command before anything can fail
--- SLASH_RELOADUI1 = "/rl"
--- SlashCmdList.RELOADUI = ReloadUI
-
 ---@type string
 local addonName, LUI = ...
 
@@ -18,8 +14,8 @@ LUI.IsRetail = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_MAINLINE)
 LUI.IsBCC = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 LUI.IsClassic = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_CLASSIC)
 
-local LIVE_TOC = 120001
-local LIVE_BUILD = 66102
+local LIVE_TOC = 120100
+local LIVE_BUILD = 69283
 
 local _, patchBuild, _, patchTOC = GetBuildInfo()
 
@@ -36,7 +32,6 @@ end
 -- ##### Setup and Locals #############################################################################################
 -- ####################################################################################################################
 
---For Testing Purposes Only
 _G["LUI"] = LUI
 local Media = LibStub("LibSharedMedia-3.0")
 local ACD = LibStub("AceConfigDialog-3.0")
@@ -50,56 +45,6 @@ local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 
 local GAME_VERSION_LABEL = _G.GAME_VERSION_LABEL
 local GENERAL = _G.GENERAL
-
--- ####################################################################################################################
--- ##### Default Settings #############################################################################################
--- ####################################################################################################################
-
--- LUI.defaults = {
--- 	profile = {
--- 		General = {
--- 			IsConfigured = false, -- Currently unused, will be when Install process is done
--- 			BlizzFrameScale = 1, -- Not sure if we'll use that, or if it's going to be part of scripts.
--- 			ModuleMessages = true,
--- 			MasterFont = "NotoSans-SCB",
--- 			MasterFlag = "OUTLINE",
--- 		},
--- 		Snippets = {
--- 		-- Siku TODO note: Snippet Engine. Dynamic creation and editing of LUIv3's Scripts.
--- 		},
--- 		Modules = {
--- 			["*"] = true,
--- 		},
--- 		Installed = {
--- 			["*"] = false,
--- 		},
--- 		Fonts = {
--- 			Master = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
--- 		},
--- 	},
--- }
-
--- ####################################################################################################################
--- ##### Loading Media ################################################################################################
--- ####################################################################################################################
-
--- REGISTER FONTS
--- Media:Register("font", "vibroceb", [[Interface\Addons\LUI4\media\fonts\vibroceb.ttf]])
--- Media:Register("font", "Prototype", [[Interface\Addons\LUI4\media\fonts\prototype.ttf]])
--- Media:Register("font", "NotoSans-SCB", [[Interface\AddOns\LUI4\media\fonts\NotoSans-SemiCondensedBold.ttf]])
-
--- -- REGISTER BORDERS
--- Media:Register("border", "glow", [[Interface\Addons\LUI4\media\borders\glow.tga]])
--- Media:Register("border", "Stripped", [[Interface\Addons\LUI4\media\borders\Stripped.tga]])
--- Media:Register("border", "Stripped_hard", [[Interface\Addons\LUI4\media\borders\Stripped_hard.tga]])
--- Media:Register("border", "Stripped_medium", [[Interface\Addons\LUI4\media\borders\Stripped_medium.tga]])
-
--- -- REGISTER STATUSBARS
--- Media:Register("statusbar", "Minimalist", [[Interface\AddOns\LUI4\media\statusbar\minimalist.tga]])
--- Media:Register("statusbar", "Gradient", [[Interface\AddOns\LUI4\media\statusbar\gradient.tga]])
--- Media:Register("statusbar", "Ruben", [[Interface\AddOns\LUI4\media\statusbar\Ruben.tga]])
-
--- LUI.blank = [[Interface\AddOns\LUI4\media\blank.tga]]
 
 -- ####################################################################################################################
 -- ##### Install Process ##############################################################################################
@@ -127,7 +72,6 @@ function LUI:CheckInstall()
 			--If not, assume the module has no install required and proceed.
 			else
 				db.Installed[name] = true
-				-- Print for testing purposes while we setup all modules during development.
 				LUI:Print("Module "..name.." required no installation")
 			end
 		end
@@ -175,8 +119,6 @@ function LUI:OpenOptions(forceOld)
 	end
 end
 
---TODO: Handle of chat command is a mess that need fixing.
---Future: Make it so that modules can handle chat command through /lui [moduleName] [setting] [value]
 function LUI:ChatCommand(input)
 	if not input or input:trim() == "" then
 		self:OpenOptions()
@@ -207,11 +149,6 @@ function LUI:DevCommands(cmd, value)
 	if cmd == "config" then
 		self:OpenOptions(true)
 	end
--- 	--/lui dev installed moduleName
--- 	--Reverts the installed state of a certain module (or all of them)
--- 	if cmd == "installed" then
--- 		LUI:Print(format(L["Core_Dev_RevertState_Format"], value))
--- 	end
 end
 
 -- ####################################################################################################################
@@ -232,13 +169,6 @@ function LUI:RegisterModule(module, dev_skipDB)
 	if module.defaults and not dev_skipDB then
 		module.db = self.db:RegisterNamespace(mName, module.defaults)
 
-		-- Register Callbacks
-		--TODO: Recheck Register Callbacks
-		--if type(module.Refresh) == "function" then
-		--	module.db.RegisterCallback(module, "OnProfileChanged", LUI.RefreshModule, module)
-		--	module.db.RegisterCallback(module, "OnProfileCopied", LUI.RefreshModule, module)
-		--	module.db.RegisterCallback(module, "OnProfileReset", LUI.RefreshModule, module)
-		--end
 	end
 
 	--Add the module to the LUI Profiler
@@ -247,38 +177,3 @@ function LUI:RegisterModule(module, dev_skipDB)
 	-- To remove when all modules transitioned to new options menu
 	module.registered = true
 end
-
--- ####################################################################################################################
--- ##### Framework Events #############################################################################################
--- ####################################################################################################################
-
--- function LUI:OnInitialize()
--- 	self.db = LibStub("AceDB-3.0"):New("LUI4DB", LUI.defaults, true)
--- 	self.db.RegisterCallback(self, "OnProfileChanged", "Refresh")
--- 	self.db.RegisterCallback(self, "OnProfileCopied", "Refresh")
--- 	self.db.RegisterCallback(self, "OnProfileReset", "Refresh")
--- 	db = self.db.profile
-
--- 	LUI:EmbedModule(LUI)
--- 	self:RegisterChatCommand("lui", "ChatCommand")
--- end
-
--- function LUI:OnEnable()
--- 	LUI:CheckInstall()
-
--- 	local font = db.Fonts.Master
--- 	LUI.MasterFont = CreateFont("LUIMasterFont")
--- 	LUI.MasterFont:SetFont(font.Name, font.Size, font.Flag)
--- end
-
--- function LUI:Refresh()
--- 	if not _G.IsLoggedIn() then return end -- in case of db callbacks fires before OnEnable function
-
--- 	--Failsafe calling OnEnable/OnDisable on Profile change to
--- 	for name_, module in self:IterateModules() do
--- 		local db = module.db
--- 		if db and db.profile and db.profile.Enable ~= nil then
--- 			module[db.profile.Enable and "Enable" or "Disable"](module)
--- 		end
--- 	end
--- end

@@ -35,7 +35,7 @@ function LUI:InstallPlexus()
 		for i, v in pairs(PlexusDB.profileKeys) do
 			if i == LUI.profileName then
 				PlexusOldProfile = v
-				break;
+					break
 			end
 		end
 

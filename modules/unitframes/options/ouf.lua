@@ -26,11 +26,11 @@ function module:CreateSettings(order)
 					if f == "oUF_LUI_targettarget" then
 						module.funcs.V2Textures(oUF_LUI_targettarget, oUF_LUI_target)
 					elseif f == "oUF_LUI_targettargettarget" then
-						module.V2Textures(_G.oUF_LUI_targettargettarget, oUF_LUI_targettarget)
+						module.funcs.V2Textures(_G.oUF_LUI_targettargettarget, oUF_LUI_targettarget)
 					elseif f == "oUF_LUI_focustarget" then
-						module.oUF_LUI.funcs.V2Textures(oUF_LUI_focustarget, oUF_LUI_focus)
+						module.funcs.V2Textures(oUF_LUI_focustarget, oUF_LUI_focus)
 					elseif f == "oUF_LUI_focus" then
-						module.oUF_LUI.funcs.V2Textures(oUF_LUI_focus, oUF_LUI_player)
+						module.funcs.V2Textures(oUF_LUI_focus, oUF_LUI_player)
 					end
 				end
 				if Enable then
@@ -91,7 +91,7 @@ function module:CreateSettings(order)
 					if _G[frame] then
 						frame = _G[frame]
 						if Enable then
-							if module.db.profile[unit].Castbar.Enable ~= false then
+							if module.db.profile[unit].Castbar.General.Enable ~= false then
 								if not frame.Castbar then module.funcs.Castbar(frame, frame.__unit, module.db.profile[unit]) end
 								frame:EnableElement("Castbar")
 							end
@@ -109,19 +109,18 @@ function module:CreateSettings(order)
 	end
 
 	local updateAuraTimer = function()
-		for k, v in pairs(oUF.objects) do
-			local aura_db = module.db.profile.Settings
-			if v.Buffs then
-				for i = 1, 50 do
-					if v.Buffs[i] then
-						v.Buffs[i].remaining:SetFont(Media:Fetch("font",  aura_db.AuratimerFont), aura_db.AuratimerSize, aura_db.AuratimerFlag)
-					end
-				end
-			end
-			if v.Debuffs then
-				for i = 1, 50 do
-					if v.Debuffs[i] then
-						v.Debuffs[i].remaining:SetFont(Media:Fetch("font",  aura_db.AuratimerFont), aura_db.AuratimerSize, aura_db.AuratimerFlag)
+		for unit, frames in pairs(module.framelist) do
+			local db = module.db.profile[unit]
+			if db and db.Aura then
+				for _, frameName in pairs(frames) do
+					local frame = _G[frameName]
+					if frame then
+						if db.Aura.Buffs and db.Aura.Buffs.Enable then
+							module.funcs.Buffs(frame, frame.__unit, db)
+						end
+						if db.Aura.Debuffs and db.Aura.Debuffs.Enable then
+							module.funcs.Debuffs(frame, frame.__unit, db)
+						end
 					end
 				end
 			end

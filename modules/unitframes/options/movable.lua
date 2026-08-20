@@ -24,6 +24,7 @@ local ufNames = {
 	party = "oUF_LUI_party",
 	maintank = "oUF_LUI_maintank",
 	boss = "oUF_LUI_boss",
+	raid = "oUF_LUI_raid",
 	player_Castbar = "oUF_LUI_player_Castbar",
 	target_Castbar = "oUF_LUI_target_Castbar",
 	arena = "oUF_LUI_arena"
@@ -34,12 +35,18 @@ local _BACKDROP = {bgFile = "Interface\\Tooltips\\UI-Tooltip-Background"}
 
 local backdropPool = {}
 
+local function GetMoveObject(unit, frameName)
+	local previewObject = module.GetUnitframePreviewAnchor and module:GetUnitframePreviewAnchor(unit)
+	return previewObject or _G[frameName]
+end
+
 local setAllPositions = function()
 	for k, v in pairs(ufNames) do
 		local k2 = nil
 		if strfind(k, "Castbar") then k, k2 = strsplit("_", k) end
-		if _G[v] and module.db.profile[k] then
-			local point, _, rpoint, x, y = backdropPool[_G[v]]:GetPoint()
+		local object = GetMoveObject(k, v)
+		if object and module.db.profile[k] and backdropPool[object] then
+			local point, _, rpoint, x, y = backdropPool[object]:GetPoint()
 			local scale = module.db.profile[k].Scale or 1
 			x, y = RoundToSignificantDigits(x, 1), RoundToSignificantDigits(y, 1)
 
@@ -56,8 +63,8 @@ local setAllPositions = function()
 				module.db.profile[k].Point = point
 			end
 			
-			_G[v]:ClearAllPoints()
-			_G[v]:SetPoint(point, UIParent, rpoint, x, y)
+			object:ClearAllPoints()
+			object:SetPoint(point, UIParent, rpoint, x, y)
 		end
 	end
 	
@@ -70,17 +77,18 @@ local resetAllPositions = function()
 	for k, v in pairs(ufNames) do
 		local k2 = nil
 		if strfind(k, "Castbar") then k, k2 = strsplit("_", k) end
-		if _G[v] and module.db.profile[k] then
-			if backdropPool[_G[v]] then backdropPool[_G[v]]:ClearAllPoints() end
+		local object = GetMoveObject(k, v)
+		if object and module.db.profile[k] then
+			if backdropPool[object] then backdropPool[object]:ClearAllPoints() end
 			
 			if k2 then
 				if module.db.profile[k][k2] then
-					_G[v]:ClearAllPoints()
-					_G[v]:SetPoint(module.db.profile[k][k2].General.Point, UIParent, module.db.profile[k][k2].General.Point, module.db.profile[k][k2].General.X, module.db.profile[k][k2].General.Y)
+					object:ClearAllPoints()
+					object:SetPoint(module.db.profile[k][k2].General.Point, UIParent, module.db.profile[k][k2].General.Point, module.db.profile[k][k2].General.X, module.db.profile[k][k2].General.Y)
 				end
 			else
-				_G[v]:ClearAllPoints()
-				_G[v]:SetPoint(module.db.profile[k].Point, UIParent, module.db.profile[k].Point, module.db.profile[k].X / (module.db.profile[k].Scale or 1), module.db.profile[k].Y / (module.db.profile[k].Scale or 1))
+				object:ClearAllPoints()
+				object:SetPoint(module.db.profile[k].Point, UIParent, module.db.profile[k].Point, module.db.profile[k].X / (module.db.profile[k].Scale or 1), module.db.profile[k].Y / (module.db.profile[k].Scale or 1))
 			end
 		end
 	end
@@ -158,9 +166,10 @@ do
 		if type(obj) == "string" then
 			return smartString(obj)
 		else
+			if obj.LUIMoveName then return obj.LUIMoveName end
 			local name = obj:GetName()
 			if name then return smartString(name) end
-			return obj.unit or "<unknown>"
+			return obj.__unit or "<unknown>"
 		end
 	end
 end
@@ -192,7 +201,7 @@ do
 	end
 
 	getBackdrop = function(obj)
-		if not obj and not obj:GetCenter() then return end
+		if not obj or not obj:GetCenter() then return end
 		
 		if math.floor(obj:GetHeight()) == 0 then obj:SetHeight(obj:GetChildren():GetHeight()) end
 
@@ -266,15 +275,19 @@ function module:MoveUnitFrames(override)
 		return LUI:Print("UnitFrames cannot be moved while in combat.")
 	end
 	
-	if oUF_LUI_party then oUF_LUI_party:Show() end
+	-- Only reveal the party header when opening move mode. The combat hider
+	-- closes this dialog with override=true and must not touch protected frame
+	-- visibility during lockdown.
+	if not override and oUF_LUI_party then oUF_LUI_party:Show() end
 	
 	if (not _LOCK) and (not override) then
 		hider:RegisterEvent("PLAYER_REGEN_DISABLED")
 		StaticPopup_Show("DRAG_UNITFRAMES")
 		
 		for k, v in pairs(ufNames) do
-			if _G[v] then
-				local bd = getBackdrop(_G[v])
+			local object = GetMoveObject(k, v)
+			if object then
+				local bd = getBackdrop(object)
 				if bd then bd:Show() end
 			end
 		end

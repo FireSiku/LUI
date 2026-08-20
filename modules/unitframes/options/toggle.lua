@@ -16,12 +16,11 @@ local oUF = LUI.oUF
 
 local MAX_BOSS_FRAMES = _G.MAX_BOSS_FRAMES
 
-local UnregisterStateDriver = _G.UnregisteredStateDriver
+local UnregisterStateDriver = _G.UnregisterStateDriver
 local GetNumSubgroupMembers = _G.GetNumSubgroupMembers
 local RegisterStateDriver = _G.RegisterStateDriver
 local GetNumGroupMembers = _G.GetNumGroupMembers
 local InCombatLockdown = _G.InCombatLockdown
--- local IsAddOnLoaded = _G.IsAddOnLoadOnDemand
 local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 local GetCVarBool = _G.GetCVarBool
 local UnitLevel = _G.UnitLevel
@@ -38,6 +37,16 @@ local iconlist = {
 	ReadyCheck = {"ReadyCheckIndicator"},
 }
 
+local indicatorDBKeys = {
+	PvP = "PvPIndicator",
+	Combat = "CombatIndicator",
+	Resting = "RestingIndicator",
+	Leader = "LeaderIndicator",
+	Role = "GroupRoleIndicator",
+	Raid = "RaidMarkerIndicator",
+	ReadyCheck = "ReadyCheckIndicator",
+}
+
 local function GetOpposite(dir)
 	if dir == "RIGHT" then
 		return "LEFT"
@@ -50,11 +59,33 @@ local function GetOpposite(dir)
 	end
 end
 
+local pendingUnitToggles = {}
+local pendingToggleFrame = CreateFrame("Frame")
+
+pendingToggleFrame:SetScript("OnEvent", function(self)
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+
+	local queued = pendingUnitToggles
+	pendingUnitToggles = {}
+
+	for unit, request in pairs(queued) do
+		module.ToggleUnit(unit, request.override)
+	end
+end)
+
 local ToggleMT = {
 	__index = function(self)
 		return self.Default
 	end,
 	__call = function(self, unit, override)
+		-- Enabling or disabling oUF frames can touch secure state drivers.
+		-- Defer the complete unit refresh until combat has ended.
+		if InCombatLockdown() then
+			pendingUnitToggles[unit] = {override = override}
+			pendingToggleFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+			return
+		end
+
 		oUF:SetActiveStyle("LUI")
 		self[unit](override, unit)
 	end,
@@ -62,7 +93,7 @@ local ToggleMT = {
 
 -- Castbars for *target units are no longer supported as they had no event-driven updates 
 function module:UnitSupportsCastbar(unit)
-	return module.db.profile.Settings.Castbars and unit:match(".+target$")
+	return module.db.profile.Settings.Castbars and not unit:match(".+target$")
 end
 
 module.ToggleUnit = setmetatable({
@@ -392,7 +423,7 @@ module.ToggleUnit = setmetatable({
 		end
 	end,
 
-	Arena = function(override)
+	arena = function(override)
 		local dbUnit = module.db.profile.arena
 		if override == nil then override = dbUnit.Enable end
 
@@ -478,8 +509,8 @@ module.ToggleUnit = setmetatable({
 				end
 			end
 
-			module.ToggleUnit("Arenatarget")
-			module.ToggleUnit("Arenapet")
+			module.ToggleUnit("arenatarget")
+			module.ToggleUnit("arenapet")
 		else
 			if dbUnit.UseBlizzard == true then
 				if not GetCVarBool("showArenaEnemyFrames") then
@@ -494,12 +525,12 @@ module.ToggleUnit = setmetatable({
 				end
 			end
 
-			module.ToggleUnit("Arenatarget", false)
-			module.ToggleUnit("Arenapet", false)
+			module.ToggleUnit("arenatarget", false)
+			module.ToggleUnit("arenapet", false)
 		end
 	end,
 
-	Arenatarget = function(override)
+	arenatarget = function(override)
 		local dbUnit = module.db.profile.arenatarget
 		if override == nil then override = dbUnit.Enable end
 
@@ -522,7 +553,7 @@ module.ToggleUnit = setmetatable({
 		end
 	end,
 
-	Arenapet = function(override)
+	arenapet = function(override)
 		local dbUnit = module.db.profile.arenapet
 		if override == nil then override = dbUnit.Enable end
 
@@ -545,7 +576,7 @@ module.ToggleUnit = setmetatable({
 		end
 	end,
 
-	Maintank = function(override)
+	maintank = function(override)
 		local dbUnit = module.db.profile.maintank
 		if override == nil then override = dbUnit.Enable end
 
@@ -623,7 +654,7 @@ module.ToggleUnit = setmetatable({
 				tank:Show()
 			end
 
-			module.ToggleUnit("Maintanktarget")
+			module.ToggleUnit("maintanktarget")
 		else
 			if oUF_LUI_maintank then
 				oUF_LUI_maintank:Hide()
@@ -634,11 +665,11 @@ module.ToggleUnit = setmetatable({
 				end
 			end
 
-			module.ToggleUnit("Maintanktarget", false)
+			module.ToggleUnit("maintanktarget", false)
 		end
 	end,
 
-	Maintanktarget = function(override)
+	maintanktarget = function(override)
 		local dbUnit = module.db.profile.maintanktarget
 		if override == nil then override = dbUnit.Enable end
 
@@ -652,17 +683,17 @@ module.ToggleUnit = setmetatable({
 				end
 			end
 
-			module.ToggleUnit("Maintanktargettarget")
+			module.ToggleUnit("maintanktargettarget")
 		else
 			for i = 1, 4 do
 				if _G["oUF_LUI_maintankUnitButton"..i.."target"] then _G["oUF_LUI_maintankUnitButton"..i.."target"]:Disable() end
 			end
 
-			module.ToggleUnit("Maintanktargettarget", false)
+			module.ToggleUnit("maintanktargettarget", false)
 		end
 	end,
 
-	Maintanktargettarget = function(override)
+	maintanktargettarget = function(override)
 		local dbUnit = module.db.profile.maintanktargettarget
 		if override == nil then override = dbUnit.Enable end
 
@@ -830,15 +861,38 @@ module.ToggleUnit = setmetatable({
 	end,
 }, ToggleMT)
 
-module.ApplySettings = function(unit)
+local pendingUnitSettings = {}
+local pendingSettingsFrame = CreateFrame("Frame")
+
+pendingSettingsFrame:SetScript("OnEvent", function(self)
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+
+	local queued = pendingUnitSettings
+	pendingUnitSettings = {}
+
+	for unit in pairs(queued) do
+		module.ApplySettings(unit)
+	end
+end)
+
+module.ApplySettings = function(unit, force)
+	-- Unitframes are protected. Option changes may update the database in
+	-- combat, but every frame mutation must wait until combat lockdown ends.
+	if InCombatLockdown() then
+		pendingUnitSettings[unit] = true
+		pendingSettingsFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
+
 	local dbUnit = module.db.profile[unit]
-	if dbUnit.Enable == false then return end
+	if dbUnit.Enable == false and not force then return end
 
 	for _, framename in pairs(module.framelist[unit]) do
 		local frame = _G[framename]
-		--print(string.format("Updating: _ = %s, framename = %s, frame = %s", tostring(_), tostring(framename), tostring(frame)))
 
 		if frame then
+			local styleUnit = frame.LUIStyleUnit or frame.__unit
+			local runtimeUnit = frame.LUIPreviewUnit or frame.__unit
 			if framename:find("oUF_LUI_raid_40") then
 				frame:SetWidth((dbUnit.Width * 5 - dbUnit.GroupPadding * 3) / 8)
 			else
@@ -847,39 +901,39 @@ module.ApplySettings = function(unit)
 			frame:SetHeight(dbUnit.Height)
 
 			-- bars
-			module.funcs.Health(frame, frame.__unit, dbUnit)
-			module.funcs.Power(frame, frame.__unit, dbUnit)
-			module.funcs.FrameBackdrop(frame, frame.__unit, dbUnit)
+			module.funcs.Health(frame, styleUnit, dbUnit)
+			module.funcs.Power(frame, styleUnit, dbUnit)
+			module.funcs.FrameBackdrop(frame, styleUnit, dbUnit)
 
 			-- texts
 			if unit == "raid" then
-				module.funcs.RaidInfo(frame, frame.__unit, dbUnit)
+				module.funcs.RaidInfo(frame, styleUnit, dbUnit)
 			else
-				module.funcs.Info(frame, frame.__unit, dbUnit)
+				module.funcs.Info(frame, styleUnit, dbUnit)
 			end
 
-			module.funcs.HealthValue(frame, frame.__unit, dbUnit)
-			module.funcs.HealthPercent(frame, frame.__unit, dbUnit)
-			module.funcs.HealthMissing(frame, frame.__unit, dbUnit)
+			module.funcs.HealthValue(frame, styleUnit, dbUnit)
+			module.funcs.HealthPercent(frame, styleUnit, dbUnit)
+			module.funcs.HealthMissing(frame, styleUnit, dbUnit)
 
-			module.funcs.PowerValue(frame, frame.__unit, dbUnit)
-			module.funcs.PowerPercent(frame, frame.__unit, dbUnit)
-			module.funcs.PowerMissing(frame, frame.__unit, dbUnit)
+			module.funcs.PowerValue(frame, styleUnit, dbUnit)
+			module.funcs.PowerPercent(frame, styleUnit, dbUnit)
+			module.funcs.PowerMissing(frame, styleUnit, dbUnit)
 
 			-- icons
-			if dbUnit.Indicators then
-				for key, icons in pairs(iconlist) do
-					if dbUnit.Indicators[key] then
-						if dbUnit.Indicators[key].Enable then
-							module.funcs[icons[1]](frame, frame.__unit, dbUnit)
-							frame:EnableElement(icons[1])
-							if icons[2] then frame:EnableElement(icons[2]) end
-						else
-							if frame[icons[1]] then
-								for _, icon in pairs(icons) do
-									frame:DisableElement(icon)
-								end
-							end
+			for key, icons in pairs(iconlist) do
+				local indicatorDB = dbUnit[indicatorDBKeys[key]]
+				if indicatorDB then
+					if indicatorDB.Enable then
+						module.funcs[icons[1]](frame, styleUnit, dbUnit)
+						for _, icon in pairs(icons) do
+							frame:EnableElement(icon)
+							if frame[icon] then frame[icon]:Show() end
+						end
+					else
+						for _, icon in pairs(icons) do
+							frame:DisableElement(icon)
+							if frame[icon] then frame[icon]:Hide() end
 						end
 					end
 				end
@@ -890,7 +944,7 @@ module.ApplySettings = function(unit)
 
 				-- runes
 				if LUI.DEATHKNIGHT then
-					module.funcs.Runes(frame, frame.__unit, module.db.profile.player)
+					module.funcs.Runes(frame, styleUnit, module.db.profile.player)
 					if dbUnit.RunesBar.Enable then
 						frame:EnableElement("Runes")
 					else
@@ -900,8 +954,8 @@ module.ApplySettings = function(unit)
 				end
 
 				-- ClassPower
-				if LUI.PALADIN or LUI.WARLOCK or LUI.MONK or LUI.ROGUE then
-					module.funcs.ClassPower(frame, frame.__unit, module.db.profile.player)
+				if LUI.DRUID or LUI.PALADIN or LUI.WARLOCK or LUI.MONK or LUI.ROGUE or LUI.MAGE or LUI.EVOKER then
+					module.funcs.ClassPower(frame, styleUnit, module.db.profile.player)
 					if dbUnit.ClassPowerBar.Enable then
 						frame:EnableElement("ClassPower")
 					else
@@ -910,9 +964,21 @@ module.ApplySettings = function(unit)
 					end
 				end
 
+				-- Totems
+				if LUI.SHAMAN then
+					module.funcs.Totems(frame, styleUnit, module.db.profile.player)
+					if dbUnit.TotemsBar.Enable then
+						frame:EnableElement("Totems")
+						frame.Totems:Show()
+					else
+						frame:DisableElement("Totems")
+						frame.Totems:Hide()
+					end
+				end
+
 				-- Additional Power
 				if LUI.DRUID or LUI.PRIEST or LUI.SHAMAN then
-					module.funcs.AdditionalPower(frame, frame.__unit, module.db.profile.player)
+					module.funcs.AdditionalPower(frame, styleUnit, module.db.profile.player)
 					if dbUnit.AdditionalPowerBar.Enable then
 						frame:EnableElement("AdditionalPower")
 					else
@@ -924,7 +990,7 @@ module.ApplySettings = function(unit)
 
 			-- portrait
 			if dbUnit.Portrait and dbUnit.Portrait.Enable then
-				module.funcs.Portrait(frame, frame.__unit, dbUnit)
+				module.funcs.Portrait(frame, runtimeUnit, dbUnit)
 				frame:EnableElement("Portrait")
 				frame.Portrait:Show()
 			else
@@ -937,7 +1003,7 @@ module.ApplySettings = function(unit)
 			-- alt power
 			if unit == "player" or unit == "pet" then
 				if module.db.profile.player.AlternativePowerBar.Enable then
-					module.funcs.AlternativePower(frame, frame.__unit, dbUnit)
+					module.funcs.AlternativePower(frame, styleUnit, dbUnit)
 					frame:EnableElement("AlternativePower")
 					frame.AlternativePower.SetPosition()
 				else
@@ -951,53 +1017,69 @@ module.ApplySettings = function(unit)
 			-- auras
 			if dbUnit.Aura then
 				if dbUnit.Aura.Buffs.Enable then
-					module.funcs.Buffs(frame, frame.__unit, dbUnit)
+					module.funcs.Buffs(frame, runtimeUnit, dbUnit)
 				else
 					if frame.Buffs then frame.Buffs:Hide() end
 				end
 
 				if dbUnit.Aura.Debuffs.Enable then
-					module.funcs.Debuffs(frame, frame.__unit, dbUnit)
+					module.funcs.Debuffs(frame, runtimeUnit, dbUnit)
 				else
 					if frame.Debuffs then frame.Debuffs:Hide() end
 				end
 
-				if dbUnit.Aura.Buffs.Enable or dbUnit.Aura.Debuffs.Enable then
-					frame:EnableElement("Auras")
-				else
-					frame:DisableElement("Auras")
+				-- Buffs/Debuffs are Blizzard AuraContainers in 12.1, not oUF elements.
+				if frame.Buffs and frame.Buffs.SetEnabled then
+					frame.Buffs:SetEnabled(dbUnit.Aura.Buffs.Enable == true)
+				end
+				if frame.Debuffs and frame.Debuffs.SetEnabled then
+					frame.Debuffs:SetEnabled(dbUnit.Aura.Debuffs.Enable == true)
 				end
 			end
 
 			-- combat feedback text
-			if dbUnit.CombatFeedback then module.funcs.CombatFeedbackText(frame, frame.__unit, dbUnit) end
+			if dbUnit.CombatFeedback then module.funcs.CombatFeedbackText(frame, styleUnit, dbUnit) end
 
 			-- castbar
-			if dbUnit.Castbar and module:UnitSupportsCastbar(unit) then
-				if dbUnit.Castbar.General.Enable then
-					module.funcs.Castbar(frame, frame.__unit, dbUnit)
+			if dbUnit.Castbar then
+				if module:UnitSupportsCastbar(unit) and dbUnit.Castbar.General.Enable then
+					module.funcs.Castbar(frame, styleUnit, dbUnit)
 					frame:EnableElement("Castbar")
 				else
 					frame:DisableElement("Castbar")
+					if frame.Castbar then frame.Castbar:Hide() end
 				end
 			end
 
 			-- aggro glow
 			if dbUnit.Border.Aggro then
-				module.funcs.AggroGlow(frame, frame.__unit, dbUnit)
-				frame:EnableElement("Threat")
+				module.funcs.AggroGlow(frame, styleUnit, dbUnit)
+				frame:EnableElement("ThreatIndicator")
 			else
-				frame:DisableElement("Threat")
+				frame:DisableElement("ThreatIndicator")
 			end
 
 			-- heal prediction
-			if dbUnit.HealthPrediction then
-				if dbUnit.HealthPrediction.Enable then
-					module.funcs.HealthPrediction(frame, frame.__unit, dbUnit)
-					frame:EnableElement("HealthPrediction")
-				else
-					frame:DisableElement("HealthPrediction")
-				end
+			if dbUnit.HealthPredictionBar then
+				module.funcs.HealthPrediction(frame, styleUnit, dbUnit)
+			end
+			if dbUnit.TotalAbsorbBar then
+				module.funcs.TotalAbsorb(frame, styleUnit, dbUnit)
+			end
+			if dbUnit.HealthPredictionBar or dbUnit.TotalAbsorbBar then
+				frame:DisableElement("Health")
+				frame:EnableElement("Health")
+			end
+
+			-- Range fading can be switched on after the frame was created. The
+			-- original layout only registered the element during initial spawn.
+			local useRange = unit == "raid" or (unit == "party" and dbUnit.RangeFade and dbUnit.Fader and not dbUnit.Fader.Enable)
+			if useRange then
+				frame.Range = frame.Range or {insideAlpha = 1, outsideAlpha = 0.5}
+				frame:EnableElement("Range")
+			else
+				frame:DisableElement("Range")
+				frame:SetAlpha(1)
 			end
 
 			if unit == "targettarget" or unit == "targettargettarget" or unit == "focustarget" or unit == "focus" then
@@ -1018,7 +1100,7 @@ module.ApplySettings = function(unit)
 				if not frame.V2Tex then module.funcs.V2Textures(frame, _G["oUF_LUI_partyUnitButton"..frame:GetName():match("%d")]) end
 				frame.V2Tex:Reposition()
 				if module.db.profile.Settings.ShowV2PartyTextures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
-			elseif unit == "Arenatarget" then
+			elseif unit == "arenatarget" then
 				if not frame.V2Tex then module.funcs.V2Textures(frame, _G["oUF_LUI_arena"..frame:GetName():match("%d")]) end
 				frame.V2Tex:Reposition()
 				if module.db.profile.Settings.ShowV2ArenaTextures then frame.V2Tex:Show() else frame.V2Tex:Hide() end

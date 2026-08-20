@@ -240,7 +240,7 @@ function module:SetMainBar()
 	local repBar = module:CreateBar("LUI_ExpBarsRep", "Reputation")
 	local honorBar = module:CreateBar("LUI_ExpBarsHonor", "Honor")
 	local azeriteBar = module:CreateBar("LUI_ExpBarsAzerite", "Azerite")
-	local genesisBar = module:CreateBar("LUI_ExpBarsGenesis", "Genesis") ---@TEST: Genesis
+	local genesisBar = module:CreateBar("LUI_ExpBarsGenesis", "Genesis")
 	mainBarList = {expBar, repBar, honorBar, azeriteBar}
 
 	for bar in module:IterateMainBars() do
@@ -252,7 +252,7 @@ function module:SetMainBar()
 	module.ReputationBar = repBar
 	module.HonorBar = honorBar
 	module.AzeriteBar = azeriteBar
-	module.GenesisBar = genesisBar ---@TEST: Genesis
+	module.GenesisBar = genesisBar
 
 	return true -- mainBarsCreated
 end

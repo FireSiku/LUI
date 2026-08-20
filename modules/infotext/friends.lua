@@ -266,11 +266,13 @@ end
 
 function element:GetBNFriendStatusString(isAFK, isDND)
 	local statusString = ""
+
 	if isDND then
-		statusString = module:ColorText(CHAT_FLAG_DND, "Status")
+		statusString = module:ColorText("<DND> ", "Status")
 	elseif isAFK then
-		statusString = module:ColorText(CHAT_FLAG_AFK, "Status")
+		statusString = module:ColorText("<AFK> ", "Status")
 	end
+
 	return statusString
 end
 

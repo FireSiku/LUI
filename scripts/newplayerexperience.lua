@@ -97,11 +97,10 @@ end
 function script:ADDON_LOADED(event, addon)
 	if addon == "Blizzard_NewPlayerExperience" then
 		if IsAddOnLoaded("Bartender4") then self.BT4 = true end
-		if self.BT4 then
-			script:RawHook(_G.TutorialHelper, "FormatString", "FormatString", true)
-			script:RawHook(_G.TutorialHelper, "GetActionButtonBySpellID", "GetActionButtonBySpellID", true)
-			script:RawHook(_G.TutorialHelper, "FindEmptyButton", "FindEmptyButton", true)
-		end
+		-- Do not replace Blizzard's TutorialHelper methods. RawHooking the
+		-- action-button lookup taints the helper's downstream protected button
+		-- updates in current clients. Bartender's own tutorial integration (or
+		-- Blizzard's fallback) can own this optional pointer functionality.
 		
 		script:SetTutorialFrames()
 	end

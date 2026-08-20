@@ -65,13 +65,23 @@ end
 function module:OverlapPrevention(frame, action)
 	local Y_Position = Y_normal
 	local X_Position = X_compact
+
 	if db.Compact then
 		Y_Position = Y_compact + (db.Spacing / 2)
 		X_Position = X_compact + (db.Spacing / 2)
 	end
 
+	local microMenuShown = false
+
+	if Panels and Panels.db and Panels.db.profile and Panels.db.profile.MicroMenu then
+		microMenuShown = Panels.db.profile.MicroMenu.IsShown
+	elseif Micromenu and Micromenu.background then
+		microMenuShown = Micromenu.background:IsShown()
+	end
+
 	local offset, x_offset = 0, 0
-	if db.OverlapPrevention == "Offset" and Panels.db.profile.MicroMenu.IsShown then
+
+	if db.OverlapPrevention == "Offset" and microMenuShown then
 		offset = db.Offset
 		x_offset = db.X_Offset
 	end
@@ -81,14 +91,22 @@ function module:OverlapPrevention(frame, action)
 			if RaidMenu_Parent:IsShown() then
 				RaidMenu.AlphaOut:Show()
 			else
-				if db.OverlapPrevention == "AutoHide" and Panels.db.profile.MicroMenu.IsShown then
+				if db.OverlapPrevention == "AutoHide" and microMenuShown then
 					Micromenu.clickerMiddle:Click()
 				end
-				RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", (((X_Position + x_offset) / db.Scale) + 17), (((Y_Position + offset) / db.Scale) + 17))
+
+				RaidMenu_Parent:SetPoint(
+					"TOPRIGHT",
+					Micromenu.buttonLeft,
+					"BOTTOMRIGHT",
+					(((X_Position + x_offset) / db.Scale) + 17),
+					(((Y_Position + offset) / db.Scale) + 17)
+				)
+
 				RaidMenu.AlphaIn:Show()
 			end
 		elseif action == "slide" then
-			if Panels.db.profile.MicroMenu.IsShown then
+			if microMenuShown then
 				RaidMenu.SlideUp:Show()
 			else
 				RaidMenu.SlideDown:Show()
@@ -96,7 +114,8 @@ function module:OverlapPrevention(frame, action)
 		elseif action == "position" then
 			RaidMenu_Parent:Show()
 			RaidMenu_Parent:SetAlpha(db.Opacity / 100)
-			if Panels.db.profile.MicroMenu.IsShown then
+
+			if microMenuShown then
 				if db.OverlapPrevention == "AutoHide" then
 					Micromenu.clickerMiddle:Click()
 				end
@@ -107,10 +126,17 @@ function module:OverlapPrevention(frame, action)
 					x_offset = db.X_Offset
 				end
 			end
-			RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", (((X_Position + x_offset) / db.Scale) + 17), (((Y_Position + offset) / db.Scale) + 17))
+
+			RaidMenu_Parent:SetPoint(
+				"TOPRIGHT",
+				Micromenu.buttonLeft,
+				"BOTTOMRIGHT",
+				(((X_Position + x_offset) / db.Scale) + 17),
+				(((Y_Position + offset) / db.Scale) + 17)
+			)
 		end
 	elseif frame == "MM" then
-		if Panels.db.profile.MicroMenu.IsShown then
+		if microMenuShown then
 			if db.OverlapPrevention == "Offset" then
 				RaidMenu.SlideUp:Show()
 			end
@@ -293,11 +319,11 @@ end
 function module:SetRaidMenu()
 	db, dbd = module.db.profile, module.db.defaults.profile
 
-	if not db.Enable or not Micromenu or not Panels then return end
+	if not db.Enable or not Micromenu then return end
 
 	-- Create frames for Raid Menu
 	RaidMenu_Parent = LUI:CreateMeAFrame("Frame", "RaidMenu_Parent", Micromenu.buttonLeft, 256, 256, 1, "HIGH", 0, "TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17), 1)
-	if Panels.db.profile.MicroMenu.IsShown and db.OverlapPrevention == "Offset" then
+	if Micromenu.background:IsShown() and db.OverlapPrevention == "Offset" then
 		RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", X_normal, (((Y_normal + db.Offset) / db.Scale) + 17))
 	else
 		RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17))

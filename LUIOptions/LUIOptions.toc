@@ -1,5 +1,5 @@
-## Interface: 120001
-## Version: 2601
+## Interface: 120100
+## Version: v2601b
 ## Title: LUIOptions
 ## Author: Siku, Nitsah
 ## Notes: Options Menu for modern versions of LUI.
@@ -10,14 +10,10 @@ LUIOptions.lua
 General.lua
 Colors.lua
 CPanel.lua
-# ActionBars.lua
 Artwork.lua
-# Auras.lua
 Bags.lua
 Chat.lua
-# Cooldown.lua
 ExpBars.lua
-# Fader.lua
 Infotexts.lua
 Merchant.lua
 Micromenu.lua

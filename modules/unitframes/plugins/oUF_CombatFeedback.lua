@@ -66,7 +66,7 @@ end
 
 
 local function combat(self, event, unit, eventType, flags, amount, dtype)
-	if unit ~= self.unit then return end
+	if unit ~= self.__unit then return end
 	local FeedbackText = self.CombatFeedbackText
 	local fColors = FeedbackText.colors
 	local font, _, fontFlags = FeedbackText:GetFont()

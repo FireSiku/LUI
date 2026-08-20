@@ -25,7 +25,6 @@ Minimap.args = {
     Header = Opt:Header({name = _G.MINIMAP_LABEL}),
     AlwaysShowText = Opt:Toggle({name = L["Minimap_AlwaysShowText_Name"], desc = L["Minimap_AlwaysShowText_Desc"], width = "full"}),
     ShowTextures = Opt:Toggle({name = L["Minimap_ShowTextures_Name"], desc = L["Minimap_ShowTextures_Desc"], width = "full"}),
-    --Spacer = Opt:Spacer(9, "full"),
     CoordPrecision = Opt:Slider({name = L["Minimap_CoordPrecision_Name"], desc = L["Minimap_CoordPrecision_Desc"], min = 0, max = 2, step = 1}),
 	Header2 = Opt:Header({name = "Appearance"}),
 	ColorType = Opt:ColorSelect({name = "Minimap Color", arg = "Minimap"}),
@@ -38,11 +37,3 @@ Minimap.args = {
 	Point = Opt:Select({name = L["Anchor"], values = LUI.Points, db = db.Position}),
 	Scale = Opt:Slider({name = L["Minimap_Scale_Name"], desc = L["Minimap/;_Scale_Desc"], values = Opt.ScaleValues, db = db.Position}),
 }
-
---[[
-		Position = module:NewGroup(L["Position"], 3, nil, nil, {
-			Position = module:NewPosition(L["Position"], 1, true, "SetMinimapSize"),
-			Point = module:NewSelect({name = L["Anchor"], LUI.Points, nil, "SetMinimapSize"}),
-			Scale = module:NewSlider({name = L["Minimap_Scale_Name"], desc = L["Minimap_Scale_Desc"], 0.5, 2.5, 0.25, true, "SetMinimapSize"}),
-		}),
-]]

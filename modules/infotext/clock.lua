@@ -224,7 +224,7 @@ function element.OnTooltipShow(GameTooltip)
 			local name, _, reset, difficulty, locked, extended, _,
 					isRaid, maxPlayers, _, maxBosses, defeatedBosses = GetSavedInstanceInfo(i)
 			if isRaid and (locked or extended) then
-				local localizedDiff = GetLocalizedDifficulty(difficulty)
+				local localizedDiff = GetLocalizedDifficulty(difficulty) or ""
 				local r, g, b = 1, 1, 1
 				if extended then r, g, b = 0.5, 1, 0.5 end
 				oneraid = OneRaidCheck(oneraid)

@@ -25,18 +25,11 @@ local elementFrames = {} -- Holds all the LDB frames.
 local elementStorage = {} -- Will hold the infotext's elements for iteration.
 local InfoMixin = {} -- Prototype for element functions.
 
---TODO: Improve Support
 --Unsupported data fields: value, suffix, label, icon, tooltip
 local supportedTypes = {
 	["data source"] = true,
 	["launcher"] = true,
 }
-
---[[ Infotext left:
-function module:SetDualSpec()  -- Need Icon setup
-function module:SetGuild()     -- Need Clickable Tootlips (Infotip)
-function module:SetFriends()   -- Need Clickable Tooltips (Infotip)
---]]
 
 local defaultPositions = 0
 
@@ -53,7 +46,6 @@ function InfoMixin:GetFrame()
 end
 
 function InfoMixin:TooltipHeader(headerName, handleGT)
-	--TODO: Change anchor to support more choices later on.
 	if handleGT then
 		GameTooltip:SetOwner(self:GetFrame(), "ANCHOR_BOTTOM")
 		GameTooltip:ClearLines()
@@ -148,7 +140,6 @@ function module:SetInfoPanels()
 	module:RegisterLDBCallback("LibDataBroker_DataObjectCreated", "DataObjectCreated")
 end
 
--- TODO: Change elemnent style to be more akin to data providers? (which is what they are)
 function module:NewElement(name, ...)
 	local element = LDB:NewDataObject(name, {type = "data source", text = name})
 	for k, v in pairs(InfoMixin) do
@@ -249,7 +240,6 @@ function module.OnClickHandler(self, ...)
 end
 
 function module.OnEnterHandler(self, ...)
-	--TODO: Have a way to not show them in combat.
 	local element = self.element
 	if element.OnEnter then
 		element.OnEnter(self, ...)

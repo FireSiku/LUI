@@ -11,18 +11,11 @@ if not module or not module.registered then return end
 
 local MirrorBar = Opt:CreateModuleOptions("Mirror Bar", module)
 
-
--- ####################################################################################################################
--- ##### Utility Functions ############################################################################################
--- ####################################################################################################################
-
-
 -- ####################################################################################################################
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
 MirrorBar.args = {
-    -- General
     Header = Opt:Header({name = L["Mirror Bar"]}),
 	General = Opt:Group({name = "General Settings", db = db.General, args = {
 		Width = Opt:InputNumber({name = "Width", desc = "Choose the Width for the Mirror Bar."}),
@@ -73,70 +66,3 @@ MirrorBar.args = {
 		OffsetY = Opt:InputNumber({name = "Y Value", desc = "Choose the Y Value for the Mirror Time Text."}),
 	}}),
 }
-
-
--- ####################################################################################################################
--- ##### Old Options ###############################################################################################
--- ####################################################################################################################
-
---- Note: New Option calls will automatically call self:Refresh when changed.
---- The part where we defined a function to be called in the Setter is not needed anymore and was dropped. 
-
--- function module:LoadOptions()
--- 	local applyMirrorbar = function() self:Refresh() end
--- 	local applyArchybar = function() self:ToggleArchy() end
-
--- 	local options = {
--- 		Title = self:NewHeader("Mirror Bar", 1),
--- 		General = self:NewGroup("General Settings", 2, {
--- 			Width = self:NewInputNumber("Width", "Choose the Width for the Mirror Bar.", 1, applyMirrorbar, nil),
--- 			Height = self:NewInputNumber("Height", "Choose the Height for the Mirror Bar.", 2, applyMirrorbar, nil),
--- 			X = self:NewInputNumber("X Value", "Choose the X Value for the Mirror Bar.", 3, applyMirrorbar, nil),
--- 			Y = self:NewInputNumber("Y Value", "Choose the Y Value for the Mirror Bar.", 4, applyMirrorbar, nil),
--- 			empty2 = self:NewDesc(" ", 5),
--- 			Texture = self:NewSelect("Texture", "Choose the Mirror Bar Texture.", 6, widgetLists.statusbar, "LSM30_Statusbar", applyMirrorbar, nil),
--- 			TextureBG = self:NewSelect("Background Texture", "Choose the MirrorBar Background Texture.", 7, widgetLists.statusbar, "LSM30_Statusbar", applyMirrorbar, nil),
--- 			BarGap = self:NewSlider("Spacing", "Select the Spacing between mirror bars when shown.", 8, 0, 40, 1, applyMirrorbar, nil, nil),
--- 			ArchyBar = self:NewToggle("Archaeology Progress Bar", "Integrate the Archaeology Progress bar", 9, applyArchybar),
--- 		}),
--- 		Colors = self:NewGroup("Bar Colors", 4, nil, {
--- 			FatigueBar = self:NewColor("Fatigue Bar", "Fatigue Bar", 1, applyMirrorbar),
--- 			BreathBar = self:NewColor("Breath Bar", "Breath Bar", 2, applyMirrorbar),
--- 			FeignBar = self:NewColor("Feign Death Bar", "Feign Death Bar", 3, applyMirrorbar),
--- 			Bar = self:NewColor("Other Bar", "Other Mirror Bars", 4, applyMirrorbar),
--- 			ArchyBar = self:NewColor("Archaeology Progress Bar", "Archaeology Progress Bar", 5(?:, nil)+\), applyMirrorbar),
--- 			Background = self:NewColor("Background", "MirrorBar Background", 6, applyMirrorbar),
--- 		}),
--- 		Text = self:NewGroup("Text Settings", 5, nil, {
--- 			Name = self:NewGroup("Name", 1, true, {
--- 				Font = self:NewSelect("Font", "Choose the Font for the Mirror Name Text.", 2, widgetLists.font, "LSM30_Font", applyMirrorbar, nil),
--- 				Color = self:NewColorNoAlpha("Name", "Mirror Name", 3, applyMirrorbar, nil),
--- 				Size = self:NewSlider("Size", "Choose the Font Size for the Mirror Name Text.", 4, 1, 40, 1, applyMirrorbar, nil, nil),
--- 				empty2 = self:NewDesc(" ", 5),
--- 				OffsetX = self:NewInputNumber("X Value", "Choose the X Value for the Mirror Name Text.", 6, applyMirrorbar, nil),
--- 				OffsetY = self:NewInputNumber("Y Value", "Choose the Y Value for the Mirror Name Text.", 7, applyMirrorbar, nil),
--- 			}),
--- 			Time = self:NewGroup("Time Settings", 2, true, {
--- 				Font = self:NewSelect("Font", "Choose the Font for the Mirror Time Text.", 2, widgetLists.font, "LSM30_Font", applyMirrorbar, nil),
--- 				Color = self:NewColorNoAlpha("Time", "Mirror Time", 3, applyMirrorbar, nil),
--- 				Size = self:NewSlider("Size", "Choose the Font Size for the Mirror Time Text.", 4, 1, 40, 1, applyMirrorbar, nil, nil),
--- 				empty2 = self:NewDesc(" ", 5),
--- 				OffsetX = self:NewInputNumber("X Value", "Choose the X Value for the Mirror Time Text.", 6, applyMirrorbar, nil),
--- 				OffsetY = self:NewInputNumber("Y Value", "Choose the Y Value for the Mirror Time Text.", 7, applyMirrorbar, nil),
--- 			})
--- 		}),
--- 		Border = self:NewGroup("Border", 3, {
--- 			Texture = self:NewSelect("Border Texture", "Choose the Border Texture.", 1, widgetLists.border, "LSM30_Border", applyMirrorbar),
--- 			Color = self:NewColor("Border", "Border", 2, applyMirrorbar),
--- 			Thickness = self:NewInputNumber("Border Thickness", "Value for your Castbar Border Thickness.", 3, applyMirrorbar),
--- 			empty2 = self:NewDesc(" ", 4),
--- 			Inset = self:NewGroup("Insets", 5, true, {
--- 				left = self:NewInputNumber("Left", "Value for the left Border Inset.", 1, applyMirrorbar, "half"),
--- 				right = self:NewInputNumber("Right", "Value for the right Border Inset.", 2, applyMirrorbar, "half"),
--- 				top = self:NewInputNumber("Top", "Value for the top Border Inset.", 3, applyMirrorbar, "half"),
--- 				bottom = self:NewInputNumber("Bottom", "Value for the bottom Border Inset.", 4, applyMirrorbar, "half"),
--- 			}),
--- 		}),
--- 	}
--- 	return options
--- end

@@ -19,6 +19,16 @@ local INFOPANEL_TEXTURE = "Interface\\AddOns\\LUI\\media\\textures\\infopanel"
 ---@type table<string, Frame|BackdropTemplate>
 local _navButtons = {}
 
+-- Refreshing the navigation bar can show, hide, or modify protected frames.
+-- Defer the refresh until combat has ended.
+local navBarRefreshFrame = CreateFrame("Frame")
+navBarRefreshFrame:SetScript("OnEvent", function(self, event)
+	if event == "PLAYER_REGEN_ENABLED" then
+		self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+		module:RefreshNavBar()
+	end
+end)
+
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
@@ -225,6 +235,13 @@ function module:IterateNavButtons()
 end
 
 function module:RefreshNavBar()
+	if InCombatLockdown() then
+		navBarRefreshFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
+
+	navBarRefreshFrame:UnregisterEvent("PLAYER_REGEN_ENABLED")
+
 	local db = module.db.profile.LUITextures
 	module.NavBarCenter:SetBackdropColor(self:RGBA("TopPanel"))
 	module.TopPanel:SetBackdropColor(self:RGBA("TopPanel"))
