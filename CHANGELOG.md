@@ -1,4 +1,4 @@
-# LUI v2601b
+# LUI v2608
 
 ## Retail modernization for Blizzard 12.1 and oUF 14.0.1
 

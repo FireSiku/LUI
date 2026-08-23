@@ -1,5 +1,5 @@
 ## Interface: 120100
-## Version: v2601b
+## Version: v2608
 ## Title: LUI
 ## Author: Siku, Nitsah
 ## Notes: User Interface Modification
