@@ -150,7 +150,6 @@ function module:RevertTooltipBackdrop()
 		local tooltipName = TOOLTIPS_LIST[i]
 		local tooltip = _G[tooltipName]
 		if tooltip then
-			tooltip:SetBackdrop(nil)
 			if tooltip.NineSlice then tooltip.NineSlice:SetAlpha(1) end
 			tooltip:SetScale(initialScale[tooltipName] or 1)
 		end
@@ -159,7 +158,6 @@ function module:RevertTooltipBackdrop()
 	-- This tooltip has no name, need to fetch and manually invoke
 	-- It is the tooltip that appears when hovering the campaign at the top of the questlog
 	local campaignFrame = _G.QuestMapLog_GetCampaignTooltip()
-	campaignFrame:SetBackdrop(nil)
 	campaignFrame.NineSlice:SetAlpha(1)
 	campaignFrame:SetScale(1)
 end
@@ -200,38 +198,13 @@ function module:GetTooltipUnit(data)
 end
 
 function module:UpdateTooltipBackdrop(frame)
+	-- SharedTooltipTemplate uses Blizzard's native NineSlice layout.
+	-- Do not add BackdropTemplateMixin or call SetBackdrop here: in 12.1
+	-- tooltip dimensions can be secret, and Backdrop.lua performs arithmetic
+	-- on those dimensions. Keep the native tooltip backdrop intact.
 	if not frame then return end
-	
-	module.tooltipBackdrop = {
-		bgFile = Media:Fetch("background", db.BgTexture),
-		edgeFile = Media:Fetch("border", db.BorderTexture),
-		edgeSize = db.BorderSize, tile = false,
-		insets = {left = 0, right = 0, top = 0, bottom = 0, }
-	}
-
-	-- for i = 1, #TOOLTIPS_LIST do
-	-- 	local tooltipName = TOOLTIPS_LIST[i]
-	-- 	local tooltip = _G[tooltipName]
-	-- 	--Make sure the tooltip exists.
-	-- 	if tooltip and tooltip.SetBackdrop then
-	-- 		-- if not tooltip.SetBackdrop then
-	-- 		-- 	Mixin(tooltip, BackdropTemplateMixin)
-	-- 		-- end
-	-- 		-- Store the original backdrop so we can revert.
-	-- 		-- Make sure we don't overwrite it if we update the tooltips again later.
-	-- 		if not oldDefault[tooltipName] then
-	-- 			oldDefault[tooltipName] = tooltip:GetBackdrop()
-	-- 			initialScale[tooltipName] = tooltip:GetScale()
-	-- 		end
-	-- 		tooltip:SetBackdrop(module.tooltipBackdrop)
-	-- 		if not module:IsHooked(tooltip, "OnShow") then
-	-- 			module:HookScript(tooltip, "OnShow", "OnTooltipShow")
-	-- 		end
-	-- 	else
-	-- 		--module:Mod(tooltipName.." Not Found")
-	-- 	end
-	if frame.SetBackdrop then
-		frame:SetBackdrop(module.tooltipBackdrop)
+	if frame.NineSlice then
+		frame.NineSlice:SetAlpha(1)
 	end
 end
 
@@ -280,14 +253,11 @@ end
 -- ####################################################################################################################
 
 function module:SetTooltip(tooltip, name)
-	-- Hide the textures
+	-- Retail tooltips use SharedTooltipTemplate/NineSlice natively.
+	-- Keep that native layout instead of mixing BackdropTemplate into
+	-- Blizzard/Ace tooltips after creation.
 	if tooltip.NineSlice then
-		tooltip.NineSlice:SetAlpha(0)
-	end
-
-	-- Add backdrop functionality
-	if not tooltip.SetBackdrop then
-		Mixin(tooltip, _G.BackdropTemplateMixin)
+		tooltip.NineSlice:SetAlpha(1)
 	end
 
 	-- Store initial scale for future reference
@@ -346,53 +316,33 @@ function module:SetStatusHealthBar()
 end
 
 function module:SetBorderColor(frame)
-	if not frame.SetBackdropColor then return end
-	
+	-- WoW 12.1 tooltips keep Blizzard's native NineSlice backdrop. We still
+	-- color the tooltip health bar, but do not call legacy backdrop methods.
 	local health = GameTooltipStatusBar
 	local tooltipData = frame.GetTooltipData and frame:GetTooltipData()
 	local tooltipType = tooltipData and tooltipData.type
-	frame:SetBackdropColor(module:RGB("Background"))
-	frame:SetBackdropBorderColor(module:RGB("Border"))
-	health:SetStatusBarColor(module:RGB("Border"))
+	local r, g, b = module:RGB("Border")
 
-	if not issecretvalue(tooltipType) then
-		
-		if tooltipType == Enum.TooltipDataType.Unit then
-			local unit = module:GetTooltipUnit(tooltipData)
+	if not issecretvalue(tooltipType) and tooltipType == Enum.TooltipDataType.Unit then
+		local unit = module:GetTooltipUnit(tooltipData)
+		if unit then
 			local playerUnit = UnitIsPlayer(unit)
-			local reaction = unit and UnitReaction(unit, "player")
+			local reaction = UnitReaction(unit, "player")
 			if not issecretvalue(playerUnit) and playerUnit then
-				-- Tooltip is a Player
 				local _, class = UnitClass(unit)
-				if issecretvalue(class) then return end
-				local r, g, b = module:RGB(class)
-				frame:SetBackdropBorderColor(r, g, b)
-				health:SetStatusBarColor(r, g, b)
-			elseif not issecretvalue(reaction) and reaction then
-				-- Tooltip is an NPC
-				local r, g, b = LUI:GetReactionColor(unit)
-				frame:SetBackdropBorderColor(r, g, b)
-				health:SetStatusBarColor(r, g, b)
-			end
-
-		elseif tooltipType == Enum.TooltipDataType.Item then
-			local itemLink = tooltipData.guid and C_Item.GetItemLinkByGUID(tooltipData.guid) or tooltipData.hyperlink
-			if itemLink then
-				local _, _, quality = GetItemInfo(itemLink)
-				-- Only need to change border color for Uncommon and above.
-				if quality and quality >= 2 then
-					local r, g, b = GetItemQualityColor(quality)
-					frame:SetBackdropBorderColor(r, g, b)
+				if not issecretvalue(class) then
+					r, g, b = module:RGB(class)
 				end
+			elseif not issecretvalue(reaction) and reaction then
+				r, g, b = LUI:GetReactionColor(unit)
 			end
 		end
-
 	end
+
+	health:SetStatusBarColor(r, g, b)
 end
 
 function module:UpdateBackdropColors()
-	GameTooltip:SetBackdropColor(module:RGB("Background"))
-	GameTooltip:SetBackdropBorderColor(module:RGB("Border"))
 	GameTooltipStatusBar:SetStatusBarColor(module:RGB("Border"))
 end
 
@@ -448,7 +398,6 @@ function module:OnTooltipShow(frame)
 		frame:SetScale(db.Scale)
 	end
 
-	module:UpdateTooltipBackdrop(frame)
 	module:SetBorderColor(frame)
 end
 
@@ -605,7 +554,6 @@ function module:OnEnable()
 		end
 	end)
 
-	module:SecureHook("SharedTooltip_SetBackdropStyle", module.UpdateTooltipBackdrop)
 
 	module:SetStatusHealthBar()
 	TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, module.OnGameTooltipSetUnit)

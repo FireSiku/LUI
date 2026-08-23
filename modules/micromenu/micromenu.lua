@@ -22,6 +22,13 @@ local IsBagOpen = _G.IsBagOpen
 local Minimap = _G.Minimap
 local format = format
 
+local function OpenWorldMapSafe()
+	if InCombatLockdown() then return end
+	if C_Map and C_Map.OpenWorldMap then
+		C_Map.OpenWorldMap()
+	end
+end
+
 local TALENT_TAB = PlayerSpellsUtil.FrameTabs.ClassTalents or 2
 local SPELL_TAB = PlayerSpellsUtil.FrameTabs.SpellBook or 3
 
@@ -718,7 +725,7 @@ function module:SetMicromenuExtraButtons()
 		clickerRight:SetScript("OnClick", function(self, button)
 			if minimapMod:IsEnabled() then
 				if button == "RightButton" then
-					_G.ToggleFrame(_G.WorldMapFrame)
+					OpenWorldMapSafe()
 				else
 					if Minimap:IsVisible() then
 						Minimap:Hide()
@@ -727,7 +734,7 @@ function module:SetMicromenuExtraButtons()
 					end
 				end
 			else
-				_G.ToggleFrame(_G.WorldMapFrame)
+				OpenWorldMapSafe()
 			end
 		end)
 

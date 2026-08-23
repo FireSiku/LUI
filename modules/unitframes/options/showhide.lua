@@ -160,12 +160,13 @@ end
 
 local function PositionContainer(container, db, group)
 	local scale = db.Scale or 1
-	local width, height = db.Width, db.Height
+	local frameHeight = module.GetUnitFrameFootprintHeight(db)
+	local width, height = db.Width, frameHeight
 	if group == "raid" then
 		-- The raid anchor represents the complete 5x5 25-player grid. Using the
 		-- size of a single unit frame makes BOTTOM/RIGHT anchors grow off-screen.
 		width = db.Width * 5 + db.GroupPadding * 4
-		height = db.Height * 5 + db.Padding * 4
+		height = frameHeight * 5 + db.Padding * 4
 	end
 	container:ClearAllPoints()
 	container:SetScale(scale)
@@ -175,9 +176,14 @@ end
 
 local function PositionGroupFrame(frame, previous, db, index)
 	frame:ClearAllPoints()
+
+	local topOverflow, bottomOverflow = module.GetUnitFrameVerticalOverflow(db)
 	if index == 1 then
 		local point = (db.GrowDirection == "LEFT" or db.GrowDirection == "TOP") and "BOTTOMRIGHT" or "TOPLEFT"
-		frame:SetPoint(point, frame:GetParent(), point, 0, 0)
+		local x, y = 0, 0
+		if db.GrowDirection == "TOP" then y = bottomOverflow end
+		if db.GrowDirection == "BOTTOM" then y = -topOverflow end
+		frame:SetPoint(point, frame:GetParent(), point, x, y)
 		return
 	end
 
@@ -185,8 +191,8 @@ local function PositionGroupFrame(frame, previous, db, index)
 	local x, y = 0, 0
 	if db.GrowDirection == "LEFT" then x = -db.Padding end
 	if db.GrowDirection == "RIGHT" then x = db.Padding end
-	if db.GrowDirection == "TOP" then y = db.Padding end
-	if db.GrowDirection == "BOTTOM" then y = -db.Padding end
+	if db.GrowDirection == "TOP" then y = db.Padding + topOverflow + bottomOverflow end
+	if db.GrowDirection == "BOTTOM" then y = -(db.Padding + topOverflow + bottomOverflow) end
 	frame:SetPoint(opposite, previous, db.GrowDirection, x, y)
 end
 
@@ -199,7 +205,7 @@ local function PositionRaidFrame(frame, container, db, index)
 		container,
 		"TOPLEFT",
 		column * (db.Width + db.GroupPadding),
-		-row * (db.Height + db.Padding)
+		-row * (module.GetUnitFrameFootprintHeight(db) + db.Padding)
 	)
 end
 

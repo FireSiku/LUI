@@ -35,38 +35,19 @@ local function BuildLayout(db)
     }
 end
 
-local function GetContainerSize(db)
+local function GetContainerLayoutLimit(db)
     local total = math.max(tonumber(db.Num) or 8, 1)
     local perRow = math.min(math.max(tonumber(db.IconsPerRow) or total, 1), total)
     local size = tonumber(db.Size) or 1
     local spacing = tonumber(db.Spacing) or 0
-    local rows = math.ceil(total / perRow)
 
-    local width = math.max(size, perRow * size + (perRow - 1) * spacing)
-    local height = math.max(size, rows * size + (rows - 1) * spacing)
-    return width, height
-end
-
-local function ConfigureButton(button, state)
-    local db = state.db
-    local settings = module.db.profile.Settings
-
-    button.Cooldown:SetReverse(db.CooldownReverse == true)
-    button.Cooldown:SetAlpha(db.DisableCooldown == true and 0 or 1)
-
-    button.Time:SetAlpha(db.AuraTimer == true and 1 or 0)
-    button.Time:SetFont(
-        Media:Fetch("font", settings.AuratimerFont),
-        settings.AuratimerSize,
-        settings.AuratimerFlag
-    )
-
-    button.AuraTypeHolder:SetAlpha(db.ColorByType == true and 1 or 0)
+    return math.max(size, perRow * size + (perRow - 1) * spacing)
 end
 
 local function MakeInitializer(state, kind)
     return function(button)
         local db = state.db
+        local settings = module.db.profile.Settings
         button:SetSize(db.Size, db.Size)
 
         local background = button:CreateTexture(nil, "BACKGROUND")
@@ -118,7 +99,18 @@ local function MakeInitializer(state, kind)
         })
 
         button:SetTooltipAnchorPoint("ANCHOR_BOTTOMRIGHT", 0, 0)
-        ConfigureButton(button, state)
+
+        cooldown:SetReverse(db.CooldownReverse == true)
+        cooldown:SetAlpha(db.DisableCooldown == true and 0 or 1)
+
+        timer:SetAlpha(db.AuraTimer == true and 1 or 0)
+        timer:SetFont(
+            Media:Fetch("font", settings.AuratimerFont),
+            settings.AuratimerSize,
+            settings.AuratimerFlag
+        )
+
+        auraTypeHolder:SetAlpha(db.ColorByType == true and 1 or 0)
     end
 end
 
@@ -138,15 +130,13 @@ end
 
 local function CreateContainer(owner, unit, kind, db)
     local state = {db = db}
-    local containerWidth, containerHeight = GetContainerSize(db)
+    local containerWidth = GetContainerLayoutLimit(db)
     local container = owner:CreateAuras({
         initialAnchor = db.InitialAnchor,
         growthX = db.GrowthX,
         growthY = db.GrowthY,
         layoutLimit = containerWidth,
     })
-
-    container:SetSize(containerWidth, containerHeight)
 
     if container.SetFlowLayoutMaximumLineSize then
         container:SetFlowLayoutMaximumLineSize(containerWidth)
@@ -202,7 +192,7 @@ end
 
 local function Apply(owner, unit, kind, db)
     unit = ResolveUnit(owner, unit)
-    local containerWidth, containerHeight = GetContainerSize(db)
+    local containerWidth = GetContainerLayoutLimit(db)
 
     local field = kind
     local container = owner[field]
@@ -212,8 +202,14 @@ local function Apply(owner, unit, kind, db)
         return
     end
 
+    -- WoW 12.1 AuraContainers own their AuraButtons. Disabling a container
+    -- clears its managed AuraButtons, so the next enable recreates them and
+    -- runs initializeFrame with the current LUI settings. This avoids touching
+    -- AuraButtons after initialization, when Blizzard may make them forbidden.
+    container:SetEnabled(false)
+
     container.__luiState.db = db
-    container:SetSize(containerWidth, containerHeight)
+
     container:ClearAllPoints()
     container:SetPoint(
         db.InitialAnchor,
@@ -240,30 +236,29 @@ local function Apply(owner, unit, kind, db)
         BuildLayout(db)
     )
 
-    container:SetFlowLayoutMaximumLineSize(containerWidth)
-    container:SetFlowLayoutAnchorPoint(
-        db.InitialAnchor or "BOTTOMLEFT"
-    )
-    container:SetFlowLayoutGrowthDirection(
-        db.GrowthX == "LEFT" and -1 or 1,
-        db.GrowthY == "DOWN" and -1 or 1
-    )
-
-    for index = 1, container:GetAuraGroupFrameCount(container.__luiKey) do
-        local button = container:GetAuraGroupFrame(container.__luiKey, index)
-        if button then
-            ConfigureButton(button, container.__luiState)
-        end
+    if container.SetFlowLayoutMaximumLineSize then
+        container:SetFlowLayoutMaximumLineSize(containerWidth)
+    end
+    if container.SetFlowLayoutAnchorPoint then
+        container:SetFlowLayoutAnchorPoint(
+            db.InitialAnchor or "BOTTOMLEFT"
+        )
+    end
+    if container.SetFlowLayoutGrowthDirection then
+        container:SetFlowLayoutGrowthDirection(
+            db.GrowthX == "LEFT" and -1 or 1,
+            db.GrowthY == "DOWN" and -1 or 1
+        )
     end
 
-    if container:GetUnit() ~= unit then
-        container:SetUnit(unit)
-    else
-        container:ForceUpdate()
-    end
+    -- Do not compare AuraContainer:GetUnit(): unit identity can be secret.
+    -- SetUnit is the supported container API and is safe to call with our
+    -- resolved public unit token.
+    container:SetUnit(unit)
 
     container:SetEnabled(true)
     container:Show()
+    container:UpdateAllAuras()
 end
 
 module.funcs.Buffs = function(self, unit, oufdb)

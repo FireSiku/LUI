@@ -47,6 +47,18 @@ local indicatorDBKeys = {
 	ReadyCheck = "ReadyCheckIndicator",
 }
 
+local function GetFrameHeight(dbUnit)
+	return tonumber(dbUnit and dbUnit.Height) or 1
+end
+
+local function GetFootprintHeight(dbUnit)
+	return module.GetUnitFrameFootprintHeight(dbUnit)
+end
+
+local function GetVerticalStackPadding(dbUnit)
+	return (tonumber(dbUnit and dbUnit.Padding) or 0) + module.GetUnitFrameStackOverflow(dbUnit)
+end
+
 local function GetOpposite(dir)
 	if dir == "RIGHT" then
 		return "LEFT"
@@ -131,6 +143,9 @@ module.ToggleUnit = setmetatable({
 		if override then
 			local x = dbUnit.X / dbUnit.Scale
 			local y = dbUnit.Y / dbUnit.Scale
+			local frameHeight = GetFrameHeight(dbUnit)
+			local footprintHeight = GetFootprintHeight(dbUnit)
+			local verticalPadding = GetVerticalStackPadding(dbUnit)
 
 			local growdir = dbUnit.GrowDirection
 			local opposite = GetOpposite(growdir)
@@ -140,8 +155,8 @@ module.ToggleUnit = setmetatable({
 				oUF_LUI_boss:ClearAllPoints()
 				oUF_LUI_boss:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
 				oUF_LUI_boss:SetWidth(dbUnit.Width)
-				oUF_LUI_boss:SetHeight(dbUnit.Height)
-				oUF_LUI_boss:SetAttribute("Height", dbUnit.Height)
+				oUF_LUI_boss:SetHeight(footprintHeight)
+				oUF_LUI_boss:SetAttribute("Height", footprintHeight)
 				oUF_LUI_boss:SetAttribute("Padding", dbUnit.Padding)
 				oUF_LUI_boss:Show()
 
@@ -158,9 +173,9 @@ module.ToggleUnit = setmetatable({
 						elseif growdir == "RIGHT" then
 							_G["oUF_LUI_boss"..i]:SetPoint(opposite, _G["oUF_LUI_boss"..i-1], growdir, dbUnit.Padding, 0)
 						elseif growdir == "TOP" then
-							_G["oUF_LUI_boss"..i]:SetPoint(opposite, _G["oUF_LUI_boss"..i-1], growdir, 0, dbUnit.Padding)
+							_G["oUF_LUI_boss"..i]:SetPoint(opposite, _G["oUF_LUI_boss"..i-1], growdir, 0, verticalPadding)
 						else
-							_G["oUF_LUI_boss"..i]:SetPoint(opposite, _G["oUF_LUI_boss"..i-1], growdir, 0, - dbUnit.Padding)
+							_G["oUF_LUI_boss"..i]:SetPoint(opposite, _G["oUF_LUI_boss"..i-1], growdir, 0, - verticalPadding)
 						end
 					end
 				end
@@ -169,8 +184,8 @@ module.ToggleUnit = setmetatable({
 				bossParent:SetScale(dbUnit.Scale)
 				bossParent:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
 				bossParent:SetWidth(dbUnit.Width)
-				bossParent:SetHeight(dbUnit.Height)
-				bossParent:SetAttribute("Height", dbUnit.Height)
+				bossParent:SetHeight(footprintHeight)
+				bossParent:SetAttribute("Height", footprintHeight)
 				bossParent:SetAttribute("Padding", dbUnit.Padding)
 				bossParent:Show()
 
@@ -198,9 +213,9 @@ module.ToggleUnit = setmetatable({
 						elseif growdir == "RIGHT" then
 							boss[i]:SetPoint(opposite, boss[i-1], growdir, dbUnit.Padding, 0)
 						elseif growdir == "TOP" then
-							boss[i]:SetPoint(opposite, boss[i-1], growdir, 0, dbUnit.Padding)
+							boss[i]:SetPoint(opposite, boss[i-1], growdir, 0, verticalPadding)
 						else
-							boss[i]:SetPoint(opposite, boss[i-1], growdir, 0, - dbUnit.Padding)
+							boss[i]:SetPoint(opposite, boss[i-1], growdir, 0, - verticalPadding)
 						end
 					end
 				end
@@ -259,6 +274,10 @@ module.ToggleUnit = setmetatable({
 			local dbParty = module.db.profile.party
 			local dbPartyTarget = module.db.profile.partytarget
 			local dbPartyPet = module.db.profile.partypet
+			local partyHeight = GetFrameHeight(dbParty)
+			local partyTargetHeight = GetFrameHeight(dbPartyTarget)
+			local partyPetHeight = GetFrameHeight(dbPartyPet)
+			local partyVerticalPadding = GetVerticalStackPadding(dbParty)
 
 			if oUF_LUI_party then
 				oUF_LUI_party:SetScale(dbUnit.Scale)
@@ -266,19 +285,19 @@ module.ToggleUnit = setmetatable({
 				oUF_LUI_party:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
 				oUF_LUI_party:SetAttribute("point", opposite)
 				oUF_LUI_party:SetAttribute("xOffset", growdir == "LEFT" and - dbUnit.Padding or dbUnit.Padding)
-				oUF_LUI_party:SetAttribute("yOffset", growdir == "BOTTOM" and - dbUnit.Padding or dbUnit.Padding)
+				oUF_LUI_party:SetAttribute("yOffset", growdir == "BOTTOM" and - partyVerticalPadding or partyVerticalPadding)
 				oUF_LUI_party:SetAttribute("showPlayer", dbUnit.ShowPlayer)
 				oUF_LUI_party:SetAttribute("oUF-initialConfigFunction", [[
 					local unit = ...
 					if unit == "party" then
-						self:SetHeight(]]..dbParty.Height..[[)
+						self:SetHeight(]]..partyHeight..[[)
 						self:SetWidth(]]..dbParty.Width..[[)
 					elseif unit == "partytarget" then
-						self:SetHeight(]]..dbPartyTarget.Height..[[)
+						self:SetHeight(]]..partyTargetHeight..[[)
 						self:SetWidth(]]..dbPartyTarget.Width..[[)
 						self:SetPoint("]]..dbPartyTarget.Point..[[", self:GetParent(), "]]..dbPartyTarget.RelativePoint..[[", ]]..dbPartyTarget.X..[[, ]]..dbPartyTarget.Y..[[)
 					elseif unit == "partypet" then
-						self:SetHeight(]]..dbPartyPet.Height..[[)
+						self:SetHeight(]]..partyPetHeight..[[)
 						self:SetWidth(]]..dbPartyPet.Width..[[)
 						self:SetPoint("]]..dbPartyPet.Point..[[", self:GetParent(), "]]..dbPartyPet.RelativePoint..[[", ]]..dbPartyPet.X..[[, ]]..dbPartyPet.Y..[[)
 					end
@@ -299,18 +318,18 @@ module.ToggleUnit = setmetatable({
 					"template", "oUF_LUI_party",
 					"point", opposite,
 					"xOffset", growdir == "LEFT" and - dbUnit.Padding or dbUnit.Padding,
-					"yOffset", growdir == "BOTTOM" and - dbUnit.Padding or dbUnit.Padding,
+					"yOffset", growdir == "BOTTOM" and - partyVerticalPadding or partyVerticalPadding,
 					"oUF-initialConfigFunction", [[
 						local unit = ...
 						if unit == "party" then
-							self:SetHeight(]]..dbParty.Height..[[)
+							self:SetHeight(]]..partyHeight..[[)
 							self:SetWidth(]]..dbParty.Width..[[)
 						elseif unit == "partytarget" then
-							self:SetHeight(]]..dbPartyTarget.Height..[[)
+							self:SetHeight(]]..partyTargetHeight..[[)
 							self:SetWidth(]]..dbPartyTarget.Width..[[)
 							self:SetPoint("]]..dbPartyTarget.Point..[[", self:GetParent(), "]]..dbPartyTarget.RelativePoint..[[", ]]..dbPartyTarget.X..[[, ]]..dbPartyTarget.Y..[[)
 						elseif unit == "partypet" then
-							self:SetHeight(]]..dbPartyPet.Height..[[)
+							self:SetHeight(]]..partyPetHeight..[[)
 							self:SetWidth(]]..dbPartyPet.Width..[[)
 							self:SetPoint("]]..dbPartyPet.Point..[[", self:GetParent(), "]]..dbPartyPet.RelativePoint..[[", ]]..dbPartyPet.X..[[, ]]..dbPartyPet.Y..[[)
 						end
@@ -430,6 +449,9 @@ module.ToggleUnit = setmetatable({
 		if override then
 			local x = dbUnit.X / dbUnit.Scale
 			local y = dbUnit.Y / dbUnit.Scale
+			local frameHeight = GetFrameHeight(dbUnit)
+			local footprintHeight = GetFootprintHeight(dbUnit)
+			local verticalPadding = GetVerticalStackPadding(dbUnit)
 
 			local growdir = dbUnit.GrowDirection
 			local opposite = GetOpposite(growdir)
@@ -439,8 +461,8 @@ module.ToggleUnit = setmetatable({
 				oUF_LUI_arena:ClearAllPoints()
 				oUF_LUI_arena:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
 				oUF_LUI_arena:SetWidth(dbUnit.Width)
-				oUF_LUI_arena:SetHeight(dbUnit.Height)
-				oUF_LUI_arena:SetAttribute("Height", dbUnit.Height)
+				oUF_LUI_arena:SetHeight(footprintHeight)
+				oUF_LUI_arena:SetAttribute("Height", footprintHeight)
 				oUF_LUI_arena:SetAttribute("Padding", dbUnit.Padding)
 				oUF_LUI_arena:Show()
 
@@ -457,9 +479,9 @@ module.ToggleUnit = setmetatable({
 						elseif growdir == "RIGHT" then
 							_G["oUF_LUI_arena"..i]:SetPoint(opposite, _G["oUF_LUI_arena"..i-1], growdir, dbUnit.Padding, 0)
 						elseif growdir == "TOP" then
-							_G["oUF_LUI_arena"..i]:SetPoint(opposite, _G["oUF_LUI_arena"..i-1], growdir, 0, dbUnit.Padding)
+							_G["oUF_LUI_arena"..i]:SetPoint(opposite, _G["oUF_LUI_arena"..i-1], growdir, 0, verticalPadding)
 						else
-							_G["oUF_LUI_arena"..i]:SetPoint(opposite, _G["oUF_LUI_arena"..i-1], growdir, 0, - dbUnit.Padding)
+							_G["oUF_LUI_arena"..i]:SetPoint(opposite, _G["oUF_LUI_arena"..i-1], growdir, 0, - verticalPadding)
 						end
 					end
 				end
@@ -472,8 +494,8 @@ module.ToggleUnit = setmetatable({
 				arenaParent:SetScale(dbUnit.Scale)
 				arenaParent:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
 				arenaParent:SetWidth(dbUnit.Width)
-				arenaParent:SetHeight(dbUnit.Height)
-				arenaParent:SetAttribute("Height", dbUnit.Height)
+				arenaParent:SetHeight(footprintHeight)
+				arenaParent:SetAttribute("Height", footprintHeight)
 				arenaParent:SetAttribute("Padding", dbUnit.Padding)
 				arenaParent:Show()
 
@@ -501,9 +523,9 @@ module.ToggleUnit = setmetatable({
 						elseif growdir == "RIGHT" then
 							arena[i]:SetPoint(opposite, arena[i-1], growdir, dbUnit.Padding, 0)
 						elseif growdir == "TOP" then
-							arena[i]:SetPoint(opposite, arena[i-1], growdir, 0, dbUnit.Padding)
+							arena[i]:SetPoint(opposite, arena[i-1], growdir, 0, verticalPadding)
 						else
-							arena[i]:SetPoint(opposite, arena[i-1], growdir, 0, - dbUnit.Padding)
+							arena[i]:SetPoint(opposite, arena[i-1], growdir, 0, - verticalPadding)
 						end
 					end
 				end
@@ -590,6 +612,10 @@ module.ToggleUnit = setmetatable({
 			local dbTank = module.db.profile.maintank
 			local dbTankTarget = module.db.profile.maintanktarget
 			local dbTankToT = module.db.profile.maintanktargettarget
+			local tankHeight = GetFrameHeight(dbTank)
+			local tankTargetHeight = GetFrameHeight(dbTankTarget)
+			local tankToTHeight = GetFrameHeight(dbTankToT)
+			local tankVerticalPadding = GetVerticalStackPadding(dbTank)
 
 			if oUF_LUI_maintank then
 				oUF_LUI_maintank:SetScale(dbUnit.Scale)
@@ -597,19 +623,19 @@ module.ToggleUnit = setmetatable({
 				oUF_LUI_maintank:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
 				oUF_LUI_maintank:SetAttribute("point", opposite)
 				oUF_LUI_maintank:SetAttribute("xOffset", growdir == "LEFT" and - dbUnit.Padding or dbUnit.Padding)
-				oUF_LUI_maintank:SetAttribute("yOffset", growdir == "BOTTOM" and - dbUnit.Padding or dbUnit.Padding)
+				oUF_LUI_maintank:SetAttribute("yOffset", growdir == "BOTTOM" and - tankVerticalPadding or tankVerticalPadding)
 				oUF_LUI_maintank:SetAttribute("oUF-initialConfigFunction", [[
 					local unit = ...
 					if unit == "maintanktargettarget" then
-						self:SetHeight(]]..dbTankToT.Height..[[)
+						self:SetHeight(]]..tankToTHeight..[[)
 						self:SetWidth(]]..dbTankToT.Width..[[)
 						self:SetPoint("]]..dbTankToT.Point..[[", self:GetParent(), "]]..dbTankToT.RelativePoint..[[", ]]..dbTankToT.X..[[, ]]..dbTankToT.Y..[[)
 					elseif unit == "maintanktarget" then
-						self:SetHeight(]]..dbTankTarget.Height..[[)
+						self:SetHeight(]]..tankTargetHeight..[[)
 						self:SetWidth(]]..dbTankTarget.Width..[[)
 						self:SetPoint("]]..dbTankTarget.Point..[[", self:GetParent(), "]]..dbTankTarget.RelativePoint..[[", ]]..dbTankTarget.X..[[, ]]..dbTankTarget.Y..[[)
 					elseif unit == "maintank" then
-						self:SetHeight(]]..dbTank.Height..[[)
+						self:SetHeight(]]..tankHeight..[[)
 						self:SetWidth(]]..dbTank.Width..[[)
 					end
 				]])
@@ -631,19 +657,19 @@ module.ToggleUnit = setmetatable({
 					"unitsPerColumn", 4,
 					"point", opposite,
 					"xOffset", growdir == "LEFT" and - dbUnit.Padding or dbUnit.Padding,
-					"yOffset", growdir == "BOTTOM" and - dbUnit.Padding or dbUnit.Padding,
+					"yOffset", growdir == "BOTTOM" and - tankVerticalPadding or tankVerticalPadding,
 					"oUF-initialConfigFunction", [[
 						local unit = ...
 						if unit == "maintanktargettarget" then
-							self:SetHeight(]]..dbTankToT.Height..[[)
+							self:SetHeight(]]..tankToTHeight..[[)
 							self:SetWidth(]]..dbTankToT.Width..[[)
 							self:SetPoint("]]..dbTankToT.Point..[[", self:GetParent(), "]]..dbTankToT.RelativePoint..[[", ]]..dbTankToT.X..[[, ]]..dbTankToT.Y..[[)
 						elseif unit == "maintanktarget" then
-							self:SetHeight(]]..dbTankTarget.Height..[[)
+							self:SetHeight(]]..tankTargetHeight..[[)
 							self:SetWidth(]]..dbTankTarget.Width..[[)
 							self:SetPoint("]]..dbTankTarget.Point..[[", self:GetParent(), "]]..dbTankTarget.RelativePoint..[[", ]]..dbTankTarget.X..[[, ]]..dbTankTarget.Y..[[)
 						elseif unit == "maintank" then
-							self:SetHeight(]]..dbTank.Height..[[)
+							self:SetHeight(]]..tankHeight..[[)
 							self:SetWidth(]]..dbTank.Width..[[)
 						end
 					]]
@@ -718,19 +744,26 @@ module.ToggleUnit = setmetatable({
 		if override == nil then override = dbUnit.Enable end
 
 		if override then
+			local frameHeight = GetFrameHeight(dbUnit)
+			local footprintHeight = GetFootprintHeight(dbUnit)
+			local raidVerticalPadding = GetVerticalStackPadding(dbUnit)
 			if IsAddOnLoaded("Plexus") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") then
 				return
 			end
 			if oUF_LUI_raid then
+				oUF_LUI_raid:SetWidth(dbUnit.Width * 5 + dbUnit.GroupPadding * 4)
+				oUF_LUI_raid:SetHeight(footprintHeight * 5 + dbUnit.Padding * 4)
+
 				for i = 1, 5 do
+					local header = _G["oUF_LUI_raid_25_"..i]
 					if i ~= 1 then
-						_G["oUF_LUI_raid_25_"..i]:SetPoint("TOPLEFT", _G["oUF_LUI_raid_25_"..i-1], "TOPRIGHT", dbUnit.GroupPadding, 0)
-						_G["oUF_LUI_raid_25_"..i]:SetAttribute("yOffset", - dbUnit.Padding)
-						_G["oUF_LUI_raid_25_"..i]:SetAttribute("oUF-initialConfigFunction", [[
-							self:SetHeight(]]..dbUnit.Height..[[)
-							self:SetWidth(]]..dbUnit.Width..[[)
-						]])
+						header:SetPoint("TOPLEFT", _G["oUF_LUI_raid_25_"..i-1], "TOPRIGHT", dbUnit.GroupPadding, 0)
 					end
+					header:SetAttribute("yOffset", - raidVerticalPadding)
+					header:SetAttribute("oUF-initialConfigFunction", [[
+						self:SetHeight(]]..frameHeight..[[)
+						self:SetWidth(]]..dbUnit.Width..[[)
+					]])
 					for j = 1, 5 do
 						local frame = _G["oUF_LUI_raid_25_"..i.."UnitButton"..j]
 						if frame then
@@ -743,14 +776,15 @@ module.ToggleUnit = setmetatable({
 				local width40 = (5 * dbUnit.Width - 3 * dbUnit.GroupPadding) / 8
 
 				for i = 1, 8 do
+					local header = _G["oUF_LUI_raid_40_"..i]
 					if i ~= 1 then
-						_G["oUF_LUI_raid_40_"..i]:SetPoint("TOPLEFT", _G["oUF_LUI_raid_40_"..i-1], "TOPRIGHT", dbUnit.GroupPadding, 0)
-						_G["oUF_LUI_raid_40_"..i]:SetAttribute("yOffset", - dbUnit.Padding)
-						_G["oUF_LUI_raid_40_"..i]:SetAttribute("oUF-initialConfigFunction", [[
-							self:SetHeight(]]..dbUnit.Height..[[)
-							self:SetWidth(]]..width40..[[)
-						]])
+						header:SetPoint("TOPLEFT", _G["oUF_LUI_raid_40_"..i-1], "TOPRIGHT", dbUnit.GroupPadding, 0)
 					end
+					header:SetAttribute("yOffset", - raidVerticalPadding)
+					header:SetAttribute("oUF-initialConfigFunction", [[
+						self:SetHeight(]]..frameHeight..[[)
+						self:SetWidth(]]..width40..[[)
+					]])
 					for j = 1, 5 do
 						local frame = _G["oUF_LUI_raid_40_"..i.."UnitButton"..j]
 						if frame then
@@ -769,7 +803,7 @@ module.ToggleUnit = setmetatable({
 			else
 				local raidAnchor = CreateFrame("Frame", "oUF_LUI_raid", UIParent)
 				raidAnchor:SetWidth(dbUnit.Width * 5 + dbUnit.GroupPadding * 4)
-				raidAnchor:SetHeight(dbUnit.Height * 5 + dbUnit.Padding * 4)
+				raidAnchor:SetHeight(footprintHeight * 5 + dbUnit.Padding * 4)
 				raidAnchor:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, dbUnit.X, dbUnit.Y)
 
 				local raid25 = CreateFrame("Frame", "oUF_LUI_raid_25", raidAnchor, "SecureHandlerStateTemplate")
@@ -784,9 +818,9 @@ module.ToggleUnit = setmetatable({
 						"showPlayer", true,
 						"showSolo", true,
 						"groupFilter", tostring(i),
-						"yOffset", - dbUnit.Padding,
+						"yOffset", - raidVerticalPadding,
 						"oUF-initialConfigFunction", [[
-							self:SetHeight(]]..dbUnit.Height..[[)
+							self:SetHeight(]]..frameHeight..[[)
 							self:SetWidth(]]..dbUnit.Width..[[)
 						]]
 					)
@@ -814,9 +848,9 @@ module.ToggleUnit = setmetatable({
 						"showPlayer", true,
 						"showSolo", true,
 						"groupFilter", tostring(i),
-						"yOffset", - dbUnit.Padding,
+						"yOffset", - raidVerticalPadding,
 						"oUF-initialConfigFunction", [[
-							self:SetHeight(]]..dbUnit.Height..[[)
+							self:SetHeight(]]..frameHeight..[[)
 							self:SetWidth(]]..width40..[[)
 						]]
 					)

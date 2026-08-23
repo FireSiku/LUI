@@ -48,7 +48,7 @@ module.defaults.profile.targettargettarget = {
 				Smooth = true,
 				Texture = "LUI_Minimalist",
 				TextureBG = "LUI_Minimalist",
-				Width = 130,
+				Width = 200,
 				X = 0,
 				Y = -26
 			},
