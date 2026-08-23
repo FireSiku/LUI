@@ -16,10 +16,10 @@ local Media = LibStub("LibSharedMedia-3.0")
 ---@class oUF
 local oUF = LUI.oUF
 
-local UnitHealth, UnitHealthMax, UnitPower, UnitPowerMax = _G.UnitHealth, _G.UnitHealthMax, _G.UnitPower, _G.UnitPowerMax
+local UnitPower, UnitPowerMax = _G.UnitPower, _G.UnitPowerMax
 local UnitIsUnit, UnitExists, UnitIsGhost, UnitIsDead = _G.UnitIsUnit, _G.UnitExists, _G.UnitIsGhost, _G.UnitIsDead
-local UnitName, UnitGUID, UnitIsPVP, UnitReaction = _G.UnitName, _G.UnitGUID, _G.UnitIsPVP, _G.UnitReaction
-local UnitIsPlayer, UnitIsEnemy, UnitIsTapDenied = _G.UnitIsPlayer, _G.UnitIsEnemy, _G.UnitIsTapDenied
+local UnitName, UnitGUID, UnitIsPVP = _G.UnitName, _G.UnitGUID, _G.UnitIsPVP
+local UnitIsPlayer, UnitIsEnemy = _G.UnitIsPlayer, _G.UnitIsEnemy
 local UnitIsVisible, UnitIsConnected, UnitIsAFK = _G.UnitIsVisible, _G.UnitIsConnected, _G.UnitIsAFK
 local GetThreatStatusColor, UnitThreatSituation = _G.GetThreatStatusColor, _G.UnitThreatSituation
 local UnitPowerType, GetUnitPowerBarTextureInfo = _G.UnitPowerType, _G.GetUnitPowerBarTextureInfo
@@ -30,12 +30,24 @@ local DebuffTypeColor =  _G.DebuffTypeColor
 local format = string.format
 local floor = math.floor
 
--- Blizzard 12.1 can return secret numeric unit values in combat. Never run
--- those through Lua-side arithmetic/abbreviation; widget formatting may accept
--- and display them safely.
-local function SafeAbbreviate(value)
-	if issecretvalue(value) then return value end
-	return AbbreviateNumbers(value)
+local function GetUnitClassColor(unit)
+	local _, class = UnitClass(unit)
+
+	-- oUF 14.0.1 uses Blizzard's class-color API when UnitClass returns a
+	-- secret class token. Custom class colors cannot be indexed with a secret.
+	if issecretvalue(class) then
+		return C_ClassColor.GetClassColor(class)
+	elseif class then
+		return module.colors.class[class]
+	end
+end
+
+-- Let oUF query the primary power with the explicit type returned by Blizzard.
+-- This keeps secret values inside Blizzard/oUF's StatusBar update path while
+-- avoiding incorrect zero values seen for some non-player Energy units when
+-- UnitPower is queried with an omitted type.
+local function GetPrimaryPower(_, unit)
+	return UnitPowerType(unit), 0
 end
 
 local function BarInterpolation(enabled)
@@ -158,10 +170,6 @@ local IsEmptyCurve = C_CurveUtil.CreateCurve()
 IsEmptyCurve:SetType(Enum.LuaCurveType.Step)
 IsEmptyCurve:AddPoint(0.01, 1)
 IsEmptyCurve:AddPoint(0, 0)
-
-local function GetDisplayPower(power, unit)
-		return (UnitPowerType(unit))
-end
 
 local function SetFontString(parent, fontName, fontHeight, fontStyle)
 	local fs = parent:CreateFontString(nil, "OVERLAY")
@@ -300,66 +308,9 @@ local function UnitFrame_OnLeave(self)
 	if self.Highlight then self.Highlight:Hide() end
 end
 
-local function OverrideHealth(self, event, unit, powerType)
+local function UpdateHealthDisplay(self, unit, current, max)
 	if self.__unit ~= unit then return end
 	local health = self.Health
-
-	local current = UnitHealth(unit)
-	local max = UnitHealthMax(unit)
-	local connected = UnitIsConnected(unit)
-	local disconnected = not issecretvalue(connected) and not connected
-
-	health:SetMinMaxValues(0, max)
-	health:SetValue(current)
-	if disconnected and not issecretvalue(max) then health:SetValue(max) end
-	health.disconnected = disconnected
-
-	local _, pToken = UnitClass(unit)
-	local color = {}
-	if not issecretvalue(pToken) then color = {LUI:GetClassColor(pToken)} end
-	local gradientColor = UnitHealthPercent(unit, true, self.colors.health:GetCurve()) --[[@as ColorMixin]]
-	local healthColorTex = health:GetStatusBarTexture()
-	local r, g, b = health.colorIndividual.r, health.colorIndividual.g, health.colorIndividual.b
-
-	if health.color == "By Class" then
-		local isPlayer = UnitIsPlayer(unit)
-		if not issecretvalue(isPlayer) and isPlayer and next(color) then
-			r, g, b = unpack(color)
-			healthColorTex:SetVertexColor(r, g, b)
-		else
-			local reaction = UnitReaction("player", unit)
-			if issecretvalue(reaction) then
-				reaction = nil
-			end
-			if reaction and reaction < 4 then
-				r, g, b = unpack(module.db.profile.Colors.Misc["Hostile"])
-				healthColorTex:SetVertexColor(r, g, b)
-			elseif reaction and reaction == 4 then
-				r, g, b = unpack(module.db.profile.Colors.Misc["Neutral"])
-				healthColorTex:SetVertexColor(r, g, b)
-			else
-				r, g, b = unpack(module.db.profile.Colors.Misc["Friendly"])
-				healthColorTex:SetVertexColor(r, g, b)
-			end
-		end
-	elseif health.color == "Individual" then
-		healthColorTex:SetVertexColor(r, g, b)
-	else
-		healthColorTex:SetVertexColor(gradientColor:GetRGB())
-	end
-
-	local tapDenied = UnitIsTapDenied and UnitIsTapDenied(unit)
-	if health.colorTapping and not issecretvalue(tapDenied) and tapDenied then
-		healthColorTex:SetVertexColor(unpack(module.db.profile.Colors.Misc["Tapped"]))
-	end
-
-	local mu = health.bg.multiplier or 1
-
-	if health.bg.invert == true then
-		health.bg:SetVertexColor(r+(1-r)*mu, g+(1-g)*mu, b+(1-b)*mu)
-	else
-		health.bg:SetVertexColor(r*mu, g*mu, b*mu)
-	end
 
 	local unitConnected = UnitIsConnected(unit)
 	local unitGhost = UnitIsGhost(unit)
@@ -367,17 +318,14 @@ local function OverrideHealth(self, event, unit, powerType)
 	local unitAFK = UnitIsAFK(unit)
 
 	if not issecretvalue(unitConnected) and not unitConnected then
-		health:SetValue(0)
 		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Offline>|r" or "")
 		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Offline>|r" or "")
 		health.valueMissing:SetText("")
 	elseif not issecretvalue(unitGhost) and unitGhost then
-		health:SetValue(0)
 		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Ghost>|r" or "")
 		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Ghost>|r" or "")
 		health.valueMissing:SetText("")
 	elseif not issecretvalue(unitDead) and unitDead then
-		health:SetValue(0)
 		health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Dead>|r" or "")
 		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Dead>|r" or "")
 		health.valueMissing:SetText("")
@@ -385,100 +333,53 @@ local function OverrideHealth(self, event, unit, powerType)
 		local healthPercent = UnitHealthPercent(unit, false, PercentCurve)
 		local notFullAlpha = UnitHealthPercent(unit, true, NotFullCurve)
 
-		-- Raid Name Text, if health is not full, hide it
 		if self.Info.OnlyWhenFull then
-			local fullHealthAlpha = UnitHealthPercent(unit, false, IsFullCurve)
-			self.Info:SetAlpha(fullHealthAlpha)
+			self.Info:SetAlpha(UnitHealthPercent(unit, false, IsFullCurve))
 		else
 			self.Info:SetAlpha(1)
 		end
-		
+
 		if health.value.Enable == true then
 			if health.value.Format == "Absolut" then
 				health.value:SetFormattedText("%s/%s", current, max)
 			elseif health.value.Format == "Absolut & Percent" then
 				health.value:SetFormattedText("%s/%s | %.1f%%", current, max, healthPercent)
 			elseif health.value.Format == "Absolut Short" then
-				health.value:SetFormattedText("%s/%s", SafeAbbreviate(current), SafeAbbreviate(max))
+				health.value:SetFormattedText("%s/%s", AbbreviateNumbers(current), AbbreviateNumbers(max))
 			elseif health.value.Format == "Absolut Short & Percent" then
-				health.value:SetFormattedText("%s/%s | %.1f%%", SafeAbbreviate(current), SafeAbbreviate(max), healthPercent)
+				health.value:SetFormattedText("%s/%s | %.1f%%", AbbreviateNumbers(current), AbbreviateNumbers(max), healthPercent)
 			elseif health.value.Format == "Standard" then
 				health.value:SetFormattedText("%s", current)
 			elseif health.value.Format == "Standard & Percent" then
 				health.value:SetFormattedText("%s | %.1f%%", current, healthPercent)
 			elseif health.value.Format == "Standard Short" then
-				health.value:SetFormattedText("%s", SafeAbbreviate(current))
+				health.value:SetFormattedText("%s", AbbreviateNumbers(current))
 			elseif health.value.Format == "Standard Short & Percent" then
-				health.value:SetFormattedText("%s | %.1f%%", SafeAbbreviate(current), healthPercent)
+				health.value:SetFormattedText("%s | %.1f%%", AbbreviateNumbers(current), healthPercent)
 			else
 				health.value:SetFormattedText("%s", current)
 			end
 
-			if health.value.color == "By Class" and next(color) then
-				health.value:SetTextColor(unpack(color))
-			elseif health.value.color == "By Class" then
-				health.value:SetTextColor(1, 1, 1)
-			elseif health.value.color == "Individual" then
-				health.value:SetTextColor(health.value.colorIndividual.r, health.value.colorIndividual.g, health.value.colorIndividual.b)
-			else
-				health.value:SetTextColor(gradientColor.r, gradientColor.g, gradientColor.b)
-			end
-
-			if health.value.ShowAlways then
-				health.value:SetAlpha(1)
-			else
-				health.value:SetAlpha(notFullAlpha)
-			end
+			health.value:SetAlpha(health.value.ShowAlways and 1 or notFullAlpha)
 		else
 			health.value:SetText("")
 		end
 
 		if health.valuePercent.Enable == true then
 			health.valuePercent:SetFormattedText("%.1f%%", healthPercent)
-
-			if health.valuePercent.color == "By Class" and next(color) then
-				health.valuePercent:SetTextColor(unpack(color))
-			elseif health.valuePercent.color == "By Class" then
-				health.valuePercent:SetTextColor(1, 1, 1)
-			elseif health.valuePercent.color == "Individual" then
-				health.valuePercent:SetTextColor(health.valuePercent.colorIndividual.r, health.valuePercent.colorIndividual.g, health.valuePercent.colorIndividual.b)
-			else
-				health.valuePercent:SetTextColor(gradientColor.r, gradientColor.g, gradientColor.b)
-			end
-
-			if health.valuePercent.ShowAlways then
-				health.valuePercent:SetAlpha(1)
-			else
-				health.valuePercent:SetAlpha(notFullAlpha)
-			end
+			health.valuePercent:SetAlpha(health.valuePercent.ShowAlways and 1 or notFullAlpha)
 		else
 			health.valuePercent:SetText("")
 		end
 
 		if health.valueMissing.Enable == true then
 			local healthMissing = UnitHealthMissing(unit)
-
 			if health.valueMissing.ShortValue == true then
-				health.valueMissing:SetFormattedText("-%s", SafeAbbreviate(healthMissing))
+				health.valueMissing:SetFormattedText("-%s", AbbreviateNumbers(healthMissing))
 			else
 				health.valueMissing:SetFormattedText("-%s", healthMissing)
 			end
-
-			if health.valueMissing.color == "By Class" and next(color) then
-				health.valueMissing:SetTextColor(unpack(color))
-			elseif health.valueMissing.color == "By Class" then
-				health.valueMissing:SetTextColor(1, 1, 1)
-			elseif health.valueMissing.color == "Individual" then
-				health.valueMissing:SetTextColor(health.valueMissing.colorIndividual.r, health.valueMissing.colorIndividual.g, health.valueMissing.colorIndividual.b)
-			else
-				health.valueMissing:SetTextColor(gradientColor.r, gradientColor.g, gradientColor.b)
-			end
-
-			if health.valueMissing.ShowAlways then
-				health.valueMissing:SetAlpha(1)
-			else
-				health.valueMissing:SetAlpha(notFullAlpha)
-			end
+			health.valueMissing:SetAlpha(health.valueMissing.ShowAlways and 1 or notFullAlpha)
 		else
 			health.valueMissing:SetText("")
 		end
@@ -488,200 +389,221 @@ local function OverrideHealth(self, event, unit, powerType)
 		if health.value.ShowDead == true then
 			health.value:SetText("|cffffffff<AFK>|r")
 		end
-
 		if health.valuePercent.ShowDead == true then
 			health.valuePercent:SetText("|cffffffff<AFK>|r")
 		end
 	end
 end
 
-local function OverridePower(self, event, unit)
+local function SetHealthTextColor(health, text, unit)
+	if not text or not text.Enable then return end
+
+	if text.color == "By Class" then
+		local color = GetUnitClassColor(unit)
+		if color then
+			text:SetTextColor(color:GetRGB())
+		else
+			text:SetTextColor(1, 1, 1)
+		end
+	elseif text.color == "Individual" then
+		text:SetTextColor(text.colorIndividual.r, text.colorIndividual.g, text.colorIndividual.b)
+	else
+		local color = health.values:EvaluateCurrentHealthPercent(health.__owner.colors.health:GetCurve())
+		text:SetTextColor(color:GetRGB())
+	end
+end
+
+local function PostUpdateHealthColor(health, unit, color)
+	if health.__owner.LUIArenaUnseen then
+		health:SetStatusBarColor(0.5, 0.5, 0.5)
+		health.bg:SetVertexColor(0.5, 0.5, 0.5)
+		return
+	end
+
+	local r, g, b
+	if color then
+		r, g, b = color:GetRGB()
+	elseif health.color == "Individual" then
+		r, g, b = health.colorIndividual.r, health.colorIndividual.g, health.colorIndividual.b
+		health:SetStatusBarColor(r, g, b)
+	else
+		r, g, b = health:GetStatusBarColor()
+	end
+
+	-- oUF 14.0.1 can supply secret color components here. Blizzard's
+	-- vertex-color API accepts those values directly, but Lua arithmetic does not.
+	-- Preserve LUI's legacy multiplier/invert behavior only for its own fixed
+	-- Individual color, whose components come from the profile and are not secret.
+	if health.color == "Individual" then
+		local mu = health.bg.multiplier or 1
+		if health.bg.invert == true then
+			health.bg:SetVertexColor(r + (1-r) * mu, g + (1-g) * mu, b + (1-b) * mu)
+		else
+			health.bg:SetVertexColor(r * mu, g * mu, b * mu)
+		end
+	else
+		health.bg:SetVertexColor(r, g, b)
+	end
+
+	SetHealthTextColor(health, health.value, unit)
+	SetHealthTextColor(health, health.valuePercent, unit)
+	SetHealthTextColor(health, health.valueMissing, unit)
+end
+
+local function SetPowerTextColor(power, text, unit)
+	if not text or not text.Enable then return end
+
+	if text.color == "By Class" then
+		local color = GetUnitClassColor(unit)
+		if color then
+			text:SetTextColor(color:GetRGB())
+		else
+			text:SetTextColor(power:GetStatusBarColor())
+		end
+	elseif text.color == "Individual" then
+		text:SetTextColor(text.colorIndividual.r, text.colorIndividual.g, text.colorIndividual.b)
+	else
+		text:SetTextColor(power:GetStatusBarColor())
+	end
+end
+
+local function UpdatePowerDisplay(self, unit, current, min, max, displayType)
 	if self.__unit ~= unit then return end
 	local power = self.Power
-
-	local displayType = GetDisplayPower(power, unit)
-	local current = UnitPower(unit, displayType)
-	local max = UnitPowerMax(unit, displayType)
-	local connected = UnitIsConnected(unit)
-	local disconnected = not issecretvalue(connected) and not connected
-
-	power:SetMinMaxValues(0, max)
-	power:SetValue(current)
-	if disconnected and not issecretvalue(max) then power:SetValue(max) end
-	power.disconnected = disconnected
-
-	local pType, pName = UnitPowerType(unit)
-	local pClass, pToken = UnitClass(unit)
-	local color = {}
-	if not issecretvalue(pToken) then color = {LUI:GetClassColor(pToken)} end
-	local color2 = {}
-	if not issecretvalue(pName) then color2 = {LUI:GetFallbackRGB(pName)} end
-	if color and not next(color2) then color2 = color end
-	local powerColorTex = power:GetStatusBarTexture()
-
-	local r, g, b = power.colorIndividual.r, power.colorIndividual.g, power.colorIndividual.b
-
-	if power.color == "By Class" and next(color) then
-		r, g, b = unpack(color)
-	elseif power.color == "Individual" then
-	elseif next(color2) then
-		r, g, b = unpack(color2)
-	end
-
-	if r and g and b then
-		powerColorTex:SetVertexColor(r, g, b)
-	end
-
-	local mu = power.bg.multiplier or 1
-
-	if power.bg.invert == true then
-		power.bg:SetVertexColor((1-r)*mu, (1-g)*mu, (1-b)*mu)
-	else
-		power.bg:SetVertexColor(r*mu, g*mu, b*mu)
-	end
+	power.LUIDisplayType = displayType
 
 	local unitConnected = UnitIsConnected(unit)
+	local disconnected = not issecretvalue(unitConnected) and not unitConnected
 	local unitGhost = UnitIsGhost(unit)
 	local unitDead = UnitIsDead(unit)
-	if not issecretvalue(unitConnected) and not unitConnected then
-		power:SetValue(0)
+
+	if disconnected or (not issecretvalue(unitGhost) and unitGhost) or (not issecretvalue(unitDead) and unitDead) then
 		power.valueMissing:SetText("")
 		power.valuePercent:SetText("")
 		power.value:SetText("")
-	elseif not issecretvalue(unitGhost) and unitGhost then
-		power:SetValue(0)
-		power.valueMissing:SetText("")
-		power.valuePercent:SetText("")
-		power.value:SetText("")
-	elseif not issecretvalue(unitDead) and unitDead then
-		power:SetValue(0)
-		power.valueMissing:SetText("")
-		power.valuePercent:SetText("")
-		power.value:SetText("")
+		return
+	end
+
+	local powerPercent = UnitPowerPercent(unit, displayType, false, PercentCurve)
+
+	if power.value.Enable == true then
+		if power.value.Format == "Absolut" then
+			power.value:SetFormattedText("%s/%s", current, max)
+		elseif power.value.Format == "Absolut & Percent" then
+			power.value:SetFormattedText("%s/%s | %.1f%%", current, max, powerPercent)
+		elseif power.value.Format == "Absolut Short" then
+			power.value:SetFormattedText("%s/%s", AbbreviateNumbers(current), AbbreviateNumbers(max))
+		elseif power.value.Format == "Absolut Short & Percent" then
+			power.value:SetFormattedText("%s/%s | %.1f%%", AbbreviateNumbers(current), AbbreviateNumbers(max), powerPercent)
+		elseif power.value.Format == "Standard" then
+			power.value:SetFormattedText("%s", current)
+		elseif power.value.Format == "Standard & Percent" then
+			power.value:SetFormattedText("%s | %.1f%%", current, powerPercent)
+		elseif power.value.Format == "Standard Short" then
+			power.value:SetFormattedText("%s", AbbreviateNumbers(current))
+		elseif power.value.Format == "Standard Short & Percent" then
+			power.value:SetFormattedText("%s | %.1f%%", AbbreviateNumbers(current), powerPercent)
+		else
+			power.value:SetFormattedText("%s", current)
+		end
+
+		local curve = C_CurveUtil.CreateCurve()
+		curve:SetType(Enum.LuaCurveType.Step)
+		curve:AddPoint(0, power.value.ShowEmpty and 1 or 0)
+		curve:AddPoint(0.001, 1)
+		curve:AddPoint(0.999, 1)
+		curve:AddPoint(1, power.value.ShowFull and 1 or 0)
+		power.value:SetAlpha(UnitPowerPercent(unit, displayType, false, curve))
 	else
-		local powerPercent = UnitPowerPercent(unit, pType, false, PercentCurve)
-	
-		if power.value.Enable == true then
-			if power.value.Format == "Absolut" then
-				power.value:SetFormattedText("%s/%s", current, max)
-			elseif power.value.Format == "Absolut & Percent" then
-				power.value:SetFormattedText("%s/%s | %.1f%%", current, max, powerPercent)
-			elseif power.value.Format == "Absolut Short" then
-				power.value:SetFormattedText("%s/%s", SafeAbbreviate(current), SafeAbbreviate(max))
-			elseif power.value.Format == "Absolut Short & Percent" then
-				power.value:SetFormattedText("%s/%s | %.1f%%", SafeAbbreviate(current), SafeAbbreviate(max), powerPercent)
-			elseif power.value.Format == "Standard" then
-				power.value:SetFormattedText("%s", current)
-			elseif power.value.Format == "Standard & Percent" then
-				power.value:SetFormattedText("%s | %.1f%%", current, powerPercent)
-			elseif power.value.Format == "Standard Short" then
-				power.value:SetFormattedText("%s", SafeAbbreviate(current))
-			elseif power.value.Format == "Standard Short & Percent" then
-				power.value:SetFormattedText("%s | %.1f%%", SafeAbbreviate(current), powerPercent)
-			else
-				power.value:SetFormattedText("%s", current)
-			end
+		power.value:SetText("")
+	end
 
-			if power.value.color == "By Class" and next(color) then
-				power.value:SetTextColor(unpack(color))
-			elseif power.value.color == "Individual" then
-				power.value:SetTextColor(
-				power.value.colorIndividual.r,
-				power.value.colorIndividual.g,
-				power.value.colorIndividual.b
-			)
-			elseif next(color2) then
-				power.value:SetTextColor(unpack(color2))
-			else
-				power.value:SetTextColor(1, 1, 1)
-			end
+	if power.valuePercent.Enable == true then
+		power.valuePercent:SetFormattedText("%.1f%%", powerPercent)
+		local curve = C_CurveUtil.CreateCurve()
+		curve:SetType(Enum.LuaCurveType.Step)
+		curve:AddPoint(0, power.valuePercent.ShowEmpty and 1 or 0)
+		curve:AddPoint(0.001, 1)
+		curve:AddPoint(0.999, 1)
+		curve:AddPoint(1, power.valuePercent.ShowFull and 1 or 0)
+		power.valuePercent:SetAlpha(UnitPowerPercent(unit, displayType, false, curve))
+	else
+		power.valuePercent:SetText("")
+	end
 
-			local powerCurve = C_CurveUtil.CreateCurve()
-			powerCurve:SetType(Enum.LuaCurveType.Step)
-			powerCurve:AddPoint(0, power.value.ShowEmpty and 1 or 0)
-			powerCurve:AddPoint(0.001, 1)
-			powerCurve:AddPoint(0.999, 1)
-			powerCurve:AddPoint(1, power.value.ShowFull and 1 or 0)
-			
-			local powerAlpha = UnitPowerPercent(unit, pType, false, powerCurve)
-			power.value:SetAlpha(powerAlpha)
+	if power.valueMissing.Enable == true then
+		local powerMissing = UnitPowerMissing(unit, displayType)
+		if power.valueMissing.ShortValue == true then
+			power.valueMissing:SetFormattedText("-%s", AbbreviateNumbers(powerMissing))
 		else
-			power.value:SetText("")
+			power.valueMissing:SetFormattedText("-%s", powerMissing)
 		end
 
-		if power.valuePercent.Enable == true then
-			power.valuePercent:SetFormattedText("%.1f%%", powerPercent)
-
-			if power.valuePercent.color == "By Class" and next(color) then
-				power.valuePercent:SetTextColor(unpack(color))
-			elseif power.valuePercent.color == "By Class" then
-				power.valuePercent:SetTextColor(1, 1, 1)
-			elseif power.valuePercent.color == "Individual" then
-				power.valuePercent:SetTextColor(power.valuePercent.colorIndividual.r, power.valuePercent.colorIndividual.g, power.valuePercent.colorIndividual.b)
-			elseif next(color2) then
-				power.valuePercent:SetTextColor(unpack(color2))
-			else
-				power.valuePercent:SetTextColor(1, 1, 1)
-			end
-
-			local powerCurve = C_CurveUtil.CreateCurve()
-			powerCurve:SetType(Enum.LuaCurveType.Step)
-			powerCurve:AddPoint(0, power.valuePercent.ShowEmpty and 1 or 0)
-			powerCurve:AddPoint(0.001, 1)
-			powerCurve:AddPoint(0.999, 1)
-			powerCurve:AddPoint(1, power.valuePercent.ShowFull and 1 or 0)
-			
-			local powerAlpha = UnitPowerPercent(unit, pType, false, powerCurve)
-			power.valuePercent:SetAlpha(powerAlpha)
-		else
-			power.valuePercent:SetText("")
-		end
-
-		if power.valueMissing.Enable == true then
-			local powerMissing = UnitPowerMissing(unit, pType)
-
-			if power.valueMissing.ShortValue == true then
-				power.valueMissing:SetFormattedText("-%s", SafeAbbreviate(powerMissing))
-			else
-				power.valueMissing:SetFormattedText("-%s", powerMissing)
-			end
-
-			if power.valueMissing.color == "By Class" and next(color) then
-				power.valueMissing:SetTextColor(unpack(color))
-			elseif power.valueMissing.color == "By Class" then
-				power.valueMissing:SetTextColor(1, 1, 1)
-			elseif power.valueMissing.color == "Individual" then
-				power.valueMissing:SetTextColor(power.valueMissing.colorIndividual.r, power.valueMissing.colorIndividual.g, power.valueMissing.colorIndividual.b)
-			elseif next(color2) then
-				power.valueMissing:SetTextColor(unpack(color2))
-			else
-				power.valueMissing:SetTextColor(1, 1, 1)
-			end
-
-			local powerCurve = C_CurveUtil.CreateCurve()
-			powerCurve:SetType(Enum.LuaCurveType.Step)
-			powerCurve:AddPoint(0, power.valueMissing.ShowEmpty and 1 or 0)
-			powerCurve:AddPoint(0.001, 1)
-			powerCurve:AddPoint(0.999, 1)
-			powerCurve:AddPoint(1, power.valueMissing.ShowFull and 1 or 0)
-			
-			local powerAlpha = UnitPowerPercent(unit, pType, false, powerCurve)
-			power.valueMissing:SetAlpha(powerAlpha)
-		else
-			power.valueMissing:SetText("")
-		end
+		local curve = C_CurveUtil.CreateCurve()
+		curve:SetType(Enum.LuaCurveType.Step)
+		curve:AddPoint(0, power.valueMissing.ShowEmpty and 1 or 0)
+		curve:AddPoint(0.001, 1)
+		curve:AddPoint(0.999, 1)
+		curve:AddPoint(1, power.valueMissing.ShowFull and 1 or 0)
+		power.valueMissing:SetAlpha(UnitPowerPercent(unit, displayType, false, curve))
+	else
+		power.valueMissing:SetText("")
 	end
 end
 
--- Keep oUF 14's native Health/Power update paths active so prediction values,
--- DurationObjects and secret values are handled by the framework. LUI styling
--- and text formatting run after those native updates.
-local function PostUpdateHealth(health, unit)
-	return OverrideHealth(health.__owner, "PostUpdate", unit)
+local function PostUpdatePowerColor(power, unit)
+	if power.__owner.LUIArenaUnseen then
+		power:SetStatusBarColor(0.5, 0.5, 0.5)
+		power.bg:SetVertexColor(0.5, 0.5, 0.5)
+		return
+	end
+
+	local r, g, b
+	if power.color == "Individual" then
+		r, g, b = power.colorIndividual.r, power.colorIndividual.g, power.colorIndividual.b
+		power:SetStatusBarColor(r, g, b)
+	else
+		-- oUF has already selected and applied the current Blizzard color. Read
+		-- it back from the StatusBar and forward it without inspecting or doing
+		-- arithmetic on callback RGB values, which may be secret in 12.1.
+		r, g, b = power:GetStatusBarColor()
+	end
+
+	-- oUF 14.0.1 may pass secret RGB components to PostUpdateColor. Forward
+	-- those directly to Blizzard's secret-capable renderer. For dynamic colors
+	-- use the texture alpha for LUI's background multiplier instead of doing
+	-- forbidden Lua arithmetic on secret RGB values.
+	local baseAlpha = power.bg.LUIBaseAlpha or 1
+	if power.color == "Individual" then
+		power.bg:SetAlpha(baseAlpha)
+		local mu = power.bg.multiplier or 1
+		if power.bg.invert == true then
+			power.bg:SetVertexColor((1-r) * mu, (1-g) * mu, (1-b) * mu)
+		else
+			power.bg:SetVertexColor(r * mu, g * mu, b * mu)
+		end
+	else
+		power.bg:SetVertexColor(r, g, b)
+		if power.bg.invert == true then
+			power.bg:SetAlpha(baseAlpha)
+		else
+			power.bg:SetAlpha(baseAlpha * (power.bg.multiplier or 1))
+		end
+	end
+
+	SetPowerTextColor(power, power.value, unit)
+	SetPowerTextColor(power, power.valuePercent, unit)
+	SetPowerTextColor(power, power.valueMissing, unit)
 end
 
-local function PostUpdatePower(power, unit)
-	OverridePower(power.__owner, "PostUpdate", unit)
+-- oUF 14 owns the Health and Power status-bar values. LUI only formats
+-- the values passed by oUF and applies presentation in PostUpdateColor.
+local function PostUpdateHealth(health, unit, current, max, lossPerc)
+	UpdateHealthDisplay(health.__owner, unit, current, max)
+end
+
+local function PostUpdatePower(power, unit, current, min, max, displayType)
+	UpdatePowerDisplay(power.__owner, unit, current, min, max, displayType)
 
 	-- oUF's native Power element calls Show() on every update. Keep the
 	-- element active so LUI's power texts continue to receive secret-safe
@@ -832,12 +754,12 @@ local function PostCastStart(castbar, unit, spellID, notInterruptible, name)
 		-- castbar.Backdrop:SetBackdropBorderColor(castbar.Colors.Border.r, castbar.Colors.Border.g, castbar.Colors.Border.b, castbar.Colors.Border.a)
 	else
 		if unit == "pet" then unit = "player" end
-		local _, pToken = UnitClass(unit)
-		if pToken == nil or issecretvalue(pToken) then
-			castbar:GetStatusBarTexture():SetVertexColor(1, 1, 1, 0.68)
+		local color = GetUnitClassColor(unit)
+		if color then
+			local r, g, b = color:GetRGB()
+			castbar:GetStatusBarTexture():SetVertexColor(r, g, b, 0.68)
 		else
-			local color = {LUI:GetClassColor(pToken)}
-			castbar:GetStatusBarTexture():SetVertexColor(color[1], color[2], color[3], 0.68)
+			castbar:GetStatusBarTexture():SetVertexColor(castbar.Colors.Bar.r, castbar.Colors.Bar.g, castbar.Colors.Bar.b, 0.68)
 		end
 		castbar.bg:SetVertexColor(0.15, 0.15, 0.15, 0.75)
 		-- castbar.Backdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
@@ -1058,9 +980,10 @@ local function ArenaEnemyUnseen(self, event, unit, state)
 	if unit ~= self.__unit then return end
 
 	if state == "unseen" then
+		self.LUIArenaUnseen = true
 		self.Health.PostUpdate = function(health)
 			health:SetValue(0)
-			health:GetStatusBarTexture():SetVertexColor(0.5, 0.5, 0.5, 1)
+			health:SetStatusBarColor(0.5, 0.5, 0.5)
 			health.bg:SetVertexColor(0.5, 0.5, 0.5, 1)
 			health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Unseen>|r" or "")
 			health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Unseen>|r" or "")
@@ -1068,7 +991,7 @@ local function ArenaEnemyUnseen(self, event, unit, state)
 		end
 		self.Power.PostUpdate = function(power)
 			power:SetValue(0)
-			power:GetStatusBarTexture():SetVertexColor(0.5, 0.5, 0.5, 1)
+			power:SetStatusBarColor(0.5, 0.5, 0.5)
 			power.bg:SetVertexColor(0.5, 0.5, 0.5, 1)
 			power.value:SetText("")
 			power.valuePercent:SetText("")
@@ -1078,8 +1001,11 @@ local function ArenaEnemyUnseen(self, event, unit, state)
 		self.Hide = self.Show
 		self:Show()
 	else
+		self.LUIArenaUnseen = false
 		self.Health.PostUpdate = PostUpdateHealth
+		self.Health.PostUpdateColor = PostUpdateHealthColor
 		self.Power.PostUpdate = PostUpdatePower
+		self.Power.PostUpdateColor = PostUpdatePowerColor
 
 		self.Hide = self.Hide_
 	end
@@ -1301,13 +1227,38 @@ module.funcs = {
 		self.Health.bg.multiplier = oufdb.HealthBar.BGMultiplier
 		self.Health.bg.invert = oufdb.HealthBar.BGInvert
 
-		self.Health.colorTapping = (unit == "target") and oufdb.HealthBar.Tapping or false
-		self.Health.colorDisconnected = false
-		self.Health.color = oufdb.HealthBar.Color
+		local colorMode = oufdb.HealthBar.Color
+		local tapping = (unit == "target") and oufdb.HealthBar.Tapping or false
+
+		self.Health.color = colorMode
 		self.Health.colorIndividual = oufdb.HealthBar.IndividualColor
+		self.Health.colorDisconnected = false
+		self.Health.colorThreat = false
+		self.Health.colorSelection = false
+		self.Health.colorClass = colorMode == "By Class"
+		self.Health.colorClassNPC = false
+		self.Health.colorClassPet = false
+		self.Health.colorSmooth = colorMode == "Gradient"
+		self.Health.colorHealth = false
 		self.Health.smoothing = BarInterpolation(oufdb.HealthBar.Smooth)
-		self.Health.colorReaction = false
 		self.Health.frequentUpdates = true
+
+		if self.Health.SetColorTapping then
+			self.Health:SetColorTapping(tapping)
+		else
+			self.Health.colorTapping = tapping
+		end
+
+		local reaction = colorMode == "By Class"
+		if self.Health.SetColorReaction then
+			self.Health:SetColorReaction(reaction)
+		else
+			self.Health.colorReaction = reaction
+		end
+
+		if colorMode == "Individual" then
+			self.Health:SetStatusBarColor(oufdb.HealthBar.IndividualColor.r, oufdb.HealthBar.IndividualColor.g, oufdb.HealthBar.IndividualColor.b)
+		end
 	end,
 	Power = function(self, unit, oufdb)
 		if not self.Power then
@@ -1330,19 +1281,34 @@ module.funcs = {
 		end
 
 		self.Power.bg:SetTexture(Media:Fetch("statusbar", oufdb.PowerBar.TextureBG))
+		self.Power.bg.LUIBaseAlpha = oufdb.PowerBar.BGAlpha
 		self.Power.bg:SetAlpha(oufdb.PowerBar.BGAlpha)
 		self.Power.bg.multiplier = oufdb.PowerBar.BGMultiplier
 		self.Power.bg.invert = oufdb.PowerBar.BGInvert
 
+		local colorMode = oufdb.PowerBar.Color
+		self.Power.color = colorMode
+		self.Power.colorIndividual = oufdb.PowerBar.IndividualColor
 		self.Power.colorTapping = false
 		self.Power.colorDisconnected = false
-		self.Power.colorSmooth = false
-		self.Power.color = oufdb.PowerBar.Color
-		self.Power.colorIndividual = oufdb.PowerBar.IndividualColor
-		self.Power.smoothing = BarInterpolation(oufdb.PowerBar.Smooth)
+		self.Power.colorThreat = false
+		self.Power.colorSelection = false
 		self.Power.colorReaction = false
+		self.Power.colorPower = colorMode == "By Type"
+		self.Power.colorPowerSmooth = false
+		self.Power.colorClass = colorMode == "By Class"
+		self.Power.colorClassNPC = colorMode == "By Class"
+		self.Power.colorClassPet = colorMode == "By Class"
+		self.Power.displayAltPower = true
+		self.Power.displayAltPowerOnly = false
+		self.Power.GetDisplayPower = GetPrimaryPower
+		self.Power.smoothing = BarInterpolation(oufdb.PowerBar.Smooth)
 		self.Power.frequentUpdates = true
 		self.Power.LUIEnabled = oufdb.PowerBar.Enable == true
+
+		if colorMode == "Individual" then
+			self.Power:SetStatusBarColor(oufdb.PowerBar.IndividualColor.r, oufdb.PowerBar.IndividualColor.g, oufdb.PowerBar.IndividualColor.b)
+		end
 
 		if self.Power.LUIEnabled then
 			self.Power:Show()
@@ -1868,8 +1834,6 @@ module.funcs = {
 				else
 					classPoint:SetPoint("LEFT", classPower[i-1], "RIGHT", oufdb.ClassPowerBar.Padding, 0)
 				end
-				--LUI:Print("ClassIcon["..i.."] Is Shown")
-				--classPoint:Show()
 				if i > classPower.Count then
 					classPoint:Hide()
 				end
@@ -2855,7 +2819,9 @@ local function SetStyle(self, unit, isSingle)
 	self.Health.Override = nil
 	self.Power.Override = nil
 	self.Health.PostUpdate = PostUpdateHealth
+	self.Health.PostUpdateColor = PostUpdateHealthColor
 	self.Power.PostUpdate = PostUpdatePower
+	self.Power.PostUpdateColor = PostUpdatePowerColor
 
 	self.LUIStyleUnit = unit
 	self.__unit = previewStyleUnit and runtimeUnit or unit

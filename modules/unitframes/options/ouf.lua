@@ -84,47 +84,20 @@ function module:CreateSettings(order)
 		end
 	end
 
-	local toggleCB = function(info, Enable)
-		for unit, frames in pairs(self.framelist) do
-			if self.defaults[unit].Castbar then
-				for _, frame in pairs(frames) do
-					if _G[frame] then
-						frame = _G[frame]
-						if Enable then
-							if module.db.profile[unit].Castbar.General.Enable ~= false then
-								if not frame.Castbar then module.funcs.Castbar(frame, frame.__unit, module.db.profile[unit]) end
-								frame:EnableElement("Castbar")
-							end
-						else
-							if frame.Castbar then
-								frame:DisableElement("Castbar")
-								frame.Castbar:Hide()
-							end
-						end
-						frame:UpdateAllElements('refreshUnit')
-					end
-				end
+	local function ApplyAllUnitframeSettings()
+		for unit in pairs(module.framelist) do
+			if module.db.profile[unit] then
+				module.ApplySettings(unit)
 			end
 		end
 	end
 
+	local toggleCB = function()
+		ApplyAllUnitframeSettings()
+	end
+
 	local updateAuraTimer = function()
-		for unit, frames in pairs(module.framelist) do
-			local db = module.db.profile[unit]
-			if db and db.Aura then
-				for _, frameName in pairs(frames) do
-					local frame = _G[frameName]
-					if frame then
-						if db.Aura.Buffs and db.Aura.Buffs.Enable then
-							module.funcs.Buffs(frame, frame.__unit, db)
-						end
-						if db.Aura.Debuffs and db.Aura.Debuffs.Enable then
-							module.funcs.Debuffs(frame, frame.__unit, db)
-						end
-					end
-				end
-			end
-		end
+		ApplyAllUnitframeSettings()
 	end
 
 	local options = self:NewGroup("Settings", order, true, {

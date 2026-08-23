@@ -94,6 +94,47 @@ end
 module.childGroups = "tree"
 module.defaults = { profile = {} }
 
+-- Return the vertical footprint occupied by the configured primary bars without
+-- changing the unit frame's own height. Some legacy LUI layouts intentionally
+-- place the PowerBar below the frame; grouped frames still need to reserve that
+-- space so their bars do not overlap.
+local function GetVerticalExtents(dbUnit)
+	local frameHeight = tonumber(dbUnit and dbUnit.Height) or 1
+	local top = 0
+	local bottom = -frameHeight
+
+	local function IncludeBar(bar, enabled)
+		if not bar or enabled == false then return end
+
+		local y = tonumber(bar.Y) or 0
+		local barHeight = tonumber(bar.Height) or 0
+		top = math.max(top, y)
+		bottom = math.min(bottom, y - barHeight)
+	end
+
+	IncludeBar(dbUnit and dbUnit.HealthBar, true)
+	IncludeBar(dbUnit and dbUnit.PowerBar, dbUnit and dbUnit.PowerBar and dbUnit.PowerBar.Enable == true)
+
+	return frameHeight, top, bottom
+end
+
+function module.GetUnitFrameFootprintHeight(dbUnit)
+	local _, top, bottom = GetVerticalExtents(dbUnit)
+	return top - bottom
+end
+
+function module.GetUnitFrameVerticalOverflow(dbUnit)
+	local frameHeight, top, bottom = GetVerticalExtents(dbUnit)
+	local topOverflow = math.max(0, top)
+	local bottomOverflow = math.max(0, -frameHeight - bottom)
+	return topOverflow, bottomOverflow
+end
+
+function module.GetUnitFrameStackOverflow(dbUnit)
+	local topOverflow, bottomOverflow = module.GetUnitFrameVerticalOverflow(dbUnit)
+	return topOverflow + bottomOverflow
+end
+
 -- ####################################################################################################################
 -- ##### Framework Events #############################################################################################
 -- ####################################################################################################################

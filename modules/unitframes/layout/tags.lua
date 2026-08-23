@@ -16,7 +16,7 @@ local oUF = LUI.oUF
 
 local UnitIsConnected, UnitIsGhost, UnitIsDead, UnitIsAFK = _G.UnitIsConnected, _G.UnitIsGhost, _G.UnitIsDead, _G.UnitIsAFK
 local UnitPower, UnitPowerMax, UnitPowerType = _G.UnitPower, _G.UnitPowerMax, _G.UnitPowerType
-local UnitClass, UnitLevel, UnitReaction = _G.UnitClass, _G.UnitLevel, _G.UnitReaction
+local UnitClass, UnitLevel = _G.UnitClass, _G.UnitLevel
 local UnitQuestTrivialLevelRange = _G.UnitQuestTrivialLevelRange
 local UnitIsPlayer, UnitName = _G.UnitIsPlayer, _G.UnitName
 
@@ -98,34 +98,46 @@ function module.RecreateNameCache()
 	end
 end
 
+local function GetClassColorMarkup(unit)
+	local _, class = UnitClass(unit)
+
+	local color
+	if issecretvalue(class) then
+		-- Match oUF 14.0.1: secret class tokens must be resolved through
+		-- Blizzard's class-color API instead of indexing custom color tables.
+		color = C_ClassColor.GetClassColor(class)
+	elseif class then
+		color = module.colors.class[class]
+	end
+
+	return color and color:GenerateHexColorMarkup() or nil
+end
+
+local function GetPowerColorMarkup(unit)
+	local pType, pToken, altR, altG, altB = UnitPowerType(unit)
+	local color = pToken and module.colors.power[pToken] or nil
+	if color then
+		return color:GenerateHexColorMarkup()
+	elseif altR then
+		if altR > 1 or altG > 1 or altB > 1 then
+			altR, altG, altB = altR / 255, altG / 255, altB / 255
+		end
+		return oUF:CreateColor(altR, altG, altB):GenerateHexColorMarkup()
+	end
+
+	color = module.colors.power[pType] or module.colors.power.MANA
+	return color and color:GenerateHexColorMarkup() or nil
+end
+
 --TagEvents["GetNameColor"] = "UNIT_HAPPINESS"
 function TagMethods.GetNameColor(unit)
-	local reaction = UnitReaction(unit, "player")
-	local _, pToken = UnitClass(unit)
-	local _, pToken2 = UnitPowerType(unit)
-	local color = (pToken ~= nil and not issecretvalue(pToken)) and {LUI:GetClassColor(pToken)} or {1, 1, 1}
-	local color2 = (pToken2 ~= nil and not issecretvalue(pToken2)) and {LUI:GetFallbackRGB(pToken2)} or {1, 1, 1}
-	
+	local classColor = GetClassColorMarkup(unit)
+	local powerColor = GetPowerColorMarkup(unit)
+
 	if UnitIsPlayer(unit) then
-		if color and next(color) then
-			return string.format("|cff%02x%02x%02x", color[1] * 255, color[2] * 255, color[3] * 255)
-		else
-			if color2 and next(color2) then
-				return string.format("|cff%02x%02x%02x", color2[1] * 255, color2[2] * 255, color2[3] * 255)
-			else
-				return string.format("|cff%02x%02x%02x", 0.8 * 255, 0.8 * 255, 0.8 * 255)
-			end
-		end
+		return classColor or powerColor or "|cffcccccc"
 	else
-		if color2 and next(color2) then
-			return string.format("|cff%02x%02x%02x", color2[1] * 255, color2[2] * 255, color2[3] * 255)
-		else
-			if color and next(color) then
-				return string.format("|cff%02x%02x%02x", color[1] * 255, color[2] * 255, color[3] * 255)
-			else
-				return string.format("|cff%02x%02x%02x", 0.8 * 255, 0.8 * 255, 0.8 * 255)
-			end
-		end
+		return powerColor or classColor or "|cffcccccc"
 	end
 end
 
