@@ -51,8 +51,6 @@ local function ConfigureButton(button, state)
     local db = state.db
     local settings = module.db.profile.Settings
 
-    button:SetSize(db.Size, db.Size)
-
     button.Cooldown:SetReverse(db.CooldownReverse == true)
     button.Cooldown:SetAlpha(db.DisableCooldown == true and 0 or 1)
 
@@ -68,6 +66,9 @@ end
 
 local function MakeInitializer(state, kind)
     return function(button)
+        local db = state.db
+        button:SetSize(db.Size, db.Size)
+
         local background = button:CreateTexture(nil, "BACKGROUND")
         background:SetAllPoints(button)
         background:SetColorTexture(0, 0, 0, 1)
