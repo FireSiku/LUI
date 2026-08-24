@@ -27,6 +27,7 @@ local IsShiftKeyDown = _G.IsShiftKeyDown
 local UnitHealthMax = _G.UnitHealthMax
 local GetGuildInfo = _G.GetGuildInfo
 local UnitIsPlayer = _G.UnitIsPlayer
+local UnitIsInMyGuild = _G.UnitIsInMyGuild
 local UnitReaction = _G.UnitReaction
 local TooltipUtil = _G.TooltipUtil
 local GetItemInfo = C_Item.GetItemInfo
@@ -35,7 +36,6 @@ local UnitPVPName = _G.UnitPVPName
 local UnitExists = _G.UnitExists
 local UnitHealth = _G.UnitHealth
 local UnitIsDead = _G.UnitIsDead
-local IsInGuild = _G.IsInGuild
 local UnitClass = _G.UnitClass
 local UnitIsAFK = _G.UnitIsAFK
 local UnitIsDND = _G.UnitIsDND
@@ -198,13 +198,32 @@ function module:GetTooltipUnit(data)
 end
 
 function module:UpdateTooltipBackdrop(frame)
-	-- SharedTooltipTemplate uses Blizzard's native NineSlice layout.
-	-- Do not add BackdropTemplateMixin or call SetBackdrop here: in 12.1
-	-- tooltip dimensions can be secret, and Backdrop.lua performs arithmetic
-	-- on those dimensions. Keep the native tooltip backdrop intact.
 	if not frame then return end
-	if frame.NineSlice then
-		frame.NineSlice:SetAlpha(1)
+	if frame.IsForbidden and frame:IsForbidden() then return end
+
+	-- Keep Blizzard's 12.1 NineSlice layout and only change its existing
+	-- textures and colors. Adding BackdropTemplateMixin or calling SetBackdrop
+	-- here can make secret tooltip dimensions enter Backdrop.lua arithmetic.
+	local nineSlice = frame.NineSlice
+	if nineSlice then
+		nineSlice:SetAlpha(1)
+
+		local background = nineSlice.Center
+		if background and background.SetTexture then
+			background:SetTexture(Media:Fetch("background", db.BgTexture))
+			background:SetTexCoord(0, 1, 0, 1)
+		end
+
+		local bgR, bgG, bgB, bgA = module:RGBA("Background")
+		if nineSlice.SetCenterColor then
+			nineSlice:SetCenterColor(bgR, bgG, bgB, bgA or 1)
+		elseif background then
+			background:SetVertexColor(bgR, bgG, bgB, bgA or 1)
+		end
+
+		if nineSlice.SetBorderColor then
+			nineSlice:SetBorderColor(module:RGBA("Border"))
+		end
 	end
 end
 
@@ -221,7 +240,6 @@ local function CanQueryGuildInfo(unit)
 	return unit == "player"
 		or unit == "target"
 		or unit == "focus"
-		or unit == "mouseover"
 		or unit:match("^party%d+$") ~= nil
 		or unit:match("^raid%d+$") ~= nil
 end
@@ -340,11 +358,24 @@ function module:SetBorderColor(frame)
 	end
 
 	health:SetStatusBarColor(r, g, b)
+	if frame.NineSlice and frame.NineSlice.SetBorderColor then
+		frame.NineSlice:SetBorderColor(r, g, b, 1)
+	end
 end
 
 function module:UpdateBackdropColors()
+	for i = 1, #TOOLTIPS_LIST do
+		module:UpdateTooltipBackdrop(_G[TOOLTIPS_LIST[i]])
+	end
 	GameTooltipStatusBar:SetStatusBarColor(module:RGB("Border"))
 end
+
+function module:Refresh()
+	db = module.db.profile
+	module:UpdateBackdropColors()
+end
+
+module.RefreshColors = module.Refresh
 
 -- ####################################################################################################################
 -- ##### Module Hooks and Scripts #####################################################################################
@@ -398,7 +429,54 @@ function module:OnTooltipShow(frame)
 		frame:SetScale(db.Scale)
 	end
 
+	module:UpdateTooltipBackdrop(frame)
 	module:SetBorderColor(frame)
+
+end
+
+local function GetGuildTooltipLine(data)
+	local lines = data and data.lines
+	if not lines or issecretvalue(lines) then return end
+
+	-- Blizzard does not assign a dedicated TooltipDataLineType to the guild
+	-- row. In a player tooltip the guild row directly precedes the localized
+	-- level row, so identify both from the structured tooltip data.
+	local guildLine = lines[2]
+	local levelLine = lines[3]
+	local unitLine = lines[1]
+	if not unitLine or not guildLine or not levelLine
+		or issecretvalue(unitLine) or issecretvalue(guildLine)
+		or issecretvalue(levelLine) then return end
+
+	local guildText = guildLine.leftText
+	local levelText = levelLine.leftText
+	if not guildText or not levelText
+		or issecretvalue(guildText) or issecretvalue(levelText) then return end
+
+	if levelText:find(LEVEL, 1, true) then
+		local unit = unitLine.unitToken
+		if issecretvalue(unit) then unit = nil end
+		return 2, guildText, unit
+	end
+end
+
+function module:ApplyGuildColor(frame, data)
+	if not frame or frame:IsForbidden() then return end
+
+	local lineIndex, tooltipGuild, unit = GetGuildTooltipLine(data)
+	if not tooltipGuild or not lineIndex then return end
+
+	local guildColorName = "Guild"
+	local isMyGuild = unit and UnitIsInMyGuild(unit)
+	if not issecretvalue(isMyGuild) and isMyGuild then
+		guildColorName = "MyGuild"
+	end
+
+	local frameName = frame:GetName()
+	local guildLine = frameName and _G[frameName.."TextLeft"..lineIndex]
+	if guildLine then
+		guildLine:SetTextColor(module:RGB(guildColorName))
+	end
 end
 
 --- Tooltip Processing function
@@ -414,6 +492,11 @@ function module.OnGameTooltipSetUnit(frame, data)
 	if db.HideCombatUnit and InCombatLockdown() then
 		return frame:Hide()
 	end
+
+	-- The tooltip data is authoritative even when Blizzard does not expose a
+	-- usable unit token for the hovered player.
+	module:ApplyGuildColor(frame, data)
+
 	local unit = module:GetTooltipUnit(data)
 	-- Blizzard can populate a valid tooltip even when its protected GUID cannot
 	-- be resolved back to a public unit token. Keep that native tooltip intact.
@@ -460,12 +543,6 @@ function module.OnGameTooltipSetUnit(frame, data)
 			frame:AppendText(" "..CHAT_FLAG_AFK)
 		end
 		if guild then
-			local guildColorName = "Guild"
-			-- Color guild name differently if it's your guild
-			if IsInGuild() and GetGuildInfo("player") == guild then
-				guildColorName = "MyGuild"
-			end
-			GameTooltipTextLeft2:SetText(module:ColorText(guild, guildColorName))
 			offset = offset + 1
 		end
 	end
@@ -543,6 +620,7 @@ function module:OnEnable()
 
 	-- Many tooltips are found in Blizzard LoadOnDemand addons
 	module:RegisterEvent("ADDON_LOADED", "SetTooltips")
+	module:SecureHook("SharedTooltip_SetBackdropStyle", "UpdateTooltipBackdrop")
 
 	module:SecureHook("GameTooltip_SetDefaultAnchor", function(frame, parent)
 		if db.Cursor then
