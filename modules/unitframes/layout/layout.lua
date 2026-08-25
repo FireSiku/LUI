@@ -288,8 +288,6 @@ local function UpdateUnitFrameTooltip(self)
 	GameTooltip_SetDefaultAnchor(GameTooltip, self)
 	local hasTooltip = GameTooltip:SetUnit(unit)
 	if not issecretvalue(hasTooltip) and hasTooltip then
-		GameTooltip_AddBlankLineToTooltip(GameTooltip)
-		GameTooltip_AddInstructionLine(GameTooltip, UNIT_POPUP_RIGHT_CLICK)
 		GameTooltip:Show()
 		self.UpdateTooltip = UpdateUnitFrameTooltip
 	else

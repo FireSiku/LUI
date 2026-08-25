@@ -18,18 +18,14 @@ local TooltipDataProcessor = _G.TooltipDataProcessor
 local GameTooltipStatusBar = _G.GameTooltipStatusBar
 local BreakUpLargeNumbers = _G.BreakUpLargeNumbers
 local GetItemQualityColor = C_Item.GetItemQualityColor
-local UnitClassification = _G.UnitClassification
 local UnitTokenFromGUID = _G.UnitTokenFromGUID
 local InCombatLockdown = _G.InCombatLockdown
-local UnitCreatureType = _G.UnitCreatureType
 local UnitHasVehicleUI = _G.UnitHasVehicleUI
 local IsShiftKeyDown = _G.IsShiftKeyDown
 local UnitHealthMax = _G.UnitHealthMax
-local GetGuildInfo = _G.GetGuildInfo
 local UnitIsPlayer = _G.UnitIsPlayer
 local UnitIsInMyGuild = _G.UnitIsInMyGuild
 local UnitReaction = _G.UnitReaction
-local TooltipUtil = _G.TooltipUtil
 local GetItemInfo = C_Item.GetItemInfo
 local UnitIsGhost = _G.UnitIsGhost
 local UnitPVPName = _G.UnitPVPName
@@ -39,21 +35,12 @@ local UnitIsDead = _G.UnitIsDead
 local UnitClass = _G.UnitClass
 local UnitIsAFK = _G.UnitIsAFK
 local UnitIsDND = _G.UnitIsDND
-local UnitLevel = _G.UnitLevel
 local UnitName = _G.UnitName
-local UnitRace = _G.UnitRace
-local UnitSex = _G.UnitSex
-local pairs = pairs
 
 -- Constants
-local TicketStatusFrame = _G.TicketStatusFrame
 local CHAT_FLAG_DND = _G.CHAT_FLAG_DND
 local CHAT_FLAG_AFK = _G.CHAT_FLAG_AFK
-local PVP_ENABLED = _G.PVP_ENABLED
-local GUILD = _G.GUILD
 local LEVEL = _G.LEVEL
-local DEAD = _G.DEAD
-local BOSS = _G.BOSS
 
 local TOOLTIPS_LIST = {
 	"GameTooltip",
@@ -92,17 +79,6 @@ local TOOLTIPS_LIST = {
 	"AceConfigDialogTooltip",
 }
 
--- Need Localization
--- was local classification
-local MOB_CLASSIFICATION = {
-	worldboss = _G.BOSS,
-	rareelite = L["Tooltip_Rare"].."+",
-	elite = "+",
-	rare = L["Tooltip_Rare"],
-	minus = "-",  -- Does not give experience or reputation.
-	normal = "",
-}
-
 -- local variables
 local oldDefault = {}
 local initialScale = {}
@@ -117,20 +93,14 @@ module.defaults = {
 		HideCombatSkills = false,
 		HideCombatUnit = false,
 		HideUF = false,
-		HidePVP = true,
-		ShowSex = false,
 		Cursor = false,
 		Point = "RIGHT",
 		Scale = 1,
 		X = -150,
 		Y = 0,
-		HealthFontSize = 12,
 		HealthBar = "LUI_Minimalist",
 		BgTexture = "Blizzard Dialog Background Dark",
-		BorderTexture = "Stripped_medium",
-		BorderSize = 14,
 		Colors = {
-			Background = { r = 0.19, g = 0.19, b = 0.19, a = 1, t = "Individual", },
 			Border =     { r = 0.3,  g = 0.3,  b = 0.3,  a = 1, t = "Individual", },
 			Guild =      { r = 0,    g = 1,    b = 0.1,                           },
 			MyGuild =    { r = 0,    g = 0.55, b = 1,                             },
@@ -212,13 +182,7 @@ function module:UpdateTooltipBackdrop(frame)
 		if background and background.SetTexture then
 			background:SetTexture(Media:Fetch("background", db.BgTexture))
 			background:SetTexCoord(0, 1, 0, 1)
-		end
-
-		local bgR, bgG, bgB, bgA = module:RGBA("Background")
-		if nineSlice.SetCenterColor then
-			nineSlice:SetCenterColor(bgR, bgG, bgB, bgA or 1)
-		elseif background then
-			background:SetVertexColor(bgR, bgG, bgB, bgA or 1)
+			nineSlice:SetCenterColor(1, 1, 1, 1)
 		end
 
 		if nineSlice.SetBorderColor then
@@ -229,27 +193,27 @@ end
 
 -- Debug function, this will call UpdateTooltipBackdrop, optionally add a tooltip before doing so.
 function LUI:ForceTooltipUpdate(ttip)
-	if ttip then
-		tinsert(TOOLTIPS_LIST, ttip)
+	if not ttip then
+		module:UpdateBackdropColors()
+		return
 	end
-	module:UpdateTooltipBackdrop()
-end
 
-local function CanQueryGuildInfo(unit)
-	if type(unit) ~= "string" then return false end
-	return unit == "player"
-		or unit == "target"
-		or unit == "focus"
-		or unit:match("^party%d+$") ~= nil
-		or unit:match("^raid%d+$") ~= nil
-end
+	local frame = ttip
+	if type(ttip) == "string" then
+		frame = _G[ttip]
+		local registered
+		for i = 1, #TOOLTIPS_LIST do
+			if TOOLTIPS_LIST[i] == ttip then
+				registered = true
+				break
+			end
+		end
+		if not registered then
+			tinsert(TOOLTIPS_LIST, ttip)
+		end
+	end
 
-local function IsGuildQueryableUnit(unit)
-	if type(unit) ~= "string" then return false end
-	if unit == "player" or unit == "pet" or unit == "vehicle" then return true end
-	if unit:match("^party%d+$") or unit:match("^raid%d+$") or unit:match("^boss%d+$") then return true end
-	if unit == "target" or unit == "focus" then return true end
-	return false
+	module:UpdateTooltipBackdrop(frame)
 end
 
 function module:GetUnitColor(unit)
@@ -341,7 +305,9 @@ function module:SetBorderColor(frame)
 	local tooltipType = tooltipData and tooltipData.type
 	local r, g, b = module:RGB("Border")
 
-	if not issecretvalue(tooltipType) and tooltipType == Enum.TooltipDataType.Unit then
+	if db.Colors.Border.t == "Class"
+		and not issecretvalue(tooltipType)
+		and tooltipType == Enum.TooltipDataType.Unit then
 		local unit = module:GetTooltipUnit(tooltipData)
 		if unit then
 			local playerUnit = UnitIsPlayer(unit)
@@ -372,6 +338,7 @@ end
 
 function module:Refresh()
 	db = module.db.profile
+	module:SetStatusHealthBar()
 	module:UpdateBackdropColors()
 end
 
@@ -484,10 +451,14 @@ end
 ---@param data TooltipData
 function module.OnGameTooltipSetUnit(frame, data)
 	if frame:IsForbidden() then return end
-	-- luacheck: globals GameTooltipTextLeft1 GameTooltipTextLeft2
+	-- luacheck: globals GameTooltipTextLeft1
 	
 	-- We're only interested in setting up the GameTooltip itself, not all frames of that type.
 	if not frame.GetName or frame:GetName() ~= "GameTooltip" then return end
+
+	-- Blizzard applies the unit tooltip layout after OnShow. Reapply the selected
+	-- background texture after the tooltip data is complete.
+	module:UpdateTooltipBackdrop(frame)
 	
 	if db.HideCombatUnit and InCombatLockdown() then
 		return frame:Hide()
@@ -497,44 +468,33 @@ function module.OnGameTooltipSetUnit(frame, data)
 	-- usable unit token for the hovered player.
 	module:ApplyGuildColor(frame, data)
 
+	-- oUF frames expose their active unit through __unit.
+	local owner = frame:GetOwner()
+	if db.HideUF and owner and owner.__unit then
+		return frame:Hide()
+	end
+
 	local unit = module:GetTooltipUnit(data)
 	-- Blizzard can populate a valid tooltip even when its protected GUID cannot
 	-- be resolved back to a public unit token. Keep that native tooltip intact.
 	if not unit then return end
 
-	-- Hide tooltip on unitframes if that option is enabled
-	if frame:GetOwner() == UIParent and db.HideUF then
-		return frame:Hide()
-	end
-
-	local sex = UnitSex(unit)
-	local race = UnitRace(unit)
-	local level = UnitLevel(unit)
 	local title = UnitPVPName(unit)
-	local guild = IsGuildQueryableUnit(unit) and CanQueryGuildInfo(unit) and GetGuildInfo(unit) or nil
 	local name, realm = UnitName(unit)
-	local creatureType = UnitCreatureType(unit)
-	local localizedClass, class_ = UnitClass(unit)
-	local classification = UnitClassification(unit)
 	local isPlayer = UnitIsPlayer(unit)
 
 	-- Identity fields can be secret in 12.1. Do not concatenate/index them.
-	if issecretvalue(sex) or issecretvalue(race) or issecretvalue(level)
-		or issecretvalue(title) or issecretvalue(name) or issecretvalue(realm)
-		or issecretvalue(localizedClass) or issecretvalue(class_)
-		or issecretvalue(classification) or issecretvalue(creatureType)
-		or issecretvalue(guild) or issecretvalue(isPlayer) then
+	if issecretvalue(title) or issecretvalue(name) or issecretvalue(realm)
+		or issecretvalue(isPlayer) then
 		return
 	end
 	local realmSuffix = (realm and " - "..realm) or ""
 
-	local diffColor = CreateColor(LUI:GetDifficultyColor(level))
 	local unitColor = CreateColor(module:GetUnitColor(unit))
 
 	local tooltipText = unitColor:WrapTextInColorCode((title or name)..realmSuffix)
 	GameTooltipTextLeft1:SetText(tooltipText or "")
 
-	local offset = 2
 	if isPlayer then
 		-- Display status next to name
 		if not issecretvalue(UnitIsDND(unit)) and UnitIsDND(unit) then
@@ -542,48 +502,6 @@ function module.OnGameTooltipSetUnit(frame, data)
 		elseif not issecretvalue(UnitIsAFK(unit)) and UnitIsAFK(unit) then
 			frame:AppendText(" "..CHAT_FLAG_AFK)
 		end
-		if guild then
-			offset = offset + 1
-		end
-	end
-
-	-- The line with level information isnt always the same, so we need to do some scanning.
-	for i = offset, frame:NumLines() do
-		local line = _G["GameTooltipTextLeft"..i]
-		local text = line and line:GetText()
-		if text then
-			line:SetFormattedText("%s", text)
-		end
-
-		-- if text then
-		-- 	-- Level line for players
-		-- 	-- if text:find(LEVEL) and race then
-		-- 	if race then
-		-- 		local levelString = (level > 0 and level) or "??"
-		-- 		local levelText = diffColor:WrapTextInColorCode(levelString)
-		-- 		local classText = unitColor:WrapTextInColorCode(localizedClass)
-		-- 		local sexString = (db.ShowSex) and LUI.GENDERS[sex].." " or ""
-		-- 		line:SetFormattedText("%s %s%s %s", levelText, sexString, race, classText)
-
-		-- 	-- Level line for creatures
-		-- 	-- elseif text:find(LEVEL) or (creatureType and text:find(creatureType)) then
-		-- 	elseif creatureType then
-		-- 		-- Need to find a new way to detect world bosses
-		-- 		-- if text:find(BOSS) then
-		-- 		-- 	-- Always color world bosses as skulls.
-		-- 		-- 	classification = "worldboss"
-		-- 		-- 	diffColor:SetRGB(module:RGB("DiffSkull"))
-		-- 		-- end
-
-		-- 		local levelString = (level > 0 and level) or ""
-		-- 		local levelText = diffColor:WrapTextInColorCode(levelString)
-		-- 		local classificationString = diffColor:WrapTextInColorCode(MOB_CLASSIFICATION[classification])
-		-- 		line:SetFormattedText("%s%s %s", levelText, classificationString, creatureType or "")
-		-- 	-- Remove the PVP line if the option is set
-		-- 	elseif text == PVP_ENABLED and db.HidePVP then
-		-- 		line:SetText("")
-		-- 	end
-		-- end
 	end
 
 	--Add ToT Line

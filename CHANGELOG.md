@@ -150,6 +150,7 @@ This changelog documents the complete release delta from the previous FireSiku L
 - Corrected Clock, Artwork, Toggle, V2Textures, and related refresh paths retained in the rebuilt package.
 - Updated the Retail build and interface constants used by LUI version checks.
 - Fixed Lua compatibility issues in the Plexus integration and Emmy ColorPicker declaration.
+- Fixed UnitFrames going missing for certain classes or specializations such as Frost Mages and Death Knights.
 - Added oUF 14 compatibility documentation and updated the embedded framework metadata, documentation, and license.
 - Rebuilt the Control Panel and option title presentation for a release build.
 - Removed obsolete empty and `_old` media files from the release package.
