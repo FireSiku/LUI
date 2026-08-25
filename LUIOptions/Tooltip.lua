@@ -35,11 +35,8 @@ Tooltip.args = {
     HideCombat = Opt:Toggle({name = L["Tooltip_HideCombat_Name"], desc = L["Tooltip_HideCombat_Desc"], width = "double"}),
 	HideCombatSkills = Opt:Toggle({name = L["Tooltip_HideCombatSkills_Name"], desc = L["Tooltip_HideCombatSkills_Desc"], width = "double", disabled = DisableIfTooltipsHidden}),
 	HideCombatUnit = Opt:Toggle({name = L["Tooltip_HideCombatUnit_Name"], desc = L["Tooltip_HideCombatUnit_Desc"], width = "double", disabled = DisableIfTooltipsHidden}),
-	HidePVP = Opt:Toggle({name = L["Tooltip_HidePVP_Name"], desc = L["Tooltip_HidePVP_Desc"], width = "double"}),
-    ShowSex = Opt:Toggle({name = L["Tooltip_ShowSex_Name"], desc = L["Tooltip_ShowSex_Desc"]}),
     SpacerOne = Opt:Spacer({width = "full"}),
     Scale = Opt:Slider({name = L["Tooltip_Scale_Name"], desc = L["Tooltip_Scale_Desc"], values = Opt.ScaleValues}),
-    BorderSize = Opt:Slider({name = L["Tooltip_BorderSize_Name"], desc = L["Tooltip_BorderSize_Desc"], min = 1, max = 30, step = 1}),
 
     -- Position
     PositionHeader = Opt:Header({name = L["Position"]}),
@@ -53,21 +50,17 @@ Tooltip.args = {
     HealthBar = Opt:MediaStatusbar({name = L["Tooltip_HealthBar_Name"], desc = L["Tooltip_HealthBar_Desc"], width = "double"}),
     SpacerTwo = Opt:Spacer({}),
     BgTexture = Opt:MediaBackground({name = L["Tooltip_BackgroundTex_Name"], desc = L["BackgroundDesc"], width = "double"}),
-    SpacerThree = Opt:Spacer({}),
-    BorderTexture = Opt:MediaBorder({name = L["Tooltip_BorderTex_Name"], desc = L["BorderDesc"], width = "double"}),
 
     -- Colors
     ColorHeader = Opt:Header({name = _G.COLORS}),
     Guild = Opt:Color({name = _G.GUILD, desc = L["Tooltip_Guild_Desc"], hasAlpha = false}),
     MyGuild = Opt:Color({name = L["Tooltip_MyGuild"], desc = L["Tooltip_MyGuild_Desc"], hasAlpha = false}),
     SpacerFour = Opt:Spacer({}),
-    Background = Opt:Color({name = L["API_BackgroundColor_Name"], hasAlpha = true}),
-    BgColorType = Opt:Select({name = L["API_BackgroundType_Name"], values = LUI.ColorTypes,
-        get = function(info) return db.Colors.Background.t end, -- getter
-        set = function(info, value) db.Colors.Background.t = value end}), -- setter
-    SpacerFive = Opt:Spacer({}),
     Border = Opt:Color({name = L["API_BorderColor_Name"], hasAlpha = true}),
     BorderColorType = Opt:Select({name = L["API_BorderType_Name"], values = LUI.ColorTypes,
         get = function(info) return db.Colors.Border.t end, -- getter
-        set = function(info, value) db.Colors.Border.t = value end}), -- setter
+        set = function(info, value)
+            db.Colors.Border.t = value
+            module:Refresh()
+        end}), -- setter
 }

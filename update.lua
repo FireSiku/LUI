@@ -143,17 +143,13 @@ function LUI:ApplyUpdate(ver)
 			Convert("Tooltip", lui_db.Tooltip, "Hidecombat", "HideCombat", tt_db)
 			Convert("Tooltip", lui_db.Tooltip, "Hidebuttons", "HideCombatSkills", tt_db)
 			Convert("Tooltip", lui_db.Tooltip, "Hideuf", "HideUF", tt_db)
-			Convert("Tooltip", lui_db.Tooltip, "ShowSex", "ShowSex", tt_db)
 			Convert("Tooltip", lui_db.Tooltip, "Cursor", "Cursor", tt_db)
 			Convert("Tooltip", lui_db.Tooltip, "Point", "Point", tt_db)
 			Convert("Tooltip", lui_db.Tooltip, "Scale", "Scale", tt_db)
 			Convert("Tooltip", lui_db.Tooltip, "X", "X", tt_db)
 			Convert("Tooltip", lui_db.Tooltip, "Y", "Y", tt_db)
-			Convert("Tooltip", lui_db.Tooltip.Border, "Size", "BorderSize", tt_db)
 			Convert("Tooltip.Textures", lui_db.Tooltip.Health, "Texture", "HealthBar", tt_db)
 			Convert("Tooltip.Textures", lui_db.Tooltip.Background, "Texture", "BgTexture", tt_db)
-			Convert("Tooltip.Textures", lui_db.Tooltip.Border, "Texture", "BorderTexture", tt_db)
-			Convert("Tooltip.Colors", lui_db.Tooltip.Background, "Color", "Background", tt_db.Colors)	
 			Convert("Tooltip.Colors", lui_db.Tooltip.Border, "Color", "Border", tt_db.Colors)
 
 			if tt_mod.Refresh then tt_mod:Refresh() end
@@ -478,7 +474,7 @@ function LUI:ApplyUpdate(ver)
 			elseif db and modName == "RaidMenu" then
 				Sanitize(db,  {"Spacing", "Offset", "X_Offset", "Opacity", "Scale"})
 			elseif db and modName == "Tooltip" then
-				Sanitize(db, {"Scale", "X", "Y", "HealthFontSize", "BorderSize"})
+				Sanitize(db, {"Scale", "X", "Y"})
 			elseif db and modName == "UI Elements" then
 				for k, v in pairs(db) do
 					Sanitize(db[k], {"X", "Y"})
