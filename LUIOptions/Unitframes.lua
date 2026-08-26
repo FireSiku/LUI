@@ -72,6 +72,11 @@ local auxiliaryPowerFormat = {
     ["Percent"] = "Percent",
 }
 
+local optionsLayouts = {
+    ["Compact"] = "Compact",
+    ["Categorized"] = "Categorized",
+}
+
 local nameFormats = {
     ["Name"] = "Name",
     ["Name + Level"] = "Name + Level",
@@ -370,23 +375,22 @@ local function GenerateCastbarShieldGroup(unit, order)
     return group
 end
 
-local function NewUnitOptionGroup(unit, order)
+local function GetOptionsLayout()
+    if LUI.db.global.UnitframesOptionsLayout == "Categorized" then
+        return "Categorized"
+    end
+    return "Compact"
+end
+
+local function NewUnitOptionGroup(unit, order, categorized)
     local dbUnit = db[unit]
 
     local unitOptions = Opt:Group({name = unit, order = order, childGroups = "tree"})
-    local barOptions = Opt:Group({name = "Bars", order = 2, childGroups = "tab"})
-    local textOptions = Opt:Group({name = "Texts", order = 3, childGroups = "tab"})
-    local auraOptions = Opt:Group({name = "Auras", order = 5, childGroups = "tab"})
-    local indicatorOptions = Opt:Group({name = "Indicators", order = 6, childGroups = "tab"})
-    local castbarOptions = Opt:Group({name = "Cast Bar", order = 7, childGroups = "tab"})
-
-    unitOptions.args.Bars = barOptions
-    unitOptions.args.Texts = textOptions
-    unitOptions.args.Auras = auraOptions
-    unitOptions.args.Indicators = indicatorOptions
-    if dbUnit.Castbar and UnitSupportsCastbar(unit) then
-        unitOptions.args.Castbar = castbarOptions
-    end
+    local barOptions = categorized and Opt:Group({name = "Bars", order = 2, childGroups = "tab"}) or unitOptions
+    local textOptions = categorized and Opt:Group({name = "Texts", order = 3, childGroups = "tab"}) or unitOptions
+    local auraOptions = categorized and Opt:Group({name = "Auras", order = 5, childGroups = "tab"}) or unitOptions
+    local indicatorOptions = categorized and Opt:Group({name = "Indicators", order = 6, childGroups = "tab"}) or unitOptions
+    local castbarOptions = categorized and Opt:Group({name = "Cast Bar", order = 7, childGroups = "tab"}) or unitOptions
 
     unitOptions.args.General = Opt:Group({name = "General", order = 1, db = dbUnit, args = {
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
@@ -414,40 +418,40 @@ local function NewUnitOptionGroup(unit, order)
        
     }})
 
-    barOptions.args.HealthBar = GenerateBarGroup(unit, "HealthBar", healthColorTypes, 1)
-    barOptions.args.PowerBar = GenerateBarGroup(unit, "PowerBar", powerColorTypes, 2)
-    barOptions.args.HealthPredictionBar = GenerateHealthPredictionGroup(unit, 3)
-    barOptions.args.TotalAbsorbBar = GenerateTotalAbsorbGroup(unit, 4)
+    barOptions.args.HealthBar = GenerateBarGroup(unit, "HealthBar", healthColorTypes, categorized and 1 or 10)
+    barOptions.args.PowerBar = GenerateBarGroup(unit, "PowerBar", powerColorTypes, categorized and 2 or 11)
+    barOptions.args.HealthPredictionBar = GenerateHealthPredictionGroup(unit, categorized and 3 or 12)
+    barOptions.args.TotalAbsorbBar = GenerateTotalAbsorbGroup(unit, categorized and 4 or 13)
     
     if unit == "player" then
-        if supportsClassPower then barOptions.args.ClassPowerBar = GenerateClassBarGroup(unit, "ClassPowerBar", 5) end
-        if LUI.DEATHKNIGHT then barOptions.args.RunesBar = GenerateClassBarGroup(unit, "RunesBar", 6) end
-        if LUI.SHAMAN then barOptions.args.TotemsBar = GenerateClassBarGroup(unit, "TotemsBar", 7) end
+        if supportsClassPower then barOptions.args.ClassPowerBar = GenerateClassBarGroup(unit, "ClassPowerBar", categorized and 5 or 14) end
+        if LUI.DEATHKNIGHT then barOptions.args.RunesBar = GenerateClassBarGroup(unit, "RunesBar", categorized and 6 or 15) end
+        if LUI.SHAMAN then barOptions.args.TotemsBar = GenerateClassBarGroup(unit, "TotemsBar", categorized and 7 or 16) end
     end
 
     if unit == "player" and supportsAdditionalPower then
-        barOptions.args.AdditionalPowerBar = GenerateBarGroup(unit, "AdditionalPowerBar", powerColorTypes, 10)
-        textOptions.args.AdditionalPowerText = GenerateAuxiliaryPowerTextGroup(unit, "AdditionalPowerText", 10)
+        barOptions.args.AdditionalPowerBar = GenerateBarGroup(unit, "AdditionalPowerBar", powerColorTypes, categorized and 10 or 17)
+        textOptions.args.AdditionalPowerText = GenerateAuxiliaryPowerTextGroup(unit, "AdditionalPowerText", categorized and 10 or 38)
     end
     if unit == "player" then
-        barOptions.args.AlternativePowerBar = GenerateBarGroup(unit, "AlternativePowerBar", powerColorTypes, 11)
-        textOptions.args.AlternativePowerText = GenerateAuxiliaryPowerTextGroup(unit, "AlternativePowerText", 11)
+        barOptions.args.AlternativePowerBar = GenerateBarGroup(unit, "AlternativePowerBar", powerColorTypes, categorized and 11 or 18)
+        textOptions.args.AlternativePowerText = GenerateAuxiliaryPowerTextGroup(unit, "AlternativePowerText", categorized and 11 or 39)
     end
     
     -- Use a single entry to handle Value, Percent and Missing?
-    if dbUnit.NameText then textOptions.args.NameText = GenerateTextGroup(unit, "NameText", nil, 1) end
-    if dbUnit.HealthText then textOptions.args.HealthText = GenerateTextGroup(unit, "HealthText", healthColorTypes, 2) end
-    if dbUnit.PowerText then textOptions.args.PowerText = GenerateTextGroup(unit, "PowerText", powerColorTypes, 3) end
-    if dbUnit.HealthPercentText then textOptions.args.HealthPercentText = GenerateTextGroup(unit, "HealthPercentText", healthColorTypes, 4) end
-    if dbUnit.PowerPercentText then textOptions.args.PowerPercentText = GenerateTextGroup(unit, "PowerPercentText", powerColorTypes, 5) end
-    if dbUnit.HealthMissingText then textOptions.args.HealthMissingText = GenerateTextGroup(unit, "HealthMissingText", healthColorTypes, 6) end
-    if dbUnit.PowerMissingText then textOptions.args.PowerMissingText = GenerateTextGroup(unit, "PowerMissingText", powerColorTypes, 7) end
+    if dbUnit.NameText then textOptions.args.NameText = GenerateTextGroup(unit, "NameText", nil, categorized and 1 or 30) end
+    if dbUnit.HealthText then textOptions.args.HealthText = GenerateTextGroup(unit, "HealthText", healthColorTypes, categorized and 2 or 31) end
+    if dbUnit.PowerText then textOptions.args.PowerText = GenerateTextGroup(unit, "PowerText", powerColorTypes, categorized and 3 or 32) end
+    if dbUnit.HealthPercentText then textOptions.args.HealthPercentText = GenerateTextGroup(unit, "HealthPercentText", healthColorTypes, categorized and 4 or 33) end
+    if dbUnit.PowerPercentText then textOptions.args.PowerPercentText = GenerateTextGroup(unit, "PowerPercentText", powerColorTypes, categorized and 5 or 34) end
+    if dbUnit.HealthMissingText then textOptions.args.HealthMissingText = GenerateTextGroup(unit, "HealthMissingText", healthColorTypes, categorized and 6 or 35) end
+    if dbUnit.PowerMissingText then textOptions.args.PowerMissingText = GenerateTextGroup(unit, "PowerMissingText", powerColorTypes, categorized and 7 or 36) end
     if dbUnit.CombatFeedback then
-        textOptions.args.CombatFeedback = GenerateTextGroup(unit, "CombatFeedback", nil, 8)
+        textOptions.args.CombatFeedback = GenerateTextGroup(unit, "CombatFeedback", nil, categorized and 8 or 37)
     end
 
     if dbUnit.Portrait then
-        unitOptions.args.Portrait = Opt:Group({name = "Portrait", order = 4, db = dbUnit.Portrait, args = {
+        unitOptions.args.Portrait = Opt:Group({name = "Portrait", order = categorized and 4 or 50, db = dbUnit.Portrait, args = {
             Enable = Opt:Toggle({name = "Enabled", width = "full"}),
             Width = Opt:InputNumber({name = "Width"}),
             Height = Opt:InputNumber({name = "Height"}),
@@ -465,7 +469,7 @@ local function NewUnitOptionGroup(unit, order)
             dbUnit.Aura.Debuffs.IconsPerRow = dbUnit.Aura.Debuffs.Num or 8
         end
 
-        auraOptions.args.Buffs = Opt:Group({name = "Buffs", order = 1, db = dbUnit.Aura.Buffs, args = {
+        auraOptions.args.Buffs = Opt:Group({name = "Buffs", order = categorized and 1 or 60, db = dbUnit.Aura.Buffs, args = {
             Enable = Opt:Toggle({name = "Enabled", width = "full"}),
             ColorByType = Opt:Toggle({name = "Color By Type"}),
             PlayerOnly = Opt:Toggle({name = "Player Only"}),
@@ -483,7 +487,7 @@ local function NewUnitOptionGroup(unit, order)
             Num = Opt:Slider({name = "Amount of Buffs", values = auraCountValues}),
             IconsPerRow = Opt:Slider({name = "Icons Per Row", desc = "Maximum number of buff icons before starting a new row.", values = auraCountValues}),
         }})
-        auraOptions.args.Debuffs = Opt:Group({name = "Debuffs", order = 2, db = dbUnit.Aura.Debuffs, args = {
+        auraOptions.args.Debuffs = Opt:Group({name = "Debuffs", order = categorized and 2 or 61, db = dbUnit.Aura.Debuffs, args = {
             Enable = Opt:Toggle({name = "Enabled", width = "full"}),
             ColorByType = Opt:Toggle({name = "Color By Type"}),
             PlayerOnly = Opt:Toggle({name = "Player Only"}),
@@ -503,30 +507,53 @@ local function NewUnitOptionGroup(unit, order)
         }})
     end
 
-    if dbUnit.LeaderIndicator then indicatorOptions.args.LeaderIndicator = GenerateIndicatorGroup(unit, "Leader Icon", 1, Opt.GetSet(dbUnit.LeaderIndicator)) end
-    if dbUnit.GroupRoleIndicator then indicatorOptions.args.GroupRoleIndicator = GenerateIndicatorGroup(unit, "Role Icon", 2, Opt.GetSet(dbUnit.GroupRoleIndicator)) end
-    if dbUnit.RaidMarkerIndicator then indicatorOptions.args.RaidMarkerIndicator = GenerateIndicatorGroup(unit, "Raid Icon", 3, Opt.GetSet(dbUnit.RaidMarkerIndicator)) end
-    if dbUnit.PvPIndicator then indicatorOptions.args.PvPIndicator = GenerateIndicatorGroup(unit, "PvP Icon", 4, Opt.GetSet(dbUnit.PvPIndicator)) end
-    if dbUnit.PvPText then textOptions.args.PvPText = GeneratePvPTextGroup(unit, 9) end
-    if dbUnit.RestingIndicator then indicatorOptions.args.RestingIndicator = GenerateIndicatorGroup(unit, "Resting Icon", 5, Opt.GetSet(dbUnit.RestingIndicator)) end
-    if dbUnit.CombatIndicator then indicatorOptions.args.CombatIndicator = GenerateIndicatorGroup(unit, "Combat Icon", 6, Opt.GetSet(dbUnit.CombatIndicator)) end
-    if dbUnit.ReadyCheckIndicator then indicatorOptions.args.ReadyCheckIndicator = GenerateIndicatorGroup(unit, "Ready Check Icon", 7, Opt.GetSet(dbUnit.ReadyCheckIndicator)) end
+    if dbUnit.LeaderIndicator then indicatorOptions.args.LeaderIndicator = GenerateIndicatorGroup(unit, "Leader Icon", categorized and 1 or 70, Opt.GetSet(dbUnit.LeaderIndicator)) end
+    if dbUnit.GroupRoleIndicator then indicatorOptions.args.GroupRoleIndicator = GenerateIndicatorGroup(unit, "Role Icon", categorized and 2 or 71, Opt.GetSet(dbUnit.GroupRoleIndicator)) end
+    if dbUnit.RaidMarkerIndicator then indicatorOptions.args.RaidMarkerIndicator = GenerateIndicatorGroup(unit, "Raid Icon", categorized and 3 or 72, Opt.GetSet(dbUnit.RaidMarkerIndicator)) end
+    if dbUnit.PvPIndicator then indicatorOptions.args.PvPIndicator = GenerateIndicatorGroup(unit, "PvP Icon", categorized and 4 or 73, Opt.GetSet(dbUnit.PvPIndicator)) end
+    if dbUnit.PvPText then textOptions.args.PvPText = GeneratePvPTextGroup(unit, categorized and 9 or 40) end
+    if dbUnit.RestingIndicator then indicatorOptions.args.RestingIndicator = GenerateIndicatorGroup(unit, "Resting Icon", categorized and 5 or 74, Opt.GetSet(dbUnit.RestingIndicator)) end
+    if dbUnit.CombatIndicator then indicatorOptions.args.CombatIndicator = GenerateIndicatorGroup(unit, "Combat Icon", categorized and 6 or 75, Opt.GetSet(dbUnit.CombatIndicator)) end
+    if dbUnit.ReadyCheckIndicator then indicatorOptions.args.ReadyCheckIndicator = GenerateIndicatorGroup(unit, "Ready Check Icon", categorized and 7 or 76, Opt.GetSet(dbUnit.ReadyCheckIndicator)) end
 
     if dbUnit.Castbar and UnitSupportsCastbar(unit) then
-        castbarOptions.args.General = GenerateCastbarGroup(unit, 1)
-        castbarOptions.args.NameText = GenerateCastbarTextGroup(unit, "NameText", 2)
-        castbarOptions.args.TimeText = GenerateCastbarTextGroup(unit, "TimeText", 3)
-        castbarOptions.args.Shield = GenerateCastbarShieldGroup(unit, 4)
+        local castbarPrefix = categorized and "" or "Castbar"
+        castbarOptions.args[castbarPrefix.."General"] = GenerateCastbarGroup(unit, categorized and 1 or 80)
+        castbarOptions.args[castbarPrefix.."NameText"] = GenerateCastbarTextGroup(unit, "NameText", categorized and 2 or 81)
+        castbarOptions.args[castbarPrefix.."TimeText"] = GenerateCastbarTextGroup(unit, "TimeText", categorized and 3 or 82)
+        castbarOptions.args[castbarPrefix.."Shield"] = GenerateCastbarShieldGroup(unit, categorized and 4 or 83)
+    end
+
+    if categorized then
+        if next(barOptions.args) then unitOptions.args.Bars = barOptions end
+        if next(textOptions.args) then unitOptions.args.Texts = textOptions end
+        if next(auraOptions.args) then unitOptions.args.Auras = auraOptions end
+        if next(indicatorOptions.args) then unitOptions.args.Indicators = indicatorOptions end
+        if next(castbarOptions.args) then unitOptions.args.Castbar = castbarOptions end
     end
 
     return unitOptions
 end
 
 
-local function BuildUnitframeOptions()
+local BuildUnitframeOptions
+
+BuildUnitframeOptions = function()
+    local optionsLayout = GetOptionsLayout()
+    local categorized = optionsLayout == "Categorized"
+
     Unitframes.args = {
         Header = Opt:Header({name = "Unitframes", order = 1}),
         General = Opt:Group({name = L["General Settings"], order = 2, db = db.Settings, args = {
+            OptionsLayout = Opt:Select({name = "Options Layout", desc = "Choose a compact component list or organize the same options into categories.", values = optionsLayouts,
+                get = GetOptionsLayout,
+                set = function(_, value)
+                    if value == GetOptionsLayout() then return end
+                    LUI.db.global.UnitframesOptionsLayout = value
+                    BuildUnitframeOptions()
+                    Opt:RefreshOptionsPanel()
+                end}),
+            LayoutSpacer = Opt:Spacer({}),
             ShowV2Textures = Opt:Toggle({name = "Show LUI v2 Connector Lines", desc = "Show or hide the thin connector lines between Target, Target-of-Target, Focus and their child frames.", width = "full"}),
             ShowV2PartyTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Party Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Party Frames or not.", width = "full"}),
             ShowV2ArenaTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Arena Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Arena Frames or not.", width = "full"}),
@@ -550,7 +577,7 @@ local function BuildUnitframeOptions()
     -- module.units is the authoritative list and includes both directly spawned
     -- frames and child frames such as party targets, pets and boss targets.
     for i, unit in ipairs(module.units) do
-        Unitframes.args[unit] = NewUnitOptionGroup(unit, i + 10)
+        Unitframes.args[unit] = NewUnitOptionGroup(unit, i + 10, categorized)
     end
 end
 
