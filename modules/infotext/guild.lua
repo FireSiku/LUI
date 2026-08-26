@@ -53,7 +53,6 @@ local GAP = 10
 local totalGuild = 0 --luacheck: ignore
 local onlineGuild = 0
 local infotip
-local onBlock
 
 -- ####################################################################################################################
 -- ##### Infotip Setup ################################################################################################
@@ -116,7 +115,7 @@ function element:UpdateGuildAnchorPoints(i)
 end
 
 function element:UpdateInfotip()
-	if infotip and onBlock then
+	if infotip and infotip:IsShown() then
 		infotip:UpdateTooltip()
 	end
 end
@@ -357,13 +356,11 @@ function element.OnEnter(frame_)
 	infotip:SetWidth(maxWidth)
 	infotip:SetHeight(maxHeight)
 	infotip:Show()
-	onBlock = true
 end
 
 function element.OnLeave(frame_)
 	if infotip and not infotip:IsMouseOver() then
 		infotip:Hide()
-		onBlock = false
 	end
 end
 

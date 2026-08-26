@@ -13,109 +13,66 @@ local module = LUI:GetModule("Infotext")
 local element = module:NewElement("Dualspec", "AceEvent-3.0")
 
 -- local copies
-local select, format, tconcat = select, format, table.concat
+local select, format = select, format
 local strsplit = string.split
-local PanelTemplates_GetSelectedTab = _G.PanelTemplates_GetSelectedTab
-local PlayerTalentFrame_Refresh = _G.PlayerTalentFrame_Refresh
 local GetSpecializationInfoByID = _G.GetSpecializationInfoByID
 local GetLootSpecialization = _G.GetLootSpecialization
-local PanelTemplates_SetTab = _G.PanelTemplates_SetTab
-local GetSpecializationInfo = _G.GetSpecializationInfo
 local GetNumSpecializations = _G.GetNumSpecializations
-local GetActiveSpecGroup = _G.GetActiveSpecGroup
-local GetSpecialization = _G.GetSpecialization
+local GetSpecializationInfo = C_SpecializationInfo.GetSpecializationInfo
+local GetSpecialization = C_SpecializationInfo.GetSpecialization
+local IsSpecializationInfoInitialized = C_SpecializationInfo.IsInitialized
 local SetSpecialization = C_SpecializationInfo.SetSpecialization
-local GetMaxTalentTier = _G.GetMaxTalentTier
-local GetNumSpecGroups = _G.GetNumSpecGroups
-local GetTalentInfo = _G.GetTalentInfo
-local ShowUIPanel = _G.ShowUIPanel
-local HideUIPanel = _G.HideUIPanel
 
 -- constants
 local LOOT_SPECIALIZATION_DEFAULT = strsplit("(", _G.LOOT_SPECIALIZATION_DEFAULT):trim()
 local SELECT_LOOT_SPECIALIZATION = _G.SELECT_LOOT_SPECIALIZATION
-local NUM_TALENT_COLUMNS = _G.NUM_TALENT_COLUMNS
 local LEVEL_UP_DUALSPEC = _G.LEVEL_UP_DUALSPEC
-local MAX_SPECS -- Set this during OnCreate
-local TALENT_DELIMITER = ""
+local MAX_SPECS = 0
 
 -- locals
-local specCache = {}  -- Keep information about specs.
-local talentCache = {} -- Keep information about talents.
-local inactiveCache = {} -- Keep information about inactive specs
-local needNewCache = false
+local specCache = {}
+local inactiveCache = {}
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
 
-function element:CacheSpecInfo()
+function element:RefreshSpecInfo()
+	MAX_SPECS = 0
+	for i = #specCache, 1, -1 do
+		specCache[i] = nil
+	end
+
+	if not IsSpecializationInfoInitialized() then
+		return
+	end
+
+	MAX_SPECS = GetNumSpecializations()
 	for i = 1, MAX_SPECS do
-		if not specCache[i] then
-			specCache[i] = {}
-			local _, name, _, icon = GetSpecializationInfo(i)
-			specCache[i].name = name
-			specCache[i].icon = icon
-		end
+		local _, name = GetSpecializationInfo(i)
+		specCache[i] = {name = name}
 	end
 end
 
-function element:ToggleTalentTab(tabID)
-	_G.TalentFrame_LoadUI()
-	local talentFrame = _G.PlayerTalentFrame
-	if talentFrame and talentFrame:IsShown() then
-		if PanelTemplates_GetSelectedTab(talentFrame) == tabID then
-			return HideUIPanel(talentFrame)
-		end
+function element:OnSpecializationChanged(event_, unit)
+	if unit == "player" then
+		element:UpdateSpec()
 	end
-	PanelTemplates_SetTab(talentFrame, tabID)
-	PlayerTalentFrame_Refresh()
-	ShowUIPanel(talentFrame)
-end
-
-function element:GetTalentString(index)
-	local ok = true
-	-- Check if we need to setup a new cache.
-	local inactiveGroup = 3 - GetActiveSpecGroup()
-	if not needNewCache and talentCache[index] then ok = false end
-	if ok and index == inactiveGroup and talentCache[inactiveGroup] then ok = false end
-	-- If ok is still true, scan the talents once more.
-	if ok then
-		if not talentCache[index] then
-			talentCache[index] = {}
-		end
-		for row = 1, GetMaxTalentTier() do
-			local indexColumn
-			for column = 1, NUM_TALENT_COLUMNS do
-				if select(4, GetTalentInfo(row, column, index)) then
-					indexColumn = column
-				end
-			end
-			talentCache[index][row] = indexColumn or 0
-		end
-		needNewCache = false
-	end
-	return tconcat(talentCache[index], TALENT_DELIMITER)
-end
-
-function element:UpdateTalents()
-	needNewCache = true
-	element:UpdateSpec()
 end
 
 function element:UpdateSpec()
+	element:RefreshSpecInfo()
+
 	local currentSpecID = GetSpecialization()
 	local currentSpec = specCache[currentSpecID]
 	local specName = (currentSpec) and currentSpec.name or L["InfoDualspec_NoSpec"]
-	if module.db.profile.lootSpec and GetLootSpecialization() > 0 then
-		local _, lootSpec = GetSpecializationInfoByID(GetLootSpecialization())
-		element.text = format("%s (%s)", specName, lootSpec)
+	local lootSpecID = GetLootSpecialization()
+	if module.db.profile.Dualspec.lootSpec and lootSpecID > 0 then
+		local _, lootSpec = GetSpecializationInfoByID(lootSpecID)
+		element.text = lootSpec and format("%s (%s)", specName, lootSpec) or specName
 	else
 		element.text = specName
 	end
-
-	--TODO: Add Icon Support
-	--element.icon = currentCache.icon
 
 	inactiveCache = {}
 	for i = 1, MAX_SPECS do
@@ -129,16 +86,13 @@ end
 
 -- Left-Click: Switch to inactive spec 1
 -- Right-Click: Switch to inactive spec 2
--- Middle-Click: Switch to inactive spec 3 ( druid only )
--- Shift-Click: Toggle Talent Frame -- TODO causes tooltip background to turn white temporarily ??
+-- Middle-Click: Switch to inactive spec 3 (Druid only)
 function element.OnClick(frame_, button)
-	--if IsShiftKeyDown() then
-	--	element:ToggleTalentTab(TALENT_TAB_TALENTS) -- taken from original code's right click function
-	if button == "LeftButton" and inactiveCache[1] then -- switch to inactive spec 1 if valid
+	if button == "LeftButton" and inactiveCache[1] then
 		SetSpecialization(inactiveCache[1])
-	elseif button == "RightButton" and inactiveCache[2] then -- spec 2
+	elseif button == "RightButton" and inactiveCache[2] then
 		SetSpecialization(inactiveCache[2])
-	elseif button == "MiddleButton" and inactiveCache[3] then -- spec 3 (druid only)
+	elseif button == "MiddleButton" and inactiveCache[3] then
 		SetSpecialization(inactiveCache[3])
 	end
 end
@@ -149,34 +103,34 @@ end
 
 function element.OnTooltipShow(GameTooltip)
 	element:TooltipHeader(LEVEL_UP_DUALSPEC)
+	element:RefreshSpecInfo()
 
 	local activeSpec = GetSpecialization()
 	local dualspecHint = ""
 
 	for i = 1, MAX_SPECS do
-		local specNum = (format(L["InfoDualspec_Spec_Num"], i))
-		local specName = (specCache[i].name)
+		local specNum = format(L["InfoDualspec_Spec_Num"], i)
+		local specName = specCache[i].name
 
 		if i == activeSpec then
 			local highlight = CreateColor(1, 1, 0)
 			specNum = highlight:WrapTextInColorCode(specNum)
 			specName = highlight:WrapTextInColorCode(specName)
 		end
-		GameTooltip:AddDoubleLine(specNum, specName, 1,1,1, 1,1,1)
+		GameTooltip:AddDoubleLine(specNum, specName, 1, 1, 1, 1, 1, 1)
 	end
 
-	-- loot spec text from original code
 	GameTooltip:AddLine(" ")
-	local lootSpec = select(2, GetSpecializationInfoByID(GetLootSpecialization())) or LOOT_SPECIALIZATION_DEFAULT
-	GameTooltip:AddDoubleLine(format("%s:", SELECT_LOOT_SPECIALIZATION), lootSpec, 1,1,1, 1,1,1)
+	local lootSpecID = GetLootSpecialization()
+	local lootSpec = lootSpecID > 0 and select(2, GetSpecializationInfoByID(lootSpecID)) or LOOT_SPECIALIZATION_DEFAULT
+	GameTooltip:AddDoubleLine(format("%s:", SELECT_LOOT_SPECIALIZATION), lootSpec, 1, 1, 1, 1, 1, 1)
 
 	for i = 1, #inactiveCache do
-		-- add hint for current inactive spec
 		dualspecHint = dualspecHint .. format(L[format("InfoDualspec_Hint_%d", i)], specCache[inactiveCache[i]].name)
 		if i < #inactiveCache then dualspecHint = dualspecHint .. "\n" end
 	end
 
-	element:AddHint(dualspecHint) -- .. L["InfoDualspec_Hint_Shift"]
+	element:AddHint(dualspecHint)
 end
 
 -- ####################################################################################################################
@@ -184,10 +138,7 @@ end
 -- ####################################################################################################################
 
 function element:OnCreate()
-	MAX_SPECS = GetNumSpecializations()
-
-	element:CacheSpecInfo()
-	element:RegisterEvent("PLAYER_TALENT_UPDATE", "UpdateTalents")
+	element:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", "OnSpecializationChanged")
 	element:RegisterEvent("PLAYER_LOOT_SPEC_UPDATED", "UpdateSpec")
-	element:UpdateTalents()
+	element:UpdateSpec()
 end

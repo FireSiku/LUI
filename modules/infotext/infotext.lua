@@ -168,6 +168,7 @@ function module:IsPositionSet(name)
 end
 
 function module:SetPosition(name, frame)
+	frame.text:ClearAllPoints()
 	if module:IsPositionSet(name) then
 		frame.text:SetPoint(db[name].Point, UIParent, db[name].Point, db[name].X, db[name].Y)
 	else
