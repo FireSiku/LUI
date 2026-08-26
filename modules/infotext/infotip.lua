@@ -205,14 +205,17 @@ end
 function element:ApplyBackdropColors()
 	local isModded = (modTooltip and modTooltip:IsEnabled()) and true or false
 	local colorDB = (isModded) and modTooltip.db.profile.Colors
+	local bgR, bgG, bgB, bgA = GameTooltip.NineSlice:GetCenterColor()
+	local borderR, borderG, borderB, borderA
+	if isModded then
+		borderR, borderG, borderB, borderA = colorDB.Border.r, colorDB.Border.g, colorDB.Border.b, colorDB.Border.a
+	else
+		borderR, borderG, borderB, borderA = GameTooltip.NineSlice:GetBorderColor()
+	end
+
 	for _, infotip in pairs(infotipStorage) do
-		if isModded then
-			infotip:SetBackdropColor(colorDB.Background.r, colorDB.Background.g, colorDB.Background.b)
-			infotip:SetBackdropBorderColor(colorDB.Border.r, colorDB.Border.g, colorDB.Border.b)
-		else
-			infotip:SetBackdropColor(GameTooltip.NineSlice:GetCenterColor())
-			infotip:SetBackdropBorderColor(GameTooltip.NineSlice:GetBorderColor())
-		end
+		infotip.NineSlice:SetCenterColor(bgR, bgG, bgB, bgA)
+		infotip.NineSlice:SetBorderColor(borderR, borderG, borderB, borderA)
 	end
 end
 
