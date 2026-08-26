@@ -361,7 +361,7 @@ function element.OnEnter(frame_)
 end
 
 function element.OnLeave(frame_)
-	if not infotip:IsMouseOver() then
+	if infotip and not infotip:IsMouseOver() then
 		infotip:Hide()
 		onBlock = false
 	end
