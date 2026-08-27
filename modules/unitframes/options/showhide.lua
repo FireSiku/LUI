@@ -20,6 +20,7 @@ local UnregisterUnitWatch = _G.UnregisterUnitWatch
 
 local preview = {
 	active = nil,
+	castbarUnit = nil,
 	frames = {},
 	containers = {},
 	registeredNames = {},
@@ -273,6 +274,31 @@ local function ShowGroup(group)
 	end
 end
 
+local function ApplyCastbarPreview(unit)
+	local db = module.db.profile[unit]
+	if not db or not db.Castbar then return end
+
+	for name, registeredUnit in pairs(preview.registeredNames) do
+		if registeredUnit == unit then
+			local frame = _G[name]
+			if frame and frame.LUIPreviewReady then
+				module.funcs.Castbar(frame, frame.LUIStyleUnit or unit, db)
+
+				local castbar = frame.Castbar
+				if castbar then
+					castbar:SetMinMaxValues(0, 10)
+					castbar:SetValue(6.5)
+					castbar.Text:SetText("Ritual of Awakening")
+					castbar.Time:SetText("6.5 / 10.0")
+					castbar.Icon:SetTexture(C_Spell.GetSpellTexture(116))
+					castbar.Shield:SetAlpha(1)
+					castbar:Show()
+				end
+			end
+		end
+	end
+end
+
 function module:StopUnitframePreview(silent)
 	if InCombatLockdown() then
 		if not silent then LUI:Print("Unitframe preview can only be changed outside combat.") end
@@ -291,6 +317,7 @@ function module:StopUnitframePreview(silent)
 	for frame in pairs(preview.hiddenRealFrames) do frame:Show() end
 	wipe(preview.hiddenRealFrames)
 	preview.active = nil
+	preview.castbarUnit = nil
 	return true
 end
 
@@ -300,7 +327,9 @@ function module:ShowUnitframePreview(selection)
 		return
 	end
 
+	local castbarUnit = preview.castbarUnit
 	self:StopUnitframePreview(true)
+	preview.castbarUnit = castbarUnit
 	preview.active = selection
 
 	if selection == "all" then
@@ -313,6 +342,20 @@ function module:ShowUnitframePreview(selection)
 	else
 		ShowSingle(selection)
 	end
+
+	if preview.castbarUnit then
+		ApplyCastbarPreview(preview.castbarUnit)
+	end
+end
+
+function module:ShowCastbarPreview(unit)
+	if InCombatLockdown() then
+		LUI:Print("Cast bar preview is unavailable during combat.")
+		return
+	end
+
+	preview.castbarUnit = unit
+	self:ShowUnitframePreview(unit)
 end
 
 function module:ToggleUnitframePreview(selection)

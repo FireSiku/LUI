@@ -27,6 +27,21 @@ local specialPowerColors = {
 	["POWER_TYPE_PYRITE"] = {0.60, 0.09, 0.17},
 }
 
+local function GetLegacyClassPowerColor(powerType)
+	local colors = module.db.profile.Colors
+	if powerType == "COMBO_POINTS" then
+		return colors.ComboPoints[1]
+	elseif powerType == "HOLY_POWER" then
+		return colors.HolyPowerBar[1]
+	elseif powerType == "CHI" then
+		return colors.ChiBar[1]
+	elseif powerType == "ARCANE_CHARGES" or powerType == "ICICLES" then
+		return colors.ArcaneChargesBar[1]
+	elseif powerType == "SOUL_SHARDS" then
+		return colors.WarlockBar.Shard1
+	end
+end
+
 local function GetCompatibleColor(color)
 	if not color then return end
 
@@ -55,7 +70,7 @@ end
 module.colors = setmetatable({
 	power = setmetatable({}, {
 		__index = function(t, k)
-			return GetCompatibleColor(specialPowerColors[k] or module.db.profile.Colors.Power[k] or oUF.colors.power[k])
+			return GetCompatibleColor(specialPowerColors[k] or GetLegacyClassPowerColor(k) or module.db.profile.Colors.Power[k] or oUF.colors.power[k])
 		end
 	}),
 	class = setmetatable({}, {
@@ -143,19 +158,8 @@ local function UpdateColors()
 	end
 	local classPower = oUF_LUI_player.ClassPower
 	if classPower then
-		local r, g, b
-		if LUI.MONK then r, g, b = unpack(module.colors.chibar[1])
-		elseif LUI.PALADIN then r, g, b = unpack(module.colors.holypowerbar[1])
-		elseif LUI.MAGE then r, g, b = unpack(module.colors.arcanechargesbar[1])
-		elseif LUI.WARLOCK then r, g, b = unpack(module.colors.warlockbar.Shard1)
-		elseif LUI.ROGUE then r, g, b = unpack(module.colors.combopoints[1])
-		elseif LUI.DRUID then r, g, b = unpack(module.colors.combopoints[1])
-		end
-		
-		classPower:SetBackdropColor(r * 0.4, g * 0.4, b * 0.4)
-		for i = 1, classPower.MaxCount do
-			classPower[i]:SetVertexColor(r, g, b)
-		end
+		if classPower.UpdateBackdropColor then classPower:UpdateBackdropColor() end
+		if classPower.ForceUpdate then classPower:ForceUpdate() end
 	end
 	for k, obj in pairs(oUF.objects) do
 		obj:UpdateAllElements('refreshUnit')

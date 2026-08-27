@@ -50,6 +50,31 @@ local function GetPrimaryPower(_, unit)
 	return UnitPowerType(unit), 0
 end
 
+-- The "By Class" option uses class colors for players and power-type colors
+-- for NPCs. oUF exposes Power.UpdateColor specifically for layout overrides,
+-- so this keeps the distinction inside the supported element color path.
+local function UpdatePowerClassOrType(self, event, unit)
+	if self.__unit ~= unit then return end
+
+	local power = self.Power
+	local color
+	if UnitIsPlayer(unit) or UnitInPartyIsAI(unit) then
+		color = GetUnitClassColor(unit)
+	else
+		local powerType, powerToken = UnitPowerType(unit)
+		color = self.colors.power[powerToken]
+			or self.colors.power[powerType]
+			or self.colors.power.MANA
+	end
+
+	if color then
+		power:SetStatusBarColor(color:GetRGB())
+	end
+	if power.PostUpdateColor then
+		power:PostUpdateColor(unit, color)
+	end
+end
+
 local function BarInterpolation(enabled)
 	return enabled and Enum.StatusBarInterpolation.ExponentialEaseOut
 		or Enum.StatusBarInterpolation.Immediate
@@ -63,14 +88,10 @@ CastbarSecondsFormatter:SetMillisecondsThreshold(60)
 local ALT_POWER_BAR_PAIR_DISPLAY_INFO = _G.ALT_POWER_BAR_PAIR_DISPLAY_INFO
 local ADDITIONAL_POWER_BAR_INDEX = _G.ADDITIONAL_POWER_BAR_INDEX
 local MAX_TOTEMS = _G.MAX_TOTEMS
+local MAX_CLASS_POWER_POINTS = 10
 
-local EVOKER_DPS_POWER_NEXUS_NODE = 93276
-local EVOKER_AUG_POWER_NEXUS_NODE = 93201
-local EVOKER_HEAL_POWER_NEXUS_NODE = 93249
-local MONK_ASCENSION_NODE = 101037
-local ROGUE_SECRET_STRATEGEM_NODE = 90722
-local ROGUE_DEEPER_STRATAGEM_NODE = 90750
-local ROGUE_DEEPER_STRATAGEM_ENTRY = 112642
+local supportsClassPower = LUI.DEMONHUNTER or LUI.DRUID or LUI.EVOKER or LUI.HUNTER or LUI.MAGE
+	or LUI.MONK or LUI.PALADIN or LUI.ROGUE or LUI.SHAMAN or LUI.WARLOCK
 
 ------------------------------------------------------------------------
 --	Textures and Medias
@@ -256,19 +277,6 @@ function LUI:DebugTalents()
 	end
 end
 
-function module:GetTalentRank(nodeId, entryId)
-	local configId = C_ClassTalents.GetActiveConfigID()
-	if not configId then return false, 0 end
-	local nodeInfo = C_Traits.GetNodeInfo(configId, nodeId)
-	if not nodeInfo then return false, 0 end
-	if #nodeInfo.entryIDs > 1 then
-		if entryId and nodeInfo.activeEntry and nodeInfo.activeEntry.entryID ~= entryId then
-			return false, 0
-		end
-	end
-	return (nodeInfo.activeRank > 0), nodeInfo.activeRank
-end
-
 local function GetUnitFrameTooltipUnit(self)
 	local unit = self:GetAttribute("unit")
 	if type(unit) == "string" and not issecretvalue(unit) then
@@ -418,10 +426,11 @@ local function PostUpdateHealthColor(health, unit, color)
 		return
 	end
 
+	local useProfileColor = health.color == "Individual" and color == nil
 	local r, g, b
 	if color then
 		r, g, b = color:GetRGB()
-	elseif health.color == "Individual" then
+	elseif useProfileColor then
 		r, g, b = health.colorIndividual.r, health.colorIndividual.g, health.colorIndividual.b
 		health:SetStatusBarColor(r, g, b)
 	else
@@ -432,7 +441,9 @@ local function PostUpdateHealthColor(health, unit, color)
 	-- vertex-color API accepts those values directly, but Lua arithmetic does not.
 	-- Preserve LUI's legacy multiplier/invert behavior only for its own fixed
 	-- Individual color, whose components come from the profile and are not secret.
-	if health.color == "Individual" then
+	local baseAlpha = health.bg.LUIBaseAlpha or 1
+	if useProfileColor then
+		health.bg:SetAlpha(baseAlpha)
 		local mu = health.bg.multiplier or 1
 		if health.bg.invert == true then
 			health.bg:SetVertexColor(r + (1-r) * mu, g + (1-g) * mu, b + (1-b) * mu)
@@ -441,6 +452,7 @@ local function PostUpdateHealthColor(health, unit, color)
 		end
 	else
 		health.bg:SetVertexColor(r, g, b)
+		health.bg:SetAlpha(baseAlpha * (health.bg.multiplier or 1))
 	end
 
 	SetHealthTextColor(health, health.value, unit)
@@ -582,11 +594,7 @@ local function PostUpdatePowerColor(power, unit)
 		end
 	else
 		power.bg:SetVertexColor(r, g, b)
-		if power.bg.invert == true then
-			power.bg:SetAlpha(baseAlpha)
-		else
-			power.bg:SetAlpha(baseAlpha * (power.bg.multiplier or 1))
-		end
+		power.bg:SetAlpha(baseAlpha * (power.bg.multiplier or 1))
 	end
 
 	SetPowerTextColor(power, power.value, unit)
@@ -1221,6 +1229,7 @@ module.funcs = {
 		
 
 		self.Health.bg:SetTexture(Media:Fetch("statusbar", oufdb.HealthBar.TextureBG))
+		self.Health.bg.LUIBaseAlpha = oufdb.HealthBar.BGAlpha
 		self.Health.bg:SetAlpha(oufdb.HealthBar.BGAlpha)
 		self.Health.bg.multiplier = oufdb.HealthBar.BGMultiplier
 		self.Health.bg.invert = oufdb.HealthBar.BGInvert
@@ -1286,6 +1295,7 @@ module.funcs = {
 
 		local colorMode = oufdb.PowerBar.Color
 		self.Power.color = colorMode
+		self.Power.UpdateColor = colorMode == "By Class" and UpdatePowerClassOrType or nil
 		self.Power.colorIndividual = oufdb.PowerBar.IndividualColor
 		self.Power.colorTapping = false
 		self.Power.colorDisconnected = false
@@ -1295,8 +1305,8 @@ module.funcs = {
 		self.Power.colorPower = colorMode == "By Type"
 		self.Power.colorPowerSmooth = false
 		self.Power.colorClass = colorMode == "By Class"
-		self.Power.colorClassNPC = colorMode == "By Class"
-		self.Power.colorClassPet = colorMode == "By Class"
+		self.Power.colorClassNPC = false
+		self.Power.colorClassPet = false
 		self.Power.displayAltPower = true
 		self.Power.displayAltPowerOnly = false
 		self.Power.GetDisplayPower = GetPrimaryPower
@@ -1729,60 +1739,28 @@ module.funcs = {
 		end
 	end,
 	ClassPower = function(self, unit, oufdb)
-		local BASE_COUNT = {
-			MAGE = 4,
-			MONK = 5,
-			PALADIN = 5,
-			ROGUE = 5,
-			WARLOCK = 5,
-			DRUID = 5,
-			EVOKER = 5,
-			DEFAULT = 5,
-		}
-		-- The maximum of a ressource a given class can have
-		local MAX_COUNT = {
-			MAGE = 4,
-			MONK = 6,
-			PALADIN = 5,
-			ROGUE = 7,
-			WARLOCK = 5,
-			DRUID = 5,
-			EVOKER = 6,
-			DEFAULT = 5,
-		}
-		local r, g, b
-		if LUI.MONK then r, g, b = unpack(module.colors.chibar[1])
-		elseif LUI.PALADIN then r, g, b = unpack(module.colors.holypowerbar[1])
-		elseif LUI.MAGE then r, g, b = unpack(module.colors.arcanechargesbar[1])
-		elseif LUI.WARLOCK then r, g, b = unpack(module.colors.warlockbar.Shard1)
-		else r, g, b = unpack(module.colors.combopoints[1])
-		end
-		
 		local classPower = self.ClassPower
 		if not classPower then
 			classPower = CreateFrame("Frame", nil, self, "BackdropTemplate")
-			-- classPower:SetFrameLevel(6)
 			classPower:SetFrameStrata("BACKGROUND")
 			classPower:SetBackdrop({
 				bgFile = "Interface/Tooltips/UI-Tooltip-Background",
 				edgeFile = glowTex, tile = false, tileSize = 0, edgeSize = 1,
 			})
-			classPower:SetBackdropColor(r * 0.35, g * 0.35, b * 0.35)
 			classPower:SetBackdropBorderColor(0, 0, 0)
-			classPower.bg = classPower:CreateTexture(nil, "BACKGROUND")
-			classPower.bg:SetTexture(Media:Fetch("statusbar", oufdb.ClassPowerBar.Texture))
-
 			classPower.multiplier = 0.35
-			classPower.Count = BASE_COUNT[LUI.playerClass] or BASE_COUNT.DEFAULT
-			classPower.MaxCount = MAX_COUNT[LUI.playerClass] or MAX_COUNT.DEFAULT
-
-			for i = 1, classPower.MaxCount do -- Always create frames for the max possible
-				classPower[i] = CreateFrame("StatusBar", nil, classPower, "BackdropTemplate")
-				classPower[i]:SetBackdrop(backdrop)
-				classPower[i]:SetBackdropColor(0.08, 0.08, 0.08)
-			end
-
+			classPower.Count = 1
 			self.ClassPower = classPower
+		end
+
+		classPower.MaxCount = MAX_CLASS_POWER_POINTS
+		for i = #classPower + 1, classPower.MaxCount do
+			local classPoint = CreateFrame("StatusBar", nil, classPower, "BackdropTemplate")
+			classPoint:SetBackdrop(backdrop)
+			classPoint:SetBackdropColor(0.08, 0.08, 0.08)
+			classPoint:SetMinMaxValues(0, 1)
+			classPoint:SetValue(0)
+			classPower[i] = classPoint
 		end
 
 		local x = oufdb.ClassPowerBar.Lock and 0 or oufdb.ClassPowerBar.X
@@ -1792,58 +1770,43 @@ module.funcs = {
 		classPower:SetWidth(oufdb.ClassPowerBar.Width)
 		classPower:ClearAllPoints()
 		classPower:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
-	
-		local function checkPowers(event, level)
-			local pLevel = (event == "UNIT_LEVEL") and tonumber(level) or UnitLevel("player")
-			if issecretvalue(pLevel) then pLevel = nil end
-			local count = BASE_COUNT[LUI.playerClass]
-			if LUI.EVOKER then 
-				if module:GetTalentRank(EVOKER_DPS_POWER_NEXUS_NODE) then
-					count = 6
-				elseif module:GetTalentRank(EVOKER_AUG_POWER_NEXUS_NODE) then
-					count = 6
-				elseif module:GetTalentRank(EVOKER_HEAL_POWER_NEXUS_NODE) then
-					count = 6
-				end
-			elseif LUI.MONK and module:GetTalentRank(MONK_ASCENSION_NODE) then
-				count = 6
-			elseif LUI.ROGUE then
-				if module:GetTalentRank(ROGUE_SECRET_STRATEGEM_NODE) then
-					count = count + 1
-				end
-				if module:GetTalentRank(ROGUE_DEEPER_STRATAGEM_NODE, ROGUE_DEEPER_STRATAGEM_ENTRY) then
-					count = count + 1
-				end
-			end
-			classPower.Count = count
 
-			for i = 1, classPower.MaxCount do
-				local classPoint = classPower[i] ---@type StatusBar
-				if oufdb.ClassPowerBar.Texture == "Empty" then
-					classPoint:GetStatusBarTexture():SetVertexColor(r, g, b)
-				else
-					classPoint:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.ClassPowerBar.Texture))
-					classPoint:GetStatusBarTexture():SetVertexColor(r, g, b)
-				end
-				classPoint:SetSize(((oufdb.ClassPowerBar.Width - 2*oufdb.ClassPowerBar.Padding) / classPower.Count), oufdb.ClassPowerBar.Height)
+		local function UpdateClassPowerLayout(element, count)
+			count = math.max(1, math.min(count or element.Count or 1, element.MaxCount))
+			element.Count = count
+			local padding = oufdb.ClassPowerBar.Padding
+			local pointWidth = math.max(1, (oufdb.ClassPowerBar.Width - (count - 1) * padding) / count)
+
+			for i = 1, element.MaxCount do
+				local classPoint = element[i] ---@type StatusBar
+				classPoint:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.ClassPowerBar.Texture))
+				classPoint:SetSize(pointWidth, oufdb.ClassPowerBar.Height)
 				classPoint:ClearAllPoints()
 				if i == 1 then
-					classPoint:SetPoint("LEFT", classPower, "LEFT", 0, 0)
+					classPoint:SetPoint("LEFT", element, "LEFT", 0, 0)
 				else
-					classPoint:SetPoint("LEFT", classPower[i-1], "RIGHT", oufdb.ClassPowerBar.Padding, 0)
+					classPoint:SetPoint("LEFT", element[i-1], "RIGHT", padding, 0)
 				end
-				if i > classPower.Count then
-					classPoint:Hide()
-				end
+				classPoint:SetShown(i <= count)
 			end
 		end
-		checkPowers()
 
-		module:RegisterEvent("UNIT_LEVEL", checkPowers)
-		module:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", checkPowers)
-		module:RegisterEvent("PLAYER_TALENT_UPDATE", checkPowers)
-		module:RegisterEvent("TRAIT_CONFIG_UPDATED", checkPowers)
-		classPower.UpdateTexture = checkPowers
+		function classPower:UpdateBackdropColor(color)
+			color = color or self.LUIColor or module.colors.class[LUI.playerClass]
+			self.LUIColor = color
+			local r, g, b = color:GetRGB()
+			self:SetBackdropColor(r * self.multiplier, g * self.multiplier, b * self.multiplier)
+		end
+
+		classPower.UpdateTexture = UpdateClassPowerLayout
+		classPower.PostUpdate = function(element, current, max, hasCurrentChanged, hasMaxChanged)
+			if max and max > 0 and (hasMaxChanged or element.Count ~= max) then
+				element:UpdateTexture(max)
+			end
+		end
+		classPower.PostUpdateColor = function(element, color)
+			if color then element:UpdateBackdropColor(color) end
+		end
 
 		function self.ClassPower.PostVisibility(element, enabled)
 			if enabled then
@@ -1852,7 +1815,10 @@ module.funcs = {
 				self.ClassPower:Hide()
 			end
 		end
-		
+
+		classPower:UpdateBackdropColor()
+		classPower:UpdateTexture(classPower.Count)
+		if classPower.ForceUpdate then classPower:ForceUpdate() end
 	end,
 	AlternativePower = function(self, unit, oufdb)
 		if not self.AlternativePower then
@@ -2275,7 +2241,7 @@ module.funcs = {
 				castbar.Icon = castbar:CreateTexture(nil, "ARTWORK")
 				castbar.Icon:SetHeight(20)
 				castbar.Icon:SetWidth(20)
-				if unit == unit:match("arena%d") then
+				if unit:match("^arena%d*$") then
 					castbar.Icon:SetPoint("RIGHT", 30, 0)
 				else
 					castbar.Icon:SetPoint("LEFT", -30, 0)
@@ -2308,7 +2274,7 @@ module.funcs = {
 			castbar:SetPoint(oufdb.Castbar.General.Point, UIParent, oufdb.Castbar.General.Point, oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
 		elseif unit == "focus" or unit == "pet" then
 			castbar:SetPoint("TOP", self, "BOTTOM", oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
-		elseif unit == unit:match("arena%d") then
+		elseif unit:match("^arena%d*$") then
 			castbar:SetPoint("RIGHT", self, "LEFT", oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
 		else
 			castbar:SetPoint("LEFT", self, "RIGHT", oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
@@ -2390,6 +2356,14 @@ module.funcs = {
 		castbar.Text:SetFont(Media:Fetch("font", oufdb.Castbar.NameText.Font), oufdb.Castbar.NameText.Size)
 		castbar.Text:ClearAllPoints()
 		castbar.Text:SetPoint("LEFT", castbar, "LEFT", oufdb.Castbar.NameText.OffsetX, oufdb.Castbar.NameText.OffsetY)
+		if oufdb.Castbar.Shield.Text == true and oufdb.Castbar.General.Shield == true and oufdb.Castbar.Shield.Enable == true then
+			castbar.Text:SetPoint("RIGHT", castbar.Shield.Label, "LEFT", -6, oufdb.Castbar.NameText.OffsetY)
+		elseif oufdb.Castbar.TimeText.Enable == true then
+			castbar.Text:SetPoint("RIGHT", castbar.Time, "LEFT", -6, oufdb.Castbar.NameText.OffsetY)
+		else
+			castbar.Text:SetPoint("RIGHT", castbar, "RIGHT", -5, oufdb.Castbar.NameText.OffsetY)
+		end
+		castbar.Text:SetWordWrap(false)
 		castbar.Text:SetTextColor(oufdb.Castbar.Colors.Name.r, oufdb.Castbar.Colors.Name.g, oufdb.Castbar.Colors.Name.b)
 
 		if oufdb.Castbar.NameText.Enable == true then
@@ -2705,24 +2679,17 @@ local function SetStyle(self, unit, isSingle)
 
 	if unit == "player" then
 		
-		if LUI.DEATHKNIGHT then
-			if oufdb.RunesBar.Enable then
-				module.funcs.Runes(self, unit, oufdb)
-			end
-		elseif LUI.DRUID then
-			if oufdb.AdditionalPowerBar.Enable then module.funcs.AdditionalPower(self, unit, oufdb) end
-			if oufdb.ClassPowerBar.Enable then module.funcs.ClassPower(self, unit, oufdb) end
-		elseif LUI.PALADIN or LUI.MONK or LUI.ROGUE or LUI.WARLOCK then
-			if oufdb.ClassPowerBar.Enable then module.funcs.ClassPower(self, unit, oufdb) end
-		elseif LUI.SHAMAN then
-			if oufdb.AdditionalPowerBar.Enable then module.funcs.AdditionalPower(self, unit, oufdb) end
-			if oufdb.TotemsBar.Enable then module.funcs.Totems(self, unit, oufdb) end
-		elseif LUI.MAGE then
-			if oufdb.ClassPowerBar.Enable then module.funcs.ClassPower(self, unit, oufdb) end
-		elseif LUI.EVOKER then
-			if oufdb.ClassPowerBar.Enable then module.funcs.ClassPower(self, unit, oufdb) end
-		elseif LUI.PRIEST then
-			if oufdb.AdditionalPowerBar.Enable then module.funcs.AdditionalPower(self, unit, oufdb) end
+		if LUI.DEATHKNIGHT and oufdb.RunesBar.Enable then
+			module.funcs.Runes(self, unit, oufdb)
+		end
+		if supportsClassPower and oufdb.ClassPowerBar.Enable then
+			module.funcs.ClassPower(self, unit, oufdb)
+		end
+		if (LUI.DRUID or LUI.PRIEST or LUI.SHAMAN) and oufdb.AdditionalPowerBar.Enable then
+			module.funcs.AdditionalPower(self, unit, oufdb)
+		end
+		if LUI.SHAMAN and oufdb.TotemsBar.Enable then
+			module.funcs.Totems(self, unit, oufdb)
 		end
 	end
 	

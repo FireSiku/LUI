@@ -150,10 +150,35 @@ end
 
 -- Get a unit token out of a tooltip frame for use in many Unit functions.
 
---- Get a unit token out of a tooltip frame for use in many Unit functions. Returns "mouseover" if the unit is secret.
+local function GetTooltipOwnerUnit(tooltip)
+	local owner = tooltip and tooltip.GetOwner and tooltip:GetOwner()
+
+	while owner do
+		local unit
+		if owner.GetAttribute then
+			unit = owner:GetAttribute("unit")
+		end
+		if type(unit) == "string" and not issecretvalue(unit) then
+			return unit
+		end
+
+		unit = owner.__unit
+		if type(unit) == "string" and not issecretvalue(unit) then
+			return unit
+		end
+
+		owner = owner.GetParent and owner:GetParent()
+	end
+end
+
+--- Get a unit token out of a tooltip frame for use in many Unit functions.
 ---@param data TooltipData
+---@param tooltip GameTooltip?
 ---@return string?
-function module:GetTooltipUnit(data)
+function module:GetTooltipUnit(data, tooltip)
+	local ownerUnit = GetTooltipOwnerUnit(tooltip)
+	if ownerUnit then return ownerUnit end
+
 	if not data then return end
 	local guid = data.guid
 	if not issecretvalue(guid) and guid then
@@ -308,7 +333,7 @@ function module:SetBorderColor(frame)
 	if db.Colors.Border.t == "Class"
 		and not issecretvalue(tooltipType)
 		and tooltipType == Enum.TooltipDataType.Unit then
-		local unit = module:GetTooltipUnit(tooltipData)
+		local unit = module:GetTooltipUnit(tooltipData, frame)
 		if unit then
 			local playerUnit = UnitIsPlayer(unit)
 			local reaction = UnitReaction(unit, "player")
@@ -349,7 +374,7 @@ module.RefreshColors = module.Refresh
 -- ####################################################################################################################
 
 function module.OnStatusBarValueChanged(frame, value_)
-	local unit = module:GetTooltipUnit(GameTooltip:GetTooltipData())
+	local unit = module:GetTooltipUnit(GameTooltip:GetTooltipData(), GameTooltip)
 	if not unit then return end
 
 	if not frame.text then
@@ -474,7 +499,7 @@ function module.OnGameTooltipSetUnit(frame, data)
 		return frame:Hide()
 	end
 
-	local unit = module:GetTooltipUnit(data)
+	local unit = module:GetTooltipUnit(data, frame)
 	-- Blizzard can populate a valid tooltip even when its protected GUID cannot
 	-- be resolved back to a public unit token. Keep that native tooltip intact.
 	if not unit then return end

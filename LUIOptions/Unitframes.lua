@@ -36,7 +36,8 @@ local relativeUnits = {
     maintanktargettarget = true,
 }
 
-local supportsClassPower = LUI.DRUID or LUI.PALADIN or LUI.MONK or LUI.ROGUE or LUI.WARLOCK or LUI.MAGE or LUI.EVOKER
+local supportsClassPower = LUI.DEMONHUNTER or LUI.DRUID or LUI.EVOKER or LUI.HUNTER or LUI.MAGE
+    or LUI.MONK or LUI.PALADIN or LUI.ROGUE or LUI.SHAMAN or LUI.WARLOCK
 local supportsAdditionalPower = LUI.DRUID or LUI.PRIEST or LUI.SHAMAN
 
 -- ####################################################################################################################
@@ -128,7 +129,7 @@ local function GenerateBarGroup(unit, name, colorTypes, order)
         Y = Opt:InputNumber({name = "Y Value"}),
         Texture = Opt:MediaStatusbar({name = "Bar Texture"}),
         TextureBG = Opt:MediaStatusbar({name = "Background Texture"}),
-        Smooth = Opt:Toggle({name = "Smooth Gradient"}),
+        Smooth = Opt:Toggle({name = "Smooth Bar Animation"}),
         BGAlpha = Opt:Slider({name = "Background Alpha", values = Opt.PercentValues}),
         BGMultiplier = Opt:Slider({name = "Background Multiplier", values = Opt.PercentValues, onlyIf = (dbBar.BGMultiplier ~= nil)}),
         BGInvert = Opt:Toggle({name = "Invert Background", width = "full", onlyIf = (dbBar.BGInvert ~= nil)}),
@@ -263,6 +264,12 @@ local function GenerateCastbarGroup(unit, order)
 
     local group = Opt:Group({name = "Cast Bar", order = order, db = dbCast.General, args = {
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
+        Preview = Opt:Execute({
+            name = "Preview Cast Bar",
+            desc = "Show a shielded test cast with a long spell name outside combat.",
+            width = "full",
+            func = function() module:ShowCastbarPreview(unit) end,
+        }),
         Width = Opt:InputNumber({name = "Width"}),
         Height = Opt:InputNumber({name = "Height"}),
         X = Opt:InputNumber({name = "X Value"}),
