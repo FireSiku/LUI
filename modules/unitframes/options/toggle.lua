@@ -27,6 +27,9 @@ local UnitLevel = _G.UnitLevel
 local IsInRaid = _G.IsInRaid
 local SetCVar = _G.SetCVar
 
+local supportsClassPower = LUI.DEMONHUNTER or LUI.DRUID or LUI.EVOKER or LUI.HUNTER or LUI.MAGE
+	or LUI.MONK or LUI.PALADIN or LUI.ROGUE or LUI.SHAMAN or LUI.WARLOCK
+
 local iconlist = {
 	PvP = {"PvPIndicator"},
 	Combat = {"CombatIndicator"},
@@ -988,7 +991,7 @@ module.ApplySettings = function(unit, force)
 				end
 
 				-- ClassPower
-				if LUI.DRUID or LUI.PALADIN or LUI.WARLOCK or LUI.MONK or LUI.ROGUE or LUI.MAGE or LUI.EVOKER then
+				if supportsClassPower then
 					module.funcs.ClassPower(frame, styleUnit, module.db.profile.player)
 					if dbUnit.ClassPowerBar.Enable then
 						frame:EnableElement("ClassPower")
