@@ -652,7 +652,7 @@ module.ToggleUnit = setmetatable({
 					end
 				end
 			else
-				local tank = oUF:SpawnHeader("oUF_LUI_maintank", nil, nil,
+				local tank = oUF:SpawnHeader("oUF_LUI_maintank", nil,
 					"showRaid", true,
 					"groupFilter", "MAINTANK",
 					"template", "oUF_LUI_maintank",
