@@ -16,7 +16,6 @@ local element = module:NewElement("Guild", "AceEvent-3.0")
 local format, strsplit, max = format, string.split, math.max
 local PanelTemplates_GetSelectedTab = _G.PanelTemplates_GetSelectedTab
 local SetGuildRosterSelection = _G.SetGuildRosterSelection
-local GetGuildRosterMOTD = _G.GetGuildRosterMOTD
 local GetNumGuildMembers = _G.GetNumGuildMembers
 local GetGuildRosterInfo = _G.GetGuildRosterInfo
 local CanEditOfficerNote = C_GuildInfo.CanEditOfficerNote
@@ -49,9 +48,9 @@ local GAP = 10
 
 -- locals
 --local guildEntries = {}
----@TODO: Allow displaying totalGuild in infotext
 local totalGuild = 0 --luacheck: ignore
 local onlineGuild = 0
+local guildMOTD = ""
 local infotip
 
 -- ####################################################################################################################
@@ -118,6 +117,11 @@ function element:UpdateInfotip()
 	if infotip and infotip:IsShown() then
 		infotip:UpdateTooltip()
 	end
+end
+
+function element:GuildMOTD(_, motdText)
+	guildMOTD = motdText or ""
+	element:UpdateInfotip()
 end
 
 -- ####################################################################################################################
@@ -251,10 +255,8 @@ function element.OnEnter(frame_)
 		-- Show MOTD
 		local motd = element:CreateMOTD()
 		local motdPrefix = CreateColor(1, 1, 1):WrapTextInColorCode(MOTD_COLON)
-		motd.name:SetText(format("%s %s", motdPrefix, GetGuildRosterMOTD()))
-		--maxWidth = motd.name:GetStringWidth() + GAP * 2
+		motd.name:SetText(format("%s %s", motdPrefix, guildMOTD))
 		maxHeight = motd:GetHeight() + infotip.sep:GetHeight() + GAP * 2
-
 		local classIconWidth, nameColumnWidth, levelColumnWidth = 0, 0, 0
 		local zoneColumnWidth, noteColumnWidth, rankColumnWidth = 0, 0, 0
 		
@@ -369,9 +371,9 @@ end
 -- ####################################################################################################################
 
 function element:OnCreate()
+	element:RegisterEvent("GUILD_MOTD", "GuildMOTD")
 	ShowGuild()
 	element:AddUpdate(ShowGuild, GUILD_UPDATE_TIME)
-	element:RegisterEvent("GUILD_MOTD", "UpdateInfotip")
 	element:RegisterEvent("GUILD_ROSTER_UPDATE", "GuildRosterUpdate")
 	element:RegisterEvent("PLAYER_GUILD_UPDATE", function(self, unit)
 		if not IsInGuild() then
