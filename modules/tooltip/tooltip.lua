@@ -99,6 +99,9 @@ module.defaults = {
 		X = -150,
 		Y = 0,
 		HealthBar = "LUI_Minimalist",
+		HealthBarHeight = 6,
+		HealthTextX = 0,
+		HealthTextY = 9,
 		BgTexture = "Blizzard Dialog Background Dark",
 		Colors = {
 			Border =     { r = 0.3,  g = 0.3,  b = 0.3,  a = 1, t = "Individual", },
@@ -142,6 +145,8 @@ function module:RevertHealthBar()
 	end
 	health:SetHeight(oldDefault.Health.Height)
 	health:SetStatusBarTexture(oldDefault.Health.StatusBarTexture)
+	health:SetScript("OnValueChanged", oldDefault.Health.OnValueChanged)
+	if health.text then health.text:Hide() end
 end
 
 -- ####################################################################################################################
@@ -297,6 +302,18 @@ function module:SetTooltips()
 end
 
 -- luacheck: globals GameTooltipStatusBar
+local function SetupStatusHealthText(health)
+	if not health.text then
+		health.text = health:CreateFontString(nil, "OVERLAY")
+	end
+
+	local font = db.Fonts.Health
+	health.text:ClearAllPoints()
+	health.text:SetPoint("CENTER", health, "CENTER", db.HealthTextX, db.HealthTextY)
+	health.text:SetFont(Media:Fetch("font", font.Name), font.Size, font.Flag)
+	health.text:Show()
+end
+
 function module:SetStatusHealthBar()
 	local health = GameTooltipStatusBar
 
@@ -309,14 +326,16 @@ function module:SetStatusHealthBar()
 		end
 		oldDefault.Health.Height = health:GetHeight()
 		oldDefault.Health.StatusBarTexture = health:GetStatusBarTexture()
+		oldDefault.Health.OnValueChanged = health:GetScript("OnValueChanged")
 	end
 
 	-- Change the Health bar
 	health:ClearAllPoints()
-	health:SetHeight(6)
+	health:SetHeight(db.HealthBarHeight)
 	health:SetPoint("BOTTOMLEFT", health:GetParent(), "TOPLEFT", 2, 5)
 	health:SetPoint("BOTTOMRIGHT", health:GetParent(), "TOPRIGHT", -2, 5)
 	health:SetStatusBarTexture(Media:Fetch("statusbar", db.HealthBar))
+	SetupStatusHealthText(health)
 
 	-- Add health values.
 	health:SetScript("OnValueChanged", module.OnStatusBarValueChanged)
@@ -373,37 +392,26 @@ module.RefreshColors = module.Refresh
 -- ##### Module Hooks and Scripts #####################################################################################
 -- ####################################################################################################################
 
-function module.OnStatusBarValueChanged(frame, value_)
+function module.OnStatusBarValueChanged(frame)
 	local unit = module:GetTooltipUnit(GameTooltip:GetTooltipData(), GameTooltip)
 	if not unit then return end
 
-	if not frame.text then
-		frame.text = module:SetFontString(frame, nil, "Health", "OVERLAY")
-		frame.text:SetPoint("CENTER", GameTooltipStatusBar, 0, 6)
-		frame.text:Show()
-	end
-
-	if unit then
-		local isGhost = UnitIsGhost(unit)
-		local isDead = UnitIsDead(unit)
-		if issecretvalue(isGhost) or issecretvalue(isDead) then
-			frame.text:SetText("")
-		elseif isGhost then
-			frame.text:SetText(L["Tooltip_Ghost"])
-		elseif isDead then
-			frame.text:SetText(_G.DEAD)
-		else
-			local current, maximum = UnitHealth(unit), UnitHealthMax(unit)
-			if issecretvalue(current) or issecretvalue(maximum) then
-				frame.text:SetText("")
-			else
-				frame.text:SetFormattedText("%s / %s", BreakUpLargeNumbers(current), BreakUpLargeNumbers(maximum))
-			end
-		end
-		frame:Show()
+	local isGhost = UnitIsGhost(unit)
+	local isDead = UnitIsDead(unit)
+	if not issecretvalue(isGhost) and isGhost then
+		frame.text:SetText(L["Tooltip_Ghost"])
+	elseif not issecretvalue(isDead) and isDead then
+		frame.text:SetText(_G.DEAD)
 	else
-		frame:Hide()
+		-- Both BreakUpLargeNumbers and FontString:SetFormattedText accept secret
+		-- values, preserving localized thousands separators for restricted health.
+		frame.text:SetFormattedText(
+			"%s / %s",
+			BreakUpLargeNumbers(UnitHealth(unit)),
+			BreakUpLargeNumbers(UnitHealthMax(unit))
+		)
 	end
+	frame:Show()
 end
 
 function module:OnTooltipShow(frame)
@@ -503,6 +511,10 @@ function module.OnGameTooltipSetUnit(frame, data)
 	-- Blizzard can populate a valid tooltip even when its protected GUID cannot
 	-- be resolved back to a public unit token. Keep that native tooltip intact.
 	if not unit then return end
+
+	-- The status bar value may already be set before OnValueChanged is hooked.
+	-- Refresh its text whenever Blizzard finishes building a unit tooltip.
+	module.OnStatusBarValueChanged(GameTooltipStatusBar)
 
 	local title = UnitPVPName(unit)
 	local name, realm = UnitName(unit)
