@@ -2282,6 +2282,10 @@ module.funcs = {
 
 		castbar.bg:SetTexture(Media:Fetch("statusbar", oufdb.Castbar.General.TextureBG))
 
+		-- Normalize numeric strings saved by older versions of the input control.
+		oufdb.Castbar.Border.Thickness = tonumber(oufdb.Castbar.Border.Thickness) or 4
+		oufdb.Castbar.Shield.Thickness = tonumber(oufdb.Castbar.Shield.Thickness) or 4
+
 		castbar.Backdrop:SetBackdrop({
 			edgeFile = Media:Fetch("border", oufdb.Castbar.Border.Texture),
 			edgeSize = oufdb.Castbar.Border.Thickness,
