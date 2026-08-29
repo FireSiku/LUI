@@ -292,9 +292,9 @@ local function GenerateCastbarGroup(unit, order)
                 dbCast.Border.Texture = value
                 if info.handler.Refresh then info.handler:Refresh() end
             end}),
-        BorderThickness = Opt:InputNumber({name = "Border Thickness", get = function() return dbCast.Border.Thickness end,
+        BorderThickness = Opt:InputNumber({name = "Border Thickness", get = function() return tostring(dbCast.Border.Thickness) end,
             set = function(info, value) -- BorderThickness Set
-                dbCast.Border.Thickness = value
+                dbCast.Border.Thickness = tonumber(value)
                 if info.handler.Refresh then info.handler:Refresh() end
             end}),
         ColorHeader = Opt:Header({name = "Appearance"}),
