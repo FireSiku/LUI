@@ -25,7 +25,6 @@ module.defaults = {
 		X_Offset = 0,
 		Opacity = 100,
 		Scale = 1,
-		ToggleRaidIcon = true,
 		ShowToolTips = false,
 		AutoHide = false,
 	},
