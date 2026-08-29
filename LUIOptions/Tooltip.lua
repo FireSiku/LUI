@@ -23,6 +23,9 @@ local function DisableIfCursorAnchor()
     return db.Cursor
 end
 
+local healthBarHeightValues = {min = 1, max = 64, softMin = 4, softMax = 24, step = 1}
+local healthTextPositionValues = {min = -100, max = 100, softMin = -20, softMax = 20, step = 1}
+
 -- ####################################################################################################################
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
@@ -48,6 +51,10 @@ Tooltip.args = {
     -- Textures
     TextureHeader = Opt:Header({name = L["Textures"]}),
     HealthBar = Opt:MediaStatusbar({name = L["Tooltip_HealthBar_Name"], desc = L["Tooltip_HealthBar_Desc"], width = "double"}),
+    HealthBarHeight = Opt:Slider({name = "Health Bar Height", values = healthBarHeightValues}),
+    Health = Opt:FontMenu({name = "Health Text"}),
+    HealthTextX = Opt:Slider({name = "Health Text X", values = healthTextPositionValues}),
+    HealthTextY = Opt:Slider({name = "Health Text Y", values = healthTextPositionValues}),
     SpacerTwo = Opt:Spacer({}),
     BgTexture = Opt:MediaBackground({name = L["Tooltip_BackgroundTex_Name"], desc = L["BackgroundDesc"], width = "double"}),
 
