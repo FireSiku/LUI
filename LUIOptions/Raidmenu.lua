@@ -43,5 +43,4 @@ RaidMenu.args = {
 	Opacity = Opt:Slider({name = L["Opacity"], desc = L["How far to vertically offset when the MicroMenu is open"], min = 20, max = 100, step = 10, disabled = IsUsingAutoHide}),
 	AutoHide = Opt:Toggle({name = L["Auto-Hide Raid Menu"], desc = L["Wether or not the Raid Menu should hide itself after clicking on a function"], width = "full"}),
 	ShowTooltips = Opt:Toggle({name = L["Show Tooltips"], desc = L["Wether or not to show tooltips for the Raid Menu tools"], width = "full"}),
-	ToggleRaidIcon = Opt:Toggle({name = L["Toggle Raid Icon"], desc = L["Wether of not Raid Target Icons can be removed by applying the icon the target already has"], width = "full"}),
 }
