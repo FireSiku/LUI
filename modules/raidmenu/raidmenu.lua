@@ -17,21 +17,16 @@ local Panels = LUI:GetModule("Panels", true)
 local Micromenu = LUI:GetModule("Micromenu", true) --[[@as LUI.Micromenu]]
 local Media = LibStub("LibSharedMedia-3.0")
 
-local GetRaidTargetIndex = _G.GetRaidTargetIndex
-local GetNumGroupMembers = _G.GetNumGroupMembers
-local SetRaidTargetIcon = _G.SetRaidTargetIcon
 local InCombatLockdown = _G.InCombatLockdown
 local GetLootThreshold = _G.GetLootThreshold
 local SetLootThreshold = _G.SetLootThreshold
 local InitiateRolePoll = _G.InitiateRolePoll
-local ConvertToParty = _G.ConvertToParty
-local ConvertToRaid = _G.ConvertToRaid
 local GetLootMethod = _G.GetLootMethod
 local SetLootMethod = _G.SetLootMethod
-local SetRaidTarget = _G.SetRaidTarget
-local DoReadyCheck = _G.DoReadyCheck
 local IsInRaid = _G.IsInRaid
 local EasyMenu = _G.EasyMenu
+local C_PartyInfo = _G.C_PartyInfo
+local SecureActionButton_ShouldUseOnKeyDown = _G.SecureActionButton_ShouldUseOnKeyDown
 
 -- Frame placeholders
 local RaidMenu_Header, RaidMenu_Parent, RaidMenu_Border, RaidMenu_BG, RaidMenu
@@ -44,22 +39,67 @@ local ConvertRaid, LootMethod, LootThreshold, RoleChecker, ReadyChecker
 local RAIDMENU_NORMAL_TEXTURE = "Interface\\AddOns\\LUI\\media\\templates\\v3\\raidmenu"
 local RAIDMENU_BG_TEXTURE = "Interface\\AddOns\\LUI\\media\\templates\\v3\\raidmenu_bg"
 local RAIDMENU_BORDER_TEXTURE = "Interface\\AddOns\\LUI\\media\\templates\\v3\\raidmenu_border"
+local RAID_MARKER_ICON_TEXTURE = "Interface\\AddOns\\LUI\\media\\textures\\icons\\raidicons.blp"
 LUI.Versions.raidmenu = 2.4
 
 local Y_normal, Y_compact = 107, 101
 local X_normal, X_compact = 0, -50
 local OverlapPreventionMethods = {"AutoHide", "Offset"}
+local WorldMarkerTexCoords = {
+	[1] = {0.25, 0.5, 0.25, 0.5}, -- Square
+	[2] = {0.75, 1, 0, 0.25},     -- Triangle
+	[3] = {0.5, 0.75, 0, 0.25},   -- Diamond
+	[4] = {0.5, 0.75, 0.25, 0.5}, -- Cross
+	[5] = {0, 0.25, 0, 0.25},     -- Star
+	[6] = {0.25, 0.5, 0, 0.25},   -- Circle
+	[7] = {0, 0.25, 0.25, 0.5},   -- Moon
+	[8] = {0.75, 1, 0.25, 0.5},   -- Skull
+}
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
 
-local function MarkTarget(iconId)
-	if db.ToggleRaidIcon then
-		SetRaidTargetIcon("target", iconId)
-	elseif (GetRaidTargetIndex("target") ~= iconId) then
-		SetRaidTarget("target", iconId)
+local function AutoHideRaidMenu(self, button, down)
+	if down == SecureActionButton_ShouldUseOnKeyDown(self) and db.AutoHide and not InCombatLockdown() then
+		Micromenu.clickerLeft:Click()
 	end
+end
+
+local function ConfigureRaidTargetButton(frame, marker)
+	frame:SetMouseClickEnabled(true)
+	frame:RegisterForClicks("AnyUp", "AnyDown")
+	frame:SetAttribute("type1", "raidtarget")
+	frame:SetAttribute("type2", "raidtarget")
+	frame:SetAttribute("unit", "target")
+	frame:SetAttribute("marker1", marker)
+	frame:SetAttribute("marker2", marker)
+	frame:SetAttribute("action1", marker == 0 and "clear" or "set")
+	frame:SetAttribute("action2", "clear")
+	frame:SetScript("PostClick", AutoHideRaidMenu)
+end
+
+local function ConfigureWorldMarkerButton(frame, marker)
+	frame:SetMouseClickEnabled(true)
+	frame:RegisterForClicks("AnyUp", "AnyDown")
+	frame:SetAttribute("type1", "worldmarker")
+	frame:SetAttribute("type2", "worldmarker")
+	frame:SetAttribute("marker1", marker)
+	frame:SetAttribute("marker2", marker)
+	if marker then
+		frame:SetAttribute("action1", "set")
+		frame:SetAttribute("action2", "clear")
+	else
+		frame:SetAttribute("action1", "clear")
+		frame:SetAttribute("action2", "clear")
+	end
+	frame:SetScript("PostClick", AutoHideRaidMenu)
+end
+
+local function UpdateConvertButton()
+	local convertToRaid = not IsInRaid()
+	ConvertRaid:SetText(convertToRaid and "Convert to Raid" or "Convert to Party")
+	ConvertRaid:SetEnabled(C_PartyInfo.AllowedToDoPartyConversion(convertToRaid))
 end
 
 function module:OverlapPrevention(frame, action)
@@ -166,21 +206,11 @@ local function FormatMarker(frame, x, y, r, g, b, id, t1, t2, t3, t4)
 	frame:SetFrameLevel(4)
 	frame:SetPoint("TOPLEFT", RaidMenu_Parent, "TOPLEFT", x, y)
 	frame:SetAlpha(0.6)
-	frame:RegisterForClicks("AnyUp")
 
 	if string.find(frame:GetName(), "WorldMarker") then
-		frame:SetAttribute("type", "worldmarker")
-		frame:SetAttribute("marker", id)
-		if id == 9 then
-			frame:SetAttribute("action", "clear")
-		else
-			frame:SetAttribute("action1", "set")
-			frame:SetAttribute("action2", "clear")
-		end
-
 		local texture = _G[frame:GetName().."MarkerTex"]
 		if not texture then
-			texture = frame:CreateTexture(frame:GetName().."MarkerTex")
+			texture = frame:CreateTexture(frame:GetName().."MarkerTex", "BACKGROUND")
 		end
 		texture:SetPoint("TOPLEFT", frame,"TOPLEFT",0,0)
 		texture:SetSize(width, height)
@@ -192,22 +222,25 @@ local function FormatMarker(frame, x, y, r, g, b, id, t1, t2, t3, t4)
 		else
 			local textureColor = _G[frame:GetName().."TextureColor"]
 			if not textureColor then
-				textureColor = frame:CreateTexture(frame:GetName().."TextureColor")
+				textureColor = frame:CreateTexture(frame:GetName().."TextureColor", "BORDER")
 			end
 			textureColor:SetPoint("TOPLEFT", frame, "TOPLEFT", 4, -4)
 			textureColor:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -4, 4)
 			textureColor:SetColorTexture(r, g, b)
+
+			local iconTexture = _G[frame:GetName().."IconTex"]
+			if not iconTexture then
+				iconTexture = frame:CreateTexture(frame:GetName().."IconTex", "ARTWORK")
+			end
+			local texCoords = WorldMarkerTexCoords[id]
+			iconTexture:SetPoint("TOPLEFT", frame, "TOPLEFT", 4, -4)
+			iconTexture:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -4, 4)
+			iconTexture:SetTexture(RAID_MARKER_ICON_TEXTURE)
+			iconTexture:SetTexCoord(texCoords[1], texCoords[2], texCoords[3], texCoords[4])
 		end
 
 	elseif string.find(frame:GetName(), "RaidIcon") then
 		frame:SetID(id)
-		frame:SetScript("OnClick", function(self)
-			if db.AutoHide then
-				Micromenu.clickerLeft:Click()
-			end
-			MarkTarget(frame:GetID())
-		end)
-
 		local texture = _G[frame:GetName().."MarkerTex"]
 		if not texture then
 			texture = frame:CreateTexture(frame:GetName().."MarkerTex")
@@ -217,12 +250,13 @@ local function FormatMarker(frame, x, y, r, g, b, id, t1, t2, t3, t4)
 		if frame:GetName() == "ClearRaidIcon" then
 			texture:SetTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Up")
 		else
-			texture:SetTexture("Interface\\AddOns\\LUI\\media\\textures\\icons\\raidicons.blp")
+			texture:SetTexture(RAID_MARKER_ICON_TEXTURE)
 			--texture:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
 		end
 		texture:SetTexCoord(t1, t2, t3, t4)
 
 	else
+		frame:RegisterForClicks("AnyUp")
 		if db.Compact then
 			width = 100 + (db.Spacing * 3)
 		else
@@ -266,7 +300,7 @@ local function SizeRaidMenu(compact)
 		FormatMarker(OrangeWorldMarker, 55  + x_spacing,      -50   + y_spacing,     1,   0.5, 0.2, 6) -- 1.00, 0.50, 0.25
 		FormatMarker(SilverWorldMarker, 80  + x_spacing * 2,  -50   + y_spacing,     0.7, 0.7, 0.7, 7) -- 0.67, 0.67, 0.67
 		FormatMarker(WhiteWorldMarker,  105 + x_spacing * 3,  -50   + y_spacing,     1,   1,   1,   8) -- 1.00, 1.00, 1.00
-		FormatMarker(ClearWorldMarkers, 130 + x_spacing * 4,  -37.5 + y_spacing / 2, 0,   0,   0,   9)
+		FormatMarker(ClearWorldMarkers, 130 + x_spacing * 4,  -37.5 + y_spacing / 2, 0,   0,   0)
 		-- Buttons
 		FormatMarker(ReadyChecker,      65 + x_spacing * 2,   -75   + y_spacing * 2)
 		FormatMarker(RoleChecker,       65 + x_spacing * 2,   -100  + y_spacing * 3)
@@ -300,7 +334,7 @@ local function SizeRaidMenu(compact)
 		FormatMarker(OrangeWorldMarker, 180, -210, 1,   0.5, 0.2, 6)
 		FormatMarker(SilverWorldMarker, 110, -245, 0.7, 0.7, 0.7, 7)
 		FormatMarker(WhiteWorldMarker,  145, -245, 1,   1,   1,   8)
-		FormatMarker(ClearWorldMarkers, 180, -245, 0,   0,   0,   9)
+		FormatMarker(ClearWorldMarkers, 180, -245, 0,   0,   0)
 		FormatMarker(ReadyChecker,      105, -50)
 		FormatMarker(RoleChecker,       105, -75)
 		FormatMarker(ConvertRaid,       105, -100)
@@ -342,6 +376,7 @@ function module:SetRaidMenu()
 	RaidMenu_BG:SetBackdropBorderColor(0, 0, 0, 0)
 
 	RaidMenu = LUI:CreateMeAFrame("Frame", "RaidMenu", RaidMenu_Parent, 256, 256, 1, "HIGH", 2, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 0, 0, 1)
+	RaidMenu:SetMouseClickEnabled(true)
 	RaidMenu:SetBackdrop({
 		bgFile = RAIDMENU_NORMAL_TEXTURE,
 		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
@@ -375,15 +410,15 @@ function module:SetRaidMenu()
 	local LootMenuFrame = CreateFrame("Frame", "LootDropDownMenu", RaidMenu_Parent, "UIDropDownMenuTemplate")
 
 	-- Create buttons for Raid Menu
-	SkullRaidIcon = CreateFrame("Button", "SkullRaidIcon", RaidMenu, "MarkerTemplate")
-	CrossRaidIcon = CreateFrame("Button", "CrossRaidIcon", RaidMenu, "MarkerTemplate")
-	SquareRaidIcon = CreateFrame("Button", "SquareRaidIcon", RaidMenu, "MarkerTemplate")
-	MoonRaidIcon = CreateFrame("Button", "MoonRaidIcon", RaidMenu, "MarkerTemplate")
-	TriangleRaidIcon = CreateFrame("Button", "TriangleRaidIcon", RaidMenu, "MarkerTemplate")
-	DiamondRaidIcon = CreateFrame("Button", "DiamondRaidIcon", RaidMenu, "MarkerTemplate")
-	CircleRaidIcon = CreateFrame("Button", "CircleRaidIcon", RaidMenu, "MarkerTemplate")
-	StarRaidIcon = CreateFrame("Button", "StarRaidIcon", RaidMenu, "MarkerTemplate")
-	ClearRaidIcon = CreateFrame("Button", "ClearRaidIcon", RaidMenu, "MarkerTemplate")
+	SkullRaidIcon = CreateFrame("Button", "SkullRaidIcon", RaidMenu, "SecureMarkerTemplate")
+	CrossRaidIcon = CreateFrame("Button", "CrossRaidIcon", RaidMenu, "SecureMarkerTemplate")
+	SquareRaidIcon = CreateFrame("Button", "SquareRaidIcon", RaidMenu, "SecureMarkerTemplate")
+	MoonRaidIcon = CreateFrame("Button", "MoonRaidIcon", RaidMenu, "SecureMarkerTemplate")
+	TriangleRaidIcon = CreateFrame("Button", "TriangleRaidIcon", RaidMenu, "SecureMarkerTemplate")
+	DiamondRaidIcon = CreateFrame("Button", "DiamondRaidIcon", RaidMenu, "SecureMarkerTemplate")
+	CircleRaidIcon = CreateFrame("Button", "CircleRaidIcon", RaidMenu, "SecureMarkerTemplate")
+	StarRaidIcon = CreateFrame("Button", "StarRaidIcon", RaidMenu, "SecureMarkerTemplate")
+	ClearRaidIcon = CreateFrame("Button", "ClearRaidIcon", RaidMenu, "SecureMarkerTemplate")
 	BlueWorldMarker = CreateFrame("Button", "BlueWorldMarker", RaidMenu, "SecureMarkerTemplate")
 	GreenWorldMarker = CreateFrame("Button", "GreenWorldMarker", RaidMenu, "SecureMarkerTemplate")
 	PurpleWorldMarker = CreateFrame("Button", "PurpleWorldMarker", RaidMenu, "SecureMarkerTemplate")
@@ -394,31 +429,40 @@ function module:SetRaidMenu()
 	SilverWorldMarker = CreateFrame("Button", "SilverWorldMarker", RaidMenu, "SecureMarkerTemplate")
 	ClearWorldMarkers = CreateFrame("Button", "ClearWorldMarkers", RaidMenu, "SecureMarkerTemplate")
 
+	ConfigureRaidTargetButton(SkullRaidIcon, 8)
+	ConfigureRaidTargetButton(CrossRaidIcon, 7)
+	ConfigureRaidTargetButton(SquareRaidIcon, 6)
+	ConfigureRaidTargetButton(MoonRaidIcon, 5)
+	ConfigureRaidTargetButton(TriangleRaidIcon, 4)
+	ConfigureRaidTargetButton(DiamondRaidIcon, 3)
+	ConfigureRaidTargetButton(CircleRaidIcon, 2)
+	ConfigureRaidTargetButton(StarRaidIcon, 1)
+	ConfigureRaidTargetButton(ClearRaidIcon, 0)
+	ConfigureWorldMarkerButton(BlueWorldMarker, 1)
+	ConfigureWorldMarkerButton(GreenWorldMarker, 2)
+	ConfigureWorldMarkerButton(PurpleWorldMarker, 3)
+	ConfigureWorldMarkerButton(RedWorldMarker, 4)
+	ConfigureWorldMarkerButton(YellowWorldMarker, 5)
+	ConfigureWorldMarkerButton(OrangeWorldMarker, 6)
+	ConfigureWorldMarkerButton(SilverWorldMarker, 7)
+	ConfigureWorldMarkerButton(WhiteWorldMarker, 8)
+	ConfigureWorldMarkerButton(ClearWorldMarkers)
+
 	ConvertRaid = CreateFrame("Button", "ConvertRaid", RaidMenu, "UIPanelButtonTemplate")
-	if GetNumGroupMembers() > 0 then
-		ConvertRaid:SetText("Convert to Party")
-	else
-		ConvertRaid:SetText("Convert to Raid")
-	end
+	UpdateConvertButton()
 	local monitoredEvents = {"GROUP_ROSTER_UPDATE", "PARTY_LEADER_CHANGED"}
 	-- "PARTY_CONVERTED_TO_RAID",
 	for i = 1, #monitoredEvents do
 		ConvertRaid:RegisterEvent(monitoredEvents[i])
 	end
-	ConvertRaid:SetScript("OnEvent", function(self, event)
-		if GetNumGroupMembers() > 0 then
-			ConvertRaid:SetText("Convert to Party")
-		else
-			ConvertRaid:SetText("Convert to Raid")
-		end
-	end)
+	ConvertRaid:SetScript("OnEvent", UpdateConvertButton)
 
 	ConvertRaid:SetScript("OnEnter", function(self)
 		if db.ShowToolTips then
 			GameTooltip:SetOwner(ConvertRaid, "ANCHOR_BOTTOMLEFT")
 			GameTooltip:SetClampedToScreen(true)
 			GameTooltip:ClearLines()
-			if GetNumGroupMembers() > 0 then
+			if IsInRaid() then
 				GameTooltip:SetText("Convert to Party")
 				GameTooltip:AddLine("Convert your Raid Group into a 5 man party", 204/255,204/255, 204/255, 1)
 				GameTooltip:AddLine("Only works with raid groups of 5 or less members!", 204/255, 204/255, 204/255, 1)
@@ -433,10 +477,10 @@ function module:SetRaidMenu()
 		GameTooltip:Hide()
 	end)
 	ConvertRaid:SetScript("OnClick", function(self)
-		if GetNumGroupMembers() > 0 and not IsInRaid() then
-			ConvertToParty()
+		if IsInRaid() then
+			C_PartyInfo.ConvertToParty()
 		else
-			ConvertToRaid()
+			C_PartyInfo.ConvertToRaid()
 		end
 		if db.AutoHide then
 			Micromenu.clickerLeft:Click()
@@ -552,7 +596,7 @@ function module:SetRaidMenu()
 		GameTooltip:Hide()
 	end)
 	ReadyChecker:SetScript("OnClick", function(self)
-		DoReadyCheck()
+		C_PartyInfo.DoReadyCheck()
 		if db.AutoHide then
 			Micromenu.clickerLeft:Click()
 		end
@@ -806,15 +850,6 @@ function module:LoadFrameOptions()
 						get = function() return db.ShowToolTips end,
 						set = function(self) db.ShowToolTips = not db.ShowToolTips end,
 						order = 9,
-					},
-					ToggleRaidIcon = {
-						name = "Toggle Raid Icon",
-						desc = "Weather of not Raid Target Icons can be removed by applying the icon the target already has",
-						type = "toggle",
-						width = "full",
-						get = function() return db.ToggleRaidIcon end,
-						set = function(self) db.ToggleRaidIcon = not db.ToggleRaidIcon end,
-						order = 10,
 					},
 				},
 			},
