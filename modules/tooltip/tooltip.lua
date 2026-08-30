@@ -212,7 +212,8 @@ function module:UpdateTooltipBackdrop(frame)
 		if background and background.SetTexture then
 			background:SetTexture(Media:Fetch("background", db.BgTexture))
 			background:SetTexCoord(0, 1, 0, 1)
-			nineSlice:SetCenterColor(1, 1, 1, 1)
+			-- Preserve Blizzard's existing center color. LibQTip-based addons copy
+			-- GameTooltip's colors without copying its background texture.
 		end
 
 		if nineSlice.SetBorderColor then
