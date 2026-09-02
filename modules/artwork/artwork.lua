@@ -1,67 +1,46 @@
--- ####################################################################################################################
--- ##### Setup and Locals #############################################################################################
--- ####################################################################################################################
+-- Built-in artwork panel lifecycle.
 
 ---@class LUIAddon
 local LUI = select(2, ...)
 
 ---@class LUI.Artwork : LUIModule
 local module = LUI:GetModule("Artwork")
-local db
 
---Table to hold all panels frames.
-local _panels = {}
+local refreshQueue = CreateFrame("Frame")
+refreshQueue:SetScript("OnEvent", function(self)
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	if module:IsEnabled() then module:Refresh() end
+end)
 
--- ####################################################################################################################
--- ##### Module Functions #############################################################################################
--- ####################################################################################################################
-
-function module:CreateNewPanel(name, paneldb)
-	local panel = CreateFrame("Frame", "LUIPanel_"..name, UIParent)
-	LUI:RegisterConfig(panel, paneldb)
+local function CreateActionBarTop()
+	local panel = CreateFrame("Frame", "LUIPanel_ActionBarTopTexture", UIParent)
+	local panelDB = module.db.profile.LUITextures.ActionBarTopTexture
+	LUI:RegisterConfig(panel, panelDB)
 	LUI:RestorePosition(panel)
-	-- LUI:MakeDraggable(panel)
-	-- panel:EnableMouse(true)
 	Mixin(panel, module.PanelMixin)
 
-	local tex = panel:CreateTexture(nil, "BACKGROUND")
-	tex:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT")
-	tex:SetPoint("TOPLEFT", panel, "TOPLEFT")
-	
-	_panels[name] = panel
-	panel.name = name
-	panel.tex = tex
-	panel.db = paneldb
-
-	panel:Refresh()
+	local texture = panel:CreateTexture(nil, "BACKGROUND")
+	texture:SetAllPoints(panel)
+	panel.name = "ActionBarTopTexture"
+	panel.tex = texture
+	panel.db = panelDB
 	return panel
 end
 
 function module:setPanels()
-	db = self.db.profile
-	module.panelList = {}
-
-	for name, paneldb in pairs(db.Textures) do
-		local frame = module:CreateNewPanel(name, paneldb)
-		table.insert(module.panelList, name)
-	end
-	sort(module.panelList, function(a, b)
-		return db.Textures[a].Order < db.Textures[b].Order
-	end)
-
-	module.ActionBarTop = module:CreateNewPanel("ActionBarTopTexture", db.LUITextures.ActionBarTopTexture)
-end
-
-function module:GetPanelByName(name)
-	return _panels[name]
+	module.ActionBarTop = module.ActionBarTop or CreateActionBarTop()
+	module.ActionBarTop.db = module.db.profile.LUITextures.ActionBarTopTexture
+	module.ActionBarTop:Refresh()
 end
 
 function module:Refresh()
-	for name, panel in pairs(_panels) do
-		panel:Refresh()
+	if InCombatLockdown() then
+		refreshQueue:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
 	end
-	module.ActionBarTop:Refresh()
-	for name, sidebar in module:IterateSidebars() do
+	refreshQueue:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	if module.ActionBarTop then module.ActionBarTop:Refresh() end
+	for _, sidebar in module:IterateSidebars() do
 		sidebar:Refresh()
 	end
 	module:RefreshNavBar()

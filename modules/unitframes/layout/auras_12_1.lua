@@ -12,18 +12,7 @@ local Media = LibStub("LibSharedMedia-3.0")
 
 local function BuildFilter(kind, db)
     local filter = kind == "Buffs" and "HELPFUL" or "HARMFUL"
-    if db.PlayerOnly and not db.IncludePet then
-        filter = filter .. "|PLAYER"
-    end
-    return filter
-end
-
-local function BuildCandidateFilters(db)
-    if db.PlayerOnly and db.IncludePet then
-        return {isFromPlayerOrPlayerPet = true}
-    end
-
-    return {}
+    return db.PlayerOnly and (filter .. "|PLAYER") or filter
 end
 
 local function BuildLayout(db)
@@ -44,10 +33,31 @@ local function GetContainerLayoutLimit(db)
     return math.max(size, perRow * size + (perRow - 1) * spacing)
 end
 
+local function ApplyButtonAppearance(button, db)
+    -- Assigned 12.1 aura buttons may become explicitly forbidden even when
+    -- InCombatLockdown() briefly reports false during a reload while dead.
+    -- Their layout is updated through SetAuraGroupLayout below; direct region
+    -- mutations must wait until Blizzard exposes the button again.
+    if button.IsForbidden and button:IsForbidden() then return end
+
+    local settings = module.db.profile.Settings
+
+    button.Cooldown:SetReverse(db.CooldownReverse == true)
+    button.Cooldown:SetAlpha(db.DisableCooldown == true and 0 or 1)
+
+    button.Time:SetAlpha(db.AuraTimer == true and 1 or 0)
+    button.Time:SetFont(
+        Media:Fetch("font", settings.AuratimerFont),
+        settings.AuratimerSize,
+        settings.AuratimerFlag
+    )
+
+    button.AuraTypeHolder:SetAlpha(db.ColorByType == true and 1 or 0)
+end
+
 local function MakeInitializer(state, kind)
     return function(button)
         local db = state.db
-        local settings = module.db.profile.Settings
         button:SetSize(db.Size, db.Size)
 
         local background = button:CreateTexture(nil, "BACKGROUND")
@@ -89,28 +99,35 @@ local function MakeInitializer(state, kind)
         button.AuraTypeHolder = auraTypeHolder
 
         local auraType = auraTypeHolder:CreateTexture(nil, "OVERLAY")
-        auraType:SetAllPoints(button)
+        auraType:SetTexture([[Interface\AddOns\LUI\media\buttons\ufAura.tga]])
+        auraType:SetPoint("TOPLEFT", button, "TOPLEFT", -2, 2)
+        auraType:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 2, -2)
+        auraType:SetTexCoord(0, 1, 0.02, 1)
         button.AuraType = auraType
         button:AddDispelTypeTexture(auraType, {
             showWhenHarmful = kind == "Debuffs",
             showWhenHelpful = kind == "Buffs",
             showWithoutDispelType = false,
-            style = Enum.CustomAuraButtonDispelTypeTextureStyle.Border,
+            -- Keep LUI's original outer aura frame. Blizzard securely applies
+            -- the dispel color without replacing it with the inset border atlas.
+            style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
         })
 
         button:SetTooltipAnchorPoint("ANCHOR_BOTTOMRIGHT", 0, 0)
+        ApplyButtonAppearance(button, db)
+    end
+end
 
-        cooldown:SetReverse(db.CooldownReverse == true)
-        cooldown:SetAlpha(db.DisableCooldown == true and 0 or 1)
+local function RefreshButtonAppearance(container, db)
+    local key = container.__luiKey
+    local count = container:GetAuraGroupFrameCount(key)
 
-        timer:SetAlpha(db.AuraTimer == true and 1 or 0)
-        timer:SetFont(
-            Media:Fetch("font", settings.AuratimerFont),
-            settings.AuratimerSize,
-            settings.AuratimerFlag
-        )
-
-        auraTypeHolder:SetAlpha(db.ColorByType == true and 1 or 0)
+    -- The public accessors enumerate Blizzard's preallocated buttons without
+    -- reading aura data. ApplyButtonAppearance skips any button that is still
+    -- explicitly forbidden after a combat reload.
+    for index = 1, count do
+        local button = container:GetAuraGroupFrame(key, index)
+        if button then ApplyButtonAppearance(button, db) end
     end
 end
 
@@ -158,7 +175,6 @@ local function CreateContainer(owner, unit, kind, db)
         {
             maxFrameCount = db.Num or 8,
             initializeFrame = MakeInitializer(state, kind),
-            candidateFilters = BuildCandidateFilters(db),
             layout = BuildLayout(db),
         }
     )
@@ -202,12 +218,6 @@ local function Apply(owner, unit, kind, db)
         return
     end
 
-    -- WoW 12.1 AuraContainers own their AuraButtons. Disabling a container
-    -- clears its managed AuraButtons, so the next enable recreates them and
-    -- runs initializeFrame with the current LUI settings. This avoids touching
-    -- AuraButtons after initialization, when Blizzard may make them forbidden.
-    container:SetEnabled(false)
-
     container.__luiState.db = db
 
     container:ClearAllPoints()
@@ -225,7 +235,7 @@ local function Apply(owner, unit, kind, db)
     )
     container:SetAuraGroupCandidateFilters(
         container.__luiKey,
-        BuildCandidateFilters(db)
+        nil
     )
     container:SetAuraGroupMaxFrameCount(
         container.__luiKey,
@@ -256,6 +266,7 @@ local function Apply(owner, unit, kind, db)
     -- resolved public unit token.
     container:SetUnit(unit)
 
+    RefreshButtonAppearance(container, db)
     container:SetEnabled(true)
     container:Show()
     container:UpdateAllAuras()

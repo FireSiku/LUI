@@ -14,16 +14,12 @@ local element = module:NewElement("Guild", "AceEvent-3.0")
 
 -- local copies
 local format, strsplit, max = format, string.split, math.max
-local PanelTemplates_GetSelectedTab = _G.PanelTemplates_GetSelectedTab
-local SetGuildRosterSelection = _G.SetGuildRosterSelection
 local GetNumGuildMembers = _G.GetNumGuildMembers
 local GetGuildRosterInfo = _G.GetGuildRosterInfo
 local CanEditOfficerNote = C_GuildInfo.CanEditOfficerNote
 local CanEditPublicNote = _G.CanEditPublicNote
 local IsControlKeyDown = _G.IsControlKeyDown
 local IsAltKeyDown = _G.IsAltKeyDown
-local ShowUIPanel = _G.ShowUIPanel
-local HideUIPanel = _G.HideUIPanel
 local SetItemRef = _G.SetItemRef
 local IsInGuild = _G.IsInGuild
 
@@ -38,20 +34,25 @@ local GUILD = _G.GUILD
 local PLAYER_HYPERLINK_FORMAT = "|Hplayer:%1$s|h[%1$s]|h"
 local PLAYER_LINK_FORMAT = "player:%s"
 local GUILD_UPDATE_TIME = 15
-local GUILD_TAB_INFO = 1
-local GUILD_TAB_ROSTER = 2
-local SLIDER_OFFSET = -6
 local STATUS_AFK = 1
 local STATUS_DND = 2
+local SLIDER_OFFSET = -6
 local TEXT_OFFSET = 5
 local GAP = 10
+local NAME_COLUMN_MAX = 190
+local NOTE_COLUMN_MAX = 160
+local ZONE_COLUMN_MAX = 180
+local RANK_COLUMN_MAX = 140
 
 -- locals
---local guildEntries = {}
-local totalGuild = 0 --luacheck: ignore
+local totalGuild = 0
 local onlineGuild = 0
 local guildMOTD = ""
 local infotip
+
+local function SetTextColor(fontString, colorName)
+	fontString:SetTextColor(module:RGB(colorName))
+end
 
 -- ####################################################################################################################
 -- ##### Infotip Setup ################################################################################################
@@ -65,7 +66,7 @@ end
 function element:CreateMOTD()
 	if infotip.motd then return infotip.motd end
 	local motd = infotip:NewLine()
-	motd.name = motd:AddFontString("LEFT", element:RGB("MOTD"))
+	motd.name = motd:AddFontString("LEFT", module:RGB("MOTD"))
 	motd.name:SetJustifyV("TOP")
 	motd.name:SetPoint("TOPLEFT")
 	motd.name:SetPoint("TOPRIGHT")
@@ -93,9 +94,9 @@ function element:CreateGuildMember(index)
 	mem.class = mem:AddTexture()
 	mem.name = mem:AddFontString("LEFT", mem.class, TEXT_OFFSET)
 	mem.level = mem:AddFontString("CENTER", mem.name)
-	mem.zone = mem:AddFontString("LEFT", mem.level, nil, element:RGB("Zone"))
-	mem.note = mem:AddFontString("CENTER", mem.zone, nil, element:RGB("Note"))
-	mem.rank = mem:AddFontString("RIGHT", mem.note, nil, element:RGB("Rank"))
+	mem.zone = mem:AddFontString("LEFT", mem.level, nil, module:RGB("Zone"))
+	mem.note = mem:AddFontString("CENTER", mem.zone, nil, module:RGB("Note"))
+	mem.rank = mem:AddFontString("RIGHT", mem.note, nil, module:RGB("Rank"))
 
 	mem:SetScript("OnClick", element.OnGuildButtonClick)
 	mem:AddHighlight()
@@ -106,6 +107,7 @@ end
 
 function element:UpdateGuildAnchorPoints(i)
 	local offset = infotip:GetSliderOffset()
+	infotip.Members[i]:ClearAllPoints()
 	if i == offset or i == 1 then
 		infotip.Members[i]:SetPoint("TOPLEFT", infotip.sep, "BOTTOMLEFT", GAP)
 	else
@@ -120,7 +122,7 @@ function element:UpdateInfotip()
 end
 
 function element:GuildMOTD(_, motdText)
-	guildMOTD = motdText or ""
+	guildMOTD = (motdText and not issecretvalue(motdText)) and motdText or ""
 	element:UpdateInfotip()
 end
 
@@ -130,6 +132,11 @@ end
 
 local function ShowGuild()
 	if IsInGuild() then C_GuildInfo.GuildRoster() end
+end
+
+local function SafeValue(value, fallback)
+	if value == nil or issecretvalue(value) then return fallback end
+	return value
 end
 
 function element:GetStatusString(status, isMobile)
@@ -146,20 +153,11 @@ function element:GetStatusString(status, isMobile)
 	elseif status == STATUS_AFK then
 		statusString = module:ColorText(CHAT_FLAG_AFK..MOBILE_AWAY_ICON, "Status")
 	elseif isMobile then
-		statusString = _G.ChatFrame_GetMobileEmbeddedTexture(73/255, 177/255, 73/255)
+		local mobileTexture = _G.ChatFrameUtil and _G.ChatFrameUtil.GetMobileEmbeddedTexture
+			or _G.ChatFrame_GetMobileEmbeddedTexture
+		if mobileTexture then statusString = mobileTexture(73/255, 177/255, 73/255) end
 	end
 	return statusString
-end
-
-function element:ToggleGuildTab(tabID)
-	if not GuildFrame then _G.GuildFrame_LoadUI() end
-	if GuildFrame and GuildFrame:IsShown() then
-		if PanelTemplates_GetSelectedTab(GuildFrame) == tabID then
-			return HideUIPanel(GuildFrame)
-		end
-	end
-	_G["GuildFrameTab"..tabID]:Click()
-	ShowUIPanel(GuildFrame)
 end
 
 function element:UpdateGuild()
@@ -167,10 +165,12 @@ function element:UpdateGuild()
 		element.text = L["InfoGuild_NoGuild"]
 		return
 	end
-	local totalNumGuild, guildNumOnline = GetNumGuildMembers()
-	local formatString = (module.db.profile.showTotal) and "%s: %d/%d" or "%s: %d"
+	totalGuild, onlineGuild = GetNumGuildMembers()
+	totalGuild = SafeValue(totalGuild, 0)
+	onlineGuild = SafeValue(onlineGuild, 0)
+	local formatString = module.db.profile.Guild.showTotal and "%s: %d/%d" or "%s: %d"
 
-	element.text = format(formatString, GUILD, guildNumOnline, totalNumGuild)
+	element.text = format(formatString, GUILD, onlineGuild, totalGuild)
 	element:UpdateInfotip()
 end
 
@@ -179,10 +179,9 @@ function element:GuildRosterUpdate()
 	--Make sure we don't query the server more than once per update time.
 	element:ResetUpdateTimer()
 
-	local numGuildMembers, guildNumOnline =  GetNumGuildMembers()
-	totalGuild = numGuildMembers
-	onlineGuild = guildNumOnline
-
+	totalGuild, onlineGuild = GetNumGuildMembers()
+	totalGuild = SafeValue(totalGuild, 0)
+	onlineGuild = SafeValue(onlineGuild, 0)
 	element:UpdateGuild()
 end
 
@@ -195,12 +194,15 @@ function element.OnGuildButtonClick(member, button)
 	if IsAltKeyDown() then
 		C_PartyInfo.InviteUnit(member.unit)
 	elseif IsControlKeyDown() then
-		if button == "LeftButton" and CanEditPublicNote() then
-			SetGuildRosterSelection(member.guildIndex)
-			StaticPopup_Show("SET_GUILDPLAYERNOTE")
-		elseif button == "RightButton" and CanEditOfficerNote() then
-			SetGuildRosterSelection(member.guildIndex)
-			StaticPopup_Show("SET_GUILDOFFICERNOTE")
+		local isPublic = button == "LeftButton"
+		if member.guid and ((isPublic and CanEditPublicNote()) or (not isPublic and CanEditOfficerNote())) then
+			local dialog = StaticPopup_Show("LUI_SET_GUILD_NOTE")
+			if dialog then
+				dialog.data = {guid = member.guid, isPublic = isPublic}
+				local editBox = dialog:GetEditBox()
+				editBox:SetText(isPublic and member.rawNote or member.officerNote)
+				editBox:HighlightText()
+			end
 		end
 	elseif button == "LeftButton" then
 		local playerLink = format(PLAYER_LINK_FORMAT, member.unit)
@@ -209,34 +211,13 @@ function element.OnGuildButtonClick(member, button)
 	end
 end
 
---Hints:
---Click to open Guild Roster.
---Right-Click to display Guild Information.
---Button4 to toggle notes.
 function element.OnClick(frame_, button)
-	-- If you arent in a guild, toggle the guild finder.
-	if button == "RightButton" then
-	else
-		_G.ToggleGuildFrame()
-	end
+	_G.ToggleGuildFrame()
 end
 
 function element:OnSliderUpdate()
-	local offset = infotip:GetSliderOffset()
-	for i = 1, #infotip.Members do
-		local member = infotip.Members[i]
-
-		-- Set the anchor points, 1 always need to be anchored to the separator.
-		element:UpdateGuildAnchorPoints(i)
-
-		-- Show/Hide the needed members.
-		if i < offset then member:Hide()                         -- Do not show if below the offset
-		elseif i > onlineGuild then member:Hide()                -- Do not show if higher than total online people
-		elseif i > infotip.maxLines + offset then member:Hide()  -- Do not show if higher than tooltip can display
-		else
-			member:Show()
-		end
-	end
+	-- Rebuild from the authoritative roster instead of moving the old anchor
+	-- chain in place. This prevents stale rows from surviving a roster change.
 	element:UpdateInfotip()
 end
 
@@ -250,74 +231,87 @@ function element.OnEnter(frame_)
 	local maxWidth, maxHeight
 	if IsInGuild() then
 		if infotip.noGuild then infotip.noGuild:Hide() end
-		local db = module.db.profile
+		local db = module.db.profile.Guild
 
 		-- Show MOTD
 		local motd = element:CreateMOTD()
 		local motdPrefix = CreateColor(1, 1, 1):WrapTextInColorCode(MOTD_COLON)
 		motd.name:SetText(format("%s %s", motdPrefix, guildMOTD))
+		SetTextColor(motd.name, "MOTD")
 		maxHeight = motd:GetHeight() + infotip.sep:GetHeight() + GAP * 2
 		local classIconWidth, nameColumnWidth, levelColumnWidth = 0, 0, 0
 		local zoneColumnWidth, noteColumnWidth, rankColumnWidth = 0, 0, 0
 		
-		-- Add Guild members
-		-- Slight complication in this process is that if "Show Offline Members" is checked, the list doesnt return
-		--   online members first, it shows them by whichever sort order the guild roster is in. So we have to assign
-		--   an index everytime we find an online guild member, not every time we loop. We end the loop whenever we
-		--   reach the end of the guild roster OR when we have created the same amount of lines as the amount of
-		--   online guild members that should be shown.
-		local i, lineIndex = 1, 1
-		while i <= GetNumGuildMembers() and lineIndex <= onlineGuild do
-			local fullName, rank, _, level, _, zone, note, officerNote, isOnline, status, class, _, _, isMobile = GetGuildRosterInfo(i)
-			if isOnline or isMobile then
-				local statusString = element:GetStatusString(status, isMobile)
+		-- The guild roster API preserves Blizzard's displayed row order and is
+		-- immediately available when the tooltip is first opened.
+		totalGuild, onlineGuild = GetNumGuildMembers()
+		totalGuild = SafeValue(totalGuild, 0)
+		onlineGuild = SafeValue(onlineGuild, 0)
+		local rosterIndex, lineIndex = 1, 1
+		while rosterIndex <= totalGuild and lineIndex <= onlineGuild do
+			local fullName, rank, _, level, _, zone, note, officerNote, isOnline,
+				status, class, _, _, isMobile, _, _, guid = GetGuildRosterInfo(rosterIndex)
+			fullName = SafeValue(fullName)
+			isOnline = SafeValue(isOnline, false)
+			isMobile = SafeValue(isMobile, false)
+			if fullName and (isOnline or isMobile) then
+				local statusString = element:GetStatusString(SafeValue(status, 0), isMobile)
 				local member = element:CreateGuildMember(lineIndex)
 				lineIndex = lineIndex + 1
 
 				--Name Column
-				local displayName, realmName_ = strsplit("-",fullName)
+				local displayName = strsplit("-", fullName)
 				local name = (db.hideRealm) and displayName or fullName
 				member.unit = fullName
-				member.guildIndex = i
+				member.guildIndex = rosterIndex
+				member.guid = SafeValue(guid)
+				member.rawNote = SafeValue(note, "")
+				member.officerNote = SafeValue(officerNote, "")
 				member.name:SetText(statusString..name)
-				-- Current clients normally return the locale-independent class
-				-- token here. Keep compatibility with clients returning the
-				-- localized class name so guild names do not fall back to white.
-				local classToken = class
-				if class and not issecretvalue(class) then
-					classToken = LUI:GetTokenFromClassName(class) or class
-				end
+				local classToken = SafeValue(class)
+				classToken = classToken and (LUI:GetTokenFromClassName(classToken) or classToken)
 				member.name:SetTextColor(LUI:GetClassColor(classToken))
-				member:SetClassIcon(member.class, class)
+				member:SetClassIcon(member.class, classToken)
 
 				--Level Column
+				level = SafeValue(level)
 				member.level:SetText(level or "")
-				member.level:SetTextColor(LUI:GetDifficultyColor(level))
+				if level then member.level:SetTextColor(LUI:GetDifficultyColor(level)) end
 
 				--Zone Column
+				zone = SafeValue(zone, _G.UNKNOWN)
 				if isMobile and not isOnline then zone = REMOTE_CHAT end
 				member.zone:SetText(zone or _G.UNKNOWN)
+				SetTextColor(member.zone, "Zone")
 
 				--Note Column
-				member.note:SetText(note or "-")
+				member.note:SetText(member.rawNote ~= "" and member.rawNote or "-")
+				SetTextColor(member.note, "Note")
 				if db.hideNotes then member.note:Hide() else member.note:Show() end
 
 				--Rank Column
-				member.rank:SetText(rank or "")
-				--member.rank:SetPoint("LEFT", db.hideNotes and member.zone or member.note, "RIGHT", GAP)
+				member.rank:SetText(SafeValue(rank, ""))
+				SetTextColor(member.rank, "Rank")
 
 				--Check if this member has any column larger than the current ones.
 				nameColumnWidth = max(nameColumnWidth, member.name:GetStringWidth())
 				levelColumnWidth = max(levelColumnWidth, member.level:GetStringWidth())
 				zoneColumnWidth = max(zoneColumnWidth, member.zone:GetStringWidth())
-				noteColumnWidth = max(noteColumnWidth, member.note:GetStringWidth())
+				if not db.hideNotes then
+					noteColumnWidth = max(noteColumnWidth, member.note:GetStringWidth())
+				end
 				rankColumnWidth = max(rankColumnWidth, member.rank:GetStringWidth())
 				classIconWidth = max(classIconWidth, member.class:GetWidth())
 			end
-			i = i + 1
+			rosterIndex = rosterIndex + 1
 		end
+		nameColumnWidth = math.min(nameColumnWidth, NAME_COLUMN_MAX)
+		noteColumnWidth = math.min(noteColumnWidth, NOTE_COLUMN_MAX)
+		zoneColumnWidth = math.min(zoneColumnWidth, ZONE_COLUMN_MAX)
+		rankColumnWidth = math.min(rankColumnWidth, RANK_COLUMN_MAX)
 
-		infotip:UpdateSlider(onlineGuild)
+		local visibleGuild = lineIndex - 1
+		infotip:UpdateSlider(visibleGuild)
 		local offset = infotip:GetSliderOffset()
 
 		-- Adjust things such as width and hide/show for every created lines.
@@ -332,7 +326,7 @@ function element.OnEnter(frame_)
 
 			-- Show/Hide the needed members.
 			if j < offset then member:Hide()                          -- Do not show if below the offset
-			elseif j > onlineGuild then member:Hide()                 -- Do not show if higher than total online people
+			elseif j > visibleGuild then member:Hide()                 -- Do not show if higher than the built roster
 			elseif j >= infotip.maxLines + offset then member:Hide()  -- Do not show if higher than tooltip can display
 			else
 				maxHeight = maxHeight + member:GetHeight()            -- Only add height based on shown buttons.
@@ -344,20 +338,33 @@ function element.OnEnter(frame_)
 		maxWidth = maxWidth + zoneColumnWidth + noteColumnWidth + rankColumnWidth + GAP * 6
 		if infotip.hasSlider then
 			maxWidth = maxWidth + infotip.slider:GetWidth()
-			infotip.slider:SetPoint("TOPRIGHT", infotip.Members[1], SLIDER_OFFSET, 0)
-			infotip.slider:SetPoint("BOTTOMRIGHT", infotip, SLIDER_OFFSET, GAP)
+			infotip.slider:ClearAllPoints()
+			infotip.slider:SetPoint("TOPRIGHT", infotip, "TOPRIGHT", SLIDER_OFFSET, -GAP)
+			infotip.slider:SetPoint("BOTTOMRIGHT", infotip, "BOTTOMRIGHT", SLIDER_OFFSET, GAP)
 		end
+		local rowWidth = max(1, maxWidth - GAP * 2
+			- (infotip.hasSlider and infotip.slider:GetWidth() or 0))
+		for _, member in ipairs(infotip.Members) do member:SetWidth(rowWidth) end
 
 	else -- not in a guild
+		if infotip.motd then infotip.motd:Hide() end
+		if infotip.sep then infotip.sep:Hide() end
+		if infotip.slider then infotip.slider:Hide() end
+		infotip.hasSlider = false
+		for _, member in ipairs(infotip.Members) do member:Hide() end
 		local noGuild = element:CreateNoGuild()
 		noGuild.name:SetText(ERR_GUILD_PLAYER_NOT_IN_GUILD)
 		maxWidth = noGuild.name:GetStringWidth() + GAP * 2
 		maxHeight = noGuild.name:GetStringHeight() + GAP * 2
 	end
 
-	infotip:SetWidth(maxWidth)
-	infotip:SetHeight(maxHeight)
+	module:SetBoundedInfotipSize(infotip, maxWidth, maxHeight)
 	infotip:Show()
+end
+
+function element:RefreshSettings()
+	element:UpdateGuild()
+	if infotip then infotip:Hide() end
 end
 
 function element.OnLeave(frame_)
@@ -371,17 +378,37 @@ end
 -- ####################################################################################################################
 
 function element:OnCreate()
+	StaticPopupDialogs["LUI_SET_GUILD_NOTE"] = {
+		preferredIndex = 3,
+		text = "Edit guild note",
+		button1 = ACCEPT,
+		button2 = CANCEL,
+		hasEditBox = true,
+		OnAccept = function(self)
+			local noteData = self.data
+			if noteData and noteData.guid then
+				C_GuildInfo.SetNote(noteData.guid, self:GetEditBox():GetText(), noteData.isPublic)
+			end
+		end,
+		EditBoxOnEnterPressed = function(self) self:GetParent():GetButton1():Click() end,
+		EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
+		timeout = 0,
+		whileDead = true,
+		hideOnEscape = true,
+	}
 	element:RegisterEvent("GUILD_MOTD", "GuildMOTD")
 	ShowGuild()
 	element:AddUpdate(ShowGuild, GUILD_UPDATE_TIME)
 	element:RegisterEvent("GUILD_ROSTER_UPDATE", "GuildRosterUpdate")
-	element:RegisterEvent("PLAYER_GUILD_UPDATE", function(self, unit)
+	element:RegisterEvent("PLAYER_GUILD_UPDATE", function(self, _, unit)
 		if not IsInGuild() then
 			element.text = L["InfoGuild_NoGuild"]
+			element:UpdateInfotip()
 			return
 		end
 		if unit and unit ~= "player" then return end
 		ShowGuild()
+		element:UpdateGuild()
 	end)
 	element:UpdateGuild()
 end

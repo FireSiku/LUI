@@ -212,16 +212,16 @@ do
 			return backdropPool[obj]
 		end
 
-		local backdrop = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
+		local backdrop = CreateFrame("Frame", nil, UIParent)
 		backdrop:Hide()
 
 		backdrop:SetScale(obj:GetScale())
 		backdrop:SetPoint(obj:GetPoint())
 		backdrop:SetSize(obj:GetSize())
 		
-		backdrop:SetBackdrop(_BACKDROP)
-		backdrop:SetBackdropColor(0, .9, 0)
-		backdrop:SetBackdropBorderColor(0, .9, 0)
+		LUI:ApplyFrameBackdrop(backdrop, _BACKDROP)
+		LUI:SetFrameBackgroundColor(backdrop, 0, .9, 0)
+		LUI:SetFrameBorderColor(backdrop, 0, .9, 0)
 		
 		backdrop:SetFrameStrata("TOOLTIP")
 

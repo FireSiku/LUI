@@ -1,17 +1,4 @@
---[[
-	This module handle experience bars of all sorts.
-	By default it will serves as an experience bar under the action bars
-	This main bar will split off in two if you are watching a reputation or honor.
-	[Rep  <--] [-->   XP]
-
-	Honor takes priority over faction reputations.
-	If displaying Azerite is enabled, it becomes AP / XP.
-	At max level, the XP bar is fully replaced by a rep/honor tracking bar. Hidden if not tracking either of them.
-	
-	Upcoming new feautre: Letting users create an additional customizable tracking bar.
-
-	This file handles the handling of the bars, XP/Rep data handling should be in their own files.
-]]
+-- Shared behavior for the main tracking bars and their data providers.
 
 -- ####################################################################################################################
 -- ##### Setup and Locals #############################################################################################
@@ -19,19 +6,15 @@
 
 ---@class LUIAddon
 local LUI = select(2, ...)
-local L = LUI.L
 
 ---@class LUI.ExperienceBars
 local module = LUI:GetModule("Experience Bars")
 local db
+local Media = LibStub("LibSharedMedia-3.0")
 
 --- Array containing all Data Providers that were loaded
 ---@type ExpBarDataProvider[]
 local dataProviderList = {}
-
---- Contains all Exp Bars that were created.
----@type ExpBar[]
-local barsList = {}
 
 --- Contains the bars that compose the primary exp bar
 ---@type ExpBar[]
@@ -70,16 +53,6 @@ function ExpBarDataProviderMixin:GetDataText()
 	return "No Data"
 end
 
---- Boolean function to indicate the data provider has a tooltip when hovering the bar
----@return boolean
-function ExpBarDataProviderMixin:HasTooltip()
-	return false
-end
-
---- Override this function to fill tooltip text
-function ExpBarDataProviderMixin:SetTooltipInfo(tooltip)
-end
-
 -- ####################################################################################################################
 -- ##### ExpBarMixin ##################################################################################################
 -- ####################################################################################################################
@@ -101,7 +74,7 @@ function ExpBarMixin:UpdateText()
 	local percentText = ""
 	if db.ShowPercent then
 		local precision = db.Precision or 2
-		local percentBar = self.barValue / self.barMax * 100
+		local percentBar = self.barMax > 0 and self.barValue / self.barMax * 100 or 0
 		percentText = format("%."..precision.."f%%", percentBar)
 		if not db.ShowCurrent then
 			return self.text:SetText(format("%s %s", percentText, self:GetDataText() or ""))
@@ -136,10 +109,18 @@ function ExpBarMixin:UpdateTextVisibility()
 	end
 end
 
-function ExpBarMixin:SetBarColor(r, g, b)
-	local mult = 0.4 -- Placeholder for LUI:GetBGMultiplier
-	self:SetStatusBarColor(r, g, b)
-	self.bg:SetVertexColor(r * mult, g * mult, b * mult)
+function ExpBarMixin:SetBarColor(r, g, b, a)
+	if type(r) ~= "number" or type(g) ~= "number" or type(b) ~= "number" then
+		r, g, b, a = module:RGBA(self.provider)
+	end
+	if type(r) ~= "number" or type(g) ~= "number" or type(b) ~= "number" then
+		r, g, b, a = 1, 1, 1, 1
+	end
+
+	local mult = tonumber(module.db.profile.BackgroundMultiplier) or 0.4
+	a = type(a) == "number" and a or 1
+	self:SetStatusBarColor(r, g, b, a)
+	self.bg:SetVertexColor(r * mult, g * mult, b * mult, a)
 end
 
 function ExpBarMixin:RegisterEvents()
@@ -147,6 +128,36 @@ function ExpBarMixin:RegisterEvents()
 	if not self.BAR_EVENTS then return end
 	for i, event in ipairs(self.BAR_EVENTS) do
 		self:RegisterEvent(event)
+	end
+end
+
+function module:SetEventHandling(enabled)
+	if not module.anchor then return end
+
+	if enabled then
+		module.anchor:RegisterEvent("PLAYER_ENTERING_WORLD")
+		module.anchor:RegisterEvent("PLAYER_MAX_LEVEL_UPDATE")
+		module.anchor:RegisterEvent("UPDATE_FACTION")
+		module.anchor:RegisterEvent("ENABLE_XP_GAIN")
+		module.anchor:RegisterEvent("DISABLE_XP_GAIN")
+		module.anchor:RegisterEvent("ZONE_CHANGED")
+		module.anchor:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+		module.anchor:RegisterEvent("TRACKED_HOUSE_CHANGED")
+		module.anchor:RegisterUnitEvent("UNIT_LEVEL", "player")
+		if not module:IsHooked(_G.StatusTrackingBarManager, "UpdateBarsShown") then
+			module:SecureHook(_G.StatusTrackingBarManager, "UpdateBarsShown", "UpdateMainBarVisibility")
+		end
+		for bar in module:IterateMainBars() do
+			bar:RegisterEvents()
+		end
+	else
+		module.anchor:UnregisterAllEvents()
+		if module:IsHooked(_G.StatusTrackingBarManager, "UpdateBarsShown") then
+			module:Unhook(_G.StatusTrackingBarManager, "UpdateBarsShown")
+		end
+		for bar in module:IterateMainBars() do
+			bar:UnregisterAllEvents()
+		end
 	end
 end
 
@@ -173,13 +184,13 @@ function module:CreateBar(name, dataProvider)
 	end
 
 	---@type ExpBar
-	local bar = CreateFrame("StatusBar", name, UIParent)
+	local bar = CreateFrame("StatusBar", name, module.anchor or UIParent)
 	bar:SetFrameStrata("HIGH")
 	bar:SetSize(db.Width, db.Height)
 	bar:SetStatusBarTexture(module:FetchStatusBar("ExpBarFill"))
 
 	local bg = bar:CreateTexture(nil, "BORDER")
-	bg:SetTexture(module:FetchStatusBar("ExpBarFill"))
+	bg:SetTexture(module:FetchStatusBar("ExpBarBg"))
 	bg:SetAllPoints(bar)
 	bar.bg = bg
 
@@ -190,17 +201,18 @@ function module:CreateBar(name, dataProvider)
 	text:SetShadowOffset(1.25, -1.25)
 	bar.text = text
 
-	bar.provider = dataProvider
 	Mixin(bar, ExpBarMixin, dataProviderList[dataProvider])
+	-- ExpBarMixin has an empty provider default, so assign the actual provider
+	-- after mixing it into the bar instead of letting Mixin overwrite it.
+	bar.provider = dataProvider
 	bar:SetScript("OnEvent", bar.UpdateBar)
 	bar:RegisterEvents()
 	
-	bar:SetBarColor(module:RGB("Experience"))
+	bar:SetBarColor(module:RGBA(dataProvider))
 	bar:UpdateTextVisibility()
 	bar:UpdateVisibility()
 	bar:UpdateBar()
 
-	tinsert(barsList, bar)
 	return bar
 end
 
@@ -224,35 +236,26 @@ function module:SetMainBar()
 	local anchor = CreateFrame("Frame", "LUI_MainExpBar", UIParent)
 	anchor:SetPoint(db.Point, UIParent, db.RelativePoint, db.X, db.Y)
 	anchor:SetSize(db.Width, db.Height)
+	module.anchor = anchor
 	
-	anchor:RegisterEvent("PLAYER_ENTERING_WORLD");
-	anchor:RegisterEvent("UPDATE_EXPANSION_LEVEL");
-	anchor:RegisterEvent("UPDATE_FACTION");
-	anchor:RegisterEvent("ENABLE_XP_GAIN");
-	anchor:RegisterEvent("DISABLE_XP_GAIN");
-	anchor:RegisterEvent("ZONE_CHANGED");
-	anchor:RegisterEvent("ZONE_CHANGED_NEW_AREA");
-	anchor:RegisterUnitEvent("UNIT_LEVEL", "player")
 	anchor:SetScript("OnEvent", function() module:UpdateMainBarVisibility() end)
-	module:SecureHook(_G.StatusTrackingBarManager, "UpdateBarsShown", "UpdateMainBarVisibility")
 
 	local expBar = module:CreateBar("LUI_ExpBarsExp", "Experience")
 	local repBar = module:CreateBar("LUI_ExpBarsRep", "Reputation")
 	local honorBar = module:CreateBar("LUI_ExpBarsHonor", "Honor")
 	local azeriteBar = module:CreateBar("LUI_ExpBarsAzerite", "Azerite")
-	local genesisBar = module:CreateBar("LUI_ExpBarsGenesis", "Genesis")
-	mainBarList = {expBar, repBar, honorBar, azeriteBar}
+	local houseFavorBar = module:CreateBar("LUI_ExpBarsHouseFavor", "HouseFavor")
+	mainBarList = {expBar, repBar, honorBar, azeriteBar, houseFavorBar}
 
 	for bar in module:IterateMainBars() do
 		bar:SetPoint("RIGHT", anchor, "RIGHT")
 	end
 
-	module.anchor = anchor
 	module.ExperienceBar = expBar
 	module.ReputationBar = repBar
 	module.HonorBar = honorBar
 	module.AzeriteBar = azeriteBar
-	module.GenesisBar = genesisBar
+	module.HouseFavorBar = houseFavorBar
 
 	return true -- mainBarsCreated
 end
@@ -260,8 +263,7 @@ end
 function module:UpdateMainBarVisibility()
 	local barLeft, barRight
 	if not module.ExperienceBar or not module.ReputationBar
-		or not module.HonorBar or not module.AzeriteBar
-		or not module.GenesisBar then
+		or not module.HonorBar or not module.AzeriteBar or not module.HouseFavorBar then
 		return
 	end
 	-- Check which bars can be visible at the moment
@@ -269,10 +271,21 @@ function module:UpdateMainBarVisibility()
 	local repShown = module.ReputationBar:ShouldBeVisible()
 	local honorShown = module.HonorBar:ShouldBeVisible()
 	local apShown = module.AzeriteBar:ShouldBeVisible()
-	local gnShown = module.GenesisBar:ShouldBeVisible()
+	local houseFavorShown = module.HouseFavorBar:ShouldBeVisible()
 	
 	-- Decide which bars should be ultimately shown.
-	if expShown then
+	if houseFavorShown then
+		barRight = module.HouseFavorBar
+		if expShown then
+			barLeft = module.ExperienceBar
+		elseif apShown then
+			barLeft = module.AzeriteBar
+		elseif honorShown then
+			barLeft = module.HonorBar
+		elseif repShown then
+			barLeft = module.ReputationBar
+		end
+	elseif expShown then
 		barRight = module.ExperienceBar
 		if apShown then
 			barLeft = module.AzeriteBar
@@ -296,8 +309,6 @@ function module:UpdateMainBarVisibility()
 	elseif repShown then
 		barRight = module.ReputationBar
 	end
-	if gnShown then barRight = module.GenesisBar end
-
 	-- Force the main bars to be hidden.
 	for bar in module:IterateMainBars() do
 		bar:Hide()
@@ -305,11 +316,10 @@ function module:UpdateMainBarVisibility()
 
 	-- Adjust size and visibility
 	if barRight then
-		--- HACK: This is a hack to provide default values in the rare cases where the UI makes some calls to the EXP bar before everything is loaded.
-		local width = db.Width or 475
-		local spacing = db.Spacing or 10
-		local textX = db.TextX or -2
-		local textY = db.TextY or 0
+		local width = db.Width
+		local spacing = db.Spacing
+		local textX = db.TextX
+		local textY = db.TextY
 
 		barRight:ClearAllPoints()
 		barRight:SetReverseFill(false)
@@ -341,18 +351,22 @@ end
 
 function module:RefreshColors()
 	for bar in module:IterateMainBars() do
-		bar:SetBarColor(module:RGB("Experience"))
+		bar:SetBarColor(module:RGBA(bar.provider))
 	end
 end
 
 function module:Refresh()
+	if not module.anchor then return end
+	module.anchor:ClearAllPoints()
 	module.anchor:SetPoint(db.Point, UIParent, db.RelativePoint, db.X, db.Y)
 	module.anchor:SetSize(db.Width, db.Height)
 	for bar in module:IterateMainBars() do
 		bar:SetStatusBarTexture(module:FetchStatusBar("ExpBarFill"))
-		bar.bg:SetTexture(module:FetchStatusBar("ExpBarFill"))
+		bar.bg:SetTexture(module:FetchStatusBar("ExpBarBg"))
+		bar.text:SetFont(Media:Fetch("font", db.Fonts.Text.Name), db.Fonts.Text.Size, db.Fonts.Text.Flag)
 		bar:UpdateTextVisibility()
 		bar:UpdateText()
 	end
+	module:RefreshColors()
 	module:UpdateMainBarVisibility()
 end

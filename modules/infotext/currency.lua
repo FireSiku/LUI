@@ -10,48 +10,29 @@ local L = LUI.L
 
 ---@class InfotextModule
 local module = LUI:GetModule("Infotext")
-local element = module:NewElement("Currency", "AceEvent-3.0", "AceHook-3.0")
+local element = module:NewElement("Currency", "AceEvent-3.0")
 
 -- local copies
-local wipe, format, tconcat = wipe, format, table.concat
+local format = format
 local C_CurrencyInfo = C_CurrencyInfo
 
--- Constants
-local MAX_WATCHED_TOKENS = _G.MAX_WATCHED_TOKENS
-local CURRENCY_FORMAT = "%d\124T%s:%d:%d:2:0\124t"
 local CURRENCY = _G.CURRENCY
-
--- locals
-local currencyString = {}
-local getCurrencyInfo = C_CurrencyInfo.GetBackpackCurrencyInfo
-	if not LUI.IsRetail then getCurrencyInfo = _G.GetBackpackCurrencyInfo end
--- local getCurrencyInfoListSize = C_CurrencyInfo.GetCurrencyListSize
--- 	if not LUI.IsRetail then getCurrencyInfoListSize = _G.GetCurrencyListSize end
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
 
-function element:GetCurrencyString()
-	wipe(currencyString)
-	-- local numCurrencies = GetNumWatchedTokens()
-	for i = 1, GetNumWatchedTokens() do
-		local info = getCurrencyInfo(i)
-		if info.name and info.discovered then
-			currencyString[i] = format(CURRENCY_FORMAT, info.quantity, info.iconFielID, 0, 0)
-		end
+local function GetWatchedCurrencyCount()
+	local count = 0
+	while C_CurrencyInfo.GetBackpackCurrencyInfo(count + 1) do
+		count = count + 1
 	end
-	return tconcat(currencyString, " ")
+	return count
 end
 
 function element:UpdateCurrency()
-	--Make sure you are watching at least one currency
-	if getCurrencyInfo(1) then
-		-- element.text = element:GetCurrencyString()
-		element.text = format("Currencies: "..GetNumWatchedTokens())
-	else
-		element.text = format("Currencies: 0")
-	end
+	element.text = format("Currencies: %d", GetWatchedCurrencyCount())
+	element:UpdateTooltip()
 end
 
 -- Click: Open Currency Frame
@@ -65,27 +46,32 @@ end
 
 function element.OnTooltipShow(GameTooltip)
 	element:TooltipHeader(CURRENCY)
-	if LUI.IsRetail then
-		for i = 1, C_CurrencyInfo.GetCurrencyListSize() do
-			local info = C_CurrencyInfo.GetCurrencyListInfo(i)
-			if info.isHeader then
-				--Do not add an empty space for the first header.
-				if i > 1 then GameTooltip:AddLine(" ") end
-				GameTooltip:AddLine(info.name)
-			elseif info.discovered and info.name then
-				local r, g, b = 1, 1, 1
-				if info.isShowInBackpack then r, g, b = 0.5, 1, 0.5 end
-				if info.quantity and info.quantity ~= 0 then
-					GameTooltip:AddDoubleLine(info.name, info.quantity, r,g,b, r,g,b)
-				else
-					--TODO: Ability to not show those at all.
-					GameTooltip:AddDoubleLine(info.name, "--", r,g,b, r,g,b)
-				end
+	local displayed = 0
+	local displayLimit = module.db.profile.Currency.DisplayLimit
+	for i = 1, C_CurrencyInfo.GetCurrencyListSize() do
+		local info = C_CurrencyInfo.GetCurrencyListInfo(i)
+		if info and info.isHeader then
+			if i > 1 then GameTooltip:AddLine(" ") end
+			GameTooltip:AddLine(info.name)
+		elseif info and info.discovered and info.name then
+			local r, g, b = 1, 1, 1
+			if info.isShowInBackpack then r, g, b = 0.5, 1, 0.5 end
+			if info.quantity and info.quantity ~= 0 then
+				GameTooltip:AddDoubleLine(info.name, info.quantity, r,g,b, r,g,b)
+			else
+				GameTooltip:AddDoubleLine(info.name, "--", r,g,b, r,g,b)
+			end
+			displayed = displayed + 1
+			if displayed >= displayLimit then
+				GameTooltip:AddLine("…", 0.7, 0.7, 0.7)
+				break
 			end
 		end
 	end
 	element:AddHint(L["InfoCurrency_Hint_Any"])
 end
+
+element.RefreshSettings = element.UpdateCurrency
 
 -- ####################################################################################################################
 -- ##### Framework Events #############################################################################################
@@ -94,6 +80,5 @@ end
 function element:OnCreate()
 	element:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")
 	element:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateCurrency")
-	-- element:HookFunction("BackpackTokenFrame:Update", "UpdateCurrency")
 	element:UpdateCurrency()
 end

@@ -86,10 +86,7 @@ local function UpdateColor(self, event)
 	end
 
 	if(color) then
-	
-	
 		local r, g, b
-
 		if(color.GetRGB) then
 			r, g, b = color:GetRGB()
 		else

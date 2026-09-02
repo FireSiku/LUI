@@ -28,9 +28,8 @@ local LUI_TEXTURES_INFO = {
 --- Get the parent frame of the panel.
 ---@return Frame parent
 function PanelMixin:GetParent()
-	--TODO: Add support for LibWindow for proper texture scaling when not anchored.
 	if self.db.Anchored then
-		return _G[self.db.Parent]
+		return _G[self.db.Parent] or UIParent
 	else
 		return UIParent
 	end
@@ -39,12 +38,7 @@ end
 --- Get the texture path
 ---@return string texturePath
 function PanelMixin:GetTexture()
-	-- TODO: Add support for various texture directories in the future.
-	if self.db.TexMode == 3 then
-		return self.db.Texture
-	else
-		return LUI_TEX_DIR..self.db.Texture
-	end
+	return LUI_TEX_DIR..self.db.Texture
 end
 
 --- Get the texture coordinates, taking flipping into account.
@@ -53,8 +47,7 @@ end
 ---@return number up
 ---@return number down
 function PanelMixin:GetTexCoord()
-	--PH: Grab TexCoord valuess from self.db.entries
-	local left, right, up, down = self.db.Left, self.db.Right, self.db.Up, self.db.Down
+	local left, right, up, down = 0, 1, 0, 1
 
 	if LUI_TEXTURES_INFO[self.db.Texture] then
 		local coord = LUI_TEXTURES_INFO[self.db.Texture]
@@ -84,7 +77,6 @@ function PanelMixin:Refresh()
 	local parent = self:GetParent()
 	local r, g, b, a = module:RGBA(self.name)
 
-	--self:SetPoint(self.db.Point, parent, self.db.RelativePoint, self.db.X, self.db.Y)
 	self:SetSize(self.db.Width, self.db.Height)
 	LUI:RegisterConfig(self, self.db)
 	LUI:RestorePosition(self)

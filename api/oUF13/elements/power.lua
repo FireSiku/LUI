@@ -132,7 +132,8 @@ local function UpdateColor(self, event, unit)
 
 			if(not color and altR) then
 				r, g, b = altR, altG, altB
-				if(r > 1 or g > 1 or b > 1) then
+				if(not issecretvalue(r) and not issecretvalue(g) and not issecretvalue(b)
+					and (r > 1 or g > 1 or b > 1)) then
 					-- BUG: As of 7.0.3, altR, altG, altB may be in 0-1 or 0-255 range.
 					r, g, b = r / 255, g / 255, b / 255
 				end
@@ -336,6 +337,7 @@ local function shouldUpdatePredictionSize(self)
 
 	local horizontal = element:GetOrientation() == 'HORIZONTAL'
 	local size = horizontal and element:GetWidth() or element:GetHeight()
+	size = math.floor((size + 0.005) * 100) / 100 -- normalize floating point errors
 	if(horizontal ~= STATE[element].horizontal or size ~= STATE[element].size) then
 		STATE[element].horizontal = horizontal
 		STATE[element].size = size

@@ -1,5 +1,4 @@
 -- This module creates a menu containing all the raid markers, world pillars and other raid/party commands
---- @TODO: Fully use Secure Handlers to allow for it to be used in combat..
 
 -- ####################################################################################################################
 -- ##### Setup and Locals #############################################################################################
@@ -7,24 +6,23 @@
 
 ---@class LUIAddon
 local LUI = select(2, ...)
-local L = LUI.L
 
 ---@class LUI.RaidMenu
 local module = LUI:GetModule("RaidMenu")
-local db, dbd
+local db
 
-local Panels = LUI:GetModule("Panels", true)
 local Micromenu = LUI:GetModule("Micromenu", true) --[[@as LUI.Micromenu]]
 local Media = LibStub("LibSharedMedia-3.0")
 
 local InCombatLockdown = _G.InCombatLockdown
-local GetLootThreshold = _G.GetLootThreshold
-local SetLootThreshold = _G.SetLootThreshold
 local InitiateRolePoll = _G.InitiateRolePoll
-local GetLootMethod = _G.GetLootMethod
-local SetLootMethod = _G.SetLootMethod
 local IsInRaid = _G.IsInRaid
-local EasyMenu = _G.EasyMenu
+local IsInGroup = _G.IsInGroup
+local HasLFGRestrictions = _G.HasLFGRestrictions
+local UnitInBattleground = _G.UnitInBattleground
+local UnitIsGroupAssistant = _G.UnitIsGroupAssistant
+local UnitIsGroupLeader = _G.UnitIsGroupLeader
+local issecretvalue = _G.issecretvalue
 local C_PartyInfo = _G.C_PartyInfo
 local SecureActionButton_ShouldUseOnKeyDown = _G.SecureActionButton_ShouldUseOnKeyDown
 
@@ -34,17 +32,41 @@ local SkullRaidIcon, CrossRaidIcon, SquareRaidIcon, MoonRaidIcon, TriangleRaidIc
 local DiamondRaidIcon, CircleRaidIcon, StarRaidIcon, ClearRaidIcon
 local BlueWorldMarker, GreenWorldMarker, PurpleWorldMarker, RedWorldMarker, YellowWorldMarker
 local OrangeWorldMarker, SilverWorldMarker, WhiteWorldMarker, ClearWorldMarkers
-local ConvertRaid, LootMethod, LootThreshold, RoleChecker, ReadyChecker
+local ConvertRaid, RoleChecker, ReadyChecker
+local pendingAction
 
-local RAIDMENU_NORMAL_TEXTURE = "Interface\\AddOns\\LUI\\media\\templates\\v3\\raidmenu"
-local RAIDMENU_BG_TEXTURE = "Interface\\AddOns\\LUI\\media\\templates\\v3\\raidmenu_bg"
-local RAIDMENU_BORDER_TEXTURE = "Interface\\AddOns\\LUI\\media\\templates\\v3\\raidmenu_border"
+local combatQueue = CreateFrame("Frame")
+combatQueue:Hide()
+combatQueue:SetScript("OnEvent", function(self)
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	self:Hide()
+
+	local action = pendingAction
+	pendingAction = nil
+	if action == "hide" or not module:IsEnabled() or not db or not db.Enable then
+		module:HideRaidMenu(true)
+	elseif action == "setup" then
+		module:SetRaidMenu(true)
+	elseif action == "refresh" then
+		module:Refresh(true)
+	end
+end)
+
+local function QueueAfterCombat(action)
+	-- A later enable/disable request supersedes a mere settings refresh.
+	if action ~= "refresh" or not pendingAction then
+		pendingAction = action
+	end
+	combatQueue:RegisterEvent("PLAYER_REGEN_ENABLED")
+	combatQueue:Show()
+end
+
+local RAIDMENU_NORMAL_TEXTURE = "Interface\\AddOns\\LUI\\media\\templates\\v3\\RaidMenu"
+local RAIDMENU_BG_TEXTURE = "Interface\\AddOns\\LUI\\media\\templates\\v3\\RaidMenu_BG"
+local RAIDMENU_BORDER_TEXTURE = "Interface\\AddOns\\LUI\\media\\templates\\v3\\RaidMenu_Border"
 local RAID_MARKER_ICON_TEXTURE = "Interface\\AddOns\\LUI\\media\\textures\\icons\\raidicons.blp"
-LUI.Versions.raidmenu = 2.4
-
 local Y_normal, Y_compact = 107, 101
 local X_normal, X_compact = 0, -50
-local OverlapPreventionMethods = {"AutoHide", "Offset"}
 local WorldMarkerTexCoords = {
 	[1] = {0.25, 0.5, 0.25, 0.5}, -- Square
 	[2] = {0.75, 1, 0, 0.25},     -- Triangle
@@ -99,10 +121,27 @@ end
 local function UpdateConvertButton()
 	local convertToRaid = not IsInRaid()
 	ConvertRaid:SetText(convertToRaid and "Convert to Raid" or "Convert to Party")
-	ConvertRaid:SetEnabled(C_PartyInfo.AllowedToDoPartyConversion(convertToRaid))
+	ConvertRaid:SetEnabled(not InCombatLockdown() and C_PartyInfo.AllowedToDoPartyConversion(convertToRaid))
+end
+
+local function UpdateGroupButtons()
+	UpdateConvertButton()
+
+	local isLeader = UnitIsGroupLeader("player")
+	local isAssistant = UnitIsGroupAssistant("player")
+	local inBattleground = UnitInBattleground("player")
+	if issecretvalue(isLeader) then isLeader = false end
+	if issecretvalue(isAssistant) then isAssistant = false end
+	if issecretvalue(inBattleground) then inBattleground = true end
+	local canManageGroup = (isLeader or isAssistant) and IsInGroup()
+	local outOfCombat = not InCombatLockdown()
+	ReadyChecker:SetEnabled(outOfCombat and canManageGroup)
+	RoleChecker:SetEnabled(outOfCombat and canManageGroup and not HasLFGRestrictions() and not inBattleground)
 end
 
 function module:OverlapPrevention(frame, action)
+	if not db.Enable or not Micromenu or not RaidMenu or InCombatLockdown() then return end
+
 	local Y_Position = Y_normal
 	local X_Position = X_compact
 
@@ -113,9 +152,7 @@ function module:OverlapPrevention(frame, action)
 
 	local microMenuShown = false
 
-	if Panels and Panels.db and Panels.db.profile and Panels.db.profile.MicroMenu then
-		microMenuShown = Panels.db.profile.MicroMenu.IsShown
-	elseif Micromenu and Micromenu.background then
+	if Micromenu and Micromenu.background then
 		microMenuShown = Micromenu.background:IsShown()
 	end
 
@@ -126,7 +163,7 @@ function module:OverlapPrevention(frame, action)
 		x_offset = db.X_Offset
 	end
 
-	if frame == "RM" and db.Enable and not InCombatLockdown() then
+	if frame == "RM" then
 		if action == "toggle" then
 			if RaidMenu_Parent:IsShown() then
 				RaidMenu.AlphaOut:Show()
@@ -204,6 +241,7 @@ local function FormatMarker(frame, x, y, r, g, b, id, t1, t2, t3, t4)
 	frame:SetScale(1)
 	frame:SetFrameStrata("HIGH")
 	frame:SetFrameLevel(4)
+	frame:ClearAllPoints()
 	frame:SetPoint("TOPLEFT", RaidMenu_Parent, "TOPLEFT", x, y)
 	frame:SetAlpha(0.6)
 
@@ -251,7 +289,6 @@ local function FormatMarker(frame, x, y, r, g, b, id, t1, t2, t3, t4)
 			texture:SetTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Up")
 		else
 			texture:SetTexture(RAID_MARKER_ICON_TEXTURE)
-			--texture:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
 		end
 		texture:SetTexCoord(t1, t2, t3, t4)
 
@@ -280,7 +317,6 @@ local function SizeRaidMenu(compact)
 		RaidMenu_Border:SetSize(frameWidth, frameHeight)
 		RaidMenu_Header:Hide()
 
-	--	FormatMarker(frame,             x,                    y,                     r,   g,   b,  id, t1,   t2,   t3,   t4)
 		-- Raid Icons
 		FormatMarker(SkullRaidIcon,     15,                   -75  + y_spacing * 2,  0,   0,   0,   8, 0.75, 1,    0.25, 0.5)
 		FormatMarker(CrossRaidIcon,     15,                   -100 + y_spacing * 3,  0,   0,   0,   7, 0.5,  0.75, 0.25, 0.5)
@@ -305,8 +341,6 @@ local function SizeRaidMenu(compact)
 		FormatMarker(ReadyChecker,      65 + x_spacing * 2,   -75   + y_spacing * 2)
 		FormatMarker(RoleChecker,       65 + x_spacing * 2,   -100  + y_spacing * 3)
 		FormatMarker(ConvertRaid,       65 + x_spacing * 2,   -125  + y_spacing * 4)
-		FormatMarker(LootMethod,        65 + x_spacing * 2,   -150  + y_spacing * 5)
-		FormatMarker(LootThreshold,     65 + x_spacing * 2,   -175  + y_spacing * 6)
 
 	else
 		local frameWidth = 256
@@ -316,7 +350,6 @@ local function SizeRaidMenu(compact)
 		RaidMenu:SetSize(frameWidth, frameHeight)
 		RaidMenu_Border:SetSize(frameWidth, frameHeight)
 		RaidMenu_Header:Show()
-	--	FormatMarker(frame,             x,   y,    r,   g,   b,  id, t1,   t2,   t3,   t4)
 		FormatMarker(SkullRaidIcon,     20,  -50,  0,   0,   0,   8, 0.75, 1,    0.25, 0.5)
 		FormatMarker(CrossRaidIcon,     20,  -90,  0,   0,   0,   7, 0.5,  0.75, 0.25, 0.5)
 		FormatMarker(SquareRaidIcon,    20,  -130, 0,   0,   0,   6, 0.25, 0.5,  0.25, 0.5)
@@ -338,22 +371,40 @@ local function SizeRaidMenu(compact)
 		FormatMarker(ReadyChecker,      105, -50)
 		FormatMarker(RoleChecker,       105, -75)
 		FormatMarker(ConvertRaid,       105, -100)
-		FormatMarker(LootMethod,        105, -125)
-		FormatMarker(LootThreshold,     105, -150)
 	end
 end
 
 function module:SetColors()
-	if not db.Enable or not Micromenu then return end
-	RaidMenu_Parent:SetBackdropColor(Micromenu:RGB("Background"))
-	RaidMenu:SetBackdropColor(Micromenu:RGB("Background"))
-	RaidMenu_Border:SetBackdropColor(Micromenu:RGB("Micromenu"))
+	if not db.Enable or not Micromenu or not RaidMenu_Parent then return end
+	local r, g, b
+	if db.MatchMicromenuBackground then
+		r, g, b = Micromenu:RGB("Background")
+	else
+		local color = db.BackgroundColor
+		r, g, b = color.r, color.g, color.b
+	end
+	RaidMenu_BG.Texture:SetVertexColor(r, g, b)
+	RaidMenu.Texture:SetVertexColor(r, g, b)
+	RaidMenu_Border.Texture:SetVertexColor(Micromenu:RGB("Micromenu"))
 end
 
-function module:SetRaidMenu()
-	db, dbd = module.db.profile, module.db.defaults.profile
+function module:SetRaidMenu(ignoreCombat)
+	db = module.db.profile
 
-	if not db.Enable or not Micromenu then return end
+	if not db.Enable or not Micromenu or not Micromenu.buttonLeft then return end
+	if not ignoreCombat and InCombatLockdown() then
+		QueueAfterCombat("setup")
+		return
+	end
+	if RaidMenu_Parent then
+		RaidMenu_Parent:Hide()
+		UpdateGroupButtons()
+		SizeRaidMenu()
+		RaidMenu_Parent:SetScale(db.Scale)
+		RaidMenu_Parent:SetAlpha(db.Opacity / 100)
+		module:SetColors()
+		return
+	end
 
 	-- Create frames for Raid Menu
 	RaidMenu_Parent = LUI:CreateMeAFrame("Frame", "RaidMenu_Parent", Micromenu.buttonLeft, 256, 256, 1, "HIGH", 0, "TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17), 1)
@@ -366,68 +417,47 @@ function module:SetRaidMenu()
 	RaidMenu_Parent:Hide()
 
 	RaidMenu_BG = LUI:CreateMeAFrame("Frame", "RaidMenu_BG", RaidMenu_Parent, 256, 256, 1, "HIGH", 1, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 0, 0, 1)
-	RaidMenu_BG:SetBackdrop({
-		bgFile = RAIDMENU_BG_TEXTURE,
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile=false, tileSize = 0, edgeSize = 1,
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
-	RaidMenu_BG:SetBackdropColor(Micromenu:RGB("Background"))
-	RaidMenu_BG:SetBackdropBorderColor(0, 0, 0, 0)
+	RaidMenu_BG.Texture = LUI:CreateFrameTexture(RaidMenu_BG, RAIDMENU_BG_TEXTURE)
+	RaidMenu_BG.Texture:SetVertexColor(Micromenu:RGB("Background"))
 
 	RaidMenu = LUI:CreateMeAFrame("Frame", "RaidMenu", RaidMenu_Parent, 256, 256, 1, "HIGH", 2, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 0, 0, 1)
 	RaidMenu:SetMouseClickEnabled(true)
-	RaidMenu:SetBackdrop({
-		bgFile = RAIDMENU_NORMAL_TEXTURE,
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile=false, tileSize = 0, edgeSize = 1,
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
-	RaidMenu:SetBackdropColor(Micromenu:RGB("Background"))
-	RaidMenu:SetBackdropBorderColor(0, 0, 0, 0)
+	RaidMenu.Texture = LUI:CreateFrameTexture(RaidMenu, RAIDMENU_NORMAL_TEXTURE)
+	RaidMenu.Texture:SetVertexColor(Micromenu:RGB("Background"))
 
 	local micro_r, micro_g, micro_b = Micromenu:RGB("Micromenu")
 	RaidMenu_Border = LUI:CreateMeAFrame("Frame", "RaidMenu_Border", RaidMenu_Parent, 256, 256, 1, "HIGH", 3, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 2, 1, 1)
-	RaidMenu_Border:SetBackdrop({
-		bgFile = RAIDMENU_BORDER_TEXTURE,
-		edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",
-		tile=false, tileSize = 0, edgeSize = 1,
-		insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
-	RaidMenu_Border:SetBackdropColor(micro_r, micro_g, micro_b, 1)
-	RaidMenu_Border:SetBackdropBorderColor(0, 0, 0, 0)
+	RaidMenu_Border.Texture = LUI:CreateFrameTexture(RaidMenu_Border, RAIDMENU_BORDER_TEXTURE)
+	RaidMenu_Border.Texture:SetVertexColor(micro_r, micro_g, micro_b, 1)
 
 	local Infotext = LUI:GetModule("Infotext", true)
-	local font = Infotext and Infotext.db.profile.Clock.Font or "vibroceb"
+	local font = Infotext and Infotext.db.profile.Fonts.Infotext or {Name = "vibroceb", Size = 12, Flag = ""}
 	local color = Infotext and Infotext.db.profile.Clock.Color or {r = 1, g = 1, b = 1, a = 1}
 	RaidMenu_Header = RaidMenu:CreateFontString("RaidMenu_Header", "OVERLAY")
-	RaidMenu_Header:SetFont(Media:Fetch("font", font), LUI:Scale(20), "THICKOUTLINE")
+	RaidMenu_Header:SetFont(Media:Fetch("font", font.Name), LUI:Scale(20), "THICKOUTLINE")
 	RaidMenu_Header:SetPoint("TOP", RaidMenu, "TOP", -5, -25)
 	RaidMenu_Header:SetTextColor(color.r, color.g, color.b, color.a)
 	RaidMenu_Header:SetText("LUI Raid Menu")
 
-	-- Create frame for dropdown lists to access
-	local LootMenuFrame = CreateFrame("Frame", "LootDropDownMenu", RaidMenu_Parent, "UIDropDownMenuTemplate")
-
 	-- Create buttons for Raid Menu
-	SkullRaidIcon = CreateFrame("Button", "SkullRaidIcon", RaidMenu, "SecureMarkerTemplate")
-	CrossRaidIcon = CreateFrame("Button", "CrossRaidIcon", RaidMenu, "SecureMarkerTemplate")
-	SquareRaidIcon = CreateFrame("Button", "SquareRaidIcon", RaidMenu, "SecureMarkerTemplate")
-	MoonRaidIcon = CreateFrame("Button", "MoonRaidIcon", RaidMenu, "SecureMarkerTemplate")
-	TriangleRaidIcon = CreateFrame("Button", "TriangleRaidIcon", RaidMenu, "SecureMarkerTemplate")
-	DiamondRaidIcon = CreateFrame("Button", "DiamondRaidIcon", RaidMenu, "SecureMarkerTemplate")
-	CircleRaidIcon = CreateFrame("Button", "CircleRaidIcon", RaidMenu, "SecureMarkerTemplate")
-	StarRaidIcon = CreateFrame("Button", "StarRaidIcon", RaidMenu, "SecureMarkerTemplate")
-	ClearRaidIcon = CreateFrame("Button", "ClearRaidIcon", RaidMenu, "SecureMarkerTemplate")
-	BlueWorldMarker = CreateFrame("Button", "BlueWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	GreenWorldMarker = CreateFrame("Button", "GreenWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	PurpleWorldMarker = CreateFrame("Button", "PurpleWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	RedWorldMarker = CreateFrame("Button", "RedWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	YellowWorldMarker = CreateFrame("Button", "YellowWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	WhiteWorldMarker = CreateFrame("Button", "WhiteWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	OrangeWorldMarker = CreateFrame("Button", "OrangeWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	SilverWorldMarker = CreateFrame("Button", "SilverWorldMarker", RaidMenu, "SecureMarkerTemplate")
-	ClearWorldMarkers = CreateFrame("Button", "ClearWorldMarkers", RaidMenu, "SecureMarkerTemplate")
+	SkullRaidIcon = CreateFrame("Button", "SkullRaidIcon", RaidMenu, "LUISecureMarkerTemplate")
+	CrossRaidIcon = CreateFrame("Button", "CrossRaidIcon", RaidMenu, "LUISecureMarkerTemplate")
+	SquareRaidIcon = CreateFrame("Button", "SquareRaidIcon", RaidMenu, "LUISecureMarkerTemplate")
+	MoonRaidIcon = CreateFrame("Button", "MoonRaidIcon", RaidMenu, "LUISecureMarkerTemplate")
+	TriangleRaidIcon = CreateFrame("Button", "TriangleRaidIcon", RaidMenu, "LUISecureMarkerTemplate")
+	DiamondRaidIcon = CreateFrame("Button", "DiamondRaidIcon", RaidMenu, "LUISecureMarkerTemplate")
+	CircleRaidIcon = CreateFrame("Button", "CircleRaidIcon", RaidMenu, "LUISecureMarkerTemplate")
+	StarRaidIcon = CreateFrame("Button", "StarRaidIcon", RaidMenu, "LUISecureMarkerTemplate")
+	ClearRaidIcon = CreateFrame("Button", "ClearRaidIcon", RaidMenu, "LUISecureMarkerTemplate")
+	BlueWorldMarker = CreateFrame("Button", "BlueWorldMarker", RaidMenu, "LUISecureMarkerTemplate")
+	GreenWorldMarker = CreateFrame("Button", "GreenWorldMarker", RaidMenu, "LUISecureMarkerTemplate")
+	PurpleWorldMarker = CreateFrame("Button", "PurpleWorldMarker", RaidMenu, "LUISecureMarkerTemplate")
+	RedWorldMarker = CreateFrame("Button", "RedWorldMarker", RaidMenu, "LUISecureMarkerTemplate")
+	YellowWorldMarker = CreateFrame("Button", "YellowWorldMarker", RaidMenu, "LUISecureMarkerTemplate")
+	WhiteWorldMarker = CreateFrame("Button", "WhiteWorldMarker", RaidMenu, "LUISecureMarkerTemplate")
+	OrangeWorldMarker = CreateFrame("Button", "OrangeWorldMarker", RaidMenu, "LUISecureMarkerTemplate")
+	SilverWorldMarker = CreateFrame("Button", "SilverWorldMarker", RaidMenu, "LUISecureMarkerTemplate")
+	ClearWorldMarkers = CreateFrame("Button", "ClearWorldMarkers", RaidMenu, "LUISecureMarkerTemplate")
 
 	ConfigureRaidTargetButton(SkullRaidIcon, 8)
 	ConfigureRaidTargetButton(CrossRaidIcon, 7)
@@ -449,13 +479,18 @@ function module:SetRaidMenu()
 	ConfigureWorldMarkerButton(ClearWorldMarkers)
 
 	ConvertRaid = CreateFrame("Button", "ConvertRaid", RaidMenu, "UIPanelButtonTemplate")
-	UpdateConvertButton()
-	local monitoredEvents = {"GROUP_ROSTER_UPDATE", "PARTY_LEADER_CHANGED"}
-	-- "PARTY_CONVERTED_TO_RAID",
+	local monitoredEvents = {
+		"GROUP_ROSTER_UPDATE",
+		"PARTY_LEADER_CHANGED",
+		"PARTY_LFG_RESTRICTED",
+		"PLAYER_ENTERING_WORLD",
+		"PLAYER_REGEN_DISABLED",
+		"PLAYER_REGEN_ENABLED",
+	}
 	for i = 1, #monitoredEvents do
 		ConvertRaid:RegisterEvent(monitoredEvents[i])
 	end
-	ConvertRaid:SetScript("OnEvent", UpdateConvertButton)
+	ConvertRaid:SetScript("OnEvent", UpdateGroupButtons)
 
 	ConvertRaid:SetScript("OnEnter", function(self)
 		if db.ShowToolTips then
@@ -477,6 +512,7 @@ function module:SetRaidMenu()
 		GameTooltip:Hide()
 	end)
 	ConvertRaid:SetScript("OnClick", function(self)
+		if InCombatLockdown() then return end
 		if IsInRaid() then
 			C_PartyInfo.ConvertToParty()
 		else
@@ -486,77 +522,6 @@ function module:SetRaidMenu()
 			Micromenu.clickerLeft:Click()
 		end
 	end)
-
-	if not LUI.IsRetail then
-		LootMethod = CreateFrame("Button", "LootMethod", RaidMenu, "UIPanelButtonTemplate")
-		LootMethod:SetText("Loot Method")
-		LootMethod:SetScript("OnEnter", function(self)
-			if db.ShowToolTips then
-				GameTooltip:SetOwner(LootMethod,"ANCHOR_BOTTOMLEFT")
-				GameTooltip:SetClampedToScreen(true)
-				GameTooltip:ClearLines()
-				GameTooltip:SetText("Loot Method")
-				GameTooltip:AddLine("Change the Loot Method for your group", 204/255, 204/255, 204/255, 1)
-				GameTooltip:Show()
-			end
-		end)
-		LootMethod:SetScript("OnLeave", function(self)
-			GameTooltip:Hide()
-		end)
-		LootMethod:SetScript("OnClick", function(self)
-			local LootMethodList = {
-				{text = "Group Loot",
-				checked = (GetLootMethod() == "group"),
-				func = function() SetLootMethod("group") if db.AutoHide then Micromenu.clickerLeft:Click() end end},
-				{text = "Free-For-All",
-				checked = (GetLootMethod() == "freeforall"),
-				func = function() SetLootMethod("freeforall") if db.AutoHide then Micromenu.clickerLeft:Click() end end},
-				{text = "Master Looter",
-				checked = (GetLootMethod() == "master"),
-				func = function() SetLootMethod("master", "player") if db.AutoHide then Micromenu.clickerLeft:Click() end end},
-				{text = "Need Before Greed",
-				checked = (GetLootMethod() == "needbeforegreed"),
-				func = function() SetLootMethod("needbeforegreed") if db.AutoHide then Micromenu.clickerLeft:Click() end end},
-				{text = "Round Robin",
-				checked = (GetLootMethod() == "roundrobin"),
-				func = function() SetLootMethod("roundrobin") if db.AutoHide then Micromenu.clickerLeft:Click() end end}
-			}
-			EasyMenu(LootMethodList, LootMenuFrame, "cursor", 0, 0, "MENU", 1)
-		end)
-
-		LootThreshold = CreateFrame("Button", "LootThreshold", RaidMenu, "UIPanelButtonTemplate")
-		LootThreshold:SetText("Loot Threshold")
-		LootThreshold:SetScript("OnEnter", function(self)
-			if db.ShowToolTips then
-				GameTooltip:SetOwner(LootThreshold, "ANCHOR_BOTTOMLEFT")
-				GameTooltip:SetClampedToScreen(true)
-				GameTooltip:ClearLines()
-				GameTooltip:SetText("Loot Threshold")
-				GameTooltip:AddLine("Change the Loot Threshold for your group", 204/255, 204/255, 204/255, 1)
-				GameTooltip:Show()
-			end
-		end)
-		LootThreshold:SetScript("OnLeave", function(self)
-			GameTooltip:Hide()
-		end)
-		LootThreshold:SetScript("OnClick", function(self)
-			local LootThresholdList = {
-				{text = "|cff1EFF00Uncommon|r",
-				checked = (GetLootThreshold() == 2),
-				func = function() SetLootThreshold("2") if db.AutoHide then Micromenu.clickerLeft:Click() end end},
-				{text = "|cff0070FFRare|r",
-				checked = (GetLootThreshold() == 3),
-				func = function() SetLootThreshold("3") if db.AutoHide then Micromenu.clickerLeft:Click() end end},
-				{text = "|cffA335EEEpic|r",
-				checked = (GetLootThreshold() == 4),
-				func = function() SetLootThreshold("4") if db.AutoHide then Micromenu.clickerLeft:Click() end end},
-				{text = "|cffFF8000Legendary|r",
-				checked = (GetLootThreshold() == 5),
-				func = function() SetLootThreshold("5") if db.AutoHide then Micromenu.clickerLeft:Click() end end}
-			}
-			EasyMenu(LootThresholdList, LootMenuFrame, "cursor", 0, 0, "MENU", 1)
-		end)
-	end
 
 	RoleChecker = CreateFrame("BUTTON", "RoleChecker", RaidMenu, "UIPanelButtonTemplate")
 	RoleChecker:SetText("Role Check")
@@ -574,6 +539,7 @@ function module:SetRaidMenu()
 		GameTooltip:Hide()
 	end)
 	RoleChecker:SetScript("OnClick", function(self)
+		if InCombatLockdown() then return end
 		InitiateRolePoll()
 		if db.AutoHide then
 			Micromenu.clickerLeft:Click()
@@ -596,11 +562,13 @@ function module:SetRaidMenu()
 		GameTooltip:Hide()
 	end)
 	ReadyChecker:SetScript("OnClick", function(self)
+		if InCombatLockdown() then return end
 		C_PartyInfo.DoReadyCheck()
 		if db.AutoHide then
 			Micromenu.clickerLeft:Click()
 		end
 	end)
+	UpdateGroupButtons()
 
 	-- Create fader frames
 	RaidMenu.AlphaOut = CreateFrame("Frame", nil, UIParent)
@@ -686,175 +654,43 @@ function module:SetRaidMenu()
 	SizeRaidMenu()
 end
 
-function module:Refresh()
-	module:OverlapPrevention("RM", "position")
+function module:Refresh(ignoreCombat)
+	if not db.Enable or not RaidMenu_Parent then return end
+	if not ignoreCombat and InCombatLockdown() then
+		QueueAfterCombat("refresh")
+		return
+	end
 	SizeRaidMenu()
+	RaidMenu_Parent:SetScale(db.Scale)
 	RaidMenu_Parent:SetAlpha(db.Opacity/100)
+	module:OverlapPrevention("RM", "position")
+	module:SetColors()
 end
 
--- ####################################################################################################################
--- ##### Legacy Frame Options #########################################################################################
--- ####################################################################################################################
+function module:SetRaidMenuEnabled(enabled)
+	db.Enable = enabled
+	if InCombatLockdown() then
+		QueueAfterCombat(enabled and "setup" or "hide")
+		return
+	end
+	if enabled then
+		module:SetRaidMenu()
+	else
+		module:HideRaidMenu()
+	end
+end
 
-function module:LoadFrameOptions()
-	local options = {
-		name = "Raid Menu",
-		type = "group",
-		order = 10,
-		args = {
-			Title = {
-				type = "header",
-				order = 1,
-				name = "Raid Menu",
-			},
-			Enable = {
-				name = "Enable",
-				desc = "Wether you want the RaidMenu enabled or not.",
-				type = "toggle",
-				disabled = function() return not Micromenu end,
-				get = function() return db.Enable end,
-				set = function(self,Enable)
-					db.Enable = Enable
-					if Enable then
-						module:SetRaidMenu()
---					else
---						StaticPopup_Show("RELOAD_UI")
-					end
-				end,
-				order = 2,
-			},
-			Settings = {
-				name = "Settings",
-				type = "group",
-				order = 3,
-				disabled = function() return not (Micromenu and db.Enable) end,
-				guiInline = true,
-				args = {
-					Compact = {
-						name = "Compact Raid Menu",
-						desc = "Use compact version of the Raid Menu",
-						type = "toggle",
-						get = function() return db.Compact end,
-						set = function(self)
-							db.Compact = not db.Compact
-							module:OverlapPrevention("RM", "position")
-							SizeRaidMenu()
-						end,
-						order = 1,
-					},
-					Spacing = {
-						name = "Spacing",
-						desc = "Spacing between buttons of Raid Menu",
-						disabled = function() return not db.Compact end,
-						type = "range",
-						step = 1,
-						min = 0,
-						max = 10,
-						get = function() return db.Spacing end,
-						set = function(self, value)
-							db.Spacing = value
-							module:OverlapPrevention("RM", "position")
-							SizeRaidMenu()
-						end,
-						order = 2,
-					},
-					OverlapPrevention = {
-						name = "Micromenu Overlap Prevention",
-						desc = "\nAutoHide: The MicroMenu or Raid Menu should hide when the other is opened\n\nOffset: The Raid Menu should offset itself when the MicroMenu is open",
-						type = "select",
-						values = OverlapPreventionMethods,
-						get = function()
-							for k, v in pairs(OverlapPreventionMethods) do
-								if db.OverlapPrevention == v then
-									return k
-								end
-							end
-						end,
-						set = function(self, value)
-							db.OverlapPrevention = OverlapPreventionMethods[value]
-							module:OverlapPrevention("RM", "position")
-						end,
-						order = 3,
-					},
-					Scale = {
-						name = "Scale",
-						desc = "The Scale of the Raid Menu",
-						type = "range",
-						step = 0.05,
-						min = 0.5,
-						max = 2.0,
-						get = function() return db.Scale end,
-						set = function(self, value)
-							db.Scale = value
-							RaidMenu_Parent:SetScale(db.Scale)
-							module:OverlapPrevention("RM", "position")
-						end,
-						order = 4,
-					},
-					X_Offset = {
-						name = "X Offset",
-						desc = "How far to horizontally offset when the MicroMenu is open\n\nDefault: "..dbd.X_Offset,
-						disabled = function() return db.OverlapPrevention == "AutoHide" end,
-						type = "range",
-						step = 1,
-						min = -200,
-						max = 200,
-						get = function() return db.X_Offset end,
-						set = function(self, value)
-							db.X_Offset = value
-							module:OverlapPrevention("RM", "position")
-						end,
-						order = 5,
-					},
-					Offset = {
-						name = "Y Offset",
-						desc = "How far to vertically offset when the MicroMenu is open\n\nDefault: "..dbd.Offset,
-						disabled = function() return db.OverlapPrevention == "AutoHide" end,
-						type = "range",
-						step = 1,
-						min = -200,
-						max = 0,
-						get = function() return db.Offset end,
-						set = function(self, value)
-							db.Offset = value
-							module:OverlapPrevention("RM", "position")
-						end,
-						order = 6,
-					},
-					Opacity = {
-						name = "Opacity",
-						desc = "The Opacity of the Raid Menu\n100% is fully visable",
-						type = "range",
-						step = 10,
-						min = 20,
-						max = 100,
-						get = function() return db.Opacity end,
-						set = function(self, value)
-							db.Opacity = value
-							RaidMenu_Parent:SetAlpha(db.Opacity/100)
-						end,
-						order = 7,
-					},
-					AutoHide = {
-						name = "AutoHide Raid Menu",
-						desc = "Weather or not the Raid Menu should hide itself after clicking on a function",
-						type = "toggle",
-						get = function() return db.AutoHide end,
-						set = function(self) db.AutoHide = not db.AutoHide end,
-						order = 8,
-					},
-					ShowToolTips = {
-						name = "Show Tooltips",
-						desc = "Weather or not to show tooltips for the Raid Menu tools",
-						type = "toggle",
-						get = function() return db.ShowToolTips end,
-						set = function(self) db.ShowToolTips = not db.ShowToolTips end,
-						order = 9,
-					},
-				},
-			},
-		},
-	}
-
-	return options
+function module:HideRaidMenu(ignoreCombat)
+	if not RaidMenu_Parent then return end
+	if not ignoreCombat and InCombatLockdown() then
+		QueueAfterCombat("hide")
+		return
+	end
+	if RaidMenu then
+		for _, animation in ipairs({RaidMenu.AlphaOut, RaidMenu.AlphaIn, RaidMenu.SlideUp, RaidMenu.SlideDown}) do
+			animation.timer = 0
+			animation:Hide()
+		end
+	end
+	RaidMenu_Parent:Hide()
 end

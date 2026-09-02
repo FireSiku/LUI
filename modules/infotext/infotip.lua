@@ -6,16 +6,16 @@
 
 ---@class LUIAddon
 local LUI = select(2, ...)
-local L = LUI.L
 
 ---@class LUI.Infotext
 local module = LUI:GetModule("Infotext")
 
-local modTooltip = LUI:GetModule("Tooltip") --[[@as LUI.Tooltip]]
+local Media = LibStub("LibSharedMedia-3.0")
 local element = {}
 
 -- local copies
 local unpack, pairs = unpack, pairs
+local floor, max, min = math.floor, math.max, math.min
 
 -- constants
 local CLASS_ICONS_TEXTURE = "Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes"
@@ -25,7 +25,6 @@ local BUTTON_HEIGHT = 15
 local SLIDER_WIDTH = 16
 local ICON_SIZE = 13
 
---Find better name for these constants
 local GAP = 10
 
 -- locals
@@ -38,7 +37,6 @@ local infotipStorage = {}
 local LineMixin = {}
 local InfotipMixin = {}
 
--- What's the need for anchor already?
 function LineMixin:AddTexture(anchor, offsetX)
 	local tex = self:CreateTexture()
 	tex:SetWidth(ICON_SIZE)
@@ -48,7 +46,11 @@ function LineMixin:AddTexture(anchor, offsetX)
 end
 
 function LineMixin:SetClassIcon(tex, class)
-	if not tex or not class then return end
+	if not tex then return end
+	if not class or not _G.CLASS_ICON_TCOORDS[class] then
+		tex:SetTexture(nil)
+		return
+	end
 	tex:SetTexture(CLASS_ICONS_TEXTURE)
 	local offset, left, right, bottom, top = 0.025, unpack(_G.CLASS_ICON_TCOORDS[class])
 	tex:SetTexCoord(left+offset, right-offset, bottom+offset, top-offset)
@@ -82,7 +84,7 @@ end
 
 function InfotipMixin:NewLine()
 	local lineName = format("%sLine%d",self:GetName(),self.totalLines + 1)
-	local newline = CreateFrame("Button", lineName, self, "BackdropTemplate")
+	local newline = CreateFrame("Button", lineName, self)
 	for k, v in pairs(LineMixin) do
 		newline[k] = v
 	end
@@ -110,14 +112,17 @@ function InfotipMixin:AddSeparator(anchor)
 	local sep = self:NewLine()
 	local sepTex = sep:CreateTexture()
 	sepTex:SetTexture("Interface\\FriendsFrame\\UI-FriendsFrame-OnlineDivider")
-	sepTex:SetPoint("LEFT")
-	sepTex:SetPoint("RIGHT")
+	sepTex:SetPoint("LEFT", 0, 0)
+	sepTex:SetPoint("RIGHT", 0, 0)
+	sepTex:SetHeight(8)
 	if anchor then sep:SetPoint("TOPLEFT", anchor, "BOTTOMLEFT") end
 	return sep
 end
 
 function InfotipMixin:GetSliderOffset()
-	return (self.hasSlider) and self.slider:GetValue() or 1
+	if not self.hasSlider or not self.slider then return 1 end
+	local minValue, maxValue = self.slider:GetMinMaxValues()
+	return floor(min(maxValue, max(minValue, self.slider:GetValue())) + 0.5)
 end
 
 function InfotipMixin:UpdateTooltip()
@@ -132,7 +137,11 @@ end
 function InfotipMixin:UpdateSlider(topValue)
 	if self.slider then
 		if topValue > self.maxLines then
-			self.slider:SetMinMaxValues(1, 1 + topValue - self.maxLines)
+			local maxValue = 1 + topValue - self.maxLines
+			self.slider:SetMinMaxValues(1, maxValue)
+			self.slider.updating = true
+			self.slider:SetValue(min(maxValue, max(1, self.slider:GetValue())))
+			self.slider.updating = nil
 			self.slider:Show()
 			self.hasSlider = true
 		else
@@ -140,6 +149,13 @@ function InfotipMixin:UpdateSlider(topValue)
 			self.hasSlider = false
 		end
 	end
+end
+
+function InfotipMixin:EnsureSlider()
+	if not self.slider then
+		self.slider = element:AddSlider(self)
+	end
+	return self.slider
 end
 
 -- ####################################################################################################################
@@ -174,19 +190,78 @@ function element.OnLineLeave(line)
 	end
 end
 
--- To revisit later, originally wanted a customizable minWidth. (default 300 to match V3 layout)
--- Right now its a strict minimum width to prevent frame from breaking.
 function module:EnforceMinWidth(infotip, value)
 	if value < infotip.minWidth then
 		infotip:SetWidth(infotip.minWidth)
 	end
 end
 
+function module:AnchorInfotip(infotip)
+	local parent = infotip.infotext:GetFrame()
+	local point = module.db.profile[infotip.infotext:GetName()].Point or "TOP"
+
+	-- Always leave exactly one owner-relative anchor behind.  The tooltip
+	-- NineSlice only decorates the frame; it must never become part of the
+	-- positioning chain.
+	infotip:ClearAllPoints()
+	if point:find("BOTTOM", 1, true) then
+		infotip:SetPoint("BOTTOM", parent, "TOP", 0, 0)
+	else
+		infotip:SetPoint("TOP", parent, "BOTTOM", 0, 0)
+	end
+end
+
+function module:SetBoundedInfotipSize(infotip, width, height)
+	-- Keep the complete NineSlice inside UIParent at every scale and resolution.
+	local maxWidth = max(INFOTIP_MIN_WIDTH, UIParent:GetWidth() - GAP * 2)
+	local maxHeight = max(BUTTON_HEIGHT, UIParent:GetHeight() - GAP * 2)
+	infotip:SetWidth(min(width, maxWidth))
+	infotip:SetHeight(min(height, maxHeight))
+end
+
+function module:ApplyInfotipBackdrop(frame, name)
+	local settings = module.db.profile[name] and module.db.profile[name].Background
+	local color = settings and settings.Color
+	local textureName = settings and settings.Texture or "Blizzard Tooltip"
+	local texture = Media:Fetch("background", textureName, true)
+	local useColorFill = textureName == "None" or not texture or texture == ""
+
+	-- Friends and Guild use Blizzard's current tooltip NineSlice for their
+	-- boundary.  Keep the configurable LUI texture as the center only; tinting
+	-- the legacy UI-Tooltip-Border white produced the bright rectangular outline
+	-- and no longer matched TooltipBorderedFrameTemplate on Retail.
+	if frame.NineSlice and NineSliceUtil then
+		NineSliceUtil.ApplyLayoutByName(frame.NineSlice, "TooltipDefaultLayout")
+		NineSliceUtil.DisableSharpening(frame.NineSlice)
+		if frame.NineSlice.Center then
+			frame.NineSlice.Center:Hide()
+		end
+	end
+
+	LUI:ApplyFrameBackdrop(frame, {
+		bgFile = useColorFill and [[Interface\Buttons\WHITE8X8]] or texture,
+		tile = not useColorFill,
+		tileSize = 16,
+		insets = {left = 4, right = 4, top = 4, bottom = 4},
+	})
+	if useColorFill then
+		LUI:SetFrameBackgroundColor(frame,
+			color and color.r or 0,
+			color and color.g or 0,
+			color and color.b or 0,
+			color and color.a or 0.8)
+	else
+		-- Display selected SharedMedia textures with their original colors.
+		LUI:SetFrameBackgroundColor(frame, 1, 1, 1, 1)
+	end
+end
+
 function element:AddSlider(newtip)
-	local slider = CreateFrame("Slider", nil, newtip, "BackdropTemplate")
+	local slider = CreateFrame("Slider", nil, newtip)
 	slider:SetWidth(SLIDER_WIDTH)
-	slider:SetThumbTexture([[Interface\Buttons\UI-SliderBar-Button-Horizontal]])
-	slider:SetBackdrop({
+	slider:SetOrientation("VERTICAL")
+	slider:SetThumbTexture([[Interface\Buttons\UI-SliderBar-Button-Vertical]])
+	LUI:ApplyFrameBackdrop(slider, {
 		bgFile = [[Interface\Buttons\UI-SliderBar-Background]],
 		edgeFile = [[Interface\Buttons\UI-SliderBar-Border]],
 		edgeSize = 8, tile = true, tileSize = 8,
@@ -195,43 +270,21 @@ function element:AddSlider(newtip)
 	slider:SetValueStep(1)
 	local infotext = newtip.infotext
 	slider:SetScript("OnValueChanged", function(self, value_)
-		if newtip:IsMouseOver() and infotext.OnSliderUpdate then
+		if not self.updating and newtip:IsMouseOver() and infotext.OnSliderUpdate then
 			infotext:OnSliderUpdate()
 		end
 	end)
 	return slider
 end
 
-function element:ApplyBackdropColors()
-	local isModded = (modTooltip and modTooltip:IsEnabled()) and true or false
-	local colorDB = (isModded) and modTooltip.db.profile.Colors
-	local bgR, bgG, bgB, bgA = GameTooltip.NineSlice:GetCenterColor()
-	local borderR, borderG, borderB, borderA
-	if isModded then
-		borderR, borderG, borderB, borderA = colorDB.Border.r, colorDB.Border.g, colorDB.Border.b, colorDB.Border.a
-	else
-		borderR, borderG, borderB, borderA = GameTooltip.NineSlice:GetBorderColor()
-	end
-
-	for _, infotip in pairs(infotipStorage) do
-		infotip.NineSlice:SetCenterColor(bgR, bgG, bgB, bgA)
-		infotip.NineSlice:SetBorderColor(borderR, borderG, borderB, borderA)
-	end
-end
-
 function module:NewInfotip(infotext)
-	-- Hook relevant functions from the tooltip module to maintain tooltip look if it hasnt been done yet.
-
-	if not module:IsHooked(modTooltip, "OnEnable") then
-		module:SecureHook(modTooltip, "UpdateBackdropColors", element.ApplyBackdropColors)
-		module:SecureHook(modTooltip, "OnEnable",  element.ApplyBackdropColors)
-		module:SecureHook(modTooltip, "OnDisable", element.ApplyBackdropColors)
-	end
-
 	local name = infotext:GetName()
 	local parent = infotext:GetFrame()
+	local parentName = parent:GetName()
 
-	local newtip = CreateFrame("Frame", format("LUIInfo_%sInfotip", name), parent, "TooltipBackdropTemplate")
+	-- The display frame already has a sanitized, unique global name. LDB object
+	-- names themselves may contain spaces or punctuation that are invalid here.
+	local newtip = CreateFrame("Frame", parentName and (parentName.."Infotip") or nil, parent, "TooltipBorderedFrameTemplate")
 	infotipStorage[name] = newtip
 	newtip.infotext = infotext
 	for k, v in pairs(InfotipMixin) do
@@ -242,13 +295,12 @@ function module:NewInfotip(infotext)
 	newtip:EnableMouse(true)
 	newtip:SetFrameStrata("TOOLTIP")
 	newtip:SetClampedToScreen(true)
+	-- A friend or guild row must never be rendered outside the NineSlice
+	-- boundary, even while its anchors are rebuilt during a slider update.
+	newtip:SetClipsChildren(true)
+	module:ApplyInfotipBackdrop(newtip, name)
 
-	--TODO: Add support for bottom panel infotexts.
-	newtip:SetPoint("TOP", parent, "BOTTOM")
-
-	-- Make frame looks like a tooltip.
-	SharedTooltip_SetBackdropStyle(newtip, "TooltipDefaultLayout")
-	element:ApplyBackdropColors()
+	module:AnchorInfotip(newtip)
 
 	-- Give every Infotip its own highlight texture.
 	newtip.highlight = newtip:CreateTexture()
@@ -281,8 +333,35 @@ function module:NewInfotip(infotext)
 	newtip.maxWidth = INFOTIP_MIN_WIDTH
 
 	-- Calculate Infotip highest numbers of possible lines.
-	newtip.maxLines = floor((UIParent:GetHeight() - GAP * 2) / BUTTON_HEIGHT - INFOTIP_MAXLINE_CUTOFF)
+	newtip.maxLines = max(1,
+		floor((UIParent:GetHeight() - GAP * 2) / BUTTON_HEIGHT - INFOTIP_MAXLINE_CUTOFF))
 	newtip.totalLines = 0
 
 	return newtip
+end
+
+local function RefreshFrameFonts(frame, font)
+	for _, region in ipairs({frame:GetRegions()}) do
+		if region:IsObjectType("FontString") then
+			region:SetFont(Media:Fetch("font", font.Name), font.Size, font.Flag)
+		end
+	end
+	for _, child in ipairs({frame:GetChildren()}) do
+		RefreshFrameFonts(child, font)
+	end
+end
+
+function module:RefreshInfotips()
+	local font = module.db.profile.Fonts.Infotip
+	for _, infotip in pairs(infotipStorage) do
+		module:AnchorInfotip(infotip)
+		RefreshFrameFonts(infotip, font)
+		module:ApplyInfotipBackdrop(infotip, infotip.infotext:GetName())
+	end
+end
+
+function module:HideInfotips()
+	for _, infotip in pairs(infotipStorage) do
+		infotip:Hide()
+	end
 end

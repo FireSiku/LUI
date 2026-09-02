@@ -8,7 +8,6 @@ local LUI = select(2, ...)
 ---@class LUI.Artwork : LUIModule
 local module = LUI:GetModule("Artwork")
 
---Table to hold all panels frames.
 local TEX_DIR = [[Interface\AddOns\LUI\media\templates\v4\]]
 local OLD_DIR = [[Interface\AddOns\LUI\media\templates\v3\]]
 
@@ -42,7 +41,8 @@ function module:CreateOrb()
 	galaxy1anim.rotation = galaxy1anim:CreateAnimation("Rotation")
 	galaxy1anim.rotation:SetDegrees(360)
 	galaxy1anim.rotation:SetDuration(35)
-	C_Timer.NewTicker(1, function() galaxy1anim:Play() end)
+	galaxy1anim:SetLooping("REPEAT")
+	galaxy1anim:Play()
 
 	-- Second Galaxy Anim
 	local galaxy2 = CreateFrame("Frame", "LUIArtwork_OrbGalaxy2", orb)
@@ -59,7 +59,8 @@ function module:CreateOrb()
 	galaxy2anim.rotation = galaxy2anim:CreateAnimation("Rotation")
 	galaxy2anim.rotation:SetDegrees(360)
 	galaxy2anim.rotation:SetDuration(18)
-	C_Timer.NewTicker(1, function() galaxy2anim:Play() end)
+	galaxy2anim:SetLooping("REPEAT")
+	galaxy2anim:Play()
 
 	-- "Lost" Galaxy Anim. This was part of the orb originally, but the texture went missing shortly after, back in 2011.
 	-- Adding it back as an optional effect as the effect is much stronger than the others. 
@@ -77,19 +78,16 @@ function module:CreateOrb()
 	galaxy3anim.rotation = galaxy3anim:CreateAnimation("Rotation")
 	galaxy3anim.rotation:SetDegrees(360)
 	galaxy3anim.rotation:SetDuration(30)
-	C_Timer.NewTicker(1, function() galaxy3anim:Play() end)
+	galaxy3anim:SetLooping("REPEAT")
+	galaxy3anim:Play()
 
 	-- Additional textures around the Orb
-	local cycleRing = CreateFrame("Frame", "LUIArtwork_OrbCycleRing", orb, "BackdropTemplate")
+	local cycleRing = CreateFrame("Frame", "LUIArtwork_OrbCycleRing", orb)
 	cycleRing:SetSize(115, 115)
 	cycleRing:SetPoint("CENTER", orb, "CENTER", 0, -1)
 	cycleRing:SetFrameStrata("BACKGROUND")
-	cycleRing:SetBackdrop({
-		bgFile = OLD_DIR.."ring_inner4", edgeSize = 1,
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border"
-	})
-	cycleRing:SetBackdropColor(0.25, 0.25, 0.25, 0.75)
-	cycleRing:SetBackdropBorderColor(0, 0, 0, 0)
+	local cycleRingTexture = LUI:CreateFrameTexture(cycleRing, OLD_DIR.."ring_inner4")
+	cycleRingTexture:SetVertexColor(0.25, 0.25, 0.25, 0.75)
 
 	-- Clicker
 	local orbClicker = CreateFrame("Button", "LUIArtwork_OrbClicker", orb, "SecureHandlerClickTemplate")
@@ -153,39 +151,37 @@ function module:CreateOrb()
 		end
 		
 	end)
+	SecureHandlerWrapScript(orbClicker, "PostClick", orbClicker, [[
+		if not PlayerInCombat() then return end
+		local show = not self:GetAttribute("panelsOpen")
+		self:SetAttribute("panelsOpen", show)
+		local count = self:GetAttribute("protectedCount") or 0
+		for i = 1, count do
+			local frame = self:GetFrameRef("protected"..i)
+			if frame then
+				if show then frame:Show() else frame:Hide() end
+			end
+		end
+	]])
 
 	-- Additional textures around the Orb
-	local outerRing = CreateFrame("Frame", "LUIArtwork_OrbOuterRing", orb, "BackdropTemplate")
+	local outerRing = CreateFrame("Frame", "LUIArtwork_OrbOuterRing", orb)
 	outerRing:SetSize(103, 103)
 	outerRing:SetPoint("CENTER", orb, "CENTER", 0, -1)
 	outerRing:SetFrameStrata("LOW")
-	outerRing:SetBackdrop({
-		bgFile = OLD_DIR.."ring", edgeSize = 1,
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		
-	})
-	outerRing:SetBackdropColor(0.25, 0.25, 0.25, 1)
-	outerRing:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI:CreateFrameTexture(outerRing, OLD_DIR.."ring"):SetVertexColor(0.25, 0.25, 0.25, 1)
 
-	local middleRing = CreateFrame("Frame", "LUIArtwork_OrbMiddleRing", orb, "BackdropTemplate")
+	local middleRing = CreateFrame("Frame", "LUIArtwork_OrbMiddleRing", orb)
 	middleRing:SetSize(115, 115)
 	middleRing:SetPoint("CENTER", orb, "CENTER", 0, -1)
 	middleRing:SetFrameStrata("LOW")
-	middleRing:SetBackdrop({
-		bgFile = OLD_DIR.."ring_inner2", edgeSize = 1,
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border"
-	})
-	middleRing:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI:CreateFrameTexture(middleRing, OLD_DIR.."ring_inner2")
 
-	local innerRing = CreateFrame("Frame", "LUIArtwork_OrbInnerRing", orb, "BackdropTemplate")
+	local innerRing = CreateFrame("Frame", "LUIArtwork_OrbInnerRing", orb)
 	innerRing:SetSize(77, 75)
 	innerRing:SetPoint("CENTER", orb, "CENTER", 1, -1)
 	innerRing:SetFrameStrata("LOW")
-	innerRing:SetBackdrop({
-		bgFile = OLD_DIR.."ring", edgeSize = 1,
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border"
-	})
-	innerRing:SetBackdropBorderColor(0, 0, 0, 0)
+	LUI:CreateFrameTexture(innerRing, OLD_DIR.."ring")
 	innerRing:SetFrameLevel(middleRing:GetFrameLevel() + 1)
 
 	module.Orb = orb
@@ -194,15 +190,30 @@ function module:CreateOrb()
 	orb.Galaxy2 = galaxy2Tex
 	orb.Galaxy3 = galaxy3Tex
 	orb.LostGalaxy = galaxy3
-	orb.Cycle = cycleRing
+	orb.Cycle = cycleRingTexture
 	orb.Clicker = orbClicker
 	orb.ClickerTex = tex
 
 	module:RefreshOrb()
 end
 
+function module:SyncOrbState()
+	if not module.Orb then return end
+	local anyShown = false
+	for kind in module:IterateNavButtons() do
+		if module.db.profile.LUITextures[kind].IsShown then
+			anyShown = true
+			break
+		end
+	end
+	module.Orb.ClickerTex:SetAlpha(anyShown and 0.75 or 0)
+	if not InCombatLockdown() then
+		module.Orb.Clicker:SetAttribute("panelsOpen", anyShown)
+	end
+end
+
 function module:SetOrbRingColor(r, g, b)
-	module.Orb.Cycle:SetBackdropColor(r, g, b, 0.75)
+	module.Orb.Cycle:SetVertexColor(r, g, b, 0.75)
 end
 
 function module:RefreshOrb()
@@ -222,8 +233,6 @@ function module:RefreshOrb()
 	orb.Galaxy2:SetVertexColor(r, g, b, 1)
 	orb.Galaxy3:SetVertexColor(r, g, b, 1)
 	orb.ClickerTex:SetVertexColor(r, g, b, 0.75)
-	--orb.Cycle:SetBackdropColor(unpack(db.orb_cycle))
-
 	if db.LostGalaxy then
 		orb.LostGalaxy:Show()
 	else

@@ -10,6 +10,7 @@ local LUI = Opt.LUI
 local L = LUI.L
 
 local IsShiftKeyDown = _G.IsShiftKeyDown
+local InCombatLockdown = _G.InCombatLockdown
 
 local CPanel = Opt:CreateModuleOptions("Control Panel", LUI)
 CPanel.order = 3
@@ -22,13 +23,15 @@ local function CreateModuleButton(name, mod, order)
 	if mod.enableButton then
 		return Opt:EnableButton({name = name, desc = L["Core_ModuleClickHint"],
 			order = order,
+			disabled = InCombatLockdown,
 			enableFunc = function() return mod:IsEnabled() end,
 			func = function(info, btn)
 				if IsShiftKeyDown() then
 					mod.db:ResetProfile()
 					mod:ModPrint(L["Core_ModuleReset"])
 				else
-					if mod.VToggle then mod:VToggle()
+					if mod.legacyNamespace and mod.Toggle then mod:Toggle()
+					elseif mod.VToggle then mod:VToggle()
 					elseif mod.Toggle then mod:Toggle()
 					end
 					mod:ModPrint((mod:IsEnabled()) and L["API_BtnEnabled"] or L["API_BtnDisabled"])
@@ -53,7 +56,7 @@ local function GenerateModuleButtons()
 		-- LUI modules are registered before the load-on-demand options addon is
 		-- loaded. Build a concrete AceConfig args table here; this embedded
 		-- AceConfig version does not accept a function for a group's args field.
-		if mod.registered then
+		if mod.registered and not mod.controlPanelHidden then
 			table.insert(modules, {name = name, mod = mod})
 		end
 	end
@@ -66,43 +69,10 @@ local function GenerateModuleButtons()
     return args
 end
 
-local infotext = LUI:GetModule("Infotext", true)
-local function GenerateInfotextButtons()
-	local args = {}
-	for name, obj in infotext.LDB:DataObjectIterator() do
-		args[name] = Opt:EnableButton({name = name,
-			enableFunc = function() return true end,
-			func = function() infotext:ToggleInfotext(name) end
-		})
-	end
-	return args
-end
-
-local addonMod = LUI:GetModule("Addons", true)
-local function GenerateAddonSupportButtons()
-	local args = {}
-	args.Desc = Opt:Desc({name = L["CPanel_AddonDesc"]})
-	args.Break = Opt:Spacer({width = "full"})
-	for name, mod in addonMod:IterateModules() do
-		args[name] = Opt:Execute({name = format(L["CPanel_AddonReset"], name),
-			func = function()
-				--addonMod.db.Installed[name] = nil
-				addonMod:OnEnable()
-			end
-		})
-	end
-	return args
-end
-
 -- ####################################################################################################################
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
 CPanel.args = {
 	Modules = Opt:Group({name = L["CPanel_Modules"], args = GenerateModuleButtons()}),
-	Infotext = Opt:Group({name = L["CPanel_Infotext"], disabled = function() return not (infotext and infotext.registered) end}),
-	Addons = Opt:Group({name = L["CPanel_Addons"], disabled = function() return not (addonMod and addonMod.registered) end}),
 }
-
-if infotext and infotext.registered then CPanel.args.Infotext.args = GenerateInfotextButtons() end
-if addonMod and addonMod.registered then CPanel.args.Addons.args = GenerateAddonSupportButtons() end

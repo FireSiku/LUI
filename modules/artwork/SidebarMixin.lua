@@ -22,6 +22,36 @@ local _sidebars = {}
 
 local BUTTON_OFFSET = 85
 local ANIM_DURATION = 0.5
+local DRAWER_BAR_OFFSET = 0.625
+local LEFT_BAR_FINE_TUNE = 0.07
+
+local function IsDominosAnchor(frameName, frame)
+	return type(frameName) == "string"
+		and frameName:match("^DominosFrame%d+$") ~= nil
+		and frame
+		and type(frame.ShowFrame) == "function"
+		and type(frame.HideFrame) == "function"
+end
+
+local function SetAnchoredFrameShown(frameName, shown)
+	local frame = frameName and _G[frameName]
+	if not frame or (frame.IsForbidden and frame:IsForbidden()) then return end
+
+	if IsDominosAnchor(frameName, frame) then
+		frame[shown and "ShowFrame" or "HideFrame"](frame)
+	elseif shown then
+		frame:Show()
+	else
+		frame:Hide()
+	end
+end
+
+local function RestoreAnchoredFrame(self, frameName, onlyIfDisabled)
+	if onlyIfDisabled and self.db.Enable and self.db.Anchor == frameName then return end
+	SetAnchoredFrameShown(frameName, true)
+end
+
+local RestoreAnchoredFrameOutOfCombat = LUI.OutOfCombatWrapper(RestoreAnchoredFrame)
 
 -- ####################################################################################################################
 -- ##### Mixin Functions ##############################################################################################
@@ -33,13 +63,12 @@ function SidebarMixin:Open()
 		-- Additionally, if called while already open, force it without playing the animation.
 		if self.db.OpenInstant or InCombatLockdown() or self:IsOpen() then
 			self.Drawer:SetAlpha(1)
-			-- Protected Bartender/action-bar frames are toggled by the secure
+			-- Protected anchored action-bar frames are toggled by the secure
 			-- PostClick wrapper while in combat.
 			if not InCombatLockdown() then
 				self.BtnAnchorOpen:Show()
 				self.BtnAnchor:Hide()
-				local anchoredFrame = _G[self.db.Anchor]
-				if anchoredFrame then anchoredFrame:Show() end
+				SetAnchoredFrameShown(self.db.Anchor, true)
 			end
 		else
 			self.OpenAnim:Play()
@@ -54,13 +83,12 @@ function SidebarMixin:Close()
 		-- Additionally, if called while already closed, force it without playing the animation.
 		if self.db.OpenInstant or InCombatLockdown() or not self:IsOpen() then
 			self.Drawer:SetAlpha(0)
-			-- Protected Bartender/action-bar frames are toggled by the secure
+			-- Protected anchored action-bar frames are toggled by the secure
 			-- PostClick wrapper while in combat.
 			if not InCombatLockdown() then
 				self.BtnAnchorOpen:Hide()
 				self.BtnAnchor:Show()
-				local anchoredFrame = _G[self.db.Anchor]
-				if anchoredFrame then anchoredFrame:Hide() end
+				SetAnchoredFrameShown(self.db.Anchor, false)
 			end
 		else
 			self.CloseAnim:Play()
@@ -83,24 +111,36 @@ end
 
 function SidebarMixin:SecureToggle(showAnchor)
 	return "local showAnchor = "..tostring(showAnchor)..[=[
-		local anchoredFrame = self:GetFrameRef("anchor")
-		local otherFrame = self:GetFrameRef("otherFrame")
-		if not PlayerInCombat() then return end
-		
-		if showAnchor then
-			anchoredFrame:Show()
-		else
-			anchoredFrame:Hide()
+			local anchoredFrame = self:GetFrameRef("anchor")
+			local otherFrame = self:GetFrameRef("otherFrame")
+			if not PlayerInCombat() or not self:GetAttribute("secureEnabled") then return end
+			local usesStateHidden = self:GetAttribute("anchorUsesStateHidden")
+			
+			if anchoredFrame and usesStateHidden then
+				if showAnchor then
+					anchoredFrame:SetAttribute("state-hidden", nil)
+				else
+					anchoredFrame:SetAttribute("state-hidden", true)
+				end
+			elseif anchoredFrame and showAnchor then
+				anchoredFrame:Show()
+			elseif anchoredFrame then
+				anchoredFrame:Hide()
 		end
 
-		otherFrame:Show()
+		if otherFrame then otherFrame:Show() end
 		self:Hide()
 	]=]
 end
 
 --- Refresh the sidebar's settings and position
 function SidebarMixin:Refresh()
-	local r, g, b, a = module:RGBA("SidebarRight")
+	local r, g, b = module:RGBA("Sidebar"..self.side)
+	local previousAnchor = self.activeAnchor
+	if previousAnchor and previousAnchor ~= self.db.Anchor then
+		RestoreAnchoredFrameOutOfCombat(self, previousAnchor)
+	end
+	self.activeAnchor = self.db.Anchor
 
 	LUI:RegisterConfig(self, self.db)
 	LUI:RestorePosition(self)
@@ -120,12 +160,25 @@ function SidebarMixin:Refresh()
 			self:Close()
 		end
 	else
+		self.OpenAnim:Stop()
+		self.CloseAnim:Stop()
+		self.Drawer:SetAlpha(0)
+		RestoreAnchoredFrameOutOfCombat(self, self.db.Anchor, true)
 		self:Hide()
 	end
 
-	if not InCombatLockdown() and _G[self.db.Anchor] then
-		self.BtnAnchor:SetFrameRef("anchor", _G[self.db.Anchor])
-		self.BtnAnchorOpen:SetFrameRef("anchor", _G[self.db.Anchor])
+	if not InCombatLockdown() then
+		local anchor = _G[self.db.Anchor]
+		local validAnchor = anchor and not (anchor.IsForbidden and anchor:IsForbidden())
+		self.BtnAnchor:SetAttribute("secureEnabled", validAnchor and true or false)
+		self.BtnAnchorOpen:SetAttribute("secureEnabled", validAnchor and true or false)
+		local usesStateHidden = IsDominosAnchor(self.db.Anchor, anchor)
+		self.BtnAnchor:SetAttribute("anchorUsesStateHidden", usesStateHidden and true or false)
+		self.BtnAnchorOpen:SetAttribute("anchorUsesStateHidden", usesStateHidden and true or false)
+		if validAnchor then
+			self.BtnAnchor:SetFrameRef("anchor", anchor)
+			self.BtnAnchorOpen:SetFrameRef("anchor", anchor)
+		end
 	end
 
 	if self.db.AutoPosition then
@@ -144,12 +197,17 @@ function SidebarMixin:AutoAdjust()
 end
 
 local function ApplyBT4Adjust(self)
-	if not C_AddOns.IsAddOnLoaded("Bartender4") or not (strsub(self.db.Anchor,1, 3) == "BT4") then return end
+	if not C_AddOns.IsAddOnLoaded("Bartender4") or type(self.db.Anchor) ~= "string"
+		or strsub(self.db.Anchor, 1, 3) ~= "BT4" then return end
+	local bartender = _G.Bartender4
+	if not bartender or not bartender.db or type(bartender.UpdateModuleConfigs) ~= "function" then return end
+	local actionBars = bartender.db:GetNamespace("ActionBars", true)
 	local _, num = strsplit("r", self.db.Anchor)
-	local barOpt = Bartender4.db:GetNamespace("ActionBars").profile.actionbars[tonumber(num)]
-	local point, parent, relativePoint, x, y = self:GetPoint()
-	local texLeft, texBottom, texWidth, texHeight = self:GetRect()
-	local drawLeft, drawBottom, drawWidth, drawHeight = self.Drawer:GetRect()
+	local barOpt = actionBars and actionBars.profile and actionBars.profile.actionbars[tonumber(num)]
+	if not barOpt then return end
+	local _, _, _, x, y = self:GetPoint()
+	local _, _, texWidth = self:GetRect()
+	local _, _, drawWidth, drawHeight = self.Drawer:GetRect()
 
 	--- For both the Tex and Drawer sizes, we need to account for the UI Scale, then reapply the frame scale to get proper values
 	local barScale = self:GetEffectiveScale()
@@ -157,8 +215,16 @@ local function ApplyBT4Adjust(self)
 
 	-- X is the leftmost point of the sidebar artwork. The nature of the drawer artwork means adjustments are needed.
 	-- The proper offset is equal to 62.5% of the width of the drawer texture.
-	local texOffset = (self.side == "Right") and texWidth or 0
-	local barX = (x - texOffset - drawWidth*0.625) /uiScale * barScale
+	local barX
+	if self.side == "Right" then
+		barX = x - texWidth - drawWidth * DRAWER_BAR_OFFSET
+	else
+		-- The LEFT point already uses the sidebar's outer left edge as its
+		-- origin. The small extra offset centers Bartender inside the
+		-- asymmetric left drawer without changing the working right side.
+		barX = x + drawWidth * (DRAWER_BAR_OFFSET + LEFT_BAR_FINE_TUNE)
+	end
+	barX = barX / uiScale * barScale
 	
 	-- Y is the halfway point, so we have to add half the height of the drawer to the y position.
 	-- Then we can adjust based on a fixed offset based on the top of the drawer texture.
@@ -174,7 +240,7 @@ local function ApplyBT4Adjust(self)
 	barOpt.position.y = barY
 	barOpt.position.point = (self.side == "Right") and "RIGHT" or "LEFT"
 	barOpt.position.scale = barScale
-	Bartender4:UpdateModuleConfigs()
+	bartender:UpdateModuleConfigs()
 end
 
 -- Bartender rebuilds secure action-button state from UpdateModuleConfigs.
@@ -185,7 +251,7 @@ module.SidebarMixin = SidebarMixin
 
 -- ####################################################################################################################
 -- ##### Sidebar Factory ##############################################################################################
--- ####################################################################################################################\
+-- ####################################################################################################################
 
 --- Create a new Sidebar
 ---@param name string # Name of the sidebar
@@ -199,6 +265,18 @@ function module:CreateNewSideBar(name, side)
 
 	local isRight = (side == "Right")
 	local other = isRight and "LEFT" or "RIGHT"
+	local direction = isRight and -1 or 1
+	local innerOffset = isRight and -10 or 10
+	local drawerOffset = isRight and 10 or -10
+
+	local function SetSidebarTexCoord(texture, atlas)
+		local left, right, top, bottom = LUI:GetCoordAtlas(atlas)
+		if isRight then
+			texture:SetTexCoord(left, right, top, bottom)
+		else
+			texture:SetTexCoord(right, left, top, bottom)
+		end
+	end
 
 	local sidedb = module.db.profile.SideBars[name]
 	local sbarName = "LUISidebar"..name
@@ -213,45 +291,47 @@ function module:CreateNewSideBar(name, side)
 	sbar:SetSize(57, 365)
 	sbar:SetPoint(other, sidebar, other, 0, 0)
 	sbar:SetTexture("Interface\\AddOns\\LUI\\media\\templates\\v4\\sidebar_base")
-	sbar:SetTexCoord(LUI:GetCoordAtlas("sidebar_base"))
+	SetSidebarTexCoord(sbar, "sidebar_base")
 	sbar:Show()
 
 	-- Button Anchor
 	local btnAnchor = CreateFrame("Button", sbarName.."ButtonAnchor", sidebar, "SecureHandlerClickTemplate")
 	btnAnchor:SetSize(22, 245)
-	btnAnchor:SetPoint(other, sidebar, other, -10, 0)
+	btnAnchor:SetPoint(other, sidebar, other, innerOffset, 0)
 	btnAnchor:Show()
 
 	-- Button Anchor
 	local btnAnchorOpen = CreateFrame("Button", sbarName.."ButtonAnchorOpen", sidebar, "SecureHandlerClickTemplate")
 	btnAnchorOpen:SetSize(22, 245)
-	btnAnchorOpen:SetPoint(other, sidebar, other, -10 - BUTTON_OFFSET, 0)
+	btnAnchorOpen:SetPoint(other, sidebar, other, innerOffset + direction * BUTTON_OFFSET, 0)
 	btnAnchorOpen:Hide()
 	
 	local drawer = sidebar:CreateTexture(sbarName.."Drawer", "BACKGROUND")
 	drawer:SetSize(100, 247)
 	drawer:SetTexture("Interface\\AddOns\\LUI\\media\\templates\\v4\\sidebar_drawer")
-	drawer:SetTexCoord(LUI:GetCoordAtlas("sidebar_drawer"))
-	drawer:SetPoint(other, btnAnchorOpen, other, 10, 0)
+	SetSidebarTexCoord(drawer, "sidebar_drawer")
+	drawer:SetPoint(other, btnAnchorOpen, other, drawerOffset, 0)
 	drawer:SetAlpha(0)
 
 	local drawerButton = btnAnchor:CreateTexture(sbarName.."DrawerButton", "BACKGROUND")
 	drawerButton:SetTexture("Interface\\AddOns\\LUI\\media\\templates\\v4\\sidebar_button")
-	drawerButton:SetTexCoord(LUI:GetCoordAtlas("sidebar_button"))
-	-- drawerButton:SetPoint(other, btnAnchor, other, 0, 0)
+	SetSidebarTexCoord(drawerButton, "sidebar_button")
 	drawerButton:SetAllPoints(btnAnchor)
 	drawerButton:Show()
 
 	local drawerButtonOpen = btnAnchorOpen:CreateTexture(sbarName.."DrawerButton", "BACKGROUND")
 	drawerButtonOpen:SetTexture("Interface\\AddOns\\LUI\\media\\templates\\v4\\sidebar_button")
-	drawerButtonOpen:SetTexCoord(LUI:GetCoordAtlas("sidebar_button"))
-	-- drawerButton:SetPoint(other, btnAnchor, other, 0, 0)
+	SetSidebarTexCoord(drawerButtonOpen, "sidebar_button")
 	drawerButtonOpen:SetAllPoints(btnAnchorOpen)
 	drawerButtonOpen:Show()
 
 	-- Set the hover animations, variables are localized to prevent unnecessary calls. 
 	local h1, h2, h3, h4 = LUI:GetCoordAtlas("sidebar_button_hover")
 	local h5, h6, h7, h8 = LUI:GetCoordAtlas("sidebar_button")
+	if not isRight then
+		h1, h2 = h2, h1
+		h5, h6 = h6, h5
+	end
 	btnAnchor:SetScript("OnEnter", function()
 		drawerButton:SetTexture("Interface\\AddOns\\LUI\\media\\templates\\v4\\sidebar_button_hover")
 		drawerButton:SetTexCoord(h1, h2, h3, h4)
@@ -280,17 +360,14 @@ function module:CreateNewSideBar(name, side)
 
 	local drawOpen = btnAnchor:CreateAnimationGroup()
 	local a3 = drawOpen:CreateAnimation("Translation")
-	a3:SetOffset(-BUTTON_OFFSET, 0)
+	a3:SetOffset(direction * BUTTON_OFFSET, 0)
 	a3:SetDuration(ANIM_DURATION)
 	drawOpen:SetScript("OnPlay", function() drawerAlphaIn:Play() end)
 	drawOpen:SetScript("OnFinished", function()
 		if not InCombatLockdown() then
 			btnAnchorOpen:Show()
 			btnAnchor:Hide()
-			local anchoredFrame = _G[sidebar.db.Anchor]
-			if anchoredFrame then 
-				anchoredFrame:Show()
-			end
+			SetAnchoredFrameShown(sidebar.db.Anchor, true)
 		end
 	end)
 
@@ -303,16 +380,13 @@ function module:CreateNewSideBar(name, side)
 	
 	local drawClose = btnAnchorOpen:CreateAnimationGroup()
 	local a4 = drawClose:CreateAnimation("Translation")
-	a4:SetOffset(BUTTON_OFFSET, 0)
+	a4:SetOffset(-direction * BUTTON_OFFSET, 0)
 	a4:SetDuration(ANIM_DURATION)
 	a4:SetStartDelay(ANIM_DURATION/4)
 	drawClose:SetScript("OnPlay", function()
 		drawerAlphaOut:Play()
 		if not InCombatLockdown() then
-			local anchoredFrame = _G[sidebar.db.Anchor]
-			if anchoredFrame then
-				anchoredFrame:Hide()
-			end
+			SetAnchoredFrameShown(sidebar.db.Anchor, false)
 		end
 	end)
 	drawClose:SetScript("OnFinished", function()

@@ -1,14 +1,13 @@
 ## Interface: 120100
-## Version: v2601b
+## Version: v2609
 ## Title: LUIOptions
-## Author: Siku, Nitsah
+## Author: Siku, Nitsah, Pahn
 ## Notes: Options Menu for modern versions of LUI.
 ## LoadOnDemand: 1
 ## X-Website: https://www.wowlui.com
 
 LUIOptions.lua
 General.lua
-Colors.lua
 CPanel.lua
 Artwork.lua
 Bags.lua
@@ -19,7 +18,6 @@ Merchant.lua
 Micromenu.lua
 Minimap.lua
 MirrorBar.lua
-Raidmenu.lua
 Tooltip.lua
 UIElements.lua
 Unitframes.lua

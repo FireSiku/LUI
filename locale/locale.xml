@@ -9,5 +9,5 @@
 	<Script file="locale-itIT.lua" />
 	<Script file="locale-koKR.lua" />
 	<Script file="locale-ptBR.lua" />
-	<Script file="locale-ruRU.lua" />
+	<Script file="locale-ruRu.lua" />
 </Ui>

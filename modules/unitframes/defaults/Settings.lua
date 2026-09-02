@@ -7,7 +7,6 @@ module.defaults.profile.Settings = {
 			ShowV2PartyTextures = true,
 			ShowV2ArenaTextures = true,
 			ShowV2BossTextures = true,
-			Castbars = true,
 			HideBlizzRaid = false,
 			AuratimerFont = "Prototype",
 			AuratimerSize = 12,

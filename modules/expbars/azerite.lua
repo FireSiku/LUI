@@ -4,7 +4,6 @@
 
 ---@class LUIAddon
 local LUI = select(2, ...)
-local L = LUI.L
 
 ---@class LUI.ExperienceBars
 local module = LUI:GetModule("Experience Bars")
@@ -24,11 +23,10 @@ AzeriteDataProvider.BAR_EVENTS = {
 
 function AzeriteDataProvider:ShouldBeVisible()
 	local db = module.db.profile
-	if LUI.IsRetail and db.ShowAzerite and C_AzeriteItem.HasActiveAzeriteItem() then
+	if db.ShowAzerite and C_AzeriteItem.HasActiveAzeriteItem() and not C_AzeriteItem.IsAzeriteItemAtMaxLevel() then
 		local itemLocation = C_AzeriteItem.FindActiveAzeriteItem()
 
-		-- Only show Azerite Bar when Heart is equipped
-		return itemLocation:IsEquipmentSlot()
+		return itemLocation and itemLocation:IsEquipmentSlot() and C_AzeriteItem.IsAzeriteItemEnabled(itemLocation)
 	end
 end
 
@@ -40,9 +38,5 @@ function AzeriteDataProvider:Update()
 end
 
 function AzeriteDataProvider:GetDataText()
-	local db = module.db.profile
-	if db.ShowAbsolute then
-		return format("AP (%s / %s)", self.barValue, self.barMax)
-	end
 	return "AP"
 end

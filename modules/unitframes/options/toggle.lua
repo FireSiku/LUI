@@ -9,7 +9,6 @@ local LUI = select(2, ...)
 
 ---@class LUI.Unitframes
 local module = LUI:GetModule("Unitframes")
-local Fader = LUI:GetModule("Fader", true) --[[@as LUI.Fader]]
 
 ---@class oUF
 local oUF = LUI.oUF
@@ -108,7 +107,10 @@ local ToggleMT = {
 
 -- Castbars for *target units are no longer supported as they had no event-driven updates 
 function module:UnitSupportsCastbar(unit)
-	return module.db.profile.Settings.Castbars and not unit:match(".+target$")
+	-- Castbars are controlled by each unit's Castbar.General.Enable setting.
+	-- The former global Settings.Castbars switch duplicated that control and
+	-- could silently keep every per-unit castbar disabled after its UI was gone.
+	return not unit:match(".+target$")
 end
 
 module.ToggleUnit = setmetatable({
@@ -360,8 +362,6 @@ module.ToggleUnit = setmetatable({
 							if not IsInRaid() and UnitInParty("player") then
 								party:Show()
 							else
-								-- GetNumGroupMembers() - total number of players in the group (either party or raid), 0 if not in a group. 
-								-- GetNumSubgroupMembers() - number of players in the player's sub-group, excluding the player. 
 								local numraid = GetNumGroupMembers()
 								local numparty = GetNumSubgroupMembers()
 								if dbUnit.ShowInRealParty and UnitInParty("player") then
@@ -489,10 +489,6 @@ module.ToggleUnit = setmetatable({
 					end
 				end
 			else
-				-- oUF kills it, we save it!
-				-- Should be handled fine by the new hideblizzard tool
-				-- Arena_LoadUI_ = ArenaLoadUI
-
 				local arenaParent = CreateFrame("Frame", "oUF_LUI_arena", UIParent)
 				arenaParent:SetScale(dbUnit.Scale)
 				arenaParent:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
@@ -1110,7 +1106,7 @@ module.ApplySettings = function(unit, force)
 
 			-- Range fading can be switched on after the frame was created. The
 			-- original layout only registered the element during initial spawn.
-			local useRange = unit == "raid" or (unit == "party" and dbUnit.RangeFade and dbUnit.Fader and not dbUnit.Fader.Enable)
+			local useRange = unit == "raid" or (unit == "party" and dbUnit.RangeFade)
 			if useRange then
 				frame.Range = frame.Range or {insideAlpha = 1, outsideAlpha = 0.5}
 				frame:EnableElement("Range")
@@ -1145,15 +1141,6 @@ module.ApplySettings = function(unit, force)
 				if not frame.V2Tex then module.funcs.V2Textures(frame, _G["oUF_LUI_boss"..frame:GetName():match("%d")]) end
 				frame.V2Tex:Reposition()
 				if module.db.profile.Settings.ShowV2BossTextures then frame.V2Tex:Show() else frame.V2Tex:Hide() end
-			end
-
-			-- -- fader
-			if Fader and dbUnit.Fader then
-				if dbUnit.Fader.Enable then
-					Fader:RegisterFrame(frame, dbUnit.Fader)
-				else
-					Fader:UnregisterFrame(frame)
-				end
 			end
 
 			LUI.Profiler.TraceScope(frame, unit, "Unitframes", 2)

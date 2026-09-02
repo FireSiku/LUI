@@ -1,10 +1,4 @@
---[[
-	Project....: LUI NextGenWoWUserInterface
-	File.......: DEBUG.lua
-	Description: Debugger for LUI
-	Version....: 0.1
-	Rev Date...: 14/08/11
-]]
+-- Runtime debug-state detection and debug output helpers.
 ---@diagnostic disable
 ---@class LUIAddon
 local LUI = select(2, ...)
@@ -13,7 +7,6 @@ local addonname = ...
 local version = C_AddOns.GetAddOnMetadata(addonname, "Version")
 local revision = C_AddOns.GetAddOnMetadata(addonname, "X-Curse-Packaged-Version")
 LUI.DEBUG = version ~= revision
--- LUI.DEBUG = true -- for debugging with core releases
 
 --------------------------------------------------
 -- / Localized API / --

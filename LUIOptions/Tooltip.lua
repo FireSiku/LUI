@@ -23,6 +23,10 @@ local function DisableIfCursorAnchor()
     return db.Cursor
 end
 
+local function DisableIfTexturedBackground()
+	return db.BgTexture ~= "None"
+end
+
 local healthBarHeightValues = {min = 1, max = 64, softMin = 4, softMax = 24, step = 1}
 local healthTextPositionValues = {min = -100, max = 100, softMin = -20, softMax = 20, step = 1}
 
@@ -44,8 +48,8 @@ Tooltip.args = {
     -- Position
     PositionHeader = Opt:Header({name = L["Position"]}),
     Cursor = Opt:Toggle({name = L["Tooltip_Cursor_Name"], desc = L["Tooltip_Cursor_Desc"], width = "full"}),
-    X = Opt:Input({name = L["API_XValue_Name"], desc = format(L["API_XValue_Desc"], L["Tooltip_Name"]), disabled = DisableIfCursorAnchor}),
-    Y = Opt:Input({name = L["API_YValue_Name"], desc = format(L["API_YValue_Desc"], L["Tooltip_Name"]), disabled = DisableIfCursorAnchor}),
+    X = Opt:PositionX({disabled = DisableIfCursorAnchor}),
+    Y = Opt:PositionY({disabled = DisableIfCursorAnchor}),
 	Point = Opt:Select({name = L["Anchor"], desc = L["AnchorDesc"], values = LUI.Points, disabled = DisableIfCursorAnchor}),
 
     -- Textures
@@ -53,10 +57,11 @@ Tooltip.args = {
     HealthBar = Opt:MediaStatusbar({name = L["Tooltip_HealthBar_Name"], desc = L["Tooltip_HealthBar_Desc"], width = "double"}),
     HealthBarHeight = Opt:Slider({name = "Health Bar Height", values = healthBarHeightValues}),
     Health = Opt:FontMenu({name = "Health Text"}),
-    HealthTextX = Opt:Slider({name = "Health Text X", values = healthTextPositionValues}),
-    HealthTextY = Opt:Slider({name = "Health Text Y", values = healthTextPositionValues}),
+    HealthTextX = Opt:OffsetX({name = "Left / Right", values = healthTextPositionValues}),
+    HealthTextY = Opt:OffsetY({name = "Down / Up", values = healthTextPositionValues}),
     SpacerTwo = Opt:Spacer({}),
     BgTexture = Opt:MediaBackground({name = L["Tooltip_BackgroundTex_Name"], desc = L["BackgroundDesc"], width = "double"}),
+	Background = Opt:Color({name = "Background Color", hasAlpha = true, disabled = DisableIfTexturedBackground}),
 
     -- Colors
     ColorHeader = Opt:Header({name = _G.COLORS}),
@@ -64,10 +69,10 @@ Tooltip.args = {
     MyGuild = Opt:Color({name = L["Tooltip_MyGuild"], desc = L["Tooltip_MyGuild_Desc"], hasAlpha = false}),
     SpacerFour = Opt:Spacer({}),
     Border = Opt:Color({name = L["API_BorderColor_Name"], hasAlpha = true}),
-    BorderColorType = Opt:Select({name = L["API_BorderType_Name"], values = LUI.ColorTypes,
-        get = function(info) return db.Colors.Border.t end, -- getter
+	BorderColorType = Opt:Select({name = L["API_BorderType_Name"], values = LUI.ColorTypes,
+		get = function() return db.Colors.Border.t end,
         set = function(info, value)
             db.Colors.Border.t = value
             module:Refresh()
-        end}), -- setter
+		end}),
 }

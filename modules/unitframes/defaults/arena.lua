@@ -173,7 +173,6 @@ module.defaults.profile.arena = {
 				Font = "Prototype",
 				Format = "Name",
 				IndividualColor = { r = 1, g = 1, b = 1 },
-				Length = "Medium",
 				Outline = "OUTLINE",
 				Point = "CENTER",
 				RelativePoint = "CENTER",
@@ -269,22 +268,5 @@ module.defaults.profile.arena = {
 				Size = 24,
 				X = 0,
 				Y = 0
-			},
-			Fader = {
-				Casting = true,
-				Combat = true,
-				Enable = false,
-				Health = true,
-				HealthClip = 1,
-				Hover = true,
-				HoverAlpha = 0.75,
-				InAlpha = 1,
-				OutAlpha = 0.1,
-				OutDelay = 0,
-				OutTime = 1.5,
-				Power = true,
-				PowerClip = 0.9,
-				Targeting = true,
-				UseGlobalSettings = true
 			},
 		}

@@ -15,13 +15,6 @@ local L = LUI.L
 local LOCALIZED_CLASS_NAMES_FEMALE = LOCALIZED_CLASS_NAMES_FEMALE
 local LOCALIZED_CLASS_NAMES_MALE = LOCALIZED_CLASS_NAMES_MALE
 
--- Default fonts used for specialized character sets. Currently here for documentation purposes.
--- TODO: Whenever a FontString may potentially get those characters, use an api call to detect those.
---           We could then detect those and replace the font with the correct font to keep support.
--- local UNIT_NAME_FONT_KOREAN = UNIT_NAME_FONT_KOREAN      -- Korean font
--- local UNIT_NAME_FONT_CHINESE = UNIT_NAME_FONT_CHINESE    -- Chinese/Japanese Font
--- local UNIT_NAME_FONT_CYRILLIC = UNIT_NAME_FONT_CYRILLIC  -- Russian Font
-
 -- ####################################################################################################################
 -- ##### StringUtils: EmmyLua #########################################################################################
 -- ####################################################################################################################
@@ -171,9 +164,7 @@ LUI.Directions = {
 	RIGHT = L["Point_Right"],
 }
 
----@TODO: Add Theme back when possible.
 LUI.ColorTypes = {
 	Individual = L["Color_Individual"],
-	--Theme = L["Color_Theme"],
 	Class = L["Color_Class"],
 }

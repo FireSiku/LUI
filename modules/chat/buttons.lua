@@ -13,13 +13,12 @@ local Chat = LUI:GetModule("Chat")
 local module = Chat:NewModule("Buttons", "LUIDevAPI", "AceHook-3.0")
 
 local L = LUI.L
-local db --luacheck:ignore
+local db
 
 --------------------------------------------------
 -- Local Variables
 --------------------------------------------------
 
-local FCF_SetChatWindowFontSize = _G.FCF_SetChatWindowFontSize
 local FCF_GetCurrentChatFrame = _G.FCF_GetCurrentChatFrame
 local ChatFontNormal = _G.ChatFontNormal
 local CHAT_FRAMES = _G.CHAT_FRAMES
@@ -27,40 +26,40 @@ local COMBATLOG = _G.COMBATLOG
 
 local lines = {}
 local copyFrame
+local killedFrameStates = setmetatable({}, {__mode = "k"})
 
 --------------------------------------------------
 -- Local Functions
 --------------------------------------------------
 
-local function getChatLines(...)
+local function getChatLines(frame)
 	wipe(lines)
-	local numLines = select("#", ...)
-	for i = 1, numLines do
-		local region = select(numLines-i+1, ...)
-		if region:GetObjectType() == "FontString" then
-			lines[i] = tostring(region:GetText())
+	for i = 1, frame:GetNumMessages() do
+		local text = frame:GetMessageInfo(i)
+		if text and not issecretvalue(text) then
+			lines[#lines + 1] = text
 		end
 	end
+	return table.concat(lines, "\n")
 end
 
 local function copyButtonOnClick(button, frame)
-	local _, size = frame:GetFont()
-	FCF_SetChatWindowFontSize(frame, frame, 0.01)
-	getChatLines(frame:GetRegions())
-	local text = table.concat(lines, "\n")
-	FCF_SetChatWindowFontSize(frame, frame, size)
+	local text = getChatLines(frame)
 	copyFrame:Show()
+	copyFrame.editBox:SetWidth(math.max(1, copyFrame.scrollArea:GetWidth() - 18))
 	copyFrame.editBox:SetText(text)
 	copyFrame.editBox:HighlightText(0)
 end
 
-local function createCopyButtton(frame)
+local function createCopyButton(frame)
+	if not frame then return end
 	local button = frame.copyButton
 
 	if not button then
 		button = CreateFrame("Button", nil, frame, "LUI_Chat_CopyButtonTemplate")
 		button.onClick = copyButtonOnClick
 		button.frame = frame
+		button.tooltipText = L["Copy chat button"]
 	end
 
 	button:SetScale(db.CopyScale)
@@ -72,41 +71,45 @@ local function configCopyButton(show)
 		if not copyFrame then
 			copyFrame = CreateFrame("Frame", "LUI_Chat_CopyFrame", UIParent)
 			tinsert(UISpecialFrames, "LUI_Chat_CopyFrame")
-			copyFrame:SetBackdrop({
+			LUI:ApplyFrameBackdrop(copyFrame, {
 				bgFile = [[Interface\DialogFrame\UI-DialogBox-Background]],
 				edgeFile = [[Interface\DialogFrame\UI-DialogBox-Border]],
 				tile = true, tileSize = 16, edgeSize = 16,
 				insets = { left = 3, right = 3, top = 5, bottom = 3 }
 			})
-			copyFrame:SetBackdropColor(0, 0, 0, 1)
+			LUI:SetFrameBackgroundColor(copyFrame, 0, 0, 0, 1)
 			copyFrame:SetSize(500, 400)
 			copyFrame:SetPoint("CENTER")
 			copyFrame:SetFrameStrata("DIALOG")
 			copyFrame:Hide()
 
-			local scrollArea = CreateFrame("ScrollFrame", "LUI_Chat_CopyScrollFrame", copyFrame, "UIPanelScrollFrameTemplate")
+			local scrollArea = CreateFrame("ScrollFrame", "LUI_Chat_CopyScrollFrame", copyFrame, "UIPanelInputScrollFrameTemplate")
 			scrollArea:SetPoint("TOPLEFT", 8, -30)
 			scrollArea:SetPoint("BOTTOMRIGHT", -30, 8)
 			copyFrame.scrollArea = scrollArea
 
-			local editBox = CreateFrame("EditBox", nil, copyFrame)
-			editBox:SetMultiLine(true)
+			for _, texture in ipairs({
+				scrollArea.TopLeftTex, scrollArea.TopRightTex, scrollArea.TopTex,
+				scrollArea.BottomLeftTex, scrollArea.BottomRightTex, scrollArea.BottomTex,
+				scrollArea.LeftTex, scrollArea.RightTex, scrollArea.MiddleTex,
+			}) do
+				texture:Hide()
+			end
+			scrollArea.CharCount:Hide()
+
+			local editBox = scrollArea.EditBox
 			editBox:SetMaxLetters(99999)
-			editBox:EnableMouse(true)
-			editBox:SetAutoFocus(false)
 			editBox:SetFontObject(ChatFontNormal)
-			editBox:SetSize(400, 270)
+			editBox:SetWidth(math.max(1, scrollArea:GetWidth() - 18))
 			editBox:SetScript("OnEscapePressed", function() copyFrame:Hide() end)
 			copyFrame.editBox = editBox
-
-			scrollArea:SetScrollChild(editBox)
 
 			local close = CreateFrame("Button", nil, copyFrame, "UIPanelCloseButton")
 			close:SetPoint("TOPRIGHT")
 		end
 
 		for i, name in ipairs(CHAT_FRAMES) do
-			createCopyButtton(_G[name])
+			createCopyButton(_G[name])
 		end
 	else
 		if not copyFrame then return end
@@ -122,6 +125,7 @@ local function configCopyButton(show)
 end
 
 local function createScrollButton(frame)
+	if not frame then return end
 	local button = frame.downButton
 
 	if not button then
@@ -173,73 +177,92 @@ local function configScrollButton(show)
 	end
 end
 
-local function hideButtons(frame)
-	frame.buttonFrame.Show = LUI.dummy
-	frame.buttonFrame:Hide()
+local function killFrame(frame)
+	if not frame then return end
+	if not killedFrameStates[frame] then
+		killedFrameStates[frame] = {shown = frame:IsShown()}
+	end
+	LUI:Kill(frame)
 end
 
-local chatButtonNames, voiceButtonNames
-if LUI.IsRetail then
-	chatButtonNames = {
-		"ChatFrameMenuButton",
-		"QuickJoinToastButton",
-	}
-	voiceButtonNames = {
-		"ChatFrameChannelButton",
-		"ChatFrameToggleVoiceDeafenButton",
-		"ChatFrameToggleVoiceMuteButton",
-	}
-else
-	chatButtonNames = {
-		"ChatFrameMenuButton",
-		"ChatFrameChannelButton",
-	}
+local function restoreFrame(frame)
+	if not frame then return end
+	local original = killedFrameStates[frame]
+	LUI:Unkill(frame)
+	if original then
+		frame:SetShown(original.shown)
+		killedFrameStates[frame] = nil
+	end
 end
+
+local function hideButtons(frame)
+	if not frame then return end
+	killFrame(frame.buttonFrame)
+end
+
+local chatButtonNames = {
+	"ChatFrameMenuButton",
+	"QuickJoinToastButton",
+}
+local voiceButtonNames = {
+	"ChatFrameChannelButton",
+	"ChatFrameToggleVoiceDeafenButton",
+	"ChatFrameToggleVoiceMuteButton",
+}
 
 local voiceHideFunc = function() return false end
-local voiceOrigFunc = function() return C_VoiceChat.IsLoggedIn() end
+local voiceVisibility = setmetatable({}, {__mode = "k"})
+
+local function updateTemporaryWindowHook()
+	local needed = db.HideButtons or db.CopyChat
+	if needed and not module:IsHooked("FCF_OpenTemporaryWindow") then
+		module:SecureHook("FCF_OpenTemporaryWindow")
+	elseif not needed and module:IsHooked("FCF_OpenTemporaryWindow") then
+		module:Unhook("FCF_OpenTemporaryWindow")
+	end
+end
 
 local function configButtons(hide)
 	if hide then
-		if module:IsHooked("FCF_OpenTemporaryWindow") then return end
-
-		module:SecureHook("FCF_OpenTemporaryWindow")
-		
 		for i, name in ipairs(chatButtonNames) do
 			local frame = _G[name]
-			LUI:Kill(frame)
+			killFrame(frame)
 		end
-		if LUI.IsRetail then
-			for i, name in pairs(voiceButtonNames) do
-				local frame = _G[name]
+		for i, name in ipairs(voiceButtonNames) do
+			local frame = _G[name]
+			if frame and not voiceVisibility[frame] then
+				voiceVisibility[frame] = {query = frame.isVisible}
+			end
+			if frame then
 				frame:SetVisibilityQueryFunction(voiceHideFunc)
-				frame:Hide()
+				frame:UpdateVisibleState()
 			end
 		end
 		for i, name in ipairs(CHAT_FRAMES) do
 			hideButtons(_G[name])
 		end
 	else
-		module:Unhook("FCF_OpenTemporaryWindow")
-
 		for i, name in ipairs(chatButtonNames) do
 			local frame = _G[name]
-			frame.Show = nil
-			frame:Show()
+			restoreFrame(frame)
 		end
-		if LUI.IsRetail then
-			for i, name in pairs(voiceButtonNames) do
-				local frame = _G[name]
-				frame:SetVisibilityQueryFunction(voiceOrigFunc)
-				if C_VoiceChat.IsLoggedIn() then
-					frame:Show()
+		for i, name in ipairs(voiceButtonNames) do
+			local frame = _G[name]
+			if frame then
+				local original = voiceVisibility[frame]
+				local visibility = original and original.query
+				if not visibility then
+					frame.isVisible = nil
+				else
+					frame:SetVisibilityQueryFunction(visibility)
 				end
+				voiceVisibility[frame] = nil
+				frame:UpdateVisibleState()
 			end
 		end
 		for i, name in ipairs(CHAT_FRAMES) do
 			local frame = _G[name]
-			frame.buttonFrame.Show = nil
-			frame.buttonFrame:Show()
+			restoreFrame(frame.buttonFrame)
 		end
 
 		configScrollButton(false)
@@ -272,9 +295,14 @@ end
 function module:FCF_OpenTemporaryWindow()
 	local frame = FCF_GetCurrentChatFrame()
 
-	hideButtons(frame)
-	if db.ScrollReminder then
+	if db.HideButtons then
+		hideButtons(frame)
+	end
+	if db.HideButtons and db.ScrollReminder then
 		createScrollButton(frame)
+	end
+	if db.CopyChat then
+		createCopyButton(frame)
 	end
 end
 
@@ -292,32 +320,6 @@ module.defaults = {
 	}
 }
 
---------------------------------------------------
--- Load Functions
---------------------------------------------------
-
-function module:LoadOptions()
-	local function buttonsDisabled()
-		return not db.HideButtons
-	end
-	local function scrollButtonDisabled()
-		return not db.HideButtons and not db.ScrollReminder
-	end
-	local function copyButtonDisabled()
-		return not db.CopyChat
-	end
-
-	local options = self:NewGroup(L["Buttons"], 3, "generic", "Refresh", {
-		HideButtons = self:NewToggle(L["Hide Buttons"], nil, 1, true),
-		ScrollReminder = self:NewToggle(L["Scroll to bottom button"], L["Show scroll to bottom button when scrolled up"], 2, true, "normal", buttonsDisabled),
-		ScrollScale = self:NewSlider(L["Scale"], L["Scale of the scroll to bottom button"], 3, 0.5, 2, 0.05, true, true, nil, scrollButtonDisabled),
-		CopyChat = self:NewToggle(L["Copy chat button"], L["Show copy chat button"], 4, true, "normal"),
-		CopyScale = self:NewSlider(L["Scale"], L["Scale of the copy chat button"], 5, 0.5, 2, 0.05, true, true, nil, copyButtonDisabled),
-	})
-
-	return options
-end
-
 function module:Refresh(info, value)
 	if type(info) == "table" then
 		self:SetDBVar(info, value)
@@ -325,11 +327,12 @@ function module:Refresh(info, value)
 
 	configButtons(db.HideButtons)
 	configScrollButton(db.HideButtons and db.ScrollReminder)
-	--configCopyButton(db.CopyChat)
+	configCopyButton(db.CopyChat)
+	updateTemporaryWindowHook()
 end
 
 function module:OnInitialize()
-	db, dbd = Chat:Namespace(self)
+	db = Chat:Namespace(self)
 end
 
 module.DBCallback = module.OnInitialize
@@ -341,18 +344,14 @@ function module:OnEnable()
 			configScrollButton(true)
 		end
 	end
-	-- if db.CopyChat then
-	-- 	configCopyButton(true)
-	-- end
+	configCopyButton(db.CopyChat)
+	updateTemporaryWindowHook()
 end
 
 function module:OnDisable()
-	self:UnhookAll()
-
 	if db.HideButtons then
 		configButtons(false)
 	end
-	-- if db.CopyChat then
-	-- 	configCopyButton(false)
-	-- end
+	configCopyButton(false)
+	self:UnhookAll()
 end
