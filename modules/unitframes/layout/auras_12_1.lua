@@ -10,20 +10,16 @@ local LUI = select(2, ...)
 local module = LUI:GetModule("Unitframes")
 local Media = LibStub("LibSharedMedia-3.0")
 
-local function BuildFilter(kind, db)
-    local filter = kind == "Buffs" and "HELPFUL" or "HARMFUL"
-    if db.PlayerOnly and not db.IncludePet then
-        filter = filter .. "|PLAYER"
-    end
-    return filter
+local function BuildFilter(kind)
+    return kind == "Buffs" and "HELPFUL" or "HARMFUL"
 end
 
 local function BuildCandidateFilters(db)
-    if db.PlayerOnly and db.IncludePet then
+    if db.PlayerOnly then
         return {isFromPlayerOrPlayerPet = true}
     end
 
-    return {}
+    return nil
 end
 
 local function BuildLayout(db)
@@ -44,11 +40,26 @@ local function GetContainerLayoutLimit(db)
     return math.max(size, perRow * size + (perRow - 1) * spacing)
 end
 
+local function ApplyButtonAppearance(button, db)
+    local settings = module.db.profile.Settings
+
+    button:SetSize(db.Size, db.Size)
+    button.Cooldown:SetReverse(db.CooldownReverse == true)
+    button.Cooldown:SetAlpha(db.DisableCooldown == true and 0 or 1)
+
+    button.Time:SetAlpha(db.AuraTimer == true and 1 or 0)
+    button.Time:SetFont(
+        Media:Fetch("font", settings.AuratimerFont),
+        settings.AuratimerSize,
+        settings.AuratimerFlag
+    )
+
+    button.AuraTypeHolder:SetAlpha(db.ColorByType == true and 1 or 0)
+end
+
 local function MakeInitializer(state, kind)
     return function(button)
         local db = state.db
-        local settings = module.db.profile.Settings
-        button:SetSize(db.Size, db.Size)
 
         local background = button:CreateTexture(nil, "BACKGROUND")
         background:SetAllPoints(button)
@@ -99,18 +110,20 @@ local function MakeInitializer(state, kind)
         })
 
         button:SetTooltipAnchorPoint("ANCHOR_BOTTOMRIGHT", 0, 0)
+        ApplyButtonAppearance(button, db)
+    end
+end
 
-        cooldown:SetReverse(db.CooldownReverse == true)
-        cooldown:SetAlpha(db.DisableCooldown == true and 0 or 1)
+local function RefreshButtonAppearance(container, db)
+    local key = container.__luiKey
+    local count = container:GetAuraGroupFrameCount(key)
 
-        timer:SetAlpha(db.AuraTimer == true and 1 or 0)
-        timer:SetFont(
-            Media:Fetch("font", settings.AuratimerFont),
-            settings.AuratimerSize,
-            settings.AuratimerFlag
-        )
-
-        auraTypeHolder:SetAlpha(db.ColorByType == true and 1 or 0)
+    -- ApplySettings is deferred until combat ends. At that point Blizzard's
+    -- public group-frame accessors can safely update both active and spare
+    -- buttons without reading any aura data.
+    for index = 1, count do
+        local button = container:GetAuraGroupFrame(key, index)
+        if button then ApplyButtonAppearance(button, db) end
     end
 end
 
@@ -154,7 +167,7 @@ local function CreateContainer(owner, unit, kind, db)
     container:SetUnit(unit)
 
     local key = container:AddGroup(
-        BuildFilter(kind, db),
+        BuildFilter(kind),
         {
             maxFrameCount = db.Num or 8,
             initializeFrame = MakeInitializer(state, kind),
@@ -202,12 +215,6 @@ local function Apply(owner, unit, kind, db)
         return
     end
 
-    -- WoW 12.1 AuraContainers own their AuraButtons. Disabling a container
-    -- clears its managed AuraButtons, so the next enable recreates them and
-    -- runs initializeFrame with the current LUI settings. This avoids touching
-    -- AuraButtons after initialization, when Blizzard may make them forbidden.
-    container:SetEnabled(false)
-
     container.__luiState.db = db
 
     container:ClearAllPoints()
@@ -221,7 +228,7 @@ local function Apply(owner, unit, kind, db)
 
     container:SetAuraGroupFilterString(
         container.__luiKey,
-        BuildFilter(kind, db)
+        BuildFilter(kind)
     )
     container:SetAuraGroupCandidateFilters(
         container.__luiKey,
@@ -256,6 +263,7 @@ local function Apply(owner, unit, kind, db)
     -- resolved public unit token.
     container:SetUnit(unit)
 
+    RefreshButtonAppearance(container, db)
     container:SetEnabled(true)
     container:Show()
     container:UpdateAllAuras()
