@@ -478,9 +478,8 @@ local function NewUnitOptionGroup(unit, order, categorized)
 
         auraOptions.args.Buffs = Opt:Group({name = "Buffs", order = categorized and 1 or 60, db = dbUnit.Aura.Buffs, args = {
             Enable = Opt:Toggle({name = "Enabled", width = "full"}),
-            ColorByType = Opt:Toggle({name = "Color By Type"}),
-            PlayerOnly = Opt:Toggle({name = "Player Only"}),
-            IncludePet = Opt:Toggle({name = "Include Pet", disabled = function() return not dbUnit.Aura.Buffs.PlayerOnly end}),
+            ColorByType = Opt:Toggle({name = "Dispel Type Border", desc = "Show Blizzard's colored aura border for magic, curse, disease, and poison."}),
+            PlayerOnly = Opt:Toggle({name = "Player & Pet Only", desc = "Show only auras applied by you, your pet, or your vehicle. Retail's PLAYER aura filter includes all three sources."}),
             AuraTimer = Opt:Toggle({name = "Aura Timer"}),
             DisableCooldown = Opt:Toggle({name = "Disable Cooldown", desc = "Hide the animated cooldown spiral."}),
             CooldownReverse = Opt:Toggle({name = "Cooldown Reverse", disabled = function() return dbUnit.Aura.Buffs.DisableCooldown end}),
@@ -496,9 +495,8 @@ local function NewUnitOptionGroup(unit, order, categorized)
         }})
         auraOptions.args.Debuffs = Opt:Group({name = "Debuffs", order = categorized and 2 or 61, db = dbUnit.Aura.Debuffs, args = {
             Enable = Opt:Toggle({name = "Enabled", width = "full"}),
-            ColorByType = Opt:Toggle({name = "Color By Type"}),
-            PlayerOnly = Opt:Toggle({name = "Player Only"}),
-            IncludePet = Opt:Toggle({name = "Include Pet", disabled = function() return not dbUnit.Aura.Debuffs.PlayerOnly end}),
+            ColorByType = Opt:Toggle({name = "Dispel Type Border", desc = "Show Blizzard's colored aura border for magic, curse, disease, and poison."}),
+            PlayerOnly = Opt:Toggle({name = "Player & Pet Only", desc = "Show only auras applied by you, your pet, or your vehicle. Retail's PLAYER aura filter includes all three sources."}),
             AuraTimer = Opt:Toggle({name = "Aura Timer"}),
             DisableCooldown = Opt:Toggle({name = "Disable Cooldown", desc = "Hide the animated cooldown spiral."}),
             CooldownReverse = Opt:Toggle({name = "Cooldown Reverse", disabled = function() return dbUnit.Aura.Debuffs.DisableCooldown end}),
