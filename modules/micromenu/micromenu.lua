@@ -273,7 +273,7 @@ local microDefinitions = {
 	{
 		name = "Housing",
 		title = _G.HOUSING_MICRO_BUTTON or "Housing",
-		any = _G.NEWBIE_TOOLTIP_HOUSING,
+		any = _G.HOUSING_DASHBOARD_MICRO_BUTTON_TUTORIAL_TEXT or "Show/Hide the Housing Dashboard",
 		state = "HousingDashboardFrame",
 		addon = "Blizzard_HousingDashboard",
 		secureClickTarget = "HousingMicroButton",
@@ -352,10 +352,17 @@ function MicroButtonClickerMixin:OnEnter()
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 
 	local parent = self:GetParent()
-	GameTooltip:SetText(parent.title)
-	if parent.any then GameTooltip:AddLine(parent.any, 1, 1, 1) end
-	if parent.left then GameTooltip:AddLine(parent.left, 1, 1, 1) end
-	if parent.right then GameTooltip:AddLine(parent.right, 1, 1, 1) end
+	GameTooltip_SetTitle(GameTooltip, parent.title)
+
+	if parent.any then
+		GameTooltip:AddLine(parent.any, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, true)
+	end
+	if parent.left then
+		GameTooltip:AddLine(parent.left, GREEN_FONT_COLOR.r, GREEN_FONT_COLOR.g, GREEN_FONT_COLOR.b, true)
+	end
+	if parent.right then
+		GameTooltip:AddLine(parent.right, GREEN_FONT_COLOR.r, GREEN_FONT_COLOR.g, GREEN_FONT_COLOR.b, true)
+	end
 	local playerLevel = UnitLevel("player")
 	if parent.level and not issecretvalue(playerLevel) and playerLevel < parent.level then
 		GameTooltip:AddLine(format(L["Micro_PlayerReq"], parent.level), LUI:NegativeColor())
@@ -499,19 +506,35 @@ end
 function module:ConsolidateOptionsFrames()
 	local optionsFrames = CreateFrame("Frame", "ConsolidatedOptionsFrame", UIParent)
 	local ACD = LibStub("AceConfigDialog-3.0")
+	local hookedOptionsFrames = setmetatable({}, {__mode = "k"})
 
 	local function UpdateState()
-		if GameMenuFrame:IsShown() or ACD.OpenFrames["LUIOptions"] then
+		local widget = ACD.OpenFrames["LUIOptions"]
+		local optionsFrame = widget and widget.frame
+
+		if GameMenuFrame:IsShown() or (optionsFrame and optionsFrame:IsShown()) then
 			optionsFrames:Show()
 		else
 			optionsFrames:Hide()
 		end
 	end
 
+	local function HookOptionsFrame()
+		local widget = ACD.OpenFrames["LUIOptions"]
+		local frame = widget and widget.frame
+
+		if frame and not hookedOptionsFrames[frame] then
+			hookedOptionsFrames[frame] = true
+			frame:HookScript("OnHide", UpdateState)
+		end
+
+		UpdateState()
+	end
+
 	hooksecurefunc(GameMenuFrame, "Show", UpdateState)
 	hooksecurefunc(GameMenuFrame, "Hide", UpdateState)
-	hooksecurefunc(ACD, "Open", UpdateState)
-	hooksecurefunc(ACD, "Close", UpdateState)
+	hooksecurefunc(ACD, "Open", HookOptionsFrame)
+	HookOptionsFrame()
 	UpdateState()
 end
 
