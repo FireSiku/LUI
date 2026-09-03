@@ -1,11 +1,11 @@
 --[[
 	Project....: LUI NextGenWoWUserInterface
 	File.......: restore.lua
-	Description: Experimental database tools.
+	Description: Profile backup and restore tools.
 	
 	Notes:
 		Creates a backup of current database settings,
-		invokes a complete reset to defaults (which should remove un-wanted old corruptions... hopefully),
+		resets the active profile to current defaults,
 		then restores only settings that are used.
 ]]
 
@@ -25,6 +25,10 @@ local tconcat, pairs, print, tonumber, tostring, type = table.concat, pairs, pri
 local stack
 local mismatches
 
+local function GetBackup()
+	return LUI.db.global.ProfileBackups[LUI.db:GetCurrentProfile()]
+end
+
 function module.Apply(dest, source)
 	local dt, st
 	for k, v in pairs(dest) do
@@ -42,7 +46,7 @@ function module.Apply(dest, source)
 			if dt == "number" and st == "string" then
 				local num = tonumber(sv)
 				if num then
-					-- Print mismatch conversion with db stack. (i.e. db.children.Cooldown.profile.Enable).
+					-- Print mismatch conversion with the affected database path.
 					mismatches = mismatches + 1
 					print("|c0090ffffLUI: |cffffff00Restore:|r Value converted because of type mismatch: [", dt, "] ~= [", st, "]; Stack =", tconcat(stack, "."))
 
@@ -53,7 +57,7 @@ function module.Apply(dest, source)
 			elseif dt == "string" and st == "number" then
 				local str = tostring(sv)
 				if str and str ~= "" and tonumber(str) == sv then
-					-- Print mismatch conversion with db stack. (i.e. db.children.Cooldown.profile.Enable).
+					-- Print mismatch conversion with the affected database path.
 					mismatches = mismatches + 1
 					print("|c0090ffffLUI: |cffffff00Restore:|r Value converted because of type mismatch: [", dt, "] ~= [", st, "]; Stack =", tconcat(stack, "."))
 
@@ -64,7 +68,7 @@ function module.Apply(dest, source)
 			end
 
 			if dt ~= st then
-				-- Print mismatch error with db stack. (i.e. db.children.Cooldown.profile.Enable).
+				-- Print mismatch error with the affected database path.
 				mismatches = mismatches + 1
 				print("|c0090ffffLUI: |cffff0000Restore:|r Value skipped because of type mismatch: [", dt, "] ~= [", st, "]; Stack =", tconcat(stack, "."))
 			else
@@ -148,9 +152,7 @@ function module.Backup()
 
 	-- Get backup location.
 	local backup = {}
-	--noinspection GlobalCreationOutsideO
-	LUICONFIG = LUICONFIG or {}
-	LUICONFIG.BACKUP = backup
+	LUI.db.global.ProfileBackups[LUI.db:GetCurrentProfile()] = backup
 
 	-- Collect old profiles.
 	for k, v in pairs(db.profile) do
@@ -192,7 +194,7 @@ end
 
 function module.Restore()
 	-- Get latest backup.
-	local backup = LUICONFIG.BACKUP
+	local backup = GetBackup()
 	if not backup then
 		return print("|c0090ffffLUI:|r Restore failed because there was not an available backup. Create backup with '/luibackup'")
 	end
@@ -221,7 +223,7 @@ end
 
 function module.Revert()
 	-- Get latest backup.
-	local backup = LUICONFIG.BACKUP
+	local backup = GetBackup()
 	if not backup then
 		return print("|c0090ffffLUI:|r Revert failed because there was not an available backup. Create backup with '/luibackup'")
 	end
