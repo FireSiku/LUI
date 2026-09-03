@@ -4,21 +4,21 @@ local script = LUI:NewScript("FrameIdentifier")
 
 local GetMouseFoci = _G.GetMouseFoci
 
-local Identifier = CreateFrame("Frame", "LUI_Frame_Identifier", UIParent, "BackdropTemplate")
+local Identifier = CreateFrame("Frame", "LUI_Frame_Identifier", UIParent)
 Identifier:SetWidth(320)
 Identifier:SetHeight(20)
 Identifier:SetPoint("CENTER")
 Identifier:SetFrameStrata("DIALOG")
-Identifier:SetBackdrop({
+LUI:ApplyFrameBackdrop(Identifier, {
 	bgFile = "Interface\\CHATFRAME\\CHATFRAMEBACKGROUND",
 	edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-	tile = "true",
+	tile = true,
 	tileSize = 32,
 	edgeSize = 5,
 	insets = {left = 1, right = 1, top = 1, bottom = 1}
 })
-Identifier:SetBackdropColor(0,0,0,0.6)
-Identifier:SetBackdropBorderColor(0,0,0,1)
+LUI:SetFrameBackgroundColor(Identifier, 0, 0, 0, 0.6)
+LUI:SetFrameBorderColor(Identifier, 0, 0, 0, 1)
 Identifier:EnableMouse(true)
 Identifier:SetMovable(true)
 Identifier:SetClampedToScreen(true)
@@ -27,39 +27,30 @@ Identifier:SetScript("OnDragStart", Identifier.StartMoving)
 Identifier:SetScript("OnDragStop", Identifier.StopMovingOrSizing)
 
 --[[ MOUSEOVER INFO ]]
-local MouseInfo = CreateFrame("FRAME", "LUI_Frame_MouseInfo", Identifier, "BackdropTemplate")
+local MouseInfo = CreateFrame("FRAME", "LUI_Frame_MouseInfo", Identifier)
 MouseInfo:SetHeight(32)
 MouseInfo:SetWidth(320)
 MouseInfo:SetPoint("TOPLEFT", Identifier, "BOTTOMLEFT", 0, -3)
-MouseInfo:SetPoint("TOPRIGHT", Identifier, "BOTTOMRIGHT", 0 -3)
-MouseInfo:SetBackdrop({
+MouseInfo:SetPoint("TOPRIGHT", Identifier, "BOTTOMRIGHT", 0, -3)
+LUI:ApplyFrameBackdrop(MouseInfo, {
 	bgFile = "Interface\\CHATFRAME\\CHATFRAMEBACKGROUND",
 	edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-	tile = "true",
+	tile = true,
 	tileSize = 32,
 	edgeSize = 5,
 	insets = {left = 1, right = 1, top = 1, bottom = 1}
 })
-MouseInfo:SetBackdropColor(0,0,0,0.6)
-MouseInfo:SetBackdropBorderColor(0,0,0,1)
+LUI:SetFrameBackgroundColor(MouseInfo, 0, 0, 0, 0.6)
+LUI:SetFrameBorderColor(MouseInfo, 0, 0, 0, 1)
 
-local CloseButton = CreateFrame("Button", "LUI_Frame_CloseButton", Identifier, "BackdropTemplate")
+local CloseButton = CreateFrame("Button", "LUI_Frame_CloseButton", Identifier)
 CloseButton:SetPoint("RIGHT",0,0)
 CloseButton:SetText("CLOSE")
 CloseButton:SetNormalFontObject("GameFontNormalSmall")
 CloseButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 CloseButton:SetWidth(50)
 CloseButton:SetHeight(20)
-CloseButton:SetBackdrop({
-	bgFile = "Interface\\CHATFRAME\\CHATFRAMEBACKGROUND",
-	edgeFile = "",
-	tile = "false",
-	tileSize = 0,
-	edgeSize = 0,
-	insets = {left = 0, right = 0, top = 0, bottom = 0}
-	})
-CloseButton:SetBackdropColor(0,0,0,0)
-CloseButton:SetScript("OnClick", function(self, click)
+CloseButton:SetScript("OnClick", function()
 	Identifier:Hide()
 end)
 
@@ -103,26 +94,40 @@ MouseActiveParent:SetText("")
 MouseActiveParent:SetPoint("LEFT", MouseParent, "RIGHT")
 MouseInfo.activeParentText = MouseActiveParent
 
-Identifier:SetScript("OnUpdate", function(self)
-	local mouseFocus = GetMouseFoci()
-	if not mouseFocus[1] then return end
-	
-	local name = mouseFocus[1]:GetName()
-	
+local function GetObjectDisplayName(object)
+	if not object or issecretvalue(object) then return end
+
+	local name = object.GetName and object:GetName()
+	if type(name) == "string" and not issecretvalue(name) then
+		return name
+	end
+
+	-- Anonymous Blizzard frames, including Damage Meter rows, can expose a
+	-- region through GetName(). GetDebugName returns a safe textual identifier.
+	local debugName = object.GetDebugName and object:GetDebugName(true)
+	if type(debugName) == "string" and not issecretvalue(debugName) then
+		return debugName
+	end
+end
+
+Identifier:SetScript("OnUpdate", function()
+	local focus = GetMouseFoci()[1]
+	if not focus then return end
+
+	local name = GetObjectDisplayName(focus)
 	if not name then
 		MouseActive:SetText("Not Defined")
 		MouseActiveParent:SetText("Unavailable")
 		return
-	else
-		MouseActive:SetText(name)
 	end
-	
-	local _, parent = _G[name]:GetPoint()
-	
-	if not parent or parent:trim() == "" then
+	MouseActive:SetText(name)
+
+	local _, parent = focus:GetPoint()
+	if not parent or issecretvalue(parent) then
 		MouseActiveParent:SetText("Not Defined")
 	else
-		MouseActiveParent:SetText(parent:GetName() or "")
+		MouseActiveParent:SetText(GetObjectDisplayName(parent) or "Not Defined")
 	end
 end)
 tinsert(UISpecialFrames,Identifier:GetName())
+Identifier:Hide()

@@ -1,91 +1,46 @@
 ---@class LUIAddon
 local LUI = select(2, ...)
-local script = LUI:NewScript("BlizzScale", "AceEvent-3.0", "AceHook-3.0")
+local script = LUI:NewScript("BlizzScale", "AceEvent-3.0")
 
 local InCombatLockdown = _G.InCombatLockdown
-local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 
 local blizzFrames = {
-	--UI Frames
 	"CharacterFrame",
 	"DressUpFrame",
-	"SpellBookFrame",
-	"PlayerTalentFrame",
+	"PlayerSpellsFrame",
 	"GossipFrame",
 	"MerchantFrame",
 	"MailFrame",
 	"OpenMailFrame",
 	"QuestFrame",
 	"TradeFrame",
-	"GuildFrame",
+	"CommunitiesFrame",
 	"FriendsFrame",
-	"RaidParentFrame",	-- Not sure what this frame is.
+	"RaidParentFrame",
 	"PVEFrame",
 	"TaxiFrame",
 	"ItemTextFrame",
 	"QuestLogPopupDetailFrame",
-	
-	--Settings Frames
 	"GameMenuFrame",
-	"VideoOptionsFrame",
-	"InterfaceOptionsFrame",
+	"SettingsPanel",
 	"KeyBindingFrame",
 	"MacroFrame",
 	"HelpFrame",
-	
-	--LoadOnDemand Frames
+
 	"CalendarFrame",
-	"AchievementFrame",		-- Blizzard_AchievementUI
-	"InspectFrame",			-- Blizzard_InspectUI
-	"ItemSocketingFrame",	-- Blizzard_ItemSocketingUI
-	"ArchaeologyFrame",		-- Blizzard_ArchaeologyUI
-	"TradeSkillFrame",		-- Blizzard_TradeSkillUI
-	"LookingForGuildFrame",	-- Blizzard_LookingForGuildUI
-	"AuctionFrame",			-- Blizzard_AuctionUI
-	"EncounterJournal",		-- Blizzard_EncounterJournal
-	"PetJournalParent",		-- Blizzard_PetJournal
-	"VoidStorageFrame",
-	"TransmogrifyFrame",
-	
-	--Not sure if LoD
+	"AchievementFrame",
+	"InspectFrame",
+	"ItemSocketingFrame",
+	"ArchaeologyFrame",
+	"ProfessionsFrame",
+	"AuctionHouseFrame",
+	"EncounterJournal",
+	"CollectionsJournal",
+	"TransmogFrame",
 	"GarrisonMissionFrame",
 	"GarrisonBuildingFrame",
 	"GarrisonCapacitiveDisplayFrame",
-	
 }
-
-local conflictAddons = {
-	AuctionFrame = "Auc-Advanced"
-}
-
--- Not Handled: Frames that need secure environment, causes taint.
-local needSecure = {
-	"StoreFrame",
-}
-
-local blizzEvents = {
-	"PLAYER_LOGIN",
-	"AUCTION_HOUSE_SHOW",
-	"INSPECT_READY",
-	"TRADE_SKILL_SHOW",
-	"SOCKET_INFO_UPDATE",
-}
-if LUI.IsRetail then
-	tinsert(blizzEvents, "ARCHAEOLOGY_TOGGLE")
-	tinsert(blizzEvents, "BARBER_SHOP_OPEN")
-	tinsert(blizzEvents, "TRANSMOGRIFY_OPEN")
-end
-local blizzHooks = {
-	"Calendar_LoadUI",
-	"MacroFrame_LoadUI",
-}
-if LUI.IsRetail then
-	tinsert(blizzHooks, "AchievementFrame_LoadUI")
-	tinsert(blizzHooks, "ArchaeologyFrame_LoadUI")
-	tinsert(blizzHooks, "CollectionsJournal_LoadUI")
-	tinsert(blizzHooks, "EncounterJournal_LoadUI")
-	tinsert(blizzHooks, "Garrison_LoadUI")
-end
 
 function script:ApplyBlizzScaling()
 	local scale = LUI.db.profile.General.BlizzFrameScale
@@ -95,41 +50,18 @@ function script:ApplyBlizzScaling()
 		return
 	end
 	
-	for i = 1, #blizzFrames do
-		local frameName = blizzFrames[i]
+	for _, frameName in ipairs(blizzFrames) do
 		local frame = _G[frameName]
-		--Check if the frame exists
 		if frame then
-			--Check if the frame has no conflicting addons, or that the addon isn't loaded.
-			if not conflictAddons[frameName] or not IsAddOnLoaded(conflictAddons[frameName]) then
-				frame:SetScale(scale)
-			end
-			
-			--HACK: Fix a bug in GarrisonUI having low frame level.
-			if frameName == "GarrisonCapacitiveDisplayFrame" then
-				frame:SetFrameLevel(70)
-			end
+			frame:SetScale(scale)
 		end
 	end
 end
 
 function script:EventHandling(event)
-	script:UnregisterEvent(event)
+	if event == "PLAYER_REGEN_ENABLED" then script:UnregisterEvent(event) end
 	script:ApplyBlizzScaling()
 end
 
-do
-	for i = 1, #blizzEvents do
-		script:RegisterEvent(blizzEvents[i], "EventHandling")
-	end
-
-	for i = 1, #blizzHooks do
-		local hookName = blizzHooks[i]
-		if _G[hookName] then
-			script:SecureHook(hookName, function()
-				script:ApplyBlizzScaling()
-				script:Unhook(hookName)
-			end)
-		end
-	end
-end
+script:RegisterEvent("PLAYER_LOGIN", "EventHandling")
+script:RegisterEvent("ADDON_LOADED", "EventHandling")

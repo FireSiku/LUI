@@ -13,7 +13,6 @@ local addonname = ...
 local version = C_AddOns.GetAddOnMetadata(addonname, "Version")
 local revision = C_AddOns.GetAddOnMetadata(addonname, "X-Curse-Packaged-Version")
 LUI.DEBUG = version ~= revision
--- LUI.DEBUG = true -- for debugging with core releases
 
 --------------------------------------------------
 -- / Localized API / --

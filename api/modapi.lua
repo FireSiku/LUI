@@ -10,7 +10,6 @@
 local LUI = select(2, ...)
 local Media = LibStub("LibSharedMedia-3.0")
 
---local copies
 local pairs = pairs
 
 ---@class LUIModule : AceModule, AceEvent-3.0
@@ -34,11 +33,10 @@ end
 ---@return number R, number G, number B
 function ModuleMixin:RGB(colorName)
 	if not colorName or issecretvalue(colorName) then
-	return 1, 1, 1
-end
+		return 1, 1, 1
+	end
 	local db = self:GetDB("Colors")
 	if db and db[colorName] then
-		-- TODO: Check for all planned types (.t)
 		if db[colorName].t and db[colorName].t == "Class" then
 			return LUI:GetClassColor(LUI.playerClass)
 		else
@@ -56,7 +54,6 @@ function ModuleMixin:RGBA(colorName)
 	local db = self:GetDB("Colors")
 
 	if db and db[colorName] then
-		-- TODO: Check for all planned types (.t)
 		if db[colorName].t and db[colorName].t == "Class" then
 			local r, g, b = LUI:GetClassColor(LUI.playerClass)
 			return r, g, b, db[colorName].a or 1
@@ -127,59 +124,6 @@ function ModuleMixin:FetchBackground(name)
 	end
 end
 
---- Function that creates a backdrop table for use with SetBackdrop and keeps a copy around based on name.
----- When function is called on an existing backdrop, update it and return it.
----- If Tile or Insets options aren't found in the DB, they can be optionally be set through parameters.
----- Requires a DB.Backdrop entry based on name.
----@param name string
----@param tile boolean @ True = Tile, False = Stretch
----@param tileSize number @ Size of each tiled copy of bgFile
----@param l number @ How far from the edge bg is drawn. (Higher = Thicker)
----@param r number @ How far from the edge bg is drawn. (Higher = Thicker)
----@param t number @ How far from the edge bg is drawn. (Higher = Thicker)
----@param b number @ How far from the edge bg is drawn. (Higher = Thicker)
----@return backdropInfo backdrop
-function ModuleMixin:FetchBackdrop(name, tile, tileSize, l, r, t, b)
-	local db = self:GetDB("Backdrop")
-	if db and db[name] then
-		local backdrop
-		-- Check if backdrop exists, if not create it.
-		if not self.__backdrops[name] then
-			backdrop = {}
-			backdrop.insets = {}
-			self.__backdrops[name] = backdrop
-		else
-			backdrop = self.__backdrops[name]
-		end
-		--Make sure the values are up to date.
-		backdrop.bgFile = Media:Fetch("background", db[name].Background)
-		backdrop.edgeFile = Media:Fetch("border", db[name].Border)
-		backdrop.edgeSize = db[name].Size
-		if db[name].Tile or tile then backdrop.tile = db[name].Tile or tile end
-		if db[name].TileSize or tileSize then backdrop.tileSize = db[name].TileSize or tileSize end
-		if db[name].Left or l then
-			backdrop.insets.left = db[name].Left or l
-			backdrop.insets.right = db[name].Right or r
-			backdrop.insets.top = db[name].Top or t
-			backdrop.insets.bottom = db[name].Bottom or b
-		end
-
-		return backdrop
-	end
-end
-
---- Function that fetch and set Backdrop, along with setting color and border color.
----@param name string @ Name of the backdrop to fetch
----@param frame Frame
-function ModuleMixin:UpdateFrameBackdrop(name, frame, ...)
-	self:FetchBackdrop()
-	local backdrop = self:FetchBackdrop(name, ...)
-
-	frame:SetBackdrop(backdrop)
-	frame:SetBackdropColor(self:RGB(name.."BG"))
-	frame:SetBackDropBorderColor(self:RGB(name.."Border"))
-end
-
 --- Quickly Setup a FontString widget
 ---@param frame Frame
 ---@param name string
@@ -217,7 +161,7 @@ function ModuleMixin:GetDB(subTable)
 	if self.db then
 		db = self.db.profile
 	end
-	if db and subTable and type(db[subTable] == "table") then
+	if db and subTable and type(db[subTable]) == "table" then
 		return db[subTable]
 	end
 	return db
@@ -242,7 +186,7 @@ function ModuleMixin:ModPrint(...)
 end
 
 --- Toggle a module's enabled state.
-function ModuleMixin:VToggle()
+function ModuleMixin:Toggle()
 	local name = self:GetName()
 	local state = not self:IsEnabled()
 	if state then

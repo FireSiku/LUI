@@ -1,36 +1,49 @@
 ---@class LUIAddon
 local LUI = select(2, ...)
-local script = LUI:NewScript("TalentSpam", "AceEvent-3.0", "AceHook-3.0")
+local script = LUI:NewScript("TalentSpam", "AceEvent-3.0")
 
-local PlayerTalentFrame = _G.PlayerTalentFrame
-
-local spam = {
-    _G.ERR_LEARN_ABILITY_S:gsub("%.", "%."),       -- 1
-    _G.ERR_LEARN_SPELL_S:gsub("%.", "%."),         -- 2
-    _G.ERR_SPELL_UNLEARNED_S:gsub("%.", "%."),     -- 3
-    _G.ERR_LEARN_PASSIVE_S:gsub("%.", "%."),       -- 4
-    _G.ERR_PET_LEARN_ABILITY_S:gsub("%.", "%."),   -- 5
-    _G.ERR_PET_LEARN_SPELL_S:gsub("%.", "%."),     -- 6
-    _G.ERR_PET_SPELL_UNLEARNED_S:gsub("%.", "%."), -- 7
+local messageTemplates = {
+	_G.ERR_LEARN_ABILITY_S,
+	_G.ERR_LEARN_SPELL_S,
+	_G.ERR_SPELL_UNLEARNED_S,
+	_G.ERR_LEARN_PASSIVE_S,
+	_G.ERR_PET_LEARN_ABILITY_S,
+	_G.ERR_PET_LEARN_SPELL_S,
+	_G.ERR_PET_SPELL_UNLEARNED_S,
 }
 
-local function gsubSpam(spamString)
-	return gsub(spamString, "%%s", "(.*)")
+local function CreateMessagePattern(template)
+	local placeholder = "\001"
+	template = template:gsub("%%s", placeholder)
+	template = template:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
+	template = template:gsub(placeholder, ".+")
+	return "^"..template.."$"
 end
 
-local function spamFilter(self, event, msg)
-	if LUI.db.profile.General.HideTalentSpam and PlayerTalentFrame and PlayerTalentFrame:IsShown() then
-		for i = 1, #spam do
-			if strfind(msg, gsubSpam(spam[i])) then return true end
+local spamPatterns = {}
+for _, template in pairs(messageTemplates) do
+	if type(template) == "string" then
+		spamPatterns[#spamPatterns + 1] = CreateMessagePattern(template)
+	end
+end
+
+local function spamFilter(_, _, msg)
+	if LUI.db.profile.General.HideTalentSpam and not issecretvalue(msg) then
+		for i = 1, #spamPatterns do
+			if strfind(msg, spamPatterns[i]) then return true end
 		end
 	end
 end
 
+local filterRegistered = false
 function script:SetTalentSpam()
-	if LUI.db.profile.General.HideTalentSpam then
-		_G.ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", spamFilter)
-	else
-		_G.ChatFrame_RemoveMessageEventFilter("CHAT_MSG_SYSTEM", spamFilter)
+	local enabled = LUI.db.profile.General.HideTalentSpam
+	if enabled and not filterRegistered then
+		_G.ChatFrameUtil.AddMessageEventFilter("CHAT_MSG_SYSTEM", spamFilter)
+		filterRegistered = true
+	elseif not enabled and filterRegistered then
+		_G.ChatFrameUtil.RemoveMessageEventFilter("CHAT_MSG_SYSTEM", spamFilter)
+		filterRegistered = false
 	end
 end
 

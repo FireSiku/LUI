@@ -22,7 +22,6 @@ local print, setmetatable, strfind, strlower, tsort, tostring, type, wipe = prin
 local debugprofilestart, debugprofilestop = debugprofilestart, debugprofilestop
 
 local GameFontNormalSmall = _G.GameFontNormalSmall
-local GetAddOnMetadata = C_AddOns.GetAddOnMetadata
 
 -- Local variables.
 local defaultKillTime = 0.5
@@ -159,7 +158,7 @@ function module.Trace(func, name, scope, killTime)
 	-- Create trace.
 	traces[func] = {
 		oldFunc = func,
-		newFunc = function(...) --a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15)
+		newFunc = function(...)
 		-- Check if removed.
 			if traces[func].removed then
 				-- Error out with removal reason.
@@ -169,7 +168,7 @@ function module.Trace(func, name, scope, killTime)
 			-- Check for recursion.
 			if traces[func].recurse > 0 then
 				-- Check this recursion loop hasn't been running excessively (n seconds or n recursions).
-				if GetTime() - traces[func].start >= traces[func].killTime --[[or traces[func].recurse > 1000]] then
+				if GetTime() - traces[func].start >= traces[func].killTime then
 					-- Remove function.
 					traces[func].removed = module.CreateError(traces[func].name, format("Recursion: %d calls.", traces[func].recurse))
 
@@ -324,7 +323,7 @@ excludes[module.TraceScope] = true
 -- Create Profilers GUI.
 if not Enabled then return end
 
-module.GUI = CreateFrame("Frame", format("LUI: Profiler (%s)", GetAddOnMetadata(addonname, "X-Curse-Packaged-Version") or "Working Copy"), nil, "BackdropTemplate")
+module.GUI = CreateFrame("Frame", format("LUI: Profiler (%s)", C_AddOns.GetAddOnMetadata(addonname, "X-Curse-Packaged-Version") or "Working Copy"))
 local gui = module.GUI
 
 -- Apply frame settings.
@@ -345,16 +344,16 @@ gui.Totals = gui:CreateFontString()
 -- Creators.
 local fields = {"Name", "Calls", "Time (us)", "Avg. Time (us)", "Min (us)", "Max (us)", "Memory (bytes)"}
 gui.NewField = function(self, field, width)
-	local f = CreateFrame("Frame", self:GetName()..": Field <"..field..">", self, "BackdropTemplate")
+	local f = CreateFrame("Frame", self:GetName()..": Field <"..field..">", self)
 	local last = self.Fields[#self.Fields]
 	self.Fields[#self.Fields + 1] = f
 	f.Field = #self.Fields
 
 	-- Frame.
 	f:Show()
-	f:SetBackdrop({bgFile = "Interface/Tooltips/UI-Tooltip-Background", edgeFile = "Interface/Tooltips/UI-Tooltip-Border", tile = true, tileSize = 16, edgeSize = 8})
-	f:SetBackdropBorderColor(0, 1, 0, 1)
-	f:SetBackdropColor(0, 0, 0, 0)
+	LUI:ApplyFrameBackdrop(f, {bgFile = "Interface/Tooltips/UI-Tooltip-Background", edgeFile = "Interface/Tooltips/UI-Tooltip-Border", tile = true, tileSize = 16, edgeSize = 8})
+	LUI:SetFrameBorderColor(f, 0, 1, 0, 1)
+	LUI:SetFrameBackgroundColor(f, 0, 0, 0, 0)
 	f:SetHeight(20)
 	f:ClearAllPoints()
 	if not last then
@@ -488,9 +487,9 @@ gui.Fields[3].Name:SetTextColor(0.4, 0.78, 1)
 
 -- Layout and look.
 -- - Frame.
-gui:SetBackdrop({bgFile = "Interface/Tooltips/UI-Tooltip-Background", edgeFile = "Interface/Tooltips/UI-Tooltip-Border", tile = true, tileSize = 16, edgeSize = 8})
-gui:SetBackdropBorderColor(0, 0, 0, 0.2)
-gui:SetBackdropColor(0, 0, 0, 0.5)
+LUI:ApplyFrameBackdrop(gui, {bgFile = "Interface/Tooltips/UI-Tooltip-Background", edgeFile = "Interface/Tooltips/UI-Tooltip-Border", tile = true, tileSize = 16, edgeSize = 8})
+LUI:SetFrameBorderColor(gui, 0, 0, 0, 0.2)
+LUI:SetFrameBackgroundColor(gui, 0, 0, 0, 0.5)
 gui:SetHeight(400)
 gui:SetPoint("CENTER", UIParent)
 gui:SetWidth(725)
@@ -521,8 +520,7 @@ gui.Totals:SetTextColor(1, 1, 1)
 -- Interaction.
 -- - Frame.
 gui:EnableMouse(true)
-gui:RegisterForDrag("LeftButton", "RightButton")
---gui:SetMinResize(725, 400)
+gui:RegisterForDrag("LeftButton")
 gui:SetMovable(true)
 gui.Sort = function(a, b)
 -- Sort traces by active field.
@@ -631,13 +629,7 @@ end
 -- Scripts.
 -- - Frame.
 gui:SetScript("OnDragStart", function(self, button)
-	if button == "LeftButton" then
-		-- Left mouse drag = move frame.
-		self:StartMoving()
-	else
-		-- Right mouse drag = resize frame.
-		--self:StartSizing("BOTTOMRIGHT")
-	end
+	self:StartMoving()
 end)
 gui:SetScript("OnDragStop", gui.StopMovingOrSizing)
 gui:SetScript("OnUpdate", gui.OnUpdate)
