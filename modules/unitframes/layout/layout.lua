@@ -2138,15 +2138,6 @@ local function SetStyle(self, unit, isSingle)
 		module.funcs.RaidInfo(self, unit, oufdb)
 	end
 
-	if unit == "party" then
-		local sanityBar = _G[format("PartyMemberFrame%dPowerBarAlt", string.sub(self:GetName(), -1))]
-		if sanityBar then
-			sanityBar:ClearAllPoints()
-			sanityBar:SetPoint("LEFT", self, "RIGHT", 25, 0)
-			sanityBar:SetParent(self)
-		end
-	end
-
 	module.funcs.HealthValue(self, unit, oufdb)
 	module.funcs.HealthPercent(self, unit, oufdb)
 	module.funcs.HealthMissing(self, unit, oufdb)
