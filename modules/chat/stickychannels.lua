@@ -14,14 +14,14 @@ local module = Chat:NewModule("StickyChannels", "LUIDevAPI", "AceHook-3.0")
 
 local db --luacheck:ignore
 local ChatTypeInfo = _G.ChatTypeInfo
+local originalSticky = {}
 
 module.channels = {
 	GUILD = { desc = "Guild chat", sticky = true },
 	OFFICER = { desc = "Officer chat", sticky = true },
 	RAID = { desc = "Raid chat", sticky = true },
 	PARTY = { desc = "Party chat", sticky = true },
-	-- Tested on the PTR - BATTLEGROUND causes errors, needs to be investigated once API changes are all known
-	--BATTLEGROUND = { desc = "Battleground chat", sticky = true },
+	INSTANCE_CHAT = { desc = "Instance chat", sticky = true },
 	SAY = { desc = "Say", sticky = true },
 	WHISPER = { desc = "Whispers", sticky = true },
 	EMOTE = { desc = "Emotes", sticky = false },
@@ -45,35 +45,13 @@ for k, v in pairs(module.channels) do
 	module.defaults.profile.Channels[k] = v.sticky
 end
 
---------------------------------------------------
--- Load Functions
---------------------------------------------------
-
-function module:LoadOptions()
-	local chans = db.Channels
-	local funcs = {
-		Enabled = function() return not db.Enabled end
-	}
-	local nextOrder = 1
-	local options = self:NewGroup("StickyChannels", 4, "generic", "Refresh", {
-		Enabled = self:NewToggle("Enable Sticky Channels", nil, 1, true),
-		Channels = self:NewGroup("Sticky Channels", 2, true, funcs.Enabled, {}),
-	})
-	for k, v in pairs(chans) do
-		options.args.Channels.args[k] = self:NewToggle(module.channels[k].desc, "Enable sticky flag for " .. module.channels[k].desc, nextOrder, true, "normal")
-		nextOrder = nextOrder + 1
-	end
-
-	return options
-end
-
 function module:Refresh(info, value)
 	if type(info) == "table" then
 		self:SetDBVar(info, value)
 	end
 
--- Extra checking to make sure we only set the sticky flag on valid channels
-	if db.Enabled == true then
+	-- Only write sticky flags for chat types Blizzard currently exposes.
+	if db.Enabled then
 		local chans = db.Channels
 		for k, v in pairs(chans) do
 			if ChatTypeInfo[k] then
@@ -91,6 +69,11 @@ end
 
 function module:OnInitialize()
 	db = Chat:Namespace(self)
+	for chatType in pairs(module.channels) do
+		if ChatTypeInfo[chatType] and originalSticky[chatType] == nil then
+			originalSticky[chatType] = ChatTypeInfo[chatType].sticky
+		end
+	end
 end
 
 module.DBCallback = module.OnInitialize
@@ -100,4 +83,9 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
+	for chatType, sticky in pairs(originalSticky) do
+		if ChatTypeInfo[chatType] then
+			ChatTypeInfo[chatType].sticky = sticky
+		end
+	end
 end

@@ -11,19 +11,16 @@ local LUI = select(2, ...)
 ---@class LUI.Chat
 local Chat = LUI:GetModule("Chat")
 local module = Chat:NewModule("EditBox", "LUIDevAPI", "AceHook-3.0")
-local Themes = LUI:GetModule("Themes")
 local Media = LibStub("LibSharedMedia-3.0")
 
 local L = LUI.L
-local db, dbd, history
+local db, history
 
 local DEFAULT_CHAT_FRAME = _G.DEFAULT_CHAT_FRAME
-local BackdropTemplateMixin = _G.BackdropTemplateMixin
 local CHAT_FRAMES = _G.CHAT_FRAMES
+local ChatTypeInfo = _G.ChatTypeInfo
 local GetCVar = _G.GetCVar
-local GetMessageTypeColor = _G.GetMessageTypeColor
-local SendChatMessage = _G.SendChatMessage
-local ChatEdit_DeactivateChat = _G.ChatEdit_DeactivateChat
+local ChatFrameUtil = _G.ChatFrameUtil
 
 --------------------------------------------------
 -- Local Variables
@@ -37,6 +34,22 @@ local backdrop = {
 		right = 0,
 	},
 }
+local originalEditBoxes = setmetatable({}, {__mode = "k"})
+
+local function capturePoints(frame)
+	local points = {}
+	for i = 1, frame:GetNumPoints() do
+		points[i] = {frame:GetPoint(i)}
+	end
+	return points
+end
+
+local function restorePoints(frame, points)
+	frame:ClearAllPoints()
+	for _, point in ipairs(points) do
+		frame:SetPoint(unpack(point))
+	end
+end
 
 --------------------------------------------------
 -- Local Functions
@@ -76,31 +89,52 @@ local function setHistory(init)
 end
 
 local function decorate(editBox)
-	editBox:SetHeight(db.Height)
-
-	if LUI.IsRetail and not editBox.decorated then
-		editBox:Hide()
-
+	if not editBox.decorated then
 		local name = editBox:GetName()
+		local font, fontSize, fontFlags = editBox:GetFont()
+		local headerFont, headerSize, headerFlags = editBox.header:GetFont()
+		originalEditBoxes[editBox] = {
+			shown = editBox:IsShown(),
+			alpha = editBox:GetAlpha(),
+			points = capturePoints(editBox),
+			height = editBox:GetHeight(),
+			font = font,
+			fontSize = fontSize,
+			fontFlags = fontFlags,
+			headerFont = headerFont,
+			headerSize = headerSize,
+			headerFlags = headerFlags,
+			altArrowKeyMode = editBox:GetAltArrowKeyMode(),
+			mouseEnabled = editBox:IsMouseEnabled(),
+			movable = editBox:IsMovable(),
+			resizable = editBox:IsResizable(),
+			onMouseDown = editBox:GetScript("OnMouseDown"),
+			onMouseUp = editBox:GetScript("OnMouseUp"),
+			resizeBounds = {editBox:GetResizeBounds()},
+			leftShown = _G[name.."Left"]:IsShown(),
+			rightShown = _G[name.."Right"]:IsShown(),
+			midShown = _G[name.."Mid"]:IsShown(),
+		}
+		editBox:Hide()
 		_G[name.."Left"]:Hide()
 		_G[name.."Right"]:Hide()
 		_G[name.."Mid"]:Hide()
 
-		editBox.focusLeft:SetTexture(nil)
-		editBox.focusRight:SetTexture(nil)
-		editBox.focusMid:SetTexture(nil)
-
-		editBox:SetMaxLetters(2048)
-		editBox:SetMaxBytes(2048)
+		LUI:Kill(editBox.focusLeft)
+		LUI:Kill(editBox.focusRight)
+		LUI:Kill(editBox.focusMid)
 
 		editBox.decorated = true
 	end
+	if not module:IsHooked(editBox, "UpdateHeader") then
+		module:SecureHook(editBox, "UpdateHeader", "UpdateEditBoxBackground")
+	end
+	editBox:SetHeight(db.Height)
 
 	local bg = editBox.bg
 
 	if not bg then
 		bg = CreateFrame("Frame", nil, editBox, "LUI_Chat_EditBoxBGTemplate")
-		if BackdropTemplateMixin then Mixin(bg, BackdropTemplateMixin) end
 		bg.lDrag.editBox = editBox
 		bg.rDrag.editBox = editBox
 
@@ -114,8 +148,8 @@ local function decorate(editBox)
 
 	bg:Show()
 
-	bg:SetBackdrop(backdrop)
-	module:ChatEdit_UpdateHeader(editBox)
+	LUI:ApplyFrameBackdrop(bg, backdrop)
+	module:UpdateEditBoxBackground(editBox)
 end
 
 local function anchorEditBox(anchor)
@@ -136,7 +170,7 @@ local function anchorEditBox(anchor)
 			editBox:SetResizable(true)
 			editBox:SetScript("OnMouseDown", startMoving)
 			editBox:SetScript("OnMouseUp", stopMoving)
-			editBox:SetMinResize(40, 1)
+			editBox:SetResizeBounds(40, 1)
 
 			editBox.lDrag:EnableMouse(true)
 			editBox.rDrag:EnableMouse(true)
@@ -179,7 +213,7 @@ function module:LibSharedMedia_Registered(mediaType, key)
 				editBox.header:SetFont(font, db.Font.Size, db.Font.Flag)
 			end
 		end
-	elseif mediaType == "border" and key == db.Border.Texture or mediaType == "background" and key == db.Background.Texture then
+	elseif (mediaType == "border" and key == db.Border.Texture) or (mediaType == "background" and key == db.Background.Texture) then
 		for i, name in ipairs(CHAT_FRAMES) do
 			decorate(_G[name].editBox)
 		end
@@ -192,18 +226,18 @@ end
 
 function module:FCF_Tab_OnClick(frame, button)
 	if db.Anchor == "TOP" and GetCVar("chatStyle") ~= "classic" then
-		ChatEdit_DeactivateChat(_G[CHAT_FRAMES[frame:GetID()]].editBox)
+		ChatFrameUtil.DeactivateChat(_G[CHAT_FRAMES[frame:GetID()]].editBox)
 	end
 end
 
-function module:ChatEdit_DeactivateChat(editBox)
+function module:AfterDeactivateChat(editBox)
 	if editBox:IsShown() then
 		editBox:SetAlpha(0)
 		editBox:EnableMouse(false)
 	end
 end
 
-function module:ChatEdit_SetLastActiveWindow(editBox)
+function module:AfterSetLastActiveWindow(editBox)
 	if editBox:IsShown() then
 		editBox:SetAlpha(0)
 	else
@@ -212,112 +246,40 @@ function module:ChatEdit_SetLastActiveWindow(editBox)
 	editBox:EnableMouse(true)
 end
 
-function module:ChatEdit_UpdateHeader(editBox) -- update EditBox Colors
+function module:UpdateEditBoxBackground(editBox)
 	if not editBox.bg then return end -- FCF_OpenTemporaryWindow calls this (hook to create editBox.bg hasn't fired yet)
 
-	local r, g, b, a
+	local color = db.Background.Color
+	local r, g, b, a = color.r, color.g, color.b, color.a
 
 	if db.ColorByChannel then
-		local attr = editBox:GetAttribute("chatType")
+		local attr = editBox:GetChatType()
 
-		if attr == "CHANNEL" then
-			local chan = editBox:GetAttribute("channelTarget")
-			if chan and chan == 0 then
-				r, g, b, a = unpack(Themes.db.profile.editbox)
-			elseif chan then
-				r, g, b = GetMessageTypeColor("CHANNEL"..chan)
-			else
-				r, g, b = GetMessageTypeColor(attr)
+		if attr and not issecretvalue(attr) then
+			local colorType = attr
+			if attr == "CHANNEL" then
+				local chan = editBox:GetChannelTarget()
+				if chan and issecretvalue(chan) then chan = nil end
+				if chan and chan > 0 then
+					colorType = "CHANNEL"..chan
+				end
 			end
-		else
-			r, g, b = GetMessageTypeColor(attr)
+
+			local channelColor = ChatTypeInfo[colorType]
+			if channelColor then
+				r, g, b = channelColor.r, channelColor.g, channelColor.b
+			end
 		end
-	else
-		r, g, b, a = unpack(Themes.db.profile.editbox)
 	end
 
-	a = a or 0.2
-	editBox.bg:SetBackdropColor(r, g, b, a)
-	editBox.bg:SetBackdropBorderColor(r, g, b, a+0.3)
+	a = a or 0.4
+	LUI:SetFrameBackgroundColor(editBox.bg, r, g, b, a)
+	LUI:SetFrameBorderColor(editBox.bg, r, g, b, math.min(1, a + 0.3))
 end
 
-do
-	local extraText, chunks = {}, {}
-
-	local function splitMsg(text, start)
-		local stack = 0
-		local first
-		wipe(chunks)
-		if start > #text then return nil end
-
-		for i = start, start + 255 do
-			local byte = text:sub(i, i)
-			local bit = text:sub(i, i+1)
-			if bit == "|H" then
-				first = first or i
-				local link = text:sub(i):match("|H(.-|h.-|h)")
-				if link and not link:find("|H") then
-					stack = stack + 2
-				else
-					stack = stack + 1
-				end
-			elseif bit == "|c" then
-				first = first or i
-				stack = stack + 1
-			elseif (bit == "|r" or bit == "|h") and stack > 0 and first then
-				stack = stack - 1
-				if stack == 0 then
-					tinsert(chunks, text:sub(first, i))
-					first = nil
-				end
-			elseif (byte == " " or byte == "") and stack == 0 and first then
-				tinsert(chunks, text:sub(first or 1, i))
-				first = nil
-			else
-				first = first or i
-			end
-		end
-
-		if #chunks == 0 then return nil end
-
-		local str = table.concat(chunks, "")
-		return start + #str, str
-	end
-
-	function module:ChatEdit_ParseText(editBox, send)
-		if send == 0 then return end
-
-		local text = editBox:GetText()
-
-		if #text <= 255 then return end
-
-		self:SecureHook("SendChatMessage")
-
-		wipe(extraText)
-		local first = true
-		for start, chunk in splitMsg, text, 1 do
-			if first then
-				editBox:SetText(chunk)
-				extraText.msg = chunk
-				first = false
-			else
-				tinsert(extraText, chunk)
-			end
-		end
-	end
-
-	function module:SendChatMessage(text, ...)
-		if text == extraText.msg then
-			self:Unhook("SendChatMessage")
-
-			for i, extra in ipairs(extraText) do
-				SendChatMessage(extra, ...)
-			end
-		end
-	end
-end
 
 function module:AddHistoryLine(frame, line)
+	if not line or issecretvalue(line) then return end
 	if history[#history] == line then return end -- return if this is the same line as the last in the table
 
 	tinsert(history, line)
@@ -352,6 +314,7 @@ module.defaults = {
 			Flag = "",
 		},
 		Background = {
+			Color = {r = 0.12, g = 0.58, b = 0.89, a = 0.4},
 			Texture = "Blizzard Tooltip",
 			Tile = false,
 			TileSize = 16,
@@ -368,58 +331,6 @@ module.defaults = {
 	factionrealm = {},
 }
 
---------------------------------------------------
--- Load Functions
---------------------------------------------------
-
-function module:LoadOptions()
-	local anchorPoints = {
-		TOP = L["Top"],
-		BOTTOM = L["Bottom"],
-		FREE = L["Free-floating"],
-		LOCK = L["Free-floating (Locked)"],
-	}
-
-	local refresh = function()
-		self:Refresh()
-	end
-
-	local tileDisabled = function()
-		return not db.Background.Tile
-	end
-
-	local options = self:NewGroup(L["EditBox"], 2, "generic", "Refresh", {
-		Font = self:NewGroup(L["Font"], 1, true, {
-			Font = self:NewSelect(L["Font"], L["Choose a font"], 1, true, "LSM30_Font", refresh),
-			Flag = self:NewSelect(L["Flag"], L["Choose a font flag"], 2, LUI.FontFlags, false, refresh),
-			Size = self:NewSlider(L["Size"], L["Choose a fontsize"], 3, 6, 20, 1, true, false, "full")
-		}),
-		Anchor = self:NewSelect(L["Anchor Point"], L["Select where the EditBox anchors to the ChatFrame"], 2, anchorPoints, false, refresh),
-		UseAlt = self:NewToggle(L["Use Alt key"], L["Requires the Alt key to be held down to move the cursor"], 3, true, "normal"),
-		History = self:NewToggle(L["Remember history"], L["Remembers the history of the EditBox across sessions"], 4, true, "normal"),
-		ColorByChannel = self:NewToggle(L["Color by channel"], L["Sets the EditBox color to the color of your currently active channel"], 5, true, "normal"),
-		Height = self:NewSlider(L["Height"], L["Adjust the height of the EditBox"], 6, 5, 50, 1, true, false, "full"),
-		Background = self:NewGroup(L["Background"], 7, true, {
-			Texture = self:NewSelect(L["Texture"], L["Choose a texture"], 1, true, "LSM30_Background", refresh),
-			empty = self:NewDesc("", 1.5, "normal"),
-			Tile = self:NewToggle(L["Tile"], L["Should the background texture be tiled over the area"], 2, true, "normal"),
-			TileSize = self:NewSlider(L["Tile Size"], L["Adjust the size of each tile of the background texture"], 3, 1, 200, 1, true, false, nil, tileDisabled),
-			Insets = self:NewGroup(L["Insets"], 4, true, {
-				top = self:NewInputNumber(L["Top"], L["Adjust the top inset of the background"], 1, refresh, "half"),
-				bottom = self:NewInputNumber(L["Bottom"], L["Adjust the bottom inset of the background"], 2, refresh, "half"),
-				left = self:NewInputNumber(L["Left"], L["Adjust the left inset of the background"], 3, refresh, "half"),
-				right = self:NewInputNumber(L["Right"], L["Adjust the right inset of the background"], 4, refresh, "half"),
-			}),
-		}),
-		Border = self:NewGroup(L["Border"], 8, true, {
-			Texture = self:NewSelect(L["Texture"], L["Choose a texture"], 1, true, "LSM30_Border", refresh),
-			Thickness = self:NewSlider(L["Thickness"], L["Adjust the thickness of the border"], 2, 1, 20, 1, refresh),
-		}),
-	})
-
-	return options
-end
-
 function module:Refresh(info, value)
 	if type(info) == "table" then
 		self:SetDBVar(info, value)
@@ -435,8 +346,9 @@ function module:Refresh(info, value)
 	end
 
 	for i, name in ipairs(CHAT_FRAMES) do
-		_G[name].editBox:SetAltArrowKeyMode(db.UseAlt)
-		decorate(_G[name].editBox)
+		local editBox = _G[name].editBox
+		decorate(editBox)
+		editBox:SetAltArrowKeyMode(db.UseAlt)
 	end
 
 	self:LibSharedMedia_Registered("font", db.Font.Font)
@@ -446,7 +358,11 @@ function module:Refresh(info, value)
 end
 
 function module:OnInitialize()
-	db, dbd = Chat:Namespace(self)
+	db = Chat:Namespace(self)
+	if db.Background.Color[1] then
+		local color = db.Background.Color
+		db.Background.Color = {r = color[1], g = color[2], b = color[3], a = color[4]}
+	end
 	history = self.db.factionrealm
 end
 
@@ -457,10 +373,8 @@ function module:OnEnable()
 
 	self:SecureHook("FCF_OpenTemporaryWindow", "Refresh")
 	self:SecureHook("FCF_Tab_OnClick")
-	self:SecureHook("ChatEdit_DeactivateChat")
-	self:SecureHook("ChatEdit_SetLastActiveWindow")
-	self:SecureHook("ChatEdit_UpdateHeader")
-	self:SecureHook("ChatEdit_ParseText")
+	self:SecureHook(ChatFrameUtil, "DeactivateChat", "AfterDeactivateChat")
+	self:SecureHook(ChatFrameUtil, "SetLastActiveWindow", "AfterSetLastActiveWindow")
 
 	setHistory(true)
 
@@ -473,20 +387,36 @@ function module:OnDisable()
 	self:UnhookAll()
 
 	for i, name in ipairs(CHAT_FRAMES) do
-		_G[name.."EditBoxLeft"]:Show()
-		_G[name.."EditBoxRight"]:Show()
-		_G[name.."EditBoxMid"]:Show()
-
 		local editBox = _G[name.."EditBox"]
+		local original = originalEditBoxes[editBox]
 		editBox:Hide()
-		editBox:SetAltArrowKeyMode(true)
-		editBox:EnableMouse(true)
-		editBox.bg:Hide()
-		anchorEditBox("BOTTOM")
-		editBox:SetFont(Media:Fetch("font", dbd.Font.Font), 14)
-		editBox.header:SetFont(Media:Fetch("font", dbd.Font.Font), 14)
-		editBox:SetMaxLetters(256)
-		editBox:SetMaxBytes(256)
+		if editBox.bg then editBox.bg:Hide() end
+
+		LUI:Unkill(editBox.focusLeft)
+		LUI:Unkill(editBox.focusRight)
+		LUI:Unkill(editBox.focusMid)
+		if original then
+			_G[name.."EditBoxLeft"]:SetShown(original.leftShown)
+			_G[name.."EditBoxRight"]:SetShown(original.rightShown)
+			_G[name.."EditBoxMid"]:SetShown(original.midShown)
+			restorePoints(editBox, original.points)
+			editBox:SetAlpha(original.alpha)
+			editBox:SetHeight(original.height)
+			editBox:SetFont(original.font, original.fontSize, original.fontFlags)
+			editBox.header:SetFont(original.headerFont, original.headerSize, original.headerFlags)
+			editBox:SetAltArrowKeyMode(original.altArrowKeyMode)
+			editBox:EnableMouse(original.mouseEnabled)
+			editBox:SetMovable(original.movable)
+			editBox:SetResizable(original.resizable)
+			editBox:SetScript("OnMouseDown", original.onMouseDown)
+			editBox:SetScript("OnMouseUp", original.onMouseUp)
+			editBox:SetResizeBounds(unpack(original.resizeBounds))
+			editBox:SetShown(original.shown)
+			originalEditBoxes[editBox] = nil
+		end
+		if editBox.SetFocusRegionsShown then
+			editBox:SetFocusRegionsShown(editBox:HasFocus())
+		end
 
 		editBox.decorated = nil
 	end

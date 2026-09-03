@@ -1,6 +1,4 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-    <Script file="GMOTD.lua"/>
-
     <Script file="chat.lua"/>
     <Script file="buttons.lua"/>
     <Script file="editbox.lua"/>
