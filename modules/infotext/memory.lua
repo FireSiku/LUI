@@ -16,7 +16,6 @@ local format = format
 local collectgarbage = collectgarbage
 local UpdateAddOnMemoryUsage = _G.UpdateAddOnMemoryUsage
 local GetAddOnMemoryUsage = _G.GetAddOnMemoryUsage
-local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 local GetNumAddOns = C_AddOns.GetNumAddOns
 local GetAddOnInfo = C_AddOns.GetAddOnInfo
 local C_Timer = C_Timer
@@ -51,8 +50,9 @@ function element:UpdateMemory()
 	totalMemory = 0
 
 	for i = 1, GetNumAddOns() do
-		local _, addonTitle = GetAddOnInfo(i)
-		if IsAddOnLoaded(i) then
+		local addonName, addonTitle = GetAddOnInfo(i)
+		addonTitle = addonTitle or addonName
+		if C_AddOns.IsAddOnLoaded(i) then
 			addonMemory[addonTitle] = GetAddOnMemoryUsage(i)
 			totalMemory = totalMemory + addonMemory[addonTitle]
 		else
@@ -83,7 +83,8 @@ function element.OnTooltipShow(GameTooltip)
 	element:TooltipHeader(L["InfoMemory_Header"])
 	for i = 1, #sortedAddons do
 		local addonTitle = sortedAddons[i]
-		local r, g, b = LUI:InverseGradient((addonMemory[addonTitle] / totalMemory) * GRADIENT_MULTIPLIER)
+		local ratio = totalMemory > 0 and addonMemory[addonTitle] / totalMemory or 0
+		local r, g, b = LUI:InverseGradient(ratio * GRADIENT_MULTIPLIER)
 		GameTooltip:AddDoubleLine(addonTitle, formatMemory(addonMemory[addonTitle]), 1,1,1, r, g, b)
 	end
 
@@ -93,22 +94,26 @@ function element.OnTooltipShow(GameTooltip)
 	element:AddHint(L["InfoMemory_Hint_Any"])
 end
 
+element.RefreshSettings = element.UpdateMemory
+
 -- ####################################################################################################################
 -- ##### Framework Events #############################################################################################
 -- ####################################################################################################################
 
 function element:OnCreate()
-	element:AddUpdate("UpdateMemory", MEMORY_UPDATE_TIME)
+	local usageElapsed = 0
+	element:AddUpdate(function()
+		usageElapsed = usageElapsed + MEMORY_UPDATE_TIME
+		if usageElapsed >= USAGE_UPDATE_TIME and not _G.InCombatLockdown() then
+			UpdateAddOnMemoryUsage()
+			usageElapsed = 0
+		end
+		element:UpdateMemory()
+	end, MEMORY_UPDATE_TIME)
 
 	-- This ensures that all addons are loaded at the time of updating memory usage.
 	C_Timer.After(1, function()
 		UpdateAddOnMemoryUsage()
 		element:UpdateMemory()
-	end)
-	-- Update usage once every 10 minutes, outside of combat.
-	C_Timer.NewTicker(USAGE_UPDATE_TIME, function()
-		if not _G.InCombatLockdown() then
-			UpdateAddOnMemoryUsage()
-		end
 	end)
 end

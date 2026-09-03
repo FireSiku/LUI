@@ -24,18 +24,18 @@ local ARMOR = _G.ARMOR
 local itemDurability = {} --Holds the changing information based on slot.
 local sortedItems = {} -- Sorting table for itemDurability
 
--- Contains Constant Information about equipment.
+-- Equipment slots that can have durability.
 local EQUIP_SLOTS = {
-	[(_G.INVTYPE_HEAD)] = 1,
-	[(_G.INVTYPE_SHOULDER)] = 3,
-	[(_G.INVTYPE_CHEST)] = 5,
-	[(_G.INVTYPE_WAIST)] = 6,
-	[(_G.INVTYPE_LEGS)] = 7,
-	[(_G.INVTYPE_FEET)] = 8,
-	[(_G.INVTYPE_WRIST)] = 9,
-	[(_G.INVTYPE_HAND)] = 10,
-	[(_G.INVTYPE_WEAPONMAINHAND)] = 16,
-	[(_G.INVTYPE_WEAPONOFFHAND)] = 17,
+	[_G.HEADSLOT] = 1,
+	[_G.SHOULDERSLOT] = 3,
+	[_G.CHESTSLOT] = 5,
+	[_G.WAISTSLOT] = 6,
+	[_G.LEGSSLOT] = 7,
+	[_G.FEETSLOT] = 8,
+	[_G.WRISTSLOT] = 9,
+	[_G.HANDSSLOT] = 10,
+	[_G.MAINHANDSLOT] = 16,
+	[_G.SECONDARYHANDSLOT] = 17,
 }
 
 -- ####################################################################################################################
@@ -54,7 +54,7 @@ end
 function element:UpdateDurability()
 	for localName, equipID in pairs(EQUIP_SLOTS) do
 		local currentDur, maxDur = GetInventoryItemDurability(equipID)
-		itemDurability[localName] = currentDur and currentDur / maxDur or nil
+		itemDurability[localName] = currentDur and maxDur and maxDur > 0 and currentDur / maxDur or nil
 	end
 
 	-- The first entry of the sorted table is the lowest value.
@@ -65,9 +65,10 @@ function element:UpdateDurability()
 end
 
 function element.OnClick(frame_, button_)
-	--TODO: Add feature to summon mammoth with Right-Click
 	ToggleCharacter("PaperDollFrame")
 end
+
+element.RefreshSettings = element.UpdateDurability
 
 -- ####################################################################################################################
 -- ##### Infotext Display #############################################################################################

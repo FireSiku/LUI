@@ -1,6 +1,6 @@
 --[[
-	Module.....: Minimap
-	Description: Replace the default minimap.
+	Module.....: Infotext
+	Description: Display LibDataBroker data sources and LUI status information.
 ]]
 -- ####################################################################################################################
 -- ##### Setup and Locals #############################################################################################
@@ -12,7 +12,6 @@ local L = LUI.L
 
 ---@class LUI.Infotext: LUIModule, AceHook-3.0
 local module = LUI:NewModule("Infotext", "AceHook-3.0")
-local Panels = LUI:GetModule("Panels", true)
 
 -- ####################################################################################################################
 -- ##### Default Settings #############################################################################################
@@ -20,30 +19,25 @@ local Panels = LUI:GetModule("Panels", true)
 
 module.defaults = {
 	profile = {
+		TopBarTextAnchor = "TOP",
+		TopBarOffsetX = 0,
+		TopBarOffsetY = 0,
 		['**'] = {
 			Enable = true,
 			Y = 0,
 			X = 0,
 			Point = "TOPLEFT",
 			Color = { r = 1, g = 1, b = 1, a = 1, },
-			Font = "vibroceb",
-			FontSize = 12,
-			Outline = "",
-		},
-		General = {
-			AllowY = true,
 		},
 		Colors = {
 			Title  = { r = 0.4, g = 0.8, b = 1  , },
 			Hint   = { r = 0  , g = 1  , b = 0  , },
 			Status = { r = 0.7, g = 0.7, b = 0.7, },
-			Panels = { r = 0.12, g = 0.58,  b = 0.89, a = 0.5, t = "Class", },
 			GameText =    { r = 1,    g = 0.77, b = 0,    },
 			Rank =        { r = 0.1,  g = 0.9,  b = 1,    },
 			Zone =        { r = 1,    g = 1,    b = 0,    },
 			MOTD =        { r = 1,    g = 0.8,  b = 0,    },
 			Note =        { r = 0.14, g = 0.76, b = 0.15, },
-			OfficerNote = { r = 1,    g = 0.56, b = 0.25, },
 			Broadcast =   { r = 1,    g = 0.8,  b = 0,    },
 			FriendBroadcast = { r = 0.8,  g = 0.3,  b = 0.2,  },
 		},
@@ -66,15 +60,12 @@ module.defaults = {
 			instanceDifficulty = true,
 			showSavedRaids = true,
 			showWorldBosses = true,
-			LocalTime = true,
-			Time24 = false,
 		},
 		Currency = {
 			Enable = false,
 			Y = 5,
 			X = 180,
 			Point = "BOTTOMLEFT",
-			Display = 0,
 			DisplayLimit = 40,
 		},
 		Dualspec = {
@@ -83,7 +74,6 @@ module.defaults = {
 			X = -300,
 			Point = "BOTTOMRIGHT",
 			lootSpec = true,
-			ShowSpentPoints = true,
 		},
 		Durability = {
 			Enable = true,
@@ -94,7 +84,6 @@ module.defaults = {
 		EquipmentSets = {
 			Enable = false,
 			Text = "Equipped Set: ",
-			SetName = "",
 			Y = 5,
 			X = -25,
 			Point = "BOTTOMRIGHT",
@@ -112,10 +101,12 @@ module.defaults = {
 			X = -350,
 			Point = "TOPRIGHT",
 			showTotal = false,
-			hideApp = true,
-			ShowTotal = false,
 			ShowHints = true,
 			ShowNotes = true,
+			Background = {
+				Texture = "Blizzard Tooltip",
+				Color = { r = 1, g = 1, b = 1, a = 1, },
+			},
 		},
 		Gold = {
 			Enable = true,
@@ -136,6 +127,10 @@ module.defaults = {
 			showTotal = false,
 			hideRealm = true,
 			hideNotes = false,
+			Background = {
+				Texture = "Blizzard Tooltip",
+				Color = { r = 1, g = 1, b = 1, a = 1, },
+			},
 		},
 		Instance = {
 			Enable = true,
@@ -169,12 +164,6 @@ module.defaults = {
 			X = -575,
 			Point = "TOPRIGHT",
 		},
-		WeaponSpeed = {
-			Enable = false,
-			Y = 0,
-			X = -670,
-			Point = "TOPRIGHT",
-		},
 	},
 	--Keep tracks of server totals
 	global = {
@@ -194,20 +183,17 @@ module.enableButton = true
 
 function module:OnInitialize()
 	LUI:RegisterModule(module)
-	
+	LUI:AddColorCallback("Infotext", function()
+		if module:IsEnabled() and module.Refresh then module:Refresh() end
+	end)
 end
 
 function module:OnEnable()
 	module:SetInfoPanels()
-	if Panels and Panels:IsEnabled() then
-		Panels:AdjustTopPanel()
-	end
 end
 
 function module:OnDisable()
+	if module.UnregisterAllLDBCallbacks then module:UnregisterAllLDBCallbacks() end
+	if module.HideInfotips then module:HideInfotips() end
 	module.topAnchor:Hide()
-	module.bottomAnchor:Hide()
-	if Panels and Panels:IsEnabled() then
-		Panels:AdjustTopPanel()
-	end
 end

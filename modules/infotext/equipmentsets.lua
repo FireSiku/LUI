@@ -6,60 +6,41 @@
 
 ---@class LUIAddon
 local LUI = select(2, ...)
-local L = LUI.L
 
 ---@class LUI.Infotext
 local module = LUI:GetModule("Infotext")
-local element = module:NewElement("EquipmentSets")
-
--- ####################################################################################################################
--- ##### Default Settings #############################################################################################
--- ####################################################################################################################
-
--- element.defaults = {
---     profile = {
---     }
--- }
--- module:MergeDefaults(element.defaults, "EquipmentSets")
+local element = module:NewElement("EquipmentSets", "AceEvent-3.0")
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
 
-function module:SetEquipmentSets(setID)
-    local f = CreateFrame("Frame")
-    f:SetScript("OnEvent", function(self, event, addon, ...)
-        local db = module.db.profile.EquipmentSets
-        for set = 1, C_EquipmentSet.GetNumEquipmentSets() do
-            local name, setID, isEquipped = C_EquipmentSet.GetEquipmentSetInfo(set - 1)
-            if (event=="EQUIPMENT_SWAP_FINISHED") then
-                local setID = select(1,...)
-                local name = C_EquipmentSet.GetEquipmentSetInfo(setID)
-                element.text = format(db.Text..name)
-                db.SetName = (db.Text..name)            -- saves variable for next world load
-            elseif (event=="PLAYER_ENTERING_WORLD") and db.SetName ~= "" then
-                element.text = format(db.SetName or "Equipped Set:")
-            else
-                element.text = format("No Equipped Set")
-            end
-        end
-    end)
-    f:RegisterEvent("PLAYER_ENTERING_WORLD")
-    f:RegisterEvent("EQUIPMENT_SWAP_FINISHED", module.SetEquipmentSets)
+function element:UpdateEquipmentSet()
+	local db = module.db.profile.EquipmentSets
+	for _, setID in ipairs(C_EquipmentSet.GetEquipmentSetIDs()) do
+		local name, _, _, isEquipped = C_EquipmentSet.GetEquipmentSetInfo(setID)
+		if isEquipped then
+			element.text = format("%s%s", db.Text, name)
+			return
+		end
+	end
+	element.text = "No Equipped Set"
 end
 
--- ####################################################################################################################
--- ##### Infotext Display #############################################################################################
--- ####################################################################################################################
-
--- function element.OnTooltipShow(GameTooltip)
--- end
+function element.OnClick()
+	_G.ToggleCharacter("PaperDollFrame")
+end
 
 -- ####################################################################################################################
 -- ##### Framework Events #############################################################################################
 -- ####################################################################################################################
 
 function element:OnCreate()
-    element.text = format("Equipped Set:")
-    module:SetEquipmentSets()
+	element:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateEquipmentSet")
+	element:RegisterEvent("EQUIPMENT_SWAP_FINISHED", "UpdateEquipmentSet")
+	element:RegisterEvent("EQUIPMENT_SETS_CHANGED", "UpdateEquipmentSet")
+	element:RegisterEvent("PLAYER_EQUIPMENT_CHANGED", "UpdateEquipmentSet")
+	element:UpdateEquipmentSet()
 end
+
+element.RefreshSettings = element.UpdateEquipmentSet

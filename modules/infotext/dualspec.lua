@@ -17,7 +17,8 @@ local select, format = select, format
 local strsplit = string.split
 local GetSpecializationInfoByID = _G.GetSpecializationInfoByID
 local GetLootSpecialization = _G.GetLootSpecialization
-local GetNumSpecializations = _G.GetNumSpecializations
+local UnitClass = _G.UnitClass
+local GetNumSpecializationsForClassID = C_SpecializationInfo.GetNumSpecializationsForClassID
 local GetSpecializationInfo = C_SpecializationInfo.GetSpecializationInfo
 local GetSpecialization = C_SpecializationInfo.GetSpecialization
 local IsSpecializationInfoInitialized = C_SpecializationInfo.IsInitialized
@@ -26,7 +27,7 @@ local SetSpecialization = C_SpecializationInfo.SetSpecialization
 -- constants
 local LOOT_SPECIALIZATION_DEFAULT = strsplit("(", _G.LOOT_SPECIALIZATION_DEFAULT):trim()
 local SELECT_LOOT_SPECIALIZATION = _G.SELECT_LOOT_SPECIALIZATION
-local LEVEL_UP_DUALSPEC = _G.LEVEL_UP_DUALSPEC
+local SPECIALIZATION = _G.SPECIALIZATION or "Specialization"
 local MAX_SPECS = 0
 
 -- locals
@@ -47,10 +48,11 @@ function element:RefreshSpecInfo()
 		return
 	end
 
-	MAX_SPECS = GetNumSpecializations()
+	local classID = select(3, UnitClass("player"))
+	MAX_SPECS = classID and GetNumSpecializationsForClassID(classID) or 0
 	for i = 1, MAX_SPECS do
 		local _, name = GetSpecializationInfo(i)
-		specCache[i] = {name = name}
+		specCache[i] = {name = name or _G.UNKNOWN}
 	end
 end
 
@@ -88,6 +90,7 @@ end
 -- Right-Click: Switch to inactive spec 2
 -- Middle-Click: Switch to inactive spec 3 (Druid only)
 function element.OnClick(frame_, button)
+	if InCombatLockdown() then return end
 	if button == "LeftButton" and inactiveCache[1] then
 		SetSpecialization(inactiveCache[1])
 	elseif button == "RightButton" and inactiveCache[2] then
@@ -97,12 +100,14 @@ function element.OnClick(frame_, button)
 	end
 end
 
+element.RefreshSettings = element.UpdateSpec
+
 -- ####################################################################################################################
 -- ##### Infotext Display #############################################################################################
 -- ####################################################################################################################
 
 function element.OnTooltipShow(GameTooltip)
-	element:TooltipHeader(LEVEL_UP_DUALSPEC)
+	element:TooltipHeader(SPECIALIZATION)
 	element:RefreshSpecInfo()
 
 	local activeSpec = GetSpecialization()
@@ -140,5 +145,6 @@ end
 function element:OnCreate()
 	element:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED", "OnSpecializationChanged")
 	element:RegisterEvent("PLAYER_LOOT_SPEC_UPDATED", "UpdateSpec")
+	element:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateSpec")
 	element:UpdateSpec()
 end
