@@ -41,6 +41,7 @@ local function ApplyButtonAppearance(button, db)
     if button.IsForbidden and button:IsForbidden() then return end
 
     local settings = module.db.profile.Settings
+    button:SetSize(db.Size, db.Size)
 
     button.Cooldown:SetReverse(db.CooldownReverse == true)
     button.Cooldown:SetAlpha(db.DisableCooldown == true and 0 or 1)
