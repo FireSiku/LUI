@@ -6,7 +6,7 @@ The current Retail build has been modernized for the latest Blizzard UI systems 
 
 ## Highlights
 
-- A complete LUI interface with automatic first-time setup
+- A complete LUI interface with safe defaults and configurable modules
 - Highly configurable player, target, focus, pet, party, raid, boss, arena, and main-tank unit frames
 - Modern health, power, cast bar, aura, absorb, heal-prediction, class-resource, and indicator support
 - Configurable LUI artwork, information texts, minimap, micro menu, mirror bars, raid menu, tooltips, and other interface modules
@@ -33,7 +33,7 @@ Install or update **LUI Core** through the CurseForge app. The app installs the 
 
 ## First start
 
-New users can follow LUI's installation wizard. Existing users normally keep their saved profiles when updating, although backing up the `WTF` folder before a major release is always recommended.
+New users start with LUI's default profile and can adjust modules from the options panel. Existing users normally keep their saved profiles when updating, although backing up the `WTF` folder before a major release is always recommended.
 
 Open the options through the LUI micro menu or with the usual LUI options command. Unit-frame previews and profile transfer tools are available in the options while out of combat.
 
@@ -46,7 +46,7 @@ Imports are validated, cannot run during combat, and ask for confirmation before
 ## Compatibility
 
 - This project page is for **World of Warcraft Retail**.
-- The current modernization targets the Blizzard 12.1 UI API and includes oUF 14.0.1 integration.
+- The current modernization targets the Blizzard 12.1 UI API and includes oUF 14.0.2 integration.
 - The Classic edition is maintained separately by **Nitsah**.
 - Optional integrations are only active when their corresponding third-party addons are installed.
 
