@@ -298,11 +298,13 @@ function module:CreateNewSideBar(name, side)
 	local btnAnchor = CreateFrame("Button", sbarName.."ButtonAnchor", sidebar, "SecureHandlerClickTemplate")
 	btnAnchor:SetSize(22, 245)
 	btnAnchor:SetPoint(other, sidebar, other, innerOffset, 0)
+	btnAnchor:SetFrameLevel(sidebar:GetFrameLevel() + 10)
 	btnAnchor:Show()
 
 	-- Button Anchor
 	local btnAnchorOpen = CreateFrame("Button", sbarName.."ButtonAnchorOpen", sidebar, "SecureHandlerClickTemplate")
 	btnAnchorOpen:SetSize(22, 245)
+	btnAnchorOpen:SetFrameLevel(sidebar:GetFrameLevel() + 10)
 	btnAnchorOpen:SetPoint(other, sidebar, other, innerOffset + direction * BUTTON_OFFSET, 0)
 	btnAnchorOpen:Hide()
 	
