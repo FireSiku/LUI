@@ -9,17 +9,15 @@ local LUI = select(2, ...)
 local module = LUI:GetModule("Bags")
 
 local GetInventoryItemTexture = _G.GetInventoryItemTexture
-local GetInventorySlotInfo = _G.GetInventorySlotInfo
 local GameTooltip_SetTitle = _G.GameTooltip_SetTitle
 local PickupBagFromSlot = _G.PickupBagFromSlot
 local PutItemInBag = _G.PutItemInBag
 local ResetCursor = _G.ResetCursor
 
 local BAGINDEX_BACKPACK = Enum.BagIndex.Backpack or 0
-local BAGINDEX_BANK = Enum.BagIndex.Bank or 1
 
 --luacheck: globals PaperDollItemSlotButton_OnEvent PaperDollItemSlotButton_OnShow PaperDollItemSlotButton_OnHide
---luacheck: globals BagSlotButton_OnEnter BankFrameItemButton_OnEnter BankFrameItemButtonBag_OnClick
+--luacheck: globals BagSlotButton_OnEnter
 
 -- ####################################################################################################################
 -- ##### Toolbar Mixin ################################################################################################
@@ -73,25 +71,6 @@ function ToolbarMixin:AddNewButton(newButton)
 	self.nextIndex = self.nextIndex + 1
 end
 
-function ToolbarMixin:ShowButton(button)
-	button.hidden = false
-	self:SetAnchors()
-end
-
-function ToolbarMixin:HideButton(button)
-	button.hidden = true
-	self:SetAnchors()
-end
-
-function ToolbarMixin:SetButtonTooltip(button, text)
-	button:SetScript("OnEnter", function()
-			GameTooltip:SetOwner(button)
-			GameTooltip:SetText(text)
-			GameTooltip:Show()
-		end)
-	button:SetScript("OnLeave", _G.GameTooltip_Hide)
-end
-
 --- Create a toolbar for a given container
 ---@param container ContainerMixin
 ---@param name string
@@ -100,14 +79,14 @@ function module:CreateToolBar(container, name)
 	toolBar:SetClampedToScreen(true)
 	toolBar:SetSize(1,1)
 
-	local bgFrame = CreateFrame("Frame", nil, toolBar, "BackdropTemplate")
+	local bgFrame = CreateFrame("Frame", nil, toolBar)
 	--Force it to the lowest frame level to prevent layering issues
 	bgFrame:SetFrameLevel(toolBar:GetParent():GetFrameLevel())
 	bgFrame:SetClampedToScreen(true)
 
-	bgFrame:SetBackdrop(module.bagBackdrop)
-	bgFrame:SetBackdropColor(module:RGBA("Background"))
-	bgFrame:SetBackdropBorderColor(module:RGBA("Border"))
+	LUI:ApplyFrameBackdrop(bgFrame, module.bagBackdrop)
+	LUI:SetFrameBackgroundColor(bgFrame, module:RGBA("Background"))
+	LUI:SetFrameBorderColor(bgFrame, module:RGBA("Border"))
 
 	toolBar.slotList = {}
 	toolBar.nextIndex = 1
@@ -121,77 +100,60 @@ function module:CreateToolBar(container, name)
 	return Mixin(toolBar, ToolbarMixin)
 end
 -- ####################################################################################################################
--- ##### Templates: BagBar Fiter Dropdown #############################################################################
+-- ##### Templates: Bag Bar Filter Menu ##############################################################################
 -- ####################################################################################################################
--- The Filter Dropdown code is taken from the ContainerFrame.lua file, and modified to work with our buttons.
--- The FrameXML declares them as local functions, so we have to copy them here.
-local function OnBagFilterClicked(bagID, filterID, value)
-	C_Container.SetBagSlotFlag(bagID, filterID, value);
-	ContainerFrameSettingsManager:SetFilterFlag(bagID, filterID, value);
-end
+local function ShowBagFilterMenu(owner)
+	local bagID = owner:GetBagID()
+	if not ContainerFrame_CanContainerUseFilterMenu(bagID) then return end
 
-local function BagFilterDropDown(self, level)
-	local bagID = self:GetParent():GetBagID()
-	if not ContainerFrame_CanContainerUseFilterMenu(bagID) then
-		return;
-	end
-	
-	-- Filter Assignment Header
-	local info = UIDropDownMenu_CreateInfo();
-	info.text = BAG_FILTER_ASSIGN_TO;
-	info.isTitle = 1;
-	info.notCheckable = 1;
-	UIDropDownMenu_AddButton(info, level);
-
-	-- Filter Assignment Options
-	info = UIDropDownMenu_CreateInfo();
-	local activeBagFilter = ContainerFrameSettingsManager:GenerateFilterList(bagID);
-	for i, flag in ContainerFrameUtil_EnumerateBagGearFilters() do
-		info.text = BAG_FILTER_LABELS[flag];
-		info.checked = activeBagFilter == flag;
-		info.func = function(_, _, _, value)
-			return OnBagFilterClicked(bagID, flag, not value);
+	MenuUtil.CreateContextMenu(owner, function(_, rootDescription)
+		rootDescription:CreateTitle(BAG_FILTER_ASSIGN_TO)
+		for _, flag in ContainerFrameUtil_EnumerateBagGearFilters() do
+			local filterFlag = flag
+			local function IsSelected()
+				return C_Container.GetBagSlotFlag(bagID, filterFlag)
+			end
+			local function SetSelected()
+				local value = not IsSelected()
+				C_Container.SetBagSlotFlag(bagID, filterFlag, value)
+				ContainerFrameSettingsManager:SetFilterFlag(bagID, filterFlag, value)
+			end
+			local checkbox = rootDescription:CreateCheckbox(BAG_FILTER_LABELS[filterFlag], IsSelected, SetSelected)
+			checkbox:SetResponse(MenuResponse.Close)
 		end
-		UIDropDownMenu_AddButton(info, level);
-	end
 
-	-- CleanUp Header
-	info = UIDropDownMenu_CreateInfo();
-	info.text = BAG_FILTER_CLEANUP;
-	info.isTitle = 1;
-	info.notCheckable = 1;
-	UIDropDownMenu_AddButton(info, level);
+		rootDescription:CreateDivider()
+		rootDescription:CreateTitle(BAG_FILTER_IGNORE)
 
-	-- CleanUp Options
-	info = UIDropDownMenu_CreateInfo();
-	info.text = BAG_FILTER_IGNORE;
-	info.func = function(_, _, _, value)
-		if bagID == BAGINDEX_BANK then
-			C_Container.SetBankAutosortDisabled(not value);
-		elseif bagID == BAGINDEX_BACKPACK then
-			C_Container.SetBackpackAutosortDisabled(not value);
-		else
-			C_Container.SetBagSlotFlag(bagID, Enum.BagSlotFlags.DisableAutoSort, not value);
+		do
+			local flag = Enum.BagSlotFlags.DisableAutoSort
+			local function IsSelected()
+				return C_Container.GetBagSlotFlag(bagID, flag)
+			end
+			local function SetSelected()
+				C_Container.SetBagSlotFlag(bagID, flag, not IsSelected())
+			end
+			local checkbox = rootDescription:CreateCheckbox(BAG_FILTER_CLEANUP, IsSelected, SetSelected)
+			checkbox:SetResponse(MenuResponse.Close)
 		end
-	end
-	if bagID == BAGINDEX_BANK then
-		info.checked = C_Container.GetBankAutosortDisabled();
-	elseif bagID == BAGINDEX_BACKPACK then
-		info.checked = C_Container.GetBackpackAutosortDisabled();
-	else
-		info.checked = C_Container.GetBagSlotFlag(bagID, Enum.BagSlotFlags.DisableAutoSort);
-	end
-	UIDropDownMenu_AddButton(info, level);
 
+		do
+			local flag = Enum.BagSlotFlags.ExcludeJunkSell
+			local function IsSelected()
+				return C_Container.GetBagSlotFlag(bagID, flag)
+			end
+			local function SetSelected()
+				C_Container.SetBagSlotFlag(bagID, flag, not IsSelected())
+			end
+			local checkbox = rootDescription:CreateCheckbox(SELL_ALL_JUNK_ITEMS_EXCLUDE_FLAG, IsSelected, SetSelected)
+			checkbox:SetResponse(MenuResponse.Close)
+		end
+	end)
 end
 
 -- ####################################################################################################################
 -- ##### Templates: BagBar Slot Button ################################################################################
 -- ####################################################################################################################
--- The end goal should be an identical button for Bags and Bank bars, without directly using Blizzard code.
--- This is to avoid potential taint. Bags and Bank use different APIs sometimes.
--- Note: Probably good idea to replace button with bagsSlot
-
 --- Called when the mouse enters a BagBar slot button.
 ---@param self ItemButton
 local function BarBarSlotOnEnter(self)
@@ -201,22 +163,11 @@ local function BarBarSlotOnEnter(self)
 	local bagId = self:GetBagID()
 	if bagId == BAGINDEX_BACKPACK then
         GameTooltip_SetTitle(GameTooltip, BACKPACK_TOOLTIP)
-    elseif bagId == BAGINDEX_BANK then
-        GameTooltip_SetTitle(GameTooltip, BANK)
     else
         local hasItem = GameTooltip:SetInventoryItem('player', self.inventoryID)
         if not hasItem then
-			local isBank = self.container == "Bank"
-            if self.purchaseCost then
-                GameTooltip:ClearLines()
-                GameTooltip_SetTitle(GameTooltip, BANK_BAG_PURCHASE)
-                GameTooltip:AddDoubleLine(COSTS_LABEL, GetCoinTextureString(self.purchaseCost))
-            elseif bagId == Enum.BagIndex.ReagentBag then
+            if bagId == Enum.BagIndex.ReagentBag then
                 GameTooltip_SetTitle(GameTooltip, EQUIP_CONTAINER_REAGENT)
-            elseif isBank and bagId > GetNumBankSlots() + NUM_TOTAL_EQUIPPED_BAG_SLOTS then
-                GameTooltip_SetTitle(GameTooltip, BANK_BAG_PURCHASE)
-            elseif isBank then
-                GameTooltip_SetTitle(GameTooltip, BANK_BAG)
             else
                 GameTooltip_SetTitle(GameTooltip, EQUIP_CONTAINER)
             end
@@ -244,20 +195,14 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 	button:RegisterBagButtonUpdateItemContextMatching()
 	button:RegisterEvent("BAG_UPDATE_DELAYED")
 	button.GetIsBarExpanded = function() return true end
-	button.FilterDropDown = CreateFrame("Frame", "$parentFilterDropDown", button, "UIDropDownMenuTemplate")
-	UIDropDownMenu_SetInitializeFunction(button.FilterDropDown, BagFilterDropDown)
 
 	button:SetScript("OnClick", function(self, btn)
 		local bagID = self:GetBagID()
 		if btn == "RightButton" then
-			ToggleDropDownMenu(1, nil, self.FilterDropDown, self, 0, 0)
+			ShowBagFilterMenu(self)
 		elseif CursorHasItem() and not self.purchaseCost then
 			PutItemInBag(self.inventoryID)
-		elseif self.purchaseCost then
-			PlaySound(SOUNDKIT.IG_MAINMENU_OPTION)
-			BankFrame.nextSlotCost = self.purchaseCost
-			StaticPopup_Show('CONFIRM_BUY_BANK_SLOT')
-		elseif bagID ~= Enum.BagIndex.Backpack and bagID ~= Enum.BagIndex.Bank then
+		elseif bagID ~= Enum.BagIndex.Backpack then
 			PickupBagFromSlot(self.inventoryID)
 		end
 	end)
@@ -268,88 +213,33 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 	end)
 	button:SetScript("OnEnter", BarBarSlotOnEnter)
 
-	--Try to have as few type-specific settings as possible
-	if button.container == "Bags" then
-		
-		--PaperDollItemSlotButton_OnLoad
-		--slotName uses id - 1 due to Bag1-4 are refered as Bag0-Bag3
-		local slotName = string.format("BAG%dSLOT", index)
-		button.inventoryID = C_Container.ContainerIDToInventoryID(id)
-		button:SetID(button.inventoryID)
+	-- PaperDollItemSlotButton_OnLoad
+	button.inventoryID = C_Container.ContainerIDToInventoryID(id)
+	button:SetID(button.inventoryID)
 
-		local texture = _G[name.."IconTexture"]
-		local textureName = GetInventoryItemTexture("player", button.inventoryID)
-		texture:SetTexture(textureName)
+	local texture = _G[name.."IconTexture"]
+	local textureName = GetInventoryItemTexture("player", button.inventoryID)
+	texture:SetTexture(textureName)
 
-		--Rest of BagSlotTemplate OnLoad
-		button:RegisterEvent("INVENTORY_SEARCH_UPDATE")
+	button:RegisterEvent("INVENTORY_SEARCH_UPDATE")
+	button.UpdateTooltip = BagSlotButton_OnEnter
+	button.IconBorder:SetTexture("")
+	button.IconBorder:SetSize(1,1)
 
-		button.UpdateTooltip = BagSlotButton_OnEnter
-		button.IconBorder:SetTexture("")
-		button.IconBorder:SetSize(1,1)
-
-		--BagSlotTemplate other events, unchecked.
-		button:SetScript("OnEvent", function(self, event, ...)
-			if event == "BAG_UPDATE_DELAYED" then
-				_G.PaperDollItemSlotButton_Update(self)
-				self:SetBackdropBorderColor(module:RGBA("Border"))
-			elseif event == "INVENTORY_SEARCH_UPDATE" then
-				self:SetMatchesSearch(not C_Container.IsContainerFiltered(self.id));
-			else
-				PaperDollItemSlotButton_OnEvent(self, event, ...)
-			end
-		end)
-		-- OnShow/OnHide are just a bunch of update
-		button:SetScript("OnShow", PaperDollItemSlotButton_OnShow)
-		button:SetScript("OnHide", PaperDollItemSlotButton_OnHide)
-		button:SetScript("OnDragStart", function(self) PickupBagFromSlot(self.inventoryID) end)
-		button:SetScript("OnReceiveDrag", function(self) PutItemInBag(self.inventoryID) end)
-	elseif button.container == "Bank" then
-		button:SetID(id-5)
-		button.invSlotName = "BAG"..id-5
-		button.GetInventorySlot = _G.ButtonInventorySlot;
-		button.UpdateTooltip = _G.BankFrameItemButton_OnEnter
-		button.inventoryID = button:GetInventorySlot()
-		button:RegisterEvent("PLAYERBANKBAGSLOTS_CHANGED")
-
-		button:SetScript("OnEvent", function(self, event)
-			if event == "BAG_UPDATE_DELAYED" then
-				module:BankBagButtonUpdate(self)
-			end
-			-- Triggers when purchasing bank slots
-			if event == "PLAYERBANKBAGSLOTS_CHANGED" then
-				LUIBank:Layout()
-			end
-		end)
-		button:SetScript("OnDragStart", _G.BankFrameItemButtonBag_Pickup)
-		button:SetScript("OnReceiveDrag", _G.BankFrameItemButtonBag_OnClick)
-
-		button:SetScript("OnShow", function(self)
-			module:BankBagButtonUpdate(self)
-		end)
-
-		--BankFrameItemButton_Update(button)
-		module:BankBagButtonUpdate(button)
-		_G.BankFrameItemButton_UpdateLocked(button)
-		button.tooltipText = button.tooltipText or ""
-	end
+	button:SetScript("OnEvent", function(self, event, ...)
+		if event == "BAG_UPDATE_DELAYED" then
+			_G.PaperDollItemSlotButton_Update(self)
+			LUI:SetFrameBorderColor(self, module:RGBA("Border"))
+		elseif event == "INVENTORY_SEARCH_UPDATE" then
+			self:SetMatchesSearch(not C_Container.IsContainerFiltered(self.id));
+		else
+			PaperDollItemSlotButton_OnEvent(self, event, ...)
+		end
+	end)
+	button:SetScript("OnShow", PaperDollItemSlotButton_OnShow)
+	button:SetScript("OnHide", PaperDollItemSlotButton_OnHide)
+	button:SetScript("OnDragStart", function(self) PickupBagFromSlot(self.inventoryID) end)
+	button:SetScript("OnReceiveDrag", function(self) PutItemInBag(self.inventoryID) end)
 
 	return button
-end
-
-function module:BankBagButtonUpdate(button)
-	local texture = button.icon
-	local textureName = GetInventoryItemTexture("player", button.inventoryID)
-	local _, slotTextureName = GetInventorySlotInfo(button.invSlotName)
-
-	if textureName then
-		texture:SetTexture(textureName)
-	elseif slotTextureName then
-		--If no bag texture is found, show empty slot.
-		texture:SetTexture(slotTextureName)
-	end
-
-	button:SetBackdropBorderColor(module:RGBA("Border"))
-
-	texture:Show()
 end

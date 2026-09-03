@@ -1,206 +1,179 @@
--- This module handle various UI Elements by LUI or Blizzard.
--- It's an umbrella module to consolidate the many, many little UI changes that LUI does
---	that do not need a full module for themselves.
-
--- ####################################################################################################################
--- ##### Setup and Locals #############################################################################################
--- ####################################################################################################################
+-- Position handling for Blizzard frames that are not exposed by Edit Mode.
 
 ---@class LUIAddon
 local LUI = select(2, ...)
 
 ---@class LUI.UIElements
 local module = LUI:GetModule("UI Elements")
-local Micromenu = LUI:GetModule("Micromenu", true) --[[@as LUI.Micromenu]]
-local db
 
-local orderUI = false
+local InCombatLockdown = _G.InCombatLockdown
+local originalPoints = {}
+local settingPosition = false
+local pendingRestore = false
 
-local ObjectiveTrackerFrame = _G.ObjectiveTrackerFrame
-local DurabilityFrame = _G.DurabilityFrame
-local Minimap = _G.Minimap
+local managedFrames = {
+	ZoneObjectives = {
+		frame = "UIWidgetTopCenterContainerFrame",
+		point = "TOP",
+		relativePoint = "TOP",
+	},
+	CaptureBar = {
+		frame = "UIWidgetBelowMinimapContainerFrame",
+		point = "TOPRIGHT",
+		relativePoint = "TOPRIGHT",
+	},
+	GroupLoot = {
+		frame = "GroupLootContainer",
+		point = "BOTTOM",
+		relativePoint = "BOTTOM",
+	},
+	TicketStatus = {
+		frame = "TicketStatusFrame",
+		point = "TOPRIGHT",
+		relativePoint = "TOPRIGHT",
+	},
+}
 
--- ####################################################################################################################
--- ##### Module Functions #############################################################################################
--- ####################################################################################################################
-
-function module:SetUIElements()
-	db = module.db.profile
-	--module:SetObjectiveFrame()
-	module:SetAdditionalFrames()
-	module:SetAlerts()
-	module:Refresh()
-end
-
-function module:SetHiddenFrames()
-	-- Durability Frame
-	if db.DurabilityFrame.HideFrame then
-		LUI:Kill(DurabilityFrame)
+local combatFrame = CreateFrame("Frame")
+combatFrame:SetScript("OnEvent", function(self)
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	if pendingRestore or not module:IsEnabled() then
+		pendingRestore = false
+		module:RestoreManagedFrames()
 	else
-		LUI:Unkill(DurabilityFrame)
-		if db.DurabilityFrame.ManagePosition then
-			DurabilityFrame:ClearAllPoints()
-			-- Not Working. Figure out why.
-			DurabilityFrame:SetPoint("RIGHT", Minimap, "LEFT", db.DurabilityFrame.X, db.DurabilityFrame.Y)
-		end
+		module:Refresh()
 	end
+end)
 
-	if db.OrderHallCommandBar.HideFrame and not orderUI then
-		module:SecureHook("OrderHall_LoadUI", function()
-			LUI:Kill(_G.OrderHallCommandBar)
+local function QueueAfterCombat(restore)
+	pendingRestore = restore == true
+	combatFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+end
+
+local function CapturePoints(frame)
+	local points = {}
+	for index = 1, frame:GetNumPoints() do
+		points[index] = {frame:GetPoint(index)}
+	end
+	return points
+end
+
+local function RestorePoints(frame, points)
+	frame:ClearAllPoints()
+	for _, point in ipairs(points or {}) do
+		frame:SetPoint(unpack(point))
+	end
+end
+
+local function GetFrame(key)
+	local definition = managedFrames[key]
+	return definition and _G[definition.frame]
+end
+
+function module:RestoreManagedFrame(key)
+	local frame = GetFrame(key)
+	local points = originalPoints[key]
+	if not frame or not points then return end
+
+	settingPosition = true
+	RestorePoints(frame, points)
+	settingPosition = false
+	originalPoints[key] = nil
+end
+
+function module:RestoreManagedFrames()
+	if InCombatLockdown() then
+		QueueAfterCombat(true)
+		return
+	end
+	for key in pairs(managedFrames) do
+		module:RestoreManagedFrame(key)
+	end
+end
+
+function module:PositionManagedFrame(key)
+	local definition = managedFrames[key]
+	local config = definition and module.db.profile[key]
+	local frame = GetFrame(key)
+	if not definition or not config or not frame then return end
+
+	if not module:IsHooked(frame, "SetPoint") then
+		module:SecureHook(frame, "SetPoint", function()
+			if not settingPosition and module:IsEnabled() then module:Refresh() end
 		end)
-		orderUI = true
-	end
-end
-
--- ####################################################################################################################
--- ##### UIElements: Force Positioning ################################################################################
--- ####################################################################################################################
---- @TODO: Refactor to be cleaner. this was ripped straight out of V3 miinimap module.
-
-local UIWidgetBelowMinimapContainerFrame = _G.UIWidgetBelowMinimapContainerFrame
-local UIWidgetTopCenterContainerFrame = _G.UIWidgetTopCenterContainerFrame
-local VehicleSeatIndicator = _G.VehicleSeatIndicator
-local TicketStatusFrame = _G.TicketStatusFrame
-local PlayerPowerBarAlt = _G.PlayerPowerBarAlt
-local GroupLootContainer = _G.GroupLootContainer
-
-local shouldntSetPoint = false
-
-function module:SetAdditionalFrames()
-	self:SecureHook(DurabilityFrame, "SetPoint", "DurabilityFrame_SetPoint")
-	if (LUI.IsRetail) then
-		self:SecureHook(VehicleSeatIndicator, "SetPoint", "VehicleSeatIndicator_SetPoint")
-		self:SecureHook(ObjectiveTrackerFrame, "SetPoint", "ObjectiveTrackerFrame_SetPoint")
-		self:SecureHook(UIWidgetTopCenterContainerFrame, "SetPoint", "AlwaysUpFrame_SetPoint")
-		self:SecureHook(TicketStatusFrame, "SetPoint", "TicketStatus_SetPoint")
-		self:SecureHook(UIWidgetBelowMinimapContainerFrame, "SetPoint", "CaptureBar_SetPoint")
-		self:SecureHook(PlayerPowerBarAlt, "SetPoint", "PlayerPowerBarAlt_SetPoint")
-		self:SecureHook(GroupLootContainer, "SetPoint", "GroupLootContainer_SetPoint")
-		self:SecureHook(QueueStatusButton, "SetPoint", "QueueStatusButton_SetPoint")
-	end
-end
-
---- Force the position of a given supported frame
----@param frame string The name of the frame to force position
-function module:SetPosition(frame)
-	shouldntSetPoint = true
-	if frame == "AlwaysUpFrame" and db.AlwaysUpFrame.ManagePosition then
-		UIWidgetTopCenterContainerFrame:ClearAllPoints()
-		UIWidgetTopCenterContainerFrame:SetPoint("TOP", UIParent, "TOP", db.AlwaysUpFrame.X, db.AlwaysUpFrame.Y)
-	elseif (LUI.IsRetail) and frame == "VehicleSeatIndicator" and db.VehicleSeatIndicator.ManagePosition then
-		VehicleSeatIndicator:ClearAllPoints()
-		VehicleSeatIndicator:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.VehicleSeatIndicator.X, db.VehicleSeatIndicator.Y)
-	elseif frame == "DurabilityFrame" and db.DurabilityFrame.ManagePosition then
-		DurabilityFrame:ClearAllPoints()
-		DurabilityFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.DurabilityFrame.X, db.DurabilityFrame.Y)
-	elseif frame == "TicketStatus" and db.TicketStatus.ManagePosition then
-		TicketStatusFrame:ClearAllPoints()
-		TicketStatusFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.TicketStatus.X, db.TicketStatus.Y)
-	elseif (LUI.IsRetail) and frame == "ObjectiveTrackerFrame" and db.ObjectiveTrackerFrame.ManagePosition then
-		--ObjectiveTrackerFrame:ClearAllPoints() -- Cause a lot of odd behaviors with the quest tracker.
-		ObjectiveTrackerFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.ObjectiveTrackerFrame.X, db.ObjectiveTrackerFrame.Y)
-	elseif frame == "CaptureBar" and db.CaptureBar.ManagePosition then
-		UIWidgetBelowMinimapContainerFrame:ClearAllPoints()
-		UIWidgetBelowMinimapContainerFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.CaptureBar.X, db.CaptureBar.Y)
-	elseif frame == "PlayerPowerBarAlt" and db.PlayerPowerBarAlt.ManagePosition then
-		PlayerPowerBarAlt:ClearAllPoints()
-		PlayerPowerBarAlt:SetPoint("BOTTOM", UIParent, "BOTTOM", db.PlayerPowerBarAlt.X, db.PlayerPowerBarAlt.Y)
-	elseif frame == "GroupLootContainer" and db.GroupLootContainer.ManagePosition then
-		GroupLootContainer:ClearAllPoints()
-		GroupLootContainer:SetPoint("BOTTOM", UIParent, "BOTTOM", db.GroupLootContainer.X, db.GroupLootContainer.Y)
-	elseif (LUI.IsRetail) and frame == "QueueStatusButton" and db.QueueStatusButton.ManagePosition then
-		QueueStatusButton:ClearAllPoints()
-		QueueStatusButton:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.QueueStatusButton.X, db.QueueStatusButton.Y)
 	end
 
-	shouldntSetPoint = false
-end
-
-function module:DurabilityFrame_SetPoint()
-	if shouldntSetPoint then return end
-	self:SetPosition('DurabilityFrame')
-end
-
-function module:ObjectiveTrackerFrame_SetPoint()
-	if shouldntSetPoint then return end
-	self:SetPosition('ObjectiveTrackerFrame')
-end
-
-function module:VehicleSeatIndicator_SetPoint()
-	if shouldntSetPoint then return end
-	self:SetPosition('VehicleSeatIndicator')
-end
-
-function module:AlwaysUpFrame_SetPoint()
-	if shouldntSetPoint then return end
-	self:SetPosition('AlwaysUpFrame')
-end
-
-function module:CaptureBar_SetPoint()
-	if shouldntSetPoint then return end
-	self:SetPosition('CaptureBar')
-end
-
-function module:GroupLootContainer_SetPoint()
-	if shouldntSetPoint then return end
-	self:SetPosition('GroupLootContainer')
-end
-
-function module:PlayerPowerBarAlt_SetPoint()
-	if shouldntSetPoint then return end
-	self:SetPosition('PlayerPowerBarAlt')
-end
-
-function module:TicketStatus_SetPoint()
-	if shouldntSetPoint then return end
-	self:SetPosition('TicketStatus')
-end
-
-function module:QueueStatusButton_SetPoint()
-	if shouldntSetPoint then return end
-	self:SetPosition('QueueStatusButton')
-end
-
--- ####################################################################################################################
--- ##### UIElement: ObjectiveTracker ##################################################################################
--- ####################################################################################################################
-
-function module:ChangeHeaderColor(header, r, g, b)
-	header.Background:SetDesaturated(true)
-	header.Background:SetVertexColor(r, g, b)
-end
-
-function module:SetObjectiveFrame()
-	-- if db.ObjectiveTracker.HeaderColor then
-	-- 	module:SecureHook("ObjectiveTracker_Initialize", function()
-	-- 		for i, v in pairs(ObjectiveTrackerFrame.MODULES) do
-	-- 			module:ChangeHeaderColor(v.Header, module:RGB(LUI.playerClass))
-	-- 		end
-	-- 	end)
-	-- end
-	if db.ObjectiveTracker.ManagePosition then
-		-- module:SecureHook("ObjectiveTracker_Update", function()
-		-- 	shouldntSetPoint = true
-		-- 	ObjectiveTrackerFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", db.ObjectiveTracker.OffsetX, db.ObjectiveTracker.OffsetY)
-		-- 	shouldntSetPoint = false
-		-- end)
+	if not config.ManagePosition then
+		module:RestoreManagedFrame(key)
+		return
 	end
-end
 
--- ####################################################################################################################
--- ##### Module Refresh ###############################################################################################
--- ####################################################################################################################
+	originalPoints[key] = originalPoints[key] or CapturePoints(frame)
+	settingPosition = true
+	frame:ClearAllPoints()
+	frame:SetPoint(definition.point, UIParent, definition.relativePoint, config.X, config.Y)
+	settingPosition = false
+end
 
 function module:Refresh()
-	module:SetHiddenFrames()
-	module:SetPosition('VehicleSeatIndicator')
-	module:SetPosition('AlwaysUpFrame')
-	module:SetPosition('CaptureBar')
-	module:SetPosition('TicketStatus')
-	module:SetPosition('PlayerPowerBarAlt')
-	module:SetPosition('ObjectiveTrackerFrame')
-	module:SetPosition('DurabilityFrame')
-	module:SetPosition('PlayerPowerBarAlt')
-	module:SetPosition('QueueStatusButton')
+	if InCombatLockdown() then
+		QueueAfterCombat(false)
+		return
+	end
+	for key in pairs(managedFrames) do
+		module:PositionManagedFrame(key)
+	end
+	module:PositionPreviews()
+end
+
+function module:PositionPreview(key)
+	local preview = module.previews and module.previews[key]
+	local definition = managedFrames[key]
+	local config = definition and module.db.profile[key]
+	if not preview or not config then return end
+	preview:ClearAllPoints()
+	preview:SetPoint(definition.point, UIParent, definition.relativePoint, config.X, config.Y)
+end
+
+function module:PositionPreviews()
+	for key, preview in pairs(module.previews or {}) do
+		if preview:IsShown() then module:PositionPreview(key) end
+	end
+end
+
+function module:CreatePreview(key, labelText)
+	module.previews = module.previews or {}
+	if module.previews[key] then return module.previews[key] end
+
+	local preview = CreateFrame("Frame", "LUI"..key.."Preview", UIParent)
+	preview:SetSize(260, 48)
+	preview:SetFrameStrata("DIALOG")
+	LUI:ApplyFrameBackdrop(preview, {
+		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
+		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+		edgeSize = 14,
+		insets = {left = 3, right = 3, top = 3, bottom = 3},
+	})
+	LUI:SetFrameBackgroundColor(preview, 0, 0, 0, 0.8)
+	LUI:SetFrameBorderColor(preview, 1, 0.82, 0, 1)
+	local label = preview:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	label:SetPoint("CENTER")
+	label:SetText(labelText)
+	preview:Hide()
+	module.previews[key] = preview
+	return preview
+end
+
+function module:TogglePreview(key, labelText)
+	local preview = module:CreatePreview(key, labelText)
+	if preview:IsShown() then
+		preview:Hide()
+	else
+		module:PositionPreview(key)
+		preview:Show()
+	end
+end
+
+function module:HidePreviews()
+	for _, preview in pairs(module.previews or {}) do preview:Hide() end
 end

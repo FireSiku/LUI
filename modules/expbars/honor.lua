@@ -4,7 +4,6 @@
 
 ---@class LUIAddon
 local LUI = select(2, ...)
-local L = LUI.L
 
 ---@class LUI.ExperienceBars
 local module = LUI:GetModule("Experience Bars")
@@ -28,7 +27,7 @@ HonorDataProvider.BAR_EVENTS = {
 }
 
 function HonorDataProvider:ShouldBeVisible()
-	return LUI.IsRetail and (IsWatchingHonorAsXP() or C_PvP.IsActiveBattlefield() or IsInActiveWorldPVP())
+	return IsWatchingHonorAsXP() or C_PvP.IsActiveBattlefield() or IsInActiveWorldPVP()
 end
 
 function HonorDataProvider:Update()
