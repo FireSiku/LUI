@@ -10,6 +10,10 @@ local L, module, db = Opt:GetLUIModule("Micromenu")
 if not module or not module.registered then return end
 
 local Micromenu = Opt:CreateModuleOptions("Micromenu", module)
+Micromenu.disabled = function(info) return InCombatLockdown() or Opt.IsModDisabled(info) end
+
+local raidMenuModule = LUI:GetModule("RaidMenu", true)
+local raidMenuDB = raidMenuModule and raidMenuModule.db and raidMenuModule.db.profile
 
 -- ####################################################################################################################
 -- ##### Utility Functions ############################################################################################
@@ -20,13 +24,43 @@ local dropDirections = {
     RIGHT = L["Point_Right"],
 }
 
+local function IndividualColorDisabled(colorName)
+	return function() return db.Colors[colorName].t ~= "Individual" end
+end
+
+local function BackgroundColorDisabled()
+	return db.ColorMatch or db.Colors.Background.t ~= "Individual"
+end
+
+local raidMenuOverlapMethods = {
+	AutoHide = L["AutoHide"],
+	Offset = L["Offset"],
+}
+
+local function IsRaidMenuUsingAutoHide()
+	return raidMenuDB and raidMenuDB.OverlapPrevention == "AutoHide"
+end
+
+local function AreRaidMenuSettingsDisabled()
+	return not raidMenuDB or not raidMenuDB.Enable or InCombatLockdown()
+end
+
+local function IsRaidMenuBackgroundColorDisabled()
+	return raidMenuDB.MatchMicromenuBackground
+end
+
+local function SetRaidMenuEnabled(_, value)
+	raidMenuModule:SetRaidMenuEnabled(value)
+end
+
 -- ####################################################################################################################
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
 Micromenu.args = {
     -- General
-    Header = Opt:Header({name = L["Micro_Name"]}),
+	Header = Opt:Header({name = L["Micro_Name"]}),
+	AlwaysShow = Opt:Toggle({name = "Always Show at Login", desc = "Open the micromenu whenever you enter the world.", width = "full"}),
 	Spacing = Opt:Slider({name = L["Spacing"], desc = L["MicroOptions_Spacing_Desc"], min = -10, max = 10, step = 1}),
 	
     -- Buttons
@@ -47,16 +81,63 @@ Micromenu.args = {
 
     -- Position
     PositionHeader = Opt:Header({name = L["Position"]}),
-    X = Opt:Input({name = L["API_XValue_Name"], desc = format(L["API_XValue_Desc"], L["Micro_Name"])}),
-    Y = Opt:Input({name = L["API_YValue_Name"], desc = format(L["API_YValue_Desc"], L["Micro_Name"])}),
+    X = Opt:PositionX(),
+    Y = Opt:PositionY(),
 	Point = Opt:Select({name = L["Anchor"], values = LUI.Points}),
 	Direction = Opt:Select({name = L["MicroOptions_Direction_Name"], desc = L["MicroOptions_Direction_Desc"], values = dropDirections}),
 
     -- Colors
 	ColorHeader = Opt:Header({name = L["Colors"]}),
+	ColorMatch = Opt:Toggle({name = "Match Background to Buttons", desc = "Use the button color for the micromenu background."}),
 	ColorType = Opt:ColorSelect({name = L["Micro_Name"], arg = "Micromenu"}),
-	Micromenu = Opt:Color({name = "Individual Color", hasAlpha = true}),
+	Micromenu = Opt:Color({name = "Individual Color", hasAlpha = true, disabled = IndividualColorDisabled("Micromenu")}),
 	Spacer = Opt:Spacer({}),
 	BGColorType = Opt:ColorSelect({name = L["Background"], arg = "Background"}),
-	Background = Opt:Color({name = "Individual Color", hasAlpha = true}),
+	Background = Opt:Color({name = "Individual Color", hasAlpha = true, disabled = BackgroundColorDisabled}),
 }
+
+-- Keep the long micromenu page and the raid-menu page as separate scrollable
+-- tabs. Mixing a large set of controls with a child group makes AceConfig give
+-- the child tab the remaining height without scrolling the controls above it.
+local micromenuSettings = Micromenu.args
+Micromenu.args = {
+	Settings = Opt:Group({name = L["Micro_Name"], args = micromenuSettings}),
+}
+
+if raidMenuModule and raidMenuDB then
+	Micromenu.args.RaidMenu = Opt:Group({
+		name = L["Raid Menu"],
+		handler = raidMenuModule,
+		db = raidMenuDB,
+		args = {
+			Header = Opt:Header({name = L["Raid Menu"]}),
+			Enable = Opt:Toggle({
+				name = "Enable Raid Menu",
+				desc = "Show the raid tools attached to the left micromenu button.",
+				get = function() return raidMenuDB.Enable end,
+				set = SetRaidMenuEnabled,
+				disabled = function() return InCombatLockdown() end,
+				width = "full",
+			}),
+			Settings = Opt:InlineGroup({name = "Settings", disabled = AreRaidMenuSettingsDisabled, args = {
+				Compact = Opt:Toggle({name = L["Compact Raid Menu"], desc = L["Use compact version of the Raid Menu"]}),
+				Spacing = Opt:Slider({name = L["Spacing"], desc = "Spacing between raid-menu buttons.", min = 0, max = 10, step = 1, disabled = function() return not raidMenuDB.Compact end}),
+				Scale = Opt:Slider({name = L["Scale"], desc = "Scale of the raid menu.", values = Opt.ScaleValues}),
+				Spacer1 = Opt:Spacer(),
+				OverlapPrevention = Opt:Select({
+					name = L["Micromenu Overlap Prevention"],
+					values = raidMenuOverlapMethods,
+					desc = "Auto-Hide closes one menu when the other opens. Offset moves the raid menu while the micromenu is visible.",
+				}),
+				X_Offset = Opt:OffsetX({min = -200, max = 200, softMin = -200, softMax = 200, disabled = IsRaidMenuUsingAutoHide}),
+				Offset = Opt:OffsetY({min = -200, max = 200, softMin = -200, softMax = 200, disabled = IsRaidMenuUsingAutoHide}),
+				Spacer2 = Opt:Spacer(),
+				Opacity = Opt:Slider({name = L["Opacity"], desc = "Opacity of the raid menu.", min = 20, max = 100, step = 10}),
+				MatchMicromenuBackground = Opt:Toggle({name = "Match Micromenu Background", desc = "Use the micromenu background color for the raid menu.", width = "full"}),
+				BackgroundColor = Opt:Color({name = "Background Color", desc = "Choose a separate raid-menu background color to improve icon contrast.", hasAlpha = false, db = raidMenuDB, disabled = IsRaidMenuBackgroundColorDisabled}),
+				AutoHide = Opt:Toggle({name = L["Auto-Hide Raid Menu"], desc = "Hide the raid menu after using one of its actions.", width = "full"}),
+				ShowToolTips = Opt:Toggle({name = L["Show Tooltips"], desc = "Show descriptions for the raid-menu tools.", width = "full"}),
+			}}),
+		},
+	})
+end
