@@ -358,6 +358,22 @@ function module:ShowCastbarPreview(unit)
 	self:ShowUnitframePreview(unit)
 end
 
+function module:StopCastbarPreview()
+	if InCombatLockdown() then
+		LUI:Print("Cast bar preview can only be changed outside combat.")
+		return false
+	end
+
+	preview.castbarUnit = nil
+	for name in pairs(preview.registeredNames) do
+		local frame = _G[name]
+		if frame and frame.Castbar then
+			frame.Castbar:Hide()
+		end
+	end
+	return true
+end
+
 function module:ToggleUnitframePreview(selection)
 	if preview.active == selection then
 		self:StopUnitframePreview()
