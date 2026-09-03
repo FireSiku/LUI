@@ -10,69 +10,26 @@ local LUI = select(2, ...)
 
 ---@class LUI.Unitframes
 local module = LUI:GetModule("Unitframes")
-local Fader = LUI:GetModule("Fader", true) --[[@as LUI.Fader]]
 local Media = LibStub("LibSharedMedia-3.0")
 
 ---@class oUF
 local oUF = LUI.oUF
 
-local UnitPower, UnitPowerMax = _G.UnitPower, _G.UnitPowerMax
-local UnitIsUnit, UnitExists, UnitIsGhost, UnitIsDead = _G.UnitIsUnit, _G.UnitExists, _G.UnitIsGhost, _G.UnitIsDead
-local UnitName, UnitGUID, UnitIsPVP = _G.UnitName, _G.UnitGUID, _G.UnitIsPVP
-local UnitIsPlayer, UnitIsEnemy = _G.UnitIsPlayer, _G.UnitIsEnemy
-local UnitIsVisible, UnitIsConnected, UnitIsAFK = _G.UnitIsVisible, _G.UnitIsConnected, _G.UnitIsAFK
-local GetThreatStatusColor, UnitThreatSituation = _G.GetThreatStatusColor, _G.UnitThreatSituation
+local UnitPowerMax = _G.UnitPowerMax
+local UnitIsUnit, UnitIsGhost, UnitIsDead = _G.UnitIsUnit, _G.UnitIsGhost, _G.UnitIsDead
+local UnitIsPVP = _G.UnitIsPVP
+local UnitIsConnected, UnitIsAFK = _G.UnitIsConnected, _G.UnitIsAFK
 local UnitPowerType, GetUnitPowerBarTextureInfo = _G.UnitPowerType, _G.GetUnitPowerBarTextureInfo
-local SetPortraitTexture, UnitHasVehicleUI = _G.SetPortraitTexture, _G.UnitHasVehicleUI
-local UnitClass, UnitLevel, GetPVPTimer = _G.UnitClass, _G.UnitLevel, _G.GetPVPTimer
-local GetShapeshiftFormID = _G.GetShapeshiftFormID
-local DebuffTypeColor =  _G.DebuffTypeColor
+local UnitHasVehicleUI = _G.UnitHasVehicleUI
+local UnitClass, GetPVPTimer = _G.UnitClass, _G.GetPVPTimer
 local format = string.format
 local floor = math.floor
 
 local function GetUnitClassColor(unit)
 	local _, class = UnitClass(unit)
-
-	-- oUF 14.0.1 uses Blizzard's class-color API when UnitClass returns a
-	-- secret class token. Custom class colors cannot be indexed with a secret.
-	if issecretvalue(class) then
-		return C_ClassColor.GetClassColor(class)
-	elseif class then
-		return module.colors.class[class]
-	end
-end
-
--- Let oUF query the primary power with the explicit type returned by Blizzard.
--- This keeps secret values inside Blizzard/oUF's StatusBar update path while
--- avoiding incorrect zero values seen for some non-player Energy units when
--- UnitPower is queried with an omitted type.
-local function GetPrimaryPower(_, unit)
-	return UnitPowerType(unit), 0
-end
-
--- The "By Class" option uses class colors for players and power-type colors
--- for NPCs. oUF exposes Power.UpdateColor specifically for layout overrides,
--- so this keeps the distinction inside the supported element color path.
-local function UpdatePowerClassOrType(self, event, unit)
-	if self.__unit ~= unit then return end
-
-	local power = self.Power
-	local color
-	if UnitIsPlayer(unit) or UnitInPartyIsAI(unit) then
-		color = GetUnitClassColor(unit)
-	else
-		local powerType, powerToken = UnitPowerType(unit)
-		color = self.colors.power[powerToken]
-			or self.colors.power[powerType]
-			or self.colors.power.MANA
-	end
-
-	if color then
-		power:SetStatusBarColor(color:GetRGB())
-	end
-	if power.PostUpdateColor then
-		power:PostUpdateColor(unit, color)
-	end
+	if class == nil then return end
+	if issecretvalue(class) then return C_ClassColor.GetClassColor(class) end
+	return module.colors.class[class] or C_ClassColor.GetClassColor(class)
 end
 
 local function BarInterpolation(enabled)
@@ -118,49 +75,6 @@ local backdrop2 = {
 	insets = {top = -1, left = -1, bottom = -1, right = -1},
 }
 
-local font = mediaPath..[=[fonts\vibrocen.ttf]=]
-local fontn = mediaPath..[=[fonts\KhmerUI.ttf]=]
-local font2 = mediaPath..[=[Fonts\ARIALN.ttf]=]
-local font3 = mediaPath..[=[fonts\Prototype.ttf]=]
-
-local cornerAuras = {
-	WARRIOR = {
-		TOPLEFT = {50720, true},
-	},
-	PRIEST = {
-		TOPLEFT = {139, true}, -- Renew
-		TOPRIGHT = {17}, -- Power Word: Shield
-		BOTTOMLEFT = {33076}, -- Prayer of Mending
-		BOTTOMRIGHT = {194384, true}, -- Atonement
-	},
-	DRUID = {
-		TOPLEFT = {8936, true}, -- Regrowth
-		TOPRIGHT = {94447}, -- Lifebloom
-		BOTTOMLEFT = {774, true}, -- Rejuvenation
-		BOTTOMRIGHT = {48438, true}, -- Wild Growth
-	},
-	MAGE = {
-		TOPLEFT = {54646}, -- Focus Magic
-	},
-	MONK = {
-		TOPLEFT = {115151, true} -- Renewing Mist
-	},
-	PALADIN = {
-		TOPLEFT = {25771, false, true}, -- Forbearance
-	},
-	SHAMAN = {
-		TOPLEFT = {61295, true}, -- Riptide
-		TOPRIGHT = {974}, -- Earth Shield
-	},
-	WARLOCK = {
-		TOPLEFT = {80398}, -- Dark Intent
-	},
-}
-
-------------------------------------------------------------------------
---	Dont edit this if you dont know what you are doing!
-------------------------------------------------------------------------
-
 local PercentCurve = C_CurveUtil.CreateCurve()
 PercentCurve:SetType(Enum.LuaCurveType.Linear)
 PercentCurve:AddPoint(0, 0)
@@ -186,12 +100,6 @@ IsFullCurve:SetType(Enum.LuaCurveType.Step)
 IsFullCurve:AddPoint(0.999, 0)
 IsFullCurve:AddPoint(1, 1)
 
--- Hide when empty
-local IsEmptyCurve = C_CurveUtil.CreateCurve()
-IsEmptyCurve:SetType(Enum.LuaCurveType.Step)
-IsEmptyCurve:AddPoint(0.01, 1)
-IsEmptyCurve:AddPoint(0, 0)
-
 local function SetFontString(parent, fontName, fontHeight, fontStyle)
 	local fs = parent:CreateFontString(nil, "OVERLAY")
 	fs:SetFont(fontName, fontHeight, fontStyle or "")
@@ -199,82 +107,6 @@ local function SetFontString(parent, fontName, fontHeight, fontStyle)
 	fs:SetShadowColor(0, 0, 0)
 	fs:SetShadowOffset(1.25, -1.25)
 	return fs
-end
-
-local function FormatTime(s)
-	local day, hour, minute = 86400, 3600, 60
-	if s >= day then
-		return format("%dd", floor(s/day + 1)), s % day
-	elseif s >= hour then
-		return format("%dh", floor(s/hour + 1)), s % hour
-	elseif s >= minute then
-		if s <= minute * 1 then
-			return format("%d:%02d", floor(s/60), s % minute), s - floor(s)
-		end
-		return format("%dm", floor(s/minute + 1)), s % minute
-	end
-	return format("%.1f", s), (s * 100 - floor(s * 100))/100
-end
-
-local function utf8sub(string, i, dots)
-	local bytes = string:len()
-	if bytes <= i then
-		return string
-	else
-		local len, pos = 0, 1
-		while pos <= bytes do
-			len = len + 1
-			local c = string:byte(pos)
-			if (c > 0 and c <= 127) then
-				pos = pos + 1
-			elseif (c >= 192 and c <= 223) then
-				pos = pos + 2
-			elseif (c >= 224 and c <= 239) then
-				pos = pos + 3
-			elseif (c >= 240 and c <= 247) then
-				pos = pos + 4
-			end
-			if (len == i) then break end
-		end
-
-		if len == i and pos <= bytes then
-			return string:sub(1, pos - 1)..(dots and "..." or "")
-		else
-			return string
-		end
-	end
-end
-
-function LUI:DebugTalents()
-	local configId = C_ClassTalents.GetActiveConfigID()
-	local configInfo = C_Traits.GetConfigInfo(configId)
-	LUI:Print("---Talents---")
-	if not LUI_Talents then LUI_Talents = {} end
-	for i, treeId in ipairs(configInfo.treeIDs) do
-		local nodes = C_Traits.GetTreeNodes(treeId)
-		for ii, nodeId in ipairs(nodes) do
-			local node = C_Traits.GetNodeInfo(configId, nodeId)
-			if node.ID > 0 then
-				for iii, entryId in ipairs(node.entryIDs) do
-					local entryInfo = C_Traits.GetEntryInfo(configId, entryId)
-					local definitionInfo = C_Traits.GetDefinitionInfo(entryInfo.definitionID)
-					local rank = node.activeRank
-					local spellId = definitionInfo.spellID
-					local spellName, _, icon = spellId and C_Spell.GetSpellName(spellId) or "Unknown"
-					if node.activeEntry and node.activeEntry.entryID ~= entryId then
-						rank = 0
-					end
-					LUI:Print(spellName, "NodeId", nodeId, "EntryId", entryId, "Rank:", rank)
-					LUI_Talents[spellName] = {
-						nodeId = nodeId,
-						entryId = entryId,
-						rank = rank,
-						spellId = spellId,
-					}
-				end
-			end
-		end
-	end
 end
 
 local function GetUnitFrameTooltipUnit(self)
@@ -420,12 +252,6 @@ local function SetHealthTextColor(health, text, unit)
 end
 
 local function PostUpdateHealthColor(health, unit, color)
-	if health.__owner.LUIArenaUnseen then
-		health:SetStatusBarColor(0.5, 0.5, 0.5)
-		health.bg:SetVertexColor(0.5, 0.5, 0.5)
-		return
-	end
-
 	local useProfileColor = health.color == "Individual" and color == nil
 	local r, g, b
 	if color then
@@ -437,8 +263,8 @@ local function PostUpdateHealthColor(health, unit, color)
 		r, g, b = health:GetStatusBarColor()
 	end
 
-	-- oUF 14.0.1 can supply secret color components here. Blizzard's
-	-- vertex-color API accepts those values directly, but Lua arithmetic does not.
+	-- Blizzard's renderer accepts secret color components directly, while Lua
+	-- arithmetic does not.
 	-- Preserve LUI's legacy multiplier/invert behavior only for its own fixed
 	-- Individual color, whose components come from the profile and are not secret.
 	local baseAlpha = health.bg.LUIBaseAlpha or 1
@@ -562,12 +388,6 @@ local function UpdatePowerDisplay(self, unit, current, min, max, displayType)
 end
 
 local function PostUpdatePowerColor(power, unit)
-	if power.__owner.LUIArenaUnseen then
-		power:SetStatusBarColor(0.5, 0.5, 0.5)
-		power.bg:SetVertexColor(0.5, 0.5, 0.5)
-		return
-	end
-
 	local r, g, b
 	if power.color == "Individual" then
 		r, g, b = power.colorIndividual.r, power.colorIndividual.g, power.colorIndividual.b
@@ -575,12 +395,12 @@ local function PostUpdatePowerColor(power, unit)
 	else
 		-- oUF has already selected and applied the current Blizzard color. Read
 		-- it back from the StatusBar and forward it without inspecting or doing
-		-- arithmetic on callback RGB values, which may be secret in 12.1.
+		-- arithmetic on callback RGB values, which may be secret on Retail.
 		r, g, b = power:GetStatusBarColor()
 	end
 
-	-- oUF 14.0.1 may pass secret RGB components to PostUpdateColor. Forward
-	-- those directly to Blizzard's secret-capable renderer. For dynamic colors
+	-- Forward dynamic RGB components directly to Blizzard's secret-capable
+	-- renderer. For dynamic colors
 	-- use the texture alpha for LUI's background multiplier instead of doing
 	-- forbidden Lua arithmetic on secret RGB values.
 	local baseAlpha = power.bg.LUIBaseAlpha or 1
@@ -619,145 +439,13 @@ local function PostUpdatePower(power, unit, current, min, max, displayType)
 	end
 end
 
-local function CreateAuraTimer(self,elapsed)
-	if self.timeLeft then
-		self.elapsed = (self.elapsed or 0) + elapsed
-		if self.elapsed >= 0.1 then
-			if not self.first then
-				self.timeLeft = self.timeLeft - self.elapsed
-			else
-				self.timeLeft = self.timeLeft - GetTime()
-				self.first = false
-			end
-			if self.timeLeft > 0 then
-				self.remaining:SetText(FormatTime(self.timeLeft))
-				self.remaining:SetTextColor(1, 1, 1)
-			else
-				self.remaining:Hide()
-				self:SetScript("OnUpdate", nil)
-			end
-			self.elapsed = 0
-		end
-	end
-end
-
-local function PostCreateAura(element, button)
-	button.backdrop = CreateFrame("Frame", nil, button, "BackdropTemplate")
-	button.backdrop:SetPoint("TOPLEFT", button, "TOPLEFT", -3.5, 3)
-	button.backdrop:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 4, -3.5)
-	button.backdrop:SetFrameStrata("BACKGROUND")
-	button.backdrop:SetBackdrop({
-		edgeFile = glowTex, edgeSize = 5,
-		insets = {left = 3, right = 3, top = 3, bottom = 3}
-	})
-	button.backdrop:SetBackdropColor(0, 0, 0, 0)
-	button.backdrop:SetBackdropBorderColor(0, 0, 0)
-	button.Count:SetPoint("BOTTOMRIGHT", -1, 2)
-	button.Count:SetJustifyH("RIGHT")
-	button.Count:SetFont(font3, 16, "OUTLINE")
-	button.Count:SetTextColor(0.84, 0.75, 0.65)
-
-	button.remaining = SetFontString(button, Media:Fetch("font", module.db.profile.Settings.AuratimerFont), module.db.profile.Settings.AuratimerSize, module.db.profile.Settings.AuratimerFlag)
-	button.remaining:SetPoint("TOPLEFT", 1, -1)
-
-	button.Cooldown.noCooldownCount = true
-
-	button.Overlay:Hide()
-
-	button.auratype = button:CreateTexture(nil, "OVERLAY")
-	button.auratype:SetTexture(buttonTex)
-	button.auratype:SetPoint("TOPLEFT", button, "TOPLEFT", -2, 2)
-	button.auratype:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 2, -2)
-	button.auratype:SetTexCoord(0, 1, 0.02, 1)
-end
-
---- PostUpdate for Auras (Buffs/Debuffs)
----@param element ufAuras
----@param unit UnitId
----@param button ufAuraButton
----@param data UnitAuraInfo
----@param position number
-local function PostUpdateAura(element, unit, button, data, position)
-	if button.isHarmfulAura then
-		if data.sourceUnit == "player" or data.sourceUnit == "pet" or data.sourceUnit == "vehicle" then
-			button.Icon:SetDesaturated()
-		else
-			button.Icon:SetDesaturated(element.fadeOthers)
-		end
-	end
-
-	if element.showAuraType and data.dispelName then
-		local color = DebuffTypeColor[data.dispelName] or DebuffTypeColor.none
-		button.auratype:SetVertexColor(color.r, color.g, color.b)
-	else
-		if button.isHarmfulAura then
-			button.auratype:SetVertexColor(0.69, 0.31, 0.31)
-		else
-			button.auratype:SetVertexColor(1, 1, 1)
-		end
-	end
-
-	if element.disableCooldown or (not data.duration) or data.duration <= 0 then
-		button.Cooldown:Hide()
-	else
-		button.Cooldown:Show()
-	end
-	--Todo: Add an option to toggle this.
-	button.Cooldown:SetHideCountdownNumbers(true)
-	button.Cooldown:SetReverse(element.cooldownReverse)
-
-	if data.duration and data.duration > 0 then
-		if element.showAuratimer then
-			button.remaining:Show()
-		else
-			button.remaining:Hide()
-		end
-	else
-		button.remaining:Hide()
-	end
-
-	button.duration = data.duration
-	button.timeLeft = data.expirationTime
-	button.first = true
-	button:SetScript("OnUpdate", CreateAuraTimer)
-end
-
---- Aura Filtering function
----@param element ufAuras
----@param unit UnitId
----@param data UnitAuraInfo
----@return boolean show @ indicates whether the aura button should be shown
-local function FilterAura(element, unit, data)
-	local caster = data.sourceUnit
-
-	-- When OnlyShowPlayer is used, only show auras that comes from the player (or when they're in a vehicle)
-	if element.onlyShowPlayer and (caster == "player" or caster == "vehicle") then
-		return true
-
-	-- When IncludePet is used show auras that comes from the player's pet as well.
-	elseif element.includePet and caster == "pet" then
-		return true
-
-	-- Show all named auras when OnlyShowPlayer is not being used
-	elseif data.name and not element.onlyShowPlayer then
-		return true
-
-	end
-end
-
 --- Castbar callback after a cast starts
 ---@param castbar ufCastbar
 ---@param unit UnitId
----@param spellID number
----@param notInterruptible boolean
----@param name string
-local function PostCastStart(castbar, unit, spellID, notInterruptible, name)
-	local unitname = UnitName(unit)
-	if issecretvalue(unitname) then unitname = nil end
+local function PostCastStart(castbar, unit)
 	if castbar.Colors.Individual == true then
 		castbar:GetStatusBarTexture():SetVertexColor(castbar.Colors.Bar.r, castbar.Colors.Bar.g, castbar.Colors.Bar.b, castbar.Colors.Bar.a)
 		castbar.bg:SetVertexColor(castbar.Colors.Background.r, castbar.Colors.Background.g, castbar.Colors.Background.b, castbar.Colors.Background.a)
-		-- castbar.Backdrop:SetBackdropBorderColor(castbar.Colors.Border.r, castbar.Colors.Border.g, castbar.Colors.Border.b, castbar.Colors.Border.a)
 	else
 		if unit == "pet" then unit = "player" end
 		local color = GetUnitClassColor(unit)
@@ -768,31 +456,7 @@ local function PostCastStart(castbar, unit, spellID, notInterruptible, name)
 			castbar:GetStatusBarTexture():SetVertexColor(castbar.Colors.Bar.r, castbar.Colors.Bar.g, castbar.Colors.Bar.b, 0.68)
 		end
 		castbar.bg:SetVertexColor(0.15, 0.15, 0.15, 0.75)
-		-- castbar.Backdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
 	end
-	-- NEED TO REWRITE SHIELDED ELEMENT TO BE ALPHA BASED.
-	-- Then use element.Shield:SetAlphaFromBoolean(castbar.otInterruptible, 1, 0)
-	-- if castbar.notInterruptible and castbar.Shielded.Enable and UnitIsEnemy("player", unit) then
-	-- 	if castbar.Shielded.IndividualColor then
-	-- 		castbar:GetStatusBarTexture():SetVertexColor(castbar.Shielded.BarColor.r, castbar.Shielded.BarColor.g, castbar.Shielded.BarColor.b, castbar.Shielded.BarColor.a)
-	-- 	end
-	-- 	if castbar.Shielded.IndividualBorder then
-	-- 		castbar.Backdrop:SetBackdrop({
-	-- 			edgeFile = Media:Fetch("border", castbar.Shielded.Texture),
-	-- 			edgeSize = castbar.Shielded.Thick,
-	-- 			insets = {
-	-- 				left = castbar.Shielded.Inset.L,
-	-- 				right = castbar.Shielded.Inset.R,
-	-- 				top = castbar.Shielded.Inset.T,
-	-- 				bottom = castbar.Shielded.Inset.B,
-	-- 			},
-	-- 		})
-	-- 		castbar.Backdrop:SetBackdropBorderColor(castbar.Shielded.Color.r, castbar.Shielded.Color.g, castbar.Shielded.Color.b, castbar.Shielded.Color.a)
-	-- 	end
-	-- 	if castbar.Shielded.Text then
-	-- 		castbar.Text:SetText(format("%s ** Shielded **", tostring(name)))
-	-- 	end
-	-- end
 end
 
 local function ShouldShowCastbar(castbar, eventUnit)
@@ -801,7 +465,8 @@ local function ShouldShowCastbar(castbar, eventUnit)
 	if not frameUnit or frameUnit ~= eventUnit then return false end
 
 	if frameUnit ~= "player" and C_Secrets.CanCompareUnitTokens(frameUnit, "player") then
-		if UnitIsUnit(frameUnit, "player") then
+		local isPlayer = UnitIsUnit(frameUnit, "player")
+		if not issecretvalue(isPlayer) and isPlayer then
 			castbar:Hide()
 			return false
 		end
@@ -810,85 +475,9 @@ local function ShouldShowCastbar(castbar, eventUnit)
 	return true
 end
 
-local function ThreatOverride(self, event, unit)
-	if unit ~= self.__unit then return end
-	if unit == "vehicle" then unit = "player" end
-
-	unit = unit or self.__unit
-	local status = UnitThreatSituation(unit)
-	if issecretvalue(status) then
-		self.ThreatIndicator:Hide()
-		return
-	end
-
-	if(status and status > 0) then
-		local r, g, b = GetThreatStatusColor(status)
-		for i = 1, 8 do
-			self.ThreatIndicator[i]:SetVertexColor(r, g, b)
-		end
-		self.ThreatIndicator:Show()
-	else
-		self.ThreatIndicator:Hide()
-	end
-end
-
-local function ChiOverride(self, event, unit, powerType)
-	if self.__unit ~= unit or (powerType and powerType ~= "CHI") then return end
-
-	 local num = UnitPower(unit, Enum.PowerType.Chi)
-	 if issecretvalue(num) then return end
-	 for i = 1, self.Chi.Force do
-		 if i <= num then
-			 self.Chi[i]:SetAlpha(1)
-		 else
-			 self.Chi[i]:SetAlpha(.4)
-		 end
-	 end
-end
-
-local function AdditionalPowerOverride(self, event, unit)
-	if not unit or not UnitIsUnit(self.__unit, unit) then return end
-	local _, class = UnitClass(unit)
-	local additionalpower = self.AdditionalPower
-
-	local form = GetShapeshiftFormID()
-	if self.AdditionalPower.ShouldEnable(unit) then
-		additionalpower:Show()
-	else
-		return additionalpower:Hide()
-	end
-
-	local cur, max = UnitPower('player', Enum.PowerType.Mana), UnitPowerMax('player', Enum.PowerType.Mana)
-	if issecretvalue(cur) or issecretvalue(max) then return end
-
-	additionalpower:SetMinMaxValues(0, max)
-	additionalpower:SetValue(cur)
-
-	local r, g, b
-	if(additionalpower.colorClass and UnitIsPlayer(unit)) then
-		r, g, b = LUI:GetClassColor(class)
-	elseif(additionalpower.colorSmooth) then
-		r, g, b = oUF.ColorGradient(cur, max, module.colors.smooth())
-	else
-		r, g, b = unpack(module.colors.power['MANA'])
-	end
-	if(b) then
-		additionalpower:GetStatusBarTexture():SetVertexColor(r, g, b)
-
-		local bg = additionalpower.bg
-		if(bg) then
-			local mu = bg.multiplier or 1
-			bg:SetVertexColor(r * mu, g * mu, b * mu)
-		end
-	end
-
-	if(additionalpower.PostUpdatePower) then
-		return additionalpower:PostUpdatePower(unit, cur, max)
-	end
-end
-
 local function PostUpdateAlternativePower(altpowerbar, unit, cur, min, max)
-	local color = {LUI:GetClassColor(LUI.playerClass)}
+	local classColor = module.colors.class[LUI.playerClass] or C_ClassColor.GetClassColor(LUI.playerClass)
+	local color = classColor and {classColor:GetRGB()} or {1, 1, 1}
 	local tex, r, g, b = GetUnitPowerBarTextureInfo("player", 3)
 
 	if altpowerbar.color == "By Class" then
@@ -899,9 +488,16 @@ local function PostUpdateAlternativePower(altpowerbar, unit, cur, min, max)
 		altpowerbar:GetStatusBarTexture():SetVertexColor(r, g, b)
 	end
 
-	r, g, b = altpowerbar:GetStatusBarColor()
+	r, g, b = altpowerbar:GetStatusBarTexture():GetVertexColor()
 	local mu = altpowerbar.bg.multiplier or 1
-	altpowerbar.bg:SetVertexColor(r*mu, g*mu, b*mu)
+	local baseAlpha = altpowerbar.bg.LUIBaseAlpha or 1
+	if altpowerbar.color == "Individual" then
+		altpowerbar.bg:SetVertexColor(r * mu, g * mu, b * mu)
+		altpowerbar.bg:SetAlpha(baseAlpha)
+	else
+		altpowerbar.bg:SetVertexColor(r, g, b)
+		altpowerbar.bg:SetAlpha(baseAlpha * mu)
+	end
 
 	if altpowerbar.Text then
 		if altpowerbar.Text.Enable then
@@ -936,21 +532,29 @@ end
 local function PostUpdateAdditionalPower(additionalpower, cur, max)
 	local _, class = UnitClass("player")
 	if additionalpower.color == "By Class" then
-		if class == nil or issecretvalue(class) then
-			additionalpower:GetStatusBarTexture():SetVertexColor(1, 1, 1)
+		local color = class ~= nil and (issecretvalue(class) and C_ClassColor.GetClassColor(class) or module.colors.class[class])
+		if color then
+			additionalpower:GetStatusBarTexture():SetVertexColor(color:GetRGB())
 		else
-			additionalpower:GetStatusBarTexture():SetVertexColor(LUI:GetClassColor(class))
+			additionalpower:GetStatusBarTexture():SetVertexColor(1, 1, 1)
 		end
 	elseif additionalpower.color == "By Type" then
-		additionalpower:GetStatusBarTexture():SetVertexColor(unpack(module.colors.power.MANA))
+		additionalpower:GetStatusBarTexture():SetVertexColor(module.colors.power.MANA:GetRGB())
 	end
 
 	local bg = additionalpower.bg
 
 	if bg then
 		local mu = bg.multiplier or 1
-		local r, g, b = additionalpower:GetStatusBarColor()
-		bg:SetVertexColor(r * mu, g * mu, b * mu)
+		local r, g, b = additionalpower:GetStatusBarTexture():GetVertexColor()
+		local baseAlpha = bg.LUIBaseAlpha or 1
+		if additionalpower.color == "Individual" then
+			bg:SetVertexColor(r * mu, g * mu, b * mu)
+			bg:SetAlpha(baseAlpha)
+		else
+			bg:SetVertexColor(r, g, b)
+			bg:SetAlpha(baseAlpha * mu)
+		end
 	end
 
 	local text = additionalpower.value
@@ -970,83 +574,21 @@ local function PostUpdateAdditionalPower(additionalpower, cur, max)
 			text:SetAlpha(1)
 		end
 
-		if text.color == "By Class" and not issecretvalue(class) and class ~= nil then
-			text:SetTextColor(LUI:GetClassColor(class))
+		if text.color == "By Class" and class ~= nil then
+			local color = issecretvalue(class) and C_ClassColor.GetClassColor(class) or module.colors.class[class]
+			if color then
+				text:SetTextColor(color:GetRGB())
+			else
+				text:SetTextColor(1, 1, 1)
+			end
 		elseif text.color == "By Type" then
-			text:SetTextColor(unpack(module.colors.power.MANA))
+			text:SetTextColor(module.colors.power.MANA:GetRGB())
 		else
 			text:SetTextColor(text.colorIndividual.r, text.colorIndividual.g, text.colorIndividual.b)
 		end
 	elseif text then
 		text:SetText("")
 	end
-end
-
-local function ArenaEnemyUnseen(self, event, unit, state)
-	if unit ~= self.__unit then return end
-
-	if state == "unseen" then
-		self.LUIArenaUnseen = true
-		self.Health.PostUpdate = function(health)
-			health:SetValue(0)
-			health:SetStatusBarColor(0.5, 0.5, 0.5)
-			health.bg:SetVertexColor(0.5, 0.5, 0.5, 1)
-			health.value:SetText(health.value.ShowDead and "|cffD7BEA5<Unseen>|r" or "")
-			health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Unseen>|r" or "")
-			health.valueMissing:SetText("")
-		end
-		self.Power.PostUpdate = function(power)
-			power:SetValue(0)
-			power:SetStatusBarColor(0.5, 0.5, 0.5)
-			power.bg:SetVertexColor(0.5, 0.5, 0.5, 1)
-			power.value:SetText("")
-			power.valuePercent:SetText("")
-			power.valueMissing:SetText("")
-		end
-
-		self.Hide = self.Show
-		self:Show()
-	else
-		self.LUIArenaUnseen = false
-		self.Health.PostUpdate = PostUpdateHealth
-		self.Health.PostUpdateColor = PostUpdateHealthColor
-		self.Power.PostUpdate = PostUpdatePower
-		self.Power.PostUpdateColor = PostUpdatePowerColor
-
-		self.Hide = self.Hide_
-	end
-
-	self.Health:ForceUpdate()
-	self.Power:ForceUpdate()
-end
-
-local function PortraitOverride(self, event, unit)
-	if not unit or not UnitIsUnit(self.__unit, unit) then return end
-
-	local portrait = self.Portrait
-
-	if(portrait:IsObjectType"Model") then
-		local guid = UnitGUID(unit)
-		if not UnitExists(unit) or not UnitIsConnected(unit) or not UnitIsVisible(unit) then
-			portrait:SetModelScale(4.25)
-			portrait:SetPosition(0, 0, -1.5)
-			portrait:SetModel("Interface\\Buttons\\talktomequestionmark.mdx")
-			portrait.guid = nil
-		elseif(portrait.guid ~= guid or event == "UNIT_MODEL_CHANGED") then
-			portrait:SetUnit(unit)
-			portrait:SetCamera(portrait:GetModel() == "character\\worgen\\male\\worgenmale.m2" and 1 or 0)
-
-			portrait.guid = guid
-		else
-			portrait:SetCamera(portrait:GetModel() == "character\\worgen\\male\\worgenmale.m2" and 1 or 0)
-		end
-	else
-		SetPortraitTexture(portrait, unit)
-	end
-
-	local a = portrait:GetAlpha()
-	portrait:SetAlpha(0)
-	portrait:SetAlpha(a)
 end
 
 local function Reposition(V2Tex)
@@ -1264,7 +806,8 @@ module.funcs = {
 		end
 
 		if colorMode == "Individual" then
-			self.Health:SetStatusBarColor(oufdb.HealthBar.IndividualColor.r, oufdb.HealthBar.IndividualColor.g, oufdb.HealthBar.IndividualColor.b)
+			local color = oufdb.HealthBar.IndividualColor
+			self.Health:SetStatusBarColor(color.r, color.g, color.b)
 		end
 	end,
 	Power = function(self, unit, oufdb)
@@ -1295,7 +838,7 @@ module.funcs = {
 
 		local colorMode = oufdb.PowerBar.Color
 		self.Power.color = colorMode
-		self.Power.UpdateColor = colorMode == "By Class" and UpdatePowerClassOrType or nil
+		self.Power.UpdateColor = nil
 		self.Power.colorIndividual = oufdb.PowerBar.IndividualColor
 		self.Power.colorTapping = false
 		self.Power.colorDisconnected = false
@@ -1309,13 +852,15 @@ module.funcs = {
 		self.Power.colorClassPet = false
 		self.Power.displayAltPower = true
 		self.Power.displayAltPowerOnly = false
-		self.Power.GetDisplayPower = GetPrimaryPower
 		self.Power.smoothing = BarInterpolation(oufdb.PowerBar.Smooth)
 		self.Power.frequentUpdates = true
 		self.Power.LUIEnabled = oufdb.PowerBar.Enable == true
 
 		if colorMode == "Individual" then
-			self.Power:SetStatusBarColor(oufdb.PowerBar.IndividualColor.r, oufdb.PowerBar.IndividualColor.g, oufdb.PowerBar.IndividualColor.b)
+			local color = oufdb.PowerBar.IndividualColor
+			self.Power:SetStatusBarColor(color.r, color.g, color.b)
+		elseif colorMode == "By Class" then
+			self.Power:SetStatusBarColor(module.colors.power.MANA:GetRGB())
 		end
 
 		if self.Power.LUIEnabled then
@@ -1325,13 +870,13 @@ module.funcs = {
 		end
 	end,
 	FrameBackdrop = function(self, unit, oufdb)
-		if not self.FrameBackdrop then self.FrameBackdrop = CreateFrame("Frame", nil, self, "BackdropTemplate") end
+		if not self.FrameBackdrop then self.FrameBackdrop = CreateFrame("Frame", nil, self) end
 
 		self.FrameBackdrop:ClearAllPoints()
 		self.FrameBackdrop:SetPoint("TOPLEFT", self, "TOPLEFT", oufdb.Backdrop.Padding.Left, oufdb.Backdrop.Padding.Top)
 		self.FrameBackdrop:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", oufdb.Backdrop.Padding.Right, oufdb.Backdrop.Padding.Bottom)
 		self.FrameBackdrop:SetFrameStrata("BACKGROUND")
-		self.FrameBackdrop:SetBackdrop({
+		LUI:ApplyFrameBackdrop(self.FrameBackdrop, {
 			bgFile = Media:Fetch("background", oufdb.Backdrop.Texture),
 			edgeFile = Media:Fetch("border", oufdb.Border.EdgeFile),
 			edgeSize = oufdb.Border.EdgeSize,
@@ -1342,8 +887,8 @@ module.funcs = {
 				bottom = oufdb.Border.Insets.Bottom
 			}
 		})
-		self.FrameBackdrop:SetBackdropColor(oufdb.Backdrop.Color.r, oufdb.Backdrop.Color.g, oufdb.Backdrop.Color.b, oufdb.Backdrop.Color.a)
-		self.FrameBackdrop:SetBackdropBorderColor(oufdb.Border.Color.r, oufdb.Border.Color.g, oufdb.Border.Color.b, oufdb.Border.Color.a)
+		LUI:SetFrameBackgroundColor(self.FrameBackdrop, oufdb.Backdrop.Color.r, oufdb.Backdrop.Color.g, oufdb.Backdrop.Color.b, oufdb.Backdrop.Color.a)
+		LUI:SetFrameBorderColor(self.FrameBackdrop, oufdb.Border.Color.r, oufdb.Border.Color.g, oufdb.Border.Color.b, oufdb.Border.Color.a)
 	end,
 
 	--texts
@@ -1540,17 +1085,18 @@ module.funcs = {
 			self.PvPIndicator = self.Overlay:CreateTexture(nil, "OVERLAY")
 			if unit == "player" then
 				self.PvPIndicator.Timer = SetFontString(self.Overlay, Media:Fetch("font", oufdb.PvPText.Font), oufdb.PvPText.Size, oufdb.PvPText.Outline)
-				self.Health:HookScript("OnUpdate", function(_, elapsed)
+				self.Health:HookScript("OnUpdate", function()
 					local isPVP = UnitIsPVP(unit)
 					if not issecretvalue(isPVP) and isPVP and oufdb.PvPIndicator.Enable and oufdb.PvPText.Enable then
-						if (GetPVPTimer() == 301000 or GetPVPTimer() == -1) then
+						local timer = GetPVPTimer()
+						if issecretvalue(timer) or timer == 301000 or timer == -1 then
 							if self.PvPIndicator.Timer:IsShown() then
 								self.PvPIndicator.Timer:Hide()
 							end
 						else
 							self.PvPIndicator.Timer:Show()
-							local min = math.floor(GetPVPTimer()/1000/60)
-							local sec = (math.floor(GetPVPTimer()/1000))-(min*60)
+							local min = math.floor(timer / 1000 / 60)
+							local sec = math.floor(timer / 1000) - min * 60
 							self.PvPIndicator.Timer:SetFormattedText("%d:%.2d", min, sec)
 						end
 					elseif self.PvPIndicator.Timer:IsShown() then
@@ -1608,23 +1154,23 @@ module.funcs = {
 			self.Runes:SetFrameLevel(6)
 				
 			for i = 1, 6 do
-				self.Runes[i] = CreateFrame("StatusBar", nil, self.Runes, "BackdropTemplate")
-				self.Runes[i]:SetBackdrop(backdrop)
-				self.Runes[i]:SetBackdropColor(0.08, 0.08, 0.08)
+				self.Runes[i] = CreateFrame("StatusBar", nil, self.Runes)
+				LUI:ApplyFrameBackdrop(self.Runes[i], backdrop)
+				LUI:SetFrameBackgroundColor(self.Runes[i], 0.08, 0.08, 0.08)
 				self.Runes[i]:RegisterEvent("RUNE_POWER_UPDATE")
 
 			end
 
-			self.Runes.FrameBackdrop = CreateFrame("Frame", nil, self.Runes, "BackdropTemplate")
+			self.Runes.FrameBackdrop = CreateFrame("Frame", nil, self.Runes)
 			self.Runes.FrameBackdrop:SetPoint("TOPLEFT", self.Runes, "TOPLEFT", -3.5, 3)
 			self.Runes.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.Runes, "BOTTOMRIGHT", 3.5, -3)
 			self.Runes.FrameBackdrop:SetFrameStrata("BACKGROUND")
-			self.Runes.FrameBackdrop:SetBackdrop({
+			LUI:ApplyFrameBackdrop(self.Runes.FrameBackdrop, {
 				edgeFile = glowTex, edgeSize = 5,
 				insets = {left = 3, right = 3, top = 3, bottom = 3}
 			})
-			self.Runes.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
-			self.Runes.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
+			LUI:SetFrameBackgroundColor(self.Runes.FrameBackdrop, 0, 0, 0, 0)
+			LUI:SetFrameBorderColor(self.Runes.FrameBackdrop, 0, 0, 0)
 		end
 
 		local x = oufdb.RunesBar.Lock and 0 or oufdb.RunesBar.X
@@ -1638,7 +1184,8 @@ module.funcs = {
 		for i = 1, 6 do
 			local runeType = (_G.GetRuneType) and _G.GetRuneType(i) or 1
 			self.Runes[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.RunesBar.Texture))
-			self.Runes[i]:GetStatusBarTexture():SetVertexColor(unpack(module.colors.runes[runeType]))
+			local color = module.colors.runes[runeType] or module.colors.power.RUNES
+			self.Runes[i]:GetStatusBarTexture():SetVertexColor(color:GetRGB())
 			self.Runes[i]:SetSize(((oufdb.RunesBar.Width - 5 * oufdb.RunesBar.Padding) / 6), oufdb.RunesBar.Height)
 
 			self.Runes[i]:ClearAllPoints()
@@ -1660,9 +1207,9 @@ module.funcs = {
 				or _G.STANDARD_TOTEM_PRIORITIES
 
 			for i = 1, MAX_TOTEMS do
-				local bar = CreateFrame("StatusBar", nil, self.Totems, "BackdropTemplate")
-				bar:SetBackdrop(backdrop)
-				bar:SetBackdropColor(0, 0, 0)
+				local bar = CreateFrame("StatusBar", nil, self.Totems)
+				LUI:ApplyFrameBackdrop(bar, backdrop)
+				LUI:SetFrameBackgroundColor(bar, 0, 0, 0)
 				bar:SetMinMaxValues(0, 1)
 				bar:SetValue(1)
 				bar.slot = i
@@ -1700,16 +1247,16 @@ module.funcs = {
 			end
 			
 			
-			self.Totems.FrameBackdrop = CreateFrame("Frame", nil, self.Totems, "BackdropTemplate")
+			self.Totems.FrameBackdrop = CreateFrame("Frame", nil, self.Totems)
 			self.Totems.FrameBackdrop:SetPoint("TOPLEFT", self.Totems, "TOPLEFT", -3.5, 3)
 			self.Totems.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.Totems, "BOTTOMRIGHT", 3.5, -3)
 			self.Totems.FrameBackdrop:SetFrameStrata("BACKGROUND")
-			self.Totems.FrameBackdrop:SetBackdrop({
+			LUI:ApplyFrameBackdrop(self.Totems.FrameBackdrop, {
 				edgeFile = glowTex, edgeSize = 5,
 				insets = {left = 3, right = 3, top = 3, bottom = 3}
 			})
-			self.Totems.FrameBackdrop:SetBackdropColor(0, 0, 0, 0)
-			self.Totems.FrameBackdrop:SetBackdropBorderColor(0, 0, 0)
+			LUI:SetFrameBackgroundColor(self.Totems.FrameBackdrop, 0, 0, 0, 0)
+			LUI:SetFrameBorderColor(self.Totems.FrameBackdrop, 0, 0, 0)
 		end
 
 		local x = oufdb.TotemsBar.Lock and 0 or oufdb.TotemsBar.X
@@ -1741,13 +1288,13 @@ module.funcs = {
 	ClassPower = function(self, unit, oufdb)
 		local classPower = self.ClassPower
 		if not classPower then
-			classPower = CreateFrame("Frame", nil, self, "BackdropTemplate")
+			classPower = CreateFrame("Frame", nil, self)
 			classPower:SetFrameStrata("BACKGROUND")
-			classPower:SetBackdrop({
+			LUI:ApplyFrameBackdrop(classPower, {
 				bgFile = "Interface/Tooltips/UI-Tooltip-Background",
 				edgeFile = glowTex, tile = false, tileSize = 0, edgeSize = 1,
 			})
-			classPower:SetBackdropBorderColor(0, 0, 0)
+			LUI:SetFrameBorderColor(classPower, 0, 0, 0)
 			classPower.multiplier = 0.35
 			classPower.Count = 1
 			self.ClassPower = classPower
@@ -1755,9 +1302,9 @@ module.funcs = {
 
 		classPower.MaxCount = MAX_CLASS_POWER_POINTS
 		for i = #classPower + 1, classPower.MaxCount do
-			local classPoint = CreateFrame("StatusBar", nil, classPower, "BackdropTemplate")
-			classPoint:SetBackdrop(backdrop)
-			classPoint:SetBackdropColor(0.08, 0.08, 0.08)
+			local classPoint = CreateFrame("StatusBar", nil, classPower)
+			LUI:ApplyFrameBackdrop(classPoint, backdrop)
+			LUI:SetFrameBackgroundColor(classPoint, 0.08, 0.08, 0.08)
 			classPoint:SetMinMaxValues(0, 1)
 			classPoint:SetValue(0)
 			classPower[i] = classPoint
@@ -1795,12 +1342,12 @@ module.funcs = {
 			color = color or self.LUIColor or module.colors.class[LUI.playerClass]
 			self.LUIColor = color
 			local r, g, b = color:GetRGB()
-			self:SetBackdropColor(r * self.multiplier, g * self.multiplier, b * self.multiplier)
+			LUI:SetFrameBackgroundColor(self, r, g, b, self.multiplier)
 		end
 
 		classPower.UpdateTexture = UpdateClassPowerLayout
 		classPower.PostUpdate = function(element, current, max, hasCurrentChanged, hasMaxChanged)
-			if max and max > 0 and (hasMaxChanged or element.Count ~= max) then
+			if max and not issecretvalue(max) and max > 0 and (hasMaxChanged or element.Count ~= max) then
 				element:UpdateTexture(max)
 			end
 		end
@@ -1867,7 +1414,8 @@ module.funcs = {
 		self.AlternativePower:SetStatusBarTexture(Media:Fetch("statusbar", module.db.profile.player.AlternativePowerBar.Texture))
 
 		self.AlternativePower.bg:SetTexture(Media:Fetch("statusbar", module.db.profile.player.AlternativePowerBar.TextureBG))
-		self.AlternativePower.bg:SetAlpha(module.db.profile.player.AlternativePowerBar.BGAlpha)
+		self.AlternativePower.bg.LUIBaseAlpha = module.db.profile.player.AlternativePowerBar.BGAlpha
+		self.AlternativePower.bg:SetAlpha(self.AlternativePower.bg.LUIBaseAlpha)
 		self.AlternativePower.bg.multiplier = module.db.profile.player.AlternativePowerBar.BGMultiplier
 
 		self.AlternativePower.smoothing = BarInterpolation(module.db.profile.player.AlternativePowerBar.Smooth)
@@ -1911,7 +1459,9 @@ module.funcs = {
 				local shouldEnable = false
 				local _, playerClass = UnitClass(unit)
 				if playerClass == nil or issecretvalue(playerClass) then return false end
-				if(not UnitHasVehicleUI('player')) then
+				local hasVehicleUI = UnitHasVehicleUI("player")
+				if issecretvalue(hasVehicleUI) then return false end
+				if not hasVehicleUI then
 					local maxPower = UnitPowerMax(unit, ADDITIONAL_POWER_BAR_INDEX)
 					if not issecretvalue(maxPower) and maxPower ~= 0 then
 						if LUI.IsRetail and (ALT_POWER_BAR_PAIR_DISPLAY_INFO[playerClass]) then
@@ -1976,7 +1526,8 @@ module.funcs = {
 		self.AdditionalPower.value.colorIndividual = oufdb.AdditionalPowerText.IndividualColor
 
 		self.AdditionalPower.bg:SetTexture(Media:Fetch("statusbar", oufdb.AdditionalPowerBar.TextureBG))
-		self.AdditionalPower.bg:SetAlpha(oufdb.AdditionalPowerBar.BGAlpha)
+		self.AdditionalPower.bg.LUIBaseAlpha = oufdb.AdditionalPowerBar.BGAlpha
+		self.AdditionalPower.bg:SetAlpha(self.AdditionalPower.bg.LUIBaseAlpha)
 		self.AdditionalPower.bg.multiplier = oufdb.AdditionalPowerBar.BGMultiplier
 
 		if self.AdditionalPower.ShouldEnable(unit) then self.AdditionalPower.SetPosition() end
@@ -1987,61 +1538,11 @@ module.funcs = {
 		end
 	end,
 
-	-- -- raid specific
-	-- SingleAuras = function(self, unit, oufdb)
-	-- 	if not cornerAuras[LUI.playerClass] then return end
-	-- 	if not self.SingleAuras then self.SingleAuras = {} end
-
-	-- 	for k, data in pairs(cornerAuras[LUI.playerClass]) do
-	-- 		local spellId, onlyPlayer, isDebuff = unpack(data)
-	-- 		local spellName = C_Spell.GetSpellName(spellId)
-
-	-- 		local x = k:find("RIGHT") and - oufdb.CornerAura.Inset or oufdb.CornerAura.Inset
-	-- 		local y = k:find("TOP") and - oufdb.CornerAura.Inset or oufdb.CornerAura.Inset
-
-	-- 		if not self.SingleAuras[k] then
-	-- 			self.SingleAuras[k] = CreateFrame("Frame", nil, self)
-	-- 			self.SingleAuras[k]:SetFrameLevel(7)
-	-- 		end
-
-	-- 		self.SingleAuras[k].spellName = spellName
-	-- 		self.SingleAuras[k].onlyPlayer = onlyPlayer
-	-- 		self.SingleAuras[k].isDebuff = isDebuff
-	-- 		self.SingleAuras[k]:SetWidth(oufdb.CornerAura.Size)
-	-- 		self.SingleAuras[k]:SetHeight(oufdb.CornerAura.Size)
-	-- 		self.SingleAuras[k]:ClearAllPoints()
-	-- 		self.SingleAuras[k]:SetPoint(k, self, k, x, y)
-	-- 	end
-	-- end,
-	-- RaidDebuffs = function(self, unit, oufdb)
-	-- 	if not self.RaidDebuffs then
-	-- 		self.RaidDebuffs = CreateFrame("Frame", nil, self, "BackdropTemplate")
-	-- 		self.RaidDebuffs:SetPoint("CENTER", self, "CENTER", 0, 0)
-	-- 		self.RaidDebuffs:SetFrameLevel(7)
-
-	-- 		self.RaidDebuffs:SetBackdrop({
-	-- 			bgFile = [=[Interface\ChatFrame\ChatFrameBackground]=],
-	-- 			insets = {top = -1, left = -1, bottom = -1, right = -1},
-	-- 		})
-
-	-- 		self.RaidDebuffs.icon = self.RaidDebuffs:CreateTexture(nil, "OVERLAY")
-	-- 		self.RaidDebuffs.icon:SetTexCoord(0.1, 0.9, 0.1, 0.9)
-	-- 		self.RaidDebuffs.icon:SetAllPoints(self.RaidDebuffs)
-
-	-- 		self.RaidDebuffs.cd = CreateFrame("Cooldown", nil, self.RaidDebuffs)
-	-- 		self.RaidDebuffs.cd:SetAllPoints(self.RaidDebuffs)
-	-- 	end
-
-	-- 	self.RaidDebuffs:SetHeight(oufdb.RaidDebuff.Size)
-	-- 	self.RaidDebuffs:SetWidth(oufdb.RaidDebuff.Size)
-	-- end,
-
 	-- others
 	Portrait = function(self, unit, oufdb)
 		if not self.Portrait then
 			self.Portrait = CreateFrame("PlayerModel", nil, self)
 			self.Portrait:SetFrameLevel(5)
-			--self.Portrait.Override = PortraitOverride
 		end
 
 		self.Portrait:SetHeight(oufdb.Portrait.Height)
@@ -2083,9 +1584,6 @@ module.funcs = {
 		self.Buffs.disableCooldown = oufdb.Aura.Buffs.DisableCooldown
 		self.Buffs.cooldownReverse = oufdb.Aura.Buffs.CooldownReverse
 
-		-- self.Buffs.PostCreateButton = PostCreateAura
-		-- self.Buffs.PostUpdateButton = PostUpdateAura
-		--self.Buffs.FilterAura = FilterAura
 		if not self.Buffs.createdButtons then self.Buffs.createdButtons = 0 end
 		if not self.Buffs.anchoredButtons then self.Buffs.anchoredButtons = 0 end
 	end,
@@ -2152,9 +1650,6 @@ module.funcs = {
 		self.Debuffs.disableCooldown = oufdb.Aura.Debuffs.DisableCooldown
 		self.Debuffs.cooldownReverse = oufdb.Aura.Debuffs.CooldownReverse
 
-		-- self.Debuffs.PostCreateButton = PostCreateAura
-		-- self.Debuffs.PostUpdateButton = PostUpdateAura
-		--self.Debuffs.FilterAura = FilterAura
 		if not self.Debuffs.createdButtons then self.Debuffs.createdButtons = 0 end
 		if not self.Debuffs.anchoredButtons then self.Debuffs.anchoredButtons = 0 end
 	end,
@@ -2200,7 +1695,7 @@ module.funcs = {
 			castbar.bg = castbar:CreateTexture(nil, "BORDER")
 			castbar.bg:SetAllPoints(castbar)
 
-			castbar.Backdrop = CreateFrame("Frame", nil, castbar, "BackdropTemplate")
+			castbar.Backdrop = CreateFrame("Frame", nil, castbar)
 			castbar.Backdrop:SetPoint("TOPLEFT", castbar, "TOPLEFT", -4, 4)
 			castbar.Backdrop:SetPoint("BOTTOMRIGHT", castbar, "BOTTOMRIGHT", 4, -4)
 			castbar.Backdrop:SetFrameLevel(math.max(castbar:GetFrameLevel() - 1, 0))
@@ -2208,7 +1703,7 @@ module.funcs = {
 			-- oUF applies the secret not-interruptible state through
 			-- SetAlphaFromBoolean. The shield frame is therefore styled here but
 			-- its visibility remains controlled by Blizzard/oUF.
-			castbar.Shield = CreateFrame("Frame", nil, castbar, "BackdropTemplate")
+			castbar.Shield = CreateFrame("Frame", nil, castbar)
 			castbar.Shield:SetAllPoints(castbar)
 			castbar.Shield:SetFrameLevel(castbar:GetFrameLevel() + 1)
 			castbar.Shield.Fill = castbar.Shield:CreateTexture(nil, "ARTWORK")
@@ -2254,16 +1749,7 @@ module.funcs = {
 			castbar.IconOverlay:SetTexture(buttonTex)
 			castbar.IconOverlay:SetVertexColor(1, 1, 1)
 
-			-- castbar.IconBackdrop = CreateFrame("Frame", nil, castbar, "BackdropTemplate")
-			-- castbar.IconBackdrop:SetPoint("TOPLEFT", castbar.Icon, "TOPLEFT", -4, 3)
-			-- castbar.IconBackdrop:SetPoint("BOTTOMRIGHT", castbar.Icon, "BOTTOMRIGHT", 3, -3.5)
-			-- castbar.IconBackdrop:SetBackdrop({
-			-- 	edgeFile = glowTex, edgeSize = 4,
-			-- 	insets = {left = 3, right = 3, top = 3, bottom = 3}
-			-- })
-			-- castbar.IconBackdrop:SetBackdropColor(0, 0, 0, 0)
-			-- castbar.IconBackdrop:SetBackdropBorderColor(0, 0, 0, 0.7)
-		end
+			end
 		castbar.ShouldShow = ShouldShowCastbar
 
 		castbar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Castbar.General.Texture))
@@ -2286,7 +1772,7 @@ module.funcs = {
 		oufdb.Castbar.Border.Thickness = tonumber(oufdb.Castbar.Border.Thickness) or 4
 		oufdb.Castbar.Shield.Thickness = tonumber(oufdb.Castbar.Shield.Thickness) or 4
 
-		castbar.Backdrop:SetBackdrop({
+		LUI:ApplyFrameBackdrop(castbar.Backdrop, {
 			edgeFile = Media:Fetch("border", oufdb.Castbar.Border.Texture),
 			edgeSize = oufdb.Castbar.Border.Thickness,
 			insets = {
@@ -2296,13 +1782,13 @@ module.funcs = {
 				bottom = oufdb.Castbar.Border.Inset.bottom
 			}
 		})
-		castbar.Backdrop:SetBackdropColor(0, 0, 0, 0)
-		castbar.Backdrop:SetBackdropBorderColor(oufdb.Castbar.Colors.Border.r, oufdb.Castbar.Colors.Border.g, oufdb.Castbar.Colors.Border.b, oufdb.Castbar.Colors.Border.a)
+		LUI:SetFrameBackgroundColor(castbar.Backdrop, 0, 0, 0, 0)
+		LUI:SetFrameBorderColor(castbar.Backdrop, oufdb.Castbar.Colors.Border.r, oufdb.Castbar.Colors.Border.g, oufdb.Castbar.Colors.Border.b, oufdb.Castbar.Colors.Border.a)
 
 		local shieldColor = oufdb.Castbar.Shield.IndividualColor and oufdb.Castbar.Shield.BarColor or oufdb.Castbar.Colors.Shield
 		local shieldBorderColor = oufdb.Castbar.Shield.IndividualBorder and oufdb.Castbar.Shield.Color or oufdb.Castbar.Colors.Border
 		castbar.Shield.Fill:SetColorTexture(shieldColor.r, shieldColor.g, shieldColor.b, shieldColor.a)
-		castbar.Shield:SetBackdrop({
+		LUI:ApplyFrameBackdrop(castbar.Shield, {
 			edgeFile = Media:Fetch("border", oufdb.Castbar.Shield.Texture),
 			edgeSize = oufdb.Castbar.Shield.Thickness,
 			insets = {
@@ -2312,11 +1798,11 @@ module.funcs = {
 				bottom = oufdb.Castbar.Shield.Inset.bottom
 			}
 		})
-		castbar.Shield:SetBackdropColor(0, 0, 0, 0)
+		LUI:SetFrameBackgroundColor(castbar.Shield, 0, 0, 0, 0)
 		if oufdb.Castbar.Shield.Border then
-			castbar.Shield:SetBackdropBorderColor(shieldBorderColor.r, shieldBorderColor.g, shieldBorderColor.b, shieldBorderColor.a)
+			LUI:SetFrameBorderColor(castbar.Shield, shieldBorderColor.r, shieldBorderColor.g, shieldBorderColor.b, shieldBorderColor.a)
 		else
-			castbar.Shield:SetBackdropBorderColor(0, 0, 0, 0)
+			LUI:SetFrameBorderColor(castbar.Shield, 0, 0, 0, 0)
 		end
 		castbar.Shield.Label:SetFont(Media:Fetch("font", oufdb.Castbar.NameText.Font), oufdb.Castbar.NameText.Size, oufdb.Castbar.NameText.Outline)
 		castbar.Shield.Label:SetTextColor(oufdb.Castbar.Colors.Name.r, oufdb.Castbar.Colors.Name.g, oufdb.Castbar.Colors.Name.b)
@@ -2377,15 +1863,21 @@ module.funcs = {
 		end
 
 		if unit == "player" then
-			-- HACK: Disable Latency until properly re-implemented
-			if oufdb.Castbar.General.Latency == true and false then
+			-- oUF 14 calculates the player safe-zone width from the current
+			-- network latency using the retail DurationObject castbar path.
+			local defaultLatencyColor = module.defaults.profile.player.Castbar.Colors.Latency
+			local latencyColor = oufdb.Castbar.Colors.Latency
+			if type(latencyColor) ~= "table" then
+				latencyColor = defaultLatencyColor
+			end
+			if oufdb.Castbar.General.Latency == true and castbar.SafeZone then
 				castbar.SafeZone:Show()
-				if oufdb.Castbar.General.IndividualColor == true then
-					castbar.SafeZone:SetVertexColor(oufdb.Castbar.Colors.Latency.r,oufdb.Castbar.Colors.Latency.g,oufdb.Castbar.Colors.Latency.b,oufdb.Castbar.Colors.Latency.a)
-				else
-					castbar.SafeZone:SetVertexColor(0.11,0.11,0.11,0.6)
+				if oufdb.Castbar.General.IndividualColor == true and latencyColor then
+					castbar.SafeZone:SetVertexColor(latencyColor.r, latencyColor.g, latencyColor.b, latencyColor.a)
+				elseif defaultLatencyColor then
+					castbar.SafeZone:SetVertexColor(defaultLatencyColor.r, defaultLatencyColor.g, defaultLatencyColor.b, defaultLatencyColor.a)
 				end
-			else
+			elseif castbar.SafeZone then
 				castbar.SafeZone:Hide()
 			end
 		end
@@ -2393,11 +1885,9 @@ module.funcs = {
 		if oufdb.Castbar.General.Icon then
 			castbar.Icon:Show()
 			castbar.IconOverlay:Show()
-			-- castbar.IconBackdrop:Show()
 		else
 			castbar.Icon:Hide()
 			castbar.IconOverlay:Hide()
-			-- castbar.IconBackdrop:Hide()
 		end
 	end,
 
@@ -2522,41 +2012,41 @@ module.funcs = {
 		if not from.V2Tex then
 			local V2Tex = CreateFrame("Frame", nil, from)
 
-			V2Tex.Horizontal = CreateFrame("Frame", nil, V2Tex, "BackdropTemplate")
+			V2Tex.Horizontal = CreateFrame("Frame", nil, V2Tex)
 			V2Tex.Horizontal:SetFrameLevel(19)
 			V2Tex.Horizontal:SetFrameStrata("BACKGROUND")
 			V2Tex.Horizontal:SetHeight(2)
-			V2Tex.Horizontal:SetBackdrop(backdrop2)
-			V2Tex.Horizontal:SetBackdropColor(0, 0, 0, 1)
-			V2Tex.Horizontal:SetBackdropBorderColor(0.1, 0.1, 0.1, 1)
+			LUI:ApplyFrameBackdrop(V2Tex.Horizontal, backdrop2)
+			LUI:SetFrameBackgroundColor(V2Tex.Horizontal, 0, 0, 0, 1)
+			LUI:SetFrameBorderColor(V2Tex.Horizontal, 0.1, 0.1, 0.1, 1)
 			V2Tex.Horizontal:Show()
 
-			V2Tex.Vertical = CreateFrame("Frame", nil, V2Tex, "BackdropTemplate")
+			V2Tex.Vertical = CreateFrame("Frame", nil, V2Tex)
 			V2Tex.Vertical:SetFrameLevel(19)
 			V2Tex.Vertical:SetFrameStrata("BACKGROUND")
 			V2Tex.Vertical:SetWidth(2)
-			V2Tex.Vertical:SetBackdrop(backdrop2)
-			V2Tex.Vertical:SetBackdropColor(0, 0, 0, 1)
-			V2Tex.Vertical:SetBackdropBorderColor(0.1, 0.1, 0.1, 1)
+			LUI:ApplyFrameBackdrop(V2Tex.Vertical, backdrop2)
+			LUI:SetFrameBackgroundColor(V2Tex.Vertical, 0, 0, 0, 1)
+			LUI:SetFrameBorderColor(V2Tex.Vertical, 0.1, 0.1, 0.1, 1)
 			V2Tex.Vertical:Show()
 
-			V2Tex.Horizontal2 = CreateFrame("Frame", nil, V2Tex, "BackdropTemplate")
+			V2Tex.Horizontal2 = CreateFrame("Frame", nil, V2Tex)
 			V2Tex.Horizontal2:SetFrameLevel(19)
 			V2Tex.Horizontal2:SetFrameStrata("BACKGROUND")
 			V2Tex.Horizontal2:SetHeight(2)
-			V2Tex.Horizontal2:SetBackdrop(backdrop2)
-			V2Tex.Horizontal2:SetBackdropColor(0, 0, 0, 1)
-			V2Tex.Horizontal2:SetBackdropBorderColor(0.1, 0.1, 0.1, 1)
+			LUI:ApplyFrameBackdrop(V2Tex.Horizontal2, backdrop2)
+			LUI:SetFrameBackgroundColor(V2Tex.Horizontal2, 0, 0, 0, 1)
+			LUI:SetFrameBorderColor(V2Tex.Horizontal2, 0.1, 0.1, 0.1, 1)
 			V2Tex.Horizontal2:Show()
 
-			V2Tex.Dot = CreateFrame("Frame", nil, V2Tex, "BackdropTemplate")
+			V2Tex.Dot = CreateFrame("Frame", nil, V2Tex)
 			V2Tex.Dot:SetFrameLevel(19)
 			V2Tex.Dot:SetFrameStrata("BACKGROUND")
 			V2Tex.Dot:SetHeight(6)
 			V2Tex.Dot:SetWidth(6)
-			V2Tex.Dot:SetBackdrop(backdrop2)
-			V2Tex.Dot:SetBackdropColor(0, 0, 0, 1)
-			V2Tex.Dot:SetBackdropBorderColor(0.1, 0.1, 0.1, 1)
+			LUI:ApplyFrameBackdrop(V2Tex.Dot, backdrop2)
+			LUI:SetFrameBackgroundColor(V2Tex.Dot, 0, 0, 0, 1)
+			LUI:SetFrameBorderColor(V2Tex.Dot, 0.1, 0.1, 0.1, 1)
 			V2Tex.Dot:Show()
 
 			-- needed for the options
@@ -2648,15 +2138,6 @@ local function SetStyle(self, unit, isSingle)
 		module.funcs.RaidInfo(self, unit, oufdb)
 	end
 
-	if unit == "party" then
-		local sanityBar = _G[format("PartyMemberFrame%dPowerBarAlt", string.sub(self:GetName(), -1))]
-		if sanityBar then
-			sanityBar:ClearAllPoints()
-			sanityBar:SetPoint("LEFT", self, "RIGHT", 25, 0)
-			sanityBar:SetParent(self)
-		end
-	end
-
 	module.funcs.HealthValue(self, unit, oufdb)
 	module.funcs.HealthPercent(self, unit, oufdb)
 	module.funcs.HealthMissing(self, unit, oufdb)
@@ -2697,16 +2178,7 @@ local function SetStyle(self, unit, isSingle)
 		end
 	end
 	
-	------------------------------------------------------------------------
-	--	Raid Specific Items
-	------------------------------------------------------------------------
-
-	if unit == "raid" then
-		--if oufdb.CornerAura.Enable then module.funcs.SingleAuras(self, unit, oufdb) end
-		--if oufdb.RaidDebuff.Enable then module.funcs.RaidDebuffs(self, unit, oufdb) end
-	end
-	
-	------------------------------------------------------------------------
+		------------------------------------------------------------------------
 	--	Other
 	------------------------------------------------------------------------
 	
@@ -2758,12 +2230,7 @@ local function SetStyle(self, unit, isSingle)
 	self.Highlight:SetBlendMode("ADD")
 	self.Highlight:Hide()
 
-	--if unit == unit:match("arena%d") then
-	--self.Hide_ = self.Hide
-	--self:RegisterEvent("ARENA_OPPONENT_UPDATE", ArenaEnemyUnseen)
-	--end
-
-	self:RegisterEvent("PLAYER_FLAGS_CHANGED", function(self) self.Health:ForceUpdate() end)
+		self:RegisterEvent("PLAYER_FLAGS_CHANGED", function(self) self.Health:ForceUpdate() end)
 	if unit == "player" then self:RegisterEvent("PLAYER_ENTERING_WORLD", function(self) self.Health:ForceUpdate() end) end
 	if unit == "pet" then
 		self.elapsed = 0
@@ -2777,9 +2244,7 @@ local function SetStyle(self, unit, isSingle)
 		end)
 	end
 
-	if Fader and oufdb.Fader and oufdb.Fader.Enable then Fader:RegisterFrame(self, oUF.Fader) end
-
-	if unit == "raid" or (unit == "party" and oufdb.RangeFade and oufdb.Fader and not oufdb.Fader.Enable) then
+		if unit == "raid" or (unit == "party" and oufdb.RangeFade) then
 		self.Range = {
 			insideAlpha = 1,
 			outsideAlpha = 0.5

@@ -155,6 +155,7 @@ end
 
 function module:OnInitialize()
 	LUI:RegisterModule(module)
+	module:BuildUnitframeColors()
 end
 
 function module:OnEnable()
@@ -162,7 +163,13 @@ function module:OnEnable()
 	for _, unit in pairs(module.unitsSpawn) do module.ToggleUnit(unit) end
 end
 
+local StopPreviewOutOfCombat = LUI.OutOfCombatWrapper(function()
+	if not module:IsEnabled() and module.StopUnitframePreview then
+		module:StopUnitframePreview(true)
+	end
+end)
+
 function module:OnDisable()
-	if self.StopUnitframePreview then self:StopUnitframePreview(true) end
+	StopPreviewOutOfCombat()
 	for _, unit in pairs(module.unitsSpawn) do module.ToggleUnit(unit, false) end
 end

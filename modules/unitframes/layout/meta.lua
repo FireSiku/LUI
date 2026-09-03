@@ -54,7 +54,7 @@ local function FormatRaidName(self)
 	-- raid-header grandparent and use the 25-player name format.
 	local tag = groupName == "oUF_LUI_raid_40" and "[RaidName40]" or "[RaidName25]"
 
-	if info.ColorByClass then tag = "[GetNameColor]"..tag.."|r" end
+	if info.ColorNameByClass then tag = "[GetNameColor]"..tag.."|r" end
 
 	self:Tag(info, tag)
 	self:UpdateAllElements('refreshUnit')

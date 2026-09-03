@@ -10,16 +10,9 @@ local LUI = select(2, ...)
 local module = LUI:GetModule("Unitframes")
 local Media = LibStub("LibSharedMedia-3.0")
 
-local function BuildFilter(kind)
-    return kind == "Buffs" and "HELPFUL" or "HARMFUL"
-end
-
-local function BuildCandidateFilters(db)
-    if db.PlayerOnly then
-        return {isFromPlayerOrPlayerPet = true}
-    end
-
-    return nil
+local function BuildFilter(kind, db)
+    local filter = kind == "Buffs" and "HELPFUL" or "HARMFUL"
+    return db.PlayerOnly and (filter .. "|PLAYER") or filter
 end
 
 local function BuildLayout(db)
@@ -41,9 +34,15 @@ local function GetContainerLayoutLimit(db)
 end
 
 local function ApplyButtonAppearance(button, db)
-    local settings = module.db.profile.Settings
+    -- Assigned 12.1 aura buttons may become explicitly forbidden even when
+    -- InCombatLockdown() briefly reports false during a reload while dead.
+    -- Their layout is updated through SetAuraGroupLayout below; direct region
+    -- mutations must wait until Blizzard exposes the button again.
+    if button.IsForbidden and button:IsForbidden() then return end
 
+    local settings = module.db.profile.Settings
     button:SetSize(db.Size, db.Size)
+
     button.Cooldown:SetReverse(db.CooldownReverse == true)
     button.Cooldown:SetAlpha(db.DisableCooldown == true and 0 or 1)
 
@@ -60,6 +59,7 @@ end
 local function MakeInitializer(state, kind)
     return function(button)
         local db = state.db
+        button:SetSize(db.Size, db.Size)
 
         local background = button:CreateTexture(nil, "BACKGROUND")
         background:SetAllPoints(button)
@@ -100,13 +100,18 @@ local function MakeInitializer(state, kind)
         button.AuraTypeHolder = auraTypeHolder
 
         local auraType = auraTypeHolder:CreateTexture(nil, "OVERLAY")
-        auraType:SetAllPoints(button)
+        auraType:SetTexture([[Interface\AddOns\LUI\media\buttons\ufAura.tga]])
+        auraType:SetPoint("TOPLEFT", button, "TOPLEFT", -2, 2)
+        auraType:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 2, -2)
+        auraType:SetTexCoord(0, 1, 0.02, 1)
         button.AuraType = auraType
         button:AddDispelTypeTexture(auraType, {
             showWhenHarmful = kind == "Debuffs",
             showWhenHelpful = kind == "Buffs",
             showWithoutDispelType = false,
-            style = Enum.CustomAuraButtonDispelTypeTextureStyle.Border,
+            -- Keep LUI's original outer aura frame. Blizzard securely applies
+            -- the dispel color without replacing it with the inset border atlas.
+            style = Enum.CustomAuraButtonDispelTypeTextureStyle.PreserveAsset,
         })
 
         button:SetTooltipAnchorPoint("ANCHOR_BOTTOMRIGHT", 0, 0)
@@ -118,9 +123,9 @@ local function RefreshButtonAppearance(container, db)
     local key = container.__luiKey
     local count = container:GetAuraGroupFrameCount(key)
 
-    -- ApplySettings is deferred until combat ends. At that point Blizzard's
-    -- public group-frame accessors can safely update both active and spare
-    -- buttons without reading any aura data.
+    -- The public accessors enumerate Blizzard's preallocated buttons without
+    -- reading aura data. ApplyButtonAppearance skips any button that is still
+    -- explicitly forbidden after a combat reload.
     for index = 1, count do
         local button = container:GetAuraGroupFrame(key, index)
         if button then ApplyButtonAppearance(button, db) end
@@ -167,11 +172,10 @@ local function CreateContainer(owner, unit, kind, db)
     container:SetUnit(unit)
 
     local key = container:AddGroup(
-        BuildFilter(kind),
+        BuildFilter(kind, db),
         {
             maxFrameCount = db.Num or 8,
             initializeFrame = MakeInitializer(state, kind),
-            candidateFilters = BuildCandidateFilters(db),
             layout = BuildLayout(db),
         }
     )
@@ -228,11 +232,11 @@ local function Apply(owner, unit, kind, db)
 
     container:SetAuraGroupFilterString(
         container.__luiKey,
-        BuildFilter(kind)
+        BuildFilter(kind, db)
     )
     container:SetAuraGroupCandidateFilters(
         container.__luiKey,
-        BuildCandidateFilters(db)
+        nil
     )
     container:SetAuraGroupMaxFrameCount(
         container.__luiKey,

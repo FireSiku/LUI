@@ -19,6 +19,32 @@ local sizeValues = {softMin = 8, softMax = 64, min = 4, max = 255, step = 1}
 local spacingValues = {softMin = -10, softMax = 10, step = 1}
 local auraCountValues = {min = 1, max = 64, softMax = 36, step = 1}
 local fontValues = {min = 4, max = 72, step = 1, softMin = 8, softMax = 36}
+local copySource = {}
+local copySection = {}
+local copySizes = {}
+local copyPositions = {}
+
+local COPY_SECTIONS = {
+    All = "All Settings",
+    General = "General",
+    Bars = "Bars",
+    Texts = "Texts",
+    Auras = "Auras",
+    Indicators = "Indicators",
+    Castbar = "Cast Bar",
+    Portrait = "Portrait",
+    Appearance = "Backdrop & Border",
+}
+
+local POSITION_KEYS = {
+    X = true, Y = true, Point = true, RelativePoint = true, InitialAnchor = true,
+    GrowthX = true, GrowthY = true, GrowDirection = true,
+}
+
+local SIZE_KEYS = {
+    Width = true, Height = true, Size = true, Scale = true, Spacing = true,
+    Padding = true, GroupPadding = true, Thickness = true, IconScale = true,
+}
 
 -- oUF cannot receive event-driven cast updates for compound target tokens such
 -- as focustarget, bosstarget or maintanktargettarget.
@@ -48,6 +74,13 @@ local powerColorTypes = {
     ["Individual"] = "Individual",
     ["By Class"] = "By Class",
     ["By Type"] = "By Type",
+}
+
+local additionalPowerColorTypes = {
+    ["Individual"] = "Individual",
+    ["By Class"] = "By Class",
+    ["By Type"] = "By Type",
+    ["Gradient"] = "Gradient",
 }
 
 local healthColorTypes = {
@@ -86,9 +119,92 @@ local nameFormats = {
     ["Level"] = "Level",
     ["Level + Name"] = "Level + Name",
     ["Level + Name + Class"] = "Level + Name + Class",
+    ["Level + Name + Race + Class"] = "Level + Name + Race + Class",
     ["Level + Class + Name"] = "Level + Class + Name",
     ["Level + Race + Class + Name"] = "Level + Race + Class + Name",
 }
+
+local horizontalDirections = {LEFT = "Left", RIGHT = "Right"}
+local verticalDirections = {UP = "Up", DOWN = "Down"}
+
+local function CopyCompatible(source, destination, withSizes, withPositions)
+    if type(source) ~= "table" or type(destination) ~= "table" then return end
+    for key, value in pairs(source) do
+        if (withSizes or not SIZE_KEYS[key]) and (withPositions or not POSITION_KEYS[key]) then
+            if type(value) == "table" and type(destination[key]) == "table" then
+                CopyCompatible(value, destination[key], withSizes, withPositions)
+            elseif type(value) == type(destination[key]) then
+                destination[key] = value
+            end
+        end
+    end
+end
+
+local function ResetTable(source, destination)
+    for key in pairs(destination) do
+        if source[key] == nil then destination[key] = nil end
+    end
+
+    for key, value in pairs(source) do
+        if type(value) == "table" then
+            if type(destination[key]) ~= "table" then destination[key] = {} end
+            ResetTable(value, destination[key])
+        else
+            destination[key] = value
+        end
+    end
+end
+
+local function SectionKeys(dbUnit, section)
+    local keys = {}
+    if section == "All" then return keys, true end
+    for key, value in pairs(dbUnit) do
+        if type(key) == "string" and (section == "General" and type(value) ~= "table"
+            or section == "Bars" and key:match("Bar$")
+            or section == "Texts" and (key:match("Text$") or key == "CombatFeedback")
+            or section == "Auras" and key == "Aura"
+            or section == "Indicators" and key:match("Indicator$")
+            or section == "Castbar" and key == "Castbar"
+            or section == "Portrait" and key == "Portrait"
+            or section == "Appearance" and (key == "Backdrop" or key == "Border")) then
+            keys[#keys + 1] = key
+        end
+    end
+    return keys, false
+end
+
+local function CopyUnitSettings(targetUnit)
+    local sourceUnit = copySource[targetUnit]
+    if not sourceUnit or sourceUnit == targetUnit then return end
+    local source, destination = db[sourceUnit], db[targetUnit]
+    local keys, copyAll = SectionKeys(source, copySection[targetUnit] or "All")
+    if copyAll then
+        CopyCompatible(source, destination, copySizes[targetUnit], copyPositions[targetUnit])
+    else
+        for _, key in ipairs(keys) do
+            if type(source[key]) == "table" and type(destination[key]) == "table" then
+                CopyCompatible(source[key], destination[key], copySizes[targetUnit], copyPositions[targetUnit])
+            elseif type(source[key]) == type(destination[key]) then
+                destination[key] = source[key]
+            end
+        end
+    end
+    module:Refresh()
+end
+
+local function GenerateCopyGroup(unit, order)
+    local values = {}
+    for _, sourceUnit in ipairs(module.units) do
+        if sourceUnit ~= unit then values[sourceUnit] = sourceUnit end
+    end
+    return Opt:Group({name = "Copy Settings", order = order, args = {
+        Source = Opt:Select({name = "Copy From", values = values, get = function() return copySource[unit] end, set = function(_, value) copySource[unit] = value end}),
+        Section = Opt:Select({name = "Section", values = COPY_SECTIONS, get = function() return copySection[unit] or "All" end, set = function(_, value) copySection[unit] = value end}),
+        IncludeSizes = Opt:Toggle({name = "Include Sizes", get = function() return copySizes[unit] == true end, set = function(_, value) copySizes[unit] = value end}),
+        IncludePositions = Opt:Toggle({name = "Include Positions", get = function() return copyPositions[unit] == true end, set = function(_, value) copyPositions[unit] = value end}),
+        Apply = Opt:Execute({name = "Copy to "..unit, disabled = function() return not copySource[unit] end, confirm = "Overwrite the selected settings for "..unit.."?", func = function() CopyUnitSettings(unit) end}),
+    }})
+end
 
 
 local function UnitFontMenu(dbFont, name)
@@ -112,6 +228,76 @@ local function OptionLabel(name)
     return (name:gsub("(%l)(%u)", "%1 %2"))
 end
 
+local RefreshPaletteFrames = LUI.OutOfCombatWrapper(function() module:Refresh() end)
+
+local function RefreshPalette()
+    module:BuildUnitframeColors()
+    RefreshPaletteFrames()
+end
+
+local function ColorArrayOption(groupName, key, label)
+    return Opt:Color({
+        name = label,
+        get = function()
+            local color = db.Colors[groupName][key]
+            return color[1], color[2], color[3], color[4]
+        end,
+        set = function(_, r, g, b, a)
+            local color = db.Colors[groupName][key]
+            color[1], color[2], color[3] = r, g, b
+            if color[4] ~= nil then color[4] = a end
+            RefreshPalette()
+        end,
+    })
+end
+
+local function ResetPalette(groupName)
+    ResetTable(module.defaults.profile.Colors[groupName], db.Colors[groupName])
+    RefreshPalette()
+end
+
+local function GeneratePaletteGroup(name, groupName, entries, order)
+    local args = {}
+    for index, entry in ipairs(entries) do
+        local key, label = entry[1], entry[2]
+        args["Color"..index] = ColorArrayOption(groupName, key, label)
+    end
+    args.Reset = Opt:Execute({name = "Reset "..name, confirm = "Reset these colors to their defaults?", func = function() ResetPalette(groupName) end})
+    return Opt:Group({name = name, order = order, args = args})
+end
+
+local function GenerateUnitframeColorOptions()
+    return Opt:Group({name = "Colors", order = 3, childGroups = "tab", args = {
+        Class = GeneratePaletteGroup("Class Colors", "Class", {
+            {"DEATHKNIGHT", "Death Knight"}, {"DEMONHUNTER", "Demon Hunter"}, {"DRUID", "Druid"},
+            {"EVOKER", "Evoker"}, {"HUNTER", "Hunter"}, {"MAGE", "Mage"}, {"MONK", "Monk"},
+            {"PALADIN", "Paladin"}, {"PRIEST", "Priest"}, {"ROGUE", "Rogue"},
+            {"SHAMAN", "Shaman"}, {"WARLOCK", "Warlock"}, {"WARRIOR", "Warrior"},
+        }, 1),
+        Power = GeneratePaletteGroup("Power Colors", "Power", {
+            {"MANA", "Mana"}, {"RAGE", "Rage"}, {"FOCUS", "Focus"}, {"ENERGY", "Energy"},
+            {"RUNES", "Runes"}, {"RUNIC_POWER", "Runic Power"}, {"FUEL", "Fuel"},
+        }, 2),
+        Health = GeneratePaletteGroup("Health Gradient", "Smooth", {
+            {1, "Low Health"}, {2, "Medium Health"}, {3, "High Health"},
+        }, 3),
+        CombatText = GeneratePaletteGroup("Combat Feedback", "CombatText", {
+            {"DAMAGE", "Damage"}, {"CRUSHING", "Crushing"}, {"CRITICAL", "Critical"},
+            {"GLANCING", "Glancing"}, {"STANDARD", "Standard"}, {"IMMUNE", "Immune"},
+            {"ABSORB", "Absorb"}, {"BLOCK", "Block"}, {"RESIST", "Resist"}, {"MISS", "Miss"},
+            {"HEAL", "Healing"}, {"CRITHEAL", "Critical Healing"}, {"ENERGIZE", "Power Gain"},
+            {"CRITENERGIZE", "Critical Power Gain"},
+        }, 4),
+        Level = GeneratePaletteGroup("Level Difficulty", "LevelDiff", {
+            {1, "Five or More Levels Higher"}, {2, "Three or Four Levels Higher"},
+            {3, "Within Two Levels"}, {4, "Green Quest Range"}, {5, "Trivial Target"},
+        }, 5),
+        Runes = GeneratePaletteGroup("Rune Colors", "Runes", {
+            {1, "Blood Rune"}, {2, "Frost Rune"}, {3, "Unholy Rune"},
+        }, 6),
+    }})
+end
+
 -- ####################################################################################################################
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
@@ -125,8 +311,8 @@ local function GenerateBarGroup(unit, name, colorTypes, order)
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
         Width = Opt:InputNumber({name = "Width"}),
         Height = Opt:InputNumber({name = "Height"}),
-        X = Opt:InputNumber({name = "X Value"}),
-        Y = Opt:InputNumber({name = "Y Value"}),
+        X = Opt:OffsetX(),
+        Y = Opt:OffsetY(),
         Texture = Opt:MediaStatusbar({name = "Bar Texture"}),
         TextureBG = Opt:MediaStatusbar({name = "Background Texture"}),
         Smooth = Opt:Toggle({name = "Smooth Bar Animation"}),
@@ -176,8 +362,8 @@ local function GenerateTextGroup(unit, name, colorTypes, order)
     local optName = OptionLabel(name)
     local group = Opt:Group({name = optName, order = order, db = dbText, args = {
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
-        X = Opt:InputNumber({name = "X Value"}),
-        Y = Opt:InputNumber({name = "Y Value"}),
+        X = Opt:OffsetX(),
+        Y = Opt:OffsetY(),
         Point = Opt:Select({name = L["Anchor"], values = LUI.Points}),
         RelativePoint = Opt:Select({name = "Attach To", values = LUI.Points}),
         Format = Opt:Select({name = "Format", desc = "Choose the Format for your "..unit.." Name.", values = nameFormats, onlyIf = (name == "NameText")}),
@@ -186,7 +372,7 @@ local function GenerateTextGroup(unit, name, colorTypes, order)
         Font = UnitFontMenu(dbText, "Text Font"),
         ShowAlways = Opt:Toggle({name = "Show when full", onlyIf = (dbText.ShowAlways ~= nil)}),
         ShowDead = Opt:Toggle({name = "Show when dead", onlyIf = (dbText.ShowDead ~= nil)}),
-        ShowFull = Opt:Toggle({name = unit..name.." Show when full", onlyIf = (dbText.ShowFull ~= nil)}),
+        ShowFull = Opt:Toggle({name = "Show when full", onlyIf = (dbText.ShowFull ~= nil)}),
         ShowEmpty = Opt:Toggle({name = "Show when empty", onlyIf = (dbText.ShowEmpty ~= nil)}),
         ShortValue = Opt:Toggle({name = "Short value", onlyIf = (dbText.ShortValue ~= nil)}),
     }})
@@ -198,12 +384,17 @@ local function GenerateTextGroup(unit, name, colorTypes, order)
     if name == "NameText" then
         local disabledClassificationFunc = function() return not dbText.ShowClassification end
 
-        group.args.ColorNameByClass = Opt:Toggle({name = "Color Name By Class"})
-        group.args.ColorClassByClass = Opt:Toggle({name = "Color Class By Class"})
-        group.args.ColorLevelByDifficulty = Opt:Toggle({name = "Color Level By Difficulty"})
-        group.args.ShowClassification = Opt:Toggle({name = "Show Classification"})
-        group.args.ShortClassification = Opt:Toggle({name = "Short Classification", disabled = disabledClassificationFunc})
-        group.args.IndividualColor = nil
+		group.args.IndividualColor = Opt:Color({name = "Name Color", hasAlpha = false, db = dbText})
+		group.args.Length = Opt:Select({name = "Name Length", values = {Short = "Short", Medium = "Medium", Long = "Long"}, onlyIf = (unit ~= "raid")})
+		group.args.ColorNameByClass = Opt:Toggle({name = "Color Name by Class"})
+		if unit ~= "raid" then
+			group.args.ColorClassByClass = Opt:Toggle({name = "Color Class by Class"})
+            group.args.ColorLevelByDifficulty = Opt:Toggle({name = "Color Level by Difficulty"})
+            group.args.ShowClassification = Opt:Toggle({name = "Show Classification"})
+            group.args.ShortClassification = Opt:Toggle({name = "Short Classification", disabled = disabledClassificationFunc})
+        else
+            group.args.Format = nil
+        end
         group.args.Color = nil
     end
 
@@ -230,8 +421,8 @@ local function GenerateClassBarGroup(unit, name, order)
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
         Width = Opt:InputNumber({name = "Width"}),
         Height = Opt:InputNumber({name = "Height"}),
-        X = Opt:InputNumber({name = "X Value"}),
-        Y = Opt:InputNumber({name = "Y Value"}),
+        X = Opt:OffsetX(),
+        Y = Opt:OffsetY(),
         Texture = Opt:MediaStatusbar({name = "Bar Texture"}),
         Lock = Opt:Toggle({name = "Lock", width = "full"}),
         Padding = Opt:Slider({name = "Padding", min=1, max=10, step=1}),
@@ -247,8 +438,8 @@ local function GenerateIndicatorGroup(unit, name, order, get, set)
     if not get or not set then return end
     local group = Opt:Group({name = name, order = order, get = get, set = set, args = {
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
-        X = Opt:InputNumber({name = "X Value"}),
-        Y = Opt:InputNumber({name = "Y Value"}),
+        X = Opt:OffsetX(),
+        Y = Opt:OffsetY(),
         Size = Opt:Slider({name = "Size", values = sizeValues}),
         Point = Opt:Select({name = L["Anchor"], values = LUI.Points}),
     }})
@@ -256,27 +447,64 @@ local function GenerateIndicatorGroup(unit, name, order, get, set)
     return group
 end
 
+local function GenerateAppearanceGroup(unit, order)
+    local dbUnit = db[unit]
+
+    return Opt:Group({name = "Backdrop & Border", order = order, args = {
+        Backdrop = Opt:Group({name = "Background", db = dbUnit.Backdrop, args = {
+            Color = Opt:Color({name = "Background Color", hasAlpha = true, db = dbUnit.Backdrop}),
+            Texture = Opt:MediaBackground({name = "Background Texture"}),
+            Padding = Opt:InlineGroup({name = "Padding", db = dbUnit.Backdrop.Padding, args = {
+                Left = Opt:InputNumber({name = "Left", width = "half"}),
+                Right = Opt:InputNumber({name = "Right", width = "half"}),
+                Top = Opt:InputNumber({name = "Top", width = "half"}),
+                Bottom = Opt:InputNumber({name = "Bottom", width = "half"}),
+            }}),
+        }}),
+        Border = Opt:Group({name = "Border", db = dbUnit.Border, args = {
+            Color = Opt:Color({name = "Border Color", hasAlpha = true, db = dbUnit.Border}),
+            EdgeFile = Opt:MediaBorder({name = "Border Texture"}),
+            EdgeSize = Opt:Slider({name = "Border Size", min = 1, max = 50, step = 1}),
+            Aggro = Opt:Toggle({name = "Aggro Glow", desc = "Color the border by threat status.", width = "full"}),
+            Insets = Opt:InlineGroup({name = "Insets", db = dbUnit.Border.Insets, args = {
+                Left = Opt:InputNumber({name = "Left", width = "half"}),
+                Right = Opt:InputNumber({name = "Right", width = "half"}),
+                Top = Opt:InputNumber({name = "Top", width = "half"}),
+                Bottom = Opt:InputNumber({name = "Bottom", width = "half"}),
+            }}),
+        }}),
+    }})
+end
+
 local function GenerateCastbarGroup(unit, order)
     local dbCast = db[unit].Castbar
     if not dbCast then return end    -- If that unit does not have options for that bar, nil it
 
-    local colorGet, colorSet = Opt.ColorGetSet(dbCast.Colors)
+    local defaultCast = module.defaults.profile[unit] and module.defaults.profile[unit].Castbar
+    local defaultColors = defaultCast and defaultCast.Colors
+    local colorGet, colorSet = Opt.ColorGetSet(dbCast.Colors, defaultColors)
+    local latencyColorGet, latencyColorSet = Opt.ColorGetSet(dbCast.Colors, defaultColors, "Latency")
 
     local group = Opt:Group({name = "Cast Bar", order = order, db = dbCast.General, args = {
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
         Preview = Opt:Execute({
             name = "Preview Cast Bar",
             desc = "Show a shielded test cast with a long spell name outside combat.",
-            width = "full",
             func = function() module:ShowCastbarPreview(unit) end,
+        }),
+        StopPreview = Opt:Execute({
+            name = "Stop Cast Bar Preview",
+            desc = "Hide the cast bar test without closing other unit frame previews.",
+            func = function() module:StopCastbarPreview() end,
         }),
         Width = Opt:InputNumber({name = "Width"}),
         Height = Opt:InputNumber({name = "Height"}),
-        X = Opt:InputNumber({name = "X Value"}),
-        Y = Opt:InputNumber({name = "Y Value"}),
+        X = Opt:OffsetX(),
+        Y = Opt:OffsetY(),
         Point = Opt:Select({name = "Anchor Point", values = LUI.Points}),
-        IndividualColor = Opt:Toggle({name = "Individual Color", desc = "If unchecked, desc = Class Color will be used", width = "full"}),
+        IndividualColor = Opt:Toggle({name = "Individual Color", desc = "If unchecked, the class color will be used.", width = "full"}),
         Icon = Opt:Toggle({name = "Show Icon", width = "full"}),
+        Latency = Opt:Toggle({name = "Show Latency Safe Zone", desc = "Shows your current network latency at the end of the player cast bar.", width = "full", onlyIf = (unit == "player")}),
         Shielded = Opt:Toggle({name = "Show Shielded Casts", desc = "Whether you want to show casts you cannot interrupt.", width = "full",
             get = function() return dbCast.General.Shield end,
             set = function(info, value)
@@ -286,22 +514,29 @@ local function GenerateCastbarGroup(unit, order)
         AestheticHeader = Opt:Header({name = "Appearance"}),
         Texture = Opt:MediaStatusbar({name = "Bar Texture"}),
         TextureBG = Opt:MediaStatusbar({name = "Background Texture"}),
-        --HACK: Using manual Get/Set for the Border options until they can be renamed
-        BorderTexture = Opt:MediaBorder({name = "Border Texture", get = function() return dbCast.Border.Texture end,
-            set = function(info, value) -- BorderTexture Set 
+		-- The stored border keys differ from the control labels.
+		BorderTexture = Opt:MediaBorder({name = "Border Texture", get = function() return dbCast.Border.Texture end,
+			set = function(info, value)
                 dbCast.Border.Texture = value
                 if info.handler.Refresh then info.handler:Refresh() end
             end}),
-        BorderThickness = Opt:InputNumber({name = "Border Thickness", get = function() return tostring(dbCast.Border.Thickness) end,
-            set = function(info, value) -- BorderThickness Set
+		BorderThickness = Opt:InputNumber({name = "Border Thickness", get = function() return tostring(dbCast.Border.Thickness) end,
+			set = function(info, value)
                 dbCast.Border.Thickness = tonumber(value)
                 if info.handler.Refresh then info.handler:Refresh() end
             end}),
+        BorderInset = Opt:InlineGroup({name = "Border Insets", db = dbCast.Border.Inset, args = {
+            left = Opt:InputNumber({name = "Left", width = "half"}),
+            right = Opt:InputNumber({name = "Right", width = "half"}),
+            top = Opt:InputNumber({name = "Top", width = "half"}),
+            bottom = Opt:InputNumber({name = "Bottom", width = "half"}),
+        }}),
         ColorHeader = Opt:Header({name = "Appearance"}),
         Bar = Opt:Color({name = "Castbar Color", hasAlpha = true, get = colorGet, set = colorSet}),
         Background = Opt:Color({name = "Background Color", hasAlpha = true, get = colorGet, set = colorSet}),
         Border = Opt:Color({name = "Border Color", hasAlpha = true, get = colorGet, set = colorSet}),
         Shield = Opt:Color({name = "Shield Color", hasAlpha = true, get = colorGet, set = colorSet}),
+        LatencyColor = Opt:Color({name = "Latency Color", hasAlpha = true, onlyIf = (unit == "player"), get = latencyColorGet, set = latencyColorSet}),
     }})
 
     return group
@@ -314,11 +549,12 @@ local function GenerateCastbarTextGroup(unit, name, order)
     local optName = string.gsub("Cast Bar "..name, "Text", " Text")
 
     local colorKey = name == "NameText" and "Name" or "Time"
-    local colorGet, colorSet = Opt.ColorGetSet(dbCast.Colors)
+    local defaultCast = module.defaults.profile[unit] and module.defaults.profile[unit].Castbar
+    local colorGet, colorSet = Opt.ColorGetSet(dbCast.Colors, defaultCast and defaultCast.Colors)
     local args = {
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
-        OffsetX = Opt:InputNumber({name = "X Offset"}),
-        OffsetY = Opt:InputNumber({name = "Y Offset"}),
+        OffsetX = Opt:OffsetX(),
+        OffsetY = Opt:OffsetY(),
         ShowMax = Opt:Toggle({name = "Show Max", onlyIf = (name == "TimeText"), width = "full"}),
         Font = UnitFontMenu(dbCast[name], name),
     }
@@ -334,8 +570,8 @@ local function GenerateAuxiliaryPowerTextGroup(unit, name, order)
 
     return Opt:Group({name = OptionLabel(name), order = order, db = dbText, args = {
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
-        X = Opt:InputNumber({name = "X Value"}),
-        Y = Opt:InputNumber({name = "Y Value"}),
+        X = Opt:OffsetX(),
+        Y = Opt:OffsetY(),
         Point = Opt:Select({name = L["Anchor"], values = LUI.Points, onlyIf = (dbText.Point ~= nil)}),
         RelativePoint = Opt:Select({name = "Attach To", values = LUI.Points, onlyIf = (dbText.RelativePoint ~= nil)}),
         Format = Opt:Select({name = "Format", values = auxiliaryPowerFormat}),
@@ -352,8 +588,8 @@ local function GeneratePvPTextGroup(unit, order)
 
     return Opt:Group({name = "PvP Timer Text", order = order, db = dbText, args = {
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
-        X = Opt:InputNumber({name = "X Value"}),
-        Y = Opt:InputNumber({name = "Y Value"}),
+        X = Opt:OffsetX(),
+        Y = Opt:OffsetY(),
         Color = Opt:Color({name = "Text Color", hasAlpha = false, db = dbText}),
         Font = UnitFontMenu(dbText, "PvP Text"),
     }})
@@ -363,7 +599,8 @@ local function GenerateCastbarShieldGroup(unit, order)
     local dbCast = db[unit].Castbar
     if not dbCast then return end    -- If that unit does not have options for that bar, nil it
 
-    local colorGet, colorSet = Opt.ColorGetSet(dbCast.Shield)
+    local defaultCast = module.defaults.profile[unit] and module.defaults.profile[unit].Castbar
+    local colorGet, colorSet = Opt.ColorGetSet(dbCast.Shield, defaultCast and defaultCast.Shield)
 
     local group = Opt:Group({name = "Shielded Cast Bar", order = order, db = dbCast.Shield, args = {
         Explain = Opt:Desc({name = "Additional settings when the cast bar cannot be interrupted."}),
@@ -378,6 +615,12 @@ local function GenerateCastbarShieldGroup(unit, order)
         Border = Opt:Toggle({name = "Border", width = "full"}),
         Texture = Opt:MediaBorder({name = "Border Texture"}),
         Thickness = Opt:InputNumber({name = "Thickness"}),
+        Inset = Opt:InlineGroup({name = "Border Insets", db = dbCast.Shield.Inset, args = {
+            left = Opt:InputNumber({name = "Left", width = "half"}),
+            right = Opt:InputNumber({name = "Right", width = "half"}),
+            top = Opt:InputNumber({name = "Top", width = "half"}),
+            bottom = Opt:InputNumber({name = "Bottom", width = "half"}),
+        }}),
     }})
     return group
 end
@@ -388,6 +631,8 @@ local function GetOptionsLayout()
     end
     return "Compact"
 end
+
+local BuildUnitframeOptions
 
 local function NewUnitOptionGroup(unit, order, categorized)
     local dbUnit = db[unit]
@@ -405,8 +650,8 @@ local function NewUnitOptionGroup(unit, order, categorized)
         Width = Opt:InputNumber({name = "Width"}),
         Height = Opt:InputNumber({name = "Height"}),
         Spacer = Opt:Spacer({}),
-        X = Opt:InputNumber({name = "X Value"}),
-        Y = Opt:InputNumber({name = "Y Value"}),
+        X = Opt:PositionX(),
+        Y = Opt:PositionY(),
         Point = Opt:Select({name = L["Anchor"], values = LUI.Points}),
         RelativePoint = Opt:Select({name = "Attach To", values = LUI.Points, onlyIf = (relativeUnits[unit] == true)}),
         Scale = Opt:Slider({name = "Scale", values = Opt.ScaleValues, onlyIf = (dbUnit.Scale ~= nil)}),
@@ -421,7 +666,12 @@ local function NewUnitOptionGroup(unit, order, categorized)
         ShowInRealParty = Opt:Toggle({name = "Show only in real Parties", desc = "Whether you want to show the Party Frames only in real Parties or in Raids with 5 or less players too.", onlyIf = (unit == "party")}),
         RangeFade = Opt:Toggle({name = "Fade Out of Range", desc = "Whether you want Party Frames to fade if that player is more than 40 yards away or not.", onlyIf = (unit == "party")}),
 		Preview = Opt:Execute({name = "Preview This Frame", desc = "Show this frame layout with player data while out of combat.", func = function() module:ToggleUnitframePreview(unit) end}),
-		StopPreview = Opt:Execute({name = "Stop Preview", desc = "Hide all unitframe preview frames.", func = function() module:StopUnitframePreview() end}),
+        StopPreview = Opt:Execute({name = "Stop Preview", desc = "Hide all unitframe preview frames.", func = function() module:StopUnitframePreview() end}),
+        Reset = Opt:Execute({name = "Reset This Frame", desc = "Restore this unit frame's default settings.", confirm = "Reset all settings for "..unit.."?", func = function()
+            ResetTable(module.defaults.profile[unit], db[unit])
+            module:Refresh()
+            Opt:RefreshOptionsPanel()
+        end}),
        
     }})
 
@@ -437,7 +687,7 @@ local function NewUnitOptionGroup(unit, order, categorized)
     end
 
     if unit == "player" and supportsAdditionalPower then
-        barOptions.args.AdditionalPowerBar = GenerateBarGroup(unit, "AdditionalPowerBar", powerColorTypes, categorized and 10 or 17)
+        barOptions.args.AdditionalPowerBar = GenerateBarGroup(unit, "AdditionalPowerBar", additionalPowerColorTypes, categorized and 10 or 17)
         textOptions.args.AdditionalPowerText = GenerateAuxiliaryPowerTextGroup(unit, "AdditionalPowerText", categorized and 10 or 38)
     end
     if unit == "player" then
@@ -445,7 +695,6 @@ local function NewUnitOptionGroup(unit, order, categorized)
         textOptions.args.AlternativePowerText = GenerateAuxiliaryPowerTextGroup(unit, "AlternativePowerText", categorized and 11 or 39)
     end
     
-    -- Use a single entry to handle Value, Percent and Missing?
     if dbUnit.NameText then textOptions.args.NameText = GenerateTextGroup(unit, "NameText", nil, categorized and 1 or 30) end
     if dbUnit.HealthText then textOptions.args.HealthText = GenerateTextGroup(unit, "HealthText", healthColorTypes, categorized and 2 or 31) end
     if dbUnit.PowerText then textOptions.args.PowerText = GenerateTextGroup(unit, "PowerText", powerColorTypes, categorized and 3 or 32) end
@@ -462,32 +711,27 @@ local function NewUnitOptionGroup(unit, order, categorized)
             Enable = Opt:Toggle({name = "Enabled", width = "full"}),
             Width = Opt:InputNumber({name = "Width"}),
             Height = Opt:InputNumber({name = "Height"}),
-            X = Opt:InputNumber({name = "X Value"}),
-            Y = Opt:InputNumber({name = "Y Value"}),
+            X = Opt:OffsetX(),
+            Y = Opt:OffsetY(),
             Alpha = Opt:Slider({name = "Alpha", values = Opt.PercentValues}),
         }})
     end
 
-    if dbUnit.Aura.Buffs then
-        if dbUnit.Aura.Buffs.IconsPerRow == nil then
-            dbUnit.Aura.Buffs.IconsPerRow = dbUnit.Aura.Buffs.Num or 8
-        end
-        if dbUnit.Aura.Debuffs.IconsPerRow == nil then
-            dbUnit.Aura.Debuffs.IconsPerRow = dbUnit.Aura.Debuffs.Num or 8
-        end
+    unitOptions.args.Appearance = GenerateAppearanceGroup(unit, categorized and 8 or 55)
 
+    if dbUnit.Aura.Buffs then
         auraOptions.args.Buffs = Opt:Group({name = "Buffs", order = categorized and 1 or 60, db = dbUnit.Aura.Buffs, args = {
             Enable = Opt:Toggle({name = "Enabled", width = "full"}),
             ColorByType = Opt:Toggle({name = "Dispel Type Border", desc = "Show Blizzard's colored aura border for magic, curse, disease, and poison."}),
-            PlayerOnly = Opt:Toggle({name = "Player & Pet Only", desc = "Show only auras applied by you, your pet, or your vehicle. Retail's PLAYER aura filter includes all three sources."}),
+            PlayerOnly = Opt:Toggle({name = "Player & Pet Only", desc = "Show only auras applied by you, your pet, or your vehicle. Retail's protected aura API no longer allows addons to separate these sources."}),
             AuraTimer = Opt:Toggle({name = "Aura Timer"}),
             DisableCooldown = Opt:Toggle({name = "Disable Cooldown", desc = "Hide the animated cooldown spiral."}),
             CooldownReverse = Opt:Toggle({name = "Cooldown Reverse", disabled = function() return dbUnit.Aura.Buffs.DisableCooldown end}),
-            X = Opt:InputNumber({name = "X Value"}),
-            Y = Opt:InputNumber({name = "Y Value"}),
+            X = Opt:OffsetX(),
+            Y = Opt:OffsetY(),
             InitialAnchor = Opt:Select({name = L["Anchor"], values = LUI.Points}),
-            GrowthX = Opt:Select({name = "Horizontal Growth", values = LUI.Directions}),
-            GrowthY = Opt:Select({name = "Vertical Growth", values = LUI.Directions}),
+            GrowthX = Opt:Select({name = "Horizontal Growth", values = horizontalDirections}),
+            GrowthY = Opt:Select({name = "Vertical Growth", values = verticalDirections}),
             Size = Opt:Slider({name = "Size", values = sizeValues}),
             Spacing = Opt:Slider({name = "Spacing", values = spacingValues}),
             Num = Opt:Slider({name = "Amount of Buffs", values = auraCountValues}),
@@ -496,15 +740,15 @@ local function NewUnitOptionGroup(unit, order, categorized)
         auraOptions.args.Debuffs = Opt:Group({name = "Debuffs", order = categorized and 2 or 61, db = dbUnit.Aura.Debuffs, args = {
             Enable = Opt:Toggle({name = "Enabled", width = "full"}),
             ColorByType = Opt:Toggle({name = "Dispel Type Border", desc = "Show Blizzard's colored aura border for magic, curse, disease, and poison."}),
-            PlayerOnly = Opt:Toggle({name = "Player & Pet Only", desc = "Show only auras applied by you, your pet, or your vehicle. Retail's PLAYER aura filter includes all three sources."}),
+            PlayerOnly = Opt:Toggle({name = "Player & Pet Only", desc = "Show only auras applied by you, your pet, or your vehicle. Retail's protected aura API no longer allows addons to separate these sources."}),
             AuraTimer = Opt:Toggle({name = "Aura Timer"}),
             DisableCooldown = Opt:Toggle({name = "Disable Cooldown", desc = "Hide the animated cooldown spiral."}),
             CooldownReverse = Opt:Toggle({name = "Cooldown Reverse", disabled = function() return dbUnit.Aura.Debuffs.DisableCooldown end}),
-            X = Opt:InputNumber({name = "X Value"}),
-            Y = Opt:InputNumber({name = "Y Value"}),
+            X = Opt:OffsetX(),
+            Y = Opt:OffsetY(),
             InitialAnchor = Opt:Select({name = L["Anchor"], values = LUI.Points}),
-            GrowthX = Opt:Select({name = "Horizontal Growth", values = LUI.Directions}),
-            GrowthY = Opt:Select({name = "Vertical Growth", values = LUI.Directions}),
+            GrowthX = Opt:Select({name = "Horizontal Growth", values = horizontalDirections}),
+            GrowthY = Opt:Select({name = "Vertical Growth", values = verticalDirections}),
             Size = Opt:Slider({name = "Size", values = sizeValues}),
             Spacing = Opt:Slider({name = "Spacing", values = spacingValues}),
             Num = Opt:Slider({name = "Amount of Debuffs", values = auraCountValues}),
@@ -537,11 +781,11 @@ local function NewUnitOptionGroup(unit, order, categorized)
         if next(castbarOptions.args) then unitOptions.args.Castbar = castbarOptions end
     end
 
+    unitOptions.args.CopySettings = GenerateCopyGroup(unit, 100)
+
     return unitOptions
 end
 
-
-local BuildUnitframeOptions
 
 BuildUnitframeOptions = function()
     local optionsLayout = GetOptionsLayout()
@@ -563,8 +807,7 @@ BuildUnitframeOptions = function()
             ShowV2PartyTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Party Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Party Frames or not.", width = "full"}),
             ShowV2ArenaTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Arena Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Arena Frames or not.", width = "full"}),
             ShowV2BossTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Boss Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Boss Frames or not.", width = "full"}),
-            Castbars = Opt:Toggle({name = "Enable Castbars", width = "full"}),
-            AuratimerFont = Opt:MediaFont({name = "Aura Timer Font"}),
+			AuratimerFont = Opt:MediaFont({name = "Aura Timer Font"}),
             AuratimerSize = Opt:Slider({name = "Aura Timer Size", values = fontValues}),
             AuratimerFlag = Opt:Select({name = "Aura Timer Outline", values = LUI.FontFlags}),
             Empty = Opt:Spacer({}),
@@ -576,7 +819,8 @@ BuildUnitframeOptions = function()
             PreviewArena = Opt:Execute({name = "Preview Arena", func = function() module:ToggleUnitframePreview("arena") end}),
             PreviewMaintank = Opt:Execute({name = "Preview Main Tank", func = function() module:ToggleUnitframePreview("maintank") end}),
             StopPreview = Opt:Execute({name = "Stop Preview", func = function() module:StopUnitframePreview() end}),
-        }})
+        }}),
+        Colors = GenerateUnitframeColorOptions(),
     }
 
     -- module.units is the authoritative list and includes both directly spawned
