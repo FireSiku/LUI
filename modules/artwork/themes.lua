@@ -1,15 +1,6 @@
 --[[
-	Project....: LUI NextGenWoWUserInterface
-	File.......: themes.lua
-	Description: Themes Module
-	Version....: 1.4
-	Rev Date...: 24/07/2011 [dd/mm/yyyy]
-
-	Edits:
-		v1.0: Loui
-		v1.2: Zista
-		v1.3: Zista
-		v1.4: Zista
+	Name........: Themes
+	Description.: Built-in and user-defined LUI color themes
 ]]
 
 ---@class LUIAddon
@@ -31,11 +22,135 @@ local strlen = string.len
 
 local ClassArray = {"Death Knight", "Demon Hunter", "Druid", "Evoker", "Hunter", "Mage", "Monk", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior"}
 
+local MODERN_COLOR_MAP = {
+	color_top = {"TopPanel"},
+	color_bottom = {"LeftBorderBack", "RightBorderBack"},
+	chat = {"Chat"},
+	chatborder = {"ChatBorder"},
+	tps = {"Tps"},
+	tpsborder = {"TpsBorder"},
+	dps = {"Dps"},
+	dpsborder = {"DpsBorder"},
+	raid = {"Raid"},
+	raidborder = {"RaidBorder"},
+	bar = {"ActionBarTopTexture"},
+	sidebar = {"SidebarLeft", "SidebarRight"},
+	navi = {"NavButtons"},
+	orb = {"Orb"},
+}
+
+local MODERN_MODULE_COLOR_MAP = {
+	{module = "Micromenu", color = "Micromenu", theme = "micromenu", fallback = "navi"},
+	{module = "Micromenu", color = "Background", theme = "micromenu_background", fallback = "chat"},
+	{module = "Minimap", color = "Minimap", theme = "minimap", fallback = "navi"},
+	{module = "Bags", color = "Background", theme = "bags", fallback = "chat"},
+	{module = "Bags", color = "Border", theme = "bagsborder", fallback = "chatborder"},
+	{module = "Bags", color = "Search", theme = "bagssearch", fallback = "navi"},
+}
+
+local function CopyArrayToColor(source, target)
+	if type(source) ~= "table" or type(target) ~= "table"
+		or type(source[1]) ~= "number" or type(source[2]) ~= "number" or type(source[3]) ~= "number" then return end
+	target.r, target.g, target.b = source[1], source[2], source[3]
+	target.a = source[4] or target.a or 1
+	target.t = "Individual"
+end
+
+local function CopyColorToArray(source)
+	if not source then return end
+	return {source.r, source.g, source.b, source.a}
+end
+
+local function CopyTheme(theme)
+	local copy = {}
+	for key, value in pairs(theme) do
+		if type(key) == "string" and type(value) == "table" then
+			copy[key] = {unpack(value)}
+		end
+	end
+	return copy
+end
+
+local function ValidateImportedTheme(data)
+	if type(data) ~= "table" then return end
+	local validated, hasModernColor = {}, false
+	for key, value in pairs(data) do
+		if type(key) ~= "string" or type(value) ~= "table"
+			or type(value[1]) ~= "number" or type(value[2]) ~= "number" or type(value[3]) ~= "number"
+			or (value[4] ~= nil and type(value[4]) ~= "number") then
+			return
+		end
+		validated[key] = {
+			math.max(0, math.min(1, value[1])),
+			math.max(0, math.min(1, value[2])),
+			math.max(0, math.min(1, value[3])),
+			value[4] and math.max(0, math.min(1, value[4])) or nil,
+		}
+		if MODERN_COLOR_MAP[key] or key == "editbox" then hasModernColor = true end
+	end
+	return hasModernColor and validated or nil
+end
+
+function module:ValidateImportedTheme(data)
+	return ValidateImportedTheme(data)
+end
+
+function module:ApplyModernTheme()
+	local artwork = LUI:GetModule("Artwork", true)
+	if artwork and artwork.db then
+		for themeKey, colorKeys in pairs(MODERN_COLOR_MAP) do
+			for _, colorKey in ipairs(colorKeys) do
+				CopyArrayToColor(db[themeKey], artwork.db.profile.Colors[colorKey])
+			end
+		end
+		if artwork:IsEnabled() then artwork:Refresh() end
+	end
+
+	local chat = LUI:GetModule("Chat", true)
+	local editBox = chat and chat:GetModule("EditBox", true)
+	if editBox and editBox.db and db.editbox then
+		CopyArrayToColor(db.editbox, editBox.db.profile.Background.Color)
+		if editBox:IsEnabled() then editBox:Refresh() end
+	end
+
+	for _, mapping in ipairs(MODERN_MODULE_COLOR_MAP) do
+		local target = LUI:GetModule(mapping.module, true)
+		local colors = target and target.db and target.db.profile.Colors
+		if colors and colors[mapping.color] then
+			CopyArrayToColor(db[mapping.theme] or db[mapping.fallback], colors[mapping.color])
+		end
+	end
+end
+
+function module:CaptureModernTheme()
+	local artwork = LUI:GetModule("Artwork", true)
+	if artwork and artwork.db then
+		for themeKey, colorKeys in pairs(MODERN_COLOR_MAP) do
+			db[themeKey] = CopyColorToArray(artwork.db.profile.Colors[colorKeys[1]]) or db[themeKey]
+		end
+	end
+
+	local chat = LUI:GetModule("Chat", true)
+	local editBox = chat and chat:GetModule("EditBox", true)
+	if editBox and editBox.db then
+		db.editbox = CopyColorToArray(editBox.db.profile.Background.Color)
+	end
+
+	for _, mapping in ipairs(MODERN_MODULE_COLOR_MAP) do
+		local target = LUI:GetModule(mapping.module, true)
+		local colors = target and target.db and target.db.profile.Colors
+		if colors and colors[mapping.color] then
+			db[mapping.theme] = CopyColorToArray(colors[mapping.color])
+		end
+	end
+end
+
 --------------------------------------------------
 -- / Color Functions / --
 --------------------------------------------------
 
 function module:ApplyTheme()
+	self:ApplyModernTheme()
 	for name, targetModule in LUI:IterateModules() do
 		self:Refresh_Colors(name, targetModule)
 	end
@@ -44,8 +159,9 @@ end
 function module:Refresh_Colors(name, targetModule) -- (name [, targetModule])
 	targetModule = targetModule or LUI:GetModule(name)
 
-	if targetModule and targetModule:IsEnabled() and targetModule.SetColors then
-		targetModule:SetColors()
+	if targetModule and targetModule:IsEnabled() then
+		if targetModule.SetColors then targetModule:SetColors() end
+		if targetModule.RefreshColors then targetModule:RefreshColors() end
 	end
 end
 
@@ -70,7 +186,7 @@ function module:CheckTheme()
 		module:LoadTheme()
 	else
 		for k, v in pairs(db.global[theme]) do
-			if not db[k] then
+			if type(v) == "table" and not db[k] then
 				db[k] = {unpack(v)}
 			end
 		end
@@ -79,37 +195,44 @@ end
 
 function module:LoadTheme(theme)
 	theme = theme or db.theme
+	local themeData = db.global[theme]
+	if type(themeData) ~= "table" then return end
 
-	for k, v in pairs(db.global[theme]) do
-		db[k] = {unpack(v)}
+	-- Older built-in and imported themes do not contain the newer module color
+	-- keys. Clear values left by the previous theme so their declared fallback
+	-- colors are used instead of stale data.
+	for _, mapping in ipairs(MODERN_MODULE_COLOR_MAP) do
+		db[mapping.theme] = nil
+	end
+	for k, v in pairs(themeData) do
+		if type(v) == "table" then db[k] = {unpack(v)} end
 	end
 end
 
 function module:SaveTheme(theme)
 	-- check if the theme name is valid
-	if type(theme) ~= "string" or theme == "" then return end
+	if type(theme) ~= "string" or theme:trim() == "" then return end
+	theme = theme:trim()
 	-- check if theme name already exists
 	if db.global[theme] and not db.global[theme].deleted then
 		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
 	end
 
+	self:CaptureModernTheme()
+
 	-- create the new theme
-	db.global[theme] = {}
-	for k, v in pairs(db.profile) do
-		db.global[theme][k] = v
-	end
-	-- clear the theme value (its in the db but shouldn't be in the theme's table)
-	db.global[theme].theme = nil
+	db.global[theme] = CopyTheme(db.profile)
 
 	-- set the new theme to be the active one
 	db.theme = theme
 	-- update the options menu
-	ACR:NotifyChange("LUI")
+	ACR:NotifyChange("LUIOptions")
 end
 
 function module:DeleteTheme(theme)
-	-- check if the theme name is valid (esle use current theme)
+	-- Use the active theme when no explicit name was supplied.
 	if theme == nil or theme == "" then theme = db.theme end
+	if type(theme) ~= "string" or theme == "" or not db.global[theme] then return end
 
 	-- check if theme is a class theme (can't be deleted)
 	if tContains(ClassArray, theme) then
@@ -127,12 +250,13 @@ function module:DeleteTheme(theme)
 	module:CheckTheme()
 	module:ApplyTheme()
 	-- update the options menu
-	ACR:NotifyChange("LUI")
+	ACR:NotifyChange("LUIOptions")
 end
 
 function module:ImportThemeName(name)
 	-- check if the theme name is valid
-	if type(name) ~= "string" or name == "" then return end
+	if type(name) ~= "string" or name:trim() == "" then return end
+	name = name:trim()
 	-- check if theme name already exists
 	if db.global[name] and not db.global[name].deleted then
 		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
@@ -141,16 +265,17 @@ function module:ImportThemeName(name)
 	-- show import data popup
 	local dialog = StaticPopup_Show("LUI_THEMES_IMPORT_DATA")
 	-- hand off theme name
-	dialog.data = name
+	if dialog then dialog.data = name end
 end
 
 function module:ImportThemeData(str, name)
 	-- check if str has valid data
 	if type(str) ~= "string" or str == "" then return end
 	-- check if the theme name is valid
-	if type(name) ~= "string" or name == "" then
+	if type(name) ~= "string" or name:trim() == "" then
 		return LUI:Print("Invalid Theme Name")
 	end
+	name = name:trim()
 	-- check if theme name already exists
 	if db.global[name] and not db.global[name].deleted then
 		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
@@ -159,7 +284,8 @@ function module:ImportThemeData(str, name)
 	-- decrypt import data
 	local valid, data = self:Deserialize(str)
 	-- check if import data was valid
-	if not valid then
+	data = valid and ValidateImportedTheme(data) or nil
+	if not data then
 		return LUI:Print("Error importing theme!")
 	end
 
@@ -171,11 +297,11 @@ function module:ImportThemeData(str, name)
 	module:ApplyTheme()
 	LUI:Print("Successfully imported "..name.." theme!")
 	-- update the options menu
-	ACR:NotifyChange("LUI")
+	ACR:NotifyChange("LUIOptions")
 end
 
 function module:ExportTheme(theme)
-	-- check if the theme name is valid (esle use current theme)
+	-- Use the active theme when no explicit name was supplied.
 	if theme == nil or theme == "" then theme = db.theme end
 	-- check if theme exists
 	if not db.global[theme] then return StaticPopup_Hide("LUI_THEMES_EXPORT") end
@@ -211,7 +337,7 @@ function module.ThemeArray() -- no self in this function
 
 	if #TempThemeArray > 0 then
 		table.insert(LUIThemeArray, "")
-		for _, themeName in pairs(TempThemeArray) do
+		for _, themeName in ipairs(TempThemeArray) do
 			table.insert(LUIThemeArray, themeName)
 		end
 	end
@@ -323,7 +449,7 @@ local function setStaticPopups()
 			self.editBox:HighlightText()
 		end,
 		EditBoxOnEnterPressed = function(self) self:GetParent():Hide() end,
-		EditBoxOnExitPressed = function(self) self:GetParent():Hide() end,
+		EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
 		timeout = 0,
 		whileDead = true,
 		hideOnEscape = true,
@@ -354,7 +480,7 @@ local function setStaticPopups()
 			db.theme = ""
 			module:CheckTheme()
 			module:ApplyTheme()
-			ACR:NotifyChange("LUI")
+			ACR:NotifyChange("LUIOptions")
 		end,
 		timeout = 0,
 		whileDead = true,
@@ -366,8 +492,6 @@ end
 -- / Module Functions / --
 --------------------------------------------------
 
-module.optionsName = "Colors"
-module.order = 2
 module.defaults = {
 	profile = {
 		theme = "",
@@ -815,406 +939,11 @@ module.defaults = {
 	},
 }
 
-function module:LoadOptions()
-	setStaticPopups()
-
-	-- disabled functions
-	local function minimapDisabled()
-		local Minimap = LUI:GetModule("Minimap")
-		return not (Minimap and Minimap:IsEnabled())
-	end
-	local function chatDisabled()
-		local Chat = LUI:GetModule("Chat")
-		return not (Chat and Chat:IsEnabled())
-	end
-
-	local disabledFuncs = {}
-	local function createDisabled(toCheck)
-		if not disabledFuncs[toCheck] then
-			disabledFuncs[toCheck] = function()
-				return not LUI:GetModule(toCheck, true)
-			end
-		end
-
-		return disabledFuncs[toCheck]
-	end
-
-	-- get/set functions
-	local function getValue(info)
-		return db[info[#info]]
-	end
-	local function setValue(info, val)
-		db[info[#info]] = val
-	end
-
-	local function getColor(info)
-		return unpack(db[info[#info]])
-	end
-	local function setColor(info, r, g, b, a)
-		db[info[#info]] = {r, g, b, a}
-	end
-
-	local function setColorMicromenu(...)
-		setColor(...)
-		self:Refresh_Colors("Micromenu")
-		self:Refresh_Colors("RaidMenu")
-	end
-
-	local setColorFuncs = {}
-	local function createSetColor(toRefresh)
-		if not setColorFuncs[toRefresh] then
-			setColorFuncs[toRefresh] = function(...)
-				setColor(...)
-				self:Refresh_Colors(toRefresh)
-			end
-		end
-
-		return setColorFuncs[toRefresh]
-	end
-
-	local options = {
-		Theme = {
-			name = "Theme",
-			type = "group",
-			order = 1,
-			args = {
-				SetTheme = {
-					name = "Theme",
-					desc = "Choose any Theme you prefer Most.",
-					type = "select",
-					values = self.ThemeArray,
-					get = function()
-						for k, v in pairs(self.ThemeArray()) do
-							if v == db.theme then
-								return k
-							end
-						end
-					end,
-					set = function(info, val)
-						local themeArray = self.ThemeArray()
-						if themeArray[val] ~= "" then
-							db.theme = themeArray[val]
-						end
-
-						self:LoadTheme()
-						self:ApplyTheme()
-					end,
-					order = 1,
-				},
-				empty = {
-					name = " \n ",
-					width = "full",
-					type = "description",
-					order = 2,
-				},
-				SaveTheme = {
-					name = "Save Theme",
-					desc = "Save your current color selection as a new theme.",
-					type = "execute",
-					func = function() StaticPopup_Show("LUI_THEMES_SAVE") end,
-					order = 3,
-				},
-				DeleteTheme = {
-					name = "Delete Theme",
-					desc = "Delete the active theme.",
-					type = "execute",
-					func = function() StaticPopup_Show("LUI_THEMES_DELETE") end,
-					order = 4,
-				},
-				empty2 = {
-					name = " \n",
-					width = "full",
-					type = "description",
-					order = 5,
-				},
-				ImportTheme = {
-					name = "Import Theme",
-					desc = "Import a new Theme into LUI",
-					type = "execute",
-					func = function() StaticPopup_Show("LUI_THEMES_IMPORT") end,
-					order = 6,
-				},
-				ExportTheme = {
-					name = "Export Theme",
-					desc = "Export your current theme so you can share it with others.",
-					type = "execute",
-					func = function() StaticPopup_Show("LUI_THEMES_EXPORT") end,
-					order = 7,
-				},
-				empty3 = {
-					name = " \n",
-					width = "full",
-					type = "description",
-					order = 8,
-				},
-				ResetThemes = {
-					name = "Reset Themes",
-					desc = "Reset all themes back to defaults",
-					type = "execute",
-					func = function() StaticPopup_Show("LUI_THEMES_RESET") end,
-					order = 9,
-				},
-			},
-		},
-		Frames = {
-			name = "Frames",
-			type = "group",
-			disabled = createDisabled("Panels"),
-			order = 2,
-			args = {
-				color_top = {
-					name = "Top Texture Color",
-					desc = "Choose any Color for your Top Texture",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 1,
-				},
-				color_bottom = {
-					name = "Bottom Texture Color",
-					desc = "Choose any Color for your Bottom Texture",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 2,
-				},
-			},
-		},
-		Panels = {
-			name = "Panels",
-			type = "group",
-			disabled = createDisabled("Panels"),
-			order = 3,
-			args = {
-				chat = {
-					name = "Chatframe Color",
-					desc = "Choose any Color for your Chat Panel",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 1,
-				},
-				chatborder = {
-					name = "Chatframe Bordercolor",
-					desc = "Choose any Bordercolor for your Chat Panel",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 2,
-				},
-				chat2 = {
-					name = "2nd Chatframe Color",
-					desc = "Choose any Color for your 2nd Chat Panel",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 3,
-				},
-				chat2border = {
-					name = "2nd Chatframe Bordercolor",
-					desc = "Choose any Bordercolor for your 2nd Chat Panel",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 4,
-				},
-				tps = {
-					name = "Tps Color",
-					desc = "Choose any Color for your Threat Panel",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 5,
-				},
-				tpsborder = {
-					name = "Tps Bordercolor",
-					desc = "Choose any Bordercolor for your Threat Panel",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 6,
-				},
-				dps = {
-					name = "Dps Color",
-					desc = "Choose any Color for your Dps Panel",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 7,
-				},
-				dpsborder = {
-					name = "Dps Bordercolor",
-					desc = "Choose any Bordercolor for your Dps Panel",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 8,
-				},
-				raid = {
-					name = "Raid Color",
-					desc = "Choose any Color for your Raid Panel",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 9,
-				},
-				raidborder = {
-					name = "Raid Panel Bordercolor",
-					desc = "Choose any Bordercolor for your Raid Panel",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 10,
-				},
-			},
-		},
-		Bars = {
-			name = "Bars",
-			type = "group",
-			disabled = createDisabled("Bars"),
-			order = 4,
-			args = {
-				bar = {
-					name = "Top Bar Texture Color",
-					desc = "Choose any Color for your Top Bar Texture",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Bars"),
-					order = 1,
-				},
-				bar2 = {
-					name = "Bottom Bar Texture Color",
-					desc = "Choose any Color for your Bottom Bar Texture",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Bars"),
-					order = 2,
-				},
-				sidebar = {
-					name = "Sidebar Color",
-					desc = "Choose any Color for your Sidebar",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Bars"),
-					order = 3,
-				},
-			},
-		},
-		Navigation = {
-			name = "Navigation",
-			type = "group",
-			disabled = createDisabled("Panels"),
-			order = 5,
-			args = {
-				navi = {
-					name = "Top Navigation Button Color",
-					desc = "Choose any Color for Top Navigation Buttons",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 1,
-				},
-				navi_hover = {
-					name = "Top Navigation Button Hover Color",
-					desc = "Choose any Color for Top Navigation Buttons Hover Effect",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 2,
-				},
-				orb = {
-					name = "Orb Color",
-					desc = "Choose any Color for your Orb",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 3,
-				},
-				orb_cycle = {
-					name = "Orb Background Color",
-					desc = "Choose any Color for your Orb Background Texture",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 4,
-				},
-				orb_hover = {
-					name = "Orb Hover Color",
-					desc = "Choose any Color for your Orb Hover Effect",
-					type = "color",
-					width = "full",
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Panels"),
-					order = 5,
-				},
-			},
-		},
-		Misc = {
-			name = "Misc",
-			type = "group",
-			order = 7,
-			args = {
-				editbox = {
-					name = "Chat Editbox Color",
-					desc = "Choose any Chat Editbox Color.",
-					type = "color",
-					width = "full",
-					disabled = chatDisabled,
-					hasAlpha = true,
-					get = getColor,
-					set = createSetColor("Chat"),
-					order = 1,
-				},
-			},
-		},
-	}
-
-	return options
-end
-
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self)
+	setStaticPopups()
 
-	-- for transition to namespace
+	-- Migrate profiles created before Themes used its own namespace.
 	if LUI.db.profile.Colors then
 		for k, v in pairs(LUI.db.profile.Colors) do
 			db[k] = v
@@ -1227,4 +956,8 @@ end
 
 function module:OnEnable()
 	LUI.Profiler.TraceScope(module, "Themes", "LUI", 2)
+	self:RegisterEvent("PLAYER_ENTERING_WORLD", function()
+		self:ApplyTheme()
+		self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+	end)
 end

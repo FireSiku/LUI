@@ -8,7 +8,6 @@ local LUI = select(2, ...)
 ---@class LUI.Artwork : LUIModule
 local module = LUI:GetModule("Artwork")
 
-local TEX_DIR = [[Interface\AddOns\LUI\media\templates\v4\]]
 local OLD_DIR = [[Interface\AddOns\LUI\media\templates\v3\]]
 local ANIM_DURATION = 0.5
 local ALPHA = 0.75
@@ -16,7 +15,7 @@ local ALPHA = 0.75
 -- constants
 local INFOPANEL_TEXTURE = "Interface\\AddOns\\LUI\\media\\textures\\infopanel"
 
----@type table<string, Frame|BackdropTemplate>
+---@type table<string, Button>
 local _navButtons = {}
 
 -- Refreshing the navigation bar can show, hide, or modify protected frames.
@@ -32,93 +31,63 @@ end)
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
-local function SetFrameBackdrop(frame, fileName)
-	if not frame then LUI:Print("frame not found:", fileName) end
-	frame:SetBackdrop({
-		bgFile = OLD_DIR..fileName, edgeSize = 1,
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-	})
-	frame:SetBackdropBorderColor(0,0,0,0)
+local function SetFrameImage(frame, fileName)
+	local texture = LUI:CreateFrameTexture(frame, OLD_DIR..fileName)
+	frame.Texture = texture
+	return texture
 end
 
 function module:CreateNavBar()
-	local topBackground = CreateFrame("Frame", "LUIArtwork_NavBarTopBackground", UIParent, "BackdropTemplate")
+	local topBackground = CreateFrame("Frame", "LUIArtwork_NavBarTopBackground", UIParent)
 	topBackground:SetSize(1024, 1024)
 	topBackground:SetFrameStrata("BACKGROUND")
 	topBackground:SetPoint("TOP", UIParent, "TOP", 17, -18)
-	SetFrameBackdrop(topBackground, "top")
+	SetFrameImage(topBackground, "top")
 	topBackground:SetAlpha(ALPHA)
 
-	local centerBackground = CreateFrame("Frame", "LUIArtwork_NavBarCenterBackground", UIParent, "BackdropTemplate")
+	local centerBackground = CreateFrame("Frame", "LUIArtwork_NavBarCenterBackground", UIParent)
 	centerBackground:SetSize(1035, 1024)
 	centerBackground:SetFrameStrata("BACKGROUND")
 	centerBackground:SetPoint("TOP", UIParent, "TOP", 17, -18)
-	SetFrameBackdrop(centerBackground, "top_back_complete")
-	--SetFrameBackdrop(centerBackground, "top_back")
+	SetFrameImage(centerBackground, "top_back_complete")
 	centerBackground:SetAlpha(ALPHA)
 
-	local topPanelTex = CreateFrame("Frame", "LUIArtwork_InfoPanel", UIParent, "BackdropTemplate")
+	local topPanelTex = CreateFrame("Frame", "LUIArtwork_InfoPanel", UIParent)
 	topPanelTex:SetSize(32, 32)
 	topPanelTex:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, 8)
 	topPanelTex:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", 0, 8)
 	topPanelTex:SetFrameStrata("BACKGROUND")
-	topPanelTex:SetBackdrop({
-		bgFile = INFOPANEL_TEXTURE, edgeSize = 1,
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-	})
-	topPanelTex:SetBackdropBorderColor(0, 0, 0, 0)
+	topPanelTex.Texture = LUI:CreateFrameTexture(topPanelTex, INFOPANEL_TEXTURE)
 	topPanelTex:Show()
 
-	-- Bottom corner Textures, since they require Backdrop for now.
-	local leftBorder = CreateFrame("Frame", "LUIArtwork_LeftBorder", UIParent, "BackdropTemplate")
+	local leftBorder = CreateFrame("Frame", "LUIArtwork_LeftBorder", UIParent)
 	leftBorder:SetSize(1024, 1024)
 	leftBorder:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", -30, -31)
 	leftBorder:SetFrameStrata("BACKGROUND")
-	leftBorder:SetBackdrop({
-		bgFile =[[Interface\AddOns\LUI\media\templates\v3\info_left]],
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		edgeSize = 1,
-	})
-	leftBorder:SetBackdropColor(0, 0, 0, 0.9)
-	leftBorder:SetBackdropBorderColor(0, 0, 0, 0)
+	leftBorder.Texture = LUI:CreateFrameTexture(leftBorder, [[Interface\AddOns\LUI\media\templates\v3\info_left]])
+	leftBorder.Texture:SetVertexColor(0, 0, 0, 0.9)
 	leftBorder:Show()
 
-	local leftBorderBack = CreateFrame("Frame", "LUIArtwork_LeftBorderBack", leftBorder, "BackdropTemplate")
+	local leftBorderBack = CreateFrame("Frame", "LUIArtwork_LeftBorderBack", leftBorder)
 	leftBorderBack:SetSize(1024, 1024)
 	leftBorderBack:SetPoint("BOTTOMLEFT", leftBorder, "BOTTOMLEFT", 7, 8)
 	leftBorderBack:SetFrameStrata("BACKGROUND")
-	leftBorderBack:SetBackdrop({
-		bgFile =[[Interface\AddOns\LUI\media\templates\v3\info_left_back]],
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		edgeSize = 1,
-	})
-	leftBorderBack:SetBackdropBorderColor(0, 0, 0, 0)
+	leftBorderBack.Texture = LUI:CreateFrameTexture(leftBorderBack, [[Interface\AddOns\LUI\media\templates\v3\info_left_back]])
 	leftBorderBack:SetFrameLevel(leftBorder:GetFrameLevel() - 1)
 
-	-- Bottom corner Textures, since they require Backdrop for now.
-	local rightBorder = CreateFrame("Frame", "LUIArtwork_LeftBorder", UIParent, "BackdropTemplate")
+	local rightBorder = CreateFrame("Frame", "LUIArtwork_RightBorder", UIParent)
 	rightBorder:SetSize(1024, 1024)
 	rightBorder:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", 36, -31)
 	rightBorder:SetFrameStrata("BACKGROUND")
-	rightBorder:SetBackdrop({
-		bgFile =[[Interface\AddOns\LUI\media\templates\v3\info_right]],
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		edgeSize = 1,
-	})
-	rightBorder:SetBackdropColor(0, 0, 0, 0.9)
-	rightBorder:SetBackdropBorderColor(0, 0, 0, 0)
+	rightBorder.Texture = LUI:CreateFrameTexture(rightBorder, [[Interface\AddOns\LUI\media\templates\v3\info_right]])
+	rightBorder.Texture:SetVertexColor(0, 0, 0, 0.9)
 	rightBorder:Show()
 
-	local rightBorderBack = CreateFrame("Frame", "LUIArtwork_LeftBorderBack", rightBorder, "BackdropTemplate")
+	local rightBorderBack = CreateFrame("Frame", "LUIArtwork_RightBorderBack", rightBorder)
 	rightBorderBack:SetSize(1024, 1024)
 	rightBorderBack:SetPoint("BOTTOMRIGHT", rightBorder, "BOTTOMRIGHT", -7, 8)
 	rightBorderBack:SetFrameStrata("BACKGROUND")
-	rightBorderBack:SetBackdrop({
-		bgFile =[[Interface\AddOns\LUI\media\templates\v3\info_right_back]],
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		edgeSize = 1,
-	})
-	rightBorderBack:SetBackdropBorderColor(0, 0, 0, 0)
+	rightBorderBack.Texture = LUI:CreateFrameTexture(rightBorderBack, [[Interface\AddOns\LUI\media\templates\v3\info_right_back]])
 	rightBorderBack:SetFrameLevel(rightBorder:GetFrameLevel() - 1)
 
 	topBackground:SetFrameLevel(centerBackground:GetFrameLevel() + 1)
@@ -205,20 +174,21 @@ function module:CreateNavButton(kind, side, x, y)
 			module:AlphaOut(kind, self)
 			db[kind].IsShown = false
 		end
+		if module.SyncOrbState then module:SyncOrbState() end
 	end)
 	if kind ~= "Chat" then 
 		SecureHandlerWrapScript(clicker, "PostClick", clicker, [[
+			if not self:GetAttribute("secureEnabled") then return end
 			local frame = self:GetFrameRef("frame")
-			if frame and not frame:IsShown() then
-				self:GetFrameRef("frame"):Show()
-				if self:GetFrameRef("additional1") then self:GetFrameRef("additional1"):Show() end
-				if self:GetFrameRef("additional2") then self:GetFrameRef("additional2"):Show() end
-				if self:GetFrameRef("additional3") then self:GetFrameRef("additional3"):Show() end
-			elseif frame then
-				self:GetFrameRef("frame"):Hide()
-				if self:GetFrameRef("additional1") then self:GetFrameRef("additional1"):Hide() end
-				if self:GetFrameRef("additional2") then self:GetFrameRef("additional2"):Hide() end
-				if self:GetFrameRef("additional3") then self:GetFrameRef("additional3"):Hide() end
+			if not frame then return end
+			local show = not frame:IsShown()
+			if show then frame:Show() else frame:Hide() end
+			local count = self:GetAttribute("additionalCount") or 0
+			for i = 1, count do
+				local additional = self:GetFrameRef("additional"..i)
+				if additional then
+					if show then additional:Show() else additional:Hide() end
+				end
 			end
 		]])
 	end
@@ -243,10 +213,13 @@ function module:RefreshNavBar()
 	navBarRefreshFrame:UnregisterEvent("PLAYER_REGEN_ENABLED")
 
 	local db = module.db.profile.LUITextures
-	module.NavBarCenter:SetBackdropColor(self:RGBA("TopPanel"))
-	module.TopPanel:SetBackdropColor(self:RGBA("TopPanel"))
-	module.LeftBorderBack:SetBackdropColor(self:RGBA("LeftBorderBack"))
-	module.RightBorderBack:SetBackdropColor(self:RGBA("LeftBorderBack"))
+	local protectedFrames = {}
+	local anyPanelShown = false
+	module.NavBarCenter.Texture:SetVertexColor(self:RGBA("TopPanel"))
+	module.TopPanel.Texture:SetVertexColor(self:RGBA("TopPanel"))
+	module.TopPanel:Show()
+	module.LeftBorderBack.Texture:SetVertexColor(self:RGBA("LeftBorderBack"))
+	module.RightBorderBack.Texture:SetVertexColor(self:RGBA("LeftBorderBack"))
 
 	if db.NavBar.TopBackground then
 		module.NavBar:Show()
@@ -280,27 +253,64 @@ function module:RefreshNavBar()
 		local db = module.db.profile.LUITextures[kind]
 		local r, g, b, a = self:RGBA("NavButtons")
 		local anchor = _G[db.Anchor]
+		local validAnchor = anchor and not (anchor.IsForbidden and anchor:IsForbidden())
+		local shouldShow = db.AlwaysShow or db.IsShown
+		db.IsShown = shouldShow
+		anyPanelShown = anyPanelShown or shouldShow
 
 		button.tex:SetVertexColor(r, g, b, a)
 		button.hover:SetVertexColor(r, g, b, 0)
+		button.tex:SetAlpha(shouldShow and ALPHA or 0)
 		if showButtons then button:Show() else button:Hide() end
 
-		if not db.IsShown then
-			button.tex:SetAlpha(0)
-			if anchor then anchor:Hide() end
+		if validAnchor and module:CanAlterFrame(anchor) then
+			if shouldShow then
+				anchor:SetAlpha(1)
+				anchor:Show()
+				if kind == "Chat" then module:SetChatVisible(true) end
+			else
+				anchor:SetAlpha(0)
+				anchor:Hide()
+			end
+
+			for _, frameName in pairs(module:LoadAdditional(db.Additional)) do
+				local frame = _G[frameName]
+				if module:CanAlterFrame(frame) then
+					frame:SetAlpha(shouldShow and 1 or 0)
+					if shouldShow then frame:Show() else frame:Hide() end
+				end
+			end
 		end
 		
 		-- If the anchor is a protected frame, we need to use the secure code path
-		if anchor and anchor:IsProtected() then
+		button:SetAttribute("secureEnabled", validAnchor and anchor:IsProtected() or false)
+		button:SetAttribute("additionalCount", 0)
+		if validAnchor and anchor:IsProtected() then
 			button:SetFrameRef("frame", anchor)
+			protectedFrames[#protectedFrames + 1] = anchor
 
-			if _G[db.Additional] and _G[db.Additional] ~= "" then
-				local additionalFrames = module:LoadAdditional(db.Additional)
-				if _G[additionalFrames[1]] then button:SetFrameRef("additional1", _G[additionalFrames[1]]) end
-				if _G[additionalFrames[2]] then button:SetFrameRef("additional2", _G[additionalFrames[2]]) end
-				if _G[additionalFrames[3]] then button:SetFrameRef("additional3", _G[additionalFrames[3]]) end
+			local additionalFrames = module:LoadAdditional(db.Additional)
+			local count = 0
+			for _, frameName in ipairs(additionalFrames) do
+				local additional = _G[frameName]
+				if additional and not (additional.IsForbidden and additional:IsForbidden()) then
+					count = count + 1
+					button:SetFrameRef("additional"..count, additional)
+					if additional:IsProtected() then protectedFrames[#protectedFrames + 1] = additional end
+				end
 			end
+			button:SetAttribute("additionalCount", count)
 		end
 
+	end
+
+	if module.Orb then
+		local orbClicker = module.Orb.Clicker
+		orbClicker:SetAttribute("panelsOpen", anyPanelShown)
+		orbClicker:SetAttribute("protectedCount", #protectedFrames)
+		for index, frame in ipairs(protectedFrames) do
+			orbClicker:SetFrameRef("protected"..index, frame)
+		end
+		module:SyncOrbState()
 	end
 end
