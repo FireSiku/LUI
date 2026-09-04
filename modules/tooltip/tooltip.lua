@@ -239,7 +239,7 @@ function module:UpdateTooltipBackdrop(frame)
 	-- textures and colors. Adding the legacy backdrop mixin or API calls
 	-- here can make secret tooltip dimensions enter Backdrop.lua arithmetic.
 	local nineSlice = frame.NineSlice
-	if nineSlice then
+	if nineSlice and not (nineSlice.IsForbidden and nineSlice:IsForbidden()) then
 		module:CaptureNativeBackdrop(frame)
 		nineSlice:SetAlpha(1)
 
@@ -264,7 +264,7 @@ end
 function module:CaptureNativeBackdrop(frame, refreshCenter)
 	local nineSlice = frame and frame.NineSlice
 	local background = nineSlice and nineSlice.Center
-	if not background then return end
+	if not background or (nineSlice.IsForbidden and nineSlice:IsForbidden()) then return end
 
 	local state = nativeBackdrop[frame]
 	if not state then
