@@ -685,6 +685,7 @@ function module:OnEnable()
 	module:SecureHook("SharedTooltip_SetBackdropStyle", "OnBackdropStyleApplied")
 
 	module:SecureHook("GameTooltip_SetDefaultAnchor", function(frame, parent)
+		if parent and parent.IsForbidden and parent:IsForbidden() then return end
 		if db.Cursor then
 			frame:SetOwner(parent, "ANCHOR_CURSOR")
 		else
