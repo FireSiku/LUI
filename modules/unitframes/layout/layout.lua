@@ -126,7 +126,7 @@ local function UpdateUnitFrameTooltip(self)
 	if not unit then return end
 
 	GameTooltip_SetDefaultAnchor(GameTooltip, self)
-	local hasTooltip = GameTooltip:SetUnit(unit)
+	local hasTooltip = GameTooltip:SetUnit(unit, true)
 	if not issecretvalue(hasTooltip) and hasTooltip then
 		GameTooltip:Show()
 		self.UpdateTooltip = UpdateUnitFrameTooltip
