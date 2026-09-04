@@ -106,8 +106,8 @@ module.defaults = {
 		Colors = {
 			Border =     { r = 0.3,  g = 0.3,  b = 0.3,  a = 1, t = "Individual", },
 			Background = { r = 0,    g = 0,    b = 0,    a = 0.8,                   },
-			Guild =      { r = 0,    g = 1,    b = 0.1,                           },
-			MyGuild =    { r = 0,    g = 0.55, b = 1,                             },
+			Guild =      { r = 0,    g = 0.55, b = 1,                             },
+			MyGuild =    { r = 0,    g = 1,    b = 0.1,                           },
 		},
 		Fonts = {
 			Health = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
@@ -550,10 +550,12 @@ local function GetGuildTooltipLine(data)
 			local isLevelLine = levelLine.type == Enum.TooltipDataLineType.UnitLevel
 				or (levelText and not issecretvalue(levelText) and levelText:find(LEVEL, 1, true))
 			if isLevelLine then
-				local guildLine = lines[index - 1]
+				local guildIndex = index - 2
+				if guildIndex <= 1 then return end
+				local guildLine = lines[guildIndex]
 				local guildText = guildLine and not issecretvalue(guildLine) and guildLine.leftText
 				if guildText and not issecretvalue(guildText) then
-					return index - 1, guildText
+					return guildIndex, guildText
 				end
 			end
 		end
