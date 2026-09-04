@@ -135,6 +135,12 @@ local function UpdateUnitFrameTooltip(self)
 	end
 end
 
+hooksecurefunc("UnitFrame_UpdateTooltip", function(self)
+	GameTooltip_SetDefaultAnchor(GameTooltip, self)
+	GameTooltip:SetUnit(self.unit, true)
+	GameTooltip:Show()
+end)
+
 local function UnitFrame_OnEnter(self)
 	UpdateUnitFrameTooltip(self)
 	if self.Highlight then self.Highlight:Show() end
