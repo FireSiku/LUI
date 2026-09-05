@@ -46,12 +46,6 @@ local function ColorOptions(name, colorName)
 	return options
 end
 
-local function ColorOptions(name, colorName)
-	return {
-		[colorName.."Type"] = Opt:ColorSelect({name = name.." Color", arg = colorName}),
-		[colorName] = Opt:Color({name = name.." Individual Color", hasAlpha = true, disabled = IndividualColorDisabled(colorName), db = db.Colors}),
-	}
-end
 
 Bags.args = {
 	Header = Opt:Header({name = L["Bags_Name"]}),
