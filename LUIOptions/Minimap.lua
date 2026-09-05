@@ -13,10 +13,6 @@ local Minimap = Opt:CreateModuleOptions("Minimap", module)
 Minimap.disabled = function(info) return InCombatLockdown() or Opt.IsModDisabled(info) end
 Minimap.get, Minimap.set = Opt.GetSet(db.General)
 
-local function IndividualColorDisabled(colorName)
-	return function() return db.Colors[colorName].t ~= "Individual" end
-end
-
 local function ResetIconPosition(iconName, x, y, scale)
 	return function()
 		local iconDB = db.Icons[iconName]
@@ -29,18 +25,18 @@ end
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
 
+local colorMenuOptions = {}
+local textColorMenuOptions = {}
+textColorMenuOptions.TextType = Opt:ColorMenu(textColorMenuOptions, {name = "Text", arg = "Text"})
+
 Minimap.args = {
     Header = Opt:Header({name = _G.MINIMAP_LABEL}),
     AlwaysShowText = Opt:Toggle({name = L["Minimap_AlwaysShowText_Name"], desc = L["Minimap_AlwaysShowText_Desc"], width = "full"}),
     ShowTextures = Opt:Toggle({name = L["Minimap_ShowTextures_Name"], desc = L["Minimap_ShowTextures_Desc"], width = "full"}),
     CoordPrecision = Opt:Slider({name = L["Minimap_CoordPrecision_Name"], desc = L["Minimap_CoordPrecision_Desc"], min = 0, max = 2, step = 1}),
 	Header2 = Opt:Header({name = "Appearance"}),
-	ColorType = Opt:ColorSelect({name = "Minimap Color", arg = "Minimap"}),
-	Minimap = Opt:Color({name = "Individual Color", hasAlpha = true, disabled = IndividualColorDisabled("Minimap")}),
-	TextColor = Opt:InlineGroup({name = "Text Color", args = {
-		TextType = Opt:ColorSelect({name = "Text Color", arg = "Text"}),
-		Text = Opt:Color({name = "Individual Text Color", hasAlpha = false, disabled = IndividualColorDisabled("Text"), db = db.Colors}),
-	}}),
+	ColorType = Opt:ColorMenu(colorMenuOptions, {name = "Minimap", arg = "Minimap"}),
+	TextColor = Opt:InlineGroup({name = "Text Color", args = textColorMenuOptions}),
 	TextFont = Opt:FontMenu({name = "Text Font", customFontLocation = "Text"}),
 	    -- Position
     PositionHeader = Opt:Header({name = L["Position"]}),
@@ -64,3 +60,5 @@ Minimap.args = {
 		}}),
 	}}),
 }
+
+Mixin(Minimap.args, colorMenuOptions)

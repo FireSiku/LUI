@@ -24,12 +24,8 @@ local dropDirections = {
     RIGHT = L["Point_Right"],
 }
 
-local function IndividualColorDisabled(colorName)
-	return function() return db.Colors[colorName].t ~= "Individual" end
-end
-
-local function BackgroundColorDisabled()
-	return db.ColorMatch or db.Colors.Background.t ~= "Individual"
+local function IsBackgroundColorDisabled()
+	return db.ColorMatch
 end
 
 local raidMenuOverlapMethods = {
@@ -56,6 +52,8 @@ end
 -- ####################################################################################################################
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
+
+local colorMenuOptions = {}
 
 Micromenu.args = {
     -- General
@@ -86,15 +84,14 @@ Micromenu.args = {
 	Point = Opt:Select({name = L["Anchor"], values = LUI.Points}),
 	Direction = Opt:Select({name = L["MicroOptions_Direction_Name"], desc = L["MicroOptions_Direction_Desc"], values = dropDirections}),
 
-    -- Colors
+	-- Colors
 	ColorHeader = Opt:Header({name = L["Colors"]}),
 	ColorMatch = Opt:Toggle({name = "Match Background to Buttons", desc = "Use the button color for the micromenu background."}),
-	ColorType = Opt:ColorSelect({name = L["Micro_Name"], arg = "Micromenu"}),
-	Micromenu = Opt:Color({name = "Individual Color", hasAlpha = true, disabled = IndividualColorDisabled("Micromenu")}),
-	Spacer = Opt:Spacer({}),
-	BGColorType = Opt:ColorSelect({name = L["Background"], arg = "Background"}),
-	Background = Opt:Color({name = "Individual Color", hasAlpha = true, disabled = BackgroundColorDisabled}),
+	ColorType = Opt:ColorMenu(colorMenuOptions, {name = L["Micro_Name"], arg = "Micromenu"}),
+	BGColorType = Opt:ColorMenu(colorMenuOptions, {name = L["Background"], arg = "Background", disabled = IsBackgroundColorDisabled}),
 }
+
+Mixin(Micromenu.args, colorMenuOptions)
 
 -- Keep the long micromenu page and the raid-menu page as separate scrollable
 -- tabs. Mixing a large set of controls with a child group makes AceConfig give

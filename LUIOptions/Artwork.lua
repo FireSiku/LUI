@@ -99,6 +99,7 @@ end
 
 local function CreatePanelGroup(name, isNative)
 	local texDB = isNative and db.LUITextures[name] or db.Textures[name]
+	local colorMenuOptions = {}
 	local function IsAnchorParentDisabled() return not texDB.Anchored end
 	local function IsTextureInputHidden() return texDB.TexMode == 1 end
 	local function IsTextureSelectHidden() return texDB.TexMode ~= 1 end
@@ -119,9 +120,7 @@ local function CreatePanelGroup(name, isNative)
 		TextureSpacer = Opt:Spacer({}),
 		Anchored = Opt:Toggle({name = L["Panels_Options_Anchored"], desc = L["Panels_Options_Anchored_Desc"], width = "normal"}),
 		Parent = Opt:Input({name = L["Parent"], desc = L["Panels_Options_Parent_Desc"], disabled = IsAnchorParentDisabled}),
-		ColorType = Opt:ColorSelect({name = "Panel Color", arg = name}),
-		[(name)] = Opt:Color({name = "Individual Color", hasAlpha = true}),
-		LineBreakFlip = Opt:Spacer({}),
+		ColorType = Opt:ColorMenu(colorMenuOptions, {name = "Panel", arg = name}),
 		HorizontalFlip = Opt:Toggle({name = L["Panels_Options_HorizontalFlip"], desc = L["Panels_Options_HorizontalFlip_Desc"]}),
 		VerticalFlip = Opt:Toggle({name = L["Panels_Options_VerticalFlip"], desc = L["Panels_Options_VerticalFlip_Desc"]}),
 		CustomTexCoords = Opt:Toggle({name = L["Panels_Options_CustomTexCoords"], desc = L["Panels_Options_CustomTexCoords_Desc"], hidden = function() return isNative or PRESET_LUI_TEXTURES[texDB.Texture] end}),
@@ -142,6 +141,7 @@ local function CreatePanelGroup(name, isNative)
 		RelativePoint = Opt:Select({name = L["Anchor"], values = LUI.Points}),
 		DeletePanel = Opt:Execute({name = "Delete Panel", func = DeleteCustomPanel, onlyIf = not isNative}),
 	}})
+	Mixin(group.args, colorMenuOptions)
 
 	return group
 end
@@ -212,8 +212,9 @@ local function CreateSidebarOptions(name, bar, barDB)
 	end
 
 	local dbName = "Sidebar"..string.gsub(name, " Sidebar", "")
+	local colorMenuOptions = {}
 
-	return Opt:Group({name = name, db = barDB, arg = bar, args = {
+	local group = Opt:Group({name = name, db = barDB, arg = bar, args = {
 		Header = Opt:Header({name = name}),
 		Enable = Opt:Toggle({name = "Enabled"}),
 		OpenInstant = Opt:Toggle({name = "Open Instantly", desc = "If enabled, there will be no delay or animation when opening or closing the sidebar.\n\nNote: During combat, the sidebar always open instantly.", disabled = IsSideBarDisabled}),
@@ -229,14 +230,16 @@ local function CreateSidebarOptions(name, bar, barDB)
 		AutoAdjust = Opt:Execute({name = "Auto-Adjust Position", desc = "If you recently changed the bar anchor, make sure to move the previous bar outside of the Sidebar to prevent overlaps.", func = autoAdjustFunc, disabled = IsSideBarDisabled}),
 		AutoPosition = Opt:Toggle({name = "Auto-Position", desc = "If enabled, LUI will automatically position the sidebar anchor. This option automatically turns off if you change the anchor to avoid errors.", disabled = IsSideBarDisabled}),
 		SpacerColor = Opt:Spacer({}),
-		ColorType = Opt:ColorSelect({name = "Sidebar Texture Color", arg = dbName}),
-		[(dbName)] = Opt:Color({name = "Individual Color", hasAlpha = true}),
+		ColorType = Opt:ColorMenu(colorMenuOptions, {name = "Sidebar Texture", arg = dbName}),
 	}})
+	Mixin(group.args, colorMenuOptions)
+	return group
 end
 
 local function CreateMainPanelOptions(kind, displayName)
 	displayName = displayName or kind
 	local isNotChat = kind ~= "Chat"
+	local colorMenuOptions = {}
 	local function presetDropdownGet(info)
 		return db.LUITextures[kind].Anchor
 	end
@@ -247,7 +250,7 @@ local function CreateMainPanelOptions(kind, displayName)
 		module:Refresh()
 	end
 
-	return Opt:Group({name = displayName, db = db.LUITextures[kind], args = {
+	local group = Opt:Group({name = displayName, db = db.LUITextures[kind], args = {
 		Header = Opt:Header({name = displayName}),
 		addon = Opt:Desc({onlyIf = isNotChat, name = "Choose a preset or enter the frame name to attach to this panel.\n"}),
 		AnchorPreset = Opt:Select({onlyIf = isNotChat, name = "Bar Preset", values = (kind == "Raid") and PRESET_RAID_ANCHORS or PRESET_METER_ANCHORS, get = presetDropdownGet, set = presetDropdownSet}),
@@ -266,39 +269,35 @@ local function CreateMainPanelOptions(kind, displayName)
 		Width = Opt:InputNumber({name = "Width", desc = "Choose the Width for your "..kind.." Panel."}),
 		Height = Opt:InputNumber({name = "Height", desc = "Choose the Height for your "..kind.." Panel."}),
 		Spacer4 = Opt:Spacer({}),
-		BGColorType = Opt:ColorSelect({name = "BG Color", desc = "Choose the Color for your "..kind.." Panel Background.", arg = kind}),
-		[(kind)] = Opt:Color({name = "Individual Color", hasAlpha = true}),
-		Spacer5 = Opt:Spacer({}),
-		BorderColorType = Opt:ColorSelect({name = "Border Color", desc = "Choose the Color for your "..kind.." Panel Border.", arg = kind.."Border"}),
-		[(kind.."Border")] = Opt:Color({name = "Individual Color", hasAlpha = true}),
+		BGColorType = Opt:ColorMenu(colorMenuOptions, {name = "BG", desc = "Choose the Color for your "..kind.." Panel Background.", arg = kind}),
+		BorderColorType = Opt:ColorMenu(colorMenuOptions, {name = "Border", desc = "Choose the Color for your "..kind.." Panel Border.", arg = kind.."Border"}),
 	}})
+	Mixin(group.args, colorMenuOptions)
+	return group
 end
 
 -- ####################################################################################################################
 -- ##### Options Table ################################################################################################
 -- ####################################################################################################################
 
+local navColorMenuOptions = {}
+
 local BuiltinArgs = {
 	NavBar = Opt:Group({name = "Navigation", db = db.LUITextures.NavBar, args = {
 		OrbHeader = Opt:Header({name = "Orb"}),
 		ShowOrb = Opt:Toggle({name = "Show Orb", desc = "Show the central galaxy orb.", width = "full"}),
 		LostGalaxy = Opt:Toggle({name = "Show Lost Galaxy", desc = "When enabled, the orb has an extra texture to make it look brighter.", width = "full"}),
-		OrbColorType = Opt:ColorSelect({name = "Orb Color", arg = "Orb"}),
-		Orb = Opt:Color({name = "Individual Color", hasAlpha = true}),
+		OrbColorType = Opt:ColorMenu(navColorMenuOptions, {name = "Orb", arg = "Orb"}),
 		NavHeader = Opt:Header({name = "NavBar"}),
 		ShowButtons = Opt:Toggle({name = "Show Buttons", desc = "When enabled the central button functionality can be used to show or hide the chat, TPS, DPS and raid window.", width = "full"}),
 		TopBackground = Opt:Toggle({name = "Show Buttons Background", desc = "When enabled the central black button background is shown.", width = "full"}),
 		CenterBackground = Opt:Toggle({name = "Show Themed Center Background", desc = "When enabled the themed central background is shown.", width = "full"}),
-		PanelColorType = Opt:ColorSelect({name = "Top Panel Color", arg = "TopPanel"}),
-		TopPanel = Opt:Color({name = "Individual Color", hasAlpha = true}),
-		Spacer = Opt:Spacer({}),
-		NavColorType = Opt:ColorSelect({name = "Buttons Color", arg = "NavButtons"}),
-		NavButtons = Opt:Color({name = "Individual Color", hasAlpha = true}),
+		PanelColorType = Opt:ColorMenu(navColorMenuOptions, {name = "Top Panel", arg = "TopPanel"}),
+		NavColorType = Opt:ColorMenu(navColorMenuOptions, {name = "Buttons", arg = "NavButtons"}),
 		LineHeader = Opt:Header({name = "Bottom Lines"}),
 		BlackLines = Opt:Toggle({name = "Show Black Lines", desc = "Enable the bottom left and right black line.", width = "full"}),
 		ThemedLines = Opt:Toggle({name = "Show Themed Lines", desc = "Enable the bottom left and right themed line.", width = "full"}),
-		LineColorType = Opt:ColorSelect({name = "Themed Lines Color", arg = "LeftBorderBack"}),
-		LeftBorderBack = Opt:Color({name = "Individual Color", hasAlpha = true}),
+		LineColorType = Opt:ColorMenu(navColorMenuOptions, {name = "Themed Lines", arg = "LeftBorderBack"}),
 	}}),
 	Chat = CreateMainPanelOptions("Chat"),
 	Tps = CreateMainPanelOptions("Tps", "Meter Panel 2"),
@@ -306,6 +305,8 @@ local BuiltinArgs = {
 	Raid = CreateMainPanelOptions("Raid"),
 	ActionBarTopTexture = CreatePanelGroup("ActionBarTopTexture", true),
 }
+
+Mixin(BuiltinArgs.NavBar.args, navColorMenuOptions)
 
 CustomArgs.NewDesc = Opt:Desc({name = "Add a custom artwork panel:", fontSize = "medium", width = "normal"})
 CustomArgs.NameInput = Opt:Input({name = "Panel Name", get = function() return nameInput or "" end, set = function(_, value) nameInput = value end})
