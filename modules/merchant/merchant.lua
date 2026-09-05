@@ -18,7 +18,7 @@ local db
 ------------------------------------------------------
 
 -- Localised functions.
-local GetCoinTextureString = _G.GetCoinTextureString
+local GetCoinTextureString = C_CurrencyInfo.GetCoinTextureString
 local GetMerchantItemLink = _G.GetMerchantItemLink
 local GetMerchantNumItems = _G.GetMerchantNumItems
 local CanMerchantRepair = _G.CanMerchantRepair
