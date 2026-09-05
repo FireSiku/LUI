@@ -22,9 +22,8 @@ local ExpBars = Opt:CreateModuleOptions("Experience Bars", module)
 
 local function IsTextDisabled() return not db.ShowText end
 local function AbsTextHidden() return not db.ShowText or not db.ShowCurrent end
-local function IndividualColorDisabled(colorName)
-    return function() return db.Colors[colorName].t ~= "Individual" end
-end
+
+local colorMenuOptions = {}
 
 ExpBars.args = {
     Header = Opt:Header({name = L["ExpBar_Name"]}),
@@ -32,16 +31,11 @@ ExpBars.args = {
     Spacing = Opt:Slider({name = L["Spacing"], desc = L["ExpBar_Options_Spacing_Desc"], min = 0, max = 20, step = 1}),
     ShowAzerite = Opt:Toggle({name = "Show Azerite XP when Heart of Azeroth is equipped.", width = "full"}),
     AppHeader = Opt:Header({name = "Appearances"}),
-    ExperienceType = Opt:ColorSelect({name = L["ExpBar_Mode_Experience"].." Color", arg = "Experience"}),
-    Experience = Opt:Color({name = L["ExpBar_Mode_Experience"].." Individual Color", hasAlpha = true, disabled = IndividualColorDisabled("Experience")}),
-    ReputationType = Opt:ColorSelect({name = "Reputation Color", arg = "Reputation"}),
-    Reputation = Opt:Color({name = "Reputation Individual Color", hasAlpha = true, disabled = IndividualColorDisabled("Reputation")}),
-    HonorType = Opt:ColorSelect({name = "Honor Color", arg = "Honor"}),
-    Honor = Opt:Color({name = "Honor Individual Color", hasAlpha = true, disabled = IndividualColorDisabled("Honor")}),
-    AzeriteType = Opt:ColorSelect({name = "Azerite Color", arg = "Azerite"}),
-    Azerite = Opt:Color({name = "Azerite Individual Color", hasAlpha = true, disabled = IndividualColorDisabled("Azerite")}),
-    HouseFavorType = Opt:ColorSelect({name = "House Favor Color", arg = "HouseFavor"}),
-    HouseFavor = Opt:Color({name = "House Favor Individual Color", hasAlpha = true, disabled = IndividualColorDisabled("HouseFavor")}),
+    ExperienceType = Opt:ColorMenu(colorMenuOptions, {name = L["ExpBar_Mode_Experience"], arg = "Experience"}),
+    ReputationType = Opt:ColorMenu(colorMenuOptions, {name = "Reputation", arg = "Reputation"}),
+    HonorType = Opt:ColorMenu(colorMenuOptions, {name = "Honor", arg = "Honor"}),
+    AzeriteType = Opt:ColorMenu(colorMenuOptions, {name = "Azerite", arg = "Azerite"}),
+    HouseFavorType = Opt:ColorMenu(colorMenuOptions, {name = "House Favor", arg = "HouseFavor"}),
     ExpBarFill = Opt:MediaStatusbar({name = L["ExpBar_Options_Fill"]}),
     ExpBarBg = Opt:MediaStatusbar({name = "Background Texture"}),
 	BackgroundMultiplier = Opt:Slider({name = "Background Darkness", min = 0, max = 1, step = 0.01, isPercent = true}),
@@ -68,5 +62,7 @@ ExpBars.args = {
     Spacer3 = Opt:Spacer({}),
     ShowCurrent = Opt:Toggle({name = L["Show Current"], disabled = IsTextDisabled}),
     ShowMax = Opt:Toggle({name = L["Show Max"], disabled = AbsTextHidden}),
-    ShortNumbers = Opt:Toggle({name = L["Short Numbers"] , disabled = AbsTextHidden}),
+	ShortNumbers = Opt:Toggle({name = L["Short Numbers"] , disabled = AbsTextHidden}),
 }
+
+Mixin(ExpBars.args, colorMenuOptions)
