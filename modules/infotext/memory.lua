@@ -107,6 +107,7 @@ function element:OnCreate()
 		if usageElapsed >= USAGE_UPDATE_TIME and not _G.InCombatLockdown() then
 			UpdateAddOnMemoryUsage()
 			usageElapsed = 0
+			return C_Timer.After(0, function() element:UpdateMemory() end)
 		end
 		element:UpdateMemory()
 	end, MEMORY_UPDATE_TIME)
