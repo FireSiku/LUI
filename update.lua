@@ -4,8 +4,8 @@ local L = LUI.L
 local db, default
 
 -- Increase whenever there are changes that would require remediation
--- The changes related to the version should be appended in an new IF block of the ApplyUpdate function.
-local DB_VERSION = 4
+-- Append every database migration in a new version block in ApplyUpdate.
+local DB_VERSION = 10
 
 function LUI:GetDBVersion()
 	return DB_VERSION
@@ -37,19 +37,15 @@ function LUI:_Resync()
 	LUI:ApplyUpdate(0)
 end
 
--- For the most part, conversion should be in this format. 
--- if db.Old then
---     db.New = db.Old
---     table.insert(cleanUp[db], Old)
--- end
-
 -- Table structure:  cleanUp[tableRef] = { Array of table keys to clean up }
 -- This metatable will automatically create an empty array if cleanUp[tableRef] doesn't exist yet.
 local cleanUp = setmetatable({}, {__index = function(t, k) t[k] = {}; return t[k] end, __mode = "k"})
 
 local function ExecuteCleanUp()
-	for t, k in pairs(cleanUp) do
-		t[k] = nil
+	for target, keys in pairs(cleanUp) do
+		for _, key in ipairs(keys) do
+			target[key] = nil
+		end
 	end
 end
 
@@ -79,7 +75,7 @@ local function Convert(display_name, old_db, old_name, new_name, new_db)
 
 	assert(type(old_db) == "table", "Setting conversion failed for "..old_name..". Expected table, received "..type(old_db))
 	if not new_db then new_db = old_db end
-	if old_db[old_name] then
+	if old_db[old_name] ~= nil then
 		if type(old_db[old_name]) == "table" then
 			MergeRecursive(new_db[new_name], old_db[old_name],  old_db.FakeTable or nil)
 			LUI:Printf("The settings for %s.%s have been restored", display_name, new_name)	-- Announce the changes
@@ -110,6 +106,8 @@ local function AreColorsEqual(color1, color2)
 end
 
 function LUI:ApplyUpdate(ver)
+	requireReload = false
+	wipe(cleanUp)
 	local lui_db = LUI.db.profile
 
 	local old_units = {
@@ -159,7 +157,7 @@ function LUI:ApplyUpdate(ver)
 		local mm_db = mm_mod.db.profile
 		if lui_db.Minimap then
 			Convert("Minimap", lui_db.Minimap.General, "AlwaysShowText", "AlwaysShowText", mm_db.General)
-			Convert("Minimap", lui_db.Minimap.General, "Size", "Scale", mm_db.General)
+			Convert("Minimap.Position", lui_db.Minimap.General, "Size", "Scale", mm_db.Position)
 			Convert("Minimap", lui_db.Minimap.General, "ShowTextures", "ShowTextures", mm_db.General)
 			Convert("Minimap", lui_db.Minimap.General, "MissionReport", "MissionReport", mm_db.General)
 
@@ -167,12 +165,9 @@ function LUI:ApplyUpdate(ver)
 				Convert("Minimap.Position", lui_db.Minimap.General.Position, "X", "X", mm_db.Position)
 				Convert("Minimap.Position", lui_db.Minimap.General.Position, "Y", "Y", mm_db.Position)
 				Convert("Minimap.Position", lui_db.Minimap.General.Position, "Point", "Point", mm_db.Position)
-				-- Need to check so we dont switch the default Locked if Unlocked is not found
-				local UnLocked = lui_db.Minimap.General.Position and lui_db.Minimap.General.Position.UnLocked or nil
-				if UnLocked then
-					Convert("Minimap.Position", lui_db.Minimap.General.Position, "UnLocked", "Locked", mm_db.Position)
-					mm_db.Position.Locked = not mm_db.PositionLocked -- Converted setting was opposite
-					LUI:Printf("Minimap.Position.Locked has been re-adjusted to %s (Was Position.Unlocked: %s)", not UnLocked, UnLocked)
+				-- Minimap movement is now controlled directly by its position options.
+				if lui_db.Minimap.General.Position and lui_db.Minimap.General.Position.UnLocked ~= nil then
+					tinsert(cleanUp[lui_db.Minimap.General.Position], "UnLocked")
 				end
 			end
 
@@ -183,35 +178,15 @@ function LUI:ApplyUpdate(ver)
 			
 			if mm_mod.Refresh then mm_mod:Refresh() end
 
-			-- Minimap Frames got moved to UI Elements
+			-- Preserve the legacy top-center widget position in the current
+			-- UI Elements namespace.
 			if lui_db.Minimap.Frames then
 				local ui_mod = LUI:GetModule("UI Elements")
 				local ui_db = ui_mod.db.profile
 
-				Convert("UIElements.AlwaysUpFrame",         lui_db.Minimap.Frames,    "AlwaysUpFrameX",         "X",              ui_db.AlwaysUpFrame)
-				Convert("UIElements.AlwaysUpFrame",         lui_db.Minimap.Frames,    "AlwaysUpFrameY",         "Y",              ui_db.AlwaysUpFrame)
-				Convert("UIElements.AlwaysUpFrame",         lui_db.Minimap.Frames, "SetAlwaysUpFrame",          "ManagePosition", ui_db.AlwaysUpFrame)
-				Convert("UIElements.VehicleSeatIndicator",  lui_db.Minimap.Frames,    "VehicleSeatIndicatorX",  "X",              ui_db.VehicleSeatIndicator)
-				Convert("UIElements.VehicleSeatIndicator",  lui_db.Minimap.Frames,    "VehicleSeatIndicatorY",  "Y",              ui_db.VehicleSeatIndicator)
-				Convert("UIElements.VehicleSeatIndicator",  lui_db.Minimap.Frames, "SetVehicleSeatIndicator",   "ManagePosition", ui_db.VehicleSeatIndicator)
-				Convert("UIElements.DurabilityFrame",       lui_db.Minimap.Frames,    "DurabilityFrameX",       "X",              ui_db.DurabilityFrame)
-				Convert("UIElements.DurabilityFrame",       lui_db.Minimap.Frames,    "DurabilityFrameY",       "Y",              ui_db.DurabilityFrame)
-				Convert("UIElements.DurabilityFrame",       lui_db.Minimap.Frames, "SetDurabilityFrame",        "ManagePosition", ui_db.DurabilityFrame)
-				Convert("UIElements.ObjectiveTrackerFrame", lui_db.Minimap.Frames,    "ObjectiveTrackerFrameX", "X",              ui_db.ObjectiveTrackerFrame)
-				Convert("UIElements.ObjectiveTrackerFrame", lui_db.Minimap.Frames,    "ObjectiveTrackerFrameY", "Y",              ui_db.ObjectiveTrackerFrame)
-				Convert("UIElements.ObjectiveTrackerFrame", lui_db.Minimap.Frames, "SetObjectiveTrackerFrame",  "ManagePosition", ui_db.ObjectiveTrackerFrame)
-				Convert("UIElements.CaptureBar",            lui_db.Minimap.Frames,    "CaptureBarX",            "X",              ui_db.CaptureBar)
-				Convert("UIElements.CaptureBar",            lui_db.Minimap.Frames,    "CaptureBarY",            "Y",              ui_db.CaptureBar)
-				Convert("UIElements.CaptureBar",            lui_db.Minimap.Frames, "SetCaptureBar",             "ManagePosition", ui_db.CaptureBar)
-				Convert("UIElements.TicketStatus",          lui_db.Minimap.Frames,    "TicketStatusX",          "X",              ui_db.TicketStatus)
-				Convert("UIElements.TicketStatus",          lui_db.Minimap.Frames,    "TicketStatusY",          "Y",              ui_db.TicketStatus)
-				Convert("UIElements.TicketStatus",          lui_db.Minimap.Frames, "SetTicketStatus",           "ManagePosition", ui_db.TicketStatus)
-				Convert("UIElements.PlayerPowerBarAlt",     lui_db.Minimap.Frames,    "PlayerPowerBarAltX",     "X",              ui_db.PlayerPowerBarAlt)
-				Convert("UIElements.PlayerPowerBarAlt",     lui_db.Minimap.Frames,    "PlayerPowerBarAltY",     "Y",              ui_db.PlayerPowerBarAlt)
-				Convert("UIElements.PlayerPowerBarAlt",     lui_db.Minimap.Frames, "SetPlayerPowerBarAlt",      "ManagePosition", ui_db.PlayerPowerBarAlt)
-				Convert("UIElements.GroupLootContainer",    lui_db.Minimap.Frames,    "GroupLootContainerX",    "X",              ui_db.GroupLootContainer)
-				Convert("UIElements.GroupLootContainer",    lui_db.Minimap.Frames,    "GroupLootContainerY",    "Y",              ui_db.GroupLootContainer)
-				Convert("UIElements.GroupLootContainer",    lui_db.Minimap.Frames, "SetGroupLootContainer",     "ManagePosition", ui_db.GroupLootContainer)
+				Convert("UIElements.ZoneObjectives", lui_db.Minimap.Frames, "AlwaysUpFrameX", "X", ui_db.ZoneObjectives)
+				Convert("UIElements.ZoneObjectives", lui_db.Minimap.Frames, "AlwaysUpFrameY", "Y", ui_db.ZoneObjectives)
+				Convert("UIElements.ZoneObjectives", lui_db.Minimap.Frames, "SetAlwaysUpFrame", "ManagePosition", ui_db.ZoneObjectives)
 				
 				if ui_mod.Refresh then ui_mod:Refresh() end
 			end
@@ -247,15 +222,17 @@ function LUI:ApplyUpdate(ver)
 			end
 			LUI:Printf("Micromenu.Colors.Buttons has been restored (used to be Themes.Colors.MicroMenu.micromenu)")
 
-			if AreColorsEqual(theme_db.micromenu_bg, colorMod:Color(LUI.playerClass)) then
-				micro_db.Colors.Micromenu.t = "Class"
-			else
-				micro_db.Colors.Background.r = theme_db.micromenu_bg[1]
-				micro_db.Colors.Background.g = theme_db.micromenu_bg[2]
-				micro_db.Colors.Background.b = theme_db.micromenu_bg[3]
-				micro_db.Colors.Background.t = "Individual"
+			if theme_db.micromenu_bg then
+				if AreColorsEqual(theme_db.micromenu_bg, colorMod:Color(LUI.playerClass)) then
+					micro_db.Colors.Background.t = "Class"
+				else
+					micro_db.Colors.Background.r = theme_db.micromenu_bg[1]
+					micro_db.Colors.Background.g = theme_db.micromenu_bg[2]
+					micro_db.Colors.Background.b = theme_db.micromenu_bg[3]
+					micro_db.Colors.Background.t = "Individual"
+				end
+				LUI:Printf("Micromenu.Colors.Background has been restored (used to be Themes.Colors.MicroMenu.micromenu_bg)")
 			end
-			LUI:Printf("Micromenu.Colors.Background has been restored (used to be Themes.Colors.MicroMenu.micromenu_bg)")
 
 			tinsert(cleanUp[theme_db], "micromenu")
 			tinsert(cleanUp[theme_db], "micromenu_bg")
@@ -296,7 +273,6 @@ function LUI:ApplyUpdate(ver)
 			Convert(currUnit, unit_db.Texts, "PowerMissing", "PowerMissingText", unit_db)
 			Convert(currUnit, unit_db.Texts, "AlternativePower", "AlternativePowerText", unit_db)
 			Convert(currUnit, unit_db.Texts, "AdditionalPower", "AdditionalPowerText", unit_db)
-			Convert(currUnit, unit_db.Texts, "ClassPower", "ClassPowerText", unit_db)
 			Convert(currUnit, unit_db.Icons, "Leader", "LeaderIndicator", unit_db)
 			Convert(currUnit, unit_db.Icons, "Role", "GroupRoleIndicator", unit_db)
 			Convert(currUnit, unit_db.Icons, "Raid", "RaidMarkerIndicator", unit_db)
@@ -318,7 +294,6 @@ function LUI:ApplyUpdate(ver)
 				Convert(currUnit, unit_db.Bars,  "Chi",            "ClassPowerBar", unit_db)
 				Convert(currUnit, unit_db.Bars,  "WarlockBar",     "ClassPowerBar", unit_db)
 				Convert(currUnit, unit_db.Bars,  "ArcaneCharges",  "ClassPowerBar", unit_db)
-				Convert(currUnit, unit_db.Texts, "WarlockBar",     "ClassPowerText", unit_db)
 
 				if uf_db.Player and uf_db.Player.Bars then
 					table.insert(cleanUp[uf_db.Player.Bars], "ShadowOrbs")
@@ -357,7 +332,6 @@ function LUI:ApplyUpdate(ver)
 			Convert("UnitFrames.Player", uf_db.player.Texts, "PvP",            "PvPText", uf_db.player)
 			Convert("UnitFrames.Player", uf_db.player.Texts, "DruidMana",      "AdditionalPowerText", uf_db.player)
 			Convert("UnitFrames.Player", uf_db.player.Texts, "AltPower",       "AlternativePowerText", uf_db.player)
-			Convert("UnitFrames.Player", uf_db.player.Texts, "WarlockBar",     "ClassPowerText", uf_db.player)
 		end
 		if uf_db.player.Bars then
 			Convert("UnitFrames.Player", uf_db.player.Bars,  "HealPrediction", "HealthPredictionBar", uf_db.player)
@@ -395,20 +369,6 @@ function LUI:ApplyUpdate(ver)
 
 		requireReload = true
 		
-		-- Convert some modules that were using color arrays
-		local function ConvertColorArray(name, color)
-			Convert(name, color, 1, "r")
-			Convert(name, color, 1, "g")
-			Convert(name, color, 1, "b")
-			Convert(name, color, 1, "a")
-		end
-
-		local cd_db = LUI:GetModule("Cooldown").db.profile
-		ConvertColorArray("Cooldown.Colors.Day", cd_db.Colors.Day)
-		ConvertColorArray("Cooldown.Colors.Hour", cd_db.Colors.Hour)
-		ConvertColorArray("Cooldown.Colors.Min", cd_db.Colors.Min)
-		ConvertColorArray("Cooldown.Colors.Sec", cd_db.Colors.Sec)
-		ConvertColorArray("Cooldown.Colors.Threshold", cd_db.Colors.Threshold)
 	end
 	
 	if ver < 3 then
@@ -428,7 +388,6 @@ function LUI:ApplyUpdate(ver)
 		end
 		local colorList = {"r", "g", "b", "a"}
 		local insetList = {"left", "right", "top", "bottom"}
-		local colorArray = {1, 2, 3, 4}
 
 		for modName, module in LUI:IterateModules() do
 			local db = module.db and module.db.profile or nil
@@ -445,18 +404,9 @@ function LUI:ApplyUpdate(ver)
 					Sanitize(font, {"Size"})
 				end
 			end
-			if db and modName == "Panels" then
-				local keys = {"OffsetX", "OffsetY", "Width", "Height"}
-				Sanitize(db.Chat, keys)
-				Sanitize(db.Tps, keys)
-				Sanitize(db.Dps, keys)
-				Sanitize(db.Raid, keys)
-			elseif db and modName == "Chat" then
+			if db and modName == "Chat" then
 				Sanitize(db, {"x", "y", "width", "height"})
 				Sanitize(db.General.Font, {"Size"})
-				Sanitize(db.General.BackgroundColor, colorArray)
-			elseif db and modName == "Cooldown" then
-				Sanitize(db.General, {"MinDuration", "MinScale", "Precision", "Threshold", "MinToSec"})
 			elseif db and modName == "Merchant" then
 				Sanitize(db.AutoRepair.Settings, {"CostLimit"})
 				Sanitize(db.AutoStock.Settings, {"CostLimit"})
@@ -514,9 +464,8 @@ function LUI:ApplyUpdate(ver)
 		requireReload = true
 	end
 
-	-- Artwork/Panel module conversions
+	-- Migrate settings from the retired Panels and ArtworkV3 namespaces.
 	if ver < 4 then
-			-- Check for the Panels SV and compare it with the new artwork SV
 		local profileName = LUI.db:GetCurrentProfile()
 		local PanelsSV = (LUI.db and LUI.db.sv.namespaces.Panels) and LUI.db.sv.namespaces.Panels.profiles[profileName]
 		local ArtworkSV = (LUI.db and LUI.db.sv.namespaces.ArtworkV3) and LUI.db.sv.namespaces.ArtworkV3.profiles[profileName]
@@ -582,7 +531,7 @@ function LUI:ApplyUpdate(ver)
 		for panel, v in pairs(oldPanelDefaults) do
 			if PanelsSV and PanelsSV[panel] then
 				for setting, value in pairs(v) do
-					if PanelsSV[panel][setting] and PanelsSV[panel][setting] ~= value and setting ~= "Animation"then
+					if PanelsSV[panel][setting] ~= nil and PanelsSV[panel][setting] ~= value and setting ~= "Animation" then
 						artModule.db.profile.LUITextures[panel][setting] = PanelsSV[panel][setting]
 					end
 				end
@@ -591,7 +540,7 @@ function LUI:ApplyUpdate(ver)
 		end
 		if ArtworkSV and ArtworkSV.UpperArt then
 			for setting, value in pairs(oldArtworkDefaults.UpperArt) do
-				if ArtworkSV.UpperArt[setting] and ArtworkSV.UpperArt[setting] ~= value then
+				if ArtworkSV.UpperArt[setting] ~= nil and ArtworkSV.UpperArt[setting] ~= value then
 					local matchingSetting = matchingArtworkSetting[setting]
 					artModule.db.profile.LUITextures.NavBar[matchingSetting] = ArtworkSV.UpperArt[setting]
 				end
@@ -600,13 +549,286 @@ function LUI:ApplyUpdate(ver)
 		end
 		if ArtworkSV and ArtworkSV.LowerArt then
 			for setting, value in pairs(oldArtworkDefaults.LowerArt) do
-				if ArtworkSV.LowerArt[setting] and ArtworkSV.LowerArt[setting] ~= value then
+				if ArtworkSV.LowerArt[setting] ~= nil and ArtworkSV.LowerArt[setting] ~= value then
 					local matchingSetting = matchingArtworkSetting[setting]
 					artModule.db.profile.LUITextures.NavBar[matchingSetting] = ArtworkSV.LowerArt[setting]
 				end
 			end
 			ArtworkSV.LowerArt = nil
 		end
+	end
+
+	if ver < 5 then
+		local chat = LUI:GetModule("Chat", true)
+		if chat and chat.db then
+			chat.db.profile.General.BackgroundColor = nil
+		end
+		local merchant = LUI:GetModule("Merchant", true)
+		if merchant and merchant.db then
+			merchant.db.profile.AutoStock.Count = nil
+		end
+
+		lui_db.General.AutoAcceptInvite = nil
+		lui_db.Minimap = nil
+		lui_db.MicroMenu = nil
+		requireReload = true
+	end
+
+	if ver < 6 then
+		local raidMenu = LUI:GetModule("RaidMenu", true)
+		if raidMenu and raidMenu.db and raidMenu.db.profile.ShowTooltips ~= nil then
+			raidMenu.db.profile.ShowToolTips = raidMenu.db.profile.ShowTooltips
+			raidMenu.db.profile.ShowTooltips = nil
+		end
+
+		local minimap = LUI:GetModule("Minimap", true)
+		if minimap and minimap.db then
+			minimap.db.profile.General.FontSize = nil
+			minimap.db.profile.Position.Locked = nil
+		end
+
+		local uiElements = LUI:GetModule("UI Elements", true)
+		if uiElements and uiElements.db then
+			if uiElements.db.profile.ObjectiveTrackerFrame then
+				uiElements.db.profile.ObjectiveTrackerFrame.HeaderColor = nil
+			end
+			for _, frameName in ipairs({"AlwaysUpFrame", "VehicleSeatIndicator", "CaptureBar", "TicketStatus", "PlayerPowerBarAlt", "GroupLootContainer", "QueueStatusButton"}) do
+				if uiElements.db.profile[frameName] then
+					uiElements.db.profile[frameName].HideFrame = nil
+				end
+			end
+			uiElements.db.profile.OrderHallCommandBar = nil
+		end
+
+		local chat = LUI:GetModule("Chat", true)
+		if chat and chat.db then
+			chat.db.profile.x = nil
+			chat.db.profile.y = nil
+			chat.db.profile.point = nil
+			chat.db.profile.width = nil
+			chat.db.profile.height = nil
+		end
+
+		local bags = LUI:GetModule("Bags", true)
+		if bags and bags.db then
+			bags.db.profile.Bank = nil
+			bags.db.profile.Reagent = nil
+			if bags.db.profile.Bags then
+				bags.db.profile.Bags.BackgroundTexture = nil
+				bags.db.profile.Bags.BorderTexture = nil
+				bags.db.profile.Bags.BorderSize = nil
+			end
+		end
+
+		local expBars = LUI:GetModule("Experience Bars", true)
+		if expBars and expBars.db then
+			expBars.db.profile.Genesis = nil
+			expBars.db.profile.ShowGensis = nil
+			expBars.db.profile.ShowRested = nil
+		end
+
+		local unitframes = LUI:GetModule("Unitframes", true)
+		if unitframes and unitframes.db then
+			for _, unit in ipairs(unitframes.units) do
+				local aura = unitframes.db.profile[unit] and unitframes.db.profile[unit].Aura
+				if aura then
+					if aura.Buffs then aura.Buffs.IncludePet = nil end
+					if aura.Debuffs then
+						aura.Debuffs.IncludePet = nil
+						aura.Debuffs.FadeOthers = nil
+					end
+				end
+			end
+		end
+
+		local retiredModules = {"Cooldown", "Fader"}
+		for _, moduleName in ipairs(retiredModules) do
+			lui_db.Modules[moduleName] = nil
+			if lui_db.modules then lui_db.modules[moduleName] = nil end
+		end
+
+		local namespaces = LUI.db.sv and LUI.db.sv.namespaces
+		if namespaces then
+			namespaces.Cooldown = nil
+			namespaces.Fader = nil
+			namespaces.Panels = nil
+			namespaces.ArtworkV3 = nil
+		end
+
+		local versions = LUI.db.global.luiconfig[LUI.profileName].Versions
+		versions.Cooldown = nil
+		versions.cooldown = nil
+		versions.Fader = nil
+		versions.fader = nil
+		versions.Omen = nil
+		versions.omen = nil
+		versions.Recount = nil
+		versions.recount = nil
+		lui_db.Recount = nil
+		requireReload = true
+	end
+
+	if ver < 7 then
+		lui_db.Installed = nil
+
+		local unitframes = LUI:GetModule("Unitframes", true)
+		if unitframes and unitframes.db then
+			local profile = unitframes.db.profile
+			profile.Settings.HideBlizzRaid = nil
+
+			for _, unit in ipairs(unitframes.units) do
+				local unitDB = profile[unit]
+				if unitDB then
+					-- Preserve the old PvP indicator setting that the original
+					-- conversion accidentally stored under a misspelled key.
+					if unitDB.PvIndicator and unitDB.PvPIndicator then
+						MergeRecursive(unitDB.PvPIndicator, unitDB.PvIndicator)
+					end
+
+					for _, key in ipairs({
+						"Bars", "Texts", "Icons", "FakeTable", "Fader", "UseBlizzard",
+						"ClassPowerText", "ComboPointsBar", "CornerAura", "RaidDebuff", "PvIndicator",
+					}) do
+						unitDB[key] = nil
+					end
+
+					if unitDB.Border then unitDB.Border.Target = nil end
+					if unitDB.Aura then
+						for _, auraType in ipairs({"Buffs", "Debuffs"}) do
+							local aura = unitDB.Aura[auraType]
+							if aura then
+								aura.IncludePet = nil
+								aura.FadeOthers = nil
+							end
+						end
+					end
+				end
+			end
+
+		end
+
+		local artwork = LUI:GetModule("Artwork", true)
+		if artwork and artwork.db then
+			local artDB = artwork.db.profile
+			for _, side in pairs(artDB.SideBars) do
+				side.Offset = nil
+				side.Additional = nil
+				side.HideEmpty = nil
+			end
+
+			local meter2 = artDB.LUITextures.Tps
+			if meter2.Anchor == "OmenAnchor" then
+				meter2.Anchor = "DetailsBaseFrame2"
+				meter2.Additional = "DetailsRowFrame2"
+			end
+
+			local meter1 = artDB.LUITextures.Dps
+			if meter1.Anchor == "Recount_MainWindow" then
+				meter1.Anchor = "DetailsBaseFrame1"
+				meter1.Additional = "DetailsRowFrame1"
+			end
+		end
+
+		local expBars = LUI:GetModule("Experience Bars", true)
+		if expBars and expBars.db then
+			local expBarsDB = expBars.db.profile
+			if expBarsDB.ExpBarFill == "Gradient" then
+				expBarsDB.ExpBarFill = "LUI_Gradient"
+			end
+			if expBarsDB.ExpBarBg == "Minimalist" then
+				expBarsDB.ExpBarBg = "LUI_Minimalist"
+			end
+		end
+
+		requireReload = true
+	end
+
+	if ver < 8 then
+		-- Profiles that already passed older migrations can still contain data
+		-- from modules and integration presets removed in this release.
+		for _, moduleName in ipairs({"Cooldown", "Fader"}) do
+			lui_db.Modules[moduleName] = nil
+			if lui_db.modules then lui_db.modules[moduleName] = nil end
+		end
+		lui_db.Cooldown = nil
+		lui_db.Fader = nil
+		lui_db.Recount = nil
+		lui_db.Installed = nil
+		lui_db.Fonts = nil
+
+		local namespaces = LUI.db.sv and LUI.db.sv.namespaces
+		if namespaces then
+			namespaces.Cooldown = nil
+			namespaces.Fader = nil
+			namespaces.Panels = nil
+			namespaces.ArtworkV3 = nil
+		end
+
+		local versions = LUI.db.global.luiconfig[LUI.profileName].Versions
+		for _, key in ipairs({
+			"Cooldown", "cooldown", "Fader", "fader", "Omen", "omen",
+			"Recount", "recount", "Bartender", "bartender", "Plexus", "plexus",
+		}) do
+			versions[key] = nil
+		end
+
+		local minimap = LUI:GetModule("Minimap", true)
+		if minimap and minimap.db then
+			local minimapDB = minimap.db.profile
+			local oldScale = rawget(minimapDB.General, "Scale")
+			if oldScale ~= nil then
+				minimapDB.Position.Scale = oldScale
+				minimapDB.General.Scale = nil
+			end
+		end
+
+		requireReload = true
+	end
+
+	if ver < 9 then
+		local uiElements = LUI:GetModule("UI Elements", true)
+		if uiElements and uiElements.db then
+			local uiDB = uiElements.db.profile
+			local oldZoneObjectives = rawget(uiDB, "AlwaysUpFrame")
+			if oldZoneObjectives then
+				MergeRecursive(uiDB.ZoneObjectives, oldZoneObjectives)
+			end
+			local oldGroupLoot = rawget(uiDB, "GroupLootContainer")
+			if oldGroupLoot then
+				MergeRecursive(uiDB.GroupLoot, oldGroupLoot)
+			end
+			for _, key in ipairs({
+				"ObjectiveTrackerFrame", "QueueStatusButton", "PlayerPowerBarAlt",
+				"AlwaysUpFrame", "DurabilityFrame", "VehicleSeatIndicator",
+				"GroupLootContainer",
+			}) do
+				uiDB[key] = nil
+			end
+		end
+
+		requireReload = true
+	end
+
+	if ver < 10 then
+		local unitframes = LUI:GetModule("Unitframes", true)
+		if unitframes and unitframes.db then
+			local nameText = unitframes.db.profile.raid and unitframes.db.profile.raid.NameText
+			if nameText and rawget(nameText, "ColorByClass") ~= nil then
+				nameText.ColorNameByClass = nameText.ColorByClass
+				nameText.ColorByClass = nil
+			end
+		end
+
+		local artwork = LUI:GetModule("Artwork", true)
+		if artwork and artwork.db then
+			for _, panelDB in pairs(artwork.db.profile.Textures) do
+				if panelDB.Texture == "panel_corner.tga" then
+					panelDB.Texture = "panel_corner_fill.tga"
+				end
+			end
+		end
+
+		requireReload = true
 	end
 
 	db.dbVersion = DB_VERSION
@@ -619,42 +841,3 @@ function LUI:ApplyUpdate(ver)
 		StaticPopup_Show("RELOAD_UI")
 	end
 end
-
---[[
-7: https://www.wowinterface.com/forums/showthread.php?t=55422
-8: https://www.wowinterface.com/forums/showthread.php?t=56361
-9: https://www.wowinterface.com/forums/showthread.php?t=56943
-10: https://www.wowinterface.com/forums/showthread.php?t=58257
-Player.Bars.DruidMana
-Player.Texts.DruidMana
--> AdditionalPower
-
-Player.Bars.AltPower
-Player.Texts.AltPower
--> AlternativePower
-
-Player.Bars.HolyPower
-Player.Bars.Chi
-Player.Bars.WarlockBar
-Player.Bars.ArcaneCharges
--> ClassPower
-
-[All].Texts.Combat
--> CombatFeedback
-
-[All].Icons -> Indicators
-Lootmaster	-> MasterLooter
-Leader		-> Leader
-Role		-> GroupRole
-Raid		-> RaidMarker
-Resting		-> Resting
-Combat		-> Combat
-PvP		
-ReadyCheck
-
-Player.Bars.ShadowOrbs
-Player.Bars.Eclipse
-Player.Texts.Eclipse
-Player.Texts.WarlockBar
--> nil
-]]

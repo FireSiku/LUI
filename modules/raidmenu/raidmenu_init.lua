@@ -1,5 +1,4 @@
 -- This module creates a menu containing all the raid markers, world pillars and other raid/party commands
---- @TODO: Fully use Secure Handlers to allow for it to be used in combat..
 
 -- ####################################################################################################################
 -- ##### Setup and Locals #############################################################################################
@@ -24,6 +23,8 @@ module.defaults = {
 		Offset = -30,
 		X_Offset = 0,
 		Opacity = 100,
+		MatchMicromenuBackground = true,
+		BackgroundColor = {r = 0.05, g = 0.05, b = 0.05, a = 1},
 		Scale = 1,
 		ShowToolTips = false,
 		AutoHide = false,
@@ -37,10 +38,12 @@ module.defaults = {
 function module:OnInitialize()
 	LUI:NewNamespace(self, nil, true)
 	LUI:RegisterModule(module, true)
-
-	--LUI:GetModule("Panels"):RegisterFrame(self)
 end
 
 function module:OnEnable()
 	self:SetRaidMenu()
+end
+
+function module:OnDisable()
+	self:HideRaidMenu()
 end

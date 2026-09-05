@@ -17,11 +17,19 @@ local GetMoney = _G.GetMoney
 
 
 -- Constants
-local BACKPACK_TOKEN_UPDATE_FUNC = "BackpackTokenFrame_Update"
 local BAG_SLOT_TEMPLATE = "ContainerFrameItemButtonTemplate"
 local BAG_SLOT_NAME_FORMAT = "LUIBags_Item%d_%d"
 local CURRENCY_FORMAT = "%d\124T%s:0:0:3:0\124t"
 local BAG_BAGBAR_NAME_FORMAT = "LUIBags_Bag%d"
+local titleBarEvents = {
+	"PLAYER_MONEY",
+	"PLAYER_LOGIN",
+	"PLAYER_TRADE_MONEY",
+	"TRADE_MONEY_CHANGED",
+	"CURRENCY_DISPLAY_UPDATE",
+	"PLAYER_TRADE_CURRENCY",
+	"TRADE_CURRENCY_CHANGED",
+}
 
 -- ####################################################################################################################
 -- ##### Bag Container Object #########################################################################################
@@ -42,21 +50,11 @@ local Bags = {
 	name = "Bags",
 }
 
-if LUI.IsRetail then
-	table.insert(Bags.BAG_ID_LIST, Enum.BagIndex.ReagentBag)
-	Bags.NUM_BAG_IDS = 6
-end
-
-function Bags:OnShow()
-end
-
-function Bags:OnHide()
-end
+table.insert(Bags.BAG_ID_LIST, Enum.BagIndex.ReagentBag)
+Bags.NUM_BAG_IDS = 6
 
 function Bags:Layout()
 	self:UpdateCurrencies()
-	-- self.bagsBar:SetAnchors()
-	-- self.utilBar:SetAnchors()
 end
 
 function Bags:NewItemSlot(id, slot)
@@ -67,13 +65,14 @@ function Bags:NewItemSlot(id, slot)
 
 	local name = string.format(BAG_SLOT_NAME_FORMAT, id, slot)
 	local itemSlot = module:CreateSlot(name, self.bagList[id], BAG_SLOT_TEMPLATE)
-	--local itemSlot = CreateFrame("Button", name, self.bagList[id], BAG_SLOT_TEMPLATE)
 
 	-- id/slot info is a pain to get through template's means, make it easier
 	itemSlot.id = id
 	itemSlot.slot = slot
 	-- SetID refers to the slot number within the bag, used by template's functions.
 	itemSlot:SetID(slot)
+	itemSlot:SetBagID(id)
+	itemSlot:RegisterBagButtonUpdateItemContextMatching()
 	itemSlot:Show()
 
 	--Set properties
@@ -97,7 +96,6 @@ end
 
 function Bags:CreateTitleBar()
 	local db = module.db.profile.Fonts
-	--TODO: Possibly change those two to use LUI FontStrings api
 	local gold = self:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge")
 	gold:SetJustifyH("RIGHT")
 	gold:SetPoint("RIGHT", self.closeButton, "LEFT", -3, 0)
@@ -110,20 +108,18 @@ function Bags:CreateTitleBar()
 	currency:SetText(self:GetCurrencyString())
 	currency:SetFont(Media:Fetch("font", db.Bags.Name), db.Bags.Size, db.Bags.Flag)
 
-	--Hooking this function allows to update watched currencies without a ReloadUI
 	local updateFunc = function() self:UpdateCurrencies() end
-	--module:SecureHook(BACKPACK_TOKEN_UPDATE_FUNC, updateFunc)
 	self:SetScript("OnEvent", updateFunc)
-	self:RegisterEvent("PLAYER_MONEY")
-	self:RegisterEvent("PLAYER_LOGIN")
-	self:RegisterEvent("PLAYER_TRADE_MONEY")
-	self:RegisterEvent("TRADE_MONEY_CHANGED")
-	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE")
-	self:RegisterEvent("PLAYER_TRADE_CURRENCY")
-	self:RegisterEvent("TRADE_CURRENCY_CHANGED")
+	self:RegisterTitleBarEvents()
 
 	self.gold = gold
 	self.currency = currency
+end
+
+function Bags:RegisterTitleBarEvents()
+	for _, event in ipairs(titleBarEvents) do
+		self:RegisterEvent(event)
+	end
 end
 
 local currencyString = {}
@@ -131,7 +127,7 @@ function Bags:GetCurrencyString()
 	table.wipe(currencyString)
 	for i = 1, GetNumWatchedTokens() do
 		local data = C_CurrencyInfo.GetBackpackCurrencyInfo(i)
-		if data.name then
+		if data and data.name then
 			currencyString[i] = string.format(CURRENCY_FORMAT, data.quantity, data.iconFileID)
 		end
 	end
@@ -139,7 +135,9 @@ function Bags:GetCurrencyString()
 end
 
 function Bags:UpdateCurrencies()
-	-- Blizzard now determines the amount of currencies you can watched based on the size of the Token Frame, even if it isn't shown
+	if not module.originalBackpackTokenWidth then
+		module.originalBackpackTokenWidth = BackpackTokenFrame:GetWidth()
+	end
 	BackpackTokenFrame:SetWidth(self:GetWidth())
 	self.gold:SetText(GetMoneyString(GetMoney()))
 	self.currency:SetText(self:GetCurrencyString())
@@ -175,6 +173,9 @@ end
 -- ####################################################################################################################
 
 function module.OpenBags()
+	if _G.ContainerFrame_AllowedToOpenBags and not _G.ContainerFrame_AllowedToOpenBags() then
+		return
+	end
 	LUIBags:Open()
 end
 
@@ -183,6 +184,9 @@ function module.CloseBags()
 end
 
 function module.ToggleBags()
+	if _G.ContainerFrame_AllowedToOpenBags and not _G.ContainerFrame_AllowedToOpenBags() then
+		return
+	end
 	if LUIBags:IsShown() then
 		module.CloseBags()
 	else
@@ -190,5 +194,5 @@ function module.ToggleBags()
 	end
 end
 
---Placeholders until refactor
+-- Expose the character-bag descriptor to the shared container factory.
 module.BagsContainer = Bags

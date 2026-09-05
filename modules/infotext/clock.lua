@@ -19,8 +19,9 @@ local GetNumSavedWorldBosses = _G.GetNumSavedWorldBosses
 local GetSavedWorldBossInfo = _G.GetSavedWorldBossInfo
 local GetSavedInstanceInfo = _G.GetSavedInstanceInfo
 local GetNumSavedInstances = _G.GetNumSavedInstances
-local TimeBreakDown = _G.ChatFrame_TimeBreakDown
+local TimeBreakDown = _G.ChatFrameUtil.TimeBreakDown
 local GetInstanceInfo = _G.GetInstanceInfo
+local GetDifficultyInfo = _G.GetDifficultyInfo
 local GameTimeFrame = _G.GameTimeFrame
 local InGuildParty = _G.InGuildParty
 local IsInInstance = _G.IsInInstance
@@ -45,57 +46,13 @@ local CVAR_LOCAL = "timeMgrUseLocalTime"
 
 local CLOCK_UPDATE_TIME = 1
 
---Instance Difficulty constants
---local TAG_GUILD_GROUP = " |cff66c7ffG|r"
 local RAID_INFO_WORLD_BOSS = _G.RAID_INFO_WORLD_BOSS
-
--- Do not localize those strings. All of them have an associated localized InfoClock_Instance_* entry
--- List as per  https://wowpedia.fandom.com/wiki/DifficultyID
-local INSTANCE_DIFFICULTY_FORMAT = {
-	[1]  = "Normal",    -- 5man Normal
-	[2]  = "Heroic",    -- 5man Heroic
-	[3]  = "Normal",    -- 10man Normal (Legacy)
-	[4]  = "Normal",    -- 25man Normal (Legacy)
-	[5]  = "Heroic",    -- 10man Heroic (Legacy)
-	[6]  = "Heroic",    -- 25man Heroic (Legacy)
-	[7]  = "LFR",       -- 25man Raid Finder (Legacy)
-	[8]  = "Mythic", 	-- 5man Mythic Keystone / Challenge Mode 
-	[9]  = "Normal",    -- 40man Normal
-	[11] = "Heroic",    -- 3man Heroic Scenario
-	[12] = "Normal",    -- 3man Scenario
-	[14] = "Normal",    -- Flexible Normal
-	[15] = "Heroic",    -- Flexible Heroic
-	[16] = "Mythic",    -- 20man Mythic
-	[17] = "LFR",       -- Flexible Raid Finder
-	[18] = "Event",     -- Event Party
-	[19] = "Event",     -- Event Raid
-	[20] = "Event",     -- Event Scenario
-	[23] = "Mythic",    -- 5man Mythic
-	[24] = "Timewalk",  -- Timewalking Dungeons
-	[25] = "Event",     -- World PVP Scenario
-	[29] = "Event",     -- PvEvP Scenario
-	[30] = "Event",     -- Event
-	[32] = "Event",     -- World PVP Scenario
-	[33] = "Timewalk",  -- Timewalking Raid
-	[34] = "Normal",    -- PvP
-	[38] = "Normal",    -- Normal Scenario
-	[39] = "Heroic",    -- Heroic Scenario
-	[40] = "Mythic",    -- Mythic Scenario
-	[45] = "Heroic",    -- PvP Scenario (DisplayHeroic)
-	[147] = "Normal",    -- Normal Warfronts
-	[149] = "Heroic",    -- Heroic Warfronts
-	[150] = "Normal",   -- Normal Party
-	[151] = "Timewalk", -- Timewalking LFR
-}
 
 local COLOR_CODES = {
 	Guild = "|cff66c7ff",
 	Normal = "|cff00ff00",
 	Heroic = "|cffff0000",
 	LFR = "|cffaaaaaa",
-	Mythic = "|cffff0000",
-	Event = "|cffaaaaaa",
-	Timewalk = "|cffaaaaaa",
 }
 
 -- ####################################################################################################################
@@ -119,22 +76,23 @@ local function OneRaidCheck(bool)
 end
 
 local function GetLocalizedDifficulty(difficulty)
-	local diff = INSTANCE_DIFFICULTY_FORMAT[difficulty]
-	if not diff then return end
-	
-	local LString = format("InfoClock_Instance_%s", diff)
-	return L[LString], COLOR_CODES[diff]
+	local name, _, isHeroic, isChallengeMode, displayHeroic, displayMythic, _, isLFR = GetDifficultyInfo(difficulty)
+	if not name then return end
+	local colorCode = COLOR_CODES.Normal
+	if isLFR then
+		colorCode = COLOR_CODES.LFR
+	elseif isHeroic or isChallengeMode or displayHeroic or displayMythic then
+		colorCode = COLOR_CODES.Heroic
+	end
+	return name, colorCode
 end
 
-if LUI.IsRetail then
-	function element:UpdateInvites()
-		invitesPending = (GameTimeFrame and GameTimeFrame.pendingCalendarInvites > 0) and true or false
-	end
+function element:UpdateInvites()
+	invitesPending = C_Calendar.GetNumPendingInvites() > 0
+end
 
-	function element:UpdateGuildParty()
-		--local TAG_GUILD_GROUP = " |cff66c7ffG|r"
-		guildParty = InGuildParty() and string.format(" %s%s|r", COLOR_CODES.Guild, L["InfoClock_Instance_Guild"]) or nil
-	end
+function element:UpdateGuildParty()
+	guildParty = InGuildParty() and string.format(" %s%s|r", COLOR_CODES.Guild, L["InfoClock_Instance_Guild"]) or nil
 end
 
 function element:UpdateInstanceInfo()
@@ -155,9 +113,8 @@ function element:UpdateCVar()
 	cvarMilitary = GetCVarBool(CVAR_MILITARY)
 	cvarLocal = GetCVarBool(CVAR_LOCAL)
 
-	--HACK: Blizzard's TimeFrame checkboxes do not update when cvars are changed, so make sure they are up to date.
-	TimeManagerMilitaryTimeCheck:SetChecked((cvarMilitary) and true or false)
-	TimeManagerLocalTimeCheck:SetChecked((cvarLocal) and true or false)
+	if _G.TimeManagerMilitaryTimeCheck then _G.TimeManagerMilitaryTimeCheck:SetChecked(cvarMilitary) end
+	if _G.TimeManagerLocalTimeCheck then _G.TimeManagerLocalTimeCheck:SetChecked(cvarLocal) end
 	-- Only Refresh the options if the option panel is loaded.
 	if element.RefreshOptionsPanel then
 		element:RefreshOptionsPanel()
@@ -165,10 +122,31 @@ function element:UpdateCVar()
 	element:UpdateClock()
 end
 
+function element:HookTimeManager()
+	if not _G.TimeManagerMilitaryTimeCheck or not _G.TimeManagerLocalTimeCheck
+		or element:IsHooked(_G.TimeManagerMilitaryTimeCheck, "OnClick") then return end
+	element:SecureHookScript(_G.TimeManagerMilitaryTimeCheck, "OnClick", "UpdateCVar")
+	element:SecureHookScript(_G.TimeManagerLocalTimeCheck, "OnClick", "UpdateCVar")
+	element:UpdateCVar()
+end
+
+function element:ADDON_LOADED(_, addonName)
+	if addonName == "Blizzard_TimeManager" then
+		element:HookTimeManager()
+		element:UnregisterEvent("ADDON_LOADED")
+	end
+end
+
+function element:CVAR_UPDATE(_, cvarName)
+	if cvarName == CVAR_MILITARY or cvarName == CVAR_LOCAL then
+		element:UpdateCVar()
+	end
+end
+
 function element:GetTime(useLocal)
 	local Hr, Min, PM
 	if useLocal then
-		Hr, Min = tonumber(date("%H")), date("%M")
+		Hr, Min = tonumber(date("%H")), tonumber(date("%M"))
 	else
 		Hr, Min = GetGameTime()
 	end
@@ -188,7 +166,7 @@ function element:UpdateClock()
 	if invitesPending then
 		element.text = L["InfoClock_InvitePending"]
 	else
-		local timeFormat = (module.db.profile.instanceDifficulty and instanceInfo) and "%s (%s%s)" or "%s"
+		local timeFormat = (module.db.profile.Clock.instanceDifficulty and instanceInfo) and "%s (%s%s)" or "%s"
 		element.text = format(timeFormat, element:GetTime(cvarLocal), instanceInfo or "", guildParty or "")
 	end
 	element:UpdateTooltip()
@@ -217,7 +195,7 @@ function element.OnTooltipShow(GameTooltip)
 	GameTooltip:AddDoubleLine(cvarLocal and TIMEMANAGER_TOOLTIP_REALMTIME or TIMEMANAGER_TOOLTIP_LOCALTIME,
 	                          element:GetTime(not cvarLocal))
 
-	local db = module.db.profile
+	local db = module.db.profile.Clock
 	local oneraid -- Used so we dont display "Saved Raids:" unless you are saved to at least one.
 	if db.showSavedRaids then
 		for i = 1, GetNumSavedInstances() do
@@ -228,18 +206,18 @@ function element.OnTooltipShow(GameTooltip)
 				local r, g, b = 1, 1, 1
 				if extended then r, g, b = 0.5, 1, 0.5 end
 				oneraid = OneRaidCheck(oneraid)
-				local nameFormat = format("%s |cffaaaaaa%s%s", name, maxPlayers, localizedDiff)
+				local nameFormat = format("%s |cffaaaaaa%s %s|r", name, maxPlayers, localizedDiff)
 				nameFormat = format("%s (%s/%s)", nameFormat, defeatedBosses, maxBosses)
 				GameTooltip:AddDoubleLine(nameFormat, formatTime(reset), 1,1,1, r,g,b)
 			end
 		end
 	end
 	--Check for World Bosses too
-	if LUI.IsRetail and db.showWorldBosses then
+	if db.showWorldBosses then
 		for i = 1, GetNumSavedWorldBosses() do
 			local name, _, reset = GetSavedWorldBossInfo(i)
 			oneraid = OneRaidCheck(oneraid)
-			GameTooltip:AddDoubleLine(format("%s |cffaaaaaa(%s)", name, RAID_INFO_WORLD_BOSS),
+			GameTooltip:AddDoubleLine(format("%s |cffaaaaaa(%s)|r", name, RAID_INFO_WORLD_BOSS),
 			                          formatTime(reset), 1,1,1, 1,1,1)
 		end
 	end
@@ -253,23 +231,29 @@ end
 
 function element:OnCreate()
 	-- Update tags that can be found next to the clock.
-	if LUI.IsRetail then element:RegisterEvent("GUILD_PARTY_STATE_UPDATED", "UpdateGuildParty") end
-	if LUI.IsRetail then element:RegisterEvent("PLAYER_DIFFICULTY_CHANGED", "UpdateInstanceInfo") end
+	element:RegisterEvent("GUILD_PARTY_STATE_UPDATED", "UpdateGuildParty")
+	element:RegisterEvent("PLAYER_DIFFICULTY_CHANGED", "UpdateInstanceInfo")
 	element:RegisterEvent("INSTANCE_GROUP_SIZE_CHANGED", "UpdateInstanceInfo")
 	element:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateInstanceInfo")
-	if LUI.IsRetail then element:UpdateGuildParty() end
+	element:UpdateGuildParty()
 	element:UpdateInstanceInfo()
 
 	-- Update cached CVar data.
-	element:SecureHookScript(TimeManagerMilitaryTimeCheck, "OnClick", "UpdateCVar")
-	element:SecureHookScript(TimeManagerLocalTimeCheck, "OnClick", "UpdateCVar")
 	element:UpdateCVar()
-
-	if LUI.IsRetail then
-		-- Update calendar invites
-		element:RegisterEvent("CALENDAR_UPDATE_PENDING_INVITES", "UpdateInvites")
-		element:UpdateInvites()
+	element:RegisterEvent("CVAR_UPDATE")
+	if C_AddOns.IsAddOnLoaded("Blizzard_TimeManager") then
+		element:HookTimeManager()
+	else
+		element:RegisterEvent("ADDON_LOADED")
 	end
 
+	element:RegisterEvent("CALENDAR_UPDATE_PENDING_INVITES", "UpdateInvites")
+	element:UpdateInvites()
+
 	element:AddUpdate("UpdateClock", CLOCK_UPDATE_TIME)
+end
+
+function element:RefreshSettings()
+	element:UpdateInstanceInfo()
+	element:UpdateClock()
 end

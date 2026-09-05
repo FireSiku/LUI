@@ -18,6 +18,7 @@ local format, floor, abs = format, floor, math.abs
 local BreakUpLargeNumbers = _G.BreakUpLargeNumbers
 local GetMoneyString = _G.GetMoneyString
 local GetMoney = _G.GetMoney
+local GetAutoCompleteRealms = C_AutoComplete.GetAutoCompleteRealms
 
 -- constants
 local COPPER_AMOUNT_SYMBOL = _G.COPPER_AMOUNT_SYMBOL
@@ -38,15 +39,9 @@ local SUPPORTED_FACTION = {
 	Horde = true,
 	Neutral = false,
 }
-local FACTION_ORDER_REALM = {
-	LUI.playerFaction,
-	LUI.otherFaction,
-	"Neutral",
-}
-local FACTION_ORDER_GLOBAL = {
-	LUI.playerFaction,
-	LUI.otherFaction,
-}
+local FACTION_ORDER_GLOBAL = SUPPORTED_FACTION[LUI.playerFaction]
+	and {LUI.playerFaction, LUI.otherFaction}
+	or {"Alliance", "Horde"}
 
 -- locals
 local moneyProfit = 0
@@ -60,18 +55,19 @@ local realmMoney = 0
 
 function element:FormatMoney(money, color)
 	local db = module.db.profile.Gold
+	money = abs(money)
 	if db.useBlizzard then
 		return GetMoneyString(money)
 	end
 
-	money = abs(money)
+	local colorSymbols = color or db.coloredSymbols
 	local gold = floor(money / (COPPER_PER_GOLD))
 	local silver = mod(floor(money / COPPER_PER_SILVER), SILVER_PER_GOLD)
 	local copper = mod(money, COPPER_PER_SILVER)
 	--BreakUpLargeNumber returns a string, not a number.
-	local goldString = format("%s%s%s|r", BreakUpLargeNumbers(gold), (color) and GOLD_COLOR or "", GOLD_AMOUNT_SYMBOL)
-	local silverString = format("%d%s%s|r", silver, (color) and SILVER_COLOR or "", SILVER_AMOUNT_SYMBOL)
-	local copperString = format("%d%s%s|r", copper, (color) and COPPER_COLOR or "", COPPER_AMOUNT_SYMBOL)
+	local goldString = format("%s%s%s|r", BreakUpLargeNumbers(gold), colorSymbols and GOLD_COLOR or "", GOLD_AMOUNT_SYMBOL)
+	local silverString = format("%d%s%s|r", silver, colorSymbols and SILVER_COLOR or "", SILVER_AMOUNT_SYMBOL)
+	local copperString = format("%d%s%s|r", copper, colorSymbols and COPPER_COLOR or "", COPPER_AMOUNT_SYMBOL)
 
 	if gold > 0 and db.showCopper then
 		return format("%s %s %s", goldString, silverString, copperString)
@@ -86,6 +82,7 @@ function element:FormatMoney(money, color)
 end
 
 function element:CacheConnectedRealms()
+	if not SUPPORTED_FACTION[LUI.playerFaction] then return end
 	local connectedRealms = GetAutoCompleteRealms()
 	local goldDB = module.db.global.Gold[LUI.playerFaction]
 	local realmDB = module.db.global.ConnectedRealms
@@ -147,20 +144,24 @@ function element:UpdateRealmMoney()
 	
 	--Update for current character
 	if SUPPORTED_FACTION[faction] then
-		--goldDB[LUI.playerRealm][LUI.playerName] = GetMoney()
 		local total = 0
-		for player, money in pairs(goldDB[LUI.playerRealm]) do
+		for _, money in pairs(goldDB[LUI.playerRealm]) do
 			total = total + money
 		end
 		if module.db.profile.Gold.ShowConnected and module.db.global.ConnectedRealms[LUI.playerRealm] then
 			for _, connectedRealm in ipairs(module.db.global.ConnectedRealms[LUI.playerRealm]) do
-				for player, money in pairs(goldDB[connectedRealm]) do
+				for _, money in pairs(goldDB[connectedRealm]) do
 					total = total + money
 				end
 			end
 		end
 		realmMoney = total
 	end
+end
+
+function element:RefreshSettings()
+	element:UpdateRealmMoney()
+	element:UpdateGold()
 end
 
 function element.OnClick(frame_, button)
@@ -229,12 +230,12 @@ function element.OnTooltipShow(GameTooltip)
 			if element:ShouldRealmBeShown(realm) then
 				local r, g, b = LUI:GetFactionColor(faction)
 				local total = 0
-				for player, money in pairs(realmData) do
+				for _, money in pairs(realmData) do
 					total = total + money
 				end
 				if module.db.profile.Gold.ShowConnected and module.db.global.ConnectedRealms[realm] then
 					for _, connectedRealm in ipairs(module.db.global.ConnectedRealms[realm]) do
-						for player, money in pairs(realmDB[faction][connectedRealm]) do
+						for _, money in pairs(realmDB[faction][connectedRealm]) do
 							total = total + money
 						end
 					end
@@ -294,6 +295,9 @@ function element:OnCreate()
 	
 	element:CacheConnectedRealms()
 	element:RegisterEvent("PLAYER_MONEY", "UpdateGold")
+	if SUPPORTED_FACTION[LUI.playerFaction] then
+		module.db.global.Gold[LUI.playerFaction][LUI.playerRealm][LUI.playerName] = previousMoney
+	end
 	element:UpdateRealmMoney()
 	element:UpdateGold()
 end

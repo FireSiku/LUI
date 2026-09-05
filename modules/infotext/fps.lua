@@ -28,17 +28,6 @@ local FPS_UPDATE_TIME = 1
 local KB_PER_MB = 1024
 
 -- ####################################################################################################################
--- ##### Default Settings #############################################################################################
--- ####################################################################################################################
-
-element.defaults = {
-	profile = {
-		X = 450,
-	},
-}
-module:MergeDefaults(element.defaults, "FPS")
-
--- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
 
@@ -52,10 +41,19 @@ end
 
 function element:UpdateFPSLatency()
 	local _, _, lagHome, lagWorld = GetNetStats()
-	element.text = format("%d%s   %d%s | %d%s", floor(GetFramerate()), FPS_ABBR,
-	                                            lagHome, MILLISECONDS_ABBR, lagWorld, MILLISECONDS_ABBR)
+	local display = module.db.profile.FPS.MSValue
+	if display == "Home" then
+		element.text = format("%d%s   %d%s", floor(GetFramerate()), FPS_ABBR, lagHome, MILLISECONDS_ABBR)
+	elseif display == "World" then
+		element.text = format("%d%s   %d%s", floor(GetFramerate()), FPS_ABBR, lagWorld, MILLISECONDS_ABBR)
+	else
+		element.text = format("%d%s   %d%s | %d%s", floor(GetFramerate()), FPS_ABBR,
+			lagHome, MILLISECONDS_ABBR, lagWorld, MILLISECONDS_ABBR)
+	end
 	element:UpdateTooltip()
 end
+
+element.RefreshSettings = element.UpdateFPSLatency
 
 -- ####################################################################################################################
 -- ##### Infotext Display #############################################################################################
@@ -90,5 +88,6 @@ end
 -- ####################################################################################################################
 
 function element:OnCreate()
+	element:UpdateFPSLatency()
 	element:AddUpdate("UpdateFPSLatency", FPS_UPDATE_TIME)
 end

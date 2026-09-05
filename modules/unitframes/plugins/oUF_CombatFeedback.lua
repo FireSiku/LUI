@@ -146,7 +146,16 @@ local function combat(self, event, unit, eventType, flags, amount, dtype)
 end
 
 local function addCombat(object)
-	if not object.CombatFeedbackText then return end
+	local FeedbackText = object.CombatFeedbackText
+	if not FeedbackText then return end
+	if FeedbackText.ignoreImmune
+		and FeedbackText.ignoreDamage
+		and FeedbackText.ignoreHeal
+		and FeedbackText.ignoreEnergize
+		and FeedbackText.ignoreOther
+	then
+		return
+	end
 	-- store the original starting height
 	local font, fontHeight, fontFlags = object.CombatFeedbackText:GetFont()
 	object.CombatFeedbackText.origHeight = fontHeight

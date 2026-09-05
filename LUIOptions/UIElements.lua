@@ -1,7 +1,3 @@
--- ####################################################################################################################
--- ##### Setup and Locals #############################################################################################
--- ####################################################################################################################
-
 ---@class Opt
 local Opt = select(2, ...)
 
@@ -11,67 +7,61 @@ if not module or not module.registered then return end
 
 local UIElements = Opt:CreateModuleOptions("UI Elements", module)
 
--- ####################################################################################################################
--- ##### Utility Functions ############################################################################################
--- ####################################################################################################################
+local managedFrameOptions = {
+	ZoneObjectives = {
+		name = "Zone Objectives Frame",
+		desc = "Top-center zone objectives, battleground information and similar widgets.",
+	},
+	CaptureBar = {
+		name = "Capture Bar / Below-Minimap Widgets",
+		desc = "Capture progress and other widgets normally shown below the minimap.",
+	},
+	GroupLoot = {
+		name = "Group Loot Container",
+		desc = "Anchor used by group-loot rolls and related loot frames.",
+	},
+	TicketStatus = {
+		name = "GM Ticket Status",
+		desc = "Status frame displayed while a support ticket is active.",
+	},
+}
 
-local function DisablePosition(info)
-	local parent = info[#info-1]
-	return not db[parent].ManagePosition
+local function GenerateManagedFrameGroup(key, info)
+	local frameDB = db[key]
+	local function IsPositionUnmanaged() return not frameDB.ManagePosition end
+	return Opt:InlineGroup({name = info.name, db = frameDB, args = {
+		Description = Opt:Desc({name = info.desc}),
+		ManagePosition = Opt:Toggle({name = "Manage This Frame's Position", width = "full"}),
+		X = Opt:PositionX({disabled = IsPositionUnmanaged}),
+		Y = Opt:PositionY({disabled = IsPositionUnmanaged}),
+		Preview = Opt:Execute({
+			name = "Toggle Position Preview",
+			func = function() module:TogglePreview(key, info.name) end,
+		}),
+	}})
 end
 
-local framePositionOrder = {
-	"ObjectiveTrackerFrame", "QueueStatusButton", "PlayerPowerBarAlt", "AlwaysUpFrame", "DurabilityFrame", 
-	"CaptureBar", "VehicleSeatIndicator", "GroupLootContainer", "TicketStatus"
-}
-
-local framePositionList = {
-	ObjectiveTrackerFrame = "Objectives Tracker",
-	QueueStatusButton = "Queue Status Button",
-	PlayerPowerBarAlt = "Alternate Power Bar",
-	AlwaysUpFrame = "Zone Objectives Frame",
-	DurabilityFrame = "Durability Frame",
-	CaptureBar = "Capture Bar",
-	VehicleSeatIndicator = "Vehicle Seat Indicator",
-	GroupLootContainer = "Group Loot Container",
-	TicketStatus = "GM Ticket Status",
-}
-
-local framePositionDescs = {
-	ObjectiveTrackerFrame = "This Frame occurs when tracking Quests and Achievements.",
-	QueueStatusButton = "This button appears when you queue up when searching for groups or instances",
-	PlayerPowerBarAlt = "This Frame is the special bar that appears during certain fights or events. Example: Sanity bar during Visions.",
-	AlwaysUpFrame = "This Frame occurs in Battlegrounds, Instances and Zone Objectives. Example: Attempts left in Icecrown.",
-	DurabilityFrame = "This Frame occurs when your gear is damaged or broken.",
-	CaptureBar = "This Frame occurs when trying to capture a pvp objective.",
-	VehicleSeatIndicator = "This Frame occurs in some special Mounts and Vehicles. Example: Traveler's Tundra Mammoth.",
-	GroupLootContainer = "This Frame is the anchor point for many Loot-based frames such as the Need/Greed and Bonus Roll frames.",
-	TicketStatus = "This Frame occurs when waiting on a ticket response",
-}
-
--- ####################################################################################################################
--- ##### Options Tables ###############################################################################################
--- ####################################################################################################################
-
-local function GenerateFramePositionGroup(frame, name, order)
-	local dbFrame = db[frame]
-    if not dbFrame then return end    -- If that unit does not have options for that bar, nil it
-
-    local group = Opt:Group({name = name, db = dbFrame, args = {
-		Desc = Opt:Desc({name = framePositionDescs[frame]}),
-        ManagePosition = Opt:Toggle({name = "Manage This Frame's Position", width = "full"}),
-        X = Opt:Input({name = "X Value"}),
-        Y = Opt:Input({name = "Y Value"}),
-    }})
-
-    return group
+local function OpenBlizzardEditMode()
+	if InCombatLockdown() then return end
+	if not C_AddOns.IsAddOnLoaded("Blizzard_EditMode") then
+		C_AddOns.LoadAddOn("Blizzard_EditMode")
+	end
+	if _G.EditModeManagerFrame then
+		LibStub("AceConfigDialog-3.0"):Close("LUIOptions")
+		ShowUIPanel(_G.EditModeManagerFrame)
+	end
 end
 
 UIElements.args = {
 	Header = Opt:Header({name = "UI Elements"}),
-	Elements = Opt:Group({name = "Frame Positions", childGroups = "tree"})
+	Description = Opt:Desc({name = "LUI manages only frames that Blizzard Edit Mode does not expose. Protected Blizzard layout changes are deferred until combat ends."}),
+	Managed = Opt:Group({name = "LUI-Managed Frames", args = {}}),
+	Blizzard = Opt:Group({name = "Blizzard Edit Mode", args = {
+		Description = Opt:Desc({name = "Use Blizzard Edit Mode for the Objectives Tracker, Alternate Power/Encounter Bar, Durability Frame, Vehicle Seat Indicator and other native HUD systems."}),
+		Open = Opt:Execute({name = "Open Blizzard Edit Mode", func = OpenBlizzardEditMode, disabled = InCombatLockdown}),
+	}}),
 }
 
-for i, name in ipairs(framePositionOrder) do
-	UIElements.args.Elements.args[name] = GenerateFramePositionGroup(name, framePositionList[name], i+5)
+for key, info in pairs(managedFrameOptions) do
+	UIElements.args.Managed.args[key] = GenerateManagedFrameGroup(key, info)
 end

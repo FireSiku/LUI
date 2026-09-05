@@ -1,7 +1,7 @@
 ## Interface: 120100
-## Version: v2608
+## Version: v2609
 ## Title: LUI
-## Author: Siku, Nitsah
+## Author: Siku, Nitsah, Pahn
 ## Notes: User Interface Modification
 ## SavedVariables: LUIDB
 ## OptionalDeps: Masque, Masque_Darion, !ClassColors
@@ -25,16 +25,15 @@ libs\AceEvent-3.0\AceEvent-3.0.xml
 libs\AceHook-3.0\AceHook-3.0.xml
 libs\AceLocale-3.0\AceLocale-3.0.xml
 libs\AceSerializer-3.0\AceSerializer-3.0.xml
-libs\AceTimer-3.0\AceTimer-3.0.xml
-libs\AceBucket-3.0\AceBucket-3.0.xml
 locale\locale.xml
 
-## oUF ## Current Version 14.0.1
-api\ouf13\oUF.xml
+## oUF ## Current Version 14.0.3
+api\oUF13\oUF.xml
 
 ### Core + API ###
 init.lua
 api\curse.lua
+api\backdrop.lua
 api\profiler.lua
 api\modapi.lua
 api\colors.lua
@@ -96,6 +95,7 @@ modules\infotext\movespeed.lua
 
 ### Micromenu ###
 modules\micromenu\micromenu.lua
+modules\micromenu\alerts.lua
 
 ### RaidMenu ###
 modules\raidmenu\raidmenu_init.lua
@@ -109,7 +109,7 @@ modules\expbars\experience.lua
 modules\expbars\reputation.lua
 modules\expbars\honor.lua
 modules\expbars\azerite.lua
-modules\expbars\genesis.lua
+modules\expbars\housefavor.lua
 
 ### Merchant ###
 modules\merchant\merchant.lua
@@ -117,20 +117,16 @@ modules\merchant\merchant.lua
 ### MirrorBars ###
 modules\mirrorbar\mirrorbar.lua
 
-### UIElements ###
+### UI Elements ###
 modules\uielements\uielements_init.lua
 modules\uielements\uielements.lua
-modules\uielements\uialerts.lua
-modules\uielements\colourpicker.lua
-modules\uielements\faq.lua
 
 ### Additional Scripts ###
+scripts\colorpicker.lua
 scripts\autoinvite.lua
-scripts\blizzoptionsmover.lua
 scripts\blizzscale.lua
 scripts\errorhider.lua
 scripts\talentspam.lua
-scripts\newplayerexperience.lua
 api\frameidentifier.lua
 
 ### Initialize Unitframes ###
@@ -160,18 +156,12 @@ modules\unitframes\defaults\maintanktargettarget.lua
 modules\unitframes\defaults\Colors.lua
 
 ### Unitframe Options ###
-modules\unitframes\options\colors.lua
-modules\unitframes\options\copysettings.lua
-modules\unitframes\options\general.lua
-modules\unitframes\options\importexport.lua
 modules\unitframes\options\movable.lua
-modules\unitframes\options\ouf.lua
 modules\unitframes\options\showhide.lua
 modules\unitframes\options\toggle.lua
 
 ### LUI Unitframe Additions ###
 modules\unitframes\plugins\oUF_CombatFeedback.lua
-## modules\unitframes\plugins\oUF_RaidDebuffs.lua
 
 ### Unitframe Layout ###
 modules\unitframes\layout\tags.lua
@@ -181,10 +171,3 @@ modules\unitframes\layout\auras_12_1.lua
 
 ### Embedded Darion ###
 media\Masque_Darion\Darion.lua
-
-### Addon Support ###
-addons\bartender.lua
-addons\plexus.lua
-addons\omen.lua
-addons\recount.lua
-addons\details.lua

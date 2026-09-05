@@ -11,7 +11,6 @@ local type, pairs = type, pairs
 local strmatch, tostring = strmatch, tostring
 local tinsert, tremove = tinsert, tremove
 local math, min, max = math, math.min, math.max
-local GetFunctionCPUUsage = _G.GetFunctionCPUUsage
 local GetCVar = _G.GetCVar
 
 -- Constants
@@ -59,10 +58,10 @@ end
 
 local LibWin = LibStub("LibWindow-1.1")
 
--- This call initializes a frame for use with LibWindow, and tells it where configuration data lives.
--- Note: Since LUI supports profiles, it is needed to do a new .RegisterConfig and .RestorePosition to every frame
---       that is being affected in the :Refresh call.
--- TODO: Implement a way to remember what frames have been affected, and automatically handle this.
+-- This call initializes a frame for use with LibWindow and tells it where configuration data lives.
+-- Since LUI supports profiles, every affected frame needs a new RegisterConfig and RestorePosition
+-- call during Refresh so it uses the active profile table.
+-- TODO: Remember which frames have been registered and refresh them automatically.
 function LUI:RegisterConfig(frame, storage, names)
 	if not names then
 		--By default, the names need to be lower case, but all of LUI's db options are using PascalCase.
@@ -98,15 +97,14 @@ function LUI:MakeDraggable(frame)
 	LibWin.MakeDraggable(frame)
 end
 
---Other functions LibWindow has that arent implemented because I dont believe will be used:
---LibWin.EnableMouseOnAlt
---LibWin.EnableMouseWheelScaling
+-- Other LibWindow methods that LUI deliberately does not wrap yet. Keeping the list here makes it
+-- clear which parts of the library contract are still available if LibWindow is replaced later.
+-- LibWin.EnableMouseOnAlt
+-- LibWin.EnableMouseWheelScaling
 
 -- ####################################################################################################################
 -- ##### Generic Utility API ##########################################################################################
 -- ####################################################################################################################
--- Clean up: It's very likely Blizzard already implemented some of these utilities.
-
 --- Count the number of entries in a table. This is done because #Table only returns array.
 ---@param t table Table to Count
 ---@param isPrint? boolean If provided, the count will be printed.
@@ -121,11 +119,6 @@ function LUI:Count(t, isPrint)
 	return count
 end
 
---Give us a sorted table to work with, fill the array with the keys, then sort based on the values in original table
---then we can just use a for loop to get a sorted result and call original[ sorted[i] ] for the value
---Went with a return-less approach that you need to provide the sort table because otherwise,
---I would need to create a new table every single call, and that would create needless garbage.\
-
 --- Returns a sorted table to work it by filling the array portion of `sortT` with the keys of `origT`, then sorting the results.  
 --- Then we can just use a loop to get the sorted results with original[ sorted[i] ] for the value.
 ---@param sortT table Table that will be wiped to contain the sorting order.
@@ -136,8 +129,6 @@ function LUI:SortTable(sortT, origT, sortFunc)
 	for k in pairs(origT) do sortT[#sortT+1] = k end
 	table.sort(sortT, sortFunc)
 end
-
---Copy a table recursively.
 
 --- Copy a table recursively
 ---@param source table
@@ -156,8 +147,6 @@ function LUI:CopyTable(source, target)
 end
 
 --- Print a table to the chat frame
-
---- Print a table to the chat frame
 ---@param tbl table
 function LUI:PrintTable(tbl)
 	if type(tbl) ~= "table" then return LUI:Print("Tried to Print a nil table.") end
@@ -167,8 +156,6 @@ function LUI:PrintTable(tbl)
 	end
 	LUI:Print("-------------------------")
 end
-
---takes table, second arg for recursion. Prints an entire table to default chat.
 
 --- Print a table recursively, with indentation
 ---@param tbl table
@@ -204,25 +191,6 @@ function LUI:PrintObjectTree(tbl, msg, recurse)
 		else LUI:Print(msg,k,type(v), v) end
 	end
 	if not recurse then LUI:Print("-------------------------") end
-end
-
--- ####################################################################################################################
--- ##### Dev Functions ################################################################################################
--- ####################################################################################################################
-
---- Function to add a bright border around a given frame to help seeing it and its size.
----@param frame Frame
-function LUI:HighlightBorder(frame)
-	local glowBackdrop = {
-		bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
-		edgeFile="Interface\\AddOns\\LUI\\media\\borders\\glow.tga",
-		--tile=0, tileSize=0,
-		edgeSize=5,
-		insets={left=3, right=3, top=3, bottom=3}
-	}
-	frame:SetBackdrop(glowBackdrop)
-	frame:SetBackdropColor(0,0,0,0)
-	frame:SetBackdropBorderColor(1,1,0,1)
 end
 
 -- ####################################################################################################################

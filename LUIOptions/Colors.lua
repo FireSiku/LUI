@@ -96,7 +96,7 @@ Colors.args = {
         Necrolord = Opt:Color({name = L["Necrolord"]}),
         NightFae =  Opt:Color({name = L["NightFae"]}),
         Venthyr =   Opt:Color({name = L["Venthyr"]}),
-     
+
         LabelHeader = Opt:Header({name = L["Faction Labels"]}),
         Standing1 = Opt:Color({name = STANDING_HATED}),
         Standing2 = Opt:Color({name = STANDING_HOSTILE}),

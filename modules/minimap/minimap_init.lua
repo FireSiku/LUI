@@ -8,7 +8,6 @@
 
 ---@class LUIAddon
 local LUI = select(2, ...)
-local L = LUI.L
 
 ---@class LUI.Minimap : LUIModule, AceHook-3.0
 local module = LUI:NewModule("Minimap", "AceHook-3.0")
@@ -25,15 +24,16 @@ module.defaults = {
 			CoordPrecision = 1,
 			AlwaysShowText = true,
 			ShowTextures = true,
-			FontSize = 12,
 		},
 		Position = {
 			X = -24,
 			Y = -72,
-			--RelativePoint = "TOPRIGHT",
 			Point = "TOPRIGHT",
-			Locked = false,
 			Scale = 1,
+		},
+		Icons = {
+			Expansion = {X = -2, Y = 2, Scale = 0.75},
+			Notifications = {X = 2, Y = 2, Scale = 1},
 		},
 		Fonts = {
 			Text = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },

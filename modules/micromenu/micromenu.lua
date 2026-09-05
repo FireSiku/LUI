@@ -7,20 +7,21 @@ local LUI = select(2, ...)
 local L = LUI.L
 
 ---@class LUI.Micromenu : LUIModule
-local module = LUI:NewModule("Micromenu")
+local module = LUI:NewModule("Micromenu", "AceHook-3.0")
 local db
 
 local PlayerSpellsUtil = _G.PlayerSpellsUtil
 local hooksecurefunc = _G.hooksecurefunc
 local GameMenuFrame = _G.GameMenuFrame
-local IsAddOnLoaded = C_AddOns.IsAddOnLoaded
 local FriendsFrame = _G.FriendsFrame
 local HideUIPanel = _G.HideUIPanel
 local ShowUIPanel = _G.ShowUIPanel
 local UnitLevel = _G.UnitLevel
+local issecretvalue = _G.issecretvalue
 local IsBagOpen = _G.IsBagOpen
 local Minimap = _G.Minimap
 local format = format
+local InCombatLockdown = _G.InCombatLockdown
 
 local function OpenWorldMapSafe()
 	if InCombatLockdown() then return end
@@ -34,35 +35,100 @@ local SPELL_TAB = PlayerSpellsUtil.FrameTabs.SpellBook or 3
 
 local addonLoadedCallbacks = {}
 local microStorage = {}
+local pendingAction
+local nativeMicroFrameState = setmetatable({}, {__mode = "k"})
 
--- List of buttons, starting from the right.
-local microList = {
-	"Bags", -- Setting should be first, but textures not ready yet
-	"Settings",
-	"Bags",
-	"Store",
-	"Collections",
-	"EJ",
-	"LFG",
-	"Guild",
-	"Housing",
-	"Quests",
-	"Achievements",
-	"Talents",
-	"Spellbook",
-	"Player",
-}
+local combatQueue = CreateFrame("Frame")
+combatQueue:Hide()
+combatQueue:SetScript("OnEvent", function(self)
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	self:Hide()
+
+	local action = pendingAction
+	pendingAction = nil
+	if action == "disable" or not module:IsEnabled() then
+		module:ApplyDisabledState()
+	else
+		module:ApplyEnabledState()
+	end
+end)
+
+local function QueueAfterCombat(action)
+	-- Enable/disable represents the final desired state; refresh never overrides it.
+	if action ~= "refresh" or not pendingAction then
+		pendingAction = action
+	end
+	combatQueue:RegisterEvent("PLAYER_REGEN_ENABLED")
+	combatQueue:Show()
+end
+
+local function EnforceNativeMicroBarHidden()
+	if InCombatLockdown() then
+		QueueAfterCombat("refresh")
+		return
+	end
+	for frame, state in pairs(nativeMicroFrameState) do
+		if state.owned then
+			frame:SetAlpha(0)
+			frame:EnableMouse(false)
+			frame:Hide()
+		end
+	end
+end
+
+local function HideNativeMicroFrame(frame)
+	if not frame then return end
+	local state = nativeMicroFrameState[frame]
+	if not state then
+		state = {
+			hooked = false,
+		}
+		nativeMicroFrameState[frame] = state
+	end
+	if not state.owned then
+		state.owned = not frame.__luiKilled
+		state.wasShown = frame:IsShown()
+		state.alpha = frame:GetAlpha()
+		state.mouseEnabled = frame:IsMouseEnabled()
+	end
+	if state.owned and not frame.__luiKilled then LUI:Kill(frame) end
+	if state.owned and not state.hooked then
+		state.hooked = true
+		hooksecurefunc(frame, "SetShown", function(_, shown)
+			if state.owned and shown then EnforceNativeMicroBarHidden() end
+		end)
+	end
+end
+
+local function HideNativeMicroBar()
+	-- MicroButtonAndBagsBar is only the legacy anchor in current Retail.
+	-- MicroMenu is the frame that actually owns the visible Blizzard buttons.
+	HideNativeMicroFrame(_G.MicroButtonAndBagsBar)
+	HideNativeMicroFrame(_G.MicroMenu)
+	EnforceNativeMicroBarHidden()
+end
+
+local function RestoreNativeMicroBar()
+	for frame, state in pairs(nativeMicroFrameState) do
+		if state.owned then
+			state.owned = false
+			LUI:Unkill(frame, false)
+			frame:SetAlpha(state.alpha)
+			frame:EnableMouse(state.mouseEnabled)
+			if state.wasShown then frame:Show() end
+		end
+	end
+end
 
 -- Constants
 
 local TEXTURE_PATH_FORMAT = "Interface\\AddOns\\LUI\\modules\\micromenu\\micro_%s.tga"
 local BACKGROUND_TEXTURE_PATH = "Interface\\AddOns\\LUI\\modules\\micromenu\\micro_background.tga"
+local EXTRA_TEXTURE_PATH = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
 local FIRST_TEXTURE_SIZE_WIDTH = 46
 local LAST_TEXTURE_SIZE_WIDTH = 48
 local TEXTURE_SIZE_HEIGHT = 28
 local TEXTURE_SIZE_WIDTH = 33
-local ALERT_ALPHA_MULT = 0.7
-
 -- The clickable area is only 27x24.
 -- Wide buttons clickable area: 42x24.
 
@@ -85,6 +151,8 @@ module.enableButton = true
 module.defaults = {
 	profile = {
 		HideSettings = false,
+		AlwaysShow = true,
+		IsShown = true,
 		HideBags = false,
 		HideStore = false,
 		HideCollections = false,
@@ -116,7 +184,7 @@ module.defaults = {
 
 local microDefinitions = {
 
-	{ -- [1]
+	{
 		name = "Settings",
 		title = L["Options"],
 		left = L["MicroSettings_Right"],
@@ -133,7 +201,7 @@ local microDefinitions = {
 		end,
 	},
 
-	{ -- [2] Currently 1 due to workaround.
+	{
 		name = "Bags",
 		title = L["Bags_Name"],
 		any = L["MicroBags_Any"],
@@ -143,15 +211,14 @@ local microDefinitions = {
 		end,
 	},
 
-	{ -- [3]
+	{
 		name = "Store",
 		title = L["MicroStore_Name"],
 		any = L["MicroStore_Any"],
 	},
 
-	{ -- [4]
+	{
 		name = "Collections",
-		alertFrame = "Collections",
 		title = L["MicroCollect_Name"],
 		any = L["MicroCollect_Any"],
 		state = "CollectionsJournal",
@@ -161,9 +228,8 @@ local microDefinitions = {
 		end,
 	},
 
-	{ -- [5]
+	{
 		name = "EJ",
-		alertFrame = "EJ",
 		title = L["MicroEJ_Name"],
 		any = L["MicroEJ_Any"],
 		state = "EncounterJournal",
@@ -173,7 +239,7 @@ local microDefinitions = {
 		end,
 	},
 
-	{ -- [6]
+	{
 		name = "LFG",
 		level = LFG_LEVEL_REQ,
 		title = L["MicroLFG_Name"],
@@ -189,7 +255,7 @@ local microDefinitions = {
 		end,
 	},
 
-	{ -- [7]
+	{
 		name = "Guild",
 		title = L["MicroGuild_Name"],
 		left = L["MicroGuild_Left"],
@@ -204,16 +270,16 @@ local microDefinitions = {
 		end,
 	},
 
-	{ -- [8]
+	{
 		name = "Housing",
 		title = _G.HOUSING_MICRO_BUTTON or "Housing",
-		any = _G.NEWBIE_TOOLTIP_HOUSING,
+		any = _G.HOUSING_DASHBOARD_MICRO_BUTTON_TUTORIAL_TEXT or "Show/Hide the Housing Dashboard",
 		state = "HousingDashboardFrame",
 		addon = "Blizzard_HousingDashboard",
 		secureClickTarget = "HousingMicroButton",
 	},
 
-	{ -- [9]
+	{
 		name = "Quests",
 		title = L["MicroQuest_Name"],
 		any = L["MicroQuest_Any"],
@@ -222,7 +288,7 @@ local microDefinitions = {
 		end,
 	},
 
-	{ -- [10]
+	{
 		name = "Achievements",
 		title = L["MicroAch_Name"],
 		any = L["MicroAch_Any"],
@@ -233,15 +299,14 @@ local microDefinitions = {
 		end,
 	},
 
-	{ -- [11]
+	{
 		name = "Talents",
-		alertFrame = "Talent",
 		level = TALENT_LEVEL_REQ,
 		title = L["MicroTalents_Name"],
 		left = L["MicroTalents_Left"],
 		right = L["MicroTalents_Right"],
 		state = "PlayerSpellsFrame",
-		addon = "Blizzard_TalentUI",
+		addon = "Blizzard_PlayerSpells",
 		OnClick = function(self, btn)
 			if btn == "RightButton" then
 				PlayerSpellsUtil.TogglePlayerSpellsFrame(SPELL_TAB)
@@ -251,17 +316,18 @@ local microDefinitions = {
 		end,
 	},
 
-	{ -- [12]
+	{
 		name = "Spellbook",
 		title = L["MicroProfession_Name"],
 		any = L["MicroProfession_Any"],
 		state = "ProfessionsBookFrame",
+		addon = "Blizzard_ProfessionsBook",
 		OnClick = function(self, btn)
 			_G.ToggleProfessionsBook()
 		end,
 	},
 
-	{ -- [13]
+	{
 		name = "Player",
 		isWide = "Left",
 		title = L["MicroPlayer_Name"],
@@ -283,14 +349,22 @@ local MicroButtonClickerMixin = {}
 function MicroButtonClickerMixin:OnEnter()
 	self:SetAlpha(1)
 	self.Hover = true
-	GameTooltip:SetOwner(self, "ANCHOR_NONE ", 40, -100)
+	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 
 	local parent = self:GetParent()
-	GameTooltip:SetText(parent.title)
-	if parent.any then GameTooltip:AddLine(parent.any, 1, 1, 1) end
-	if parent.left then GameTooltip:AddLine(parent.left, 1, 1, 1) end
-	if parent.right then GameTooltip:AddLine(parent.right, 1, 1, 1) end
-	if parent.level and UnitLevel("player") < parent.level then
+	GameTooltip_SetTitle(GameTooltip, parent.title)
+
+	if parent.any then
+		GameTooltip:AddLine(parent.any, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, true)
+	end
+	if parent.left then
+		GameTooltip:AddLine(parent.left, GREEN_FONT_COLOR.r, GREEN_FONT_COLOR.g, GREEN_FONT_COLOR.b, true)
+	end
+	if parent.right then
+		GameTooltip:AddLine(parent.right, GREEN_FONT_COLOR.r, GREEN_FONT_COLOR.g, GREEN_FONT_COLOR.b, true)
+	end
+	local playerLevel = UnitLevel("player")
+	if parent.level and not issecretvalue(playerLevel) and playerLevel < parent.level then
 		GameTooltip:AddLine(format(L["Micro_PlayerReq"], parent.level), LUI:NegativeColor())
 	end
 	GameTooltip:Show()
@@ -301,15 +375,6 @@ function MicroButtonClickerMixin:OnLeave()
 	self.Hover = nil
 	GameTooltip:Hide()
 end
-
-MicroButtonClickerMixin.clickerBackdrop = {
-	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-	edgeFile = nil,
-	tile = false,
-	tileSize = 0,
-	edgeSize = 1,
-	insets = { left = 0, right = 0, top = 0, bottom = 0 }
-}
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
@@ -350,13 +415,14 @@ function module:ClickerStateUpdateHandler(button, objectName)
 
 	hooksecurefunc(objectToHook, "Show", UpdateState)
 	hooksecurefunc(objectToHook, "Hide", UpdateState)
+	UpdateState()
 end
 
 --- Create a new MicroButton.
 ---@param buttonData table
 ---@return MicroButton
 function module:NewMicroButton(buttonData)
-	local r, g, b, a_ = module:RGBA("Micromenu")
+	local r, g, b = module:RGB("Micromenu")
 	local name = buttonData.name
 
 	local button = CreateFrame("Frame", "LUIMicromenu_" .. name, _G.LUIMicromenu_Background)
@@ -389,36 +455,36 @@ function module:NewMicroButton(buttonData)
 			"Button",
 			nil,
 			button,
-			"SecureActionButtonTemplate,BackdropTemplate"
+			"SecureActionButtonTemplate"
 		)
 
 		button.clicker:SetAttribute("type1", "macro")
 		button.clicker:SetAttribute("macrotext1", "/click " .. secureClickTarget)
 		button.clicker:SetAttribute("useOnKeyDown", false)
 	else
-		button.clicker = CreateFrame("Button", nil, button, "BackdropTemplate")
+		button.clicker = CreateFrame("Button", nil, button)
 	end
 
-		button.clicker:SetSize(TEXTURE_CLICK_WIDTH, TEXTURE_CLICK_HEIGHT)
+	button.clicker:SetSize(TEXTURE_CLICK_WIDTH, TEXTURE_CLICK_HEIGHT)
 	if secureClickTarget then
 		button.clicker:RegisterForClicks("AnyUp", "AnyDown")
 	else
 		button.clicker:RegisterForClicks("AnyUp")
 	end
-		button.clicker:SetBackdrop(MicroButtonClickerMixin.clickerBackdrop)
-		button.clicker:SetPoint("CENTER", button, "CENTER", -1, 0)
-		button.clicker:SetBackdropColor(0, 0, 0, 1)
-		button.clicker:SetAlpha(0)
+	button.clicker:SetPoint("CENTER", button, "CENTER", -1, 0)
+	button.clicker.Fill = LUI:CreateFrameTexture(button.clicker, LUI.Media.blank)
+	button.clicker.Fill:SetColorTexture(0, 0, 0, 1)
+	button.clicker:SetAlpha(0)
 
 	-- Push down the clicker frame so it does not go above the texture.
-		button.clicker:SetFrameLevel(button:GetFrameLevel() - 1)
+	button.clicker:SetFrameLevel(button:GetFrameLevel() - 1)
 
 	if button.OnClick and not secureClickTarget then
 		button.clicker:SetScript("OnClick", button.OnClick)
 	end
 
 	if button.state then
-		if button.addon and not IsAddOnLoaded(button.addon) then
+		if button.addon and not C_AddOns.IsAddOnLoaded(button.addon) then
 			addonLoadedCallbacks[button.addon] = function()
 				module:ClickerStateUpdateHandler(button, button.state)
 			end
@@ -440,28 +506,36 @@ end
 function module:ConsolidateOptionsFrames()
 	local optionsFrames = CreateFrame("Frame", "ConsolidatedOptionsFrame", UIParent)
 	local ACD = LibStub("AceConfigDialog-3.0")
+	local hookedOptionsFrames = setmetatable({}, {__mode = "k"})
 
 	local function UpdateState()
-		if GameMenuFrame:IsShown() or ACD.OpenFrames["LUIOptions"] then
+		local widget = ACD.OpenFrames["LUIOptions"]
+		local optionsFrame = widget and widget.frame
+
+		if GameMenuFrame:IsShown() or (optionsFrame and optionsFrame:IsShown()) then
 			optionsFrames:Show()
 		else
 			optionsFrames:Hide()
 		end
 	end
 
+	local function HookOptionsFrame()
+		local widget = ACD.OpenFrames["LUIOptions"]
+		local frame = widget and widget.frame
+
+		if frame and not hookedOptionsFrames[frame] then
+			hookedOptionsFrames[frame] = true
+			frame:HookScript("OnHide", UpdateState)
+		end
+
+		UpdateState()
+	end
+
 	hooksecurefunc(GameMenuFrame, "Show", UpdateState)
 	hooksecurefunc(GameMenuFrame, "Hide", UpdateState)
-
-	if ACD then
-		hooksecurefunc(ACD, "Open", function()
-			local optionsFrame = ACD.OpenFrames["LUIOptions"]
-
-			if optionsFrame then
-				hooksecurefunc(optionsFrame, "Hide", UpdateState)
-				UpdateState()
-			end
-		end)
-	end
+	hooksecurefunc(ACD, "Open", HookOptionsFrame)
+	HookOptionsFrame()
+	UpdateState()
 end
 
 function module:ConsolidateSocialFrames()
@@ -478,37 +552,31 @@ function module:ConsolidateSocialFrames()
 	FriendsFrame:HookScript("OnShow", UpdateState)
 	FriendsFrame:HookScript("OnHide", UpdateState)
 
-	addonLoadedCallbacks["Blizzard_Communities"] = function()
+	local function HookCommunitiesFrame()
 		_G.CommunitiesFrame:HookScript("OnShow", UpdateState)
 		_G.CommunitiesFrame:HookScript("OnHide", UpdateState)
+		UpdateState()
 	end
+	if _G.CommunitiesFrame then
+		HookCommunitiesFrame()
+	else
+		addonLoadedCallbacks["Blizzard_Communities"] = HookCommunitiesFrame
+	end
+	UpdateState()
 end
 
 function module:ConsolidateBagFrames()
 	local bagFrames = CreateFrame("Frame", "ConsolidatedBagFrame", UIParent)
 
-	local addonBagFrame
-
-	if IsAddOnLoaded("Stuffing") then
-		addonBagFrame = _G.StuffingFrameBags
-	elseif IsAddOnLoaded("Bagnon") then
-		addonBagFrame = _G.BagnonFrameinventory
-	elseif IsAddOnLoaded("ArkInventory") then
-		addonBagFrame = _G.ARKINV_Frame1
-	elseif IsAddOnLoaded("OneBag") then
-		addonBagFrame = _G.OneBagFrame
-	else
-		addonBagFrame = nil
-	end
-
 	local function UpdateState()
 		if
-			(addonBagFrame and addonBagFrame:IsShown())
+			(_G.LUIBags and _G.LUIBags:IsShown())
 			or IsBagOpen(0)
 			or IsBagOpen(1)
 			or IsBagOpen(2)
 			or IsBagOpen(3)
 			or IsBagOpen(4)
+			or IsBagOpen(5)
 		then
 			bagFrames:Show()
 		else
@@ -516,15 +584,23 @@ function module:ConsolidateBagFrames()
 		end
 	end
 
-	for i = 1, 5 do
-		_G["ContainerFrame" .. i]:HookScript("OnShow", UpdateState)
-		_G["ContainerFrame" .. i]:HookScript("OnHide", UpdateState)
+	for i = 1, 13 do
+		local frame = _G["ContainerFrame" .. i]
+		if frame then
+			frame:HookScript("OnShow", UpdateState)
+			frame:HookScript("OnHide", UpdateState)
+		end
 	end
 
-	if addonBagFrame then
-		addonBagFrame:HookScript("OnShow", UpdateState)
-		addonBagFrame:HookScript("OnHide", UpdateState)
+	if _G.ContainerFrameCombinedBags then
+		_G.ContainerFrameCombinedBags:HookScript("OnShow", UpdateState)
+		_G.ContainerFrameCombinedBags:HookScript("OnHide", UpdateState)
 	end
+	if _G.LUIBags then
+		_G.LUIBags:HookScript("OnShow", UpdateState)
+		_G.LUIBags:HookScript("OnHide", UpdateState)
+	end
+	UpdateState()
 end
 
 -- ####################################################################################################################
@@ -585,139 +661,70 @@ function module:SetMicromenuAnchors()
 	module.background:ClearAllPoints()
 
 	if not firstAnchor then
+		module.background:Hide()
 		return
 	end
 
 	local point = "TOP" .. db.Direction
 	module.background:SetPoint(point, firstAnchor, point)
 	module.background:SetPoint(LUI.Opposites[point], previousAnchor, LUI.Opposites[point])
+	module.background:SetShown(db.IsShown)
 end
 
 function module:SetMicromenuExtraButtons()
-	local LUIDB = LUI.db.profile.MicroMenu
 	local minimapMod = LUI:GetModule("Minimap", true)
 	local buttonLeft, buttonMiddle, buttonRight
 	local clickerLeft, clickerMiddle, clickerRight
 
-	buttonMiddle = CreateFrame("Frame", "LUIMicromenu_buttonMiddle", UIParent, "BackdropTemplate")
+	buttonMiddle = CreateFrame("Frame", "LUIMicromenu_buttonMiddle", UIParent)
 	buttonMiddle:SetSize(128, 128)
 	buttonMiddle:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -150, 6)
-	buttonMiddle:SetBackdrop({
-		bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\" .. (LUIDB.AlwaysShow and "micro_anchor3" or "micro_anchor"),
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0 },
-	})
-	buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
-	buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
+	buttonMiddle.Texture = LUI:CreateFrameTexture(buttonMiddle, EXTRA_TEXTURE_PATH .. (db.IsShown and "micro_anchor3" or "micro_anchor"))
+	buttonMiddle.Texture:SetVertexColor(module:RGB("Micromenu"))
 
-	clickerMiddle = CreateFrame("Button", "LUIMicromenu_clickerMiddle", buttonMiddle, "BackdropTemplate")
+	clickerMiddle = CreateFrame("Button", "LUIMicromenu_clickerMiddle", buttonMiddle)
 	clickerMiddle:SetSize(85, 22)
 	clickerMiddle:SetPoint("TOP", buttonMiddle, "TOP", 0, 0)
 	clickerMiddle:RegisterForClicks("AnyUp")
 
 	clickerMiddle:SetScript("OnClick", function(self)
 		if _G.LUIMicromenu_Background:IsVisible() then
-			LUIDB.IsShown = false
+			db.IsShown = false
 
-			buttonMiddle:SetBackdrop({
-				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
-					.. (clickerMiddle:IsMouseMotionFocus() and "micro_anchor2" or "micro_anchor"),
-				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0 }
-			})
-			buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
-			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
+			buttonMiddle.Texture:SetTexture(EXTRA_TEXTURE_PATH .. (clickerMiddle:IsMouseMotionFocus() and "micro_anchor2" or "micro_anchor"))
 			_G.LUIMicromenu_Background:Hide()
 		else
-			LUIDB.IsShown = true
+			db.IsShown = true
 
-			buttonMiddle:SetBackdrop({
-				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\"
-					.. (clickerMiddle:IsMouseMotionFocus() and "micro_anchor4" or "micro_anchor3"),
-				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0 }
-			})
-			buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
-			buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
+			buttonMiddle.Texture:SetTexture(EXTRA_TEXTURE_PATH .. (clickerMiddle:IsMouseMotionFocus() and "micro_anchor4" or "micro_anchor3"))
 			_G.LUIMicromenu_Background:Show()
 		end
 	end)
 
 	clickerMiddle:SetScript("OnEnter", function(self)
-		if LUIDB.IsShown then
-			buttonMiddle:SetBackdrop({
-				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\micro_anchor4",
-				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0 }
-			})
+		if db.IsShown then
+			buttonMiddle.Texture:SetTexture(EXTRA_TEXTURE_PATH .. "micro_anchor4")
 		else
-			buttonMiddle:SetBackdrop({
-				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\micro_anchor2",
-				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0 }
-			})
+			buttonMiddle.Texture:SetTexture(EXTRA_TEXTURE_PATH .. "micro_anchor2")
 		end
-
-		buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
-		buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
 	end)
 
 	clickerMiddle:SetScript("OnLeave", function(self)
-		if LUIDB.IsShown then
-			buttonMiddle:SetBackdrop({
-				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\micro_anchor3",
-				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0 }
-			})
+		if db.IsShown then
+			buttonMiddle.Texture:SetTexture(EXTRA_TEXTURE_PATH .. "micro_anchor3")
 		else
-			buttonMiddle:SetBackdrop({
-				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\micro_anchor",
-				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0 }
-			})
+			buttonMiddle.Texture:SetTexture(EXTRA_TEXTURE_PATH .. "micro_anchor")
 		end
-
-		buttonMiddle:SetBackdropColor(module:RGB("Micromenu"))
-		buttonMiddle:SetBackdropBorderColor(0, 0, 0, 0)
 	end)
 
 	if minimapMod then
-		buttonRight = CreateFrame("Frame", "LUIMicromenu_Right", buttonMiddle, "BackdropTemplate")
+		buttonRight = CreateFrame("Frame", "LUIMicromenu_Right", buttonMiddle)
 		buttonRight:SetSize(128, 128)
 		buttonRight:SetPoint("RIGHT", buttonMiddle, "RIGHT", 47, -3)
-		buttonRight:SetBackdrop({
-			bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\mm_button_right",
-			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-			tile = false,
-			tileSize = 0,
-			edgeSize = 1,
-			insets = { left = 0, right = 0, top = 0, bottom = 0 },
-		})
-		buttonRight:SetBackdropColor(module:RGB("Micromenu"))
-		buttonRight:SetBackdropBorderColor(0, 0, 0, 0)
+		buttonRight.Texture = LUI:CreateFrameTexture(buttonRight, EXTRA_TEXTURE_PATH .. "mm_button_right")
+		buttonRight.Texture:SetVertexColor(module:RGB("Micromenu"))
 
-		clickerRight = CreateFrame("Button", "LUIMicromenu_clickerRight", buttonRight, "BackdropTemplate")
+		clickerRight = CreateFrame("Button", "LUIMicromenu_clickerRight", buttonRight)
 		clickerRight:SetSize(40, 12)
 		clickerRight:SetPoint("TOP", buttonRight, "TOP", 22, -5)
 		clickerRight:RegisterForClicks("AnyUp")
@@ -739,50 +746,24 @@ function module:SetMicromenuExtraButtons()
 		end)
 
 		clickerRight:SetScript("OnEnter", function(self)
-			buttonRight:SetBackdrop({
-				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\mm_button_right_hover",
-				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0 }
-			})
-			buttonRight:SetBackdropColor(module:RGB("Micromenu"))
-			buttonRight:SetBackdropBorderColor(0, 0, 0, 0)
+			buttonRight.Texture:SetTexture(EXTRA_TEXTURE_PATH .. "mm_button_right_hover")
 		end)
 
 		clickerRight:SetScript("OnLeave", function(self)
-			buttonRight:SetBackdrop({
-				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\mm_button_right",
-				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0 }
-			})
-			buttonRight:SetBackdropColor(module:RGB("Micromenu"))
-			buttonRight:SetBackdropBorderColor(0, 0, 0, 0)
+			buttonRight.Texture:SetTexture(EXTRA_TEXTURE_PATH .. "mm_button_right")
 		end)
 	end
 
 	local raidmenu_mod = LUI:GetModule("RaidMenu", true)
 
 	if raidmenu_mod then
-		buttonLeft = CreateFrame("Frame", "LUIMicromenu_buttonLeft", buttonMiddle, "BackdropTemplate")
+		buttonLeft = CreateFrame("Frame", "LUIMicromenu_buttonLeft", buttonMiddle)
 		buttonLeft:SetSize(128, 128)
 		buttonLeft:SetPoint("LEFT", buttonMiddle, "LEFT", -47, -3)
-		buttonLeft:SetBackdrop({
-			bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\mm_button_left",
-			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-			tile = false,
-			tileSize = 0,
-			edgeSize = 1,
-			insets = { left = 0, right = 0, top = 0, bottom = 0 },
-		})
-		buttonLeft:SetBackdropColor(module:RGB("Micromenu"))
-		buttonLeft:SetBackdropBorderColor(0, 0, 0, 0)
+		buttonLeft.Texture = LUI:CreateFrameTexture(buttonLeft, EXTRA_TEXTURE_PATH .. "mm_button_left")
+		buttonLeft.Texture:SetVertexColor(module:RGB("Micromenu"))
 
-		clickerLeft = CreateFrame("Button", "LUIMicromenu_clickerLeft", buttonLeft, "BackdropTemplate")
+		clickerLeft = CreateFrame("Button", "LUIMicromenu_clickerLeft", buttonLeft)
 		clickerLeft:SetSize(40, 12)
 		clickerLeft:SetPoint("TOP", buttonLeft, "TOP", -22, -5)
 		clickerLeft:RegisterForClicks("AnyUp")
@@ -792,29 +773,11 @@ function module:SetMicromenuExtraButtons()
 		end)
 
 		clickerLeft:SetScript("OnEnter", function(self)
-			buttonLeft:SetBackdrop({
-				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\mm_button_left_hover",
-				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0 }
-			})
-			buttonLeft:SetBackdropColor(module:RGB("Micromenu"))
-			buttonLeft:SetBackdropBorderColor(0, 0, 0, 0)
+			buttonLeft.Texture:SetTexture(EXTRA_TEXTURE_PATH .. "mm_button_left_hover")
 		end)
 
 		clickerLeft:SetScript("OnLeave", function(self)
-			buttonLeft:SetBackdrop({
-				bgFile = "Interface\\AddOns\\LUI\\media\\templates\\v3\\mm_button_left",
-				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false,
-				tileSize = 0,
-				edgeSize = 1,
-				insets = { left = 0, right = 0, top = 0, bottom = 0 }
-			})
-			buttonLeft:SetBackdropColor(module:RGB("Micromenu"))
-			buttonLeft:SetBackdropBorderColor(0, 0, 0, 0)
+			buttonLeft.Texture:SetTexture(EXTRA_TEXTURE_PATH .. "mm_button_left")
 		end)
 	end
 
@@ -828,18 +791,10 @@ end
 
 function module:SetMicromenu()
 	-- Create Micromenu background.
-	local background = CreateFrame("Frame", "LUIMicromenu_Background", UIParent, "BackdropTemplate")
-	background:SetBackdrop({
-		bgFile = BACKGROUND_TEXTURE_PATH,
-		edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-		tile = false,
-		tileSize = 0,
-		edgeSize = 1,
-		insets = { left = 0, right = 0, top = 0, bottom = 0 }
-	})
+	local background = CreateFrame("Frame", "LUIMicromenu_Background", UIParent)
 	background:SetFrameStrata("BACKGROUND")
-	background:SetBackdropColor(module:RGBA((db.ColorMatch) and "Micromenu" or "Background"))
-	background:SetBackdropBorderColor(0, 0, 0, 0)
+	background.Texture = LUI:CreateFrameTexture(background, BACKGROUND_TEXTURE_PATH)
+	background.Texture:SetVertexColor(module:RGBA((db.ColorMatch) and "Micromenu" or "Background"))
 	module.background = background
 
 	-- Create Micromenu buttons.
@@ -849,13 +804,27 @@ function module:SetMicromenu()
 
 	module:SetMicromenuAnchors()
 	module:SetMicromenuExtraButtons()
+	background:SetShown(db.IsShown)
 end
 
 --- Fires the stored functions for the frame hooks.
-function module:OnEvent(_, addon)
+function module:OnEvent(event, addon)
+	if event == "PLAYER_ENTERING_WORLD" or event == "EDIT_MODE_LAYOUTS_UPDATED" then
+		HideNativeMicroBar()
+		return
+	end
 	if addonLoadedCallbacks[addon] then
 		addonLoadedCallbacks[addon]()
 		addonLoadedCallbacks[addon] = nil
+	end
+end
+
+local function RunLoadedAddonCallbacks()
+	for addon, callback in pairs(addonLoadedCallbacks) do
+		if C_AddOns.IsAddOnLoaded(addon) then
+			callback()
+			addonLoadedCallbacks[addon] = nil
+		end
 	end
 end
 
@@ -863,20 +832,33 @@ end
 -- ##### Module Refresh ###############################################################################################
 -- ####################################################################################################################
 
-function module:Refresh()
-	module:SetMicromenuAnchors()
+function module:RefreshColors()
+	if not module.background then return end
 
-	module.background:SetBackdropColor(module:RGBA((db.ColorMatch) and "Micromenu" or "Background"))
+	module.background.Texture:SetVertexColor(module:RGBA((db.ColorMatch) and "Micromenu" or "Background"))
 
-	local r, g, b, a_ = module:RGBA("Micromenu")
+	local r, g, b = module:RGB("Micromenu")
 
-	for i = 1, #microList do
-		local button = microStorage[microList[i]]
-
-		if button and button.tex then
-			button.tex:SetVertexColor(r, g, b)
-		end
+	for i = 1, #microStorage do
+		local button = microStorage[i]
+		button.icon:SetVertexColor(r, g, b)
+		button.border:SetVertexColor(r, g, b)
 	end
+
+	module.buttonMiddle.Texture:SetVertexColor(r, g, b)
+	if module.buttonLeft then module.buttonLeft.Texture:SetVertexColor(r, g, b) end
+	if module.buttonRight then module.buttonRight.Texture:SetVertexColor(r, g, b) end
+end
+
+function module:Refresh()
+	if InCombatLockdown() then
+		QueueAfterCombat("refresh")
+		return
+	end
+	if not module.background then return end
+
+	module:SetMicromenuAnchors()
+	module:RefreshColors()
 end
 
 -- ####################################################################################################################
@@ -884,19 +866,72 @@ end
 -- ####################################################################################################################
 
 function module:OnInitialize()
+	local oldDB = rawget(LUI.db.profile, "MicroMenu")
 	LUI:RegisterModule(module)
 	db = module.db.profile
+	if oldDB then
+		if rawget(oldDB, "AlwaysShow") ~= nil then db.AlwaysShow = oldDB.AlwaysShow end
+		if rawget(oldDB, "IsShown") ~= nil then db.IsShown = oldDB.IsShown end
+		LUI.db.profile.MicroMenu = nil
+	end
+	if db.AlwaysShow then db.IsShown = true end
+end
+
+function module:ApplyEnabledState()
+	HideNativeMicroBar()
+	module:RegisterEvent("ADDON_LOADED", "OnEvent")
+	module:RegisterEvent("PLAYER_ENTERING_WORLD", "OnEvent")
+	module:RegisterEvent("EDIT_MODE_LAYOUTS_UPDATED", "OnEvent")
+
+	if not module.background then
+		module:ConsolidateOptionsFrames()
+		module:ConsolidateSocialFrames()
+		module:ConsolidateBagFrames()
+		module:SetMicromenu()
+	else
+		module.buttonMiddle:Show()
+		if module.buttonLeft then module.buttonLeft:Show() end
+		if module.buttonRight then module.buttonRight:Show() end
+		module:Refresh()
+	end
+	RunLoadedAddonCallbacks()
+	module:SetAlerts()
+
+	local raidMenu = LUI:GetModule("RaidMenu", true)
+	if raidMenu and raidMenu:IsEnabled() then
+		raidMenu:SetRaidMenu()
+	end
+end
+
+function module:ApplyDisabledState()
+	RestoreNativeMicroBar()
+	module:RestoreAlerts()
+	module:UnhookAll()
+	if not module.background then return end
+	local raidMenu = LUI:GetModule("RaidMenu", true)
+	if raidMenu and raidMenu.HideRaidMenu then raidMenu:HideRaidMenu() end
+	module.background:Hide()
+	module.buttonMiddle:Hide()
+	if module.buttonLeft then module.buttonLeft:Hide() end
+	if module.buttonRight then module.buttonRight:Hide() end
+	for i = 1, #microStorage do
+		microStorage[i]:Hide()
+	end
 end
 
 function module:OnEnable()
-	module:RegisterEvent("ADDON_LOADED", "OnEvent")
-
-	module:ConsolidateOptionsFrames()
-	module:ConsolidateSocialFrames()
-	module:ConsolidateBagFrames()
-
-	module:SetMicromenu()
+	if InCombatLockdown() then
+		QueueAfterCombat("enable")
+		return
+	end
+	module:ApplyEnabledState()
 end
 
 function module:OnDisable()
+	module:UnregisterAllEvents()
+	if InCombatLockdown() then
+		QueueAfterCombat("disable")
+		return
+	end
+	module:ApplyDisabledState()
 end

@@ -6,11 +6,10 @@
 
 ---@class LUIAddon
 local LUI = select(2, ...)
-local L = LUI.L
 
 ---@class LUI.Infotext
 local module = LUI:GetModule("Infotext")
-local element = module:NewElement("MoveSpeed", "AceEvent-3.0")
+local element = module:NewElement("MoveSpeed")
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
@@ -22,8 +21,10 @@ function element:SetMoveSpeed()
 	local text = "Speed: [Secret]"
 	
 	if not issecretvalue(speed) then
-		if speed == 0 then speed = runSpeed end
-		text = format("Speed: %d%%", speed / baseSpeed * 100)
+		if speed == 0 and not issecretvalue(runSpeed) then speed = runSpeed end
+		if not issecretvalue(speed) then
+			text = format("Speed: %d%%", speed / baseSpeed * 100)
+		end
 	end
 
 	element.text = text
@@ -31,14 +32,12 @@ function element:SetMoveSpeed()
 end
 
 -- ####################################################################################################################
--- ##### Infotext Display #############################################################################################
--- ####################################################################################################################
-
--- ####################################################################################################################
 -- ##### Framework Events #############################################################################################
 -- ####################################################################################################################
 
 function element:OnCreate()
-	-- module:SetMoveSpeed()
+	element:SetMoveSpeed()
 	element:AddUpdate("SetMoveSpeed", 1)
 end
+
+element.RefreshSettings = element.SetMoveSpeed

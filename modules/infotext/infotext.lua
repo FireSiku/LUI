@@ -1,6 +1,6 @@
--- This module handle various Infotext by LUI or other addons.
--- It's job is to provide a LDB Display for any addon that wishes to have one and our own displays too.
--- This module also serves as both an access to LDB and access to Ace features for its elements.
+-- This module provides a LibDataBroker display for LUI and third-party data
+-- objects, owns LUI's built-in infotext displays and exposes the Ace module
+-- helpers used by its elements.
 
 -- ####################################################################################################################
 -- ##### Setup and Locals #############################################################################################
@@ -14,7 +14,9 @@ local L = LUI.L
 local module = LUI:GetModule("Infotext")
 
 local LDB = LibStub:GetLibrary("LibDataBroker-1.1")
+local Media = LibStub("LibSharedMedia-3.0")
 module.RegisterLDBCallback = LDB.RegisterCallback
+module.UnregisterAllLDBCallbacks = LDB.UnregisterAllCallbacks
 module.LDB = LDB
 local db
 
@@ -25,13 +27,54 @@ local elementFrames = {} -- Holds all the LDB frames.
 local elementStorage = {} -- Will hold the infotext's elements for iteration.
 local InfoMixin = {} -- Prototype for element functions.
 
---Unsupported data fields: value, suffix, label, icon, tooltip
+-- Icon-only launchers fall back to their label or object name.
 local supportedTypes = {
 	["data source"] = true,
 	["launcher"] = true,
 }
 
 local defaultPositions = 0
+local frameNameCounts = {}
+local TOP_BAR_VISIBLE_HEIGHT = 24
+local TOP_BAR_TEXT_POINTS = {
+	TOP = "TOPLEFT",
+	MIDDLE = "LEFT",
+	BOTTOM = "BOTTOMLEFT",
+}
+
+local function GetDisplayFrameName(name)
+	local base = "LUIInfo_" .. tostring(name):gsub("[^%w_]", "_")
+	local count = (frameNameCounts[base] or 0) + 1
+	frameNameCounts[base] = count
+	return count == 1 and base or (base .. "_" .. count)
+end
+
+local function UpdateDisplaySize(frame)
+	local width = frame.text:GetUnboundedStringWidth()
+	local _, fontHeight = frame.text:GetFont()
+	if issecretvalue(width) or issecretvalue(fontHeight) then return end
+	local textHeight = math.max(1, math.ceil(fontHeight or 1) + 2)
+
+	-- LUIArtwork_InfoPanel is 32 units high and starts 8 units above the
+	-- screen, leaving a 24-unit visible top bar. Anchor the FontString itself
+	-- instead of relying on vertical justification; this applies the setting
+	-- consistently to every top-bar display.
+	local point = frame:GetPoint()
+	local topAnchored = type(point) == "string" and point:find("TOP", 1, true)
+	local minimumHeight = topAnchored and TOP_BAR_VISIBLE_HEIGHT or 1
+	local frameWidth = math.max(1, math.ceil(width))
+	frame:SetSize(frameWidth, math.max(minimumHeight, textHeight))
+
+	frame.text:ClearAllPoints()
+	frame.text:SetSize(frameWidth, textHeight)
+	frame.text:SetJustifyV("MIDDLE")
+	if topAnchored then
+		local textPoint = TOP_BAR_TEXT_POINTS[db.TopBarTextAnchor] or TOP_BAR_TEXT_POINTS.TOP
+		frame.text:SetPoint(textPoint, frame, textPoint)
+	else
+		frame.text:SetPoint("LEFT", frame, "LEFT")
+	end
+end
 
 -- ####################################################################################################################
 -- ##### InfoMixin ####################################################################################################
@@ -104,40 +147,29 @@ end
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################-
 
-function module:GetAnchor(position)
-	return _G[format("LUIInfotext_%sAnchor", position:lower())]
-end
-
 function module:SetInfoPanels()
 	db = module.db.profile
 
-	local topAnchor = module:GetAnchor("top")
-	local bottomAnchor = module:GetAnchor("bottom")
+	local topAnchor = _G.LUIInfotextAnchor
 	if not topAnchor then
-		topAnchor = CreateFrame("Frame", "LUIInfotext_topAnchor", UIParent)
+		topAnchor = CreateFrame("Frame", "LUIInfotextAnchor", UIParent)
 		topAnchor:SetSize(1, 1)
 		topAnchor:SetFrameStrata("HIGH")
 		topAnchor:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, -1)
 	end
-	if not bottomAnchor then
-		bottomAnchor = CreateFrame("FRAME", "LUIInfotext_bottomAnchor", UIParent)
-		bottomAnchor:SetSize(1, 1)
-		bottomAnchor:SetFrameStrata("HIGH")
-		bottomAnchor:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 0, 4)
-	end
 	topAnchor:Show()
-	bottomAnchor:Show()
 	module.topAnchor = topAnchor
-	module.bottomAnchor = bottomAnchor
 
 	-- Make sure all objects created before the callback gets properly initialized.
 	for name, element in LDB:DataObjectIterator() do
 		if not elementFrames[name] then
 			self:DataObjectCreated(name, element)
+		else
+			module:RegisterLDBCallback("LibDataBroker_AttributeChanged_"..name, "AttributeChanged")
 		end
 	end
 
-	module:RegisterLDBCallback("LibDataBroker_DataObjectCreated", "DataObjectCreated")
+	module:RegisterLDBCallback("LibDataBroker_DataObjectCreated", "LDBDataObjectCreated")
 end
 
 function module:NewElement(name, ...)
@@ -153,29 +185,38 @@ function module:NewElement(name, ...)
 	return element
 end
 
--- function to retrieve element
 function module:GetElement(name)
 	return elementStorage[name]
 end
 
---Override the module iterator
-function module:IterateModules()
+function module:IterateElements()
+	return pairs(elementStorage)
+end
+
+-- Iterate the display frames created for built-in and third-party LDB objects.
+function module:IterateDisplays()
 	return pairs(elementFrames)
 end
 
 function module:IsPositionSet(name)
-	return (db[name].X ~= 0) and true or false
+	return elementStorage[name] ~= nil or db[name].X ~= 0 or db[name].Y ~= 0 or db[name].Point ~= "TOPLEFT"
 end
 
 function module:SetPosition(name, frame)
-	frame.text:ClearAllPoints()
+	frame:ClearAllPoints()
 	if module:IsPositionSet(name) then
-		frame.text:SetPoint(db[name].Point, UIParent, db[name].Point, db[name].X, db[name].Y)
+		local point = db[name].Point
+		local x = tonumber(db[name].X) or 0
+		local y = tonumber(db[name].Y) or 0
+		if type(point) == "string" and point:find("TOP", 1, true) then
+			x = x + (tonumber(db.TopBarOffsetX) or 0)
+			y = y + (tonumber(db.TopBarOffsetY) or 0)
+		end
+		frame:SetPoint(point, UIParent, point, x, y)
 	else
-		local anchor = module:GetAnchor("bottom")
 		defaultPositions = defaultPositions + 1
 		local defaultX = -25 + (50 * defaultPositions)
-		frame.text:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", defaultX, 5)
+		frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", defaultX, 5)
 	end
 end
 -- ####################################################################################################################
@@ -184,17 +225,18 @@ end
 
 --This is used on the creation of any LDB Object
 function module:DataObjectCreated(name, element)
-	--LUI:Print("Object Created:", name, "("..element.type..")",not supportedTypes[element.type] and "(unsupported)" or "")
 	if not supportedTypes[element.type] then return end
+	if elementFrames[name] then return end
 
-	local topAnchor = module:GetAnchor("top")
-	local frame = CreateFrame("Button", "LUIInfo_"..name, topAnchor)
+	local frame = CreateFrame("Button", GetDisplayFrameName(name), module.topAnchor)
 	elementFrames[name] = frame
 	frame.name = name
 	frame.element = element
 
-	frame.text = module:SetFontString(frame, frame:GetName().."Text", "Infotext", "OVERLAY", "LEFT")
-	frame.text:SetTextColor(1,1,1)
+	frame.text = module:SetFontString(frame, frame:GetName().."Text", "Infotext", "OVERLAY", "LEFT", "MIDDLE")
+	frame.text:SetAllPoints(frame)
+	local color = db[name].Color
+	frame.text:SetTextColor(color.r, color.g, color.b, color.a)
 	frame.text:SetShadowColor(0,0,0)
 	frame.text:SetShadowOffset(1.25, -1.25)
 
@@ -208,11 +250,10 @@ function module:DataObjectCreated(name, element)
 	if element.OnCreate then element:OnCreate(frame) end
 
 	module:SetPosition(name, frame)
-	-- module:SetLDBPosition(name, frame)
 
-	frame:SetAllPoints(frame.text)
-
-	frame.text:SetText(element.text)
+	local displayText = element.text or element.label or name
+	if not issecretvalue(displayText) then frame.text:SetText(displayText) end
+	UpdateDisplaySize(frame)
 	if db[name].Enable then
 		frame:Show()
 	else
@@ -223,12 +264,18 @@ function module:DataObjectCreated(name, element)
 	module:RegisterLDBCallback("LibDataBroker_AttributeChanged_"..name, "AttributeChanged")
 end
 
+function module:LDBDataObjectCreated(_, name, element)
+	self:DataObjectCreated(name, element)
+end
+
 function module:AttributeChanged(event_, name, attr, value, element_)
 	local frame = elementFrames[name]
-	if attr == "text" then
-		frame.text:SetText(value)
+	if frame and (attr == "text" or attr == "label") then
+		local displayText = frame.element.text or frame.element.label or name
+		if issecretvalue(displayText) then return end
+		frame.text:SetText(displayText)
+		UpdateDisplaySize(frame)
 	end
-	--if not ph[name] then LUI:Print("Attribute Changed:", name, attr, "("..value..")") end
 end
 
 -- ####################################################################################################################
@@ -291,13 +338,26 @@ function module:ToggleInfotext(name)
 end
 
 function module:Refresh()
-    defaultPositions = 0
-    for name, obj in module:IterateModules() do
-        module:SetPosition(name, obj)
-        if db[name].Enable then
-            obj:Show()
-        else
-            obj:Hide()
-        end
-    end
+	defaultPositions = 0
+	local displayNames = {}
+	for name in module:IterateDisplays() do
+		displayNames[#displayNames + 1] = name
+	end
+	table.sort(displayNames)
+	for _, name in ipairs(displayNames) do
+		local obj = elementFrames[name]
+		module:SetPosition(name, obj)
+		local color = db[name].Color
+		obj.text:SetTextColor(color.r, color.g, color.b, color.a)
+		local font = db.Fonts.Infotext
+		obj.text:SetFont(Media:Fetch("font", font.Name), font.Size, font.Flag)
+		UpdateDisplaySize(obj)
+		if obj.element.RefreshSettings then obj.element:RefreshSettings() end
+		if db[name].Enable then
+			obj:Show()
+		else
+			obj:Hide()
+		end
+	end
+	if module.RefreshInfotips then module:RefreshInfotips() end
 end

@@ -1,4 +1,4 @@
---- Core is responsible for handling modules and installation process.
+--- Core option-panel and profile-transfer handling.
 
 -- ####################################################################################################################
 -- ##### Setup and Locals #############################################################################################
@@ -16,6 +16,10 @@ local L = LUI.L
 
 local OPTION_PANEL_WIDTH = 930
 local OPTION_PANEL_HEIGHT = 660
+local OPTION_PANEL_MIN_WIDTH = 800
+local OPTION_PANEL_MIN_HEIGHT = 520
+local OPTION_PANEL_SCREEN_MARGIN = 40
+local OPTION_PANEL_TREE_WIDTH = 210
 
 -- Avoid extraneous Libstub calls
 Opt.LUI = LUI
@@ -39,17 +43,6 @@ local LUIOptionMeta = {}
 -- ##### Utility Functions ############################################################################################
 -- ####################################################################################################################
 --- Note: info[#info] returns the name of the current option
-
---- Fetch the option's parent table
----@param info InfoTable
----@return table
-local function GetParentTable(info)
-	local parentTable = info.options.args
-	for i=1, #info-1 do
-		parentTable = parentTable[info[i]].args
-	end
-	return parentTable
-end
 
 --- Add a confirmation dialog to an option before changing the value. Behavior determined by `confirm` param.
 ---- boolean: Prompt for confirmation using "name - desc"
@@ -133,7 +126,7 @@ local function AddShared(data, optionType)
 
 	-- Provides a quick way to debug options
 	if data.debug then
-		data.get, data.get = debugGetSet(data.debug)
+		data.get, data.set = debugGetSet(data.debug)
 		data.debug = nil
 	end
 
@@ -158,6 +151,13 @@ end
 -- Common Slider Values
 OptionMixin.ScaleValues = {softMin = 0.5, softMax = 2, bigStep = 0.05, min = 0.25, max = 4, step = 0.01, isPercent = true}
 OptionMixin.PercentValues = {min = 0, max = 1, step = 0.01, bigStep = 0.05, isPercent = true}
+OptionMixin.PositionValues = {softMin = -1000, softMax = 1000, min = -10000, max = 10000, step = 1, bigStep = 10}
+OptionMixin.OffsetValues = {softMin = -100, softMax = 100, min = -2000, max = 2000, step = 1, bigStep = 5}
+
+-- InputNumber uses AceConfig's text input control, but its database value must
+-- remain numeric. Track those option tables without exposing a custom key to
+-- AceConfigRegistry (which would reject it as an unknown parameter).
+local numericInputOptions = setmetatable({}, {__mode = "k"})
 
 -- ####################################################################################################################
 -- ##### Options: Generators ##########################################################################################
@@ -169,18 +169,31 @@ function OptionMixin.GetSet(db)
 	assert(type(db) == "table", "OptionMixin.GetSet argument #1 expected table, got "..type(db))
 	local get = function(info, key)
 		local value = db[info[#info]]
-		if info.type == "multiselect" then return value[key] end
-		if info.type == "input" then return tostring(value) end
+		if info.type == "multiselect" then
+			return type(value) == "table" and value[key] or false
+		end
+		if info.type == "input" then
+			return value == nil and "" or tostring(value)
+		end
+		if info.type == "range" then
+			return tonumber(value)
+		end
 		return value
 	end
 
 	local set = function(info, value, state)
-		if tonumber(value) then
-			value = tonumber(value)
-		end
 		if info.type == "multiselect" then
-			db[info[#info]][value] = state
+			local values = db[info[#info]]
+			if type(values) ~= "table" then
+				values = {}
+				db[info[#info]] = values
+			end
+			values[value] = state
 		else
+			if numericInputOptions[info.option] or info.type == "range" then
+				value = tonumber(value)
+				if value == nil then return end
+			end
 			db[info[#info]] = value
 		end
 		if info.handler.Refresh then
@@ -191,18 +204,56 @@ function OptionMixin.GetSet(db)
 	return get, set
 end
 
+--- Return a saved color table, restoring missing components from the actual
+--- defaults supplied by the owning module.  Do not invent a white fallback:
+--- that would silently change the appearance of old profiles.
+---@param db table
+---@param key string
+---@param defaults? table
+---@param create boolean
+---@return table?
+local function GetColorTable(db, key, defaults, create)
+	local color = db[key]
+	local defaultColor = type(defaults) == "table" and defaults[key] or nil
+
+	if type(color) ~= "table" then
+		if type(defaultColor) == "table" then
+			color = {}
+		elseif create then
+			color = {}
+		else
+			return
+		end
+		db[key] = color
+	end
+
+	if type(defaultColor) == "table" then
+		for _, component in ipairs({"r", "g", "b", "a"}) do
+			if type(color[component]) ~= "number" and type(defaultColor[component]) == "number" then
+				color[component] = defaultColor[component]
+			end
+		end
+	end
+
+	return color
+end
+
 --- Generate Get/Set functions for color options based on a database table.
 --- Additionally, if handler is defined, will attempt to call RefreshColors if it exists.
 ---@param db AceDB-3.0
+---@param defaults? table @ Matching defaults table from the owning module.
+---@param keyOverride? string @ Stored key when it differs from the option key.
 ---@return function Get, function Set
-function OptionMixin.ColorGetSet(db)
+function OptionMixin.ColorGetSet(db, defaults, keyOverride)
+	assert(type(db) == "table", "OptionMixin.ColorGetSet argument #1 expected table, got "..type(db))
 	local get = function(info)
-		local c = db[info[#info]]
+		local c = GetColorTable(db, keyOverride or info[#info], defaults, false)
+		if not c then return end
 		return c.r, c.g, c.b, c.a
 	end
 	
 	local set = function(info, r, g, b, a)
-		local c = db[info[#info]]
+		local c = GetColorTable(db, keyOverride or info[#info], defaults, true)
 		c.r, c.g, c.b = RoundToSignificantDigits(r, 2), RoundToSignificantDigits(g, 2), RoundToSignificantDigits(b, 2)
 		if info.option.hasAlpha then c.a = RoundToSignificantDigits(a, 2) end
 		if info.handler.RefreshColors then 
@@ -221,6 +272,7 @@ end
 local function defaultColorGet(info)
 	assert(type(info.handler.db.profile.Colors) == "table", info[#info]..": Could not find 'Colors' table for handler "..info.handler:GetName())
 	local c = info.handler.db.profile.Colors[info[#info]]
+	if type(c) ~= "table" then return end
 	return c.r, c.g, c.b, c.a
 end
 
@@ -228,6 +280,10 @@ end
 ---@param info InfoTable
 local function defaultColorSet(info, r, g, b, a)
 	local c = info.handler.db.profile.Colors[info[#info]]
+	if type(c) ~= "table" then
+		c = {}
+		info.handler.db.profile.Colors[info[#info]] = c
+	end
 	c.r, c.g, c.b = RoundToSignificantDigits(r, 2), RoundToSignificantDigits(g, 2), RoundToSignificantDigits(b, 2)
 	if info.option.hasAlpha then c.a = RoundToSignificantDigits(a, 2) end
 	if info.handler.RefreshColors then 
@@ -315,6 +371,7 @@ function OptionMixin:InputNumber(data)
 	data = AddShared(data, "input")
 	if not data then return end
 
+	numericInputOptions[data] = true
 	data.validate = self.IsNumber
 	return data
 end
@@ -330,6 +387,43 @@ function OptionMixin:Slider(data)
 		data.values = nil
 	end
 	return data
+end
+
+local function AddMissingSliderValues(data, values)
+	for key, value in pairs(values) do
+		if data[key] == nil then data[key] = value end
+	end
+	return data
+end
+
+--- Position slider with an editable numeric field supplied by AceConfig.
+function OptionMixin:PositionX(data)
+	data = AddMissingSliderValues(data or {}, self.PositionValues)
+	data.name = data.name or "Left / Right"
+	data.desc = data.desc or "Negative values move left; positive values move right. You can also enter an exact number below the slider."
+	return self:Slider(data)
+end
+
+--- Position slider with an editable numeric field supplied by AceConfig.
+function OptionMixin:PositionY(data)
+	data = AddMissingSliderValues(data or {}, self.PositionValues)
+	data.name = data.name or "Down / Up"
+	data.desc = data.desc or "Negative values move down; positive values move up. You can also enter an exact number below the slider."
+	return self:Slider(data)
+end
+
+function OptionMixin:OffsetX(data)
+	data = AddMissingSliderValues(data or {}, self.OffsetValues)
+	data.name = data.name or "Left / Right"
+	data.desc = data.desc or "Negative values move left; positive values move right. You can also enter an exact number below the slider."
+	return self:Slider(data)
+end
+
+function OptionMixin:OffsetY(data)
+	data = AddMissingSliderValues(data or {}, self.OffsetValues)
+	data.name = data.name or "Down / Up"
+	data.desc = data.desc or "Negative values move down; positive values move up. You can also enter an exact number below the slider."
+	return self:Slider(data)
 end
 
 ---@param data LUIOption
@@ -417,7 +511,7 @@ end
 
 local function FontMenuGetter(info)
 	local db = info.handler.db.profile.Fonts
-	local font = info[#info-1]
+	local font = info.arg or info[#info-1]
 	local prop = info[#info]
 	
 	return db[font][prop]
@@ -425,7 +519,7 @@ end
 
 local function FontMenuSetter(info, value)
 	local db = info.handler.db.profile.Fonts
-	local font = info[#info-1]
+	local font = info.arg or info[#info-1]
 	local prop = info[#info]
 	
 	db[font][prop] = value
@@ -439,12 +533,15 @@ local sizeValues = {min = 4, max = 72, step = 1, softMin = 8, softMax = 36}
 --- Create an inline group containing font settings.
 ---@param data LUIOption
 function OptionMixin:FontMenu(data)
+	local customFontLocation = data and data.customFontLocation
+	if data then data.customFontLocation = nil end
 	data = AddShared(data, "group")
+	if not data then return end
 	data.inline = true
 	data.args = {
-		Size = Opt:Slider({name = "Size", values = sizeValues, get = FontMenuGetter, set = FontMenuSetter, arg = data.customFontLocation}),
-		Name = Opt:MediaFont({name = "Font", get = FontMenuGetter, set = FontMenuSetter, arg = data.customFontLocation}),
-		Flag = Opt:Select({name = "Outline", values = LUI.FontFlags, get = FontMenuGetter, set = FontMenuSetter, arg = data.customFontLocation}),
+		Size = Opt:Slider({name = "Size", values = sizeValues, get = FontMenuGetter, set = FontMenuSetter, arg = customFontLocation}),
+		Name = Opt:MediaFont({name = "Font", get = FontMenuGetter, set = FontMenuSetter, arg = customFontLocation}),
+		Flag = Opt:Select({name = "Outline", values = LUI.FontFlags, get = FontMenuGetter, set = FontMenuSetter, arg = customFontLocation}),
 	}
 	return data
 end
@@ -472,82 +569,104 @@ end
 
 function OptionMixin:ColorSelect(data)
 	data = AddShared(data, "select")
+	if not data then return end
 	data.values = LUI.ColorTypes
-	if data and not data.get then
+	if not data.get then
 		data.get = defaultColorSelectGet
 		data.set = defaultColorSelectSet
 	end
 	return data
 end
 
-local function ColorMenuGetter(info)
-	local db = info.handler.db.profile.Colors
-	local c = db[string.sub(info.option.name,0, -7)]
-	if info.type == "color" then
-		return c.r, c.g, c.b, c.a
-	elseif info.type == "select" then
-		return c.t
-	elseif info.type == "range" then
-		return c.a
-	end
-end
-
-local function ColorMenuSetter(info, value, g, b, a)
-	local db = info.handler.db.profile.Colors
-	local c = db[string.sub(info.option.name,0, -7)]
-	if info.type == "color" then
-		c.r, c.g = RoundToSignificantDigits(value, 2), RoundToSignificantDigits(g, 2)
-		c.b, c.a = RoundToSignificantDigits(b, 2), RoundToSignificantDigits(a, 2)
-	elseif info.type == "select" then
-		LUI:Print("ct value")
-		c.t = value
-	elseif info.type == "range" then
-		c.a = value
-	end
+local function RefreshColorMenu(info)
 	if info.handler.RefreshColors then
-		info.handler.RefreshColors()
+		info.handler:RefreshColors()
+	elseif info.handler.Refresh then
+		info.handler:Refresh()
 	end
 end
 
---- Generate a Color / Dropdown combo, the dropdown selection determines the color bypass. (Theme, Class, Spec, etc)
----@param parent AceOption
----@param color string
----@param desc? string
----@param order number
----@param disabled? boolean|function
----@return LUIOption
-function OptionMixin:ColorMenu(parent, color, desc, order, disabled)
-	local hiddenFunc = function(info)
-		local db = info.handler.db.profile.Colors
-		
-		local c = (type(color) == "string" and db[color] or color.db)
+local function ColorMenuColorGet(info)
+	local color = info.handler.db.profile.Colors[info.arg]
+	return color.r, color.g, color.b, color.a
+end
+
+local function ColorMenuColorSet(info, r, g, b, a)
+	local color = info.handler.db.profile.Colors[info.arg]
+	color.r = RoundToSignificantDigits(r, 2)
+	color.g = RoundToSignificantDigits(g, 2)
+	color.b = RoundToSignificantDigits(b, 2)
+	color.a = RoundToSignificantDigits(a, 2)
+	RefreshColorMenu(info)
+end
+
+local function ColorMenuAlphaGet(info)
+	return info.handler.db.profile.Colors[info.arg].a
+end
+
+local function ColorMenuAlphaSet(info, value)
+	info.handler.db.profile.Colors[info.arg].a = RoundToSignificantDigits(value, 2)
+	RefreshColorMenu(info)
+end
+
+--- Generate a color-type dropdown with either an individual color picker or an opacity slider.
+---@param parent table
+---@param data LUIOption
+---@return LUIOption?
+function OptionMixin:ColorMenu(parent, data)
+	if data.onlyIf == false then return end
+
+	local color = data.arg or data.name
+	local name = data.name
+	local desc = data.desc
+	local disabled = data.disabled
+	local order = data.order
+
+	local function IsColorControlHidden(info)
+		local colorType = info.handler.db.profile.Colors[info.arg].t
 		if info.type == "color" then
-			return c.t ~= "Individual"
+			return colorType ~= "Individual"
 		elseif info.type == "range" then
-			return c.t == "Individual"
+			return colorType == "Individual"
 		end
 	end
 
-	if type(color) == "table" then
-		AddShared(color, "select")
-		local name = color.name
-		color.name = name.." Color"
-		color.values = LUI.ColorTypes
-		color.get, color.set = ColorMenuGetter, ColorMenuSetter
-		parent[name.."Picker"] = self:Color({name = "Color", desc = color.desc, disabled = color.disabled, hidden = hiddenFunc, get = ColorMenuGetter, set = ColorMenuSetter, hasAlpha = true})
-		parent[name.."Slider"] = self:Slider({name = "Opacity", desc = color.desc, disabled = color.disabled, hidden = hiddenFunc, get = ColorMenuGetter, set = ColorMenuSetter, values = self.PercentValues})
-		parent[name.."Break"] = self:Spacer({width = "full"})
-		ACR:NotifyChange(optName)
-		return color
-	end
+	data.name = name.." Color"
+	data.arg = color
+	local colorSelect = self:ColorSelect(data)
 
-	local t = self:Select(color.." Color", desc, order, LUI.ColorTypes, nil, disabled, nil, ColorMenuGetter, ColorMenuSetter)
-	parent[color.."Picker"] = self:Color("Color", desc, order+0.1, true, nil, disabled, hiddenFunc, ColorMenuGetter, ColorMenuSetter)
-	parent[color.."Slider"] = self:Slider("Opacity", desc, order+0.1, self.PercentValues, nil, disabled, hiddenFunc, ColorMenuGetter, ColorMenuSetter)
-	parent[color.."Break"] = self:Spacer(order+0.2, "full")
-	ACR:NotifyChange(optName)
-	return t
+	parent[color.."Picker"] = self:Color({
+		name = name.." Individual Color",
+		desc = desc,
+		order = order and order + 0.1,
+		disabled = disabled,
+		hidden = IsColorControlHidden,
+		get = ColorMenuColorGet,
+		set = ColorMenuColorSet,
+		arg = color,
+		hasAlpha = true,
+	})
+
+	parent[color.."Slider"] = self:Slider({
+		name = "Opacity",
+		desc = desc,
+		order = order and order + 0.1,
+		disabled = disabled,
+		hidden = IsColorControlHidden,
+		get = ColorMenuAlphaGet,
+		set = ColorMenuAlphaSet,
+		arg = color,
+		values = self.PercentValues,
+	})
+
+	parent[color.."Break"] = self:Spacer({
+		order = order and order + 0.2,
+		width = "full",
+	})
+
+	return colorSelect
 end
+
 -- ####################################################################################################################
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
@@ -569,8 +688,6 @@ end
 local options = {
 	name = titleName,
 	type = "group",
-	get = "getter",
-	set = "setter",
 	handler = LUI,
 	args = {
 		Space = {
@@ -609,6 +726,13 @@ local PROFILE_RESOURCES = {
 	Unitframes = "Layout",
 }
 
+local RETIRED_PROFILE_NAMESPACES = {
+	ArtworkV3 = true,
+	Cooldown = true,
+	Fader = true,
+	Panels = true,
+}
+
 local function TrimText(value)
 	if type(value) ~= "string" then return "" end
 	return value:match("^%s*(.-)%s*$") or ""
@@ -644,6 +768,24 @@ end
 
 local function CopyProfileData(value)
 	return CopySerializable(value, {}, 0)
+end
+
+local function RemoveRetiredProfileData(captured)
+	local profile = captured.profile
+	for _, key in ipairs({"Cooldown", "Fader", "Fonts", "Installed", "Recount"}) do
+		profile[key] = nil
+	end
+	for _, stateTable in ipairs({profile.Modules, profile.modules}) do
+		if type(stateTable) == "table" then
+			stateTable.Cooldown = nil
+			stateTable.Fader = nil
+		end
+	end
+	if captured.namespaces then
+		for namespaceName in pairs(RETIRED_PROFILE_NAMESPACES) do
+			captured.namespaces[namespaceName] = nil
+		end
+	end
 end
 
 local function TablesMatch(first, second, compared)
@@ -734,37 +876,56 @@ local function ValidateProfileResources(resources)
 			or type(resource.data) ~= "table" then
 			return false
 		end
+		local module = LUI:GetModule(moduleName, true)
+		if moduleName == "Themes" and (not module or not module:ValidateImportedTheme(resource.data)) then
+			return false
+		elseif moduleName == "Unitframes" and (not module or not module:SanitizeLayoutData(resource.data)) then
+			return false
+		end
 	end
 	return true
 end
 
+local function SanitizeProfileResource(moduleName, data)
+	local module = LUI:GetModule(moduleName, true)
+	if moduleName == "Themes" then
+		return module and module:ValidateImportedTheme(data)
+	elseif moduleName == "Unitframes" then
+		return module and module:SanitizeLayoutData(data)
+	end
+	return CopyProfileData(data)
+end
+
 local function ImportProfileResources(captured, resources)
-	if not resources then return end
+	if not resources then return true end
 
 	for moduleName, resource in pairs(resources) do
 		local namespace = captured.namespaces and captured.namespaces[moduleName]
 		local namespaceStorage = LUI.db.sv.namespaces and LUI.db.sv.namespaces[moduleName]
 		if namespace and namespaceStorage then
+			local resourceData = SanitizeProfileResource(moduleName, resource.data)
+			if not resourceData then return false end
 			namespaceStorage.global = namespaceStorage.global or {}
 			local resourceName = resource.name
 			local existing = rawget(namespaceStorage.global, resourceName)
 
-			if existing and not TablesMatch(existing, resource.data) then
+			if existing and not TablesMatch(existing, resourceData) then
 				local baseName = resourceName .. " (Imported)"
 				resourceName = baseName
 				local suffix = 2
 				local importedExisting = rawget(namespaceStorage.global, resourceName)
-				while importedExisting and not TablesMatch(importedExisting, resource.data) do
+				while importedExisting and not TablesMatch(importedExisting, resourceData) do
 					resourceName = format("%s %d", baseName, suffix)
 					suffix = suffix + 1
 					importedExisting = rawget(namespaceStorage.global, resourceName)
 				end
 			end
 
-			namespaceStorage.global[resourceName] = CopyProfileData(resource.data)
+			namespaceStorage.global[resourceName] = resourceData
 			namespace.profile[PROFILE_RESOURCES[moduleName]] = resourceName
 		end
 	end
+	return true
 end
 
 local function ClearStoredProfile(storage, profileName)
@@ -806,6 +967,7 @@ end
 local function GenerateProfileExport()
 	local profileName = LUI.db:GetCurrentProfile()
 	local captured = CaptureProfileStorage(LUI.db.sv, profileName)
+	RemoveRetiredProfileData(captured)
 	local payload = {
 		kind = PROFILE_EXPORT_KIND,
 		format = PROFILE_EXPORT_FORMAT,
@@ -869,9 +1031,13 @@ local function ImportProfile()
 		LUI:Print("The LUI profile contains unsupported data.")
 		return
 	end
+	RemoveRetiredProfileData(importedData)
 
 	local currentProfile = LUI.db:GetCurrentProfile()
-	ImportProfileResources(importedData, importedResources)
+	if not ImportProfileResources(importedData, importedResources) then
+		LUI:Print("The LUI profile contains invalid theme or unitframe layout data.")
+		return
+	end
 	ClearStoredProfile(LUI.db.sv, profileName)
 	StoreCapturedProfile(LUI.db.sv, profileName, importedData)
 
@@ -967,6 +1133,49 @@ end
 -- ##### Framework Functions ##########################################################################################
 -- ####################################################################################################################
 
+local function ConfigureOptionsFrame()
+	local widget = ACD.OpenFrames[optName]
+	if not widget or not widget.frame then return end
+
+	local uiWidth = _G.UIParent:GetWidth() or OPTION_PANEL_WIDTH
+	local uiHeight = _G.UIParent:GetHeight() or OPTION_PANEL_HEIGHT
+	local maxWidth = math.max(400, uiWidth - OPTION_PANEL_SCREEN_MARGIN)
+	local maxHeight = math.max(200, uiHeight - OPTION_PANEL_SCREEN_MARGIN)
+	local minWidth = math.min(OPTION_PANEL_MIN_WIDTH, maxWidth)
+	local minHeight = math.min(OPTION_PANEL_MIN_HEIGHT, maxHeight)
+	local frame = widget.frame
+
+	frame:SetClampedToScreen(true)
+	if frame.SetResizeBounds then
+		frame:SetResizeBounds(minWidth, minHeight, maxWidth, maxHeight)
+	else
+		frame:SetMinResize(minWidth, minHeight)
+		frame:SetMaxResize(maxWidth, maxHeight)
+	end
+
+	local width = math.min(maxWidth, math.max(minWidth, frame:GetWidth() or OPTION_PANEL_WIDTH))
+	local height = math.min(maxHeight, math.max(minHeight, frame:GetHeight() or OPTION_PANEL_HEIGHT))
+	if width ~= frame:GetWidth() then widget:SetWidth(width) end
+	if height ~= frame:GetHeight() then widget:SetHeight(height) end
+
+	local status = ACD:GetStatusTable(optName)
+	status.width, status.height = width, height
+
+	-- Keep every generated page inside the right content pane. Leaf pages use
+	-- AceConfig's ScrollFrame; clipping also protects tabbed/tree pages while
+	-- their controls are being rebuilt during a resize.
+	if widget.content and widget.content.SetClipsChildren then
+		widget.content:SetClipsChildren(true)
+	end
+
+	local root = widget.children and widget.children[1]
+	if root and root.type == "TreeGroup" then
+		root:SetTreeWidth(OPTION_PANEL_TREE_WIDTH, false)
+		if root.content and root.content.SetClipsChildren then root.content:SetClipsChildren(true) end
+		if root.border and root.border.SetClipsChildren then root.border:SetClipsChildren(true) end
+	end
+end
+
 local optionsLoaded = false
 function LUI:NewOpen(force, ...)
 	if ACD.OpenFrames[optName] and not force then
@@ -977,6 +1186,7 @@ function LUI:NewOpen(force, ...)
 			LUI:Print(L["Core_OpenOptionsFail"])
 		else
 			ACD:Open(optName, nil, ...)
+			ConfigureOptionsFrame()
 			optionsLoaded = true
 		end
 	end
@@ -1001,10 +1211,20 @@ end
 ---@param module LUIModule
 ---@return LUIOption
 function Opt:CreateModuleOptions(name, module, hidden)
-    local options = self:Group({name = name, childGroups = "tab", disabled = Opt.IsModDisabled, hidden = hidden, db = module.db.profile})
-    Opt.options.args[name] = options -- Add it to the overall options table
-    options.handler = module
-    return options
+	local function IsModuleHidden(info)
+		if type(hidden) == "function" then
+			if hidden(info) then return true end
+		elseif hidden then
+			return true
+		end
+
+		return module.IsEnabled and not module:IsEnabled()
+	end
+
+	local options = self:Group({name = name, childGroups = "tab", disabled = Opt.IsModDisabled, hidden = IsModuleHidden, db = module.db.profile})
+	Opt.options.args[name] = options -- Add it to the overall options table
+	options.handler = module
+	return options
 end
 
 function Opt:OnEnable()

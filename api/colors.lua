@@ -11,6 +11,7 @@ local L = LUI.L
 
 ---@class LUI.Colors : LUIModule
 local module = LUI:NewModule("Colors")
+module.controlPanelHidden = true
 
 local db
 
@@ -23,9 +24,6 @@ local UnitReaction = _G.UnitReaction
 
 module.defaults = {
 	profile = {
-		Advanced = {
-			BackgroundMultiplier = 0.4,
-		},
 		Colors = {
 			-- Class Colors
 			DEATHKNIGHT = { r = 0.8,  g = 0.1,  b = 0.1,  },
@@ -47,10 +45,10 @@ module.defaults = {
 			Horde     = { r = 1,    g = 0.3,  b = 0.3,  },
 			Neutral   = { r = 0.9,  g = 0.7,  b = 0,    },
 			Sanctuary = { r = 0,    g = 1,    b = 1,    },
-			Kyrian =    { r = 0.25, g = 0.78, b = 0.92, },
+			Kyrian    = { r = 0.25, g = 0.78, b = 0.92, },
 			Necrolord = { r = 0.05, g = 0.97, b = 0.6,  },
-			NightFae =  { r = 0.64, g = 0.19, b = 0.79, },
-			Venthyr =   { r = 0.77, g = 0.07, b = 0.23, },
+			NightFae  = { r = 0.64, g = 0.19, b = 0.79, },
+			Venthyr   = { r = 0.77, g = 0.07, b = 0.23, },
 
 			-- Reaction Colors
 			Standing1 = { r = 1,   g = 0.3, b = 0.3, }, -- Hated
@@ -75,26 +73,27 @@ module.defaults = {
 			HOLY_POWER     = { r = 0.9 , g = 0.88, b = 0.06, },
 			SOUL_SHARDS    = { r = 0.57, g = 0.22, b = 1   , },
 			CHI            = { r = 0   , g = 1   , b = 0.59, },
-			STAGGER_LOW    = { r = 052 , g = 1   , b = 0.52, },
-			STAGGER_MED    = { r = 1   , g = 0.97, b = 0.72, },
-			STAGGER_HIGH   = { r = 1   , g = 0.42, b = 0.42, },
 			LUNAR_POWER    = { r = 0.3 , g = 0.52, b = 0.9 , },
 			MAELSTROM      = { r = 0.04, g = 0.39, b = 0.98, },
 			PAIN           = { r = 1   , g = 0.61, b = 0   , },
 			INSANITY       = { r = 0.4 , g = 0   , b = 0.8 , },
 			FURY           = { r = 0.79, g = 0.26, b = 0.99, },
+			ESSENCE        = { r = 0.39, g = 0.68, b = 0.81, },
+			ALTERNATE      = { r = 0.7 , g = 0.7 , b = 0.6 , },
+			ICICLES        = { r = 0.45, g = 0.85, b = 0.96, },
+			TIP_OF_THE_SPEAR = { r = 0.42, g = 0.74, b = 0.16, },
 
 			--Gradient
 			Good =   { r = 0,   g = 1,   b = 0,   },
 			Medium = { r = 1,   g = 1,   b = 0,   },
 			Bad =    { r = 0.8, g = 0.3, b = 0.2, },
 
-			--TODO: Level Differences. (NYI)
-			DiffSkull = { r = 0.69, g = 0.31, b = 0.31, }, -- Target Level >= 5
-			DiffHard =  { r = 0.71, g = 0.43, b = 0.27, }, -- Target Level >= 3
-			DiffEqual = { r = 0.84, g = 0.75, b = 0.65, }, -- Target Level <> 2
-			DiffEasy =  { r = 0.33, g = 0.59, b = 0.33, }, -- Target Level GreenQuestRange
-			DiffLow =   { r = 0.55, g = 0.57, b = 0.61, }, -- Low Level Target
+			-- Level-difficulty colors
+			DiffSkull = { r = 0.69, g = 0.31, b = 0.31, },
+			DiffHard  = { r = 0.71, g = 0.43, b = 0.27, },
+			DiffEqual = { r = 0.84, g = 0.75, b = 0.65, },
+			DiffEasy  = { r = 0.33, g = 0.59, b = 0.33, },
+			DiffLow   = { r = 0.55, g = 0.57, b = 0.61, },
 		},
 	},
 }
@@ -122,17 +121,11 @@ end
 -- ##### Simple API ###################################################################################################
 -- ####################################################################################################################
 
---- Return a Multiplier for RGB values to use for darker background colors.
----@return number mult
-function LUI:GetBGMultiplier()
-	return db.Advanced.BackgroundMultiplier
-end
-
 --- Utility function for other modules to fetch a color stored in Color module.
 ---@return number R, number G, number B
 function LUI:GetFallbackRGB(colorName)
 	if not colorName then return end
-	--HACK: Sometimes NPCs will have a PowerType of "POWER_TYPE_xxx", so we need to strip that.
+	-- UnitPowerType can expose resource keys with this prefix for NPCs.
 	if strfind(colorName, "POWER_TYPE_") then colorName = string.split("_", colorName)[3] end
 	return GetColorRGB(colorName)
 end
@@ -201,9 +194,9 @@ end
 ---@param level number
 ---@return number R, number G, number B
 function LUI:GetDifficultyColor(level)
+	if level == nil or issecretvalue(level) then return 1, 1, 1 end
 	local color = GetQuestDifficultyColor(level)
 	return color.r, color.g, color.b
-	
 end
 
 -- ####################################################################################################################
@@ -246,19 +239,7 @@ end
 -- ####################################################################################################################
 -- ##### Color Callback API ###########################################################################################
 -- ####################################################################################################################
----@TODO: Possibly have a full callback system for API, otherwise we will just have more copies of this function.
--- Provide callbacks for modules to use when colors are changed.
-
-local multiplierCallback = {}
 local colorCallback = {}
-
---Register a function that will be called back by the Options API when someone change BG Multiplier.
----@param id any @ Unique identifier for the callback. If it already exists, do nothing.
----@param func function @ Function to be called back when event occurs.
-function LUI:AddBGMultiplierCallback(id, func)
-	if multiplierCallback[id] then return end
-	multiplierCallback[id] = func
-end
 
 --- Register a function that will be called back by the Options API when someone change class/theme colors.  
 ---@param id any @ Unique identifier for the callback. If it already exists, do nothing.
@@ -272,10 +253,7 @@ end
 -- ##### Module Refresh ###############################################################################################
 -- ####################################################################################################################
 
-function module:RefreshClassColors()
-	--Nothing happens currently, as we don't alter class colors.
-
-	--Call back functions that needs to know
+function module:RefreshColors()
 	for id_, func in pairs(colorCallback) do func() end
 end
 
@@ -286,7 +264,4 @@ end
 function module:OnInitialize()
 	LUI:RegisterModule(module)
 	db = module.db.profile
-end
-
-function module:OnEnable()
 end

@@ -12,9 +12,7 @@ L["Auras"] = true
 L["Bags"] = true
 L["Chat"] = true
 L["Colors"] = true
-L["Cooldown"] = true
 L["ExpBars"] = true
-L["Fader"] = true
 L["Infotext"] = true
 L["Merchant"] = true
 L["Micromenu"] = true
@@ -277,16 +275,12 @@ L["Point_BottomLeft"] = "Bottom Left"
 L["Point_BottomRight"] = "Bottom Right"
 
 -- Core
-L["Core_InstallSucess"] = "LUI has been installed."
-L["Core_ModuleInstallFail_Format"] = "Error installing %s module: %s"
 L["Core_Welcome"] = "Welcome"
 L["Core_IntroText"] = "Welcome to LUI v4, a complete default UI replacement.\n\n For any question regarding the UI, please go to our forums at http://wowlui.com \n\n\n"
 L["Core_Revision_Format"] = "Revision: %s"
 L["Core_ModuleMenu"] = "|cffffffffModules:|r"
 L["Core_OpenOptionsFail"] = "|cffFF0000Unable to open the options for the first time while in combat."
 L["Core_Dev_RevertState_Format"] = "Reverted %s's installed state"
-L["Core_LoadProfileSucess_Format"] = "Loading Profile: %s"
-L["Core_LoadProfileFail_Format"] = "No Profile Found: %s"
 L["Core_ModuleClickHint"] = "Left Click: Toggle between Enabled and Disabled.\nShift Click: Reset module's settings."
 L["Core_ModuleReset"] = "Settings have been reset."
 
@@ -307,9 +301,6 @@ L["API_BGMultiplier_Desc"] = "How much of a darker shade should the background o
 -- CPanel
 L["CPanel_Modules"] = "Modules"
 L["CPanel_Infotext"] = "Infotext"
-L["CPanel_Addons"] = "Addons"
-L["CPanel_AddonReset"] = "Reset %s"
-L["CPanel_AddonDesc"] = "These buttons will not automatically reset your settings. It will simply causes LUI to ask if you want to install pre-set settings again. If you select No, none of your settings will be affected."
 
 -- Colors
 L["Colors_Classes"] = "Classes"
@@ -431,15 +422,14 @@ L["Bags_Lock_Desc"] = "Lock the bags frames in place."
 L["Bags_Padding_Desc"] = "This sets the space between the background border and the adjacent items."
 L["Bags_Spacing_Desc"] = "This sets the distance between items."
 L["Bags_Scale_Desc"] = "Determines the scale of your bags frame."
--- TODO: Review writing of the following "Whether or not" toggles.
 L["Bags_ShowBagBar_Name"] = "Show Bag Bar"
-L["Bags_ShowBagBar_Desc"] = "Whether or not to show bag bar."
+L["Bags_ShowBagBar_Desc"] = "Show the character bag buttons above the combined bag."
 L["Bags_ShowItemQuality_Name"] = "Show Item Quality"
-L["Bags_ShowItemQuality_Desc"] = "Whether or not to show item quality."
+L["Bags_ShowItemQuality_Desc"] = "Color item-slot borders by item quality."
 L["Bags_ShowNewItemAnim_Name"] = "Show New Item Animation"
-L["Bags_ShowNewItemAnim_Desc"] = "Whether or not to show new item animations."
+L["Bags_ShowNewItemAnim_Desc"] = "Highlight items that Blizzard marks as new."
 L["Bags_ShowQuestHighlights_Name"] = "Show Quest Highlights"
-L["Bags_ShowQuestHighlights_Desc"] = "Whether or not to show quest highlights."
+L["Bags_ShowQuestHighlights_Desc"] = "Highlight items used by active quests."
 L["Bags_BackgroundTex_Name"] = "Bags' Background Texture"
 L["Bags_BorderTex_Name"] = "Bags' Border Texture"
 L["Bags_ItemBackground_Name"] = "ItemSlot Background"
@@ -538,10 +528,6 @@ L["InfoDualspec_Spec_Num"] = "Spec %d:"
 L["InfoDualspec_Hint_1"] = "Left-Click to switch to %s."
 L["InfoDualspec_Hint_2"] = "Right-Click to switch to %s."
 L["InfoDualspec_Hint_3"] = "Middle-Click to switch to %s."
-L["InfoDualspec_Hint_Shift"] = "Shift-Click to toggle Talent Frame."
-----------------
-L["InfoDualspec_LootSpec_Name"] = "Show Loot Specialization"
-L["InfoDualspec_LootSpec_Desc"] = "Display your current loot specialization in the infotext if you are using a specific one.\n\nNote: Your loot specialization will be displayed in the tooltip regardless of this option."
 L["InfoCurrency_Hint_Any"] = "Click to open Currency frame."
 L["InfoGuild_NoGuild"] = "No Guild"
 L["InfoFriends_NoFriends"] = "No friends online."

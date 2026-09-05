@@ -4,13 +4,11 @@
 
 ---@class LUIAddon
 local LUI = select(2, ...)
-local L = LUI.L
 
 ---@class LUI.ExperienceBars
 local module = LUI:GetModule("Experience Bars")
 
-local IsPlayerAtEffectiveMaxLevel = GameRulesUtil.IsPlayerAtEffectiveMaxLevel
-local IsXPUserDisabled = _G.IsXPUserDisabled
+local CanShowExperienceBar = GameRulesUtil.CanShowExperienceBar
 local UnitXPMax = _G.UnitXPMax
 local UnitXP = _G.UnitXP
 
@@ -25,11 +23,7 @@ ExperienceDataProvider.BAR_EVENTS = {
 }
 
 function ExperienceDataProvider:ShouldBeVisible()
-    if IsXPUserDisabled() then
-        return false
-    end
-
-    return not IsPlayerAtEffectiveMaxLevel()
+    return CanShowExperienceBar()
 end
 
 function ExperienceDataProvider:Update()

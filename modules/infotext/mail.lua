@@ -6,11 +6,10 @@
 
 ---@class LUIAddon
 local LUI = select(2, ...)
-local L = LUI.L
 
 ---@class LUI.Infotext
 local module = LUI:GetModule("Infotext")
-local element = module:NewElement("Mail")
+local element = module:NewElement("Mail", "AceEvent-3.0")
 
 local GetInboxNumItems = _G.GetInboxNumItems
 local HasNewMail = _G.HasNewMail
@@ -19,30 +18,33 @@ local HasNewMail = _G.HasNewMail
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
 
-function module:SetMail()
-    local f = CreateFrame("Frame")
-    f:SetScript("OnEvent", function()
-        local db = module.db.profile.Mail
-        local numMail, totalItems = GetInboxNumItems()
-        local hasNew = HasNewMail()
-        element.text = format("Mail: "..numMail.."/"..totalItems) .. ( hasNew and db.NewIndic or "" )
-    end)
-    f:RegisterEvent("MAIL_INBOX_UPDATE")
-    f:RegisterEvent("UPDATE_PENDING_MAIL")
+function element:UpdateMail()
+	local db = module.db.profile.Mail
+	local numMail, totalItems = GetInboxNumItems()
+	local hasNew = HasNewMail()
+	numMail = tonumber(numMail) or 0
+	totalItems = tonumber(totalItems) or 0
 
+	if numMail > 0 or totalItems > 0 then
+		element.text = format("Mail: %d/%d%s", numMail, totalItems, hasNew and db.NewIndic or "")
+	elseif hasNew then
+		element.text = "Mail: New"..(db.NewIndic or "")
+	else
+		element.text = "Mail: 0"
+	end
 end
-
--- ####################################################################################################################
--- ##### Infotext Display #############################################################################################
--- ####################################################################################################################
-
--- function element.OnTooltipShow(GameTooltip)
--- end
 
 -- ####################################################################################################################
 -- ##### Framework Events #############################################################################################
 -- ####################################################################################################################
 
 function element:OnCreate()
-    module:SetMail()
+	element:RegisterEvent("PLAYER_ENTERING_WORLD", "UpdateMail")
+	element:RegisterEvent("MAIL_SHOW", "UpdateMail")
+	element:RegisterEvent("MAIL_CLOSED", "UpdateMail")
+	element:RegisterEvent("MAIL_INBOX_UPDATE", "UpdateMail")
+	element:RegisterEvent("UPDATE_PENDING_MAIL", "UpdateMail")
+	element:UpdateMail()
 end
+
+element.RefreshSettings = element.UpdateMail

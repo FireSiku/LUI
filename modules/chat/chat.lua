@@ -13,26 +13,14 @@ local module = LUI:NewModule("Chat", "LUIDevAPI", "AceHook-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 
 local L = LUI.L
-local db, dbd
+local db
 
-local ChatFrame_RemoveMessageEventFilter = _G.ChatFrame_RemoveMessageEventFilter
-local ChatFrame_AddMessageEventFilter = _G.ChatFrame_AddMessageEventFilter
-local FCF_SavePositionAndDimensions = _G.FCF_SavePositionAndDimensions
-local GetChatWindowSavedDimensions = _G.GetChatWindowSavedDimensions
-local GetChatWindowSavedPosition = _G.GetChatWindowSavedPosition
-local ChatEdit_GetActiveWindow = _G.ChatEdit_GetActiveWindow
-local ChatEdit_OnEscapePressed = _G.ChatEdit_OnEscapePressed
+local ChatFrameUtil = _G.ChatFrameUtil
 local FCF_GetCurrentChatFrame = _G.FCF_GetCurrentChatFrame
 local FCFDock_SelectWindow = _G.FCFDock_SelectWindow
 local FCFTab_UpdateAlpha = _G.FCFTab_UpdateAlpha
-local FCF_SetWindowAlpha = _G.FCF_SetWindowAlpha
-local FCF_SetWindowColor = _G.FCF_SetWindowColor
-local SetChatWindowColor = _G.SetChatWindowColor
 local GENERAL_CHAT_DOCK = _G.GENERAL_CHAT_DOCK
-local GetScreenHeight = _G.GetScreenHeight
-local GetScreenWidth = _G.GetScreenWidth
 local IsShiftKeyDown = _G.IsShiftKeyDown
-local FCF_SetLocked = _G.FCF_SetLocked
 local PARTY_LEADER = _G.PARTY_LEADER
 local IsAltKeyDown = _G.IsAltKeyDown
 local CHAT_FRAMES = _G.CHAT_FRAMES
@@ -45,282 +33,6 @@ local CLOSE = _G.CLOSE
 
 local urlEvents, urlPatterns
 do
-	local tlds = {
-		ONION = true, -- for all the TOR fags out there
-		-- Copied from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
-		-- Version 2008041301, Last Updated Mon Apr 21 08:07:00 2008 UTC
-		AC = true,
-		AD = true,
-		AE = true,
-		AERO = true,
-		AF = true,
-		AG = true,
-		AI = true,
-		AL = true,
-		AM = true,
-		AN = true,
-		AO = true,
-		AQ = true,
-		AR = true,
-		ARPA = true,
-		AS = true,
-		ASIA = true,
-		AT = true,
-		AU = true,
-		AW = true,
-		AX = true,
-		AZ = true,
-		BA = true,
-		BB = true,
-		BD = true,
-		BE = true,
-		BF = true,
-		BG = true,
-		BH = true,
-		BI = true,
-		BIZ = true,
-		BJ = true,
-		BM = true,
-		BN = true,
-		BO = true,
-		BR = true,
-		BS = true,
-		BT = true,
-		BV = true,
-		BW = true,
-		BY = true,
-		BZ = true,
-		CA = true,
-		CAT = true,
-		CC = true,
-		CD = true,
-		CF = true,
-		CG = true,
-		CH = true,
-		CI = true,
-		CK = true,
-		CL = true,
-		CM = true,
-		CN = true,
-		CO = true,
-		COM = true,
-		COOP = true,
-		CR = true,
-		CU = true,
-		CV = true,
-		CX = true,
-		CY = true,
-		CZ = true,
-		DE = true,
-		DJ = true,
-		DK = true,
-		DM = true,
-		DO = true,
-		DZ = true,
-		EC = true,
-		EDU = true,
-		EE = true,
-		EG = true,
-		ER = true,
-		ES = true,
-		ET = true,
-		EU = true,
-		FI = true,
-		FJ = true,
-		FK = true,
-		FM = true,
-		FO = true,
-		FR = true,
-		GA = true,
-		GB = true,
-		GD = true,
-		GE = true,
-		GF = true,
-		GG = true,
-		GH = true,
-		GI = true,
-		GL = true,
-		GM = true,
-		GN = true,
-		GOV = true,
-		GP = true,
-		GQ = true,
-		GR = true,
-		GS = true,
-		GT = true,
-		GU = true,
-		GW = true,
-		GY = true,
-		HK = true,
-		HM = true,
-		HN = true,
-		HR = true,
-		HT = true,
-		HU = true,
-		ID = true,
-		IE = true,
-		IL = true,
-		IM = true,
-		IN = true,
-		INFO = true,
-		INT = true,
-		IO = true,
-		IQ = true,
-		IR = true,
-		IS = true,
-		IT = true,
-		JE = true,
-		JM = true,
-		JO = true,
-		JOBS = true,
-		JP = true,
-		KE = true,
-		KG = true,
-		KH = true,
-		KI = true,
-		KM = true,
-		KN = true,
-		KP = true,
-		KR = true,
-		KW = true,
-		KY = true,
-		KZ = true,
-		LA = true,
-		LB = true,
-		LC = true,
-		LI = true,
-		LK = true,
-		LR = true,
-		LS = true,
-		LT = true,
-		LU = true,
-		LV = true,
-		LY = true,
-		MA = true,
-		MC = true,
-		MD = true,
-		ME = true,
-		MG = true,
-		MH = true,
-		MIL = true,
-		MK = true,
-		ML = true,
-		MM = true,
-		MN = true,
-		MO = true,
-		MOBI = true,
-		MP = true,
-		MQ = true,
-		MR = true,
-		MS = true,
-		MT = true,
-		MU = true,
-		MUSEUM = true,
-		MV = true,
-		MW = true,
-		MX = true,
-		MY = true,
-		MZ = true,
-		NA = true,
-		NAME = true,
-		NC = true,
-		NE = true,
-		NET = true,
-		NF = true,
-		NG = true,
-		NI = true,
-		NL = true,
-		NO = true,
-		NP = true,
-		NR = true,
-		NU = true,
-		NZ = true,
-		OM = true,
-		ORG = true,
-		PA = true,
-		PE = true,
-		PF = true,
-		PG = true,
-		PH = true,
-		PK = true,
-		PL = true,
-		PM = true,
-		PN = true,
-		PR = true,
-		PRO = true,
-		PS = true,
-		PT = true,
-		PW = true,
-		PY = true,
-		QA = true,
-		RE = true,
-		RO = true,
-		RS = true,
-		RU = true,
-		RW = true,
-		SA = true,
-		SB = true,
-		SC = true,
-		SD = true,
-		SE = true,
-		SG = true,
-		SH = true,
-		SI = true,
-		SJ = true,
-		SK = true,
-		SL = true,
-		SM = true,
-		SN = true,
-		SO = true,
-		SR = true,
-		ST = true,
-		SU = true,
-		SV = true,
-		SY = true,
-		SZ = true,
-		TC = true,
-		TD = true,
-		TEL = true,
-		TF = true,
-		TG = true,
-		TH = true,
-		TJ = true,
-		TK = true,
-		TL = true,
-		TM = true,
-		TN = true,
-		TO = true,
-		TP = true,
-		TR = true,
-		TRAVEL = true,
-		TT = true,
-		TV = true,
-		TW = true,
-		TZ = true,
-		UA = true,
-		UG = true,
-		UK = true,
-		UM = true,
-		US = true,
-		UY = true,
-		UZ = true,
-		VA = true,
-		VC = true,
-		VE = true,
-		VG = true,
-		VI = true,
-		VN = true,
-		VU = true,
-		WF = true,
-		WS = true,
-		YE = true,
-		YT = true,
-		YU = true,
-		ZA = true,
-		ZM = true,
-		ZW = true,
-	}
-
 	local formatStr = "|cffb4b4b4|Hurl:%s|h[%s]|h|r"
 
 	local function urlLink(link)
@@ -331,26 +43,13 @@ do
 		return format(formatStr, link, link)
 	end
 
-	local function urlLink_TLD(link, tld)
-		if link == nil or tld == nil then
-			return ""
-		end
-
-		if tlds[tld:upper()] then
-			return format(formatStr, link, link)
-		else
-			return link
-		end
-	end
-
 	urlEvents = {
-		"CHAT_MSG_BATTLEGROUND", "CHAT_MSG_BATTLEGROUND_LEADER",
-		"CHAT_MSG_CHANNEL", "CHAT_MSG_EMOTE",
+		"CHAT_MSG_CHANNEL", "CHAT_MSG_COMMUNITIES_CHANNEL", "CHAT_MSG_EMOTE",
 		"CHAT_MSG_GUILD", "CHAT_MSG_OFFICER",
-		"CHAT_MSG_PARTY", "CHAT_MSG_RAID",
+		"CHAT_MSG_INSTANCE_CHAT", "CHAT_MSG_INSTANCE_CHAT_LEADER", "CHAT_MSG_PARTY", "CHAT_MSG_RAID",
 		"CHAT_MSG_RAID_LEADER", "CHAT_MSG_RAID_WARNING", "CHAT_MSG_PARTY_LEADER",
-		"CHAT_MSG_SAY", "CHAT_MSG_WHISPER","CHAT_MSG_BN_WHISPER",
-		"CHAT_MSG_WHISPER_INFORM", "CHAT_MSG_YELL", "CHAT_MSG_BN_WHISPER_INFORM","CHAT_MSG_BN_CONVERSATION"
+		"CHAT_MSG_SAY", "CHAT_MSG_WHISPER", "CHAT_MSG_BN_WHISPER",
+		"CHAT_MSG_WHISPER_INFORM", "CHAT_MSG_YELL", "CHAT_MSG_BN_WHISPER_INFORM",
 	}
 
 	urlPatterns = {
@@ -360,11 +59,8 @@ do
 		-- www.X.Y url
 		{ pattern = "^(www%.[-%w_%%]+%.%S+)", matchfunc=urlLink},
 		{ pattern = "%f[%S](www%.[-%w_%%]+%.%S+)", matchfunc=urlLink},
-		-- "W X"@Y.Z email (this is seriously a valid email)
-		--{ pattern = '^(%"[^%"]+%"@[-%w_%%%.]+%.(%a%a+))', matchfunc=urlLink_TLD},
-		--{ pattern = '%f[%S](%"[^%"]+%"@[-%w_%%%.]+%.(%a%a+))', matchfunc=urlLink_TLD},
 		-- X@Y.Z email
-		{ pattern = "(%S+@[-%w_%%%.]+%.(%a%a+))", matchfunc=urlLink_TLD},
+		{ pattern = "(%S+@[-%w_%%%.]+%.(%a%a+))", matchfunc=urlLink},
 		-- XXX.YYY.ZZZ.WWW:VVVV/UUUUU IPv4 address with port and path
 		{ pattern = "^([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d:[0-6]?%d?%d?%d?%d/%S+)", matchfunc=urlLink},
 		{ pattern = "%f[%S]([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d:[0-6]?%d?%d?%d?%d/%S+)", matchfunc=urlLink},
@@ -378,21 +74,21 @@ do
 		{ pattern = "^([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%)%f[%D]", matchfunc=urlLink},
 		{ pattern = "%f[%S]([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%)%f[%D]", matchfunc=urlLink},
 		-- X.Y.Z:WWWW/VVVVV url with port and path
-		{ pattern = "^([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d/%S+)", matchfunc=urlLink_TLD},
-		{ pattern = "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d/%S+)", matchfunc=urlLink_TLD},
+		{ pattern = "^([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d/%S+)", matchfunc=urlLink},
+		{ pattern = "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d/%S+)", matchfunc=urlLink},
 		-- X.Y.Z:WWWW url with port (ts server for example)
-		{ pattern = "^([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d)%f[%D]", matchfunc=urlLink_TLD},
-		{ pattern = "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d)%f[%D]", matchfunc=urlLink_TLD},
+		{ pattern = "^([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d)%f[%D]", matchfunc=urlLink},
+		{ pattern = "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d)%f[%D]", matchfunc=urlLink},
 		-- X.Y.Z/WWWWW url with path
-		{ pattern = "^([-%w_%%%.]+[-%w_%%]%.(%a%a+)/%S+)", matchfunc=urlLink_TLD},
-		{ pattern = "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+)/%S+)", matchfunc=urlLink_TLD},
+		{ pattern = "^([-%w_%%%.]+[-%w_%%]%.(%a%a+)/%S+)", matchfunc=urlLink},
+		{ pattern = "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+)/%S+)", matchfunc=urlLink},
 		-- X.Y.Z url
-		{ pattern = "^([-%w_%%%.]+[-%w_%%]%.(%a%a+))", matchfunc=urlLink_TLD},
-		{ pattern = "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+))", matchfunc=urlLink_TLD},
+		{ pattern = "^([-%w_%%%.]+[-%w_%%]%.(%a%a+))", matchfunc=urlLink},
+		{ pattern = "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+))", matchfunc=urlLink},
 	}
 end
 
-local shortChannelNames, shortWhispers, rwFormat
+local shortChannelNames, shortChannelLinks, shortWhispers, rwFormat
 do
 	shortChannelNames = {
 		[L["Guild"]] = "[G]",
@@ -403,8 +99,6 @@ do
 		[L["Raid"]] = "[R]",
 		[L["Raid Leader"]] = "[RL]",
 		[L["Raid Warning"]] = "[RW]",
-		[L["Battleground"]] = "[BG]",
-		[L["Battleground Leader"]] = "[BL]",
 		[L["General"]] = "[General]",
 		[L["Trade"]] = "[Trade]",
 		[L["LocalDefense"]] = "[LocalDefense]",
@@ -416,6 +110,19 @@ do
 		["BN Whisper From"] = "[BN:From]",
 		["BN Whisper To"] = "[BN:To]",
 	}
+	shortChannelLinks = {
+		GUILD = "[G]",
+		OFFICER = "[O]",
+		PARTY = "[P]",
+		PARTY_LEADER = "[PL]",
+		RAID = "[R]",
+		RAID_LEADER = "[RL]",
+		RAID_WARNING = "[RW]",
+		INSTANCE_CHAT = "[I]",
+		INSTANCE_CHAT_LEADER = "[IL]",
+	}
+	if _G.INSTANCE_CHAT_MESSAGE then shortChannelNames[_G.INSTANCE_CHAT_MESSAGE] = "[I]" end
+	if _G.INSTANCE_CHAT_LEADER then shortChannelNames[_G.INSTANCE_CHAT_LEADER] = "[IL]" end
 
 	shortWhispers = {
 		["Whisper To"] = "To (|Hplayer.-|h):",
@@ -429,6 +136,9 @@ do
 	for k, v in pairs(shortChannelNames) do
 		shortChannelNames[k] = L[v]
 	end
+	for k, v in pairs(shortChannelLinks) do
+		shortChannelLinks[k] = L[v]
+	end
 	for k, v in pairs(shortWhispers) do
 		shortWhispers[k] = L[v]
 	end
@@ -438,18 +148,17 @@ local linkTypes = {
 	item = true,
 	spell = true,
 	enchant = true,
-	talent = true,
-	glyph = true,
 	quest = true,
 	achievement = true,
+	currency = true,
+	battlepet = true,
 	instancelock = true,
-	-- trade = true, -- causes the profession window to open on link hover
-	--- invaild link types for GameTooltip:SetHyperlink()
-	-- player = true,
-	-- playerGM = true,
-	-- journal = true,
-	-- levelup = true,
 }
+
+local showingHyperlinkTooltip
+local originalChatFrames = setmetatable({}, {__mode = "k"})
+local originalTabs = setmetatable({}, {__mode = "k"})
+local originalTabGlobals
 
 --------------------------------------------------
 -- Local Functions
@@ -464,10 +173,11 @@ local function createStaticPopups()
 		editBoxWidth = 400,
 		maxLetters = 1024, -- need this to override after other dialogs set to low numbers
 		OnShow = function(self, data)
-			local button = self.button2
+			local button = self:GetButton2()
+			local editBox = self:GetEditBox()
 			button:ClearAllPoints()
 			button:SetWidth(200)
-			button:SetPoint("CENTER", self.editBox, "CENTER", 0, -30)
+			button:SetPoint("CENTER", editBox, "CENTER", 0, -30)
 		end,
 		EditBoxOnEscapePressed = function(self)
 			self:GetParent():Hide()
@@ -480,67 +190,89 @@ local function createStaticPopups()
 	createStaticPopups = nil
 end
 
+local function showURLCopy(url)
+	if not url or issecretvalue(url) then return end
+	if createStaticPopups then createStaticPopups() end
+
+	local dialog = StaticPopup_Show("LUI_Chat_UrlCopy")
+	if dialog then
+		local editBox = dialog:GetEditBox()
+		editBox:SetText(url)
+		editBox:SetFocus()
+		editBox:HighlightText(0)
+	end
+end
+
+local function captureChatFrame(frame)
+	if originalChatFrames[frame] then return end
+	local font, fontSize, fontFlags = frame:GetFont()
+	local left, right, top, bottom = frame:GetClampRectInsets()
+	originalChatFrames[frame] = {
+		font = font,
+		fontSize = fontSize,
+		fontFlags = fontFlags,
+		fading = frame:GetFading(),
+		clamped = frame:IsClampedToScreen(),
+		clampInsets = {left, right, top, bottom},
+	}
+end
+
 local function unclampChatFrame(frame)
+	captureChatFrame(frame)
 	frame:SetClampRectInsets(0,0,0,0)
 	frame:SetClampedToScreen(false)
 end
 
-local function positionChatFrame()
-	-- local frame = GENERAL_CHAT_DOCK.primary
-	-- frame:SetMovable(true)
-	-- frame:SetUserPlaced(true)
-	-- frame:SetSize(db.width, db.height)
-	-- frame:ClearAllPoints()
-	-- frame:SetPoint(db.point, UIParent, db.point, db.x, db.y)
-	-- FCF_SavePositionAndDimensions(frame)
-	-- FCF_SetLocked(frame, 1)
-end
-
 local function configureTab(tab, minimalist)
 	if minimalist then
-		if module:IsHooked(tab, "OnMouseWheel") then return end
-
-		tab:SetHeight(29)
-		--tab.leftTexture:Hide()
-		--tab.middleTexture:Hide()
-		--tab.rightTexture:Hide()
-		--tab.leftSelectedTexture:SetAlpha(0)
-		--tab.rightSelectedTexture:SetAlpha(0)
-		--tab.middleSelectedTexture:SetAlpha(0)
-		--tab.leftHighlightTexture:SetAlpha(0)
-		--tab.middleHighlightTexture:SetAlpha(0)
-		--tab.rightHighlightTexture:SetAlpha(0)
-		tab:EnableMouseWheel(true)
-		module:HookScript(tab, "OnMouseWheel")
+		if not originalTabs[tab] then
+			originalTabs[tab] = {
+				height = tab:GetHeight(),
+				mouseWheelEnabled = tab:IsMouseWheelEnabled(),
+			}
+		end
+		if not module:IsHooked(tab, "OnMouseWheel") then
+			tab:SetHeight(29)
+			tab:EnableMouseWheel(true)
+			module:HookScript(tab, "OnMouseWheel")
+		end
 	else
-		tab:SetHeight(32)
-		--tab.leftTexture:Show()
-		--tab.middleTexture:Show()
-		--tab.rightTexture:Show()
-		--tab.leftSelectedTexture:SetAlpha(1)
-		--tab.rightSelectedTexture:SetAlpha(1)
-		--tab.middleSelectedTexture:SetAlpha(1)
-		--tab.leftHighlightTexture:SetAlpha(1)
-		--tab.middleHighlightTexture:SetAlpha(1)
-		--tab.rightHighlightTexture:SetAlpha(1)
-		tab:EnableMouseWheel(false)
-		module:Unhook(tab, "OnMouseWheel")
+		local original = originalTabs[tab]
+		if original then
+			tab:SetHeight(original.height)
+			tab:EnableMouseWheel(original.mouseWheelEnabled)
+			module:Unhook(tab, "OnMouseWheel")
+			originalTabs[tab] = nil
+		end
 	end
 
 	FCFTab_UpdateAlpha(_G[CHAT_FRAMES[tab:GetID()]])
 end
 
-local function configureTabs(minimalist)
-	if minimalist then
-		_G.CHAT_FRAME_FADE_OUT_TIME = 0.5
-		_G.CHAT_TAB_HIDE_DELAY = 0
-		_G.CHAT_FRAME_TAB_SELECTED_NOMOUSE_ALPHA = 0
-		_G.CHAT_FRAME_TAB_NORMAL_NOMOUSE_ALPHA = 0
+local function configureTabs(minimalist, disableFading)
+	if minimalist or disableFading then
+		if not originalTabGlobals then
+			originalTabGlobals = {
+				fadeOutTime = _G.CHAT_FRAME_FADE_OUT_TIME,
+				hideDelay = _G.CHAT_TAB_HIDE_DELAY,
+				selectedMouseAlpha = _G.CHAT_FRAME_TAB_SELECTED_MOUSEOVER_ALPHA,
+				selectedNoMouseAlpha = _G.CHAT_FRAME_TAB_SELECTED_NOMOUSE_ALPHA,
+				normalMouseAlpha = _G.CHAT_FRAME_TAB_NORMAL_MOUSEOVER_ALPHA,
+				normalNoMouseAlpha = _G.CHAT_FRAME_TAB_NORMAL_NOMOUSE_ALPHA,
+			}
+		end
+		_G.CHAT_FRAME_FADE_OUT_TIME = minimalist and 0.5 or originalTabGlobals.fadeOutTime
+		_G.CHAT_TAB_HIDE_DELAY = minimalist and 0 or originalTabGlobals.hideDelay
+		_G.CHAT_FRAME_TAB_SELECTED_NOMOUSE_ALPHA = disableFading and originalTabGlobals.selectedMouseAlpha or 0
+		_G.CHAT_FRAME_TAB_NORMAL_NOMOUSE_ALPHA = disableFading and originalTabGlobals.normalMouseAlpha or 0
 	else
-		_G.CHAT_FRAME_FADE_OUT_TIME = 2
-		_G.CHAT_TAB_HIDE_DELAY = 1
-		_G.CHAT_FRAME_TAB_SELECTED_NOMOUSE_ALPHA = 0.4
-		_G.CHAT_FRAME_TAB_NORMAL_NOMOUSE_ALPHA = 0.2
+		if originalTabGlobals then
+			_G.CHAT_FRAME_FADE_OUT_TIME = originalTabGlobals.fadeOutTime
+			_G.CHAT_TAB_HIDE_DELAY = originalTabGlobals.hideDelay
+			_G.CHAT_FRAME_TAB_SELECTED_NOMOUSE_ALPHA = originalTabGlobals.selectedNoMouseAlpha
+			_G.CHAT_FRAME_TAB_NORMAL_NOMOUSE_ALPHA = originalTabGlobals.normalNoMouseAlpha
+			originalTabGlobals = nil
+		end
 	end
 
 	for i, name in ipairs(CHAT_FRAMES) do
@@ -549,7 +281,7 @@ local function configureTabs(minimalist)
 end
 
 local function urlFilterFunc(frame, event, msg, ...)
-	if not msg then return false, msg, ... end
+	if not msg or issecretvalue(msg) then return false, msg, ... end
 
 	for i, v in ipairs(urlPatterns) do
 		msg = gsub(msg, v.pattern, v.matchfunc)
@@ -558,8 +290,24 @@ local function urlFilterFunc(frame, event, msg, ...)
 	return false, msg, ...
 end
 
-local function replaceChannel(origChannel, msg, num, channel)
-	return ("|Hchannel:%s|h%s|h "):format(origChannel, shortChannelNames[channel] or msg)
+local function replaceChannel(origChannel, label)
+	local replacement = shortChannelLinks[origChannel]
+	if not replacement then
+		local channelName = label:match("^%[[%d%. ]*(.-)%]$")
+		if channelName then
+			channelName = channelName:gsub("%s+%-%s+.*$", "")
+			replacement = shortChannelNames[channelName]
+		end
+
+		if not replacement then
+			local channelNumber = label:match("^%[(%d+)%.")
+			if channelNumber then
+				replacement = "["..channelNumber.."]"
+			end
+		end
+	end
+
+	return ("|Hchannel:%s|h%s|h"):format(origChannel, replacement or label)
 end
 
 local function replaceChannelRW(msg, channel)
@@ -588,7 +336,7 @@ end
 function module:SetColors()
 	local EditBox = module:GetModule("EditBox")
 	for i, name in ipairs(CHAT_FRAMES) do
-		EditBox:ChatEdit_UpdateHeader(_G[name].editBox)
+		EditBox:UpdateEditBoxBackground(_G[name].editBox)
 	end
 end
 
@@ -611,8 +359,8 @@ function module:FCF_OpenTemporaryWindow()
 		if GENERAL_CHAT_DOCK:IsMouseOver() or GENERAL_CHAT_DOCK.selected:IsMouseOver() then
 			frame.hasBeenFaded = true
 		end
-		configureTab(_G[frame:GetName().."Tab"], true)
 	end
+	configureTab(_G[frame:GetName().."Tab"], db.General.MinimalistTabs)
 
 	frame:SetFont(Media:Fetch("font", db.General.Font.Font), db.General.Font.Size, db.General.Font.Flag)
 
@@ -620,92 +368,75 @@ function module:FCF_OpenTemporaryWindow()
 		self:RawHook(frame, "AddMessage", true)
 	end
 
-	if db.General.DisableFading then
-		frame:SetFading(nil)
-	end
+	frame:SetFading(not db.General.DisableFading)
 
-	if not self:IsHooked(frame, "OnHyperlinkEnter") then
+	if db.General.LinkHover and not self:IsHooked(frame, "OnHyperlinkEnter") then
 		self:HookScript(frame, "OnHyperlinkEnter")
 		self:HookScript(frame, "OnHyperlinkLeave")
 	end
-end
 
-function module:FCF_SavePositionAndDimensions(chatFrame)
-	if chatFrame ~= GENERAL_CHAT_DOCK.primary then return end
-
-	local width, height = GetChatWindowSavedDimensions(chatFrame:GetID())
-	if (width and height) then
-		db.width, db.height = width, height
-	end
-
-	local point, xOffset, yOffset = GetChatWindowSavedPosition(chatFrame:GetID())
-	if point then
-		db.x = xOffset * GetScreenWidth()
-		db.y = yOffset * GetScreenHeight()
-		db.point = point
+	if db.General.ShiftMouseScroll and not self:IsHooked(frame, "OnMouseWheel") then
+		self:HookScript(frame, "OnMouseWheel", "ScrollFrame_OnMouseWheel")
 	end
 end
 
 function module:SetItemRef(link, text, button, chatFrame)
-	if IsAltKeyDown() and strsub(link, 1, 6) == "player" then
-		C_PartyInfo.InviteUnit(link:match("player:([^:]+)"))
-		if ChatEdit_GetActiveWindow() then
-			ChatEdit_OnEscapePressed(ChatEdit_GetActiveWindow())
+	if not issecretvalue(link) then
+		local linkType, linkOptions = LinkUtil.SplitLinkData(link)
+		if linkType == "url" then
+			showURLCopy(linkOptions)
+			return
+		elseif IsAltKeyDown() and linkType == "player" then
+			local playerName = linkOptions and linkOptions:match("^([^:]+)")
+			if playerName then C_PartyInfo.InviteUnit(playerName) end
+			local editBox = ChatFrameUtil.GetActiveWindow()
+			if editBox then editBox:OnEscapePressed() end
+			return
 		end
-		return false
-	end
-	return true
-end
-
-function module:SetHyperlink(frame, link, ...)
-	if IsAltKeyDown() and strsub(link, 1, 6) == "player" then
-		C_PartyInfo.InviteUnit(link:match("player:([^:]+)"))
-		if ChatEdit_GetActiveWindow() then
-			ChatEdit_OnEscapePressed(ChatEdit_GetActiveWindow())
-        end
-		return
 	end
 
-	if strsub(link, 1, 3) == "url" then
-		local dialog = StaticPopup_Show("LUI_Chat_UrlCopy")
-		dialog.editBox:SetText(strsub(link, 5))
-		dialog.editBox:SetFocus()
-		dialog.editBox:HighlightText(0)
-		return
-	end
-
-	return self.hooks[frame].SetHyperlink(frame, link, ...)
+	return self.hooks.SetItemRef(link, text, button, chatFrame)
 end
 
 function module:AddMessage(frame, text, ...)
 	if text and not issecretvalue(text) then
 		if text:match("|Hchannel:") then
-			text = gsub(text, "|Hchannel:(%S-)|h(%[([%d. ]*)([^%]]+)%])|h ", replaceChannel)
+			text = gsub(text, "|Hchannel:([^|]+)|h(%b[])|h", replaceChannel)
 		elseif text:match("WHISPER:.-|h") then
 			text = gsub(text, "^(.+:)", replaceWhisper)
 		else
 			text = gsub(text, rwFormat, replaceChannelRW)
-			text = gsub(text, "has come online.", "is now online!")
-			text = gsub(text, "(|Hplayer:.-|h) %a-:", "%1:") -- strip say/yell
 		end
 	end
 
 	return self.hooks[frame].AddMessage(frame, text, ...)
 end
 
-function module:OnHyperlinkEnter(frame, link)
-	if linkTypes[strmatch(link, "^(.-):")] then
-		GameTooltip:SetOwner(UIParent, "ANCHOR_CURSOR")
-		GameTooltip:SetHyperlink(link)
-		GameTooltip:Show()
+function module:OnHyperlinkEnter(frame, link, text)
+	-- Retail chat text can be secret even when its hyperlink payload is safe.
+	-- GameTooltip only needs the payload for normal links, so do not suppress
+	-- item tooltips merely because the displayed text is protected.
+	if issecretvalue(link) then return end
+	local linkType = LinkUtil.SplitLinkData(link)
+	if linkTypes[linkType] then
+		GameTooltip:SetOwner(frame, "ANCHOR_CURSOR_RIGHT")
+		if linkType == "battlepet" then
+			if not issecretvalue(text) and BattlePetToolTip_ShowLink(text) then
+				showingHyperlinkTooltip = BattlePetTooltip
+			end
+		else
+			GameTooltip:SetHyperlink(link)
+			GameTooltip:Show()
+			showingHyperlinkTooltip = GameTooltip
+		end
 	end
 end
 
 function module:OnHyperlinkLeave(frame, link)
-	--As of 7.1, link returns nil.
-	--if linkTypes[strmatch(link, "^(.-):")] then
-		GameTooltip:Hide()
-	--end
+	if showingHyperlinkTooltip then
+		showingHyperlinkTooltip:Hide()
+		showingHyperlinkTooltip = nil
+	end
 end
 
 function module:OnMouseWheel(tab, direction)
@@ -747,11 +478,6 @@ end
 
 module.defaults = {
 	profile = {
-		x = 28,
-		y = 46,
-		point = "BOTTOMLEFT",
-		width = 404,
-		height = 171,
 		General = {
 			Font = {
 				Font = (function()
@@ -767,60 +493,16 @@ module.defaults = {
 			},
 			ShortChannelNames = true,
 			DisableFading = true,
+			DisableTabFading = false,
 			MinimalistTabs = true,
 			LinkHover = true,
-			BackgroundColor = {0, 0, 0, 0.4},
 			ShiftMouseScroll = true,
 		},
 	},
 }
 
-module.conflicts = "Chatter;Prat |cff8080ff3.0|r"
+module.conflicts = {"Chatter", "Prat-3.0"}
 module.enableButton = true
-
-module.getter = "generic"
-module.setter = "Refresh"
-
---------------------------------------------------
--- Load Functions
---------------------------------------------------
-
-function module:LoadOptions()
-	local function refresh()
-		self:Refresh()
-	end
-	local function resetChatPos()
-		db.x = dbd.x
-		db.y = dbd.y
-		db.point = dbd.point
-		db.width = dbd.width
-		db.height = dbd.height
-
-		positionChatFrame()
-	end
-
-	local options = {
-		General = self:NewGroup(L["General Settings"], 1, {
-			Font = self:NewGroup(L["Font"], 1, true, {
-				Font = self:NewSelect(L["Font"], L["Choose a font"], 1, true, "LSM30_Font", refresh),
-				Flag = self:NewSelect(L["Flag"], L["Choose a font flag"], 2, LUI.FontFlags, false, refresh),
-				Size = self:NewSlider(L["Size"], L["Choose a fontsize"], 3, 6, 20, 1, true, false, "full")
-			}),
-			ShortChannelNames = self:NewToggle(L["Short channel names"], L["Use abreviated channel names"], 2, true),
-			DisableFading = self:NewToggle(L["Disable fading"], L["Stop the chat from fading out over time"], 3, true),
-			MinimalistTabs = self:NewToggle(L["Minimalist tabs"], L["Use minimalist style tabs"], 4, true),
-			LinkHover = self:NewToggle(L["Link hover tooltip"], L["Show tooltip when mousing over links in chat"], 5, true),
-			ShiftMouseScroll = self:NewToggle(L["Shift mouse scrolling"], L["Holding shift while mouse scrolling will jump to top or bottom"], 6, refresh),
-			--BackgroundColor = self:NewColor(L["Chat Background"], nil, 7, refresh, "full"),
-			--ResetPosition = self:NewExecute(L["Reset position"], L["Reset the main chat dock's position"], 8, resetChatPos, L["Are you sure?"]),
-		}),
-		StickyChannels = module:GetModule("StickyChannels"):LoadOptions(),
-		EditBox = module:GetModule("EditBox"):LoadOptions(),
-		Buttons = module:GetModule("Buttons"):LoadOptions(),
-	}
-
-	return options
-end
 
 function module:Refresh(info, value)
 	if type(info) == "table" then
@@ -829,6 +511,7 @@ function module:Refresh(info, value)
 
 	for i, name in ipairs(CHAT_FRAMES) do
 		local frame = _G[name]
+		captureChatFrame(frame)
 
 		if db.General.ShortChannelNames then
 			if frame ~= COMBATLOG and not self:IsHooked(frame, "AddMessage") then
@@ -858,13 +541,9 @@ function module:Refresh(info, value)
 
 		frame:SetFading(not db.General.DisableFading)
 
-		-- local r, g, b, a = unpack(db.General.BackgroundColor)
-		-- FCF_SetWindowColor(frame, r, g, b)
-		-- SetChatWindowColor(i, r, g, b)
-		-- FCF_SetWindowAlpha(frame, a)
 	end
 
-	configureTabs(db.General.MinimalistTabs)
+	configureTabs(db.General.MinimalistTabs, db.General.DisableTabFading)
 
 	self:LibSharedMedia_Registered("font", db.General.Font.Font)
 
@@ -876,26 +555,28 @@ function module:Refresh(info, value)
 end
 
 function module:DBCallback(event, dbobj, profile)
-	db, dbd = LUI:Namespace(self)
+	db = LUI:Namespace(self)
+	db.modules = db.modules or {}
 
 	for name, module in self:IterateModules() do
 		if module.DBCallback then
 			module:DBCallback()
 		end
 
-		if db.modules[name] ~= nil and db.modules[name] ~= module:IsEnabled() then
-			module:Toggle(db.modules)
+		local shouldEnable = self:IsEnabled() and db.modules[name] ~= false
+		if shouldEnable ~= module:IsEnabled() then
+			module:LegacyToggle(shouldEnable)
 		end
 	end
 
 	if self:IsEnabled() then
-		positionChatFrame()
 		self:Refresh()
 	end
 end
 
 function module:OnInitialize()
-	db, dbd = LUI:Namespace(self, true)
+	db = LUI:Namespace(self, true)
+	db.modules = db.modules or {}
 	LUI.Profiler.TraceScope(module, "Chat", "LUI", 2)
 
 	local disabled = not self.enabledState
@@ -905,26 +586,23 @@ function module:OnInitialize()
 
 		if disabled then
 			module:SetEnabledState(false)
-		elseif db[name] then
-			module:SetEnabledState(db[name].Enable)
+		elseif db.modules[name] ~= nil then
+			module:SetEnabledState(db.modules[name])
 		end
 	end
 end
 
 function module:OnEnable()
-	
+	db.modules = db.modules or {}
+		
 	Media.RegisterCallback(self, "LibSharedMedia_Registered")
 
 	if createStaticPopups then
 		createStaticPopups()
 	end
 
-	positionChatFrame()
-
-	self:RawHook(_G.ItemRefTooltip, "SetHyperlink", true)
-	self:SecureHook("FCF_SavePositionAndDimensions")
 	self:SecureHook("FCF_OpenTemporaryWindow")
-	self:SecureHook("SetItemRef")
+	self:RawHook("SetItemRef", true)
 
 	for i, name in ipairs(CHAT_FRAMES) do
 		local frame = _G[name]
@@ -932,7 +610,7 @@ function module:OnEnable()
 	end
 
 	for _, event in ipairs(urlEvents) do
-		ChatFrame_AddMessageEventFilter(event, urlFilterFunc)
+		ChatFrameUtil.AddMessageEventFilter(event, urlFilterFunc)
 	end
 
 	self:Refresh()
@@ -947,19 +625,29 @@ end
 function module:OnDisable()
 	Media.UnregisterCallback(self, "LibSharedMedia_Registered")
 
+	for name, childModule in self:IterateModules() do
+		if childModule:IsEnabled() then
+			childModule:Disable()
+		end
+	end
+
 	self:UnhookAll()
 
-	if db.General.MinimalistTabs then
-		configureTabs(false)
-	end
+	configureTabs(false, false)
 
 	for i, name in ipairs(CHAT_FRAMES) do
 		local chatFrame = _G[name]
-		chatFrame:SetFading(true)
-		chatFrame:SetFont(Media:Fetch("font", dbd.General.Font.Font), 14)
+		local original = originalChatFrames[chatFrame]
+		if original then
+			chatFrame:SetFading(original.fading)
+			chatFrame:SetFont(original.font, original.fontSize, original.fontFlags)
+			chatFrame:SetClampRectInsets(unpack(original.clampInsets))
+			chatFrame:SetClampedToScreen(original.clamped)
+			originalChatFrames[chatFrame] = nil
+		end
 	end
 
 	for _, event in ipairs(urlEvents) do
-		ChatFrame_RemoveMessageEventFilter(event, urlFilterFunc)
+		ChatFrameUtil.RemoveMessageEventFilter(event, urlFilterFunc)
 	end
 end

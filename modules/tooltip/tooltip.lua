@@ -13,7 +13,6 @@ local module = LUI:NewModule("Tooltip", "AceHook-3.0")
 local Media = LibStub("LibSharedMedia-3.0")
 local db
 
-local QuestMapLog_GetCampaignTooltip = _G.QuestMapLog_GetCampaignTooltip
 local TooltipDataProcessor = _G.TooltipDataProcessor
 local GameTooltipStatusBar = _G.GameTooltipStatusBar
 local BreakUpLargeNumbers = _G.BreakUpLargeNumbers
@@ -50,7 +49,6 @@ local TOOLTIPS_LIST = {
 	"ShoppingTooltip1",
 	"ShoppingTooltip2",
 	"FriendsTooltip",
-	"TicketStatusFrameButton",
 	"DropDownList1MenuBackdrop",
 	"DropDownList2MenuBackdrop",
 	"BrowserSettingsTooltip",
@@ -75,13 +73,15 @@ local TOOLTIPS_LIST = {
 	"ContributionTooltip",
 	"ContributionBuffTooltip",
 	"AddonTooltip",
-	"LibDBIconTooltip",
-	"AceConfigDialogTooltip",
 }
+
+local TOOLTIP_BACKGROUND_TILE_SIZE = 16
 
 -- local variables
 local oldDefault = {}
-local initialScale = {}
+local initialScale = setmetatable({}, { __mode = "k" })
+local nativeBackdrop = setmetatable({}, { __mode = "k" })
+local tooltipPostCallRegistered = false
 
 -- ####################################################################################################################
 -- ##### Default Settings #############################################################################################
@@ -105,8 +105,9 @@ module.defaults = {
 		BgTexture = "Blizzard Dialog Background Dark",
 		Colors = {
 			Border =     { r = 0.3,  g = 0.3,  b = 0.3,  a = 1, t = "Individual", },
-			Guild =      { r = 0,    g = 1,    b = 0.1,                           },
-			MyGuild =    { r = 0,    g = 0.55, b = 1,                             },
+			Background = { r = 0,    g = 0,    b = 0,    a = 0.8,                   },
+			Guild =      { r = 0,    g = 0.55, b = 1,                             },
+			MyGuild =    { r = 0,    g = 1,    b = 0.1,                           },
 		},
 		Fonts = {
 			Health = { Name = "NotoSans-SCB", Size = 12, Flag = "OUTLINE", },
@@ -120,32 +121,42 @@ module.defaults = {
 
 function module:RevertTooltipBackdrop()
 	for i = 1, #TOOLTIPS_LIST do
-		local tooltipName = TOOLTIPS_LIST[i]
-		local tooltip = _G[tooltipName]
-		if tooltip then
-			if tooltip.NineSlice then tooltip.NineSlice:SetAlpha(1) end
-			tooltip:SetScale(initialScale[tooltipName] or 1)
+		local tooltip = _G[TOOLTIPS_LIST[i]]
+		if tooltip and (not tooltip.IsForbidden or not tooltip:IsForbidden()) then
+			module:RestoreNativeBackdrop(tooltip)
+			tooltip:SetScale(initialScale[tooltip] or 1)
 		end
 	end
 
 	-- This tooltip has no name, need to fetch and manually invoke
 	-- It is the tooltip that appears when hovering the campaign at the top of the questlog
-	local campaignFrame = _G.QuestMapLog_GetCampaignTooltip()
-	campaignFrame.NineSlice:SetAlpha(1)
-	campaignFrame:SetScale(1)
+	local getCampaignTooltip = _G.QuestMapLog_GetCampaignTooltip
+	local campaignFrame = getCampaignTooltip and getCampaignTooltip()
+	if campaignFrame and (not campaignFrame.IsForbidden or not campaignFrame:IsForbidden()) then
+		module:RestoreNativeBackdrop(campaignFrame)
+		campaignFrame:SetScale(initialScale[campaignFrame] or 1)
+	end
 end
 
 function module:RevertHealthBar()
 	local health = GameTooltipStatusBar
-	local numPoints = health:GetNumPoints()
+	local stored = oldDefault.Health
+	if not stored then return end
 	health:ClearAllPoints()
-	for i = 1, numPoints do
-		local point, relativeTo, relativePoint, xOffset, yOffset = unpack(oldDefault.Health.Points[i])
+	for i = 1, #stored.Points do
+		local point, relativeTo, relativePoint, xOffset, yOffset = unpack(stored.Points[i])
 		health:SetPoint(point, relativeTo, relativePoint, xOffset, yOffset)
 	end
-	health:SetHeight(oldDefault.Health.Height)
-	health:SetStatusBarTexture(oldDefault.Health.StatusBarTexture)
-	health:SetScript("OnValueChanged", oldDefault.Health.OnValueChanged)
+	health:SetHeight(stored.Height)
+	local texture = health:GetStatusBarTexture()
+	if stored.StatusBarAtlas then
+		texture:SetAtlas(stored.StatusBarAtlas)
+	else
+		texture:SetTexture(stored.StatusBarTexture)
+	end
+	texture:SetTexCoord(unpack(stored.StatusBarTexCoord))
+	texture:SetVertexColor(unpack(stored.StatusBarVertexColor))
+	health:SetScript("OnValueChanged", stored.OnValueChanged)
 	if health.text then health.text:Hide() end
 end
 
@@ -192,9 +203,32 @@ function module:GetTooltipUnit(data, tooltip)
 			return unit
 		end
 	end
-	if UnitExists("mouseover") then
+	local mouseoverExists = UnitExists("mouseover")
+	if not issecretvalue(mouseoverExists) and mouseoverExists then
 		return "mouseover"
 	end
+end
+
+local function SetTooltipBackgroundTexture(frame, background, texture)
+	background:SetTexture(texture, true, true)
+
+	-- SharedMedia background entries are backdrop tiles, not full-frame images.
+	-- Reproduce BackdropTemplate's tile sizing on the existing NineSlice center
+	-- without feeding protected tooltip dimensions into SharedXML/Backdrop.lua.
+	local width, height = background:GetSize()
+	if not issecretvalue(width) and not issecretvalue(height)
+		and type(width) == "number" and type(height) == "number" then
+		local scale = frame:GetEffectiveScale()
+		if issecretvalue(scale) or type(scale) ~= "number" then scale = 1 end
+		background:SetTexCoord(
+			0, math.max(1, width * scale / TOOLTIP_BACKGROUND_TILE_SIZE),
+			0, math.max(1, height * scale / TOOLTIP_BACKGROUND_TILE_SIZE)
+		)
+	else
+		background:SetTexCoord(0, 1, 0, 1)
+	end
+	-- Preserve Blizzard's existing NineSlice center color. LibQTip-based
+	-- addons copy GameTooltip's colors without copying its background texture.
 end
 
 function module:UpdateTooltipBackdrop(frame)
@@ -202,24 +236,75 @@ function module:UpdateTooltipBackdrop(frame)
 	if frame.IsForbidden and frame:IsForbidden() then return end
 
 	-- Keep Blizzard's 12.1 NineSlice layout and only change its existing
-	-- textures and colors. Adding BackdropTemplateMixin or calling SetBackdrop
+	-- textures and colors. Adding the legacy backdrop mixin or API calls
 	-- here can make secret tooltip dimensions enter Backdrop.lua arithmetic.
 	local nineSlice = frame.NineSlice
-	if nineSlice then
+	if nineSlice and not (nineSlice.IsForbidden and nineSlice:IsForbidden()) then
+		module:CaptureNativeBackdrop(frame)
 		nineSlice:SetAlpha(1)
 
 		local background = nineSlice.Center
 		if background and background.SetTexture then
-			background:SetTexture(Media:Fetch("background", db.BgTexture))
-			background:SetTexCoord(0, 1, 0, 1)
-			-- Preserve Blizzard's existing center color. LibQTip-based addons copy
-			-- GameTooltip's colors without copying its background texture.
+			local texture = Media:Fetch("background", db.BgTexture, true)
+			if db.BgTexture == "None" or not texture or texture == "" then
+				background:SetColorTexture(1, 1, 1, 1)
+				background:SetTexCoord(0, 1, 0, 1)
+				background:SetVertexColor(module:RGBA("Background"))
+			else
+				SetTooltipBackgroundTexture(frame, background, texture)
+			end
 		end
 
 		if nineSlice.SetBorderColor then
 			nineSlice:SetBorderColor(module:RGBA("Border"))
 		end
 	end
+end
+
+function module:CaptureNativeBackdrop(frame, refreshCenter)
+	local nineSlice = frame and frame.NineSlice
+	local background = nineSlice and nineSlice.Center
+	if not background or (nineSlice.IsForbidden and nineSlice:IsForbidden()) then return end
+
+	local state = nativeBackdrop[frame]
+	if not state then
+		state = {
+			alpha = nineSlice:GetAlpha(),
+			borderColor = { nineSlice:GetBorderColor() },
+		}
+		nativeBackdrop[frame] = state
+	end
+
+	if refreshCenter or not state.centerTexture then
+		state.centerAtlas = background.GetAtlas and background:GetAtlas() or nil
+		state.centerTexture = background:GetTexture()
+		state.centerTexCoord = { background:GetTexCoord() }
+		state.centerColor = { background:GetVertexColor() }
+	end
+end
+
+function module:RestoreNativeBackdrop(frame)
+	local state = nativeBackdrop[frame]
+	local nineSlice = frame and frame.NineSlice
+	local background = nineSlice and nineSlice.Center
+	if not state or not background then return end
+
+	if state.centerAtlas then
+		background:SetAtlas(state.centerAtlas)
+	else
+		background:SetTexture(state.centerTexture)
+	end
+	background:SetTexCoord(unpack(state.centerTexCoord))
+	background:SetVertexColor(unpack(state.centerColor))
+	nineSlice:SetBorderColor(unpack(state.borderColor))
+	nineSlice:SetAlpha(state.alpha)
+	nativeBackdrop[frame] = nil
+end
+
+function module:OnBackdropStyleApplied(frame)
+	if not module:IsEnabled() or not initialScale[frame] then return end
+	module:CaptureNativeBackdrop(frame, true)
+	module:UpdateTooltipBackdrop(frame)
 end
 
 -- Debug function, this will call UpdateTooltipBackdrop, optionally add a tooltip before doing so.
@@ -254,7 +339,10 @@ function module:GetUnitColor(unit)
 		return 1, 1, 1
 	elseif isPlayer and not hasVehicleUI then
 		local _, class = UnitClass(unit)
-		if issecretvalue(class) then return 1, 1, 1 end
+		if issecretvalue(class) then
+			local color = C_ClassColor.GetClassColor(class)
+			return color:GetRGB()
+		end
 		return module:RGB(class)
 	else
 		return LUI:GetReactionColor(unit)
@@ -265,17 +353,19 @@ end
 -- ##### Module Setup #################################################################################################
 -- ####################################################################################################################
 
-function module:SetTooltip(tooltip, name)
+function module:SetTooltip(tooltip)
+	if not tooltip or (tooltip.IsForbidden and tooltip:IsForbidden()) then return end
+
 	-- Retail tooltips use SharedTooltipTemplate/NineSlice natively.
-	-- Keep that native layout instead of mixing BackdropTemplate into
+	-- Keep that native layout instead of mixing legacy backdrop support into
 	-- Blizzard/Ace tooltips after creation.
 	if tooltip.NineSlice then
 		tooltip.NineSlice:SetAlpha(1)
 	end
 
 	-- Store initial scale for future reference
-	if name and not initialScale[name] then
-		initialScale[name] = tooltip:GetScale()
+	if not initialScale[tooltip] then
+		initialScale[tooltip] = tooltip:GetScale()
 	end
 
 	-- Hook its OnShow
@@ -291,15 +381,19 @@ function module:SetTooltips()
 		local tooltip = _G[tooltipName]
 
 		if tooltip then
-			module:SetTooltip(tooltip, tooltipName)
+			module:SetTooltip(tooltip)
 		end
 	end
 
 	-- This tooltip has no name, need to fetch and manually invoke
 	-- It is the tooltip that appears when hovering the campaign at the top of the questlog
-	if LUI.IsRetail then module:SetTooltip(QuestMapLog_GetCampaignTooltip()) end
+	local getCampaignTooltip = _G.QuestMapLog_GetCampaignTooltip
+	if LUI.IsRetail and getCampaignTooltip then
+		module:SetTooltip(getCampaignTooltip())
+	end
 
-	-- TODO: Yet to solve the StoreTooltip, if possible
+	-- StoreTooltip belongs to Blizzard_StoreUI's forbidden scope in Retail 12.1.
+	-- Addons must leave it untouched.
 end
 
 -- luacheck: globals GameTooltipStatusBar
@@ -326,7 +420,11 @@ function module:SetStatusHealthBar()
 			oldDefault.Health.Points[i] = { health:GetPoint(i) }
 		end
 		oldDefault.Health.Height = health:GetHeight()
-		oldDefault.Health.StatusBarTexture = health:GetStatusBarTexture()
+		local statusBarTexture = health:GetStatusBarTexture()
+		oldDefault.Health.StatusBarAtlas = statusBarTexture.GetAtlas and statusBarTexture:GetAtlas() or nil
+		oldDefault.Health.StatusBarTexture = statusBarTexture:GetTexture()
+		oldDefault.Health.StatusBarTexCoord = { statusBarTexture:GetTexCoord() }
+		oldDefault.Health.StatusBarVertexColor = { statusBarTexture:GetVertexColor() }
 		oldDefault.Health.OnValueChanged = health:GetScript("OnValueChanged")
 	end
 
@@ -348,7 +446,7 @@ function module:SetBorderColor(frame)
 	local health = GameTooltipStatusBar
 	local tooltipData = frame.GetTooltipData and frame:GetTooltipData()
 	local tooltipType = tooltipData and tooltipData.type
-	local r, g, b = module:RGB("Border")
+	local color = module:Color("Border")
 
 	if db.Colors.Border.t == "Class"
 		and not issecretvalue(tooltipType)
@@ -359,17 +457,21 @@ function module:SetBorderColor(frame)
 			local reaction = UnitReaction(unit, "player")
 			if not issecretvalue(playerUnit) and playerUnit then
 				local _, class = UnitClass(unit)
-				if not issecretvalue(class) then
-					r, g, b = module:RGB(class)
+				if issecretvalue(class) then
+					color = C_ClassColor.GetClassColor(class)
+				elseif class then
+					color = module:Color(class)
 				end
 			elseif not issecretvalue(reaction) and reaction then
-				r, g, b = LUI:GetReactionColor(unit)
+				color = CreateColor(LUI:GetReactionColor(unit))
 			end
 		end
 	end
 
-	health:SetStatusBarColor(r, g, b)
+	if not color then return end
+	health:SetStatusBarColor(color:GetRGB())
 	if frame.NineSlice and frame.NineSlice.SetBorderColor then
+		local r, g, b = color:GetRGB()
 		frame.NineSlice:SetBorderColor(r, g, b, 1)
 	end
 end
@@ -378,7 +480,8 @@ function module:UpdateBackdropColors()
 	for i = 1, #TOOLTIPS_LIST do
 		module:UpdateTooltipBackdrop(_G[TOOLTIPS_LIST[i]])
 	end
-	GameTooltipStatusBar:SetStatusBarColor(module:RGB("Border"))
+	local color = module:Color("Border")
+	if color then GameTooltipStatusBar:SetStatusBarColor(color:GetRGB()) end
 end
 
 function module:Refresh()
@@ -416,16 +519,14 @@ function module.OnStatusBarValueChanged(frame)
 end
 
 function module:OnTooltipShow(frame)
+	if not module:IsEnabled() then return end
 	if db.HideCombat and InCombatLockdown() then
 		return frame:Hide()
 	end
-	
-	---@TODO: Investigate why a frame with no name would be called for this function. Issue #46
-	if not frame.GetName then return end
 
 	--If a frame has a smaller scale than normal for any reasons, make sure that's respected.
-	if initialScale[frame:GetName()] then
-		frame:SetScale(initialScale[frame:GetName()] * db.Scale)
+	if initialScale[frame] then
+		frame:SetScale(initialScale[frame] * db.Scale)
 	else
 		frame:SetScale(db.Scale)
 	end
@@ -439,35 +540,36 @@ local function GetGuildTooltipLine(data)
 	local lines = data and data.lines
 	if not lines or issecretvalue(lines) then return end
 
-	-- Blizzard does not assign a dedicated TooltipDataLineType to the guild
-	-- row. In a player tooltip the guild row directly precedes the localized
-	-- level row, so identify both from the structured tooltip data.
-	local guildLine = lines[2]
-	local levelLine = lines[3]
-	local unitLine = lines[1]
-	if not unitLine or not guildLine or not levelLine
-		or issecretvalue(unitLine) or issecretvalue(guildLine)
-		or issecretvalue(levelLine) then return end
-
-	local guildText = guildLine.leftText
-	local levelText = levelLine.leftText
-	if not guildText or not levelText
-		or issecretvalue(guildText) or issecretvalue(levelText) then return end
-
-	if levelText:find(LEVEL, 1, true) then
-		local unit = unitLine.unitToken
-		if issecretvalue(unit) then unit = nil end
-		return 2, guildText, unit
+	-- The guild row has no dedicated line type. Locate Blizzard's UnitLevel
+	-- row and color the immediately preceding row instead of assuming that
+	-- guild and level are always lines 2 and 3.
+	for index = 3, #lines do
+		local levelLine = lines[index]
+		if levelLine and not issecretvalue(levelLine) then
+			local levelText = levelLine.leftText
+			local isLevelLine = levelLine.type == Enum.TooltipDataLineType.UnitLevel
+				or (levelText and not issecretvalue(levelText) and levelText:find(LEVEL, 1, true))
+			if isLevelLine then
+				local guildIndex = index - 2
+				if guildIndex <= 1 then return end
+				local guildLine = lines[guildIndex]
+				local guildText = guildLine and not issecretvalue(guildLine) and guildLine.leftText
+				if guildText and not issecretvalue(guildText) then
+					return guildIndex, guildText
+				end
+			end
+		end
 	end
 end
 
 function module:ApplyGuildColor(frame, data)
 	if not frame or frame:IsForbidden() then return end
 
-	local lineIndex, tooltipGuild, unit = GetGuildTooltipLine(data)
+	local lineIndex, tooltipGuild = GetGuildTooltipLine(data)
 	if not tooltipGuild or not lineIndex then return end
 
 	local guildColorName = "Guild"
+	local unit = module:GetTooltipUnit(data, frame)
 	local isMyGuild = unit and UnitIsInMyGuild(unit)
 	if not issecretvalue(isMyGuild) and isMyGuild then
 		guildColorName = "MyGuild"
@@ -484,6 +586,7 @@ end
 ---@param frame GameTooltip
 ---@param data TooltipData
 function module.OnGameTooltipSetUnit(frame, data)
+	if not module:IsEnabled() then return end
 	if frame:IsForbidden() then return end
 	-- luacheck: globals GameTooltipTextLeft1
 	
@@ -535,9 +638,11 @@ function module.OnGameTooltipSetUnit(frame, data)
 
 	if isPlayer then
 		-- Display status next to name
-		if not issecretvalue(UnitIsDND(unit)) and UnitIsDND(unit) then
+		local isDND = UnitIsDND(unit)
+		local isAFK = UnitIsAFK(unit)
+		if not issecretvalue(isDND) and isDND then
 			frame:AppendText(" "..CHAT_FLAG_DND)
-		elseif not issecretvalue(UnitIsAFK(unit)) and UnitIsAFK(unit) then
+		elseif not issecretvalue(isAFK) and isAFK then
 			frame:AppendText(" "..CHAT_FLAG_AFK)
 		end
 	end
@@ -555,6 +660,7 @@ function module.OnGameTooltipSetUnit(frame, data)
 end
 
 function module:HideCombatSkillTooltips(frame)
+	if not module:IsEnabled() then return end
 	if db.HideCombatSkills and InCombatLockdown() and not IsShiftKeyDown() then
 		frame:Hide()
 	end
@@ -576,9 +682,10 @@ function module:OnEnable()
 
 	-- Many tooltips are found in Blizzard LoadOnDemand addons
 	module:RegisterEvent("ADDON_LOADED", "SetTooltips")
-	module:SecureHook("SharedTooltip_SetBackdropStyle", "UpdateTooltipBackdrop")
+	module:SecureHook("SharedTooltip_SetBackdropStyle", "OnBackdropStyleApplied")
 
 	module:SecureHook("GameTooltip_SetDefaultAnchor", function(frame, parent)
+		if parent and parent.IsForbidden and parent:IsForbidden() then return end
 		if db.Cursor then
 			frame:SetOwner(parent, "ANCHOR_CURSOR")
 		else
@@ -590,7 +697,12 @@ function module:OnEnable()
 
 
 	module:SetStatusHealthBar()
-	TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, module.OnGameTooltipSetUnit)
+	-- Blizzard provides no removal API for tooltip post-calls. Register once and
+	-- let the callback's enabled-state guard handle later module toggles.
+	if not tooltipPostCallRegistered then
+		TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, module.OnGameTooltipSetUnit)
+		tooltipPostCallRegistered = true
+	end
 
 	--Hide ability tooltips if option is enabled
 	module:SecureHook(GameTooltip, "SetAction", "HideCombatSkillTooltips")
@@ -599,6 +711,8 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
+	module:UnregisterEvent("ADDON_LOADED")
+	module:UnhookAll()
 	module:RevertTooltipBackdrop()
 	module:RevertHealthBar()
 end

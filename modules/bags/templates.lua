@@ -8,36 +8,24 @@ local LUI = select(2, ...)
 ---@class LUI.Bags
 local module = LUI:GetModule("Bags")
 
-local GetInventoryItemTexture = _G.GetInventoryItemTexture
-local GetInventorySlotInfo = _G.GetInventorySlotInfo
-local PickupBagFromSlot = _G.PickupBagFromSlot
-local PutItemInBag = _G.PutItemInBag
-local ResetCursor = _G.ResetCursor
 local PlaySound = _G.PlaySound
 
 local CLEANUP_TEXTURE_ATLAS = "bags-button-autosort-up"
-local CLEANUP_TEXTURE = "Interface\\ContainerFrame\\Bags"
 local CLEANUP_SOUND = _G.SOUNDKIT.UI_BAG_SORTING_01
 
 local SEARCH = _G.SEARCH
 
---luacheck: globals BAG_CLEANUP_BAGS BAG_CLEANUP_BANK BAG_CLEANUP_REAGENT_BANK
---luacheck: globals PaperDollItemSlotButton_OnEvent PaperDollItemSlotButton_OnShow PaperDollItemSlotButton_OnHide
---luacheck: globals BagSlotButton_OnEnter BankFrameItemButton_OnEnter BankFrameItemButtonBag_OnClick
-
+--luacheck: globals BAG_CLEANUP_BAGS
 -- ####################################################################################################################
 -- ##### Templates: CleanUp Button ####################################################################################
 -- ####################################################################################################################
 
 local CLEANUP_TEXT = {
 	LUIBags_CleanUp = BAG_CLEANUP_BAGS,
-	LUIBank_CleanUp = BAG_CLEANUP_BANK,
-	LUIReagent_CleanUp = BAG_CLEANUP_REAGENT_BANK,
 }
 
 function module:CreateCleanUpButton(name, parent, sortFunc)
 	local button = module:CreateSlot(name, parent, "")
-	--module:ApplyBackdrop(button, module.itemBackdrop)
 	button:SetScript("OnClick", function()
 			PlaySound(CLEANUP_SOUND)
 			sortFunc()
@@ -49,9 +37,6 @@ function module:CreateCleanUpButton(name, parent, sortFunc)
 		end)
 	button:SetScript("OnLeave", _G.GameTooltip_Hide)
 
-	--Adjust the icon to fit CleanUp.
-	button.icon:SetTexCoord(LUI:GetCoordAtlas("CleanUp"))
-	button.icon:SetTexture(CLEANUP_TEXTURE)
 	button.icon:SetAtlas(CLEANUP_TEXTURE_ATLAS)
 
 	return button
@@ -86,8 +71,6 @@ function module:CreateSearchBar(container)
 	-- Editbox scripts
 	editbox:SetScript("OnEscapePressed", editbox.ClearFocus)
 	editbox:SetScript("OnEnterPressed", editbox.ClearFocus)
-	--editbox:SetScript("OnEditFocusLost", editbox.Hide)
-	--editbox:SetScript("OnEditFocusGained", editbox.HighlightText)
 	editbox:SetScript("OnTextChanged", function(self, text)
 		if text then
 			container:SearchUpdate(self:GetText())
@@ -110,13 +93,11 @@ function module:CreateSearchBar(container)
 	button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	button:SetAllPoints(search)
 
-	button:SetScript("OnClick", function(self, btn)
-		if btn == "RightButton" or container.editbox:IsShown() then
-			container:HideTitleBar()
-			container.editbox:Show()
-			container.clear:Show()
-			container.editbox:SetFocus()
-		end
+	button:SetScript("OnClick", function()
+		container:HideTitleBar()
+		container.editbox:Show()
+		container.clear:Show()
+		container.editbox:SetFocus()
 	end)
 	button:SetScript("OnMouseDown", function() container:StartMovingFrame() end)
 	button:SetScript("OnMouseUp", function() container:StopMovingFrame() end)

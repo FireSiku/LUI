@@ -1,6 +1,7 @@
--- This is the file for the four main panels used in LUI. These panels should ultimately be integrated into the new PanelMixin system.
--- At this time, there is a feature disparity between the way it generate its gradient and directions, so for now they are separate.
--- The four panels are the Chat, Tps, Dps, and Raid panels, they can be toggled using the navbar buttons.
+-- The four main Artwork panels are Chat, Tps, Dps and Raid. They can be
+-- toggled from the navigation bar. They remain separate from PanelMixin
+-- because their directional gradient and reveal animation need different
+-- texture coordinates and lifecycle handling.
 
 -- ####################################################################################################################
 -- ##### Setup and Locals #############################################################################################
@@ -12,25 +13,22 @@ local LUI = select(2, ...)
 ---@class LUI.Artwork : LUIModule
 local module = LUI:GetModule("Artwork")
 
-local TEX_DIR = [[Interface\AddOns\LUI\media\templates\v4\]]
 local OLD_DIR = [[Interface\AddOns\LUI\media\templates\v3\]]
 local ANIM_DURATION = 0.5
-local ALPHA = 0.75
 
 -- constants
 local INFOPANEL_TEXTURE = "Interface\\AddOns\\LUI\\media\\textures\\infopanel"
 
 local db
-local ThemesDB
 
----@type table<string, Frame|BackdropTemplate>
+---@type table<string, Frame>
 local _mainPanels = {}
 
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################
 
--- Black voodoo magic used for compatibility, as these panels used a now-deprecated function.
+-- Texture coordinates matching the four supported panel directions.
 local rotationCoords = {
 	[0] = {
 		-0.20710676908493, -- [1]
@@ -80,18 +78,21 @@ local function RotateTexture(self, degrees)
 end
 
 function module:SetChatVisible(setVisible)
-	for i=1,NUM_CHAT_WINDOWS do
-		for _,v in pairs{"","Tab"}do
-			local f=_G["ChatFrame"..i..v]
-			if not f.ORShow then f.ORShow = f.Show end
-			if setVisible then
-				f.Show = f.ORShow
-			else
-				f.v=f:IsVisible()
-				f.Show = f.Hide
-			end
-			if f.v then
-				f:Show()
+	for _, chatFrameName in ipairs(_G.CHAT_FRAMES) do
+		for _, suffix in ipairs{"", "Tab"} do
+			local f = _G[chatFrameName..suffix]
+			if f then
+				if setVisible then
+					if f.LUIArtworkChatHidden then
+						f.LUIArtworkChatHidden = nil
+						if f.LUIArtworkWasShown then f:Show() end
+						f.LUIArtworkWasShown = nil
+					end
+				elseif not f.LUIArtworkChatHidden then
+					f.LUIArtworkWasShown = f:IsShown()
+					f.LUIArtworkChatHidden = true
+					f:Hide()
+				end
 			end
 		end
 	end
@@ -102,7 +103,7 @@ function module:LoadAdditional(str)
 
 	local frames = {}
 
-	-- Strip whitepsaces
+	-- Strip whitespace.
 	str = str:gsub("%s+", "")
 
 	if strfind(str, ",") then
@@ -119,6 +120,7 @@ end
 
 function module:CanAlterFrame(frame)
 	if not frame then return false end
+	if frame.IsForbidden and frame:IsForbidden() then return false end
 	if not (frame:IsProtected() and _G.InCombatLockdown()) then
 		return true
 	end
@@ -332,8 +334,8 @@ function module:AlphaIn(kind, button)
 	db[kind].IsShown = true
 	local frame = _G[_mainPanels[kind].frame]
 
-	if frame and (not frame.IsProtected or not frame:IsProtected()) then
-		_G[_mainPanels[kind].frame]:Show()
+	if module:CanAlterFrame(frame) then
+		frame:Show()
 
 		for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
 			if module:CanAlterFrame(_G[f]) then _G[f]:Show() end
@@ -342,8 +344,10 @@ function module:AlphaIn(kind, button)
 		if db[kind].Animation then
 			_mainPanels[kind].AlphaIn:Show()
 		else
-			_G[_mainPanels[kind].frame]:SetAlpha(1)
-			for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do _G[f]:SetAlpha(1) end
+			frame:SetAlpha(1)
+			for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
+				if module:CanAlterFrame(_G[f]) then _G[f]:SetAlpha(1) end
+			end
 		end
 	end
 end
@@ -353,7 +357,7 @@ function module:AlphaOut(kind, button)
 	db[kind].IsShown = false
 	local frame = _G[_mainPanels[kind].frame]
 
-	if frame and (not frame.IsProtected or not frame:IsProtected()) then
+	if module:CanAlterFrame(frame) then
 		if db[kind].Animation then
 			_mainPanels[kind].AlphaOut:Show()
 
@@ -384,7 +388,7 @@ function module:CreateBackground(kind)
 
 	_mainPanels[kind].timerout = 0
 	_mainPanels[kind].timerin = 0
-	_mainPanels[kind].alphatimer = .5
+	_mainPanels[kind].alphatimer = ANIM_DURATION
 
 	_mainPanels[kind].frame = frame
 
@@ -393,20 +397,21 @@ function module:CreateBackground(kind)
 	_mainPanels[kind].AlphaOut.timerout = 0
 	_mainPanels[kind].AlphaOut:SetScript("OnUpdate", function(self, elapsed)
 		self.timerout = self.timerout + elapsed
+		local target = _G[_mainPanels[kind].frame]
 
-		if self.timerout < .5 then
-			local alpha = 1 - self.timerout / .5
+		if self.timerout < ANIM_DURATION then
+			local alpha = 1 - self.timerout / ANIM_DURATION
 
-			if _G[frame] and module:CanAlterFrame(_G[frame]) then
-				_G[frame]:SetAlpha(alpha)
+			if module:CanAlterFrame(target) then
+				target:SetAlpha(alpha)
 				for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
 					if module:CanAlterFrame(_G[f]) then _G[f]:SetAlpha(alpha) end
 				end
 			end
 		else
-			if _G[frame] and module:CanAlterFrame(_G[frame]) then
-				_G[frame]:SetAlpha(0)
-				_G[frame]:Hide()
+			if module:CanAlterFrame(target) then
+				target:SetAlpha(0)
+				target:Hide()
 				for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
 					if module:CanAlterFrame(_G[f]) then
 						_G[f]:SetAlpha(0)
@@ -425,19 +430,20 @@ function module:CreateBackground(kind)
 	_mainPanels[kind].AlphaIn.timerin = 0
 	_mainPanels[kind].AlphaIn:SetScript("OnUpdate", function(self, elapsed)
 		self.timerin = self.timerin + elapsed
+		local target = _G[_mainPanels[kind].frame]
 
-		if self.timerin < .5 then
-			local alpha = self.timerin / .5
+		if self.timerin < ANIM_DURATION then
+			local alpha = self.timerin / ANIM_DURATION
 
-			if _G[frame] and module:CanAlterFrame(_G[frame]) then
-				_G[frame]:SetAlpha(alpha)
+			if module:CanAlterFrame(target) then
+				target:SetAlpha(alpha)
 				for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
 					if module:CanAlterFrame(_G[f]) then _G[f]:SetAlpha(alpha) end
 				end
 			end
 		else
-			if _G[frame] and module:CanAlterFrame(_G[frame]) then
-				_G[frame]:SetAlpha(1)
+			if module:CanAlterFrame(target) then
+				target:SetAlpha(1)
 				for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
 					if module:CanAlterFrame(_G[f]) then _G[f]:SetAlpha(1) end
 				end
@@ -452,25 +458,31 @@ function module:CreateBackground(kind)
 
 	f:RegisterEvent("PLAYER_ENTERING_WORLD")
 	f:SetScript("OnEvent", function(self)
-		if frame then
-			module:ApplyBackground(kind)
-			f:UnregisterEvent("PLAYER_ENTERING_WORLD")
-		end
+		module:ApplyBackground(kind)
+		self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	end)
 end
 
 function module:ApplyBackground(kind)
 	local data = db[kind]
-	local frame
+	local frame, frameName
 	if kind == "Chat" then
+		frameName = "ChatAlphaAnchor"
 		frame = ChatAlphaAnchor
 		frame:Raise() -- Fix for Panel being above chat frame
 	else
-		frame = _G[db[kind].Anchor]
+		frameName = data.Anchor
+		frame = _G[frameName]
 	end
+	_mainPanels[kind].frame = frameName
 
-	if not frame then
+	if not frame or (frame.IsForbidden and frame:IsForbidden()) then
 		_mainPanels[kind]:Hide()
+		return
+	end
+	if frame:IsProtected() and InCombatLockdown() then
+		_mainPanels[kind]:Hide()
+		self:RefreshMainPanels()
 		return
 	end
 
@@ -486,7 +498,6 @@ end
 
 function module:setMainPanels()
 	db = module.db.profile.LUITextures
-	ThemesDB = LUI:GetModule("Themes").db.profile
 
 	ChatAlphaAnchor = CreateFrame("Frame", "ChatAlphaAnchor", UIParent)
 	ChatAlphaAnchor:SetWidth(30)
@@ -504,8 +515,26 @@ function module:setMainPanels()
 end
 
 function module:RefreshMainPanels()
+	if InCombatLockdown() then
+		if not module.mainPanelRefreshFrame then
+			module.mainPanelRefreshFrame = CreateFrame("Frame")
+			module.mainPanelRefreshFrame:SetScript("OnEvent", function(self)
+				self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+				module:RefreshMainPanels()
+			end)
+		end
+		module.mainPanelRefreshFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
+	if module.mainPanelRefreshFrame then
+		module.mainPanelRefreshFrame:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	end
 	self:ApplyBackground("Chat")
 	self:ApplyBackground("Tps")
 	self:ApplyBackground("Dps")
 	self:ApplyBackground("Raid")
+end
+
+function module:IterateMainPanels()
+	return pairs(_mainPanels)
 end

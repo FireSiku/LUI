@@ -1,4 +1,4 @@
--- LUI Color Picker based on ColorPickerPlus
+-- General LUI color picker extension based on ColorPickerPlus.
 
 ---@class LUIAddon
 local LUI = select(2, ...)
@@ -27,7 +27,6 @@ local function UpdateColor(tbox)
 
 	editingText = true
 	ColorPickerFrame.Content.ColorPicker:SetColorRGB(r, g, b)
-	-- ColorSwatch:SetColorTexture(r, g, b)
 	editingText = nil
 end
 
@@ -55,8 +54,6 @@ function script:PLAYER_ENTERING_WORLD(event)
 	local colorPicker = ColorPickerFrame.Content.ColorPicker
 
 	ColorPickerFrame:HookScript("OnShow", function(self)
-		-- ColorPickerOldColorSwatch:SetTexture(ColorPickerFrame:GetColorRGB())
-
 		if ColorPickerFrame.hasOpacity then
 			ColorPickerBoxA:Show()
 			ColorPickerBoxLabelA:Show()

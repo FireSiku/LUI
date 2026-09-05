@@ -7,20 +7,25 @@ local LUI = select(2, ...)
 
 ---@class LUI.MirrorBar: LUIModule
 local module = LUI:NewModule("Mirror Bar", "LUIDevAPI")
+module.enableButton = true
 local db
 
 local Media = LibStub("LibSharedMedia-3.0")
-local widgetLists = AceGUIWidgetLSMlists
 
+local GetMirrorTimerInfo = _G.GetMirrorTimerInfo
 local GetMirrorTimerProgress = _G.GetMirrorTimerProgress
 local CanScanResearchSite = _G.CanScanResearchSite
-local LoadAddOn = C_AddOns.LoadAddon
 local format = string.format
 local floor = math.floor
 
 local MIRRORTIMER_NUMTIMERS = 3 -- MirrorTimer.lua -> numMirrorTimerTypes
 
-local PAUSED
+local BLIZZARD_MIRROR_EVENTS = {
+	"PLAYER_ENTERING_WORLD",
+	"MIRROR_TIMER_START",
+	"MIRROR_TIMER_STOP",
+	"MIRROR_TIMER_PAUSE",
+}
 
 -- ####################################################################################################################
 -- ##### Default Settings #############################################################################################
@@ -59,108 +64,52 @@ module.defaults = {
 	},
 }
 
--- ####################################################################################################################
--- ##### Module Options ###############################################################################################
--- ####################################################################################################################
-
-module.optionsName = "Mirror Bar"
-module.getter = "generic"
-module.setter = "Refresh"
-
-function module:LoadOptions()
-	local applyMirrorbar = function() self:Refresh() end
-	local applyArchybar = function() self:ToggleArchy() end
-
-	local options = {
-		Title = self:NewHeader("Mirror Bar", 1),
-		General = self:NewGroup("General Settings", 2, {
-			Width = self:NewInputNumber("Width", "Choose the Width for the Mirror Bar.", 1, applyMirrorbar, nil),
-			Height = self:NewInputNumber("Height", "Choose the Height for the Mirror Bar.", 2, applyMirrorbar, nil),
-			X = self:NewInputNumber("X Value", "Choose the X Value for the Mirror Bar.", 3, applyMirrorbar, nil),
-			Y = self:NewInputNumber("Y Value", "Choose the Y Value for the Mirror Bar.", 4, applyMirrorbar, nil),
-			empty2 = self:NewDesc(" ", 5),
-			Texture = self:NewSelect("Texture", "Choose the Mirror Bar Texture.", 6, widgetLists.statusbar, "LSM30_Statusbar", applyMirrorbar, nil),
-			TextureBG = self:NewSelect("Background Texture", "Choose the MirrorBar Background Texture.", 7, widgetLists.statusbar, "LSM30_Statusbar", applyMirrorbar, nil),
-			BarGap = self:NewSlider("Spacing", "Select the Spacing between mirror bars when shown.", 8, 0, 40, 1, applyMirrorbar, nil, nil),
-			ArchyBar = self:NewToggle("Archaeology Progress Bar", "Integrate the Archaeology Progress bar", 9, applyArchybar),
-		}),
-		Colors = self:NewGroup("Bar Colors", 4, nil, {
-			FatigueBar = self:NewColor("Fatigue Bar", "Fatigue Bar", 1, applyMirrorbar),
-			BreathBar = self:NewColor("Breath Bar", "Breath Bar", 2, applyMirrorbar),
-			FeignBar = self:NewColor("Feign Death Bar", "Feign Death Bar", 3, applyMirrorbar),
-			Bar = self:NewColor("Other Bar", "Other Mirror Bars", 4, applyMirrorbar),
-			ArchyBar = self:NewColor("Archaeology Progress Bar", "Archaeology Progress Bar", 5, applyMirrorbar),
-			Background = self:NewColor("Background", "MirrorBar Background", 6, applyMirrorbar),
-		}),
-		Text = self:NewGroup("Text Settings", 5, nil, {
-			Name = self:NewGroup("Name", 1, true, {
-				Font = self:NewSelect("Font", "Choose the Font for the Mirror Name Text.", 2, widgetLists.font, "LSM30_Font", applyMirrorbar, nil),
-				Color = self:NewColorNoAlpha("Name", "Mirror Name", 3, applyMirrorbar, nil),
-				Size = self:NewSlider("Size", "Choose the Font Size for the Mirror Name Text.", 4, 1, 40, 1, applyMirrorbar, nil, nil),
-				empty2 = self:NewDesc(" ", 5),
-				OffsetX = self:NewInputNumber("X Value", "Choose the X Value for the Mirror Name Text.", 6, applyMirrorbar, nil),
-				OffsetY = self:NewInputNumber("Y Value", "Choose the Y Value for the Mirror Name Text.", 7, applyMirrorbar, nil),
-			}),
-			Time = self:NewGroup("Time Settings", 2, true, {
-				Font = self:NewSelect("Font", "Choose the Font for the Mirror Time Text.", 2, widgetLists.font, "LSM30_Font", applyMirrorbar, nil),
-				Color = self:NewColorNoAlpha("Time", "Mirror Time", 3, applyMirrorbar, nil),
-				Size = self:NewSlider("Size", "Choose the Font Size for the Mirror Time Text.", 4, 1, 40, 1, applyMirrorbar, nil, nil),
-				empty2 = self:NewDesc(" ", 5),
-				OffsetX = self:NewInputNumber("X Value", "Choose the X Value for the Mirror Time Text.", 6, applyMirrorbar, nil),
-				OffsetY = self:NewInputNumber("Y Value", "Choose the Y Value for the Mirror Time Text.", 7, applyMirrorbar, nil),
-			})
-		}),
-		Border = self:NewGroup("Border", 3, {
-			Texture = self:NewSelect("Border Texture", "Choose the Border Texture.", 1, widgetLists.border, "LSM30_Border", applyMirrorbar),
-			Color = self:NewColor("Border", "Border", 2, applyMirrorbar),
-			Thickness = self:NewInputNumber("Border Thickness", "Value for your Castbar Border Thickness.", 3, applyMirrorbar),
-			empty2 = self:NewDesc(" ", 4),
-			Inset = self:NewGroup("Insets", 5, true, {
-				left = self:NewInputNumber("Left", "Value for the left Border Inset.", 1, applyMirrorbar, "half"),
-				right = self:NewInputNumber("Right", "Value for the right Border Inset.", 2, applyMirrorbar, "half"),
-				top = self:NewInputNumber("Top", "Value for the top Border Inset.", 3, applyMirrorbar, "half"),
-				bottom = self:NewInputNumber("Bottom", "Value for the bottom Border Inset.", 4, applyMirrorbar, "half"),
-			}),
-		}),
-	}
-	return options
-end
-
--- ####################################################################################################################
--- ##### Module Functions #############################################################################################
--- ####################################################################################################################
-
 local function formatTime(time)
-	local hour = floor(time/3600)
-	local min = floor(time/60)
-	local sec = time%60
+	local hour = floor(time / 3600)
+	local min = floor(time / 60) % 60
+	local sec = floor(time % 60)
 
 	if hour > 0 then
-		return format('%d:%02d:%02d', hour, min, sec)
+		return format("%d:%02d:%02d", hour, min, sec)
 	elseif min > 0 then
-		return format('%d:%02d', min, sec)
+		return format("%d:%02d", min, sec)
 	else
-		return format('%02d', sec)
+		return format("%02d", sec)
 	end
 end
 
-local function OnUpdate(self, elps)
-	if PAUSED then return end
+local function GetBarColorKey(timer)
+	if timer == "FEIGNDEATH" then
+		return "FeignBar"
+	elseif timer == "BREATH" then
+		return "BreathBar"
+	elseif timer == "FATIGUE" then
+		return "FatigueBar"
+	elseif timer == "ARCHY" then
+		return "ArchyBar"
+	end
+	return "Bar"
+end
+
+local function OnUpdate(self)
+	if self.paused then return end
 
 	if self.timer == "ARCHY" then
-		if ( not CanScanResearchSite() ) then
-			self:SetScript('OnUpdate', nil)
+		if not CanScanResearchSite() then
+			if _G.ArcheologyDigsiteProgressBar then
+				_G.ArcheologyDigsiteProgressBar.shouldShow = false
+			end
+			self:SetScript("OnUpdate", nil)
 			self.timer = nil
 			self:Hide()
-		else
-			local time = string.format("%s / %s", tostring(self.value), tostring(self.maxvalue))
-			if self.Time then
-				self.Time:SetText(time)
-			end
+		elseif self.Time then
+			self.Time:SetText(format("%s / %s", tostring(self.value), tostring(self.maxvalue)))
 		end
 	else
-		local time = GetMirrorTimerProgress(self.timer) / 1000
-		time = (time < 0) and 0 or (time > self.maxvalue) and self.maxvalue or time
+		local progress = GetMirrorTimerProgress(self.timer)
+		if not progress then return end
+		local time = progress / 1000
+		time = time < 0 and 0 or time > self.maxvalue and self.maxvalue or time
 		self:SetValue(time)
 		if self.Time then
 			self.Time:SetText(formatTime(time))
@@ -168,105 +117,172 @@ local function OnUpdate(self, elps)
 	end
 end
 
-local function UpdateBar(self, timers, timer, value, maxvalue, scale, paused, label)
-	PAUSED = paused > 0
-	local barname
-	local bar = self.MirrorBar[timers]
+local function UpdateBar(self, index, timer, value, maxvalue, scale, paused, label)
+	local bar = self.MirrorBar[index]
 	bar.timer = timer
-	if bar.timer == "ARCHY" then
+	bar.paused = paused > 0
+
+	if timer == "ARCHY" then
 		bar.value = value
 		bar.maxvalue = maxvalue
 	else
 		bar.value = value / 1000
 		bar.maxvalue = maxvalue / 1000
 	end
+
 	bar.scale = scale
 	bar.label = label
 	if bar.Text then
 		bar.Text:SetText(label)
-		if label then
-			if label == "Feign Death" then
-				barname = "FeignBar"
-			elseif label == "Breath" or label == "Fatigue" then
-				barname = label.."Bar"
-			elseif label == "Archaeology Progress" then
-				barname = "ArchyBar"
-			else
-				barname = "Bar"
-			end
-		else
-			barname = "Bar"
-		end
 	end
-	local c = db.Colors[barname]
-	bar:SetStatusBarColor(c.r, c.g, c.b, c.a)
 
-	bar:SetMinMaxValues(0, maxvalue/1000)
-	bar:SetValue(value/1000)
-
-	bar:SetScript('OnUpdate', OnUpdate)
+	local color = db.Colors[GetBarColorKey(timer)]
+	bar:SetStatusBarColor(color.r, color.g, color.b, color.a)
+	bar:SetMinMaxValues(0, bar.maxvalue)
+	bar:SetValue(bar.value)
+	bar:SetScript("OnUpdate", OnUpdate)
 	bar:Show()
 end
 
 local function MIRROR_TIMER_START(self, event, timer, value, maxvalue, scale, paused, label)
-	local timers
+	local available
 	for i = 1, MIRRORTIMER_NUMTIMERS do
 		if self.MirrorBar[i].timer == timer then
-			timers = i
+			available = i
 			break
 		elseif not self.MirrorBar[i]:IsShown() then
-			timers = timers or i
+			available = available or i
 		end
 	end
-	UpdateBar(self, timers, timer, value, maxvalue, scale, paused, label)
+
+	if available then
+		UpdateBar(self, available, timer, value, maxvalue, scale, paused, label)
+	end
 end
 
 local function MIRROR_TIMER_STOP(self, event, timer)
 	for i = 1, MIRRORTIMER_NUMTIMERS do
 		if self.MirrorBar[i].timer == timer then
 			self.MirrorBar[i].timer = nil
+			self.MirrorBar[i].paused = nil
+			self.MirrorBar[i]:SetScript("OnUpdate", nil)
 			self.MirrorBar[i]:Hide()
 		end
 	end
 end
 
-local function MIRROR_TIMER_PAUSE(self, event, paused)
-	PAUSED = paused > 0
+local function MIRROR_TIMER_PAUSE(self, event, timer, paused)
+	for i = 1, MIRRORTIMER_NUMTIMERS do
+		if self.MirrorBar[i].timer == timer then
+			self.MirrorBar[i].paused = paused > 0
+			break
+		end
+	end
 end
 
-local function SURVEY_CAST(self, event, ...)
-	local numFindsCompleted, totalFinds = ...;
-	MIRROR_TIMER_START(self, "ARCHAEOLOGY_SURVEY_CAST", "ARCHY", numFindsCompleted, totalFinds, nil, 0, "Archaeology Progress")
+local function SURVEY_CAST(self, event, numFindsCompleted, totalFinds)
+	if _G.ArcheologyDigsiteProgressBar then
+		_G.ArcheologyDigsiteProgressBar.shouldShow = true
+	end
+	MIRROR_TIMER_START(self, event, "ARCHY", numFindsCompleted, totalFinds, nil, 0, "Archaeology Progress")
 end
 
-local function SURVEY_COMPLETE(self, event, ...)
-	local numFindsCompleted, totalFinds = ...;
+local function SURVEY_COMPLETE(self, event, numFindsCompleted, totalFinds)
 	if numFindsCompleted == totalFinds then
-		MIRROR_TIMER_STOP(self, "ARCHAEOLOGY_FIND_COMPLETE", "ARCHY")
+		MIRROR_TIMER_STOP(self, event, "ARCHY")
+	else
+		MIRROR_TIMER_START(self, event, "ARCHY", numFindsCompleted, totalFinds, nil, 0, "Archaeology Progress")
+	end
+end
+
+local function DIGSITE_COMPLETE(self, event, researchFieldID)
+	MIRROR_TIMER_STOP(self, event, "ARCHY")
+	if _G.ArcheologyDigsiteProgressBar then
+		_G.ArcheologyDigsiteProgressBar.shouldShow = false
+	end
+	if _G.DigsiteCompleteAlertSystem and _G.GetArchaeologyRaceInfoByID then
+		_G.DigsiteCompleteAlertSystem:AddAlert(_G.GetArchaeologyRaceInfoByID(researchFieldID))
+	end
+end
+
+local function RestoreArchaeologyBar()
+	local archaeologyBar = _G.ArcheologyDigsiteProgressBar
+	if not archaeologyBar then return end
+
+	LUI:Unkill(archaeologyBar)
+	archaeologyBar:RegisterEvent("ARCHAEOLOGY_SURVEY_CAST")
+	archaeologyBar:UnregisterEvent("ARCHAEOLOGY_FIND_COMPLETE")
+	archaeologyBar:UnregisterEvent("ARTIFACT_DIGSITE_COMPLETE")
+	if archaeologyBar.UpdateShownState then
+		archaeologyBar:UpdateShownState()
 	end
 end
 
 function module:ToggleArchy()
+	if not self:IsEnabled() then return end
+
+	local archaeologyBar = _G.ArcheologyDigsiteProgressBar
 	if db.General.ArchyBar then
-		if not _G.ArcheologyDigsiteProgressBar then
-			LoadAddOn("Blizzard_ArchaeologyUI")
-		end
+		if not archaeologyBar then return end
+		LUI:Kill(archaeologyBar)
+		archaeologyBar:UnregisterEvent('ARCHAEOLOGY_SURVEY_CAST')
+		archaeologyBar:UnregisterEvent('ARCHAEOLOGY_FIND_COMPLETE')
+		archaeologyBar:UnregisterEvent('ARTIFACT_DIGSITE_COMPLETE')
 		self:RegisterEvent('ARCHAEOLOGY_SURVEY_CAST', SURVEY_CAST, self)
 		self:RegisterEvent('ARCHAEOLOGY_FIND_COMPLETE', SURVEY_COMPLETE, self)
-		UIParent:UnregisterEvent('ARCHAEOLOGY_SURVEY_CAST')
-		LUI:Kill(_G.ArcheologyDigsiteProgressBar)
+		self:RegisterEvent('ARTIFACT_DIGSITE_COMPLETE', DIGSITE_COMPLETE, self)
 	else
 		MIRROR_TIMER_STOP(self, "ARCHAEOLOGY_FIND_COMPLETE", "ARCHY")
 		self:UnregisterEvent('ARCHAEOLOGY_SURVEY_CAST', SURVEY_CAST)
 		self:UnregisterEvent('ARCHAEOLOGY_FIND_COMPLETE', SURVEY_COMPLETE)
-		UIParent:RegisterEvent('ARCHAEOLOGY_SURVEY_CAST')
-		LUI:Unkill(_G.ArcheologyDigsiteProgressBar)
+		self:UnregisterEvent('ARTIFACT_DIGSITE_COMPLETE', DIGSITE_COMPLETE)
+		RestoreArchaeologyBar()
+	end
+end
+
+local function DisableBlizzardMirrorTimers()
+	local container = _G.MirrorTimerContainer
+	if not container then return end
+
+	for i = 1, #BLIZZARD_MIRROR_EVENTS do
+		container:UnregisterEvent(BLIZZARD_MIRROR_EVENTS[i])
+	end
+
+	if container.activeTimers and container.ClearTimer then
+		local active = {}
+		for timer in pairs(container.activeTimers) do
+			active[#active + 1] = timer
+		end
+		for i = 1, #active do
+			container:ClearTimer(active[i])
+		end
+	end
+end
+
+local function RestoreBlizzardMirrorTimers()
+	local container = _G.MirrorTimerContainer
+	if not container then return end
+
+	for i = 1, #BLIZZARD_MIRROR_EVENTS do
+		container:RegisterEvent(BLIZZARD_MIRROR_EVENTS[i])
+	end
+	if container.OnEvent then
+		container:OnEvent("PLAYER_ENTERING_WORLD")
+	end
+end
+
+local function LoadActiveMirrorTimers(self)
+	for i = 1, MIRRORTIMER_NUMTIMERS do
+		local timer, value, maxvalue, scale, paused, label = GetMirrorTimerInfo(i)
+		if timer and timer ~= "UNKNOWN" then
+			MIRROR_TIMER_START(self, "PLAYER_ENTERING_WORLD", timer, value, maxvalue, scale, paused, label)
+		end
 	end
 end
 
 function module:Refresh(...)
 	for i = 1, MIRRORTIMER_NUMTIMERS do
-		local barname
+		self.MirrorBar[i]:ClearAllPoints()
 		if i == 1 then
 			self.MirrorBar[i]:SetPoint('TOP', UIParent, db.General.X, db.General.Y)
 		else
@@ -275,24 +291,12 @@ function module:Refresh(...)
 		self.MirrorBar[i]:SetHeight(db.General.Height)
 		self.MirrorBar[i]:SetWidth(db.General.Width)
 		self.MirrorBar[i]:SetStatusBarTexture(Media:Fetch("statusbar", db.General.Texture))
-		local label = self.MirrorBar[i].Text:GetText()
-		if label then
-			if label == "Feign Death" then
-				barname = "FeignBar"
-			elseif label == "Breath" or label == "Fatigue" then
-				barname = label.."Bar"
-			elseif label == "Archaeology Progress" then
-				barname = "ArchyBar"
-			else
-				barname = "Bar"
-			end
-		else
-			barname = "Bar"
-		end
-		self.MirrorBar[i]:SetStatusBarColor(db.Colors[barname].r, db.Colors[barname].g, db.Colors[barname].b, db.Colors[barname].a)
+		local barname = GetBarColorKey(self.MirrorBar[i].timer)
+		local color = db.Colors[barname]
+		self.MirrorBar[i]:SetStatusBarColor(color.r, color.g, color.b, color.a)
 		self.MirrorBar[i].bg:SetTexture(Media:Fetch("statusbar", db.General.TextureBG))
 		self.MirrorBar[i].bg:SetVertexColor(db.Colors.Background.r,db.Colors.Background.g,db.Colors.Background.b, db.Colors.Background.a)
-		self.MirrorBar[i].Backdrop:SetBackdrop({
+		LUI:ApplyFrameBackdrop(self.MirrorBar[i].Backdrop, {
 			edgeFile = Media:Fetch("border", db.Border.Texture),
 			edgeSize = db.Border.Thickness,
 			insets = {
@@ -302,12 +306,14 @@ function module:Refresh(...)
 				bottom = db.Border.Inset.bottom,
 			}
 		})
-		self.MirrorBar[i].Backdrop:SetBackdropBorderColor(db.Border.Color.r, db.Border.Color.g, db.Border.Color.b,db.Border.Color.a)
+		LUI:SetFrameBorderColor(self.MirrorBar[i].Backdrop, db.Border.Color.r, db.Border.Color.g, db.Border.Color.b, db.Border.Color.a)
 		self.MirrorBar[i].Text:SetFont(Media:Fetch("font", db.Text.Name.Font), db.Text.Name.Size, 'OUTLINE')
 		self.MirrorBar[i].Text:SetTextColor(db.Text.Name.Color.r, db.Text.Name.Color.g, db.Text.Name.Color.b)
+		self.MirrorBar[i].Text:ClearAllPoints()
 		self.MirrorBar[i].Text:SetPoint('CENTER', self.MirrorBar[i], db.Text.Name.OffsetX, db.Text.Name.OffsetY)
 		self.MirrorBar[i].Time:SetFont(Media:Fetch("font", db.Text.Time.Font), db.Text.Time.Size, 'OUTLINE')
 		self.MirrorBar[i].Time:SetTextColor(db.Text.Time.Color.r, db.Text.Time.Color.g, db.Text.Time.Color.b)
+		self.MirrorBar[i].Time:ClearAllPoints()
 		self.MirrorBar[i].Time:SetPoint('RIGHT', self.MirrorBar[i], db.Text.Time.OffsetX, db.Text.Time.OffsetY)
 	end
 end
@@ -322,42 +328,13 @@ function module:CreateMirrorbars()
 			self.MirrorBar[i].Time = self.MirrorBar[i]:CreateFontString(nil, 'OVERLAY')
 			self.MirrorBar[i].bg = self.MirrorBar[i]:CreateTexture(nil, 'BORDER')
 			self.MirrorBar[i].bg:SetAllPoints(self.MirrorBar[i])
-			self.MirrorBar[i].Backdrop = CreateFrame("Frame", nil, self.MirrorBar[i], "BackdropTemplate")
+			self.MirrorBar[i].Backdrop = CreateFrame("Frame", nil, self.MirrorBar[i])
 			self.MirrorBar[i].Backdrop:SetPoint("TOPLEFT", self.MirrorBar[i], "TOPLEFT", -4, 3)
 			self.MirrorBar[i].Backdrop:SetPoint("BOTTOMRIGHT", self.MirrorBar[i], "BOTTOMRIGHT", 3, -3.5)
 			self.MirrorBar[i].Backdrop:SetParent(self.MirrorBar[i])
 		end
 	end
-	for i = 1, MIRRORTIMER_NUMTIMERS do
-		if i == 1 then
-			self.MirrorBar[i]:SetPoint('TOP', UIParent, db.General.X, db.General.Y)
-		else
-			self.MirrorBar[i]:SetPoint('TOP', self.MirrorBar[i-1], 'BOTTOM', 0, -db.General.BarGap)
-		end
-		self.MirrorBar[i]:SetHeight(db.General.Height)
-		self.MirrorBar[i]:SetWidth(db.General.Width)
-		self.MirrorBar[i]:SetStatusBarTexture(Media:Fetch("statusbar", db.General.Texture))
-		self.MirrorBar[i]:SetStatusBarColor(db.Colors.Bar.r, db.Colors.Bar.g, db.Colors.Bar.b, db.Colors.Bar.a)
-		self.MirrorBar[i].bg:SetTexture(Media:Fetch("statusbar", db.General.TextureBG))
-		self.MirrorBar[i].bg:SetVertexColor(db.Colors.Background.r,db.Colors.Background.g,db.Colors.Background.b, db.Colors.Background.a)
-		self.MirrorBar[i].Backdrop:SetBackdrop({
-			edgeFile = Media:Fetch("border", db.Border.Texture),
-			edgeSize = db.Border.Thickness,
-			insets = {
-				left = db.Border.Inset.left,
-				right = db.Border.Inset.right,
-				top = db.Border.Inset.top,
-				bottom = db.Border.Inset.bottom,
-			}
-		})
-		self.MirrorBar[i].Backdrop:SetBackdropBorderColor(db.Border.Color.r, db.Border.Color.g, db.Border.Color.b,db.Border.Color.a)
-		self.MirrorBar[i].Text:SetFont(Media:Fetch("font", db.Text.Name.Font), db.Text.Name.Size, 'OUTLINE')
-		self.MirrorBar[i].Text:SetTextColor(db.Text.Name.Color.r, db.Text.Name.Color.g, db.Text.Name.Color.b)
-		self.MirrorBar[i].Text:SetPoint('CENTER', self.MirrorBar[i], db.Text.Name.OffsetX, db.Text.Name.OffsetY)
-		self.MirrorBar[i].Time:SetFont(Media:Fetch("font", db.Text.Time.Font), db.Text.Time.Size, 'OUTLINE')
-		self.MirrorBar[i].Time:SetTextColor(db.Text.Time.Color.r, db.Text.Time.Color.g, db.Text.Time.Color.b)
-		self.MirrorBar[i].Time:SetPoint('RIGHT', self.MirrorBar[i], db.Text.Time.OffsetX, db.Text.Time.OffsetY)
-	end
+	self:Refresh()
 end
 
 -- ####################################################################################################################
@@ -369,7 +346,7 @@ function module:OnInitialize()
 end
 
 function module:OnEnable()
-	MirrorTimerContainer:UnregisterEvent('MIRROR_TIMER_START')
+	DisableBlizzardMirrorTimers()
 	module:CreateMirrorbars()
 	for i = 1, MIRRORTIMER_NUMTIMERS do
 		self.MirrorBar[i]:Hide()
@@ -378,30 +355,28 @@ function module:OnEnable()
 	self:RegisterEvent('MIRROR_TIMER_START', MIRROR_TIMER_START, self)
 	self:RegisterEvent('MIRROR_TIMER_STOP', MIRROR_TIMER_STOP, self)
 	self:RegisterEvent('MIRROR_TIMER_PAUSE', MIRROR_TIMER_PAUSE, self)
-	-- Archaeology Update
-	if db.General.ArchyBar then
-		if not _G.ArcheologyDigsiteProgressBar then
-			LoadAddOn("Blizzard_ArchaeologyUI")
-		end
-		LUI:Kill(_G.ArcheologyDigsiteProgressBar)
-		UIParent:UnregisterEvent('ARCHAEOLOGY_SURVEY_CAST')
-		self:RegisterEvent('ARCHAEOLOGY_SURVEY_CAST', SURVEY_CAST, self)
-		self:RegisterEvent('ARCHAEOLOGY_FIND_COMPLETE', SURVEY_COMPLETE, self)
-	end
+	LoadActiveMirrorTimers(self)
+	if db.General.ArchyBar then self:ToggleArchy() end
 end
 
 function module:OnDisable()
-	MirrorTimerContainer:RegisterEvent('MIRROR_TIMER_START')
-
 	self:UnregisterEvent('MIRROR_TIMER_START', MIRROR_TIMER_START)
 	self:UnregisterEvent('MIRROR_TIMER_STOP', MIRROR_TIMER_STOP)
 	self:UnregisterEvent('MIRROR_TIMER_PAUSE', MIRROR_TIMER_PAUSE)
 
-	-- Archaeology Update
-	LUI:Unkill(_G.ArcheologyDigsiteProgressBar)
-	UIParent:RegisterAllEvents('ARCHAEOLOGY_SURVEY_CAST')
-	
-	MIRROR_TIMER_STOP(self, "ARCHAEOLOGY_FIND_COMPLETE", "ARCHY")
+	RestoreArchaeologyBar()
+
+	for i = 1, MIRRORTIMER_NUMTIMERS do
+		local bar = self.MirrorBar and self.MirrorBar[i]
+		if bar then
+			bar.timer = nil
+			bar.paused = nil
+			bar:SetScript("OnUpdate", nil)
+			bar:Hide()
+		end
+	end
 	self:UnregisterEvent('ARCHAEOLOGY_SURVEY_CAST', SURVEY_CAST)
 	self:UnregisterEvent('ARCHAEOLOGY_FIND_COMPLETE', SURVEY_COMPLETE)
+	self:UnregisterEvent('ARTIFACT_DIGSITE_COMPLETE', DIGSITE_COMPLETE)
+	RestoreBlizzardMirrorTimers()
 end
