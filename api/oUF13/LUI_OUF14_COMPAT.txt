@@ -1,9 +1,9 @@
-LUI oUF 14.0.2 / Blizzard 12.1 compatibility notes
+LUI oUF 14.0.3 / Blizzard 12.1 compatibility notes
 
 Base: FireSiku LUI Retail.
-Framework: official oUF 14.0.2 core and element load list.
+Framework: official oUF 14.0.3 core and element load list.
 
-The bundled framework is based on official oUF 14.0.2. FireSiku's existing
+The bundled framework is based on official oUF 14.0.3. FireSiku's existing
 Retail renderer compatibility is retained at StatusBar call sites: ColorMixin
 objects are unpacked to numeric RGB values because Blizzard 12.1's
 SetStatusBarColor expects numeric components. oUF colors.lua remains unchanged.
