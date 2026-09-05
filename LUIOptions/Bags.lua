@@ -40,8 +40,10 @@ local function GenerateBagsOptions()
 	return options
 end
 
-local function IndividualColorDisabled(colorName)
-	return function() return db.Colors[colorName].t ~= "Individual" end
+local function ColorOptions(name, colorName)
+	local options = {}
+	options[colorName.."Type"] = Opt:ColorMenu(options, {name = name, arg = colorName})
+	return options
 end
 
 local function ColorOptions(name, colorName)
