@@ -14,7 +14,7 @@ The unused `TEX_DIR` and `ALPHA` locals remain removed. `ANIM_DURATION` is back 
 
 ## Retail 12.1 changes
 
-LUI now targets interface `120100` and includes oUF 14.0.2. Health, power, class resources, casts, absorbs, prediction, range and indicators were updated for the current APIs.
+LUI now targets interface `120100` and includes oUF 14.0.3. Health, power, class resources, casts, absorbs, prediction, range and indicators were updated for the current APIs.
 
 LUI no longer writes cooldown values to Blizzard action buttons. Those values can be protected or secret in Retail 12.1, so Blizzard has to own the cooldown display. Unsafe frame changes are delayed until combat ends.
 
@@ -66,8 +66,6 @@ These removals are about avoiding broken or duplicate runtime code. Documentatio
 
 ## Testing
 
-I tested settings, profiles, import/export, raid use and scaling. Teks and BaeBlade helped with general module checks, Jay tested the raid and unitframe paths, and Nikko tested Blizzard bars, Blizzard Damage Meter, Bartender4 and Dominos.
-
-The last Dominos visibility change and the small Bartender left-side adjustment were made after Nikko's report and still need one final in-game check.
+Pahn tested settings, profiles, import/export, raid use and scaling. Teks and BaeBlade helped with general module checks, Jay tested the raid and unitframe paths, and Nikko tested Blizzard bars, Blizzard Damage Meter, Bartender4 and Dominos.
 
 The static checks pass: all Lua and XML files parse, every active TOC/XML path resolves, and there are no remaining LUI-owned legacy backdrop calls or direct action-button cooldown writes.

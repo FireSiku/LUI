@@ -27,7 +27,7 @@ libs\AceLocale-3.0\AceLocale-3.0.xml
 libs\AceSerializer-3.0\AceSerializer-3.0.xml
 locale\locale.xml
 
-## oUF ## Current Version 14.0.2
+## oUF ## Current Version 14.0.3
 api\oUF13\oUF.xml
 
 ### Core + API ###

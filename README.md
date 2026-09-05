@@ -46,7 +46,7 @@ Imports are validated, cannot run during combat, and ask for confirmation before
 ## Compatibility
 
 - This project page is for **World of Warcraft Retail**.
-- The current modernization targets the Blizzard 12.1 UI API and includes oUF 14.0.2 integration.
+- The current modernization targets the Blizzard 12.1 UI API and includes oUF 14.0.3 integration.
 - The Classic edition is maintained separately by **Nitsah**.
 - Optional integrations are only active when their corresponding third-party addons are installed.
 
