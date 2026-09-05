@@ -68,11 +68,14 @@ function element:UpdateMemory()
 end
 
 function element.OnClick(frame, button)
-	if button == "RightButton" then
-		UpdateAddOnMemoryUsage()
-	end
 	collectgarbage("collect")
-	element:UpdateMemory()
+	C_Timer.After(0, function()
+		if button == "RightButton" then
+			UpdateAddOnMemoryUsage()
+			return C_Timer.After(0, function() element:UpdateMemory() end)
+		end
+		element:UpdateMemory()
+	end)
 end
 
 -- ####################################################################################################################
@@ -115,6 +118,6 @@ function element:OnCreate()
 	-- This ensures that all addons are loaded at the time of updating memory usage.
 	C_Timer.After(1, function()
 		UpdateAddOnMemoryUsage()
-		element:UpdateMemory()
+		C_Timer.After(0, function() element:UpdateMemory() end)
 	end)
 end
