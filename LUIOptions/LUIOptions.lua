@@ -578,6 +578,95 @@ function OptionMixin:ColorSelect(data)
 	return data
 end
 
+local function RefreshColorMenu(info)
+	if info.handler.RefreshColors then
+		info.handler:RefreshColors()
+	elseif info.handler.Refresh then
+		info.handler:Refresh()
+	end
+end
+
+local function ColorMenuColorGet(info)
+	local color = info.handler.db.profile.Colors[info.arg]
+	return color.r, color.g, color.b, color.a
+end
+
+local function ColorMenuColorSet(info, r, g, b, a)
+	local color = info.handler.db.profile.Colors[info.arg]
+	color.r = RoundToSignificantDigits(r, 2)
+	color.g = RoundToSignificantDigits(g, 2)
+	color.b = RoundToSignificantDigits(b, 2)
+	color.a = RoundToSignificantDigits(a, 2)
+	RefreshColorMenu(info)
+end
+
+local function ColorMenuAlphaGet(info)
+	return info.handler.db.profile.Colors[info.arg].a
+end
+
+local function ColorMenuAlphaSet(info, value)
+	info.handler.db.profile.Colors[info.arg].a = RoundToSignificantDigits(value, 2)
+	RefreshColorMenu(info)
+end
+
+--- Generate a color-type dropdown with either an individual color picker or an opacity slider.
+---@param parent table
+---@param data LUIOption
+---@return LUIOption?
+function OptionMixin:ColorMenu(parent, data)
+	if data.onlyIf == false then return end
+
+	local color = data.arg or data.name
+	local name = data.name
+	local desc = data.desc
+	local disabled = data.disabled
+	local order = data.order
+
+	local function IsColorControlHidden(info)
+		local colorType = info.handler.db.profile.Colors[info.arg].t
+		if info.type == "color" then
+			return colorType ~= "Individual"
+		elseif info.type == "range" then
+			return colorType == "Individual"
+		end
+	end
+
+	data.name = name.." Color"
+	data.arg = color
+	local colorSelect = self:ColorSelect(data)
+
+	parent[color.."Picker"] = self:Color({
+		name = name.." Individual Color",
+		desc = desc,
+		order = order and order + 0.1,
+		disabled = disabled,
+		hidden = IsColorControlHidden,
+		get = ColorMenuColorGet,
+		set = ColorMenuColorSet,
+		arg = color,
+		hasAlpha = true,
+	})
+
+	parent[color.."Slider"] = self:Slider({
+		name = "Opacity",
+		desc = desc,
+		order = order and order + 0.1,
+		disabled = disabled,
+		hidden = IsColorControlHidden,
+		get = ColorMenuAlphaGet,
+		set = ColorMenuAlphaSet,
+		arg = color,
+		values = self.PercentValues,
+	})
+
+	parent[color.."Break"] = self:Spacer({
+		order = order and order + 0.2,
+		width = "full",
+	})
+
+	return colorSelect
+end
+
 -- ####################################################################################################################
 -- ##### Options Tables ###############################################################################################
 -- ####################################################################################################################
