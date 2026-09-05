@@ -302,7 +302,7 @@ function module:RestoreNativeBackdrop(frame)
 end
 
 function module:OnBackdropStyleApplied(frame)
-	if not module:IsEnabled() then return end
+	if not module:IsEnabled() or not initialScale[frame] then return end
 	module:CaptureNativeBackdrop(frame, true)
 	module:UpdateTooltipBackdrop(frame)
 end
