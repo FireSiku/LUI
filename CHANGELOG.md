@@ -4,7 +4,7 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 
 ## Core
 
-- Updated the embedded oUF runtime to 14.0.2.
+- Updated the embedded oUF runtime to 14.0.3.
 - Updated status bars, tooltips, auras and other UI code for the current Blizzard API.
 - Fixed profile switching, profile conversion, import/export and per-profile backups.
 - Restored the current options pages and hid modules that are not available.
