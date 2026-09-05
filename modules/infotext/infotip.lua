@@ -222,9 +222,13 @@ end
 function module:ApplyInfotipBackdrop(frame, name)
 	local settings = module.db.profile[name] and module.db.profile[name].Background
 	local color = settings and settings.Color
+	local border = settings and settings.Border
 	local textureName = settings and settings.Texture or "Blizzard Tooltip"
+	local borderTextureName = settings and settings.BorderTexture or "Blizzard Tooltip"
 	local texture = Media:Fetch("background", textureName, true)
+	local borderTexture = Media:Fetch("border", borderTextureName, true)
 	local useColorFill = textureName == "None" or not texture or texture == ""
+	local useNativeBorder = borderTextureName == "Blizzard Tooltip" or not borderTexture or borderTexture == ""
 
 	-- Friends and Guild use Blizzard's current tooltip NineSlice for their
 	-- boundary.  Keep the configurable LUI texture as the center only; tinting
@@ -233,6 +237,14 @@ function module:ApplyInfotipBackdrop(frame, name)
 	if frame.NineSlice and NineSliceUtil then
 		NineSliceUtil.ApplyLayoutByName(frame.NineSlice, "TooltipDefaultLayout")
 		NineSliceUtil.DisableSharpening(frame.NineSlice)
+		frame.NineSlice:SetShown(useNativeBorder)
+		if useNativeBorder then
+			frame.NineSlice:SetBorderColor(
+				border and border.r or 1,
+				border and border.g or 1,
+				border and border.b or 1,
+				border and border.a or 1)
+		end
 		if frame.NineSlice.Center then
 			frame.NineSlice.Center:Hide()
 		end
@@ -240,6 +252,8 @@ function module:ApplyInfotipBackdrop(frame, name)
 
 	LUI:ApplyFrameBackdrop(frame, {
 		bgFile = useColorFill and [[Interface\Buttons\WHITE8X8]] or texture,
+		edgeFile = not useNativeBorder and borderTexture or nil,
+		edgeSize = 16,
 		tile = not useColorFill,
 		tileSize = 16,
 		insets = {left = 4, right = 4, top = 4, bottom = 4},
@@ -253,6 +267,13 @@ function module:ApplyInfotipBackdrop(frame, name)
 	else
 		-- Display selected SharedMedia textures with their original colors.
 		LUI:SetFrameBackgroundColor(frame, 1, 1, 1, 1)
+	end
+	if not useNativeBorder then
+		LUI:SetFrameBorderColor(frame,
+			border and border.r or 1,
+			border and border.g or 1,
+			border and border.b or 1,
+			border and border.a or 1)
 	end
 end
 

@@ -111,10 +111,12 @@ local friendsArgs = Infotext.args.Settings.args.Friends.args
 friendsArgs.showTotal = Opt:Toggle({name = "Show Total Friend Count", width = "full"})
 friendsArgs.ShowNotes = Opt:Toggle({name = "Show Friend Notes", width = "full"})
 friendsArgs.ShowHints = Opt:Toggle({name = "Show Mouse Hints", width = "full"})
-friendsArgs.Background = Opt:InlineGroup({name = "Friends Window Background", args = {
+friendsArgs.Background = Opt:InlineGroup({name = "Friends Window Appearance", args = {
 	Texture = Opt:MediaBackground({name = "Texture", db = db.Friends.Background}),
 	Color = Opt:Color({name = "Color", hasAlpha = true, db = db.Friends.Background,
 		disabled = DisableIfBackgroundTextured(db.Friends.Background)}),
+	BorderTexture = Opt:MediaBorder({name = "Border Texture", db = db.Friends.Background}),
+	Border = Opt:Color({name = "Border Color", hasAlpha = true, db = db.Friends.Background}),
 }})
 
 local goldArgs = Infotext.args.Settings.args.Gold.args
@@ -127,10 +129,12 @@ local guildArgs = Infotext.args.Settings.args.Guild.args
 guildArgs.showTotal = Opt:Toggle({name = "Show Total Guild Count", width = "full"})
 guildArgs.hideRealm = Opt:Toggle({name = "Hide Realm Names", width = "full"})
 guildArgs.hideNotes = Opt:Toggle({name = "Hide Guild Notes", width = "full"})
-guildArgs.Background = Opt:InlineGroup({name = "Guild Window Background", args = {
+guildArgs.Background = Opt:InlineGroup({name = "Guild Window Appearance", args = {
 	Texture = Opt:MediaBackground({name = "Texture", db = db.Guild.Background}),
 	Color = Opt:Color({name = "Color", hasAlpha = true, db = db.Guild.Background,
 		disabled = DisableIfBackgroundTextured(db.Guild.Background)}),
+	BorderTexture = Opt:MediaBorder({name = "Border Texture", db = db.Guild.Background}),
+	Border = Opt:Color({name = "Border Color", hasAlpha = true, db = db.Guild.Background}),
 }})
 
 local mailArgs = Infotext.args.Settings.args.Mail.args

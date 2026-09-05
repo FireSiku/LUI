@@ -104,8 +104,10 @@ module.defaults = {
 			ShowHints = true,
 			ShowNotes = true,
 			Background = {
-				Texture = "Blizzard Tooltip",
-				Color = { r = 1, g = 1, b = 1, a = 1, },
+				Texture = "Blizzard Dialog Background Dark",
+				Color = { r = 0, g = 0, b = 0, a = 0.8, },
+				BorderTexture = "Blizzard Tooltip",
+				Border = { r = 0.3, g = 0.3, b = 0.3, a = 1, },
 			},
 		},
 		Gold = {
@@ -128,8 +130,10 @@ module.defaults = {
 			hideRealm = true,
 			hideNotes = false,
 			Background = {
-				Texture = "Blizzard Tooltip",
-				Color = { r = 1, g = 1, b = 1, a = 1, },
+				Texture = "Blizzard Dialog Background Dark",
+				Color = { r = 0, g = 0, b = 0, a = 0.8, },
+				BorderTexture = "Blizzard Tooltip",
+				Border = { r = 0.3, g = 0.3, b = 0.3, a = 1, },
 			},
 		},
 		Instance = {
