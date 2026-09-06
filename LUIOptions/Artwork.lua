@@ -104,7 +104,7 @@ local function CreatePanelGroup(name, isNative)
 	local function IsTextureInputHidden() return texDB.TexMode == 1 end
 	local function IsTextureSelectHidden() return texDB.TexMode ~= 1 end
 	local function IsTexCoordsHidden()
-		return isNative or PRESET_LUI_TEXTURES[texDB.Texture] or not texDB.CustomTexCoords
+		return PRESET_LUI_TEXTURES[texDB.Texture] or not texDB.CustomTexCoords
 	end
 	local function SetPresetTexture(_, value)
 		texDB.Texture = value
@@ -114,16 +114,17 @@ local function CreatePanelGroup(name, isNative)
 	local group = Opt:Group({name = name, db = texDB, args = {
 		Enabled = Opt:Toggle({name = "Enabled"}),
 		TextureHeader = Opt:Header({name = L["Texture"]}),
-		TexMode = Opt:Select({name = L["Panels_Options_Category"], values = TEX_MODE_SELECT, disabled = isNative}),
-		Texture = Opt:Input({name = L["Texture"], desc = L["Panels_Options_Texture_Desc"], hidden = IsTextureInputHidden, onlyIf = not isNative}),
-		TextureSelect = Opt:Select({name = L["Panels_Options_TextureSelect"], desc = L["Panels_Options_TextureSelect_Desc"], values = PRESET_LUI_TEXTURES, hidden = IsTextureSelectHidden, disabled = isNative, get = function() return texDB.Texture end, set = SetPresetTexture}),
-		TextureSpacer = Opt:Spacer({}),
+		TexMode = Opt:Select({name = L["Panels_Options_Category"], values = TEX_MODE_SELECT}),
+		Texture = Opt:Input({name = L["Texture"], desc = L["Panels_Options_Texture_Desc"], hidden = IsTextureInputHidden}),
+		TextureSelect = Opt:Select({name = L["Panels_Options_TextureSelect"], desc = L["Panels_Options_TextureSelect_Desc"],
+			values = PRESET_LUI_TEXTURES, hidden = IsTextureSelectHidden, get = function() return texDB.Texture end, set = SetPresetTexture}),
 		Anchored = Opt:Toggle({name = L["Panels_Options_Anchored"], desc = L["Panels_Options_Anchored_Desc"], width = "normal"}),
 		Parent = Opt:Input({name = L["Parent"], desc = L["Panels_Options_Parent_Desc"], disabled = IsAnchorParentDisabled}),
 		ColorType = Opt:ColorMenu(colorMenuOptions, {name = "Panel", arg = name}),
 		HorizontalFlip = Opt:Toggle({name = L["Panels_Options_HorizontalFlip"], desc = L["Panels_Options_HorizontalFlip_Desc"]}),
 		VerticalFlip = Opt:Toggle({name = L["Panels_Options_VerticalFlip"], desc = L["Panels_Options_VerticalFlip_Desc"]}),
-		CustomTexCoords = Opt:Toggle({name = L["Panels_Options_CustomTexCoords"], desc = L["Panels_Options_CustomTexCoords_Desc"], hidden = function() return isNative or PRESET_LUI_TEXTURES[texDB.Texture] end}),
+		CustomTexCoords = Opt:Toggle({name = L["Panels_Options_CustomTexCoords"], desc = L["Panels_Options_CustomTexCoords_Desc"],
+			hidden = function() return PRESET_LUI_TEXTURES[texDB.Texture] end}),
 		CoordSpacer = Opt:Spacer({}),
 		Left = Opt:InputNumber({name = L["Point_Left"], width = "half", hidden = IsTexCoordsHidden}),
 		Right = Opt:InputNumber({name = L["Point_Right"], width = "half", hidden = IsTexCoordsHidden}),
