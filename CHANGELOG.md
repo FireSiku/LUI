@@ -6,6 +6,8 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 
 - Updated the embedded oUF runtime to 14.0.3.
 - Updated status bars, tooltips, auras and other UI code for the current Blizzard API.
+- Restored secret-safe class and resource color handling for protected Retail values.
+- Restored shared color menus with separate opacity controls across Artwork, Bags, Experience Bars, Micromenu and Minimap.
 - Fixed profile switching, profile conversion, import/export and per-profile backups.
 - Restored the current options pages and hid modules that are not available.
 - Fixed Blizzard frame scaling and several AceConfig layout and state issues.
@@ -16,14 +18,21 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 - Moved unit-frame auras to Blizzard's current AuraContainer system.
 - Fixed missing aura icons, filters, timers, cooldowns, dispel borders and boss-frame icon borders.
 - Restored name-length, raid-status and editable unitframe palette options.
+- Synced PvP and honor indicator handling with the secret-value changes in oUF 14.0.3.
+- Avoided `UNIT_COMBAT` updates when every combat-feedback option is disabled.
 - Deferred protected frame changes until combat ends to avoid taint errors.
 
-## Chat and infotext
+## Chat, tooltips and infotext
 
 - Fixed short channel names, message and tab fading, chat links, copy-chat and scroll reminder buttons.
 - Restored edit-box positioning, history, channel colors, textures and borders.
 - Added clear descriptions for sticky channels and hover-window font settings.
 - Updated Friends, Guild and the remaining infotext providers for the current APIs.
+- Added background and border texture and color options for the Friends and Guild windows, matching the standard LUI tooltip defaults.
+- Corrected unit-tooltip guild colors so the player's guild is green and other guilds are blue.
+- Removed Blizzard's frame-settings hint from LUI player, party and raid frame tooltips.
+- Limited backdrop and anchoring updates to safe, LUI-managed tooltips, preventing forbidden-object errors on embedded Blizzard widgets.
+- Deferred memory collection, usage refreshes and sorting across frames to prevent timeouts with many loaded addons.
 - Improved top-bar alignment for larger infotext fonts, added global horizontal and vertical offsets and enabled all standard screen anchors.
 
 ## Artwork and addon support
@@ -33,21 +42,23 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 - Fixed Bartender4 auto-positioning on the left sidebar.
 - Added presets for both Blizzard Damage Meter windows.
 - Added a separate Raid Menu background color for better icon contrast.
+- Enabled texture category, preset and custom texture settings for the action-bar top artwork.
 - Fixed tooltip backgrounds used by SavedInstances and other LibQTip-based addons.
 
 ## Other fixes
 
 - Fixed Bags update handling and character-bag ownership.
+- Updated merchant coin-texture formatting to the current `C_CurrencyInfo` API.
 - Updated Experience Bars, Mirror Bar, Minimap, Micromenu, Merchant and UI Elements for Retail 12.1.
 - Removed obsolete Cooldown, Fader, installer, updater and old addon-integration code.
 
-Thanks to Teks, BaeBlade, Jay, Nikko and the LUI community for testing and feedback.
+Thanks to Teks, BaeBlade, Jay, Nikko, Dvuk13 and the LUI community for testing and feedback.
 
 ---
 
 # LUI v2608
 
-## Retail modernization for Blizzard 12.1 and oUF 14.0.1
+## Retail modernization for Blizzard 12.1 and oUF 14.0.3
 
 This changelog documents the complete release delta from the previous FireSiku LUI Retail version.
 
@@ -93,7 +104,7 @@ This changelog documents the complete release delta from the previous FireSiku L
 
 ## Framework and Blizzard API
 
-- Replaced the embedded oUF 13.4.5 framework with official oUF 14.0.1 core files and its current element load list.
+- Replaced the embedded oUF 13.4.5 framework with official oUF 14.0.3 core files and its current element load list.
 - Updated the LUI and LUIOptions interface metadata for Blizzard 12.1 Retail.
 - Added compatibility aliases required by the original FireSiku layouts while moving runtime behavior to oUF 14.
 - Updated event, power, aura, private-aura, range, rune, stagger, threat, summon, quest, PvP, raid-target, ready-check, and resurrection paths for the current Blizzard API and secret-value rules.
@@ -211,10 +222,3 @@ This changelog documents the complete release delta from the previous FireSiku L
 - The final ZIP passes archive-integrity validation.
 - Dedicated local checks cover profile transfer, preview creation, the 25-frame raid grid, mover save/restore, preview cleanup, and multi-row aura dimensions.
 - Community testers verified profile import/export, unit-frame previews, aura timers and cooldowns, aura refresh/removal, target pinging, non-player tooltips, cast bars, and the new icons-per-row setting in game.
-
-## Installation note
-
-- CurseForge users can install or update the complete package normally.
-- For manual installation, delete the old `LUI` and `LUIOptions` addon folders before copying the new versions.
-- Do not merge the release into an older manual installation because obsolete Lua files may remain behind.
-- Deleting the addon folders does not delete profiles stored under `WTF`, but backing up `WTF` before a major update is recommended.
