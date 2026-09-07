@@ -37,6 +37,7 @@ function AzeriteDataProvider:Update()
 	self.barMax = totalXP
 end
 
-function AzeriteDataProvider:GetDataText()
-	return "AP"
+function AzeriteDataProvider:GetDataText(style)
+	if style == "None" then return "" end
+	return style == "Full" and "Azerite Power" or "AP"
 end

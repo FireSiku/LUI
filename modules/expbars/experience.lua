@@ -34,6 +34,7 @@ function ExperienceDataProvider:Update()
     self.barMax = maxXP
 end
 
-function ExperienceDataProvider:GetDataText()
-	return "XP"
+function ExperienceDataProvider:GetDataText(style)
+	if style == "None" then return "" end
+	return style == "Full" and "Experience" or "XP"
 end

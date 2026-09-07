@@ -49,6 +49,8 @@ function HouseFavorDataProvider:Update(event, houseLevelFavor)
 	self.barMax = math.max(1, nextThreshold - threshold)
 end
 
-function HouseFavorDataProvider:GetDataText()
-	return self.houseLevel and ("Favor " .. self.houseLevel) or "Favor"
+function HouseFavorDataProvider:GetDataText(style)
+	if style == "None" then return "" end
+	local label = style == "Full" and "House Favor" or "Favor"
+	return self.houseLevel and (label .. " " .. self.houseLevel) or label
 end

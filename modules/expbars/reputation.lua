@@ -93,13 +93,15 @@ function ReputationDataProvider:GetFriendshipValues(factionID)
 end
 
 function ReputationDataProvider:Update()
-	local _, standing, barMin, barMax, barValue, factionID = GetWatchedFactionInfo()
+	local name, standing, barMin, barMax, barValue, factionID = GetWatchedFactionInfo()
 	if not factionID or not standing or not barMin or not barMax or not barValue then
+		self.repName = nil
 		self.repText = ""
 		self.barMin, self.barValue, self.barMax = 0, 0, 1
 		return
 	end
 
+	self.repName = name
 	self.repText = SHORT_REPUTATION_NAMES[standing]
 	local friendshipInfo = C_GossipInfo.GetFriendshipReputation(factionID)
 
@@ -127,6 +129,12 @@ function ReputationDataProvider:Update()
 	self.barValue = barValue
 end
 
-function ReputationDataProvider:GetDataText()
-	return self.repText
+function ReputationDataProvider:GetDataText(style)
+	if style == "None" then return "" end
+	local status = self.repText or ""
+	if style == "Full" then
+		local name = self.repName or "Reputation"
+		return status ~= "" and format("%s (%s)", name, status) or name
+	end
+	return status ~= "" and format("Rep %s", status) or "Rep"
 end

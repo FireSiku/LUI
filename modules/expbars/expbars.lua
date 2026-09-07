@@ -21,6 +21,22 @@ local LUI = select(2, ...)
 local module = LUI:GetModule("Experience Bars")
 local db
 local Media = LibStub("LibSharedMedia-3.0")
+local GameTooltip = _G.GameTooltip
+local InCombatLockdown = _G.InCombatLockdown
+local RoundToSignificantDigits = _G.RoundToSignificantDigits
+
+local POINT_COORDS = {
+	TOPLEFT = {0, 1}, TOP = {0.5, 1}, TOPRIGHT = {1, 1},
+	LEFT = {0, 0.5}, CENTER = {0.5, 0.5}, RIGHT = {1, 0.5},
+	BOTTOMLEFT = {0, 0}, BOTTOM = {0.5, 0}, BOTTOMRIGHT = {1, 0},
+}
+
+local function GetFramePoint(frame, point)
+	local left, bottom, width, height = frame:GetRect()
+	local coords = POINT_COORDS[point]
+	if not left or not coords then return end
+	return left + width * coords[1], bottom + height * coords[2]
+end
 
 --- Array containing all Data Providers that were loaded
 ---@type ExpBarDataProvider[]
@@ -58,8 +74,10 @@ function ExpBarDataProviderMixin:ShouldBeVisible()
 end
 
 --- Determine text being displayed
+---@param style "None"|"Short"|"Full"?
 ---@return string text
-function ExpBarDataProviderMixin:GetDataText()
+function ExpBarDataProviderMixin:GetDataText(style)
+	if style == "None" then return "" end
 	return "No Data"
 end
 
@@ -81,13 +99,19 @@ end
 
 function ExpBarMixin:UpdateText()
 	local db = module.db.profile --[[@as table]]
+	local trackerText = self:GetDataText(db.TrackerLabel or "Short") or ""
+	local function AddTrackerText(valueText)
+		if trackerText == "" then return valueText end
+		if valueText == "" then return trackerText end
+		return format("%s %s", valueText, trackerText)
+	end
 	local percentText = ""
 	if db.ShowPercent then
 		local precision = db.Precision or 2
 		local percentBar = self.barMax > 0 and self.barValue / self.barMax * 100 or 0
 		percentText = format("%."..precision.."f%%", percentBar)
 		if not db.ShowCurrent then
-			return self.text:SetText(format("%s %s", percentText, self:GetDataText() or ""))
+			return self.text:SetText(AddTrackerText(percentText))
 		end
 	end
 	if db.ShowCurrent then
@@ -98,9 +122,55 @@ function ExpBarMixin:UpdateText()
 		if db.ShowPercent then
 			text = format("%s (%s)", text, percentText)
 		end
-		return self.text:SetText(format("%s %s", text, self:GetDataText() or ""))
+		return self.text:SetText(AddTrackerText(text))
 	end
-	return self.text:SetText(self:GetDataText() or "")
+	return self.text:SetText(trackerText)
+end
+
+function ExpBarMixin:ShowTooltip()
+	local settings = module.db.profile
+	if not settings.ShowTooltip then return end
+
+	GameTooltip:SetOwner(self, "ANCHOR_TOP")
+	GameTooltip:ClearLines()
+	GameTooltip:AddLine(self:GetDataText("Full") or self.provider, 1, 0.82, 0)
+
+	local current, maximum = self.barValue, self.barMax
+	if type(current) == "number" and type(maximum) == "number"
+		and not issecretvalue(current) and not issecretvalue(maximum) then
+		GameTooltip:AddDoubleLine("Progress",
+			format("%s / %s", BreakUpLargeNumbers(current), BreakUpLargeNumbers(maximum)),
+			1, 1, 1, 1, 1, 1)
+		local precision = settings.Precision or 2
+		local percent = maximum > 0 and current / maximum * 100 or 0
+		GameTooltip:AddDoubleLine("Percentage", format("%."..precision.."f%%", percent),
+			1, 1, 1, 1, 1, 1)
+	end
+	GameTooltip:Show()
+end
+
+function ExpBarMixin:HideTooltip()
+	if GameTooltip:GetOwner() == self then GameTooltip:Hide() end
+end
+
+local function StartAnchorMoving()
+	if module.db.profile.Lock or InCombatLockdown() then return end
+	module.isMoving = true
+	module.anchor:StartMoving()
+	GameTooltip:Hide()
+end
+
+local function StopAnchorMoving()
+	if not module.isMoving then return end
+	module.isMoving = nil
+	module.anchor:StopMovingOrSizing()
+	module:SaveAnchorPosition()
+end
+
+function ExpBarMixin:UpdateInteractionState()
+	local settings = module.db.profile
+	self:EnableMouse(settings.ShowTooltip or not settings.Lock)
+	if not settings.ShowTooltip then self:HideTooltip() end
 end
 
 function ExpBarMixin:UpdateVisibility()
@@ -216,10 +286,16 @@ function module:CreateBar(name, dataProvider)
 	-- after mixing it into the bar instead of letting Mixin overwrite it.
 	bar.provider = dataProvider
 	bar:SetScript("OnEvent", bar.UpdateBar)
+	bar:SetScript("OnEnter", bar.ShowTooltip)
+	bar:SetScript("OnLeave", bar.HideTooltip)
+	bar:SetScript("OnDragStart", StartAnchorMoving)
+	bar:SetScript("OnDragStop", StopAnchorMoving)
+	bar:RegisterForDrag("LeftButton")
 	bar:RegisterEvents()
 	
 	bar:SetBarColor(module:RGBA(dataProvider))
 	bar:UpdateTextVisibility()
+	bar:UpdateInteractionState()
 	bar:UpdateVisibility()
 	bar:UpdateBar()
 
@@ -247,6 +323,25 @@ function module:SetMainBar()
 	anchor:SetPoint(db.Point, UIParent, db.RelativePoint, db.X, db.Y)
 	anchor:SetSize(db.Width, db.Height)
 	module.anchor = anchor
+
+	local mover = CreateFrame("Frame", nil, anchor)
+	mover:SetAllPoints(anchor)
+	mover:SetFrameStrata("HIGH")
+	mover:SetFrameLevel(anchor:GetFrameLevel() + 10)
+	mover:EnableMouse(true)
+	mover:RegisterForDrag("LeftButton")
+	mover:SetScript("OnDragStart", StartAnchorMoving)
+	mover:SetScript("OnDragStop", StopAnchorMoving)
+
+	local moverBackground = mover:CreateTexture(nil, "BACKGROUND")
+	moverBackground:SetAllPoints(mover)
+	moverBackground:SetColorTexture(0, 0.9, 0, 0.45)
+
+	local moverText = mover:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	moverText:SetPoint("CENTER")
+	moverText:SetText("Experience Bars - Drag to move")
+	module.mover = mover
+	module:UpdateMoveState()
 	
 	anchor:SetScript("OnEvent", function() module:UpdateMainBarVisibility() end)
 
@@ -268,6 +363,29 @@ function module:SetMainBar()
 	module.HouseFavorBar = houseFavorBar
 
 	return true -- mainBarsCreated
+end
+
+function module:UpdateMoveState()
+	local unlocked = not db.Lock
+	module.anchor:SetMovable(unlocked)
+	if unlocked then
+		module.mover:Show()
+	else
+		module.mover:Hide()
+	end
+end
+
+function module:SaveAnchorPosition()
+	local point = db.Point or "CENTER"
+	local relativePoint = db.RelativePoint or "CENTER"
+	local frameX, frameY = GetFramePoint(module.anchor, point)
+	local relativeX, relativeY = GetFramePoint(UIParent, relativePoint)
+	if not frameX or not relativeX then return end
+
+	db.X = RoundToSignificantDigits(frameX - relativeX, 1)
+	db.Y = RoundToSignificantDigits(frameY - relativeY, 1)
+	module.anchor:ClearAllPoints()
+	module.anchor:SetPoint(point, UIParent, relativePoint, db.X, db.Y)
 end
 
 function module:UpdateMainBarVisibility()
@@ -370,11 +488,13 @@ function module:Refresh()
 	module.anchor:ClearAllPoints()
 	module.anchor:SetPoint(db.Point, UIParent, db.RelativePoint, db.X, db.Y)
 	module.anchor:SetSize(db.Width, db.Height)
+	module:UpdateMoveState()
 	for bar in module:IterateMainBars() do
 		bar:SetStatusBarTexture(module:FetchStatusBar("ExpBarFill"))
 		bar.bg:SetTexture(module:FetchStatusBar("ExpBarBg"))
 		bar.text:SetFont(Media:Fetch("font", db.Fonts.Text.Name), db.Fonts.Text.Size, db.Fonts.Text.Flag)
 		bar:UpdateTextVisibility()
+		bar:UpdateInteractionState()
 		bar:UpdateText()
 	end
 	module:RefreshColors()

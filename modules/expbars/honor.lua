@@ -38,6 +38,7 @@ function HonorDataProvider:Update()
 	self.barMax = honorMax
 end
 
-function HonorDataProvider:GetDataText()
+function HonorDataProvider:GetDataText(style)
+	if style == "None" then return "" end
 	return "Honor"
 end
