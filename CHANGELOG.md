@@ -61,7 +61,7 @@ Thanks to Teks, BaeBlade, Jay, Nikko, Dvuk13 and the LUI community for testing a
 
 # LUI v2608
 
-## Retail modernization for Blizzard 12.1 and oUF 14.0.3
+## Retail modernization for Blizzard 12.1 and oUF 14.0.1
 
 This changelog documents the complete release delta from the previous FireSiku LUI Retail version.
 
@@ -107,7 +107,7 @@ This changelog documents the complete release delta from the previous FireSiku L
 
 ## Framework and Blizzard API
 
-- Replaced the embedded oUF 13.4.5 framework with official oUF 14.0.3 core files and its current element load list.
+- Replaced the embedded oUF 13.4.5 framework with official oUF 14.0.1 core files and its current element load list.
 - Updated the LUI and LUIOptions interface metadata for Blizzard 12.1 Retail.
 - Added compatibility aliases required by the original FireSiku layouts while moving runtime behavior to oUF 14.
 - Updated event, power, aura, private-aura, range, rune, stagger, threat, summon, quest, PvP, raid-target, ready-check, and resurrection paths for the current Blizzard API and secret-value rules.
