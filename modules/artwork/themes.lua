@@ -11,6 +11,7 @@ local module = LUI:NewModule("Themes", "LUIDevAPI", "AceSerializer-3.0")
 local ACR = LibStub("AceConfigRegistry-3.0")
 
 local db, dbd
+local applyThemeOnEnable
 local StaticPopup_Hide = _G.StaticPopup_Hide
 local tContains = _G.tContains
 local strupper = string.upper
@@ -43,9 +44,6 @@ local MODERN_MODULE_COLOR_MAP = {
 	{module = "Micromenu", color = "Micromenu", theme = "micromenu", fallback = "navi"},
 	{module = "Micromenu", color = "Background", theme = "micromenu_background", fallback = "chat"},
 	{module = "Minimap", color = "Minimap", theme = "minimap", fallback = "navi"},
-	{module = "Bags", color = "Background", theme = "bags", fallback = "chat"},
-	{module = "Bags", color = "Border", theme = "bagsborder", fallback = "chatborder"},
-	{module = "Bags", color = "Search", theme = "bagssearch", fallback = "navi"},
 }
 
 local function CopyArrayToColor(source, target)
@@ -184,6 +182,7 @@ function module:CheckTheme()
 		db.theme = gsub(class, "(%a)([%w_']*)", function(first, rest) return strupper(first)..strlower(rest) end)
 
 		module:LoadTheme()
+		return true
 	else
 		for k, v in pairs(db.global[theme]) do
 			if type(v) == "table" and not db[k] then
@@ -951,13 +950,15 @@ function module:OnInitialize()
 		LUI.db.profile.Colors = nil
 	end
 
-	self:CheckTheme()
+	applyThemeOnEnable = self:CheckTheme()
 end
 
 function module:OnEnable()
 	LUI.Profiler.TraceScope(module, "Themes", "LUI", 2)
+	if not applyThemeOnEnable then return end
 	self:RegisterEvent("PLAYER_ENTERING_WORLD", function()
 		self:ApplyTheme()
+		applyThemeOnEnable = false
 		self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	end)
 end

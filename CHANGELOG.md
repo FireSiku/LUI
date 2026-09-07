@@ -11,6 +11,7 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 - Fixed profile switching, profile conversion, import/export and per-profile backups.
 - Restored the current options pages and hid modules that are not available.
 - Fixed Blizzard frame scaling and several AceConfig layout and state issues.
+- Preserved individual module colors across reloads and kept Bags colors independent from artwork themes, retaining the class-colored background and default opacity.
 
 ## Unit frames
 
