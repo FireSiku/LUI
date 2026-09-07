@@ -23,6 +23,12 @@ local ExpBars = Opt:CreateModuleOptions("Experience Bars", module)
 local function IsTextDisabled() return not db.ShowText end
 local function AbsTextHidden() return not db.ShowText or not db.ShowCurrent end
 
+local TRACKER_LABEL_VALUES = {
+	None = "None",
+	Short = "Short",
+	Full = "Full",
+}
+
 local colorMenuOptions = {}
 
 ExpBars.args = {
@@ -43,6 +49,7 @@ ExpBars.args = {
 	Width = Opt:InputNumber({name = "Width"}),
 	Height = Opt:InputNumber({name = "Height"}),
 	PositionHeader = Opt:Header({name = L["Position"]}),
+	Lock = Opt:Toggle({name = "Lock Bar", desc = "Unlock to drag the bar freely. Its position is saved using the selected anchors."}),
 	X = Opt:PositionX(),
 	Y = Opt:PositionY(),
 	Point = Opt:Select({name = L["Anchor"], values = LUI.Points}),
@@ -57,6 +64,9 @@ ExpBars.args = {
 		Flag = Opt:Select({name = "Outline", values = LUI.FontFlags}),
 	}}),
 	ShowText = Opt:Toggle({name = L["ExpBar_Options_ShowText"]}),
+	TrackerLabel = Opt:Select({name = "Tracker Label", desc = "Choose how the tracked progress type is named on the bar.",
+		values = TRACKER_LABEL_VALUES, sorting = {"None", "Short", "Full"}, disabled = IsTextDisabled}),
+	ShowTooltip = Opt:Toggle({name = "Show Tooltip", desc = "Show the tracker name and full progress when hovering over a bar."}),
     ShowPercent = Opt:Toggle({name = L["Show Percent"], disabled = IsTextDisabled}),
 	Precision = Opt:Slider({name = L["Precision"], min = 0, max = 3, softMax = 2, step = 1, disabled = IsTextDisabled}),
     Spacer3 = Opt:Spacer({}),

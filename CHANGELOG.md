@@ -50,6 +50,8 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 - Fixed Bags update handling and character-bag ownership.
 - Updated merchant coin-texture formatting to the current `C_CurrencyInfo` API.
 - Updated Experience Bars, Mirror Bar, Minimap, Micromenu, Merchant and UI Elements for Retail 12.1.
+- Added configurable tracker labels and optional hover tooltips to Experience Bars, including watched reputation faction names.
+- Added a lock option and visible drag area for freely positioning Experience Bars while preserving anchor-relative X/Y offsets.
 - Removed obsolete Cooldown, Fader, installer, updater and old addon-integration code.
 
 Thanks to Teks, BaeBlade, Jay, Nikko, Dvuk13 and the LUI community for testing and feedback.
