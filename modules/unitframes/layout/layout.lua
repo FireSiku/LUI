@@ -100,6 +100,7 @@ IsFullCurve:SetType(Enum.LuaCurveType.Step)
 IsFullCurve:AddPoint(0.999, 0)
 IsFullCurve:AddPoint(1, 1)
 
+-- Native curve evaluation accepts restricted shield values without Lua comparisons.
 local function SetFontString(parent, fontName, fontHeight, fontStyle)
 	local fs = parent:CreateFontString(nil, "OVERLAY")
 	fs:SetFont(fontName, fontHeight, fontStyle or "")
@@ -290,6 +291,7 @@ local function PostUpdateHealthColor(health, unit, color)
 	SetHealthTextColor(health, health.value, unit)
 	SetHealthTextColor(health, health.valuePercent, unit)
 	SetHealthTextColor(health, health.valueMissing, unit)
+	SetHealthTextColor(health, health.absorbText, unit)
 end
 
 local function SetPowerTextColor(power, text, unit)
@@ -430,8 +432,51 @@ end
 
 -- oUF 14 owns the Health and Power status-bar values. LUI only formats
 -- the values passed by oUF and applies presentation in PostUpdateColor.
+-- Mirror the native absorb value into the part clipped to filled health.
+-- The frame anchors handle overlap; no arithmetic on health/absorb values.
+local function UpdateAbsorbBackfill(health)
+	local backfill = health.AbsorbBackfill
+	if not backfill then return end
+	local amount = health.values:GetDamageAbsorbs()
+	backfill:SetWidth(health:GetWidth())
+	backfill:SetMinMaxValues(0, health.values:GetMaximumHealth())
+	backfill:SetValue(amount)
+end
+
+local function UpdateAbsorbText(health, unit)
+	local text = health.absorbText
+	if not text or not text.Enable then return end
+
+	-- Query the current total directly, including on absorb-only events.
+	unit = unit or health.__owner.__unit
+	local amount = UnitGetTotalAbsorbs(unit)
+	local value
+	if text.ShortValue then
+		value = AbbreviateNumbers(amount)
+	else
+		value = BreakUpLargeNumbers(amount)
+	end
+	text:SetFormattedText("%s%s", text.Prefix, value)
+	text:SetAlpha(text.Opacity or 1)
+	-- Native status-bar clamping opens the text clip for any positive absorb.
+	-- Only the saved option is tested in Lua; the shield value stays opaque.
+	if text.ShowEmpty then
+		text.VisibilityBar:SetValue(1)
+	else
+		text.VisibilityBar:SetValue(amount)
+	end
+end
+
+local function AbsorbTextEvent(self, event, unit)
+	if unit ~= self.__unit then return end
+	-- Keep text updates independent of shield-bar creation and event order.
+	UpdateAbsorbText(self.Health, unit)
+end
+
 local function PostUpdateHealth(health, unit, current, max, lossPerc)
+	UpdateAbsorbBackfill(health)
 	UpdateHealthDisplay(health.__owner, unit, current, max)
+	UpdateAbsorbText(health, unit)
 end
 
 local function PostUpdatePower(power, unit, current, min, max, displayType)
@@ -758,7 +803,7 @@ module.funcs = {
 	Health = function(self, unit, oufdb)
 		if not self.Health then
 			self.Health = CreateFrame("StatusBar", nil, self)
-			self.Health:SetFrameLevel(2)
+			self.Health:SetFrameLevel(self:GetFrameLevel() + 2)
 			self.Health.bg = self.Health:CreateTexture(nil, "BORDER")
 			self.Health.bg:SetAllPoints(self.Health)
 		end
@@ -819,7 +864,7 @@ module.funcs = {
 	Power = function(self, unit, oufdb)
 		if not self.Power then
 			self.Power = CreateFrame("StatusBar", nil, self)
-			self.Power:SetFrameLevel(2)
+			self.Power:SetFrameLevel(self:GetFrameLevel() + 2)
 			self.Power.bg = self.Power:CreateTexture(nil, "BORDER")
 			self.Power.bg:SetAllPoints(self.Power)
 		end
@@ -881,7 +926,8 @@ module.funcs = {
 		self.FrameBackdrop:ClearAllPoints()
 		self.FrameBackdrop:SetPoint("TOPLEFT", self, "TOPLEFT", oufdb.Backdrop.Padding.Left, oufdb.Backdrop.Padding.Top)
 		self.FrameBackdrop:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", oufdb.Backdrop.Padding.Right, oufdb.Backdrop.Padding.Bottom)
-		self.FrameBackdrop:SetFrameStrata("BACKGROUND")
+		self.FrameBackdrop:SetFrameStrata(self:GetFrameStrata())
+		self.FrameBackdrop:SetFrameLevel(self:GetFrameLevel())
 		LUI:ApplyFrameBackdrop(self.FrameBackdrop, {
 			bgFile = Media:Fetch("background", oufdb.Backdrop.Texture),
 			edgeFile = Media:Fetch("border", oufdb.Border.EdgeFile),
@@ -955,6 +1001,46 @@ module.funcs = {
 		self.Health.value.Format = oufdb.HealthText.Format
 		self.Health.value.color = oufdb.HealthText.Color
 		self.Health.value.colorIndividual = oufdb.HealthText.IndividualColor
+	end,
+	AbsorbText = function(self, unit, oufdb)
+		local settings = oufdb.AbsorbText
+		local health = self.Health
+		local text = health.absorbText
+		if not settings or not settings.Enable then
+			if text then text.Enable = false; text:Hide() end
+			self:UnregisterEvent("UNIT_ABSORB_AMOUNT_CHANGED", AbsorbTextEvent)
+			return
+		end
+
+		if not text then
+			local visibility = CreateFrame("StatusBar", nil, self.Overlay)
+			visibility:SetMinMaxValues(0, 1)
+			visibility:SetStatusBarTexture(LUI.Media.blank)
+			visibility:GetStatusBarTexture():SetAlpha(0)
+			visibility:SetValue(0)
+
+			local clip = CreateFrame("Frame", nil, visibility)
+			clip:SetAllPoints(visibility:GetStatusBarTexture())
+			clip:SetClipsChildren(true)
+			text = SetFontString(clip, Media:Fetch("font", settings.Font), settings.Size, settings.Outline)
+			text.VisibilityBar = visibility
+			health.absorbText = text
+		end
+		-- Keep the clipping area centered around the configured text anchor.
+		-- Its generous bounds leave room for the prefix and font outline.
+		local visibility = text.VisibilityBar
+		visibility:SetSize(math.max(1024, self:GetWidth() * 4), settings.Size * 4)
+		visibility:ClearAllPoints()
+		visibility:SetPoint("CENTER", self, settings.RelativePoint, settings.X, settings.Y)
+		text:SetFont(Media:Fetch("font", settings.Font), settings.Size, settings.Outline)
+		text:ClearAllPoints()
+		text:SetPoint(settings.Point, visibility, "CENTER")
+		text.Enable = true
+		text.Opacity = settings.Opacity or 1
+		text.ShortValue, text.ShowEmpty, text.Prefix = settings.ShortValue, settings.ShowEmpty, settings.Prefix
+		text.color, text.colorIndividual = settings.Color, settings.IndividualColor
+		text:Show()
+		self:RegisterEvent("UNIT_ABSORB_AMOUNT_CHANGED", AbsorbTextEvent)
 	end,
 	HealthPercent = function(self, unit, oufdb)
 		if not self.Health.valuePercent then self.Health.valuePercent = SetFontString(self.Overlay, Media:Fetch("font", oufdb.HealthPercentText.Font), oufdb.HealthPercentText.Size, oufdb.HealthPercentText.Outline) end
@@ -1157,7 +1243,7 @@ module.funcs = {
 	Runes = function(self, unit, oufdb)
 		if not self.Runes then
 			self.Runes = CreateFrame("Frame", nil, self)
-			self.Runes:SetFrameLevel(6)
+			self.Runes:SetFrameLevel(self:GetFrameLevel() + 6)
 				
 			for i = 1, 6 do
 				self.Runes[i] = CreateFrame("StatusBar", nil, self.Runes)
@@ -1170,7 +1256,7 @@ module.funcs = {
 			self.Runes.FrameBackdrop = CreateFrame("Frame", nil, self.Runes)
 			self.Runes.FrameBackdrop:SetPoint("TOPLEFT", self.Runes, "TOPLEFT", -3.5, 3)
 			self.Runes.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.Runes, "BOTTOMRIGHT", 3.5, -3)
-			self.Runes.FrameBackdrop:SetFrameStrata("BACKGROUND")
+			self.Runes.FrameBackdrop:SetFrameLevel(self.Runes:GetFrameLevel() - 1)
 			LUI:ApplyFrameBackdrop(self.Runes.FrameBackdrop, {
 				edgeFile = glowTex, edgeSize = 5,
 				insets = {left = 3, right = 3, top = 3, bottom = 3}
@@ -1207,7 +1293,7 @@ module.funcs = {
 	Totems = function(self, unit, oufdb)
 		if not self.Totems then
 			self.Totems = CreateFrame("Frame", nil, self)
-			self.Totems:SetFrameLevel(6)
+			self.Totems:SetFrameLevel(self:GetFrameLevel() + 6)
 			local priorities = UnitClassBase("player") == "SHAMAN"
 				and _G.SHAMAN_TOTEM_PRIORITIES
 				or _G.STANDARD_TOTEM_PRIORITIES
@@ -1256,7 +1342,7 @@ module.funcs = {
 			self.Totems.FrameBackdrop = CreateFrame("Frame", nil, self.Totems)
 			self.Totems.FrameBackdrop:SetPoint("TOPLEFT", self.Totems, "TOPLEFT", -3.5, 3)
 			self.Totems.FrameBackdrop:SetPoint("BOTTOMRIGHT", self.Totems, "BOTTOMRIGHT", 3.5, -3)
-			self.Totems.FrameBackdrop:SetFrameStrata("BACKGROUND")
+			self.Totems.FrameBackdrop:SetFrameLevel(self.Totems:GetFrameLevel() - 1)
 			LUI:ApplyFrameBackdrop(self.Totems.FrameBackdrop, {
 				edgeFile = glowTex, edgeSize = 5,
 				insets = {left = 3, right = 3, top = 3, bottom = 3}
@@ -1295,7 +1381,7 @@ module.funcs = {
 		local classPower = self.ClassPower
 		if not classPower then
 			classPower = CreateFrame("Frame", nil, self)
-			classPower:SetFrameStrata("BACKGROUND")
+			classPower:SetFrameLevel(self:GetFrameLevel() + 6)
 			LUI:ApplyFrameBackdrop(classPower, {
 				bgFile = "Interface/Tooltips/UI-Tooltip-Background",
 				edgeFile = glowTex, tile = false, tileSize = 0, edgeSize = 1,
@@ -1548,7 +1634,7 @@ module.funcs = {
 	Portrait = function(self, unit, oufdb)
 		if not self.Portrait then
 			self.Portrait = CreateFrame("PlayerModel", nil, self)
-			self.Portrait:SetFrameLevel(5)
+			self.Portrait:SetFrameLevel(self:GetFrameLevel() + 5)
 		end
 
 		self.Portrait:SetHeight(oufdb.Portrait.Height)
@@ -1696,7 +1782,7 @@ module.funcs = {
 		if not castbar then
 			self.Castbar = CreateFrame("StatusBar", self:GetName().."_Castbar", self)
 			castbar = self.Castbar
-			castbar:SetFrameLevel(6)
+			castbar:SetFrameLevel(self:GetFrameLevel() + 6)
 
 			castbar.bg = castbar:CreateTexture(nil, "BORDER")
 			castbar.bg:SetAllPoints(castbar)
@@ -1996,31 +2082,65 @@ module.funcs = {
 		local db = oufdb.TotalAbsorbBar
 		local health = self.Health
 		if not db.Enable then
-			if health.DamageAbsorb then health.DamageAbsorb:SetAlpha(0) end
+			if health.AbsorbContainer then health.AbsorbContainer:SetAlpha(0) end
 			return
 		end
 
-		if not health.DamageAbsorb then
-			health.DamageAbsorb = CreateFrame("StatusBar", nil, health)
+		if not health.AbsorbContainer then
+			local container = CreateFrame("Frame", nil, health)
+			container:SetAllPoints(health)
+			container:SetClipsChildren(true)
+			health.AbsorbContainer = container
+
+			local filledClip = CreateFrame("Frame", nil, container)
+			filledClip:SetPoint("TOPLEFT", health, "TOPLEFT")
+			filledClip:SetPoint("BOTTOMRIGHT", health:GetStatusBarTexture(), "BOTTOMRIGHT")
+			filledClip:SetClipsChildren(true)
+
+			health.DamageAbsorb = CreateFrame("StatusBar", nil, container)
+			health.AbsorbBackfill = CreateFrame("StatusBar", nil, filledClip)
 		end
 
+		-- Keep the full shield amount available; geometry clips it to the frame.
+		health.damageAbsorbClampMode = Enum.UnitDamageAbsorbClampMode.MaximumHealth
+		health.AbsorbContainer:SetAlpha(1)
+
 		local absorb = health.DamageAbsorb
-		absorb:SetAlpha(1)
-		absorb:SetWidth(oufdb.HealthBar.Width * self:GetWidth() / oufdb.Width)
-		absorb:SetStatusBarTexture(Media:Fetch("statusbar", db.Texture))
-		absorb:GetStatusBarTexture():SetVertexColor(db.MyColor.r, db.MyColor.g, db.MyColor.b, db.MyColor.a)
-		absorb:ClearAllPoints()
-		absorb:SetPoint("TOPLEFT", health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
-		absorb:SetPoint("BOTTOMLEFT", health:GetStatusBarTexture(), "BOTTOMRIGHT", 0, 0)
+		local backfill = health.AbsorbBackfill
+		local texture = Media:Fetch("statusbar", db.Texture)
+		for _, bar in ipairs({absorb, backfill}) do
+			bar:SetWidth(health:GetWidth())
+			bar:SetStatusBarTexture(texture)
+			bar:GetStatusBarTexture():SetVertexColor(db.MyColor.r, db.MyColor.g, db.MyColor.b, db.MyColor.a)
+			bar:ClearAllPoints()
+		end
+
+		-- Normal prediction: extend from the current health fill into empty space.
+		absorb:SetReverseFill(false)
+		absorb:SetPoint("TOPLEFT", health:GetStatusBarTexture(), "TOPRIGHT")
+		absorb:SetPoint("BOTTOMLEFT", health:GetStatusBarTexture(), "BOTTOMRIGHT")
+
+		-- Only the shield portion exceeding that empty space overlaps filled health.
+		-- The parent clips this mirrored segment at the current health edge.
+		backfill:SetReverseFill(true)
+		backfill:SetPoint("TOPRIGHT", health, "TOPRIGHT")
+		backfill:SetPoint("BOTTOMRIGHT", health, "BOTTOMRIGHT")
+
+		if not health.OverDamageAbsorbIndicator then
+			local overflow = health.AbsorbContainer:CreateTexture(nil, "OVERLAY")
+			overflow:SetPoint("TOPRIGHT", health, "TOPRIGHT", 0, 0)
+			overflow:SetPoint("BOTTOMRIGHT", health, "BOTTOMRIGHT", 0, 0)
+			overflow:SetWidth(8)
+			health.OverDamageAbsorbIndicator = overflow
+		end
 	end,
-	
+
 	V2Textures = function(from, to)
 		if not from.V2Tex then
 			local V2Tex = CreateFrame("Frame", nil, from)
 
 			V2Tex.Horizontal = CreateFrame("Frame", nil, V2Tex)
-			V2Tex.Horizontal:SetFrameLevel(19)
-			V2Tex.Horizontal:SetFrameStrata("BACKGROUND")
+			V2Tex.Horizontal:SetFrameLevel(from:GetFrameLevel())
 			V2Tex.Horizontal:SetHeight(2)
 			LUI:ApplyFrameBackdrop(V2Tex.Horizontal, backdrop2)
 			LUI:SetFrameBackgroundColor(V2Tex.Horizontal, 0, 0, 0, 1)
@@ -2028,8 +2148,7 @@ module.funcs = {
 			V2Tex.Horizontal:Show()
 
 			V2Tex.Vertical = CreateFrame("Frame", nil, V2Tex)
-			V2Tex.Vertical:SetFrameLevel(19)
-			V2Tex.Vertical:SetFrameStrata("BACKGROUND")
+			V2Tex.Vertical:SetFrameLevel(from:GetFrameLevel())
 			V2Tex.Vertical:SetWidth(2)
 			LUI:ApplyFrameBackdrop(V2Tex.Vertical, backdrop2)
 			LUI:SetFrameBackgroundColor(V2Tex.Vertical, 0, 0, 0, 1)
@@ -2037,8 +2156,7 @@ module.funcs = {
 			V2Tex.Vertical:Show()
 
 			V2Tex.Horizontal2 = CreateFrame("Frame", nil, V2Tex)
-			V2Tex.Horizontal2:SetFrameLevel(19)
-			V2Tex.Horizontal2:SetFrameStrata("BACKGROUND")
+			V2Tex.Horizontal2:SetFrameLevel(from:GetFrameLevel())
 			V2Tex.Horizontal2:SetHeight(2)
 			LUI:ApplyFrameBackdrop(V2Tex.Horizontal2, backdrop2)
 			LUI:SetFrameBackgroundColor(V2Tex.Horizontal2, 0, 0, 0, 1)
@@ -2046,8 +2164,7 @@ module.funcs = {
 			V2Tex.Horizontal2:Show()
 
 			V2Tex.Dot = CreateFrame("Frame", nil, V2Tex)
-			V2Tex.Dot:SetFrameLevel(19)
-			V2Tex.Dot:SetFrameStrata("BACKGROUND")
+			V2Tex.Dot:SetFrameLevel(from:GetFrameLevel())
 			V2Tex.Dot:SetHeight(6)
 			V2Tex.Dot:SetWidth(6)
 			LUI:ApplyFrameBackdrop(V2Tex.Dot, backdrop2)
@@ -2102,6 +2219,8 @@ local function SetStyle(self, unit, isSingle)
 	end
 
 
+	-- Keep the complete unit frame above world nameplates, including its backdrop.
+	self:SetFrameStrata("MEDIUM")
 	self.colors = module.colors
 	self:RegisterForClicks("AnyUp")
 
@@ -2135,7 +2254,7 @@ local function SetStyle(self, unit, isSingle)
 
 	-- creating a frame as anchor for icons, texts etc
 	self.Overlay = CreateFrame("Frame", nil, self)
-	self.Overlay:SetFrameLevel(8)
+	self.Overlay:SetFrameLevel(self:GetFrameLevel() + 8)
 	self.Overlay:SetAllPoints(self.Health)
 
 	if unit ~= "raid" then
@@ -2147,6 +2266,7 @@ local function SetStyle(self, unit, isSingle)
 	module.funcs.HealthValue(self, unit, oufdb)
 	module.funcs.HealthPercent(self, unit, oufdb)
 	module.funcs.HealthMissing(self, unit, oufdb)
+	module.funcs.AbsorbText(self, unit, oufdb)
 
 	module.funcs.PowerValue(self, unit, oufdb)
 	module.funcs.PowerPercent(self, unit, oufdb)

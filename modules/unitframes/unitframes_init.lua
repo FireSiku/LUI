@@ -154,6 +154,18 @@ function module:Refresh()
 end
 
 function module:OnInitialize()
+	-- Register per-unit defaults after all layout default files have loaded.
+	-- AceDB fills missing settings without replacing saved text preferences.
+	for _, defaults in pairs(module.defaults.profile) do
+		if type(defaults) == "table" and defaults.HealthBar then
+			defaults.AbsorbText = {
+				Enable = false, Font = "Prototype", Size = 12, Outline = "OUTLINE",
+				Color = "Individual", IndividualColor = {r = 0.5, g = 1, b = 0.5},
+				Point = "CENTER", RelativePoint = "CENTER", X = 0, Y = 0,
+				ShortValue = true, ShowEmpty = false, Prefix = "Absorb: ", Opacity = 1,
+			}
+		end
+	end
 	LUI:RegisterModule(module)
 	module:BuildUnitframeColors()
 end

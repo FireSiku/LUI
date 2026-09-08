@@ -948,6 +948,7 @@ module.ApplySettings = function(unit, force)
 			module.funcs.HealthValue(frame, styleUnit, dbUnit)
 			module.funcs.HealthPercent(frame, styleUnit, dbUnit)
 			module.funcs.HealthMissing(frame, styleUnit, dbUnit)
+			module.funcs.AbsorbText(frame, styleUnit, dbUnit)
 
 			module.funcs.PowerValue(frame, styleUnit, dbUnit)
 			module.funcs.PowerPercent(frame, styleUnit, dbUnit)

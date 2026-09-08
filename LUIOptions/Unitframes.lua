@@ -377,6 +377,11 @@ local function GenerateTextGroup(unit, name, colorTypes, order)
         ShortValue = Opt:Toggle({name = "Short value", onlyIf = (dbText.ShortValue ~= nil)}),
     }})
 
+    if name == "AbsorbText" then
+        group.args.Opacity = Opt:Slider({name = "Text Opacity", min = 0, max = 1, step = 0.01, isPercent = true, db = dbText})
+        group.args.Prefix = Opt:Input({name = "Text Prefix", desc = "Text before the total shield amount. Leave empty to show only the number."})
+    end
+
     if name == "HealthText" or name == "PowerText" then
         group.args.Format = Opt:Select({name = "Format", values = valueFormat, onlyIf = (name == "HealthText" or name == "PowerText")})
     end
@@ -702,6 +707,7 @@ local function NewUnitOptionGroup(unit, order, categorized)
     if dbUnit.PowerPercentText then textOptions.args.PowerPercentText = GenerateTextGroup(unit, "PowerPercentText", powerColorTypes, categorized and 5 or 34) end
     if dbUnit.HealthMissingText then textOptions.args.HealthMissingText = GenerateTextGroup(unit, "HealthMissingText", healthColorTypes, categorized and 6 or 35) end
     if dbUnit.PowerMissingText then textOptions.args.PowerMissingText = GenerateTextGroup(unit, "PowerMissingText", powerColorTypes, categorized and 7 or 36) end
+    if dbUnit.AbsorbText then textOptions.args.AbsorbText = GenerateTextGroup(unit, "AbsorbText", healthColorTypes, categorized and 9 or 37.5) end
     if dbUnit.CombatFeedback then
         textOptions.args.CombatFeedback = GenerateTextGroup(unit, "CombatFeedback", nil, categorized and 8 or 37)
     end
