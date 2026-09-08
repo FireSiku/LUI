@@ -792,7 +792,8 @@ end
 function module:SetMicromenu()
 	-- Create Micromenu background.
 	local background = CreateFrame("Frame", "LUIMicromenu_Background", UIParent)
-	background:SetFrameStrata("BACKGROUND")
+	background:SetFrameStrata("LOW")
+	background:SetFrameLevel(0)
 	background.Texture = LUI:CreateFrameTexture(background, BACKGROUND_TEXTURE_PATH)
 	background.Texture:SetVertexColor(module:RGBA((db.ColorMatch) and "Micromenu" or "Background"))
 	module.background = background

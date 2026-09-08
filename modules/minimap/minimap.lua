@@ -341,10 +341,12 @@ function module:SetMinimapAgain()
 	module:ToggleMinimapText()
 	module:ToggleMinimapTextures()
 
-	-- SetParent aligns child strata with the parent, so restore the decorative background strata.
-	LUIMinimapBorder:SetFrameStrata("BACKGROUND")
+	-- Restore decorative layers above nameplates and below the minimap contents.
+	LUIMinimapBorder:SetFrameStrata("LOW")
+	LUIMinimapBorder:SetFrameLevel(0)
 	for i = 1, 8 do
-		_G["LUIMinimapTexture"..i]:SetFrameStrata("BACKGROUND")
+		_G["LUIMinimapTexture"..i]:SetFrameStrata("LOW")
+		_G["LUIMinimapTexture"..i]:SetFrameLevel(i <= 4 and 1 or 0)
 	end
 end
 
@@ -403,7 +405,8 @@ function module:SetMinimapFrames()
 	local minimapBorder = CreateFrame("Frame", "LUIMinimapBorder", Minimap)
 	local borderSize = Minimap:GetSize() * (1 + borderEdgeSize/100)
 	minimapBorder:SetSize(borderSize, borderSize)
-	minimapBorder:SetFrameStrata("BACKGROUND")
+	minimapBorder:SetFrameStrata("LOW")
+	minimapBorder:SetFrameLevel(0)
 	minimapBorder:SetPoint("CENTER", Minimap, "CENTER", 0, 0)
 	LUI:ApplyFrameBackdrop(minimapBorder, borderBackdrop)
 	LUI:SetFrameBorderColor(minimapBorder, 0, 0, 0, 1)
@@ -417,7 +420,8 @@ function module:SetMinimapFrames()
 	for i = 1, 4 do
 		local minimapTex = CreateFrame("Frame", "LUIMinimapTexture"..i, Minimap)
 		minimapTex:SetSize(50,50)
-		minimapTex:SetFrameStrata("BACKGROUND")
+		minimapTex:SetFrameStrata("LOW")
+		minimapTex:SetFrameLevel(1)
 		minimapTex:SetPoint(texPoint[i], Minimap, texPoint[i], texOffX[i], texOffY[i])
 		LUI:ApplyFrameBackdrop(minimapTex, textureBackdrop)
 		LUI:SetFrameBorderColor(minimapTex, r, g, b, a)
@@ -426,7 +430,8 @@ function module:SetMinimapFrames()
 	for i = 5, 8 do
 		local minimapTex = CreateFrame("Frame", "LUIMinimapTexture"..i, Minimap)
 		minimapTex:SetSize(56,56)
-		minimapTex:SetFrameStrata("BACKGROUND")
+		minimapTex:SetFrameStrata("LOW")
+		minimapTex:SetFrameLevel(1)
 		minimapTex:SetPoint(texPoint[i-4], Minimap, texPoint[i-4], texOffX[i], texOffY[i])
 		minimapTex:SetFrameLevel(minimapTex:GetFrameLevel()-1)
 		LUI:ApplyFrameBackdrop(minimapTex, textureBackdrop)
