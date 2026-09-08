@@ -36,6 +36,7 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 - Restored edit-box positioning, history, channel colors, textures and borders.
 - Added clear descriptions for sticky channels and hover-window font settings.
 - Updated Friends, Guild and the remaining infotext providers for the current APIs.
+- Clock: Kept the time display fixed by showing instance information separately. Added compact difficulty labels including N, HC, M, M+ and MFlex, while keeping the full instance name and difficulty available in the tooltip.
 - Added background and border texture and color options for the Friends and Guild windows, matching the standard LUI tooltip defaults.
 - Corrected unit-tooltip guild colors so the player's guild is green and other guilds are blue.
 - Removed Blizzard's frame-settings hint from LUI player, party and raid frame tooltips.
