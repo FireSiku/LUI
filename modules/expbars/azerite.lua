@@ -18,7 +18,9 @@ local AzeriteDataProvider = module:CreateBarDataProvider("Azerite")
 
 AzeriteDataProvider.BAR_EVENTS = {
 	"AZERITE_ITEM_EXPERIENCE_CHANGED",
-	"AZERITE_EMPOWERED_ITEM_EQUIPPED_STATUS_CHANGED"
+	"AZERITE_ITEM_POWER_LEVEL_CHANGED",
+	"AZERITE_ITEM_ENABLED_STATE_CHANGED",
+	"AZERITE_EMPOWERED_ITEM_EQUIPPED_STATUS_CHANGED",
 }
 
 function AzeriteDataProvider:ShouldBeVisible()
@@ -32,7 +34,18 @@ end
 
 function AzeriteDataProvider:Update()
 	local itemLocation = C_AzeriteItem.FindActiveAzeriteItem()
+	if not itemLocation then
+		self.barMin, self.barValue, self.barMax = 0, 0, 1
+		return
+	end
+
 	local currentXP, totalXP = C_AzeriteItem.GetAzeriteItemXPInfo(itemLocation)
+	if type(currentXP) ~= "number" or type(totalXP) ~= "number" or totalXP <= 0 then
+		self.barMin, self.barValue, self.barMax = 0, 0, 1
+		return
+	end
+
+	self.barMin = 0
 	self.barValue = currentXP
 	self.barMax = totalXP
 end

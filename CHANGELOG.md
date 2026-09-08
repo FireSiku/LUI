@@ -63,6 +63,9 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 - Updated Experience Bars, Mirror Bar, Minimap, Micromenu, Merchant and UI Elements for Retail 12.1.
 - Added configurable tracker labels and optional hover tooltips to Experience Bars, including watched reputation faction names.
 - Added a lock option and visible drag area for freely positioning Experience Bars while preserving anchor-relative X/Y offsets.
+- Fixed Experience Bar tracker refreshes so the active primary and secondary trackers update correctly when their availability changes.
+- Improved Azerite and House Favor tracking for current Retail APIs and added safer handling for unavailable tracker data.
+- Added an option to separate two active Experience Bars, giving the secondary bar its own position and width instead of splitting the primary bar.
 - Removed obsolete Cooldown, Fader, installer, updater and old addon-integration code.
 
 Thanks to Teks, BaeBlade, Jay, Nikko, Dvuk13 and the LUI community for testing and feedback.

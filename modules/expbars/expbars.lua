@@ -2,8 +2,9 @@
 	This module manages progress bars for experience, reputation, honor,
 	Heart of Azeroth and house favor.
 
-	The primary bar can split into two when a secondary tracker is active:
-	[secondary tracker] [experience]
+	When a secondary tracker is active, the bars can either share the main
+	anchor or use two independent anchors:
+	[secondary tracker] [primary tracker]
 
 	Each tracker lives in its own data-provider file. This file owns the shared
 	bar mixins, provider registration, selection priority and layout; XP and
@@ -23,12 +24,35 @@ local Media = LibStub("LibSharedMedia-3.0")
 local GameTooltip = _G.GameTooltip
 local InCombatLockdown = _G.InCombatLockdown
 local RoundToSignificantDigits = _G.RoundToSignificantDigits
+local max = math.max
+local tonumber = tonumber
+local type = type
 
 local POINT_COORDS = {
 	TOPLEFT = {0, 1}, TOP = {0.5, 1}, TOPRIGHT = {1, 1},
 	LEFT = {0, 0.5}, CENTER = {0.5, 0.5}, RIGHT = {1, 0.5},
 	BOTTOMLEFT = {0, 0}, BOTTOM = {0.5, 0}, BOTTOMRIGHT = {1, 0},
 }
+
+-- Match Blizzard's current status-tracking priority for the providers LUI supports.
+-- House Favor has the highest priority, followed by Experience, Azerite, Honor and Reputation.
+local TRACKER_PRIORITY = {
+	"HouseFavor",
+	"Experience",
+	"Azerite",
+	"Honor",
+	"Reputation",
+}
+
+local function ValidPoint(point, fallback)
+	return POINT_COORDS[point] and point or fallback
+end
+
+local function GetNumber(value, fallback, minimum)
+	value = tonumber(value) or fallback
+	if minimum then value = max(minimum, value) end
+	return value
+end
 
 local function GetFramePoint(frame, point)
 	local left, bottom, width, height = frame:GetRect()
@@ -38,7 +62,7 @@ local function GetFramePoint(frame, point)
 end
 
 --- Array containing all Data Providers that were loaded
----@type ExpBarDataProvider[]
+---@type table<string, ExpBarDataProvider>
 local dataProviderList = {}
 
 --- Contains the bars that compose the primary exp bar
@@ -88,12 +112,12 @@ end
 local ExpBarMixin = {provider = ""}
 
 function ExpBarMixin:UpdateBar(event, ...)
-	if self:IsVisible() then
-		self:Update(event, ...)
-		self:SetMinMaxValues(self.barMin, self.barMax)
-		self:SetValue(self.barValue)
-		self:UpdateText()
-	end
+	if not self:IsVisible() then return end
+
+	self:Update(event, ...)
+	self:SetMinMaxValues(self.barMin, self.barMax)
+	self:SetValue(self.barValue)
+	self:UpdateText()
 end
 
 function ExpBarMixin:UpdateText()
@@ -115,7 +139,7 @@ function ExpBarMixin:UpdateText()
 	end
 	if db.ShowCurrent then
 		local text = db.ShortNumbers and AbbreviateNumbers(self.barValue) or self.barValue --[[@as string]]
-		if db.ShowMax then 
+		if db.ShowMax then
 			text = format("%s/%s", text, db.ShortNumbers and AbbreviateNumbers(self.barMax) or self.barMax)
 		end
 		if db.ShowPercent then
@@ -152,32 +176,28 @@ function ExpBarMixin:HideTooltip()
 	if GameTooltip:GetOwner() == self then GameTooltip:Hide() end
 end
 
-local function StartAnchorMoving()
-	if module.db.profile.Lock or InCombatLockdown() then return end
-	module.isMoving = true
-	module.anchor:StartMoving()
+local function StartAnchorMoving(frame)
+	local anchor = frame.moveAnchor or frame
+	if module.db.profile.Lock or InCombatLockdown() or not anchor then return end
+
+	module.movingAnchor = anchor
+	anchor:StartMoving()
 	GameTooltip:Hide()
 end
 
-local function StopAnchorMoving()
-	if not module.isMoving then return end
-	module.isMoving = nil
-	module.anchor:StopMovingOrSizing()
-	module:SaveAnchorPosition()
+local function StopAnchorMoving(frame)
+	local anchor = module.movingAnchor or frame.moveAnchor or frame
+	if not anchor then return end
+
+	module.movingAnchor = nil
+	anchor:StopMovingOrSizing()
+	module:SaveAnchorPosition(anchor)
 end
 
 function ExpBarMixin:UpdateInteractionState()
 	local settings = module.db.profile
 	self:EnableMouse(settings.ShowTooltip or not settings.Lock)
 	if not settings.ShowTooltip then self:HideTooltip() end
-end
-
-function ExpBarMixin:UpdateVisibility()
-	if self:ShouldBeVisible() then
-		self:Show()
-	else
-		self:Hide()
-	end
 end
 
 function ExpBarMixin:UpdateTextVisibility()
@@ -204,9 +224,8 @@ function ExpBarMixin:SetBarColor(r, g, b, a)
 end
 
 function ExpBarMixin:RegisterEvents()
-	self:RegisterEvent("PLAYER_ENTERING_WORLD")
 	if not self.BAR_EVENTS then return end
-	for i, event in ipairs(self.BAR_EVENTS) do
+	for _, event in ipairs(self.BAR_EVENTS) do
 		self:RegisterEvent(event)
 	end
 end
@@ -214,6 +233,7 @@ end
 function module:SetEventHandling(enabled)
 	if not module.anchor then return end
 
+	local statusTrackingBarManager = _G.StatusTrackingBarManager
 	if enabled then
 		module.anchor:RegisterEvent("PLAYER_ENTERING_WORLD")
 		module.anchor:RegisterEvent("PLAYER_MAX_LEVEL_UPDATE")
@@ -224,16 +244,16 @@ function module:SetEventHandling(enabled)
 		module.anchor:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 		module.anchor:RegisterEvent("TRACKED_HOUSE_CHANGED")
 		module.anchor:RegisterUnitEvent("UNIT_LEVEL", "player")
-		if not module:IsHooked(_G.StatusTrackingBarManager, "UpdateBarsShown") then
-			module:SecureHook(_G.StatusTrackingBarManager, "UpdateBarsShown", "UpdateMainBarVisibility")
+		if statusTrackingBarManager and not module:IsHooked(statusTrackingBarManager, "UpdateBarsShown") then
+			module:SecureHook(statusTrackingBarManager, "UpdateBarsShown", "UpdateMainBarVisibility")
 		end
 		for bar in module:IterateMainBars() do
 			bar:RegisterEvents()
 		end
 	else
 		module.anchor:UnregisterAllEvents()
-		if module:IsHooked(_G.StatusTrackingBarManager, "UpdateBarsShown") then
-			module:Unhook(_G.StatusTrackingBarManager, "UpdateBarsShown")
+		if statusTrackingBarManager and module:IsHooked(statusTrackingBarManager, "UpdateBarsShown") then
+			module:Unhook(statusTrackingBarManager, "UpdateBarsShown")
 		end
 		for bar in module:IterateMainBars() do
 			bar:UnregisterAllEvents()
@@ -267,7 +287,7 @@ function module:CreateBar(name, dataProvider)
 	---@type ExpBar
 	local bar = CreateFrame("StatusBar", name, module.anchor or UIParent)
 	bar:SetFrameStrata("HIGH")
-	bar:SetSize(db.Width, db.Height)
+	bar:SetSize(GetNumber(db.Width, 475, 1), GetNumber(db.Height, 12, 1))
 	bar:SetStatusBarTexture(module:FetchStatusBar("ExpBarFill"))
 
 	local bg = bar:CreateTexture(nil, "BORDER")
@@ -286,21 +306,44 @@ function module:CreateBar(name, dataProvider)
 	-- ExpBarMixin has an empty provider default, so assign the actual provider
 	-- after mixing it into the bar instead of letting Mixin overwrite it.
 	bar.provider = dataProvider
-	bar:SetScript("OnEvent", bar.UpdateBar)
+	bar:SetScript("OnEvent", function(_, event, ...)
+		module:UpdateMainBarVisibility(event, ...)
+	end)
 	bar:SetScript("OnEnter", bar.ShowTooltip)
 	bar:SetScript("OnLeave", bar.HideTooltip)
 	bar:SetScript("OnDragStart", StartAnchorMoving)
 	bar:SetScript("OnDragStop", StopAnchorMoving)
 	bar:RegisterForDrag("LeftButton")
 	bar:RegisterEvents()
-	
+
 	bar:SetBarColor(module:RGBA(dataProvider))
 	bar:UpdateTextVisibility()
 	bar:UpdateInteractionState()
-	bar:UpdateVisibility()
-	bar:UpdateBar()
+	bar:Hide()
 
 	return bar
+end
+
+local function CreateMover(anchor, label)
+	local mover = CreateFrame("Frame", nil, anchor)
+	mover:SetAllPoints(anchor)
+	mover:SetFrameStrata("HIGH")
+	mover:SetFrameLevel(anchor:GetFrameLevel() + 10)
+	mover:EnableMouse(true)
+	mover:RegisterForDrag("LeftButton")
+	mover.moveAnchor = anchor
+	mover:SetScript("OnDragStart", StartAnchorMoving)
+	mover:SetScript("OnDragStop", StopAnchorMoving)
+
+	local moverBackground = mover:CreateTexture(nil, "BACKGROUND")
+	moverBackground:SetAllPoints(mover)
+	moverBackground:SetColorTexture(0, 0.9, 0, 0.45)
+
+	local moverText = mover:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	moverText:SetPoint("CENTER")
+	moverText:SetText(label)
+
+	return mover
 end
 
 -- ####################################################################################################################
@@ -319,32 +362,33 @@ end
 
 function module:SetMainBar()
 	local db = module.db.profile --[[@as table]]
+	local width = GetNumber(db.Width, 475, 1)
+	local height = GetNumber(db.Height, 12, 1)
+	local point = ValidPoint(db.Point, "BOTTOM")
+	local relativePoint = ValidPoint(db.RelativePoint, "BOTTOM")
 
 	local anchor = CreateFrame("Frame", "LUI_MainExpBar", UIParent)
-	anchor:SetPoint(db.Point, UIParent, db.RelativePoint, db.X, db.Y)
-	anchor:SetSize(db.Width, db.Height)
+	anchor:SetPoint(point, UIParent, relativePoint, GetNumber(db.X, 0), GetNumber(db.Y, 6))
+	anchor:SetSize(width, height)
 	module.anchor = anchor
 
-	local mover = CreateFrame("Frame", nil, anchor)
-	mover:SetAllPoints(anchor)
-	mover:SetFrameStrata("HIGH")
-	mover:SetFrameLevel(anchor:GetFrameLevel() + 10)
-	mover:EnableMouse(true)
-	mover:RegisterForDrag("LeftButton")
-	mover:SetScript("OnDragStart", StartAnchorMoving)
-	mover:SetScript("OnDragStop", StopAnchorMoving)
+	local secondaryAnchor = CreateFrame("Frame", "LUI_SecondaryExpBar", UIParent)
+	secondaryAnchor:SetPoint(
+		ValidPoint(db.SecondaryPoint, "BOTTOM"),
+		UIParent,
+		ValidPoint(db.SecondaryRelativePoint, "BOTTOM"),
+		GetNumber(db.SecondaryX, 0),
+		GetNumber(db.SecondaryY, 24)
+	)
+	secondaryAnchor:SetSize(GetNumber(db.SecondaryWidth, width, 1), height)
+	module.secondaryAnchor = secondaryAnchor
 
-	local moverBackground = mover:CreateTexture(nil, "BACKGROUND")
-	moverBackground:SetAllPoints(mover)
-	moverBackground:SetColorTexture(0, 0.9, 0, 0.45)
+	module.mover = CreateMover(anchor, "Experience Bar 1 - Drag to move")
+	module.secondaryMover = CreateMover(secondaryAnchor, "Experience Bar 2 - Drag to move")
 
-	local moverText = mover:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	moverText:SetPoint("CENTER")
-	moverText:SetText("Experience Bars - Drag to move")
-	module.mover = mover
-	module:UpdateMoveState()
-	
-	anchor:SetScript("OnEvent", function() module:UpdateMainBarVisibility() end)
+	anchor:SetScript("OnEvent", function(_, event, ...)
+		module:UpdateMainBarVisibility(event, ...)
+	end)
 
 	local expBar = module:CreateBar("LUI_ExpBarsExp", "Experience")
 	local repBar = module:CreateBar("LUI_ExpBarsRep", "Reputation")
@@ -353,128 +397,133 @@ function module:SetMainBar()
 	local houseFavorBar = module:CreateBar("LUI_ExpBarsHouseFavor", "HouseFavor")
 	mainBarList = {expBar, repBar, honorBar, azeriteBar, houseFavorBar}
 
-	for bar in module:IterateMainBars() do
-		bar:SetPoint("RIGHT", anchor, "RIGHT")
-	end
-
 	module.ExperienceBar = expBar
 	module.ReputationBar = repBar
 	module.HonorBar = honorBar
 	module.AzeriteBar = azeriteBar
 	module.HouseFavorBar = houseFavorBar
 
+	module:UpdateMoveState()
 	return true -- mainBarsCreated
 end
 
 function module:UpdateMoveState()
 	local db = module.db.profile
 	local unlocked = not db.Lock
+
 	module.anchor:SetMovable(unlocked)
+	module.secondaryAnchor:SetMovable(unlocked)
+
 	if unlocked then
 		module.mover:Show()
 	else
 		module.mover:Hide()
 	end
+
+	if unlocked and db.SplitTracker and db.SeparateTrackerBars then
+		module.secondaryAnchor:Show()
+		module.secondaryMover:Show()
+	else
+		module.secondaryMover:Hide()
+		if not module.secondaryActive then
+			module.secondaryAnchor:Hide()
+		end
+	end
 end
 
-function module:SaveAnchorPosition()
+function module:SaveAnchorPosition(anchor)
 	local db = module.db.profile
-	local point = db.Point or "CENTER"
-	local relativePoint = db.RelativePoint or "CENTER"
-	local frameX, frameY = GetFramePoint(module.anchor, point)
+	local isSecondary = anchor == module.secondaryAnchor
+	local pointKey = isSecondary and "SecondaryPoint" or "Point"
+	local relativePointKey = isSecondary and "SecondaryRelativePoint" or "RelativePoint"
+	local xKey = isSecondary and "SecondaryX" or "X"
+	local yKey = isSecondary and "SecondaryY" or "Y"
+	local point = ValidPoint(db[pointKey], "BOTTOM")
+	local relativePoint = ValidPoint(db[relativePointKey], "BOTTOM")
+	local frameX, frameY = GetFramePoint(anchor, point)
 	local relativeX, relativeY = GetFramePoint(UIParent, relativePoint)
 	if not frameX or not relativeX then return end
 
-	db.X = RoundToSignificantDigits(frameX - relativeX, 1)
-	db.Y = RoundToSignificantDigits(frameY - relativeY, 1)
-	module.anchor:ClearAllPoints()
-	module.anchor:SetPoint(point, UIParent, relativePoint, db.X, db.Y)
+	db[xKey] = RoundToSignificantDigits(frameX - relativeX, 1)
+	db[yKey] = RoundToSignificantDigits(frameY - relativeY, 1)
+	anchor:ClearAllPoints()
+	anchor:SetPoint(point, UIParent, relativePoint, db[xKey], db[yKey])
 end
 
-function module:UpdateMainBarVisibility()
+local function GetVisibleTrackers()
+	local primary, secondary
+	for _, provider in ipairs(TRACKER_PRIORITY) do
+		local bar = module[provider.."Bar"]
+		if bar and bar:ShouldBeVisible() then
+			if not primary then
+				primary = bar
+			elseif not secondary then
+				secondary = bar
+				break
+			end
+		end
+	end
+	return primary, secondary
+end
+
+local function ConfigureBar(bar, anchor, width, height, reverseFill, textPoint, textX, textY)
+	bar:ClearAllPoints()
+	bar:SetReverseFill(reverseFill)
+	bar:SetSize(width, height)
+	bar:SetPoint(textPoint, anchor, textPoint)
+	bar.moveAnchor = anchor
+	bar.text:ClearAllPoints()
+	bar.text:SetPoint(textPoint, bar, textPoint, textX, textY)
+	bar:Show()
+end
+
+function module:UpdateMainBarVisibility(event, ...)
 	local db = module.db.profile
-	local barLeft, barRight
 	if not module.ExperienceBar or not module.ReputationBar
 		or not module.HonorBar or not module.AzeriteBar or not module.HouseFavorBar then
 		return
 	end
-	-- Check which bars can be visible at the moment
-	local expShown = module.ExperienceBar:ShouldBeVisible()
-	local repShown = module.ReputationBar:ShouldBeVisible()
-	local honorShown = module.HonorBar:ShouldBeVisible()
-	local apShown = module.AzeriteBar:ShouldBeVisible()
-	local houseFavorShown = module.HouseFavorBar:ShouldBeVisible()
-	
-	-- Decide which bars should be ultimately shown.
-	if houseFavorShown then
-		barRight = module.HouseFavorBar
-		if expShown then
-			barLeft = module.ExperienceBar
-		elseif apShown then
-			barLeft = module.AzeriteBar
-		elseif honorShown then
-			barLeft = module.HonorBar
-		elseif repShown then
-			barLeft = module.ReputationBar
-		end
-	elseif expShown then
-		barRight = module.ExperienceBar
-		if apShown then
-			barLeft = module.AzeriteBar
-		elseif honorShown then
-			barLeft = module.HonorBar
-		elseif repShown then
-			barLeft = module.ReputationBar
-		end
-	elseif apShown then
-		barRight = module.AzeriteBar
-		if honorShown then
-			barLeft = module.HonorBar
-		elseif repShown then
-			barLeft = module.ReputationBar
-		end
-	elseif honorShown then
-		barRight = module.HonorBar
-		if repShown then
-			barLeft = module.ReputationBar
-		end
-	elseif repShown then
-		barRight = module.ReputationBar
-	end
-	-- Force the main bars to be hidden.
+
+	local primary, secondary = GetVisibleTrackers()
+	if not db.SplitTracker then secondary = nil end
+
 	for bar in module:IterateMainBars() do
 		bar:Hide()
 	end
 
-	-- Adjust size and visibility
-	if barRight then
-		local width = db.Width
-		local spacing = db.Spacing
-		local textX = db.TextX
-		local textY = db.TextY
+	module.secondaryActive = secondary ~= nil and db.SplitTracker and db.SeparateTrackerBars
 
-		barRight:ClearAllPoints()
-		barRight:SetReverseFill(false)
-		barRight:SetPoint("RIGHT", module.anchor, "RIGHT")
-		barRight.text:ClearAllPoints()
-		barRight.text:SetPoint("RIGHT", barRight, "RIGHT", textX, textY)
-		barRight:Show()
-		barRight:UpdateBar()
-		if db.SplitTracker and barLeft then
-			local halfWidth = (width - spacing) * 0.5
-			barRight:SetWidth(halfWidth)
-			barLeft:SetWidth(halfWidth)
-			barLeft:ClearAllPoints()
-			barLeft:SetReverseFill(true)
-			barLeft:SetPoint("LEFT", module.anchor, "LEFT")
-			barLeft.text:ClearAllPoints()
-			barLeft.text:SetPoint("LEFT", barLeft, "LEFT", -textX, textY)
-			barLeft:Show()
-			barLeft:UpdateBar()
+	local width = GetNumber(db.Width, 475, 1)
+	local height = GetNumber(db.Height, 12, 1)
+	local textX = GetNumber(db.TextX, -2)
+	local textY = GetNumber(db.TextY, 0)
+	module.anchor:SetSize(width, height)
+	module.secondaryAnchor:SetHeight(height)
+
+	if primary then
+		if secondary and db.SeparateTrackerBars then
+			local secondaryWidth = GetNumber(db.SecondaryWidth, width, 1)
+			module.secondaryAnchor:SetWidth(secondaryWidth)
+			module.secondaryAnchor:Show()
+			ConfigureBar(primary, module.anchor, width, height, false, "RIGHT", textX, textY)
+			ConfigureBar(secondary, module.secondaryAnchor, secondaryWidth, height, false, "RIGHT", textX, textY)
+		elseif secondary then
+			local spacing = GetNumber(db.Spacing, 10, 0)
+			local halfWidth = max(1, (width - spacing) * 0.5)
+			ConfigureBar(primary, module.anchor, halfWidth, height, false, "RIGHT", textX, textY)
+			ConfigureBar(secondary, module.anchor, halfWidth, height, true, "LEFT", -textX, textY)
+			module.secondaryAnchor:Hide()
 		else
-			barRight:SetWidth(width)
+			ConfigureBar(primary, module.anchor, width, height, false, "RIGHT", textX, textY)
+			module.secondaryAnchor:Hide()
 		end
+	else
+		module.secondaryAnchor:Hide()
 	end
+
+	if primary then primary:UpdateBar(event, ...) end
+	if secondary then secondary:UpdateBar(event, ...) end
+	module:UpdateMoveState()
 end
 
 -- ####################################################################################################################
@@ -489,18 +538,35 @@ end
 
 function module:Refresh()
 	local db = module.db.profile
-	if not module.anchor then return end
+	if not module.anchor or not module.secondaryAnchor then return end
+
+	local point = ValidPoint(db.Point, "BOTTOM")
+	local relativePoint = ValidPoint(db.RelativePoint, "BOTTOM")
 	module.anchor:ClearAllPoints()
-	module.anchor:SetPoint(db.Point, UIParent, db.RelativePoint, db.X, db.Y)
-	module.anchor:SetSize(db.Width, db.Height)
-	module:UpdateMoveState()
+	module.anchor:SetPoint(point, UIParent, relativePoint, GetNumber(db.X, 0), GetNumber(db.Y, 6))
+	module.anchor:SetSize(GetNumber(db.Width, 475, 1), GetNumber(db.Height, 12, 1))
+
+	local secondaryPoint = ValidPoint(db.SecondaryPoint, "BOTTOM")
+	local secondaryRelativePoint = ValidPoint(db.SecondaryRelativePoint, "BOTTOM")
+	module.secondaryAnchor:ClearAllPoints()
+	module.secondaryAnchor:SetPoint(
+		secondaryPoint,
+		UIParent,
+		secondaryRelativePoint,
+		GetNumber(db.SecondaryX, 0),
+		GetNumber(db.SecondaryY, 24)
+	)
+	module.secondaryAnchor:SetSize(
+		GetNumber(db.SecondaryWidth, GetNumber(db.Width, 475, 1), 1),
+		GetNumber(db.Height, 12, 1)
+	)
+
 	for bar in module:IterateMainBars() do
 		bar:SetStatusBarTexture(module:FetchStatusBar("ExpBarFill"))
 		bar.bg:SetTexture(module:FetchStatusBar("ExpBarBg"))
 		bar.text:SetFont(Media:Fetch("font", db.Fonts.Text.Name), db.Fonts.Text.Size, db.Fonts.Text.Flag)
 		bar:UpdateTextVisibility()
 		bar:UpdateInteractionState()
-		bar:UpdateText()
 	end
 	module:RefreshColors()
 	module:UpdateMainBarVisibility()

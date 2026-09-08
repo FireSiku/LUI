@@ -29,6 +29,12 @@ module.defaults = {
 		RelativePoint = "BOTTOM",
 		Lock = true,
 		SplitTracker = true,
+		SeparateTrackerBars = false,
+		SecondaryWidth = 475,
+		SecondaryX = 0,
+		SecondaryY = 24,
+		SecondaryPoint = "BOTTOM",
+		SecondaryRelativePoint = "BOTTOM",
 		ShowText = true,
 		ShowAzerite = true,
 		Precision = 2,
@@ -79,4 +85,5 @@ end
 function module:OnDisable()
 	module:SetEventHandling(false)
 	if module.anchor then module.anchor:Hide() end
+	if module.secondaryAnchor then module.secondaryAnchor:Hide() end
 end

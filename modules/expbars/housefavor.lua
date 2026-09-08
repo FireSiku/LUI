@@ -44,6 +44,11 @@ function HouseFavorDataProvider:Update(event, houseLevelFavor)
 
 	local threshold = C_Housing.GetHouseLevelFavorForLevel(data.houseLevel)
 	local nextThreshold = C_Housing.GetHouseLevelFavorForLevel(data.houseLevel + 1)
+	if type(data.houseFavor) ~= "number" or type(threshold) ~= "number" or type(nextThreshold) ~= "number" then
+		self.barMin, self.barValue, self.barMax = 0, 0, 1
+		return
+	end
+
 	self.barMin = 0
 	self.barValue = math.max(0, data.houseFavor - threshold)
 	self.barMax = math.max(1, nextThreshold - threshold)
