@@ -19,7 +19,6 @@ local LUI = select(2, ...)
 
 ---@class LUI.ExperienceBars
 local module = LUI:GetModule("Experience Bars")
-local db
 local Media = LibStub("LibSharedMedia-3.0")
 local GameTooltip = _G.GameTooltip
 local InCombatLockdown = _G.InCombatLockdown
@@ -182,6 +181,7 @@ function ExpBarMixin:UpdateVisibility()
 end
 
 function ExpBarMixin:UpdateTextVisibility()
+	local db = module.db.profile
 	if db.ShowText then
 		self.text:Show()
 	else
@@ -259,6 +259,7 @@ end
 ---@param dataProvider string
 ---@return ExpBar
 function module:CreateBar(name, dataProvider)
+	local db = module.db.profile
 	if not dataProvider or not dataProviderList[dataProvider] then
 		error("Usage: CreateBar(name, dataProvider): dataProvider is not valid")
 	end
@@ -317,7 +318,7 @@ function module:IterateMainBars()
 end
 
 function module:SetMainBar()
-	db = module.db.profile --[[@as table]]
+	local db = module.db.profile --[[@as table]]
 
 	local anchor = CreateFrame("Frame", "LUI_MainExpBar", UIParent)
 	anchor:SetPoint(db.Point, UIParent, db.RelativePoint, db.X, db.Y)
@@ -366,6 +367,7 @@ function module:SetMainBar()
 end
 
 function module:UpdateMoveState()
+	local db = module.db.profile
 	local unlocked = not db.Lock
 	module.anchor:SetMovable(unlocked)
 	if unlocked then
@@ -376,6 +378,7 @@ function module:UpdateMoveState()
 end
 
 function module:SaveAnchorPosition()
+	local db = module.db.profile
 	local point = db.Point or "CENTER"
 	local relativePoint = db.RelativePoint or "CENTER"
 	local frameX, frameY = GetFramePoint(module.anchor, point)
@@ -389,6 +392,7 @@ function module:SaveAnchorPosition()
 end
 
 function module:UpdateMainBarVisibility()
+	local db = module.db.profile
 	local barLeft, barRight
 	if not module.ExperienceBar or not module.ReputationBar
 		or not module.HonorBar or not module.AzeriteBar or not module.HouseFavorBar then
@@ -484,6 +488,7 @@ function module:RefreshColors()
 end
 
 function module:Refresh()
+	local db = module.db.profile
 	if not module.anchor then return end
 	module.anchor:ClearAllPoints()
 	module.anchor:SetPoint(db.Point, UIParent, db.RelativePoint, db.X, db.Y)
