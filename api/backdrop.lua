@@ -26,14 +26,22 @@ local function SetComplexTexCoord(texture, coords)
 end
 
 local function UpdateCoordinates(frame)
+	if frame.IsForbidden and frame:IsForbidden() then return end
 	local state = frame.__luiBackdrop
 	if not state or not state.info then return end
 
 	local info = state.info
 	local edgeSize = state.edgeSize
+	local width, height = frame:GetWidth(), frame:GetHeight()
 	local scale = frame:GetEffectiveScale()
-	local repeatX = max(0, (frame:GetWidth() / edgeSize) * scale - 2 - COORD_START)
-	local repeatY = max(0, (frame:GetHeight() / edgeSize) * scale - 2 - COORD_START)
+	-- Tooltip dimensions may be secret. Anchor the pieces normally and use
+	-- one stretched edge tile until public dimensions are available again.
+	local readable = not issecretvalue(width) and not issecretvalue(height) and not issecretvalue(scale)
+	local repeatX, repeatY = COORD_END, COORD_END
+	if readable then
+		repeatX = max(0, (width / edgeSize) * scale - 2 - COORD_START)
+		repeatY = max(0, (height / edgeSize) * scale - 2 - COORD_START)
+	end
 	local pieces = state.pieces
 
 	pieces.TopEdge:SetTexCoord(0.2578125, repeatX, 0.3671875, repeatX, 0.2578125, COORD_START, 0.3671875, COORD_START)
@@ -43,8 +51,10 @@ local function UpdateCoordinates(frame)
 
 	if info.tile then
 		local tileSize = tonumber(info.tileSize) or edgeSize
-		if tileSize > 0 then
-			pieces.Center:SetTexCoord(0, (frame:GetWidth() / tileSize) * scale, 0, (frame:GetHeight() / tileSize) * scale)
+		if tileSize > 0 and readable then
+			pieces.Center:SetTexCoord(0, (width / tileSize) * scale, 0, (height / tileSize) * scale)
+		else
+			pieces.Center:SetTexCoord(0, 1, 0, 1)
 		end
 	else
 		pieces.Center:SetTexCoord(0, 1, 0, 1)

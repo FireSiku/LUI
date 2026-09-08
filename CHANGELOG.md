@@ -15,6 +15,9 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 
 ## Unit frames
 
+- Added optional absorb text to each unit frame, with live shield totals, short/full numbers, prefix, font, color, opacity, position and an option to hide zero values, including when shield values are protected.
+- Updated absorb bars to extend from the current health fill and overlap filled health when needed, keeping shields visible at full health. Added an overflow indicator for shields exceeding maximum health and preserved existing absorb display settings.
+- Kept unit-frame backgrounds, bars and indicators on consistent layers so world nameplates cannot appear between them.
 - Updated health, power, cast, absorb, prediction, class-resource, range and indicator handling.
 - Moved unit-frame auras to Blizzard's current AuraContainer system.
 - Fixed missing aura icons, filters, timers, cooldowns, dispel borders and boss-frame icon borders.
@@ -25,6 +28,10 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 
 ## Chat, tooltips and infotext
 
+- Fixed tooltip background textures being blacked out by the native tint and removed forced background tiling from tooltips and Friends/Guild windows to prevent grid-like seams.
+- Grouped tooltip appearance and health-text controls, using the standard color-type labels and border opacity directly in the individual color picker.
+- Added SharedMedia border texture selection, retained the native Blizzard border as the default, and prevented overlapping native/custom borders. Kept custom border rendering safe when tooltip dimensions are protected.
+- Separated tooltip health-bar color and opacity settings from border colors, and added health-text visibility and color controls. Clarified the own-guild and other-guild color options, which remain saved per profile.
 - Fixed short channel names, message and tab fading, chat links, copy-chat and scroll reminder buttons.
 - Restored edit-box positioning, history, channel colors, textures and borders.
 - Added clear descriptions for sticky channels and hover-window font settings.
@@ -38,6 +45,7 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 
 ## Artwork and addon support
 
+- Raised artwork, top-bar, micromenu and minimap backgrounds above world nameplates while keeping them below interface controls.
 - Fixed sidebar presets and visibility for Blizzard action bars, Bartender4 and Dominos.
 - Restored user-created artwork panels, custom/full-path textures and per-panel theme selection.
 - Fixed Bartender4 auto-positioning on the left sidebar.
@@ -48,6 +56,7 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 
 ## Other fixes
 
+- Fixed Experience Bars retaining an old profile after profile changes, preventing missing-width errors and keeping layout, text and drag settings tied to the active profile.
 - Fixed Bags update handling and character-bag ownership.
 - Updated merchant coin-texture formatting to the current `C_CurrencyInfo` API.
 - Updated Experience Bars, Mirror Bar, Minimap, Micromenu, Merchant and UI Elements for Retail 12.1.

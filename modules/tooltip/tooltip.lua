@@ -75,8 +75,6 @@ local TOOLTIPS_LIST = {
 	"AddonTooltip",
 }
 
-local TOOLTIP_BACKGROUND_TILE_SIZE = 16
-
 -- local variables
 local oldDefault = {}
 local initialScale = setmetatable({}, { __mode = "k" })
@@ -100,12 +98,16 @@ module.defaults = {
 		Y = 0,
 		HealthBar = "LUI_Minimalist",
 		HealthBarHeight = 6,
+		ShowHealthText = true,
 		HealthTextX = 0,
 		HealthTextY = 9,
 		BgTexture = "Blizzard Dialog Background Dark",
+		BorderTexture = "Blizzard Tooltip",
 		Colors = {
 			Border =     { r = 0.3,  g = 0.3,  b = 0.3,  a = 1, t = "Individual", },
 			Background = { r = 0,    g = 0,    b = 0,    a = 0.8,                   },
+			HealthBar =  { r = 0.2, g = 0.8, b = 0.2, a = 1, t = "Class", },
+			HealthText = { r = 1, g = 1, b = 1, a = 1, },
 			Guild =      { r = 0,    g = 0.55, b = 1,                             },
 			MyGuild =    { r = 0,    g = 1,    b = 0.1,                           },
 		},
@@ -209,26 +211,67 @@ function module:GetTooltipUnit(data, tooltip)
 	end
 end
 
-local function SetTooltipBackgroundTexture(frame, background, texture)
-	background:SetTexture(texture, true, true)
+local function SetTooltipBackgroundTexture(background, texture)
+	-- Fit one complete image to the tooltip. Repeating non-seamless media
+	-- such as parchment in small tiles creates a visible grid.
+	background:SetTexture(texture)
+	background:SetTexCoord(0, 1, 0, 1)
+	background:SetVertexColor(1, 1, 1, 1)
+end
 
-	-- SharedMedia background entries are backdrop tiles, not full-frame images.
-	-- Reproduce BackdropTemplate's tile sizing on the existing NineSlice center
-	-- without feeding protected tooltip dimensions into SharedXML/Backdrop.lua.
-	local width, height = background:GetSize()
-	if not issecretvalue(width) and not issecretvalue(height)
-		and type(width) == "number" and type(height) == "number" then
-		local scale = frame:GetEffectiveScale()
-		if issecretvalue(scale) or type(scale) ~= "number" then scale = 1 end
-		background:SetTexCoord(
-			0, math.max(1, width * scale / TOOLTIP_BACKGROUND_TILE_SIZE),
-			0, math.max(1, height * scale / TOOLTIP_BACKGROUND_TILE_SIZE)
-		)
-	else
-		background:SetTexCoord(0, 1, 0, 1)
+local BORDER_PIECES = {
+	"TopLeftCorner", "TopRightCorner", "BottomLeftCorner", "BottomRightCorner",
+	"TopEdge", "BottomEdge", "LeftEdge", "RightEdge",
+}
+
+local function RestoreBorderPieces(frame, state)
+	if frame.LUITooltipBorder then frame.LUITooltipBorder:Hide() end
+	if not state or not state.borderPieces then return end
+	for piece, saved in pairs(state.borderPieces) do piece:SetShown(saved.shown) end
+	state.borderPieces = nil
+end
+
+function module:UpdateTooltipBorder(frame)
+	if not frame or (frame.IsForbidden and frame:IsForbidden()) then return end
+	local nineSlice = frame.NineSlice
+	if nineSlice and nineSlice.IsForbidden and nineSlice:IsForbidden() then return end
+	local state = nativeBackdrop[frame]
+	if not nineSlice or not state then return end
+	local name = db.BorderTexture or "Blizzard Tooltip"
+	local texture = Media:Fetch("border", name, true)
+	local useNative = name == "Blizzard Tooltip" or (name ~= "None" and (not texture or texture == ""))
+	if useNative then
+		RestoreBorderPieces(frame, state)
+		return
 	end
-	-- Preserve Blizzard's existing NineSlice center color. LibQTip-based
-	-- addons copy GameTooltip's colors without copying its background texture.
+
+	state.borderPieces = state.borderPieces or {}
+	for _, key in ipairs(BORDER_PIECES) do
+		local piece = nineSlice[key]
+		if piece then
+			if state.borderPieces[piece] == nil then state.borderPieces[piece] = {shown = piece:IsShown()} end
+			-- Later native border-color updates can replace texture alpha.
+			-- Hide the native pieces so only the selected border is drawn.
+			piece:Hide()
+		end
+	end
+	if name == "None" then
+		if frame.LUITooltipBorder then frame.LUITooltipBorder:Hide() end
+		return
+	end
+
+	local border = frame.LUITooltipBorder
+	if not border then
+		border = CreateFrame("Frame", nil, nineSlice)
+		border:SetAllPoints(nineSlice)
+		frame.LUITooltipBorder = border
+	end
+	if border.LUIBorderTexture ~= texture then
+		LUI:ApplyFrameBackdrop(border, {edgeFile = texture, edgeSize = 16})
+		border.LUIBorderTexture = texture
+	end
+	LUI:SetFrameBorderColor(border, module:RGBA("Border"))
+	border:Show()
 end
 
 function module:UpdateTooltipBackdrop(frame)
@@ -245,19 +288,35 @@ function module:UpdateTooltipBackdrop(frame)
 
 		local background = nineSlice.Center
 		if background and background.SetTexture then
+			local state = nativeBackdrop[frame]
 			local texture = Media:Fetch("background", db.BgTexture, true)
 			if db.BgTexture == "None" or not texture or texture == "" then
+				if frame.LUITooltipBackground then frame.LUITooltipBackground:Hide() end
+				background:SetShown(state.centerShown)
 				background:SetColorTexture(1, 1, 1, 1)
 				background:SetTexCoord(0, 1, 0, 1)
 				background:SetVertexColor(module:RGBA("Background"))
 			else
-				SetTooltipBackgroundTexture(frame, background, texture)
+				-- Native tooltip centers are tinted black. Render SharedMedia
+				-- artwork separately so that tint cannot black out its texture.
+				-- Preserve the native color for LibQTip addons that copy it.
+				local artwork = frame.LUITooltipBackground
+				if not artwork then
+					artwork = nineSlice:CreateTexture(nil, "BACKGROUND")
+					artwork:SetAllPoints(background)
+					frame.LUITooltipBackground = artwork
+				end
+				background:SetVertexColor(unpack(state.centerColor))
+				background:Hide()
+				SetTooltipBackgroundTexture(artwork, texture)
+				artwork:SetShown(state.centerShown)
 			end
 		end
 
 		if nineSlice.SetBorderColor then
 			nineSlice:SetBorderColor(module:RGBA("Border"))
 		end
+		module:UpdateTooltipBorder(frame)
 	end
 end
 
@@ -271,6 +330,7 @@ function module:CaptureNativeBackdrop(frame, refreshCenter)
 		state = {
 			alpha = nineSlice:GetAlpha(),
 			borderColor = { nineSlice:GetBorderColor() },
+			centerShown = background:IsShown(),
 		}
 		nativeBackdrop[frame] = state
 	end
@@ -288,6 +348,9 @@ function module:RestoreNativeBackdrop(frame)
 	local nineSlice = frame and frame.NineSlice
 	local background = nineSlice and nineSlice.Center
 	if not state or not background then return end
+	RestoreBorderPieces(frame, state)
+	if frame.LUITooltipBackground then frame.LUITooltipBackground:Hide() end
+	background:SetShown(state.centerShown)
 
 	if state.centerAtlas then
 		background:SetAtlas(state.centerAtlas)
@@ -406,7 +469,8 @@ local function SetupStatusHealthText(health)
 	health.text:ClearAllPoints()
 	health.text:SetPoint("CENTER", health, "CENTER", db.HealthTextX, db.HealthTextY)
 	health.text:SetFont(Media:Fetch("font", font.Name), font.Size, font.Flag)
-	health.text:Show()
+	health.text:SetTextColor(module:RGBA("HealthText"))
+	health.text:SetShown(db.ShowHealthText)
 end
 
 function module:SetStatusHealthBar()
@@ -440,15 +504,12 @@ function module:SetStatusHealthBar()
 	health:SetScript("OnValueChanged", module.OnStatusBarValueChanged)
 end
 
-function module:SetBorderColor(frame)
-	-- WoW 12.1 tooltips keep Blizzard's native NineSlice backdrop. We still
-	-- color the tooltip health bar, but do not call legacy backdrop methods.
-	local health = GameTooltipStatusBar
+local function GetTooltipElementColor(frame, colorName)
 	local tooltipData = frame.GetTooltipData and frame:GetTooltipData()
 	local tooltipType = tooltipData and tooltipData.type
-	local color = module:Color("Border")
+	local color = module:Color(colorName)
 
-	if db.Colors.Border.t == "Class"
+	if db.Colors[colorName].t == "Class"
 		and not issecretvalue(tooltipType)
 		and tooltipType == Enum.TooltipDataType.Unit then
 		local unit = module:GetTooltipUnit(tooltipData, frame)
@@ -467,27 +528,49 @@ function module:SetBorderColor(frame)
 			end
 		end
 	end
+	return color
+end
 
-	if not color then return end
-	health:SetStatusBarColor(color:GetRGB())
-	if frame.NineSlice and frame.NineSlice.SetBorderColor then
+function module:SetBorderColor(frame)
+	if not frame or frame:IsForbidden() then return end
+	local nineSlice = frame.NineSlice
+	if not nineSlice or (nineSlice.IsForbidden and nineSlice:IsForbidden()) then return end
+	local color = GetTooltipElementColor(frame, "Border")
+	if color and nineSlice.SetBorderColor then
 		local r, g, b = color:GetRGB()
-		frame.NineSlice:SetBorderColor(r, g, b, 1)
+		nineSlice:SetBorderColor(r, g, b, db.Colors.Border.a)
+		if frame.LUITooltipBorder then
+			LUI:SetFrameBorderColor(frame.LUITooltipBorder, r, g, b, db.Colors.Border.a)
+		end
+	end
+end
+
+function module:SetHealthBarColor(frame)
+	-- Other managed tooltips must not recolor GameTooltip's health bar.
+	if frame ~= GameTooltip or frame:IsForbidden() then return end
+	local color = GetTooltipElementColor(frame, "HealthBar")
+	if color then
+		local r, g, b = color:GetRGB()
+		GameTooltipStatusBar:SetStatusBarColor(r, g, b, db.Colors.HealthBar.a)
 	end
 end
 
 function module:UpdateBackdropColors()
 	for i = 1, #TOOLTIPS_LIST do
-		module:UpdateTooltipBackdrop(_G[TOOLTIPS_LIST[i]])
+		local frame = _G[TOOLTIPS_LIST[i]]
+		module:UpdateTooltipBackdrop(frame)
+		module:SetBorderColor(frame)
 	end
-	local color = module:Color("Border")
-	if color then GameTooltipStatusBar:SetStatusBarColor(color:GetRGB()) end
+	module:SetHealthBarColor(GameTooltip)
 end
 
 function module:Refresh()
 	db = module.db.profile
 	module:SetStatusHealthBar()
 	module:UpdateBackdropColors()
+	if not GameTooltip:IsForbidden() then
+		module:ApplyGuildColor(GameTooltip, GameTooltip:GetTooltipData())
+	end
 end
 
 module.RefreshColors = module.Refresh
@@ -497,6 +580,11 @@ module.RefreshColors = module.Refresh
 -- ####################################################################################################################
 
 function module.OnStatusBarValueChanged(frame)
+	module:SetHealthBarColor(GameTooltip)
+	if not db.ShowHealthText then
+		if frame.text then frame.text:Hide() end
+		return
+	end
 	local unit = module:GetTooltipUnit(GameTooltip:GetTooltipData(), GameTooltip)
 	if not unit then return end
 
@@ -533,6 +621,7 @@ function module:OnTooltipShow(frame)
 
 	module:UpdateTooltipBackdrop(frame)
 	module:SetBorderColor(frame)
+	module:SetHealthBarColor(frame)
 
 end
 
@@ -657,6 +746,7 @@ function module.OnGameTooltipSetUnit(frame, data)
 	end
 
 	module:SetBorderColor(frame)
+	module:SetHealthBarColor(frame)
 end
 
 function module:HideCombatSkillTooltips(frame)

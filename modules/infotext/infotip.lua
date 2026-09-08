@@ -254,8 +254,8 @@ function module:ApplyInfotipBackdrop(frame, name)
 		bgFile = useColorFill and [[Interface\Buttons\WHITE8X8]] or texture,
 		edgeFile = not useNativeBorder and borderTexture or nil,
 		edgeSize = 16,
-		tile = not useColorFill,
-		tileSize = 16,
+		-- Use the complete background image, matching the regular tooltip.
+		tile = false,
 		insets = {left = 4, right = 4, top = 4, bottom = 4},
 	})
 	if useColorFill then
