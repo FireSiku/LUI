@@ -49,11 +49,28 @@ local function GetDisplayFrameName(name)
 	return count == 1 and base or (base .. "_" .. count)
 end
 
-local function UpdateDisplaySize(frame)
+local QueueDisplaySize
+local pendingDisplaySizes = {}
+local DISPLAY_SIZE_RETRY_DELAY = 0.5
+local DISPLAY_SIZE_MAX_ATTEMPTS = 10
+
+local function UpdateDisplaySize(frame, retrying)
 	local width = frame.text:GetUnboundedStringWidth()
 	local _, fontHeight = frame.text:GetFont()
-	if issecretvalue(width) or issecretvalue(fontHeight) then return end
-	local textHeight = math.max(1, math.ceil(fontHeight or 1) + 2)
+	local text = frame.text:GetText()
+	local ready = false
+	if not issecretvalue(width) and not issecretvalue(fontHeight) and not issecretvalue(text) then
+		ready = type(width) == "number" and width >= 0 and width < math.huge
+			and type(fontHeight) == "number" and fontHeight > 0 and fontHeight < math.huge
+			and (width > 1 or not text or text == "")
+	end
+	-- Keep the last valid layout until both font metrics are usable. Retry
+	-- independently of LDB text changes, including temporarily secret metrics.
+	if not ready then
+		if not retrying then QueueDisplaySize(frame) end
+		return false
+	end
+	local textHeight = math.max(1, math.ceil(fontHeight) + 2)
 
 	-- LUIArtwork_InfoPanel is 32 units high and starts 8 units above the
 	-- screen, leaving a 24-unit visible top bar. Anchor the FontString itself
@@ -74,6 +91,28 @@ local function UpdateDisplaySize(frame)
 	else
 		frame.text:SetPoint("LEFT", frame, "LEFT")
 	end
+
+	return true
+end
+
+QueueDisplaySize = function(frame)
+	if pendingDisplaySizes[frame] then return end
+	pendingDisplaySizes[frame] = true
+	local attempts = 0
+	local function Retry()
+		if not module:IsEnabled() or not frame.text then
+			pendingDisplaySizes[frame] = nil
+			return
+		end
+		attempts = attempts + 1
+		local ok, ready = xpcall(function() return UpdateDisplaySize(frame, true) end, geterrorhandler())
+		if ok and not ready and attempts < DISPLAY_SIZE_MAX_ATTEMPTS then
+			C_Timer.After(DISPLAY_SIZE_RETRY_DELAY, Retry)
+		else
+			pendingDisplaySizes[frame] = nil
+		end
+	end
+	C_Timer.After(DISPLAY_SIZE_RETRY_DELAY, Retry)
 end
 
 -- ####################################################################################################################
@@ -159,6 +198,15 @@ function module:SetInfoPanels()
 	end
 	topAnchor:Show()
 	module.topAnchor = topAnchor
+	-- Reconcile unchanged text after world entry, without changing its enabled
+	-- state or rerunning element initialization and event registrations.
+	topAnchor:RegisterEvent("PLAYER_ENTERING_WORLD")
+	topAnchor:SetScript("OnEvent", function()
+		if not module:IsEnabled() then return end
+		for _, frame in pairs(elementFrames) do
+			if frame.LUIInitialized then QueueDisplaySize(frame) end
+		end
+	end)
 
 	module:RegisterLDBCallback("LibDataBroker_DataObjectCreated", "LDBDataObjectCreated")
 
@@ -168,6 +216,9 @@ function module:SetInfoPanels()
 			self:DataObjectCreated(name, element)
 		else
 			module:RegisterLDBCallback("LibDataBroker_AttributeChanged_"..name, "AttributeChanged")
+			-- Values may have changed while callbacks were unregistered. Reuse
+			-- the normal display update without rerunning element initialization.
+			xpcall(function() self:AttributeChanged(nil, name, "text") end, geterrorhandler())
 		end
 	end
 end

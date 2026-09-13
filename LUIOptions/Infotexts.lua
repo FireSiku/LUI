@@ -111,6 +111,9 @@ local friendsArgs = Infotext.args.Settings.args.Friends.args
 friendsArgs.showTotal = Opt:Toggle({name = "Show Total Friend Count", width = "full"})
 friendsArgs.ShowNotes = Opt:Toggle({name = "Show Friend Notes", width = "full"})
 friendsArgs.ShowHints = Opt:Toggle({name = "Show Mouse Hints", width = "full"})
+friendsArgs.ExtraWidth = Opt:Slider({name = "Extra Window Width", min = 0, max = 800, step = 10,
+	desc = "Widen the Friends hover window and its zone/realm or game-status column. 0 uses the automatic width. Limited by available screen space.",
+	db = db.Friends})
 friendsArgs.Background = Opt:InlineGroup({name = "Friends Window Appearance", args = {
 	Texture = Opt:MediaBackground({name = "Texture", db = db.Friends.Background}),
 	Color = Opt:Color({name = "Color", hasAlpha = true, db = db.Friends.Background,

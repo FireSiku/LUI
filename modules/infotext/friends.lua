@@ -88,10 +88,11 @@ local GAP = 10
 local BUTTON_HEIGHT = 15
 local NAME_COLUMN_MAX = 190
 local NOTE_COLUMN_MAX = 160
-local ZONE_COLUMN_MAX = 180
 local GAME_COLUMN_MAX = 240
 local FRIENDS_WIDTH_PADDING = 90
 local FRIENDS_HEIGHT_REDUCTION = 24
+local FRIENDS_SLIDER_WIDTH = 16
+local ROW_TEXT_FIELDS = {"name", "level", "zone", "gameText", "note"}
 
 
 -- BNET_CLIENT Constants
@@ -108,6 +109,24 @@ local legendTip
 local function SafeValue(value, fallback)
 	if value == nil or issecretvalue(value) then return fallback end
 	return value
+end
+
+local function GetRequiredZoneWidth(text)
+	if not text:IsShown() then return 0 end
+	-- Measure the complete zone/realm text, independently of a width assigned
+	-- on an earlier opening of the window. Leave room for fractional metrics.
+	local width = text:GetUnboundedStringWidth()
+	if issecretvalue(width) or type(width) ~= "number" or not (width > 0 and width < math.huge) then return 0 end
+	return math.ceil(width) + 1
+end
+
+local function FitZoneColumnWidth(requiredWidth, otherColumnsWidth)
+	-- Keep full zone/realm names on one line whenever the screen allows it.
+	-- Reserve the window padding and scrollbar before allocating this column.
+	local sliderWidth = infotip.slider and infotip.slider:GetWidth() or FRIENDS_SLIDER_WIDTH
+	local available = max(1, UIParent:GetWidth() - GAP * 2 - sliderWidth
+		- FRIENDS_WIDTH_PADDING - otherColumnsWidth)
+	return min(requiredWidth, available)
 end
 
 local function SetTextColor(fontString, colorName)
@@ -377,7 +396,7 @@ function element:DisplayBNFriends()
 
 			nameColumnWidth = max(nameColumnWidth, bnfriend.name:GetStringWidth())
 			levelColumnWidth = max(levelColumnWidth, bnfriend.level:GetStringWidth())
-			zoneColumnWidth = max(zoneColumnWidth, bnfriend.zone:GetStringWidth())
+			zoneColumnWidth = max(zoneColumnWidth, GetRequiredZoneWidth(bnfriend.zone))
 			if module.db.profile.Friends.ShowNotes then
 				noteColumnWidth = max(noteColumnWidth, bnfriend.note:GetStringWidth())
 			end
@@ -402,7 +421,9 @@ function element:DisplayBNFriends()
 	end
 	nameColumnWidth = math.min(nameColumnWidth, NAME_COLUMN_MAX)
 	noteColumnWidth = math.min(noteColumnWidth, NOTE_COLUMN_MAX)
-	zoneColumnWidth = math.min(zoneColumnWidth, ZONE_COLUMN_MAX)
+	zoneColumnWidth = FitZoneColumnWidth(zoneColumnWidth,
+		TEXT_OFFSET + classIconWidth + nameColumnWidth + noteColumnWidth + GAP * 4
+		+ factionIconWidth + levelColumnWidth + TEXT_OFFSET + GAP)
 	gameColumnWidth = math.min(gameColumnWidth, GAME_COLUMN_MAX)
 	for i = 1, #infotip.BNFriends do
 		local bnfriend = infotip.BNFriends[i]
@@ -514,7 +535,7 @@ function element:DisplayFriends()
 
 			nameColumnWidth = max(nameColumnWidth, friend.name:GetStringWidth())
 			levelColumnWidth = max(levelColumnWidth, friend.level:GetStringWidth())
-			zoneColumnWidth = max(zoneColumnWidth, friend.zone:GetStringWidth())
+			zoneColumnWidth = max(zoneColumnWidth, GetRequiredZoneWidth(friend.zone))
 			if module.db.profile.Friends.ShowNotes then
 				noteColumnWidth = max(noteColumnWidth, friend.note:GetStringWidth())
 			end
@@ -523,7 +544,9 @@ function element:DisplayFriends()
 	end
 	nameColumnWidth = math.min(nameColumnWidth, NAME_COLUMN_MAX)
 	noteColumnWidth = math.min(noteColumnWidth, NOTE_COLUMN_MAX)
-	zoneColumnWidth = math.min(zoneColumnWidth, ZONE_COLUMN_MAX)
+	zoneColumnWidth = FitZoneColumnWidth(zoneColumnWidth,
+		TEXT_OFFSET + classIconWidth + nameColumnWidth + levelColumnWidth
+		+ noteColumnWidth + GAP * 5)
 
 	for i = 1, #infotip.Friends do
 		local friend = infotip.Friends[i]
@@ -536,6 +559,40 @@ function element:DisplayFriends()
 	local maxWidth = TEXT_OFFSET + classIconWidth + nameColumnWidth + levelColumnWidth
 	maxWidth = maxWidth + zoneColumnWidth + noteColumnWidth + GAP * 5
 	infotip.maxWidth = max(infotip.maxWidth, maxWidth)
+end
+
+local function UpdateFriendRowHeight(row)
+	local height = BUTTON_HEIGHT
+	-- Measure after assigning column widths: long zone/realm names and notes
+	-- can wrap, and the next row must start below the complete text.
+	for _, key in ipairs(ROW_TEXT_FIELDS) do
+		local text = row[key]
+		if text and text:IsShown() then
+			height = max(height, text:GetStringHeight() + 3)
+		end
+	end
+	row:SetHeight(math.ceil(height))
+end
+
+function element:PrepareFriendRows()
+	-- Reserve space for a scrollbar before deciding how much wider the
+	-- content can become. It may be needed once wrapped row heights are known.
+	local sliderWidth = infotip.slider and infotip.slider:GetWidth() or FRIENDS_SLIDER_WIDTH
+	local available = max(0, UIParent:GetWidth() - GAP * 2 - sliderWidth - infotip.maxWidth)
+	local extraWidth = min(available, max(0, tonumber(module.db.profile.Friends.ExtraWidth) or 0))
+	infotip.maxWidth = infotip.maxWidth + extraWidth
+
+	for index = 1, infotip.bnIndex do
+		local row = infotip.BNFriends[index]
+		row.zone:SetWidth(row.zone:GetWidth() + extraWidth)
+		row.gameText:SetWidth(row.gameText:GetWidth() + extraWidth)
+		UpdateFriendRowHeight(row)
+	end
+	for index = 1, infotip.friendIndex do
+		local row = infotip.Friends[index]
+		row.zone:SetWidth(row.zone:GetWidth() + extraWidth)
+		UpdateFriendRowHeight(row)
+	end
 end
 
 function element:LayoutFriendRows(baseHeight)
@@ -772,6 +829,7 @@ function element.OnEnter(frame_)
 	local rowBaseHeight = infotip.maxHeight
 	element:DisplayFriends()
 	infotip.maxWidth = infotip.maxWidth + FRIENDS_WIDTH_PADDING
+	element:PrepareFriendRows()
 	for _, broadcast in ipairs(infotip.FriendsBC) do
 		broadcast.text:SetWidth(max(1,
 			infotip.maxWidth - BC_OFFSET - TEXT_OFFSET - GAP * 3))
