@@ -225,8 +225,10 @@ end
 -- ##### Infotext Display #############################################################################################
 -- ####################################################################################################################
 
-function element.OnEnter(frame_)
-	ShowGuild()
+function element.OnEnter(frame_, requestRoster)
+	-- Infotip:UpdateTooltip passes false when only redrawing existing data.
+	-- A roster response must not immediately request another roster update.
+	if requestRoster ~= false then ShowGuild() end
 	if not infotip then element:BuildTooltip() end
 	local maxWidth, maxHeight
 	if IsInGuild() then
