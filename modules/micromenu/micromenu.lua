@@ -849,6 +849,11 @@ function module:RefreshColors()
 	module.buttonMiddle.Texture:SetVertexColor(r, g, b)
 	if module.buttonLeft then module.buttonLeft.Texture:SetVertexColor(r, g, b) end
 	if module.buttonRight then module.buttonRight.Texture:SetVertexColor(r, g, b) end
+
+	local raidMenu = LUI:GetModule("RaidMenu", true)
+	if raidMenu and raidMenu.SetColors then
+		raidMenu:SetColors()
+	end
 end
 
 function module:Refresh()

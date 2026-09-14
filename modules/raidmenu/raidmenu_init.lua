@@ -25,6 +25,8 @@ module.defaults = {
 		Opacity = 100,
 		MatchMicromenuBackground = true,
 		BackgroundColor = {r = 0.05, g = 0.05, b = 0.05, a = 1},
+		MatchMicromenuBorder = true,
+		BorderColor = {r = 0.12, g = 0.58, b = 0.89, a = 1},
 		Scale = 1,
 		ShowToolTips = false,
 		AutoHide = false,

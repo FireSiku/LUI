@@ -303,6 +303,7 @@ function module:SetMinimap(ignoreCombat)
 	end)
 
 	module:ToggleMinimapText()	-- Refresh the Show/Hide for those two.
+	module:RefreshTextColors()
 
 	--Script to add text when you mouseover the minimap
 	Minimap:HookScript("OnEnter",function()
@@ -339,6 +340,7 @@ function module:SetMinimapAgain()
 	module:SetMinimapScripts()
 	module:PositionMinimapIcons()
 	module:ToggleMinimapText()
+	module:RefreshTextColors()
 	module:ToggleMinimapTextures()
 
 	-- Restore decorative layers above nameplates and below the minimap contents.
@@ -488,7 +490,18 @@ function module:Refresh(ignoreCombat)
 	module:RefreshColors()
 end
 
+function module:RefreshTextColors()
+	local r, g, b, a = module:RGBA("Text")
+	if _G.LUIMinimapZoneText then
+		_G.LUIMinimapZoneText:SetTextColor(r, g, b, a)
+	end
+	if _G.LUIMinimapCoordText then
+		_G.LUIMinimapCoordText:SetTextColor(r, g, b, a)
+	end
+end
+
 function module:RefreshColors()
+	module:RefreshTextColors()
 	if not _G.LUIMinimapTexture1 then return end
 	local r, g, b, a = module:RGBA("Minimap")
 	for i = 1, 4 do

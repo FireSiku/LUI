@@ -375,18 +375,30 @@ local function SizeRaidMenu(compact)
 end
 
 function module:SetColors()
-	if not db.Enable or not Micromenu or not RaidMenu_Parent then return end
-	local r, g, b
+	db = module.db.profile
+	if not db.Enable or not Micromenu or not RaidMenu_Border then return end
+	local r, g, b, a
 	if db.MatchMicromenuBackground then
-		r, g, b = Micromenu:RGB("Background")
+		local colorName = Micromenu.db.profile.ColorMatch and "Micromenu" or "Background"
+		r, g, b, a = Micromenu:RGBA(colorName)
 	else
 		local color = db.BackgroundColor
-		r, g, b = color.r, color.g, color.b
+		r, g, b, a = color.r, color.g, color.b, color.a or 1
 	end
-	RaidMenu_BG.Texture:SetVertexColor(r, g, b)
-	RaidMenu.Texture:SetVertexColor(r, g, b)
-	RaidMenu_Border.Texture:SetVertexColor(Micromenu:RGB("Micromenu"))
+	RaidMenu_BG.Texture:SetVertexColor(r, g, b, a)
+	RaidMenu.Texture:SetVertexColor(r, g, b, a)
+	if db.MatchMicromenuBorder then
+		r, g, b = Micromenu:RGB("Micromenu")
+		a = 1
+	else
+		local color = db.BorderColor
+		r, g, b, a = color.r, color.g, color.b, color.a or 1
+	end
+	RaidMenu_Border.Texture:SetVertexColor(r, g, b, a)
 end
+
+-- Color changes do not need to resize or reposition the secure menu buttons.
+module.RefreshColors = module.SetColors
 
 function module:SetRaidMenu(ignoreCombat)
 	db = module.db.profile
@@ -418,17 +430,14 @@ function module:SetRaidMenu(ignoreCombat)
 
 	RaidMenu_BG = LUI:CreateMeAFrame("Frame", "RaidMenu_BG", RaidMenu_Parent, 256, 256, 1, "HIGH", 1, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 0, 0, 1)
 	RaidMenu_BG.Texture = LUI:CreateFrameTexture(RaidMenu_BG, RAIDMENU_BG_TEXTURE)
-	RaidMenu_BG.Texture:SetVertexColor(Micromenu:RGB("Background"))
 
 	RaidMenu = LUI:CreateMeAFrame("Frame", "RaidMenu", RaidMenu_Parent, 256, 256, 1, "HIGH", 2, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 0, 0, 1)
 	RaidMenu:SetMouseClickEnabled(true)
 	RaidMenu.Texture = LUI:CreateFrameTexture(RaidMenu, RAIDMENU_NORMAL_TEXTURE)
-	RaidMenu.Texture:SetVertexColor(Micromenu:RGB("Background"))
 
-	local micro_r, micro_g, micro_b = Micromenu:RGB("Micromenu")
 	RaidMenu_Border = LUI:CreateMeAFrame("Frame", "RaidMenu_Border", RaidMenu_Parent, 256, 256, 1, "HIGH", 3, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 2, 1, 1)
 	RaidMenu_Border.Texture = LUI:CreateFrameTexture(RaidMenu_Border, RAIDMENU_BORDER_TEXTURE)
-	RaidMenu_Border.Texture:SetVertexColor(micro_r, micro_g, micro_b, 1)
+	module:SetColors()
 
 	local Infotext = LUI:GetModule("Infotext", true)
 	local font = Infotext and Infotext.db.profile.Fonts.Infotext or {Name = "vibroceb", Size = 12, Flag = ""}
