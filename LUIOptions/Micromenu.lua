@@ -45,6 +45,10 @@ local function IsRaidMenuBackgroundColorDisabled()
 	return raidMenuDB.MatchMicromenuBackground
 end
 
+local function IsRaidMenuBorderColorDisabled()
+	return raidMenuDB.MatchMicromenuBorder
+end
+
 local function SetRaidMenuEnabled(_, value)
 	raidMenuModule:SetRaidMenuEnabled(value)
 end
@@ -129,11 +133,15 @@ if raidMenuModule and raidMenuDB then
 				X_Offset = Opt:OffsetX({min = -200, max = 200, softMin = -200, softMax = 200, disabled = IsRaidMenuUsingAutoHide}),
 				Offset = Opt:OffsetY({min = -200, max = 200, softMin = -200, softMax = 200, disabled = IsRaidMenuUsingAutoHide}),
 				Spacer2 = Opt:Spacer(),
-				Opacity = Opt:Slider({name = L["Opacity"], desc = "Opacity of the raid menu.", min = 20, max = 100, step = 10}),
-				MatchMicromenuBackground = Opt:Toggle({name = "Match Micromenu Background", desc = "Use the micromenu background color for the raid menu.", width = "full"}),
-				BackgroundColor = Opt:Color({name = "Background Color", desc = "Choose a separate raid-menu background color to improve icon contrast.", hasAlpha = false, db = raidMenuDB, disabled = IsRaidMenuBackgroundColorDisabled}),
 				AutoHide = Opt:Toggle({name = L["Auto-Hide Raid Menu"], desc = "Hide the raid menu after using one of its actions.", width = "full"}),
 				ShowToolTips = Opt:Toggle({name = L["Show Tooltips"], desc = "Show descriptions for the raid-menu tools.", width = "full"}),
+			}}),
+			Appearance = Opt:InlineGroup({name = "Colors and Opacity", disabled = AreRaidMenuSettingsDisabled, args = {
+				Opacity = Opt:Slider({name = "Overall Opacity", desc = "Opacity of the entire raid menu, including icons and text. Background and border opacity can be adjusted separately in their color pickers.", min = 20, max = 100, step = 1, width = "full"}),
+				MatchMicromenuBackground = Opt:Toggle({name = "Match Micromenu Background", desc = "Use the micromenu background color and opacity for the raid menu. Turn this off to choose your own color and opacity.", width = "full"}),
+				BackgroundColor = Opt:Color({name = "Background Color", desc = "Choose the raid-menu background color and opacity. This does not fade the icons or text.", hasAlpha = true, db = raidMenuDB, disabled = IsRaidMenuBackgroundColorDisabled, width = "full"}),
+				MatchMicromenuBorder = Opt:Toggle({name = "Match Micromenu Border", desc = "Use the micromenu button color for the raid-menu border. Turn this off to choose your own color and opacity.", width = "full"}),
+				BorderColor = Opt:Color({name = "Border Color", desc = "Choose the raid-menu border color and opacity.", hasAlpha = true, db = raidMenuDB, disabled = IsRaidMenuBorderColorDisabled, width = "full"}),
 			}}),
 		},
 	})

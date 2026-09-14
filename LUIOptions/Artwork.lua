@@ -253,6 +253,7 @@ local function CreateMainPanelOptions(kind, displayName)
 
 	local group = Opt:Group({name = displayName, db = db.LUITextures[kind], args = {
 		Header = Opt:Header({name = displayName}),
+		RaidPanelDesc = Opt:Desc({onlyIf = kind == "Raid", name = "Artwork behind the raid frames. Raid markers, ready checks and other raid tools are configured under Micromenu > Raid Menu.\n"}),
 		addon = Opt:Desc({onlyIf = isNotChat, name = "Choose a preset or enter the frame name to attach to this panel.\n"}),
 		AnchorPreset = Opt:Select({onlyIf = isNotChat, name = "Bar Preset", values = (kind == "Raid") and PRESET_RAID_ANCHORS or PRESET_METER_ANCHORS, get = presetDropdownGet, set = presetDropdownSet}),
 		Anchor = Opt:Input({onlyIf = isNotChat, name = "Anchor", desc = "Enter the anchor frame manually."}),
@@ -303,7 +304,7 @@ local BuiltinArgs = {
 	Chat = CreateMainPanelOptions("Chat"),
 	Tps = CreateMainPanelOptions("Tps", "Meter Panel 2"),
 	Dps = CreateMainPanelOptions("Dps", "Meter Panel 1"),
-	Raid = CreateMainPanelOptions("Raid"),
+	Raid = CreateMainPanelOptions("Raid", "Raid Panel"),
 	ActionBarTopTexture = CreatePanelGroup("ActionBarTopTexture", true),
 }
 
