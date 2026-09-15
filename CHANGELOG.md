@@ -13,6 +13,16 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 - Fixed Blizzard frame scaling and several AceConfig layout and state issues.
 - Preserved individual module colors across reloads and kept Bags colors independent from artwork themes, retaining the class-colored background and default opacity.
 
+## LUI Diagnostics
+
+- Added a permanent **LUI DEBUG** entry in the options and a guided window for starting, stopping and sharing diagnostic recordings.
+- Bundled the separate, optional **LUIDiagnostics** addon with load-on-demand loading and its own SavedVariables file, keeping diagnostic records separate from LUI settings.
+- Added confirmation screens and automatic UI reloads when starting or stopping a recording. These actions are blocked during combat; active recording continues through combat, reloads and logins until stopped.
+- Integrated current and older BugGrabber callback interfaces to include Lua errors and stack traces. Native blocked-action, forbidden-action and Lua-warning capture remains available without BugGrabber.
+- Added timestamps, combat and instance state, relevant window states, active LUI modules, WoW/LUI/addon versions and recent event names to diagnostic reports.
+- Limited the history to three sessions, with bounded error and event records, repeat counters and flood protection. Restricted values and forbidden frames are treated as unavailable.
+- Added a copyable report and step-by-step instructions for locating the saved file and sharing it in Discord. No upload occurs automatically.
+
 ## Unit frames
 
 - Added optional raid-group text to the player frame, with position, font, size and color settings. It is disabled by default, stays empty outside raids and follows the player's subgroup through roster and vehicle changes using the existing oUF group tag.

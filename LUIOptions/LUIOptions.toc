@@ -8,6 +8,7 @@
 
 LUIOptions.lua
 General.lua
+Diagnostics.lua
 CPanel.lua
 Colors.lua
 Artwork.lua

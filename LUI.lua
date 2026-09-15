@@ -625,6 +625,7 @@ function LUI:OnInitialize()
 
 	db_ = self.db.profile
 	global_db.Versions.lui = LUI.Versions.lui
+	self:InitializeDiagnostics()
 
 	self.db.RegisterCallback(self, "OnProfileChanged", "Refresh")
 	self.db.RegisterCallback(self, "OnProfileCopied", "Refresh")

@@ -44,6 +44,7 @@ api\devapi.lua
 api\restore.lua
 api\strings.lua
 LUI.lua
+api\diagnostics.lua
 update.lua
 
 ### Artwork ###

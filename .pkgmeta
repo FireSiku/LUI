@@ -2,6 +2,7 @@ package-as: LUI
 
 move-folders:
   LUI/LUIOptions: LUIOptions
+  LUI/LUIDiagnostics: LUIDiagnostics
 
 externals:
   libs/LibStub:
