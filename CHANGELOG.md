@@ -69,6 +69,7 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 - Fixed Bartender4 auto-positioning on the left sidebar.
 - Added presets for both Blizzard Damage Meter windows.
 - Added a separate Raid Menu background color for better icon contrast.
+- Restored hiding Blizzard's raid control panel while the LUI raid menu is enabled. Added a default-on Hide Blizzard Raid Menu option under Micromenu > Raid Menu; disabling it, the raid menu or Micromenu restores Blizzard's visibility rules. Uses Retail rolesets, defers changes during combat and leaves party/raid unit frames and Blizzard event handlers unchanged.
 - Enabled texture category, preset and custom texture settings for the action-bar top artwork.
 - Fixed tooltip backgrounds used by SavedInstances and other LibQTip-based addons.
 

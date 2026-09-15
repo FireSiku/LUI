@@ -34,22 +34,57 @@ local BlueWorldMarker, GreenWorldMarker, PurpleWorldMarker, RedWorldMarker, Yell
 local OrangeWorldMarker, SilverWorldMarker, WhiteWorldMarker, ClearWorldMarkers
 local ConvertRaid, RoleChecker, ReadyChecker
 local pendingAction
+local nativeMenuActive = false
+local hiddenBlizzardRaidMenu
 
 local combatQueue = CreateFrame("Frame")
 combatQueue:Hide()
-combatQueue:SetScript("OnEvent", function(self)
+
+function module:UpdateBlizzardRaidMenu(active)
+	if active ~= nil then nativeMenuActive = active end
+	if InCombatLockdown() then
+		combatQueue:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
+
+	local profile = module.db and module.db.profile
+	local shouldHide = nativeMenuActive and module:IsEnabled() and profile and profile.Enable
+		and profile.HideBlizzardRaidMenu and Micromenu and Micromenu:IsEnabled()
+	local frame = hiddenBlizzardRaidMenu or _G.CompactRaidFrameManager
+	if not frame or not frame.SetRolesets or frame:IsForbidden() then return end
+
+	-- Gate only the manager. Restore its XML roleset without changing
+	-- Blizzard's shown state, event handlers or the raid-frame container.
+	if shouldHide and not hiddenBlizzardRaidMenu then
+		frame:SetRolesets("alwaysBlocked")
+		hiddenBlizzardRaidMenu = frame
+	elseif not shouldHide and hiddenBlizzardRaidMenu then
+		frame:SetRolesets("unitFrames")
+		hiddenBlizzardRaidMenu = nil
+	end
+end
+
+combatQueue:RegisterEvent("ADDON_LOADED")
+combatQueue:RegisterEvent("PLAYER_ENTERING_WORLD")
+combatQueue:SetScript("OnEvent", function(self, event, addon)
+	if event == "ADDON_LOADED" and addon ~= "Blizzard_CompactRaidFrames" then return end
+	if event ~= "PLAYER_REGEN_ENABLED" then
+		module:UpdateBlizzardRaidMenu()
+		return
+	end
 	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
 	self:Hide()
 
 	local action = pendingAction
 	pendingAction = nil
 	if action == "hide" or not module:IsEnabled() or not db or not db.Enable then
-		module:HideRaidMenu(true)
+		module:HideRaidMenu()
 	elseif action == "setup" then
-		module:SetRaidMenu(true)
+		module:SetRaidMenu()
 	elseif action == "refresh" then
-		module:Refresh(true)
+		module:Refresh()
 	end
+	module:UpdateBlizzardRaidMenu()
 end)
 
 local function QueueAfterCombat(action)
@@ -400,11 +435,14 @@ end
 -- Color changes do not need to resize or reposition the secure menu buttons.
 module.RefreshColors = module.SetColors
 
-function module:SetRaidMenu(ignoreCombat)
+function module:SetRaidMenu()
 	db = module.db.profile
 
-	if not db.Enable or not Micromenu or not Micromenu.buttonLeft then return end
-	if not ignoreCombat and InCombatLockdown() then
+	if not module:IsEnabled() or not db.Enable or not Micromenu or not Micromenu:IsEnabled() or not Micromenu.buttonLeft then
+		module:HideRaidMenu()
+		return
+	end
+	if InCombatLockdown() then
 		QueueAfterCombat("setup")
 		return
 	end
@@ -415,6 +453,7 @@ function module:SetRaidMenu(ignoreCombat)
 		RaidMenu_Parent:SetScale(db.Scale)
 		RaidMenu_Parent:SetAlpha(db.Opacity / 100)
 		module:SetColors()
+		module:UpdateBlizzardRaidMenu(true)
 		return
 	end
 
@@ -661,27 +700,24 @@ function module:SetRaidMenu(ignoreCombat)
 	end)
 
 	SizeRaidMenu()
+	module:UpdateBlizzardRaidMenu(true)
 end
 
-function module:Refresh(ignoreCombat)
-	if not db.Enable or not RaidMenu_Parent then return end
-	if not ignoreCombat and InCombatLockdown() then
+function module:Refresh()
+	db = module.db.profile
+	if InCombatLockdown() then
 		QueueAfterCombat("refresh")
 		return
 	end
-	SizeRaidMenu()
-	RaidMenu_Parent:SetScale(db.Scale)
-	RaidMenu_Parent:SetAlpha(db.Opacity/100)
-	module:OverlapPrevention("RM", "position")
-	module:SetColors()
+	module:SetRaidMenu()
+	if nativeMenuActive then
+		module:OverlapPrevention("RM", "position")
+	end
 end
 
 function module:SetRaidMenuEnabled(enabled)
+	db = module.db.profile
 	db.Enable = enabled
-	if InCombatLockdown() then
-		QueueAfterCombat(enabled and "setup" or "hide")
-		return
-	end
 	if enabled then
 		module:SetRaidMenu()
 	else
@@ -689,9 +725,10 @@ function module:SetRaidMenuEnabled(enabled)
 	end
 end
 
-function module:HideRaidMenu(ignoreCombat)
+function module:HideRaidMenu()
+	module:UpdateBlizzardRaidMenu(false)
 	if not RaidMenu_Parent then return end
-	if not ignoreCombat and InCombatLockdown() then
+	if InCombatLockdown() then
 		QueueAfterCombat("hide")
 		return
 	end
