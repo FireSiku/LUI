@@ -13,21 +13,22 @@ The current Retail build has been modernized for the latest Blizzard UI systems 
 - Profile management for different characters, roles, or layouts
 - **Profile import and export**, including module settings and the selected custom LUI theme and unit-frame layout
 - **Out-of-combat unit-frame previews** for individual frames and complete party, raid, boss, arena, and main-tank groups
+- **Optional LUI Diagnostics** with guided recording, BugGrabber integration and shareable reports
 - Optional support for compatible third-party addons and replacements; built-in LUI modules can be enabled or disabled where supported
 
 ## Installation
 
 ### CurseForge app
 
-Install or update **LUI Core** through the CurseForge app. The app installs the required `LUI` and `LUIOptions` addon folders.
+Install or update **LUI Core** through the CurseForge app. The app installs `LUI`, `LUIOptions` and the optional `LUIDiagnostics` addon. Diagnostics is loaded on demand and recording is off by default.
 
 ### Manual installation
 
 1. Exit World of Warcraft completely.
 2. Back up your `WTF` folder if you want an additional copy of your settings.
-3. Delete the existing `Interface/AddOns/LUI` and `Interface/AddOns/LUIOptions` folders.
-4. Extract the new `LUI` and `LUIOptions` folders into `World of Warcraft/_retail_/Interface/AddOns`.
-5. Start World of Warcraft and enable both addons.
+3. Delete the existing `Interface/AddOns/LUI`, `Interface/AddOns/LUIOptions` and, if present, `Interface/AddOns/LUIDiagnostics` addon folders.
+4. Extract the new `LUI`, `LUIOptions` and `LUIDiagnostics` folders into `World of Warcraft/_retail_/Interface/AddOns`, next to each other.
+5. Start World of Warcraft and enable LUI and LUIOptions. Keep LUIDiagnostics enabled in the AddOns list if you want to use its guided diagnostic window; recording is activated separately inside the window.
 
 **Do not merge a new release into old LUI addon folders.** A clean replacement prevents obsolete files from older versions from being loaded. Removing the addon folders does not remove your profiles; those are stored separately in the account's `WTF` folder.
 
@@ -42,6 +43,22 @@ Open the options through the LUI micro menu or with the usual LUI options comman
 The profile transfer page can generate a text string for the active profile. An imported profile includes its module namespaces and the selected custom LUI theme and unit-frame layout. Account-wide records such as accumulated gold totals are intentionally not exported.
 
 Imports are validated, cannot run during combat, and ask for confirmation before replacing an existing profile with the same name.
+
+## Diagnostics and bug reports
+
+Open **LUI DEBUG** in the options, or use `/luidebug`, to start a diagnostic
+recording. The window guides you through confirmation, an automatic reload,
+stopping and saving the recording, and sharing the results. Start and stop at
+a safe moment outside combat. Recording continues until explicitly stopped.
+
+Enable **!BugGrabber** to include general Lua errors and original stack traces.
+Without it, native blocked actions and Lua warnings are still recorded. Copy
+the latest session report from the window, or attach `LUIDiagnostics.lua` from
+your account's `WTF/Account/<account folder>/SavedVariables` directory after
+stopping and saving. Error text may contain names; inspect it before sharing.
+
+See [LUIDiagnostics/README.md](LUIDiagnostics/README.md) for the full workflow,
+recorded data and history limits.
 
 ## Compatibility
 
