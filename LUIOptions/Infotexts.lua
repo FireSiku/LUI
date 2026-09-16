@@ -57,7 +57,8 @@ for _, name in ipairs(elementNames) do
 	SettingsArgs[name] = InfoTextGroup(name)
 end
 
-function Opt:LUIInfotextDataObjectCreated(_, name)
+function Opt:LUIInfotextDataObjectCreated(_, name, element)
+	if not module:IsSupportedObject(element) then return end
 	if not SettingsArgs[name] then
 		SettingsArgs[name] = InfoTextGroup(name)
 	end

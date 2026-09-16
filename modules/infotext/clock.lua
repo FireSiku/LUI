@@ -310,7 +310,9 @@ function element:OnCreate(frame)
 end
 
 function element:RefreshSettings()
-	element:UpdateInstanceFont()
 	element:UpdateInstanceInfo()
 	element:UpdateClock()
 end
+
+-- Presentation refreshes must also update the separate instance label.
+element.RefreshDisplay = element.UpdateInstanceFont

@@ -1,3 +1,18 @@
+# LUI v2609 Alpha 10
+
+## Infotext improvements
+
+- Reworked shared infotext display setup and refresh to recover missing text on first login. Reapply fonts, text, saved positions and visibility after world entry and loading screens, including displays whose text has not changed.
+- Extended the existing bounded retries to reapply fonts and text as well as measure dimensions. Retain valid display sizes when metrics are unavailable or restricted, and keep initialized displays visible after individual provider errors while still reporting those errors.
+- Refresh the Clock's separate instance-label font through the shared display refresh without rerunning provider settings or roster requests on loading-screen events.
+- Size Battle.net friend name columns for the complete account and current character name, keeping the pair on one line within the screen width. Preserve automatic zone/realm sizing and the existing Extra Window Width setting; align other-game notes after their game status.
+- Share text measurement, wrapped row-height calculation and scroll-range updates between Friends and Guild. Account for wrapped text when laying out the lists, keep the final entries reachable and prevent scroll-range changes from recursively rebuilding the window.
+- Restore reused empty-list, Battle.net-unavailable, no-guild and guild-message rows correctly. Update an open Friends list without another roster request and hide its hint window when the list closes. Preserve the existing Guild redraw guard, correct player-guild event arguments and align ranks correctly when notes are hidden.
+- Keep addons with identical display titles separate in the Memory tooltip, correct representative-realm selection in Gold and remove an unintended global assignment in Loot Spec.
+- Only create infotext options for supported broker types. Checked the affected API calls and restricted-value handling against Retail 12.1.0 build 69814.
+
+---
+
 # LUI v2609
 
 This release updates LUI for World of Warcraft Retail 12.1 while keeping the original artwork, themes and layouts.
