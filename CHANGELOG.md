@@ -1,15 +1,44 @@
 # LUI v2609 Alpha 10
 
-## Infotext improvements
+## Infotexts
 
-- Reworked shared infotext display setup and refresh to recover missing text on first login. Reapply fonts, text, saved positions and visibility after world entry and loading screens, including displays whose text has not changed.
-- Extended the existing bounded retries to reapply fonts and text as well as measure dimensions. Retain valid display sizes when metrics are unavailable or restricted, and keep initialized displays visible after individual provider errors while still reporting those errors.
-- Refresh the Clock's separate instance-label font through the shared display refresh without rerunning provider settings or roster requests on loading-screen events.
-- Size Battle.net friend name columns for the complete account and current character name, keeping the pair on one line within the screen width. Preserve automatic zone/realm sizing and the existing Extra Window Width setting; align other-game notes after their game status.
-- Share text measurement, wrapped row-height calculation and scroll-range updates between Friends and Guild. Account for wrapped text when laying out the lists, keep the final entries reachable and prevent scroll-range changes from recursively rebuilding the window.
-- Restore reused empty-list, Battle.net-unavailable, no-guild and guild-message rows correctly. Update an open Friends list without another roster request and hide its hint window when the list closes. Preserve the existing Guild redraw guard, correct player-guild event arguments and align ranks correctly when notes are hidden.
-- Keep addons with identical display titles separate in the Memory tooltip, correct representative-realm selection in Gold and remove an unintended global assignment in Loot Spec.
-- Only create infotext options for supported broker types. Checked the affected API calls and restricted-value handling against Retail 12.1.0 build 69814.
+- Improved the reliability of the clock and other infotexts on first login and after loading screens, addressing missing text and incorrect sizing.
+- Saved fonts, colors and positions are now applied consistently, including when infotexts are turned back on.
+- An error while refreshing an infotext no longer hides an already working display.
+- The clock's instance label now keeps the correct font when the display is refreshed.
+- Fixed missing or overwritten entries in the Memory tooltip when addons share the same display name.
+- Corrected which realm is shown for connected-realm groups in the Gold tooltip.
+- Cleaned up a minor issue in the Loot Specialization display and prevented unusable entries from being added to the infotext settings.
+
+## Friends and Guild
+
+- Battle.net names and current character names now stay together on one line.
+- The Friends window automatically allows room for full area and realm names. Added **Extra Window Width** under **Infotext > Individual Settings > Friends** for players who prefer a wider window.
+- Long notes and messages now have enough space, improving row spacing and scrolling. The last entries in a list remain reachable.
+- Improved list updates and prevented repeated requests for friends or guild data when a window refreshes.
+- Fixed notices and guild messages that could remain hidden after the list changed, including the messages shown when no friends are online or a character has no guild.
+- Corrected note placement for friends playing other games and rank placement when guild notes are hidden.
+- The Friends mouse-control hints now close together with the Friends window.
+
+## Raid Menu and Minimap
+
+- Raid menu background and border colors, including transparency, now apply correctly at login and after settings changes. Colors linked to the micromenu also update when its appearance changes.
+- Added **Hide Blizzard Raid Menu** under **Micromenu > Raid Menu**, enabled by default, to prevent both raid menus from appearing together. Turning it off, or disabling the LUI raid menu or micromenu, restores Blizzard's normal controls.
+- Changes to Blizzard's raid menu wait until combat ends when necessary. Party and raid unit frames are unaffected.
+- Minimap area names and coordinates now consistently use the saved text color and transparency.
+- Renamed the Artwork **Raid** entry to **Raid Panel** and clarified that it controls the artwork behind the raid frames. Raid tools remain under **Micromenu > Raid Menu**.
+
+## LUI DEBUG
+
+- Added **LUI DEBUG** to the options, also available through `/luidebug`, to help record and share information when a problem occurs.
+- The guided window explains how to start recording, stop and save a session, and share a report with the LUI team. Starting and stopping require confirmation outside combat and reload the interface.
+- Recording is off by default. Once started, it continues through combat, reloads and logins until you stop it.
+- Reports include error details, WoW and addon versions, active LUI modules and information about what was happening when an error occurred. Install **!BugGrabber** to include general Lua errors; blocked actions and Lua warnings can also be recorded without it.
+- Keeps the latest three sessions and groups repeated errors to make reports easier to read.
+- Reports can be copied from the window or shared as a saved file. The window explains where to find it; nothing is uploaded automatically.
+- The optional **LUIDiagnostics** addon is included alongside LUI and LUIOptions. Installation and troubleshooting instructions have been updated.
+
+Thanks to Ullwarth for the original infotext sizing report and suggested retry approach, and to the community for testing and feedback.
 
 ---
 
@@ -27,16 +56,6 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 - Restored the current options pages and hid modules that are not available.
 - Fixed Blizzard frame scaling and several AceConfig layout and state issues.
 - Preserved individual module colors across reloads and kept Bags colors independent from artwork themes, retaining the class-colored background and default opacity.
-
-## LUI Diagnostics
-
-- Added a permanent **LUI DEBUG** entry in the options and a guided window for starting, stopping and sharing diagnostic recordings.
-- Bundled the separate, optional **LUIDiagnostics** addon with load-on-demand loading and its own SavedVariables file, keeping diagnostic records separate from LUI settings.
-- Added confirmation screens and automatic UI reloads when starting or stopping a recording. These actions are blocked during combat; active recording continues through combat, reloads and logins until stopped.
-- Integrated current and older BugGrabber callback interfaces to include Lua errors and stack traces. Native blocked-action, forbidden-action and Lua-warning capture remains available without BugGrabber.
-- Added timestamps, combat and instance state, relevant window states, active LUI modules, WoW/LUI/addon versions and recent event names to diagnostic reports.
-- Limited the history to three sessions, with bounded error and event records, repeat counters and flood protection. Restricted values and forbidden frames are treated as unavailable.
-- Added a copyable report and step-by-step instructions for locating the saved file and sharing it in Discord. No upload occurs automatically.
 
 ## Unit frames
 
@@ -84,7 +103,6 @@ This release updates LUI for World of Warcraft Retail 12.1 while keeping the ori
 - Fixed Bartender4 auto-positioning on the left sidebar.
 - Added presets for both Blizzard Damage Meter windows.
 - Added a separate Raid Menu background color for better icon contrast.
-- Restored hiding Blizzard's raid control panel while the LUI raid menu is enabled. Added a default-on Hide Blizzard Raid Menu option under Micromenu > Raid Menu; disabling it, the raid menu or Micromenu restores Blizzard's visibility rules. Uses Retail rolesets, defers changes during combat and leaves party/raid unit frames and Blizzard event handlers unchanged.
 - Enabled texture category, preset and custom texture settings for the action-bar top artwork.
 - Fixed tooltip backgrounds used by SavedInstances and other LibQTip-based addons.
 
