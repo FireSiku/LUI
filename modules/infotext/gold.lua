@@ -101,6 +101,7 @@ function element:CacheConnectedRealms()
 			elseif i > 1 and LUI:Count(goldDB[realm]) > realmChars then
 				realmDB[realmShown].Show = false
 				realmDB[realm].Show = true
+				realmChars = LUI:Count(goldDB[realm])
 				realmShown = realm
 			else
 				realmDB[realm].Show = false

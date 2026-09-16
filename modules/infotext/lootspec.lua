@@ -24,7 +24,7 @@ function element:SetLootSpec()
 	local db = module.db.profile.LootSpec
 	local lootSpec = GetLootSpecialization()
 	local currentSpec = GetSpecialization()
-	local specName
+	local _, specName
 	if lootSpec == 0 and currentSpec then
 		_, specName = GetSpecializationInfo(currentSpec)
 	elseif lootSpec > 0 then

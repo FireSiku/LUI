@@ -74,8 +74,18 @@ function LineMixin:AddHighlight()
 	self:SetScript("OnEnter", element.OnLineEnter)
 end
 
-function LineMixin:ResetHeight()
-	self:SetHeight(BUTTON_HEIGHT)
+function LineMixin:UpdateTextHeight()
+	local height = BUTTON_HEIGHT
+	for _, region in ipairs({self:GetRegions()}) do
+		if region:IsObjectType("FontString") and region:IsShown() then
+			local textHeight = region:GetStringHeight()
+			if issecretvalue(textHeight) or type(textHeight) ~= "number"
+				or not (textHeight >= 0 and textHeight < math.huge) then return self:GetHeight() end
+			height = max(height, textHeight + 3)
+		end
+	end
+	self:SetHeight(math.ceil(height))
+	return self:GetHeight()
 end
 
 -- ####################################################################################################################
@@ -95,9 +105,6 @@ function InfotipMixin:NewLine()
 	newline:RegisterForClicks("AnyUp")
 	newline:SetScript("OnLeave", element.OnLineLeave)
 	newline:SetScript("OnMouseWheel", element.OnLineScroll)
-
-	newline:SetPoint("LEFT")
-	newline:SetPoint("RIGHT")
 
 	-- increase line count
 	self.totalLines = self.totalLines + 1
@@ -134,20 +141,19 @@ function InfotipMixin:UpdateTooltip()
 	end
 end
 
-function InfotipMixin:UpdateSlider(topValue)
-	if self.slider then
-		if topValue > self.maxLines then
-			local maxValue = 1 + topValue - self.maxLines
-			self.slider:SetMinMaxValues(1, maxValue)
-			self.slider.updating = true
-			self.slider:SetValue(min(maxValue, max(1, self.slider:GetValue())))
-			self.slider.updating = nil
-			self.slider:Show()
-			self.hasSlider = true
-		else
-			self.slider:Hide()
-			self.hasSlider = false
-		end
+function InfotipMixin:SetScrollRange(maxOffset)
+	if maxOffset > 1 then
+		local slider = self:EnsureSlider()
+		-- Changing the range can itself clamp the value and fire OnValueChanged.
+		slider.updating = true
+		slider:SetMinMaxValues(1, maxOffset)
+		slider:SetValue(min(maxOffset, max(1, slider:GetValue())))
+		slider.updating = nil
+		slider:Show()
+		self.hasSlider = true
+	else
+		if self.slider then self.slider:Hide() end
+		self.hasSlider = false
 	end
 end
 
@@ -194,6 +200,13 @@ function module:EnforceMinWidth(infotip, value)
 	if value < infotip.minWidth then
 		infotip:SetWidth(infotip.minWidth)
 	end
+end
+
+function module:GetInfotipTextWidth(text)
+	if not text:IsShown() then return 0 end
+	local width = text:GetUnboundedStringWidth()
+	if issecretvalue(width) or type(width) ~= "number" or not (width > 0 and width < math.huge) then return 0 end
+	return math.ceil(width) + 1
 end
 
 function module:AnchorInfotip(infotip)

@@ -50,11 +50,12 @@ local function GetDisplayFrameName(name)
 end
 
 local QueueDisplaySize
+local UpdateDisplay
 local pendingDisplaySizes = {}
 local DISPLAY_SIZE_RETRY_DELAY = 0.5
 local DISPLAY_SIZE_MAX_ATTEMPTS = 10
 
-local function UpdateDisplaySize(frame, retrying)
+local function UpdateDisplaySize(frame)
 	local width = frame.text:GetUnboundedStringWidth()
 	local _, fontHeight = frame.text:GetFont()
 	local text = frame.text:GetText()
@@ -66,10 +67,7 @@ local function UpdateDisplaySize(frame, retrying)
 	end
 	-- Keep the last valid layout until both font metrics are usable. Retry
 	-- independently of LDB text changes, including temporarily secret metrics.
-	if not ready then
-		if not retrying then QueueDisplaySize(frame) end
-		return false
-	end
+	if not ready then return false end
 	local textHeight = math.max(1, math.ceil(fontHeight) + 2)
 
 	-- LUIArtwork_InfoPanel is 32 units high and starts 8 units above the
@@ -105,7 +103,7 @@ QueueDisplaySize = function(frame)
 			return
 		end
 		attempts = attempts + 1
-		local ok, ready = xpcall(function() return UpdateDisplaySize(frame, true) end, geterrorhandler())
+		local ok, ready = xpcall(function() return UpdateDisplay(frame, true) end, geterrorhandler())
 		if ok and not ready and attempts < DISPLAY_SIZE_MAX_ATTEMPTS then
 			C_Timer.After(DISPLAY_SIZE_RETRY_DELAY, Retry)
 		else
@@ -113,6 +111,22 @@ QueueDisplaySize = function(frame)
 		end
 	end
 	C_Timer.After(DISPLAY_SIZE_RETRY_DELAY, Retry)
+end
+
+UpdateDisplay = function(frame, applyFont)
+	if applyFont then
+		local font = db.Fonts.Infotext
+		frame.text:SetFont(Media:Fetch("font", font.Name), font.Size, font.Flag)
+		if frame.element.RefreshDisplay then frame.element:RefreshDisplay() end
+	end
+	local text = frame.element.text
+	if issecretvalue(text) then return false end
+	if not text then text = frame.element.label end
+	if issecretvalue(text) then return false end
+	frame.text:SetText(text or frame.name)
+	local ready = UpdateDisplaySize(frame)
+	if not ready then QueueDisplaySize(frame) end
+	return ready
 end
 
 -- ####################################################################################################################
@@ -186,6 +200,16 @@ end
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################-
 
+local displayRefreshQueued = false
+local function QueueDisplayRefresh()
+	if displayRefreshQueued then return end
+	displayRefreshQueued = true
+	C_Timer.After(0, function()
+		displayRefreshQueued = false
+		if module:IsEnabled() then module:RefreshDisplays() end
+	end)
+end
+
 function module:SetInfoPanels()
 	db = module.db.profile
 
@@ -198,29 +222,22 @@ function module:SetInfoPanels()
 	end
 	topAnchor:Show()
 	module.topAnchor = topAnchor
-	-- Reconcile unchanged text after world entry, without changing its enabled
-	-- state or rerunning element initialization and event registrations.
+	-- World entry can precede the end of the initial loading screen. Reapply
+	-- the complete display layout on the next frame after either event.
 	topAnchor:RegisterEvent("PLAYER_ENTERING_WORLD")
-	topAnchor:SetScript("OnEvent", function()
-		if not module:IsEnabled() then return end
-		for _, frame in pairs(elementFrames) do
-			if frame.LUIInitialized then QueueDisplaySize(frame) end
-		end
-	end)
+	topAnchor:RegisterEvent("LOADING_SCREEN_DISABLED")
+	topAnchor:SetScript("OnEvent", QueueDisplayRefresh)
 
 	module:RegisterLDBCallback("LibDataBroker_DataObjectCreated", "LDBDataObjectCreated")
 
-	-- Make sure all objects created before the callback gets properly initialized.
+	-- Reconnect broker callbacks, then reconcile the displays in a stable order.
 	for name, element in LDB:DataObjectIterator() do
-		if not elementFrames[name] or not elementFrames[name].LUIInitialized then
-			self:DataObjectCreated(name, element)
-		else
+		if elementFrames[name] and elementFrames[name].LUIInitialized then
 			module:RegisterLDBCallback("LibDataBroker_AttributeChanged_"..name, "AttributeChanged")
-			-- Values may have changed while callbacks were unregistered. Reuse
-			-- the normal display update without rerunning element initialization.
-			xpcall(function() self:AttributeChanged(nil, name, "text") end, geterrorhandler())
 		end
 	end
+	module:RefreshDisplays()
+	QueueDisplayRefresh()
 end
 
 function module:NewElement(name, ...)
@@ -274,21 +291,39 @@ end
 -- ##### LDB Handling #################################################################################################
 -- ####################################################################################################################
 
+function module:IsSupportedObject(element)
+	local kind = element.type
+	return not issecretvalue(kind) and supportedTypes[kind] == true
+end
+
+local function ApplyDisplaySettings(frame)
+	local settings = db[frame.name]
+	module:SetPosition(frame.name, frame)
+	local color = settings.Color
+	frame.text:SetTextColor(color.r, color.g, color.b, color.a)
+	UpdateDisplay(frame, true)
+	if settings.Enable then frame:Show() else frame:Hide() end
+end
+
 local function CreateDisplay(name, element)
-	if not supportedTypes[element.type] then return end
+	if not module:IsSupportedObject(element) then return end
 	local frame = elementFrames[name]
 	if frame and frame.LUIInitialized then return end
 
 	-- Reuse partial frames when settings are refreshed or the module is enabled again.
 	if not frame then
 		frame = CreateFrame("Button", GetDisplayFrameName(name), module.topAnchor)
+		frame:SetSize(1, 1)
 		elementFrames[name] = frame
 	end
 	frame.name = name
 	frame.element = element
 
 	frame.text = frame.text or module:SetFontString(frame, frame:GetName().."Text", "Infotext", "OVERLAY", "LEFT", "MIDDLE")
-	frame.text:SetAllPoints(frame)
+	-- Let the text establish its natural width before sizing the button.
+	frame.text:ClearAllPoints()
+	frame.text:SetPoint("LEFT", frame, "LEFT")
+	frame.text:SetWordWrap(false)
 	local color = db[name].Color
 	frame.text:SetTextColor(color.r, color.g, color.b, color.a)
 	frame.text:SetShadowColor(0,0,0)
@@ -306,16 +341,7 @@ local function CreateDisplay(name, element)
 		frame.LUIOnCreateComplete = true
 	end
 
-	module:SetPosition(name, frame)
-
-	local displayText = element.text or element.label or name
-	if not issecretvalue(displayText) then frame.text:SetText(displayText) end
-	UpdateDisplaySize(frame)
-	if db[name].Enable then
-		frame:Show()
-	else
-		frame:Hide()
-	end
+	ApplyDisplaySettings(frame)
 
 	--This allow me to unregister callbacks based on element instead of filtering using the global one.
 	module:RegisterLDBCallback("LibDataBroker_AttributeChanged_"..name, "AttributeChanged")
@@ -327,7 +353,7 @@ local function RunDisplayOperation(name, operation)
 	local ok = xpcall(operation, geterrorhandler())
 	if not ok then
 		local frame = elementFrames[name]
-		if frame then frame:Hide() end
+		if frame and not frame.LUIInitialized then frame:Hide() end
 	end
 	return ok
 end
@@ -344,10 +370,7 @@ end
 function module:AttributeChanged(event_, name, attr, value, element_)
 	local frame = elementFrames[name]
 	if frame and (attr == "text" or attr == "label") then
-		local displayText = frame.element.text or frame.element.label or name
-		if issecretvalue(displayText) then return end
-		frame.text:SetText(displayText)
-		UpdateDisplaySize(frame)
+		UpdateDisplay(frame)
 	end
 end
 
@@ -410,33 +433,30 @@ function module:ToggleInfotext(name)
 	end
 end
 
-function module:Refresh()
+function module:RefreshDisplays(refreshElements)
+	db = module.db.profile
 	defaultPositions = 0
 	local displayNames = {}
-	for name in module:IterateDisplays() do
-		displayNames[#displayNames + 1] = name
+	for name, element in LDB:DataObjectIterator() do
+		if module:IsSupportedObject(element) then displayNames[#displayNames + 1] = name end
 	end
 	table.sort(displayNames)
 	for _, name in ipairs(displayNames) do
 		local obj = elementFrames[name]
-		if not obj.LUIInitialized then
-			module:DataObjectCreated(name, obj.element)
+		if not obj or not obj.LUIInitialized then
+			module:DataObjectCreated(name, LDB:GetDataObjectByName(name))
 		else
 			RunDisplayOperation(name, function()
-				module:SetPosition(name, obj)
-				local color = db[name].Color
-				obj.text:SetTextColor(color.r, color.g, color.b, color.a)
-				local font = db.Fonts.Infotext
-				obj.text:SetFont(Media:Fetch("font", font.Name), font.Size, font.Flag)
-				UpdateDisplaySize(obj)
-				if obj.element.RefreshSettings then obj.element:RefreshSettings() end
-				if db[name].Enable then
-					obj:Show()
-				else
-					obj:Hide()
-				end
+				ApplyDisplaySettings(obj)
 			end)
+			if refreshElements and obj.element.RefreshSettings then
+				RunDisplayOperation(name, function() obj.element:RefreshSettings() end)
+			end
 		end
 	end
+end
+
+function module:Refresh()
+	module:RefreshDisplays(true)
 	if module.RefreshInfotips then module:RefreshInfotips() end
 end

@@ -92,7 +92,6 @@ local GAME_COLUMN_MAX = 240
 local FRIENDS_WIDTH_PADDING = 90
 local FRIENDS_HEIGHT_REDUCTION = 24
 local FRIENDS_SLIDER_WIDTH = 16
-local ROW_TEXT_FIELDS = {"name", "level", "zone", "gameText", "note"}
 
 
 -- BNET_CLIENT Constants
@@ -107,21 +106,12 @@ local infotip
 local legendTip
 
 local function SafeValue(value, fallback)
-	if value == nil or issecretvalue(value) then return fallback end
+	if issecretvalue(value) or value == nil then return fallback end
 	return value
 end
 
-local function GetRequiredZoneWidth(text)
-	if not text:IsShown() then return 0 end
-	-- Measure the complete zone/realm text, independently of a width assigned
-	-- on an earlier opening of the window. Leave room for fractional metrics.
-	local width = text:GetUnboundedStringWidth()
-	if issecretvalue(width) or type(width) ~= "number" or not (width > 0 and width < math.huge) then return 0 end
-	return math.ceil(width) + 1
-end
-
-local function FitZoneColumnWidth(requiredWidth, otherColumnsWidth)
-	-- Keep full zone/realm names on one line whenever the screen allows it.
+local function FitColumnWidth(requiredWidth, otherColumnsWidth)
+	-- Keep complete text on one line whenever the screen allows it.
 	-- Reserve the window padding and scrollbar before allocating this column.
 	local sliderWidth = infotip.slider and infotip.slider:GetWidth() or FRIENDS_SLIDER_WIDTH
 	local available = max(1, UIParent:GetWidth() - GAP * 2 - sliderWidth
@@ -169,6 +159,9 @@ function element:BuildTooltip()
 	infotip.BNFriends = {}
 	infotip.FriendsBC = {}
 	infotip.Friends = {}
+	infotip:HookScript("OnHide", function()
+		if legendTip then legendTip:Hide() end
+	end)
 end
 
 function element:BuildLegend()
@@ -262,6 +255,7 @@ function element:CreateBNFriend(index)
 
 	bnfriend.class = bnfriend:AddTexture()
 	bnfriend.name = bnfriend:AddFontString("LEFT", bnfriend.class, TEXT_OFFSET)
+	bnfriend.name:SetWordWrap(false)
 	bnfriend.gameText = bnfriend:AddFontString("LEFT", bnfriend.name, nil, module:RGB("GameText"))
 	bnfriend.level = bnfriend:AddFontString("CENTER", bnfriend.name)
 	bnfriend.faction = bnfriend:AddTexture(bnfriend.level, GAP)
@@ -275,10 +269,7 @@ function element:CreateBNFriend(index)
 end
 
 function element:CreateFriendBroadcast(index)
-	if infotip.FriendsBC[index] then
-		infotip.FriendsBC[index]:ResetHeight()
-		return infotip.FriendsBC[index]
-	end
+	if infotip.FriendsBC[index] then return infotip.FriendsBC[index] end
 	local bc = infotip:NewLine()
 	bc.index = index
 
@@ -350,6 +341,8 @@ function element:DisplayBNFriends()
 			SetTextColor(bnfriend.note, "Note")
 
 			if client == BNET_CLIENT_WOW then
+				bnfriend.note:ClearAllPoints()
+				bnfriend.note:SetPoint("LEFT", bnfriend.zone, "RIGHT", GAP, 0)
 				local class = SafeValue(gameInfo.classFilename) or LUI:GetTokenFromClassName(SafeValue(gameInfo.className))
 				bnfriend:SetClassIcon(bnfriend.class, class)
 				local nameString = module:ColorText(characterName, class)
@@ -377,6 +370,8 @@ function element:DisplayBNFriends()
 				bnfriend.level:Show()
 				bnfriend.zone:Show()
 			else
+				bnfriend.note:ClearAllPoints()
+				bnfriend.note:SetPoint("LEFT", bnfriend.gameText, "RIGHT", GAP, 0)
 				if BNet_GetBattlenetClientAtlas then
 					bnfriend.class:SetAtlas(BNet_GetBattlenetClientAtlas(client))
 				else
@@ -394,14 +389,14 @@ function element:DisplayBNFriends()
 				bnfriend.gameText:Show()
 			end
 
-			nameColumnWidth = max(nameColumnWidth, bnfriend.name:GetStringWidth())
-			levelColumnWidth = max(levelColumnWidth, bnfriend.level:GetStringWidth())
-			zoneColumnWidth = max(zoneColumnWidth, GetRequiredZoneWidth(bnfriend.zone))
+			nameColumnWidth = max(nameColumnWidth, module:GetInfotipTextWidth(bnfriend.name))
+			levelColumnWidth = max(levelColumnWidth, module:GetInfotipTextWidth(bnfriend.level))
+			zoneColumnWidth = max(zoneColumnWidth, module:GetInfotipTextWidth(bnfriend.zone))
 			if module.db.profile.Friends.ShowNotes then
-				noteColumnWidth = max(noteColumnWidth, bnfriend.note:GetStringWidth())
+				noteColumnWidth = max(noteColumnWidth, module:GetInfotipTextWidth(bnfriend.note))
 			end
 			classIconWidth = max(classIconWidth, bnfriend.class:GetWidth())
-			gameColumnWidth = max(gameColumnWidth, bnfriend.gameText:GetStringWidth())
+			gameColumnWidth = max(gameColumnWidth, module:GetInfotipTextWidth(bnfriend.gameText))
 
 			local customMessage = strtrim(SafeValue(accountInfo.customMessage, ""))
 			if customMessage ~= "" then
@@ -410,21 +405,21 @@ function element:DisplayBNFriends()
 				bnfriend.broadcast = element:CreateFriendBroadcast(infotip.bcIndex)
 				bnfriend.broadcast.text:SetText(customMessage)
 				SetTextColor(bnfriend.broadcast.text, "FriendBroadcast")
-				if bnfriend.broadcast:GetHeight() < bnfriend.broadcast.text:GetStringHeight() then
-					bnfriend.broadcast:SetHeight(bnfriend.broadcast.text:GetStringHeight() + 3)
-				end
 			else
 				bnfriend.hasBroadcast = false
 				bnfriend.broadcast = nil
 			end
 		end
 	end
-	nameColumnWidth = math.min(nameColumnWidth, NAME_COLUMN_MAX)
 	noteColumnWidth = math.min(noteColumnWidth, NOTE_COLUMN_MAX)
-	zoneColumnWidth = FitZoneColumnWidth(zoneColumnWidth,
-		TEXT_OFFSET + classIconWidth + nameColumnWidth + noteColumnWidth + GAP * 4
-		+ factionIconWidth + levelColumnWidth + TEXT_OFFSET + GAP)
 	gameColumnWidth = math.min(gameColumnWidth, GAME_COLUMN_MAX)
+	-- Account and current character form one label; size it to the full pair.
+	-- Only the screen limit may shorten it, while zone text can still wrap.
+	local fixedWidth = TEXT_OFFSET + classIconWidth + noteColumnWidth + GAP * 4
+	local wowInfoWidth = factionIconWidth + levelColumnWidth + TEXT_OFFSET + GAP
+	nameColumnWidth = FitColumnWidth(nameColumnWidth,
+		fixedWidth + max(wowInfoWidth + 1, gameColumnWidth))
+	zoneColumnWidth = FitColumnWidth(zoneColumnWidth, fixedWidth + nameColumnWidth + wowInfoWidth)
 	for i = 1, #infotip.BNFriends do
 		local bnfriend = infotip.BNFriends[i]
 		bnfriend.name:SetWidth(nameColumnWidth)
@@ -444,12 +439,6 @@ function element:DisplayBNFriends()
 	maxWidth = maxWidth + max(factionIconWidth + zoneColumnWidth + levelColumnWidth + TEXT_OFFSET + GAP, gameColumnWidth)
 	infotip.maxWidth = max(infotip.maxWidth, maxWidth)
 
-	-- Broadcast visibility follows its Battle.net friend row.
-	for i = 1, #infotip.FriendsBC do
-		local bc = infotip.FriendsBC[i]
-		bc.text:SetWidth(infotip.maxWidth - BC_OFFSET - TEXT_OFFSET - GAP * 3)
-		if i > infotip.bcIndex then bc:Hide() end
-	end
 end
 
 function element.OnBNFriendButtonClick(bnfriend, button)
@@ -533,18 +522,18 @@ function element:DisplayFriends()
 			SetTextColor(friend.zone, "Zone")
 			SetTextColor(friend.note, "Note")
 
-			nameColumnWidth = max(nameColumnWidth, friend.name:GetStringWidth())
-			levelColumnWidth = max(levelColumnWidth, friend.level:GetStringWidth())
-			zoneColumnWidth = max(zoneColumnWidth, GetRequiredZoneWidth(friend.zone))
+			nameColumnWidth = max(nameColumnWidth, module:GetInfotipTextWidth(friend.name))
+			levelColumnWidth = max(levelColumnWidth, module:GetInfotipTextWidth(friend.level))
+			zoneColumnWidth = max(zoneColumnWidth, module:GetInfotipTextWidth(friend.zone))
 			if module.db.profile.Friends.ShowNotes then
-				noteColumnWidth = max(noteColumnWidth, friend.note:GetStringWidth())
+				noteColumnWidth = max(noteColumnWidth, module:GetInfotipTextWidth(friend.note))
 			end
 			classIconWidth = max(classIconWidth, friend.class:GetWidth())
 		end
 	end
 	nameColumnWidth = math.min(nameColumnWidth, NAME_COLUMN_MAX)
 	noteColumnWidth = math.min(noteColumnWidth, NOTE_COLUMN_MAX)
-	zoneColumnWidth = FitZoneColumnWidth(zoneColumnWidth,
+	zoneColumnWidth = FitColumnWidth(zoneColumnWidth,
 		TEXT_OFFSET + classIconWidth + nameColumnWidth + levelColumnWidth
 		+ noteColumnWidth + GAP * 5)
 
@@ -561,19 +550,6 @@ function element:DisplayFriends()
 	infotip.maxWidth = max(infotip.maxWidth, maxWidth)
 end
 
-local function UpdateFriendRowHeight(row)
-	local height = BUTTON_HEIGHT
-	-- Measure after assigning column widths: long zone/realm names and notes
-	-- can wrap, and the next row must start below the complete text.
-	for _, key in ipairs(ROW_TEXT_FIELDS) do
-		local text = row[key]
-		if text and text:IsShown() then
-			height = max(height, text:GetStringHeight() + 3)
-		end
-	end
-	row:SetHeight(math.ceil(height))
-end
-
 function element:PrepareFriendRows()
 	-- Reserve space for a scrollbar before deciding how much wider the
 	-- content can become. It may be needed once wrapped row heights are known.
@@ -586,12 +562,12 @@ function element:PrepareFriendRows()
 		local row = infotip.BNFriends[index]
 		row.zone:SetWidth(row.zone:GetWidth() + extraWidth)
 		row.gameText:SetWidth(row.gameText:GetWidth() + extraWidth)
-		UpdateFriendRowHeight(row)
+		row:UpdateTextHeight()
 	end
 	for index = 1, infotip.friendIndex do
 		local row = infotip.Friends[index]
 		row.zone:SetWidth(row.zone:GetWidth() + extraWidth)
-		UpdateFriendRowHeight(row)
+		row:UpdateTextHeight()
 	end
 end
 
@@ -634,18 +610,7 @@ function element:LayoutFriendRows(baseHeight)
 	end
 
 	local maxOffset = max(1, lastPageStart)
-	if maxOffset > 1 then
-		local slider = infotip:EnsureSlider()
-		slider:SetMinMaxValues(1, maxOffset)
-		slider.updating = true
-		slider:SetValue(min(maxOffset, max(1, slider:GetValue())))
-		slider.updating = nil
-		slider:Show()
-		infotip.hasSlider = true
-	elseif infotip.slider then
-		infotip.slider:Hide()
-		infotip.hasSlider = false
-	end
+	infotip:SetScrollRange(maxOffset)
 
 	local firstVisible = infotip:GetSliderOffset()
 	local previous
@@ -762,6 +727,7 @@ function element:FriendlistUpdate()
 	totalBNFriends = SafeValue(totalBNFriends, 0)
 	onlineBNFriends = SafeValue(onlineBNFriends, 0)
 	element:UpdateFriends()
+	element:UpdateInfotip()
 end
 
 function element.OnClick(frame_, button)
@@ -778,8 +744,8 @@ end
 -- ##### Infotext Display #############################################################################################
 -- ####################################################################################################################
 
-function element.OnEnter(frame_)
-	C_FriendList.ShowFriends()
+function element.OnEnter(frame_, requestRoster)
+	if requestRoster ~= false then C_FriendList.ShowFriends() end
 	if not infotip then element:BuildTooltip() end
 	infotip.maxWidth = 0
 	infotip.maxHeight = GAP * 2
@@ -809,8 +775,7 @@ function element.OnEnter(frame_)
 			SetTextColor(broadcast.name, "Broadcast")
 			infotip.sep:ClearAllPoints()
 			infotip.sep:SetPoint("TOPLEFT", broadcast, "BOTTOMLEFT")
-			infotip.maxWidth = broadcast.name:GetStringWidth() + GAP * 2
-			infotip.maxHeight = broadcast:GetHeight() + infotip.sep:GetHeight() + GAP * 2
+			infotip.maxWidth = module:GetInfotipTextWidth(broadcast.name) + GAP * 2
 
 			element:DisplayBNFriends()
 
@@ -818,39 +783,50 @@ function element.OnEnter(frame_)
 			--If you get disconnected from BNet but not from WoW, display it.
 			if infotip.broadcast then infotip.broadcast:Hide() end
 			local bnetDown = element:CreateNegativeLine("bnetDown")
+			bnetDown:Show()
 			infotip.sep:ClearAllPoints()
 			infotip.sep:SetPoint("TOPLEFT", bnetDown, "BOTTOMLEFT")
 			bnetDown.name:SetText(BATTLENET_UNAVAILABLE)
-			infotip.maxWidth = bnetDown.name:GetStringWidth() + GAP * 2
-			infotip.maxHeight = bnetDown:GetHeight() + infotip.sep:GetHeight() + GAP * 2
+			infotip.maxWidth = module:GetInfotipTextWidth(bnetDown.name) + GAP * 2
 		end
 	end
 
-	local rowBaseHeight = infotip.maxHeight
 	element:DisplayFriends()
-	infotip.maxWidth = infotip.maxWidth + FRIENDS_WIDTH_PADDING
+	infotip.maxWidth = min(UIParent:GetWidth() - GAP * 2 - FRIENDS_SLIDER_WIDTH,
+		infotip.maxWidth + FRIENDS_WIDTH_PADDING)
 	element:PrepareFriendRows()
+	local rowBaseHeight = GAP * 2
+	local header = infotip.broadcast and infotip.broadcast:IsShown() and infotip.broadcast
+		or infotip.bnetDown and infotip.bnetDown:IsShown() and infotip.bnetDown
+	if header then
+		header:SetWidth(max(1, infotip.maxWidth - GAP * 2))
+		rowBaseHeight = rowBaseHeight + header:UpdateTextHeight() + infotip.sep:GetHeight()
+	end
 	for _, broadcast in ipairs(infotip.FriendsBC) do
 		broadcast.text:SetWidth(max(1,
 			infotip.maxWidth - BC_OFFSET - TEXT_OFFSET - GAP * 3))
-		broadcast:SetHeight(max(BUTTON_HEIGHT, broadcast.text:GetStringHeight() + 3))
+		broadcast:UpdateTextHeight()
 	end
 	element:LayoutFriendRows(rowBaseHeight)
 
 	-- If no friends are online, display it.
 	if (infotip.bnIndex + infotip.friendIndex) == 0 then
 		local noFriends = element:CreateNegativeLine("noFriends")
+		noFriends:Show()
+		noFriends.name:SetText(L["InfoFriends_NoFriends"])
+		infotip.maxWidth = min(UIParent:GetWidth() - GAP * 2,
+			max(infotip.maxWidth, module:GetInfotipTextWidth(noFriends.name) + GAP * 2))
+		noFriends:SetWidth(max(1, infotip.maxWidth - GAP * 2))
+		noFriends:UpdateTextHeight()
 		noFriends:ClearAllPoints()
 		-- if you're on an account with BNet disabled, no separator are created.
-		if infotip.sep then
+		if infotip.sep and infotip.sep:IsShown() then
 			noFriends:SetPoint("TOPLEFT", infotip.sep, "BOTTOMLEFT")
 			infotip.maxHeight = infotip.maxHeight + noFriends:GetHeight()
 		else
 			noFriends:SetPoint("TOPLEFT", GAP, -GAP)
 			infotip.maxHeight = noFriends:GetHeight() + GAP * 2
 		end
-		noFriends.name:SetText(L["InfoFriends_NoFriends"])
-		infotip.maxWidth = max(infotip.maxWidth, noFriends.name:GetStringWidth() + GAP*2)
 	else
 		if infotip.noFriends then infotip.noFriends:Hide() end
 	end

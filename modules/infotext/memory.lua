@@ -21,7 +21,8 @@ local GetAddOnInfo = C_AddOns.GetAddOnInfo
 local C_Timer = C_Timer
 
 local totalMemory = 0
-local addonMemory = {} --contains addonTitle, memoryUsage
+local addonMemory = {} -- Indexed by unique addon folder name.
+local addonTitles = {}
 local sortedAddons = {} -- Sorting table for addonMemory
 
 -- Everything is too green without this multiplier
@@ -53,10 +54,12 @@ function element:UpdateMemory()
 		local addonName, addonTitle = GetAddOnInfo(i)
 		addonTitle = addonTitle or addonName
 		if C_AddOns.IsAddOnLoaded(i) then
-			addonMemory[addonTitle] = GetAddOnMemoryUsage(i)
-			totalMemory = totalMemory + addonMemory[addonTitle]
+			addonMemory[addonName] = GetAddOnMemoryUsage(i)
+			addonTitles[addonName] = addonTitle
+			totalMemory = totalMemory + addonMemory[addonName]
 		else
-			addonMemory[addonTitle] = nil
+			addonMemory[addonName] = nil
+			addonTitles[addonName] = nil
 		end
 	end
 
@@ -85,10 +88,10 @@ end
 function element.OnTooltipShow(GameTooltip)
 	element:TooltipHeader(L["InfoMemory_Header"])
 	for i = 1, #sortedAddons do
-		local addonTitle = sortedAddons[i]
-		local ratio = totalMemory > 0 and addonMemory[addonTitle] / totalMemory or 0
+		local addonName = sortedAddons[i]
+		local ratio = totalMemory > 0 and addonMemory[addonName] / totalMemory or 0
 		local r, g, b = LUI:InverseGradient(ratio * GRADIENT_MULTIPLIER)
-		GameTooltip:AddDoubleLine(addonTitle, formatMemory(addonMemory[addonTitle]), 1,1,1, r, g, b)
+		GameTooltip:AddDoubleLine(addonTitles[addonName], formatMemory(addonMemory[addonName]), 1,1,1, r, g, b)
 	end
 
 	GameTooltip:AddLine(" ")

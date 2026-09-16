@@ -43,6 +43,8 @@ local NAME_COLUMN_MAX = 190
 local NOTE_COLUMN_MAX = 160
 local ZONE_COLUMN_MAX = 180
 local RANK_COLUMN_MAX = 140
+local BUTTON_HEIGHT = 15
+local SLIDER_WIDTH = 16
 
 -- locals
 local totalGuild = 0
@@ -105,16 +107,6 @@ function element:CreateGuildMember(index)
 	return mem
 end
 
-function element:UpdateGuildAnchorPoints(i)
-	local offset = infotip:GetSliderOffset()
-	infotip.Members[i]:ClearAllPoints()
-	if i == offset or i == 1 then
-		infotip.Members[i]:SetPoint("TOPLEFT", infotip.sep, "BOTTOMLEFT", GAP)
-	else
-		infotip.Members[i]:SetPoint("TOPLEFT", infotip.Members[i-1], "BOTTOMLEFT")
-	end
-end
-
 function element:UpdateInfotip()
 	if infotip and infotip:IsShown() then
 		infotip:UpdateTooltip()
@@ -122,7 +114,7 @@ function element:UpdateInfotip()
 end
 
 function element:GuildMOTD(_, motdText)
-	guildMOTD = (motdText and not issecretvalue(motdText)) and motdText or ""
+	guildMOTD = not issecretvalue(motdText) and motdText or ""
 	element:UpdateInfotip()
 end
 
@@ -135,7 +127,7 @@ local function ShowGuild()
 end
 
 local function SafeValue(value, fallback)
-	if value == nil or issecretvalue(value) then return fallback end
+	if issecretvalue(value) or value == nil then return fallback end
 	return value
 end
 
@@ -237,10 +229,11 @@ function element.OnEnter(frame_, requestRoster)
 
 		-- Show MOTD
 		local motd = element:CreateMOTD()
+		motd:Show()
+		infotip.sep:Show()
 		local motdPrefix = CreateColor(1, 1, 1):WrapTextInColorCode(MOTD_COLON)
 		motd.name:SetText(format("%s %s", motdPrefix, guildMOTD))
 		SetTextColor(motd.name, "MOTD")
-		maxHeight = motd:GetHeight() + infotip.sep:GetHeight() + GAP * 2
 		local classIconWidth, nameColumnWidth, levelColumnWidth = 0, 0, 0
 		local zoneColumnWidth, noteColumnWidth, rankColumnWidth = 0, 0, 0
 		
@@ -290,19 +283,21 @@ function element.OnEnter(frame_, requestRoster)
 				member.note:SetText(member.rawNote ~= "" and member.rawNote or "-")
 				SetTextColor(member.note, "Note")
 				if db.hideNotes then member.note:Hide() else member.note:Show() end
+				member.rank:ClearAllPoints()
+				member.rank:SetPoint("LEFT", db.hideNotes and member.zone or member.note, "RIGHT", GAP, 0)
 
 				--Rank Column
 				member.rank:SetText(SafeValue(rank, ""))
 				SetTextColor(member.rank, "Rank")
 
 				--Check if this member has any column larger than the current ones.
-				nameColumnWidth = max(nameColumnWidth, member.name:GetStringWidth())
-				levelColumnWidth = max(levelColumnWidth, member.level:GetStringWidth())
-				zoneColumnWidth = max(zoneColumnWidth, member.zone:GetStringWidth())
+				nameColumnWidth = max(nameColumnWidth, module:GetInfotipTextWidth(member.name))
+				levelColumnWidth = max(levelColumnWidth, module:GetInfotipTextWidth(member.level))
+				zoneColumnWidth = max(zoneColumnWidth, module:GetInfotipTextWidth(member.zone))
 				if not db.hideNotes then
-					noteColumnWidth = max(noteColumnWidth, member.note:GetStringWidth())
+					noteColumnWidth = max(noteColumnWidth, module:GetInfotipTextWidth(member.note))
 				end
-				rankColumnWidth = max(rankColumnWidth, member.rank:GetStringWidth())
+				rankColumnWidth = max(rankColumnWidth, module:GetInfotipTextWidth(member.rank))
 				classIconWidth = max(classIconWidth, member.class:GetWidth())
 			end
 			rosterIndex = rosterIndex + 1
@@ -313,10 +308,16 @@ function element.OnEnter(frame_, requestRoster)
 		rankColumnWidth = math.min(rankColumnWidth, RANK_COLUMN_MAX)
 
 		local visibleGuild = lineIndex - 1
-		infotip:UpdateSlider(visibleGuild)
-		local offset = infotip:GetSliderOffset()
+		maxWidth = TEXT_OFFSET + classIconWidth + nameColumnWidth + levelColumnWidth
+			+ zoneColumnWidth + noteColumnWidth + rankColumnWidth + GAP * 6
+		maxWidth = math.min(UIParent:GetWidth() - GAP * 2 - SLIDER_WIDTH,
+			max(maxWidth, math.min(module:GetInfotipTextWidth(motd.name) + GAP * 2, 500)))
+		local rowWidth = max(1, maxWidth - GAP * 2)
+		motd:SetWidth(rowWidth)
+		infotip.sep:SetWidth(rowWidth)
+		maxHeight = motd:UpdateTextHeight() + infotip.sep:GetHeight() + GAP * 2
 
-		-- Adjust things such as width and hide/show for every created lines.
+		-- Measure wrapped text before calculating the scroll range.
 		for j = 1, #infotip.Members do
 			local member = infotip.Members[j]
 			member.name:SetWidth(nameColumnWidth)
@@ -324,30 +325,36 @@ function element.OnEnter(frame_, requestRoster)
 			member.zone:SetWidth(zoneColumnWidth)
 			member.note:SetWidth(noteColumnWidth)
 			member.rank:SetWidth(rankColumnWidth)
-			element:UpdateGuildAnchorPoints(j)
-
-			-- Show/Hide the needed members.
-			if j < offset then member:Hide()                          -- Do not show if below the offset
-			elseif j > visibleGuild then member:Hide()                 -- Do not show if higher than the built roster
-			elseif j >= infotip.maxLines + offset then member:Hide()  -- Do not show if higher than tooltip can display
-			else
-				maxHeight = maxHeight + member:GetHeight()            -- Only add height based on shown buttons.
-				member:Show()
-			end
+			member:SetWidth(rowWidth)
+			member:UpdateTextHeight()
+			member:Hide()
+		end
+		local maxWindowHeight = max(BUTTON_HEIGHT, UIParent:GetHeight() - GAP * 2)
+		local lastPageStart, lastPageHeight = visibleGuild, maxHeight
+		for j = visibleGuild, 1, -1 do
+			local height = infotip.Members[j]:GetHeight()
+			if lastPageHeight + height > maxWindowHeight then break end
+			lastPageStart, lastPageHeight = j, lastPageHeight + height
+		end
+		infotip:SetScrollRange(max(1, lastPageStart))
+		local offset = infotip:GetSliderOffset()
+		local previous = infotip.sep
+		for j = offset, visibleGuild do
+			local member = infotip.Members[j]
+			if j > offset and maxHeight + member:GetHeight() > maxWindowHeight then break end
+			member:ClearAllPoints()
+			member:SetPoint("TOPLEFT", previous, "BOTTOMLEFT")
+			member:Show()
+			maxHeight = maxHeight + member:GetHeight()
+			previous = member
 		end
 
-		maxWidth = TEXT_OFFSET + classIconWidth + nameColumnWidth + levelColumnWidth
-		maxWidth = maxWidth + zoneColumnWidth + noteColumnWidth + rankColumnWidth + GAP * 6
 		if infotip.hasSlider then
 			maxWidth = maxWidth + infotip.slider:GetWidth()
 			infotip.slider:ClearAllPoints()
 			infotip.slider:SetPoint("TOPRIGHT", infotip, "TOPRIGHT", SLIDER_OFFSET, -GAP)
 			infotip.slider:SetPoint("BOTTOMRIGHT", infotip, "BOTTOMRIGHT", SLIDER_OFFSET, GAP)
 		end
-		local rowWidth = max(1, maxWidth - GAP * 2
-			- (infotip.hasSlider and infotip.slider:GetWidth() or 0))
-		for _, member in ipairs(infotip.Members) do member:SetWidth(rowWidth) end
-
 	else -- not in a guild
 		if infotip.motd then infotip.motd:Hide() end
 		if infotip.sep then infotip.sep:Hide() end
@@ -355,9 +362,12 @@ function element.OnEnter(frame_, requestRoster)
 		infotip.hasSlider = false
 		for _, member in ipairs(infotip.Members) do member:Hide() end
 		local noGuild = element:CreateNoGuild()
+		noGuild:Show()
 		noGuild.name:SetText(ERR_GUILD_PLAYER_NOT_IN_GUILD)
-		maxWidth = noGuild.name:GetStringWidth() + GAP * 2
-		maxHeight = noGuild.name:GetStringHeight() + GAP * 2
+		maxWidth = math.min(UIParent:GetWidth() - GAP * 2,
+			module:GetInfotipTextWidth(noGuild.name) + GAP * 2)
+		noGuild:SetWidth(max(1, maxWidth - GAP * 2))
+		maxHeight = noGuild:UpdateTextHeight() + GAP * 2
 	end
 
 	module:SetBoundedInfotipSize(infotip, maxWidth, maxHeight)
@@ -402,13 +412,14 @@ function element:OnCreate()
 	ShowGuild()
 	element:AddUpdate(ShowGuild, GUILD_UPDATE_TIME)
 	element:RegisterEvent("GUILD_ROSTER_UPDATE", "GuildRosterUpdate")
-	element:RegisterEvent("PLAYER_GUILD_UPDATE", function(self, _, unit)
+	element:RegisterEvent("PLAYER_GUILD_UPDATE", function(_, unit)
+		if unit and unit ~= "player" then return end
 		if not IsInGuild() then
+			guildMOTD = ""
 			element.text = L["InfoGuild_NoGuild"]
 			element:UpdateInfotip()
 			return
 		end
-		if unit and unit ~= "player" then return end
 		ShowGuild()
 		element:UpdateGuild()
 	end)
