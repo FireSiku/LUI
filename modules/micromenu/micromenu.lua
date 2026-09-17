@@ -688,6 +688,11 @@ function module:SetMicromenuExtraButtons()
 	clickerMiddle:RegisterForClicks("AnyUp")
 
 	clickerMiddle:SetScript("OnClick", function(self)
+		-- The micromenu owns protected buttons. Hiding or showing their parent
+		-- during combat is blocked by the client, so leave both the frame and
+		-- its saved state untouched until the player can toggle it safely.
+		if InCombatLockdown() then return end
+
 		if _G.LUIMicromenu_Background:IsVisible() then
 			db.IsShown = false
 
@@ -849,11 +854,6 @@ function module:RefreshColors()
 	module.buttonMiddle.Texture:SetVertexColor(r, g, b)
 	if module.buttonLeft then module.buttonLeft.Texture:SetVertexColor(r, g, b) end
 	if module.buttonRight then module.buttonRight.Texture:SetVertexColor(r, g, b) end
-
-	local raidMenu = LUI:GetModule("RaidMenu", true)
-	if raidMenu and raidMenu.SetColors then
-		raidMenu:SetColors()
-	end
 end
 
 function module:Refresh()

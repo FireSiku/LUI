@@ -20,11 +20,17 @@
 - Corrected note placement for friends playing other games and rank placement when guild notes are hidden.
 - The Friends mouse-control hints now close together with the Friends window.
 
+## Bags
+
+- Fixed newly looted items appearing in different positions after logging in or reloading while **Fill Bags from Bottom** was enabled. Item positions now remain consistent while keeping the selected fill direction.
+
 ## Raid Menu and Minimap
 
 - Raid menu background and border colors, including transparency, now apply correctly at login and after settings changes. Colors linked to the micromenu also update when its appearance changes.
 - Added **Hide Blizzard Raid Menu** under **Micromenu > Raid Menu**, enabled by default, to prevent both raid menus from appearing together. Turning it off, or disabling the LUI raid menu or micromenu, restores Blizzard's normal controls.
 - Changes to Blizzard's raid menu wait until combat ends when necessary. Party and raid unit frames are unaffected.
+- The micromenu no longer attempts to hide protected controls during combat, preventing blocked-action errors and mismatched visibility settings.
+- Raid menu refreshes and overlapping fade animations can no longer leave an invisible frame intercepting mouse clicks.
 - Minimap area names and coordinates now consistently use the saved text color and transparency.
 - Renamed the Artwork **Raid** entry to **Raid Panel** and clarified that it controls the artwork behind the raid frames. Raid tools remain under **Micromenu > Raid Menu**.
 
@@ -38,7 +44,7 @@
 - Reports can be copied from the window or shared as a saved file. The window explains where to find it; nothing is uploaded automatically.
 - The optional **LUIDiagnostics** addon is included alongside LUI and LUIOptions. Installation and troubleshooting instructions have been updated.
 
-Thanks to Ullwarth for the original infotext sizing report and suggested retry approach, and to the community for testing and feedback.
+Thanks to Ullwarth for the original infotext sizing report and suggested retry approach, and to Highlôrd, Teks and the community for testing and feedback.
 
 ---
 

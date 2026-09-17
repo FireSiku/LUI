@@ -838,7 +838,6 @@ function ContainerMixin:BagUpdateEvent(idList)
 	-- after those updates instead of relying only on the initial option click.
 	if self.name == "Bags" then
 		if module.bagSortSettling then
-			self.bottomLootOrder = nil
 			module:ScheduleBagLootLayout()
 		end
 		self:SetAnchors()
@@ -869,21 +868,14 @@ function module:SetFillBagsFromBottom(value)
     module:SortBags()
 end
 
-function module:ResetBagLootOrder()
-    for _, container in pairs(containerStorage) do
-        container.bottomLootOrder = nil
-    end
-end
-
 function module:ScheduleBagLootLayout()
     if module.bagLootLayoutTimer then module.bagLootLayoutTimer:Cancel() end
     -- Native cleanup moves items over several BAG_UPDATE batches. Establish
     -- the next loot layout only once those batches have settled.
-    module.bagLootLayoutTimer = C_Timer.NewTimer(.25, function()
-        module.bagLootLayoutTimer = nil
-        module.bagSortSettling = nil
-        module:ResetBagLootOrder()
-        for _, container in pairs(containerStorage) do
+	module.bagLootLayoutTimer = C_Timer.NewTimer(.25, function()
+		module.bagLootLayoutTimer = nil
+		module.bagSortSettling = nil
+		for _, container in pairs(containerStorage) do
             container:SetAnchors()
         end
     end)
@@ -907,53 +899,28 @@ function module:SortBags()
     if module.bagSortTimer then module.bagSortTimer:Cancel() end
     -- Let the native direction setting update before requesting a sort.
     -- Coalesce quick clicks so an old request cannot sort the new selection.
-    module.bagSortTimer = C_Timer.NewTimer(0, function()
-        module.bagSortTimer = nil
-        module.bagSortSettling = true
-        module:ResetBagLootOrder()
-        C_Container.SortBags()
+	module.bagSortTimer = C_Timer.NewTimer(0, function()
+		module.bagSortTimer = nil
+		module.bagSortSettling = true
+		C_Container.SortBags()
         module:Refresh()
         module:ScheduleBagLootLayout()
     end)
 end
 
-local function GetBagLootSlots(container, id, reverseSlots)
+local function GetBagDisplaySlots(container, id, reverseSlots)
     local source = container.itemList[id]
-    local count = 0
-    for _, slot in ipairs(source) do
-        if slot:IsShown() then count = count + 1 end
-    end
-    local cache = container.bottomLootOrder
-    if not cache or cache.profile ~= module.db.profile or cache.reverseSlots ~= reverseSlots then
-        cache = { profile = module.db.profile, reverseSlots = reverseSlots }
-        container.bottomLootOrder = cache
-    end
-    local order = cache[id]
-    if not order or order.source ~= source or #order ~= count then
-        order = { source = source }
-        for i = 1, #source do
-            local index = reverseSlots and (#source - i + 1) or i
-            if source[index]:IsShown() then order[#order + 1] = source[index] end
+    if not reverseSlots then return source end
+
+    -- Keep the visual position tied directly to the real Blizzard slot ID.
+    -- The previous empty-slot remapping only lived in memory, so newly looted
+    -- items jumped elsewhere when the mapping was rebuilt after login/reload.
+    local order = {}
+    for i = #source, 1, -1 do
+        if source[i]:IsShown() then
+            order[#order + 1] = source[i]
         end
     end
-    local free, empty = {}, {}
-    for _, slot in ipairs(source) do
-        if slot:IsShown() and not C_Container.GetContainerItemInfo(id, slot.slot) then
-            free[#free + 1] = slot
-            empty[slot] = true
-        end
-    end
-    local nextFree = 1
-    for i, slot in ipairs(order) do
-        -- Only remap empty positions. Occupied slots retain their positions as
-        -- loot arrives. Empty positions follow native insertion order from
-        -- the top when sorting down, or from the bottom when sorting up.
-        if empty[slot] then
-            order[i] = free[reverseSlots and nextFree or (#free - nextFree + 1)]
-            nextFree = nextFree + 1
-        end
-    end
-    cache[id] = order
     return order
 end
 
@@ -977,7 +944,7 @@ function ContainerMixin:SetAnchors()
 	local reverseSlots = self.name == "Bags" and module:GetFillBagsFromBottom()
 	for i = 1, self.NUM_BAG_IDS do
 		local id = self.BAG_ID_LIST[i]
-		local displaySlots = self.name == "Bags" and GetBagLootSlots(self, id, reverseSlots) or self.itemList[id]
+		local displaySlots = self.name == "Bags" and GetBagDisplaySlots(self, id, reverseSlots) or self.itemList[id]
 		if self:GetOption("BagNewline") then
 			index = 0
 		end
@@ -1349,7 +1316,6 @@ function module:RestoreBlizzardBagState()
 	if module.bagSortTimer then module.bagSortTimer:Cancel(); module.bagSortTimer = nil end
 	if module.bagLootLayoutTimer then module.bagLootLayoutTimer:Cancel(); module.bagLootLayoutTimer = nil end
 	module.bagSortSettling = nil
-	module:ResetBagLootOrder()
 	if module.originalBagInsertOrder ~= nil then
 		C_Container.SetInsertItemsLeftToRight(module.originalBagInsertOrder)
 		module.originalBagInsertOrder = nil
