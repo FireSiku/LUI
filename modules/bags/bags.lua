@@ -837,9 +837,6 @@ function ContainerMixin:BagUpdateEvent(idList)
 	-- Sorting moves items over multiple updates. Reapply the selected layout
 	-- after those updates instead of relying only on the initial option click.
 	if self.name == "Bags" then
-		if module.bagSortSettling then
-			module:ScheduleBagLootLayout()
-		end
 		self:SetAnchors()
 	end
 
@@ -864,21 +861,83 @@ function module:GetFillBagsFromBottom()
 end
 
 function module:SetFillBagsFromBottom(value)
+    if InCombatLockdown() then return end
     module.db.profile.Bags.FillFromBottom = not not value
     module:SortBags()
 end
 
+function module:ResetBagLootOrder(clearSaved)
+    for _, container in pairs(containerStorage) do
+        container.bottomLootOrder = nil
+    end
+    if clearSaved and module.db.char then
+        module.db.char.BagDisplayOrder = {}
+    end
+end
+
+local function GetBagSortSnapshot()
+    local bags = containerStorage.Bags
+    if not bags then return "" end
+    local snapshot = {}
+    for _, id in ipairs(bags.BAG_ID_LIST) do
+        local count = C_Container.GetContainerNumSlots(id)
+        snapshot[#snapshot + 1] = id .. ":" .. count
+        for slot = 1, count do
+            local info = C_Container.GetContainerItemInfo(id, slot)
+            if info and info.isLocked then return end
+            snapshot[#snapshot + 1] = info and ((info.itemID or 0) .. ":" .. (info.stackCount or 0)) or "-"
+        end
+    end
+    return table.concat(snapshot, ";")
+end
+
+function module:CancelBagSortTracking()
+    module.bagSortGeneration = (module.bagSortGeneration or 0) + 1
+    if module.bagSortTimer then module.bagSortTimer:Cancel(); module.bagSortTimer = nil end
+    if module.bagLootLayoutTimer then module.bagLootLayoutTimer:Cancel(); module.bagLootLayoutTimer = nil end
+    if module.bagSortWatcher then module.bagSortWatcher:UnregisterAllEvents() end
+    module.bagSortSnapshot = nil
+    module.bagSortSettling = nil
+end
+
 function module:ScheduleBagLootLayout()
     if module.bagLootLayoutTimer then module.bagLootLayoutTimer:Cancel() end
-    -- Native cleanup moves items over several BAG_UPDATE batches. Establish
-    -- the next loot layout only once those batches have settled.
-	module.bagLootLayoutTimer = C_Timer.NewTimer(.25, function()
-		module.bagLootLayoutTimer = nil
-		module.bagSortSettling = nil
-		for _, container in pairs(containerStorage) do
-            container:SetAnchors()
+    local generation = module.bagSortGeneration
+    module.bagLootLayoutTimer = C_Timer.NewTimer(.25, function()
+        if generation ~= module.bagSortGeneration then return end
+        module.bagLootLayoutTimer = nil
+        local snapshot = GetBagSortSnapshot()
+        -- A quiet timer alone is not enough: native cleanup can still have
+        -- locked items or outstanding moves. Require two matching unlocked
+        -- snapshots, and restart on native bag/lock updates even when closed.
+        if snapshot == nil or snapshot ~= module.bagSortSnapshot then
+            module.bagSortSnapshot = snapshot
+            module:ScheduleBagLootLayout()
+            return
         end
+        module:CancelBagSortTracking()
+        module:ResetBagLootOrder(true)
+        for _, container in pairs(containerStorage) do container:Layout() end
     end)
+end
+
+function module:WatchBagSort()
+    if not module.bagSortWatcher then
+        module.bagSortWatcher = CreateFrame("Frame")
+        module.bagSortWatcher:SetScript("OnEvent", function(_, event, id)
+            if event == "PLAYER_REGEN_ENABLED" then
+                module:SortBags()
+                return
+            end
+            if not module.bagSortSettling then return end
+            if event ~= "BAG_UPDATE_DELAYED" and not module:IsCharacterBag(id) then return end
+            module.bagSortSnapshot = nil
+            module:ScheduleBagLootLayout()
+        end)
+    end
+    module.bagSortWatcher:RegisterEvent("BAG_UPDATE")
+    module.bagSortWatcher:RegisterEvent("BAG_UPDATE_DELAYED")
+    module.bagSortWatcher:RegisterEvent("ITEM_LOCK_CHANGED")
 end
 
 function module:ConfigureBagLootInsertion()
@@ -895,32 +954,144 @@ function module:ConfigureBagLootInsertion()
 end
 
 function module:SortBags()
-    C_Container.SetSortBagsRightToLeft(not module:GetFillBagsFromBottom())
-    if module.bagSortTimer then module.bagSortTimer:Cancel() end
-    -- Let the native direction setting update before requesting a sort.
-    -- Coalesce quick clicks so an old request cannot sort the new selection.
-	module.bagSortTimer = C_Timer.NewTimer(0, function()
-		module.bagSortTimer = nil
-		module.bagSortSettling = true
-		C_Container.SortBags()
+    if InCombatLockdown() then return end
+    module:CancelBagSortTracking()
+    module.bagSortSettling = true
+    module:ResetBagLootOrder(true)
+    local direction = not module:GetFillBagsFromBottom()
+    local generation = module.bagSortGeneration
+    local attempts = 0
+    C_Container.SetSortBagsRightToLeft(direction)
+    module:ConfigureBagLootInsertion()
+
+    local function RequestSort()
+        if generation ~= module.bagSortGeneration then return end
+        module.bagSortTimer = nil
+        if InCombatLockdown() then
+            module:CancelBagSortTracking()
+            module:WatchBagSort()
+            module.bagSortWatcher:RegisterEvent("PLAYER_REGEN_ENABLED")
+            return
+        end
+        -- A zero-delay timer does not prove the direction has been applied.
+        -- In particular, the first switch to top-fill must not sort using
+        -- the previous direction and then cache that intermediate layout.
+        if C_Container.GetSortBagsRightToLeft() ~= direction then
+            attempts = attempts + 1
+            if attempts >= 20 then
+                module:CancelBagSortTracking()
+                LUI:Print("Bag sorting direction is not ready. Please try Clean Bags again.")
+                return
+            end
+            module.bagSortTimer = C_Timer.NewTimer(.1, RequestSort)
+            return
+        end
+        module:WatchBagSort()
+        C_Container.SortBags()
         module:Refresh()
         module:ScheduleBagLootLayout()
-    end)
+    end
+    module.bagSortTimer = C_Timer.NewTimer(0, RequestSort)
+end
+
+local function RestoreSavedBagOrder(source, saved)
+    if type(saved) ~= "table" then return end
+
+    local order, seen = {}, {}
+    for i = 1, #saved do
+        local slotID = saved[i]
+        local slot = type(slotID) == "number" and source[slotID]
+        if not slot or not slot:IsShown() or seen[slotID] then return end
+        seen[slotID] = true
+        order[#order + 1] = slot
+    end
+
+    local visible = 0
+    for i = 1, #source do
+        if source[i]:IsShown() then visible = visible + 1 end
+    end
+    if #order ~= visible then return end
+    return order
+end
+
+local function SaveBagOrder(savedBags, id, order)
+    local saved = savedBags[id]
+    if type(saved) ~= "table" then saved = {} end
+    for i = 1, #order do
+        saved[i] = order[i].slot
+    end
+    for i = #saved, #order + 1, -1 do saved[i] = nil end
+    savedBags[id] = saved
 end
 
 local function GetBagDisplaySlots(container, id, reverseSlots)
     local source = container.itemList[id]
-    if not reverseSlots then return source end
+    local visible = 0
+    for i = 1, #source do
+        if source[i]:IsShown() then visible = visible + 1 end
+    end
 
-    -- Keep the visual position tied directly to the real Blizzard slot ID.
-    -- The previous empty-slot remapping only lived in memory, so newly looted
-    -- items jumped elsewhere when the mapping was rebuilt after login/reload.
-    local order = {}
-    for i = #source, 1, -1 do
-        if source[i]:IsShown() then
-            order[#order + 1] = source[i]
+    -- Never restore, remap or save a loot layout while native cleanup is
+    -- moving items. Show actual slots until its updates have settled.
+    if module.bagSortSettling then
+        local order = {}
+        for i = 1, #source do
+            local index = reverseSlots and (#source - i + 1) or i
+            if source[index]:IsShown() then order[#order + 1] = source[index] end
+        end
+        return order
+    end
+
+    local cache = container.bottomLootOrder
+    if not cache or cache.profile ~= module.db.profile or cache.reverseSlots ~= reverseSlots then
+        cache = { profile = module.db.profile, reverseSlots = reverseSlots }
+        container.bottomLootOrder = cache
+    end
+    local savedRoot = module.db.char and module.db.char.BagDisplayOrder
+    if type(savedRoot) ~= "table" or savedRoot.reverseSlots ~= reverseSlots then
+        savedRoot = { reverseSlots = reverseSlots, bags = {} }
+        if module.db.char then module.db.char.BagDisplayOrder = savedRoot end
+    end
+    if type(savedRoot.bags) ~= "table" then savedRoot.bags = {} end
+
+    local order = cache[id]
+    if not order or order.source ~= source or #order ~= visible then
+        order = RestoreSavedBagOrder(source, savedRoot.bags[id])
+    end
+    if not order then
+        order = {}
+        for i = 1, #source do
+            local index = reverseSlots and (#source - i + 1) or i
+            if source[index]:IsShown() then order[#order + 1] = source[index] end
         end
     end
+
+    -- Keep occupied slots fixed, but reassign currently empty positions in
+    -- native insertion order. This also handles holes left by selling or
+    -- moving an item, without moving any other visible item on screen.
+    local free, empty = {}, {}
+    for i = 1, #source do
+        local slot = source[i]
+        if slot:IsShown() and not C_Container.GetContainerItemInfo(id, slot.slot) then
+            free[#free + 1] = slot
+            empty[slot] = true
+        end
+    end
+    local nextFree = 1
+    for i = 1, #order do
+        if empty[order[i]] then
+            order[i] = free[reverseSlots and nextFree or (#free - nextFree + 1)]
+            nextFree = nextFree + 1
+        end
+    end
+
+    -- Do not overwrite a useful saved mapping with an empty early-login
+    -- snapshot. It can be validated once the real bag size is available.
+    if visible > 0 then
+        SaveBagOrder(savedRoot.bags, id, order)
+    end
+    order.source = source
+    cache[id] = order
     return order
 end
 
@@ -1313,9 +1484,8 @@ function module:SetBags()
 end
 
 function module:RestoreBlizzardBagState()
-	if module.bagSortTimer then module.bagSortTimer:Cancel(); module.bagSortTimer = nil end
-	if module.bagLootLayoutTimer then module.bagLootLayoutTimer:Cancel(); module.bagLootLayoutTimer = nil end
-	module.bagSortSettling = nil
+	module:CancelBagSortTracking()
+	module:ResetBagLootOrder(false)
 	if module.originalBagInsertOrder ~= nil then
 		C_Container.SetInsertItemsLeftToRight(module.originalBagInsertOrder)
 		module.originalBagInsertOrder = nil

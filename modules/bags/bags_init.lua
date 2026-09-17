@@ -67,6 +67,11 @@ module.defaults = {
 			Stack =       { r = 1,   g = 1,   b = 1,   a = 1, t = "Individual", },
 		},
 	},
+	char = {
+		-- Character-specific because real bag sizes, filters and occupied slots
+		-- can differ even when several characters share the same LUI profile.
+		BagDisplayOrder = {},
+	},
 }
 
 -- ####################################################################################################################
