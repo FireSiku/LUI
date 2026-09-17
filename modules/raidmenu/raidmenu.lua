@@ -34,57 +34,22 @@ local BlueWorldMarker, GreenWorldMarker, PurpleWorldMarker, RedWorldMarker, Yell
 local OrangeWorldMarker, SilverWorldMarker, WhiteWorldMarker, ClearWorldMarkers
 local ConvertRaid, RoleChecker, ReadyChecker
 local pendingAction
-local nativeMenuActive = false
-local hiddenBlizzardRaidMenu
 
 local combatQueue = CreateFrame("Frame")
 combatQueue:Hide()
-
-function module:UpdateBlizzardRaidMenu(active)
-	if active ~= nil then nativeMenuActive = active end
-	if InCombatLockdown() then
-		combatQueue:RegisterEvent("PLAYER_REGEN_ENABLED")
-		return
-	end
-
-	local profile = module.db and module.db.profile
-	local shouldHide = nativeMenuActive and module:IsEnabled() and profile and profile.Enable
-		and profile.HideBlizzardRaidMenu and Micromenu and Micromenu:IsEnabled()
-	local frame = hiddenBlizzardRaidMenu or _G.CompactRaidFrameManager
-	if not frame or not frame.SetRolesets or frame:IsForbidden() then return end
-
-	-- Gate only the manager. Restore its XML roleset without changing
-	-- Blizzard's shown state, event handlers or the raid-frame container.
-	if shouldHide and not hiddenBlizzardRaidMenu then
-		frame:SetRolesets("alwaysBlocked")
-		hiddenBlizzardRaidMenu = frame
-	elseif not shouldHide and hiddenBlizzardRaidMenu then
-		frame:SetRolesets("unitFrames")
-		hiddenBlizzardRaidMenu = nil
-	end
-end
-
-combatQueue:RegisterEvent("ADDON_LOADED")
-combatQueue:RegisterEvent("PLAYER_ENTERING_WORLD")
-combatQueue:SetScript("OnEvent", function(self, event, addon)
-	if event == "ADDON_LOADED" and addon ~= "Blizzard_CompactRaidFrames" then return end
-	if event ~= "PLAYER_REGEN_ENABLED" then
-		module:UpdateBlizzardRaidMenu()
-		return
-	end
+combatQueue:SetScript("OnEvent", function(self)
 	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
 	self:Hide()
 
 	local action = pendingAction
 	pendingAction = nil
 	if action == "hide" or not module:IsEnabled() or not db or not db.Enable then
-		module:HideRaidMenu()
+		module:HideRaidMenu(true)
 	elseif action == "setup" then
-		module:SetRaidMenu()
+		module:SetRaidMenu(true)
 	elseif action == "refresh" then
-		module:Refresh()
+		module:Refresh(true)
 	end
-	module:UpdateBlizzardRaidMenu()
 end)
 
 local function QueueAfterCombat(action)
@@ -201,8 +166,14 @@ function module:OverlapPrevention(frame, action)
 	if frame == "RM" then
 		if action == "toggle" then
 			if RaidMenu_Parent:IsShown() then
+				-- Never let opposing fades fight over the protected menu parent.
+				-- That could leave an invisible but mouse-active frame behind.
+				RaidMenu.AlphaIn.timer = 0
+				RaidMenu.AlphaIn:Hide()
 				RaidMenu.AlphaOut:Show()
 			else
+				RaidMenu.AlphaOut.timer = 0
+				RaidMenu.AlphaOut:Hide()
 				if db.OverlapPrevention == "AutoHide" and microMenuShown then
 					Micromenu.clickerMiddle:Click()
 				end
@@ -224,7 +195,9 @@ function module:OverlapPrevention(frame, action)
 				RaidMenu.SlideDown:Show()
 			end
 		elseif action == "position" then
-			RaidMenu_Parent:Show()
+			-- Repositioning and refreshing must preserve the current visibility.
+			-- Showing the parent here could create an invisible click blocker
+			-- after a deferred combat refresh.
 			RaidMenu_Parent:SetAlpha(db.Opacity / 100)
 
 			if microMenuShown then
@@ -410,39 +383,24 @@ local function SizeRaidMenu(compact)
 end
 
 function module:SetColors()
-	db = module.db.profile
-	if not db.Enable or not Micromenu or not RaidMenu_Border then return end
-	local r, g, b, a
+	if not db.Enable or not Micromenu or not RaidMenu_Parent then return end
+	local r, g, b
 	if db.MatchMicromenuBackground then
-		local colorName = Micromenu.db.profile.ColorMatch and "Micromenu" or "Background"
-		r, g, b, a = Micromenu:RGBA(colorName)
+		r, g, b = Micromenu:RGB("Background")
 	else
 		local color = db.BackgroundColor
-		r, g, b, a = color.r, color.g, color.b, color.a or 1
+		r, g, b = color.r, color.g, color.b
 	end
-	RaidMenu_BG.Texture:SetVertexColor(r, g, b, a)
-	RaidMenu.Texture:SetVertexColor(r, g, b, a)
-	if db.MatchMicromenuBorder then
-		r, g, b = Micromenu:RGB("Micromenu")
-		a = 1
-	else
-		local color = db.BorderColor
-		r, g, b, a = color.r, color.g, color.b, color.a or 1
-	end
-	RaidMenu_Border.Texture:SetVertexColor(r, g, b, a)
+	RaidMenu_BG.Texture:SetVertexColor(r, g, b)
+	RaidMenu.Texture:SetVertexColor(r, g, b)
+	RaidMenu_Border.Texture:SetVertexColor(Micromenu:RGB("Micromenu"))
 end
 
--- Color changes do not need to resize or reposition the secure menu buttons.
-module.RefreshColors = module.SetColors
-
-function module:SetRaidMenu()
+function module:SetRaidMenu(ignoreCombat)
 	db = module.db.profile
 
-	if not module:IsEnabled() or not db.Enable or not Micromenu or not Micromenu:IsEnabled() or not Micromenu.buttonLeft then
-		module:HideRaidMenu()
-		return
-	end
-	if InCombatLockdown() then
+	if not db.Enable or not Micromenu or not Micromenu.buttonLeft then return end
+	if not ignoreCombat and InCombatLockdown() then
 		QueueAfterCombat("setup")
 		return
 	end
@@ -453,7 +411,6 @@ function module:SetRaidMenu()
 		RaidMenu_Parent:SetScale(db.Scale)
 		RaidMenu_Parent:SetAlpha(db.Opacity / 100)
 		module:SetColors()
-		module:UpdateBlizzardRaidMenu(true)
 		return
 	end
 
@@ -469,14 +426,17 @@ function module:SetRaidMenu()
 
 	RaidMenu_BG = LUI:CreateMeAFrame("Frame", "RaidMenu_BG", RaidMenu_Parent, 256, 256, 1, "HIGH", 1, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 0, 0, 1)
 	RaidMenu_BG.Texture = LUI:CreateFrameTexture(RaidMenu_BG, RAIDMENU_BG_TEXTURE)
+	RaidMenu_BG.Texture:SetVertexColor(Micromenu:RGB("Background"))
 
 	RaidMenu = LUI:CreateMeAFrame("Frame", "RaidMenu", RaidMenu_Parent, 256, 256, 1, "HIGH", 2, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 0, 0, 1)
 	RaidMenu:SetMouseClickEnabled(true)
 	RaidMenu.Texture = LUI:CreateFrameTexture(RaidMenu, RAIDMENU_NORMAL_TEXTURE)
+	RaidMenu.Texture:SetVertexColor(Micromenu:RGB("Background"))
 
+	local micro_r, micro_g, micro_b = Micromenu:RGB("Micromenu")
 	RaidMenu_Border = LUI:CreateMeAFrame("Frame", "RaidMenu_Border", RaidMenu_Parent, 256, 256, 1, "HIGH", 3, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 2, 1, 1)
 	RaidMenu_Border.Texture = LUI:CreateFrameTexture(RaidMenu_Border, RAIDMENU_BORDER_TEXTURE)
-	module:SetColors()
+	RaidMenu_Border.Texture:SetVertexColor(micro_r, micro_g, micro_b, 1)
 
 	local Infotext = LUI:GetModule("Infotext", true)
 	local font = Infotext and Infotext.db.profile.Fonts.Infotext or {Name = "vibroceb", Size = 12, Flag = ""}
@@ -700,24 +660,27 @@ function module:SetRaidMenu()
 	end)
 
 	SizeRaidMenu()
-	module:UpdateBlizzardRaidMenu(true)
 end
 
-function module:Refresh()
-	db = module.db.profile
-	if InCombatLockdown() then
+function module:Refresh(ignoreCombat)
+	if not db.Enable or not RaidMenu_Parent then return end
+	if not ignoreCombat and InCombatLockdown() then
 		QueueAfterCombat("refresh")
 		return
 	end
-	module:SetRaidMenu()
-	if nativeMenuActive then
-		module:OverlapPrevention("RM", "position")
-	end
+	SizeRaidMenu()
+	RaidMenu_Parent:SetScale(db.Scale)
+	RaidMenu_Parent:SetAlpha(db.Opacity/100)
+	module:OverlapPrevention("RM", "position")
+	module:SetColors()
 end
 
 function module:SetRaidMenuEnabled(enabled)
-	db = module.db.profile
 	db.Enable = enabled
+	if InCombatLockdown() then
+		QueueAfterCombat(enabled and "setup" or "hide")
+		return
+	end
 	if enabled then
 		module:SetRaidMenu()
 	else
@@ -725,10 +688,9 @@ function module:SetRaidMenuEnabled(enabled)
 	end
 end
 
-function module:HideRaidMenu()
-	module:UpdateBlizzardRaidMenu(false)
+function module:HideRaidMenu(ignoreCombat)
 	if not RaidMenu_Parent then return end
-	if InCombatLockdown() then
+	if not ignoreCombat and InCombatLockdown() then
 		QueueAfterCombat("hide")
 		return
 	end
