@@ -10,7 +10,6 @@ local L = LUI.L
 local module = LUI:NewModule("Micromenu", "AceHook-3.0")
 local db
 
-local PlayerSpellsUtil = _G.PlayerSpellsUtil
 local hooksecurefunc = _G.hooksecurefunc
 local GameMenuFrame = _G.GameMenuFrame
 local FriendsFrame = _G.FriendsFrame
@@ -30,13 +29,11 @@ local function OpenWorldMapSafe()
 	end
 end
 
-local TALENT_TAB = PlayerSpellsUtil.FrameTabs.ClassTalents or 2
-local SPELL_TAB = PlayerSpellsUtil.FrameTabs.SpellBook or 3
-
 local addonLoadedCallbacks = {}
 local microStorage = {}
 local pendingAction
 local nativeMicroFrameState = setmetatable({}, {__mode = "k"})
+local playerSpellsClicker
 
 local combatQueue = CreateFrame("Frame")
 combatQueue:Hide()
@@ -62,60 +59,144 @@ local function QueueAfterCombat(action)
 	combatQueue:Show()
 end
 
-local function EnforceNativeMicroBarHidden()
+-- Blizzard creates the unnamed tab buttons when its PlayerSpells addon loads.
+-- Only store references on our own secure buttons; leave the native tab state
+-- and scripts untouched; opening and tab selection use native click handlers.
+local function BindPlayerSpellsClickTargets()
+	local clicker = playerSpellsClicker
+	local frame = _G.PlayerSpellsFrame
+	if not clicker or not frame then return end
 	if InCombatLockdown() then
 		QueueAfterCombat("refresh")
 		return
 	end
-	for frame, state in pairs(nativeMicroFrameState) do
-		if state.owned then
-			frame:SetAlpha(0)
-			frame:EnableMouse(false)
-			frame:Hide()
-		end
+
+	local talentsTab = frame:GetTabButton(frame.talentTabID)
+	local spellBookTab = frame:GetTabButton(frame.spellBookTabID)
+	local closeButton = frame.CloseButton or _G.PlayerSpellsFrameCloseButton
+	clicker.talentsProxy:SetAttribute("clickbutton", talentsTab)
+	clicker.spellBookProxy:SetAttribute("clickbutton", spellBookTab)
+	clicker.closeProxy:SetAttribute("clickbutton", closeButton)
+	clicker:SetFrameRef("playerSpells", frame)
+	clicker:SetFrameRef("talentsPage", frame.TalentsFrame)
+	clicker:SetFrameRef("spellBookPage", frame.SpellBookFrame)
+	for _, proxy in ipairs({clicker.talentsProxy, clicker.spellBookProxy, clicker.closeProxy}) do
+		proxy:SetFrameRef("playerSpells", frame)
 	end
+	clicker.talentsProxy:SetFrameRef("nativeTab", talentsTab)
+	clicker.spellBookProxy:SetFrameRef("nativeTab", spellBookTab)
 end
 
-local function HideNativeMicroFrame(frame)
-	if not frame then return end
-	local state = nativeMicroFrameState[frame]
-	if not state then
-		state = {
-			hooked = false,
-		}
-		nativeMicroFrameState[frame] = state
+local function SetupPlayerSpellsClicker(clicker)
+	playerSpellsClicker = clicker
+	local function NewProxy(name, isTab)
+		local proxy = CreateFrame("Button", name, clicker, "SecureActionButtonTemplate,SecureHandlerBaseTemplate")
+		proxy:SetAttribute("type", "click")
+		proxy:SetAttribute("useOnKeyDown", false)
+		proxy:RegisterForClicks("LeftButtonUp")
+		proxy:SetAttribute("lui-is-tab", isTab)
+		proxy:WrapScript(proxy, "OnClick", [[
+			local frame = self:GetFrameRef("playerSpells")
+			if down or SecureCmdOptionParse("[combat] true") or not frame or not frame:IsShown() then
+				return false
+			end
+			if self:GetAttribute("lui-is-tab") then
+				local tab = self:GetFrameRef("nativeTab")
+				if not tab or not tab:IsShown() then return false end
+			end
+		]])
+		proxy:Hide()
+		return proxy
 	end
-	if not state.owned then
-		state.owned = not frame.__luiKilled
-		state.wasShown = frame:IsShown()
-		state.alpha = frame:GetAlpha()
-		state.mouseEnabled = frame:IsMouseEnabled()
-	end
-	if state.owned and not frame.__luiKilled then LUI:Kill(frame) end
-	if state.owned and not state.hooked then
-		state.hooked = true
-		hooksecurefunc(frame, "SetShown", function(_, shown)
-			if state.owned and shown then EnforceNativeMicroBarHidden() end
-		end)
-	end
+
+	clicker.talentsProxy = NewProxy("LUIMicromenu_TalentsTabClick", true)
+	clicker.spellBookProxy = NewProxy("LUIMicromenu_SpellBookTabClick", true)
+	clicker.closeProxy = NewProxy("LUIMicromenu_PlayerSpellsCloseClick", false)
+	clicker:SetAttribute("*type1", "macro")
+	clicker:SetAttribute("*type2", "macro")
+	clicker:SetAttribute("lui-talents-click", "/click LUIMicromenu_TalentsTabClick LeftButton 0")
+	clicker:SetAttribute("lui-spellbook-click", "/click LUIMicromenu_SpellBookTabClick LeftButton 0")
+	clicker:SetAttribute("lui-close-click", "/click LUIMicromenu_PlayerSpellsCloseClick LeftButton 0")
+	clicker:WrapScript(clicker, "OnClick", [[
+		if down or SecureCmdOptionParse("[combat] true") then return false end
+		local right = button == "RightButton"
+		if not right and button ~= "LeftButton" then return false end
+		local frame = self:GetFrameRef("playerSpells")
+		local page = self:GetFrameRef(right and "spellBookPage" or "talentsPage")
+		local macro = self:GetAttribute(right and "lui-spellbook-click" or "lui-talents-click")
+		if not frame or not frame:IsShown() then
+			-- The native first click loads Blizzard_PlayerSpells securely. Its
+			-- ADDON_LOADED event binds our proxies before the second macro line.
+			macro = "/click PlayerSpellsMicroButton LeftButton 0\n" .. macro
+		elseif page and page:IsShown() then
+			macro = self:GetAttribute("lui-close-click")
+		end
+		self:SetAttribute(right and "*macrotext2" or "*macrotext1", macro)
+	]])
+	BindPlayerSpellsClickTargets()
+end
+
+-- Change native menu visibility through Blizzard's secure state handler.
+-- Calling Hide from addon hooks can propagate taint through native UI updates.
+-- Keep the state driver on our own frame and leave Blizzard's methods, parent,
+-- mouse settings, alpha and visibility-driver registration untouched.
+local function SetNativeMicroVisibility(state, visibility)
+	local handler = state.handler
+	UnregisterStateDriver(handler, "luimicro")
+	-- A constant driver only dispatches when its state changes. Reset our own
+	-- state so a refresh can re-hide a menu shown by an external UI update.
+	handler:SetAttribute("state-luimicro", nil)
+	RegisterStateDriver(handler, "luimicro", visibility)
 end
 
 local function HideNativeMicroBar()
-	-- MicroButtonAndBagsBar is only the legacy anchor in current Retail.
-	-- MicroMenu is the frame that actually owns the visible Blizzard buttons.
-	HideNativeMicroFrame(_G.MicroButtonAndBagsBar)
-	HideNativeMicroFrame(_G.MicroMenu)
-	EnforceNativeMicroBarHidden()
+	if InCombatLockdown() then
+		QueueAfterCombat("refresh")
+		return
+	end
+
+	-- Hide the owning container through the secure handler, as used by
+	-- EllesmereUI's micro-menu hider. Leave MicroMenu's own shown state intact.
+	local frame = _G.MicroMenuContainer
+	if not frame or (frame.IsForbidden and frame:IsForbidden()) then return end
+
+	local state = nativeMicroFrameState[frame]
+	if not state then
+		local handler = CreateFrame("Frame", nil, nil, "SecureHandlerStateTemplate")
+		handler:SetFrameRef("target", frame)
+		handler:SetAttribute("_onstate-luimicro", [[
+			local target = self:GetFrameRef("target")
+			if target then
+				if newstate == "hide" then
+					target:Hide()
+				elseif newstate == "show" then
+					target:Show()
+				end
+			end
+		]])
+		state = { handler = handler }
+		nativeMicroFrameState[frame] = state
+	end
+
+	if not state.owned then
+		state.wasShown = frame:IsShown()
+		state.owned = true
+	elseif not frame:IsShown() then
+		return
+	end
+	SetNativeMicroVisibility(state, "hide")
 end
 
 local function RestoreNativeMicroBar()
-	for frame, state in pairs(nativeMicroFrameState) do
+	if InCombatLockdown() then
+		QueueAfterCombat("disable")
+		return
+	end
+	for _, state in pairs(nativeMicroFrameState) do
 		if state.owned then
+			SetNativeMicroVisibility(state, state.wasShown and "show" or "hide")
+			UnregisterStateDriver(state.handler, "luimicro")
 			state.owned = false
-			LUI:Unkill(frame, false)
-			frame:SetAlpha(state.alpha)
-			frame:EnableMouse(state.mouseEnabled)
-			if state.wasShown then frame:Show() end
 		end
 	end
 end
@@ -307,13 +388,9 @@ local microDefinitions = {
 		right = L["MicroTalents_Right"],
 		state = "PlayerSpellsFrame",
 		addon = "Blizzard_PlayerSpells",
-		OnClick = function(self, btn)
-			if btn == "RightButton" then
-				PlayerSpellsUtil.TogglePlayerSpellsFrame(SPELL_TAB)
-			else
-				PlayerSpellsUtil.TogglePlayerSpellsFrame(TALENT_TAB)
-			end
-		end,
+		-- Keep opening, selecting tabs and closing on native secure click paths.
+		secureClickTarget = "PlayerSpellsMicroButton",
+		securePlayerSpells = true,
 	},
 
 	{
@@ -322,9 +399,8 @@ local microDefinitions = {
 		any = L["MicroProfession_Any"],
 		state = "ProfessionsBookFrame",
 		addon = "Blizzard_ProfessionsBook",
-		OnClick = function(self, btn)
-			_G.ToggleProfessionsBook()
-		end,
+		secureClickTarget = "ProfessionMicroButton",
+		secureClickBothButtons = true,
 	},
 
 	{
@@ -455,11 +531,23 @@ function module:NewMicroButton(buttonData)
 			"Button",
 			nil,
 			button,
-			"SecureActionButtonTemplate"
+			button.securePlayerSpells and "SecureActionButtonTemplate,SecureHandlerBaseTemplate" or "SecureActionButtonTemplate"
 		)
 
-		button.clicker:SetAttribute("type1", "macro")
-		button.clicker:SetAttribute("macrotext1", "/click " .. secureClickTarget)
+		if button.securePlayerSpells then
+			SetupPlayerSpellsClicker(button.clicker)
+		elseif button.secureClickBothButtons then
+			-- Secure click delegation invokes Blizzard's native handler. Do not
+			-- call PlayerSpellsUtil or select its tabs from an addon OnClick.
+			local target = _G[secureClickTarget]
+			for mouseButton = 1, 2 do
+				button.clicker:SetAttribute("*type" .. mouseButton, "click")
+				button.clicker:SetAttribute("*clickbutton" .. mouseButton, target)
+			end
+		else
+			button.clicker:SetAttribute("type1", "macro")
+			button.clicker:SetAttribute("macrotext1", "/click " .. secureClickTarget)
+		end
 		button.clicker:SetAttribute("useOnKeyDown", false)
 	else
 		button.clicker = CreateFrame("Button", nil, button)
@@ -815,9 +903,15 @@ end
 
 --- Fires the stored functions for the frame hooks.
 function module:OnEvent(event, addon)
+	if event == "ADDON_LOADED" and addon == "Blizzard_PlayerSpells" then
+		BindPlayerSpellsClickTargets()
+	end
 	if event == "PLAYER_ENTERING_WORLD" or event == "EDIT_MODE_LAYOUTS_UPDATED" then
 		HideNativeMicroBar()
 		return
+	end
+	if event == "ADDON_LOADED" and addon == "Blizzard_MicroMenu" then
+		HideNativeMicroBar()
 	end
 	if addonLoadedCallbacks[addon] then
 		addonLoadedCallbacks[addon]()
@@ -901,6 +995,7 @@ function module:ApplyEnabledState()
 		module:Refresh()
 	end
 	RunLoadedAddonCallbacks()
+	BindPlayerSpellsClickTargets()
 	module:SetAlerts()
 
 	local raidMenu = LUI:GetModule("RaidMenu", true)

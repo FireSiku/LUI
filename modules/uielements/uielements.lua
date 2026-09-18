@@ -116,6 +116,7 @@ function module:PositionManagedFrame(key)
 end
 
 function module:Refresh()
+	module:RefreshDarkButtons()
 	if InCombatLockdown() then
 		QueueAfterCombat(false)
 		return

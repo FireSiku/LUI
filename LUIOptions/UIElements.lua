@@ -54,7 +54,8 @@ end
 
 UIElements.args = {
 	Header = Opt:Header({name = "UI Elements"}),
-	Description = Opt:Desc({name = "LUI manages only frames that Blizzard Edit Mode does not expose. Protected Blizzard layout changes are deferred until combat ends."}),
+	Description = Opt:Desc({name = "Customize button artwork and manage frames that Blizzard Edit Mode does not expose. Changes to protected frames are deferred until combat ends."}),
+	DarkButtons = Opt:Toggle({name = "Dark Buttons", width = "full", desc = "Use LUI dark button artwork without installing a separate Interface/Buttons folder. Disabling restores the original artwork. Changes made in combat apply when combat ends."}),
 	Managed = Opt:Group({name = "LUI-Managed Frames", args = {}}),
 	Blizzard = Opt:Group({name = "Blizzard Edit Mode", args = {
 		Description = Opt:Desc({name = "Use Blizzard Edit Mode for the Objectives Tracker, Alternate Power/Encounter Bar, Durability Frame, Vehicle Seat Indicator and other native HUD systems."}),
