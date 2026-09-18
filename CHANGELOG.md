@@ -3,8 +3,12 @@
 ## Changes since last version
 
 - Micromenu: Opening the spellbook no longer prevents moving or adding spells on Blizzard action bars; left-click opens talents and right-click opens the spellbook.
-- UIElements: Added Dark Buttons, enabled by default, with bundled artwork for Blizzard windows and the Escape menu. A separate Interface/Buttons folder is no longer needed.
-- UIElements: Button styling applies on first opening, uses smaller updates and restores Blizzard artwork when disabled.
+- Micromenu: The Dungeon Finder queue eye now remains visible while searching, even when LUI hides Blizzard's micromenu.
+- UIElements: Button artwork is now included in LUI, so a separate Interface/Buttons folder is no longer needed.
+- UIElements: Added independent style choices for the Escape menu and other buttons, including Blizzard Dark, LUI Classic and LUI HD.
+- UIElements: Added high-resolution button artwork and a matching Blizzard Dark appearance for LUI options and confirmation dialogs.
+- UIElements: Styles can be changed without reloading, and disabling button customization restores Blizzard artwork. Changes made in combat apply after combat ends.
+- UIElements: Fixed forbidden-object errors when button styling encounters protected addon frames, including Plater aura controls.
 
 ---
 
@@ -138,3 +142,4 @@ Thanks to Teks, BaeBlade, Jay, Nikko, Dvuk13 and the LUI community for testing a
 - Addons: Deferred protected Bartender installer and sidebar changes until out of combat.
 - Addons: Removed TutorialHelper hooks that could taint Blizzard action buttons.
 - Addons: Fixed Lua compatibility issues in the Plexus integration and color-picker declarations.
+

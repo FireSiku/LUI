@@ -34,6 +34,25 @@ local microStorage = {}
 local pendingAction
 local nativeMicroFrameState = setmetatable({}, {__mode = "k"})
 local playerSpellsClicker
+local queueButtonParent
+
+local function PreserveQueueButton(container)
+	local button = _G.QueueStatusButton
+	if not button or (button.IsForbidden and button:IsForbidden()) then return end
+	local parent = button:GetParent()
+	local ancestor = parent
+	while ancestor do
+		if ancestor == container then
+			-- Only detach an eye that would inherit our hidden container.
+			-- Keep its anchors and Blizzard's queue-driven visibility intact.
+			queueButtonParent = parent
+			button:SetParent(_G.UIParent)
+			return
+		end
+		if ancestor.IsForbidden and ancestor:IsForbidden() then return end
+		ancestor = ancestor:GetParent()
+	end
+end
 
 local combatQueue = CreateFrame("Frame")
 combatQueue:Hide()
@@ -159,6 +178,7 @@ local function HideNativeMicroBar()
 	-- EllesmereUI's micro-menu hider. Leave MicroMenu's own shown state intact.
 	local frame = _G.MicroMenuContainer
 	if not frame or (frame.IsForbidden and frame:IsForbidden()) then return end
+	PreserveQueueButton(frame)
 
 	local state = nativeMicroFrameState[frame]
 	if not state then
@@ -198,6 +218,13 @@ local function RestoreNativeMicroBar()
 			UnregisterStateDriver(state.handler, "luimicro")
 			state.owned = false
 		end
+	end
+	local button = _G.QueueStatusButton
+	if queueButtonParent and button and not (button.IsForbidden and button:IsForbidden()) then
+		if button:GetParent() == _G.UIParent then
+			button:SetParent(queueButtonParent)
+		end
+		queueButtonParent = nil
 	end
 end
 

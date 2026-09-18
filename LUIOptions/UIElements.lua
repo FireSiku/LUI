@@ -52,10 +52,44 @@ local function OpenBlizzardEditMode()
 	end
 end
 
+local function IsButtonCustomizationDisabled()
+	return not module:IsEnabled() or not module.db.profile.DarkButtons
+end
+
+local function SetButtonOption(key, value)
+	module.db.profile[key] = value
+	module:RefreshDarkButtons()
+end
+
 UIElements.args = {
 	Header = Opt:Header({name = "UI Elements"}),
 	Description = Opt:Desc({name = "Customize button artwork and manage frames that Blizzard Edit Mode does not expose. Changes to protected frames are deferred until combat ends."}),
-	DarkButtons = Opt:Toggle({name = "Dark Buttons", width = "full", desc = "Use LUI dark button artwork without installing a separate Interface/Buttons folder. Disabling restores the original artwork. Changes made in combat apply when combat ends."}),
+	Buttons = Opt:InlineGroup({name = "Button Appearance", args = {
+		DarkButtons = {
+			type = "toggle", order = 1, name = "Customize Buttons", width = "full",
+			desc = "Choose button artwork for the Escape menu and other buttons separately. Disabling restores Blizzard artwork. Changes made in combat apply when combat ends.",
+			get = function() return module.db.profile.DarkButtons end,
+			set = function(_, value) SetButtonOption("DarkButtons", value) end,
+		},
+		ButtonStyle = {
+			type = "select", order = 2, name = "Other Buttons", width = "double",
+			desc = "Choose Blizzard, Blizzard Dark, classic LUI or high-resolution LUI artwork for other supported buttons. Blizzard Dark uses the same style as the Escape menu option. Combine this with any Escape menu style.",
+			values = {blizzard = "Blizzard", dark = "Blizzard Dark", classic = "LUI Classic", hd = "LUI HD"},
+			sorting = {"blizzard", "dark", "classic", "hd"},
+			get = function() return module.db.profile.ButtonStyle end,
+			set = function(_, value) SetButtonOption("ButtonStyle", value) end,
+			disabled = IsButtonCustomizationDisabled,
+		},
+		EscapeButtonStyle = {
+			type = "select", order = 3, name = "Escape Menu Buttons", width = "double",
+			desc = "Choose the artwork for Escape menu buttons independently: Blizzard, a dark version of Blizzard buttons, or rectangular LUI HD buttons. Button sizes and spacing stay the same.",
+			values = {blizzard = "Blizzard", dark = "Blizzard Dark", hd = "LUI HD (Rectangular)"},
+			sorting = {"blizzard", "dark", "hd"},
+			get = function() return module.db.profile.EscapeButtonStyle end,
+			set = function(_, value) SetButtonOption("EscapeButtonStyle", value) end,
+			disabled = IsButtonCustomizationDisabled,
+		},
+	}}),
 	Managed = Opt:Group({name = "LUI-Managed Frames", args = {}}),
 	Blizzard = Opt:Group({name = "Blizzard Edit Mode", args = {
 		Description = Opt:Desc({name = "Use Blizzard Edit Mode for the Objectives Tracker, Alternate Power/Encounter Bar, Durability Frame, Vehicle Seat Indicator and other native HUD systems."}),
