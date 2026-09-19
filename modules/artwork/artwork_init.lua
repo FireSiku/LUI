@@ -239,6 +239,10 @@ local function DisableArtwork()
 	end
 
 	for _, sidebar in module:IterateSidebars() do
+		sidebar.OpenAnim:Stop()
+		sidebar.CloseAnim:Stop()
+		if sidebar.DrawerAlphaIn then sidebar.DrawerAlphaIn:Stop() end
+		if sidebar.DrawerAlphaOut then sidebar.DrawerAlphaOut:Stop() end
 		local anchor = _G[sidebar.db.Anchor]
 		if module:CanAlterFrame(anchor) then anchor:Show() end
 		sidebar:Hide()

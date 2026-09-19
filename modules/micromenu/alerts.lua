@@ -35,6 +35,12 @@ local BlizzMicroButtons = {
 
 local reanchoredHelpTips = setmetatable({}, {__mode = "k"})
 local reanchoredPointers = setmetatable({}, {__mode = "k"})
+local pointerTimers = setmetatable({}, {__mode = "k"})
+
+local function CanPosition(frame)
+	return frame and not (frame.IsForbidden and frame:IsForbidden())
+		and not (frame.IsProtected and frame:IsProtected())
+end
 
 local function CapturePoints(frame)
 	local points = {}
@@ -68,9 +74,9 @@ local function CapturePointerArrow(frame)
 end
 
 local function RestorePointerArrow(frame, state)
-	if frame.AnimDelayTimer then
-		frame.AnimDelayTimer:Cancel()
-		frame.AnimDelayTimer = nil
+	if pointerTimers[frame] then
+		pointerTimers[frame]:Cancel()
+		pointerTimers[frame] = nil
 	end
 	for _, direction in ipairs(arrowDirections) do
 		for index = 1, 2 do
@@ -90,21 +96,72 @@ local function RestorePointerArrow(frame, state)
 	RestorePoints(arrow2, state.arrow2Points)
 	arrow1:Show()
 	arrow1.Anim:Play()
-	frame.AnimDelayTimer = C_Timer.NewTimer(0.5, function()
-		if frame.currentTarget then
-			arrow2:Show()
-			arrow2.Anim:Play()
-		end
-	end)
+	arrow2:Show()
+	arrow2.Anim:Play()
 end
 
-local function RememberHelpTip(frame)
-	if not reanchoredHelpTips[frame] then
-		reanchoredHelpTips[frame] = {
-			relativeRegion = frame.relativeRegion,
-			targetPoint = frame.info and frame.info.targetPoint,
-		}
+-- Do not call AnchorAndRotate/RotateArrow/SetClampedTextureRotation from
+-- addon execution: those helpers WRITE Lua caches on Blizzard's frames.
+-- In particular, relativeRegion is read by HelpTip:OnHide on the path from
+-- PlayerSpells:OnShow to MultiActionBar_ShowAllGrids. Keep all logical fields
+-- and callback ownership native; override only C-backed visual properties.
+local function RotateTexture(texture, degrees)
+	if not texture then return end
+	local coords = texture.origTexCoords
+	if not coords then return end -- Native Init has normally populated these.
+	local width, height = texture.origWidth, texture.origHeight
+	if width and height then
+		if degrees == 90 or degrees == 270 then width, height = height, width end
+		texture:SetSize(width, height)
 	end
+	local order = degrees == 90 and {3, 7, 1, 5}
+		or degrees == 180 and {7, 5, 3, 1}
+		or degrees == 270 and {5, 1, 7, 3} or {1, 3, 5, 7}
+	texture:SetTexCoord(coords[order[1]], coords[order[1]+1], coords[order[2]], coords[order[2]+1],
+		coords[order[3]], coords[order[3]+1], coords[order[4]], coords[order[4]+1])
+end
+
+local function Transform(x, y, rotation)
+	if rotation.swapOffsets then x, y = y, x end
+	return x * rotation.modOffsetX, y * rotation.modOffsetY
+end
+
+local function PositionHelpTip(frame, region, point, alignment, info, arrowOnly)
+	local tip = _G.HelpTip
+	local pointInfo = tip.PointInfo[point]
+	local rotation = pointInfo and tip.Rotations[pointInfo.arrowRotation]
+	if not rotation then return end
+	local anchor = rotation.anchors[alignment]
+	if not arrowOnly then
+		local offset = tip.DistanceOffsets[alignment]
+		local x, y = Transform(offset[1], offset[2], rotation)
+		local baseX, baseY = info.offsetX or 0, info.offsetY or 0
+		if point ~= (info.targetPoint or tip.Point.BottomEdgeCenter) then
+			if point <= tip.Point.BottomEdgeRight then baseY = -baseY else baseX = -baseX end
+		end
+		frame:ClearAllPoints()
+		frame:SetPoint(anchor, region, pointInfo.relativeAnchor, x + baseX, y + baseY)
+	end
+	local arrow = frame.Arrow
+	if not arrow or info.hideArrow then return end
+	local offset = tip.ArrowOffsets[alignment]
+	local x, y = Transform(offset[1], offset[2], rotation)
+	arrow:ClearAllPoints()
+	arrow:SetPoint("CENTER", frame, anchor, x, y)
+	RotateTexture(arrow.Arrow, rotation.degrees)
+	RotateTexture(arrow.Glow, rotation.degrees)
+	if arrow.Glow and arrow.Arrow then
+		x, y = Transform(tip.ArrowGlowOffsets[1], tip.ArrowGlowOffsets[2], rotation)
+		arrow.Glow:SetPoint("CENTER", arrow.Arrow, "CENTER", x, y)
+	end
+end
+
+local function RestoreHelpTip(frame, reset)
+	local state = reanchoredHelpTips[frame]
+	if state and CanPosition(frame) and (reset or frame.info == state.info) then
+		PositionHelpTip(frame, state.region, state.point, state.alignment, state.info, reset)
+	end
+	reanchoredHelpTips[frame] = nil
 end
 
 
@@ -113,36 +170,55 @@ end
 -- ####################################################################################################################
 
 function module:SetAlerts()
-	if _G.HelpTipTemplateMixin and not module:IsHooked(_G.HelpTipTemplateMixin, "Init") then
-		module:SecureHook(_G.HelpTipTemplateMixin, "Init", "AlertHandler")
-	end
-	if _G.HelpTip and _G.HelpTip.framePool then
-		for alert in _G.HelpTip.framePool:EnumerateActive() do
-			module:AlertHandler(alert, alert:GetParent(), alert.info, alert.relativeRegion)
+	local function PositionActiveHelpTips()
+		if not module:IsEnabled() or not _G.HelpTip or not _G.HelpTip.framePool then return end
+		for frame in _G.HelpTip.framePool:EnumerateActive() do
+			-- Hook actual pooled instances, including tips created before LUI.
+			-- A mixin-only hook misses methods already copied to existing frames.
+			if CanPosition(frame) and not module:IsHooked(frame, "AnchorAndRotate") then
+				module:SecureHook(frame, "AnchorAndRotate", function(self)
+					module:AlertHandler(self, nil, self.info, self.relativeRegion)
+				end)
+				module:SecureHook(frame, "Reset", function(self) RestoreHelpTip(self, true) end)
+			end
+			module:AlertHandler(frame, nil, frame.info, frame.relativeRegion)
 		end
 	end
+	if _G.HelpTip and not module:IsHooked(_G.HelpTip, "Show") then
+		module:SecureHook(_G.HelpTip, "Show", PositionActiveHelpTips)
+	end
+	PositionActiveHelpTips()
 	if _G.TutorialPointerFrame and not module:IsHooked(_G.TutorialPointerFrame, "Show") then
 		module:SecureHook(_G.TutorialPointerFrame, "Show", function(table, content, direction, anchorFrame)
 			local newPointer = anchorFrame and anchorFrame.currentNPEPointer
 			if newPointer then module:ShouldReAnchorPointer(newPointer) end
 		end)
+		module:SecureHook(_G.TutorialPointerFrame, "_RetireFrame", function(_, frame)
+			if pointerTimers[frame] then pointerTimers[frame]:Cancel(); pointerTimers[frame] = nil end
+			reanchoredPointers[frame] = nil
+		end)
 	end
 end
 
 function module:AlertHandler(frame, parent, info, relativeRegion)
-	if not frame or not info or not relativeRegion then return end
+	if not module:IsEnabled() or not CanPosition(frame) or not info or not relativeRegion then return end
+	local target, point
 	if relativeRegion == _G.QueueStatusButton then
-		RememberHelpTip(frame)
-		frame:AnchorAndRotate(_G.HelpTip.Point.LeftEdgeCenter)
+		target, point = relativeRegion, _G.HelpTip.Point.LeftEdgeCenter
 	end
 	for blizzardFrame, microFrame in pairs(BlizzMicroButtons) do
 		if relativeRegion == _G[blizzardFrame] and _G[microFrame] then
-			RememberHelpTip(frame)
-			frame.relativeRegion = _G[microFrame]
-			frame.info.targetPoint = _G.HelpTip.Point.BottomEdgeCenter
-			frame:AnchorAndRotate(_G.HelpTip.Point.BottomEdgeCenter)
+			target, point = _G[microFrame], _G.HelpTip.Point.BottomEdgeCenter
+			break
 		end
 	end
+	if not target then return end
+	reanchoredHelpTips[frame] = {
+		info = info, region = relativeRegion,
+		point = frame.appliedTargetPoint or info.targetPoint or _G.HelpTip.Point.BottomEdgeCenter,
+		alignment = frame.appliedAlignment or info.alignment or _G.HelpTip.Alignment.Center,
+	}
+	PositionHelpTip(frame, target, point, _G.HelpTip.Alignment.Center, info)
 end
 
 function module:DebugAlert()
@@ -163,9 +239,10 @@ function module:ShowPointerArrow(frame, direction)
 			arrow1.Anim:Stop()
 			arrow2:Hide()
 			arrow2.Anim:Stop()
-			if frame.AnimDelayTimer then frame.AnimDelayTimer:Cancel() end
 		end
 	end
+	if frame.AnimDelayTimer then frame.AnimDelayTimer:Cancel() end
+	if pointerTimers[frame] then pointerTimers[frame]:Cancel() end
 	-- Show the desired arrow.
 	local arrow1 = frame["Arrow_"..direction..1]
 	local arrow2 = frame["Arrow_"..direction..2]
@@ -179,17 +256,20 @@ function module:ShowPointerArrow(frame, direction)
 	arrow1:Show();
 	arrow1.Anim:Play();
 	-- Second arrow starts halfway through the first arrow's animation.
-	frame.AnimDelayTimer = C_Timer.NewTimer(0.5, function()
-		arrow2:Show();
-		arrow2.Anim:Play()
+	local state = reanchoredPointers[frame]
+	pointerTimers[frame] = C_Timer.NewTimer(0.5, function()
+		if module:IsEnabled() and reanchoredPointers[frame] == state
+			and state and frame.currentTarget == state.currentTarget then
+			arrow2:Show()
+			arrow2.Anim:Play()
+		end
 	end)
 end
 
 function module:ShouldReAnchorPointer(frame)
-	if not frame or not frame.currentTarget or not frame.Content or not frame.Content.Text then return end
+	if not module:IsEnabled() or not CanPosition(frame) or not frame.currentTarget or not frame.Content or not frame.Content.Text then return end
 	local anchor = frame.currentTarget
 	local text = frame.Content.Text:GetText()
-	if not frame:IsShown() and text then frame:Show() end
 	local anchorFound = false
 
 	-- Check if the pointer is pojnting to blizzard microbuttons
@@ -215,7 +295,6 @@ function module:ShouldReAnchorPointer(frame)
 			anchor = BlizzMicroButtons.LFDMicroButton
 			-- Make sure warning is only visible while you're on Exile Reach
 			if C_Map.GetBestMapForUnit("player") ~= 1409 then
-				frame:Hide()
 				return
 			end
 		-- New mount added to your collection
@@ -229,59 +308,38 @@ function module:ShouldReAnchorPointer(frame)
 	local target = _G[anchor]
 	if not target then return end
 	local oldTarget = frame.currentTarget
-	if not reanchoredPointers[frame] then
+	local state = reanchoredPointers[frame]
+	if not state or state.currentTarget ~= oldTarget then
 		reanchoredPointers[frame] = {
 			currentTarget = oldTarget,
 			points = CapturePoints(frame),
+			contentPoints = CapturePoints(frame.Content),
 			arrow = CapturePointerArrow(frame),
 		}
 	end
-	if oldTarget and oldTarget.currentNPEPointer == frame then
-		oldTarget.currentNPEPointer = nil
-	end
-	if not target.hasHookedScriptsForNPE then
-		target:HookScript("OnShow", function(self)
-			if self.currentNPEPointer then self.currentNPEPointer:Show() end
-		end)
-		target:HookScript("OnHide", function(self)
-			if self.currentNPEPointer then self.currentNPEPointer:Hide() end
-		end)
-		target.hasHookedScriptsForNPE = true
-	end
-	target.currentNPEPointer = frame
-	frame.currentTarget = target
+	-- Native currentTarget/currentNPEPointer and timer ownership must stay
+	-- intact: Blizzard reads them when showing, hiding and retiring a pointer.
 	frame:ClearAllPoints()
 	frame:SetPoint("TOP", target, "BOTTOM", 0, -100)
+	frame.Content:ClearAllPoints()
+	frame.Content:SetPoint("TOP", frame, "BOTTOM", 0, 5)
 	module:ShowPointerArrow(frame, "UP")
 end
 
 function module:RestoreAlerts()
-	for frame, state in pairs(reanchoredHelpTips) do
-		if frame and frame.info then
-			frame.relativeRegion = state.relativeRegion
-			frame.info.targetPoint = state.targetPoint
-			frame.appliedTargetPoint = nil
-			frame.appliedAlignment = nil
-			frame:AnchorAndRotate()
-		end
-		reanchoredHelpTips[frame] = nil
+	for frame in pairs(reanchoredHelpTips) do
+		RestoreHelpTip(frame)
 	end
 
 	for frame, state in pairs(reanchoredPointers) do
 		-- A retired tutorial pointer has already been detached and returned to
 		-- Blizzard's pool. Never reconnect one of those pooled frames.
-		if frame and frame.currentTarget then
-			local currentTarget = frame.currentTarget
-			if currentTarget and currentTarget.currentNPEPointer == frame then
-				currentTarget.currentNPEPointer = nil
-			end
-			frame.currentTarget = state.currentTarget
-			if state.currentTarget then
-				state.currentTarget.currentNPEPointer = frame
-			end
+		if CanPosition(frame) and frame.currentTarget == state.currentTarget then
 			RestorePoints(frame, state.points)
+			RestorePoints(frame.Content, state.contentPoints)
 			RestorePointerArrow(frame, state.arrow)
 		end
+		if pointerTimers[frame] then pointerTimers[frame]:Cancel(); pointerTimers[frame] = nil end
 		reanchoredPointers[frame] = nil
 	end
 end

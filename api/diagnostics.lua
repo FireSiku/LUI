@@ -34,8 +34,18 @@ function LUI:OpenDiagnostics()
 	if diagnostics then diagnostics:OpenWindow() end
 end
 
+function LUI:ActionBarDiagnostics(command)
+	command = (command or ""):lower():match("^%s*(.-)%s*$")
+	local diagnostics = self:LoadDiagnostics(command == "")
+	if diagnostics then
+		diagnostics:Initialize()
+		diagnostics:ActionBarCommand(command)
+	end
+end
+
 function LUI:InitializeDiagnostics()
 	self:RegisterChatCommand("luidebug", "OpenDiagnostics")
+	self:RegisterChatCommand("luidrag", "ActionBarDiagnostics")
 	self.cmdList.commands.diagnostics = "OpenDiagnostics"
 	local state = self:GetDiagnosticsState()
 	if state.enabled or state.showAfterReload then

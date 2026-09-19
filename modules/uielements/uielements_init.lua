@@ -9,6 +9,9 @@ module.enableButton = true
 
 module.defaults = {
 	profile = {
+		DarkButtons = true,
+		ButtonStyle = "classic",
+		EscapeButtonStyle = "dark",
 		ZoneObjectives = {
 			X = 300,
 			Y = -35,
@@ -43,6 +46,7 @@ function module:OnEnable()
 end
 
 function module:OnDisable()
+	module:StopDarkButtons()
 	module:UnregisterAllEvents()
 	module:RestoreManagedFrames()
 	module:HidePreviews()

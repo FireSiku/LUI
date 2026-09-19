@@ -167,6 +167,9 @@ function D:RefreshWindow()
 				.. "\n\nDescribe what happened, what you were doing and roughly when it occurred. The file includes up to 3 sessions; the copyable report shows the latest session."
 				.. "\n\nYou can also use Copy report to avoid looking through folders. Nothing is uploaded automatically.")
 			window.note:SetText("<account folder> is a placeholder for your own account directory. The report and the file may contain names from error text. Review them before sharing.")
+			if current and current.actionBars then
+				window.note:SetText("Action-bar trace: also attach World of Warcraft/_retail_/Logs/taint.log alongside LUIDiagnostics.lua. Check timestamps for this session; older native log entries are retained.")
+			end
 		end
 		window.primary:SetText("Select all (then Ctrl+C)")
 		window.secondary:SetText("Back")

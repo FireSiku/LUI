@@ -17,7 +17,6 @@ local module = LUI:NewModule("RaidMenu")
 module.defaults = {
 	profile = {
 		Enable = true,
-		HideBlizzardRaidMenu = true,
 		Compact = true,
 		Spacing = 5,
 		OverlapPrevention = "Offset",

@@ -1,5 +1,5 @@
 ## Interface: 120100
-## Version: 0.1.0
+## Version: 0.1.2-alerttrace
 ## Title: LUI Diagnostics
 ## Author: LUI Team
 ## Notes: Optional troubleshooting reports for LUI. Open LUI DEBUG in LUI options.
@@ -9,4 +9,5 @@
 ## SavedVariables: LUIDiagnosticsDB
 
 Core.lua
+ActionBars.lua
 Window.lua
