@@ -1,6 +1,6 @@
 local ADDON, D = ...
 _G.LUIDiagnostics = D
-D.VERSION = "0.1.0"
+D.VERSION = "0.1.2-alerttrace"
 D.MAX_SESSIONS, D.MAX_ERRORS, D.MAX_EVENTS = 3, 40, 60
 local frame = CreateFrame("Frame")
 local recording, busy = false, false
@@ -167,6 +167,7 @@ local function Capture(kind, message, stack, stackSource, addon, func)
 		session.throttled = session.throttled + 1
 		return
 	end
+	if D.CaptureActionBars then D:CaptureActionBars("error") end
 	if not stack then
 		stack = Read(debugstack, 4, 18, 8)
 		stackSource = "Diagnostic event handler; not necessarily the original failing call"
@@ -269,9 +270,11 @@ function D:Resume()
 	self:AttachBugGrabber()
 	for _, event in ipairs(watchedEvents) do frame:RegisterEvent(event) end
 	self:Breadcrumb("DIAGNOSTICS_RESUMED")
+	if self.BeginActionBarCapture then self:BeginActionBarCapture(session) end
 end
 
 function D:Stop()
+	if self.EndActionBarCapture then self:EndActionBarCapture() end
 	if session and recording then
 		self:Breadcrumb("DIAGNOSTICS_STOPPED")
 		session.finishedAt = Stamp()
@@ -289,6 +292,7 @@ function D:ChangeRecording(enabled)
 	if enabled then
 		if recording then return false end
 		state.enabled, state.newSession, state.showAfterReload = true, true, "started"
+		if self:GetDatabase().actionBarTrace then state.showAfterReload = nil end
 	else
 		self:Stop()
 		state.enabled, state.showAfterReload = false, "stopped"
@@ -394,6 +398,7 @@ function D:BuildReport()
 	for _, event in ipairs(current.events) do
 		Add(event.at .. " " .. event.event .. (event.detail and " " .. event.detail or "") .. (event.count and " x" .. event.count or ""))
 	end
+	if self.AppendActionBarReport then self:AppendActionBarReport(current, Add) end
 	Add()
 	Add("END OF REPORT | session " .. current.id .. " | " .. #current.errors .. " stored error groups")
 	return table.concat(lines, "\n")

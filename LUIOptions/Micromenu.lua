@@ -117,16 +117,6 @@ if raidMenuModule and raidMenuDB then
 				width = "full",
 			}),
 			Settings = Opt:InlineGroup({name = "Settings", disabled = AreRaidMenuSettingsDisabled, args = {
-				HideBlizzardRaidMenu = Opt:Toggle({
-					name = "Hide Blizzard Raid Menu",
-					desc = "Hide Blizzard's raid control panel while the LUI raid menu is enabled. Turn this off to access Blizzard's additional group controls. Party and raid unit frames are not affected.",
-					width = "full",
-					get = function() return raidMenuModule.db.profile.HideBlizzardRaidMenu end,
-					set = function(_, value)
-						raidMenuModule.db.profile.HideBlizzardRaidMenu = value
-						raidMenuModule:UpdateBlizzardRaidMenu()
-					end,
-				}),
 				Compact = Opt:Toggle({name = L["Compact Raid Menu"], desc = L["Use compact version of the Raid Menu"]}),
 				Spacing = Opt:Slider({name = L["Spacing"], desc = "Spacing between raid-menu buttons.", min = 0, max = 10, step = 1, disabled = function() return not raidMenuDB.Compact end}),
 				Scale = Opt:Slider({name = L["Scale"], desc = "Scale of the raid menu.", values = Opt.ScaleValues}),

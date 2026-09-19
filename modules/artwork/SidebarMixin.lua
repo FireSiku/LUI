@@ -58,6 +58,8 @@ local RestoreAnchoredFrameOutOfCombat = LUI.OutOfCombatWrapper(RestoreAnchoredFr
 -- ####################################################################################################################
 
 function SidebarMixin:Open()
+	self.CloseAnim:Stop()
+	if self.DrawerAlphaOut then self.DrawerAlphaOut:Stop() end
 	if not self.OpenAnim:IsPlaying() then
 		-- Open Instantly if the option is set or we are in combat.
 		-- Additionally, if called while already open, force it without playing the animation.
@@ -78,6 +80,8 @@ function SidebarMixin:Open()
 end
 
 function SidebarMixin:Close()
+	self.OpenAnim:Stop()
+	if self.DrawerAlphaIn then self.DrawerAlphaIn:Stop() end
 	if not self.CloseAnim:IsPlaying() then
 		-- Close Instantly if the option is set or we are in combat.
 		-- Additionally, if called while already closed, force it without playing the animation.
@@ -162,6 +166,8 @@ function SidebarMixin:Refresh()
 	else
 		self.OpenAnim:Stop()
 		self.CloseAnim:Stop()
+		if self.DrawerAlphaIn then self.DrawerAlphaIn:Stop() end
+		if self.DrawerAlphaOut then self.DrawerAlphaOut:Stop() end
 		self.Drawer:SetAlpha(0)
 		RestoreAnchoredFrameOutOfCombat(self, self.db.Anchor, true)
 		self:Hide()
@@ -400,18 +406,39 @@ function module:CreateNewSideBar(name, side)
 
 	sidebar.OpenAnim = drawOpen
 	sidebar.CloseAnim = drawClose
+	sidebar.DrawerAlphaIn = drawerAlphaIn
+	sidebar.DrawerAlphaOut = drawerAlphaOut
+
+	-- Animation completion cannot move protected anchors after combat starts.
+	-- Stop the visual workers and settle the latest desired state on leaving.
+	sidebar:RegisterEvent("PLAYER_REGEN_DISABLED")
+	sidebar:RegisterEvent("PLAYER_REGEN_ENABLED")
+	sidebar:SetScript("OnEvent", function(self, event)
+		if event == "PLAYER_REGEN_DISABLED" then
+			self.OpenAnim:Stop()
+			self.CloseAnim:Stop()
+			self.DrawerAlphaIn:Stop()
+			self.DrawerAlphaOut:Stop()
+		elseif not InCombatLockdown() and module:IsEnabled() then
+			self:Refresh()
+		end
+	end)
 
 	-- Config
 	sidebar:EnableMouse(true)
 	Mixin(sidebar, module.SidebarMixin)
 
-	btnAnchor:SetScript("OnClick", function() sidebar:Toggle() end)
+	btnAnchor:SetScript("OnClick", function()
+		if InCombatLockdown() then sidebar:Open() else sidebar:Toggle() end
+	end)
 	SecureHandlerWrapScript(btnAnchor, "PostClick", btnAnchor, sidebar:SecureToggle(true))
 	btnAnchor:RegisterForClicks("AnyUp")
 	
 	btnAnchor:SetFrameRef("otherFrame", btnAnchorOpen)
 
-	btnAnchorOpen:SetScript("OnClick", function() sidebar:Toggle() end)
+	btnAnchorOpen:SetScript("OnClick", function()
+		if InCombatLockdown() then sidebar:Close() else sidebar:Toggle() end
+	end)
 	SecureHandlerWrapScript(btnAnchorOpen, "PostClick", btnAnchorOpen, sidebar:SecureToggle(false))
 	btnAnchorOpen:RegisterForClicks("AnyUp")
 	btnAnchorOpen:SetFrameRef("otherFrame", btnAnchor)

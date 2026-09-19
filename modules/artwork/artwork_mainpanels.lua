@@ -330,8 +330,32 @@ local function CreateBackground(kind)
 	return f
 end
 
+function module:StopPanelAnimations(kind)
+	local panel = _mainPanels[kind]
+	if not panel then return end
+	panel.AlphaIn:Hide()
+	panel.AlphaIn.timerin = 0
+	panel.AlphaOut:Hide()
+	panel.AlphaOut.timerout = 0
+end
+
+local function PausePanelAnimation(kind)
+	module:StopPanelAnimations(kind)
+	local function RestoreAlpha(frame)
+		if frame and not (frame.IsForbidden and frame:IsForbidden()) then
+			-- Alpha is cosmetic and can be restored without changing protected
+			-- visibility. A paused fade must not leave a transparent click target.
+			frame:SetAlpha(1)
+		end
+	end
+	RestoreAlpha(_G[_mainPanels[kind].frame])
+	for _, name in pairs(module:LoadAdditional(db[kind].Additional)) do RestoreAlpha(_G[name]) end
+	module:RefreshNavBar()
+end
+
 function module:AlphaIn(kind, button)
 	if not _mainPanels[kind] then return end
+	module:StopPanelAnimations(kind)
 	db[kind].IsShown = true
 	local frame = _G[_mainPanels[kind].frame]
 
@@ -343,6 +367,7 @@ function module:AlphaIn(kind, button)
 		end
 		
 		if db[kind].Animation then
+			_mainPanels[kind].AlphaIn.startAlpha = frame:GetAlpha()
 			_mainPanels[kind].AlphaIn:Show()
 		else
 			frame:SetAlpha(1)
@@ -355,11 +380,13 @@ end
 
 function module:AlphaOut(kind, button)
 	if not _mainPanels[kind] then return end
+	module:StopPanelAnimations(kind)
 	db[kind].IsShown = false
 	local frame = _G[_mainPanels[kind].frame]
 
 	if module:CanAlterFrame(frame) then
 		if db[kind].Animation then
+			_mainPanels[kind].AlphaOut.startAlpha = frame:GetAlpha()
 			_mainPanels[kind].AlphaOut:Show()
 
 		else
@@ -397,11 +424,15 @@ function module:CreateBackground(kind)
 	_mainPanels[kind].AlphaOut:Hide()
 	_mainPanels[kind].AlphaOut.timerout = 0
 	_mainPanels[kind].AlphaOut:SetScript("OnUpdate", function(self, elapsed)
+		if InCombatLockdown() then
+			PausePanelAnimation(kind)
+			return
+		end
 		self.timerout = self.timerout + elapsed
 		local target = _G[_mainPanels[kind].frame]
 
 		if self.timerout < ANIM_DURATION then
-			local alpha = 1 - self.timerout / ANIM_DURATION
+			local alpha = (self.startAlpha or 1) * (1 - self.timerout / ANIM_DURATION)
 
 			if module:CanAlterFrame(target) then
 				target:SetAlpha(alpha)
@@ -430,11 +461,16 @@ function module:CreateBackground(kind)
 	_mainPanels[kind].AlphaIn:Hide()
 	_mainPanels[kind].AlphaIn.timerin = 0
 	_mainPanels[kind].AlphaIn:SetScript("OnUpdate", function(self, elapsed)
+		if InCombatLockdown() then
+			PausePanelAnimation(kind)
+			return
+		end
 		self.timerin = self.timerin + elapsed
 		local target = _G[_mainPanels[kind].frame]
 
 		if self.timerin < ANIM_DURATION then
-			local alpha = self.timerin / ANIM_DURATION
+			local from = self.startAlpha or 0
+			local alpha = from + (1 - from) * self.timerin / ANIM_DURATION
 
 			if module:CanAlterFrame(target) then
 				target:SetAlpha(alpha)

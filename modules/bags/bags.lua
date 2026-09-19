@@ -1286,6 +1286,10 @@ function module:CreateNewContainer(name, obj)
 	closeBtn:RegisterForClicks("AnyUp")
 	closeBtn:SetScript("OnClick", function() frame:Close() end)
 	frame.closeButton = closeBtn
+	local uiElements = LUI:GetModule("UI Elements", true)
+	if uiElements and uiElements.RegisterBagCloseButton then
+		uiElements:RegisterBagCloseButton(frame, closeBtn)
+	end
 
 	frame.toolbars = {} -- Used to store BagBar and such
 

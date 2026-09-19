@@ -160,14 +160,14 @@ function module:CreateNavButton(kind, side, x, y)
 	clicker:SetScript("OnLeave", function() hover:SetAlpha(0) end)
 	clicker:SetScript("OnClick", function()
 		local frame = _G[db[kind].Anchor]
-		if frame and not frame:IsShown() then
+		if frame and not db[kind].IsShown then
 			if kind == "Chat" and not (alphaOut:IsPlaying() or alphaIn:IsPlaying()) then
 				module:SetChatVisible(true)
 			end
 			alphaIn:Play()
 			module:AlphaIn(kind, self)
 			db[kind].IsShown = true
-		elseif frame and frame:IsShown() then
+		elseif frame and db[kind].IsShown then
 			if kind == "Chat" and not (alphaOut:IsPlaying() or alphaIn:IsPlaying()) then
 				module:SetChatVisible(false)
 			end
@@ -179,6 +179,9 @@ function module:CreateNavButton(kind, side, x, y)
 	end)
 	if kind ~= "Chat" then 
 		SecureHandlerWrapScript(clicker, "PostClick", clicker, [[
+			-- Outside combat the normal click already changes visibility.
+			-- Toggling a second time here reverses that change.
+			if not PlayerInCombat() then return end
 			if not self:GetAttribute("secureEnabled") then return end
 			local frame = self:GetFrameRef("frame")
 			if not frame then return end
@@ -206,6 +209,7 @@ function module:IterateNavButtons()
 end
 
 function module:RefreshNavBar()
+	if not module:IsEnabled() or not module.NavBar then return end
 	if InCombatLockdown() then
 		navBarRefreshFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
@@ -251,6 +255,7 @@ function module:RefreshNavBar()
 	end
 	local showButtons = db.NavBar.ShowButtons
 	for kind, button in module:IterateNavButtons() do
+		module:StopPanelAnimations(kind)
 		local db = module.db.profile.LUITextures[kind]
 		local r, g, b, a = self:RGBA("NavButtons")
 		local anchor = _G[db.Anchor]

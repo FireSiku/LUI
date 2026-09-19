@@ -34,21 +34,25 @@ local BlueWorldMarker, GreenWorldMarker, PurpleWorldMarker, RedWorldMarker, Yell
 local OrangeWorldMarker, SilverWorldMarker, WhiteWorldMarker, ClearWorldMarkers
 local ConvertRaid, RoleChecker, ReadyChecker
 local pendingAction
+local menuShown = false
+local fade, slide
+local animationFrame
 
 local combatQueue = CreateFrame("Frame")
 combatQueue:Hide()
 combatQueue:SetScript("OnEvent", function(self)
+	if InCombatLockdown() then return end
 	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
 	self:Hide()
 
 	local action = pendingAction
 	pendingAction = nil
 	if action == "hide" or not module:IsEnabled() or not db or not db.Enable then
-		module:HideRaidMenu(true)
+		module:HideRaidMenu()
 	elseif action == "setup" then
-		module:SetRaidMenu(true)
+		module:SetRaidMenu()
 	elseif action == "refresh" then
-		module:Refresh(true)
+		module:Refresh()
 	end
 end)
 
@@ -84,7 +88,7 @@ local WorldMarkerTexCoords = {
 
 local function AutoHideRaidMenu(self, button, down)
 	if down == SecureActionButton_ShouldUseOnKeyDown(self) and db.AutoHide and not InCombatLockdown() then
-		Micromenu.clickerLeft:Click()
+		module:CloseRaidMenu()
 	end
 end
 
@@ -139,101 +143,90 @@ local function UpdateGroupButtons()
 	RoleChecker:SetEnabled(outOfCombat and canManageGroup and not HasLFGRestrictions() and not inBattleground)
 end
 
-function module:OverlapPrevention(frame, action)
-	if not db.Enable or not Micromenu or not RaidMenu or InCombatLockdown() then return end
+-- One worker owns each transition. Rapid clicks change the destination,
+-- rather than starting competing fade/slide scripts on a protected parent.
+local function StopAnimations()
+	fade, slide = nil, nil
+	if animationFrame then animationFrame:Hide() end
+end
 
-	local Y_Position = Y_normal
-	local X_Position = X_compact
-
+local function MenuPosition()
+	local x, y = X_compact, Y_normal
 	if db.Compact then
-		Y_Position = Y_compact + (db.Spacing / 2)
-		X_Position = X_compact + (db.Spacing / 2)
+		x, y = X_compact + db.Spacing / 2, Y_compact + db.Spacing / 2
+	end
+	if db.OverlapPrevention == "Offset" and Micromenu.background:IsShown() then
+		x, y = x + db.X_Offset, y + db.Offset
+	end
+	return x / db.Scale + 17, y / db.Scale + 17
+end
+
+local function PositionMenu()
+	local x, y = MenuPosition()
+	RaidMenu_Parent:ClearAllPoints()
+	RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", x, y)
+end
+
+local function FadeMenu(shown)
+	menuShown = shown
+	local from = RaidMenu_Parent:IsShown() and RaidMenu_Parent:GetAlpha() or 0
+	local target = shown and db.Opacity / 100 or 0
+	fade = {from = from, target = target, elapsed = 0}
+	if shown then
+		RaidMenu_Parent:SetAlpha(from)
+		RaidMenu_Parent:Show()
+	end
+	animationFrame:Show()
+end
+
+function module:CloseRaidMenu()
+	if not RaidMenu_Parent or InCombatLockdown() then return end
+	FadeMenu(false)
+end
+
+local function SlideMenu()
+	local _, _, _, x, y = RaidMenu_Parent:GetPoint(1)
+	local targetX, targetY = MenuPosition()
+	if not menuShown or not x or not y then
+		slide = nil
+		PositionMenu()
+		return
+	end
+	slide = {x = x, y = y, targetX = targetX, targetY = targetY, elapsed = 0}
+	animationFrame:Show()
+end
+
+function module:OverlapPrevention(frame, action)
+	db = module.db.profile
+	if not module:IsEnabled() or not db.Enable or not Micromenu
+		or not Micromenu:IsEnabled() or not RaidMenu then return end
+	if InCombatLockdown() then
+		-- A native visibility update may arrive during combat. Reconcile its
+		-- position later; a blocked user click does not change the open state.
+		if frame == "MM" then QueueAfterCombat("refresh") end
+		return
 	end
 
-	local microMenuShown = false
-
-	if Micromenu and Micromenu.background then
-		microMenuShown = Micromenu.background:IsShown()
-	end
-
-	local offset, x_offset = 0, 0
-
-	if db.OverlapPrevention == "Offset" and microMenuShown then
-		offset = db.Offset
-		x_offset = db.X_Offset
-	end
-
-	if frame == "RM" then
-		if action == "toggle" then
-			if RaidMenu_Parent:IsShown() then
-				-- Never let opposing fades fight over the protected menu parent.
-				-- That could leave an invisible but mouse-active frame behind.
-				RaidMenu.AlphaIn.timer = 0
-				RaidMenu.AlphaIn:Hide()
-				RaidMenu.AlphaOut:Show()
-			else
-				RaidMenu.AlphaOut.timer = 0
-				RaidMenu.AlphaOut:Hide()
-				if db.OverlapPrevention == "AutoHide" and microMenuShown then
-					Micromenu.clickerMiddle:Click()
-				end
-
-				RaidMenu_Parent:SetPoint(
-					"TOPRIGHT",
-					Micromenu.buttonLeft,
-					"BOTTOMRIGHT",
-					(((X_Position + x_offset) / db.Scale) + 17),
-					(((Y_Position + offset) / db.Scale) + 17)
-				)
-
-				RaidMenu.AlphaIn:Show()
+	if frame == "RM" and action == "toggle" then
+		if not menuShown then
+			if db.OverlapPrevention == "AutoHide" and Micromenu.background:IsShown() then
+				Micromenu.clickerMiddle:Click()
 			end
-		elseif action == "slide" then
-			if microMenuShown then
-				RaidMenu.SlideUp:Show()
-			else
-				RaidMenu.SlideDown:Show()
-			end
-		elseif action == "position" then
-			-- Repositioning and refreshing must preserve the current visibility.
-			-- Showing the parent here could create an invisible click blocker
-			-- after a deferred combat refresh.
-			RaidMenu_Parent:SetAlpha(db.Opacity / 100)
-
-			if microMenuShown then
-				if db.OverlapPrevention == "AutoHide" then
-					Micromenu.clickerMiddle:Click()
-				end
-			else
-				if db.OverlapPrevention == "Offset" then
-					Micromenu.clickerMiddle:Click()
-					offset = db.Offset
-					x_offset = db.X_Offset
-				end
-			end
-
-			RaidMenu_Parent:SetPoint(
-				"TOPRIGHT",
-				Micromenu.buttonLeft,
-				"BOTTOMRIGHT",
-				(((X_Position + x_offset) / db.Scale) + 17),
-				(((Y_Position + offset) / db.Scale) + 17)
-			)
+			slide = nil
+			PositionMenu()
 		end
+		FadeMenu(not menuShown)
 	elseif frame == "MM" then
-		if microMenuShown then
-			if db.OverlapPrevention == "Offset" then
-				RaidMenu.SlideUp:Show()
-			end
+		if db.OverlapPrevention == "AutoHide" and Micromenu.background:IsShown() then
+			if menuShown then FadeMenu(false) end
 		else
-			if db.OverlapPrevention == "AutoHide" then
-				if RaidMenu_Parent:IsShown() then
-					Micromenu.clickerLeft:Click()
-				end
-			else
-				RaidMenu.SlideDown:Show()
-			end
+			SlideMenu()
 		end
+	elseif action == "slide" then
+		SlideMenu()
+	elseif action == "position" then
+		slide = nil
+		PositionMenu()
 	end
 end
 
@@ -396,21 +389,17 @@ function module:SetColors()
 	RaidMenu_Border.Texture:SetVertexColor(Micromenu:RGB("Micromenu"))
 end
 
-function module:SetRaidMenu(ignoreCombat)
+function module:SetRaidMenu()
 	db = module.db.profile
 
-	if not db.Enable or not Micromenu or not Micromenu.buttonLeft then return end
-	if not ignoreCombat and InCombatLockdown() then
+	if not module:IsEnabled() or not db.Enable or not Micromenu or not Micromenu:IsEnabled() or not Micromenu.buttonLeft then return end
+	if InCombatLockdown() then
 		QueueAfterCombat("setup")
 		return
 	end
 	if RaidMenu_Parent then
-		RaidMenu_Parent:Hide()
 		UpdateGroupButtons()
-		SizeRaidMenu()
-		RaidMenu_Parent:SetScale(db.Scale)
-		RaidMenu_Parent:SetAlpha(db.Opacity / 100)
-		module:SetColors()
+		module:Refresh()
 		return
 	end
 
@@ -432,6 +421,11 @@ function module:SetRaidMenu(ignoreCombat)
 	RaidMenu:SetMouseClickEnabled(true)
 	RaidMenu.Texture = LUI:CreateFrameTexture(RaidMenu, RAIDMENU_NORMAL_TEXTURE)
 	RaidMenu.Texture:SetVertexColor(Micromenu:RGB("Background"))
+
+	-- With the micromenu collapsed, this panel overlaps its own toggle.
+	-- Keep the small click target above the panel and its level-4 buttons.
+	Micromenu.clickerLeft:SetFrameStrata("HIGH")
+	Micromenu.clickerLeft:SetFrameLevel(5)
 
 	local micro_r, micro_g, micro_b = Micromenu:RGB("Micromenu")
 	RaidMenu_Border = LUI:CreateMeAFrame("Frame", "RaidMenu_Border", RaidMenu_Parent, 256, 256, 1, "HIGH", 3, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 2, 1, 1)
@@ -527,7 +521,7 @@ function module:SetRaidMenu(ignoreCombat)
 			C_PartyInfo.ConvertToRaid()
 		end
 		if db.AutoHide then
-			Micromenu.clickerLeft:Click()
+			module:CloseRaidMenu()
 		end
 	end)
 
@@ -550,7 +544,7 @@ function module:SetRaidMenu(ignoreCombat)
 		if InCombatLockdown() then return end
 		InitiateRolePoll()
 		if db.AutoHide then
-			Micromenu.clickerLeft:Click()
+			module:CloseRaidMenu()
 		end
 	end)
 
@@ -573,109 +567,75 @@ function module:SetRaidMenu(ignoreCombat)
 		if InCombatLockdown() then return end
 		C_PartyInfo.DoReadyCheck()
 		if db.AutoHide then
-			Micromenu.clickerLeft:Click()
+			module:CloseRaidMenu()
 		end
 	end)
 	UpdateGroupButtons()
 
-	-- Create fader frames
-	RaidMenu.AlphaOut = CreateFrame("Frame", nil, UIParent)
-	RaidMenu.AlphaOut.timer = 0
-	RaidMenu.AlphaOut:Hide()
-
-	RaidMenu.AlphaOut:SetScript("OnUpdate", function(self,elapsed)
-		self.timer = self.timer + elapsed
-		if self.timer < .5 then
-			RaidMenu_Parent:SetAlpha((1 - self.timer / .5) * (db.Opacity / 100))
-		else
-			RaidMenu_Parent:SetAlpha(0)
-			RaidMenu_Parent:Hide()
-			self.timer = 0
-			self:Hide()
-		end
-	end)
-
-	RaidMenu.AlphaIn = CreateFrame("Frame", nil, UIParent)
-	RaidMenu.AlphaIn.timer = 0
-	RaidMenu.AlphaIn:Hide()
-
-	RaidMenu.AlphaIn:SetScript("OnUpdate", function(self,elapsed)
-		RaidMenu_Parent:Show()
-		self.timer = self.timer + elapsed
-		if self.timer < .5 then
-			RaidMenu_Parent:SetAlpha((self.timer / .5)*(db.Opacity / 100))
-		else
+	animationFrame = CreateFrame("Frame", nil, UIParent)
+	animationFrame:Hide()
+	animationFrame:SetScript("OnUpdate", function(self, elapsed)
+		-- Combat can begin between a click and any later animation tick.
+		-- Pause geometry/visibility changes, then settle the latest requested
+		-- state once combat ends. Alpha is cosmetic: keep the paused parent
+		-- visible so an interrupted fade cannot leave an invisible click blocker.
+		if InCombatLockdown() then
 			RaidMenu_Parent:SetAlpha(db.Opacity / 100)
-			self.timer = 0
 			self:Hide()
+			QueueAfterCombat("refresh")
+			return
 		end
+		if fade then
+			fade.elapsed = math.min(.5, fade.elapsed + elapsed)
+			local progress = fade.elapsed / .5
+			RaidMenu_Parent:SetAlpha(fade.from + (fade.target - fade.from) * progress)
+			if progress == 1 then
+				if not menuShown then RaidMenu_Parent:Hide() end
+				fade = nil
+			end
+		end
+		if slide then
+			slide.elapsed = math.min(.5, slide.elapsed + elapsed)
+			local progress = slide.elapsed / .5
+			RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT",
+				slide.x + (slide.targetX - slide.x) * progress,
+				slide.y + (slide.targetY - slide.y) * progress)
+			if progress == 1 then slide = nil end
+		end
+		if not fade and not slide then self:Hide() end
 	end)
 
-	RaidMenu.SlideUp = CreateFrame("Frame", nil, UIParent)
-	RaidMenu.SlideUp.timer = 0
-	RaidMenu.SlideUp:Hide()
-
-	RaidMenu.SlideUp:SetScript("OnUpdate", function(self,elapsed)
-		local X_Position, Y_Position
-		if db.Compact then
-			Y_Position = Y_compact + (db.Spacing / 2)
-			X_Position = X_compact + (db.Spacing / 2)
-		else
-			Y_Position = Y_normal
-			X_Position = X_normal
-		end
-		self.timer = self.timer + elapsed
-		if self.timer < .5 then
-			local offset = (1 - self.timer / .5) * db.Offset
-			RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), (((Y_Position + offset) / db.Scale) + 17))
-		else
-			RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), ((Y_Position / db.Scale) + 17))
-			self.timer = 0
-			self:Hide()
-		end
-	end)
-
-	RaidMenu.SlideDown = CreateFrame("Frame", nil, UIParent)
-	RaidMenu.SlideDown.timer = 0
-	RaidMenu.SlideDown:Hide()
-
-	RaidMenu.SlideDown:SetScript("OnUpdate", function(self,elapsed)
-		local X_Position, Y_Position
-		if db.Compact then
-			Y_Position = Y_compact + (db.Spacing / 2)
-			X_Position = X_compact + (db.Spacing / 2)
-		else
-			Y_Position = Y_normal
-			X_Position = X_normal
-		end
-		self.timer = self.timer + elapsed
-		if self.timer < .5 then
-			local offset = (self.timer / .5) * db.Offset
-			RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), (((Y_Position + offset) / db.Scale) + 17))
-		else
-			RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", (X_Position + db.X_Offset), (((Y_Position + db.Offset) / db.Scale) + 17))
-			self.timer = 0
-			self:Hide()
-		end
-	end)
-
-	SizeRaidMenu()
+	-- Follow actual visibility changes instead of guessing the next state.
+	Micromenu.background:HookScript("OnShow", function() module:OverlapPrevention("MM") end)
+	Micromenu.background:HookScript("OnHide", function() module:OverlapPrevention("MM") end)
+	module:Refresh()
 end
 
-function module:Refresh(ignoreCombat)
-	if not db.Enable or not RaidMenu_Parent then return end
-	if not ignoreCombat and InCombatLockdown() then
+function module:Refresh()
+	db = module.db.profile
+	if not RaidMenu_Parent then return end
+	if InCombatLockdown() then
 		QueueAfterCombat("refresh")
 		return
 	end
+	if not module:IsEnabled() or not db.Enable or not Micromenu:IsEnabled() then
+		module:HideRaidMenu()
+		return
+	end
+	StopAnimations()
 	SizeRaidMenu()
 	RaidMenu_Parent:SetScale(db.Scale)
-	RaidMenu_Parent:SetAlpha(db.Opacity/100)
-	module:OverlapPrevention("RM", "position")
+	PositionMenu()
+	if db.OverlapPrevention == "AutoHide" and Micromenu.background:IsShown() then
+		menuShown = false
+	end
+	RaidMenu_Parent:SetAlpha(menuShown and db.Opacity / 100 or 0)
+	RaidMenu_Parent:SetShown(menuShown)
 	module:SetColors()
 end
 
 function module:SetRaidMenuEnabled(enabled)
+	db = module.db.profile
 	db.Enable = enabled
 	if InCombatLockdown() then
 		QueueAfterCombat(enabled and "setup" or "hide")
@@ -688,17 +648,15 @@ function module:SetRaidMenuEnabled(enabled)
 	end
 end
 
-function module:HideRaidMenu(ignoreCombat)
+function module:HideRaidMenu()
+	menuShown = false
+	StopAnimations()
 	if not RaidMenu_Parent then return end
-	if not ignoreCombat and InCombatLockdown() then
+	if InCombatLockdown() then
+		RaidMenu_Parent:SetAlpha(db.Opacity / 100)
 		QueueAfterCombat("hide")
 		return
 	end
-	if RaidMenu then
-		for _, animation in ipairs({RaidMenu.AlphaOut, RaidMenu.AlphaIn, RaidMenu.SlideUp, RaidMenu.SlideDown}) do
-			animation.timer = 0
-			animation:Hide()
-		end
-	end
 	RaidMenu_Parent:Hide()
+	RaidMenu_Parent:SetAlpha(0)
 end

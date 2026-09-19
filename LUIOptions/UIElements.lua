@@ -67,7 +67,7 @@ UIElements.args = {
 	Buttons = Opt:InlineGroup({name = "Button Appearance", args = {
 		DarkButtons = {
 			type = "toggle", order = 1, name = "Customize Buttons", width = "full",
-			desc = "Choose button artwork for the Escape menu and other buttons separately. Disabling restores Blizzard artwork. Changes made in combat apply when combat ends.",
+			desc = "Choose button artwork for the Escape menu and other buttons separately. Protected action buttons keep their native artwork. Disabling restores Blizzard artwork. Changes made in combat apply when combat ends.",
 			get = function() return module.db.profile.DarkButtons end,
 			set = function(_, value) SetButtonOption("DarkButtons", value) end,
 		},

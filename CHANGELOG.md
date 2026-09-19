@@ -2,13 +2,20 @@
 
 ## Changes since last version
 
-- Micromenu: Opening the spellbook no longer prevents moving or adding spells on Blizzard action bars; left-click opens talents and right-click opens the spellbook.
-- Micromenu: The Dungeon Finder queue eye now remains visible while searching, even when LUI hides Blizzard's micromenu.
+- Micromenu: Opening talents or the spellbook no longer prevents moving or adding spells on Blizzard action bars, including after leveling up with an unspent talent point and an active reminder.
+- Micromenu: Left-click opens talents and right-click opens the spellbook. Talent reminders and tutorial pointers keep working when moved to LUI's menu.
+- Micromenu: The Dungeon Finder queue eye remains visible while searching, even when LUI hides Blizzard's micromenu.
+- Micromenu: The Raid Menu can now be closed while the micromenu is collapsed. Rapid clicks, automatic closing and position updates no longer leave it in the wrong state.
+- Micromenu: Raid Menu transitions interrupted by combat finish correctly after combat ends.
+- Artwork: Fixed panels and sidebars getting stuck or switching twice during repeated clicks and combat transitions.
 - UIElements: Button artwork is now included in LUI, so a separate Interface/Buttons folder is no longer needed.
 - UIElements: Added independent style choices for the Escape menu and other buttons, including Blizzard Dark, LUI Classic and LUI HD.
-- UIElements: Added high-resolution button artwork and a matching Blizzard Dark appearance for LUI options and confirmation dialogs.
+- UIElements: Added high-resolution button artwork and a matching Blizzard Dark appearance for LUI options and confirmation dialogs. Classic and HD artwork now use consistent styling across older and newer menu buttons.
+- UIElements: Newly opened windows and tabs receive their button styling immediately. Changing styles updates visible buttons without waiting for background discovery.
+- UIElements: Fixed missing LUI HD button faces in Group Finder, Guilds and Communities, including disabled buttons. Bag close buttons, specialization controls and window size buttons now follow button customization.
+- UIElements: Spell and macro action buttons keep their original appearance. Styling also skips protected or inaccessible addon controls.
 - UIElements: Styles can be changed without reloading, and disabling button customization restores Blizzard artwork. Changes made in combat apply after combat ends.
-- UIElements: Fixed forbidden-object errors when button styling encounters protected addon frames, including Plater aura controls.
+- Core: Added optional action-bar diagnostics with /luidrag to help investigate blocked spell placement and talent reminders. Reports remain local and recording is off by default.
 
 ---
 
