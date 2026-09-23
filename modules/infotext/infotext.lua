@@ -54,6 +54,15 @@ local UpdateDisplay
 local pendingDisplaySizes = {}
 local DISPLAY_SIZE_RETRY_DELAY = 0.5
 local DISPLAY_SIZE_MAX_ATTEMPTS = 10
+local pendingSecureRefresh = false
+
+local function DeferSecureDisplay(frame)
+	if frame.LUISecureClick and InCombatLockdown() then
+		pendingSecureRefresh = true
+		return true
+	end
+	return false
+end
 
 local function UpdateDisplaySize(frame)
 	local width = frame.text:GetUnboundedStringWidth()
@@ -114,6 +123,9 @@ QueueDisplaySize = function(frame)
 end
 
 UpdateDisplay = function(frame, applyFont)
+	-- Keep this display's text and protected hit rectangle together in combat.
+	-- PLAYER_REGEN_ENABLED applies the latest text/settings, without polling.
+	if DeferSecureDisplay(frame) then return true end
 	if applyFont then
 		local font = db.Fonts.Infotext
 		frame.text:SetFont(Media:Fetch("font", font.Name), font.Size, font.Flag)
@@ -210,6 +222,20 @@ local function QueueDisplayRefresh()
 	end)
 end
 
+local function OnDisplayEvent(_, event)
+	if event == "PLAYER_REGEN_ENABLED" then
+		if not pendingSecureRefresh then return end
+		pendingSecureRefresh = false
+		if module:IsEnabled() then
+			module:RefreshDisplays()
+		else
+			module:HideSecureDisplays()
+		end
+	else
+		QueueDisplayRefresh()
+	end
+end
+
 function module:SetInfoPanels()
 	db = module.db.profile
 
@@ -226,7 +252,8 @@ function module:SetInfoPanels()
 	-- the complete display layout on the next frame after either event.
 	topAnchor:RegisterEvent("PLAYER_ENTERING_WORLD")
 	topAnchor:RegisterEvent("LOADING_SCREEN_DISABLED")
-	topAnchor:SetScript("OnEvent", QueueDisplayRefresh)
+	topAnchor:RegisterEvent("PLAYER_REGEN_ENABLED")
+	topAnchor:SetScript("OnEvent", OnDisplayEvent)
 
 	module:RegisterLDBCallback("LibDataBroker_DataObjectCreated", "LDBDataObjectCreated")
 
@@ -271,6 +298,7 @@ function module:IsPositionSet(name)
 end
 
 function module:SetPosition(name, frame)
+	if DeferSecureDisplay(frame) then return end
 	frame:ClearAllPoints()
 	if module:IsPositionSet(name) then
 		local point = db[name].Point
@@ -297,6 +325,16 @@ function module:IsSupportedObject(element)
 end
 
 local function ApplyDisplaySettings(frame)
+	if DeferSecureDisplay(frame) then return end
+	if frame.LUISecureClick then
+		local target = _G[frame.element.secureClickTarget]
+		if target and not target:IsForbidden() then
+			frame:SetAttribute("clickbutton", target)
+		else
+			-- Never fall back to calling ToggleCharacter from insecure Lua.
+			frame:SetAttribute("clickbutton", nil)
+		end
+	end
 	local settings = db[frame.name]
 	module:SetPosition(frame.name, frame)
 	local color = settings.Color
@@ -309,10 +347,26 @@ local function CreateDisplay(name, element)
 	if not module:IsSupportedObject(element) then return end
 	local frame = elementFrames[name]
 	if frame and frame.LUIInitialized then return end
+	-- Only explicitly opted-in built-in elements may create a protected display.
+	local secureClick = elementStorage[name] == element and element.secureClickTarget
+	if secureClick and InCombatLockdown() then
+		pendingSecureRefresh = true
+		return
+	end
 
 	-- Reuse partial frames when settings are refreshed or the module is enabled again.
 	if not frame then
-		frame = CreateFrame("Button", GetDisplayFrameName(name), module.topAnchor)
+		-- A protected child would also protect the shared infotext anchor.
+		-- Parent this display to UIParent so all other infotext stays unchanged.
+		frame = CreateFrame("Button", GetDisplayFrameName(name),
+			secureClick and UIParent or module.topAnchor,
+			secureClick and "SecureActionButtonTemplate" or nil)
+		if secureClick then
+			frame.LUISecureClick = true
+			frame:SetFrameStrata(module.topAnchor:GetFrameStrata())
+			frame:SetAttribute("type", "click")
+			frame:SetAttribute("useOnKeyDown", false)
+		end
 		frame:SetSize(1, 1)
 		elementFrames[name] = frame
 	end
@@ -329,8 +383,13 @@ local function CreateDisplay(name, element)
 	frame.text:SetShadowColor(0,0,0)
 	frame.text:SetShadowOffset(1.25, -1.25)
 
-	frame:RegisterForClicks("AnyUp")
-	frame:SetScript("OnClick", module.OnClickHandler)
+	if frame.LUISecureClick then
+		frame:RegisterForClicks("AnyUp", "AnyDown")
+		-- Preserve SecureActionButtonTemplate's OnClick handler.
+	else
+		frame:RegisterForClicks("AnyUp")
+		frame:SetScript("OnClick", module.OnClickHandler)
+	end
 	frame:SetScript("OnEnter", module.OnEnterHandler)
 	frame:SetScript("OnLeave", module.OnLeaveHandler)
 
@@ -353,7 +412,7 @@ local function RunDisplayOperation(name, operation)
 	local ok = xpcall(operation, geterrorhandler())
 	if not ok then
 		local frame = elementFrames[name]
-		if frame and not frame.LUIInitialized then frame:Hide() end
+		if frame and not frame.LUIInitialized and not DeferSecureDisplay(frame) then frame:Hide() end
 	end
 	return ok
 end
@@ -413,23 +472,40 @@ function module:IsInfotextEnabled(name)
 end
 
 function module:ShowInfotext(name)
-	elementFrames[name]:Show()
 	db[name].Enable = true
+	local frame = elementFrames[name]
+	if frame and not DeferSecureDisplay(frame) then frame:Show() end
 end
 
 function module:HideInfotext(name)
-	elementFrames[name]:Hide()
 	db[name].Enable = false
+	local frame = elementFrames[name]
+	if frame and not DeferSecureDisplay(frame) then frame:Hide() end
 end
 
 function module:ToggleInfotext(name)
 	local frame = elementFrames[name]
+	if not frame then
+		db[name].Enable = not db[name].Enable
+		return
+	end
+	if frame.LUISecureClick then
+		-- A second toggle during combat must cancel the queued first toggle.
+		if db[name].Enable then module:HideInfotext(name) else module:ShowInfotext(name) end
+		return
+	end
 	if frame:IsShown() then
 		frame:Hide()
 		db[name].Enable = false
 	else
 		frame:Show()
 		db[name].Enable = true
+	end
+end
+
+function module:HideSecureDisplays()
+	for _, frame in pairs(elementFrames) do
+		if frame.LUISecureClick and not DeferSecureDisplay(frame) then frame:Hide() end
 	end
 end
 

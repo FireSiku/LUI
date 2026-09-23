@@ -202,5 +202,6 @@ end
 function module:OnDisable()
 	if module.UnregisterAllLDBCallbacks then module:UnregisterAllLDBCallbacks() end
 	if module.HideInfotips then module:HideInfotips() end
+	if module.HideSecureDisplays then module:HideSecureDisplays() end
 	module.topAnchor:Hide()
 end
