@@ -22,7 +22,7 @@ local UnitIsPlayer, UnitName = _G.UnitIsPlayer, _G.UnitName
 
 --- Classic Compatibility
 -- This updates our local copy, does not conflict with other addons.
-if not LUI.IsRetail then
+if not UnitQuestTrivialLevelRange then
 	UnitQuestTrivialLevelRange = _G.GetQuestGreenRange
 end
 
