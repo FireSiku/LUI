@@ -4,6 +4,7 @@
 
 ---@class LUIAddon
 local LUI = select(2, ...)
+if LUI.IsForever then return end
 
 ---@class LUI.ExperienceBars
 local module = LUI:GetModule("Experience Bars")
