@@ -98,6 +98,7 @@ modules\infotext\movespeed.lua
 
 ### Micromenu ###
 modules\micromenu\micromenu.lua
+modules\micromenu\compat.lua
 modules\micromenu\alerts.lua
 
 ### RaidMenu ###

@@ -160,6 +160,10 @@ end
 -- Keep the state driver on our own frame and leave Blizzard's methods, parent,
 -- mouse settings, alpha and visibility-driver registration untouched.
 local function SetNativeMicroVisibility(state, visibility)
+	if LUI.IsForever then
+		state.frame:SetShown(visibility == "show")
+		return
+	end
 	local handler = state.handler
 	UnregisterStateDriver(handler, "luimicro")
 	-- A constant driver only dispatches when its state changes. Reset our own
@@ -181,7 +185,10 @@ local function HideNativeMicroBar()
 	PreserveQueueButton(frame)
 
 	local state = nativeMicroFrameState[frame]
-	if not state then
+	if not state and LUI.IsForever then
+		state = {frame = frame}
+		nativeMicroFrameState[frame] = state
+	elseif not state then
 		local handler = CreateFrame("Frame", nil, nil, "SecureHandlerStateTemplate")
 		handler:SetFrameRef("target", frame)
 		handler:SetAttribute("_onstate-luimicro", [[
@@ -215,7 +222,7 @@ local function RestoreNativeMicroBar()
 	for _, state in pairs(nativeMicroFrameState) do
 		if state.owned then
 			SetNativeMicroVisibility(state, state.wasShown and "show" or "hide")
-			UnregisterStateDriver(state.handler, "luimicro")
+			if state.handler then UnregisterStateDriver(state.handler, "luimicro") end
 			state.owned = false
 		end
 	end
@@ -247,7 +254,7 @@ local TEXTURE_CLICK_WIDTH = 27
 
 -- Level Requirements
 
-local TALENT_LEVEL_REQ = 10
+local TALENT_LEVEL_REQ = LUI.IsForever and 1 or 10
 local LFG_LEVEL_REQ = 10
 
 -- ####################################################################################################################
@@ -270,6 +277,7 @@ module.defaults = {
 		HideHousing = false,
 		HideQuests = false,
 		HideAchievements = false,
+		HideLegacy = false,
 		HideTalents = false,
 		HideSpellbook = false,
 		HidePlayer = false,
@@ -356,9 +364,9 @@ local microDefinitions = {
 		state = "PVEFrame",
 		OnClick = function(self, btn)
 			if btn == "RightButton" then
-				_G.TogglePVPUI()
+				if _G.TogglePVPUI then _G.TogglePVPUI() end
 			else
-				_G.ToggleLFDParentFrame()
+				if _G.ToggleLFDParentFrame then _G.ToggleLFDParentFrame() end
 			end
 		end,
 	},
@@ -408,6 +416,18 @@ local microDefinitions = {
 	},
 
 	{
+        name = "Legacy",
+        iconName = "achievements",
+        title = _G.LEGACY_BUTTON or "Legacy",
+        any = "Show/Hide Legacy",
+        state = "LegacySystemFrame",
+        addon = "Blizzard_LegacySystem",
+        secureClickTarget = "LegacyMicroButton",
+        secureClickBothButtons = true,
+        nativeTooltipTarget = "LegacyMicroButton",
+    },
+
+	{
 		name = "Talents",
 		level = TALENT_LEVEL_REQ,
 		title = L["MicroTalents_Name"],
@@ -416,8 +436,10 @@ local microDefinitions = {
 		state = "PlayerSpellsFrame",
 		addon = "Blizzard_PlayerSpells",
 		-- Keep opening, selecting tabs and closing on native secure click paths.
-		secureClickTarget = "PlayerSpellsMicroButton",
-		securePlayerSpells = true,
+		secureClickTarget = LUI.IsForever and "TalentMicroButton" or "PlayerSpellsMicroButton",
+		secureClickRightTarget = LUI.IsForever and "SpellbookMicroButton" or nil,
+		secureClickBothButtons = LUI.IsForever,
+		securePlayerSpells = not LUI.IsForever,
 	},
 
 	{
@@ -466,6 +488,10 @@ function MicroButtonClickerMixin:OnEnter()
 	if parent.right then
 		GameTooltip:AddLine(parent.right, GREEN_FONT_COLOR.r, GREEN_FONT_COLOR.g, GREEN_FONT_COLOR.b, true)
 	end
+    local native = parent.nativeTooltipTarget and _G[parent.nativeTooltipTarget]
+    if native and native.disabledTooltip then
+        GameTooltip:AddLine(native.disabledTooltip, 1, 0.2, 0.2, true)
+    end
 	local playerLevel = UnitLevel("player")
 	if parent.level and not issecretvalue(playerLevel) and playerLevel < parent.level then
 		GameTooltip:AddLine(format(L["Micro_PlayerReq"], parent.level), LUI:NegativeColor())
@@ -535,7 +561,7 @@ function module:NewMicroButton(buttonData)
 	-- Make an icon for the button.
 	button.icon = button:CreateTexture(nil, "ARTWORK")
 	button.icon:SetPoint("CENTER", 0, 0)
-	button.icon:SetTexture(format(TEXTURE_PATH_FORMAT, strlower(name)))
+	button.icon:SetTexture(format(TEXTURE_PATH_FORMAT, strlower(buttonData.iconName or name)))
 	button.icon:SetTexCoord(LUI:GetCoordAtlas("MicroBtn_Icon"))
 	button.icon:SetVertexColor(r, g, b)
 
@@ -569,7 +595,8 @@ function module:NewMicroButton(buttonData)
 			local target = _G[secureClickTarget]
 			for mouseButton = 1, 2 do
 				button.clicker:SetAttribute("*type" .. mouseButton, "click")
-				button.clicker:SetAttribute("*clickbutton" .. mouseButton, target)
+				button.clicker:SetAttribute("*clickbutton" .. mouseButton,
+					mouseButton == 2 and button.secureClickRightTarget and _G[button.secureClickRightTarget] or target)
 			end
 		else
 			button.clicker:SetAttribute("type1", "macro")
@@ -723,6 +750,18 @@ end
 -- ####################################################################################################################
 
 function module:SetMicromenuAnchors()
+    if InCombatLockdown() then
+        QueueAfterCombat("refresh")
+        return
+    end
+    for _, button in ipairs(microStorage) do
+        if button.secureClickBothButtons then
+            local left = _G[button.secureClickTarget]
+            local right = button.secureClickRightTarget and _G[button.secureClickRightTarget] or left
+            button.clicker:SetAttribute("*clickbutton1", left)
+            button.clicker:SetAttribute("*clickbutton2", right)
+        end
+    end
 	local firstAnchor, previousAnchor
 
 	local buttonSpacing = (db.Direction == "LEFT" and (db.Spacing - 2)) or -(db.Spacing - 2)
@@ -732,7 +771,7 @@ function module:SetMicromenuAnchors()
 		local button = microStorage[i]
 		button:ClearAllPoints()
 
-		if db[("Hide") .. button.name] then
+		if db[("Hide") .. button.name] or not module:IsClientButtonAvailable(button.name) then
 			button:Hide()
 		else
 			button:Show()
@@ -934,10 +973,12 @@ function module:OnEvent(event, addon)
 		BindPlayerSpellsClickTargets()
 	end
 	if event == "PLAYER_ENTERING_WORLD" or event == "EDIT_MODE_LAYOUTS_UPDATED" then
+		if module.background then module:SetMicromenuAnchors() end
 		HideNativeMicroBar()
 		return
 	end
 	if event == "ADDON_LOADED" and addon == "Blizzard_MicroMenu" then
+		if module.background then module:SetMicromenuAnchors() end
 		HideNativeMicroBar()
 	end
 	if addonLoadedCallbacks[addon] then
