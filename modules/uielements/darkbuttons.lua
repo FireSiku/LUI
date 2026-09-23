@@ -9,6 +9,7 @@ local hooked = setmetatable({}, {__mode = "k"})
 local active, applying, hooksInstalled = false, false, false
 local buttonStyle, escapeButtonStyle, pendingRefresh
 local deferredReconcile
+local combatQueued = false
 local deferredObjects = setmetatable({}, {__mode = "k"})
 local aceGUIHooked = false
 local cosmeticOwners = setmetatable({}, {__mode = "k"})
@@ -177,10 +178,15 @@ local function StyleForRegion(region)
     return StyleForButton(region:GetParent())
 end
 
-local function DeferCombat(needsReconcile, object)
+local function DeferCombat(needsReconcile, object, operation)
     if needsReconcile then deferredReconcile = true end
-    if object and not IsSecret(object) then deferredObjects[object] = true end
-    eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+    if object and not IsSecret(object) and deferredObjects[object] ~= "branch" then
+        deferredObjects[object] = operation or "paint"
+    end
+    if not combatQueued then
+        combatQueued = true
+        eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+    end
 end
 
 -- Menu and shared buttons use a rectangle drawn at their existing size.
@@ -642,7 +648,7 @@ local function CoordinatesChanged(region, ...)
     if not coords then return end
     record.coords = coords
     if not active then return end
-    if InCombatLockdown() then DeferCombat(true, region); return end
+    if InCombatLockdown() then DeferCombat(false, region); return end
     if StyleForRegion(region) ~= record.style then ApplyRegion(region); return end
     applying = true
     region:SetTexCoord(0, 1, 0, 1)
@@ -657,7 +663,7 @@ local function ColorChanged(region)
     if not color then return end
     record.color = color
     if not active then return end
-    if InCombatLockdown() then DeferCombat(true, region); return end
+    if InCombatLockdown() then DeferCombat(false, region); return end
     if StyleForRegion(region) ~= record.style then ApplyRegion(region); return end
     applying = true
     region:SetVertexColor(record.tint, record.tint, record.tint, color[4])
@@ -672,7 +678,7 @@ local function DesaturationChanged(region, value)
     if type(value) ~= "number" then return end
     record.desaturation = value
     if not active then return end
-    if InCombatLockdown() then DeferCombat(true, region); return end
+    if InCombatLockdown() then DeferCombat(false, region); return end
     if StyleForRegion(region) ~= record.style then ApplyRegion(region); return end
     applying = true
     region:SetDesaturation(1)
@@ -681,7 +687,7 @@ end
 
 ApplyRegion = function(region)
     if applying or not active or not CanStyle(region) or customRegions[region] then return end
-    if InCombatLockdown() then DeferCombat(true, region); return end
+    if InCombatLockdown() then DeferCombat(false, region); return end
     if region:GetObjectType() ~= "Texture" then return end
     local atlas, texture = region:GetAtlas(), region:GetTexture()
     if IsSecret(atlas) or IsSecret(texture) then return end
@@ -804,7 +810,7 @@ end
 
 ApplyButton = function(button, buttonState)
     if not active or not CanStyle(button) or not button:IsObjectType("Button") then return end
-    if InCombatLockdown() then DeferCombat(true, button); return end
+    if InCombatLockdown() then DeferCombat(false, button); return end
     knownButtons[button] = true
     if not showHooks[button] then
         local success = button:HookScript("OnShow", function(self) ApplyButton(self) end)
@@ -1301,7 +1307,7 @@ end
 
 local function PrepareButton(button)
     if not active or not CanStyle(button) or not button:IsObjectType("Button") then return end
-    if InCombatLockdown() then DeferCombat(true, button); return end
+    if InCombatLockdown() then DeferCombat(false, button); return end
     local previous = preparedButtons[button]
     local parent = button:GetParent()
     if previous and previous.revision == revision and previous.parent == parent then return end
@@ -1315,7 +1321,7 @@ end
 -- The window tree is never traversed. Cap both depth and work for addon rows.
 local function PrepareBranch(root)
     if not active or not CanStyle(root) then return end
-    if InCombatLockdown() then DeferCombat(true, root); return end
+    if InCombatLockdown() then DeferCombat(false, root, "branch"); return end
     local remaining = 64
     local Visit
     Visit = function(object, depth)
@@ -1595,19 +1601,18 @@ end
 eventFrame:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_REGEN_ENABLED" then
         self:UnregisterEvent(event)
+        combatQueued = false
         if pendingRefresh then module:RefreshDarkButtons(); return end
         if not active then RestoreArtwork(); return end
         -- Reconcile only registered controls and the objects deferred in combat.
-        PrepareKnownPanels(deferredReconcile)
+        if deferredReconcile then PrepareKnownPanels(true) end
         deferredReconcile = nil
-        for object in pairs(deferredObjects) do
+        for object, operation in pairs(deferredObjects) do
             deferredObjects[object] = nil
             if CanStyle(object) then
                 if object:IsObjectType("Texture") then ApplyRegion(object)
-                else
-                    ApplyButton(object)
-                    PrepareBranch(object)
-                end
+                elseif operation == "branch" then PrepareBranch(object)
+                else ApplyButton(object) end
             end
         end
     elseif active then
