@@ -58,6 +58,15 @@ for _, atlas in ipairs({"RedButton-Expand", "RedButton-Expand-Pressed", "RedButt
     "RedButton-MiniCondense", "RedButton-MiniCondense-pressed", "RedButton-MiniCondense-disabled"}) do
     tintAtlases[atlas] = "window-icon"
 end
+-- Trading Post icon buttons keep their cart/delete/rotation glyphs. These
+-- native atlas faces need tinting rather than a rectangular replacement.
+for _, family in ipairs({"128-RedButton-ShoppingCart", "128-RedButton-Delete"}) do
+    for _, suffix in ipairs({"", "-Pressed", "-Disabled", "-Highlight"}) do
+        tintAtlases[family .. suffix] = "window-icon"
+    end
+end
+tintAtlases["perks-button-up"] = "window-icon"
+tintAtlases["perks-button-down"] = "window-icon"
 local sharedFamilies = {
     ["128-RedButton"] = true,
     ["128-GoldRedButton"] = true,
@@ -772,6 +781,7 @@ end
 -- Explicit public control paths from Blizzard XML (Retail and Forever); absent paths are skipped.
 -- Legacy controls and protected-window cosmetic leaves are registered separately.
 local controlTargets = {
+    ["PerksProgramFrame"] = {buttons = {"FooterFrame.AddToCartButton", "FooterFrame.LeaveButton", "FooterFrame.PurchaseButton", "FooterFrame.RefundButton", "FooterFrame.RemoveFromCartButton", "FooterFrame.RotateButtonContainer.RotateLeftButton", "FooterFrame.RotateButtonContainer.RotateRightButton", "FooterFrame.ToggleAttackAnimation", "FooterFrame.ToggleHideArmor", "FooterFrame.ToggleMountSpecial", "FooterFrame.TogglePlayerPreview", "FooterFrame.ViewCartButton", "ModelSceneContainerFrame.AlteredFormButton", "ModelSceneContainerFrame.NormalFormButton", "ProductsFrame.PerksProgramShoppingCartFrame.ClearCartButton", "ProductsFrame.PerksProgramShoppingCartFrame.CloseButton", "ProductsFrame.PerksProgramShoppingCartFrame.PurchaseCartButton", "ProductsFrame.ProductsScrollBoxContainer.NameSortButton", "ProductsFrame.ProductsScrollBoxContainer.PerksProgramHoldFrame.FrozenProductContainer.ProductButton", "ProductsFrame.ProductsScrollBoxContainer.PerksProgramHoldFrame.FrozenProductContainer.ProductButton.ContentsContainer.CartToggleButton", "ProductsFrame.ProductsScrollBoxContainer.PriceSortButton", "ProductsFrame.ProductsScrollBoxContainer.TimeSortButton"}, scrolls = {"ProductsFrame.PerksProgramProductDetailsContainerFrame.SetDetailsScrollBoxContainer.ScrollBox", "ProductsFrame.PerksProgramShoppingCartFrame.ItemList.ScrollBox", "ProductsFrame.ProductsScrollBoxContainer.ScrollBox"}},
     ["AchievementFrame"] = {buttons = {"HeaderDetails.Back", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview1", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview2", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview3", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview4", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview5", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.ShowAllSearchResults", "SearchResults.CloseButton", "Tab1", "Tab2", "Tab3"}, scrolls = {"Categories.ScrollBox", "SearchResults.ScrollBox"}},
     ["AchievementFrameAchievements"] = {buttons = {}, scrolls = {"ScrollBox"}},
     ["AchievementFrameCloseButton"] = {buttons = {"."}, scrolls = {}},
