@@ -257,6 +257,119 @@ end
 -- ##### Infotext: Battle.net Friends Display #########################################################################
 -- ####################################################################################################################
 
+-- Optional Retail-only Raider.IO integration. Resolve the displayed character,
+-- never a different character on the same Battle.net account.
+local scoreRegions = {"us", "kr", "eu", "tw", "cn"}
+
+function element:IsFriendScoreEnabled()
+    return LUI.IsRetail and module.db.profile.Friends.ShowScore
+        and type(_G.RaiderIO) == "table" and type(_G.RaiderIO.GetProfile) == "function"
+end
+
+function element:UpdateFriendScore(row, name, realm, region)
+    row.score:SetText("")
+    row.score:Hide()
+    row.scoreName, row.scoreRealm, row.scoreRegion = nil, nil, nil
+    if not self:IsFriendScoreEnabled() then return end
+    name, realm, region = SafeValue(name), SafeValue(realm), SafeValue(region)
+    if type(name) ~= "string" or name == "" or type(realm) ~= "string" or realm == "" then return end
+    local ok, profile = pcall(_G.RaiderIO.GetProfile, name, realm, region)
+    profile = ok and SafeValue(profile)
+    if type(profile) ~= "table" or not SafeValue(profile.success, false) then return end
+    local keystone = SafeValue(profile.mythicKeystoneProfile)
+    if type(keystone) ~= "table" or (issecretvalue(keystone.blocked) or keystone.blocked)
+        or not SafeValue(keystone.hasRenderableData, false) then return end
+    local score = SafeValue(keystone.currentScore)
+    if type(score) ~= "number" or not (score >= 0 and score < math.huge) then return end
+    row.scoreName, row.scoreRealm, row.scoreRegion = name, realm, region
+    row.score:SetText(format("M+ %.0f", score))
+    row.score:SetTextColor(1, 1, 1)
+    if type(_G.RaiderIO.GetScoreColor) == "function" then
+        local colorOK, red, green, blue = pcall(_G.RaiderIO.GetScoreColor, score)
+        red, green, blue = SafeValue(red), SafeValue(green), SafeValue(blue)
+        if colorOK and type(red) == "number" and type(green) == "number" and type(blue) == "number" then
+            row.score:SetTextColor(red, green, blue)
+        end
+    end
+    row.score:Show()
+end
+
+function element:GetBNScoreIdentity(gameInfo)
+    if not LUI.IsRetail or SafeValue(gameInfo.clientProgram) ~= BNET_CLIENT_WOW
+        or SafeValue(gameInfo.wowProjectID) ~= WOW_PROJECT_MAINLINE then return end
+    local region = scoreRegions[SafeValue(gameInfo.regionID, 0)]
+    if not region and not SafeValue(gameInfo.isInCurrentRegion, false) then return end
+    return SafeValue(gameInfo.characterName), SafeValue(gameInfo.realmName), region
+end
+
+local function HideFriendScoreTooltip(row)
+    if GameTooltip and GameTooltip:IsOwned(row) then GameTooltip:Hide() end
+end
+
+-- Place the detail tooltip beside the whole Friends window, on the side
+-- facing the screen centre. Compare physical dimensions to support UI scaling.
+function element:PositionFriendScoreTooltip(row)
+    local tip = GameTooltip
+    local uiScale, tipScale = UIParent:GetEffectiveScale(), tip:GetEffectiveScale()
+    local windowScale, rowScale = infotip:GetEffectiveScale(), row:GetEffectiveScale()
+    local left, right, top = infotip:GetLeft(), infotip:GetRight(), row:GetTop()
+    if not left or not right or not top then return end
+    local screenWidth, screenHeight = UIParent:GetWidth() * uiScale, UIParent:GetHeight() * uiScale
+    local width, height = tip:GetWidth() * tipScale, tip:GetHeight() * tipScale
+    local gap = 8 * uiScale
+    left, right, top = left * windowScale, right * windowScale, top * rowScale
+    local owner = infotip:GetParent()
+    local centre = owner and owner:GetCenter()
+    centre = centre and centre * owner:GetEffectiveScale() or (left + right) / 2
+    local useLeft = centre >= screenWidth / 2
+    local leftSpace, rightSpace = left - gap * 2, screenWidth - right - gap * 2
+    if useLeft and leftSpace < width and rightSpace >= width then
+        useLeft = false
+    elseif not useLeft and rightSpace < width and leftSpace >= width then
+        useLeft = true
+    elseif leftSpace < width and rightSpace < width then
+        useLeft = leftSpace >= rightSpace
+    end
+    local x = useLeft and (left - gap - width) or (right + gap)
+    -- Very wide lists may leave neither side enough room. Keep the details
+    -- readable within the screen, allowing only the unavoidable overlap.
+    x = max(gap, min(x, screenWidth - width - gap))
+    local y = min(screenHeight - gap, max(top, height + gap))
+    tip:ClearAllPoints()
+    tip:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x / tipScale, y / tipScale)
+end
+
+function element:AddFriendScore(row)
+    row.score = row:AddFontString("RIGHT", row.zone, GAP)
+    row.score:SetWordWrap(false)
+    row.score:Hide()
+    row:HookScript("OnEnter", function(self)
+        if not element:IsFriendScoreEnabled() or not module.db.profile.Friends.ShowScoreDetails
+            or not self.scoreName or type(_G.RaiderIO.ShowProfile) ~= "function" then return end
+        GameTooltip:SetOwner(self, "ANCHOR_NONE")
+        GameTooltip:SetText(self.scoreName.." - "..self.scoreRealm)
+        local ok, shown = pcall(_G.RaiderIO.ShowProfile, GameTooltip,
+            self.scoreName, self.scoreRealm, self.scoreRegion)
+        if not ok or not shown then
+            HideFriendScoreTooltip(self)
+        else
+            element:PositionFriendScoreTooltip(self)
+        end
+    end)
+    row:HookScript("OnLeave", HideFriendScoreTooltip)
+    row:HookScript("OnHide", HideFriendScoreTooltip)
+end
+
+function element:PositionFriendScore(row, width, isWoW)
+    row.score:ClearAllPoints()
+    row.score:SetPoint("LEFT", row.zone, "RIGHT", GAP, 0)
+    row.score:SetWidth(max(1, width))
+    row.score:SetShown(isWoW and width > 0)
+    row.note:ClearAllPoints()
+    local anchor = not isWoW and row.gameText or (width > 0 and row.score or row.zone)
+    row.note:SetPoint("LEFT", anchor, "RIGHT", GAP, 0)
+end
+
 function element:CreateBNFriend(index)
 	if infotip.BNFriends[index] then return infotip.BNFriends[index] end
 	local bnfriend = infotip:NewLine()
@@ -273,6 +386,7 @@ function element:CreateBNFriend(index)
 
 	bnfriend:SetScript("OnClick", element.OnBNFriendButtonClick)
 	bnfriend:AddHighlight()
+	element:AddFriendScore(bnfriend)
 	infotip.BNFriends[index] = bnfriend
 	return bnfriend
 end
@@ -318,6 +432,7 @@ end
 function element:DisplayBNFriends()
 	local classIconWidth, nameColumnWidth, noteColumnWidth, gameColumnWidth = 0, 0, 0, 0
 	local levelColumnWidth, factionIconWidth, zoneColumnWidth = 0, 0, 0
+	local scoreColumnWidth = 0
 	infotip.bnIndex = 0
 	infotip.bcIndex = 0
 	for _, broadcast in ipairs(infotip.FriendsBC) do broadcast:Hide() end
@@ -343,6 +458,8 @@ function element:DisplayBNFriends()
 			bnfriend.gameAccountID = SafeValue(gameInfo.gameAccountID)
 			bnfriend.accountName = accountName
 			bnfriend.client = client
+            element:UpdateFriendScore(bnfriend, element:GetBNScoreIdentity(gameInfo))
+            scoreColumnWidth = max(scoreColumnWidth, module:GetInfotipTextWidth(bnfriend.score))
 			bnfriend.note:SetText(SafeValue(accountInfo.note, ""))
 			bnfriend.note:SetShown(module.db.profile.Friends.ShowNotes)
 			SetTextColor(bnfriend.gameText, "GameText")
@@ -424,7 +541,8 @@ function element:DisplayBNFriends()
 	gameColumnWidth = math.min(gameColumnWidth, GAME_COLUMN_MAX)
 	-- Account and current character form one label; size it to the full pair.
 	-- Only the screen limit may shorten it, while zone text can still wrap.
-	local fixedWidth = TEXT_OFFSET + classIconWidth + noteColumnWidth + GAP * 4
+    local scoreWidth = scoreColumnWidth > 0 and (scoreColumnWidth + GAP) or 0
+	local fixedWidth = TEXT_OFFSET + classIconWidth + noteColumnWidth + GAP * 4 + scoreWidth
 	local wowInfoWidth = factionIconWidth + levelColumnWidth + TEXT_OFFSET + GAP
 	nameColumnWidth = FitColumnWidth(nameColumnWidth,
 		fixedWidth + max(wowInfoWidth + 1, gameColumnWidth))
@@ -435,6 +553,7 @@ function element:DisplayBNFriends()
 		bnfriend.level:SetWidth(levelColumnWidth)
 		bnfriend.zone:SetWidth(zoneColumnWidth)
 		bnfriend.note:SetWidth(noteColumnWidth)
+		element:PositionFriendScore(bnfriend, scoreColumnWidth, bnfriend.client == BNET_CLIENT_WOW)
 		bnfriend.gameText:SetWidth(gameColumnWidth)
 		bnfriend:Hide()
 		if bnfriend.broadcast then
@@ -445,7 +564,7 @@ function element:DisplayBNFriends()
 	-- Calculate the length of the BNFriend row. This calculation need to check between
 	--  gameText and wow client's toon information is the longest and adds that.
 	local maxWidth = TEXT_OFFSET + classIconWidth + nameColumnWidth + noteColumnWidth + GAP * 4
-	maxWidth = maxWidth + max(factionIconWidth + zoneColumnWidth + levelColumnWidth + TEXT_OFFSET + GAP, gameColumnWidth)
+	maxWidth = maxWidth + max(factionIconWidth + zoneColumnWidth + levelColumnWidth + TEXT_OFFSET + GAP + scoreWidth, gameColumnWidth)
 	infotip.maxWidth = max(infotip.maxWidth, maxWidth)
 
 end
@@ -487,6 +606,7 @@ function element:CreateFriend(index)
 
 	friend:SetScript("OnClick", element.OnFriendButtonClick)
 	friend:AddHighlight()
+	element:AddFriendScore(friend)
 	infotip.Friends[index] = friend
 	return friend
 end
@@ -503,7 +623,7 @@ end
 
 function element:DisplayFriends()
 	local classIconWidth, nameColumnWidth, levelColumnWidth = 0, 0, 0
-	local zoneColumnWidth, noteColumnWidth = 0, 0
+	local zoneColumnWidth, noteColumnWidth, scoreColumnWidth = 0, 0, 0
 	infotip.friendIndex = 0
 	-- The current friends list does not guarantee that every online entry is in
 	-- the first GetNumOnlineFriends() indices.
@@ -518,6 +638,9 @@ function element:DisplayFriends()
 			local r, g, b = module:RGB(class)
 
 			friend.unit = friendName
+            local scoreName, scoreRealm = friendName:match("^([^%-]+)%-(.+)$")
+            element:UpdateFriendScore(friend, scoreName or friendName, scoreRealm or LUI.playerRealm)
+            scoreColumnWidth = max(scoreColumnWidth, module:GetInfotipTextWidth(friend.score))
 			friend.name:SetText(statusString..friendName)
 			friend.name:SetTextColor(r or 1, g or 1, b or 1)
 			friend:SetClassIcon(friend.class, class)
@@ -542,9 +665,10 @@ function element:DisplayFriends()
 	end
 	nameColumnWidth = math.min(nameColumnWidth, NAME_COLUMN_MAX)
 	noteColumnWidth = math.min(noteColumnWidth, NOTE_COLUMN_MAX)
+	local scoreWidth = scoreColumnWidth > 0 and (scoreColumnWidth + GAP) or 0
 	zoneColumnWidth = FitColumnWidth(zoneColumnWidth,
 		TEXT_OFFSET + classIconWidth + nameColumnWidth + levelColumnWidth
-		+ noteColumnWidth + GAP * 5)
+		+ noteColumnWidth + GAP * 5 + scoreWidth)
 
 	for i = 1, #infotip.Friends do
 		local friend = infotip.Friends[i]
@@ -552,10 +676,11 @@ function element:DisplayFriends()
 		friend.level:SetWidth(levelColumnWidth)
 		friend.zone:SetWidth(zoneColumnWidth)
 		friend.note:SetWidth(noteColumnWidth)
+		element:PositionFriendScore(friend, scoreColumnWidth, true)
 		friend:Hide()
 	end
 	local maxWidth = TEXT_OFFSET + classIconWidth + nameColumnWidth + levelColumnWidth
-	maxWidth = maxWidth + zoneColumnWidth + noteColumnWidth + GAP * 5
+	maxWidth = maxWidth + zoneColumnWidth + noteColumnWidth + GAP * 5 + scoreWidth
 	infotip.maxWidth = max(infotip.maxWidth, maxWidth)
 end
 
