@@ -7,7 +7,10 @@ LUI = LibStub("AceAddon-3.0"):NewAddon(LUI, addonName, "AceComm-3.0", "AceConsol
 LUI.L = LibStub("AceLocale-3.0"):GetLocale(addonName)
 LUI:SetDefaultModuleLibraries("AceEvent-3.0")
 
-LUI.IsRetail = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_MAINLINE)
+local clientVersion = GetBuildInfo()
+LUI.IsForever = clientVersion and clientVersion:match("^1%.60%.") ~= nil
+LUI.IsRetail = (_G.WOW_PROJECT_ID == _G.WOW_PROJECT_MAINLINE) and not LUI.IsForever
+LUI.UsesModernUI = LUI.IsRetail or LUI.IsForever
 
 _G["LUI"] = LUI
 
