@@ -96,6 +96,7 @@ ExpBars.args = {
 		desc = "Show a second active tracker when one is available.",
 		width = "double",
 	}),
+	Lock = Opt:Toggle({name = "Lock Bars", desc = "Unlock to drag the primary bar and, when separated, the secondary bar."}),
 	SeparateTrackerBars = Opt:Toggle({
 		name = "Separate tracked bars",
 		desc = "Give the second tracker its own position and width instead of splitting the main bar in half.",
@@ -130,7 +131,6 @@ ExpBars.args = {
 	PrimaryHeader = Opt:Header({name = "Primary Bar"}),
 	Width = Opt:InputNumber({name = "Width"}),
 	Height = Opt:InputNumber({name = "Height"}),
-	Lock = Opt:Toggle({name = "Lock Bars", desc = "Unlock to drag the primary bar and, when separated, the secondary bar."}),
 	X = Opt:PositionX(),
 	Y = Opt:PositionY(),
 	Point = Opt:Select({name = L["Anchor"], values = LUI.Points}),
