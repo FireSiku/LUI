@@ -8,6 +8,10 @@ if not module or not module.registered then return end
 local UIElements = Opt:CreateModuleOptions("UI Elements", module)
 
 local managedFrameOptions = {
+	QueueEye = {
+		name = "LFG Queue Eye",
+		desc = "Move the queue-status eye independently of the micro menu. Enable position management, then adjust X/Y. The preview works without joining a queue. Changes apply outside combat.",
+	},
 	ZoneObjectives = {
 		name = "Zone Objectives Frame",
 		desc = "Top-center zone objectives, battleground information and similar widgets.",

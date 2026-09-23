@@ -12,6 +12,11 @@ local settingPosition = false
 local pendingRestore = false
 
 local managedFrames = {
+	QueueEye = {
+		frame = "QueueStatusButton",
+		point = "TOPRIGHT",
+		relativePoint = "TOPRIGHT",
+	},
 	ZoneObjectives = {
 		frame = "UIWidgetTopCenterContainerFrame",
 		point = "TOP",
@@ -70,10 +75,35 @@ local function GetFrame(key)
 	return definition and _G[definition.frame]
 end
 
+local function CanPosition(frame)
+	if not frame or (issecretvalue and issecretvalue(frame)) then return false end
+	for _, name in ipairs({"IsForbidden", "HasAnySecretAspect", "HasAnyForbiddenAspects", "HasAccessConstraints"}) do
+		local ok, restricted = pcall(function()
+			if frame[name] then return frame[name](frame) end
+			return false
+		end)
+		if not ok or (issecretvalue and issecretvalue(restricted)) or restricted ~= false then return false end
+	end
+	return true
+end
+
+local eyePositionPending = false
+function module:QueueEyePosition()
+	if eyePositionPending then return end
+	eyePositionPending = true
+	C_Timer.After(0, function()
+		eyePositionPending = false
+		if not module:IsEnabled() then return end
+		if InCombatLockdown() then QueueAfterCombat(false); return end
+		module:PositionManagedFrame("QueueEye")
+	end)
+end
+
 function module:RestoreManagedFrame(key)
 	local frame = GetFrame(key)
 	local points = originalPoints[key]
 	if not frame or not points then return end
+	if key == "QueueEye" and not CanPosition(frame) then return end
 
 	settingPosition = true
 	RestorePoints(frame, points)
@@ -96,8 +126,22 @@ function module:PositionManagedFrame(key)
 	local config = definition and module.db.profile[key]
 	local frame = GetFrame(key)
 	if not definition or not config or not frame then return end
+	if key == "QueueEye" then
+		if InCombatLockdown() then QueueAfterCombat(false); return end
+		if not CanPosition(frame) then return end
+	end
 
-	if not module:IsHooked(frame, "SetPoint") then
+	if key == "QueueEye" then
+		if config.ManagePosition and not module:IsHooked(frame, "SetPoint") then
+			module:SecureHook(frame, "SetPoint", function()
+				if settingPosition or not module:IsEnabled() or not module.db.profile.QueueEye.ManagePosition then return end
+				-- Let the native layout finish. Keep its latest anchor for restore;
+				-- do not run a full UI Elements/style refresh from this callback.
+				if not InCombatLockdown() and CanPosition(frame) then originalPoints.QueueEye = CapturePoints(frame) end
+				module:QueueEyePosition()
+			end)
+		end
+	elseif not module:IsHooked(frame, "SetPoint") then
 		module:SecureHook(frame, "SetPoint", function()
 			if not settingPosition and module:IsEnabled() then module:Refresh() end
 		end)
@@ -148,6 +192,7 @@ function module:CreatePreview(key, labelText)
 
 	local preview = CreateFrame("Frame", "LUI"..key.."Preview", UIParent)
 	preview:SetSize(260, 48)
+	if key == "QueueEye" then preview:SetSize(80, 48) end
 	preview:SetFrameStrata("DIALOG")
 	LUI:ApplyFrameBackdrop(preview, {
 		bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",

@@ -12,6 +12,11 @@ module.defaults = {
 		DarkButtons = true,
 		ButtonStyle = "classic",
 		EscapeButtonStyle = "dark",
+		QueueEye = {
+			X = -250,
+			Y = -180,
+			ManagePosition = false,
+		},
 		ZoneObjectives = {
 			X = 300,
 			Y = -35,
