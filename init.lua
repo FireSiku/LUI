@@ -29,10 +29,18 @@ LUI.cmdList = {
 
 function LUI:OpenOptions()
 	if not C_AddOns.IsAddOnLoaded("LUIOptions") then
-		C_AddOns.LoadAddOn("LUIOptions")
+		local loaded, reason = C_AddOns.LoadAddOn("LUIOptions")
+		if not loaded then
+			self:Print("LUIOptions could not be loaded (" .. tostring(reason or "unknown reason") .. "). Check that the addon is installed and enabled.")
+			return
+		end
 	end
 
-	self:NewOpen()
+	if type(self.NewOpen) ~= "function" then
+		self:Print("LUIOptions did not finish loading. Please check for an earlier Lua error and reload the UI.")
+		return
+	end
+	return self:NewOpen()
 end
 
 function LUI:ChatCommand(input)
