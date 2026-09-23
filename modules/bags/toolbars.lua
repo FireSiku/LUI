@@ -38,6 +38,7 @@ function ToolbarMixin:SetAnchors()
 	local previousAnchor, firstAnchor
 	for i = 1, #self.slotList do
 		local slot = self.slotList[i]
+		if slot.UpdateClientVisibility then slot:UpdateClientVisibility() end
 		slot:ClearAllPoints()
 
 		if not slot.hidden then

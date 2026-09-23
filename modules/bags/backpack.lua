@@ -160,6 +160,7 @@ function Bags:CreateUtilBar()
 	--CleanUp
 	local button = module:CreateCleanUpButton("LUIBags_CleanUp", utilBar, function() module:SortBags() end)
 	utilBar:AddNewButton(button)
+	module:CreateKeyringButton(utilBar)
 end
 
 -- ####################################################################################################################
