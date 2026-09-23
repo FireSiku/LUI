@@ -122,6 +122,7 @@ local function AddShared(data, optionType)
 
 	-- Handle generic AceOptions properties
 	data.type = optionType
+	OptionMixin.AddConfirm(data, data.confirm)
 	if not data.order then data.order = nextOrder end
 
 	-- Provides a quick way to debug options
