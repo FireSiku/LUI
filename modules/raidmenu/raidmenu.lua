@@ -375,6 +375,12 @@ local function SizeRaidMenu(compact)
 		FormatMarker(RoleChecker,       105, -75)
 		FormatMarker(ConvertRaid,       105, -100)
 	end
+	local width, height = RaidMenu_Parent:GetSize()
+	height = module:LayoutGroupTools(width, height)
+	RaidMenu_Parent:SetHeight(height)
+	RaidMenu_BG:SetHeight(height)
+	RaidMenu:SetHeight(height)
+	RaidMenu_Border:SetHeight(height)
 end
 
 function module:SetColors()
@@ -413,6 +419,7 @@ function module:SetRaidMenu()
 		RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17))
 	end
 	RaidMenu_Parent:SetScale(db.Scale)
+	RaidMenu_Parent:SetClampedToScreen(true)
 	RaidMenu_Parent:Hide()
 
 	RaidMenu_BG = LUI:CreateMeAFrame("Frame", "RaidMenu_BG", RaidMenu_Parent, 256, 256, 1, "HIGH", 1, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 0, 0, 1)
@@ -590,6 +597,7 @@ function module:SetRaidMenu()
 		end
 	end)
 	UpdateGroupButtons()
+	module:CreateGroupTools(RaidMenu)
 
 	animationFrame = CreateFrame("Frame", nil, UIParent)
 	animationFrame:Hide()
@@ -651,6 +659,7 @@ function module:Refresh()
 	RaidMenu_Parent:SetAlpha(menuShown and db.Opacity / 100 or 0)
 	RaidMenu_Parent:SetShown(menuShown)
 	module:SetColors()
+	module:SetGroupToolsActive(true)
 end
 
 function module:SetRaidMenuEnabled(enabled)
@@ -670,6 +679,7 @@ end
 function module:HideRaidMenu()
 	menuShown = false
 	StopAnimations()
+	module:SetGroupToolsActive(false)
 	if not RaidMenu_Parent then return end
 	if InCombatLockdown() then
 		RaidMenu_Parent:SetAlpha(db.Opacity / 100)

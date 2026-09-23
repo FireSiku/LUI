@@ -105,6 +105,7 @@ modules\micromenu\alerts.lua
 ### RaidMenu ###
 modules\raidmenu\raidmenu_init.lua
 modules\raidmenu\raidmenu.xml
+modules\raidmenu\raidmenu_tools.lua
 modules\raidmenu\raidmenu.lua
 
 ### ExpBars ###
