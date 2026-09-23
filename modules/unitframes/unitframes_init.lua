@@ -155,9 +155,27 @@ end
 
 function module:OnInitialize()
 	-- Register per-unit defaults after all layout default files have loaded.
-	-- AceDB fills missing settings without replacing saved text preferences.
+	-- AceDB fills missing settings without replacing saved preferences.
 	for _, defaults in pairs(module.defaults.profile) do
 		if type(defaults) == "table" and defaults.HealthBar then
+			-- Every health bar supports these overlays. Some child-frame defaults
+			-- omitted them, which also hid their options. Keep existing per-unit
+			-- defaults and create independent tables for the missing sections.
+			if defaults.HealthPredictionBar == nil then
+				defaults.HealthPredictionBar = {
+					Enable = false,
+					MyColor = {r = 0, g = 0.5, b = 0, a = 0.25},
+					OtherColor = {r = 0, g = 1, b = 0, a = 0.25},
+					Texture = "LUI_Gradient",
+				}
+			end
+			if defaults.TotalAbsorbBar == nil then
+				defaults.TotalAbsorbBar = {
+					Enable = false,
+					MyColor = {r = 0, g = 1, b = 0, a = 0.5},
+					Texture = "LUI_Gradient",
+				}
+			end
 			defaults.AbsorbText = {
 				Enable = false, Font = "Prototype", Size = 12, Outline = "OUTLINE",
 				Color = "Individual", IndividualColor = {r = 0.5, g = 1, b = 0.5},
