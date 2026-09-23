@@ -112,6 +112,13 @@ fpsArgs.MSValue = Opt:Select({name = "Latency Display", values = {Both = "Home a
 local friendsArgs = Infotext.args.Settings.args.Friends.args
 friendsArgs.showTotal = Opt:Toggle({name = "Show Total Friend Count", width = "full"})
 friendsArgs.ShowNotes = Opt:Toggle({name = "Show Friend Notes", width = "full"})
+friendsArgs.ShowScore = Opt:Toggle({name = "Show Mythic+ Score", width = "full",
+    desc = "Show the current character's Raider.IO score between zone and friend note. Requires Raider.IO and matching character data; missing data stays blank.",
+    hidden = not Opt.LUI.IsRetail, db = db.Friends})
+friendsArgs.ShowScoreDetails = Opt:Toggle({name = "Show Raider.IO Details on Hover", width = "full",
+    desc = "Show Raider.IO character details when hovering a friend with score data.",
+    hidden = not Opt.LUI.IsRetail, db = db.Friends,
+    disabled = function() return not module.db.profile.Friends.ShowScore end})
 friendsArgs.ShowHints = Opt:Toggle({name = "Show Mouse Hints", width = "full"})
 friendsArgs.ExtraWidth = Opt:Slider({name = "Extra Window Width", min = 0, max = 800, step = 10,
 	desc = "Widen the Friends hover window and its zone/realm or game-status column. 0 uses the automatic width. Limited by available screen space.",
