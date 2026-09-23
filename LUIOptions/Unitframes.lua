@@ -824,11 +824,23 @@ BuildUnitframeOptions = function()
                     BuildUnitframeOptions()
                     Opt:RefreshOptionsPanel()
                 end}),
+            SharedFont = Opt:MediaFont({name = "Font for All Unitframe Texts", width = "double",
+                desc = "Apply this font to every unit frame, including names, values, cast bars, combat feedback, raid group labels, aura timers and aura counts. Sizes and outlines stay unchanged. You can customize individual text fonts afterwards; this shows the last font applied to all texts.",
+                get = function() return module.db.profile.Settings.LastAppliedFont or module.db.profile.Settings.AuratimerFont end,
+                set = function(_, value) module:ApplySharedFont(value) end,
+            }),
             LayoutSpacer = Opt:Spacer({}),
             ShowV2Textures = Opt:Toggle({name = "Show LUI v2 Connector Lines", desc = "Show or hide the thin connector lines between Target, Target-of-Target, Focus and their child frames.", width = "full"}),
             ShowV2PartyTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Party Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Party Frames or not.", width = "full"}),
             ShowV2ArenaTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Arena Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Arena Frames or not.", width = "full"}),
             ShowV2BossTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Boss Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Boss Frames or not.", width = "full"}),
+            AuraCountFont = Opt:MediaFont({name = "Aura Count Font",
+                get = function() return module.db.profile.Settings.AuraCountFont or LibStub("LibSharedMedia-3.0"):GetDefault("font") end,
+                set = function(_, value)
+                    module.db.profile.Settings.AuraCountFont = value
+                    RefreshPaletteFrames()
+                end,
+            }),
 			AuratimerFont = Opt:MediaFont({name = "Aura Timer Font"}),
             AuratimerSize = Opt:Slider({name = "Aura Timer Size", values = fontValues}),
             AuratimerFlag = Opt:Select({name = "Aura Timer Outline", values = LUI.FontFlags}),

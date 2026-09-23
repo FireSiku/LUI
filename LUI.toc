@@ -139,6 +139,7 @@ api\frameidentifier.lua
 ### Initialize Unitframes ###
 modules\unitframes\templates.xml
 modules\unitframes\unitframes_init.lua
+modules\unitframes\fonts.lua
 modules\unitframes\defaults\Settings.lua
 modules\unitframes\defaults\player.lua
 modules\unitframes\defaults\target.lua
