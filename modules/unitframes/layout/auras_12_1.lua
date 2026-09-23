@@ -53,6 +53,12 @@ local function ApplyButtonAppearance(button, db)
         settings.AuratimerFlag
     )
 
+    if settings.AuraCountFont then
+        local _, size, flags = GameFontNormalSmall:GetFont()
+        button.Count:SetFont(Media:Fetch("font", settings.AuraCountFont), size, flags)
+    else
+        button.Count:SetFontObject(GameFontNormalSmall)
+    end
     button.AuraTypeHolder:SetAlpha(db.ColorByType == true and 1 or 0)
 end
 
