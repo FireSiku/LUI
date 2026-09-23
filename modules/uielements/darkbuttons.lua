@@ -1093,6 +1093,45 @@ local controlTargets = {
     ["WhoFrameColumnHeader4"] = {buttons = {"."}, scrolls = {}},
     ["WhoFrameGroupInviteButton"] = {buttons = {"."}, scrolls = {}},
     ["WhoFrameWhoButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarClassTotalsButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarCreateEventAutoApproveCheck"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarCreateEventCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarCreateEventCreateButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarCreateEventDescriptionContainer"] = {buttons = {}, scrolls = {"ScrollingEditBox.ScrollBox"}},
+    ["CalendarCreateEventInviteButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarCreateEventInviteList"] = {buttons = {}, scrolls = {"ScrollBox"}},
+    ["CalendarCreateEventInviteListClassSortButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarCreateEventInviteListNameSortButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarCreateEventInviteListStatusSortButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarCreateEventLockEventCheck"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarCreateEventMassInviteButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarCreateEventRaidInviteButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarEventPickerCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarEventPickerFrame"] = {buttons = {}, scrolls = {"ScrollBox"}},
+    ["CalendarMassInviteAcceptButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarMassInviteCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarNextMonthButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarPrevMonthButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarTexturePickerAcceptButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarTexturePickerCancelButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarTexturePickerFrame"] = {buttons = {}, scrolls = {"ScrollBox"}},
+    ["CalendarViewEventAcceptButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarViewEventCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarViewEventDeclineButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarViewEventDescriptionContainer"] = {buttons = {}, scrolls = {"ScrollingFont.ScrollBox"}},
+    ["CalendarViewEventFrame"] = {buttons = {"HeaderFrame"}, scrolls = {}},
+    ["CalendarViewEventInviteList"] = {buttons = {}, scrolls = {"ScrollBox"}},
+    ["CalendarViewEventInviteListClassSortButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarViewEventInviteListNameSortButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarViewEventInviteListStatusSortButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarViewEventRemoveButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarViewEventTentativeButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarViewHolidayCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarViewHolidayFrame"] = {buttons = {}, scrolls = {"ScrollingFont.ScrollBox"}},
+    ["CalendarViewRaidCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["CalendarViewRaidFrame"] = {buttons = {}, scrolls = {"ScrollingFont.ScrollBox"}},
+    ["WorldMapFrame"] = {buttons = {"BorderFrame.CloseButton", "BorderFrame.MaximizeMinimizeFrame.MaximizeButton", "BorderFrame.MaximizeMinimizeFrame.MinimizeButton", "BorderFrame.Tutorial"}, scrolls = {}},
 }
 
 -- Known native window close buttons may sit below a protected window. Only
@@ -1292,11 +1331,32 @@ local commonControls = {
     "button1", "button2", "button3", "button4", "Button1", "Button2", "Button3", "Button4",
 }
 
+local function PrepareMapControls(frame, name)
+    if name ~= "WorldMapFrame" and name ~= "QuestMapFrame" then return end
+    local targets = controlTargets[name]
+    if not targets then return end
+    for _, path in ipairs(targets.buttons) do
+        local button = ResolveControl(frame, path)
+        if CanTouch(button) and button:IsObjectType("Button") then
+            local ancestor = button:GetParent()
+            for _ = 1, 32 do
+                if not CanTouch(ancestor) then break end
+                if ancestor == frame then
+                    RegisterCosmeticButton(button:GetParent(), button)
+                    break
+                end
+                ancestor = ancestor:GetParent()
+            end
+        end
+    end
+end
+
 PrepareRoot = function(frame, name)
     if not active or not CanTouch(frame) or preparing[frame] then return end
     if InCombatLockdown() then DeferCombat(true); return end
     preparing[frame] = true
     RegisterCloseButton(frame, name)
+    PrepareMapControls(frame, name)
     if frame == _G.PlayerSpellsFrame then PreparePlayerSpellsControls() end
     if CanStyle(frame) then
         PrepareButton(frame)
