@@ -849,7 +849,7 @@ local panelNames = {
     "CommunitiesFrame", "GuildFrame", "PVEFrame", "PVPUIFrame", "ProfessionsFrame",
     "ProfessionsBookFrame", "QuestFrame", "GossipFrame", "MerchantFrame", "MailFrame",
     "AuctionHouseFrame", "BankFrame", "ItemTextFrame", "WorldMapFrame", "SettingsPanel",
-    "LUIBags",
+    "LUIBags", "LegacySystemFrame", "ReadyCheckFrame", "ReadyCheckListenerFrame",
 }
 
 local function RegisterCloseButton(frame, name)
@@ -876,6 +876,23 @@ local function RegisterCosmeticButton(parent, button)
     if not CanTouch(parent) or not CanTouch(button) or button:GetParent() ~= parent then return end
     cosmeticOwners[button] = parent
     ApplyButton(button)
+end
+
+-- Register only the two native response controls, including while hidden so
+-- their artwork is ready before the first ready check. Keep native OnClick
+-- handlers intact; all restrictions on the buttons/textures still apply.
+local function PrepareReadyCheckButtons()
+    if not active then return end
+    local root = _G.ReadyCheckFrame
+    if not CanTouch(root) then return end
+    local parent = _G.ReadyCheckListenerFrame
+    if parent then
+        if not CanTouch(parent) or parent:GetParent() ~= root then return end
+    else
+        parent = root
+    end
+    RegisterCosmeticButton(parent, _G.ReadyCheckFrameYesButton)
+    RegisterCosmeticButton(parent, _G.ReadyCheckFrameNoButton)
 end
 
 local function PreparePlayerSpellsControls()
@@ -956,7 +973,9 @@ QueuePanel = function(frame)
     ScheduleScan(state, 0)
 end
 
+
 local function PrepareKnownPanels(force)
+    PrepareReadyCheckButtons()
     for _, name in ipairs(panelNames) do
         local frame = _G[name]
         if CanTouch(frame) and (force or not preparedPanels[frame]) then
@@ -970,6 +989,10 @@ end
 
 local panelHooks = {}
 local panelTargets = {
+    ShowReadyCheck = function()
+        PrepareReadyCheckButtons()
+        QueuePanel(_G.ReadyCheckListenerFrame or _G.ReadyCheckFrame)
+    end,
     ShowUIPanel = QueuePanel,
     StaticPopup_OnShow = QueuePanel,
     StaticPopupSpecial_Show = QueuePanel,
@@ -1084,6 +1107,7 @@ eventFrame:SetScript("OnEvent", function(self, event)
         if pendingRefresh then module:RefreshDarkButtons(); return end
         if not active then RestoreArtwork(); return end
         PreparePlayerSpellsControls()
+        PrepareReadyCheckButtons()
         if scanState then
             ScheduleScan(scanState)
             return
