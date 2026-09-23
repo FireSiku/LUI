@@ -999,8 +999,8 @@ local function ImportProfile()
 
 	local profileName = TrimText(profileImportName)
 	local importText = TrimText(profileImportText)
-	if profileName == "" or #profileName > 64 or profileName:find("[%c]") then
-		LUI:Print("Enter a valid profile name with no more than 64 characters.")
+	if profileName == "" or _G.strlenutf8(profileName) > 50 or profileName:find("[%c]") then
+		LUI:Print("Enter a valid profile name with no more than 50 characters.")
 		return
 	end
 	if importText == "" or #importText > MAX_PROFILE_STRING_LENGTH then
