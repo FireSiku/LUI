@@ -79,6 +79,12 @@ local function GenerateBagsOptions()
 		Spacer2 = Opt:Spacer({}),
 		Lock = Opt:Toggle({name = "Lock Frame", desc = "Lock the frame in place."}),
 		BagBar = Opt:Toggle({name = "Show Bag Bar", desc = "Show the bag bar."}),
+        ShowKeyringButton = Opt:Toggle({
+            name = "Show Keyring Button",
+            desc = "Show the native keyring shortcut beside Clean Bags. Blizzard's keyring visibility setting must also be enabled.",
+            hidden = function() return not Opt.LUI:HasClientFeature("Keyring") end,
+            width = "full",
+        }),
 		BagNewline = Opt:Toggle({name = "Newline After Bags", desc = "Start a new row for each bag."}),
         ReverseCleanUp = Opt:Toggle({
             name = "Fill Bags from Bottom",

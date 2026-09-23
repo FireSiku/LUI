@@ -27,6 +27,7 @@ module.defaults = {
 			Spacing = 4,
 			Scale = 1,
 			BagBar = true,
+			ShowKeyringButton = true,
 			ItemQuality = true,
 			ItemLevel = true,
 			BagNewline = false,
