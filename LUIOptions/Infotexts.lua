@@ -22,8 +22,9 @@ local Infotext = Opt:CreateModuleOptions("Infotext", module)
 -- ####################################################################################################################
 
 local function InfoTextGroup(name)
-    local group = Opt:Group({name = name, db = db[name], args = {
-		Header = Opt:Header({name = name}),
+    local label = (Opt.LUI.IsForever and name == "Dualspec") and (_G.TALENTS or "Talents") or name
+    local group = Opt:Group({name = label, db = db[name], args = {
+        Header = Opt:Header({name = label}),
 		Enable = Opt:Toggle({name = "Enable", width = "full"}),
 		X = Opt:PositionX(),
 		Y = Opt:PositionY(),
@@ -100,7 +101,7 @@ local currencyArgs = Infotext.args.Settings.args.Currency.args
 currencyArgs.DisplayLimit = Opt:Slider({name = "Tooltip Currency Limit", min = 5, max = 100, step = 1})
 
 local dualspecArgs = Infotext.args.Settings.args.Dualspec.args
-dualspecArgs.lootSpec = Opt:Toggle({name = "Show Loot Specialization", width = "full"})
+dualspecArgs.lootSpec = Opt:Toggle({name = "Show Loot Specialization", width = "full", hidden = Opt.LUI.IsForever})
 
 local equipmentArgs = Infotext.args.Settings.args.EquipmentSets.args
 equipmentArgs.Text = Opt:Input({name = "Text Prefix", width = "full"})
@@ -144,8 +145,10 @@ guildArgs.Background = Opt:InlineGroup({name = "Guild Window Appearance", args =
 local mailArgs = Infotext.args.Settings.args.Mail.args
 mailArgs.NewIndic = Opt:Input({name = "New Mail Indicator", width = "full"})
 
-local lootSpecArgs = Infotext.args.Settings.args.LootSpec.args
-lootSpecArgs.Text = Opt:Input({name = "Text Prefix", width = "full"})
+local lootSpecGroup = Infotext.args.Settings.args.LootSpec
+if lootSpecGroup then
+    lootSpecGroup.args.Text = Opt:Input({name = "Text Prefix", width = "full"})
+end
 
 -- ####################################################################################################################
 -- ##### Gold Infotext ################################################################################################
