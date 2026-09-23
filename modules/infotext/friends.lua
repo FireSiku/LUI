@@ -123,6 +123,12 @@ local function SetTextColor(fontString, colorName)
 	fontString:SetTextColor(module:RGB(colorName))
 end
 
+-- The edit box needs its own Enter handler: enterClicksFirstButton alone
+-- does not confirm while typing. Share the save action with Accept.
+local function SaveBroadcast(dialog)
+    C_BattleNet.SetCustomMessage(SafeValue(dialog:GetEditBox():GetText(), ""))
+end
+
 --Add new Static Dialog, called once, no need to have local copies.
 StaticPopupDialogs["LUI_SET_BN_BROADCAST"] = {
 	text = _G.BN_BROADCAST_TOOLTIP,
@@ -131,20 +137,23 @@ StaticPopupDialogs["LUI_SET_BN_BROADCAST"] = {
 	exclusive = true,
 	whileDead = true,
 	hideOnEscape = true,
-	enterClicksFirstButton = true,
 
 	timeout = 0,
 	hasEditBox = 1,
 	maxLetters = 127,
-	OnAccept = function(self)
-		C_BattleNet.SetCustomMessage(self:GetEditBox():GetText())
-	end,
+	OnAccept = SaveBroadcast,
 	OnShow = function(self)
 		local _, _, _, currentBroadcast = BNGetInfo()
 		self:GetEditBox():SetText(SafeValue(currentBroadcast, ""))
 		self:GetEditBox():SetFocus()
 	end,
 	
+    EditBoxOnEnterPressed = function(editBox)
+        local dialog = editBox.GetOwningDialog and editBox:GetOwningDialog() or editBox:GetParent()
+        if not dialog or not dialog:GetButton1():IsEnabled() then return end
+        SaveBroadcast(dialog)
+        dialog:Hide()
+    end,
 	EditBoxOnEscapePressed = function(self)
 		self:GetParent():Hide()
 	end, 
