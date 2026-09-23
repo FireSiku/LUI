@@ -678,7 +678,8 @@ local function Enable(self, unit)
 
 		element:SetScript('OnUpdate', element.OnUpdate or onUpdate)
 
-		if(unit == 'player' and not (self.hasChildren or self.isChild or self.isNamePlate)) then
+		local handledBlizzard = element.HandleBlizzardCastbar and element:HandleBlizzardCastbar(true)
+		if(not handledBlizzard and unit == 'player' and not (self.hasChildren or self.isChild or self.isNamePlate)) then
 			PlayerCastingBarFrame:UnregisterAllEvents()
 			PlayerCastingBarFrame:Hide()
 			PetCastingBarFrame:UnregisterAllEvents()
@@ -740,7 +741,8 @@ local function Disable(self, unit)
 			element.Time.binding:SetEnabled(false)
 		end
 
-		if(unit == 'player' and not (self.hasChildren or self.isChild or self.isNamePlate)) then
+		local handledBlizzard = element.HandleBlizzardCastbar and element:HandleBlizzardCastbar(false)
+		if(not handledBlizzard and unit == 'player' and not (self.hasChildren or self.isChild or self.isNamePlate)) then
 			for event in next, eventMethods do
 				PlayerCastingBarFrame:RegisterUnitEvent(event, 'player')
 				PetCastingBarFrame:RegisterUnitEvent(event, 'pet')
