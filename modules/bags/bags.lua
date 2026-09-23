@@ -1095,82 +1095,63 @@ local function GetBagDisplaySlots(container, id, reverseSlots)
     return order
 end
 
--- This function will set all itemslot anchors and the container's dimensions based on that.
-function ContainerMixin:SetAnchors()
-	-- index will help us stay positioned to prevent going above RowSize
-	-- lineAnchor is going to store the first frame of every line, allowing to make a new line easily
-	-- rightAnchor is going to store the rightmost frame, to set the width of the container
-	-- rightIndex will be used to denote the position of the rightAnchor, to make sure it stays the rightmost frame
-	-- previousAnchor is going to store the frame we just processed, so easily anchor the next one (unless newline)
-	local lineAnchor, rightAnchor, previousAnchor
-	local index = 0
-	local rightIndex = 0
-	local padding = self:GetOption("Padding")
-	local spacing = self:GetOption("Spacing")
-	local rowSize = self:GetOption("RowSize")
-	-- Blizzard's bottom-fill direction chooses later bags first, but fills
-	-- each bag from its first slot. Mirror slots within each bag so a partly
-	-- filled bag joins the full bags below instead of leaving a gap between.
-	-- Keep the stored lists and real slot IDs intact for updates and clicks.
-	local reverseSlots = self.name == "Bags" and module:GetFillBagsFromBottom()
-	for i = 1, self.NUM_BAG_IDS do
-		local id = self.BAG_ID_LIST[i]
-		local displaySlots = self.name == "Bags" and GetBagDisplaySlots(self, id, reverseSlots) or self.itemList[id]
-		if self:GetOption("BagNewline") then
-			index = 0
-		end
-		for j = 1, #displaySlots do
-			local itemSlot = displaySlots[j]
-			-- Make sure to clear points to prevent errors.
-			itemSlot:ClearAllPoints()
-			-- ItemSlots beyond bagCount are hidden, so we don't count them
-			if itemSlot:IsShown() then
-				-- Increment the index for positioning
-				index = index + 1
-				-- if lineAnchor is nil, then its the first slot.
-				if not lineAnchor then
-					local xOffset = padding
-					local yOffset = LAYOUT_OFFSET + padding
-					itemSlot:SetPoint("TOPLEFT", self, "TOPLEFT", xOffset, -yOffset)
-					-- Set the itemSlot to be the anchor for future slots.
-					lineAnchor = itemSlot
-					rightAnchor = itemSlot
-					previousAnchor = itemSlot
-					rightIndex = index
-				-- Check to see if we need to do a newline
-				elseif index == 1 or index > rowSize then
-					-- The previous lineAnchor takes care of the xOffset
-					local yOffset = spacing
-					itemSlot:SetPoint("TOP", lineAnchor, "BOTTOM", 0, -yOffset)
-					-- Since it was a newline, it becomes the new lineAnchor
-					lineAnchor = itemSlot
-					previousAnchor = itemSlot
-					index = 1
-				-- In any other situation, just anchor it to the right of the previous slot
-				else
-					local xOffset = spacing
-					-- The previousAnchor takes care of the yOffset
-					itemSlot:SetPoint("LEFT", previousAnchor, "RIGHT", xOffset, 0)
-					previousAnchor = itemSlot
-					-- Check to see if it becomes the new rightAnchor
-					if index > rightIndex then
-						rightAnchor = itemSlot
-						rightIndex = index
-					end
-				end
-			end
-		end  -- end of itemList loop for current ID
-	end -- end of itemList for the last ID
+-- Keep every slot anchored directly to the container. Rebuilding chains of
+-- sibling anchors on every open invalidates the geometry of later slots too.
+-- Read the current anchor so changes by another addon are not hidden by a cache.
+local function SetBagSlotPoint(slot, container, x, y)
+    if slot:GetNumPoints() == 1 then
+        local point, relativeTo, relativePoint, oldX, oldY = slot:GetPoint(1)
+        if issecretvalue(point) or issecretvalue(relativeTo) or issecretvalue(relativePoint)
+            or issecretvalue(oldX) or issecretvalue(oldY) then return end
+        if point == "TOPLEFT" and relativeTo == container and relativePoint == "TOPLEFT"
+            and oldX == x and oldY == y then return end
+    end
+    slot:ClearAllPoints()
+    slot:SetPoint("TOPLEFT", container, "TOPLEFT", x, y)
+end
 
-	-- Set anchors of the background frame to cover all the items.
-	self.background:ClearAllPoints()
-	self.background:SetPoint("LEFT", lineAnchor, "LEFT", -padding, 0)
-	self.background:SetPoint("RIGHT", rightAnchor, "RIGHT", padding, 0)
-	self.background:SetPoint("BOTTOM", lineAnchor, "BOTTOM", 0, -padding)
-	self.background:SetPoint("TOP", rightAnchor, "TOP", 0, LAYOUT_OFFSET + padding)
-	-- Then set the size of the container frame to be equal to the background.
-	-- The decorative border intentionally extends outside this area.
-	self:SetSize(self.background:GetWidth(), self.background:GetHeight())
+function ContainerMixin:SetAnchors()
+    local padding = self:GetOption("Padding")
+    local spacing = self:GetOption("Spacing")
+    local rowSize = self:GetOption("RowSize")
+    local bagNewline = self:GetOption("BagNewline")
+    local reverseSlots = self.name == "Bags" and module:GetFillBagsFromBottom()
+    local column, rows, maxColumns = 0, 0, 0
+    for i = 1, self.NUM_BAG_IDS do
+        local id = self.BAG_ID_LIST[i]
+        local displaySlots = self.name == "Bags" and GetBagDisplaySlots(self, id, reverseSlots) or self.itemList[id]
+        if bagNewline then column = 0 end
+        for j = 1, #displaySlots do
+            local itemSlot = displaySlots[j]
+            if itemSlot:IsShown() then
+                if column == 0 or column >= rowSize then
+                    rows = rows + 1
+                    column = 0
+                end
+                local x = padding + column * (BAG_TEXTURE_SIZE + spacing)
+                local y = -(LAYOUT_OFFSET + padding + (rows - 1) * (BAG_TEXTURE_SIZE + spacing))
+                SetBagSlotPoint(itemSlot, self, x, y)
+                column = column + 1
+                maxColumns = max(maxColumns, column)
+            end
+        end
+    end
+
+    -- Item buttons have the fixed BAG_TEXTURE_SIZE set in CreateSlot. Compute
+    -- the surface directly instead of sizing the parent from anchored children.
+    local width = padding * 2 + maxColumns * BAG_TEXTURE_SIZE + max(0, maxColumns - 1) * spacing
+    local height = LAYOUT_OFFSET + padding * 2 + rows * BAG_TEXTURE_SIZE + max(0, rows - 1) * spacing
+    local oldWidth, oldHeight = self:GetSize()
+    if not issecretvalue(oldWidth) and not issecretvalue(oldHeight)
+        and (oldWidth ~= width or oldHeight ~= height) then
+        self:SetSize(width, height)
+    end
+    SetBagSlotPoint(self.background, self, 0, 0)
+    oldWidth, oldHeight = self.background:GetSize()
+    if not issecretvalue(oldWidth) and not issecretvalue(oldHeight)
+        and (oldWidth ~= width or oldHeight ~= height) then
+        self.background:SetSize(width, height)
+    end
 end
 
 -- ####################################################################################################################
