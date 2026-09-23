@@ -1,6 +1,6 @@
 local ADDON, D = ...
 _G.LUIDiagnostics = D
-D.VERSION = "0.1.2-alerttrace"
+D.VERSION = "0.1.5"
 D.MAX_SESSIONS, D.MAX_ERRORS, D.MAX_EVENTS = 3, 40, 60
 local frame = CreateFrame("Frame")
 local recording, busy = false, false
