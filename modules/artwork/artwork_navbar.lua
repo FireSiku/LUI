@@ -158,7 +158,7 @@ function module:CreateNavButton(kind, side, x, y)
 	clicker:RegisterForClicks("AnyUp")
 	clicker:SetScript("OnEnter", function() hover:SetAlpha(ALPHA) end)
 	clicker:SetScript("OnLeave", function() hover:SetAlpha(0) end)
-	clicker:SetScript("OnClick", function()
+	local function OnClick()
 		local frame = _G[db[kind].Anchor]
 		if frame and not db[kind].IsShown then
 			if kind == "Chat" and not (alphaOut:IsPlaying() or alphaIn:IsPlaying()) then
@@ -176,8 +176,9 @@ function module:CreateNavButton(kind, side, x, y)
 			db[kind].IsShown = false
 		end
 		if module.SyncOrbState then module:SyncOrbState() end
-	end)
-	if kind ~= "Chat" then 
+	end
+	clicker:SetScript("OnClick", LUI.IsForever and LUI.OutOfCombatWrapper(OnClick) or OnClick)
+	if kind ~= "Chat" and not LUI.IsForever then 
 		SecureHandlerWrapScript(clicker, "PostClick", clicker, [[
 			-- Outside combat the normal click already changes visibility.
 			-- Toggling a second time here reverses that change.
