@@ -6,6 +6,7 @@
 
 ---@class LUIAddon
 local LUI = select(2, ...)
+if LUI.IsForever and (not HasLootSpecializations or not HasLootSpecializations()) then return end
 
 ---@class LUI.Infotext
 local module = LUI:GetModule("Infotext")
