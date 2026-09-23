@@ -2,7 +2,7 @@
 -- protected geometry/attributes in combat. Every action rechecks permissions.
 local LUI = select(2, ...)
 local module = LUI:GetModule("RaidMenu")
-local buttons, menuParent
+local buttons, menuParent, nativeState, hiddenParent
 local toolsActive = false
 local restrictionQueries = {"IsForbidden", "HasAnySecretAspect", "HasAnyForbiddenAspects", "HasAccessConstraints"}
 
@@ -245,9 +245,44 @@ function module:LayoutGroupTools(width, height)
 	return y + 18
 end
 
+-- Keep the native manager alive, with all its events and scripts intact. Its
+-- unitframe container is a separate frame and is never reparented or hidden.
+-- A hidden LUI-owned parent prevents native Show() calls from reviving the
+-- manager during combat without any combat-time hooks or insecure Show/Hide.
+function module:SyncBlizzardRaidManager()
+	if InCombatLockdown() then return end
+	local replace = Enabled() and buttons and _G.MenuUtil and MenuUtil.CreateContextMenu
+	if not replace then
+		if nativeState and CanAccess(nativeState.frame) then
+			local frame = nativeState.frame
+			if Read(frame.GetParent, frame) == hiddenParent then
+				if not CanAccess(nativeState.parent) then return end
+				local ok = pcall(frame.SetParent, frame, nativeState.parent)
+				if not ok then return end
+			end
+			nativeState = nil
+			-- Native events kept its own shown state current while reparented.
+			-- No insecure call into Blizzard's visibility/update handlers needed.
+		end
+		return
+	end
+	local frame = _G.CompactRaidFrameManager
+	if not CanAccess(frame) then return end
+	if nativeState then return end
+	local parent = Read(frame.GetParent, frame)
+	if not CanAccess(parent) then return end
+	if not hiddenParent then
+		hiddenParent = CreateFrame("Frame", "LUIRaidManagerHiddenParent", UIParent)
+		hiddenParent:Hide()
+	end
+	local ok = pcall(frame.SetParent, frame, hiddenParent)
+	if ok then nativeState = {frame = frame, parent = parent} end
+end
+
 function module:SetGroupToolsActive(active)
 	toolsActive = active
 	self:UpdateGroupTools()
+	self:SyncBlizzardRaidManager()
 end
 
 function module:CreateGroupTools(parent)
@@ -290,5 +325,6 @@ function module:CreateGroupTools(parent)
 	end
 	events:SetScript("OnEvent", function()
 		module:UpdateGroupTools()
+		module:SyncBlizzardRaidManager()
 	end)
 end
