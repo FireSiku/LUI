@@ -431,9 +431,12 @@ function module:SetTooltip(tooltip)
 		initialScale[tooltip] = tooltip:GetScale()
 	end
 
-	-- Hook its OnShow
+	-- Keep Blizzard's OnShow in its original execution context. AceHook's
+	-- ordinary HookScript replaces it with an addon wrapper, so native quest
+	-- reward padding would perform arithmetic on secret sizes under LUI taint.
+	-- Apply our appearance only after the native handler has finished.
 	if not module:IsHooked(tooltip, "OnShow") then
-		module:HookScript(tooltip, "OnShow", "OnTooltipShow")
+		module:SecureHookScript(tooltip, "OnShow", "OnTooltipShow")
 	end
 end
 
