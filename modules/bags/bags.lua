@@ -1209,9 +1209,12 @@ function module:CreateSlot(name, parent, template)
 	button:SetPushedTexture("")
 	button:SetNormalTexture("")
 
-	local normalTex = _G[name.."NormalTexture"]
+	-- Hide the native border instead of shrinking it to a visible center pixel.
+	-- Keep it transparent even if a native button update shows it again.
+	local normalTex = button.NormalTexture or _G[name.."NormalTexture"]
 	if normalTex then
-		normalTex:SetSize(1,1)
+		normalTex:SetAlpha(0)
+		normalTex:Hide()
 	end
 
 	--Make IconTexture not clash with our backdrop
