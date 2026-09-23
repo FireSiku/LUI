@@ -20,6 +20,10 @@ local General = Opt:CreateModuleOptions("General", LUI)
 General.order = 1
 
 local function GetVersionText()
+    if LUI.IsForever or LUI.IsRetail then
+        local version, build = GetBuildInfo()
+        return format("v2610 - %s %s (%s)", LUI.IsForever and "Forever" or "Retail", version, build)
+    end
     local version, alpha, git = strsplit("-", LUI.curseVersion)
     if not version then
         return format("%s: %s", GAME_VERSION_LABEL, GetAddOnMetadata("LUI", "Version"))

@@ -677,7 +677,9 @@ local titleName = "LUI Options"
 do
     local version, alpha, git = strsplit("-", LUI.curseVersion)
 	-- Break up the version string to avoid the curse packager converting it.
-	if LUI.curseVersion == "@project".."-version@" then
+	if LUI.IsForever or LUI.IsRetail then
+		titleName = "LUI Options - v2610 (" .. (LUI.IsForever and "Forever" or "Retail") .. ")"
+	elseif LUI.curseVersion == "@project".."-version@" then
 		titleName = format("%s %s (Dev)", titleName, GetAddOnMetadata("LUI", "Version"))
 	elseif not version or not alpha then
 		titleName = format("%s %s (Release)", titleName, GetAddOnMetadata("LUI", "Version"))
