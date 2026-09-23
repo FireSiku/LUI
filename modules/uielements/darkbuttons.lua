@@ -108,6 +108,12 @@ end
 local function CanStyle(object)
     for _ = 1, 32 do
         if not CanTouch(object) then return false end
+        -- Inventory/equipment slots own their appearance (LUI Bags also draws
+        -- its own borders). Never install generic button/texture hooks on
+        -- these slots or their descendants: showing a full bag would run the
+        -- cosmetic callbacks again for every icon, overlay and cooldown.
+        local isItemButton = object:IsObjectType("ItemButton")
+        if IsSecret(isItemButton) or isItemButton then return false end
         if object == UIParent then return true end
         if object.IsProtected and object:IsProtected() then return false end
         -- Explicitly registered menu controls can have a protected window
@@ -116,6 +122,11 @@ local function CanStyle(object)
         -- the full guard.
         local owner = cosmeticOwners[object]
         if owner and object.GetParent and object:GetParent() == owner then return true end
+        -- Exclude the complete LUI bag tree, not just objects identifying as
+        -- ItemButton. Plain overlay buttons, cooldown frames and bag parents
+        -- can otherwise acquire their own OnShow discovery/styling hooks.
+        -- The explicitly registered close button above remains supported.
+        if object == _G.LUIBags then return false end
         if not object.GetParent then return false end
         object = object:GetParent()
         if IsSecret(object) then return false end
@@ -760,6 +771,7 @@ ApplyButton = function(button, buttonState)
     end
 end
 
+
 -- Newly opened panels take priority. Background discovery remains bounded and
 -- stops scheduling as soon as it finishes; opening a panel never requests it.
 local QueueScan, ScheduleScan
@@ -793,7 +805,7 @@ local function ScanButtons(state)
             frame = state.pending[count]
             state.pending[count] = nil
             state.pendingSet[frame] = nil
-            if CanTouch(frame) and frame.GetChildren then
+            if CanStyle(frame) and frame.GetChildren then
                 -- Hidden children can become visible on a later tab switch.
                 QueueChildren(state, frame:GetChildren())
             end
