@@ -109,15 +109,20 @@ function oUF:DisableBlizzard(unit)
 
 			handleFrame(CompactArenaFrame)
 
-			for _, frame in next, CompactArenaFrame.memberUnitFrames do
-				handleFrame(frame)
+			-- Forever excludes CompactArenaFrame from Blizzard_UnitFrame.
+			if(CompactArenaFrame and CompactArenaFrame.memberUnitFrames) then
+				for _, frame in next, CompactArenaFrame.memberUnitFrames do
+					handleFrame(frame)
+				end
 			end
 
 			-- old arena frames, they're still used for flag carriers etc in battlegrounds
 			handleFrame(ArenaEnemyMatchFramesContainer)
 
-			for _, frame in next, ArenaEnemyMatchFramesContainer.UnitFrames do
-				handleFrame(frame)
+			if(ArenaEnemyMatchFramesContainer and ArenaEnemyMatchFramesContainer.UnitFrames) then
+				for _, frame in next, ArenaEnemyMatchFramesContainer.UnitFrames do
+					handleFrame(frame)
+				end
 			end
 		end
 	elseif(unit:match('nameplate%d?%d?%d?$')) then
