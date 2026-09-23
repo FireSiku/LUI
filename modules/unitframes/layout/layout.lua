@@ -513,6 +513,14 @@ end
 local function ShouldShowCastbar(castbar, eventUnit)
 	local owner = castbar.__owner
 	local frameUnit = owner and owner.__unit
+	local isPlayerFrame = owner and (owner.__realUnit or frameUnit) == "player"
+	if isPlayerFrame and module:UsesBlizzardSpecialCastbar() then
+		castbar:Hide()
+		return false
+	end
+	-- The player frame can display the vehicle while cast events still name
+	-- "player". oUF registers both units during that switch.
+	if isPlayerFrame and frameUnit == "vehicle" and eventUnit == "player" then return true end
 	if not frameUnit or frameUnit ~= eventUnit then return false end
 
 	if frameUnit ~= "player" and C_Secrets.CanCompareUnitTokens(frameUnit, "player") then
@@ -1890,6 +1898,11 @@ module.funcs = {
 
 			end
 		castbar.ShouldShow = ShouldShowCastbar
+		if unit == "player" then
+			castbar.HandleBlizzardCastbar = function(element, enabled)
+				return module:HandleBlizzardCastbar(element, enabled)
+			end
+		end
 
 		castbar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Castbar.General.Texture))
 		castbar:SetHeight(oufdb.Castbar.General.Height)
