@@ -1,3 +1,56 @@
+# LUI v2610
+
+## Changes since Alpha 11
+
+- Core: detect Forever and expose client capability checks.
+- Unitframes: tolerate missing native arena containers.
+- Unitframes: prepare Forever group headers outside combat.
+- Artwork: defer Forever panel toggles until combat ends.
+- Micromenu: adapt native controls and availability to Forever.
+- ExpBars: omit unavailable Forever tracking providers.
+- Options: place bar locking beside tracker controls.
+- Bags: add an optional native Forever keyring shortcut.
+- Bags: preserve the native Forever bank.
+- Infotext: show Forever talents instead of Retail specialization.
+- UIElements: expose the native Forever swing timer.
+- UIElements: migrate the saved Forever button preference.
+- Options: build class colors from available class tokens.
+- Options: retain confirmation callbacks in generated controls.
+- Profiles: validate imported names by UTF-8 character count.
+- Unitframes: supply missing prediction and absorb defaults.
+- Unitframes: refresh additional-power colors and smoothing.
+- Unitframes: honor raid information text anchors.
+- Unitframes: add shared text and aura-count font controls.
+- Unitframes: apply configured castbar text outlines.
+- Unitframes: choose quest-range fallback by API availability.
+- Infotext: save Battle.net broadcasts when pressing Enter.
+- Infotext: add optional Raider.IO friend scores and details.
+- UIElements: reject restricted objects before cosmetic hooks.
+- UIElements: register ready-check responses and Legacy window.
+- RaidMenu: recheck group-action permissions on click.
+- RaidMenu: clear all unit markers with a secure right-click.
+- RaidMenu: add native group options and leave controls.
+- RaidMenu: hide and restore the native group manager.
+- Unitframes: restore native casts during temporary action UIs.
+- Tooltip: run styling after the native OnShow handler.
+- Bags: retain unchanged slot anchors when reopening.
+- UIElements: exclude bag trees and item slots from generic styling.
+- UIElements: restore optional LFG queue-eye positioning.
+- Bags: hide the native border instead of leaving a center pixel.
+- UIElements: prepare known controls through lifecycle callbacks.
+- UIElements: register calendar and map cosmetic controls.
+- UIElements: style the current catalog shop controls.
+- Core: handle options-addon load failures without a nil call.
+- Infotext: open Forever equipment sets through the native click path.
+- UIElements: add Trading Post button coverage.
+- UIElements: skip unchanged button geometry and visual updates.
+- UIElements: reconcile only deferred button work after combat.
+- Release: identify the combined clients as v2610.
+
+Button performance changes have passed local mock checks; in-game microlag improvement is not yet confirmed.
+
+---
+
 # LUI v2609 Alpha 11
 
 ## Changes since last version
