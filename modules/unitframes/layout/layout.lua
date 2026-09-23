@@ -580,24 +580,32 @@ local function PostUpdateAlternativePower(altpowerbar, unit, cur, min, max)
 	end
 end
 
-local function PostUpdateAdditionalPower(additionalpower, cur, max)
-	local _, class = UnitClass("player")
-	if additionalpower.color == "By Class" then
+local function PostUpdateAdditionalPowerColor(additionalpower)
+	local r, g, b
+	if additionalpower.color == "Individual" then
+		r, g, b = additionalpower.colorIndividual.r, additionalpower.colorIndividual.g, additionalpower.colorIndividual.b
+		additionalpower:SetStatusBarColor(r, g, b)
+	elseif additionalpower.color == "By Class" then
+		local _, class = UnitClass("player")
 		local color = class ~= nil and (issecretvalue(class) and C_ClassColor.GetClassColor(class) or module.colors.class[class])
 		if color then
-			additionalpower:GetStatusBarTexture():SetVertexColor(color:GetRGB())
+			r, g, b = color:GetRGB()
 		else
-			additionalpower:GetStatusBarTexture():SetVertexColor(1, 1, 1)
+			r, g, b = 1, 1, 1
 		end
+		additionalpower:SetStatusBarColor(r, g, b)
 	elseif additionalpower.color == "By Type" then
-		additionalpower:GetStatusBarTexture():SetVertexColor(module.colors.power.MANA:GetRGB())
+		r, g, b = module.colors.power.MANA:GetRGB()
+		additionalpower:SetStatusBarColor(r, g, b)
+	else
+		-- oUF applies the gradient before calling PostUpdateColor.
+		r, g, b = additionalpower:GetStatusBarColor()
 	end
 
 	local bg = additionalpower.bg
 
 	if bg then
 		local mu = bg.multiplier or 1
-		local r, g, b = additionalpower:GetStatusBarTexture():GetVertexColor()
 		local baseAlpha = bg.LUIBaseAlpha or 1
 		if additionalpower.color == "Individual" then
 			bg:SetVertexColor(r * mu, g * mu, b * mu)
@@ -607,7 +615,10 @@ local function PostUpdateAdditionalPower(additionalpower, cur, max)
 			bg:SetAlpha(baseAlpha * mu)
 		end
 	end
+end
 
+local function PostUpdateAdditionalPower(additionalpower, cur, max)
+	local _, class = UnitClass("player")
 	local text = additionalpower.value
 	if text and text.Enable then
 		local percent = UnitPowerPercent("player", ADDITIONAL_POWER_BAR_INDEX, false, PercentCurve)
@@ -1576,8 +1587,6 @@ module.funcs = {
 			self.AdditionalPower = AdditionalPower
 			self.AdditionalPower.bg = bg
 
-			self.AdditionalPower.smoothing = BarInterpolation(oufdb.AdditionalPowerBar.Smooth)
-
 			self.AdditionalPower.value = SetFontString(self.AdditionalPower, Media:Fetch("font", oufdb.AdditionalPowerText.Font), oufdb.AdditionalPowerText.Size, oufdb.AdditionalPowerText.Outline)
 			
 			self.AdditionalPower.ShouldEnable = function(unit)
@@ -1589,7 +1598,7 @@ module.funcs = {
 				if not hasVehicleUI then
 					local maxPower = UnitPowerMax(unit, ADDITIONAL_POWER_BAR_INDEX)
 					if not issecretvalue(maxPower) and maxPower ~= 0 then
-						if LUI.IsRetail and (ALT_POWER_BAR_PAIR_DISPLAY_INFO[playerClass]) then
+						if LUI.UsesModernUI and (ALT_POWER_BAR_PAIR_DISPLAY_INFO[playerClass]) then
 							local powerType = UnitPowerType(unit)
 							if powerType ~= nil and not issecretvalue(powerType) then
 								shouldEnable = ALT_POWER_BAR_PAIR_DISPLAY_INFO[playerClass][powerType]
@@ -1616,6 +1625,7 @@ module.funcs = {
 			self.AdditionalPower:SetScript("OnHide", self.AdditionalPower.SetPosition)
 
 			self.AdditionalPower.PostUpdate = PostUpdateAdditionalPower
+			self.AdditionalPower.PostUpdateColor = PostUpdateAdditionalPowerColor
 		end
 
 		self.AdditionalPower:ClearAllPoints()
@@ -1630,6 +1640,7 @@ module.funcs = {
 		self.AdditionalPower:SetHeight(oufdb.AdditionalPowerBar.Height)
 		self.AdditionalPower:SetWidth(oufdb.AdditionalPowerBar.Width)
 		self.AdditionalPower:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.AdditionalPowerBar.Texture))
+		self.AdditionalPower.smoothing = BarInterpolation(oufdb.AdditionalPowerBar.Smooth)
 
 		self.AdditionalPower.value:SetFont(Media:Fetch("font", oufdb.AdditionalPowerText.Font), oufdb.AdditionalPowerText.Size, oufdb.AdditionalPowerText.Outline)
 		self.AdditionalPower.value:ClearAllPoints()
@@ -1642,6 +1653,7 @@ module.funcs = {
 		end
 
 		self.AdditionalPower.color = oufdb.AdditionalPowerBar.Color
+		self.AdditionalPower.colorIndividual = oufdb.AdditionalPowerBar.IndividualColor
 		self.AdditionalPower.colorPower = oufdb.AdditionalPowerBar.Color == "By Type" or oufdb.AdditionalPowerBar.Color == "Gradient"
 		self.AdditionalPower.colorPowerSmooth = oufdb.AdditionalPowerBar.Color == "Gradient"
 		self.AdditionalPower.value.Enable = oufdb.AdditionalPowerText.Enable
@@ -1654,6 +1666,7 @@ module.funcs = {
 		self.AdditionalPower.bg.LUIBaseAlpha = oufdb.AdditionalPowerBar.BGAlpha
 		self.AdditionalPower.bg:SetAlpha(self.AdditionalPower.bg.LUIBaseAlpha)
 		self.AdditionalPower.bg.multiplier = oufdb.AdditionalPowerBar.BGMultiplier
+		PostUpdateAdditionalPowerColor(self.AdditionalPower)
 
 		if self.AdditionalPower.ShouldEnable(unit) then self.AdditionalPower.SetPosition() end
 		if module.db.profile.player.AdditionalPowerBar.Enable then
