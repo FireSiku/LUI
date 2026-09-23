@@ -1132,6 +1132,7 @@ local controlTargets = {
     ["CalendarViewRaidCloseButton"] = {buttons = {"."}, scrolls = {}},
     ["CalendarViewRaidFrame"] = {buttons = {}, scrolls = {"ScrollingFont.ScrollBox"}},
     ["WorldMapFrame"] = {buttons = {"BorderFrame.CloseButton", "BorderFrame.MaximizeMinimizeFrame.MaximizeButton", "BorderFrame.MaximizeMinimizeFrame.MinimizeButton", "BorderFrame.Tutorial"}, scrolls = {}},
+    ["CatalogShopFrame"] = {buttons = {"CatalogShopDetailsFrame.ButtonContainer.DetailsButton", "CatalogShopDetailsFrame.ButtonContainer.PurchaseButton", "CatalogShopDetailsFrame.ProductRefundContainer.RefundButton", "CatalogShopErrorFrame.AcceptButton", "CatalogShopErrorFrame.WebsiteButton", "CatalogShopVCFrame.vcPurchaseButton", "CloseButton", "HeaderFrame.CatalogShopNavBar.ScrollBackwards", "HeaderFrame.CatalogShopNavBar.ScrollForwards", "ModelSceneContainerFrame.AlternateFormButton", "ModelSceneContainerFrame.NormalFormButton", "PMTImageContainerFrame.ImageCarousel.LeftButton", "PMTImageContainerFrame.ImageCarousel.RightButton", "PersistentRefundContainerFrame.PersistentRefundButton", "ProductDetailsContainerFrame.BackButton"}, scrolls = {"HeaderFrame.CatalogShopNavBar.NavButtonScrollBox", "IconTrainFrame.IconTrainScrollBox", "PMTImageContainerFrame.ImageCarousel.ScrollBox", "ProductContainerFrame.ProductsScrollBoxContainer.ScrollBox", "ProductDetailsContainerFrame.DetailsProductContainerFrame.ProductsScrollBoxContainer.ScrollBox"}},
 }
 
 -- Known native window close buttons may sit below a protected window. Only
