@@ -22,7 +22,7 @@ local HasLFGRestrictions = _G.HasLFGRestrictions
 local UnitInBattleground = _G.UnitInBattleground
 local UnitIsGroupAssistant = _G.UnitIsGroupAssistant
 local UnitIsGroupLeader = _G.UnitIsGroupLeader
-local issecretvalue = _G.issecretvalue
+local issecretvalue = _G.issecretvalue or function() return false end
 local C_PartyInfo = _G.C_PartyInfo
 local SecureActionButton_ShouldUseOnKeyDown = _G.SecureActionButton_ShouldUseOnKeyDown
 
@@ -125,7 +125,9 @@ end
 local function UpdateConvertButton()
 	local convertToRaid = not IsInRaid()
 	ConvertRaid:SetText(convertToRaid and "Convert to Raid" or "Convert to Party")
-	ConvertRaid:SetEnabled(not InCombatLockdown() and C_PartyInfo.AllowedToDoPartyConversion(convertToRaid))
+	local allowed = C_PartyInfo.AllowedToDoPartyConversion(convertToRaid)
+	if issecretvalue(allowed) then allowed = false end
+	ConvertRaid:SetEnabled(not InCombatLockdown() and allowed)
 end
 
 local function UpdateGroupButtons()
@@ -515,6 +517,8 @@ function module:SetRaidMenu()
 	end)
 	ConvertRaid:SetScript("OnClick", function(self)
 		if InCombatLockdown() then return end
+		UpdateGroupButtons()
+		if not self:IsEnabled() then return end
 		if IsInRaid() then
 			C_PartyInfo.ConvertToParty()
 		else
@@ -542,6 +546,8 @@ function module:SetRaidMenu()
 	end)
 	RoleChecker:SetScript("OnClick", function(self)
 		if InCombatLockdown() then return end
+		UpdateGroupButtons()
+		if not self:IsEnabled() then return end
 		InitiateRolePoll()
 		if db.AutoHide then
 			module:CloseRaidMenu()
@@ -565,6 +571,8 @@ function module:SetRaidMenu()
 	end)
 	ReadyChecker:SetScript("OnClick", function(self)
 		if InCombatLockdown() then return end
+		UpdateGroupButtons()
+		if not self:IsEnabled() then return end
 		C_PartyInfo.DoReadyCheck()
 		if db.AutoHide then
 			module:CloseRaidMenu()
