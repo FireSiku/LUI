@@ -125,6 +125,7 @@ modules\mirrorbar\mirrorbar.lua
 ### UI Elements ###
 modules\uielements\uielements_init.lua
 modules\uielements\uielements.lua
+modules\uielements\compat.lua
 modules\uielements\darkbuttons.lua
 
 ### Additional Scripts ###
