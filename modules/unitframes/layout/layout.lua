@@ -1009,10 +1009,11 @@ module.funcs = {
 	RaidInfo = function(self, unit, oufdb)
 		if not self.Info then
 			self.Info = SetFontString(self.Overlay, Media:Fetch("font", oufdb.NameText.Font), oufdb.NameText.Size, oufdb.NameText.Outline)
-			self.Info:SetPoint("CENTER", self, "CENTER", 0, 0)
 		end
 		self.Info:SetTextColor(oufdb.NameText.IndividualColor.r, oufdb.NameText.IndividualColor.g, oufdb.NameText.IndividualColor.b)
 		self.Info:SetFont(Media:Fetch("font", oufdb.NameText.Font), oufdb.NameText.Size, oufdb.NameText.Outline)
+		self.Info:ClearAllPoints()
+		self.Info:SetPoint(oufdb.NameText.Point, self, oufdb.NameText.RelativePoint, oufdb.NameText.X, oufdb.NameText.Y)
 
 		if oufdb.NameText.Enable == true then
 			self.Info:Show()
