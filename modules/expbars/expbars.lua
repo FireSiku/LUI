@@ -36,7 +36,7 @@ local POINT_COORDS = {
 
 -- Match Blizzard's current status-tracking priority for the providers LUI supports.
 -- House Favor has the highest priority, followed by Experience, Azerite, Honor and Reputation.
-local TRACKER_PRIORITY = {
+local TRACKER_PRIORITY = LUI.IsForever and {"Experience", "Reputation", "Honor"} or {
 	"HouseFavor",
 	"Experience",
 	"Azerite",
@@ -395,18 +395,25 @@ function module:SetMainBar()
 		module:UpdateMainBarVisibility(event, ...)
 	end)
 
-	local expBar = module:CreateBar("LUI_ExpBarsExp", "Experience")
-	local repBar = module:CreateBar("LUI_ExpBarsRep", "Reputation")
-	local honorBar = module:CreateBar("LUI_ExpBarsHonor", "Honor")
-	local azeriteBar = module:CreateBar("LUI_ExpBarsAzerite", "Azerite")
-	local houseFavorBar = module:CreateBar("LUI_ExpBarsHouseFavor", "HouseFavor")
-	mainBarList = {expBar, repBar, honorBar, azeriteBar, houseFavorBar}
-
-	module.ExperienceBar = expBar
-	module.ReputationBar = repBar
-	module.HonorBar = honorBar
-	module.AzeriteBar = azeriteBar
-	module.HouseFavorBar = houseFavorBar
+	-- Forever does not load the Azerite and House Favor providers.
+	-- Keep the list packed so iteration also works with optional providers.
+	local trackers = {
+		{"Experience", "LUI_ExpBarsExp"},
+		{"Reputation", "LUI_ExpBarsRep"},
+		{"Honor", "LUI_ExpBarsHonor"},
+		{"Azerite", "LUI_ExpBarsAzerite"},
+		{"HouseFavor", "LUI_ExpBarsHouseFavor"},
+	}
+	mainBarList = {}
+	for _, tracker in ipairs(trackers) do
+		local provider, name = tracker[1], tracker[2]
+		local bar
+		if dataProviderList[provider] then
+			bar = module:CreateBar(name, provider)
+			mainBarList[#mainBarList + 1] = bar
+		end
+		module[provider.."Bar"] = bar
+	end
 
 	module:UpdateMoveState()
 	return true -- mainBarsCreated
@@ -484,8 +491,7 @@ end
 
 function module:UpdateMainBarVisibility(event, ...)
 	local db = module.db.profile
-	if not module.ExperienceBar or not module.ReputationBar
-		or not module.HonorBar or not module.AzeriteBar or not module.HouseFavorBar then
+	if not module.anchor or not module.secondaryAnchor or #mainBarList == 0 then
 		return
 	end
 

@@ -27,6 +27,11 @@ HonorDataProvider.BAR_EVENTS = {
 }
 
 function HonorDataProvider:ShouldBeVisible()
+    if not IsWatchingHonorAsXP or not UnitHonorMax then return false end
+    if LUI.IsForever then
+        local maximum = UnitHonorMax("player")
+        if not maximum or issecretvalue(maximum) or maximum <= 0 then return false end
+    end
 	return IsWatchingHonorAsXP() or C_PvP.IsActiveBattlefield() or IsInActiveWorldPVP()
 end
 
