@@ -8,7 +8,8 @@ local records = setmetatable({}, {__mode = "k"})
 local hooked = setmetatable({}, {__mode = "k"})
 local active, applying, hooksInstalled = false, false, false
 local buttonStyle, escapeButtonStyle, pendingRefresh
-local scanState
+local deferredReconcile
+local deferredObjects = setmetatable({}, {__mode = "k"})
 local aceGUIHooked = false
 local cosmeticOwners = setmetatable({}, {__mode = "k"})
 local showHooks = setmetatable({}, {__mode = "k"})
@@ -167,13 +168,9 @@ local function StyleForRegion(region)
     return StyleForButton(region:GetParent())
 end
 
-local function DeferCombat(needsReconcile)
-    -- A texture changed behind a paused discovery cursor. Revisit it after
-    -- combat; merely pausing discovery does not require another full pass.
-    if needsReconcile and scanState then
-        if scanState.started then scanState.again = true
-        else scanState.full = true end
-    end
+local function DeferCombat(needsReconcile, object)
+    if needsReconcile then deferredReconcile = true end
+    if object and not IsSecret(object) then deferredObjects[object] = true end
     eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 end
 
@@ -294,7 +291,7 @@ ApplySharedButton = function(button, buttonState)
         RestoreSharedButton(sharedButtons[button])
         return false
     end
-    if InCombatLockdown() then DeferCombat(true); return true end
+    if InCombatLockdown() then DeferCombat(true, button); return true end
     if StyleForButton(button) ~= "hd" then
         RestoreSharedButton(sharedButtons[button])
         return false
@@ -594,7 +591,7 @@ local function CoordinatesChanged(region, ...)
     if not coords then return end
     record.coords = coords
     if not active then return end
-    if InCombatLockdown() then DeferCombat(true); return end
+    if InCombatLockdown() then DeferCombat(true, region); return end
     if StyleForRegion(region) ~= record.style then ApplyRegion(region); return end
     applying = true
     region:SetTexCoord(0, 1, 0, 1)
@@ -609,7 +606,7 @@ local function ColorChanged(region)
     if not color then return end
     record.color = color
     if not active then return end
-    if InCombatLockdown() then DeferCombat(true); return end
+    if InCombatLockdown() then DeferCombat(true, region); return end
     if StyleForRegion(region) ~= record.style then ApplyRegion(region); return end
     applying = true
     region:SetVertexColor(record.tint, record.tint, record.tint, color[4])
@@ -624,7 +621,7 @@ local function DesaturationChanged(region, value)
     if type(value) ~= "number" then return end
     record.desaturation = value
     if not active then return end
-    if InCombatLockdown() then DeferCombat(true); return end
+    if InCombatLockdown() then DeferCombat(true, region); return end
     if StyleForRegion(region) ~= record.style then ApplyRegion(region); return end
     applying = true
     region:SetDesaturation(1)
@@ -633,7 +630,7 @@ end
 
 ApplyRegion = function(region)
     if applying or not active or not CanStyle(region) or customRegions[region] then return end
-    if InCombatLockdown() then DeferCombat(true); return end
+    if InCombatLockdown() then DeferCombat(true, region); return end
     if region:GetObjectType() ~= "Texture" then return end
     local atlas, texture = region:GetAtlas(), region:GetTexture()
     if IsSecret(atlas) or IsSecret(texture) then return end
@@ -756,7 +753,7 @@ end
 
 ApplyButton = function(button, buttonState)
     if not active or not CanStyle(button) or not button:IsObjectType("Button") then return end
-    if InCombatLockdown() then DeferCombat(true); return end
+    if InCombatLockdown() then DeferCombat(true, button); return end
     knownButtons[button] = true
     if not showHooks[button] then
         local success = button:HookScript("OnShow", function(self) ApplyButton(self) end)
@@ -772,85 +769,331 @@ ApplyButton = function(button, buttonState)
 end
 
 
--- Newly opened panels take priority. Background discovery remains bounded and
--- stops scheduling as soon as it finishes; opening a panel never requests it.
-local QueueScan, ScheduleScan
-local function GetScanState()
-    if not scanState then
-        scanState = {pending = {}, pendingSet = {}}
-    end
-    return scanState
-end
-
-local function QueueFrame(state, frame)
-    if not CanTouch(frame) or state.pendingSet[frame] then return end
-    state.pendingSet[frame] = true
-    state.pending[#state.pending + 1] = frame
-end
-
-local function QueueChildren(state, ...)
-    for index = 1, select("#", ...) do QueueFrame(state, select(index, ...)) end
-end
-
-local function ScanButtons(state)
-    if scanState ~= state or not active then return end
-    state.scheduled = false
-    if InCombatLockdown() then DeferCombat(); return end
-    state.running = true
-    local started = GetTimePreciseSec()
-    for _ = 1, 100 do
-        local frame
-        local count = #state.pending
-        if count > 0 then
-            frame = state.pending[count]
-            state.pending[count] = nil
-            state.pendingSet[frame] = nil
-            if CanStyle(frame) and frame.GetChildren then
-                -- Hidden children can become visible on a later tab switch.
-                QueueChildren(state, frame:GetChildren())
-            end
-        elseif state.full then
-            state.started = true
-            frame = EnumerateFrames(state.cursor)
-            if IsSecret(frame) or not frame then
-                state.cursor, state.started = nil, false
-                state.full, state.again = state.again, nil
-                frame = nil
-                if not state.full then break end
-            else
-                state.cursor = frame
-            end
-        else
-            break
-        end
-        if frame then ApplyButton(frame) end
-        if GetTimePreciseSec() - started >= .00075 then break end
-    end
-    state.running = false
-    if #state.pending > 0 or state.full then
-        ScheduleScan(state, .01)
-    else
-        scanState = nil
-    end
-end
-
-ScheduleScan = function(state, delay)
-    if state.scheduled then return end
-    if InCombatLockdown() then DeferCombat(); return end
-    state.scheduled = true
-    local ticket = {}
-    state.ticket = ticket
-    C_Timer.After(delay or .1, function()
-        if state.ticket == ticket then ScanButtons(state) end
-    end)
-end
-
-QueueScan = function()
-    if not active then return end
-    local state = GetScanState()
-    if state.started then state.again = true else state.full = true end
-    ScheduleScan(state)
-end
+-- Explicit public control paths from Blizzard XML (Retail and Forever); absent paths are skipped.
+-- Legacy controls and protected-window cosmetic leaves are registered separately.
+local controlTargets = {
+    ["AchievementFrame"] = {buttons = {"HeaderDetails.Back", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview1", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview2", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview3", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview4", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview5", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.ShowAllSearchResults", "SearchResults.CloseButton", "Tab1", "Tab2", "Tab3"}, scrolls = {"Categories.ScrollBox", "SearchResults.ScrollBox"}},
+    ["AchievementFrameAchievements"] = {buttons = {}, scrolls = {"ScrollBox"}},
+    ["AchievementFrameCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["AchievementFrameComparison"] = {buttons = {}, scrolls = {"AchievementContainer.ScrollBox", "StatContainer.ScrollBox"}},
+    ["AchievementFrameStats"] = {buttons = {}, scrolls = {"ScrollBox"}},
+    ["AchievementFrameSummaryCategoriesCategory10Button"] = {buttons = {"."}, scrolls = {}},
+    ["AchievementFrameSummaryCategoriesCategory11Button"] = {buttons = {"."}, scrolls = {}},
+    ["AchievementFrameSummaryCategoriesCategory12Button"] = {buttons = {"."}, scrolls = {}},
+    ["AchievementFrameSummaryCategoriesCategory1Button"] = {buttons = {"."}, scrolls = {}},
+    ["AchievementFrameSummaryCategoriesCategory2Button"] = {buttons = {"."}, scrolls = {}},
+    ["AchievementFrameSummaryCategoriesCategory3Button"] = {buttons = {"."}, scrolls = {}},
+    ["AchievementFrameSummaryCategoriesCategory4Button"] = {buttons = {"."}, scrolls = {}},
+    ["AchievementFrameSummaryCategoriesCategory5Button"] = {buttons = {"."}, scrolls = {}},
+    ["AchievementFrameSummaryCategoriesCategory6Button"] = {buttons = {"."}, scrolls = {}},
+    ["AchievementFrameSummaryCategoriesCategory7Button"] = {buttons = {"."}, scrolls = {}},
+    ["AchievementFrameSummaryCategoriesCategory8Button"] = {buttons = {"."}, scrolls = {}},
+    ["AchievementFrameSummaryCategoriesCategory9Button"] = {buttons = {"."}, scrolls = {}},
+    ["AuctionHouseFrame"] = {buttons = {"AuctionsFrame.AllAuctionsList.RefreshFrame.RefreshButton", "AuctionsFrame.AuctionsTab", "AuctionsFrame.BidFrame.BidButton", "AuctionsFrame.BidsList.RefreshFrame.RefreshButton", "AuctionsFrame.BidsTab", "AuctionsFrame.BuyoutFrame.BuyoutButton", "AuctionsFrame.CancelAuctionButton", "AuctionsFrame.CommoditiesList.RefreshFrame.RefreshButton", "AuctionsFrame.ItemDisplay", "AuctionsFrame.ItemDisplay.FavoriteButton", "AuctionsFrame.ItemDisplay.ItemButton", "AuctionsFrame.ItemList.RefreshFrame.RefreshButton", "AuctionsTab", "BrowseResultsFrame.ItemList.RefreshFrame.RefreshButton", "BuyDialog.BuyNowButton", "BuyDialog.CancelButton", "BuyDialog.Notification.Button", "BuyDialog.OkayButton", "BuyTab", "CloseButton", "CommoditiesBuyFrame.BackButton", "CommoditiesBuyFrame.BuyDisplay.BuyButton", "CommoditiesBuyFrame.BuyDisplay.ItemDisplay", "CommoditiesBuyFrame.BuyDisplay.ItemDisplay.FavoriteButton", "CommoditiesBuyFrame.BuyDisplay.ItemDisplay.ItemButton", "CommoditiesBuyFrame.BuyDisplay.QuantityInput.MaxButton", "CommoditiesBuyFrame.ItemList.RefreshFrame.RefreshButton", "CommoditiesSellFrame.ItemDisplay", "CommoditiesSellFrame.ItemDisplay.ItemButton", "CommoditiesSellFrame.Overlay", "CommoditiesSellFrame.PostButton", "CommoditiesSellFrame.QuantityInput.MaxButton", "CommoditiesSellList.RefreshFrame.RefreshButton", "DialogOverlay", "ItemBuyFrame.BackButton", "ItemBuyFrame.BidFrame.BidButton", "ItemBuyFrame.BuyoutFrame.BuyoutButton", "ItemBuyFrame.ItemDisplay", "ItemBuyFrame.ItemDisplay.FavoriteButton", "ItemBuyFrame.ItemDisplay.ItemButton", "ItemBuyFrame.ItemList.RefreshFrame.RefreshButton", "ItemSellFrame.BuyoutModeCheckButton", "ItemSellFrame.DisabledOverlay", "ItemSellFrame.ItemDisplay", "ItemSellFrame.ItemDisplay.ItemButton", "ItemSellFrame.Overlay", "ItemSellFrame.PostButton", "ItemSellFrame.QuantityInput.MaxButton", "ItemSellList.RefreshFrame.RefreshButton", "SearchBar.FavoritesSearchButton", "SearchBar.FilterButton.ClearFiltersButton", "SearchBar.SearchButton", "SellTab", "WoWTokenResults.Buyout", "WoWTokenResults.GameTimeTutorial.CloseButton", "WoWTokenResults.GameTimeTutorial.RightDisplay.StoreButton", "WoWTokenResults.HelpButton", "WoWTokenResults.TokenDisplay", "WoWTokenResults.TokenDisplay.FavoriteButton", "WoWTokenResults.TokenDisplay.ItemButton", "WoWTokenSellFrame.DummyRefreshButton", "WoWTokenSellFrame.ItemDisplay", "WoWTokenSellFrame.ItemDisplay.ItemButton", "WoWTokenSellFrame.PostButton"}, scrolls = {"AuctionsFrame.AllAuctionsList.ScrollBox", "AuctionsFrame.BidsList.ScrollBox", "AuctionsFrame.CommoditiesList.ScrollBox", "AuctionsFrame.ItemList.ScrollBox", "AuctionsFrame.SummaryList.ScrollBox", "BrowseResultsFrame.ItemList.ScrollBox", "CategoriesList.ScrollBox", "CommoditiesBuyFrame.ItemList.ScrollBox", "CommoditiesSellList.ScrollBox", "ItemBuyFrame.ItemList.ScrollBox", "ItemSellList.ScrollBox"}},
+    ["AuctionHouseMultisellProgressFrame"] = {buttons = {"CancelButton"}, scrolls = {}},
+    ["BagItemAutoSortButton"] = {buttons = {"."}, scrolls = {}},
+    ["BankCleanUpConfirmationPopup"] = {buttons = {"AcceptButton", "CancelButton", "HidePopupCheckbox.Checkbox"}, scrolls = {}},
+    ["BankFrame"] = {buttons = {"BankPanel.AutoDepositFrame.DepositButton", "BankPanel.AutoDepositFrame.IncludeReagentsCheckbox", "BankPanel.AutoSortButton", "BankPanel.MoneyFrame.DepositButton", "BankPanel.MoneyFrame.WithdrawButton", "BankPanel.PurchaseButton", "BankPanel.PurchasePrompt.TabCostFrame.PurchaseButton", "BankPanel.PurchaseTab", "BankPanel.TabSettingsMenu.BorderBox.SelectedIconArea.SelectedIconButton", "BankPanel.TabSettingsMenu.DepositSettingsMenu.AssignConsumablesCheckbox", "BankPanel.TabSettingsMenu.DepositSettingsMenu.AssignEquipmentCheckbox", "BankPanel.TabSettingsMenu.DepositSettingsMenu.AssignJunkCheckbox", "BankPanel.TabSettingsMenu.DepositSettingsMenu.AssignProfessionGoodsCheckbox", "BankPanel.TabSettingsMenu.DepositSettingsMenu.AssignReagentsCheckbox", "BankPanel.TabSettingsMenu.DepositSettingsMenu.IgnoreCleanUpCheckbox", "CloseButton"}, scrolls = {"BankPanel.TabSettingsMenu.IconSelector"}},
+    ["BasicMessageDialogButton"] = {buttons = {"."}, scrolls = {}},
+    ["BonusRollFrame"] = {buttons = {"PromptFrame.EncounterJournalLinkButton", "PromptFrame.PassButton", "PromptFrame.RollButton"}, scrolls = {}},
+    ["CharacterBackSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterChestSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterFeetSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterFinger0Slot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterFinger1Slot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterFrame"] = {buttons = {"CloseButton", "RightPaneToggleButton"}, scrolls = {}},
+    ["CharacterFrameTab1"] = {buttons = {"."}, scrolls = {}},
+    ["CharacterFrameTab2"] = {buttons = {"."}, scrolls = {}},
+    ["CharacterFrameTab3"] = {buttons = {"."}, scrolls = {}},
+    ["CharacterHandsSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterHeadSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterLegsSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterMainHandSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterNeckSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterRangedSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterSecondaryHandSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterShirtSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterShoulderSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterStatsPanePetScrollBox"] = {buttons = {}, scrolls = {".", "ScrollBox"}},
+    ["CharacterStatsPaneScrollBox"] = {buttons = {}, scrolls = {".", "ScrollBox"}},
+    ["CharacterTabardSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterTrinket0Slot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterTrinket1Slot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterWaistSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CharacterWristSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
+    ["CinematicFrameCloseDialogConfirmButton"] = {buttons = {"."}, scrolls = {}},
+    ["CinematicFrameCloseDialogResumeButton"] = {buttons = {"."}, scrolls = {}},
+    ["CoinPickupCancelButton"] = {buttons = {"."}, scrolls = {}},
+    ["CoinPickupLeftButton"] = {buttons = {"."}, scrolls = {}},
+    ["CoinPickupOkayButton"] = {buttons = {"."}, scrolls = {}},
+    ["CoinPickupRightButton"] = {buttons = {"."}, scrolls = {}},
+    ["CollectionsJournal"] = {buttons = {"CloseButton", "HeirloomsTab", "MountsTab", "PetsTab", "ToysTab", "WarbandScenesTab", "WardrobeTab"}, scrolls = {}},
+    ["CommunitiesAvatarPickerDialog"] = {buttons = {}, scrolls = {"ScrollBox"}},
+    ["CommunitiesFrame"] = {buttons = {"ChatTab", "CloseButton", "ClubFinderInvitationFrame.AcceptButton", "ClubFinderInvitationFrame.ApplyButton", "ClubFinderInvitationFrame.DeclineButton", "ClubFinderInvitationFrame.RequestToJoinFrame.Apply", "ClubFinderInvitationFrame.RequestToJoinFrame.Cancel", "ClubFinderInvitationFrame.WarningDialog.Accept", "ClubFinderInvitationFrame.WarningDialog.Cancel", "CommunitiesCalendarButton", "CommunitiesControlFrame.CommunitiesSettingsButton", "CommunitiesControlFrame.GuildControlButton", "CommunitiesControlFrame.GuildRecruitmentButton", "CommunityFinderFrame.ClubFinderPendingTab", "CommunityFinderFrame.ClubFinderSearchTab", "CommunityFinderFrame.GuildCards.FirstCard", "CommunityFinderFrame.GuildCards.FirstCard.RequestJoin", "CommunityFinderFrame.GuildCards.NextPage", "CommunityFinderFrame.GuildCards.PreviousPage", "CommunityFinderFrame.GuildCards.SecondCard", "CommunityFinderFrame.GuildCards.SecondCard.RequestJoin", "CommunityFinderFrame.GuildCards.ThirdCard", "CommunityFinderFrame.GuildCards.ThirdCard.RequestJoin", "CommunityFinderFrame.OptionsList.DpsRoleFrame.Checkbox", "CommunityFinderFrame.OptionsList.HealerRoleFrame.Checkbox", "CommunityFinderFrame.OptionsList.Search", "CommunityFinderFrame.OptionsList.TankRoleFrame.Checkbox", "CommunityFinderFrame.PendingGuildCards.FirstCard", "CommunityFinderFrame.PendingGuildCards.FirstCard.RequestJoin", "CommunityFinderFrame.PendingGuildCards.NextPage", "CommunityFinderFrame.PendingGuildCards.PreviousPage", "CommunityFinderFrame.PendingGuildCards.SecondCard", "CommunityFinderFrame.PendingGuildCards.SecondCard.RequestJoin", "CommunityFinderFrame.PendingGuildCards.ThirdCard", "CommunityFinderFrame.PendingGuildCards.ThirdCard.RequestJoin", "CommunityFinderFrame.RequestToJoinFrame.Apply", "CommunityFinderFrame.RequestToJoinFrame.Cancel", "CommunityNameChangeFrame.Button", "CommunityNameChangeFrame.CloseButton", "CommunityPostingChangeFrame.Button", "CommunityPostingChangeFrame.CloseButton", "EditStreamDialog.Accept", "EditStreamDialog.Cancel", "EditStreamDialog.Delete", "EditStreamDialog.TypeCheckbox", "GuildBenefitsFrame.GuildRewardsTutorialButton", "GuildBenefitsTab", "GuildDetailsFrame.Info.EditDetailsButton", "GuildDetailsFrame.Info.EditMOTDButton", "GuildDetailsFrame.News.GMImpeachButton", "GuildDetailsFrame.News.SetFiltersButton", "GuildFinderFrame.ClubFinderPendingTab", "GuildFinderFrame.ClubFinderSearchTab", "GuildFinderFrame.GuildCards.FirstCard", "GuildFinderFrame.GuildCards.FirstCard.RequestJoin", "GuildFinderFrame.GuildCards.NextPage", "GuildFinderFrame.GuildCards.PreviousPage", "GuildFinderFrame.GuildCards.SecondCard", "GuildFinderFrame.GuildCards.SecondCard.RequestJoin", "GuildFinderFrame.GuildCards.ThirdCard", "GuildFinderFrame.GuildCards.ThirdCard.RequestJoin", "GuildFinderFrame.OptionsList.DpsRoleFrame.Checkbox", "GuildFinderFrame.OptionsList.HealerRoleFrame.Checkbox", "GuildFinderFrame.OptionsList.Search", "GuildFinderFrame.OptionsList.TankRoleFrame.Checkbox", "GuildFinderFrame.PendingGuildCards.FirstCard", "GuildFinderFrame.PendingGuildCards.FirstCard.RequestJoin", "GuildFinderFrame.PendingGuildCards.NextPage", "GuildFinderFrame.PendingGuildCards.PreviousPage", "GuildFinderFrame.PendingGuildCards.SecondCard", "GuildFinderFrame.PendingGuildCards.SecondCard.RequestJoin", "GuildFinderFrame.PendingGuildCards.ThirdCard", "GuildFinderFrame.PendingGuildCards.ThirdCard.RequestJoin", "GuildFinderFrame.RequestToJoinFrame.Apply", "GuildFinderFrame.RequestToJoinFrame.Cancel", "GuildInfoTab", "GuildLogButton", "GuildMemberDetailFrame.CloseButton", "GuildMemberDetailFrame.GroupInviteButton", "GuildMemberDetailFrame.RemoveButton", "GuildNameAlertFrame", "GuildNameChangeFrame.Button", "GuildNameChangeFrame.CloseButton", "GuildPostingChangeFrame.Button", "GuildPostingChangeFrame.CloseButton", "InvitationFrame.AcceptButton", "InvitationFrame.DeclineButton", "InviteButton", "MaximizeMinimizeFrame.MaximizeButton", "MaximizeMinimizeFrame.MinimizeButton", "MemberList.ShowOfflineButton", "PostingExpirationText.InfoButton", "RecruitmentDialog.Accept", "RecruitmentDialog.Cancel", "RecruitmentDialog.MaxLevelOnly.Button", "RecruitmentDialog.MinIlvlOnly.Button", "RecruitmentDialog.ShouldListClub.Button", "RosterTab", "TicketFrame.AcceptButton", "TicketFrame.DeclineButton"}, scrolls = {"ApplicantList.ScrollBox", "CommunitiesList.ScrollBox", "CommunityFinderFrame.CommunityCards.ScrollBox", "CommunityFinderFrame.PendingCommunityCards.ScrollBox", "GuildBenefitsFrame.Perks.ScrollBox", "GuildBenefitsFrame.Rewards.ScrollBox", "GuildDetailsFrame.News.ScrollBox", "GuildFinderFrame.CommunityCards.ScrollBox", "GuildFinderFrame.PendingCommunityCards.ScrollBox", "MemberList.ScrollBox"}},
+    ["CommunitiesGuildLogFrameCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["CommunitiesGuildNewsFiltersFrame"] = {buttons = {"Achievement", "CloseButton", "DungeonEncounter", "EpicItemCrafted", "EpicItemLooted", "EpicItemPurchased", "GuildAchievement", "LegendaryItemLooted"}, scrolls = {}},
+    ["CommunitiesGuildTextEditFrameAcceptButton"] = {buttons = {"."}, scrolls = {}},
+    ["CommunitiesGuildTextEditFrameCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["CommunitiesSettingsDialog"] = {buttons = {"Accept", "AutoAcceptApplications.Button", "Cancel", "ChangeAvatarButton", "CrossFactionToggle.CheckButton", "Delete", "MaxLevelOnly.Button", "MinIlvlOnly.Button", "ShouldListClub.Button"}, scrolls = {}},
+    ["CommunitiesTicketManagerDialog"] = {buttons = {"Close", "Copy", "GenerateLinkButton", "LinkToChat", "MaximizeButton"}, scrolls = {"InviteManager.ScrollBox"}},
+    ["ConquestFrame"] = {buttons = {"Arena2v2", "Arena3v3", "ConquestBar.Reward", "JoinButton", "RatedBG", "RatedBGBlitz", "RatedSoloShuffle", "RoleList.DPSIcon", "RoleList.DPSIcon.checkButton", "RoleList.HealerIcon", "RoleList.HealerIcon.checkButton", "RoleList.TankIcon", "RoleList.TankIcon.checkButton"}, scrolls = {}},
+    ["ContainedAlertFrame"] = {buttons = {"."}, scrolls = {}},
+    ["DestinyFrame"] = {buttons = {"allianceButton", "hordeButton"}, scrolls = {}},
+    ["DressUpFrame"] = {buttons = {"CloseButton", "MaximizeMinimizeFrame.MaximizeButton", "MaximizeMinimizeFrame.MinimizeButton", "ResetButton", "ToggleCustomSetDetailsButton"}, scrolls = {"SetSelectionPanel.ScrollBox"}},
+    ["DressUpFrameCancelButton"] = {buttons = {"."}, scrolls = {}},
+    ["DropDownToggleButton"] = {buttons = {"."}, scrolls = {}},
+    ["EncounterJournal"] = {buttons = {"CloseButton", "JourneysFrame.JourneyOverview.OverviewBtn", "JourneysFrame.JourneyProgress.DelvesCompanionConfigurationFrame.CompanionConfigBtn", "JourneysFrame.JourneyProgress.LevelSkipButton", "JourneysFrame.JourneyProgress.OverviewBtn", "JourneysTab", "LootJournalTab", "MonthlyActivitiesFrame.HelpButton", "MonthlyActivitiesTab", "TutorialsFrame.Contents.StartButton", "TutorialsTab", "dungeonsTab", "encounter.info.bossTab", "encounter.info.instanceButton", "encounter.info.lootTab", "encounter.info.modelTab", "encounter.info.overviewTab", "encounter.instance.mapButton", "instanceSelect.GreatVaultButton", "navBar.home", "raidsTab", "suggestFrame.Suggestion1.button", "suggestFrame.Suggestion1.nextButton", "suggestFrame.Suggestion1.prevButton", "suggestFrame.Suggestion2.centerDisplay.button", "suggestFrame.Suggestion3.centerDisplay.button", "suggestTab"}, scrolls = {"JourneysFrame.JourneysList", "MonthlyActivitiesFrame.FilterList.ScrollBox", "MonthlyActivitiesFrame.ScrollBox", "encounter.info.BossesScrollBox", "encounter.info.LootContainer.ScrollBox", "encounter.instance.LoreScrollingFont.ScrollBox", "instanceSelect.ScrollBox", "searchResults", "searchResults.ScrollBox"}},
+    ["EncounterJournalEncounterFrameInfoCreatureButton1"] = {buttons = {"."}, scrolls = {}},
+    ["EncounterJournalSearchResultsCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["EquipmentFlyoutFrame"] = {buttons = {"NavigationFrame.NextButton", "NavigationFrame.PageTurnIndicatorLeft", "NavigationFrame.PageTurnIndicatorRight", "NavigationFrame.PrevButton"}, scrolls = {}},
+    ["EventButton"] = {buttons = {"."}, scrolls = {}},
+    ["EventToastManagerFrame"] = {buttons = {"HideButton"}, scrolls = {}},
+    ["EventToastManagerSideDisplay"] = {buttons = {"."}, scrolls = {}},
+    ["FloatingBattlePetTooltip"] = {buttons = {"CloseButton", "JournalClick"}, scrolls = {}},
+    ["FloatingPetBattleAbilityTooltip"] = {buttons = {"CloseButton"}, scrolls = {}},
+    ["FriendsFrame"] = {buttons = {"CloseButton", "FriendsTabHeader.BattlenetFrame.BroadcastFrame.CancelButton", "FriendsTabHeader.BattlenetFrame.BroadcastFrame.UpdateButton", "FriendsTabHeader.BattlenetFrame.UnavailableInfoButton", "IgnoreListWindow.CloseButton", "IgnoreListWindow.UnignorePlayerButton"}, scrolls = {"IgnoreListWindow.ScrollBox"}},
+    ["FriendsFrameAddFriendButton"] = {buttons = {"."}, scrolls = {}},
+    ["FriendsFrameSendMessageButton"] = {buttons = {"."}, scrolls = {}},
+    ["FriendsFrameTab1"] = {buttons = {"."}, scrolls = {}},
+    ["FriendsFrameTab2"] = {buttons = {"."}, scrolls = {}},
+    ["FriendsFrameTab3"] = {buttons = {"."}, scrolls = {}},
+    ["FriendsFrameTab4"] = {buttons = {"."}, scrolls = {}},
+    ["FriendsFriendsFrame"] = {buttons = {"CloseButton", "SendRequestButton"}, scrolls = {"ScrollBox"}},
+    ["FriendsListFrame"] = {buttons = {}, scrolls = {"ScrollBox"}},
+    ["GearManagerPopupFrame"] = {buttons = {"BorderBox.SelectedIconArea.SelectedIconButton"}, scrolls = {"IconSelector"}},
+    ["GhostFrame"] = {buttons = {"."}, scrolls = {}},
+    ["GroupFinderFrame"] = {buttons = {"groupButton1", "groupButton2", "groupButton3", "groupButton4"}, scrolls = {}},
+    ["GroupLootFrame1"] = {buttons = {"GreedButton", "IconFrame", "NeedButton", "PassButton", "TransmogButton"}, scrolls = {}},
+    ["GroupLootFrame2"] = {buttons = {"GreedButton", "IconFrame", "NeedButton", "PassButton", "TransmogButton"}, scrolls = {}},
+    ["GroupLootFrame3"] = {buttons = {"GreedButton", "IconFrame", "NeedButton", "PassButton", "TransmogButton"}, scrolls = {}},
+    ["GroupLootFrame4"] = {buttons = {"GreedButton", "IconFrame", "NeedButton", "PassButton", "TransmogButton"}, scrolls = {}},
+    ["GroupLootHistoryFrame"] = {buttons = {"ClosePanelButton", "ResizeButton"}, scrolls = {"ScrollBox"}},
+    ["GuildBankFrame"] = {buttons = {"BuyInfo.PurchaseButton", "CloseButton", "DepositButton", "Info.SaveButton", "WithdrawButton"}, scrolls = {}},
+    ["GuildBankFrameTab1"] = {buttons = {"."}, scrolls = {}},
+    ["GuildBankFrameTab2"] = {buttons = {"."}, scrolls = {}},
+    ["GuildBankFrameTab3"] = {buttons = {"."}, scrolls = {}},
+    ["GuildBankFrameTab4"] = {buttons = {"."}, scrolls = {}},
+    ["GuildBankPopupFrame"] = {buttons = {"BorderBox.SelectedIconArea.SelectedIconButton"}, scrolls = {"IconSelector"}},
+    ["GuildBankTab1"] = {buttons = {"Button"}, scrolls = {}},
+    ["GuildBankTab2"] = {buttons = {"Button"}, scrolls = {}},
+    ["GuildBankTab3"] = {buttons = {"Button"}, scrolls = {}},
+    ["GuildBankTab4"] = {buttons = {"Button"}, scrolls = {}},
+    ["GuildBankTab5"] = {buttons = {"Button"}, scrolls = {}},
+    ["GuildBankTab6"] = {buttons = {"Button"}, scrolls = {}},
+    ["GuildBankTab7"] = {buttons = {"Button"}, scrolls = {}},
+    ["GuildBankTab8"] = {buttons = {"Button"}, scrolls = {}},
+    ["GuildInviteFrameDeclineButton"] = {buttons = {"."}, scrolls = {}},
+    ["GuildInviteFrameJoinButton"] = {buttons = {"."}, scrolls = {}},
+    ["GuildRegistrarButton1"] = {buttons = {"."}, scrolls = {}},
+    ["GuildRegistrarButton2"] = {buttons = {"."}, scrolls = {}},
+    ["GuildRegistrarFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
+    ["GuildRegistrarFrameCancelButton"] = {buttons = {"."}, scrolls = {}},
+    ["GuildRegistrarFrameGoodbyeButton"] = {buttons = {"."}, scrolls = {}},
+    ["GuildRegistrarFramePurchaseButton"] = {buttons = {"."}, scrolls = {}},
+    ["HeirloomsJournal"] = {buttons = {"PagingFrame.NextPageButton", "PagingFrame.PrevPageButton"}, scrolls = {}},
+    ["HonorFrame"] = {buttons = {"BonusFrame.Arena1Button", "BonusFrame.BrawlButton", "BonusFrame.BrawlButton2", "BonusFrame.RandomBGButton", "BonusFrame.RandomEpicBGButton", "ConquestBar.Reward", "QueueButton", "RoleList.DPSIcon", "RoleList.DPSIcon.checkButton", "RoleList.HealerIcon", "RoleList.HealerIcon.checkButton", "RoleList.TankIcon", "RoleList.TankIcon.checkButton"}, scrolls = {"SpecificScrollBox"}},
+    ["InboxNextPageButton"] = {buttons = {"."}, scrolls = {}},
+    ["InboxPrevPageButton"] = {buttons = {"."}, scrolls = {}},
+    ["InspectRecipeFrame"] = {buttons = {"CloseButton", "SchematicForm.AllocateBestQualityCheckbox", "SchematicForm.Concentrate.ConcentrateToggleButton", "SchematicForm.Details.CraftingChoicesContainer.ConcentrateContainer.ConcentrateToggleButton", "SchematicForm.FavoriteButton", "SchematicForm.OutputIcon", "SchematicForm.QualityDialog.AcceptButton", "SchematicForm.QualityDialog.CancelButton", "SchematicForm.QualityDialog.ClosePanelButton", "SchematicForm.RecipeSourceButton", "SchematicForm.TrackRecipeCheckbox"}, scrolls = {}},
+    ["ItemTextFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
+    ["ItemTextNextPageButton"] = {buttons = {"."}, scrolls = {}},
+    ["ItemTextPrevPageButton"] = {buttons = {"."}, scrolls = {}},
+    ["JumpToUnreadButton"] = {buttons = {"."}, scrolls = {}},
+    ["LFDQueueFrame"] = {buttons = {}, scrolls = {"Follower.ScrollBox", "Specific.ScrollBox"}},
+    ["LFDQueueFrameFindGroupButton"] = {buttons = {"."}, scrolls = {}},
+    ["LFDQueueFrameNoLFDWhileLFRLeaveQueueButton"] = {buttons = {"."}, scrolls = {}},
+    ["LFDQueueFramePartyBackfillBackfillButton"] = {buttons = {"."}, scrolls = {}},
+    ["LFDQueueFramePartyBackfillNoBackfillButton"] = {buttons = {"."}, scrolls = {}},
+    ["LFDQueueFrameRoleButtonDPS"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["LFDQueueFrameRoleButtonHealer"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["LFDQueueFrameRoleButtonLeader"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["LFDQueueFrameRoleButtonTank"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["LFDRoleCheckPopupAcceptButton"] = {buttons = {"."}, scrolls = {}},
+    ["LFDRoleCheckPopupDeclineButton"] = {buttons = {"."}, scrolls = {}},
+    ["LFDRoleCheckPopupRoleButtonDPS"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["LFDRoleCheckPopupRoleButtonHealer"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["LFDRoleCheckPopupRoleButtonTank"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["LFGDungeonReadyDialog"] = {buttons = {"enterButton", "leaveButton"}, scrolls = {}},
+    ["LFGDungeonReadyDialogCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["LFGDungeonReadyStatusCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["LFGInvitePopupAcceptButton"] = {buttons = {"."}, scrolls = {}},
+    ["LFGInvitePopupDeclineButton"] = {buttons = {"."}, scrolls = {}},
+    ["LFGInvitePopupRoleButtonDPS"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["LFGInvitePopupRoleButtonHealer"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["LFGInvitePopupRoleButtonTank"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["LFGListApplicationDialog"] = {buttons = {"CancelButton", "DamagerButton", "DamagerButton.CheckButton", "HealerButton", "HealerButton.CheckButton", "SignUpButton", "TankButton", "TankButton.CheckButton"}, scrolls = {}},
+    ["LFGListFrame"] = {buttons = {"ApplicationViewer.AutoAcceptButton", "ApplicationViewer.BrowseGroupsButton", "ApplicationViewer.EditButton", "ApplicationViewer.ItemLevelColumnHeader", "ApplicationViewer.NameColumnHeader", "ApplicationViewer.RatingColumnHeader", "ApplicationViewer.RefreshButton", "ApplicationViewer.RemoveEntryButton", "ApplicationViewer.RoleColumnHeader", "CategorySelection.FindGroupButton", "CategorySelection.StartGroupButton", "EntryCreation.ActivityFinder.Dialog.CancelButton", "EntryCreation.ActivityFinder.Dialog.EntryBox.LockButton", "EntryCreation.ActivityFinder.Dialog.SelectButton", "EntryCreation.CancelButton", "EntryCreation.CrossFactionGroup.CheckButton", "EntryCreation.Description.LockButton", "EntryCreation.ItemLevel.CheckButton", "EntryCreation.ItemLevel.EditBox.LockButton", "EntryCreation.ListGroupButton", "EntryCreation.ListGroupButton.DisableStateClickButton", "EntryCreation.MythicPlusRating.CheckButton", "EntryCreation.MythicPlusRating.EditBox.LockButton", "EntryCreation.Name.LockButton", "EntryCreation.PVPRating.CheckButton", "EntryCreation.PVPRating.EditBox.LockButton", "EntryCreation.PrivateGroup.CheckButton", "EntryCreation.PvpItemLevel.CheckButton", "EntryCreation.PvpItemLevel.EditBox.LockButton", "EntryCreation.VoiceChat.CheckButton", "EntryCreation.VoiceChat.EditBox.LockButton", "SearchPanel.BackButton", "SearchPanel.BackToGroupButton", "SearchPanel.RefreshButton", "SearchPanel.ScrollBox.StartGroupButton", "SearchPanel.SignUpButton"}, scrolls = {"ApplicationViewer.ScrollBox", "EntryCreation.ActivityFinder.Dialog.ScrollBox", "SearchPanel.ScrollBox"}},
+    ["LFGListInviteDialog"] = {buttons = {"AcceptButton", "AcknowledgeButton", "DeclineButton"}, scrolls = {}},
+    ["LFGReadyCheckPopup"] = {buttons = {"NoButton", "YesButton"}, scrolls = {}},
+    ["LootFrame"] = {buttons = {"ClosePanelButton"}, scrolls = {"ScrollBox"}},
+    ["MailFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
+    ["MailFrameTab1"] = {buttons = {"."}, scrolls = {}},
+    ["MailFrameTab2"] = {buttons = {"."}, scrolls = {}},
+    ["MailItem1"] = {buttons = {"Button"}, scrolls = {}},
+    ["MailItem1ExpireTime"] = {buttons = {"."}, scrolls = {}},
+    ["MailItem2"] = {buttons = {"Button"}, scrolls = {}},
+    ["MailItem2ExpireTime"] = {buttons = {"."}, scrolls = {}},
+    ["MailItem3"] = {buttons = {"Button"}, scrolls = {}},
+    ["MailItem3ExpireTime"] = {buttons = {"."}, scrolls = {}},
+    ["MailItem4"] = {buttons = {"Button"}, scrolls = {}},
+    ["MailItem4ExpireTime"] = {buttons = {"."}, scrolls = {}},
+    ["MailItem5"] = {buttons = {"Button"}, scrolls = {}},
+    ["MailItem5ExpireTime"] = {buttons = {"."}, scrolls = {}},
+    ["MailItem6"] = {buttons = {"Button"}, scrolls = {}},
+    ["MailItem6ExpireTime"] = {buttons = {"."}, scrolls = {}},
+    ["MailItem7"] = {buttons = {"Button"}, scrolls = {}},
+    ["MailItem7ExpireTime"] = {buttons = {"."}, scrolls = {}},
+    ["MapQuestInfoRewardsFrame"] = {buttons = {"ArtifactXPFrame", "HonorFrame", "MoneyFrame", "SkillPointFrame", "TitleFrame", "WarModeBonusFrame", "XPFrame"}, scrolls = {}},
+    ["MapQuestInfoRewardsFrameQuestInfoItem1"] = {buttons = {"."}, scrolls = {}},
+    ["MasterLooterFrame"] = {buttons = {"player1"}, scrolls = {}},
+    ["MerchantFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
+    ["MerchantFrameTab1"] = {buttons = {"."}, scrolls = {}},
+    ["MerchantFrameTab2"] = {buttons = {"."}, scrolls = {}},
+    ["MerchantGuildBankRepairButton"] = {buttons = {"."}, scrolls = {}},
+    ["MerchantNextPageButton"] = {buttons = {"."}, scrolls = {}},
+    ["MerchantPrevPageButton"] = {buttons = {"."}, scrolls = {}},
+    ["MerchantRepairAllButton"] = {buttons = {"."}, scrolls = {}},
+    ["MerchantRepairItemButton"] = {buttons = {"."}, scrolls = {}},
+    ["MerchantSellAllJunkButton"] = {buttons = {"."}, scrolls = {}},
+    ["ModelPreviewFrame"] = {buttons = {"CloseButton", "Display.ModelScene.CarouselLeftButton", "Display.ModelScene.CarouselRightButton", "Display.ModelScene.ControlFrame.resetButton", "Display.ModelScene.ControlFrame.rotateLeftButton", "Display.ModelScene.ControlFrame.rotateRightButton", "Display.ModelScene.ControlFrame.zoomInButton", "Display.ModelScene.ControlFrame.zoomOutButton"}, scrolls = {}},
+    ["MountJournal"] = {buttons = {"BottomLeftInset.SlotButton", "BottomLeftInset.SuppressedMountEquipmentButton", "DynamicFlightFlyoutPopup.DynamicFlightModeButton", "DynamicFlightFlyoutPopup.OpenDynamicFlightSkillTreeButton", "MountButton", "MountDisplay.InfoButton", "MountDisplay.ModelScene.TogglePlayer", "SummonRandomFavoriteSpellFrame.Button", "ToggleDynamicFlightFlyoutButton"}, scrolls = {"ScrollBox"}},
+    ["OpenAllMail"] = {buttons = {"."}, scrolls = {}},
+    ["OpenMailCancelButton"] = {buttons = {"."}, scrolls = {}},
+    ["OpenMailDeleteButton"] = {buttons = {"."}, scrolls = {}},
+    ["OpenMailFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
+    ["OpenMailReplyButton"] = {buttons = {"."}, scrolls = {}},
+    ["OpenMailReportSpamButton"] = {buttons = {"."}, scrolls = {}},
+    ["PVEFrame"] = {buttons = {"CloseButton", "tab1", "tab2", "tab3"}, scrolls = {}},
+    ["PVPFramePopup"] = {buttons = {"minimizeButton"}, scrolls = {}},
+    ["PVPFramePopupAcceptButton"] = {buttons = {"."}, scrolls = {}},
+    ["PVPFramePopupDeclineButton"] = {buttons = {"."}, scrolls = {}},
+    ["PVPQueueFrame"] = {buttons = {"CategoryButton1", "CategoryButton2", "CategoryButton3", "CategoryButton4", "CategoryButton5", "HonorInset.CasualPanel.HonorLevelDisplay.NextRewardLevel", "HonorInset.PlunderstormPanel.PlunderstoreButton", "HonorInset.RatedPanel.HonorLevelDisplay.NextRewardLevel", "HonorInset.TrainingGroundsPanel.HonorLevelDisplay.NextRewardLevel", "NewSeasonPopup.Leave", "PrestigeLevelDialog.Accept", "PrestigeLevelDialog.Cancel", "PrestigeLevelDialog.CloseButton"}, scrolls = {}},
+    ["PVPRankFrame"] = {buttons = {"MainInfoFrame.RankProgressBarDisplay.NextRewardLevel"}, scrolls = {"DetailFrame.Description.ScrollBox"}},
+    ["PVPReadyDialog"] = {buttons = {"enterButton", "leaveButton"}, scrolls = {}},
+    ["PVPReadyDialogCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["PVPRoleCheckPopup"] = {buttons = {"DPSIcon", "DPSIcon.checkButton", "HealerIcon", "HealerIcon.checkButton", "TankIcon", "TankIcon.checkButton"}, scrolls = {}},
+    ["PVPRoleCheckPopupAcceptButton"] = {buttons = {"."}, scrolls = {}},
+    ["PVPRoleCheckPopupDeclineButton"] = {buttons = {"."}, scrolls = {}},
+    ["PaperDollFrame"] = {buttons = {"CharacterModelScene.ControlFrame.resetButton", "CharacterModelScene.ControlFrame.rotateLeftButton", "CharacterModelScene.ControlFrame.rotateRightButton", "CharacterModelScene.ControlFrame.zoomInButton", "CharacterModelScene.ControlFrame.zoomOutButton", "EquipmentManagerPane.EquipSet", "EquipmentManagerPane.NewSet", "EquipmentManagerPane.SaveSet"}, scrolls = {"EquipmentManagerPane.ScrollBox", "TitleManagerPane.ScrollBox"}},
+    ["PaperDollSidebarTab1"] = {buttons = {"."}, scrolls = {}},
+    ["PaperDollSidebarTab2"] = {buttons = {"."}, scrolls = {}},
+    ["PaperDollSidebarTab3"] = {buttons = {"."}, scrolls = {}},
+    ["PetJournal"] = {buttons = {"AchievementStatus", "FindBattleButton", "HealPetSpellFrame.Button", "Loadout.Pet1", "Loadout.Pet1.MenuRegion", "Loadout.Pet1.dragButton", "Loadout.Pet1.modelScene.cardButton", "Loadout.Pet1.setButton", "Loadout.Pet1.spell1", "Loadout.Pet1.spell2", "Loadout.Pet1.spell3", "Loadout.Pet2", "Loadout.Pet2.MenuRegion", "Loadout.Pet2.dragButton", "Loadout.Pet2.modelScene.cardButton", "Loadout.Pet2.setButton", "Loadout.Pet2.spell1", "Loadout.Pet2.spell2", "Loadout.Pet2.spell3", "Loadout.Pet3", "Loadout.Pet3.MenuRegion", "Loadout.Pet3.dragButton", "Loadout.Pet3.modelScene.cardButton", "Loadout.Pet3.setButton", "Loadout.Pet3.spell1", "Loadout.Pet3.spell2", "Loadout.Pet3.spell3", "MainHelpButton", "PetCard.PetInfo", "PetCard.spell1", "PetCard.spell2", "PetCard.spell3", "PetCard.spell4", "PetCard.spell5", "PetCard.spell6", "SpellSelect.Spell1", "SpellSelect.Spell2", "SummonButton", "SummonRandomPetSpellFrame.Button"}, scrolls = {"ScrollBox"}},
+    ["PetitionFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
+    ["PetitionFrameCancelButton"] = {buttons = {"."}, scrolls = {}},
+    ["PetitionFrameRenameButton"] = {buttons = {"."}, scrolls = {}},
+    ["PetitionFrameRequestButton"] = {buttons = {"."}, scrolls = {}},
+    ["PetitionFrameSignButton"] = {buttons = {"."}, scrolls = {}},
+    ["PingSystemTutorial"] = {buttons = {"CloseButton"}, scrolls = {}},
+    ["PlunderstormFrame"] = {buttons = {"StartQueue"}, scrolls = {}},
+    ["PlunderstormFramePopup"] = {buttons = {"AcceptButton", "DeclineButton"}, scrolls = {}},
+    ["PrimaryProfession1"] = {buttons = {"SpellButton1", "SpellButton2", "UnlearnButton"}, scrolls = {}},
+    ["PrimaryProfession2"] = {buttons = {"SpellButton1", "SpellButton2", "UnlearnButton"}, scrolls = {}},
+    ["ProfessionsBookFrame"] = {buttons = {"CloseButton", "MainHelpButton"}, scrolls = {}},
+    ["ProfessionsCustomerOrdersFrame"] = {buttons = {"BrowseOrders.SearchBar.FavoritesSearchButton", "BrowseOrders.SearchBar.SearchButton", "BrowseTab", "CloseButton", "Form.AllocateBestQualityCheckbox", "Form.BackButton", "Form.CurrentListings.CloseButton", "Form.FavoriteButton", "Form.OutputIcon", "Form.PaymentContainer.CancelOrderButton", "Form.PaymentContainer.ListOrderButton", "Form.PaymentContainer.ViewListingsButton", "Form.QualityDialog.AcceptButton", "Form.QualityDialog.CancelButton", "Form.QualityDialog.ClosePanelButton", "Form.TrackRecipeCheckbox.Checkbox", "MyOrdersPage.RefreshButton", "OrdersTab"}, scrolls = {"BrowseOrders.CategoryList.ScrollBox", "BrowseOrders.RecipeList.ScrollBox", "Form.CurrentListings.OrderList.ScrollBox", "Form.PaymentContainer.NoteEditBox.ScrollingEditBox.ScrollBox", "MyOrdersPage.OrderList.ScrollBox"}},
+    ["ProfessionsFrame"] = {buttons = {"CloseButton", "CraftingPage.CraftingOutputLog.ClosePanelButton", "CraftingPage.CreateAllButton", "CraftingPage.CreateButton", "CraftingPage.MinimizedSearchResults.CloseButton", "CraftingPage.SchematicForm.AllocateBestQualityCheckbox", "CraftingPage.SchematicForm.Concentrate.ConcentrateToggleButton", "CraftingPage.SchematicForm.Details.CraftingChoicesContainer.ConcentrateContainer.ConcentrateToggleButton", "CraftingPage.SchematicForm.FavoriteButton", "CraftingPage.SchematicForm.OutputIcon", "CraftingPage.SchematicForm.QualityDialog.AcceptButton", "CraftingPage.SchematicForm.QualityDialog.CancelButton", "CraftingPage.SchematicForm.QualityDialog.ClosePanelButton", "CraftingPage.SchematicForm.RecipeSourceButton", "CraftingPage.SchematicForm.TrackRecipeCheckbox", "CraftingPage.TutorialButton", "CraftingPage.ViewGuildCraftersButton", "MaximizeMinimize.MaximizeButton", "MaximizeMinimize.MinimizeButton", "OrdersPage.BrowseFrame.BackButton", "OrdersPage.BrowseFrame.FavoritesSearchButton", "OrdersPage.BrowseFrame.GuildOrdersButton", "OrdersPage.BrowseFrame.NpcOrdersButton", "OrdersPage.BrowseFrame.PersonalOrdersButton", "OrdersPage.BrowseFrame.PublicOrdersButton", "OrdersPage.BrowseFrame.SearchButton", "OrdersPage.OrderView.CompleteOrderButton", "OrdersPage.OrderView.CraftingOutputLog.ClosePanelButton", "OrdersPage.OrderView.CreateButton", "OrdersPage.OrderView.DeclineOrderDialog.CancelButton", "OrdersPage.OrderView.DeclineOrderDialog.ConfirmButton", "OrdersPage.OrderView.OrderDetails.FulfillmentForm.ItemIcon", "OrdersPage.OrderView.OrderDetails.SchematicForm.AllocateBestQualityCheckbox", "OrdersPage.OrderView.OrderDetails.SchematicForm.Concentrate.ConcentrateToggleButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.Details.CraftingChoicesContainer.ConcentrateContainer.ConcentrateToggleButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.FavoriteButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.OutputIcon", "OrdersPage.OrderView.OrderDetails.SchematicForm.QualityDialog.AcceptButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.QualityDialog.CancelButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.QualityDialog.ClosePanelButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.RecipeSourceButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.TrackRecipeCheckbox", "OrdersPage.OrderView.OrderInfo.BackButton", "OrdersPage.OrderView.OrderInfo.DeclineOrderButton", "OrdersPage.OrderView.OrderInfo.ReleaseOrderButton", "OrdersPage.OrderView.OrderInfo.StartOrderButton", "OrdersPage.OrderView.StartRecraftButton", "OrdersPage.OrderView.StopRecraftButton", "SpecPage.ApplyButton", "SpecPage.BackToFullTreeButton", "SpecPage.BackToPreviewButton", "SpecPage.DetailedView.Path", "SpecPage.DetailedView.SpendPointsButton", "SpecPage.DetailedView.UnlockPathButton", "SpecPage.UndoButton", "SpecPage.UnlockTabButton", "SpecPage.ViewPreviewButton", "SpecPage.ViewTreeButton"}, scrolls = {"CraftingPage.CraftingOutputLog.ScrollBox", "CraftingPage.GuildFrame.Container.ScrollBox", "CraftingPage.MinimizedSearchResults.ScrollBox", "CraftingPage.RecipeList.ScrollBox", "OrdersPage.BrowseFrame.OrderList.ScrollBox", "OrdersPage.BrowseFrame.RecipeList.ScrollBox", "OrdersPage.OrderView.CraftingOutputLog.ScrollBox", "OrdersPage.OrderView.DeclineOrderDialog.NoteEditBox.ScrollingEditBox.ScrollBox", "OrdersPage.OrderView.OrderDetails.FulfillmentForm.NoteEditBox.ScrollingEditBox.ScrollBox"}},
+    ["QuestFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
+    ["QuestFrameAcceptButton"] = {buttons = {"."}, scrolls = {}},
+    ["QuestFrameCompleteButton"] = {buttons = {"."}, scrolls = {}},
+    ["QuestFrameCompleteQuestButton"] = {buttons = {"."}, scrolls = {}},
+    ["QuestFrameDeclineButton"] = {buttons = {"."}, scrolls = {}},
+    ["QuestFrameGoodbyeButton"] = {buttons = {"."}, scrolls = {}},
+    ["QuestFrameGreetingGoodbyeButton"] = {buttons = {"."}, scrolls = {}},
+    ["QuestInfoRewardsFrame"] = {buttons = {"ArtifactXPFrame", "HonorFrame", "SkillPointFrame", "WarModeBonusFrame"}, scrolls = {}},
+    ["QuestInfoRewardsFrameQuestInfoItem1"] = {buttons = {"."}, scrolls = {}},
+    ["QuestInfoSpellObjectiveFrame"] = {buttons = {"."}, scrolls = {}},
+    ["QuestLogPopupDetailFrame"] = {buttons = {"AbandonButton", "CloseButton", "ShareButton", "ShowMapButton", "TrackButton"}, scrolls = {}},
+    ["QuestMapFrame"] = {buttons = {"QuestSessionManagement.ExecuteSessionCommand", "QuestsFrame.CampaignOverview.Header.BackButton", "QuestsFrame.DetailsFrame.AbandonButton", "QuestsFrame.DetailsFrame.BackFrame.BackButton", "QuestsFrame.DetailsFrame.DestinationMapButton", "QuestsFrame.DetailsFrame.ShareButton", "QuestsFrame.DetailsFrame.TrackButton", "QuestsFrame.DetailsFrame.WaypointMapButton"}, scrolls = {"EventsFrame.ScrollBox"}},
+    ["QuestSessionManager"] = {buttons = {"CheckConvertToRaidDialog.ButtonContainer.Confirm", "CheckConvertToRaidDialog.ButtonContainer.Decline", "CheckLeavePartyDialog.ButtonContainer.Confirm", "CheckLeavePartyDialog.ButtonContainer.Decline", "CheckStartDialog.ButtonContainer.Confirm", "CheckStartDialog.ButtonContainer.Decline", "CheckStopDialog.ButtonContainer.Confirm", "CheckStopDialog.ButtonContainer.Decline", "ConfirmBNJoinGroupRequestDialog.ButtonContainer.Confirm", "ConfirmBNJoinGroupRequestDialog.ButtonContainer.Decline", "ConfirmInviteToGroupDialog.ButtonContainer.Confirm", "ConfirmInviteToGroupDialog.ButtonContainer.Decline", "ConfirmInviteToGroupReceivedDialog.ButtonContainer.Confirm", "ConfirmInviteToGroupReceivedDialog.ButtonContainer.Decline", "ConfirmInviteTravelPassConfirmationDialog.ButtonContainer.Confirm", "ConfirmInviteTravelPassConfirmationDialog.ButtonContainer.Decline", "ConfirmJoinGroupRequestDialog.ButtonContainer.Confirm", "ConfirmJoinGroupRequestDialog.ButtonContainer.Decline", "ConfirmRequestToJoinGroupDialog.ButtonContainer.Confirm", "ConfirmRequestToJoinGroupDialog.ButtonContainer.Decline", "StartDialog.ButtonContainer.Confirm", "StartDialog.ButtonContainer.Decline", "StartDialog.MinimizeButton"}, scrolls = {}},
+    ["RaidFinderFrameFindRaidButton"] = {buttons = {"."}, scrolls = {}},
+    ["RaidFinderQueueFrameIneligibleFrame"] = {buttons = {"leaveQueueButton"}, scrolls = {}},
+    ["RaidFinderQueueFramePartyBackfillBackfillButton"] = {buttons = {"."}, scrolls = {}},
+    ["RaidFinderQueueFramePartyBackfillNoBackfillButton"] = {buttons = {"."}, scrolls = {}},
+    ["RaidFinderQueueFrameRoleButtonDPS"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["RaidFinderQueueFrameRoleButtonHealer"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["RaidFinderQueueFrameRoleButtonLeader"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["RaidFinderQueueFrameRoleButtonTank"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["RatingMenuButtonOkay"] = {buttons = {"."}, scrolls = {}},
+    ["ReadyCheckFrameNoButton"] = {buttons = {"."}, scrolls = {}},
+    ["ReadyCheckFrameYesButton"] = {buttons = {"."}, scrolls = {}},
+    ["ReadyStatus"] = {buttons = {"CloseButton"}, scrolls = {}},
+    ["ReputationFrame"] = {buttons = {"ReputationDetailFrame.AtWarCheckbox", "ReputationDetailFrame.CloseButton", "ReputationDetailFrame.MakeInactiveCheckbox", "ReputationDetailFrame.ViewRenownButton", "ReputationDetailFrame.WatchFactionCheckbox"}, scrolls = {"ReputationDetailFrame.Description.ScrollBox", "ReputationDetailFrame.ScrollingDescription.ScrollBox", "ScrollBox"}},
+    ["RolePollPopup"] = {buttons = {"acceptButton"}, scrolls = {}},
+    ["RolePollPopupCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["RolePollPopupRoleButtonDPS"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["RolePollPopupRoleButtonHealer"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["RolePollPopupRoleButtonTank"] = {buttons = {".", "checkButton"}, scrolls = {}},
+    ["ScenarioFinderFrame"] = {buttons = {}, scrolls = {"Queue.Specific.ScrollFrame"}},
+    ["ScenarioQueueFrameFindGroupButton"] = {buttons = {"."}, scrolls = {}},
+    ["ScenarioQueueFramePartyBackfillBackfillButton"] = {buttons = {"."}, scrolls = {}},
+    ["ScenarioQueueFramePartyBackfillNoBackfillButton"] = {buttons = {"."}, scrolls = {}},
+    ["SecondaryProfession1"] = {buttons = {"SpellButton1", "SpellButton2"}, scrolls = {}},
+    ["SecondaryProfession2"] = {buttons = {"SpellButton1", "SpellButton2"}, scrolls = {}},
+    ["SecondaryProfession3"] = {buttons = {"SpellButton1", "SpellButton2"}, scrolls = {}},
+    ["SendMailAttachment1"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment10"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment11"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment12"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment13"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment14"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment15"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment16"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment2"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment3"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment4"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment5"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment6"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment7"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment8"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailAttachment9"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailCODButton"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailCancelButton"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailMailButton"] = {buttons = {"."}, scrolls = {}},
+    ["SendMailSendMoneyButton"] = {buttons = {"."}, scrolls = {}},
+    ["SettingsPanel"] = {buttons = {"AddOnsTab", "ApplyButton", "CloseButton", "ClosePanelButton", "Container.SettingsList.Header.DefaultsButton", "Container.SettingsList.Header.TutorialButton", "Container.SettingsList.ScrollBox.InputBlocker", "GameTab", "SearchBox.clearButton"}, scrolls = {"CategoryList.ScrollBox", "Container.SettingsList.ScrollBox"}},
+    ["SideDressUpFrame"] = {buttons = {"ResetButton"}, scrolls = {}},
+    ["SideDressUpFrameCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["SkillsFrame"] = {buttons = {}, scrolls = {"ScrollBox", "SkillDetailFrame.Description.ScrollBox"}},
+    ["StackSplitFrame"] = {buttons = {"CancelButton", "LeftButton", "OkayButton", "RightButton"}, scrolls = {}},
+    ["TabardCharacterModelRotateLeftButton"] = {buttons = {"."}, scrolls = {}},
+    ["TabardCharacterModelRotateRightButton"] = {buttons = {"."}, scrolls = {}},
+    ["TabardFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
+    ["TabardFrameAcceptButton"] = {buttons = {"."}, scrolls = {}},
+    ["TabardFrameCancelButton"] = {buttons = {"."}, scrolls = {}},
+    ["TabardFrameCustomization1LeftButton"] = {buttons = {"."}, scrolls = {}},
+    ["TabardFrameCustomization1RightButton"] = {buttons = {"."}, scrolls = {}},
+    ["TabardFrameCustomization2LeftButton"] = {buttons = {"."}, scrolls = {}},
+    ["TabardFrameCustomization2RightButton"] = {buttons = {"."}, scrolls = {}},
+    ["TabardFrameCustomization3LeftButton"] = {buttons = {"."}, scrolls = {}},
+    ["TabardFrameCustomization3RightButton"] = {buttons = {"."}, scrolls = {}},
+    ["TabardFrameCustomization4LeftButton"] = {buttons = {"."}, scrolls = {}},
+    ["TabardFrameCustomization4RightButton"] = {buttons = {"."}, scrolls = {}},
+    ["TabardFrameCustomization5LeftButton"] = {buttons = {"."}, scrolls = {}},
+    ["TabardFrameCustomization5RightButton"] = {buttons = {"."}, scrolls = {}},
+    ["TaxiFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
+    ["ToyBox"] = {buttons = {"PagingFrame.NextPageButton", "PagingFrame.PrevPageButton", "iconsFrame.spellButton1", "iconsFrame.spellButton10", "iconsFrame.spellButton11", "iconsFrame.spellButton12", "iconsFrame.spellButton13", "iconsFrame.spellButton14", "iconsFrame.spellButton15", "iconsFrame.spellButton16", "iconsFrame.spellButton17", "iconsFrame.spellButton18", "iconsFrame.spellButton2", "iconsFrame.spellButton3", "iconsFrame.spellButton4", "iconsFrame.spellButton5", "iconsFrame.spellButton6", "iconsFrame.spellButton7", "iconsFrame.spellButton8", "iconsFrame.spellButton9"}, scrolls = {}},
+    ["TradeFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
+    ["TradeFrameCancelButton"] = {buttons = {"."}, scrolls = {}},
+    ["TradeFrameTradeButton"] = {buttons = {"."}, scrolls = {}},
+    ["TrainingGroundsFrame"] = {buttons = {"BonusTrainingGroundList.RandomTrainingGroundArenaButton", "BonusTrainingGroundList.RandomTrainingGroundButton", "ConquestBar.Reward", "QueueButton", "RoleList.DPSIcon", "RoleList.DPSIcon.checkButton", "RoleList.HealerIcon", "RoleList.HealerIcon.checkButton", "RoleList.TankIcon", "RoleList.TankIcon.checkButton"}, scrolls = {"SpecificTrainingGroundList.ScrollBox"}},
+    ["TransmogAndMountDressupFrame"] = {buttons = {"ShowMountCheckButton"}, scrolls = {}},
+    ["TutorialFrameAlertButton"] = {buttons = {"."}, scrolls = {}},
+    ["TutorialFrameCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["TutorialFrameNextButton"] = {buttons = {"."}, scrolls = {}},
+    ["TutorialFrameOkayButton"] = {buttons = {"."}, scrolls = {}},
+    ["TutorialFramePrevButton"] = {buttons = {"."}, scrolls = {}},
+    ["WarbandSceneJournal"] = {buttons = {"IconsFrame.Icons.Controls.ShowOwned.Checkbox"}, scrolls = {}},
+    ["WardrobeCollectionFrame"] = {buttons = {"InfoButton", "ItemsCollectionFrame.PagingFrame.NextPageButton", "ItemsCollectionFrame.PagingFrame.PrevPageButton", "ItemsTab", "SetsTab"}, scrolls = {"SetsCollectionFrame.ListContainer.ScrollBox"}},
+    ["WardrobeCustomSetEditFrame"] = {buttons = {"AcceptButton", "CancelButton", "DeleteButton"}, scrolls = {}},
+    ["WeeklyRewardsFrame"] = {buttons = {"CloseButton", "SelectRewardButton"}, scrolls = {}},
+    ["WhoFrame"] = {buttons = {"LevelHeader"}, scrolls = {"ScrollBox"}},
+    ["WhoFrameAddFriendButton"] = {buttons = {"."}, scrolls = {}},
+    ["WhoFrameColumnHeader1"] = {buttons = {"."}, scrolls = {}},
+    ["WhoFrameColumnHeader2"] = {buttons = {"."}, scrolls = {}},
+    ["WhoFrameColumnHeader4"] = {buttons = {"."}, scrolls = {}},
+    ["WhoFrameGroupInviteButton"] = {buttons = {"."}, scrolls = {}},
+    ["WhoFrameWhoButton"] = {buttons = {"."}, scrolls = {}},
+}
 
 -- Known native window close buttons may sit below a protected window. Only
 -- the verified close branch is allowed; the window's action/talent children
@@ -944,67 +1187,181 @@ local function InstallPlayerSpellsEvents()
     end
 end
 
-QueuePanel = function(frame)
-    if not active or not CanTouch(frame) then return end
-    if InCombatLockdown() then QueueFrame(GetScanState(), frame); DeferCombat(true); return end
-    -- Deal with the close control even when the rest of this root is secure.
-    for _, name in ipairs(panelNames) do
-        if frame == _G[name] then RegisterCloseButton(frame, name); break end
+-- Prepare public controls at their owning window's lifecycle, never by
+-- EnumerateFrames or by replacing Blizzard templates / frame metatables.
+local revision = 0
+local preparedButtons = setmetatable({}, {__mode = "k"})
+local panelNamesByFrame = setmetatable({}, {__mode = "k"})
+local rootShowHooks = setmetatable({}, {__mode = "k"})
+local scrollHooks = setmetatable({}, {__mode = "k"})
+local menuHooks = setmetatable({}, {__mode = "k"})
+local preparing = setmetatable({}, {__mode = "k"})
+local PrepareRoot, PrepareKnownPanels
+
+local function ResolveControl(root, path)
+    local object = root
+    for key in path:gmatch("[^.]+") do
+        if not CanTouch(object) then return end
+        object = object[key]
     end
-    if frame == _G.PlayerSpellsFrame then PreparePlayerSpellsControls() end
-    if not CanStyle(frame) then return end
-    local state = GetScanState()
-    -- Apply the visible branch during the opening call, before it is painted.
-    -- Never perform a synchronous scan of every frame in the UI. Very large
-    -- trees spill into the existing bounded worker; hidden branches get an
-    -- OnShow hook so they are styled when a tab first makes them visible.
-    local pending, seen = {frame}, {}
-    local started = GetTimePreciseSec()
-    for _ = 1, 256 do
-        local object = table.remove(pending)
-        if not object then break end
-        if not seen[object] and CanStyle(object) then
-            seen[object] = true
-            if object:IsObjectType("Button") then
-                ApplyButton(object)
-            elseif object.HookScript and not showHooks[object] then
-                local success = object:HookScript("OnShow", function(self) QueuePanel(self) end)
-                if success ~= false then showHooks[object] = true end
-            end
-            if object.GetChildren and (object == frame or not object.IsShown or object:IsShown()) then
-                for _, child in ipairs({object:GetChildren()}) do pending[#pending + 1] = child end
-            end
-        end
-        if GetTimePreciseSec() - started >= .002 then break end
-    end
-    for _, object in ipairs(pending) do QueueFrame(state, object) end
-    -- Also discover controls populated by the native caller after ShowUIPanel.
-    QueueFrame(state, frame)
-    if state.running then return end
-    state.ticket, state.scheduled = nil, false
-    ScheduleScan(state, 0)
+    if CanTouch(object) then return object end
 end
 
+local function PrepareButton(button)
+    if not active or not CanStyle(button) or not button:IsObjectType("Button") then return end
+    if InCombatLockdown() then DeferCombat(true, button); return end
+    local previous = preparedButtons[button]
+    local parent = button:GetParent()
+    if previous and previous.revision == revision and previous.parent == parent then return end
+    ApplyButton(button)
+    previous = previous or {}
+    previous.revision, previous.parent = revision, parent
+    preparedButtons[button] = previous
+end
 
-local function PrepareKnownPanels(force)
-    PrepareReadyCheckButtons()
-    for _, name in ipairs(panelNames) do
-        local frame = _G[name]
-        if CanTouch(frame) and (force or not preparedPanels[frame]) then
-            preparedPanels[frame] = true
-            RegisterCloseButton(frame, name)
-            QueuePanel(frame)
+-- Only a newly initialized list row or an AceGUI widget is inspected here.
+-- The window tree is never traversed. Cap both depth and work for addon rows.
+local function PrepareBranch(root)
+    if not active or not CanStyle(root) then return end
+    if InCombatLockdown() then DeferCombat(true, root); return end
+    local remaining = 64
+    local Visit
+    Visit = function(object, depth)
+        if remaining == 0 or depth > 6 or not CanStyle(object) then return end
+        remaining = remaining - 1
+        PrepareButton(object)
+        if object.GetChildren then
+            local function Children(...)
+                for index = 1, select("#", ...) do
+                    if remaining == 0 then return end
+                    Visit(select(index, ...), depth + 1)
+                end
+            end
+            Children(object:GetChildren())
         end
     end
+    Visit(root, 0)
+end
+
+local function PrepareScrollBox(scrollBox)
+    if not CanStyle(scrollBox) or not scrollBox.RegisterCallback
+        or not scrollBox.ForEachFrame or not scrollBox.GetView then return end
+    if InCombatLockdown() then DeferCombat(true); return end
+    local util = _G.ScrollUtil
+    if not util or type(util.AddInitializedFrameCallback) ~= "function" then return end
+    local previous = scrollHooks[scrollBox]
+    if not previous then
+        previous = {}
+        scrollHooks[scrollBox] = previous
+        -- The callback is documented for addons; do not replace initializers
+        -- or hook the frame pool / shared ScrollBox mixins.
+        util.AddInitializedFrameCallback(scrollBox, function(_, frame)
+            PrepareBranch(frame)
+        end, eventFrame, false)
+    end
+    -- Load-on-demand windows can create their ScrollBox before assigning a
+    -- view. Keep the initialization callback, but do not enumerate that list
+    -- until Blizzard has installed its view. No polling or native Init calls.
+    local view = scrollBox:GetView()
+    if IsSecret(view) or type(view) ~= "table" or type(view.ForEachFrame) ~= "function" then return end
+    if type(view.IsInitialized) == "function" then
+        local initialized = view:IsInitialized()
+        if IsSecret(initialized) or not initialized then return end
+    end
+    if previous.revision ~= revision or previous.view ~= view then
+        scrollBox:ForEachFrame(PrepareBranch)
+        previous.revision, previous.view = revision, view
+    end
+end
+
+local function PrepareMenuButtons(frame)
+    if not active or not CanStyle(frame) then return end
+    if InCombatLockdown() then DeferCombat(true); return end
+    local pool = frame.buttonPool
+    if IsSecret(pool) or type(pool) ~= "table" or type(pool.EnumerateActive) ~= "function" then return end
+    for button in pool:EnumerateActive() do
+        if CanTouch(button) and button:GetParent() == frame then PrepareButton(button) end
+    end
+end
+
+local commonControls = {
+    "CloseButton", "ClosePanelButton", "OkayButton", "CancelButton", "AcceptButton",
+    "ApplyButton", "BackButton", "NextButton", "PrevButton", "PreviousButton",
+    "MaximizeMinimizeButton.MaximizeButton", "MaximizeMinimizeButton.MinimizeButton",
+    "MaximizeMinimizeFrame.MaximizeButton", "MaximizeMinimizeFrame.MinimizeButton",
+    "button1", "button2", "button3", "button4", "Button1", "Button2", "Button3", "Button4",
+}
+
+PrepareRoot = function(frame, name)
+    if not active or not CanTouch(frame) or preparing[frame] then return end
+    if InCombatLockdown() then DeferCombat(true); return end
+    preparing[frame] = true
+    RegisterCloseButton(frame, name)
+    if frame == _G.PlayerSpellsFrame then PreparePlayerSpellsControls() end
+    if CanStyle(frame) then
+        PrepareButton(frame)
+        if not frame:IsObjectType("Button") then
+            for _, path in ipairs(commonControls) do PrepareButton(ResolveControl(frame, path)) end
+        end
+        if name and name:match("^StaticPopup%d+$") then
+            for index = 1, 4 do PrepareButton(_G[name .. "Button" .. index]) end
+        end
+        local targets = name and controlTargets[name]
+        if targets then
+            for _, path in ipairs(targets.buttons) do PrepareButton(ResolveControl(frame, path)) end
+            for _, path in ipairs(targets.scrolls) do PrepareScrollBox(ResolveControl(frame, path)) end
+        end
+        if not frame:IsObjectType("Button") and not rootShowHooks[frame] then
+            frame:HookScript("OnShow", function(self)
+                PrepareRoot(self, panelNamesByFrame[self])
+            end)
+            rootShowHooks[frame] = true
+        end
+        if frame == _G.GameMenuFrame then
+            if not menuHooks[frame] and type(frame.InitButtons) == "function" then
+                -- Observe the concrete menu instance after its own build;
+                -- no replacement of native scripts, methods or mixins.
+                hooksecurefunc(frame, "InitButtons", PrepareMenuButtons)
+                menuHooks[frame] = true
+            end
+            PrepareMenuButtons(frame)
+        end
+    end
+    preparing[frame] = nil
+end
+
+QueuePanel = function(frame)
+    if not active or not CanTouch(frame) then return end
+    PrepareRoot(frame, panelNamesByFrame[frame])
+end
+
+PrepareKnownPanels = function(force)
+    if not active then return end
+    if InCombatLockdown() then DeferCombat(true); return end
+    local function PrepareName(name)
+        local frame = _G[name]
+        if IsSecret(frame) or not frame then return end
+        if not force and preparedPanels[frame] == revision then return end
+        if not CanTouch(frame) then return end
+        panelNamesByFrame[frame] = name
+        PrepareRoot(frame, name)
+        preparedPanels[frame] = revision
+    end
+    for _, name in ipairs(panelNames) do PrepareName(name) end
+    for name in pairs(controlTargets) do PrepareName(name) end
+    -- Legacy clients use named menu buttons rather than a button pool.
+    for _, suffix in ipairs({"Help", "Store", "Options", "UIOptions", "Keybindings",
+        "Macros", "Addons", "Logout", "Quit", "Continue", "EditMode", "Ratings"}) do
+        PrepareName("GameMenuButton" .. suffix)
+    end
+    for index = 1, 4 do PrepareName("StaticPopup" .. index) end
     PreparePlayerSpellsControls()
+    PrepareReadyCheckButtons()
 end
 
 local panelHooks = {}
 local panelTargets = {
-    ShowReadyCheck = function()
-        PrepareReadyCheckButtons()
-        QueuePanel(_G.ReadyCheckListenerFrame or _G.ReadyCheckFrame)
-    end,
+    ShowReadyCheck = function() PrepareReadyCheckButtons() end,
     ShowUIPanel = QueuePanel,
     StaticPopup_OnShow = QueuePanel,
     StaticPopupSpecial_Show = QueuePanel,
@@ -1014,12 +1371,19 @@ local panelTargets = {
         if CanTouch(frame) then QueuePanel(frame.DetailsFrame or frame) end
     end,
 }
+local menuEventInstalled = false
 local function InstallPanelHooks()
     for name, callback in pairs(panelTargets) do
         if not panelHooks[name] and type(_G[name]) == "function" then
             hooksecurefunc(name, callback)
             panelHooks[name] = true
         end
+    end
+    if not menuEventInstalled and _G.EventRegistry then
+        _G.EventRegistry:RegisterCallback("GameMenuFrame.Shown", function()
+            PrepareMenuButtons(_G.GameMenuFrame)
+        end, eventFrame)
+        menuEventInstalled = true
     end
 end
 
@@ -1029,7 +1393,7 @@ local function HookAceGUI()
     if not AceGUI then return end
     aceGUIHooked = true
     hooksecurefunc(AceGUI, "RegisterAsWidget", function(_, widget)
-        if not IsSecret(widget) and widget then ApplyButton(widget.frame) end
+        if not IsSecret(widget) and type(widget) == "table" then PrepareBranch(widget.frame) end
     end)
 end
 
@@ -1083,7 +1447,10 @@ function module:RefreshDarkButtons()
         return
     end
     pendingRefresh = nil
-    active, scanState = false, nil
+    active = false
+    deferredReconcile = nil
+    wipe(deferredObjects)
+    revision = revision + 1
     RestoreArtwork()
     buttonStyle, escapeButtonStyle = nextButton, nextEscape
     active = true
@@ -1101,13 +1468,12 @@ function module:RefreshDarkButtons()
     eventFrame:RegisterEvent("ADDON_LOADED")
     eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
     PrepareKnownPanels(true)
-    QueueScan()
 end
 
 function module:StopDarkButtons()
     active, pendingRefresh = false, nil
-    -- Already queued callbacks compare this identity before touching frames.
-    scanState = nil
+    deferredReconcile = nil
+    wipe(deferredObjects)
     eventFrame:UnregisterEvent("ADDON_LOADED")
     eventFrame:UnregisterEvent("PLAYER_ENTERING_WORLD")
     RestoreArtwork()
@@ -1118,17 +1484,23 @@ eventFrame:SetScript("OnEvent", function(self, event)
         self:UnregisterEvent(event)
         if pendingRefresh then module:RefreshDarkButtons(); return end
         if not active then RestoreArtwork(); return end
-        PreparePlayerSpellsControls()
-        PrepareReadyCheckButtons()
-        if scanState then
-            ScheduleScan(scanState)
-            return
+        -- Reconcile only registered controls and the objects deferred in combat.
+        PrepareKnownPanels(deferredReconcile)
+        deferredReconcile = nil
+        for object in pairs(deferredObjects) do
+            deferredObjects[object] = nil
+            if CanStyle(object) then
+                if object:IsObjectType("Texture") then ApplyRegion(object)
+                else
+                    ApplyButton(object)
+                    PrepareBranch(object)
+                end
+            end
         end
-    elseif event == "ADDON_LOADED" and active then
+    elseif active then
         InstallPanelHooks()
         HookAceGUI()
         InstallPlayerSpellsEvents()
         PrepareKnownPanels()
     end
-    QueueScan()
 end)
