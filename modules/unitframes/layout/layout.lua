@@ -1970,7 +1970,7 @@ module.funcs = {
 				B = oufdb.Castbar.Shield.Inset.bottom,
 			},
 		}
-		castbar.Time:SetFont(Media:Fetch("font", oufdb.Castbar.TimeText.Font), oufdb.Castbar.TimeText.Size)
+		castbar.Time:SetFont(Media:Fetch("font", oufdb.Castbar.TimeText.Font), oufdb.Castbar.TimeText.Size, oufdb.Castbar.TimeText.Outline)
 		castbar.Time:ClearAllPoints()
 		castbar.Time:SetPoint("RIGHT", castbar, "RIGHT", oufdb.Castbar.TimeText.OffsetX, oufdb.Castbar.TimeText.OffsetY)
 		castbar.Time:SetTextColor(oufdb.Castbar.Colors.Time.r, oufdb.Castbar.Colors.Time.g, oufdb.Castbar.Colors.Time.b)
@@ -1982,7 +1982,7 @@ module.funcs = {
 			castbar.Time:Hide()
 		end
 
-		castbar.Text:SetFont(Media:Fetch("font", oufdb.Castbar.NameText.Font), oufdb.Castbar.NameText.Size)
+		castbar.Text:SetFont(Media:Fetch("font", oufdb.Castbar.NameText.Font), oufdb.Castbar.NameText.Size, oufdb.Castbar.NameText.Outline)
 		castbar.Text:ClearAllPoints()
 		castbar.Text:SetPoint("LEFT", castbar, "LEFT", oufdb.Castbar.NameText.OffsetX, oufdb.Castbar.NameText.OffsetY)
 		if oufdb.Castbar.Shield.Text == true and oufdb.Castbar.General.Shield == true and oufdb.Castbar.Shield.Enable == true then
