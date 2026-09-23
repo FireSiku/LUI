@@ -77,15 +77,29 @@ local function IsSecret(value)
     return issecretvalue and issecretvalue(value)
 end
 
+local restrictionQueries = {
+    "HasAnySecretAspect", "HasAnyForbiddenAspects", "HasAccessConstraints", "IsForbidden",
+}
+
 local function CanTouch(object)
     if IsSecret(object) or not object then return false end
-    if object.IsForbidden and object:IsForbidden() then return false end
+    -- Aura buttons can be neither forbidden nor protected while their secret
+    -- visibility still disallows OnShow hooks. Exclude restricted objects
+    -- before discovery, styling or restoration, including their descendants.
+    -- Recheck on every call: pooled objects can acquire restrictions later.
+    for _, name in ipairs(restrictionQueries) do
+        local query = object[name]
+        if query then
+            local ok, restricted = pcall(query, object)
+            if not ok or IsSecret(restricted) or restricted ~= false then return false end
+        end
+    end
     -- Some enumerated addon frames reject native methods even though
     -- IsForbidden reports false. Treat a rejected type query as inaccessible;
     -- never continue discovery or install texture hooks on that object.
     if not object.IsObjectType then return false end
-    local accessible = pcall(object.IsObjectType, object, "Region")
-    return accessible
+    local accessible, isRegion = pcall(object.IsObjectType, object, "Region")
+    return accessible and not IsSecret(isRegion)
 end
 
 -- Cosmetic discovery must not install hooks on secure action controls or
@@ -734,8 +748,8 @@ ApplyButton = function(button, buttonState)
     if InCombatLockdown() then DeferCombat(true); return end
     knownButtons[button] = true
     if not showHooks[button] then
-        showHooks[button] = true
-        button:HookScript("OnShow", function(self) ApplyButton(self) end)
+        local success = button:HookScript("OnShow", function(self) ApplyButton(self) end)
+        if success ~= false then showHooks[button] = true end
     end
     if ApplySharedButton(button, buttonState) then return end
     if ApplySlicedButton(button, buttonState) then return end
@@ -925,8 +939,8 @@ QueuePanel = function(frame)
             if object:IsObjectType("Button") then
                 ApplyButton(object)
             elseif object.HookScript and not showHooks[object] then
-                showHooks[object] = true
-                object:HookScript("OnShow", function(self) QueuePanel(self) end)
+                local success = object:HookScript("OnShow", function(self) QueuePanel(self) end)
+                if success ~= false then showHooks[object] = true end
             end
             if object.GetChildren and (object == frame or not object.IsShown or object:IsShown()) then
                 for _, child in ipairs({object:GetChildren()}) do pending[#pending + 1] = child end
