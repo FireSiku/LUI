@@ -207,6 +207,7 @@ local sharedEdgeRight = HDTextureColor(15, 16, 16)
 local function LayoutSharedButton(button, state)
     local width, height = button:GetSize()
     if IsSecret(width) or IsSecret(height) or width <= 2 or height <= 2 then return false end
+    if state.layoutWidth == width and state.layoutHeight == height then return true end
     local face, top, bottom, left, right = unpack(state.normal)
     face:ClearAllPoints()
     face:SetPoint("TOPLEFT", button, "TOPLEFT", 1, -1)
@@ -228,11 +229,13 @@ local function LayoutSharedButton(button, state)
     right:SetPoint("BOTTOMRIGHT", face, "BOTTOMRIGHT", 0, 0)
     right:SetWidth(1)
     state.highlight[1]:SetAllPoints(face)
+    state.layoutWidth, state.layoutHeight = width, height
     return true
 end
 
 local function RestoreSharedButton(state)
     if not state then return end
+    if state.restored and not state.saved then return end
     if state.saved then
         for _, original in ipairs(state.saved) do
             if CanStyle(original.texture) then original.texture:SetAlpha(original.alpha) end
@@ -244,6 +247,8 @@ local function RestoreSharedButton(state)
             if CanStyle(texture) then texture:Hide() end
         end
     end
+    state.appliedState = nil
+    state.restored = true
 end
 
 local function RestoreSharedButtons()
@@ -261,7 +266,8 @@ local panelFiles = {
 local function LegacyButtonParts(button)
     local parts, seen, hasFace = {}, {}, false
     local function Add(region)
-        if not CanStyle(region) or region:GetParent() ~= button or customRegions[region] or seen[region] then return end
+        if IsSecret(region) or not region or customRegions[region] or seen[region] then return end
+        if not CanStyle(region) or region:GetParent() ~= button then return end
         if region:GetObjectType() ~= "Texture" then return end
         local atlas, texture = region:GetAtlas(), region:GetTexture()
         if IsSecret(atlas) or IsSecret(texture) then return end
@@ -292,16 +298,17 @@ local ApplyButton, ApplySharedButton, RestoreRegion, SourceChanged
 local QueuePanel
 ApplySharedButton = function(button, buttonState)
     if not active or not CanStyle(button) then return false end
+    -- Do not enumerate/allocate legacy texture parts for a different style.
+    if InCombatLockdown() then DeferCombat(false, button); return true end
+    if StyleForButton(button) ~= "hd" then
+        RestoreSharedButton(sharedButtons[button])
+        return false
+    end
     local family = button.atlasName
     if IsSecret(family) then return false end
     local modern = family and sharedFamilies[family]
     local parts = not modern and LegacyButtonParts(button)
     if not modern and not parts then
-        RestoreSharedButton(sharedButtons[button])
-        return false
-    end
-    if InCombatLockdown() then DeferCombat(true, button); return true end
-    if StyleForButton(button) ~= "hd" then
         RestoreSharedButton(sharedButtons[button])
         return false
     end
@@ -378,16 +385,24 @@ ApplySharedButton = function(button, buttonState)
             return true
         end
     end
-    for _, original in ipairs(state.saved) do original.texture:SetAlpha(0) end
+    for _, original in ipairs(state.saved) do
+        local alpha = original.texture:GetAlpha()
+        if IsSecret(alpha) then return true end
+        if alpha ~= 0 then original.texture:SetAlpha(0) end
+    end
     local colors = sharedColors[buttonState] or sharedColors.NORMAL
-    local face, top, bottom, left, right = unpack(state.normal)
-    face:SetGradient("VERTICAL", colors.bottom, colors.top)
-    top:SetColorTexture(unpack(colors.edgeTop))
-    bottom:SetColorTexture(unpack(colors.edgeBottom))
-    left:SetColorTexture(unpack(sharedEdgeLeft))
-    right:SetColorTexture(unpack(sharedEdgeRight))
-    for _, texture in ipairs(state.normal) do texture:Show() end
-    state.highlight[1]:SetShown(buttonState ~= "DISABLED")
+    if state.appliedState ~= colors then
+        local face, top, bottom, left, right = unpack(state.normal)
+        face:SetGradient("VERTICAL", colors.bottom, colors.top)
+        top:SetColorTexture(unpack(colors.edgeTop))
+        bottom:SetColorTexture(unpack(colors.edgeBottom))
+        left:SetColorTexture(unpack(sharedEdgeLeft))
+        right:SetColorTexture(unpack(sharedEdgeRight))
+        for _, texture in ipairs(state.normal) do texture:Show() end
+        state.highlight[1]:SetShown(buttonState ~= "DISABLED")
+        state.appliedState = colors
+    end
+    state.restored = false
     return true
 end
 
@@ -428,6 +443,23 @@ local function LayoutLegacyButton(button, state)
     return true
 end
 
+local function SlicedButtonUnchanged(button, state, parts, buttonState, classic)
+    if not state or not state.saved or state.appliedState ~= buttonState
+        or state.appliedClassic ~= classic or #state.saved ~= #parts then return false end
+    local width, height = button:GetSize()
+    if IsSecret(width) or IsSecret(height) or width <= 0 or height <= 0
+        or state.appliedWidth ~= width or state.appliedHeight ~= height then return false end
+    -- Revalidate the current sources, ownership and native alpha. Pooled
+    -- controls can replace their textures or become restricted at any time.
+    for index, texture in ipairs(parts) do
+        if state.saved[index].texture ~= texture or not CanStyle(texture)
+            or texture:GetParent() ~= button then return false end
+        local alpha = texture:GetAlpha()
+        if IsSecret(alpha) or alpha ~= 0 then return false end
+    end
+    return true
+end
+
 local function ApplySlicedButton(button, buttonState)
     local state = legacyButtons[button]
     local style = StyleForButton(button)
@@ -456,6 +488,7 @@ local function ApplySlicedButton(button, buttonState)
     buttonState = buttonState or button:GetButtonState()
     if IsSecret(enabled) or IsSecret(buttonState) then return true end
     if not enabled then buttonState = "DISABLED" end
+    if SlicedButtonUnchanged(button, state, parts, buttonState, classic) then return true end
     if not state or state.classic ~= classic then
         local leftInfo, rightInfo
         if classic then
@@ -481,7 +514,8 @@ local function ApplySlicedButton(button, buttonState)
         highlight:SetBlendMode("ADD")
         state.highlight[1] = highlight
         local function Update(self) ApplyButton(self) end
-        for _, script in ipairs({"OnShow", "OnEnable", "OnDisable", "OnSizeChanged"}) do
+        -- ApplyButton already owns the common OnShow hook.
+        for _, script in ipairs({"OnEnable", "OnDisable", "OnSizeChanged"}) do
             button:HookScript(script, Update)
         end
         button:HookScript("OnMouseDown", function(self) ApplyButton(self, "PUSHED") end)
@@ -527,6 +561,14 @@ local function ApplySlicedButton(button, buttonState)
     for _, original in ipairs(saved) do original.texture:SetAlpha(0) end
     for _, texture in ipairs(state.normal) do texture:Show() end
     state.highlight[1]:SetShown(buttonState ~= "DISABLED")
+    local width, height = button:GetSize()
+    if not IsSecret(width) and not IsSecret(height) then
+        state.appliedWidth, state.appliedHeight = width, height
+    else
+        state.appliedWidth, state.appliedHeight = nil, nil
+    end
+    state.appliedState, state.appliedClassic = buttonState, classic
+    state.restored = false
     return true
 end
 
