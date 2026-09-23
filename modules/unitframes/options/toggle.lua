@@ -73,6 +73,28 @@ local function GetOpposite(dir)
 	end
 end
 
+local function SpawnGroupHeader(name, unit, capacity, ...)
+	if not LUI.IsForever then
+		return oUF:SpawnHeader(name, nil, ...)
+	end
+
+	-- The beta's restricted compiler is unavailable. Supply an ordinary
+	-- out-of-combat layout callback for the preallocated native header.
+	local function Configure(frame, styleUnit)
+		local settings = module.db.profile[styleUnit]
+		local width = settings.Width
+		if unit == "raid" and name:find("oUF_LUI_raid_40_", 1, true) then
+			width = (5 * width - 3 * settings.GroupPadding) / 8
+		end
+		frame:SetSize(width, GetFrameHeight(settings))
+		if styleUnit ~= unit then
+			frame:SetPoint(settings.Point, frame:GetParent(), settings.RelativePoint, settings.X, settings.Y)
+		end
+	end
+
+	return oUF:SpawnPreconfiguredHeader(name, unit, capacity, Configure, ...)
+end
+
 local raidLabelHeaders = {}
 local raidLabelMedia = LibStub("LibSharedMedia-3.0")
 
@@ -271,16 +293,20 @@ module.ToggleUnit = setmetatable({
 				bossParent:SetAttribute("Padding", dbUnit.Padding)
 				bossParent:Show()
 
-				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
-				handler:SetFrameRef("boss", bossParent)
-				handler:SetAttribute("_onstate-resize", [[
-					local parent = self:GetFrameRef("boss")
-					local padding = parent:GetAttribute("Padding")
-					local height = parent:GetAttribute("Height")
-					parent:SetHeight(newstate * height + (newstate - 1) * padding)
-				]])
-				RegisterStateDriver(handler, "resize", "[@boss4,exists] 4; [@boss3,exists] 3; [@boss2,exists] 2; 1")
-				bossParent.handler = handler
+				-- The Forever beta lacks the compiler used by custom secure snippets.
+				-- Keep this invisible anchor fixed; child frames still use unit watches.
+				if not LUI.IsForever then
+					local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
+					handler:SetFrameRef("boss", bossParent)
+					handler:SetAttribute("_onstate-resize", [[
+						local parent = self:GetFrameRef("boss")
+						local padding = parent:GetAttribute("Padding")
+						local height = parent:GetAttribute("Height")
+						parent:SetHeight(newstate * height + (newstate - 1) * padding)
+					]])
+					RegisterStateDriver(handler, "resize", "[@boss4,exists] 4; [@boss3,exists] 3; [@boss2,exists] 2; 1")
+					bossParent.handler = handler
+				end
 
 				local boss = {}
 				for i = 1, MAX_BOSS_FRAMES do
@@ -393,7 +419,7 @@ module.ToggleUnit = setmetatable({
 				end
 				oUF_LUI_party.handler:GetScript("OnEvent")(oUF_LUI_party.handler)
 			else
-				local party = oUF:SpawnHeader("oUF_LUI_party", nil,
+				local party = SpawnGroupHeader("oUF_LUI_party", "party", 5,
 					"showParty", true,
 					"showPlayer", dbUnit.ShowPlayer,
 					"showSolo", false,
@@ -575,16 +601,20 @@ module.ToggleUnit = setmetatable({
 				arenaParent:SetAttribute("Padding", dbUnit.Padding)
 				arenaParent:Show()
 
-				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
-				handler:SetFrameRef("arena", arenaParent)
-				handler:SetAttribute("_onstate-resize", [[
-					local parent = self:GetFrameRef("arena")
-					local padding = parent:GetAttribute("Padding")
-					local height = parent:GetAttribute("Height")
-					parent:SetHeight(newstate * height + (newstate - 1) * padding)
-				]])
-				RegisterStateDriver(handler, "resize", "[@arena5,exists] 5; [@arena4,exists] 4; [@arena3,exists] 3; [@arena2,exists] 2; 1")
-				arenaParent.handler = handler
+				-- The Forever beta lacks the compiler used by custom secure snippets.
+				-- Keep this invisible anchor fixed; child frames still use unit watches.
+				if not LUI.IsForever then
+					local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
+					handler:SetFrameRef("arena", arenaParent)
+					handler:SetAttribute("_onstate-resize", [[
+						local parent = self:GetFrameRef("arena")
+						local padding = parent:GetAttribute("Padding")
+						local height = parent:GetAttribute("Height")
+						parent:SetHeight(newstate * height + (newstate - 1) * padding)
+					]])
+					RegisterStateDriver(handler, "resize", "[@arena5,exists] 5; [@arena4,exists] 4; [@arena3,exists] 3; [@arena2,exists] 2; 1")
+					arenaParent.handler = handler
+				end
 
 				local arena = {}
 				for i = 1, 5 do
@@ -725,7 +755,7 @@ module.ToggleUnit = setmetatable({
 					end
 				end
 			else
-				local tank = oUF:SpawnHeader("oUF_LUI_maintank", nil,
+				local tank = SpawnGroupHeader("oUF_LUI_maintank", "maintank", 4,
 					"showRaid", true,
 					"groupFilter", "MAINTANK",
 					"template", "oUF_LUI_maintank",
@@ -889,7 +919,7 @@ module.ToggleUnit = setmetatable({
 				RegisterStateDriver(raid25, "visibility", "[@raid26,exists] hide; show")
 				local raid25table = {}
 				for i = 1, 5 do
-					raid25table[i] = oUF:SpawnHeader("oUF_LUI_raid_25_"..i, nil,
+					raid25table[i] = SpawnGroupHeader("oUF_LUI_raid_25_"..i, "raid", 5,
 						"showRaid", true,
 						"showPlayer", true,
 						"showSolo", true,
@@ -919,7 +949,7 @@ module.ToggleUnit = setmetatable({
 
 				local raid40table = {}
 				for i = 1, 8 do
-					raid40table[i] = oUF:SpawnHeader("oUF_LUI_raid_40_"..i, nil,
+					raid40table[i] = SpawnGroupHeader("oUF_LUI_raid_40_"..i, "raid", 5,
 						"showRaid", true,
 						"showPlayer", true,
 						"showSolo", true,

@@ -822,6 +822,68 @@ do
 
 		return header
 	end
+
+	-- Forever beta: prepare a bounded group outside combat without executing
+	-- initialConfigFunction/refreshUnitChange snippets. Blizzard's original
+	-- header still owns filtering, unit assignment and layout during combat.
+	function oUF:SpawnPreconfiguredHeader(name, unit, capacity, configure, ...)
+		assert(not InCombatLockdown(), 'Group headers must be prepared outside combat.')
+		assert(style, 'Unable to create frame. No styles have been registered.')
+		assert(capacity > 0 and capacity <= 40, 'Invalid group header capacity.')
+
+		local header = Mixin(CreateFrame('Frame', name, UIParent, 'SecureGroupHeaderTemplate'), headerMixin)
+		header:Hide()
+		header:SetRolesets('unitFrames')
+		header:SetAttribute('_ignore', true)
+		header:SetAttribute('template', 'SecureUnitButtonTemplate, PingableUnitFrameTemplate')
+		for i = 1, select('#', ...), 2 do
+			local attribute, value = select(i, ...)
+			if(attribute ~= 'oUF-initialConfigFunction' and attribute ~= 'initialConfigFunction') then
+				header:SetAttribute(attribute, value)
+			end
+		end
+		header:SetAttribute('oUF-headerType', 'group')
+		header.style = style
+		header.styleFunction = styleProxy
+
+		-- A negative starting index makes the native header allocate every slot
+		-- even while solo. The capacity cap prevents new, unstyled buttons from
+		-- being created when the roster later changes in combat.
+		local startingIndex = header:GetAttribute('startingIndex')
+		local sortDir = header:GetAttribute('sortDir')
+		header:SetAttribute('startingIndex', 1 - capacity)
+		header:SetAttribute('sortDir', 'ASC')
+		header:SetAttribute('unitsPerColumn', capacity)
+		header:SetAttribute('maxColumns', 1)
+		SecureGroupHeader_Update(header)
+
+		for i = 1, capacity do
+			local button = header:GetAttribute('child' .. i)
+			local frames = {button, button:GetChildren()}
+			for _, frame in ipairs(frames) do
+				local suffix = frame:GetAttribute('unitsuffix')
+				local styleUnit = unit .. (suffix or '')
+				frame:SetAttribute('oUF-guessUnit', styleUnit)
+				frame:SetAttribute('*type1', 'target')
+				frame:SetAttribute('*type2', 'togglemenu')
+				frame:SetAttribute('toggleForVehicle', true)
+				configure(frame, styleUnit)
+				RegisterUnitWatch(frame)
+			end
+			walkObject(button, unit)
+		end
+
+		header:SetAttribute('startingIndex', startingIndex)
+		header:SetAttribute('sortDir', sortDir)
+		header:SetAttribute('_ignore', nil)
+		SecureGroupHeader_Update(header)
+		table.insert(headers, header)
+
+		if(header:GetAttribute('showParty')) then
+			self:DisableBlizzard('party')
+		end
+		return header
+	end
 end
 
 --[[ oUF:Spawn(unit, overrideName)
