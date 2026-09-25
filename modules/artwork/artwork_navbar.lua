@@ -225,7 +225,7 @@ function module:RefreshNavBar()
 	module.TopPanel.Texture:SetVertexColor(self:RGBA("TopPanel"))
 	module.TopPanel:Show()
 	module.LeftBorderBack.Texture:SetVertexColor(self:RGBA("LeftBorderBack"))
-	module.RightBorderBack.Texture:SetVertexColor(self:RGBA("LeftBorderBack"))
+	module.RightBorderBack.Texture:SetVertexColor(self:RGBA("RightBorderBack"))
 
 	if db.NavBar.TopBackground then
 		module.NavBar:Show()
