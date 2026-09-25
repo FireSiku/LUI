@@ -226,7 +226,9 @@ end
 function ExpBarMixin:RegisterEvents()
 	if not self.BAR_EVENTS then return end
 	for _, event in ipairs(self.BAR_EVENTS) do
-		self:RegisterEvent(event)
+		-- One dispatcher owns all tracker events. Shared events otherwise run
+		-- the complete layout once for the anchor and again for each bar.
+		module.anchor:RegisterEvent(event)
 	end
 end
 
@@ -257,9 +259,6 @@ function module:SetEventHandling(enabled)
 		module.anchor:UnregisterAllEvents()
 		if statusTrackingBarManager and module:IsHooked(statusTrackingBarManager, "UpdateBarsShown") then
 			module:Unhook(statusTrackingBarManager, "UpdateBarsShown")
-		end
-		for bar in module:IterateMainBars() do
-			bar:UnregisterAllEvents()
 		end
 	end
 end
@@ -309,15 +308,11 @@ function module:CreateBar(name, dataProvider)
 	-- ExpBarMixin has an empty provider default, so assign the actual provider
 	-- after mixing it into the bar instead of letting Mixin overwrite it.
 	bar.provider = dataProvider
-	bar:SetScript("OnEvent", function(_, event, ...)
-		module:UpdateMainBarVisibility(event, ...)
-	end)
 	bar:SetScript("OnEnter", bar.ShowTooltip)
 	bar:SetScript("OnLeave", bar.HideTooltip)
 	bar:SetScript("OnDragStart", StartAnchorMoving)
 	bar:SetScript("OnDragStop", StopAnchorMoving)
 	bar:RegisterForDrag("LeftButton")
-	bar:RegisterEvents()
 
 	bar:SetBarColor(module:RGBA(dataProvider))
 	bar:UpdateTextVisibility()
