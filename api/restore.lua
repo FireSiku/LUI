@@ -31,13 +31,15 @@ end
 
 function module.Apply(dest, source)
 	local dt, st
-	for k, v in pairs(dest) do
-		if source[k] ~= nil then
+	for k, sv in pairs(source) do
+		-- Looking up the destination also resolves AceDB's lazy wildcard
+		-- defaults, such as the enabled state of individual modules.
+		local v = dest[k]
+		if v ~= nil then
 			-- Push stack.
 			stack[#stack + 1] = k
 
 			-- Create a local temp of source[k] so that converts don't effect our backup.
-			local sv = source[k]
 
 			-- Check value types are the same.
 			dt, st = type(v), type(sv)
