@@ -336,6 +336,10 @@ end
 --If module is disabled and re-enabled, call this instead to prevent re-initializing everything
 function module:SetMinimapAgain()
 	db = module.db.profile
+	if _G.GetMinimapShape ~= GetLuiMinimapShape then
+		originalGetMinimapShape = _G.GetMinimapShape
+	end
+	_G.GetMinimapShape = GetLuiMinimapShape
 	-- Capture Blizzard's restored geometry before applying the LUI position.
 	module:HideDefaultMinimap()
 	module:SetMinimapPosition()
