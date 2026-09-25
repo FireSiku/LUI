@@ -1170,7 +1170,7 @@ function ContainerMixin:SearchUpdate(text)
 				itemSlot:SetAlpha(ITEMSLOT_FILTER_ALPHA)
 			end
 			if itemSlot.name then
-				if strfind(strlower(itemSlot.name), text) then
+				if strfind(strlower(itemSlot.name), text, 1, true) then
 					SetItemButtonDesaturated(itemSlot, data and data.isLocked)
 					itemSlot:SetAlpha(ITEMSLOT_NORMAL_ALPHA)
 				else
