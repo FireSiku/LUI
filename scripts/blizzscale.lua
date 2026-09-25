@@ -52,8 +52,13 @@ function script:ApplyBlizzScaling()
 	
 	for _, frameName in ipairs(blizzFrames) do
 		local frame = _G[frameName]
-		if frame then
-			frame:SetScale(scale)
+		if frame and not (frame.IsForbidden and frame:IsForbidden()) then
+			local currentScale = frame:GetScale()
+			-- GetScale can round through a float (e.g. 0.85 -> 0.85000002).
+			-- Avoid rewriting every existing window whenever any addon loads.
+			if not issecretvalue(currentScale) and math.abs(currentScale - scale) > 0.000001 then
+				frame:SetScale(scale)
+			end
 		end
 	end
 end
