@@ -148,21 +148,12 @@ local function RemoveDefaults(data, default)
 end
 
 function module.Backup()
-	-- Get current db.
 	local db = LUI.db
-
-	-- Get backup location.
 	local backup = {}
 	LUI.db.global.ProfileBackups[LUI.db:GetCurrentProfile()] = backup
-
-	-- Collect old profiles.
-	for k, v in pairs(db.profile) do
-		backup[k] = {}
-		module.Get(v, backup[k])
-
-		-- Remove default values.
-		backup[k] = RemoveDefaults(backup[k], db.defaults.profile[k])
-	end
+	-- The root contains scalar values as well as tables (notably dbVersion).
+	module.Get(db.profile, backup)
+	RemoveDefaults(backup, db.defaults and db.defaults.profile)
 
 	-- Collect children.
 	backup.children = {}
