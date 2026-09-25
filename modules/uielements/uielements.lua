@@ -139,9 +139,13 @@ function module:PositionManagedFrame(key)
 				module:QueueEyePosition()
 			end)
 		end
-	elseif not module:IsHooked(frame, "SetPoint") then
+	elseif config.ManagePosition and not module:IsHooked(frame, "SetPoint") then
 		module:SecureHook(frame, "SetPoint", function()
-			if not settingPosition and module:IsEnabled() then module:Refresh() end
+			-- A native layout change only affects this managed frame. Avoid
+			-- repositioning every other frame and preview from this callback.
+			if not settingPosition and module:IsEnabled() and module.db.profile[key].ManagePosition then
+				module:PositionManagedFrame(key)
+			end
 		end)
 	end
 
