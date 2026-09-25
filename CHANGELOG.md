@@ -1,5 +1,51 @@
 # LUI v2610
 
+## Test13 code audit
+
+- Tooltip: apply scale changes immediately to managed tooltips, preserving their original scale without compounding. The reported 85% was already applied correctly; this is not a confirmed fix for the perceived tooltip size.
+- UIElements: share button state hooks across styles and restrict native layout callbacks to the affected managed frame. Keep the Test12 calendar artwork unchanged.
+- Experience Bars: dispatch shared tracker events once through the existing anchor.
+- Minimap: preserve the native position and scale across repeated module toggles and reinstall the LUI shape callback on re-enable.
+- Mirror Bars: accept both boolean and numeric pause values.
+- Bags: treat search input as literal text, including pattern characters such as brackets and percent signs.
+- Artwork: use the current profile for sidebars, main panels and navigation buttons; prevent deferred updates from reviving disabled panels; honor the right-side background color.
+- Chat: preserve untouched voice visibility callbacks, tolerate a cleared last-active edit box, and correct bare IPv4 link patterns.
+- Profiles: repair backups containing scalar values, wildcard settings and nested namespaces; preserve the previous backup on capture failure and keep restored namespace metadata separate from profile settings.
+- Colors: resolve complete POWER_TYPE resource tokens and prevent rounded color-picker display fields from writing values back.
+- Scaling: avoid redundant Blizzard-window scale writes on addon load and skip forbidden frames.
+- Unitframes: safely restore real groups when entering combat during a preview; refresh combat-feedback registration after option changes and correct resource-feedback formatting and colors.
+- Masque: resolve embedded Darion textures from LUI's bundled media directory.
+- Packaging: remove a stale duplicate infotext tooltip Show call and update packaged version metadata.
+- Validation: full-package Lua/XML syntax and load-path checks, focused behavior checks and independent reviews passed. In-game verification remains outstanding.
+
+## Test12 follow-up
+
+- UIElements: revert all calendar-specific frame, corner and background changes from Tests 9–11. Keep the original Blizzard calendar artwork and change only the close-button texture crop to remove the LUI artwork's transparent margins.
+- Other Test9–11 fixes, including friend-name sizing and the selected oUF updates, are retained.
+
+## Test11 follow-up
+
+- UIElements: replace the calendar's shaped close-button cut-out with standard WoW title-bar and corner artwork. Preserve the native side-border anchors and close-button behavior.
+- UIElements: remove the previous close-button fill, reuse the header regions across openings, and restore the original calendar artwork when button styling is disabled.
+
+## Test10 follow-up
+
+- Infotext: reset the previous name-column width before measuring complete Battle.net account/character labels, including hidden pooled rows. Keep one measurement per name in the existing refresh pass.
+- UIElements: restore the selected LUI calendar close-button artwork and fill the opening behind it below the native calendar border. Reuse one background texture and hide it when restoring Blizzard styling.
+- Validation: targeted Lua checks and syntax validation passed; in-game confirmation of both visual corrections is still pending.
+
+## Test9 follow-up
+
+- UIElements: preserve and darken the native calendar close-button shape to cover the frame cut-out.
+- Unitframes: backport upstream oUF's power-token color fix while retaining LUI's secret-value checks.
+- Unitframes: backport upstream oUF's nested nameplate castbar handling.
+- Compatibility review: Retail 12.1.0 (69933) and Forever 1.60.1 (70009). In-game verification remains required; embedded oUF remains 14.0.3 with selected upstream fixes.
+
+## Test8 follow-up
+
+- Infotext: let normal WoW friend names use the available screen width, matching Battle.net names.
+- UIElements: add button styling for Quick Join, its role dialog, and raid/raid-info controls.
+
 ## Changes since Alpha 11
 
 - Core: detect Forever and expose client capability checks.
