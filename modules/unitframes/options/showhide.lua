@@ -155,7 +155,10 @@ local function HideRealGroupFrame(group)
 	local frame = frameName and _G[frameName]
 	if frame and frame:IsShown() then
 		preview.hiddenRealFrames[frame] = true
-		frame:Hide()
+		-- Preview buttons hide through a secure state driver when combat starts.
+		-- Restore the real group through the same mechanism: an ordinary Hide()
+		-- here would leave both sets hidden until the preview was stopped later.
+		RegisterStateDriver(frame, "visibility", "[combat] show; hide")
 	end
 end
 
@@ -317,7 +320,10 @@ function module:StopUnitframePreview(silent)
 	wipe(preview.registeredNames)
 
 	for _, container in pairs(preview.containers) do container:Hide() end
-	for frame in pairs(preview.hiddenRealFrames) do frame:Show() end
+	for frame in pairs(preview.hiddenRealFrames) do
+		UnregisterStateDriver(frame, "visibility")
+		frame:Show()
+	end
 	wipe(preview.hiddenRealFrames)
 	preview.active = nil
 	preview.castbarUnit = nil
