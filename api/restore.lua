@@ -184,6 +184,38 @@ function module.Reload()
 	StaticPopup_Show("RELOAD_UI")
 end
 
+local function RestoreSnapshot(db, backup, restore)
+	local profile = {}
+	for key, value in pairs(backup) do
+		if key ~= "children" then profile[key] = value end
+	end
+	restore(db.profile, profile)
+
+	local function RestoreChildren(parent, children)
+		if type(children) ~= "table" then return end
+		-- Only AceDB may create database objects. Unknown namespaces in old
+		-- backups must not be inserted as plain tables into db.children.
+		for name, child in pairs(parent.children or {}) do
+			local source = children[name]
+			if type(source) == "table" then
+				stack[#stack + 1] = name
+				for _, scope in ipairs({"profile", "realm"}) do
+					if type(source[scope]) == "table" then
+						stack[#stack + 1] = scope
+						restore(child[scope], source[scope])
+						stack[#stack] = nil
+					end
+				end
+				stack[#stack + 1] = "children"
+				RestoreChildren(child, source.children)
+				stack[#stack], stack[#stack - 1] = nil, nil
+			end
+		end
+	end
+	stack = {"db", "children"}
+	RestoreChildren(db, backup.children)
+end
+
 function module.Restore()
 	-- Get latest backup.
 	local backup = GetBackup()
@@ -203,11 +235,7 @@ function module.Restore()
 	-- Begin restore process.
 	-- Restore from old profiles.
 	stack = {"db", "profile"}
-	module.Apply(db.profile, backup)
-
-	-- Restore children.
-	stack = {"db", "children"}
-	module.Apply(db.children, backup.children)
+	RestoreSnapshot(db, backup, module.Apply)
 
 	print("|c0090ffffLUI:|r Restore of database has completed.", mismatches > 0 and "Encountered", mismatches, "mismatches which have now been corrected." or "")
 	module.Reload()
@@ -228,10 +256,7 @@ function module.Revert()
 
 	-- Begin revert process.
 	-- Revert from old profiles.
-	module.Set(db.profile, backup)
-
-	-- Restore children.
-	module.Set(db.children, backup.children)
+	RestoreSnapshot(db, backup, module.Set)
 
 	print("|c0090ffffLUI:|r Revert of database has completed.")
 	StaticPopup_Show("RELOAD_UI")
