@@ -127,15 +127,16 @@ local function RemoveDefaults(data, default)
 	if type(data) ~= "table" or type(default) ~= "table" then return end
 
 	for k, v in pairs(data) do
+		local defaultValue = default[k]
+		if defaultValue == nil then defaultValue = default["*"] end
+		if defaultValue == nil then defaultValue = default["**"] end
 		if type(v) == "table" then
-			if default[k] then
-				RemoveDefaults(data[k], default[k])
+			if type(defaultValue) == "table" then
+				RemoveDefaults(data[k], defaultValue)
 				if IsEmptyTable(data[k]) then data[k] = nil end
-			else
-				data[k] = nil
 			end
 		else
-			if default[k] == data[k] or default[k] == nil then data[k] = nil end
+			if defaultValue == v then data[k] = nil end
 		end
 	end
 
