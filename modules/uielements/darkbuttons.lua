@@ -918,6 +918,8 @@ local controlTargets = {
     ["FriendsFrameTab4"] = {buttons = {"."}, scrolls = {}},
     ["FriendsFriendsFrame"] = {buttons = {"CloseButton", "SendRequestButton"}, scrolls = {"ScrollBox"}},
     ["FriendsListFrame"] = {buttons = {}, scrolls = {"ScrollBox"}},
+    ["QuickJoinFrame"] = {buttons = {"JoinQueueButton"}, scrolls = {}},
+    ["QuickJoinRoleSelectionFrame"] = {buttons = {"CloseButton", "AcceptButton", "CancelButton", "RoleButtonTank.CheckButton", "RoleButtonHealer.CheckButton", "RoleButtonDPS.CheckButton"}, scrolls = {}},
     ["GearManagerPopupFrame"] = {buttons = {"BorderBox.SelectedIconArea.SelectedIconButton"}, scrolls = {"IconSelector"}},
     ["GhostFrame"] = {buttons = {"."}, scrolls = {}},
     ["GroupFinderFrame"] = {buttons = {"groupButton1", "groupButton2", "groupButton3", "groupButton4"}, scrolls = {}},
