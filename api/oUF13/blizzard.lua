@@ -32,6 +32,7 @@ local function handleFrame(baseName)
 		end
 
 		local castbar = frame.castBar or frame.spellbar or frame.CastingBarFrame
+			or (frame.CastBarsContainer and frame.CastBarsContainer.castBar)
 		if(castbar) then
 			castbar:UnregisterAllEvents()
 		end
