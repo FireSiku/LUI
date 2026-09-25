@@ -103,7 +103,7 @@ function module:RestoreManagedFrame(key)
 	local frame = GetFrame(key)
 	local points = originalPoints[key]
 	if not frame or not points then return end
-	if key == "QueueEye" and not CanPosition(frame) then return end
+	if not CanPosition(frame) then return end
 
 	settingPosition = true
 	RestorePoints(frame, points)
@@ -126,10 +126,8 @@ function module:PositionManagedFrame(key)
 	local config = definition and module.db.profile[key]
 	local frame = GetFrame(key)
 	if not definition or not config or not frame then return end
-	if key == "QueueEye" then
-		if InCombatLockdown() then QueueAfterCombat(false); return end
-		if not CanPosition(frame) then return end
-	end
+	if InCombatLockdown() then QueueAfterCombat(false); return end
+	if not CanPosition(frame) then return end
 
 	if key == "QueueEye" then
 		if config.ManagePosition and not module:IsHooked(frame, "SetPoint") then
