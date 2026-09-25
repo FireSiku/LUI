@@ -101,18 +101,14 @@ function module.Get(source, dest)
 end
 
 function module.Set(dest, source)
-	for k, v in pairs(dest) do
-		if source[k] ~= nil then
-			-- Force apply backup values.
-			if type(source[k]) == "table" then
-				if type(v) ~= "table" then
-					dest[k] = source[k]
-				else
-					module.Set(dest[k], source[k])
-				end
-			else
-				dest[k] = source[k]
-			end
+	for k, v in pairs(source) do
+		-- Exact reverts also retain custom keys absent from the defaults.
+		-- Copy them instead of sharing a mutable table with the backup.
+		if type(v) == "table" then
+			if type(dest[k]) ~= "table" then dest[k] = {} end
+			module.Set(dest[k], v)
+		else
+			dest[k] = v
 		end
 	end
 end
