@@ -122,13 +122,13 @@ local function combat(self, event, unit, eventType, flags, amount, dtype)
 		else
 			color = fColors and fColors.HEAL or colors.HEAL
 		end
-	elseif event == "ENERGIZE" and not FeedbackText.ignoreEnergize then
-		text = amount
+	elseif eventType == "ENERGIZE" and not FeedbackText.ignoreEnergize then
+		text, arg = "%d", amount
 		if flags == "CRITICAL" then
-			color = fColors and fColors.ENERGIZE or colors.ENERGIZE
+			color = fColors and fColors.CRITENERGIZE or colors.CRITENERGIZE
 			fontHeight = fontHeight * 1.3
 		else
-			color = fColors and fColors.CRITENERGIZE or colors.CRITENERGIZE
+			color = fColors and fColors.ENERGIZE or colors.ENERGIZE
 		end
 	elseif not FeedbackText.ignoreOther then
 		text = CombatFeedbackText[eventType]
