@@ -86,7 +86,6 @@ local BC_OFFSET = 20
 local SLIDER_OFFSET = -6
 local GAP = 10
 local BUTTON_HEIGHT = 15
-local NAME_COLUMN_MAX = 190
 local NOTE_COLUMN_MAX = 160
 local GAME_COLUMN_MAX = 240
 local FRIENDS_WIDTH_PADDING = 90
@@ -600,6 +599,7 @@ function element:CreateFriend(index)
 
 	friend.class = friend:AddTexture()
 	friend.name = friend:AddFontString("LEFT", friend.class, TEXT_OFFSET)
+	friend.name:SetWordWrap(false)
 	friend.level = friend:AddFontString("CENTER", friend.name)
 	friend.zone = friend:AddFontString("LEFT", friend.level, nil, module:RGB("Zone"))
 	friend.note = friend:AddFontString("CENTER", friend.zone, nil, module:RGB("Note"))
@@ -663,9 +663,13 @@ function element:DisplayFriends()
 			classIconWidth = max(classIconWidth, friend.class:GetWidth())
 		end
 	end
-	nameColumnWidth = math.min(nameColumnWidth, NAME_COLUMN_MAX)
 	noteColumnWidth = math.min(noteColumnWidth, NOTE_COLUMN_MAX)
 	local scoreWidth = scoreColumnWidth > 0 and (scoreColumnWidth + GAP) or 0
+	-- Match Battle.net rows: reserve the other columns, then allow the full
+	-- character name (including realm/status) up to the screen limit.
+	nameColumnWidth = FitColumnWidth(nameColumnWidth,
+		TEXT_OFFSET + classIconWidth + levelColumnWidth
+		+ noteColumnWidth + GAP * 5 + scoreWidth + 1)
 	zoneColumnWidth = FitColumnWidth(zoneColumnWidth,
 		TEXT_OFFSET + classIconWidth + nameColumnWidth + levelColumnWidth
 		+ noteColumnWidth + GAP * 5 + scoreWidth)
