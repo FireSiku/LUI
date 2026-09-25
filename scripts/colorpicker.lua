@@ -34,7 +34,9 @@ local function UpdateColor(tbox)
 end
 
 local function UpdateColorTexts(r, g, b)
-	if not r then return end
+	if r == nil or g == nil or b == nil then
+		r, g, b = ColorPickerFrame.Content.ColorPicker:GetColorRGB()
+	end
 	ColorPickerBoxR:SetText(string.format("%.2f", r))
 	ColorPickerBoxG:SetText(string.format("%.2f", g))
 	ColorPickerBoxB:SetText(string.format("%.2f", b))
