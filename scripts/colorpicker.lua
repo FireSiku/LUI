@@ -94,11 +94,13 @@ function script:PLAYER_ENTERING_WORLD(event)
 		if i == 4 then
 			box:SetScript("OnEscapePressed", function(self) self:ClearFocus() UpdateColorTexts() end)
 			box:SetScript("OnEnterPressed", function(self) self:ClearFocus() UpdateColorTexts() end)
-			box:SetScript("OnTextChanged", function(self) UpdateAlpha(self) end)
+			box:SetScript("OnTextChanged", function(self, userInput) if userInput then UpdateAlpha(self) end end)
 		else
 			box:SetScript("OnEscapePressed", function(self) self:ClearFocus() UpdateColorTexts() end)
 			box:SetScript("OnEnterPressed", function(self) self:ClearFocus() UpdateColorTexts() end)
-			box:SetScript("OnTextChanged", function(self) UpdateColor(self) end)
+			-- Displaying rounded component values must not write those rounded
+			-- values back to the picker or trigger extra color callbacks.
+			box:SetScript("OnTextChanged", function(self, userInput) if userInput then UpdateColor(self) end end)
 		end
 
 		box:SetScript("OnEditFocusGained", function(self) self:SetCursorPosition(0) self:HighlightText() end)
