@@ -552,6 +552,7 @@ function module:setMainPanels()
 end
 
 function module:RefreshMainPanels()
+	if not module:IsEnabled() then return end
 	if InCombatLockdown() then
 		if not module.mainPanelRefreshFrame then
 			module.mainPanelRefreshFrame = CreateFrame("Frame")
