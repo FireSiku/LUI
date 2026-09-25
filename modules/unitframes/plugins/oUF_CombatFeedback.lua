@@ -83,7 +83,7 @@ local function combat(self, event, unit, eventType, flags, amount, dtype)
 				color = fColors and fColors.CRITICAL or colors.CRITICAL
 				fontHeight = fontHeight * 1.5
 			elseif  flags == "CRUSHING" then
-				color = fColors and fColors.CRUSING or colors.CRUSHING
+				color = fColors and fColors.CRUSHING or colors.CRUSHING
 				fontHeight = fontHeight * 1.5
 			elseif flags == "GLANCING" then
 				color = fColors and fColors.GLANCING or colors.GLANCING
