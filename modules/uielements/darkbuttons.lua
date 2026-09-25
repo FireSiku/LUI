@@ -83,6 +83,7 @@ end
 local sharedButtons = setmetatable({}, {__mode = "k"})
 local legacyButtons = setmetatable({}, {__mode = "k"})
 local customRegions = setmetatable({}, {__mode = "k"})
+local buttonStateHooks = setmetatable({}, {__mode = "k"})
 -- Both LUI close-button resolutions use the same transparent margins.
 -- The calendar's native cut-out needs the full button face inside its box.
 local calendarCloseCoords = {6 / 32, 25 / 32, 7 / 32, 25 / 32}
@@ -305,6 +306,20 @@ end
 
 local ApplyButton, ApplySharedButton, RestoreRegion, SourceChanged
 local QueuePanel
+local function HookButtonState(button, name, handler, script)
+    local installed = buttonStateHooks[button]
+    if not installed then
+        installed = {}
+        buttonStateHooks[button] = installed
+    end
+    if installed[name] then return end
+    -- The HD and sliced faces share these callbacks. Style changes must not
+    -- accumulate a second repaint callback on the same native control.
+    if script then button:HookScript(name, handler)
+    else hooksecurefunc(button, name, handler) end
+    installed[name] = true
+end
+
 ApplySharedButton = function(button, buttonState)
     if not active or not CanStyle(button) then return false end
     -- Do not enumerate/allocate legacy texture parts for a different style.
@@ -355,17 +370,17 @@ ApplySharedButton = function(button, buttonState)
         glow:Hide()
         state.highlight[1] = glow
         if modern then
-            hooksecurefunc(button, "UpdateButton", function(self, value) ApplyButton(self, value) end)
-            hooksecurefunc(button, "UpdateScale", function(self) ApplyButton(self) end)
+            HookButtonState(button, "UpdateButton", function(self, value) ApplyButton(self, value) end)
+            HookButtonState(button, "UpdateScale", function(self) ApplyButton(self) end)
         else
-            button:HookScript("OnMouseDown", function(self) ApplyButton(self, "PUSHED") end)
-            button:HookScript("OnMouseUp", function(self) ApplyButton(self, "NORMAL") end)
+            HookButtonState(button, "OnMouseDown", function(self) ApplyButton(self, "PUSHED") end, true)
+            HookButtonState(button, "OnMouseUp", function(self) ApplyButton(self, "NORMAL") end, true)
             if button.SetButtonState then
-                hooksecurefunc(button, "SetButtonState", function(self, value) ApplyButton(self, value) end)
+                HookButtonState(button, "SetButtonState", function(self, value) ApplyButton(self, value) end)
             end
         end
         for _, script in ipairs({"OnSizeChanged", "OnEnable", "OnDisable"}) do
-            button:HookScript(script, function(self) ApplyButton(self) end)
+            HookButtonState(button, script, function(self) ApplyButton(self) end, true)
         end
     end
     -- Never hide the native face until its replacement has valid anchors.
@@ -525,12 +540,12 @@ local function ApplySlicedButton(button, buttonState)
         local function Update(self) ApplyButton(self) end
         -- ApplyButton already owns the common OnShow hook.
         for _, script in ipairs({"OnEnable", "OnDisable", "OnSizeChanged"}) do
-            button:HookScript(script, Update)
+            HookButtonState(button, script, Update, true)
         end
-        button:HookScript("OnMouseDown", function(self) ApplyButton(self, "PUSHED") end)
-        button:HookScript("OnMouseUp", function(self) ApplyButton(self, "NORMAL") end)
-        if button.SetButtonState then hooksecurefunc(button, "SetButtonState", function(self, value) ApplyButton(self, value) end) end
-        if button.UpdateButton then hooksecurefunc(button, "UpdateButton", function(self, value) ApplyButton(self, value) end) end
+        HookButtonState(button, "OnMouseDown", function(self) ApplyButton(self, "PUSHED") end, true)
+        HookButtonState(button, "OnMouseUp", function(self) ApplyButton(self, "NORMAL") end, true)
+        if button.SetButtonState then HookButtonState(button, "SetButtonState", function(self, value) ApplyButton(self, value) end) end
+        if button.UpdateButton then HookButtonState(button, "UpdateButton", function(self, value) ApplyButton(self, value) end) end
     end
     RestoreSharedButton(state)
     local suffix = buttonState == "DISABLED" and "-Disabled" or buttonState == "PUSHED" and "-Pressed" or ""
