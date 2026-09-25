@@ -110,7 +110,6 @@ end
 --- Create the NavBar buttons.
 ---@param side "left2"|"left1"|"right1"|"right2"
 function module:CreateNavButton(kind, side, x, y)
-	local db = module.db.profile.LUITextures
 	local isWide = (side == "left2" or side == "right2")
 
 
@@ -159,6 +158,7 @@ function module:CreateNavButton(kind, side, x, y)
 	clicker:SetScript("OnEnter", function() hover:SetAlpha(ALPHA) end)
 	clicker:SetScript("OnLeave", function() hover:SetAlpha(0) end)
 	local function OnClick()
+		local db = module.db.profile.LUITextures
 		local frame = _G[db[kind].Anchor]
 		if frame and not db[kind].IsShown then
 			if kind == "Chat" and not (alphaOut:IsPlaying() or alphaIn:IsPlaying()) then
