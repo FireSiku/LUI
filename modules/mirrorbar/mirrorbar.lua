@@ -117,10 +117,15 @@ local function OnUpdate(self)
 	end
 end
 
+local function IsTimerPaused(paused)
+	-- Accept boolean event payloads as well as numeric timer-info values.
+	return paused == true or (type(paused) == "number" and paused > 0)
+end
+
 local function UpdateBar(self, index, timer, value, maxvalue, scale, paused, label)
 	local bar = self.MirrorBar[index]
 	bar.timer = timer
-	bar.paused = paused > 0
+	bar.paused = IsTimerPaused(paused)
 
 	if timer == "ARCHY" then
 		bar.value = value
@@ -174,7 +179,7 @@ end
 local function MIRROR_TIMER_PAUSE(self, event, timer, paused)
 	for i = 1, MIRRORTIMER_NUMTIMERS do
 		if self.MirrorBar[i].timer == timer then
-			self.MirrorBar[i].paused = paused > 0
+			self.MirrorBar[i].paused = IsTimerPaused(paused)
 			break
 		end
 	end
