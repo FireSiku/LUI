@@ -109,6 +109,17 @@ local function SafeValue(value, fallback)
 	return value
 end
 
+local function MeasureFriendName(name)
+	-- Rows are pooled and hidden while the list is rebuilt. Discard the last
+	-- column width before measuring the full account/character label; do not
+	-- use the shared helper's visibility check for these mandatory labels.
+	name:SetWidth(0)
+	local width = name:GetStringWidth()
+	if issecretvalue(width) or type(width) ~= "number"
+		or not (width > 0 and width < math.huge) then return 0 end
+	return math.ceil(width) + 2
+end
+
 local function FitColumnWidth(requiredWidth, otherColumnsWidth)
 	-- Keep complete text on one line whenever the screen allows it.
 	-- Reserve the window padding and scrollbar before allocating this column.
@@ -514,7 +525,7 @@ function element:DisplayBNFriends()
 				bnfriend.gameText:Show()
 			end
 
-			nameColumnWidth = max(nameColumnWidth, module:GetInfotipTextWidth(bnfriend.name))
+			nameColumnWidth = max(nameColumnWidth, MeasureFriendName(bnfriend.name))
 			levelColumnWidth = max(levelColumnWidth, module:GetInfotipTextWidth(bnfriend.level))
 			zoneColumnWidth = max(zoneColumnWidth, module:GetInfotipTextWidth(bnfriend.zone))
 			if module.db.profile.Friends.ShowNotes then
@@ -654,7 +665,7 @@ function element:DisplayFriends()
 			SetTextColor(friend.zone, "Zone")
 			SetTextColor(friend.note, "Note")
 
-			nameColumnWidth = max(nameColumnWidth, module:GetInfotipTextWidth(friend.name))
+			nameColumnWidth = max(nameColumnWidth, MeasureFriendName(friend.name))
 			levelColumnWidth = max(levelColumnWidth, module:GetInfotipTextWidth(friend.level))
 			zoneColumnWidth = max(zoneColumnWidth, module:GetInfotipTextWidth(friend.zone))
 			if module.db.profile.Friends.ShowNotes then
