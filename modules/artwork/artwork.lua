@@ -99,7 +99,7 @@ function module:Refresh()
 	for _, sidebar in self:IterateSidebars() do
 		sidebar:Refresh()
 	end
+	self:RefreshMainPanels()
 	self:RefreshNavBar()
 	self:RefreshOrb()
-	self:RefreshMainPanels()
 end

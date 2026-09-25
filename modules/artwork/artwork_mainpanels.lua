@@ -566,6 +566,8 @@ function module:RefreshMainPanels()
 	if module.mainPanelRefreshFrame then
 		module.mainPanelRefreshFrame:UnregisterEvent("PLAYER_REGEN_ENABLED")
 	end
+	db = module.db.profile.LUITextures
+	db.Chat.Anchor = "ChatAlphaAnchor"
 	self:ApplyBackground("Chat")
 	self:ApplyBackground("Tps")
 	self:ApplyBackground("Dps")
