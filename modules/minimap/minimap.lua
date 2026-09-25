@@ -329,14 +329,16 @@ function module:SetMinimap(ignoreCombat)
 			QueueAfterCombat("setup")
 			return
 		end
-		module:SetMinimapPosition()
 		module:SetMinimapAgain()
 	end
 end
 
 --If module is disabled and re-enabled, call this instead to prevent re-initializing everything
 function module:SetMinimapAgain()
+	db = module.db.profile
+	-- Capture Blizzard's restored geometry before applying the LUI position.
 	module:HideDefaultMinimap()
+	module:SetMinimapPosition()
 	module:SetMinimapScripts()
 	module:PositionMinimapIcons()
 	module:ToggleMinimapText()
