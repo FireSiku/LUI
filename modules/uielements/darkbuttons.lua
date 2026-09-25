@@ -83,6 +83,9 @@ end
 local sharedButtons = setmetatable({}, {__mode = "k"})
 local legacyButtons = setmetatable({}, {__mode = "k"})
 local customRegions = setmetatable({}, {__mode = "k"})
+-- Both LUI close-button resolutions use the same transparent margins.
+-- The calendar's native cut-out needs the full button face inside its box.
+local calendarCloseCoords = {6 / 32, 25 / 32, 7 / 32, 25 / 32}
 
 local function IsSecret(value)
     return issecretvalue and issecretvalue(value)
@@ -643,7 +646,7 @@ end
 local function CoordinatesChanged(region, ...)
     if applying or not CanStyle(region) then return end
     local record = records[region]
-    if not record or not record.atlas or not record.file then return end
+    if not record or not record.coords or not record.file then return end
     local coords = PublicValues(...)
     if not coords then return end
     record.coords = coords
@@ -651,7 +654,8 @@ local function CoordinatesChanged(region, ...)
     if InCombatLockdown() then DeferCombat(false, region); return end
     if StyleForRegion(region) ~= record.style then ApplyRegion(region); return end
     applying = true
-    region:SetTexCoord(0, 1, 0, 1)
+    if record.appliedCoords then region:SetTexCoord(unpack(record.appliedCoords))
+    else region:SetTexCoord(0, 1, 0, 1) end
     applying = false
 end
 
@@ -704,8 +708,9 @@ ApplyRegion = function(region)
         -- Reconcile native changes made during combat without replacing the
         -- original source we need when this option/module is disabled.
         applying = true
-        if previous.file and previous.atlas then
-            region:SetTexCoord(0, 1, 0, 1)
+        if previous.file and previous.coords then
+            if previous.appliedCoords then region:SetTexCoord(unpack(previous.appliedCoords))
+            else region:SetTexCoord(0, 1, 0, 1) end
         elseif not previous.file then
             region:SetVertexColor(previous.tint, previous.tint, previous.tint, previous.color[4])
             if previous.desaturation ~= nil then region:SetDesaturation(1) end
@@ -719,6 +724,12 @@ ApplyRegion = function(region)
         applying = true
         region:SetVertexColor(unpack(previous.color))
         if previous.desaturation ~= nil then region:SetDesaturation(previous.desaturation) end
+        applying = false
+    elseif previous and previous.appliedCoords and not atlas then
+        -- SetTexture retains UVs. Remove our calendar crop before recording
+        -- a different file; SetAtlas already supplies its own coordinates.
+        applying = true
+        region:SetTexCoord(unpack(previous.coords))
         applying = false
     end
     records[region] = nil
@@ -749,13 +760,16 @@ ApplyRegion = function(region)
     local record
     if file then
         record = {file = file}
-        if atlas then
+        if region:GetParent() == _G.CalendarCloseButton
+            and file.name:match("^UI%-Panel%-MinimizeButton%-") then
+            record.appliedCoords = calendarCloseCoords
+        end
+        if atlas or record.appliedCoords then
             local coords = PublicValues(region:GetTexCoord())
             if not coords then return end
-            record.atlas, record.coords = atlas, coords
-        else
-            record.texture = texture
+            record.coords = coords
         end
+        if atlas then record.atlas = atlas else record.texture = texture end
     else
         local color = PublicValues(region:GetVertexColor())
         if not color then return end
@@ -794,7 +808,8 @@ ApplyRegion = function(region)
     applying = true
     if file then
         region:SetTexture(file.path)
-        if atlas then region:SetTexCoord(0, 1, 0, 1) end
+        if record.appliedCoords then region:SetTexCoord(unpack(record.appliedCoords))
+        elseif atlas then region:SetTexCoord(0, 1, 0, 1) end
     else
         region:SetVertexColor(record.tint, record.tint, record.tint, record.color[4])
         if record.desaturation ~= nil then region:SetDesaturation(1) end
