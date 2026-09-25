@@ -1189,7 +1189,10 @@ module.ApplySettings = function(unit, force)
 			end
 
 			-- combat feedback text
-			if dbUnit.CombatFeedback then module.funcs.CombatFeedbackText(frame, styleUnit, dbUnit) end
+			if dbUnit.CombatFeedback then
+				module.funcs.CombatFeedbackText(frame, styleUnit, dbUnit)
+				frame:UpdateCombatFeedback()
+			end
 
 			-- castbar
 			if dbUnit.Castbar then

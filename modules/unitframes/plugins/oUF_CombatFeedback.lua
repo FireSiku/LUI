@@ -154,6 +154,9 @@ local function addCombat(object)
 		and FeedbackText.ignoreEnergize
 		and FeedbackText.ignoreOther
 	then
+		object:UnregisterEvent("UNIT_COMBAT", combat)
+		feedback[object] = nil
+		FeedbackText:Hide()
 		return
 	end
 	-- store the original starting height
@@ -166,3 +169,4 @@ end
 
 for k, object in ipairs(oUF.objects) do addCombat(object) end
 oUF:RegisterInitCallback(addCombat)
+oUF:RegisterMetaFunction("UpdateCombatFeedback", addCombat)
