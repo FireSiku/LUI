@@ -139,6 +139,7 @@ end
 
 --- Refresh the sidebar's settings and position
 function SidebarMixin:Refresh()
+	self.db = module.db.profile.SideBars[self.name]
 	local r, g, b = module:RGBA("Sidebar"..self.side)
 	local previousAnchor = self.activeAnchor
 	if previousAnchor and previousAnchor ~= self.db.Anchor then
