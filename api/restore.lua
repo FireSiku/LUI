@@ -147,33 +147,30 @@ local function RemoveDefaults(data, default)
 	return data
 end
 
+local function CaptureChildren(db)
+	local children = {}
+	for name, child in pairs(db.children or {}) do
+		local captured = {profile = {}}
+		children[name] = captured
+		module.Get(child.profile, captured.profile)
+		RemoveDefaults(captured.profile, child.defaults and child.defaults.profile)
+		if child.realm then
+			captured.realm = {}
+			module.Get(child.realm, captured.realm)
+			RemoveDefaults(captured.realm, child.defaults and child.defaults.realm)
+		end
+		if child.children then captured.children = CaptureChildren(child) end
+	end
+	return children
+end
+
 function module.Backup()
 	local db = LUI.db
 	local backup = {}
 	-- The root contains scalar values as well as tables (notably dbVersion).
 	module.Get(db.profile, backup)
 	RemoveDefaults(backup, db.defaults and db.defaults.profile)
-
-	-- Collect children.
-	backup.children = {}
-	local child = backup.children
-	for k, v in pairs(db.children) do
-		-- Get child profile and realm setting.
-		child[k] = {profile = {}}
-		module.Get(v.profile, child[k].profile)
-
-		-- Remove default values.
-		child[k].profile = RemoveDefaults(child[k].profile, v.defaults.profile)
-
-		if v.realm then
-			child[k].realm = {}
-			module.Get(v.realm, child[k].realm)
-
-			-- Remove default values.
-			child[k].realm = RemoveDefaults(child[k].realm, v.defaults.realm)
-		end
-	end
-
+	backup.children = CaptureChildren(db)
 	-- Publish only a completed snapshot, preserving the previous backup if
 	-- collection fails partway through.
 	db.global.ProfileBackups[db:GetCurrentProfile()] = backup
