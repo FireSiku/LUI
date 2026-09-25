@@ -14,15 +14,18 @@ local editingText
 local ColorPickerFrame = ColorPickerFrame --[[ @as ColorPickerFrameMixin ]]
 
 local function UpdateColor(tbox)
+	local value = tonumber(tbox:GetText())
+	if not value then return end
+	value = math.max(0, math.min(1, value))
 	local r, g, b = ColorPickerFrame.Content.ColorPicker:GetColorRGB()
 	local id = tbox:GetID()
 
 	if id == 1 then
-		r = tonumber(tbox:GetText()) or 0
+		r = value
 	elseif id == 2 then
-		g = tonumber(tbox:GetText()) or 0
+		g = value
 	elseif id == 3 then
-		b = tonumber(tbox:GetText()) or 0
+		b = value
 	end
 
 	editingText = true
@@ -42,8 +45,9 @@ local function UpdateColorTexts(r, g, b)
 end
 
 local function UpdateAlpha(tbox)
-	local a = tonumber(tbox:GetText()) or 1
-	if a > 1 then a = 1 end
+	local a = tonumber(tbox:GetText())
+	if not a then return end
+	a = math.max(0, math.min(1, a))
 	editingText = true
 	ColorPickerFrame.Content.ColorPicker:SetColorAlpha(a)
 	editingText = nil
