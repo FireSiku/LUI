@@ -569,6 +569,9 @@ end
 
 function module:Refresh()
 	db = module.db.profile
+	for tooltip in pairs(initialScale) do
+		module:ApplyTooltipScale(tooltip)
+	end
 	module:SetStatusHealthBar()
 	module:UpdateBackdropColors()
 	if not GameTooltip:IsForbidden() then
@@ -609,18 +612,19 @@ function module.OnStatusBarValueChanged(frame)
 	frame:Show()
 end
 
+function module:ApplyTooltipScale(frame)
+	if not module:IsEnabled() or (frame.IsForbidden and frame:IsForbidden()) then return end
+	-- Always use the original scale so option changes cannot compound scaling.
+	frame:SetScale((initialScale[frame] or 1) * db.Scale)
+end
+
 function module:OnTooltipShow(frame)
 	if not module:IsEnabled() then return end
 	if db.HideCombat and InCombatLockdown() then
 		return frame:Hide()
 	end
 
-	--If a frame has a smaller scale than normal for any reasons, make sure that's respected.
-	if initialScale[frame] then
-		frame:SetScale(initialScale[frame] * db.Scale)
-	else
-		frame:SetScale(db.Scale)
-	end
+	module:ApplyTooltipScale(frame)
 
 	module:UpdateTooltipBackdrop(frame)
 	module:SetBorderColor(frame)
