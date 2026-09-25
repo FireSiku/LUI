@@ -150,7 +150,6 @@ end
 function module.Backup()
 	local db = LUI.db
 	local backup = {}
-	LUI.db.global.ProfileBackups[LUI.db:GetCurrentProfile()] = backup
 	-- The root contains scalar values as well as tables (notably dbVersion).
 	module.Get(db.profile, backup)
 	RemoveDefaults(backup, db.defaults and db.defaults.profile)
@@ -174,6 +173,10 @@ function module.Backup()
 			child[k].realm = RemoveDefaults(child[k].realm, v.defaults.realm)
 		end
 	end
+
+	-- Publish only a completed snapshot, preserving the previous backup if
+	-- collection fails partway through.
+	db.global.ProfileBackups[db:GetCurrentProfile()] = backup
 
 	print("|c0090ffffLUI:|r Backup of current profile complete.")
 end
