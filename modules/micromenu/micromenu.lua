@@ -323,7 +323,12 @@ local microDefinitions = {
 		any = L["MicroBags_Any"],
 		state = "ConsolidatedBagFrame",
 		OnClick = function(self, btn)
-			_G.ToggleAllBags()
+			local bags = LUI:GetModule("Bags", true)
+			if bags and bags:IsEnabled() then
+				bags.ToggleBags()
+			else
+				_G.ToggleAllBags()
+			end
 		end,
 	},
 
@@ -711,9 +716,13 @@ function module:ConsolidateBagFrames()
 	local bagFrames = CreateFrame("Frame", "ConsolidatedBagFrame", UIParent)
 
 	local function UpdateState()
+		local bags = LUI:GetModule("Bags", true)
+		if bags and bags:IsEnabled() and _G.LUIBags then
+			bagFrames:SetShown(_G.LUIBags:IsShown())
+			return
+		end
 		if
-			(_G.LUIBags and _G.LUIBags:IsShown())
-			or IsBagOpen(0)
+			IsBagOpen(0)
 			or IsBagOpen(1)
 			or IsBagOpen(2)
 			or IsBagOpen(3)
