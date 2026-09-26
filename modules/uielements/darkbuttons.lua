@@ -664,6 +664,14 @@ local function CoordinatesChanged(region, ...)
     if not record or not record.coords or not record.file then return end
     local coords = PublicValues(...)
     if not coords then return end
+    -- Native button setters can replace a texture without calling its Lua
+    -- SetTexture hook (for example, when a role checkbox becomes a radio).
+    -- Keep the new source's UVs instead of stretching its entire sprite sheet.
+    if not OwnsArtwork(region, record) then
+        records[region] = nil
+        ApplyRegion(region)
+        return
+    end
     record.coords = coords
     if not active then return end
     if InCombatLockdown() then DeferCombat(false, region); return end
