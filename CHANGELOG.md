@@ -30,6 +30,7 @@
 - Bags: Added an optional keyring shortcut for Forever while preserving its native bank window.
 - Bags: Reduced repeated slot positioning when reopening bags and removed a leftover native border artifact.
 - Bags: Searches now handle special characters such as brackets and percent signs correctly.
+- Bags: Preserved Blizzard's secure bag functions to prevent blocked item use after bank visits on Retail.
 - Experience Bars: Unavailable trackers are hidden in Forever, and the bar-locking option is grouped with the tracker controls.
 - Experience Bars: Removed duplicate event updates when refreshing the bars.
 - Minimap: Fixed position, scale and shape handling when disabling and re-enabling the module.

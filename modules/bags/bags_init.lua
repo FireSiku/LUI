@@ -95,28 +95,32 @@ function module:OnEnable()
 	module:SetBags()
 	module:EnableBank()
 
-	local origToggleBag = ToggleBag
-	local origOpenBag = OpenBag
-	module:RawHook("ToggleBag", function(id)
-		if module:IsCharacterBag(id) then
-			module.ToggleBags()
-		else
-			origToggleBag(id)
-		end 
-	end, true)
-	module:RawHook("OpenBag", function(id, force)
-		if module:IsCharacterBag(id) then
-			module.OpenBags()
-		else
-			origOpenBag(id, force)
-		end
-	end, true)
-	module:RawHook("ToggleBackpack", module.ToggleBags, true)
-	module:RawHook("OpenAllBags",    module.OpenBags,   true)
-	module:RawHook("ToggleAllBags",  module.ToggleBags, true)
-	module:RawHook("OpenBackpack",   module.OpenBags,   true)
-	module:SecureHook("CloseBackpack",  module.CloseBags,  true)
-	module:SecureHook("CloseAllBags",   module.CloseBags,  true)
+	if not LUI.IsForever then
+		module:EnableRetailBagHooks()
+	else
+		local origToggleBag = ToggleBag
+		local origOpenBag = OpenBag
+		module:RawHook("ToggleBag", function(id)
+			if module:IsCharacterBag(id) then
+				module.ToggleBags()
+			else
+				origToggleBag(id)
+			end
+		end, true)
+		module:RawHook("OpenBag", function(id, force)
+			if module:IsCharacterBag(id) then
+				module.OpenBags()
+			else
+				origOpenBag(id, force)
+			end
+		end, true)
+		module:RawHook("ToggleBackpack", module.ToggleBags, true)
+		module:RawHook("OpenAllBags",    module.OpenBags,   true)
+		module:RawHook("ToggleAllBags",  module.ToggleBags, true)
+		module:RawHook("OpenBackpack",   module.OpenBags,   true)
+		module:SecureHook("CloseBackpack",  module.CloseBags,  true)
+		module:SecureHook("CloseAllBags",   module.CloseBags,  true)
+	end
 
 	if not tContains(UISpecialFrames, "LUIBags") then
 		tinsert(UISpecialFrames, "LUIBags")
@@ -125,6 +129,7 @@ end
 
 function module:OnDisable()
 	module:DisableBank()
+	if not LUI.IsForever then module:DisableRetailBagHooks() end
 	if _G.LUIBags then
 		module.CloseBags()
 	end
