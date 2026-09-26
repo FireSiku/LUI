@@ -891,6 +891,7 @@ local controlTargets = {
     ["BankCleanUpConfirmationPopup"] = {buttons = {"AcceptButton", "CancelButton", "HidePopupCheckbox.Checkbox"}, scrolls = {}},
     ["BankFrame"] = {buttons = {"BankPanel.AutoDepositFrame.DepositButton", "BankPanel.AutoDepositFrame.IncludeReagentsCheckbox", "BankPanel.AutoSortButton", "BankPanel.MoneyFrame.DepositButton", "BankPanel.MoneyFrame.WithdrawButton", "BankPanel.PurchaseButton", "BankPanel.PurchasePrompt.TabCostFrame.PurchaseButton", "BankPanel.PurchaseTab", "BankPanel.TabSettingsMenu.BorderBox.SelectedIconArea.SelectedIconButton", "BankPanel.TabSettingsMenu.DepositSettingsMenu.AssignConsumablesCheckbox", "BankPanel.TabSettingsMenu.DepositSettingsMenu.AssignEquipmentCheckbox", "BankPanel.TabSettingsMenu.DepositSettingsMenu.AssignJunkCheckbox", "BankPanel.TabSettingsMenu.DepositSettingsMenu.AssignProfessionGoodsCheckbox", "BankPanel.TabSettingsMenu.DepositSettingsMenu.AssignReagentsCheckbox", "BankPanel.TabSettingsMenu.DepositSettingsMenu.IgnoreCleanUpCheckbox", "CloseButton"}, scrolls = {"BankPanel.TabSettingsMenu.IconSelector"}},
     ["BasicMessageDialogButton"] = {buttons = {"."}, scrolls = {}},
+    ["BattleNetInviteFrame"] = {buttons = {"SendButton", "CancelButton"}, scrolls = {}},
     ["BonusRollFrame"] = {buttons = {"PromptFrame.EncounterJournalLinkButton", "PromptFrame.PassButton", "PromptFrame.RollButton"}, scrolls = {}},
     ["CharacterBackSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
     ["CharacterChestSlot"] = {buttons = {"popoutButton"}, scrolls = {}},
