@@ -1002,6 +1002,7 @@ local controlTargets = {
     ["InboxNextPageButton"] = {buttons = {"."}, scrolls = {}},
     ["InboxPrevPageButton"] = {buttons = {"."}, scrolls = {}},
     ["InspectRecipeFrame"] = {buttons = {"CloseButton", "SchematicForm.AllocateBestQualityCheckbox", "SchematicForm.Concentrate.ConcentrateToggleButton", "SchematicForm.Details.CraftingChoicesContainer.ConcentrateContainer.ConcentrateToggleButton", "SchematicForm.FavoriteButton", "SchematicForm.OutputIcon", "SchematicForm.QualityDialog.AcceptButton", "SchematicForm.QualityDialog.CancelButton", "SchematicForm.QualityDialog.ClosePanelButton", "SchematicForm.RecipeSourceButton", "SchematicForm.TrackRecipeCheckbox"}, scrolls = {}},
+    ["InstanceAbandonPopup"] = {buttons = {"ButtonContainer.Button1", "ButtonContainer.Button2"}, scrolls = {}},
     ["ItemTextFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
     ["ItemTextNextPageButton"] = {buttons = {"."}, scrolls = {}},
     ["ItemTextPrevPageButton"] = {buttons = {"."}, scrolls = {}},

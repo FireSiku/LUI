@@ -40,6 +40,7 @@
 - UIElements: Added button styling for ready checks, the Forever Legacy window, map and calendar controls, the shop, Trading Post, Quick Join, raid tabs and raid dialogs.
 - UIElements: Corrected the calendar close-button artwork while preserving the original calendar frame and layout.
 - UIElements: Fixed distorted role-selection circles in group invitations when using custom button styles.
+- UIElements: Added button styling to the Abandon Key vote dialog.
 - UIElements: Restored optional Dungeon Finder queue-eye positioning.
 - UIElements: Reduced repeated button updates and duplicate callbacks when changing styles. After combat, only pending styling work is processed.
 - UIElements: Improved handling of restricted controls and kept bag and item-slot artwork separate from general button styling.
