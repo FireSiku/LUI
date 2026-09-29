@@ -146,18 +146,19 @@ function element:UpdateInstanceDisplay()
 	local frame = element:GetFrame()
 	if not frame or not frame.instanceText then return end
 	local text = frame.instanceText
+	local _, _, topInset, bottomInset = frame:GetHitRectInsets()
 	if not invitesPending and module.db.profile.Clock.instanceDifficulty and instanceInfo then
 		text:SetText(format("[%s%s]", instanceInfo, guildParty or ""))
 		text:Show()
 		-- Include the separate tag in the clock's hover/click area without resizing it.
 		local width = text:GetUnboundedStringWidth()
 		if not issecretvalue(width) then
-			frame:SetHitRectInsets(-math.ceil(width) - INSTANCE_TEXT_GAP, 0, 0, 0)
+			frame:SetHitRectInsets(-math.ceil(width) - INSTANCE_TEXT_GAP, 0, topInset, bottomInset)
 		end
 	else
 		text:SetText("")
 		text:Hide()
-		frame:SetHitRectInsets(0, 0, 0, 0)
+		frame:SetHitRectInsets(0, 0, topInset, bottomInset)
 	end
 end
 -- luacheck: globals TimeManagerMilitaryTimeCheck TimeManagerLocalTimeCheck
