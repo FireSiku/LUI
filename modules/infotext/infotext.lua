@@ -87,17 +87,31 @@ local function UpdateDisplaySize(frame)
 	local topAnchored = type(point) == "string" and point:find("TOP", 1, true)
 	local minimumHeight = topAnchored and TOP_BAR_VISIBLE_HEIGHT or 1
 	local frameWidth = math.max(1, math.ceil(width))
-	frame:SetSize(frameWidth, math.max(minimumHeight, textHeight))
+	local frameHeight = math.max(minimumHeight, textHeight)
+	frame:SetSize(frameWidth, frameHeight)
 
 	frame.text:ClearAllPoints()
 	frame.text:SetSize(frameWidth, textHeight)
 	frame.text:SetJustifyV("MIDDLE")
+	local topInset, bottomInset = 0, 0
 	if topAnchored then
 		local textPoint = TOP_BAR_TEXT_POINTS[db.TopBarTextAnchor] or TOP_BAR_TEXT_POINTS.TOP
 		frame.text:SetPoint(textPoint, frame, textPoint)
+		local padding = frameHeight - textHeight
+		if textPoint == "TOPLEFT" then
+			bottomInset = padding
+		elseif textPoint == "BOTTOMLEFT" then
+			topInset = padding
+		else
+			topInset, bottomInset = padding / 2, padding / 2
+		end
 	else
 		frame.text:SetPoint("LEFT", frame, "LEFT")
 	end
+	-- Keep the top-bar layout, but only let the text area receive the mouse.
+	-- Preserve horizontal extensions such as the clock's instance label.
+	local leftInset, rightInset = frame:GetHitRectInsets()
+	frame:SetHitRectInsets(leftInset, rightInset, topInset, bottomInset)
 
 	return true
 end
