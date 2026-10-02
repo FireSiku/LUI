@@ -125,6 +125,7 @@ function module:OnEnable()
 	if not tContains(UISpecialFrames, "LUIBags") then
 		tinsert(UISpecialFrames, "LUIBags")
 	end
+	LUI:SetNativeReplacementActive("Bags", true)
 end
 
 function module:OnDisable()
@@ -135,4 +136,5 @@ function module:OnDisable()
 	end
 	self:UnhookAll()
 	module:RestoreBlizzardBagState()
+	LUI:SetNativeReplacementActive("Bags", false)
 end

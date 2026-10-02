@@ -33,6 +33,7 @@ api\oUF13\oUF.xml
 ### Core + API ###
 init.lua
 api\client.lua
+api\nativevisibility.lua
 api\curse.lua
 api\backdrop.lua
 api\profiler.lua
