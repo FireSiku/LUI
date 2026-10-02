@@ -2,6 +2,7 @@
 
 ## Changes since last version
 
+- Core: Hide native progress and bag bars in Forever while their LUI replacements are enabled, and restore them when disabled.
 - Core: Added shared Retail and Warcraft Forever support with client-specific features and options.
 - Core: Fixed errors when the options addon cannot be loaded and restored confirmation dialogs in generated settings.
 - Core: Class color settings now use the classes available on the current client, and imported profile names handle accented characters correctly.
