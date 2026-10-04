@@ -12,3 +12,10 @@ Additional LUI compatibility includes Blizzard 12.1 AuraContainers,
 DurationObject castbars and totems, secret-safe Health/Power display paths,
 current healing and absorb widgets, combat-safe refreshes, and out-of-combat
 layout previews.
+
+Resource compatibility backports (oUF 14.1.1):
+- GameVersion/GameCompatibility tables and ClassPower client gates.
+- Cat Form, rather than Shred, determines druid combo-point availability.
+LUI also fixes AdditionalPower gradients to evaluate Mana explicitly and
+preserves fractional ClassPower values below 0.1. The embedded base remains
+14.0.3; this is not a full framework upgrade to 14.1.1.
