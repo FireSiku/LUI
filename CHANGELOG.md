@@ -30,6 +30,7 @@
 - Infotext: Pressing Enter now saves Battle.net broadcast messages.
 - Infotext: Added Forever talent information and corrected equipment-set access.
 - Tooltip: Corrected styling order when tooltips appear, and scale changes now apply immediately when adjusted.
+- Bags: Wait for native bag or item-lock events instead of continuously polling locked items after sorting.
 - Bags: Added an optional keyring shortcut for Forever while preserving its native bank window.
 - Bags: Reduced repeated slot positioning when reopening bags and removed a leftover native border artifact.
 - Bags: Searches now handle special characters such as brackets and percent signs correctly.
