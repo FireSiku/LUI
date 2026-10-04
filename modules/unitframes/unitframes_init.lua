@@ -13,6 +13,14 @@ local LUI = select(2, ...)
 local module = LUI:NewModule("Unitframes", "AceHook-3.0", "AceSerializer-3.0")
 module.enableButton = true
 
+-- Keep the option pages, initial layout and settings refresh on the same
+-- client/class capabilities. oUF handles the active spec, form and talents.
+module.supportsClassPower = LUI.DRUID or LUI.ROGUE or LUI.SHAMAN
+	or (LUI.IsRetail and (LUI.DEMONHUNTER or LUI.EVOKER or LUI.HUNTER or LUI.MAGE
+		or LUI.MONK or LUI.PALADIN or LUI.WARLOCK)) or false
+module.supportsAdditionalPower = LUI.DRUID
+	or (LUI.IsRetail and (LUI.PRIEST or LUI.SHAMAN)) or false
+
 module.unitsSpawn = {"player", "target", "focus", "focustarget", "targettarget", "targettargettarget", "pet", "pettarget", "boss", "party", "maintank", "arena", "raid"}
 
 module.units = {"player", "target", "targettarget", "targettargettarget", "focus", "focustarget", "pet", "pettarget", "party", "partytarget", "partypet", "boss", "bosstarget", "maintank", "maintanktarget", "maintanktargettarget", "arena", "arenatarget", "arenapet", "raid"}

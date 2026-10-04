@@ -42,13 +42,11 @@ CastbarSecondsFormatter:SetDefaultAbbreviation(Enum.SecondsFormatterAbbreviation
 CastbarSecondsFormatter:SetMinInterval(Enum.SecondsFormatterInterval.Seconds)
 CastbarSecondsFormatter:SetMillisecondsThreshold(60)
 
-local ALT_POWER_BAR_PAIR_DISPLAY_INFO = _G.ALT_POWER_BAR_PAIR_DISPLAY_INFO
-local ADDITIONAL_POWER_BAR_INDEX = _G.ADDITIONAL_POWER_BAR_INDEX
+local ADDITIONAL_POWER_BAR_INDEX = Enum.PowerType.Mana
 local MAX_TOTEMS = _G.MAX_TOTEMS
 local MAX_CLASS_POWER_POINTS = 10
 
-local supportsClassPower = LUI.DEMONHUNTER or LUI.DRUID or LUI.EVOKER or LUI.HUNTER or LUI.MAGE
-	or LUI.MONK or LUI.PALADIN or LUI.ROGUE or LUI.SHAMAN or LUI.WARLOCK
+local supportsClassPower = module.supportsClassPower
 
 ------------------------------------------------------------------------
 --	Textures and Medias
@@ -557,10 +555,44 @@ local function ShouldShowCastbar(castbar, eventUnit)
 	return true
 end
 
+-- Additional mana and encounter power can be active together. Lay out every
+-- visible overlay in one pass so their show/hide callbacks cannot undo each other.
+local function UpdatePlayerPowerLayout(player)
+	if not player or not player.Power then return end
+	local db = module.db.profile.player
+	local overlays = {}
+	local function Position(bar, settings)
+		if not bar then return end
+		bar:ClearAllPoints()
+		bar:SetSize(settings.Width, settings.Height)
+		bar:SetPoint("TOPLEFT", player, "TOPLEFT", settings.X, settings.Y)
+		if settings.Enable and settings.OverPower and bar:IsShown() then
+			overlays[#overlays + 1] = bar
+		end
+	end
+	Position(player.AdditionalPower, db.AdditionalPowerBar)
+	Position(player.AlternativePower, db.AlternativePowerBar)
+	Position(player.LUIPetAlternativePower, db.AlternativePowerBar)
+
+	local count = #overlays
+	local height = db.PowerBar.Height
+	local gap = count > 0 and math.min(2, math.max(0, (height - count - 1) / count)) or 0
+	local rowHeight = math.max(1, (height - count * gap) / (count + 1))
+	player.Power:SetHeight(rowHeight)
+	local previous = player.Power
+	for _, bar in ipairs(overlays) do
+		bar:ClearAllPoints()
+		bar:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -gap)
+		bar:SetPoint("TOPRIGHT", previous, "BOTTOMRIGHT", 0, -gap)
+		bar:SetHeight(rowHeight)
+		previous = bar
+	end
+end
+
 local function PostUpdateAlternativePower(altpowerbar, unit, cur, min, max)
 	local classColor = module.colors.class[LUI.playerClass] or C_ClassColor.GetClassColor(LUI.playerClass)
 	local color = classColor and {classColor:GetRGB()} or {1, 1, 1}
-	local tex, r, g, b = GetUnitPowerBarTextureInfo("player", 3)
+	local tex, r, g, b = GetUnitPowerBarTextureInfo(unit, 3)
 
 	if altpowerbar.color == "By Class" then
 		altpowerbar:GetStatusBarTexture():SetVertexColor(unpack(color))
@@ -574,7 +606,7 @@ local function PostUpdateAlternativePower(altpowerbar, unit, cur, min, max)
 	UpdateBarBackground(altpowerbar.bg, r, g, b)
 
 	if altpowerbar.Text then
-		if altpowerbar.Text.Enable then
+		if altpowerbar.Text.Enable and altpowerbar:IsShown() then
 			if altpowerbar.Text.Format == "Absolut" then
 				altpowerbar.Text:SetFormattedText("%s/%s", cur, max)
 			elseif altpowerbar.Text.Format == "Percent" then
@@ -1320,6 +1352,7 @@ module.funcs = {
 		self.Runes:SetWidth(oufdb.RunesBar.Width)
 		self.Runes:ClearAllPoints()
 		self.Runes:SetPoint("BOTTOMLEFT", self, "TOPLEFT", x, y)
+		self.Runes:SetShown(oufdb.RunesBar.Enable)
 
 		for i = 1, 6 do
 			local runeType = (_G.GetRuneType) and _G.GetRuneType(i) or 1
@@ -1429,6 +1462,7 @@ module.funcs = {
 		local classPower = self.ClassPower
 		if not classPower then
 			classPower = CreateFrame("Frame", nil, self)
+			classPower:Hide()
 			classPower:SetFrameLevel(self:GetFrameLevel() + 6)
 			LUI:ApplyFrameBackdrop(classPower, {
 				bgFile = "Interface/Tooltips/UI-Tooltip-Background",
@@ -1505,47 +1539,33 @@ module.funcs = {
 
 		classPower:UpdateBackdropColor()
 		classPower:UpdateTexture(classPower.Count)
-		if classPower.ForceUpdate then classPower:ForceUpdate() end
+		if not oufdb.ClassPowerBar.Enable then
+			classPower:Hide()
+		elseif classPower.ForceUpdate and self:IsElementEnabled("ClassPower") then
+			classPower:ForceUpdate()
+		end
 	end,
 	AlternativePower = function(self, unit, oufdb)
+		local player = unit == "player" and self or oUF_LUI_player
 		if not self.AlternativePower then
 			self.AlternativePower = CreateFrame("StatusBar", nil, self)
+			self.AlternativePower:Hide()
 			if unit == "pet" then self.AlternativePower:SetParent(oUF_LUI_player) end
 
 			self.AlternativePower.bg = CreateBarBackground(self.AlternativePower)
 
 			self.AlternativePower.SetPosition = function()
-				if not module.db.profile.player.AlternativePowerBar.OverPower then return end
-
-				if oUF_LUI_player.AlternativePower:IsShown() or (oUF_LUI_pet and oUF_LUI_pet.AlternativePower and oUF_LUI_pet.AlternativePower:IsShown()) then
-					oUF_LUI_player.Power:SetHeight(module.db.profile.player.PowerBar.Height/2 - 1)
-					oUF_LUI_player.AlternativePower:SetHeight(module.db.profile.player.PowerBar.Height/2 - 1)
-				else
-					oUF_LUI_player.Power:SetHeight(module.db.profile.player.PowerBar.Height)
-					oUF_LUI_player.AlternativePower:SetHeight(module.db.profile.player.AlternativePowerBar.Height)
-				end
+				UpdatePlayerPowerLayout(player)
 			end
 
-			self.AlternativePower:SetScript("OnShow", function()
-				self.AlternativePower.SetPosition()
-				self.AlternativePower:ForceUpdate()
-			end)
+			self.AlternativePower:SetScript("OnShow", self.AlternativePower.SetPosition)
 			self.AlternativePower:SetScript("OnHide", self.AlternativePower.SetPosition)
 
 			self.AlternativePower.Text = SetFontString(self.AlternativePower, Media:Fetch("font", module.db.profile.player.AlternativePowerText.Font), module.db.profile.player.AlternativePowerText.Size, module.db.profile.player.AlternativePowerText.Outline)
 		end
 
-		self.AlternativePower:ClearAllPoints()
-		if unit == "player" then
-			if module.db.profile.player.AlternativePowerBar.OverPower then
-				self.AlternativePower:SetPoint("TOPLEFT", self.Power, "BOTTOMLEFT", 0, -2)
-				self.AlternativePower:SetPoint("TOPRIGHT", self.Power, "BOTTOMRIGHT", 0, -2)
-			else
-				self.AlternativePower:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.profile.player.AlternativePowerBar.X, module.db.profile.player.AlternativePowerBar.Y)
-			end
-		else
-			self.AlternativePower:SetPoint("TOPLEFT", oUF_LUI_player.AlternativePower, "TOPLEFT", 0, 0)
-			self.AlternativePower:SetPoint("BOTTOMRIGHT", oUF_LUI_player.AlternativePower, "BOTTOMRIGHT", 0, 0)
+		if unit == "pet" and player then
+			player.LUIPetAlternativePower = self.AlternativePower
 		end
 
 		self.AlternativePower:SetHeight(module.db.profile.player.AlternativePowerBar.Height)
@@ -1579,6 +1599,13 @@ module.funcs = {
 	AdditionalPower = function(self, unit, oufdb)
 		if not self.AdditionalPower then
 			local AdditionalPower = CreateFrame("StatusBar", nil, self)
+			AdditionalPower:Hide()
+			-- Blizzard's default pairs only include lunar power for druids.
+			-- Give oUF a private copy so mana also remains visible in bear/cat form.
+			AdditionalPower.displayPairs = CopyTable(_G.ALT_POWER_BAR_PAIR_DISPLAY_INFO or {})
+			AdditionalPower.displayPairs.DRUID = AdditionalPower.displayPairs.DRUID or {}
+			AdditionalPower.displayPairs.DRUID[Enum.PowerType.Rage] = true
+			AdditionalPower.displayPairs.DRUID[Enum.PowerType.Energy] = true
 
 			local bg = CreateBarBackground(AdditionalPower, "BACKGROUND")
 			
@@ -1587,36 +1614,8 @@ module.funcs = {
 
 			self.AdditionalPower.value = SetFontString(self.AdditionalPower, Media:Fetch("font", oufdb.AdditionalPowerText.Font), oufdb.AdditionalPowerText.Size, oufdb.AdditionalPowerText.Outline)
 			
-			self.AdditionalPower.ShouldEnable = function(unit)
-				local shouldEnable = false
-				local _, playerClass = UnitClass(unit)
-				if playerClass == nil or issecretvalue(playerClass) then return false end
-				local hasVehicleUI = UnitHasVehicleUI("player")
-				if issecretvalue(hasVehicleUI) then return false end
-				if not hasVehicleUI then
-					local maxPower = UnitPowerMax(unit, ADDITIONAL_POWER_BAR_INDEX)
-					if not issecretvalue(maxPower) and maxPower ~= 0 then
-						if LUI.UsesModernUI and (ALT_POWER_BAR_PAIR_DISPLAY_INFO[playerClass]) then
-							local powerType = UnitPowerType(unit)
-							if powerType ~= nil and not issecretvalue(powerType) then
-								shouldEnable = ALT_POWER_BAR_PAIR_DISPLAY_INFO[playerClass][powerType]
-							end
-						end
-					end
-				end
-				return shouldEnable
-			end
-			
 			self.AdditionalPower.SetPosition = function()
-				if not oufdb.AdditionalPowerBar.OverPower then return self.Power:SetHeight(oufdb.PowerBar.Height) end
-
-				if self.AdditionalPower:IsShown() then
-					self.Power:SetHeight(oufdb.PowerBar.Height/2 - 1)
-					self.AdditionalPower:SetHeight(oufdb.AdditionalPowerBar.Height/2 - 1)
-				else
-					self.Power:SetHeight(oufdb.PowerBar.Height)
-					self.AdditionalPower:SetHeight(oufdb.AdditionalPowerBar.Height)
-				end
+				UpdatePlayerPowerLayout(self)
 			end
 
 			self.AdditionalPower:SetScript("OnShow", self.AdditionalPower.SetPosition)
@@ -1624,15 +1623,6 @@ module.funcs = {
 
 			self.AdditionalPower.PostUpdate = PostUpdateAdditionalPower
 			self.AdditionalPower.PostUpdateColor = PostUpdateAdditionalPowerColor
-		end
-
-		self.AdditionalPower:ClearAllPoints()
-		if oufdb.AdditionalPowerBar.OverPower then
-			self.AdditionalPower:SetPoint("TOPLEFT", self.Power, "BOTTOMLEFT", 0, -2)
-			self.AdditionalPower:SetPoint("TOPRIGHT", self.Power, "BOTTOMRIGHT", 0, -2)
-		else
-			self.Power:SetHeight(oufdb.PowerBar.Height)
-			self.AdditionalPower:SetPoint("TOPLEFT", self, "TOPLEFT", module.db.profile.player.AdditionalPowerBar.X, module.db.profile.player.AdditionalPowerBar.Y)
 		end
 
 		self.AdditionalPower:SetHeight(oufdb.AdditionalPowerBar.Height)
@@ -1663,12 +1653,12 @@ module.funcs = {
 		ConfigureBarBackground(self.AdditionalPower.bg, oufdb.AdditionalPowerBar)
 		PostUpdateAdditionalPowerColor(self.AdditionalPower)
 
-		if self.AdditionalPower.ShouldEnable(unit) then self.AdditionalPower.SetPosition() end
-		if module.db.profile.player.AdditionalPowerBar.Enable then
-			self.AdditionalPower:Show()
-		else
+		-- oUF owns visibility and its event registrations. Showing the bar here
+		-- would reveal it in mana form again whenever the options are refreshed.
+		if not oufdb.AdditionalPowerBar.Enable then
 			self.AdditionalPower:Hide()
 		end
+		self.AdditionalPower.SetPosition()
 	end,
 
 	-- others
@@ -2343,7 +2333,7 @@ local function SetStyle(self, unit, isSingle)
 		if supportsClassPower and oufdb.ClassPowerBar.Enable then
 			module.funcs.ClassPower(self, unit, oufdb)
 		end
-		if (LUI.DRUID or LUI.PRIEST or LUI.SHAMAN) and oufdb.AdditionalPowerBar.Enable then
+		if module.supportsAdditionalPower and oufdb.AdditionalPowerBar.Enable then
 			module.funcs.AdditionalPower(self, unit, oufdb)
 		end
 		if LUI.SHAMAN and oufdb.TotemsBar.Enable then
