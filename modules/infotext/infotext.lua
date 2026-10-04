@@ -88,6 +88,14 @@ local function UpdateDisplaySize(frame)
 	local minimumHeight = topAnchored and TOP_BAR_VISIBLE_HEIGHT or 1
 	local frameWidth = math.max(1, math.ceil(width))
 	local frameHeight = math.max(minimumHeight, textHeight)
+	local textPoint = topAnchored and (TOP_BAR_TEXT_POINTS[db.TopBarTextAnchor] or TOP_BAR_TEXT_POINTS.TOP) or "LEFT"
+	-- Text can change without changing its geometry (FPS, clock, brokers).
+	-- Keep the established anchors and hit rectangle until the layout changes.
+	local layout = frame.LUIDisplayLayout
+	if layout and layout.width == frameWidth and layout.height == frameHeight
+		and layout.textHeight == textHeight and layout.textPoint == textPoint then
+		return true
+	end
 	frame:SetSize(frameWidth, frameHeight)
 
 	frame.text:ClearAllPoints()
@@ -95,7 +103,6 @@ local function UpdateDisplaySize(frame)
 	frame.text:SetJustifyV("MIDDLE")
 	local topInset, bottomInset = 0, 0
 	if topAnchored then
-		local textPoint = TOP_BAR_TEXT_POINTS[db.TopBarTextAnchor] or TOP_BAR_TEXT_POINTS.TOP
 		frame.text:SetPoint(textPoint, frame, textPoint)
 		local padding = frameHeight - textHeight
 		if textPoint == "TOPLEFT" then
@@ -112,6 +119,10 @@ local function UpdateDisplaySize(frame)
 	-- Preserve horizontal extensions such as the clock's instance label.
 	local leftInset, rightInset = frame:GetHitRectInsets()
 	frame:SetHitRectInsets(leftInset, rightInset, topInset, bottomInset)
+	frame.LUIDisplayLayout = layout or {}
+	layout = frame.LUIDisplayLayout
+	layout.width, layout.height = frameWidth, frameHeight
+	layout.textHeight, layout.textPoint = textHeight, textPoint
 
 	return true
 end
