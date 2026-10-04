@@ -907,10 +907,15 @@ function module:ScheduleBagLootLayout()
         if generation ~= module.bagSortGeneration then return end
         module.bagLootLayoutTimer = nil
         local snapshot = GetBagSortSnapshot()
-        -- A quiet timer alone is not enough: native cleanup can still have
-        -- locked items or outstanding moves. Require two matching unlocked
-        -- snapshots, and restart on native bag/lock updates even when closed.
-        if snapshot == nil or snapshot ~= module.bagSortSnapshot then
+        -- ITEM_LOCK_CHANGED / BAG_UPDATE will resume tracking after a lock.
+        -- Do not keep scanning every slot while an item remains locked.
+        if snapshot == nil then
+            module.bagSortSnapshot = nil
+            return
+        end
+        -- Native cleanup can still have outstanding moves. Require two
+        -- matching unlocked snapshots, including when the bag is closed.
+        if snapshot ~= module.bagSortSnapshot then
             module.bagSortSnapshot = snapshot
             module:ScheduleBagLootLayout()
             return
