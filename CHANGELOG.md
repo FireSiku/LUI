@@ -8,6 +8,7 @@
 - Core: Class color settings now use the classes available on the current client, and imported profile names handle accented characters correctly.
 - Core: Fixed profile backups and restores losing custom or module settings. Failed backups now preserve the previous saved backup.
 - Core: Corrected resource colors and color-picker input. Displayed rounding no longer changes the selected color.
+- Unitframes: Reuse power-text visibility curves instead of allocating new curves on every resource update.
 - Unitframes: Fixed errors from unavailable arena frames and corrected group-frame setup in Forever.
 - Unitframes: Restored missing prediction and absorb defaults and fixed additional-power color and smoothing updates.
 - Unitframes: Added shared font settings for frame text and aura counts. Castbar text outlines and raid information text positions now follow their settings.

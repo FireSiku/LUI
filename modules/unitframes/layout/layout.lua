@@ -94,6 +94,24 @@ PowerActiveCurve:AddPoint(0.001, 1)
 PowerActiveCurve:AddPoint(0.999, 1)
 PowerActiveCurve:AddPoint(1, 0)
 
+-- Visibility depends only on the two saved options, not on current power.
+-- Reuse these four possible curves across all units and power updates.
+local PowerTextCurves = { [0] = PowerActiveCurve }
+local function GetPowerTextCurve(text)
+	local key = (text.ShowEmpty and 2 or 0) + (text.ShowFull and 1 or 0)
+	local curve = PowerTextCurves[key]
+	if not curve then
+		curve = C_CurveUtil.CreateCurve()
+		curve:SetType(Enum.LuaCurveType.Step)
+		curve:AddPoint(0, text.ShowEmpty and 1 or 0)
+		curve:AddPoint(0.001, 1)
+		curve:AddPoint(0.999, 1)
+		curve:AddPoint(1, text.ShowFull and 1 or 0)
+		PowerTextCurves[key] = curve
+	end
+	return curve
+end
+
 -- Show only when full
 local IsFullCurve = C_CurveUtil.CreateCurve()
 IsFullCurve:SetType(Enum.LuaCurveType.Step)
@@ -351,26 +369,14 @@ local function UpdatePowerDisplay(self, unit, current, min, max, displayType)
 			power.value:SetFormattedText("%s", current)
 		end
 
-		local curve = C_CurveUtil.CreateCurve()
-		curve:SetType(Enum.LuaCurveType.Step)
-		curve:AddPoint(0, power.value.ShowEmpty and 1 or 0)
-		curve:AddPoint(0.001, 1)
-		curve:AddPoint(0.999, 1)
-		curve:AddPoint(1, power.value.ShowFull and 1 or 0)
-		power.value:SetAlpha(UnitPowerPercent(unit, displayType, false, curve))
+		power.value:SetAlpha(UnitPowerPercent(unit, displayType, false, GetPowerTextCurve(power.value)))
 	else
 		power.value:SetText("")
 	end
 
 	if power.valuePercent.Enable == true then
 		power.valuePercent:SetFormattedText("%.1f%%", powerPercent)
-		local curve = C_CurveUtil.CreateCurve()
-		curve:SetType(Enum.LuaCurveType.Step)
-		curve:AddPoint(0, power.valuePercent.ShowEmpty and 1 or 0)
-		curve:AddPoint(0.001, 1)
-		curve:AddPoint(0.999, 1)
-		curve:AddPoint(1, power.valuePercent.ShowFull and 1 or 0)
-		power.valuePercent:SetAlpha(UnitPowerPercent(unit, displayType, false, curve))
+		power.valuePercent:SetAlpha(UnitPowerPercent(unit, displayType, false, GetPowerTextCurve(power.valuePercent)))
 	else
 		power.valuePercent:SetText("")
 	end
@@ -383,13 +389,7 @@ local function UpdatePowerDisplay(self, unit, current, min, max, displayType)
 			power.valueMissing:SetFormattedText("-%s", powerMissing)
 		end
 
-		local curve = C_CurveUtil.CreateCurve()
-		curve:SetType(Enum.LuaCurveType.Step)
-		curve:AddPoint(0, power.valueMissing.ShowEmpty and 1 or 0)
-		curve:AddPoint(0.001, 1)
-		curve:AddPoint(0.999, 1)
-		curve:AddPoint(1, power.valueMissing.ShowFull and 1 or 0)
-		power.valueMissing:SetAlpha(UnitPowerPercent(unit, displayType, false, curve))
+		power.valueMissing:SetAlpha(UnitPowerPercent(unit, displayType, false, GetPowerTextCurve(power.valueMissing)))
 	else
 		power.valueMissing:SetText("")
 	end
