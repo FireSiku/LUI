@@ -1,6 +1,6 @@
 # LUI v2610
 
-## Changes since v2609 Alpha 11
+## Changes since last version
 
 - Core: Added shared Retail and Warcraft Forever support with client-specific features and options.
 - Core: Blizzard's progress and bag bars are hidden in Forever while their LUI replacements are enabled, and restored when disabled.
@@ -14,8 +14,8 @@
 - Unitframes: Fixed group frames remaining hidden when entering combat during a preview.
 - Unitframes: Combat-feedback settings now apply immediately, with corrected resource-gain text and resource and crushing-hit colors.
 - Artwork: Corrected profile switching, disabled-panel visibility and right-side background colors.
-- Raid Menu: Added group options, difficulty settings, Edit Mode access and leave-group controls.
-- Raid Menu: Added a right-click action to clear unit markers and updated group-action permission checks.
+- Micromenu: Added Raid Menu group options, difficulty settings, Edit Mode access and leave-group controls.
+- Micromenu: Added a Raid Menu right-click action to clear unit markers and updated group-action permission checks.
 - Infotext: Added optional Raider.IO Mythic+ scores and character details to the friends list.
 - Infotext: Improved friend-name sizing and added Enter confirmation for Battle.net broadcast messages.
 - Tooltip: Improved compatibility with Blizzard tooltip handlers and made scale changes apply immediately.
