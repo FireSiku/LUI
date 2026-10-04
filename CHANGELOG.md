@@ -24,6 +24,7 @@
 - Micromenu: Added Raid Menu group options, difficulty settings, Edit Mode access and leave-group controls.
 - Micromenu: Added a secure right-click action to clear unit markers and updated group-action permission checks.
 - Micromenu: Fixed hiding and restoring Blizzard's group manager through the Raid Menu settings.
+- Infotext: Avoid rebuilding display geometry when text changes retain the same dimensions and alignment.
 - Infotext: Added optional Raider.IO scores and profile details to the friends list.
 - Infotext: Corrected account and character name sizing in the friends list to avoid cutting names off too early.
 - Infotext: Pressing Enter now saves Battle.net broadcast messages.
