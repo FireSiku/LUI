@@ -258,6 +258,61 @@ local function UpdateHealthDisplay(self, unit, current, max)
 	end
 end
 
+-- Keep opacity independent from background brightness. The second texture is
+-- allocated with the bar, never in a color-update callback. For restricted RGB,
+-- native additive blending applies the multiplier without Lua color arithmetic.
+local function CreateBarBackground(bar, layer)
+	local bg = bar:CreateTexture(nil, layer or "BORDER", nil, 0)
+	bg:SetAllPoints(bar)
+	bg:SetBlendMode("BLEND")
+	bg.LUIColor = bar:CreateTexture(nil, layer or "BORDER", nil, 1)
+	bg.LUIColor:SetAllPoints(bg)
+	bg.LUIColor:SetBlendMode("ADD")
+	bg.LUIColor:SetAlpha(0)
+	return bg
+end
+
+local function ConfigureBarBackground(bg, settings)
+	local texture = Media:Fetch("statusbar", settings.TextureBG)
+	bg:SetTexture(texture)
+	bg.LUIColor:SetTexture(texture)
+	bg.LUIBaseAlpha = settings.BGAlpha
+	bg.multiplier = settings.BGMultiplier
+	bg.invert = settings.BGInvert
+	bg:SetAlpha(settings.BGAlpha)
+end
+
+local function UpdateBarBackground(bg, r, g, b, healthInvert)
+	local alpha = bg.LUIBaseAlpha or 1
+	local mu = bg.multiplier or 1
+	if not issecretvalue(r) and not issecretvalue(g) and not issecretvalue(b) then
+		bg.LUIColor:SetAlpha(0)
+		if bg.invert then
+			if healthInvert then
+				bg:SetVertexColor(r + (1-r) * mu, g + (1-g) * mu, b + (1-b) * mu)
+			else
+				bg:SetVertexColor((1-r) * mu, (1-g) * mu, (1-b) * mu)
+			end
+		else
+			bg:SetVertexColor(r * mu, g * mu, b * mu)
+		end
+		bg:SetAlpha(alpha)
+	else
+		-- BLEND reserves the configured opacity, ADD supplies only the color.
+		-- Both layers use the same media texture, including its per-pixel alpha.
+		local base, tint = 0, mu
+		if bg.invert and healthInvert then
+			base, tint = mu, 1 - mu
+		end
+		-- A power-color complement cannot be calculated from restricted RGB.
+		-- Retain normal shading in that case, rather than inspecting secret values.
+		bg:SetVertexColor(base, base, base)
+		bg:SetAlpha(alpha)
+		bg.LUIColor:SetVertexColor(r, g, b)
+		bg.LUIColor:SetAlpha(alpha * tint)
+	end
+end
+
 local function SetHealthTextColor(health, text, unit)
 	if not text or not text.Enable then return end
 
@@ -288,23 +343,7 @@ local function PostUpdateHealthColor(health, unit, color)
 		r, g, b = health:GetStatusBarColor()
 	end
 
-	-- Blizzard's renderer accepts secret color components directly, while Lua
-	-- arithmetic does not.
-	-- Preserve LUI's legacy multiplier/invert behavior only for its own fixed
-	-- Individual color, whose components come from the profile and are not secret.
-	local baseAlpha = health.bg.LUIBaseAlpha or 1
-	if useProfileColor then
-		health.bg:SetAlpha(baseAlpha)
-		local mu = health.bg.multiplier or 1
-		if health.bg.invert == true then
-			health.bg:SetVertexColor(r + (1-r) * mu, g + (1-g) * mu, b + (1-b) * mu)
-		else
-			health.bg:SetVertexColor(r * mu, g * mu, b * mu)
-		end
-	else
-		health.bg:SetVertexColor(r, g, b)
-		health.bg:SetAlpha(baseAlpha * (health.bg.multiplier or 1))
-	end
+	UpdateBarBackground(health.bg, r, g, b, true)
 
 	SetHealthTextColor(health, health.value, unit)
 	SetHealthTextColor(health, health.valuePercent, unit)
@@ -407,23 +446,7 @@ local function PostUpdatePowerColor(power, unit)
 		r, g, b = power:GetStatusBarColor()
 	end
 
-	-- Forward dynamic RGB components directly to Blizzard's secret-capable
-	-- renderer. For dynamic colors
-	-- use the texture alpha for LUI's background multiplier instead of doing
-	-- forbidden Lua arithmetic on secret RGB values.
-	local baseAlpha = power.bg.LUIBaseAlpha or 1
-	if power.color == "Individual" then
-		power.bg:SetAlpha(baseAlpha)
-		local mu = power.bg.multiplier or 1
-		if power.bg.invert == true then
-			power.bg:SetVertexColor((1-r) * mu, (1-g) * mu, (1-b) * mu)
-		else
-			power.bg:SetVertexColor(r * mu, g * mu, b * mu)
-		end
-	else
-		power.bg:SetVertexColor(r, g, b)
-		power.bg:SetAlpha(baseAlpha * (power.bg.multiplier or 1))
-	end
+	UpdateBarBackground(power.bg, r, g, b)
 
 	SetPowerTextColor(power, power.value, unit)
 	SetPowerTextColor(power, power.valuePercent, unit)
@@ -548,15 +571,7 @@ local function PostUpdateAlternativePower(altpowerbar, unit, cur, min, max)
 	end
 
 	r, g, b = altpowerbar:GetStatusBarTexture():GetVertexColor()
-	local mu = altpowerbar.bg.multiplier or 1
-	local baseAlpha = altpowerbar.bg.LUIBaseAlpha or 1
-	if altpowerbar.color == "Individual" then
-		altpowerbar.bg:SetVertexColor(r * mu, g * mu, b * mu)
-		altpowerbar.bg:SetAlpha(baseAlpha)
-	else
-		altpowerbar.bg:SetVertexColor(r, g, b)
-		altpowerbar.bg:SetAlpha(baseAlpha * mu)
-	end
+	UpdateBarBackground(altpowerbar.bg, r, g, b)
 
 	if altpowerbar.Text then
 		if altpowerbar.Text.Enable then
@@ -610,18 +625,8 @@ local function PostUpdateAdditionalPowerColor(additionalpower)
 		r, g, b = additionalpower:GetStatusBarColor()
 	end
 
-	local bg = additionalpower.bg
-
-	if bg then
-		local mu = bg.multiplier or 1
-		local baseAlpha = bg.LUIBaseAlpha or 1
-		if additionalpower.color == "Individual" then
-			bg:SetVertexColor(r * mu, g * mu, b * mu)
-			bg:SetAlpha(baseAlpha)
-		else
-			bg:SetVertexColor(r, g, b)
-			bg:SetAlpha(baseAlpha * mu)
-		end
+	if additionalpower.bg then
+		UpdateBarBackground(additionalpower.bg, r, g, b)
 	end
 end
 
@@ -823,8 +828,7 @@ module.funcs = {
 		if not self.Health then
 			self.Health = CreateFrame("StatusBar", nil, self)
 			self.Health:SetFrameLevel(self:GetFrameLevel() + 2)
-			self.Health.bg = self.Health:CreateTexture(nil, "BORDER")
-			self.Health.bg:SetAllPoints(self.Health)
+			self.Health.bg = CreateBarBackground(self.Health)
 		end
 		
 		self.Health:SetHeight(oufdb.HealthBar.Height)
@@ -840,11 +844,7 @@ module.funcs = {
 		end
 		
 
-		self.Health.bg:SetTexture(Media:Fetch("statusbar", oufdb.HealthBar.TextureBG))
-		self.Health.bg.LUIBaseAlpha = oufdb.HealthBar.BGAlpha
-		self.Health.bg:SetAlpha(oufdb.HealthBar.BGAlpha)
-		self.Health.bg.multiplier = oufdb.HealthBar.BGMultiplier
-		self.Health.bg.invert = oufdb.HealthBar.BGInvert
+		ConfigureBarBackground(self.Health.bg, oufdb.HealthBar)
 
 		local colorMode = oufdb.HealthBar.Color
 		local tapping = (unit == "target") and oufdb.HealthBar.Tapping or false
@@ -884,8 +884,7 @@ module.funcs = {
 		if not self.Power then
 			self.Power = CreateFrame("StatusBar", nil, self)
 			self.Power:SetFrameLevel(self:GetFrameLevel() + 2)
-			self.Power.bg = self.Power:CreateTexture(nil, "BORDER")
-			self.Power.bg:SetAllPoints(self.Power)
+			self.Power.bg = CreateBarBackground(self.Power)
 		end
 
 		self.Power:SetHeight(oufdb.PowerBar.Height)
@@ -900,11 +899,7 @@ module.funcs = {
 			self.Power:SetPoint("TOPLEFT", self, "TOPLEFT", oufdb.PowerBar.X * self:GetWidth() / oufdb.Width, oufdb.PowerBar.Y) -- needed for 25/40 man raid width downscaling!
 		end
 
-		self.Power.bg:SetTexture(Media:Fetch("statusbar", oufdb.PowerBar.TextureBG))
-		self.Power.bg.LUIBaseAlpha = oufdb.PowerBar.BGAlpha
-		self.Power.bg:SetAlpha(oufdb.PowerBar.BGAlpha)
-		self.Power.bg.multiplier = oufdb.PowerBar.BGMultiplier
-		self.Power.bg.invert = oufdb.PowerBar.BGInvert
+		ConfigureBarBackground(self.Power.bg, oufdb.PowerBar)
 
 		local colorMode = oufdb.PowerBar.Color
 		self.Power.color = colorMode
@@ -1517,8 +1512,7 @@ module.funcs = {
 			self.AlternativePower = CreateFrame("StatusBar", nil, self)
 			if unit == "pet" then self.AlternativePower:SetParent(oUF_LUI_player) end
 
-			self.AlternativePower.bg = self.AlternativePower:CreateTexture(nil, "BORDER")
-			self.AlternativePower.bg:SetAllPoints(self.AlternativePower)
+			self.AlternativePower.bg = CreateBarBackground(self.AlternativePower)
 
 			self.AlternativePower.SetPosition = function()
 				if not module.db.profile.player.AlternativePowerBar.OverPower then return end
@@ -1558,11 +1552,7 @@ module.funcs = {
 		self.AlternativePower:SetWidth(module.db.profile.player.AlternativePowerBar.Width)
 		self.AlternativePower:SetStatusBarTexture(Media:Fetch("statusbar", module.db.profile.player.AlternativePowerBar.Texture))
 
-		self.AlternativePower.bg:SetTexture(Media:Fetch("statusbar", module.db.profile.player.AlternativePowerBar.TextureBG))
-		self.AlternativePower.bg.LUIBaseAlpha = module.db.profile.player.AlternativePowerBar.BGAlpha
-		self.AlternativePower.bg:SetAlpha(self.AlternativePower.bg.LUIBaseAlpha)
-		self.AlternativePower.bg.multiplier = module.db.profile.player.AlternativePowerBar.BGMultiplier
-
+		ConfigureBarBackground(self.AlternativePower.bg, module.db.profile.player.AlternativePowerBar)
 		self.AlternativePower.smoothing = BarInterpolation(module.db.profile.player.AlternativePowerBar.Smooth)
 		self.AlternativePower.color = module.db.profile.player.AlternativePowerBar.Color
 		self.AlternativePower.colorIndividual = module.db.profile.player.AlternativePowerBar.IndividualColor
@@ -1590,8 +1580,7 @@ module.funcs = {
 		if not self.AdditionalPower then
 			local AdditionalPower = CreateFrame("StatusBar", nil, self)
 
-			local bg = AdditionalPower:CreateTexture(nil, "BACKGROUND")
-			bg:SetAllPoints(AdditionalPower)
+			local bg = CreateBarBackground(AdditionalPower, "BACKGROUND")
 			
 			self.AdditionalPower = AdditionalPower
 			self.AdditionalPower.bg = bg
@@ -1671,10 +1660,7 @@ module.funcs = {
 		self.AdditionalPower.value.color = oufdb.AdditionalPowerText.Color
 		self.AdditionalPower.value.colorIndividual = oufdb.AdditionalPowerText.IndividualColor
 
-		self.AdditionalPower.bg:SetTexture(Media:Fetch("statusbar", oufdb.AdditionalPowerBar.TextureBG))
-		self.AdditionalPower.bg.LUIBaseAlpha = oufdb.AdditionalPowerBar.BGAlpha
-		self.AdditionalPower.bg:SetAlpha(self.AdditionalPower.bg.LUIBaseAlpha)
-		self.AdditionalPower.bg.multiplier = oufdb.AdditionalPowerBar.BGMultiplier
+		ConfigureBarBackground(self.AdditionalPower.bg, oufdb.AdditionalPowerBar)
 		PostUpdateAdditionalPowerColor(self.AdditionalPower)
 
 		if self.AdditionalPower.ShouldEnable(unit) then self.AdditionalPower.SetPosition() end
