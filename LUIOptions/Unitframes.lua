@@ -62,9 +62,8 @@ local relativeUnits = {
     maintanktargettarget = true,
 }
 
-local supportsClassPower = LUI.DEMONHUNTER or LUI.DRUID or LUI.EVOKER or LUI.HUNTER or LUI.MAGE
-    or LUI.MONK or LUI.PALADIN or LUI.ROGUE or LUI.SHAMAN or LUI.WARLOCK
-local supportsAdditionalPower = LUI.DRUID or LUI.PRIEST or LUI.SHAMAN
+local supportsClassPower = module.supportsClassPower
+local supportsAdditionalPower = module.supportsAdditionalPower
 
 -- ####################################################################################################################
 -- ##### Custom Controls ##############################################################################################

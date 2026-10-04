@@ -11,6 +11,8 @@
 - Unitframes: Added shared font settings and a separate aura-count font option. Castbar outlines and raid information text positions now follow their settings.
 - Unitframes: Restored missing healing-prediction and absorb defaults, and corrected resource colors and additional-power smoothing.
 - Unitframes: Background opacity and brightness now apply independently to health and resource bars.
+- Unitframes: Corrected class-resource availability in Retail and Forever, cat-form combo-point detection and small fractional resource values.
+- Unitframes: Restored druid mana in bear and cat form, corrected mana text and gradients, and fixed resource-bar toggles and overlapping auxiliary bars.
 - Unitframes: Restored Blizzard castbars during temporary action UIs and updated nameplate castbar handling.
 - Unitframes: Fixed group frames remaining hidden when entering combat during a preview.
 - Unitframes: Combat-feedback settings now apply immediately, with corrected resource-gain text and resource and crushing-hit colors.
