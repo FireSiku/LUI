@@ -102,8 +102,7 @@ General.args = {
         }}),
         DamageText = Opt:Group({name = "Damage Text", inline = true, args = {
             DamageFont = Opt:MediaFont({name = "Font", set = SetGeneralOption("DamageFont", ApplyDamageFont)}),
-            DamageFontSize = Opt:Slider({name = "Font Size", min = 20, max = 60, step = 1, set = SetGeneralOption("DamageFontSize", ApplyDamageFont)}),
-            DamageFontSizeCrit = Opt:Slider({name = "Critical Font Size", min = 20, max = 60, step = 1, set = SetGeneralOption("DamageFontSizeCrit", ApplyDamageFont)}),
+            SizeInfo = Opt:Desc({name = "Normal and critical combat-text sizes are managed by Blizzard to keep combat animations secure."}),
         }}),
 		ProfileTools = Opt:Group({name = "Profile Backup", inline = true, args = {
 			Backup = Opt:Execute({name = "Create Backup", desc = "Save the current profile settings for Restore or Revert.", func = BackupProfile}),
