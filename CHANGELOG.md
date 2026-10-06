@@ -21,11 +21,13 @@
 - Micromenu: Added a Raid Menu right-click action to clear unit markers and updated group-action permission checks.
 - Infotext: Added optional Raider.IO Mythic+ scores and character details to the friends list.
 - Infotext: Improved friend-name sizing and added Enter confirmation for Battle.net broadcast messages.
+- Infotext: Tooltips now anchor to the text without the unused display-frame gap. Friends and Guild lists remain open during slow mouse transitions, row changes and scrollbar use.
 - Tooltip: Improved compatibility with Blizzard tooltip handlers and made scale changes apply immediately.
 - Bags: Added an optional keyring shortcut for Forever and retained its native bank window.
 - Bags: Fixed blocked item use after visiting the bank on Retail.
 - Bags: Fixed searches containing special characters and removed stray pixels from item slots.
 - Experience Bars: Grouped the bar-locking option with the tracker controls.
+- Experience Bars: Added rested XP shading and the full rested reserve in the tooltip for Retail and Forever, including split and reversed bars.
 - Minimap: Fixed position, scale and shape handling when disabling and re-enabling the module.
 - Mirror Bar: Fixed pause handling for breath, fatigue and other mirror timers.
 - Chat: Fixed voice-control visibility restoration, handling of a cleared chat input and clickable IP address links.
