@@ -26,6 +26,9 @@ local SLIDER_WIDTH = 16
 local ICON_SIZE = 13
 
 local GAP = 10
+local HOVER_PADDING = 8
+local HOVER_CHECK_INTERVAL = 0.05
+local HOVER_HIDE_DELAY = 0.2
 
 -- locals
 local infotipStorage = {}
@@ -141,6 +144,23 @@ function InfotipMixin:UpdateTooltip()
 	end
 end
 
+function InfotipMixin:UpdateHover(elapsed)
+	-- Only runs while this tooltip is visible. Include the owner and a small
+	-- border margin so slow movement between the text, rows and slider is safe.
+	self.hoverElapsed = (self.hoverElapsed or 0) + elapsed
+	if self.hoverElapsed < HOVER_CHECK_INTERVAL then return end
+	local interval = self.hoverElapsed
+	self.hoverElapsed = 0
+	local owner = self.infotext:GetFrame()
+	if self:IsMouseOver(HOVER_PADDING, -HOVER_PADDING, -HOVER_PADDING, HOVER_PADDING)
+		or owner:IsMouseOver(HOVER_PADDING, -HOVER_PADDING, -HOVER_PADDING, HOVER_PADDING) then
+		self.hoverOutside = 0
+	else
+		self.hoverOutside = (self.hoverOutside or 0) + interval
+		if self.hoverOutside >= HOVER_HIDE_DELAY then self:Hide() end
+	end
+end
+
 function InfotipMixin:SetScrollRange(maxOffset)
 	if maxOffset > 1 then
 		local slider = self:EnsureSlider()
@@ -191,9 +211,7 @@ function element.OnLineLeave(line)
 	highlight:ClearAllPoints()
 	highlight:Hide()
 
-	if not infotip:IsMouseOver() then
-		infotip:Hide()
-	end
+	-- Visibility is handled by UpdateHover, including transitions across rows.
 end
 
 function module:EnforceMinWidth(infotip, value)
@@ -211,17 +229,7 @@ end
 
 function module:AnchorInfotip(infotip)
 	local parent = infotip.infotext:GetFrame()
-	local point = module.db.profile[infotip.infotext:GetName()].Point or "TOP"
-
-	-- Always leave exactly one owner-relative anchor behind.  The tooltip
-	-- NineSlice only decorates the frame; it must never become part of the
-	-- positioning chain.
-	infotip:ClearAllPoints()
-	if point:find("BOTTOM", 1, true) then
-		infotip:SetPoint("BOTTOM", parent, "TOP", 0, 0)
-	else
-		infotip:SetPoint("TOP", parent, "BOTTOM", 0, 0)
-	end
+	module:AnchorInfotextTooltip(infotip, parent)
 end
 
 function module:SetBoundedInfotipSize(infotip, width, height)
@@ -319,6 +327,7 @@ function module:NewInfotip(infotext)
 	-- The display frame already has a sanitized, unique global name. LDB object
 	-- names themselves may contain spaces or punctuation that are invalid here.
 	local newtip = CreateFrame("Frame", parentName and (parentName.."Infotip") or nil, parent, "TooltipBorderedFrameTemplate")
+	newtip:Hide()
 	infotipStorage[name] = newtip
 	newtip.infotext = infotext
 	for k, v in pairs(InfotipMixin) do
@@ -353,10 +362,13 @@ function module:NewInfotip(infotext)
 
 	newtip:HookScript("OnHide", function(self)
 		self.highlight:Hide()
+		self.hoverElapsed = nil
+		self.hoverOutside = nil
 	end)
 
-	--Trigger the element's OnLeave when you leave the infotip
-	newtip:SetScript("OnLeave", infotext.OnLeave)
+	-- Check the whole region, not individual mouse-focus changes. A child row
+	-- or slider can receive focus while the pointer is still inside the tip.
+	newtip:SetScript("OnUpdate", newtip.UpdateHover)
 
 	-- Enforce Infotip minimum width.
 	newtip.minWidth = INFOTIP_MIN_WIDTH

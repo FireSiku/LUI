@@ -178,9 +178,24 @@ function InfoMixin:GetFrame()
 	return elementFrames[self:GetName()]
 end
 
+function module:AnchorInfotextTooltip(tooltip, frame)
+	-- The display keeps a full-height layout frame, but only its text receives
+	-- the mouse. Anchor to that same text region rather than the unused padding.
+	local anchor = frame.text or frame
+	local point = frame:GetPoint()
+	tooltip:ClearAllPoints()
+	if type(point) == "string" and point:find("BOTTOM", 1, true) then
+		tooltip:SetPoint("BOTTOM", anchor, "TOP", 0, 0)
+	else
+		tooltip:SetPoint("TOP", anchor, "BOTTOM", 0, 0)
+	end
+end
+
 function InfoMixin:TooltipHeader(headerName, handleGT)
 	if handleGT then
-		GameTooltip:SetOwner(self:GetFrame(), "ANCHOR_BOTTOM")
+		local frame = self:GetFrame()
+		GameTooltip:SetOwner(frame, "ANCHOR_NONE")
+		module:AnchorInfotextTooltip(GameTooltip, frame)
 		GameTooltip:ClearLines()
 	end
 	--Make sure the header ends with a colon
@@ -472,7 +487,8 @@ function module.OnEnterHandler(self, ...)
 	if element.OnEnter then
 		element.OnEnter(self, ...)
 	elseif element.OnTooltipShow then
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		GameTooltip:SetOwner(self, "ANCHOR_NONE")
+		module:AnchorInfotextTooltip(GameTooltip, self)
 		GameTooltip:ClearLines()
 		element.OnTooltipShow(GameTooltip)
 		GameTooltip:Show()
