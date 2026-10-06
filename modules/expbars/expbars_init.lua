@@ -45,6 +45,7 @@ module.defaults = {
 		ShowCurrent = false,
 		ShowMax = false,
 		ShowPercent = true,
+		ShowRestedXP = true,
 		TrackerLabel = "Short",
 		ShowTooltip = true,
 		ShortNumbers = true,
