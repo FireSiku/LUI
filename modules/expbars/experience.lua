@@ -108,6 +108,13 @@ function ExperienceDataProvider:AddRestedTooltip()
     GameTooltip:Show()
 end
 
+function ExperienceDataProvider:GetTextPrefix()
+    if not module.db.profile.ShowRestedXP then return "" end
+    local maximum, rested = self.barMax, self.restedXP or 0
+    if issecretvalue(maximum) or maximum <= 0 or rested <= 0 then return "" end
+    return format("(%."..(module.db.profile.Precision or 2).."f%% Rested)", rested / maximum * 100)
+end
+
 function ExperienceDataProvider:GetDataText(style)
 	if style == "None" then return "" end
 	return style == "Full" and "Experience" or "XP"

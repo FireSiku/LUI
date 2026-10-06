@@ -161,6 +161,11 @@ ExpBars.args = {
 	}),
 	ShowTooltip = Opt:Toggle({name = "Show Tooltip", desc = "Show the tracker name and full progress when hovering over a bar."}),
 	ShowPercent = Opt:Toggle({name = L["Show Percent"], disabled = IsTextDisabled}),
+	ShowRestedXP = Opt:Toggle({
+		name = "Show Rested XP",
+		desc = "Show the rested XP reserve as a percentage of the current level before the normal XP text. The reserve can exceed 100%.",
+		disabled = IsTextDisabled,
+	}),
 	Precision = Opt:Slider({name = L["Precision"], min = 0, max = 3, softMax = 2, step = 1, disabled = IsTextDisabled}),
 	Spacer3 = Opt:Spacer({}),
 	ShowCurrent = Opt:Toggle({name = L["Show Current"], disabled = IsTextDisabled}),
