@@ -1004,16 +1004,6 @@ function element:RefreshSettings()
 	if legendTip then legendTip:Hide() end
 end
 
-function element.OnLeave(frame_)
-	if infotip and not infotip:IsMouseOver() then
-		infotip:Hide()
-	end
-	
-	if legendTip then
-		legendTip:Hide()
-	end
-end
-
 -- ####################################################################################################################
 -- ##### Framework Events #############################################################################################
 -- ####################################################################################################################
