@@ -123,10 +123,13 @@ end
 function ExpBarMixin:UpdateText()
 	local db = module.db.profile --[[@as table]]
 	local trackerText = self:GetDataText(db.TrackerLabel or "Short") or ""
+	local prefixText = self.GetTextPrefix and self:GetTextPrefix() or ""
 	local function AddTrackerText(valueText)
-		if trackerText == "" then return valueText end
-		if valueText == "" then return trackerText end
-		return format("%s %s", valueText, trackerText)
+		if trackerText ~= "" then
+			valueText = valueText == "" and trackerText or format("%s %s", valueText, trackerText)
+		end
+		if prefixText == "" then return valueText end
+		return valueText == "" and prefixText or format("%s %s", prefixText, valueText)
 	end
 	local percentText = ""
 	if db.ShowPercent then
@@ -147,7 +150,7 @@ function ExpBarMixin:UpdateText()
 		end
 		return self.text:SetText(AddTrackerText(text))
 	end
-	return self.text:SetText(trackerText)
+	return self.text:SetText(AddTrackerText(""))
 end
 
 function ExpBarMixin:ShowTooltip()

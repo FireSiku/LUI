@@ -7,6 +7,7 @@
 - Core: Fixed errors when the options addon cannot be loaded and restored confirmation dialogs in generated settings.
 - Core: Fixed profile backups and restores losing custom or module settings. Failed backups preserve the previous backup, and imported profile names handle accented characters correctly.
 - Core: Corrected color-picker input. Displayed rounding no longer changes the selected color.
+- Core: Stopped modifying Blizzard's combat-text animation constants to prevent secret-value errors. Combat-text font selection remains available; Blizzard controls normal and critical text sizes.
 - Core: Reduced repeated work in unitframe resource displays, infotext layouts, bags, experience bars, button styling and window layouts.
 - Unitframes: Added shared font settings and a separate aura-count font option. Castbar outlines and raid information text positions now follow their settings.
 - Unitframes: Restored missing healing-prediction and absorb defaults, and corrected resource colors and additional-power smoothing.
@@ -27,7 +28,7 @@
 - Bags: Fixed blocked item use after visiting the bank on Retail.
 - Bags: Fixed searches containing special characters and removed stray pixels from item slots.
 - Experience Bars: Grouped the bar-locking option with the tracker controls.
-- Experience Bars: Added rested XP shading and the full rested reserve in the tooltip for Retail and Forever, including split and reversed bars.
+- Experience Bars: Added rested XP shading, an optional rested percentage on the bar and the full rested reserve in the tooltip for Retail and Forever, including split and reversed bars.
 - Minimap: Fixed position, scale and shape handling when disabling and re-enabling the module.
 - Mirror Bar: Fixed pause handling for breath, fatigue and other mirror timers.
 - Chat: Fixed voice-control visibility restoration, handling of a cleared chat input and clickable IP address links.
