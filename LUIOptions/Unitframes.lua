@@ -37,7 +37,7 @@ local COPY_SECTIONS = {
 }
 
 local POSITION_KEYS = {
-    X = true, Y = true, Point = true, RelativePoint = true, InitialAnchor = true,
+    X = true, Y = true, Point = true, RelativePoint = true, InitialAnchor = true, Position = true,
     GrowthX = true, GrowthY = true, GrowDirection = true,
 }
 
@@ -616,6 +616,12 @@ local function GenerateCastbarShieldGroup(unit, order)
         Explain = Opt:Desc({name = "Additional settings when the cast bar cannot be interrupted."}),
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
         Text = Opt:Toggle({name = "Text", width = "full"}),
+        Icons = Opt:InlineGroup({name = "Shield Icons", db = dbCast.Shield.Icons, args = {
+            Position = Opt:Select({name = "Show Icons", values = {NONE = "None", LEFT = "Left", RIGHT = "Right", BOTH = "Both Sides"}}),
+            Size = Opt:Slider({name = "Size", values = sizeValues}),
+            X = Opt:InputNumber({name = "Distance from Bar", desc = "Distance from each side of the cast bar. Negative values move the icons inside the bar."}),
+            Y = Opt:OffsetY(),
+        }}),
         IndividualColor = Opt:Toggle({name = "Override Bar Color", desc = "Change the color of the cast bar when the cast cannot be interrupted."}),
         BarColor = Opt:Color({name = "Shielded Cast Color", hasAlpha = true, get = colorGet, set = colorSet}),
         Spacer = Opt:Spacer({}),

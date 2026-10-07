@@ -165,6 +165,11 @@ function module:OnInitialize()
 	-- Register per-unit defaults after all layout default files have loaded.
 	-- AceDB fills missing settings without replacing saved preferences.
 	for _, defaults in pairs(module.defaults.profile) do
+		if type(defaults) == "table" and defaults.Castbar and defaults.Castbar.Shield then
+			defaults.Castbar.Shield.Icons = {
+				Position = "NONE", Size = 20, X = 44, Y = 0,
+			}
+		end
 		if type(defaults) == "table" and defaults.HealthBar then
 			-- Every health bar supports these overlays. Some child-frame defaults
 			-- omitted them, which also hid their options. Keep existing per-unit
