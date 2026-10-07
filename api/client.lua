@@ -7,7 +7,6 @@ function LUI:HasClientFeature(feature)
         return self.IsForever and _G.LegacyMicroButton ~= nil
     elseif feature == "SwingTimer" then
         return self.IsForever and C_CVar and type(C_CVar.GetCVar) == "function"
-            and type(C_CVar.GetCVarBool) == "function" and type(C_CVar.SetCVar) == "function"
             and C_CVar.GetCVar("showSwingTimer") ~= nil or false
     elseif feature == "Keyring" then
         return self.IsForever and C_ActionBar and type(C_ActionBar.ShouldShowKeyring) == "function"
