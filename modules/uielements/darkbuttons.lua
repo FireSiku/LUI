@@ -885,6 +885,7 @@ end
 local controlTargets = {
     ["ColorPickerFrame"] = {buttons = {"Footer.OkayButton", "Footer.CancelButton"}, scrolls = {}},
     ["TimeManagerFrame"] = {buttons = {}, scrolls = {}},
+    ["TokenFrame"] = {buttons = {}, scrolls = {}},
     ["StopwatchCloseButton"] = {buttons = {"."}, scrolls = {}},
     ["StatisticsFrame"] = {buttons = {}, scrolls = {}},
     ["SocialUIFrame"] = {cosmetic = {"RaidFrame.RaidInfoButton", "RaidFrame.ConvertToRaidButton", "RaidInfoFrame.CloseButton", "RaidInfoFrame.ExtendButton"}, buttons = {}, scrolls = {}},
@@ -1466,11 +1467,11 @@ local function PrepareScrollBox(scrollBox, prepareRow)
     end
 end
 
-local function PrepareStatisticsRow(frame)
+local function PrepareCharacterListRow(frame)
     if not active or not CanTouch(frame) then return end
-    -- Statistics is inside CharacterFrame, whose equipment slots can protect
-    -- its ancestors. Register only the native header button and its toggle;
-    -- no statistics values or unrelated row descendants are inspected.
+    -- Statistics and Currency share these native header controls inside
+    -- CharacterFrame, whose equipment slots can protect their ancestors.
+    -- Register only the header and its toggle, without inspecting row data.
     if CanTouch(frame.StateIcon) and frame.StateIcon:GetParent() == frame then
         RegisterCosmeticButton(frame:GetParent(), frame)
     end
@@ -1525,10 +1526,11 @@ PrepareRoot = function(frame, name)
     RegisterCloseButton(frame, name)
     PrepareCosmeticControls(frame, name)
     if frame == _G.PlayerSpellsFrame then PreparePlayerSpellsControls() end
-    if frame == _G.StatisticsFrame and frame:GetParent() == _G.CharacterFrame then
+    if (frame == _G.StatisticsFrame or frame == _G.TokenFrame)
+        and frame:GetParent() == _G.CharacterFrame then
         local scrollBox = frame.ScrollBox
         if CanTouch(scrollBox) and scrollBox:GetParent() == frame then
-            PrepareScrollBox(scrollBox, PrepareStatisticsRow)
+            PrepareScrollBox(scrollBox, PrepareCharacterListRow)
         end
     end
     if CanStyle(frame) then
