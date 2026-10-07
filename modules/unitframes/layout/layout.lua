@@ -1997,6 +1997,29 @@ module.funcs = {
 		castbar.Shield.Label:SetShown(oufdb.Castbar.Shield.Text == true)
 		castbar.Shield:SetShown(oufdb.Castbar.General.Shield == true and oufdb.Castbar.Shield.Enable == true)
 
+		-- Both icons inherit oUF's native interruptibility alpha from Shield.
+		-- Allocate only when selected and reuse them on later settings changes.
+		local icons = oufdb.Castbar.Shield.Icons
+		for _, side in ipairs({"LEFT", "RIGHT"}) do
+			local left = side == "LEFT"
+			local key = left and "LeftIcon" or "RightIcon"
+			local show = icons.Position == side or icons.Position == "BOTH"
+			local icon = castbar.Shield[key]
+			if show and not icon then
+				icon = castbar.Shield:CreateTexture(nil, "OVERLAY")
+				icon:SetTexture([[Interface\CastingBar\UI-CastingBar-Small-Shield]])
+				castbar.Shield[key] = icon
+			end
+			if icon then
+				icon:SetShown(show)
+				if show then
+					icon:SetSize(icons.Size, icons.Size)
+					icon:ClearAllPoints()
+					icon:SetPoint(left and "RIGHT" or "LEFT", castbar.Shield, side, left and -icons.X or icons.X, icons.Y)
+				end
+			end
+		end
+
 		castbar.Colors = {
 			Individual = oufdb.Castbar.General.IndividualColor,
 			Bar = oufdb.Castbar.Colors.Bar,
