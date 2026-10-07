@@ -3,12 +3,15 @@
 ## Changes since last version
 
 - Core: Added shared Retail and Warcraft Forever support with client-specific features and options.
+- Core: The options title identifies the game client while retaining Dev, Release and Alpha version information.
 - Core: Blizzard's progress and bag bars are hidden in Forever while their LUI replacements are enabled, and restored when disabled.
 - Core: Fixed errors when the options addon cannot be loaded and restored confirmation dialogs in generated settings.
 - Core: Fixed profile backups and restores losing custom or module settings. Failed backups preserve the previous backup, and imported profile names handle accented characters correctly.
 - Core: Corrected color-picker input. Displayed rounding no longer changes the selected color.
 - Core: Stopped modifying Blizzard's combat-text animation constants to prevent secret-value errors. Combat-text font selection remains available; Blizzard controls normal and critical text sizes.
 - Core: Reduced repeated work in unitframe resource displays, infotext layouts, bags, experience bars, button styling and window layouts.
+- Unitframes: Updated the complete embedded framework to oUF 14.2.0, with LUI-specific resource, castbar and group-header behavior maintained in the Unitframes module.
+- Unitframes: Forever group-frame preparation now uses Blizzard's native header callbacks instead of directly calling the shared group update function.
 - Unitframes: Added shared font settings and a separate aura-count font option. Castbar outlines and raid information text positions now follow their settings.
 - Unitframes: Restored missing healing-prediction and absorb defaults, and corrected resource colors and additional-power smoothing.
 - Unitframes: Background opacity and brightness now apply independently to health and resource bars.

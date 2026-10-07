@@ -387,10 +387,13 @@ local function Update(self, event, unit, powerType)
 
 		hasCurChanged = cur ~= STATE[element].cur
 		if(hasCurChanged) then
+			local numActive = cur + 0.9
 			for i = 1, max do
-				-- StatusBars clamp to [0, 1]. Preserve small fractional resources,
-				-- including normalized soul fragments below one tenth of a bar.
-				element[i]:SetValue(cur - i + 1)
+				if(i > numActive) then
+					element[i]:SetValue(0)
+				else
+					element[i]:SetValue(cur - i + 1)
+				end
 			end
 
 			STATE[element].cur = cur
