@@ -16,6 +16,8 @@ local cosmeticOwners = setmetatable({}, {__mode = "k"})
 local showHooks = setmetatable({}, {__mode = "k"})
 local preparedPanels = setmetatable({}, {__mode = "k"})
 local knownButtons = setmetatable({}, {__mode = "k"})
+local revision = 0
+local preparedButtons = setmetatable({}, {__mode = "k"})
 local eventFrame = CreateFrame("Frame")
 local unpack = unpack or table.unpack
 
@@ -68,6 +70,20 @@ for _, family in ipairs({"128-RedButton-ShoppingCart", "128-RedButton-Delete"}) 
 end
 tintAtlases["perks-button-up"] = "window-icon"
 tintAtlases["perks-button-down"] = "window-icon"
+-- Keep the native collapse/expand glyphs, including the tracker's double
+-- arrows and Statistics' section toggles, when their state changes.
+for _, atlas in ipairs({
+    "ui-questtrackerbutton-collapse-all", "ui-questtrackerbutton-collapse-all-pressed",
+    "ui-questtrackerbutton-expand-all", "ui-questtrackerbutton-expand-all-pressed",
+    "ui-questtrackerbutton-secondary-collapse", "ui-questtrackerbutton-secondary-collapse-pressed",
+    "ui-questtrackerbutton-secondary-expand", "ui-questtrackerbutton-secondary-expand-pressed",
+    "ui-questtrackerbutton-red-highlight", "ui-questtrackerbutton-yellow-highlight",
+    "common-button-list-plus", "common-button-list-minus",
+    "campaign_headericon_closed", "campaign_headericon_closedpressed",
+    "campaign_headericon_open", "campaign_headericon_openpressed",
+}) do
+    tintAtlases[atlas] = "window-icon"
+end
 local sharedFamilies = {
     ["128-RedButton"] = true,
     ["128-GoldRedButton"] = true,
@@ -867,6 +883,17 @@ end
 -- Explicit public control paths from Blizzard XML (Retail and Forever); absent paths are skipped.
 -- Legacy controls and protected-window cosmetic leaves are registered separately.
 local controlTargets = {
+    ["ColorPickerFrame"] = {buttons = {"Footer.OkayButton", "Footer.CancelButton"}, scrolls = {}},
+    ["TimeManagerFrame"] = {buttons = {}, scrolls = {}},
+    ["StopwatchCloseButton"] = {buttons = {"."}, scrolls = {}},
+    ["StatisticsFrame"] = {buttons = {}, scrolls = {}},
+    ["SocialUIFrame"] = {cosmetic = {"RaidFrame.RaidInfoButton", "RaidFrame.ConvertToRaidButton", "RaidInfoFrame.CloseButton", "RaidInfoFrame.ExtendButton"}, buttons = {}, scrolls = {}},
+    ["TransmogFrame"] = {cosmetic = {
+        "OutfitCollection.SaveOutfitButton",
+        "WardrobeCollection.TabContent.CustomSetsFrame.NewCustomSetButton",
+        "WardrobeCollection.TabContent.SituationsFrame.DefaultsButton",
+        "WardrobeCollection.TabContent.SituationsFrame.ApplyButton",
+    }, buttons = {}, scrolls = {}},
     ["PerksProgramFrame"] = {buttons = {"FooterFrame.AddToCartButton", "FooterFrame.LeaveButton", "FooterFrame.PurchaseButton", "FooterFrame.RefundButton", "FooterFrame.RemoveFromCartButton", "FooterFrame.RotateButtonContainer.RotateLeftButton", "FooterFrame.RotateButtonContainer.RotateRightButton", "FooterFrame.ToggleAttackAnimation", "FooterFrame.ToggleHideArmor", "FooterFrame.ToggleMountSpecial", "FooterFrame.TogglePlayerPreview", "FooterFrame.ViewCartButton", "ModelSceneContainerFrame.AlteredFormButton", "ModelSceneContainerFrame.NormalFormButton", "ProductsFrame.PerksProgramShoppingCartFrame.ClearCartButton", "ProductsFrame.PerksProgramShoppingCartFrame.CloseButton", "ProductsFrame.PerksProgramShoppingCartFrame.PurchaseCartButton", "ProductsFrame.ProductsScrollBoxContainer.NameSortButton", "ProductsFrame.ProductsScrollBoxContainer.PerksProgramHoldFrame.FrozenProductContainer.ProductButton", "ProductsFrame.ProductsScrollBoxContainer.PerksProgramHoldFrame.FrozenProductContainer.ProductButton.ContentsContainer.CartToggleButton", "ProductsFrame.ProductsScrollBoxContainer.PriceSortButton", "ProductsFrame.ProductsScrollBoxContainer.TimeSortButton"}, scrolls = {"ProductsFrame.PerksProgramProductDetailsContainerFrame.SetDetailsScrollBoxContainer.ScrollBox", "ProductsFrame.PerksProgramShoppingCartFrame.ItemList.ScrollBox", "ProductsFrame.ProductsScrollBoxContainer.ScrollBox"}},
     ["AchievementFrame"] = {buttons = {"HeaderDetails.Back", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview1", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview2", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview3", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview4", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.SearchPreview5", "HeaderDetails.Filters.SearchBox.SearchPreviewContainer.ShowAllSearchResults", "SearchResults.CloseButton", "Tab1", "Tab2", "Tab3"}, scrolls = {"Categories.ScrollBox", "SearchResults.ScrollBox"}},
     ["AchievementFrameAchievements"] = {buttons = {}, scrolls = {"ScrollBox"}},
@@ -962,12 +989,12 @@ local controlTargets = {
     ["RaidParentFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
     ["RaidParentFrameTab1"] = {buttons = {"."}, scrolls = {}},
     ["RaidParentFrameTab2"] = {buttons = {"."}, scrolls = {}},
-    ["RaidFrameConvertToRaidButton"] = {buttons = {"."}, scrolls = {}},
-    ["RaidFrameRaidInfoButton"] = {buttons = {"."}, scrolls = {}},
+    ["RaidFrameConvertToRaidButton"] = {owner = "RaidFrame", buttons = {"."}, scrolls = {}},
+    ["RaidFrameRaidInfoButton"] = {owner = "RaidFrame", buttons = {"."}, scrolls = {}},
     ["RaidFrameAllAssistCheckButton"] = {buttons = {"."}, scrolls = {}},
-    ["RaidInfoCloseButton"] = {buttons = {"."}, scrolls = {}},
-    ["RaidInfoExtendButton"] = {buttons = {"."}, scrolls = {}},
-    ["RaidInfoCancelButton"] = {buttons = {"."}, scrolls = {}},
+    ["RaidInfoCloseButton"] = {owner = "RaidInfoFrame", buttons = {"."}, scrolls = {}},
+    ["RaidInfoExtendButton"] = {owner = "RaidInfoFrame", buttons = {"."}, scrolls = {}},
+    ["RaidInfoCancelButton"] = {owner = "RaidInfoFrame", buttons = {"."}, scrolls = {}},
     ["GearManagerPopupFrame"] = {buttons = {"BorderBox.SelectedIconArea.SelectedIconButton"}, scrolls = {"IconSelector"}},
     ["GhostFrame"] = {buttons = {"."}, scrolls = {}},
     ["GroupFinderFrame"] = {buttons = {"groupButton1", "groupButton2", "groupButton3", "groupButton4"}, scrolls = {}},
@@ -1065,7 +1092,7 @@ local controlTargets = {
     ["MerchantRepairItemButton"] = {buttons = {"."}, scrolls = {}},
     ["MerchantSellAllJunkButton"] = {buttons = {"."}, scrolls = {}},
     ["ModelPreviewFrame"] = {buttons = {"CloseButton", "Display.ModelScene.CarouselLeftButton", "Display.ModelScene.CarouselRightButton", "Display.ModelScene.ControlFrame.resetButton", "Display.ModelScene.ControlFrame.rotateLeftButton", "Display.ModelScene.ControlFrame.rotateRightButton", "Display.ModelScene.ControlFrame.zoomInButton", "Display.ModelScene.ControlFrame.zoomOutButton"}, scrolls = {}},
-    ["MountJournal"] = {buttons = {"BottomLeftInset.SlotButton", "BottomLeftInset.SuppressedMountEquipmentButton", "DynamicFlightFlyoutPopup.DynamicFlightModeButton", "DynamicFlightFlyoutPopup.OpenDynamicFlightSkillTreeButton", "MountButton", "MountDisplay.InfoButton", "MountDisplay.ModelScene.TogglePlayer", "SummonRandomFavoriteSpellFrame.Button", "ToggleDynamicFlightFlyoutButton"}, scrolls = {"ScrollBox"}},
+    ["MountJournal"] = {cosmetic = {"MountButton"}, buttons = {"BottomLeftInset.SlotButton", "BottomLeftInset.SuppressedMountEquipmentButton", "DynamicFlightFlyoutPopup.DynamicFlightModeButton", "DynamicFlightFlyoutPopup.OpenDynamicFlightSkillTreeButton", "MountDisplay.InfoButton", "MountDisplay.ModelScene.TogglePlayer", "SummonRandomFavoriteSpellFrame.Button", "ToggleDynamicFlightFlyoutButton"}, scrolls = {"ScrollBox"}},
     ["OpenAllMail"] = {buttons = {"."}, scrolls = {}},
     ["OpenMailCancelButton"] = {buttons = {"."}, scrolls = {}},
     ["OpenMailDeleteButton"] = {buttons = {"."}, scrolls = {}},
@@ -1087,7 +1114,7 @@ local controlTargets = {
     ["PaperDollSidebarTab1"] = {buttons = {"."}, scrolls = {}},
     ["PaperDollSidebarTab2"] = {buttons = {"."}, scrolls = {}},
     ["PaperDollSidebarTab3"] = {buttons = {"."}, scrolls = {}},
-    ["PetJournal"] = {buttons = {"AchievementStatus", "FindBattleButton", "HealPetSpellFrame.Button", "Loadout.Pet1", "Loadout.Pet1.MenuRegion", "Loadout.Pet1.dragButton", "Loadout.Pet1.modelScene.cardButton", "Loadout.Pet1.setButton", "Loadout.Pet1.spell1", "Loadout.Pet1.spell2", "Loadout.Pet1.spell3", "Loadout.Pet2", "Loadout.Pet2.MenuRegion", "Loadout.Pet2.dragButton", "Loadout.Pet2.modelScene.cardButton", "Loadout.Pet2.setButton", "Loadout.Pet2.spell1", "Loadout.Pet2.spell2", "Loadout.Pet2.spell3", "Loadout.Pet3", "Loadout.Pet3.MenuRegion", "Loadout.Pet3.dragButton", "Loadout.Pet3.modelScene.cardButton", "Loadout.Pet3.setButton", "Loadout.Pet3.spell1", "Loadout.Pet3.spell2", "Loadout.Pet3.spell3", "MainHelpButton", "PetCard.PetInfo", "PetCard.spell1", "PetCard.spell2", "PetCard.spell3", "PetCard.spell4", "PetCard.spell5", "PetCard.spell6", "SpellSelect.Spell1", "SpellSelect.Spell2", "SummonButton", "SummonRandomPetSpellFrame.Button"}, scrolls = {"ScrollBox"}},
+    ["PetJournal"] = {cosmetic = {"FindBattleButton", "SummonButton"}, buttons = {"AchievementStatus", "HealPetSpellFrame.Button", "Loadout.Pet1", "Loadout.Pet1.MenuRegion", "Loadout.Pet1.dragButton", "Loadout.Pet1.modelScene.cardButton", "Loadout.Pet1.setButton", "Loadout.Pet1.spell1", "Loadout.Pet1.spell2", "Loadout.Pet1.spell3", "Loadout.Pet2", "Loadout.Pet2.MenuRegion", "Loadout.Pet2.dragButton", "Loadout.Pet2.modelScene.cardButton", "Loadout.Pet2.setButton", "Loadout.Pet2.spell1", "Loadout.Pet2.spell2", "Loadout.Pet2.spell3", "Loadout.Pet3", "Loadout.Pet3.MenuRegion", "Loadout.Pet3.dragButton", "Loadout.Pet3.modelScene.cardButton", "Loadout.Pet3.setButton", "Loadout.Pet3.spell1", "Loadout.Pet3.spell2", "Loadout.Pet3.spell3", "MainHelpButton", "PetCard.PetInfo", "PetCard.spell1", "PetCard.spell2", "PetCard.spell3", "PetCard.spell4", "PetCard.spell5", "PetCard.spell6", "SpellSelect.Spell1", "SpellSelect.Spell2", "SummonRandomPetSpellFrame.Button"}, scrolls = {"ScrollBox"}},
     ["PetitionFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
     ["PetitionFrameCancelButton"] = {buttons = {"."}, scrolls = {}},
     ["PetitionFrameRenameButton"] = {buttons = {"."}, scrolls = {}},
@@ -1244,6 +1271,15 @@ local controlTargets = {
     ["CatalogShopFrame"] = {buttons = {"CatalogShopDetailsFrame.ButtonContainer.DetailsButton", "CatalogShopDetailsFrame.ButtonContainer.PurchaseButton", "CatalogShopDetailsFrame.ProductRefundContainer.RefundButton", "CatalogShopErrorFrame.AcceptButton", "CatalogShopErrorFrame.WebsiteButton", "CatalogShopVCFrame.vcPurchaseButton", "CloseButton", "HeaderFrame.CatalogShopNavBar.ScrollBackwards", "HeaderFrame.CatalogShopNavBar.ScrollForwards", "ModelSceneContainerFrame.AlternateFormButton", "ModelSceneContainerFrame.NormalFormButton", "PMTImageContainerFrame.ImageCarousel.LeftButton", "PMTImageContainerFrame.ImageCarousel.RightButton", "PersistentRefundContainerFrame.PersistentRefundButton", "ProductDetailsContainerFrame.BackButton"}, scrolls = {"HeaderFrame.CatalogShopNavBar.NavButtonScrollBox", "IconTrainFrame.IconTrainScrollBox", "PMTImageContainerFrame.ImageCarousel.ScrollBox", "ProductContainerFrame.ProductsScrollBoxContainer.ScrollBox", "ProductDetailsContainerFrame.DetailsProductContainerFrame.ProductsScrollBoxContainer.ScrollBox"}},
 }
 
+-- These module headers are plain controls even when a quest item protects
+-- the tracker above them. Never scan the quest/action buttons below it.
+for _, name in ipairs({"ObjectiveTrackerFrame", "AchievementObjectiveTracker",
+    "AdventureObjectiveTracker", "BonusObjectiveTracker", "CampaignQuestObjectiveTracker",
+    "InitiativeTasksObjectiveTracker", "MonthlyActivitiesObjectiveTracker", "ProfessionsRecipeTracker",
+    "QuestObjectiveTracker", "ScenarioObjectiveTracker", "UIWidgetObjectiveTracker", "WorldQuestObjectiveTracker"}) do
+    controlTargets[name] = {cosmetic = {"Header.MinimizeButton"}, buttons = {}, scrolls = {}}
+end
+
 -- Known native window close buttons may sit below a protected window. Only
 -- the verified close branch is allowed; the window's action/talent children
 -- still fail CanStyle. Some templates expose a global name, not a parent key.
@@ -1256,13 +1292,25 @@ local panelNames = {
     "LUIBags", "LegacySystemFrame", "ReadyCheckFrame", "ReadyCheckListenerFrame",
 }
 
+local function PrepareButton(button)
+    if not active or not CanStyle(button) or not button:IsObjectType("Button") then return end
+    if InCombatLockdown() then DeferCombat(false, button); return end
+    local previous = preparedButtons[button]
+    local parent = button:GetParent()
+    if previous and previous.revision == revision and previous.parent == parent then return end
+    ApplyButton(button)
+    previous = previous or {}
+    previous.revision, previous.parent = revision, parent
+    preparedButtons[button] = previous
+end
+
 local function RegisterCloseButton(frame, name)
     if not CanTouch(frame) then return end
     local close = frame.CloseButton or (name == "LUIBags" and frame.closeButton)
         or (name and _G[name .. "CloseButton"])
     if CanTouch(close) and close.GetParent and close:GetParent() == frame then
         cosmeticOwners[close] = frame
-        ApplyButton(close)
+        PrepareButton(close)
     end
 end
 
@@ -1273,13 +1321,20 @@ function module:RegisterBagCloseButton(frame, button)
     if frame ~= _G.LUIBags or not CanTouch(frame) or frame.closeButton ~= button then return end
     if not CanTouch(button) or button:GetParent() ~= frame then return end
     cosmeticOwners[button] = frame
-    ApplyButton(button)
+    PrepareButton(button)
 end
 
 local function RegisterCosmeticButton(parent, button)
     if not CanTouch(parent) or not CanTouch(button) or button:GetParent() ~= parent then return end
     cosmeticOwners[button] = parent
-    ApplyButton(button)
+    PrepareButton(button)
+end
+
+-- The raid menu also owns secure marker buttons. Its construction code
+-- registers only the plain text controls through this shared styling path.
+function module:RegisterRaidMenuButton(parent, button)
+    if parent ~= _G.RaidMenu then return end
+    RegisterCosmeticButton(parent, button)
 end
 
 -- Register only the two native response controls, including while hidden so
@@ -1338,8 +1393,6 @@ end
 
 -- Prepare public controls at their owning window's lifecycle, never by
 -- EnumerateFrames or by replacing Blizzard templates / frame metatables.
-local revision = 0
-local preparedButtons = setmetatable({}, {__mode = "k"})
 local panelNamesByFrame = setmetatable({}, {__mode = "k"})
 local rootShowHooks = setmetatable({}, {__mode = "k"})
 local scrollHooks = setmetatable({}, {__mode = "k"})
@@ -1354,18 +1407,6 @@ local function ResolveControl(root, path)
         object = object[key]
     end
     if CanTouch(object) then return object end
-end
-
-local function PrepareButton(button)
-    if not active or not CanStyle(button) or not button:IsObjectType("Button") then return end
-    if InCombatLockdown() then DeferCombat(false, button); return end
-    local previous = preparedButtons[button]
-    local parent = button:GetParent()
-    if previous and previous.revision == revision and previous.parent == parent then return end
-    ApplyButton(button)
-    previous = previous or {}
-    previous.revision, previous.parent = revision, parent
-    preparedButtons[button] = previous
 end
 
 -- Only a newly initialized list row or an AceGUI widget is inspected here.
@@ -1392,20 +1433,22 @@ local function PrepareBranch(root)
     Visit(root, 0)
 end
 
-local function PrepareScrollBox(scrollBox)
-    if not CanStyle(scrollBox) or not scrollBox.RegisterCallback
+local function PrepareScrollBox(scrollBox, prepareRow)
+    if not CanTouch(scrollBox) or (not prepareRow and not CanStyle(scrollBox))
+        or (scrollBox.IsProtected and scrollBox:IsProtected()) or not scrollBox.RegisterCallback
         or not scrollBox.ForEachFrame or not scrollBox.GetView then return end
     if InCombatLockdown() then DeferCombat(true); return end
     local util = _G.ScrollUtil
     if not util or type(util.AddInitializedFrameCallback) ~= "function" then return end
     local previous = scrollHooks[scrollBox]
+    prepareRow = prepareRow or PrepareBranch
     if not previous then
         previous = {}
         scrollHooks[scrollBox] = previous
         -- The callback is documented for addons; do not replace initializers
         -- or hook the frame pool / shared ScrollBox mixins.
         util.AddInitializedFrameCallback(scrollBox, function(_, frame)
-            PrepareBranch(frame)
+            prepareRow(frame)
         end, eventFrame, false)
     end
     -- Load-on-demand windows can create their ScrollBox before assigning a
@@ -1418,9 +1461,20 @@ local function PrepareScrollBox(scrollBox)
         if IsSecret(initialized) or not initialized then return end
     end
     if previous.revision ~= revision or previous.view ~= view then
-        scrollBox:ForEachFrame(PrepareBranch)
+        scrollBox:ForEachFrame(prepareRow)
         previous.revision, previous.view = revision, view
     end
+end
+
+local function PrepareStatisticsRow(frame)
+    if not active or not CanTouch(frame) then return end
+    -- Statistics is inside CharacterFrame, whose equipment slots can protect
+    -- its ancestors. Register only the native header button and its toggle;
+    -- no statistics values or unrelated row descendants are inspected.
+    if CanTouch(frame.StateIcon) and frame.StateIcon:GetParent() == frame then
+        RegisterCosmeticButton(frame:GetParent(), frame)
+    end
+    RegisterCosmeticButton(frame, frame.ToggleCollapseButton)
 end
 
 local function PrepareMenuButtons(frame)
@@ -1441,11 +1495,14 @@ local commonControls = {
     "button1", "button2", "button3", "button4", "Button1", "Button2", "Button3", "Button4",
 }
 
-local function PrepareMapControls(frame, name)
-    if name ~= "WorldMapFrame" and name ~= "QuestMapFrame" then return end
-    local targets = controlTargets[name]
+local function PrepareCosmeticControls(frame, name)
+    local targets = name and controlTargets[name]
     if not targets then return end
-    for _, path in ipairs(targets.buttons) do
+    if targets.owner then RegisterCosmeticButton(_G[targets.owner], frame) end
+    local paths = targets.cosmetic
+    if name == "WorldMapFrame" or name == "QuestMapFrame" then paths = targets.buttons end
+    if not paths then return end
+    for _, path in ipairs(paths) do
         local button = ResolveControl(frame, path)
         if CanTouch(button) and button:IsObjectType("Button") then
             local ancestor = button:GetParent()
@@ -1466,8 +1523,14 @@ PrepareRoot = function(frame, name)
     if InCombatLockdown() then DeferCombat(true); return end
     preparing[frame] = true
     RegisterCloseButton(frame, name)
-    PrepareMapControls(frame, name)
+    PrepareCosmeticControls(frame, name)
     if frame == _G.PlayerSpellsFrame then PreparePlayerSpellsControls() end
+    if frame == _G.StatisticsFrame and frame:GetParent() == _G.CharacterFrame then
+        local scrollBox = frame.ScrollBox
+        if CanTouch(scrollBox) and scrollBox:GetParent() == frame then
+            PrepareScrollBox(scrollBox, PrepareStatisticsRow)
+        end
+    end
     if CanStyle(frame) then
         PrepareButton(frame)
         if not frame:IsObjectType("Button") then
@@ -1527,6 +1590,8 @@ PrepareKnownPanels = function(force)
     for index = 1, 4 do PrepareName("StaticPopup" .. index) end
     PreparePlayerSpellsControls()
     PrepareReadyCheckButtons()
+    -- Includes LUI-owned controls registered while custom styling was off.
+    for button in pairs(cosmeticOwners) do PrepareButton(button) end
 end
 
 local panelHooks = {}
@@ -1633,7 +1698,7 @@ function module:RefreshDarkButtons()
     -- Do not make the user wait for a fresh EnumerateFrames pass. Hidden
     -- controls already have OnShow hooks and can be reconciled lazily.
     for button in pairs(knownButtons) do
-        if CanTouch(button) and button.IsVisible and button:IsVisible() then ApplyButton(button) end
+        if CanTouch(button) and button.IsVisible and button:IsVisible() then PrepareButton(button) end
     end
     eventFrame:RegisterEvent("ADDON_LOADED")
     eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")

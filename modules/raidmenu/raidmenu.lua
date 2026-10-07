@@ -597,6 +597,12 @@ function module:SetRaidMenu()
 		end
 	end)
 	UpdateGroupButtons()
+	local uiElements = LUI:GetModule("UI Elements", true)
+	if uiElements and uiElements.RegisterRaidMenuButton then
+		for _, button in ipairs({ConvertRaid, RoleChecker, ReadyChecker}) do
+			uiElements:RegisterRaidMenuButton(RaidMenu, button)
+		end
+	end
 	module:CreateGroupTools(RaidMenu)
 
 	animationFrame = CreateFrame("Frame", nil, UIParent)
