@@ -64,6 +64,17 @@ local function Snapshot(frame, pet)
 	return state
 end
 
+local function CaptureNativeStates()
+	if nativeStates then return end
+	local player = Snapshot(_G.PlayerCastingBarFrame)
+	local pet = Snapshot(_G.PetCastingBarFrame, true)
+	if not player or not pet then return end
+	-- Capture before oUF enables its element and unregisters native events.
+	if not player.events.PLAYER_ENTERING_WORLD.registered
+		or not player.events.UNIT_SPELLCAST_START.registered then return end
+	nativeStates = {player, pet}
+end
+
 local function RestoreParent(state)
 	if not state.parent then return true end
 	local frame = state.frame
@@ -96,9 +107,14 @@ local function SetNativeEvents(state, enabled)
 				else
 					frame:UnregisterEvent(event)
 				end
+			elseif state.resetByOUF then
+				-- oUF's Disable registers its own event list. Restore the original
+				-- absence too, rather than leaving extra native handlers active.
+				frame:UnregisterEvent(event)
 			end
 		end
 		state.eventsEnabled = enabled
+		state.resetByOUF = nil
 	end
 	if not enabled then frame:Hide() end
 	return true
@@ -119,14 +135,8 @@ local function Sync()
 	if InCombatLockdown() then return end
 	if not owner and not nativeStates then return end
 	if not nativeStates then
-		local player = Snapshot(_G.PlayerCastingBarFrame)
-		local pet = Snapshot(_G.PetCastingBarFrame, true)
-		if not player or not pet then return end
-		-- Another addon may already own the native bar. Keep the LUI fallback
-		-- instead of suppressing it in favour of an inactive native frame.
-		if not player.events.PLAYER_ENTERING_WORLD.registered
-			or not player.events.UNIT_SPELLCAST_START.registered then return end
-		nativeStates = {player, pet}
+		CaptureNativeStates()
+		if not nativeStates then return end
 	end
 	local player, pet = nativeStates[1], nativeStates[2]
 	if not CanAccess(player.frame) or not CanAccess(pet.frame) then return end
@@ -154,9 +164,10 @@ local function Sync()
 	else
 		if not RestoreParent(player) then return end
 	end
+	local resetByOUF = player.resetByOUF
 	SetNativeEvents(player, special)
 	SetNativeEvents(pet, false)
-	if nativeSpecial ~= special then
+	if nativeSpecial ~= special or resetByOUF then
 		local wasSpecial = nativeSpecial
 		nativeSpecial = special
 		if special then
@@ -178,15 +189,40 @@ local function ScheduleSync()
 	end
 end
 
-function module:HandleBlizzardCastbar(element, enabled)
-	if enabled then
-		owner = element.__owner
-	elseif owner == element.__owner then
+local function SyncCastbarElement(frame, elementName)
+	if elementName and elementName ~= "Castbar" then return end
+	if not frame.LUIBlizzardCastbarPrepared then return end
+	nativeStates = nativeStates or frame.LUIBlizzardCastbarStates
+	if frame:IsElementEnabled("Castbar") and not frame:IsElementPaused("Castbar") then
+		owner = frame
+	elseif owner == frame then
 		owner = nil
 	end
+	if nativeStates then
+		for _, state in ipairs(nativeStates) do
+			state.eventsEnabled = nil
+			state.resetByOUF = true
+		end
+	end
 	ScheduleSync()
-	return true
 end
+
+function module:PrepareBlizzardCastbar(frame)
+	-- Layout initialization runs before oUF enables the Castbar element.
+	-- Only the real player frame can own Blizzard's player casting bar.
+	if frame.LUIPreview or module.previewStyleUnit or frame.hasChildren or frame.isChild or frame.isNamePlate then return end
+	CaptureNativeStates()
+	frame.LUIBlizzardCastbarStates = nativeStates or frame.LUIBlizzardCastbarStates
+	if frame.LUIBlizzardCastbarPrepared then return end
+	frame.LUIBlizzardCastbarPrepared = true
+	for _, method in ipairs({"EnableElement", "DisableElement", "PauseElement", "ResumeElement"}) do
+		hooksecurefunc(frame, method, SyncCastbarElement)
+	end
+end
+
+LUI.oUF:RegisterInitCallback(function(frame)
+	if frame.LUIBlizzardCastbarPrepared then SyncCastbarElement(frame) end
+end)
 
 function module:UsesBlizzardSpecialCastbar()
 	return owner ~= nil and nativeSpecial == true

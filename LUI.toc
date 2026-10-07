@@ -27,7 +27,7 @@ libs\AceLocale-3.0\AceLocale-3.0.xml
 libs\AceSerializer-3.0\AceSerializer-3.0.xml
 locale\locale.xml
 
-## oUF ## Current Version 14.0.3
+## oUF ## Current Version 14.2.0
 api\oUF13\oUF.xml
 
 ### Core + API ###
@@ -142,6 +142,7 @@ api\frameidentifier.lua
 modules\unitframes\templates.xml
 modules\unitframes\unitframes_init.lua
 modules\unitframes\castbar_compat.lua
+modules\unitframes\groupheaders.lua
 modules\unitframes\fonts.lua
 modules\unitframes\defaults\Settings.lua
 modules\unitframes\defaults\player.lua

@@ -91,7 +91,7 @@ local function SpawnGroupHeader(name, unit, capacity, ...)
 		end
 	end
 
-	return oUF:SpawnPreconfiguredHeader(name, unit, capacity, Configure, ...)
+	return module:SpawnPreconfiguredHeader(name, unit, capacity, Configure, ...)
 end
 
 local raidLabelHeaders = {}

@@ -86,17 +86,8 @@ local function UpdateColor(self, event)
 	end
 
 	if(color) then
-		local r, g, b
-		if(color.GetRGB) then
-			r, g, b = color:GetRGB()
-		else
-			r, g, b = color.r, color.g, color.b
-		end
-
-		if(r and g and b) then
-			for index = 1, #element do
-				element[index]:SetStatusBarColor(r, g, b)
-			end
+		for index = 1, #element do
+			element[index]:SetStatusBarColor(color:GetRGB())
 		end
 	end
 
