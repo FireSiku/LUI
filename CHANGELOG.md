@@ -38,7 +38,7 @@
 - Mirror Bar: Fixed pause handling for breath, fatigue and other mirror timers.
 - Chat: Fixed voice-control visibility restoration, handling of a cleared chat input and clickable IP address links.
 - UIElements: Added a setting for Forever's native swing timer.
-- UIElements: Extended button styling to additional Blizzard windows and dialogs, including Forever's Legacy window and Statistics controls, the shop, Trading Post, map, calendar, collections, transmog, color picker, timer, objective tracker, Quick Join, native and LUI raid controls, ready checks, Abandon Key votes and Battle.net friend requests.
+- UIElements: Extended button styling to additional Blizzard windows and dialogs, including Forever's Legacy window and Statistics controls, the shop, Trading Post, map, calendar, collections, transmog, color picker, timer, objective tracker, currency categories, Quick Join, native and LUI raid controls, ready checks, Abandon Key votes and Battle.net friend requests.
 - UIElements: Added optional positioning and a preview for the Dungeon Finder queue eye.
 - UIElements: Improved compatibility with restricted controls and kept bag and item-slot artwork separate from general button styling.
 - Addons: Corrected Darion skin texture paths for users who have Masque installed separately.
