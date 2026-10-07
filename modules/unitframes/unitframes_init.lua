@@ -20,6 +20,7 @@ module.supportsClassPower = LUI.DRUID or LUI.ROGUE or LUI.SHAMAN
 		or LUI.MONK or LUI.PALADIN or LUI.WARLOCK)) or false
 module.supportsAdditionalPower = LUI.DRUID
 	or (LUI.IsRetail and (LUI.PRIEST or LUI.SHAMAN)) or false
+module.supportsPetHappiness = LUI.IsForever and LUI.HUNTER or false
 
 module.unitsSpawn = {"player", "target", "focus", "focustarget", "targettarget", "targettargettarget", "pet", "pettarget", "boss", "party", "maintank", "arena", "raid"}
 
