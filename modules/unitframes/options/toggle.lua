@@ -48,6 +48,11 @@ local indicatorDBKeys = {
 	ReadyCheck = "ReadyCheckIndicator",
 }
 
+if module.supportsPetHappiness then
+	iconlist.Happiness = {"Happiness"}
+	indicatorDBKeys.Happiness = "HappinessIndicator"
+end
+
 local function GetFrameHeight(dbUnit)
 	return tonumber(dbUnit and dbUnit.Height) or 1
 end

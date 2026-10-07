@@ -173,6 +173,7 @@ module.defaults.profile.pet = {
 			GroupRoleIndicator = { Enable = false, Point = "TOPRIGHT", Size = 22, X = 15, Y = 10 },
 			PvPIndicator = { Enable = false, Point = "TOPLEFT", Size = 35, X = -12, Y = 10 },
 			RaidMarkerIndicator = { Enable = false, Point = "CENTER", Size = 55, X = 0, Y = 10 },
+			HappinessIndicator = module.supportsPetHappiness and { Enable = true, Point = "TOPRIGHT", Size = 16, X = 8, Y = 8 } or nil,
 			NameText = {
 				ColorClassByClass = false,
 				ColorLevelByDifficulty = false,
