@@ -45,27 +45,29 @@ local files = {
 
 -- Only these modern atlas decorations are replaced. Checkmarks, labels,
 -- icons and unlisted atlas textures retain their native artwork.
+-- Lookup keys are lowercase: GetAtlas can return different capitalization
+-- from the names used by Blizzard's XML and SetAtlas calls.
 local atlases = {
-    ["RedButton-Exit"] = "UI-Panel-MinimizeButton-Up",
-    ["RedButton-exit-pressed"] = "UI-Panel-MinimizeButton-Down",
-    ["RedButton-Exit-Disabled"] = "UI-Panel-MinimizeButton-Disabled",
-    ["RedButton-Highlight"] = "UI-Panel-MinimizeButton-Highlight",
+    ["redbutton-exit"] = "UI-Panel-MinimizeButton-Up",
+    ["redbutton-exit-pressed"] = "UI-Panel-MinimizeButton-Down",
+    ["redbutton-exit-disabled"] = "UI-Panel-MinimizeButton-Disabled",
+    ["redbutton-highlight"] = "UI-Panel-MinimizeButton-Highlight",
     ["checkbox-minimal"] = "UI-CheckBox-Up",
 }
 local ACTION_BORDER = "UI-HUD-ActionBar-IconFrame"
-local tintAtlases = {[ACTION_BORDER] = "tint"}
+local tintAtlases = {[ACTION_BORDER:lower()] = "tint"}
 -- Window size controls retain their arrow glyphs in every custom style.
 -- These are separate from the three-slice button faces replaced by LUI HD.
 for _, atlas in ipairs({"RedButton-Expand", "RedButton-Expand-Pressed", "RedButton-Expand-Disabled",
     "RedButton-Condense", "RedButton-Condense-Pressed", "RedButton-Condense-disabled",
     "RedButton-MiniCondense", "RedButton-MiniCondense-pressed", "RedButton-MiniCondense-disabled"}) do
-    tintAtlases[atlas] = "window-icon"
+    tintAtlases[atlas:lower()] = "window-icon"
 end
 -- Trading Post icon buttons keep their cart/delete/rotation glyphs. These
 -- native atlas faces need tinting rather than a rectangular replacement.
 for _, family in ipairs({"128-RedButton-ShoppingCart", "128-RedButton-Delete"}) do
     for _, suffix in ipairs({"", "-Pressed", "-Disabled", "-Highlight"}) do
-        tintAtlases[family .. suffix] = "window-icon"
+        tintAtlases[(family .. suffix):lower()] = "window-icon"
     end
 end
 tintAtlases["perks-button-up"] = "window-icon"
@@ -82,7 +84,7 @@ for _, atlas in ipairs({
     "campaign_headericon_closed", "campaign_headericon_closedpressed",
     "campaign_headericon_open", "campaign_headericon_openpressed",
 }) do
-    tintAtlases[atlas] = "window-icon"
+    tintAtlases[atlas:lower()] = "window-icon"
 end
 local sharedFamilies = {
     ["128-RedButton"] = true,
@@ -90,11 +92,11 @@ local sharedFamilies = {
 }
 for family in pairs(sharedFamilies) do
     for _, suffix in ipairs({"", "-Disabled", "-Pressed"}) do
-        tintAtlases[family .. "-Left" .. suffix] = "desaturate"
-        tintAtlases[family .. "-Right" .. suffix] = "desaturate"
-        tintAtlases["_" .. family .. "-Center" .. suffix] = "desaturate"
+        tintAtlases[(family .. "-Left" .. suffix):lower()] = "desaturate"
+        tintAtlases[(family .. "-Right" .. suffix):lower()] = "desaturate"
+        tintAtlases[("_" .. family .. "-Center" .. suffix):lower()] = "desaturate"
     end
-    tintAtlases[family .. "-Highlight"] = "desaturate"
+    tintAtlases[(family .. "-Highlight"):lower()] = "desaturate"
 end
 local sharedButtons = setmetatable({}, {__mode = "k"})
 local legacyButtons = setmetatable({}, {__mode = "k"})
@@ -774,8 +776,9 @@ ApplyRegion = function(region)
     records[region] = nil
 
     local artSet = artwork[style == "hd" and "hd" or "classic"]
-    local file = atlas and artSet[atlases[atlas]]
-    if atlas == "checkbox-minimal" then
+    local atlasKey = atlas and atlas:lower()
+    local file = atlasKey and artSet[atlases[atlasKey]]
+    if atlasKey == "checkbox-minimal" then
         local parent = region:GetParent()
         if CanTouch(parent) and parent:IsObjectType("Button") then
             if region == parent:GetHighlightTexture() then file = artSet["UI-CheckBox-Highlight"]
@@ -785,7 +788,7 @@ ApplyRegion = function(region)
     -- Do not replace a texture belonging to an unrelated atlas, even if its
     -- backing file happens to be present in the old Interface/Buttons list.
     if not atlas then file = artSet[replacements[TextureKey(texture)]] end
-    local tint = atlas and tintAtlases[atlas]
+    local tint = atlasKey and tintAtlases[atlasKey]
     if style == "dark" and file then
         -- Keep native shapes, detail and UVs for Blizzard Dark, including
         -- older file-based buttons; only remove their original color.
