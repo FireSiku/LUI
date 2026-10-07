@@ -451,6 +451,43 @@ local function PostUpdatePowerColor(power, unit)
 	SetPowerTextColor(power, power.valueMissing, unit)
 end
 
+-- Keep LUI's secret-safe color handling outside the bundled oUF element.
+-- These are the three color modes exposed by the PowerBar options.
+local function UpdatePowerColor(self, event, unit)
+	if self.__unit ~= unit then return end
+	local power = self.Power
+	local color, r, g, b
+	if power.color == "By Class" then
+		if UnitIsPlayer(unit) or UnitInPartyIsAI(unit) then
+			color = GetUnitClassColor(unit)
+		end
+	elseif power.color == "By Type" then
+		local displayType = power.LUIDisplayType
+		color = displayType and self.colors.power[displayType]
+		if not color then
+			local powerType, token, altR, altG, altB = UnitPowerType(unit)
+			if not issecretvalue(token) then color = self.colors.power[token] end
+			if not color then
+				if issecretvalue(altR) or issecretvalue(altG) or issecretvalue(altB) then
+					-- Native StatusBars accept opaque components; Lua must not compare them.
+					r, g, b = altR, altG, altB
+				elseif altR ~= nil and altG ~= nil and altB ~= nil then
+					r, g, b = altR, altG, altB
+					if r > 1 or g > 1 or b > 1 then r, g, b = r / 255, g / 255, b / 255 end
+				elseif not issecretvalue(powerType) then
+					color = self.colors.power[powerType] or self.colors.power.MANA
+				end
+			end
+		end
+	end
+	if color then
+		power:SetStatusBarColor(color:GetRGB())
+	elseif issecretvalue(r) or r ~= nil then
+		power:SetStatusBarColor(r, g, b)
+	end
+	PostUpdatePowerColor(power, unit)
+end
+
 -- oUF 14 owns the Health and Power status-bar values. LUI only formats
 -- the values passed by oUF and applies presentation in PostUpdateColor.
 -- Mirror the native absorb value into the part clipped to filled health.
@@ -660,6 +697,19 @@ local function PostUpdateAdditionalPowerColor(additionalpower)
 	if additionalpower.bg then
 		UpdateBarBackground(additionalpower.bg, r, g, b)
 	end
+end
+
+local function UpdateAdditionalPowerColor(self, event, unit, powerType)
+	if not (unit and oUF.Private.unitIsUnit(unit, "player") and powerType == "MANA") then return end
+	local power = self.AdditionalPower
+	local color = power.colorPower and self.colors.power[Enum.PowerType.Mana]
+	if color then
+		if power.colorPowerSmooth and color:GetCurve() then
+			color = UnitPowerPercent(unit, Enum.PowerType.Mana, true, color:GetCurve())
+		end
+		power:SetStatusBarColor(color:GetRGB())
+	end
+	PostUpdateAdditionalPowerColor(power)
 end
 
 local function PostUpdateAdditionalPower(additionalpower, cur, max)
@@ -935,7 +985,7 @@ module.funcs = {
 
 		local colorMode = oufdb.PowerBar.Color
 		self.Power.color = colorMode
-		self.Power.UpdateColor = nil
+		self.Power.UpdateColor = UpdatePowerColor
 		self.Power.colorIndividual = oufdb.PowerBar.IndividualColor
 		self.Power.colorTapping = false
 		self.Power.colorDisconnected = false
@@ -1524,6 +1574,13 @@ module.funcs = {
 			if max and not issecretvalue(max) and max > 0 and (hasMaxChanged or element.Count ~= max) then
 				element:UpdateTexture(max)
 			end
+			-- oUF rounds away fractions below 0.1 when deciding which points are
+			-- active. Preserve those values using the bars' native [0, 1] clamp.
+			if hasCurrentChanged and not issecretvalue(current) and not issecretvalue(max) then
+				for i = 1, math.min(max or 0, element.MaxCount) do
+					element[i]:SetValue(current - i + 1)
+				end
+			end
 		end
 		classPower.PostUpdateColor = function(element, color)
 			if color then element:UpdateBackdropColor(color) end
@@ -1623,6 +1680,7 @@ module.funcs = {
 
 			self.AdditionalPower.PostUpdate = PostUpdateAdditionalPower
 			self.AdditionalPower.PostUpdateColor = PostUpdateAdditionalPowerColor
+			self.AdditionalPower.UpdateColor = UpdateAdditionalPowerColor
 		end
 
 		self.AdditionalPower:SetHeight(oufdb.AdditionalPowerBar.Height)
@@ -1875,9 +1933,7 @@ module.funcs = {
 			end
 		castbar.ShouldShow = ShouldShowCastbar
 		if unit == "player" then
-			castbar.HandleBlizzardCastbar = function(element, enabled)
-				return module:HandleBlizzardCastbar(element, enabled)
-			end
+			module:PrepareBlizzardCastbar(self)
 		end
 
 		castbar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.Castbar.General.Texture))

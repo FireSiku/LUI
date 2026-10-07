@@ -548,7 +548,7 @@ local function CastGlobal(self, event, unit, _, spellID)
 	-- we need to fake some data
 	STATE[element].channeling = true
 
-	local duration = C_DurationUtil.CreateDuration()
+	local duration = element.globalCooldownDuration
 	duration:SetTimeFromStart(cooldownInfo.startTime, cooldownInfo.duration, cooldownInfo.modRate)
 
 	element:SetTimerDuration(duration, element.smoothing, Enum.StatusBarTimerDirection.RemainingTime)
@@ -671,6 +671,7 @@ local function Enable(self, unit)
 		end
 
 		if(unit == 'player' and element.showGlobalCooldown) then
+			element.globalCooldownDuration = element.globalCooldownDuration or C_DurationUtil.CreateDuration()
 			self:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED', CastGlobal)
 		end
 
@@ -678,8 +679,7 @@ local function Enable(self, unit)
 
 		element:SetScript('OnUpdate', element.OnUpdate or onUpdate)
 
-		local handledBlizzard = element.HandleBlizzardCastbar and element:HandleBlizzardCastbar(true)
-		if(not handledBlizzard and unit == 'player' and not (self.hasChildren or self.isChild or self.isNamePlate)) then
+		if(unit == 'player' and not (self.hasChildren or self.isChild or self.isNamePlate)) then
 			PlayerCastingBarFrame:UnregisterAllEvents()
 			PlayerCastingBarFrame:Hide()
 			PetCastingBarFrame:UnregisterAllEvents()
@@ -741,8 +741,7 @@ local function Disable(self, unit)
 			element.Time.binding:SetEnabled(false)
 		end
 
-		local handledBlizzard = element.HandleBlizzardCastbar and element:HandleBlizzardCastbar(false)
-		if(not handledBlizzard and unit == 'player' and not (self.hasChildren or self.isChild or self.isNamePlate)) then
+		if(unit == 'player' and not (self.hasChildren or self.isChild or self.isNamePlate)) then
 			for event in next, eventMethods do
 				PlayerCastingBarFrame:RegisterUnitEvent(event, 'player')
 				PetCastingBarFrame:RegisterUnitEvent(event, 'pet')
