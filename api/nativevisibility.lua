@@ -33,7 +33,18 @@ local function RestoreShownState(state)
     return state.wasShown
 end
 
-local function Apply(state, enabled, queueRefresh)
+local function QueueRefresh()
+    if queued then return end
+    queued = true
+    -- Reconcile after the native callback has returned. Never call Hide from
+    -- inside Blizzard's OnShow/layout call stack or use a polling timer.
+    C_Timer.After(0, function()
+        queued = false
+        LUI:RefreshNativeReplacements()
+    end)
+end
+
+local function Apply(state, enabled)
     local frame = state.frame or _G[state.name]
     if not frame then return false end
     if not CanAccess(frame, state.name) then return enabled or state.hidden end
@@ -45,7 +56,7 @@ local function Apply(state, enabled, queueRefresh)
             frame:HookScript("OnShow", function()
                 if state.hidden then
                     state.wasShown = true
-                    queueRefresh()
+                    QueueRefresh()
                 end
             end)
         end
@@ -63,12 +74,13 @@ local function Apply(state, enabled, queueRefresh)
     return false
 end
 
-local function Refresh(queueRefresh)
+function LUI:RefreshNativeReplacements()
+    if not eventFrame then return end
     local active, pending = false, false
     for _, states in pairs(replacements) do
         active = active or states.enabled
         for _, state in ipairs(states) do
-            pending = Apply(state, states.enabled, queueRefresh) or pending
+            pending = Apply(state, states.enabled) or pending
         end
     end
 
@@ -79,17 +91,6 @@ local function Refresh(queueRefresh)
         eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
     end
     if active then eventFrame:RegisterEvent("ADDON_LOADED") end
-end
-
-local function QueueRefresh()
-    if queued then return end
-    queued = true
-    -- Reconcile after the native callback has returned. Never call Hide from
-    -- inside Blizzard's OnShow/layout call stack or use a polling timer.
-    C_Timer.After(0, function()
-        queued = false
-        Refresh(QueueRefresh)
-    end)
 end
 
 function LUI:SetNativeReplacementActive(moduleName, enabled)
@@ -106,5 +107,5 @@ function LUI:SetNativeReplacementActive(moduleName, enabled)
             end
         end)
     end
-    Refresh(QueueRefresh)
+    self:RefreshNativeReplacements()
 end
