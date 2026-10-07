@@ -306,6 +306,7 @@ function module:CreateGroupTools(parent)
 			if CanLeaveInstance() then ConfirmOrLeaveParty(); AfterAction() end
 		end},
 	}
+	local uiElements = LUI:GetModule("UI Elements", true)
 	for i, entry in ipairs(entries) do
 		local button = CreateFrame("Button", "LUIRaidGroupTool" .. i, parent, "UIPanelButtonTemplate")
 		button:SetFrameLevel(parent:GetFrameLevel() + 2)
@@ -315,6 +316,9 @@ function module:CreateGroupTools(parent)
 		button:SetText(entry[1])
 		button:SetScript("OnClick", entry[2])
 		buttons[i] = button
+		if uiElements and uiElements.RegisterRaidMenuButton then
+			uiElements:RegisterRaidMenuButton(parent, button)
+		end
 	end
 	parent:HookScript("OnShow", function() module:UpdateGroupTools() end)
 	local events = CreateFrame("Frame")
