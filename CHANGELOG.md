@@ -20,6 +20,7 @@
 - Unitframes: Corrected class-resource availability in Retail and Forever, cat-form combo-point detection and small fractional resource values.
 - Unitframes: Restored druid mana in bear and cat form, corrected mana text and gradients, and fixed resource-bar toggles and overlapping auxiliary bars.
 - Unitframes: Restored Blizzard castbars during temporary action UIs and updated nameplate castbar handling.
+- Unitframes: Added optional shield icons for uninterruptible casts, with left, right or both sides and adjustable size and offsets.
 - Unitframes: Fixed group frames remaining hidden when entering combat during a preview.
 - Unitframes: Combat-feedback settings now apply immediately, with corrected resource-gain text and resource and crushing-hit colors.
 - Artwork: Corrected profile switching, disabled-panel visibility and right-side background colors.
