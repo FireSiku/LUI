@@ -1349,6 +1349,18 @@ module.funcs = {
 			end
 		end
 	end,
+	Happiness = function(self, unit, oufdb)
+		if not module.supportsPetHappiness or unit ~= "pet" then return end
+		if not self.Happiness then
+			self.Happiness = self.Overlay:CreateTexture(nil, "OVERLAY")
+			self.Happiness:Hide()
+		end
+		-- oUF supplies the native happiness atlas and controls its visibility.
+		local settings = oufdb.HappinessIndicator
+		self.Happiness:SetSize(settings.Size, settings.Size)
+		self.Happiness:ClearAllPoints()
+		self.Happiness:SetPoint(settings.Point, self, settings.Point, settings.X, settings.Y)
+	end,
 	RestingIndicator = function(self, unit, oufdb)
 		if not self.RestingIndicator then self.RestingIndicator = self.Overlay:CreateTexture(nil, "OVERLAY") end
 
@@ -2403,6 +2415,7 @@ local function SetStyle(self, unit, isSingle)
 	if oufdb.RestingIndicator and oufdb.RestingIndicator.Enable then module.funcs.RestingIndicator(self, unit, oufdb) end
 	if oufdb.CombatIndicator and oufdb.CombatIndicator.Enable then module.funcs.CombatIndicator(self, unit, oufdb) end
 	if oufdb.ReadyCheckIndicator and oufdb.ReadyCheckIndicator.Enable then module.funcs.ReadyCheckIndicator(self, unit, oufdb) end
+	if module.supportsPetHappiness and unit == "pet" and oufdb.HappinessIndicator.Enable then module.funcs.Happiness(self, unit, oufdb) end
 
 	------------------------------------------------------------------------
 	--	Player Specific Items

@@ -791,6 +791,9 @@ local function NewUnitOptionGroup(unit, order, categorized)
     if dbUnit.RestingIndicator then indicatorOptions.args.RestingIndicator = GenerateIndicatorGroup(unit, "Resting Icon", categorized and 5 or 74, Opt.GetSet(dbUnit.RestingIndicator)) end
     if dbUnit.CombatIndicator then indicatorOptions.args.CombatIndicator = GenerateIndicatorGroup(unit, "Combat Icon", categorized and 6 or 75, Opt.GetSet(dbUnit.CombatIndicator)) end
     if dbUnit.ReadyCheckIndicator then indicatorOptions.args.ReadyCheckIndicator = GenerateIndicatorGroup(unit, "Ready Check Icon", categorized and 7 or 76, Opt.GetSet(dbUnit.ReadyCheckIndicator)) end
+    if module.supportsPetHappiness and unit == "pet" then
+        indicatorOptions.args.HappinessIndicator = GenerateIndicatorGroup(unit, "Pet Happiness", categorized and 8 or 77, Opt.GetSet(dbUnit.HappinessIndicator))
+    end
 
     if dbUnit.Castbar and UnitSupportsCastbar(unit) then
         local castbarPrefix = categorized and "" or "Castbar"
