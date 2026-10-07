@@ -14,7 +14,6 @@ local replacements = {
 
 local eventFrame
 local queued = false
-local Refresh, QueueRefresh
 
 local function CanAccess(frame, name)
     return frame and frame ~= UIParent
@@ -34,7 +33,7 @@ local function RestoreShownState(state)
     return state.wasShown
 end
 
-local function Apply(state, enabled)
+local function Apply(state, enabled, queueRefresh)
     local frame = state.frame or _G[state.name]
     if not frame then return false end
     if not CanAccess(frame, state.name) then return enabled or state.hidden end
@@ -46,7 +45,7 @@ local function Apply(state, enabled)
             frame:HookScript("OnShow", function()
                 if state.hidden then
                     state.wasShown = true
-                    QueueRefresh()
+                    queueRefresh()
                 end
             end)
         end
@@ -64,12 +63,12 @@ local function Apply(state, enabled)
     return false
 end
 
-Refresh = function()
+local function Refresh(queueRefresh)
     local active, pending = false, false
     for _, states in pairs(replacements) do
         active = active or states.enabled
         for _, state in ipairs(states) do
-            pending = Apply(state, states.enabled) or pending
+            pending = Apply(state, states.enabled, queueRefresh) or pending
         end
     end
 
@@ -82,14 +81,14 @@ Refresh = function()
     if active then eventFrame:RegisterEvent("ADDON_LOADED") end
 end
 
-QueueRefresh = function()
+local function QueueRefresh()
     if queued then return end
     queued = true
     -- Reconcile after the native callback has returned. Never call Hide from
     -- inside Blizzard's OnShow/layout call stack or use a polling timer.
     C_Timer.After(0, function()
         queued = false
-        Refresh()
+        Refresh(QueueRefresh)
     end)
 end
 
@@ -107,5 +106,5 @@ function LUI:SetNativeReplacementActive(moduleName, enabled)
             end
         end)
     end
-    Refresh()
+    Refresh(QueueRefresh)
 end
