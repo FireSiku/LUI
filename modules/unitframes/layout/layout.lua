@@ -690,7 +690,7 @@ local function PostUpdateAdditionalPowerColor(additionalpower)
 		r, g, b = module.colors.power.MANA:GetRGB()
 		additionalpower:SetStatusBarColor(r, g, b)
 	else
-		-- oUF applies the gradient before calling PostUpdateColor.
+		-- UpdateAdditionalPowerColor applies the native mana gradient first.
 		r, g, b = additionalpower:GetStatusBarColor()
 	end
 
@@ -700,7 +700,11 @@ local function PostUpdateAdditionalPowerColor(additionalpower)
 end
 
 local function UpdateAdditionalPowerColor(self, event, unit, powerType)
-	if not (unit and oUF.Private.unitIsUnit(unit, "player") and powerType == "MANA") then return end
+	-- oUF removes Private when loading finishes. Use the public comparison
+	-- gate here, just as in the player castbar's unit check.
+	if not unit or powerType ~= "MANA" or not C_Secrets.CanCompareUnitTokens(unit, "player") then return end
+	local isPlayer = UnitIsUnit(unit, "player")
+	if issecretvalue(isPlayer) or not isPlayer then return end
 	local power = self.AdditionalPower
 	local color = power.colorPower and self.colors.power[Enum.PowerType.Mana]
 	if color then

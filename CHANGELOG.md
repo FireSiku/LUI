@@ -11,6 +11,7 @@
 - Core: Stopped modifying Blizzard's combat-text animation constants to prevent secret-value errors. Combat-text font selection remains available; Blizzard controls normal and critical text sizes.
 - Core: Reduced repeated work in unitframe resource displays, infotext layouts, bags, experience bars, button styling and window layouts.
 - Unitframes: Updated the complete embedded framework to oUF 14.2.0, with LUI-specific resource, castbar and group-header behavior maintained in the Unitframes module.
+- Unitframes: Fixed additional-power initialization after oUF finishes loading.
 - Unitframes: Forever group-frame preparation now uses Blizzard's native header callbacks instead of directly calling the shared group update function.
 - Unitframes: Added shared font settings and a separate aura-count font option. Castbar outlines and raid information text positions now follow their settings.
 - Unitframes: Restored missing healing-prediction and absorb defaults, and corrected resource colors and additional-power smoothing.
