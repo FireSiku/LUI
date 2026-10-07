@@ -675,16 +675,15 @@ Mixin(Opt, OptionMixin)
 
 local titleName = "LUI Options"
 do
-    local version, alpha, git = strsplit("-", LUI.curseVersion)
-	-- Break up the version string to avoid the curse packager converting it.
-	if LUI.IsForever or LUI.IsRetail then
-		titleName = "LUI Options - v2610 (" .. (LUI.IsForever and "Forever" or "Retail") .. ")"
-	elseif LUI.curseVersion == "@project".."-version@" then
-		titleName = format("%s %s (Dev)", titleName, GetAddOnMetadata("LUI", "Version"))
-	elseif not version or not alpha then
-		titleName = format("%s %s (Release)", titleName, GetAddOnMetadata("LUI", "Version"))
+    local version, alpha = strsplit("-", LUI.curseVersion)
+    local wowVersion = LUI.IsForever and "Forever" or "Retail"
+    -- Break up the version string to avoid the curse packager converting it.
+    if LUI.curseVersion == "@project".."-version@" then
+        titleName = format("%s %s %s (Dev)", wowVersion, titleName, GetAddOnMetadata("LUI", "Version"))
+    elseif not version or not alpha then
+        titleName = format("%s %s %s (Release)", wowVersion, titleName, GetAddOnMetadata("LUI", "Version"))
     else
-        titleName = format("%s %s (Alpha %s)", titleName, version, alpha)
+        titleName = format("%s %s %s (Alpha %s)", wowVersion, titleName, version, alpha)
     end
 end
 
