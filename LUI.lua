@@ -280,12 +280,15 @@ end
 function LUI:SetDamageFont(_, loadedAddon)
 	if loadedAddon and loadedAddon ~= "Blizzard_CombatText" then return end
 
+	local constants = _G.CombatTextConstants
 	local fontObject = _G.CombatTextFont
-	if not fontObject then return end
+	if not constants or not fontObject then return end
 
 	local fontPath = Media:Fetch("font", db.General.DamageFont)
-	local _, fontSize, fontFlags = fontObject:GetFont()
-	fontObject:SetFont(fontPath, fontSize, fontFlags)
+	local _, _, fontFlags = fontObject:GetFont()
+	-- Use the normal message height for the custom face rather than inheriting
+	-- the 64px world font that Blizzard scales down for its combat text.
+	fontObject:SetFont(fontPath, constants.MessageHeight, fontFlags)
 
 	-- Do not write CombatTextConstants. Blizzard reads these values while
 	-- animating secret combat-text positions; addon-owned values taint that
