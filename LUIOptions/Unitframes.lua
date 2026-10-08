@@ -504,7 +504,7 @@ local function GenerateCastbarGroup(unit, order)
         }),
         StopPreview = Opt:Execute({
             name = "Stop Cast Bar Preview",
-            desc = "Hide the cast bar test without closing other unit frame previews.",
+            desc = "Hide the test cast. A frame opened only for this test is closed too.",
             func = function() module:StopCastbarPreview() end,
         }),
         Width = Opt:InputNumber({name = "Width"}),
