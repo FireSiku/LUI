@@ -280,11 +280,19 @@ end
 function LUI:SetDamageFont(_, loadedAddon)
 	if loadedAddon and loadedAddon ~= "Blizzard_CombatText" then return end
 
+	-- External font packs may register after LUI. Keep the current font until
+	-- the selected face becomes available instead of silently using a fallback.
+	local fontPath = Media:Fetch("font", db.General.DamageFont, true)
+	if not fontPath then return end
+
+	-- World damage numbers cache this font at login, independently of the
+	-- load-on-demand scrolling combat text. A font change requires a relog.
+	_G.DAMAGE_TEXT_FONT = fontPath
+
 	local constants = _G.CombatTextConstants
 	local fontObject = _G.CombatTextFont
 	if not constants or not fontObject then return end
 
-	local fontPath = Media:Fetch("font", db.General.DamageFont)
 	-- Select SLUG explicitly: custom combat fonts can lose glyphs or spacing
 	-- with inherited world-font flags or the unflagged rendering path.
 	fontObject:SetFont(fontPath, constants.MessageHeight, "SLUG")
@@ -293,9 +301,7 @@ function LUI:SetDamageFont(_, loadedAddon)
 	-- animating secret combat-text positions; addon-owned values taint that
 	-- execution path. Keep native normal/critical sizes and only change the font.
 
-	if loadedAddon then
-		self:UnregisterEvent("ADDON_LOADED")
-	end
+	self:UnregisterEvent("ADDON_LOADED")
 end
 
 ------------------------------------------------------
@@ -634,11 +640,15 @@ function LUI:OnInitialize()
 
 	self:RegisterChatCommand(addonname, "ChatCommand")
 
-	if IsAddOnLoaded("Blizzard_CombatText") then
-		self:SetDamageFont()
-	else
+	Media.RegisterCallback(self, "LibSharedMedia_Registered", function(_, mediaType, key)
+		if mediaType == "font" and key == db.General.DamageFont then
+			self:SetDamageFont()
+		end
+	end)
+	if not IsAddOnLoaded("Blizzard_CombatText") then
 		self:RegisterEvent("ADDON_LOADED", "SetDamageFont")
 	end
+	self:SetDamageFont()
 	self:LoadExtraModules()
 
 	-- Shared confirmation used by profile restores, migrations and settings that
