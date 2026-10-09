@@ -7,8 +7,16 @@ local Opt = select(2, ...)
 
 ---@class LUIAddon
 local LUI = Opt.LUI
-local db = LUI.db.profile
-local generalDB = db.General
+-- Restores replace General before the reload prompt is accepted. Keep the
+-- option getters and setters attached to the active profile in that interval.
+local generalDB = setmetatable({}, {
+    __index = function(_, key)
+        return LUI.db.profile.General[key]
+    end,
+    __newindex = function(_, key, value)
+        LUI.db.profile.General[key] = value
+    end,
+})
 
 ---@type AceLocale.Localizations
 local L = LUI.L

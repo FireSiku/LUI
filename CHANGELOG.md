@@ -7,7 +7,7 @@
 - Core: Blizzard's progress and bag bars are hidden in Forever while their LUI replacements are enabled, and restored when disabled.
 - Core: Fixed errors when the options addon cannot be loaded and restored confirmation dialogs in generated settings.
 - Core: Fixed older-profile conversion when current button settings are present.
-- Core: Fixed profile backups and restores losing custom or module settings. Failed backups preserve the previous backup, and imported profile names handle accented characters correctly.
+- Core: Fixed profile backups and restores losing custom or module settings. General settings continue to use the active profile after restoring a backup. Failed backups preserve the previous backup, and imported profile names handle accented characters correctly.
 - Core: Corrected color-picker input. Displayed rounding no longer changes the selected color.
 - Core: Stopped modifying Blizzard's combat-text animation constants to prevent secret-value errors. Custom fonts use Blizzard's normal text size and the SLUG renderer while critical animations remain under Blizzard's control.
 - Core: Combat-text font selection also applies to damage numbers above units after relogging, and waits for selected fonts from later-loading media packs.
