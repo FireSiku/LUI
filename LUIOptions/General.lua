@@ -101,7 +101,8 @@ General.args = {
             AutoInviteKeyword = Opt:Input({name = "AutoInvite Keyword", desc = "AutoInvite remains inactive until a non-empty keyword is entered.", disabled = function() return not generalDB.AutoInvite end, set = SetGeneralOption("AutoInviteKeyword", ApplyAutoInvite), width = "full"}),
         }}),
         DamageText = Opt:Group({name = "Damage Text", inline = true, args = {
-            DamageFont = Opt:MediaFont({name = "Font", set = SetGeneralOption("DamageFont", ApplyDamageFont)}),
+            DamageFont = Opt:MediaFont({name = "Font", desc = "Choose the font for scrolling combat text and damage numbers above units.", set = SetGeneralOption("DamageFont", ApplyDamageFont)}),
+            FontInfo = Opt:Desc({name = "After changing the font, log out to character selection and back in to update damage numbers above units. Reloading the UI is not sufficient."}),
             SizeInfo = Opt:Desc({name = "Normal and critical combat-text sizes are managed by Blizzard to keep combat animations secure."}),
         }}),
 		ProfileTools = Opt:Group({name = "Profile Backup", inline = true, args = {
