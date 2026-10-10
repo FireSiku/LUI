@@ -110,6 +110,9 @@ General.args = {
         }}),
         DamageText = Opt:Group({name = "Damage Text", inline = true, args = {
             DamageFont = Opt:MediaFont({name = "Font", desc = "Choose the font for scrolling combat text and damage numbers above units.", set = SetGeneralOption("DamageFont", ApplyDamageFont)}),
+            DamageFontOutline = Opt:Select({name = "Outline", desc = "Change the outline of scrolling combat text, including healing and absorbs. Applies immediately; does not change damage numbers above units.",
+                values = {[""] = LUI.FontFlags[""], OUTLINE = LUI.FontFlags.OUTLINE, THICKOUTLINE = LUI.FontFlags.THICKOUTLINE},
+                set = SetGeneralOption("DamageFontOutline", ApplyDamageFont)}),
             FontInfo = Opt:Desc({name = "After changing the font, log out to character selection and back in to update damage numbers above units. Reloading the UI is not sufficient."}),
             SizeInfo = Opt:Desc({name = "Normal and critical combat-text sizes are managed by Blizzard to keep combat animations secure."}),
         }}),
