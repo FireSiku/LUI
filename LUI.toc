@@ -1,5 +1,5 @@
-## Interface: 120100
-## Version: v2609
+## Interface: 120100, 16001
+## Version: v2610
 ## Title: LUI
 ## Author: Siku, Nitsah, Pahn
 ## Notes: User Interface Modification
@@ -27,11 +27,13 @@ libs\AceLocale-3.0\AceLocale-3.0.xml
 libs\AceSerializer-3.0\AceSerializer-3.0.xml
 locale\locale.xml
 
-## oUF ## Current Version 14.0.3
+## oUF ## Current Version 14.2.0
 api\oUF13\oUF.xml
 
 ### Core + API ###
 init.lua
+api\client.lua
+api\nativevisibility.lua
 api\curse.lua
 api\backdrop.lua
 api\profiler.lua
@@ -69,6 +71,7 @@ modules\bags\bags_init.lua
 modules\bags\toolbars.lua
 modules\bags\bags.lua
 modules\bags\templates.lua
+modules\bags\keyring.lua
 modules\bags\backpack.lua
 modules\bags\bank.lua
 
@@ -97,11 +100,13 @@ modules\infotext\movespeed.lua
 
 ### Micromenu ###
 modules\micromenu\micromenu.lua
+modules\micromenu\compat.lua
 modules\micromenu\alerts.lua
 
 ### RaidMenu ###
 modules\raidmenu\raidmenu_init.lua
 modules\raidmenu\raidmenu.xml
+modules\raidmenu\raidmenu_tools.lua
 modules\raidmenu\raidmenu.lua
 
 ### ExpBars ###
@@ -122,6 +127,7 @@ modules\mirrorbar\mirrorbar.lua
 ### UI Elements ###
 modules\uielements\uielements_init.lua
 modules\uielements\uielements.lua
+modules\uielements\compat.lua
 modules\uielements\darkbuttons.lua
 
 ### Additional Scripts ###
@@ -135,6 +141,10 @@ api\frameidentifier.lua
 ### Initialize Unitframes ###
 modules\unitframes\templates.xml
 modules\unitframes\unitframes_init.lua
+modules\unitframes\castbar_compat.lua
+modules\unitframes\classpower_compat.lua
+modules\unitframes\groupheaders.lua
+modules\unitframes\fonts.lua
 modules\unitframes\defaults\Settings.lua
 modules\unitframes\defaults\player.lua
 modules\unitframes\defaults\target.lua

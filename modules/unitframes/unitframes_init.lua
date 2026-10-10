@@ -13,6 +13,15 @@ local LUI = select(2, ...)
 local module = LUI:NewModule("Unitframes", "AceHook-3.0", "AceSerializer-3.0")
 module.enableButton = true
 
+-- Keep the option pages, initial layout and settings refresh on the same
+-- client/class capabilities. oUF handles the active spec, form and talents.
+module.supportsClassPower = LUI.DRUID or LUI.ROGUE or LUI.SHAMAN
+	or (LUI.IsRetail and (LUI.DEMONHUNTER or LUI.EVOKER or LUI.HUNTER or LUI.MAGE
+		or LUI.MONK or LUI.PALADIN or LUI.WARLOCK)) or false
+module.supportsAdditionalPower = LUI.DRUID
+	or (LUI.IsRetail and (LUI.PRIEST or LUI.SHAMAN)) or false
+module.supportsPetHappiness = LUI.IsForever and LUI.HUNTER or false
+
 module.unitsSpawn = {"player", "target", "focus", "focustarget", "targettarget", "targettargettarget", "pet", "pettarget", "boss", "party", "maintank", "arena", "raid"}
 
 module.units = {"player", "target", "targettarget", "targettargettarget", "focus", "focustarget", "pet", "pettarget", "party", "partytarget", "partypet", "boss", "bosstarget", "maintank", "maintanktarget", "maintanktargettarget", "arena", "arenatarget", "arenapet", "raid"}
@@ -155,9 +164,32 @@ end
 
 function module:OnInitialize()
 	-- Register per-unit defaults after all layout default files have loaded.
-	-- AceDB fills missing settings without replacing saved text preferences.
+	-- AceDB fills missing settings without replacing saved preferences.
 	for _, defaults in pairs(module.defaults.profile) do
+		if type(defaults) == "table" and defaults.Castbar and defaults.Castbar.Shield then
+			defaults.Castbar.Shield.Icons = {
+				Position = "NONE", Size = 20, X = 44, Y = 0,
+			}
+		end
 		if type(defaults) == "table" and defaults.HealthBar then
+			-- Every health bar supports these overlays. Some child-frame defaults
+			-- omitted them, which also hid their options. Keep existing per-unit
+			-- defaults and create independent tables for the missing sections.
+			if defaults.HealthPredictionBar == nil then
+				defaults.HealthPredictionBar = {
+					Enable = false,
+					MyColor = {r = 0, g = 0.5, b = 0, a = 0.25},
+					OtherColor = {r = 0, g = 1, b = 0, a = 0.25},
+					Texture = "LUI_Gradient",
+				}
+			end
+			if defaults.TotalAbsorbBar == nil then
+				defaults.TotalAbsorbBar = {
+					Enable = false,
+					MyColor = {r = 0, g = 1, b = 0, a = 0.5},
+					Texture = "LUI_Gradient",
+				}
+			end
 			defaults.AbsorbText = {
 				Enable = false, Font = "Prototype", Size = 12, Outline = "OUTLINE",
 				Color = "Individual", IndividualColor = {r = 0.5, g = 1, b = 0.5},

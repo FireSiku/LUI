@@ -122,6 +122,7 @@ local function AddShared(data, optionType)
 
 	-- Handle generic AceOptions properties
 	data.type = optionType
+	OptionMixin.AddConfirm(data, data.confirm)
 	if not data.order then data.order = nextOrder end
 
 	-- Provides a quick way to debug options
@@ -674,14 +675,15 @@ Mixin(Opt, OptionMixin)
 
 local titleName = "LUI Options"
 do
-    local version, alpha, git = strsplit("-", LUI.curseVersion)
-	-- Break up the version string to avoid the curse packager converting it.
-	if LUI.curseVersion == "@project".."-version@" then
-		titleName = format("%s %s (Dev)", titleName, GetAddOnMetadata("LUI", "Version"))
-	elseif not version or not alpha then
-		titleName = format("%s %s (Release)", titleName, GetAddOnMetadata("LUI", "Version"))
+    local version, alpha = strsplit("-", LUI.curseVersion)
+    local wowVersion = LUI.IsForever and "Forever" or "Retail"
+    -- Break up the version string to avoid the curse packager converting it.
+    if LUI.curseVersion == "@project".."-version@" then
+        titleName = format("%s %s %s (Dev)", wowVersion, titleName, GetAddOnMetadata("LUI", "Version"))
+    elseif not version or not alpha then
+        titleName = format("%s %s %s (Release)", wowVersion, titleName, GetAddOnMetadata("LUI", "Version"))
     else
-        titleName = format("%s %s (Alpha %s)", titleName, version, alpha)
+        titleName = format("%s %s %s (Alpha %s)", wowVersion, titleName, version, alpha)
     end
 end
 
@@ -998,8 +1000,8 @@ local function ImportProfile()
 
 	local profileName = TrimText(profileImportName)
 	local importText = TrimText(profileImportText)
-	if profileName == "" or #profileName > 64 or profileName:find("[%c]") then
-		LUI:Print("Enter a valid profile name with no more than 64 characters.")
+	if profileName == "" or _G.strlenutf8(profileName) > 50 or profileName:find("[%c]") then
+		LUI:Print("Enter a valid profile name with no more than 50 characters.")
 		return
 	end
 	if importText == "" or #importText > MAX_PROFILE_STRING_LENGTH then

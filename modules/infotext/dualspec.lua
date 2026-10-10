@@ -12,6 +12,22 @@ local L = LUI.L
 local module = LUI:GetModule("Infotext")
 local element = module:NewElement("Dualspec", "AceEvent-3.0")
 
+-- Forever has talent trees, not the Retail specialization-switching panel.
+if LUI.IsForever then
+    local function UpdateTalents() element.text = _G.TALENTS or "Talents" end
+    function element.OnClick()
+        if InCombatLockdown() then return end
+        PlayerSpellsUtil.TogglePlayerSpellsFrame(PlayerSpellsUtil.FrameTabs.ClassTalents)
+    end
+    function element.OnTooltipShow(tooltip)
+        element:TooltipHeader(_G.TALENTS or "Talents")
+        tooltip:AddLine("Click to open your talent trees.", 1, 1, 1)
+    end
+    element.OnCreate = UpdateTalents
+    element.RefreshSettings = UpdateTalents
+    return
+end
+
 -- local copies
 local select, format = select, format
 local strsplit = string.split

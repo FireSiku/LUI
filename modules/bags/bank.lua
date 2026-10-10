@@ -293,6 +293,9 @@ function module:AttachBankHooks()
 end
 
 function module:EnableBank()
+    -- Forever's native bank owns bag sockets and pages. The Retail grid would
+    -- move these items out of their native pages, so retain that bank layout.
+    if LUI.IsForever then return end
     module.bankIntegrationEnabled = true
     if not module.bankLoadWatcher then
         module.bankLoadWatcher = CreateFrame("Frame")

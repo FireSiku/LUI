@@ -34,14 +34,13 @@ local function GetContainerLayoutLimit(db)
 end
 
 local function ApplyButtonAppearance(button, db)
-    -- Assigned 12.1 aura buttons may become explicitly forbidden even when
-    -- InCombatLockdown() briefly reports false during a reload while dead.
-    -- Their layout is updated through SetAuraGroupLayout below; direct region
-    -- mutations must wait until Blizzard exposes the button again.
-    if button.IsForbidden and button:IsForbidden() then return end
+    -- Aura access can remain restricted between pulls in a Mythic+ run.
+    -- IsForbidden alone does not include these conditional restrictions.
+    local canAccess = button:CanBeAccessedInContext()
+    if issecretvalue(canAccess) or not canAccess then return false end
 
     local settings = module.db.profile.Settings
-    button:SetSize(db.Size, db.Size)
+    -- Existing button sizes are managed through SetAuraGroupLayout.
 
     button.Cooldown:SetReverse(db.CooldownReverse == true)
     button.Cooldown:SetAlpha(db.DisableCooldown == true and 0 or 1)
@@ -53,7 +52,14 @@ local function ApplyButtonAppearance(button, db)
         settings.AuratimerFlag
     )
 
+    if settings.AuraCountFont then
+        local _, size, flags = GameFontNormalSmall:GetFont()
+        button.Count:SetFont(Media:Fetch("font", settings.AuraCountFont), size, flags)
+    else
+        button.Count:SetFontObject(GameFontNormalSmall)
+    end
     button.AuraTypeHolder:SetAlpha(db.ColorByType == true and 1 or 0)
+    return true
 end
 
 local function MakeInitializer(state, kind)
@@ -119,18 +125,40 @@ local function MakeInitializer(state, kind)
     end
 end
 
+local pendingAppearance = {}
+local appearanceFrame = CreateFrame("Frame")
+
 local function RefreshButtonAppearance(container, db)
     local key = container.__luiKey
     local count = container:GetAuraGroupFrameCount(key)
+    local pending = false
 
     -- The public accessors enumerate Blizzard's preallocated buttons without
-    -- reading aura data. ApplyButtonAppearance skips any button that is still
-    -- explicitly forbidden after a combat reload.
+    -- reading aura data. Retry skipped appearance changes when access returns.
     for index = 1, count do
         local button = container:GetAuraGroupFrame(key, index)
-        if button then ApplyButtonAppearance(button, db) end
+        if button and not ApplyButtonAppearance(button, db) then
+            pending = true
+        end
+    end
+
+    pendingAppearance[container] = pending or nil
+    if pending then
+        appearanceFrame:RegisterEvent("ADDON_RESTRICTION_STATE_CHANGED")
+        appearanceFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+        appearanceFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+    elseif not next(pendingAppearance) then
+        appearanceFrame:UnregisterAllEvents()
     end
 end
+
+appearanceFrame:SetScript("OnEvent", function()
+    if InCombatLockdown() then return end
+
+    for container in pairs(pendingAppearance) do
+        RefreshButtonAppearance(container, container.__luiState.db)
+    end
+end)
 
 local function ResolveUnit(owner, fallbackUnit)
     local unit = owner.__unit

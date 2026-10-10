@@ -36,7 +36,7 @@ local POINT_COORDS = {
 
 -- Match Blizzard's current status-tracking priority for the providers LUI supports.
 -- House Favor has the highest priority, followed by Experience, Azerite, Honor and Reputation.
-local TRACKER_PRIORITY = {
+local TRACKER_PRIORITY = LUI.IsForever and {"Experience", "Reputation", "Honor"} or {
 	"HouseFavor",
 	"Experience",
 	"Azerite",
@@ -68,6 +68,8 @@ local dataProviderList = {}
 --- Contains the bars that compose the primary exp bar
 ---@type ExpBar[]
 local mainBarList = {}
+local mainBarLayoutReady = false
+local mainBarPrimary, mainBarSecondary
 
 -- ####################################################################################################################
 -- ##### ExpBarDataProviderMixin ######################################################################################
@@ -123,10 +125,13 @@ end
 function ExpBarMixin:UpdateText()
 	local db = module.db.profile --[[@as table]]
 	local trackerText = self:GetDataText(db.TrackerLabel or "Short") or ""
+	local prefixText = self.GetTextPrefix and self:GetTextPrefix() or ""
 	local function AddTrackerText(valueText)
-		if trackerText == "" then return valueText end
-		if valueText == "" then return trackerText end
-		return format("%s %s", valueText, trackerText)
+		if trackerText ~= "" then
+			valueText = valueText == "" and trackerText or format("%s %s", valueText, trackerText)
+		end
+		if prefixText == "" then return valueText end
+		return valueText == "" and prefixText or format("%s %s", prefixText, valueText)
 	end
 	local percentText = ""
 	if db.ShowPercent then
@@ -147,7 +152,7 @@ function ExpBarMixin:UpdateText()
 		end
 		return self.text:SetText(AddTrackerText(text))
 	end
-	return self.text:SetText(trackerText)
+	return self.text:SetText(AddTrackerText(""))
 end
 
 function ExpBarMixin:ShowTooltip()
@@ -226,7 +231,9 @@ end
 function ExpBarMixin:RegisterEvents()
 	if not self.BAR_EVENTS then return end
 	for _, event in ipairs(self.BAR_EVENTS) do
-		self:RegisterEvent(event)
+		-- One dispatcher owns all tracker events. Shared events otherwise run
+		-- the complete layout once for the anchor and again for each bar.
+		module.anchor:RegisterEvent(event)
 	end
 end
 
@@ -235,6 +242,7 @@ function module:SetEventHandling(enabled)
 
 	local statusTrackingBarManager = _G.StatusTrackingBarManager
 	if enabled then
+		mainBarLayoutReady = false
 		module.anchor:RegisterEvent("PLAYER_ENTERING_WORLD")
 		module.anchor:RegisterEvent("PLAYER_MAX_LEVEL_UPDATE")
 		module.anchor:RegisterEvent("UPDATE_FACTION")
@@ -257,9 +265,6 @@ function module:SetEventHandling(enabled)
 		module.anchor:UnregisterAllEvents()
 		if statusTrackingBarManager and module:IsHooked(statusTrackingBarManager, "UpdateBarsShown") then
 			module:Unhook(statusTrackingBarManager, "UpdateBarsShown")
-		end
-		for bar in module:IterateMainBars() do
-			bar:UnregisterAllEvents()
 		end
 	end
 end
@@ -309,15 +314,11 @@ function module:CreateBar(name, dataProvider)
 	-- ExpBarMixin has an empty provider default, so assign the actual provider
 	-- after mixing it into the bar instead of letting Mixin overwrite it.
 	bar.provider = dataProvider
-	bar:SetScript("OnEvent", function(_, event, ...)
-		module:UpdateMainBarVisibility(event, ...)
-	end)
 	bar:SetScript("OnEnter", bar.ShowTooltip)
 	bar:SetScript("OnLeave", bar.HideTooltip)
 	bar:SetScript("OnDragStart", StartAnchorMoving)
 	bar:SetScript("OnDragStop", StopAnchorMoving)
 	bar:RegisterForDrag("LeftButton")
-	bar:RegisterEvents()
 
 	bar:SetBarColor(module:RGBA(dataProvider))
 	bar:UpdateTextVisibility()
@@ -395,18 +396,25 @@ function module:SetMainBar()
 		module:UpdateMainBarVisibility(event, ...)
 	end)
 
-	local expBar = module:CreateBar("LUI_ExpBarsExp", "Experience")
-	local repBar = module:CreateBar("LUI_ExpBarsRep", "Reputation")
-	local honorBar = module:CreateBar("LUI_ExpBarsHonor", "Honor")
-	local azeriteBar = module:CreateBar("LUI_ExpBarsAzerite", "Azerite")
-	local houseFavorBar = module:CreateBar("LUI_ExpBarsHouseFavor", "HouseFavor")
-	mainBarList = {expBar, repBar, honorBar, azeriteBar, houseFavorBar}
-
-	module.ExperienceBar = expBar
-	module.ReputationBar = repBar
-	module.HonorBar = honorBar
-	module.AzeriteBar = azeriteBar
-	module.HouseFavorBar = houseFavorBar
+	-- Forever does not load the Azerite and House Favor providers.
+	-- Keep the list packed so iteration also works with optional providers.
+	local trackers = {
+		{"Experience", "LUI_ExpBarsExp"},
+		{"Reputation", "LUI_ExpBarsRep"},
+		{"Honor", "LUI_ExpBarsHonor"},
+		{"Azerite", "LUI_ExpBarsAzerite"},
+		{"HouseFavor", "LUI_ExpBarsHouseFavor"},
+	}
+	mainBarList = {}
+	for _, tracker in ipairs(trackers) do
+		local provider, name = tracker[1], tracker[2]
+		local bar
+		if dataProviderList[provider] then
+			bar = module:CreateBar(name, provider)
+			mainBarList[#mainBarList + 1] = bar
+		end
+		module[provider.."Bar"] = bar
+	end
 
 	module:UpdateMoveState()
 	return true -- mainBarsCreated
@@ -482,16 +490,8 @@ local function ConfigureBar(bar, anchor, width, height, reverseFill, textPoint, 
 	bar:Show()
 end
 
-function module:UpdateMainBarVisibility(event, ...)
+local function LayoutMainBars(primary, secondary)
 	local db = module.db.profile
-	if not module.ExperienceBar or not module.ReputationBar
-		or not module.HonorBar or not module.AzeriteBar or not module.HouseFavorBar then
-		return
-	end
-
-	local primary, secondary = GetVisibleTrackers()
-	if not db.SplitTracker then secondary = nil end
-
 	for bar in module:IterateMainBars() do
 		bar:Hide()
 	end
@@ -526,9 +526,24 @@ function module:UpdateMainBarVisibility(event, ...)
 		module.secondaryAnchor:Hide()
 	end
 
+	module:UpdateMoveState()
+end
+
+function module:UpdateMainBarVisibility(event, ...)
+	if not module.anchor or not module.secondaryAnchor or #mainBarList == 0 then return end
+
+	local primary, secondary = GetVisibleTrackers()
+	if not module.db.profile.SplitTracker then secondary = nil end
+
+	-- Data events keep the current geometry. Settings refreshes and tracker
+	-- changes rebuild it, including split/reversed bars and mover visibility.
+	if not mainBarLayoutReady or primary ~= mainBarPrimary or secondary ~= mainBarSecondary then
+		LayoutMainBars(primary, secondary)
+		mainBarPrimary, mainBarSecondary = primary, secondary
+		mainBarLayoutReady = true
+	end
 	if primary then primary:UpdateBar(event, ...) end
 	if secondary then secondary:UpdateBar(event, ...) end
-	module:UpdateMoveState()
 end
 
 -- ####################################################################################################################
@@ -542,6 +557,7 @@ function module:RefreshColors()
 end
 
 function module:Refresh()
+	mainBarLayoutReady = false
 	module:ResetAutoReputation()
 	local db = module.db.profile
 	if not module.anchor or not module.secondaryAnchor then return end

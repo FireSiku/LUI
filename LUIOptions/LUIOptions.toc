@@ -1,5 +1,5 @@
-## Interface: 120100
-## Version: v2609
+## Interface: 120100, 16001
+## Version: v2610
 ## Title: LUIOptions
 ## Author: Siku, Nitsah, Pahn
 ## Notes: Options Menu for modern versions of LUI.

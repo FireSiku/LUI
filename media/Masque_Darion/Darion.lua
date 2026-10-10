@@ -14,7 +14,7 @@ MSQ:AddSkin("Darion", {
 		Width = 40,
 		Height = 40,
 		Color = {0.3, 0.3, 0.3, 1},
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Backdrop]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Backdrop]],
 	},
 	Icon = {
 		Width = 34,
@@ -24,7 +24,7 @@ MSQ:AddSkin("Darion", {
 		Width = 40,
 		Height = 40,
 		Color = {1, 1, 1, 1},
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Overlay]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Overlay]],
 	},
 	Cooldown = {
 		Width = 34,
@@ -34,13 +34,13 @@ MSQ:AddSkin("Darion", {
 		Width = 40,
 		Height = 40,
 		Color = {1, 1, 1, 1},
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Overlay]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Overlay]],
 	},
 	Normal = {
 		Width = 40,
 		Height = 40,
 		Color = {0, 0, 0, 1},
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Normal]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Normal]],
 	},
 	Disabled = {
 		Hide = true,
@@ -50,18 +50,18 @@ MSQ:AddSkin("Darion", {
 		Height = 40,
 		BlendMode = "ADD",
 		Color = {1, 1, 1, 1},
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Highlight]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Highlight]],
 	},
 	Border = {
 		Width = 40,
 		Height = 40,
 		BlendMode = "DISABLE",
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Border]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Border]],
 	},
 	Gloss = {
 		Width = 40,
 		Height = 40,
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Gloss]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Gloss]],
 	},
 	AutoCastable = {
 		Width = 34,
@@ -74,7 +74,7 @@ MSQ:AddSkin("Darion", {
 		Width = 40,
 		Height = 40,
 		BlendMode = "ADD",
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Highlight]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Highlight]],
 	},
 	Name = {
 		Width = 32,
@@ -117,7 +117,7 @@ MSQ:AddSkin("Darion Clean", {
 		Width = 40,
 		Height = 40,
 		Color = {0.3, 0.3, 0.3, 1},
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Backdrop]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Backdrop]],
 	},
 	Icon = {
 		Width = 34,
@@ -127,7 +127,7 @@ MSQ:AddSkin("Darion Clean", {
 		Width = 40,
 		Height = 40,
 		Color = {1, 1, 1, 1},
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Overlay]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Overlay]],
 	},
 	Cooldown = {
 		Width = 34,
@@ -137,13 +137,13 @@ MSQ:AddSkin("Darion Clean", {
 		Width = 40,
 		Height = 40,
 		Color = {1, 1, 1, 1},
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Overlay]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Overlay]],
 	},
 	Normal = {
 		Width = 40,
 		Height = 40,
 		Color = {0.2, 0.2, 0.2, 1},
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Normal_clean]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Normal_clean]],
 	},
 	Disabled = {
 		Hide = true,
@@ -153,18 +153,18 @@ MSQ:AddSkin("Darion Clean", {
 		Height = 40,
 		BlendMode = "ADD",
 		Color = {1, 1, 1, 1},
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Highlight]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Highlight]],
 	},
 	Border = {
 		Width = 40,
 		Height = 40,
 		BlendMode = "DISABLE",
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Border]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Border]],
 	},
 	Gloss = {
 		Width = 40,
 		Height = 40,
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Gloss_clean]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Gloss_clean]],
 	},
 	AutoCastable = {
 		Width = 34,
@@ -177,7 +177,7 @@ MSQ:AddSkin("Darion Clean", {
 		Width = 40,
 		Height = 40,
 		BlendMode = "ADD",
-		Texture = [[Interface\AddOns\Masque_Darion\Textures\Highlight]],
+		Texture = [[Interface\AddOns\LUI\media\Masque_Darion\Textures\Highlight]],
 	},
 	Name = {
 		Width = 32,

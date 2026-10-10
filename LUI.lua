@@ -55,7 +55,7 @@ Media:Register("font", "NotoSans-SCB", [[Interface\AddOns\LUI\media\fonts\NotoSa
 
 -- REGISTER BORDERS
 Media:Register("border", "glow", [[Interface\Addons\LUI\media\borders\glow.tga]])
-Media:Register("border", "Stripped", [[Interface\Addons\LUI\media\\borders\Stripped.tga]])
+Media:Register("border", "Stripped", [[Interface\Addons\LUI\media\borders\Stripped.tga]])
 Media:Register("border", "Stripped_hard", [[Interface\Addons\LUI\media\borders\Stripped_hard.tga]])
 Media:Register("border", "Stripped_medium", [[Interface\Addons\LUI\media\borders\Stripped_medium.tga]])
 
@@ -66,7 +66,7 @@ Media:Register("statusbar", "LUI_Gradient", [[Interface\AddOns\LUI\media\statusb
 Media:Register("statusbar", "LUI_Minimalist", [[Interface\AddOns\LUI\media\statusbars\Minimalist.tga]])
 Media:Register("statusbar", "LUI_Ruben", [[Interface\AddOns\LUI\media\statusbars\Ruben.tga]])
 Media:Register("statusbar", "Smelly", [[Interface\AddOns\LUI\media\statusbars\Smelly.tga]])
-Media:Register("statusbar", "Neal", [[Interface\AddOns\LUI\media\statusbars\Neal]])
+Media:Register("statusbar", "Neal", [[Interface\AddOns\LUI\media\statusbars\Neal.blp]])
 Media:Register("statusbar", "RenaitreMinion", [[Interface\AddOns\LUI\media\statusbars\RenaitreMinion.tga]])
 Media:Register("statusbar", "Otravi", [[Interface\AddOns\LUI\media\statusbars\Otravi.tga]])
 Media:Register("statusbar", "Empty", [[Interface\AddOns\LUI\media\textures\blank.tga]])
@@ -104,6 +104,7 @@ LUI.defaults = {
 			BlizzFrameScale = 1,
 			ModuleMessages = true,
 			DamageFont = "neuropol",
+			DamageFontOutline = "",
 			DamageFontSize = 25,
 			DamageFontSizeCrit = 34,
 			["*"] = {},
@@ -280,21 +281,33 @@ end
 function LUI:SetDamageFont(_, loadedAddon)
 	if loadedAddon and loadedAddon ~= "Blizzard_CombatText" then return end
 
+	-- External font packs may register after LUI. Keep the current font until
+	-- the selected face becomes available instead of silently using a fallback.
+	local fontPath = Media:Fetch("font", db.General.DamageFont, true)
+	if not fontPath then return end
+
+	-- World damage numbers cache this font at login, independently of the
+	-- load-on-demand scrolling combat text. A font change requires a relog.
+	_G.DAMAGE_TEXT_FONT = fontPath
+
 	local constants = _G.CombatTextConstants
 	local fontObject = _G.CombatTextFont
 	if not constants or not fontObject then return end
 
-	local fontPath = Media:Fetch("font", db.General.DamageFont)
-	local _, _, fontFlags = fontObject:GetFont()
-	fontObject:SetFont(fontPath, db.General.DamageFontSize, fontFlags)
-
-	constants.MessageHeight = db.General.DamageFontSize
-	constants.CriticalHitMaxHeight = db.General.DamageFontSizeCrit
-	constants.CriticalHitMinHeight = max(db.General.DamageFontSizeCrit - 2, 1)
-
-	if loadedAddon then
-		self:UnregisterEvent("ADDON_LOADED")
+	-- Select SLUG explicitly: custom combat fonts can lose glyphs or spacing
+	-- with inherited world-font flags or the unflagged rendering path.
+	local outline = db.General.DamageFontOutline
+	local flags = "SLUG"
+	if outline == "OUTLINE" or outline == "THICKOUTLINE" then
+		flags = flags .. ", " .. outline
 	end
+	fontObject:SetFont(fontPath, constants.MessageHeight, flags)
+
+	-- Do not write CombatTextConstants. Blizzard reads these values while
+	-- animating secret combat-text positions; addon-owned values taint that
+	-- execution path. Keep native normal/critical sizes and only change the font.
+
+	self:UnregisterEvent("ADDON_LOADED")
 end
 
 ------------------------------------------------------
@@ -633,11 +646,15 @@ function LUI:OnInitialize()
 
 	self:RegisterChatCommand(addonname, "ChatCommand")
 
-	if IsAddOnLoaded("Blizzard_CombatText") then
-		self:SetDamageFont()
-	else
+	Media.RegisterCallback(self, "LibSharedMedia_Registered", function(_, mediaType, key)
+		if mediaType == "font" and key == db.General.DamageFont then
+			self:SetDamageFont()
+		end
+	end)
+	if not IsAddOnLoaded("Blizzard_CombatText") then
 		self:RegisterEvent("ADDON_LOADED", "SetDamageFont")
 	end
+	self:SetDamageFont()
 	self:LoadExtraModules()
 
 	-- Shared confirmation used by profile restores, migrations and settings that

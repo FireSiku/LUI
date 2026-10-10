@@ -22,7 +22,7 @@ local UnitIsPlayer, UnitName = _G.UnitIsPlayer, _G.UnitName
 
 --- Classic Compatibility
 -- This updates our local copy, does not conflict with other addons.
-if not LUI.IsRetail then
+if not UnitQuestTrivialLevelRange then
 	UnitQuestTrivialLevelRange = _G.GetQuestGreenRange
 end
 
@@ -137,13 +137,10 @@ end
 
 --TagEvents["GetNameColor"] = "UNIT_HAPPINESS"
 function TagMethods.GetNameColor(unit)
-	local classColor = GetClassColorMarkup(unit)
-	local powerColor = GetPowerColorMarkup(unit)
-
 	if UnitIsPlayer(unit) then
-		return classColor or powerColor or "|cffcccccc"
+		return GetClassColorMarkup(unit) or GetPowerColorMarkup(unit) or "|cffcccccc"
 	else
-		return powerColor or classColor or "|cffcccccc"
+		return GetPowerColorMarkup(unit) or GetClassColorMarkup(unit) or "|cffcccccc"
 	end
 end
 
@@ -217,16 +214,22 @@ function TagMethods.NameLong(unit)
 	end
 end
 
-TagEvents["RaidName25"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
-function TagMethods.RaidName25(unit, relativeUnit)
+local function GetRaidName(unit, relativeUnit, sizeIndex)
 	if module.db.profile and module.db.profile.raid.NameText.ShowDead then
-		if not issecretvalue(UnitIsConnected(unit)) and not UnitIsConnected(unit) then
+		local connected = UnitIsConnected(unit)
+		if not issecretvalue(connected) and not connected then
 			return "|cffD7BEA5<Offline>|r"
-		elseif not issecretvalue(UnitIsGhost(unit)) and UnitIsGhost(unit) then
+		end
+		local ghost = UnitIsGhost(unit)
+		if not issecretvalue(ghost) and ghost then
 			return "|cffD7BEA5<Ghost>|r"
-		elseif not issecretvalue(UnitIsDead(unit)) and UnitIsDead(unit) then
+		end
+		local dead = UnitIsDead(unit)
+		if not issecretvalue(dead) and dead then
 			return "|cffD7BEA5<Dead>|r"
-		elseif not issecretvalue(UnitIsAFK(unit)) and UnitIsAFK(unit) then
+		end
+		local afk = UnitIsAFK(unit)
+		if not issecretvalue(afk) and afk then
 			return "|cffD7BEA5<AFK>|r"
 		end
 	end
@@ -234,27 +237,17 @@ function TagMethods.RaidName25(unit, relativeUnit)
 	if name == nil then return "" end
 	if issecretvalue(name) then return name end
 	if not nameCache[name] then ShortenName(name) end
-	return nameCache[name][1]
+	return nameCache[name][sizeIndex]
 end
 
-TagEvents["RaidName40"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
+TagEvents["RaidName25"] = "UNIT_NAME_UPDATE UNIT_HEALTH UNIT_CONNECTION PLAYER_FLAGS_CHANGED"
+function TagMethods.RaidName25(unit, relativeUnit)
+	return GetRaidName(unit, relativeUnit, 1)
+end
+
+TagEvents["RaidName40"] = TagEvents["RaidName25"]
 function TagMethods.RaidName40(unit, relativeUnit)
-	if module.db.profile and module.db.profile.raid.NameText.ShowDead then
-		if not issecretvalue(UnitIsConnected(unit)) and not UnitIsConnected(unit) then
-			return "|cffD7BEA5<Offline>|r"
-		elseif not issecretvalue(UnitIsGhost(unit)) and UnitIsGhost(unit) then
-			return "|cffD7BEA5<Ghost>|r"
-		elseif not issecretvalue(UnitIsDead(unit)) and UnitIsDead(unit) then
-			return "|cffD7BEA5<Dead>|r"
-		elseif not issecretvalue(UnitIsAFK(unit)) and UnitIsAFK(unit) then
-			return "|cffD7BEA5<AFK>|r"
-		end
-	end
-	local name = unit == "vehicle" and UnitName(relativeUnit or unit) or UnitName(unit)
-	if name == nil then return "" end
-	if issecretvalue(name) then return name end
-	if not nameCache[name] then ShortenName(name) end
-	return nameCache[name][2]
+	return GetRaidName(unit, relativeUnit, 2)
 end
 
 TagEvents["additionalpower2"] = "UNIT_POWER_UPDATE UNIT_MAXPOWER"

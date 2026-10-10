@@ -33,7 +33,12 @@ function element:UpdateBags()
 end
 
 function element.OnClick(frame_, button_)
-	_G.ToggleAllBags()
+	local bags = LUI:GetModule("Bags", true)
+	if bags and bags:IsEnabled() then
+		bags.ToggleBags()
+	else
+		_G.ToggleAllBags()
+	end
 end
 
 -- ####################################################################################################################
@@ -64,6 +69,7 @@ element.RefreshSettings = element.UpdateBags
 -- ####################################################################################################################
 
 function element:OnCreate()
-	element:RegisterEvent("BAG_UPDATE", "UpdateBags")
+	-- Blizzard batches changes across bags into one completed update.
+	element:RegisterEvent("BAG_UPDATE_DELAYED", "UpdateBags")
 	element:UpdateBags()
 end

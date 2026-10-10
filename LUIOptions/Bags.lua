@@ -79,6 +79,12 @@ local function GenerateBagsOptions()
 		Spacer2 = Opt:Spacer({}),
 		Lock = Opt:Toggle({name = "Lock Frame", desc = "Lock the frame in place."}),
 		BagBar = Opt:Toggle({name = "Show Bag Bar", desc = "Show the bag bar."}),
+        ShowKeyringButton = Opt:Toggle({
+            name = "Show Keyring Button",
+            desc = "Show the native keyring shortcut beside Clean Bags. Blizzard's keyring visibility setting must also be enabled.",
+            hidden = function() return not Opt.LUI:HasClientFeature("Keyring") end,
+            width = "full",
+        }),
 		BagNewline = Opt:Toggle({name = "Newline After Bags", desc = "Start a new row for each bag."}),
         ReverseCleanUp = Opt:Toggle({
             name = "Fill Bags from Bottom",
@@ -112,7 +118,7 @@ end
 Bags.args = {
 	Header = Opt:Header({name = L["Bags_Name"]}),
 	Backpack = Opt:Group({name = L["Backpack Options"], get = GetBagValue, set = SetBagValue, args = GenerateBagsOptions()}),
-    Bank = Opt:Group({name = "Bank Options", get = GetSectionValue("Bank"), set = SetSectionValue("Bank"), args = {
+    Bank = Opt:Group({name = "Bank Options", hidden = Opt.LUI.IsForever, get = GetSectionValue("Bank"), set = SetSectionValue("Bank"), args = {
         Enabled = Opt:Toggle({name = "Use LUI Bank", desc = "Use LUI backgrounds, borders and a row-based item grid for the character and Warband bank. Blizzard's bank tabs, item actions, access restrictions and confirmation dialogs remain active.", width = "full"}),
         Description = Opt:Desc({name = "The bank shares the Textures page and Show Item Quality setting with your bags. Open a banker to preview changes. Disable Use LUI Bank to restore Blizzard's appearance."}),
         Layout = Opt:InlineGroup({name = "Bank Layout", disabled = function() return not module.db.profile.Bank.Enabled end, args = {

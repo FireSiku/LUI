@@ -110,7 +110,6 @@ end
 --- Create the NavBar buttons.
 ---@param side "left2"|"left1"|"right1"|"right2"
 function module:CreateNavButton(kind, side, x, y)
-	local db = module.db.profile.LUITextures
 	local isWide = (side == "left2" or side == "right2")
 
 
@@ -158,7 +157,8 @@ function module:CreateNavButton(kind, side, x, y)
 	clicker:RegisterForClicks("AnyUp")
 	clicker:SetScript("OnEnter", function() hover:SetAlpha(ALPHA) end)
 	clicker:SetScript("OnLeave", function() hover:SetAlpha(0) end)
-	clicker:SetScript("OnClick", function()
+	local function OnClick()
+		local db = module.db.profile.LUITextures
 		local frame = _G[db[kind].Anchor]
 		if frame and not db[kind].IsShown then
 			if kind == "Chat" and not (alphaOut:IsPlaying() or alphaIn:IsPlaying()) then
@@ -176,8 +176,9 @@ function module:CreateNavButton(kind, side, x, y)
 			db[kind].IsShown = false
 		end
 		if module.SyncOrbState then module:SyncOrbState() end
-	end)
-	if kind ~= "Chat" then 
+	end
+	clicker:SetScript("OnClick", LUI.IsForever and LUI.OutOfCombatWrapper(OnClick) or OnClick)
+	if kind ~= "Chat" and not LUI.IsForever then 
 		SecureHandlerWrapScript(clicker, "PostClick", clicker, [[
 			-- Outside combat the normal click already changes visibility.
 			-- Toggling a second time here reverses that change.
@@ -224,7 +225,7 @@ function module:RefreshNavBar()
 	module.TopPanel.Texture:SetVertexColor(self:RGBA("TopPanel"))
 	module.TopPanel:Show()
 	module.LeftBorderBack.Texture:SetVertexColor(self:RGBA("LeftBorderBack"))
-	module.RightBorderBack.Texture:SetVertexColor(self:RGBA("LeftBorderBack"))
+	module.RightBorderBack.Texture:SetVertexColor(self:RGBA("RightBorderBack"))
 
 	if db.NavBar.TopBackground then
 		module.NavBar:Show()

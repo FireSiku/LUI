@@ -83,7 +83,7 @@ local function combat(self, event, unit, eventType, flags, amount, dtype)
 				color = fColors and fColors.CRITICAL or colors.CRITICAL
 				fontHeight = fontHeight * 1.5
 			elseif  flags == "CRUSHING" then
-				color = fColors and fColors.CRUSING or colors.CRUSHING
+				color = fColors and fColors.CRUSHING or colors.CRUSHING
 				fontHeight = fontHeight * 1.5
 			elseif flags == "GLANCING" then
 				color = fColors and fColors.GLANCING or colors.GLANCING
@@ -122,13 +122,13 @@ local function combat(self, event, unit, eventType, flags, amount, dtype)
 		else
 			color = fColors and fColors.HEAL or colors.HEAL
 		end
-	elseif event == "ENERGIZE" and not FeedbackText.ignoreEnergize then
-		text = amount
+	elseif eventType == "ENERGIZE" and not FeedbackText.ignoreEnergize then
+		text, arg = "%d", amount
 		if flags == "CRITICAL" then
-			color = fColors and fColors.ENERGIZE or colors.ENERGIZE
+			color = fColors and fColors.CRITENERGIZE or colors.CRITENERGIZE
 			fontHeight = fontHeight * 1.3
 		else
-			color = fColors and fColors.CRITENERGIZE or colors.CRITENERGIZE
+			color = fColors and fColors.ENERGIZE or colors.ENERGIZE
 		end
 	elseif not FeedbackText.ignoreOther then
 		text = CombatFeedbackText[eventType]
@@ -154,6 +154,9 @@ local function addCombat(object)
 		and FeedbackText.ignoreEnergize
 		and FeedbackText.ignoreOther
 	then
+		object:UnregisterEvent("UNIT_COMBAT", combat)
+		feedback[object] = nil
+		FeedbackText:Hide()
 		return
 	end
 	-- store the original starting height
@@ -166,3 +169,4 @@ end
 
 for k, object in ipairs(oUF.objects) do addCombat(object) end
 oUF:RegisterInitCallback(addCombat)
+oUF:RegisterMetaFunction("UpdateCombatFeedback", addCombat)

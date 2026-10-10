@@ -248,9 +248,9 @@ local function configButtons(hide)
 		end
 		for i, name in ipairs(voiceButtonNames) do
 			local frame = _G[name]
-			if frame then
-				local original = voiceVisibility[frame]
-				local visibility = original and original.query
+			local original = frame and voiceVisibility[frame]
+			if original then
+				local visibility = original.query
 				if not visibility then
 					frame.isVisible = nil
 				else

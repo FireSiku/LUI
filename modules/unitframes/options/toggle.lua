@@ -26,8 +26,7 @@ local UnitLevel = _G.UnitLevel
 local IsInRaid = _G.IsInRaid
 local SetCVar = _G.SetCVar
 
-local supportsClassPower = LUI.DEMONHUNTER or LUI.DRUID or LUI.EVOKER or LUI.HUNTER or LUI.MAGE
-	or LUI.MONK or LUI.PALADIN or LUI.ROGUE or LUI.SHAMAN or LUI.WARLOCK
+local supportsClassPower = module.supportsClassPower
 
 local iconlist = {
 	PvP = {"PvPIndicator"},
@@ -48,6 +47,11 @@ local indicatorDBKeys = {
 	Raid = "RaidMarkerIndicator",
 	ReadyCheck = "ReadyCheckIndicator",
 }
+
+if module.supportsPetHappiness then
+	iconlist.Happiness = {"Happiness"}
+	indicatorDBKeys.Happiness = "HappinessIndicator"
+end
 
 local function GetFrameHeight(dbUnit)
 	return tonumber(dbUnit and dbUnit.Height) or 1
@@ -71,6 +75,28 @@ local function GetOpposite(dir)
 	elseif dir == "TOP" then
 		return "BOTTOM"
 	end
+end
+
+local function SpawnGroupHeader(name, unit, capacity, ...)
+	if not LUI.IsForever then
+		return oUF:SpawnHeader(name, nil, ...)
+	end
+
+	-- The beta's restricted compiler is unavailable. Supply an ordinary
+	-- out-of-combat layout callback for the preallocated native header.
+	local function Configure(frame, styleUnit)
+		local settings = module.db.profile[styleUnit]
+		local width = settings.Width
+		if unit == "raid" and name:find("oUF_LUI_raid_40_", 1, true) then
+			width = (5 * width - 3 * settings.GroupPadding) / 8
+		end
+		frame:SetSize(width, GetFrameHeight(settings))
+		if styleUnit ~= unit then
+			frame:SetPoint(settings.Point, frame:GetParent(), settings.RelativePoint, settings.X, settings.Y)
+		end
+	end
+
+	return module:SpawnPreconfiguredHeader(name, unit, capacity, Configure, ...)
 end
 
 local raidLabelHeaders = {}
@@ -271,16 +297,20 @@ module.ToggleUnit = setmetatable({
 				bossParent:SetAttribute("Padding", dbUnit.Padding)
 				bossParent:Show()
 
-				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
-				handler:SetFrameRef("boss", bossParent)
-				handler:SetAttribute("_onstate-resize", [[
-					local parent = self:GetFrameRef("boss")
-					local padding = parent:GetAttribute("Padding")
-					local height = parent:GetAttribute("Height")
-					parent:SetHeight(newstate * height + (newstate - 1) * padding)
-				]])
-				RegisterStateDriver(handler, "resize", "[@boss4,exists] 4; [@boss3,exists] 3; [@boss2,exists] 2; 1")
-				bossParent.handler = handler
+				-- The Forever beta lacks the compiler used by custom secure snippets.
+				-- Keep this invisible anchor fixed; child frames still use unit watches.
+				if not LUI.IsForever then
+					local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
+					handler:SetFrameRef("boss", bossParent)
+					handler:SetAttribute("_onstate-resize", [[
+						local parent = self:GetFrameRef("boss")
+						local padding = parent:GetAttribute("Padding")
+						local height = parent:GetAttribute("Height")
+						parent:SetHeight(newstate * height + (newstate - 1) * padding)
+					]])
+					RegisterStateDriver(handler, "resize", "[@boss4,exists] 4; [@boss3,exists] 3; [@boss2,exists] 2; 1")
+					bossParent.handler = handler
+				end
 
 				local boss = {}
 				for i = 1, MAX_BOSS_FRAMES do
@@ -393,7 +423,7 @@ module.ToggleUnit = setmetatable({
 				end
 				oUF_LUI_party.handler:GetScript("OnEvent")(oUF_LUI_party.handler)
 			else
-				local party = oUF:SpawnHeader("oUF_LUI_party", nil,
+				local party = SpawnGroupHeader("oUF_LUI_party", "party", 5,
 					"showParty", true,
 					"showPlayer", dbUnit.ShowPlayer,
 					"showSolo", false,
@@ -575,16 +605,20 @@ module.ToggleUnit = setmetatable({
 				arenaParent:SetAttribute("Padding", dbUnit.Padding)
 				arenaParent:Show()
 
-				local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
-				handler:SetFrameRef("arena", arenaParent)
-				handler:SetAttribute("_onstate-resize", [[
-					local parent = self:GetFrameRef("arena")
-					local padding = parent:GetAttribute("Padding")
-					local height = parent:GetAttribute("Height")
-					parent:SetHeight(newstate * height + (newstate - 1) * padding)
-				]])
-				RegisterStateDriver(handler, "resize", "[@arena5,exists] 5; [@arena4,exists] 4; [@arena3,exists] 3; [@arena2,exists] 2; 1")
-				arenaParent.handler = handler
+				-- The Forever beta lacks the compiler used by custom secure snippets.
+				-- Keep this invisible anchor fixed; child frames still use unit watches.
+				if not LUI.IsForever then
+					local handler = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
+					handler:SetFrameRef("arena", arenaParent)
+					handler:SetAttribute("_onstate-resize", [[
+						local parent = self:GetFrameRef("arena")
+						local padding = parent:GetAttribute("Padding")
+						local height = parent:GetAttribute("Height")
+						parent:SetHeight(newstate * height + (newstate - 1) * padding)
+					]])
+					RegisterStateDriver(handler, "resize", "[@arena5,exists] 5; [@arena4,exists] 4; [@arena3,exists] 3; [@arena2,exists] 2; 1")
+					arenaParent.handler = handler
+				end
 
 				local arena = {}
 				for i = 1, 5 do
@@ -725,7 +759,7 @@ module.ToggleUnit = setmetatable({
 					end
 				end
 			else
-				local tank = oUF:SpawnHeader("oUF_LUI_maintank", nil,
+				local tank = SpawnGroupHeader("oUF_LUI_maintank", "maintank", 4,
 					"showRaid", true,
 					"groupFilter", "MAINTANK",
 					"template", "oUF_LUI_maintank",
@@ -889,7 +923,7 @@ module.ToggleUnit = setmetatable({
 				RegisterStateDriver(raid25, "visibility", "[@raid26,exists] hide; show")
 				local raid25table = {}
 				for i = 1, 5 do
-					raid25table[i] = oUF:SpawnHeader("oUF_LUI_raid_25_"..i, nil,
+					raid25table[i] = SpawnGroupHeader("oUF_LUI_raid_25_"..i, "raid", 5,
 						"showRaid", true,
 						"showPlayer", true,
 						"showSolo", true,
@@ -919,7 +953,7 @@ module.ToggleUnit = setmetatable({
 
 				local raid40table = {}
 				for i = 1, 8 do
-					raid40table[i] = oUF:SpawnHeader("oUF_LUI_raid_40_"..i, nil,
+					raid40table[i] = SpawnGroupHeader("oUF_LUI_raid_40_"..i, "raid", 5,
 						"showRaid", true,
 						"showPlayer", true,
 						"showSolo", true,
@@ -1098,7 +1132,7 @@ module.ApplySettings = function(unit, force)
 				end
 
 				-- Additional Power
-				if LUI.DRUID or LUI.PRIEST or LUI.SHAMAN then
+				if module.supportsAdditionalPower then
 					module.funcs.AdditionalPower(frame, styleUnit, module.db.profile.player)
 					if dbUnit.AdditionalPowerBar.Enable then
 						frame:EnableElement("AdditionalPower")
@@ -1159,7 +1193,10 @@ module.ApplySettings = function(unit, force)
 			end
 
 			-- combat feedback text
-			if dbUnit.CombatFeedback then module.funcs.CombatFeedbackText(frame, styleUnit, dbUnit) end
+			if dbUnit.CombatFeedback then
+				module.funcs.CombatFeedbackText(frame, styleUnit, dbUnit)
+				frame:UpdateCombatFeedback()
+			end
 
 			-- castbar
 			if dbUnit.Castbar then

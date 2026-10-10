@@ -552,6 +552,7 @@ function module:setMainPanels()
 end
 
 function module:RefreshMainPanels()
+	if not module:IsEnabled() then return end
 	if InCombatLockdown() then
 		if not module.mainPanelRefreshFrame then
 			module.mainPanelRefreshFrame = CreateFrame("Frame")
@@ -566,6 +567,8 @@ function module:RefreshMainPanels()
 	if module.mainPanelRefreshFrame then
 		module.mainPanelRefreshFrame:UnregisterEvent("PLAYER_REGEN_ENABLED")
 	end
+	db = module.db.profile.LUITextures
+	db.Chat.Anchor = "ChatAlphaAnchor"
 	self:ApplyBackground("Chat")
 	self:ApplyBackground("Tps")
 	self:ApplyBackground("Dps")

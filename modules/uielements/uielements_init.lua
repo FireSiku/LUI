@@ -12,6 +12,11 @@ module.defaults = {
 		DarkButtons = true,
 		ButtonStyle = "classic",
 		EscapeButtonStyle = "dark",
+		QueueEye = {
+			X = -250,
+			Y = -180,
+			ManagePosition = false,
+		},
 		ZoneObjectives = {
 			X = 300,
 			Y = -35,
@@ -37,6 +42,11 @@ module.defaults = {
 
 function module:OnInitialize()
 	LUI:RegisterModule(module)
+	if LUI.IsForever and not module.db.profile.ForeverButtonSettingsMigrated then
+		local enabled = LUI.db.profile.General.DarkButtons
+		if enabled ~= nil then module.db.profile.DarkButtons = enabled end
+		module.db.profile.ForeverButtonSettingsMigrated = true
+	end
 end
 
 function module:OnEnable()

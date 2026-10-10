@@ -377,7 +377,9 @@ function LUI:ApplyUpdate(ver)
 
 		-- go through a list of keys in a table and if any of them are strings, cast them to number
 		local function Sanitize(t, list)
-			if not t then return end
+			-- Current profiles mix position tables with scalar options such as
+			-- button enable flags and style names. Only tables have fields to convert.
+			if type(t) ~= "table" then return end
 			for i = 1, #list do
 				local key = list[i]
 				if t[key] and type(t[key]) == "string" then

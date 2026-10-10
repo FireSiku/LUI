@@ -119,7 +119,7 @@ function module:CreateOrb()
 
 	local locked = false -- To prevent rapid clicking issues
 	orbClicker:RegisterForClicks("AnyUp")
-	orbClicker:SetScript("OnClick", function()
+	local function OnClick()
 		if locked then return end
 		local forceShow = false
 		if tex:GetAlpha() == 0 then
@@ -151,19 +151,23 @@ function module:CreateOrb()
 			end
 		end
 		
-	end)
-	SecureHandlerWrapScript(orbClicker, "PostClick", orbClicker, [[
-		if not PlayerInCombat() then return end
-		local show = not self:GetAttribute("panelsOpen")
-		self:SetAttribute("panelsOpen", show)
-		local count = self:GetAttribute("protectedCount") or 0
-		for i = 1, count do
-			local frame = self:GetFrameRef("protected"..i)
-			if frame then
-				if show then frame:Show() else frame:Hide() end
+	end
+	-- Keep the visual and protected panel states together until combat ends.
+	orbClicker:SetScript("OnClick", LUI.IsForever and LUI.OutOfCombatWrapper(OnClick) or OnClick)
+	if not LUI.IsForever then
+		SecureHandlerWrapScript(orbClicker, "PostClick", orbClicker, [[
+			if not PlayerInCombat() then return end
+			local show = not self:GetAttribute("panelsOpen")
+			self:SetAttribute("panelsOpen", show)
+			local count = self:GetAttribute("protectedCount") or 0
+			for i = 1, count do
+				local frame = self:GetFrameRef("protected"..i)
+				if frame then
+					if show then frame:Show() else frame:Hide() end
+				end
 			end
-		end
-	]])
+		]])
+	end
 
 	-- Additional textures around the Orb
 	local outerRing = CreateFrame("Frame", "LUIArtwork_OrbOuterRing", orb)

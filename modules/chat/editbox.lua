@@ -238,6 +238,8 @@ function module:AfterDeactivateChat(editBox)
 end
 
 function module:AfterSetLastActiveWindow(editBox)
+	-- The native setter accepts nil when there is no last active window.
+	if not editBox then return end
 	if editBox:IsShown() then
 		editBox:SetAlpha(0)
 	else

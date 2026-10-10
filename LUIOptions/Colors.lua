@@ -8,9 +8,6 @@ local Opt = select(2, ...)
 ---@type AceLocale.Localizations, LUI.Colors, AceDB-3.0
 local L, module, db = Opt:GetLUIModule("Colors")
 
-local GetNumClasses = _G.GetNumClasses
-local GetClassInfo = _G.GetClassInfo
-
 -- constants
 local SANCTUARY = _G.SANCTUARY_TERRITORY:sub(2, -2)  -- Remove parenthesis.
 local FACTION_ALLIANCE = _G.FACTION_ALLIANCE
@@ -37,9 +34,16 @@ Colors.order = 2
 --May be moved to the API if we need to. List of localizedclass by englishClass
 
 local classL = {}
-for i = 1, GetNumClasses() do
-    local localizedClass, englishClass = GetClassInfo(i)
-    classL[englishClass] = localizedClass
+-- Class IDs are not contiguous in Forever (for example, druid is ID 11).
+-- Use the client's supported class tokens instead of treating a count as IDs.
+for _, class in ipairs(_G.CLASS_SORT_ORDER) do
+    classL[class] = _G.LOCALIZED_CLASS_NAMES_MALE[class] or class
+end
+
+local function ClassColor(class)
+    if classL[class] then
+        return Opt:Color({name = classL[class]})
+    end
 end
 
 -- ####################################################################################################################
@@ -50,19 +54,19 @@ Colors.args = {
     Header = Opt:Header({name = COLORS}),
     Class = Opt:Group({name = L["Colors_Classes"], args = {
         ClassHeader = Opt:Header({name = L["Colors_Classes"]}),
-        DEATHKNIGHT = Opt:Color({name = classL["DEATHKNIGHT"]}),
-        DEMONHUNTER = Opt:Color({name = classL["DEMONHUNTER"]}),
-        EVOKER      = Opt:Color({name = classL["EVOKER"]}),
-        DRUID       = Opt:Color({name = classL["DRUID"]}),
-        HUNTER      = Opt:Color({name = classL["HUNTER"]}),
-        MAGE        = Opt:Color({name = classL["MAGE"]}),
-        MONK        = Opt:Color({name = classL["MONK"]}),
-        PALADIN     = Opt:Color({name = classL["PALADIN"]}),
-        PRIEST      = Opt:Color({name = classL["PRIEST"]}),
-        ROGUE       = Opt:Color({name = classL["ROGUE"]}),
-        SHAMAN      = Opt:Color({name = classL["SHAMAN"]}),
-        WARLOCK     = Opt:Color({name = classL["WARLOCK"]}),
-        WARRIOR     = Opt:Color({name = classL["WARRIOR"]}),
+        DEATHKNIGHT = ClassColor("DEATHKNIGHT"),
+        DEMONHUNTER = ClassColor("DEMONHUNTER"),
+        EVOKER      = ClassColor("EVOKER"),
+        DRUID       = ClassColor("DRUID"),
+        HUNTER      = ClassColor("HUNTER"),
+        MAGE        = ClassColor("MAGE"),
+        MONK        = ClassColor("MONK"),
+        PALADIN     = ClassColor("PALADIN"),
+        PRIEST      = ClassColor("PRIEST"),
+        ROGUE       = ClassColor("ROGUE"),
+        SHAMAN      = ClassColor("SHAMAN"),
+        WARLOCK     = ClassColor("WARLOCK"),
+        WARRIOR     = ClassColor("WARRIOR"),
         --Primary Class Powers Section
         --Note: Blizzard seems to be shifting toward using POWER_TYPE_* but havent converted all of them to it yet.
         PrimaryHeader = Opt:Header({name = L["Color_Primary"]}),

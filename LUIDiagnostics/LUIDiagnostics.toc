@@ -1,5 +1,5 @@
-## Interface: 120100
-## Version: 0.1.2-alerttrace
+## Interface: 120100, 16001
+## Version: 0.1.5-v2610
 ## Title: LUI Diagnostics
 ## Author: LUI Team
 ## Notes: Optional troubleshooting reports for LUI. Open LUI DEBUG in LUI options.

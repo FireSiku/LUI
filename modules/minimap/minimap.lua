@@ -115,15 +115,6 @@ local minimapFrames = {
 }
 
 function module:HideDefaultMinimap()
-	-- Hide Several Frames surrounding minimap, after taking note of their state
-	for _, frameName in ipairs(minimapFrames) do
-		local frame = _G[frameName]
-		if frame then
-			oldDefault[frameName] = frame:IsShown()
-			LUI:Kill(frame)
-		end
-	end
-
 	--Change Minimap's Parent:
 	oldDefault.scale = Minimap:GetScale()
 	oldDefault.parent = Minimap:GetParent()
@@ -140,9 +131,19 @@ function module:HideDefaultMinimap()
 	end
 	Minimap:SetParent(UIParent)
 
-	-- Keep Blizzard's notification icons visible on LUI's minimap.
+	-- Move notifications before hiding their original parent. A brief hide
+	-- runs Blizzard's mail OnHide, which clears the icon until the next update.
 	IndicatorFrame:SetParent(Minimap)
 	if ExpansionButton then ExpansionButton:SetParent(Minimap) end
+
+	-- Hide surrounding frames after preserving notification visibility.
+	for _, frameName in ipairs(minimapFrames) do
+		local frame = _G[frameName]
+		if frame then
+			oldDefault[frameName] = frame:IsShown()
+			LUI:Kill(frame)
+		end
+	end
 	
 	--Turn the Minimap into a square
 	Minimap:SetMaskTexture(MINIMAP_SQUARE_TEXTURE_MASK)
@@ -329,14 +330,20 @@ function module:SetMinimap(ignoreCombat)
 			QueueAfterCombat("setup")
 			return
 		end
-		module:SetMinimapPosition()
 		module:SetMinimapAgain()
 	end
 end
 
 --If module is disabled and re-enabled, call this instead to prevent re-initializing everything
 function module:SetMinimapAgain()
+	db = module.db.profile
+	if _G.GetMinimapShape ~= GetLuiMinimapShape then
+		originalGetMinimapShape = _G.GetMinimapShape
+	end
+	_G.GetMinimapShape = GetLuiMinimapShape
+	-- Capture Blizzard's restored geometry before applying the LUI position.
 	module:HideDefaultMinimap()
+	module:SetMinimapPosition()
 	module:SetMinimapScripts()
 	module:PositionMinimapIcons()
 	module:ToggleMinimapText()

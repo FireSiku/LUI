@@ -22,7 +22,7 @@ local HasLFGRestrictions = _G.HasLFGRestrictions
 local UnitInBattleground = _G.UnitInBattleground
 local UnitIsGroupAssistant = _G.UnitIsGroupAssistant
 local UnitIsGroupLeader = _G.UnitIsGroupLeader
-local issecretvalue = _G.issecretvalue
+local issecretvalue = _G.issecretvalue or function() return false end
 local C_PartyInfo = _G.C_PartyInfo
 local SecureActionButton_ShouldUseOnKeyDown = _G.SecureActionButton_ShouldUseOnKeyDown
 
@@ -125,7 +125,9 @@ end
 local function UpdateConvertButton()
 	local convertToRaid = not IsInRaid()
 	ConvertRaid:SetText(convertToRaid and "Convert to Raid" or "Convert to Party")
-	ConvertRaid:SetEnabled(not InCombatLockdown() and C_PartyInfo.AllowedToDoPartyConversion(convertToRaid))
+	local allowed = C_PartyInfo.AllowedToDoPartyConversion(convertToRaid)
+	if issecretvalue(allowed) then allowed = false end
+	ConvertRaid:SetEnabled(not InCombatLockdown() and allowed)
 end
 
 local function UpdateGroupButtons()
@@ -373,6 +375,12 @@ local function SizeRaidMenu(compact)
 		FormatMarker(RoleChecker,       105, -75)
 		FormatMarker(ConvertRaid,       105, -100)
 	end
+	local width, height = RaidMenu_Parent:GetSize()
+	height = module:LayoutGroupTools(width, height)
+	RaidMenu_Parent:SetHeight(height)
+	RaidMenu_BG:SetHeight(height)
+	RaidMenu:SetHeight(height)
+	RaidMenu_Border:SetHeight(height)
 end
 
 function module:SetColors()
@@ -411,6 +419,7 @@ function module:SetRaidMenu()
 		RaidMenu_Parent:SetPoint("TOPRIGHT", Micromenu.buttonLeft, "BOTTOMRIGHT", X_normal, ((Y_normal / db.Scale) + 17))
 	end
 	RaidMenu_Parent:SetScale(db.Scale)
+	RaidMenu_Parent:SetClampedToScreen(true)
 	RaidMenu_Parent:Hide()
 
 	RaidMenu_BG = LUI:CreateMeAFrame("Frame", "RaidMenu_BG", RaidMenu_Parent, 256, 256, 1, "HIGH", 1, "TOPRIGHT", RaidMenu_Parent, "TOPRIGHT", 0, 0, 1)
@@ -470,6 +479,17 @@ function module:SetRaidMenu()
 	ConfigureRaidTargetButton(CircleRaidIcon, 2)
 	ConfigureRaidTargetButton(StarRaidIcon, 1)
 	ConfigureRaidTargetButton(ClearRaidIcon, 0)
+	-- Blizzard's secure raidtarget action supports clearing all unit markers.
+	-- Keep left-click's existing target-only action; right-click clears all.
+	ClearRaidIcon:SetAttribute("action2", "clear-all")
+	ClearRaidIcon:HookScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+		GameTooltip:SetText("Clear Unit Markers")
+		GameTooltip:AddLine("Left-click: clear the target's marker", 1, 1, 1)
+		GameTooltip:AddLine("Right-click: clear all unit markers", 1, 1, 1)
+		GameTooltip:Show()
+	end)
+	ClearRaidIcon:HookScript("OnLeave", function() GameTooltip:Hide() end)
 	ConfigureWorldMarkerButton(BlueWorldMarker, 1)
 	ConfigureWorldMarkerButton(GreenWorldMarker, 2)
 	ConfigureWorldMarkerButton(PurpleWorldMarker, 3)
@@ -515,6 +535,8 @@ function module:SetRaidMenu()
 	end)
 	ConvertRaid:SetScript("OnClick", function(self)
 		if InCombatLockdown() then return end
+		UpdateGroupButtons()
+		if not self:IsEnabled() then return end
 		if IsInRaid() then
 			C_PartyInfo.ConvertToParty()
 		else
@@ -542,6 +564,8 @@ function module:SetRaidMenu()
 	end)
 	RoleChecker:SetScript("OnClick", function(self)
 		if InCombatLockdown() then return end
+		UpdateGroupButtons()
+		if not self:IsEnabled() then return end
 		InitiateRolePoll()
 		if db.AutoHide then
 			module:CloseRaidMenu()
@@ -565,12 +589,21 @@ function module:SetRaidMenu()
 	end)
 	ReadyChecker:SetScript("OnClick", function(self)
 		if InCombatLockdown() then return end
+		UpdateGroupButtons()
+		if not self:IsEnabled() then return end
 		C_PartyInfo.DoReadyCheck()
 		if db.AutoHide then
 			module:CloseRaidMenu()
 		end
 	end)
 	UpdateGroupButtons()
+	local uiElements = LUI:GetModule("UI Elements", true)
+	if uiElements and uiElements.RegisterRaidMenuButton then
+		for _, button in ipairs({ConvertRaid, RoleChecker, ReadyChecker}) do
+			uiElements:RegisterRaidMenuButton(RaidMenu, button)
+		end
+	end
+	module:CreateGroupTools(RaidMenu)
 
 	animationFrame = CreateFrame("Frame", nil, UIParent)
 	animationFrame:Hide()
@@ -632,6 +665,7 @@ function module:Refresh()
 	RaidMenu_Parent:SetAlpha(menuShown and db.Opacity / 100 or 0)
 	RaidMenu_Parent:SetShown(menuShown)
 	module:SetColors()
+	module:SetGroupToolsActive(true)
 end
 
 function module:SetRaidMenuEnabled(enabled)
@@ -651,6 +685,7 @@ end
 function module:HideRaidMenu()
 	menuShown = false
 	StopAnimations()
+	module:SetGroupToolsActive(false)
 	if not RaidMenu_Parent then return end
 	if InCombatLockdown() then
 		RaidMenu_Parent:SetAlpha(db.Opacity / 100)

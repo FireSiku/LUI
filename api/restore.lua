@@ -31,13 +31,15 @@ end
 
 function module.Apply(dest, source)
 	local dt, st
-	for k, v in pairs(dest) do
-		if source[k] ~= nil then
+	for k, sv in pairs(source) do
+		-- Looking up the destination also resolves AceDB's lazy wildcard
+		-- defaults, such as the enabled state of individual modules.
+		local v = dest[k]
+		if v ~= nil then
 			-- Push stack.
 			stack[#stack + 1] = k
 
 			-- Create a local temp of source[k] so that converts don't effect our backup.
-			local sv = source[k]
 
 			-- Check value types are the same.
 			dt, st = type(v), type(sv)
@@ -99,18 +101,14 @@ function module.Get(source, dest)
 end
 
 function module.Set(dest, source)
-	for k, v in pairs(dest) do
-		if source[k] ~= nil then
-			-- Force apply backup values.
-			if type(source[k]) == "table" then
-				if type(v) ~= "table" then
-					dest[k] = source[k]
-				else
-					module.Set(dest[k], source[k])
-				end
-			else
-				dest[k] = source[k]
-			end
+	for k, v in pairs(source) do
+		-- Exact reverts also retain custom keys absent from the defaults.
+		-- Copy them instead of sharing a mutable table with the backup.
+		if type(v) == "table" then
+			if type(dest[k]) ~= "table" then dest[k] = {} end
+			module.Set(dest[k], v)
+		else
+			dest[k] = v
 		end
 	end
 end
@@ -127,15 +125,16 @@ local function RemoveDefaults(data, default)
 	if type(data) ~= "table" or type(default) ~= "table" then return end
 
 	for k, v in pairs(data) do
+		local defaultValue = default[k]
+		if defaultValue == nil then defaultValue = default["*"] end
+		if defaultValue == nil then defaultValue = default["**"] end
 		if type(v) == "table" then
-			if default[k] then
-				RemoveDefaults(data[k], default[k])
+			if type(defaultValue) == "table" then
+				RemoveDefaults(data[k], defaultValue)
 				if IsEmptyTable(data[k]) then data[k] = nil end
-			else
-				data[k] = nil
 			end
 		else
-			if default[k] == data[k] or default[k] == nil then data[k] = nil end
+			if defaultValue == v then data[k] = nil end
 		end
 	end
 
@@ -146,42 +145,33 @@ local function RemoveDefaults(data, default)
 	return data
 end
 
-function module.Backup()
-	-- Get current db.
-	local db = LUI.db
-
-	-- Get backup location.
-	local backup = {}
-	LUI.db.global.ProfileBackups[LUI.db:GetCurrentProfile()] = backup
-
-	-- Collect old profiles.
-	for k, v in pairs(db.profile) do
-		backup[k] = {}
-		module.Get(v, backup[k])
-
-		-- Remove default values.
-		backup[k] = RemoveDefaults(backup[k], db.defaults.profile[k])
-	end
-
-	-- Collect children.
-	backup.children = {}
-	local child = backup.children
-	for k, v in pairs(db.children) do
-		-- Get child profile and realm setting.
-		child[k] = {profile = {}}
-		module.Get(v.profile, child[k].profile)
-
-		-- Remove default values.
-		child[k].profile = RemoveDefaults(child[k].profile, v.defaults.profile)
-
-		if v.realm then
-			child[k].realm = {}
-			module.Get(v.realm, child[k].realm)
-
-			-- Remove default values.
-			child[k].realm = RemoveDefaults(child[k].realm, v.defaults.realm)
+local function CaptureChildren(db)
+	local children = {}
+	for name, child in pairs(db.children or {}) do
+		local captured = {profile = {}}
+		children[name] = captured
+		module.Get(child.profile, captured.profile)
+		RemoveDefaults(captured.profile, child.defaults and child.defaults.profile)
+		if child.realm then
+			captured.realm = {}
+			module.Get(child.realm, captured.realm)
+			RemoveDefaults(captured.realm, child.defaults and child.defaults.realm)
 		end
+		if child.children then captured.children = CaptureChildren(child) end
 	end
+	return children
+end
+
+function module.Backup()
+	local db = LUI.db
+	local backup = {}
+	-- The root contains scalar values as well as tables (notably dbVersion).
+	module.Get(db.profile, backup)
+	RemoveDefaults(backup, db.defaults and db.defaults.profile)
+	backup.children = CaptureChildren(db)
+	-- Publish only a completed snapshot, preserving the previous backup if
+	-- collection fails partway through.
+	db.global.ProfileBackups[db:GetCurrentProfile()] = backup
 
 	print("|c0090ffffLUI:|r Backup of current profile complete.")
 end
@@ -190,6 +180,38 @@ function module.Reload()
 	-- Prompt a reloadui.
 	print("|c0090ffffLUI: |cffffff00Please reload your interface with the pop up provided to avoid errors.")
 	StaticPopup_Show("RELOAD_UI")
+end
+
+local function RestoreSnapshot(db, backup, restore)
+	local profile = {}
+	for key, value in pairs(backup) do
+		if key ~= "children" then profile[key] = value end
+	end
+	restore(db.profile, profile)
+
+	local function RestoreChildren(parent, children)
+		if type(children) ~= "table" then return end
+		-- Only AceDB may create database objects. Unknown namespaces in old
+		-- backups must not be inserted as plain tables into db.children.
+		for name, child in pairs(parent.children or {}) do
+			local source = children[name]
+			if type(source) == "table" then
+				stack[#stack + 1] = name
+				for _, scope in ipairs({"profile", "realm"}) do
+					if type(source[scope]) == "table" then
+						stack[#stack + 1] = scope
+						restore(child[scope], source[scope])
+						stack[#stack] = nil
+					end
+				end
+				stack[#stack + 1] = "children"
+				RestoreChildren(child, source.children)
+				stack[#stack], stack[#stack - 1] = nil, nil
+			end
+		end
+	end
+	stack = {"db", "children"}
+	RestoreChildren(db, backup.children)
 end
 
 function module.Restore()
@@ -211,11 +233,7 @@ function module.Restore()
 	-- Begin restore process.
 	-- Restore from old profiles.
 	stack = {"db", "profile"}
-	module.Apply(db.profile, backup)
-
-	-- Restore children.
-	stack = {"db", "children"}
-	module.Apply(db.children, backup.children)
+	RestoreSnapshot(db, backup, module.Apply)
 
 	print("|c0090ffffLUI:|r Restore of database has completed.", mismatches > 0 and "Encountered", mismatches, "mismatches which have now been corrected." or "")
 	module.Reload()
@@ -236,10 +254,7 @@ function module.Revert()
 
 	-- Begin revert process.
 	-- Revert from old profiles.
-	module.Set(db.profile, backup)
-
-	-- Restore children.
-	module.Set(db.children, backup.children)
+	RestoreSnapshot(db, backup, module.Set)
 
 	print("|c0090ffffLUI:|r Revert of database has completed.")
 	StaticPopup_Show("RELOAD_UI")

@@ -37,7 +37,7 @@ local COPY_SECTIONS = {
 }
 
 local POSITION_KEYS = {
-    X = true, Y = true, Point = true, RelativePoint = true, InitialAnchor = true,
+    X = true, Y = true, Point = true, RelativePoint = true, InitialAnchor = true, Position = true,
     GrowthX = true, GrowthY = true, GrowDirection = true,
 }
 
@@ -62,9 +62,8 @@ local relativeUnits = {
     maintanktargettarget = true,
 }
 
-local supportsClassPower = LUI.DEMONHUNTER or LUI.DRUID or LUI.EVOKER or LUI.HUNTER or LUI.MAGE
-    or LUI.MONK or LUI.PALADIN or LUI.ROGUE or LUI.SHAMAN or LUI.WARLOCK
-local supportsAdditionalPower = LUI.DRUID or LUI.PRIEST or LUI.SHAMAN
+local supportsClassPower = module.supportsClassPower
+local supportsAdditionalPower = module.supportsAdditionalPower
 
 -- ####################################################################################################################
 -- ##### Custom Controls ##############################################################################################
@@ -505,7 +504,7 @@ local function GenerateCastbarGroup(unit, order)
         }),
         StopPreview = Opt:Execute({
             name = "Stop Cast Bar Preview",
-            desc = "Hide the cast bar test without closing other unit frame previews.",
+            desc = "Hide the test cast. A frame opened only for this test is closed too.",
             func = function() module:StopCastbarPreview() end,
         }),
         Width = Opt:InputNumber({name = "Width"}),
@@ -617,6 +616,12 @@ local function GenerateCastbarShieldGroup(unit, order)
         Explain = Opt:Desc({name = "Additional settings when the cast bar cannot be interrupted."}),
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
         Text = Opt:Toggle({name = "Text", width = "full"}),
+        Icons = Opt:InlineGroup({name = "Shield Icons", db = dbCast.Shield.Icons, args = {
+            Position = Opt:Select({name = "Show Icons", values = {NONE = "None", LEFT = "Left", RIGHT = "Right", BOTH = "Both Sides"}}),
+            Size = Opt:Slider({name = "Size", values = sizeValues}),
+            X = Opt:InputNumber({name = "Distance from Bar", desc = "Distance from each side of the cast bar. Negative values move the icons inside the bar."}),
+            Y = Opt:OffsetY(),
+        }}),
         IndividualColor = Opt:Toggle({name = "Override Bar Color", desc = "Change the color of the cast bar when the cast cannot be interrupted."}),
         BarColor = Opt:Color({name = "Shielded Cast Color", hasAlpha = true, get = colorGet, set = colorSet}),
         Spacer = Opt:Spacer({}),
@@ -786,6 +791,9 @@ local function NewUnitOptionGroup(unit, order, categorized)
     if dbUnit.RestingIndicator then indicatorOptions.args.RestingIndicator = GenerateIndicatorGroup(unit, "Resting Icon", categorized and 5 or 74, Opt.GetSet(dbUnit.RestingIndicator)) end
     if dbUnit.CombatIndicator then indicatorOptions.args.CombatIndicator = GenerateIndicatorGroup(unit, "Combat Icon", categorized and 6 or 75, Opt.GetSet(dbUnit.CombatIndicator)) end
     if dbUnit.ReadyCheckIndicator then indicatorOptions.args.ReadyCheckIndicator = GenerateIndicatorGroup(unit, "Ready Check Icon", categorized and 7 or 76, Opt.GetSet(dbUnit.ReadyCheckIndicator)) end
+    if module.supportsPetHappiness and unit == "pet" then
+        indicatorOptions.args.HappinessIndicator = GenerateIndicatorGroup(unit, "Pet Happiness", categorized and 8 or 77, Opt.GetSet(dbUnit.HappinessIndicator))
+    end
 
     if dbUnit.Castbar and UnitSupportsCastbar(unit) then
         local castbarPrefix = categorized and "" or "Castbar"
@@ -824,11 +832,23 @@ BuildUnitframeOptions = function()
                     BuildUnitframeOptions()
                     Opt:RefreshOptionsPanel()
                 end}),
+            SharedFont = Opt:MediaFont({name = "Font for All Unitframe Texts", width = "double",
+                desc = "Apply this font to every unit frame, including names, values, cast bars, combat feedback, raid group labels, aura timers and aura counts. Sizes and outlines stay unchanged. You can customize individual text fonts afterwards; this shows the last font applied to all texts.",
+                get = function() return module.db.profile.Settings.LastAppliedFont or module.db.profile.Settings.AuratimerFont end,
+                set = function(_, value) module:ApplySharedFont(value) end,
+            }),
             LayoutSpacer = Opt:Spacer({}),
             ShowV2Textures = Opt:Toggle({name = "Show LUI v2 Connector Lines", desc = "Show or hide the thin connector lines between Target, Target-of-Target, Focus and their child frames.", width = "full"}),
             ShowV2PartyTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Party Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Party Frames or not.", width = "full"}),
             ShowV2ArenaTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Arena Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Arena Frames or not.", width = "full"}),
             ShowV2BossTextures = Opt:Toggle({name = "Show LUI v2 Connector Frames for Boss Frames", desc = "Whether you want to show LUI v2 Frame Connectors on Boss Frames or not.", width = "full"}),
+            AuraCountFont = Opt:MediaFont({name = "Aura Count Font",
+                get = function() return module.db.profile.Settings.AuraCountFont or LibStub("LibSharedMedia-3.0"):GetDefault("font") end,
+                set = function(_, value)
+                    module.db.profile.Settings.AuraCountFont = value
+                    RefreshPaletteFrames()
+                end,
+            }),
 			AuratimerFont = Opt:MediaFont({name = "Aura Timer Font"}),
             AuratimerSize = Opt:Slider({name = "Aura Timer Size", values = fontValues}),
             AuratimerFlag = Opt:Select({name = "Aura Timer Outline", values = LUI.FontFlags}),
