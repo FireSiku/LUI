@@ -4,6 +4,7 @@ local LUI = select(2, ...)
 local module = LUI:GetModule("UI Elements")
 local PATH = [[Interface\AddOns\LUI\media\buttons\]]
 local replacements, artwork = {}, {classic = {}, hd = {}}
+local silverButtonFiles = {}
 local records = setmetatable({}, {__mode = "k"})
 local hooked = setmetatable({}, {__mode = "k"})
 local active, applying, hooksInstalled = false, false, false
@@ -72,6 +73,21 @@ for _, family in ipairs({"128-RedButton-ShoppingCart", "128-RedButton-Delete"}) 
 end
 tintAtlases["perks-button-up"] = "window-icon"
 tintAtlases["perks-button-down"] = "window-icon"
+-- Settings use dropdowns, steppers and tabs instead of UIPanelButton faces.
+-- Preserve their native shapes, selection states and separate arrow glyphs.
+for _, atlas in ipairs({
+    "common-dropdown-c-button", "common-dropdown-c-button-open", "common-dropdown-c-button-disabled",
+    "common-dropdown-c-button-pressed-1", "common-dropdown-c-button-hover-1",
+    "common-dropdown-c-button-pressedhover-1", "common-dropdown-c-button-pressed-2",
+    "common-dropdown-c-button-hover-2", "common-dropdown-c-button-pressedhover-2",
+    "Minimal_SliderBar_Button_Left", "Minimal_SliderBar_Button_Right",
+    "Options_Tab_Left", "Options_Tab_Middle", "Options_Tab_Right",
+    "Options_Tab_Active_Left", "Options_Tab_Active_Middle", "Options_Tab_Active_Right",
+    "Options_ListExpand_Left", "Options_ListExpand_Right", "_Options_ListExpand_Middle",
+    "Options_List_Active", "Options_List_Hover",
+}) do
+    tintAtlases[atlas:lower()] = "window-icon"
+end
 -- Keep the native collapse/expand glyphs, including the tracker's double
 -- arrows and Statistics' section toggles, when their state changes.
 for _, atlas in ipairs({
@@ -292,7 +308,7 @@ local panelFiles = {
 }
 
 local function LegacyButtonParts(button)
-    local parts, seen, hasFace = {}, {}, false
+    local parts, seen, hasFace, silver = {}, {}, false, false
     local function Add(region)
         if IsSecret(region) or not region or customRegions[region] or seen[region] then return end
         if not CanStyle(region) or region:GetParent() ~= button then return end
@@ -301,8 +317,10 @@ local function LegacyButtonParts(button)
         if IsSecret(atlas) or IsSecret(texture) then return end
         local record = records[region]
         local file = record and record.file and record.file.name or (not atlas and replacements[TextureKey(texture)])
-        if panelFiles[file] then hasFace = true end
-        if panelFiles[file] or file == "UI-Panel-Button-Highlight" or file == "UI-DialogBox-Button-Highlight" then
+        local silverFace = not atlas and silverButtonFiles[TextureKey(texture)]
+        if silverFace then silver = true end
+        if panelFiles[file] or silverFace then hasFace = true end
+        if panelFiles[file] or silverFace or file == "UI-Panel-Button-Highlight" or file == "UI-DialogBox-Button-Highlight" then
             seen[region] = true
             parts[#parts + 1] = region
         end
@@ -319,7 +337,7 @@ local function LegacyButtonParts(button)
     if CanStyle(highlight) and highlight:GetParent() == button and not seen[highlight] then
         parts[#parts + 1] = highlight
     end
-    return parts
+    return parts, silver
 end
 
 local ApplyButton, ApplySharedButton, RestoreRegion, SourceChanged
@@ -516,21 +534,24 @@ local function ApplySlicedButton(button, buttonState, style)
     local family = button.atlasName
     if IsSecret(family) then return false end
     local classic = style == "classic" and family and sharedFamilies[family] or false
+    local parts
+    if style == "classic" and not classic and button.TopLeft and button.TopMiddle and button.MiddleMiddle then
+        parts, classic = LegacyButtonParts(button)
+    end
     if style ~= "dark" and not classic then
         RestoreSharedButton(state)
         return false
     end
     -- Modern atlas buttons need the same classic BLP slices as older panel
     -- buttons; simply desaturating their atlases is the Blizzard Dark style.
-    local parts
-    if classic then
+    if classic and not parts then
         local highlight = button:GetHighlightTexture()
         for _, key in ipairs({"Left", "Center", "Right"}) do
             if not CanStyle(button[key]) or button[key]:GetParent() ~= button then return true end
         end
         if not CanStyle(highlight) or highlight:GetParent() ~= button then return true end
         parts = {button.Left, button.Center, button.Right, highlight}
-    else
+    elseif not parts then
         parts = LegacyButtonParts(button)
     end
     if not parts then RestoreSharedButton(state); return false end
@@ -1465,6 +1486,28 @@ local function PrepareBranch(root)
     Visit(root, 0)
 end
 
+local function PrepareSettingsRow(frame)
+    if not active or not CanStyle(frame) then return end
+    local base, raid = frame.BaseQualityControls, frame.RaidQualityControls
+    if not CanTouch(base) or not CanTouch(raid)
+        or base:GetParent() ~= frame or raid:GetParent() ~= frame then
+        return PrepareBranch(frame)
+    end
+    -- Graphics puts both complete quality panels in one ScrollBox row.
+    -- Visit each native control separately so the normal addon-row limit
+    -- cannot discard the second panel or the controls at the bottom.
+    PrepareButton(frame.BaseTab)
+    PrepareButton(frame.RaidTab)
+    for _, panel in ipairs({base, raid}) do
+        local controls = panel.Controls
+        if not IsSecret(controls) and type(controls) == "table" then
+            for _, control in ipairs(controls) do
+                if CanTouch(control) and control:GetParent() == panel then PrepareBranch(control) end
+            end
+        end
+    end
+end
+
 local function PrepareScrollBox(scrollBox, prepareRow)
     if not CanTouch(scrollBox) or (not prepareRow and not CanStyle(scrollBox))
         or (scrollBox.IsProtected and scrollBox:IsProtected()) or not scrollBox.RegisterCallback
@@ -1575,7 +1618,10 @@ PrepareRoot = function(frame, name)
         local targets = name and controlTargets[name]
         if targets then
             for _, path in ipairs(targets.buttons) do PrepareButton(ResolveControl(frame, path)) end
-            for _, path in ipairs(targets.scrolls) do PrepareScrollBox(ResolveControl(frame, path)) end
+            for _, path in ipairs(targets.scrolls) do
+                local prepareRow = name == "SettingsPanel" and path == "Container.SettingsList.ScrollBox" and PrepareSettingsRow or nil
+                PrepareScrollBox(ResolveControl(frame, path), prepareRow)
+            end
         end
         if not frame:IsObjectType("Button") and not rootShowHooks[frame] then
             frame:HookScript("OnShow", function(self)
@@ -1682,6 +1728,17 @@ local function InstallHooks()
         if not IsSecret(id) and id and id ~= 0 then replacements[id] = file end
         id = GetFileIDFromPath and GetFileIDFromPath(path)
         if not IsSecret(id) and id and id ~= 0 then replacements[id] = file end
+    end
+    -- Keybinding buttons use nine slices from the silver sheet. Reuse the
+    -- complete button renderer; replacing individual slices would distort it.
+    for _, file in ipairs({"UI-Silver-Button-Up", "UI-Silver-Button-Down"}) do
+        local path = "Interface\\Buttons\\" .. file
+        silverButtonFiles[TextureKey(path)] = true
+        silverButtonFiles[TextureKey(path .. ".blp")] = true
+        for _, source in ipairs({path, path .. ".blp"}) do
+            local id = GetFileIDFromPath and GetFileIDFromPath(source)
+            if not IsSecret(id) and id and id ~= 0 then silverButtonFiles[id] = true end
+        end
     end
     for _, name in ipairs({"UIPanelButton_OnLoad", "UIPanelButton_OnShow"}) do
         if type(_G[name]) == "function" then hooksecurefunc(name, ApplyButton) end
