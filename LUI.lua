@@ -104,6 +104,7 @@ LUI.defaults = {
 			BlizzFrameScale = 1,
 			ModuleMessages = true,
 			DamageFont = "neuropol",
+			DamageFontOutline = "",
 			DamageFontSize = 25,
 			DamageFontSizeCrit = 34,
 			["*"] = {},
@@ -295,7 +296,12 @@ function LUI:SetDamageFont(_, loadedAddon)
 
 	-- Select SLUG explicitly: custom combat fonts can lose glyphs or spacing
 	-- with inherited world-font flags or the unflagged rendering path.
-	fontObject:SetFont(fontPath, constants.MessageHeight, "SLUG")
+	local outline = db.General.DamageFontOutline
+	local flags = "SLUG"
+	if outline == "OUTLINE" or outline == "THICKOUTLINE" then
+		flags = flags .. ", " .. outline
+	end
+	fontObject:SetFont(fontPath, constants.MessageHeight, flags)
 
 	-- Do not write CombatTextConstants. Blizzard reads these values while
 	-- animating secret combat-text positions; addon-owned values taint that
