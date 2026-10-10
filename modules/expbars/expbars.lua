@@ -68,6 +68,8 @@ local dataProviderList = {}
 --- Contains the bars that compose the primary exp bar
 ---@type ExpBar[]
 local mainBarList = {}
+local mainBarLayoutReady = false
+local mainBarPrimary, mainBarSecondary
 
 -- ####################################################################################################################
 -- ##### ExpBarDataProviderMixin ######################################################################################
@@ -240,6 +242,7 @@ function module:SetEventHandling(enabled)
 
 	local statusTrackingBarManager = _G.StatusTrackingBarManager
 	if enabled then
+		mainBarLayoutReady = false
 		module.anchor:RegisterEvent("PLAYER_ENTERING_WORLD")
 		module.anchor:RegisterEvent("PLAYER_MAX_LEVEL_UPDATE")
 		module.anchor:RegisterEvent("UPDATE_FACTION")
@@ -487,15 +490,8 @@ local function ConfigureBar(bar, anchor, width, height, reverseFill, textPoint, 
 	bar:Show()
 end
 
-function module:UpdateMainBarVisibility(event, ...)
+local function LayoutMainBars(primary, secondary)
 	local db = module.db.profile
-	if not module.anchor or not module.secondaryAnchor or #mainBarList == 0 then
-		return
-	end
-
-	local primary, secondary = GetVisibleTrackers()
-	if not db.SplitTracker then secondary = nil end
-
 	for bar in module:IterateMainBars() do
 		bar:Hide()
 	end
@@ -530,9 +526,24 @@ function module:UpdateMainBarVisibility(event, ...)
 		module.secondaryAnchor:Hide()
 	end
 
+	module:UpdateMoveState()
+end
+
+function module:UpdateMainBarVisibility(event, ...)
+	if not module.anchor or not module.secondaryAnchor or #mainBarList == 0 then return end
+
+	local primary, secondary = GetVisibleTrackers()
+	if not module.db.profile.SplitTracker then secondary = nil end
+
+	-- Data events keep the current geometry. Settings refreshes and tracker
+	-- changes rebuild it, including split/reversed bars and mover visibility.
+	if not mainBarLayoutReady or primary ~= mainBarPrimary or secondary ~= mainBarSecondary then
+		LayoutMainBars(primary, secondary)
+		mainBarPrimary, mainBarSecondary = primary, secondary
+		mainBarLayoutReady = true
+	end
 	if primary then primary:UpdateBar(event, ...) end
 	if secondary then secondary:UpdateBar(event, ...) end
-	module:UpdateMoveState()
 end
 
 -- ####################################################################################################################
@@ -546,6 +557,7 @@ function module:RefreshColors()
 end
 
 function module:Refresh()
+	mainBarLayoutReady = false
 	module:ResetAutoReputation()
 	local db = module.db.profile
 	if not module.anchor or not module.secondaryAnchor then return end
