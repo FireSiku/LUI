@@ -15,6 +15,7 @@
 - Core: Reduced repeated work in unitframe resource displays, infotext layouts, bags, experience bars, button styling and window layouts.
 - Unitframes: Updated the complete embedded framework to oUF 14.2.0, with LUI-specific resource, castbar and group-header behavior maintained in the Unitframes module.
 - Unitframes: Removed redundant pet and world-entry refreshes and reduced PvP timer polling.
+- Unitframes: Reduced repeated text-color queries and skipped unnecessary resource-text visibility queries.
 - Unitframes: Fixed additional-power initialization after oUF finishes loading.
 - Unitframes: Forever group-frame preparation now uses Blizzard's native header callbacks instead of directly calling the shared group update function.
 - Unitframes: Added shared font settings and a separate aura-count font option. Castbar outlines and raid information text positions now follow their settings.
@@ -39,6 +40,7 @@
 - Infotext: Added an Alliance, Horde or Both filter for characters in the Gold tooltip while retaining both faction totals.
 - Infotext: The Gold tooltip shows Blizzard's Warband bank balance separately on clients that support bank money transfers.
 - Tooltip: Improved compatibility with Blizzard tooltip handlers and made scale changes apply immediately.
+- Tooltip: Removed a redundant rebuild of Blizzard unitframe tooltips.
 - Bags: Added an optional keyring shortcut for Forever and retained its native bank window.
 - Bags: Fixed blocked item use after visiting the bank on Retail.
 - Bags: Fixed searches containing special characters and removed stray pixels from item slots.
@@ -53,6 +55,7 @@
 - UIElements: Added optional positioning and a preview for the Dungeon Finder queue eye.
 - UIElements: Improved compatibility with restricted controls and kept bag and item-slot artwork separate from general button styling.
 - UIElements: Fixed LUI HD styling and restoration when native buttons replace their textures.
+- UIElements: Extended button styling to Blizzard settings dropdowns, steppers, tabs, expandable sections and keybindings, including both graphics-quality panels.
 - Addons: Corrected Darion skin texture paths for users who have Masque installed separately.
 
 ---
