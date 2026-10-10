@@ -767,14 +767,12 @@ local function UpdateAdditionalPowerColor(self, event, unit, powerType)
 end
 
 local function PostUpdateAdditionalPower(additionalpower, cur, max)
-	local _, class = UnitClass("player")
 	local text = additionalpower.value
 	if text and text.Enable then
-		local percent = UnitPowerPercent("player", ADDITIONAL_POWER_BAR_INDEX, false, PercentCurve)
 		if text.Format == "Absolut" then
 			text:SetFormattedText("%s/%s", cur, max)
 		elseif text.Format == "Percent" then
-			text:SetFormattedText("%.1f%%", percent)
+			text:SetFormattedText("%.1f%%", UnitPowerPercent("player", ADDITIONAL_POWER_BAR_INDEX, false, PercentCurve))
 		else
 			text:SetFormattedText("%s", cur)
 		end
@@ -785,8 +783,8 @@ local function PostUpdateAdditionalPower(additionalpower, cur, max)
 			text:SetAlpha(1)
 		end
 
-		if text.color == "By Class" and class ~= nil then
-			local color = issecretvalue(class) and C_ClassColor.GetClassColor(class) or module.colors.class[class]
+		if text.color == "By Class" then
+			local color = GetUnitClassColor("player")
 			if color then
 				text:SetTextColor(color:GetRGB())
 			else
