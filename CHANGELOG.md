@@ -11,6 +11,7 @@
 - Core: Corrected color-picker input. Displayed rounding no longer changes the selected color.
 - Core: Stopped modifying Blizzard's combat-text animation constants to prevent secret-value errors. Custom fonts use Blizzard's normal text size and the SLUG renderer while critical animations remain under Blizzard's control.
 - Core: Combat-text font selection also applies to damage numbers above units after relogging, and waits for selected fonts from later-loading media packs.
+- Core: Added None, Outline and Thick Outline choices for scrolling combat text, with immediate updates and no forced monochrome rendering.
 - Core: Reduced repeated work in unitframe resource displays, infotext layouts, bags, experience bars, button styling and window layouts.
 - Unitframes: Updated the complete embedded framework to oUF 14.2.0, with LUI-specific resource, castbar and group-header behavior maintained in the Unitframes module.
 - Unitframes: Fixed additional-power initialization after oUF finishes loading.
@@ -19,6 +20,8 @@
 - Unitframes: Restored missing healing-prediction and absorb defaults, and corrected resource colors and additional-power smoothing.
 - Unitframes: Background opacity and brightness now apply independently to health and resource bars.
 - Unitframes: Corrected class-resource availability in Retail and Forever, cat-form combo-point detection and small fractional resource values.
+- Unitframes: Forever combo points now follow the current target and update when points are transferred between targets.
+- Unitframes: Corrected the inverted PvP indicator on Retail 12.1.0 while retaining Blizzard's restricted-value handling.
 - Unitframes: Restored druid mana in bear and cat form, corrected mana text and gradients, and fixed resource-bar toggles and overlapping auxiliary bars.
 - Unitframes: Restored Blizzard castbars during temporary action UIs and updated nameplate castbar handling.
 - Unitframes: Added optional shield icons for uninterruptible casts, with left, right or both sides and adjustable size and offsets.
@@ -32,6 +35,8 @@
 - Infotext: Added optional Raider.IO Mythic+ scores and character details to the friends list.
 - Infotext: Improved friend-name sizing and added Enter confirmation for Battle.net broadcast messages.
 - Infotext: Tooltips now anchor to the text without the unused display-frame gap. Friends and Guild lists remain open during slow mouse transitions, row changes and scrollbar use.
+- Infotext: Added an Alliance, Horde or Both filter for characters in the Gold tooltip while retaining both faction totals.
+- Infotext: The Gold tooltip shows Blizzard's Warband bank balance separately on clients that support bank money transfers.
 - Tooltip: Improved compatibility with Blizzard tooltip handlers and made scale changes apply immediately.
 - Bags: Added an optional keyring shortcut for Forever and retained its native bank window.
 - Bags: Fixed blocked item use after visiting the bank on Retail.
@@ -39,6 +44,7 @@
 - Experience Bars: Grouped the bar-locking option with the tracker controls.
 - Experience Bars: Added rested XP shading, an optional rested percentage on the bar and the full rested reserve in the tooltip for Retail and Forever, including split and reversed bars.
 - Minimap: Fixed position, scale and shape handling when disabling and re-enabling the module.
+- Minimap: Preserved existing mail notifications when enabling the LUI minimap.
 - Mirror Bar: Fixed pause handling for breath, fatigue and other mirror timers.
 - Chat: Fixed voice-control visibility restoration, handling of a cleared chat input and clickable IP address links.
 - UIElements: Added a setting for Forever's native swing timer.
