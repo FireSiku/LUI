@@ -369,6 +369,15 @@ ApplySharedButton = function(button, buttonState, style)
     if not enabled then buttonState = "DISABLED" end
 
     local state = sharedButtons[button]
+    if state and state.saved then
+        local changed = #state.saved ~= #parts
+        for index, texture in ipairs(parts) do
+            if not state.saved[index] or state.saved[index].texture ~= texture then changed = true; break end
+        end
+        -- Pooled buttons can replace their native slices. Restore the old
+        -- sources before taking a snapshot of the current texture objects.
+        if changed then RestoreSharedButton(state) end
+    end
     if not state then
         state = {normal = {}, highlight = {}}
         sharedButtons[button] = state
