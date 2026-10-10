@@ -147,6 +147,12 @@ local function GetPowerTextCurve(text)
 	return curve
 end
 
+local function GetPowerTextAlpha(unit, displayType, text)
+	-- These saved options make the text visible at every power value.
+	if text.ShowEmpty and text.ShowFull then return 1 end
+	return UnitPowerPercent(unit, displayType, false, GetPowerTextCurve(text))
+end
+
 -- Show only when full
 local IsFullCurve = C_CurveUtil.CreateCurve()
 IsFullCurve:SetType(Enum.LuaCurveType.Step)
@@ -188,12 +194,6 @@ local function UpdateUnitFrameTooltip(self)
 		self.UpdateTooltip = nil
 	end
 end
-
-hooksecurefunc("UnitFrame_UpdateTooltip", function(self)
-	GameTooltip_SetDefaultAnchor(GameTooltip, self)
-	GameTooltip:SetUnit(self.unit, true)
-	GameTooltip:Show()
-end)
 
 local function UnitFrame_OnEnter(self)
 	UpdateUnitFrameTooltip(self)
@@ -358,22 +358,25 @@ local function UpdateBarBackground(bg, r, g, b, healthInvert)
 	end
 end
 
-local function SetHealthTextColor(health, text, unit)
-	if not text or not text.Enable then return end
+local function SetHealthTextColor(health, text, unit, classColor, healthColor)
+	if not text or not text.Enable then return classColor, healthColor end
 
 	if text.color == "By Class" then
-		local color = GetUnitClassColor(unit)
-		if color then
-			text:SetTextColor(color:GetRGB())
+		if classColor == nil then classColor = GetUnitClassColor(unit) or false end
+		if classColor then
+			text:SetTextColor(classColor:GetRGB())
 		else
 			text:SetTextColor(1, 1, 1)
 		end
 	elseif text.color == "Individual" then
 		text:SetTextColor(text.colorIndividual.r, text.colorIndividual.g, text.colorIndividual.b)
 	else
-		local color = health.values:EvaluateCurrentHealthPercent(health.__owner.colors.health:GetCurve())
-		text:SetTextColor(color:GetRGB())
+		if healthColor == nil then
+			healthColor = health.values:EvaluateCurrentHealthPercent(health.__owner.colors.health:GetCurve())
+		end
+		text:SetTextColor(healthColor:GetRGB())
 	end
+	return classColor, healthColor
 end
 
 local function PostUpdateHealthColor(health, unit, color)
@@ -390,27 +393,31 @@ local function PostUpdateHealthColor(health, unit, color)
 
 	UpdateBarBackground(health.bg, r, g, b, true)
 
-	SetHealthTextColor(health, health.value, unit)
-	SetHealthTextColor(health, health.valuePercent, unit)
-	SetHealthTextColor(health, health.valueMissing, unit)
-	SetHealthTextColor(health, health.absorbText, unit)
+	-- Share native color lookups within this update only; never cache unit data
+	-- across events or inspect restricted color components.
+	local classColor, healthColor
+	classColor, healthColor = SetHealthTextColor(health, health.value, unit, classColor, healthColor)
+	classColor, healthColor = SetHealthTextColor(health, health.valuePercent, unit, classColor, healthColor)
+	classColor, healthColor = SetHealthTextColor(health, health.valueMissing, unit, classColor, healthColor)
+	SetHealthTextColor(health, health.absorbText, unit, classColor, healthColor)
 end
 
-local function SetPowerTextColor(power, text, unit)
-	if not text or not text.Enable then return end
+local function SetPowerTextColor(text, unit, classColor, r, g, b)
+	if not text or not text.Enable then return classColor end
 
 	if text.color == "By Class" then
-		local color = GetUnitClassColor(unit)
-		if color then
-			text:SetTextColor(color:GetRGB())
+		if classColor == nil then classColor = GetUnitClassColor(unit) or false end
+		if classColor then
+			text:SetTextColor(classColor:GetRGB())
 		else
-			text:SetTextColor(power:GetStatusBarColor())
+			text:SetTextColor(r, g, b)
 		end
 	elseif text.color == "Individual" then
 		text:SetTextColor(text.colorIndividual.r, text.colorIndividual.g, text.colorIndividual.b)
 	else
-		text:SetTextColor(power:GetStatusBarColor())
+		text:SetTextColor(r, g, b)
 	end
+	return classColor
 end
 
 local function UpdatePowerDisplay(self, unit, current, min, max, displayType)
@@ -456,14 +463,14 @@ local function UpdatePowerDisplay(self, unit, current, min, max, displayType)
 			power.value:SetFormattedText("%s", current)
 		end
 
-		power.value:SetAlpha(UnitPowerPercent(unit, displayType, false, GetPowerTextCurve(power.value)))
+		power.value:SetAlpha(GetPowerTextAlpha(unit, displayType, power.value))
 	else
 		power.value:SetText("")
 	end
 
 	if power.valuePercent.Enable == true then
 		power.valuePercent:SetFormattedText("%.1f%%", powerPercent)
-		power.valuePercent:SetAlpha(UnitPowerPercent(unit, displayType, false, GetPowerTextCurve(power.valuePercent)))
+		power.valuePercent:SetAlpha(GetPowerTextAlpha(unit, displayType, power.valuePercent))
 	else
 		power.valuePercent:SetText("")
 	end
@@ -476,7 +483,7 @@ local function UpdatePowerDisplay(self, unit, current, min, max, displayType)
 			power.valueMissing:SetFormattedText("-%s", powerMissing)
 		end
 
-		power.valueMissing:SetAlpha(UnitPowerPercent(unit, displayType, false, GetPowerTextCurve(power.valueMissing)))
+		power.valueMissing:SetAlpha(GetPowerTextAlpha(unit, displayType, power.valueMissing))
 	else
 		power.valueMissing:SetText("")
 	end
@@ -496,9 +503,10 @@ local function PostUpdatePowerColor(power, unit)
 
 	UpdateBarBackground(power.bg, r, g, b)
 
-	SetPowerTextColor(power, power.value, unit)
-	SetPowerTextColor(power, power.valuePercent, unit)
-	SetPowerTextColor(power, power.valueMissing, unit)
+	local classColor
+	classColor = SetPowerTextColor(power.value, unit, classColor, r, g, b)
+	classColor = SetPowerTextColor(power.valuePercent, unit, classColor, r, g, b)
+	SetPowerTextColor(power.valueMissing, unit, classColor, r, g, b)
 end
 
 -- Keep LUI's secret-safe color handling outside the bundled oUF element.
