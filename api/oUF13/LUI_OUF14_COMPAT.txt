@@ -7,9 +7,11 @@ The api/oUF13 directory name is retained for existing load paths.
 
 LUI owns its compatibility code in modules/unitframes:
 - layout/layout.lua: power colors, explicit Mana gradients, fractional class
-  resources, backgrounds, health/absorb presentation and resource layout.
+  resources, backgrounds, health/absorb presentation, resource layout and
+  the Retail 12.1.0 PvP indicator override.
 - layout/auras_12_1.lua: native AuraContainer presentation.
 - castbar_compat.lua: temporary Blizzard castbar ownership and restoration.
+- classpower_compat.lua: Forever target-bound combo points and their events.
 - groupheaders.lua: bounded Forever headers initialized outside combat.
 
 Do not patch bundled framework files for LUI-specific behavior. Use oUF's
