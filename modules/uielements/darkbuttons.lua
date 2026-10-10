@@ -338,11 +338,11 @@ local function HookButtonState(button, name, handler, script)
     installed[name] = true
 end
 
-ApplySharedButton = function(button, buttonState)
+ApplySharedButton = function(button, buttonState, style)
     if not active or not CanStyle(button) then return false end
     -- Do not enumerate/allocate legacy texture parts for a different style.
     if InCombatLockdown() then DeferCombat(false, button); return true end
-    if StyleForButton(button) ~= "hd" then
+    if style ~= "hd" then
         RestoreSharedButton(sharedButtons[button])
         return false
     end
@@ -502,9 +502,8 @@ local function SlicedButtonUnchanged(button, state, parts, buttonState, classic)
     return true
 end
 
-local function ApplySlicedButton(button, buttonState)
+local function ApplySlicedButton(button, buttonState, style)
     local state = legacyButtons[button]
-    local style = StyleForButton(button)
     local family = button.atlasName
     if IsSecret(family) then return false end
     local classic = style == "classic" and family and sharedFamilies[family] or false
@@ -677,9 +676,10 @@ SourceChanged = function(region)
 end
 
 local function CoordinatesChanged(region, ...)
-    if applying or not CanStyle(region) then return end
+    if applying or IsSecret(region) then return end
     local record = records[region]
     if not record or not record.coords or not record.file then return end
+    if not CanStyle(region) then return end
     local coords = PublicValues(...)
     if not coords then return end
     -- Native button setters can replace a texture without calling its Lua
@@ -701,9 +701,10 @@ local function CoordinatesChanged(region, ...)
 end
 
 local function ColorChanged(region)
-    if applying or not CanStyle(region) then return end
+    if applying or IsSecret(region) then return end
     local record = records[region]
     if not record or record.file then return end
+    if not CanStyle(region) then return end
     local color = PublicValues(region:GetVertexColor())
     if not color then return end
     record.color = color
@@ -716,9 +717,10 @@ local function ColorChanged(region)
 end
 
 local function DesaturationChanged(region, value)
-    if applying or not CanStyle(region) or IsSecret(value) then return end
+    if applying or IsSecret(region) or IsSecret(value) then return end
     local record = records[region]
     if not record or record.desaturation == nil then return end
+    if not CanStyle(region) then return end
     if type(value) == "boolean" then value = value and 1 or 0 end
     if type(value) ~= "number" then return end
     record.desaturation = value
@@ -859,9 +861,20 @@ ApplyRegion = function(region)
     applying = false
 end
 
-local function ApplyRegions(...)
+local function ApplyRegions(button, ...)
+    local seen = {}
+    local function ApplyOnce(region)
+        if IsSecret(region) or not region or seen[region] then return end
+        seen[region] = true
+        ApplyRegion(region)
+    end
     for index = 1, select("#", ...) do
-        ApplyRegion(select(index, ...))
+        ApplyOnce(select(index, ...))
+    end
+    -- State textures may be absent from GetRegions, or already included.
+    -- Reconcile each object once, regardless of how the template exposes it.
+    for _, getter in ipairs(buttonTextureGetters) do
+        if button[getter] then ApplyOnce(button[getter](button)) end
     end
 end
 
@@ -873,13 +886,10 @@ ApplyButton = function(button, buttonState)
         local success = button:HookScript("OnShow", function(self) ApplyButton(self) end)
         if success ~= false then showHooks[button] = true end
     end
-    if ApplySharedButton(button, buttonState) then return end
-    if ApplySlicedButton(button, buttonState) then return end
-    ApplyRegions(button:GetRegions())
-    -- Button state textures are not consistently included in GetRegions.
-    for _, getter in ipairs(buttonTextureGetters) do
-        if button[getter] then ApplyRegion(button[getter](button)) end
-    end
+    local style = StyleForButton(button)
+    if ApplySharedButton(button, buttonState, style) then return end
+    if ApplySlicedButton(button, buttonState, style) then return end
+    ApplyRegions(button, button:GetRegions())
 end
 
 
@@ -1295,6 +1305,15 @@ local panelNames = {
     "AuctionHouseFrame", "BankFrame", "ItemTextFrame", "WorldMapFrame", "SettingsPanel",
     "LUIBags", "LegacySystemFrame", "ReadyCheckFrame", "ReadyCheckListenerFrame",
 }
+-- Merge the explicit target roots once. A forced style refresh must not
+-- resolve the same window twice because it occurs in both lists.
+do
+    local listed = {}
+    for _, name in ipairs(panelNames) do listed[name] = true end
+    for name in pairs(controlTargets) do
+        if not listed[name] then panelNames[#panelNames + 1] = name end
+    end
+end
 
 local function PrepareButton(button)
     if not active or not CanStyle(button) or not button:IsObjectType("Button") then return end
@@ -1586,7 +1605,6 @@ PrepareKnownPanels = function(force)
         preparedPanels[frame] = revision
     end
     for _, name in ipairs(panelNames) do PrepareName(name) end
-    for name in pairs(controlTargets) do PrepareName(name) end
     -- Legacy clients use named menu buttons rather than a button pool.
     for _, suffix in ipairs({"Help", "Store", "Options", "UIOptions", "Keybindings",
         "Macros", "Addons", "Logout", "Quit", "Continue", "EditMode", "Ratings"}) do
