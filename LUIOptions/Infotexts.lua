@@ -136,6 +136,9 @@ goldArgs.showRealm = Opt:Toggle({name = "Show Realm Total", width = "full"})
 goldArgs.useBlizzard = Opt:Toggle({name = "Use Blizzard Money Format", width = "full"})
 goldArgs.showCopper = Opt:Toggle({name = "Show Copper with Gold", width = "full"})
 goldArgs.coloredSymbols = Opt:Toggle({name = "Color Coin Symbols", width = "full"})
+goldArgs.FactionFilter = Opt:Select({name = "Characters in Tooltip",
+    desc = "Choose which faction's characters appear in the Gold tooltip. Realm totals continue to show both factions.",
+    values = {Both = "Both Factions", Alliance = _G.FACTION_ALLIANCE, Horde = _G.FACTION_HORDE}})
 
 local guildArgs = Infotext.args.Settings.args.Guild.args
 guildArgs.showTotal = Opt:Toggle({name = "Show Total Guild Count", width = "full"})

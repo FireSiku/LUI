@@ -43,6 +43,10 @@ local FACTION_ORDER_GLOBAL = SUPPORTED_FACTION[LUI.playerFaction]
 	and {LUI.playerFaction, LUI.otherFaction}
 	or {"Alliance", "Horde"}
 
+local accountBankType = Enum.BankType and Enum.BankType.Account
+local supportsWarbankGold = accountBankType and C_Bank and C_Bank.FetchDepositedMoney
+	and C_Bank.DoesBankTypeSupportMoneyTransfer and C_Bank.DoesBankTypeSupportMoneyTransfer(accountBankType)
+
 -- locals
 local moneyProfit = 0
 local moneySpent = 0
@@ -218,10 +222,13 @@ function element.OnTooltipShow(GameTooltip)
 	GameTooltip:AddLine(" ")
 	GameTooltip:AddLine(L["InfoGold_Characters"] )
 	local realmDB = module.db.global.Gold
+	local factionFilter = module.db.profile.Gold.FactionFilter
 	for i, faction in ipairs(FACTION_ORDER_GLOBAL) do
-		for name, money in pairs(realmDB[faction][LUI.playerRealm]) do
-			local r, g, b = LUI:GetFactionColor(faction)
-			GameTooltip:AddDoubleLine(name, element:FormatMoney(money, true), r, g, b, 1,1,1)
+		if not SUPPORTED_FACTION[factionFilter] or factionFilter == faction then
+			for name, money in pairs(realmDB[faction][LUI.playerRealm]) do
+				local r, g, b = LUI:GetFactionColor(faction)
+				GameTooltip:AddDoubleLine(name, element:FormatMoney(money, true), r, g, b, 1,1,1)
+			end
 		end
 	end
 	GameTooltip:AddLine(" ")
@@ -246,6 +253,13 @@ function element.OnTooltipShow(GameTooltip)
 				end
 			end
 		end
+	end
+
+	if supportsWarbankGold then
+		-- Use the same balance as Blizzard's ACCOUNT money frame. This is
+		-- account-wide money, not character income or a faction/realm total.
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddDoubleLine(ACCOUNT_BANK_PANEL_TITLE, element:FormatMoney(C_Bank.FetchDepositedMoney(accountBankType), true), 1,1,1, 1,1,1)
 	end
 
 	element:AddHint(L["InfoGold_Hint_Any"], L["InfoGold_Hint_Right"])
@@ -296,6 +310,9 @@ function element:OnCreate()
 	
 	element:CacheConnectedRealms()
 	element:RegisterEvent("PLAYER_MONEY", "UpdateGold")
+	if supportsWarbankGold then
+		element:RegisterEvent("ACCOUNT_MONEY", "UpdateTooltip")
+	end
 	if SUPPORTED_FACTION[LUI.playerFaction] then
 		module.db.global.Gold[LUI.playerFaction][LUI.playerRealm][LUI.playerName] = previousMoney
 	end

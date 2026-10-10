@@ -123,6 +123,7 @@ module.defaults = {
 			showCopper = false,
 			coloredSymbols = false,
 			ShowConnected = true,
+			FactionFilter = "Both",
 		},
 		Guild = {
 			Enable = true,
