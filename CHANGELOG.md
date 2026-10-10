@@ -6,6 +6,7 @@
 - Core: The options title identifies the game client while retaining Dev, Release and Alpha version information.
 - Core: Blizzard's progress and bag bars are hidden in Forever while their LUI replacements are enabled, and restored when disabled.
 - Core: Fixed errors when the options addon cannot be loaded and restored confirmation dialogs in generated settings.
+- Core: Corrected media file paths that could interrupt startup with strict LibSharedMedia validation.
 - Core: Fixed older-profile conversion when current button settings are present.
 - Core: Fixed profile backups and restores losing custom or module settings. General settings continue to use the active profile after restoring a backup. Failed backups preserve the previous backup, and imported profile names handle accented characters correctly.
 - Core: Corrected color-picker input. Displayed rounding no longer changes the selected color.
