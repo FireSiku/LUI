@@ -142,6 +142,7 @@ api\frameidentifier.lua
 modules\unitframes\templates.xml
 modules\unitframes\unitframes_init.lua
 modules\unitframes\castbar_compat.lua
+modules\unitframes\classpower_compat.lua
 modules\unitframes\groupheaders.lua
 modules\unitframes\fonts.lua
 modules\unitframes\defaults\Settings.lua
