@@ -66,7 +66,7 @@ Media:Register("statusbar", "LUI_Gradient", [[Interface\AddOns\LUI\media\statusb
 Media:Register("statusbar", "LUI_Minimalist", [[Interface\AddOns\LUI\media\statusbars\Minimalist.tga]])
 Media:Register("statusbar", "LUI_Ruben", [[Interface\AddOns\LUI\media\statusbars\Ruben.tga]])
 Media:Register("statusbar", "Smelly", [[Interface\AddOns\LUI\media\statusbars\Smelly.tga]])
-Media:Register("statusbar", "Neal", [[Interface\AddOns\LUI\media\statusbars\Neal]])
+Media:Register("statusbar", "Neal", [[Interface\AddOns\LUI\media\statusbars\Neal.blp]])
 Media:Register("statusbar", "RenaitreMinion", [[Interface\AddOns\LUI\media\statusbars\RenaitreMinion.tga]])
 Media:Register("statusbar", "Otravi", [[Interface\AddOns\LUI\media\statusbars\Otravi.tga]])
 Media:Register("statusbar", "Empty", [[Interface\AddOns\LUI\media\textures\blank.tga]])
