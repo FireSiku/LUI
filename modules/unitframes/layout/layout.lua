@@ -37,6 +37,36 @@ local function BarInterpolation(enabled)
 		or Enum.StatusBarInterpolation.Immediate
 end
 
+local function UpdatePvPIndicator(self, event, unit)
+	if unit and unit ~= self.__unit then return end
+	unit = unit or self.__unit
+	local icon = self.PvPIndicator
+	local faction = UnitFactionGroup(unit)
+	if unit == "player" and UnitIsMercenary(unit) then
+		if faction == "Horde" then
+			faction = "Alliance"
+		elseif faction == "Alliance" then
+			faction = "Horde"
+		end
+	end
+
+	if UnitIsPVPFreeForAll(unit) then
+		faction = "FFA"
+		icon:SetAlpha(1)
+	elseif faction == "Horde" or faction == "Alliance" then
+		-- Retail 12.1.0's oUF path inverts this test. Let the native widget
+		-- consume the flag directly, including a restricted PvP boolean.
+		icon:SetAlphaFromBoolean(UnitIsPVP(unit), 1, 0)
+	else
+		icon:SetAlpha(0)
+	end
+	if faction == "FFA" or faction == "Horde" or faction == "Alliance" then
+		icon:SetTexture("Interface\\TargetingFrame\\UI-PVP-" .. faction)
+		icon:SetTexCoord(0, 0.65625, 0, 0.65625)
+	end
+	icon:Show()
+end
+
 local CastbarSecondsFormatter = C_StringUtil.CreateSecondsFormatter()
 CastbarSecondsFormatter:SetDefaultAbbreviation(Enum.SecondsFormatterAbbreviation.OneLetter)
 CastbarSecondsFormatter:SetMinInterval(Enum.SecondsFormatterInterval.Seconds)
@@ -1309,6 +1339,9 @@ module.funcs = {
 	PvPIndicator = function(self, unit, oufdb)
 		if not self.PvPIndicator then
 			self.PvPIndicator = self.Overlay:CreateTexture(nil, "OVERLAY")
+			if LUI.IsRetail and select(4, GetBuildInfo()) < 120105 then
+				self.PvPIndicator.Override = UpdatePvPIndicator
+			end
 			if unit == "player" then
 				self.PvPIndicator.Timer = SetFontString(self.Overlay, Media:Fetch("font", oufdb.PvPText.Font), oufdb.PvPText.Size, oufdb.PvPText.Outline)
 				self.Health:HookScript("OnUpdate", function()
