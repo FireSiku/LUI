@@ -69,6 +69,7 @@ element.RefreshSettings = element.UpdateBags
 -- ####################################################################################################################
 
 function element:OnCreate()
-	element:RegisterEvent("BAG_UPDATE", "UpdateBags")
+	-- Blizzard batches changes across bags into one completed update.
+	element:RegisterEvent("BAG_UPDATE_DELAYED", "UpdateBags")
 	element:UpdateBags()
 end
