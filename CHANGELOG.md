@@ -11,9 +11,10 @@
 - Core: Corrected color-picker input. Displayed rounding no longer changes the selected color.
 - Core: Stopped modifying Blizzard's combat-text animation constants to prevent secret-value errors. Custom fonts use Blizzard's normal text size and the SLUG renderer while critical animations remain under Blizzard's control.
 - Core: Combat-text font selection also applies to damage numbers above units after relogging, and waits for selected fonts from later-loading media packs.
-- Core: Added None, Outline and Thick Outline choices for scrolling combat text, with immediate updates and no forced monochrome rendering.
+- Core: Added None, Outline and Thick Outline choices for scrolling combat text, with immediate updates.
 - Core: Reduced repeated work in unitframe resource displays, infotext layouts, bags, experience bars, button styling and window layouts.
 - Unitframes: Updated the complete embedded framework to oUF 14.2.0, with LUI-specific resource, castbar and group-header behavior maintained in the Unitframes module.
+- Unitframes: Removed redundant pet and world-entry refreshes and reduced PvP timer polling.
 - Unitframes: Fixed additional-power initialization after oUF finishes loading.
 - Unitframes: Forever group-frame preparation now uses Blizzard's native header callbacks instead of directly calling the shared group update function.
 - Unitframes: Added shared font settings and a separate aura-count font option. Castbar outlines and raid information text positions now follow their settings.
