@@ -103,6 +103,13 @@ local backdrop2 = {
 	insets = {top = -1, left = -1, bottom = -1, right = -1},
 }
 
+local PercentFormats = {
+	["Absolut & Percent"] = true,
+	["Absolut Short & Percent"] = true,
+	["Standard & Percent"] = true,
+	["Standard Short & Percent"] = true,
+}
+
 local PercentCurve = C_CurveUtil.CreateCurve()
 PercentCurve:SetType(Enum.LuaCurveType.Linear)
 PercentCurve:AddPoint(0, 0)
@@ -221,8 +228,18 @@ local function UpdateHealthDisplay(self, unit, current, max)
 		health.valuePercent:SetText(health.valuePercent.ShowDead and "|cffD7BEA5<Dead>|r" or "")
 		health.valueMissing:SetText("")
 	else
-		local healthPercent = UnitHealthPercent(unit, false, PercentCurve)
-		local notFullAlpha = UnitHealthPercent(unit, true, NotFullCurve)
+		-- Only query native curves used by enabled texts. The results may be
+		-- restricted; pass them to widgets without inspecting their values.
+		local healthPercent
+		if health.valuePercent.Enable or (health.value.Enable and PercentFormats[health.value.Format]) then
+			healthPercent = UnitHealthPercent(unit, false, PercentCurve)
+		end
+		local notFullAlpha
+		if (health.value.Enable and not health.value.ShowAlways)
+			or (health.valuePercent.Enable and not health.valuePercent.ShowAlways)
+			or (health.valueMissing.Enable and not health.valueMissing.ShowAlways) then
+			notFullAlpha = UnitHealthPercent(unit, true, NotFullCurve)
+		end
 
 		if self.Info.OnlyWhenFull then
 			self.Info:SetAlpha(UnitHealthPercent(unit, false, IsFullCurve))
@@ -413,7 +430,10 @@ local function UpdatePowerDisplay(self, unit, current, min, max, displayType)
 		return
 	end
 
-	local powerPercent = UnitPowerPercent(unit, displayType, false, PercentCurve)
+	local powerPercent
+	if power.valuePercent.Enable or (power.value.Enable and PercentFormats[power.value.Format]) then
+		powerPercent = UnitPowerPercent(unit, displayType, false, PercentCurve)
+	end
 
 	if power.value.Enable == true then
 		if power.value.Format == "Absolut" then
