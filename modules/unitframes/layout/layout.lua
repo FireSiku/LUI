@@ -2552,19 +2552,9 @@ local function SetStyle(self, unit, isSingle)
 	self.Highlight:SetBlendMode("ADD")
 	self.Highlight:Hide()
 
-		self:RegisterEvent("PLAYER_FLAGS_CHANGED", function(self) self.Health:ForceUpdate() end)
-	if unit == "player" then self:RegisterEvent("PLAYER_ENTERING_WORLD", function(self) self.Health:ForceUpdate() end) end
-	if unit == "pet" then
-		self.elapsed = 0
-		self:SetScript("OnUpdate", function(self, elapsed)
-			if self.elapsed > 2.5 then
-				self:UpdateAllElements('refreshUnit')
-				self.elapsed = 0
-			else
-				self.elapsed = self.elapsed + elapsed
-			end
-		end)
-	end
+	self:RegisterEvent("PLAYER_FLAGS_CHANGED", function(self) self.Health:ForceUpdate() end)
+	-- oUF owns world-entry, pet/vehicle changes and each element's events.
+	-- A second world-entry refresh or periodic full pet update repeats that work.
 
 		if unit == "raid" or (unit == "party" and oufdb.RangeFade) then
 		self.Range = {
