@@ -55,7 +55,7 @@ Media:Register("font", "NotoSans-SCB", [[Interface\AddOns\LUI\media\fonts\NotoSa
 
 -- REGISTER BORDERS
 Media:Register("border", "glow", [[Interface\Addons\LUI\media\borders\glow.tga]])
-Media:Register("border", "Stripped", [[Interface\Addons\LUI\media\\borders\Stripped.tga]])
+Media:Register("border", "Stripped", [[Interface\Addons\LUI\media\borders\Stripped.tga]])
 Media:Register("border", "Stripped_hard", [[Interface\Addons\LUI\media\borders\Stripped_hard.tga]])
 Media:Register("border", "Stripped_medium", [[Interface\Addons\LUI\media\borders\Stripped_medium.tga]])
 
