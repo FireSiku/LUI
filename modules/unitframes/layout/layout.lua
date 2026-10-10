@@ -1364,23 +1364,32 @@ module.funcs = {
 			end
 			if unit == "player" then
 				self.PvPIndicator.Timer = SetFontString(self.Overlay, Media:Fetch("font", oufdb.PvPText.Font), oufdb.PvPText.Size, oufdb.PvPText.Outline)
-				self.Health:HookScript("OnUpdate", function()
-					local isPVP = UnitIsPVP(unit)
-					if not issecretvalue(isPVP) and isPVP and oufdb.PvPIndicator.Enable and oufdb.PvPText.Enable then
-						local timer = GetPVPTimer()
-						if issecretvalue(timer) or timer == 301000 or timer == -1 then
-							if self.PvPIndicator.Timer:IsShown() then
-								self.PvPIndicator.Timer:Hide()
-							end
-						else
-							self.PvPIndicator.Timer:Show()
-							local min = math.floor(timer / 1000 / 60)
-							local sec = math.floor(timer / 1000) - min * 60
-							self.PvPIndicator.Timer:SetFormattedText("%d:%.2d", min, sec)
-						end
-					elseif self.PvPIndicator.Timer:IsShown() then
-						self.PvPIndicator.Timer:Hide()
+				local elapsedSinceUpdate = 0
+				self.Health:HookScript("OnUpdate", function(_, elapsed)
+					local icon = self.PvPIndicator
+					elapsedSinceUpdate = elapsedSinceUpdate + elapsed
+					if elapsedSinceUpdate < 0.2 then return end
+					elapsedSinceUpdate = 0
+
+					local settings = module.db.profile.player
+					local isPVP
+					if settings.PvPIndicator.Enable and settings.PvPText.Enable then
+						isPVP = UnitIsPVP(unit)
 					end
+					if not issecretvalue(isPVP) and isPVP then
+						local timer = GetPVPTimer()
+						if not issecretvalue(timer) and timer ~= 301000 and timer ~= -1 then
+							local seconds = floor(timer / 1000)
+							if icon.LUITimerSeconds ~= seconds then
+								icon.Timer:SetFormattedText("%d:%.2d", floor(seconds / 60), seconds % 60)
+								icon.LUITimerSeconds = seconds
+							end
+							icon.Timer:Show()
+							return
+						end
+					end
+					icon.LUITimerSeconds = nil
+					if icon.Timer:IsShown() then icon.Timer:Hide() end
 				end)
 			end
 		end
