@@ -463,9 +463,9 @@ local microDefinitions = {
 		title = L["MicroPlayer_Name"],
 		any = L["MicroPlayer_Any"],
 		state = "CharacterFrame",
-		OnClick = function(self, btn)
-			_G.ToggleCharacter("PaperDollFrame")
-		end,
+		-- Keep CharacterFrame's status-bar updates on Blizzard's secure click path.
+		secureClickTarget = "CharacterMicroButton",
+		secureClickBothButtons = true,
 	},
 }
 
