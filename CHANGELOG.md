@@ -35,6 +35,7 @@
 - Artwork: Corrected profile switching, disabled-panel visibility and right-side background colors.
 - Micromenu: Added Raid Menu group options, difficulty settings, Edit Mode access and leave-group controls.
 - Micromenu: Added a Raid Menu right-click action to clear unit markers and updated group-action permission checks.
+- Micromenu: Routed character-panel clicks through Blizzard's native button to avoid secret-value errors in its status-bar text updates.
 - Infotext: Added optional Raider.IO Mythic+ scores and character details to the friends list.
 - Infotext: Improved friend-name sizing and added Enter confirmation for Battle.net broadcast messages.
 - Infotext: Tooltips now anchor to the text without the unused display-frame gap. Friends and Guild lists remain open during slow mouse transitions, row changes and scrollbar use.
