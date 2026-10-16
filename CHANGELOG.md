@@ -32,7 +32,7 @@
 - Experience Bars: Added rested XP shading, an optional rested percentage and the full rested reserve in the tooltip, including split and reversed bars. Grouped bar locking with the tracker controls.
 - Minimap: Fixed position, scale and shape handling when disabling and re-enabling the module, and preserved existing mail notifications during setup.
 - Mirror Bar: Fixed pause handling for breath, fatigue and other mirror timers.
-- Chat: Fixed voice-control restoration, cleared chat input handling and clickable IP address links.
+- Chat: Fixed font-size resets, voice-control restoration, cleared chat input handling and clickable IP address links.
 - UIElements: Added a setting for Forever's native swing timer.
 - UIElements: Expanded button styling across additional Blizzard windows, dialogs and settings controls, including graphics-quality panels, collections, group tools and Forever windows.
 - UIElements: Added optional positioning and a preview for the Dungeon Finder queue eye.
