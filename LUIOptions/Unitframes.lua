@@ -446,7 +446,10 @@ end
 
 local function GenerateIndicatorGroup(unit, name, order, get, set)
     if not get or not set then return end
-    local group = Opt:Group({name = name, order = order, get = get, set = set, args = {
+    local group = Opt:Group({name = name, order = order, get = get, set = set, handler = {
+        IsEnabled = function() return module:IsEnabled() end,
+        Refresh = function() module.ApplyIndicatorSettings(unit) end,
+    }, args = {
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
         X = Opt:OffsetX(),
         Y = Opt:OffsetY(),

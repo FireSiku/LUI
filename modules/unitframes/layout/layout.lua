@@ -1365,8 +1365,14 @@ module.funcs = {
 	PvPIndicator = function(self, unit, oufdb)
 		if not self.PvPIndicator then
 			self.PvPIndicator = self.Overlay:CreateTexture(nil, "OVERLAY")
+			self.PvPIndicator.useAtlasSize = false
 			if LUI.IsRetail and select(4, GetBuildInfo()) < 120105 then
 				self.PvPIndicator.Override = UpdatePvPIndicator
+			elseif LUI.IsRetail then
+				-- oUF's Retail atlas update still requests its native size.
+				self.PvPIndicator.PostUpdate = function(icon)
+					icon:SetSize(icon.LUISize, icon.LUISize)
+				end
 			end
 			if unit == "player" then
 				self.PvPIndicator.Timer = SetFontString(self.Overlay, Media:Fetch("font", oufdb.PvPText.Font), oufdb.PvPText.Size, oufdb.PvPText.Outline)
@@ -1400,6 +1406,7 @@ module.funcs = {
 			end
 		end
 
+		self.PvPIndicator.LUISize = oufdb.PvPIndicator.Size
 		self.PvPIndicator:SetHeight(oufdb.PvPIndicator.Size)
 		self.PvPIndicator:SetWidth(oufdb.PvPIndicator.Size)
 		self.PvPIndicator:ClearAllPoints()

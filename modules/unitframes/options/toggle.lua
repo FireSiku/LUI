@@ -1028,6 +1028,46 @@ pendingSettingsFrame:SetScript("OnEvent", function(self)
 	end
 end)
 
+local function ApplyIndicators(frame, styleUnit, dbUnit, update)
+	for key, icons in pairs(iconlist) do
+		local indicatorDB = dbUnit[indicatorDBKeys[key]]
+		if indicatorDB then
+			if indicatorDB.Enable then
+				module.funcs[icons[1]](frame, styleUnit, dbUnit)
+				for _, icon in pairs(icons) do
+					frame:EnableElement(icon)
+					if frame[icon] then
+						frame[icon]:Show()
+						if update and frame[icon].ForceUpdate then frame[icon]:ForceUpdate() end
+					end
+				end
+			else
+				for _, icon in pairs(icons) do
+					frame:DisableElement(icon)
+					if frame[icon] then frame[icon]:Hide() end
+				end
+			end
+		end
+	end
+end
+
+-- Indicator edits do not need to rebuild bars, auras or active castbar previews.
+module.ApplyIndicatorSettings = function(unit)
+	if InCombatLockdown() then
+		pendingUnitSettings[unit] = true
+		pendingSettingsFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
+
+	local dbUnit = module.db.profile[unit]
+	for _, framename in pairs(module.framelist[unit]) do
+		local frame = _G[framename]
+		if frame then
+			ApplyIndicators(frame, frame.LUIStyleUnit or frame.__unit, dbUnit, true)
+		end
+	end
+end
+
 module.ApplySettings = function(unit, force)
 	-- Unitframes are protected. Option changes may update the database in
 	-- combat, but every frame mutation must wait until combat lockdown ends.
@@ -1076,23 +1116,7 @@ module.ApplySettings = function(unit, force)
 			module.funcs.PowerMissing(frame, styleUnit, dbUnit)
 
 			-- icons
-			for key, icons in pairs(iconlist) do
-				local indicatorDB = dbUnit[indicatorDBKeys[key]]
-				if indicatorDB then
-					if indicatorDB.Enable then
-						module.funcs[icons[1]](frame, styleUnit, dbUnit)
-						for _, icon in pairs(icons) do
-							frame:EnableElement(icon)
-							if frame[icon] then frame[icon]:Show() end
-						end
-					else
-						for _, icon in pairs(icons) do
-							frame:DisableElement(icon)
-							if frame[icon] then frame[icon]:Hide() end
-						end
-					end
-				end
-			end
+			ApplyIndicators(frame, styleUnit, dbUnit)
 
 			-- player specific
 			if unit == "player" then
