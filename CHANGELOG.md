@@ -10,6 +10,7 @@
 - Core: Corrected media paths that could interrupt startup with strict LibSharedMedia validation.
 - Core: Reduced repeated updates in unitframes, infotext, bags, experience bars, button styling and window layouts.
 - Unitframes: Updated the embedded oUF framework to 14.2.0.
+- Unitframes: Updated arena preparation displays for restricted specialization data.
 - Unitframes: Added shared font settings and a separate aura-count font option. Castbar outlines and raid information text positions now follow their settings.
 - Unitframes: Restored healing-prediction and absorb defaults. Background opacity and brightness now apply independently to health and resource bars.
 - Unitframes: Corrected class-resource handling, druid mana, resource colors and text, bar toggles and overlapping auxiliary bars.

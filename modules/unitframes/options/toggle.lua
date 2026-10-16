@@ -1294,6 +1294,9 @@ module.ApplySettings = function(unit, force)
 
 			LUI.Profiler.TraceScope(frame, unit, "Unitframes", 2)
 			frame:UpdateAllElements('refreshUnit')
+			if unit == "arena" and module.UpdateArenaPreparation then
+				module:UpdateArenaPreparation(frame)
+			end
 		end
 	end
 end
