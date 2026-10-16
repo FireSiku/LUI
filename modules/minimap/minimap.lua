@@ -21,6 +21,7 @@ local IndicatorFrame = _G.MinimapCluster.IndicatorFrame
 local ExpansionButton = _G.ExpansionLandingPageMinimapButton
 local Minimap = _G.Minimap
 local InCombatLockdown = _G.InCombatLockdown
+local HasNewMail = _G.HasNewMail
 
 local MINIMAP_SQUARE_TEXTURE_MASK = "Interface\\ChatFrame\\ChatFrameBackground"
 local MINIMAP_ROUND_TEXTURE_MASK = "Textures\\MinimapMask"
@@ -36,6 +37,7 @@ local function GetLuiMinimapShape() return minimapShape end
 local oldDefault = {}         -- Keep information on default minimap
 local pendingAction
 local trackingMenu
+local mailFrameHooked
 local trackingAnchor = AnchorUtil.CreateAnchor("TOPRIGHT", Minimap, "TOPLEFT", -10, 8)
 
 local combatQueue = CreateFrame("Frame")
@@ -91,7 +93,23 @@ function module:PositionMinimapIcons()
 	IndicatorFrame:SetScale(db.Icons.Notifications.Scale)
 end
 
+local function RestoreMailIcon(mailFrame)
+	-- Blizzard clears the icon in OnHide, including when only a parent hides.
+	if module:IsEnabled() and mailFrame:IsVisible()
+		and mailFrame:IsEventRegistered("UPDATE_PENDING_MAIL")
+		and HasNewMail() and not mailFrame.MailIcon:IsShown() then
+		mailFrame:TryPlayMailNotification()
+	end
+end
+
 local function SetupMinimapIconHooks()
+	local mailFrame = IndicatorFrame.MailFrame
+	if not mailFrameHooked then
+		mailFrameHooked = true
+		mailFrame:HookScript("OnShow", RestoreMailIcon)
+	end
+	RestoreMailIcon(mailFrame)
+
 	if not ExpansionButton or module.expansionButtonHooked then return end
 	module.expansionButtonHooked = true
 
@@ -345,6 +363,7 @@ function module:SetMinimapAgain()
 	module:HideDefaultMinimap()
 	module:SetMinimapPosition()
 	module:SetMinimapScripts()
+	SetupMinimapIconHooks()
 	module:PositionMinimapIcons()
 	module:ToggleMinimapText()
 	module:RefreshTextColors()
