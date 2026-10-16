@@ -16,6 +16,7 @@ local L = LUI.L
 local db
 
 local ChatFrameUtil = _G.ChatFrameUtil
+local FCF_GetChatFrameByID = _G.FCF_GetChatFrameByID
 local FCF_GetCurrentChatFrame = _G.FCF_GetCurrentChatFrame
 local FCFDock_SelectWindow = _G.FCFDock_SelectWindow
 local FCFTab_UpdateAlpha = _G.FCFTab_UpdateAlpha
@@ -217,6 +218,11 @@ local function captureChatFrame(frame)
 	}
 end
 
+local function applyChatFont(frame)
+	captureChatFrame(frame)
+	frame:SetFont(Media:Fetch("font", db.General.Font.Font), db.General.Font.Size, db.General.Font.Flag)
+end
+
 local function unclampChatFrame(frame)
 	captureChatFrame(frame)
 	frame:SetClampRectInsets(0,0,0,0)
@@ -343,7 +349,7 @@ end
 function module:LibSharedMedia_Registered(mediaType, key)
 	if mediaType == "font" and key == db.General.Font.Font then
 		for i, name in ipairs(CHAT_FRAMES) do
-			_G[name]:SetFont(Media:Fetch("font", db.General.Font.Font), db.General.Font.Size, db.General.Font.Flag)
+			applyChatFont(_G[name])
 		end
 	end
 end
@@ -351,6 +357,11 @@ end
 --------------------------------------------------
 -- Hook Functions
 --------------------------------------------------
+
+function module:FloatingChatFrame_Update(id)
+	-- Blizzard can restore its saved font size after LUI's initial refresh.
+	applyChatFont(FCF_GetChatFrameByID(id))
+end
 
 function module:FCF_OpenTemporaryWindow()
 	local frame = FCF_GetCurrentChatFrame()
@@ -362,7 +373,7 @@ function module:FCF_OpenTemporaryWindow()
 	end
 	configureTab(_G[frame:GetName().."Tab"], db.General.MinimalistTabs)
 
-	frame:SetFont(Media:Fetch("font", db.General.Font.Font), db.General.Font.Size, db.General.Font.Flag)
+	applyChatFont(frame)
 
 	if db.General.ShortChannelNames and not self:IsHooked(frame, "AddMessage") then
 		self:RawHook(frame, "AddMessage", true)
@@ -601,6 +612,7 @@ function module:OnEnable()
 		createStaticPopups()
 	end
 
+	self:SecureHook("FloatingChatFrame_Update")
 	self:SecureHook("FCF_OpenTemporaryWindow")
 	self:RawHook("SetItemRef", true)
 
