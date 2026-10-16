@@ -8,7 +8,8 @@ The api/oUF13 directory name is retained for existing load paths.
 LUI owns its compatibility code in modules/unitframes:
 - layout/layout.lua: power colors, explicit Mana gradients, fractional class
   resources, backgrounds, health/absorb presentation, resource layout and
-  the Retail 12.1.0 PvP indicator override.
+  the Retail 12.1.0 PvP indicator override. PvP icons retain LUI's configured
+  dimensions through useAtlasSize on Forever and PostUpdate on Retail 12.1.5.
 - layout/auras_12_1.lua: native AuraContainer presentation.
 - castbar_compat.lua: temporary Blizzard castbar ownership and restoration.
 - classpower_compat.lua: Forever target-bound combo points and their events.
@@ -16,3 +17,13 @@ LUI owns its compatibility code in modules/unitframes:
 
 Do not patch bundled framework files for LUI-specific behavior. Use oUF's
 layout callbacks, color overrides and initialization hooks instead.
+
+API review, 2026-10-16:
+- Retail 12.1.5 build 70391; Forever 1.60.1 build 70425.
+- oUF 14.2.0 remains the latest release; its master has no newer commits.
+- Open compatibility concern: units.lua's arena preparation directly uses
+  GetArenaOpponentSpec and indexes class colors from its result. Blizzard's
+  current API marks the specialization ID as secret. Its native
+  UnitFrameUtil arena-display delegates provide an alternative, but the
+  existing oUF preparation path has not been replaced or verified in game.
+  This is separate from PvPIndicator visibility and size settings.
