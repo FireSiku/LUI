@@ -2,62 +2,40 @@
 
 ## Changes since last version
 
-- Core: Added shared Retail and Warcraft Forever support with client-specific features and options.
-- Core: The options title identifies the game client while retaining Dev, Release and Alpha version information.
-- Core: Blizzard's progress and bag bars are hidden in Forever while their LUI replacements are enabled, and restored when disabled.
-- Core: Fixed errors when the options addon cannot be loaded and restored confirmation dialogs in generated settings.
-- Core: Corrected media file paths that could interrupt startup with strict LibSharedMedia validation.
-- Core: Fixed older-profile conversion when current button settings are present.
-- Core: Fixed profile backups and restores losing custom or module settings. General settings continue to use the active profile after restoring a backup. Failed backups preserve the previous backup, and imported profile names handle accented characters correctly.
-- Core: Corrected color-picker input. Displayed rounding no longer changes the selected color.
-- Core: Stopped modifying Blizzard's combat-text animation constants to prevent secret-value errors. Custom fonts use Blizzard's normal text size and the SLUG renderer while critical animations remain under Blizzard's control.
-- Core: Combat-text font selection also applies to damage numbers above units after relogging, and waits for selected fonts from later-loading media packs.
-- Core: Added None, Outline and Thick Outline choices for scrolling combat text, with immediate updates.
-- Core: Reduced repeated work in unitframe resource displays, infotext layouts, bags, experience bars, button styling and window layouts.
-- Unitframes: Updated the complete embedded framework to oUF 14.2.0, with LUI-specific resource, castbar and group-header behavior maintained in the Unitframes module.
-- Unitframes: Removed redundant pet and world-entry refreshes and reduced PvP timer polling.
-- Unitframes: Reduced repeated text-color queries and skipped unnecessary resource-text visibility queries.
-- Unitframes: Fixed additional-power initialization after oUF finishes loading.
-- Unitframes: Forever group-frame preparation now uses Blizzard's native header callbacks instead of directly calling the shared group update function.
+- Core: Added shared Retail and Warcraft Forever support, including Retail 12.1.5 compatibility and client-specific options.
+- Core: Fixed options-addon loading errors, confirmation dialogs and older-profile conversion.
+- Core: Fixed profile backups and restores losing custom or module settings. Failed backups preserve the previous backup, and imported profile names support accented characters.
+- Core: Corrected color-picker input so displayed rounding no longer changes the selected color.
+- Core: Added scrolling combat-text outline choices and improved custom-font handling for scrolling text and damage numbers above units.
+- Core: Corrected media paths that could interrupt startup with strict LibSharedMedia validation.
+- Core: Reduced repeated updates in unitframes, infotext, bags, experience bars, button styling and window layouts.
+- Unitframes: Updated the embedded oUF framework to 14.2.0.
 - Unitframes: Added shared font settings and a separate aura-count font option. Castbar outlines and raid information text positions now follow their settings.
-- Unitframes: Restored missing healing-prediction and absorb defaults, and corrected resource colors and additional-power smoothing.
-- Unitframes: Background opacity and brightness now apply independently to health and resource bars.
-- Unitframes: Corrected class-resource availability in Retail and Forever, cat-form combo-point detection and small fractional resource values.
-- Unitframes: Forever combo points now follow the current target and update when points are transferred between targets.
-- Unitframes: Corrected the inverted PvP indicator on Retail 12.1.0 while retaining Blizzard's restricted-value handling.
-- Unitframes: Restored druid mana in bear and cat form, corrected mana text and gradients, and fixed resource-bar toggles and overlapping auxiliary bars.
+- Unitframes: Restored healing-prediction and absorb defaults. Background opacity and brightness now apply independently to health and resource bars.
+- Unitframes: Corrected class-resource handling, druid mana, resource colors and text, bar toggles and overlapping auxiliary bars.
 - Unitframes: Restored Blizzard castbars during temporary action UIs and updated nameplate castbar handling.
-- Unitframes: Added optional shield icons for uninterruptible casts, with left, right or both sides and adjustable size and offsets.
-- Unitframes: Added a pet happiness indicator for Hunters in Warcraft Forever, with adjustable size and position.
-- Unitframes: Fixed group frames remaining hidden when entering combat during a preview.
-- Unitframes: Stopping a castbar preview now also closes unitframe previews opened only for that test.
-- Unitframes: Combat-feedback settings now apply immediately, with corrected resource-gain text and resource and crushing-hit colors.
+- Unitframes: Added optional shield icons for uninterruptible casts, with adjustable size, position and left, right or both-side placement.
+- Unitframes: Added a configurable pet happiness indicator for Hunters in Warcraft Forever.
+- Unitframes: Improved unitframe and castbar preview cleanup and transitions into combat.
+- Unitframes: Combat-feedback settings now apply immediately, with corrected resource-gain text and colors.
+- Unitframes: Indicator settings refresh only the selected unit frames and their previews.
 - Artwork: Corrected profile switching, disabled-panel visibility and right-side background colors.
-- Micromenu: Added Raid Menu group options, difficulty settings, Edit Mode access and leave-group controls.
-- Micromenu: Added a Raid Menu right-click action to clear unit markers and updated group-action permission checks.
-- Micromenu: Routed character-panel clicks through Blizzard's native button to avoid secret-value errors in its status-bar text updates.
-- Infotext: Added optional Raider.IO Mythic+ scores and character details to the friends list.
-- Infotext: Improved friend-name sizing and added Enter confirmation for Battle.net broadcast messages.
-- Infotext: Tooltips now anchor to the text without the unused display-frame gap. Friends and Guild lists remain open during slow mouse transitions, row changes and scrollbar use.
-- Infotext: Added an Alliance, Horde or Both filter for characters in the Gold tooltip while retaining both faction totals.
-- Infotext: The Gold tooltip shows Blizzard's Warband bank balance separately on clients that support bank money transfers.
+- Micromenu: Added Raid Menu group options, difficulty settings, Edit Mode access, leave-group controls and a right-click action to clear unit markers.
+- Micromenu: Character-panel clicks now use Blizzard's native button to avoid secret-value errors in its status bars.
+- Infotext: Added optional Raider.IO Mythic+ scores and character details to the friends list, improved name sizing and added Enter confirmation for Battle.net broadcasts.
+- Infotext: Improved tooltip anchoring and Friends/Guild window behavior during mouse transitions, row changes and scrollbar use.
+- Infotext: Added an Alliance, Horde or Both filter to the Gold tooltip and a separate Warband bank balance on supported clients.
 - Tooltip: Improved compatibility with Blizzard tooltip handlers and made scale changes apply immediately.
-- Tooltip: Removed a redundant rebuild of Blizzard unitframe tooltips.
 - Bags: Added an optional keyring shortcut for Forever and retained its native bank window.
-- Bags: Fixed blocked item use after visiting the bank on Retail.
-- Bags: Fixed searches containing special characters and removed stray pixels from item slots.
-- Experience Bars: Grouped the bar-locking option with the tracker controls.
-- Experience Bars: Added rested XP shading, an optional rested percentage on the bar and the full rested reserve in the tooltip for Retail and Forever, including split and reversed bars.
-- Minimap: Fixed position, scale and shape handling when disabling and re-enabling the module.
-- Minimap: Preserved existing mail notifications when enabling the LUI minimap.
+- Bags: Fixed blocked item use after visiting the bank on Retail, searches containing special characters and stray pixels around item slots.
+- Experience Bars: Added rested XP shading, an optional rested percentage and the full rested reserve in the tooltip, including split and reversed bars. Grouped bar locking with the tracker controls.
+- Minimap: Fixed position, scale and shape handling when disabling and re-enabling the module, and preserved existing mail notifications during setup.
 - Mirror Bar: Fixed pause handling for breath, fatigue and other mirror timers.
-- Chat: Fixed voice-control visibility restoration, handling of a cleared chat input and clickable IP address links.
+- Chat: Fixed voice-control restoration, cleared chat input handling and clickable IP address links.
 - UIElements: Added a setting for Forever's native swing timer.
-- UIElements: Extended button styling to additional Blizzard windows and dialogs, including Forever's Legacy window and Statistics controls, the shop, Trading Post, map, calendar, collections, transmog, color picker, timer, objective tracker, currency categories, Quick Join, native and LUI raid controls, ready checks, Abandon Key votes and Battle.net friend requests.
+- UIElements: Expanded button styling across additional Blizzard windows, dialogs and settings controls, including graphics-quality panels, collections, group tools and Forever windows.
 - UIElements: Added optional positioning and a preview for the Dungeon Finder queue eye.
-- UIElements: Improved compatibility with restricted controls and kept bag and item-slot artwork separate from general button styling.
-- UIElements: Fixed LUI HD styling and restoration when native buttons replace their textures.
-- UIElements: Extended button styling to Blizzard settings dropdowns, steppers, tabs, expandable sections and keybindings, including both graphics-quality panels.
+- UIElements: Improved styling and restoration of native buttons while keeping restricted controls and item-slot artwork separate.
 - Addons: Corrected Darion skin texture paths for users who have Masque installed separately.
 
 ---
