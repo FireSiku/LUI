@@ -38,6 +38,7 @@ local oldDefault = {}         -- Keep information on default minimap
 local pendingAction
 local trackingMenu
 local mailFrameHooked
+local indicatorPositionHooked
 local trackingAnchor = AnchorUtil.CreateAnchor("TOPRIGHT", Minimap, "TOPLEFT", -10, 8)
 
 local combatQueue = CreateFrame("Frame")
@@ -102,6 +103,10 @@ local function RestoreMailIcon(mailFrame)
 	end
 end
 
+local function RestoreMinimapIconPositions()
+	if module:IsEnabled() then module:PositionMinimapIcons() end
+end
+
 local function SetupMinimapIconHooks()
 	local mailFrame = IndicatorFrame.MailFrame
 	if not mailFrameHooked then
@@ -110,15 +115,18 @@ local function SetupMinimapIconHooks()
 	end
 	RestoreMailIcon(mailFrame)
 
+	if not indicatorPositionHooked then
+		indicatorPositionHooked = true
+		-- Edit Mode and tracking updates can reanchor notifications to Blizzard's header.
+		hooksecurefunc(_G.MinimapCluster, "SetHeaderUnderneath", RestoreMinimapIconPositions)
+		hooksecurefunc("MiniMapIndicatorFrame_UpdatePosition", RestoreMinimapIconPositions)
+	end
+
 	if not ExpansionButton or module.expansionButtonHooked then return end
 	module.expansionButtonHooked = true
 
-	hooksecurefunc(ExpansionButton, "SetLandingPageIconOffset", function()
-		if module:IsEnabled() then module:PositionMinimapIcons() end
-	end)
-	ExpansionButton:HookScript("OnShow", function()
-		if module:IsEnabled() then module:PositionMinimapIcons() end
-	end)
+	hooksecurefunc(ExpansionButton, "SetLandingPageIconOffset", RestoreMinimapIconPositions)
+	ExpansionButton:HookScript("OnShow", RestoreMinimapIconPositions)
 end
 
 -- ####################################################################################################################
