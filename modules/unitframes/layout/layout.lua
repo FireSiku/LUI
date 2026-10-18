@@ -67,6 +67,58 @@ local function UpdatePvPIndicator(self, event, unit)
 	icon:Show()
 end
 
+local function UpdatePortrait(self, event, unit)
+	local frameUnit = self.__unit
+	if issecretvalue(frameUnit) or not frameUnit then return end
+	if not issecretvalue(unit) and unit and unit ~= frameUnit
+		and C_Secrets.CanCompareUnitTokens(frameUnit, unit) then
+		local isSameUnit = UnitIsUnit(frameUnit, unit)
+		if not issecretvalue(isSameUnit) and not isSameUnit then return end
+	end
+	-- An event's unit comparison can be secret during combat/model changes.
+	-- Refresh this frame's own model when the event cannot be ruled out.
+	unit = frameUnit
+	local element = self.Portrait
+	if element.PreUpdate then element:PreUpdate(unit) end
+
+	local connected, visible = UnitIsConnected(unit), UnitIsVisible(unit)
+	local guid = UnitGUID(unit)
+	-- PlayerModel:SetUnit requires a declassified identity.
+	local unavailable = issecretvalue(guid)
+		or (not issecretvalue(connected) and not connected)
+		or (not issecretvalue(visible) and not visible)
+	local changed = event ~= "OnUpdate" or element.LUIPortraitUnavailable ~= unavailable
+	if not changed and not issecretvalue(guid) and not issecretvalue(element.LUIPortraitGUID) then
+		changed = element.LUIPortraitGUID ~= guid
+	end
+
+	if changed then
+		if unavailable then
+			element:SetCamDistanceScale(0.25)
+			element:SetPortraitZoom(0)
+			element:SetPosition(0, 0, 0.25)
+			element:ClearModel()
+			element:SetModel("Interface\\Buttons\\TalkToMeQuestionMark.m2")
+		else
+			element:SetCamDistanceScale(1)
+			element:SetPortraitZoom(1)
+			element:SetPosition(0, 0, 0)
+			element:ClearModel()
+			element:SetUnit(unit)
+		end
+		element.LUIPortraitGUID = guid
+		element.LUIPortraitUnavailable = unavailable
+	end
+
+	if element.PostUpdate then return element:PostUpdate(unit, changed) end
+end
+
+local function UpdatePortraitRestrictions(self, event)
+	if self:IsElementEnabled("Portrait") and not self:IsElementPaused("Portrait") then
+		return UpdatePortrait(self, event)
+	end
+end
+
 local CastbarSecondsFormatter = C_StringUtil.CreateSecondsFormatter()
 CastbarSecondsFormatter:SetDefaultAbbreviation(Enum.SecondsFormatterAbbreviation.OneLetter)
 CastbarSecondsFormatter:SetMinInterval(Enum.SecondsFormatterInterval.Seconds)
@@ -1817,6 +1869,8 @@ module.funcs = {
 			self.Portrait = CreateFrame("PlayerModel", nil, self)
 			self.Portrait:SetFrameLevel(self:GetFrameLevel() + 5)
 		end
+		self.Portrait.Override = UpdatePortrait
+		self:RegisterEvent("ADDON_RESTRICTION_STATE_CHANGED", UpdatePortraitRestrictions, true)
 
 		self.Portrait:SetHeight(oufdb.Portrait.Height)
 		self.Portrait:SetWidth(oufdb.Portrait.Width * self:GetWidth() / oufdb.Width) -- needed for 25/40 man raid width downscaling!
