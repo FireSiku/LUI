@@ -23,7 +23,6 @@
 - Artwork: Corrected profile switching, disabled-panel visibility and right-side background colors.
 - Micromenu: Added Raid Menu group options, difficulty settings, Edit Mode access, leave-group controls and a right-click action to clear unit markers.
 - Micromenu: Character-panel clicks now use Blizzard's native button to avoid secret-value errors in its status bars.
-- Micromenu: Added Forever's Group Finder button and visibility option, and removed the duplicate Achievements entry when Legacy is available.
 - Infotext: Added optional Raider.IO Mythic+ scores and character details to the friends list, improved name sizing and added Enter confirmation for Battle.net broadcasts.
 - Infotext: Improved tooltip anchoring and Friends/Guild window behavior during mouse transitions, row changes and scrollbar use.
 - Infotext: Added an Alliance, Horde or Both filter to the Gold tooltip and a separate Warband bank balance on supported clients.
