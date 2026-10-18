@@ -362,11 +362,16 @@ local microDefinitions = {
 
 	{
 		name = "LFG",
-		level = LFG_LEVEL_REQ,
-		title = L["MicroLFG_Name"],
-		left = L["MicroLFG_Left"],
-		right = L["MicroLFG_Right"],
-		state = "PVEFrame",
+		level = not LUI.IsForever and LFG_LEVEL_REQ or nil,
+		title = LUI.IsForever and (_G.LFG_TITLE or L["MicroLFG_Name"]) or L["MicroLFG_Name"],
+		any = LUI.IsForever and _G.BINDING_NAME_TOGGLEGROUPFINDER or nil,
+		left = not LUI.IsForever and L["MicroLFG_Left"] or nil,
+		right = not LUI.IsForever and L["MicroLFG_Right"] or nil,
+		state = LUI.IsForever and "LFGParentFrame" or "PVEFrame",
+		addon = LUI.IsForever and "Blizzard_GroupFinder_VanillaStyle" or nil,
+		secureClickTarget = LUI.IsForever and "LFDMicroButton" or nil,
+		secureClickBothButtons = LUI.IsForever,
+		nativeTooltipTarget = LUI.IsForever and "LFDMicroButton" or nil,
 		OnClick = function(self, btn)
 			if btn == "RightButton" then
 				if _G.TogglePVPUI then _G.TogglePVPUI() end
@@ -494,8 +499,10 @@ function MicroButtonClickerMixin:OnEnter()
 		GameTooltip:AddLine(parent.right, GREEN_FONT_COLOR.r, GREEN_FONT_COLOR.g, GREEN_FONT_COLOR.b, true)
 	end
     local native = parent.nativeTooltipTarget and _G[parent.nativeTooltipTarget]
-    if native and native.disabledTooltip then
-        GameTooltip:AddLine(native.disabledTooltip, 1, 0.2, 0.2, true)
+    local disabledTooltip = native and not native:IsEnabled() and native.disabledTooltip
+    if type(disabledTooltip) == "function" then disabledTooltip = disabledTooltip() end
+    if disabledTooltip then
+        GameTooltip:AddLine(disabledTooltip, 1, 0.2, 0.2, true)
     end
 	local playerLevel = UnitLevel("player")
 	if parent.level and not issecretvalue(playerLevel) and playerLevel < parent.level then
