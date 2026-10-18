@@ -10,7 +10,7 @@ local rules = {
 }
 local functions = {
     Collections = "ToggleCollectionsJournal", EJ = "ToggleEncounterJournal",
-    LFG = "ToggleLFDParentFrame", Achievements = "ToggleAchievementFrame",
+    LFG = "ToggleGroupFinderFrame", Achievements = "ToggleAchievementFrame",
 }
 
 function module:IsClientButtonAvailable(name)
@@ -19,6 +19,8 @@ function module:IsClientButtonAvailable(name)
         if not LUI:HasClientFeature(name) then return false end
     end
     if not LUI.IsForever then return true end
+    -- Forever exposes achievements as Legacy Challenges in the same window.
+    if name == "Achievements" and LUI:HasClientFeature("Legacy") then return false end
     local rule = rules[name] and Enum.GameRule and Enum.GameRule[rules[name]]
     if rule and C_GameRules and C_GameRules.IsGameRuleActive
         and C_GameRules.IsGameRuleActive(rule) then return false end
