@@ -56,6 +56,14 @@ enable-nolib-creation: no
 license-output: docs/License.txt
 
 ignore:
+  - docs/.nojekyll
+  - docs/README.md
+  - docs/index.html
+  - docs/style.css
+  - docs/style.min.css
+  - docs/script.js
+  - docs/script.min.js
+  - docs/assets
   - docs/ToDo.txt
   - media/templates/v3_backup
   - media/templates/v4_originals
