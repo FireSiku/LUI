@@ -11,7 +11,9 @@ function LUI:HasClientFeature(feature)
     elseif feature == "Keyring" then
         return self.IsForever and C_ActionBar and type(C_ActionBar.ShouldShowKeyring) == "function"
             and Enum and Enum.BagIndex and Enum.BagIndex.Keyring ~= nil or false
-    elseif feature == "Housing" or feature == "LFG" or feature == "EJ" then
+    elseif feature == "LFG" then
+        return self.IsRetail or (self.IsForever and _G.LFDMicroButton ~= nil)
+    elseif feature == "Housing" or feature == "EJ" then
         -- These native addons are excluded from the supported Forever build.
         return self.IsRetail
     end
