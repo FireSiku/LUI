@@ -5,7 +5,7 @@ local db, default
 
 -- Increase whenever there are changes that would require remediation
 -- Append every database migration in a new version block in ApplyUpdate.
-local DB_VERSION = 10
+local DB_VERSION = 11
 
 function LUI:GetDBVersion()
 	return DB_VERSION
@@ -826,6 +826,27 @@ function LUI:ApplyUpdate(ver)
 			for _, panelDB in pairs(artwork.db.profile.Textures) do
 				if panelDB.Texture == "panel_corner.tga" then
 					panelDB.Texture = "panel_corner_fill.tga"
+				end
+			end
+		end
+
+		requireReload = true
+	end
+
+	if ver < 11 then
+		local artwork = LUI:GetModule("Artwork", true)
+		if artwork and artwork.db then
+			local panels = artwork.db.profile.LUITextures
+			for kind, id in pairs({Dps = 1, Tps = 2}) do
+				local panel = panels[kind]
+				-- The old defaults did not distinguish an automatic Details
+				-- assignment from a chosen preset. Clear that pairing once;
+				-- with empty defaults, later explicit choices stay saved.
+				if (panel.Anchor == "" or panel.Anchor == "DetailsBaseFrame"..id)
+					and (panel.Additional == "" or panel.Additional == "DetailsRowFrame"..id) then
+					panel.Anchor = ""
+					panel.Additional = ""
+					panel.IsShown = false
 				end
 			end
 		end
