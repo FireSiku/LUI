@@ -209,8 +209,12 @@ local function SyncRetailBags()
 	if not retailBagHooksEnabled then return end
 	local shown = retailBagRequestedOpen
 	retailBagRequestedOpen = nil
-	if shown == LUIBags:IsShown() then return end
-	if shown then module.OpenBags() else module.CloseBags() end
+	if shown ~= LUIBags:IsShown() then
+		if shown then module.OpenBags() else module.CloseBags() end
+	end
+	-- A coalesced close or a rejected open may leave LUI hidden throughout,
+	-- so its OnHide cannot clear native bags that still report IsShown().
+	if not LUIBags:IsShown() then HideRetailBagFrames() end
 end
 
 local function QueueRetailBagSync(shown)
@@ -262,6 +266,9 @@ function module:EnableRetailBagHooks()
 	end
 	retailBagHooksEnabled = true
 	SuppressRetailBagFrames()
+	-- Reparenting an open native bag makes it invisible, not closed. ESC
+	-- would otherwise consume its first press closing that hidden window.
+	if not LUIBags:IsShown() then HideRetailBagFrames() end
 
 	for name, handler in pairs({
 		ToggleBackpack = RequestRetailBagToggle,
