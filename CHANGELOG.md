@@ -21,6 +21,9 @@
 - Unitframes: Improved unitframe and castbar preview cleanup and transitions into combat.
 - Unitframes: Combat-feedback settings now apply immediately, with corrected resource-gain text and colors.
 - Unitframes: Indicator settings refresh only the selected unit frames and their previews.
+- Unitframes: Fixed aura row settings and copying or resetting aura layouts.
+- Unitframes: Castbar anchors now follow their settings, and copying General settings respects size and position options.
+- Unitframes: Raid name shortening now follows frame width and font changes without splitting accented characters.
 - Artwork: Corrected profile switching, disabled-panel visibility and right-side background colors.
 - Micromenu: Added Raid Menu group options, difficulty settings, Edit Mode access, leave-group controls and a right-click action to clear unit markers.
 - Micromenu: Character-panel clicks now use Blizzard's native button to avoid secret-value errors in its status bars.
