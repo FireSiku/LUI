@@ -67,6 +67,7 @@ local PRESET_RAID_ANCHORS = {
 	CompactRaidFrameContainer = "Blizzard Raid Frames",
 }
 local PRESET_METER_ANCHORS = {
+	[""] = "None",
 	DetailsBaseFrame1 = "Details - Window 1",
 	DetailsBaseFrame2 = "Details - Window 2",
 	DamageMeterSessionWindow1 = "Blizzard Damage Meter - Window 1",
@@ -254,7 +255,9 @@ local function CreateMainPanelOptions(kind, displayName)
 	local group = Opt:Group({name = displayName, db = db.LUITextures[kind], args = {
 		Header = Opt:Header({name = displayName}),
 		RaidPanelDesc = Opt:Desc({onlyIf = kind == "Raid", name = "Artwork behind the raid frames. Raid markers, ready checks and other raid tools are configured under Micromenu > Raid Menu.\n"}),
-		addon = Opt:Desc({onlyIf = isNotChat, name = "Choose a preset or enter the frame name to attach to this panel.\n"}),
+		addon = Opt:Desc({onlyIf = isNotChat, name = kind == "Raid"
+			and "Choose a preset or enter the frame name to attach to this panel.\n"
+			or "Meter panels are unassigned by default. Choose a preset or enter a frame name to let LUI add artwork and show or hide that window. Select None to remove the assignment.\n"}),
 		AnchorPreset = Opt:Select({onlyIf = isNotChat, name = "Bar Preset", values = (kind == "Raid") and PRESET_RAID_ANCHORS or PRESET_METER_ANCHORS, get = presetDropdownGet, set = presetDropdownSet}),
 		Anchor = Opt:Input({onlyIf = isNotChat, name = "Anchor", desc = "Enter the anchor frame manually."}),
 		FrameIdentifierDesc = Opt:Desc({onlyIf = isNotChat, name = "Use the LUI Frame Identifier to find a frame name. You can also use Blizzard's /framestack command."}),
