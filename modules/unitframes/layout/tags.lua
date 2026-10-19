@@ -38,6 +38,7 @@ TagMethods["lui:raidgroup"] = function()
 end
 
 local function utf8sub(string, i, dots)
+	if i <= 0 then return "" end
 	local bytes = string:len()
 	if bytes <= i then
 		return string
@@ -76,21 +77,21 @@ local function ShortenName(name)
 	if not nameCache[name] then nameCache[name] = {} end
 
 	local shortname = name
-	local maxwidth = module.db.profile.raid.Width * 0.9
+	local maxwidth = math.max(0, module.db.profile.raid.Width * 0.9)
 
 	local l = name:len()
 	while maxwidth < teststring:GetStringWidth() do
-		shortname = shortname:sub(1, l)
+		shortname = utf8sub(name, l)
 		teststring:SetText(shortname)
 		l = l - 1
 	end
 
 	nameCache[name][1] = shortname
 
-	maxwidth = ((module.db.profile.raid.Width * 5 - module.db.profile.raid.GroupPadding * 3) / 8) * 0.9
+	maxwidth = math.max(0, ((module.db.profile.raid.Width * 5 - module.db.profile.raid.GroupPadding * 3) / 8) * 0.9)
 
 	while maxwidth < teststring:GetStringWidth() do
-		shortname = shortname:sub(1, l)
+		shortname = utf8sub(name, l)
 		teststring:SetText(shortname)
 		l = l - 1
 	end

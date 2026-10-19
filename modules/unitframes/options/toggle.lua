@@ -1023,9 +1023,10 @@ pendingSettingsFrame:SetScript("OnEvent", function(self)
 	local queued = pendingUnitSettings
 	pendingUnitSettings = {}
 
-	for unit in pairs(queued) do
-		module.ApplySettings(unit)
+	for unit, force in pairs(queued) do
+		module.ApplySettings(unit, force)
 	end
+	if module.RefreshUnitframePreview then module:RefreshUnitframePreview() end
 end)
 
 local function ApplyIndicators(frame, styleUnit, dbUnit, update)
@@ -1054,7 +1055,7 @@ end
 -- Indicator edits do not need to rebuild bars, auras or active castbar previews.
 module.ApplyIndicatorSettings = function(unit)
 	if InCombatLockdown() then
-		pendingUnitSettings[unit] = true
+		pendingUnitSettings[unit] = pendingUnitSettings[unit] or false
 		pendingSettingsFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
 	end
@@ -1072,18 +1073,17 @@ module.ApplySettings = function(unit, force)
 	-- Unitframes are protected. Option changes may update the database in
 	-- combat, but every frame mutation must wait until combat lockdown ends.
 	if InCombatLockdown() then
-		pendingUnitSettings[unit] = true
+		pendingUnitSettings[unit] = force or pendingUnitSettings[unit] or false
 		pendingSettingsFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
 	end
 
 	local dbUnit = module.db.profile[unit]
-	if dbUnit.Enable == false and not force then return end
 
 	for _, framename in pairs(module.framelist[unit]) do
 		local frame = _G[framename]
 
-		if frame then
+		if frame and (dbUnit.Enable ~= false or force or frame.LUIPreview) then
 			local styleUnit = frame.LUIStyleUnit or frame.__unit
 			local runtimeUnit = frame.LUIPreviewUnit or frame.__unit
 			if framename:find("oUF_LUI_raid_40") then
