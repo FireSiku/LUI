@@ -40,7 +40,9 @@ local function ApplyButtonAppearance(button, db)
     if issecretvalue(canAccess) or not canAccess then return false end
 
     local settings = module.db.profile.Settings
-    -- Existing button sizes are managed through SetAuraGroupLayout.
+    -- SetAuraGroupLayout only reserves space and positions the buttons; it
+    -- does not resize existing widgets. Apply the same size to the icon frame.
+    button:SetSize(db.Size, db.Size)
 
     button.Cooldown:SetReverse(db.CooldownReverse == true)
     button.Cooldown:SetAlpha(db.DisableCooldown == true and 0 or 1)

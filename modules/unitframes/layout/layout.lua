@@ -541,6 +541,31 @@ local function UpdatePowerDisplay(self, unit, current, min, max, displayType)
 	end
 end
 
+local function GetPowerTypeColor(power, unit)
+	local colors = power.__owner.colors.power
+	local displayType = power.LUIDisplayType
+	local color = displayType and colors[displayType]
+	if not color then
+		local powerType, token, r, g, b = UnitPowerType(unit)
+		if not issecretvalue(token) then color = colors[token] end
+		if not color then
+			if issecretvalue(r) or issecretvalue(g) or issecretvalue(b) then
+				return r, g, b
+			elseif r ~= nil and g ~= nil and b ~= nil then
+				if r > 1 or g > 1 or b > 1 then r, g, b = r / 255, g / 255, b / 255 end
+				return r, g, b
+			elseif not issecretvalue(powerType) then
+				color = colors[powerType] or colors.MANA
+			end
+		end
+	end
+	if color then return color:GetRGB() end
+end
+
+local function UsesPowerTypeColor(text)
+	return text and text.Enable and text.color == "By Type"
+end
+
 local function PostUpdatePowerColor(power, unit)
 	local r, g, b
 	if power.color == "Individual" then
@@ -554,6 +579,13 @@ local function PostUpdatePowerColor(power, unit)
 	end
 
 	UpdateBarBackground(power.bg, r, g, b)
+
+	-- Texts have their own color mode. "By Type" must follow the displayed
+	-- resource even when the bar uses an individual or class color.
+	if UsesPowerTypeColor(power.value) or UsesPowerTypeColor(power.valuePercent) or UsesPowerTypeColor(power.valueMissing) then
+		local typeR, typeG, typeB = GetPowerTypeColor(power, unit)
+		if issecretvalue(typeR) or typeR ~= nil then r, g, b = typeR, typeG, typeB end
+	end
 
 	local classColor
 	classColor = SetPowerTextColor(power.value, unit, classColor, r, g, b)
@@ -572,23 +604,7 @@ local function UpdatePowerColor(self, event, unit)
 			color = GetUnitClassColor(unit)
 		end
 	elseif power.color == "By Type" then
-		local displayType = power.LUIDisplayType
-		color = displayType and self.colors.power[displayType]
-		if not color then
-			local powerType, token, altR, altG, altB = UnitPowerType(unit)
-			if not issecretvalue(token) then color = self.colors.power[token] end
-			if not color then
-				if issecretvalue(altR) or issecretvalue(altG) or issecretvalue(altB) then
-					-- Native StatusBars accept opaque components; Lua must not compare them.
-					r, g, b = altR, altG, altB
-				elseif altR ~= nil and altG ~= nil and altB ~= nil then
-					r, g, b = altR, altG, altB
-					if r > 1 or g > 1 or b > 1 then r, g, b = r / 255, g / 255, b / 255 end
-				elseif not issecretvalue(powerType) then
-					color = self.colors.power[powerType] or self.colors.power.MANA
-				end
-			end
-		end
+		r, g, b = GetPowerTypeColor(power, unit)
 	end
 	if color then
 		power:SetStatusBarColor(color:GetRGB())
@@ -1552,7 +1568,7 @@ module.funcs = {
 			self.Runes[i]:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.RunesBar.Texture))
 			local color = module.colors.runes[runeType] or module.colors.power.RUNES
 			self.Runes[i]:GetStatusBarTexture():SetVertexColor(color:GetRGB())
-			self.Runes[i]:SetSize(((oufdb.RunesBar.Width - 5 * oufdb.RunesBar.Padding) / 6), oufdb.RunesBar.Height)
+			self.Runes[i]:SetSize(math.max(1, (oufdb.RunesBar.Width - 5 * oufdb.RunesBar.Padding) / 6), oufdb.RunesBar.Height)
 
 			self.Runes[i]:ClearAllPoints()
 			local runePoints = {0, 1, 6, 3, 2, 5}
@@ -1565,12 +1581,12 @@ module.funcs = {
 	end,
 
 	Totems = function(self, unit, oufdb)
+		local priorities = UnitClassBase("player") == "SHAMAN"
+			and _G.SHAMAN_TOTEM_PRIORITIES
+			or _G.STANDARD_TOTEM_PRIORITIES
 		if not self.Totems then
 			self.Totems = CreateFrame("Frame", nil, self)
 			self.Totems:SetFrameLevel(self:GetFrameLevel() + 6)
-			local priorities = UnitClassBase("player") == "SHAMAN"
-				and _G.SHAMAN_TOTEM_PRIORITIES
-				or _G.STANDARD_TOTEM_PRIORITIES
 
 			for i = 1, MAX_TOTEMS do
 				local bar = CreateFrame("StatusBar", nil, self.Totems)
@@ -1624,6 +1640,16 @@ module.funcs = {
 			LUI:SetFrameBackgroundColor(self.Totems.FrameBackdrop, 0, 0, 0, 0)
 			LUI:SetFrameBorderColor(self.Totems.FrameBackdrop, 0, 0, 0)
 		end
+		-- oUF updates the icon/cooldown; the status bar needs its own native
+		-- duration binding. Do not inspect haveTotem or the duration's values.
+		self.Totems.PostUpdate = function(element, slot, haveTotem, name, icon, duration)
+			local bar = element[priorities[slot]]
+			if duration ~= nil then
+				bar:SetTimerDuration(duration, Enum.StatusBarInterpolation.Immediate, Enum.StatusBarTimerDirection.RemainingTime)
+			else
+				bar:SetValue(0)
+			end
+		end
 
 		local x = oufdb.TotemsBar.Lock and 0 or oufdb.TotemsBar.X
 		local y = oufdb.TotemsBar.Lock and 0.5 or oufdb.TotemsBar.Y
@@ -1638,7 +1664,7 @@ module.funcs = {
 			local bar = self.Totems[i]
 			bar:SetStatusBarTexture(Media:Fetch("statusbar", oufdb.TotemsBar.Texture))
 			bar:SetHeight(oufdb.TotemsBar.Height)
-			bar:SetWidth((oufdb.TotemsBar.Width - 3 * oufdb.TotemsBar.Padding) / 4)
+			bar:SetWidth(math.max(1, (oufdb.TotemsBar.Width - 3 * oufdb.TotemsBar.Padding) / 4))
 			bar.icon:SetSize(oufdb.TotemsBar.Height * oufdb.TotemsBar.IconScale, oufdb.TotemsBar.Height * oufdb.TotemsBar.IconScale)
 
 			bar:ClearAllPoints()
@@ -1648,7 +1674,8 @@ module.funcs = {
 				bar:SetPoint("LEFT", self.Totems[totemPoints[i]], "RIGHT", oufdb.TotemsBar.Padding, 0)
 			end
 
-			bar.bg.multiplier = oufdb.TotemsBar.Multiplier
+			local multiplier = oufdb.TotemsBar.Multiplier
+			bar.bg:SetVertexColor(multiplier, multiplier, multiplier)
 		end
 	end,
 	ClassPower = function(self, unit, oufdb)
@@ -1747,11 +1774,12 @@ module.funcs = {
 		end
 	end,
 	AlternativePower = function(self, unit, oufdb)
-		local player = unit == "player" and self or oUF_LUI_player
+		local isPreview = self.LUIPreview or module.previewStyleUnit ~= nil
+		local player = (unit == "player" or isPreview) and self or oUF_LUI_player
 		if not self.AlternativePower then
 			self.AlternativePower = CreateFrame("StatusBar", nil, self)
 			self.AlternativePower:Hide()
-			if unit == "pet" then self.AlternativePower:SetParent(oUF_LUI_player) end
+			if unit == "pet" and not isPreview then self.AlternativePower:SetParent(oUF_LUI_player) end
 
 			self.AlternativePower.bg = CreateBarBackground(self.AlternativePower)
 
@@ -1765,7 +1793,7 @@ module.funcs = {
 			self.AlternativePower.Text = SetFontString(self.AlternativePower, Media:Fetch("font", module.db.profile.player.AlternativePowerText.Font), module.db.profile.player.AlternativePowerText.Size, module.db.profile.player.AlternativePowerText.Outline)
 		end
 
-		if unit == "pet" and player then
+		if unit == "pet" and not isPreview and player then
 			player.LUIPetAlternativePower = self.AlternativePower
 		end
 
@@ -2088,12 +2116,8 @@ module.funcs = {
 		castbar:ClearAllPoints()
 		if unit == "player" or unit == "target" then
 			castbar:SetPoint(oufdb.Castbar.General.Point, UIParent, oufdb.Castbar.General.Point, oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
-		elseif unit == "focus" or unit == "pet" then
-			castbar:SetPoint("TOP", self, "BOTTOM", oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
-		elseif unit:match("^arena%d*$") then
-			castbar:SetPoint("RIGHT", self, "LEFT", oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
 		else
-			castbar:SetPoint("LEFT", self, "RIGHT", oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
+			castbar:SetPoint(oufdb.Castbar.General.Point, self, oufdb.Castbar.General.RelativePoint, oufdb.Castbar.General.X, oufdb.Castbar.General.Y)
 		end
 
 		castbar.bg:SetTexture(Media:Fetch("statusbar", oufdb.Castbar.General.TextureBG))

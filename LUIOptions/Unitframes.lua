@@ -183,7 +183,9 @@ local function CopyUnitSettings(targetUnit)
         for _, key in ipairs(keys) do
             if type(source[key]) == "table" and type(destination[key]) == "table" then
                 CopyCompatible(source[key], destination[key], copySizes[targetUnit], copyPositions[targetUnit])
-            elseif type(source[key]) == type(destination[key]) then
+            elseif type(source[key]) == type(destination[key])
+                and (copySizes[targetUnit] or not SIZE_KEYS[key])
+                and (copyPositions[targetUnit] or not POSITION_KEYS[key]) then
                 destination[key] = source[key]
             end
         end
@@ -515,6 +517,7 @@ local function GenerateCastbarGroup(unit, order)
         X = Opt:OffsetX(),
         Y = Opt:OffsetY(),
         Point = Opt:Select({name = "Anchor Point", values = LUI.Points}),
+        RelativePoint = Opt:Select({name = "Attach To", values = LUI.Points, onlyIf = (unit ~= "player" and unit ~= "target")}),
         IndividualColor = Opt:Toggle({name = "Individual Color", desc = "If unchecked, the class color will be used.", width = "full"}),
         Icon = Opt:Toggle({name = "Show Icon", width = "full"}),
         Latency = Opt:Toggle({name = "Show Latency Safe Zone", desc = "Shows your current network latency at the end of the player cast bar.", width = "full", onlyIf = (unit == "player")}),
@@ -763,7 +766,7 @@ local function NewUnitOptionGroup(unit, order, categorized)
             GrowthX = Opt:Select({name = "Horizontal Growth", values = horizontalDirections}),
             GrowthY = Opt:Select({name = "Vertical Growth", values = verticalDirections}),
             Size = Opt:Slider({name = "Size", values = sizeValues}),
-            Spacing = Opt:Slider({name = "Spacing", values = spacingValues}),
+            Spacing = Opt:Slider({name = "Spacing", desc = "Gap between icons and rows. Negative values overlap icons; their positions must remain at least one pixel apart.", values = spacingValues}),
             Num = Opt:Slider({name = "Amount of Buffs", values = auraCountValues}),
             IconsPerRow = Opt:Slider({name = "Icons Per Row", desc = "Maximum number of buff icons before starting a new row.", values = auraCountValues}),
         }})
@@ -780,7 +783,7 @@ local function NewUnitOptionGroup(unit, order, categorized)
             GrowthX = Opt:Select({name = "Horizontal Growth", values = horizontalDirections}),
             GrowthY = Opt:Select({name = "Vertical Growth", values = verticalDirections}),
             Size = Opt:Slider({name = "Size", values = sizeValues}),
-            Spacing = Opt:Slider({name = "Spacing", values = spacingValues}),
+            Spacing = Opt:Slider({name = "Spacing", desc = "Gap between icons and rows. Negative values overlap icons; their positions must remain at least one pixel apart.", values = spacingValues}),
             Num = Opt:Slider({name = "Amount of Debuffs", values = auraCountValues}),
             IconsPerRow = Opt:Slider({name = "Icons Per Row", desc = "Maximum number of debuff icons before starting a new row.", values = auraCountValues}),
         }})

@@ -148,7 +148,45 @@ end
 -- ##### Framework Events #############################################################################################
 -- ####################################################################################################################
 
+local function InitializeUnitLayoutSettings()
+	for _, unit in ipairs(module.units) do
+		local settingsUnit = module.db.profile[unit]
+		local aura = settingsUnit.Aura
+		for _, kind in ipairs({"Buffs", "Debuffs"}) do
+			local settings = aura and aura[kind]
+			if settings then
+				-- Older profiles used the total amount as their implicit row size.
+				-- Save that value once so changing the amount no longer changes
+				-- the row size, and copying/resetting uses the same visible value.
+				if settings.IconsPerRow == nil then
+					settings.IconsPerRow = settings.Num
+				end
+				-- Overlap is supported, but a zero/negative stride prevents the
+				-- native flow layout from advancing or wrapping at the row limit.
+				settings.Spacing = math.max(settings.Spacing or 0, 1 - settings.Size)
+			end
+		end
+		local castbar = settingsUnit.Castbar and settingsUnit.Castbar.General
+		if castbar and unit ~= "player" and unit ~= "target" and not unit:match(".+target$")
+			and castbar.RelativePoint == nil then
+			-- These castbars previously ignored Point and used fixed anchors.
+			-- Start with those actual anchors to preserve existing positions.
+			if unit == "focus" or unit == "pet" then
+				castbar.Point, castbar.RelativePoint = "TOP", "BOTTOM"
+			elseif unit == "arena" then
+				castbar.Point, castbar.RelativePoint = "RIGHT", "LEFT"
+			else
+				castbar.Point, castbar.RelativePoint = "LEFT", "RIGHT"
+			end
+		end
+	end
+end
+
 function module:Refresh()
+	InitializeUnitLayoutSettings()
+	-- Raid name truncation depends on the current width, font and font size.
+	if self.RecreateNameCache then self.RecreateNameCache() end
+
 	for _, unit in pairs(module.unitsSpawn) do
 		self.ToggleUnit(unit)
 	end
@@ -199,6 +237,7 @@ function module:OnInitialize()
 		end
 	end
 	LUI:RegisterModule(module)
+	InitializeUnitLayoutSettings()
 	module:BuildUnitframeColors()
 end
 
