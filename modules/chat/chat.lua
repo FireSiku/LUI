@@ -430,6 +430,7 @@ function module:OnHyperlinkEnter(frame, link, text)
 	if issecretvalue(link) then return end
 	local linkType = LinkUtil.SplitLinkData(link)
 	if linkTypes[linkType] then
+		if LUI:TooltipHasWidgets(GameTooltip) then return end
 		GameTooltip:SetOwner(frame, "ANCHOR_CURSOR_RIGHT")
 		if linkType == "battlepet" then
 			if not issecretvalue(text) and BattlePetToolTip_ShowLink(text) then
@@ -445,7 +446,11 @@ end
 
 function module:OnHyperlinkLeave(frame, link)
 	if showingHyperlinkTooltip then
-		showingHyperlinkTooltip:Hide()
+		if showingHyperlinkTooltip == GameTooltip then
+			LUI:HideTooltip(GameTooltip, frame)
+		else
+			showingHyperlinkTooltip:Hide()
+		end
 		showingHyperlinkTooltip = nil
 	end
 end

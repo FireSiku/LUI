@@ -31,6 +31,7 @@
 - Infotext: Improved tooltip anchoring and Friends/Guild window behavior during mouse transitions, row changes and scrollbar use.
 - Infotext: Added an Alliance, Horde or Both filter to the Gold tooltip and a separate Warband bank balance on supported clients.
 - Tooltip: Improved compatibility with Blizzard tooltip handlers and made scale changes apply immediately.
+- Tooltip: Prevented LUI hover and hide callbacks from taking over active Blizzard widget tooltips.
 - Bags: Added an optional keyring shortcut for Forever and retained its native bank window.
 - Bags: Fixed blocked item use after visiting the bank on Retail, searches containing special characters and stray pixels around item slots.
 - Experience Bars: Added rested XP shading, an optional rested percentage and the full rested reserve in the tooltip, including split and reversed bars. Grouped bar locking with the tracker controls.

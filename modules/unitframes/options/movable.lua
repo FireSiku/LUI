@@ -257,7 +257,7 @@ StaticPopupDialogs["DRAG_UNITFRAMES"] = {
 	button2 = "Cancel",
 	OnShow = function()
 		LibStub("AceConfigDialog-3.0"):Close("LUI")
-		GameTooltip:Hide()
+		LUI:HideTooltip(GameTooltip)
 	end,
 	OnHide = function()
 		module:MoveUnitFrames(true)

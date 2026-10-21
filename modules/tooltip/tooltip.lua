@@ -614,6 +614,7 @@ end
 
 function module:ApplyTooltipScale(frame)
 	if not module:IsEnabled() or (frame.IsForbidden and frame:IsForbidden()) then return end
+	if LUI:TooltipHasWidgets(frame) then return end
 	-- Always use the original scale so option changes cannot compound scaling.
 	frame:SetScale((initialScale[frame] or 1) * db.Scale)
 end
@@ -621,7 +622,7 @@ end
 function module:OnTooltipShow(frame)
 	if not module:IsEnabled() then return end
 	if db.HideCombat and InCombatLockdown() then
-		return frame:Hide()
+		return LUI:HideTooltip(frame)
 	end
 
 	module:ApplyTooltipScale(frame)
@@ -684,6 +685,7 @@ end
 function module.OnGameTooltipSetUnit(frame, data)
 	if not module:IsEnabled() then return end
 	if frame:IsForbidden() then return end
+	if LUI:TooltipHasWidgets(frame) then return end
 	-- luacheck: globals GameTooltipTextLeft1
 	
 	-- We're only interested in setting up the GameTooltip itself, not all frames of that type.
@@ -759,7 +761,7 @@ end
 function module:HideCombatSkillTooltips(frame)
 	if not module:IsEnabled() then return end
 	if db.HideCombatSkills and InCombatLockdown() and not IsShiftKeyDown() then
-		frame:Hide()
+		LUI:HideTooltip(frame)
 	end
 end
 
@@ -783,6 +785,7 @@ function module:OnEnable()
 
 	module:SecureHook("GameTooltip_SetDefaultAnchor", function(frame, parent)
 		if parent and parent.IsForbidden and parent:IsForbidden() then return end
+		if LUI:TooltipHasWidgets(frame) then return end
 		if db.Cursor then
 			frame:SetOwner(parent, "ANCHOR_CURSOR")
 		else

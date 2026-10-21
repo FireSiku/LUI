@@ -31,6 +31,7 @@ function module:CreateCleanUpButton(name, parent, sortFunc)
 			sortFunc()
 		end)
 	button:SetScript("OnEnter", function()
+			if LUI:TooltipHasWidgets(GameTooltip) then return end
 			GameTooltip:SetOwner(button)
 			GameTooltip:SetText(CLEANUP_TEXT[name])
 			GameTooltip:Show()

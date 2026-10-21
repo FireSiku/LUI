@@ -484,6 +484,7 @@ local MicroButtonClickerMixin = {}
 function MicroButtonClickerMixin:OnEnter()
 	self:SetAlpha(1)
 	self.Hover = true
+	if LUI:TooltipHasWidgets(GameTooltip) then return end
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 
 	local parent = self:GetParent()
@@ -514,7 +515,7 @@ end
 function MicroButtonClickerMixin:OnLeave()
 	self:SetAlpha(self:GetParent().Opened and 1 or 0)
 	self.Hover = nil
-	GameTooltip:Hide()
+	LUI:HideTooltip(GameTooltip, self)
 end
 
 -- ####################################################################################################################

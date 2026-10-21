@@ -163,6 +163,7 @@ end
 ---@param self ItemButton
 local function BarBarSlotOnEnter(self)
 	_G.EventRegistry:TriggerEvent("BagSlot.OnEnter", self)
+	if LUI:TooltipHasWidgets(GameTooltip) then return end
 	GameTooltip:SetOwner(self, 'ANCHOR_LEFT')
 	
 	local bagId = self:GetBagID()
@@ -220,8 +221,8 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 			PickupBagFromSlot(self.inventoryID)
 		end
 	end)
-	button:SetScript("OnLeave", function()
-		GameTooltip:Hide()
+	button:SetScript("OnLeave", function(self)
+		LUI:HideTooltip(GameTooltip, self)
 		ResetCursor()
 		_G.EventRegistry:TriggerEvent("BagSlot.OnLeave", button)
 	end)
