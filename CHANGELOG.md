@@ -35,6 +35,7 @@
 - Bags: Fixed blocked item use after visiting the bank on Retail, searches containing special characters and stray pixels around item slots.
 - Experience Bars: Added rested XP shading, an optional rested percentage and the full rested reserve in the tooltip, including split and reversed bars. Grouped bar locking with the tracker controls.
 - Minimap: Fixed position, scale and shape handling when disabling and re-enabling the module, kept notification icons in place after Edit Mode and tracking updates, and preserved mail notifications during setup and after hiding the UI or minimap.
+- Minimap: Fixed blocked minimap pings while preserving the right-click tracking menu and mouse-wheel zoom.
 - Mirror Bar: Fixed pause handling for breath, fatigue and other mirror timers.
 - Chat: Fixed font-size resets, voice-control restoration, cleared chat input handling and clickable IP address links.
 - UIElements: Added a setting for Forever's native swing timer.
