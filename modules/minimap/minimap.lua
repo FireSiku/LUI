@@ -37,6 +37,7 @@ local function GetLuiMinimapShape() return minimapShape end
 local oldDefault = {}         -- Keep information on default minimap
 local pendingAction
 local trackingMenu
+local trackingClicker
 local mailFrameHooked
 local indicatorPositionHooked
 local trackingAnchor = AnchorUtil.CreateAnchor("TOPRIGHT", Minimap, "TOPLEFT", -10, 8)
@@ -145,8 +146,6 @@ function module:HideDefaultMinimap()
 	oldDefault.scale = Minimap:GetScale()
 	oldDefault.parent = Minimap:GetParent()
 	oldDefault.mouseWheelEnabled = Minimap:IsMouseWheelEnabled()
-	oldDefault.onMouseWheel = Minimap:GetScript("OnMouseWheel")
-	oldDefault.onMouseUp = Minimap:GetScript("OnMouseUp")
 	oldDefault.indicatorParent = IndicatorFrame:GetParent()
 	oldDefault.indicatorPoints = CapturePoints(IndicatorFrame)
 	oldDefault.indicatorScale = IndicatorFrame:GetScale()
@@ -217,8 +216,7 @@ function module:RestoreDefaultMinimap(ignoreCombat)
 	--Revert Minimap Parent
 	Minimap:SetParent(oldDefault.parent)
 	Minimap:SetScale(oldDefault.scale)
-	Minimap:SetScript("OnMouseWheel", oldDefault.onMouseWheel)
-	Minimap:SetScript("OnMouseUp", oldDefault.onMouseUp)
+	if trackingClicker then trackingClicker:Hide() end
 	IndicatorFrame:SetParent(oldDefault.indicatorParent)
 	RestorePoints(IndicatorFrame, oldDefault.indicatorPoints)
 	IndicatorFrame:SetScale(oldDefault.indicatorScale or 1)
@@ -410,16 +408,20 @@ end
 
 function module:SetMinimapScripts()
 	Minimap:EnableMouseWheel(true)
-	Minimap:SetScript("OnMouseWheel", function(self, delta)
-		if module:IsEnabled() then self:OnMouseWheel(delta) end
-	end)
-	Minimap:SetScript("OnMouseUp", function(self, button)
-		if button == "RightButton" and module:IsEnabled() then
-			module:ToggleTrackingMenu()
-		else
-			self:OnClick()
-		end
-	end)
+	-- Keep the native scripts intact: calling OnClick from addon code taints
+	-- the protected PingLocation call. Only intercept the tracking-menu button.
+	if not trackingClicker then
+		trackingClicker = CreateFrame("Button", nil, Minimap)
+		trackingClicker:SetAllPoints(Minimap)
+		trackingClicker:SetFrameLevel(Minimap:GetFrameLevel())
+		trackingClicker:SetPassThroughButtons("LeftButton", "MiddleButton", "Button4", "Button5")
+		trackingClicker:SetMouseMotionEnabled(false)
+		trackingClicker:RegisterForClicks("RightButtonUp")
+		trackingClicker:SetScript("OnClick", function()
+			if module:IsEnabled() then module:ToggleTrackingMenu() end
+		end)
+	end
+	trackingClicker:Show()
 end
 
 --Set Frames surrounding the minimap.
