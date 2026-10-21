@@ -313,13 +313,14 @@ function element:GetBNScoreIdentity(gameInfo)
 end
 
 local function HideFriendScoreTooltip(row)
-    if GameTooltip and GameTooltip:IsOwned(row) then GameTooltip:Hide() end
+    LUI:HideTooltip(GameTooltip, row)
 end
 
 -- Place the detail tooltip beside the whole Friends window, on the side
 -- facing the screen centre. Compare physical dimensions to support UI scaling.
 function element:PositionFriendScoreTooltip(row)
     local tip = GameTooltip
+    if LUI:TooltipHasWidgets(tip) then return end
     local uiScale, tipScale = UIParent:GetEffectiveScale(), tip:GetEffectiveScale()
     local windowScale, rowScale = infotip:GetEffectiveScale(), row:GetEffectiveScale()
     local left, right, top = infotip:GetLeft(), infotip:GetRight(), row:GetTop()
@@ -356,6 +357,7 @@ function element:AddFriendScore(row)
     row:HookScript("OnEnter", function(self)
         if not element:IsFriendScoreEnabled() or not module.db.profile.Friends.ShowScoreDetails
             or not self.scoreName or type(_G.RaiderIO.ShowProfile) ~= "function" then return end
+        if LUI:TooltipHasWidgets(GameTooltip) then return end
         GameTooltip:SetOwner(self, "ANCHOR_NONE")
         GameTooltip:SetText(self.scoreName.." - "..self.scoreRealm)
         local ok, shown = pcall(_G.RaiderIO.ShowProfile, GameTooltip,

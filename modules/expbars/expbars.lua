@@ -158,6 +158,7 @@ end
 function ExpBarMixin:ShowTooltip()
 	local settings = module.db.profile
 	if not settings.ShowTooltip then return end
+	if LUI:TooltipHasWidgets(GameTooltip) then return end
 
 	GameTooltip:SetOwner(self, "ANCHOR_TOP")
 	GameTooltip:ClearLines()
@@ -178,7 +179,7 @@ function ExpBarMixin:ShowTooltip()
 end
 
 function ExpBarMixin:HideTooltip()
-	if GameTooltip:GetOwner() == self then GameTooltip:Hide() end
+	LUI:HideTooltip(GameTooltip, self)
 end
 
 local function StartAnchorMoving(frame)
@@ -187,7 +188,7 @@ local function StartAnchorMoving(frame)
 
 	module.movingAnchor = anchor
 	anchor:StartMoving()
-	GameTooltip:Hide()
+	LUI:HideTooltip(GameTooltip)
 end
 
 local function StopAnchorMoving(frame)

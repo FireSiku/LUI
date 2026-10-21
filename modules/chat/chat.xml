@@ -31,6 +31,7 @@
             </OnClick>
             <OnEnter>
                 self:SetSize(28, 28)
+                if LUI:TooltipHasWidgets(GameTooltip) then return end
                 GameTooltip:SetOwner(self)
                 GameTooltip:ClearLines()
                 GameTooltip:AddLine(self.tooltipText)
@@ -38,7 +39,7 @@
             </OnEnter>
             <OnLeave>
                 self:SetSize(10, 10)
-                GameTooltip:Hide()
+                LUI:HideTooltip(GameTooltip, self)
             </OnLeave>
         </Scripts>
         <NormalTexture file="Interface\AddOns\LUI\media\textures\icons\chatcopy"/>

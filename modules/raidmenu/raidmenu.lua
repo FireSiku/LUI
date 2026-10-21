@@ -483,13 +483,14 @@ function module:SetRaidMenu()
 	-- Keep left-click's existing target-only action; right-click clears all.
 	ClearRaidIcon:SetAttribute("action2", "clear-all")
 	ClearRaidIcon:HookScript("OnEnter", function(self)
+		if LUI:TooltipHasWidgets(GameTooltip) then return end
 		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
 		GameTooltip:SetText("Clear Unit Markers")
 		GameTooltip:AddLine("Left-click: clear the target's marker", 1, 1, 1)
 		GameTooltip:AddLine("Right-click: clear all unit markers", 1, 1, 1)
 		GameTooltip:Show()
 	end)
-	ClearRaidIcon:HookScript("OnLeave", function() GameTooltip:Hide() end)
+	ClearRaidIcon:HookScript("OnLeave", function(self) LUI:HideTooltip(GameTooltip, self) end)
 	ConfigureWorldMarkerButton(BlueWorldMarker, 1)
 	ConfigureWorldMarkerButton(GreenWorldMarker, 2)
 	ConfigureWorldMarkerButton(PurpleWorldMarker, 3)
@@ -516,6 +517,7 @@ function module:SetRaidMenu()
 
 	ConvertRaid:SetScript("OnEnter", function(self)
 		if db.ShowToolTips then
+			if LUI:TooltipHasWidgets(GameTooltip) then return end
 			GameTooltip:SetOwner(ConvertRaid, "ANCHOR_BOTTOMLEFT")
 			GameTooltip:SetClampedToScreen(true)
 			GameTooltip:ClearLines()
@@ -531,7 +533,7 @@ function module:SetRaidMenu()
 		end
 	end)
 	ConvertRaid:SetScript("OnLeave", function(self)
-		GameTooltip:Hide()
+		LUI:HideTooltip(GameTooltip, self)
 	end)
 	ConvertRaid:SetScript("OnClick", function(self)
 		if InCombatLockdown() then return end
@@ -551,6 +553,7 @@ function module:SetRaidMenu()
 	RoleChecker:SetText("Role Check")
 	RoleChecker:SetScript("OnEnter", function(self)
 		if db.ShowToolTips then
+			if LUI:TooltipHasWidgets(GameTooltip) then return end
 			GameTooltip:SetOwner(RoleChecker, "ANCHOR_BOTTOMLEFT")
 			GameTooltip:SetClampedToScreen(true)
 			GameTooltip:ClearLines()
@@ -560,7 +563,7 @@ function module:SetRaidMenu()
 		end
 	end)
 	RoleChecker:SetScript("OnLeave", function(self)
-		GameTooltip:Hide()
+		LUI:HideTooltip(GameTooltip, self)
 	end)
 	RoleChecker:SetScript("OnClick", function(self)
 		if InCombatLockdown() then return end
@@ -576,6 +579,7 @@ function module:SetRaidMenu()
 	ReadyChecker:SetText("Ready Check")
 	ReadyChecker:SetScript("OnEnter", function(self)
 		if db.ShowToolTips then
+			if LUI:TooltipHasWidgets(GameTooltip) then return end
 			GameTooltip:SetOwner(ReadyChecker, "ANCHOR_BOTTOMLEFT")
 			GameTooltip:SetClampedToScreen(true)
 			GameTooltip:ClearLines()
@@ -585,7 +589,7 @@ function module:SetRaidMenu()
 		end
 	end)
 	ReadyChecker:SetScript("OnLeave", function(self)
-		GameTooltip:Hide()
+		LUI:HideTooltip(GameTooltip, self)
 	end)
 	ReadyChecker:SetScript("OnClick", function(self)
 		if InCombatLockdown() then return end

@@ -192,6 +192,7 @@ function module:AnchorInfotextTooltip(tooltip, frame)
 end
 
 function InfoMixin:TooltipHeader(headerName, handleGT)
+	if LUI:TooltipHasWidgets(GameTooltip) then return end
 	if handleGT then
 		local frame = self:GetFrame()
 		GameTooltip:SetOwner(frame, "ANCHOR_NONE")
@@ -207,6 +208,7 @@ function InfoMixin:TooltipHeader(headerName, handleGT)
 end
 
 function InfoMixin:AddHint(...)
+	if LUI:TooltipHasWidgets(GameTooltip) then return end
 	local r, g, b = module:RGB("Hint")
 	GameTooltip:AddLine(" ")
 	GameTooltip:AddLine(L["Info_Hint"], r, g, b)
@@ -487,6 +489,7 @@ function module.OnEnterHandler(self, ...)
 	if element.OnEnter then
 		element.OnEnter(self, ...)
 	elseif element.OnTooltipShow then
+		if LUI:TooltipHasWidgets(GameTooltip) then return end
 		GameTooltip:SetOwner(self, "ANCHOR_NONE")
 		module:AnchorInfotextTooltip(GameTooltip, self)
 		GameTooltip:ClearLines()
@@ -500,7 +503,7 @@ function module.OnLeaveHandler(self, ...)
 	if element.OnLeave then
 		element.OnLeave(self, ...)
 	elseif element.OnTooltipShow then
-		GameTooltip:Hide()
+		LUI:HideTooltip(GameTooltip, self)
 	end
 end
 

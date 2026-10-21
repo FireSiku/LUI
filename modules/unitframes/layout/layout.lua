@@ -234,6 +234,7 @@ local function GetUnitFrameTooltipUnit(self)
 end
 
 local function UpdateUnitFrameTooltip(self)
+	if LUI:TooltipHasWidgets(GameTooltip) then return end
 	local unit = GetUnitFrameTooltipUnit(self)
 	if not unit then return end
 
@@ -254,7 +255,9 @@ end
 
 local function UnitFrame_OnLeave(self)
 	self.UpdateTooltip = nil
-	GameTooltip:FadeOut()
+	if GameTooltip:IsOwned(self) and not LUI:TooltipHasWidgets(GameTooltip) then
+		GameTooltip:FadeOut()
+	end
 	if self.Highlight then self.Highlight:Hide() end
 end
 

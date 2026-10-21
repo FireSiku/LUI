@@ -97,6 +97,7 @@ end
 
 function ExperienceDataProvider:AddRestedTooltip()
     if not module.db.profile.ShowTooltip or GameTooltip:GetOwner() ~= self or not GameTooltip:IsShown() then return end
+    if LUI:TooltipHasWidgets(GameTooltip) then return end
     local maximum = self.barMax
     if issecretvalue(maximum) or maximum <= 0 then return end
 
