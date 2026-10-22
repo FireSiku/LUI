@@ -356,6 +356,9 @@ local function PausePanelAnimation(kind)
 			-- Alpha is cosmetic and can be restored without changing protected
 			-- visibility. A paused fade must not leave a transparent click target.
 			frame:SetAlpha(1)
+			if module:CanAlterFrame(frame) then
+				if db[kind].IsShown then frame:Show() else frame:Hide() end
+			end
 		end
 	end
 	RestoreAlpha(module:GetMainPanelVisibilityFrame(kind))
@@ -363,51 +366,56 @@ local function PausePanelAnimation(kind)
 	module:RefreshNavBar()
 end
 
-function module:AlphaIn(kind, button)
+local function GetToggleFrames(kind)
+	local frame = module:GetMainPanelVisibilityFrame(kind)
+	if not frame or (frame.IsForbidden and frame:IsForbidden()) then return {}, false end
+	local frames = {frame}
+	local animate = db[kind].Animation and not InCombatLockdown() and not frame:IsProtected()
+	for _, name in ipairs(module:LoadAdditional(db[kind].Additional)) do
+		local additional = _G[name]
+		if not (additional.IsForbidden and additional:IsForbidden()) then
+			frames[#frames + 1] = additional
+			if additional:IsProtected() then animate = false end
+		end
+	end
+	return frames, animate
+end
+
+function module:AlphaIn(kind)
 	if not _mainPanels[kind] then return end
 	module:StopPanelAnimations(kind)
 	db[kind].IsShown = true
-	local frame = module:GetMainPanelVisibilityFrame(kind)
+	local frames, animate = GetToggleFrames(kind)
+	local anchor = frames[1]
+	local from = animate and anchor:IsShown() and anchor:GetAlpha() or 0
 
-	if module:CanAlterFrame(frame) then
-		frame:Show()
-
-		for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
-			if module:CanAlterFrame(_G[f]) then _G[f]:Show() end
+	for _, frame in ipairs(frames) do
+		if module:CanAlterFrame(frame) then
+			frame:SetAlpha(animate and from or 1)
+			frame:Show()
 		end
-		
-		if db[kind].Animation then
-			_mainPanels[kind].AlphaIn.startAlpha = frame:GetAlpha()
-			_mainPanels[kind].AlphaIn:Show()
-		else
-			frame:SetAlpha(1)
-			for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
-				if module:CanAlterFrame(_G[f]) then _G[f]:SetAlpha(1) end
-			end
-		end
+	end
+	if animate then
+		_mainPanels[kind].AlphaIn.startAlpha = from
+		_mainPanels[kind].AlphaIn:Show()
 	end
 end
 
-function module:AlphaOut(kind, button)
+function module:AlphaOut(kind)
 	if not _mainPanels[kind] then return end
 	module:StopPanelAnimations(kind)
 	db[kind].IsShown = false
-	local frame = module:GetMainPanelVisibilityFrame(kind)
-
-	if module:CanAlterFrame(frame) then
-		if db[kind].Animation then
-			_mainPanels[kind].AlphaOut.startAlpha = frame:GetAlpha()
-			_mainPanels[kind].AlphaOut:Show()
-
-		else
-			frame:SetAlpha(0)
-			frame:Hide()
-
-			for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
-				if module:CanAlterFrame(_G[f]) then
-					_G[f]:SetAlpha(0)
-					_G[f]:Hide()
-				end
+	local frames, animate = GetToggleFrames(kind)
+	if animate then
+		_mainPanels[kind].AlphaOut.startAlpha = frames[1]:GetAlpha()
+		_mainPanels[kind].AlphaOut:Show()
+	else
+		for _, frame in ipairs(frames) do
+			if module:CanAlterFrame(frame) then
+				frame:Hide()
+				-- Secure clicks can show protected frames in combat. Leave them
+				-- opaque while hidden so Show() can make them visible again.
+				frame:SetAlpha(1)
 			end
 		end
 	end
@@ -452,12 +460,12 @@ function module:CreateBackground(kind)
 			end
 		else
 			if module:CanAlterFrame(target) then
-				target:SetAlpha(0)
 				target:Hide()
+				target:SetAlpha(1)
 				for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
 					if module:CanAlterFrame(_G[f]) then
-						_G[f]:SetAlpha(0)
 						_G[f]:Hide()
+						_G[f]:SetAlpha(1)
 					end
 				end
 			end
@@ -542,7 +550,7 @@ function module:ApplyBackground(kind)
 	_mainPanels[kind]:SetPoint("TOPLEFT", frame, "TOPLEFT", data.OffsetX, data.OffsetY)
 	_mainPanels[kind]:SetAlpha(1)
 	if frame == _G.CompactRaidFrameContainer then
-		_mainPanels[kind]:SetShown(data.AlwaysShow or data.IsShown)
+		_mainPanels[kind]:SetShown(data.IsShown)
 	else
 		_mainPanels[kind]:Show()
 	end
