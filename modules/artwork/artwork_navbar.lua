@@ -159,7 +159,7 @@ function module:CreateNavButton(kind, side, x, y)
 	clicker:SetScript("OnLeave", function() hover:SetAlpha(0) end)
 	local function OnClick()
 		local db = module.db.profile.LUITextures
-		local frame = _G[db[kind].Anchor]
+		local frame = module:GetMainPanelVisibilityFrame(kind)
 		if frame and not db[kind].IsShown then
 			if kind == "Chat" and not (alphaOut:IsPlaying() or alphaIn:IsPlaying()) then
 				module:SetChatVisible(true)
@@ -259,7 +259,7 @@ function module:RefreshNavBar()
 		module:StopPanelAnimations(kind)
 		local db = module.db.profile.LUITextures[kind]
 		local r, g, b, a = self:RGBA("NavButtons")
-		local anchor = _G[db.Anchor]
+		local anchor = module:GetMainPanelVisibilityFrame(kind)
 		local validAnchor = anchor and not (anchor.IsForbidden and anchor:IsForbidden())
 		local shouldShow = db.AlwaysShow or db.IsShown
 		db.IsShown = shouldShow

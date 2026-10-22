@@ -109,17 +109,27 @@ function module:LoadAdditional(str)
 	if strfind(str, ",") then
 		local list = {strsplit(",", str)}
 		for _, name in ipairs(list) do
-			if _G[name] then table.insert(frames, name) end
+			if _G[name] and _G[name] ~= _G.CompactRaidFrameContainer then table.insert(frames, name) end
 		end
 	else
-		if _G[str] then table.insert(frames, str) end
+		if _G[str] and _G[str] ~= _G.CompactRaidFrameContainer then table.insert(frames, str) end
 	end
 
 	return frames
 end
 
+function module:GetMainPanelVisibilityFrame(kind)
+	local frame = _G[self.db.profile.LUITextures[kind].Anchor]
+	-- Blizzard owns raid-frame visibility. Artwork controls its own background
+	-- instead of hiding or fading the native container along with the panel.
+	if frame and frame == _G.CompactRaidFrameContainer then
+		return _mainPanels[kind]
+	end
+	return frame
+end
+
 function module:CanAlterFrame(frame)
-	if not frame then return false end
+	if not frame or frame == _G.CompactRaidFrameContainer then return false end
 	if frame.IsForbidden and frame:IsForbidden() then return false end
 	if not (frame:IsProtected() and _G.InCombatLockdown()) then
 		return true
@@ -348,7 +358,7 @@ local function PausePanelAnimation(kind)
 			frame:SetAlpha(1)
 		end
 	end
-	RestoreAlpha(_G[_mainPanels[kind].frame])
+	RestoreAlpha(module:GetMainPanelVisibilityFrame(kind))
 	for _, name in pairs(module:LoadAdditional(db[kind].Additional)) do RestoreAlpha(_G[name]) end
 	module:RefreshNavBar()
 end
@@ -357,7 +367,7 @@ function module:AlphaIn(kind, button)
 	if not _mainPanels[kind] then return end
 	module:StopPanelAnimations(kind)
 	db[kind].IsShown = true
-	local frame = _G[_mainPanels[kind].frame]
+	local frame = module:GetMainPanelVisibilityFrame(kind)
 
 	if module:CanAlterFrame(frame) then
 		frame:Show()
@@ -382,7 +392,7 @@ function module:AlphaOut(kind, button)
 	if not _mainPanels[kind] then return end
 	module:StopPanelAnimations(kind)
 	db[kind].IsShown = false
-	local frame = _G[_mainPanels[kind].frame]
+	local frame = module:GetMainPanelVisibilityFrame(kind)
 
 	if module:CanAlterFrame(frame) then
 		if db[kind].Animation then
@@ -390,8 +400,8 @@ function module:AlphaOut(kind, button)
 			_mainPanels[kind].AlphaOut:Show()
 
 		else
-			_G[_mainPanels[kind].frame]:SetAlpha(0)
-			_G[_mainPanels[kind].frame]:Hide()
+			frame:SetAlpha(0)
+			frame:Hide()
 
 			for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
 				if module:CanAlterFrame(_G[f]) then
@@ -429,7 +439,7 @@ function module:CreateBackground(kind)
 			return
 		end
 		self.timerout = self.timerout + elapsed
-		local target = _G[_mainPanels[kind].frame]
+		local target = module:GetMainPanelVisibilityFrame(kind)
 
 		if self.timerout < ANIM_DURATION then
 			local alpha = (self.startAlpha or 1) * (1 - self.timerout / ANIM_DURATION)
@@ -466,7 +476,7 @@ function module:CreateBackground(kind)
 			return
 		end
 		self.timerin = self.timerin + elapsed
-		local target = _G[_mainPanels[kind].frame]
+		local target = module:GetMainPanelVisibilityFrame(kind)
 
 		if self.timerin < ANIM_DURATION then
 			local from = self.startAlpha or 0
@@ -530,7 +540,12 @@ function module:ApplyBackground(kind)
 	_mainPanels[kind]:Set(data.Direction, frame, data.Width, data.Height, 1, r, g, b, a, rc, gc, bc, ac)
 	_mainPanels[kind]:ClearAllPoints()
 	_mainPanels[kind]:SetPoint("TOPLEFT", frame, "TOPLEFT", data.OffsetX, data.OffsetY)
-	_mainPanels[kind]:Show()
+	_mainPanels[kind]:SetAlpha(1)
+	if frame == _G.CompactRaidFrameContainer then
+		_mainPanels[kind]:SetShown(data.AlwaysShow or data.IsShown)
+	else
+		_mainPanels[kind]:Show()
+	end
 end
 
 function module:setMainPanels()
