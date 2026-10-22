@@ -133,7 +133,7 @@ function module:CreateOrb()
 		locked = false
 		for kind, button in module:IterateNavButtons() do
 			local db = module.db.profile.LUITextures[kind]
-			local frame = _G[db.Anchor]
+			local frame = module:GetMainPanelVisibilityFrame(kind)
 			if forceShow and frame and not frame:IsShown() then
 				if kind == "Chat" and not (button.tex.alphaOut:IsPlaying() or button.tex.alphaIn:IsPlaying()) then
 					module:SetChatVisible(true)
