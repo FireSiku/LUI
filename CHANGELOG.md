@@ -25,6 +25,7 @@
 - Unitframes: Castbar anchors now follow their settings, and copying General settings respects size and position options.
 - Unitframes: Raid name shortening now follows frame width and font changes without splitting accented characters.
 - Artwork: Corrected profile switching, disabled-panel visibility and right-side background colors.
+- Artwork: Fixed chat and panel toggles during rapid clicks, animation refreshes and combat. Individual buttons and the orb now keep their visibility state in sync.
 - Artwork: Blizzard raid frames keep their normal visibility when attached to artwork panels. The orb and panel buttons toggle only their background.
 - Micromenu: Added Raid Menu group options, difficulty settings, Edit Mode access, leave-group controls and a right-click action to clear unit markers.
 - Micromenu: Character-panel clicks now use Blizzard's native button to avoid secret-value errors in its status bars.
