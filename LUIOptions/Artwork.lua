@@ -256,15 +256,20 @@ local function CreateMainPanelOptions(kind, displayName)
 		Header = Opt:Header({name = displayName}),
 		RaidPanelDesc = Opt:Desc({onlyIf = kind == "Raid", name = "Artwork behind the raid frames. Raid markers, ready checks and other raid tools are configured under Micromenu > Raid Menu.\n"}),
 		addon = Opt:Desc({onlyIf = isNotChat, name = kind == "Raid"
-			and "Choose a preset or enter the frame name to attach to this panel.\n"
+			and "Choose which raid frames to attach this artwork to. This does not select or enable your unitframes. For Blizzard raid frames, the orb and panel button only toggle the artwork background.\n"
 			or "Meter panels are unassigned by default. Choose a preset or enter a frame name to let LUI add artwork and show or hide that window. Select None to remove the assignment.\n"}),
 		AnchorPreset = Opt:Select({onlyIf = isNotChat, name = "Bar Preset", values = (kind == "Raid") and PRESET_RAID_ANCHORS or PRESET_METER_ANCHORS, get = presetDropdownGet, set = presetDropdownSet}),
 		Anchor = Opt:Input({onlyIf = isNotChat, name = "Anchor", desc = "Enter the anchor frame manually."}),
 		FrameIdentifierDesc = Opt:Desc({onlyIf = isNotChat, name = "Use the LUI Frame Identifier to find a frame name. You can also use Blizzard's /framestack command."}),
 		FrameIdentifier = Opt:Execute({onlyIf = isNotChat, name = "LUI Frame Identifier", desc = "Click to show the LUI Frame Identifier", func = function() _G.LUI_Frame_Identifier:Show() end }),
-		Additional = Opt:Input({onlyIf = isNotChat, name = "Additional Frames", desc = "Type in any additional Frames (seperated by commas), that you would like to show/hide."}),
+		Additional = Opt:Input({onlyIf = isNotChat, name = "Additional Frames", desc = "Additional frames to show or hide, separated by commas. Blizzard raid frames keep their normal visibility."}),
 		Spacer1 = Opt:Spacer({}),
-		AlwaysShow = Opt:Toggle({name = "Show at Login", desc = "Show this panel and its anchored frame when entering the world.", width = "full"}),
+		AlwaysShow = Opt:Toggle({name = "Show at Login", desc = function()
+			if db.LUITextures[kind].Anchor == "CompactRaidFrameContainer" then
+				return "Show the artwork background at login. Blizzard controls when the raid frames appear."
+			end
+			return "Show this panel and its anchored frame when entering the world."
+		end, width = "full"}),
 		OffsetX = Opt:OffsetX(),
 		OffsetY = Opt:OffsetY(),
 		Spacer2 = Opt:Spacer({}),
