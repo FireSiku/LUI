@@ -413,14 +413,17 @@ function module:SetMinimapScripts()
 	if not trackingClicker then
 		trackingClicker = CreateFrame("Button", nil, Minimap)
 		trackingClicker:SetAllPoints(Minimap)
-		trackingClicker:SetFrameLevel(Minimap:GetFrameLevel())
 		trackingClicker:SetPassThroughButtons("LeftButton", "MiddleButton", "Button4", "Button5")
+		trackingClicker:SetMouseClickEnabled(true)
 		trackingClicker:SetMouseMotionEnabled(false)
 		trackingClicker:RegisterForClicks("RightButtonUp")
 		trackingClicker:SetScript("OnClick", function()
 			if module:IsEnabled() then module:ToggleTrackingMenu() end
 		end)
 	end
+	-- The click area must sit above the native map, which otherwise handles
+	-- right clicks as pings. Reapply the level when reusing the click area.
+	trackingClicker:SetFrameLevel(Minimap:GetFrameLevel() + 1)
 	trackingClicker:Show()
 end
 
