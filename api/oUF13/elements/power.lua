@@ -133,8 +133,7 @@ local function UpdateColor(self, event, unit)
 			if(not color) then
 				if(altR) then
 					r, g, b = altR, altG, altB
-					if(not issecretvalue(r) and not issecretvalue(g) and not issecretvalue(b)
-						and (r > 1 or g > 1 or b > 1)) then
+					if(r > 1 or g > 1 or b > 1) then
 						-- BUG: As of 7.0.3, altR, altG, altB may be in 0-1 or 0-255 range.
 						r, g, b = r / 255, g / 255, b / 255
 					end

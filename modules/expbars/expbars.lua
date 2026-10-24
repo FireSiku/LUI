@@ -68,6 +68,8 @@ local dataProviderList = {}
 --- Contains the bars that compose the primary exp bar
 ---@type ExpBar[]
 local mainBarList = {}
+local mainBarLayoutReady = false
+local mainBarPrimary, mainBarSecondary
 
 -- ####################################################################################################################
 -- ##### ExpBarDataProviderMixin ######################################################################################
@@ -123,10 +125,13 @@ end
 function ExpBarMixin:UpdateText()
 	local db = module.db.profile --[[@as table]]
 	local trackerText = self:GetDataText(db.TrackerLabel or "Short") or ""
+	local prefixText = self.GetTextPrefix and self:GetTextPrefix() or ""
 	local function AddTrackerText(valueText)
-		if trackerText == "" then return valueText end
-		if valueText == "" then return trackerText end
-		return format("%s %s", valueText, trackerText)
+		if trackerText ~= "" then
+			valueText = valueText == "" and trackerText or format("%s %s", valueText, trackerText)
+		end
+		if prefixText == "" then return valueText end
+		return valueText == "" and prefixText or format("%s %s", prefixText, valueText)
 	end
 	local percentText = ""
 	if db.ShowPercent then
@@ -147,12 +152,13 @@ function ExpBarMixin:UpdateText()
 		end
 		return self.text:SetText(AddTrackerText(text))
 	end
-	return self.text:SetText(trackerText)
+	return self.text:SetText(AddTrackerText(""))
 end
 
 function ExpBarMixin:ShowTooltip()
 	local settings = module.db.profile
 	if not settings.ShowTooltip then return end
+	if LUI:TooltipHasWidgets(GameTooltip) then return end
 
 	GameTooltip:SetOwner(self, "ANCHOR_TOP")
 	GameTooltip:ClearLines()
@@ -173,7 +179,7 @@ function ExpBarMixin:ShowTooltip()
 end
 
 function ExpBarMixin:HideTooltip()
-	if GameTooltip:GetOwner() == self then GameTooltip:Hide() end
+	LUI:HideTooltip(GameTooltip, self)
 end
 
 local function StartAnchorMoving(frame)
@@ -182,7 +188,7 @@ local function StartAnchorMoving(frame)
 
 	module.movingAnchor = anchor
 	anchor:StartMoving()
-	GameTooltip:Hide()
+	LUI:HideTooltip(GameTooltip)
 end
 
 local function StopAnchorMoving(frame)
@@ -237,6 +243,7 @@ function module:SetEventHandling(enabled)
 
 	local statusTrackingBarManager = _G.StatusTrackingBarManager
 	if enabled then
+		mainBarLayoutReady = false
 		module.anchor:RegisterEvent("PLAYER_ENTERING_WORLD")
 		module.anchor:RegisterEvent("PLAYER_MAX_LEVEL_UPDATE")
 		module.anchor:RegisterEvent("UPDATE_FACTION")
@@ -484,15 +491,8 @@ local function ConfigureBar(bar, anchor, width, height, reverseFill, textPoint, 
 	bar:Show()
 end
 
-function module:UpdateMainBarVisibility(event, ...)
+local function LayoutMainBars(primary, secondary)
 	local db = module.db.profile
-	if not module.anchor or not module.secondaryAnchor or #mainBarList == 0 then
-		return
-	end
-
-	local primary, secondary = GetVisibleTrackers()
-	if not db.SplitTracker then secondary = nil end
-
 	for bar in module:IterateMainBars() do
 		bar:Hide()
 	end
@@ -527,9 +527,24 @@ function module:UpdateMainBarVisibility(event, ...)
 		module.secondaryAnchor:Hide()
 	end
 
+	module:UpdateMoveState()
+end
+
+function module:UpdateMainBarVisibility(event, ...)
+	if not module.anchor or not module.secondaryAnchor or #mainBarList == 0 then return end
+
+	local primary, secondary = GetVisibleTrackers()
+	if not module.db.profile.SplitTracker then secondary = nil end
+
+	-- Data events keep the current geometry. Settings refreshes and tracker
+	-- changes rebuild it, including split/reversed bars and mover visibility.
+	if not mainBarLayoutReady or primary ~= mainBarPrimary or secondary ~= mainBarSecondary then
+		LayoutMainBars(primary, secondary)
+		mainBarPrimary, mainBarSecondary = primary, secondary
+		mainBarLayoutReady = true
+	end
 	if primary then primary:UpdateBar(event, ...) end
 	if secondary then secondary:UpdateBar(event, ...) end
-	module:UpdateMoveState()
 end
 
 -- ####################################################################################################################
@@ -543,6 +558,7 @@ function module:RefreshColors()
 end
 
 function module:Refresh()
+	mainBarLayoutReady = false
 	module:ResetAutoReputation()
 	local db = module.db.profile
 	if not module.anchor or not module.secondaryAnchor then return end

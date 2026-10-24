@@ -13,6 +13,15 @@ local LUI = select(2, ...)
 local module = LUI:NewModule("Unitframes", "AceHook-3.0", "AceSerializer-3.0")
 module.enableButton = true
 
+-- Keep the option pages, initial layout and settings refresh on the same
+-- client/class capabilities. oUF handles the active spec, form and talents.
+module.supportsClassPower = LUI.DRUID or LUI.ROGUE or LUI.SHAMAN
+	or (LUI.IsRetail and (LUI.DEMONHUNTER or LUI.EVOKER or LUI.HUNTER or LUI.MAGE
+		or LUI.MONK or LUI.PALADIN or LUI.WARLOCK)) or false
+module.supportsAdditionalPower = LUI.DRUID
+	or (LUI.IsRetail and (LUI.PRIEST or LUI.SHAMAN)) or false
+module.supportsPetHappiness = LUI.IsForever and LUI.HUNTER or false
+
 module.unitsSpawn = {"player", "target", "focus", "focustarget", "targettarget", "targettargettarget", "pet", "pettarget", "boss", "party", "maintank", "arena", "raid"}
 
 module.units = {"player", "target", "targettarget", "targettargettarget", "focus", "focustarget", "pet", "pettarget", "party", "partytarget", "partypet", "boss", "bosstarget", "maintank", "maintanktarget", "maintanktargettarget", "arena", "arenatarget", "arenapet", "raid"}
@@ -139,7 +148,45 @@ end
 -- ##### Framework Events #############################################################################################
 -- ####################################################################################################################
 
+local function InitializeUnitLayoutSettings()
+	for _, unit in ipairs(module.units) do
+		local settingsUnit = module.db.profile[unit]
+		local aura = settingsUnit.Aura
+		for _, kind in ipairs({"Buffs", "Debuffs"}) do
+			local settings = aura and aura[kind]
+			if settings then
+				-- Older profiles used the total amount as their implicit row size.
+				-- Save that value once so changing the amount no longer changes
+				-- the row size, and copying/resetting uses the same visible value.
+				if settings.IconsPerRow == nil then
+					settings.IconsPerRow = settings.Num
+				end
+				-- Overlap is supported, but a zero/negative stride prevents the
+				-- native flow layout from advancing or wrapping at the row limit.
+				settings.Spacing = math.max(settings.Spacing or 0, 1 - settings.Size)
+			end
+		end
+		local castbar = settingsUnit.Castbar and settingsUnit.Castbar.General
+		if castbar and unit ~= "player" and unit ~= "target" and not unit:match(".+target$")
+			and castbar.RelativePoint == nil then
+			-- These castbars previously ignored Point and used fixed anchors.
+			-- Start with those actual anchors to preserve existing positions.
+			if unit == "focus" or unit == "pet" then
+				castbar.Point, castbar.RelativePoint = "TOP", "BOTTOM"
+			elseif unit == "arena" then
+				castbar.Point, castbar.RelativePoint = "RIGHT", "LEFT"
+			else
+				castbar.Point, castbar.RelativePoint = "LEFT", "RIGHT"
+			end
+		end
+	end
+end
+
 function module:Refresh()
+	InitializeUnitLayoutSettings()
+	-- Raid name truncation depends on the current width, font and font size.
+	if self.RecreateNameCache then self.RecreateNameCache() end
+
 	for _, unit in pairs(module.unitsSpawn) do
 		self.ToggleUnit(unit)
 	end
@@ -157,6 +204,11 @@ function module:OnInitialize()
 	-- Register per-unit defaults after all layout default files have loaded.
 	-- AceDB fills missing settings without replacing saved preferences.
 	for _, defaults in pairs(module.defaults.profile) do
+		if type(defaults) == "table" and defaults.Castbar and defaults.Castbar.Shield then
+			defaults.Castbar.Shield.Icons = {
+				Position = "NONE", Size = 20, X = 44, Y = 0,
+			}
+		end
 		if type(defaults) == "table" and defaults.HealthBar then
 			-- Every health bar supports these overlays. Some child-frame defaults
 			-- omitted them, which also hid their options. Keep existing per-unit
@@ -185,6 +237,7 @@ function module:OnInitialize()
 		end
 	end
 	LUI:RegisterModule(module)
+	InitializeUnitLayoutSettings()
 	module:BuildUnitframeColors()
 end
 

@@ -26,8 +26,7 @@ local UnitLevel = _G.UnitLevel
 local IsInRaid = _G.IsInRaid
 local SetCVar = _G.SetCVar
 
-local supportsClassPower = LUI.DEMONHUNTER or LUI.DRUID or LUI.EVOKER or LUI.HUNTER or LUI.MAGE
-	or LUI.MONK or LUI.PALADIN or LUI.ROGUE or LUI.SHAMAN or LUI.WARLOCK
+local supportsClassPower = module.supportsClassPower
 
 local iconlist = {
 	PvP = {"PvPIndicator"},
@@ -48,6 +47,11 @@ local indicatorDBKeys = {
 	Raid = "RaidMarkerIndicator",
 	ReadyCheck = "ReadyCheckIndicator",
 }
+
+if module.supportsPetHappiness then
+	iconlist.Happiness = {"Happiness"}
+	indicatorDBKeys.Happiness = "HappinessIndicator"
+end
 
 local function GetFrameHeight(dbUnit)
 	return tonumber(dbUnit and dbUnit.Height) or 1
@@ -92,7 +96,7 @@ local function SpawnGroupHeader(name, unit, capacity, ...)
 		end
 	end
 
-	return oUF:SpawnPreconfiguredHeader(name, unit, capacity, Configure, ...)
+	return module:SpawnPreconfiguredHeader(name, unit, capacity, Configure, ...)
 end
 
 local raidLabelHeaders = {}
@@ -1019,27 +1023,67 @@ pendingSettingsFrame:SetScript("OnEvent", function(self)
 	local queued = pendingUnitSettings
 	pendingUnitSettings = {}
 
-	for unit in pairs(queued) do
-		module.ApplySettings(unit)
+	for unit, force in pairs(queued) do
+		module.ApplySettings(unit, force)
 	end
+	if module.RefreshUnitframePreview then module:RefreshUnitframePreview() end
 end)
 
-module.ApplySettings = function(unit, force)
-	-- Unitframes are protected. Option changes may update the database in
-	-- combat, but every frame mutation must wait until combat lockdown ends.
+local function ApplyIndicators(frame, styleUnit, dbUnit, update)
+	for key, icons in pairs(iconlist) do
+		local indicatorDB = dbUnit[indicatorDBKeys[key]]
+		if indicatorDB then
+			if indicatorDB.Enable then
+				module.funcs[icons[1]](frame, styleUnit, dbUnit)
+				for _, icon in pairs(icons) do
+					frame:EnableElement(icon)
+					if frame[icon] then
+						frame[icon]:Show()
+						if update and frame[icon].ForceUpdate then frame[icon]:ForceUpdate() end
+					end
+				end
+			else
+				for _, icon in pairs(icons) do
+					frame:DisableElement(icon)
+					if frame[icon] then frame[icon]:Hide() end
+				end
+			end
+		end
+	end
+end
+
+-- Indicator edits do not need to rebuild bars, auras or active castbar previews.
+module.ApplyIndicatorSettings = function(unit)
 	if InCombatLockdown() then
-		pendingUnitSettings[unit] = true
+		pendingUnitSettings[unit] = pendingUnitSettings[unit] or false
 		pendingSettingsFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
 	end
 
 	local dbUnit = module.db.profile[unit]
-	if dbUnit.Enable == false and not force then return end
+	for _, framename in pairs(module.framelist[unit]) do
+		local frame = _G[framename]
+		if frame then
+			ApplyIndicators(frame, frame.LUIStyleUnit or frame.__unit, dbUnit, true)
+		end
+	end
+end
+
+module.ApplySettings = function(unit, force)
+	-- Unitframes are protected. Option changes may update the database in
+	-- combat, but every frame mutation must wait until combat lockdown ends.
+	if InCombatLockdown() then
+		pendingUnitSettings[unit] = force or pendingUnitSettings[unit] or false
+		pendingSettingsFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
+
+	local dbUnit = module.db.profile[unit]
 
 	for _, framename in pairs(module.framelist[unit]) do
 		local frame = _G[framename]
 
-		if frame then
+		if frame and (dbUnit.Enable ~= false or force or frame.LUIPreview) then
 			local styleUnit = frame.LUIStyleUnit or frame.__unit
 			local runtimeUnit = frame.LUIPreviewUnit or frame.__unit
 			if framename:find("oUF_LUI_raid_40") then
@@ -1072,23 +1116,7 @@ module.ApplySettings = function(unit, force)
 			module.funcs.PowerMissing(frame, styleUnit, dbUnit)
 
 			-- icons
-			for key, icons in pairs(iconlist) do
-				local indicatorDB = dbUnit[indicatorDBKeys[key]]
-				if indicatorDB then
-					if indicatorDB.Enable then
-						module.funcs[icons[1]](frame, styleUnit, dbUnit)
-						for _, icon in pairs(icons) do
-							frame:EnableElement(icon)
-							if frame[icon] then frame[icon]:Show() end
-						end
-					else
-						for _, icon in pairs(icons) do
-							frame:DisableElement(icon)
-							if frame[icon] then frame[icon]:Hide() end
-						end
-					end
-				end
-			end
+			ApplyIndicators(frame, styleUnit, dbUnit)
 
 			-- player specific
 			if unit == "player" then
@@ -1128,7 +1156,7 @@ module.ApplySettings = function(unit, force)
 				end
 
 				-- Additional Power
-				if LUI.DRUID or LUI.PRIEST or LUI.SHAMAN then
+				if module.supportsAdditionalPower then
 					module.funcs.AdditionalPower(frame, styleUnit, module.db.profile.player)
 					if dbUnit.AdditionalPowerBar.Enable then
 						frame:EnableElement("AdditionalPower")
@@ -1266,6 +1294,9 @@ module.ApplySettings = function(unit, force)
 
 			LUI.Profiler.TraceScope(frame, unit, "Unitframes", 2)
 			frame:UpdateAllElements('refreshUnit')
+			if unit == "arena" and module.UpdateArenaPreparation then
+				module:UpdateArenaPreparation(frame)
+			end
 		end
 	end
 end

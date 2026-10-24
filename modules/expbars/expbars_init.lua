@@ -45,6 +45,7 @@ module.defaults = {
 		ShowCurrent = false,
 		ShowMax = false,
 		ShowPercent = true,
+		ShowRestedXP = true,
 		TrackerLabel = "Short",
 		ShowTooltip = true,
 		ShortNumbers = true,
@@ -81,10 +82,12 @@ function module:OnEnable()
 	module:SetEventHandling(true)
 	module.anchor:Show()
 	module:UpdateMainBarVisibility()
+	LUI:SetNativeReplacementActive("Experience Bars", true)
 end
 
 function module:OnDisable()
 	module:SetEventHandling(false)
 	if module.anchor then module.anchor:Hide() end
 	if module.secondaryAnchor then module.secondaryAnchor:Hide() end
+	LUI:SetNativeReplacementActive("Experience Bars", false)
 end

@@ -37,7 +37,7 @@ local COPY_SECTIONS = {
 }
 
 local POSITION_KEYS = {
-    X = true, Y = true, Point = true, RelativePoint = true, InitialAnchor = true,
+    X = true, Y = true, Point = true, RelativePoint = true, InitialAnchor = true, Position = true,
     GrowthX = true, GrowthY = true, GrowDirection = true,
 }
 
@@ -62,9 +62,8 @@ local relativeUnits = {
     maintanktargettarget = true,
 }
 
-local supportsClassPower = LUI.DEMONHUNTER or LUI.DRUID or LUI.EVOKER or LUI.HUNTER or LUI.MAGE
-    or LUI.MONK or LUI.PALADIN or LUI.ROGUE or LUI.SHAMAN or LUI.WARLOCK
-local supportsAdditionalPower = LUI.DRUID or LUI.PRIEST or LUI.SHAMAN
+local supportsClassPower = module.supportsClassPower
+local supportsAdditionalPower = module.supportsAdditionalPower
 
 -- ####################################################################################################################
 -- ##### Custom Controls ##############################################################################################
@@ -184,7 +183,9 @@ local function CopyUnitSettings(targetUnit)
         for _, key in ipairs(keys) do
             if type(source[key]) == "table" and type(destination[key]) == "table" then
                 CopyCompatible(source[key], destination[key], copySizes[targetUnit], copyPositions[targetUnit])
-            elseif type(source[key]) == type(destination[key]) then
+            elseif type(source[key]) == type(destination[key])
+                and (copySizes[targetUnit] or not SIZE_KEYS[key])
+                and (copyPositions[targetUnit] or not POSITION_KEYS[key]) then
                 destination[key] = source[key]
             end
         end
@@ -447,7 +448,10 @@ end
 
 local function GenerateIndicatorGroup(unit, name, order, get, set)
     if not get or not set then return end
-    local group = Opt:Group({name = name, order = order, get = get, set = set, args = {
+    local group = Opt:Group({name = name, order = order, get = get, set = set, handler = {
+        IsEnabled = function() return module:IsEnabled() end,
+        Refresh = function() module.ApplyIndicatorSettings(unit) end,
+    }, args = {
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
         X = Opt:OffsetX(),
         Y = Opt:OffsetY(),
@@ -505,7 +509,7 @@ local function GenerateCastbarGroup(unit, order)
         }),
         StopPreview = Opt:Execute({
             name = "Stop Cast Bar Preview",
-            desc = "Hide the cast bar test without closing other unit frame previews.",
+            desc = "Hide the test cast. A frame opened only for this test is closed too.",
             func = function() module:StopCastbarPreview() end,
         }),
         Width = Opt:InputNumber({name = "Width"}),
@@ -513,6 +517,7 @@ local function GenerateCastbarGroup(unit, order)
         X = Opt:OffsetX(),
         Y = Opt:OffsetY(),
         Point = Opt:Select({name = "Anchor Point", values = LUI.Points}),
+        RelativePoint = Opt:Select({name = "Attach To", values = LUI.Points, onlyIf = (unit ~= "player" and unit ~= "target")}),
         IndividualColor = Opt:Toggle({name = "Individual Color", desc = "If unchecked, the class color will be used.", width = "full"}),
         Icon = Opt:Toggle({name = "Show Icon", width = "full"}),
         Latency = Opt:Toggle({name = "Show Latency Safe Zone", desc = "Shows your current network latency at the end of the player cast bar.", width = "full", onlyIf = (unit == "player")}),
@@ -617,6 +622,12 @@ local function GenerateCastbarShieldGroup(unit, order)
         Explain = Opt:Desc({name = "Additional settings when the cast bar cannot be interrupted."}),
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
         Text = Opt:Toggle({name = "Text", width = "full"}),
+        Icons = Opt:InlineGroup({name = "Shield Icons", db = dbCast.Shield.Icons, args = {
+            Position = Opt:Select({name = "Show Icons", values = {NONE = "None", LEFT = "Left", RIGHT = "Right", BOTH = "Both Sides"}}),
+            Size = Opt:Slider({name = "Size", values = sizeValues}),
+            X = Opt:InputNumber({name = "Distance from Bar", desc = "Distance from each side of the cast bar. Negative values move the icons inside the bar."}),
+            Y = Opt:OffsetY(),
+        }}),
         IndividualColor = Opt:Toggle({name = "Override Bar Color", desc = "Change the color of the cast bar when the cast cannot be interrupted."}),
         BarColor = Opt:Color({name = "Shielded Cast Color", hasAlpha = true, get = colorGet, set = colorSet}),
         Spacer = Opt:Spacer({}),
@@ -755,7 +766,7 @@ local function NewUnitOptionGroup(unit, order, categorized)
             GrowthX = Opt:Select({name = "Horizontal Growth", values = horizontalDirections}),
             GrowthY = Opt:Select({name = "Vertical Growth", values = verticalDirections}),
             Size = Opt:Slider({name = "Size", values = sizeValues}),
-            Spacing = Opt:Slider({name = "Spacing", values = spacingValues}),
+            Spacing = Opt:Slider({name = "Spacing", desc = "Gap between icons and rows. Negative values overlap icons; their positions must remain at least one pixel apart.", values = spacingValues}),
             Num = Opt:Slider({name = "Amount of Buffs", values = auraCountValues}),
             IconsPerRow = Opt:Slider({name = "Icons Per Row", desc = "Maximum number of buff icons before starting a new row.", values = auraCountValues}),
         }})
@@ -772,7 +783,7 @@ local function NewUnitOptionGroup(unit, order, categorized)
             GrowthX = Opt:Select({name = "Horizontal Growth", values = horizontalDirections}),
             GrowthY = Opt:Select({name = "Vertical Growth", values = verticalDirections}),
             Size = Opt:Slider({name = "Size", values = sizeValues}),
-            Spacing = Opt:Slider({name = "Spacing", values = spacingValues}),
+            Spacing = Opt:Slider({name = "Spacing", desc = "Gap between icons and rows. Negative values overlap icons; their positions must remain at least one pixel apart.", values = spacingValues}),
             Num = Opt:Slider({name = "Amount of Debuffs", values = auraCountValues}),
             IconsPerRow = Opt:Slider({name = "Icons Per Row", desc = "Maximum number of debuff icons before starting a new row.", values = auraCountValues}),
         }})
@@ -786,6 +797,9 @@ local function NewUnitOptionGroup(unit, order, categorized)
     if dbUnit.RestingIndicator then indicatorOptions.args.RestingIndicator = GenerateIndicatorGroup(unit, "Resting Icon", categorized and 5 or 74, Opt.GetSet(dbUnit.RestingIndicator)) end
     if dbUnit.CombatIndicator then indicatorOptions.args.CombatIndicator = GenerateIndicatorGroup(unit, "Combat Icon", categorized and 6 or 75, Opt.GetSet(dbUnit.CombatIndicator)) end
     if dbUnit.ReadyCheckIndicator then indicatorOptions.args.ReadyCheckIndicator = GenerateIndicatorGroup(unit, "Ready Check Icon", categorized and 7 or 76, Opt.GetSet(dbUnit.ReadyCheckIndicator)) end
+    if module.supportsPetHappiness and unit == "pet" then
+        indicatorOptions.args.HappinessIndicator = GenerateIndicatorGroup(unit, "Pet Happiness", categorized and 8 or 77, Opt.GetSet(dbUnit.HappinessIndicator))
+    end
 
     if dbUnit.Castbar and UnitSupportsCastbar(unit) then
         local castbarPrefix = categorized and "" or "Castbar"

@@ -323,7 +323,12 @@ local microDefinitions = {
 		any = L["MicroBags_Any"],
 		state = "ConsolidatedBagFrame",
 		OnClick = function(self, btn)
-			_G.ToggleAllBags()
+			local bags = LUI:GetModule("Bags", true)
+			if bags and bags:IsEnabled() then
+				bags.ToggleBags()
+			else
+				_G.ToggleAllBags()
+			end
 		end,
 	},
 
@@ -357,11 +362,16 @@ local microDefinitions = {
 
 	{
 		name = "LFG",
-		level = LFG_LEVEL_REQ,
-		title = L["MicroLFG_Name"],
-		left = L["MicroLFG_Left"],
-		right = L["MicroLFG_Right"],
-		state = "PVEFrame",
+		level = not LUI.IsForever and LFG_LEVEL_REQ or nil,
+		title = LUI.IsForever and (_G.LFG_TITLE or L["MicroLFG_Name"]) or L["MicroLFG_Name"],
+		any = LUI.IsForever and _G.BINDING_NAME_TOGGLEGROUPFINDER or nil,
+		left = not LUI.IsForever and L["MicroLFG_Left"] or nil,
+		right = not LUI.IsForever and L["MicroLFG_Right"] or nil,
+		state = LUI.IsForever and "LFGParentFrame" or "PVEFrame",
+		addon = LUI.IsForever and "Blizzard_GroupFinder_VanillaStyle" or nil,
+		secureClickTarget = LUI.IsForever and "LFDMicroButton" or nil,
+		secureClickBothButtons = LUI.IsForever,
+		nativeTooltipTarget = LUI.IsForever and "LFDMicroButton" or nil,
 		OnClick = function(self, btn)
 			if btn == "RightButton" then
 				if _G.TogglePVPUI then _G.TogglePVPUI() end
@@ -458,9 +468,9 @@ local microDefinitions = {
 		title = L["MicroPlayer_Name"],
 		any = L["MicroPlayer_Any"],
 		state = "CharacterFrame",
-		OnClick = function(self, btn)
-			_G.ToggleCharacter("PaperDollFrame")
-		end,
+		-- Keep CharacterFrame's status-bar updates on Blizzard's secure click path.
+		secureClickTarget = "CharacterMicroButton",
+		secureClickBothButtons = true,
 	},
 }
 
@@ -474,6 +484,7 @@ local MicroButtonClickerMixin = {}
 function MicroButtonClickerMixin:OnEnter()
 	self:SetAlpha(1)
 	self.Hover = true
+	if LUI:TooltipHasWidgets(GameTooltip) then return end
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
 
 	local parent = self:GetParent()
@@ -489,8 +500,10 @@ function MicroButtonClickerMixin:OnEnter()
 		GameTooltip:AddLine(parent.right, GREEN_FONT_COLOR.r, GREEN_FONT_COLOR.g, GREEN_FONT_COLOR.b, true)
 	end
     local native = parent.nativeTooltipTarget and _G[parent.nativeTooltipTarget]
-    if native and native.disabledTooltip then
-        GameTooltip:AddLine(native.disabledTooltip, 1, 0.2, 0.2, true)
+    local disabledTooltip = native and not native:IsEnabled() and native.disabledTooltip
+    if type(disabledTooltip) == "function" then disabledTooltip = disabledTooltip() end
+    if disabledTooltip then
+        GameTooltip:AddLine(disabledTooltip, 1, 0.2, 0.2, true)
     end
 	local playerLevel = UnitLevel("player")
 	if parent.level and not issecretvalue(playerLevel) and playerLevel < parent.level then
@@ -502,7 +515,7 @@ end
 function MicroButtonClickerMixin:OnLeave()
 	self:SetAlpha(self:GetParent().Opened and 1 or 0)
 	self.Hover = nil
-	GameTooltip:Hide()
+	LUI:HideTooltip(GameTooltip, self)
 end
 
 -- ####################################################################################################################
@@ -711,9 +724,13 @@ function module:ConsolidateBagFrames()
 	local bagFrames = CreateFrame("Frame", "ConsolidatedBagFrame", UIParent)
 
 	local function UpdateState()
+		local bags = LUI:GetModule("Bags", true)
+		if bags and bags:IsEnabled() and _G.LUIBags then
+			bagFrames:SetShown(_G.LUIBags:IsShown())
+			return
+		end
 		if
-			(_G.LUIBags and _G.LUIBags:IsShown())
-			or IsBagOpen(0)
+			IsBagOpen(0)
 			or IsBagOpen(1)
 			or IsBagOpen(2)
 			or IsBagOpen(3)

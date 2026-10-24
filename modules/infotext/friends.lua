@@ -11,7 +11,7 @@ local L = LUI.L
 ---@class LUI.Infotext
 local module = LUI:GetModule("Infotext")
 local element = module:NewElement("Friends", "AceEvent-3.0")
-StaticPopupDialogs["LUI_CONFIRM_REMOVE_BN_FRIEND"] = {
+LUI.PopupDialogs["LUI_CONFIRM_REMOVE_BN_FRIEND"] = {
 	text = "Remove %s from your Battle.net friends list?",
 	button1 = YES,
 	button2 = NO,
@@ -20,12 +20,10 @@ StaticPopupDialogs["LUI_CONFIRM_REMOVE_BN_FRIEND"] = {
 			BNRemoveFriend(data)
 		end
 	end,
-	timeout = 0,
-	whileDead = true,
 	hideOnEscape = true,
 }
 
-StaticPopupDialogs["LUI_SET_FRIEND_NOTE"] = {
+LUI.PopupDialogs["LUI_SET_FRIEND_NOTE"] = {
 	text = _G.SET_FRIENDNOTE_LABEL,
 	button1 = ACCEPT,
 	button2 = CANCEL,
@@ -47,8 +45,6 @@ StaticPopupDialogs["LUI_SET_FRIEND_NOTE"] = {
 	end,
 	EditBoxOnEnterPressed = function(self) self:GetParent():GetButton1():Click() end,
 	EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
-	timeout = 0,
-	whileDead = true,
 	hideOnEscape = true,
 }
 
@@ -58,7 +54,6 @@ local C_FriendList, C_PartyInfo, C_BattleNet = _G.C_FriendList, _G.C_PartyInfo, 
 local BNet_GetBattlenetClientAtlas = _G.BNet_GetBattlenetClientAtlas
 local ToggleFriendsFrame = _G.ToggleFriendsFrame
 local BNFeaturesEnabled = _G.BNFeaturesEnabled
-local StaticPopup_Show = _G.StaticPopup_Show
 local IsControlKeyDown = _G.IsControlKeyDown
 local BNGetNumFriends = _G.BNGetNumFriends
 local IsAltKeyDown = _G.IsAltKeyDown
@@ -139,16 +134,14 @@ local function SaveBroadcast(dialog)
     C_BattleNet.SetCustomMessage(SafeValue(dialog:GetEditBox():GetText(), ""))
 end
 
---Add new Static Dialog, called once, no need to have local copies.
-StaticPopupDialogs["LUI_SET_BN_BROADCAST"] = {
+-- LUI-owned broadcast editor.
+LUI.PopupDialogs["LUI_SET_BN_BROADCAST"] = {
 	text = _G.BN_BROADCAST_TOOLTIP,
 	button1 = _G.ACCEPT,
 	button2 = _G.CANCEL,
 	exclusive = true,
-	whileDead = true,
 	hideOnEscape = true,
 
-	timeout = 0,
 	hasEditBox = 1,
 	maxLetters = 127,
 	OnAccept = SaveBroadcast,
@@ -225,7 +218,7 @@ function element:CreateBroadcast()
 	bc:EnableMouse(true)
 	bc:SetScript("OnMouseUp", function(self, button)
 		if button == "LeftButton" then
-			StaticPopup_Show("LUI_SET_BN_BROADCAST")
+			LUI:ShowPopup("LUI_SET_BN_BROADCAST")
 		end
 	end)
 	
@@ -313,13 +306,14 @@ function element:GetBNScoreIdentity(gameInfo)
 end
 
 local function HideFriendScoreTooltip(row)
-    if GameTooltip and GameTooltip:IsOwned(row) then GameTooltip:Hide() end
+    LUI:HideTooltip(GameTooltip, row)
 end
 
 -- Place the detail tooltip beside the whole Friends window, on the side
 -- facing the screen centre. Compare physical dimensions to support UI scaling.
 function element:PositionFriendScoreTooltip(row)
     local tip = GameTooltip
+    if LUI:TooltipHasWidgets(tip) then return end
     local uiScale, tipScale = UIParent:GetEffectiveScale(), tip:GetEffectiveScale()
     local windowScale, rowScale = infotip:GetEffectiveScale(), row:GetEffectiveScale()
     local left, right, top = infotip:GetLeft(), infotip:GetRight(), row:GetTop()
@@ -356,6 +350,7 @@ function element:AddFriendScore(row)
     row:HookScript("OnEnter", function(self)
         if not element:IsFriendScoreEnabled() or not module.db.profile.Friends.ShowScoreDetails
             or not self.scoreName or type(_G.RaiderIO.ShowProfile) ~= "function" then return end
+        if LUI:TooltipHasWidgets(GameTooltip) then return end
         GameTooltip:SetOwner(self, "ANCHOR_NONE")
         GameTooltip:SetText(self.scoreName.." - "..self.scoreRealm)
         local ok, shown = pcall(_G.RaiderIO.ShowProfile, GameTooltip,
@@ -585,11 +580,11 @@ function element.OnBNFriendButtonClick(bnfriend, button)
 		C_BattleNet.InviteFriend(bnfriend.gameAccountID)
 	elseif IsControlKeyDown() then
 		if not bnfriend.accountID then return end
-		StaticPopup_Show("LUI_SET_FRIEND_NOTE", bnfriend.accountName, nil,
+		LUI:ShowPopup("LUI_SET_FRIEND_NOTE", bnfriend.accountName, nil,
 			{isBattleNet = true, id = bnfriend.accountID, note = bnfriend.note:GetText()})
 	elseif button == "MiddleButton" then
 		if not bnfriend.accountID then return end
-		StaticPopup_Show("LUI_CONFIRM_REMOVE_BN_FRIEND", bnfriend.accountName, nil, bnfriend.accountID)
+		LUI:ShowPopup("LUI_CONFIRM_REMOVE_BN_FRIEND", bnfriend.accountName, nil, bnfriend.accountID)
 	elseif button == "LeftButton" then
 		if not bnfriend.accountID then return end
 		local name = format("%s:%s", bnfriend.accountName, bnfriend.accountID)
@@ -846,7 +841,7 @@ function element.OnFriendButtonClick(friend, button)
 	if IsAltKeyDown() then
 		C_PartyInfo.InviteUnit(friend.unit)
 	elseif IsControlKeyDown() then
-		StaticPopup_Show("LUI_SET_FRIEND_NOTE", friend.unit, nil,
+		LUI:ShowPopup("LUI_SET_FRIEND_NOTE", friend.unit, nil,
 			{name = friend.unit, note = friend.rawNote})
 	elseif button == "MiddleButton" then
 		C_FriendList.RemoveFriend(friend.unit)
@@ -1002,16 +997,6 @@ function element:RefreshSettings()
 	element:UpdateFriends()
 	if infotip then infotip:Hide() end
 	if legendTip then legendTip:Hide() end
-end
-
-function element.OnLeave(frame_)
-	if infotip and not infotip:IsMouseOver() then
-		infotip:Hide()
-	end
-	
-	if legendTip then
-		legendTip:Hide()
-	end
 end
 
 -- ####################################################################################################################

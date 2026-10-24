@@ -87,17 +87,42 @@ local function UpdateDisplaySize(frame)
 	local topAnchored = type(point) == "string" and point:find("TOP", 1, true)
 	local minimumHeight = topAnchored and TOP_BAR_VISIBLE_HEIGHT or 1
 	local frameWidth = math.max(1, math.ceil(width))
-	frame:SetSize(frameWidth, math.max(minimumHeight, textHeight))
+	local frameHeight = math.max(minimumHeight, textHeight)
+	local textPoint = topAnchored and (TOP_BAR_TEXT_POINTS[db.TopBarTextAnchor] or TOP_BAR_TEXT_POINTS.TOP) or "LEFT"
+	-- Text can change without changing its geometry (FPS, clock, brokers).
+	-- Keep the established anchors and hit rectangle until the layout changes.
+	local layout = frame.LUIDisplayLayout
+	if layout and layout.width == frameWidth and layout.height == frameHeight
+		and layout.textHeight == textHeight and layout.textPoint == textPoint then
+		return true
+	end
+	frame:SetSize(frameWidth, frameHeight)
 
 	frame.text:ClearAllPoints()
 	frame.text:SetSize(frameWidth, textHeight)
 	frame.text:SetJustifyV("MIDDLE")
+	local topInset, bottomInset = 0, 0
 	if topAnchored then
-		local textPoint = TOP_BAR_TEXT_POINTS[db.TopBarTextAnchor] or TOP_BAR_TEXT_POINTS.TOP
 		frame.text:SetPoint(textPoint, frame, textPoint)
+		local padding = frameHeight - textHeight
+		if textPoint == "TOPLEFT" then
+			bottomInset = padding
+		elseif textPoint == "BOTTOMLEFT" then
+			topInset = padding
+		else
+			topInset, bottomInset = padding / 2, padding / 2
+		end
 	else
 		frame.text:SetPoint("LEFT", frame, "LEFT")
 	end
+	-- Keep the top-bar layout, but only let the text area receive the mouse.
+	-- Preserve horizontal extensions such as the clock's instance label.
+	local leftInset, rightInset = frame:GetHitRectInsets()
+	frame:SetHitRectInsets(leftInset, rightInset, topInset, bottomInset)
+	frame.LUIDisplayLayout = layout or {}
+	layout = frame.LUIDisplayLayout
+	layout.width, layout.height = frameWidth, frameHeight
+	layout.textHeight, layout.textPoint = textHeight, textPoint
 
 	return true
 end
@@ -153,9 +178,25 @@ function InfoMixin:GetFrame()
 	return elementFrames[self:GetName()]
 end
 
+function module:AnchorInfotextTooltip(tooltip, frame)
+	-- The display keeps a full-height layout frame, but only its text receives
+	-- the mouse. Anchor to that same text region rather than the unused padding.
+	local anchor = frame.text or frame
+	local point = frame:GetPoint()
+	tooltip:ClearAllPoints()
+	if type(point) == "string" and point:find("BOTTOM", 1, true) then
+		tooltip:SetPoint("BOTTOM", anchor, "TOP", 0, 0)
+	else
+		tooltip:SetPoint("TOP", anchor, "BOTTOM", 0, 0)
+	end
+end
+
 function InfoMixin:TooltipHeader(headerName, handleGT)
+	if LUI:TooltipHasWidgets(GameTooltip) then return end
 	if handleGT then
-		GameTooltip:SetOwner(self:GetFrame(), "ANCHOR_BOTTOM")
+		local frame = self:GetFrame()
+		GameTooltip:SetOwner(frame, "ANCHOR_NONE")
+		module:AnchorInfotextTooltip(GameTooltip, frame)
 		GameTooltip:ClearLines()
 	end
 	--Make sure the header ends with a colon
@@ -167,6 +208,7 @@ function InfoMixin:TooltipHeader(headerName, handleGT)
 end
 
 function InfoMixin:AddHint(...)
+	if LUI:TooltipHasWidgets(GameTooltip) then return end
 	local r, g, b = module:RGB("Hint")
 	GameTooltip:AddLine(" ")
 	GameTooltip:AddLine(L["Info_Hint"], r, g, b)
@@ -447,7 +489,9 @@ function module.OnEnterHandler(self, ...)
 	if element.OnEnter then
 		element.OnEnter(self, ...)
 	elseif element.OnTooltipShow then
-		GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+		if LUI:TooltipHasWidgets(GameTooltip) then return end
+		GameTooltip:SetOwner(self, "ANCHOR_NONE")
+		module:AnchorInfotextTooltip(GameTooltip, self)
 		GameTooltip:ClearLines()
 		element.OnTooltipShow(GameTooltip)
 		GameTooltip:Show()
@@ -459,7 +503,7 @@ function module.OnLeaveHandler(self, ...)
 	if element.OnLeave then
 		element.OnLeave(self, ...)
 	elseif element.OnTooltipShow then
-		GameTooltip:Hide()
+		LUI:HideTooltip(GameTooltip, self)
 	end
 end
 

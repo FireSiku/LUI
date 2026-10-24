@@ -116,41 +116,20 @@ function module:CreateOrb()
 	a2:SetToAlpha(0)
 	a2:SetDuration(ANIM_DURATION)
 	alphaOut:SetScript("OnFinished", function() tex:SetAlpha(0) end)
+	tex.alphaIn = alphaIn
+	tex.alphaOut = alphaOut
 
-	local locked = false -- To prevent rapid clicking issues
 	orbClicker:RegisterForClicks("AnyUp")
 	local function OnClick()
-		if locked then return end
-		local forceShow = false
-		if tex:GetAlpha() == 0 then
-			locked = true
-			alphaIn:Play()
-			forceShow = true
-		elseif math.floor(tex:GetAlpha()*100+0.5) == ALPHA*100 then
-			locked = true
-			alphaOut:Play()
+		if not module:IsEnabled() then return end
+		local anyShown = module:AnyMainPanelShown()
+		if InCombatLockdown() and not LUI.IsForever then
+			anyShown = orbClicker:GetAttribute("panelsOpen")
 		end
-		locked = false
-		for kind, button in module:IterateNavButtons() do
-			local db = module.db.profile.LUITextures[kind]
-			local frame = _G[db.Anchor]
-			if forceShow and frame and not frame:IsShown() then
-				if kind == "Chat" and not (button.tex.alphaOut:IsPlaying() or button.tex.alphaIn:IsPlaying()) then
-					module:SetChatVisible(true)
-				end
-				button.tex.alphaIn:Play()
-				module:AlphaIn(kind, button)
-				db.IsShown = true
-			elseif not forceShow and frame and frame:IsShown() then
-				if kind == "Chat" and not (button.tex.alphaOut:IsPlaying() or button.tex.alphaIn:IsPlaying()) then
-					module:SetChatVisible(false)
-				end
-				button.tex.alphaOut:Play()
-				module:AlphaOut(kind, button)
-				db.IsShown = false
-			end
+		for kind in module:IterateNavButtons() do
+			module:SetMainPanelShown(kind, not anyShown)
 		end
-		
+		module:SyncOrbState(true)
 	end
 	-- Keep the visual and protected panel states together until combat ends.
 	orbClicker:SetScript("OnClick", LUI.IsForever and LUI.OutOfCombatWrapper(OnClick) or OnClick)
@@ -159,11 +138,17 @@ function module:CreateOrb()
 			if not PlayerInCombat() then return end
 			local show = not self:GetAttribute("panelsOpen")
 			self:SetAttribute("panelsOpen", show)
-			local count = self:GetAttribute("protectedCount") or 0
+			local count = self:GetAttribute("buttonCount") or 0
 			for i = 1, count do
-				local frame = self:GetFrameRef("protected"..i)
-				if frame then
-					if show then frame:Show() else frame:Hide() end
+				local button = self:GetFrameRef("button"..i)
+				if button and button:GetAttribute("panelEnabled") then
+					button:SetAttribute("panelShown", show)
+					for j = 1, button:GetAttribute("protectedCount") or 0 do
+						local frame = button:GetFrameRef("protected"..j)
+						if frame then
+							if show then frame:Show() else frame:Hide() end
+						end
+					end
 				end
 			end
 		]])
@@ -204,16 +189,20 @@ function module:CreateOrb()
 	module:RefreshOrb()
 end
 
-function module:SyncOrbState()
-	if not module.Orb then return end
-	local anyShown = false
+function module:AnyMainPanelShown()
 	for kind in module:IterateNavButtons() do
-		if module.db.profile.LUITextures[kind].IsShown then
-			anyShown = true
-			break
+		local frame = self:GetMainPanelVisibilityFrame(kind)
+		if frame and not (frame.IsForbidden and frame:IsForbidden()) and self.db.profile.LUITextures[kind].IsShown then
+			return true
 		end
 	end
-	module.Orb.ClickerTex:SetAlpha(anyShown and 0.75 or 0)
+	return false
+end
+
+function module:SyncOrbState(animate)
+	if not module.Orb then return end
+	local anyShown = self:AnyMainPanelShown()
+	self:SetPanelIndicator(module.Orb.ClickerTex, anyShown, animate)
 	if not InCombatLockdown() then
 		module.Orb.Clicker:SetAttribute("panelsOpen", anyShown)
 	end

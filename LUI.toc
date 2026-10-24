@@ -1,4 +1,4 @@
-## Interface: 120100, 16001
+## Interface: 120105, 16001
 ## Version: v2610
 ## Title: LUI
 ## Author: Siku, Nitsah, Pahn
@@ -27,18 +27,21 @@ libs\AceLocale-3.0\AceLocale-3.0.xml
 libs\AceSerializer-3.0\AceSerializer-3.0.xml
 locale\locale.xml
 
-## oUF ## Current Version 14.0.3
+## oUF ## Upstream snapshot 14.2.0-9-g3692cb6
 api\oUF13\oUF.xml
 
 ### Core + API ###
 init.lua
 api\client.lua
+api\nativevisibility.lua
 api\curse.lua
 api\backdrop.lua
+api\popups.lua
 api\profiler.lua
 api\modapi.lua
 api\colors.lua
 api\utils.lua
+api\tooltip.lua
 api\debug.lua
 api\outofcombatwrapper.lua
 api\devapi.lua
@@ -141,6 +144,9 @@ api\frameidentifier.lua
 modules\unitframes\templates.xml
 modules\unitframes\unitframes_init.lua
 modules\unitframes\castbar_compat.lua
+modules\unitframes\classpower_compat.lua
+modules\unitframes\arena_compat.lua
+modules\unitframes\groupheaders.lua
 modules\unitframes\fonts.lua
 modules\unitframes\defaults\Settings.lua
 modules\unitframes\defaults\player.lua

@@ -21,6 +21,7 @@ local IndicatorFrame = _G.MinimapCluster.IndicatorFrame
 local ExpansionButton = _G.ExpansionLandingPageMinimapButton
 local Minimap = _G.Minimap
 local InCombatLockdown = _G.InCombatLockdown
+local HasNewMail = _G.HasNewMail
 
 local MINIMAP_SQUARE_TEXTURE_MASK = "Interface\\ChatFrame\\ChatFrameBackground"
 local MINIMAP_ROUND_TEXTURE_MASK = "Textures\\MinimapMask"
@@ -36,6 +37,9 @@ local function GetLuiMinimapShape() return minimapShape end
 local oldDefault = {}         -- Keep information on default minimap
 local pendingAction
 local trackingMenu
+local trackingClicker
+local mailFrameHooked
+local indicatorPositionHooked
 local trackingAnchor = AnchorUtil.CreateAnchor("TOPRIGHT", Minimap, "TOPLEFT", -10, 8)
 
 local combatQueue = CreateFrame("Frame")
@@ -91,16 +95,39 @@ function module:PositionMinimapIcons()
 	IndicatorFrame:SetScale(db.Icons.Notifications.Scale)
 end
 
+local function RestoreMailIcon(mailFrame)
+	-- Blizzard clears the icon in OnHide, including when only a parent hides.
+	if module:IsEnabled() and mailFrame:IsVisible()
+		and mailFrame:IsEventRegistered("UPDATE_PENDING_MAIL")
+		and HasNewMail() and not mailFrame.MailIcon:IsShown() then
+		mailFrame:TryPlayMailNotification()
+	end
+end
+
+local function RestoreMinimapIconPositions()
+	if module:IsEnabled() then module:PositionMinimapIcons() end
+end
+
 local function SetupMinimapIconHooks()
+	local mailFrame = IndicatorFrame.MailFrame
+	if not mailFrameHooked then
+		mailFrameHooked = true
+		mailFrame:HookScript("OnShow", RestoreMailIcon)
+	end
+	RestoreMailIcon(mailFrame)
+
+	if not indicatorPositionHooked then
+		indicatorPositionHooked = true
+		-- Edit Mode and tracking updates can reanchor notifications to Blizzard's header.
+		hooksecurefunc(_G.MinimapCluster, "SetHeaderUnderneath", RestoreMinimapIconPositions)
+		hooksecurefunc("MiniMapIndicatorFrame_UpdatePosition", RestoreMinimapIconPositions)
+	end
+
 	if not ExpansionButton or module.expansionButtonHooked then return end
 	module.expansionButtonHooked = true
 
-	hooksecurefunc(ExpansionButton, "SetLandingPageIconOffset", function()
-		if module:IsEnabled() then module:PositionMinimapIcons() end
-	end)
-	ExpansionButton:HookScript("OnShow", function()
-		if module:IsEnabled() then module:PositionMinimapIcons() end
-	end)
+	hooksecurefunc(ExpansionButton, "SetLandingPageIconOffset", RestoreMinimapIconPositions)
+	ExpansionButton:HookScript("OnShow", RestoreMinimapIconPositions)
 end
 
 -- ####################################################################################################################
@@ -115,21 +142,10 @@ local minimapFrames = {
 }
 
 function module:HideDefaultMinimap()
-	-- Hide Several Frames surrounding minimap, after taking note of their state
-	for _, frameName in ipairs(minimapFrames) do
-		local frame = _G[frameName]
-		if frame then
-			oldDefault[frameName] = frame:IsShown()
-			LUI:Kill(frame)
-		end
-	end
-
 	--Change Minimap's Parent:
 	oldDefault.scale = Minimap:GetScale()
 	oldDefault.parent = Minimap:GetParent()
 	oldDefault.mouseWheelEnabled = Minimap:IsMouseWheelEnabled()
-	oldDefault.onMouseWheel = Minimap:GetScript("OnMouseWheel")
-	oldDefault.onMouseUp = Minimap:GetScript("OnMouseUp")
 	oldDefault.indicatorParent = IndicatorFrame:GetParent()
 	oldDefault.indicatorPoints = CapturePoints(IndicatorFrame)
 	oldDefault.indicatorScale = IndicatorFrame:GetScale()
@@ -140,9 +156,19 @@ function module:HideDefaultMinimap()
 	end
 	Minimap:SetParent(UIParent)
 
-	-- Keep Blizzard's notification icons visible on LUI's minimap.
+	-- Move notifications before hiding their original parent. A brief hide
+	-- runs Blizzard's mail OnHide, which clears the icon until the next update.
 	IndicatorFrame:SetParent(Minimap)
 	if ExpansionButton then ExpansionButton:SetParent(Minimap) end
+
+	-- Hide surrounding frames after preserving notification visibility.
+	for _, frameName in ipairs(minimapFrames) do
+		local frame = _G[frameName]
+		if frame then
+			oldDefault[frameName] = frame:IsShown()
+			LUI:Kill(frame)
+		end
+	end
 	
 	--Turn the Minimap into a square
 	Minimap:SetMaskTexture(MINIMAP_SQUARE_TEXTURE_MASK)
@@ -190,8 +216,7 @@ function module:RestoreDefaultMinimap(ignoreCombat)
 	--Revert Minimap Parent
 	Minimap:SetParent(oldDefault.parent)
 	Minimap:SetScale(oldDefault.scale)
-	Minimap:SetScript("OnMouseWheel", oldDefault.onMouseWheel)
-	Minimap:SetScript("OnMouseUp", oldDefault.onMouseUp)
+	if trackingClicker then trackingClicker:Hide() end
 	IndicatorFrame:SetParent(oldDefault.indicatorParent)
 	RestorePoints(IndicatorFrame, oldDefault.indicatorPoints)
 	IndicatorFrame:SetScale(oldDefault.indicatorScale or 1)
@@ -344,6 +369,7 @@ function module:SetMinimapAgain()
 	module:HideDefaultMinimap()
 	module:SetMinimapPosition()
 	module:SetMinimapScripts()
+	SetupMinimapIconHooks()
 	module:PositionMinimapIcons()
 	module:ToggleMinimapText()
 	module:RefreshTextColors()
@@ -382,16 +408,23 @@ end
 
 function module:SetMinimapScripts()
 	Minimap:EnableMouseWheel(true)
-	Minimap:SetScript("OnMouseWheel", function(self, delta)
-		if module:IsEnabled() then self:OnMouseWheel(delta) end
-	end)
-	Minimap:SetScript("OnMouseUp", function(self, button)
-		if button == "RightButton" and module:IsEnabled() then
-			module:ToggleTrackingMenu()
-		else
-			self:OnClick()
-		end
-	end)
+	-- Keep the native scripts intact: calling OnClick from addon code taints
+	-- the protected PingLocation call. Only intercept the tracking-menu button.
+	if not trackingClicker then
+		trackingClicker = CreateFrame("Button", nil, Minimap)
+		trackingClicker:SetAllPoints(Minimap)
+		trackingClicker:SetPassThroughButtons("LeftButton", "MiddleButton", "Button4", "Button5")
+		trackingClicker:SetMouseClickEnabled(true)
+		trackingClicker:SetMouseMotionEnabled(false)
+		trackingClicker:RegisterForClicks("RightButtonUp")
+		trackingClicker:SetScript("OnClick", function()
+			if module:IsEnabled() then module:ToggleTrackingMenu() end
+		end)
+	end
+	-- The click area must sit above the native map, which otherwise handles
+	-- right clicks as pings. Reapply the level when reusing the click area.
+	trackingClicker:SetFrameLevel(Minimap:GetFrameLevel() + 1)
+	trackingClicker:Show()
 end
 
 --Set Frames surrounding the minimap.
