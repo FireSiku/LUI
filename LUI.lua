@@ -659,14 +659,11 @@ function LUI:OnInitialize()
 
 	-- Shared confirmation used by profile restores, migrations and settings that
 	-- cannot safely rebuild protected frames while the UI is running.
-	StaticPopupDialogs["RELOAD_UI"] = {
-		preferredIndex = 3,
+	LUI.PopupDialogs["RELOAD_UI"] = {
 		text = L["The UI needs to be reloaded!"],
 		button1 = ACCEPT,
 		button2 = CANCEL,
 		OnAccept = ReloadUI,
-		timeout = 0,
-		whileDead = 1,
 		hideOnEscape = 1
 	}
 

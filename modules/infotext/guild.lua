@@ -188,9 +188,8 @@ function element.OnGuildButtonClick(member, button)
 	elseif IsControlKeyDown() then
 		local isPublic = button == "LeftButton"
 		if member.guid and ((isPublic and CanEditPublicNote()) or (not isPublic and CanEditOfficerNote())) then
-			local dialog = StaticPopup_Show("LUI_SET_GUILD_NOTE")
+			local dialog = LUI:ShowPopup("LUI_SET_GUILD_NOTE", nil, nil, {guid = member.guid, isPublic = isPublic})
 			if dialog then
-				dialog.data = {guid = member.guid, isPublic = isPublic}
 				local editBox = dialog:GetEditBox()
 				editBox:SetText(isPublic and member.rawNote or member.officerNote)
 				editBox:HighlightText()
@@ -384,8 +383,7 @@ end
 -- ####################################################################################################################
 
 function element:OnCreate()
-	StaticPopupDialogs["LUI_SET_GUILD_NOTE"] = {
-		preferredIndex = 3,
+	LUI.PopupDialogs["LUI_SET_GUILD_NOTE"] = {
 		text = "Edit guild note",
 		button1 = ACCEPT,
 		button2 = CANCEL,
@@ -398,8 +396,6 @@ function element:OnCreate()
 		end,
 		EditBoxOnEnterPressed = function(self) self:GetParent():GetButton1():Click() end,
 		EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
-		timeout = 0,
-		whileDead = true,
 		hideOnEscape = true,
 	}
 	element:RegisterEvent("GUILD_MOTD", "GuildMOTD")

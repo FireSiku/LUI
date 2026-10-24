@@ -1393,6 +1393,11 @@ function module:RegisterRaidMenuButton(parent, button)
     RegisterCosmeticButton(parent, button)
 end
 
+function module:RegisterPopupButton(parent, button)
+    if not LUI:IsPopupButton(parent, button) then return end
+    RegisterCosmeticButton(parent, button)
+end
+
 -- Register only the two native response controls, including while hidden so
 -- their artwork is ready before the first ready check. Keep native OnClick
 -- handlers intact; all restrictions on the buttons/textures still apply.
@@ -1671,6 +1676,9 @@ PrepareKnownPanels = function(force)
     for index = 1, 4 do PrepareName("StaticPopup" .. index) end
     PreparePlayerSpellsControls()
     PrepareReadyCheckButtons()
+    if LUI.ForEachPopupButton then
+        LUI:ForEachPopupButton(function(parent, button) module:RegisterPopupButton(parent, button) end)
+    end
     -- Includes LUI-owned controls registered while custom styling was off.
     for button in pairs(cosmeticOwners) do PrepareButton(button) end
 end
