@@ -10,7 +10,7 @@
 - Core: Added scrolling combat-text outline choices and improved custom-font handling for scrolling text and damage numbers above units.
 - Core: Corrected media paths that could interrupt startup with strict LibSharedMedia validation.
 - Core: Reduced repeated updates in unitframes, infotext, bags, experience bars, button styling and window layouts.
-- Unitframes: Updated the embedded oUF framework to 14.2.0.
+- Unitframes: Updated embedded oUF to upstream snapshot 14.2.0-9-g3692cb6, including restricted GUID handling.
 - Unitframes: Updated arena preparation displays for restricted specialization data.
 - Unitframes: Fixed portrait errors during combat and shapeshifting.
 - Unitframes: Added shared font settings and a separate aura-count font option. Castbar outlines and raid information text positions now follow their settings.

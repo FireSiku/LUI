@@ -1,7 +1,7 @@
-## Interface: 120100, 120105, 16001
+## Interface: 120105, 120107, 16001
 ## Title: oUF
 ## Author: Haste, lightspark, p3lim, Rainrider
-## Version: 14.2.0
+## Version: 14.2.0-9-g3692cb6
 ## Notes: Unit frame framework. Does nothing by itself.
 ## AllowLoadGameType: standard, camelot
 ## OptionalDeps: Clique
