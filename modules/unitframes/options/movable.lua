@@ -180,7 +180,7 @@ hider:SetScript("OnEvent", function()
 		for k, bdrop in next, backdropPool do bdrop:Hide() end
 		_LOCK = nil
 		
-		_G.StaticPopup_Hide("DRAG_UNITFRAMES")
+		LUI:HidePopup("DRAG_UNITFRAMES")
 		LUI:Print("UnitFrame anchors hidden due to combat. The changed positions are NOT saved!")
 		hider:UnregisterEvent("PLAYER_REGEN_DISABLED")
 	end
@@ -249,8 +249,7 @@ do
 	end
 end
 
-StaticPopupDialogs["DRAG_UNITFRAMES"] = {
-	preferredIndex = 3,
+LUI.PopupDialogs["DRAG_UNITFRAMES"] = {
 	text = "oUF_LUI UnitFrames are dragable.",
 	button1 = "Save",
 	button3 = "Reset",
@@ -265,8 +264,6 @@ StaticPopupDialogs["DRAG_UNITFRAMES"] = {
 	OnAccept = setAllPositions,
 	OnAlt = resetAllPositions,
 	OnCancel = resetAllPositions,
-	timeout = 0,
-	whileDead = true,
 	hideOnEscape = true,
 }
 
@@ -282,7 +279,7 @@ function module:MoveUnitFrames(override)
 	
 	if (not _LOCK) and (not override) then
 		hider:RegisterEvent("PLAYER_REGEN_DISABLED")
-		StaticPopup_Show("DRAG_UNITFRAMES")
+		LUI:ShowPopup("DRAG_UNITFRAMES")
 		
 		for k, v in pairs(ufNames) do
 			local object = GetMoveObject(k, v)
@@ -298,7 +295,7 @@ function module:MoveUnitFrames(override)
 			bdrop:Hide()
 		end
 		
-		_G.StaticPopup_Hide("DRAG_UNITFRAMES")
+		LUI:HidePopup("DRAG_UNITFRAMES")
 		_LOCK = nil
 		
 		hider:UnregisterEvent("PLAYER_REGEN_DISABLED")

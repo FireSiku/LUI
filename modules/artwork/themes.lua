@@ -12,7 +12,6 @@ local ACR = LibStub("AceConfigRegistry-3.0")
 
 local db, dbd
 local applyThemeOnEnable
-local StaticPopup_Hide = _G.StaticPopup_Hide
 local tContains = _G.tContains
 local strupper = string.upper
 local strlen = string.len
@@ -214,7 +213,7 @@ function module:SaveTheme(theme)
 	theme = theme:trim()
 	-- check if theme name already exists
 	if db.global[theme] and not db.global[theme].deleted then
-		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
+		return LUI:ShowPopup("LUI_THEMES_ALREADY_EXISTS")
 	end
 
 	self:CaptureModernTheme()
@@ -258,13 +257,11 @@ function module:ImportThemeName(name)
 	name = name:trim()
 	-- check if theme name already exists
 	if db.global[name] and not db.global[name].deleted then
-		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
+		return LUI:ShowPopup("LUI_THEMES_ALREADY_EXISTS")
 	end
 
 	-- show import data popup
-	local dialog = StaticPopup_Show("LUI_THEMES_IMPORT_DATA")
-	-- hand off theme name
-	if dialog then dialog.data = name end
+	LUI:ShowPopup("LUI_THEMES_IMPORT_DATA", nil, nil, name)
 end
 
 function module:ImportThemeData(str, name)
@@ -277,7 +274,7 @@ function module:ImportThemeData(str, name)
 	name = name:trim()
 	-- check if theme name already exists
 	if db.global[name] and not db.global[name].deleted then
-		return StaticPopup_Show("LUI_THEMES_ALREADY_EXISTS")
+		return LUI:ShowPopup("LUI_THEMES_ALREADY_EXISTS")
 	end
 
 	-- decrypt import data
@@ -303,7 +300,7 @@ function module:ExportTheme(theme)
 	-- Use the active theme when no explicit name was supplied.
 	if theme == nil or theme == "" then theme = db.theme end
 	-- check if theme exists
-	if not db.global[theme] then return StaticPopup_Hide("LUI_THEMES_EXPORT") end
+	if not db.global[theme] then return LUI:HidePopup("LUI_THEMES_EXPORT") end
 
 	-- encrypt data for export
 	local data = self:Serialize(db.global[theme])
@@ -345,22 +342,18 @@ function module.ThemeArray() -- no self in this function
 end
 
 --------------------------------------------------
--- / Static Popups / --
+-- / LUI Dialogs / --
 --------------------------------------------------
 
-local function setStaticPopups()
-	StaticPopupDialogs["LUI_THEMES_ALREADY_EXISTS"] = {
-		preferredIndex = 3,
+local function registerDialogs()
+	LUI.PopupDialogs["LUI_THEMES_ALREADY_EXISTS"] = {
 		text = "That theme already exists.\nPlease choose another name.",
 		button1 = "OK",
-		timeout = 0,
-		whileDead = true,
 		hideOnEscape = true,
 		enterClicksFirstButton = true,
 	}
 
-	StaticPopupDialogs["LUI_THEMES_SAVE"] = {
-		preferredIndex = 3,
+	LUI.PopupDialogs["LUI_THEMES_SAVE"] = {
 		text = 'Enter the name for your new theme',
 		button1 = "Save Theme",
 		button2 = "Cancel",
@@ -368,32 +361,22 @@ local function setStaticPopups()
 		editBoxWidth = 150,
 		maxLetters = 20,
 		OnAccept = function(self)
-			self:Hide()
-			module:SaveTheme(self.editBox:GetText())
+			module:SaveTheme(self:GetEditBox():GetText())
 		end,
-		EditBoxOnEnterPressed = function(self)
-			self:GetParent():Hide()
-			module:SaveTheme(self:GetText())
-		end,
+		EditBoxOnEnterPressed = function(self) self:GetParent():GetButton1():Click() end,
 		EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
-		timeout = 0,
-		whileDead = true,
 		hideOnEscape = true,
 	}
 
-	StaticPopupDialogs["LUI_THEMES_DELETE"] = {
-		preferredIndex = 3,
+	LUI.PopupDialogs["LUI_THEMES_DELETE"] = {
 		text = 'Are you sure you want to delete the current theme?',
 		button1 = "Yes",
 		button2 = "No",
 		OnAccept = function(self) module:DeleteTheme() end,
-		timeout = 0,
-		whileDead = true,
 		hideOnEscape = true,
 	}
 
-	StaticPopupDialogs["LUI_THEMES_IMPORT"] = {
-		preferredIndex = 3,
+	LUI.PopupDialogs["LUI_THEMES_IMPORT"] = {
 		text = 'Enter a name for your new theme',
 		button1 = "Continue",
 		button2 = "Cancel",
@@ -401,21 +384,14 @@ local function setStaticPopups()
 		editBoxWidth = 150,
 		maxLetters = 20,
 		OnAccept = function(self)
-			self:Hide()
-			module:ImportThemeName(self.editBox:GetText())
+			module:ImportThemeName(self:GetEditBox():GetText())
 		end,
-		EditBoxOnEnterPressed = function(self)
-			self:GetParent():Hide()
-			module:ImportThemeName(self:GetText())
-		end,
+		EditBoxOnEnterPressed = function(self) self:GetParent():GetButton1():Click() end,
 		EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
-		timeout = 0,
-		whileDead = true,
 		hideOnEscape = true,
 	}
 
-	StaticPopupDialogs["LUI_THEMES_IMPORT_DATA"] = {
-		preferredIndex = 3,
+	LUI.PopupDialogs["LUI_THEMES_IMPORT_DATA"] = {
 		text = "Paste (Ctrl + v) the new theme string here:",
 		button1 = "Import Theme",
 		button2 = "Cancel",
@@ -423,39 +399,33 @@ local function setStaticPopups()
 		editBoxWidth = 500,
 		maxLetters = 2000,
 		OnAccept = function(self, data)
-			module:ImportThemeData(self.editBox:GetText(), data)
+			module:ImportThemeData(self:GetEditBox():GetText(), data)
 		end,
-		EditBoxOnEnterPressed = function(self, data)
-			self:GetParent():Hide()
-			module:ImportThemeData(self:GetText(), data)
-		end,
+		EditBoxOnEnterPressed = function(self) self:GetParent():GetButton1():Click() end,
 		EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
-		timeout = 0,
-		whileDead = true,
 		hideOnEscape = true,
 	}
 
-	StaticPopupDialogs["LUI_THEMES_EXPORT"] = {
-		preferredIndex = 3,
+	LUI.PopupDialogs["LUI_THEMES_EXPORT"] = {
 		text = "Copy (Ctrl + c) the following to share it with others:",
 		button1 = "Close",
 		hasEditBox = 1,
 		editBoxWidth = 500,
 		maxLetters = 2000,
 		OnShow = function(self)
-			self.editBox:SetText(module:ExportTheme())
-			self.editBox:SetFocus()
-			self.editBox:HighlightText()
+			local text = module:ExportTheme()
+			if not text then return end
+			local editBox = self:GetEditBox()
+			editBox:SetText(text)
+			editBox:SetFocus()
+			editBox:HighlightText()
 		end,
 		EditBoxOnEnterPressed = function(self) self:GetParent():Hide() end,
 		EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
-		timeout = 0,
-		whileDead = true,
 		hideOnEscape = true,
 	}
 
-	StaticPopupDialogs["LUI_THEMES_RESET"] = {
-		preferredIndex = 3,
+	LUI.PopupDialogs["LUI_THEMES_RESET"] = {
 		text = "Are you sure you want to reset all your themes?",
 		button1 = "Yes",
 		button2 = "No",
@@ -481,8 +451,6 @@ local function setStaticPopups()
 			module:ApplyTheme()
 			ACR:NotifyChange("LUIOptions")
 		end,
-		timeout = 0,
-		whileDead = true,
 		hideOnEscape = true,
 	}
 end
@@ -940,7 +908,7 @@ module.defaults = {
 
 function module:OnInitialize()
 	db, dbd = LUI:NewNamespace(self)
-	setStaticPopups()
+	registerDialogs()
 
 	-- Migrate profiles created before Themes used its own namespace.
 	if LUI.db.profile.Colors then

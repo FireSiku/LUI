@@ -179,7 +179,7 @@ end
 function module.Reload()
 	-- Prompt a reloadui.
 	print("|c0090ffffLUI: |cffffff00Please reload your interface with the pop up provided to avoid errors.")
-	StaticPopup_Show("RELOAD_UI")
+	LUI:ShowPopup("RELOAD_UI")
 end
 
 local function RestoreSnapshot(db, backup, restore)
@@ -257,7 +257,7 @@ function module.Revert()
 	RestoreSnapshot(db, backup, module.Set)
 
 	print("|c0090ffffLUI:|r Revert of database has completed.")
-	StaticPopup_Show("RELOAD_UI")
+	LUI:ShowPopup("RELOAD_UI")
 end
 
 

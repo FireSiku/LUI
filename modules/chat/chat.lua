@@ -165,37 +165,28 @@ local originalTabGlobals
 -- Local Functions
 --------------------------------------------------
 
-local function createStaticPopups()
-	StaticPopupDialogs["LUI_Chat_UrlCopy"] = {
-		preferredIndex = 3,
+local function createURLDialog()
+	LUI.PopupDialogs["LUI_Chat_UrlCopy"] = {
 		text = "URL - Ctrl-C to copy",
 		button2 = CLOSE,
 		hasEditBox = 1,
 		editBoxWidth = 400,
-		maxLetters = 1024, -- need this to override after other dialogs set to low numbers
-		OnShow = function(self, data)
-			local button = self:GetButton2()
-			local editBox = self:GetEditBox()
-			button:ClearAllPoints()
-			button:SetWidth(200)
-			button:SetPoint("CENTER", editBox, "CENTER", 0, -30)
-		end,
+		maxLetters = 1024,
+		buttonWidth = 200,
 		EditBoxOnEscapePressed = function(self)
 			self:GetParent():Hide()
 		end,
-		timeout = 0,
-		whileDead = 1,
 		hideOnEscape = 1
 	}
 
-	createStaticPopups = nil
+	createURLDialog = nil
 end
 
 local function showURLCopy(url)
 	if not url or issecretvalue(url) then return end
-	if createStaticPopups then createStaticPopups() end
+	if createURLDialog then createURLDialog() end
 
-	local dialog = StaticPopup_Show("LUI_Chat_UrlCopy")
+	local dialog = LUI:ShowPopup("LUI_Chat_UrlCopy")
 	if dialog then
 		local editBox = dialog:GetEditBox()
 		editBox:SetText(url)
@@ -613,8 +604,8 @@ function module:OnEnable()
 		
 	Media.RegisterCallback(self, "LibSharedMedia_Registered")
 
-	if createStaticPopups then
-		createStaticPopups()
+	if createURLDialog then
+		createURLDialog()
 	end
 
 	self:SecureHook("FloatingChatFrame_Update")

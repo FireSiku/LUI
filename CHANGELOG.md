@@ -4,6 +4,7 @@
 
 - Core: Added shared Retail and Warcraft Forever support, including Retail 12.1.5 compatibility and client-specific options.
 - Core: Fixed options-addon loading errors, confirmation dialogs and older-profile conversion.
+- Core: Isolated LUI confirmation and input dialogs from Blizzard's shared popup state while preserving button styles.
 - Core: Fixed profile backups and restores losing custom or module settings. Failed backups preserve the previous backup, and imported profile names support accented characters.
 - Core: Corrected color-picker input so displayed rounding no longer changes the selected color.
 - Core: Added scrolling combat-text outline choices and improved custom-font handling for scrolling text and damage numbers above units.

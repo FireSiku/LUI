@@ -13,15 +13,12 @@ end
 
 local requireReload = false
 
-StaticPopupDialogs["LUI_DB_UPDATE"] = {
-	preferredIndex = 3,
+LUI.PopupDialogs["LUI_DB_UPDATE"] = {
 	text = "This version of LUI contains settings that needs to be restored or updated. Do you want LUI to convert the affected settings?\n\nNote: Do not downgrade the version of LUI after conversion has been done.",
 	button1 = ACCEPT,
 	button2 = CANCEL,
 	OnAccept = function() LUI:ApplyUpdate(db.dbVersion) end,
-	timeout = 0,
-	whileDead = 1,
-	hideOnEscape = 0,
+	hideOnEscape = false,
 }
 
 function LUI:CheckUpdate()
@@ -29,7 +26,7 @@ function LUI:CheckUpdate()
 	default = LUI.defaults.profile
 
 	if DB_VERSION > db.dbVersion then
-		StaticPopup_Show("LUI_DB_UPDATE")
+		LUI:ShowPopup("LUI_DB_UPDATE")
 	end
 end
 
@@ -861,6 +858,6 @@ function LUI:ApplyUpdate(ver)
 	pcall(ExecuteCleanUp)
 
 	if requireReload then
-		StaticPopup_Show("RELOAD_UI")
+		LUI:ShowPopup("RELOAD_UI")
 	end
 end
