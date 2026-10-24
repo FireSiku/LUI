@@ -22,8 +22,9 @@ local Infotext = Opt:CreateModuleOptions("Infotext", module)
 -- ####################################################################################################################
 
 local function InfoTextGroup(name)
-    local group = Opt:Group({name = name, db = db[name], args = {
-		Header = Opt:Header({name = name}),
+    local label = (Opt.LUI.IsForever and name == "Dualspec") and (_G.TALENTS or "Talents") or name
+    local group = Opt:Group({name = label, db = db[name], args = {
+        Header = Opt:Header({name = label}),
 		Enable = Opt:Toggle({name = "Enable", width = "full"}),
 		X = Opt:PositionX(),
 		Y = Opt:PositionY(),
@@ -100,7 +101,7 @@ local currencyArgs = Infotext.args.Settings.args.Currency.args
 currencyArgs.DisplayLimit = Opt:Slider({name = "Tooltip Currency Limit", min = 5, max = 100, step = 1})
 
 local dualspecArgs = Infotext.args.Settings.args.Dualspec.args
-dualspecArgs.lootSpec = Opt:Toggle({name = "Show Loot Specialization", width = "full"})
+dualspecArgs.lootSpec = Opt:Toggle({name = "Show Loot Specialization", width = "full", hidden = Opt.LUI.IsForever})
 
 local equipmentArgs = Infotext.args.Settings.args.EquipmentSets.args
 equipmentArgs.Text = Opt:Input({name = "Text Prefix", width = "full"})
@@ -111,6 +112,13 @@ fpsArgs.MSValue = Opt:Select({name = "Latency Display", values = {Both = "Home a
 local friendsArgs = Infotext.args.Settings.args.Friends.args
 friendsArgs.showTotal = Opt:Toggle({name = "Show Total Friend Count", width = "full"})
 friendsArgs.ShowNotes = Opt:Toggle({name = "Show Friend Notes", width = "full"})
+friendsArgs.ShowScore = Opt:Toggle({name = "Show Mythic+ Score", width = "full",
+    desc = "Show the current character's Raider.IO score between zone and friend note. Requires Raider.IO and matching character data; missing data stays blank.",
+    hidden = not Opt.LUI.IsRetail, db = db.Friends})
+friendsArgs.ShowScoreDetails = Opt:Toggle({name = "Show Raider.IO Details on Hover", width = "full",
+    desc = "Show Raider.IO character details when hovering a friend with score data.",
+    hidden = not Opt.LUI.IsRetail, db = db.Friends,
+    disabled = function() return not module.db.profile.Friends.ShowScore end})
 friendsArgs.ShowHints = Opt:Toggle({name = "Show Mouse Hints", width = "full"})
 friendsArgs.ExtraWidth = Opt:Slider({name = "Extra Window Width", min = 0, max = 800, step = 10,
 	desc = "Widen the Friends hover window and its zone/realm or game-status column. 0 uses the automatic width. Limited by available screen space.",
@@ -128,6 +136,9 @@ goldArgs.showRealm = Opt:Toggle({name = "Show Realm Total", width = "full"})
 goldArgs.useBlizzard = Opt:Toggle({name = "Use Blizzard Money Format", width = "full"})
 goldArgs.showCopper = Opt:Toggle({name = "Show Copper with Gold", width = "full"})
 goldArgs.coloredSymbols = Opt:Toggle({name = "Color Coin Symbols", width = "full"})
+goldArgs.FactionFilter = Opt:Select({name = "Characters in Tooltip",
+    desc = "Choose which faction's characters appear in the Gold tooltip. Realm totals continue to show both factions.",
+    values = {Both = "Both Factions", Alliance = _G.FACTION_ALLIANCE, Horde = _G.FACTION_HORDE}})
 
 local guildArgs = Infotext.args.Settings.args.Guild.args
 guildArgs.showTotal = Opt:Toggle({name = "Show Total Guild Count", width = "full"})
@@ -144,8 +155,10 @@ guildArgs.Background = Opt:InlineGroup({name = "Guild Window Appearance", args =
 local mailArgs = Infotext.args.Settings.args.Mail.args
 mailArgs.NewIndic = Opt:Input({name = "New Mail Indicator", width = "full"})
 
-local lootSpecArgs = Infotext.args.Settings.args.LootSpec.args
-lootSpecArgs.Text = Opt:Input({name = "Text Prefix", width = "full"})
+local lootSpecGroup = Infotext.args.Settings.args.LootSpec
+if lootSpecGroup then
+    lootSpecGroup.args.Text = Opt:Input({name = "Text Prefix", width = "full"})
+end
 
 -- ####################################################################################################################
 -- ##### Gold Infotext ################################################################################################

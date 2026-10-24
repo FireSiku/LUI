@@ -7,8 +7,16 @@ local Opt = select(2, ...)
 
 ---@class LUIAddon
 local LUI = Opt.LUI
-local db = LUI.db.profile
-local generalDB = db.General
+-- Restores replace General before the reload prompt is accepted. Keep the
+-- option getters and setters attached to the active profile in that interval.
+local generalDB = setmetatable({}, {
+    __index = function(_, key)
+        return LUI.db.profile.General[key]
+    end,
+    __newindex = function(_, key, value)
+        LUI.db.profile.General[key] = value
+    end,
+})
 
 ---@type AceLocale.Localizations
 local L = LUI.L
@@ -20,6 +28,10 @@ local General = Opt:CreateModuleOptions("General", LUI)
 General.order = 1
 
 local function GetVersionText()
+    if LUI.IsForever or LUI.IsRetail then
+        local version, build = GetBuildInfo()
+        return format("v2610 - %s %s (%s)", LUI.IsForever and "Forever" or "Retail", version, build)
+    end
     local version, alpha, git = strsplit("-", LUI.curseVersion)
     if not version then
         return format("%s: %s", GAME_VERSION_LABEL, GetAddOnMetadata("LUI", "Version"))
@@ -97,9 +109,12 @@ General.args = {
             AutoInviteKeyword = Opt:Input({name = "AutoInvite Keyword", desc = "AutoInvite remains inactive until a non-empty keyword is entered.", disabled = function() return not generalDB.AutoInvite end, set = SetGeneralOption("AutoInviteKeyword", ApplyAutoInvite), width = "full"}),
         }}),
         DamageText = Opt:Group({name = "Damage Text", inline = true, args = {
-            DamageFont = Opt:MediaFont({name = "Font", set = SetGeneralOption("DamageFont", ApplyDamageFont)}),
-            DamageFontSize = Opt:Slider({name = "Font Size", min = 20, max = 60, step = 1, set = SetGeneralOption("DamageFontSize", ApplyDamageFont)}),
-            DamageFontSizeCrit = Opt:Slider({name = "Critical Font Size", min = 20, max = 60, step = 1, set = SetGeneralOption("DamageFontSizeCrit", ApplyDamageFont)}),
+            DamageFont = Opt:MediaFont({name = "Font", desc = "Choose the font for scrolling combat text and damage numbers above units.", set = SetGeneralOption("DamageFont", ApplyDamageFont)}),
+            DamageFontOutline = Opt:Select({name = "Outline", desc = "Change the outline of scrolling combat text, including healing and absorbs. Applies immediately; does not change damage numbers above units.",
+                values = {[""] = LUI.FontFlags[""], OUTLINE = LUI.FontFlags.OUTLINE, THICKOUTLINE = LUI.FontFlags.THICKOUTLINE},
+                set = SetGeneralOption("DamageFontOutline", ApplyDamageFont)}),
+            FontInfo = Opt:Desc({name = "After changing the font, log out to character selection and back in to update damage numbers above units. Reloading the UI is not sufficient."}),
+            SizeInfo = Opt:Desc({name = "Normal and critical combat-text sizes are managed by Blizzard to keep combat animations secure."}),
         }}),
 		ProfileTools = Opt:Group({name = "Profile Backup", inline = true, args = {
 			Backup = Opt:Execute({name = "Create Backup", desc = "Save the current profile settings for Restore or Revert.", func = BackupProfile}),

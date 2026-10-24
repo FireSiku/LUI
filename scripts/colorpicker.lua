@@ -14,15 +14,18 @@ local editingText
 local ColorPickerFrame = ColorPickerFrame --[[ @as ColorPickerFrameMixin ]]
 
 local function UpdateColor(tbox)
+	local value = tonumber(tbox:GetText())
+	if not value then return end
+	value = math.max(0, math.min(1, value))
 	local r, g, b = ColorPickerFrame.Content.ColorPicker:GetColorRGB()
 	local id = tbox:GetID()
 
 	if id == 1 then
-		r = tonumber(tbox:GetText()) or 0
+		r = value
 	elseif id == 2 then
-		g = tonumber(tbox:GetText()) or 0
+		g = value
 	elseif id == 3 then
-		b = tonumber(tbox:GetText()) or 0
+		b = value
 	end
 
 	editingText = true
@@ -31,7 +34,9 @@ local function UpdateColor(tbox)
 end
 
 local function UpdateColorTexts(r, g, b)
-	if not r then return end
+	if r == nil or g == nil or b == nil then
+		r, g, b = ColorPickerFrame.Content.ColorPicker:GetColorRGB()
+	end
 	ColorPickerBoxR:SetText(string.format("%.2f", r))
 	ColorPickerBoxG:SetText(string.format("%.2f", g))
 	ColorPickerBoxB:SetText(string.format("%.2f", b))
@@ -42,8 +47,9 @@ local function UpdateColorTexts(r, g, b)
 end
 
 local function UpdateAlpha(tbox)
-	local a = tonumber(tbox:GetText()) or 1
-	if a > 1 then a = 1 end
+	local a = tonumber(tbox:GetText())
+	if not a then return end
+	a = math.max(0, math.min(1, a))
 	editingText = true
 	ColorPickerFrame.Content.ColorPicker:SetColorAlpha(a)
 	editingText = nil
@@ -94,11 +100,13 @@ function script:PLAYER_ENTERING_WORLD(event)
 		if i == 4 then
 			box:SetScript("OnEscapePressed", function(self) self:ClearFocus() UpdateColorTexts() end)
 			box:SetScript("OnEnterPressed", function(self) self:ClearFocus() UpdateColorTexts() end)
-			box:SetScript("OnTextChanged", function(self) UpdateAlpha(self) end)
+			box:SetScript("OnTextChanged", function(self, userInput) if userInput then UpdateAlpha(self) end end)
 		else
 			box:SetScript("OnEscapePressed", function(self) self:ClearFocus() UpdateColorTexts() end)
 			box:SetScript("OnEnterPressed", function(self) self:ClearFocus() UpdateColorTexts() end)
-			box:SetScript("OnTextChanged", function(self) UpdateColor(self) end)
+			-- Displaying rounded component values must not write those rounded
+			-- values back to the picker or trigger extra color callbacks.
+			box:SetScript("OnTextChanged", function(self, userInput) if userInput then UpdateColor(self) end end)
 		end
 
 		box:SetScript("OnEditFocusGained", function(self) self:SetCursorPosition(0) self:HighlightText() end)

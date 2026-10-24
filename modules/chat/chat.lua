@@ -16,6 +16,7 @@ local L = LUI.L
 local db
 
 local ChatFrameUtil = _G.ChatFrameUtil
+local FCF_GetChatFrameByID = _G.FCF_GetChatFrameByID
 local FCF_GetCurrentChatFrame = _G.FCF_GetCurrentChatFrame
 local FCFDock_SelectWindow = _G.FCFDock_SelectWindow
 local FCFTab_UpdateAlpha = _G.FCFTab_UpdateAlpha
@@ -71,8 +72,8 @@ do
 		{ pattern = "^([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%/%S+)", matchfunc=urlLink},
 		{ pattern = "%f[%S]([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%/%S+)", matchfunc=urlLink},
 		-- XXX.YYY.ZZZ.WWW IPv4 address
-		{ pattern = "^([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%)%f[%D]", matchfunc=urlLink},
-		{ pattern = "%f[%S]([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%)%f[%D]", matchfunc=urlLink},
+		{ pattern = "^([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d)%f[%D]", matchfunc=urlLink},
+		{ pattern = "%f[%S]([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d)%f[%D]", matchfunc=urlLink},
 		-- X.Y.Z:WWWW/VVVVV url with port and path
 		{ pattern = "^([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d/%S+)", matchfunc=urlLink},
 		{ pattern = "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d/%S+)", matchfunc=urlLink},
@@ -164,37 +165,28 @@ local originalTabGlobals
 -- Local Functions
 --------------------------------------------------
 
-local function createStaticPopups()
-	StaticPopupDialogs["LUI_Chat_UrlCopy"] = {
-		preferredIndex = 3,
+local function createURLDialog()
+	LUI.PopupDialogs["LUI_Chat_UrlCopy"] = {
 		text = "URL - Ctrl-C to copy",
 		button2 = CLOSE,
 		hasEditBox = 1,
 		editBoxWidth = 400,
-		maxLetters = 1024, -- need this to override after other dialogs set to low numbers
-		OnShow = function(self, data)
-			local button = self:GetButton2()
-			local editBox = self:GetEditBox()
-			button:ClearAllPoints()
-			button:SetWidth(200)
-			button:SetPoint("CENTER", editBox, "CENTER", 0, -30)
-		end,
+		maxLetters = 1024,
+		buttonWidth = 200,
 		EditBoxOnEscapePressed = function(self)
 			self:GetParent():Hide()
 		end,
-		timeout = 0,
-		whileDead = 1,
 		hideOnEscape = 1
 	}
 
-	createStaticPopups = nil
+	createURLDialog = nil
 end
 
 local function showURLCopy(url)
 	if not url or issecretvalue(url) then return end
-	if createStaticPopups then createStaticPopups() end
+	if createURLDialog then createURLDialog() end
 
-	local dialog = StaticPopup_Show("LUI_Chat_UrlCopy")
+	local dialog = LUI:ShowPopup("LUI_Chat_UrlCopy")
 	if dialog then
 		local editBox = dialog:GetEditBox()
 		editBox:SetText(url)
@@ -215,6 +207,11 @@ local function captureChatFrame(frame)
 		clamped = frame:IsClampedToScreen(),
 		clampInsets = {left, right, top, bottom},
 	}
+end
+
+local function applyChatFont(frame)
+	captureChatFrame(frame)
+	frame:SetFont(Media:Fetch("font", db.General.Font.Font), db.General.Font.Size, db.General.Font.Flag)
 end
 
 local function unclampChatFrame(frame)
@@ -343,7 +340,7 @@ end
 function module:LibSharedMedia_Registered(mediaType, key)
 	if mediaType == "font" and key == db.General.Font.Font then
 		for i, name in ipairs(CHAT_FRAMES) do
-			_G[name]:SetFont(Media:Fetch("font", db.General.Font.Font), db.General.Font.Size, db.General.Font.Flag)
+			applyChatFont(_G[name])
 		end
 	end
 end
@@ -351,6 +348,11 @@ end
 --------------------------------------------------
 -- Hook Functions
 --------------------------------------------------
+
+function module:FloatingChatFrame_Update(id)
+	-- Blizzard can restore its saved font size after LUI's initial refresh.
+	applyChatFont(FCF_GetChatFrameByID(id))
+end
 
 function module:FCF_OpenTemporaryWindow()
 	local frame = FCF_GetCurrentChatFrame()
@@ -362,7 +364,7 @@ function module:FCF_OpenTemporaryWindow()
 	end
 	configureTab(_G[frame:GetName().."Tab"], db.General.MinimalistTabs)
 
-	frame:SetFont(Media:Fetch("font", db.General.Font.Font), db.General.Font.Size, db.General.Font.Flag)
+	applyChatFont(frame)
 
 	if db.General.ShortChannelNames and not self:IsHooked(frame, "AddMessage") then
 		self:RawHook(frame, "AddMessage", true)
@@ -419,6 +421,7 @@ function module:OnHyperlinkEnter(frame, link, text)
 	if issecretvalue(link) then return end
 	local linkType = LinkUtil.SplitLinkData(link)
 	if linkTypes[linkType] then
+		if LUI:TooltipHasWidgets(GameTooltip) then return end
 		GameTooltip:SetOwner(frame, "ANCHOR_CURSOR_RIGHT")
 		if linkType == "battlepet" then
 			if not issecretvalue(text) and BattlePetToolTip_ShowLink(text) then
@@ -434,7 +437,11 @@ end
 
 function module:OnHyperlinkLeave(frame, link)
 	if showingHyperlinkTooltip then
-		showingHyperlinkTooltip:Hide()
+		if showingHyperlinkTooltip == GameTooltip then
+			LUI:HideTooltip(GameTooltip, frame)
+		else
+			showingHyperlinkTooltip:Hide()
+		end
 		showingHyperlinkTooltip = nil
 	end
 end
@@ -597,10 +604,11 @@ function module:OnEnable()
 		
 	Media.RegisterCallback(self, "LibSharedMedia_Registered")
 
-	if createStaticPopups then
-		createStaticPopups()
+	if createURLDialog then
+		createURLDialog()
 	end
 
+	self:SecureHook("FloatingChatFrame_Update")
 	self:SecureHook("FCF_OpenTemporaryWindow")
 	self:RawHook("SetItemRef", true)
 

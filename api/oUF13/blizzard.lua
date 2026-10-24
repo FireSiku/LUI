@@ -1,10 +1,16 @@
 local _, ns = ...
 local oUF = ns.oUF
+local Private = oUF.Private
+
+local GameVersion = Private.GameVersion
 
 -- sourced from Blizzard_UnitFrame/Mainline/TargetFrame.lua
 local MAX_BOSS_FRAMES = _G.MAX_BOSS_FRAMES or 5
 
+-- sourced from Blizzard_FrameXMLBase/Shared/Constants.lua
+local MEMBERS_PER_RAID_GROUP = _G.MEMBERS_PER_RAID_GROUP or 5
 
+local isPlayerHooked = false
 local isArenaHooked = false
 local isBossHooked = false
 local isPartyHooked = false
@@ -31,7 +37,7 @@ local function handleFrame(baseName)
 			power:UnregisterAllEvents()
 		end
 
-		local castbar = frame.castBar or frame.spellbar or frame.CastingBarFrame
+		local castbar = frame.castBar or frame.spellbar or frame.CastingBarFrame or (frame.CastBarsContainer and frame.CastBarsContainer.castBar)
 		if(castbar) then
 			castbar:UnregisterAllEvents()
 		end
@@ -73,6 +79,22 @@ function oUF:DisableBlizzard(unit)
 
 	if(unit == 'player') then
 		handleFrame(PlayerFrame)
+
+		if(GameVersion.Forever and not isPlayerHooked) then
+			isPlayerHooked = true
+
+			-- by killing PlayerFrame we also inadvertedly kill the sound played when
+			-- the player toggles pvp status, so we'll have to re-implement that.
+			-- no fix for this for retail (yet - the event might be added in 12.1.7).
+			-- this should really be handled by GameEvent...
+			local f = CreateFrame('Frame')
+			f:RegisterEvent('PLAYER_PVP_FLAG_CHANGED')
+			f:SetScript('OnEvent', function(_, _, isFlagged)
+				if(isFlagged) then
+					PlaySound(SOUNDKIT.IG_PVP_UPDATE)
+				end
+			end)
+		end
 	elseif(unit == 'pet') then
 		handleFrame(PetFrame)
 	elseif(unit == 'target') then
@@ -98,26 +120,35 @@ function oUF:DisableBlizzard(unit)
 		if(not isPartyHooked) then
 			isPartyHooked = true
 
-			PartyFrame:SetRolesets('alwaysBlocked')
-			if CompactPartyFrame then
-				CompactPartyFrame:SetRolesets('alwaysBlocked')
+			handleFrame(PartyFrame)
+
+			for frame in PartyFrame.PartyMemberFramePool:EnumerateActive() do
+				handleFrame(frame)
+			end
+
+			for i = 1, MEMBERS_PER_RAID_GROUP do
+				handleFrame('CompactPartyFrameMember' .. i)
 			end
 		end
 	elseif(unit:match('arena%d?$')) then
 		if(not isArenaHooked) then
 			isArenaHooked = true
 
-			handleFrame(CompactArenaFrame)
+			if(CompactArenaFrame) then -- does not exist in Forever
+				handleFrame(CompactArenaFrame)
 
-			for _, frame in next, CompactArenaFrame.memberUnitFrames do
-				handleFrame(frame)
+				for _, frame in next, CompactArenaFrame.memberUnitFrames do
+					handleFrame(frame)
+				end
 			end
 
-			-- old arena frames, they're still used for flag carriers etc in battlegrounds
-			handleFrame(ArenaEnemyMatchFramesContainer)
+			if(ArenaEnemyMatchFramesContainer) then
+				-- old arena frames, they're still used for flag carriers etc in battlegrounds
+				handleFrame(ArenaEnemyMatchFramesContainer)
 
-			for _, frame in next, ArenaEnemyMatchFramesContainer.UnitFrames do
-				handleFrame(frame)
+				for _, frame in next, ArenaEnemyMatchFramesContainer.UnitFrames do
+					handleFrame(frame)
+				end
 			end
 		end
 	elseif(unit:match('nameplate%d?%d?%d?$')) then

@@ -8,6 +8,10 @@ if not module or not module.registered then return end
 local UIElements = Opt:CreateModuleOptions("UI Elements", module)
 
 local managedFrameOptions = {
+	QueueEye = {
+		name = "LFG Queue Eye",
+		desc = "Move the queue-status eye independently of the micro menu. Enable position management, then adjust X/Y. The preview works without joining a queue. Changes apply outside combat.",
+	},
 	ZoneObjectives = {
 		name = "Zone Objectives Frame",
 		desc = "Top-center zone objectives, battleground information and similar widgets.",
@@ -90,6 +94,20 @@ UIElements.args = {
 			disabled = IsButtonCustomizationDisabled,
 		},
 	}}),
+    SwingTimer = Opt:Group({name = "Swing Timer (Forever)",
+        hidden = function() return not module:IsSwingTimerAvailable() end,
+        args = {
+            Description = Opt:Desc({name = "Use Blizzard's native swing timer for main-hand, off-hand and ranged attacks. Position, size and each bar's visibility are configured in Blizzard Edit Mode. This switch changes Blizzard's setting and is independent of LUI profiles."}),
+            Enabled = Opt:Toggle({
+                name = _G.ENABLE_SWING_TIMER or "Enable Swing Timer",
+                width = "full",
+                get = function() return module:GetSwingTimerEnabled() end,
+                set = function(_, value) module:SetSwingTimerEnabled(value) end,
+                disabled = InCombatLockdown,
+            }),
+            Open = Opt:Execute({name = "Position and Visibility in Edit Mode", func = OpenBlizzardEditMode, disabled = InCombatLockdown}),
+        },
+    }),
 	Managed = Opt:Group({name = "LUI-Managed Frames", args = {}}),
 	Blizzard = Opt:Group({name = "Blizzard Edit Mode", args = {
 		Description = Opt:Desc({name = "Use Blizzard Edit Mode for the Objectives Tracker, Alternate Power/Encounter Bar, Durability Frame, Vehicle Seat Indicator and other native HUD systems."}),

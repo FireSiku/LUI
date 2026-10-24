@@ -21,6 +21,7 @@ local UnregisterUnitWatch = _G.UnregisterUnitWatch
 local preview = {
 	active = nil,
 	castbarUnit = nil,
+	castbarOnly = nil,
 	frames = {},
 	containers = {},
 	registeredNames = {},
@@ -155,7 +156,10 @@ local function HideRealGroupFrame(group)
 	local frame = frameName and _G[frameName]
 	if frame and frame:IsShown() then
 		preview.hiddenRealFrames[frame] = true
-		frame:Hide()
+		-- Preview buttons hide through a secure state driver when combat starts.
+		-- Restore the real group through the same mechanism: an ordinary Hide()
+		-- here would leave both sets hidden until the preview was stopped later.
+		RegisterStateDriver(frame, "visibility", "[combat] show; hide")
 	end
 end
 
@@ -317,10 +321,14 @@ function module:StopUnitframePreview(silent)
 	wipe(preview.registeredNames)
 
 	for _, container in pairs(preview.containers) do container:Hide() end
-	for frame in pairs(preview.hiddenRealFrames) do frame:Show() end
+	for frame in pairs(preview.hiddenRealFrames) do
+		UnregisterStateDriver(frame, "visibility")
+		frame:Show()
+	end
 	wipe(preview.hiddenRealFrames)
 	preview.active = nil
 	preview.castbarUnit = nil
+	preview.castbarOnly = nil
 	return true
 end
 
@@ -357,8 +365,12 @@ function module:ShowCastbarPreview(unit)
 		return
 	end
 
+	-- A cast test also needs a unitframe, but must not leave that frame active
+	-- when stopped unless the user had explicitly opened a frame preview.
+	local castbarOnly = preview.castbarOnly or not preview.active
 	preview.castbarUnit = unit
 	self:ShowUnitframePreview(unit)
+	preview.castbarOnly = castbarOnly
 end
 
 function module:StopCastbarPreview()
@@ -366,6 +378,8 @@ function module:StopCastbarPreview()
 		LUI:Print("Cast bar preview can only be changed outside combat.")
 		return false
 	end
+
+	if preview.castbarOnly then return self:StopUnitframePreview() end
 
 	preview.castbarUnit = nil
 	for name in pairs(preview.registeredNames) do
@@ -388,7 +402,9 @@ end
 function module:RefreshUnitframePreview()
 	if not preview.active or InCombatLockdown() then return end
 	local selection = preview.active
+	local castbarOnly = preview.castbarOnly
 	self:ShowUnitframePreview(selection)
+	preview.castbarOnly = castbarOnly
 end
 
 -- Allow the unitframe mover to use a visible preview container when the real

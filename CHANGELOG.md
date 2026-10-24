@@ -1,3 +1,55 @@
+# LUI v2610
+
+## Changes since last version
+
+- Core: Added shared Retail and Warcraft Forever support, including Retail 12.1.5 compatibility and client-specific options.
+- Core: Fixed options-addon loading errors, confirmation dialogs and older-profile conversion.
+- Core: Isolated LUI confirmation and input dialogs from Blizzard's shared popup state while preserving button styles.
+- Core: Fixed profile backups and restores losing custom or module settings. Failed backups preserve the previous backup, and imported profile names support accented characters.
+- Core: Corrected color-picker input so displayed rounding no longer changes the selected color.
+- Core: Added scrolling combat-text outline choices and improved custom-font handling for scrolling text and damage numbers above units.
+- Core: Corrected media paths that could interrupt startup with strict LibSharedMedia validation.
+- Core: Reduced repeated updates in unitframes, infotext, bags, experience bars, button styling and window layouts.
+- Unitframes: Updated embedded oUF to upstream snapshot 14.2.0-9-g3692cb6, including restricted GUID handling.
+- Unitframes: Updated arena preparation displays for restricted specialization data.
+- Unitframes: Fixed portrait errors during combat and shapeshifting.
+- Unitframes: Added shared font settings and a separate aura-count font option. Castbar outlines and raid information text positions now follow their settings.
+- Unitframes: Restored healing-prediction and absorb defaults. Background opacity and brightness now apply independently to health and resource bars.
+- Unitframes: Corrected class-resource handling, druid mana, resource colors and text, bar toggles and overlapping auxiliary bars.
+- Unitframes: Restored Blizzard castbars during temporary action UIs and updated nameplate castbar handling.
+- Unitframes: Added optional shield icons for uninterruptible casts, with adjustable size, position and left, right or both-side placement.
+- Unitframes: Added a configurable pet happiness indicator for Hunters in Warcraft Forever.
+- Unitframes: Improved unitframe and castbar preview cleanup and transitions into combat.
+- Unitframes: Combat-feedback settings now apply immediately, with corrected resource-gain text and colors.
+- Unitframes: Indicator settings refresh only the selected unit frames and their previews.
+- Unitframes: Fixed aura row settings and copying or resetting aura layouts.
+- Unitframes: Castbar anchors now follow their settings, and copying General settings respects size and position options.
+- Unitframes: Raid name shortening now follows frame width and font changes without splitting accented characters.
+- Artwork: Corrected profile switching, disabled-panel visibility and right-side background colors.
+- Artwork: Fixed chat and panel toggles during rapid clicks, animation refreshes and combat. Individual buttons and the orb now keep their visibility state in sync.
+- Artwork: Blizzard raid frames keep their normal visibility when attached to artwork panels. The orb and panel buttons toggle only their background.
+- Micromenu: Added Raid Menu group options, difficulty settings, Edit Mode access, leave-group controls and a right-click action to clear unit markers.
+- Micromenu: Character-panel clicks now use Blizzard's native button to avoid secret-value errors in its status bars.
+- Infotext: Added optional Raider.IO Mythic+ scores and character details to the friends list, improved name sizing and added Enter confirmation for Battle.net broadcasts.
+- Infotext: Improved tooltip anchoring and Friends/Guild window behavior during mouse transitions, row changes and scrollbar use.
+- Infotext: Added an Alliance, Horde or Both filter to the Gold tooltip and a separate Warband bank balance on supported clients.
+- Tooltip: Improved compatibility with Blizzard tooltip handlers and made scale changes apply immediately.
+- Tooltip: Prevented LUI hover and hide callbacks from taking over active Blizzard widget tooltips.
+- Bags: Added an optional keyring shortcut for Forever and retained its native bank window.
+- Bags: Fixed blocked item use after visiting the bank on Retail, searches containing special characters and stray pixels around item slots.
+- Experience Bars: Added rested XP shading, an optional rested percentage and the full rested reserve in the tooltip, including split and reversed bars. Grouped bar locking with the tracker controls.
+- Minimap: Fixed position, scale and shape handling when disabling and re-enabling the module, kept notification icons in place after Edit Mode and tracking updates, and preserved mail notifications during setup and after hiding the UI or minimap.
+- Minimap: Fixed blocked minimap pings while preserving the right-click tracking menu and mouse-wheel zoom.
+- Mirror Bar: Fixed pause handling for breath, fatigue and other mirror timers.
+- Chat: Fixed font-size resets, voice-control restoration, cleared chat input handling and clickable IP address links.
+- UIElements: Added a setting for Forever's native swing timer.
+- UIElements: Expanded button styling across additional Blizzard windows, dialogs and settings controls, including graphics-quality panels, collections, group tools and Forever windows.
+- UIElements: Added optional positioning and a preview for the Dungeon Finder queue eye.
+- UIElements: Improved styling and restoration of native buttons while keeping restricted controls and item-slot artwork separate.
+- Addons: Corrected Darion skin texture paths for users who have Masque installed separately.
+
+---
+
 # LUI v2609 Alpha 11
 
 ## Changes since last version
@@ -149,4 +201,3 @@ Thanks to Teks, BaeBlade, Jay, Nikko, Dvuk13 and the LUI community for testing a
 - Addons: Deferred protected Bartender installer and sidebar changes until out of combat.
 - Addons: Removed TutorialHelper hooks that could taint Blizzard action buttons.
 - Addons: Fixed Lua compatibility issues in the Plexus integration and color-picker declarations.
-

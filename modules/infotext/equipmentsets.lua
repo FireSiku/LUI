@@ -11,6 +11,10 @@ local LUI = select(2, ...)
 local module = LUI:GetModule("Infotext")
 local element = module:NewElement("EquipmentSets", "AceEvent-3.0")
 
+-- Forever's character window reads secret health values when it opens.
+-- LUI's own display must enter through Blizzard's native hardware-click path.
+element.secureClickTarget = LUI.IsForever and "CharacterMicroButton" or nil
+
 -- ####################################################################################################################
 -- ##### Module Functions #############################################################################################
 -- ####################################################################################################################

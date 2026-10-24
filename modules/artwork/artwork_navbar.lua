@@ -17,6 +17,8 @@ local INFOPANEL_TEXTURE = "Interface\\AddOns\\LUI\\media\\textures\\infopanel"
 
 ---@type table<string, Button>
 local _navButtons = {}
+-- Show at Login initializes each profile once; refreshes preserve later clicks.
+local initializedProfiles = setmetatable({}, {__mode = "k"})
 
 -- Refreshing the navigation bar can show, hide, or modify protected frames.
 -- Defer the refresh until combat has ended.
@@ -35,6 +37,30 @@ local function SetFrameImage(frame, fileName)
 	local texture = LUI:CreateFrameTexture(frame, OLD_DIR..fileName)
 	frame.Texture = texture
 	return texture
+end
+
+function module:SetPanelIndicator(texture, shown, animate)
+	-- A previous fade must not finish after the next click or a refresh.
+	texture.alphaIn:Stop()
+	texture.alphaOut:Stop()
+	if animate then
+		if shown then texture.alphaIn:Play() else texture.alphaOut:Play() end
+	else
+		texture:SetAlpha(shown and ALPHA or 0)
+	end
+end
+
+function module:SetMainPanelShown(kind, shown)
+	if not self:IsEnabled() then return end
+	local button = _navButtons[kind]
+	local frame = self:GetMainPanelVisibilityFrame(kind)
+	if not button or not frame or (frame.IsForbidden and frame:IsForbidden()) then return end
+
+	-- Chat visibility is independent of the decorative button animation.
+	if kind == "Chat" then self:SetChatVisible(shown) end
+	self:SetPanelIndicator(button.tex, shown, true)
+	if shown then self:AlphaIn(kind) else self:AlphaOut(kind) end
+	if not InCombatLockdown() then button:SetAttribute("panelShown", shown) end
 end
 
 function module:CreateNavBar()
@@ -110,7 +136,6 @@ end
 --- Create the NavBar buttons.
 ---@param side "left2"|"left1"|"right1"|"right2"
 function module:CreateNavButton(kind, side, x, y)
-	local db = module.db.profile.LUITextures
 	local isWide = (side == "left2" or side == "right2")
 
 
@@ -158,41 +183,40 @@ function module:CreateNavButton(kind, side, x, y)
 	clicker:RegisterForClicks("AnyUp")
 	clicker:SetScript("OnEnter", function() hover:SetAlpha(ALPHA) end)
 	clicker:SetScript("OnLeave", function() hover:SetAlpha(0) end)
-	clicker:SetScript("OnClick", function()
-		local frame = _G[db[kind].Anchor]
-		if frame and not db[kind].IsShown then
-			if kind == "Chat" and not (alphaOut:IsPlaying() or alphaIn:IsPlaying()) then
-				module:SetChatVisible(true)
-			end
-			alphaIn:Play()
-			module:AlphaIn(kind, self)
-			db[kind].IsShown = true
-		elseif frame and db[kind].IsShown then
-			if kind == "Chat" and not (alphaOut:IsPlaying() or alphaIn:IsPlaying()) then
-				module:SetChatVisible(false)
-			end
-			alphaOut:Play()
-			module:AlphaOut(kind, self)
-			db[kind].IsShown = false
+	local function OnClick()
+		if not module:IsEnabled() then return end
+		local shown = module.db.profile.LUITextures[kind].IsShown
+		if InCombatLockdown() and not LUI.IsForever then
+			shown = clicker:GetAttribute("panelShown")
 		end
-		if module.SyncOrbState then module:SyncOrbState() end
-	end)
-	if kind ~= "Chat" then 
+		module:SetMainPanelShown(kind, not shown)
+		module:SyncOrbState()
+	end
+	clicker:SetScript("OnClick", LUI.IsForever and LUI.OutOfCombatWrapper(OnClick) or OnClick)
+	if not LUI.IsForever then
 		SecureHandlerWrapScript(clicker, "PostClick", clicker, [[
-			-- Outside combat the normal click already changes visibility.
-			-- Toggling a second time here reverses that change.
 			if not PlayerInCombat() then return end
-			if not self:GetAttribute("secureEnabled") then return end
-			local frame = self:GetFrameRef("frame")
-			if not frame then return end
-			local show = not frame:IsShown()
-			if show then frame:Show() else frame:Hide() end
-			local count = self:GetAttribute("additionalCount") or 0
+			if not self:GetAttribute("panelEnabled") then return end
+			local show = not self:GetAttribute("panelShown")
+			self:SetAttribute("panelShown", show)
+			local count = self:GetAttribute("protectedCount") or 0
 			for i = 1, count do
-				local additional = self:GetFrameRef("additional"..i)
-				if additional then
-					if show then additional:Show() else additional:Hide() end
+				local frame = self:GetFrameRef("protected"..i)
+				if frame then
+					if show then frame:Show() else frame:Hide() end
 				end
+			end
+			local orb = self:GetFrameRef("orb")
+			if orb then
+				local anyShown = false
+				for i = 1, orb:GetAttribute("buttonCount") or 0 do
+					local button = orb:GetFrameRef("button"..i)
+					if button and button:GetAttribute("panelEnabled") and button:GetAttribute("panelShown") then
+						anyShown = true
+						break
+					end
+				end
+				orb:SetAttribute("panelsOpen", anyShown)
 			end
 		]])
 	end
@@ -218,13 +242,14 @@ function module:RefreshNavBar()
 	navBarRefreshFrame:UnregisterEvent("PLAYER_REGEN_ENABLED")
 
 	local db = module.db.profile.LUITextures
-	local protectedFrames = {}
-	local anyPanelShown = false
+	local initialize = not initializedProfiles[db]
+	local orbClicker = module.Orb and module.Orb.Clicker
+	local buttonCount = 0
 	module.NavBarCenter.Texture:SetVertexColor(self:RGBA("TopPanel"))
 	module.TopPanel.Texture:SetVertexColor(self:RGBA("TopPanel"))
 	module.TopPanel:Show()
 	module.LeftBorderBack.Texture:SetVertexColor(self:RGBA("LeftBorderBack"))
-	module.RightBorderBack.Texture:SetVertexColor(self:RGBA("LeftBorderBack"))
+	module.RightBorderBack.Texture:SetVertexColor(self:RGBA("RightBorderBack"))
 
 	if db.NavBar.TopBackground then
 		module.NavBar:Show()
@@ -258,15 +283,14 @@ function module:RefreshNavBar()
 		module:StopPanelAnimations(kind)
 		local db = module.db.profile.LUITextures[kind]
 		local r, g, b, a = self:RGBA("NavButtons")
-		local anchor = _G[db.Anchor]
+		local anchor = module:GetMainPanelVisibilityFrame(kind)
 		local validAnchor = anchor and not (anchor.IsForbidden and anchor:IsForbidden())
-		local shouldShow = db.AlwaysShow or db.IsShown
+		local shouldShow = db.IsShown or (initialize and db.AlwaysShow) or false
 		db.IsShown = shouldShow
-		anyPanelShown = anyPanelShown or shouldShow
 
 		button.tex:SetVertexColor(r, g, b, a)
 		button.hover:SetVertexColor(r, g, b, 0)
-		button.tex:SetAlpha(shouldShow and ALPHA or 0)
+		module:SetPanelIndicator(button.tex, validAnchor and shouldShow, false)
 		if showButtons then button:Show() else button:Hide() end
 
 		if validAnchor and module:CanAlterFrame(anchor) then
@@ -275,48 +299,48 @@ function module:RefreshNavBar()
 				anchor:Show()
 				if kind == "Chat" then module:SetChatVisible(true) end
 			else
-				anchor:SetAlpha(0)
 				anchor:Hide()
+				anchor:SetAlpha(1)
 			end
 
 			for _, frameName in pairs(module:LoadAdditional(db.Additional)) do
 				local frame = _G[frameName]
 				if module:CanAlterFrame(frame) then
-					frame:SetAlpha(shouldShow and 1 or 0)
 					if shouldShow then frame:Show() else frame:Hide() end
+					frame:SetAlpha(1)
 				end
 			end
 		end
 		
-		-- If the anchor is a protected frame, we need to use the secure code path
-		button:SetAttribute("secureEnabled", validAnchor and anchor:IsProtected() or false)
-		button:SetAttribute("additionalCount", 0)
-		if validAnchor and anchor:IsProtected() then
-			button:SetFrameRef("frame", anchor)
-			protectedFrames[#protectedFrames + 1] = anchor
-
-			local additionalFrames = module:LoadAdditional(db.Additional)
-			local count = 0
-			for _, frameName in ipairs(additionalFrames) do
+		-- Every button shares its requested state with the orb. Collect protected
+		-- additional frames even when the main anchor itself is unprotected.
+		button:SetAttribute("panelEnabled", not not validAnchor)
+		button:SetAttribute("panelShown", validAnchor and shouldShow or false)
+		local count = 0
+		if validAnchor then
+			if anchor:IsProtected() then
+				count = count + 1
+				button:SetFrameRef("protected"..count, anchor)
+			end
+			for _, frameName in ipairs(module:LoadAdditional(db.Additional)) do
 				local additional = _G[frameName]
-				if additional and not (additional.IsForbidden and additional:IsForbidden()) then
+				if additional and not (additional.IsForbidden and additional:IsForbidden()) and additional:IsProtected() then
 					count = count + 1
-					button:SetFrameRef("additional"..count, additional)
-					if additional:IsProtected() then protectedFrames[#protectedFrames + 1] = additional end
+					button:SetFrameRef("protected"..count, additional)
 				end
 			end
-			button:SetAttribute("additionalCount", count)
 		end
-
+		button:SetAttribute("protectedCount", count)
+		if orbClicker then
+			button:SetFrameRef("orb", orbClicker)
+			buttonCount = buttonCount + 1
+			orbClicker:SetFrameRef("button"..buttonCount, button)
+		end
 	end
+	initializedProfiles[db] = true
 
-	if module.Orb then
-		local orbClicker = module.Orb.Clicker
-		orbClicker:SetAttribute("panelsOpen", anyPanelShown)
-		orbClicker:SetAttribute("protectedCount", #protectedFrames)
-		for index, frame in ipairs(protectedFrames) do
-			orbClicker:SetFrameRef("protected"..index, frame)
-		end
+	if orbClicker then
+		orbClicker:SetAttribute("buttonCount", buttonCount)
 		module:SyncOrbState()
 	end
 end

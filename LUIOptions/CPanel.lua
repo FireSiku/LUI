@@ -34,7 +34,7 @@ local function CreateModuleButton(name, mod, order)
 					elseif mod.Toggle then mod:Toggle()
 					end
 					mod:ModPrint((mod:IsEnabled()) and L["API_BtnEnabled"] or L["API_BtnDisabled"])
-					StaticPopup_Show("RELOAD_UI")
+					LUI:ShowPopup("RELOAD_UI")
 				end
 			end
 		})

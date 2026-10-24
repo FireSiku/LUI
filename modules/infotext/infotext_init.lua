@@ -103,6 +103,8 @@ module.defaults = {
 			showTotal = false,
 			ShowHints = true,
 			ShowNotes = true,
+			ShowScore = true,
+			ShowScoreDetails = true,
 			ExtraWidth = 0,
 			Background = {
 				Texture = "Blizzard Dialog Background Dark",
@@ -121,6 +123,7 @@ module.defaults = {
 			showCopper = false,
 			coloredSymbols = false,
 			ShowConnected = true,
+			FactionFilter = "Both",
 		},
 		Guild = {
 			Enable = true,
@@ -200,5 +203,6 @@ end
 function module:OnDisable()
 	if module.UnregisterAllLDBCallbacks then module:UnregisterAllLDBCallbacks() end
 	if module.HideInfotips then module:HideInfotips() end
+	if module.HideSecureDisplays then module:HideSecureDisplays() end
 	module.topAnchor:Hide()
 end

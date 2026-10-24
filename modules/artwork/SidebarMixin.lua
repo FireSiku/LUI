@@ -139,6 +139,7 @@ end
 
 --- Refresh the sidebar's settings and position
 function SidebarMixin:Refresh()
+	self.db = module.db.profile.SideBars[self.name]
 	local r, g, b = module:RGBA("Sidebar"..self.side)
 	local previousAnchor = self.activeAnchor
 	if previousAnchor and previousAnchor ~= self.db.Anchor then
@@ -428,18 +429,22 @@ function module:CreateNewSideBar(name, side)
 	sidebar:EnableMouse(true)
 	Mixin(sidebar, module.SidebarMixin)
 
-	btnAnchor:SetScript("OnClick", function()
+	btnAnchor:SetScript("OnClick", LUI.IsForever and LUI.OutOfCombatWrapper(function() sidebar:Toggle() end) or function()
 		if InCombatLockdown() then sidebar:Open() else sidebar:Toggle() end
 	end)
-	SecureHandlerWrapScript(btnAnchor, "PostClick", btnAnchor, sidebar:SecureToggle(true))
+	if not LUI.IsForever then
+		SecureHandlerWrapScript(btnAnchor, "PostClick", btnAnchor, sidebar:SecureToggle(true))
+	end
 	btnAnchor:RegisterForClicks("AnyUp")
 	
 	btnAnchor:SetFrameRef("otherFrame", btnAnchorOpen)
 
-	btnAnchorOpen:SetScript("OnClick", function()
+	btnAnchorOpen:SetScript("OnClick", LUI.IsForever and LUI.OutOfCombatWrapper(function() sidebar:Toggle() end) or function()
 		if InCombatLockdown() then sidebar:Close() else sidebar:Toggle() end
 	end)
-	SecureHandlerWrapScript(btnAnchorOpen, "PostClick", btnAnchorOpen, sidebar:SecureToggle(false))
+	if not LUI.IsForever then
+		SecureHandlerWrapScript(btnAnchorOpen, "PostClick", btnAnchorOpen, sidebar:SecureToggle(false))
+	end
 	btnAnchorOpen:RegisterForClicks("AnyUp")
 	btnAnchorOpen:SetFrameRef("otherFrame", btnAnchor)
 

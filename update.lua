@@ -5,7 +5,7 @@ local db, default
 
 -- Increase whenever there are changes that would require remediation
 -- Append every database migration in a new version block in ApplyUpdate.
-local DB_VERSION = 10
+local DB_VERSION = 11
 
 function LUI:GetDBVersion()
 	return DB_VERSION
@@ -13,15 +13,12 @@ end
 
 local requireReload = false
 
-StaticPopupDialogs["LUI_DB_UPDATE"] = {
-	preferredIndex = 3,
+LUI.PopupDialogs["LUI_DB_UPDATE"] = {
 	text = "This version of LUI contains settings that needs to be restored or updated. Do you want LUI to convert the affected settings?\n\nNote: Do not downgrade the version of LUI after conversion has been done.",
 	button1 = ACCEPT,
 	button2 = CANCEL,
 	OnAccept = function() LUI:ApplyUpdate(db.dbVersion) end,
-	timeout = 0,
-	whileDead = 1,
-	hideOnEscape = 0,
+	hideOnEscape = false,
 }
 
 function LUI:CheckUpdate()
@@ -29,7 +26,7 @@ function LUI:CheckUpdate()
 	default = LUI.defaults.profile
 
 	if DB_VERSION > db.dbVersion then
-		StaticPopup_Show("LUI_DB_UPDATE")
+		LUI:ShowPopup("LUI_DB_UPDATE")
 	end
 end
 
@@ -377,7 +374,9 @@ function LUI:ApplyUpdate(ver)
 
 		-- go through a list of keys in a table and if any of them are strings, cast them to number
 		local function Sanitize(t, list)
-			if not t then return end
+			-- Current profiles mix position tables with scalar options such as
+			-- button enable flags and style names. Only tables have fields to convert.
+			if type(t) ~= "table" then return end
 			for i = 1, #list do
 				local key = list[i]
 				if t[key] and type(t[key]) == "string" then
@@ -831,6 +830,27 @@ function LUI:ApplyUpdate(ver)
 		requireReload = true
 	end
 
+	if ver < 11 then
+		local artwork = LUI:GetModule("Artwork", true)
+		if artwork and artwork.db then
+			local panels = artwork.db.profile.LUITextures
+			for kind, id in pairs({Dps = 1, Tps = 2}) do
+				local panel = panels[kind]
+				-- The old defaults did not distinguish an automatic Details
+				-- assignment from a chosen preset. Clear that pairing once;
+				-- with empty defaults, later explicit choices stay saved.
+				if (panel.Anchor == "" or panel.Anchor == "DetailsBaseFrame"..id)
+					and (panel.Additional == "" or panel.Additional == "DetailsRowFrame"..id) then
+					panel.Anchor = ""
+					panel.Additional = ""
+					panel.IsShown = false
+				end
+			end
+		end
+
+		requireReload = true
+	end
+
 	db.dbVersion = DB_VERSION
 	LUI:Printf("Conversion done! Profile %s has been updated to latest standards.", LUI.db:GetCurrentProfile())
 
@@ -838,6 +858,6 @@ function LUI:ApplyUpdate(ver)
 	pcall(ExecuteCleanUp)
 
 	if requireReload then
-		StaticPopup_Show("RELOAD_UI")
+		LUI:ShowPopup("RELOAD_UI")
 	end
 end

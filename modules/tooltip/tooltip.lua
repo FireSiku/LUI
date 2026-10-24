@@ -431,9 +431,12 @@ function module:SetTooltip(tooltip)
 		initialScale[tooltip] = tooltip:GetScale()
 	end
 
-	-- Hook its OnShow
+	-- Keep Blizzard's OnShow in its original execution context. AceHook's
+	-- ordinary HookScript replaces it with an addon wrapper, so native quest
+	-- reward padding would perform arithmetic on secret sizes under LUI taint.
+	-- Apply our appearance only after the native handler has finished.
 	if not module:IsHooked(tooltip, "OnShow") then
-		module:HookScript(tooltip, "OnShow", "OnTooltipShow")
+		module:SecureHookScript(tooltip, "OnShow", "OnTooltipShow")
 	end
 end
 
@@ -566,6 +569,9 @@ end
 
 function module:Refresh()
 	db = module.db.profile
+	for tooltip in pairs(initialScale) do
+		module:ApplyTooltipScale(tooltip)
+	end
 	module:SetStatusHealthBar()
 	module:UpdateBackdropColors()
 	if not GameTooltip:IsForbidden() then
@@ -606,18 +612,20 @@ function module.OnStatusBarValueChanged(frame)
 	frame:Show()
 end
 
+function module:ApplyTooltipScale(frame)
+	if not module:IsEnabled() or (frame.IsForbidden and frame:IsForbidden()) then return end
+	if LUI:TooltipHasWidgets(frame) then return end
+	-- Always use the original scale so option changes cannot compound scaling.
+	frame:SetScale((initialScale[frame] or 1) * db.Scale)
+end
+
 function module:OnTooltipShow(frame)
 	if not module:IsEnabled() then return end
 	if db.HideCombat and InCombatLockdown() then
-		return frame:Hide()
+		return LUI:HideTooltip(frame)
 	end
 
-	--If a frame has a smaller scale than normal for any reasons, make sure that's respected.
-	if initialScale[frame] then
-		frame:SetScale(initialScale[frame] * db.Scale)
-	else
-		frame:SetScale(db.Scale)
-	end
+	module:ApplyTooltipScale(frame)
 
 	module:UpdateTooltipBackdrop(frame)
 	module:SetBorderColor(frame)
@@ -677,6 +685,7 @@ end
 function module.OnGameTooltipSetUnit(frame, data)
 	if not module:IsEnabled() then return end
 	if frame:IsForbidden() then return end
+	if LUI:TooltipHasWidgets(frame) then return end
 	-- luacheck: globals GameTooltipTextLeft1
 	
 	-- We're only interested in setting up the GameTooltip itself, not all frames of that type.
@@ -752,7 +761,7 @@ end
 function module:HideCombatSkillTooltips(frame)
 	if not module:IsEnabled() then return end
 	if db.HideCombatSkills and InCombatLockdown() and not IsShiftKeyDown() then
-		frame:Hide()
+		LUI:HideTooltip(frame)
 	end
 end
 
@@ -776,6 +785,7 @@ function module:OnEnable()
 
 	module:SecureHook("GameTooltip_SetDefaultAnchor", function(frame, parent)
 		if parent and parent.IsForbidden and parent:IsForbidden() then return end
+		if LUI:TooltipHasWidgets(frame) then return end
 		if db.Cursor then
 			frame:SetOwner(parent, "ANCHOR_CURSOR")
 		else

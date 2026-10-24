@@ -67,6 +67,7 @@ local PRESET_RAID_ANCHORS = {
 	CompactRaidFrameContainer = "Blizzard Raid Frames",
 }
 local PRESET_METER_ANCHORS = {
+	[""] = "None",
 	DetailsBaseFrame1 = "Details - Window 1",
 	DetailsBaseFrame2 = "Details - Window 2",
 	DamageMeterSessionWindow1 = "Blizzard Damage Meter - Window 1",
@@ -254,14 +255,21 @@ local function CreateMainPanelOptions(kind, displayName)
 	local group = Opt:Group({name = displayName, db = db.LUITextures[kind], args = {
 		Header = Opt:Header({name = displayName}),
 		RaidPanelDesc = Opt:Desc({onlyIf = kind == "Raid", name = "Artwork behind the raid frames. Raid markers, ready checks and other raid tools are configured under Micromenu > Raid Menu.\n"}),
-		addon = Opt:Desc({onlyIf = isNotChat, name = "Choose a preset or enter the frame name to attach to this panel.\n"}),
+		addon = Opt:Desc({onlyIf = isNotChat, name = kind == "Raid"
+			and "Choose which raid frames to attach this artwork to. This does not select or enable your unitframes. For Blizzard raid frames, the orb and panel button only toggle the artwork background.\n"
+			or "Meter panels are unassigned by default. Choose a preset or enter a frame name to let LUI add artwork and show or hide that window. Select None to remove the assignment.\n"}),
 		AnchorPreset = Opt:Select({onlyIf = isNotChat, name = "Bar Preset", values = (kind == "Raid") and PRESET_RAID_ANCHORS or PRESET_METER_ANCHORS, get = presetDropdownGet, set = presetDropdownSet}),
 		Anchor = Opt:Input({onlyIf = isNotChat, name = "Anchor", desc = "Enter the anchor frame manually."}),
 		FrameIdentifierDesc = Opt:Desc({onlyIf = isNotChat, name = "Use the LUI Frame Identifier to find a frame name. You can also use Blizzard's /framestack command."}),
 		FrameIdentifier = Opt:Execute({onlyIf = isNotChat, name = "LUI Frame Identifier", desc = "Click to show the LUI Frame Identifier", func = function() _G.LUI_Frame_Identifier:Show() end }),
-		Additional = Opt:Input({onlyIf = isNotChat, name = "Additional Frames", desc = "Type in any additional Frames (seperated by commas), that you would like to show/hide."}),
+		Additional = Opt:Input({onlyIf = isNotChat, name = "Additional Frames", desc = "Additional frames to show or hide, separated by commas. Blizzard raid frames keep their normal visibility."}),
 		Spacer1 = Opt:Spacer({}),
-		AlwaysShow = Opt:Toggle({name = "Show at Login", desc = "Show this panel and its anchored frame when entering the world.", width = "full"}),
+		AlwaysShow = Opt:Toggle({name = "Show at Login", desc = function()
+			if db.LUITextures[kind].Anchor == "CompactRaidFrameContainer" then
+				return "Show the artwork background at login. Blizzard controls when the raid frames appear."
+			end
+			return "Show this panel and its anchored frame when entering the world."
+		end, width = "full"}),
 		OffsetX = Opt:OffsetX(),
 		OffsetY = Opt:OffsetY(),
 		Spacer2 = Opt:Spacer({}),
@@ -326,11 +334,11 @@ Artwork.args = {
 	Header = Opt:Header({name = "Artwork"}),
 	Themes = Opt:Group({name = "Themes", args = {
 		Active = Opt:Select({name = "Theme", desc = "Apply a built-in or saved color theme to the active artwork components.", values = themes.ThemeArray, get = GetActiveTheme, set = SetActiveTheme}),
-		Save = Opt:Execute({name = "Save Current Theme", desc = "Save the current artwork colors as a reusable theme.", func = function() StaticPopup_Show("LUI_THEMES_SAVE") end}),
-		Delete = Opt:Execute({name = "Delete Active Theme", func = function() StaticPopup_Show("LUI_THEMES_DELETE") end}),
-		Import = Opt:Execute({name = "Import Theme", func = function() StaticPopup_Show("LUI_THEMES_IMPORT") end}),
-		Export = Opt:Execute({name = "Export Theme", func = function() StaticPopup_Show("LUI_THEMES_EXPORT") end}),
-		Reset = Opt:Execute({name = "Reset Themes", func = function() StaticPopup_Show("LUI_THEMES_RESET") end}),
+		Save = Opt:Execute({name = "Save Current Theme", desc = "Save the current artwork colors as a reusable theme.", func = function() LUI:ShowPopup("LUI_THEMES_SAVE") end}),
+		Delete = Opt:Execute({name = "Delete Active Theme", func = function() LUI:ShowPopup("LUI_THEMES_DELETE") end}),
+		Import = Opt:Execute({name = "Import Theme", func = function() LUI:ShowPopup("LUI_THEMES_IMPORT") end}),
+		Export = Opt:Execute({name = "Export Theme", func = function() LUI:ShowPopup("LUI_THEMES_EXPORT") end}),
+		Reset = Opt:Execute({name = "Reset Themes", func = function() LUI:ShowPopup("LUI_THEMES_RESET") end}),
 	}}),
 	Builtin = Opt:Group({name = "LUI Panels", childGroups = "tab", args = BuiltinArgs}),
 	Custom = Opt:Group({name = "Custom Panels", childGroups = "tab", args = CustomArgs}),

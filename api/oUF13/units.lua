@@ -13,14 +13,14 @@ local function updateArenaPreparationElements(self, event, elementName, specID)
 
 			* self   - the parent object
 			* event  - the event triggering the update (string)
-			* specID - the specialization ID for the opponent (number)
+			* specID - (DEPRECATED) the specialization ID for the opponent (number)
 			--]]
 			--[[ Override: Power.OverrideArenaPreparation(self, event, specID)
 			Used to completely override the internal update function for arena preparation.
 
 			* self   - the parent object
 			* event  - the event triggering the update (string)
-			* specID - the specialization ID for the opponent (number)
+			* specID - (DEPRECATED) the specialization ID for the opponent (number)
 			--]]
 			element.OverrideArenaPreparation(self, event, specID)
 			return
@@ -28,20 +28,22 @@ local function updateArenaPreparationElements(self, event, elementName, specID)
 
 		element:SetMinMaxValues(0, 1)
 		element:SetValue(1)
+		element:Show()
+
 		if(element.UpdateColorArenaPreparation) then
 			--[[ Override: Health:UpdateColor(specID)
 			Used to completely override the internal function for updating the widget's colors
 			during arena preparation.
 
 			* self   - the Health element
-			* specID - the specialization ID for the opponent (number)
+			* specID - (DEPRECATED) the specialization ID for the opponent (number)
 			--]]
 			--[[ Override: Power:UpdateColor(specID)
 			Used to completely override the internal function for updating the widget's colors
 			during arena preparation.
 
 			* self   - the Power element
-			* specID - the specialization ID for the opponent (number)
+			* specID - (DEPRECATED) the specialization ID for the opponent (number)
 			--]]
 			element:UpdateColorArenaPreparation(specID)
 		else
@@ -50,8 +52,8 @@ local function updateArenaPreparationElements(self, event, elementName, specID)
 			-- if(element.colorPower and elementName == 'Power') then
 				-- FIXME: no idea if we can get power type here without the unit
 			if(element.colorClass) then
-				local _, _, _, _, _, class = GetSpecializationInfoByID(specID)
-				color = self.colors.class[class]
+				local info = UnitFrameUtil.GetArenaOpponentSpecDisplayInfo(self.__unitIndex)
+				color = oUF:CreateColor(info.barColorR, info.barColorG, info.barColorB)
 			elseif(element.colorReaction) then
 				color = self.colors.reaction[2]
 			elseif(element.colorSmooth and self.colors.health:GetCurve()) then
@@ -71,20 +73,21 @@ local function updateArenaPreparationElements(self, event, elementName, specID)
 
 			* self   - the Health element
 			* event  - the event triggering the update (string)
-			* specID - the specialization ID for the opponent (number)
+			* specID - (DEPRECATED) the specialization ID for the opponent (number)
 			--]]
 			--[[ Callback: Power:PostUpdateArenaPreparation(event, specID)
 			Called after the element has been updated during arena preparation.
 
 			* self   - the Power element
 			* event  - the event triggering the update (string)
-			* specID - the specialization ID for the opponent (number)
+			* specID - (DEPRECATED) the specialization ID for the opponent (number)
 			--]]
 			element:PostUpdateArenaPreparation(event, specID)
 		end
 	end
 end
 
+local restoreArenaCVar
 local function updateArenaPreparation(self, event)
 	if(not self:GetAttribute('oUF-enableArenaPrep')) then
 		return
@@ -92,18 +95,13 @@ local function updateArenaPreparation(self, event)
 
 	if(event == 'ARENA_OPPONENT_UPDATE' and not self:IsEnabled()) then
 		self:Enable()
+		self:ResumeAllElements()
 		self:UpdateAllElements('ArenaPreparation')
 		self:UnregisterEvent(event, updateArenaPreparation)
 
-		-- show elements that don't handle their own visibility
-		if(self:IsElementEnabled('Auras')) then
-			if(self.Auras) then self.Auras:Show() end
-			if(self.Buffs) then self.Buffs:Show() end
-			if(self.Debuffs) then self.Debuffs:Show() end
-		end
-
-		if(self.Portrait and self:IsElementEnabled('Portrait')) then
-			self.Portrait:Show()
+		if(restoreArenaCVar) then
+			C_CVar.SetCVar('pvpFramesDisplayClassColor', 0)
+			restoreArenaCVar = false
 		end
 	elseif(event == 'PLAYER_ENTERING_WORLD' and not UnitExists(self.__unit)) then
 		-- semi-recursive call for when the player zones into an arena
@@ -115,37 +113,36 @@ local function updateArenaPreparation(self, event)
 			return
 		end
 
+		if((self.Health.colorClass or self.Power.colorClass) and not C_CVar.GetCVarBool('pvpFramesDisplayClassColor')) then
+			-- this CVar is required for class coloring to work with UnitFrameUtil
+			restoreArenaCVar = true
+			C_CVar.SetCVar('pvpFramesDisplayClassColor', 1)
+		end
+
 		if(self.PreUpdate) then
 			self:PreUpdate(event)
 		end
 
-		if(not self:IsEnabled() and GetNumArenaOpponentSpecs() < self.__unitIndex) then
+		local numOpponents = GetNumArenaOpponentSpecs()
+		if(not self:IsEnabled() and numOpponents < self.__unitIndex) then
 			-- hide the object if the opponent leaves
 			self:Hide()
 		end
 
-		local specID = GetArenaOpponentSpec(self.__unitIndex)
-		if(specID) then
+		if(self.__unitIndex <= numOpponents) then
 			if(self:IsEnabled()) then
 				-- disable the unit watch so we can forcefully show the object ourselves
 				self:Disable()
 				self:RegisterEvent('ARENA_OPPONENT_UPDATE', updateArenaPreparation)
 			end
 
-			-- update Health and Power (if available) with "fake" data
+			-- pause all elements
+			self:PauseAllElements()
+
+			-- update Health and Power (if available) with fake data
+			local specID = GetArenaOpponentSpec(self.__unitIndex) -- DEPRECATED
 			updateArenaPreparationElements(self, event, 'Health', specID)
 			updateArenaPreparationElements(self, event, 'Power', specID)
-
-			-- hide all other (relevant) elements (they have no effect during arena prep)
-			if(self.Auras) then self.Auras:Hide() end
-			if(self.Buffs) then self.Buffs:Hide() end
-			if(self.Debuffs) then self.Debuffs:Hide() end
-			if(self.Castbar) then self.Castbar:Hide() end
-			if(self.CombatIndicator) then self.CombatIndicator:Hide() end
-			if(self.GroupRoleIndicator) then self.GroupRoleIndicator:Hide() end
-			if(self.Portrait) then self.Portrait:Hide() end
-			if(self.PvPIndicator) then self.PvPIndicator:Hide() end
-			if(self.RaidTargetIndicator) then self.RaidTargetIndicator:Hide() end
 
 			self:Show()
 			self:UpdateTags()

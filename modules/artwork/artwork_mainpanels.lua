@@ -109,17 +109,27 @@ function module:LoadAdditional(str)
 	if strfind(str, ",") then
 		local list = {strsplit(",", str)}
 		for _, name in ipairs(list) do
-			if _G[name] then table.insert(frames, name) end
+			if _G[name] and _G[name] ~= _G.CompactRaidFrameContainer then table.insert(frames, name) end
 		end
 	else
-		if _G[str] then table.insert(frames, str) end
+		if _G[str] and _G[str] ~= _G.CompactRaidFrameContainer then table.insert(frames, str) end
 	end
 
 	return frames
 end
 
+function module:GetMainPanelVisibilityFrame(kind)
+	local frame = _G[self.db.profile.LUITextures[kind].Anchor]
+	-- Blizzard owns raid-frame visibility. Artwork controls its own background
+	-- instead of hiding or fading the native container along with the panel.
+	if frame and frame == _G.CompactRaidFrameContainer then
+		return _mainPanels[kind]
+	end
+	return frame
+end
+
 function module:CanAlterFrame(frame)
-	if not frame then return false end
+	if not frame or frame == _G.CompactRaidFrameContainer then return false end
 	if frame.IsForbidden and frame:IsForbidden() then return false end
 	if not (frame:IsProtected() and _G.InCombatLockdown()) then
 		return true
@@ -346,58 +356,66 @@ local function PausePanelAnimation(kind)
 			-- Alpha is cosmetic and can be restored without changing protected
 			-- visibility. A paused fade must not leave a transparent click target.
 			frame:SetAlpha(1)
+			if module:CanAlterFrame(frame) then
+				if db[kind].IsShown then frame:Show() else frame:Hide() end
+			end
 		end
 	end
-	RestoreAlpha(_G[_mainPanels[kind].frame])
+	RestoreAlpha(module:GetMainPanelVisibilityFrame(kind))
 	for _, name in pairs(module:LoadAdditional(db[kind].Additional)) do RestoreAlpha(_G[name]) end
 	module:RefreshNavBar()
 end
 
-function module:AlphaIn(kind, button)
+local function GetToggleFrames(kind)
+	local frame = module:GetMainPanelVisibilityFrame(kind)
+	if not frame or (frame.IsForbidden and frame:IsForbidden()) then return {}, false end
+	local frames = {frame}
+	local animate = db[kind].Animation and not InCombatLockdown() and not frame:IsProtected()
+	for _, name in ipairs(module:LoadAdditional(db[kind].Additional)) do
+		local additional = _G[name]
+		if not (additional.IsForbidden and additional:IsForbidden()) then
+			frames[#frames + 1] = additional
+			if additional:IsProtected() then animate = false end
+		end
+	end
+	return frames, animate
+end
+
+function module:AlphaIn(kind)
 	if not _mainPanels[kind] then return end
 	module:StopPanelAnimations(kind)
 	db[kind].IsShown = true
-	local frame = _G[_mainPanels[kind].frame]
+	local frames, animate = GetToggleFrames(kind)
+	local anchor = frames[1]
+	local from = animate and anchor:IsShown() and anchor:GetAlpha() or 0
 
-	if module:CanAlterFrame(frame) then
-		frame:Show()
-
-		for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
-			if module:CanAlterFrame(_G[f]) then _G[f]:Show() end
+	for _, frame in ipairs(frames) do
+		if module:CanAlterFrame(frame) then
+			frame:SetAlpha(animate and from or 1)
+			frame:Show()
 		end
-		
-		if db[kind].Animation then
-			_mainPanels[kind].AlphaIn.startAlpha = frame:GetAlpha()
-			_mainPanels[kind].AlphaIn:Show()
-		else
-			frame:SetAlpha(1)
-			for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
-				if module:CanAlterFrame(_G[f]) then _G[f]:SetAlpha(1) end
-			end
-		end
+	end
+	if animate then
+		_mainPanels[kind].AlphaIn.startAlpha = from
+		_mainPanels[kind].AlphaIn:Show()
 	end
 end
 
-function module:AlphaOut(kind, button)
+function module:AlphaOut(kind)
 	if not _mainPanels[kind] then return end
 	module:StopPanelAnimations(kind)
 	db[kind].IsShown = false
-	local frame = _G[_mainPanels[kind].frame]
-
-	if module:CanAlterFrame(frame) then
-		if db[kind].Animation then
-			_mainPanels[kind].AlphaOut.startAlpha = frame:GetAlpha()
-			_mainPanels[kind].AlphaOut:Show()
-
-		else
-			_G[_mainPanels[kind].frame]:SetAlpha(0)
-			_G[_mainPanels[kind].frame]:Hide()
-
-			for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
-				if module:CanAlterFrame(_G[f]) then
-					_G[f]:SetAlpha(0)
-					_G[f]:Hide()
-				end
+	local frames, animate = GetToggleFrames(kind)
+	if animate then
+		_mainPanels[kind].AlphaOut.startAlpha = frames[1]:GetAlpha()
+		_mainPanels[kind].AlphaOut:Show()
+	else
+		for _, frame in ipairs(frames) do
+			if module:CanAlterFrame(frame) then
+				frame:Hide()
+				-- Secure clicks can show protected frames in combat. Leave them
+				-- opaque while hidden so Show() can make them visible again.
+				frame:SetAlpha(1)
 			end
 		end
 	end
@@ -429,7 +447,7 @@ function module:CreateBackground(kind)
 			return
 		end
 		self.timerout = self.timerout + elapsed
-		local target = _G[_mainPanels[kind].frame]
+		local target = module:GetMainPanelVisibilityFrame(kind)
 
 		if self.timerout < ANIM_DURATION then
 			local alpha = (self.startAlpha or 1) * (1 - self.timerout / ANIM_DURATION)
@@ -442,12 +460,12 @@ function module:CreateBackground(kind)
 			end
 		else
 			if module:CanAlterFrame(target) then
-				target:SetAlpha(0)
 				target:Hide()
+				target:SetAlpha(1)
 				for _, f in pairs(module:LoadAdditional(db[kind].Additional)) do
 					if module:CanAlterFrame(_G[f]) then
-						_G[f]:SetAlpha(0)
 						_G[f]:Hide()
+						_G[f]:SetAlpha(1)
 					end
 				end
 			end
@@ -466,7 +484,7 @@ function module:CreateBackground(kind)
 			return
 		end
 		self.timerin = self.timerin + elapsed
-		local target = _G[_mainPanels[kind].frame]
+		local target = module:GetMainPanelVisibilityFrame(kind)
 
 		if self.timerin < ANIM_DURATION then
 			local from = self.startAlpha or 0
@@ -530,7 +548,12 @@ function module:ApplyBackground(kind)
 	_mainPanels[kind]:Set(data.Direction, frame, data.Width, data.Height, 1, r, g, b, a, rc, gc, bc, ac)
 	_mainPanels[kind]:ClearAllPoints()
 	_mainPanels[kind]:SetPoint("TOPLEFT", frame, "TOPLEFT", data.OffsetX, data.OffsetY)
-	_mainPanels[kind]:Show()
+	_mainPanels[kind]:SetAlpha(1)
+	if frame == _G.CompactRaidFrameContainer then
+		_mainPanels[kind]:SetShown(data.IsShown)
+	else
+		_mainPanels[kind]:Show()
+	end
 end
 
 function module:setMainPanels()
@@ -552,6 +575,7 @@ function module:setMainPanels()
 end
 
 function module:RefreshMainPanels()
+	if not module:IsEnabled() then return end
 	if InCombatLockdown() then
 		if not module.mainPanelRefreshFrame then
 			module.mainPanelRefreshFrame = CreateFrame("Frame")
@@ -566,6 +590,8 @@ function module:RefreshMainPanels()
 	if module.mainPanelRefreshFrame then
 		module.mainPanelRefreshFrame:UnregisterEvent("PLAYER_REGEN_ENABLED")
 	end
+	db = module.db.profile.LUITextures
+	db.Chat.Anchor = "ChatAlphaAnchor"
 	self:ApplyBackground("Chat")
 	self:ApplyBackground("Tps")
 	self:ApplyBackground("Dps")
