@@ -132,6 +132,10 @@ local restrictionQueries = {
 
 local function CanTouch(object)
     if IsSecret(object) or not object then return false end
+    -- These unprotected frames submit protected instance-abandon responses.
+    -- Leave their scripts and artwork to Blizzard, including descendants
+    -- reached through the generic popup and button hooks.
+    if object == _G.InstanceAbandonPopup or object == _G.InstanceAbandonFrame then return false end
     -- Aura buttons can be neither forbidden nor protected while their secret
     -- visibility still disallows OnShow hooks. Exclude restricted objects
     -- before discovery, styling or restoration, including their descendants.
@@ -1074,7 +1078,6 @@ local controlTargets = {
     ["InboxNextPageButton"] = {buttons = {"."}, scrolls = {}},
     ["InboxPrevPageButton"] = {buttons = {"."}, scrolls = {}},
     ["InspectRecipeFrame"] = {buttons = {"CloseButton", "SchematicForm.AllocateBestQualityCheckbox", "SchematicForm.Concentrate.ConcentrateToggleButton", "SchematicForm.Details.CraftingChoicesContainer.ConcentrateContainer.ConcentrateToggleButton", "SchematicForm.FavoriteButton", "SchematicForm.OutputIcon", "SchematicForm.QualityDialog.AcceptButton", "SchematicForm.QualityDialog.CancelButton", "SchematicForm.QualityDialog.ClosePanelButton", "SchematicForm.RecipeSourceButton", "SchematicForm.TrackRecipeCheckbox"}, scrolls = {}},
-    ["InstanceAbandonPopup"] = {buttons = {"ButtonContainer.Button1", "ButtonContainer.Button2"}, scrolls = {}},
     ["ItemTextFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
     ["ItemTextNextPageButton"] = {buttons = {"."}, scrolls = {}},
     ["ItemTextPrevPageButton"] = {buttons = {"."}, scrolls = {}},
