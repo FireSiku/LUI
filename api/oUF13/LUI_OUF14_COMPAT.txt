@@ -1,8 +1,12 @@
-LUI / oUF 14.2.0 integration notes
+LUI / oUF integration notes
 
-Framework: complete official oUF 14.2.0 release, without LUI source changes.
-Source: https://github.com/oUF-wow/oUF/tree/14.2.0
-Release commit: a1f9df774263d00e0feedca40200065f06e14eda
+Framework: complete official upstream snapshot, without LUI source changes.
+Source: https://github.com/oUF-wow/oUF/tree/3692cb6b24a0a2272a8c9d02f93640a338b6243f
+Upstream commit: 3692cb6b24a0a2272a8c9d02f93640a338b6243f (2026-10-23)
+Packaged version: 14.2.0-9-g3692cb6 (nine commits after release 14.2.0).
+This is a development snapshot, not a new numbered release. Only the standard
+project-version packaging tokens are replaced with the pinned version above;
+unchanged files retain their existing line endings.
 The api/oUF13 directory name is retained for existing load paths.
 
 LUI owns its compatibility code in modules/unitframes:
@@ -20,11 +24,17 @@ LUI owns its compatibility code in modules/unitframes:
 Do not patch bundled framework files for LUI-specific behavior. Use oUF's
 layout callbacks, color overrides and initialization hooks instead.
 
-API review, 2026-10-16:
-- Retail 12.1.5 build 70391; Forever 1.60.1 build 70425.
-- oUF 14.2.0 remains the latest release; its master has no newer commits.
+API review, 2026-10-24:
+- Retail 12.1.5 build 70575; Forever 1.60.1 build 70532.
+- oUF 14.2.0 remains the latest numbered release. This snapshot adds upstream
+  secret-GUID scrubbing for group frames, native arena specialization display,
+  arena tags and unitless master-looter event registration.
 - The LUI arena integration replaces oUF's raw GetArenaOpponentSpec path on
   clients with native arena-display delegates. Secret specialization data is
   forwarded to text, color and alpha widgets without addon-side decisions.
   Preparation views hide when live units appear, the match engages, combat
   starts, the parent hides or arena frames are disabled.
+- LUI keeps oUF-enableArenaPrep disabled on its real arena buttons. The new
+  upstream preparation lifecycle and class-color CVar changes therefore do
+  not run alongside LUI's preparation views, which follow the native CVar.
+- The reviewed Retail and Forever changes require no further LUI adaptations.
