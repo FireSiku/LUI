@@ -1,4 +1,6 @@
-# Unreleased
+# LUI v2610 Alpha
+
+## Changes since last version
 
 - Core: Corrected Forever character and ruleset keys while preserving saved profile selections.
 - Infotext: Gold records now use complete Forever character names and skip realm connections on that client.
