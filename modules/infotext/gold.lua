@@ -86,6 +86,7 @@ function element:FormatMoney(money, color)
 end
 
 function element:CacheConnectedRealms()
+	if LUI.IsForever then return end
 	if not SUPPORTED_FACTION[LUI.playerFaction] then return end
 	local connectedRealms = GetAutoCompleteRealms()
 	local goldDB = module.db.global.Gold[LUI.playerFaction]
@@ -153,7 +154,7 @@ function element:UpdateRealmMoney()
 		for _, money in pairs(goldDB[LUI.playerRealm]) do
 			total = total + money
 		end
-		if module.db.profile.Gold.ShowConnected and module.db.global.ConnectedRealms[LUI.playerRealm] then
+		if not LUI.IsForever and module.db.profile.Gold.ShowConnected and module.db.global.ConnectedRealms[LUI.playerRealm] then
 			for _, connectedRealm in ipairs(module.db.global.ConnectedRealms[LUI.playerRealm]) do
 				for _, money in pairs(goldDB[connectedRealm]) do
 					total = total + money
@@ -186,7 +187,7 @@ function element:ShouldRealmBeShown(realmName)
 	local goldDB = module.db.global.Gold
 	local realmDB = module.db.global.ConnectedRealms
 	-- All realms are shown when not connecting realms
-	if not module.db.profile.Gold.ShowConnected then
+	if LUI.IsForever or not module.db.profile.Gold.ShowConnected then
 		return true
 	-- If the realm has gold information but is not connected, it should be shown
 	elseif (goldDB.Alliance[realmName] or goldDB.Horde[realmName]) and not realmDB[realmName] then
@@ -241,7 +242,7 @@ function element.OnTooltipShow(GameTooltip)
 				for _, money in pairs(realmData) do
 					total = total + money
 				end
-				if module.db.profile.Gold.ShowConnected and module.db.global.ConnectedRealms[realm] then
+				if not LUI.IsForever and module.db.profile.Gold.ShowConnected and module.db.global.ConnectedRealms[realm] then
 					for _, connectedRealm in ipairs(module.db.global.ConnectedRealms[realm]) do
 						for _, money in pairs(realmDB[faction][connectedRealm]) do
 							total = total + money
@@ -308,6 +309,16 @@ function element:OnCreate()
 		module.db.realm.Gold = nil
 	end
 	
+	local legacy = LUI.legacyPlayerIdentity
+	if legacy and SUPPORTED_FACTION[LUI.playerFaction] then
+		local factionDB = module.db.global.Gold[LUI.playerFaction]
+		local oldRealm = rawget(factionDB, (legacy.realm:gsub(" ", "")))
+		if oldRealm and (oldRealm ~= factionDB[LUI.playerRealm] or legacy.name ~= LUI.playerName) then
+			-- The current balance is written below under the complete name.
+			-- Remove only this character's legacy entry to avoid counting it twice.
+			oldRealm[legacy.name] = nil
+		end
+	end
 	element:CacheConnectedRealms()
 	element:RegisterEvent("PLAYER_MONEY", "UpdateGold")
 	if supportsWarbankGold then

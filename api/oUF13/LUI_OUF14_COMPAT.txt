@@ -1,11 +1,10 @@
 LUI / oUF integration notes
 
 Framework: complete official upstream snapshot, without LUI source changes.
-Source: https://github.com/oUF-wow/oUF/tree/3692cb6b24a0a2272a8c9d02f93640a338b6243f
-Upstream commit: 3692cb6b24a0a2272a8c9d02f93640a338b6243f (2026-10-23)
-Packaged version: 14.2.0-9-g3692cb6 (nine commits after release 14.2.0).
-This is a development snapshot, not a new numbered release. Only the standard
-project-version packaging tokens are replaced with the pinned version above;
+Source: https://github.com/oUF-wow/oUF/tree/14.2.1
+Upstream commit: c5ff6e4a09bfaf2186e205777e0fab964b5cddc1 (2026-10-31)
+Packaged version: 14.2.1 (official release, published 2026-11-03).
+Only the standard project-version packaging tokens are replaced with this version;
 unchanged files retain their existing line endings.
 The api/oUF13 directory name is retained for existing load paths.
 
@@ -38,3 +37,15 @@ API review, 2026-10-24:
   upstream preparation lifecycle and class-color CVar changes therefore do
   not run alongside LUI's preparation views, which follow the native CVar.
 - The reviewed Retail and Forever changes require no further LUI adaptations.
+
+API review, 2026-11-04:
+- Retail 12.1.5 build 70783; Forever 1.60.1 build 70755.
+- Official release 14.2.1 adds two source changes over the previous snapshot:
+  leader tags use the supplied unit, and Stagger only restores or disables the
+  stock MonkStaggerBar on Retail, where that Blizzard frame exists.
+- All 47 official framework files match upstream, apart from standard version
+  token replacement and preserved line endings. LUI's separate arena preparation
+  views and oUF-enableArenaPrep = false are retained.
+- UNIT_COMBAT now marks its amount as secret on both clients. The LUI-owned
+  CombatFeedback plugin forwards it to FontString:SetFormattedText without a
+  Lua comparison; ordinary zero amounts keep their absorb/block/resist behavior.
