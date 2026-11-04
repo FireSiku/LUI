@@ -78,7 +78,9 @@ local function combat(self, event, unit, eventType, flags, amount, dtype)
 		fontHeight = fontHeight * 0.75
 		text = CombatFeedbackText[eventType]
 	elseif eventType == "WOUND" and not FeedbackText.ignoreDamage then
-		if amount ~= 0 then
+		-- Retail and Forever can send secret amounts. Pass them straight to
+		-- SetFormattedText; only ordinary values may be compared with zero.
+		if issecretvalue(amount) or amount ~= 0 then
 			if flags == "CRITICAL" then
 				color = fColors and fColors.CRITICAL or colors.CRITICAL
 				fontHeight = fontHeight * 1.5

@@ -773,6 +773,9 @@ function ContainerMixin:SlotUpdate(itemSlot)
 
 	if data then
 		SetItemButtonTexture(itemSlot, data.iconFileID)
+		-- Native texture updates now reset coordinates on Forever.
+		local icon = itemSlot.icon or _G[itemSlot:GetName().."IconTexture"]
+		if icon then icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) end
 		SetItemButtonCount(itemSlot, itemSlot.level or data.stackCount)
 		SetItemButtonDesaturated(itemSlot, data.isLocked)
 

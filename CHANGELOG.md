@@ -1,3 +1,13 @@
+# Unreleased
+
+- Core: Corrected Forever character and ruleset keys while preserving saved profile selections.
+- Infotext: Gold records now use complete Forever character names and skip realm connections on that client.
+- Bags: Preserved item icon cropping after native texture updates on Forever.
+- Unitframes: Fixed combat feedback errors when damage amounts are restricted on Retail and Warcraft Forever.
+- Unitframes: Updated embedded oUF to 14.2.1, including Forever stagger compatibility and corrected leader tags.
+
+---
+
 # LUI v2610
 
 ## Changes since last version

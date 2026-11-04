@@ -33,7 +33,7 @@ LUI.Versions = {lui = 3404}
 LUI.playerClass = select(2, _G.UnitClass("player"))
 LUI.playerFaction = _G.UnitFactionGroup("player")
 LUI.playerName =  _G.UnitName("player")
-LUI.playerRealm = _G.GetRealmName()
+LUI.playerRealm = _G.GetRealmName() or ""
 LUI.playerFullName = format("%s-%s", LUI.playerName, LUI.playerRealm)
 LUI.otherFaction = (LUI.playerFaction == "Horde") and "Alliance" or "Horde"
 
@@ -622,7 +622,10 @@ end
 ------------------------------------------------------
 
 function LUI:OnInitialize()
+	local previousProfileKeys = self.IsForever and _G.LUIDB and _G.LUIDB.profileKeys
+	previousProfileKeys = previousProfileKeys and CopyTable(previousProfileKeys)
 	self.db = LibStub("AceDB-3.0"):New("LUIDB", LUI.defaults, true)
+	self:InitializePlayerIdentity(previousProfileKeys)
 
 	local global_db = self.db.global.luiconfig[LUI.profileName]
 	local firstRun = not (global_db and global_db.IsConfigured)
