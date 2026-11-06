@@ -163,31 +163,116 @@ function module:AutoRepair()
 	end
 end
 
-function module:AutoSell()
-	if not db.AutoSell.Enable then return end
+local SELL_INTERVAL, SELL_TIMEOUT = .2, 5
+local sellSession
+local merchantOpen = false
+local merchantBlocked = false
 
-	local totalPrice = 0
-	local lastBag = Enum.BagIndex.ReagentBag or _G.NUM_BAG_SLOTS
-	for bag = 0, lastBag do
-		for slot = 1, C_Container.GetContainerNumSlots(bag) do
-			local itemInfo = C_Container.GetContainerItemInfo(bag, slot)
+local function CancelAutoSell()
+	if sellSession and sellSession.timer then sellSession.timer:Cancel() end
+	sellSession = nil
+end
 
-			if itemInfo and itemInfo.itemID and not itemInfo.isLocked and not itemInfo.hasNoValue then
-				if itemInfo.quality and db.AutoSell.ItemQualities[itemInfo.quality + 1] and not db.AutoSell.Exclusions[itemInfo.itemID] then
-					local _, _, _, _,_,_,_,_,_,_, itemPrice = GetItemInfo(itemInfo.hyperlink)
-					if itemPrice and itemPrice > 0 then
-						totalPrice = totalPrice + (itemInfo.stackCount * itemPrice)
-						C_Container.UseContainerItem(bag, slot)
-					end
-				end
-			end
+local function GetAutoSellInfo(bag, slot)
+	local info = C_Container.GetContainerItemInfo(bag, slot)
+	if info and info.itemID and not info.isLocked and not info.hasNoValue
+		and info.quality and db.AutoSell.ItemQualities[info.quality + 1]
+		and not db.AutoSell.Exclusions[info.itemID] then
+		local price = select(11, GetItemInfo(info.hyperlink))
+		if price and price > 0 then return info, price end
+	end
+end
+
+local function GetSlotGUID(bag, slot)
+	return C_Item.GetItemGUID(ItemLocation:CreateFromBagAndSlot(bag, slot))
+end
+
+local function FinishAutoSell()
+	local totalPrice = sellSession.totalPrice
+	CancelAutoSell()
+	if db.AutoSell.Settings.ShowSuccess and totalPrice > 0 then
+		print("|cff00ff00Successfully sold specified items for:|r "..GetCoinTextureString(totalPrice))
+	end
+	if not merchantBlocked then module:AutoStock() end
+end
+
+local ProcessAutoSell
+local function ScheduleAutoSell(session)
+	session.timer = C_Timer.NewTimer(SELL_INTERVAL, function()
+		-- A close, profile switch or disable may already have replaced this visit.
+		if sellSession ~= session then return end
+		session.timer = nil
+		ProcessAutoSell(session)
+	end)
+end
+
+ProcessAutoSell = function(session)
+	if not merchantOpen or not module:IsEnabled() or not _G.MerchantFrame or not _G.MerchantFrame:IsShown() then
+		CancelAutoSell()
+		return
+	end
+	if not db.AutoSell.Enable then
+		FinishAutoSell()
+		return
+	end
+
+	local pending = session.pending
+	if pending then
+		local info = C_Container.GetContainerItemInfo(pending.bag, pending.slot)
+		local sameItem = info and GetSlotGUID(pending.bag, pending.slot) == pending.guid
+		-- Wait for the sold stack to leave the bag. A move to another slot is
+		-- not a sale, so also require the carried item count to decrease.
+		if not sameItem and GetItemCount(pending.itemID) <= pending.carriedCount - pending.count then
+			session.totalPrice = session.totalPrice + pending.price
+			session.pending = nil
+		elseif GetTime() >= pending.deadline then
+			-- Never retry an unanswered sale or send more transactions after it.
+			merchantBlocked = true
+			FinishAutoSell()
+			return
+		else
+			ScheduleAutoSell(session)
+			return
 		end
 	end
 
-	-- Print profits.
-	if db.AutoSell.Settings.ShowSuccess and (totalPrice > 0) then
-		print("|cff00ff00Successfully sold specified items for:|r "..GetCoinTextureString(totalPrice))
+	while session.index <= #session.queue do
+		local entry = session.queue[session.index]
+		session.index = session.index + 1
+		local info, price = GetAutoSellInfo(entry.bag, entry.slot)
+		-- Do not sell a replacement item after sorting or moving bag contents.
+		if info and info.itemID == entry.itemID and GetSlotGUID(entry.bag, entry.slot) == entry.guid then
+			session.pending = {
+				bag = entry.bag, slot = entry.slot, guid = entry.guid, itemID = entry.itemID,
+				count = info.stackCount, price = info.stackCount * price,
+				carriedCount = GetItemCount(info.itemID), deadline = GetTime() + SELL_TIMEOUT,
+			}
+			C_Container.UseContainerItem(entry.bag, entry.slot)
+			if sellSession == session then ScheduleAutoSell(session) end
+			return
+		end
 	end
+	FinishAutoSell()
+end
+
+function module:AutoSell()
+	if not db.AutoSell.Enable or not merchantOpen or merchantBlocked or sellSession then return end
+
+	local queue = {}
+	local lastBag = Enum.BagIndex.ReagentBag or _G.NUM_BAG_SLOTS
+	for bag = 0, lastBag do
+		for slot = 1, C_Container.GetContainerNumSlots(bag) do
+			local info = GetAutoSellInfo(bag, slot)
+			if info then
+				queue[#queue + 1] = {bag = bag, slot = slot, itemID = info.itemID, guid = GetSlotGUID(bag, slot)}
+			end
+		end
+	end
+	if #queue == 0 then return end
+
+	-- Pace requests and wait for each inventory response before the next sale.
+	sellSession = {queue = queue, index = 1, totalPrice = 0}
+	ScheduleAutoSell(sellSession)
 end
 
 function module:AutoStock()
@@ -253,15 +338,24 @@ end
 ------------------------------------------------------
 
 function module:MERCHANT_SHOW()
+	if merchantOpen then return end
+	merchantOpen = true
+	merchantBlocked = false
 	self:AutoSell()
 	self:AutoRepair()
-	self:AutoStock()
+	if not sellSession then self:AutoStock() end
+end
+
+function module:MERCHANT_CLOSED()
+	merchantOpen = false
+	merchantBlocked = false
+	CancelAutoSell()
 end
 
 function module:MERCHANT_UPDATE()
 	-- Merchant links and item data can arrive after MERCHANT_SHOW. Purchases
-	-- update the carried count before this event fires, so retrying is safe.
-	self:AutoStock()
+	-- must wait for selling to finish so restocking cannot mask a sold stack.
+	if merchantOpen and not sellSession and not merchantBlocked then self:AutoStock() end
 end
 
 ------------------------------------------------------
@@ -313,6 +407,7 @@ module.enableButton = true
 module.defaultState = false
 
 function module:OnInitialize()
+	CancelAutoSell()
 	db = LUI:Namespace(self, true)
 end
 
@@ -320,9 +415,11 @@ module.DBCallback = module.OnInitialize
 
 function module:OnEnable()
 	self:RegisterEvent("MERCHANT_SHOW")
+	self:RegisterEvent("MERCHANT_CLOSED")
 	self:RegisterEvent("MERCHANT_UPDATE")
 end
 
 function module:OnDisable()
+	self:MERCHANT_CLOSED()
 	self:UnregisterAllEvents()
 end
