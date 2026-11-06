@@ -68,7 +68,16 @@
         </section>
         <section id="profiles">
             <h2><a href="#profiles">Profile Sharing</a></h2>
-            <p>Share setups under <strong>Profiles → Profile Import / Export</strong>. Use a new profile name when importing to keep your existing setup.</p>
+            <p>Use <strong>Profiles → Profile Import / Export</strong> to share your active LUI profile or copy your Retail setup to Forever. Update LUI in both clients before starting.</p>
+            <ol>
+                <li>In <strong>Retail</strong>, type <code>/lui</code>, select <strong>Profiles</strong> and check that <strong>Current Profile</strong> is the setup you want to copy.</li>
+                <li>Scroll down to <strong>Profile Import / Export</strong> and click <strong>Generate Export String</strong>.</li>
+                <li>Click inside <strong>Export String</strong>, then press <kbd>Ctrl+A</kbd> and <kbd>Ctrl+C</kbd> to copy the entire string.</li>
+                <li>In <strong>Forever</strong>, open the same page. Under <strong>Import</strong>, enter a new <strong>Profile Name</strong> and press <kbd>Enter</kbd> to confirm it. A new name keeps your existing Forever profile.</li>
+                <li>Paste the complete string into <strong>Import String</strong> with <kbd>Ctrl+V</kbd>, then click <strong>Accept</strong> below the text box.</li>
+                <li>While out of combat, click <strong>Import Profile</strong>. LUI imports and selects the profile, then reloads the UI.</li>
+            </ol>
+            <p>The <strong>Copy From</strong> dropdown only lists profiles already stored in the current client. Use export/import to transfer between clients. The imported profile is an independent copy; later Retail changes are not automatically synchronized.</p>
             <figure>
                 <img alt="LUI Profiles page showing Profile Import and Export" decoding="async" height="868" loading="lazy" src="assets/profiles.webp" width="1205"/>
                 <figcaption>Profiles.</figcaption>
