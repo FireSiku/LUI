@@ -727,11 +727,18 @@ function module.OnGameTooltipSetUnit(frame, data)
 		or issecretvalue(isPlayer) then
 		return
 	end
-	local realmSuffix = (realm and " - "..realm) or ""
+	local displayName = title or name
+	local realmSuffix = ""
+	if LUI.IsForever then
+		-- The second name is a surname, already included in UnitPVPName.
+		displayName = title or NameUtil.GetUnmodifiedUnitFullName(unit)
+	elseif realm then
+		realmSuffix = " - "..realm
+	end
 
 	local unitColor = CreateColor(module:GetUnitColor(unit))
 
-	local tooltipText = unitColor:WrapTextInColorCode((title or name)..realmSuffix)
+	local tooltipText = unitColor:WrapTextInColorCode(displayName..realmSuffix)
 	GameTooltipTextLeft1:SetText(tooltipText or "")
 
 	if isPlayer then
