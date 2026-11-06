@@ -189,100 +189,113 @@ function module.ToggleBags()
 	end
 end
 
--- Retail's bank opens bags before selecting its bank type. Replacing any of
--- the nested bag globals taints that selection and later native item clicks.
+-- Both clients open bags before protected bank initialization. Replacing any
+-- nested bag global taints bank selection, free-slot purchases and item clicks.
 -- Keep those functions intact and handle their open/close requests separately.
-local retailBagParents = {}
-local retailBagHolder
-local retailBagHooksEnabled = false
-local retailBagSyncTimer
-local retailBagRequestedOpen
+local nativeBagParents = {}
+local nativeBagFrames = {}
+local nativeBagHolder
+local nativeBagHooksEnabled = false
+local nativeBagSyncTimer
+local nativeBagRequestedOpen
 
-local function HideRetailBagFrames()
-	for frame in pairs(retailBagParents) do
+local function HideNativeBagFrames()
+	for frame in pairs(nativeBagParents) do
 		frame:Hide()
 	end
 end
 
-local function SyncRetailBags()
-	retailBagSyncTimer = nil
-	if not retailBagHooksEnabled then return end
-	local shown = retailBagRequestedOpen
-	retailBagRequestedOpen = nil
+local function SyncNativeBags()
+	nativeBagSyncTimer = nil
+	if not nativeBagHooksEnabled then return end
+	local shown = nativeBagRequestedOpen
+	nativeBagRequestedOpen = nil
 	if shown ~= LUIBags:IsShown() then
 		if shown then module.OpenBags() else module.CloseBags() end
 	end
 	-- A coalesced close or a rejected open may leave LUI hidden throughout,
 	-- so its OnHide cannot clear native bags that still report IsShown().
-	if not LUIBags:IsShown() then HideRetailBagFrames() end
+	if not LUIBags:IsShown() then HideNativeBagFrames() end
 end
 
-local function QueueRetailBagSync(shown)
-	if not retailBagHooksEnabled then return end
-	retailBagRequestedOpen = shown
-	if not retailBagSyncTimer then
+local function QueueNativeBagSync(shown)
+	if not nativeBagHooksEnabled then return end
+	nativeBagRequestedOpen = shown
+	if not nativeBagSyncTimer then
 		-- OpenAllBags and ToggleBackpack call other hooked bag functions. Apply
 		-- only the outermost request, once, after that call chain has finished.
-		retailBagSyncTimer = C_Timer.NewTimer(0, SyncRetailBags)
+		nativeBagSyncTimer = C_Timer.NewTimer(0, SyncNativeBags)
 	end
 end
 
-local function RequestRetailBagOpen()
-	if ContainerFrame_AllowedToOpenBags() then QueueRetailBagSync(true) end
+local function RequestNativeBagOpen()
+	if ContainerFrame_AllowedToOpenBags() then QueueNativeBagSync(true) end
 end
 
-local function RequestRetailBagClose()
-	QueueRetailBagSync(false)
+local function RequestNativeBagClose()
+	QueueNativeBagSync(false)
 end
 
-local function RequestRetailBagToggle()
+local function RequestNativeBagToggle()
 	if ContainerFrame_AllowedToOpenBags() then
-		QueueRetailBagSync(not LUIBags:IsShown())
+		QueueNativeBagSync(not LUIBags:IsShown())
 	end
 end
 
-local function SuppressRetailBagFrame(frame)
+local function SuppressNativeBagFrame(frame)
 	if not frame then return end
+	nativeBagFrames[frame] = true
+	-- Forever uses the same container pool for its native keyring. A frame
+	-- reused for keys must remain visible under its current native parent.
+	if LUI.IsForever and frame.GetBagID and frame:GetBagID() == Enum.BagIndex.Keyring then
+		local parent = nativeBagParents[frame]
+		if parent then
+			if frame:GetParent() == nativeBagHolder then frame:SetParent(parent) end
+			nativeBagParents[frame] = nil
+		end
+		return
+	end
 	local parent = frame:GetParent()
-	if parent ~= retailBagHolder then
-		retailBagParents[frame] = parent
+	if parent ~= nativeBagHolder then
+		nativeBagParents[frame] = parent
 		-- Keep native rendering and per-frame updates inactive. Do not replace
 		-- native methods or write their Lua state while suppressing the frames.
-		frame:SetParent(retailBagHolder)
+		frame:SetParent(nativeBagHolder)
 	end
 end
 
-local function SuppressRetailBagFrames()
+local function SuppressNativeBagFrames()
+	if not nativeBagHooksEnabled then return end
 	for i = 1, NUM_CONTAINER_FRAMES do
-		SuppressRetailBagFrame(_G["ContainerFrame"..i])
+		SuppressNativeBagFrame(_G["ContainerFrame"..i])
 	end
-	SuppressRetailBagFrame(_G.ContainerFrameCombinedBags)
+	SuppressNativeBagFrame(_G.ContainerFrameCombinedBags)
 end
 
-function module:EnableRetailBagHooks()
-	if not retailBagHolder then
-		retailBagHolder = CreateFrame("Frame", nil, UIParent)
-		retailBagHolder:Hide()
+function module:EnableNativeBagHooks()
+	if not nativeBagHolder then
+		nativeBagHolder = CreateFrame("Frame", nil, UIParent)
+		nativeBagHolder:Hide()
 	end
-	retailBagHooksEnabled = true
-	SuppressRetailBagFrames()
+	nativeBagHooksEnabled = true
+	SuppressNativeBagFrames()
 	-- Reparenting an open native bag makes it invisible, not closed. ESC
 	-- would otherwise consume its first press closing that hidden window.
-	if not LUIBags:IsShown() then HideRetailBagFrames() end
+	if not LUIBags:IsShown() then HideNativeBagFrames() end
 
 	for name, handler in pairs({
-		ToggleBackpack = RequestRetailBagToggle,
-		ToggleAllBags = RequestRetailBagToggle,
-		OpenBackpack = RequestRetailBagOpen,
-		OpenAllBags = RequestRetailBagOpen,
-		CloseBackpack = RequestRetailBagClose,
-		CloseAllBags = RequestRetailBagClose,
+		ToggleBackpack = RequestNativeBagToggle,
+		ToggleAllBags = RequestNativeBagToggle,
+		OpenBackpack = RequestNativeBagOpen,
+		OpenAllBags = RequestNativeBagOpen,
+		CloseBackpack = RequestNativeBagClose,
+		CloseAllBags = RequestNativeBagClose,
 	}) do
 		if type(_G[name]) == "function" then
 			module:SecureHook(name, handler)
 		end
 	end
-	for name, handler in pairs({ToggleBag = RequestRetailBagToggle, OpenBag = RequestRetailBagOpen, CloseBag = RequestRetailBagClose}) do
+	for name, handler in pairs({ToggleBag = RequestNativeBagToggle, OpenBag = RequestNativeBagOpen, CloseBag = RequestNativeBagClose}) do
 		local request = handler
 		module:SecureHook(name, function(id)
 			if module:IsCharacterBag(id) then request() end
@@ -290,30 +303,35 @@ function module:EnableRetailBagHooks()
 	end
 	for _, name in ipairs({"ContainerFrame_SetFullScreenFrame", "ContainerFrame_ClearFullScreenFrame"}) do
 		if type(_G[name]) == "function" then
-			module:SecureHook(name, SuppressRetailBagFrames)
+			module:SecureHook(name, SuppressNativeBagFrames)
 		end
+	end
+	if LUI.IsForever and type(_G.ContainerFrame_GenerateFrame) == "function" then
+		module:SecureHook("ContainerFrame_GenerateFrame", function(frame)
+			if nativeBagHooksEnabled and nativeBagFrames[frame] then SuppressNativeBagFrame(frame) end
+		end)
 	end
 	module:SecureHookScript(LUIBags, "OnHide", function()
 		if not LUIBags:IsShown() then
 			-- Do not call CloseAllBags here: it writes Blizzard's bag-opener
 			-- upvalue from addon code. These hidden children need only C Hide().
-			HideRetailBagFrames()
+			HideNativeBagFrames()
 		end
 	end)
 end
 
-function module:DisableRetailBagHooks()
-	retailBagHooksEnabled = false
-	retailBagRequestedOpen = nil
-	if retailBagSyncTimer then
-		retailBagSyncTimer:Cancel()
-		retailBagSyncTimer = nil
+function module:DisableNativeBagHooks()
+	nativeBagHooksEnabled = false
+	nativeBagRequestedOpen = nil
+	if nativeBagSyncTimer then
+		nativeBagSyncTimer:Cancel()
+		nativeBagSyncTimer = nil
 	end
 	-- Hide before restoring parents so native windows do not flash on disable.
-	HideRetailBagFrames()
-	for frame, parent in pairs(retailBagParents) do
+	HideNativeBagFrames()
+	for frame, parent in pairs(nativeBagParents) do
 		frame:SetParent(parent)
-		retailBagParents[frame] = nil
+		nativeBagParents[frame] = nil
 	end
 end
 
