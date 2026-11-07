@@ -3,6 +3,7 @@
 ## Changes since last version
 
 - Core: Corrected Forever character and ruleset keys while preserving saved profile selections.
+- Core: Fixed profile imports failing when saved unitframe layouts are included.
 - Infotext: Gold records now use complete Forever character names and skip realm connections on that client.
 - Bags: Preserved item icon cropping after native texture updates on Forever.
 - Bags: Kept native bag functions secure on Forever to prevent blocked bank initialization and free first-slot purchases.
