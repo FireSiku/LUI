@@ -1174,6 +1174,10 @@ local function ConfigureOptionsFrame()
 		if root.content and root.content.SetClipsChildren then root.content:SetClipsChildren(true) end
 		if root.border and root.border.SetClipsChildren then root.border:SetClipsChildren(true) end
 	end
+
+	-- Match a background click: release stale widget focus and raise the window.
+	LibStub("AceGUI-3.0"):ClearFocus()
+	frame:Raise()
 end
 
 local optionsLoaded = false
