@@ -881,8 +881,6 @@ local function ValidateProfileResources(resources)
 		local module = LUI:GetModule(moduleName, true)
 		if moduleName == "Themes" and (not module or not module:ValidateImportedTheme(resource.data)) then
 			return false
-		elseif moduleName == "Unitframes" and (not module or not module:SanitizeLayoutData(resource.data)) then
-			return false
 		end
 	end
 	return true
@@ -892,9 +890,9 @@ local function SanitizeProfileResource(moduleName, data)
 	local module = LUI:GetModule(moduleName, true)
 	if moduleName == "Themes" then
 		return module and module:ValidateImportedTheme(data)
-	elseif moduleName == "Unitframes" then
-		return module and module:SanitizeLayoutData(data)
 	end
+	-- Active unitframe settings are stored in the profile namespace. Preserve
+	-- legacy saved layouts as data without calling the removed layout API.
 	return CopyProfileData(data)
 end
 
@@ -1176,6 +1174,10 @@ local function ConfigureOptionsFrame()
 		if root.content and root.content.SetClipsChildren then root.content:SetClipsChildren(true) end
 		if root.border and root.border.SetClipsChildren then root.border:SetClipsChildren(true) end
 	end
+
+	-- Match a background click: release stale widget focus and raise the window.
+	LibStub("AceGUI-3.0"):ClearFocus()
+	frame:Raise()
 end
 
 local optionsLoaded = false
