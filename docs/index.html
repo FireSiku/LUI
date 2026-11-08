@@ -1,20 +1,16 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1" name="viewport"/>
-    <meta content="LUI v2610 guide for World of Warcraft Retail and Warcraft Forever" name="description"/>
+    <meta content="LUI v2610 settings guide for World of Warcraft Retail and Warcraft Forever" name="description"/>
     <title>LUI Guide | v2610</title>
     <link href="style.min.css" rel="stylesheet"/>
 </head>
 <body>
 <header class="site-header">
     <div>
-        <a aria-label="LUI Guide home" class="brand" href="#top">
-            <span>LUI</span>
-            <span>Guide</span>
-        </a>
+        <a aria-label="LUI Guide home" class="brand" href="#top"><span>LUI</span><span>Guide</span></a>
     </div>
 </header>
 <main id="top">
@@ -24,6 +20,7 @@
             <a href="#useful-terms">Useful Terms</a>
             <a href="#profiles">Profile Sharing</a>
             <a href="#options-window">Options Window</a>
+            <a href="#artwork">Artwork &amp; Sidebars</a>
             <a href="#unitframes">Unitframes</a>
             <a href="#moving-preview">Moving &amp; Preview</a>
             <a href="#bars-texts">Bars, Texts &amp; Indicators</a>
@@ -34,7 +31,9 @@
             <a href="#ui-elements">Buttons &amp; UI Elements</a>
             <a href="#tooltip-infotext">Tooltip &amp; Infotext</a>
             <a href="#menus">Micromenu &amp; RaidMenu</a>
+            <a href="#other-settings">Other Settings</a>
             <a href="#combat">Combat Restrictions</a>
+            <a href="#faq">FAQ</a>
             <a href="#diagnostics">LUI DEBUG</a>
             <a href="#troubleshooting">Troubleshooting</a>
         </div>
@@ -47,37 +46,38 @@
             <div aria-label="Guide information" class="meta-grid">
                 <div><span>Version</span><strong>v2610</strong></div>
                 <div><span>Clients</span><strong>Retail / Forever</strong></div>
-                <div><span>Updated</span><strong>06 November 2026</strong></div>
+                <div><span>Updated</span><strong>08 November 2026</strong></div>
             </div>
             <div class="callout note">
                 <strong>About this guide</strong>
-                <p>This guide covers LUI v2610 for Retail and Forever. It focuses on the settings most likely to cause questions. Available options depend on your client, class and enabled modules. You do not need to configure everything — start with the parts you actually use.</p>
+                <p>Find what you can adjust and where to find it. Available options depend on your client, class and enabled modules. Start with the parts you use. This preview includes placeholders for missing screenshots.</p>
             </div>
         </section>
         <section id="useful-terms">
             <h2><a href="#useful-terms">Useful Terms</a></h2>
-            <p>A few terms appear throughout LUI. Knowing these makes the rest of the options much easier to understand.</p>
             <div class="data-grid">
-                <div><strong>Anchor</strong><span>The point used to attach a frame or element, such as Top Left, Center or Bottom Right.</span></div>
+                <div><strong>Anchor</strong><span>The point used to attach an element, such as Top Left, Center or Bottom Right.</span></div>
                 <div><strong>Attach To / Relative Anchor</strong><span>The point on the parent or related frame that the element attaches to.</span></div>
-                <div><strong>Growth</strong><span>The direction in which additional frames or aura icons are added, set through Grow Direction or Horizontal / Vertical Growth.</span></div>
-                <div><strong>Spacing</strong><span>The distance between repeated elements such as icons, bars or buttons.</span></div>
-                <div><strong>Scale</strong><span>Changes the overall size of a supported frame or element.</span></div>
-                <div><strong>Preview</strong><span>A temporary out-of-combat test display used for layout, positioning and appearance.</span></div>
+                <div><strong>Growth / Spacing</strong><span>The direction in which icons or frames are added, and the space between them.</span></div>
+                <div><strong>Scale</strong><span>Changes the overall size of a supported element.</span></div>
+                <div><strong>Preview</strong><span>A temporary test display for adjusting appearance and position outside combat.</span></div>
             </div>
         </section>
         <section id="profiles">
             <h2><a href="#profiles">Profile Sharing</a></h2>
-            <p>Use <strong>Profiles → Profile Import / Export</strong> to share your active LUI profile or copy your Retail setup to Forever. Update LUI in both clients before starting.</p>
+            <p>Use <strong>Profiles → Profile Import / Export</strong> to share your setup or copy it between Retail and Forever. Update LUI in both clients first.</p>
             <ol>
-                <li>In <strong>Retail</strong>, type <code>/lui</code>, select <strong>Profiles</strong> and check that <strong>Current Profile</strong> is the setup you want to copy.</li>
-                <li>Scroll down to <strong>Profile Import / Export</strong> and click <strong>Generate Export String</strong>.</li>
-                <li>Click inside <strong>Export String</strong>, then press <kbd>Ctrl+A</kbd> and <kbd>Ctrl+C</kbd> to copy the entire string.</li>
-                <li>In <strong>Forever</strong>, open the same page. Under <strong>Import</strong>, enter a new <strong>Profile Name</strong> and press <kbd>Enter</kbd> to confirm it. A new name keeps your existing Forever profile.</li>
-                <li>Paste the complete string into <strong>Import String</strong> with <kbd>Ctrl+V</kbd>, then click <strong>Accept</strong> below the text box.</li>
-                <li>While out of combat, click <strong>Import Profile</strong>. LUI imports and selects the profile, then reloads the UI.</li>
+                <li>Open <code>/lui</code> → <strong>Profiles</strong> and check <strong>Current Profile</strong>.</li>
+                <li>Scroll to <strong>Profile Import / Export</strong> and click <strong>Generate Export String</strong>.</li>
+                <li>Click inside <strong>Export String</strong>. Press <kbd>Ctrl+A</kbd>, then <kbd>Ctrl+C</kbd> to copy it completely.</li>
+                <li>In the other client, open the same page. Use a new <strong>Profile Name</strong> under Import, then press <kbd>Enter</kbd>. A new name preserves your existing profile.</li>
+                <li>Paste into <strong>Import String</strong> with <kbd>Ctrl+V</kbd> and click <strong>Accept</strong> below the text box.</li>
+                <li>Outside combat, click <strong>Import Profile</strong>. LUI selects the imported profile and reloads.</li>
             </ol>
-            <p>The <strong>Copy From</strong> dropdown only lists profiles already stored in the current client. Use export/import to transfer between clients. The imported profile is an independent copy; later Retail changes are not automatically synchronized.</p>
+            <div class="callout note">
+                <strong>Copying between clients</strong>
+                <p>Copy From only lists profiles in your current client. Use export/import between clients. The imported copy is independent; later changes are not synchronized.</p>
+            </div>
             <figure>
                 <img alt="LUI Profiles page showing Profile Import and Export" decoding="async" height="868" loading="lazy" src="assets/profiles.webp" width="1205"/>
                 <figcaption>Profiles.</figcaption>
@@ -85,217 +85,269 @@
         </section>
         <section id="options-window">
             <h2><a href="#options-window">Understanding the Options Window</a></h2>
-            <p>Open LUI by typing <code>/lui</code> in chat or by clicking the <strong>gear icon</strong> in the LUI Micromenu. The left side contains the main sections and modules.</p>
+            <p>Type <code>/lui</code> or click the <strong>gear icon</strong> in the LUI Micromenu. Select a module on the left to open its settings.</p>
             <figure>
                 <img alt="Main LUI Options window" decoding="async" height="873" loading="lazy" src="assets/lui-options.webp" width="1228"/>
                 <figcaption>General → Settings.</figcaption>
             </figure>
             <h3>Modules</h3>
-            <p>Use <strong>Control Panel → Modules</strong> to enable the parts of LUI you want. Each module has its own page; the main areas are:</p>
-            <div class="data-grid">
-                <div><strong>Artwork</strong><span>Themes, built-in panels, sidebars and custom panels. Raid Panel changes the artwork behind raid frames; raid tools are under Micromenu → Raid Menu.</span></div>
-                <div><strong>Unitframes</strong><span>Player, target, party and raid displays, including bars, text, auras, cast bars, borders and previews.</span></div>
-                <div><strong>Bags / Experience Bars</strong><span>Bag and bank appearance, sorting direction and progress trackers.</span></div>
-                <div><strong>Tooltip / Infotext</strong><span>Tooltip appearance and small information displays, including Friends and Guild hover windows.</span></div>
-                <div><strong>Micromenu / Minimap</strong><span>Menu buttons, raid tools, minimap layout and separate positioning for expansion, mail and notification icons.</span></div>
-                <div><strong>UI Elements</strong><span>Button styles and additional frame positions, including the LFG queue eye.</span></div>
-                <div><strong>Chat / Mirror Bar / Merchant</strong><span>Chat appearance and behavior; timers such as breath and fatigue; automatic merchant actions where available.</span></div>
-                <div><strong>LUI DEBUG</strong><span>Guided recording and sharing of troubleshooting reports.</span></div>
+            <p><strong>Control Panel → Modules</strong> enables or disables individual parts of LUI. Follow any reload prompt. Shift-click resets that module's settings.</p>
+            <h3>General settings</h3>
+            <p><strong>General → Settings</strong> contains Blizzard window scaling, error-message and talent-message filters, module notices and keyword-based automatic invites.</p>
+            <p>Under <strong>Damage Text</strong>, choose combat-text fonts. Outline affects scrolling text only. Changing the font for damage numbers above units requires logging out to character selection and back in.</p>
+            <p>Under <strong>Profile Backup</strong>, Create Backup saves the active profile. Restore Current Settings restores compatible values over current defaults; Revert Exact Backup restores the saved values directly.</p>
+            <h3 id="general-colors">Colors</h3>
+            <p><strong>Colors</strong> contains shared palettes; <strong>Unitframes → Colors</strong> contains unitframe palettes.</p>
+            <div class="callout note">
+                <strong>Changing one element's color</strong>
+                <p>Class colors are shared and may also affect unitframes and tooltips. Where available, choose Color Type → Individual on the element itself for a separate color. Alpha controls transparency.</p>
             </div>
-            <h3>Combat-text fonts</h3>
-            <p>Under <strong>General → Settings → Damage Text</strong>, choose the font for scrolling combat text and damage numbers above units. <strong>Outline</strong> affects scrolling text only.</p>
-            <h3>Profile backup</h3>
-            <p>Under <strong>General → Settings → Profile Backup</strong>, <strong>Create Backup</strong> saves the active profile. <strong>Restore Current Settings</strong> starts from current defaults and restores compatible backed-up values. <strong>Revert Exact Backup</strong> restores the backed-up values directly. These controls use the latest backup for that profile.</p>
             <h3>Compact vs. Categorized</h3>
-            <p>Under <strong>Unitframes → General Settings → Options Layout</strong>, choose <strong>Compact</strong> for a flat list or <strong>Categorized</strong> to group settings by topic. This changes only the options menu, not your frames.</p>
+            <p><strong>Unitframes → General Settings → Options Layout</strong> switches between a flat list and settings grouped by topic. It changes the options menu only.</p>
             <figure>
                 <img alt="Unitframe options shown in Categorized mode" decoding="async" height="867" loading="lazy" src="assets/categorized.webp" width="1210"/>
                 <figcaption>Player → Bars → Health Bar in Categorized mode.</figcaption>
             </figure>
         </section>
+        <section id="artwork">
+            <h2><a href="#artwork">Artwork and Sidebars</a></h2>
+            <p><strong>Artwork → Themes</strong> selects, saves and shares artwork themes. Use <a href="#profiles">Profiles</a> to share the complete LUI setup.</p>
+            <h3>Panels and orb</h3>
+            <p><strong>Artwork → LUI Panels</strong> controls navigation artwork, the orb, chat and raid backgrounds, meter panels and sidebars. Each panel offers appearance and positioning settings; <strong>Bar Preset / Anchor</strong> assigns an existing frame.</p>
+            <p>The orb toggles assigned panels together. An unassigned meter panel has nothing to toggle. Raid Panel controls the artwork; raid frames are configured under <strong>Unitframes → Raid</strong>.</p>
+            <figure>
+                <div class="callout"><strong>Screenshot placeholder</strong><p>Artwork → LUI Panels → Navigation</p></div>
+                <figcaption>Orb and navigation artwork.</figcaption>
+            </figure>
+            <div class="callout tip" id="details-windows">
+                <strong>Using two Details! windows</strong>
+                <p>Create both windows and choose damage or healing in Details! first. Under Artwork → LUI Panels, assign Meter Panel 1 → Bar Preset → Details - Window 1, then Meter Panel 2 → Details - Window 2. Move the windows in Details!; their LUI artwork follows.</p>
+            </div>
+            <figure>
+                <div class="callout"><strong>Screenshot placeholder</strong><p>Artwork → LUI Panels → Meter Panel 1 / Meter Panel 2</p></div>
+                <figcaption>Assigning an existing meter window.</figcaption>
+            </figure>
+            <h3 id="sidebar-setup">Sidebars</h3>
+            <p>Open <strong>Artwork → LUI Panels → Left Sidebar / Right Sidebar</strong>. Turn on Enabled, then select your installed action bar under <strong>Bar Preset</strong> or enter its frame name under <strong>Anchor</strong>.</p>
+            <p>Auto-Adjust Position and Auto-Position support Bartender. For Dominos, assign the Anchor and arrange the bar in Dominos.</p>
+            <h3>Custom panels</h3>
+            <p><strong>Artwork → Custom Panels</strong> creates additional decorative panels. Select a panel to change its texture, size, position or parent frame; flip and texture-coordinate controls adjust the image.</p>
+        </section>
         <section id="unitframes">
             <h2><a href="#unitframes">Unitframes</a></h2>
-            <p>Select a Unitframes tab to configure that frame independently. Frame and bar widths have separate settings: changing the general frame width does not automatically resize every bar.</p>
+            <p>Select a frame under <strong>Unitframes</strong>. Its <strong>General</strong> page controls visibility, size, position and preview. Portraits, bars, texts and indicators have their own pages where supported.</p>
             <figure>
                 <img alt="LUI Unitframes General Settings page" decoding="async" height="869" loading="lazy" src="assets/unitframes-general.webp" width="1210"/>
                 <figcaption>Unitframes → General Settings.</figcaption>
             </figure>
-            <h3>Shared fonts</h3>
-            <p><strong>Font for All Unitframe Texts</strong> also applies to aura timers and counts. Sizes and outlines stay unchanged; you can still override individual fonts afterwards.</p>
-            <h3>Backdrop &amp; Border</h3>
-            <p>On each frame, <strong>Backdrop &amp; Border</strong> controls the outer background, border, padding and insets. These are separate from the backgrounds inside health and resource bars. <strong>Aggro Glow</strong> lets the border change with threat status.</p>
-            <h3>Copying settings between frames</h3>
-            <p>Open the destination frame's <strong>Copy Settings</strong> page. Choose <strong>Copy From</strong> and a <strong>Section</strong>, then use <strong>Copy to [frame]</strong> and confirm. <strong>Include Sizes</strong> and <strong>Include Positions</strong> are off by default, so you can transfer the appearance while keeping those settings. Only settings supported by both frames are copied.</p>
+            <h3>Shared and group settings</h3>
+            <p><strong>General Settings</strong> contains shared fonts, aura fonts and decorative connectors. <strong>Font for All Unitframe Texts</strong> also changes aura fonts, while keeping their sizes and outlines.</p>
+            <p>A group's <strong>General</strong> page controls growth and spacing. Party also has visibility rules and <strong>Fade Out of Range</strong>; Raid uses automatic range fading.</p>
+            <div class="callout note">
+                <strong>Using another raid-frame addon</strong>
+                <p>When Grid2, Plexus, VuhDo or Healbot is loaded, LUI skips creating its own raid frames. Configure those frames in their addon.</p>
+            </div>
+            <h3>Appearance and copying</h3>
+            <p><strong>Backdrop &amp; Border</strong> controls the outer frame; bar backgrounds are separate. Frame width and individual bar widths are also separate.</p>
+            <p>On the destination frame's <strong>Copy Settings</strong> page, select <strong>Copy From</strong> and a <strong>Section</strong>, then confirm the copy. Include Sizes and Include Positions are off by default.</p>
         </section>
         <section id="moving-preview">
             <h2><a href="#moving-preview">Moving Frames and Using Preview</a></h2>
-            <p>Under <strong>Unitframes → General Settings</strong>, use <strong>Move Unitframes</strong> to drag frames into place. The preview controls show frames even when the corresponding units are absent. Individual frames also offer <strong>Preview This Frame</strong>; previews end on combat entry or profile changes.</p>
+            <p>Under <strong>Unitframes → General Settings</strong>, use <strong>Move Unitframes</strong> to drag frames into place and save your changes. Preview controls show missing units; individual frames also offer <strong>Preview This Frame</strong>. Previews end on combat entry or profile changes.</p>
             <figure class="compact-figure">
-                <img alt="LUI Move Unitframes controls with Save, Cancel and Reset buttons" decoding="async" height="123" loading="lazy" src="assets/move-unitframes.webp" width="610"/>
-                <figcaption><strong>Reset</strong> returns movers to their last saved positions, not the default layout.</figcaption>
+                <img alt="LUI unitframe mover controls" decoding="async" height="123" loading="lazy" src="assets/move-unitframes.webp" width="610"/>
+                <figcaption>Move Unitframes.</figcaption>
             </figure>
+            <div class="callout tip">
+                <strong>Reset</strong>
+                <p>Reset returns movers to their last saved positions, not the default layout.</p>
+            </div>
         </section>
         <section id="bars-texts">
-            <h2><a href="#bars-texts">Bars, Texts, Colors and Indicators</a></h2>
-            <p>The available options depend on the frame you selected. Not every unitframe has every bar, text or indicator.</p>
-            <h3>Bars</h3>
+            <h2><a href="#bars-texts">Bars, Texts and Indicators</a></h2>
+            <p>Choose a frame, then open <strong>Bars</strong>, <strong>Texts</strong> or <strong>Indicators</strong> in Categorized mode. Available choices depend on the frame and client.</p>
             <ul>
-                <li><strong>Health / Power:</strong> control the main status bars and their size, texture and color behavior.</li>
-                <li><strong>Heal Prediction / Absorb:</strong> show incoming healing and absorb information where supported.</li>
-                <li><strong>Class / Additional Power:</strong> show resources supported by your class and client. Additional Power includes a separate mana bar for druids in bear or cat form; its Gradient follows mana. Alternative Power is a separate encounter resource where supported.</li>
+                <li><strong>Bars:</strong> health, power, incoming healing, absorbs and supported class or encounter resources. Adjust visibility, size, texture, position and color behavior.</li>
+                <li><strong>Texts:</strong> names, health, power, percentages, absorbs and combat feedback. Each has its own font, format, position and visibility options.</li>
+                <li><strong>Indicators:</strong> icons such as leader, role, raid marker, PvP, ready check and combat status. Set their visibility, size and position.</li>
             </ul>
-            <h3>Backgrounds and colors</h3>
-            <p><strong>Background Alpha</strong> controls opacity; <strong>Background Multiplier</strong> controls brightness. They are independent. <strong>Unitframes → Colors</strong> contains shared palettes for classes, power types, health gradients and combat feedback. For one fixed bar or text color, select <strong>Individual</strong> in that element's Color Type.</p>
-            <h3>Texts</h3>
-            <p>Common text groups include Name Text, Health Text, Power Text, Health Percent Text, Absorb Text and Combat Feedback. Depending on the text, you can change font, size, outline, position, format and color behavior. Absorb text can use full or short values and hide zero values.</p>
-            <p><strong>Player → Texts → Raid Group Text</strong> can show your raid subgroup on the player frame. <strong>Raid → Texts → Group Labels</strong> labels occupied groups beside the raid frames.</p>
-            <h3>Indicators</h3>
-            <p>Supported frames can show icons such as Leader, Role, Raid Marker, PvP, Resting, Combat and Ready Check. Indicator pages usually control whether the icon is enabled, its size and its position.</p>
-            <p>Hunters in <strong>Forever</strong> also have <strong>Pet → Indicators → Pet Happiness</strong> in Categorized mode, with its own enable, size and position settings.</p>
+            <div class="callout note">
+                <strong>Shields and incoming healing</strong>
+                <p>Enable Absorb Bar or Heal Prediction Bar under Bars where supported. Their text displays are configured separately under Texts.</p>
+            </div>
+            <p><strong>Player → Texts → Raid Group Text</strong> shows your subgroup. <strong>Raid → Texts → Group Labels</strong> labels occupied groups. Hunters in Forever also have <strong>Pet → Indicators → Pet Happiness</strong>.</p>
         </section>
         <section id="auras">
             <h2><a href="#auras">Buffs and Debuffs</a></h2>
-            <p>Buffs and Debuffs are configured separately for each supported unitframe.</p>
+            <p>Open the frame's <strong>Auras → Buffs / Debuffs</strong> page in Categorized mode. Buffs and debuffs have separate size, spacing, position and filtering settings.</p>
             <figure>
-                <img alt="Target Auras Debuffs options in LUI" decoding="async" height="864" loading="lazy" src="assets/auras.webp" width="1207"/>
-                <figcaption>Target → Auras → Debuffs in Categorized mode.</figcaption>
+                <img alt="LUI Target debuff options" decoding="async" height="864" loading="lazy" src="assets/auras.webp" width="1207"/>
+                <figcaption>Target → Auras → Debuffs.</figcaption>
             </figure>
             <div class="data-grid">
-                <div><strong>Player &amp; Pet Only</strong><span>Includes your auras and those applied by your pet or vehicle; it does not enable the pet frame.</span></div>
-                <div><strong>Dispel Type Border</strong><span>Shows the aura border color for magic, curse, disease and poison.</span></div>
-                <div><strong>Aura Timer / Disable Cooldown</strong><span>The numeric duration and animated cooldown spiral are independent.</span></div>
-                <div><strong>Amount of Buffs / Amount of Debuffs</strong><span>Limits the total icons. Icons Per Row only controls when they wrap onto another row.</span></div>
+                <div><strong>Player &amp; Pet Only</strong><span>Includes your auras and those applied by your pet or vehicle.</span></div>
+                <div><strong>Dispel Type Border</strong><span>Colors borders by magic, curse, disease or poison.</span></div>
+                <div><strong>Aura Timer / Disable Cooldown</strong><span>The numeric duration and cooldown spiral are independent.</span></div>
+                <div><strong>Amount / Icons Per Row</strong><span>Amount limits the total; Icons Per Row controls wrapping.</span></div>
             </div>
-            <p>After filtering, auras use Blizzard's expiration-time sorting. With the count limit set to 4, only the first four in that order are displayed. This does not select the four most important buffs or debuffs.</p>
+            <p>Filtered auras follow Blizzard's expiration-time sorting. A limit of four shows the first four in that order.</p>
         </section>
         <section id="cast-bars">
             <h2><a href="#cast-bars">Cast Bars</a></h2>
-            <p>Cast-bar settings are available on supported unitframes. Select the frame and open <strong>Cast Bar</strong> to enable and configure its bar. Frames such as Target of Target do not have their own cast-bar settings.</p>
-            <ul>
-                <li><strong>Show Latency Safe Zone:</strong> marks network latency at the end of the player cast bar.</li>
-                <li><strong>Show Shielded Casts:</strong> shows casts that cannot be interrupted.</li>
-            </ul>
-            <p>Under the frame's <strong>Shielded Cast Bar → Shield Icons</strong>, choose an icon on the left, right or both sides, then adjust its size and position. Shielded bar and border colors are optional overrides on the same page.</p>
+            <p>Open a supported frame's <strong>Cast Bar</strong> page to set its appearance, size and position. Player and Target can attach to the screen; other cast bars use their available Attach To choices.</p>
+            <p><strong>Show Latency Safe Zone</strong> marks latency on the player bar. <strong>Show Shielded Casts</strong> shows uninterruptible casts. Under <strong>Shielded Cast Bar → Shield Icons</strong>, choose left, right or both icons; bar and border colors can be overridden separately.</p>
             <div class="callout tip">
-                <strong>Testing cast bars</strong>
-                <p><strong>Preview Cast Bar</strong> shows a test cast, including shielded-cast appearance. A real cast replaces the preview. <strong>Stop Cast Bar Preview</strong> ends the castbar test and closes any frame opened only for it; <strong>Stop Preview</strong> under Unitframes → General Settings closes all previews.</p>
+                <strong>Testing several cast bars</strong>
+                <p>Click Preview Cast Bar on each bar you want to adjust. Their previews can run together. Stop Cast Bar Preview ends one test; Stop Preview under Unitframes → General Settings ends all previews. A real cast replaces its preview.</p>
             </div>
         </section>
         <section id="bags-bank">
             <h2><a href="#bags-bank">Bags and Bank</a></h2>
-            <p>Configure the bag window under <strong>Bags → Backpack Options</strong>. Disable <strong>Lock Frame</strong> to reposition it.</p>
-            <h3>Sorting and layout</h3>
-            <p><strong>Fill Bags from Bottom</strong> changes the fill direction and immediately runs bag cleanup. With it off, bags fill from the top. Bag filters and reagent restrictions still apply. <strong>Newline After Bags</strong> starts a separate row for each bag.</p>
-            <h3>Textures and colors</h3>
-            <div class="data-grid">
-                <div><strong>Bag Border / Item Border</strong><span>Each has its own texture, thickness and color. The outer window border and item-slot borders are separate.</span></div>
-                <div><strong>Show Item Quality</strong><span>Colors items and equipped bags by quality. Turn it off to choose a fixed Item Border Color. Empty item slots have no border.</span></div>
-                <div><strong>Background</strong><span>With a Background Texture selected, the color setting controls opacity without tinting the artwork. Without a texture, it supplies the fill color.</span></div>
-                <div><strong>Item Background</strong><span>Colors the backplate beneath item icons, separately from their borders.</span></div>
+            <p><strong>Bags → Backpack Options</strong> controls items per row, spacing and scale. Disable <strong>Lock Frame</strong> to move the window. Newline After Bags starts a separate row for each bag.</p>
+            <p><strong>Fill Bags from Bottom</strong> changes the fill direction and immediately runs cleanup. Bag filters and reagent restrictions still apply.</p>
+            <p><strong>Bags → Textures</strong> contains fonts, backgrounds and separate window/item borders. Show Item Quality colors item borders by quality. Background opacity and item-slot backgrounds can be adjusted separately.</p>
+            <figure>
+                <div class="callout"><strong>Screenshot placeholder</strong><p>Bags → Backpack Options / Textures</p></div>
+                <figcaption>Bag layout and appearance.</figcaption>
+            </figure>
+            <div class="callout note">
+                <strong>Retail and Forever</strong>
+                <p>Retail's Bags → Bank Options → Use LUI Bank is optional and off by default. It shares bag textures, with separate layout settings. Forever uses its native bank; its keyring shortcut also requires Blizzard's keyring visibility setting.</p>
             </div>
-            <h3>Bank and client differences</h3>
-            <p>In <strong>Retail</strong>, <strong>Bags → Bank Options → Use LUI Bank</strong> optionally styles the character and Warband banks. It is off by default. The bank shares bag textures and item-quality colors, with its own row size, spacing, scale and <strong>Fill Bank from Bottom</strong> setting. Blizzard's tabs and item actions remain available.</p>
-            <p><strong>Forever</strong> keeps its native bank window. <strong>Show Keyring Button</strong> adds a shortcut beside Clean Bags when Blizzard's keyring visibility setting is also enabled.</p>
         </section>
         <section id="experience-bars">
             <h2><a href="#experience-bars">Experience Bars</a></h2>
-            <p>Experience Bars shows available progress such as experience, reputation and honor. Retail also supports Azerite and House Favor when their requirements are met. The active bars depend on available tracker data.</p>
-            <div class="data-grid">
-                <div><strong>Allow tracking two things at once</strong><span>Shows a second active tracker when available. By default the two trackers share the main bar's width.</span></div>
-                <div><strong>Separate tracked bars</strong><span>Gives the second tracker its own position and width. Enable tracking two things first.</span></div>
-                <div><strong>Lock Bars</strong><span>Turn off to drag the primary bar and, when separated, the secondary bar. Turn on again when finished.</span></div>
-                <div><strong>Automatically track reputation gains</strong><span>Switches to the faction that most recently gained reputation and also changes Blizzard's watched faction. Reputation losses do not switch it.</span></div>
-                <div><strong>Tracker Label</strong><span>Chooses None, Short or Full for the progress label. Show Current, Show Max, Show Percent and Short Numbers control the values.</span></div>
+            <p><strong>Experience Bars</strong> tracks available progress such as experience, reputation and honor. Set the bar size, position, textures, labels and values here. Text and hover tooltips have separate switches.</p>
+            <div class="callout tip">
+                <strong>A second progress bar</strong>
+                <p>Enable Allow tracking two things at once. Enable Separate tracked bars for an independent position and width, then turn off Lock Bars to move them.</p>
             </div>
-            <h3>Rested XP and text</h3>
-            <p><strong>Show Rested XP</strong> adds the rested reserve as a percentage before the normal XP text. That reserve can exceed 100% of a level.</p>
-            <p>The bar text, hover tooltip and blue rested area are independent. Hiding the text leaves the other two available.</p>
+            <p><strong>Automatically track reputation gains</strong> switches the watched faction. <strong>Show Rested XP</strong> adds the reserve to the text; its tooltip and blue rested area remain independent.</p>
+            <figure>
+                <div class="callout"><strong>Screenshot placeholder</strong><p>Experience Bars</p></div>
+                <figcaption>Tracker, text and positioning options.</figcaption>
+            </figure>
         </section>
         <section id="ui-elements">
             <h2><a href="#ui-elements">Buttons and UI Elements</a></h2>
-            <h3>Buttons</h3>
-            <p>Open <strong>UI Elements → Button Appearance</strong> and enable <strong>Customize Buttons</strong>. Choose the style for normal window buttons and the Escape menu independently. Button artwork is included in LUI; no separate Interface/Buttons folder is required.</p>
+            <p>Under <strong>UI Elements → Button Appearance</strong>, enable <strong>Customize Buttons</strong> and choose styles for ordinary buttons and the Escape menu separately.</p>
             <figure>
-                <img alt="UI Elements with separate Other Buttons and Escape Menu Buttons style choices" decoding="async" height="872" loading="lazy" src="assets/buttons.webp" width="1216"/>
+                <img alt="LUI UI Elements and button appearance options" decoding="async" height="872" loading="lazy" src="assets/buttons.webp" width="1216"/>
                 <figcaption>UI Elements.</figcaption>
             </figure>
-            <p>Disabling <strong>Customize Buttons</strong> restores Blizzard artwork. Action-bar spell and macro buttons keep their own appearance; some other controls may also retain Blizzard artwork.</p>
-            <h3>Moving additional frames</h3>
-            <p>Under <strong>UI Elements → LUI-Managed Frames</strong>, choose a frame such as <strong>LFG Queue Eye</strong>, enable <strong>Manage This Frame's Position</strong> and adjust <strong>Left / Right</strong> and <strong>Down / Up</strong>. <strong>Toggle Position Preview</strong> helps position it without joining a queue.</p>
-            <p>Use <strong>UI Elements → Blizzard Edit Mode</strong> for the Objectives Tracker, Alternate Power/Encounter Bar, Durability Frame and Vehicle Seat Indicator.</p>
-            <h3>Forever swing timer</h3>
-            <p>When supported by the Forever client, <strong>Swing Timer (Forever)</strong> toggles Blizzard's native swing timer. Set its position, size and individual bar visibility in Blizzard Edit Mode. This switch changes a Blizzard setting independently of LUI profiles.</p>
+            <p><strong>LUI-Managed Frames</strong> positions supported elements such as the LFG Queue Eye. Select the frame, enable Manage This Frame's Position and use Toggle Position Preview.</p>
+            <p><strong>Blizzard Edit Mode</strong> handles the Objectives Tracker, Alternate Power/Encounter Bar, Durability Frame and Vehicle Seat Indicator.</p>
+            <div class="callout note">
+                <strong>Forever swing timer</strong>
+                <p>On supported clients, Swing Timer (Forever) toggles Blizzard's timer. Adjust its bars and placement in Blizzard Edit Mode. This Blizzard setting is independent of LUI profiles.</p>
+            </div>
         </section>
         <section id="tooltip-infotext">
             <h2><a href="#tooltip-infotext">Tooltip and Infotext</a></h2>
             <h3>Tooltip</h3>
-            <p>Tooltip settings control visibility, position, scale, health display, textures and colors. With <strong>Anchor to Cursor</strong> enabled, fixed-position controls may be greyed out.</p>
-            <p><strong>Tooltip Appearance</strong> separates background and border settings from the health bar and health text. Choose <strong>Individual</strong> in the relevant Color Type to use a custom health-bar or border color. Set <strong>Background Texture</strong> to <strong>None</strong> to choose a plain Background Color.</p>
+            <p><strong>Tooltip</strong> contains visibility rules, scale, position, health bar/text, background and border settings. With Anchor to Cursor enabled, fixed-position controls may be greyed out. Background Texture → None allows a plain background color.</p>
             <h3>Infotext</h3>
-            <p>Infotext provides small displays such as the clock, gold, Friends and Guild.</p>
-            <p>Most infotext entries have their own Enable toggle and position settings under <strong>Infotext → Individual Settings</strong>. Friends and Guild have separate hover-window appearance settings. <strong>Friends → Extra Window Width</strong> adds room for zone, realm or game-status text; 0 uses the automatic width.</p>
-            <p><strong>Infotext → Global Settings</strong> contains the display and hover-window fonts. <strong>Top Bar Placement</strong> aligns and moves the top-bar infotexts together while retaining their individual positions. Additional choices, such as gold totals and character-data resets, are on the relevant Individual Settings page.</p>
-            <p>Under <strong>Individual Settings → Gold → Characters in Tooltip</strong>, show Alliance, Horde or both. This filters the character list; realm totals still include both factions. On supported clients, the tooltip also shows the Warband bank balance separately from character gold.</p>
-            <p>In <strong>Retail</strong>, <strong>Show Mythic+ Score</strong> adds a friend's score between the zone and note. It requires the separate Raider.IO addon and matching character data; missing data stays blank. <strong>Show Raider.IO Details on Hover</strong> adds character details. Battle.net broadcast messages can be confirmed with Enter.</p>
+            <p><strong>Infotext → Individual Settings</strong> enables and positions displays such as time, gold, bag space, durability, Friends and Guild. Hover over a display for more information. Each page contains its own extra choices, such as gold totals or friend notes.</p>
+            <p><strong>Global Settings</strong> contains shared fonts and hover-window colors. <strong>Top Bar Placement</strong> moves the top displays together. Friends and Guild also have separate hover-window appearance settings.</p>
+            <figure>
+                <div class="callout"><strong>Screenshot placeholder</strong><p>Infotext → Individual Settings / Global Settings</p></div>
+                <figcaption>Choosing displays and adjusting the top bar.</figcaption>
+            </figure>
+            <div class="callout tip">
+                <strong>Displays from other addons</strong>
+                <p>Supported LibDataBroker displays appear under Individual Settings too. Enable and position them here; their addon-specific settings remain in the supplying addon.</p>
+            </div>
+            <p>Retail's <strong>Show Mythic+ Score</strong> requires Raider.IO and matching character data. Gold's <strong>Characters in Tooltip</strong> filters the character list by faction; realm totals still include both.</p>
         </section>
         <section id="menus">
             <h2><a href="#menus">Micromenu and RaidMenu</a></h2>
-            <p>Micromenu provides access to common Blizzard windows. In Retail, left-click the talents button for talents and right-click it for the spellbook. Available buttons follow your client, including <strong>Group Finder</strong> and <strong>Legacy</strong> on Forever. Open <strong>Micromenu → Raid Menu</strong> for group-tool settings.</p>
+            <p><strong>Micromenu → Micromenu</strong> controls visible buttons, placement and colors. In Retail, left-click the talents button for talents and right-click for the spellbook. Available buttons depend on your client.</p>
             <figure>
-                <img alt="Current LUI Raid Menu with markers, countdown, Group Options and leave-group controls" decoding="async" height="432" loading="lazy" src="assets/micromenu-raidmenu.webp" width="266" style="max-width: 266px;"/>
+                <img alt="LUI Micromenu and Raid Menu" decoding="async" height="432" loading="lazy" src="assets/micromenu-raidmenu.webp" width="266"/>
                 <figcaption>LUI Raid Menu.</figcaption>
             </figure>
             <div class="callout tip">
                 <strong>Quick toggle bars</strong>
-                <p>The three small bars are quick show/hide controls: the <strong>left</strong> bar toggles RaidMenu, the <strong>middle</strong> bar with the arrow expands or collapses the Micromenu, and the <strong>right</strong> bar toggles the Minimap.</p>
+                <p>Left: RaidMenu. Middle arrow: expand or collapse Micromenu. Right: Minimap.</p>
             </div>
-            <h3>Menu settings</h3>
-            <ul>
-                <li><strong>Micromenu tab:</strong> Hide Buttons, Position and Colors control which buttons are visible and how the menu is arranged.</li>
-                <li><strong>Raid Menu tab:</strong> Compact Raid Menu, Spacing and Scale adjust the layout. Disable Match Micromenu Background to choose a separate background color.</li>
-                <li><strong>Micromenu Overlap Prevention:</strong> can close one menu when the other opens or move the Raid Menu. In Offset mode, adjust Left / Right and Down / Up.</li>
-            </ul>
-            <h3>Group tools</h3>
-            <p><strong>Group - Options</strong> opens additional controls such as difficulty, Edit Mode, raid-frame settings and supported assistant or ping options. Blizzard raid-frame filters in this menu apply to Blizzard's frames; LUI's raid layout is configured under Unitframes → Raid.</p>
-            <p>On <strong>Clear Unit Markers</strong>, left-click clears the target's marker and right-click clears all unit markers. Available actions depend on your client, group permissions and combat state. Disabling <strong>Enable Raid Menu</strong> restores Blizzard's group manager outside combat.</p>
+            <p><strong>Micromenu → Raid Menu</strong> controls the group tools, compact layout, scale, spacing, background and overlap behavior.</p>
+            <p><strong>Group - Options</strong> opens difficulty, raid-frame and other supported group controls. Blizzard raid-frame filters affect Blizzard's frames; configure LUI's layout under Unitframes → Raid.</p>
+            <p><strong>Clear Unit Markers:</strong> left-click clears the target's marker; right-click clears all unit markers. Actions depend on group permissions and combat state. Disabling Enable Raid Menu restores Blizzard's group manager outside combat.</p>
+        </section>
+        <section id="other-settings">
+            <h2><a href="#other-settings">Other Settings</a></h2>
+            <h3 id="chat">Chat</h3>
+            <p><strong>Chat → General Settings</strong> covers fonts, fading, channel names and link tooltips. <strong>Chat Input Box</strong> changes typing-box placement and appearance. <strong>Buttons</strong> controls chat buttons and copying; <strong>Sticky Channels</strong> keeps chosen channels selected after sending a message.</p>
+            <figure>
+                <div class="callout"><strong>Screenshot placeholder</strong><p>Chat</p></div>
+                <figcaption>Chat settings and their pages.</figcaption>
+            </figure>
+            <h3 id="minimap">Minimap</h3>
+            <p><strong>Minimap</strong> controls map size, placement, artwork, text and coordinates. <strong>Minimap Icons</strong> separately positions expansion, mail and notification icons.</p>
+            <figure>
+                <div class="callout"><strong>Screenshot placeholder</strong><p>Minimap → Minimap Icons</p></div>
+                <figcaption>Map and icon positioning.</figcaption>
+            </figure>
+            <h3 id="merchant">Merchant</h3>
+            <p><strong>Merchant → Auto Repair / Auto Sell / Auto Stock</strong> each has its own enable switch. Choose repair funding, selling rules and exclusions, or items and quantities to restock.</p>
+            <div class="callout warning">
+                <strong>Automatic selling</strong>
+                <p>Check the selected item qualities and exclusions before enabling Auto Sell.</p>
+            </div>
+            <h3 id="mirror-bars">Mirror Bar</h3>
+            <p><strong>Mirror Bar → General Settings</strong> sets the size, position, texture and spacing of timers such as breath and fatigue. Border, Bar Colors, Name Text Settings and Time Text Settings adjust their appearance.</p>
         </section>
         <section id="combat">
             <h2><a href="#combat">Combat Restrictions</a></h2>
-            <p>World of Warcraft protects some interface frames and actions during combat.</p>
             <div class="callout warning">
                 <strong>If an option cannot be changed</strong>
-                <p>Leave combat and try again. Moving or previewing unitframes and importing a profile are intended for out-of-combat use. Some protected layout changes may also wait until combat ends.</p>
+                <p>Leave combat and try again. Moving or previewing unitframes and importing profiles require out-of-combat use. Some protected layout changes wait until combat ends.</p>
             </div>
             <div class="callout tip">
-                <strong>No reload required for normal changes</strong>
-                <p>Most settings apply directly. Follow reload prompts when shown; a manual reload is not needed after every change.</p>
+                <strong>Most changes apply directly</strong>
+                <p>Follow reload prompts when shown. A manual reload is not needed after every change.</p>
             </div>
+        </section>
+        <section id="faq">
+            <h2><a href="#faq">FAQ</a></h2>
+            <h3>Can I use LUI on Forever?</h3>
+            <p>Yes. This guide covers Retail and Forever; some settings are client-specific.</p>
+            <h3>How do I put action bars into the sidebars?</h3>
+            <p>Assign your existing bar in the <a href="#sidebar-setup">sidebar settings</a>. Bartender and Dominos keep their own bar settings.</p>
+            <h3>Can I preview unitframes without a party or raid?</h3>
+            <p>Yes. Use <a href="#moving-preview">Moving &amp; Preview</a> to display frames while adjusting your layout.</p>
+            <h3>How do I show two Details! meters?</h3>
+            <p>Follow <a href="#details-windows">Using two Details! windows</a> to connect both windows to their LUI artwork.</p>
+            <h3>Why does a class-color change affect several elements?</h3>
+            <p>They can use a shared palette. <a href="#general-colors">Colors</a> explains how to give an element its own color.</p>
+            <h3>What should I include in a bug report?</h3>
+            <p>Share your <a href="#diagnostics">LUI DEBUG report</a>, the complete BugSack error if available, and a description of the steps leading up to the problem. Copy the reports before reloading.</p>
+            <h3>Where can I read past changes?</h3>
+            <p>The <a href="https://github.com/FireSiku/LUI/blob/master/CHANGELOG.md" rel="noopener" target="_blank">project changelog</a> collects the available release notes in one place.</p>
         </section>
         <section id="diagnostics">
             <h2><a href="#diagnostics">LUI DEBUG</a></h2>
             <p>Enable the bundled <strong>LUIDiagnostics</strong> addon, then open <strong>LUI DEBUG → Open LUI DEBUG</strong> or type <code>/luidebug</code>. Follow the instructions in the window.</p>
             <figure>
-                <img alt="LUI DEBUG window showing diagnostics off and the Start, Copy report and File or Discord controls" decoding="async" height="774" loading="lazy" src="assets/lui-debug.webp" width="965"/>
+                <img alt="LUI DEBUG window showing recording controls" decoding="async" height="774" loading="lazy" src="assets/lui-debug.webp" width="965"/>
                 <figcaption>LUI DEBUG.</figcaption>
             </figure>
             <div class="callout warning">
                 <strong>Closing the window does NOT stop recording</strong>
                 <p>Recording continues through reloads and logins until you stop it in LUI DEBUG.</p>
             </div>
-            <p>Keep <strong>END OF REPORT</strong> when copying. Nothing is uploaded automatically.</p>
-            <p>General Lua errors require the separate <strong>!BugGrabber</strong> addon. Blocked-action events and Lua warnings can be recorded without it.</p>
+            <p>Keep <strong>END OF REPORT</strong> when copying. Nothing is uploaded automatically. General Lua errors also require <strong>!BugGrabber</strong>; blocked-action events can be recorded without it.</p>
         </section>
         <section id="troubleshooting">
             <h2><a href="#troubleshooting">Troubleshooting</a></h2>
-            <p>If something does not behave as expected, start with the simplest checks first.</p>
             <ol>
-                <li>Type <code>/reload</code> and test again.</li>
-                <li>If needed, disable other addons and test with LUI and LUIOptions. Keep LUIDiagnostics and !BugGrabber enabled when collecting a report.</li>
-                <li>If the Blizzard UI itself appears stuck, restart the game.</li>
+                <li>Type <code>/reload</code> and test again. If already recording a problem, copy the report first.</li>
+                <li>Test with LUI and LUIOptions only. Keep LUIDiagnostics and !BugGrabber enabled when collecting a report.</li>
+                <li>If Blizzard's UI appears stuck, restart the game.</li>
             </ol>
             <div class="callout note">
                 <strong>When reporting a bug</strong>
-                <p>Include your LUI version, Retail or Forever client and build, the complete error or diagnostic report, the affected frame or option, what you clicked before it happened, and whether it still happens with other addons disabled.</p>
+                <p>Include the LUI DEBUG report, the complete BugSack error if available, and a description of what happened, what you expected and how to reproduce it. Mention whether it also happens with other addons disabled, if tested.</p>
             </div>
             <div class="button-links">
                 <a href="https://github.com/FireSiku/LUI/issues" rel="noopener" target="_blank">LUI GitHub Issue Tracker</a>

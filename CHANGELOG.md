@@ -1,5 +1,9 @@
 # LUI v2610 Alpha
 
+## Changes since last update
+
+- Guide: Expanded the settings overview and added a FAQ.
+
 ## Changes since last version
 
 - Core: Corrected Forever character and ruleset keys while preserving saved profile selections.
