@@ -11,6 +11,7 @@
 - Merchant: Paced automatic sales and stopped queued sales when closing the merchant or receiving no inventory response.
 - Unitframes: Fixed combat feedback errors when damage amounts are restricted on Retail and Warcraft Forever.
 - Unitframes: Updated embedded oUF to 14.2.1, including Forever stagger compatibility and corrected leader tags.
+- Unitframes: Expanded player and target cast bar positioning sliders so they can be moved below the unitframes.
 - Tooltip: Prevented Forever surnames from being repeated as realm names in unit tooltips.
 
 ---
