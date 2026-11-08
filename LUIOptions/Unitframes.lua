@@ -495,6 +495,7 @@ local function GenerateCastbarGroup(unit, order)
     local dbCast = db[unit].Castbar
     if not dbCast then return end    -- If that unit does not have options for that bar, nil it
 
+    local screenAnchored = unit == "player" or unit == "target"
     local defaultCast = module.defaults.profile[unit] and module.defaults.profile[unit].Castbar
     local defaultColors = defaultCast and defaultCast.Colors
     local colorGet, colorSet = Opt.ColorGetSet(dbCast.Colors, defaultColors)
@@ -514,10 +515,11 @@ local function GenerateCastbarGroup(unit, order)
         }),
         Width = Opt:InputNumber({name = "Width"}),
         Height = Opt:InputNumber({name = "Height"}),
-        X = Opt:OffsetX(),
-        Y = Opt:OffsetY(),
-        Point = Opt:Select({name = "Anchor Point", values = LUI.Points}),
-        RelativePoint = Opt:Select({name = "Attach To", values = LUI.Points, onlyIf = (unit ~= "player" and unit ~= "target")}),
+        X = screenAnchored and Opt:PositionX() or Opt:OffsetX(),
+        Y = screenAnchored and Opt:PositionY() or Opt:OffsetY(),
+        Point = Opt:Select({name = "Anchor Point", values = LUI.Points,
+            desc = screenAnchored and "Choose the screen point used to position the cast bar." or nil}),
+        RelativePoint = Opt:Select({name = "Attach To", values = LUI.Points, onlyIf = not screenAnchored}),
         IndividualColor = Opt:Toggle({name = "Individual Color", desc = "If unchecked, the class color will be used.", width = "full"}),
         Icon = Opt:Toggle({name = "Show Icon", width = "full"}),
         Latency = Opt:Toggle({name = "Show Latency Safe Zone", desc = "Shows your current network latency at the end of the player cast bar.", width = "full", onlyIf = (unit == "player")}),
