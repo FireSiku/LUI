@@ -20,8 +20,7 @@ local UnregisterUnitWatch = _G.UnregisterUnitWatch
 
 local preview = {
 	active = nil,
-	castbarUnit = nil,
-	castbarOnly = nil,
+	castbarUnits = {},
 	frames = {},
 	containers = {},
 	registeredNames = {},
@@ -306,14 +305,10 @@ local function ApplyCastbarPreview(unit)
 	end
 end
 
-function module:StopUnitframePreview(silent)
-	if InCombatLockdown() then
-		if not silent then LUI:Print("Unitframe preview can only be changed outside combat.") end
-		return false
-	end
-
+local function ClearPreviewFrames()
 	for name, frame in pairs(preview.frames) do
 		UnregisterStateDriver(frame, "visibility")
+		if frame.Castbar then frame.Castbar:Hide() end
 		frame:Hide()
 		local unit = preview.registeredNames[name]
 		if unit then RemoveRegisteredName(unit, name) end
@@ -326,9 +321,39 @@ function module:StopUnitframePreview(silent)
 		frame:Show()
 	end
 	wipe(preview.hiddenRealFrames)
+end
+
+local function RebuildPreview()
+	ClearPreviewFrames()
+	local shown = {}
+	local function ShowSelection(selection)
+		local unit = childParents[selection] or selection
+		if shown[unit] then return end
+		shown[unit] = true
+		if parentGroups[unit] then ShowGroup(unit) else ShowSingle(unit) end
+	end
+
+	if preview.active == "all" then
+		for _, unit in ipairs(singleUnits) do ShowSelection(unit) end
+		for _, group in ipairs({"party", "boss", "arena", "maintank", "raid"}) do ShowSelection(group) end
+	elseif preview.active then
+		ShowSelection(preview.active)
+	end
+
+	-- Cast tests add their layouts without replacing an explicit frame preview.
+	for unit in pairs(preview.castbarUnits) do ShowSelection(unit) end
+	for unit in pairs(preview.castbarUnits) do ApplyCastbarPreview(unit) end
+end
+
+function module:StopUnitframePreview(silent)
+	if InCombatLockdown() then
+		if not silent then LUI:Print("Unitframe preview can only be changed outside combat.") end
+		return false
+	end
+
+	ClearPreviewFrames()
 	preview.active = nil
-	preview.castbarUnit = nil
-	preview.castbarOnly = nil
+	wipe(preview.castbarUnits)
 	return true
 end
 
@@ -338,25 +363,8 @@ function module:ShowUnitframePreview(selection)
 		return
 	end
 
-	local castbarUnit = preview.castbarUnit
-	self:StopUnitframePreview(true)
-	preview.castbarUnit = castbarUnit
 	preview.active = selection
-
-	if selection == "all" then
-		for _, unit in ipairs(singleUnits) do ShowSingle(unit) end
-		for _, group in ipairs({"party", "boss", "arena", "maintank", "raid"}) do ShowGroup(group) end
-	elseif parentGroups[selection] then
-		ShowGroup(selection)
-	elseif childParents[selection] then
-		ShowGroup(childParents[selection])
-	else
-		ShowSingle(selection)
-	end
-
-	if preview.castbarUnit then
-		ApplyCastbarPreview(preview.castbarUnit)
-	end
+	RebuildPreview()
 end
 
 function module:ShowCastbarPreview(unit)
@@ -365,29 +373,29 @@ function module:ShowCastbarPreview(unit)
 		return
 	end
 
-	-- A cast test also needs a unitframe, but must not leave that frame active
-	-- when stopped unless the user had explicitly opened a frame preview.
-	local castbarOnly = preview.castbarOnly or not preview.active
-	preview.castbarUnit = unit
-	self:ShowUnitframePreview(unit)
-	preview.castbarOnly = castbarOnly
+	if unit == "all" then
+		for _, castUnit in ipairs(self.units) do
+			local db = self.db.profile[castUnit]
+			if db and db.Castbar and self:UnitSupportsCastbar(castUnit) then
+				preview.castbarUnits[castUnit] = true
+			end
+		end
+	else
+		local db = self.db.profile[unit]
+		if not db or not db.Castbar or not self:UnitSupportsCastbar(unit) then return end
+		preview.castbarUnits[unit] = true
+	end
+	RebuildPreview()
 end
 
-function module:StopCastbarPreview()
+function module:StopCastbarPreview(unit)
 	if InCombatLockdown() then
 		LUI:Print("Cast bar preview can only be changed outside combat.")
 		return false
 	end
 
-	if preview.castbarOnly then return self:StopUnitframePreview() end
-
-	preview.castbarUnit = nil
-	for name in pairs(preview.registeredNames) do
-		local frame = _G[name]
-		if frame and frame.Castbar then
-			frame.Castbar:Hide()
-		end
-	end
+	if unit then preview.castbarUnits[unit] = nil else wipe(preview.castbarUnits) end
+	RebuildPreview()
 	return true
 end
 
@@ -400,11 +408,8 @@ function module:ToggleUnitframePreview(selection)
 end
 
 function module:RefreshUnitframePreview()
-	if not preview.active or InCombatLockdown() then return end
-	local selection = preview.active
-	local castbarOnly = preview.castbarOnly
-	self:ShowUnitframePreview(selection)
-	preview.castbarOnly = castbarOnly
+	if InCombatLockdown() or not (preview.active or next(preview.castbarUnits)) then return end
+	RebuildPreview()
 end
 
 -- Allow the unitframe mover to use a visible preview container when the real
@@ -413,6 +418,9 @@ end
 function module:GetUnitframePreviewAnchor(unit)
 	if preview.active == "all" or preview.active == unit or childParents[preview.active] == unit then
 		return preview.containers[unit]
+	end
+	for castUnit in pairs(preview.castbarUnits) do
+		if castUnit == unit or childParents[castUnit] == unit then return preview.containers[unit] end
 	end
 end
 
