@@ -1,5 +1,12 @@
 # LUI v2610 Alpha
 
+## Changes since last update
+
+- Unitframes: Expanded positioning ranges for player and target cast bars.
+- Unitframes: Added simultaneous cast bar previews with individual and global stop controls.
+- UIElements: Added button styling for dropdowns in Friends, Who, Group Finder and the Adventure Guide.
+- UIElements: Styled profession controls and Forever's profession tabs.
+
 ## Changes since last version
 
 - Core: Corrected Forever character and ruleset keys while preserving saved profile selections.
@@ -11,8 +18,6 @@
 - Merchant: Paced automatic sales and stopped queued sales when closing the merchant or receiving no inventory response.
 - Unitframes: Fixed combat feedback errors when damage amounts are restricted on Retail and Warcraft Forever.
 - Unitframes: Updated embedded oUF to 14.2.1, including Forever stagger compatibility and corrected leader tags.
-- Unitframes: Expanded positioning ranges for player and target cast bars.
-- Unitframes: Added simultaneous cast bar previews with individual and global stop controls.
 - Tooltip: Prevented Forever surnames from being repeated as realm names in unit tooltips.
 
 ---
