@@ -505,12 +505,22 @@ local function GenerateCastbarGroup(unit, order)
         Enable = Opt:Toggle({name = "Enabled", width = "full"}),
         Preview = Opt:Execute({
             name = "Preview Cast Bar",
-            desc = "Show a shielded test cast with a long spell name outside combat.",
+            desc = "Add this cast bar to the preview outside combat. Other cast bar previews stay visible.",
             func = function() module:ShowCastbarPreview(unit) end,
         }),
         StopPreview = Opt:Execute({
             name = "Stop Cast Bar Preview",
-            desc = "Hide the test cast. A frame opened only for this test is closed too.",
+            desc = "Hide this test cast. Frames needed by other previews stay visible.",
+            func = function() module:StopCastbarPreview(unit) end,
+        }),
+        PreviewAll = Opt:Execute({
+            name = "Preview All Cast Bars",
+            desc = "Show test casts for all supported unitframes outside combat without changing their Enabled settings.",
+            func = function() module:ShowCastbarPreview("all") end,
+        }),
+        StopAllPreviews = Opt:Execute({
+            name = "Stop All Cast Previews",
+            desc = "Hide all test casts and close frames opened only for cast bar previews.",
             func = function() module:StopCastbarPreview() end,
         }),
         Width = Opt:InputNumber({name = "Width"}),
