@@ -6,6 +6,7 @@
 - Unitframes: Added simultaneous cast bar previews with individual and global stop controls.
 - UIElements: Added button styling for dropdowns in Friends, Who, Group Finder and the Adventure Guide.
 - UIElements: Styled profession controls and Forever's profession tabs.
+- Bags: Prevented old item slots from reappearing after switching to smaller bags.
 
 ## Changes since last version
 
