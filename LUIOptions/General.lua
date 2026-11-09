@@ -95,6 +95,7 @@ General.args = {
 		IntroText = Opt:Desc({name = "Find settings and answers in the LUI Guide, or join our Discord for help, feedback and news. Select a link below and press Ctrl+C to copy it.", fontSize = "medium"}),
 		Guide = Opt:Input({name = "LUI Guide", get = function() return LUI.Links.Guide end, set = function() end, width = "full"}),
 		Discord = Opt:Input({name = "Discord", get = function() return LUI.Links.Discord end, set = function() end, width = "full"}),
+		Changelog = Opt:Input({name = "Changelog", get = function() return LUI.Links.Changelog end, set = function() end, width = "full"}),
 		VerText = Opt:Desc({name = GetVersionText(), fontSize = "large"}),
 		Header = Opt:Header({name = "General Settings"}),
 	}}),

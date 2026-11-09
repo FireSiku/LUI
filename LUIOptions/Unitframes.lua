@@ -184,7 +184,7 @@ local function SectionKeys(dbUnit, section)
     local keys = {}
     if section == "All" then return keys, true end
     for key, value in pairs(dbUnit) do
-        if type(key) == "string" and (section == "General" and type(value) ~= "table"
+        if type(key) == "string" and (section == "General" and (type(value) ~= "table" or key == "Fading")
             or section == "Bars" and key:match("Bar$")
             or section == "Texts" and (key:match("Text$") or key == "CombatFeedback")
             or section == "Auras" and key == "Aura"
@@ -733,7 +733,15 @@ local function NewUnitOptionGroup(unit, order, categorized)
         ShowInRaid = Opt:Toggle({name = "Show in Raid", desc = "Whether you want to show the Party Frames in Raid or not.", onlyIf = (unit == "party")}),
         ShowInRealParty = Opt:Toggle({name = "Show only in real Parties", desc = "Whether you want to show the Party Frames only in real Parties or in Raids with 5 or less players too.", onlyIf = (unit == "party")}),
         RangeFade = Opt:Toggle({name = "Fade Out of Range", desc = "Whether you want Party Frames to fade if that player is more than 40 yards away or not.", onlyIf = (unit == "party")}),
+		Fading = Opt:InlineGroup({name = "Fading", db = dbUnit.Fading, args = {
+			Enable = Opt:Toggle({name = "Fade Out of Combat", desc = "Reduce opacity outside combat. Mouseover and combat restore full opacity; range fading still applies."}),
+			OutOfCombatAlpha = Opt:Slider({name = "Out-of-Combat Opacity", values = Opt.PercentValues,
+				disabled = function() return not dbUnit.Fading.Enable end}),
+		}}),
 		Preview = Opt:Execute({name = "Preview This Frame", desc = "Show this frame layout with player data while out of combat.", func = function() module:ToggleUnitframePreview(unit) end}),
+		RaidPreviewSize = Opt:Select({name = "Raid Preview Size", values = {[25] = "25 Players", [40] = "40 Players"}, onlyIf = unit == "raid",
+			get = function() return module:GetRaidPreviewSize() end, set = function(_, value) module:SetRaidPreviewSize(value) end,
+			disabled = InCombatLockdown}),
         StopPreview = Opt:Execute({name = "Stop Preview", desc = "Hide all unitframe preview frames.", func = function() module:StopUnitframePreview() end}),
         Reset = Opt:Execute({name = "Reset This Frame", desc = "Restore this unit frame's default settings.", confirm = "Reset all settings for "..unit.."?", func = function()
             ResetTable(module.defaults.profile[unit], db[unit])
