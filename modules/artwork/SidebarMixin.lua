@@ -174,6 +174,10 @@ function SidebarMixin:Refresh()
 		self:Hide()
 	end
 
+	if self.db.AutoPosition then
+		self:AutoAdjust()
+	end
+
 	if not InCombatLockdown() then
 		local anchor = _G[self.db.Anchor]
 		local validAnchor = anchor and not (anchor.IsForbidden and anchor:IsForbidden())
@@ -187,10 +191,6 @@ function SidebarMixin:Refresh()
 			self.BtnAnchorOpen:SetFrameRef("anchor", anchor)
 		end
 	end
-
-	if self.db.AutoPosition then
-		self:AutoAdjust()
-	end
 end
 
 -- ####################################################################################################################
@@ -198,61 +198,72 @@ end
 -- ####################################################################################################################
 
 function SidebarMixin:AutoAdjust()
-	if C_AddOns.IsAddOnLoaded("Bartender4") then
-		self:BT4Adjust()
+	if IsDominosAnchor(self.db.Anchor, _G[self.db.Anchor]) then
+		return self:DominosAdjust()
+	elseif C_AddOns.IsAddOnLoaded("Bartender4") then
+		return self:BT4Adjust()
 	end
 end
 
-local function ApplyBT4Adjust(self)
-	if not C_AddOns.IsAddOnLoaded("Bartender4") or type(self.db.Anchor) ~= "string"
-		or strsub(self.db.Anchor, 1, 3) ~= "BT4" then return end
-	local bartender = _G.Bartender4
-	if not bartender or not bartender.db or type(bartender.UpdateModuleConfigs) ~= "function" then return end
-	local actionBars = bartender.db:GetNamespace("ActionBars", true)
-	local _, num = strsplit("r", self.db.Anchor)
-	local barOpt = actionBars and actionBars.profile and actionBars.profile.actionbars[tonumber(num)]
-	if not barOpt then return end
+local function GetBarPosition(self)
 	local _, _, _, x, y = self:GetPoint()
 	local _, _, texWidth = self:GetRect()
 	local _, _, drawWidth, drawHeight = self.Drawer:GetRect()
-
-	--- For both the Tex and Drawer sizes, we need to account for the UI Scale, then reapply the frame scale to get proper values
+	if not x or not y or not texWidth or not drawWidth or not drawHeight then return end
 	local barScale = self:GetEffectiveScale()
 	local uiScale = UIParent:GetScale()
-
-	-- X is the leftmost point of the sidebar artwork. The nature of the drawer artwork means adjustments are needed.
-	-- The proper offset is equal to 62.5% of the width of the drawer texture.
 	local barX
 	if self.side == "Right" then
 		barX = x - texWidth - drawWidth * DRAWER_BAR_OFFSET
 	else
-		-- The LEFT point already uses the sidebar's outer left edge as its
-		-- origin. The small extra offset centers Bartender inside the
-		-- asymmetric left drawer without changing the working right side.
 		barX = x + drawWidth * (DRAWER_BAR_OFFSET + LEFT_BAR_FINE_TUNE)
 	end
-	barX = barX / uiScale * barScale
-	
-	-- Y is the halfway point, so we have to add half the height of the drawer to the y position.
-	-- Then we can adjust based on a fixed offset based on the top of the drawer texture.
-	local barY = (y + drawHeight*0.41) / uiScale * barScale
-
-	
-	-- Update Bartender settings.
-	barOpt.enabled = self.db.Enable
-	barOpt.buttons = 12
-	barOpt.rows = 6
-	barOpt.alpha = 1
-	barOpt.position.x = barX
-	barOpt.position.y = barY
-	barOpt.position.point = (self.side == "Right") and "RIGHT" or "LEFT"
-	barOpt.position.scale = barScale
-	bartender:UpdateModuleConfigs()
+	return barX / uiScale * barScale, (y + drawHeight * 0.41) / uiScale * barScale, barScale
 end
 
--- Bartender rebuilds secure action-button state from UpdateModuleConfigs.
--- Never invoke it during combat; apply the latest sidebar values on leaving.
+local function ApplyBT4Adjust(self)
+	if not module:IsEnabled() then return end
+	if not C_AddOns.IsAddOnLoaded("Bartender4") or type(self.db.Anchor) ~= "string"
+		or strsub(self.db.Anchor, 1, 3) ~= "BT4" then return end
+	local bartender = _G.Bartender4
+	local actionBars = bartender and bartender:GetModule("ActionBars", true)
+	local id = tonumber(self.db.Anchor:match("^BT4Bar(%d+)$"))
+	local barOpt = actionBars and id and actionBars.db.profile.actionbars[id]
+	if not barOpt then return end
+	local barX, barY, barScale = GetBarPosition(self)
+	if not barX then return end
+	barOpt.buttons, barOpt.rows, barOpt.alpha = 12, 6, 1
+	barOpt.position.x, barOpt.position.y = barX, barY
+	barOpt.position.point = self.side == "Right" and "RIGHT" or "LEFT"
+	barOpt.position.scale = barScale
+	if self.db.Enable then
+		actionBars:EnableBar(id)
+		SetAnchoredFrameShown(self.db.Anchor, self:IsOpen())
+	else
+		actionBars:DisableBar(id)
+	end
+end
+
+local function ApplyDominosAdjust(self)
+	if not module:IsEnabled() then return end
+	local frame = _G[self.db.Anchor]
+	if not IsDominosAnchor(self.db.Anchor, frame) then return end
+	local x, y, scale = GetBarPosition(self)
+	if not x then return end
+	frame:SetNumButtons(math.min(12, frame:MaxLength()))
+	frame:SetColumns(2)
+	frame:SetSpacing(2)
+	frame:SetPadding(2, 2)
+	frame:SetFrameScale(scale)
+	frame:ClearSavedAnchor()
+	frame:SavePosition("TOPLEFT", self.side == "Right" and "RIGHT" or "LEFT", x / scale, y / scale)
+	frame:RestorePosition()
+	SetAnchoredFrameShown(self.db.Anchor, self.db.Enable and self:IsOpen())
+end
+
+-- Both addons rebuild protected bar state; apply settings outside combat.
 SidebarMixin.BT4Adjust = LUI.OutOfCombatWrapper(ApplyBT4Adjust)
+SidebarMixin.DominosAdjust = LUI.OutOfCombatWrapper(ApplyDominosAdjust)
 
 module.SidebarMixin = SidebarMixin
 

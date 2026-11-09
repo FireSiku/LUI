@@ -37,7 +37,19 @@ local backdropPool = {}
 
 local function GetMoveObject(unit, frameName)
 	local previewObject = module.GetUnitframePreviewAnchor and module:GetUnitframePreviewAnchor(unit)
+	if previewObject and frameName:match("_Castbar$") then
+		return previewObject.Castbar or _G[frameName]
+	end
 	return previewObject or _G[frameName]
+end
+
+local function GetPointPosition(frame, point)
+	local left, bottom, width, height = frame:GetRect()
+	if not left or not bottom then return end
+	local x = point:find("LEFT") and 0 or point:find("RIGHT") and 1 or 0.5
+	local y = point:find("BOTTOM") and 0 or point:find("TOP") and 1 or 0.5
+	local scale = frame:GetEffectiveScale()
+	return (left + width * x) * scale, (bottom + height * y) * scale
 end
 
 local setAllPositions = function()
@@ -58,15 +70,31 @@ local setAllPositions = function()
 					module.db.profile[k][k2].General.Point = point
 				end
 			else
+				local settings = module.db.profile[k]
+				if (settings.Anchor and settings.Anchor ~= "UIParent")
+					or (settings.AnchorPoint and settings.AnchorPoint ~= "AUTO") then
+					point = settings.Point
+					rpoint = LUI.Points[settings.AnchorPoint] and settings.AnchorPoint or point
+					local anchor = module:GetUnitAnchor(object, settings)
+					x, y = settings.X / scale, settings.Y / scale
+					local left, bottom = GetPointPosition(backdropPool[object], point)
+					local anchorX, anchorY = GetPointPosition(anchor, rpoint)
+					if left and anchorX then
+						x = (left - anchorX) / object:GetEffectiveScale()
+						y = (bottom - anchorY) / object:GetEffectiveScale()
+					end
+				end
 				module.db.profile[k].X = RoundToSignificantDigits(x * scale, 1)
 				module.db.profile[k].Y = RoundToSignificantDigits(y * scale, 1)
 				module.db.profile[k].Point = point
 			end
 			
 			object:ClearAllPoints()
-			object:SetPoint(point, UIParent, rpoint, x, y)
+			if k2 then object:SetPoint(point, UIParent, rpoint, x, y)
+			else module:PositionFrame(object, module.db.profile[k]) end
 		end
 	end
+	module:RefreshAnchors()
 	
 	for k, v in pairs(ufNames) do
 		if _G[v] and _G[v].V2Tex then _G[v].V2Tex:Reposition() end
@@ -88,7 +116,7 @@ local resetAllPositions = function()
 				end
 			else
 				object:ClearAllPoints()
-				object:SetPoint(module.db.profile[k].Point, UIParent, module.db.profile[k].Point, module.db.profile[k].X / (module.db.profile[k].Scale or 1), module.db.profile[k].Y / (module.db.profile[k].Scale or 1))
+				module:PositionFrame(object, module.db.profile[k])
 			end
 		end
 	end

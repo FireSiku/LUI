@@ -30,7 +30,7 @@ General.order = 1
 local function GetVersionText()
     if LUI.IsForever or LUI.IsRetail then
         local version, build = GetBuildInfo()
-        return format("v2610 - %s %s (%s)", LUI.IsForever and "Forever" or "Retail", version, build)
+        return format("%s - %s %s (%s)", GetAddOnMetadata("LUI", "Version"), LUI.IsForever and "Forever" or "Retail", version, build)
     end
     local version, alpha, git = strsplit("-", LUI.curseVersion)
     if not version then
@@ -92,7 +92,9 @@ General.args = {
     Welcome = Opt:Group({name = L["Core_Welcome"], args = {
         IntroImage = Opt:Desc({name = " ", image = [=[Interface\AddOns\LUI\media\textures\logo2.tga]=], imageCoords = {0, 0, 1}, imageWidth = 512, imageHeight = 128, width = "full"}),
         Spacer1 = Opt:Spacer({}),
-		IntroText = Opt:Desc({name = L["For more info, visit Discord"].."\n\n\n", fontSize = "medium"}),
+		IntroText = Opt:Desc({name = "Find settings and answers in the LUI Guide, or join our Discord for help, feedback and news. Select a link below and press Ctrl+C to copy it.", fontSize = "medium"}),
+		Guide = Opt:Input({name = "LUI Guide", get = function() return LUI.Links.Guide end, set = function() end, width = "full"}),
+		Discord = Opt:Input({name = "Discord", get = function() return LUI.Links.Discord end, set = function() end, width = "full"}),
 		VerText = Opt:Desc({name = GetVersionText(), fontSize = "large"}),
 		Header = Opt:Header({name = "General Settings"}),
 	}}),
