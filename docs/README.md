@@ -22,6 +22,8 @@ Replace the matching file in `assets/`, or update its `src` in `index.html`. Kee
 
 Screenshots also link to their original-size asset. Update both the image source and its link when changing a filename. Keep the image's width and height accurate, and cap its displayed width at the original pixel width so small captures are not stretched. The added v2611 captures use lossless WebP.
 
+Place each caption before its image and name the exact settings page or identify the image as an example/result. Keep the matching explanation immediately beside that image.
+
 ### Layout
 Desktop layout lives under **Page layout and table of contents** in `style.css`. Responsive rules are at the bottom.
 
