@@ -27,10 +27,10 @@ local LUI_TEXTURES_INFO = {
 
 --- Get the parent frame of the panel.
 ---@return Frame parent
-function PanelMixin:GetParent()
+function PanelMixin:GetAnchor()
 	-- TODO: Add LibWindow-aware scaling for panels that are not anchored.
 	if self.db.Anchored then
-		return _G[self.db.Parent] or UIParent
+		return LUI:GetValidAnchor(self, self.db.Parent) or UIParent
 	else
 		return UIParent
 	end
@@ -85,13 +85,18 @@ end
 
 --- Refresh the panel's settings and position
 function PanelMixin:Refresh()
-	local parent = self:GetParent()
+	local parent = self:GetAnchor()
 	local r, g, b, a = module:RGBA(self.name)
 
 	self:SetSize(self.db.Width, self.db.Height)
+	self:SetParent(parent)
 	LUI:RegisterConfig(self, self.db)
 	LUI:RestorePosition(self)
-	self:SetParent(parent)
+	if self.db.Anchored and LUI.Points[self.db.RelativePoint] and self.db.RelativePoint ~= self.db.Point then
+		local scale = self.db.Scale or 1
+		self:ClearAllPoints()
+		self:SetPoint(self.db.Point, parent, self.db.RelativePoint, self.db.X / scale, self.db.Y / scale)
+	end
 	self:SetFrameStrata("LOW")
 	self:SetFrameLevel(0)
 	self:SetAlpha(a)

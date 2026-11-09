@@ -1,5 +1,5 @@
 ## Interface: 120105, 16001
-## Version: v2610
+## Version: v2611
 ## Title: LUIOptions
 ## Author: Siku, Nitsah, Pahn
 ## Notes: Options Menu for modern versions of LUI.
@@ -8,6 +8,7 @@
 
 LUIOptions.lua
 General.lua
+ActionBars.lua
 Diagnostics.lua
 CPanel.lua
 Colors.lua

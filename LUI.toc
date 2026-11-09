@@ -1,10 +1,10 @@
 ## Interface: 120105, 16001
-## Version: v2610
+## Version: v2611
 ## Title: LUI
 ## Author: Siku, Nitsah, Pahn
 ## Notes: User Interface Modification
 ## SavedVariables: LUIDB
-## OptionalDeps: Masque, Masque_Darion, !ClassColors
+## OptionalDeps: Masque, Masque_Darion, !ClassColors, Bartender4, Dominos
 ## X-oUF: oUF_LUI
 
 ### Initialize Libs ###
