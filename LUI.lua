@@ -32,6 +32,7 @@ LUI.Versions = {lui = 3404}
 LUI.Links = {
 	Guide = "https://firesiku.github.io/LUI/",
 	Discord = "https://discord.gg/SR29pjc",
+	Changelog = "https://github.com/FireSiku/LUI/blob/master/CHANGELOG.md",
 }
 
 local function SelectGuideLink(frame)

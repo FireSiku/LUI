@@ -246,6 +246,7 @@ function module:OnInitialize()
 			}
 		end
 		if type(defaults) == "table" and defaults.HealthBar then
+			defaults.Fading = {Enable = false, OutOfCombatAlpha = 0.35}
 			-- Every health bar supports these overlays. Some child-frame defaults
 			-- omitted them, which also hid their options. Keep existing per-unit
 			-- defaults and create independent tables for the missing sections.
@@ -290,6 +291,7 @@ local StopPreviewOutOfCombat = LUI.OutOfCombatWrapper(function()
 end)
 
 function module:OnDisable()
+	self:DisableFading()
 	StopPreviewOutOfCombat()
 	for _, unit in pairs(module.unitsSpawn) do module.ToggleUnit(unit, false) end
 end

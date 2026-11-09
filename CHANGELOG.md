@@ -2,9 +2,11 @@
 
 ## Changes since last update
 
-- Core: Added a first-use welcome dialog and permanent links to the LUI Guide and Discord in General > Welcome.
+- Core: Added a first-use welcome dialog and permanent links to the LUI Guide, Discord and changelog in General > Welcome.
 - Core: Added optional Bartender4 and Dominos setup with two bottom bars and sidebar positioning in a separate action-bar profile.
 - Unitframes: Added frame-relative positioning for unitframes and group anchors, including previews and saved mover positions.
+- Unitframes: Added optional out-of-combat fading with mouseover visibility and existing range fading.
+- Unitframes: Included all raid subgroups in the compact layout and added a 40-player raid preview.
 - Artwork: Validated custom panel anchors and prevented invalid or circular parent references.
 - Artwork: Added Dominos sidebar auto-positioning and kept closed Bartender sidebars hidden after position updates.
 
