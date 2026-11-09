@@ -20,6 +20,7 @@ local UnregisterUnitWatch = _G.UnregisterUnitWatch
 
 local preview = {
 	active = nil,
+	raidSize = 25,
 	castbarUnits = {},
 	frames = {},
 	containers = {},
@@ -168,8 +169,7 @@ local function PositionContainer(container, db, group)
 	local frameHeight = module.GetUnitFrameFootprintHeight(db)
 	local width, height = db.Width, frameHeight
 	if group == "raid" then
-		-- The raid anchor represents the complete 5x5 25-player grid. Using the
-		-- size of a single unit frame makes BOTTOM/RIGHT anchors grow off-screen.
+		-- Both raid sizes use the configured raid grid's complete footprint.
 		width = db.Width * 5 + db.GroupPadding * 4
 		height = frameHeight * 5 + db.Padding * 4
 	end
@@ -204,12 +204,13 @@ end
 local function PositionRaidFrame(frame, container, db, index)
 	local column = math.floor((index - 1) / 5)
 	local row = (index - 1) % 5
+	local width = preview.raidSize == 40 and (5 * db.Width - 3 * db.GroupPadding) / 8 or db.Width
 	frame:ClearAllPoints()
 	frame:SetPoint(
 		"TOPLEFT",
 		container,
 		"TOPLEFT",
-		column * (db.Width + db.GroupPadding),
+		column * (width + db.GroupPadding),
 		-row * (module.GetUnitFrameFootprintHeight(db) + db.Padding)
 	)
 end
@@ -238,15 +239,18 @@ local function ShowGroup(group)
 	PositionContainer(container, db, group)
 
 	local previous
-	for i = 1, definition.count do
+	local count = group == "raid" and preview.raidSize or definition.count
+	for i = 1, count do
 		local frame = GetPreviewFrame(group, group..i)
 		if frame then
 			frame:SetParent(container)
 			frame:SetScale(1)
 			if group == "raid" then
+				frame.LUIRaidWidePreview = preview.raidSize == 40
 				PositionRaidFrame(frame, container, db, i)
 				if (i - 1) % 5 == 0 then
-					module:ConfigureRaidGroupLabel(frame, math.floor((i - 1) / 5) + 1, db.Width, "TOP", true)
+					local width = frame.LUIRaidWidePreview and (5 * db.Width - 3 * db.GroupPadding) / 8 or db.Width
+					module:ConfigureRaidGroupLabel(frame, math.floor((i - 1) / 5) + 1, width, "TOP", true)
 				end
 			else
 				PositionGroupFrame(frame, previous, db, i)
@@ -424,6 +428,16 @@ end
 function module:RefreshUnitframePreview()
 	if InCombatLockdown() or not (preview.active or next(preview.castbarUnits)) then return end
 	RebuildPreview()
+end
+
+function module:GetRaidPreviewSize()
+	return preview.raidSize
+end
+
+function module:SetRaidPreviewSize(size)
+	if InCombatLockdown() or (size ~= 25 and size ~= 40) then return end
+	preview.raidSize = size
+	self:RefreshUnitframePreview()
 end
 
 -- Allow the unitframe mover to use a visible preview container when the real
