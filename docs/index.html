@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1" name="viewport"/>
-    <meta content="LUI v2611 settings guide for World of Warcraft Retail and Warcraft Forever" name="description"/>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="LUI v2611 settings guide for World of Warcraft Retail and Warcraft Forever" name="description">
     <title>LUI Guide | v2611</title>
-    <link href="style.min.css" rel="stylesheet"/>
+    <link href="style.min.css" rel="stylesheet">
 </head>
 <body>
 <header class="site-header">
@@ -17,30 +17,7 @@
     <aside aria-label="Table of contents">
         <div>
             <strong>On this page</strong>
-            <a href="#useful-terms">Useful Terms</a>
-            <a href="#profiles">Profile Sharing</a>
-            <a href="#options-window">Options Window</a>
-            <a href="#control-panel">Control Panel</a>
-            <a href="#welcome-setup">Welcome &amp; Bar Setup</a>
-            <a href="#artwork">Artwork &amp; Sidebars</a>
-            <a href="#unitframes">Unitframes</a>
-            <a href="#unitframe-position">Anchors &amp; Fading</a>
-            <a href="#raid-frames">Raid Frames &amp; Preview</a>
-            <a href="#moving-preview">Moving &amp; Preview</a>
-            <a href="#bars-texts">Bars, Texts &amp; Indicators</a>
-            <a href="#auras">Buffs &amp; Debuffs</a>
-            <a href="#cast-bars">Cast Bars</a>
-            <a href="#bags-bank">Bags &amp; Bank</a>
-            <a href="#experience-bars">Experience Bars</a>
-            <a href="#ui-elements">Buttons &amp; UI Elements</a>
-            <a href="#tooltip-infotext">Tooltip &amp; Infotext</a>
-            <a href="#menus">Micromenu &amp; RaidMenu</a>
-            <a href="#other-settings">Other Settings</a>
-            <a href="#combat">Combat Restrictions</a>
-            <a href="#faq">FAQ</a>
-            <a href="#diagnostics">LUI DEBUG</a>
-            <a href="#troubleshooting">Troubleshooting</a>
-        </div>
+            <a href="#welcome-setup">General → Welcome</a><a href="#options-window">General → Settings</a><a href="#control-panel">Control Panel</a><a href="#profiles">Profile Sharing</a><a href="#general-colors">Colors</a><a href="#useful-terms">Useful Terms</a><a href="#artwork">Artwork &amp; Sidebars</a><a href="#unitframes">Unitframes</a><a href="#options-layout">Options Layout</a><a href="#unitframe-position">Anchors &amp; Fading</a><a href="#raid-frames">Raid Frames &amp; Preview</a><a href="#moving-preview">Moving &amp; Preview</a><a href="#bars-texts">Bars, Texts &amp; Indicators</a><a href="#auras">Buffs &amp; Debuffs</a><a href="#cast-bars">Cast Bars</a><a href="#bags-bank">Bags &amp; Bank</a><a href="#experience-bars">Experience Bars</a><a href="#ui-elements">Buttons &amp; UI Elements</a><a href="#tooltip-infotext">Tooltip &amp; Infotext</a><a href="#menus">Micromenu &amp; RaidMenu</a><a href="#other-settings">Other Settings</a><a href="#combat">Combat Restrictions</a><a href="#faq">FAQ</a><a href="#diagnostics">LUI DEBUG</a><a href="#troubleshooting">Troubleshooting</a></div>
     </aside>
     <article>
         <section class="hero">
@@ -57,77 +34,12 @@
                 <p>Find what you can adjust and where to find it. Available options depend on your client, class and enabled modules. Start with the parts you use. Screenshots may differ slightly by client and installed addons. Select an image to open it at original size.</p>
             </div>
         </section>
-        <section id="useful-terms">
-            <h2><a href="#useful-terms">Useful Terms</a></h2>
-            <div class="data-grid">
-                <div><strong>Anchor</strong><span>The point used to attach an element, such as Top Left, Center or Bottom Right.</span></div>
-                <div><strong>Attach To / Relative Anchor</strong><span>The point on the parent or related frame that the element attaches to.</span></div>
-                <div><strong>Growth / Spacing</strong><span>The direction in which icons or frames are added, and the space between them.</span></div>
-                <div><strong>Scale</strong><span>Changes the overall size of a supported element.</span></div>
-                <div><strong>Preview</strong><span>A temporary test display for adjusting appearance and position outside combat.</span></div>
-            </div>
-        </section>
-        <section id="profiles">
-            <h2><a href="#profiles">Profile Sharing</a></h2>
-            <p>Use <strong>Profiles → Profile Import / Export</strong> to share your setup or copy it between Retail and Forever. Update LUI in both clients first.</p>
-            <ol>
-                <li>Open <code>/lui</code> → <strong>Profiles</strong> and check <strong>Current Profile</strong>.</li>
-                <li>Scroll to <strong>Profile Import / Export</strong> and click <strong>Generate Export String</strong>.</li>
-                <li>Click inside <strong>Export String</strong>. Press <kbd>Ctrl+A</kbd>, then <kbd>Ctrl+C</kbd> to copy it completely.</li>
-                <li>In the other client, open the same page. Use a new <strong>Profile Name</strong> under Import, then press <kbd>Enter</kbd>. A new name preserves your existing profile.</li>
-                <li>Paste into <strong>Import String</strong> with <kbd>Ctrl+V</kbd> and click <strong>Accept</strong> below the text box.</li>
-                <li>Outside combat, click <strong>Import Profile</strong>. LUI selects the imported profile and reloads.</li>
-            </ol>
-            <div class="callout note">
-                <strong>Copying between clients</strong>
-                <p>Copy From only lists profiles in your current client. Use export/import between clients. The imported copy is independent; later changes are not synchronized.</p>
-            </div>
-            <figure>
-                <a href="assets/profiles.webp" target="_blank" rel="noopener" aria-label="Open screenshot: LUI Profiles page showing Profile Import and Export"><img alt="LUI Profiles page showing Profile Import and Export" decoding="async" height="868" loading="lazy" src="assets/profiles.webp" width="1205" style="max-width:1205px"/></a>
-                <figcaption>Profiles.</figcaption>
-            </figure>
-        </section>
-        <section id="options-window">
-            <h2><a href="#options-window">Understanding the Options Window</a></h2>
-            <p>Type <code>/lui</code> or click the <strong>gear icon</strong> in the LUI Micromenu. Select a module on the left to open its settings.</p>
-            <figure>
-                <a href="assets/lui-options.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Main LUI Options window"><img alt="Main LUI Options window" decoding="async" height="873" loading="lazy" src="assets/lui-options.webp" width="1228" style="max-width:1228px"/></a>
-                <figcaption>General → Settings.</figcaption>
-            </figure>
-            <h3 id="control-panel">Control Panel</h3>
-            <p><strong>Control Panel → Modules</strong> switches individual parts of LUI on or off. Each button shows Enabled or Disabled; follow the reload prompt after changing it. Settings for disabled modules may be hidden. Always Enabled marks a component without an on/off switch.</p>
-            <figure>
-                <a href="assets/control-panel.webp" target="_blank" rel="noopener" aria-label="Open screenshot: LUI Control Panel showing enabled, disabled and always-enabled modules"><img alt="LUI Control Panel showing enabled, disabled and always-enabled modules" decoding="async" height="425" loading="lazy" src="assets/control-panel.webp" width="1119" style="max-width:1119px"/></a>
-                <figcaption>Control Panel → Modules. The screenshot shows one example setup.</figcaption>
-            </figure>
-            <div class="callout warning">
-                <strong>Resetting a module</strong>
-                <p>A normal click switches a module on or off. Shift-click resets that module's current settings to defaults.</p>
-            </div>
-            <h3>General settings</h3>
-            <p><strong>General → Settings</strong> contains Blizzard window scaling, error-message and talent-message filters, module notices and keyword-based automatic invites.</p>
-            <p>Under <strong>Damage Text</strong>, choose combat-text fonts. Outline affects scrolling text only. Changing the font for damage numbers above units requires logging out to character selection and back in.</p>
-            <p>Under <strong>Profile Backup</strong>, Create Backup saves the active profile. Restore Current Settings restores compatible values over current defaults; Revert Exact Backup restores the saved values directly.</p>
-            <h3 id="general-colors">Colors</h3>
-            <p><strong>Colors</strong> contains shared palettes; <strong>Unitframes → Colors</strong> contains unitframe palettes.</p>
-            <div class="callout note">
-                <strong>Changing one element's color</strong>
-                <p>Class colors are shared and may also affect unitframes and tooltips. Where available, choose Color Type → Individual on the element itself for a separate color. Alpha controls transparency.</p>
-            </div>
-            <h3>Compact vs. Categorized</h3>
-            <p><strong>Unitframes → General Settings → Options Layout</strong> switches between a flat list and settings grouped by topic. It changes the options menu only.</p>
-            <figure>
-                <a href="assets/categorized.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Unitframe options shown in Categorized mode"><img alt="Unitframe options shown in Categorized mode" decoding="async" height="867" loading="lazy" src="assets/categorized.webp" width="1210" style="max-width:1210px"/></a>
-                <figcaption>Player → Bars → Health Bar in Categorized mode.</figcaption>
-            </figure>
-        </section>
         <section id="welcome-setup">
-            <h2><a href="#welcome-setup">Welcome and Action Bar Setup</a></h2>
+            <h2><a href="#welcome-setup">General → Welcome</a></h2><p>Type <code>/lui</code> or click the <strong>gear icon</strong> in the LUI Micromenu. Select a module on the left to open its settings.</p>
             <p><strong>General → Welcome</strong> keeps the LUI Guide, Discord and Changelog links in one place. Click a link field and press <kbd>Ctrl+C</kbd> to copy it. New setups also receive a one-time welcome message with help links.</p>
             <figure>
-                <a href="assets/welcome.webp" target="_blank" rel="noopener" aria-label="Open screenshot: LUI Welcome page with Guide, Discord, Changelog and action bar setup controls"><img alt="LUI Welcome page with Guide, Discord, Changelog and action bar setup controls" decoding="async" height="806" loading="lazy" src="assets/welcome.webp" width="1116" style="max-width:1116px"/></a>
-                <figcaption>General → Welcome. Setup buttons depend on which action-bar addon is enabled.</figcaption>
-            </figure>
+                <figcaption>General → Welcome: help links and Action Bar Setup</figcaption><a href="assets/welcome.webp" target="_blank" rel="noopener" aria-label="Open screenshot: General → Welcome: help links and Action Bar Setup"><img alt="LUI Welcome page with Guide, Discord, Changelog and action bar setup controls" decoding="async" height="806" loading="lazy" src="assets/welcome.webp" width="1116" style="max-width:1116px"></a>
+                </figure>
             <h3 id="actionbar-setup">Bartender4 or Dominos</h3>
             <p>Enable one of these separate action-bar addons, leave combat, then use <strong>General → Welcome → Action Bar Setup</strong>. Click <strong>Set Up Bartender4</strong> or <strong>Set Up Dominos</strong>.</p>
             <p>LUI creates and activates a copy of your current profile in that addon. It arranges two bottom rows of twelve buttons and assigns bars to the LUI sidebars. Enable the sidebars under <a href="#sidebar-setup">Artwork</a> if needed, and fine-tune the bars in Bartender4 or Dominos.</p>
@@ -137,24 +49,71 @@
             </div>
             <p>If the setup button is greyed out, check that you are outside combat and only one of Bartender4 or Dominos is enabled.</p>
         </section>
+        <section id="options-window">
+            <h2><a href="#options-window">General → Settings</a></h2><p><strong>General → Settings</strong> contains Blizzard window scaling, error-message and talent-message filters, module notices and keyword-based automatic invites.</p>
+            <p>Under <strong>Damage Text</strong>, choose combat-text fonts. Outline affects scrolling text only. Changing the font for damage numbers above units requires logging out to character selection and back in.</p>
+            <p>Under <strong>Profile Backup</strong>, Create Backup saves the active profile. Restore Current Settings restores compatible values over current defaults; Revert Exact Backup restores the saved values directly.</p>
+            <figure>
+                <figcaption>General → Settings</figcaption><a href="assets/lui-options.webp" target="_blank" rel="noopener" aria-label="Open screenshot: General → Settings"><img alt="Main LUI Options window" decoding="async" height="873" loading="lazy" src="assets/lui-options.webp" width="1228" style="max-width:1228px"></a>
+                </figure>
+            </section>
+        <section id="control-panel"><h2><a href="#control-panel">Control Panel</a></h2><p><strong>Control Panel → Modules</strong> switches individual parts of LUI on or off. Each button shows Enabled or Disabled; follow the reload prompt after changing it. Settings for disabled modules may be hidden. Always Enabled marks a component without an on/off switch.</p>
+            <figure>
+                <figcaption>Control Panel → Modules</figcaption><a href="assets/control-panel.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Control Panel → Modules"><img alt="LUI Control Panel showing enabled, disabled and always-enabled modules" decoding="async" height="425" loading="lazy" src="assets/control-panel.webp" width="1119" style="max-width:1119px"></a>
+                </figure>
+            <div class="callout warning">
+                <strong>Resetting a module</strong>
+                <p>A normal click switches a module on or off. Shift-click resets that module's current settings to defaults.</p>
+            </div>
+            </section><section id="profiles">
+            <h2><a href="#profiles">Profile Sharing</a></h2>
+            <p>Use <strong>Profiles → Profile Import / Export</strong> to share your setup or copy it between Retail and Forever. Update LUI in both clients first.</p>
+            <h3>Export the active profile</h3><ol>
+                <li>Open <code>/lui</code> → <strong>Profiles</strong> and check <strong>Current Profile</strong>.</li>
+                <li>Scroll to <strong>Profile Import / Export</strong> and click <strong>Generate Export String</strong>.</li>
+                <li>Click inside <strong>Export String</strong>. Press <kbd>Ctrl+A</kbd>, then <kbd>Ctrl+C</kbd> to copy it completely.</li>
+                </ol>
+            <figure>
+                <figcaption>Profiles: current profile and export controls</figcaption><a href="assets/profiles.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Profiles: current profile and export controls"><img alt="LUI Profiles page showing Profile Import and Export" decoding="async" height="868" loading="lazy" src="assets/profiles.webp" width="1205" style="max-width:1205px"></a>
+                </figure>
+        <h3>Import into another client</h3><p>Scroll below the <strong>Export String</strong> box to find the <strong>Import</strong> section.</p><ol><li>In the other client, open the same page. Use a new <strong>Profile Name</strong> under Import, then press <kbd>Enter</kbd>. A new name preserves your existing profile.</li>
+                <li>Paste into <strong>Import String</strong> with <kbd>Ctrl+V</kbd> and click <strong>Accept</strong> below the text box.</li>
+                <li>Outside combat, click <strong>Import Profile</strong>. LUI selects the imported profile and reloads.</li>
+            </ol><div class="callout note">
+                <strong>Copying between clients</strong>
+                <p>Copy From only lists profiles in your current client. Use export/import between clients. The imported copy is independent; later changes are not synchronized.</p>
+            </div>
+            </section>
+        <section id="general-colors"><h2><a href="#general-colors">Colors</a></h2><p><strong>Colors</strong> contains shared palettes; <strong>Unitframes → Colors</strong> contains unitframe palettes.</p>
+            <div class="callout note">
+                <strong>Changing one element's color</strong>
+                <p>Class colors are shared and may also affect unitframes and tooltips. Where available, choose Color Type → Individual on the element itself for a separate color. Alpha controls transparency.</p>
+            </div>
+            </section><section id="useful-terms">
+            <h2><a href="#useful-terms">Useful Terms</a></h2>
+            <div class="data-grid">
+                <div><strong>Anchor</strong><span>The point used to attach an element, such as Top Left, Center or Bottom Right.</span></div>
+                <div><strong>Attach To / Relative Anchor</strong><span>The point on the parent or related frame that the element attaches to.</span></div>
+                <div><strong>Growth / Spacing</strong><span>The direction in which icons or frames are added, and the space between them.</span></div>
+                <div><strong>Scale</strong><span>Changes the overall size of a supported element.</span></div>
+                <div><strong>Preview</strong><span>A temporary test display for adjusting appearance and position outside combat.</span></div>
+            </div>
+        </section>
         <section id="artwork">
             <h2><a href="#artwork">Artwork and Sidebars</a></h2>
             <p><strong>Artwork → Themes</strong> selects, saves and shares artwork themes. Use <a href="#profiles">Profiles</a> to share the complete LUI setup.</p>
             <h3>Panels and orb</h3>
             <p><strong>Artwork → LUI Panels</strong> controls navigation artwork, the orb, chat and raid backgrounds, meter panels and sidebars. Each panel offers appearance and positioning settings; <strong>Bar Preset / Anchor</strong> assigns an existing frame.</p>
-            <p>The orb toggles assigned panels together. An unassigned meter panel has nothing to toggle. Raid Panel controls the artwork; raid frames are configured under <strong>Unitframes → Raid</strong>.</p>
-            <figure>
-                <a href="assets/artwork-navigation.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Artwork navigation settings for the orb, buttons and bottom lines"><img alt="Artwork navigation settings for the orb, buttons and bottom lines" decoding="async" height="806" loading="lazy" src="assets/artwork-navigation.webp" width="1137" style="max-width:1137px"/></a>
-                <figcaption>Artwork → LUI Panels → Navigation.</figcaption>
-            </figure>
-            <div class="callout tip" id="details-windows">
+            <p>Under Artwork → LUI Panels → Navigation, Show Orb controls the orb. The same page contains the navigation buttons and bottom-line artwork. The orb toggles assigned panels together.</p><figure>
+                <figcaption>Artwork → LUI Panels → Navigation</figcaption><a href="assets/artwork-navigation.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Artwork → LUI Panels → Navigation"><img alt="Artwork navigation settings for the orb, buttons and bottom lines" decoding="async" height="806" loading="lazy" src="assets/artwork-navigation.webp" width="1137" style="max-width:1137px"></a>
+                </figure>
+            <p>An unassigned meter panel has nothing to toggle. <strong>Raid Panel</strong> controls background artwork; configure raid frames under <strong>Unitframes → raid</strong>.</p><div class="callout tip" id="details-windows">
                 <strong>Using two Details! windows</strong>
                 <p>Create both windows and choose damage or healing in Details! first. Under Artwork → LUI Panels, assign Meter Panel 1 → Bar Preset → Details - Window 1, then Meter Panel 2 → Details - Window 2. Move the windows in Details!; their LUI artwork follows.</p>
             </div>
             <figure>
-                <a href="assets/artwork-meter-preset.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Meter Panel 1 Bar Preset menu listing both Details windows"><img alt="Meter Panel 1 Bar Preset menu listing both Details windows" decoding="async" height="808" loading="lazy" src="assets/artwork-meter-preset.webp" width="1143" style="max-width:1143px"/></a>
-                <figcaption>Artwork → LUI Panels → Meter Panel 1 → Bar Preset. Choose the matching window for each panel.</figcaption>
-            </figure>
+                <figcaption>Artwork → LUI Panels → Meter Panel 1 → Bar Preset</figcaption><a href="assets/artwork-meter-preset.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Artwork → LUI Panels → Meter Panel 1 → Bar Preset"><img alt="Meter Panel 1 Bar Preset menu listing both Details windows" decoding="async" height="808" loading="lazy" src="assets/artwork-meter-preset.webp" width="1143" style="max-width:1143px"></a>
+                </figure>
             <h3 id="sidebar-setup">Sidebars</h3>
             <p>Open <strong>Artwork → LUI Panels → Left Sidebar / Right Sidebar</strong>. Turn on Enabled, then select your installed action bar under <strong>Bar Preset</strong> or enter its frame name under <strong>Anchor</strong>.</p>
             <p>Auto-Adjust Position and Auto-Position support Bartender4 and Dominos. Changing Bar Preset turns Auto-Position off; enable it again after choosing the desired bar if you want LUI to keep positioning it. For a complete starting layout, use <a href="#actionbar-setup">Action Bar Setup</a>.</p>
@@ -164,12 +123,11 @@
         <section id="unitframes">
             <h2><a href="#unitframes">Unitframes</a></h2>
             <p>Select a frame under <strong>Unitframes</strong>. Its <strong>General</strong> page controls visibility, size, position and preview. Portraits, bars, texts and indicators have their own pages where supported.</p>
+            <h3 id="options-layout">Choose Compact or Categorized</h3><p><strong>Unitframes → General Settings → Options Layout</strong> changes how the settings menu is organized. Choose Compact for a flat list or Categorized for pages grouped under Bars, Texts, Auras and other topics. It changes the menu only.</p><p><strong>General Settings</strong> contains shared fonts, aura fonts and decorative connectors. <strong>Font for All Unitframe Texts</strong> also changes aura fonts, while keeping their sizes and outlines.</p>
             <figure>
-                <a href="assets/unitframes-general.webp" target="_blank" rel="noopener" aria-label="Open screenshot: LUI Unitframes General Settings page"><img alt="LUI Unitframes General Settings page" decoding="async" height="869" loading="lazy" src="assets/unitframes-general.webp" width="1210" style="max-width:1210px"/></a>
-                <figcaption>Unitframes → General Settings.</figcaption>
-            </figure>
-            <h3>Shared and group settings</h3>
-            <p><strong>General Settings</strong> contains shared fonts, aura fonts and decorative connectors. <strong>Font for All Unitframe Texts</strong> also changes aura fonts, while keeping their sizes and outlines.</p>
+                <figcaption>Unitframes → General Settings: Options Layout and shared controls</figcaption><a href="assets/unitframes-general.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Unitframes → General Settings: Options Layout and shared controls"><img alt="LUI Unitframes General Settings page" decoding="async" height="869" loading="lazy" src="assets/unitframes-general.webp" width="1210" style="max-width:1210px"></a>
+                </figure>
+            <h3>Group settings</h3>
             <p>A group's <strong>General</strong> page controls growth and spacing. Party also has visibility rules and <strong>Fade Out of Range</strong>; Raid uses automatic range fading.</p>
             <div class="callout note">
                 <strong>Using another raid-frame addon</strong>
@@ -181,20 +139,17 @@
             <h3 id="unitframe-fading">Fading outside combat</h3>
             <p>On the same General page, enable <strong>Fading → Fade Out of Combat</strong> and set <strong>Out-of-Combat Opacity</strong>. It is off by default. Mouseover or entering combat restores normal opacity; existing range fading still applies.</p>
             <figure>
-                <a href="assets/unitframes-player-general.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Player General settings showing Anchor Frame, Attach To and optional out-of-combat fading"><img alt="Player General settings showing Anchor Frame, Attach To and optional out-of-combat fading" decoding="async" height="797" loading="lazy" src="assets/unitframes-player-general.webp" width="1113" style="max-width:1113px"/></a>
-                <figcaption>Unitframes → player → General. Positioning, anchors, Fading and frame preview.</figcaption>
-            </figure>
+                <figcaption>Unitframes → player → General: anchors and Fading</figcaption><a href="assets/unitframes-player-general.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Unitframes → player → General: anchors and Fading"><img alt="Player General settings showing Anchor Frame, Attach To and optional out-of-combat fading" decoding="async" height="797" loading="lazy" src="assets/unitframes-player-general.webp" width="1113" style="max-width:1113px"></a>
+                </figure>
             <h3 id="raid-frames">Raid frames and 25 / 40-player preview</h3>
             <p>LUI raid frames support up to forty players, including occupied subgroups 7 and 8. The live layout switches automatically with raid size: compact up to twenty-five members, wider for twenty-six to forty.</p>
             <p>To check the layout without a raid, open <strong>Unitframes → raid → General</strong>, select <strong>Raid Preview Size → 25 Players / 40 Players</strong>, then click <strong>Preview This Frame</strong>. This selection changes the preview only. Use it outside combat and click <strong>Stop Preview</strong> when finished.</p>
             <figure>
-                <a href="assets/raid-general.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Raid General page with the 40 Players preview size selected"><img alt="Raid General page with the 40 Players preview size selected" decoding="async" height="799" loading="lazy" src="assets/raid-general.webp" width="1113" style="max-width:1113px"/></a>
-                <figcaption>Unitframes → raid → General. Select the preview size here.</figcaption>
-            </figure>
+                <figcaption>Unitframes → raid → General: Raid Preview Size</figcaption><a href="assets/raid-general.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Unitframes → raid → General: Raid Preview Size"><img alt="Raid General page with the 40 Players preview size selected" decoding="async" height="799" loading="lazy" src="assets/raid-general.webp" width="1113" style="max-width:1113px"></a>
+                </figure>
             <figure class="compact-figure">
-                <a href="assets/raid-preview-40.webp" target="_blank" rel="noopener" aria-label="Open screenshot: LUI raid preview showing forty frames in eight groups of five"><img alt="LUI raid preview showing forty frames in eight groups of five" decoding="async" height="249" loading="lazy" src="assets/raid-preview-40.webp" width="495" style="max-width:495px"/></a>
-                <figcaption>40-player preview: eight groups of five. This is a preview, not a live-raid screenshot.</figcaption>
-            </figure>
+                <figcaption>Result: 40-player preview, with eight groups of five</figcaption><a href="assets/raid-preview-40.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Result: 40-player preview, with eight groups of five"><img alt="LUI raid preview showing forty frames in eight groups of five" decoding="async" height="249" loading="lazy" src="assets/raid-preview-40.webp" width="495" style="max-width:495px"></a>
+                </figure>
             <h3>Appearance and copying</h3>
             <p><strong>Backdrop &amp; Border</strong> controls the outer frame; bar backgrounds are separate. Frame width and individual bar widths are also separate.</p>
             <p>On the destination frame's <strong>Copy Settings</strong> page, select <strong>Copy From</strong> and a <strong>Section</strong>, then confirm the copy. Include Sizes and Include Positions are off by default.</p>
@@ -203,9 +158,8 @@
             <h2><a href="#moving-preview">Moving Frames and Using Preview</a></h2>
             <p>Under <strong>Unitframes → General Settings</strong>, use <strong>Move Unitframes</strong> to drag frames into place and save your changes. Preview controls show missing units; individual frames also offer <strong>Preview This Frame</strong>. Previews end on combat entry or profile changes.</p>
             <figure class="compact-figure">
-                <a href="assets/move-unitframes.webp" target="_blank" rel="noopener" aria-label="Open screenshot: LUI unitframe mover controls"><img alt="LUI unitframe mover controls" decoding="async" height="123" loading="lazy" src="assets/move-unitframes.webp" width="610" style="max-width:610px"/></a>
-                <figcaption>Move Unitframes.</figcaption>
-            </figure>
+                <figcaption>Unitframes → General Settings: mover and preview controls</figcaption><a href="assets/move-unitframes.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Unitframes → General Settings: mover and preview controls"><img alt="LUI unitframe mover controls" decoding="async" height="123" loading="lazy" src="assets/move-unitframes.webp" width="610" style="max-width:610px"></a>
+                </figure>
             <div class="callout tip">
                 <strong>Reset</strong>
                 <p>Reset returns movers to their last saved positions, not the default layout.</p>
@@ -219,7 +173,10 @@
                 <li><strong>Texts:</strong> names, health, power, percentages, absorbs and combat feedback. Each has its own font, format, position and visibility options.</li>
                 <li><strong>Indicators:</strong> icons such as leader, role, raid marker, PvP, ready check and combat status. Set their visibility, size and position.</li>
             </ul>
-            <div class="callout note">
+            <h3>Example: Player Health Bar</h3><p>In <strong>Categorized</strong> mode, open <strong>Unitframes → player → Bars → Health Bar</strong>. The example below shows the health bar's size, position, textures, background and color controls.</p><figure>
+                <figcaption>Categorized example: player → Bars → Health Bar</figcaption><a href="assets/categorized.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Categorized example: player → Bars → Health Bar"><img alt="Player Health Bar settings in Categorized mode" decoding="async" height="867" loading="lazy" src="assets/categorized.webp" width="1210" style="max-width:1210px"></a>
+                </figure>
+        <div class="callout note">
                 <strong>Shields and incoming healing</strong>
                 <p>Enable Absorb Bar or Heal Prediction Bar under Bars where supported. Their text displays are configured separately under Texts.</p>
             </div>
@@ -229,9 +186,8 @@
             <h2><a href="#auras">Buffs and Debuffs</a></h2>
             <p>Open the frame's <strong>Auras → Buffs / Debuffs</strong> page in Categorized mode. Buffs and debuffs have separate size, spacing, position and filtering settings.</p>
             <figure>
-                <a href="assets/auras.webp" target="_blank" rel="noopener" aria-label="Open screenshot: LUI Target debuff options"><img alt="LUI Target debuff options" decoding="async" height="864" loading="lazy" src="assets/auras.webp" width="1207" style="max-width:1207px"/></a>
-                <figcaption>Target → Auras → Debuffs.</figcaption>
-            </figure>
+                <figcaption>Unitframes → target → Auras → Debuffs</figcaption><a href="assets/auras.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Unitframes → target → Auras → Debuffs"><img alt="LUI Target debuff options" decoding="async" height="864" loading="lazy" src="assets/auras.webp" width="1207" style="max-width:1207px"></a>
+                </figure>
             <div class="data-grid">
                 <div><strong>Player &amp; Pet Only</strong><span>Includes your auras and those applied by your pet or vehicle.</span></div>
                 <div><strong>Dispel Type Border</strong><span>Colors borders by magic, curse, disease or poison.</span></div>
@@ -253,30 +209,24 @@
             <h2><a href="#bags-bank">Bags and Bank</a></h2>
             <p><strong>Bags → Backpack Options</strong> controls items per row, spacing and scale. Disable <strong>Lock Frame</strong> to move the window. Newline After Bags starts a separate row for each bag.</p>
             <p><strong>Fill Bags from Bottom</strong> changes the fill direction and immediately runs cleanup. Bag filters and reagent restrictions still apply.</p>
+            <figure>
+                <figcaption>Bags → Backpack Options</figcaption><a href="assets/bags-backpack-options.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Bags → Backpack Options"><img alt="Backpack layout settings including items per row, spacing and Fill Bags from Bottom" decoding="async" height="814" loading="lazy" src="assets/bags-backpack-options.webp" width="1141" style="max-width:1141px"></a>
+                </figure>
+            <figure>
+                <figcaption>Result: the backpack and bag bar</figcaption><a href="assets/bags-backpack-example.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Result: the backpack and bag bar"><img alt="Open LUI backpack with bag bar, items and Forever keyring shortcut" decoding="async" height="307" loading="lazy" src="assets/bags-backpack-example.webp" width="793" style="max-width:793px"></a>
+                </figure>
+            <h3>Textures, borders and colors</h3>
             <p><strong>Bags → Textures</strong> contains fonts, backgrounds and separate window/item borders. Show Item Quality colors item borders by quality. Background opacity and item-slot backgrounds can be adjusted separately.</p>
             <figure>
-                <a href="assets/bags-backpack-options.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Backpack layout settings including items per row, spacing and Fill Bags from Bottom"><img alt="Backpack layout settings including items per row, spacing and Fill Bags from Bottom" decoding="async" height="814" loading="lazy" src="assets/bags-backpack-options.webp" width="1141" style="max-width:1141px"/></a>
-                <figcaption>Bags → Backpack Options.</figcaption>
-            </figure>
+                <figcaption>Bags → Textures: textures, border thickness and fonts</figcaption><a href="assets/bags-textures-upper.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Bags → Textures: textures, border thickness and fonts"><img alt="Bag background and border textures, border thickness and font settings" decoding="async" height="493" loading="lazy" src="assets/bags-textures-upper.webp" width="1124" style="max-width:1124px"></a>
+                </figure>
+            <p><strong>Background Color</strong> fills the window when Background Texture is None. With a texture selected, its opacity is used while the texture keeps its own colors.</p><figure>
+                <figcaption>Bags → Textures → Background Color</figcaption><a href="assets/bags-background-color.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Bags → Textures → Background Color"><img alt="Bag background color control" decoding="async" height="102" loading="lazy" src="assets/bags-background-color.webp" width="754" style="max-width:754px"></a>
+                </figure>
+            <p><strong>Bag Border</strong>, <strong>Item Border</strong> and <strong>Item Background</strong> have separate colors. Item Background colors the backplate beneath the icon.</p><p><strong>Item Border Color</strong> is greyed out while Show Item Quality is enabled under Backpack Options. Turn off Show Item Quality to choose one border color instead.</p>
             <figure>
-                <a href="assets/bags-backpack-example.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Open LUI backpack with bag bar, items and Forever keyring shortcut"><img alt="Open LUI backpack with bag bar, items and Forever keyring shortcut" decoding="async" height="307" loading="lazy" src="assets/bags-backpack-example.webp" width="793" style="max-width:793px"/></a>
-                <figcaption>Example backpack and bag bar. The keyring shortcut is client-specific.</figcaption>
-            </figure>
-            <h3>Textures, borders and colors</h3>
-            <figure>
-                <a href="assets/bags-textures-upper.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Bag background and border textures, border thickness and font settings"><img alt="Bag background and border textures, border thickness and font settings" decoding="async" height="493" loading="lazy" src="assets/bags-textures-upper.webp" width="1124" style="max-width:1124px"/></a>
-                <figcaption>Bags → Textures: window and item borders have separate controls.</figcaption>
-            </figure>
-            <p><strong>Background Color</strong> fills the window when Background Texture is None. With a texture selected, its opacity is used while the texture keeps its own colors. <strong>Item Background</strong> colors the backplate beneath the item icon.</p>
-            <figure>
-                <a href="assets/bags-background-color.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Bag background color control"><img alt="Bag background color control" decoding="async" height="102" loading="lazy" src="assets/bags-background-color.webp" width="754" style="max-width:754px"/></a>
-                <figcaption>Background Color is separate from Item Background.</figcaption>
-            </figure>
-            <p><strong>Item Border Color</strong> is greyed out while Show Item Quality is enabled under Backpack Options. Turn off Show Item Quality to choose one border color instead.</p>
-            <figure>
-                <a href="assets/bags-textures-colors.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Bag and item border, item background and text color controls"><img alt="Bag and item border, item background and text color controls" decoding="async" height="866" loading="lazy" src="assets/bags-textures-colors.webp" width="1133" style="max-width:1133px"/></a>
-                <figcaption>Bags → Textures, further down: separate colors for frames, slots and text.</figcaption>
-            </figure>
+                <figcaption>Bags → Textures: border, item background and text colors</figcaption><a href="assets/bags-textures-colors.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Bags → Textures: border, item background and text colors"><img alt="Bag and item border, item background and text color controls" decoding="async" height="866" loading="lazy" src="assets/bags-textures-colors.webp" width="1133" style="max-width:1133px"></a>
+                </figure>
             <div class="callout note">
                 <strong>Retail and Forever</strong>
                 <p>Retail's Bags → Bank Options → Use LUI Bank is optional and off by default. It shares bag textures, with separate layout settings. Forever uses its native bank; its keyring shortcut also requires Blizzard's keyring visibility setting.</p>
@@ -289,24 +239,20 @@
                 <strong>A second progress bar</strong>
                 <p>Enable Allow tracking two things at once. Enable Separate tracked bars for an independent position and width, then turn off Lock Bars to move them.</p>
             </div>
-            <p><strong>Automatically track reputation gains</strong> switches the watched faction. <strong>Show Rested XP</strong> adds the reserve to the text; its tooltip and blue rested area remain independent.</p>
-            <figure>
-                <a href="assets/experience-bars-upper.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Experience bar tracking, appearance, textures and primary bar settings"><img alt="Experience bar tracking, appearance, textures and primary bar settings" decoding="async" height="873" loading="lazy" src="assets/experience-bars-upper.webp" width="1113" style="max-width:1113px"/></a>
-                <figcaption>Experience Bars: tracking and appearance controls.</figcaption>
-            </figure>
-            <figure>
-                <a href="assets/experience-bars-lower.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Primary and secondary progress bar positions, font and text display choices"><img alt="Primary and secondary progress bar positions, font and text display choices" decoding="async" height="855" loading="lazy" src="assets/experience-bars-lower.webp" width="1116" style="max-width:1116px"/></a>
-                <figcaption>Experience Bars, further down: separate bars, fonts, labels and values.</figcaption>
-            </figure>
+            <p><strong>Automatically track reputation gains</strong> switches the watched faction when reputation is gained.</p><figure>
+                <figcaption>Experience Bars: tracking and appearance</figcaption><a href="assets/experience-bars-upper.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Experience Bars: tracking and appearance"><img alt="Experience bar tracking, appearance, textures and primary bar settings" decoding="async" height="873" loading="lazy" src="assets/experience-bars-upper.webp" width="1113" style="max-width:1113px"></a>
+                </figure>
+            <p><strong>Primary Bar</strong> and <strong>Secondary Bar</strong> control position and size. Further down, <strong>Text Settings</strong> and <strong>Font</strong> control labels and values.</p><p><strong>Show Rested XP</strong> adds the reserve to the text; its tooltip and blue rested area remain independent.</p><figure>
+                <figcaption>Experience Bars: bar positions and text settings</figcaption><a href="assets/experience-bars-lower.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Experience Bars: bar positions and text settings"><img alt="Primary and secondary progress bar positions, font and text display choices" decoding="async" height="855" loading="lazy" src="assets/experience-bars-lower.webp" width="1116" style="max-width:1116px"></a>
+                </figure>
         </section>
         <section id="ui-elements">
             <h2><a href="#ui-elements">Buttons and UI Elements</a></h2>
             <p>Under <strong>UI Elements → Button Appearance</strong>, enable <strong>Customize Buttons</strong> and choose styles for ordinary buttons and the Escape menu separately.</p>
             <figure>
-                <a href="assets/buttons.webp" target="_blank" rel="noopener" aria-label="Open screenshot: LUI UI Elements and button appearance options"><img alt="LUI UI Elements and button appearance options" decoding="async" height="872" loading="lazy" src="assets/buttons.webp" width="1216" style="max-width:1216px"/></a>
-                <figcaption>UI Elements.</figcaption>
-            </figure>
-            <p><strong>LUI-Managed Frames</strong> positions supported elements such as the LFG Queue Eye. Select the frame, enable Manage This Frame's Position and use Toggle Position Preview.</p>
+                <figcaption>UI Elements → Button Appearance</figcaption><a href="assets/buttons.webp" target="_blank" rel="noopener" aria-label="Open screenshot: UI Elements → Button Appearance"><img alt="UI Elements Button Appearance settings for ordinary buttons and the Escape menu" decoding="async" height="274" loading="lazy" src="assets/buttons.webp" width="883" style="max-width:883px"></a>
+                </figure>
+            <h3>Managed frames and Edit Mode</h3><p><strong>LUI-Managed Frames</strong> positions supported elements such as the LFG Queue Eye. Select the frame, enable Manage This Frame's Position and use Toggle Position Preview.</p>
             <p><strong>Blizzard Edit Mode</strong> handles the Objectives Tracker, Alternate Power/Encounter Bar, Durability Frame and Vehicle Seat Indicator.</p>
             <div class="callout note">
                 <strong>Forever swing timer</strong>
@@ -319,15 +265,13 @@
             <p><strong>Tooltip</strong> contains visibility rules, scale, position, health bar/text, background and border settings. With Anchor to Cursor enabled, fixed-position controls may be greyed out. Background Texture → None allows a plain background color.</p>
             <h3>Infotext</h3>
             <p><strong>Infotext → Individual Settings</strong> enables and positions displays such as time, gold, bag space, durability, Friends and Guild. Hover over a display for more information. Each page contains its own extra choices, such as gold totals or friend notes.</p>
+            <figure>
+                <figcaption>Infotext → Individual Settings → Clock</figcaption><a href="assets/infotext-individual-clock.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Infotext → Individual Settings → Clock"><img alt="Infotext Individual Settings with Clock selected and installed DataBroker displays listed" decoding="async" height="482" loading="lazy" src="assets/infotext-individual-clock.webp" width="1122" style="max-width:1122px"></a>
+                </figure>
             <p><strong>Global Settings</strong> contains shared fonts and hover-window colors. <strong>Top Bar Placement</strong> moves the top displays together. Friends and Guild also have separate hover-window appearance settings.</p>
             <figure>
-                <a href="assets/infotext-individual-clock.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Infotext Individual Settings with Clock selected and installed DataBroker displays listed"><img alt="Infotext Individual Settings with Clock selected and installed DataBroker displays listed" decoding="async" height="482" loading="lazy" src="assets/infotext-individual-clock.webp" width="1122" style="max-width:1122px"/></a>
-                <figcaption>Infotext → Individual Settings → Clock. Extra tabs depend on your installed addons.</figcaption>
-            </figure>
-            <figure>
-                <a href="assets/infotext-global-settings.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Infotext global fonts, Top Bar Placement and hover-window text colors"><img alt="Infotext global fonts, Top Bar Placement and hover-window text colors" decoding="async" height="616" loading="lazy" src="assets/infotext-global-settings.webp" width="1120" style="max-width:1120px"/></a>
-                <figcaption>Infotext → Global Settings. Top Bar Placement moves the top displays together.</figcaption>
-            </figure>
+                <figcaption>Infotext → Global Settings</figcaption><a href="assets/infotext-global-settings.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Infotext → Global Settings"><img alt="Infotext global fonts, Top Bar Placement and hover-window text colors" decoding="async" height="616" loading="lazy" src="assets/infotext-global-settings.webp" width="1120" style="max-width:1120px"></a>
+                </figure>
             <div class="callout tip">
                 <strong>Displays from other addons</strong>
                 <p>Supported LibDataBroker displays appear under Individual Settings too. Enable and position them here; their addon-specific settings remain in the supplying addon.</p>
@@ -336,19 +280,18 @@
         </section>
         <section id="menus">
             <h2><a href="#menus">Micromenu and RaidMenu</a></h2>
-            <p><strong>Micromenu → Micromenu</strong> controls visible buttons, placement and colors. In Retail, left-click the talents button for talents and right-click for the spellbook. Available buttons depend on your client.</p>
-            <figure>
-                <a href="assets/micromenu-raidmenu.webp" target="_blank" rel="noopener" aria-label="Open screenshot: LUI Micromenu and Raid Menu"><img alt="LUI Micromenu and Raid Menu" decoding="async" height="432" loading="lazy" src="assets/micromenu-raidmenu.webp" width="266" style="max-width:266px"/></a>
-                <figcaption>LUI Raid Menu.</figcaption>
-            </figure>
+            <h3>Micromenu</h3><p><strong>Micromenu → Micromenu</strong> controls visible buttons, placement and colors. In Retail, left-click the talents button for talents and right-click for the spellbook. Available buttons depend on your client.</p>
             <div class="callout tip">
                 <strong>Quick toggle bars</strong>
                 <p>Left: RaidMenu. Middle arrow: expand or collapse Micromenu. Right: Minimap.</p>
             </div>
-            <p><strong>Micromenu → Raid Menu</strong> controls the group tools, compact layout, scale, spacing, background and overlap behavior.</p>
+            <h3>Raid Menu</h3><p><strong>Micromenu → Raid Menu</strong> controls the group tools, compact layout, scale, spacing, background and overlap behavior.</p>
             <p><strong>Group - Options</strong> opens difficulty, raid-frame and other supported group controls. Blizzard raid-frame filters affect Blizzard's frames; configure LUI's layout under Unitframes → Raid.</p>
             <p><strong>Clear Unit Markers:</strong> left-click clears the target's marker; right-click clears all unit markers. Actions depend on group permissions and combat state. Disabling Enable Raid Menu restores Blizzard's group manager outside combat.</p>
-        </section>
+        <figure>
+                <figcaption>Example: the in-game Raid Menu</figcaption><a href="assets/micromenu-raidmenu.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Example: the in-game Raid Menu"><img alt="LUI Micromenu and Raid Menu" decoding="async" height="432" loading="lazy" src="assets/micromenu-raidmenu.webp" width="266" style="max-width:266px"></a>
+                </figure>
+            </section>
         <section id="other-settings">
             <h2><a href="#other-settings">Other Settings</a></h2>
             <h3 id="chat">Chat</h3>
@@ -356,29 +299,23 @@
                 <strong>Using Prat or Chatter</strong>
                 <p>LUI leaves chat to Prat or Chatter while either addon is enabled, so its own Chat settings may be absent. To use LUI Chat, disable the other chat addon, reload, and enable Chat under Control Panel if needed.</p>
             </div>
-            <p><strong>Chat → General Settings</strong> covers fonts, fading, channel names and link tooltips. <strong>Chat Input Box</strong> changes typing-box placement and appearance. <strong>Buttons</strong> controls chat buttons and copying; <strong>Sticky Channels</strong> keeps chosen channels selected after sending a message.</p>
-            <figure>
-                <a href="assets/chat-general.webp" target="_blank" rel="noopener" aria-label="Open screenshot: LUI Chat general settings for fonts, channel names, tabs and message fading"><img alt="LUI Chat general settings for fonts, channel names, tabs and message fading" decoding="async" height="452" loading="lazy" src="assets/chat-general.webp" width="1124" style="max-width:1124px"/></a>
-                <figcaption>Chat → General Settings. Disable message fading keeps messages visible.</figcaption>
-            </figure>
-            <figure>
-                <a href="assets/chat-input-box.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Chat Input Box settings for font, anchor, height, history and background"><img alt="Chat Input Box settings for font, anchor, height, history and background" decoding="async" height="802" loading="lazy" src="assets/chat-input-box.webp" width="1113" style="max-width:1113px"/></a>
-                <figcaption>Chat → Chat Input Box. Use Anchor Point to place the input box.</figcaption>
-            </figure>
-            <figure>
-                <a href="assets/chat-input-border.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Chat input box border texture and thickness settings"><img alt="Chat input box border texture and thickness settings" decoding="async" height="113" loading="lazy" src="assets/chat-input-border.webp" width="748" style="max-width:748px"/></a>
-                <figcaption>Chat Input Box, further down: Border.</figcaption>
-            </figure>
-            <h3 id="minimap">Minimap</h3>
+            <p><strong>Chat → General Settings</strong> controls fonts, message and tab fading, channel names and link tooltips. Disable message fading keeps chat messages visible.</p><figure>
+                <figcaption>Chat → General Settings</figcaption><a href="assets/chat-general.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Chat → General Settings"><img alt="LUI Chat general settings for fonts, channel names, tabs and message fading" decoding="async" height="452" loading="lazy" src="assets/chat-general.webp" width="1124" style="max-width:1124px"></a>
+                </figure>
+            <p><strong>Chat → Chat Input Box</strong> controls the typing box: font, Anchor Point, height, history and background.</p><figure>
+                <figcaption>Chat → Chat Input Box</figcaption><a href="assets/chat-input-box.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Chat → Chat Input Box"><img alt="Chat Input Box settings for font, anchor, height, history and background" decoding="async" height="802" loading="lazy" src="assets/chat-input-box.webp" width="1113" style="max-width:1113px"></a>
+                </figure>
+            <p>Further down on <strong>Chat Input Box</strong>, <strong>Border</strong> sets the input box's border texture and thickness.</p><figure>
+                <figcaption>Chat → Chat Input Box → Border</figcaption><a href="assets/chat-input-border.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Chat → Chat Input Box → Border"><img alt="Chat input box border texture and thickness settings" decoding="async" height="113" loading="lazy" src="assets/chat-input-border.webp" width="748" style="max-width:748px"></a>
+                </figure>
+            <p><strong>Buttons</strong> controls chat buttons and copying; <strong>Sticky Channels</strong> keeps chosen channels selected after sending a message.</p><h3 id="minimap">Minimap</h3>
             <p><strong>Minimap</strong> controls map size, placement, artwork, text and coordinates. <strong>Minimap Icons</strong> separately positions expansion, mail and notification icons.</p>
             <figure>
-                <a href="assets/minimap-icon-options.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Minimap position, scale and independent icon position and size controls"><img alt="Minimap position, scale and independent icon position and size controls" decoding="async" height="863" loading="lazy" src="assets/minimap-icon-options.webp" width="1121" style="max-width:1121px"/></a>
-                <figcaption>Minimap → Minimap Icons. Map, expansion-button and notification positions are separate.</figcaption>
-            </figure>
+                <figcaption>Minimap: Position and Minimap Icons</figcaption><a href="assets/minimap-icon-options.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Minimap: Position and Minimap Icons"><img alt="Minimap position, scale and independent icon position and size controls" decoding="async" height="863" loading="lazy" src="assets/minimap-icon-options.webp" width="1121" style="max-width:1121px"></a>
+                </figure>
             <figure class="compact-figure">
-                <a href="assets/minimap-example.webp" target="_blank" rel="noopener" aria-label="Open screenshot: In-game minimap with area name, coordinates and mail notification"><img alt="In-game minimap with area name, coordinates and mail notification" decoding="async" height="277" loading="lazy" src="assets/minimap-example.webp" width="274" style="max-width:274px"/></a>
-                <figcaption>Example minimap with coordinates and a mail notification.</figcaption>
-            </figure>
+                <figcaption>Result: the in-game minimap</figcaption><a href="assets/minimap-example.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Result: the in-game minimap"><img alt="In-game minimap with area name, coordinates and mail notification" decoding="async" height="277" loading="lazy" src="assets/minimap-example.webp" width="274" style="max-width:274px"></a>
+                </figure>
             <h3 id="merchant">Merchant</h3>
             <p><strong>Merchant → Auto Repair / Auto Sell / Auto Stock</strong> each has its own enable switch. Choose repair funding, selling rules and exclusions, or items and quantities to restock.</p>
             <div class="callout warning">
@@ -424,9 +361,8 @@
             <h2><a href="#diagnostics">LUI DEBUG</a></h2>
             <p>Enable the bundled <strong>LUIDiagnostics</strong> addon, then open <strong>LUI DEBUG → Open LUI DEBUG</strong> or type <code>/luidebug</code>. Follow the instructions in the window.</p>
             <figure>
-                <a href="assets/lui-debug.webp" target="_blank" rel="noopener" aria-label="Open screenshot: LUI DEBUG window showing recording controls"><img alt="LUI DEBUG window showing recording controls" decoding="async" height="774" loading="lazy" src="assets/lui-debug.webp" width="965" style="max-width:965px"/></a>
-                <figcaption>LUI DEBUG.</figcaption>
-            </figure>
+                <figcaption>Example: the LUI DEBUG window</figcaption><a href="assets/lui-debug.webp" target="_blank" rel="noopener" aria-label="Open screenshot: Example: the LUI DEBUG window"><img alt="LUI DEBUG window showing recording controls" decoding="async" height="774" loading="lazy" src="assets/lui-debug.webp" width="965" style="max-width:965px"></a>
+                </figure>
             <div class="callout warning">
                 <strong>Closing the window does NOT stop recording</strong>
                 <p>Recording continues through reloads and logins until you stop it in LUI DEBUG.</p>
