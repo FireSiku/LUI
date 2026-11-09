@@ -19,7 +19,6 @@ local db
 -- Local Variables
 --------------------------------------------------
 
-local FCF_GetCurrentChatFrame = _G.FCF_GetCurrentChatFrame
 local ChatFontNormal = _G.ChatFontNormal
 local CHAT_FRAMES = _G.CHAT_FRAMES
 local COMBATLOG = _G.COMBATLOG
@@ -36,7 +35,7 @@ local function getChatLines(frame)
 	wipe(lines)
 	for i = 1, frame:GetNumMessages() do
 		local text = frame:GetMessageInfo(i)
-		if text and not issecretvalue(text) then
+		if not issecretvalue(text) and text then
 			lines[#lines + 1] = text
 		end
 	end
@@ -215,10 +214,10 @@ local voiceVisibility = setmetatable({}, {__mode = "k"})
 
 local function updateTemporaryWindowHook()
 	local needed = db.HideButtons or db.CopyChat
-	if needed and not module:IsHooked("FCF_OpenTemporaryWindow") then
-		module:SecureHook("FCF_OpenTemporaryWindow")
-	elseif not needed and module:IsHooked("FCF_OpenTemporaryWindow") then
-		module:Unhook("FCF_OpenTemporaryWindow")
+	if needed and not module:IsHooked("FCF_SetTemporaryWindowType") then
+		module:SecureHook("FCF_SetTemporaryWindowType")
+	elseif not needed and module:IsHooked("FCF_SetTemporaryWindowType") then
+		module:Unhook("FCF_SetTemporaryWindowType")
 	end
 end
 
@@ -292,8 +291,7 @@ function module:AddMessage(frame)
 	end
 end
 
-function module:FCF_OpenTemporaryWindow()
-	local frame = FCF_GetCurrentChatFrame()
+function module:FCF_SetTemporaryWindowType(frame)
 
 	if db.HideButtons then
 		hideButtons(frame)
