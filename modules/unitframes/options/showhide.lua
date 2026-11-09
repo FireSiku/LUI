@@ -144,6 +144,7 @@ local function GetContainer(group)
 	if not container then
 		container = CreateFrame("Frame", "oUF_LUI_preview_container_"..group, UIParent)
 		container.LUIMoveName = group
+		container.LUIPreview = true
 		preview.containers[group] = container
 	end
 	container:Show()
@@ -174,7 +175,7 @@ local function PositionContainer(container, db, group)
 	end
 	container:ClearAllPoints()
 	container:SetScale(scale)
-	container:SetPoint(db.Point, UIParent, db.Point, db.X / scale, db.Y / scale)
+	module:PositionFrame(container, db)
 	container:SetSize(width, height)
 end
 
@@ -223,7 +224,7 @@ local function ShowSingle(unit)
 	frame:SetParent(UIParent)
 	frame:SetScale(scale)
 	frame:ClearAllPoints()
-	frame:SetPoint(db.Point, UIParent, db.Point, db.X / scale, db.Y / scale)
+	module:PositionFrame(frame, db)
 	module.ApplySettings(unit, true)
 end
 
@@ -323,6 +324,18 @@ local function ClearPreviewFrames()
 	wipe(preview.hiddenRealFrames)
 end
 
+local function PositionPreviewAnchors()
+	local anchors = {}
+	for _, unit in ipairs(module.unitsSpawn) do
+		local frame = module:GetUnitframePreviewAnchor(unit)
+		if frame and frame:IsShown() then
+			frame:ClearAllPoints()
+			anchors[unit] = frame
+		end
+	end
+	for unit, frame in pairs(anchors) do module:PositionFrame(frame, module.db.profile[unit]) end
+end
+
 local function RebuildPreview()
 	ClearPreviewFrames()
 	local shown = {}
@@ -342,6 +355,7 @@ local function RebuildPreview()
 
 	-- Cast tests add their layouts without replacing an explicit frame preview.
 	for unit in pairs(preview.castbarUnits) do ShowSelection(unit) end
+	PositionPreviewAnchors()
 	for unit in pairs(preview.castbarUnits) do ApplyCastbarPreview(unit) end
 end
 
@@ -416,11 +430,13 @@ end
 -- secure group header does not exist (for example outside a raid or when a
 -- conflicting raid-frame addon prevented LUI from spawning its raid header).
 function module:GetUnitframePreviewAnchor(unit)
+	local names = self.framelist[unit]
+	local anchor = preview.containers[unit] or (names and preview.frames[names[#names]])
 	if preview.active == "all" or preview.active == unit or childParents[preview.active] == unit then
-		return preview.containers[unit]
+		return anchor
 	end
 	for castUnit in pairs(preview.castbarUnits) do
-		if castUnit == unit or childParents[castUnit] == unit then return preview.containers[unit] end
+		if castUnit == unit or childParents[castUnit] == unit then return anchor end
 	end
 end
 

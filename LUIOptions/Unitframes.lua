@@ -23,6 +23,8 @@ local copySource = {}
 local copySection = {}
 local copySizes = {}
 local copyPositions = {}
+local anchorPointValues = CopyTable(LUI.Points)
+anchorPointValues.AUTO = "Same as Anchor"
 
 local COPY_SECTIONS = {
     All = "All Settings",
@@ -37,7 +39,7 @@ local COPY_SECTIONS = {
 }
 
 local POSITION_KEYS = {
-    X = true, Y = true, Point = true, RelativePoint = true, InitialAnchor = true, Position = true,
+    X = true, Y = true, Point = true, RelativePoint = true, Anchor = true, AnchorPoint = true, InitialAnchor = true, Position = true,
     GrowthX = true, GrowthY = true, GrowDirection = true,
 }
 
@@ -61,6 +63,30 @@ local relativeUnits = {
     maintanktarget = true,
     maintanktargettarget = true,
 }
+
+local function UnitAnchorValues(unit)
+    local values = {UIParent = "Screen"}
+    for _, target in ipairs(module.unitsSpawn) do
+        local name = "oUF_LUI_"..target
+        if target ~= unit and _G[name] then values[name] = "Unitframe: "..target end
+    end
+    for name, label in pairs({
+        Minimap = "Minimap", ChatFrame1 = "Chat",
+        LUIPanel_ActionBarTopTexture = "Artwork: Action Bar Top",
+        LUISidebarLeft = "Artwork: Left Sidebar", LUISidebarRight = "Artwork: Right Sidebar",
+        BT4Bar1 = "Bartender: Main Bar", DominosFrame1 = "Dominos: Main Bar",
+        DetailsBaseFrame1 = "Details: Window 1", DetailsBaseFrame2 = "Details: Window 2",
+    }) do
+        if _G[name] then values[name] = label end
+    end
+    local artwork = LUI:GetModule("Artwork", true)
+    if artwork then
+        for name, panel in artwork:IteratePanels() do
+            if panel.db then values[panel:GetName()] = "Artwork: "..name end
+        end
+    end
+    return values
+end
 
 local supportsClassPower = module.supportsClassPower
 local supportsAdditionalPower = module.supportsAdditionalPower
@@ -687,6 +713,14 @@ local function NewUnitOptionGroup(unit, order, categorized)
         X = Opt:PositionX(),
         Y = Opt:PositionY(),
         Point = Opt:Select({name = L["Anchor"], values = LUI.Points}),
+        Anchor = Opt:Select({name = "Anchor Frame", desc = "Move with another frame. Changes apply outside combat; unavailable anchors use the screen.",
+            values = function() return UnitAnchorValues(unit) end, onlyIf = not relativeUnits[unit],
+            validate = function(_, value)
+                return LUI:GetValidAnchor(_G["oUF_LUI_"..unit], value) and true
+                    or "Choose an existing frame that does not depend on this unitframe."
+            end}),
+        AnchorPoint = Opt:Select({name = "Attach To", values = anchorPointValues,
+            onlyIf = not relativeUnits[unit]}),
         RelativePoint = Opt:Select({name = "Attach To", values = LUI.Points, onlyIf = (relativeUnits[unit] == true)}),
         Scale = Opt:Slider({name = "Scale", values = Opt.ScaleValues, onlyIf = (dbUnit.Scale ~= nil)}),
         -- Groups Options

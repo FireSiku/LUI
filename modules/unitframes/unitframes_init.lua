@@ -103,6 +103,37 @@ end
 module.childGroups = "tree"
 module.defaults = { profile = {} }
 
+function module:GetUnitAnchor(frame, settings)
+	local name = settings.Anchor
+	if frame.LUIPreview and type(name) == "string" and self.GetUnitframePreviewAnchor then
+		local unit = name:match("^oUF_LUI_(%a+)$")
+		local previewAnchor = unit and self:GetUnitframePreviewAnchor(unit)
+		if previewAnchor then name = previewAnchor:GetName() end
+	end
+	return LUI:GetValidAnchor(frame, name) or UIParent
+end
+
+function module:PositionFrame(frame, settings, x, y)
+	local scale = settings.Scale or 1
+	local relativePoint = settings.AnchorPoint
+	if not LUI.Points[relativePoint] then relativePoint = settings.Point end
+	frame:SetPoint(settings.Point, self:GetUnitAnchor(frame, settings), relativePoint,
+		x or settings.X / scale, y or settings.Y / scale)
+end
+
+function module:RefreshAnchors()
+	if InCombatLockdown() or not self:IsEnabled() then return end
+	-- Remove the previous profile's dependencies before applying the new ones.
+	for _, unit in ipairs(self.unitsSpawn) do
+		local frame = _G["oUF_LUI_"..unit]
+		if frame then frame:ClearAllPoints() end
+	end
+	for _, unit in ipairs(self.unitsSpawn) do
+		local frame = _G["oUF_LUI_"..unit]
+		if frame then self:PositionFrame(frame, self.db.profile[unit]) end
+	end
+end
+
 -- Return the vertical footprint occupied by the configured primary bars without
 -- changing the unit frame's own height. Some legacy LUI layouts intentionally
 -- place the PowerBar below the frame; grouped frames still need to reserve that
@@ -196,11 +227,16 @@ function module:Refresh()
 	-- option pages and databases. Apply every unit database after the parents
 	-- have created/enabled their children.
 	for _, unit in pairs(module.units) do self.ApplySettings(unit) end
+	self:RefreshAnchors()
 
 	if self.RefreshUnitframePreview then self:RefreshUnitframePreview() end
 end
 
 function module:OnInitialize()
+	for _, unit in ipairs(self.unitsSpawn) do
+		self.defaults.profile[unit].Anchor = "UIParent"
+		self.defaults.profile[unit].AnchorPoint = "AUTO"
+	end
 	-- Register per-unit defaults after all layout default files have loaded.
 	-- AceDB fills missing settings without replacing saved preferences.
 	for _, defaults in pairs(module.defaults.profile) do
@@ -244,6 +280,7 @@ end
 function module:OnEnable()
 	LUI.Profiler.TraceScope(module, "Unitframes", "LUI", 2)
 	for _, unit in pairs(module.unitsSpawn) do module.ToggleUnit(unit) end
+	self:RefreshAnchors()
 end
 
 local StopPreviewOutOfCombat = LUI.OutOfCombatWrapper(function()

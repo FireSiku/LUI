@@ -188,6 +188,7 @@ pendingToggleFrame:SetScript("OnEvent", function(self)
 	for unit, request in pairs(queued) do
 		module.ToggleUnit(unit, request.override)
 	end
+	module:RefreshAnchors()
 end)
 
 local ToggleMT = {
@@ -230,11 +231,11 @@ module.ToggleUnit = setmetatable({
 				_G["oUF_LUI_"..unit]:UpdateAllElements('refreshUnit')
 				_G["oUF_LUI_"..unit]:ClearAllPoints()
 				_G["oUF_LUI_"..unit]:SetScale(dbUnit.Scale)
-				_G["oUF_LUI_"..unit]:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(_G["oUF_LUI_"..unit], dbUnit, x, y)
 			else
 				local f = oUF:Spawn(unit, "oUF_LUI_"..unit)
 				f:SetScale(dbUnit.Scale)
-				f:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(f, dbUnit, x, y)
 			end
 
 		else
@@ -261,7 +262,7 @@ module.ToggleUnit = setmetatable({
 			if oUF_LUI_boss then
 				oUF_LUI_boss:SetScale(dbUnit.Scale)
 				oUF_LUI_boss:ClearAllPoints()
-				oUF_LUI_boss:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(oUF_LUI_boss, dbUnit, x, y)
 				oUF_LUI_boss:SetWidth(dbUnit.Width)
 				oUF_LUI_boss:SetHeight(footprintHeight)
 				oUF_LUI_boss:SetAttribute("Height", footprintHeight)
@@ -290,7 +291,7 @@ module.ToggleUnit = setmetatable({
 			else
 				local bossParent = CreateFrame("Frame", "oUF_LUI_boss", UIParent)
 				bossParent:SetScale(dbUnit.Scale)
-				bossParent:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(bossParent, dbUnit, x, y)
 				bossParent:SetWidth(dbUnit.Width)
 				bossParent:SetHeight(footprintHeight)
 				bossParent:SetAttribute("Height", footprintHeight)
@@ -394,7 +395,7 @@ module.ToggleUnit = setmetatable({
 			if oUF_LUI_party then
 				oUF_LUI_party:SetScale(dbUnit.Scale)
 				oUF_LUI_party:ClearAllPoints()
-				oUF_LUI_party:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(oUF_LUI_party, dbUnit, x, y)
 				oUF_LUI_party:SetAttribute("point", opposite)
 				oUF_LUI_party:SetAttribute("xOffset", growdir == "LEFT" and - dbUnit.Padding or dbUnit.Padding)
 				oUF_LUI_party:SetAttribute("yOffset", growdir == "BOTTOM" and - partyVerticalPadding or partyVerticalPadding)
@@ -449,7 +450,7 @@ module.ToggleUnit = setmetatable({
 				)
 
 				party:SetScale(dbUnit.Scale)
-				party:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(party, dbUnit, x, y)
 
 				local handler = CreateFrame("Frame")
 				handler:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -569,7 +570,7 @@ module.ToggleUnit = setmetatable({
 			if oUF_LUI_arena then
 				oUF_LUI_arena:SetScale(dbUnit.Scale)
 				oUF_LUI_arena:ClearAllPoints()
-				oUF_LUI_arena:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(oUF_LUI_arena, dbUnit, x, y)
 				oUF_LUI_arena:SetWidth(dbUnit.Width)
 				oUF_LUI_arena:SetHeight(footprintHeight)
 				oUF_LUI_arena:SetAttribute("Height", footprintHeight)
@@ -598,7 +599,7 @@ module.ToggleUnit = setmetatable({
 			else
 				local arenaParent = CreateFrame("Frame", "oUF_LUI_arena", UIParent)
 				arenaParent:SetScale(dbUnit.Scale)
-				arenaParent:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(arenaParent, dbUnit, x, y)
 				arenaParent:SetWidth(dbUnit.Width)
 				arenaParent:SetHeight(footprintHeight)
 				arenaParent:SetAttribute("Height", footprintHeight)
@@ -730,7 +731,7 @@ module.ToggleUnit = setmetatable({
 			if oUF_LUI_maintank then
 				oUF_LUI_maintank:SetScale(dbUnit.Scale)
 				oUF_LUI_maintank:ClearAllPoints()
-				oUF_LUI_maintank:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(oUF_LUI_maintank, dbUnit, x, y)
 				oUF_LUI_maintank:SetAttribute("point", opposite)
 				oUF_LUI_maintank:SetAttribute("xOffset", growdir == "LEFT" and - dbUnit.Padding or dbUnit.Padding)
 				oUF_LUI_maintank:SetAttribute("yOffset", growdir == "BOTTOM" and - tankVerticalPadding or tankVerticalPadding)
@@ -786,7 +787,7 @@ module.ToggleUnit = setmetatable({
 				)
 
 				tank:SetScale(dbUnit.Scale)
-				tank:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(tank, dbUnit, x, y)
 				tank:Show()
 			end
 
@@ -905,7 +906,7 @@ module.ToggleUnit = setmetatable({
 				end
 
 				oUF_LUI_raid:ClearAllPoints()
-				oUF_LUI_raid:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, dbUnit.X, dbUnit.Y)
+				module:PositionFrame(oUF_LUI_raid, dbUnit)
 				oUF_LUI_raid:Show()
 
 				RegisterStateDriver(oUF_LUI_raid_25, "visibility", "[@raid26,exists] hide; show")
@@ -914,7 +915,7 @@ module.ToggleUnit = setmetatable({
 				local raidAnchor = CreateFrame("Frame", "oUF_LUI_raid", UIParent)
 				raidAnchor:SetWidth(dbUnit.Width * 5 + dbUnit.GroupPadding * 4)
 				raidAnchor:SetHeight(footprintHeight * 5 + dbUnit.Padding * 4)
-				raidAnchor:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, dbUnit.X, dbUnit.Y)
+				module:PositionFrame(raidAnchor, dbUnit)
 
 				local raid25 = CreateFrame("Frame", "oUF_LUI_raid_25", raidAnchor, "SecureHandlerStateTemplate")
 				raid25:SetWidth(1)

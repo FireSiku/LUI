@@ -1,3 +1,15 @@
+# LUI v2611 Alpha
+
+## Changes since last update
+
+- Core: Added a first-use welcome dialog and permanent links to the LUI Guide and Discord in General > Welcome.
+- Core: Added optional Bartender4 and Dominos setup with two bottom bars and sidebar positioning in a separate action-bar profile.
+- Unitframes: Added frame-relative positioning for unitframes and group anchors, including previews and saved mover positions.
+- Artwork: Validated custom panel anchors and prevented invalid or circular parent references.
+- Artwork: Added Dominos sidebar auto-positioning and kept closed Bartender sidebars hidden after position updates.
+
+---
+
 # LUI v2610 Alpha
 
 ## Changes since last update

@@ -120,7 +120,11 @@ local function CreatePanelGroup(name, isNative)
 		TextureSelect = Opt:Select({name = L["Panels_Options_TextureSelect"], desc = L["Panels_Options_TextureSelect_Desc"],
 			values = PRESET_LUI_TEXTURES, hidden = IsTextureSelectHidden, get = function() return texDB.Texture end, set = SetPresetTexture}),
 		Anchored = Opt:Toggle({name = L["Panels_Options_Anchored"], desc = L["Panels_Options_Anchored_Desc"], width = "normal"}),
-		Parent = Opt:Input({name = L["Parent"], desc = L["Panels_Options_Parent_Desc"], disabled = IsAnchorParentDisabled}),
+		Parent = Opt:Input({name = L["Parent"], desc = L["Panels_Options_Parent_Desc"], disabled = IsAnchorParentDisabled,
+			validate = function(_, value)
+				return LUI:GetValidAnchor(_G["LUIPanel_"..name], value) and true
+					or "Choose an existing frame that does not depend on this panel."
+			end}),
 		ColorType = Opt:ColorMenu(colorMenuOptions, {name = "Panel", arg = name}),
 		HorizontalFlip = Opt:Toggle({name = L["Panels_Options_HorizontalFlip"], desc = L["Panels_Options_HorizontalFlip_Desc"]}),
 		VerticalFlip = Opt:Toggle({name = L["Panels_Options_VerticalFlip"], desc = L["Panels_Options_VerticalFlip_Desc"]}),
