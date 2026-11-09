@@ -692,6 +692,10 @@ end
 ---@param itemSlot ItemButton
 function ContainerMixin:SlotUpdate(itemSlot)
 	local id, slot = itemSlot.id, itemSlot.slot
+	if slot > (self.bagSizes[id] or 0) then
+		itemSlot:Hide()
+		return
+	end
 	local data = C_Container.GetContainerItemInfo(id, slot)
 
 	itemSlot:SetHasItem(data ~= nil)
