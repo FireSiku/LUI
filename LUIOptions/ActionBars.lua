@@ -52,6 +52,7 @@ local function SetupBartender()
 	local bars = addon and addon:GetModule("ActionBars", true)
 	if not bars or not bars.db then return end
 	if not ProfileMatchesConfirmation("Bartender4", addon) then return end
+	LUI:RecordAddonSetup("Bartender4", "STARTED")
 	local profile = GetProfile(addon)
 	bars.db.profile.enabled = true
 	for row, id in ipairs({1, 6}) do
@@ -64,6 +65,7 @@ local function SetupBartender()
 	end
 	addon:UpdateModuleConfigs()
 	ConfigureSidebars("BT4Bar")
+	LUI:RecordAddonSetup("Bartender4", "COMPLETED")
 	LUI:Print("Bartender4: LUI layout applied to profile "..profile..".")
 end
 
@@ -71,6 +73,7 @@ local function SetupDominos()
 	local addon = GetAddon("Dominos")
 	if not addon or not addon.Frame or not addon.SetNumButtons then return end
 	if not ProfileMatchesConfirmation("Dominos", addon) then return end
+	LUI:RecordAddonSetup("Dominos", "STARTED")
 	local profile = GetProfile(addon)
 	local enabled = addon.db.profile.modules.ActionBars
 	addon.db.profile.modules.ActionBars = true
@@ -89,6 +92,7 @@ local function SetupDominos()
 		bar:ShowFrame()
 	end
 	ConfigureSidebars("DominosFrame")
+	LUI:RecordAddonSetup("Dominos", "COMPLETED")
 	LUI:Print("Dominos: LUI layout applied to profile "..profile..".")
 end
 

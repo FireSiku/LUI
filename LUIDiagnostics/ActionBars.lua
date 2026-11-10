@@ -206,7 +206,7 @@ function D:ActionBarCommand(command)
 	elseif command == "" then
 		if not current then LUI:Print("LUI DEBUG: Start the action-bar trace with /luidrag start outside combat."); return end
 		if self:CaptureActionBars("manual failure marker", true) then
-			LUI:Print("LUI DEBUG: Failure state marked. Use /luidrag stop outside combat to save. Share LUIDiagnostics.lua and _retail_/Logs/taint.log.")
+			LUI:Print("LUI DEBUG: Failure state marked. Use /luidrag stop outside combat to save. Share LUIDiagnostics.lua and " .. self.TAINT_LOG_PATH .. ".")
 		else LUI:Print("LUI DEBUG: Snapshot failed; Blizzard taint.log and the other diagnostic records remain available.") end
 	else LUI:Print("LUI DEBUG: /luidrag start | /luidrag (mark failure) | /luidrag stop") end
 end
@@ -224,5 +224,5 @@ function D:AppendActionBarReport(session, Add)
 	for _, sample in ipairs(trace.samples) do PrintSample(sample) end
 	Add("PINNED FAILURE MARKERS")
 	for _, sample in ipairs(trace.markers) do PrintSample(sample) end
-	Add("Also attach _retail_/Logs/taint.log for Blizzard's recorded propagation stacks.")
+	Add("Also attach " .. self.TAINT_LOG_PATH .. " for Blizzard's recorded propagation stacks.")
 end
