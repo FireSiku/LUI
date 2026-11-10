@@ -1439,6 +1439,16 @@ function module:RegisterPopupButton(parent, button)
     RegisterCosmeticButton(parent, button)
 end
 
+-- AceConfig owns an unnamed confirmation/validation dialog outside AceGUI's
+-- widget registration. Its buttons have no UIPanelButton template hooks.
+local function PrepareOptionsPopup()
+    local dialog = LibStub("AceConfigDialog-3.0", true)
+    local frame = dialog and dialog.popup
+    if not CanStyle(frame) then return end
+    RegisterCosmeticButton(frame, frame.accept)
+    RegisterCosmeticButton(frame, frame.cancel)
+end
+
 local function PrepareOptionsTree(widget)
     if not CanStyle(widget.frame) or not CanTouch(widget.treeframe) or type(widget.buttons) ~= "table" then return end
     for _, row in ipairs(widget.buttons) do
@@ -1751,6 +1761,7 @@ PrepareKnownPanels = function(force)
         PrepareName("GameMenuButton" .. suffix)
     end
     for index = 1, 4 do PrepareName("StaticPopup" .. index) end
+    PrepareOptionsPopup()
     PreparePlayerSpellsControls()
     PrepareReadyCheckButtons()
     if LUI.ForEachPopupButton then
