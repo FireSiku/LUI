@@ -548,6 +548,9 @@ function module:ApplyBackground(kind)
 	_mainPanels[kind]:Set(data.Direction, frame, data.Width, data.Height, 1, r, g, b, a, rc, gc, bc, ac)
 	_mainPanels[kind]:ClearAllPoints()
 	_mainPanels[kind]:SetPoint("TOPLEFT", frame, "TOPLEFT", data.OffsetX, data.OffsetY)
+	if data.FitAnchor then
+		_mainPanels[kind]:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", data.OffsetX, data.OffsetY)
+	end
 	_mainPanels[kind]:SetAlpha(1)
 	if frame == _G.CompactRaidFrameContainer then
 		_mainPanels[kind]:SetShown(data.IsShown)
