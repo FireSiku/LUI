@@ -242,6 +242,7 @@ function Opt:CreateSnippetOptions()
 			Share = {name = "Share", type = "group", order = 1, args = {
 				Description = {type = "description", order = 1, width = "full",
 					name = "Share selected LUI sections, including their saved appearance and positions. External addon profiles are separate. Colors shares the common palette; individual colors travel with their own section."},
+				ProcessingHint = {name = Opt.ProfileTransfer.PauseNotice, type = "description", order = 1.5, width = "full"},
 				Name = {name = "Snippet Name", type = "input", order = 2, width = "full",
 					get = function() return exportName end,
 					set = function(_, value) exportName, exportText = value, "" end},
@@ -262,6 +263,7 @@ function Opt:CreateSnippetOptions()
 			Import = {name = "Import", type = "group", order = 2, args = {
 				Description = {type = "description", order = 1, width = "full",
 					name = "Read a snippet, then choose which sections to replace in your active profile. Module switches are kept. One backup of the latest snippet import is retained. Shared palette changes also affect other elements using those colors."},
+				ProcessingHint = {name = Opt.ProfileTransfer.PauseNotice, type = "description", order = 1.5, width = "full"},
 				String = {name = "Snippet String", type = "input", order = 2, width = "full", multiline = 6,
 					get = function() return importText end,
 					set = function(_, value)

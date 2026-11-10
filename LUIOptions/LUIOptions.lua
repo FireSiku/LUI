@@ -965,7 +965,10 @@ local function ProfileExists(profileName)
 end
 
 -- Shared data-only helpers for full profiles and selective layout snippets.
-Opt.ProfileTransfer = {Copy = CopyProfileData, Capture = CaptureProfileStorage}
+Opt.ProfileTransfer = {
+	Copy = CopyProfileData, Capture = CaptureProfileStorage,
+	PauseNotice = "A brief game freeze during export or import is normal, especially with large profiles. Please wait for processing to finish.",
+}
 
 local function GenerateProfileExport()
 	local profileName = LUI.db:GetCurrentProfile()
@@ -1068,6 +1071,12 @@ local function CreateProfileTransferOptions()
 				name = "Export the active LUI profile or import a shared profile. Module settings and their selected custom theme or unitframe layout are included; account-wide data such as gold totals is not exported.",
 				type = "description",
 				order = 1,
+				width = "full",
+			},
+			ProcessingHint = {
+				name = Opt.ProfileTransfer.PauseNotice,
+				type = "description",
+				order = 1.5,
 				width = "full",
 			},
 			GenerateExport = {
