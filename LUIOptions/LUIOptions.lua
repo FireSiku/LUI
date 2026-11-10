@@ -964,6 +964,9 @@ local function ProfileExists(profileName)
 	return false
 end
 
+-- Shared data-only helpers for full profiles and selective layout snippets.
+Opt.ProfileTransfer = {Copy = CopyProfileData, Capture = CaptureProfileStorage}
+
 local function GenerateProfileExport()
 	local profileName = LUI.db:GetCurrentProfile()
 	local captured = CaptureProfileStorage(LUI.db.sv, profileName)
@@ -1237,4 +1240,5 @@ function Opt:OnEnable()
 	options.args.Profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(LUI.db)
 	options.args.Profiles.order = 4
 	options.args.Profiles.args.LUIProfileTransfer = CreateProfileTransferOptions()
+	options.args.Profiles.args.LayoutSnippets = self:CreateSnippetOptions()
 end
