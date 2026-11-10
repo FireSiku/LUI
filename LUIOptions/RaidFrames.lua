@@ -247,4 +247,4 @@ for _, id in ipairs({"Grid2", "VuhDo", "HealBot", "DandersFrames"}) do
 end
 
 args.Requirements = Opt:Desc({name = "Enable one supported raid-frame addon and finish its initial setup first. Apply the layout outside combat. Unlock hardlocked VuhDo profiles and finish editing automatic Danders layouts first. Further adjustments and automatic profile assignments stay in that addon's options."})
-Opt.options.args.General.args.Welcome.args.RaidFrames = Opt:InlineGroup({name = "Raid Frame Setup", args = args})
+Opt.AddonSetup.args.RaidFrames = Opt:InlineGroup({name = "Raid Frame Setup", args = args})

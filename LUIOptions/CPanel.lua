@@ -73,5 +73,8 @@ end
 -- ####################################################################################################################
 
 CPanel.args = {
-	Modules = Opt:Group({name = L["CPanel_Modules"], args = GenerateModuleButtons()}),
+	Modules = Opt:Group({name = L["CPanel_Modules"], order = 1, args = GenerateModuleButtons()}),
+	AddonSetup = Opt:Group({name = "Addon Setup", order = 2, args = {}}),
 }
+
+Opt.AddonSetup = CPanel.args.AddonSetup
