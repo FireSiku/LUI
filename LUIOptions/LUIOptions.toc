@@ -10,6 +10,7 @@ LUIOptions.lua
 Snippets.lua
 General.lua
 CPanel.lua
+SetupProfiles.lua
 ActionBars.lua
 RaidFrames.lua
 Diagnostics.lua

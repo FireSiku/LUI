@@ -3,8 +3,8 @@
 ## Changes since last update
 
 - Core: Added a first-use welcome dialog and permanent links to the LUI Guide, Discord and changelog in General > Welcome.
-- Core: Added optional Bartender4 and Dominos setup under Control Panel > Addon Setup, with two bottom bars and sidebar positioning in the selected action-bar profile.
-- Core: Added optional Grid2, VuhDo, HealBot and Danders Frames setup in the selected addon profile, preserving spells, click bindings and aura indicators.
+- Core: Added optional Bartender4 and Dominos setup under Control Panel > Addon Setup, with two bottom bars and sidebar positioning in a separate LUI profile copy, preserving the original profile and keybindings.
+- Core: Added optional Grid2, VuhDo, HealBot and Danders Frames setup in a separate LUI profile or skin copy, preserving the original, spells, click bindings and aura indicators. Reapplying setup updates the same LUI copy.
 - Core: Included addon setup progress in optional LUI Debug reports and clarified log-file locations for Retail and Forever.
 - Core: Added selective sharing of LUI settings, with imports into the active profile and recovery of the last snippet import.
 - UIElements: Applied the selected button style to expand and collapse controls in the LUI options tree and to option confirmation dialogs.

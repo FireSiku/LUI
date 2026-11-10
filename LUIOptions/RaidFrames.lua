@@ -1,5 +1,6 @@
 local Opt = select(2, ...)
 local LUI = Opt.LUI
+local Profiles = Opt.SetupProfiles
 
 local FRAME_WIDTH, FRAME_HEIGHT, SPACING = 80, 33, 4
 local OFFSET_X, OFFSET_Y = -28, 40
@@ -58,9 +59,10 @@ setups.VuhDo = {
 		local panel = _G.VUHDO_PANEL_SETUP and VUHDO_PANEL_SETUP[1]
 		if not _G.VUHDO_CONFIG or not panel or not panel.MODEL or not panel.SCALING
 			or not panel.POSITION or not panel.PANEL_COLOR
-			or not _G.VUHDO_saveProfile or not _G.VUHDO_getProfileNamedCompressed then return end
+			or not _G.VUHDO_saveProfile or not _G.VUHDO_getProfileNamedCompressed
+			or not _G.VUHDO_loadProfile then return end
 		local _, profile = VUHDO_getProfileNamedCompressed(VUHDO_CONFIG.CURRENT_PROFILE)
-		if profile and profile.HARDLOCKED then return end
+		if not profile then return end
 		return {name = VUHDO_CONFIG.CURRENT_PROFILE, panel = panel}
 	end,
 	apply = function(context)
@@ -69,12 +71,6 @@ setups.VuhDo = {
 		local loaded = C_AddOns.LoadAddOn("VuhDoOptions")
 		if not loaded then return false, "Open VuhDo's options once, then try again." end
 		local name = context.name
-		if not name or name == "" then
-			name = "LUI"
-			if VUHDO_getProfileNamedCompressed(name) then
-				return false, "Select the VuhDo profile to update, then try again."
-			end
-		end
 		local panel = context.panel
 		SetValues(panel.MODEL, {groups = {1, 2, 3, 4, 5, 6, 7, 8}, ordering = 0, isReverse = false})
 		SetValues(panel.SCALING, {
@@ -90,11 +86,6 @@ setups.VuhDo = {
 		})
 		panel.PANEL_COLOR.barTexture = "LUI_Gradient"
 		VUHDO_CONFIG.CURRENT_PROFILE = name
-		-- The setup confirmation already names the profile being updated.
-		-- Mark the saved revision as local so VuhDo does not offer to fork an
-		-- imported profile instead of updating it. Hardlocked profiles are skipped.
-		local _, profile = VUHDO_getProfileNamedCompressed(name)
-		if profile then profile.ORIGINATOR_TOON = VUHDO_PLAYER_FULL_NAME or VUHDO_PLAYER_NAME end
 		VUHDO_saveProfile(name)
 		context.name = name
 	end,
@@ -108,7 +99,9 @@ setups.HealBot = {
 		local name = skins and skins.Current_Skin
 		local groups = name and skins.HealGroups and skins.HealGroups[name]
 		if not groups or not groups[4] or not groups[5]
-			or not _G.hbv_Skins_SetFrameVarSkin or not _G.hbv_Skins_SetVarSkin then return end
+			or not _G.hbv_Skins_SetFrameVarSkin or not _G.hbv_Skins_SetVarSkin
+			or not _G.HealBot_Options_setNewSkin or not _G.HealBot_Options_Set_Current_Skin
+			or not _G.HealBot_Options_checkSkinName or not _G.HealBot_Data or HealBot_Data.UILOCK then return end
 		return {name = name, groups = groups}
 	end,
 	apply = function(context)
@@ -159,7 +152,8 @@ setups.DandersFrames = {
 	get = function()
 		local addon = _G.DandersFrames
 		if not addon or not addon.db or not addon.db.raid or not addon.DeepCopy
-			or not addon.GetCurrentProfile or not addon.SaveCurrentProfile then return end
+			or not addon.GetCurrentProfile or not addon.SaveCurrentProfile
+			or not addon.DuplicateProfile or not addon.SetProfile then return end
 		if addon.AutoProfilesUI and addon.AutoProfilesUI.IsEditing and addon.AutoProfilesUI:IsEditing() then return end
 		local name = addon:GetCurrentProfile()
 		if not _G.DandersFramesDB_v2 or not DandersFramesDB_v2.profiles
@@ -190,28 +184,90 @@ setups.DandersFrames = {
 	end,
 }
 
+local function GetProfileAdapter(id)
+	if id == "Grid2" then return Profiles:Ace(_G.Grid2 and Grid2.db) end
+	if id == "VuhDo" then
+		local function Exists(name)
+			local _, profile = VUHDO_getProfileNamedCompressed(name)
+			return profile ~= nil
+		end
+		local function Select(name)
+			if not Exists(name) then error("VuhDo profile is unavailable.") end
+			VUHDO_loadProfile(name)
+			VUHDO_CURRENT_PROFILE = name
+			VUHDO_IS_DEFAULT_PROFILE = name == VUHDO_DEFAULT_PROFILE
+		end
+		return {
+			current = function() return VUHDO_CONFIG.CURRENT_PROFILE end,
+			exists = Exists,
+			select = Select,
+			writable = function(name)
+				local _, profile = VUHDO_getProfileNamedCompressed(name)
+				return profile and not profile.LOCKED and not profile.HARDLOCKED
+					and (profile.ORIGINATOR_TOON == (VUHDO_PLAYER_FULL_NAME or VUHDO_PLAYER_NAME)
+						or profile.ORIGINATOR_TOON == VUHDO_PLAYER_NAME or VUHDO_CONFIG.IS_ALWAYS_OVERWRITE_PROFILE)
+			end,
+			copy = function(_, target)
+				if Exists(target) then return false end
+				if not C_AddOns.LoadAddOn("VuhDoOptions") then return false end
+				-- Save As captures the current live settings, including all panels,
+				-- spells and indicators, through VuhDo's own compression boundary.
+				-- Never turn the new copy into the user's default/auto profile.
+				local wasDefault = VUHDO_IS_DEFAULT_PROFILE
+				VUHDO_IS_DEFAULT_PROFILE = false
+				VUHDO_CONFIG.CURRENT_PROFILE = target
+				local ok, message = pcall(VUHDO_saveProfile, target)
+				if not ok then VUHDO_IS_DEFAULT_PROFILE = wasDefault; error(message) end
+				if not Exists(target) then VUHDO_IS_DEFAULT_PROFILE = wasDefault; return false end
+				Select(target)
+			end,
+		}
+	elseif id == "HealBot" then
+		return {
+			current = function() return Healbot_Config_Skins.Current_Skin end,
+			exists = function(name) return HealBot_Options_checkSkinName(name) end,
+			select = function(name) HealBot_Options_Set_Current_Skin(name, nil, nil, true) end,
+			copy = function(_, target)
+				if HealBot_Options_checkSkinName(target) then return false end
+				HealBot_Options_setNewSkin(target)
+			end,
+		}
+	elseif id == "DandersFrames" then
+		local addon = _G.DandersFrames
+		return {
+			current = function() return addon:GetCurrentProfile() end,
+			exists = function(name) return DandersFramesDB_v2.profiles[name] ~= nil end,
+			select = function(name) addon:SetProfile(name) end,
+			copy = function(_, target) return addon:DuplicateProfile(target) end,
+		}
+	end
+end
+
 local function GetContext(id)
 	if InCombatLockdown() or not C_AddOns.IsAddOnLoaded(id) then return end
 	for other in pairs(setups) do
 		if other ~= id and C_AddOns.IsAddOnLoaded(other) then return end
 	end
 	if C_AddOns.IsAddOnLoaded("Plexus") then return end
-	return setups[id].get()
+	local context = setups[id].get()
+	if context and GetProfileAdapter(id) then return context end
 end
 
 local function SetupRaidFrames(id)
 	local context = GetContext(id)
 	if not context then return end
 	local setup = setups[id]
-	if confirmedProfiles[id] and confirmedProfiles[id] ~= context.name then
-		confirmedProfiles[id] = nil
-		LUI:Print("The selected profile changed. Run setup again for the new profile.")
-		return
-	end
+	local confirmed = confirmedProfiles[id]
 	confirmedProfiles[id] = nil
 	LUI:RecordAddonSetup(id, "STARTED")
-	local applied, message = setup.apply(context)
-	if applied == false then
+	local profile, message = Profiles:Run(id, GetProfileAdapter(id), confirmed, function(target)
+		-- Switching profiles replaces native tables and proxies. Obtain the
+		-- layout context again so no write can hit the old profile's tables.
+		context = setup.get()
+		if not context or context.name ~= target then return false, "The LUI setup profile is unavailable." end
+		return setup.apply(context)
+	end)
+	if not profile then
 		LUI:RecordAddonSetup(id, "CANCELLED")
 		LUI:Print(message)
 		return
@@ -226,12 +282,12 @@ local function SetupRaidFrames(id)
 		panel.OffsetX, panel.OffsetY = 0, 0
 	end
 	LUI:RecordAddonSetup(id, "COMPLETED")
-	LUI:Print(setup.label..": LUI layout applied to profile '"..context.name.."'.")
+	LUI:Print(setup.label..": LUI layout applied to setup profile '"..profile.."'.")
 	ReloadUI()
 end
 
 local args = {
-	Info = Opt:Desc({name = "Apply the LUI raid layout to the raid-frame addon's selected profile. This updates the main raid panel with compact frames, all eight raid groups and a position near the bottom-right corner. Reapplying updates the same profile. Spells, click bindings and aura indicators are kept."}),
+	Info = Opt:Desc({name = "Copy your selected raid-frame profile or skin into a separate LUI setup profile, then apply compact frames, all eight raid groups and bottom-right positioning there. Your original is kept. Reapplying updates the same LUI copy. Spells, click bindings and aura indicators are kept."}),
 }
 
 for _, id in ipairs({"Grid2", "VuhDo", "HealBot", "DandersFrames"}) do
@@ -240,14 +296,18 @@ for _, id in ipairs({"Grid2", "VuhDo", "HealBot", "DandersFrames"}) do
 	args[id] = Opt:Execute({
 		name = "Set Up "..setup.label,
 		func = function() SetupRaidFrames(addonID) end,
-		disabled = function() return not GetContext(addonID) end,
+		disabled = function()
+			return not GetContext(addonID) or not Profiles:Plan(addonID, GetProfileAdapter(addonID))
+		end,
 		confirm = function()
 			local context = GetContext(addonID)
-			confirmedProfiles[addonID] = context and context.name
-			return context and format("Apply the LUI layout to %s profile '%s' and reload the UI? Frame sizes, positions and group layouts will be updated, including automatic raid layouts. Spells, click bindings and aura indicators are kept.", setup.label, context.name or "LUI") or false
+			local plan = context and Profiles:Plan(addonID, GetProfileAdapter(addonID))
+			confirmedProfiles[addonID] = plan
+			return plan and Profiles:Confirmation(setup.label, plan,
+				"Frame sizes, positions and group layouts will be updated in the LUI copy, including automatic raid layouts. Spells, click bindings and aura indicators are kept. The UI will reload.") or false
 		end,
 	})
 end
 
-args.Requirements = Opt:Desc({name = "Enable one supported raid-frame addon and finish its initial setup first. Apply the layout outside combat. Unlock hardlocked VuhDo profiles and finish editing automatic Danders layouts first. Further adjustments and automatic profile assignments stay in that addon's options."})
+args.Requirements = Opt:Desc({name = "Enable one supported raid-frame addon and save its current configuration first. Apply the layout outside combat. Unlock an existing LUI VuhDo setup copy before updating it, and finish editing automatic Danders layouts first. Further adjustments and automatic profile or skin assignments stay in that addon's options."})
 Opt.AddonSetup.args.RaidFrames = Opt:InlineGroup({name = "Raid Frame Setup", args = args})
