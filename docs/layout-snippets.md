@@ -29,13 +29,15 @@ Export** and their own named-profile workflow.
 
 ### Sharing destinations
 
-Wago's general <https://wago.io/snippets> area currently also hosts configuration
-strings (for example, Details and SUF profiles), beyond executable Lua examples.
-It is a candidate for manually shared LUI strings with screenshots, version,
-client, resolution/UI scale and required external addons in the description.
-No LUI upload/round-trip was performed as part of this change. Native format
-recognition, a dedicated LUI category and automatic companion updates would
-need separate support; they are not supplied by adding an import string here.
+On 10 November 2026, Wago's live import form rejected a valid synthetic LUI
+snippet with **Invalid import**. Nothing was submitted or published. Do not
+recommend Wago's general snippets search as an established LUI upload route.
+Native recognition needs support from Wago's maintainers. Their official
+[import-string request form](https://docs.google.com/forms/d/e/1FAIpQLSdYdCJuXGx29oAkmzvkgbEnGSlWzXFld_qpChJhfNq2VvBjPA/viewform)
+accepts addon format details and an example string. See
+[the LUI format reference](wago-import-format.md) for that preparation.
+Dedicated browsing, UI Packs and automatic companion updates are separate
+capabilities and are not implemented by the snippet feature.
 
 A Discord forum post with a screenshot and the complete string as a `.txt`
 attachment can use the same workflow. A curated guide page can link to such
