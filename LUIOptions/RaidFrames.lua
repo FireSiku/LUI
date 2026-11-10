@@ -209,8 +209,10 @@ local function SetupRaidFrames(id)
 		return
 	end
 	confirmedProfiles[id] = nil
+	LUI:RecordAddonSetup(id, "STARTED")
 	local applied, message = setup.apply(context)
 	if applied == false then
+		LUI:RecordAddonSetup(id, "CANCELLED")
 		LUI:Print(message)
 		return
 	end
@@ -223,6 +225,7 @@ local function SetupRaidFrames(id)
 		panel.Animation = false
 		panel.OffsetX, panel.OffsetY = 0, 0
 	end
+	LUI:RecordAddonSetup(id, "COMPLETED")
 	LUI:Print(setup.label..": LUI layout applied to profile '"..context.name.."'.")
 	ReloadUI()
 end

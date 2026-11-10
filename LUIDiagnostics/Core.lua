@@ -1,6 +1,8 @@
 local ADDON, D = ...
 _G.LUIDiagnostics = D
-D.VERSION = "0.1.5"
+D.VERSION = "0.1.6"
+D.SAVED_VARIABLES_PATH = "World of Warcraft\\<game folder>\\WTF\\Account\\<account folder>\\SavedVariables\\LUIDiagnostics.lua"
+D.TAINT_LOG_PATH = "World of Warcraft/<game folder>/Logs/taint.log"
 D.MAX_SESSIONS, D.MAX_ERRORS, D.MAX_EVENTS = 3, 40, 60
 local frame = CreateFrame("Frame")
 local recording, busy = false, false
@@ -128,9 +130,11 @@ end
 
 function D:Breadcrumb(event, detail)
 	if not recording or not session then return end
+	event = Text(event, 80)
+	if Secret(detail) or detail ~= nil then detail = Text(detail, 200) end
 	local last = session.events[#session.events]
 	local at = Stamp()
-	if last and last.event == event and last.at == at then
+	if last and last.event == event and last.detail == detail and last.at == at then
 		last.count = (last.count or 1) + 1
 		return
 	end

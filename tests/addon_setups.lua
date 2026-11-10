@@ -55,6 +55,8 @@ local function Environment(addonID, file)
 	env._G = env
 	state.environment, state.options, state.artwork = env, opt, artwork
 	function state:Load()
+		local diagnostics = assert(loadfile("api/diagnostics.lua"))
+		setfenv(diagnostics, env)("LUI", lui)
 		local controlPanel = assert(loadfile("LUIOptions/CPanel.lua"))
 		setfenv(controlPanel, env)("LUIOptions", opt)
 		local chunk = assert(loadfile(file or "LUIOptions/RaidFrames.lua"))
@@ -189,6 +191,20 @@ for _, addonID in ipairs({"Bartender4", "Dominos"}) do
 	state.button.func()
 	state.button.func()
 	Check(db:GetCurrentProfile() == "My Bars", addonID.." must update the selected profile")
+	local events = {}
+	env.LUIDiagnostics = {IsRecording = function() return true end,
+		Breadcrumb = function(_, event, detail) events[#events + 1] = {event, detail} end}
+	state.button.func()
+	Check(#events == 2 and events[1][1] == "ADDON_SETUP_STARTED"
+		and events[2][1] == "ADDON_SETUP_COMPLETED" and events[2][2] == addonID,
+		addonID.." must record setup progress only when diagnostics is already active")
+	if addonID == "Bartender4" then
+		events = {}
+		env.Bartender4.UpdateModuleConfigs = function() error("fixture failure") end
+		local ok = pcall(state.button.func)
+		Check(not ok and #events == 1 and events[1][1] == "ADDON_SETUP_STARTED",
+			"a failing setup must remain visible to the native error handler without claiming completion")
+	end
 end
 
 print("Addon setup checks passed: "..passed)

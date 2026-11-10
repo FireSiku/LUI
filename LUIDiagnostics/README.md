@@ -1,4 +1,4 @@
-# LUI Diagnostics 0.1.2-alerttrace — test version
+# LUI Diagnostics 0.1.6
 
 An optional addon bundled beside LUI and LUIOptions. Open **LUI DEBUG** in the
 LUI options, then **Open LUI DEBUG**. `/luidebug` and `/lui diagnostics` open the
@@ -6,7 +6,7 @@ same guided window. The existing `/lui debug` developer command is unchanged.
 
 ## Targeted action-bar investigation
 
-This test build adds an explicit `/luidrag start` mode, used outside combat.
+The explicit `/luidrag start` mode is used outside combat.
 It starts a new diagnostic session and reloads the interface. It also enables
 Blizzard's `taintLog=2` until `/luidrag stop` or the normal diagnostics stop.
 The previous taintLog setting is retained and restored when stopping, unless
@@ -16,7 +16,7 @@ problem; this native log is more verbose than normal diagnostics.
 When dragging fails, use `/luidrag` **before reloading** to pin the current
 state, then `/luidrag stop` outside combat to save and reload. Send both:
 
-- `World of Warcraft/_retail_/Logs/taint.log`
+- `World of Warcraft/<game folder>/Logs/taint.log`
 - The `LUIDiagnostics.lua` SavedVariables file described below.
 
 The trace reads all 96 standard action buttons, their visibility, grid and
@@ -24,7 +24,7 @@ selected Lua-field taint status, the PlayerSpells window/tab, unspent talent
 flags and the microbutton's suggested tab/spell. Close-button texture and
 ancestor protection are included to investigate the red close button.
 Active HelpTip ownership and the action-bar highlight table's taint status
-help verify the level-up/talent-alert correction in diagnostic version 0.1.2.
+provide context when investigating level-up and talent alerts.
 It never invokes Blizzard click/tab/update methods or hooks native controls.
 Only changed samples are retained at half-second intervals (40 per session),
 plus up to three pinned failure markers. Talent/action events and first error
@@ -47,7 +47,11 @@ not deleted. Match timestamps to the new session.
 
 The complete SavedVariables file contains up to three sessions:
 
-`World of Warcraft/_retail_/WTF/Account/<account folder>/SavedVariables/LUIDiagnostics.lua`
+`World of Warcraft/<game folder>/WTF/Account/<account folder>/SavedVariables/LUIDiagnostics.lua`
+
+`<game folder>` is the folder of the WoW client you are testing (Retail or
+Forever); `<account folder>` is your own account directory. Use **Copy report**
+if you prefer to share the latest session without finding the file.
 
 WoW writes the latest data on a normal reload or logout. A crash/forced exit can
 lose data not yet written. Share this one file, not LUI.lua, its .bak backup or
@@ -65,6 +69,9 @@ the window is the one already present in LUI's localization files.
 - Time, combat status, instance type, a small fixed list of relevant window
   states, active LUI modules, WoW/LUI versions, and loaded addon versions.
 - A bounded trail of event names before errors. No roster content is requested.
+- When recording is active, the addon name and start/completion of LUI's
+  action-bar and raid-frame setups. Profile names, profile contents, spells
+  and bindings are not included. Running a setup never starts diagnostics.
 
 Error groups retain the context and preceding events from their **first**
 recorded occurrence, plus the latest occurrence time and a repeat count. A
@@ -120,6 +127,9 @@ Reference interfaces inspected:
 - Legacy callback API: https://github.com/Beast-Masters-addons/BugGrabber/blob/master/BugGrabber.lua
 
 ## Changelog
+
+0.1.6: Added bounded addon setup progress while recording, retained distinct
+event details within the same second, and clarified file paths for both clients.
 
 0.1.0: Initial guided diagnostics window, separate load-on-demand recorder and
 SavedVariables file, optional BugGrabber integration, bounded context snapshots,
