@@ -2,7 +2,6 @@ local _, D = ...
 local window, reportBox
 local page = "overview"
 local WIDTH, HEIGHT = 740, 590
-local PATH = "World of Warcraft\\_retail_\\WTF\\Account\\<account folder>\\SavedVariables\\LUIDiagnostics.lua"
 local DISCORD = "https://discord.gg/SR29pjc"
 
 local function Label(parent, size, x, y, width)
@@ -134,7 +133,7 @@ function D:RefreshWindow()
 	if page == "confirmStart" then
 		window.heading:SetText("Start diagnostics?")
 		window.body:SetText("Your interface will reload immediately when you confirm. Start only at a safe moment outside combat.\n\nAfter the reload, play normally until the problem happens. Diagnostics will stay active across reloads and logins until you stop it.")
-		window.detail:SetText("The report collects Lua errors from BugGrabber, blocked actions, timestamps, combat and window state, versions and active LUI modules.\n\n!BugGrabber is needed for general Lua errors. Without it, blocked actions and Lua warnings can still be recorded.\n\nPrevious sessions are retained within the history limit.")
+		window.detail:SetText("The report collects Lua errors from BugGrabber, blocked actions, timestamps, combat and window state, versions, active LUI modules and addon setup progress.\n\n!BugGrabber is needed for general Lua errors. Without it, blocked actions and Lua warnings can still be recorded.\n\nPrevious sessions are retained within the history limit.")
 		window.primary:SetText("Start & reload UI")
 		window.secondary:SetText("Cancel")
 		window.tertiary:Hide()
@@ -159,16 +158,16 @@ function D:RefreshWindow()
 			window.heading:SetText("Share your report with the LUI team")
 			local saveHint = active and "Recording is still active. Stop, save & reload UI first so the file contains the latest data."
 				or "After Stop, save & reload UI, the file is ready to attach."
-			reportBox:SetText(saveHint .. "\n\nFILE LOCATION (Retail)\n" .. PATH
-				.. "\n\nOpen your World of Warcraft installation folder, then _retail_, WTF, Account, your account folder and SavedVariables."
+			reportBox:SetText(saveHint .. "\n\nFILE LOCATION (Retail / Forever)\n" .. self.SAVED_VARIABLES_PATH
+				.. "\n\nOpen the folder of the WoW client you are testing (Retail or Forever), then WTF, Account, your account folder and SavedVariables."
 				.. "\n\nAttach LUIDiagnostics.lua. Do not send LUI.lua, the .bak file or your whole WTF folder."
 				.. "\n\nDISCORD\n" .. DISCORD
 				.. "\n\nPost in the LUI support / bug-report area, or the thread where the team requested your log."
 				.. "\n\nDescribe what happened, what you were doing and roughly when it occurred. The file includes up to 3 sessions; the copyable report shows the latest session."
 				.. "\n\nYou can also use Copy report to avoid looking through folders. Nothing is uploaded automatically.")
-			window.note:SetText("<account folder> is a placeholder for your own account directory. The report and the file may contain names from error text. Review them before sharing.")
+			window.note:SetText("<game folder> is the client folder you launch; <account folder> is your account directory. Error text may contain names. Review the report before sharing.")
 			if current and current.actionBars then
-				window.note:SetText("Action-bar trace: also attach World of Warcraft/_retail_/Logs/taint.log alongside LUIDiagnostics.lua. Check timestamps for this session; older native log entries are retained.")
+				window.note:SetText("Action-bar trace: also attach " .. self.TAINT_LOG_PATH .. " alongside LUIDiagnostics.lua. Check timestamps for this session; older native log entries are retained.")
 			end
 		end
 		window.primary:SetText("Select all (then Ctrl+C)")
