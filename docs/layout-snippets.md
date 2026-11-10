@@ -10,13 +10,15 @@ finish. Include this notice in the guide update and community explanation too.
 
 ## Player workflow
 
-1. On **Share**, give the snippet a name, select LUI sections and generate the
-   string. Copy the complete `!LUISnippet:1!` string.
+1. On **Share**, give the snippet a name, confirm the name with Enter, select
+   LUI sections and generate the string. Copy the complete `!LUISnippet:1!` string.
 2. Share the string in a text attachment or preset post. A future gallery can
    pair strings with screenshots and client/resolution information; this change
    does not create a website or upload anything from the game.
-3. On **Import**, paste the string and click **Read Snippet**. Inspect its name,
-   LUI version and source client. Choose which contained sections to import.
+3. On **Import**, paste the string, click **Accept** below the text box, then
+   click **Read Snippet**. Inspect its name, LUI version and source client.
+   Choose which contained sections to import. Clicking Read before Accept
+   reads the previously confirmed text and can clear an unconfirmed paste.
 4. **Apply to Current Profile** names the target profile and affected sections
    before confirmation, then reloads the interface outside combat.
 5. **Restore > Undo Last Snippet Import** restores the previous settings for the
@@ -75,6 +77,16 @@ cached profile. Cross-client snippets identify their source; missing child
 components reject the import before writing.
 
 ## In-game review
+
+On 10 November 2026, Pahn confirmed the basic Unitframes round-trip on Forever
+in a separate test profile: export, change player-frame width, import the
+snippet to recover the exported width, then Undo to recover the changed width.
+The import and Undo both completed their automatic reloads successfully.
+An additional Unitframes-only import retained the enlarged LUI chat font and
+the enabled Chat module; the settings also survived logout and login.
+For this check, change font size in **Chat > General Settings > Font**.
+Blizzard's chat-tab font-size menu does not update LUI's saved font setting.
+The remaining cases below still need their own in-game checks.
 
 - Export Unitframes from a configured source profile. Import only Unitframes
   into a different existing profile; check its chat, artwork and bags afterward.
