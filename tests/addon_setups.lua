@@ -25,10 +25,16 @@ local function Environment(addonID, file)
 	function artwork:IsEnabled() return true end
 	function artwork:IterateSidebars() return pairs({}) end
 	function artwork:Refresh() end
-	local lui = {GetModule = function() return artwork end, Print = function() end}
+	local lui = {GetModule = function() return artwork end, Print = function() end,
+		L = {CPanel_Modules = "Modules"}, IterateModules = function() return pairs({}) end}
 	local opt = {LUI = lui, options = {args = {General = {args = {Welcome = {args = {}}}}}}}
-	for _, method in ipairs({"InlineGroup", "Desc", "Execute"}) do
+	for _, method in ipairs({"Group", "InlineGroup", "Desc", "Execute"}) do
 		opt[method] = function(_, data) return data end
+	end
+	function opt:CreateModuleOptions(name)
+		local group = {args = {}}
+		self.options.args[name] = group
+		return group
 	end
 	local env = setmetatable({
 		CopyTable = Copy, format = string.format,
@@ -49,9 +55,11 @@ local function Environment(addonID, file)
 	env._G = env
 	state.environment, state.options, state.artwork = env, opt, artwork
 	function state:Load()
+		local controlPanel = assert(loadfile("LUIOptions/CPanel.lua"))
+		setfenv(controlPanel, env)("LUIOptions", opt)
 		local chunk = assert(loadfile(file or "LUIOptions/RaidFrames.lua"))
 		setfenv(chunk, env)("LUIOptions", opt)
-		local group = opt.options.args.General.args.Welcome.args[file and "ActionBars" or "RaidFrames"]
+		local group = opt.options.args["Control Panel"].args.AddonSetup.args[file and "ActionBars" or "RaidFrames"]
 		self.button = group.args[addonID == "Bartender4" and "Bartender" or addonID]
 	end
 	return state, env

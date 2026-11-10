@@ -1,6 +1,6 @@
 # Optional addon layouts in v2611
 
-The buttons in General > Welcome apply to the addon's **currently selected
+The buttons in Control Panel > Addon Setup apply to the addon's **currently selected
 profile**. Reapplying updates that profile. There is no numbered-copy or
 automatic profile creation at login. The confirmation names the target profile;
 switching profiles before accepting cancels the operation.
@@ -50,5 +50,6 @@ settings, automatic layouts, all raid groups, combat, multiple loaded addons,
 hardlocked profiles and a profile change during confirmation. These are local
 checks; Retail and Forever in-game verification is still required.
 
-The existing Guide screenshots describe the older action-bar copy behavior.
+The existing Guide screenshots describe the older action-bar copy behavior
+and the former placement under General > Welcome.
 Refresh the setup section and its screenshots after the in-game layout review.

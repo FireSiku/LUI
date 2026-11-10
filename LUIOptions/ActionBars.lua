@@ -92,7 +92,7 @@ local function SetupDominos()
 	LUI:Print("Dominos: LUI layout applied to profile "..profile..".")
 end
 
-Opt.options.args.General.args.Welcome.args.ActionBars = Opt:InlineGroup({
+Opt.AddonSetup.args.ActionBars = Opt:InlineGroup({
 	name = "Action Bar Setup",
 	args = {
 		Info = Opt:Desc({name = "Enable Bartender4 or Dominos, then apply the LUI layout to its currently selected profile. This sets up two bottom rows and bars for the LUI sidebars. Reapplying updates the same profile and keeps your keybindings."}),
