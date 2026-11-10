@@ -1185,6 +1185,8 @@ local function ConfigureOptionsFrame()
 		root:SetTreeWidth(OPTION_PANEL_TREE_WIDTH, false)
 		if root.content and root.content.SetClipsChildren then root.content:SetClipsChildren(true) end
 		if root.border and root.border.SetClipsChildren then root.border:SetClipsChildren(true) end
+		local uiElements = LUI:GetModule("UI Elements", true)
+		if uiElements and uiElements.RegisterOptionsTree then uiElements:RegisterOptionsTree(root) end
 	end
 
 	-- Match a background click: release stale widget focus and raise the window.
