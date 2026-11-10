@@ -19,6 +19,7 @@ local preparedPanels = setmetatable({}, {__mode = "k"})
 local knownButtons = setmetatable({}, {__mode = "k"})
 local revision = 0
 local preparedButtons = setmetatable({}, {__mode = "k"})
+local optionsTrees = setmetatable({}, {__mode = "k"})
 local eventFrame = CreateFrame("Frame")
 local unpack = unpack or table.unpack
 
@@ -1436,6 +1437,32 @@ end
 function module:RegisterPopupButton(parent, button)
     if not LUI:IsPopupButton(parent, button) then return end
     RegisterCosmeticButton(parent, button)
+end
+
+local function PrepareOptionsTree(widget)
+    if not CanStyle(widget.frame) or not CanTouch(widget.treeframe) or type(widget.buttons) ~= "table" then return end
+    for _, row in ipairs(widget.buttons) do
+        local toggle = CanTouch(row) and row:GetParent() == widget.treeframe and row.toggle
+        if CanTouch(toggle) and toggle:GetParent() == row then
+            cosmeticOwners[toggle] = row
+            -- Native SetNormalTexture calls can bypass texture hooks when
+            -- a pooled row switches from plus to minus or back.
+            ApplyButton(toggle)
+        end
+    end
+end
+
+-- TreeGroup is an AceGUI container, so RegisterAsWidget never sees its
+-- expand buttons. Register LUI's own tree after layout and after each refresh
+-- to include newly created rows without scanning the entire options window.
+function module:RegisterOptionsTree(widget)
+    if IsSecret(widget) or type(widget) ~= "table" or widget.type ~= "TreeGroup"
+        or type(widget.RefreshTree) ~= "function" then return end
+    if not optionsTrees[widget] then
+        hooksecurefunc(widget, "RefreshTree", PrepareOptionsTree)
+        optionsTrees[widget] = true
+    end
+    PrepareOptionsTree(widget)
 end
 
 -- Register only the two native response controls, including while hidden so
