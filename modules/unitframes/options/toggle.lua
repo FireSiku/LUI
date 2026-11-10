@@ -891,7 +891,7 @@ module.ToggleUnit = setmetatable({
 			local frameHeight = GetFrameHeight(dbUnit)
 			local footprintHeight = GetFootprintHeight(dbUnit)
 			local raidVerticalPadding = GetVerticalStackPadding(dbUnit)
-			if IsAddOnLoaded("Plexus") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") then
+			if IsAddOnLoaded("Plexus") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("HealBot") or IsAddOnLoaded("DandersFrames") then
 				return
 			end
 			if oUF_LUI_raid then
