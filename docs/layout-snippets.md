@@ -4,6 +4,10 @@ The first implementation is under **Profiles > Layout Snippets**, alongside the
 existing full-profile import/export. The guide and screenshots will be updated
 after in-game review.
 
+The full-profile page and snippet sharing/import pages explain that processing
+large settings can briefly freeze the game. Users should wait for processing to
+finish. Include this notice in the guide update and community explanation too.
+
 ## Player workflow
 
 1. On **Share**, give the snippet a name, select LUI sections and generate the
