@@ -6,6 +6,7 @@
 - Core: Added optional Bartender4 and Dominos setup under Control Panel > Addon Setup, with two bottom bars and sidebar positioning in the selected action-bar profile.
 - Core: Added optional Grid2, VuhDo, HealBot and Danders Frames setup in the selected addon profile, preserving spells, click bindings and aura indicators.
 - Core: Included addon setup progress in optional LUI Debug reports and clarified log-file locations for Retail and Forever.
+- Core: Added selective sharing of LUI settings, with imports into the active profile and recovery of the last snippet import.
 - Unitframes: Added frame-relative positioning for unitframes and group anchors, including previews and saved mover positions.
 - Unitframes: Added optional out-of-combat fading with mouseover visibility and existing range fading.
 - Unitframes: Included all raid subgroups in the compact layout and added a 40-player raid preview.
