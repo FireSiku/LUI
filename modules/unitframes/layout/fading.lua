@@ -10,17 +10,30 @@ local function Opacity(state)
 		and 1 or state.settings.OutOfCombatAlpha
 end
 
+local function SetAlpha(state, region, inside, outside)
+	if state.range and state.rangeEligible then
+		region:SetAlphaFromBoolean(state.inRange, inside, outside)
+	else
+		region:SetAlpha(inside)
+	end
+end
+
+local function ApplyPortraitAlpha(state, inside, outside)
+	if state.portrait then
+		SetAlpha(state, state.portrait, inside * state.portraitAlpha, outside * state.portraitAlpha)
+	end
+end
+
 local function ApplyAlpha(state, alpha)
-	local frame, range = state.frame, state.range
+	local range = state.range
+	local inside, outside = alpha, alpha
 	if range then
 		range.insideAlpha = state.insideAlpha * alpha
 		range.outsideAlpha = state.outsideAlpha * alpha
-		if state.rangeEligible then
-			frame:SetAlphaFromBoolean(state.inRange, range.insideAlpha, range.outsideAlpha)
-			return
-		end
+		inside, outside = range.insideAlpha, range.outsideAlpha
 	end
-	frame:SetAlpha(range and range.insideAlpha or alpha)
+	SetAlpha(state, state.frame, inside, outside)
+	ApplyPortraitAlpha(state, inside, outside)
 end
 
 local function Update(frame)
@@ -40,6 +53,7 @@ local function RangePostUpdate(range, frame, inRange, eligible)
 	local state = active[frame]
 	-- Keep range results opaque; Blizzard selects the alpha from the boolean.
 	state.inRange, state.rangeEligible = inRange, eligible
+	ApplyPortraitAlpha(state, range.insideAlpha, range.outsideAlpha)
 	if state.postUpdate then return state.postUpdate(range, frame, inRange, eligible) end
 end
 
@@ -49,6 +63,13 @@ local function RestoreRange(state)
 	range.PreUpdate, range.PostUpdate = state.preUpdate, state.postUpdate
 	range.insideAlpha, range.outsideAlpha = state.insideAlpha, state.outsideAlpha
 	state.range = nil
+end
+
+local function RestorePortrait(state)
+	if not state.portrait then return end
+	state.portrait:SetAlpha(state.portraitAlpha)
+	state.portrait:SetIgnoreParentAlpha(state.portraitIgnoresParentAlpha)
+	state.portrait = nil
 end
 
 local function OnEnter(frame)
@@ -76,6 +97,7 @@ local function Disable(frame)
 	if not frame:IsElementEnabled("Range") then RestoreRange(state) end
 	ApplyAlpha(state, 1)
 	RestoreRange(state)
+	RestorePortrait(state)
 	for _, script in ipairs({"OnEnter", "OnLeave", "OnShow", "OnHide"}) do module:Unhook(frame, script) end
 	active[frame] = nil
 	if not next(active) then events:UnregisterAllEvents() end
@@ -94,11 +116,13 @@ end)
 
 function module:ConfigureFading(frame, settings)
 	local fade = settings.Fading
+	local state = active[frame]
+	local portraitAlpha = settings.Portrait and settings.Portrait.Alpha or 1
 	if not self:IsEnabled() or not settings.Enable or not fade or not fade.Enable or frame.LUIPreview then
+		if state then state.portraitAlpha = portraitAlpha end
 		Disable(frame)
 		return
 	end
-	local state = active[frame]
 	if not state then
 		if not next(active) then
 			inCombat = InCombatLockdown()
@@ -115,6 +139,17 @@ function module:ConfigureFading(frame, settings)
 		self:SecureHookScript(frame, "OnHide", OnHide)
 	end
 	state.settings = fade
+	if state.portrait ~= frame.Portrait then
+		RestorePortrait(state)
+		state.portrait = frame.Portrait
+		if state.portrait then
+			-- PlayerModel rendering needs its own alpha update. Apply the
+			-- combined opacity once, while preserving its configured alpha.
+			state.portraitIgnoresParentAlpha = state.portrait:IsIgnoringParentAlpha()
+			state.portrait:SetIgnoreParentAlpha(true)
+		end
+	end
+	state.portraitAlpha = portraitAlpha
 	local range = frame:IsElementEnabled("Range") and frame.Range or nil
 	if state.range ~= range then
 		RestoreRange(state)

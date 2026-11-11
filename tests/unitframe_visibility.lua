@@ -27,6 +27,8 @@ local function Frame(name)
     function f:IsElementEnabled(name) return name == "Range" and self.rangeEnabled end
     function f:SetAlpha(value) self.alpha = value end
     function f:SetAlphaFromBoolean(value, inside, outside) self.rangeCall = {value, inside, outside} end
+    function f:IsIgnoringParentAlpha() return self.ignoreParentAlpha or false end
+    function f:SetIgnoreParentAlpha(value) self.ignoreParentAlpha = value end
     if name then env[name] = f end
     return f
 end
@@ -141,4 +143,65 @@ module:DisableFading()
 local preview = Frame(); preview.LUIPreview = true
 module:ConfigureFading(preview, settings)
 Check(preview.alpha == 1 and not next(preview.scripts) and not next(events.events), "previews remain fully visible without fader hooks")
+
+-- PlayerModel rendering needs an explicit alpha update. Keep its configured
+-- opacity and avoid applying the unitframe's fade a second time by inheritance.
+target = false
+settings.Portrait.Alpha = .6
+settings.Fading.Enable, settings.Fading.ShowWithTarget = true, true
+player.Portrait = Frame()
+player.Portrait.parent = player
+player.Portrait:SetAlpha(.6)
+module:ConfigureFading(player, settings)
+Check(Near(player.Portrait.alpha, .21), "an existing portrait fades with its player frame")
+Check(player.Portrait:IsIgnoringParentAlpha(), "portrait opacity must not be multiplied by the parent again")
+target = true; Event("PLAYER_TARGET_CHANGED")
+Check(Near(player.Portrait.alpha, .6), "target visibility restores the configured portrait opacity")
+target = false; Event("PLAYER_TARGET_CHANGED")
+Script(player, "OnEnter")
+Check(Near(player.Portrait.alpha, .6), "mouseover restores portrait opacity")
+Script(player, "OnLeave")
+Check(Near(player.Portrait.alpha, .21), "leaving mouseover fades the portrait again")
+combat = true; Event("PLAYER_REGEN_DISABLED")
+Check(Near(player.Portrait.alpha, .6), "combat restores portrait opacity")
+combat = false; Event("PLAYER_REGEN_ENABLED")
+Check(Near(player.Portrait.alpha, .21), "combat exit fades the portrait again")
+local targetFrame = Frame()
+targetFrame.Portrait = Frame()
+targetFrame.Portrait:SetAlpha(.7)
+local targetSettings = {Enable = true, Portrait = {Alpha = .7}, Fading = {Enable = false, OutOfCombatAlpha = .35}}
+module:ConfigureFading(targetFrame, targetSettings)
+Event("PLAYER_TARGET_CHANGED")
+Check(Near(targetFrame.Portrait.alpha, .7), "unmanaged target portraits retain their own opacity")
+targetSettings.Fading.Enable = true
+module:ConfigureFading(targetFrame, targetSettings)
+Check(Near(targetFrame.Portrait.alpha, .245), "target portraits use their own fader and portrait settings")
+module:DisableFading(targetFrame)
+Check(Near(targetFrame.Portrait.alpha, .7) and Near(player.Portrait.alpha, .21), "disabling target fading leaves player fading independent")
+-- A profile import can change portrait opacity and disable fading together.
+settings.Portrait.Alpha, settings.Fading.Enable = .8, false
+player.Portrait:SetAlpha(.8)
+module:ConfigureFading(player, settings)
+Check(Near(player.Portrait.alpha, .8) and not player.Portrait:IsIgnoringParentAlpha(), "disabling fading retains the current profile's portrait opacity")
+player.Portrait = nil
+settings.Fading.Enable, settings.Portrait.Alpha = true, .4
+module:ConfigureFading(player, settings)
+player.Portrait = Frame()
+player.Portrait:SetAlpha(.4)
+module:ConfigureFading(player, settings)
+Check(Near(player.Portrait.alpha, .14), "portraits enabled after fading are synchronized immediately")
+player.rangeEnabled = true
+module:ConfigureFading(player, settings)
+player.Range:PostUpdate(player, opaque, true)
+Check(player.Portrait.rangeCall[1] == opaque and Near(player.Portrait.rangeCall[2], .112)
+    and Near(player.Portrait.rangeCall[3], .028), "portrait range fading forwards opaque booleans with configured opacity")
+target = true; Event("PLAYER_TARGET_CHANGED")
+Check(Near(player.Portrait.rangeCall[2], .32) and Near(player.Portrait.rangeCall[3], .08), "target visibility preserves the portrait's normal range fading")
+module:DisableFading()
+Check(Near(player.Portrait.alpha, .4) and not player.Portrait:IsIgnoringParentAlpha(), "cleanup restores portrait opacity and parent-alpha behavior")
+player.rangeEnabled = false
+player.Portrait:SetIgnoreParentAlpha(true)
+module:ConfigureFading(player, settings)
+module:DisableFading()
+Check(player.Portrait:IsIgnoringParentAlpha(), "cleanup preserves an existing ignore-parent-alpha choice")
 print("Unitframe visibility and anchor checks passed: "..passed)
