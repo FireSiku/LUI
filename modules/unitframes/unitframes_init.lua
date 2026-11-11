@@ -246,7 +246,7 @@ function module:OnInitialize()
 			}
 		end
 		if type(defaults) == "table" and defaults.HealthBar then
-			defaults.Fading = {Enable = false, OutOfCombatAlpha = 0.35}
+			defaults.Fading = {Enable = false, ShowWithTarget = false, OutOfCombatAlpha = 0.35}
 			-- Every health bar supports these overlays. Some child-frame defaults
 			-- omitted them, which also hid their options. Keep existing per-unit
 			-- defaults and create independent tables for the missing sections.
