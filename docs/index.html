@@ -153,10 +153,14 @@
 </figure>
 <ol><li>Enter a unique <strong>Panel Name</strong>, for example <code>Tracker Background</code>, press <kbd>Enter</kbd>, then click <strong>Create Panel</strong>.</li>
 <li>Select the new panel and leave <strong>Enabled</strong> on.</li>
-<li>For a simple background, choose <strong>Category → LUI Texture</strong> and select <strong>Solid Panel</strong> in the texture list.</li>
-<li>Set Width, Height and Scale. Choose <strong>Individual</strong> in the panel's color settings for a separate color; Alpha sets its transparency.</li>
+<li>For a simple background, choose <strong>Category → LUI Texture</strong> and <strong>Texture Select → Solid Panel</strong>.</li>
+<li>Set Width, Height and Scale. Choose <strong>Individual</strong> under <strong>Panel Color</strong> for a separate color; <strong>Opacity</strong> sets its transparency.</li>
 <li>Enable <strong>Anchored</strong> and enter the existing window's frame name under <strong>Parent</strong>, then confirm the input. The panel follows that frame's movement and visibility.</li>
 <li>In Position, the first <strong>Anchor</strong> chooses a point on the panel and the second chooses a point on its parent. Choosing Top Right for both attaches those corners together. Use Left / Right and Down / Up for the offset.</li></ol>
+<p>The example below uses <strong>Class Color</strong>, so this druid's panel is orange. <strong>Parent</strong> is still <code>UIParent</code>, which means the screen. Enter the window's frame name there to attach the panel to that window.</p>
+<figure>
+<figcaption>Custom panel settings: Solid Panel texture, color, size and anchors</figcaption><a aria-label="Open screenshot: Custom panel settings" href="assets/custom-panels-settings.webp" rel="noopener" target="_blank"><img alt="Tracker Background custom panel with Solid Panel texture, Class Color, full Opacity, size 400 by 300, UIParent as Parent and Center anchors, alongside the resulting orange panel" decoding="async" height="999" loading="lazy" src="assets/custom-panels-settings.webp" style="max-width:1588px" width="1588"/></a>
+</figure>
 <div class="callout note" id="frame-identifier"><strong>Find the frame name</strong><p>Open <b>Artwork → LUI Panels → Meter Panel 1 → LUI Frame Identifier</b>, then move the mouse over the window. Look for the main window's name, rather than a temporary row, icon or button. Blizzard's <code>/framestack</code> command can also help identify it.</p></div>
 <p>Enter the name exactly, including capital letters. For example, a native quest tracker may use <code>ObjectiveTrackerFrame</code>; use the name present in your client. If it is unavailable, LUI uses the screen as a fallback. Change Width and Height again if you resize the window and want a different background size.</p>
 <p>Choose <strong>Custom LUI Texture</strong> for a filename in LUI's texture folder, or <strong>Custom Texture Path</strong> for a complete WoW texture path. Horizontal/Vertical Flip and custom texture coordinates adjust the image.</p></section><section id="bags-bank">
