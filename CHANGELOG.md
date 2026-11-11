@@ -1,4 +1,32 @@
+# LUI v2611 Alpha
+
+## Changes since last update
+
+- Core: Added a first-use welcome dialog and permanent links to the LUI Guide, Discord and changelog in General > Welcome.
+- Core: Added optional Bartender4 and Dominos setup under Control Panel > Addon Setup, with two bottom bars and sidebar positioning in a separate LUI profile copy, preserving the original profile and keybindings.
+- Core: Added optional Grid2, VuhDo, HealBot and Danders Frames setup in a separate LUI profile or skin copy, preserving the original, spells, click bindings and aura indicators. Reapplying setup updates the same LUI copy.
+- Core: Included addon setup progress in optional LUI Debug reports and clarified log-file locations for Retail and Forever.
+- Core: Added selective sharing of LUI settings, with imports into the active profile and recovery of the last snippet import.
+- UIElements: Applied the selected button style to expand and collapse controls in the LUI options tree and to option confirmation dialogs.
+- Unitframes: Added frame-relative positioning for unitframes and group anchors, including Cooldown Manager anchors, previews and saved mover positions.
+- Unitframes: Added optional out-of-combat fading for frames and portraits, with mouseover visibility, an option to show frames while a target is selected, and existing range fading.
+- Unitframes: Included all raid subgroups in the compact layout and added a 40-player raid preview.
+- Artwork: Validated custom panel anchors and prevented invalid or circular parent references.
+- Artwork: Added Danders Frames to the raid-panel presets and optional artwork sizing that follows the attached frame.
+- Artwork: Added Dominos sidebar auto-positioning and kept closed Bartender sidebars hidden after position updates.
+
+---
+
 # LUI v2610 Alpha
+
+## Changes since last update
+
+- Unitframes: Expanded positioning ranges for player and target cast bars.
+- Unitframes: Added simultaneous cast bar previews with individual and global stop controls.
+- UIElements: Added button styling for dropdowns in Friends, Who, Group Finder and the Adventure Guide.
+- UIElements: Styled profession controls and Forever's profession tabs.
+- Bags: Prevented old item slots from reappearing after switching to smaller bags.
+- Chat: Fixed errors when opening temporary whisper conversations and applied chat styling to the new window.
 
 ## Changes since last version
 

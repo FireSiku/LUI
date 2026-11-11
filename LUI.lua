@@ -29,6 +29,36 @@ local ACCEPT = _G.ACCEPT
 local CANCEL = _G.CANCEL
 
 LUI.Versions = {lui = 3404}
+LUI.Links = {
+	Guide = "https://firesiku.github.io/LUI/",
+	Discord = "https://discord.gg/SR29pjc",
+	Changelog = "https://github.com/FireSiku/LUI/blob/master/CHANGELOG.md",
+}
+
+local function SelectGuideLink(frame)
+	frame.EditBox:SetText(LUI.Links.Guide)
+	frame.EditBox:HighlightText()
+	frame.EditBox:SetFocus()
+	return true
+end
+
+LUI.PopupDialogs.LUI_WELCOME = {
+	text = "Welcome to LUI!\n\nThe LUI Guide explains the settings and answers common questions. Join our Discord for help, feedback and news.\n\nChoose a link and press Ctrl+C to copy it. Both links are also available under General > Welcome.",
+	button1 = "LUI Guide",
+	button2 = _G.CLOSE,
+	button3 = "Discord",
+	hasEditBox = true,
+	editBoxWidth = 400,
+	OnShow = SelectGuideLink,
+	OnAccept = SelectGuideLink,
+	OnAlt = function(frame)
+		frame.EditBox:SetText(LUI.Links.Discord)
+		frame.EditBox:HighlightText()
+		frame.EditBox:SetFocus()
+		return true
+	end,
+	hideOnEscape = true,
+}
 
 LUI.playerClass = select(2, _G.UnitClass("player"))
 LUI.playerFaction = _G.UnitFactionGroup("player")
@@ -626,6 +656,7 @@ function LUI:OnInitialize()
 	previousProfileKeys = previousProfileKeys and CopyTable(previousProfileKeys)
 	self.db = LibStub("AceDB-3.0"):New("LUIDB", LUI.defaults, true)
 	self:InitializePlayerIdentity(previousProfileKeys)
+	self.showWelcomeOnLogin = next(self.db.global.luiconfig) == nil
 
 	local global_db = self.db.global.luiconfig[LUI.profileName]
 	local firstRun = not (global_db and global_db.IsConfigured)
@@ -678,8 +709,12 @@ function LUI:OnEnable()
 	self:CheckUpdate()
 	if self.openOptionsOnLogin then
 		self.openOptionsOnLogin = nil
+		local showWelcome = self.showWelcomeOnLogin
+		self.showWelcomeOnLogin = nil
 		C_Timer.After(0, function()
-			if LUI:IsEnabled() then LUI:OpenOptions() end
+			if not LUI:IsEnabled() then return end
+			LUI:OpenOptions()
+			if showWelcome then LUI:ShowPopup("LUI_WELCOME") end
 		end)
 	end
 end

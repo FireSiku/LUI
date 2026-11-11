@@ -17,7 +17,6 @@ local db
 
 local ChatFrameUtil = _G.ChatFrameUtil
 local FCF_GetChatFrameByID = _G.FCF_GetChatFrameByID
-local FCF_GetCurrentChatFrame = _G.FCF_GetCurrentChatFrame
 local FCFDock_SelectWindow = _G.FCFDock_SelectWindow
 local FCFTab_UpdateAlpha = _G.FCFTab_UpdateAlpha
 local GENERAL_CHAT_DOCK = _G.GENERAL_CHAT_DOCK
@@ -183,7 +182,7 @@ local function createURLDialog()
 end
 
 local function showURLCopy(url)
-	if not url or issecretvalue(url) then return end
+	if issecretvalue(url) or not url then return end
 	if createURLDialog then createURLDialog() end
 
 	local dialog = LUI:ShowPopup("LUI_Chat_UrlCopy")
@@ -243,7 +242,7 @@ local function configureTab(tab, minimalist)
 		end
 	end
 
-	FCFTab_UpdateAlpha(_G[CHAT_FRAMES[tab:GetID()]])
+	FCFTab_UpdateAlpha(FCF_GetChatFrameByID(tab:GetID()))
 end
 
 local function configureTabs(minimalist, disableFading)
@@ -278,7 +277,7 @@ local function configureTabs(minimalist, disableFading)
 end
 
 local function urlFilterFunc(frame, event, msg, ...)
-	if not msg or issecretvalue(msg) then return false, msg, ... end
+	if issecretvalue(msg) or not msg then return false, msg, ... end
 
 	for i, v in ipairs(urlPatterns) do
 		msg = gsub(msg, v.pattern, v.matchfunc)
@@ -354,11 +353,10 @@ function module:FloatingChatFrame_Update(id)
 	applyChatFont(FCF_GetChatFrameByID(id))
 end
 
-function module:FCF_OpenTemporaryWindow()
-	local frame = FCF_GetCurrentChatFrame()
+function module:FCF_SetTemporaryWindowType(frame)
 	unclampChatFrame(frame)
 	if db.General.MinimalistTabs then
-		if GENERAL_CHAT_DOCK:IsMouseOver() or GENERAL_CHAT_DOCK.selected:IsMouseOver() then
+		if GENERAL_CHAT_DOCK:IsMouseOver() or (GENERAL_CHAT_DOCK.selected and GENERAL_CHAT_DOCK.selected:IsMouseOver()) then
 			frame.hasBeenFaded = true
 		end
 	end
@@ -401,7 +399,7 @@ function module:SetItemRef(link, text, button, chatFrame)
 end
 
 function module:AddMessage(frame, text, ...)
-	if text and not issecretvalue(text) then
+	if not issecretvalue(text) and text then
 		if text:match("|Hchannel:") then
 			text = gsub(text, "|Hchannel:([^|]+)|h(%b[])|h", replaceChannel)
 		elseif text:match("WHISPER:.-|h") then
@@ -609,7 +607,7 @@ function module:OnEnable()
 	end
 
 	self:SecureHook("FloatingChatFrame_Update")
-	self:SecureHook("FCF_OpenTemporaryWindow")
+	self:SecureHook("FCF_SetTemporaryWindowType")
 	self:RawHook("SetItemRef", true)
 
 	for i, name in ipairs(CHAT_FRAMES) do

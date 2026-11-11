@@ -19,6 +19,7 @@ local preparedPanels = setmetatable({}, {__mode = "k"})
 local knownButtons = setmetatable({}, {__mode = "k"})
 local revision = 0
 local preparedButtons = setmetatable({}, {__mode = "k"})
+local optionsTrees = setmetatable({}, {__mode = "k"})
 local eventFrame = CreateFrame("Frame")
 local unpack = unpack or table.unpack
 
@@ -73,6 +74,21 @@ for _, family in ipairs({"128-RedButton-ShoppingCart", "128-RedButton-Delete"}) 
 end
 tintAtlases["perks-button-up"] = "window-icon"
 tintAtlases["perks-button-down"] = "window-icon"
+-- Standard and filter dropdowns keep their native arrows and state artwork.
+for _, family in ipairs({"common-dropdown-a-button", "common-dropdown-b-button"}) do
+    for _, state in ipairs({"", "-disabled", "-pressed", "-hover", "-pressedhover", "-open"}) do
+        tintAtlases[family .. state] = "window-icon"
+        if family == "common-dropdown-a-button" then
+            tintAtlases[family .. state .. "-shadowless"] = "window-icon"
+        end
+    end
+end
+tintAtlases["common-dropdown-textholder"] = "window-icon"
+for _, atlas in ipairs({"common-button-tertiary-square-normal", "common-button-tertiary-square-pressed",
+    "common-button-tertiary-square-hover", "common-button-tertiary-square-disabled",
+    "common-sidetab", "common-sidetab-selected", "common-sidetab-hover"}) do
+    tintAtlases[atlas] = "window-icon"
+end
 -- Settings use dropdowns, steppers and tabs instead of UIPanelButton faces.
 -- Preserve their native shapes, selection states and separate arrow glyphs.
 for _, atlas in ipairs({
@@ -155,6 +171,11 @@ local function CanTouch(object)
     return accessible and not IsSecret(isRegion)
 end
 
+local function CanOwnCosmeticTexture(owner)
+    return CanTouch(owner) and not owner:IsObjectType("ItemButton")
+        and not (owner.IsProtected and owner:IsProtected())
+end
+
 -- Cosmetic discovery must not install hooks on secure action controls or
 -- their textures, including unnamed children. Check ownership on every call
 -- because pooled regions can be reparented after their first scan.
@@ -174,7 +195,9 @@ local function CanStyle(object)
         -- Other children (talents, spells, tabs and action buttons) keep
         -- the full guard.
         local owner = cosmeticOwners[object]
-        if owner and object.GetParent and object:GetParent() == owner then return true end
+        if owner and object.GetParent and object:GetParent() == owner then
+            return not object:IsObjectType("Texture") or CanOwnCosmeticTexture(owner)
+        end
         -- Exclude the complete LUI bag tree, not just objects identifying as
         -- ItemButton. Plain overlay buttons, cooldown frames and bag parents
         -- can otherwise acquire their own OnShow discovery/styling hooks.
@@ -932,6 +955,7 @@ end
 local controlTargets = {
     ["ColorPickerFrame"] = {buttons = {"Footer.OkayButton", "Footer.CancelButton"}, scrolls = {}},
     ["TimeManagerFrame"] = {buttons = {}, scrolls = {}},
+    ["WhoFrameDropdown"] = {buttons = {"."}, scrolls = {}},
     ["TokenFrame"] = {buttons = {}, scrolls = {}},
     ["StopwatchCloseButton"] = {buttons = {"."}, scrolls = {}},
     ["StatisticsFrame"] = {buttons = {}, scrolls = {}},
@@ -1014,7 +1038,7 @@ local controlTargets = {
     ["DressUpFrame"] = {buttons = {"CloseButton", "MaximizeMinimizeFrame.MaximizeButton", "MaximizeMinimizeFrame.MinimizeButton", "ResetButton", "ToggleCustomSetDetailsButton"}, scrolls = {"SetSelectionPanel.ScrollBox"}},
     ["DressUpFrameCancelButton"] = {buttons = {"."}, scrolls = {}},
     ["DropDownToggleButton"] = {buttons = {"."}, scrolls = {}},
-    ["EncounterJournal"] = {buttons = {"CloseButton", "JourneysFrame.JourneyOverview.OverviewBtn", "JourneysFrame.JourneyProgress.DelvesCompanionConfigurationFrame.CompanionConfigBtn", "JourneysFrame.JourneyProgress.LevelSkipButton", "JourneysFrame.JourneyProgress.OverviewBtn", "JourneysTab", "LootJournalTab", "MonthlyActivitiesFrame.HelpButton", "MonthlyActivitiesTab", "TutorialsFrame.Contents.StartButton", "TutorialsTab", "dungeonsTab", "encounter.info.bossTab", "encounter.info.instanceButton", "encounter.info.lootTab", "encounter.info.modelTab", "encounter.info.overviewTab", "encounter.instance.mapButton", "instanceSelect.GreatVaultButton", "navBar.home", "raidsTab", "suggestFrame.Suggestion1.button", "suggestFrame.Suggestion1.nextButton", "suggestFrame.Suggestion1.prevButton", "suggestFrame.Suggestion2.centerDisplay.button", "suggestFrame.Suggestion3.centerDisplay.button", "suggestTab"}, scrolls = {"JourneysFrame.JourneysList", "MonthlyActivitiesFrame.FilterList.ScrollBox", "MonthlyActivitiesFrame.ScrollBox", "encounter.info.BossesScrollBox", "encounter.info.LootContainer.ScrollBox", "encounter.instance.LoreScrollingFont.ScrollBox", "instanceSelect.ScrollBox", "searchResults", "searchResults.ScrollBox"}},
+    ["EncounterJournal"] = {buttons = {"LootJournalViewDropdown", "instanceSelect.ExpansionDropdown", "encounter.info.difficulty", "encounter.info.LootContainer.filter", "encounter.info.LootContainer.slotFilter", "CloseButton", "JourneysFrame.JourneyOverview.OverviewBtn", "JourneysFrame.JourneyProgress.DelvesCompanionConfigurationFrame.CompanionConfigBtn", "JourneysFrame.JourneyProgress.LevelSkipButton", "JourneysFrame.JourneyProgress.OverviewBtn", "JourneysTab", "LootJournalTab", "MonthlyActivitiesFrame.HelpButton", "MonthlyActivitiesTab", "TutorialsFrame.Contents.StartButton", "TutorialsTab", "dungeonsTab", "encounter.info.bossTab", "encounter.info.instanceButton", "encounter.info.lootTab", "encounter.info.modelTab", "encounter.info.overviewTab", "encounter.instance.mapButton", "instanceSelect.GreatVaultButton", "navBar.home", "raidsTab", "suggestFrame.Suggestion1.button", "suggestFrame.Suggestion1.nextButton", "suggestFrame.Suggestion1.prevButton", "suggestFrame.Suggestion2.centerDisplay.button", "suggestFrame.Suggestion3.centerDisplay.button", "suggestTab"}, scrolls = {"JourneysFrame.JourneysList", "MonthlyActivitiesFrame.FilterList.ScrollBox", "MonthlyActivitiesFrame.ScrollBox", "encounter.info.BossesScrollBox", "encounter.info.LootContainer.ScrollBox", "encounter.instance.LoreScrollingFont.ScrollBox", "instanceSelect.ScrollBox", "searchResults", "searchResults.ScrollBox"}},
     ["EncounterJournalEncounterFrameInfoCreatureButton1"] = {buttons = {"."}, scrolls = {}},
     ["EncounterJournalSearchResultsCloseButton"] = {buttons = {"."}, scrolls = {}},
     ["EquipmentFlyoutFrame"] = {buttons = {"NavigationFrame.NextButton", "NavigationFrame.PageTurnIndicatorLeft", "NavigationFrame.PageTurnIndicatorRight", "NavigationFrame.PrevButton"}, scrolls = {}},
@@ -1023,7 +1047,7 @@ local controlTargets = {
     ["EventToastManagerSideDisplay"] = {buttons = {"."}, scrolls = {}},
     ["FloatingBattlePetTooltip"] = {buttons = {"CloseButton", "JournalClick"}, scrolls = {}},
     ["FloatingPetBattleAbilityTooltip"] = {buttons = {"CloseButton"}, scrolls = {}},
-    ["FriendsFrame"] = {buttons = {"CloseButton", "FriendsTabHeader.BattlenetFrame.BroadcastFrame.CancelButton", "FriendsTabHeader.BattlenetFrame.BroadcastFrame.UpdateButton", "FriendsTabHeader.BattlenetFrame.UnavailableInfoButton", "IgnoreListWindow.CloseButton", "IgnoreListWindow.UnignorePlayerButton"}, scrolls = {"IgnoreListWindow.ScrollBox"}},
+    ["FriendsFrame"] = {buttons = {"FriendsTabHeader.StatusDropdown", "CloseButton", "FriendsTabHeader.BattlenetFrame.BroadcastFrame.CancelButton", "FriendsTabHeader.BattlenetFrame.BroadcastFrame.UpdateButton", "FriendsTabHeader.BattlenetFrame.UnavailableInfoButton", "IgnoreListWindow.CloseButton", "IgnoreListWindow.UnignorePlayerButton"}, scrolls = {"IgnoreListWindow.ScrollBox"}},
     ["FriendsFrameAddFriendButton"] = {buttons = {"."}, scrolls = {}},
     ["FriendsFrameSendMessageButton"] = {buttons = {"."}, scrolls = {}},
     ["FriendsFrameTab1"] = {buttons = {"."}, scrolls = {}},
@@ -1105,7 +1129,7 @@ local controlTargets = {
     ["LFGInvitePopupRoleButtonHealer"] = {buttons = {".", "checkButton"}, scrolls = {}},
     ["LFGInvitePopupRoleButtonTank"] = {buttons = {".", "checkButton"}, scrolls = {}},
     ["LFGListApplicationDialog"] = {buttons = {"CancelButton", "DamagerButton", "DamagerButton.CheckButton", "HealerButton", "HealerButton.CheckButton", "SignUpButton", "TankButton", "TankButton.CheckButton"}, scrolls = {}},
-    ["LFGListFrame"] = {buttons = {"ApplicationViewer.AutoAcceptButton", "ApplicationViewer.BrowseGroupsButton", "ApplicationViewer.EditButton", "ApplicationViewer.ItemLevelColumnHeader", "ApplicationViewer.NameColumnHeader", "ApplicationViewer.RatingColumnHeader", "ApplicationViewer.RefreshButton", "ApplicationViewer.RemoveEntryButton", "ApplicationViewer.RoleColumnHeader", "CategorySelection.FindGroupButton", "CategorySelection.StartGroupButton", "EntryCreation.ActivityFinder.Dialog.CancelButton", "EntryCreation.ActivityFinder.Dialog.EntryBox.LockButton", "EntryCreation.ActivityFinder.Dialog.SelectButton", "EntryCreation.CancelButton", "EntryCreation.CrossFactionGroup.CheckButton", "EntryCreation.Description.LockButton", "EntryCreation.ItemLevel.CheckButton", "EntryCreation.ItemLevel.EditBox.LockButton", "EntryCreation.ListGroupButton", "EntryCreation.ListGroupButton.DisableStateClickButton", "EntryCreation.MythicPlusRating.CheckButton", "EntryCreation.MythicPlusRating.EditBox.LockButton", "EntryCreation.Name.LockButton", "EntryCreation.PVPRating.CheckButton", "EntryCreation.PVPRating.EditBox.LockButton", "EntryCreation.PrivateGroup.CheckButton", "EntryCreation.PvpItemLevel.CheckButton", "EntryCreation.PvpItemLevel.EditBox.LockButton", "EntryCreation.VoiceChat.CheckButton", "EntryCreation.VoiceChat.EditBox.LockButton", "SearchPanel.BackButton", "SearchPanel.BackToGroupButton", "SearchPanel.RefreshButton", "SearchPanel.ScrollBox.StartGroupButton", "SearchPanel.SignUpButton"}, scrolls = {"ApplicationViewer.ScrollBox", "EntryCreation.ActivityFinder.Dialog.ScrollBox", "SearchPanel.ScrollBox"}},
+    ["LFGListFrame"] = {buttons = {"EntryCreation.GroupDropdown", "EntryCreation.ActivityDropdown", "EntryCreation.PlayStyleDropdown", "SearchPanel.FilterButton", "ApplicationViewer.AutoAcceptButton", "ApplicationViewer.BrowseGroupsButton", "ApplicationViewer.EditButton", "ApplicationViewer.ItemLevelColumnHeader", "ApplicationViewer.NameColumnHeader", "ApplicationViewer.RatingColumnHeader", "ApplicationViewer.RefreshButton", "ApplicationViewer.RemoveEntryButton", "ApplicationViewer.RoleColumnHeader", "CategorySelection.FindGroupButton", "CategorySelection.StartGroupButton", "EntryCreation.ActivityFinder.Dialog.CancelButton", "EntryCreation.ActivityFinder.Dialog.EntryBox.LockButton", "EntryCreation.ActivityFinder.Dialog.SelectButton", "EntryCreation.CancelButton", "EntryCreation.CrossFactionGroup.CheckButton", "EntryCreation.Description.LockButton", "EntryCreation.ItemLevel.CheckButton", "EntryCreation.ItemLevel.EditBox.LockButton", "EntryCreation.ListGroupButton", "EntryCreation.ListGroupButton.DisableStateClickButton", "EntryCreation.MythicPlusRating.CheckButton", "EntryCreation.MythicPlusRating.EditBox.LockButton", "EntryCreation.Name.LockButton", "EntryCreation.PVPRating.CheckButton", "EntryCreation.PVPRating.EditBox.LockButton", "EntryCreation.PrivateGroup.CheckButton", "EntryCreation.PvpItemLevel.CheckButton", "EntryCreation.PvpItemLevel.EditBox.LockButton", "EntryCreation.VoiceChat.CheckButton", "EntryCreation.VoiceChat.EditBox.LockButton", "SearchPanel.BackButton", "SearchPanel.BackToGroupButton", "SearchPanel.RefreshButton", "SearchPanel.ScrollBox.StartGroupButton", "SearchPanel.SignUpButton"}, scrolls = {"ApplicationViewer.ScrollBox", "EntryCreation.ActivityFinder.Dialog.ScrollBox", "SearchPanel.ScrollBox"}},
     ["LFGListInviteDialog"] = {buttons = {"AcceptButton", "AcknowledgeButton", "DeclineButton"}, scrolls = {}},
     ["LFGReadyCheckPopup"] = {buttons = {"NoButton", "YesButton"}, scrolls = {}},
     ["LootFrame"] = {buttons = {"ClosePanelButton"}, scrolls = {"ScrollBox"}},
@@ -1174,7 +1198,12 @@ local controlTargets = {
     ["PrimaryProfession2"] = {buttons = {"SpellButton1", "SpellButton2", "UnlearnButton"}, scrolls = {}},
     ["ProfessionsBookFrame"] = {buttons = {"CloseButton", "MainHelpButton"}, scrolls = {}},
     ["ProfessionsCustomerOrdersFrame"] = {buttons = {"BrowseOrders.SearchBar.FavoritesSearchButton", "BrowseOrders.SearchBar.SearchButton", "BrowseTab", "CloseButton", "Form.AllocateBestQualityCheckbox", "Form.BackButton", "Form.CurrentListings.CloseButton", "Form.FavoriteButton", "Form.OutputIcon", "Form.PaymentContainer.CancelOrderButton", "Form.PaymentContainer.ListOrderButton", "Form.PaymentContainer.ViewListingsButton", "Form.QualityDialog.AcceptButton", "Form.QualityDialog.CancelButton", "Form.QualityDialog.ClosePanelButton", "Form.TrackRecipeCheckbox.Checkbox", "MyOrdersPage.RefreshButton", "OrdersTab"}, scrolls = {"BrowseOrders.CategoryList.ScrollBox", "BrowseOrders.RecipeList.ScrollBox", "Form.CurrentListings.OrderList.ScrollBox", "Form.PaymentContainer.NoteEditBox.ScrollingEditBox.ScrollBox", "MyOrdersPage.OrderList.ScrollBox"}},
-    ["ProfessionsFrame"] = {buttons = {"CloseButton", "CraftingPage.CraftingOutputLog.ClosePanelButton", "CraftingPage.CreateAllButton", "CraftingPage.CreateButton", "CraftingPage.MinimizedSearchResults.CloseButton", "CraftingPage.SchematicForm.AllocateBestQualityCheckbox", "CraftingPage.SchematicForm.Concentrate.ConcentrateToggleButton", "CraftingPage.SchematicForm.Details.CraftingChoicesContainer.ConcentrateContainer.ConcentrateToggleButton", "CraftingPage.SchematicForm.FavoriteButton", "CraftingPage.SchematicForm.OutputIcon", "CraftingPage.SchematicForm.QualityDialog.AcceptButton", "CraftingPage.SchematicForm.QualityDialog.CancelButton", "CraftingPage.SchematicForm.QualityDialog.ClosePanelButton", "CraftingPage.SchematicForm.RecipeSourceButton", "CraftingPage.SchematicForm.TrackRecipeCheckbox", "CraftingPage.TutorialButton", "CraftingPage.ViewGuildCraftersButton", "MaximizeMinimize.MaximizeButton", "MaximizeMinimize.MinimizeButton", "OrdersPage.BrowseFrame.BackButton", "OrdersPage.BrowseFrame.FavoritesSearchButton", "OrdersPage.BrowseFrame.GuildOrdersButton", "OrdersPage.BrowseFrame.NpcOrdersButton", "OrdersPage.BrowseFrame.PersonalOrdersButton", "OrdersPage.BrowseFrame.PublicOrdersButton", "OrdersPage.BrowseFrame.SearchButton", "OrdersPage.OrderView.CompleteOrderButton", "OrdersPage.OrderView.CraftingOutputLog.ClosePanelButton", "OrdersPage.OrderView.CreateButton", "OrdersPage.OrderView.DeclineOrderDialog.CancelButton", "OrdersPage.OrderView.DeclineOrderDialog.ConfirmButton", "OrdersPage.OrderView.OrderDetails.FulfillmentForm.ItemIcon", "OrdersPage.OrderView.OrderDetails.SchematicForm.AllocateBestQualityCheckbox", "OrdersPage.OrderView.OrderDetails.SchematicForm.Concentrate.ConcentrateToggleButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.Details.CraftingChoicesContainer.ConcentrateContainer.ConcentrateToggleButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.FavoriteButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.OutputIcon", "OrdersPage.OrderView.OrderDetails.SchematicForm.QualityDialog.AcceptButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.QualityDialog.CancelButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.QualityDialog.ClosePanelButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.RecipeSourceButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.TrackRecipeCheckbox", "OrdersPage.OrderView.OrderInfo.BackButton", "OrdersPage.OrderView.OrderInfo.DeclineOrderButton", "OrdersPage.OrderView.OrderInfo.ReleaseOrderButton", "OrdersPage.OrderView.OrderInfo.StartOrderButton", "OrdersPage.OrderView.StartRecraftButton", "OrdersPage.OrderView.StopRecraftButton", "SpecPage.ApplyButton", "SpecPage.BackToFullTreeButton", "SpecPage.BackToPreviewButton", "SpecPage.DetailedView.Path", "SpecPage.DetailedView.SpendPointsButton", "SpecPage.DetailedView.UnlockPathButton", "SpecPage.UndoButton", "SpecPage.UnlockTabButton", "SpecPage.ViewPreviewButton", "SpecPage.ViewTreeButton"}, scrolls = {"CraftingPage.CraftingOutputLog.ScrollBox", "CraftingPage.GuildFrame.Container.ScrollBox", "CraftingPage.MinimizedSearchResults.ScrollBox", "CraftingPage.RecipeList.ScrollBox", "OrdersPage.BrowseFrame.OrderList.ScrollBox", "OrdersPage.BrowseFrame.RecipeList.ScrollBox", "OrdersPage.OrderView.CraftingOutputLog.ScrollBox", "OrdersPage.OrderView.DeclineOrderDialog.NoteEditBox.ScrollingEditBox.ScrollBox", "OrdersPage.OrderView.OrderDetails.FulfillmentForm.NoteEditBox.ScrollingEditBox.ScrollBox"}},
+    ["ProfessionsFrame"] = {cosmetic = {
+        "CraftingPage.CreateAllButton", "CraftingPage.CreateButton", "CraftingPage.LinkButton",
+        "CraftingPage.RecipeList.FilterDropdown", "CraftingPage.CreateMultipleInputBox.IncrementButton",
+        "CraftingPage.CreateMultipleInputBox.DecrementButton", "CraftingPage.ViewGuildCraftersButton",
+        "CraftingPage.CraftingOutputLog.ClosePanelButton", "CraftingPage.MinimizedSearchResults.CloseButton",
+    }, buttons = {"CloseButton", "CraftingPage.SchematicForm.AllocateBestQualityCheckbox", "CraftingPage.SchematicForm.Concentrate.ConcentrateToggleButton", "CraftingPage.SchematicForm.Details.CraftingChoicesContainer.ConcentrateContainer.ConcentrateToggleButton", "CraftingPage.SchematicForm.FavoriteButton", "CraftingPage.SchematicForm.OutputIcon", "CraftingPage.SchematicForm.QualityDialog.AcceptButton", "CraftingPage.SchematicForm.QualityDialog.CancelButton", "CraftingPage.SchematicForm.QualityDialog.ClosePanelButton", "CraftingPage.SchematicForm.RecipeSourceButton", "CraftingPage.SchematicForm.TrackRecipeCheckbox", "CraftingPage.TutorialButton", "MaximizeMinimize.MaximizeButton", "MaximizeMinimize.MinimizeButton", "OrdersPage.BrowseFrame.BackButton", "OrdersPage.BrowseFrame.FavoritesSearchButton", "OrdersPage.BrowseFrame.GuildOrdersButton", "OrdersPage.BrowseFrame.NpcOrdersButton", "OrdersPage.BrowseFrame.PersonalOrdersButton", "OrdersPage.BrowseFrame.PublicOrdersButton", "OrdersPage.BrowseFrame.SearchButton", "OrdersPage.OrderView.CompleteOrderButton", "OrdersPage.OrderView.CraftingOutputLog.ClosePanelButton", "OrdersPage.OrderView.CreateButton", "OrdersPage.OrderView.DeclineOrderDialog.CancelButton", "OrdersPage.OrderView.DeclineOrderDialog.ConfirmButton", "OrdersPage.OrderView.OrderDetails.FulfillmentForm.ItemIcon", "OrdersPage.OrderView.OrderDetails.SchematicForm.AllocateBestQualityCheckbox", "OrdersPage.OrderView.OrderDetails.SchematicForm.Concentrate.ConcentrateToggleButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.Details.CraftingChoicesContainer.ConcentrateContainer.ConcentrateToggleButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.FavoriteButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.OutputIcon", "OrdersPage.OrderView.OrderDetails.SchematicForm.QualityDialog.AcceptButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.QualityDialog.CancelButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.QualityDialog.ClosePanelButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.RecipeSourceButton", "OrdersPage.OrderView.OrderDetails.SchematicForm.TrackRecipeCheckbox", "OrdersPage.OrderView.OrderInfo.BackButton", "OrdersPage.OrderView.OrderInfo.DeclineOrderButton", "OrdersPage.OrderView.OrderInfo.ReleaseOrderButton", "OrdersPage.OrderView.OrderInfo.StartOrderButton", "OrdersPage.OrderView.StartRecraftButton", "OrdersPage.OrderView.StopRecraftButton", "SpecPage.ApplyButton", "SpecPage.BackToFullTreeButton", "SpecPage.BackToPreviewButton", "SpecPage.DetailedView.Path", "SpecPage.DetailedView.SpendPointsButton", "SpecPage.DetailedView.UnlockPathButton", "SpecPage.UndoButton", "SpecPage.UnlockTabButton", "SpecPage.ViewPreviewButton", "SpecPage.ViewTreeButton"}, scrolls = {"CraftingPage.CraftingOutputLog.ScrollBox", "CraftingPage.GuildFrame.Container.ScrollBox", "CraftingPage.MinimizedSearchResults.ScrollBox", "CraftingPage.RecipeList.ScrollBox", "OrdersPage.BrowseFrame.OrderList.ScrollBox", "OrdersPage.BrowseFrame.RecipeList.ScrollBox", "OrdersPage.OrderView.CraftingOutputLog.ScrollBox", "OrdersPage.OrderView.DeclineOrderDialog.NoteEditBox.ScrollingEditBox.ScrollBox", "OrdersPage.OrderView.OrderDetails.FulfillmentForm.NoteEditBox.ScrollingEditBox.ScrollBox"}},
     ["QuestFrame"] = {buttons = {"CloseButton"}, scrolls = {}},
     ["QuestFrameAcceptButton"] = {buttons = {"."}, scrolls = {}},
     ["QuestFrameCompleteButton"] = {buttons = {"."}, scrolls = {}},
@@ -1327,6 +1356,18 @@ for _, name in ipairs({"ObjectiveTrackerFrame", "AchievementObjectiveTracker",
     controlTargets[name] = {cosmetic = {"Header.MinimizeButton"}, buttons = {}, scrolls = {}}
 end
 
+-- Forever embeds secure profession spell buttons in the overview. Only the
+-- decorative regions on its plain side tabs join the cosmetic allowlist.
+if LUI.IsForever then
+    local paths = controlTargets.ProfessionsFrame.cosmetic
+    for _, tab in ipairs({"ProfessionsOverviewTab", "Professions1Tab", "Professions2Tab", "Professions3Tab",
+        "Professions4Tab", "Professions5Tab", "Professions6Tab", "Professions7Tab"}) do
+        for _, region in ipairs({"Background", "SelectedTexture", "TabGlow", "HighlightTexture"}) do
+            paths[#paths + 1] = tab .. "." .. region
+        end
+    end
+end
+
 -- Known native window close buttons may sit below a protected window. Only
 -- the verified close branch is allowed; the window's action/talent children
 -- still fail CanStyle. Some templates expose a global name, not a parent key.
@@ -1396,6 +1437,42 @@ end
 function module:RegisterPopupButton(parent, button)
     if not LUI:IsPopupButton(parent, button) then return end
     RegisterCosmeticButton(parent, button)
+end
+
+-- AceConfig owns an unnamed confirmation/validation dialog outside AceGUI's
+-- widget registration. Its buttons have no UIPanelButton template hooks.
+local function PrepareOptionsPopup()
+    local dialog = LibStub("AceConfigDialog-3.0", true)
+    local frame = dialog and dialog.popup
+    if not CanStyle(frame) then return end
+    RegisterCosmeticButton(frame, frame.accept)
+    RegisterCosmeticButton(frame, frame.cancel)
+end
+
+local function PrepareOptionsTree(widget)
+    if not CanStyle(widget.frame) or not CanTouch(widget.treeframe) or type(widget.buttons) ~= "table" then return end
+    for _, row in ipairs(widget.buttons) do
+        local toggle = CanTouch(row) and row:GetParent() == widget.treeframe and row.toggle
+        if CanTouch(toggle) and toggle:GetParent() == row then
+            cosmeticOwners[toggle] = row
+            -- Native SetNormalTexture calls can bypass texture hooks when
+            -- a pooled row switches from plus to minus or back.
+            ApplyButton(toggle)
+        end
+    end
+end
+
+-- TreeGroup is an AceGUI container, so RegisterAsWidget never sees its
+-- expand buttons. Register LUI's own tree after layout and after each refresh
+-- to include newly created rows without scanning the entire options window.
+function module:RegisterOptionsTree(widget)
+    if IsSecret(widget) or type(widget) ~= "table" or widget.type ~= "TreeGroup"
+        or type(widget.RefreshTree) ~= "function" then return end
+    if not optionsTrees[widget] then
+        hooksecurefunc(widget, "RefreshTree", PrepareOptionsTree)
+        optionsTrees[widget] = true
+    end
+    PrepareOptionsTree(widget)
 end
 
 -- Register only the two native response controls, including while hidden so
@@ -1587,12 +1664,22 @@ local function PrepareCosmeticControls(frame, name)
     if not paths then return end
     for _, path in ipairs(paths) do
         local button = ResolveControl(frame, path)
-        if CanTouch(button) and button:IsObjectType("Button") then
+        if CanTouch(button) and (button:IsObjectType("Button") or button:IsObjectType("Texture")) then
             local ancestor = button:GetParent()
             for _ = 1, 32 do
                 if not CanTouch(ancestor) then break end
                 if ancestor == frame then
-                    RegisterCosmeticButton(button:GetParent(), button)
+                    local parent = button:GetParent()
+                    if button:IsObjectType("Texture") then
+                        -- Whitelisted decoration only; never exempt a secure
+                        -- action control or an inventory slot's textures.
+                        if CanOwnCosmeticTexture(parent) then
+                            cosmeticOwners[button] = parent
+                            ApplyRegion(button)
+                        end
+                    else
+                        RegisterCosmeticButton(parent, button)
+                    end
                     break
                 end
                 ancestor = ancestor:GetParent()
@@ -1674,6 +1761,7 @@ PrepareKnownPanels = function(force)
         PrepareName("GameMenuButton" .. suffix)
     end
     for index = 1, 4 do PrepareName("StaticPopup" .. index) end
+    PrepareOptionsPopup()
     PreparePlayerSpellsControls()
     PrepareReadyCheckButtons()
     if LUI.ForEachPopupButton then
@@ -1696,6 +1784,7 @@ local panelTargets = {
     end,
 }
 local menuEventInstalled = false
+local professionsEventsInstalled = false
 local function InstallPanelHooks()
     for name, callback in pairs(panelTargets) do
         if not panelHooks[name] and type(_G[name]) == "function" then
@@ -1708,6 +1797,13 @@ local function InstallPanelHooks()
             PrepareMenuButtons(_G.GameMenuFrame)
         end, eventFrame)
         menuEventInstalled = true
+    end
+    if not professionsEventsInstalled and _G.EventRegistry then
+        local callback = function() QueuePanel(_G.ProfessionsFrame) end
+        for _, event in ipairs({"ProfessionsFrame.Show", "ProfessionsFrame.TabSet"}) do
+            _G.EventRegistry:RegisterCallback(event, callback, eventFrame)
+        end
+        professionsEventsInstalled = true
     end
 end
 

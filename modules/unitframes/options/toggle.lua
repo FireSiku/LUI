@@ -102,15 +102,55 @@ end
 local raidLabelHeaders = {}
 local raidLabelMedia = LibStub("LibSharedMedia-3.0")
 
+local function SetRaidGroupLabelText(label, text, width, packed)
+	local settings = module.db.profile.raid.GroupLabel
+	label:SetFont(raidLabelMedia:Fetch("font", settings.Font), settings.Size, settings.Outline)
+	label:SetText(packed and (GROUP.." 8–8") or text)
+	label:SetWidth(0)
+	local textWidth = label:GetStringWidth()
+	if textWidth > width and width > 0 then
+		label:SetFont(raidLabelMedia:Fetch("font", settings.Font), settings.Size * width / textWidth, settings.Outline)
+	end
+	label:SetWidth(width)
+	label:SetText(text)
+end
+
+local function GetRaidFrameGroup(frame)
+	local unit = frame:GetAttribute("unit")
+	if issecretvalue(unit) or type(unit) ~= "string" then return end
+	local index = tonumber(unit:match("^raid(%d+)$"))
+	if not index then return end
+	local group = select(3, GetRaidRosterInfo(index))
+	if not issecretvalue(group) and type(group) == "number" then return group end
+end
+
 local function UpdateRaidGroupLabelVisibility(header)
 	local label = header.LUIGroupLabel
 	if not label then return end
 	local settings = module.db.profile.raid.GroupLabel
 	local first = header:GetAttribute("child1")
-	label:SetShown(settings and settings.Enable and IsInRaid() and first and first:IsShown() or false)
+	local shown = settings and settings.Enable and IsInRaid() and first and first:IsShown() or false
+	label:SetShown(shown)
+	if shown and header.LUIRaidPacked then
+		local firstGroup = GetRaidFrameGroup(first)
+		local lastGroup = firstGroup
+		for index = 5, 2, -1 do
+			local child = header:GetAttribute("child"..index)
+			if child and child:IsShown() then
+				lastGroup = GetRaidFrameGroup(child) or firstGroup
+				break
+			end
+		end
+		local text = RAID
+		if firstGroup then
+			text = GROUP.." "..firstGroup
+			if lastGroup ~= firstGroup then text = text.."–"..lastGroup end
+		end
+		if label:GetText() ~= text then label:SetText(text) end
+	end
 end
 
--- Only text visibility changes on roster events; secure header layout stays untouched.
+-- Only label text and visibility change on roster events; secure header layout stays untouched.
 local raidLabelEvents = CreateFrame("Frame")
 raidLabelEvents:RegisterEvent("GROUP_ROSTER_UPDATE")
 raidLabelEvents:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -122,7 +162,8 @@ raidLabelEvents:SetScript("OnEvent", function()
 	end)
 end)
 
-function module:ConfigureRaidGroupLabel(anchor, group, width, point, preview)
+function module:ConfigureRaidGroupLabel(anchor, group, width, point, preview, packed)
+	anchor.LUIRaidPacked = packed and not preview or false
 	local settings = self.db.profile.raid.GroupLabel
 	local label = anchor.LUIGroupLabel
 	if not settings or not settings.Enable then
@@ -145,16 +186,8 @@ function module:ConfigureRaidGroupLabel(anchor, group, width, point, preview)
 		end
 	end
 
-	label:SetFont(raidLabelMedia:Fetch("font", settings.Font), settings.Size, settings.Outline)
 	label:SetTextColor(settings.Color.r, settings.Color.g, settings.Color.b)
-	label:SetText(GROUP.." "..group)
-	label:SetWidth(0)
-	-- Fit the complete heading to narrow 40-player columns without overlapping its neighbour.
-	local textWidth = label:GetStringWidth()
-	if textWidth > width and width > 0 then
-		label:SetFont(raidLabelMedia:Fetch("font", settings.Font), settings.Size * width / textWidth, settings.Outline)
-	end
-	label:SetWidth(width)
+	SetRaidGroupLabelText(label, GROUP.." "..group, width, anchor.LUIRaidPacked)
 	label:ClearAllPoints()
 	local topOverflow, bottomOverflow = self.GetUnitFrameVerticalOverflow(self.db.profile.raid)
 	local spacing = settings.Spacing
@@ -188,6 +221,7 @@ pendingToggleFrame:SetScript("OnEvent", function(self)
 	for unit, request in pairs(queued) do
 		module.ToggleUnit(unit, request.override)
 	end
+	module:RefreshAnchors()
 end)
 
 local ToggleMT = {
@@ -230,11 +264,11 @@ module.ToggleUnit = setmetatable({
 				_G["oUF_LUI_"..unit]:UpdateAllElements('refreshUnit')
 				_G["oUF_LUI_"..unit]:ClearAllPoints()
 				_G["oUF_LUI_"..unit]:SetScale(dbUnit.Scale)
-				_G["oUF_LUI_"..unit]:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(_G["oUF_LUI_"..unit], dbUnit, x, y)
 			else
 				local f = oUF:Spawn(unit, "oUF_LUI_"..unit)
 				f:SetScale(dbUnit.Scale)
-				f:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(f, dbUnit, x, y)
 			end
 
 		else
@@ -261,7 +295,7 @@ module.ToggleUnit = setmetatable({
 			if oUF_LUI_boss then
 				oUF_LUI_boss:SetScale(dbUnit.Scale)
 				oUF_LUI_boss:ClearAllPoints()
-				oUF_LUI_boss:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(oUF_LUI_boss, dbUnit, x, y)
 				oUF_LUI_boss:SetWidth(dbUnit.Width)
 				oUF_LUI_boss:SetHeight(footprintHeight)
 				oUF_LUI_boss:SetAttribute("Height", footprintHeight)
@@ -290,7 +324,7 @@ module.ToggleUnit = setmetatable({
 			else
 				local bossParent = CreateFrame("Frame", "oUF_LUI_boss", UIParent)
 				bossParent:SetScale(dbUnit.Scale)
-				bossParent:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(bossParent, dbUnit, x, y)
 				bossParent:SetWidth(dbUnit.Width)
 				bossParent:SetHeight(footprintHeight)
 				bossParent:SetAttribute("Height", footprintHeight)
@@ -394,7 +428,7 @@ module.ToggleUnit = setmetatable({
 			if oUF_LUI_party then
 				oUF_LUI_party:SetScale(dbUnit.Scale)
 				oUF_LUI_party:ClearAllPoints()
-				oUF_LUI_party:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(oUF_LUI_party, dbUnit, x, y)
 				oUF_LUI_party:SetAttribute("point", opposite)
 				oUF_LUI_party:SetAttribute("xOffset", growdir == "LEFT" and - dbUnit.Padding or dbUnit.Padding)
 				oUF_LUI_party:SetAttribute("yOffset", growdir == "BOTTOM" and - partyVerticalPadding or partyVerticalPadding)
@@ -449,7 +483,7 @@ module.ToggleUnit = setmetatable({
 				)
 
 				party:SetScale(dbUnit.Scale)
-				party:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(party, dbUnit, x, y)
 
 				local handler = CreateFrame("Frame")
 				handler:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -569,7 +603,7 @@ module.ToggleUnit = setmetatable({
 			if oUF_LUI_arena then
 				oUF_LUI_arena:SetScale(dbUnit.Scale)
 				oUF_LUI_arena:ClearAllPoints()
-				oUF_LUI_arena:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(oUF_LUI_arena, dbUnit, x, y)
 				oUF_LUI_arena:SetWidth(dbUnit.Width)
 				oUF_LUI_arena:SetHeight(footprintHeight)
 				oUF_LUI_arena:SetAttribute("Height", footprintHeight)
@@ -598,7 +632,7 @@ module.ToggleUnit = setmetatable({
 			else
 				local arenaParent = CreateFrame("Frame", "oUF_LUI_arena", UIParent)
 				arenaParent:SetScale(dbUnit.Scale)
-				arenaParent:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(arenaParent, dbUnit, x, y)
 				arenaParent:SetWidth(dbUnit.Width)
 				arenaParent:SetHeight(footprintHeight)
 				arenaParent:SetAttribute("Height", footprintHeight)
@@ -730,7 +764,7 @@ module.ToggleUnit = setmetatable({
 			if oUF_LUI_maintank then
 				oUF_LUI_maintank:SetScale(dbUnit.Scale)
 				oUF_LUI_maintank:ClearAllPoints()
-				oUF_LUI_maintank:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(oUF_LUI_maintank, dbUnit, x, y)
 				oUF_LUI_maintank:SetAttribute("point", opposite)
 				oUF_LUI_maintank:SetAttribute("xOffset", growdir == "LEFT" and - dbUnit.Padding or dbUnit.Padding)
 				oUF_LUI_maintank:SetAttribute("yOffset", growdir == "BOTTOM" and - tankVerticalPadding or tankVerticalPadding)
@@ -786,7 +820,7 @@ module.ToggleUnit = setmetatable({
 				)
 
 				tank:SetScale(dbUnit.Scale)
-				tank:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, x, y)
+				module:PositionFrame(tank, dbUnit, x, y)
 				tank:Show()
 			end
 
@@ -857,7 +891,7 @@ module.ToggleUnit = setmetatable({
 			local frameHeight = GetFrameHeight(dbUnit)
 			local footprintHeight = GetFootprintHeight(dbUnit)
 			local raidVerticalPadding = GetVerticalStackPadding(dbUnit)
-			if IsAddOnLoaded("Plexus") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("Healbot") then
+			if IsAddOnLoaded("Plexus") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("HealBot") or IsAddOnLoaded("DandersFrames") then
 				return
 			end
 			if oUF_LUI_raid then
@@ -905,7 +939,7 @@ module.ToggleUnit = setmetatable({
 				end
 
 				oUF_LUI_raid:ClearAllPoints()
-				oUF_LUI_raid:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, dbUnit.X, dbUnit.Y)
+				module:PositionFrame(oUF_LUI_raid, dbUnit)
 				oUF_LUI_raid:Show()
 
 				RegisterStateDriver(oUF_LUI_raid_25, "visibility", "[@raid26,exists] hide; show")
@@ -914,7 +948,7 @@ module.ToggleUnit = setmetatable({
 				local raidAnchor = CreateFrame("Frame", "oUF_LUI_raid", UIParent)
 				raidAnchor:SetWidth(dbUnit.Width * 5 + dbUnit.GroupPadding * 4)
 				raidAnchor:SetHeight(footprintHeight * 5 + dbUnit.Padding * 4)
-				raidAnchor:SetPoint(dbUnit.Point, UIParent, dbUnit.Point, dbUnit.X, dbUnit.Y)
+				module:PositionFrame(raidAnchor, dbUnit)
 
 				local raid25 = CreateFrame("Frame", "oUF_LUI_raid_25", raidAnchor, "SecureHandlerStateTemplate")
 				raid25:SetWidth(1)
@@ -927,7 +961,12 @@ module.ToggleUnit = setmetatable({
 						"showRaid", true,
 						"showPlayer", true,
 						"showSolo", true,
-						"groupFilter", tostring(i),
+						"groupFilter", "1,2,3,4,5,6,7,8",
+						"groupBy", "GROUP",
+						"groupingOrder", "1,2,3,4,5,6,7,8",
+						"startingIndex", (i - 1) * 5 + 1,
+						"unitsPerColumn", 5,
+						"maxColumns", 1,
 						"yOffset", - raidVerticalPadding,
 						"oUF-initialConfigFunction", [[
 							self:SetHeight(]]..frameHeight..[[)
@@ -979,7 +1018,7 @@ module.ToggleUnit = setmetatable({
 				local width = size == 25 and dbUnit.Width or (5 * dbUnit.Width - 3 * dbUnit.GroupPadding) / 8
 				for group = 1, count do
 					local header = _G["oUF_LUI_raid_"..size.."_"..group]
-					module:ConfigureRaidGroupLabel(header, group, width, header:GetAttribute("point"))
+					module:ConfigureRaidGroupLabel(header, group, width, header:GetAttribute("point"), false, size == 25)
 				end
 			end
 
@@ -1086,7 +1125,7 @@ module.ApplySettings = function(unit, force)
 		if frame and (dbUnit.Enable ~= false or force or frame.LUIPreview) then
 			local styleUnit = frame.LUIStyleUnit or frame.__unit
 			local runtimeUnit = frame.LUIPreviewUnit or frame.__unit
-			if framename:find("oUF_LUI_raid_40") then
+			if framename:find("oUF_LUI_raid_40") or frame.LUIRaidWidePreview then
 				frame:SetWidth((dbUnit.Width * 5 - dbUnit.GroupPadding * 3) / 8)
 			else
 				frame:SetWidth(dbUnit.Width)
@@ -1263,6 +1302,7 @@ module.ApplySettings = function(unit, force)
 				frame:DisableElement("Range")
 				frame:SetAlpha(1)
 			end
+			module:ConfigureFading(frame, dbUnit)
 
 			if unit == "targettarget" or unit == "targettargettarget" or unit == "focustarget" or unit == "focus" then
 				if not frame.V2Tex then
@@ -1297,6 +1337,8 @@ module.ApplySettings = function(unit, force)
 			if unit == "arena" and module.UpdateArenaPreparation then
 				module:UpdateArenaPreparation(frame)
 			end
+		elseif frame then
+			module:DisableFading(frame)
 		end
 	end
 end

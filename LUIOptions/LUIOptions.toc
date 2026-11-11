@@ -1,5 +1,5 @@
 ## Interface: 120105, 16001
-## Version: v2610
+## Version: v2611
 ## Title: LUIOptions
 ## Author: Siku, Nitsah, Pahn
 ## Notes: Options Menu for modern versions of LUI.
@@ -7,9 +7,13 @@
 ## X-Website: https://www.wowlui.com
 
 LUIOptions.lua
+Snippets.lua
 General.lua
-Diagnostics.lua
 CPanel.lua
+SetupProfiles.lua
+ActionBars.lua
+RaidFrames.lua
+Diagnostics.lua
 Colors.lua
 Artwork.lua
 Bags.lua

@@ -97,6 +97,31 @@ function LUI:MakeDraggable(frame)
 	LibWin.MakeDraggable(frame)
 end
 
+-- Follow only the selected frame's dependencies when settings are applied.
+-- Invalid names, non-frames and circular anchors fall back to the screen.
+function LUI:GetValidAnchor(frame, name)
+	if not name or name == "" or name == "UIParent" then return UIParent end
+	if type(name) ~= "string" then return end
+	local anchor = _G[name]
+	if type(anchor) ~= "table" or type(anchor.IsObjectType) ~= "function"
+		or (anchor.IsForbidden and anchor:IsForbidden()) or not anchor:IsObjectType("Frame") then return end
+	local seen = {}
+	local function DependsOn(candidate)
+		if not candidate then return false end
+		if candidate == frame then return true end
+		if candidate == UIParent or seen[candidate] then return false end
+		if candidate.IsForbidden and candidate:IsForbidden() then return true end
+		seen[candidate] = true
+		if DependsOn(candidate:GetParent()) then return true end
+		for index = 1, candidate:GetNumPoints() do
+			local _, relative = candidate:GetPoint(index)
+			if DependsOn(relative) then return true end
+		end
+		return false
+	end
+	if not DependsOn(anchor) then return anchor end
+end
+
 -- Other LibWindow methods that LUI deliberately does not wrap yet. Keeping the list here makes it
 -- clear which parts of the library contract are still available if LibWindow is replaced later.
 -- LibWin.EnableMouseOnAlt

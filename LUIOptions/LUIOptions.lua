@@ -964,6 +964,12 @@ local function ProfileExists(profileName)
 	return false
 end
 
+-- Shared data-only helpers for full profiles and selective layout snippets.
+Opt.ProfileTransfer = {
+	Copy = CopyProfileData, Capture = CaptureProfileStorage,
+	PauseNotice = "A brief game freeze during export or import is normal, especially with large profiles. Please wait for processing to finish.",
+}
+
 local function GenerateProfileExport()
 	local profileName = LUI.db:GetCurrentProfile()
 	local captured = CaptureProfileStorage(LUI.db.sv, profileName)
@@ -1065,6 +1071,12 @@ local function CreateProfileTransferOptions()
 				name = "Export the active LUI profile or import a shared profile. Module settings and their selected custom theme or unitframe layout are included; account-wide data such as gold totals is not exported.",
 				type = "description",
 				order = 1,
+				width = "full",
+			},
+			ProcessingHint = {
+				name = Opt.ProfileTransfer.PauseNotice,
+				type = "description",
+				order = 1.5,
 				width = "full",
 			},
 			GenerateExport = {
@@ -1173,6 +1185,8 @@ local function ConfigureOptionsFrame()
 		root:SetTreeWidth(OPTION_PANEL_TREE_WIDTH, false)
 		if root.content and root.content.SetClipsChildren then root.content:SetClipsChildren(true) end
 		if root.border and root.border.SetClipsChildren then root.border:SetClipsChildren(true) end
+		local uiElements = LUI:GetModule("UI Elements", true)
+		if uiElements and uiElements.RegisterOptionsTree then uiElements:RegisterOptionsTree(root) end
 	end
 
 	-- Match a background click: release stale widget focus and raise the window.
@@ -1237,4 +1251,5 @@ function Opt:OnEnable()
 	options.args.Profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(LUI.db)
 	options.args.Profiles.order = 4
 	options.args.Profiles.args.LUIProfileTransfer = CreateProfileTransferOptions()
+	options.args.Profiles.args.LayoutSnippets = self:CreateSnippetOptions()
 end

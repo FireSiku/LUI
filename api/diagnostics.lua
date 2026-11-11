@@ -34,6 +34,14 @@ function LUI:OpenDiagnostics()
 	if diagnostics then diagnostics:OpenWindow() end
 end
 
+function LUI:RecordAddonSetup(addon, stage)
+	-- Optional context only: running a setup must not load or start diagnostics.
+	local diagnostics = _G.LUIDiagnostics
+	if diagnostics and diagnostics:IsRecording() then
+		pcall(diagnostics.Breadcrumb, diagnostics, "ADDON_SETUP_" .. stage, addon)
+	end
+end
+
 function LUI:ActionBarDiagnostics(command)
 	command = (command or ""):lower():match("^%s*(.-)%s*$")
 	local diagnostics = self:LoadDiagnostics(command == "")

@@ -61,6 +61,7 @@ local PRESET_BAR_ANCHORS = {
 local PRESET_RAID_ANCHORS = {
 	PlexusLayoutFrame = "Plexus",
 	Grid2LayoutFrame = "Grid2",
+	DandersRaidFramesContainer = "Danders Frames",
 	f1_HealBot_Action = "Healbot",
 	Vd1 = "Vuhdo",
 	oUF_LUI_raid = "LUI oUF",
@@ -120,7 +121,11 @@ local function CreatePanelGroup(name, isNative)
 		TextureSelect = Opt:Select({name = L["Panels_Options_TextureSelect"], desc = L["Panels_Options_TextureSelect_Desc"],
 			values = PRESET_LUI_TEXTURES, hidden = IsTextureSelectHidden, get = function() return texDB.Texture end, set = SetPresetTexture}),
 		Anchored = Opt:Toggle({name = L["Panels_Options_Anchored"], desc = L["Panels_Options_Anchored_Desc"], width = "normal"}),
-		Parent = Opt:Input({name = L["Parent"], desc = L["Panels_Options_Parent_Desc"], disabled = IsAnchorParentDisabled}),
+		Parent = Opt:Input({name = L["Parent"], desc = L["Panels_Options_Parent_Desc"], disabled = IsAnchorParentDisabled,
+			validate = function(_, value)
+				return LUI:GetValidAnchor(_G["LUIPanel_"..name], value) and true
+					or "Choose an existing frame that does not depend on this panel."
+			end}),
 		ColorType = Opt:ColorMenu(colorMenuOptions, {name = "Panel", arg = name}),
 		HorizontalFlip = Opt:Toggle({name = L["Panels_Options_HorizontalFlip"], desc = L["Panels_Options_HorizontalFlip_Desc"]}),
 		VerticalFlip = Opt:Toggle({name = L["Panels_Options_VerticalFlip"], desc = L["Panels_Options_VerticalFlip_Desc"]}),
@@ -272,12 +277,13 @@ local function CreateMainPanelOptions(kind, displayName)
 		end, width = "full"}),
 		OffsetX = Opt:OffsetX(),
 		OffsetY = Opt:OffsetY(),
+		FitAnchor = Opt:Toggle({onlyIf = isNotChat, name = "Match Frame Size", desc = "Resize the artwork with the attached window, including changes in raid size."}),
 		Spacer2 = Opt:Spacer({}),
 		Direction = Opt:Select({name = "Direction", values = LUI.Points}),
 		Animation = Opt:Toggle({name = "Fade Animation", desc = "Enable a fade animation when showing or hiding the panel. Protected frames such as raid frames do not support this setting.", disabled = (kind == "Raid")}),
 		Spacer3 = Opt:Spacer({}),
-		Width = Opt:InputNumber({name = "Width", desc = "Choose the Width for your "..kind.." Panel."}),
-		Height = Opt:InputNumber({name = "Height", desc = "Choose the Height for your "..kind.." Panel."}),
+		Width = Opt:InputNumber({name = "Width", desc = "Choose the Width for your "..kind.." Panel.", disabled = function() return db.LUITextures[kind].FitAnchor end}),
+		Height = Opt:InputNumber({name = "Height", desc = "Choose the Height for your "..kind.." Panel.", disabled = function() return db.LUITextures[kind].FitAnchor end}),
 		Spacer4 = Opt:Spacer({}),
 		BGColorType = Opt:ColorMenu(colorMenuOptions, {name = "BG", desc = "Choose the Color for your "..kind.." Panel Background.", arg = kind}),
 		BorderColorType = Opt:ColorMenu(colorMenuOptions, {name = "Border", desc = "Choose the Color for your "..kind.." Panel Border.", arg = kind.."Border"}),

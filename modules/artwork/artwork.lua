@@ -26,11 +26,11 @@ local function CreatePanelFrame(name)
 	return panel
 end
 
-function module:CreateNewPanel(name, panelDB)
+function module:CreateNewPanel(name, panelDB, deferRefresh)
 	local panel = customPanels[name] or CreatePanelFrame(name)
 	customPanels[name] = panel
 	panel.db = panelDB
-	panel:Refresh()
+	if not deferRefresh then panel:Refresh() end
 	return panel
 end
 
@@ -56,6 +56,10 @@ function module:setPanels()
 	local profile = self.db.profile
 	local activePanels = {}
 	self.panelList = {}
+	self.ActionBarTop = self.ActionBarTop or CreateActionBarTop()
+	self.ActionBarTop.db = profile.LUITextures.ActionBarTopTexture
+	self.ActionBarTop:SetParent(UIParent)
+	self.ActionBarTop:ClearAllPoints()
 
 	for name, panelDB in pairs(profile.Textures) do
 		-- Older defaults referred to a texture name that never existed in the
@@ -64,9 +68,12 @@ function module:setPanels()
 			panelDB.Texture = "panel_corner_fill.tga"
 		end
 		activePanels[name] = true
-		self:CreateNewPanel(name, panelDB)
+		local panel = self:CreateNewPanel(name, panelDB, true)
+		panel:SetParent(UIParent)
+		panel:ClearAllPoints()
 		table.insert(self.panelList, name)
 	end
+	for name in pairs(activePanels) do customPanels[name]:Refresh() end
 
 	table.sort(self.panelList, function(a, b)
 		return (profile.Textures[a].Order or 100) < (profile.Textures[b].Order or 100)
@@ -79,8 +86,6 @@ function module:setPanels()
 		end
 	end
 
-	self.ActionBarTop = self.ActionBarTop or CreateActionBarTop()
-	self.ActionBarTop.db = profile.LUITextures.ActionBarTopTexture
 	self.ActionBarTop:Refresh()
 end
 
