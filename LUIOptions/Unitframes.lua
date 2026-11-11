@@ -76,6 +76,10 @@ local function UnitAnchorValues(unit)
         LUISidebarLeft = "Artwork: Left Sidebar", LUISidebarRight = "Artwork: Right Sidebar",
         BT4Bar1 = "Bartender: Main Bar", DominosFrame1 = "Dominos: Main Bar",
         DetailsBaseFrame1 = "Details: Window 1", DetailsBaseFrame2 = "Details: Window 2",
+        EssentialCooldownViewer = "CDM: Essential Cooldowns",
+        UtilityCooldownViewer = "CDM: Utility Cooldowns",
+        BuffIconCooldownViewer = "CDM: Tracked Buffs",
+        BuffBarCooldownViewer = "CDM: Tracked Bars",
     }) do
         if _G[name] then values[name] = label end
     end
@@ -735,6 +739,8 @@ local function NewUnitOptionGroup(unit, order, categorized)
         RangeFade = Opt:Toggle({name = "Fade Out of Range", desc = "Whether you want Party Frames to fade if that player is more than 40 yards away or not.", onlyIf = (unit == "party")}),
 		Fading = Opt:InlineGroup({name = "Fading", db = dbUnit.Fading, args = {
 			Enable = Opt:Toggle({name = "Fade Out of Combat", desc = "Reduce opacity outside combat. Mouseover and combat restore full opacity; range fading still applies."}),
+			ShowWithTarget = Opt:Toggle({name = "Show with Target", desc = "Restore normal opacity while you have a target selected, including outside combat. Range fading still applies.",
+				disabled = function() return not dbUnit.Fading.Enable end}),
 			OutOfCombatAlpha = Opt:Slider({name = "Out-of-Combat Opacity", values = Opt.PercentValues,
 				disabled = function() return not dbUnit.Fading.Enable end}),
 		}}),

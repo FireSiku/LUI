@@ -3,10 +3,11 @@ local module = LUI:GetModule("Unitframes")
 
 local active = {}
 local events = CreateFrame("Frame")
-local inCombat
+local inCombat, hasTarget
 
 local function Opacity(state)
-	return (inCombat or state.hovered) and 1 or state.settings.OutOfCombatAlpha
+	return (inCombat or state.hovered or (state.settings.ShowWithTarget and hasTarget))
+		and 1 or state.settings.OutOfCombatAlpha
 end
 
 local function ApplyAlpha(state, alpha)
@@ -81,7 +82,11 @@ local function Disable(frame)
 end
 
 events:SetScript("OnEvent", function(_, event)
-	inCombat = event == "PLAYER_REGEN_DISABLED"
+	if event == "PLAYER_TARGET_CHANGED" then
+		hasTarget = UnitExists("target")
+	else
+		inCombat = event == "PLAYER_REGEN_DISABLED"
+	end
 	for frame in pairs(active) do
 		if frame:IsVisible() then Update(frame) end
 	end
@@ -97,8 +102,10 @@ function module:ConfigureFading(frame, settings)
 	if not state then
 		if not next(active) then
 			inCombat = InCombatLockdown()
+			hasTarget = UnitExists("target")
 			events:RegisterEvent("PLAYER_REGEN_DISABLED")
 			events:RegisterEvent("PLAYER_REGEN_ENABLED")
+			events:RegisterEvent("PLAYER_TARGET_CHANGED")
 		end
 		state = {frame = frame, hovered = frame:IsMouseOver()}
 		active[frame] = state

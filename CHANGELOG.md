@@ -8,8 +8,8 @@
 - Core: Included addon setup progress in optional LUI Debug reports and clarified log-file locations for Retail and Forever.
 - Core: Added selective sharing of LUI settings, with imports into the active profile and recovery of the last snippet import.
 - UIElements: Applied the selected button style to expand and collapse controls in the LUI options tree and to option confirmation dialogs.
-- Unitframes: Added frame-relative positioning for unitframes and group anchors, including previews and saved mover positions.
-- Unitframes: Added optional out-of-combat fading with mouseover visibility and existing range fading.
+- Unitframes: Added frame-relative positioning for unitframes and group anchors, including Cooldown Manager anchors, previews and saved mover positions.
+- Unitframes: Added optional out-of-combat fading with mouseover visibility, an option to show frames while a target is selected, and existing range fading.
 - Unitframes: Included all raid subgroups in the compact layout and added a 40-player raid preview.
 - Artwork: Validated custom panel anchors and prevented invalid or circular parent references.
 - Artwork: Added Danders Frames to the raid-panel presets and optional artwork sizing that follows the attached frame.
