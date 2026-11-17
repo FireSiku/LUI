@@ -223,7 +223,9 @@ function module:RefreshOrb()
 		orb:Show()
 	end
 
-	local r, g, b = self:RGBA("Orb")
+	local r, g, b, a = self:RGBA("Orb")
+	-- Fade the complete orb while preserving its ring and galaxy animations.
+	orb:SetAlpha(a)
 	orb.Back:SetVertexColor(r, g, b, 1)
 	orb.Galaxy1:SetVertexColor(r, g, b, 1)
 	orb.Galaxy2:SetVertexColor(r, g, b, 1)

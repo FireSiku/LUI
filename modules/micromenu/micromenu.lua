@@ -564,7 +564,7 @@ end
 ---@param buttonData table
 ---@return MicroButton
 function module:NewMicroButton(buttonData)
-	local r, g, b = module:RGB("Micromenu")
+	local r, g, b, a = module:RGBA("Micromenu")
 	local name = buttonData.name
 
 	local button = CreateFrame("Frame", "LUIMicromenu_" .. name, _G.LUIMicromenu_Background)
@@ -576,14 +576,14 @@ function module:NewMicroButton(buttonData)
 	button.icon:SetPoint("CENTER", 0, 0)
 	button.icon:SetTexture(format(TEXTURE_PATH_FORMAT, strlower(buttonData.iconName or name)))
 	button.icon:SetTexCoord(LUI:GetCoordAtlas("MicroBtn_Icon"))
-	button.icon:SetVertexColor(r, g, b)
+	button.icon:SetVertexColor(r, g, b, a)
 
 	-- Make a border for the button.
 	button.border = button:CreateTexture(nil, "ARTWORK")
 	button.border:SetAllPoints()
 	button.border:SetTexture(format(TEXTURE_PATH_FORMAT, "border"))
 	button.border:SetTexCoord(LUI:GetCoordAtlas("MicroBtn_Default"))
-	button.border:SetVertexColor(r, g, b)
+	button.border:SetVertexColor(r, g, b, a)
 
 	-- Create the clickable area.
 	-- Protected Blizzard microbuttons keep the original hardware click path.
@@ -851,7 +851,7 @@ function module:SetMicromenuExtraButtons()
 	buttonMiddle:SetSize(128, 128)
 	buttonMiddle:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -150, 6)
 	buttonMiddle.Texture = LUI:CreateFrameTexture(buttonMiddle, EXTRA_TEXTURE_PATH .. (db.IsShown and "micro_anchor3" or "micro_anchor"))
-	buttonMiddle.Texture:SetVertexColor(module:RGB("Micromenu"))
+	buttonMiddle.Texture:SetVertexColor(module:RGBA("Micromenu"))
 
 	clickerMiddle = CreateFrame("Button", "LUIMicromenu_clickerMiddle", buttonMiddle)
 	clickerMiddle:SetSize(85, 22)
@@ -898,7 +898,7 @@ function module:SetMicromenuExtraButtons()
 		buttonRight:SetSize(128, 128)
 		buttonRight:SetPoint("RIGHT", buttonMiddle, "RIGHT", 47, -3)
 		buttonRight.Texture = LUI:CreateFrameTexture(buttonRight, EXTRA_TEXTURE_PATH .. "mm_button_right")
-		buttonRight.Texture:SetVertexColor(module:RGB("Micromenu"))
+		buttonRight.Texture:SetVertexColor(module:RGBA("Micromenu"))
 
 		clickerRight = CreateFrame("Button", "LUIMicromenu_clickerRight", buttonRight)
 		clickerRight:SetSize(40, 12)
@@ -937,7 +937,7 @@ function module:SetMicromenuExtraButtons()
 		buttonLeft:SetSize(128, 128)
 		buttonLeft:SetPoint("LEFT", buttonMiddle, "LEFT", -47, -3)
 		buttonLeft.Texture = LUI:CreateFrameTexture(buttonLeft, EXTRA_TEXTURE_PATH .. "mm_button_left")
-		buttonLeft.Texture:SetVertexColor(module:RGB("Micromenu"))
+		buttonLeft.Texture:SetVertexColor(module:RGBA("Micromenu"))
 
 		clickerLeft = CreateFrame("Button", "LUIMicromenu_clickerLeft", buttonLeft)
 		clickerLeft:SetSize(40, 12)
@@ -1022,17 +1022,20 @@ function module:RefreshColors()
 
 	module.background.Texture:SetVertexColor(module:RGBA((db.ColorMatch) and "Micromenu" or "Background"))
 
-	local r, g, b = module:RGB("Micromenu")
+	local r, g, b, a = module:RGBA("Micromenu")
 
 	for i = 1, #microStorage do
 		local button = microStorage[i]
-		button.icon:SetVertexColor(r, g, b)
-		button.border:SetVertexColor(r, g, b)
+		button.icon:SetVertexColor(r, g, b, a)
+		button.border:SetVertexColor(r, g, b, a)
 	end
 
-	module.buttonMiddle.Texture:SetVertexColor(r, g, b)
-	if module.buttonLeft then module.buttonLeft.Texture:SetVertexColor(r, g, b) end
-	if module.buttonRight then module.buttonRight.Texture:SetVertexColor(r, g, b) end
+	module.buttonMiddle.Texture:SetVertexColor(r, g, b, a)
+	if module.buttonLeft then module.buttonLeft.Texture:SetVertexColor(r, g, b, a) end
+	if module.buttonRight then module.buttonRight.Texture:SetVertexColor(r, g, b, a) end
+
+	local raidMenu = LUI:GetModule("RaidMenu", true)
+	if raidMenu and raidMenu:IsEnabled() and raidMenu.SetColors then raidMenu:SetColors() end
 end
 
 function module:Refresh()

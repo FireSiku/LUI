@@ -53,8 +53,11 @@ local function CopyArrayToColor(source, target)
 	target.t = "Individual"
 end
 
-local function CopyColorToArray(source)
+local function CopyColorToArray(source, owner, key)
 	if not source then return end
+	if source.t == "Class" and owner then
+		return {owner:RGBA(key)}
+	end
 	return {source.r, source.g, source.b, source.a}
 end
 
@@ -123,7 +126,8 @@ function module:CaptureModernTheme()
 	local artwork = LUI:GetModule("Artwork", true)
 	if artwork and artwork.db then
 		for themeKey, colorKeys in pairs(MODERN_COLOR_MAP) do
-			db[themeKey] = CopyColorToArray(artwork.db.profile.Colors[colorKeys[1]]) or db[themeKey]
+			local key = colorKeys[1]
+			db[themeKey] = CopyColorToArray(artwork.db.profile.Colors[key], artwork, key) or db[themeKey]
 		end
 	end
 
@@ -137,7 +141,7 @@ function module:CaptureModernTheme()
 		local target = LUI:GetModule(mapping.module, true)
 		local colors = target and target.db and target.db.profile.Colors
 		if colors and colors[mapping.color] then
-			db[mapping.theme] = CopyColorToArray(colors[mapping.color])
+			db[mapping.theme] = CopyColorToArray(colors[mapping.color], target, mapping.color)
 		end
 	end
 end

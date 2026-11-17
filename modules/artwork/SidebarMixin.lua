@@ -140,7 +140,7 @@ end
 --- Refresh the sidebar's settings and position
 function SidebarMixin:Refresh()
 	self.db = module.db.profile.SideBars[self.name]
-	local r, g, b = module:RGBA("Sidebar"..self.side)
+	local r, g, b, a = module:RGBA("Sidebar"..self.side)
 	local previousAnchor = self.activeAnchor
 	if previousAnchor and previousAnchor ~= self.db.Anchor then
 		RestoreAnchoredFrameOutOfCombat(self, previousAnchor)
@@ -151,10 +151,10 @@ function SidebarMixin:Refresh()
 	LUI:RestorePosition(self)
 	self:Show()
 
-	self.Sbar:SetVertexColor(r, g, b, 1)
-	self.Drawer:SetVertexColor(r, g, b, 1)
-	self.DrawerButton:SetVertexColor(r, g, b, 1)
-	self.DrawerButtonOpen:SetVertexColor(r, g, b, 1)
+	self.Sbar:SetVertexColor(r, g, b, a)
+	self.Drawer:SetVertexColor(r, g, b, a)
+	self.DrawerButton:SetVertexColor(r, g, b, a)
+	self.DrawerButtonOpen:SetVertexColor(r, g, b, a)
 
 	if self.db.Enable then
 		self:Show()

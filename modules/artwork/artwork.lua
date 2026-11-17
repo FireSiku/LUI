@@ -108,3 +108,5 @@ function module:Refresh()
 	self:RefreshNavBar()
 	self:RefreshOrb()
 end
+
+module.RefreshColors = module.Refresh
