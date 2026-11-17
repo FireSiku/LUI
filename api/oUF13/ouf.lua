@@ -1,6 +1,6 @@
 local parent, ns = ...
 local global = C_AddOns.GetAddOnMetadata(parent, 'X-oUF')
-local _VERSION = '14.2.1'
+local _VERSION = '14.3.1'
 if(_VERSION:find('project%-version')) then
 	_VERSION = 'devel'
 end
@@ -1139,7 +1139,12 @@ function oUF:AddMetaElement(name, create, update, enable, disable)
 		enable = enable,
 		disable = disable,
 	}
-	self:RegisterMetaFunction('Create' .. name, create)
+	self:RegisterMetaFunction('Create' .. name .. 'Element', create)
+
+	if(name == 'Auras') then
+		-- deprecated fallback, will be removed in oUF 15
+		self:RegisterMetaFunction('Create' .. name, create)
+	end
 end
 
 --[[ oUF:GetUnitFrame(unit)
