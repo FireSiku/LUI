@@ -248,8 +248,9 @@ function module:RefreshNavBar()
 	module.NavBarCenter.Texture:SetVertexColor(self:RGBA("TopPanel"))
 	module.TopPanel.Texture:SetVertexColor(self:RGBA("TopPanel"))
 	module.TopPanel:Show()
+	-- The single Themed Lines color control configures both sides.
 	module.LeftBorderBack.Texture:SetVertexColor(self:RGBA("LeftBorderBack"))
-	module.RightBorderBack.Texture:SetVertexColor(self:RGBA("RightBorderBack"))
+	module.RightBorderBack.Texture:SetVertexColor(self:RGBA("LeftBorderBack"))
 
 	if db.NavBar.TopBackground then
 		module.NavBar:Show()

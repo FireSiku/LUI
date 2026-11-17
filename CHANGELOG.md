@@ -14,6 +14,7 @@
 - Artwork: Validated custom panel anchors and prevented invalid or circular parent references.
 - Artwork: Added Danders Frames to the raid-panel presets and optional artwork sizing that follows the attached frame.
 - Artwork: Added Dominos sidebar auto-positioning and kept closed Bartender sidebars hidden after position updates.
+- Artwork: Fixed the right bottom line ignoring the shared themed-line color and opacity.
 
 ---
 
