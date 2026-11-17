@@ -1768,6 +1768,8 @@ module.funcs = {
 		end
 
 		classPower:UpdateBackdropColor()
+
+		module:PrepareForeverComboPoints(self)
 		classPower:UpdateTexture(classPower.Count)
 		if not oufdb.ClassPowerBar.Enable then
 			classPower:Hide()

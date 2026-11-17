@@ -15,6 +15,8 @@ LUI owns its compatibility code in modules/unitframes:
   dimensions through useAtlasSize on Forever and PostUpdate on Retail 12.1.5.
 - layout/auras_12_1.lua: native AuraContainer presentation.
 - castbar_compat.lua: temporary Blizzard castbar ownership and restoration.
+- classpower_compat.lua: restricted Forever combo-point values and the
+  COMBO_TARGET_CHANGED event, preserving LUI's existing extra safeguards.
 - arena_compat.lua: native specialization display on preparation-only frames;
   real arena buttons keep their unit watches and active elements.
 - groupheaders.lua: bounded Forever headers initialized outside combat.
@@ -26,8 +28,9 @@ API review, 2026-11-17:
 - Retail live 12.1.5 build 70783; Forever 1.60.1 build 70938.
 - All framework sources match official 14.3.1, apart from standard version
   token replacement and preserved line endings.
-- Upstream now owns Forever target-bound combo points and target-change
-  updates. LUI's duplicate override and event hooks have been removed.
+- Upstream now handles Forever target-bound combo points and target-change
+  updates. LUI retains its existing compatibility adapter for restricted-value
+  guards, bounded widget updates and COMBO_TARGET_CHANGED refreshes.
 - Aura containers use CreateAurasElement, the current upstream meta method.
 - The new optional Swing element is not instantiated by LUI. Blizzard's
   native swing timer remains controlled by the existing UI Elements setting.
