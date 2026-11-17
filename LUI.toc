@@ -27,7 +27,7 @@ libs\AceLocale-3.0\AceLocale-3.0.xml
 libs\AceSerializer-3.0\AceSerializer-3.0.xml
 locale\locale.xml
 
-## oUF ## Upstream release 14.2.1
+## oUF ## Upstream release 14.3.1
 api\oUF13\oUF.xml
 
 ### Core + API ###
@@ -145,7 +145,6 @@ modules\unitframes\templates.xml
 modules\unitframes\unitframes_init.lua
 modules\unitframes\layout\fading.lua
 modules\unitframes\castbar_compat.lua
-modules\unitframes\classpower_compat.lua
 modules\unitframes\arena_compat.lua
 modules\unitframes\groupheaders.lua
 modules\unitframes\fonts.lua
