@@ -15,7 +15,6 @@ module.controlPanelHidden = true
 
 local db
 
-local GetQuestDifficultyColor = _G.GetQuestDifficultyColor
 local UnitReaction = _G.UnitReaction
 
 -- ####################################################################################################################
@@ -194,9 +193,25 @@ end
 ---@param level number
 ---@return number R, number G, number B
 function LUI:GetDifficultyColor(level)
-	if level == nil or issecretvalue(level) then return 1, 1, 1 end
-	local color = GetQuestDifficultyColor(level)
-	return color.r, color.g, color.b
+	if issecretvalue(level) or type(level) ~= "number" then return 1, 1, 1 end
+	if level < 1 then return GetColorRGB("DiffSkull") end
+
+	local playerLevel = UnitLevel("player")
+	if issecretvalue(playerLevel) or type(playerLevel) ~= "number" then return 1, 1, 1 end
+	local difference = level - playerLevel
+	local colorName
+	if difference >= 5 then
+		colorName = "DiffSkull"
+	elseif difference >= 3 then
+		colorName = "DiffHard"
+	elseif difference >= -2 then
+		colorName = "DiffEqual"
+	else
+		local trivialRange = UnitQuestTrivialLevelRange("player")
+		if issecretvalue(trivialRange) or type(trivialRange) ~= "number" then return 1, 1, 1 end
+		colorName = -difference <= trivialRange and "DiffEasy" or "DiffLow"
+	end
+	return GetColorRGB(colorName)
 end
 
 -- ####################################################################################################################
@@ -255,6 +270,17 @@ end
 
 function module:RefreshColors()
 	for id_, func in pairs(colorCallback) do func() end
+	-- Refresh the consumers of the shared palette without reapplying a theme
+	-- or changing their saved individual colors and color modes.
+	for _, targetModule in LUI:IterateModules() do
+		if targetModule ~= self and targetModule:IsEnabled() then
+			if targetModule.RefreshColors then
+				targetModule:RefreshColors()
+			elseif targetModule.SetColors then
+				targetModule:SetColors()
+			end
+		end
+	end
 end
 
 -- ####################################################################################################################
