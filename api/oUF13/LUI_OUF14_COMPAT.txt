@@ -1,9 +1,9 @@
 LUI / oUF integration notes
 
 Framework: complete official upstream snapshot, without LUI source changes.
-Source: https://github.com/oUF-wow/oUF/tree/14.2.1
-Upstream commit: c5ff6e4a09bfaf2186e205777e0fab964b5cddc1 (2026-10-31)
-Packaged version: 14.2.1 (official release, published 2026-11-03).
+Source: https://github.com/oUF-wow/oUF/tree/14.3.1
+Upstream commit: 5e8840142b530022b5113d4e3bfdb84ffc942332 (2026-11-14)
+Packaged version: 14.3.1 (official release, published 2026-11-14).
 Only the standard project-version packaging tokens are replaced with this version;
 unchanged files retain their existing line endings.
 The api/oUF13 directory name is retained for existing load paths.
@@ -15,13 +15,23 @@ LUI owns its compatibility code in modules/unitframes:
   dimensions through useAtlasSize on Forever and PostUpdate on Retail 12.1.5.
 - layout/auras_12_1.lua: native AuraContainer presentation.
 - castbar_compat.lua: temporary Blizzard castbar ownership and restoration.
-- classpower_compat.lua: Forever target-bound combo points and their events.
 - arena_compat.lua: native specialization display on preparation-only frames;
   real arena buttons keep their unit watches and active elements.
 - groupheaders.lua: bounded Forever headers initialized outside combat.
 
 Do not patch bundled framework files for LUI-specific behavior. Use oUF's
 layout callbacks, color overrides and initialization hooks instead.
+
+API review, 2026-11-17:
+- Retail live 12.1.5 build 70783; Forever 1.60.1 build 70938.
+- All framework sources match official 14.3.1, apart from standard version
+  token replacement and preserved line endings.
+- Upstream now owns Forever target-bound combo points and target-change
+  updates. LUI's duplicate override and event hooks have been removed.
+- Aura containers use CreateAurasElement, the current upstream meta method.
+- The new optional Swing element is not instantiated by LUI. Blizzard's
+  native swing timer remains controlled by the existing UI Elements setting.
+- Retail 12.1.7 PTR build 70892 is not treated as the live client.
 
 API review, 2026-10-24:
 - Retail 12.1.5 build 70575; Forever 1.60.1 build 70532.

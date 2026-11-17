@@ -179,7 +179,7 @@ end
 local function CreateContainer(owner, unit, kind, db)
     local state = {db = db}
     local containerWidth = GetContainerLayoutLimit(db)
-    local container = owner:CreateAuras({
+    local container = owner:CreateAurasElement({
         initialAnchor = db.InitialAnchor,
         growthX = db.GrowthX,
         growthY = db.GrowthY,
