@@ -1,4 +1,4 @@
--- Exercise the bundled upstream elements after removing LUI's combo override.
+-- Exercise the bundled upstream elements and LUI's extra Forever safeguards.
 -- Run with Lua 5.1 from the repository root; no embedded oUF source is changed.
 local passed = 0
 local function Check(value, why) assert(value, why); passed = passed + 1 end
@@ -40,10 +40,18 @@ for _, forever in ipairs({false, true}) do
                 SetShown = function(self, value) self.shown = value end,
                 SetValue = function(self, value) self.value = math.max(0, math.min(1, value)) end}
         end
-        local frame = {ClassPower = element, __unit = "player", events = {}, colors = {power = {
+        local frame = {ClassPower = element, __unit = "player", events = {}, callbacks = {}, colors = {power = {
             COMBO_POINTS = {GetRGB = function() return .2, .6, .8 end}}}}
-        function frame:RegisterEvent(name, callback) self.events[name] = callback end
-        function frame:UnregisterEvent(name) self.events[name] = nil end
+        function frame:RegisterEvent(name, callback)
+            local callbacks = self.callbacks[name] or {}; self.callbacks[name] = callbacks
+            callbacks[callback] = true
+            self.events[name] = function(self, ...) for handler in pairs(callbacks) do handler(self, ...) end end
+        end
+        function frame:UnregisterEvent(name, callback)
+            local callbacks = self.callbacks[name]
+            if callbacks and callback then callbacks[callback] = nil end
+            if not callback or not callbacks or not next(callbacks) then self.events[name], self.callbacks[name] = nil, nil end
+        end
         local classPower = registered.ClassPower
         Check(classPower.enable(frame, "player"), "native class power enables for " .. class)
         classPower.update(frame, "ForceUpdate", "player")
@@ -60,7 +68,61 @@ for _, forever in ipairs({false, true}) do
         else
             Check(not frame.events.PLAYER_TARGET_CHANGED, "Retail keeps its player-bound power lifecycle")
         end
-        classPower.disable(frame)
+        if forever then
+            local adapter, initialize, restricted = {}, nil, {}
+            local restrictedCurrent, maximum = false, 5
+            local readPoints = env.GetComboPoints
+            env.GetComboPoints = function(...) if restrictedCurrent then return restricted end; return readPoints(...) end
+            env.UnitPowerMax = function() return maximum end
+            env.issecretvalue = function(value) return value == restricted end
+            env.hooksecurefunc = function(object, name, callback)
+                local original = assert(object[name])
+                object[name] = function(self, ...)
+                    local result = original(self, ...); callback(self, ...); return result
+                end
+            end
+            local lui = {IsForever = true, DRUID = class == "DRUID", ROGUE = class == "ROGUE",
+                GetModule = function() return adapter end,
+                oUF = {RegisterInitCallback = function(_, callback) initialize = callback end}}
+            function element:SetAlpha(value) self.alpha = value end
+            frame.elementEnabled = true
+            function frame:IsElementEnabled() return self.elementEnabled end
+            function frame:IsElementPaused() return self.paused end
+            frame.EnableElement = Noop
+            function frame:DisableElement() self.elementEnabled = false; classPower.disable(self) end
+            function frame:PauseElement() self.paused = true; element.ClassPowerDisable(self, true) end
+            function frame:ResumeElement() self.paused = false; element.ClassPowerEnable(self, false) end
+            setfenv(assert(loadfile("modules/unitframes/classpower_compat.lua")), env)("LUI", lui)
+            adapter:PrepareForeverComboPoints(frame)
+            currentTarget = "first"
+            initialize(frame)
+            Check(element.alpha == 1 and element[3].value == 1, "LUI safeguards retain normal native visibility and points")
+            local callbacks = 0; for _ in pairs(frame.callbacks.PLAYER_TARGET_CHANGED) do callbacks = callbacks + 1 end
+            Check(callbacks == 2, "LUI and upstream target callbacks coexist without replacing each other")
+            currentTarget = "second"
+            frame.events.PLAYER_TARGET_CHANGED(frame, "PLAYER_TARGET_CHANGED")
+            Check(element[1].value == 1 and element[2].value == 0, "target changes also work with the LUI adapter")
+            points.second = 2
+            frame.events.COMBO_TARGET_CHANGED(frame, "COMBO_TARGET_CHANGED")
+            Check(element[2].value == 1, "combo-target updates refresh without changing the selected target")
+            restrictedCurrent = true
+            frame.events.UNIT_POWER_UPDATE(frame, "UNIT_POWER_UPDATE", "player", "COMBO_POINTS")
+            Check(element.alpha == 0, "restricted current points are hidden before comparison or arithmetic")
+            restrictedCurrent, maximum = false, restricted
+            frame.events.UNIT_POWER_UPDATE(frame, "UNIT_POWER_UPDATE", "player", "COMBO_POINTS")
+            Check(element.alpha == 0, "restricted maximum points are hidden before comparison or arithmetic")
+            maximum = 7
+            frame.events.UNIT_POWER_UPDATE(frame, "UNIT_POWER_UPDATE", "player", "COMBO_POINTS")
+            Check(element.alpha == 1 and element[5].shown, "normal data restores visibility and updates stay within the available widgets")
+            frame:PauseElement("ClassPower")
+            Check(not frame.events.PLAYER_TARGET_CHANGED and not frame.events.COMBO_TARGET_CHANGED, "pausing removes both sets of combo-target callbacks")
+            maximum = 5
+            frame:ResumeElement("ClassPower")
+            Check(frame.events.PLAYER_TARGET_CHANGED and frame.events.COMBO_TARGET_CHANGED, "resuming restores native and LUI update events")
+            frame:DisableElement("ClassPower")
+        else
+            classPower.disable(frame)
+        end
         Check(not next(frame.events), "disabling native class power removes every registered event")
 
         -- Ask the real GCD event handler which client-specific spell it reads.

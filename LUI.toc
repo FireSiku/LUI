@@ -145,6 +145,7 @@ modules\unitframes\templates.xml
 modules\unitframes\unitframes_init.lua
 modules\unitframes\layout\fading.lua
 modules\unitframes\castbar_compat.lua
+modules\unitframes\classpower_compat.lua
 modules\unitframes\arena_compat.lua
 modules\unitframes\groupheaders.lua
 modules\unitframes\fonts.lua
