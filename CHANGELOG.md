@@ -7,8 +7,12 @@
 - Core: Added optional Grid2, VuhDo, HealBot and Danders Frames setup in a separate LUI profile or skin copy, preserving the original, spells, click bindings and aura indicators. Reapplying setup updates the same LUI copy.
 - Core: Included addon setup progress in optional LUI Debug reports and clarified log-file locations for Retail and Forever.
 - Core: Added selective sharing of LUI settings, with imports into the active profile and recovery of the last snippet import.
+- UIElements: Added button styling for dropdowns in Friends, Who, Group Finder and the Adventure Guide.
+- UIElements: Styled profession controls and Forever's profession tabs.
 - UIElements: Applied the selected button style to expand and collapse controls in the LUI options tree and to option confirmation dialogs.
 - Unitframes: Added frame-relative positioning for unitframes and group anchors, including Cooldown Manager anchors, previews and saved mover positions.
+- Unitframes: Expanded positioning ranges for player and target cast bars.
+- Unitframes: Added simultaneous cast bar previews with individual and global stop controls.
 - Unitframes: Added optional out-of-combat fading for frames and portraits, with mouseover visibility, an option to show frames while a target is selected, and existing range fading.
 - Unitframes: Included all raid subgroups in the compact layout and added a 40-player raid preview.
 - Artwork: Validated custom panel anchors and prevented invalid or circular parent references.
@@ -19,6 +23,8 @@
 - Micromenu: Applied saved opacity to icons, borders and toggle artwork, and refreshed matching raid-menu colors immediately.
 - Colors: Refreshed enabled modules after shared palette changes without overwriting individual settings, and applied configured level-difficulty colors to Friends and Guild lists.
 - Unitframes: Updated embedded oUF to 14.3.1, including Forever combo-point and global-cooldown fixes, corrected range checks and restricted-unit handling. Retained LUI's additional Forever combo-point safeguards and updated aura creation to the current oUF API.
+- Bags: Prevented old item slots from reappearing after switching to smaller bags.
+- Chat: Fixed errors when opening temporary whisper conversations and applied chat styling to the new window.
 
 ---
 
