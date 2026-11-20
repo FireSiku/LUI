@@ -15,6 +15,7 @@
 - Unitframes: Added simultaneous cast bar previews with individual and global stop controls.
 - Unitframes: Added optional out-of-combat fading for frames and portraits, with mouseover visibility, an option to show frames while a target is selected, and existing range fading.
 - Unitframes: Included all raid subgroups in the compact layout and added a 40-player raid preview.
+- Unitframes: Hid stale player leader and assistant indicators after the last group member leaves.
 - Artwork: Validated custom panel anchors and prevented invalid or circular parent references.
 - Artwork: Added Danders Frames to the raid-panel presets and optional artwork sizing that follows the attached frame.
 - Artwork: Added Dominos sidebar auto-positioning and kept closed Bartender sidebars hidden after position updates.
@@ -25,6 +26,7 @@
 - Unitframes: Updated embedded oUF to 14.3.1, including Forever combo-point and global-cooldown fixes, corrected range checks and restricted-unit handling. Retained LUI's additional Forever combo-point safeguards and updated aura creation to the current oUF API.
 - Bags: Prevented old item slots from reappearing after switching to smaller bags.
 - Chat: Fixed errors when opening temporary whisper conversations and applied chat styling to the new window.
+- Tooltip: Removed Blizzard's right-click instruction from unit tooltips after native tooltip updates.
 
 ---
 

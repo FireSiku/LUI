@@ -37,6 +37,22 @@ local function BarInterpolation(enabled)
 		or Enum.StatusBarInterpolation.Immediate
 end
 
+local function PostUpdateGroupIndicator(element)
+	local unit = element.__owner.__unit
+	if issecretvalue(unit) or type(unit) ~= "string" then return end
+	local isPlayer = unit == "player" or UnitIsUnit(unit, "player")
+	if issecretvalue(isPlayer) or not isPlayer then return end
+
+	-- Leader flags can outlive the final member leaving a party. Only gate the
+	-- player's own indicator; a solo player's target can lead another group.
+	local homeGroup = IsInGroup(LE_PARTY_CATEGORY_HOME)
+	local instanceGroup = IsInGroup(LE_PARTY_CATEGORY_INSTANCE)
+	if not issecretvalue(homeGroup) and not homeGroup
+		and not issecretvalue(instanceGroup) and not instanceGroup then
+		element:Hide()
+	end
+end
+
 local function UpdatePvPIndicator(self, event, unit)
 	if unit and unit ~= self.__unit then return end
 	unit = unit or self.__unit
@@ -1402,6 +1418,8 @@ module.funcs = {
 		if not self.LeaderIndicator then
 			self.LeaderIndicator = self.Overlay:CreateTexture(nil, "OVERLAY")
 			self.AssistantIndicator = self.Overlay:CreateTexture(nil, "OVERLAY")
+			self.LeaderIndicator.PostUpdate = PostUpdateGroupIndicator
+			self.AssistantIndicator.PostUpdate = PostUpdateGroupIndicator
 		end
 
 		self.LeaderIndicator:SetHeight(oufdb.LeaderIndicator.Size)

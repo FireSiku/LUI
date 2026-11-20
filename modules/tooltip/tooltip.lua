@@ -772,6 +772,37 @@ function module:HideCombatSkillTooltips(frame)
 	end
 end
 
+function module:HideUnitFrameInstruction(frame, text)
+	if not module:IsEnabled() or frame ~= GameTooltip then return end
+	if issecretvalue(text) or text ~= _G.UNIT_POPUP_RIGHT_CLICK then return end
+	if frame:IsForbidden() or LUI:TooltipHasWidgets(frame) then return end
+	local data = frame:GetTooltipData()
+	if not data or issecretvalue(data.type) or data.type ~= Enum.TooltipDataType.Unit then return end
+	local count = frame:NumLines()
+	if issecretvalue(count) or count < 1 then return end
+	local last = frame:GetLeftLine(count)
+	local lastText = last and last:GetText()
+	if issecretvalue(lastText) or lastText ~= text then return end
+
+	-- Blizzard appends this instruction after the unit tooltip post-call.
+	-- Clear only that line and its empty spacer before the native Show call,
+	-- preserving unit data, addon rows and restricted tooltip dimensions.
+	last:SetText("")
+	last:Hide()
+	if count > 1 then
+		local spacer = frame:GetLeftLine(count - 1)
+		local right = frame:GetRightLine(count - 1)
+		local leftText = spacer and spacer:GetText()
+		local rightText = right and right:GetText()
+		if not issecretvalue(leftText) and not issecretvalue(rightText)
+			and (not leftText or leftText == "" or leftText == " ")
+			and (not rightText or rightText == "" or rightText == " ") then
+			if spacer then spacer:SetText(""); spacer:Hide() end
+			if right then right:SetText(""); right:Hide() end
+		end
+	end
+end
+
 -- ####################################################################################################################
 -- ##### Framework Events #############################################################################################
 -- ####################################################################################################################
@@ -789,6 +820,7 @@ function module:OnEnable()
 	-- Many tooltips are found in Blizzard LoadOnDemand addons
 	module:RegisterEvent("ADDON_LOADED", "SetTooltips")
 	module:SecureHook("SharedTooltip_SetBackdropStyle", "OnBackdropStyleApplied")
+	module:SecureHook("GameTooltip_AddInstructionLine", "HideUnitFrameInstruction")
 
 	module:SecureHook("GameTooltip_SetDefaultAnchor", function(frame, parent)
 		if parent and parent.IsForbidden and parent:IsForbidden() then return end
