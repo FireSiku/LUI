@@ -189,6 +189,7 @@ local function RefreshBagSlotStyle(button)
 	if nativeBorder then nativeBorder:Hide() end
 	module:ApplyItemStyle(button)
 	module:SetToolbarSlotBorderColor(button, button:GetParent().container)
+	module:ApplyBagTextColor(button.Count, "Stack")
 end
 
 --- Create an ItemButton specific to the BagBar
@@ -237,7 +238,7 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 	texture:SetTexture(textureName)
 
 	button:RegisterEvent("INVENTORY_SEARCH_UPDATE")
-	button.UpdateTooltip = BagSlotButton_OnEnter
+	button.UpdateTooltip = BarBarSlotOnEnter
 	if button.IconBorder then button.IconBorder:Hide() end
 
 	button:SetScript("OnEvent", function(self, event, ...)
@@ -251,7 +252,7 @@ function module:BagBarSlotButtonTemplate(index, id, name, parent)
 			RefreshBagSlotStyle(self)
 		end
 	end)
-	button:SetScript("OnShow", PaperDollItemSlotButton_OnShow)
+	button:SetScript("OnShow", function(self) PaperDollItemSlotButton_OnShow(self, true) end)
 	button:HookScript("OnShow", RefreshBagSlotStyle)
 	button:SetScript("OnHide", PaperDollItemSlotButton_OnHide)
 	button:SetScript("OnDragStart", function(self) PickupBagFromSlot(self.inventoryID) end)

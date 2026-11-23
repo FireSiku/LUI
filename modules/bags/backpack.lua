@@ -289,12 +289,14 @@ function module:EnableNativeBagHooks()
 		OpenBackpack = RequestNativeBagOpen,
 		OpenAllBags = RequestNativeBagOpen,
 		CloseBackpack = RequestNativeBagClose,
-		CloseAllBags = RequestNativeBagClose,
 	}) do
 		if type(_G[name]) == "function" then
 			module:SecureHook(name, handler)
 		end
 	end
+	-- CloseAllBags can reject a panel that did not open the bags. Its native
+	-- event is emitted only after that ownership check accepts the request.
+	EventRegistry:RegisterCallback("ContainerFrame.CloseAllBags", RequestNativeBagClose, module)
 	for name, handler in pairs({ToggleBag = RequestNativeBagToggle, OpenBag = RequestNativeBagOpen, CloseBag = RequestNativeBagClose}) do
 		local request = handler
 		module:SecureHook(name, function(id)
@@ -322,6 +324,7 @@ end
 
 function module:DisableNativeBagHooks()
 	nativeBagHooksEnabled = false
+	EventRegistry:UnregisterCallback("ContainerFrame.CloseAllBags", module)
 	nativeBagRequestedOpen = nil
 	if nativeBagSyncTimer then
 		nativeBagSyncTimer:Cancel()

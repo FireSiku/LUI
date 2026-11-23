@@ -781,6 +781,8 @@ function ContainerMixin:SlotUpdate(itemSlot)
 		local icon = itemSlot.icon or _G[itemSlot:GetName().."IconTexture"]
 		if icon then icon:SetTexCoord(0.08, 0.92, 0.08, 0.92) end
 		SetItemButtonCount(itemSlot, itemSlot.level or data.stackCount)
+		-- Blizzard's count setter reapplies its default text color.
+		module:ApplyBagTextColor(itemSlot.Count, "Stack")
 		SetItemButtonDesaturated(itemSlot, data.isLocked)
 
 		if self:GetOption("ShowOverlay") and itemLink then
@@ -953,6 +955,7 @@ function module:WatchBagSort()
 end
 
 function module:ConfigureBagLootInsertion()
+    if not module:IsEnabled() then return end
     if module.originalBagInsertOrder == nil then
         module.originalBagInsertOrder = C_Container.GetInsertItemsLeftToRight()
     end
@@ -960,19 +963,24 @@ function module:ConfigureBagLootInsertion()
     -- sorting down, last normal bag first when sorting up. Blizzard retains
     -- ownership of bag filters, reagent restrictions and existing stacks.
     local insertFromLastBag = not module:GetFillBagsFromBottom()
+    module.appliedBagInsertOrder = insertFromLastBag
     if C_Container.GetInsertItemsLeftToRight() ~= insertFromLastBag then
         C_Container.SetInsertItemsLeftToRight(insertFromLastBag)
     end
 end
 
 function module:SortBags()
-    if InCombatLockdown() then return end
+    if not module:IsEnabled() or InCombatLockdown() then return end
     module:CancelBagSortTracking()
     module.bagSortSettling = true
     module:ResetBagLootOrder(true)
     local direction = not module:GetFillBagsFromBottom()
     local generation = module.bagSortGeneration
     local attempts = 0
+    if module.originalBagSortDirection == nil then
+        module.originalBagSortDirection = C_Container.GetSortBagsRightToLeft()
+    end
+    module.appliedBagSortDirection = direction
     C_Container.SetSortBagsRightToLeft(direction)
     module:ConfigureBagLootInsertion()
 
@@ -1373,7 +1381,7 @@ end
 -- ##### Module Refresh ###############################################################################################
 -- ####################################################################################################################
 function module:Refresh()
-    if not module.db or not module.db.profile then return end
+    if not module:IsEnabled() or not module.db or not module.db.profile then return end
     module:ConfigureBagLootInsertion()
     module:RefreshMedia()
 
@@ -1487,8 +1495,20 @@ function module:RestoreBlizzardBagState()
 	module:CancelBagSortTracking()
 	module:ResetBagLootOrder(false)
 	if module.originalBagInsertOrder ~= nil then
-		C_Container.SetInsertItemsLeftToRight(module.originalBagInsertOrder)
+		-- Another addon or the player may have changed the shared preference
+		-- since LUI last applied it. Restore only the value LUI still owns.
+		if C_Container.GetInsertItemsLeftToRight() == module.appliedBagInsertOrder then
+			C_Container.SetInsertItemsLeftToRight(module.originalBagInsertOrder)
+		end
 		module.originalBagInsertOrder = nil
+		module.appliedBagInsertOrder = nil
+	end
+	if module.originalBagSortDirection ~= nil then
+		if C_Container.GetSortBagsRightToLeft() == module.appliedBagSortDirection then
+			C_Container.SetSortBagsRightToLeft(module.originalBagSortDirection)
+		end
+		module.originalBagSortDirection = nil
+		module.appliedBagSortDirection = nil
 	end
 	if _G.LUIBags then _G.LUIBags:UnregisterAllEvents() end
 end
