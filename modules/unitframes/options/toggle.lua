@@ -892,7 +892,7 @@ module.ToggleUnit = setmetatable({
 			local footprintHeight = GetFootprintHeight(dbUnit)
 			local raidVerticalPadding = GetVerticalStackPadding(dbUnit)
 			if IsAddOnLoaded("Plexus") or IsAddOnLoaded("Grid2") or IsAddOnLoaded("VuhDo") or IsAddOnLoaded("HealBot") or IsAddOnLoaded("DandersFrames") then
-				return
+				return module.ToggleUnit("raid", false)
 			end
 			if oUF_LUI_raid then
 				oUF_LUI_raid:SetWidth(dbUnit.Width * 5 + dbUnit.GroupPadding * 4)
@@ -1021,8 +1021,10 @@ module.ToggleUnit = setmetatable({
 					module:ConfigureRaidGroupLabel(header, group, width, header:GetAttribute("point"), false, size == 25)
 				end
 			end
+			module:SetBlizzardRaidFramesHidden(true)
 
 		else
+			module:SetBlizzardRaidFramesHidden(false)
 			if oUF_LUI_raid then
 				for i = 1, 5 do
 					for j = 1, 5 do
