@@ -41,7 +41,7 @@ function module:StyleBankItem(button)
     local saved = state.slots[button]
     local icon = button.icon or button.Icon
     if not saved then
-        saved = {width = button:GetWidth(), height = button:GetHeight()}
+        saved = {width = button:GetWidth(), height = button:GetHeight(), points = SavePoints(button)}
         if icon then
             saved.icon = icon
             saved.iconPoints = SavePoints(icon)
@@ -135,6 +135,7 @@ function module:RestoreBankStyle()
         HideSkin(button)
         button.LUIHasItem = nil
         button:SetSize(saved.width, saved.height)
+        RestorePoints(button, saved.points)
         if saved.icon then
             RestorePoints(saved.icon, saved.iconPoints)
             saved.icon:SetTexCoord(unpack(saved.iconCoords))
@@ -171,10 +172,9 @@ function module:RestoreBankStyle()
         RestorePoints(state.title, state.titlePoints)
         state.title:SetText(state.titleText)
     end
-    -- Let Blizzard regenerate its native slot anchors, including the correct
-    -- purchase/locked panel when there are no accessible item slots.
+    -- Restore geometry without regenerating native slots from addon code:
+    -- GenerateItemSlotsForSelectedTab also rewrites protected item identities.
     if panel:IsShown() then
-        panel:RefreshBankPanel()
         panel:RequestTitleRefresh()
     end
     if frame:IsShown() then UpdateUIPanelPositions(frame) end
@@ -283,7 +283,19 @@ function module:AttachBankHooks()
     end
     for _, method in ipairs({"GenerateItemSlotsForSelectedTab", "RefreshAllItemsForSelectedTab", "RefreshBankPanel", "RefreshBankTabs", "RequestTitleRefresh"}) do
         if not module:IsHooked(panel, method) then
-            module:SecureHook(panel, method, function() module:RefreshBank() end)
+            local nativeLayout = method == "GenerateItemSlotsForSelectedTab"
+            module:SecureHook(panel, method, function()
+                local state = module.bankStyleState
+                if nativeLayout and state.active and not state.restoring then
+                    -- Pooled buttons can acquire new native anchors on a tab
+                    -- change. Save those before applying the LUI grid again.
+                    for button in panel:EnumerateValidItems() do
+                        local saved = state.slots[button]
+                        if saved then saved.points = SavePoints(button) end
+                    end
+                end
+                module:RefreshBank()
+            end)
         end
     end
     if not module:IsHooked(frame, "OnShow") then

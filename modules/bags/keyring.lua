@@ -33,7 +33,7 @@ function module:CreateKeyringButton(parent)
     end
     button:RegisterEvent("CVAR_UPDATE")
     button:SetScript("OnEvent", function(_, _, cvar)
-        if type(cvar) == "string" and cvar:lower() == "showkeyring" then
+        if module:IsEnabled() and type(cvar) == "string" and cvar:lower() == "showkeyring" then
             parent:SetAnchors()
         end
     end)

@@ -51,7 +51,7 @@ function module:CreateSearchBar(container)
 	local db = container:GetDB() or {}
 
 	-- Search Text
-	local search = container:CreateFontString(nil, "OVERLAY", "GameFonthighlightLarge")
+	local search = container:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
 	local searchText = SEARCH
 	search:SetPoint("TOPLEFT", container, tonumber(db.Padding) or 0, -10)
 	search:SetPoint("TOPRIGHT", -40, 0)

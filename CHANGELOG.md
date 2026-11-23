@@ -26,6 +26,8 @@
 - Colors: Refreshed enabled modules after shared palette changes without overwriting individual settings, and applied configured level-difficulty colors to Friends and Guild lists.
 - Unitframes: Updated embedded oUF to 14.3.1, including Forever combo-point and global-cooldown fixes, corrected range checks and restricted-unit handling. Retained LUI's additional Forever combo-point safeguards and updated aura creation to the current oUF API.
 - Bags: Prevented old item slots from reappearing after switching to smaller bags.
+- Bags: Respected Blizzard's bag-close ownership checks and restored shared sort and loot-insertion preferences when disabling LUI Bags, preserving later external changes.
+- Bags: Restored Retail bank artwork and slot positions without reinitializing Blizzard item buttons, and kept bag-slot tooltips and configured item-count colors up to date.
 - Chat: Fixed errors when opening temporary whisper conversations and applied chat styling to the new window.
 - Tooltip: Removed Blizzard's right-click instruction from unit tooltips after native tooltip updates.
 
