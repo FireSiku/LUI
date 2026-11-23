@@ -101,6 +101,8 @@ function oUF:DisableBlizzard(unit)
 		handleFrame(TargetFrame)
 	elseif(unit == 'focus') then
 		handleFrame(FocusFrame)
+	elseif(unit:match('raid%d?%d?$')) then
+		handleFrame(CompactRaidFrameContainer)
 	elseif(unit:match('boss%d?$')) then
 		if(not isBossHooked) then
 			isBossHooked = true
