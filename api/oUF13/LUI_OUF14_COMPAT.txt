@@ -1,12 +1,19 @@
 LUI / oUF integration notes
 
-Framework: complete official upstream snapshot, without LUI source changes.
+Framework: official upstream snapshot with the generic raid-frame suppression
+case added to blizzard.lua's existing DisableBlizzard function.
 Source: https://github.com/oUF-wow/oUF/tree/14.3.1
 Upstream commit: 5e8840142b530022b5113d4e3bfdb84ffc942332 (2026-11-14)
 Packaged version: 14.3.1 (official release, published 2026-11-14).
-Only the standard project-version packaging tokens are replaced with this version;
+The standard project-version packaging tokens are replaced with this version;
 unchanged files retain their existing line endings.
 The api/oUF13 directory name is retained for existing load paths.
+
+Local framework fix, 2026-11-23:
+- DisableBlizzard handles raid units through the existing handleFrame function,
+  just as it handles player, target, focus and party replacements. LUI's raid
+  toggle invokes that same API after enabling its raid layout. No separate
+  LUI visibility controller is installed.
 
 LUI owns its compatibility code in modules/unitframes:
 - layout/layout.lua: power colors, explicit Mana gradients, fractional class

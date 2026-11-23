@@ -154,4 +154,88 @@ local frame = {__unit = "partypet1", Range = {insideAlpha = 1, outsideAlpha = .2
     SetAlphaFromBoolean = function(self, value, inside, outside) self.applied = {value, inside, outside} end}
 registered.Range(frame, "UNIT_IN_RANGE_UPDATE")
 Check(frame.applied[1] == opaque and frame.applied[3] == .2, "pet range booleans are forwarded without inspecting restricted values")
+
+-- Raid layouts use the existing oUF Blizzard-frame suppression path, like
+-- single-unit and party replacements. Exercise the real LUI enable/toggle path.
+for _, forever in ipairs({false, true}) do
+    for _, scenario in ipairs({"raid", "disabled", "external"}) do
+        local env = setmetatable({}, {__index = _G}); env._G = env
+        local combat = false
+        local function Frame(name)
+            local f = {events = {}, scripts = {}, attributes = {}, shown = true}
+            function f:RegisterEvent(event) self.events[event] = true end
+            function f:UnregisterEvent(event) self.events[event] = nil end
+            function f:UnregisterAllEvents() self.events = {} end
+            function f:SetScript(event, callback) self.scripts[event] = callback end
+            function f:SetAttribute(key, value) self.attributes[key] = value end
+            function f:GetAttribute(key) return self.attributes[key] end
+            function f:SetRolesets(value) self.roleset = value end
+            function f:Show() self.shown = true end
+            function f:Hide() self.shown = false end
+            function f:IsShown() return self.shown and self.roleset ~= "alwaysBlocked" end
+            for _, method in ipairs({"SetWidth", "SetHeight", "SetSize", "SetScale", "SetPoint", "SetParent", "ClearAllPoints"}) do
+                f[method] = Noop
+            end
+            if name then env[name] = f end
+            return f
+        end
+        env.UIParent = Frame("UIParent")
+        env.MAX_BOSS_FRAMES = 5
+        env.CreateFrame = function(_, name) return Frame(name) end
+        env.InCombatLockdown = function() return combat end
+        env.LibStub = function() return {} end
+        env.RegisterStateDriver, env.UnregisterStateDriver = Noop, Noop
+        env.C_AddOns = {IsAddOnLoaded = function(name) return scenario == "external" and name == "Grid2" end}
+        env.SetCVar = function() error("the raid fix must not change saved Blizzard preferences") end
+        local module = {IsEnabled = function() return true end, DisableFading = Noop}
+        local ouf = {Private = {GameVersion = {Forever = forever}}, SetActiveStyle = Noop,
+            SpawnHeader = function(_, name) return Frame(name) end}
+        local lui = {IsForever = forever, oUF = ouf, Points = {}, Profiler = {TraceScope = Noop},
+            NewModule = function() return module end, GetModule = function() return module end,
+            OutOfCombatWrapper = function(callback) return callback end}
+        setfenv(assert(loadfile("api/oUF13/blizzard.lua")), env)("oUF", {oUF = ouf})
+        local function Load(path) setfenv(assert(loadfile(path)), env)("LUI", lui) end
+        Load("modules/unitframes/unitframes_init.lua")
+        Load("modules/unitframes/options/toggle.lua")
+        module.PositionFrame, module.ConfigureRaidGroupLabel = Noop, Noop
+        module.GetUnitFrameFootprintHeight = function() return 20 end
+        module.GetUnitFrameStackOverflow = function() return 0 end
+        module.SpawnPreconfiguredHeader = function(_, name) return Frame(name) end
+        module.db = {profile = {}}
+        for _, unit in ipairs(module.units) do
+            module.db.profile[unit] = {Enable = false, UseBlizzard = false, X = 0, Y = 0, Scale = 1}
+        end
+        module.db.profile.raid = {Enable = scenario ~= "disabled", Height = 20, Width = 50, Padding = 3, GroupPadding = 4}
+        local native = Frame("CompactRaidFrameContainer")
+        native:RegisterEvent("GROUP_ROSTER_UPDATE")
+        local originalShow = native.Show
+        module:OnEnable()
+        if scenario == "raid" then
+            Check(not native:IsShown() and env.oUF_LUI_raid.shown, "enabling the LUI raid layout uses oUF to suppress duplicate Blizzard frames")
+            Check(native.roleset == "alwaysBlocked" and not next(native.events), "raid suppression uses the same native roleset and event cleanup as other oUF replacements")
+            combat = true; native:Show()
+            Check(not native:IsShown() and native.Show == originalShow, "native Show calls cannot restore duplicates in combat and Show is not replaced")
+            combat = false
+            native.roleset = "unitFrames"
+            ouf:DisableBlizzard("raid40")
+            Check(not native:IsShown(), "numbered raid units use the same suppression case")
+            native.roleset = "unitFrames"
+            ouf:DisableBlizzard("raidpet1")
+            Check(native:IsShown(), "raid-pet tokens are not mistaken for the raid replacement")
+            env.CompactRaidFrameContainer = nil
+            ouf:DisableBlizzard("raid")
+            env.CompactRaidFrameContainer = native
+            module.ToggleUnit("raid")
+            Check(not native:IsShown(), "the normal refresh retries suppression after a previously missing native frame")
+        else
+            Check(native:IsShown() and native.events.GROUP_ROSTER_UPDATE,
+                "native raid frames remain untouched when LUI raid frames are disabled or another raid addon owns the layout")
+            Check(not env.oUF_LUI_raid, "no LUI raid layout is created when disabled or delegated")
+        end
+        local target = Frame("TargetFrame")
+        target:RegisterEvent("UNIT_TARGET")
+        ouf:DisableBlizzard("target")
+        Check(not target:IsShown() and not next(target.events), "the established target-frame suppression still works")
+    end
+end
 print("ouf_compat: " .. passed .. " checks passed")
