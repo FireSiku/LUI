@@ -291,6 +291,7 @@ local StopPreviewOutOfCombat = LUI.OutOfCombatWrapper(function()
 end)
 
 function module:OnDisable()
+	self:SetBlizzardRaidFramesHidden(false)
 	self:DisableFading()
 	StopPreviewOutOfCombat()
 	for _, unit in pairs(module.unitsSpawn) do module.ToggleUnit(unit, false) end

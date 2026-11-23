@@ -2,6 +2,7 @@
 
 ## Changes since last update
 
+- Unitframes: Prevented duplicate Blizzard raid frames while LUI's raid frames are active and restored native visibility when the replacement is disabled.
 - Core: Added a first-use welcome dialog and permanent links to the LUI Guide, Discord and changelog in General > Welcome.
 - Core: Added optional Bartender4 and Dominos setup under Control Panel > Addon Setup, with two bottom bars and sidebar positioning in a separate LUI profile copy, preserving the original profile and keybindings.
 - Core: Added optional Grid2, VuhDo, HealBot and Danders Frames setup in a separate LUI profile or skin copy, preserving the original, spells, click bindings and aura indicators. Reapplying setup updates the same LUI copy.
