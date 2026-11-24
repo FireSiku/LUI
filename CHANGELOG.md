@@ -23,6 +23,7 @@
 - Artwork: Fixed the right bottom line ignoring the shared themed-line color and opacity.
 - Artwork: Applied saved opacity to sidebars and the complete orb, and saved visible class colors when creating a theme.
 - Micromenu: Applied saved opacity to icons, borders and toggle artwork, and refreshed matching raid-menu colors immediately.
+- Micromenu: Prevented bank and item-use taint when tracking Blizzard bag visibility.
 - Colors: Refreshed enabled modules after shared palette changes without overwriting individual settings, and applied configured level-difficulty colors to Friends and Guild lists.
 - Unitframes: Updated embedded oUF to 14.3.1, including Forever combo-point and global-cooldown fixes, corrected range checks and restricted-unit handling. Retained LUI's additional Forever combo-point safeguards and updated aura creation to the current oUF API.
 - Bags: Prevented old item slots from reappearing after switching to smaller bags.

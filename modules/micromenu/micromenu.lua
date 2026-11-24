@@ -17,7 +17,6 @@ local HideUIPanel = _G.HideUIPanel
 local ShowUIPanel = _G.ShowUIPanel
 local UnitLevel = _G.UnitLevel
 local issecretvalue = _G.issecretvalue
-local IsBagOpen = _G.IsBagOpen
 local Minimap = _G.Minimap
 local format = format
 local InCombatLockdown = _G.InCombatLockdown
@@ -722,30 +721,37 @@ end
 
 function module:ConsolidateBagFrames()
 	local bagFrames = CreateFrame("Frame", "ConsolidatedBagFrame", UIParent)
+	local containers = {}
 
 	local function UpdateState()
+		if not module:IsEnabled() then return end
 		local bags = LUI:GetModule("Bags", true)
 		if bags and bags:IsEnabled() and _G.LUIBags then
 			bagFrames:SetShown(_G.LUIBags:IsShown())
 			return
 		end
-		if
-			IsBagOpen(0)
-			or IsBagOpen(1)
-			or IsBagOpen(2)
-			or IsBagOpen(3)
-			or IsBagOpen(4)
-			or IsBagOpen(5)
-		then
-			bagFrames:Show()
-		else
-			bagFrames:Hide()
+		-- IsBagOpen can initialize Blizzard's shared container enumerator.
+		-- Read only C-backed visibility and IDs so LUI never seeds that cache.
+		local combined = _G.ContainerFrameCombinedBags
+		local shown = combined and combined:IsShown() or false
+		if not shown then
+			for _, frame in ipairs(containers) do
+				if frame:IsShown() then
+					local id = frame:GetID()
+					if id >= 0 and id <= 5 then
+						shown = true
+						break
+					end
+				end
+			end
 		end
+		bagFrames:SetShown(shown)
 	end
 
 	for i = 1, 13 do
 		local frame = _G["ContainerFrame" .. i]
 		if frame then
+			containers[#containers + 1] = frame
 			frame:HookScript("OnShow", UpdateState)
 			frame:HookScript("OnHide", UpdateState)
 		end
